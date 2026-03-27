@@ -1,0 +1,49 @@
+from config import *
+
+PATH_SOURCE = Path(__file__).parents[2]
+sys.path.insert(0, str(PATH_SOURCE/Path('source')))
+
+from field_computation import FieldComputation
+from construct_model import construct_model
+from model_train import train
+
+
+
+# run as: python .\main.py hidden_layers neurons seed activation init_coeff
+# for example: python .\main.py 8 400 1 TrainableReLU 3.0
+
+
+## ############################################################################
+## Model construction #########################################################
+## ############################################################################
+pffmodel, matprop, network = construct_model(PFF_model_dict, mat_prop_dict, 
+                                             network_dict, domain_extrema, device)
+field_comp = FieldComputation(net = network,
+                              domain_extrema = domain_extrema, 
+                              lmbda = torch.tensor([0.0], device = device), 
+                              theta = loading_angle, 
+                              alpha_constraint = numr_dict["alpha_constraint"])
+field_comp.net = field_comp.net.to(device)
+field_comp.domain_extrema = field_comp.domain_extrema.to(device)
+field_comp.theta = field_comp.theta.to(device)
+
+## #############################################################################
+## #############################################################################
+
+
+
+## #############################################################################
+# Training #####################################################################
+## #############################################################################
+if __name__ == "__main__":
+    # ★ 根据 fatigue_dict 自动选择加载序列：
+    #   fatigue_on=True  + loading_type='cyclic'   → disp_cyclic（等幅循环）
+    #   fatigue_on=False 或 loading_type='monotonic' → disp（原始单调加载）
+    _fatigue_on   = fatigue_dict.get("fatigue_on", False)
+    _loading_type = fatigue_dict.get("loading_type", "monotonic")
+    active_disp   = disp_cyclic if (_fatigue_on and _loading_type == "cyclic") else disp
+
+    train(field_comp, active_disp, pffmodel, matprop, crack_dict, numr_dict,
+          optimizer_dict, training_dict, coarse_mesh_file, fine_mesh_file,
+          device, trainedModel_path, intermediateModel_path, writer,
+          fatigue_dict=fatigue_dict)   # ★ 传入疲劳字典
