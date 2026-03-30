@@ -47,6 +47,13 @@ def update_fatigue_history(hist_fat, psi_plus_elem, psi_plus_prev, fatigue_dict)
     ------
     torch.Tensor, shape (n_elem,)  —— 更新后的 ᾱ（detached，不参与反向传播）
     """
+    # ★ Seleš/Golahmar 修复：单调加载不累积疲劳历史变量
+    # 疲劳由定义是循环现象；单调加载下 f ≡ 1，退化回标准相场
+    # 效果：mono + fatigue_on == mono + fatigue_off（Case C 验证目标）
+    loading_type = fatigue_dict.get('loading_type', 'cyclic')
+    if loading_type == 'monotonic':
+        return hist_fat   # ᾱ 不变，f 将保持 1.0
+
     accum_type = fatigue_dict.get('accum_type', 'carrara')
 
     # H(Δψ⁺)·Δψ⁺ ≥ 0  ——  relu 实现：只保留正增量（加载阶段）

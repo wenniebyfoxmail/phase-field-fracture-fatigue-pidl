@@ -178,9 +178,10 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
     _, E_el_p = strain_energy_with_split(
         strain_11, strain_22, strain_12, alpha_elem, matprop, pffmodel
     )
-    # E_el_p 是 per-element 的退化拉伸能（不含面积乘）
-    # 除以面积得到能量密度（与 Carrara ᾱ = ∫ψ⁺ dt 的量纲一致）
-    psi_plus_elem = (E_el_p / area_elem.clamp(min=1e-16)).detach()
+    # E_el_p = ψ⁺_0（未退化拉伸应变能密度）
+    # Carrara Eq.39 要求累积退化能 g(α)·ψ⁺_0，避免裂尖奇异性
+    g_alpha, _ = pffmodel.Edegrade(alpha_elem)
+    psi_plus_elem = (g_alpha * E_el_p).detach()
     return psi_plus_elem
 
 

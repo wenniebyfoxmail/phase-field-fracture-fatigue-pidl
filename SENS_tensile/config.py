@@ -81,15 +81,15 @@ mat_prop_dict = {"mat_E" : 1.0, "mat_nu" : 0.3, "w1" : 1.0, "l0" : 0.01}
 # -------------------------------------------------------------------------
 fatigue_dict = {
     # ── 总开关 ──────────────────────────────────────────────────────────────
-    "fatigue_on"   : False,          # True: 开启疲劳 | False: 恢复 Manav 原始
+    "fatigue_on"   : True,           # True: 开启疲劳 | False: 恢复 Manav 原始
 
     # ── 加载方式（fatigue_on=True 时生效）───────────────────────────────────
-    "loading_type" : "cyclic",       # 'monotonic': 单调加载（验证用）
-                                     # 'cyclic'   : 循环加载（疲劳模拟）
+    "loading_type" : "cyclic",       # 'monotonic': 单调加载（Case C 验证用）
+                                     # 'cyclic'   : 循环加载（Case D 疲劳模拟）
 
     # ── 循环加载参数 ─────────────────────────────────────────────────────────
-    "n_cycles"     : 50,             # LCF 总循环数（disp_cyclic 的长度由此决定）
-    "disp_max"     : 0.12,           # 峰值位移振幅（无量纲；约为 ε ≈ 0.12 时开始损伤）
+    "n_cycles"     : 300,           # 最大循环数（设大，由断裂判据自动停止）
+    "disp_max"     : 0.08,           # 峰值位移振幅（低于单调断裂值 0.155，可试 0.10/0.14）
     "R_ratio"      : 0.0,            # 应力比 R = σ_min/σ_max；R=0 → 拉-拉循环
 
     # ── 历史变量累积策略 ─────────────────────────────────────────────────────
@@ -104,8 +104,16 @@ fatigue_dict = {
     "degrad_type"  : "asymptotic",   # 'asymptotic'  → Carrara Eq.41：f=[2α_T/(ᾱ+α_T)]²（永不到0）
                                      # 'logarithmic' → Carrara Eq.42：f=[1-κ·log10(ᾱ/α_T)]²（有限步归零）
 
+    # ── 断裂检测参数（cyclic 模式自动停止）─────────────────────────────────
+    "fracture_E_drop_ratio"  : 0.1,  # E_el < ratio × E_el_max 时触发检测
+    "fracture_confirm_cycles": 10,   # 触发后再观察 N 圈确认（防数值扰动）
+    "x_tip_threshold"        : 0.48, # 裂缝尖端 x 坐标判据：x_tip >= 此值 → 贯通（右边界 x=0.5）
+    "x_tip_alpha_thr"        : 0.90, # α > 此值认为是裂缝带内
+    "x_tip_y_band"           : 0.05, # 中心线附近带宽：|y| < 此值的节点参与判断
+    "plot_every_n_cycles"    : 20,   # 每 N 圈保存一张 α 场快照
+
     # ── 疲劳阈值 ────────────────────────────────────────────────────────────
-    "alpha_T"      : 0.094,          # 疲劳阈值（归一化）；ᾱ > α_T 时 f 开始下降
+    "alpha_T"      : 0.5,            # 疲劳阈值（归一化）；ᾱ > α_T 时 f 开始下降
                                      # 推导：GRIPHFiTH α_T/ψ_c ≈ 0.25
                                      #       Manav AT1 ψ_c ≈ w1/(8*l0)*(3/8*sqrt(3/8))...
                                      #       近似取 α_T = 0.25 × (3w1/16) ≈ 0.047；
@@ -181,6 +189,7 @@ else:
         f"_aT{_fat.get('alpha_T',0.094)}"
         f"_N{_fat.get('n_cycles',50)}"
         f"_R{_fat.get('R_ratio',0.0)}"
+        f"_Umax{_fat.get('disp_max',0.12)}"
     )
 
 model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+

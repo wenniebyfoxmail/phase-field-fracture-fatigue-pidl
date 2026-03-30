@@ -1,6 +1,6 @@
 from config import *
 
-PATH_SOURCE = Path(__file__).parents[2]
+PATH_SOURCE = Path(__file__).parents[1]
 sys.path.insert(0, str(PATH_SOURCE/Path('source')))
 
 from field_computation import FieldComputation
