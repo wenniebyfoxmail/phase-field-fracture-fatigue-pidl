@@ -107,9 +107,10 @@ fatigue_dict = {
     # ── 断裂检测参数（cyclic 模式自动停止）─────────────────────────────────
     "fracture_E_drop_ratio"  : 0.1,  # E_el < ratio × E_el_max 时触发检测
     "fracture_confirm_cycles": 10,   # 触发后再观察 N 圈确认（防数值扰动）
-    "crack_length_threshold" : 0.46, # 裂缝长度判据：crack_length >= 此值 → 贯通
-                                     # 定义：从 crack_mouth=(0,0) 到最远受损节点的距离
-                                     # 0.46 ≈ 92% 右半域宽度（右边界 x=0.5，crack_mouth x=0）
+    "crack_length_threshold" : 0.46, # 裂缝贯通判据：crack_length >= 此值 → 停止
+                                     # 定义：L∞ 距离 = max(|Δx|, |Δy|) from crack_mouth=(0,0)
+                                     # 等价于：x 或 y 方向投影任意一个达到 92% × 0.5
+                                     # 适用于任意裂缝路径（水平/斜/剪切），无需预设方向
     "x_tip_alpha_thr"        : 0.90, # α > 此值认为是裂缝带内
     "plot_every_n_cycles"    : 20,   # 每 N 圈保存一张 α 场快照
 
@@ -191,6 +192,7 @@ else:
         f"_N{_fat.get('n_cycles',50)}"
         f"_R{_fat.get('R_ratio',0.0)}"
         f"_Umax{_fat.get('disp_max',0.12)}"
+        f"_detLinf"          # 裂缝检测方法版本标记：L∞ 距离判据
     )
 
 model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+

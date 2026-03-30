@@ -59,10 +59,10 @@ def _save_alpha_snapshot(inp, alpha, T_conn, cycle, snapshot_dir):
     plt.close(fig)
 
 
-# ── 裂缝尖端检测（通用，基于与 crack_mouth 的距离）────────────────────────────
+# ── 裂缝尖端检测（通用，基于 L∞ 距离）──────────────────────────────────────
 def get_crack_tip(alpha_vals, node_coords, crack_mouth_xy, threshold=0.9):
     """
-    返回裂缝尖端坐标和裂缝长度（从 crack_mouth 到最远受损节点的距离）。
+    返回裂缝尖端坐标和 L∞ 裂缝长度（max(|Δx|, |Δy|)）。
 
     参数
     ----
@@ -73,16 +73,24 @@ def get_crack_tip(alpha_vals, node_coords, crack_mouth_xy, threshold=0.9):
 
     返回
     ----
-    crack_tip_xy  : torch.Tensor, shape (2,)   — 裂缝尖端坐标
-    crack_length  : float                      — 裂缝长度（距离量纲）
+    crack_tip_xy  : torch.Tensor, shape (2,)   — 裂缝尖端坐标（L∞意义下最远点）
+    crack_length  : float                      — L∞ 裂缝长度 = max(|Δx|, |Δy|)
+
+    说明
+    ----
+    使用 L∞（Chebyshev）距离而非欧式距离：
+      - 欧式距离对斜裂缝偏大（到对角 ≈0.707），会导致阈值不一致
+      - L∞ 距离等价于"在 x 或 y 方向的最大投影"，与域边界距离（0.5）直接可比
+      - 判据 crack_length >= 0.46 意味着：任意方向投影达到 92% 域半宽 → 贯通
     """
     damaged = alpha_vals > threshold
     if damaged.sum() == 0:
         return crack_mouth_xy, 0.0
-    d_coords = node_coords[damaged]
-    dist = torch.norm(d_coords - crack_mouth_xy, dim=1)
-    idx  = dist.argmax()
-    return d_coords[idx], dist[idx].item()
+    d_coords  = node_coords[damaged]
+    delta     = (d_coords - crack_mouth_xy).abs()          # |Δx|, |Δy| per node
+    linf_dist = delta.max(dim=1).values                    # max(|Δx|, |Δy|) per node
+    idx       = linf_dist.argmax()
+    return d_coords[idx], linf_dist[idx].item()
 
 
 def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
@@ -365,12 +373,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if j % _plot_every == 0 or _frac_detected:
                 _save_alpha_snapshot(inp, alpha_el, T_conn, j, _snapshot_dir)
 
-            # ── 裂缝尖端位置计算（通用：距 crack_mouth 的最远受损节点距离）──────
-            _, crack_length = get_crack_tip(
+            # ── 裂缝尖端位置计算（L∞：max(|Δx|,|Δy|) 从 crack_mouth 到最远受损节点）──
+            crack_tip_xy, crack_length = get_crack_tip(
                 alpha_el.flatten(), inp, _crack_mouth, threshold=_alpha_crack_thr
             )
             _x_tip_history.append(crack_length)
-            print(f"  [crack_length] = {crack_length:.4f}")
+            _tip_x = crack_tip_xy[0].item()
+            _tip_y = crack_tip_xy[1].item()
+            print(f"  [crack_tip]    = ({_tip_x:.4f}, {_tip_y:.4f})  "
+                  f"L∞_length = {crack_length:.4f}")
 
             # ── 断裂检测：E_el 骤降 OR crack_length 超阈值（二者满足其一即触发）──
             _E_triggered    = (E_el_max > 0 and E_el_scalar < _E_drop_ratio * E_el_max)
