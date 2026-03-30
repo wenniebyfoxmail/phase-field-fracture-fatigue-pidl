@@ -59,6 +59,32 @@ def _save_alpha_snapshot(inp, alpha, T_conn, cycle, snapshot_dir):
     plt.close(fig)
 
 
+# ── 裂缝尖端检测（通用，基于与 crack_mouth 的距离）────────────────────────────
+def get_crack_tip(alpha_vals, node_coords, crack_mouth_xy, threshold=0.9):
+    """
+    返回裂缝尖端坐标和裂缝长度（从 crack_mouth 到最远受损节点的距离）。
+
+    参数
+    ----
+    alpha_vals    : torch.Tensor, shape (N,)   — 各节点相场值
+    node_coords   : torch.Tensor, shape (N, 2) — 各节点 (x, y) 坐标
+    crack_mouth_xy: torch.Tensor, shape (2,)   — 初始裂缝尖端坐标（SENS: [0.0, 0.0]）
+    threshold     : float                      — α > threshold 认为属于裂缝带
+
+    返回
+    ----
+    crack_tip_xy  : torch.Tensor, shape (2,)   — 裂缝尖端坐标
+    crack_length  : float                      — 裂缝长度（距离量纲）
+    """
+    damaged = alpha_vals > threshold
+    if damaged.sum() == 0:
+        return crack_mouth_xy, 0.0
+    d_coords = node_coords[damaged]
+    dist = torch.norm(d_coords - crack_mouth_xy, dim=1)
+    idx  = dist.argmax()
+    return d_coords[idx], dist[idx].item()
+
+
 def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
           optimizer_dict, training_dict, coarse_mesh_file, fine_mesh_file,
           device, trainedModel_path, intermediateModel_path, writer,
@@ -211,11 +237,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _confirm_cycles = fatigue_dict.get('fracture_confirm_cycles',  10)
     _plot_every     = fatigue_dict.get('plot_every_n_cycles',      20)
 
-    # ★ x_tip 判据参数
-    _x_tip_threshold = fatigue_dict.get('x_tip_threshold', 0.48)  # 裂缝贯通右边界
-    _alpha_crack_thr = fatigue_dict.get('x_tip_alpha_thr', 0.90)  # α > 此值认为属于裂缝带
-    _y_band_half     = fatigue_dict.get('x_tip_y_band',    0.05)  # |y| < 此值的节点参与判断
-    _x_tip_history   = []    # 每圈 x_tip，供后处理
+    # ★ crack_length 判据参数（通用：距 crack_mouth 的距离，与加载方向无关）
+    _crack_length_threshold = fatigue_dict.get('crack_length_threshold', 0.46)
+    _alpha_crack_thr        = fatigue_dict.get('x_tip_alpha_thr', 0.90)
+    _crack_mouth            = torch.tensor([0.0, 0.0], device=device)  # SENS: 预裂缝尖端
+    _x_tip_history          = []    # 每圈 crack_length，供后处理（变量名保持兼容）
 
     # α 快照目录（与 best_models/ 同级）
     _snapshot_dir = trainedModel_path.parent / Path('alpha_snapshots')
@@ -339,21 +365,16 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if j % _plot_every == 0 or _frac_detected:
                 _save_alpha_snapshot(inp, alpha_el, T_conn, j, _snapshot_dir)
 
-            # ── 裂缝尖端位置计算（x_tip 判据）────────────────────────────────
-            _inp_np   = inp.detach().cpu().numpy()
-            _alpha_np = alpha_el.detach().cpu().numpy().flatten()
-            _y_mask   = np.abs(_inp_np[:, 1]) < _y_band_half
-            _crack_mask = (_alpha_np > _alpha_crack_thr) & _y_mask
-            if _crack_mask.any():
-                x_tip = float(_inp_np[_crack_mask, 0].max())
-            else:
-                x_tip = float(_inp_np[:, 0].min())   # 尚无裂缝，尖端取最左
-            _x_tip_history.append(x_tip)
-            print(f"  [x_tip]     = {x_tip:.4f}")
+            # ── 裂缝尖端位置计算（通用：距 crack_mouth 的最远受损节点距离）──────
+            _, crack_length = get_crack_tip(
+                alpha_el.flatten(), inp, _crack_mouth, threshold=_alpha_crack_thr
+            )
+            _x_tip_history.append(crack_length)
+            print(f"  [crack_length] = {crack_length:.4f}")
 
-            # ── 断裂检测：E_el 骤降 OR 裂缝尖端贯通（二者满足其一即触发）──
+            # ── 断裂检测：E_el 骤降 OR crack_length 超阈值（二者满足其一即触发）──
             _E_triggered    = (E_el_max > 0 and E_el_scalar < _E_drop_ratio * E_el_max)
-            _xtip_triggered = (x_tip >= _x_tip_threshold)
+            _xtip_triggered = (crack_length >= _crack_length_threshold)
 
             if not _frac_detected and (_E_triggered or _xtip_triggered):
                 _frac_detected = True
@@ -364,17 +385,18 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     _reasons.append(f"E_el={E_el_scalar:.3e} < "
                                     f"{_E_drop_ratio}×{E_el_max:.3e}")
                 if _xtip_triggered:
-                    _reasons.append(f"x_tip={x_tip:.4f} >= {_x_tip_threshold}")
+                    _reasons.append(f"crack_length={crack_length:.4f} >= "
+                                    f"{_crack_length_threshold}")
                 print(f"  [Fracture?] cycle {j}: {' | '.join(_reasons)}. "
                       f"Continuing {_confirm_cycles} confirmation cycles...")
             elif _frac_detected:
                 _frac_confirm_remaining -= 1
                 # 两个判据都失效时才重置（防 E_el 数值波动误重置）
                 _E_recovered    = (E_el_scalar >= _E_drop_ratio * E_el_max)
-                _xtip_retracted = (x_tip < _x_tip_threshold)
+                _xtip_retracted = (crack_length < _crack_length_threshold)
                 if _E_recovered and _xtip_retracted:
                     print(f"  [Fracture reset] cycle {j}: "
-                          f"E_el recovered AND x_tip retracted → reset.")
+                          f"E_el recovered AND crack_length retracted → reset.")
                     _frac_detected = False
                     _frac_cycle    = None
 

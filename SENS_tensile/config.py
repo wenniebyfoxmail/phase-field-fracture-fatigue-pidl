@@ -107,9 +107,10 @@ fatigue_dict = {
     # ── 断裂检测参数（cyclic 模式自动停止）─────────────────────────────────
     "fracture_E_drop_ratio"  : 0.1,  # E_el < ratio × E_el_max 时触发检测
     "fracture_confirm_cycles": 10,   # 触发后再观察 N 圈确认（防数值扰动）
-    "x_tip_threshold"        : 0.48, # 裂缝尖端 x 坐标判据：x_tip >= 此值 → 贯通（右边界 x=0.5）
+    "crack_length_threshold" : 0.46, # 裂缝长度判据：crack_length >= 此值 → 贯通
+                                     # 定义：从 crack_mouth=(0,0) 到最远受损节点的距离
+                                     # 0.46 ≈ 92% 右半域宽度（右边界 x=0.5，crack_mouth x=0）
     "x_tip_alpha_thr"        : 0.90, # α > 此值认为是裂缝带内
-    "x_tip_y_band"           : 0.05, # 中心线附近带宽：|y| < 此值的节点参与判断
     "plot_every_n_cycles"    : 20,   # 每 N 圈保存一张 α 场快照
 
     # ── 疲劳阈值 ────────────────────────────────────────────────────────────
