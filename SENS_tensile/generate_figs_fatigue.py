@@ -55,25 +55,41 @@ else:
         print("Complete fracture not detected within recorded cycles.")
 
 # ── 2. 确定面板用的 cycle 列表 ───────────────────────────────────────────────
-panel_cycles_base = [0, 20, 40, 60, 80, 100]
+# 扫描实际存在的 snapshot 文件
+all_snaps = sorted(snapshot_dir.glob('alpha_cycle_*.png'))
+all_cycles = [int(p.stem.split('_')[-1]) for p in all_snaps]
 
-# 如果完全断裂帧已在列表中就不重复加
-if frac_cycle is not None and frac_cycle not in panel_cycles_base:
-    panel_cycles = panel_cycles_base + [frac_cycle]
-elif frac_cycle is not None:
-    panel_cycles = panel_cycles_base      # 已在列表里，不重复
+if not all_cycles:
+    print("[WARN] No alpha snapshots found. Skipping panel plot.")
+    panel_cycles = []
 else:
-    panel_cycles = panel_cycles_base
+    # 默认面板帧
+    panel_cycles_base = [0, 20, 40, 60, 80, 100]
+    # panel_cycles_base = [60, 120, 180, 240, 260, 280]
+    # 检查默认帧中有多少存在
+    default_available = [c for c in panel_cycles_base if c in all_cycles]
 
-# 过滤掉实际不存在 snapshot 的帧
-available = []
-for cyc in panel_cycles:
-    p = snapshot_dir / f'alpha_cycle_{cyc:04d}.png'
-    if p.exists():
-        available.append(cyc)
+    if len(default_available) >= 3:
+        # 默认帧基本可用
+        panel_cycles_base = default_available
     else:
-        print(f"[WARN] snapshot missing: alpha_cycle_{cyc:04d}.png  (skipped)")
-panel_cycles = available
+        # 默认帧不适用（如 continuation run），自动选最多 6 帧等间距
+        n_select = min(6, len(all_cycles))
+        indices = [int(round(i * (len(all_cycles) - 1) / (n_select - 1)))
+                   for i in range(n_select)] if n_select > 1 else [0]
+        panel_cycles_base = [all_cycles[i] for i in dict.fromkeys(indices)]
+        print(f"[Info] Default panel cycles not found. Auto-selected: {panel_cycles_base}")
+
+    # 加入完全断裂帧（如不重复）
+    if frac_cycle is not None and frac_cycle not in panel_cycles_base:
+        # 找最近的实际存在的 snapshot
+        nearest = min(all_cycles, key=lambda c: abs(c - frac_cycle))
+        if nearest not in panel_cycles_base:
+            panel_cycles_base = panel_cycles_base + [nearest]
+            print(f"[Info] Adding fracture-nearest snapshot: cycle {nearest}")
+
+    panel_cycles = sorted(panel_cycles_base)
+
 print(f"Panel cycles to plot: {panel_cycles}")
 
 # ── 3. α 场面板图 ────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 from config import *
 
-PATH_SOURCE = Path(__file__).parents[2]
+PATH_SOURCE = Path(__file__).parents[1]
 sys.path.insert(0, str(PATH_SOURCE/Path('source')))
 
 from field_computation import FieldComputation
@@ -19,7 +19,7 @@ disp_idx = 23   # 默认绘制最终步 U_p=0.2；改为15可看断裂瞬间(U_p
 
 device = 'cpu'
 ## ############################################################################
-## Model construction #########################################################
+## Model construction ################### ######################################
 ## ############################################################################
 pffmodel, matprop, network = construct_model(PFF_model_dict, mat_prop_dict, 
                                              network_dict, domain_extrema, device)

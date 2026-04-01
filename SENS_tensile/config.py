@@ -84,12 +84,12 @@ fatigue_dict = {
     "fatigue_on"   : True,           # True: 开启疲劳 | False: 恢复 Manav 原始
 
     # ── 加载方式（fatigue_on=True 时生效）───────────────────────────────────
-    "loading_type" : "cyclic",       # 'monotonic': 单调加载（Case C 验证用）
+    "loading_type" : "cyclic",     # 'monotonic': 单调加载（Case C 验证用）
                                      # 'cyclic'   : 循环加载（Case D 疲劳模拟）
 
     # ── 循环加载参数 ─────────────────────────────────────────────────────────
-    "n_cycles"     : 300,           # 最大循环数（设大，由断裂判据自动停止）
-    "disp_max"     : 0.08,           # 峰值位移振幅（低于单调断裂值 0.155，可试 0.10/0.14）
+    "n_cycles"     : 500,           # 最大循环数（设大，由断裂判据自动停止）
+    "disp_max"     : 0.09,           # 峰值位移振幅（Case E）
     "R_ratio"      : 0.0,            # 应力比 R = σ_min/σ_max；R=0 → 拉-拉循环
 
     # ── 历史变量累积策略 ─────────────────────────────────────────────────────
@@ -192,7 +192,8 @@ else:
         f"_N{_fat.get('n_cycles',50)}"
         f"_R{_fat.get('R_ratio',0.0)}"
         f"_Umax{_fat.get('disp_max',0.12)}"
-        f"_detLinf"          # 裂缝检测方法版本标记：L∞ 距离判据
+        # NOTE: _detLinf 标记在续跑期间注释掉，以保持目录名与 checkpoint 一致
+        # 跑完后恢复：f"_detLinf"
     )
 
 model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+

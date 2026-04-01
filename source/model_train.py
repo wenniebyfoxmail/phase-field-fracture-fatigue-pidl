@@ -60,7 +60,8 @@ def _save_alpha_snapshot(inp, alpha, T_conn, cycle, snapshot_dir):
 
 
 # ── 裂缝尖端检测（通用，基于 L∞ 距离）──────────────────────────────────────
-def get_crack_tip(alpha_vals, node_coords, crack_mouth_xy, threshold=0.9):
+def get_crack_tip(alpha_vals, node_coords, crack_mouth_xy, threshold=0.9,
+                  x_min=None):
     """
     返回裂缝尖端坐标和 L∞ 裂缝长度（max(|Δx|, |Δy|)）。
 
@@ -70,6 +71,8 @@ def get_crack_tip(alpha_vals, node_coords, crack_mouth_xy, threshold=0.9):
     node_coords   : torch.Tensor, shape (N, 2) — 各节点 (x, y) 坐标
     crack_mouth_xy: torch.Tensor, shape (2,)   — 初始裂缝尖端坐标（SENS: [0.0, 0.0]）
     threshold     : float                      — α > threshold 认为属于裂缝带
+    x_min         : float | None               — 只搜索 x > x_min 的节点（排除预制裂缝）
+                                                 SENS: 传入 crack_mouth_xy[0] = 0.0
 
     返回
     ----
@@ -82,8 +85,16 @@ def get_crack_tip(alpha_vals, node_coords, crack_mouth_xy, threshold=0.9):
       - 欧式距离对斜裂缝偏大（到对角 ≈0.707），会导致阈值不一致
       - L∞ 距离等价于"在 x 或 y 方向的最大投影"，与域边界距离（0.5）直接可比
       - 判据 crack_length >= 0.46 意味着：任意方向投影达到 92% 域半宽 → 贯通
+    x_min 过滤原因：
+      - 预制裂缝节点（x ∈ [-0.5, 0]）在 t=0 就是 α≈1 的永久损伤
+      - 不加过滤时 L∞(crack_mouth → 预制裂缝左端) = 0.5，从第1圈就误触发
+      - 只搜索 x > crack_mouth_x 确保只追踪新扩展部分
     """
     damaged = alpha_vals > threshold
+    # 排除预制裂缝：只保留 x > x_min 的受损节点
+    if x_min is not None:
+        forward = node_coords[:, 0] > x_min
+        damaged = damaged & forward
     if damaged.sum() == 0:
         return crack_mouth_xy, 0.0
     d_coords  = node_coords[damaged]
@@ -249,6 +260,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _crack_length_threshold = fatigue_dict.get('crack_length_threshold', 0.46)
     _alpha_crack_thr        = fatigue_dict.get('x_tip_alpha_thr', 0.90)
     _crack_mouth            = torch.tensor([0.0, 0.0], device=device)  # SENS: 预裂缝尖端
+    _crack_mouth_x          = _crack_mouth[0].item()  # 过滤预制裂缝用（只搜 x > 此值）
     _x_tip_history          = []    # 每圈 crack_length，供后处理（变量名保持兼容）
 
     # α 快照目录（与 best_models/ 同级）
@@ -374,8 +386,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 _save_alpha_snapshot(inp, alpha_el, T_conn, j, _snapshot_dir)
 
             # ── 裂缝尖端位置计算（L∞：max(|Δx|,|Δy|) 从 crack_mouth 到最远受损节点）──
+            # x_min=_crack_mouth_x 排除预制裂缝（预制裂缝在 x≤0，新裂缝向 x>0 扩展）
             crack_tip_xy, crack_length = get_crack_tip(
-                alpha_el.flatten(), inp, _crack_mouth, threshold=_alpha_crack_thr
+                alpha_el.flatten(), inp, _crack_mouth, threshold=_alpha_crack_thr,
+                x_min=_crack_mouth_x
             )
             _x_tip_history.append(crack_length)
             _tip_x = crack_tip_xy[0].item()
