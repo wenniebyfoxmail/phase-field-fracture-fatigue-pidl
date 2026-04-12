@@ -258,20 +258,30 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     E_el_history       = []      # 每圈弹性能，供后处理画 E_el vs N 曲线
     E_el_max           = 0.0     # 历史最大弹性能（断裂判据基准）
     alpha_bar_history  = []      # 每圈 [ᾱ_max, ᾱ_mean, f_min]，自动保存为 alpha_bar_vs_cycle.npy
-    _frac_detected          = False   # 是否已触发骤降检测
-    _frac_cycle             = None    # 首次检测到骤降的圈号
+    _frac_detected          = False   # 是否已触发断裂检测
+    _frac_cycle             = None    # 首次检测到断裂的圈号
     _frac_confirm_remaining = 0       # 剩余确认圈数（>0 时持续观察）
+    _dense_sampling         = False   # 是否进入逐圈密集采样模式
 
     _E_drop_ratio   = fatigue_dict.get('fracture_E_drop_ratio',   0.5)
-    _confirm_cycles = fatigue_dict.get('fracture_confirm_cycles',  10)
+    _confirm_cycles = fatigue_dict.get('fracture_confirm_cycles',  3)   # 边界判据已很明确，3圈即可
     _plot_every     = fatigue_dict.get('plot_every_n_cycles',      20)
 
-    # ★ crack_length 判据参数（通用：距 crack_mouth 的距离，与加载方向无关）
-    _crack_length_threshold = fatigue_dict.get('crack_length_threshold', 0.46)
-    _alpha_crack_thr        = fatigue_dict.get('x_tip_alpha_thr', 0.90)
-    _crack_mouth            = torch.tensor([0.0, 0.0], device=device)  # SENS: 预裂缝尖端
-    _crack_mouth_x          = _crack_mouth[0].item()  # 过滤预制裂缝用（只搜 x > 此值）
-    _x_tip_history          = []    # 每圈 crack_length，供后处理（变量名保持兼容）
+    # ★ 右边界 α 判据参数（主判据：替代旧的 L∞ 距离判据）
+    # 物理含义：当目标边界面上有足够多节点的 α 超过阈值时认为贯穿
+    _alpha_bdy_warn  = fatigue_dict.get('alpha_bdy_warn',      0.90)  # 触发密集采样的预警阈值
+    _alpha_bdy_frac  = fatigue_dict.get('alpha_bdy_threshold', 0.95)  # 贯穿判据阈值（与 FEM 对齐）
+    _alpha_bdy_nmin  = fatigue_dict.get('alpha_bdy_nmin',      3)     # 最少节点数（防单点噪声）
+    # 右边界节点掩码（预计算，避免每圈重复判断）
+    # SENS 几何：右边界 x ≈ 0.5，取 x > 0.48 覆盖边界层节点
+    _right_bdy_x_min = fatigue_dict.get('right_bdy_x_min',    0.48)
+    _right_bdy_mask  = inp[:, 0] > _right_bdy_x_min           # shape (N_nodes,)，bool
+
+    # ★ L∞ 裂缝尖端（保留用于日志和后处理，不再作为停止判据）
+    _alpha_crack_thr = fatigue_dict.get('x_tip_alpha_thr', 0.90)
+    _crack_mouth     = torch.tensor([0.0, 0.0], device=device)  # SENS: 预裂缝尖端
+    _crack_mouth_x   = _crack_mouth[0].item()
+    _x_tip_history   = []    # 每圈 crack_length，供后处理（变量名保持兼容）
 
     # α 快照目录（与 best_models/ 同级）
     _snapshot_dir = trainedModel_path.parent / Path('alpha_snapshots')
@@ -394,12 +404,22 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             E_el_history.append(E_el_scalar)
             E_el_max = max(E_el_max, E_el_scalar)
 
-            # ── α 场快照：每 _plot_every 圈保存一次，断裂确认期每圈都保存 ──
-            if j % _plot_every == 0 or _frac_detected:
+            # ── 右边界 α 检测（主判据）──────────────────────────────────────
+            alpha_bdy     = alpha_el.flatten()[_right_bdy_mask]
+            alpha_bdy_max = float(alpha_bdy.max().item()) if _right_bdy_mask.sum() > 0 else 0.0
+            n_bdy_frac    = int((alpha_bdy > _alpha_bdy_frac).sum().item())
+
+            # 预警：α > 0.90 → 开始逐圈密集采样
+            if not _dense_sampling and alpha_bdy_max >= _alpha_bdy_warn:
+                _dense_sampling = True
+                print(f"  [Dense sampling ON] cycle {j}: α_max@bdy={alpha_bdy_max:.4f} "
+                      f">= {_alpha_bdy_warn} → 开始逐圈保存快照")
+
+            # ── α 场快照：常规每 _plot_every 圈；密集采样期或断裂确认期每圈保存 ──
+            if j % _plot_every == 0 or _dense_sampling or _frac_detected:
                 _save_alpha_snapshot(inp, alpha_el, T_conn, j, _snapshot_dir)
 
-            # ── 裂缝尖端位置计算（L∞：max(|Δx|,|Δy|) 从 crack_mouth 到最远受损节点）──
-            # x_min=_crack_mouth_x 排除预制裂缝（预制裂缝在 x≤0，新裂缝向 x>0 扩展）
+            # ── 裂缝尖端 L∞（仅用于日志和后处理，不再作为停止判据）──────────
             crack_tip_xy, crack_length = get_crack_tip(
                 alpha_el.flatten(), inp, _crack_mouth, threshold=_alpha_crack_thr,
                 x_min=_crack_mouth_x
@@ -408,35 +428,34 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             _tip_x = crack_tip_xy[0].item()
             _tip_y = crack_tip_xy[1].item()
             print(f"  [crack_tip]    = ({_tip_x:.4f}, {_tip_y:.4f})  "
-                  f"L∞_length = {crack_length:.4f}")
+                  f"L∞_length = {crack_length:.4f}  "
+                  f"α_max@bdy={alpha_bdy_max:.4f}  N_bdy>{_alpha_bdy_frac}={n_bdy_frac}")
 
-            # ── 断裂检测：E_el 骤降 OR crack_length 超阈值（二者满足其一即触发）──
-            _E_triggered    = (E_el_max > 0 and E_el_scalar < _E_drop_ratio * E_el_max)
-            _xtip_triggered = (crack_length >= _crack_length_threshold)
+            # ── 断裂检测：α>0.95 @ 右边界（主）OR E_el 骤降（兜底）──────────
+            _bdy_triggered = (n_bdy_frac >= _alpha_bdy_nmin)
+            _E_triggered   = (E_el_max > 0 and E_el_scalar < _E_drop_ratio * E_el_max)
 
-            if not _frac_detected and (_E_triggered or _xtip_triggered):
+            if not _frac_detected and (_bdy_triggered or _E_triggered):
                 _frac_detected = True
                 _frac_cycle    = j
                 _frac_confirm_remaining = _confirm_cycles
                 _reasons = []
+                if _bdy_triggered:
+                    _reasons.append(f"α_bdy={alpha_bdy_max:.4f} >= {_alpha_bdy_frac} "
+                                    f"({n_bdy_frac} nodes)")
                 if _E_triggered:
                     _reasons.append(f"E_el={E_el_scalar:.3e} < "
                                     f"{_E_drop_ratio}×{E_el_max:.3e}")
-                if _xtip_triggered:
-                    _reasons.append(f"crack_length={crack_length:.4f} >= "
-                                    f"{_crack_length_threshold}")
                 print(f"  [Fracture?] cycle {j}: {' | '.join(_reasons)}. "
                       f"Continuing {_confirm_cycles} confirmation cycles...")
             elif _frac_detected:
                 _frac_confirm_remaining -= 1
-                # 两个判据都失效时才重置（防 E_el 数值波动误重置）
-                _E_recovered    = (E_el_scalar >= _E_drop_ratio * E_el_max)
-                _xtip_retracted = (crack_length < _crack_length_threshold)
-                if _E_recovered and _xtip_retracted:
-                    print(f"  [Fracture reset] cycle {j}: "
-                          f"E_el recovered AND crack_length retracted → reset.")
-                    _frac_detected = False
-                    _frac_cycle    = None
+                # 两个判据都失效时才重置（防数值波动误重置）
+                if (not _bdy_triggered) and (E_el_scalar >= _E_drop_ratio * E_el_max):
+                    print(f"  [Fracture reset] cycle {j}: both criteria recovered → reset.")
+                    _frac_detected  = False
+                    _frac_cycle     = None
+                    _dense_sampling = False
 
         # ------------------------------------------------------------------
         # 保存模型和损失（与 Manav 完全相同）
