@@ -33,7 +33,7 @@ PREFIX = 'hl_6_Neurons_100_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT
 
 CYCLIC_CASES = [
     # (label,  umax, N_f,  directory_suffix)
-    ('$U_{max}$=0.12', 0.12, 109, 'fatigue_on_carrara_asy_aT0.5_N300_R0.0_Umax0.12'),
+    ('$U_{max}$=0.12', 0.12, 103, 'fatigue_on_carrara_asy_aT0.5_N300_R0.0_Umax0.12'),
     ('$U_{max}$=0.11', 0.11, 130, 'fatigue_on_carrara_asy_aT0.5_N200_R0.0_Umax0.11'),
     ('$U_{max}$=0.10', 0.10, 199, 'fatigue_on_carrara_asy_aT0.5_N600_R0.0_Umax0.1'),
     ('$U_{max}$=0.09', 0.09, 276, 'fatigue_on_carrara_asy_aT0.5_N500_R0.0_Umax0.09'),
@@ -256,6 +256,48 @@ def fig_caseC_vs_0B():
 
 
 # =============================================================================
+# Fig 5 — alpha_bar history（fatigue accumulation & degradation per case）
+# Reads alpha_bar_vs_cycle.npy (col0=max, col1=mean, col2=f_min) if present
+# =============================================================================
+def fig_alpha_bar():
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    fig.suptitle(r'Fatigue accumulation $\bar{\alpha}$ and degradation $f(\bar{\alpha})$',
+                 fontsize=12, fontweight='bold')
+
+    ax_ab, ax_f = axes
+
+    for i, (label, umax, nf, suffix) in enumerate(CYCLIC_CASES):
+        ab_path = SCRIPT_DIR / (PREFIX + suffix) / 'best_models' / 'alpha_bar_vs_cycle.npy'
+        if not ab_path.exists():
+            print(f'  [skip] {ab_path.name} not found for {label}')
+            continue
+        ab = np.load(str(ab_path))   # shape (N, 3)
+        N  = np.arange(len(ab))
+        ax_ab.plot(N, ab[:, 0], color=COLORS[i], lw=1.8, label=label)
+        ax_f.plot( N, ab[:, 2], color=COLORS[i], lw=1.8, label=label)
+
+    for ax in [ax_ab, ax_f]:
+        ax.set_xlabel('Cycle $N$', fontsize=12)
+        ax.grid(True, alpha=0.3)
+        ax.legend(fontsize=9)
+
+    ax_ab.axhline(0.5, color='k', ls='--', lw=1.0, label=r'$\alpha_T=0.5$')
+    ax_ab.set_ylabel(r'$\bar{\alpha}_{\max}$', fontsize=12)
+    ax_ab.set_title(r'Fatigue accumulation $\bar{\alpha}_{\max}$ vs cycle', fontsize=11)
+
+    ax_f.axhline(1.0, color='k', ls='--', lw=0.8, alpha=0.5)
+    ax_f.set_ylabel(r'$f_{\min}(\bar{\alpha})$', fontsize=12)
+    ax_f.set_title(r'Degradation factor $f_{\min}$ vs cycle', fontsize=11)
+    ax_f.set_ylim(-0.02, 1.08)
+
+    plt.tight_layout()
+    path = OUT_DIR / 'fig5_alpha_bar_vs_N.png'
+    fig.savefig(str(path), dpi=200, bbox_inches='tight')
+    plt.close(fig)
+    print(f'Saved: {path}')
+
+
+# =============================================================================
 # 主程序
 # =============================================================================
 if __name__ == '__main__':
@@ -270,5 +312,8 @@ if __name__ == '__main__':
 
     print('\n=== Fig 4: Case C vs 0B ===')
     fig_caseC_vs_0B()
+
+    print('\n=== Fig 5: alpha_bar vs N ===')
+    fig_alpha_bar()
 
     print(f'\nAll figures saved to: {OUT_DIR}')

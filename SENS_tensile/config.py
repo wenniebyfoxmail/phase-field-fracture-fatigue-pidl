@@ -88,8 +88,8 @@ fatigue_dict = {
                                      # 'cyclic'   : 循环加载（Case D 疲劳模拟）
 
     # ── 循环加载参数 ─────────────────────────────────────────────────────────
-    "n_cycles"     : 500,           # 最大循环数（设大，由断裂判据自动停止）
-    "disp_max"     : 0.09,           # 峰值位移振幅（Case E）
+    "n_cycles"     : 400,           # 最大循环数（6x100 Umax=0.09 在276圈贯通，8x400估计~220+，留裕量）
+    "disp_max"     : 0.09,          # 峰值位移振幅（8x400 Umax=0.09）
     "R_ratio"      : 0.0,            # 应力比 R = σ_min/σ_max；R=0 → 拉-拉循环
 
     # ── 历史变量累积策略 ─────────────────────────────────────────────────────
@@ -192,6 +192,7 @@ else:
         f"_N{_fat.get('n_cycles',50)}"
         f"_R{_fat.get('R_ratio',0.0)}"
         f"_Umax{_fat.get('disp_max',0.12)}"
+        + ("_mono" if _fat.get("loading_type") == "monotonic" else "")
         # NOTE: _detLinf 标记在续跑期间注释掉，以保持目录名与 checkpoint 一致
         # 跑完后恢复：f"_detLinf"
     )

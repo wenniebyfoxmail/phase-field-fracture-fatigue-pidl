@@ -39,11 +39,16 @@ from fatigue_history import update_fatigue_history, compute_fatigue_degrad
 
 # ── α 场快照辅助函数 ────────────────────────────────────────────────────────
 def _save_alpha_snapshot(inp, alpha, T_conn, cycle, snapshot_dir):
-    """保存第 cycle 圈的 α 场 PNG，固定色轴 [0,1]，用于观察疲劳裂缝演化。"""
+    """保存第 cycle 圈的 α 场：
+    - PNG  → alpha_snapshots/alpha_cycle_{cycle:04d}.png  （可视化）
+    - npy  → alpha_snapshots/alpha_cycle_{cycle:04d}.npy  （数值，供 FEM 对比）
+              shape (N_nodes, 3)，列: [x, y, alpha]
+    """
     inp_np   = inp.detach().cpu().numpy()
     alpha_np = alpha.detach().cpu().numpy().flatten()
     T_np     = T_conn.detach().cpu().numpy() if torch.is_tensor(T_conn) else T_conn
 
+    # ── PNG ───────────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(4, 3))
     ax.set_aspect('equal')
     if T_np is not None:
@@ -57,6 +62,10 @@ def _save_alpha_snapshot(inp, alpha, T_conn, cycle, snapshot_dir):
     plt.tight_layout()
     plt.savefig(snapshot_dir / f'alpha_cycle_{cycle:04d}.png', dpi=200)
     plt.close(fig)
+
+    # ── npy: (N_nodes, 3) → [x, y, alpha] ────────────────────────────────────
+    field_data = np.column_stack([inp_np[:, 0], inp_np[:, 1], alpha_np])
+    np.save(snapshot_dir / f'alpha_cycle_{cycle:04d}.npy', field_data)
 
 
 # ── 裂缝尖端检测（通用，基于 L∞ 距离）──────────────────────────────────────
@@ -246,8 +255,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # -------------------------------------------------------------------------
     # ★ 断裂检测 & 可视化参数（仅 fatigue_on=True 时有意义）
     # -------------------------------------------------------------------------
-    E_el_history  = []           # 每圈弹性能，供后处理画 E_el vs N 曲线
-    E_el_max      = 0.0          # 历史最大弹性能（断裂判据基准）
+    E_el_history       = []      # 每圈弹性能，供后处理画 E_el vs N 曲线
+    E_el_max           = 0.0     # 历史最大弹性能（断裂判据基准）
+    alpha_bar_history  = []      # 每圈 [ᾱ_max, ᾱ_mean, f_min]，自动保存为 alpha_bar_vs_cycle.npy
     _frac_detected          = False   # 是否已触发骤降检测
     _frac_cycle             = None    # 首次检测到骤降的圈号
     _frac_confirm_remaining = 0       # 剩余确认圈数（>0 时持续观察）
@@ -369,6 +379,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             alpha_bar_max = hist_fat.max().item()
             print(f"  [Fatigue step {j}] ᾱ_max={alpha_bar_max:.4e} | "
                   f"f_min={f_min:.4f} | f_mean={f_mean:.4f}")
+            alpha_bar_history.append([alpha_bar_max,
+                                       hist_fat.mean().item(),
+                                       float(f_min)])
 
             # ── E_el 计算（用于断裂检测和后处理曲线）─────────────────────
             with torch.no_grad():
@@ -449,6 +462,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     np.array(E_el_history))
             np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),
                     np.array(_x_tip_history))
+            np.save(str(trainedModel_path / 'alpha_bar_vs_cycle.npy'),
+                    np.array(alpha_bar_history))
             break
 
     # 循环正常结束（跑完所有圈）也保存历史
@@ -458,3 +473,6 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_on and _x_tip_history:
         np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),
                 np.array(_x_tip_history))
+    if fatigue_on and alpha_bar_history:
+        np.save(str(trainedModel_path / 'alpha_bar_vs_cycle.npy'),
+                np.array(alpha_bar_history))
