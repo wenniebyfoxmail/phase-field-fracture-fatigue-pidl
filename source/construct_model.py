@@ -3,20 +3,34 @@ from pff_model import PFFModel
 from material_properties import MaterialProperties
 from network import NeuralNet, init_xavier
 
-def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, device):
+def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, device,
+                    williams_dict=None):
+    """
+    构建 PFF 模型、材料属性和神经网络。
+
+    ★ Direction 4 新增参数
+    williams_dict : dict | None
+        None 或 {"enable": False} → input_dimension = 2（原始行为）
+        {"enable": True, ...}     → input_dimension = 8（Williams 特征）
+    """
     # Phase field model
-    pffmodel = PFFModel(PFF_model = PFF_model_dict["PFF_model"], 
+    pffmodel = PFFModel(PFF_model = PFF_model_dict["PFF_model"],
                         se_split = PFF_model_dict["se_split"],
                         tol_ir = torch.tensor(PFF_model_dict["tol_ir"], device=device))
 
     # Material model
-    matprop = MaterialProperties(mat_E = torch.tensor(mat_prop_dict["mat_E"], device=device), 
-                                mat_nu = torch.tensor(mat_prop_dict["mat_nu"], device=device), 
-                                w1 = torch.tensor(mat_prop_dict["w1"], device=device), 
+    matprop = MaterialProperties(mat_E = torch.tensor(mat_prop_dict["mat_E"], device=device),
+                                mat_nu = torch.tensor(mat_prop_dict["mat_nu"], device=device),
+                                w1 = torch.tensor(mat_prop_dict["w1"], device=device),
                                 l0 = torch.tensor(mat_prop_dict["l0"], device=device))
 
+    # ★ Direction 4: Williams 启用时 NN 输入维度从 2 扩展到 8
+    _wd = williams_dict or {}
+    _williams_on = _wd.get('enable', False)
+    in_dim = 8 if _williams_on else domain_extrema.shape[0]   # 8 or 2
+
     # Neural network
-    network = NeuralNet(input_dimension=domain_extrema.shape[0], 
+    network = NeuralNet(input_dimension=in_dim,
                         output_dimension=domain_extrema.shape[0]+1,
                         n_hidden_layers=network_dict["hidden_layers"],
                         neurons=network_dict["neurons"],

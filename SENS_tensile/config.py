@@ -88,8 +88,8 @@ fatigue_dict = {
                                      # 'cyclic'   : 循环加载（Case D 疲劳模拟）
 
     # ── 循环加载参数 ─────────────────────────────────────────────────────────
-    "n_cycles"     : 400,           # 最大循环数（6x100 Umax=0.09 在276圈贯通，8x400估计~220+，留裕量）
-    "disp_max"     : 0.09,          # 峰值位移振幅（8x400 Umax=0.09）
+    "n_cycles"     : 300,           # Direction3 对比：与 baseline 8×400 seed=1 Umax=0.12 N300 一致
+    "disp_max"     : 0.12,          # 峰值位移振幅（Umax=0.12）
     "R_ratio"      : 0.0,            # 应力比 R = σ_min/σ_max；R=0 → 拉-拉循环
 
     # ── 历史变量累积策略 ─────────────────────────────────────────────────────
@@ -123,6 +123,30 @@ fatigue_dict = {
 
     # ── 对数退化参数（degrad_type='logarithmic' 时有效）────────────────────
     "kappa"        : 1.0,            # κ > 0；控制疲劳寿命上限：ᾱ_max = α_T·10^(1/κ)
+
+    # ── 方向3：裂尖自适应损失加权（Crack-Tip Adaptive Loss Weighting）─────
+    # 原理：w_e = 1 + β·(ψ⁺_e / ψ⁺_mean)^p
+    #   裂尖 ψ⁺ 高 → w_e 大 → 该单元损失贡献增大 → NN 分配更多表达能力
+    # enable=False 时完全等价原始行为（crack_tip_weights=None）
+    "tip_weight_cfg": {
+        "enable"      : False,       # Direction 3 负结果 → 已关闭；True 时追加 _tipw_ 目录标签
+        "beta"        : 2.0,         # 加权强度；beta=0 → 均匀；推荐范围 1~5
+        "power"       : 1.0,         # ψ⁺ 比值的幂次；1.0 = 线性加权；2.0 = 平方增强
+        "start_cycle" : 1,           # 从第几圈开始加权（0 = 从预训练完成后第1圈就加权）
+    },
+}
+
+# ★ Direction 4: Williams 裂尖增强输入特征
+# ────────────────────────────────────────────────────────────────────────────
+# 背景：PIDL Kt≈7 vs FEM Kt≈15 → 根因：MLP 谱偏差无法表示 r^(1/2) 奇异性
+# 方案：将 Williams 展开基函数作为 NN 附加输入特征（8D 标准集）
+#   [x, y, √(r/l₀), r/l₀, sin(θ/2), cos(θ/2), sin(3θ/2), cos(3θ/2)]
+# 关键：只改输入特征，不改 Deep Ritz 能量泛函 → 安全（不重蹈 Direction 3 覆辙）
+# ────────────────────────────────────────────────────────────────────────────
+williams_dict = {
+    "enable"     : True,         # True: 启用 8D 特征; False: 原始 2D（完全等价 baseline）
+    "theta_mode" : "atan2",      # θ = atan2(dy, dx) ∈ (-π, π]（预留接口，未来可扩展）
+    "r_min"      : 1e-6,         # r 下限，防止裂尖节点处除零
 }
 
 
@@ -184,6 +208,12 @@ _fat = fatigue_dict
 if not _fat.get("fatigue_on", False):
     _fatigue_tag = "_fatigue_off"
 else:
+    # ★ 方向3：tip_weight 启用时在目录名追加 _tipw_bβ_pP 标签，便于区分
+    _tw_cfg = _fat.get('tip_weight_cfg', {})
+    _tipw_tag = (
+        f"_tipw_b{_tw_cfg.get('beta',2.0)}_p{_tw_cfg.get('power',1.0)}"
+        if _tw_cfg.get('enable', False) else ""
+    )
     _fatigue_tag = (
         f"_fatigue_on"
         f"_{_fat.get('accum_type','carrara')}"
@@ -193,9 +223,13 @@ else:
         f"_R{_fat.get('R_ratio',0.0)}"
         f"_Umax{_fat.get('disp_max',0.12)}"
         + ("_mono" if _fat.get("loading_type") == "monotonic" else "")
+        + _tipw_tag  # ★ 仅 enable=True 时追加，否则为空字符串
         # NOTE: _detLinf 标记在续跑期间注释掉，以保持目录名与 checkpoint 一致
         # 跑完后恢复：f"_detLinf"
     )
+
+# ★ Direction 4: Williams 标签（enable=True 时追加 _williams_std，便于区分 baseline）
+_williams_tag = "_williams_std" if williams_dict.get("enable", False) else ""
 
 model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             '_Neurons_'+str(network_dict["neurons"])+
@@ -204,7 +238,8 @@ model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             '_Seed_'+str(network_dict["seed"])+
                             '_PFFmodel_'+str(PFF_model_dict["PFF_model"])+
                             '_gradient_'+str(numr_dict["gradient_type"])+
-                            _fatigue_tag)          # ★ 疲劳标签追加到路径末尾
+                            _fatigue_tag +
+                            _williams_tag)         # ★ Direction 4 标签追加到路径末尾
 model_path.mkdir(parents=True, exist_ok=True)
 trainedModel_path = model_path/Path('best_models/')
 trainedModel_path.mkdir(parents=True, exist_ok=True)
@@ -234,6 +269,11 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\ndegrad_type: {_fat.get("degrad_type")}')
     file.write(f'\nalpha_T: {_fat.get("alpha_T")}')
     file.write(f'\nkappa: {_fat.get("kappa")}')
+    # ★ Direction 4: Williams 特征参数
+    file.write(f'\n--- williams ---')
+    file.write(f'\nwilliams_enable: {williams_dict.get("enable", False)}')
+    file.write(f'\nwilliams_theta_mode: {williams_dict.get("theta_mode", "atan2")}')
+    file.write(f'\nwilliams_r_min: {williams_dict.get("r_min", 1e-6)}')
 
 ## #############################################################################
 ## #############################################################################

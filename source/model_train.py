@@ -36,6 +36,9 @@ from plotting import plot_field
 from compute_energy import get_psi_plus_per_elem, compute_energy
 from fatigue_history import update_fatigue_history, compute_fatigue_degrad
 
+# ★ Direction 4: Williams ψ⁺ 重心估计裂尖坐标（可选，仅在 williams_enabled=True 时调用）
+from williams_features import compute_x_tip_psi
+
 
 # ── α 场快照辅助函数 ────────────────────────────────────────────────────────
 def _save_alpha_snapshot(inp, alpha, T_conn, cycle, snapshot_dir):
@@ -228,6 +231,18 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         f_fatigue = 1.0
         print("[Fatigue] fatigue_on=False → 等价 Manav 原始行为")
 
+    # ★ 方向3：裂尖自适应权重初始化
+    # tip_weight_cfg = None 或 fatigue_dict 内的子字典 "tip_weight_cfg"
+    # 初始 cycle（pretraining 完成后第 1 圈）无权重（均匀），之后从 psi_plus_elem 计算
+    _tip_w_cfg         = fatigue_dict.get('tip_weight_cfg', None)   # None → 关闭
+    crack_tip_weights  = None   # 当前循环的权重（None = 均匀）
+    if _tip_w_cfg and _tip_w_cfg.get('enable', False):
+        print(f"[TipWeight] 裂尖自适应加权已启用: β={_tip_w_cfg.get('beta',2.0)}, "
+              f"p={_tip_w_cfg.get('power',1.0)}, "
+              f"从 cycle {_tip_w_cfg.get('start_cycle',1)} 开始")
+    else:
+        _tip_w_cfg = None   # 统一置 None，后续只需判断 if _tip_w_cfg
+
     # -------------------------------------------------------------------------
     # ★ 检测最新 step checkpoint，实现断点续训
     # -------------------------------------------------------------------------
@@ -283,6 +298,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _crack_mouth_x   = _crack_mouth[0].item()
     _x_tip_history   = []    # 每圈 crack_length，供后处理（变量名保持兼容）
 
+    # ★ Direction 4: Williams 特征开关 & ψ⁺ 重心裂尖历史
+    # 通过 field_comp.williams_enabled 检测是否启用（无需额外参数传递）
+    _williams_enabled = getattr(field_comp, 'williams_enabled', False)
+    _x_tip_psi_history = []   # ψ⁺ 重心估计的裂尖 x 坐标，每圈一个值
+
     # α 快照目录（与 best_models/ 同级）
     _snapshot_dir = trainedModel_path.parent / Path('alpha_snapshots')
     if fatigue_on:
@@ -298,7 +318,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         start = time.time()
 
         # ------------------------------------------------------------------
-        # 训练（与 Manav 完全相同的结构；仅多传 f_fatigue）
+        # 训练（与 Manav 完全相同的结构；仅多传 f_fatigue 和 crack_tip_weights）
         # ------------------------------------------------------------------
         if j == 0 or optimizer_dict["n_epochs_LBFGS"] > 0:
             n_epochs = max(optimizer_dict["n_epochs_LBFGS"], 1)
@@ -308,7 +328,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
                 optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
                 intermediateModel_path=None, writer=writer, training_dict=training_dict,
-                f_fatigue=f_fatigue    # ★ 传入疲劳退化函数
+                f_fatigue=f_fatigue,              # ★ 传入疲劳退化函数
+                crack_tip_weights=crack_tip_weights  # ★ 方向3：裂尖自适应权重
             )
             loss_data = loss_data + loss_data1
 
@@ -322,7 +343,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 min_delta=optimizer_dict["optim_rel_tol"],
                 intermediateModel_path=intermediateModel_path,
                 writer=writer, training_dict=training_dict,
-                f_fatigue=f_fatigue    # ★ 传入疲劳退化函数
+                f_fatigue=f_fatigue,              # ★ 传入疲劳退化函数
+                crack_tip_weights=crack_tip_weights  # ★ 方向3：裂尖自适应权重
             )
             loss_data = loss_data + loss_data2
 
@@ -362,6 +384,17 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     matprop, pffmodel, area_T, T_conn=None
                 )
 
+            # ★ Direction 4: 用 ψ⁺ 重心估计裂尖坐标 → 更新 field_comp.x_tip
+            # 必须在 update_fatigue_history 之前，确保本圈 psi_plus_elem 是峰值状态
+            if _williams_enabled and T_conn is not None:
+                _x_tip_psi_val = compute_x_tip_psi(inp, psi_plus_elem, T_conn, top_k=10)
+                _x_tip_psi_history.append(_x_tip_psi_val)
+                field_comp.x_tip = _x_tip_psi_val   # 下一圈 fieldCalculation 使用此坐标
+                print(f"  [Williams]  x_tip_psi={_x_tip_psi_val:.4f}")
+            elif _williams_enabled:
+                # 自动微分模式：T_conn=None，形心计算不可用，暂保持上一圈值
+                _x_tip_psi_history.append(field_comp.x_tip)
+
             # 更新疲劳历史变量 ᾱ（Carrara Eq.39 或 Golahmar Eq.31）
             hist_fat = update_fatigue_history(
                 hist_fat, psi_plus_elem, psi_plus_prev, fatigue_dict
@@ -382,6 +415,21 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # 修复后：prev = R²·ψ⁺_peak → 每圈累积 (1-R²)·ψ⁺_peak ✅
             R = fatigue_dict.get('R_ratio', 0.0)
             psi_plus_prev = (R ** 2) * psi_plus_elem.clone()
+
+            # ★ 方向3：计算下一圈的裂尖自适应权重
+            # 在当前圈 psi_plus_elem 更新后立即计算，供下一圈的 fit() 使用
+            # w_e = 1 + β·(ψ⁺_e / ψ⁺_mean)^p  （均匀加 1 确保 w_e ≥ 1）
+            if _tip_w_cfg is not None:
+                _tw_beta        = _tip_w_cfg.get('beta', 2.0)
+                _tw_power       = _tip_w_cfg.get('power', 1.0)
+                _tw_start_cycle = _tip_w_cfg.get('start_cycle', 1)
+                if j >= _tw_start_cycle:
+                    psi_mean = psi_plus_elem.mean().clamp(min=1e-30)
+                    crack_tip_weights = (
+                        1.0 + _tw_beta * (psi_plus_elem / psi_mean).pow(_tw_power)
+                    ).detach()
+                else:
+                    crack_tip_weights = None   # 还未到启用圈数，本圈均匀
 
             # 日志输出
             f_min = f_fatigue.min().item()
@@ -479,8 +527,13 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                   f"First detected at cycle {_frac_cycle}.")
             np.save(str(trainedModel_path / 'E_el_vs_cycle.npy'),
                     np.array(E_el_history))
-            np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),
+            np.save(str(trainedModel_path / 'x_tip_alpha_vs_cycle.npy'),   # ★ α 基准名称更新
                     np.array(_x_tip_history))
+            np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),         # ★ 保留旧名称（向后兼容）
+                    np.array(_x_tip_history))
+            if _williams_enabled and _x_tip_psi_history:                    # ★ Direction 4
+                np.save(str(trainedModel_path / 'x_tip_psi_vs_cycle.npy'),
+                        np.array(_x_tip_psi_history))
             np.save(str(trainedModel_path / 'alpha_bar_vs_cycle.npy'),
                     np.array(alpha_bar_history))
             break
@@ -490,8 +543,13 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         np.save(str(trainedModel_path / 'E_el_vs_cycle.npy'),
                 np.array(E_el_history))
     if fatigue_on and _x_tip_history:
-        np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),
+        np.save(str(trainedModel_path / 'x_tip_alpha_vs_cycle.npy'),       # ★ α 基准名称更新
                 np.array(_x_tip_history))
+        np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),             # ★ 保留旧名称（向后兼容）
+                np.array(_x_tip_history))
+    if fatigue_on and _williams_enabled and _x_tip_psi_history:            # ★ Direction 4
+        np.save(str(trainedModel_path / 'x_tip_psi_vs_cycle.npy'),
+                np.array(_x_tip_psi_history))
     if fatigue_on and alpha_bar_history:
         np.save(str(trainedModel_path / 'alpha_bar_vs_cycle.npy'),
                 np.array(alpha_bar_history))
