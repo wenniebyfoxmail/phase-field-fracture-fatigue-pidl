@@ -30,18 +30,21 @@ class EarlyStopping:
 
 def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matprop, pffmodel,
         weight_decay, num_epochs, optimizer, intermediateModel_path=None, writer=None, training_dict={},
-        f_fatigue=1.0):
+        f_fatigue=1.0, crack_tip_weights=None):
     # ★ 新增参数 f_fatigue：
     #    - 标量 1.0（默认）：完全等价 Manav 原始行为
     #    - Tensor (n_elem,)：逐元素疲劳退化函数，由 fatigue_history.compute_fatigue_degrad() 提供
+    # ★ 新增参数 crack_tip_weights（方向3：裂尖自适应损失加权）：
+    #    - None（默认）：均匀权重，完全等价原始代码
+    #    - Tensor (n_elem,)：w_e = 1 + β·(ψ⁺_e/ψ⁺_mean)^p，裂尖附近 w 大
     loss_data = list()
-    
+
     # Loop over epochs
     for epoch in range(num_epochs):
         loop = tqdm(training_set_collocation, miniters=25)
         # Loop over batches
         for j, (inp_train, outp_train)  in enumerate(loop):
-            
+
             def closure():
                 optimizer.zero_grad()
                 if T_conn == None:
@@ -52,8 +55,10 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
 
                 # 2. 计算能量（物理）
                 # ★ 传入 f_fatigue（疲劳退化函数）；默认 1.0 与 Manav 原始完全一致
+                # ★ 传入 crack_tip_weights（裂尖自适应加权）；None = 均匀
                 loss_E_el, loss_E_d, loss_hist = compute_energy(inp_train, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
-                                                                f_fatigue=f_fatigue)
+                                                                f_fatigue=f_fatigue,
+                                                                crack_tip_weights=crack_tip_weights)
 
                 # 3. 损失函数 = log(总能量) ！！！
                 loss_var = torch.log10(loss_E_el + loss_E_d + loss_hist)
@@ -94,25 +99,27 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
 
 def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matprop, pffmodel,
                             weight_decay, num_epochs, optimizer, min_delta, intermediateModel_path=None, writer=None, training_dict={},
-                            f_fatigue=1.0):
+                            f_fatigue=1.0, crack_tip_weights=None):
     # ★ 新增参数 f_fatigue（同 fit）
+    # ★ 新增参数 crack_tip_weights（方向3，同 fit）
     loss_data = list()
     early_stopping = EarlyStopping(tol_steps=10, min_delta=min_delta, device=area_T.device)
     loss_prev = torch.tensor([0.0], device=area_T.device)
-    
+
     # Loop over epochs
     for epoch in range(num_epochs):
         loop = tqdm(training_set_collocation, miniters=25)
         # Loop over batches
         for j, (inp_train, outp_train)  in enumerate(loop):
-            
+
             optimizer.zero_grad()
             if T_conn == None:
                 inp_train.requires_grad = True
             u, v, alpha = field_comp.fieldCalculation(inp_train)
-            # ★ 传入 f_fatigue
+            # ★ 传入 f_fatigue 和 crack_tip_weights
             loss_E_el, loss_E_d, loss_hist = compute_energy(inp_train, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
-                                                            f_fatigue=f_fatigue)
+                                                            f_fatigue=f_fatigue,
+                                                            crack_tip_weights=crack_tip_weights)
             loss_var = torch.log10(loss_E_el + loss_E_d + loss_hist)
 
             # weight regularization

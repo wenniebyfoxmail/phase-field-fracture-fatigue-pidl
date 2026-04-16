@@ -35,7 +35,7 @@ import torch.nn as nn
 
 # Computes the total strain energy, damage energy and irreversibility penalty
 def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn=None,
-                   f_fatigue=1.0):
+                   f_fatigue=1.0, crack_tip_weights=None):
     """
     计算总能量
 
@@ -45,6 +45,13 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
     ★ 新增参数 f_fatigue：
         - 标量 1.0（默认）：完全恢复 Manav 原始行为
         - Tensor (n_elem,)：逐元素退化，由 fatigue_history.compute_fatigue_degrad() 提供
+
+    ★ 新增参数 crack_tip_weights（方向3：裂尖自适应损失加权）：
+        - None（默认）：均匀权重，与原始完全一致
+        - Tensor (n_elem,)：逐元素权重 w_e ≥ 1，裂尖区域 w 大
+          w_e = 1 + β·(ψ⁺_e / ψ⁺_mean)^p
+          效果：强制 NN 把更多"表达能力"分配给裂尖，改善 Kt 偏低问题
+          不改变物理模型，只改变优化优先级
 
     参数：
     ------
@@ -66,6 +73,8 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
         单元连接关系，shape (n_elements, 3)
     f_fatigue : float or torch.Tensor, shape (n_elements,)   ← ★ 新增
         疲劳退化函数值。默认 1.0 = 无疲劳（完全等价原始代码）
+    crack_tip_weights : torch.Tensor or None, shape (n_elements,)   ← ★ 新增
+        裂尖自适应权重。None = 均匀（完全等价原始代码）
 
     返回：
     ------
@@ -76,9 +85,17 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
         inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn,
         f_fatigue=f_fatigue   # ★ 传入退化函数
     )
-    E_el_sum   = torch.sum(E_el)
-    E_d_sum    = torch.sum(E_d)
-    E_hist_sum = torch.sum(E_hist_penalty)
+
+    # ★ 方向3：裂尖自适应加权（crack_tip_weights=None 时完全等价原始代码）
+    if crack_tip_weights is not None:
+        # w_e ≥ 1，裂尖附近权重大 → 优化优先级高
+        E_el_sum   = torch.sum(crack_tip_weights * E_el)
+        E_d_sum    = torch.sum(crack_tip_weights * E_d)
+        E_hist_sum = torch.sum(crack_tip_weights * E_hist_penalty)
+    else:
+        E_el_sum   = torch.sum(E_el)
+        E_d_sum    = torch.sum(E_d)
+        E_hist_sum = torch.sum(E_hist_penalty)
 
     return E_el_sum, E_d_sum, E_hist_sum
 
