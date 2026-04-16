@@ -18,17 +18,28 @@ from model_train import train
 ## ############################################################################
 pffmodel, matprop, network = construct_model(PFF_model_dict, mat_prop_dict,
                                              network_dict, domain_extrema, device,
-                                             williams_dict=williams_dict)   # ★ Direction 4
+                                             williams_dict=williams_dict,    # ★ Direction 4
+                                             fourier_dict=fourier_dict)      # ★ exp/fourier-feature
 field_comp = FieldComputation(net = network,
                               domain_extrema = domain_extrema,
                               lmbda = torch.tensor([0.0], device = device),
                               theta = loading_angle,
                               alpha_constraint = numr_dict["alpha_constraint"],
                               williams_dict = williams_dict,                 # ★ Direction 4
-                              l0 = mat_prop_dict["l0"])                      # ★ Direction 4
+                              l0 = mat_prop_dict["l0"],                      # ★ Direction 4
+                              fourier_dict = fourier_dict,                   # ★ exp/fourier-feature
+                              device = device)                               # ★ exp/fourier-feature
 field_comp.net = field_comp.net.to(device)
 field_comp.domain_extrema = field_comp.domain_extrema.to(device)
 field_comp.theta = field_comp.theta.to(device)
+
+# ★ exp/fourier-feature: B 矩阵落盘（复现 + 后处理用）
+if fourier_dict.get("enable", False):
+    torch.save(field_comp.fourier_B.cpu(),
+               trainedModel_path / 'fourier_B.pt')
+    print(f"[Fourier] B saved to {trainedModel_path / 'fourier_B.pt'}, "
+          f"shape={tuple(field_comp.fourier_B.shape)}, "
+          f"NN input_dim={network.input_dimension}")
 
 ## #############################################################################
 ## #############################################################################

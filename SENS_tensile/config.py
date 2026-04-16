@@ -144,10 +144,28 @@ fatigue_dict = {
 # 关键：只改输入特征，不改 Deep Ritz 能量泛函 → 安全（不重蹈 Direction 3 覆辙）
 # ────────────────────────────────────────────────────────────────────────────
 williams_dict = {
-    "enable"     : True,         # True: 启用 8D 特征; False: 原始 2D（完全等价 baseline）
+    "enable"     : False,        # ★ exp/fourier-feature: 关闭 Williams，用 Fourier 替代
     "theta_mode" : "atan2",      # θ = atan2(dy, dx) ∈ (-π, π]（预留接口，未来可扩展）
     "r_min"      : 1e-6,         # r 下限，防止裂尖节点处除零
 }
+
+# ★ Direction 2.1 Option A Alternative: Random Fourier Features（Tancik et al. NeurIPS 2020）
+# ────────────────────────────────────────────────────────────────────────────
+# 与 Williams 互斥的另一条路线：用随机高斯投影把坐标 (x,y) 映射成高频正弦/余弦特征
+#   γ(v) = [x, y, sin(2π Bᵀv), cos(2π Bᵀv)]，B ∈ R^{2 × n_freq}，B_ij ~ N(0, σ²)
+# 输入维 = 2 + 2·n_freq；目标 Kt ≈ 10–12（vs Williams 目标 12–14、FEM 15.3）
+# ────────────────────────────────────────────────────────────────────────────
+fourier_dict = {
+    "enable" : True,             # True: 启用 (2 + 2·n_freq) 维特征; False: 原始 2D
+    "n_freq" : 16,               # B 列数；总输入维 = 2 + 2·n_freq；n_freq=16 → 34D
+                                 # 公平对比 Williams 时改 n_freq=3 → 8D
+    "sigma"  : 1.0,              # B 标准差；控制频率带宽（Tancik 推荐 1~10）
+    "seed"   : 42,               # 固定 B 随机性（独立于 NN 初始化 seed）
+}
+
+# 互斥性检查（Williams 和 Fourier 都修改 NN 输入维度，不能同时启用）
+assert not (williams_dict.get("enable", False) and fourier_dict.get("enable", False)), \
+    "williams_dict 和 fourier_dict 不可同时 enable=True（输入特征互斥）"
 
 
 # Domain definition
@@ -231,6 +249,12 @@ else:
 # ★ Direction 4: Williams 标签（enable=True 时追加 _williams_std，便于区分 baseline）
 _williams_tag = "_williams_std" if williams_dict.get("enable", False) else ""
 
+# ★ exp/fourier-feature: Fourier 标签（enable=True 时追加 _fourier_nfXX_sigYY）
+_fourier_tag = (
+    f"_fourier_nf{fourier_dict['n_freq']}_sig{fourier_dict['sigma']}"
+    if fourier_dict.get("enable", False) else ""
+)
+
 model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             '_Neurons_'+str(network_dict["neurons"])+
                             '_activation_'+network_dict["activation"]+
@@ -239,7 +263,8 @@ model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             '_PFFmodel_'+str(PFF_model_dict["PFF_model"])+
                             '_gradient_'+str(numr_dict["gradient_type"])+
                             _fatigue_tag +
-                            _williams_tag)         # ★ Direction 4 标签追加到路径末尾
+                            _williams_tag +        # ★ Direction 4
+                            _fourier_tag)          # ★ exp/fourier-feature
 model_path.mkdir(parents=True, exist_ok=True)
 trainedModel_path = model_path/Path('best_models/')
 trainedModel_path.mkdir(parents=True, exist_ok=True)
@@ -274,6 +299,12 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\nwilliams_enable: {williams_dict.get("enable", False)}')
     file.write(f'\nwilliams_theta_mode: {williams_dict.get("theta_mode", "atan2")}')
     file.write(f'\nwilliams_r_min: {williams_dict.get("r_min", 1e-6)}')
+    # ★ exp/fourier-feature: Fourier 特征参数
+    file.write(f'\n--- fourier ---')
+    file.write(f'\nfourier_enable: {fourier_dict.get("enable", False)}')
+    file.write(f'\nfourier_n_freq: {fourier_dict.get("n_freq", 16)}')
+    file.write(f'\nfourier_sigma: {fourier_dict.get("sigma", 1.0)}')
+    file.write(f'\nfourier_seed: {fourier_dict.get("seed", 42)}')
 
 ## #############################################################################
 ## #############################################################################
