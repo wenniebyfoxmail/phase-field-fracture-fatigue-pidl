@@ -26,3 +26,11 @@ nohup.out
 
 # ── 压缩包 ───────────────────────────────────────────────
 *.zip
+
+# ── Claude Code 内部文件（本地配置、worktree）────────────
+.claude/
+
+# ── 结果/草稿（原则：结论进 memory，不进 git；见 CLAUDE.md）
+paper_draft/
+notes/
+findings.md
