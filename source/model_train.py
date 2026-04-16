@@ -281,6 +281,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _E_drop_ratio   = fatigue_dict.get('fracture_E_drop_ratio',   0.5)
     _confirm_cycles = fatigue_dict.get('fracture_confirm_cycles',  3)   # 边界判据已很明确，3圈即可
     _plot_every     = fatigue_dict.get('plot_every_n_cycles',      20)
+    # ★ Fix A: E_el fallback 判据 warmup 期
+    # 原因：cycle 0-1 NN 可能产生伪解（尤其 Williams features 下 x_tip 尚未稳定），
+    # E_el 尖峰会抬高 E_el_max 基线，导致后续正常 E_el 被误判为"骤降 → 断裂"
+    _E_fallback_warmup = fatigue_dict.get('E_fallback_warmup_cycles', 5)
 
     # ★ 右边界 α 判据参数（主判据：替代旧的 L∞ 距离判据）
     # 物理含义：当目标边界面上有足够多节点的 α 超过阈值时认为贯穿
@@ -406,12 +410,26 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
             # ★ Direction 4: 用 ψ⁺ 重心估计裂尖坐标 → 更新 field_comp.x_tip
             # 必须在 update_fatigue_history 之前，确保本圈 psi_plus_elem 是峰值状态
-            # ★ Fix: 断裂确认期间冻结 x_tip，防止裂尖跳到右边界导致 Williams 特征失真
+            # ★ Fix B: cycle 0 保持初始 x_tip（α 场未收敛，ψ⁺ 分布被预裂缝污染，
+            #   给出非物理的 x_tip 估计，如 -0.17，导致 cycle 1 Williams features 失真 → NN 伪解）
+            # ★ Fix B: sanity check — 如果 ψ⁺ centroid 跑进预裂缝内部超过 0.02，拒绝更新
+            # ★ Fix:   断裂确认期间冻结 x_tip，防止裂尖跳到右边界导致 Williams 特征失真
             if _williams_enabled and T_conn is not None:
                 if not _frac_detected:
-                    _x_tip_psi_val = compute_x_tip_psi(inp, psi_plus_elem, T_conn, top_k=10)
-                    field_comp.x_tip = _x_tip_psi_val   # 下一圈 fieldCalculation 使用此坐标
-                    print(f"  [Williams]  x_tip_psi={_x_tip_psi_val:.4f}")
+                    if j == 0:
+                        # Cycle 0: 保持 __init__ 时的初始值（crack_mouth 附近，物理先验）
+                        print(f"  [Williams]  x_tip_psi={field_comp.x_tip:.4f} "
+                              f"(cycle 0, keep initial — psi+ unreliable before alpha converges)")
+                    else:
+                        _x_tip_psi_val = compute_x_tip_psi(inp, psi_plus_elem, T_conn, top_k=10)
+                        _x_tip_floor   = _crack_mouth_x - 0.02   # 下界：不允许跑进预裂缝内
+                        if _x_tip_psi_val < _x_tip_floor:
+                            print(f"  [Williams]  x_tip_psi={_x_tip_psi_val:.4f} "
+                                  f"rejected (< floor {_x_tip_floor:.4f}), "
+                                  f"keep {field_comp.x_tip:.4f}")
+                        else:
+                            field_comp.x_tip = _x_tip_psi_val
+                            print(f"  [Williams]  x_tip_psi={_x_tip_psi_val:.4f}")
                 else:
                     print(f"  [Williams]  x_tip_psi={field_comp.x_tip:.4f} (frozen, fracture confirmed)")
                 _x_tip_psi_history.append(field_comp.x_tip)
@@ -518,7 +536,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
             # ── 断裂检测：α>0.95 @ 右边界（主）OR E_el 骤降（兜底）──────────
             _bdy_triggered = (n_bdy_frac >= _alpha_bdy_nmin)
-            _E_triggered   = (E_el_max > 0 and E_el_scalar < _E_drop_ratio * E_el_max)
+            # ★ Fix A: warmup 期内禁用 E_el fallback（防单点尖峰假阳性）
+            _E_triggered   = (j >= _E_fallback_warmup
+                              and E_el_max > 0
+                              and E_el_scalar < _E_drop_ratio * E_el_max)
 
             if not _frac_detected and (_bdy_triggered or _E_triggered):
                 _frac_detected = True
