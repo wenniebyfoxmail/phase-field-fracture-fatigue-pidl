@@ -105,7 +105,11 @@ fatigue_dict = {
                                      # 'logarithmic' → Carrara Eq.42：f=[1-κ·log10(ᾱ/α_T)]²（有限步归零）
 
     # ── 断裂检测参数（cyclic 模式自动停止）─────────────────────────────────
-    "fracture_E_drop_ratio"  : 0.1,  # E_el < ratio × E_el_max 时触发检测
+    # Run #4 fix: Williams 等易产生 NN 数值尖峰的实验下 E_el fallback 不可靠
+    # （cycle 58 尖峰让 cycle 69 错停；主判据 α>0.95@boundary 未误触）
+    # SENT 几何主判据已足够，关掉 fallback。其他几何或 baseline 需要时打开。
+    "enable_E_fallback"      : False, # False: 只用主判据（α>0.95@boundary）| True: 保留 E_el fallback
+    "fracture_E_drop_ratio"  : 0.1,  # E_el < ratio × E_el_max 时触发检测（仅 enable_E_fallback=True 时生效）
     "fracture_confirm_cycles": 10,   # 触发后再观察 N 圈确认（防数值扰动）
     "crack_length_threshold" : 0.46, # 裂缝贯通判据：crack_length >= 此值 → 停止
                                      # 定义：L∞ 距离 = max(|Δx|, |Δy|) from crack_mouth=(0,0)

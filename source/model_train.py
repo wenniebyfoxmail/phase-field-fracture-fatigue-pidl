@@ -285,6 +285,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # 原因：cycle 0-1 NN 可能产生伪解（尤其 Williams features 下 x_tip 尚未稳定），
     # E_el 尖峰会抬高 E_el_max 基线，导致后续正常 E_el 被误判为"骤降 → 断裂"
     _E_fallback_warmup = fatigue_dict.get('E_fallback_warmup_cycles', 5)
+    # ★ Run #4 fix: E_el fallback 判据总开关
+    # Run #3 在 cycle 58 出现 late-cycle NN 数值尖峰（E_el 9.9e-2 vs 正常 4e-3），
+    # warmup 无法防住 mid-training 的单点尖峰。对 SENT 几何，主判据 α>0.95@boundary
+    # 已经足够精确（Run #2, #3 都没有误触）。默认保留 fallback 以向后兼容；
+    # 对含 Williams features 或其他易产生数值尖峰的实验，应在 config 里设 False。
+    _E_fallback_enabled = fatigue_dict.get('enable_E_fallback', True)
 
     # ★ 右边界 α 判据参数（主判据：替代旧的 L∞ 距离判据）
     # 物理含义：当目标边界面上有足够多节点的 α 超过阈值时认为贯穿
@@ -536,8 +542,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
             # ── 断裂检测：α>0.95 @ 右边界（主）OR E_el 骤降（兜底）──────────
             _bdy_triggered = (n_bdy_frac >= _alpha_bdy_nmin)
-            # ★ Fix A: warmup 期内禁用 E_el fallback（防单点尖峰假阳性）
-            _E_triggered   = (j >= _E_fallback_warmup
+            # ★ Fix A (warmup) + Run #4 fix (enable_E_fallback): 双层保护
+            # - enable_E_fallback=False：完全禁用 fallback（Williams 等易尖峰的实验用）
+            # - enable_E_fallback=True + warmup：fallback 仅在 cycle >= warmup 生效
+            _E_triggered   = (_E_fallback_enabled
+                              and j >= _E_fallback_warmup
                               and E_el_max > 0
                               and E_el_scalar < _E_drop_ratio * E_el_max)
 
