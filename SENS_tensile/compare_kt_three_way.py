@@ -66,7 +66,10 @@ def find_pidl_dir(umax: str, flavor: str) -> Path | None:
         matches = [d for d in dirs if d.name.endswith(umax_tag)]
     elif flavor == "williams_v3":
         matches = [d for d in dirs if "williams_std_v3_cycle69" in d.name]
+    elif flavor == "williams_v4":
+        matches = [d for d in dirs if "williams_std_v4_" in d.name]
     elif flavor == "williams_v4_current":
+        # fall back: in-progress run (not yet archived)
         matches = [d for d in dirs if d.name.endswith("williams_std")]
     else:
         matches = []
@@ -125,9 +128,9 @@ def load_fem(csv_path: Path) -> dict:
 # -----------------------------------------------------------------------------
 
 COLOR = {"FEM": "#D62728", "Baseline": "#1F77B4", "Williams v3": "#2CA02C",
-         "Williams v4 (current)": "#9467BD"}
-LINESTYLE = {"FEM": "-", "Baseline": "-", "Williams v3": "-",
-             "Williams v4 (current)": "--"}
+         "Williams v4": "#9467BD", "Williams v4 (current)": "#8C564B"}
+LINESTYLE = {"FEM": "-", "Baseline": "-", "Williams v3": ":",
+             "Williams v4": "-", "Williams v4 (current)": "--"}
 LINEWIDTH = 1.8
 
 
@@ -348,6 +351,7 @@ def main() -> int:
     series = {}
     for label, flavor in [("Baseline", "baseline"),
                           ("Williams v3", "williams_v3"),
+                          ("Williams v4", "williams_v4"),
                           ("Williams v4 (current)", "williams_v4_current")]:
         d = find_pidl_dir(args.umax, flavor)
         if d is None:
