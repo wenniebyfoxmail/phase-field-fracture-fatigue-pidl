@@ -89,7 +89,41 @@ def find_pidl_dir(umax: str, flavor: str) -> Path | None:
     return matches[0]
 
 
-def load_pidl(model_dir: Path) -> dict | None:
+def _detect_n_f(out: dict, dirname: str) -> tuple[int, str]:
+    """Detect fracture cycle N_f for a PIDL run.
+
+    Priority:
+      1. Parse "_Nf{NN}_" from archived directory name (exact)
+      2. First cycle where x_tip_use >= 0.5 (reached boundary)
+      3. First cycle where E_el drops below 20% of early max (E_el collapse)
+      4. Last available cycle (no fracture detected, e.g. false-stop run)
+    """
+    import re
+    # 1. Archive name hint
+    m = re.search(r"_Nf(\d+)_", dirname)
+    if m:
+        return int(m.group(1)), f"dir name _Nf{m.group(1)}_"
+    # 2. x_tip boundary hit
+    x = out.get("x_tip_use")
+    if x is not None and len(x) > 0:
+        mask = x >= 0.5
+        if mask.any():
+            return int(np.argmax(mask)), "x_tip≥0.5"
+    # 3. E_el collapse (drop below 20% of 1st-quarter max)
+    E = out.get("E_el")
+    if E is not None and len(E) > 10:
+        e_ref = float(E[:max(1, len(E)//4)].max())
+        mask = E < 0.2 * e_ref
+        # find the first drop after cycle 5 (avoid cycle-1 transients)
+        idx_list = np.where(mask)[0]
+        idx_list = idx_list[idx_list > 5]
+        if len(idx_list) > 0:
+            return int(idx_list[0]), "E_el drop"
+    # 4. Fallback: last saved cycle
+    return out.get("n_cycles", 1) - 1, "end of data"
+
+
+def load_pidl(model_dir: Path, truncate_at_Nf: bool = True) -> dict | None:
     bm = model_dir / "best_models"
     out = {}
     for name, k in [("Kt_vs_cycle.npy", "Kt"),
@@ -124,11 +158,30 @@ def load_pidl(model_dir: Path) -> dict | None:
     elif "x_tip" in out:
         out["x_tip_use"] = out["x_tip"]
     out["n_cycles"] = len(out.get("Kt", out.get("E_el", [])))
+
+    # Detect N_f and (optionally) truncate all array-valued fields at N_f (inclusive)
+    n_f, src = _detect_n_f(out, model_dir.name)
+    out["n_f"] = n_f
+    out["n_f_source"] = src
+    if truncate_at_Nf:
+        keep = n_f + 1  # inclusive of fracture cycle
+        for key, val in list(out.items()):
+            if isinstance(val, np.ndarray) and val.ndim == 1 and len(val) > keep:
+                out[key] = val[:keep]
+            elif isinstance(val, np.ndarray) and val.ndim == 2 and val.shape[0] > keep:
+                out[key] = val[:keep]
+        out["n_cycles_truncated"] = keep
     return out
 
 
-def load_fem(csv_path: Path) -> dict:
+def load_fem(csv_path: Path, truncate_at_Nf: bool = True) -> dict:
     df = pd.read_csv(csv_path)
+    # FEM CSV already ends at N_f (data collection stops at fracture).
+    # max(da_dN) gives the fracture cycle.
+    n_f = int(df["N"].iloc[df["da_dN"].idxmax()]) if "da_dN" in df.columns \
+          else int(df["N"].iloc[-1])
+    if truncate_at_Nf:
+        df = df[df["N"] <= n_f].copy()
     out = {
         "N": df["N"].values,
         "E_el": df["E_el"].values,
@@ -136,7 +189,7 @@ def load_fem(csv_path: Path) -> dict:
         "f_min": df["f_min"].values,
         "a_ell": df["a_ell"].values,
         "d_max": df["d_max"].values,
-        "N_f": int(df["N"].values[-1]),  # last cycle = fracture
+        "N_f": n_f,
     }
     # New columns from "_full" CSV (Apr 18)
     for col in ["Kt", "f_mean", "alpha_bar_mean", "psi_peak", "psi_tip", "psi_nominal"]:
@@ -202,23 +255,89 @@ def plot_log_metric(series: dict, fem_series: dict, key: str, ylabel: str,
     plt.close(fig)
 
 
+def _panel_pidl_fem(ax, fem_series, fem_col, series, pidl_key,
+                    ylabel, title, log=False):
+    """Helper: plot FEM + all PIDL variants on one axis."""
+    if fem_series is not None and fem_col in fem_series:
+        _add_series(ax, fem_series["N"], fem_series[fem_col], "FEM")
+    for name, d in series.items():
+        if pidl_key in d:
+            _add_series(ax, np.arange(len(d[pidl_key])), d[pidl_key], name)
+    if log:
+        ax.set_yscale("log")
+    ax.set_xlabel("Cycle N")
+    ax.set_ylabel(ylabel)
+    ax.set_title(title, fontsize=10)
+    ax.legend(loc="best", fontsize=8)
+    ax.grid(alpha=0.3, which="both" if log else "major")
+
+
 def plot_summary_6panel(series: dict, fem_series: dict, outpath: Path) -> None:
-    """2×3 layout with Kt, psi_peak, alpha_max, alpha_mean, f_min, f_mean."""
+    """2×3 layout with Kt, alpha_max, psi_peak, alpha_mean, f_min, f_mean.
+
+    All series have been pre-truncated at their respective N_f in load_pidl /
+    load_fem, so curves cleanly end at penetration point with no post-fracture
+    numerical artifacts.
+    """
     fig, axes = plt.subplots(2, 3, figsize=(15, 9))
 
-    # (0,0) Kt (log scale because values vary by orders of magnitude)
-    ax = axes[0, 0]
-    if fem_series is not None and "Kt" in fem_series:
-        _add_series(ax, fem_series["N"], fem_series["Kt"], "FEM")
-    for name, d in series.items():
-        if "Kt" in d:
-            _add_series(ax, np.arange(len(d["Kt"])), d["Kt"], name)
-    ax.set_yscale("log")
-    ax.set_xlabel("Cycle")
-    ax.set_ylabel("Kt   [log]")
-    ax.set_title("(a) Kt = √(ψ⁺_tip/ψ⁺_nom)\nall three rise; late-cycle artifact")
-    ax.legend(loc="best", fontsize=8)
-    ax.grid(alpha=0.3, which="both")
+    # (a) Kt — all rise to similar values before fracture; curves end at N_f
+    _panel_pidl_fem(axes[0, 0], fem_series, "Kt", series, "Kt",
+                    "Kt  [log]",
+                    "(a) Kt = √(ψ⁺_tip / ψ⁺_nom)\nall three rise; "
+                    "curves truncated at N_f",
+                    log=True)
+
+    # (b) alpha_max — damage concentration at tip
+    _panel_pidl_fem(axes[0, 1], fem_series, "alpha_max", series, "alpha_max",
+                    r"$\bar{\alpha}_{\max}$  [log]",
+                    "(b) Max damage accumulator\nFEM ≫ PIDL "
+                    "(100× tip concentration)",
+                    log=True)
+
+    # (c) psi_peak — peak stress on 1 element (new Apr 17 metric)
+    _panel_pidl_fem(axes[0, 2], fem_series, "psi_peak", series, "psi_peak",
+                    "peak ψ⁺  [log]",
+                    "(c) Peak ψ⁺ over all elements\n"
+                    "Williams v4 has highest peak at mid-cycles",
+                    log=True)
+
+    # (d) alpha_mean — domain-average damage
+    _panel_pidl_fem(axes[1, 0], fem_series, "alpha_bar_mean", series, "alpha_mean",
+                    r"$\bar{\alpha}_{\mathrm{mean}}$",
+                    "(d) Domain-avg damage accumulator\n"
+                    "FEM accumulates ~2× more",
+                    log=False)
+
+    # (e) f_min — degradation at most damaged element
+    _panel_pidl_fem(axes[1, 1], fem_series, "f_min", series, "f_min",
+                    r"$f_{\min}$  [log]",
+                    "(e) Degradation min (most broken)\n"
+                    "FEM reaches 10⁻⁶ (complete break)",
+                    log=True)
+
+    # (f) f_mean — domain-average degradation (KEY corrected metric)
+    _panel_pidl_fem(axes[1, 2], fem_series, "f_mean", series, "f_mean",
+                    r"$f_{\mathrm{mean}}$",
+                    "(f) Domain-avg degradation\n"
+                    "FEM=0.74 at N_f (NOT 0.99) — more degraded than PIDL",
+                    log=False)
+
+    # N_f vertical markers on (d) and (f)
+    for ax in [axes[1, 0], axes[1, 2]]:
+        if fem_series is not None:
+            ax.axvline(fem_series["N_f"], color=COLOR["FEM"], ls=":", alpha=0.4)
+        for name, d in series.items():
+            if "n_f" in d:
+                ax.axvline(d["n_f"], color=COLOR.get(name, "black"),
+                           ls=":", alpha=0.4)
+
+    fig.suptitle("Three-way comparison at U_max=0.12 — "
+                 "curves truncated at each method's N_f (penetration)",
+                 y=1.00, fontsize=13, fontweight='bold')
+    fig.tight_layout()
+    fig.savefig(outpath, dpi=200)
+    plt.close(fig)
 
 
 def plot_summary_4panel(series: dict, fem_series: dict, fem_kt: float,
@@ -337,17 +456,22 @@ def write_summary_table(series: dict, fem_series: dict, fem_kt: float,
         # PIDL variants
         for name, d in series.items():
             idx_p = None
+            # "effective" length after truncation
+            n_eff = d.get("n_cycles_truncated", d["n_cycles"])
             if c == "N_f":
-                if "x_tip_use" in d:
+                # Prefer recorded N_f (from truncation logic)
+                if "n_f" in d:
+                    idx_p = min(d["n_f"], n_eff - 1)
+                elif "x_tip_use" in d:
                     mask = d["x_tip_use"] >= 0.5
                     if mask.any():
                         idx_p = int(np.argmax(mask))
                     else:
-                        idx_p = d["n_cycles"] - 1
+                        idx_p = n_eff - 1
                 else:
-                    idx_p = d["n_cycles"] - 1
+                    idx_p = n_eff - 1
             elif isinstance(c, int):
-                idx_p = c if c < d["n_cycles"] else None
+                idx_p = c if c < n_eff else None
             if idx_p is not None:
                 kt_v = f"{d['Kt'][idx_p]:.2f}" if "Kt" in d else "NA"
                 am_v = f"{d['alpha_max'][idx_p]:.2f}" if "alpha_max" in d else "NA"
@@ -429,7 +553,9 @@ def main() -> int:
             print(f"⚠️  {label}: dir {d.name} has no data")
             continue
         series[label] = data
-        print(f"✅ {label}: {d.name} ({data['n_cycles']} cycles)")
+        nf_info = f"N_f={data.get('n_f', '?')} ({data.get('n_f_source', '?')})"
+        trunc = data.get("n_cycles_truncated", data["n_cycles"])
+        print(f"✅ {label}: {data['n_cycles']}→{trunc} cycles, {nf_info}")
 
     if not series:
         print("❌ No PIDL data loaded, aborting")
@@ -450,6 +576,8 @@ def main() -> int:
                         outdir / "fig_E_el_vs_cycle.png")
         plot_summary_4panel(series, fem, args.fem_kt,
                             outdir / "fig_summary_4panel.png")
+        plot_summary_6panel(series, fem, outdir / "fig_summary_6panel.png")
+        print(f"  Wrote fig_summary_6panel.png")
 
     # --- Summary table ---
     if fem is not None:
