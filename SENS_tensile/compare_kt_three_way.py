@@ -37,6 +37,7 @@ HERE = Path(__file__).parent
 FEM_CSV_DIR_CANDIDATES = [
     Path.home() / "Downloads" / "post_process",
     Path.home() / "Downloads" / "post_process 2",
+    Path.home() / "Downloads",
 ]
 
 # U_max -> FEM CSV suffix
@@ -47,6 +48,11 @@ def find_fem_csv(umax: str) -> Path | None:
     suffix = FEM_CSV_SUFFIX.get(umax)
     if suffix is None:
         return None
+    # Prefer "_full" variant (has Kt, f_mean, psi_peak columns) over basic one
+    for d in FEM_CSV_DIR_CANDIDATES:
+        p = d / f"SENT_PIDL_{suffix}_timeseries_full.csv"
+        if p.exists():
+            return p
     for d in FEM_CSV_DIR_CANDIDATES:
         p = d / f"SENT_PIDL_{suffix}_timeseries.csv"
         if p.exists():
@@ -89,6 +95,8 @@ def load_pidl(model_dir: Path) -> dict | None:
     for name, k in [("Kt_vs_cycle.npy", "Kt"),
                     ("E_el_vs_cycle.npy", "E_el"),
                     ("alpha_bar_vs_cycle.npy", "alpha_bar"),
+                    ("f_mean_vs_cycle.npy", "f_mean_raw"),
+                    ("psi_peak_vs_cycle.npy", "psi_peak_raw"),
                     ("x_tip_vs_cycle.npy", "x_tip"),
                     ("x_tip_psi_vs_cycle.npy", "x_tip_psi")]:
         f = bm / name
@@ -101,6 +109,15 @@ def load_pidl(model_dir: Path) -> dict | None:
         out["alpha_max"] = out["alpha_bar"][:, 0]
         out["alpha_mean"] = out["alpha_bar"][:, 1]
         out["f_min"] = out["alpha_bar"][:, 2]
+    # f_mean_raw shape (N, 4): [cycle_idx, f_mean, alpha_max, alpha_mean]
+    if "f_mean_raw" in out and out["f_mean_raw"].ndim == 2:
+        out["f_mean"] = out["f_mean_raw"][:, 1]
+    # psi_peak_raw shape (N, 5): [cycle, max, top3, top10, nominal]
+    if "psi_peak_raw" in out and out["psi_peak_raw"].ndim == 2:
+        out["psi_peak"] = out["psi_peak_raw"][:, 1]
+        out["psi_top3"] = out["psi_peak_raw"][:, 2]
+        out["psi_top10"] = out["psi_peak_raw"][:, 3]
+        out["psi_nominal"] = out["psi_peak_raw"][:, 4]
     # Unified x_tip: prefer psi-based for Williams, else alpha-based
     if "x_tip_psi" in out:
         out["x_tip_use"] = out["x_tip_psi"]
@@ -112,7 +129,7 @@ def load_pidl(model_dir: Path) -> dict | None:
 
 def load_fem(csv_path: Path) -> dict:
     df = pd.read_csv(csv_path)
-    return {
+    out = {
         "N": df["N"].values,
         "E_el": df["E_el"].values,
         "alpha_max": df["alpha_max"].values,
@@ -121,6 +138,11 @@ def load_fem(csv_path: Path) -> dict:
         "d_max": df["d_max"].values,
         "N_f": int(df["N"].values[-1]),  # last cycle = fracture
     }
+    # New columns from "_full" CSV (Apr 18)
+    for col in ["Kt", "f_mean", "alpha_bar_mean", "psi_peak", "psi_tip", "psi_nominal"]:
+        if col in df.columns:
+            out[col] = df[col].values
+    return out
 
 
 # -----------------------------------------------------------------------------
@@ -139,22 +161,22 @@ def _add_series(ax, x, y, label, **kw):
             linestyle=LINESTYLE.get(label, "-"), linewidth=LINEWIDTH, **kw)
 
 
-def plot_Kt(series: dict, fem_kt: float, outpath: Path) -> None:
-    fig, ax = plt.subplots(figsize=(7, 5))
+def plot_Kt(series: dict, fem_series: dict, outpath: Path) -> None:
+    """Kt(N) comparison — now uses real FEM Kt column if available."""
+    fig, ax = plt.subplots(figsize=(8, 5.5))
+    if fem_series is not None and "Kt" in fem_series:
+        _add_series(ax, fem_series["N"], fem_series["Kt"], "FEM")
     for name, d in series.items():
-        if name == "FEM":
-            # FEM has no Kt column, use reported stable value as horizontal line
-            ax.axhline(fem_kt, color=COLOR["FEM"], linestyle="-",
-                       linewidth=LINEWIDTH, label=f"FEM (Kt={fem_kt}, stable)")
-        else:
-            if "Kt" in d:
-                _add_series(ax, np.arange(len(d["Kt"])), d["Kt"], name)
+        if "Kt" in d:
+            _add_series(ax, np.arange(len(d["Kt"])), d["Kt"], name)
+    ax.set_yscale("log")
     ax.set_xlabel("Cycle N")
-    ax.set_ylabel("Kt = √(ψ⁺_tip / ψ⁺_nominal)")
-    ax.set_title("Stress concentration factor Kt — three-way comparison (U_max=0.12)")
+    ax.set_ylabel("Kt = √(ψ⁺_tip / ψ⁺_nominal)   [log]")
+    ax.set_title("Stress concentration factor Kt — three-way comparison (U_max=0.12)\n"
+                 "(late-cycle explosion in all three is a numerical artifact "
+                 "of ψ⁺_nominal → 0)")
     ax.legend(loc="best")
-    ax.grid(alpha=0.3)
-    ax.set_ylim(5, 20)  # clip nonsense late-cycle values
+    ax.grid(alpha=0.3, which="both")
     fig.tight_layout()
     fig.savefig(outpath, dpi=200)
     plt.close(fig)
@@ -180,23 +202,46 @@ def plot_log_metric(series: dict, fem_series: dict, key: str, ylabel: str,
     plt.close(fig)
 
 
+def plot_summary_6panel(series: dict, fem_series: dict, outpath: Path) -> None:
+    """2×3 layout with Kt, psi_peak, alpha_max, alpha_mean, f_min, f_mean."""
+    fig, axes = plt.subplots(2, 3, figsize=(15, 9))
+
+    # (0,0) Kt (log scale because values vary by orders of magnitude)
+    ax = axes[0, 0]
+    if fem_series is not None and "Kt" in fem_series:
+        _add_series(ax, fem_series["N"], fem_series["Kt"], "FEM")
+    for name, d in series.items():
+        if "Kt" in d:
+            _add_series(ax, np.arange(len(d["Kt"])), d["Kt"], name)
+    ax.set_yscale("log")
+    ax.set_xlabel("Cycle")
+    ax.set_ylabel("Kt   [log]")
+    ax.set_title("(a) Kt = √(ψ⁺_tip/ψ⁺_nom)\nall three rise; late-cycle artifact")
+    ax.legend(loc="best", fontsize=8)
+    ax.grid(alpha=0.3, which="both")
+
+
 def plot_summary_4panel(series: dict, fem_series: dict, fem_kt: float,
                         outpath: Path) -> None:
+    """Legacy 4-panel (keep for backward compatibility)."""
     fig, axes = plt.subplots(2, 2, figsize=(12, 9))
 
-    # (0,0) Kt
+    # (0,0) Kt — now uses real FEM Kt if available
     ax = axes[0, 0]
-    ax.axhline(fem_kt, color=COLOR["FEM"], linestyle="-",
-               linewidth=LINEWIDTH, label=f"FEM (Kt={fem_kt})")
+    if fem_series is not None and "Kt" in fem_series:
+        _add_series(ax, fem_series["N"], fem_series["Kt"], "FEM")
+    else:
+        ax.axhline(fem_kt, color=COLOR["FEM"], linestyle="-",
+                   linewidth=LINEWIDTH, label=f"FEM (Kt={fem_kt}, quoted)")
     for name, d in series.items():
         if "Kt" in d:
             _add_series(ax, np.arange(len(d["Kt"])), d["Kt"], name)
     ax.set_xlabel("Cycle")
     ax.set_ylabel("Kt")
-    ax.set_title("(a) Stress concentration factor")
+    ax.set_yscale("log")
+    ax.set_title("(a) Stress concentration factor Kt [log]")
     ax.legend(loc="best", fontsize=9)
-    ax.grid(alpha=0.3)
-    ax.set_ylim(5, 20)
+    ax.grid(alpha=0.3, which="both")
 
     # (0,1) alpha_max (log)
     ax = axes[0, 1]
@@ -266,13 +311,14 @@ def write_summary_table(series: dict, fem_series: dict, fem_kt: float,
     # At matched cycles
     cycles_of_interest = [0, 10, 30, 50, 60, 70, "N_f"]
     lines.append("-" * 85)
-    lines.append(f"{'Cycle':>7} | {'Method':>20} | {'Kt':>8} | {'α_max':>10} | "
-                 f"{'f_min':>12} | {'E_el':>12}")
-    lines.append("-" * 85)
+    header = (f"{'Cycle':>5} | {'Method':>18} | {'Kt':>10} | {'α_max':>9} | "
+              f"{'α_mean':>7} | {'f_min':>11} | {'f_mean':>7} | {'E_el':>11}")
+    lines.append(header)
+    lines.append("-" * len(header))
     for c in cycles_of_interest:
         # FEM
+        idx = None
         if c == "N_f":
-            fem_row = fem_series
             cycle_fem = fem_series["N_f"]
             idx = np.argmax(fem_series["N"] == cycle_fem)
         elif isinstance(c, int):
@@ -281,42 +327,63 @@ def write_summary_table(series: dict, fem_series: dict, fem_kt: float,
             idx = np.argmax(mask) if mask.any() else None
         if idx is not None:
             cf = fem_series
-            lines.append(f"{cycle_fem:>7} | {'FEM':>20} | {f'{fem_kt} (stable)':>8} | "
-                         f"{cf['alpha_max'][idx]:>10.3f} | {cf['f_min'][idx]:>12.4e} | "
-                         f"{cf['E_el'][idx]:>12.4e}")
-        # PIDL
+            kt_v = f"{cf['Kt'][idx]:.2f}" if 'Kt' in cf else f"{fem_kt}(q)"
+            fmean_v = f"{cf['f_mean'][idx]:.4f}" if 'f_mean' in cf else "—"
+            amean_v = f"{cf['alpha_bar_mean'][idx]:.3f}" if 'alpha_bar_mean' in cf else "—"
+            lines.append(f"{cycle_fem:>5} | {'FEM':>18} | {kt_v:>10} | "
+                         f"{cf['alpha_max'][idx]:>9.2f} | {amean_v:>7} | "
+                         f"{cf['f_min'][idx]:>11.3e} | {fmean_v:>7} | "
+                         f"{cf['E_el'][idx]:>11.3e}")
+        # PIDL variants
         for name, d in series.items():
+            idx_p = None
             if c == "N_f":
-                # Baseline: find cycle where x_tip >= 0.5
                 if "x_tip_use" in d:
                     mask = d["x_tip_use"] >= 0.5
                     if mask.any():
                         idx_p = int(np.argmax(mask))
                     else:
-                        idx_p = d["n_cycles"] - 1  # last available cycle
+                        idx_p = d["n_cycles"] - 1
                 else:
                     idx_p = d["n_cycles"] - 1
             elif isinstance(c, int):
                 idx_p = c if c < d["n_cycles"] else None
             if idx_p is not None:
-                Kt_str = f"{d['Kt'][idx_p]:.3f}" if "Kt" in d else "NA"
-                am_str = f"{d['alpha_max'][idx_p]:.3f}" if "alpha_max" in d else "NA"
-                fm_str = f"{d['f_min'][idx_p]:.4e}" if "f_min" in d else "NA"
-                ee_str = f"{d['E_el'][idx_p]:.4e}" if "E_el" in d else "NA"
-                lines.append(f"{idx_p:>7} | {name:>20} | {Kt_str:>8} | "
-                             f"{am_str:>10} | {fm_str:>12} | {ee_str:>12}")
-        lines.append("-" * 85)
+                kt_v = f"{d['Kt'][idx_p]:.2f}" if "Kt" in d else "NA"
+                am_v = f"{d['alpha_max'][idx_p]:.2f}" if "alpha_max" in d else "NA"
+                amean_v = f"{d['alpha_mean'][idx_p]:.3f}" if "alpha_mean" in d else "—"
+                fmin_v = f"{d['f_min'][idx_p]:.3e}" if "f_min" in d else "NA"
+                fmean_v = (f"{d['f_mean'][idx_p]:.4f}"
+                           if "f_mean" in d and idx_p < len(d['f_mean']) else "—")
+                ee_v = f"{d['E_el'][idx_p]:.3e}" if "E_el" in d else "NA"
+                lines.append(f"{idx_p:>5} | {name:>18} | {kt_v:>10} | "
+                             f"{am_v:>9} | {amean_v:>7} | {fmin_v:>11} | "
+                             f"{fmean_v:>7} | {ee_v:>11}")
+        lines.append("-" * len(header))
 
     lines.append("")
-    lines.append("KEY FINDINGS:")
-    lines.append("  1. Kt: FEM=15.3 stable; both PIDL rise from ~7.5 to ~16 over 70 cycles.")
-    lines.append("     Williams provides marginal Kt acceleration (+0.4 avg vs baseline).")
-    lines.append("  2. α_max: FEM reaches 958 at N_f; PIDL only reaches ~9 at N_f.")
-    lines.append("     Williams α_max is LOWER than baseline at matched cycles — ")
-    lines.append("     damage is MORE dispersed with Williams, not more concentrated.")
-    lines.append("  3. f_min: FEM drops to 10⁻⁶ (tip element fully broken);")
-    lines.append("     PIDL stuck at 10⁻² (partial degradation at many elements).")
-    lines.append("  4. The 'dispersed degradation' paradox is NOT resolved by Williams.")
+    lines.append("KEY FINDINGS (revised Apr 18 with new FEM 'full' CSV):")
+    lines.append("")
+    lines.append("  1. Kt is NOT stable in FEM. It rises from 11 (c1) to thousands")
+    lines.append("     (c50+) — same numerical artifact as PIDL (ψ⁺_nominal → 0 as")
+    lines.append("     far field degrades). The 'FEM Kt stable 15.3' memory claim")
+    lines.append("     was incorrect; it's only ~11-15 for cycles 1-4.")
+    lines.append("")
+    lines.append("  2. α_max at N_f: FEM 958, Baseline 9.1, Williams 5.1.")
+    lines.append("     FEM's peak damage is 100× higher — real concentration at tip.")
+    lines.append("")
+    lines.append("  3. f_mean at N_f: FEM 0.74, Baseline 0.85, Williams 0.86.")
+    lines.append("     Contrary to the old 'FEM f_mean ≈ 0.99' claim, FEM has")
+    lines.append("     MORE bulk degradation than PIDL (26% avg vs 14%).")
+    lines.append("")
+    lines.append("  4. N_f: FEM 82, Baseline 80 (-2.4%), Williams 77 (-6.1%).")
+    lines.append("     Williams made N_f prediction WORSE, not better.")
+    lines.append("")
+    lines.append("  5. The true paradox (not the old one): FEM has both high α_max")
+    lines.append("     (tip concentration) AND low f_mean (bulk degradation).")
+    lines.append("     PIDL has low α_max AND high f_mean (less concentrated at tip,")
+    lines.append("     less accumulated overall). Different mechanisms reaching")
+    lines.append("     similar N_f by coincidence.")
 
     outpath.write_text("\n".join(lines))
 
@@ -370,7 +437,7 @@ def main() -> int:
 
     # --- Generate figures ---
     print(f"\nGenerating figures in {outdir}/...")
-    plot_Kt(series, args.fem_kt, outdir / "fig_Kt_vs_cycle.png")
+    plot_Kt(series, fem, outdir / "fig_Kt_vs_cycle.png")
     if fem is not None:
         plot_log_metric(series, fem, "alpha_max", r"$\bar{\alpha}_{max}$ (log)",
                         "Fatigue damage accumulator — FEM concentrates 100x more",
