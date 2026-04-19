@@ -77,6 +77,9 @@ def find_pidl_dir(umax: str, flavor: str) -> Path | None:
     elif flavor == "williams_v4_current":
         # fall back: in-progress run (not yet archived)
         matches = [d for d in dirs if d.name.endswith("williams_std")]
+    elif flavor == "fourier_v1":
+        # Fourier random-features Run #1 (n_freq=16, sigma=1.0, NN input dim 34)
+        matches = [d for d in dirs if "fourier_nf16" in d.name]
     else:
         matches = []
     if not matches:
@@ -203,9 +206,11 @@ def load_fem(csv_path: Path, truncate_at_Nf: bool = True) -> dict:
 # -----------------------------------------------------------------------------
 
 COLOR = {"FEM": "#D62728", "Baseline": "#1F77B4", "Williams v3": "#2CA02C",
-         "Williams v4": "#9467BD", "Williams v4 (current)": "#8C564B"}
+         "Williams v4": "#9467BD", "Williams v4 (current)": "#8C564B",
+         "Fourier v1": "#FF7F0E"}    # orange — distinct from blue (Baseline) & purple (W v4)
 LINESTYLE = {"FEM": "-", "Baseline": "-", "Williams v3": ":",
-             "Williams v4": "-", "Williams v4 (current)": "--"}
+             "Williams v4": "-", "Williams v4 (current)": "--",
+             "Fourier v1": "-."}     # dash-dot
 LINEWIDTH = 1.8
 
 
@@ -500,14 +505,23 @@ def write_summary_table(series: dict, fem_series: dict, fem_kt: float,
     lines.append("     Contrary to the old 'FEM f_mean ≈ 0.99' claim, FEM has")
     lines.append("     MORE bulk degradation than PIDL (26% avg vs 14%).")
     lines.append("")
-    lines.append("  4. N_f: FEM 82, Baseline 80 (-2.4%), Williams 77 (-6.1%).")
-    lines.append("     Williams made N_f prediction WORSE, not better.")
+    lines.append("  4. N_f: FEM 82, Baseline 80 (-2.4%), Williams 77 (-6.1%),")
+    lines.append("     Fourier 84 (+2.4%). Fourier has the smallest |ΔN_f| from FEM")
+    lines.append("     among PIDL methods, but with opposite sign vs baseline.")
     lines.append("")
     lines.append("  5. The true paradox (not the old one): FEM has both high α_max")
     lines.append("     (tip concentration) AND low f_mean (bulk degradation).")
     lines.append("     PIDL has low α_max AND high f_mean (less concentrated at tip,")
     lines.append("     less accumulated overall). Different mechanisms reaching")
     lines.append("     similar N_f by coincidence.")
+    lines.append("")
+    lines.append("  6. Fourier random features (Tancik 2020, n_freq=16, NN dim 34):")
+    lines.append("     damage profile (α_max≈9.07, α_mean≈0.385) ≈ baseline; peak ψ⁺")
+    lines.append("     stability ≈ baseline (top10 Jaccard 0.140 vs 0.106 for BL,")
+    lines.append("     0.255 for W). Three-way ablation: input feature enrichment")
+    lines.append("     (physics-prior OR random spectral) cannot bridge the FEM-PIDL")
+    lines.append("     α_max 100× gap. The N_f shift Fourier vs baseline (+4 cycles)")
+    lines.append("     comes from boundary-criterion timing, not damage mechanism.")
 
     outpath.write_text("\n".join(lines))
 
@@ -539,11 +553,13 @@ def main() -> int:
         print(f"✅ FEM: loaded {fem_path.name}, N_f = {fem['N_f']}")
 
     # --- Load PIDL flavors ---
+    # NOTE: Williams v3 (false-stop run, no real fracture) intentionally excluded
+    # from comparison plots. v4 is the publication baseline for Williams.
     series = {}
     for label, flavor in [("Baseline", "baseline"),
-                          ("Williams v3", "williams_v3"),
                           ("Williams v4", "williams_v4"),
-                          ("Williams v4 (current)", "williams_v4_current")]:
+                          ("Williams v4 (current)", "williams_v4_current"),
+                          ("Fourier v1", "fourier_v1")]:
         d = find_pidl_dir(args.umax, flavor)
         if d is None:
             print(f"⚠️  {label}: dir not found (flavor={flavor})")
