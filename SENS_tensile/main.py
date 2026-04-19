@@ -25,10 +25,15 @@ field_comp = FieldComputation(net = network,
                               theta = loading_angle,
                               alpha_constraint = numr_dict["alpha_constraint"],
                               williams_dict = williams_dict,                 # ★ Direction 4
+                              ansatz_dict  = ansatz_dict,                    # ★ Direction 5
                               l0 = mat_prop_dict["l0"])                      # ★ Direction 4
 field_comp.net = field_comp.net.to(device)
 field_comp.domain_extrema = field_comp.domain_extrema.to(device)
 field_comp.theta = field_comp.theta.to(device)
+# ★ Direction 5: 可学习标量 c_singular（nn.Parameter）迁移到 device
+if field_comp.c_singular is not None:
+    import torch.nn as _nn
+    field_comp.c_singular = _nn.Parameter(field_comp.c_singular.data.to(device))
 
 ## #############################################################################
 ## #############################################################################

@@ -174,7 +174,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
         # L-BFGS 快速收敛 + RPROP 精细调整
         n_epochs = max(optimizer_dict["n_epochs_LBFGS"], 1)
-        NNparams = field_comp.net.parameters()
+        NNparams = field_comp.parameters()
         optimizer = get_optimizer(NNparams, "LBFGS")
         loss_data1 = fit(
             field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
@@ -185,7 +185,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         loss_data = loss_data + loss_data1
 
         n_epochs = optimizer_dict["n_epochs_RPROP"]
-        NNparams = field_comp.net.parameters()
+        NNparams = field_comp.parameters()
         optimizer = get_optimizer(NNparams, "RPROP")
         loss_data2 = fit_with_early_stopping(
             field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
@@ -319,6 +319,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # ★ 每圈 Kt 日志：预计算元素形心 + 远场掩码（仅数值梯度模式有效）
     _Kt_history = []
     _Kt         = float('nan')   # 当前圈 Kt（初始化为 nan，日志安全输出）
+
+    # ★ Direction 5: Enriched Ansatz 每圈记录可学习标量 c_singular
+    _ansatz_enabled     = getattr(field_comp, 'ansatz_enabled', False)
+    _c_singular_history = []   # list of [cycle_idx, c_val]
     if fatigue_on and T_conn is not None:
         _inp_np = inp.detach().cpu().numpy()
         _T_np   = T_conn.cpu().numpy() if isinstance(T_conn, torch.Tensor) else T_conn
@@ -350,7 +354,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         # ------------------------------------------------------------------
         if j == 0 or optimizer_dict["n_epochs_LBFGS"] > 0:
             n_epochs = max(optimizer_dict["n_epochs_LBFGS"], 1)
-            NNparams  = field_comp.net.parameters()
+            NNparams  = field_comp.parameters()
             optimizer = get_optimizer(NNparams, "LBFGS")
             loss_data1 = fit(
                 field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
@@ -363,7 +367,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
         if optimizer_dict["n_epochs_RPROP"] > 0:
             n_epochs  = optimizer_dict["n_epochs_RPROP"]
-            NNparams  = field_comp.net.parameters()
+            NNparams  = field_comp.parameters()
             optimizer = get_optimizer(NNparams, "RPROP")
             loss_data2 = fit_with_early_stopping(
                 field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
@@ -489,13 +493,21 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 else:
                     crack_tip_weights = None   # 还未到启用圈数，本圈均匀
 
+            # ★ Direction 5: 记录 c_singular 当前值（每圈训练完毕后）
+            if _ansatz_enabled and field_comp.c_singular is not None:
+                _c_val = float(field_comp.c_singular.detach().cpu().item())
+                _c_singular_history.append([j, _c_val])
+            else:
+                _c_val = None
+
             # 日志输出
             f_min = f_fatigue.min().item()
             f_mean = f_fatigue.mean().item()
             alpha_bar_max = hist_fat.max().item()
             _Kt_str = f"{_Kt:.2f}" if not np.isnan(_Kt) else "N/A"
+            _c_str  = f" | c={_c_val:+.4e}" if _c_val is not None else ""
             print(f"  [Fatigue step {j}] ᾱ_max={alpha_bar_max:.4e} | "
-                  f"f_min={f_min:.4f} | f_mean={f_mean:.4f} | Kt={_Kt_str}")
+                  f"f_min={f_min:.4f} | f_mean={f_mean:.4f} | Kt={_Kt_str}{_c_str}")
             alpha_bar_history.append([alpha_bar_max,
                                        hist_fat.mean().item(),
                                        float(f_min)])
@@ -607,6 +619,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _Kt_history:
                 np.save(str(trainedModel_path / 'Kt_vs_cycle.npy'),
                         np.array(_Kt_history))
+            if _ansatz_enabled and _c_singular_history:                     # ★ Direction 5
+                np.save(str(trainedModel_path / 'c_singular_vs_cycle.npy'),
+                        np.array(_c_singular_history))   # shape (N,2): [cycle_idx, c_val]
             if _time_history:
                 np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                         np.array(_time_history))   # shape (N,2): [cycle_idx, seconds]
@@ -629,6 +644,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _Kt_history:
                 np.save(str(trainedModel_path / 'Kt_vs_cycle.npy'),
                         np.array(_Kt_history))
+            if _ansatz_enabled and _c_singular_history:                    # ★ Direction 5
+                np.save(str(trainedModel_path / 'c_singular_vs_cycle.npy'),
+                        np.array(_c_singular_history))
             if _time_history:
                 np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                         np.array(_time_history))
@@ -652,6 +670,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_on and _Kt_history:
         np.save(str(trainedModel_path / 'Kt_vs_cycle.npy'),
                 np.array(_Kt_history))
+    if fatigue_on and _ansatz_enabled and _c_singular_history:             # ★ Direction 5
+        np.save(str(trainedModel_path / 'c_singular_vs_cycle.npy'),
+                np.array(_c_singular_history))
     if fatigue_on and _time_history:
         np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                 np.array(_time_history))
