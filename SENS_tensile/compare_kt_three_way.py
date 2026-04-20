@@ -80,6 +80,10 @@ def find_pidl_dir(umax: str, flavor: str) -> Path | None:
     elif flavor == "fourier_v1":
         # Fourier random-features Run #1 (n_freq=16, sigma=1.0, NN input dim 34)
         matches = [d for d in dirs if "fourier_nf16" in d.name]
+    elif flavor == "enriched_v1":
+        # ★ Direction 5: Enriched Ansatz Mode-I output enrichment
+        # (c·χ(r)·F^I added to NN displacement output, x_tip FIXED at (0,0))
+        matches = [d for d in dirs if "enriched_ansatz_modeI_v1" in d.name]
     else:
         matches = []
     if not matches:
@@ -207,10 +211,12 @@ def load_fem(csv_path: Path, truncate_at_Nf: bool = True) -> dict:
 
 COLOR = {"FEM": "#D62728", "Baseline": "#1F77B4", "Williams v3": "#2CA02C",
          "Williams v4": "#9467BD", "Williams v4 (current)": "#8C564B",
-         "Fourier v1": "#FF7F0E"}    # orange — distinct from blue (Baseline) & purple (W v4)
+         "Fourier v1": "#FF7F0E",     # orange — distinct from blue (Baseline) & purple (W v4)
+         "Enriched v1": "#17BECF"}    # cyan — ★ Direction 5: output enrichment
 LINESTYLE = {"FEM": "-", "Baseline": "-", "Williams v3": ":",
              "Williams v4": "-", "Williams v4 (current)": "--",
-             "Fourier v1": "-."}     # dash-dot
+             "Fourier v1": "-.",      # dash-dot
+             "Enriched v1": (0, (3, 1, 1, 1))}  # dash-dot-dot — Dir 5
 LINEWIDTH = 1.8
 
 
@@ -559,7 +565,8 @@ def main() -> int:
     for label, flavor in [("Baseline", "baseline"),
                           ("Williams v4", "williams_v4"),
                           ("Williams v4 (current)", "williams_v4_current"),
-                          ("Fourier v1", "fourier_v1")]:
+                          ("Fourier v1", "fourier_v1"),
+                          ("Enriched v1", "enriched_v1")]:   # ★ Direction 5
         d = find_pidl_dir(args.umax, flavor)
         if d is None:
             print(f"⚠️  {label}: dir not found (flavor={flavor})")

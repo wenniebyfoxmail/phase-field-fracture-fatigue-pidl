@@ -68,11 +68,16 @@ def list_default_dirs():
 
 
 def recompute_psi_stats(model_dir: Path, williams_enabled: bool,
-                        x_tip_per_cycle: np.ndarray | None) -> np.ndarray:
+                        x_tip_per_cycle: np.ndarray | None,
+                        ansatz_enabled: bool = False,
+                        c_per_cycle: np.ndarray | None = None) -> np.ndarray:
     """Run through all checkpoints in model_dir and compute psi+ statistics.
 
     Returns array shape (N_cycles, 5):
         columns: [cycle_idx, psi_max, psi_top3_mean, psi_top10_mean, psi_nominal]
+
+    ★ Direction 5: when ansatz_enabled=True, reconstructs enriched FieldComputation
+    with c_singular loaded per-cycle from c_per_cycle (from c_singular_vs_cycle.npy).
     """
     best = model_dir / "best_models"
 
@@ -82,6 +87,16 @@ def recompute_psi_stats(model_dir: Path, williams_enabled: bool,
     if williams_enabled:
         williams_dict = {"enable": True, "theta_mode": "atan2", "r_min": 1e-6}
 
+    # ★ Direction 5: ansatz_dict for enriched archives (matches training config)
+    ansatz_dict = None
+    if ansatz_enabled:
+        ansatz_dict = {
+            "enable": True,
+            "x_tip": 0.0, "y_tip": 0.0,
+            "r_cutoff": 0.1, "nu": 0.3,
+            "c_init": 0.01, "modes": ["I"],
+        }
+
     pffmodel, matprop, network = construct_model(
         PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, device,
         williams_dict=williams_dict)
@@ -90,16 +105,24 @@ def recompute_psi_stats(model_dir: Path, williams_enabled: bool,
         matprop, pffmodel, crack_dict, numr_dict,
         mesh_file=fine_mesh_file, device=device)
 
-    field_comp = FieldComputation(
+    # Build FieldComputation with or without ansatz
+    _fc_kwargs = dict(
         net=network, domain_extrema=domain_extrema,
         lmbda=torch.tensor([0.0], device=device),
         theta=loading_angle,
         alpha_constraint=numr_dict["alpha_constraint"],
         williams_dict=williams_dict,
         l0=mat_prop_dict["l0"])
+    if ansatz_dict is not None:
+        _fc_kwargs["ansatz_dict"] = ansatz_dict
+    field_comp = FieldComputation(**_fc_kwargs)
     field_comp.net = field_comp.net.to(device)
     field_comp.domain_extrema = field_comp.domain_extrema.to(device)
     field_comp.theta = field_comp.theta.to(device)
+    # ★ Direction 5: move c_singular to device
+    if field_comp.c_singular is not None:
+        import torch.nn as _nn
+        field_comp.c_singular = _nn.Parameter(field_comp.c_singular.data.to(device))
 
     # Element centroids
     T_np = T_conn.cpu().numpy() if isinstance(T_conn, torch.Tensor) else T_conn
@@ -122,6 +145,14 @@ def recompute_psi_stats(model_dir: Path, williams_enabled: bool,
 
         if williams_enabled and x_tip_per_cycle is not None and j < len(x_tip_per_cycle):
             field_comp.x_tip = float(x_tip_per_cycle[j])
+
+        # ★ Direction 5: restore c_singular for this cycle (from c_singular_vs_cycle.npy)
+        if ansatz_enabled and c_per_cycle is not None and field_comp.c_singular is not None:
+            # c_per_cycle shape: (N, 2) = [cycle_idx, c_val]; look up row where col 0 == j
+            row = c_per_cycle[c_per_cycle[:, 0].astype(int) == j]
+            if len(row) > 0:
+                field_comp.c_singular.data = torch.tensor(
+                    [float(row[0, 1])], dtype=torch.float32, device=device)
 
         field_comp.lmbda = torch.tensor(lmbda_val, device=device)
         field_comp.net.load_state_dict(
@@ -177,6 +208,8 @@ def main() -> int:
     for label, d in targets:
         print(f"\n=== Processing {label}: {d.name} ===")
         williams_enabled = "williams" in d.name
+        # ★ Direction 5: detect enriched_ansatz flavor
+        ansatz_enabled = "enriched_ansatz" in d.name
 
         x_tip_per_cycle = None
         if williams_enabled:
@@ -189,7 +222,19 @@ def main() -> int:
                     print(f"  Loaded x_tip: {fname}  ({len(x_tip_per_cycle)} cycles)")
                     break
 
-        arr = recompute_psi_stats(d, williams_enabled, x_tip_per_cycle)
+        c_per_cycle = None
+        if ansatz_enabled:
+            p = d / "best_models" / "c_singular_vs_cycle.npy"
+            if p.exists():
+                c_per_cycle = np.load(str(p))
+                print(f"  Loaded c_singular: {len(c_per_cycle)} cycles "
+                      f"(init {c_per_cycle[0,1]:+.4f} → final {c_per_cycle[-1,1]:+.4f})")
+            else:
+                print(f"  WARN: ansatz enabled but c_singular_vs_cycle.npy missing → using c_init=0.01")
+
+        arr = recompute_psi_stats(d, williams_enabled, x_tip_per_cycle,
+                                  ansatz_enabled=ansatz_enabled,
+                                  c_per_cycle=c_per_cycle)
         if args.max_cycles and len(arr) > args.max_cycles:
             print(f"  (stopped after {args.max_cycles} cycles per --max-cycles)")
 
