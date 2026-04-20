@@ -138,6 +138,23 @@ fatigue_dict = {
         "power"       : 1.0,         # ψ⁺ 比值的幂次；1.0 = 线性加权；2.0 = 平方增强
         "start_cycle" : 1,           # 从第几圈开始加权（0 = 从预训练完成后第1圈就加权）
     },
+
+    # ── 方向6.1：空间调制 α_T（Spatial α_T Modulation）─────────────────────
+    # 原理：α_T_local(r) = α_T_base · (1 - β · exp(-r/r_T))
+    #   裂尖单元 α_T 降低 → 更早进入 f<1 退化区 → 应力重分布正反馈推高 α_max
+    # 目的：闭合 PIDL vs FEM 的 α_max 100× gap
+    #   （Dir 4/5 已证输入/输出端谱扩展均无法突破，瓶颈在 fatigue evolution 本身）
+    # β=0.5, r_T=0.1 依据：
+    #   β=0.5 → 裂尖 α_T_local = 0.25（baseline 一半），数值安全，幅度明显
+    #   r_T=0.1 = 10·l₀，与 Direction 5 ansatz_dict.r_cutoff 同尺度
+    # enable=False 时 α_T 退回 scalar α_T_base，完全等价 baseline
+    "spatial_alpha_T": {
+        "enable" : True,
+        "beta"   : 0.5,              # 调制深度 ∈ [0, 1]
+        "r_T"    : 0.1,              # 衰减长度（≈ 10·l₀，与 Enriched χ 同尺度）
+        "x_tip"  : 0.0,              # 固定裂尖 x（SENT 预裂缝 tip，与 ansatz_dict 一致）
+        "y_tip"  : 0.0,              # 固定裂尖 y
+    },
 }
 
 # ★ Direction 4: Williams 裂尖增强输入特征
@@ -167,7 +184,7 @@ williams_dict = {
 #   4. enable=False 时零开销，完全等价 baseline
 # ────────────────────────────────────────────────────────────────────────────
 ansatz_dict = {
-    "enable"   : True,
+    "enable"   : False,          # ★ Direction 6.1: 关闭 Enriched，单变量对照 spatial α_T
     "x_tip"    : 0.0,
     "y_tip"    : 0.0,
     "r_cutoff" : 0.1,            # ≈ 10 · l₀
@@ -262,6 +279,13 @@ _williams_tag = "_williams_std" if williams_dict.get("enable", False) else ""
 _modes_str = "".join(ansatz_dict.get("modes", ["I"]))
 _ansatz_tag = f"_enriched_ansatz_mode{_modes_str}_v1" if ansatz_dict.get("enable", False) else ""
 
+# ★ Direction 6.1: Spatial α_T 标签（enable=True 时追加 _spAlphaT_b{β}_r{r_T}）
+_sp_cfg = _fat.get('spatial_alpha_T', {})
+_spAlphaT_tag = (
+    f"_spAlphaT_b{_sp_cfg.get('beta', 0.0)}_r{_sp_cfg.get('r_T', 0.1)}"
+    if _sp_cfg.get('enable', False) else ""
+)
+
 model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             '_Neurons_'+str(network_dict["neurons"])+
                             '_activation_'+network_dict["activation"]+
@@ -271,7 +295,8 @@ model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             '_gradient_'+str(numr_dict["gradient_type"])+
                             _fatigue_tag +
                             _williams_tag +        # ★ Direction 4 标签
-                            _ansatz_tag)            # ★ Direction 5 标签
+                            _ansatz_tag +          # ★ Direction 5 标签
+                            _spAlphaT_tag)         # ★ Direction 6.1 标签
 model_path.mkdir(parents=True, exist_ok=True)
 trainedModel_path = model_path/Path('best_models/')
 trainedModel_path.mkdir(parents=True, exist_ok=True)
@@ -315,6 +340,13 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\nansatz_nu: {ansatz_dict.get("nu", 0.3)}')
     file.write(f'\nansatz_c_init: {ansatz_dict.get("c_init", 0.01)}')
     file.write(f'\nansatz_modes: {ansatz_dict.get("modes", ["I"])}')
+    # ★ Direction 6.1: Spatial α_T 参数
+    file.write(f'\n--- spatial_alpha_T ---')
+    file.write(f'\nspAlphaT_enable: {_sp_cfg.get("enable", False)}')
+    file.write(f'\nspAlphaT_beta: {_sp_cfg.get("beta", 0.0)}')
+    file.write(f'\nspAlphaT_r_T: {_sp_cfg.get("r_T", 0.1)}')
+    file.write(f'\nspAlphaT_x_tip: {_sp_cfg.get("x_tip", 0.0)}')
+    file.write(f'\nspAlphaT_y_tip: {_sp_cfg.get("y_tip", 0.0)}')
 
 ## #############################################################################
 ## #############################################################################
