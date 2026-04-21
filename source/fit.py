@@ -38,7 +38,7 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
     
     # Loop over epochs
     for epoch in range(num_epochs):
-        loop = tqdm(training_set_collocation, miniters=25)
+        loop = tqdm(training_set_collocation, miniters=25, disable=True)
         # Loop over batches
         for j, (inp_train, outp_train)  in enumerate(loop):
             
@@ -102,7 +102,7 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
     
     # Loop over epochs
     for epoch in range(num_epochs):
-        loop = tqdm(training_set_collocation, miniters=25)
+        loop = tqdm(training_set_collocation, miniters=25, disable=True)
         # Loop over batches
         for j, (inp_train, outp_train)  in enumerate(loop):
             

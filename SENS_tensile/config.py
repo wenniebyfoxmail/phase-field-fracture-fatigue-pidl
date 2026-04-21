@@ -144,7 +144,7 @@ fatigue_dict = {
 # 关键：只改输入特征，不改 Deep Ritz 能量泛函 → 安全（不重蹈 Direction 3 覆辙）
 # ────────────────────────────────────────────────────────────────────────────
 williams_dict = {
-    "enable"     : True,         # True: 启用 8D 特征; False: 原始 2D（完全等价 baseline）
+    "enable"     : False,         # True: 启用 8D 特征; False: 原始 2D（完全等价 baseline）
     "theta_mode" : "atan2",      # θ = atan2(dy, dx) ∈ (-π, π]（预留接口，未来可扩展）
     "r_min"      : 1e-6,         # r 下限，防止裂尖节点处除零
 }

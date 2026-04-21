@@ -287,6 +287,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _alpha_bdy_warn  = fatigue_dict.get('alpha_bdy_warn',      0.90)  # 触发密集采样的预警阈值
     _alpha_bdy_frac  = fatigue_dict.get('alpha_bdy_threshold', 0.95)  # 贯穿判据阈值（与 FEM 对齐）
     _alpha_bdy_nmin  = fatigue_dict.get('alpha_bdy_nmin',      3)     # 最少节点数（防单点噪声）
+    # ★ 速度优化：日志降频（关键事件 Fracture?/Dense sampling/Fracture confirmed 不受控）
+    _log_every       = fatigue_dict.get('log_every_n_cycles',  1)     # 默认 1 = 每步打印（旧行为）
     # 右边界节点掩码（预计算，避免每圈重复判断）
     # SENS 几何：右边界 x ≈ 0.5，取 x > 0.48 覆盖边界层节点
     _right_bdy_x_min = fatigue_dict.get('right_bdy_x_min',    0.48)
@@ -313,7 +315,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # =========================================================================
     for j, disp_i in enumerate(disp[start_j:], start=start_j):
         field_comp.lmbda = torch.tensor(disp_i).to(device)
-        print(f'idx: {j}; displacement/amplitude: {field_comp.lmbda}')
+        if (j % _log_every == 0) or _frac_detected or _dense_sampling:
+            print(f'idx: {j}; displacement/amplitude: {field_comp.lmbda}')
         loss_data = list()
         start = time.time()
 
@@ -329,7 +332,6 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
                 intermediateModel_path=None, writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,              # ★ 传入疲劳退化函数
-                crack_tip_weights=crack_tip_weights  # ★ 方向3：裂尖自适应权重
             )
             loss_data = loss_data + loss_data1
 
@@ -344,7 +346,6 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 intermediateModel_path=intermediateModel_path,
                 writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,              # ★ 传入疲劳退化函数
-                crack_tip_weights=crack_tip_weights  # ★ 方向3：裂尖自适应权重
             )
             loss_data = loss_data + loss_data2
 
@@ -435,8 +436,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             f_min = f_fatigue.min().item()
             f_mean = f_fatigue.mean().item()
             alpha_bar_max = hist_fat.max().item()
-            print(f"  [Fatigue step {j}] ᾱ_max={alpha_bar_max:.4e} | "
-                  f"f_min={f_min:.4f} | f_mean={f_mean:.4f}")
+            if (j % _log_every == 0) or _frac_detected or _dense_sampling:
+                print(f"  [Fatigue step {j}] ᾱ_max={alpha_bar_max:.4e} | "
+                      f"f_min={f_min:.4f} | f_mean={f_mean:.4f}")
             alpha_bar_history.append([alpha_bar_max,
                                        hist_fat.mean().item(),
                                        float(f_min)])
@@ -475,9 +477,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             _x_tip_history.append(crack_length)
             _tip_x = crack_tip_xy[0].item()
             _tip_y = crack_tip_xy[1].item()
-            print(f"  [crack_tip]    = ({_tip_x:.4f}, {_tip_y:.4f})  "
-                  f"L∞_length = {crack_length:.4f}  "
-                  f"α_max@bdy={alpha_bdy_max:.4f}  N_bdy>{_alpha_bdy_frac}={n_bdy_frac}")
+            if (j % _log_every == 0) or _frac_detected or _dense_sampling:
+                print(f"  [crack_tip]    = ({_tip_x:.4f}, {_tip_y:.4f})  "
+                      f"L∞_length = {crack_length:.4f}  "
+                      f"α_max@bdy={alpha_bdy_max:.4f}  N_bdy>{_alpha_bdy_frac}={n_bdy_frac}")
 
             # ── 断裂检测：α>0.95 @ 右边界（主）OR E_el 骤降（兜底）──────────
             _bdy_triggered = (n_bdy_frac >= _alpha_bdy_nmin)

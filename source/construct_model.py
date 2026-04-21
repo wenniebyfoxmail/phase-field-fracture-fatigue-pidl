@@ -39,4 +39,13 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
     torch.manual_seed(network_dict["seed"])
     init_xavier(network)
 
+    # ★ 速度优化：torch.compile（PyTorch ≥ 2.0），减少 Python launch overhead
+    # 默认关闭以保兼容；TrainableReLU/SteepReLU 含可训练参数，编译可能 fallback
+    if network_dict.get("compile", False):
+        try:
+            network = torch.compile(network, mode='reduce-overhead')
+            print(f"[construct_model] torch.compile enabled (mode=reduce-overhead)")
+        except Exception as e:
+            print(f"[construct_model] torch.compile failed, fallback to eager: {e}")
+
     return pffmodel, matprop, network
