@@ -227,8 +227,26 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         print(f"[Fatigue] fatigue_on=True | accum='{fatigue_dict.get('accum_type','carrara')}' | "
               f"degrad='{fatigue_dict.get('degrad_type','asymptotic')}' | "
               f"alpha_T={fatigue_dict.get('alpha_T', 1.0):.4g}")
+
+        # ★ Direction 6.1: 预计算元素形心，供 spatial α_T 使用（tensor 版本）
+        _sp_cfg = fatigue_dict.get('spatial_alpha_T', {})
+        if _sp_cfg.get('enable', False) and T_conn is not None:
+            _Tc = T_conn if isinstance(T_conn, torch.Tensor) else torch.as_tensor(T_conn, device=device)
+            _cx_t = (inp[_Tc[:,0], 0] + inp[_Tc[:,1], 0] + inp[_Tc[:,2], 0]) / 3.0
+            _cy_t = (inp[_Tc[:,0], 1] + inp[_Tc[:,1], 1] + inp[_Tc[:,2], 1]) / 3.0
+            elem_centroids = torch.stack([_cx_t, _cy_t], dim=1).detach()
+            print(f"[spAlphaT] Spatial α_T enabled: "
+                  f"β={_sp_cfg.get('beta',0.0)}, r_T={_sp_cfg.get('r_T',0.1)}, "
+                  f"tip=({_sp_cfg.get('x_tip',0.0)},{_sp_cfg.get('y_tip',0.0)}) | "
+                  f"n_elem={n_elem}")
+        else:
+            elem_centroids = None
+            if _sp_cfg.get('enable', False):
+                print("[spAlphaT] WARNING: enable=True but T_conn is None "
+                      "(autodiff mode); fallback to scalar α_T")
     else:
         f_fatigue = 1.0
+        elem_centroids = None
         print("[Fatigue] fatigue_on=False → 等价 Manav 原始行为")
 
     # ★ 方向3：裂尖自适应权重初始化
@@ -251,6 +269,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         key=lambda p: int(p.stem.rsplit('_', 1)[-1])
     )
     start_j = 0
+    _did_restore = False   # ★ 标志位：True → 后续 history lists 从 .npy 初始化
     if _step_ckpts:
         _latest = _step_ckpts[-1]
         _last_j = int(_latest.stem.rsplit('_', 1)[-1])
@@ -263,16 +282,39 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if fatigue_on:
                 hist_fat      = _ckpt['hist_fat'].to(device)
                 psi_plus_prev = _ckpt['psi_plus_prev'].to(device)
-                f_fatigue     = compute_fatigue_degrad(hist_fat, fatigue_dict)
+                f_fatigue     = compute_fatigue_degrad(
+                    hist_fat, fatigue_dict, elem_centroids=elem_centroids
+                )
             start_j = _last_j + 1
+            _did_restore = True
             print(f"[Checkpoint] 从 step {_last_j} 恢复，继续 step {start_j}/{len(disp)-1}")
+
+    # -------------------------------------------------------------------------
+    # ★ Helper: 从 .npy 恢复逐 cycle history list（修正长期 bug）
+    # 之前 restore 只恢复 NN 权重 + hist_alpha/hist_fat，逐 cycle history lists
+    # 从空 [] 开始 → 下次 save 会覆盖 .npy 丢失 cycle 0..start_j-1 的数据。
+    # 本 helper：若 .npy 存在则 load + truncate 到 start_j，保证 history/NN 同步。
+    # -------------------------------------------------------------------------
+    def _restore_hist(fname):
+        if not _did_restore:
+            return []
+        p = trainedModel_path / fname
+        if not p.exists():
+            return []
+        lst = np.load(p).tolist()
+        if len(lst) > start_j:
+            print(f"[Restore] {fname}: truncated {len(lst)} → {start_j} cycles")
+            lst = lst[:start_j]
+        else:
+            print(f"[Restore] {fname}: loaded {len(lst)} cycles")
+        return lst
 
     # -------------------------------------------------------------------------
     # ★ 断裂检测 & 可视化参数（仅 fatigue_on=True 时有意义）
     # -------------------------------------------------------------------------
-    E_el_history       = []      # 每圈弹性能，供后处理画 E_el vs N 曲线
-    E_el_max           = 0.0     # 历史最大弹性能（断裂判据基准）
-    alpha_bar_history  = []      # 每圈 [ᾱ_max, ᾱ_mean, f_min]，自动保存为 alpha_bar_vs_cycle.npy
+    E_el_history       = _restore_hist('E_el_vs_cycle.npy')      # ★ 续训时从 .npy 恢复
+    E_el_max           = max(E_el_history) if E_el_history else 0.0  # ★ 从恢复的 history 算 max
+    alpha_bar_history  = _restore_hist('alpha_bar_vs_cycle.npy')  # ★ 每圈 [ᾱ_max, ᾱ_mean, f_min]
     _frac_detected          = False   # 是否已触发断裂检测
     _frac_cycle             = None    # 首次检测到断裂的圈号
     _frac_confirm_remaining = 0       # 剩余确认圈数（>0 时持续观察）
@@ -306,23 +348,23 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _alpha_crack_thr = fatigue_dict.get('x_tip_alpha_thr', 0.90)
     _crack_mouth     = torch.tensor([0.0, 0.0], device=device)  # SENS: 预裂缝尖端
     _crack_mouth_x   = _crack_mouth[0].item()
-    _x_tip_history   = []    # 每圈 crack_length，供后处理（变量名保持兼容）
+    _x_tip_history   = _restore_hist('x_tip_alpha_vs_cycle.npy')    # ★ 续训时从 .npy 恢复
 
     # ★ Direction 4: Williams 特征开关 & ψ⁺ 重心裂尖历史
     # 通过 field_comp.williams_enabled 检测是否启用（无需额外参数传递）
     _williams_enabled = getattr(field_comp, 'williams_enabled', False)
-    _x_tip_psi_history = []   # ψ⁺ 重心估计的裂尖 x 坐标，每圈一个值
+    _x_tip_psi_history = _restore_hist('x_tip_psi_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
 
     # ★ 每圈耗时记录（增量保存到 time_vs_cycle.npy）
-    _time_history = []   # list of [cycle_idx, cycle_seconds]
+    _time_history = _restore_hist('time_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
 
     # ★ 每圈 Kt 日志：预计算元素形心 + 远场掩码（仅数值梯度模式有效）
-    _Kt_history = []
+    _Kt_history = _restore_hist('Kt_vs_cycle.npy')       # ★ 续训时从 .npy 恢复
     _Kt         = float('nan')   # 当前圈 Kt（初始化为 nan，日志安全输出）
 
     # ★ Direction 5: Enriched Ansatz 每圈记录可学习标量 c_singular
     _ansatz_enabled     = getattr(field_comp, 'ansatz_enabled', False)
-    _c_singular_history = []   # list of [cycle_idx, c_val]
+    _c_singular_history = _restore_hist('c_singular_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
     if fatigue_on and T_conn is not None:
         _inp_np = inp.detach().cpu().numpy()
         _T_np   = T_conn.cpu().numpy() if isinstance(T_conn, torch.Tensor) else T_conn
@@ -463,7 +505,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             )
 
             # 更新疲劳退化函数 f(ᾱ)（Carrara Eq.41 或 Eq.42）
-            f_fatigue = compute_fatigue_degrad(hist_fat, fatigue_dict)
+            # ★ Direction 6.1: 传入 elem_centroids 支持空间调制 α_T
+            f_fatigue = compute_fatigue_degrad(
+                hist_fat, fatigue_dict, elem_centroids=elem_centroids
+            )
 
             # ★ 重置 psi_plus_prev，正确模拟循环加载的卸载阶段
             # 原因：NN 只求解峰值状态，不显式模拟卸载。

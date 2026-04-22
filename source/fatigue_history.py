@@ -79,27 +79,53 @@ def update_fatigue_history(hist_fat, psi_plus_elem, psi_plus_prev, fatigue_dict)
     return (hist_fat + delta_alpha).detach()
 
 
-def compute_fatigue_degrad(hist_fat, fatigue_dict):
+def compute_fatigue_degrad(hist_fat, fatigue_dict, elem_centroids=None):
     """
     计算疲劳退化函数 f(ᾱ) ∈ [0, 1]（逐元素）
 
     当 ᾱ ≤ α_T 时 f = 1（无疲劳效应）；
     当 ᾱ > α_T 时 f 随 ᾱ 单调递减，模拟断裂韧性下降。
 
+    ★ Direction 6.1: Spatial α_T modulation
+    ---------------------------------------
+    若 fatigue_dict['spatial_alpha_T'].enable=True 且提供 elem_centroids，
+    α_T 变为空间相关：α_T_local(r) = α_T_base · (1 - β · exp(-r/r_T))
+    裂尖单元 α_T 降低 → 更早进入 f<1 区域 → 应力重分布正反馈推高局部 α_max。
+    当 enable=False 或 elem_centroids is None → α_T 统一为 scalar α_T_base，
+    数值等价 baseline。
+
     参数：
     ------
     hist_fat : torch.Tensor, shape (n_elem,)
         各元素疲劳历史变量 ᾱ
     fatigue_dict : dict
-        疲劳参数（需含 'degrad_type', 'alpha_T'；
-                  对数型还需 'kappa'）
+        疲劳参数（需含 'degrad_type', 'alpha_T'；对数型还需 'kappa'）
+        可选 'spatial_alpha_T' 子 dict：{'enable','beta','r_T','x_tip','y_tip'}
+    elem_centroids : torch.Tensor, shape (n_elem, 2), optional
+        各元素形心坐标 (x, y)。仅 spatial_alpha_T.enable=True 时需要。
+        device/dtype 需与 hist_fat 一致。
 
     返回：
     ------
     torch.Tensor, shape (n_elem,)  —— f(ᾱ)（detached）
     """
-    degrad_type = fatigue_dict.get('degrad_type', 'asymptotic')
-    alpha_T     = fatigue_dict.get('alpha_T', 1.0)
+    degrad_type  = fatigue_dict.get('degrad_type', 'asymptotic')
+    alpha_T_base = fatigue_dict.get('alpha_T', 1.0)
+
+    # ── Direction 6.1: 空间调制 α_T ─────────────────────────────────────────
+    # 裂尖附近（r≪r_T）α_T 显著降低；远场（r≫r_T）回到 α_T_base。
+    sp_cfg = fatigue_dict.get('spatial_alpha_T', {})
+    if sp_cfg.get('enable', False) and elem_centroids is not None:
+        beta  = sp_cfg.get('beta', 0.0)
+        r_T   = sp_cfg.get('r_T', 0.1)
+        x_tip = sp_cfg.get('x_tip', 0.0)
+        y_tip = sp_cfg.get('y_tip', 0.0)
+        dx    = elem_centroids[:, 0] - x_tip
+        dy    = elem_centroids[:, 1] - y_tip
+        r     = torch.sqrt(dx * dx + dy * dy + 1e-12)
+        alpha_T = alpha_T_base * (1.0 - beta * torch.exp(-r / r_T))
+    else:
+        alpha_T = torch.full_like(hist_fat, float(alpha_T_base))
 
     f    = torch.ones_like(hist_fat)   # 默认 f = 1（ᾱ ≤ α_T 区域）
     mask = hist_fat > alpha_T          # 需要退化的元素
@@ -107,7 +133,7 @@ def compute_fatigue_degrad(hist_fat, fatigue_dict):
     if degrad_type == 'asymptotic':
         # ── Carrara Eq.41：渐近型，永远 > 0 ─────────────────────────────────
         # f = [2α_T / (ᾱ + α_T)]²
-        f[mask] = (2.0 * alpha_T / (hist_fat[mask] + alpha_T)).pow(2)
+        f[mask] = (2.0 * alpha_T[mask] / (hist_fat[mask] + alpha_T[mask])).pow(2)
 
     elif degrad_type == 'logarithmic':
         # ── Carrara Eq.42：对数型，有限步归零 ────────────────────────────────
@@ -117,7 +143,7 @@ def compute_fatigue_degrad(hist_fat, fatigue_dict):
         upper = alpha_T * (10.0 ** (1.0 / kappa))   # ᾱ 达到此值时 f → 0
         mask1 = mask & (hist_fat <= upper)
         mask2 = hist_fat > upper
-        f[mask1] = (1.0 - kappa * torch.log10(hist_fat[mask1] / alpha_T)).pow(2)
+        f[mask1] = (1.0 - kappa * torch.log10(hist_fat[mask1] / alpha_T[mask1])).pow(2)
         f[mask2] = 0.0                               # 完全疲劳退化
 
     else:
