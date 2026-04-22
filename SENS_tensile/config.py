@@ -142,16 +142,17 @@ fatigue_dict = {
     # ── 方向6.1：空间调制 α_T（Spatial α_T Modulation）─────────────────────
     # 原理：α_T_local(r) = α_T_base · (1 - β · exp(-r/r_T))
     #   裂尖单元 α_T 降低 → 更早进入 f<1 退化区 → 应力重分布正反馈推高 α_max
-    # 目的：闭合 PIDL vs FEM 的 α_max 100× gap
-    #   （Dir 4/5 已证输入/输出端谱扩展均无法突破，瓶颈在 fatigue evolution 本身）
-    # β=0.5, r_T=0.1 依据：
-    #   β=0.5 → 裂尖 α_T_local = 0.25（baseline 一半），数值安全，幅度明显
-    #   r_T=0.1 = 10·l₀，与 Direction 5 ansatz_dict.r_cutoff 同尺度
+    #
+    # ★ Dir 6.1-narrow (Apr 21 2026): β=0.8, r_T=0.03（单元尺度调制）
+    #   第一次尝试 β=0.5, r_T=0.1 (NEGATIVE: ᾱ_max=7.04 < baseline 9.09, N_f=76)
+    #   假设：r_T=0.1 覆盖 ≈200 元素 → wide-but-shallow 带 → 裂缝扩展快
+    #   现在 r_T=0.03 ≈ 3·l₀ ≈ 1-3 个 mesh 元素 → 模拟 FEM 单点奇异
+    #   β=0.8 → 裂尖 α_T_local = 0.5·(1-0.8) = 0.10（强力 aggressive）
     # enable=False 时 α_T 退回 scalar α_T_base，完全等价 baseline
     "spatial_alpha_T": {
         "enable" : True,
-        "beta"   : 0.5,              # 调制深度 ∈ [0, 1]
-        "r_T"    : 0.1,              # 衰减长度（≈ 10·l₀，与 Enriched χ 同尺度）
+        "beta"   : 0.8,              # 调制深度 ∈ [0, 1]（narrow 版 aggressive）
+        "r_T"    : 0.03,             # 衰减长度（≈ 3·l₀，元素尺度）
         "x_tip"  : 0.0,              # 固定裂尖 x（SENT 预裂缝 tip，与 ansatz_dict 一致）
         "y_tip"  : 0.0,              # 固定裂尖 y
     },

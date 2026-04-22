@@ -61,7 +61,9 @@ def find_fem_csv(umax: str) -> Path | None:
 
 
 def find_pidl_dir(umax: str, flavor: str) -> Path | None:
-    """flavor in {'baseline', 'williams_v3', 'williams_v4_current'}"""
+    """flavor in {'baseline', 'williams_v3', 'williams_v4', 'williams_v4_current',
+                  'fourier_v1', 'enriched_v1',
+                  'spAlphaT_broad', 'spAlphaT_narrow'}"""
     base = HERE
     umax_tag = f"Umax{umax}"
     dirs = [d for d in base.iterdir() if d.is_dir() and umax_tag in d.name
@@ -84,6 +86,15 @@ def find_pidl_dir(umax: str, flavor: str) -> Path | None:
         # ★ Direction 5: Enriched Ansatz Mode-I output enrichment
         # (c·χ(r)·F^I added to NN displacement output, x_tip FIXED at (0,0))
         matches = [d for d in dirs if "enriched_ansatz_modeI_v1" in d.name]
+    elif flavor == "spAlphaT_broad":
+        # ★ Direction 6.1 broad (β=0.5, r_T=0.1)
+        # NEGATIVE: ᾱ_max=7.04 < baseline 9.09, N_f=76 < 80
+        matches = [d for d in dirs if "spAlphaT_b0.5_r0.1" in d.name]
+    elif flavor == "spAlphaT_narrow":
+        # ★ Direction 6.1-narrow (β=0.8, r_T=0.03, element-scale)
+        # NEGATIVE-but-better: ᾱ_max=7.55 (still < 9.09), N_f=80 ✓ recovered,
+        # Peak Kt=30.2 top-10 / 35.2 max (close to Enriched 28.9)
+        matches = [d for d in dirs if "spAlphaT_b0.8_r0.03" in d.name]
     else:
         matches = []
     if not matches:
@@ -566,7 +577,9 @@ def main() -> int:
                           ("Williams v4", "williams_v4"),
                           ("Williams v4 (current)", "williams_v4_current"),
                           ("Fourier v1", "fourier_v1"),
-                          ("Enriched v1", "enriched_v1")]:   # ★ Direction 5
+                          ("Enriched v1", "enriched_v1"),         # ★ Direction 5
+                          ("Dir 6.1 broad",  "spAlphaT_broad"),   # ★ Dir 6.1 broad
+                          ("Dir 6.1 narrow", "spAlphaT_narrow")]: # ★ Dir 6.1 narrow
         d = find_pidl_dir(args.umax, flavor)
         if d is None:
             print(f"⚠️  {label}: dir not found (flavor={flavor})")
