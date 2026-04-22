@@ -254,7 +254,7 @@ def stats_f(f: np.ndarray) -> str:
 # --- Figure generators -------------------------------------------------------
 
 def figure_structural_d(fem_nodes, fem_tri, fem, pidl_entries, outpath):
-    fig, axes = plt.subplots(2, 2, figsize=(9.8, 9.2))
+    fig, axes = plt.subplots(2, 3, figsize=(13.5, 9.2))   # 6 panels: FEM + 5 PIDL
     ax_list = axes.flatten()
     tpc = None
 
@@ -288,7 +288,7 @@ def figure_structural_d(fem_nodes, fem_tri, fem, pidl_entries, outpath):
 
 
 def figure_fatigue_f(fem_nodes, fem_tri, fem, pidl_entries, outpath):
-    fig, axes = plt.subplots(2, 2, figsize=(9.8, 9.2))
+    fig, axes = plt.subplots(2, 3, figsize=(13.5, 9.2))   # 6 panels: FEM + 5 PIDL
     ax_list = axes.flatten()
     tpc = None
 
@@ -330,11 +330,12 @@ def main() -> int:
 
     print("Finding PIDL archives ...")
     specs = [
-        ("Baseline",        baseline_dir(),                              80),
-        ("Williams v4",     find_archive("williams_std_v4_"),            None),
-        ("Enriched v1",     find_archive("enriched_ansatz_modeI_v1"),    None),
-        ("Dir 6.1 broad",   find_archive("spAlphaT_b0.5_r0.1"),          None),   # ★ Dir 6.1 broad
-        ("Dir 6.1 narrow",  find_archive("spAlphaT_b0.8_r0.03"),         None),   # ★ Dir 6.1-narrow
+        ("Baseline",        baseline_dir(),                                          80),
+        ("Williams v4",     find_archive("williams_std_v4_"),                        None),
+        ("Enriched v1",     find_archive("enriched_ansatz_modeI_v1"),                None),
+        # ★ Dir 6.1: 加 "_cycle" suffix 过滤掉 config-import 产生的空 stub dir
+        ("Dir 6.1 broad",   find_archive("spAlphaT_b0.5_r0.1_cycle"),                None),
+        ("Dir 6.1 narrow",  find_archive("spAlphaT_b0.8_r0.03_cycle"),               None),
     ]
     pidl_entries = []
     for label, d, nf in specs:
