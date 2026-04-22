@@ -85,11 +85,24 @@ def fem_load_nf() -> dict:
 
 # --- PIDL --------------------------------------------------------------------
 
-def carrara_f(alpha_bar: np.ndarray, alpha_T: float) -> np.ndarray:
+def carrara_f(alpha_bar: np.ndarray, alpha_T) -> np.ndarray:
+    """Carrara asymptotic f = [2α_T/(ᾱ+α_T)]² ; supports scalar or per-element α_T."""
+    alpha_T_arr = np.broadcast_to(np.asarray(alpha_T, dtype=alpha_bar.dtype),
+                                  alpha_bar.shape)
     out = np.ones_like(alpha_bar)
-    mask = alpha_bar > alpha_T
-    out[mask] = (2.0 * alpha_T / (alpha_bar[mask] + alpha_T)) ** 2
+    mask = alpha_bar > alpha_T_arr
+    out[mask] = (2.0 * alpha_T_arr[mask] / (alpha_bar[mask] + alpha_T_arr[mask])) ** 2
     return out
+
+
+def _parse_spalphaT_params(dname: str) -> tuple[float, float, float, float] | None:
+    """Parse (β, r_T, x_tip, y_tip) from `_spAlphaT_b{β}_r{r_T}` dir-name tag.
+    tip fixed at (0,0) per config. Returns None if tag absent."""
+    import re
+    m = re.search(r"spAlphaT_b([\d.]+)_r([\d.]+)", dname)
+    if m is None:
+        return None
+    return float(m.group(1)), float(m.group(2)), 0.0, 0.0
 
 
 def pidl_reconstruct(archive_dir: Path, cycle: int) -> dict:
@@ -160,9 +173,23 @@ def pidl_reconstruct(archive_dir: Path, cycle: int) -> dict:
     ckpt = torch.load(str(best / f"checkpoint_step_{cycle}.pt"),
                       map_location="cpu", weights_only=False)
     hist_fat = ckpt["hist_fat"].cpu().numpy().flatten()
-    f_vals = carrara_f(hist_fat, ALPHA_T)
 
     T_np = T_conn.cpu().numpy() if isinstance(T_conn, torch.Tensor) else T_conn
+
+    # ★ Direction 6.1: spatial α_T modulation —— per-element α_T from dir-name params
+    sp_params = _parse_spalphaT_params(dname)
+    if sp_params is not None:
+        beta, r_T, x_tip, y_tip = sp_params
+        nodes_np = inp.detach().cpu().numpy()
+        cx = nodes_np[T_np[:, 0], 0] + nodes_np[T_np[:, 1], 0] + nodes_np[T_np[:, 2], 0]
+        cy = nodes_np[T_np[:, 0], 1] + nodes_np[T_np[:, 1], 1] + nodes_np[T_np[:, 2], 1]
+        cx = cx / 3.0; cy = cy / 3.0
+        r_elem = np.sqrt((cx - x_tip) ** 2 + (cy - y_tip) ** 2 + 1e-12)
+        alpha_T_arr = ALPHA_T * (1.0 - beta * np.exp(-r_elem / r_T))
+        f_vals = carrara_f(hist_fat, alpha_T_arr)
+    else:
+        f_vals = carrara_f(hist_fat, ALPHA_T)
+
     d_pidl_elem = alpha_node_np[T_np].mean(axis=1)      # (n_elem,)
 
     return {
@@ -303,9 +330,11 @@ def main() -> int:
 
     print("Finding PIDL archives ...")
     specs = [
-        ("Baseline",    baseline_dir(),                              80),
-        ("Williams v4", find_archive("williams_std_v4_"),            None),
-        ("Enriched v1", find_archive("enriched_ansatz_modeI_v1"),    None),
+        ("Baseline",        baseline_dir(),                              80),
+        ("Williams v4",     find_archive("williams_std_v4_"),            None),
+        ("Enriched v1",     find_archive("enriched_ansatz_modeI_v1"),    None),
+        ("Dir 6.1 broad",   find_archive("spAlphaT_b0.5_r0.1"),          None),   # ★ Dir 6.1 broad
+        ("Dir 6.1 narrow",  find_archive("spAlphaT_b0.8_r0.03"),         None),   # ★ Dir 6.1-narrow
     ]
     pidl_entries = []
     for label, d, nf in specs:
