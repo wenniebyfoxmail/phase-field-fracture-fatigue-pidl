@@ -254,7 +254,7 @@ def stats_f(f: np.ndarray) -> str:
 # --- Figure generators -------------------------------------------------------
 
 def figure_structural_d(fem_nodes, fem_tri, fem, pidl_entries, outpath):
-    fig, axes = plt.subplots(2, 3, figsize=(13.5, 9.2))   # 6 panels: FEM + 5 PIDL
+    fig, axes = plt.subplots(2, 4, figsize=(17.5, 9.2))   # 8 panels: FEM + 6 PIDL + 1 empty
     ax_list = axes.flatten()
     tpc = None
 
@@ -288,7 +288,7 @@ def figure_structural_d(fem_nodes, fem_tri, fem, pidl_entries, outpath):
 
 
 def figure_fatigue_f(fem_nodes, fem_tri, fem, pidl_entries, outpath):
-    fig, axes = plt.subplots(2, 3, figsize=(13.5, 9.2))   # 6 panels: FEM + 5 PIDL
+    fig, axes = plt.subplots(2, 4, figsize=(17.5, 9.2))   # 8 panels: FEM + 6 PIDL + 1 empty
     ax_list = axes.flatten()
     tpc = None
 
@@ -335,7 +335,10 @@ def main() -> int:
         ("Enriched v1",     find_archive("enriched_ansatz_modeI_v1"),                None),
         # ★ Dir 6.1: 加 "_cycle" suffix 过滤掉 config-import 产生的空 stub dir
         ("Dir 6.1 broad",   find_archive("spAlphaT_b0.5_r0.1_cycle"),                None),
-        ("Dir 6.1 narrow",  find_archive("spAlphaT_b0.8_r0.03_cycle"),               None),
+        # narrow carrara: require "carrara" to exclude Golahmar version
+        ("Dir 6.1 narrow",  find_archive("carrara_asy_aT0.5_N300_R0.0_Umax0.12_spAlphaT_b0.8_r0.03_cycle"),  None),
+        # ★ Dir 6.2: Golahmar + narrow spatial α_T (PIDL Peak Kt record 39+)
+        ("Dir 6.2 Golahmar+narrow", find_archive("golahmar_asy_aT0.5_N300_R0.0_Umax0.12_spAlphaT_b0.8_r0.03_cycle"), None),
     ]
     pidl_entries = []
     for label, d, nf in specs:
