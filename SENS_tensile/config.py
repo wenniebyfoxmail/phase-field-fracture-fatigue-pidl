@@ -93,11 +93,10 @@ fatigue_dict = {
     "R_ratio"      : 0.0,            # 应力比 R = σ_min/σ_max；R=0 → 拉-拉循环
 
     # ── 历史变量累积策略 ─────────────────────────────────────────────────────
-    "accum_type"   : "golahmar",     # 'carrara'  → Carrara Eq.39：线性累积 Δᾱ = H(Δψ⁺)·Δψ⁺
+    "accum_type"   : "carrara",      # 'carrara'  → Carrara Eq.39：线性累积 Δᾱ = H(Δψ⁺)·Δψ⁺
                                      # 'golahmar' → Golahmar Eq.31：幂律累积
-                                     # ★ Dir 6.2 (Apr 22): Golahmar + narrow spAlphaT (β=0.8, r_T=0.03)
-                                     #   测试 Golahmar Δᾱ = (ψ⁺/α_n)^(n-1)·Δψ⁺ 能否突破
-                                     #   AT1+Carrara 的 ᾱ_max ceiling (~8)
+                                     # ★ E2 (Apr 23): switched back to carrara for ψ⁺ hack sanity
+                                     #   Dir 6.2 golahmar+spAlphaT archived (N_f=154, ᾱ_max=10.66 ceiling)
 
     # Golahmar 幂律参数（accum_type='golahmar' 时有效）
     "n_power"      : 2.0,            # 幂律指数 n；控制 S-N 斜率（n=1 退化为 Carrara）
@@ -150,7 +149,7 @@ fatigue_dict = {
     # 用法：enable=True 启动放大；保持其他 config 不变（Dir 6 可以同时测试）
     # 建议先用 cycle 50 baseline checkpoint 做 warm-start 测试
     "psi_hack": {
-        "enable"    : False,         # ★ E2: True 开启 ψ⁺ 裂尖放大
+        "enable"    : False,         # ★ E2 experiment concluded (Apr 24, archive _cycle91_Nf81_real_fracture); 默认关闭
         "x_tip"     : 0.0,           # 裂尖 x（与 ansatz_dict 一致）
         "y_tip"     : 0.0,           # 裂尖 y
         "r_hack"    : 0.02,          # Gaussian 衰减长度（≈ 2·l₀ ≈ 元素尺度）
@@ -168,7 +167,7 @@ fatigue_dict = {
     #   β=0.8 → 裂尖 α_T_local = 0.5·(1-0.8) = 0.10（强力 aggressive）
     # enable=False 时 α_T 退回 scalar α_T_base，完全等价 baseline
     "spatial_alpha_T": {
-        "enable" : True,
+        "enable" : False,            # ★ E2 (Apr 23): disabled to isolate ψ⁺ hack effect
         "beta"   : 0.8,              # 调制深度 ∈ [0, 1]（narrow 版 aggressive）
         "r_T"    : 0.03,             # 衰减长度（≈ 3·l₀，元素尺度）
         "x_tip"  : 0.0,              # 固定裂尖 x（SENT 预裂缝 tip，与 ansatz_dict 一致）
