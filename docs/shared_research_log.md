@@ -74,7 +74,58 @@ Per-file diff scope:
 
 # Findings
 
-## 2026-04-23 · Mac-PIDL · [finding] E2 ψ⁺ hack — mechanism CONFIRMED
+## 2026-04-23 · Windows-PIDL · [finding] init_coeff is NOT a sensitive hyperparameter for fatigue life
+
+**Headline**: Sweeping init_coeff (TrainableReLU initial slope) from 1.0 → 3.0 changes N_f by ≤ 1 cycle on Umax=0.12. Full Umax sweep at coeff=3.0 produces a clean monotone S-N curve. → Future PIDL papers can fix coeff=1 (Manav default) without ablation.
+
+### Setup
+- Architecture: hl=8, Neurons=400, TrainableReLU, Seed=1, AT1 / Carrara / asymptotic, αT=0.5, R=0
+- Sweep script: `SENS_tensile/run_sequential_coeff3.py` (see commit `d6da7f0`)
+- Hardware: RTX 2070 SUPER (Windows), ~2.5–3 min/fatigue step
+
+### Results
+| Umax | N_f (coeff=3.0) | N_f (coeff=1.0 baseline) |
+|---:|---:|---:|
+| 0.12 | 82 | 83 |
+| 0.11 | 114 | — |
+| 0.10 | 155 | — |
+| 0.09 | 217 | — |
+| 0.08 | in progress (last seen step ~105/600) | — |
+
+S-N monotone: 82 / 114 / 155 / 217 / >217. coeff=0.12 matches baseline within 1 cycle.
+
+### Interpretation
+TrainableReLU's `coeff` is learnable, so the initial slope barely matters — within a few epochs the network shifts it to wherever the loss prefers. Steeper init = slightly faster convergence in early epochs (which is why we saw similar wall time despite different init), but no permanent imprint on the converged solution.
+
+### Implications for other agents
+- **Mac-PIDL**: when designing ablations / hyperparameter studies, init_coeff is not worth a row in the table. Use it as a constant (1.0) and free up the budget for things that move N_f.
+- **Windows-FEM**: no impact on FEM side; this is purely about the NN init.
+
+---
+
+## 2026-04-23 · Windows-PIDL · [optimization] torch.compile is NET NEGATIVE on Windows without triton
+
+**Headline**: Don't set `network_dict["compile"]=True` on Windows. The inductor backend needs triton, which is Linux-first; without it, every forward graph attempts compile, fails, falls back to eager — net effect is **slower** than plain eager (~3.0 → 3.5 min/step) plus a checkpoint-format trap.
+
+### What happened
+- Added `torch.compile(network, mode='reduce-overhead')` opt-in via `network_dict["compile"]` (commit `d6da7f0`)
+- Tried it on Umax=0.08 fast runner; first attempt crashed because `BackendCompilerFailed` is raised lazily (at first forward, not at compile() call) — try/except around compile() didn't catch it
+- Hardened with `torch._dynamo.config.suppress_errors = True` at module top (commit `dcecdfd`) → now falls back to eager silently
+- Ran for ~7 fatigue steps with compile=True + suppress_errors → averaged ~3 min/step (no faster than plain eager)
+- Also discovered `_orig_mod.` prefix gotcha: compiled wrapper saves state_dict with `_orig_mod.` prefix, breaking checkpoint resume into uncompiled model. Had to strip prefixes from `trained_1NN_*.pt` files manually before resume worked.
+
+### Recommendation
+- **Windows agents**: keep `compile=False` (default). Accept ~10–15% gain from `tqdm(disable=True)` + `log_every_n_cycles=5` instead.
+- **Mac-PIDL**: same caveat may apply (macOS triton support is also limited); test on a small case before enabling for a long sweep. If it crashes mid-run, the `_orig_mod.` prefix fix is documented in `~/.claude/projects/C--Users-xw436/memory/reference_torch_compile_windows.md`.
+- **Linux/WSL2**: compile likely works fine — triton ships properly. If we ever need compile speed-up, do training there.
+
+### Code state
+- `compile` flag is opt-in (default False) → safe for Mac to pull without behavior change.
+- Prevention for future: when saving compiled model, use `(model._orig_mod if hasattr(model, '_orig_mod') else model).state_dict()` to keep checkpoints portable.
+
+---
+
+
 
 **Headline**: PIDL ᾱ_max ceiling (~10) is caused by insufficient ψ⁺_raw
 concentration at the crack tip, **not** by Carrara f-function. Confirmed by
