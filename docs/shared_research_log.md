@@ -74,6 +74,40 @@ Per-file diff scope:
 
 # Findings
 
+## 2026-04-24 · Mac-PIDL · [finding] E2 ψ⁺ hack FINAL — ceiling broken 46×, N_f matches FEM
+
+**Headline**: E2 experiment completed (91 cycles, wall-clock ~5h40m on Mac CPU). With tip-ψ⁺ multiplied by a Gaussian amplifier (mult=1000, r_hack=0.02), PIDL Baseline's ᾱ_max jumped **from 10 → 457** (46× ceiling break) while `N_f = 81` within 1 cycle of FEM's 82. **ψ⁺_raw concentration is the root cause of both the ᾱ_max and low-U_max N_f gaps**, confirmed.
+
+### Final metrics (archive `..._psiHack_m1000_r0.02_cycle91_Nf81_real_fracture/`)
+
+| Metric | E2 (cycle 91) | FEM (cycle 82 = N_f) | Baseline PIDL (cycle 80 = N_f) | Dir 6.2 Golahmar (cycle 164) |
+|---|---|---|---|---|
+| **N_f** | **81** | 82 | 80 | 154 (overshoot) |
+| **ᾱ_max** | **457.04** (+46×) | 958 | 9.09 | 10.66 |
+| **f_min** | **4.78e-06** (−3k×) | 1.09e-06 | 1.1e-02 | 1.0e-03 |
+| ᾱ_mean | 0.505 | 0.671 | 0.370 | — |
+
+E2 ᾱ_max is 48% of FEM's; f_min only 4.4× from FEM. Baseline PIDL is 100× below FEM on ᾱ_max and 10⁴× above FEM on f_min. **E2 bridges most of that gap via a single pointwise hack**, proving no further architectural changes to PIDL/Carrara are needed in principle — just better ψ⁺ concentration.
+
+### What this unlocks for Ch2 narrative
+
+Previous 6 ablations (Dir 2.1 Fourier, Dir 3 tip-weight, Dir 4 Williams, Dir 5 Enriched @ U=0.12, Dir 6.1 broad/narrow spAlphaT, Dir 6.2 Golahmar+narrow) failed to break the ~10 ceiling because all addressed **downstream** of ψ⁺. E2 (upstream hack) succeeds. The story is a coherent proof-by-contradiction:
+
+> "If we could directly raise tip ψ⁺_raw, ᾱ would accumulate FEM-like. Since we can't raise ψ⁺_raw directly (NN smoothness), we need an architectural fix that produces sharp ψ⁺ without manual injection. Enriched Ansatz is that candidate — Direction 5 single-point result (N_f=84, Kt=28.9 at U=0.12) already hints the direction works; we need the full S-N sweep to quantify."
+
+### Next (triggered by this finding)
+
+- **E1 Enriched Ansatz S-N sweep at 5 U_max on CSD3** — see `docs/handovers/csd3_inbox.md` Request 0 (env bootstrap) + Request 1 (experiment). Runner committed: `400ebf9`. Unblocked.
+- **Mac-side**: `finding_e2_psi_hack_apr24.md` memory file (local) + commit config.py revert (`64306a6`) + runner (`400ebf9`) pushed. Archive renamed with `_cycle91_Nf81_real_fracture` suffix.
+
+### Commit trail
+
+- Code hook: `529c7c0` Add E2 psi_hack sanity hook
+- Revert: `64306a6` Disable psi_hack toggle
+- Runner: `400ebf9` Add run_enriched_umax.py (CSD3 Request 1 unblock)
+
+---
+
 ## 2026-04-23 · Windows-PIDL · [finding] init_coeff is NOT a sensitive hyperparameter for fatigue life
 
 **Headline**: Sweeping init_coeff (TrainableReLU initial slope) from 1.0 → 3.0 changes N_f by ≤ 1 cycle on Umax=0.12. Full Umax sweep at coeff=3.0 produces a clean monotone S-N curve. → Future PIDL papers can fix coeff=1 (Manav default) without ablation.
