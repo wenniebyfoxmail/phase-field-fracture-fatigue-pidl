@@ -63,7 +63,8 @@ def find_fem_csv(umax: str) -> Path | None:
 def find_pidl_dir(umax: str, flavor: str) -> Path | None:
     """flavor in {'baseline', 'williams_v3', 'williams_v4', 'williams_v4_current',
                   'fourier_v1', 'enriched_v1',
-                  'spAlphaT_broad', 'spAlphaT_narrow'}"""
+                  'spAlphaT_broad', 'spAlphaT_narrow',
+                  'golahmar_narrow'}"""
     base = HERE
     umax_tag = f"Umax{umax}"
     dirs = [d for d in base.iterdir() if d.is_dir() and umax_tag in d.name
@@ -94,7 +95,16 @@ def find_pidl_dir(umax: str, flavor: str) -> Path | None:
         # ★ Direction 6.1-narrow (β=0.8, r_T=0.03, element-scale)
         # NEGATIVE-but-better: ᾱ_max=7.55 (still < 9.09), N_f=80 ✓ recovered,
         # Peak Kt=30.2 top-10 / 35.2 max (close to Enriched 28.9)
-        matches = [d for d in dirs if "spAlphaT_b0.8_r0.03" in d.name]
+        # Exclude Golahmar: match ONLY carrara accumulator
+        matches = [d for d in dirs if "spAlphaT_b0.8_r0.03" in d.name
+                   and "carrara" in d.name]
+    elif flavor == "golahmar_narrow":
+        # ★ Direction 6.2: Golahmar + narrow spatial α_T
+        # MIXED STRONG-POSITIVE: N_f=154 (almost 2× baseline 80!), ᾱ_max=10.87
+        # (+5% vs Enriched 10.33), Peak Kt=39.08 top-10 ⭐⭐ PIDL all-time record
+        # f_mean=0.95 (highest localization), f_min=0.0010
+        matches = [d for d in dirs if "golahmar" in d.name
+                   and "spAlphaT_b0.8_r0.03" in d.name]
     else:
         matches = []
     if not matches:
@@ -579,7 +589,8 @@ def main() -> int:
                           ("Fourier v1", "fourier_v1"),
                           ("Enriched v1", "enriched_v1"),         # ★ Direction 5
                           ("Dir 6.1 broad",  "spAlphaT_broad"),   # ★ Dir 6.1 broad
-                          ("Dir 6.1 narrow", "spAlphaT_narrow")]: # ★ Dir 6.1 narrow
+                          ("Dir 6.1 narrow", "spAlphaT_narrow"),  # ★ Dir 6.1 narrow
+                          ("Dir 6.2 Golahmar+narrow", "golahmar_narrow")]:  # ★ Dir 6.2
         d = find_pidl_dir(args.umax, flavor)
         if d is None:
             print(f"⚠️  {label}: dir not found (flavor={flavor})")
