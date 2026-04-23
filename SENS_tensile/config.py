@@ -93,8 +93,11 @@ fatigue_dict = {
     "R_ratio"      : 0.0,            # 应力比 R = σ_min/σ_max；R=0 → 拉-拉循环
 
     # ── 历史变量累积策略 ─────────────────────────────────────────────────────
-    "accum_type"   : "carrara",      # 'carrara'  → Carrara Eq.39：线性累积 Δᾱ = H(Δψ⁺)·Δψ⁺
+    "accum_type"   : "golahmar",     # 'carrara'  → Carrara Eq.39：线性累积 Δᾱ = H(Δψ⁺)·Δψ⁺
                                      # 'golahmar' → Golahmar Eq.31：幂律累积
+                                     # ★ Dir 6.2 (Apr 22): Golahmar + narrow spAlphaT (β=0.8, r_T=0.03)
+                                     #   测试 Golahmar Δᾱ = (ψ⁺/α_n)^(n-1)·Δψ⁺ 能否突破
+                                     #   AT1+Carrara 的 ᾱ_max ceiling (~8)
 
     # Golahmar 幂律参数（accum_type='golahmar' 时有效）
     "n_power"      : 2.0,            # 幂律指数 n；控制 S-N 斜率（n=1 退化为 Carrara）
