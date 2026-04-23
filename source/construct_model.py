@@ -1,4 +1,5 @@
 import torch
+import torch._dynamo   # ★ 顶层导入，避免函数内 import 触发 UnboundLocalError
 from pff_model import PFFModel
 from material_properties import MaterialProperties
 from network import NeuralNet, init_xavier
@@ -40,12 +41,14 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
     init_xavier(network)
 
     # ★ 速度优化：torch.compile（PyTorch ≥ 2.0），减少 Python launch overhead
-    # 默认关闭以保兼容；TrainableReLU/SteepReLU 含可训练参数，编译可能 fallback
+    # 编译是惰性的（首次 forward 才真编译）→ 必须设 dynamo suppress_errors
+    # 否则 inductor backend 缺 triton（Windows 默认无）会硬崩
     if network_dict.get("compile", False):
         try:
+            torch._dynamo.config.suppress_errors = True   # 编译失败时 fallback 到 eager
             network = torch.compile(network, mode='reduce-overhead')
-            print(f"[construct_model] torch.compile enabled (mode=reduce-overhead)")
+            print(f"[construct_model] torch.compile enabled (suppress_errors=True for fallback)")
         except Exception as e:
-            print(f"[construct_model] torch.compile failed, fallback to eager: {e}")
+            print(f"[construct_model] torch.compile setup failed, eager mode: {e}")
 
     return pffmodel, matprop, network
