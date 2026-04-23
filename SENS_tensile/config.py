@@ -142,6 +142,21 @@ fatigue_dict = {
         "start_cycle" : 1,           # 从第几圈开始加权（0 = 从预训练完成后第1圈就加权）
     },
 
+    # ── E2 sanity hack (Apr 23 2026): ψ⁺ 裂尖放大 ──────────────────────────
+    # 目的：验证 ψ⁺_raw 集中能力是否是 ᾱ_max ceiling 根因
+    # 在 get_psi_plus_per_elem 输出上乘 Gaussian 放大乘子，
+    # 模拟 FEM mesh 分辨率允许的单元级应力集中
+    #   scale(r) = 1 + (mult − 1) · exp(−(r/r_hack)²)
+    # 用法：enable=True 启动放大；保持其他 config 不变（Dir 6 可以同时测试）
+    # 建议先用 cycle 50 baseline checkpoint 做 warm-start 测试
+    "psi_hack": {
+        "enable"    : False,         # ★ E2: True 开启 ψ⁺ 裂尖放大
+        "x_tip"     : 0.0,           # 裂尖 x（与 ansatz_dict 一致）
+        "y_tip"     : 0.0,           # 裂尖 y
+        "r_hack"    : 0.02,          # Gaussian 衰减长度（≈ 2·l₀ ≈ 元素尺度）
+        "multiplier": 1000.0,        # 裂尖中心放大倍数（FEM tip ψ⁺ ≈ 10⁴ × PIDL ~0.4）
+    },
+
     # ── 方向6.1：空间调制 α_T（Spatial α_T Modulation）─────────────────────
     # 原理：α_T_local(r) = α_T_base · (1 - β · exp(-r/r_T))
     #   裂尖单元 α_T 降低 → 更早进入 f<1 退化区 → 应力重分布正反馈推高 α_max
@@ -290,6 +305,13 @@ _spAlphaT_tag = (
     if _sp_cfg.get('enable', False) else ""
 )
 
+# ★ E2 sanity hack (Apr 23 2026): ψ⁺ 放大标签
+_ph_cfg = _fat.get('psi_hack', {})
+_psiHack_tag = (
+    f"_psiHack_m{int(_ph_cfg.get('multiplier', 1000))}_r{_ph_cfg.get('r_hack', 0.02)}"
+    if _ph_cfg.get('enable', False) else ""
+)
+
 model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             '_Neurons_'+str(network_dict["neurons"])+
                             '_activation_'+network_dict["activation"]+
@@ -300,7 +322,8 @@ model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             _fatigue_tag +
                             _williams_tag +        # ★ Direction 4 标签
                             _ansatz_tag +          # ★ Direction 5 标签
-                            _spAlphaT_tag)         # ★ Direction 6.1 标签
+                            _spAlphaT_tag +        # ★ Direction 6.1 标签
+                            _psiHack_tag)          # ★ E2 sanity hack 标签
 model_path.mkdir(parents=True, exist_ok=True)
 trainedModel_path = model_path/Path('best_models/')
 trainedModel_path.mkdir(parents=True, exist_ok=True)

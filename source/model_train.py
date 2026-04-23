@@ -444,12 +444,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # 计算当前步各单元退化拉伸应变能密度 ψ⁺
             # 数值梯度模式（T_conn is not None）：不需要 inp.requires_grad
             # 自动微分模式（T_conn is None）    ：需要 inp.requires_grad
+            # ★ E2 sanity hack (Apr 23 2026): 如果 fatigue_dict 里有 psi_hack 子 dict，透传
+            _psi_hack = fatigue_dict.get('psi_hack', None)
             if T_conn is not None:
                 with torch.no_grad():
                     u_eval, v_eval, alpha_eval = field_comp.fieldCalculation(inp)
                 psi_plus_elem = get_psi_plus_per_elem(
                     inp, u_eval, v_eval, alpha_eval,
-                    matprop, pffmodel, area_T, T_conn
+                    matprop, pffmodel, area_T, T_conn,
+                    psi_hack_dict=_psi_hack
                 )
             else:
                 # 自动微分模式：需要 inp 开启梯度
@@ -457,7 +460,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 u_eval, v_eval, alpha_eval = field_comp.fieldCalculation(inp_tmp)
                 psi_plus_elem = get_psi_plus_per_elem(
                     inp_tmp, u_eval, v_eval, alpha_eval,
-                    matprop, pffmodel, area_T, T_conn=None
+                    matprop, pffmodel, area_T, T_conn=None,
+                    psi_hack_dict=_psi_hack
                 )
 
             # ★ Direction 4: 用 ψ⁺ 重心估计裂尖坐标 → 更新 field_comp.x_tip

@@ -166,7 +166,8 @@ def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, are
 
 
 # ★ 新增函数：计算各元素退化拉伸应变能密度，供疲劳历史变量更新使用
-def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn=None):
+def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn=None,
+                          psi_hack_dict=None):
     """
     ★ 新增函数（Manav 原始代码中不存在）
 
@@ -179,6 +180,10 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
     ------
     inp, u, v, alpha : 同 compute_energy
     matprop, pffmodel, area_elem, T_conn : 同 compute_energy
+    psi_hack_dict : dict or None (★ E2 sanity hack, Apr 23 2026)
+        若非 None 且 enable=True，在裂尖邻域用 Gaussian 乘以 multiplier 放大 ψ⁺_elem，
+        模拟 FEM-like 应力集中。keys: {enable, x_tip, y_tip, r_hack, multiplier}。
+        默认 None 时行为与原始一致。
 
     返回：
     ------
@@ -199,6 +204,22 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
     # Carrara Eq.39 要求累积退化能 g(α)·ψ⁺_0，避免裂尖奇异性
     g_alpha, _ = pffmodel.Edegrade(alpha_elem)
     psi_plus_elem = (g_alpha * E_el_p).detach()
+
+    # ★ E2 sanity hack (Apr 23 2026) — 验证 ψ⁺ 集中是否是 ᾱ_max ceiling 根因
+    # 在裂尖邻域用 Gaussian 衰减乘子放大 ψ⁺，模拟 FEM 的应力集中能力
+    if psi_hack_dict is not None and psi_hack_dict.get('enable', False) \
+            and T_conn is not None:
+        x_tip = float(psi_hack_dict.get('x_tip', 0.0))
+        y_tip = float(psi_hack_dict.get('y_tip', 0.0))
+        r_hack = float(psi_hack_dict.get('r_hack', 0.02))
+        mult = float(psi_hack_dict.get('multiplier', 1000.0))
+        # element centroids
+        cx = (inp[T_conn[:, 0], 0] + inp[T_conn[:, 1], 0] + inp[T_conn[:, 2], 0]) / 3.0
+        cy = (inp[T_conn[:, 0], 1] + inp[T_conn[:, 1], 1] + inp[T_conn[:, 2], 1]) / 3.0
+        r_elem = torch.sqrt((cx - x_tip) ** 2 + (cy - y_tip) ** 2 + 1e-12)
+        # 平滑 Gaussian 放大: 中心 mult，远场 1，半峰在 r_hack
+        scale = 1.0 + (mult - 1.0) * torch.exp(-(r_elem / r_hack) ** 2)
+        psi_plus_elem = (psi_plus_elem * scale).detach()
     return psi_plus_elem
 
 
