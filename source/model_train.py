@@ -174,7 +174,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
         # L-BFGS 快速收敛 + RPROP 精细调整
         n_epochs = max(optimizer_dict["n_epochs_LBFGS"], 1)
-        NNparams = field_comp.net.parameters()
+        NNparams = field_comp.parameters()
         optimizer = get_optimizer(NNparams, "LBFGS")
         loss_data1 = fit(
             field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
@@ -185,7 +185,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         loss_data = loss_data + loss_data1
 
         n_epochs = optimizer_dict["n_epochs_RPROP"]
-        NNparams = field_comp.net.parameters()
+        NNparams = field_comp.parameters()
         optimizer = get_optimizer(NNparams, "RPROP")
         loss_data2 = fit_with_early_stopping(
             field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
@@ -227,8 +227,26 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         print(f"[Fatigue] fatigue_on=True | accum='{fatigue_dict.get('accum_type','carrara')}' | "
               f"degrad='{fatigue_dict.get('degrad_type','asymptotic')}' | "
               f"alpha_T={fatigue_dict.get('alpha_T', 1.0):.4g}")
+
+        # ★ Direction 6.1: 预计算元素形心，供 spatial α_T 使用（tensor 版本）
+        _sp_cfg = fatigue_dict.get('spatial_alpha_T', {})
+        if _sp_cfg.get('enable', False) and T_conn is not None:
+            _Tc = T_conn if isinstance(T_conn, torch.Tensor) else torch.as_tensor(T_conn, device=device)
+            _cx_t = (inp[_Tc[:,0], 0] + inp[_Tc[:,1], 0] + inp[_Tc[:,2], 0]) / 3.0
+            _cy_t = (inp[_Tc[:,0], 1] + inp[_Tc[:,1], 1] + inp[_Tc[:,2], 1]) / 3.0
+            elem_centroids = torch.stack([_cx_t, _cy_t], dim=1).detach()
+            print(f"[spAlphaT] Spatial α_T enabled: "
+                  f"β={_sp_cfg.get('beta',0.0)}, r_T={_sp_cfg.get('r_T',0.1)}, "
+                  f"tip=({_sp_cfg.get('x_tip',0.0)},{_sp_cfg.get('y_tip',0.0)}) | "
+                  f"n_elem={n_elem}")
+        else:
+            elem_centroids = None
+            if _sp_cfg.get('enable', False):
+                print("[spAlphaT] WARNING: enable=True but T_conn is None "
+                      "(autodiff mode); fallback to scalar α_T")
     else:
         f_fatigue = 1.0
+        elem_centroids = None
         print("[Fatigue] fatigue_on=False → 等价 Manav 原始行为")
 
     # ★ 方向3：裂尖自适应权重初始化
@@ -251,6 +269,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         key=lambda p: int(p.stem.rsplit('_', 1)[-1])
     )
     start_j = 0
+    _did_restore = False   # ★ 标志位：True → 后续 history lists 从 .npy 初始化
     if _step_ckpts:
         _latest = _step_ckpts[-1]
         _last_j = int(_latest.stem.rsplit('_', 1)[-1])
@@ -263,16 +282,39 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if fatigue_on:
                 hist_fat      = _ckpt['hist_fat'].to(device)
                 psi_plus_prev = _ckpt['psi_plus_prev'].to(device)
-                f_fatigue     = compute_fatigue_degrad(hist_fat, fatigue_dict)
+                f_fatigue     = compute_fatigue_degrad(
+                    hist_fat, fatigue_dict, elem_centroids=elem_centroids
+                )
             start_j = _last_j + 1
+            _did_restore = True
             print(f"[Checkpoint] 从 step {_last_j} 恢复，继续 step {start_j}/{len(disp)-1}")
+
+    # -------------------------------------------------------------------------
+    # ★ Helper: 从 .npy 恢复逐 cycle history list（修正长期 bug）
+    # 之前 restore 只恢复 NN 权重 + hist_alpha/hist_fat，逐 cycle history lists
+    # 从空 [] 开始 → 下次 save 会覆盖 .npy 丢失 cycle 0..start_j-1 的数据。
+    # 本 helper：若 .npy 存在则 load + truncate 到 start_j，保证 history/NN 同步。
+    # -------------------------------------------------------------------------
+    def _restore_hist(fname):
+        if not _did_restore:
+            return []
+        p = trainedModel_path / fname
+        if not p.exists():
+            return []
+        lst = np.load(p).tolist()
+        if len(lst) > start_j:
+            print(f"[Restore] {fname}: truncated {len(lst)} → {start_j} cycles")
+            lst = lst[:start_j]
+        else:
+            print(f"[Restore] {fname}: loaded {len(lst)} cycles")
+        return lst
 
     # -------------------------------------------------------------------------
     # ★ 断裂检测 & 可视化参数（仅 fatigue_on=True 时有意义）
     # -------------------------------------------------------------------------
-    E_el_history       = []      # 每圈弹性能，供后处理画 E_el vs N 曲线
-    E_el_max           = 0.0     # 历史最大弹性能（断裂判据基准）
-    alpha_bar_history  = []      # 每圈 [ᾱ_max, ᾱ_mean, f_min]，自动保存为 alpha_bar_vs_cycle.npy
+    E_el_history       = _restore_hist('E_el_vs_cycle.npy')      # ★ 续训时从 .npy 恢复
+    E_el_max           = max(E_el_history) if E_el_history else 0.0  # ★ 从恢复的 history 算 max
+    alpha_bar_history  = _restore_hist('alpha_bar_vs_cycle.npy')  # ★ 每圈 [ᾱ_max, ᾱ_mean, f_min]
     _frac_detected          = False   # 是否已触发断裂检测
     _frac_cycle             = None    # 首次检测到断裂的圈号
     _frac_confirm_remaining = 0       # 剩余确认圈数（>0 时持续观察）
@@ -281,6 +323,16 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _E_drop_ratio   = fatigue_dict.get('fracture_E_drop_ratio',   0.5)
     _confirm_cycles = fatigue_dict.get('fracture_confirm_cycles',  3)   # 边界判据已很明确，3圈即可
     _plot_every     = fatigue_dict.get('plot_every_n_cycles',      20)
+    # ★ Fix A: E_el fallback 判据 warmup 期
+    # 原因：cycle 0-1 NN 可能产生伪解（尤其 Williams features 下 x_tip 尚未稳定），
+    # E_el 尖峰会抬高 E_el_max 基线，导致后续正常 E_el 被误判为"骤降 → 断裂"
+    _E_fallback_warmup = fatigue_dict.get('E_fallback_warmup_cycles', 5)
+    # ★ Run #4 fix: E_el fallback 判据总开关
+    # Run #3 在 cycle 58 出现 late-cycle NN 数值尖峰（E_el 9.9e-2 vs 正常 4e-3），
+    # warmup 无法防住 mid-training 的单点尖峰。对 SENT 几何，主判据 α>0.95@boundary
+    # 已经足够精确（Run #2, #3 都没有误触）。默认保留 fallback 以向后兼容；
+    # 对含 Williams features 或其他易产生数值尖峰的实验，应在 config 里设 False。
+    _E_fallback_enabled = fatigue_dict.get('enable_E_fallback', True)
 
     # ★ 右边界 α 判据参数（主判据：替代旧的 L∞ 距离判据）
     # 物理含义：当目标边界面上有足够多节点的 α 超过阈值时认为贯穿
@@ -298,12 +350,34 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _alpha_crack_thr = fatigue_dict.get('x_tip_alpha_thr', 0.90)
     _crack_mouth     = torch.tensor([0.0, 0.0], device=device)  # SENS: 预裂缝尖端
     _crack_mouth_x   = _crack_mouth[0].item()
-    _x_tip_history   = []    # 每圈 crack_length，供后处理（变量名保持兼容）
+    _x_tip_history   = _restore_hist('x_tip_alpha_vs_cycle.npy')    # ★ 续训时从 .npy 恢复
 
     # ★ Direction 4: Williams 特征开关 & ψ⁺ 重心裂尖历史
     # 通过 field_comp.williams_enabled 检测是否启用（无需额外参数传递）
     _williams_enabled = getattr(field_comp, 'williams_enabled', False)
-    _x_tip_psi_history = []   # ψ⁺ 重心估计的裂尖 x 坐标，每圈一个值
+    _x_tip_psi_history = _restore_hist('x_tip_psi_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
+
+    # ★ 每圈耗时记录（增量保存到 time_vs_cycle.npy）
+    _time_history = _restore_hist('time_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
+
+    # ★ 每圈 Kt 日志：预计算元素形心 + 远场掩码（仅数值梯度模式有效）
+    _Kt_history = _restore_hist('Kt_vs_cycle.npy')       # ★ 续训时从 .npy 恢复
+    _Kt         = float('nan')   # 当前圈 Kt（初始化为 nan，日志安全输出）
+
+    # ★ Direction 5: Enriched Ansatz 每圈记录可学习标量 c_singular
+    _ansatz_enabled     = getattr(field_comp, 'ansatz_enabled', False)
+    _c_singular_history = _restore_hist('c_singular_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
+    if fatigue_on and T_conn is not None:
+        _inp_np = inp.detach().cpu().numpy()
+        _T_np   = T_conn.cpu().numpy() if isinstance(T_conn, torch.Tensor) else T_conn
+        _cx = (_inp_np[_T_np[:,0],0] + _inp_np[_T_np[:,1],0] + _inp_np[_T_np[:,2],0]) / 3.0
+        _cy = (_inp_np[_T_np[:,0],1] + _inp_np[_T_np[:,1],1] + _inp_np[_T_np[:,2],1]) / 3.0
+        _nominal_mask = (np.abs(_cy) > 0.3) & (_cx > -0.3)
+        _n_nominal    = int(_nominal_mask.sum())
+        print(f"[Kt logging] Nominal elements: {_n_nominal} (|y|>0.3, x>-0.3)")
+    else:
+        _nominal_mask = None
+        _n_nominal    = 0
 
     # α 快照目录（与 best_models/ 同级）
     _snapshot_dir = trainedModel_path.parent / Path('alpha_snapshots')
@@ -325,7 +399,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         # ------------------------------------------------------------------
         if j == 0 or optimizer_dict["n_epochs_LBFGS"] > 0:
             n_epochs = max(optimizer_dict["n_epochs_LBFGS"], 1)
-            NNparams  = field_comp.net.parameters()
+            NNparams  = field_comp.parameters()
             optimizer = get_optimizer(NNparams, "LBFGS")
             loss_data1 = fit(
                 field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
@@ -337,7 +411,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
         if optimizer_dict["n_epochs_RPROP"] > 0:
             n_epochs  = optimizer_dict["n_epochs_RPROP"]
-            NNparams  = field_comp.net.parameters()
+            NNparams  = field_comp.parameters()
             optimizer = get_optimizer(NNparams, "RPROP")
             loss_data2 = fit_with_early_stopping(
                 field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
@@ -350,7 +424,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             loss_data = loss_data + loss_data2
 
         end = time.time()
-        print(f"Execution time: {(end-start)/60:.03f}minutes")
+        _cycle_seconds = end - start
+        print(f"Execution time: {_cycle_seconds/60:.03f}minutes")
+        _time_history.append([j, _cycle_seconds])
 
         # ------------------------------------------------------------------
         # Manav 原始：更新相场不可逆性历史变量 hist_alpha
@@ -369,12 +445,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # 计算当前步各单元退化拉伸应变能密度 ψ⁺
             # 数值梯度模式（T_conn is not None）：不需要 inp.requires_grad
             # 自动微分模式（T_conn is None）    ：需要 inp.requires_grad
+            # ★ E2 sanity hack (Apr 23 2026): 如果 fatigue_dict 里有 psi_hack 子 dict，透传
+            _psi_hack = fatigue_dict.get('psi_hack', None)
             if T_conn is not None:
                 with torch.no_grad():
                     u_eval, v_eval, alpha_eval = field_comp.fieldCalculation(inp)
                 psi_plus_elem = get_psi_plus_per_elem(
                     inp, u_eval, v_eval, alpha_eval,
-                    matprop, pffmodel, area_T, T_conn
+                    matprop, pffmodel, area_T, T_conn,
+                    psi_hack_dict=_psi_hack
                 )
             else:
                 # 自动微分模式：需要 inp 开启梯度
@@ -382,19 +461,48 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 u_eval, v_eval, alpha_eval = field_comp.fieldCalculation(inp_tmp)
                 psi_plus_elem = get_psi_plus_per_elem(
                     inp_tmp, u_eval, v_eval, alpha_eval,
-                    matprop, pffmodel, area_T, T_conn=None
+                    matprop, pffmodel, area_T, T_conn=None,
+                    psi_hack_dict=_psi_hack
                 )
 
             # ★ Direction 4: 用 ψ⁺ 重心估计裂尖坐标 → 更新 field_comp.x_tip
             # 必须在 update_fatigue_history 之前，确保本圈 psi_plus_elem 是峰值状态
+            # ★ Fix B: cycle 0 保持初始 x_tip（α 场未收敛，ψ⁺ 分布被预裂缝污染，
+            #   给出非物理的 x_tip 估计，如 -0.17，导致 cycle 1 Williams features 失真 → NN 伪解）
+            # ★ Fix B: sanity check — 如果 ψ⁺ centroid 跑进预裂缝内部超过 0.02，拒绝更新
+            # ★ Fix:   断裂确认期间冻结 x_tip，防止裂尖跳到右边界导致 Williams 特征失真
             if _williams_enabled and T_conn is not None:
-                _x_tip_psi_val = compute_x_tip_psi(inp, psi_plus_elem, T_conn, top_k=10)
-                _x_tip_psi_history.append(_x_tip_psi_val)
-                field_comp.x_tip = _x_tip_psi_val   # 下一圈 fieldCalculation 使用此坐标
-                print(f"  [Williams]  x_tip_psi={_x_tip_psi_val:.4f}")
+                if not _frac_detected:
+                    if j == 0:
+                        # Cycle 0: 保持 __init__ 时的初始值（crack_mouth 附近，物理先验）
+                        print(f"  [Williams]  x_tip_psi={field_comp.x_tip:.4f} "
+                              f"(cycle 0, keep initial — psi+ unreliable before alpha converges)")
+                    else:
+                        _x_tip_psi_val = compute_x_tip_psi(inp, psi_plus_elem, T_conn, top_k=10)
+                        _x_tip_floor   = _crack_mouth_x - 0.02   # 下界：不允许跑进预裂缝内
+                        if _x_tip_psi_val < _x_tip_floor:
+                            print(f"  [Williams]  x_tip_psi={_x_tip_psi_val:.4f} "
+                                  f"rejected (< floor {_x_tip_floor:.4f}), "
+                                  f"keep {field_comp.x_tip:.4f}")
+                        else:
+                            field_comp.x_tip = _x_tip_psi_val
+                            print(f"  [Williams]  x_tip_psi={_x_tip_psi_val:.4f}")
+                else:
+                    print(f"  [Williams]  x_tip_psi={field_comp.x_tip:.4f} (frozen, fracture confirmed)")
+                _x_tip_psi_history.append(field_comp.x_tip)
             elif _williams_enabled:
                 # 自动微分模式：T_conn=None，形心计算不可用，暂保持上一圈值
                 _x_tip_psi_history.append(field_comp.x_tip)
+
+            # ★ 每圈 Kt 计算（复用已有 psi_plus_elem，零额外前向传播）
+            if _nominal_mask is not None:
+                _psi0      = psi_plus_elem.detach().cpu().numpy()
+                _top10_idx = np.argsort(_psi0)[-10:]
+                _psi_tip   = float(_psi0[_top10_idx].mean())
+                _psi_nom   = (float(_psi0[_nominal_mask].mean())
+                               if _n_nominal > 0 else float(_psi0.mean()))
+                _Kt        = (_psi_tip / _psi_nom) ** 0.5 if _psi_nom > 1e-20 else float('nan')
+                _Kt_history.append(_Kt)
 
             # 更新疲劳历史变量 ᾱ（Carrara Eq.39 或 Golahmar Eq.31）
             hist_fat = update_fatigue_history(
@@ -402,7 +510,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             )
 
             # 更新疲劳退化函数 f(ᾱ)（Carrara Eq.41 或 Eq.42）
-            f_fatigue = compute_fatigue_degrad(hist_fat, fatigue_dict)
+            # ★ Direction 6.1: 传入 elem_centroids 支持空间调制 α_T
+            f_fatigue = compute_fatigue_degrad(
+                hist_fat, fatigue_dict, elem_centroids=elem_centroids
+            )
 
             # ★ 重置 psi_plus_prev，正确模拟循环加载的卸载阶段
             # 原因：NN 只求解峰值状态，不显式模拟卸载。
@@ -432,13 +543,22 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 else:
                     crack_tip_weights = None   # 还未到启用圈数，本圈均匀
 
+            # ★ Direction 5: 记录 c_singular 当前值（每圈训练完毕后）
+            if _ansatz_enabled and field_comp.c_singular is not None:
+                _c_val = float(field_comp.c_singular.detach().cpu().item())
+                _c_singular_history.append([j, _c_val])
+            else:
+                _c_val = None
+
             # 日志输出
             f_min = f_fatigue.min().item()
             f_mean = f_fatigue.mean().item()
             alpha_bar_max = hist_fat.max().item()
             if (j % _log_every == 0) or _frac_detected or _dense_sampling:
+                _Kt_str = f"{_Kt:.2f}" if not np.isnan(_Kt) else "N/A"
+                _c_str  = f" | c={_c_val:+.4e}" if _c_val is not None else ""
                 print(f"  [Fatigue step {j}] ᾱ_max={alpha_bar_max:.4e} | "
-                      f"f_min={f_min:.4f} | f_mean={f_mean:.4f}")
+                      f"f_min={f_min:.4f} | f_mean={f_mean:.4f} | Kt={_Kt_str}{_c_str}")
             alpha_bar_history.append([alpha_bar_max,
                                        hist_fat.mean().item(),
                                        float(f_min)])
@@ -452,7 +572,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 )
             E_el_scalar = float(E_el_val.item())
             E_el_history.append(E_el_scalar)
-            E_el_max = max(E_el_max, E_el_scalar)
+            # ★ Fix: 断裂确认期间冻结 E_el_max，防止 NN 伪解抬高基线导致判据失效
+            if not _frac_detected:
+                E_el_max = max(E_el_max, E_el_scalar)
 
             # ── 右边界 α 检测（主判据）──────────────────────────────────────
             alpha_bdy     = alpha_el.flatten()[_right_bdy_mask]
@@ -484,7 +606,13 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
             # ── 断裂检测：α>0.95 @ 右边界（主）OR E_el 骤降（兜底）──────────
             _bdy_triggered = (n_bdy_frac >= _alpha_bdy_nmin)
-            _E_triggered   = (E_el_max > 0 and E_el_scalar < _E_drop_ratio * E_el_max)
+            # ★ Fix A (warmup) + Run #4 fix (enable_E_fallback): 双层保护
+            # - enable_E_fallback=False：完全禁用 fallback（Williams 等易尖峰的实验用）
+            # - enable_E_fallback=True + warmup：fallback 仅在 cycle >= warmup 生效
+            _E_triggered   = (_E_fallback_enabled
+                              and j >= _E_fallback_warmup
+                              and E_el_max > 0
+                              and E_el_scalar < _E_drop_ratio * E_el_max)
 
             if not _frac_detected and (_bdy_triggered or _E_triggered):
                 _frac_detected = True
@@ -524,6 +652,32 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         torch.save(_ckpt_data,
                    trainedModel_path / Path(f'checkpoint_step_{j}.pt'))
 
+        # ★ 每圈增量保存历史数组（防 crash/kill 导致数据丢失）
+        # np.save 写 .npy 耗时 < 1 ms，对总训练时间无影响
+        if fatigue_on:
+            if E_el_history:
+                np.save(str(trainedModel_path / 'E_el_vs_cycle.npy'),
+                        np.array(E_el_history))
+            if _x_tip_history:
+                _xt = np.array(_x_tip_history)
+                np.save(str(trainedModel_path / 'x_tip_alpha_vs_cycle.npy'), _xt)
+                np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),       _xt)
+            if _williams_enabled and _x_tip_psi_history:
+                np.save(str(trainedModel_path / 'x_tip_psi_vs_cycle.npy'),
+                        np.array(_x_tip_psi_history))
+            if alpha_bar_history:
+                np.save(str(trainedModel_path / 'alpha_bar_vs_cycle.npy'),
+                        np.array(alpha_bar_history))
+            if _Kt_history:
+                np.save(str(trainedModel_path / 'Kt_vs_cycle.npy'),
+                        np.array(_Kt_history))
+            if _ansatz_enabled and _c_singular_history:                     # ★ Direction 5
+                np.save(str(trainedModel_path / 'c_singular_vs_cycle.npy'),
+                        np.array(_c_singular_history))   # shape (N,2): [cycle_idx, c_val]
+            if _time_history:
+                np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
+                        np.array(_time_history))   # shape (N,2): [cycle_idx, seconds]
+
         # ── 断裂确认：判据持续满足 confirm_cycles 圈 → 停止 ──────────────
         if fatigue_on and _frac_detected and _frac_confirm_remaining <= 0:
             print(f"  [Fracture confirmed] Stopping at cycle {j}. "
@@ -539,6 +693,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         np.array(_x_tip_psi_history))
             np.save(str(trainedModel_path / 'alpha_bar_vs_cycle.npy'),
                     np.array(alpha_bar_history))
+            if _Kt_history:
+                np.save(str(trainedModel_path / 'Kt_vs_cycle.npy'),
+                        np.array(_Kt_history))
+            if _ansatz_enabled and _c_singular_history:                    # ★ Direction 5
+                np.save(str(trainedModel_path / 'c_singular_vs_cycle.npy'),
+                        np.array(_c_singular_history))
+            if _time_history:
+                np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
+                        np.array(_time_history))
             break
 
     # 循环正常结束（跑完所有圈）也保存历史
@@ -556,3 +719,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_on and alpha_bar_history:
         np.save(str(trainedModel_path / 'alpha_bar_vs_cycle.npy'),
                 np.array(alpha_bar_history))
+    if fatigue_on and _Kt_history:
+        np.save(str(trainedModel_path / 'Kt_vs_cycle.npy'),
+                np.array(_Kt_history))
+    if fatigue_on and _ansatz_enabled and _c_singular_history:             # ★ Direction 5
+        np.save(str(trainedModel_path / 'c_singular_vs_cycle.npy'),
+                np.array(_c_singular_history))
+    if fatigue_on and _time_history:
+        np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
+                np.array(_time_history))

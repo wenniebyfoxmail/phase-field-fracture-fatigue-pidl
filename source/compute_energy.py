@@ -35,7 +35,7 @@ import torch.nn as nn
 
 # Computes the total strain energy, damage energy and irreversibility penalty
 def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn=None,
-                   f_fatigue=1.0):
+                   f_fatigue=1.0, crack_tip_weights=None):
     """
     计算总能量
 
@@ -45,6 +45,13 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
     ★ 新增参数 f_fatigue：
         - 标量 1.0（默认）：完全恢复 Manav 原始行为
         - Tensor (n_elem,)：逐元素退化，由 fatigue_history.compute_fatigue_degrad() 提供
+
+    ★ 新增参数 crack_tip_weights（方向3：裂尖自适应损失加权）：
+        - None（默认）：均匀权重，与原始完全一致
+        - Tensor (n_elem,)：逐元素权重 w_e ≥ 1，裂尖区域 w 大
+          w_e = 1 + β·(ψ⁺_e / ψ⁺_mean)^p
+          效果：强制 NN 把更多"表达能力"分配给裂尖，改善 Kt 偏低问题
+          不改变物理模型，只改变优化优先级
 
     参数：
     ------
@@ -66,6 +73,8 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
         单元连接关系，shape (n_elements, 3)
     f_fatigue : float or torch.Tensor, shape (n_elements,)   ← ★ 新增
         疲劳退化函数值。默认 1.0 = 无疲劳（完全等价原始代码）
+    crack_tip_weights : torch.Tensor or None, shape (n_elements,)   ← ★ 新增
+        裂尖自适应权重。None = 均匀（完全等价原始代码）
 
     返回：
     ------
@@ -76,9 +85,17 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
         inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn,
         f_fatigue=f_fatigue   # ★ 传入退化函数
     )
-    E_el_sum   = torch.sum(E_el)
-    E_d_sum    = torch.sum(E_d)
-    E_hist_sum = torch.sum(E_hist_penalty)
+
+    # ★ 方向3：裂尖自适应加权（crack_tip_weights=None 时完全等价原始代码）
+    if crack_tip_weights is not None:
+        # w_e ≥ 1，裂尖附近权重大 → 优化优先级高
+        E_el_sum   = torch.sum(crack_tip_weights * E_el)
+        E_d_sum    = torch.sum(crack_tip_weights * E_d)
+        E_hist_sum = torch.sum(crack_tip_weights * E_hist_penalty)
+    else:
+        E_el_sum   = torch.sum(E_el)
+        E_d_sum    = torch.sum(E_d)
+        E_hist_sum = torch.sum(E_hist_penalty)
 
     return E_el_sum, E_d_sum, E_hist_sum
 
@@ -149,7 +166,8 @@ def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, are
 
 
 # ★ 新增函数：计算各元素退化拉伸应变能密度，供疲劳历史变量更新使用
-def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn=None):
+def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn=None,
+                          psi_hack_dict=None):
     """
     ★ 新增函数（Manav 原始代码中不存在）
 
@@ -162,6 +180,10 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
     ------
     inp, u, v, alpha : 同 compute_energy
     matprop, pffmodel, area_elem, T_conn : 同 compute_energy
+    psi_hack_dict : dict or None (★ E2 sanity hack, Apr 23 2026)
+        若非 None 且 enable=True，在裂尖邻域用 Gaussian 乘以 multiplier 放大 ψ⁺_elem，
+        模拟 FEM-like 应力集中。keys: {enable, x_tip, y_tip, r_hack, multiplier}。
+        默认 None 时行为与原始一致。
 
     返回：
     ------
@@ -182,6 +204,22 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
     # Carrara Eq.39 要求累积退化能 g(α)·ψ⁺_0，避免裂尖奇异性
     g_alpha, _ = pffmodel.Edegrade(alpha_elem)
     psi_plus_elem = (g_alpha * E_el_p).detach()
+
+    # ★ E2 sanity hack (Apr 23 2026) — 验证 ψ⁺ 集中是否是 ᾱ_max ceiling 根因
+    # 在裂尖邻域用 Gaussian 衰减乘子放大 ψ⁺，模拟 FEM 的应力集中能力
+    if psi_hack_dict is not None and psi_hack_dict.get('enable', False) \
+            and T_conn is not None:
+        x_tip = float(psi_hack_dict.get('x_tip', 0.0))
+        y_tip = float(psi_hack_dict.get('y_tip', 0.0))
+        r_hack = float(psi_hack_dict.get('r_hack', 0.02))
+        mult = float(psi_hack_dict.get('multiplier', 1000.0))
+        # element centroids
+        cx = (inp[T_conn[:, 0], 0] + inp[T_conn[:, 1], 0] + inp[T_conn[:, 2], 0]) / 3.0
+        cy = (inp[T_conn[:, 0], 1] + inp[T_conn[:, 1], 1] + inp[T_conn[:, 2], 1]) / 3.0
+        r_elem = torch.sqrt((cx - x_tip) ** 2 + (cy - y_tip) ** 2 + 1e-12)
+        # 平滑 Gaussian 放大: 中心 mult，远场 1，半峰在 r_hack
+        scale = 1.0 + (mult - 1.0) * torch.exp(-(r_elem / r_hack) ** 2)
+        psi_plus_elem = (psi_plus_elem * scale).detach()
     return psi_plus_elem
 
 

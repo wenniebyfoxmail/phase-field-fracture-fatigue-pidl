@@ -93,8 +93,11 @@ fatigue_dict = {
     "R_ratio"      : 0.0,            # 应力比 R = σ_min/σ_max；R=0 → 拉-拉循环
 
     # ── 历史变量累积策略 ─────────────────────────────────────────────────────
-    "accum_type"   : "carrara",      # 'carrara'  → Carrara Eq.39：线性累积 Δᾱ = H(Δψ⁺)·Δψ⁺
+    "accum_type"   : "golahmar",     # 'carrara'  → Carrara Eq.39：线性累积 Δᾱ = H(Δψ⁺)·Δψ⁺
                                      # 'golahmar' → Golahmar Eq.31：幂律累积
+                                     # ★ Dir 6.2 (Apr 22): Golahmar + narrow spAlphaT (β=0.8, r_T=0.03)
+                                     #   测试 Golahmar Δᾱ = (ψ⁺/α_n)^(n-1)·Δψ⁺ 能否突破
+                                     #   AT1+Carrara 的 ᾱ_max ceiling (~8)
 
     # Golahmar 幂律参数（accum_type='golahmar' 时有效）
     "n_power"      : 2.0,            # 幂律指数 n；控制 S-N 斜率（n=1 退化为 Carrara）
@@ -105,7 +108,11 @@ fatigue_dict = {
                                      # 'logarithmic' → Carrara Eq.42：f=[1-κ·log10(ᾱ/α_T)]²（有限步归零）
 
     # ── 断裂检测参数（cyclic 模式自动停止）─────────────────────────────────
-    "fracture_E_drop_ratio"  : 0.1,  # E_el < ratio × E_el_max 时触发检测
+    # Run #4 fix: Williams 等易产生 NN 数值尖峰的实验下 E_el fallback 不可靠
+    # （cycle 58 尖峰让 cycle 69 错停；主判据 α>0.95@boundary 未误触）
+    # SENT 几何主判据已足够，关掉 fallback。其他几何或 baseline 需要时打开。
+    "enable_E_fallback"      : False, # False: 只用主判据（α>0.95@boundary）| True: 保留 E_el fallback
+    "fracture_E_drop_ratio"  : 0.1,  # E_el < ratio × E_el_max 时触发检测（仅 enable_E_fallback=True 时生效）
     "fracture_confirm_cycles": 10,   # 触发后再观察 N 圈确认（防数值扰动）
     "crack_length_threshold" : 0.46, # 裂缝贯通判据：crack_length >= 此值 → 停止
                                      # 定义：L∞ 距离 = max(|Δx|, |Δy|) from crack_mouth=(0,0)
@@ -134,6 +141,39 @@ fatigue_dict = {
         "power"       : 1.0,         # ψ⁺ 比值的幂次；1.0 = 线性加权；2.0 = 平方增强
         "start_cycle" : 1,           # 从第几圈开始加权（0 = 从预训练完成后第1圈就加权）
     },
+
+    # ── E2 sanity hack (Apr 23 2026): ψ⁺ 裂尖放大 ──────────────────────────
+    # 目的：验证 ψ⁺_raw 集中能力是否是 ᾱ_max ceiling 根因
+    # 在 get_psi_plus_per_elem 输出上乘 Gaussian 放大乘子，
+    # 模拟 FEM mesh 分辨率允许的单元级应力集中
+    #   scale(r) = 1 + (mult − 1) · exp(−(r/r_hack)²)
+    # 用法：enable=True 启动放大；保持其他 config 不变（Dir 6 可以同时测试）
+    # 建议先用 cycle 50 baseline checkpoint 做 warm-start 测试
+    "psi_hack": {
+        "enable"    : False,         # ★ E2: True 开启 ψ⁺ 裂尖放大
+        "x_tip"     : 0.0,           # 裂尖 x（与 ansatz_dict 一致）
+        "y_tip"     : 0.0,           # 裂尖 y
+        "r_hack"    : 0.02,          # Gaussian 衰减长度（≈ 2·l₀ ≈ 元素尺度）
+        "multiplier": 1000.0,        # 裂尖中心放大倍数（FEM tip ψ⁺ ≈ 10⁴ × PIDL ~0.4）
+    },
+
+    # ── 方向6.1：空间调制 α_T（Spatial α_T Modulation）─────────────────────
+    # 原理：α_T_local(r) = α_T_base · (1 - β · exp(-r/r_T))
+    #   裂尖单元 α_T 降低 → 更早进入 f<1 退化区 → 应力重分布正反馈推高 α_max
+    #
+    # ★ Dir 6.1-narrow (Apr 21 2026): β=0.8, r_T=0.03（单元尺度调制）
+    #   第一次尝试 β=0.5, r_T=0.1 (NEGATIVE: ᾱ_max=7.04 < baseline 9.09, N_f=76)
+    #   假设：r_T=0.1 覆盖 ≈200 元素 → wide-but-shallow 带 → 裂缝扩展快
+    #   现在 r_T=0.03 ≈ 3·l₀ ≈ 1-3 个 mesh 元素 → 模拟 FEM 单点奇异
+    #   β=0.8 → 裂尖 α_T_local = 0.5·(1-0.8) = 0.10（强力 aggressive）
+    # enable=False 时 α_T 退回 scalar α_T_base，完全等价 baseline
+    "spatial_alpha_T": {
+        "enable" : True,
+        "beta"   : 0.8,              # 调制深度 ∈ [0, 1]（narrow 版 aggressive）
+        "r_T"    : 0.03,             # 衰减长度（≈ 3·l₀，元素尺度）
+        "x_tip"  : 0.0,              # 固定裂尖 x（SENT 预裂缝 tip，与 ansatz_dict 一致）
+        "y_tip"  : 0.0,              # 固定裂尖 y
+    },
 }
 
 # ★ Direction 4: Williams 裂尖增强输入特征
@@ -144,9 +184,32 @@ fatigue_dict = {
 # 关键：只改输入特征，不改 Deep Ritz 能量泛函 → 安全（不重蹈 Direction 3 覆辙）
 # ────────────────────────────────────────────────────────────────────────────
 williams_dict = {
-    "enable"     : False,         # True: 启用 8D 特征; False: 原始 2D（完全等价 baseline）
+    "enable"     : False,        # ★ Direction 5: 关闭 Williams 输入特征（启用 Enriched Ansatz 时独立运行）
     "theta_mode" : "atan2",      # θ = atan2(dy, dx) ∈ (-π, π]（预留接口，未来可扩展）
     "r_min"      : 1e-6,         # r 下限，防止裂尖节点处除零
+}
+
+
+# ★ Direction 5: Enriched Ansatz —— 输出端 Williams 主奇异项增强
+# ────────────────────────────────────────────────────────────────────────────
+# 背景：Direction 4 (Williams 输入) + Direction 2.1 (Fourier 输入) 三方对比证明：
+#       输入端谱扩展无法闭合 α_max 100× 的差距（两者都卡在 α_max ≈ 5-9）
+# 思路：把 r^(1/2) 奇异位移形函数直接加到 NN 输出（XFEM 式富集）：
+#       u = BC_scale · [ NN(x,y) + c · χ(r) · F^I(r,θ) ]
+# 关键点：
+#   1. x_tip 固定为 (0,0)，不随 cycle 更新（避免 Williams v4 的峰元素漂移）
+#   2. χ(r)=exp(-r/r_cutoff) 保证远场回到 NN，只在裂尖富集
+#   3. c 是可学习标量（nn.Parameter，初值 0.01），代表平均 K_I
+#   4. enable=False 时零开销，完全等价 baseline
+# ────────────────────────────────────────────────────────────────────────────
+ansatz_dict = {
+    "enable"   : False,          # ★ Direction 6.1: 关闭 Enriched，单变量对照 spatial α_T
+    "x_tip"    : 0.0,
+    "y_tip"    : 0.0,
+    "r_cutoff" : 0.1,            # ≈ 10 · l₀
+    "nu"       : 0.3,            # 平面应变 Poisson 比 → κ = 3 − 4ν = 1.8
+    "c_init"   : 0.01,           # 初始 K_I 量级
+    "modes"    : ["I"],          # 默认 Mode I；SENT 几何为 Mode-I-dominant
 }
 
 
@@ -231,6 +294,24 @@ else:
 # ★ Direction 4: Williams 标签（enable=True 时追加 _williams_std，便于区分 baseline）
 _williams_tag = "_williams_std" if williams_dict.get("enable", False) else ""
 
+# ★ Direction 5: Enriched Ansatz 标签（enable=True 时追加 _enriched_ansatz_modeI_v1）
+_modes_str = "".join(ansatz_dict.get("modes", ["I"]))
+_ansatz_tag = f"_enriched_ansatz_mode{_modes_str}_v1" if ansatz_dict.get("enable", False) else ""
+
+# ★ Direction 6.1: Spatial α_T 标签（enable=True 时追加 _spAlphaT_b{β}_r{r_T}）
+_sp_cfg = _fat.get('spatial_alpha_T', {})
+_spAlphaT_tag = (
+    f"_spAlphaT_b{_sp_cfg.get('beta', 0.0)}_r{_sp_cfg.get('r_T', 0.1)}"
+    if _sp_cfg.get('enable', False) else ""
+)
+
+# ★ E2 sanity hack (Apr 23 2026): ψ⁺ 放大标签
+_ph_cfg = _fat.get('psi_hack', {})
+_psiHack_tag = (
+    f"_psiHack_m{int(_ph_cfg.get('multiplier', 1000))}_r{_ph_cfg.get('r_hack', 0.02)}"
+    if _ph_cfg.get('enable', False) else ""
+)
+
 model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             '_Neurons_'+str(network_dict["neurons"])+
                             '_activation_'+network_dict["activation"]+
@@ -239,7 +320,10 @@ model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             '_PFFmodel_'+str(PFF_model_dict["PFF_model"])+
                             '_gradient_'+str(numr_dict["gradient_type"])+
                             _fatigue_tag +
-                            _williams_tag)         # ★ Direction 4 标签追加到路径末尾
+                            _williams_tag +        # ★ Direction 4 标签
+                            _ansatz_tag +          # ★ Direction 5 标签
+                            _spAlphaT_tag +        # ★ Direction 6.1 标签
+                            _psiHack_tag)          # ★ E2 sanity hack 标签
 model_path.mkdir(parents=True, exist_ok=True)
 trainedModel_path = model_path/Path('best_models/')
 trainedModel_path.mkdir(parents=True, exist_ok=True)
@@ -274,6 +358,22 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\nwilliams_enable: {williams_dict.get("enable", False)}')
     file.write(f'\nwilliams_theta_mode: {williams_dict.get("theta_mode", "atan2")}')
     file.write(f'\nwilliams_r_min: {williams_dict.get("r_min", 1e-6)}')
+    # ★ Direction 5: Enriched Ansatz 参数
+    file.write(f'\n--- enriched_ansatz ---')
+    file.write(f'\nansatz_enable: {ansatz_dict.get("enable", False)}')
+    file.write(f'\nansatz_x_tip: {ansatz_dict.get("x_tip", 0.0)}')
+    file.write(f'\nansatz_y_tip: {ansatz_dict.get("y_tip", 0.0)}')
+    file.write(f'\nansatz_r_cutoff: {ansatz_dict.get("r_cutoff", 0.1)}')
+    file.write(f'\nansatz_nu: {ansatz_dict.get("nu", 0.3)}')
+    file.write(f'\nansatz_c_init: {ansatz_dict.get("c_init", 0.01)}')
+    file.write(f'\nansatz_modes: {ansatz_dict.get("modes", ["I"])}')
+    # ★ Direction 6.1: Spatial α_T 参数
+    file.write(f'\n--- spatial_alpha_T ---')
+    file.write(f'\nspAlphaT_enable: {_sp_cfg.get("enable", False)}')
+    file.write(f'\nspAlphaT_beta: {_sp_cfg.get("beta", 0.0)}')
+    file.write(f'\nspAlphaT_r_T: {_sp_cfg.get("r_T", 0.1)}')
+    file.write(f'\nspAlphaT_x_tip: {_sp_cfg.get("x_tip", 0.0)}')
+    file.write(f'\nspAlphaT_y_tip: {_sp_cfg.get("y_tip", 0.0)}')
 
 ## #############################################################################
 ## #############################################################################

@@ -9,6 +9,8 @@ _SOURCE_PATH = Path(__file__).parents[1] / 'source'
 if str(_SOURCE_PATH) not in sys.path:
     sys.path.insert(0, str(_SOURCE_PATH))
 from williams_features import compute_williams_features
+# ★ Direction 5: Enriched Ansatz —— 输出端 Williams 主奇异项增强
+from enriched_ansatz import compute_enrichment
 
 
 class FieldComputation:
@@ -26,6 +28,13 @@ class FieldComputation:
     williams_dict: dict | None
         None 或 {"enable": False} → 原始行为（2D 输入）
         {"enable": True, "theta_mode": "atan2", "r_min": 1e-6} → 8D Williams 特征输入
+
+    ★ Direction 5 新增参数
+    ansatz_dict: dict | None
+        None 或 {"enable": False} → 原始行为（无富集项）
+        {"enable": True, "x_tip": 0.0, "y_tip": 0.0, "r_cutoff": 0.1,
+         "nu": 0.3, "c_init": 0.01, "modes": ["I"]}
+          → 在 NN 输出上叠加 c · χ(r) · F^mode(r,θ)，其中 c 是可学习标量
     l0: float
         相场长度参数，用于特征无量纲化（默认 0.01）
 
@@ -35,6 +44,7 @@ class FieldComputation:
     def __init__(self, net, domain_extrema, lmbda, theta,
                  alpha_constraint='nonsmooth',
                  williams_dict=None,
+                 ansatz_dict=None,
                  l0=0.01):
         self.net = net
         self.domain_extrema = domain_extrema
@@ -49,6 +59,22 @@ class FieldComputation:
         self.l0   = float(l0)
         self.x_tip = 0.0   # 当前裂尖 x 坐标；由 model_train.py 每圈更新
         self.y_tip = 0.0   # SENS 几何中裂尖始终在 y=0
+
+        # ★ Direction 5: Enriched Ansatz 配置 —— 输出端主奇异位移项
+        _ad = ansatz_dict or {}
+        self.ansatz_enabled = _ad.get('enable', False)
+        self.ansatz_x_tip   = float(_ad.get('x_tip', 0.0))   # FIXED（不随 cycle 更新）
+        self.ansatz_y_tip   = float(_ad.get('y_tip', 0.0))
+        self.ansatz_r_cutoff = float(_ad.get('r_cutoff', 0.1))
+        self.ansatz_nu      = float(_ad.get('nu', 0.3))
+        self.ansatz_modes   = tuple(_ad.get('modes', ("I",)))
+        if self.ansatz_enabled:
+            # nn.Parameter 自动 requires_grad=True；device 由 main.py 外部移动
+            self.c_singular = nn.Parameter(
+                torch.tensor([float(_ad.get('c_init', 0.01))], dtype=torch.float32)
+            )
+        else:
+            self.c_singular = None
 
         if alpha_constraint == 'smooth':
             self.alpha_constraint = torch.sigmoid
@@ -85,22 +111,49 @@ class FieldComputation:
         out = self.net(inp_nn)     # 神经网络输出（8D 或 2D 输入）
         out_disp = out[:, 0:2]    # 位移部分
 
+        # ★ Direction 5: Enriched Ansatz —— 输出端叠加 c·χ(r)·F^mode(r,θ)
+        # 使用 FIXED (x_tip, y_tip) = (0, 0) 避免 Williams v4 的峰元素漂移问题
+        if self.ansatz_enabled:
+            u_sing, v_sing = compute_enrichment(
+                inp,
+                x_tip=self.ansatz_x_tip,
+                y_tip=self.ansatz_y_tip,
+                r_cutoff=self.ansatz_r_cutoff,
+                nu=self.ansatz_nu,
+                modes=self.ansatz_modes,
+            )
+            disp_u = out_disp[:, 0] + self.c_singular * u_sing
+            disp_v = out_disp[:, 1] + self.c_singular * v_sing
+        else:
+            disp_u = out_disp[:, 0]
+            disp_v = out_disp[:, 1]
+
         # 约束相场在 [0, 1] 范围内
         alpha = self.alpha_constraint(out[:, 2])
 
-        # 边界条件强制（使用物理坐标 inp，不受 Williams 特征影响）
+        # 边界条件强制（使用物理坐标 inp，不受 Williams / Enriched Ansatz 影响）
         # (y-y0)(yL-y) 在边界 y=y0 和 y=yL 处为 0
-        u = ((inp[:, -1]-y0)*(yL-inp[:, -1])*out_disp[:, 0] +
+        u = ((inp[:, -1]-y0)*(yL-inp[:, -1])*disp_u +
              (inp[:, -1]-y0)/(yL-y0)*torch.cos(self.theta)) * self.lmbda
-        v = ((inp[:, -1]-y0)*(yL-inp[:, -1])*out_disp[:, 1] +
+        v = ((inp[:, -1]-y0)*(yL-inp[:, -1])*disp_v +
              (inp[:, -1]-y0)/(yL-y0)*torch.sin(self.theta)) * self.lmbda
 
         return u, v, alpha
-    
+
     def update_hist_alpha(self, inp):
         _, _, pred_alpha = self.fieldCalculation(inp)
         pred_alpha = pred_alpha.detach()
         return pred_alpha
+
+    def parameters(self):
+        """
+        ★ Direction 5: 收集所有可训练参数（NN + c_singular）。
+        optim 需要的参数迭代器；model_train.py 用它替代 field_comp.net.parameters()。
+        """
+        params = list(self.net.parameters())
+        if self.c_singular is not None:
+            params.append(self.c_singular)
+        return params
     
 
 class NonsmoothSigmoid(nn.Module):

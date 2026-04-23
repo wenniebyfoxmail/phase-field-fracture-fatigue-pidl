@@ -26,3 +26,13 @@ nohup.out
 
 # ── 压缩包 ───────────────────────────────────────────────
 *.zip
+
+# ── Claude Code 内部文件（本地配置、worktree）────────────
+.claude/
+
+# ── 结果/草稿（原则：结论进 memory，不进 git；见 CLAUDE.md）
+paper_draft/
+notes/
+findings.md
+# 生成的图（.png 已 gitignore，但子目录也要排除防止 README/txt 等误入）
+SENS_tensile/figures/
