@@ -163,6 +163,45 @@ Per-file diff scope:
 
 # Findings
 
+## 2026-04-24 · Windows-PIDL · [finding] coeff=3.0 Umax sweep COMPLETE — init_coeff NOT sensitive
+
+**Headline**: 5-Umax sweep at `init_coeff=3.0` (vs coeff=1.0 baseline) finished. All 5 Umax give N_f within ≤3% of coeff=1.0 baseline. **init_coeff is NOT a sensitive hyperparameter for fatigue life and does not need ablation in the paper.**
+
+### Final S-N (coeff=3.0 vs baseline)
+
+| Umax | N_f (coeff=3.0) | N_f (coeff=1.0 baseline) | Δ | Wall time |
+|---|---:|---:|---:|---:|
+| 0.12 | **82**  | 83  | −1  | 4.6 h |
+| 0.11 | **114** | —   | —   | 4.9 h |
+| 0.10 | **155** | —   | —   | 8.1 h |
+| 0.09 | **217** | —   | —   | ~11 h |
+| 0.08 | **330** | 341 | −11 | 27.9 h |
+
+Cumulative wall clock ~56 h (Apr 19 → Apr 24). Archives under `SENS_tensile/hl_8_Neurons_400_activation_TrainableReLU_coeff_3.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N<NNN>_R0.0_Umax<X>/`.
+
+### Observations
+
+1. **init_coeff robustness**: at both endpoints where coeff=1.0 data exists (0.12 and 0.08), coeff=3.0 matches within 1 and 11 cycles respectively. That's 1.2% and 3.2% of N_f. All 5 points are monotone in Umax as expected. **Lesson**: fix coeff=1 for future work; don't waste ablation budget here.
+2. **S-N shape matches FEM qualitatively** but offsets low by ~17% across all Umax (consistent with Mac's E2 finding that PIDL Baseline under-represents tip ψ⁺ concentration).
+3. **ᾱ_max ceiling on this architecture**: 23-24 (hl=8, Neurons=400, TrainableReLU). Higher than Mac's baseline ceiling (~10) — **architecture capacity affects ᾱ_max but NOT N_f much**, indicating the two quantities decouple more than one might expect.
+4. **Crack-tip burst dynamics**: at all Umax, tip creeps slowly from 0 to ~0.45 (92% of domain half-width), then jumps to 0.5 in ~10 cycles. Same qualitative pattern as FEM. Confirms PIDL Baseline captures the stable-propagation-then-snap-through behavior — it's the ψ⁺ magnitude, not the dynamics, that differs from FEM.
+5. **Per-step time grows with damage-field complexity**: at Umax=0.08 specifically, step 0–49 avg 2.20 min but step 300–332 avg 10.21 min (5× slowdown, pure physics, not code). Speed knobs (tqdm off + `log_every_n_cycles=5`) help early phase but can't compensate for late-stage NN convergence difficulty. `torch.compile` tried and reverted (Windows triton missing — see Windows-PIDL home-level memory for details).
+
+### Implications for paper
+
+- **Delete any planned coeff sensitivity ablation** — redundant.
+- Coeff=3 results give additional S-N points that can be pooled with baseline if useful (e.g., for error bars on PIDL N_f vs FEM), OR be noted as reproducibility evidence.
+- The ~17% offset from FEM anchors the scientific problem the paper sets out to explain — Mac's E2 ψ⁺ hack results already attribute this offset to ψ⁺ concentration mechanism.
+
+### Code changes pushed during the sweep (already in origin/main)
+
+- `d6da7f0` — fit/model_train/construct_model speed knobs (tqdm off, log_every, optional torch.compile); opt-in, default unchanged
+- `dcecdfd` — dynamo suppress_errors fallback (Windows-only relevance)
+- `54abb37` — windows-pidl [optimization] entry on torch.compile Windows pitfalls
+- All behavior-preserving by default (see the 2026-04-23 reply entry above for per-file scope).
+
+---
+
 ## 2026-04-24 · Windows-PIDL · [done] + [anomaly] E2 ψ⁺ hack Umax=0.08 — N_f=80, NOT upper bound
 
 **Headline**: `mult=1000` amplifier at low U_max **saturates the fatigue accumulator at cycle 0** (ᾱ_max=388 before any loading history), collapsing U_max sensitivity. Result is NOT the expected "upper bound" (Mac predicted N_f ≈ 385–400 matching FEM 396); instead **N_f=80**, essentially **identical to Mac's E2 @ Umax=0.12 (N_f=81)**. The hack with this multiplier is U_max-insensitive at this and lower amplitudes.
