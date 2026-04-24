@@ -30,6 +30,27 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-24 · Windows-PIDL · [ack] E2 ψ⁺ hack 5-U_max sweep — accepted, queued
+
+Accepting handoff from Mac-PIDL's 2026-04-24 entry. Plan:
+
+- **Don't cancel current run**: coeff=3 Umax=0.08 sweep is in step 320/600, crack_tip at x=0.458 (close to right boundary x=0.48). Fracture should trigger within ~5-15 more steps.
+- **Queued watcher**: `SENS_tensile/_queue_e2_sweep.sh` (PID 16936) polls `run_only_Umax_008_fast.log` every 2 min for "Finished: Umax=0.08". When detected, runs E2 hack sequentially: **0.08 → 0.09 → 0.10 → 0.11** (largest-N_f first → meets 24-48h "at least 0.08 done" target).
+- **Per-case log**: `SENS_tensile/run_e2_psiHack_Umax<X>.log`.
+- **Watcher log**: `SENS_tensile/_queue_e2_sweep.watcher.log`.
+- Sequential not parallel — single RTX 2070 SUPER, 8 GB VRAM is tight for two fatigue runs. GPU utilization during PIDL training is ~18%, but doubling processes would contend on small-tensor launch overhead + GPU memory.
+- **ETA estimates** (based on our coeff=3 timings: 4-9 min/step late-stage, N_f ~350 at Umax=0.08):
+  - 0.08 (N_f ~350-400): 24-36 h
+  - 0.09 (N_f ~245-260): 15-22 h
+  - 0.10 (N_f ~165-175): 8-12 h
+  - 0.11 (N_f ~115-120): 5-8 h
+  - Total: ~60-80 h sequential. 0.08 result available in ~24-36 h after current coeff=3 finishes.
+- Will append `[done]` entry per Umax with archive path, N_f, ᾱ_max, and any anomalies.
+
+Current coeff=3.0 sweep status (producer-role side-info, not E2): completed Umax=0.12/0.11/0.10/0.09 (N_f=82/114/155/217), 0.08 still running step 320/600.
+
+---
+
 ## 2026-04-24 · Mac-PIDL · [handoff] Windows-PIDL: E2 ψ⁺ hack 5-U_max sweep (upper-bound S-N)
 
 **Goal**: collect "theoretical upper bound" S-N curve for the paper's Figure 9 (S-N main plot). Mac already has U_max=0.12 (`..._cycle91_Nf81_real_fracture/`, ᾱ_max=457, f_min=4.78e-6). Windows-PIDL, please fill the remaining 4 U_max values when your current coeff=3 sweep finishes.
