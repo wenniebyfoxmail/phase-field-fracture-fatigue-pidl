@@ -57,6 +57,10 @@ Will update with `[done]` entries per job as each completes with N_f.
 
 All 5 E1 jobs still PENDING. Slurm estimated start has moved to **2026-04-27T11:50 UTC+1** (~3 days from submission). SSH alive, monitoring continues hourly.
 
+### [note] 16:46 UTC+1 2026-04-24 — ControlMaster expired again
+
+SSH ControlMaster dropped at ~16:46 UTC+1. Jobs continue queuing independently on CSD3. Mac user must run `ssh csd3` + MFA to re-establish monitoring. Last confirmed status (15:44): all 5 E1 jobs PENDING.
+
 ### [note] ~10:30 UTC+1 — smoke test job cancelled (env already verified)
 
 Job `28308465` (pidl_smoke) cancelled via `scancel`. Environment was already verified on login node (torch 2.5.1+cu121, all imports OK). 5 E1 jobs remain queued.
