@@ -53,6 +53,10 @@
 
 Will update with `[done]` entries per job as each completes with N_f.
 
+### [note] ~10:30 UTC+1 — smoke test job cancelled (env already verified)
+
+Job `28308465` (pidl_smoke) cancelled via `scancel`. Environment was already verified on login node (torch 2.5.1+cu121, all imports OK). 5 E1 jobs remain queued.
+
 ### [progress] 08:41 UTC+1 — PENDING after 5.5h; Slurm estimates now 48–54h queue wait ⚠️
 
 Ampere queue: **234 PENDING / 114 RUNNING** (348 total). Estimated starts have shifted further out:
