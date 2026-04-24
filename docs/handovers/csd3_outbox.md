@@ -53,6 +53,21 @@
 
 Will update with `[done]` entries per job as each completes with N_f.
 
+### [progress] 07:38 UTC+1 — PENDING after 4.5h; Slurm estimates ~23h queue wait
+
+All 6 jobs (smoke + 5×E1) still PENDING, 0 running. Ampere partition: **242 PENDING / 110 RUNNING** (352 total jobs).
+
+**Slurm estimated start times (via `squeue --format="%S"`):**
+
+| Job | ID | Slurm est. start | Slurm est. end |
+|---|---|---|---|
+| pidl_smoke | 28308465 | 2026-04-25 06:50 UTC+1 | 2026-04-25 07:10 UTC+1 |
+| pidl_e1_U0.08–0.12 | 28314349–53 | N/A (cannot estimate) | N/A |
+
+The smoke test has a 20-min wallclock so gets scheduled first (earliest completion); the E1 11:55h jobs are behind. **Expected queue wait ≈ 23 hours**, i.e. jobs likely start ~06:50 UTC+1 on 2026-04-25.
+
+**Impact**: No action required — jobs will self-start when nodes free up. SSH ControlMaster expires ~08:30 UTC+1 today; jobs are independent of the SSH session. Mac-side monitoring will switch to long-interval wakeups (every 30–60 min) after ControlMaster expires. When jobs do start, logs will appear at `~/rds/hpc-work/code/phase-field-fracture-with-pidl/logs/`.
+
 ### [progress] 06:10 UTC+1 — still PENDING after 6h
 
 All 6 jobs (smoke + 5×E1) still in queue, 0 running. Ampere partition was heavily loaded (~370 jobs) when submitted. SSH ControlMaster expires ~08:30 UTC+1 — if jobs haven't started by then, Mac should re-establish SSH and re-arm monitoring. Jobs themselves will keep queuing independently of the SSH session.
