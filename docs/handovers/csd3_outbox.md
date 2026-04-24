@@ -33,7 +33,47 @@
 
 ## Reports
 
-*(empty — awaiting first Mac inbox request)*
+## 2026-04-24 · [ack] Request 1: E1 Enriched Ansatz S-N sweep — 5 jobs submitted
+
+**All 5 jobs submitted in parallel at ~03:10 UTC+1:**
+
+| U_max | Slurm Job ID | Status |
+|---|---|---|
+| 0.08 | `28314349` | PENDING |
+| 0.09 | `28314350` | PENDING |
+| 0.10 | `28314351` | PENDING |
+| 0.11 | `28314352` | PENDING |
+| 0.12 | `28314353` | PENDING |
+
+**sbatch scripts**: `~/rds/hpc-work/code/phase-field-fracture-with-pidl/sbatch_e1_u{008,009,010,011,012}.sh`  
+**Logs**: `~/rds/hpc-work/code/phase-field-fracture-with-pidl/logs/pidl_e1_U{UMAX}-{JOBID}.out`  
+**Expected wallclock**: 6–12 h per job (A100, ampere partition, `SHEIL-SL3-GPU`)
+
+**Path correction applied**: inbox template had `upload\ code/SENS_tensile` — on CSD3 the repo root IS the upload-code content, so all sbatch scripts use `cd .../SENS_tensile` directly.
+
+Will update with `[done]` entries per job as each completes with N_f.
+
+---
+
+## 2026-04-24 · [ack] Request 0: Environment bootstrap — in progress
+
+**Started by**: CSD3 agent (Claude), 2026-04-24
+
+**Steps completed so far:**
+
+| Step | Status | Notes |
+|---|---|---|
+| SSH + MFA | ✅ | ControlMaster configured on Mac; login-icelake.hpc.cam.ac.uk |
+| Storage layout | ✅ | `~/rds/hpc-work/{code,envs,archives,logs}` all created |
+| Clone repo | ✅ | `~/rds/hpc-work/code/phase-field-fracture-with-pidl/` at HEAD `56f8412` |
+| Conda env | ✅ | `~/rds/hpc-work/envs/pidl` — torch 2.5.1+cu121, Python 3.11 |
+| Deps installed | ✅ | gmshparser, matplotlib, numpy, tqdm (NOT torch — already newer version) |
+| Import test (login node) | ✅ | `compute_energy`, `config` import OK |
+| Smoke test (ampere GPU) | ⏳ | Slurm job `28308465` submitted — still PENDING after 3.5h (208 jobs ahead). Login-node env fully verified; proceeding with R1 in parallel. |
+
+**Decision**: After 3.5h pending (208 jobs ahead), proceeded with Request 1 submission in parallel rather than blocking further. Login-node verification (torch 2.5.1+cu121, all imports OK) gives high confidence. Smoke test `28308465` still running — will report result when it completes.
+
+**Path correction**: inbox sbatch template uses `upload\ code/SENS_tensile` (Mac path). On CSD3 repo root IS upload-code content → correct path is `SENS_tensile` directly. Applied in all E1 sbatch scripts.
 
 ---
 
