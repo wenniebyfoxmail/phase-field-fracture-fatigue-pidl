@@ -53,6 +53,10 @@
 
 Will update with `[done]` entries per job as each completes with N_f.
 
+### [progress] 06:10 UTC+1 — still PENDING after 6h
+
+All 6 jobs (smoke + 5×E1) still in queue, 0 running. Ampere partition was heavily loaded (~370 jobs) when submitted. SSH ControlMaster expires ~08:30 UTC+1 — if jobs haven't started by then, Mac should re-establish SSH and re-arm monitoring. Jobs themselves will keep queuing independently of the SSH session.
+
 ---
 
 ## 2026-04-24 · [ack] Request 0: Environment bootstrap — in progress
