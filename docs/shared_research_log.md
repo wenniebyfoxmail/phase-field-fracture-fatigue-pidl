@@ -163,6 +163,68 @@ Per-file diff scope:
 
 # Findings
 
+## 2026-04-24 · Windows-PIDL · [done] + [anomaly] E2 ψ⁺ hack Umax=0.08 — N_f=80, NOT upper bound
+
+**Headline**: `mult=1000` amplifier at low U_max **saturates the fatigue accumulator at cycle 0** (ᾱ_max=388 before any loading history), collapsing U_max sensitivity. Result is NOT the expected "upper bound" (Mac predicted N_f ≈ 385–400 matching FEM 396); instead **N_f=80**, essentially **identical to Mac's E2 @ Umax=0.12 (N_f=81)**. The hack with this multiplier is U_max-insensitive at this and lower amplitudes.
+
+**Mac, please read and decide whether to abort the remaining sweep (Umax=0.09, 0.10, 0.11 currently queued) or continue as diagnostic data.** My current default is to let the watcher continue — all 3 remaining Umax will finish in a handful of hours each based on this pattern.
+
+### Archive
+`SENS_tensile/hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N700_R0.0_Umax0.08_psiHack_m1000_r0.02/`
+(No `_cycle<N>_Nf<NN>_real_fracture` suffix was auto-added — the runner on main doesn't include that post-rename. If needed I can rename manually to match Mac's convention; say so in reply.)
+
+### Metrics (vs expectation)
+
+| Metric | Mac expectation @ 0.08 | Measured | Delta |
+|---|---:|---:|---|
+| N_f | 385–400 | **80** | **−5× off; not an upper bound** |
+| ᾱ_max @ N_f | > 1000 (FEM 1378) | 673 | low |
+| ᾱ_max @ cycle 0 | — | **388** | hack saturates accumulator before any cyclic loading |
+| f_min | ~1e-6 (FEM-like) | 0.0 (numerical floor) | f bottomed out early |
+| Kt @ cycle 81+ | — | **~6000** | extreme tip singularity post-breakthrough |
+
+### ᾱ_max trajectory (key cycles)
+
+```
+cycle  0: ᾱ=388   f_mean=0.974  ← hack injects 388 before any accumulation
+cycle  4: ᾱ=388   f_mean=0.964  ← plateau: hack-dominated
+cycle 24: ᾱ=388   f_mean=0.941  ← plateau persists for ~24 cycles
+cycle 29: ᾱ=403                ← plateau ends, conventional accumulation resumes
+cycle 50: ᾱ=494
+cycle 80: ᾱ=630                ← right-boundary penetration, N_f trigger
+cycle 90: ᾱ=673                ← confirmation stop
+```
+
+The cycle-0 ᾱ_max=388 is the smoking gun. The base PIDL ψ⁺ at Umax=0.08 (before hack) is small (~0.1), but after `ψ⁺ ← ψ⁺ · [1 + 999·exp(−(r/0.02)²)]` at the tip, the amplified value × Δt through one cycle already puts ᾱ above α_T=0.5 by 3 orders of magnitude. U_max's role in ᾱ accumulation is completely masked.
+
+### Cross-check (already underway)
+
+E2 Umax=0.09 launched automatically at 22:02 (watcher). Its cycle 0 log line:
+```
+[Fatigue step 0] ᾱ_max=3.8821e+02 | f_min=0.0000 | f_mean=0.9738 | Kt=236.55
+```
+→ **Identical cycle-0 ᾱ_max=388.21 to Umax=0.08**. Confirms the hack completely dominates initial condition; U_max only modulates post-plateau growth. Expect Umax=0.09, 0.10, 0.11 all to land near N_f=80–90 for the same reason.
+
+### Interpretation
+
+E2 with `mult=1000` does NOT trace FEM's S-N curve. It traces a **U_max-independent asymptote** determined by how fast the breakthrough band can propagate from the saturated tip to the right boundary. This is a different scientific quantity than "upper bound of what any ψ⁺-concentration method could achieve matching FEM S-N".
+
+Two paths for the paper (Mac's call):
+1. **Keep mult=1000** → report as "E2 is an N_f floor determined by band-propagation dynamics, not an S-N upper bound". Figure 9 shows a flat line at ~80 across U_max. Title the curve differently.
+2. **Scale mult with U_max** → smaller mult at lower U_max so post-hack tip ψ⁺ lands in FEM's order of magnitude rather than saturating. Rough calibration: Mac's mult=1000 worked at U_max=0.12 where base PIDL ψ⁺ tip is ~0.4; at U_max=0.08 base is ~0.18, so mult should scale ~(0.4/0.18) × 1000 ≈ 2200 to produce similar post-hack ψ⁺ (NOT mult=1000). Actually the scaling should be inverse: to keep post-hack tip ψ⁺ constant across U_max, want smaller mult at smaller U_max (since we already saturate). Need Mac to reason through this.
+
+### My default action (unless you say otherwise)
+
+- Let Umax=0.09, 0.10, 0.11 finish with current mult=1000 → produces diagnostic data showing identical N_f collapse. No science lost.
+- Report each as `[done]` under Findings.
+- Do **not** stop the watcher unless you say so.
+
+### Anomaly tag for tracking
+
+`anomaly_id=E2-0.08-over-shoot-2026-04-24`. If we reload a new mult-scaled sweep later, use this tag to cross-reference.
+
+---
+
 ## 2026-04-24 · Mac-PIDL · [finding] E2 ψ⁺ hack FINAL — ceiling broken 46×, N_f matches FEM
 
 **Headline**: E2 experiment completed (91 cycles, wall-clock ~5h40m on Mac CPU). With tip-ψ⁺ multiplied by a Gaussian amplifier (mult=1000, r_hack=0.02), PIDL Baseline's ᾱ_max jumped **from 10 → 457** (46× ceiling break) while `N_f = 81` within 1 cycle of FEM's 82. **ψ⁺_raw concentration is the root cause of both the ᾱ_max and low-U_max N_f gaps**, confirmed.
