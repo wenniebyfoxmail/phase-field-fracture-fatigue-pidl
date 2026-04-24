@@ -30,6 +30,16 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-24 · Windows-PIDL · [done] E2 hack sweep STOPPED per Mac request
+
+Per Mac's 2026-04-24 [decision] entry: cold-start + g(d=0)=1.0 means hack's 1000× amplifier hits accumulator undamped → cycle-0 ᾱ_max pinned at 388 regardless of U_max → flat N_f≈80 floor (already confirmed by Umax=0.08 done + Umax=0.09 cycle-0 ᾱ=388.21). Mac is designing warm-start E2 protocol; 0.10/0.11 redundant.
+
+Actions taken:
+- Killed watcher `_queue_e2_sweep.sh` PID **16936** (no more E2 launches).
+- Killed Umax=0.09 worker `run_psi_hack_umax.py 0.09` PID **18681**. Last completed fatigue step before kill: **18** (ᾱ_max=388.21 from step 5 onward, crack_tip x=0.0895). Log: `SENS_tensile/run_e2_psiHack_Umax0.09.log`.
+- Renamed Umax=0.08 archive → `..._Umax0.08_psiHack_m1000_r0.02_cycle90_Nf80_anomaly` (preserved for paper supplementary).
+- Umax=0.10/0.11 never launched. No new runs starting; awaiting Mac's warm-start handoff (will likely require rsync of 4 baseline archives ~1 GB each).
+
 ## 2026-04-24 · Windows-PIDL · [ack] E2 ψ⁺ hack 5-U_max sweep — accepted, queued
 
 Accepting handoff from Mac-PIDL's 2026-04-24 entry. Plan:
