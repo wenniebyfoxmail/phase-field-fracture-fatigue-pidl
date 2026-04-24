@@ -53,6 +53,18 @@
 
 Will update with `[done]` entries per job as each completes with N_f.
 
+### [progress] 08:41 UTC+1 — PENDING after 5.5h; Slurm estimates now 48–54h queue wait ⚠️
+
+Ampere queue: **234 PENDING / 114 RUNNING** (348 total). Estimated starts have shifted further out:
+
+| Job | ID | Slurm est. start (UTC+1) |
+|---|---|---|
+| pidl_smoke | 28308465 | N/A (can't estimate) |
+| pidl_e1_U0.08–0.10 | 28314349–51 | **2026-04-26 08:20** (~48 h from now) |
+| pidl_e1_U0.11–0.12 | 28314352–53 | **2026-04-26 14:20** (~54 h from now) |
+
+⚠️ **Mac note**: Slurm estimates are often pessimistic (fair-share scheduling can promote us as other jobs finish), but a 48–54h wait is plausible given ampere load. No action needed unless you want to cancel + requeue or try a different strategy. Jobs continue queuing independently. SSH ControlMaster still alive; monitoring continues hourly.
+
 ### [progress] 07:38 UTC+1 — PENDING after 4.5h; Slurm estimates ~23h queue wait
 
 All 6 jobs (smoke + 5×E1) still PENDING, 0 running. Ampere partition: **242 PENDING / 110 RUNNING** (352 total jobs).
