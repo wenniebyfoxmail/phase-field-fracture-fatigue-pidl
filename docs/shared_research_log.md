@@ -30,6 +30,74 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-24 · Mac-PIDL · [handoff] Windows-PIDL: E2 ψ⁺ hack 5-U_max sweep (upper-bound S-N)
+
+**Goal**: collect "theoretical upper bound" S-N curve for the paper's Figure 9 (S-N main plot). Mac already has U_max=0.12 (`..._cycle91_Nf81_real_fracture/`, ᾱ_max=457, f_min=4.78e-6). Windows-PIDL, please fill the remaining 4 U_max values when your current coeff=3 sweep finishes.
+
+### What to run
+
+```bash
+cd "upload code/SENS_tensile"
+# after `git pull` (to get runner from commit 21980dc)
+python run_psi_hack_umax.py 0.08
+python run_psi_hack_umax.py 0.09
+python run_psi_hack_umax.py 0.10
+python run_psi_hack_umax.py 0.11
+```
+
+Sequential or parallel (your choice based on Windows GPU / CPU availability).
+
+### Runner (committed on main, commit `21980dc`)
+
+- `SENS_tensile/run_psi_hack_umax.py` — cold-start, CLI arg = `umax`
+- Defaults: `--mult 1000 --r_hack 0.02` (matches Mac E2 at 0.12). Don't override unless you want to explore sensitivity.
+
+### Config (auto-applied by runner; don't edit config.py)
+
+- `psi_hack.enable = True`
+- `accum_type = 'carrara'`, `spatial_alpha_T` off, `williams` off, `ansatz` off
+- `n_cycles = 700` (deep enough for low U_max where N_f can hit 300–400)
+
+### Archive naming
+
+Each Umax run creates:
+```
+hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N700_R0.0_Umax<UMAX>_psiHack_m1000_r0.02/
+```
+After fracture detection + 10-cycle confirmation, the primary main.py loop should auto-add the `_cycle<N>_Nf<NN>_real_fracture` suffix. (If it doesn't on your branch, rename manually matching Mac's E2 archive pattern.)
+
+### Expected metrics (extrapolating from Mac E2 @ U=0.12)
+
+| U_max | FEM N_f | Baseline PIDL N_f | **E2 hack expected N_f** | Expected ᾱ_max |
+|---|---|---|---|---|
+| 0.08 | 396 | 341 | should land near FEM (~385–400) | > 1000 (FEM has 1378) |
+| 0.09 | 254 | 230 | ~245–260 | > 700 |
+| 0.10 | 170 | 160 | ~165–175 | > 500 |
+| 0.11 | 117 | 112 | ~115–120 | ~500 |
+
+**Sanity check**: ᾱ_max should break 10 ceiling by cycle 55–65 (Mac E2 at 0.12 showed the break at cycle 52 → 108). If after cycle 70 ᾱ_max is still stuck near 10, something is off (psi_hack may not have activated; check log banner for "psi_hack.enable=True" and for `multiplier=1000` in output).
+
+### Reporting
+
+Append to `docs/shared_research_log.md` (below the Findings section) per Umax `[done]` entry with:
+- Archive path
+- Final N_f and ᾱ_max at N_f
+- Any anomalies (did fracture confirm? did ᾱ_max plateau prematurely?)
+
+Or if anything blocks: `[blocker]` entry here and ping Mac to unblock.
+
+### Priority
+
+**Medium**. Not blocking Ch2 writing (Mac already has the ψ⁺ mechanism proof at 0.12 as load-bearing evidence). But the full 5-Umax upper-bound curve is load-bearing for Figure 9. Target: have at least 0.08 done in next 24–48h so Mac can draft the figure.
+
+### Safety notes
+
+- `psi_hack` only affects the fatigue accumulator (via `get_psi_plus_per_elem`); the NN Deep Ritz loss uses a separate `compute_energy` path and is unaffected. NN training dynamics should be identical to baseline.
+- Cold start from cycle 0 is safe: pretraining (no fatigue) runs first, so by cycle 0 of cyclic loading the NN has a reasonable field already.
+- Cycle 0 to 5 may show large Δᾱ spikes — this is expected (hack is fully active; no gradual ramp-up).
+
+---
+
 ## [question] Windows-PIDL commit d6da7f0 scope & safety (2026-04-23)
 
 - Windows-PIDL made two performance changes:
