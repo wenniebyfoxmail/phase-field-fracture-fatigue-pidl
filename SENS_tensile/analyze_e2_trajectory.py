@@ -151,6 +151,15 @@ def main():
     r_to_tip = np.sqrt(cx ** 2 + cy ** 2)
     hack_scale_arr = hack_scale(centroids_np, HACK)
 
+    # ★ Apr 25 expert review G1: process-zone integrated metrics
+    # ℓ₀ = mat_prop_dict['l0'] = 0.01
+    L0 = 0.01
+    area_T_np = area_T.detach().cpu().numpy() if hasattr(area_T, "detach") else np.asarray(area_T)
+    pz_l0_mask  = r_to_tip <= L0       # process zone of radius ℓ₀
+    pz_2l0_mask = r_to_tip <= 2 * L0   # 2·ℓ₀ for sensitivity
+    print(f"  Process-zone: |B_ℓ₀(tip)|={pz_l0_mask.sum()} elems, "
+          f"|B_2ℓ₀(tip)|={pz_2l0_mask.sum()} elems")
+
     # Load existing alpha_bar trajectory
     abar = np.load(best / "alpha_bar_vs_cycle.npy")  # may be (N,) or (N,2)
     print(f"alpha_bar_vs_cycle.npy shape: {abar.shape}")
@@ -182,6 +191,25 @@ def main():
         psi_deg_max = float(psi_deg.max())
         psi_with_hack_max = float(psi_with_hack.max())
 
+        # ★ Process-zone integrated metrics (G1)
+        # ∫_{B_r(tip)} ψ⁺ dA, computed as sum over elements with centroid in B_r
+        pz_l0_psi_raw_int = float((psi_raw[pz_l0_mask] * area_T_np[pz_l0_mask]).sum())
+        pz_l0_psi_deg_int = float((psi_deg[pz_l0_mask] * area_T_np[pz_l0_mask]).sum())
+        pz_2l0_psi_raw_int = float((psi_raw[pz_2l0_mask] * area_T_np[pz_2l0_mask]).sum())
+        pz_2l0_psi_deg_int = float((psi_deg[pz_2l0_mask] * area_T_np[pz_2l0_mask]).sum())
+        # Top-percentile metrics (more stable than max under mesh refinement)
+        psi_raw_p99 = float(np.percentile(psi_raw, 99.0))   # top-1% threshold
+        psi_raw_p95 = float(np.percentile(psi_raw, 95.0))   # top-5% threshold
+        psi_deg_p99 = float(np.percentile(psi_deg, 99.0))
+        psi_deg_p95 = float(np.percentile(psi_deg, 95.0))
+        # Mean of top-1% / top-5% (more representative than threshold)
+        idx_top1 = np.argpartition(psi_raw, -max(1, len(psi_raw) // 100))[-max(1, len(psi_raw) // 100):]
+        idx_top5 = np.argpartition(psi_raw, -max(1, len(psi_raw) // 20))[-max(1, len(psi_raw) // 20):]
+        psi_raw_top1pct_mean = float(psi_raw[idx_top1].mean())
+        psi_raw_top5pct_mean = float(psi_raw[idx_top5].mean())
+        psi_deg_top1pct_mean = float(psi_deg[idx_top1].mean())
+        psi_deg_top5pct_mean = float(psi_deg[idx_top5].mean())
+
         # element nearest (0, 0)
         i_near = int(np.argmin(r_to_tip))
 
@@ -206,7 +234,14 @@ def main():
                      # element coords for tracking
                      float(centroids_np[i_A, 0]), float(centroids_np[i_A, 1]),
                      float(centroids_np[i_B, 0]), float(centroids_np[i_B, 1]),
-                     float(centroids_np[i_C, 0]), float(centroids_np[i_C, 1])])
+                     float(centroids_np[i_C, 0]), float(centroids_np[i_C, 1]),
+                     # ★ Process-zone metrics (G1) cols 28-39
+                     pz_l0_psi_raw_int, pz_l0_psi_deg_int,
+                     pz_2l0_psi_raw_int, pz_2l0_psi_deg_int,
+                     psi_raw_p99, psi_raw_p95,
+                     psi_deg_p99, psi_deg_p95,
+                     psi_raw_top1pct_mean, psi_raw_top5pct_mean,
+                     psi_deg_top1pct_mean, psi_deg_top5pct_mean])
 
         if j % 5 == 0 or j < 3 or j >= 80:
             print(f"  c{j:>3d}: "
@@ -228,7 +263,14 @@ def main():
             # field stats  cols 19-21
             "psi_raw_max", "psi_deg_max", "psi_with_hack_max",
             # coords of A/B/C  cols 22-27
-            "A_x", "A_y", "B_x", "B_y", "C_x", "C_y"]
+            "A_x", "A_y", "B_x", "B_y", "C_x", "C_y",
+            # ★ Process-zone metrics (G1) cols 28-39
+            "pz_l0_psi_raw_int", "pz_l0_psi_deg_int",
+            "pz_2l0_psi_raw_int", "pz_2l0_psi_deg_int",
+            "psi_raw_p99", "psi_raw_p95",
+            "psi_deg_p99", "psi_deg_p95",
+            "psi_raw_top1pct_mean", "psi_raw_top5pct_mean",
+            "psi_deg_top1pct_mean", "psi_deg_top5pct_mean"]
     np.savez(str(out_npz), data=arr, columns=np.array(cols),
              alpha_bar_vs_cycle=abar)
     print(f"\n→ saved {out_npz.name}  ({len(arr)} cycles)")
