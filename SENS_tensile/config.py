@@ -234,7 +234,24 @@ disp = disp[1:]
 # ★ 循环加载位移序列（fatigue_on=True + loading_type='cyclic' 时由 main.py 选用）
 # 等幅循环：每步幅值均为 disp_max，步数 = n_cycles
 # R=0 → 每个"步"代表一个完整的 0→disp_max 峰值（卸载时 ψ⁺ 不累积，无需显式建模）
+#
+# ⚠ Apr 25 BUGFIX (Windows-PIDL caught): runners that override
+# fatigue_dict["disp_max"] AFTER importing config must call rebuild_disp_cyclic()
+# afterwards, or `disp_cyclic` will retain the default 0.12 vector and the
+# CLI Umax argument silently has no effect on training.
 disp_cyclic = np.ones(fatigue_dict["n_cycles"]) * fatigue_dict["disp_max"]
+
+
+def rebuild_disp_cyclic():
+    """Rebuild module-level `disp_cyclic` from current `fatigue_dict` values.
+
+    Call after mutating `fatigue_dict['disp_max']` or `fatigue_dict['n_cycles']`
+    in a runner script. Without this, runners that override these values
+    after `import config` will silently train at the import-time defaults.
+    """
+    global disp_cyclic
+    disp_cyclic = np.ones(fatigue_dict["n_cycles"]) * fatigue_dict["disp_max"]
+    return disp_cyclic
 
 ## ############################################################################
 ## ############################################################################

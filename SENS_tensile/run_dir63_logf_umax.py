@@ -74,6 +74,7 @@ config.fatigue_dict["kappa"]                     = KAPPA           # ★ NEW PAR
 config.fatigue_dict["alpha_T"]                   = ALPHA_T
 config.fatigue_dict["disp_max"]                  = float(args.umax)
 config.fatigue_dict["n_cycles"]                  = 300
+config.rebuild_disp_cyclic()  # ★ Apr 25 bugfix: rebuild loading vector after dict mutation
 config.fatigue_dict["R_ratio"]                   = 0.0
 config.fatigue_dict["enable_E_fallback"]         = False
 config.fatigue_dict["spatial_alpha_T"]["enable"] = False
