@@ -114,7 +114,10 @@ def main():
         print(f"ERROR: archive not found: {archive}")
         return 1
     best = archive / "best_models"
-    out_npz = HERE / f"e2_trajectory_{archive.name[:80]}.npz"
+    # Distinguishing tags live at the END of the archive name (logf, enriched,
+    # psiHack, etc); first 80 chars are common boilerplate. Use last 80 chars.
+    _tag = archive.name[-80:].replace("/", "_")
+    out_npz = HERE / f"trajectory_{_tag}.npz"
 
     # Build NN + field once (reused, just reload weights)
     pffmodel, matprop, network = construct_model(

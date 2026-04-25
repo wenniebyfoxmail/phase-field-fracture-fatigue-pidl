@@ -119,7 +119,8 @@ def get_crack_tip(alpha_vals, node_coords, crack_mouth_xy, threshold=0.9,
 def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
           optimizer_dict, training_dict, coarse_mesh_file, fine_mesh_file,
           device, trainedModel_path, intermediateModel_path, writer,
-          fatigue_dict=None):                        # ★ 新增参数
+          fatigue_dict=None,                         # ★ 新增参数
+          mit8_dict=None):                           # ★ MIT-8 supervised warmup
     '''
     Neural network training: pretraining with a coarser mesh in the first
     stage before the main training proceeds.
@@ -394,6 +395,20 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         loss_data = list()
         start = time.time()
 
+        # ★ MIT-8: build per-cycle supervised_dict (None outside [1, K])
+        _supervised_dict = None
+        if mit8_dict is not None and mit8_dict.get('enable', False):
+            _K = int(mit8_dict.get('K', 0))
+            if 1 <= j <= _K:
+                _supervised_dict = {
+                    'fem_sup': mit8_dict['fem_sup'],
+                    'cycle_idx': j,
+                    'lambda': float(mit8_dict.get('lambda', 1.0)),
+                    'pidl_centroids': mit8_dict['pidl_centroids'],
+                    'loss_kind': mit8_dict.get('loss_kind', 'mse_log'),
+                }
+                print(f"  [MIT-8] cycle {j}/{_K}: supervised lambda={_supervised_dict['lambda']}")
+
         # ------------------------------------------------------------------
         # 训练（与 Manav 完全相同的结构；仅多传 f_fatigue 和 crack_tip_weights）
         # ------------------------------------------------------------------
@@ -406,6 +421,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
                 intermediateModel_path=None, writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,              # ★ 传入疲劳退化函数
+                supervised_dict=_supervised_dict, # ★ MIT-8
             )
             loss_data = loss_data + loss_data1
 
@@ -420,6 +436,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 intermediateModel_path=intermediateModel_path,
                 writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,              # ★ 传入疲劳退化函数
+                supervised_dict=_supervised_dict, # ★ MIT-8
             )
             loss_data = loss_data + loss_data2
 

@@ -3,7 +3,24 @@ import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 
-from compute_energy import compute_energy
+from compute_energy import compute_energy, gradients, strain_energy_with_split
+
+
+def _compute_psi_raw_per_elem(inp, u, v, alpha, matprop, pffmodel, area_T, T_conn):
+    """Compute UNDEGRADED ψ⁺_0 per element (E_el_p before g(α) multiply).
+
+    Used by MIT-8 supervised-warmup loss. Differs from
+    compute_energy.get_psi_plus_per_elem (which returns g·E_el_p).
+    """
+    s11, s22, s12, _, _ = gradients(inp, u, v, alpha, area_T, T_conn)
+    if T_conn is None:
+        alpha_elem = alpha
+    else:
+        alpha_elem = (alpha[T_conn[:, 0]] + alpha[T_conn[:, 1]]
+                      + alpha[T_conn[:, 2]]) / 3
+    _, E_el_p = strain_energy_with_split(s11, s22, s12, alpha_elem,
+                                         matprop, pffmodel)
+    return E_el_p   # graph-attached, so backward through u, v works
 
 
 class EarlyStopping:
@@ -30,7 +47,9 @@ class EarlyStopping:
 
 def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matprop, pffmodel,
         weight_decay, num_epochs, optimizer, intermediateModel_path=None, writer=None, training_dict={},
-        f_fatigue=1.0, crack_tip_weights=None):
+        f_fatigue=1.0, crack_tip_weights=None,
+        supervised_dict=None):
+    # ★ MIT-8 supervised_dict — see fit_with_early_stopping signature
     # ★ 新增参数 f_fatigue：
     #    - 标量 1.0（默认）：完全等价 Manav 原始行为
     #    - Tensor (n_elem,)：逐元素疲劳退化函数，由 fatigue_history.compute_fatigue_degrad() 提供
@@ -73,6 +92,18 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
 
                 loss = loss_var + weight_decay*loss_reg
 
+                # ★ MIT-8 supervised term (Apr 25): joint physics + FEM ψ⁺ supervision
+                if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
+                    psi_raw_pidl = _compute_psi_raw_per_elem(
+                        inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
+                    loss_sup = supervised_dict['fem_sup'].supervised_loss(
+                        psi_raw_pidl,
+                        cycle_idx=supervised_dict['cycle_idx'],
+                        pidl_centroids=supervised_dict['pidl_centroids'],
+                        lambda_sup=supervised_dict['lambda'],
+                        loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
+                    loss = loss + loss_sup
+
                 if writer is not None:
                     writer.add_scalars('U_p_'+str(field_comp.lmbda.item()), {'loss':loss.item(), "loss_E":loss_var.item()}, epoch)
 
@@ -99,7 +130,11 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
 
 def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matprop, pffmodel,
                             weight_decay, num_epochs, optimizer, min_delta, intermediateModel_path=None, writer=None, training_dict={},
-                            f_fatigue=1.0, crack_tip_weights=None):
+                            f_fatigue=1.0, crack_tip_weights=None,
+                            supervised_dict=None):
+    # ★ MIT-8 supervised_dict (Apr 25, optional, default None → identical behavior):
+    #    {'fem_sup': FEMSupervision, 'cycle_idx': int, 'lambda': float,
+    #     'pidl_centroids': np.ndarray, 'loss_kind': 'mse_log'|'mse_lin'|'mse_rel'}
     # ★ 新增参数 f_fatigue（同 fit）
     # ★ 新增参数 crack_tip_weights（方向3，同 fit）
     loss_data = list()
@@ -130,6 +165,18 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                         loss_reg += torch.sum(param**2)
 
             loss = loss_var + weight_decay*loss_reg
+
+            # ★ MIT-8 supervised term (Apr 25): joint physics + FEM ψ⁺ supervision
+            if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
+                psi_raw_pidl = _compute_psi_raw_per_elem(
+                    inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
+                loss_sup = supervised_dict['fem_sup'].supervised_loss(
+                    psi_raw_pidl,
+                    cycle_idx=supervised_dict['cycle_idx'],
+                    pidl_centroids=supervised_dict['pidl_centroids'],
+                    lambda_sup=supervised_dict['lambda'],
+                    loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
+                loss = loss + loss_sup
 
             if writer is not None:
                     writer.add_scalars('U_p_'+str(field_comp.lmbda.item()), {'loss':loss.item(), "loss_E":loss_var.item()}, epoch)

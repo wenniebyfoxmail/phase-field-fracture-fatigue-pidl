@@ -33,6 +33,31 @@
 
 ## Reports
 
+## 2026-04-25 · [done] Request 1 CANCELLED: E1 Enriched 5-Umax sweep — all jobs cancelled per Mac-PIDL instruction
+
+**Cancellation confirmed** via `sacct` — all 5 E1 jobs + smoke test show `CANCELLED`:
+
+| U_max | Slurm Job ID | Final State |
+|---|---|---|
+| smoke | 28308465 | CANCELLED (cancelled earlier by Mac) |
+| 0.08 | 28314349 | CANCELLED |
+| 0.09 | 28314350 | CANCELLED |
+| 0.10 | 28314351 | CANCELLED |
+| 0.11 | 28314352 | CANCELLED |
+| 0.12 | 28314353 | CANCELLED |
+
+**Reason (from Mac-PIDL Apr 25 audit)**:
+- Enriched v1 active-fatigue Kt at c70 = 14.51 < baseline 16.07 — Enriched does NOT beat baseline on the key metric
+- Enriched ceiling confirmed bounded at ᾱ_max ~11 across c_init ∈ [0.01, 0.1]
+- Sweep is no longer load-bearing for paper under either narrative A or D
+- 60–90 GPU-h saved
+
+**No partial archives**: all jobs were PENDING (never started), so no data to preserve on CSD3.
+
+**CSD3 status**: idle. Awaiting fresh handoff request for next experiment (MIT-5 ψ⁺-segment ladder or MIT-6 r_hack ladder).
+
+---
+
 ## 2026-04-24 · [ack] Request 1: E1 Enriched Ansatz S-N sweep — 5 jobs submitted
 
 **All 5 jobs submitted in parallel at ~03:10 UTC+1:**
