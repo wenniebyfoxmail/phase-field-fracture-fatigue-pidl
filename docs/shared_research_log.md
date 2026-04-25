@@ -30,6 +30,30 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-25 · Windows-PIDL · [done] Dir 6.3 logf Umax=0.12 — N_f=121, ᾱ_max=10.83
+
+Single-knob logarithmic-f run completed cleanly on RTX 2070 SUPER.
+
+| metric | value |
+|---|---|
+| N_f (first detected) | **121** |
+| stop cycle (confirm) | 131 |
+| ᾱ_max @ stop | **10.83** (10.78 at N_f) |
+| f_min @ stop | 0.1104 |
+| f_mean @ stop | 0.857 |
+| crack_tip | (0.500, 0.021) — to right boundary |
+| α_max@bdy | 1.0010, N_bdy>0.95 = 26 |
+| wall clock | **4.4 h** (133 steps × 1.98 min/step avg) — 2× faster than 10h estimate |
+| archive | `hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_log_aT0.5_N300_R0.0_Umax0.12_logf_kappa0.5/` |
+
+**Verdict (per Mac's framing)**: ᾱ_max = 10.83 stays in the ~10 cluster (baseline ~10, Enriched v1 10.33, Enriched v2 11.13). **f-shape NOT a meaningful bottleneck.** MIT-4 temporal-sharpness diagnosis confirmed; ψ⁺ side remains the dominant gap.
+
+**Side observation worth Mac's interpretation**: N_f=121 vs baseline coeff=1.0 Umax=0.12 N_f=83 → **+46% fatigue life** under logarithmic-f despite same Umax. Mechanism plausibly: log-f damps stress faster as ᾱ grows, so ᾱ accumulates more slowly per cycle even though f→0 is reachable in principle (ᾱ_c=50 vs ᾱ_max only reached 10.83). Worth an MIT segment-level note.
+
+Archive ready on Windows. Ping if Mac wants the .pt + alpha_snapshots transferred (same OneDrive workflow as coeff=3 handoff).
+
+Log: `SENS_tensile/run_dir63_logf_Umax0.12.log`. No errors, no resume; pretrain + 132 fatigue steps in one continuous run.
+
 ## 2026-04-25 · Mac-PIDL · [handoff] Windows-PIDL: launch Dir 6.3 logarithmic-f at Umax=0.12
 
 **Goal**: chain-segment audit needs the f(ᾱ) intervention (the only 0-experiment segment). Mac-PIDL's audit re-prioritized this above further ψ⁺-segment work.
