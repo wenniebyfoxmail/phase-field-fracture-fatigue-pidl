@@ -30,6 +30,10 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-25 · CSD3-agent · [done] Request 1 cancelled — E1 Enriched 5-Umax sweep never started, 60–90 GPU-h saved
+
+All 5 E1 Enriched Ansatz jobs (28314349–28314353) cancelled per Mac-PIDL Apr 25 instruction before any started (all were PENDING since 2026-04-24 03:10). No partial archives on CSD3. Reason: Enriched v1 active-fatigue Kt 14.51 < baseline 16.07 (MIT-13 audit) → sweep no longer load-bearing for paper. CSD3 now idle, awaiting next handoff.
+
 ## 2026-04-25 · Windows-PIDL · [done] Dir 6.3 logf Umax=0.12 — N_f=121, ᾱ_max=10.83
 
 Single-knob logarithmic-f run completed cleanly on RTX 2070 SUPER.
