@@ -114,10 +114,15 @@ def main():
         print(f"ERROR: archive not found: {archive}")
         return 1
     best = archive / "best_models"
-    # Distinguishing tags live at the END of the archive name (logf, enriched,
-    # psiHack, etc); first 80 chars are common boilerplate. Use last 80 chars.
+    # Use a coeff_<value>_<last-80-chars> tag to disambiguate coeff variants
+    # that otherwise share the same N/Umax tail.
+    _coeff = "coeff1"
+    if "coeff_3.0" in archive.name:
+        _coeff = "coeff3"
+    elif "coeff_1.0" not in archive.name:
+        _coeff = "coeffX"
     _tag = archive.name[-80:].replace("/", "_")
-    out_npz = HERE / f"trajectory_{_tag}.npz"
+    out_npz = HERE / f"trajectory_{_coeff}_{_tag}.npz"
 
     # Build NN + field once (reused, just reload weights)
     pffmodel, matprop, network = construct_model(
@@ -131,7 +136,11 @@ def main():
         lmbda=torch.tensor([0.0], device=DEVICE), theta=loading_angle,
         alpha_constraint=numr_dict["alpha_constraint"],
         williams_dict=None, l0=mat_prop_dict["l0"])
-    field_comp.lmbda = torch.tensor(0.12, device=DEVICE)
+    # Extract Umax from archive name (handles Umax0.12, Umax0.08, etc.)
+    _umax_str = archive.name.split("Umax")[-1].split("_")[0]
+    _umax = float(_umax_str)
+    print(f"  Loading amplitude (extracted from name): Umax={_umax}")
+    field_comp.lmbda = torch.tensor(_umax, device=DEVICE)
 
     # Pre-compute centroid distance to tip (0, 0) once
     inp_np = inp.detach().cpu().numpy()
