@@ -30,6 +30,46 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-25 · Mac-PIDL · [handoff] Windows-PIDL: launch Dir 6.3 logarithmic-f at Umax=0.12
+
+**Goal**: chain-segment audit needs the f(ᾱ) intervention (the only 0-experiment segment). Mac-PIDL's audit re-prioritized this above further ψ⁺-segment work.
+
+### What to run on Windows
+
+```powershell
+cd <repo>/SENS_tensile
+git pull
+python run_dir63_logf_umax.py 0.12
+```
+
+`run_dir63_logf_umax.py` is the new runner — single-knob change vs baseline:
+- `degrad_type='logarithmic'` (vs default `asymptotic`)
+- `kappa=0.5` (default; gives ᾱ_crit = 50)
+- All other config = baseline coeff=1.0, 8×400 TrainableReLU, no Williams, no Enriched, no spAlphaT, no psi_hack
+
+### Expected output
+
+Archive dir: `hl_8_..._Umax0.12_logf_kappa0.5/`. Standard fatigue training, ~10h on RTX 2070 SUPER (vs ~24h Mac CPU). Watch log for fracture confirmation around cycle 75-100.
+
+### What we're testing
+
+If ᾱ_max ceiling stays ~10 → f-shape NOT a bottleneck → confirms ψ⁺ side is the dominant gap. If ᾱ_max breaks past 10 → f-shape IS a bottleneck → ψ⁺-only narrative needs revision.
+
+### Side context (for situational awareness, not action)
+
+- **Mac Enriched v2 STRONGER fractured Apr 25**: cycle 83 detected, ᾱ_max=11.13 vs Enriched v1 10.33. **+0.8 (+8%)** — Enriched family ceiling confirmed. v2's c_singular drifted negative (-0.025 at fracture) → stronger-init didn't help.
+- **MIT-4 self-correction (Apr 25)**: re-analysis of Mac E2 archive showed prior "PIDL ψ⁺_raw=4000, gap 2.4×" claim was a numerical artifact at α=1 saturated elements. Active fatigue driver native ψ⁺_raw ≈ 5; PIDL-FEM gap at active driver ~2000× (3 orders), matches original Apr 23 framing in spirit. E2 hack confirmed = "frozen accumulator at hack center" not redistribution mimic. E2 is a **fatigue-model sanity check**, NOT a "PIDL closure proof" — the apparent 48% closure number is set by the multiplier choice (×1000), not learned by NN architecture.
+- **Audit ledger** at Mac's `~/.claude/plans/audit_ledger.md` (local, not shared) tracks the Successor↔Auditor exchange that drove these corrections.
+
+### What Mac-PIDL is doing in parallel
+
+- MIT-4 trajectory analysis on baseline + Enriched v1 archives (running locally, ~1-2h analysis only, no compute conflict with Windows).
+- Holding all new training launches pending Dir 6.3 outcome + user's narrative decision (A closure / D framework paper).
+
+Commit: this entry + 2 new SENS_tensile scripts (`analyze_e2_trajectory.py`, `run_dir63_logf_umax.py`) — code only, no result files.
+
+---
+
 ## 2026-04-24 · Windows-PIDL · [done] E2 hack sweep STOPPED per Mac request
 
 Per Mac's 2026-04-24 [decision] entry: cold-start + g(d=0)=1.0 means hack's 1000× amplifier hits accumulator undamped → cycle-0 ᾱ_max pinned at 388 regardless of U_max → flat N_f≈80 floor (already confirmed by Umax=0.08 done + Umax=0.09 cycle-0 ᾱ=388.21). Mac is designing warm-start E2 protocol; 0.10/0.11 redundant.
