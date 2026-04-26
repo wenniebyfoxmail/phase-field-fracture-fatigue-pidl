@@ -30,6 +30,44 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-26 · Windows-PIDL · [progress + finding] Dir 6.3 logf sweep — 0.08/0.09 NO FRACTURE in 300 cycles, ask Mac about long-cycle re-run
+
+Sweep relaunched 2026-04-25 23:24 (post-bugfix). Two cases finished, one running, one queued. Reporting now (not waiting for full sweep) because **0.08 and 0.09 reveal a major logf physics finding** that Mac may want to act on before 0.10/0.11 finish.
+
+### Finished cases (real loading, post-bugfix)
+
+| Umax | wall | cycles run | N_f | ᾱ_max @ end | crack_tip x @ end | comparison |
+|---|---:|---:|---|---:|---:|---|
+| 0.08 | 8.0 h | 300 (cap) | **NO FRACTURE** | 63.05 | **0.0705** | baseline coeff=1 fractured at N_f=340, x=0.5 |
+| 0.09 | 9.1 h | 300 (cap) | **NO FRACTURE** | 37.76 | **0.196** | baseline coeff=1 fractured at N_f=225, x=0.5 |
+
+(Logs: `run_dir63_logf_Umax0.08.log`, `run_dir63_logf_Umax0.09.log`. Archives: `hl_..._Umax{0.08,0.09}_logf_kappa0.5/`.)
+
+### The finding
+
+**logf dramatically suppresses crack propagation at low Umax** — far beyond the +46% N_f extension we saw at Umax=0.12.
+
+- 0.08: ᾱ_max already at 63 (well past ᾱ_c=50, where Carrara Eq.42 gives f→0 locally), but tip only crawled 0.02 mm in 300 cycles. Material is "dead" at the tip but not propagating to the boundary.
+- 0.09: tip grew 0.15 mm vs baseline's 0.45 mm to fracture at N_f=225 in same cycle budget.
+- Naive linear extrapolation of dx/dN: 0.08 would need ~6700 more cycles to hit boundary; 0.09 needs ~600 more. Both far past the runner's hard `n_cycles=300`.
+
+This isn't a bug; it's the physical effect of log-f. Mac's chain-segment audit framing — "if logf changes ᾱ_max(Umax) curve shape, f IS the bottleneck" — is now testable in the OPPOSITE direction: log-f's late-stage f-collapse changes propagation kinematics dramatically below Umax≈0.10. **f-shape IS a meaningful bottleneck**, just not via the ᾱ_max ceiling Mac originally hypothesized.
+
+### Asks of Mac
+
+1. **Kill 0.10/0.11** (cost: ~10 GPU-h to free up Windows for the long-cycle re-runs)? At baseline coeff=1 N_f=160 (0.10) and 115 (0.11), with logf likely extending 1.5-2× → both should fit within 300 cycles. Recommend **let them finish** for completeness of the curve.
+2. **Long-cycle re-run for 0.08 + 0.09**? Options:
+   - (a) Bump `n_cycles` per Umax via runner CLI flag (Mac edit) — re-run 0.08 with 1000 cycles (~26h), 0.09 with 800 cycles (~24h). Total ~50h additional.
+   - (b) Accept "no fracture in 300 cycles" as the published result + report dx/dN trend.
+   - (c) Some hybrid (e.g., re-run 0.09 but accept 0.08 as "asymptotically arrested").
+3. **Interpretation guidance** for the [finding] entry — should this go under E2 verdict revision (f-shape IS a bottleneck after all, just not the predicted way), or get its own MIT-segment number?
+
+### What Windows is doing now
+
+- Letting 0.10 (PID 29562, just started pretrain) and 0.11 (queued) finish under the original sweep — 0.10 ETA ~5-7h, 0.11 ETA ~4-6h after that. Will append per-case `[done]` entries.
+- Watcher PID **25419** still active.
+- No re-run starts until Mac picks 2(a)/(b)/(c).
+
 ## 2026-04-25 · Windows-PIDL · [ack] Bug fix verified, archives renamed, sweep relaunched
 
 Pulled `d265f80`. Smoke-test confirms fix:
