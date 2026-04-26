@@ -63,11 +63,15 @@ UMAX_CYCLES = {
     0.12: [1, 40, 70, 82],
 }
 
-# Map Umax → (PIDL baseline archive name)
-PIDL_BASELINE = {
-    0.08: "hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N700_R0.0_Umax0.08",
-    0.12: "hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N300_R0.0_Umax0.12",
+# Map (coeff, Umax) → PIDL archive name
+PIDL_ARCHIVES = {
+    ("1.0", 0.08): "hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N700_R0.0_Umax0.08",
+    ("1.0", 0.12): "hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N300_R0.0_Umax0.12",
+    ("3.0", 0.08): "hl_8_Neurons_400_activation_TrainableReLU_coeff_3.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N600_R0.0_Umax0.08",
+    ("3.0", 0.12): "hl_8_Neurons_400_activation_TrainableReLU_coeff_3.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N300_R0.0_Umax0.12",
 }
+# Backward-compat alias
+PIDL_BASELINE = {u: PIDL_ARCHIVES[("1.0", u)] for u in (0.08, 0.12)}
 
 
 def point_in_triangle(p, v1, v2, v3, tol=1e-12):
@@ -199,9 +203,9 @@ def fem_load_psi_at_cycle(umax: float, cycle: int):
     return np.asarray(data["psi_elem"], dtype=np.float64).ravel()
 
 
-def get_pidl_native_at_cycle(umax: float, cycle: int):
+def get_pidl_native_at_cycle(umax: float, cycle: int, coeff: str = "1.0"):
     """Reload PIDL trained network at given cycle, recompute ψ⁺_raw per element."""
-    archive = HERE / PIDL_BASELINE[umax]
+    archive = HERE / PIDL_ARCHIVES[(coeff, umax)]
     ckpt_path = archive / "best_models" / f"trained_1NN_{cycle}.pt"
     if not ckpt_path.is_file():
         # try nearest available cycle (skip non-numeric stems like initTraining)
@@ -263,7 +267,10 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("umax", type=float, help="0.08 or 0.12")
+    parser.add_argument("--coeff", default="1.0", choices=["1.0", "3.0"],
+                        help="PIDL init_coeff variant (1.0 default; 3.0 needs Apr 25 OneDrive archives)")
     args = parser.parse_args()
+    coeff_str = args.coeff
 
     if args.umax not in UMAX_CYCLES:
         raise SystemExit(f"No FEM data for Umax={args.umax}")
@@ -281,7 +288,7 @@ def main():
 
     # Load PIDL mesh once (use cycle 1 as reference; mesh doesn't change)
     print("Loading PIDL mesh + cycle-1 NN...")
-    pidl_data = get_pidl_native_at_cycle(args.umax, 1)
+    pidl_data = get_pidl_native_at_cycle(args.umax, 1, coeff=coeff_str)
     if pidl_data is None:
         raise SystemExit(f"PIDL cycle 1 not available")
     _, pidl_centroids, pidl_areas, pidl_r_to_tip, pidl_inp_np, T_np, _ = pidl_data
@@ -317,7 +324,7 @@ def main():
         print(f"  Max FEM elements per PIDL (tip-region indicator): {max_n_fem_per_pidl}")
 
         # PIDL native at this cycle
-        pidl_data_c = get_pidl_native_at_cycle(args.umax, cycle)
+        pidl_data_c = get_pidl_native_at_cycle(args.umax, cycle, coeff=coeff_str)
         if pidl_data_c is None:
             print(f"  PIDL cycle {cycle} NOT FOUND, skipping")
             continue
@@ -357,8 +364,9 @@ def main():
             "max_n_fem_per_pidl": int(max_n_fem_per_pidl),
         })
 
-    # Save CSV
-    csv_path = HERE / f"alpha0_results_Umax{args.umax}.csv"
+    # Save CSV (include coeff in filename to avoid collision with coeff=1)
+    csv_suffix = f"_coeff{coeff_str}" if coeff_str != "1.0" else ""
+    csv_path = HERE / f"alpha0_results_Umax{args.umax}{csv_suffix}.csv"
     if rows:
         keys = list(rows[0].keys())
         with open(csv_path, "w") as f:
@@ -396,7 +404,7 @@ def main():
 
     out_dir = HERE / "figures" / "audit"
     out_dir.mkdir(parents=True, exist_ok=True)
-    fig_path = out_dir / f"alpha0_fem_vs_pidl_projection_Umax{args.umax}.png"
+    fig_path = out_dir / f"alpha0_fem_vs_pidl_projection_Umax{args.umax}{csv_suffix}.png"
     fig.savefig(fig_path, dpi=140)
     print(f"→ saved {fig_path}")
 
