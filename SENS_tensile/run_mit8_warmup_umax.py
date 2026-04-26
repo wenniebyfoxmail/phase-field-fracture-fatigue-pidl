@@ -45,6 +45,9 @@ parser.add_argument("--loss-kind", default="mse_log",
                     help="Supervised loss type. mse_log handles ψ⁺ orders-of-magnitude variation.")
 parser.add_argument("--n-cycles", type=int, default=300,
                     help="Total fatigue cycles (default 300; smoke test: e.g. 10).")
+parser.add_argument("--supervised-every", type=int, default=1,
+                    help="Compute supervised loss every N epochs (default 1 = "
+                         "every epoch; use 10 for 10x speedup with amortization).")
 args = parser.parse_args()
 
 if args.umax not in (0.08, 0.12):
@@ -125,6 +128,7 @@ print(f"  U_max     = {args.umax}")
 print(f"  K (release after this cycle) = {args.K}")
 print(f"  lambda    = {args.lam}")
 print(f"  loss_kind = {args.loss_kind}")
+print(f"  supervised_every = {args.supervised_every} epochs")
 print(f"  n_cycles  = {args.n_cycles}")
 print(f"  archive   = {_dir_name}")
 print(f"  device    = {config.device}")
@@ -162,6 +166,7 @@ mit8_dict = {
     "fem_sup": fem_sup,
     "pidl_centroids": pidl_centroids,
     "loss_kind": args.loss_kind,
+    "every_n_epochs": int(args.supervised_every),
 }
 
 # Sanity: print FEM ψ⁺ stats interpolated to PIDL at first FEM cycle

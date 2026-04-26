@@ -39,12 +39,18 @@ parser.add_argument("umax", type=float,
                     help="Loading amplitude (e.g., 0.08, 0.09, 0.10, 0.11, 0.12).")
 parser.add_argument("--kappa", type=float, default=0.5,
                     help="Logarithmic-f decay rate (ᾱ_c = α_T·10^(1/κ)). Default 0.5 → ᾱ_c=50.")
+parser.add_argument("--n-cycles", type=int, default=300,
+                    help="Total fatigue cycles to run (default 300). At low Umax with logf, "
+                         "consider 700+ since logf can suppress propagation kinematics and "
+                         "specimen may not fracture in 300 cycles (per Apr 26 Windows finding).")
 args = parser.parse_args()
 
 if not (0.05 <= args.umax <= 0.20):
     raise SystemExit(f"umax={args.umax} out of sensible range [0.05, 0.20]")
 if not (0.1 <= args.kappa <= 5.0):
     raise SystemExit(f"kappa={args.kappa} out of sensible range [0.1, 5.0]")
+if not (10 <= args.n_cycles <= 5000):
+    raise SystemExit(f"n_cycles={args.n_cycles} out of sensible range [10, 5000]")
 
 # --- Inject CLI args for config.py argv parsing ------------------------------
 sys.argv = [
@@ -73,7 +79,7 @@ config.fatigue_dict["degrad_type"]               = "logarithmic"  # ★ THE CHAN
 config.fatigue_dict["kappa"]                     = KAPPA           # ★ NEW PARAM
 config.fatigue_dict["alpha_T"]                   = ALPHA_T
 config.fatigue_dict["disp_max"]                  = float(args.umax)
-config.fatigue_dict["n_cycles"]                  = 300
+config.fatigue_dict["n_cycles"]                  = int(args.n_cycles)
 config.rebuild_disp_cyclic()  # ★ Apr 25 bugfix: rebuild loading vector after dict mutation
 config.fatigue_dict["R_ratio"]                   = 0.0
 config.fatigue_dict["enable_E_fallback"]         = False

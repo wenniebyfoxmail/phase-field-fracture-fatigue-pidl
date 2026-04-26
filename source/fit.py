@@ -92,17 +92,19 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
 
                 loss = loss_var + weight_decay*loss_reg
 
-                # ★ MIT-8 supervised term (Apr 25): joint physics + FEM ψ⁺ supervision
+                # ★ MIT-8 supervised term (Apr 25 + Apr 26 amortization)
                 if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
-                    psi_raw_pidl = _compute_psi_raw_per_elem(
-                        inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
-                    loss_sup = supervised_dict['fem_sup'].supervised_loss(
-                        psi_raw_pidl,
-                        cycle_idx=supervised_dict['cycle_idx'],
-                        pidl_centroids=supervised_dict['pidl_centroids'],
-                        lambda_sup=supervised_dict['lambda'],
-                        loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
-                    loss = loss + loss_sup
+                    _every_n = max(1, int(supervised_dict.get('every_n_epochs', 1)))
+                    if (epoch % _every_n) == 0:
+                        psi_raw_pidl = _compute_psi_raw_per_elem(
+                            inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
+                        loss_sup = supervised_dict['fem_sup'].supervised_loss(
+                            psi_raw_pidl,
+                            cycle_idx=supervised_dict['cycle_idx'],
+                            pidl_centroids=supervised_dict['pidl_centroids'],
+                            lambda_sup=supervised_dict['lambda'],
+                            loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
+                        loss = loss + _every_n * loss_sup
 
                 if writer is not None:
                     writer.add_scalars('U_p_'+str(field_comp.lmbda.item()), {'loss':loss.item(), "loss_E":loss_var.item()}, epoch)
@@ -134,7 +136,10 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                             supervised_dict=None):
     # ★ MIT-8 supervised_dict (Apr 25, optional, default None → identical behavior):
     #    {'fem_sup': FEMSupervision, 'cycle_idx': int, 'lambda': float,
-    #     'pidl_centroids': np.ndarray, 'loss_kind': 'mse_log'|'mse_lin'|'mse_rel'}
+    #     'pidl_centroids': np.ndarray, 'loss_kind': 'mse_log'|'mse_lin'|'mse_rel',
+    #     'every_n_epochs': int (default 1; >1 amortizes the supervised
+    #         pass — supervised loss only added every N epochs to reduce
+    #         per-cycle wall time while still biasing the trajectory)}
     # ★ 新增参数 f_fatigue（同 fit）
     # ★ 新增参数 crack_tip_weights（方向3，同 fit）
     loss_data = list()
@@ -166,17 +171,23 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
 
             loss = loss_var + weight_decay*loss_reg
 
-            # ★ MIT-8 supervised term (Apr 25): joint physics + FEM ψ⁺ supervision
+            # ★ MIT-8 supervised term (Apr 25): joint physics + FEM ψ⁺ supervision.
+            # Apr 26 amortization: supervised loss only computed every N epochs
+            # to avoid 30× wall-time penalty per cycle. Default every_n=1
+            # (every epoch); use every_n=10 to add supervision once per 10 epochs.
             if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
-                psi_raw_pidl = _compute_psi_raw_per_elem(
-                    inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
-                loss_sup = supervised_dict['fem_sup'].supervised_loss(
-                    psi_raw_pidl,
-                    cycle_idx=supervised_dict['cycle_idx'],
-                    pidl_centroids=supervised_dict['pidl_centroids'],
-                    lambda_sup=supervised_dict['lambda'],
-                    loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
-                loss = loss + loss_sup
+                _every_n = max(1, int(supervised_dict.get('every_n_epochs', 1)))
+                if (epoch % _every_n) == 0:
+                    psi_raw_pidl = _compute_psi_raw_per_elem(
+                        inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
+                    loss_sup = supervised_dict['fem_sup'].supervised_loss(
+                        psi_raw_pidl,
+                        cycle_idx=supervised_dict['cycle_idx'],
+                        pidl_centroids=supervised_dict['pidl_centroids'],
+                        lambda_sup=supervised_dict['lambda'],
+                        loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
+                    # Scale up to compensate for the missed epochs
+                    loss = loss + _every_n * loss_sup
 
             if writer is not None:
                     writer.add_scalars('U_p_'+str(field_comp.lmbda.item()), {'loss':loss.item(), "loss_E":loss_var.item()}, epoch)
