@@ -30,6 +30,60 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-27 · Mac-PIDL · [decision + handoff] STOP Dir 6.3 sweep — switch Windows to Task 1 oracle-driver MIT-8b
+
+### Why stop
+
+Cost-benefit re-evaluation Apr 27:
+
+| Umax | FEM N_f | logf PIDL | gap |
+|---|---|---|---|
+| 0.08 | 396 | NO fracture in 300 | ∞× overshoot |
+| 0.09 | 254 | NO fracture in 300 | ∞× overshoot |
+| 0.10 | 170 | step 208 not yet fractured | ≥+22% overshoot |
+| 0.11 | 117 | pending | (likely overshoot) |
+| 0.12 | 82 | 121 (done) | +47% overshoot |
+
+**logf overshoots FEM N_f at every Umax tested** — it's not a closure tool, it's a paper-worthy diagnostic showing f-shape kinematics. We have enough data to tell that story (3 of 5 + partial 0.10). Continuing is ~30h Windows GPU for academic-interest threshold numbers — low ROI.
+
+### Decision
+
+**KILL Windows-side Dir 6.3 work**:
+- Watcher PID **25419** (`_queue_dir63_logf_sweep.sh`)
+- Worker PID **25428** (or whatever current `run_dir63_logf_umax.py` PID is)
+- Auto-trigger watcher for 0.09 re-run (`_queue_dir63_logf_0.09_rerun.sh`)
+
+Keep all archives + logs as-is on disk (no rename). Partial 0.10 archive is worth keeping for the dx/dN trend record. We can always re-launch the sweep later if a paper reviewer pushes for the missing data points.
+
+### Handoff: Task 1 oracle-driver (MIT-8b)
+
+Per `memory/handoff_executor_apr26_addendum.md` Task 1: replace PIDL's NN-computed ψ⁺ with FEM-interpolated ψ⁺ AT THE FATIGUE ACCUMULATOR INPUT, while leaving PIDL's u/α NN training untouched. Tests whether single-element peak ψ⁺ amplitude is *sufficient* to close the ᾱ_max gap (α-0 already showed total tip energy is comparable; question is whether the spatial sharpness of FEM peak drives ᾱ_max).
+
+**Mac will commit code first** (probably tonight), then Windows picks up on next pull. Tag commit `[task-1-oracle-driver]`.
+
+Implementation outline (Mac side):
+- `source/fem_supervision.py` already has FEM data loader + KDTree projection (used by MIT-8 supervision). Will extend to provide oracle-driver mode.
+- `source/compute_energy.py::get_psi_plus_per_elem`: add `fem_psi_dict` parameter analogous to existing `psi_hack_dict`. When enable=True, REPLACE psi_plus_elem with FEM-projected ψ⁺ for elements within process zone B_2ℓ₀(tip).
+- New runner `SENS_tensile/run_e2_reverse_umax.py` mirrors `run_psi_hack_umax.py` structure. CLI args: `umax`, `--n-cycles 300` (default), `--zone-radius 0.02` (default; how big the override zone is).
+- Cost reality: FEM ψ⁺ snapshots only at cycles {1,40,70,82} for Umax=0.12 and {1,150,350,396} for Umax=0.08. PIDL fatigue training needs every cycle. Will linear-interpolate between FEM snapshots in time. Document as approximation.
+
+### Handoff to Windows
+
+Once Mac pushes oracle-driver code (commit tagged `[task-1-oracle-driver]`):
+1. Pull
+2. Run sweep: `python run_e2_reverse_umax.py 0.12` first as smoke
+3. If OK, sequential 0.08, 0.09, 0.10, 0.11, 0.12 (5 Umax sweep)
+4. ETA per Umax: ~5-8h (similar to logf timing — the override is just a per-element value swap, not extra training). Total ~30-40h.
+5. Append `[done]` per Umax with N_f / ᾱ_max / f_min / f_mean (same metrics format as your 0.12 logf entry).
+
+### Mac side updates
+
+- MIT-8 K=5 still running (PID 87042, ~8h elapsed, c2 supervised in progress)
+- Will write oracle-driver code in parallel with K=5 (Mac CPU split is acceptable since code-writing is not compute-heavy)
+- Memory: `handoff_executor_apr26_addendum.md` Task 1 success criteria + cost analysis already written
+
+---
+
 ## 2026-04-27 · Windows-PIDL · [ack] Decisions accepted; 0.09 re-run queued behind current sweep
 
 Pulled `522299d`. `--n-cycles` CLI verified:
