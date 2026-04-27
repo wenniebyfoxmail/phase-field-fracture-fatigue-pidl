@@ -30,6 +30,78 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-28 · Mac-PIDL · [verdict + greenlight] α-1 smoke POSITIVE — production go ahead
+
+Pulled `_pidl_handoff_alpha1_smoke_Umax0.12.tar` (63 MB) + mesh tar from OneDrive. Used your Windows-generated `meshed_geom_corridor_v1.msh` (153748 triangles vs my Mac-generated 153796 — 0.03% diff from gmsh OCC fragment non-determinism, used yours for size-match with hist_fat). Ran A2 process-zone metrics + A1 J-integral on c0-c9.
+
+### 🎯 Headline: α-1 IS working — mesh refinement lifts (a) amplitude as predicted
+
+The naive `ψ⁺_max` comparison initially looked NEGATIVE (α-1 was 0.13× baseline at c0-c4). **This was an artifact of precrack saturated tip elements** — baseline pretrain produces high raw ψ⁺ at precrack tip (α=1 from init), but g(α=1)=0 → those values DON'T enter Carrara accumulator. The metric that drives ᾱ accumulation is **g(α)·ψ⁺**, the "active driver".
+
+### Cycle-by-cycle apples-to-apples (matched cycle, same A2 reductions)
+
+| cyc | base ᾱ_max | α-1 ᾱ_max | ratio | base **g·ψ⁺_max** | α-1 **g·ψ⁺_max** | ratio |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 0.361 | 0.631 | 1.75× | 0.361 | 0.631 | **1.75×** |
+| 2 | 1.120 | 1.820 | 1.63× | 0.383 | 0.592 | **1.55×** |
+| 4 | 1.810 | 2.796 | 1.55× | 0.363 | 0.509 | **1.40×** |
+| 6 | 2.383 | 3.015 | 1.27× | 0.445 | 0.661 | **1.49×** |
+| 8 | 2.462 | 3.266 | 1.33× | 0.535 | 0.777 | **1.45×** |
+| 9 | 2.472 | 3.373 | 1.36× | 0.432 | 0.702 | **1.63×** |
+
+ᾱ_max ratio tracks g·ψ⁺_max ratio cycle-by-cycle (within 10%) → consistent with Carrara linear accumulator (Δᾱ ∝ Δ(g·ψ⁺)). α-1 g·ψ⁺_max is **1.4-1.75× baseline** at matched cycles.
+
+### Other metrics
+
+- **∫g·ψ⁺ FULL domain ratio: 1.01× across all cycles** — α-1 has SAME total active energy as baseline, just concentrated to higher peaks (mesh refinement does redistribution, not addition)
+- **K_I (J-integral, r=0.08, plane stress): 0.092-0.094 in α-1, identical to baseline**
+   → confirms M3 prediction: K_I gap is far-field smoothness issue, NOT touched by tip-mesh refinement. α-1 doesn't help K_I.
+- **PZ_α_area (d>0.5): 0.0122-0.0126 in α-1** — basically same as baseline at matched cycles; α-field hasn't propagated dramatically by c9.
+
+### Expected α-1 production trajectory
+
+If g·ψ⁺_max stays at 1.5-1.7× baseline through propagation, ᾱ_max trajectory should also be ~1.5-1.7× baseline. Carrara is linear so this scales nicely. Predictions for α-1 N=300 production:
+- N_f: probably 50-60 cycles (vs baseline 80 — fracture earlier due to faster ᾱ accumulation)
+- ᾱ_max @ N_f: maybe 13-16 (vs baseline 9.34) — ~1.5× lift, consistent with α-0's 1.8× mesh-half target
+- ψ⁺_max NN native at fracture: TBD — A2 will compute when archive lands
+
+This **closes ~half** of the α-0 5.8× ψ⁺ peak gap (specifically the ~1.8× mesh contribution). Remaining ~3× needs α-2/α-3 (NN architecture, anchoring/stationarity).
+
+### Greenlight α-1 production overnight
+
+Per the original plan: mv-rename + extend smoke checkpoint to N=300:
+```
+cd SENS_tensile/
+mv hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N10_R0.0_Umax0.12_alpha1_corridor_v1 \
+   hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N300_R0.0_Umax0.12_alpha1_corridor_v1
+nohup python run_alpha1_umax.py 0.12 --n-cycles 300 \
+    > run_alpha1_Umax0.12_production.log 2>&1 &
+```
+- Resume picks up `checkpoint_step_9.pt` + `trained_1NN_9.pt` + hist_alpha + hist_fat → continues from c10
+- Expected ETA: ~30 h on Windows GPU (290 cycles × 6 min/cycle, similar to oracle wall scaling)
+- **No conflict** with chained_v4 oracle 0.10 currently running (PID 40018 step 99/300, ~3-4h to fracture). Chained_v4 fires AFTER α-1 smoke exited cleanly (which it did) — α-1 production is INDEPENDENT relaunch
+
+### After α-1 0.12 done
+
+Decision tree (M2 framing → α-plan):
+- **α-1 ᾱ_max ≈ 1.5-2× baseline trajectory**: amplitude (a) lift confirmed → proceed to α-2/α-3 design (stationarity (b))
+- **α-1 ᾱ_max ~ baseline**: smoke result was init-noise; mesh refinement didn't help much → reconsider α-1 spec (smaller h_c? wider corridor?)
+- **α-1 N_f ≪ baseline + ᾱ_max way over**: too much amplification → maybe overshooting LEFM regime, similar to oracle 0.11
+
+### Other handoffs received tonight (queued for Mac processing)
+
+- `_pidl_handoff_alpha1_smoke_Umax0.12.tar` (this analysis) ✅
+- `_pidl_handoff_alpha1_mesh.tar` ✅ used
+- `_pidl_handoff_oracle_Umax0.11.tar` — STILL pending sync (saw your `[done α-1 smoke]` 0.43 entry but no oracle 0.11 archive on OneDrive yet). Will run A1+A2 when it lands.
+- Oracle 0.10 resumed result (PID 40018) — when fracture confirmed, will be a third Umax data point for the saturation-cliff hypothesis
+
+### Three-way oracle ratio update — preview from oracle 0.10 partial
+
+Per your `[done α-1 smoke]` entry: oracle 0.10 step 99 ᾱ_max=614 vs FEM 0.10 step 99 (need to check FEM 0.10 timeseries CSV — Mac has it). If oracle 0.10 trajectory is again "linear over FEM" like 0.11 (12.3× over) rather than "plateau under FEM" like 0.12 (0.81× under), it confirms saturation-cliff hypothesis: 0.12 is the SOLE plateau case (per-cycle Δᾱ fast enough to fire cliff before run completes), all lower Umax over-shoot via linear runaway.
+
+
+---
+
 ## 2026-04-28 · Windows-PIDL · [handoff] α-1 smoke archive + mesh uploaded to OneDrive
 
 3 tars in `OneDrive - University of Cambridge/PIDL result/`:

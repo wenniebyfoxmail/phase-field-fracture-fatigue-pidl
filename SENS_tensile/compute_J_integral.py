@@ -102,14 +102,16 @@ PRIORITY_ARCHIVES = [
 ]
 
 
-def setup_pidl_pipeline(coeff_str="1.0"):
+def setup_pidl_pipeline(coeff_str="1.0", mesh_file=None):
+    if mesh_file is None:
+        mesh_file = FINE_MESH
     pffmodel, matprop, network = construct_model(
         PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, DEVICE,
         williams_dict=None,
     )
     inp, T_conn, area_T, _ = prep_input_data(
         matprop, pffmodel, crack_dict, numr_dict,
-        mesh_file=FINE_MESH, device=DEVICE,
+        mesh_file=mesh_file, device=DEVICE,
     )
     field_comp = FieldComputation(
         net=network, domain_extrema=domain_extrema,
@@ -331,14 +333,18 @@ def main() -> int:
                     help="cycle subsampling factor")
     ap.add_argument("--force", action="store_true",
                     help="recompute even if cached")
+    ap.add_argument("--mesh", default=None,
+                    help="Mesh .msh file (default: meshed_geom2.msh; for "
+                         "α-1 archives use meshed_geom_corridor_v1.msh)")
     args = ap.parse_args()
 
     if not args.archive and not args.all:
         ap.error("must pass --archive or --all")
 
-    print(f"Building PIDL pipeline (E={E_YOUNG}, ν={NU}, ℓ₀={L0})…")
+    mesh_path = args.mesh if args.mesh else FINE_MESH
+    print(f"Building PIDL pipeline (E={E_YOUNG}, ν={NU}, ℓ₀={L0}, mesh={Path(mesh_path).name})…")
     print(f"  contour radii: {CONTOUR_RADII}  n_theta={N_THETA}")
-    ctx = setup_pidl_pipeline()
+    ctx = setup_pidl_pipeline(mesh_file=mesh_path)
 
     targets = []
     if args.archive:

@@ -127,7 +127,9 @@ def compute_reductions(field: np.ndarray, area: np.ndarray,
     }
 
 
-def setup_pidl_pipeline(coeff_str="1.0"):
+def setup_pidl_pipeline(coeff_str="1.0", mesh_file=None):
+    if mesh_file is None:
+        mesh_file = FINE_MESH
     """Build PIDL field computation pipeline once (mesh + NN structure are reused)."""
     pffmodel, matprop, network = construct_model(
         PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, DEVICE,
@@ -135,7 +137,7 @@ def setup_pidl_pipeline(coeff_str="1.0"):
     )
     inp, T_conn, area_T, _ = prep_input_data(
         matprop, pffmodel, crack_dict, numr_dict,
-        mesh_file=FINE_MESH, device=DEVICE,
+        mesh_file=mesh_file, device=DEVICE,
     )
     field_comp = FieldComputation(
         net=network, domain_extrema=domain_extrema,
@@ -305,6 +307,9 @@ def main() -> int:
     ap.add_argument("--alpha-T", type=float, default=ALPHA_T_DEFAULT)
     ap.add_argument("--force", action="store_true", help="recompute even if cached")
     ap.add_argument("--coeff", default="1.0", choices=["1.0", "3.0"])
+    ap.add_argument("--mesh", default=None,
+                    help="Mesh .msh file (default: meshed_geom2.msh; for "
+                         "α-1 archives use meshed_geom_corridor_v1.msh)")
     args = ap.parse_args()
 
     if not args.archive and not args.all:
@@ -316,8 +321,9 @@ def main() -> int:
     if args.all:
         targets.extend(PRIORITY_ARCHIVES)
 
-    print(f"Building PIDL pipeline (coeff={args.coeff})…")
-    ctx = setup_pidl_pipeline(coeff_str=args.coeff)
+    mesh_path = args.mesh if args.mesh else FINE_MESH
+    print(f"Building PIDL pipeline (coeff={args.coeff}, mesh={Path(mesh_path).name})…")
+    ctx = setup_pidl_pipeline(coeff_str=args.coeff, mesh_file=mesh_path)
     print(f"  PIDL elements: {len(ctx['areas'])}")
     print(f"  PZ_ℓ₀ elements: {ctx['pz_l0_mask'].sum()}")
     print(f"  PZ_2ℓ₀ elements: {ctx['pz_2l0_mask'].sum()}")
