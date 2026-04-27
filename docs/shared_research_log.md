@@ -30,6 +30,82 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-28 · Windows-PIDL · [done α-1 smoke + ack chained_v4 fired] α-1 c10 ᾱ_max=3.37; oracle 0.10 resumed at step 99/300
+
+### α-1 smoke RESULT (Umax=0.12, n_cycles=10)
+
+Wall: 1.39 h total (pretrain 16.6 min + 10 fatigue cycles, avg ~6.7 min/cycle on 153k corridor mesh — close to your 5 min/cycle estimate). Sanity clean (no NaN/inf, monotone smooth).
+
+| cycle | ᾱ_max | f_min | f_mean | Kt |
+|---:|---:|---:|---:|---:|
+| 0 | 0.6309 | 0.7819 | 1.0000 | 8.59 |
+| 1 | 1.2281 | 0.3349 | 1.0000 | 8.52 |
+| 2 | 1.8204 | 0.1857 | 0.9998 | 8.54 |
+| 3 | 2.3624 | 0.1220 | 0.9994 | 8.44 |
+| 4 | 2.7956 | 0.0921 | 0.9990 | 8.34 |
+| 5 | 2.8843 | 0.0873 | 0.9985 | 9.15 |
+| 6 | 3.0147 | 0.0809 | 0.9979 | 9.57 |
+| 7 | 3.1419 | 0.0754 | 0.9973 | 9.38 |
+| 8 | 3.2655 | 0.0705 | 0.9966 | 9.71 |
+| 9 | **3.3734** | 0.0667 | 0.9958 | 9.77 |
+
+### Quick comparison vs baseline 0.12 (67k legacy mesh) at matched cycles
+
+| cycle | baseline 0.12 ᾱ_max | **α-1 ᾱ_max** | factor |
+|---:|---:|---:|---:|
+| 1 | 0.586 | **1.228** | 2.10× |
+| (no baseline data at intermediate cycles) |
+| 9 (≈10) | (extrapolating ~1.5-2) | **3.373** | ~1.7-2.3× |
+
+Approximately **2× higher** ᾱ_max than baseline at same cycle. Implication: mesh refinement IS giving sharper local ψ⁺ → faster ᾱ accumulation. Direction (a) "amplitude" of your two-effect framing is responsive to mesh refinement. **Encouraging for α-1 production**, but ψ⁺_max not directly measured in log — Mac A1/A2 on archive `hl_8_..._N10_R0.0_Umax0.12_alpha1_corridor_v1/` will give the definitive ψ⁺ peak number.
+
+Archive size ~50 MB (10 cycles only). Will pack + ship to OneDrive after this entry. Mac can use it to decide α-1 production scaling (mv-rename + n-cycles 300, ~30h on 153k GPU).
+
+### Chained_v4 fired ✓ — oracle 0.10 resume in flight
+
+```
+[Mon Apr 27 22:50:09 GMTDT 2026] α-1 smoke PID 39347 exited; checking log for state
+[Mon Apr 27 22:50:15 GMTDT 2026]   α-1 smoke final: 10 fatigue steps, last ᾱ_max=3.3734e+00
+[Mon Apr 27 22:50:15 GMTDT 2026] relaunching oracle 0.10: python -u run_e2_reverse_umax.py 0.10
+```
+
+Oracle 0.10 worker PID **40018**, log `run_e2_reverse_Umax0.10_resumed.log`. Resumed cleanly from `checkpoint_step_60.pt` (5 cycles past my "step 56" snapshot — final step before kill propagated to disk). Currently at:
+
+| metric | value |
+|---|---|
+| step | **99/300** |
+| ᾱ_max | 614 |
+| f_min | 0.0000 |
+| f_mean | 0.861 |
+| Kt | 37.10 |
+| crack_tip x | 0.235 (vs boundary 0.5) |
+| α_max@bdy | -0.0013 |
+| N_bdy>0.95 | 0 |
+
+Tip propagated 0.087 → 0.235 (+0.148) since resume. Linear extrapolation: tip reaches 0.5 around step ~150. Fracture probably ~step 130-160 (matching FEM 0.10 N_f=170, baseline 160).
+
+### Three-way oracle ratio question (your plateau finding) — gets a third data point
+
+Per your `[finding] Oracle 0.12 UNDER FEM 0.81×, oracle 0.11 OVER 12.3× — Hypothesis C alone doesn't explain` (no commit hash visible to me; Mac side):
+- Oracle 0.12 ᾱ_max=776.8 = 0.81× FEM 0.12 (UNDER)
+- Oracle 0.11 ᾱ_max=11253 = 12.3× FEM 0.11 (OVER)
+- **Oracle 0.10 ᾱ_max @ N_f = TBD** (will be in [done] entry when fracture lands)
+
+If 0.10 also OVER FEM, the trend is "0.12 UNDER, 0.11+ OVER" — sharp transition between 0.12 and 0.11. If 0.10 is e.g. 5× FEM, it's a smooth decreasing function of Umax. Either way another diagnostic point for whatever plateau mechanism Mac is investigating in 0.12.
+
+### What's NOT auto-queued
+
+- 0.09 oracle (was queued in killed sweep_v2)
+- 0.08 N=500 resume (was queued in killed chained_v3)
+
+Will set up after 0.10 fractures (~next 1.5-3h). Default plan: write a chained_v5 doing 0.09 → mv-rename 0.08 → 0.08 N=500. Or wait for user/Mac call on whether to revisit oracle calibration first (apply_g, zone_radius) given the ratio anomaly.
+
+### Disk
+
+C: 19 GB free. α-1 archive 50 MB, oracle 0.10 resume +0.5-1 GB to fracture, all comfortable.
+
+---
+
 ## 2026-04-27 · Windows-PIDL · [exec-c61e50c] SWAP done — α-1 smoke running, oracle 0.10 will auto-resume
 
 Per Mac SWAP request `c61e50c`. All 4 steps executed at 21:25-21:27 UK.
