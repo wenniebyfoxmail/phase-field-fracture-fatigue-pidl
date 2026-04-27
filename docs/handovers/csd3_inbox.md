@@ -29,6 +29,158 @@
 
 ## Active requests
 
+## 2026-04-27 · Request 2: Tier-1 G4 sensitivity sweeps (seed std + ℓ₀ + α_T)
+
+**Goal**: produce three baseline-only sensitivity sweeps that are paper-essential per the Apr 25 external expert review (G4: seed std + ℓ₀/α_T sensitivity). All three use plain baseline architecture (no Williams, no Enriched, no spAlphaT, no psi_hack); only one parameter varies per run. Total = 25 jobs, ~125 GPU-h. NO new physics, NO closure attempt — purely confidence intervals + sensitivity for paper figures.
+
+**Why now**: HPC currently idle. Tier-2 (α-1 mesh-refine) and Tier-3 (architectural) candidates need 1-3 weeks of new code first; Tier-1 needs ZERO new physics code (single parameterized runner, already committed). This fills CSD3 productively while Mac codes Task 1 oracle-driver and α-1 mesh refinement.
+
+**Scientific context**: see `~/.claude/projects/.../memory/external_review_apr25.md` G4. Reviewer-asked but NOT YET ANSWERED:
+- Are baseline N_f / ᾱ_max numbers seed-stable? (no error bars currently)
+- Is the PIDL-FEM gap robust to ℓ₀ choice? (only ℓ₀=0.01 tested)
+- Is α_T=0.5 driving the qualitative conclusion? (only α_T=0.5 tested)
+
+### Prerequisites (Mac provides)
+
+Mac has committed `SENS_tensile/run_g4_sensitivity.py` (commit subject contains "G4 sensitivity"). CSD3: `git pull` first; if runner not present, raise `[blocker]` in outbox.
+
+### Sub-task A — Seed std sweep (15 jobs)
+
+Cross-product `Umax ∈ {0.08, 0.09, 0.10, 0.11, 0.12} × seed ∈ {2, 3, 4}` (seed=1 already exists in archives, so we add 3 new seeds for ±std estimate; total = 5 × 3 = 15).
+
+| Job | Umax | Seed | Wallclock | Archive tag |
+|---|---|---|---|---|
+| A.1 | 0.08 | 2 | ~10h | `..._Seed_2_..._Umax0.08` |
+| A.2 | 0.08 | 3 | ~10h | `..._Seed_3_..._Umax0.08` |
+| A.3 | 0.08 | 4 | ~10h | `..._Seed_4_..._Umax0.08` |
+| A.4-6 | 0.09 | 2,3,4 | ~8h each | similar |
+| A.7-9 | 0.10 | 2,3,4 | ~6h each | similar |
+| A.10-12 | 0.11 | 2,3,4 | ~5h each | similar |
+| A.13-15 | 0.12 | 2,3,4 | ~4h each | similar |
+
+Runner invocation:
+```bash
+python run_g4_sensitivity.py <UMAX> --seed <SEED>
+```
+
+### Sub-task B — ℓ₀ sensitivity sweep (5 jobs)
+
+Fix `Umax=0.10` (mid-range), seed=1, vary `ℓ₀ ∈ {0.005, 0.01, 0.02, 0.05, 0.10}`. Note ℓ₀=0.01 is baseline (already exists), so 4 NEW jobs needed. **Skip 0.01 if you confirm an existing seed=1 Umax=0.10 archive** (look for `_Seed_1_..._Umax0.10` without any g4 tag).
+
+| Job | ℓ₀ | Wallclock | Archive tag |
+|---|---|---|---|
+| B.1 | 0.005 | ~6h | `..._Umax0.10_g4_l00.005` |
+| B.2 | 0.01 | ~6h | `..._Umax0.10` (baseline; **skip if existing**) |
+| B.3 | 0.02 | ~6h | `..._Umax0.10_g4_l00.02` |
+| B.4 | 0.05 | ~6h | `..._Umax0.10_g4_l00.05` |
+| B.5 | 0.10 | ~6h | `..._Umax0.10_g4_l00.1` |
+
+Runner invocation:
+```bash
+python run_g4_sensitivity.py 0.10 --l0 <L0_VALUE>
+```
+
+### Sub-task C — α_T sensitivity sweep (5 jobs)
+
+Fix `Umax=0.10`, seed=1, ℓ₀=0.01, vary `α_T ∈ {0.3, 0.5, 0.7, 1.0, 2.0}`. α_T=0.5 is baseline (skip if existing).
+
+| Job | α_T | Wallclock | Archive tag |
+|---|---|---|---|
+| C.1 | 0.3 | ~6h | `..._aT0.3_..._Umax0.10_g4_aT0.3` |
+| C.2 | 0.5 | ~6h | baseline (skip if existing) |
+| C.3 | 0.7 | ~6h | `..._aT0.7_..._Umax0.10_g4_aT0.7` |
+| C.4 | 1.0 | ~6h | `..._aT1_..._Umax0.10_g4_aT1` |
+| C.5 | 2.0 | ~6h | `..._aT2_..._Umax0.10_g4_aT2` |
+
+Runner invocation:
+```bash
+python run_g4_sensitivity.py 0.10 --alpha_T <ALPHA_T_VALUE>
+```
+
+### Config (auto-set by runner; do NOT hand-edit)
+
+```python
+network_dict["hidden_layers"]    = 8
+network_dict["neurons"]          = 400
+network_dict["seed"]             = <CLI arg, default 1>
+network_dict["activation"]       = "TrainableReLU"
+network_dict["init_coeff"]       = 1.0
+mat_prop_dict["l0"]              = <CLI arg, default 0.01>
+ansatz_dict["enable"]            = False
+williams_dict["enable"]          = False
+fatigue_dict["accum_type"]       = "carrara"
+fatigue_dict["alpha_T"]          = <CLI arg, default 0.5>
+fatigue_dict["disp_max"]         = <CLI Umax positional arg>
+fatigue_dict["n_cycles"]         = 700
+fatigue_dict["spatial_alpha_T"]["enable"] = False
+fatigue_dict["psi_hack"]["enable"]        = False
+```
+
+### sbatch template (per job — substitute `<UMAX>`, `<EXTRA_FLAGS>`, `<TAG>`)
+
+```bash
+#!/bin/bash
+#SBATCH -J pidl_g4_<TAG>
+#SBATCH -A SHEIL-SL3-GPU
+#SBATCH -p ampere
+#SBATCH --nodes=1 --ntasks=1
+#SBATCH --gres=gpu:1
+#SBATCH --time=11:55:00
+#SBATCH -o logs/%x-%j.out
+#SBATCH -e logs/%x-%j.err
+
+set -euo pipefail
+module purge
+module load rhel8/default-amp
+source ~/rds/hpc-work/envs/pidl/bin/activate
+
+cd ~/rds/hpc-work/code/phase-field-fracture-with-pidl/upload\ code/SENS_tensile
+python run_g4_sensitivity.py <UMAX> <EXTRA_FLAGS> 2>&1 | tee logs/pidl_g4_<TAG>_$(date +%Y%m%d_%H%M).log
+```
+
+Sub-task examples:
+- A: `<EXTRA_FLAGS>` = `--seed 2`, `<TAG>` = `seedSweep_U<UMAX>_s2`
+- B: `<EXTRA_FLAGS>` = `--l0 0.005`, `<TAG>` = `l0Sweep_U0.10_l0_005`
+- C: `<EXTRA_FLAGS>` = `--alpha_T 0.3`, `<TAG>` = `aTSweep_U0.10_aT0_3`
+
+CSD3: feel free to write a single shell script that submits all 25 sbatch jobs as an array, or batches them as your scheduler quota allows. ~125 GPU-h total comfortably within the 2,999 GPU-h budget.
+
+### Expected outputs (per job)
+
+Under `SENS_tensile/<dir_name_from_runner>/`:
+- `best_models/` — checkpoints + `*_vs_cycle.npy` arrays (ᾱ_max, ᾱ_mean, f_min)
+- `intermediate_models/` — periodic snapshots
+- Logs under `logs/`
+
+Rsync back to Mac (just the small per-cycle arrays, NOT the full checkpoint set):
+```bash
+rsync -av --include='*.npy' --include='*.txt' --exclude='*.pt' \
+    csd3:~/rds/hpc-work/code/phase-field-fracture-with-pidl/upload\ code/SENS_tensile/hl_8_*Seed_2*Umax* \
+    ~/Downloads/_csd3_g4_sweep/
+```
+
+### Acceptance criteria
+
+For each sub-task, success = all jobs reach final cycle (n_cycles=700) OR fracture (α-boundary criterion) without crashing, AND the per-cycle .npy arrays are recoverable.
+
+- A complete: 15 archives with `Seed_∈{2,3,4}` × `Umax_∈{0.08, 0.09, 0.10, 0.11, 0.12}`; Mac will compute std(N_f) and std(ᾱ_max) per Umax.
+- B complete: 4-5 archives at Umax=0.10 with varying l0; Mac will plot N_f / ᾱ_max as functions of ℓ₀.
+- C complete: 4-5 archives at Umax=0.10 with varying α_T; Mac will plot N_f / ᾱ_max as functions of α_T.
+
+### Acknowledgement protocol
+
+1. **Ack**: in `csd3_outbox.md`, add `## 2026-04-27 · Ack Request 2: starting` entry with first job IDs
+2. As each sub-task batch finishes, write `[done] Request 2.A` / `2.B` / `2.C` with N_f summary table per Umax/parameter
+3. After all done, write a `[done] Request 2 (all)` roll-up with the 3 sensitivity tables
+
+### Stop conditions
+
+- If runner crashes on first job (e.g., import error, mesh load failure), STOP entire request and raise `[blocker]` in outbox. Don't waste GPU on 24 broken jobs.
+- If first 5 jobs use >2× expected wallclock, raise `[issue]` in outbox before submitting remaining 20 (likely ampere queue contention or env regression).
+- If user (Mac) writes `[cancel] Request 2` in inbox, scancel all pending Request 2 jobs.
+
+---
+
 ## 2026-04-24 · Request 1: E1 Enriched Ansatz S-N sweep at 5 U_max
 
 **Goal**: produce a full S-N curve (N_f vs U_max) for the **Enriched Mode-I Ansatz** PIDL method across `U_max ∈ {0.08, 0.09, 0.10, 0.11, 0.12}`. This tests whether the fixed-tip r^(1/2) output singular enrichment architecturally closes the PIDL-FEM S-N gap. This is the **primary data for Ch2 paper**.
