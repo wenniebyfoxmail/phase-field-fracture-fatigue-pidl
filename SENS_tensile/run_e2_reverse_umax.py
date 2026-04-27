@@ -39,7 +39,8 @@ from pathlib import Path
 # --- CLI ---------------------------------------------------------------------
 parser = argparse.ArgumentParser(description="Task 1 oracle-driver MIT-8b runner.")
 parser.add_argument("umax", type=float,
-                    help="Loading amplitude. Must be 0.08 or 0.12 (FEM data available).")
+                    help="Loading amplitude. Any U_max for which FEM data is "
+                         "discoverable in FEM_DATA_DIR (env) or DEFAULT_FEM_DIR.")
 parser.add_argument("--n-cycles", type=int, default=300,
                     help="Total fatigue cycles (default 300).")
 parser.add_argument("--zone-radius", type=float, default=0.02,
@@ -49,9 +50,10 @@ parser.add_argument("--no-apply-g", action="store_true",
                          "Default applies g(α) to match degraded ψ⁺ that fatigue accumulator expects.")
 args = parser.parse_args()
 
-if args.umax not in (0.08, 0.12):
-    raise SystemExit(f"FEM data only at Umax 0.08 / 0.12. Got {args.umax}. "
-                     f"Add Umax 0.09/0.10/0.11 FEM dumps if needed.")
+# Note: U_max validity is delegated to FEMSupervision auto-discovery — it will
+# raise a descriptive ValueError if no FEM cycle dumps are found for this U_max.
+# (Apr 27: dropped the (0.08, 0.12) whitelist after Windows confirmed full
+# per-cycle dump exists for all 5 Umax in SENT_PIDL_<NN>_export/psi_fields/.)
 if not (10 <= args.n_cycles <= 5000):
     raise SystemExit(f"n_cycles={args.n_cycles} out of [10, 5000]")
 
