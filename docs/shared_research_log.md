@@ -30,6 +30,68 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-27 · Windows-PIDL · [finding] Full per-cycle FEM ψ⁺ exists on Windows for ALL 5 Umax — sparse handoff_v2 may be unnecessary
+
+While checking what data was available for the oracle-driver smoke test, found Windows-FEM has the **complete per-cycle FEM ψ⁺ dump** for all 5 Umax (not just the 4-snapshot sparse subset Mac packaged into `_pidl_handoff_v2/`).
+
+### Where + counts
+
+```
+C:\Users\xw436\GRIPHFiTH\Scripts\fatigue_fracture\
+├── SENT_PIDL_08_export/psi_fields/cycle_0001..0396.mat  (396 files = full N_f)
+├── SENT_PIDL_09_export/psi_fields/cycle_0001..0254.mat  (254 files = full N_f)
+├── SENT_PIDL_10_export/psi_fields/cycle_0001..0170.mat  (170 files = full N_f)
+├── SENT_PIDL_11_export/psi_fields/cycle_0001..0117.mat  (117 files = full N_f)
+└── SENT_PIDL_12_export/psi_fields/cycle_0001..0082.mat  ( 82 files = full N_f)
+TOTAL: 1019 cycle dumps × 5 Umax
+```
+
+### Schema check
+
+Sample `SENT_PIDL_08_export/psi_fields/cycle_0001.mat`:
+```
+fields: ['alpha_elem', 'f_alpha_elem', 'psi_elem']
+  psi_elem: shape=(77730, 1)  ← same field name + same mesh size as handoff_v2
+```
+Compatible with `FEMSupervision._load_snapshots()` (reads `data["psi_elem"]`). Same mesh, so `mesh_geometry.mat` from `_pidl_handoff_v2/` is reusable.
+
+### Implications
+
+1. **Mac's `_AVAILABLE_CYCLES = {0.08: [1,150,350,396], 0.12: [1,40,70,82]}` undersells the data**. Full per-cycle FEM ψ⁺ is available on Windows. Mac only had the sparse subset because Windows-FEM packed it into `_pidl_handoff_v2/` for transport efficiency back when only Mac was consuming it.
+2. **Time-interpolation between FEM snapshots becomes unnecessary** for Windows runs (Mac's runner doc currently flags this as "approximation"). Each PIDL cycle can use the actual FEM ψ⁺ at that exact cycle.
+3. **5-Umax sweep is feasible** — runner's current `if args.umax not in (0.08, 0.12): exit` check (line 52) was data-driven, not physics-driven. With Umax 0.09/0.10/0.11 data on Windows, the check can be relaxed.
+
+### Three options for how to use this
+
+**(A) Status quo**: ignore the find. Smoke test with sparse 0.12 + linear interp. Run only 0.08 + 0.12 oracle-driver. Wrapper unchanged. Simplest, but throws away data.
+
+**(B) Wrapper-side adapter (Producer-only)**: extend `run_e2_reverse_umax_windows.py` to:
+   - Build a scratch dir `~/scratch/_fem_full_sweep/` with handoff_v2-style symlinks (`u08_cycle_NNNN.mat` → `SENT_PIDL_08_export/psi_fields/cycle_NNNN.mat`) — 1019 file symlinks
+   - Monkeypatch `fem_supervision._AVAILABLE_CYCLES` to full 5-Umax list
+   - Monkeypatch the runner's `umax in (0.08, 0.12)` check
+   - Pros: no Dev-side change. Cons: hacky (3 monkeypatches stacked); per-Umax archive paths may collide with future Mac runs that share repo (low risk).
+
+**(C) Mac-side proper fix (Dev role)**: rewrite `fem_supervision.py` to:
+   - Auto-discover available cycles from filesystem (glob `u{NN}_cycle_*.mat` and parse cycle numbers) — no hardcoded `_AVAILABLE_CYCLES` dict
+   - Skip time interpolation when cycle_idx exists exactly in the dataset (use file directly)
+   - Accept `FEM_DATA_DIR` env var (the Apr 27 question answered above)
+   - Update `run_e2_reverse_umax.py` to drop the `(0.08, 0.12)` whitelist
+   - Windows then symlinks/copies its full-sweep into the env-pointed dir, OR Mac defines a new on-Windows path convention. Either way Windows gets 5 Umax with no monkeypatching.
+
+### Recommendation
+
+**(C)**, because it's clean and lets both machines use the same logic. (B) is the fallback if you don't want the Dev work right now. (A) leaves Mac's runner verbiage about "5 Umax sweep" structurally impossible.
+
+If Mac picks (C), Windows will:
+1. Pull the new `fem_supervision.py`
+2. Set `FEM_DATA_DIR` to a unified scratch dir Windows builds (with all 1019 cycle files in handoff_v2 naming), or whatever convention Mac chooses
+3. Drop the wrapper script
+4. Run the real 5-Umax sweep
+
+No urgency — current smoke test (0.12, PID 32078) keeps running with sparse interp regardless of which option you pick. ETA ~5-8h. Worst case its result is invalidated and we re-run; archive footprint is small.
+
+---
+
 ## 2026-04-27 · Windows-PIDL · [done-stop] + [smoke-ok] + [question] Task 1 oracle-driver running via wrapper
 
 ### Dir 6.3 stop (per Mac decision 7e11cc5)
