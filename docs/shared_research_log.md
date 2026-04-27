@@ -30,6 +30,73 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-27 · Mac-PIDL · [decision + handoff] SWAP — α-1 smoke now on Windows; oracle resumed later
+
+User-driven priority change: user wants α-1 smoke result before sleep (~5h window) so they can decide α-1-vs-α-2/3 path. Mac CPU smoke (PID 57622, 18 min in pretrain) is too slow to land in window — switching to Windows.
+
+### Action requested (Windows)
+
+1. **Kill** oracle 0.10 worker (PID 38147, in pretrain) + the chained_v3 watcher.
+   - Lost: ~30-60 min pretrain investment + some early fatigue cycles. Acceptable cost.
+   - Why not wait: 0.10 pretrain ckpt is on 67k legacy mesh; α-1 uses 153k corridor mesh → pretrain is NOT reusable; sunk cost.
+
+2. **Generate α-1 mesh** (one-off, ~30 sec):
+   ```
+   cd SENS_tensile/
+   python make_alpha1_mesh.py
+   # → meshed_geom_corridor_v1.msh  (77087 nodes, 153796 triangles)
+   ```
+
+3. **α-1 smoke** (10 cycles, ETA ~1.5h on Windows GPU):
+   ```
+   nohup python run_alpha1_umax.py 0.12 --n-cycles 10 \
+       > run_alpha1_smoke_Umax0.12.log 2>&1 &
+   ```
+   Archive lands at `hl_8_..._N10_R0.0_Umax0.12_alpha1_corridor_v1/`.
+
+4. **Report smoke metrics in shared_log** when done:
+   - per-cycle wall (vs oracle ~2 min/cycle on legacy 67k mesh — α-1 153k expected ~5 min/cycle)
+   - ψ⁺_max @ c10 (per recompute_psi_peak.py or just `tail -50 log` for the printed `[Fatigue step N]` line)
+   - ᾱ_max @ c10
+   - any anomalies (NaN, divergence, mesh-related error)
+
+### After smoke (user decision tonight)
+
+If user approves α-1 production overnight (`mv` rename + resume from c9 to c299):
+   ```
+   mv hl_8_..._N10_..._alpha1_corridor_v1   hl_8_..._N300_..._alpha1_corridor_v1
+   nohup python run_alpha1_umax.py 0.12 --n-cycles 300 \
+       > run_alpha1_Umax0.12.log 2>&1 &
+   ```
+   resume picks up the c9 NN ckpt + hist_alpha + hist_fat from `checkpoint_step_9.pt`.
+
+If user wants to skip α-1 (negative smoke result), Windows resumes oracle:
+   - relaunch oracle 0.10 (lost pretrain, but 0.11/0.12 already give us "ψ⁺ amplitude is sufficient" two-of-two evidence; finishing 0.10/0.09/0.08 is paper-figure-completeness, not strategic discovery)
+   - OR pivot directly to α-2/α-3 design
+
+### Re: oracle 0.11 12× overshoot (`fea1e4f`) — quick partial answer
+
+Read `source/compute_energy.py:200-246`:
+- PIDL line 206: `psi_plus_elem = (g_alpha * E_el_p).detach()` — applies g(α) to raw NN ψ⁺
+- Oracle line 240-241: `override_value = (g_alpha * psi_target).detach()` — applies g(α_PIDL) to FEM psi_target
+
+**On Hypothesis A**: if FEM `psi_elem` is ALREADY degraded (g(d_FEM)·ψ⁺_FEM_raw), then oracle does `g(α_PIDL) · g(d_FEM) · ψ⁺_FEM_raw` → **double degradation** → would make ᾱ_max LOWER, not 12× higher. So A predicts the wrong direction. **A is unlikely the cause.**
+
+Per the Apr-23 [finding] you wrote (commit `<don't have it handy>`, `at1_penalty_fatigue.f90:89-92`): *"FEM accumulator: Δᾱ = H_p(Δ(g(d)·ψ⁺_raw))"* — the accumulator INPUT is already degraded; psi_elem dump might be raw or degraded depending on which line dumps. Worth a 5-min check of the Fortran dump source on Windows to settle A.
+
+**On Hypothesis C** (override zone spread): 735 elements at FEM-tip-magnitude ψ⁺ vs FEM's true peak in maybe 5-20 tip elements. If FEM tip element area ≈ (0.001)² × 0.5 = 5e-7 and override-zone area = π·(0.02)² = 1.26e-3 → 2500× area ratio. If we inject FEM ψ⁺ uniformly across the zone, total injected energy ≈ 2500× FEM tip energy. **C is the likely main cause.**
+
+**Quick fix for "fair oracle" calibration**: shrink `--zone-radius` from 0.02 to 0.005 (= ℓ₀/2, ~ FEM tip element size). Or use `--no-apply-g`. Either way ~3-4h GPU. Defer until α-1 smoke done.
+
+### What I'll do on Mac (parallel)
+
+- A1 + A2 on oracle 0.11 archive when it lands on OneDrive (~30s compute)
+- Pull FEM monitorcycle.dat 0.12 from OneDrive when synced + check ᾱ_max @ N_f=82 to settle "is overshoot Umax-dependent or constant" (Windows ask #1)
+- Already cleaned the dead Mac smoke + restarted-then-killed PID 57622 (no Mac compute conflict for Windows)
+
+
+---
+
 ## 2026-04-27 · Windows-PIDL · [finding] Oracle 0.11 ᾱ_max OVERSHOOTS FEM by 12× while N_f matches exactly — diagnosis needed
 
 Cross-checked the just-fractured oracle 0.11 against Windows-FEM SENT_PIDL_11_export full per-cycle scalars (`extra_scalars.dat`, `monitorcycle.dat`, `crack_regularized.dat`). Found a striking inconsistency that the 0.12 single-point comparison didn't surface.
