@@ -464,13 +464,30 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # 自动微分模式（T_conn is None）    ：需要 inp.requires_grad
             # ★ E2 sanity hack (Apr 23 2026): 如果 fatigue_dict 里有 psi_hack 子 dict，透传
             _psi_hack = fatigue_dict.get('psi_hack', None)
+            # ★ Apr 27 — Oracle-driver MIT-8b: build per-cycle FEM ψ⁺ override dict
+            _fem_oracle = None
+            _fem_oracle_cfg = fatigue_dict.get('fem_oracle', None)
+            if _fem_oracle_cfg is not None and _fem_oracle_cfg.get('enable', False):
+                _fem_sup = _fem_oracle_cfg['fem_sup']  # FEMSupervision instance
+                _pidl_centroids = _fem_oracle_cfg['pidl_centroids']  # np.ndarray
+                _override_mask = _fem_oracle_cfg['override_mask']    # torch.bool tensor
+                _apply_g = _fem_oracle_cfg.get('apply_g', True)
+                _device = inp.device
+                # Linear-interp FEM ψ⁺ at this fatigue cycle j → tensor on device
+                _psi_target = _fem_sup.psi_target_at_cycle(
+                    int(j), _pidl_centroids, device=_device, dtype=torch.float32)
+                _fem_oracle = {
+                    'enable': True, 'psi_target': _psi_target,
+                    'override_mask': _override_mask, 'apply_g': _apply_g,
+                }
             if T_conn is not None:
                 with torch.no_grad():
                     u_eval, v_eval, alpha_eval = field_comp.fieldCalculation(inp)
                 psi_plus_elem = get_psi_plus_per_elem(
                     inp, u_eval, v_eval, alpha_eval,
                     matprop, pffmodel, area_T, T_conn,
-                    psi_hack_dict=_psi_hack
+                    psi_hack_dict=_psi_hack,
+                    fem_oracle_dict=_fem_oracle,
                 )
             else:
                 # 自动微分模式：需要 inp 开启梯度
@@ -479,7 +496,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 psi_plus_elem = get_psi_plus_per_elem(
                     inp_tmp, u_eval, v_eval, alpha_eval,
                     matprop, pffmodel, area_T, T_conn=None,
-                    psi_hack_dict=_psi_hack
+                    psi_hack_dict=_psi_hack,
+                    fem_oracle_dict=_fem_oracle,
                 )
 
             # ★ Direction 4: 用 ψ⁺ 重心估计裂尖坐标 → 更新 field_comp.x_tip

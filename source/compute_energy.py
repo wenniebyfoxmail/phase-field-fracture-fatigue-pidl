@@ -167,7 +167,7 @@ def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, are
 
 # ★ 新增函数：计算各元素退化拉伸应变能密度，供疲劳历史变量更新使用
 def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn=None,
-                          psi_hack_dict=None):
+                          psi_hack_dict=None, fem_oracle_dict=None):
     """
     ★ 新增函数（Manav 原始代码中不存在）
 
@@ -220,6 +220,29 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
         # 平滑 Gaussian 放大: 中心 mult，远场 1，半峰在 r_hack
         scale = 1.0 + (mult - 1.0) * torch.exp(-(r_elem / r_hack) ** 2)
         psi_plus_elem = (psi_plus_elem * scale).detach()
+
+    # ★ Apr 27 — Oracle-driver MIT-8b: REPLACE PIDL ψ⁺ with FEM-projected ψ⁺
+    # 在 process zone B_2ℓ₀(tip) 内用 FEM-interpolated ψ⁺ 替换 PIDL 自己算的值。
+    # 用途：测 single-element peak ψ⁺ amplitude 是否 sufficient cause for ᾱ_max。
+    # fem_oracle_dict keys:
+    #   enable: bool
+    #   psi_target: torch.Tensor (n_elem,) — pre-projected FEM ψ⁺ at PIDL elements
+    #              (interpolated by runner; tensor on same device as psi_plus_elem)
+    #   override_mask: torch.Tensor (n_elem,) bool — which elements to override
+    #              (typically r_to_tip <= 2*ℓ₀; precomputed by runner)
+    #   apply_g: bool (default True) — multiply by g(α) before substituting
+    #              (matches degraded ψ⁺ that fatigue accumulator expects)
+    if fem_oracle_dict is not None and fem_oracle_dict.get('enable', False) \
+            and T_conn is not None:
+        psi_target = fem_oracle_dict['psi_target']    # raw FEM ψ⁺ at PIDL elems
+        mask = fem_oracle_dict['override_mask']
+        apply_g = fem_oracle_dict.get('apply_g', True)
+        if apply_g:
+            override_value = (g_alpha * psi_target).detach()
+        else:
+            override_value = psi_target.detach()
+        # In-place override on the masked elements
+        psi_plus_elem = torch.where(mask, override_value, psi_plus_elem)
     return psi_plus_elem
 
 
