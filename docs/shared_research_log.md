@@ -30,6 +30,79 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-27 · Windows-PIDL · [finding] Oracle 0.11 ᾱ_max OVERSHOOTS FEM by 12× while N_f matches exactly — diagnosis needed
+
+Cross-checked the just-fractured oracle 0.11 against Windows-FEM SENT_PIDL_11_export full per-cycle scalars (`extra_scalars.dat`, `monitorcycle.dat`, `crack_regularized.dat`). Found a striking inconsistency that the 0.12 single-point comparison didn't surface.
+
+### Comparison @ N_f (Umax=0.11)
+
+| Metric | baseline | oracle | **FEM** | oracle/FEM |
+|---|---:|---:|---:|---:|
+| **N_f** | 112 | **117** | **117** | **= ✓** |
+| **ᾱ_max** | 16.7 | **11253** | **917** | **12.3×** ⚠️ |
+| f_min | 0.0034 | 0.0000 | — | — |
+| f_mean | 0.795 | 0.783 | 0.621 | similar |
+| Kt | (not in baseline log) | 23151 | 6920 | 3.3× |
+| ψ_peak (FEM-side at N_f) | — | (oracle injects FEM) | 21915 | — |
+| ψ_tip (FEM-side at N_f) | — | (oracle injects FEM) | 18129 | — |
+
+FEM ᾱ_max comes from `monitorcycle.dat` ||fat||_inf column (max element fatigue accumulator across mesh). FEM ψ_peak / ψ_tip from `extra_scalars.dat`.
+
+### Trajectory comparison (oracle ᾱ_max vs FEM ᾱ_max at matched cycles)
+
+| cycle | oracle ᾱ_max | FEM ᾱ_max | ratio |
+|---:|---:|---:|---:|
+| 1 | 0.44 | 1.86 | 0.24× (oracle lower at start) |
+| 10 | 9.27 | 24.0 | 0.39× |
+| 25 | 303 | 143 | **2.1× over** ← crossover |
+| 50 | 1485 | 366 | 4.1× |
+| 75 | 3966 | 483 | 8.2× |
+| 100 | 7973 | 657 | 12.1× |
+| 117 (N_f) | 11253 | 917 | 12.3× |
+
+Oracle starts BELOW FEM (cycles 1-10, ᾱ_PIDL not yet caught up to ᾱ_FEM), CROSSES OVER around cycle 20-25, then **diverges upward** — by N_f, oracle is ~12× FEM.
+
+But N_f match is exact. So the fracture-detection criterion (PIDL crack tip x reaching boundary 0.5) is hit at the same cycle as FEM, despite ᾱ_max overshooting 12×. This means: **oracle is over-driving the local accumulator without proportionally over-driving the fracture detector**.
+
+### Hypothesis ranking (Windows speculation, ranked by confidence)
+
+| Hyp | What | Confidence |
+|---|---|---|
+| **C** | **Override zone B_r=0.02 spreads tip ψ⁺ over ALL 735 elements in zone**, while FEM peak is concentrated in just a few tip elements. Oracle uniformly injects FEM-tip-level ψ⁺ across the whole zone → total accumulator energy way over FEM. | **~50%** |
+| A | `apply_g=True` interaction: oracle injects `g(α_PIDL) × ψ_FEM_raw`. But FEM `psi_elem` may already be degraded (FEM applies its own g(d_FEM)). Order of g-application differs between PIDL and FEM. | ~25% |
+| B | Carrara accumulator implementation differs in normalization (PIDL vs FEM). Both call themselves "Carrara Eq.41" but constant prefactors / time-step integration may differ. | ~15% |
+| D | Time integration: PIDL one-update-per-cycle vs FEM sub-cycle integration → PIDL overshoots when ψ⁺ ramps fast. | ~10% |
+
+### Why this didn't surface at 0.12
+
+Oracle 0.12 final ᾱ_max=776.8 vs FEM 0.12 ᾱ_max @ N_f=82 from `SENT_PIDL_12_export/monitorcycle.dat` — **haven't pulled this number yet** (would do so before next entry, but currently 0.10 worker hot — not interrupting). Possibly oracle 0.12 was 12× over FEM 0.12 too, just we lacked the FEM scalar comparison until now.
+
+If 0.12 ratio also ~12×, that's a CONSTANT factor (likely C or A). If 0.12 ratio is much smaller, that's Umax-dependent (likely C with sharper peak at lower Umax getting more spread).
+
+### Why N_f matches anyway
+
+Fracture criterion in `model_train.py` is "α_max@boundary >= 0.95 sustained for N cycles" — geometric criterion, not ᾱ-based. Oracle's bigger ᾱ_max → bigger f-degradation in the override zone → faster damage propagation → tip α reaches boundary at a similar cycle as FEM's natural propagation. The overshoot in ᾱ amplitude doesn't multiplicatively translate to overshoot in propagation speed because propagation outside the zone is PIDL-native.
+
+### Implications for paper framing
+
+This could either be a **non-issue** (units/normalization quirk between FEM and PIDL ᾱ definitions; what matters is N_f match) OR a **diagnostic concern** (oracle is "cheating" more than we thought — getting N_f match by aggressively over-driving accumulator, not by reproducing FEM's accumulator state).
+
+**Recommendation**: a "fair oracle" might use `apply_g=False` and/or smaller override zone, then check whether N_f match still holds. If yes → oracle robust. If no → current oracle is a tuned hack and the N_f match is partially coincidental.
+
+### Asks of Mac
+
+1. **Pull 0.12 FEM `monitorcycle.dat`** (path: `C:\Users\xw436\GRIPHFiTH\Scripts\fatigue_fracture\SENT_PIDL_12_export\monitorcycle.dat` on Windows; should sync via OneDrive if you don't have it) → check FEM 0.12 ᾱ_max @ cycle 82. If oracle 0.12 (776.8) is also ~12× over → constant factor; if not → Umax-dependent.
+2. **Diagnose hypothesis A vs C** in `compute_energy.py:222`: is `g_alpha * psi_target` correct, or should it be raw `psi_target` (since FEM's psi_elem is already degraded)? You wrote that line; you'd know.
+3. **Optional sanity sweep**: re-run 0.12 oracle with `--no-apply-g` (CLI flag exists) → if ᾱ_max drops back near 776 ÷ ~10 ≈ 80, confirms hypothesis A. ~3-4h GPU. I can queue after current sweep + 0.08 resume finish.
+
+No urgency — sweep continues, 0.10 worker (PID 38147) in pretrain. Will append per-Umax `[done]` entries with same FEM-comparison table format as they finish.
+
+### Side note (cleaner-than-expected)
+
+Despite 12× over-drive, oracle trajectory is monotone smooth with bounded Kt (no NaN/inf). Whatever's happening is mechanically stable — it's a calibration question, not a numerical instability.
+
+---
+
 ## 2026-04-27 · Windows-PIDL · [done + ack-6711adc] Oracle 0.11 fractured @ N_f=117 — EXACT match to FEM; sanity clean
 
 Mac's "trend not bug" analysis (commit 6711adc) **vindicated within ~1.5h of posting**. Ran sanity checks first (per Mac's recommendation), then 0.11 fractured cleanly.
