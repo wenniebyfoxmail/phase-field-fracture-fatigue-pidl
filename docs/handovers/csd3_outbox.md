@@ -33,6 +33,60 @@
 
 ## Reports
 
+## 2026-04-27 · [ack] Request 2: G4 sensitivity sweeps — all 25 jobs submitted
+
+**git pull**: HEAD at `f69a60b` (merge, contains `run_g4_sensitivity.py` ✅). Path correction applied: repo root on CSD3 is the upload-code content directly → `cd .../SENS_tensile` (no `upload\ code/` subdirectory).
+
+**Baseline check**: no existing Umax=0.10 seed=1 archives on CSD3 → all 25 jobs submitted (including B.2 l0=0.01 and C.2 α_T=0.5 which are baseline re-runs for cross-check).
+
+### Sub-task A — Seed sweep (15 jobs)
+
+| Umax | Seed | Job ID | Status |
+|---|---|---|---|
+| 0.08 | 2 | `28505241` | PENDING |
+| 0.08 | 3 | `28505243` | PENDING |
+| 0.08 | 4 | `28505248` | PENDING |
+| 0.09 | 2 | `28505252` | PENDING |
+| 0.09 | 3 | `28505254` | PENDING |
+| 0.09 | 4 | `28505256` | PENDING |
+| 0.10 | 2 | `28505265` | PENDING |
+| 0.10 | 3 | `28505267` | PENDING |
+| 0.10 | 4 | `28505269` | PENDING |
+| 0.11 | 2 | `28505270` | PENDING |
+| 0.11 | 3 | `28505272` | PENDING |
+| 0.11 | 4 | `28505273` | PENDING |
+| 0.12 | 2 | `28505274` | PENDING |
+| 0.12 | 3 | `28505276` | PENDING |
+| 0.12 | 4 | `28505278` | PENDING |
+
+### Sub-task B — ℓ₀ sweep (5 jobs, Umax=0.10, seed=1)
+
+| ℓ₀ | Job ID | Status |
+|---|---|---|
+| 0.005 | `28505279` | PENDING |
+| 0.01 (baseline) | `28505280` | PENDING |
+| 0.02 | `28505281` | PENDING |
+| 0.05 | `28505289` | PENDING |
+| 0.10 | `28505294` | PENDING |
+
+### Sub-task C — α_T sweep (5 jobs, Umax=0.10, seed=1)
+
+| α_T | Job ID | Status |
+|---|---|---|
+| 0.3 | `28505295` | PENDING |
+| 0.5 (baseline) | `28505420` | PENDING |
+| 0.7 | `28505432` | PENDING |
+| 1.0 | `28505506` | PENDING |
+| 2.0 | `28505533` | PENDING |
+
+**sbatch scripts**: `~/rds/hpc-work/code/phase-field-fracture-with-pidl/sbatch_g4_*.sh` (25 files)  
+**Logs**: `~/rds/hpc-work/code/phase-field-fracture-with-pidl/logs/pidl_g4_*-{JOBID}.out`  
+**Expected wallclock**: 6–12h per job (A100, ampere, `SHEIL-SL3-GPU`). ~125 GPU-h total.
+
+Will update with `[done] Request 2.A/B/C` entries as each sub-task batch completes.
+
+---
+
 ## 2026-04-25 · [done] Request 0: Environment bootstrap — complete (smoke test waived)
 
 All bootstrap steps confirmed complete. Smoke test job `28308465` was subsequently cancelled (env verified on login node; GPU smoke test not needed).
