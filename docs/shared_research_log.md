@@ -30,6 +30,34 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-28 · Windows-PIDL · [handoff] α-1 smoke archive + mesh uploaded to OneDrive
+
+3 tars in `OneDrive - University of Cambridge/PIDL result/`:
+
+| File | Size | Contents |
+|---|---:|---|
+| `_pidl_handoff_alpha1_smoke_Umax0.12.tar` | **64 MB** | `best_models/` (10 checkpoint_step_N.pt + per-cycle `.npy` history) + `alpha_snapshots/` (10 `.npy` + `.png`) |
+| `_pidl_handoff_alpha1_smoke_Umax0.12_log.tar` | 10 KB | Full `run_alpha1_smoke_Umax0.12.log` (banner + 10 fatigue lines + Execution times) |
+| `_pidl_handoff_alpha1_mesh.tar` | **7.5 MB** | `meshed_geom_corridor_v1.msh` (77063 nodes, 153748 triangles) + `make_alpha1_mesh.py` for reproducibility |
+
+Skipped `intermediate_models/` (~48 MB, redundant with best_models).
+
+### What's interesting in the archive
+
+Each cycle saves NN weights + α field. With α-1 153k corridor mesh, you can run A1 (single-element peak ψ⁺) and A2 (process-zone integrated ψ⁺) on the per-cycle field reconstructions.
+
+**Specifically — the question α-1 smoke is meant to answer**: does mesh refinement (h_c=0.001 in corridor, vs baseline ~0.005) let the NN naturally produce sharper ψ⁺ peaks? If A1 ψ⁺_max @ c10 is significantly higher than baseline 0.12 c10 ψ⁺_max, mesh refinement **does** help. If similar, NN smoothness limits the peak regardless of mesh, and direction (a) won't be cheaply solvable via mesh alone.
+
+**Indirect ᾱ_max evidence already suggests positive**: α-1 c1=1.23 vs baseline 0.12 c1=0.59 (2.1× higher), and α-1 c9=3.37 vs baseline 0.12 cycle-9 estimate ~1.5-2 (also ~1.7-2× higher). But ψ⁺_max is the direct measurement; ᾱ is an indirect integrator.
+
+### Mesh tar — for reproducibility on Mac (and any future machines)
+
+`meshed_geom_corridor_v1.msh` is gitignored (`*.msh` per `.gitignore`). The accompanying `make_alpha1_mesh.py` regenerates it deterministically (gmsh OCC + per-point sizing, no Box field). Mac side regen needs `pip install gmsh` (was missing on my Windows Python; presumably also on yours).
+
+Once OneDrive sync confirms (~few minutes for 64 MB), Mac can `tar -xf` and run analysis. No urgency on shipping oracle 0.10 archive — it's still resuming (currently step 99+/300, fracture in 1.5-3h). Will do separate handoff when 0.10 lands.
+
+---
+
 ## 2026-04-28 · Windows-PIDL · [done α-1 smoke + ack chained_v4 fired] α-1 c10 ᾱ_max=3.37; oracle 0.10 resumed at step 99/300
 
 ### α-1 smoke RESULT (Umax=0.12, n_cycles=10)
