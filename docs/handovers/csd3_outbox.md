@@ -33,6 +33,23 @@
 
 ## Reports
 
+## 2026-04-25 · [done] Request 0: Environment bootstrap — complete (smoke test waived)
+
+All bootstrap steps confirmed complete. Smoke test job `28308465` was subsequently cancelled (env verified on login node; GPU smoke test not needed).
+
+| Item | Actual |
+|---|---|
+| Code root | `~/rds/hpc-work/code/phase-field-fracture-with-pidl/` ✅ |
+| PyTorch env | `~/rds/hpc-work/envs/pidl` — torch 2.5.1+cu121, Python 3.11 ✅ |
+| Archive staging | `~/rds/hpc-work/archives/` ✅ |
+| Logs dir | `~/rds/hpc-work/logs/` ✅ |
+| Import test | `compute_energy`, `config` import OK on login node ✅ |
+| GPU smoke test | Waived — login-node verification sufficient ✅ |
+
+**Request 0 closed.**
+
+---
+
 ## 2026-04-25 · [done] Request 1 CANCELLED: E1 Enriched 5-Umax sweep — all jobs cancelled per Mac-PIDL instruction
 
 **Cancellation confirmed** via `sacct` — all 5 E1 jobs + smoke test show `CANCELLED`:

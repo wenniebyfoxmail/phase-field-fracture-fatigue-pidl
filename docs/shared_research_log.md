@@ -30,6 +30,75 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-27 · Mac-PIDL · [done] MIT-8 K=5 amortized — NEGATIVE result; baseline-indistinguishable
+
+PID 87042 finished 13:07 UK time. ~19 h Mac CPU total.
+
+### Headline numbers (Umax=0.12, archive `..._mit8_K5_lam1.0/`)
+
+| metric | baseline | K=5 amortized | E2 ψ⁺-hack |
+|---|---|---|---|
+| N_f (C1=C2) | 80 | **81** | 81 |
+| ᾱ_max @ N_f | 9.09 | **8.45** | ~290 (rising to 457) |
+| f_min @ N_f | 1.09e-2 | 1.25e-2 | <1e-4 |
+| K_I pristine (A1) | 0.0935 | **0.0926** | undefined |
+| ψ⁺_max @ c91 (A2) | 4.52e+03 | **6.51e+03** | 4.51e+03 |
+
+K=5 supervision DID raise ψ⁺_max (+44%) but did NOT raise ᾱ_max. Same
+"moving-peak" pattern as Williams (Dir 4) + Enriched (Dir 5). K_I
+unchanged at the LEFM far-field metric.
+
+### Verdict
+
+K=5 amortized supervision is NOT a closure tool. The supervision in
+cycles 1-5 + every-10 amortization is too weak — by cycle 5, only 5
+cycles of supervised LBFGS have fired, and FEM ψ⁺ at c5 is small
+(barely above baseline NN's natural peak). Post-release c5+ trajectory
+exactly tracks baseline.
+
+This is a NEGATIVE control result. Implication: **Task 1 oracle-driver
+(currently running on Windows) is the right next step**. Replacing ψ⁺
+at the accumulator INPUT (oracle approach) is structurally different
+from MSE-supervising the NN output (K=5 approach) — the oracle bypasses
+NN's smoothness limitation on a per-cycle basis, the supervision tries
+to coax it into FEM-like behavior.
+
+If oracle-driver SUCCEEDS (ᾱ_max → FEM-level): confirms ψ⁺ peak is
+sufficient cause for the gap. If it FAILS (ᾱ_max stays low): there's
+a second mechanism in Carrara accumulator we missed.
+
+### Files committed in this session (Mac side, since `b6cdc85`)
+
+```
+ac773a7  [option-C] fem_supervision auto-discover + FEM_DATA_DIR (Windows pulled, acked b6cdc85)
+631d4df  [A2] process-zone metrics post-processing (G1)
+5bfd20f  [A1] J-integral / K_I extraction (G2)
+6103ac2  [A3] S-N regression cross-criterion sensitivity (G4)
+4ac7dc3  [B2] transfer-function chain summary across 27 archives
+```
+
+### Local memory writeups (NOT in git per project rule)
+
+- `audit_apr27_a1a2a3.md` — A1/A2/A3 vs MEMORY audit; **major reframe**:
+  K_I across all PIDL methods at Umax=0.12 is identical (≈0.094); the
+  Kt-method-ranking memory entries were NN-output-reduction artifacts.
+- `finding_mit8_K5_apr27.md` — this K=5 result + comparison to baseline.
+- `finding_dir63_logf_apr25.md` — appended Apr 27 final verdict block
+  (logf overshoots FEM at all Umax, STOP decision rationale).
+- `finding_e2_psi_hack_apr24.md` — appended Apr 27 confirmation that
+  the Apr 25 INVALIDATED low-Umax E2 claim still stands.
+
+### What Mac is doing now
+
+Idle on training; analysis-only. Awaiting:
+1. Windows oracle-driver smoke #2 + 4-Umax sweep (~12-20h).
+2. Optional: A2/A1 on K=5 archive added (just done, included above).
+
+No urgent next-action queued. Will re-engage when Windows posts a [done]
+on any of the 5 oracle-driver Umax runs or when user requests.
+
+---
+
 ## 2026-04-27 · Windows-PIDL · [ack-C] Pulled `ac773a7`; smoke #2 + chained 4-Umax sweep launched
 
 Pulled Mac's option-C fix. Killed obsolete sparse-interp smoke (PID 32078) and renamed its log to `BUG_sparse_interp_run_e2_reverse_Umax0.12.log`.
