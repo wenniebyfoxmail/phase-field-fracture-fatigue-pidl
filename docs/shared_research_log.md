@@ -30,6 +30,109 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-27 · Mac-PIDL · [finding] Oracle 0.12 UNDER FEM 0.81×, oracle 0.11 OVER 12.3× — Hypothesis C alone doesn't explain; plateau mechanism in 0.12
+
+Mac has the FEM scalar timeseries CSVs all along — `~/Downloads/_pidl_handoff_v2/post_process/SENT_PIDL_NN_timeseries.csv` for all 5 Umax (Apr 20 vintage). Resolved your ask #1 without touching Windows.
+
+### Cross-Umax FEM ᾱ_max (`alpha_max` column @ N_f)
+
+| Umax | FEM N_f | FEM ᾱ_max@N_f | FEM ψ⁺_peak@N_f | FEM Kt@N_f |
+|---:|---:|---:|---:|---:|
+| 0.08 | 396 | **1378** | 1.20e+04 | 7995 |
+| 0.09 | 254 | 1017 | 1.51e+04 | 7522 |
+| 0.10 | 170 | 838 | 1.84e+04 | 7982 |
+| 0.11 | 117 | 917 | 2.19e+04 | 6920 |
+| 0.12 | 82 | **958** | 2.60e+04 | 7016 |
+
+Note: FEM ᾱ_max is NOT monotone in Umax (dips at 0.10) — depends on cycle-count vs per-cycle Δᾱ tradeoff.
+
+**Important MEMORY correction**: my `finding_oracle_driver_apr27.md` cited FEM 0.12 ᾱ_max ~ 1378 — WRONG (that was 0.08). Correct value is **958**. Updating local memory.
+
+### Oracle/FEM ratio is highly Umax-dependent (NOT constant 12×)
+
+| Umax | Oracle ᾱ_max @end | FEM ᾱ_max @N_f | **ratio** | comment |
+|---:|---:|---:|---:|---|
+| 0.12 | 776.83 | 958.22 | **0.81×** | **UNDER** FEM |
+| 0.11 | 11253 | 917.06 | **12.27×** | OVER FEM |
+| 0.10 | TBD | 838.24 | — | (running) |
+| 0.09 | TBD | 1016.86 | — | |
+| 0.08 | TBD | 1378.19 | — | |
+
+**14.5× jump** in oracle ᾱ_max between adjacent Umax (776→11253 from 0.12→0.11). This is NOT a constant-factor zone-spread artifact (Hypothesis C) — that would predict a constant ratio.
+
+### Cycle-by-cycle 0.12 oracle vs FEM — there's a PLATEAU
+
+Mac ran A2 (commit 631d4df) on the oracle 0.12 archive earlier; pulling the per-cycle ᾱ_max trajectory:
+
+```
+cyc  | oracle ᾱ_max | FEM ᾱ_max | oracle/FEM
+  1  |       0.43   |    2.25   |  0.19×
+  5  |       1.15   |    9.08   |  0.13×
+ 10  |     ★83.88   |   49.33   |  1.70× ← jump from c5 to c10
+ 20  |       84.11  |  125.13   |  0.67×
+ 30  |       84.12  |  232.22   |  0.36×  ← plateau
+ 40  |       85.46  |  330.92   |  0.26×  ← still plateau
+ 50  |       88.69  |  386.64   |  0.23×
+ 60  |       90.99  |  547.69   |  0.17×
+ 70  |      156.37  |  730.36   |  0.21×
+ 80  |      413.21  |  920.68   |  0.45×  ← jumping again
+ 82  |      469.17  |  958.22   |  0.49×
+ 93  |      776.83  |   —       |  —
+```
+
+**Two regimes**:
+1. **c5→c10 jump** (1.15 → 83.88, 73× growth in 5 cycles) — override zone elements rapidly accumulate FEM ψ⁺
+2. **c10→c70 plateau** at ~84-156 — likely the chain reaction:
+   `ᾱ ≫ α_T=0.5 → f(ᾱ)→0 → α-field grows fast → α→1 → g(α)→0 → effective ψ⁺_into_accumulator → 0 → Δᾱ frozen`
+   The override-zone elements "die" at ᾱ≈84 and stop accumulating; FEM 0.12 keeps growing because crack propagation moves to NEW elements with fresh ᾱ=0
+3. **c70+ resume** — possibly tip propagation finally takes a NEW element OUT of override zone but STILL receiving non-zero PIDL g(α)·ψ⁺, allowing cascading damage (separate mechanism from override)
+
+### Why does 0.11 not plateau?
+
+**Speculation** (worth checking when oracle 0.11 archive lands on Mac):
+
+- 0.11 has 117 cycles vs 82 → more time for the post-saturation propagation regime
+- 0.11 has ~16% smaller per-cycle FEM ψ⁺ peak (LEFM ∝ U²) → reaches the saturation cliff slower → less of the "frozen plateau" relative to total run
+- Smoother integration with longer cycle horizon → trajectory looks linear (1485 c50 → 3966 c75 → 7973 c100 → 11253 c117)
+
+If this hypothesis is right, the picture is:
+- Oracle 0.12: hits saturation cliff fast, frozen most of run, recovers late, finishes UNDER FEM
+- Oracle 0.11: just below saturation cliff, accumulates linearly through whole run, finishes OVER FEM
+- Oracle 0.10/0.09/0.08: even slower per-cycle Δᾱ → likely "linear grow to high ᾱ_max" pattern → expect OVER-shoot
+
+So the **Umax-dependence comes from cycle-count + saturation interplay**, not a clean factor.
+
+### Updated Hypothesis ranking
+
+| Hyp | What | New confidence |
+|---|---|---|
+| **E (new)** | **Saturation cliff at ᾱ ≫ α_T**: once override-zone elements pass the chain `ᾱ→f=0→α→1→g=0`, they stop accumulating; trajectory shape depends on whether we hit cliff early (0.12) or late (0.11+) | **~50%** |
+| C | Override zone B_r=0.02 spreads peak | ~25% (still plausible as secondary; explains why ᾱ_freeze ≈ 84 instead of FEM tip's much higher ᾱ_max) |
+| A | Double g(α) | ~10% (unchanged — still wrong-direction; but contributes to cliff timing) |
+| B | Carrara normalization differs | ~10% |
+| D | Time integration | ~5% |
+
+### Implication: oracle is NOT a clean amplitude-closure tool
+
+Original framing in `finding_oracle_driver_apr27.md`: "oracle confirms ψ⁺ amplitude is sufficient cause for FEM-level ᾱ_max". This is now **partially valid** — oracle gives N_f match (paper-grade confirmation) but the ᾱ_max trajectory is NOT a faithful FEM reproduction. It's a different physics regime that happens to produce similar N_f via fracture-detector saturation.
+
+For paper Ch2 narrative:
+- ✅ N_f match holds (2/2 across Umax tested) — robust
+- ⚠️ ᾱ_max comparison is NOT robust → drop the "ᾱ_max → FEM" claim from the M2 framing
+- ✅ "ψ⁺ at fatigue accumulator drives N_f" still holds, but with caveat that the override-zone mechanism is its own beast
+- ⚠️ Two-effect framing (amplitude + stationarity): stationarity story strengthens (override zone IS stationary), but the amplitude side is now murkier
+
+### Lower-priority asks (defer until α-1 done)
+
+1. **Mac will write the cycle-by-cycle comparison figure** when oracle 0.10/0.09/0.08 archives all land. Will go in paper Ch2 supplementary.
+2. **No-apply-g sanity sweep** at Umax=0.12 (your fea1e4f ask #3) — still relevant as a separate calibration test, but the saturation-cliff story is now more important than the apply_g question.
+3. **Smaller --zone-radius** test (e.g. 0.005) — same priority. Defer.
+
+For α-1 swap path, the new finding doesn't change the α-1 plan (still test mesh refinement → ψ⁺_max amplitude lift independently of oracle).
+
+
+---
+
 ## 2026-04-27 · Mac-PIDL · [decision + handoff] SWAP — α-1 smoke now on Windows; oracle resumed later
 
 User-driven priority change: user wants α-1 smoke result before sleep (~5h window) so they can decide α-1-vs-α-2/3 path. Mac CPU smoke (PID 57622, 18 min in pretrain) is too slow to land in window — switching to Windows.
