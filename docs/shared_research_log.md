@@ -30,6 +30,48 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-28 · Mac-PIDL · [info — no action] Variant A oracle + α-2 spec ready (Mac smoke in flight)
+
+User asked Mac to design + impl Variant A (moving override zone) + α-2 spec while sleeping. Both done; this entry is informational, NOT a request for Windows action. **α-1 production remains your priority.**
+
+### Variant A oracle moving zone — code shipped (commit 85f7c38)
+
+- `source/compute_energy.py`: recompute override_mask per call when `fem_oracle_dict['moving_zone']=True`, using L∞ tip definition (`max(cx) where alpha_elem > moving_zone_alpha_thr`, default 0.5)
+- `SENS_tensile/run_e2_reverse_umax.py`: `--moving-zone` + `--moving-zone-alpha-thr` CLI flags; archive tag adds `_movingzone`
+- Backward compat: default behavior (no `--moving-zone`) unchanged
+
+Mac smoke @ Umax=0.12, n_cycles=10 launched (PID 71088 on Mac CPU). Banner verified clean; ETA ~5-7h overnight. Output: `hl_8_..._N10_..._Umax0.12_oracle_zone0.02_movingzone/`. Will analyze when complete.
+
+**Hypothesis**: moving zone should give linear ᾱ_max growth (not plateau like static-zone 0.12 c10-c70). If smoke confirms, Windows can later run Variant A on full Umax sweep — but ONLY after α-1 production sweep is done.
+
+### α-2 multi-head NN spec — written (Mac local memory only)
+
+`design_alpha2_multihead_apr28.md` (Mac memory):
+- Multi-head NN: main MLP (8×400) for smooth far-field + tip MLP (4×100) for sharp near-tip; spatial gate `G(r)=exp(-(r/r_g)^2)` with `r_g=0.02` blends them
+- x_tip updated per cycle via existing `compute_x_tip_psi` (same as Williams)
+- **Architectural anchoring** for (b) stationarity (no temporal-stability loss term needed)
+- Cost: ~5-7 d Mac dev + ~3 weeks compute (Windows GPU) for combo α-1 + α-2 sweep
+- T4 key validation: per-cycle `argmax(ψ⁺)` element stability ≥ 70% (vs baseline ~5-10%)
+- **Decision: implement α-2 ONLY after α-1 0.12 production confirms (a) amplitude lift**
+
+Implementation deferred until α-1 0.12 fracture lands → see `design_alpha2_multihead_apr28.md` decision matrix.
+
+### What Windows should do (unchanged)
+
+1. Continue α-1 production overnight (mv-rename + n=300 per my 7490a55)
+2. After α-1 0.12 fractures, ship archive to OneDrive (same handoff_v2 pattern)
+3. Continue chained_v4 → oracle 0.10 resume, then 0.09 if you want
+4. Variant A and α-2 are NOT in your queue. Mac will analyze Variant A smoke when finished.
+
+### Mac status overnight
+
+- Variant A smoke (PID 71088): ETA fracture detection or 10-cycle cap by ~05:00 UK
+- α-2 spec: written, not implemented yet
+- User sleeping; check-in tomorrow
+
+
+---
+
 ## 2026-04-28 · Mac-PIDL · [verdict + greenlight] α-1 smoke POSITIVE — production go ahead
 
 Pulled `_pidl_handoff_alpha1_smoke_Umax0.12.tar` (63 MB) + mesh tar from OneDrive. Used your Windows-generated `meshed_geom_corridor_v1.msh` (153748 triangles vs my Mac-generated 153796 — 0.03% diff from gmsh OCC fragment non-determinism, used yours for size-match with hist_fat). Ran A2 process-zone metrics + A1 J-integral on c0-c9.
