@@ -221,7 +221,7 @@ def activations(activation, init_coeff, n_hidden_layers=1):
     if activation == 'SteepTanh':
         activations = SteepTanh(init_coeff)
         trainable_activation = False
-    elif activation == 'SteepReLU':
+    elif activation == 'SteepReLU' or activation == 'ReLU':
         activations = SteepReLU(init_coeff)
         trainable_activation = False
     elif activation == 'TrainableTanh':
@@ -256,7 +256,7 @@ def init_xavier(model):
     init_coeff = model.init_coeff
     def init_weights(m):
         if type(m) == nn.Linear and m.weight.requires_grad and m.bias.requires_grad:
-            if activation == 'TrainableReLU' or activation == 'SteepReLU':
+            if activation == 'TrainableReLU' or activation == 'SteepReLU' or activation == 'ReLU':
                 # ReLU类激活函数的增益计算
                 # 使用 leaky_relu 增益近似
                 g = nn.init.calculate_gain('leaky_relu', np.sqrt(init_coeff**2-1.0))

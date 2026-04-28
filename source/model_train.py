@@ -358,6 +358,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _williams_enabled = getattr(field_comp, 'williams_enabled', False)
     _x_tip_psi_history = _restore_hist('x_tip_psi_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
 
+    # ★ α-2 multihead: 检测网络是否支持 update_tip（MultiHeadNN）
+    _multihead_enabled = hasattr(field_comp.net, 'update_tip')
+    # ★ α-2 T4 stationarity diagnostic: per-cycle argmax(ψ⁺) element index
+    _psi_argmax_history = _restore_hist('psi_argmax_vs_cycle.npy')
+
     # ★ 每圈耗时记录（增量保存到 time_vs_cycle.npy）
     _time_history = _restore_hist('time_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
 
@@ -529,6 +534,19 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 # 自动微分模式：T_conn=None，形心计算不可用，暂保持上一圈值
                 _x_tip_psi_history.append(field_comp.x_tip)
 
+            # ★ α-2 multihead: compute x_tip from ψ⁺ for spatial gate anchoring
+            if _multihead_enabled and T_conn is not None:
+                if not _frac_detected:
+                    if j > 0:
+                        _x_tip_new = compute_x_tip_psi(inp, psi_plus_elem, T_conn, top_k=10)
+                        _x_tip_floor = _crack_mouth_x - 0.02
+                        if _x_tip_new >= _x_tip_floor:
+                            field_comp.x_tip = _x_tip_new
+                    field_comp.net.update_tip(field_comp.x_tip, 0.0)
+                    if (j % _log_every == 0) or _frac_detected or _dense_sampling:
+                        print(f"  [MultiHead]  x_tip={field_comp.x_tip:.4f}  r_g={field_comp.net.r_g:.3f}")
+                # fracture confirmed: tip stays frozen at last position
+
             # ★ 每圈 Kt 计算（复用已有 psi_plus_elem，零额外前向传播）
             if _nominal_mask is not None:
                 _psi0      = psi_plus_elem.detach().cpu().numpy()
@@ -538,6 +556,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                                if _n_nominal > 0 else float(_psi0.mean()))
                 _Kt        = (_psi_tip / _psi_nom) ** 0.5 if _psi_nom > 1e-20 else float('nan')
                 _Kt_history.append(_Kt)
+
+            # ★ α-2 T4 stationarity diagnostic: argmax(ψ⁺) per cycle
+            _psi_argmax_history.append(int(np.argmax(psi_plus_elem.detach().cpu().numpy())))
 
             # 更新疲劳历史变量 ᾱ（Carrara Eq.39 或 Golahmar Eq.31）
             hist_fat = update_fatigue_history(
@@ -706,6 +727,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _Kt_history:
                 np.save(str(trainedModel_path / 'Kt_vs_cycle.npy'),
                         np.array(_Kt_history))
+            if _psi_argmax_history:                                          # ★ α-2 T4
+                np.save(str(trainedModel_path / 'psi_argmax_vs_cycle.npy'),
+                        np.array(_psi_argmax_history))
             if _ansatz_enabled and _c_singular_history:                     # ★ Direction 5
                 np.save(str(trainedModel_path / 'c_singular_vs_cycle.npy'),
                         np.array(_c_singular_history))   # shape (N,2): [cycle_idx, c_val]
@@ -731,6 +755,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _Kt_history:
                 np.save(str(trainedModel_path / 'Kt_vs_cycle.npy'),
                         np.array(_Kt_history))
+            if _psi_argmax_history:                                         # ★ α-2 T4
+                np.save(str(trainedModel_path / 'psi_argmax_vs_cycle.npy'),
+                        np.array(_psi_argmax_history))
             if _ansatz_enabled and _c_singular_history:                    # ★ Direction 5
                 np.save(str(trainedModel_path / 'c_singular_vs_cycle.npy'),
                         np.array(_c_singular_history))
@@ -757,6 +784,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_on and _Kt_history:
         np.save(str(trainedModel_path / 'Kt_vs_cycle.npy'),
                 np.array(_Kt_history))
+    if fatigue_on and _psi_argmax_history:                                  # ★ α-2 T4
+        np.save(str(trainedModel_path / 'psi_argmax_vs_cycle.npy'),
+                np.array(_psi_argmax_history))
     if fatigue_on and _ansatz_enabled and _c_singular_history:             # ★ Direction 5
         np.save(str(trainedModel_path / 'c_singular_vs_cycle.npy'),
                 np.array(_c_singular_history))

@@ -5,14 +5,18 @@ from material_properties import MaterialProperties
 from network import NeuralNet, init_xavier
 
 def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, device,
-                    williams_dict=None):
+                    williams_dict=None, multihead_dict=None):
     """
     构建 PFF 模型、材料属性和神经网络。
 
-    ★ Direction 4 新增参数
     williams_dict : dict | None
         None 或 {"enable": False} → input_dimension = 2（原始行为）
         {"enable": True, ...}     → input_dimension = 8（Williams 特征）
+
+    ★ α-2 新增参数
+    multihead_dict : dict | None
+        None 或 {"enable": False} → 使用标准 NeuralNet
+        {"enable": True, ...}     → 构建 MultiHeadNN（双头 + 空间门控）
     """
     # Phase field model
     pffmodel = PFFModel(PFF_model = PFF_model_dict["PFF_model"],
@@ -25,25 +29,60 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
                                 w1 = torch.tensor(mat_prop_dict["w1"], device=device),
                                 l0 = torch.tensor(mat_prop_dict["l0"], device=device))
 
+    # ★ α-2: MultiHeadNN（双头 + 空间门控）
+    _mh = multihead_dict or {}
+    _mh_on = _mh.get('enable', False)
+
     # ★ Direction 4: Williams 启用时 NN 输入维度从 2 扩展到 8
     _wd = williams_dict or {}
     _williams_on = _wd.get('enable', False)
-    in_dim = 8 if _williams_on else domain_extrema.shape[0]   # 8 or 2
 
-    # Neural network
-    network = NeuralNet(input_dimension=in_dim,
-                        output_dimension=domain_extrema.shape[0]+1,
-                        n_hidden_layers=network_dict["hidden_layers"],
-                        neurons=network_dict["neurons"],
-                        activation=network_dict["activation"],
-                        init_coeff=network_dict["init_coeff"])
-    torch.manual_seed(network_dict["seed"])
-    init_xavier(network)
+    if _mh_on:
+        from multihead_network import MultiHeadNN
+        network = MultiHeadNN(
+            n_hidden_main=_mh.get('n_hidden_main', network_dict["hidden_layers"]),
+            neurons_main=_mh.get('neurons_main', network_dict["neurons"]),
+            n_hidden_tip=_mh.get('n_hidden_tip', 4),
+            neurons_tip=_mh.get('neurons_tip', 100),
+            r_g=_mh.get('r_g', 0.02),
+            gate_power=_mh.get('gate_power', 2),
+            activation_main=network_dict["activation"],
+            activation_tip=_mh.get('activation_tip', 'ReLU'),
+            init_coeff=network_dict["init_coeff"],
+        )
+        torch.manual_seed(network_dict["seed"])
+        init_xavier(network.main)
+        init_xavier(network.tip)
+        print(f"[construct_model] MultiHeadNN built: "
+              f"main={_mh.get('n_hidden_main', 8)}×{_mh.get('neurons_main', 400)} "
+              f"tip={_mh.get('n_hidden_tip', 4)}×{_mh.get('neurons_tip', 100)} "
+              f"r_g={_mh.get('r_g', 0.02)} gate_power={_mh.get('gate_power', 2)}")
+    elif _williams_on:
+        in_dim = 8  # Williams features
+        network = NeuralNet(input_dimension=in_dim,
+                            output_dimension=domain_extrema.shape[0]+1,
+                            n_hidden_layers=network_dict["hidden_layers"],
+                            neurons=network_dict["neurons"],
+                            activation=network_dict["activation"],
+                            init_coeff=network_dict["init_coeff"])
+        torch.manual_seed(network_dict["seed"])
+        init_xavier(network)
+    else:
+        in_dim = domain_extrema.shape[0]   # 2
+        network = NeuralNet(input_dimension=in_dim,
+                            output_dimension=domain_extrema.shape[0]+1,
+                            n_hidden_layers=network_dict["hidden_layers"],
+                            neurons=network_dict["neurons"],
+                            activation=network_dict["activation"],
+                            init_coeff=network_dict["init_coeff"])
+        torch.manual_seed(network_dict["seed"])
+        init_xavier(network)
 
     # ★ 速度优化：torch.compile（PyTorch ≥ 2.0），减少 Python launch overhead
     # 编译是惰性的（首次 forward 才真编译）→ 必须设 dynamo suppress_errors
     # 否则 inductor backend 缺 triton（Windows 默认无）会硬崩
-    if network_dict.get("compile", False):
+    # Skip for MultiHeadNN (nested module complexity)
+    if network_dict.get("compile", False) and not _mh_on:
         try:
             torch._dynamo.config.suppress_errors = True   # 编译失败时 fallback 到 eager
             network = torch.compile(network, mode='reduce-overhead')
