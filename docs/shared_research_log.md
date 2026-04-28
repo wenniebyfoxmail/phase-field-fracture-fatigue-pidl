@@ -30,6 +30,77 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-28 · Mac-PIDL · [ask] Audit hits 14-18 integration done; 2 open mitigations need Windows
+
+Apr-28 audit pass surfaced 5 hits on the load-bearing Claim 1 (ψ⁺ segment / ᾱ_max framing). Mac integrated 3 of 5 today (Hits 14, 15, 18). Remaining 2 (Hits 16, 17) need Windows compute / source.
+
+Canonical ledger now lives at Mac local memory `audit_ledger_claim1_canonical_apr28.md` — v3 audit-tightened Claim 1 wording with revision history. Three older finding files (MIT-1, MIT-4, Dir 6.3) point here instead of restating.
+
+### Hits done today (Mac)
+
+- **Hit 14 (active-driver definition fragility)**: ran `SENS_tensile/audit_active_driver_definitions.py` on baseline coeff=1.0 Umax=0.12 archive c10/30/50/70. Six driver definitions compared (D1a-d sub-window variants, D2 max Δᾱ, D3 max ψ⁺·H(Δψ)). Result: D1a robust to upper bound, fragile to lower bound (D1b → 5.5× different ψ⁺_raw). D3 picks the saturated precrack element at (-0.44, 0) — that's the phantom captor; do NOT use. D1a g·ψ⁺ trajectory 0.36-0.52 across cycles confirms MIT-1 invariance claim with 16% spread. CSV at `SENS_tensile/audit_active_driver_results.csv`.
+
+- **Hit 15 (phantom vs active-driver split)**: Ch2 ablation table's ψ⁺ row should split into:
+  - "Active-driver ψ⁺ amplification" — Williams/Fourier/Enriched/spAlphaT/MIT-8 K=5 — **NONE positive** (all within 1.5× baseline 0.4)
+  - "Phantom-element / override-zone accumulator hijack" — E2 + Oracle — both positive but mechanistically different from active-driver lift
+
+  **Implication**: α-plan should NOT promise "raise active-driver g·ψ⁺_raw" (zero precedent). Should promise "anchored sustained-amplitude ψ⁺ injection" (E2/Oracle's shared property). α-1 mesh smoke c5 +1.5-1.7× ψ⁺_max DOES qualify as the first method to (modestly) move active-driver, so is partial counter-evidence — α-1 production outcome will tighten this.
+
+- **Hit 18 (ledger discipline)**: canonical ledger nominated; MIT-1/MIT-4/Dir-6.3 files now reference it instead of restating Claim 1.
+
+### Hits 16/17 — need Windows action
+
+#### Hit 16 (low-Umax α-rep robustness)
+
+Currently MIT-1 "method-invariant g·ψ⁺_raw ≈ 0.4" is at coeff=1, Umax=0.12 only. Need test at low Umax where ᾱ_max is 6× larger and dynamics may differ.
+
+**Ask**: when Windows GPU is freer (post P1-P3 priority queue from `52ad99d`), please add to queue:
+```
+python run_enriched_umax.py 0.08         # ~5h Windows GPU
+python run_enriched_umax.py 0.09         # ~5h
+# Williams + Fourier at low Umax already SLOW on Mac; Windows much faster.
+# 0.08 is highest priority — that's where ᾱ_max is largest in baseline.
+```
+
+If g·ψ⁺_raw at α∈[0.5,0.95] in these archives matches baseline coeff=1 0.08's ~0.4 (per MIT-1), Claim 1 invariance holds. If different, paper's "method-invariant" wording must caveat Umax range.
+
+**Priority**: P5 (after current Windows P1-P4 queue). Defer if more strategic items emerge.
+
+#### Hit 17 (FEM mesh convergence at element 28645)
+
+Auditor concern: PIDL-vs-FEM ψ⁺_raw 5.8× peak gap could be both-discretized-different-amounts rather than NN-smoothness-vs-truth. Need to know FEM ψ⁺_raw is mesh-converged.
+
+**Ask**: please provide mesh-convergence diagnostics for FEM ψ⁺_raw at element 28645 (or any tip-element identifier you use), at Umax=0.12 cycle 50:
+- if GRIPHFiTH has standard mesh-convergence output (e.g. `psi_at_tip_vs_mesh_h.csv` or similar), one-screenshot answer
+- if no convergence study exists, please confirm mesh size at tip element so we can document as caveat
+
+If FEM tip h ≈ 0.0009 is already in the converged regime (further refinement gives <10% ψ⁺ change), the 5.8× PIDL-FEM gap is a true representational gap. If FEM is itself under-resolved at the tip, the true gap could be much larger AND PIDL coeff=1's "FEM alignment" is misleading (matching wrong target).
+
+**Priority**: would help finalize paper Ch2 framing. Single Fortran log dump or rerun at h/2 sufficient. ~2h GPU at most.
+
+### What Mac is NOT asking
+
+- Variant A v2 / Variant B — already in your priority queue per `52ad99d`
+- α-1 production status — in flight, fine
+- Re-run oracle 0.10 fresh — already in queue P3
+
+### Mac state
+
+- Memory canonical ledger pushed locally; MEMORY.md ⭐⭐⭐ first entry now points to it
+- Audit hits 14-15-18 mitigated
+- α-1 production launch (PID 43368) and oracle 0.10 archive analysis already done; results in shared_log 035e9a7
+- α-2 implementation deferred until α-1 outcome
+- Will wait for both Hit 16 (low-Umax α-rep archives) and Hit 17 (FEM mesh-convergence) before final paper figure (currently placeholder)
+
+### Cross-references
+
+- Audit ledger (Mac local): `audit_ledger_claim1_canonical_apr28.md`
+- Hit 14 raw data: `SENS_tensile/audit_active_driver_results.csv`
+- Hit 14 generator: `SENS_tensile/audit_active_driver_definitions.py`
+
+
+---
+
 ## 2026-04-28 · Mac-PIDL · [decision] Windows GPU priority queue (post α-1 production)
 
 Per joint discussion + 4-way oracle analysis (commit 035e9a7), here's the prioritized queue for Windows GPU after α-1 0.12 production fractures (~24 h remaining for PID 43368).
