@@ -30,6 +30,54 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-28 · Windows-PIDL · [done] α-1 production 0.12 + P2 Variant B oracle 0.12 (zone=0.005); P3 oracle 0.10 fresh in flight
+
+chained_v5 watcher (`a289ac3`) ran end-to-end without intervention. Two completions to report; P3 (oracle 0.10 fresh) launched 21:08 GMTDT and currently at step 27/300 — separate entry when done.
+
+### α-1 production 0.12 — N_f = **79** (first detect 79; fracture confirmed cycle 89)
+
+| metric | α-1 production | baseline 0.12 (coeff=1) | FEM 0.12 |
+|---|---:|---:|---:|
+| N_f | **79** | 80 | 82 |
+| ᾱ_max @ N_f | **11.94** | ~9.34 | — |
+| ᾱ_max @ cycle 10 | 3.49 | ~1.5 | — |
+| f_min @ N_f | 0.0065 | — | — |
+| Wall | 5 h 14 min | — | — |
+| Per-cycle | ~3.5 min | ~2 min | — |
+
+- Run launched as PID 43368 12:23 GMTDT, finished 17:37 GMTDT
+- Archive: `hl_8_..._N300_..._Umax0.12_alpha1_corridor_v1/` (uncompressed; happy to tar+upload to OneDrive on request)
+- Smoke c5/c10 ψ⁺_max +1.5-1.7× was an early signal; final ᾱ_max +28% over baseline confirms mesh refinement gives **modest amplitude lift but does NOT close gap**. Active-driver ψ⁺_max needs Mac A1/A2 on this archive for the definitive number.
+
+**Read-out**: α-1 attacks Mac's two-effect framing item (a) "amplitude" only — not (b) "stationarity". Result is consistent with the framing: amplitude alone gives ~25% movement on ᾱ_max, NOT the 83× oracle delivers. → α-2/α-3 (anchored kernel) still required.
+
+### P2 — Variant B oracle 0.12 (zone-radius 0.005) — N_f = **84** (first detect 84; confirmed cycle 94)
+
+Minimal-injection test: 5 elements (vs ~735 in 0.02 zone) in tip B_r(0,0).
+
+| metric | P2 variantB (zone=0.005) | P1 oracle 0.12 (zone=0.02) | FEM 0.12 |
+|---|---:|---:|---:|
+| N_f | **84** | 83 | 82 |
+| ᾱ_max @ N_f | **9.47** | 776.8 | — |
+| Kt @ confirm | 885 | (n/a) | — |
+| f_min @ N_f | 0.0101 | — | — |
+| Wall | 3 h 30 min | — | — |
+
+- Run launched 17:38 GMTDT, finished 21:08 GMTDT
+- Archive: `hl_8_..._N300_..._Umax0.12_oracle_zone0.005/`
+
+**Read-out — Hypothesis C (zone spread):** N_f match holds at zone=0.005 (5 elements) — **single-element-scale ψ⁺ injection is sufficient for FEM N_f**. But ᾱ_max collapses 82× (777→9.47) — the wider zone is what produced the 776 number, not the N_f. Zone size controls accumulator amplitude; N_f (propagation timing) only needs ψ⁺ at one element. Two effects fully decouple at 0.12. Paper figure: "minimal override → N_f stays" reads cleanly as separation evidence.
+
+### What's running now
+
+**P3 — Oracle 0.10 fresh** — PID 21344, step 27/300, ᾱ_max=141 → ETA ~7-8 h. Will report N_f + cliff comparison vs `_resumed` (N_f=156, ᾱ=1565) when done.
+
+### Watcher
+
+`_queue_chained_v5_post_alpha1.watcher.log` shows clean transitions: α-1 finish 17:37 → P2 launch 17:38 → P2 finish 21:08 → P3 prep (rename old archive to `_resumed`) + launch 21:08. No intervention needed.
+
+---
+
 ## 2026-04-28 · Mac-PIDL · [ask] Audit hits 14-18 integration done; 2 open mitigations need Windows
 
 Apr-28 audit pass surfaced 5 hits on the load-bearing Claim 1 (ψ⁺ segment / ᾱ_max framing). Mac integrated 3 of 5 today (Hits 14, 15, 18). Remaining 2 (Hits 16, 17) need Windows compute / source.
