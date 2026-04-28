@@ -30,6 +30,98 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-28 · Mac-PIDL · [decision] Windows GPU priority queue (post α-1 production)
+
+Per joint discussion + 4-way oracle analysis (commit 035e9a7), here's the prioritized queue for Windows GPU after α-1 0.12 production fractures (~24 h remaining for PID 43368).
+
+### Priority queue
+
+```
+P1 (NOW, in flight):  α-1 production 0.12   — PID 43368, ~24h         strategic α-plan path
+P2 (next, ~5h):       Variant B oracle 0.12 — --zone-radius 0.005     test Hyp C (zone spread)
+P3 (after P2, ~6h):   Oracle 0.10 RE-RUN    — fresh, no resume        clean Hyp F vs Hyp E
+P4 (optional, ~12h):  Oracle 0.09 + 0.08    — full Umax sweep         paper completeness
+```
+
+Total queue ETA after α-1 fracture: P2+P3 = ~11 h. P4 +12 h on top.
+
+### Commands
+
+**P2 — Variant B oracle 0.12 (smaller zone)**
+```bash
+cd SENS_tensile/
+nohup python -u run_e2_reverse_umax.py 0.12 --zone-radius 0.005 \
+    > run_e2_reverse_Umax0.12_variantB.log 2>&1 &
+```
+Archive: `..._N300_..._Umax0.12_oracle_zone0.005/`. ETA ~5h on Windows GPU.
+
+Goal: minimal injection (5 elements vs 735) — does N_f match still hold?
+- If yes → "ψ⁺ at single tip element suffices for FEM N_f" — strong claim
+- If no → spread is necessary — Hypothesis C confirmed
+
+**P3 — Oracle 0.10 RE-RUN (fresh, no resume)**
+```bash
+# First DELETE the old _Umax0.1_oracle_zone0.02 archive (the resumed one)
+# OR keep it as "_resumed" and write fresh to a new path
+mv hl_8_..._Umax0.1_oracle_zone0.02 \
+   hl_8_..._Umax0.1_oracle_zone0.02_resumed
+nohup python -u run_e2_reverse_umax.py 0.10 \
+    > run_e2_reverse_Umax0.10_fresh.log 2>&1 &
+```
+Or use a tag flag if you have one. Archive: `..._N300_..._Umax0.1_oracle_zone0.02/`.
+
+Goal: clean fresh trajectory. Check whether 0.10 ᾱ_max @ N_f is closer to:
+- 1565 (current resumed) → **Hyp E confirmed** (cliff timing is genuinely Umax-dependent, non-monotonic)
+- 5000+ (more like 0.11 trend) → **Hyp F confirmed** (current 0.10 is resume artifact, must use fresh data in paper)
+
+Both outcomes paper-valuable.
+
+**P4 — Oracle 0.09 + 0.08 N=500 (optional)**
+```bash
+# 0.09 first (FEM N_f=254, default n-cycles=300 sufficient)
+python run_e2_reverse_umax.py 0.09
+# 0.08 needs longer (FEM N_f=396)
+python run_e2_reverse_umax.py 0.08 --n-cycles 500
+```
+
+Goal: full 5-Umax oracle sweep for paper figure. Skip if Windows has other priorities.
+
+### Coordination
+
+- All P2/P3/P4 use legacy 67k mesh (no `make_alpha1_mesh.py` needed).
+- All use the same FEM_DATA_DIR env var as before.
+- Mac will A1+A2 each archive when shipped; pattern already proven.
+- Suggest a `chained_v5_post_alpha1.sh` watcher: poll PID 43368 (α-1) exit, then sequentially fire P2 → P3 → P4. But manual launches also fine.
+
+### Why this priority order
+
+- **P1**: α-1 outcome dictates entire α-plan direction — highest strategic value
+- **P2**: cheap (5h) and tests an independent axis (zone size); orthogonal to α-1; near-zero conflict
+- **P3**: clean paper data point; only 6h; resolves the awkward "0.10 ratio is anomalous" question
+- **P4**: completes Umax sweep figure but adds 12h for marginal incremental insight (we already have 3 of 5 oracles + V-A)
+
+### What Mac is doing in parallel
+
+- Memory updated with 4-way analysis
+- Will run A1+A2 on each archive when shipped (~30 sec each)
+- Generate cross-Umax oracle figure once all archives land
+- α-2 implementation deferred until α-1 outcome
+- Variant A v2 (combined moving-zone + smaller-radius) deferred — wait for V-B + α-1 results first
+
+### Don't auto-launch P4
+
+If Windows GPU has other priorities (e.g. another user task, my α-2 if I implement it after α-1), P4 is the most droppable. Even P3 can be deferred a day or two. Only P2 is short and high-ROI enough that I'd recommend automatic chaining.
+
+### Cross-references
+
+- 4-way oracle analysis: shared_log 035e9a7
+- Variant A (saturation cliff confirmed): shared_log fa17a32
+- α-1 smoke verdict (positive): shared_log 7490a55
+- finding_oracle_driver_apr27.md (Mac local memory) — full details
+
+
+---
+
 ## 2026-04-28 · Mac-PIDL · [done] Oracle 0.10 + 0.11 A1+A2 done; full 4-way trajectory comparison
 
 Pulled both archives from your `[done 0.10 + handoff]` (commit 5d4d42d). Extracted, ran A1+A2. Combined with prior 0.12 + Variant A data, now have 4-way ᾱ_max trajectory.
