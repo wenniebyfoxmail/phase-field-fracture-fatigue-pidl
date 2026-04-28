@@ -48,6 +48,13 @@ parser.add_argument("--zone-radius", type=float, default=0.02,
 parser.add_argument("--no-apply-g", action="store_true",
                     help="Skip g(α) multiplication on FEM ψ⁺_raw before substitution. "
                          "Default applies g(α) to match degraded ψ⁺ that fatigue accumulator expects.")
+parser.add_argument("--moving-zone", action="store_true",
+                    help="Variant A (Apr 28): override mask follows the current crack "
+                         "tip x_tip (L∞ definition: max x where α_elem > 0.5) each cycle. "
+                         "Fixes the saturation-cliff plateau of static-zone oracle. "
+                         "Archive tag: _movingzone (vs default _zone fixed-origin).")
+parser.add_argument("--moving-zone-alpha-thr", type=float, default=0.5,
+                    help="Alpha threshold for L∞ tip definition under --moving-zone (default 0.5).")
 args = parser.parse_args()
 
 # Note: U_max validity is delegated to FEMSupervision auto-discovery — it will
@@ -125,6 +132,8 @@ _fatigue_tag = (
 _oracle_tag = f"_oracle_zone{args.zone_radius}"
 if args.no_apply_g:
     _oracle_tag += "_noG"
+if args.moving_zone:
+    _oracle_tag += "_movingzone"
 _dir_name = (
     "hl_" + str(config.network_dict["hidden_layers"])
     + "_Neurons_" + str(config.network_dict["neurons"])
@@ -148,7 +157,11 @@ print("=" * 72)
 print("Task 1 oracle-driver MIT-8b")
 print(f"  U_max         = {args.umax}")
 print(f"  n_cycles      = {args.n_cycles}")
-print(f"  zone_radius   = {args.zone_radius}  (B_r(0,0) override zone)")
+if args.moving_zone:
+    print(f"  zone_radius   = {args.zone_radius}  (B_r(x_tip, 0) MOVING override zone, "
+          f"x_tip from L∞ alpha>{args.moving_zone_alpha_thr})")
+else:
+    print(f"  zone_radius   = {args.zone_radius}  (B_r(0,0) STATIC override zone)")
 print(f"  apply_g(α)    = {not args.no_apply_g}")
 print(f"  PIDL elements in zone: {n_override} / {len(pidl_centroids)}")
 print(f"  archive       = {_dir_name}")
@@ -166,8 +179,11 @@ config.fatigue_dict["fem_oracle"] = {
     "enable": True,
     "fem_sup": fem_sup,
     "pidl_centroids": pidl_centroids,
-    "override_mask": override_mask,
+    "override_mask": override_mask,                  # static fallback (used if moving_zone=False)
     "apply_g": not args.no_apply_g,
+    "moving_zone": bool(args.moving_zone),
+    "moving_zone_alpha_thr": float(args.moving_zone_alpha_thr),
+    "zone_radius": float(args.zone_radius),
 }
 
 # --- Build field_comp + train ------------------------------------------------

@@ -235,8 +235,29 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
     if fem_oracle_dict is not None and fem_oracle_dict.get('enable', False) \
             and T_conn is not None:
         psi_target = fem_oracle_dict['psi_target']    # raw FEM ψ⁺ at PIDL elems
-        mask = fem_oracle_dict['override_mask']
         apply_g = fem_oracle_dict.get('apply_g', True)
+
+        # ★ Apr 28 — Variant A: moving override zone
+        # If 'moving_zone'=True, recompute override_mask EACH CALL from current
+        # alpha field (L∞ tip def). Crack tip propagates → zone follows →
+        # fresh elements (ᾱ≈0) keep entering zone and accumulating. This is the
+        # diagnostic fix for the saturation-cliff plateau seen in static-zone
+        # oracle 0.12 (override zone fixed at (0,0) → same elements freeze).
+        if fem_oracle_dict.get('moving_zone', False):
+            cx = (inp[T_conn[:, 0], 0] + inp[T_conn[:, 1], 0] + inp[T_conn[:, 2], 0]) / 3.0
+            cy = (inp[T_conn[:, 0], 1] + inp[T_conn[:, 1], 1] + inp[T_conn[:, 2], 1]) / 3.0
+            thresh = fem_oracle_dict.get('moving_zone_alpha_thr', 0.5)
+            damaged = alpha_elem > thresh
+            if damaged.any():
+                x_tip_now = cx[damaged].max()
+            else:
+                x_tip_now = cx.new_tensor(0.0)
+            zone_radius = fem_oracle_dict.get('zone_radius', 0.02)
+            r_to_tip = torch.sqrt((cx - x_tip_now) ** 2 + cy ** 2 + 1e-12)
+            mask = r_to_tip <= zone_radius
+        else:
+            mask = fem_oracle_dict['override_mask']    # static (default; backward compat)
+
         if apply_g:
             override_value = (g_alpha * psi_target).detach()
         else:
