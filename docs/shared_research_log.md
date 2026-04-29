@@ -30,6 +30,72 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-29 · Mac-PIDL · [audit-response + Path-C-pushed] Auditor round-2 hits 14-18 processed; Path C/A supervised α implemented on `claude/exp/supervised-alpha-c` ready for Windows pickup
+
+### Path C / A implementation pushed (commit 2eecdb3, branch claude/exp/supervised-alpha-c)
+
+Per `design_supervised_alpha_apr29.md`. Standard 8×400 NN unchanged; only adds opt-in α-supervision loss term `λ_α · MSE(α_PIDL_zone, α_FEM_interpolated)` to total loss. Cycle-conditional λ_α schedule supports:
+- **Path C**: always-on constant λ
+- **Path A**: warm-start λ for cycles 1..K, then 0
+- **Anchor mode**: λ only at supplied training anchors, hold out others for test
+
+Files added: `source/fem_supervision.py` (extended with `alpha_target_at_cycle` + `supervised_alpha_loss`), `source/fit.py` (`_compute_alpha_per_elem` + new loss block in both fit functions), `source/model_train.py` (cycle dispatch), `SENS_tensile/run_supervised_alpha_umax.py` (NEW runner with `--mode pathC|pathA|anchor`, `--lambda-alpha`, `--zone-radius`, `--K-warm`, `--train-anchors`, `--test-anchor`).
+
+**Backward compat**: `supervised_alpha_dict=None` (default) is identical to baseline / α-1 / α-2 / oracle behavior. Safe for any concurrent training.
+
+**Test/train methodology** (per user Q): Path A's "test set" = cycles >K_warm (free-evolve, no supervision). Path C/B can use anchor-mode `--train-anchors 1,40,82 --test-anchor 70` to hold out one FEM anchor for post-process MSE generalization test.
+
+**Asks for Windows-PIDL** (after current chained_v6 finishes):
+1. **Path C smoke** at λ=1, K=5, Umax=0.12: `python run_supervised_alpha_umax.py 0.12 --n-cycles 10 --mode pathC --lambda-alpha 1.0 --zone-radius 0.02` (~30-50 min Windows GPU)
+2. If smoke shows MSE convergence + ᾱ_max > baseline 9.34: λ_α scan {0.01, 0.1, 1, 10, 100} (5 runs × 30 min = ~3 h)
+3. If λ scan finds optimum: production N=300 at that λ
+
+### Auditor round-2 response (Hits 14-18)
+
+Thanks for the second-round audit. Five hits, four addressable now, one needs Windows compute. Disposition:
+
+**Hit 14 (PZ integration radius cherry-pick)**: ⚠ partial-defensible. Computed PIDL/FEM ratios at multiple metrics from existing α-0 data:
+
+| Metric | Umax=0.12 c40 | c70 | c82 | Umax=0.08 c150 | c350 | c396 |
+|---|---:|---:|---:|---:|---:|---:|
+| PZ integral @ r=ℓ_0 | 1.26 | 1.27 | 1.22 | 1.68 | 0.97 | 0.92 |
+| PZ integral @ r=2ℓ_0 | 1.30 | 1.18 | 1.12 | 1.66 | 0.97 | 0.91 |
+| top-1% mean | **4.0** | 0.96 | **0.40** | **8.3** | 0.81 | **0.37** |
+| top-5% mean | 4.1 | 1.13 | 0.60 | 8.3 | 1.19 | 0.54 |
+| single-point max | 0.31 | 0.17 | 0.17 | 0.64 | 0.19 | 0.18 |
+
+**Honest framing**: PIDL has correct TOTAL energy in PZ at r ∈ [ℓ_0, 2ℓ_0] (ratio ≈ 1×, defensible) **AND** PIDL distributes it differently from FEM (top-1% swings 4× over → 0.4× under, single-point max consistently 5-6× under). Both true simultaneously. The "0.97-1.27" claim is r-AND-cycle specific; reported alone it's misleading. Future paper will report all three metrics. No new compute needed.
+
+**Hit 15 (Layer 6 framing precommit)**: ✅ FIXED. Rewrote `taxonomy_methods_layered_apr27.md` Layer 6 header — was "the actual closure path", now "the only untested layer; closure capacity HYPOTHESIZED, not demonstrated". Status table now shows: α-1 +28% partial, α-2 default fail, α-2 tighter / α-3 / supervised α untested. "Closure capacity at Layer 6 is hypothesized, not demonstrated" added.
+
+**Hit 16 (low-Umax α-rep test)**: ⏳ NEEDS WINDOWS COMPUTE. Spec: re-run Enriched-v1 at Umax=0.08 (`run_enriched_umax.py 0.08 --n-cycles 500`), compute active-driver g·ψ⁺_raw at active fatigue cycles (c100-c350), compare to baseline 0.08 (which has ᾱ_max=57 vs 0.12 baseline 9.3 per memory MIT-1). If active-driver > 1.5× baseline, Claim 1 weakens to "high-Umax only"; if not, Claim 1 strengthens. ~10 GPU-h. Queue this AFTER Path C smoke.
+
+**Hit 17 (K_I=0.094 contour sensitivity)**: ✅ ADDRESSED with existing data. `compute_J_integral.py` already tested 3 contour radii (5ℓ_0 / 8ℓ_0 / 12ℓ_0). Spread 0.5-7% across all archives — K_I path-independent in standard analysis range. K_I=0.094 is GENUINE method-invariance, not contour artifact. Auditor's "test smaller r" question is technically valid but smaller r (≤2ℓ_0) violates standard J-integral practice (numerical noise from singularity dominates path integral). The 5-12*ℓ_0 range is the textbook recommendation.
+
+**Hit 18 (ledger discipline)**: ✅ FIXED. Tagged 3 superseded MEMORY.md entries (MIT-1, MIT-4, MIT-13) with "(Claim 1 superseded by `audit_ledger_claim1_canonical_apr28.md`; this entry retained for revision history of [specific finding])". Future Claim 1 edits go to canonical ledger only.
+
+**G4 status check (your question, external review Apr 25)**: partial:
+- ✅ N_f criterion sensitivity DONE (`SENS_tensile/N_f_per_criterion.csv`, 5 criteria C1-C5)
+- ✅ S-N slope per criterion DONE (`SENS_tensile/SN_slopes_per_criterion.csv`)
+- ⏳ ℓ_0/α_T 25-job CSD3 SLURM array submitted (`shared_log dcc3bdf`) but STATUS UNKNOWN — Mac will query CSD3 next session to retrieve results
+- ❌ Seed std (3-seed mean±std) NOT formally done; we have seed=1,2,3 archives in places but no consolidated finding
+
+Will close G4 once CSD3 jobs results retrieved + 3-seed std computed.
+
+### Memory updates this session
+
+- `audit_ledger_claim1_canonical_apr28.md` v3.5 — audit response integrated
+- `taxonomy_methods_layered_apr27.md` — Layer 6 honesty rewrite
+- `MEMORY.md` — superseded entries tagged
+
+### Branch status
+
+- `main` ← this entry + Path C analyses
+- `claude/exp/alpha2-multihead` ← α-2 implementation, T4 FAIL noted (still queued for tighter-gate variant)
+- `claude/exp/supervised-alpha-c` ← **NEW** Path C/A ready for Windows pickup (commit 2eecdb3)
+
+---
+
 ## 2026-04-29 · Mac-PIDL · [finding + ask] **Hyp #3 ALSO REFUTED** by direct α-field data; oracle dead as closure tool; pivoting to supervised α learning (paths A/B/C); need 3 new FEM data items
 
 ### Finding — Hyp #3 (PIDL α shallower → over-shoot via g(α_PIDL)>g(α_FEM)) REFUTED
