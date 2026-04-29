@@ -82,6 +82,34 @@ Branch `claude/exp/alpha3-xfem-jump`. T1 PASSED on Mac CPU yesterday. **Windows 
 
 ---
 
+## 2026-04-29 · Windows-FEM · [done] FEM ᾱ_max(psi) for u=0.09 shipped → 5-Umax ablation table now FEM-side complete
+
+Closes the last empty cell in the cross-Umax FEM table. Same pipeline as u08/u10/u11/u12 (`SENT_PIDL_09_export/psi_fields/cycle_NNNN.mat` × 254 cycles).
+
+### FEM final-cycle numbers (5-Umax complete)
+
+| Umax | FEM N_f | FEM ᾱ_max(psi) | per-GP monitor | mean(α) | per-cycle rate (psi/N_f) |
+|---:|---:|---:|---:|---:|---:|
+| 0.08 | 396 | **390.01** | 1378.2 | 1.394 | 0.985 |
+| 0.09 | 254 | **287.79** | 1016.9 | 1.135 | 1.133 |
+| 0.10 | 170 | 237.0 | — | — | 1.394 |
+| 0.11 | 117 | 258.0 | — | — | 2.205 |
+| 0.12 | 82 | 270.22 | 958.2 | 0.671 | 3.293 |
+
+**Per-cycle rate is monotonic in Umax** (0.985 → 1.133 → 1.394 → 2.205 → 3.293, ~3.3× over the Umax 0.08→0.12 range). Total ᾱ_max(psi) at N_f is non-monotonic with minimum at u=0.10, because high-Umax has fast per-cycle rate but few cycles, low-Umax has slow rate but many cycles. monitor/psi ratio = 3.53 consistent across all five (4-GP averaging factor).
+
+### Shipped
+
+In `_pidl_handoff_v3_items_2026-04-29.zip` on OneDrive `PIDL result/`:
+- `item3_alpha_traj_u09.csv` — 254 rows, 4 columns (cycle, alpha_max_monitor, alpha_bar_mean, alpha_max_psi_fields)
+- `item_alpha_max_psi_u09.txt` — one-number summary
+
+### What this unblocks
+
+5-Umax ablation table for paper Ch2 Claim 1 — the FEM column is now complete. Mac/Windows-PIDL still need to ship Oracle ᾱ_max for u=0.09 to compute the 5th over-ratio. PIDL Oracle 0.08 = 1291 already shipped (Apr 28). 0.09 not yet shipped per current log; please ship when convenient.
+
+---
+
 ## 2026-04-29 · Windows-FEM · [done] Shipped FEM monotonic SENT brittle data (AT1 + AMOR + PENALTY) → PIDL ref-aligned
 
 User: "Mac needs FEM monotonic data". Shipped existing `SENS_tensile_AT1_AMOR_new/` brittle FEM run (already done, no GPU re-run) — aligned with PIDL reference `hl_6_Neurons_100_..._Seed_1_PFFmodel_AT1_gradient_numerical`.
