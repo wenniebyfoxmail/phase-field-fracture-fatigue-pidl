@@ -120,7 +120,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
           optimizer_dict, training_dict, coarse_mesh_file, fine_mesh_file,
           device, trainedModel_path, intermediateModel_path, writer,
           fatigue_dict=None,                         # ★ 新增参数
-          mit8_dict=None):                           # ★ MIT-8 supervised warmup
+          mit8_dict=None,                            # ★ MIT-8 supervised warmup
+          supervised_alpha_dict=None):               # ★ Path C / A supervised α (Apr 29)
     '''
     Neural network training: pretraining with a coarser mesh in the first
     stage before the main training proceeds.
@@ -409,6 +410,45 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 }
                 print(f"  [MIT-8] cycle {j}/{_K}: supervised lambda={_supervised_dict['lambda']}")
 
+        # ★ Path C / A supervised α: build per-cycle supervised_alpha_dict
+        # design_supervised_alpha_apr29.md. Cycle-conditional λ_α schedule
+        # supports Path C (always-on, constant λ), Path A (warm-start: λ>0
+        # for cycles ≤ K_warm, then λ=0), and anchor-only (λ>0 only at FEM
+        # anchor cycles). The supervised_alpha_dict from the runner contains
+        # the full schedule; we extract the per-cycle λ here.
+        _supervised_alpha_dict = None
+        if supervised_alpha_dict is not None and supervised_alpha_dict.get('enable', False):
+            # Compute effective λ for this cycle
+            _sched = supervised_alpha_dict.get('lambda_schedule', None)
+            if _sched is None:
+                # Constant λ for all cycles (Path C default)
+                _eff_lambda = float(supervised_alpha_dict.get('lambda', 0.0))
+            elif callable(_sched):
+                _eff_lambda = float(_sched(j))
+            elif isinstance(_sched, dict):
+                # cycle → λ map; missing cycles use 0
+                _eff_lambda = float(_sched.get(j, 0.0))
+            else:
+                # list-like, indexed by cycle
+                _eff_lambda = float(_sched[j]) if j < len(_sched) else 0.0
+            # Anchor-only mode: skip non-anchor cycles
+            _anchor_only = supervised_alpha_dict.get('anchor_cycles_only', False)
+            _train_anchors = supervised_alpha_dict.get('train_anchors', None)
+            if _anchor_only and _train_anchors is not None and j not in _train_anchors:
+                _eff_lambda = 0.0
+            if _eff_lambda > 0:
+                _supervised_alpha_dict = {
+                    'fem_sup': supervised_alpha_dict['fem_sup'],
+                    'cycle_idx': j,
+                    'lambda': _eff_lambda,
+                    'pidl_centroids': supervised_alpha_dict['pidl_centroids'],
+                    'zone_mask': supervised_alpha_dict.get('zone_mask', None),
+                    'loss_kind': supervised_alpha_dict.get('loss_kind', 'mse_lin'),
+                    'every_n_epochs': supervised_alpha_dict.get('every_n_epochs', 1),
+                }
+                print(f"  [Supervised-α] cycle {j}: λ_α={_eff_lambda:.3g} "
+                      f"(zone={'on' if _supervised_alpha_dict['zone_mask'] is not None else 'all-elements'})")
+
         # ------------------------------------------------------------------
         # 训练（与 Manav 完全相同的结构；仅多传 f_fatigue 和 crack_tip_weights）
         # ------------------------------------------------------------------
@@ -422,6 +462,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 intermediateModel_path=None, writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,              # ★ 传入疲劳退化函数
                 supervised_dict=_supervised_dict, # ★ MIT-8
+                supervised_alpha_dict=_supervised_alpha_dict,  # ★ Path C/A supervised α
             )
             loss_data = loss_data + loss_data1
 
@@ -437,6 +478,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,              # ★ 传入疲劳退化函数
                 supervised_dict=_supervised_dict, # ★ MIT-8
+                supervised_alpha_dict=_supervised_alpha_dict,  # ★ Path C/A supervised α
             )
             loss_data = loss_data + loss_data2
 

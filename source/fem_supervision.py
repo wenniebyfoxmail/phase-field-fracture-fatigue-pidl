@@ -183,6 +183,91 @@ class FEMSupervision:
                 return (self.cycles[i], self.cycles[i + 1])
         return (self.cycles[0], self.cycles[0])
 
+    def alpha_target_at_cycle(self, cycle_idx: int,
+                              pidl_centroids: np.ndarray,
+                              *, device: torch.device | None = None,
+                              dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        """Return FEM α field target at given cycle, on PIDL collocation.
+
+        Mirror of psi_target_at_cycle but for the α (damage) field.
+        Uses self.d_field which was loaded from `alpha_elem` (or `d_elem`)
+        in _load_snapshots. Same nearest-neighbor + linear-interpolation logic.
+
+        Used by Path C supervised α learning (design_supervised_alpha_apr29.md).
+        """
+        if not self.d_field:
+            raise RuntimeError(
+                f"FEMSupervision has no α field data (d_field empty). "
+                f"FEM snapshots in {self.fem_dir} may lack alpha_elem/d_elem keys.")
+        if cycle_idx in self.d_field:
+            alpha = self._interpolate_to_pidl(self.d_field[cycle_idx], pidl_centroids)
+        else:
+            c_lo, c_hi = self._bracket_cycles(cycle_idx)
+            # bracket cycles must both have α data; fall back to nearest if not
+            c_lo_a = c_lo if c_lo in self.d_field else min(self.d_field.keys(), key=lambda c: abs(c - cycle_idx))
+            c_hi_a = c_hi if c_hi in self.d_field else c_lo_a
+            alpha_lo = self._interpolate_to_pidl(self.d_field[c_lo_a], pidl_centroids)
+            if c_hi_a == c_lo_a:
+                alpha = alpha_lo
+            else:
+                alpha_hi = self._interpolate_to_pidl(self.d_field[c_hi_a], pidl_centroids)
+                t = (cycle_idx - c_lo_a) / (c_hi_a - c_lo_a)
+                alpha = (1.0 - t) * alpha_lo + t * alpha_hi
+        out = torch.from_numpy(alpha).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def supervised_alpha_loss(self, alpha_pidl_per_elem: torch.Tensor,
+                              cycle_idx: int,
+                              pidl_centroids: np.ndarray,
+                              lambda_sup: float = 1.0,
+                              zone_mask: torch.Tensor | None = None,
+                              loss_kind: str = "mse_lin") -> torch.Tensor:
+        """Compute λ·MSE(α_PIDL, α_FEM_interp) at cycle_idx.
+
+        Path C of `design_supervised_alpha_apr29.md`: data-driven supervision
+        on PIDL α field using FEM α as target. Standard 8×400 NN unchanged;
+        only adds this term to the total loss in fit.py.
+
+        Args
+        ----
+        alpha_pidl_per_elem : (N_elem,) tensor of PIDL α at element centroids
+        cycle_idx : int — current fatigue cycle
+        pidl_centroids : (N_elem, 2) ndarray of element centroids
+        lambda_sup : scalar weight on this loss term
+        zone_mask : optional (N_elem,) bool tensor restricting to override zone
+                    (e.g. B_r=0.02 around moving x_tip). If None, applies to all.
+        loss_kind : 'mse_lin' (default; α ∈ [0,1] so plain MSE well-behaved),
+                    'mse_log' (uses log(α+eps) to emphasize low-α elements),
+                    'mse_rel' (relative error, dominated by α near 0)
+        """
+        target = self.alpha_target_at_cycle(
+            cycle_idx, pidl_centroids,
+            device=alpha_pidl_per_elem.device,
+            dtype=alpha_pidl_per_elem.dtype)
+        if zone_mask is not None:
+            a_p = alpha_pidl_per_elem[zone_mask]
+            a_f = target[zone_mask]
+        else:
+            a_p = alpha_pidl_per_elem
+            a_f = target
+        if a_p.numel() == 0:
+            return torch.tensor(0.0, device=alpha_pidl_per_elem.device,
+                                dtype=alpha_pidl_per_elem.dtype)
+        eps = 1e-6
+        if loss_kind == "mse_lin":
+            loss = ((a_p - a_f) ** 2).mean()
+        elif loss_kind == "mse_log":
+            ratio = torch.log(a_p.clamp(min=eps)) - torch.log(a_f.clamp(min=eps))
+            loss = (ratio ** 2).mean()
+        elif loss_kind == "mse_rel":
+            rel = (a_p - a_f) / (a_f.abs() + eps)
+            loss = (rel ** 2).mean()
+        else:
+            raise ValueError(f"unknown loss_kind={loss_kind}")
+        return lambda_sup * loss
+
     def supervised_loss(self, psi_pidl_raw_per_elem: torch.Tensor,
                         cycle_idx: int,
                         pidl_centroids: np.ndarray,

@@ -23,6 +23,20 @@ def _compute_psi_raw_per_elem(inp, u, v, alpha, matprop, pffmodel, area_T, T_con
     return E_el_p   # graph-attached, so backward through u, v works
 
 
+def _compute_alpha_per_elem(alpha_nodal, T_conn):
+    """Convert per-node α to per-element α via mean over triangle vertices.
+
+    Used by Path C supervised-α loss. Same averaging pattern as
+    _compute_psi_raw_per_elem. Returns graph-attached tensor so backward
+    through NN α output works.
+    """
+    if T_conn is None:
+        return alpha_nodal
+    return (alpha_nodal[T_conn[:, 0]]
+            + alpha_nodal[T_conn[:, 1]]
+            + alpha_nodal[T_conn[:, 2]]) / 3
+
+
 class EarlyStopping:
     '''
     If the relative decrease in the loss is < min_delta for # of consecutive steps = tolerance,
@@ -48,8 +62,9 @@ class EarlyStopping:
 def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matprop, pffmodel,
         weight_decay, num_epochs, optimizer, intermediateModel_path=None, writer=None, training_dict={},
         f_fatigue=1.0, crack_tip_weights=None,
-        supervised_dict=None):
+        supervised_dict=None, supervised_alpha_dict=None):
     # ★ MIT-8 supervised_dict — see fit_with_early_stopping signature
+    # ★ Path C supervised_alpha_dict (Apr 29) — see fit_with_early_stopping signature
     # ★ 新增参数 f_fatigue：
     #    - 标量 1.0（默认）：完全等价 Manav 原始行为
     #    - Tensor (n_elem,)：逐元素疲劳退化函数，由 fatigue_history.compute_fatigue_degrad() 提供
@@ -106,6 +121,20 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                             loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
                         loss = loss + _every_n * loss_sup
 
+                # ★ Path C supervised α term (Apr 29) — design_supervised_alpha_apr29.md
+                if supervised_alpha_dict is not None and supervised_alpha_dict.get('lambda', 0.0) > 0:
+                    _every_n_a = max(1, int(supervised_alpha_dict.get('every_n_epochs', 1)))
+                    if (epoch % _every_n_a) == 0:
+                        alpha_elem_pidl = _compute_alpha_per_elem(alpha, T_conn)
+                        loss_sup_a = supervised_alpha_dict['fem_sup'].supervised_alpha_loss(
+                            alpha_elem_pidl,
+                            cycle_idx=supervised_alpha_dict['cycle_idx'],
+                            pidl_centroids=supervised_alpha_dict['pidl_centroids'],
+                            lambda_sup=supervised_alpha_dict['lambda'],
+                            zone_mask=supervised_alpha_dict.get('zone_mask', None),
+                            loss_kind=supervised_alpha_dict.get('loss_kind', 'mse_lin'))
+                        loss = loss + _every_n_a * loss_sup_a
+
                 if writer is not None:
                     writer.add_scalars('U_p_'+str(field_comp.lmbda.item()), {'loss':loss.item(), "loss_E":loss_var.item()}, epoch)
 
@@ -133,13 +162,19 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
 def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matprop, pffmodel,
                             weight_decay, num_epochs, optimizer, min_delta, intermediateModel_path=None, writer=None, training_dict={},
                             f_fatigue=1.0, crack_tip_weights=None,
-                            supervised_dict=None):
+                            supervised_dict=None, supervised_alpha_dict=None):
     # ★ MIT-8 supervised_dict (Apr 25, optional, default None → identical behavior):
     #    {'fem_sup': FEMSupervision, 'cycle_idx': int, 'lambda': float,
     #     'pidl_centroids': np.ndarray, 'loss_kind': 'mse_log'|'mse_lin'|'mse_rel',
     #     'every_n_epochs': int (default 1; >1 amortizes the supervised
     #         pass — supervised loss only added every N epochs to reduce
     #         per-cycle wall time while still biasing the trajectory)}
+    # ★ Path C supervised_alpha_dict (Apr 29, optional, default None → identical behavior):
+    #    {'fem_sup': FEMSupervision, 'cycle_idx': int, 'lambda': float (this is
+    #         the per-cycle effective λ_α — set to 0 to skip supervision in this cycle,
+    #         enabling Path A schedule by cycle_conditional λ_α dispatch in runner),
+    #     'pidl_centroids': np.ndarray, 'zone_mask': torch.bool tensor (None=all elements),
+    #     'loss_kind': 'mse_lin'|'mse_log'|'mse_rel', 'every_n_epochs': int}
     # ★ 新增参数 f_fatigue（同 fit）
     # ★ 新增参数 crack_tip_weights（方向3，同 fit）
     loss_data = list()
@@ -188,6 +223,20 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                         loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
                     # Scale up to compensate for the missed epochs
                     loss = loss + _every_n * loss_sup
+
+            # ★ Path C supervised α term (Apr 29) — design_supervised_alpha_apr29.md
+            if supervised_alpha_dict is not None and supervised_alpha_dict.get('lambda', 0.0) > 0:
+                _every_n_a = max(1, int(supervised_alpha_dict.get('every_n_epochs', 1)))
+                if (epoch % _every_n_a) == 0:
+                    alpha_elem_pidl = _compute_alpha_per_elem(alpha, T_conn)
+                    loss_sup_a = supervised_alpha_dict['fem_sup'].supervised_alpha_loss(
+                        alpha_elem_pidl,
+                        cycle_idx=supervised_alpha_dict['cycle_idx'],
+                        pidl_centroids=supervised_alpha_dict['pidl_centroids'],
+                        lambda_sup=supervised_alpha_dict['lambda'],
+                        zone_mask=supervised_alpha_dict.get('zone_mask', None),
+                        loss_kind=supervised_alpha_dict.get('loss_kind', 'mse_lin'))
+                    loss = loss + _every_n_a * loss_sup_a
 
             if writer is not None:
                     writer.add_scalars('U_p_'+str(field_comp.lmbda.item()), {'loss':loss.item(), "loss_E":loss_var.item()}, epoch)
