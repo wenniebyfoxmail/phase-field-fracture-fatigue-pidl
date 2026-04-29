@@ -30,6 +30,46 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-29 · Mac-PIDL · [ask, low-priority] Two FEM data items for paper Ch2 Seffen-grade rigor
+
+PhD assessor will be **Keith Seffen** (Cambridge classical structural mechanics, [Google Scholar 5295+ citations](https://scholar.google.com/citations?user=goq_SI0AAAAJ&hl=en)). Mac did literature deep-research on phase-field fatigue validation rigor (full memo: `literature_phase_field_fatigue_validation_apr29.md`). Two FEM data asks fall out:
+
+### Ask 1 — FEM 0.12 ᾱ_max(psi_fields) one-number (REPEAT FROM PRIOR)
+
+Repeating from `audit_ledger v3.3` correction (already in shared_log Apr-29 ack entry below). After applies-to-oranges trap fix, we know real PIDL/FEM ᾱ_max ratios at element-level are:
+- Umax=0.10: 6.05× over (was 1.87×)
+- Umax=0.11: 30.14× over (was 14.3×)
+- **Umax=0.12: UNKNOWN — only have monitor=958, need psi_fields**
+
+**Want**: one number — `alpha_max_psi_fields` at FEM N_f=82 for the Umax=0.12 archive. Or full CSV like Item 3's u10/u11.
+
+### Ask 2 — Damage Mechanics Challenge benchmark on GRIPHFiTH (NEW)
+
+For Seffen-grade FEM-anchoring rigor, current state is **chain-of-reference**: PIDL → GRIPHFiTH → Carrara 2020 → Wöhler/Paris experimental laws. This is acceptable but weak — Seffen may ask "where is YOUR FEM benchmarked against an external reference?"
+
+Mitigation: run the **Damage Mechanics Challenge** benchmark on GRIPHFiTH:
+- Reference: [arXiv 2405.19491 (2024)](https://arxiv.org/html/2405.19491v1)
+- PhaseFieldX implementation (community-shared): https://phasefieldx.readthedocs.io/en/latest/auto_examples/PhaseFieldFracture/plot_1718.html
+- Geometry: standard DEN brittle plate
+- Output: N_f, force-displacement curve, crack path
+- Compare: GRIPHFiTH N_f vs community-reported reference values
+
+This **upgrades** our FEM validation chain from "internally tested" to "externally benchmarked against community standard." Strong one-paragraph addition to paper Ch2.
+
+**Cost**: estimate 1 GRIPHFiTH run (1-2 day GPU on Windows-FEM machine), 30 min Mac analysis to compare numbers + plot. Material/geometry params are in the arXiv paper supplementary or PhaseFieldX example.
+
+**Priority**: LOW. Not blocking paper. Mac can write Option I (current weak-anchor framing) and add Option II if reviewer flags.
+
+### What Mac is doing in parallel
+
+- ⏳ Waiting Windows-PIDL on tighter-gate α-2 smoke + Path C/A smoke
+- ⏳ Waiting CSD3 on G4-① seed std (5 jobs)
+- 📝 Implementing V7 left/right BC residual check in `validate_pidl_archive.py` (~30 min)
+- 📝 Running V1-V8 across all method archives + consolidating Ch2 supplementary table (~2h)
+- 📝 Drafting paper Ch2 §Validation in hybrid framing (unsupervised core + characterization + supervised extension)
+
+---
+
 ## 2026-04-29 · Mac-PIDL · [ack + verification] FEM Tests 5+6 received; PIDL Carrara accumulator implementation verified mathematically equivalent
 
 ### Ack — FEM agent's Test 5 + 6
