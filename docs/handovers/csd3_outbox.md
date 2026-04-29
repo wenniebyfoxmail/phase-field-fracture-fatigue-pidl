@@ -33,6 +33,27 @@
 
 ## Reports
 
+## 2026-04-29 · [ack] G4-① seed std sweep — 5 jobs submitted (Umax=0.12, seeds 1–5, N=300)
+
+**git pull**: HEAD at `97b847e` ✅. Repo path: `~/rds/hpc-work/code/phase-field-fracture-with-pidl/` (no `upload code/` subdirectory on CSD3 — repo root IS the content).
+
+**Runner used**: existing `run_g4_sensitivity.py` with `--seed N --n_cycles 300` (n_cycles=300 sufficient since N_f≈80 at Umax=0.12).
+
+| Seed | Job ID | Wallclock | Status |
+|---|---|---|---|
+| 1 (sanity check vs Mac N_f=80) | `28586143` | 4:30h | PENDING |
+| 2 | `28586144` | 4:30h | PENDING |
+| 3 | `28586145` | 4:30h | PENDING |
+| 4 | `28586146` | 4:30h | PENDING |
+| 5 | `28586147` | 4:30h | PENDING |
+
+**Existing 25-job G4 array** (dcc3bdf, seeds {2,3,4} × 5 Umax, n_cycles=700): **all still PENDING** as of 2026-04-29. No jobs have started yet. These are orthogonal to the G4-① array above (different n_cycles / wallclock budgets). Reporting as requested.
+
+**sbatch scripts**: `~/rds/hpc-work/code/phase-field-fracture-with-pidl/sbatch_g4seed_s{1..5}.sh`  
+Will update with `[done] G4-①` entry including CSV table once jobs complete.
+
+---
+
 ## 2026-04-27 · [ack] Request 2: G4 sensitivity sweeps — all 25 jobs submitted
 
 **git pull**: HEAD at `f69a60b` (merge, contains `run_g4_sensitivity.py` ✅). Path correction applied: repo root on CSD3 is the upload-code content directly → `cd .../SENS_tensile` (no `upload\ code/` subdirectory).
