@@ -30,6 +30,65 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-29 · Windows-PIDL · [done] α-2 smoke 0.12 + T4 — FAIL on T4 (modal=0.30); production N=300 chained anyway per user override
+
+Smoke completed 2026-04-29 ~02:30 GMTDT. Caveat: smoke launched accidentally by a broken watcher (used `ps -p` which doesn't see Windows-native PIDs in MSYS2; ran ~50 min concurrent with P3 oracle 0.10, slowed P3 from 2.4 → 3.8 min/cycle during the overlap). Lesson saved locally; chained_v6 watcher uses `ps -W $4` correctly.
+
+### α-2 smoke 0.12 (n_cycles=10) — completed
+
+| cycle | ᾱ_max | x_tip | f_min | vs baseline | vs α-1 |
+|---:|---:|---:|---:|---|---|
+| 0 | 0.343 | 0.000 | 1.0000 | 5× | 0.54× |
+| 5 | 1.843 | 0.006 | 0.182 | ~2.6× | 0.64× |
+| 9 | **2.471** | 0.020 | 0.113 | **1.7×** | **0.73×** |
+
+Amplitude lift modest (1.7× baseline) — **less than α-1 production's 2.4× at same Umax**. Architecture as configured (4×100 tip head, r_g=0.02, gate_power=2) does NOT outperform mesh refinement on amplitude.
+
+### T4 stationarity — **FAIL ❌**
+
+```
+peak_stability_modal:   0.300   (PASS ≥ 0.70; baseline ~0.05-0.10; α-1 ~0.10-0.20)
+peak_stability_run:     0.300
+n_unique_argmax:        7  (modal element idx 26278, count 3 of 10 cycles)
+transitions:            6
+first 5 argmax:  [30970, 30970, 26278, 26278, 26278]
+last 5 argmax:   [29928, 21313, 29237, 10767, 10869]
+```
+
+**Read-out**: gate held for cycles 2-4 (modal 26278), then drifts across 5 different elements c5-c9. Spatial gating with r_g=0.02 doesn't pin ψ⁺ argmax — main head still drives the peak outside the gate region. Architecture as-is does NOT close (b) stationarity.
+
+### Mac's PASS gate
+
+| metric | α-2 smoke | PASS | STRONG |
+|---|---:|---:|---:|
+| ᾱ_max @ N_f | (smoke c10=2.47; production N=300 needed for true N_f number) | ≥ 12 | ≥ 15-20 |
+| T4 modal | **0.300** | ≥ 0.70 | — |
+
+T4 alone says **FAIL** → Mac's [ask] rule says "stop, pivot to α-3 XFEM-jump."
+
+### What I'm doing despite FAIL — chained_v6 watcher (PID 48588, started 03:04:53 GMTDT)
+
+User explicitly authorized N=300 production for paper-completeness data, knowing the smoke result. Chain queued (waits on P3 oracle 0.10 fresh exit):
+
+1. Wait for P3 oracle 0.10 fresh (WINPID 21344) to exit (~3-4 h ETA from 03:05)
+2. Oracle 0.08 resume: mv N300→N500, run `--n-cycles 500` (resume from step 299 → ~6 h)
+3. α-2 production 0.12 N=300 on `claude/exp/alpha2-multihead` branch (~3-10 h)
+4. T4 on production archive
+5. `git checkout main`
+
+Total chain ETA: ~12-15 h → finish ~15:00-18:00 GMTDT Apr 29.
+
+Mac note: smoke result is consistent with your "FAIL → pivot α-3" rule. Production is paper-completeness only, NOT evidence α-2 closes the gap. If you want us to abort the production phase to free GPU for α-3 sooner, please reply [decision] and I will kill chained_v6 mid-flight.
+
+### Suggested α-2 next-iteration knobs (if α-3 isn't ready first)
+
+- Tighter gate: r_g=0.005 or 0.010 (current 0.02 = 2·l₀ may be too wide)
+- Harder gate cutoff: gate_power=4 or 8 (sharper falloff outside r_g)
+- Larger tip head: try 6×200 or different init_coeff scaling
+- Each would be a fresh smoke; not in current chain.
+
+---
+
 ## 2026-04-28 · Mac-PIDL · [ask] α-2 multi-head NN ready for Windows production smoke (after P3 finishes)
 
 Per `design_alpha2_multihead_apr28.md`, α-2 (multi-head NN with spatial gating, anchored at moving x_tip) targets the (b) STATIONARITY half of the two-effect framing. Mac shipped implementation today.
