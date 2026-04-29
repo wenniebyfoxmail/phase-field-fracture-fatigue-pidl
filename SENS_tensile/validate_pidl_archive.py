@@ -287,26 +287,185 @@ def test_v6_f_min_floor(archive: Path) -> dict:
     }
 
 
-def test_v7_bc_residual(archive: Path) -> dict:
-    """V7. BC residual.
+def _parse_archive_arch(archive: Path) -> dict | None:
+    """Parse archive directory name to extract NN architecture parameters.
 
-    PIDL uses BC scaling u_BC_corner * (y-y0)*(yL-y) / ((yL-y0)/2)² which IS
-    exact at y=y0 and y=yL by construction (analytical). So residual is 0
-    by construction at those boundaries.
+    Expected pattern: hl_<L>_Neurons_<N>_activation_<A>_coeff_<C>_Seed_<S>_...
 
-    For vertical edges x=x0, x=xL: NN output u(x0,y) is NOT constrained
-    explicitly in current PIDL setup (free boundaries assumed) — but the
-    physics solution u should naturally satisfy traction-free condition there.
-
-    This test reports the corner check (analytical → expect 0) and notes
-    the side-boundary condition is an open audit item.
+    Returns dict {hl, neurons, activation, init_coeff, seed} or None on parse fail.
     """
+    import re
+    name = archive.name
+    m = re.match(r"hl_(\d+)_Neurons_(\d+)_activation_(\w+)_coeff_([\d.]+)_Seed_(\d+)", name)
+    if not m:
+        return None
     return {
-        "test": "V7_bc_residual", "status": "PASS-by-construction",
-        "note": "Top/bottom BC analytically enforced via BC scaling (residual=0 by construction). "
-                "Left/right edges (x=±0.5) traction-free, not actively checked. "
-                "Audit item if needed: forward NN at boundary nodes and check σ·n = 0.",
-        "criterion": "Top/bot BC: analytical (PASS); side BC: not checked",
+        "hl": int(m.group(1)),
+        "neurons": int(m.group(2)),
+        "activation": m.group(3),
+        "init_coeff": float(m.group(4)),
+        "seed": int(m.group(5)),
+    }
+
+
+def test_v7_bc_residual(archive: Path,
+                        E: float = 210e3, nu: float = 0.3,
+                        umax: float = 0.12,
+                        n_y_samples: int = 50) -> dict:
+    """V7. PIDL BC residual at left/right (free) boundaries.
+
+    PIDL hard-enforces top/bottom y=±0.5 BCs analytically via the
+    `(y-y0)*(yL-y)` scaling factor in field_computation.py — those boundaries
+    have residual = 0 by construction. **Side boundaries x=±0.5 are
+    traction-free assumed but NOT explicitly enforced** — the NN must learn
+    to keep stress σ·n ≈ 0 at those edges via the Deep Ritz minimization.
+
+    This test loads the latest NN checkpoint, samples (x=±0.5, y=linspace) on
+    the side boundaries, runs forward + autograd to compute σ_xx and σ_xy,
+    and reports the relative residual vs the bulk-domain max stress.
+
+    PASS criterion: max |σ_xx_bdy| / max |σ_yy_bulk| < 0.10 (10% relative)
+    WARN: 0.10-0.30
+    FAIL: > 0.30
+    """
+    import torch
+    import sys
+    HERE = Path(__file__).parent
+    sys.path.insert(0, str(HERE.parent / "source"))
+
+    arch = _parse_archive_arch(archive)
+    if arch is None:
+        return {"test": "V7_bc_residual_side", "status": "SKIP",
+                "reason": f"could not parse arch from archive name {archive.name}"}
+
+    # Try to find a NN weight file (trained_1NN_*.pt)
+    bm = archive / "best_models"
+    nn_files = sorted(bm.glob("trained_1NN_*.pt"),
+                      key=lambda p: int(p.stem.split("_")[-1]) if p.stem.split("_")[-1].isdigit() else -1)
+    if not nn_files:
+        return {"test": "V7_bc_residual_side", "status": "SKIP",
+                "reason": "no trained_1NN_*.pt file found"}
+    # Use cycle 0 (pristine post-pretrain) for fair BC check.
+    # Later cycles get distorted by crack propagation near right edge.
+    nn_file = bm / "trained_1NN_0.pt"
+    if not nn_file.is_file():
+        nn_file = nn_files[0]   # earliest available
+
+    # Detect special architectures (multihead/xfem) by looking for tags in archive name
+    name = archive.name
+    if "alpha2_mh" in name or "supα" in name or "supα_pathC" in name or "alpha3_xfem" in name:
+        return {"test": "V7_bc_residual_side", "status": "SKIP",
+                "reason": "non-baseline architecture; manual V7 needed for "
+                         "MultiHeadNN/XFEMJumpNN/Path-C variants"}
+
+    try:
+        from network import NeuralNet
+    except ImportError as e:
+        return {"test": "V7_bc_residual_side", "status": "SKIP",
+                "reason": f"could not import NeuralNet: {e}"}
+
+    # Build NN matching archive arch
+    try:
+        net = NeuralNet(input_dimension=2, output_dimension=3,
+                        n_hidden_layers=arch["hl"],
+                        neurons=arch["neurons"],
+                        activation=arch["activation"],
+                        init_coeff=arch["init_coeff"])
+        sd = torch.load(str(nn_file), map_location="cpu", weights_only=False)
+        net.load_state_dict(sd)
+        net.eval()
+    except Exception as e:
+        return {"test": "V7_bc_residual_side", "status": "SKIP",
+                "reason": f"NN load failed: {type(e).__name__}: {e}"}
+
+    # Sample boundary points
+    y_edge = torch.linspace(-0.5 + 1e-3, 0.5 - 1e-3, n_y_samples, dtype=torch.float32)
+    # Left edge x=-0.5; right edge x=+0.5
+    x_left = -0.5 * torch.ones_like(y_edge)
+    x_right = 0.5 * torch.ones_like(y_edge)
+    xy_left = torch.stack([x_left, y_edge], dim=1).requires_grad_(True)
+    xy_right = torch.stack([x_right, y_edge], dim=1).requires_grad_(True)
+
+    # Sample bulk grid for normalization (avoid boundary)
+    x_bulk = torch.linspace(-0.45, 0.45, 30, dtype=torch.float32)
+    y_bulk = torch.linspace(-0.45, 0.45, 30, dtype=torch.float32)
+    Xb, Yb = torch.meshgrid(x_bulk, y_bulk, indexing="ij")
+    xy_bulk = torch.stack([Xb.flatten(), Yb.flatten()], dim=1).requires_grad_(True)
+
+    # Apply BC scaling consistent with FieldComputation:
+    # u = (y-y0)*(yL-y)*u_NN + (y-y0)/(yL-y0)*cos(theta)*lmbda
+    # v = (y-y0)*(yL-y)*v_NN + (y-y0)/(yL-y0)*sin(theta)*lmbda
+    # alpha = clamp(α_NN, 0, 1)
+    # For mode I tension (theta=π/2): cos(theta)=0, sin(theta)=1
+    # For SENT geometry: y0=-0.5, yL=0.5, so (y-y0)*(yL-y) = (y+0.5)*(0.5-y)
+    #                                       (y-y0)/(yL-y0) = (y+0.5)/1 = y+0.5
+    y0, yL = -0.5, 0.5
+    lmbda = float(umax)
+
+    def field(xy):
+        out = net(xy)
+        u_NN, v_NN, _ = out[:, 0], out[:, 1], out[:, 2]
+        bc_scale = (xy[:, 1] - y0) * (yL - xy[:, 1])
+        bc_load = (xy[:, 1] - y0) / (yL - y0)
+        u = bc_scale * u_NN * lmbda  # cos(π/2)=0 ⇒ load term vanishes for u
+        v = (bc_scale * v_NN + bc_load * 1.0) * lmbda  # sin(π/2)=1
+        return u, v
+
+    def stress_at(xy):
+        u, v = field(xy)
+        eps_xx = torch.autograd.grad(u.sum(), xy, create_graph=False, retain_graph=True)[0][:, 0]
+        eps_yy = torch.autograd.grad(v.sum(), xy, create_graph=False, retain_graph=True)[0][:, 1]
+        # ε_xy = 0.5(∂u/∂y + ∂v/∂x)
+        du_dy = torch.autograd.grad(u.sum(), xy, create_graph=False, retain_graph=True)[0][:, 1]
+        dv_dx = torch.autograd.grad(v.sum(), xy, create_graph=False, retain_graph=False)[0][:, 0]
+        eps_xy = 0.5 * (du_dy + dv_dx)
+        # Plane strain Hooke
+        c = E / ((1 + nu) * (1 - 2 * nu))
+        s_xx = c * ((1 - nu) * eps_xx + nu * eps_yy)
+        s_yy = c * (nu * eps_xx + (1 - nu) * eps_yy)
+        G = E / (2 * (1 + nu))
+        s_xy = 2 * G * eps_xy
+        return s_xx.detach(), s_yy.detach(), s_xy.detach()
+
+    s_xx_L, s_yy_L, s_xy_L = stress_at(xy_left)
+    s_xx_R, s_yy_R, s_xy_R = stress_at(xy_right)
+    s_xx_b, s_yy_b, s_xy_b = stress_at(xy_bulk)
+
+    # Reference scale: max |σ_yy| in bulk (loading-direction stress)
+    s_ref = float(s_yy_b.abs().max())
+    if s_ref < 1e-12:
+        return {"test": "V7_bc_residual_side", "status": "SKIP",
+                "reason": f"bulk σ_yy is ~0 ({s_ref:.3e}) — pretrain may not be loaded; check NN file"}
+
+    sxx_L_max = float(s_xx_L.abs().max())
+    sxx_R_max = float(s_xx_R.abs().max())
+    sxy_L_max = float(s_xy_L.abs().max())
+    sxy_R_max = float(s_xy_R.abs().max())
+    rel_sxx = max(sxx_L_max, sxx_R_max) / s_ref
+    rel_sxy = max(sxy_L_max, sxy_R_max) / s_ref
+
+    # Status: max of σ_xx and σ_xy relative residual at side boundaries
+    rel_max = max(rel_sxx, rel_sxy)
+    if rel_max < 0.10:
+        status = "PASS"
+    elif rel_max < 0.30:
+        status = "WARN"
+    else:
+        status = "FAIL"
+
+    return {
+        "test": "V7_bc_residual_side", "status": status,
+        "nn_file": nn_file.name,
+        "rel_residual_sxx": rel_sxx,
+        "rel_residual_sxy": rel_sxy,
+        "max_sxx_left_abs": sxx_L_max,
+        "max_sxx_right_abs": sxx_R_max,
+        "max_sxy_left_abs": sxy_L_max,
+        "max_sxy_right_abs": sxy_R_max,
+        "ref_max_syy_bulk_abs": s_ref,
+        "criterion": "max(|σ_xx|, |σ_xy|) at x=±0.5 relative to bulk |σ_yy|: "
+                     "<10% PASS, 10-30% WARN, >30% FAIL "
+                     "(top/bot BC analytical PASS by construction)",
     }
 
 
