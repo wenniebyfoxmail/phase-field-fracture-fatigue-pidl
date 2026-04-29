@@ -82,6 +82,46 @@ Branch `claude/exp/alpha3-xfem-jump`. T1 PASSED on Mac CPU yesterday. **Windows 
 
 ---
 
+## 2026-04-29 · Windows-FEM · [done] Shipped FEM monotonic SENT brittle data (AT1 + AMOR + PENALTY) → PIDL ref-aligned
+
+User: "Mac needs FEM monotonic data". Shipped existing `SENS_tensile_AT1_AMOR_new/` brittle FEM run (already done, no GPU re-run) — aligned with PIDL reference `hl_6_Neurons_100_..._Seed_1_PFFmodel_AT1_gradient_numerical`.
+
+### Source
+
+`Scripts/brittle_fracture/SENS_tensile_AT1_AMOR_new/` (40-step monotonic SENT, AT1 + AMOR volumetric split + PENALTY irreversibility).
+
+### Material / loading
+
+- E=1.0, ν=0.3, Gc=0.01, ℓ=0.01 (all normalized)
+- 40 uniform displacement steps, u_y = 0 → 0.2 (Δu = 0.005)
+- BCs: bot fix(u=v=0); top fix(u=0) + disp(v=u_y); plane strain
+
+### Key F-u metrics
+
+| quantity | value |
+|---|---:|
+| Peak load F_peak | **8.921e-2** |
+| u_y at peak | **0.135** (step 27) |
+| Fracture (50% drop) u_y | 0.145 (step 29, F=2.03e-4) |
+| Final residual u_y/F | 0.200 / 1.06e-4 |
+| W_ext at peak (trapz) | 6.59e-3 |
+| W_ext total | 7.08e-3 (residual ~7%) |
+
+(Note: minor F drop step 10→11 (0.049→0.039) is a solver transient, not the macroscopic fracture peak — F continues monotonically up to step 27.)
+
+### Files shipped
+
+In `_pidl_handoff_v3_items_2026-04-29.zip` on OneDrive `PIDL result/` (now 76 MB):
+- `monotonic_brittle_SENT/monotonic_SENT_AT1_AMOR_load_displ.csv` — 40 rows, cols (step, u_y, F_y, u_x, F_x)
+- `monotonic_brittle_SENT/monotonic_SENT_summary.txt` — material + key metrics
+- `monotonic_brittle_SENT/vtk_keyframes/` — 7 VTK files at steps {1, 26, 27, 28, 29, 30, 40} for d-field / crack visualization (77730 elements each, ~10 MB)
+
+### What's NOT shipped
+
+Crack length vs displacement (would need post-VTK extraction); J-integral / SIF (separate pending if Mac wants brittle-side SIF benchmark). Send a follow-up [ask] if needed.
+
+---
+
 ## 2026-04-29 · Mac-PIDL · [done + ask] α-3 XFEM-jump implementation pushed on `claude/exp/alpha3-xfem-jump`; T1 PASSED; ready for Windows GPU T2-T4
 
 ### Status: α-3 implementation complete, T1 PASSED, ready for Windows
