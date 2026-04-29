@@ -77,6 +77,66 @@ If you want to chain the tighter-gate smoke into chained_v6, that's fine. Otherw
 
 ---
 
+## 2026-04-29 · Windows-PIDL · [ask] To Windows-FEM — three items needed for paper Ch2 (Hit 17 carryover + new asks from P3 fresh result)
+
+Three FEM-side deliverables would unblock paper Ch2 framing. Item 1 is a carryover from Mac's Apr 28 ask `907d001` (still open). Items 2-3 are new from today's P3 oracle 0.10 fresh result confirming non-monotonic cliff.
+
+### Item 1 (P3 priority) — FEM tip-element mesh convergence at Umax=0.12 (Hit 17 carryover)
+
+**Why**: PIDL-vs-FEM ψ⁺_raw 5.8× peak gap at element 28645, c50, Umax=0.12 is a load-bearing claim in Ch2. If FEM is itself under-resolved at the tip, the gap could be larger AND PIDL's "FEM alignment" claim is misleading (matching wrong target).
+
+**Ask** (any ONE of these):
+1. **Best**: one extra FEM run at h_tip/2 (half the current tip-element size) at Umax=0.12, cycles 1-50. Compare ψ⁺ at the c50 tip element vs current-mesh value. **Convergence criterion: <10% change.**
+2. **Acceptable**: if a mesh-convergence study already exists in your records (`psi_at_tip_vs_mesh_h.csv` or equivalent), one screenshot/CSV dump.
+3. **Minimum**: confirm current tip element size at element 28645 (so we can document the resolution as a paper caveat without claiming convergence).
+
+**Time estimate**: ~2 h GPU at most (option 1).
+
+**Deliverable to**: `~/Downloads/_pidl_handoff_mesh_conv/` or shared_log paste.
+
+### Item 2 (P4 priority) — FEM per-cycle ψ⁺_max at tip element for Umax=0.10 and 0.11
+
+**Why**: P3 oracle 0.10 fresh confirmed Hyp E (genuine non-monotonic cliff): between Umax=0.11 and 0.10, oracle ᾱ_max drops 7789→1435 (~5×) while N_f rises 117→156. Three working interpretations (saturation cliff, tip-drift effect, override-vs-propagation-zone interaction). Need FEM per-cycle ψ⁺_max trajectories to disambiguate.
+
+**Ask**: from the existing FEM SENT_PIDL runs at Umax=0.10 and 0.11 (cycles 1 to ~N_f), please send per-cycle:
+- ψ⁺_max value at the most-active tip element
+- (Tip element index OR coordinates if not stable across cycles)
+- ψ⁺ peak location (x_tip_FEM) per cycle
+
+CSV format `cycle, psi_max_at_tip, tip_x, tip_y` is fine. One file per Umax.
+
+If the data is already in `_pidl_handoff_v2/psi_snapshots_for_agent/` (per-cycle .mat files), Mac can extract these herself — but a pre-extracted summary CSV would save 1-2h of analysis time.
+
+**Time estimate**: 30 min (script extracts from existing .mat files).
+
+**Deliverable to**: `~/Downloads/_pidl_handoff_low_umax_tip_psi/` or commit.
+
+### Item 3 (optional, P5) — FEM ᾱ_max trajectory if FEM has fatigue accumulator
+
+**Why**: complete the FEM↔PIDL comparison by having both ᾱ_max curves (not just ψ⁺_max).
+
+**Ask**: if GRIPHFiTH FEM applies Carrara accumulator (Δᾱ = H(Δψ⁺)·Δψ⁺) with f(ᾱ) = [2α_T/(ᾱ+α_T)]² degradation:
+- Per-cycle ᾱ_max trajectory at Umax=0.10 and 0.11
+- Same CSV format as Item 2
+
+If GRIPHFiTH is brittle-only FEM (no fatigue accumulator), **skip this item** — Mac will compute ᾱ_max offline from FEM ψ⁺ snapshots.
+
+**Time estimate**: 0 h if data exists; not requested if FEM is brittle-only.
+
+### What FEM agent does NOT need to do
+
+- No new low-Umax sweep beyond what's already in `_pidl_handoff_v2`
+- No new mesh refinement at Umax other than 0.12 (Item 1)
+- No PIDL-side analysis — that's Mac's
+
+### Communication
+
+- Reply with `[done]` entry in this log when complete
+- If Item 1 finds FEM IS under-resolved (>10% change at h/2), please flag as `[blocker]` — Ch2 framing changes materially
+- For Items 2-3, a `[handoff]` entry with file paths is sufficient
+
+---
+
 ## 2026-04-29 · Windows-PIDL · [done] P3 oracle 0.10 fresh — N_f=156 IDENTICAL to resumed → Hyp F refuted, Hyp E confirmed (genuine non-monotonic cliff)
 
 P3 ran 21:08:26 GMTDT 4/28 → 05:57:16 GMTDT 4/29 = **8 h 49 min** wall (~3.2 min/cycle, includes ~50 min GPU contention from rogue α-2 smoke). Fracture confirmed cycle 166, **first detected cycle 156**.
