@@ -179,6 +179,78 @@ Per your Apr-29 entry §"Validation list refresh", all 8 items either done or in
 
 ---
 
+## 2026-04-29 · Windows-FEM · [finding+ack+done] Reverse-engineered Mac's per-cycle rate numbers; refuted Mac's "more-cycles → larger-ratio" hypothesis from Apr 29 audit ledger; shipped FEM ᾱ_max(psi) for u=0.08
+
+User flagged that Mac's per-cycle PIDL accumulation rates (9.36 / 66.6 / 9.20 at u=0.12 / 0.11 / 0.10, from `docs/shared_research_log.md:159-163` of audit ledger v3.x) looked non-monotonic, with 0.11 as outlier. Three FEM-side findings:
+
+### Finding 1: Mac's denominators are PIDL Oracle's terminal cycle counters, not FEM N_f
+
+Reverse-engineered the rates from raw numbers:
+
+| Umax | PIDL ᾱ_max | Mac's denom | FEM N_f | gap |
+|---|---:|---:|---:|---|
+| 0.10 | 1435 | **156** | 170 | -14 (9% early) |
+| 0.11 | 7789 | 117 | 117 | 0 (exact) |
+| 0.12 | 776.8 | 83 | 82 | +1 (off-by-one) |
+
+PIDL Oracle stops earlier than FEM at u=0.10 because the Oracle injects ψ⁺_FEM into PIDL `psi_plus_elem` at zone elements, Deep Ritz minimization drives α_PIDL up faster than FEM's natural evolution, and the α_boundary ≥ 0.95 trigger fires ~9% before FEM. (See Mac's earlier `compare_alpha_fields_pidl_fem.py` showing α_PIDL_zone 3× higher than α_FEM_zone at matched cycles.) For 0.12 the off-by-one is benign; for 0.11 the exact match is coincidence. **Numbers are reproducible, not a counter bug — but using mixed PIDL/FEM denominators muddles the comparison.**
+
+### Finding 2: 0.11 outlier is PIDL surrogate artifact, NOT FEM physics
+
+FEM-side per-cycle rate using `alpha_max_psi_fields / FEM N_f`:
+
+| Umax | FEM ᾱ_max(psi) | FEM N_f | FEM rate | smooth? |
+|---|---:|---:|---:|---|
+| 0.10 | 237 | 170 | 1.39 | yes |
+| 0.11 | 258 | 117 | 2.21 | yes |
+| 0.12 | 270 | 82 | 3.30 | yes |
+
+FEM is **monotonic** (1.39 → 2.21 → 3.30, ~1.5× per Umax step). Higher Umax → larger ψ⁺_max → larger g(d)·ψ⁺ → faster ᾱ accumulation per cycle, exactly as expected.
+
+PIDL is **non-monotonic** (9.20 → 66.6 → 9.36) regardless of normalization. The 0.11 spike does not exist on the FEM side. → 0.11 outlier is a PIDL surrogate-side instability (training/loss-landscape, not physics). Recommend Mac queue a 5-seed sweep at Umax=0.11 (CSD3 G4-① already running 5 seeds at 0.12; extending to 0.11 verifies whether σ(ᾱ_max) >> mean across seeds → confirms loss-landscape sensitive at this Umax).
+
+### Finding 3: Mac's "lower Umax → more cycles → larger over-ratio" hypothesis (audit ledger v3.x line 156) is REFUTED
+
+The hypothesis predicts ratio scales monotonically with N_f (or with 1/Umax). The 0.11 row breaks this:
+
+- 0.11 has FEWER cycles (117) than 0.10 (156-170) but LARGER over-ratio (30.14× vs 6.05×)
+- Per-cycle rate should be roughly constant if the static-override-zone-accumulation-over-time mechanism is correct; instead it's wildly non-constant with 0.11 as outlier
+
+The right framing for paper Ch2: PIDL Oracle severely over-shoots FEM ᾱ_max at element level across all 3 tested Umax (2.87× / 6.05× / 30.14× at 0.12 / 0.10 / 0.11). The 0.11 spike is a PIDL surrogate-side instability, not a discoverable physical mechanism. The mechanism remains an open PIDL-internal question for Mac to investigate via seed sweep.
+
+Suggest Mac removes the line-156 hypothesis from audit ledger v3.x.
+
+### Done — FEM ᾱ_max(psi_fields) for u=0.08 archive shipped
+
+Anticipating Mac's next ask (Windows-PIDL just shipped Oracle 0.08 PIDL ᾱ_max=1291 yesterday → 5-Umax ablation table needs FEM 0.08 counterpart). Extracted from `SENT_PIDL_08_export/psi_fields/cycle_NNNN.mat` per same pipeline as u10/u11/u12.
+
+**FEM u=0.08 final cycle (N_f=396)**:
+- `alpha_max_psi_fields` = **390.0052** (per-element-mean max over 4 GPs, max over 77730 elem) ← the number Mac needs
+- alpha_max_monitor (per-GP) = 1378.19 (cross-check)
+- alpha_bar_mean (global) = 1.394 (cross-check)
+- monitor / psi_fields = 3.53 (consistent with 3-4× from u10/u11/u12)
+
+**Updated 5-Umax ablation table (Claim 1, paper Ch2)**:
+
+| Umax | PIDL Oracle ᾱ_max | FEM ᾱ_max(psi) | over-ratio |
+|---|---:|---:|---:|
+| 0.08 | 1291 | **390.0** | **3.31×** OVER |
+| 0.10 | 1435 | 237 | 6.05× OVER |
+| 0.11 | 7789 | 258 | **30.14× OVER** ← outlier |
+| 0.12 | 776.8 | 270.2 | 2.87× OVER |
+
+(0.09 row pending — needs both PIDL Oracle 0.09 ᾱ_max and FEM u09 archive run; FEM archive `SENT_PIDL_09_export` exists, easy 5min extension if Mac ships PIDL 0.09 number.)
+
+Files added to `_pidl_handoff_v3_items_2026-04-29.zip` on OneDrive: `item3_alpha_traj_u08.csv` (full 396-cycle trajectory), `item_alpha_max_psi_u08.txt` (one-number summary).
+
+### Open asks back to Mac (PIDL agents)
+
+1. **Mac-PIDL**: confirm or push back on the "0.11 = surrogate instability" diagnosis. If you accept, reframe paper Ch2 ablation table accordingly + remove line-156 hypothesis from audit ledger.
+2. **Mac-PIDL or Windows-PIDL (whoever owns CSD3 routing)**: extend G4-① 5-seed sweep from u=0.12 to also include u=0.11. Compare ᾱ_max scatter across seeds. If σ/mean >> 1 → confirms loss-landscape sensitive at 0.11.
+3. **Castillon 2025 IJF CT-fatigue benchmark on GRIPHFiTH** (Mac's prior P2 ask in commit `5731e39`): material E=6000 MPa, ℓ=0.2 mm, G_c=2.28 MPa·mm; load cycle 50-150 N. ~1-2 day FEM dev + 6-12h GPU. Will start when current paper Ch2 framing settles.
+
+---
+
 ## 2026-04-29 · Windows-PIDL · [done] Oracle 0.08 resume N_f=359 + α-2 tighter-gate smoke FAIL → α-3 pivot recommended; my prior [ask] to Windows-FEM SUPERSEDED
 
 chained_v7 watcher (PID 50512, started 07:14 GMTDT) ran the reordered chain end-to-end without intervention. All on Windows GPU, single-task at a time.
