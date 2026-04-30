@@ -123,6 +123,75 @@ If user wants Mac to drive Taobo for α-3 production OR Path C smoke instead of 
 
 ---
 
+## 2026-04-30 · Windows-FEM · [finding+done] Castillon 2025 IJF benchmark IS SENT-fatigue, NOT CT-fatigue (Mac's `5731e39` ask was reframe-needed); INPUT_SENT_castillon.m written, ready to run
+
+### Finding: Castillon CT-fatigue benchmark does not exist
+
+Cloned `CastillonMiguel/phasefieldx` (engine) + `CastillonMiguel/A-Phase-Field-Approach-to-Fatigue-Analysis-Bridging-Theory-and-Simulation` (paper repo) to `C:/Users/xw436/_castillon_benchmark/`. Surveyed:
+
+- **CT examples** (`paper_repo/examples/Phase_Field_Compact_Specimen/specimen_{1_H00, 2_H16, 3_H08, 4_Hminus16}`) — all four have `fatigue=False`. Pure monotonic brittle fracture, NOT fatigue.
+- **Only fatigue example in entire codebase**: `phasefieldx/examples/Fatigue/1800_Fatigue_Single_Edge_Notched_Tension_Test/plot_1800.py` — **SENT geometry, not CT**.
+
+Mac's `5731e39` "Castillon 2025 CT-specimen fatigue benchmark" was a misremembering. There is no CT-fatigue. The closest cross-code fatigue validation is SENT-vs-SENT — which GRIPHFiTH already has the geometry for.
+
+### Castillon SENT-fatigue parameters (from plot_1800.py)
+
+| param | Castillon (1800) | GRIPHFiTH SENT_PIDL_12 (current) | mapping |
+|---|---|---|---|
+| E | 210 kN/mm² | 1.0 (norm) | use Castillon's physical units |
+| ν | 0.3 | 0.3 | same |
+| Gc | 0.0027 kN/mm | 0.01 (norm) | use Castillon's |
+| ℓ | 0.004 mm | 0.01 (norm) | **CAVEAT** — see below |
+| α_T | 0.05625 kN/mm² | 0.5 (norm) | use Castillon's |
+| Δu | 4e-3 mm | 0.08-0.12 | use Castillon's |
+| f(ᾱ) form | asymptotic, p=2 | asymptotic, p=2 | **same** ✓ |
+| accumulator | max(0, Δ(g·ψ⁺_raw)) | max(0, Δ(g·ψ⁺_raw)) | **same** ✓ |
+| diss_fct | "quadratic" | AT1 | switch to **AT2** |
+| split | "no" | AMOR | switch to **ISO** |
+| irreversibility | "miehe" | PENALTY | switch to **HISTORY** |
+
+### ℓ caveat (paper Ch2 must disclose)
+
+GRIPHFiTH's existing Abaqus SENT mesh has h ≈ 3.6e-3, giving ℓ/h ≈ 1.1 with Castillon's ℓ=0.004 — under-resolved (need ≥5). Use **ℓ=0.01** (ℓ/h ≈ 2.8, still marginal) for first cross-code smoke. Full match with Castillon ℓ=0.004 needs remesh to ~625k elements (~1 day extra). Document this caveat in V8 row of paper Ch2 supplementary table.
+
+### Accumulator equivalence (proved via code inspection)
+
+Castillon `phasefieldx/.../solver/solver.py:362-375`:
+```python
+alpha_c = g(d_n) · ψ⁺(u_{n+1})    # degraded ψ⁺ in alpha_c
+delta_alpha = |alpha_c - alpha_n| · np.heaviside((alpha_c - alpha_n)/dt, 1)
+alpha_cum_bar_c = alpha_cum_bar_n + delta_alpha
+Fatigue = (2·alpha_T / (alpha_cum_bar_c + alpha_T))^2
+```
+
+GRIPHFiTH `at1_penalty_fatigue.f90:89-91`:
+```fortran
+strain_en_degr = ((1-d)^2 + res_stiff) * strain_en_undgr
+Dalpha       = H_p(strain_en_degr - history_vars_old(:,:,3))
+alpha_np1    = history_vars_old(:,:,2) + Dalpha
+```
+
+Both: **Δᾱ = max(0, g(d)·ψ⁺_n+1 − g(d_prev)·ψ⁺_n)**. Mathematically equivalent (smooth Macaulay ramp H_p ↔ sharp Heaviside in continuous limit).
+
+### Done
+
+- `Scripts/fatigue_fracture/INPUT_SENT_castillon.m` written. AT2 + ISO + HISTORY, Castillon's E/Gc/α_T/Δu, ℓ=0.01 (caveat), 1500 max_cycles, 8 sub-steps per cycle, R=0.
+- Repo clones at `C:/Users/xw436/_castillon_benchmark/` for future cross-checks.
+- Castillon's accumulator + f(ᾱ) form verified to match GRIPHFiTH (above).
+
+### Next
+
+1. Run `INPUT_SENT_castillon.m` on Windows GPU — estimate 6-12 h to reach N_f.
+2. Compare N_f against Castillon's published reference (`paper_repo/examples/Phase_Field_Three_Point` and similar dirs have reference numbers for N_f-vs-Δu sweeps; SENT 1800 example has its own animation/plot).
+3. Add V8 row to paper Ch2 supplementary table with caveats.
+
+### Still pending from yesterday
+
+- PIDL Oracle u=0.09 ᾱ_max from Mac/Windows-PIDL (last cell of 5-Umax over-ratio table)
+- 5-seed sweep at u=0.11 (Mac/CSD3) to confirm 0.11 outlier = surrogate instability
+
+---
+
 ## 2026-04-30 · Windows-PIDL · [done + ask] α-3 T2/T3/T4 — modal=**0.500 MARGINAL**, ᾱ_max@c9=3.04 (best stationarity yet but doesn't close); PRODUCTION GATED — Mac decide
 
 chained_v8 watcher (PID 54734, started 21:09 GMTDT 4/29) ran α-3 T2 → T3 cleanly. T4 had a watcher bug (analyze_alpha2_t4.py exists only on `claude/exp/alpha2-multihead` branch; α-3 branch + main don't have it) → ran T4 manually after.
