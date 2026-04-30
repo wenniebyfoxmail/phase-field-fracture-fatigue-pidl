@@ -30,6 +30,67 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-30 · Mac-PIDL · [correction² ] PIDL confirm = **10** (not 3), and N_f = **first-detect** cycle (confirm doesn't shift N_f); definitive criterion table
+
+User caught two more sloppy details in my framing. Both correct:
+
+### Correction 1: confirm_cycles is 10, not 3
+
+Source `model_train.py:325` has default 3, BUT `SENS_tensile/config.py:115` overrides to **10**:
+```python
+"fracture_confirm_cycles": 10,   # 触发后再观察 N 圈确认（防数值扰动）
+```
+All actual production archives use 10 (verified in `model_settings.txt` of every archive). Windows-PIDL log entries also show "Continuing 10 confirmation cycles..." — consistent.
+
+### Correction 2: N_f IS first-detect, NOT first-detect + confirm
+
+Source `model_train.py:654`:
+```python
+if not _frac_detected and (_bdy_triggered or _E_triggered):
+    _frac_detected = True
+    _frac_cycle    = j        # ← THIS IS N_f
+```
+`:717` print: `f"First detected at cycle {_frac_cycle}."`
+
+The 10-cycle confirm just delays STOPPING the run (to allow reset if criteria recover from numerical noise), but **the reported N_f value is the first-detect cycle, unchanged by confirm logic**.
+
+So baseline 0.09 archive shows 236 cycles total = first-detect at **cycle 225** + 10 confirm + 1 final = 236. **N_f = 225** (matches user's memory).
+
+### Definitive PIDL vs FEM N_f criterion table (final)
+
+| | FEM (GRIPHFiTH) | PIDL | Effect on PIDL N_f |
+|---|---|---|---|
+| Variable | `d` | `α` | **same** physical phase-field damage variable [0,1] (per `pff_model.py:28`) |
+| Threshold | 0.95 | 0.95 | same |
+| Min node count | ≥ 1 | ≥ 3 | makes PIDL N_f **later** |
+| Confirm cycles | 0 (single-shot stop) | 10 (delayed stop, **N_f unchanged**) | NO effect on N_f value |
+| Variable evolution speed | PDE incremental | Deep Ritz NN-jump | makes PIDL α reach 0.95 **earlier** per cycle |
+| Fallback | none | E_el < 0.5×max (optional) | rarely fires; ignored for default |
+
+**Net**: only TWO factors affect PIDL N_f vs FEM N_f:
+1. Stricter threshold count (1 vs 3 nodes) → PIDL **later**
+2. Faster α evolution (Deep Ritz vs PDE) → PIDL **earlier**
+
+Observed PIDL Oracle 0.10 N_f=156 vs FEM 170: factor (2) wins; PIDL fractures 9% earlier.
+
+### My prior commits had errors; corrected
+
+- `243e5db` said variable d vs α "different" → false; same variable
+- `bfd8bd0` said confirm = 3 → false; default 3 but config overrides to 10
+- Both also implicit suggested confirm shifts N_f → false; N_f is always first-detect
+
+Memory updates pending: `audit_ledger v3.13`, `handoff_apr30`, `successor_note`. Will reconcile in next push.
+
+### Concrete implication for paper Ch2
+
+The Direction tables in `experiment_results.md` already report N_f as first-detect (e.g. "Williams v4 Nf=77, run stopped cycle 87" → 77 is first-detect, 87 = 77 + 10 confirm). All historical PIDL N_f numbers ARE first-detect — no historical correction needed for the data, only for our framing of WHY they differ from FEM.
+
+For baseline 0.09: archive name doesn't include `_Nf{N}` tag, but trajectory analysis confirms first-detect at cycle 225 (consistent with user's recollection).
+
+Mac apologizes for the iterative correction sequence in 243e5db → bfd8bd0 → this one. The right table is now stable above.
+
+---
+
 ## 2026-04-30 · Mac-PIDL · [correction] α (PIDL) and d (FEM) ARE the same phase-field damage variable; my prior framing was sloppy
 
 User flagged: "α and d 不一样吗?". Mac confirms — **α (PIDL) and d (FEM) are the SAME phase-field damage variable conceptually** ([0,1] scale, 0=intact, 1=fully broken). Per `source/pff_model.py:28`: "相场变量 α ∈ [0, 1]：0表示完好材料，1表示完全断裂". Naming differs (PIDL legacy uses α; FEM convention uses d) but the physical quantity is identical.
