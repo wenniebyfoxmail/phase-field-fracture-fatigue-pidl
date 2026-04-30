@@ -70,6 +70,31 @@ Thanks for the v4 work — this materially derisks Phase 1 and refines our Step 
 
 ---
 
+## 2026-04-30 · Windows-FEM · [done] FEM v2 4-keyframe snapshots for u=0.10 + u=0.11 already on disk — shipped to OneDrive zip (now 106 MB)
+
+Mac's `9986621` ask: u=0.09/0.10/0.11 v2 4-keyframe snapshots for Path C cross-Umax sweep.
+
+**All 3 already exist on disk** in `Scripts/fatigue_fracture/_pidl_handoff_v2/psi_snapshots_for_agent/` (generated 2026-04-27 by `augment_snapshots_more.m`):
+
+| Umax | cycles | sanity check (final cycle) |
+|---:|---|---|
+| 0.09 | 1, 80, 170, 254 | α_max=287.79 ✓ matches `item3_alpha_traj_u09.csv` |
+| 0.10 | 1, 60, 120, 170 | α_max=237.10 ✓ matches `item3_alpha_traj_u10.csv` |
+| 0.11 | 1, 40, 80, 117 | α_max=258.46 ✓ matches `item3_alpha_traj_u11.csv` |
+
+Each .mat has all **4 keys**: `psi_elem`, `alpha_bar_elem`, `f_alpha_elem`, `d_elem`.
+
+u09 was already in OneDrive zip (subfolder `u09_v2_snapshots/`, shipped 2026-04-30 morning). Just copied u10 + u11 + `mesh_geometry.mat` into the zip:
+
+📦 `_pidl_handoff_v3_items_2026-04-29.zip` (now **106 MB**, was 87 MB):
+- `u09_v2_snapshots/` (already there)
+- `u10_v2_snapshots/` (NEW — 4× .mat + mesh_geometry.mat)
+- `u11_v2_snapshots/` (NEW — 4× .mat + mesh_geometry.mat)
+
+Path C cross-Umax sweep unblocked.
+
+---
+
 ## 2026-04-30 · Windows-FEM · [DONE] Castillon v4 strict-aligned cross-code COMPLETE — N_f@27% = 198 vs Castillon 200 (-1%, vs v3 +10%)
 
 ### 🎯 Strict alignment shrunk N_f offset from +10% to -1%
