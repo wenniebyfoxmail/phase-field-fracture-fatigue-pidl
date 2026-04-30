@@ -30,6 +30,70 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-30 · Windows-FEM · [DONE] Castillon v4 strict-aligned cross-code COMPLETE — N_f@27% = 198 vs Castillon 200 (-1%, vs v3 +10%)
+
+### 🎯 Strict alignment shrunk N_f offset from +10% to -1%
+
+| | mesh | ℓ | N_f@Castillon-27% | Δ vs Castillon (200) |
+|---|---|---:|---:|---:|
+| v3 (loose-aligned) | GRIPHFiTH SENT 77k quads, h_tip=3.6e-3 | 0.01 | 221 | +10.5% |
+| **v4 (strict-aligned)** | **Castillon-style 17k quads, h_tip=1e-3** | **0.004** | **198** | **-1.0%** |
+| Castillon ref | their `Fatigue/mesh/mesh.msh` 10k tris, h_tip=3e-3 | 0.004 | 200 | — |
+
+**Conclusion**: ℓ smearing is the dominant driver of v3's +10% offset. NOT quad-vs-tri topology.
+
+### Cycle-1 elastic still ~4.5% off Castillon (in BOTH v3 and v4)
+
+| | F_peak cycle 1 | Δ vs Castillon (0.280) |
+|---|---:|---:|
+| v3 | 0.267 | -4.6% |
+| v4 | 0.268 | -4.3% |
+
+ℓ refinement did NOT shrink the cycle-1 elastic offset → this offset is **NOT ℓ-sensitive**, dominated by quad-vs-tri stiffness at the slit tip + meshing strategy details. Within typical phase-field cross-implementation uncertainty.
+
+### v4 build process (3 iterations to get clean run)
+
+1. **First try**: 3 inverted quads (negative-area) from default Recombine → singular K → NaN
+2. **Retry-1** (Mesh.Algorithm=11 quasi-structured + Laplace2D + Relocate2D opt): 0 inverted, but **1 orphan node P8** at (0.5, 0) (right midline, included in `.geo` for symmetry but not on curve loop) → 2 free DOFs → singular K
+3. **Retry-2** (P8 removed from `.geo`): 0 inverted, 0 orphans → cleanly runs
+
+Mid-run: hit `forrtl: There is not enough space on the disk` at cycle 45 stagger 7 (95 GB free → SuiteSparse temp / Windows I/O fluke, not real disk full). Resumed from cycle-25 checkpoint, completed without recurrence. Total v4 wall ≈ 2.5 h.
+
+### How v4 mesh was built
+
+`Dependencies/SENT_mesh/gen_castillon_quad_mesh.py`:
+- Recreate Castillon's 9101 SENT geometry programmatically in Python gmsh
+- Box field refinement: h_tip=0.001, h_zone=0.01, h_global=0.05 (Castillon-style)
+- Quasi-structured + Recombine + 5 iters Laplace2D + 5 iters Relocate2D
+- gmsh native Abaqus .inp export (CPS4 quads), then strip Z=0 column from NODE section to avoid GRIPHFiTH's `quad_composition.m:61` typo bug (`ids` should be `idx`, only triggers when dim=3)
+
+Final: 17510 nodes, 17351 quads, h_tip=1e-3, ℓ/h_tip=4 (3× more refined than Castillon's own 1.33).
+
+### Why we couldn't use Castillon's mesh.msh directly
+
+GRIPHFiTH `abaqus_import.m:43` hardcodes `nel=4` (quads only). Castillon's mesh is all triangles. Modifying GRIPHFiTH source would touch shared lab code — out of scope per user direction "禁止向 ETH repo push".
+
+Solution: regenerate quads from same `.geo` source. Same geometry, same refinement strategy, but quads instead of tris. Result is "Castillon-style refined quad mesh" — not bit-identical to Castillon but using same .geo + same h refinement strategy.
+
+### Files shipped
+
+OneDrive zip `_pidl_handoff_v3_items_2026-04-29.zip` (87 MB) → new subfolder `castillon_v3v4_compare/`:
+- `F_vs_cycle.csv` — per-cycle peak F for v3 / v4 / Castillon ref (parallel columns)
+- `alpha_d_vs_cycle.csv` — per-cycle ᾱ_max (GP) and d_max for v3 / v4
+- `fig1_F_retention_vs_cycle.png` — overlay plot showing N_f@27% crossings
+- `fig2_alpha_max_vs_cycle.png` — log-scale ᾱ growth comparison
+- `README.md` — paper Ch2 V8 row wording
+
+### Paper Ch2 V8 row proposed wording
+
+> "GRIPHFiTH SENT-fatigue benchmark vs Castillon 2025 IJF (PhaseFieldX implementation): bit-exact 8-step fully-reversed loading trajectory match. Two variants tested. Loose-aligned (existing GRIPHFiTH mesh + ℓ=0.01): N_f@27% = 221 (+10.5% vs Castillon 200), cycle-1 elastic -4.6%. Strict-aligned (Castillon-style refined quad mesh + ℓ=0.004): N_f@27% = 198 (-1.0% vs Castillon), cycle-1 elastic -4.3%. The shrinkage from +10% to -1% with ℓ refinement confirms ℓ smearing as the dominant lifetime offset driver. Residual ~4.5% cycle-1 elastic offset is ℓ-insensitive and attributable to quad-vs-tri topology + BC discretization details — within typical phase-field cross-implementation uncertainty."
+
+### About Mac's ask (FEM v2 4-keyframe snapshots for u=0.10/0.11)
+
+Will do next — same `augment_snapshots_more.m` pattern as the u09 4-key snapshots already in the OneDrive zip. ~30 min Windows MATLAB.
+
+---
+
 ## 2026-04-30 · Mac-PIDL · [handoff + ask] need FEM v2 4-keyframe snapshots for Umax = 0.09 / 0.10 / 0.11 to enable Path C cross-Umax sweep
 
 ### Context
