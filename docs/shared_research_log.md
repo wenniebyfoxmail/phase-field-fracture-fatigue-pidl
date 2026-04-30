@@ -30,6 +30,83 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-30 · Mac-PIDL · [retraction + correction] α_T = 0.094 production change is WITHDRAWN — partial alignment is incoherent; cleaner phasing
+
+### What was retracted
+
+Earlier today's `1694435` commit + the [decision + handoff] entry below proposed changing `α_T` from production 0.5 to Carrara-aligned 0.094 in PIDL/GRIPHFiTH. **This is now retracted**.
+
+### Why retracted (logical consistency)
+
+User pushback caught a framing problem: changing only α_T (from 0.5 → 0.094) was supposed to make our setup "Carrara-aligned" via the dimensionless ratio R_α = α_T/(½ε_y²·E) = 0.5. But this only works if the OTHER dimensionless groups also match Carrara (σ_c/E, ℓ/W, h/ℓ, AT model, strain split). They don't — our toy normalization keeps σ_c/E = 1 (vs Carrara 0.057), ℓ/W = 0.01 (vs 0.004), volumetric split (vs spectral), AT1 (vs AT2), h/ℓ = 2 (vs 0.2).
+
+**In a different dimensionless regime (toy σ_c/E = 1), R_α = 0.5 doesn't carry the same physical meaning as in Carrara's regime (σ_c/E = 0.057)**. So tweaking α_T alone gives no actual physics alignment, only a cosmetic ratio match.
+
+The clean choice is binary:
+- **All toy** (current production: keep everything as is)
+- **All Carrara real-dimensionless** (full re-normalization + NN scaling layer + retrain)
+
+Anything in between is logically incoherent.
+
+### Replacement plan (cleaner phasing)
+
+**Phase 1 (current Carrara-alignment campaign, modified)**:
+- **Windows-FEM Step 1** still proceeds: GRIPHFiTH reproduces Carrara 2020 Fig 6 a-N curves in **real units** (E=210 GPa, ℓ=0.004 mm, α_T=56.25 N/mm², AT2 + spectral, h=ℓ/5)
+  - This validates GRIPHFiTH against community paper (independent of PIDL)
+  - Output: Tier 1 community anchor for GRIPHFiTH
+- **Mac PIDL**: KEEP α_T = 0.5 production-wide. Don't change anything.
+  - Current Path C R2 (N_f=89), α-3 R1 (N_f=81), Ablation A (in progress) data all VALID as **methodology demonstration in normalized setup**
+  - No retraining needed
+- **Paper Ch2 framing change**:
+  - Drop claims like "PIDL closes FEM ᾱ_max gap" (no external anchor for the absolute value)
+  - Reframe as: "PIDL methodology validated against in-house FEM in normalized setup; GRIPHFiTH validated against Carrara 2020 in real units"
+  - Two validation tracks, not transitively connected
+  - Honest about limits
+
+**Phase 2 (concrete specialization, 2-3 months later)**:
+- All-in-one transition:
+  - Physics: concrete dimensionless (σ_c/E ≈ 0.05, ν = 0.18, α_T from Holmen 1979 / ACI 215R)
+  - NN architecture: add input/output scaling layer (~3 days `source/model.py` work)
+  - Possibly switch to Wu PF-CZM (TBD: 2A pure-Carrara-extended vs 2B Wu PF-CZM)
+  - Strain split: volumetric → spectral or no-tension
+  - Full PIDL retrain ~50 GPU-h Taobo
+  - This is paper Ch3 "PIDL fatigue prediction for concrete pavement"
+
+### Why Phase 2 ≠ "fix Phase 1 issues"
+
+It's tempting to say "do all the alignment in Phase 1". But Phase 1's α_T-only fix and Phase 2's full re-normalization aren't on the same effort gradient — Phase 2's NN scaling layer is a real architecture change (input/output normalization), and the cleanest moment to do this is when we re-target the physics anyway (concrete). Mixing partial-alignment patches into Phase 1 invalidates current data without adding real value.
+
+### What stays in the campaign
+
+- ✅ Windows-FEM Step 1: Carrara Fig 6 reproduction (GRIPHFiTH self-validation)
+- ✅ Mac Step 2: dimensionless audit (already done — `parameter_audit_carrara_apr30.md`)
+- ❌ Mac Step 3: PIDL re-aligns at α_T=0.094 (RETRACTED)
+- ✅ NEW Phase 2: Full re-normalization + concrete specialization (months)
+
+### Asks / state changes
+
+**Windows-FEM agent**:
+- Step 1 plan unchanged: Carrara Fig 6 a-N reproduction in GRIPHFiTH
+- α_T value for Step 1 = 56.25 N/mm² (Carrara real units), unrelated to PIDL production α_T
+- Estimate Windows compute time when convenient
+
+**Mac (self)**:
+- DON'T change `config.py` α_T
+- DON'T retrain Path C / α-3 / Ablation A on new α_T
+- KEEP current toy-units data as methodology demonstration
+- Update memory to reflect retraction
+
+**Files to update**:
+- `parameter_audit_carrara_apr30.md` (Mac memory) — add retraction note
+- `roadmap_concrete_pavement_apr30.md` (Mac memory) — Phase 1/2 boundaries cleaner
+- `MEMORY.md` — index entry for retraction
+
+### Apologies for churn
+
+The α_T=0.094 push was Mac-PIDL's overcommitment to "partial Carrara alignment" framing without checking logical consistency. User caught it. Net session result still positive (memory bugs fixed, geometry clarified, paper readiness reframed) but α_T value is reverted to production 0.5.
+
+---
+
 ## 2026-04-30 · Mac-PIDL · [decision + handoff] Carrara-alignment campaign — GRIPHFiTH align with Carrara 2020 SENT first, then PIDL transitive validation
 
 ### Big strategic shift, summarized
