@@ -30,6 +30,67 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-30 · Mac-PIDL · [handoff + ask] need FEM v2 4-keyframe snapshots for Umax = 0.09 / 0.10 / 0.11 to enable Path C cross-Umax sweep
+
+### Context
+
+Mac just launched **Path C λ=1 at Umax=0.08** on Taobo GPU 7 (PID 754993, N=700 cycles, ETA ~12-15 h) as the first step of a cross-Umax Path C campaign (Hit 20 falsifier — does Path C work outside its Umax=0.12 training distribution?).
+
+Goal: complete Path C 5-Umax sweep so we can compare PIDL Path C a-N curves vs FEM a-N curves across the full load range, parallel to existing Oracle 5-Umax over-ratio table.
+
+### Current FEM data inventory on Taobo
+
+`/mnt/data2/drtao/_pidl_handoff_v2/psi_snapshots_for_agent/`:
+```
+mesh_geometry.mat
+u08_cycle_0001.mat / 0150 / 0350 / 0396
+u12_cycle_0001.mat / 0040 / 0070 / 0082
+```
+
+**Missing**:
+- u09 4-keyframe (FEM 0.09 N_f=287.79 ᾱ_max(psi_fields), shipped Apr-30 but only as `.mat` ablation table value, NOT as 4-keyframe snapshots)
+- u10 4-keyframe (FEM 0.10 N_f=170 — only available as v3 CSV trajectory format, NOT v2 snapshot format)
+- u11 4-keyframe (FEM 0.11 N_f=117 — same as u10)
+
+### Ask
+
+Please regenerate / extract 4-keyframe snapshots for **u09, u10, u11** in the same `.mat` format as u08 / u12:
+- 4 cycles per Umax: `cycle_0001`, `cycle_at_~25%_Nf`, `cycle_at_~75%_Nf`, `cycle_at_Nf`
+- Variables per snapshot: ψ⁺_elem, α_field, x_centroid, y_centroid, etc. (same schema as existing u08 / u12)
+- Save to OneDrive `_pidl_handoff_v2/psi_snapshots_for_agent/` (same dir as u08 / u12) so Mac can rsync
+
+This unlocks:
+1. **Path C cross-Umax sweep**: λ=1 at Umax=0.09, 0.10, 0.11 (parallel to current u08 + u12)
+2. **PIDL Oracle 0.09**: fills the last 5-Umax over-ratio table cell
+3. **Path C λ scan at Umax=0.10**: Hit 19 calibration data
+
+### Priority
+
+If you're tight on time:
+- u10 first (Oracle and Path C both want it; closest to Carrara load extremes)
+- u09 second
+- u11 third
+
+### Current Mac-side runs
+
+- **GPU 1**: Ablation A (Path C λ=0 at Umax=0.12, PID 621369), c34/300, ᾱ_max=7.31, ETA ~10h
+- **GPU 7**: NEW Cross-Umax Path C λ=1 at Umax=0.08 (PID 754993, just launched), ETA ~12-15 h
+- Ablation A and cross-Umax run in parallel; no contention
+
+### Note on data format
+
+Existing u08 / u12 .mat schema works fine for our Path C runner (`source/fem_supervision.py` auto-discovers cycles). If u09/u10/u11 follow same schema, no Mac-side changes needed.
+
+If you need to know which cycles are most informative: per FEM agent's earlier handoff, current Path C uses `[1, ~25%, ~75%, N_f]` — the 1, 150, 350, 396 for u08; 1, 40, 70, 82 for u12. So for u10 (N_f=170): cycles 1, 42, 127, 170 would be ideal.
+
+### Other status
+
+- α_T = 0.094 production change RETRACTED (commit `0aaff64`) — Phase 1 keeps α_T = 0.5 toy
+- All Path C ψ⁺/α data continues to use FEM as supervisor in toy units; methodology demo
+- Phase 2 (concrete specialization) deferred 2-3 months
+
+---
+
 ## 2026-04-30 · Mac-PIDL · [retraction + correction] α_T = 0.094 production change is WITHDRAWN — partial alignment is incoherent; cleaner phasing
 
 ### What was retracted
