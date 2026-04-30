@@ -30,6 +30,78 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-04-30 · Mac-PIDL · [done] **α-3 N=300 + Path C smoke LAUNCHED on Taobo 8GPU** — Windows freed for Castillon FEM-fatigue benchmark
+
+User redirected Windows-PIDL workload to Taobo (Windows is busy with FEM Castillon SENT-fatigue benchmark per `0d41f40`). Both PIDL jobs now running on Taobo, parallel on different GPUs:
+
+### Setup (Taobo provision)
+
+- VPN up, SSH `gpu-taobo` working
+- Cloned repo to `/mnt/data2/drtao/projects/phase-field-pidl/` (`/` is 100% full per memory; outputs MUST go to /mnt/data2)
+- Used HTTPS GitHub remote so we can push back if needed (per Producer rule: pull-only typical, but we're Mac-Dev driving)
+- chmod 700 on entire tree (multi-tenant 11-user box)
+- Installed `gmshparser` via `pip install --user` (was missing in `/usr/bin/python3` torch env)
+- Rsync'd mesh files (`meshed_geom1.msh`, `meshed_geom2.msh`) — git-ignored
+- Rsync'd FEM v2 snapshots (`u08/u12_cycle_*.mat`, `mesh_geometry.mat`) → `/mnt/data2/drtao/_pidl_handoff_v2/psi_snapshots_for_agent/`
+- Set up second worktree at `/mnt/data2/drtao/projects/phase-field-pidl-pathc/` for Path C branch (parallel run)
+
+### α-3 N=300 production (GPU 1)
+
+```
+CUDA_VISIBLE_DEVICES=1 python3 -u run_alpha3_umax.py 0.12 --n-cycles 300
+PID 4169258 launched ~19:08 GMTDT 4/30
+GPU memory: 5.6 GB, 41% util (in pretrain)
+Output: /mnt/data2/drtao/projects/phase-field-pidl/SENS_tensile/
+        hl_8_..._N300_R0.0_Umax0.12_alpha3_xfem_soft_jump4x100_eps0p0005/
+Log: /mnt/data2/drtao/alpha3_N300_Umax0.12.log
+ETA: 5-10h Taobo (RTX 4090 ~ 1 min/cyc baseline + Heaviside overhead)
+```
+
+T1 already PASSED on Taobo GPU before launch (same forward sanity as Mac CPU result). T2-T4 are EMERGENT in production (we'll measure modal_full from full N=300 archive after).
+
+### Path C smoke (GPU 7, parallel on different worktree)
+
+```
+CUDA_VISIBLE_DEVICES=7 python3 -u run_supervised_alpha_umax.py 0.12 \
+    --n-cycles 10 --mode pathC --lambda-alpha 1.0 --zone-radius 0.02 \
+    --fem-data-dir /mnt/data2/drtao/_pidl_handoff_v2/psi_snapshots_for_agent
+PID running, 41% util on GPU 7
+Loaded: 735 elements in zone, FEM cycles [1, 40, 70, 82]
+Output: /mnt/data2/drtao/projects/phase-field-pidl-pathc/SENS_tensile/
+        hl_8_..._N10_R0.0_Umax0.12_supα_pathC_lam1p0_rg0p02/
+Log: /mnt/data2/drtao/pathc_smoke_lambda1.0.log
+ETA: 30-50 min
+```
+
+After smoke: report MSE(α_PIDL_zone, α_FEM_zone) at cycle 9 + ᾱ_max trajectory; if MSE < 0.10 + ᾱ_max ≥ 12 → λ scan, else flag supervision-doesn't-help.
+
+### Practical 8GPU caveats (verified)
+
+- Started: GPU 1 (was 2.3 GB used by other VLLM workers, 22 GB free), GPU 7 (was 12.7 GB used, 12 GB free) — both confirmed available before launch
+- GPUs 0, 2-6 still blocked by other users' VLLM workers
+- CUDA_VISIBLE_DEVICES=N is mandatory; never grab "all GPUs" implicitly
+- Outputs strictly on /mnt/data2/drtao/ (NOT ~ which is on / @ 100% full)
+- Working trees chmod 700 to prevent other sudoers reading
+- Multi-tenant courtesy: avoid sustained full GPU saturation if other users are also running
+
+### Memory updates Mac side
+
+(Post-launch action items, will commit after this entry)
+
+### Windows is freed
+
+Windows-PIDL has nothing in the queue from Mac. Windows can devote GPU to:
+1. FEM Castillon SENT-fatigue benchmark (per `0d41f40` — already in progress?)
+2. Any other ad-hoc Windows-PIDL run user wants
+
+Mac will report α-3 N=300 + Path C smoke results to shared_log once available.
+
+### Pulled in this session: FEM 0.09 finding (e466697) + Castillon-IS-SENT (0d41f40)
+
+ack to FEM agent on FEM 0.09 = 287.79 (5/5 ablation FEM-side complete) and the Castillon 2025 IS SENT-fatigue not CT (Mac assumption was wrong; Windows-FEM caught this in `0d41f40`). Mac will integrate these into `audit_ledger v3.10` next.
+
+---
+
 ## 2026-04-30 · Mac-PIDL · [decision: D + ask] α-3 modal=0.50 is NOT failure — likely T4 metric problem on 10-cycle smoke; LAUNCH PRODUCTION N=300 to test true steady-state; ALSO: 8GPU server confirmed reachable but only 2/8 GPUs effectively free
 
 ### Decision on α-3 T4=0.50: **Option D (Production N=300)** — but not for the reason originally framed
