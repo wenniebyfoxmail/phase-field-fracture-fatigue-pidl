@@ -107,6 +107,59 @@ The α_T=0.094 push was Mac-PIDL's overcommitment to "partial Carrara alignment"
 
 ---
 
+## 2026-04-30 · Windows-FEM · [in flight] Castillon v4 strict-aligned cross-code (mesh + ℓ=0.004) — cycle 44 / ~200, F drop 7.3% so far
+
+### Why v4 (after v3 already passed at +10% offset)
+
+User direction: "对齐彻底一些" + "找到 benchmark 提供的 mesh". Built Castillon-style refined quad mesh from their 9101 SENT `.geo` source (only their `phasefieldx/examples/Fatigue/mesh/mesh.msh` was tris which GRIPHFiTH doesn't support — `abaqus_import.m:43` hardcodes nel=4 for quads). Used quasi-structured + Recombine + Laplace optimization to get clean quads.
+
+Iterations to get v4 working:
+- v4 first try: 3 inverted quads → singular K → NaN
+- v4 retry-1: Mesh.Algorithm=11 (quasi-structured) + Laplace2D optimization → 0 inverted, but still NaN
+- Discovery: 1 orphan node (P8 at right midline, included in `.geo` for symmetry but not on curve loop) → 2 free DOFs → singular K
+- v4 retry-3: removed P8 from `.geo` → 0 orphans, 17510 nodes / 17351 quads — **runs cleanly**
+
+### Mesh comparison
+
+| | mesh | h_tip | ℓ | ℓ/h_tip |
+|---|---|---:|---:|---:|
+| Castillon ref | 9990 tris (their `Fatigue/mesh/mesh.msh`) | 0.003 | 0.004 | 1.33 |
+| v3 | GRIPHFiTH SENT_mesh.inp 77730 quads | 3.6e-3 | 0.01 | 2.78 |
+| **v4** | **17351 quads (custom from Castillon `.geo` + Recombine)** | **0.001** | **0.004** | **4.0** |
+
+v4 is the most refined of the three (3× more refined than Castillon's own ref).
+
+### Early result (v4 cycle 44)
+
+| metric | v3 cyc 44 | **v4 cyc 44** |
+|---|---:|---:|
+| F_peak | ~0.262 (-2%) | **0.2484 (-7.3%)** |
+| ||fat||_inf | ~14.3 | **18.1** |
+| ||d||_inf | ~1.02 | **1.054** |
+
+**v4 damage growing FASTER than v3** — d crosses 1 around cycle 35-40 (vs v3 cycle ~50), F dropping 3.5× faster. Consistent with refined ℓ → more localized damage → faster d-percolation.
+
+If linear extrapolation holds (it won't — fatigue accelerates), F=27% would hit around cycle 290. But fatigue rate is convex, so likely **N_f@27% somewhere 180-230 cycles**.
+
+### What we learn so far
+
+Cycle-1 F_peak: v3=0.267, v4=0.268 (vs Castillon 0.280). **ℓ 缩 2.5× 几乎没改 cycle-1 elastic offset (-4.6% → -4.3%)**. This suggests cycle-1 offset is NOT primarily ℓ-driven, but rather:
+- quad vs tri stiffness (quads stiffer at same h)
+- BC discretization (we use 1-node x-anchor, Castillon uses different setup)
+- mesh orientation around tip (axis-aligned quads vs Delaunay tris)
+
+**Lifetime is ℓ-sensitive though** — v4 damage running ~1.5-2× faster than v3 in early cycles. Should get a cleaner answer when v4 finishes.
+
+### Compute
+
+Single MATLAB job, 17k mesh, 2 min/cycle. Estimated ~5-7 h to N_f. Will write final V8-row update + comparison plots (`compare_castillon_v3_v4_ref.py` already prepared) when run completes.
+
+### Local commits (NOT pushed to ETH per user direction)
+
+GRIPHFiTH local devel: `b564f6c` (v4 INPUT/main + gen_castillon_quad_mesh.py + compare script) on top of `0c58422` (v2/v3) on top of `9ee14df` (52-file initial dump). Will NOT push to ETH gitlab.
+
+---
+
 ## 2026-04-30 · Mac-PIDL · [decision + handoff] Carrara-alignment campaign — GRIPHFiTH align with Carrara 2020 SENT first, then PIDL transitive validation
 
 ### Big strategic shift, summarized
