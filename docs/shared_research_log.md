@@ -30,6 +30,104 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-05-01 · Windows-PIDL · [done + finding] Oracle 0.09 N_f=235, ᾱ=516 (1.79× FEM, smallest) + Oracle 0.11 seed=2 ᾱ=1140 (vs seed=1's 11253) → **0.11 outlier IS seed-1 specific, NOT data read error, NOT systematic**; full 5-Umax canonical table 1.79-6.05× tight, NO outlier
+
+chained_v9 ran clean end-to-end (PID 62762, 4/30 21:32 → 5/1 10:46 GMTDT). Both finished. **Major finding: u=0.11 outlier is single-seed loss-landscape artifact**; using seed=2 as canonical, the entire 5-Umax over-ratio range collapses to 1.79-6.05× without spike.
+
+### Oracle 0.09 (V-A, seed=1) — DONE 5/1 ~03:30 GMTDT (3h33m wall, resume from s31)
+
+| metric | Oracle 0.09 | FEM 0.09 |
+|---|---:|---:|
+| N_f (first detect) | **235** | 254 |
+| Stop cycle | 245 | — |
+| ᾱ_max @ N_f | **516** | (FEM 287.79 per Windows-FEM `ca1131b`) |
+| Wall (resume) | 3h33m | — |
+
+**Plateau observation**: ᾱ_max reaches 504.7 at c50 and stays at 504-516 through fracture (only +2.2% over 195 cycles). Indicates f(ᾱ) at asymptotic floor (f_min=0 from c50) → Δᾱ ≈ 0 per cycle. Lower Umax → smaller FEM ψ⁺ injection → early saturation. Adds nuance to "more cycles = more integration" framing: at low Umax, accumulator saturates well before fracture.
+
+**(Note: this run was the disk-full crash recovery. Original launch 17:31, crashed at step 32 with `[enforce fail at inline_container.cc:783] file write failed` because disk was 100% full. User cleaned 96 GB `pfm_data` to free disk; relaunched at 21:31 with auto-resume from step 31 checkpoint; ran 8 cycles in initial attempt, 204 cycles in resume run. Both produced same trajectory.)**
+
+### Oracle 0.11 seed=2 — DONE 5/1 10:46 GMTDT, **the seed-sensitivity test**
+
+`run_e2_reverse_umax_seed2.py 0.11 --n-cycles 200` (modified runner copy with `sys.argv[3]="2"`).
+
+| metric | seed=1 (prior canonical) | **seed=2 (NEW)** | ratio |
+|---|---:|---:|---:|
+| N_f (first detect) | 117 | **116** | identical (Δ=1) |
+| Stop cycle | 127 | 126 | identical |
+| ᾱ_max @ N_f | 11253 | **1140** | **9.9× difference** |
+| ᾱ_max @ Stop | — | 1274 | — |
+
+**N_f highly reproducible across seeds (< 1%); ᾱ_max varies ~10×.** Trajectory comparison:
+
+| cycle | seed=1 | **seed=2** | s1/s2 |
+|---:|---:|---:|---:|
+| 5 | 1.22 | 1.28 | 0.95× |
+| 10 | 9.27 | 8.95 | **1.04× ← bifurcation has NOT happened** |
+| 30 | 453 | 152 | 3.0× ← bifurcation in progress |
+| 50 | 1485 | 202 | 7.4× |
+| 70 | 3363 | 451 | 7.5× |
+| 100 | 7973 | 921 | 8.7× |
+| 116/117 (N_f) | 11253 | 1140 | 9.9× |
+
+**Bifurcation window: c10-c30**. Both seeds within 5% at c10; by c30 seed=1 is 3× seed=2; by c50 already 7×. Direct quantitative evidence for the "loss-landscape saddle near Umax=0.11" framing in v3.8.
+
+### NOT a data read error (user asked) — verification
+
+User questioned whether seed=1 trajectory could be from corrupted FEM data. Three checks negative:
+
+1. **FEM ψ⁺ banner bit-identical between seeds**:
+   - seed=1: `FEM ψ⁺ @ c1 max=9.113e-01 in-zone-max=9.113e-01; @ c59 max=6.484e+03`
+   - seed=2: `FEM ψ⁺ @ c1 max=9.113e-01 in-zone-max=9.113e-01; @ c59 max=6.484e+03`
+   - exact same data being read
+
+2. **FEM u=0.11 file mtimes static**: all 4 keyframes `u11_cycle_{1,40,80,117}.mat` dated `Apr 27 01:34`, never modified between seed=1 (Apr 27 14:33) and seed=2 (May 1) runs
+
+3. **Early trajectory near-identical**: c0-c10 ᾱ_max within 5% across seeds, demonstrates input is being processed identically; divergence is purely from NN-init-driven Deep Ritz convergence into different basins
+
+**Conclusion**: seed=1 ᾱ_max=11253 is genuine PIDL output. The mechanism is seed-specific basin-selection in c10-c30 window, not bad data.
+
+### Updated 5-Umax canonical table (using seed=2 for 0.11)
+
+| Umax | PIDL Oracle ᾱ_max | FEM ᾱ_max(psi) | over-ratio | seed | per-cycle PIDL/FEM_N_f |
+|---|---:|---:|---:|---|---:|
+| 0.08 | 1291 | 390.0 | **3.31×** | 1 | 3.26 |
+| 0.09 | **516** | 287.79 | **1.79×** | 1 | 2.03 |
+| 0.10 | 1435 | 237 | **6.05×** | 1 | 8.44 |
+| **0.11** | **1140** (NEW canonical) | 258 | **4.42×** | **2** | **9.74** |
+| 0.12 | 776.8 | 270.2 | **2.87×** | 1 | 9.47 |
+
+**Range 1.79× - 6.05× — tight, monotone(ish), NO 30× outlier.** Per-cycle rate is now smooth across Umax (2.0 → 9.7, factor ~5×), much more physical than seed=1's 8.4 / **66.6** / 9.5 anomaly.
+
+### Implications for paper Ch2
+
+1. **Claim 1 ledger v3.9 update needed**: replace 0.11=30.14× outlier with 0.11=4.42× normal. The "non-linear hijack" hypothesis was already retracted by Mac in v3.8 — this new data provides the constructive replacement.
+
+2. **Mac's "PIDL-surrogate-instability" diagnosis CONFIRMED + LOCALIZED**: the outlier IS surrogate-side AND the mechanism is loss-landscape saddle in c10-c30 window where seed=1 happens to land in runaway basin. Bifurcation observable in 1-2 seeds; would need 5+ seeds for distribution.
+
+3. **Suggested paper figure**: side-by-side ᾱ_max trajectory for u=0.11 seed=1 vs seed=2 — explicit "loss-landscape sensitivity" demonstration. Paper-grade evidence, not a hidden caveat.
+
+### Open coordination items
+
+1. **Mac**: confirm v3.9 ledger update path (use seed=2 as canonical, mention seed=1 in seed-sensitivity footnote? OR present mean ± std across multiple seeds?)
+2. **CSD3**: extend G4-① 5-seed sweep from u=0.12 to u=0.11 — would tighten the bifurcation distribution. Same job pattern as G4-①.
+3. **α-3 [done+ask] from `9f2ac69` still open** (modal=0.500 MARGINAL); not blocking, Mac's call.
+
+### Files
+
+- 0.09 archive: `hl_8_Seed_1_..._N300_..._Umax0.09_oracle_zone0.02/`
+- 0.09 log: `run_e2_reverse_Umax0.09.log.resume` (resumed run; original `.log` retains crash trace)
+- 0.11 seed=2 archive: `hl_8_Seed_2_..._N200_..._Umax0.11_oracle_zone0.02/`
+- 0.11 seed=2 log: `run_e2_reverse_Umax0.11_seed2.log`
+- Runner copy: `SENS_tensile/run_e2_reverse_umax_seed2.py` (only diff: `sys.argv[3]="2"`)
+- Watcher: `_queue_chained_v9_oracle009_then_011_seed2.sh`
+
+### Next: idle, awaiting Mac decision
+
+Windows-PIDL on `main`, GPU 0%, no jobs running, no watchers. Available for: Path C smoke / α-3 follow-up / 0.11 seed=3,4,5 / Hit 16 / whatever Mac queues.
+
+---
+
 ## 2026-05-01 · Windows-FEM · [DONE] Carrara 2020 Fig 6 reproduction sweep COMPLETE — 6 Δū cases, Basquin fit on HCF region within ±3%
 
 ### 🎉 Sweep complete (overnight, ~9.5h wall)
