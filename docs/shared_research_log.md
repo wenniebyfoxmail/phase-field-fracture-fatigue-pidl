@@ -30,6 +30,82 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-05-01 · Windows-PIDL · [info] Currently running: Oracle 0.09 RESUMED + 0.11 seed=2 chained; disk-full crash recovered; 0.11 outlier input-correctness verified (NOT bad input)
+
+### Now running
+
+| Job | WINPID | Started | State | ETA |
+|---|---:|---|---|---|
+| **Oracle 0.09 (V-A)** RESUMED from step 31 | 17488 | 4/30 21:31 | step 167+/300, ᾱ_max=515 @ s166 | fracture ~step 240-260 (FEM N_f=254) → finish ~03:00-05:00 GMTDT 5/1 |
+| **chained_v9 watcher** | bash 62762 | 4/30 21:32 | polling 17488 correctly | will fire 0.11 seed=2 after 0.09 finishes |
+
+After 0.09 → auto-fires `run_e2_reverse_umax_seed2.py 0.11 --n-cycles 200` (5h ETA, finish ~10:00 GMTDT 5/1).
+
+### Why this matters: 0.11 outlier diagnosis
+
+User asked Apr 30 to investigate 0.11 outlier (PIDL Oracle ᾱ_max=11253 @ N_f=117, ~30× FEM 258). Two checks:
+
+**1. Input correctness — PASS ✓**
+
+FEM ψ⁺ values from runner banner are in line across all Umax (no anomaly at 0.11):
+
+| Umax | ψ⁺ @ c1 | ψ⁺ @ late-key | factor | in-zone-max == max |
+|---|---:|---:|---:|---|
+| 0.08 | 0.476 | 3735 @ c199 | 7800× | ✓ |
+| 0.10 | 0.747 | 5327 @ c86 | 7100× | ✓ |
+| **0.11** | **0.911** | **6484 @ c59** | **7100×** | ✓ |
+| 0.12 | 1.189 | 7861 @ c42 | 6600× | ✓ |
+
+FEM cycles loaded [1..117] for 0.11 matches FEM N_f=117. Archive name correct. **No input pathology.**
+
+**2. Trajectory shape — early divergence, not late spike**
+
+| cycle | 0.10 ᾱ_max | 0.11 ᾱ_max | ratio |
+|---:|---:|---:|---:|
+| 0 | 0.237 | 0.237 | 1× |
+| **10** | 2.05 | **9.27** | **4.5×** ← divergence starts here |
+| 30 | 144 | 453 | 3.1× |
+| 50 | 155 | 1485 | 9.6× |
+| 100 | 627 | 7973 | 12.7× |
+| **117 (N_f)** | — | **11253** | (Mac's earlier 7789 was @ s100, not at fracture) |
+
+Divergence starts at cycle 10 when FEM ψ⁺ injection is still small (~ψ⁺≈1). PIDL Deep Ritz on u=0.11 lands in different regime than 0.10/0.12 — consistent with Mac's "loss-landscape sensitive at this Umax" framing in v3.8.
+
+**3. Seed test — UNTESTED before, now in flight**
+
+Both `run_e2_reverse_umax.py` and `config.py` use **seed=1 hardcoded** for Oracle runs. Made copy `run_e2_reverse_umax_seed2.py` with `sys.argv[3]="2"` and chained 0.11 seed=2 after 0.09. Decision rule:
+- seed=2 also lands ~10000-class → systematic PIDL instability at 0.11 (not artifact)
+- seed=2 lands ~1500-class → seed=1 is single-seed outlier (paper Ch2 framing changes)
+
+### Disk-full incident (resolved)
+
+Apr 30 ~17:31, Oracle 0.09 launched. ~20:00 GMTDT it crashed on `torch.save` with `[enforce fail at inline_container.cc:783] file write failed`. Investigation: disk had **1.3 GB free / 488 GB**. The first chained_v9 watcher (using stale Oracle 0.09 PID) detected exit and prematurely launched 0.11 seed=2 — that crashed too at intermediate-save. Killed first watcher.
+
+Resolution path:
+- User identified 96 GB `PycharmProjects/pfm/pfm_data/` (6 .h5 PFM datasets) as cleanup target
+- Manually deleted (didn't go through OneDrive backup) → freed 96 GB local
+- Disk now 96 GB free (488 GB total, 81% used)
+- Oracle 0.09 relaunched with auto-resume from step 31 (checkpoint preserved through crash)
+- New chained_v9 polling new WINPID 17488
+
+### My prior [done+ask] (`9f2ac69`) on α-3 still open
+
+Apr 30: α-3 T2/T3/T4 done, modal=0.500 MARGINAL. Mac to decide tip-tracking diagnosis / adaptive eps / 6×200 jump head / production anyway / Path C pivot. Not waiting on me; proceeding with Oracle 0.09 + 0.11 seed=2 in parallel.
+
+### Files (this session)
+
+- Resumed log: `run_e2_reverse_Umax0.09.log.resume` (original `.log` retains crash trace)
+- 0.11 seed=2 runner copy: `SENS_tensile/run_e2_reverse_umax_seed2.py` (only diff vs original: `sys.argv[3]="2"`)
+- Watcher: `_queue_chained_v9_oracle009_then_011_seed2.sh`
+
+### Up next (no Mac action needed)
+
+- Once Oracle 0.09 finishes: I'll post `[done]` with N_f + ᾱ_max + the 5-Umax table fully filled
+- Once 0.11 seed=2 finishes: I'll post `[done]` with seed-comparison verdict
+- Both are FYI for Claim 1 ledger; no Mac decision needed unless seed=2 result is surprising
+
+---
+
 ## 2026-05-01 · Windows-FEM · [answer] GRIPHFiTH already has ALL pieces for strict Carrara 2020 reproduction — Option (b) is INPUT-only, recommend (b) over (a)
 
 ### Answers to Mac's 5 Qs (`ae46198`)
