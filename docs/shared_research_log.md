@@ -30,6 +30,93 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-05-01 · Windows-FEM · [DONE] MIEHE spectral kernel BUGFIX + recompile — strict Carrara Option (b) UNLOCKED
+
+After yesterday's Carrara sweep with AMOR (Option c), patched the MIEHE Fortran kernel and recompiled the mex. **Strict Carrara reproduction (Option b, AT2 + spectral split) is now possible**. du25 MIEHE production launched, N_f estimate ~200 cycles.
+
+### 3 bugs in `Sources/+phase_field/+mex/Modules/fem/assembly/equilibrium/miehe.f90` STRAIN SPLIT branch
+
+These bugs caused NaN at cycle 2 in cyclic (R=-1) loading regardless of Carrara real-units vs normalized — fundamental kernel issue, not user error.
+
+**Bug 1 (line 253-254)**: hardcoded `eps_p_idx = 2`, `eps_n_idx = 1` without checking which `princ_strain` was actually positive. When `diasym` returned eigenvalues in opposite order (no sort guarantee), the formula treated the negative strain as positive and vice versa → sign-flipped projector → NaN by iteration 2 once strains evolved past first cycle.
+
+**Bug 2 (line 255-256)**: `princ_strain(p)/(princ_strain(p) - princ_strain(n))` divides by zero when eigenvalues are equal (e.g., near-pure-shear or near-equibiaxial regions, which appear during cyclic crossing).
+
+**Bug 3 (line 261-262)**: `H_p(trace_eps)/trace_eps` and `H_n(trace_eps)/trace_eps` are 0/0 when `trace_eps = 0` exactly (deviatoric strain regions). With sharp Macaulay brackets, this is NaN; with smooth ramps it's 0/eps which still blows up.
+
+### Patches (pure Fortran, no API change)
+
+```fortran
+! Bug 1 fix: select eps_p_idx based on actual sign
+if (princ_strain(1) > 0.0d0) then
+   eps_p_idx = 1; eps_n_idx = 2
+else
+   eps_p_idx = 2; eps_n_idx = 1
+end if
+
+! Bug 2 fix: guard divide-by-zero
+if (abs(princ_strain(eps_p_idx) - princ_strain(eps_n_idx)) < 1.0d-14) then
+   P_plus = H_proj(:,:,eps_p_idx)   ! ISOTROPIC fallback
+   P_neg  = H_proj(:,:,eps_n_idx)
+else
+   P_plus = (princ_strain(eps_p_idx)/(2.0d0*(...))) * (G_proj+G_proj) + H_proj
+   P_neg  = (... symmetric ...)
+end if
+
+! Bug 3 fix: piecewise mathematical limit of H_p(x)/x
+if (trace_eps > 0.0d0) then
+   CC_plus = lambda_loc*II + (2.0d0*G*P_plus)
+   CC_neg  = (2.0d0*G*P_neg)
+else if (trace_eps < 0.0d0) then
+   CC_plus = (2.0d0*G*P_plus)
+   CC_neg  = lambda_loc*II + (2.0d0*G*P_neg)
+else  ! trace_eps == 0 exactly
+   CC_plus = (2.0d0*G*P_plus)
+   CC_neg  = (2.0d0*G*P_neg)
+end if
+```
+
+All three patches preserve the published Miehe (2010) formulas in the well-defined regimes; they only protect numerical edge cases that should mathematically be regular limits.
+
+### Mex rebuild
+
+`build_miehe_mex.m` (committed to local devel `279eb51`):
+- Intel oneAPI 2025 + Visual Studio 2022 (both already on machine)
+- Default mex API (no `-compatibleArrayDims`, no `-R2017b` — both gave dimension mismatch with existing module .obj files; default API works clean)
+- Step 1: compile types/scalar_utils/array_utils/matrix_utils/mex_utils/miehe → tmp_miehe_build/*.obj
+- Step 2: link wrapper + objs → MIEHE.mexw64
+- Link extras: `-lmwlapack -lmwblas` (kernel uses DSYEV for eigenvalue decomposition)
+
+### Verification
+
+Minimal test (v4 normalized, 5 cycles, fully-reversed R=-1) which previously NaN'd at cycle 2: now passes all 5 cycles in **38 seconds**.
+
+du25 production test (Carrara real-units, 1500 max_cycle) launched, currently at cycle 7 / ~200 expected. Per-cycle ~20 sec, comparable to AMOR (most GPs hit ISOTROPIC branch which is fast; STRAIN SPLIT is expensive but only at tip transition zones).
+
+### Implication for paper Ch2 / Carrara reproduction
+
+The yesterday's overnight sweep used AMOR (Option c, ~1.5h compute, 4 HCF data points giving Basquin m=3.49). With MIEHE now working, can re-run any/all cases with strict Carrara (Option b, AT2 + spectral) to compare:
+
+- AMOR Basquin m=3.49 (paper-acceptable, community-standard split)
+- MIEHE Basquin m≈ TBD (Carrara's exact published reference, m~3.8-4.0)
+
+The 12-15% AMOR-vs-MIEHE Basquin exponent gap can now be **directly quantified** rather than just cited from literature.
+
+### Next steps
+
+1. du25 MIEHE production finishes (~65 min wall) → first MIEHE data point
+2. If du25 MIEHE N_f ~ AMOR N_f=195 within ±20%, run remaining 5 cases
+3. Compare AMOR vs MIEHE Basquin fits side by side
+4. Full Carrara V8 row in paper Ch2 with both AMOR and MIEHE (preferred) numbers
+
+### Files
+
+- Local commit GRIPHFiTH devel `279eb51` (NOT pushed to ETH per standing rule)
+- `MIEHE.mexw64` regenerated (binary, .gitignore'd)
+- du25 MIEHE results will append to OneDrive zip when complete
+
+---
+
 ## 2026-05-01 · Windows-PIDL · [done + finding] Oracle 0.09 N_f=235, ᾱ=516 (1.79× FEM, smallest) + Oracle 0.11 seed=2 ᾱ=1140 (vs seed=1's 11253) → **0.11 outlier IS seed-1 specific, NOT data read error, NOT systematic**; full 5-Umax canonical table 1.79-6.05× tight, NO outlier
 
 chained_v9 ran clean end-to-end (PID 62762, 4/30 21:32 → 5/1 10:46 GMTDT). Both finished. **Major finding: u=0.11 outlier is single-seed loss-landscape artifact**; using seed=2 as canonical, the entire 5-Umax over-ratio range collapses to 1.79-6.05× without spike.
