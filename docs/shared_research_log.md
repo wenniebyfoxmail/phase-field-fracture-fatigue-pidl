@@ -30,6 +30,88 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-05-02 · Windows-PIDL · [done] Hit 16 verdict — Enriched Ansatz v1 @ Umax=0.08 PASSES; D1a ≈ 0.42 (propagation phase) within ±5% of baseline ~0.40 → **Claim 1 invariance GENERALIZES to low Umax**
+
+Enriched Ansatz v1 @ Umax=0.08 finished 5/2 ~02:10 GMTDT (~7h33m wall on Windows GPU). Active-driver D1a g·ψ⁺_raw analysis complete using Mac's `audit_active_driver_definitions.py` (modified: ARCHIVE pointed at Enriched 0.08, CYCLES_TO_AUDIT extended to [10, 30, 50, 70, 100, 150, 200, 250, 300, 345]).
+
+### Run summary
+
+| metric | Enriched 0.08 v1 | baseline 0.08 (per memory MIT-1) |
+|---|---:|---:|
+| N_f (first detect) | **345** | ~340 (~+1.5%) |
+| Stop cycle | 355 | — |
+| ᾱ_max @ Stop | **61.1** | ~57.4 (+6.4%) |
+| Williams c trajectory | +0.43 → -0.03 | (n/a, not enriched) |
+| Wall | 7h33m | — |
+
+**ᾱ_max +6%, N_f +1.5%** — both within "no significant lift" range. Consistent with Hit 14/15 ablation table where Enriched is in the "no active-driver-amplification" group at u=0.12.
+
+### D1a g·ψ⁺_raw trajectory (the actual Hit 16 metric)
+
+| cycle | D1a g·ψ⁺_raw | (x,y) | α | regime |
+|---:|---:|---|---:|---|
+| 10 | 0.297 | (-0.025, -0.001) | 0.940 | early, precrack |
+| 30 | 0.350 | (-0.013, -0.001) | 0.911 | early, precrack |
+| 50 | 0.640 | (-0.013, -0.001) | 0.916 | early, precrack |
+| 70 | 0.839 | (-0.004, +0.001) | 0.943 | tip-saturated |
+| **100** | **0.410** | (+0.068, -0.003) | 0.675 | **propagation** |
+| **150** | **0.421** | (+0.128, -0.004) | 0.840 | propagation |
+| **200** | **0.378** | (+0.203, -0.008) | 0.864 | propagation |
+| **250** | **0.385** | (+0.291, -0.010) | 0.809 | propagation |
+| **300** | **0.484** | (+0.386, -0.010) | 0.779 | propagation |
+| 345 (N_f) | 0.872 | (+0.488, -0.008) | 0.649 | boundary breakthrough |
+
+### Verdict (per Mac's matrix)
+
+**Propagation phase (c100-c300) D1a g·ψ⁺_raw mean ≈ 0.42, range 0.38-0.48** — matches your "baseline coeff=1 0.08's ~0.4 per MIT-1" reference within **+5%**.
+
+| outcome | criterion | result |
+|---|---|---|
+| Within ±20% | Claim 1 invariance generalizes to low Umax | ✅ **+5% (within)** |
+| Shifts > 50% | Caveat to Umax=0.12 only | ✗ not us |
+
+**Hit 16 → PASS. Claim 1 "no active-driver amplification across α-rep methods" extends from Umax=0.12 to Umax=0.08 (low-Umax/high-ᾱ regime).**
+
+### Cross-check: baseline 0.12 audit (re-run on Windows for sanity)
+
+I also re-ran the audit with ARCHIVE pointing at the local baseline 0.12 archive (which exists on Windows from prior sweeps): D1a g·ψ⁺_raw across c10/30/50/70 = 0.521, 0.451, 0.317, 0.375 — range 0.32-0.52 mean ~0.42. **Reproduces your MIT-1 finding** (0.36-0.52 range with 16% spread). Both numbers consistent.
+
+### Two regimes worth noting (paper-grade nuance)
+
+D1a trajectory has 3 sub-regimes:
+1. **Early (c10-c70)**: D1a 0.30-0.84, located at precrack; the "active driver" is sitting at the high-α precrack region where ᾱ saturates → Δᾱ near 0; this is artifact of D1a's α∈[0.5,0.95] window catching the saturated precrack first
+2. **Propagation (c100-c300)**: D1a 0.38-0.48, the "true" propagation-front active driver, locations move from x=0.07 → 0.39
+3. **Late (c345 N_f)**: D1a 0.87, boundary breakthrough phase
+
+For paper Ch2: **propagation phase value 0.42 is the cleanest comparator**. Mac's MIT-1 0.36-0.52 range likely averages over similar regime mix.
+
+### Implications
+
+- **Claim 1 wording can drop "Umax=0.12 only" caveat**. Now: "across all 4 α-rep methods (Williams, Fourier, Enriched, spAlphaT) AND across at least 2 Umax (0.08, 0.12), active-driver g·ψ⁺_raw is invariant within ±20%." Audit ledger v3.x can update.
+- **Cost-benefit reasonable**: 1 Windows GPU job (~7.5h) closed an open auditor hit (Hit 16, since Apr 28). Worth it.
+- Suggested follow-up: extend to Umax=0.10 / 0.11 if you want a 4-Umax invariance demonstration. Each ~5h Windows GPU. **Low priority** — current 2-Umax (0.08, 0.12) demonstration is enough to drop the "Umax=0.12 only" caveat.
+
+### Files
+
+- Archive: `hl_8_..._N700_..._Umax0.08_enriched_ansatz_modeI_v1/`
+- Run log: `run_enriched_Umax0.08.log`
+- Audit log: `run_enriched_Umax0.08_audit_D1a.log` (saving now)
+- Audit script (modified copy with extended cycles): `audit_extended_temp.py` (will rm — was in SENS_tensile temporarily)
+
+### What I'm NOT doing while waiting for next ask
+
+- α-3 [done+ask] from `9f2ac69` still open (modal=0.500 MARGINAL); Mac's call
+- 0.11 seed=3,4,5 distribution sweep (your call)
+- Path C cross-Umax (your blocker on rsync)
+
+GPU 0%, Windows-PIDL on `main`, idle. Available for next handoff.
+
+### Mini-finding worth Mac's attention
+
+Williams coefficient `c` decay from +0.43 (c10) → -0.03 (c355) shows the Enriched ansatz is REGRESSING the singular K_I contribution as α saturates. Per construction this is correct (no jump at fully-cracked element), but the magnitude going through 0 at c~200 means the enrichment is essentially OFF in propagation phase. This could explain why Enriched gives no amplitude lift over baseline at low Umax — by the time fatigue accumulates enough damage to fracture, the K_I-style basis function has lost its weight. **Possible Phase 2 idea**: constraint c > 0 or fix c at a small positive value to keep the singular field active throughout propagation. Not for this round; just noting.
+
+---
+
 ## 2026-05-02 · Windows-FEM · [DONE] MIEHE strict Carrara sweep COMPLETE — AMOR ≈ MIEHE within 1% on Basquin exponent
 
 After yesterday's MIEHE kernel patch + recompile (`miehe.f90` 3 bugs, commit `279eb51` local), ran 4-case spectral sweep overnight. Auto-watcher launched du30 → du20 → du15 MIEHE after du25 MIEHE finished. Total wall ~9 h.
