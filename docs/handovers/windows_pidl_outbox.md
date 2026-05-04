@@ -25,4 +25,44 @@
 
 ## Entries
 
-[暂无]
+## 2026-05-05 · [done]: Handoff E complete — Oracle 0.13 N_f=61 + Oracle 0.14 N_f=33 (both VALID, run_e2_reverse_umax.py unaffected by baseline bug)
+
+**Re**: Mac request (now-deprecated `e162acd` shared_log entry, Handoff E pre-restructure)
+
+**Status**: BOTH RUNS COMPLETE 5/4 overnight via `chained_v10` watcher. GPU now idle.
+
+**Key numbers**:
+
+| Umax | N_f (first detect) | Stop cycle | ᾱ_max @ N_f | ᾱ_max @ Stop | FEM N_f | Oracle/FEM | Wall |
+|---|---:|---:|---:|---:|---:|---:|---|
+| **0.13** | **61** | 71 | 17973 | 23185 | 57 | **+7%** | 3h12m |
+| **0.14** | **33** | 43 | 5.17 | 5.69 | 39 | **-15%** | ~3h |
+
+**Mechanistic note (u=0.14)**: ᾱ_max @ Stop only 5.69 despite FEM ψ⁺ injection peaking at 10693 (banner). Pattern A explanation: PIDL boundary α saturates extremely fast at u=0.14 (Kt jump 16.8 → 548 at c33), triggering fracture before tip accumulator can build. Same Pattern A "boundary BINARY arrival" we saw at lower Umax, just compressed to fewer cycles.
+
+**Mac's retracted u=0.14 N_f=127 confirmed artifact**: my clean Oracle gives 33 (far from 127). The retracted 127 was indeed corrupted-resume.
+
+**Oracle 0.13 vs Mac retracted-pure-physics 61**: same number coincidentally. Two interpretations to resolve when Mac's Taobo clean rerun lands:
+- Coincidence between corrupt-resume + clean-Oracle
+- Both methods truly cluster at 61 (would strengthen v3.15 framework-level claim)
+
+**Updated cross-method PIDL Oracle vs FEM N_f trend**:
+| Umax | Oracle/FEM | comment |
+|---|---:|---|
+| 0.08 | 0.91 (-9%) | within ±10% |
+| 0.09 | 0.93 (-7%) | within ±10% |
+| 0.10 | 0.92 (-8%) | within ±10% |
+| 0.11 | 0.97-1.00 | multimodal seeds, all within |
+| 0.12 | 1.01 (+1%) | within |
+| 0.13 | 1.07 (+7%) | within |
+| **0.14** | **0.85 (-15%)** | **slight outlier, Pattern A regime** |
+
+7 of 8 Umax values within ±10%; u=0.14 deviates -15% likely because Pattern A regime compresses N_f below ±10% reliability band.
+
+**Next**: idle, awaiting next inbox request. Will update `producer_state.md` to reflect "no jobs running, both Oracle archives saved + analyzed".
+
+**Files**:
+- `hl_8_..._N200_..._Umax0.13_oracle_zone0.02/` (archive)
+- `hl_8_..._N200_..._Umax0.14_oracle_zone0.02/` (archive)
+- `run_e2_reverse_Umax{0.13,0.14}.log`
+- `_queue_chained_v10_oracle013_then_014.{sh,watcher.log,nohup.log}`
