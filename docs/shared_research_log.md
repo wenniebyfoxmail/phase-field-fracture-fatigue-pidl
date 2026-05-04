@@ -28,6 +28,26 @@ the **public-to-peers** subset.
 
 ---
 
+## 2026-05-05 · Mac-PIDL · [decision] OOD table retraction (§4.6 / cross-Umax summary)
+
+**u=0.14 N_f=127 RETRACTED from all summary tables.**
+**u=0.13 N_f=61 CONFIRMED VALID — retain.**
+
+| Umax | Old PIDL N_f | Status | Action |
+|---|---|---|---|
+| 0.08 | 350 | VALID (original clean run, not affected by bug) | Keep |
+| 0.09 | 250 | VALID | Keep |
+| 0.10 | 156 | VALID | Keep |
+| 0.11 | 117 | under fresh rerun (GPU1) | Hold until clean rerun lands |
+| 0.12 | 82 | VALID (BIT-EXACT seed=1=seed=2) | Keep |
+| **0.13** | **61** | **CONFIRMED VALID** (ran fresh from empty archive) | **Keep** |
+| **0.14** | ~~127~~ | **RETRACTED** (resumed from pathc step 126, post-fracture) | **Delete; replace when GPU7 clean rerun lands** |
+
+Any paper draft, ledger entry, or memory referencing u=0.14 N_f=127 should be struck.
+OOD generalisation claim (§4.6) is currently supported by u=0.13 only; u=0.14 result pending.
+
+---
+
 ## 2026-05-05 · Mac-PIDL · [finding + fix] u=0.14 anomaly root cause + two code guards
 
 ### Finding: u=0.14 seed=1/2 contamination mechanism (now fully traced)
