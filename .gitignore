@@ -8,6 +8,7 @@ hl_*/
 # ── 模型权重 & 损失数据（实验结果）──────────────────────
 *.pt
 *.npy
+*.npz
 
 # ── 图片输出 ─────────────────────────────────────────────
 *.png
@@ -36,3 +37,18 @@ notes/
 findings.md
 # 生成的图（.png 已 gitignore，但子目录也要排除防止 README/txt 等误入）
 SENS_tensile/figures/
+
+# ── 生成型结果表（保留少量 canonical CSV，忽略脚本导出的摘要）────
+SENS_tensile/*_summary.csv
+SENS_tensile/posthoc_*.csv
+SENS_tensile/trajectory_*.csv
+SENS_tensile/*_per_criterion.csv
+SENS_tensile/audit_active_driver_results.csv
+
+# ── 本地迁移/备份残留（不作为共享文档）────────────────────
+docs/_backups/
+
+# ── 本地研究分析/briefing（不作为共享 workflow 资产）──────
+docs/advisor_method_evolution.md
+docs/diagoosis.md
+docs/fem_likeness_scorecard.md
