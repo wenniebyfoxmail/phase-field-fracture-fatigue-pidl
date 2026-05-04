@@ -271,6 +271,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     )
     start_j = 0
     _did_restore = False   # ★ 标志位：True → 后续 history lists 从 .npy 初始化
+    _frac_state_from_ckpt = {}  # stash for fracture detection state from checkpoint
     if _step_ckpts:
         _latest = _step_ckpts[-1]
         _last_j = int(_latest.stem.rsplit('_', 1)[-1])
@@ -286,6 +287,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 f_fatigue     = compute_fatigue_degrad(
                     hist_fat, fatigue_dict, elem_centroids=elem_centroids
                 )
+                # ★ Stash fracture detection state (backwards-compat: old ckpts lack these keys)
+                _frac_state_from_ckpt = {
+                    'detected':  _ckpt.get('_frac_detected',          False),
+                    'cycle':     _ckpt.get('_frac_cycle',             None),
+                    'remaining': _ckpt.get('_frac_confirm_remaining', 0),
+                }
             start_j = _last_j + 1
             _did_restore = True
             print(f"[Checkpoint] 从 step {_last_j} 恢复，继续 step {start_j}/{len(disp)-1}")
@@ -320,6 +327,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _frac_cycle             = None    # 首次检测到断裂的圈号
     _frac_confirm_remaining = 0       # 剩余确认圈数（>0 时持续观察）
     _dense_sampling         = False   # 是否进入逐圈密集采样模式
+    # ★ Restore fracture detection state from checkpoint (expert rec, May-5 2026).
+    # Without this, a run interrupted mid-confirmation-window would restart the counter
+    # from 0, adding up to _confirm_cycles extra cycles before stopping.
+    if _frac_state_from_ckpt.get('detected', False):
+        _frac_detected          = True
+        _frac_cycle             = _frac_state_from_ckpt['cycle']
+        _frac_confirm_remaining = _frac_state_from_ckpt['remaining']
+        print(f"[Checkpoint] 恢复断裂检测状态: detected at cycle {_frac_cycle}, "
+              f"confirm remaining = {_frac_confirm_remaining}")
 
     _E_drop_ratio   = fatigue_dict.get('fracture_E_drop_ratio',   0.5)
     _confirm_cycles = fatigue_dict.get('fracture_confirm_cycles',  3)   # 边界判据已很明确，3圈即可
@@ -699,8 +715,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         # ★ 保存断点续训 checkpoint（含 hist_alpha 及疲劳变量）
         _ckpt_data = {'hist_alpha': hist_alpha}
         if fatigue_on:
-            _ckpt_data['hist_fat']      = hist_fat
-            _ckpt_data['psi_plus_prev'] = psi_plus_prev
+            _ckpt_data['hist_fat']                 = hist_fat
+            _ckpt_data['psi_plus_prev']            = psi_plus_prev
+            _ckpt_data['_frac_detected']           = _frac_detected
+            _ckpt_data['_frac_cycle']              = _frac_cycle
+            _ckpt_data['_frac_confirm_remaining']  = _frac_confirm_remaining
         torch.save(_ckpt_data,
                    trainedModel_path / Path(f'checkpoint_step_{j}.pt'))
 
