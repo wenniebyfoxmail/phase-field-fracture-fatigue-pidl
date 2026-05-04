@@ -30,6 +30,43 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-05-04 · Windows-FEM · [done] Extended Umax FEM unblocked — u=0.13 N_f=57, u=0.14 N_f=39 + 4-keyframe snapshots ready
+
+### What ran (sequential sweep, ~3h12m wall, GRIPHFiTH devel branch)
+
+PIDL series extension to higher Umax (mirroring 0.08–0.12 setup): AT1 + AMOR + PENALTY, ℓ=0.01, α_T=0.5, p=2, R=0, n_step=8, mesh `SENT_mesh.inp` (77730 elements).
+
+| Δū | N_f | F_initial | F at penetration | Pace |
+|---:|---:|---:|---:|---:|
+| 0.13 | **57** | 0.0822 | 0.00122 | ~1.7 min/cyc |
+| 0.14 | **39** | 0.0850 | 0.00111 | ~2.2 min/cyc |
+
+### Snapshots written (4 keyframes per case, same format as u08–u12)
+
+`Scripts/fatigue_fracture/_pidl_handoff_v2/psi_snapshots_for_agent/`:
+- `u13_cycle_{0001,0017,0040,0057}.mat`
+- `u14_cycle_{0001,0012,0027,0039}.mat`
+
+Each .mat has 4 keys: `psi_elem`, `alpha_bar_elem`, `f_alpha_elem`, `d_elem` (n_elem × 1 element-averaged from Gauss points + d-field read from VTK at nearest cycle ≤ keyframe). Penetration count: u13 cyc57 = 1326/77730 (1.71%) elements with d≥0.95; u14 cyc39 = 1320/77730 (1.70%).
+
+### Basquin check (PIDL series 0.12 / 0.13 / 0.14)
+
+- N_f(0.12) = 82 (existing), N_f(0.13) = 57, N_f(0.14) = 39
+- log-log slope on these 3 points: **m ≈ 4.8** (steeper than Carrara series m=3.49 — but PIDL series uses ℓ=0.01 + AT1, different from Carrara real-units AT2)
+
+### Files
+
+- INPUT: `Scripts/fatigue_fracture/INPUT_SENT_PIDL_{13,14}_export.m`
+- driver: `main_SENT_PIDL_{13,14}_export.m`
+- snapshot script: `augment_snapshots_u13_u14.m` (auto-picks keyframes [1, ~30%·N_f, ~70%·N_f, N_f])
+- raw fatigue outputs: `Scripts/fatigue_fracture/SENT_PIDL_{13,14}_export/` (load_displ + monitorcycle + extra_scalars + per-cycle psi_fields + VTK keyframes)
+
+### Action for Mac-PIDL
+
+Unblocks the cross-Umax extension (Handoff B in `d0f66db`). u13/u14 .mat files are now in same path / format as u08–u12 → drop into existing PIDL eval pipeline as-is.
+
+---
+
 ## 2026-05-03 · Windows-PIDL · [ack + launch] Handoff D pickup — Oracle 0.11 seed=3 launched (WINPID 34140); ack of A/B/C campaign + post-hoc Patterns A/B/C verdict
 
 ### Launched (Handoff D pickup)
