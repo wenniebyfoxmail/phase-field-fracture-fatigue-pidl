@@ -142,6 +142,40 @@ Mac 侧详细技术指引见 `~/.claude/projects/.../memory/feedback_process_kil
 - 备份位置建议：`~/Documents/claude_archive/<日期>/`（或 Windows 用户的等效位置）
 - 原则：**分支和 worktree 可重建，对话记录删了就没了**
 
+## 输出长度控制
+
+- **默认简短**：状态更新一句话，技术细节进 commit message 或 memory，不在对话里展开
+- 用户问"做了什么"→ 列 bullet，不写段落
+- 用户问"为什么"→ 给原因，不给背景故事
+- 只有用户明确要求"详细解释"才展开
+
+## Runner 脚本编写规则（May-5 2026 教训）
+
+**教训 1：config.py 路径在 import 时构建，post-import 改 dict 是 no-op**
+
+- `config.model_path` 在 `import config` 时就已经用默认值固化
+- 任何 runner 覆盖 `fatigue_dict`（umax / n_cycles 等）后，**必须手动重建**：
+  ```python
+  config.model_path             = HERE / Path(_dir_name)
+  config.trainedModel_path      = config.model_path / "best_models/"
+  config.intermediateModel_path = config.model_path / "intermediate_models/"
+  ```
+- 参考模板：`run_baseline_umax.py`（main branch，May-4 2026 bugfix 版）
+- ❌ 禁止用 `config.savefolder_name = arch`——该变量从未被 config.py 读取
+
+**教训 2：Producer 端的 runner 脚本必须与 Dev 同步**
+
+- Producer（Taobo / Windows）在本地加的 `run_*.py` 必须同步到 Dev（Mac）并 commit 进 branch
+- Dev 修了某个 runner → 必须显式通知 Producer pull 或就地覆写
+- 判断是否同步的最简检查：`grep "BUGFIXED\|May-[0-9]" run_*.py`
+
+**教训 3：Checkpoint resume 必须做防御检查**
+
+- `source/model_train.py` 已内置两层防御（commit `427ebe7` + `87f3c0e`）：
+  1. 恢复 `_x_tip_history` 后检查 crack_length >= right boundary → ABORT
+  2. 保存/恢复 `_frac_detected / _frac_cycle / _frac_confirm_remaining`
+- 新写的 training loop 或 runner 若需要 resume，必须复现这两层
+
 ## Related docs
 
 - `docs/git_workflow.md` — 完整多机协作规则（本文件的 authoritative 展开）
