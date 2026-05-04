@@ -353,6 +353,23 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _crack_mouth_x   = _crack_mouth[0].item()
     _x_tip_history   = _restore_hist('x_tip_alpha_vs_cycle.npy')    # ★ 续训时从 .npy 恢复
 
+    # ★ Post-restore sanity guard: abort if the inherited checkpoint is already post-fracture.
+    # Scenario: run_baseline_umax.py (buggy version) accidentally points config.model_path at
+    # a DIFFERENT run's archive → step N of a u=0.12 run gets loaded as "step N of u=0.14".
+    # The restore succeeds silently; without this guard the loop would just run the confirmation
+    # window and produce a garbage N_f.  Fix: check crack_length from restored history.
+    if _did_restore and fatigue_on and _x_tip_history:
+        _restored_crack_len = float(_x_tip_history[-1])
+        if _restored_crack_len >= _right_bdy_x_min:
+            print(
+                f"\n[Checkpoint] ABORT — restored crack tip L∞={_restored_crack_len:.4f} "
+                f">= right-boundary threshold {_right_bdy_x_min} at step {_last_j}.\n"
+                f"  The loaded checkpoint was saved AFTER fracture, or belongs to a "
+                f"different run (archive path mismatch).\n"
+                f"  Delete best_models/ for a clean start, or check config.model_path."
+            )
+            return
+
     # ★ Direction 4: Williams 特征开关 & ψ⁺ 重心裂尖历史
     # 通过 field_comp.williams_enabled 检测是否启用（无需额外参数传递）
     _williams_enabled = getattr(field_comp, 'williams_enabled', False)
