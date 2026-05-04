@@ -142,13 +142,6 @@ Mac 侧详细技术指引见 `~/.claude/projects/.../memory/feedback_process_kil
 - 备份位置建议：`~/Documents/claude_archive/<日期>/`（或 Windows 用户的等效位置）
 - 原则：**分支和 worktree 可重建，对话记录删了就没了**
 
-## 输出长度控制
-
-- **默认简短**：状态更新一句话，技术细节进 commit message 或 memory，不在对话里展开
-- 用户问"做了什么"→ 列 bullet，不写段落
-- 用户问"为什么"→ 给原因，不给背景故事
-- 只有用户明确要求"详细解释"才展开
-
 ## Related docs
 
 - `docs/git_workflow.md` — 完整多机协作规则（本文件的 authoritative 展开）
