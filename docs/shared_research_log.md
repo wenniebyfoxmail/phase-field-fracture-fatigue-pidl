@@ -30,6 +30,54 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-05-04 · Mac-PIDL · [handoff E + status] Oracle 0.13/0.14 ask + 2 Taobo jobs running + §4 tagged draft + f(p) learnable starting
+
+### Handoff E (NEW): Windows-PIDL — please run Oracle 0.13 + Oracle 0.14
+
+**Why**: Mac just got pure-physics @ u=0.13 PIDL N_f=61 vs FEM N_f=57 (+7%), within ±10% cross-validation band. **Need Oracle method-cross-validation at the same Umax** to distinguish "method-specific N_f match" from "framework-level mechanism".
+
+**Specific commands** (FEM data already shipped in `_pidl_handoff_v2/psi_snapshots_for_agent/u{13,14}_cycle_*.mat` per `09d235d`):
+
+```bash
+# Oracle 0.13 (~5-7h Windows GPU) — FEM N_f=57
+python run_e2_reverse_umax.py 0.13 --n-cycles 200
+
+# Oracle 0.14 (~3-5h Windows GPU) — FEM N_f=39
+python run_e2_reverse_umax.py 0.14 --n-cycles 200
+```
+
+Sequential is fine (~8-12h overnight). Same Variant A oracle config (zone=0.02) as your 0.10/0.11/0.12 sweep.
+
+**Verdict criteria**:
+- Both Oracle N_f within ±10% of pure-physics → **method-robust framework-level mechanism** (strongest §4.6 OOD claim)
+- Oracle N_f deviates significantly → method-specific behavior, refines §4 caveat
+
+### Mac status (this session)
+
+**Running on Taobo** (do NOT kill):
+- u=0.11 seed=2 Multi-seed pure-physics: GPU 1, PID 3342672, ETA ~6-8h. Pairs with seed=1 N_f=116 ᾱ_max=17.98 → tests if u=0.11 saddle is Oracle-specific or also seen in pure-physics.
+- u=0.14 seed=1 pure-physics OOD: GPU 7, PID 3345046, ETA ~3-5h. Tests +2 step beyond training (u=0.13 was +1 step).
+
+**Just done**:
+- u=0.13 seed=1 pure-physics: N_f=61, ᾱ_max=7.64 (vs FEM 57, +7% — ±10% band ✓)
+- u=0.11 seed=1 Multi-seed pure-physics: N_f=116, ᾱ_max=17.98 (note: pure-physics, not Oracle, so 17.98 is consistent with smooth-NN ceiling not seed multimodality)
+
+**§4 tagged draft v0** (`section4_draft_may4_tagged.md` Mac local, NOT in git per CLAUDE.md): 10 subsections covering Pattern A/B/C + energy budget (Finding 4) + multimodal u=0.11 (your `d762b53`) + OOD u=0.13/0.14 + open ᾱ_max gap caveat. Tagged with [CORE]/[EVID]/[CAVEAT]/[PENDING]/[MOVE]/[SPEC] per `paper-ledger-to-paper` skill. Polish deferred until u=0.11 seed=2 + u=0.14 + Oracle 0.13/0.14 land.
+
+**f(p) learnable starting NOW** (worktree `claude/exp/f-shape-p-learnable`):
+- Make Carrara Eq.41 exponent `p` (currently hardcoded at 2 in `compute_fatigue_degrad`) into nn.Parameter
+- Deep Ritz energy gradient only — **NO FEM supervision** (avoid circular calibration per audit ledger v3.16)
+- Soft prior λ_p · (p-2)² for stability
+- Smoke Test 1 (backward-compat p_learnable=False bit-exact) + Test 2 (p_learnable=True 30 cyc) on Mac CPU first; production on Taobo only after smoke pass
+- Spec at Mac local `f_p_learnable_design.md` (NOT in git)
+
+### Open offers (Mac perspective)
+
+- **Windows-FEM**: low-priority Phase 2 PCC concrete-real-units `INPUT_SENT_concrete_PCC.m` template prep (~2-4h). Discussing parameters with user before formal handoff.
+- **You** (Windows-PIDL): Oracle 0.13 + 0.14 (above) is the concrete ask.
+
+---
+
 ## 2026-05-04 · Windows-PIDL · [done + finding] Oracle 0.11 seed=3 → **THIRD UNIQUE BASIN ᾱ_max=3511** (vs seed=1: 11253, seed=2: 1140); MULTIMODAL distribution confirmed; **N_f cross-seed Δ=3 cycles (0.11 sweep N_f={114,116,117}) — strong evidence for v3.15 framework-level mechanism**
 
 Handoff D from Mac's `c90bacf` complete. Seed=3 fell into a **third distinct basin** — neither close to seed=2 nor seed=1, decisively showing **multimodal loss-landscape at u=0.11**.
