@@ -17,6 +17,37 @@
 
 ---
 
+## Research Decomposition Protocol
+
+当任务是开放式研究（问题定义本身在演化中）：
+
+1. 不建长 todo list。先读 `docs/research_frontier.md`
+2. 声明本 session 的唯一 Current Question
+3. Active Branches 最多 3 个；本 session 只追 1 个
+4. 定义一个 discriminating action（能区分假设的最小动作）
+5. 记录 Switch Condition：什么结果会让我切换主线
+6. 未触发 Switch Condition 时，不重写主问题
+7. Side ideas 放 Parking Lot，不追
+8. 多 agent 只做边界清晰的 sidecar（文献提取、日志检查、结果整理、对比分析）
+9. 主问题不并行、不委派；研究判断留在主 agent
+
+---
+
+## Self-check
+
+对重要判断，尤其是准备写入 `frontier` / `shared_research_log` / `outbox` 的结论，必须区分：
+- **Observed**：直接从代码/日志/实验结果看到的
+- **Inference**：基于证据推出的解释
+- **Unknown**：缺关键观测，只是工作假设
+
+额外检查：
+- 什么证据会推翻这个解释？
+- 有没有一个同样能解释现象的替代假设？
+- 置信度：confirmed / likely / speculative？
+- 能不能立刻做一个最小验证（查文件/跑命令/看 git log）？能查就先查
+
+---
+
 ## 通信边界（2026-05-05 起）
 
 - 跨机任务通信走 `docs/handovers/*_inbox.md` / `*_outbox.md`

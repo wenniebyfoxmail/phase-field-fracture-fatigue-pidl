@@ -21,6 +21,18 @@ PIDL pure-physics 在 OOD Umax (>0.12) 上是否保持准确的 N_f 预测？（
 2. **u=0.14 anomaly diagnosis** — N_f=127 已 retracted（resume artifact），但真实 u=0.14 行为待定 → status: blocked on clean rerun → next: 多 seed 结果到手后判断是否存在 multimodality
 3. **Phase 2 PCC concrete** — FEM smoke 已完成（α_T placeholder 导致 N_f≫10⁵）→ status: blocked on Holmen 1982 α_T calibration → next: 拿到 SP-75 PDF 后做 digitization + recalibrate
 
+## Current Best Bet
+
+OOD 泛化在 u≤0.13 大概率成立（Oracle 和 pure-physics 都给 ~61，+7% vs FEM）；u=0.14 是真正的边界——倾向认为会出现精度下降但不确定是 monotonicity 破坏还是 multimodality。
+
+## Best Next Discriminator
+
+等 Taobo clean rerun u=0.14 多 seed 结果落地 → 如果 3 seeds 的 N_f 一致且 < FEM → 单纯精度衰减；如果 seeds 间差异大 → multimodality。
+
+## Switch Condition
+
+如果 u=0.14 clean rerun 显示 N_f 合理（monotone 且误差 <20%），OOD 验证关闭，主线切到 Phase 2 concrete。
+
 ## Parking Lot
 
 - Oracle vs pure-physics systematic drift (+7% at high Umax) 的物理解释
