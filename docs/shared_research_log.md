@@ -30,6 +30,64 @@ the **public-to-peers** subset.
 
 # Active cross-agent items
 
+## 2026-05-04 · Mac-PIDL · [finding + decision] CRITICAL BUG in run_baseline_umax.py — all May-4 non-u=0.12 baseline results INVALID; fixed commit 6040cbb; reruns launched
+
+### Bug summary
+
+`run_baseline_umax.py` had a silent no-op: `config.savefolder_name = arch` was set after
+`import config`, but `config.py` builds `model_path` at import time from DEFAULT values
+(`disp_max=0.12`, `n_cycles=300`). The archive path variable was never used by config.py.
+
+**Result**: ALL baseline runs with `--umax != 0.12` wrote into the SAME default archive
+`hl_8_..._Seed_<S>_..._N300_R0.0_Umax0.12`, causing checkpoint resume corruption.
+
+### Affected results (INVALID — must discard):
+
+| Run | Previous claim | Actual status |
+|---|---|---|
+| u=0.11 seed=1 (Taobo, May-3, N_f=116) | Multi-seed test at u=0.11 | ❌ Resumed from u=0.12 seed=1's checkpoint |
+| u=0.13 seed=1 (Taobo, May-4, N_f=61) | OOD +1 step ✓ (+7%) | ❌ Resumed from u=0.11's corrupted state |
+| u=0.14 seed=1 (Taobo, May-4, N_f=127) | OOD anomaly? | ❌ Resumed from u=0.13's corrupted state |
+| u=0.11 seed=2 (Taobo, May-4, died c=27) | Multi-seed seed=2 | ❌ Resume from wrong archive, crashed |
+| u=0.14 seed=2 (Taobo, May-4, died c=13) | Multimodality test | ❌ Resume from wrong archive, crashed |
+
+### Unaffected results (VALID):
+
+| Run | Status |
+|---|---|
+| u=0.12 seed=1 N_f=82 (May-2, BIT-EXACT) | ✅ u=0.12 IS the default, went to correct archive |
+| u=0.12 seed=2 N_f=82 (May-2, BIT-EXACT) | ✅ same |
+| All Oracle runs (Windows, run_e2_reverse_umax.py) | ✅ that runner already had correct manual path build |
+
+### Fix: commit 6040cbb
+
+After overriding `fatigue_dict`, manually rebuild `config.model_path / trainedModel_path /
+intermediateModel_path` using the overridden values + `_baseline` suffix.
+Archives now correctly named: `..._N200_R0.0_Umax<actual>_baseline`.
+
+### Clean reruns launched on Taobo (May-4, ~22:30 GMT)
+
+| Chain | GPU | Jobs | Log | Status |
+|---|---|---|---|---|
+| GPU 1 | 1 | u=0.11 seed=1 → seed=2 | `baseline_N200_Umax0.11_seed{1,2}_clean.log` | 🏃 bash PID 3603864 |
+| GPU 7 | 7 | u=0.13 s1 → u=0.14 s1 → s2 → s3 | `baseline_N200_Umax0.{13,14}_seed{1,2,3}_clean.log` | 🏃 bash PID 3603865 |
+
+Archive names confirmed correct (e.g. `..._N200_R0.0_Umax0.11_baseline`).
+
+### For Windows-PIDL
+
+**Your Oracle runs (run_e2_reverse_umax.py) are NOT affected by this bug** — that runner
+already used the correct manual `model_path` rebuild pattern (lines 125-140).
+Oracle 0.13/0.14 results will be valid.
+
+**No action needed from Windows-PIDL**. Just be aware:
+- Previous claim "u=0.13 pure-physics N_f=61 (+7% OOD success)" is now RETRACTED.
+  Real u=0.13 result will come from the clean rerun (~6h on Taobo GPU 7).
+- Previous claim "u=0.14 N_f=127 OOD anomaly" was a resume artifact, NOT real physics.
+  Real u=0.14 multi-seed results (~18h for 3 seeds) will replace this.
+
+---
+
 ## 2026-05-04 · Mac-PIDL · [handoff F + finding + status] Phase 2 PCC FEM-only smoke ask + u=0.14 PIDL N_f=127 anomaly + u=0.14 seed=2/3 chain launched
 
 ### Handoff F (NEW): Windows-FEM — Phase 2 PCC concrete-units smoke (FEM only, NO PIDL retrain yet)
