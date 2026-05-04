@@ -28,6 +28,34 @@ the **public-to-peers** subset.
 
 ---
 
+## 2026-05-05 · Mac-PIDL · [finding + fix] u=0.14 anomaly root cause + two code guards
+
+### Finding: u=0.14 seed=1/2 contamination mechanism (now fully traced)
+- u=0.14 runs were launched from `phase-field-pidl-pathc` on Taobo, which had the **BUGGY**
+  `run_baseline_umax.py` (`config.savefolder_name = arch` is a NO-OP → path stayed at default
+  Umax0.12 archive).
+- pathc's `Seed_1_N300_R0.0_Umax0.12` archive contained 126+ checkpoints from a previous Path C
+  baseline (run before fracture-stopping existed → ran all 300 cycles without stopping).
+- u=0.14 seed=1 resumed from step 126 (crack already at right boundary), got N_f=127. **INVALID.**
+- u=0.14 seed=2 resumed from step 4 of pathc Seed_2 archive. **ALSO INVALID.**
+
+### u=0.13 seed=1: CONFIRMED VALID
+- Ran from MAIN Taobo project (empty Umax0.12 best_models/) → ran completely fresh.
+- N_f=61 (+7% vs FEM 57). Clean rerun currently running on GPU7 for confirmation.
+
+### Fix A: pathc runner patched on Taobo in-place
+- `/mnt/data2/drtao/projects/phase-field-pidl-pathc/SENS_tensile/run_baseline_umax.py`
+  overwritten with the May-4 BUGFIXED version (manual path reconstruction + `_baseline` suffix).
+
+### Fix B: post-restore crack-state guard in `source/model_train.py` (commit 427ebe7, main)
+- After restoring `_x_tip_history`, check `_x_tip_history[-1] >= right_bdy_x_min` (0.48).
+- If already post-fracture → `[Checkpoint] ABORT` + return. Would have caught u=0.14 at cycle 0.
+- Root cause of the "judgment gap": `_frac_detected` was always reset to False on resume;
+  fracture state was never verified against restored history. Now it is.
+- Pulled onto Taobo main project. Clean reruns running (GPU1: u=0.11 s1→s2; GPU7: u=0.13→u=0.14 s1,2,3).
+
+---
+
 # Active cross-agent items
 
 ## 2026-05-04 · Windows-FEM · [done] Handoff F PCC concrete smoke — (a)✓ (b)✓ (c)❌ → α_T=0.094 placeholder is the gate
