@@ -27,6 +27,39 @@
 
 ## Active Requests
 
+## 2026-05-05 · Request FEM-4: export a(N) crack propagation curve for u=0.08, 0.12, 0.13
+
+**Goal**: 生成 FEM 的 a(N) 曲线（裂纹尖端位置 vs 循环数），与 PIDL 的 x_tip-vs-N 叠图对比。这是 Carrara 2020 Fig 6 的核心图，paper 必须有。
+
+**定义对齐（与 PIDL 一致）**：
+- `x_tip(N)` = 该 cycle 中 α > 0.95 的最大 x 坐标（即 crack front 的 x 位置）
+- 如果 GRIPHFiTH 输出的是 GP-level α，取所有 α>0.95 的 GP 中 x 坐标的最大值
+
+**需要的 Umax**（3 个，覆盖低/中/高 Umax）：
+- u=0.08：FEM N_f ≈ 396，`SENT_PIDL_08_export/` 已有
+- u=0.12：FEM N_f = 82，`SENT_PIDL_12_export/` 已有
+- u=0.13：FEM N_f = 57，数据在 `_pidl_handoff_v2/psi_snapshots_for_agent/` 或单独跑一次
+
+**Output format**（每个 Umax 一个 CSV）：
+```
+cycle, x_tip_alpha95, alpha_max_monitor
+1, 0.502, 0.031
+2, 0.503, 0.044
+...
+```
+
+**Files requested**:
+- `fem_a_traj_u008.csv`
+- `fem_a_traj_u012.csv`
+- `fem_a_traj_u013.csv`
+- 放到 `_pidl_handoff_v3_items/` 或新建 `_pidl_aN_curves/`
+
+**Priority**: high（这个图是 paper 核心图之一，PIDL 这边 x_tip 数据已有，等 FEM 数据就能出图）
+
+**Note**: `export_alpha_traj_u12.m` 目前只导出 α_max，不含 x_tip，需要新写或修改导出脚本。
+
+---
+
 ## 2026-05-05 · Request FEM-3: h-sweep extension — ℓ/h=20 to bracket convergence
 
 **Goal**: mesh_C/M/F 显示 M→F 仍有 +8.9%，尚未收敛。加 ℓ/h=20 一个点来估计渐近值，给 paper 一个更紧的 convergence bracket。
