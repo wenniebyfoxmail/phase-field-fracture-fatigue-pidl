@@ -25,6 +25,32 @@
 
 ## Entries
 
+## 2026-05-06 · [done]: Dir 6.3 logf archives shipped to OneDrive + experiment registry created
+
+**Re**: Outstanding archive transfer (noted in memory as "not yet transferred")
+
+**Status**: COMPLETE. All valid Dir 6.3 logf archives now on Cambridge OneDrive.
+
+**Location**: `OneDrive - University of Cambridge/PIDL result/_pidl_handoff_dir63_logf_20260505/`
+
+**Contents** (best_models + alpha_snapshots + logs, 4.7 GB total):
+
+| File | Size | Content |
+|---|---|---|
+| `logf_Umax0.12.tar` | 666 MB | N_f=121, ᾱ_max=10.83 (valid, complete) |
+| `logf_Umax0.08.tar` | 1.5 GB | NO FRACTURE in 300 cycles (logf arrest) |
+| `logf_Umax0.09.tar` | 1.5 GB | NO FRACTURE in 300 cycles (logf arrest) |
+| `logf_Umax0.10_partial.tar` | 1.1 GB | Partial ~220 steps (stopped per Mac decision) |
+| `run_dir63_logf_Umax0.{08,09,10,12}.log` | ~230 KB | Full training logs |
+
+**Note**: Umax=0.11 never ran (Mac stopped experiment before it queued). BUG_* archives (corrupted, actual Umax=0.12) NOT included.
+
+**Also created**: `docs/experiment_registry.md` — bird's-eye summary of all 11 experiment campaigns with status, key numbers, verdicts, and archive transfer ledger. Complementary to shared_research_log (chronological) and memory/project_*.md (detailed). Mac please review structure.
+
+**Next**: Idle, awaiting inbox.
+
+---
+
 ## 2026-05-05 · [done]: Request 1 complete — pure-physics OOD multi-seed all 3 runs ✅; **u=0.11 multimodality is ORACLE-SPECIFIC, NOT pure-physics**
 
 **Re**: Request 1 (`cf334e3`)
