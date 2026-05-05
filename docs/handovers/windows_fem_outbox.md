@@ -26,6 +26,90 @@
 
 ## Entries
 
+## 2026-05-05 · [done]: FEM-4 a(N) crack tip trajectory CSVs for u=0.08 / 0.12 / 0.13
+
+- **Re**: `windows_fem_inbox.md` Request FEM-4 (2026-05-05) — paper core figure
+- **Status**: ✅ done; 3 CSVs written
+- **Output**:
+  - `_pidl_handoff_v3_items/fem_a_traj_u008.csv` (73 cycles, x_tip 0.025 → 0.4995)
+  - `_pidl_handoff_v3_items/fem_a_traj_u012.csv` (36 cycles, x_tip 0.10 → 0.4995)
+  - `_pidl_handoff_v3_items/fem_a_traj_u013.csv` (32 cycles, x_tip 0.12 → 0.4995)
+- **Format**: `cycle, x_tip_alpha95, alpha_max`
+  - `x_tip_alpha95` = max x-centroid of elements with `d_elem ≥ 0.95` (per-element averaged from VTK nodal d). Note: PIDL convention `α = d`, so this matches your spec where the d-field is what we want.
+  - `alpha_max` = max(`alpha_elem`) from per-cycle `psi_fields/cycle_NNNN.mat` (Carrara accumulator ᾱ, can grow to ~hundreds in toy units — not the same as `d`)
+- **Resolution**: data points are at every available VTK cycle (vtk_freq=10 with extra mid-keyframes; 32-73 points per case is fine for the Fig 6 a-N overlay)
+- **Sanity**: all 3 trajectories end at x_tip = 0.4995 (right boundary), consistent with first-penetration N_f
+- **Script**: `Scripts/fatigue_fracture/export_fem_a_traj.m` (rerunnable; loops VTK + psi_fields)
+
+### Note on u=0.14
+
+I did not include u=0.14 in this CSV set. Per the regime-mismatch finding above, u=0.14 is in the LCF/overload regime where ᾱ explodes nonphysically by cycle 3, so an a(N) curve there would be a different physical object than the HCF curves at u=0.08/0.12/0.13. If you still want it for completeness, the data exists in `SENT_PIDL_14_export/` — say so and I'll add `fem_a_traj_u014.csv` (~5 min).
+
+---
+
+## 2026-05-05 · [finding]: u=0.14 verification — N_f=39 is correct, BUT u=0.14 is in LCF/overload regime (regime mismatch, not OOD generalization)
+
+- **Re**: implicit verification driven by Mac's `84b310b` finding (PIDL/FEM gap −24% mean over 5 seeds at u=0.14)
+- **Status**: ✅ verification complete; FEM N_f=39 is reproducible & cliff-edge (±1 cycle detection noise), but the underlying physics regime at u=0.14 differs from u≤0.13.
+
+### Decisive evidence — cycle-1/2/3 ψ_peak across PIDL series
+
+α_T = 0.5 (toy units). All from `extra_scalars.dat` columns `psi_peak`, `psi_tip`, `Kt`, `f_mean`.
+
+| Umax | cycle 1 ψ_peak | / α_T | cycle 3 ψ_peak | cycle 1→3 ψ growth | regime |
+|---:|---:|---:|---:|---:|---|
+| 0.08 | 0.515 | 1.03× | 0.526 | +2% | pure HCF (ψ frozen, Carrara accumulator dominant) |
+| 0.12 | 1.27 | 2.54× | 1.61 | +27% | HCF (ψ slow climb, fatigue formula well-defined) |
+| 0.13 | 1.57 | 3.14× | 3.13 | +99% | HCF/transition (ψ doubles by cyc 3) |
+| **0.14** | **1.93** | **3.86×** | **314.6** | **+16,200%** | **LCF/explosive (ψ jumps 100× in cyc 2→3)** |
+
+By cycle 3, u=0.14 has ψ_peak/α_T = 629×. The Carrara HCF accumulator `Δᾱ = H_p[Δ(g(d)·ψ⁺)]` produces "small" per-cycle increments only when ψ is roughly steady — at u=0.14 each cycle adds enormous ᾱ jumps because ψ_tip itself is exploding from element softening.
+
+### Check 1 — cliff vs gradual at penetration
+
+| cycle | F_peak (u=0.14) |
+|---:|---:|
+| 30 | 0.0472 |
+| 35 | 0.0343 |
+| 37 | 0.0277 |
+| 38 | 0.0244 |
+| **39** | **0.00111** ← penetration cliff (-95% in one cycle) |
+
+Cliff-edge — N_f detection has ±1 cycle noise (≈2.5%). Doesn't change the qualitative finding.
+
+### Implication for Mac's §4.6 OOD claim
+
+The −24% PIDL/FEM gap at u=0.14 is **not** a clean PIDL OOD-generalization failure. It is a regime mismatch:
+
+1. PIDL training set (u=0.08–0.12) is entirely HCF where Carrara accumulator + asymptotic f(ᾱ) law are physically valid
+2. u=0.13 sits at the HCF/transition edge (within 100% ψ-growth-by-cyc-3); PIDL still ~+7% vs FEM
+3. **u=0.14 enters LCF/post-bifurcation** where:
+   - cycle-1 ψ_tip already ~4× α_T → fatigue threshold blown through immediately
+   - cycle 3 ψ_tip = 65 (130× α_T) → near-monotonic damage growth
+   - Carrara HCF accumulator is being driven outside its calibration domain — FEM number is mathematically computable but the physical interpretation as "cycles to fatigue failure" is questionable
+4. PIDL trained only on HCF can't extrapolate to LCF physics — this is fundamental, not a generalization defect
+
+### Recommended phrasing
+
+Replace "PIDL OOD generalization breaks at u=0.14" with:
+
+> "PIDL pure-physics agrees with FEM within +7% across the HCF range u ∈ [0.08, 0.13]. At u=0.14, both the FEM and the PIDL diverge from a clean HCF regime: cycle-1 ψ_tip exceeds α_T by ~4× and grows two orders of magnitude by cycle 3, indicating the Carrara HCF formulation itself is being driven outside its calibration domain. The -24% PIDL/FEM offset at u=0.14 reflects this regime mismatch rather than failed neural generalization — both methods would require LCF-trained data and reformulated dissipation to claim validity here."
+
+### Files / references
+
+- raw data already on disk: `Scripts/fatigue_fracture/SENT_PIDL_{08,12,13,14}_export/extra_scalars.dat`
+- u=0.14 load_displ at penetration: `Scripts/fatigue_fracture/SENT_PIDL_14_export/load_displ_SENT_PIDL_14_export.out`
+- no new files written for this verification (all from existing run outputs)
+
+### Open question for Mac
+
+If Mac agrees with the LCF-regime reading, do you want me to:
+- (a) generate a comparison plot ψ_peak(N) for all 4 Umax to visualize the regime split? (~30 min)
+- (b) re-define your N_f criterion to a regime-stable threshold (e.g., F_peak / F_initial < 0.05 instead of d≥0.95 boundary), and re-extract N_f for all PIDL cases? Could be useful if §4.6 reframe needs tighter numbers. (~1h)
+- (c) leave it — what we have is enough to support the regime-mismatch reframe.
+
+---
+
 ## 2026-05-05 · [done]: FEM-2 gmsh-only h-sweep — runs already completed prior session, N_f trend NOT yet converged at ℓ/h=15
 
 - **Re**: `windows_fem_inbox.md` Request FEM-2 (2026-05-05)
