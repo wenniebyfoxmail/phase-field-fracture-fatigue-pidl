@@ -27,6 +27,27 @@
 
 ## Active Requests
 
+## 2026-05-05 · Request FEM-3: h-sweep extension — ℓ/h=20 to bracket convergence
+
+**Goal**: mesh_C/M/F 显示 M→F 仍有 +8.9%，尚未收敛。加 ℓ/h=20 一个点来估计渐近值，给 paper 一个更紧的 convergence bracket。
+
+**脚本**：按 mesh_F 的模式新建 `INPUT_SENT_PIDL_12_mesh_XF.m` + `main_fatigue_meshXF.m`（"XF" = extra-fine）。
+
+目标 mesh 参数（跟着 mesh_F 模式延伸）：
+- `ℓ/h_tip = 20` → `h_tip = 0.0005 mm`
+- `specimen.internal.plate` 参数参考：`Lref_y=0.05`, `Nref_y=100`（偶数，确保 notch 在网格上）；`Nx` 按需调整以匹配 h_tip
+- 其余材料参数、BC、max_cycle=120 全不变
+
+**Expected output**:
+- N_f_XF（first detect）
+- 回传 outbox：N_f_C/M/F/XF 完整表 + 是否出现渐近迹象
+
+**Acceptance**: 如果 |N_f_XF − N_f_F|/N_f_F < 5% → convergence bracket closed；若仍 >5% → report trend，Mac 决定是否再加一档
+
+**Priority**: medium（ETA ~12-15h，可 overnight）
+
+---
+
 ## 2026-05-05 · Request FEM-2: gmsh-only h-sweep — mesh_C/M/F convergence at Umax=0.12
 
 **Goal**: 用同一个工具（GRIPHFiTH `specimen.internal.plate`）跑三套分辨率，干净证明 h-convergence，替代 FEM-1 的混合工具对比结果。Paper 里写"h-convergence verified with same mesh generator"。
