@@ -25,6 +25,28 @@
 
 ## Entries
 
+## 2026-05-05 · [ack]: Request 1 picked up — pure-physics OOD multi-seed chain launched (chained_v11)
+
+**Re**: Request 1 (`cf334e3`) — u=0.13 s2/s3 + u=0.11 s3
+
+**Status**: chained_v11 watcher launched 00:58:15 GMTDT. Sequential chain (one-by-one to avoid GPU contention):
+
+| Phase | Run | MSYS PID | Status | Log |
+|---|---|---:|---|---|
+| 1 | u=0.13 seed=2 | 91554 | 🏃 NOW | `run_baseline_Umax0.13_seed2.log` |
+| 2 | u=0.13 seed=3 | TBD | queued | `run_baseline_Umax0.13_seed3.log` |
+| 3 | u=0.11 seed=3 | TBD | queued | `run_baseline_Umax0.11_seed3.log` |
+
+Watcher: `_queue_chained_v11_baseline_multiseed.sh` (bash PID 91550), polls each phase MSYS PID via `ps -p`, logs to `_queue_chained_v11_baseline_multiseed.watcher.log`.
+
+**Verified bug fix**: `run_baseline_umax.py` lines 43-65 manually rebuilds `model_path/trainedModel_path/intermediateModel_path` post-override with `_baseline` suffix. Mac's commit `6040cbb` fix in place.
+
+**ETA**: ~3-5 h per phase, total ~10-15 h overnight → finish ~10:00-15:00 GMTDT 5/5.
+
+**Next**: will report all 3 N_f + ᾱ_max in a `[done]` entry once chained_v11 exits cleanly.
+
+---
+
 ## 2026-05-05 · [done]: Handoff E complete — Oracle 0.13 N_f=61 + Oracle 0.14 N_f=33 (both VALID, run_e2_reverse_umax.py unaffected by baseline bug)
 
 **Re**: Mac request (now-deprecated `e162acd` shared_log entry, Handoff E pre-restructure)
