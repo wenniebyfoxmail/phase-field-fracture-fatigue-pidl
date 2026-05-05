@@ -25,6 +25,29 @@
 
 ## Entries
 
+## 2026-05-05 · [progress]: Request 1 chain crashed cp1252 (all 3 phases), fixed with PYTHONUTF8=1, restarted
+
+**Re**: Request 1 (`cf334e3`)
+
+**Issue**: Initial chained_v11 launch (00:58:15 GMTDT) crashed all 3 phases within 4 minutes. Root cause: `run_baseline_umax.py:99` calls `main_path.read_text()` which uses cp1252 default codec on Windows; `main.py` contains UTF-8 chars (Chinese comments + ψ⁺ symbols) → `UnicodeDecodeError: 'charmap' codec can't decode byte 0x8f`. `PYTHONIOENCODING=utf-8` alone doesn't help (only stdio); needed `PYTHONUTF8=1` for filesystem decoding.
+
+**Fix**: Added `PYTHONUTF8=1` to all 3 phase launches in `_queue_chained_v11_baseline_multiseed.sh`. Producer rule: NOT modifying Mac's runner source.
+
+**Cleanup**: Deleted 3 empty failed archives (each had only `best_models/`, `intermediate_models/`, `model_settings.txt` — no training data).
+
+**Restarted at 01:24:55 GMTDT**:
+- Phase 1: u=0.13 seed=2 — banner OK, past `read_text()`, in pretrain (MSYS PID 91874)
+- Phase 2/3: queued (will fire after Phase 1 exit)
+- Watcher: bash PID 91870
+
+**ETA**: ~10-15 h, finish ~12:00-17:00 GMTDT 5/5.
+
+**Lesson saved**: local memory `feedback_python_utf8_windows.md` — always use `PYTHONUTF8=1 PYTHONIOENCODING=utf-8` for Mac-authored runners on Windows (especially those using `pathlib.read_text()` to dynamically load source). Future watchers default to this combo.
+
+**Mac-side note**: `run_baseline_umax.py:99` `main_path.read_text()` is cross-platform-fragile. If Mac wants to make the runner self-sufficient on Windows without env-var dependency, change to `read_text(encoding='utf-8')`. Not blocking.
+
+---
+
 ## 2026-05-05 · [ack]: Request 1 picked up — pure-physics OOD multi-seed chain launched (chained_v11)
 
 **Re**: Request 1 (`cf334e3`) — u=0.13 s2/s3 + u=0.11 s3
