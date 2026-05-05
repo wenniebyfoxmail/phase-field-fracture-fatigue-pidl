@@ -41,4 +41,20 @@
 
 ## Entries
 
-[新 entries 从这里开始，newest first]
+## 2026-05-05 · Mac-PIDL [finding]
+
+**FEM mesh inventory across campaigns — PIDL series is ℓ/h≈1 (coarse), not community standard**
+
+Three distinct mesh campaigns exist in GRIPHFiTH:
+
+| Campaign | Mesh file | ℓ | h_tip | ℓ/h_tip | Quads |
+|---|---|---|---|---|---|
+| PIDL series (u=0.08–0.14) | SENT_mesh.inp (Abaqus, Mac-supplied) | 0.01 mm | ~0.01 mm | **~1** | 77,730 |
+| Carrara strict-repro (AMOR+MIEHE Basquin sweep) | SENT_carrara_quad.inp | 0.004 mm | 0.0008 mm | **5** | 31,041 |
+| PCC concrete smoke (Handoff F) | SENT_pcc_concrete_quad.inp | 5 mm | 1 mm | **5** | 1,107 |
+
+**Key implication**: the PIDL-series FEM reference data (all N_f values used for PIDL/FEM comparison) comes from ℓ/h≈1, which is coarser than the Carrara/community standard of ℓ/h=5. The mesh was kept for back-compat with PIDL training data.
+
+**Paper action item**: need mesh-convergence check — run PIDL-series at Umax=0.12 with ℓ/h=5 mesh, verify N_f within 5%. If it passes, state "legacy mesh retained for PIDL back-compat; convergence verified at representative Umax". If N_f shifts >5%, must decide whether to retrain PIDL with new mesh or caveat.
+
+**Audit Hit 16 status**: still open, this finding confirms it's a real gap.
