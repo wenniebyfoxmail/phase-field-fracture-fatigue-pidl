@@ -26,6 +26,71 @@
 
 ## Entries
 
+## 2026-05-05 · [correction] [in-progress]: FEM-2/3 trend has band-width confound — running clean 2×4 matrix (FEM-D) to disentangle h-refinement from band-narrowing
+
+### What I missed in the FEM-2/3 outbox
+
+User caught a critical issue while inspecting mesh visualizations: **the refined band y-width `Lref_y` is NOT constant across mesh_C/M/F/XF**. Reading `Dependencies/Plate_mesh/MeshRectanglularPlate_notch.m:41`:
+
+```matlab
+ny = [linspace(0, 0.5*(B-Lref_y), Ny+1), ...
+      linspace(0.5*(B-Lref_y), 0.5*(B+Lref_y), Nref_y+1), ...
+      linspace(0.5*(B+Lref_y), B, Ny+1)];
+```
+
+The four meshes I claimed were a "clean h-refinement series" actually have:
+
+| Mesh | h_tip | **Lref_y** | refined band y | comment |
+|---|---:|---:|---|---|
+| mesh_C  | 0.002    | **0.10** | [0.45, 0.55] | wide |
+| mesh_M  | 0.001    | **0.10** | [0.45, 0.55] | wide |
+| mesh_F  | 0.000667 | **0.05** | [0.475, 0.525] | NARROWED ← from F onward |
+| mesh_XF | 0.0005   | **0.05** | [0.475, 0.525] | narrow |
+
+The original mesh_F INPUT comment says: *"narrower y-band (0.05 vs coarse/medium 0.1) is safe because AT1 damage band width ≈ 4ℓ = 0.04 < 0.05"*. The reasoning is sound for damage-band-fits, but it CONFOUNDS the h-refinement study.
+
+### What this means for the previous FEM-2/3 conclusion
+
+| Step | h_tip change | Lref_y change | Pure h-refinement? | ΔN_f |
+|---|---|---|---|---:|
+| C → M | 0.002 → 0.001 | 0.10 → 0.10 | ✅ pure | +2.6% |
+| **M → F** | **0.001 → 0.000667** | **0.10 → 0.05 (band shrank!)** | **❌ confounded** | **+8.9%** |
+| F → XF | 0.000667 → 0.0005 | 0.05 → 0.05 | ✅ pure | +12.8% |
+
+So my "diverging trend" claim from the previous outbox is **partly an artifact**: M→F mixes h-refinement with band narrowing. The clean h-refinement evidence I have is just two isolated steps (C→M at +2.6% and F→XF at +12.8%) — they don't form a single contiguous series because the band differs.
+
+### Action: running FEM-D clean 2×4 matrix
+
+Filling the matrix to get clean h-refinement series at both Lref_y values:
+
+|  | h=0.002 (ℓ/h=5) | h=0.001 (10) | h=0.000667 (15) | h=0.0005 (20) |
+|---|:---:|:---:|:---:|:---:|
+| Lref_y=0.10 (wide) | mesh_C ✓ | mesh_M ✓ | **F_w** (running) | **XF_w** (running) |
+| Lref_y=0.05 (narrow) | **C_n** (running) | **M_n** (running) | mesh_F ✓ | mesh_XF ✓ |
+
+4 new runs queued sequentially `meshC_n → meshM_n → meshF_w → meshXF_w` (total ~17-20h overnight). Outputs `Scripts/fatigue_fracture/SENT_PIDL_12_mesh_{C_n,M_n,F_w,XF_w}/`. Element counts: 33K / 90K / 285K / 480K.
+
+When this completes I'll have **two parallel pure h-refinement series**:
+- Wide band (Lref_y=0.10): C → M → F_w → XF_w
+- Narrow band (Lref_y=0.05): C_n → M_n → F → XF
+
+Then the comparison at fixed h shows the band-width effect, and each row tells the true h-convergence story.
+
+### Caveat on previous FEM-3 conclusion
+
+**Don't act on "trend diverging" yet** — that conclusion is partially a band-width artifact. Wait for FEM-D to finish (~tomorrow) before deciding paper framing on §4.6 / mesh-convergence section.
+
+The (B) recommendation from the FEM-3 outbox (switch to F-threshold N_f criterion) is still sensible regardless and could run in parallel — say if you want me to do that now (~30 min, no new FEM run, just post-process).
+
+### Files written
+
+- INPUTs: `Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_mesh_{C_n,M_n,F_w,XF_w}.m`
+- drivers: `Scripts/fatigue_fracture/main_fatigue_mesh{C_n,M_n,F_w,XF_w}.m`
+- sweep: `Scripts/fatigue_fracture/run_FEM_D_sweep.sh`
+- master log: `Scripts/fatigue_fracture/sweep_logs/FEM_D_master.log`
+
+---
+
 ## 2026-05-05 · [done] [concerning]: FEM-3 ℓ/h=20 mesh_XF — N_f=97, trend DIVERGING (deltas growing not shrinking)
 
 - **Re**: `windows_fem_inbox.md` Request FEM-3 (2026-05-05)
