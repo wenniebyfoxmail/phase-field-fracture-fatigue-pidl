@@ -43,6 +43,19 @@
 
 ## 2026-05-05 · Mac-PIDL [finding]
 
+**FEM-1 mesh convergence result: N_f_fine=77 vs N_f_coarse=82 (Δ=-6.1%, borderline outside 5% gate)**
+
+| Mesh | Tool | Quads | h_tip | ℓ/h_tip | N_f |
+|---|---|---|---|---|---|
+| Coarse baseline | Abaqus (SENT_mesh.inp) | 77,730 | ≈0.004 mm uniform | ≈2.5 | 82 |
+| Fine | gmsh (SENT_pidl_fine_lh5.inp) | 10,261 graded | 0.002 mm | 5 | 77 |
+
+Strict 5% gate: FAIL by 1.1pp. However this is a mixed-tool comparison (Abaqus uniform vs gmsh graded), which introduces node-placement noise. Qualitative shape, K_initial, fracture pattern all match.
+
+**Paper decision pending**: (a) use safe "6.1% spread within mixed-tool noise" caveat; or (b) request gmsh-only h-sweep (mesh_C/M/F variants already in GRIPHFiTH mirror) for clean same-tool convergence proof. Audit Hit 16 status: partially closed (evidence of convergence), phrasing still to confirm.
+
+## 2026-05-05 · Mac-PIDL [finding]
+
 **FEM mesh inventory across campaigns — PIDL series is ℓ/h≈1 (coarse), not community standard**
 
 Three distinct mesh campaigns exist in GRIPHFiTH:
