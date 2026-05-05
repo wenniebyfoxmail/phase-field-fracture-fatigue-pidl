@@ -27,7 +27,54 @@
 
 ## Active Requests
 
-[暂无]
+## 2026-05-05 · Request FEM-1: mesh convergence check — PIDL-series at Umax=0.12, ℓ/h=5
+
+**Goal**: 验证 PIDL-series FEM 参考数据（ℓ/h≈1，N_f≈82）是否网格收敛。Paper 里要能写一句"convergence verified at representative Umax"。
+
+**现有 baseline**:
+- INPUT file: `Scripts/fatigue_fracture/INPUT_SENT_PIDL_12.m`
+- Mesh: `Dependencies/SENT_mesh/SENT_mesh.inp`（77,730 quads，h_tip≈0.01 mm，ℓ/h≈1）
+- Result: N_f ≈ 82
+
+**需要做的**:
+
+**Step 1 — 生成新 mesh**（与 SENT_carrara_quad.inp / SENT_pcc_concrete_quad.inp 同流程）:
+
+| 参数 | 目标值 |
+|---|---|
+| 几何 | 同 SENT_mesh.inp：1×1 mm，notch 在左中，物理切口 |
+| ℓ | 0.01 mm（不变） |
+| h_tip | **0.002 mm**（ℓ/h_tip = 5） |
+| h_zone | 0.005 mm（tip 周围精细区） |
+| h_global | 0.05 mm |
+| 格式 | Abaqus .inp 或 GRIPHFiTH 支持的格式 |
+| 文件名 | `SENT_pidl_fine_lh5.inp` |
+
+**Step 2 — 新 INPUT 文件**（基于 INPUT_SENT_PIDL_12.m 修改）:
+- 文件名：`INPUT_SENT_PIDL_12_fine.m`
+- 唯一改动：mesh 路径指向新 `SENT_pidl_fine_lh5.inp`
+- 所有材料参数不变：E=1, ν=0.3, Gc=0.01, ℓ=0.01, α_T=0.5, p=2.0, AT1, AMOR, PENALTY
+- BC 不变：uy_final=0.12, R=0.0
+- max_cycle=120（足够，预期 fracture ~82）
+
+**Step 3 — 跑**:
+```matlab
+run('Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_fine.m')
+main_fatigue_fracture(...)
+```
+
+**Expected outputs**:
+- N_f（first penetration cycle）
+- ᾱ_max @ N_f
+- 回传到 `windows_fem_outbox.md`：N_f_fine vs N_f_coarse=82，差值 %
+
+**Acceptance criteria**:
+- PASS：|N_f_fine − 82| / 82 ≤ 5%（网格收敛）
+- FAIL：>5%，需要讨论是否重跑所有 Umax 或降级 caveat
+
+**Priority**: medium（OOD 表格不 block 这个，但 paper submission 前必须有）
+
+**Blocker 提示**: 如果 mesh 生成工具（Abaqus/Gmsh）有问题，outbox 里说一声，Mac 可以帮生成 .inp 文件。
 
 ---
 
