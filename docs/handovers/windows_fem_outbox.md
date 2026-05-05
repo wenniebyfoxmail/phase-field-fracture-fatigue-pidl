@@ -26,6 +26,65 @@
 
 ## Entries
 
+## 2026-05-05 · [done] [concerning]: FEM-3 ℓ/h=20 mesh_XF — N_f=97, trend DIVERGING (deltas growing not shrinking)
+
+- **Re**: `windows_fem_inbox.md` Request FEM-3 (2026-05-05)
+- **Status**: ✅ run completed; N_f=97 at ℓ/h=20. Total wall 17,797 s (~5 h, 280K elements). **But the convergence picture is concerning — read carefully.**
+
+### Full sweep (FEM-2 + FEM-3 combined)
+
+| Mesh | ℓ/h_tip | h_tip | Elements | N_f | Δ vs previous | Wall |
+|---|---:|---:|---:|---:|---:|---:|
+| C  | 5  | 0.002    | 45,000  | 77 | — | ~88 min |
+| M  | 10 | 0.001    | 140,000 | 79 | +2.6% (vs C) | ~5.5 h |
+| F  | 15 | 0.000667 | 174,000 | 86 | +8.9% (vs M) | ~6.4 h |
+| **XF** | **20** | **0.0005** | **280,000** | **97** | **+12.8% (vs F)** | ~5.0 h |
+
+### Why this is concerning
+
+For genuine h-convergence, the relative deltas should **shrink** as h→0 (asymptotic behavior). Here they are **growing**:
+- C→M: +2.6%
+- M→F: +8.9%
+- F→XF: +12.8%
+
+This is the opposite of asymptotic convergence. Mac's strict PASS criterion `|N_f_XF − N_f_F|/N_f_F < 5%` fails by **7.8pp**, and the trend says further refinement will likely give *more* divergence, not less.
+
+### Likely causes (in order of plausibility)
+
+1. **Penetration-criterion sensitivity to mesh** — the d≥0.95 boundary trigger fires when the d-front reaches the right edge. Finer meshes resolve smaller boundary regions and the d-front "slows down" near the boundary in finer meshes, producing later cycle detection. Evidence: F at penetration scales with mesh:
+   - mesh_C: F_pen = 9.7e-4
+   - mesh_M: F_pen = 7.3e-4
+   - mesh_F: F_pen = 1.9e-4
+   - mesh_XF: F_pen = 1.8e-4
+   The cliff drops in the last cycle are similar across meshes, but the magnitude of detection differs. **This is a definition artifact, not physics.**
+
+2. **PENALTY-irreversibility convergence pathology** — known in PF-fracture literature. Penalty enforces d ≤ 1 softly, allowing overshoot. Larger meshes accumulate slightly different overshoots → integrated N_f differs. HISTORY irreversibility (Carrara default) is more h-stable but wasn't used here because PIDL series uses PENALTY.
+
+3. **AT1 has weaker localization than AT2 for phase-field fatigue** — AT1's Γ-convergence asymptotic is more mesh-sensitive in fatigue settings. Carrara 2020 chose AT2 partly for this reason.
+
+### Recommendation for paper
+
+This data **cannot** support a "mesh-converged" claim with a strict 5% criterion. Three honest framings (Mac picks):
+
+- **(A) Acknowledge mesh sensitivity** "N_f shows monotone increase with mesh refinement, varying from 77 (ℓ/h=5) to 97 (ℓ/h=20). The h→0 limit is not yet bracketed; results in the paper are reported at ℓ/h≈2.5 (the PIDL series mesh, N_f=82) which sits within the C-M-F range. The PIDL-vs-FEM agreement of +7% at u=0.13 is similar in magnitude to the FEM-vs-FEM mesh sensitivity, suggesting the comparison is dominated by mesh effects rather than PIDL extrapolation error."
+- **(B) Switch to a mesh-stable N_f criterion** — re-extract N_f using `F_peak / F_initial < 5%` or `F_peak < 0.005` from the load_displ history. This bypasses the d-boundary detector. ~30 min to re-extract for all 4 meshes. If meshes converge under this criterion, the original disagreement is purely a definition artifact.
+- **(C) Add ℓ/h=25, 30** — if Mac wants to bracket convergence at all costs. Each level ~2× slower than previous (ℓ/h=25 ≈ 12 h, ℓ/h=30 ≈ 25 h). Risk: trend keeps diverging, no bracket exists with current N_f definition.
+
+**My vote**: (B) first, ~30 min cost. If F-threshold gives mesh-stable N_f, the paper claim is salvaged ("mesh-converged under load-amplitude criterion"). If it doesn't, then (A) is the honest framing.
+
+### Files
+
+- INPUT: `Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_mesh_XF.m`
+- driver: `Scripts/fatigue_fracture/main_fatigue_meshXF.m`
+- output: `Scripts/fatigue_fracture/SENT_PIDL_12_mesh_XF/` (load_displ + monitor + extra_scalars + 97 psi_field/.mat + VTK keyframes)
+- log: `Scripts/fatigue_fracture/sweep_logs/SENT_PIDL_12_mesh_XF_run.log`
+
+### Next
+
+Standby. If Mac picks (B), I can run the F-threshold re-extraction immediately (~30 min, no new FEM run needed — just load_displ post-processing across all 4 + the original baseline). Tell me in inbox.
+
+---
+
 ## 2026-05-05 · [done]: FEM-4 a(N) crack tip trajectory CSVs for u=0.08 / 0.12 / 0.13
 
 - **Re**: `windows_fem_inbox.md` Request FEM-4 (2026-05-05) — paper core figure
