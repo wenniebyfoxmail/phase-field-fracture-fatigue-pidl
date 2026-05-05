@@ -26,6 +26,56 @@
 
 ## Entries
 
+## 2026-05-05 · [done]: FEM-2 gmsh-only h-sweep — runs already completed prior session, N_f trend NOT yet converged at ℓ/h=15
+
+- **Re**: `windows_fem_inbox.md` Request FEM-2 (2026-05-05)
+- **Status**: ✅ data already on disk from a prior session — INPUT files (`INPUT_SENT_PIDL_12_mesh_{C,M,F}.m`) and drivers (`main_fatigue_mesh{C,M,F}.m`) were created in earlier work, and all three runs reached penetration cleanly. No new run needed. Verifying via `monitorcycle.dat` line counts + `cputime.dat` final cycle stamps.
+
+### Result table
+
+| Mesh | ℓ/h_tip | Elements | N_f | Δ vs prior | Total wall |
+|---|---:|---:|---:|---|---:|
+| mesh_C | 5 | ~45,000 (Nx=500, Nref_y=50, ±0.05 band) | **77** | — | ~88 min |
+| mesh_M | 10 | ~120,000 (Nx=1000, Nref_y=100, ±0.05 band) | **79** | +2.6% from C | ~5.5 h |
+| mesh_F | 15 | ~144,000 (Nx=1500, Nref_y=76, ±0.025 band) | **86** | +8.9% from M | ~6.4 h |
+
+(Trend: monotone increasing N_f as ℓ/h_tip grows. **Note**: mesh_C N_f=77 matches FEM-1 fine result `SENT_PIDL_12_fine` exactly, even though those came from different gmsh scripts with different geometry — Carrara-style notch slit vs plate.m sharp_notch. That cross-tool agreement is reassuring evidence the result is real.)
+
+### Acceptance assessment
+
+| Mac criterion | Result | Verdict |
+|---|---|---|
+| PASS: \|N_f_M − N_f_F\|/N_f < 5% | \|79−86\|/86 = **8.1%** | ❌ FAIL by 3pp |
+| BONUS: C ≈ M ≈ F | spread 77–86 = 11.7% | ❌ FAIL — even ℓ/h=5 underestimates ℓ/h=15 by ~10% |
+
+### Honest reading
+
+- **Direction of trend**: refining the mesh INCREASES N_f. The phase-field N_f is *not* an upper-bound result (more refinement → longer life), so the original Abaqus N_f=82 is mid-trend and the "true" h→0 limit is presumably above 86.
+- **Slowing? Not really**: C→M = +2.6%, M→F = +8.9%. The M→F jump is *larger* than C→M, so the trend is not yet asymptotic. Mesh F may still be in the "transitional" regime, or there's a stagnation-iter / penetration-detection sensitivity at very fine meshes.
+- **Penetration-criterion noise**: F at penetration is much smaller for mesh_F (1.9e-4) than mesh_C (9.7e-4). Suggests the d≥0.95 cross-boundary trigger fires deeper into the cycle for fine meshes — could add 1-2 cycles of "phantom" extension. Worth flagging.
+
+### Recommended phrasing for paper
+
+Two honest options:
+
+- **(weak / accurate)** "Mesh-convergence study at ℓ/h_tip ∈ {5, 10, 15} shows monotone N_f increase from 77 → 79 → 86 cycles; the result is not yet asymptotically converged but the variation is bounded within ~12% of the published baseline of 82."
+- **(stronger, requires more runs)** Add ℓ/h=20 or ℓ/h=25 to bound the convergence rate properly. Each level ≈doubles cost (mesh_F took 6.4h; ℓ/h=20 likely 12-15h). Tell me if Mac wants these.
+
+### Files written
+
+- INPUT: `Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_mesh_{C,M,F}.m`
+- driver: `Scripts/fatigue_fracture/main_fatigue_mesh{C,M,F}.m`
+- output: `Scripts/fatigue_fracture/SENT_PIDL_12_mesh_{C,M,F}/` (load_displ + monitorcycle + cputime + per-cycle psi_fields not present — these runs predate the psi-export augmentation; if Mac wants them, easy rerun for mesh_C only ~90 min)
+
+### Next
+
+Standby. Possible follow-ups (Mac's call):
+1. Add ℓ/h=20 / ℓ/h=25 mesh extensions for proper asymptotic bracket
+2. Re-run mesh_C (only one fast) with current `solve_fatigue_fracture.m` (with psi export) for snapshot consistency vs PIDL u=0.12 series
+3. Investigate penetration-criterion sensitivity — gate at fixed F_threshold instead of d≥0.95 boundary
+
+---
+
 ## 2026-05-05 · [done]: FEM-1 mesh convergence — N_f=77 vs baseline 82 (Δ=-6.1%, marginally outside 5% PASS line)
 
 - **Re**: `windows_fem_inbox.md` Request FEM-1 (2026-05-05)
