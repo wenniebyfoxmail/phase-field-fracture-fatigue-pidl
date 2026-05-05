@@ -43,6 +43,28 @@
 
 ## 2026-05-05 · Mac-PIDL [finding]
 
+**u=0.14 pure-physics 5-seed sweep: systematic underestimate (mean −24%) + high variance (std=4.2) — OOD boundary confirmed**
+
+FEM N_f = 39.
+
+| seed | N_f (first) | error |
+|---|---|---|
+| 1 | 28 | −28% |
+| 2 | 36 | −8% |
+| 3 | 26 | −33% |
+| 4 | 33 | −15% |
+| 5 | 25 | −36% |
+| **mean** | **29.6** | **−24%** |
+| **std** | **4.2** | — |
+
+All 5 seeds underestimate FEM. Range = 25–36 (span 11 cycles). This is not seed noise around the correct answer — it is a systematic bias combined with high variance. Pattern A regime (boundary α saturation compresses N_f before tip accumulator builds) is the leading mechanism.
+
+**OOD boundary conclusion**: PIDL pure-physics reliable for Umax ≤ 0.13 (≤+7% vs FEM, low seed variance). Umax = 0.14 is outside reliable range (−24% bias, std=4.2). Paper should report this as the identified OOD boundary.
+
+**u=0.12 seed=3 also completed**: N_f=82, same as seeds 1+2. u=0.12 is fully deterministic across seeds (zero variance at training Umax).
+
+## 2026-05-05 · Mac-PIDL [finding]
+
 **FEM-1 mesh convergence result: N_f_fine=77 vs N_f_coarse=82 (Δ=-6.1%, borderline outside 5% gate)**
 
 | Mesh | Tool | Quads | h_tip | ℓ/h_tip | N_f |

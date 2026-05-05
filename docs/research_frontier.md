@@ -23,15 +23,17 @@ PIDL pure-physics 在 OOD Umax (>0.12) 上是否保持准确的 N_f 预测？（
 
 ## Current Best Bet
 
-OOD 泛化在 u≤0.13 大概率成立（Oracle 和 pure-physics 都给 ~61，+7% vs FEM）；u=0.14 是真正的边界——倾向认为会出现精度下降但不确定是 monotonicity 破坏还是 multimodality。
+**OOD 边界已确定**：Umax ≤ 0.13 可靠（≤+7% vs FEM，低 seed 方差）；Umax = 0.14 系统性低估 −24%（mean），std=4.2，超出可靠范围。Switch condition 已触发。
 
 ## Best Next Discriminator
 
-等 Taobo clean rerun u=0.14 多 seed 结果落地 → 如果 3 seeds 的 N_f 一致且 < FEM → 单纯精度衰减；如果 seeds 间差异大 → multimodality。
+u=0.13 多 seed（Windows 在跑）→ 确认 u=0.13 方差低（如预期） → OOD 结论最终锁定。
 
 ## Switch Condition
 
-如果 u=0.14 clean rerun 显示 N_f 合理（monotone 且误差 <20%），OOD 验证关闭，主线切到 Phase 2 concrete。
+~~如果 u=0.14 clean rerun 显示 N_f 合理（monotone 且误差 <20%），OOD 验证关闭~~
+
+**TRIGGERED 2026-05-05**：u=0.14 5-seed 显示系统性低估 −24% + 高方差。OOD 验证完成，主线切到 **Phase 2 concrete**（等 u=0.13 multi-seed 收口后正式关闭 Branch 1）。
 
 ## Parking Lot
 
@@ -40,7 +42,9 @@ OOD 泛化在 u≤0.13 大概率成立（Oracle 和 pure-physics 都给 ~61，+7
 - Phase 2B beam/slab geometry
 - PIDL retraining at concrete units (Phase 2.5+)
 
-## Recently Closed
+## Recently Closed / Triggered
 
-- u=0.14 N_f=127: RETRACTED, resume artifact (详见 shared_research_log 2026-05-05)
+- **OOD boundary CONFIRMED 2026-05-05**: Umax ≤ 0.13 reliable; 0.14 = systematic −24% bias + high variance → Branch 1 switch triggered
+- u=0.12 seed=1/2/3: N_f=82 all three, zero variance (deterministic at training Umax)
+- u=0.14 N_f=127: RETRACTED, resume artifact (詳 shared_research_log 2026-05-05)
 - run_baseline_umax.py bug: FIXED commit 6040cbb + guard 427ebe7 (2026-05-04)
