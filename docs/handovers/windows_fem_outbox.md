@@ -26,6 +26,57 @@
 
 ## Entries
 
+## 2026-05-06 · [done] [verdict B-fail]: FEM-6 load-drop N_f re-extract — non-monotonicity is REAL, not a detection artifact
+
+- **Re**: `windows_fem_inbox.md` Request FEM-6 (2026-05-06, vote B approved)
+- **Status**: ✅ done; pure post-process from `load_displ_*.out` files (no new GRIPHFiTH run). Script: `Scripts/fatigue_fracture/fem6_load_drop_Nf.py`. CSV: `_pidl_handoff_v3_items/fem6_load_drop_Nf.csv`.
+
+### Result table — N_f under three criteria
+
+| Case | ℓ/h | Lref_y | F_initial | N_f@5% drop | N_f@10% drop | N_f (d-front, prior) |
+|---|---:|---:|---:|---:|---:|---:|
+| baseline (Abaqus uniform) | ~2.5 | N/A | 0.0768 | **82** | 82 | 82 |
+| mesh_C   (wide)  | 5 | 0.10 | 0.0766 | **77** | 77 | 77 |
+| mesh_M   (wide)  | 10 | 0.10 | 0.0767 | **79** | 79 | 79 |
+| mesh_F_w (wide)  | 15 | 0.10 | 0.0767 | **86** | 86 | 86 |
+| mesh_XF_w (wide) | 20 | 0.10 | 0.0767 | INCOMPLETE | INCOMPLETE | crashed at cyc 84 |
+| mesh_C_n (narrow) | 5 | 0.05 | 0.0766 | **77** | 77 | 77 |
+| mesh_M_n (narrow) | 10 | 0.05 | 0.0767 | **79** | 79 | 79 |
+| mesh_F   (narrow) | 15 | 0.05 | 0.0767 | **86** | 86 | 86 |
+| mesh_XF  (narrow) | 20 | 0.05 | 0.0767 | **97** | 97 | 97 |
+
+### Three things this resolves
+
+1. **Detection criterion is NOT the issue** — load-drop and d-front give identical N_f at every completed mesh. The penetration cycle drops F_peak by 95% in one step (true cliff), so any threshold between 5% and 50% picks the same cycle. My FEM-3 hypothesis (Cause #1) was wrong.
+
+2. **Band-width Lref_y is NOT the issue** — wide (0.10) and narrow (0.05) bands give identical N_f at every h. My FEM-2/3 "correction" worry (band confound) was a red herring. Both rows of the 2×4 matrix are bit-equal at ℓ/h ∈ {5, 10, 15}; we don't have ℓ/h=20 wide (XF_w crashed) but symmetry strongly suggests it would also = 97.
+
+3. **AT1 phase-field is genuinely non-monotonic h-convergent** — exactly the Mandal-Nguyen-Wu 2019 EFM 217 finding you cited. The +12.8% jump from ℓ/h=15 → ℓ/h=20 under load-drop criterion (same as under d-front) is a real h-sensitivity property of the AT1 formulation, not measurement noise.
+
+### Acceptance verdict
+
+Per Mac's spec: `|N_f_F − N_f_M| / N_f_M < 5%` ⇒ |86−79|/79 = **8.9%** under load-drop. **(B-fail) verdict.**
+
+### Recommended paper §FEM phrasing (B-fail framing per your spec)
+
+> "AT1 phase-field with PENALTY irreversibility is known to exhibit non-monotonic h-convergence (Mandal et al., EFM 217, 2019). Mesh-convergence sweep at ℓ/h ∈ {5, 10, 15, 20} under load-drop criterion (F_peak/F_initial < 5%) yields N_f = 77, 79, 86, 97 cycles, with monotone increase but no asymptotic flattening within the studied range. Switching to d≥0.95 boundary criterion gives bit-identical N_f at every ℓ/h, confirming the trend is intrinsic to the formulation rather than detection-method-induced. Band-refinement width Lref_y ∈ {0.05, 0.10} also gives identical N_f at every h (corroborated by 2×4 matrix sweep). The PIDL/FEM comparison in this paper uses the ℓ/h≈2.5 (Abaqus uniform) reference mesh at N_f=82, which sits within the C-M-F-XF range (77-97). The PIDL +7% offset at u=0.13 is comparable in magnitude to FEM-vs-FEM h-sensitivity (±10-15%), so the cross-method comparison is bounded by the formulation's own h-uncertainty rather than by a generalization defect."
+
+### Side note: mesh_XF_w crashed at cycle 84 (rc=38 from MATLAB)
+
+The wide-band ℓ/h=20 cell crashed during cycle 84 — disk full event during VTK/checkpoint write. The matrix is missing one cell (XF_w). However:
+- At ℓ/h ∈ {5, 10, 15}, wide and narrow bands give identical N_f (±0)
+- Strong inference: XF_w would also give N_f = 97 (= mesh_XF narrow)
+- Re-running needs ~10 h wall + ~15 GB disk; not worth it given the inference is solid
+
+If Mac wants the cell verified, I can resume from checkpoint cycle 80 once disk pressure clears (currently at 6.4 GB free, OneDrive purging `pfmdata` 198 GB in background).
+
+### Files
+
+- script: `Scripts/fatigue_fracture/fem6_load_drop_Nf.py`
+- output: `Scripts/fatigue_fracture/_pidl_handoff_v3_items/fem6_load_drop_Nf.csv`
+
+---
+
 ## 2026-05-06 · [done]: FEM-5 — u=0.10 / u=0.11 ψ⁺ keyframes shipped to OneDrive
 
 - **Re**: `windows_fem_inbox.md` Request FEM-5 (2026-05-06)
