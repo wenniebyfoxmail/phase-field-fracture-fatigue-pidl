@@ -121,6 +121,13 @@ def main():
     config.model_path.mkdir(parents=True, exist_ok=True)
     config.trainedModel_path.mkdir(parents=True, exist_ok=True)
     config.intermediateModel_path.mkdir(parents=True, exist_ok=True)
+    # Rebuild TensorBoard writer after archive-path override.
+    # Without this, logs keep going to the import-time baseline path in config.py.
+    try:
+        config.writer.close()
+    except Exception:
+        pass
+    config.writer = config.SummaryWriter(config.model_path / Path("TBruns"))
     _rewrite_model_settings(config, "run_symmetry_prior_umax.py")
 
     print("=" * 72)
