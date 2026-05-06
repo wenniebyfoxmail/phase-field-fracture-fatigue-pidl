@@ -26,6 +26,44 @@
 
 ## Entries
 
+## 2026-05-06 · [done]: FEM-D 2×4 matrix COMPLETE — wide=narrow at every h confirmed (XF_w resumed from cyc 80)
+
+- **Re**: FEM-D follow-up after the FEM-3 band-width "correction" worry
+- **Status**: ✅ matrix fully filled. mesh_XF_w resumed from checkpoint cycle 80 after disk-full crash; ran 81→97 in 2.4h, hit penetration at cycle 97 (F dropped 0.015 → 1.8e-4 in last cycle, classic cliff).
+
+### Final 2×4 matrix
+
+| | ℓ/h=5 | ℓ/h=10 | ℓ/h=15 | ℓ/h=20 |
+|---|---:|---:|---:|---:|
+| **Lref_y=0.10 (wide)**  | mesh_C  = **77** | mesh_M   = **79** | mesh_F_w = **86** | mesh_XF_w = **97** |
+| **Lref_y=0.05 (narrow)**| mesh_C_n= **77** | mesh_M_n = **79** | mesh_F   = **86** | mesh_XF   = **97** |
+
+**Wide row vs narrow row are bit-identical at all 4 h values.** Band-width has zero effect on N_f when ≥ 4ℓ (damage band fits comfortably in either 0.05 or 0.10 corridor).
+
+### What this confirms
+
+- The FEM-3 "diverging trend" reading was correct, NOT a band-width artifact (my earlier `ea223fb` correction was the red herring, and FEM-D fully reverses it)
+- The +12.8% F→XF jump is a real h-property of AT1 + PENALTY (Mandal-Nguyen-Wu 2019)
+- (B-fail) framing from FEM-6 stands; see that outbox entry for paper phrasing
+
+### Resume notes (for future-me)
+
+- monitorcycle.dat has stale duplicate cycle 81-84 rows from the crashed run, then fresh 81-97 from resume. `load_displ_SENT_PIDL_12_mesh_XF_w.out` similarly. `psi_fields/cycle_*.mat` were overwritten cleanly.
+- FEM-6 post-process script `fem6_load_drop_Nf.py` patched to dedupe via monitorcycle.dat as cycle authority (resume rows overwrite crash rows). XF_w under load-drop = **97** (matches d-front, matches narrow XF). Re-ran FEM-6, all cells consistent. CSV at `_pidl_handoff_v3_items/fem6_load_drop_Nf.csv` updated.
+
+### Disk update
+
+OneDrive `pfmdata` purging finally kicked in: 6.4 GB → 12 GB → 9.3 GB (after XF_w resume used 3 GB). Headroom OK going forward.
+
+### Files
+
+- INPUT: `Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_mesh_XF_w.m`
+- driver: `Scripts/fatigue_fracture/main_fatigue_meshXF_w.m`
+- output: `Scripts/fatigue_fracture/SENT_PIDL_12_mesh_XF_w/`
+- log: `Scripts/fatigue_fracture/sweep_logs/SENT_PIDL_12_meshXF_w_run.log` (appended)
+
+---
+
 ## 2026-05-06 · [done] [verdict B-fail]: FEM-6 load-drop N_f re-extract — non-monotonicity is REAL, not a detection artifact
 
 - **Re**: `windows_fem_inbox.md` Request FEM-6 (2026-05-06, vote B approved)
