@@ -132,8 +132,13 @@ class FieldComputation:
             # for the SENT geometry. v_BC and bubble are unaffected (BC and
             # bubble may not be odd; the prior is on the NN correction only,
             # consistent with the variational symmetric solution).
+            # ★ 2026-05-07 input feature scaling fix: map [0, 0.25] → [-1, 1] so
+            # the y-axis input has the same scale + sign range as x ∈ [-0.5, 0.5]
+            # rescaled. Without this rescale, RPROP sign-based step updates were
+            # ill-conditioned in the y direction, causing 6-15× slowdown vs baseline.
+            # NN raw output is still even in y (function of y² only).
             y_col = inp[:, 1:2]
-            inp_nn = torch.cat([inp[:, 0:1], y_col**2], dim=1)
+            inp_nn = torch.cat([inp[:, 0:1], 8.0 * y_col**2 - 1.0], dim=1)
         else:
             inp_nn = inp   # 原始行为，无开销
 
