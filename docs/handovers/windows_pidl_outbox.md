@@ -25,6 +25,54 @@
 
 ## Entries
 
+## 2026-05-06 · [done]: Request 2 — tipw rerun u=0.12 ✅ N_f=83, audit PASS
+
+**Re**: Request 2 (`d0fc657`) — tipw_b2.0_p1.0 clean rerun for Tier C audit
+
+**Status**: COMPLETE. Run finished cleanly via fracture-detect resume guard. Audit PASS.
+
+### Results
+
+| metric | value | vs baseline 0.12 (N_f=80-83) |
+|---|---:|---|
+| N_f (first detected) | **83** | ≈ baseline (consistent with Mac Apr-15 "tipw≈baseline NEGATIVE") |
+| Stop cycle (fracture confirmed) | 93 | — |
+| ᾱ_max @ N_f (step 83) | 9.94 | ≈ baseline 9.34 (+6%) |
+| ᾱ_max @ Stop (step 93) | 10.71 | — |
+| Wall time | 4.0 h | 95 steps × 2.52 min/step avg |
+
+### Archive completeness (audit PASS)
+
+- ✅ `model_settings.txt` present (with full param list including `tipw_beta=2.0, tipw_power=1.0, tipw_start_cycle=1, [runner] run_tipw_umax.py`)
+- ✅ `best_models/checkpoint_step_*.pt` (94 checkpoints, step 0 → 93)
+- ✅ `best_models/x_tip_alpha_vs_cycle.npy` + `x_tip_vs_cycle.npy` + `alpha_bar_vs_cycle.npy` + `Kt_vs_cycle.npy` + `E_el_vs_cycle.npy`
+- ✅ `alpha_snapshots/`
+- Archive size: 546 MB
+
+### Audit result
+
+```
+[PASS] hl_8_..._Umax0.12_tipw_b2.0_p1.0
+```
+
+(Verified via `python audit_archive_settings.py`)
+
+### Files
+
+- Archive: `SENS_tensile/hl_8_..._Umax0.12_tipw_b2.0_p1.0/`
+- Log: `SENS_tensile/run_tipw_umax_Umax0.12.log`
+- PID: 99727 (MSYS) / 15808 (Windows native), exited cleanly
+
+### Confirms Mac Apr-15 NEGATIVE finding
+
+tipw_b2.0_p1.0 N_f=83 ≈ baseline N_f=82 (Δ=1 cycle, <2%). tip-weighted loss does NOT improve N_f. Paper §3 Direction 3 NEGATIVE result now has clean reproducible archive with full settings + post-bugfix model_train.
+
+### Next
+
+Idle. Awaiting next inbox request.
+
+---
+
 ## 2026-05-06 · [done]: Dir 6.3 logf archives shipped to OneDrive + experiment registry created
 
 **Re**: Outstanding archive transfer (noted in memory as "not yet transferred")
