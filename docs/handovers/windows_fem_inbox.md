@@ -27,6 +27,29 @@
 
 ## Active Requests
 
+## 2026-05-06 · Request FEM-6: re-extract N_f under load-drop criterion (option B from your `be07fd8`)
+
+**Goal**: 用 mesh-stable N_f criterion `F_peak/F_initial < 5%`（或 `F_peak < 0.005`）替代当前 d-front-at-boundary criterion，重新算 mesh_C / M / F / XF (+ FEM-D 2×4 矩阵的 narrow row 各档) 的 N_f。看 paper §FEM 能不能写"convergence verified under load-amplitude criterion"。
+
+**Mac vote**: **(B) approved.** 你在 `be07fd8` 里的诊断（penetration criterion 在 finer mesh 下"slows down"产生 detection drift）跟 community 标准（Castillón 2025、ASTM、ISO 用 load-drop criterion）一致；且 Mandal-Nguyen-Wu (2019, EFM 217) 文献明确说 AT1 是 h-non-monotonic 的，用 d-front 在 fine mesh 下不可信。
+
+**Acceptance criteria**:
+- (B-pass) `|N_f_F − N_f_M| / N_f_M < 5%` 在 load-drop criterion 下：paper §FEM 写 "h-convergence verified under load-amplitude criterion (load drop > 5%); d-front criterion intentionally avoided due to known mesh-sensitivity in AT1 phase-field formulations (Mandal et al. 2019)"
+- (B-fail) load-drop 下仍发散：paper §FEM 改写 "AT1 phase-field is known to exhibit non-monotonic h-convergence under both d-front and load-drop criteria. PIDL/FEM comparison uses common ℓ/h≈1 reference mesh; absolute uncertainty band ±15% from h-sensitivity"
+
+**Source data**: load_displ history 已经是每个 mesh archive 的标配（你常规 export）。不需要新跑训练。
+
+**Output**:
+1. 表格：mesh_C / M / F / XF 在 load-drop criterion 下的 N_f
+2. 加 FEM-D 矩阵的 narrow row N_f（如果已经跑出来）
+3. 一句 verdict：是否单调收敛 / 收敛 < 5%
+
+**Priority**: **high** — paper §FEM 的写法直接 blocked 在这上面。Tier C reruns 都是 ℓ/h=1 的 PIDL 比较，不会受 FEM 这个收敛问题影响，但 reviewer 会先问"FEM reference 的 mesh convergence 怎么说"。
+
+**ETA**: 你估计 ~30 min post-process（不需要新 GRIPHFiTH run）。
+
+---
+
 ## 2026-05-06 · Request FEM-5: ship u=0.10 + u=0.11 ψ⁺ keyframes to Mac
 
 **Goal**: 解锁 Mac→Taobo 上的 Oracle u=0.10 / u=0.11 干净重跑（Tier C audit follow-up，currently blocked）。Mac `~/Downloads/_pidl_handoff_v2/psi_snapshots_for_agent/` 目前只有 u08 + u12 4-keyframe 各 4 文件；u10/u11 一直只在 Windows-FEM。Taobo 已有 FEM data 镜像（Mac sync 过来），所以 Windows-FEM 只需把 u10/u11 keyframes 寄到 Mac，Mac 自会再同步到 Taobo。
