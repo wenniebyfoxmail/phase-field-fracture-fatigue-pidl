@@ -26,6 +26,44 @@
 
 ## Entries
 
+## 2026-05-06 · [done]: FEM-5 — u=0.10 / u=0.11 ψ⁺ keyframes shipped to OneDrive
+
+- **Re**: `windows_fem_inbox.md` Request FEM-5 (2026-05-06)
+- **Status**: ✅ done; 8 .mat files at the cycles you specified
+- **Delivery**: `OneDrive/PIDL result/_pidl_handoff_FEM5_u10_u11_2026-05-06.zip` (16.2 MB)
+- **Files** (each has 4 keys: `psi_elem`, `alpha_bar_elem`, `f_alpha_elem`, `d_elem`):
+
+| File | d_max | broken (d≥0.95) elements |
+|---|---:|---:|
+| u10_cycle_0001.mat | (cycle 1, no damage) | 0 / 77,730 |
+| u10_cycle_0080.mat | 1.013 | 243 (0.31%) |
+| u10_cycle_0140.mat | 1.003 | 787 (1.01%) |
+| u10_cycle_0170.mat | 1.016 | 1382 (1.78%) |
+| u11_cycle_0001.mat | 0.030 | 0 |
+| u11_cycle_0055.mat | 1.014 | 216 (0.28%) — VTK fallback to cycle 53 (vtk_freq grid; psi_fields cycle exact) |
+| u11_cycle_0095.mat | 1.014 | 727 (0.94%) |
+| u11_cycle_0117.mat | 1.033 | 1382 (1.78%) — penetration |
+
+- **VTK note for u11 cycle 55**: VTKs only exist at cycles ≤53 + every 10 thereafter. Used nearest VTK ≤55 (cycle 53) for d-field. ψ⁺/α/f from exact cycle 55 psi_fields/cycle_0055.mat. Should be fine — 2-cycle d-field offset is well under propagation timescale at this Umax.
+- **Local copies**: also kept at `Scripts/fatigue_fracture/_pidl_handoff_v2/psi_snapshots_for_agent/` for sanity. Note: I did not delete the older u10/u11 keyframes (c60, c120 for u10; c40, c80 for u11) — Mac can ignore those, all cycles you asked for are present.
+- **Generation script**: `Scripts/fatigue_fracture/augment_snapshots_u10_u11_FEM5.m`
+
+### Acceptance check ready
+
+Mac can verify by loading any of the 8 .mat files and confirming the 4 keys exist with size = num_elem × 1 = 77730 × 1.
+
+---
+
+## 2026-05-06 · [progress]: FEM-D first cell complete — mesh_C_n N_f=77, identical to mesh_C wide-band
+
+- **Re**: FEM-D 2×4 matrix correction
+- **Status**: 1/4 done. meshC_n finished cleanly at N_f=77 (matches mesh_C wide-band N_f=77 exactly). meshM_n started now.
+- **Implication**: at ℓ/h=5 (the coarsest end), band-width changes (Lref_y=0.10 vs 0.05) make **zero difference**. Damage band 4ℓ=0.04 fits well within both 0.10 and 0.05 corridors. This is a positive convergence indicator at the coarse end — both rows of the 2×4 matrix start at the same anchor.
+- **Remaining queue**: meshM_n (~2-3h) → meshF_w (~5-6h) → meshXF_w (~10-12h). Total ~17-21h, will complete tomorrow afternoon.
+- **Next outbox**: when full 2×4 lands, with both pure h-refinement series + a clean band-width comparison at each h.
+
+---
+
 ## 2026-05-05 · [correction] [in-progress]: FEM-2/3 trend has band-width confound — running clean 2×4 matrix (FEM-D) to disentangle h-refinement from band-narrowing
 
 ### What I missed in the FEM-2/3 outbox
