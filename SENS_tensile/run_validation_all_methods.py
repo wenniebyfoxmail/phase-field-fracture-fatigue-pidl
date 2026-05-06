@@ -119,12 +119,19 @@ def main():
     out_txt = HERE / "validation_table_all_methods.txt"
 
     with open(out_csv, 'w') as f:
-        f.write("method,archive,V1,V2,V3,V4,V5,V6,V7,V8,V1_detail,V3_K_med,V5_alpha_max,V6_f_min,V7_rel_sxx,V8_log_ratio\n")
+        f.write(
+            "method,archive,"
+            "V1,V2,V3,V4,V5,V6,V7,V8,"
+            "V4_alpha_even,V4_ux_corr_even,V4_vy_corr_odd,V4_dalpha_dy,"
+            "V4_rms_alpha,V4_rms_ux_corr,V4_rms_vy_corr,V4_rms_dalpha_dy,"
+            "V1_detail,V3_K_med,V5_alpha_max,V6_f_min,V7_rel_sxx,V8_log_ratio\n"
+        )
         for r in rows:
             badges = r['badges']
             details = r.get('details', {})
             v1d = details.get('V1', {})
             v3d = details.get('V3', {})
+            v4d = details.get('V4', {})
             v5d = details.get('V5', {})
             v6d = details.get('V6', {})
             v7d = details.get('V7', {})
@@ -135,6 +142,14 @@ def main():
                 f"{badges.get('V3','?')},{badges.get('V4','?')},"
                 f"{badges.get('V5','?')},{badges.get('V6','?')},"
                 f"{badges.get('V7','?')},{badges.get('V8','?')},"
+                f"{v4d.get('status_alpha_even', '')},"
+                f"{v4d.get('status_ux_corr_even', '')},"
+                f"{v4d.get('status_vy_corr_odd', '')},"
+                f"{v4d.get('status_dalpha_dy_centerline', '')},"
+                f"{v4d.get('rms_alpha_skew', '')},"
+                f"{v4d.get('rms_ux_corr_even', '')},"
+                f"{v4d.get('rms_vy_corr_odd', '')},"
+                f"{v4d.get('rms_dalpha_dy_centerline', '')},"
                 f"{v1d.get('max_rel_increase_E_el', '')},"
                 f"{v3d.get('K_r1_med', '')},"
                 f"{v5d.get('alpha_max_at_Nf', '')},"

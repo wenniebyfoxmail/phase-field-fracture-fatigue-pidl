@@ -38,6 +38,18 @@ class FieldComputation:
     l0: float
         相场长度参数，用于特征无量纲化（默认 0.01）
 
+    ★ 2026-05-06 新增 — symmetry_prior（geometry-aware mirror symmetry prior）
+    symmetry_prior: bool
+        False (default) → 原始行为（保留所有 caller 的现有结果）
+        True → 对 NN raw correction 强制 y-mirror parity，仅在 baseline 分支
+        （非 Williams branch）生效。Williams 分支的 8D feature 不受影响。
+        实现：input 用 (x, y²) 让 NN raw output 自动 even；disp_v_raw 再乘
+        y 让 correction odd。alpha + disp_u correction 自动 even。
+        v_BC 仍是 affine in y（非 odd）；约束作用于 NN correction，不约束总场。
+        见 docs/.../paper §4 reframe + 设计 caveat（Wu 2026 conceptual grounding，
+        Carrara framework requires symmetric solution under symmetric BCs）。
+        Phase 3 非对称几何关闭此 flag。
+
     fieldCalculation: applies BCs and constraint on alpha (needs to be customized for each problem)
     update_hist_alpha: alpha_field for use in the next loading step to enforce irreversibility
     '''
@@ -45,7 +57,8 @@ class FieldComputation:
                  alpha_constraint='nonsmooth',
                  williams_dict=None,
                  ansatz_dict=None,
-                 l0=0.01):
+                 l0=0.01,
+                 symmetry_prior=False):
         self.net = net
         self.domain_extrema = domain_extrema
         self.theta = theta
@@ -81,6 +94,12 @@ class FieldComputation:
         else:
             self.alpha_constraint = NonsmoothSigmoid(2.0, 1e-3)
 
+        # ★ 2026-05-06 mirror symmetry prior (only for baseline branch, not Williams)
+        self.symmetry_prior = bool(symmetry_prior)
+        if self.symmetry_prior and self.williams_enabled:
+            print("[FieldComputation] WARNING: symmetry_prior=True ignored when williams_enabled=True "
+                  "(Williams 8D feature 已包含 r,θ 几何信息，不叠加 y² 变换)")
+
     def fieldCalculation(self, inp):
         """
         将神经网络的原始输出转换为满足边界条件的物理场。
@@ -105,11 +124,33 @@ class FieldComputation:
                 r_min=self.williams_r_min,
                 theta_mode=self.williams_theta_mode,
             )
+        elif self.symmetry_prior:
+            # ★ 2026-05-06 mirror symmetry prior:
+            # NN sees (x, y²) instead of (x, y). NN raw output is automatically
+            # even in y (function of y²). Below we apply odd parity to disp_v_raw
+            # by multiplying by y, so the NN correction has the right symmetry
+            # for the SENT geometry. v_BC and bubble are unaffected (BC and
+            # bubble may not be odd; the prior is on the NN correction only,
+            # consistent with the variational symmetric solution).
+            y_col = inp[:, 1:2]
+            inp_nn = torch.cat([inp[:, 0:1], y_col**2], dim=1)
         else:
             inp_nn = inp   # 原始行为，无开销
 
         out = self.net(inp_nn)     # 神经网络输出（8D 或 2D 输入）
-        out_disp = out[:, 0:2]    # 位移部分
+
+        # ★ 2026-05-06 mirror symmetry: enforce odd parity on disp_v_raw correction
+        # disp_u_raw: even (NN raw output already even via y² input) — pass through
+        # disp_v_raw: even via y² → multiply by y to get odd (and disp_v(x,0)=0 automatic)
+        # alpha_raw:  even (passes through alpha_constraint downstream)
+        if self.symmetry_prior and not self.williams_enabled:
+            y_col1d = inp[:, 1]                  # shape [N], y in [-0.5, 0.5]
+            out_disp = torch.stack([
+                out[:, 0],                       # disp_u correction: even
+                y_col1d * out[:, 1],             # disp_v correction: odd
+            ], dim=1)
+        else:
+            out_disp = out[:, 0:2]              # 位移部分（原始行为）
 
         # ★ Direction 5: Enriched Ansatz —— 输出端叠加 c·χ(r)·F^mode(r,θ)
         # 使用 FIXED (x_tip, y_tip) = (0, 0) 避免 Williams v4 的峰元素漂移问题

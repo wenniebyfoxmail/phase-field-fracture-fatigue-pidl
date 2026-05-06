@@ -61,8 +61,19 @@
 | **α-1** 生产跑 u=0.12 N=300 | Windows | N_f=79，ᾱ_max=11.94（+28%）→ 有小幅改善但不是 closure | ❌ NEGATIVE（不闭合）|
 | **α-2** multi-head（主头+尖端门控头，default gate r_g=0.02） | Mac(dev)+Windows(prod) | T4 modal=0.30 FAIL（需≥0.70）| ❌ FAIL |
 | **α-2** tighter gate r_g=0.005 power=4 | Windows | T4 modal=0.30 FAIL → α-2 架构宣告无效 | ❌ DEAD |
-| **α-3** XFEM 跳跃增益（Heaviside 型连续+跳跃双头） | Windows | T4 modal=0.500（最优但 MARGINAL；PASS≥0.95）| ⚠ MARGINAL，设计稿已存，未正式跑大 sweep |
-| **Path C** supervised-α（zone MSE loss，无改架构） | Mac(impl) | 实现完毕（branch `supervised-alpha-c`），计划 Windows 产跑 | ⏳ 未完成 |
+| **α-3** XFEM 跳跃增益（Heaviside 型连续+跳跃双头） | Windows | T4 modal=0.500 MARGINAL（最优 stationarity）；ᾱ_max@c9=3.04 | ⚠ MARGINAL → **CLOSED OUT 2026-05-06**：not pursued for Phase 1，Path C 给了更好 trajectory metrics |
+| **Path C** supervised-α @ u=0.12 λ=0 seed=1 | Taobo | N_f=82 EXACT，ᾱ_max=12.08 | ✅ 确认 N_f match seed-robust |
+| **Path C** supervised-α @ u=0.12 λ=0 seed=2 (multi-seed) | Taobo | N_f=82 BIT-EXACT，ᾱ_max=10.17 | ✅ 框架级 N_f match 不依赖 seed |
+| **Path C** supervised-α @ u=0.12 λ=1 (R2) | Taobo | N_f=89，ᾱ_max=**108.9**（vs FEM 270 = 0.40×） | ✅ **最强 ᾱ_max 改善**（4× α-1/α-2/α-3 at c9=9.66）|
+| **Path C** supervised-α @ u=0.12 λ=10 | Taobo | N_f=89，ᾱ_max=27.46 | 过 supervised → λ=1 sweet spot |
+| **Path C** supervised-α @ u=0.08 λ=1 (cross-Umax) | Taobo | N_f=375 (FEM 396, −5%)，ᾱ_max=128.8 (FEM 390, 0.33×) | ✅ 跨 Umax transfer |
+
+> **Path C 不继续的原因**（v3.16, 2026-05-06 决策）: 
+> 1. cross-Umax 显示 ᾱ_max 在 c200 进入 **plateau ≈ 128.8**，结构性 ceiling（zone-internal f(ᾱ) 进入 asymptotic 极低退化 regime，accumulator Δᾱ → 接近 0）；不是 cycle 不够
+> 2. ᾱ_max gap 可能不是正确闭合目标：domain-level proxy α_bar_domain ratio 仅 1.08-1.78×（vs ᾱ_max 9-94×），积分量已经接近，只是空间峰值不同
+> 3. N_f 与 ᾱ_max 解耦：Path C 闭合 ᾱ_max 不改 N_f match 的 paper claim
+> 4. Path C 是 supervised（非 pure-physics），适合 §5 supervised extension 而非 §4 closure 主线
+> 5. 资源 ROI：继续 Path C+α-3 combine = 3-4 周 engineering vs Phase 2 PCC concrete 转向更高 impact
 
 ---
 

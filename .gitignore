@@ -52,3 +52,6 @@ docs/_backups/
 docs/advisor_method_evolution.md
 docs/diagoosis.md
 docs/fem_likeness_scorecard.md
+
+# ── Local-only references (PDFs + private README, not for git) ──
+references/

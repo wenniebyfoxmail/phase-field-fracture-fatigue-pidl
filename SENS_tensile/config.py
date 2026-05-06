@@ -211,6 +211,18 @@ ansatz_dict = {
     "modes"    : ["I"],          # 默认 Mode I；SENT 几何为 Mode-I-dominant
 }
 
+# ★ 2026-05-06: mirror symmetry prior
+# 仅对 baseline 2D input 分支生效：NN sees (x, y²)，v-correction 再乘 y。
+# 目的：
+#   - α(x,y)=α(x,-y)
+#   - u_x^corr even in y
+#   - u_y^corr odd in y
+#   - ∂α/∂y(x,0)=0 自动成立
+# 注意：
+#   - 这是对 NN correction 的 parity prior，不是对总位移场直接施加 odd/even
+#   - Williams 8D feature 分支当前忽略该开关（见 field_computation.py warning）
+symmetry_prior = False
+
 
 # Domain definition
 '''
@@ -313,6 +325,7 @@ _williams_tag = "_williams_std" if williams_dict.get("enable", False) else ""
 # ★ Direction 5: Enriched Ansatz 标签（enable=True 时追加 _enriched_ansatz_modeI_v1）
 _modes_str = "".join(ansatz_dict.get("modes", ["I"]))
 _ansatz_tag = f"_enriched_ansatz_mode{_modes_str}_v1" if ansatz_dict.get("enable", False) else ""
+_symmetry_tag = "_symY2" if symmetry_prior else ""
 
 # ★ Direction 6.1: Spatial α_T 标签（enable=True 时追加 _spAlphaT_b{β}_r{r_T}）
 _sp_cfg = _fat.get('spatial_alpha_T', {})
@@ -338,6 +351,7 @@ model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             _fatigue_tag +
                             _williams_tag +        # ★ Direction 4 标签
                             _ansatz_tag +          # ★ Direction 5 标签
+                            _symmetry_tag +        # ★ 2026-05-06 symmetry prior 标签
                             _spAlphaT_tag +        # ★ Direction 6.1 标签
                             _psiHack_tag)          # ★ E2 sanity hack 标签
 model_path.mkdir(parents=True, exist_ok=True)
@@ -383,6 +397,8 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\nansatz_nu: {ansatz_dict.get("nu", 0.3)}')
     file.write(f'\nansatz_c_init: {ansatz_dict.get("c_init", 0.01)}')
     file.write(f'\nansatz_modes: {ansatz_dict.get("modes", ["I"])}')
+    file.write(f'\n--- symmetry ---')
+    file.write(f'\nsymmetry_prior: {symmetry_prior}')
     # ★ Direction 6.1: Spatial α_T 参数
     file.write(f'\n--- spatial_alpha_T ---')
     file.write(f'\nspAlphaT_enable: {_sp_cfg.get("enable", False)}')

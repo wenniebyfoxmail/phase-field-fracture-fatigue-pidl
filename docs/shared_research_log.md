@@ -35,7 +35,8 @@
 - **u=0.14 N_f=127 RETRACTED**: resume artifact, not real physics.
 - **u=0.12 seed=1/2 N_f=82 BIT-EXACT**: VALID, unaffected by bug.
 - **Oracle runs (Windows, run_e2_reverse_umax.py)**: all VALID, unaffected by bug.
-- **Phase 2 PCC FEM smoke**: completed, α_T=0.094 placeholder → N_f≫10⁵. Blocked on Holmen 1982 calibration.
+- **Phase 2 PCC FEM smoke**: completed, α_T=0.094 placeholder → N_f≫10⁵. ~~Blocked on Holmen 1982 calibration.~~ **UNBLOCKED 2026-05-06**: fib MC 2010 §5.1.11 + Lee & Barr 2004 (in `references/`) provide modern S-N relations sufficient for α_T calibration; Holmen 1982 not strictly needed.
+- **α-3 XFEM-jump CLOSED OUT 2026-05-06**: smoke modal=0.500 MARGINAL (commit 9f2ac69 left 5 path options for Mac to decide). Mac decision: **NOT pursuing α-3 production** — Path C supervised-α gave better trajectory metrics (Finding 6: a-N RMS 0.026 vs pure-physics 0.087, 3.4× closer to FEM); v3.16 strategic redirect away from ᾱ_max gap closure as primary target. α-3 design spec retained in memory as future work; not Phase 1 paper material.
 
 ---
 

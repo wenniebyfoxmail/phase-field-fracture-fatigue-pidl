@@ -40,10 +40,202 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent / "source"))
 
+FINE_MESH = str(HERE / "meshed_geom2.msh")
+
 
 # -----------------------------------------------------------------------------
 # Test implementations
 # -----------------------------------------------------------------------------
+
+def _severity_rank(status: str) -> int:
+    return {"PASS": 0, "WARN": 1, "FAIL": 2, "SKIP": -1}.get(status, -1)
+
+
+def _merge_status(*statuses: str) -> str:
+    real = [s for s in statuses if s != "SKIP"]
+    if not real:
+        return "SKIP"
+    return max(real, key=_severity_rank)
+
+
+def _parse_settings(model_dir: Path) -> dict:
+    f = model_dir / "model_settings.txt"
+    if not f.exists():
+        return {}
+    cfg = {}
+    for line in f.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("---"):
+            continue
+        if ":" in line:
+            k, v = line.split(":", 1)
+            cfg[k.strip()] = v.strip()
+    return cfg
+
+
+def _as_bool(v, default=False) -> bool:
+    if v is None:
+        return default
+    if isinstance(v, bool):
+        return v
+    return str(v).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _pick_symmetry_cycle(archive: Path) -> tuple[int | None, Path | None]:
+    snap_dir = archive / "alpha_snapshots"
+    snaps = sorted(snap_dir.glob("alpha_cycle_*.npy")) if snap_dir.is_dir() else []
+    if len(snaps) < 2:
+        nn_file = _load_cycle_nn_file(archive, None)
+        if nn_file is None:
+            return None, None
+        try:
+            cyc = int(nn_file.stem.split("_")[-1])
+        except Exception:
+            cyc = None
+        return cyc, None
+    mid = snaps[len(snaps) // 2]
+    try:
+        cyc = int(mid.stem.split("_")[-1])
+    except Exception:
+        cyc = None
+    return cyc, mid
+
+
+def _load_cycle_nn_file(archive: Path, cycle: int | None) -> Path | None:
+    bm = archive / "best_models"
+    if cycle is not None:
+        exact = bm / f"trained_1NN_{cycle}.pt"
+        if exact.is_file():
+            return exact
+    nn_files = sorted(
+        bm.glob("trained_1NN_*.pt"),
+        key=lambda p: int(p.stem.split("_")[-1]) if p.stem.split("_")[-1].isdigit() else -1,
+    )
+    if not nn_files:
+        return None
+    if cycle is None:
+        return nn_files[min(len(nn_files) // 2, len(nn_files) - 1)]
+    nums = []
+    for p in nn_files:
+        try:
+            nums.append((abs(int(p.stem.split("_")[-1]) - cycle), p))
+        except Exception:
+            continue
+    return min(nums, key=lambda t: t[0])[1] if nums else nn_files[0]
+
+
+def _rebuild_field_comp(archive: Path, cycle: int | None):
+    """Reconstruct FieldComputation at a chosen cycle for symmetry audits."""
+    import ast
+    import torch
+    from construct_model import construct_model
+    from input_data_from_mesh import prep_input_data
+    from field_computation import FieldComputation
+
+    cfg = _parse_settings(archive)
+    arch = _parse_archive_arch(archive)
+    if arch is None:
+        raise ValueError(f"could not parse arch from archive name: {archive.name}")
+
+    network_dict = {
+        "model_type": "MLP",
+        "hidden_layers": int(cfg.get("hidden_layers", arch["hl"])),
+        "neurons": int(cfg.get("neurons", arch["neurons"])),
+        "seed": int(cfg.get("seed", arch["seed"])),
+        "activation": cfg.get("activation", arch["activation"]),
+        "init_coeff": float(cfg.get("coeff", arch["init_coeff"])),
+        "compile": False,
+    }
+    pff_model_dict = {
+        "PFF_model": cfg.get("PFF_model", "AT1"),
+        "se_split": cfg.get("se_split", "volumetric"),
+        "tol_ir": 5e-3,
+    }
+    mat_prop_dict = {
+        "mat_E": 1.0,
+        "mat_nu": 0.3,
+        "w1": 1.0,
+        "l0": 0.01,
+    }
+    numr_dict = {"alpha_constraint": cfg.get("alpha_constraint", "nonsmooth"),
+                 "gradient_type": "numerical"}
+    crack_dict = {"x_init": [0.0], "y_init": [0.0], "L_crack": [0.0]}
+    domain_extrema = torch.tensor([[-0.5, 0.5], [-0.5, 0.5]])
+    loading_angle = torch.tensor([np.pi / 2])
+
+    williams_dict = None
+    if _as_bool(cfg.get("williams_enable", False)):
+        williams_dict = {
+            "enable": True,
+            "theta_mode": cfg.get("williams_theta_mode", "atan2"),
+            "r_min": float(cfg.get("williams_r_min", 1e-6)),
+        }
+
+    ansatz_dict = None
+    if _as_bool(cfg.get("ansatz_enable", False)):
+        modes_raw = cfg.get("ansatz_modes", "['I']")
+        try:
+            modes = ast.literal_eval(modes_raw)
+        except Exception:
+            modes = ["I"]
+        ansatz_dict = {
+            "enable": True,
+            "x_tip": float(cfg.get("ansatz_x_tip", 0.0)),
+            "y_tip": float(cfg.get("ansatz_y_tip", 0.0)),
+            "r_cutoff": float(cfg.get("ansatz_r_cutoff", 0.1)),
+            "nu": float(cfg.get("ansatz_nu", 0.3)),
+            "c_init": float(cfg.get("ansatz_c_init", 0.01)),
+            "modes": modes,
+        }
+
+    symmetry_prior = _as_bool(cfg.get("symmetry_prior", False), default=False)
+    pffmodel, matprop, network = construct_model(
+        pff_model_dict, mat_prop_dict, network_dict, domain_extrema, "cpu",
+        williams_dict=williams_dict)
+    inp, T_conn, area_T, _ = prep_input_data(
+        matprop, pffmodel, crack_dict, numr_dict,
+        mesh_file=FINE_MESH, device="cpu")
+
+    field_comp = FieldComputation(
+        net=network, domain_extrema=domain_extrema,
+        lmbda=torch.tensor([float(cfg.get("disp_max", 0.12))]),
+        theta=loading_angle,
+        alpha_constraint=numr_dict["alpha_constraint"],
+        williams_dict=williams_dict,
+        ansatz_dict=ansatz_dict,
+        l0=mat_prop_dict["l0"],
+        symmetry_prior=symmetry_prior,
+    )
+
+    best = archive / "best_models"
+    nn_file = _load_cycle_nn_file(archive, cycle)
+    if nn_file is None:
+        raise FileNotFoundError("no trained_1NN_*.pt file found")
+    field_comp.net.load_state_dict(torch.load(str(nn_file), map_location="cpu", weights_only=False))
+    field_comp.net.eval()
+
+    if williams_dict is not None:
+        xt = best / "x_tip_psi_vs_cycle.npy"
+        if xt.exists() and cycle is not None:
+            x_tip_arr = np.load(xt)
+            if cycle < len(x_tip_arr):
+                field_comp.x_tip = float(x_tip_arr[cycle])
+
+    if ansatz_dict is not None and field_comp.c_singular is not None:
+        cs_file = best / "c_singular_vs_cycle.npy"
+        if cs_file.exists() and cycle is not None:
+            cs = np.load(cs_file)
+            row = cs[cs[:, 0].astype(int) == cycle]
+            if len(row) > 0:
+                field_comp.c_singular.data = torch.tensor([float(row[0, 1])], dtype=torch.float32)
+
+    return {
+        "cfg": cfg,
+        "field_comp": field_comp,
+        "inp": inp,
+        "T_conn": T_conn,
+        "nn_file": nn_file.name,
+    }
 
 def test_v1_energy_balance(archive: Path) -> dict:
     """V1. Per-cycle energy balance.
@@ -146,55 +338,151 @@ def test_v3_J_path_independence(archive: Path) -> dict:
 
 
 def test_v4_symmetry(archive: Path, cycles_to_check: list[int] | None = None) -> dict:
-    """V4. Geometric symmetry — α field across y=0 axis in tip ROI.
+    """V4. Composite symmetry audit about the y=0 mirror plane.
 
-    Computes RMS error |α(x, +y) - α(x, -y)| in tip ROI for a chosen cycle
-    (default: midway through fatigue life ~ N_f/2).
+    This is intentionally broader than the old alpha-only check:
+      1. alpha-even mirror:      α(x,+y) ≈ α(x,-y)
+      2. u_x correction even:    u_corr(x,+y) ≈ u_corr(x,-y)
+      3. u_y correction odd:     v_corr(x,+y) ≈ -v_corr(x,-y)
+      4. centerline derivative:  ∂α/∂y(x,0) ≈ 0
+
+    Important: the odd/even statements apply to the NN correction / residual
+    field, NOT to the total vertical displacement including the affine loading
+    term. This matches the current FieldComputation BC decomposition.
     """
-    snap_dir = archive / "alpha_snapshots"
-    snaps = sorted(snap_dir.glob("alpha_cycle_*.npy")) if snap_dir.is_dir() else []
-    if len(snaps) < 2:
-        return {"test": "V4_symmetry", "status": "SKIP",
-                "reason": "need ≥2 alpha snapshots"}
-    # Pick mid-life snapshot (avoid cycle 0 = pristine, avoid post-fracture)
-    mid = snaps[len(snaps) // 2]
-    arr = np.load(mid)
-    xy = arr[:, :2]
-    a = arr[:, 2]
-    # Tip ROI x ∈ [0, 0.3]; quotient pairing via nearest neighbor
-    mask = (xy[:, 0] >= 0) & (xy[:, 0] <= 0.3) & (np.abs(xy[:, 1]) < 0.05)
-    if mask.sum() < 30:
-        return {"test": "V4_symmetry", "status": "SKIP",
-                "reason": f"only {int(mask.sum())} pts"}
-    pts = xy[mask]
-    a_pts = a[mask]
-    # For each (x, +y), find nearest (x, -y); compare alpha
-    pos = pts[pts[:, 1] >= 0]
-    a_pos = a_pts[pts[:, 1] >= 0]
-    neg = pts[pts[:, 1] < 0]
-    a_neg = a_pts[pts[:, 1] < 0]
-    if len(neg) == 0 or len(pos) == 0:
-        return {"test": "V4_symmetry", "status": "SKIP",
-                "reason": "asymmetric ROI sampling"}
+    import torch
     from scipy.spatial import cKDTree
-    # Mirror neg.y, then KDTree match (x, |y|)
-    tree_neg_mirror = cKDTree(np.column_stack([neg[:, 0], -neg[:, 1]]))
-    d, idx = tree_neg_mirror.query(pos, k=1)
-    # Only count well-matched pairs (d < 0.005)
-    good = d < 0.005
-    if good.sum() < 10:
+
+    cyc, mid = _pick_symmetry_cycle(archive)
+    if cyc is None and mid is None:
         return {"test": "V4_symmetry", "status": "SKIP",
-                "reason": f"only {int(good.sum())} good pairs"}
-    diff = a_pos[good] - a_neg[idx[good]]
-    rms = float(np.sqrt(np.mean(diff ** 2)))
-    max_diff = float(np.abs(diff).max())
-    status = "PASS" if rms < 2e-4 else ("WARN" if rms < 1e-2 else "FAIL")
+                "reason": "no alpha snapshots and no NN checkpoints"}
+
+    # ------------------------------------------------------------------
+    # Part B/C/D: reconstruct field + audit residual parity and centerline dα/dy
+    # ------------------------------------------------------------------
+    status_ux = status_vy = status_dady = "SKIP"
+    status_alpha = "SKIP"
+    rms_alpha = max_alpha = np.nan
+    rms_ux = rms_vy = rms_dady = np.nan
+    max_ux = max_vy = max_dady = np.nan
+    nn_file = ""
+    symmetry_prior = False
+    try:
+        ctx = _rebuild_field_comp(archive, cyc)
+        field_comp = ctx["field_comp"]
+        inp = ctx["inp"]
+        nn_file = ctx["nn_file"]
+        symmetry_prior = bool(getattr(field_comp, "symmetry_prior", False))
+
+        with torch.no_grad():
+            u, v, alpha_full = field_comp.fieldCalculation(inp)
+        xy_full = inp.detach().cpu().numpy()
+        u_np = u.detach().cpu().numpy().reshape(-1)
+        v_np = v.detach().cpu().numpy().reshape(-1)
+        a_np = alpha_full.detach().cpu().numpy().reshape(-1)
+
+        lmbda = float(field_comp.lmbda.item() if hasattr(field_comp.lmbda, "item") else field_comp.lmbda)
+        theta = float(field_comp.theta.item() if hasattr(field_comp.theta, "item") else field_comp.theta[0])
+        y0, yL = float(field_comp.domain_extrema[1, 0]), float(field_comp.domain_extrema[1, 1])
+        y = xy_full[:, 1]
+        bc_load = (y - y0) / (yL - y0)
+        u_bc = lmbda * bc_load * np.cos(theta)
+        v_bc = lmbda * bc_load * np.sin(theta)
+        u_corr = u_np - u_bc
+        v_corr = v_np - v_bc
+
+        mask_full = (xy_full[:, 0] >= 0) & (xy_full[:, 0] <= 0.3) & (np.abs(xy_full[:, 1]) < 0.05)
+        if mask_full.sum() < 30:
+            return {"test": "V4_symmetry", "status": "SKIP",
+                    "reason": f"only {int(mask_full.sum())} pts in symmetry ROI"}
+        pts2 = xy_full[mask_full]
+        a2 = a_np[mask_full]
+        u2 = u_corr[mask_full]
+        v2 = v_corr[mask_full]
+        pos2 = pts2[pts2[:, 1] >= 0]
+        a_pos = a2[pts2[:, 1] >= 0]
+        u_pos = u2[pts2[:, 1] >= 0]
+        v_pos = v2[pts2[:, 1] >= 0]
+        neg2 = pts2[pts2[:, 1] < 0]
+        a_neg = a2[pts2[:, 1] < 0]
+        u_neg = u2[pts2[:, 1] < 0]
+        v_neg = v2[pts2[:, 1] < 0]
+        if len(pos2) > 0 and len(neg2) > 0:
+            tree2 = cKDTree(np.column_stack([neg2[:, 0], -neg2[:, 1]]))
+            d2, idx2 = tree2.query(pos2, k=1)
+            good2 = d2 < 0.005
+            if good2.sum() >= 10:
+                diff_alpha = a_pos[good2] - a_neg[idx2[good2]]
+                diff_ux = u_pos[good2] - u_neg[idx2[good2]]
+                diff_vy = v_pos[good2] + v_neg[idx2[good2]]
+                rms_alpha = float(np.sqrt(np.mean(diff_alpha ** 2)))
+                max_alpha = float(np.abs(diff_alpha).max())
+                rms_ux = float(np.sqrt(np.mean(diff_ux ** 2)))
+                max_ux = float(np.abs(diff_ux).max())
+                rms_vy = float(np.sqrt(np.mean(diff_vy ** 2)))
+                max_vy = float(np.abs(diff_vy).max())
+                status_alpha = "PASS" if rms_alpha < 2e-4 else ("WARN" if rms_alpha < 1e-2 else "FAIL")
+                status_ux = "PASS" if rms_ux < 1e-4 else ("WARN" if rms_ux < 1e-2 else "FAIL")
+                status_vy = "PASS" if rms_vy < 1e-4 else ("WARN" if rms_vy < 1e-2 else "FAIL")
+            else:
+                return {"test": "V4_symmetry", "status": "SKIP",
+                        "reason": f"only {int(good2.sum())} good mirror pairs"}
+        else:
+            return {"test": "V4_symmetry", "status": "SKIP",
+                    "reason": "asymmetric ROI sampling"}
+
+        # centerline derivative: evaluate ∂α/∂y at y=0 along x ∈ [0, 0.3]
+        x_line = torch.linspace(0.0, 0.3, 41, dtype=torch.float32)
+        y_line = torch.zeros_like(x_line)
+        xy_line = torch.stack([x_line, y_line], dim=1).requires_grad_(True)
+        _, _, alpha_line = field_comp.fieldCalculation(xy_line)
+        grad_alpha = torch.autograd.grad(alpha_line.sum(), xy_line, create_graph=False, retain_graph=False)[0][:, 1]
+        dady = grad_alpha.detach().cpu().numpy()
+        rms_dady = float(np.sqrt(np.mean(dady ** 2)))
+        max_dady = float(np.abs(dady).max())
+        status_dady = "PASS" if rms_dady < 1e-3 else ("WARN" if rms_dady < 5e-2 else "FAIL")
+    except Exception as e:
+        return {
+            "test": "V4_symmetry",
+            "status": status_alpha,
+            "rms_alpha_skew": rms_alpha,
+            "max_alpha_skew": max_alpha,
+            "status_alpha_even": status_alpha,
+            "status_ux_corr_even": "SKIP",
+            "status_vy_corr_odd": "SKIP",
+            "status_dalpha_dy_centerline": "SKIP",
+            "snapshot": mid.name if mid is not None else "",
+            "cycle": cyc,
+            "n_pairs": 0,
+            "criterion": "Composite symmetry audit: alpha-even + correction parity + centerline dα/dy",
+            "note": f"alpha-only audit succeeded; reconstruction skipped: {type(e).__name__}: {e}",
+        }
+
+    overall = _merge_status(status_alpha, status_ux, status_vy, status_dady)
     return {
-        "test": "V4_symmetry", "status": status,
-        "rms_alpha_skew": rms, "max_alpha_skew": max_diff,
-        "n_pairs": int(good.sum()), "snapshot": mid.name,
-        "criterion": "RMS asymmetry < 2e-4 (FEM target); FAIL if > 1e-2",
-        "note": "PIDL has known d-skew per finding_pidl_d_skew_apr20.md",
+        "test": "V4_symmetry", "status": overall,
+        "snapshot": mid.name if mid is not None else "", "cycle": cyc, "nn_file": nn_file,
+        "symmetry_prior": symmetry_prior,
+        "n_pairs": int(good2.sum()) if 'good2' in locals() else 0,
+        "rms_alpha_skew": rms_alpha, "max_alpha_skew": max_alpha,
+        "rms_ux_corr_even": rms_ux, "max_ux_corr_even": max_ux,
+        "rms_vy_corr_odd": rms_vy, "max_vy_corr_odd": max_vy,
+        "rms_dalpha_dy_centerline": rms_dady, "max_dalpha_dy_centerline": max_dady,
+        "status_alpha_even": status_alpha,
+        "status_ux_corr_even": status_ux,
+        "status_vy_corr_odd": status_vy,
+        "status_dalpha_dy_centerline": status_dady,
+        "criterion": (
+            "Composite symmetry audit about y=0: "
+            "alpha-even PASS if RMS<2e-4; "
+            "u_x correction even / u_y correction odd PASS if RMS<1e-4; "
+            "centerline ∂α/∂y PASS if RMS<1e-3"
+        ),
+        "note": (
+            "Odd/even statements apply to the NN correction/residual field, not the total vertical displacement "
+            "including the affine top-bottom loading term."
+        ),
     }
 
 
