@@ -449,12 +449,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             n_epochs = max(optimizer_dict["n_epochs_LBFGS"], 1)
             NNparams  = field_comp.parameters()
             optimizer = get_optimizer(NNparams, "LBFGS")
+            # ★ 2026-05-07 Soft mirror-symmetry penalty (B path) — read from fatigue_dict
+            _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
             loss_data1 = fit(
                 field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
                 optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
                 intermediateModel_path=None, writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,              # ★ 传入疲劳退化函数
                 supervised_dict=_supervised_dict, # ★ MIT-8
+                symmetry_dict=_symmetry_dict,     # ★ B path soft sym
             )
             loss_data = loss_data + loss_data1
 
@@ -462,6 +465,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             n_epochs  = optimizer_dict["n_epochs_RPROP"]
             NNparams  = field_comp.parameters()
             optimizer = get_optimizer(NNparams, "RPROP")
+            _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
             loss_data2 = fit_with_early_stopping(
                 field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
                 optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
@@ -470,6 +474,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,              # ★ 传入疲劳退化函数
                 supervised_dict=_supervised_dict, # ★ MIT-8
+                symmetry_dict=_symmetry_dict,     # ★ B path soft sym
             )
             loss_data = loss_data + loss_data2
 

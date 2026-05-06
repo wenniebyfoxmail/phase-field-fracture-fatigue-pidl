@@ -6,6 +6,43 @@ from tqdm import tqdm
 from compute_energy import compute_energy, gradients, strain_energy_with_split
 
 
+def _compute_symmetry_penalty(field_comp, inp, lam_alpha, lam_u, lam_v):
+    """Soft mirror-symmetry penalty for SENT (y → -y geometry symmetry).
+
+    Penalizes on NN raw correction (NOT total field), so the affine v_BC
+    `(y+0.5)·sin(θ)·λ` is NOT constrained to be odd. The variational
+    symmetric solution under such affine BC has even u_x correction +
+    odd u_y correction + even α correction.
+
+    Three terms:
+      L_alpha = ‖α(x,y) − α(x,−y)‖²   (even, after alpha_constraint)
+      L_u     = ‖u_x_corr(x,y) − u_x_corr(x,−y)‖²
+      L_v     = ‖u_y_corr(x,y) + u_y_corr(x,−y)‖²
+
+    Single forward pass via batch doubling to amortize CUDA launch cost.
+
+    Only valid when williams_enabled=False (Williams branch uses 8D θ
+    feature, not raw 2D input).
+    """
+    if getattr(field_comp, 'williams_enabled', False):
+        return torch.tensor(0.0, device=inp.device)
+
+    inp_m = inp.clone()
+    inp_m[:, 1] = -inp_m[:, 1]
+    inp_doubled = torch.cat([inp, inp_m], dim=0)
+    raw_doubled = field_comp.net(inp_doubled)
+    N = inp.shape[0]
+    raw, raw_m = raw_doubled[:N], raw_doubled[N:]
+
+    L_u = ((raw[:, 0] - raw_m[:, 0]) ** 2).mean()
+    L_v = ((raw[:, 1] + raw_m[:, 1]) ** 2).mean()
+    a   = field_comp.alpha_constraint(raw[:, 2])
+    a_m = field_comp.alpha_constraint(raw_m[:, 2])
+    L_alpha = ((a - a_m) ** 2).mean()
+
+    return lam_alpha * L_alpha + lam_u * L_u + lam_v * L_v
+
+
 def _compute_psi_raw_per_elem(inp, u, v, alpha, matprop, pffmodel, area_T, T_conn):
     """Compute UNDEGRADED ψ⁺_0 per element (E_el_p before g(α) multiply).
 
@@ -48,7 +85,8 @@ class EarlyStopping:
 def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matprop, pffmodel,
         weight_decay, num_epochs, optimizer, intermediateModel_path=None, writer=None, training_dict={},
         f_fatigue=1.0, crack_tip_weights=None,
-        supervised_dict=None):
+        supervised_dict=None,
+        symmetry_dict=None):
     # ★ MIT-8 supervised_dict — see fit_with_early_stopping signature
     # ★ 新增参数 f_fatigue：
     #    - 标量 1.0（默认）：完全等价 Manav 原始行为
@@ -106,6 +144,19 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                             loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
                         loss = loss + _every_n * loss_sup
 
+                # ★ 2026-05-07 Soft mirror-symmetry penalty (B path)
+                # Activated by symmetry_dict={'enable': True, 'lambda_alpha':..., ...}
+                # Penalizes NN raw correction parity, NOT total field
+                if symmetry_dict is not None and symmetry_dict.get('enable', False):
+                    loss_sym = _compute_symmetry_penalty(
+                        field_comp, inp_train,
+                        lam_alpha=symmetry_dict.get('lambda_alpha', 1.0),
+                        lam_u    =symmetry_dict.get('lambda_u',     1.0),
+                        lam_v    =symmetry_dict.get('lambda_v',     1.0))
+                    loss = loss + loss_sym
+                    if writer is not None:
+                        writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_sym', loss_sym.item(), epoch)
+
                 if writer is not None:
                     writer.add_scalars('U_p_'+str(field_comp.lmbda.item()), {'loss':loss.item(), "loss_E":loss_var.item()}, epoch)
 
@@ -133,7 +184,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
 def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matprop, pffmodel,
                             weight_decay, num_epochs, optimizer, min_delta, intermediateModel_path=None, writer=None, training_dict={},
                             f_fatigue=1.0, crack_tip_weights=None,
-                            supervised_dict=None):
+                            supervised_dict=None,
+                            symmetry_dict=None):
     # ★ MIT-8 supervised_dict (Apr 25, optional, default None → identical behavior):
     #    {'fem_sup': FEMSupervision, 'cycle_idx': int, 'lambda': float,
     #     'pidl_centroids': np.ndarray, 'loss_kind': 'mse_log'|'mse_lin'|'mse_rel',
@@ -188,6 +240,17 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                         loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
                     # Scale up to compensate for the missed epochs
                     loss = loss + _every_n * loss_sup
+
+            # ★ 2026-05-07 Soft mirror-symmetry penalty (B path)
+            if symmetry_dict is not None and symmetry_dict.get('enable', False):
+                loss_sym = _compute_symmetry_penalty(
+                    field_comp, inp_train,
+                    lam_alpha=symmetry_dict.get('lambda_alpha', 1.0),
+                    lam_u    =symmetry_dict.get('lambda_u',     1.0),
+                    lam_v    =symmetry_dict.get('lambda_v',     1.0))
+                loss = loss + loss_sym
+                if writer is not None:
+                    writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_sym', loss_sym.item(), epoch)
 
             if writer is not None:
                     writer.add_scalars('U_p_'+str(field_comp.lmbda.item()), {'loss':loss.item(), "loss_E":loss_var.item()}, epoch)
