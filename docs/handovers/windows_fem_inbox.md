@@ -27,6 +27,38 @@
 
 ## Active Requests
 
+## 2026-05-06 · Request FEM-5: ship u=0.10 + u=0.11 ψ⁺ keyframes to Mac
+
+**Goal**: 解锁 Mac→Taobo 上的 Oracle u=0.10 / u=0.11 干净重跑（Tier C audit follow-up，currently blocked）。Mac `~/Downloads/_pidl_handoff_v2/psi_snapshots_for_agent/` 目前只有 u08 + u12 4-keyframe 各 4 文件；u10/u11 一直只在 Windows-FEM。Taobo 已有 FEM data 镜像（Mac sync 过来），所以 Windows-FEM 只需把 u10/u11 keyframes 寄到 Mac，Mac 自会再同步到 Taobo。
+
+**Format**: 与 u08/u12 完全一致——4 个 keyframe `.mat` 文件 / Umax，每个含 `psi_elem`, `alpha_bar_elem`, `f_alpha_elem`, `d_elem`（n_elem × 1 element-averaged from Gauss points + d-field read from VTK at nearest cycle ≤ keyframe）。
+
+**Keyframe cycles 选择参考 u12 模式**（c1, c40, c70, c82）：
+- u=0.10 (FEM N_f=170)：建议 c1, c80, c140, c170
+- u=0.11 (FEM N_f=117)：建议 c1, c55, c95, c117
+
+**Expected files** (8 个 `.mat`)：
+```
+u10_cycle_0001.mat
+u10_cycle_0080.mat
+u10_cycle_0140.mat
+u10_cycle_0170.mat
+u11_cycle_0001.mat
+u11_cycle_0055.mat
+u11_cycle_0095.mat
+u11_cycle_0117.mat
+```
+
+**Delivery**: 跟 u08/u12 一样，OneDrive 共享文件夹（或 zip 一起发）。Mac 拿到后会落到 `~/Downloads/_pidl_handoff_v2/psi_snapshots_for_agent/` 然后 rsync 到 Taobo。
+
+**Acceptance**: Mac 可以读到这 8 个文件，sanity check 与 u08/u12 文件的 keys 一致；Taobo 上 `run_e2_reverse_umax.py 0.10` 和 `0.11` 不再报 FEM data missing。
+
+**Priority**: medium (paper 用 Oracle u=0.10/0.11 数据 cross-validate framework claim；Taobo 5/8 GPU 也在等这个解锁)。ETA：抽 20-30 min 跑一下 export script 应该够。
+
+**Background**: Mac 同时在审计 archive 设置（commit `28cce78` 后 audit 脚本发现 3 个 u=0.12 method archive WARN due to missing model_settings.txt）。Tier C 重跑已派 5 个到 Taobo，但 Oracle u=0.10/0.11 还要等这两组 keyframe ship 过来。
+
+---
+
 ## 2026-05-05 · Request FEM-4: export a(N) crack propagation curve for u=0.08, 0.12, 0.13
 
 **Goal**: 生成 FEM 的 a(N) 曲线（裂纹尖端位置 vs 循环数），与 PIDL 的 x_tip-vs-N 叠图对比。这是 Carrara 2020 Fig 6 的核心图，paper 必须有。
