@@ -25,6 +25,32 @@
 
 ## Entries
 
+## 2026-05-07 · [ack]: Request 3 — soft symmetry cross-Umax chain launched (chained_v12)
+
+**Re**: Request 3 (`eca7b54`) — soft sym λ=1.0 @ u=0.11 / 0.13 / 0.10
+
+**Status**: chained_v12 watcher launched 15:11:11 GMTDT. Sequential chain (one-by-one to avoid GPU contention).
+
+| Phase | Run | N_cycles | Status | Log |
+|---|---|---:|---|---|
+| 1 | u=0.11 seed=1 | 300 | 🏃 NOW (pretrain) | `soft_sym_u011_la1_seed1.log` |
+| 2 | u=0.13 seed=1 | 200 | queued | `soft_sym_u013_la1_seed1.log` |
+| 3 | u=0.10 seed=1 | 300 | queued | `soft_sym_u010_la1_seed1.log` |
+
+Watcher: `_queue_chained_v12_softsym_cross_umax.sh` (bash PID 109153, MSYS), nohup detached.
+Phase 1 worker MSYS PID: 109164 / Windows native PID 26916.
+
+**Preventive measures applied** (lessons from Request 1):
+- `PYTHONUTF8=1 PYTHONIOENCODING=utf-8` env vars (verified `run_symmetry_soft_umax.py:140` calls `main_path.read_text()` without explicit encoding → cp1252 risk)
+- nohup so chain survives terminal close
+- Sequential to avoid GPU/disk contention
+
+**ETA**: ~3.5h × 3 = ~10-12h total → finish ~01:00–03:00 GMTDT 5/8.
+
+**Reply plan**: per-phase `[done]` entries (or one consolidated when chain completes); each with N_f / ᾱ_max @ N_f / V4 RMS @ last cycle from `validate_pidl_archive.py`.
+
+---
+
 ## 2026-05-06 · [done]: Request 2 — tipw rerun u=0.12 ✅ N_f=83, audit PASS
 
 **Re**: Request 2 (`d0fc657`) — tipw_b2.0_p1.0 clean rerun for Tier C audit
