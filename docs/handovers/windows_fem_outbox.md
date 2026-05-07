@@ -26,6 +26,55 @@
 
 ## Entries
 
+## 2026-05-07 · [done]: FEM-8 — V7 side-boundary traction residual = 1.21e-3 (~100× better than PIDL WARN range)
+
+- **Re**: Mac inline chat request 2026-05-07 — apples-to-apples FEM V7 for §4 / validation table
+- **Status**: ✅ done
+- **Setup**: same Phase-1 SENT reference as PIDL series (mesh `Dependencies/SENT_mesh/SENT_mesh.inp`, 77,730 quads, AT1+AMOR+PENALTY, E=1, ν=0.3, plane strain)
+- **Cycle / loading state**: NOT cycle 0 / cycle 1 of the cyclic run (those VTKs are end-of-cycle so u back to 0 → all stresses = 0; cycle 1 substep 5 in fatigue VTK has ε≈0). Instead I built a dedicated **monotonic single-step** elastic INPUT (`INPUT_FEM8_elastic_u012.m`, brittle solver, n_step=1, uy_final=0.12) so the VTK captures the peak elastic state directly. **State reported = peak load u=0.12, monotonic, no prior cycling.** Damage-field d_max = 0.023 (small notch-tip softening but elastic-dominated everywhere else).
+
+### Numbers (matches Mac's V7 specification)
+
+| Quantity | Value |
+|---|---:|
+| max \|σ_xx\| on left edge (x=−0.5) | 3.01e-3 |
+| max \|σ_xx\| on right edge (x=+0.5) | 1.08e-3 |
+| max \|σ_xy\| on left edge | 1.61e-3 |
+| max \|σ_xy\| on right edge | 5.71e-4 |
+| max \|σ_yy\| in bulk (notch tip) | **2.496** |
+| **rel_sxx** = max-side σ_xx / max-bulk σ_yy | **1.21e-3** |
+| **rel_sxy** = max-side σ_xy / max-bulk σ_yy | **6.46e-4** |
+| **V7_FEM = max(rel_sxx, rel_sxy)** | **1.21e-3 (0.12%)** |
+
+### Sampling method
+
+**Boundary nodes**, stress read directly from VTK `TENSORS Stress float` field (GRIPHFiTH brittle solver writes per-node stress projected from Gauss points). Nodes selected by `|x − ±0.5| < 1e-6`: 22 nodes on left edge, 89 on right edge.
+
+(Note: the asymmetry 22 vs 89 is real — Abaqus auto-mesher placed more nodes on the right because the left has the slit notch from x=−0.5 to x=0 which subtracted some boundary nodes; the few left-edge nodes are the ones at corners + notch slit endpoints. The non-uniform sampling slightly biases left-edge max higher because fewer nodes sample a coarser slice.)
+
+### Comparison to PIDL V7
+
+PIDL V7 in WARN range 17–30% on right edge.
+FEM V7 = 0.12%.
+**Ratio: PIDL/FEM ≈ 140–250×.**
+
+**Verdict**: PIDL's residual is **not** in the regime of FEM-discretization noise. There is a real free-boundary-quality gap between PIDL and FEM that needs to be addressed (boundary loss term tightening, more boundary collocation points, or architectural symmetry priors). The FEM number is solidly below 1% and would not show up as a §4 validation concern.
+
+### Files
+
+- INPUT: `Scripts/brittle_fracture/INPUT_FEM8_elastic_u012.m` (brittle, monotonic 1-step)
+- driver: `Scripts/brittle_fracture/main_FEM8_elastic_u012.m`
+- output: `Scripts/brittle_fracture/FEM8_elastic_u012/FEM8_elastic_u01200001.vtk` (peak elastic state)
+- post-process: `Scripts/fatigue_fracture/fem8_v7_side_boundary.py`
+- CSV (boundary samples): `Scripts/fatigue_fracture/_pidl_handoff_v3_items/fem8_v7_side_samples.csv` (111 rows: edge, y, σ_xx, σ_xy, σ_yy, d) — for σ_xx(y), σ_xy(y) plot if you want it
+- log: `Scripts/fatigue_fracture/sweep_logs/FEM8_elastic_run.log` (run took 27.3 s)
+
+### ETA actual
+
+~30 min wall (FEM run 27s + post-process + I had a false start trying to read the cyclic-fatigue cycle 1 VTK first — those have stress=0 because GRIPHFiTH writes VTK at end-of-cycle when u=0; flagging that for future-me too).
+
+---
+
 ## 2026-05-07 · [done]: FEM-7 — V4 mirror RMS (PASS), integrated damage = 4.39e-2, α field shipped
 
 - **Re**: `windows_fem_inbox.md` Request FEM-7 (2026-05-07)
