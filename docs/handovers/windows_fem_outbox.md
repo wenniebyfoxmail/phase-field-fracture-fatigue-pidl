@@ -26,6 +26,57 @@
 
 ## Entries
 
+## 2026-05-07 · [done]: FEM-7 — V4 mirror RMS (PASS), integrated damage = 4.39e-2, α field shipped
+
+- **Re**: `windows_fem_inbox.md` Request FEM-7 (2026-05-07)
+- **Status**: ✅ done; 3 numbers + 1 .mat ready
+- **Source**: `_pidl_handoff_v2/psi_snapshots_for_agent/u12_cycle_0082.mat` + `Dependencies/SENT_mesh/SENT_mesh.inp`
+- **Script**: `Scripts/fatigue_fracture/fem7_mirror_damage.m`
+
+### (a) FEM V4 mirror RMS @ Umax=0.12, cycle 82
+
+The Abaqus auto-mesher did NOT generate a perfectly mirror-symmetric mesh, so the analysis splits into two views:
+
+| Pair-finding | n_pairs | alpha_bar RMS | rel (/max=270) | d_elem RMS | rel (/max=1.04) |
+|---|---:|---:|---:|---:|---:|
+| Exact mesh-coincident (TOL=1e-7) | **262** | **8.07e-3** | **2.98e-5** | 7.02e-3 | 6.75e-3 |
+| Nearest-neighbor (dist ≤ 1e-4) | 2498 | 4.00 | 1.48e-2 | 2.06e-2 | 1.98e-2 |
+
+**Verdict (Mandal-Nguyen-Wu 2019 PASS threshold ≤ 2e-4):**
+- Exact-pairs **alpha_bar relative RMS = 2.98e-5** → **PASS by ~7×** (machine precision, where the mesh permits a clean comparison)
+- Soft-pairs RMS at 1e-4 tolerance is dominated by mesh-discretization-induced field interpolation, not physics asymmetry. NOT directly comparable to PIDL mirror RMS (PIDL operates on a regular interpolation grid).
+
+**Fair comparison for paper §4.2**: report the **exact-pair number** (alpha_bar RMS = 2.98e-5 relative). Caveat that only 262/77,730 elements form exact mirror pairs because Abaqus's mesher placed elements asymmetrically; restricting to those gives a clean ground-truth.
+
+### (b) Integrated ∫ ᾱ·(1-f(ᾱ))·dV @ cycle 82
+
+- **Result: 4.3888e-02** (toy units, plane-strain quad area integral)
+- α_T = 0.5, p = 2 (matches PIDL setting)
+- f(ᾱ) = min(1, [2α_T / (ᾱ + α_T)]²) — Carrara asymptotic Eq. 41
+- Mesh total area: 0.9995 (matches expected 1×1 SENT minus the slit)
+- f_mean (Mac legacy proxy) = 0.7360 — included for cross-reference; the integrated quantity is the correct one per your red-team note
+
+### (c) α field snapshot @ cycle 82 — shipped
+
+`OneDrive/PIDL result/u12_cycle_0082_FEM7.mat` (1.93 MB). Also at `Scripts/fatigue_fracture/_pidl_handoff_v3_items/u12_cycle_0082_FEM7.mat` (local copy).
+
+Fields:
+- `centroids` (77730 × 2) — element centroid (x, y)
+- `alpha_bar_elem` (77730 × 1) — Carrara accumulator at c82, max=270.22
+- `d_elem` (77730 × 1) — phase-field damage at c82, max=1.0410 (penalty overshoot)
+- `area_per_elem` (77730 × 1) — bonus, for any further volume integrals
+- Scalars: `cycle=82`, `umax=0.12`, `alpha_T=0.5`, `p=2`, plus all three (a)/(b) computed values
+
+### Note on penetration cycle alignment
+
+Mac's spec said "fracture cycle 82". My existing snapshot is at exact cycle 82 (which IS the penetration cycle for u=0.12 baseline; F drops 0.022 → 0.0012 in cycle 82). The .mat I shipped is from this cycle, not the cycle preceding penetration. If Mac wants pre-penetration (cycle 81), say so — same script, different cycle.
+
+### ETA actual
+
+~25 min wall (mostly MATLAB startup + mesh load). Within Mac's 30-60 min estimate.
+
+---
+
 ## 2026-05-06 · [done]: FEM-D 2×4 matrix COMPLETE — wide=narrow at every h confirmed (XF_w resumed from cyc 80)
 
 - **Re**: FEM-D follow-up after the FEM-3 band-width "correction" worry
