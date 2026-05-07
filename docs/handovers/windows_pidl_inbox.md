@@ -27,6 +27,59 @@
 
 ## Active Requests
 
+## 2026-05-07 · Request 3: soft symmetry cross-Umax verification @ u=0.10 / 0.11 / 0.13
+
+**Goal**: 验证 soft symmetry penalty (commit 90f2297) 在非 training Umax 下也保持 N_f match within ±10%。Phase 1 paper §4 reframe 的 "framework consistency cross-Umax" claim 需要 cross-Umax 的 soft sym 数据点（目前只有 u=0.12 N_f=85 一个点）。Mac 已派 seed=2/3 to Taobo (Queue E) 做 multi-seed evidence；你这边可以并行做 cross-Umax evidence。
+
+**Branch/Commit**: `git pull origin main`，HEAD 包含 commit `90f2297` (soft sym 实现) 即可。
+
+**Runner**: `SENS_tensile/run_symmetry_soft_umax.py`（已存在；λ_α=λ_u=λ_v=1.0 for paper consistency）
+
+**3 个 run，按顺序跑（chained，~3.5h × 3 = ~10-12h）**:
+
+```bash
+cd SENS_tensile
+
+PYTHONIOENCODING=utf-8 python -u run_symmetry_soft_umax.py 0.11 \
+    --n-cycles 300 --seed 1 --lam-alpha 1.0 --lam-u 1.0 --lam-v 1.0 \
+    > soft_sym_u011_la1_seed1.log 2>&1
+
+PYTHONIOENCODING=utf-8 python -u run_symmetry_soft_umax.py 0.13 \
+    --n-cycles 200 --seed 1 --lam-alpha 1.0 --lam-u 1.0 --lam-v 1.0 \
+    > soft_sym_u013_la1_seed1.log 2>&1
+
+PYTHONIOENCODING=utf-8 python -u run_symmetry_soft_umax.py 0.10 \
+    --n-cycles 300 --seed 1 --lam-alpha 1.0 --lam-u 1.0 --lam-v 1.0 \
+    > soft_sym_u010_la1_seed1.log 2>&1
+```
+
+> u=0.13 用 N=200 因为 FEM N_f=57，预期 PIDL ~60-70 cycles 就 fracture
+> u=0.11 FEM N_f=117 → N=300 充裕；u=0.10 FEM N_f=170 → N=300 也够
+
+**Expected outputs**:
+- 3 个 archive `hl_8_..._Umax{0.10,0.11,0.13}_symSoft_la1.0_lu1.0_lv1.0/`
+- 3 个 log file 含 N_f
+- 回传 outbox：N_f 比对 FEM 表 + V4 RMS (last cycle)
+
+**Acceptance criteria** (per paper §4 cross-Umax claim)：
+- N_f within ±10% of FEM N_f at each Umax
+  - u=0.10: FEM=170, PIDL acceptable [153, 187]
+  - u=0.11: FEM=117, PIDL acceptable [105, 129]
+  - u=0.13: FEM=57, PIDL acceptable [51, 63]
+- V4 RMS at fracture cycle ~ 0.02 (similar to u=0.12 0.022)
+
+**Background**: Mac 完成 soft sym λ=1.0 production @ u=0.12 seed=1 (commit 90f2297, Taobo PID 2888934 already done; N_f=85 vs baseline 82, V4 RMS 0.022, wall 3.76h). Layer 3 red-team flagged "single-seed at single Umax" 是 §4 弱点。Mac 派 multi-seed (seed=2/3 @ u=0.12) 到 Taobo Queue E；Windows 这边做 cross-Umax 是 orthogonal evidence。
+
+**Reply expected**:
+- ack 时附 PID + log paths
+- 每 run done 时附 N_f + ᾱ_max @ N_f + V4 RMS @ last cycle (用 `python validate_pidl_archive.py` 即可)
+
+**Priority**: medium-high — 3 个 cross-Umax 数据点是 §4 cross-Umax claim 的 robustness evidence，写 LaTeX 之前 nice-to-have。Tier C 全完，K=40 retry 还在 Taobo 跑（不抢你 GPU）。
+
+**ETA**: 10-12h sequential (Windows GPU)。无需赶夜，正常工作时段跑也行。
+
+---
+
 ## 2026-05-06 · Request 2: tipw rerun @ u=0.12 (Tier C audit follow-up)
 
 **Goal**: 重新生成干净的 tipw_b2.0_p1.0 archive（带 model_settings.txt + 经过 May-4 fracture-detect resume guard 的 model_train），让它在 `audit_archive_settings.py` 下 PASS。原 Mac Apr-15 archive 没写 settings，且早于 bugfix。

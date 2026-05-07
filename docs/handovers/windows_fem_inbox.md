@@ -27,6 +27,68 @@
 
 ## Active Requests
 
+## 2026-05-07 · Request FEM-7: FEM-side symmetry + integrated damage budget @ u=0.12
+
+**Goal**: 给 paper §4 reframe 提供 FEM 端的对照数字。Mac 这边 PIDL 完成了 soft symmetry penalty 实验（commit 90f2297）+ Layer 3 red-team 反馈，现需 FEM 侧的：
+1. **V4 对称性 ground truth**：FEM α-field 在 SENT 几何下的 mirror RMS 数字（公认应 ≈ 0 at machine precision，但需要数字进 paper §4.2）
+2. **真实 integrated damage budget**：∫ ᾱ·(1-f(ᾱ))·dV at fracture cycle，替代 Mac 当前的 f_mean-based 'domain-mean proxy'（red-team 指出后者是 wrong quantity）
+3. **α field snapshot @ fracture cycle**：用于 F4.5a side-by-side mirror visualization (PIDL baseline vs PIDL soft sym vs FEM)
+
+**Specific deliverables** (3 个 numbers + 1 个 .mat)：
+
+### (a) FEM V4 mirror RMS @ Umax=0.12 fracture cycle (cycle 82)
+
+```python
+# From SENT_PIDL_12/psi_fields/cycle_0082.mat or similar
+import numpy as np
+from scipy.spatial import cKDTree
+import scipy.io as sio
+
+m = sio.loadmat("path/to/cycle_0082.mat")
+centroids = m["centroids"]      # (N_elem, 2)
+alpha = m["alpha_bar_elem"]      # or "d_elem"
+x, y = centroids[:,0], centroids[:,1]
+mu = y > 1e-6; ml = y < -1e-6
+tree = cKDTree(np.stack([x[ml], -y[ml]], axis=1))
+d, idx = tree.query(np.stack([x[mu], y[mu]], axis=1), k=1)
+exact = d < 1e-7    # exact mirror pairs (for FEM mesh likely ~thousands)
+diff = alpha[mu][exact].flatten() - alpha[ml][idx[exact]].flatten()
+print(f"FEM V4 mirror RMS (exact pairs): {np.sqrt((diff**2).mean()):.4e}")
+print(f"n_exact_pairs: {exact.sum()}")
+```
+→ 期望 RMS < 1e-4（per `Mandal-Nguyen-Wu 2019 EFM 217` 标 ≤ 2e-4 PASS）
+
+### (b) Integrated ∫ ᾱ·(1-f(ᾱ))·dV @ fracture cycle 82
+
+```python
+alpha_T = 0.5        # match PIDL's setting
+f_alpha = (2*alpha_T / (alpha + alpha_T))**2
+# area_per_elem = element area (from mesh; you have it from FEM solver)
+integrated = (alpha.flatten() * (1 - f_alpha).flatten() * area_per_elem.flatten()).sum()
+print(f"FEM ∫ᾱ(1-f)dV @ c82 = {integrated:.4e}")
+```
+
+→ 这个数字对照 PIDL 的同公式（Mac 端在算 baseline + soft sym 两个 archive 的同 quantity），决定 paper §4.4 是 'energy budget 1.5-2× near-equivalence' 还是要砍掉
+
+### (c) α field snapshot @ fracture cycle
+
+期望 1 个 .mat 文件 `u12_cycle_0082_FEM7.mat`，含：
+- `centroids`: (N_elem, 2)
+- `alpha_bar_elem`: (N_elem, 1) — Carrara accumulator at c82
+- `d_elem`: (N_elem, 1) — phase-field damage at c82
+
+放 `_pidl_handoff_v3_items/` 同步到 OneDrive。
+
+### (d) Paper-grade caveat
+
+如果你有 FEM 的 V4 RMS、integrated damage、α field 的 ready 现成 dump，直接给 numbers + .mat 即可。如果需要新跑 post-processing，约 30 min-1h（不需要新 GRIPHFiTH run）。
+
+**Priority**: high — 这三个 number 是 §4 核心 claim 的 FEM 对照 baseline，写 LaTeX 之前必须有。
+
+**ETA**: 你估计 30 min-1h post-process。
+
+---
+
 ## 2026-05-06 · Request FEM-6: re-extract N_f under load-drop criterion (option B from your `be07fd8`)
 
 **Goal**: 用 mesh-stable N_f criterion `F_peak/F_initial < 5%`（或 `F_peak < 0.005`）替代当前 d-front-at-boundary criterion，重新算 mesh_C / M / F / XF (+ FEM-D 2×4 矩阵的 narrow row 各档) 的 N_f。看 paper §FEM 能不能写"convergence verified under load-amplitude criterion"。
