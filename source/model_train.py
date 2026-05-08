@@ -451,13 +451,16 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             optimizer = get_optimizer(NNparams, "LBFGS")
             # ★ 2026-05-07 Soft mirror-symmetry penalty (B path) — read from fatigue_dict
             _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
+            # ★ 2026-05-08 Soft side-traction penalty — read from fatigue_dict
+            _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
             loss_data1 = fit(
                 field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
                 optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
                 intermediateModel_path=None, writer=writer, training_dict=training_dict,
-                f_fatigue=f_fatigue,              # ★ 传入疲劳退化函数
-                supervised_dict=_supervised_dict, # ★ MIT-8
-                symmetry_dict=_symmetry_dict,     # ★ B path soft sym
+                f_fatigue=f_fatigue,                    # ★ 传入疲劳退化函数
+                supervised_dict=_supervised_dict,       # ★ MIT-8
+                symmetry_dict=_symmetry_dict,           # ★ B path soft sym
+                side_traction_dict=_side_traction_dict, # ★ side-traction penalty
             )
             loss_data = loss_data + loss_data1
 
@@ -466,15 +469,17 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             NNparams  = field_comp.parameters()
             optimizer = get_optimizer(NNparams, "RPROP")
             _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
+            _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
             loss_data2 = fit_with_early_stopping(
                 field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
                 optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
                 min_delta=optimizer_dict["optim_rel_tol"],
                 intermediateModel_path=intermediateModel_path,
                 writer=writer, training_dict=training_dict,
-                f_fatigue=f_fatigue,              # ★ 传入疲劳退化函数
-                supervised_dict=_supervised_dict, # ★ MIT-8
-                symmetry_dict=_symmetry_dict,     # ★ B path soft sym
+                f_fatigue=f_fatigue,                    # ★ 传入疲劳退化函数
+                supervised_dict=_supervised_dict,       # ★ MIT-8
+                symmetry_dict=_symmetry_dict,           # ★ B path soft sym
+                side_traction_dict=_side_traction_dict, # ★ side-traction penalty
             )
             loss_data = loss_data + loss_data2
 

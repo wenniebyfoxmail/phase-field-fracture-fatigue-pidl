@@ -43,6 +43,69 @@ def _compute_symmetry_penalty(field_comp, inp, lam_alpha, lam_u, lam_v):
     return lam_alpha * L_alpha + lam_u * L_u + lam_v * L_v
 
 
+def _compute_side_traction_penalty(field_comp, matprop, lam_xx, lam_xy,
+                                    sigma_ref=1.0, n_bdy_pts=51):
+    """Soft side-traction penalty: enforce σ_xx ≈ 0, σ_xy ≈ 0 on x=±0.5.
+
+    The side edges of the SENT specimen are traction-free by the problem statement,
+    but PIDL does not enforce this explicitly (FEM satisfies it via natural BC).
+    This penalty penalises σ_xx and σ_xy on the side boundaries using AD-mode
+    gradients at a fixed set of query points — independent of whether the main
+    training loop uses numerical or AD gradients.
+
+    Args:
+        field_comp:  FieldComputation instance (NN + BC layers).
+        matprop:     MaterialProperties (provides mat_lmbda, mat_mu).
+        lam_xx:      Penalty weight for σ_xx term.
+        lam_xy:      Penalty weight for σ_xy term.
+        sigma_ref:   Stress normalisation (default 1.0 = material-unit scale, E=1).
+        n_bdy_pts:   Number of y-sample points per side edge (default 51).
+
+    Returns:
+        Scalar penalty tensor (graph-attached for backward).
+    """
+    device = next(field_comp.net.parameters()).device
+
+    # Sample y ∈ (−0.495, 0.495) to avoid corners (y0=−0.5, yL=+0.5 are BC nodes)
+    y_vals = torch.linspace(-0.495, 0.495, n_bdy_pts, dtype=torch.float32, device=device)
+    x_left  = torch.full((n_bdy_pts,), -0.5, dtype=torch.float32, device=device)
+    x_right = torch.full((n_bdy_pts,),  0.5, dtype=torch.float32, device=device)
+
+    pts_left  = torch.stack([x_left,  y_vals], dim=1)
+    pts_right = torch.stack([x_right, y_vals], dim=1)
+    xy_bdy = torch.cat([pts_left, pts_right], dim=0)   # (2*n_bdy_pts, 2)
+    xy_bdy = xy_bdy.requires_grad_(True)
+
+    # Forward pass at boundary (always AD-mode, graph required for backward)
+    u_bdy, v_bdy, _ = field_comp.fieldCalculation(xy_bdy)
+
+    # ∂u/∂x, ∂u/∂y — retain graph so v_bdy can be differentiated next
+    grads_u = torch.autograd.grad(u_bdy.sum(), xy_bdy,
+                                  create_graph=True, retain_graph=True)[0]
+    du_dx = grads_u[:, 0]
+    du_dy = grads_u[:, 1]
+
+    # ∂v/∂x, ∂v/∂y
+    grads_v = torch.autograd.grad(v_bdy.sum(), xy_bdy, create_graph=True)[0]
+    dv_dx = grads_v[:, 0]
+    dv_dy = grads_v[:, 1]
+
+    # Plane-strain isotropic stress (small-strain, undegraded for boundary check)
+    lmbda = matprop.mat_lmbda   # Lame first parameter (E*nu / ((1+nu)(1-2nu)))
+    mu    = matprop.mat_mu      # Shear modulus (E / (2*(1+nu)))
+    eps11 = du_dx
+    eps22 = dv_dy
+    eps12 = 0.5 * (du_dy + dv_dx)
+
+    sig_xx = lmbda * (eps11 + eps22) + 2.0 * mu * eps11   # normal stress on x-face
+    sig_xy = 2.0 * mu * eps12                               # shear stress on x-face
+
+    L_xx = (sig_xx / sigma_ref).pow(2).mean()
+    L_xy = (sig_xy / sigma_ref).pow(2).mean()
+
+    return lam_xx * L_xx + lam_xy * L_xy
+
+
 def _compute_psi_raw_per_elem(inp, u, v, alpha, matprop, pffmodel, area_T, T_conn):
     """Compute UNDEGRADED ψ⁺_0 per element (E_el_p before g(α) multiply).
 
@@ -86,7 +149,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
         weight_decay, num_epochs, optimizer, intermediateModel_path=None, writer=None, training_dict={},
         f_fatigue=1.0, crack_tip_weights=None,
         supervised_dict=None,
-        symmetry_dict=None):
+        symmetry_dict=None,
+        side_traction_dict=None):
     # ★ MIT-8 supervised_dict — see fit_with_early_stopping signature
     # ★ 新增参数 f_fatigue：
     #    - 标量 1.0（默认）：完全等价 Manav 原始行为
@@ -157,6 +221,20 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                     if writer is not None:
                         writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_sym', loss_sym.item(), epoch)
 
+                # ★ 2026-05-08 Soft side-traction penalty
+                # Activated by side_traction_dict={'enable': True, 'lam_xx':..., 'lam_xy':..., 'sigma_ref':...}
+                # Enforces σ_xx ≈ 0, σ_xy ≈ 0 on x=±0.5 (traction-free side edges)
+                if side_traction_dict is not None and side_traction_dict.get('enable', False):
+                    loss_strac = _compute_side_traction_penalty(
+                        field_comp, matprop,
+                        lam_xx    =side_traction_dict.get('lam_xx',    1.0),
+                        lam_xy    =side_traction_dict.get('lam_xy',    1.0),
+                        sigma_ref =side_traction_dict.get('sigma_ref', 1.0),
+                        n_bdy_pts =side_traction_dict.get('n_bdy_pts', 51))
+                    loss = loss + loss_strac
+                    if writer is not None:
+                        writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_strac', loss_strac.item(), epoch)
+
                 if writer is not None:
                     writer.add_scalars('U_p_'+str(field_comp.lmbda.item()), {'loss':loss.item(), "loss_E":loss_var.item()}, epoch)
 
@@ -185,7 +263,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                             weight_decay, num_epochs, optimizer, min_delta, intermediateModel_path=None, writer=None, training_dict={},
                             f_fatigue=1.0, crack_tip_weights=None,
                             supervised_dict=None,
-                            symmetry_dict=None):
+                            symmetry_dict=None,
+                            side_traction_dict=None):
     # ★ MIT-8 supervised_dict (Apr 25, optional, default None → identical behavior):
     #    {'fem_sup': FEMSupervision, 'cycle_idx': int, 'lambda': float,
     #     'pidl_centroids': np.ndarray, 'loss_kind': 'mse_log'|'mse_lin'|'mse_rel',
@@ -251,6 +330,18 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                 loss = loss + loss_sym
                 if writer is not None:
                     writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_sym', loss_sym.item(), epoch)
+
+            # ★ 2026-05-08 Soft side-traction penalty
+            if side_traction_dict is not None and side_traction_dict.get('enable', False):
+                loss_strac = _compute_side_traction_penalty(
+                    field_comp, matprop,
+                    lam_xx    =side_traction_dict.get('lam_xx',    1.0),
+                    lam_xy    =side_traction_dict.get('lam_xy',    1.0),
+                    sigma_ref =side_traction_dict.get('sigma_ref', 1.0),
+                    n_bdy_pts =side_traction_dict.get('n_bdy_pts', 51))
+                loss = loss + loss_strac
+                if writer is not None:
+                    writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_strac', loss_strac.item(), epoch)
 
             if writer is not None:
                     writer.add_scalars('U_p_'+str(field_comp.lmbda.item()), {'loss':loss.item(), "loss_E":loss_var.item()}, epoch)
