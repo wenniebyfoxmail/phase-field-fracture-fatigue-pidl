@@ -27,6 +27,104 @@
 
 ## Active Requests
 
+## 2026-05-09 · Request 4: A1 post-hoc mirror α — smoke + 3-seed production @ u=0.12
+
+**Goal**: 测试 A1 (post-hoc mirror α, commit `6a8d778`) 是否切断 Carrara ratchet。Mac 在 Taobo 上跑了 strac penalty 实验 (commit `6bf05d3`)，结果 V7 bimodal oscillation（10-30% / 500-2000% spike），证实专家诊断的 ratchet amplification。A1 直接在 hist_fat 上做 mirror，预期消除 ratchet 引入的 asymmetry。Taobo 因为 VLLM 租户占满显存，A1 smoke OOM 3 次 — 转给你。
+
+**Branch/Commit**: `git pull origin main`；A1 实现在 `6a8d778`，已包含在你刚 push 的 HEAD 之前。
+
+**Runner**: `SENS_tensile/run_mirror_alpha_umax.py`（新增；soft sym + A1 mirror α；NO strac，NO Williams）
+
+### Phase 1: Smoke (5 cycles, ~30-45 min on Windows GPU, 优先做)
+
+```bash
+cd "upload code/SENS_tensile"
+python run_mirror_alpha_umax.py 0.12 --n-cycles 5 --seed 1
+```
+
+**Expected first-time output**:
+- Pretrain banner `Execution time: ~12 min`
+- `[mirrorα] Post-hoc mirror α (A1) enabled: ... | n_elem=67276`
+- `[mirrorα] mirror_idx pre-computed; mean |y_i + y_mirror[i]| = 5.096e-04` (mirror map quality check — 应 ~5e-4)
+- 5 cycles `[Fatigue step 0..4]` complete
+
+**Smoke acceptance**: 跑完不 crash + trained_1NN_4.pt 存在 + ᾱ_max trajectory 不爆炸。
+
+### Phase 2: Production (3 seeds × N=300，可 chained 单 GPU 或 parallel)
+
+```bash
+python run_mirror_alpha_umax.py 0.12 --n-cycles 300 --seed 1
+python run_mirror_alpha_umax.py 0.12 --n-cycles 300 --seed 2
+python run_mirror_alpha_umax.py 0.12 --n-cycles 300 --seed 3
+```
+
+**Expected outputs (per seed)**:
+- archive: `hl_8_..._N300_..._Umax0.12_symSoft_la1.0_lu1.0_lv1.0_mirrorA1/`
+- 关键文件: `best_models/x_tip_alpha_vs_cycle.npy`, `alpha_bar_vs_cycle.npy`, `trained_1NN_*.pt`, `validation_report.json`
+- model_settings.txt 含 `mirror_alpha_y: {'enable': True}` 标识
+
+### V7 standalone test script (smoke 后跑这个测 V7 trajectory)
+
+在 `SENS_tensile/` 目录下执行（替换 ARC 为 archive name）:
+
+```python
+import sys; sys.path.insert(0, '../source'); sys.argv = ['main.py', '8', '400', '1', 'TrainableReLU', '1.0']
+import torch, os
+from config import *
+from material_properties import MaterialProperties
+from field_computation import FieldComputation
+from construct_model import construct_model
+ARC = 'hl_8_Neurons_400_..._mirrorA1'   # ← fill in archive name
+pffmodel, matprop, network = construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, 'cpu', williams_dict=williams_dict)
+fc = FieldComputation(net=network, domain_extrema=domain_extrema, lmbda=torch.tensor([0.0]), theta=loading_angle, alpha_constraint=numr_dict['alpha_constraint'], williams_dict=williams_dict, ansatz_dict=ansatz_dict, l0=mat_prop_dict['l0'], symmetry_prior=False)
+print('cyc V7sxx_pct V7sxy_pct')
+for c in range(5):
+    pt = f'{ARC}/best_models/trained_1NN_{c}.pt'
+    if not os.path.exists(pt): continue
+    sd = torch.load(pt, map_location='cpu', weights_only=False)
+    fc.net.load_state_dict(sd); fc.net.eval()
+    fc.lmbda = torch.tensor(0.12, dtype=torch.float32)
+    yv = torch.linspace(-0.495, 0.495, 51, dtype=torch.float32)
+    xy_L = torch.stack([torch.full_like(yv, -0.5), yv], dim=1).requires_grad_(True)
+    xy_R = torch.stack([torch.full_like(yv,  0.5), yv], dim=1).requires_grad_(True)
+    def stress(xy):
+        u,v,_ = fc.fieldCalculation(xy)
+        gu = torch.autograd.grad(u.sum(), xy, create_graph=False, retain_graph=True)[0]
+        gv = torch.autograd.grad(v.sum(), xy, create_graph=False)[0]
+        e11=gu[:,0]; e22=gv[:,1]; e12=0.5*(gu[:,1]+gv[:,0])
+        sxx=matprop.mat_lmbda*(e11+e22)+2*matprop.mat_mu*e11
+        syy=matprop.mat_lmbda*(e11+e22)+2*matprop.mat_mu*e22
+        sxy=2*matprop.mat_mu*e12
+        return sxx, syy, sxy
+    sxxL,_,sxyL = stress(xy_L); sxxR,_,sxyR = stress(xy_R)
+    xb=torch.linspace(-0.45,0.45,30); yb=torch.linspace(-0.45,0.45,30)
+    X,Y=torch.meshgrid(xb,yb,indexing='ij')
+    xy_b=torch.stack([X.flatten(),Y.flatten()],dim=1).requires_grad_(True)
+    _,sb,_ = stress(xy_b); sref=sb.abs().max().item()
+    rs=max(sxxL.abs().max().item(), sxxR.abs().max().item())/sref
+    rh=max(sxyL.abs().max().item(), sxyR.abs().max().item())/sref
+    print(f'{c}    {100*rs:7.1f}%   {100*rh:7.1f}%')
+```
+
+**Hypothesis**: 如果 A1 work，V7 trajectory 应 **monotonic convergent**（不再 bimodal spike-and-recover）。Strac 在 Taobo 跑出来的对照（同 seed=1 trajectory）：
+- c0: 364% → c1: 118% → c2: 14% → c3: 527% (spike) → c4: 10%
+
+A1 期望（hypothesized）：
+- c0: ~300% → c1: 100% → c2: 30% → c3: 15% → c4: 5%（无 spike）
+
+**Failure mode**: 如果 V7 还是 bimodal，说明 ratchet 不是 V7 issue 主因，需要重新诊断。
+
+**Stop condition**:
+- Smoke FAIL (crash, NaN) → reply blocker
+- Smoke PASS + V7 monotonic → proceed Phase 2 production
+- Smoke PASS + V7 bimodal → reply [done] with smoke trajectory，await Mac decision
+
+**Priority**: HIGH — §4.2 V7 paragraph depends on this。Strac 已 locked 作为 negative finding；A1 若 work 是 positive finding 替代。
+
+**Mac status**: Strac seed 1 (PID 1494956) 还在 Taobo GPU 1 跑（cycle 11+），seed 2/3 已 kill 让位 A1 (但 Taobo VLLM 租户占满 OOM)。
+
+---
+
 ## 2026-05-07 · Request 3: soft symmetry cross-Umax verification @ u=0.10 / 0.11 / 0.13
 
 **Goal**: 验证 soft symmetry penalty (commit 90f2297) 在非 training Umax 下也保持 N_f match within ±10%。Phase 1 paper §4 reframe 的 "framework consistency cross-Umax" claim 需要 cross-Umax 的 soft sym 数据点（目前只有 u=0.12 N_f=85 一个点）。Mac 已派 seed=2/3 to Taobo (Queue E) 做 multi-seed evidence；你这边可以并行做 cross-Umax evidence。
