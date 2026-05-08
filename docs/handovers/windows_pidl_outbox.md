@@ -25,6 +25,80 @@
 
 ## Entries
 
+## 2026-05-09 · [done+blocker]: Request 4 Phase 1 smoke — A1 V7 trajectory NOT monotonic convergent; Phase 2 STOPPED, awaiting Mac decision
+
+**Re**: Request 4 (`638b0de`) — A1 post-hoc mirror α (`run_mirror_alpha_umax.py`)
+
+**Status**: Smoke (5 cycles) COMPLETE, V7 test failed acceptance criteria. Phase 2 production NOT launched per decision tree.
+
+### Smoke runtime
+
+- Pretrain: 16.6 min
+- Cycles 0/1/2/3/4 wall: 13.7 / 4.4 / 3.0 / 4.6 / 2.6 min (total ~28 min cycles + 17 min pretrain ≈ 45 min smoke wall)
+- ᾱ_max trajectory: 0.392 → 0.783 → 1.178 → 1.577 → 1.982 (monotonic, no explosion ✅)
+- x_tip stays at 0 across all 5 cycles (expected for early cycles at u=0.12)
+- No crash, no NaN ✅
+
+### Mirror α init banner (verified clean)
+
+```
+[mirrorα] Post-hoc mirror α (A1) enabled: hist_fat symmetrized about y=0 each cycle | n_elem=67276
+[mirrorα] mirror_idx pre-computed; mean |y_i + y_mirror[i]| = 5.096e-04
+```
+
+Matches Mac's expected 5e-4 quality target exactly ✅
+
+### V7 trajectory test (CRITICAL — A1 hypothesis FAILED)
+
+Ran `v7_test_mirror_smoke.py` (script from inbox lines 70-107, with `sys.path.insert(0, '.')` fix for config import on Windows):
+
+| cycle | V7 σ_xx % | V7 σ_xy % |
+|---:|---:|---:|
+| 0 | 62250 | **17.6** |
+| 1 | 55551 | **54.0** |
+| 2 | 54125 | **100.4** |
+| 3 | 56262 | **162.5** |
+| 4 | 65398 | **235.8** |
+
+### Decision: NOT a Strac-style bimodal spike, but ALSO NOT monotonic convergent
+
+**V7 σ_xy: monotonic DIVERGENT** (17.6 → 54.0 → 100.4 → 162.5 → 235.8) — grows ~13× across 5 cycles. Not the "monotonic convergent" Mac hypothesized; it's the opposite trend.
+
+**V7 σ_xx: high-magnitude oscillation** (54k–65k%, ~10× larger than soft-sym alone — expected since A1 has no strac penalty). Within a narrow band, not the dramatic c2:14% / c3:527% Strac swing, but also not converging.
+
+Comparison to Mac's reference trajectories:
+- Strac (Taobo, seed=1): c0:364% c1:118% c2:14% c3:**527% spike** c4:10% — bimodal spike-and-recover
+- A1 expected: c0:~300% c1:100% c2:30% c3:15% c4:5% — monotonic convergent
+- **A1 actual (Windows, seed=1)**: σ_xy monotonic divergent; σ_xx high oscillating
+
+This is a **third failure mode** — neither Strac's bimodal nor the hoped-for convergent. The mirror α IS working (init quality 5e-4, ᾱ trajectory clean, mirror map covers 67276 elements), but it does NOT eliminate the underlying V7 BC residual problem. Hypothesis: ratchet asymmetry might be downstream of V7, or V7 has its own root cause unrelated to the hist_fat asymmetry that A1 targets.
+
+### Decision per inbox decision tree
+
+> "Smoke PASS + V7 bimodal → reply [done] with smoke trajectory, await Mac decision"
+
+V7 σ_xy monotonic-divergent is closer to "bimodal spike" than "monotonic convergent" → **STOPPING. Phase 2 production NOT launched.**
+
+### Files
+
+- Archive: `SENS_tensile/hl_8_..._N5_..._Umax0.12_symSoft_la1.0_lu1.0_lv1.0_mirrorA1/` (5 trained_1NN_*.pt + alpha_bar_vs_cycle.npy + x_tip_*.npy + model_settings.txt)
+- Smoke log: `SENS_tensile/run_mirror_smoke_Umax0.12.log`
+- V7 test script: `SENS_tensile/v7_test_mirror_smoke.py` (with `sys.path` fix)
+- model_settings.txt confirms: `symmetry_soft: enable=True λ_α=λ_u=λ_v=1.0`, `mirror_alpha_y: enable=True`
+
+### Possible next steps for Mac to consider
+
+1. **Diagnose V7 σ_xy growth mechanism** — why does it grow even with mirror α + soft sym? Is the soft sym penalty too weak to constrain σ_xy at sides?
+2. **Try A1 + Strac combo** — A1 alone may not address V7; combine with Strac penalty to enforce side traction-free BC explicitly
+3. **Try larger λ values** for soft sym — current λ=1.0 might be insufficient at high u
+4. **Re-examine V7 root cause** — A1 targets ratchet/temporal asymmetry; V7 measures spatial BC residual at sides. These may be orthogonal failure modes
+
+### GPU status
+
+Idle. Awaiting Mac decision before any further A1 / mirror / sym work.
+
+---
+
 ## 2026-05-08 · [done]: Request 3 — soft sym cross-Umax 3 phases ✅ all pass acceptance criteria
 
 **Re**: Request 3 (`eca7b54`) — soft sym λ_α=λ_u=λ_v=1.0 @ u=0.11 / 0.13 / 0.10
