@@ -152,3 +152,50 @@ def compute_fatigue_degrad(hist_fat, fatigue_dict, elem_centroids=None):
         )
 
     return f.detach()
+
+
+# =============================================================================
+# ★ 2026-05-08  A1: post-hoc mirror α — break the Carrara ratchet
+# =============================================================================
+# Cyclic Carrara accumulator (Δᾱ = ReLU(Δψ⁺)·Δψ⁺) is unidirectional: tiny initial
+# asymmetry (from NN/optimizer/sampling) gets amplified cycle-by-cycle through
+# memory feedback (ᾱ → f(ᾱ) → easier damage on biased side → larger Δᾱ next cycle).
+# Mirror operator forces hist_fat(x,y) = hist_fat(x,-y) at the end of each cycle,
+# resetting the ratchet's asymmetric build-up. Justified by SENT geometry being
+# physically symmetric about y=0 under symmetric BCs.
+# =============================================================================
+
+def mirror_y_indices(elem_centroids):
+    """For each element, return the index of its mirror partner about y=0.
+
+    Uses cKDTree nearest-neighbor lookup on element centroids: for centroid (x, y),
+    find the element whose centroid is closest to (x, -y). Computed once per run
+    (mesh fixed) and cached by caller.
+
+    Args:
+        elem_centroids: torch.Tensor (n_elem, 2) — element centroids (x, y).
+
+    Returns:
+        torch.LongTensor (n_elem,) — mirror index for each element.
+    """
+    import numpy as np
+    from scipy.spatial import cKDTree
+    pts = elem_centroids.detach().cpu().numpy().astype(np.float64)
+    pts_mirror = pts.copy()
+    pts_mirror[:, 1] = -pts_mirror[:, 1]
+    tree = cKDTree(pts)
+    _, idx = tree.query(pts_mirror, k=1)
+    return torch.as_tensor(idx, dtype=torch.long, device=elem_centroids.device)
+
+
+def mirror_alpha_y(hist_fat, mirror_idx):
+    """Symmetrize hist_fat about y=0 by averaging with mirror partners.
+
+    Args:
+        hist_fat: torch.Tensor (n_elem,) — current ᾱ field.
+        mirror_idx: torch.LongTensor (n_elem,) — pre-computed mirror map.
+
+    Returns:
+        torch.Tensor (n_elem,) — symmetrized ᾱ (detached).
+    """
+    return (0.5 * (hist_fat + hist_fat[mirror_idx])).detach()

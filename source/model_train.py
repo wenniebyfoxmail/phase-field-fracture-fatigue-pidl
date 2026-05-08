@@ -34,7 +34,8 @@ from plotting import plot_field
 
 # ★ 新增：疲劳相关函数（仅在 fatigue_on=True 时实际调用）
 from compute_energy import get_psi_plus_per_elem, compute_energy
-from fatigue_history import update_fatigue_history, compute_fatigue_degrad
+from fatigue_history import (update_fatigue_history, compute_fatigue_degrad,
+                              mirror_y_indices, mirror_alpha_y)
 
 # ★ Direction 4: Williams ψ⁺ 重心估计裂尖坐标（可选，仅在 williams_enabled=True 时调用）
 from williams_features import compute_x_tip_psi
@@ -229,22 +230,42 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
               f"degrad='{fatigue_dict.get('degrad_type','asymptotic')}' | "
               f"alpha_T={fatigue_dict.get('alpha_T', 1.0):.4g}")
 
-        # ★ Direction 6.1: 预计算元素形心，供 spatial α_T 使用（tensor 版本）
-        _sp_cfg = fatigue_dict.get('spatial_alpha_T', {})
-        if _sp_cfg.get('enable', False) and T_conn is not None:
+        # ★ Direction 6.1 + 2026-05-08 A1: 预计算元素形心
+        # Used by: (a) spatial α_T modulation; (b) post-hoc mirror α ratchet break
+        _sp_cfg     = fatigue_dict.get('spatial_alpha_T', {})
+        _mirror_cfg = fatigue_dict.get('mirror_alpha_y',  {})
+        _need_centroids = (
+            (_sp_cfg.get('enable', False) and T_conn is not None) or
+            (_mirror_cfg.get('enable', False) and T_conn is not None)
+        )
+        if _need_centroids:
             _Tc = T_conn if isinstance(T_conn, torch.Tensor) else torch.as_tensor(T_conn, device=device)
             _cx_t = (inp[_Tc[:,0], 0] + inp[_Tc[:,1], 0] + inp[_Tc[:,2], 0]) / 3.0
             _cy_t = (inp[_Tc[:,0], 1] + inp[_Tc[:,1], 1] + inp[_Tc[:,2], 1]) / 3.0
             elem_centroids = torch.stack([_cx_t, _cy_t], dim=1).detach()
-            print(f"[spAlphaT] Spatial α_T enabled: "
-                  f"β={_sp_cfg.get('beta',0.0)}, r_T={_sp_cfg.get('r_T',0.1)}, "
-                  f"tip=({_sp_cfg.get('x_tip',0.0)},{_sp_cfg.get('y_tip',0.0)}) | "
-                  f"n_elem={n_elem}")
+            if _sp_cfg.get('enable', False):
+                print(f"[spAlphaT] Spatial α_T enabled: "
+                      f"β={_sp_cfg.get('beta',0.0)}, r_T={_sp_cfg.get('r_T',0.1)}, "
+                      f"tip=({_sp_cfg.get('x_tip',0.0)},{_sp_cfg.get('y_tip',0.0)}) | "
+                      f"n_elem={n_elem}")
+            if _mirror_cfg.get('enable', False):
+                print(f"[mirrorα] Post-hoc mirror α (A1) enabled: "
+                      f"hist_fat symmetrized about y=0 each cycle | n_elem={n_elem}")
         else:
             elem_centroids = None
             if _sp_cfg.get('enable', False):
                 print("[spAlphaT] WARNING: enable=True but T_conn is None "
                       "(autodiff mode); fallback to scalar α_T")
+            if _mirror_cfg.get('enable', False):
+                print("[mirrorα] WARNING: enable=True but T_conn is None "
+                      "(autodiff mode); mirror α NOT applied")
+
+        # Pre-compute mirror index map once (mesh fixed across cycles)
+        _mirror_idx = None
+        if _mirror_cfg.get('enable', False) and elem_centroids is not None:
+            _mirror_idx = mirror_y_indices(elem_centroids)
+            _resid = ((elem_centroids[_mirror_idx, 1] + elem_centroids[:, 1]).abs().mean().item())
+            print(f"[mirrorα] mirror_idx pre-computed; mean |y_i + y_mirror[i]| = {_resid:.3e}")
     else:
         f_fatigue = 1.0
         elem_centroids = None
@@ -586,6 +607,13 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             hist_fat = update_fatigue_history(
                 hist_fat, psi_plus_elem, psi_plus_prev, fatigue_dict
             )
+
+            # ★ 2026-05-08 A1: post-hoc mirror α — break Carrara ratchet
+            # Symmetrize ᾱ about y=0 BEFORE f(ᾱ) is computed for next cycle.
+            # Resets the asymmetric memory build-up; SENT geometry is symmetric
+            # under symmetric BCs so this is physically defensible.
+            if _mirror_idx is not None:
+                hist_fat = mirror_alpha_y(hist_fat, _mirror_idx)
 
             # 更新疲劳退化函数 f(ᾱ)（Carrara Eq.41 或 Eq.42）
             # ★ Direction 6.1: 传入 elem_centroids 支持空间调制 α_T
