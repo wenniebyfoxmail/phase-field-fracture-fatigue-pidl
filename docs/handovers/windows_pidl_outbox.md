@@ -25,6 +25,64 @@
 
 ## Entries
 
+## 2026-05-08 · [done]: Request 3 — soft sym cross-Umax 3 phases ✅ all pass acceptance criteria
+
+**Re**: Request 3 (`eca7b54`) — soft sym λ_α=λ_u=λ_v=1.0 @ u=0.11 / 0.13 / 0.10
+
+**Status**: chained_v12 ALL 3 PHASES COMPLETE 11:40:28 GMTDT 5/8. Wall total ~20.5h (longer than 10-12h ETA — pretrain re-ran each phase, per-step 2.7-3.7 min/step).
+
+### Results vs FEM acceptance criteria
+
+| Umax | N_f (PIDL) | N_f (FEM) | error | accept band | ᾱ_max @ N_f | ᾱ_max @ Stop | V4 RMS α_skew | wall |
+|---|---:|---:|---:|---|---:|---:|---:|---:|
+| **0.10** | **158** | 170 | **−7%** | [153, 187] ✅ | 20.46 | 20.94 | **0.0216** | 10.5h |
+| **0.11** | **117** | 117 | **0%** ✅ | [105, 129] ✅ | 25.94 | 27.07 | **0.0216** | 5.8h |
+| **0.13** | **62** | 57 | **+9%** | [51, 63] ✅ | 9.21 | 10.36 | **0.0222** | 4.1h |
+
+**ALL 3 within ±10% of FEM ✅** | **V4 RMS uniformly ~0.022 across all 4 Umax (0.10/0.11/0.12/0.13)** ✅
+
+### Cross-Umax consistency for §4 paper claim
+
+| Umax | N_f (soft sym) | N_f (FEM) | V4 RMS @ N_f |
+|---|---:|---:|---:|
+| 0.10 | 158 | 170 (−7%) | 0.0216 |
+| 0.11 | 117 | 117 (0%) | 0.0216 |
+| 0.12 (Mac, prior) | 85 | 82 (+4%) | 0.022 |
+| 0.13 | 62 | 57 (+9%) | 0.0222 |
+
+**4 Umax data points** — soft sym λ=1.0 is **consistent across the entire Umax range**. V4 RMS spread = 0.0216-0.0222 (Δ < 3%). Cross-Umax claim for §4 reframe is now backed by 4 independent runs.
+
+### V4 detail (V4_symmetry strict criteria FAIL but RMS at expected level)
+
+V4 strict gates (alpha-even RMS<2e-4, dα/dy<1e-3) all FAIL for soft sym — expected since soft penalty trades exact symmetry for unconstrained α field. RMS ~0.022 matches Mac's pre-stated acceptance "similar to u=0.12 0.022", confirming λ=1.0 produces the same trade-off across Umax.
+
+### Archives (audit-clean, all 3)
+
+- `hl_8_..._N300_..._Umax0.11_symSoft_la1.0_lu1.0_lv1.0/`
+- `hl_8_..._N200_..._Umax0.13_symSoft_la1.0_lu1.0_lv1.0/`
+- `hl_8_..._N300_..._Umax0.1_symSoft_la1.0_lu1.0_lv1.0/`
+
+All 3 with `model_settings.txt` + `best_models/checkpoint_*.pt` + history npy + `alpha_snapshots/` + `validation_report.json`.
+
+### Files
+
+- Logs: `soft_sym_u011_la1_seed1.log`, `soft_sym_u013_la1_seed1.log`, `soft_sym_u010_la1_seed1.log`
+- Watcher: `_queue_chained_v12_softsym_cross_umax.{sh,watcher.log,nohup.log}`
+- Validation reports: under each archive `best_models/validation_report.json`
+- Per-Umax validate text: `validate_{0.11,0.13,0.1}_softsym.txt`
+
+### Notes
+
+- chained_v12 watcher worked first try (PYTHONUTF8=1 lesson applied — no cp1252 incidents)
+- Wall longer than ETA because pretrain re-runs each phase (~17min × 3); for future cross-Umax chains consider checkpoint reuse if same architecture
+- u=0.13 fastest (62 cycles) — confirms FEM N_f=57 trend; u=0.10 slowest (168 cycles) as expected
+
+### Next
+
+Idle. GPU 0%. Awaiting next inbox request.
+
+---
+
 ## 2026-05-07 · [ack]: Request 3 — soft symmetry cross-Umax chain launched (chained_v12)
 
 **Re**: Request 3 (`eca7b54`) — soft sym λ=1.0 @ u=0.11 / 0.13 / 0.10
