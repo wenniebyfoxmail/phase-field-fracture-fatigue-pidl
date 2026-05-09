@@ -25,6 +25,67 @@
 
 ## Entries
 
+## 2026-05-09 · [done]: Request 5 — A1 V7 raw value sanity dump → **Scenario A (REAL spike)** + striking L/R asymmetry
+
+**Re**: Request 5 (`8cf0a20`) — sanity dump on already-saved A1 smoke checkpoints
+
+**Status**: COMPLETE. CPU run, ~3 min. No archive change.
+
+### Raw V7 dump (5 cycles, u=0.12 A1 mirror α + soft sym λ=1.0)
+
+| cyc | sxx_L_max | sxx_R_max | sxy_L_max | sxy_R_max | syy_bulk_max | rel_sxx | rel_sxy |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0 | **2.40e+02** | 1.03e-01 | 3.26e-02 | 6.79e-02 | **3.86e-01** | 62250% | 17.6% |
+| 1 | **2.55e+02** | 1.03e-01 | 2.48e-01 | 6.81e-02 | **4.60e-01** | 55551% | 54.0% |
+| 2 | **2.43e+02** | 1.03e-01 | 4.50e-01 | 6.81e-02 | **4.49e-01** | 54125% | 100.4% |
+| 3 | **2.41e+02** | 1.02e-01 | 6.95e-01 | 6.83e-02 | **4.28e-01** | 56262% | 162.5% |
+| 4 | **2.80e+02** | 1.02e-01 | 1.01e+00 | 6.81e-02 | **4.27e-01** | 65398% | 235.8% |
+
+### Verdict: **Scenario A (REAL)** — confirmed
+
+- **syy_bulk_max ≈ 0.39–0.46** across all 5 cycles → bulk loading is **HEALTHY**, NOT collapsed (similar magnitude to Strac's 0.5003)
+- **sxx_L_max ≈ 240–280 raw** → genuine massive boundary spike at x=−0.5 edge, ~30000× Strac's 0.0098
+- 60000% ratio is REAL, not a denominator artefact
+
+**§4.2 V7 narrative implication**: A1 fixes ratchet (?), but introduces a NEW V7 failure mode — **massive boundary stress spike on the LEFT edge**. This is consistent with Mac's hypothesis "Scenario A → A1 fixes ratchet but introduces NEW V7 failure mode → three-way negative result".
+
+### NEW finding: striking LEFT vs RIGHT asymmetry
+
+Beyond Mac's two-scenario framing, the dump reveals an unexpected **x-axis asymmetry** between the two free edges:
+
+| metric | LEFT edge (x=−0.5) | RIGHT edge (x=+0.5) | L/R ratio |
+|---|---:|---:|---:|
+| sxx_max (cyc 0) | **240.07** | 0.103 | **2333×** |
+| sxx_max (cyc 4) | **279.56** | 0.102 | **2745×** |
+| sxy_max (cyc 0) | 0.033 | 0.068 | 0.48× |
+| sxy_max (cyc 4) | **1.008** | 0.068 | **14.8×** |
+
+Observations:
+1. **sxx blow-up is LEFT-only** — RIGHT edge sxx stays at ~0.10 (similar to Strac magnitude). Just one edge breaks.
+2. **sxy on LEFT grows monotonically** — 0.033 → 0.248 → 0.450 → 0.695 → 1.008 (~3× per cycle). RIGHT sxy is flat at 0.068.
+3. **A1 mirror α is about y=0 (horizontal)** — should NOT directly affect x-axis L/R asymmetry. Yet L/R is dramatically asymmetric.
+
+### Working interpretations (speculative — Mac to decide)
+
+- **(a) Geometric / loading asymmetry inherent in SENT** — crack tip drifts toward x=+0.5 in normal runs (`x_tip` history shows tip moves to 0.5). LEFT edge is the back-edge; some boundary mode there may be unrelated to crack physics
+- **(b) Mirror α back-reaction** — symmetrising hist_fat about y=0 may indirectly excite an unrelated x-axis mode through the displacement field's coupled response
+- **(c) Network init / training pathology specific to seed=1** — may need seed=2/3 sanity check to confirm
+
+### Files
+
+- Updated script: `SENS_tensile/v7_test_mirror_smoke.py` (raw value dump version)
+- All 5 trained_1NN_*.pt + checkpoints intact in `hl_8_..._N5_..._mirrorA1/best_models/`
+- This dump took ~3 min CPU on Windows (no GPU contention)
+
+### Next
+
+Idle. Awaiting Mac §4.2 decision on whether to:
+- Document A1 as three-way negative finding and move on
+- Investigate L/R asymmetry mechanism (maybe needs A1 + Strac combo to test)
+- Run seed=2/3 smoke to verify L/R asymmetry is reproducible
+
+---
+
 ## 2026-05-09 · [done+blocker]: Request 4 Phase 1 smoke — A1 V7 trajectory NOT monotonic convergent; Phase 2 STOPPED, awaiting Mac decision
 
 **Re**: Request 4 (`638b0de`) — A1 post-hoc mirror α (`run_mirror_alpha_umax.py`)
