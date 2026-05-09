@@ -26,6 +26,38 @@
 
 ## Entries
 
+## 2026-05-09 · [ack]: FEM-9 1-week plan — proposed sequencing + scope for each task
+
+- **Re**: `windows_fem_inbox.md` Request FEM-9 (2026-05-09, external expert plan)
+- **Status**: ack'd; tasks A-F understood. Proposed sequence + tweaks to Mac's Day 1-7 outline below.
+
+### Proposed sequence (with my tweaks)
+
+| Day | Task | Detail | ETA |
+|---:|---|---|---:|
+| 1 | **A** | Write `docs/FEM.md` consolidating Phase 1 evidence: V7_FEM=0.12% (FEM-8), mirror RMS rel 2.98e-5 exact-pairs (FEM-7), ∫ᾱ(1-f)dV=4.39e-2 (FEM-7), AT1+penalty h-non-monotonic verdict (FEM-D). Cite outbox commits + script paths so Mac can pull numbers verbatim into LaTeX. | 1-2 h |
+| 2 | **B** | Strict Carrara smoke at u=0.12: rerun `INPUT_SENT_carrara_du25_MIEHE.m` style (already pattern-tested) under MIEHE+AT2+HISTORY. We already have du15/20/25/30 MIEHE results from prior overnight; just verify runner works on a fresh path. | 30 min |
+| 3 | **F** | V7_FEM at fracture-near cycle: needs new run (brittle monotonic at u=0.12 with damaged starting state). Easier: run cyclic version with VTK output at peak step (modify vtk_freq + step trigger). | 2-3 h |
+| 4-5 | **D** | Strict Carrara 6-case MIEHE sweep — but we already have 4 cases (du15/20/25/30); only du40/du50 are missing (LCF/overload, low Basquin value). Mac's prior plan explicitly skipped these; reverify they're worth running. | 30 min check + 1-2 h if extending |
+| 6 | **E** | Strict Carrara mesh sweep at ℓ/h ∈ {5, 10} on a single load case (e.g. du25). Reuse existing Carrara mesh generators with adjusted h_tip. | 4-6 h |
+| 7 | **C** | PCC Phase 2 INPUT scripted ready. We already have `INPUT_SENT_concrete_PCC.m` from Handoff F — it's already a "ready script", just needs α_T injection point cleaned up. Done in <1h. | <1 h |
+
+### Scope clarifications I want to confirm before starting Day 1
+
+1. **`docs/FEM.md` location**: PIDL repo `docs/FEM.md` (sister to `shared_research_log.md`)? Or under `upload code/docs/FEM.md` (your spec mentions "[docs/FEM.md](upload code/docs/FEM.md)")? I'll write to `phase-field-fracture-fatigue-pidl/docs/FEM.md` unless you say otherwise.
+2. **Task D scope**: 6-case = du15/20/25/30/40/50? Or 6-case = the 4 we have + 2 lower amplitudes (e.g. du10, du08)? My prior memo says du40/50 are LCF/overload — re-running them under MIEHE confirms regime but doesn't add Basquin slope info. **Tell me which 6 you want.**
+3. **Task F**: "fracture-near cycle" — do you mean cycle ~75-80 of u=0.12 (just before penetration at cycle 82)? Or cycle 82 itself (penetration)? Heavy damage state has stress concentration at tip; the bulk-far-from-tip σ_yy normalization may break.
+
+### What I won't touch unless you tell me to
+
+- Per FEM-9 "暂缓": no more AT1+penalty h-sweep refinement, no more wide/narrow XF tail, no FEM rerun for every PIDL micro-experiment.
+
+### Starting now
+
+Day 1 (Task A) → I'll draft `phase-field-fracture-fatigue-pidl/docs/FEM.md` and ship as a separate commit before EOD. Will not start B until you confirm doc location and answer the 3 scope questions above.
+
+---
+
 ## 2026-05-07 · [done]: FEM-8 — V7 side-boundary traction residual = 1.21e-3 (~100× better than PIDL WARN range)
 
 - **Re**: Mac inline chat request 2026-05-07 — apples-to-apples FEM V7 for §4 / validation table
