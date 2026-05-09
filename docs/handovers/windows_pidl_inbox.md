@@ -27,6 +27,63 @@
 
 ## Active Requests
 
+## 2026-05-09 · Request 6: A1 reproducibility (seeds 2/3) + Strac×A1 combo
+
+**Re**: Request 5 outbox (`9094c1d`) — A1 smoke seed=1 has σ_xx LEFT-edge spike (raw 240–280) with **L/R ratio ~2700×**. Need two follow-ups before §4.2 can be locked.
+
+### Goal
+
+Two questions to answer before writing §4.2 V7 paragraph:
+
+- **(B) Is the LEFT-edge spike reproducible?** Seed=1 might be an init pathology. Run seed=2 and seed=3 A1 smokes, dump V7 raw values like Request 5. If all 3 seeds spike on LEFT but not RIGHT → robust finding suitable for paper. If seed-dependent → write as "seed-1 pathology, mechanism unclear".
+- **(C) Does adding Strac penalty rescue the LEFT-edge spike?** Combo runner = soft sym + A1 mirror α + Strac side-traction penalty. If LEFT σ_xx returns to baseline magnitude (~0.01-0.10) → Strac is orthogonal mitigation, paper narrative is "stack mitigations on top of A1 to cover its blind spot". If LEFT σ_xx stays huge → Strac and A1 have destructive interaction at the fundamental level.
+
+### Phase B: A1 smoke seeds 2 and 3 (~90 min total Windows)
+
+Already-existing runner, just change `--seed`:
+
+```bash
+cd "upload code/SENS_tensile"
+python run_mirror_alpha_umax.py 0.12 --n-cycles 5 --seed 2
+python run_mirror_alpha_umax.py 0.12 --n-cycles 5 --seed 3
+```
+
+Then re-run the same V7 raw-dump test (`v7_test_mirror_smoke.py` updated version from Request 5) on each new archive.
+
+**Reply format**: 2 tables (one per seed), same 5-line raw-dump format as Request 5 outbox. Plus a one-line summary: "LEFT spike reproducible across all 3 seeds: yes / no".
+
+### Phase C: A1 + Strac combo smoke (1 run, ~45 min Windows)
+
+New runner pushed: `SENS_tensile/run_mirror_strac_combo_umax.py`. Stacks all three penalties (soft sym + A1 mirror + Strac).
+
+```bash
+cd "upload code/SENS_tensile"
+python run_mirror_strac_combo_umax.py 0.12 --n-cycles 5 --seed 1
+```
+
+Default: λ_α=λ_u=λ_v=1, λ_xx=λ_xy=1, σ_ref=1, n_bdy_pts=51 (matches Strac smoke + A1 smoke defaults).
+
+After the smoke run, dump raw V7 like Request 5 on the new archive (you can copy `v7_test_mirror_smoke.py` and just change ARC to the new directory name; the script is geometry/method-agnostic).
+
+**Reply format**: 1 raw V7 dump table + 1-line verdict: "LEFT spike rescued / persists".
+
+### Stop conditions
+
+- Phase B PASS (3/3 seeds reproduce LEFT spike) → finding is paper-grade robust
+- Phase B partial (1-2/3) → seed-dependent, weaker but still reportable
+- Phase C: Strac rescues LEFT (raw σ_xx <1.0 on LEFT) → paper writes "mitigations are stackable, not orthogonal"
+- Phase C: Strac fails (raw σ_xx still ≥100) → paper writes "destructive interaction at representation level"
+
+### Priority
+
+HIGH — single biggest unblocker for §4.2 V7 paragraph (which is the only remaining open block in §4 paper).
+
+### Mac status
+
+Strac seed 1 (Taobo GPU 1) cycle 13+. Mac otherwise idle. Mac will push Phase C combo runner within ~10 min.
+
+---
+
 ## 2026-05-09 · Request 5: A1 V7 σ_xx 60000% measurement — sanity dump (raw values)
 
 **Re**: Request 4 outbox (`3a8b7d2`) — A1 smoke V7 σ_xx in 54k-65k% range. Mac suspects measurement issue.

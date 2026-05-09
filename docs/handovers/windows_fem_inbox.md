@@ -27,6 +27,87 @@
 
 ## Active Requests
 
+## 2026-05-09 · Request FEM-9: Windows-FEM 1-week plan (external expert recommendation)
+
+**Goal**: 把外部专家给的 1 周 FEM 工作排期同步过来。专家把任务分成"必须做 / 值得做 / 暂缓"三档。整体方向：**收口 Phase 1 evidence、启动 strict Carrara、准备 PCC Phase 2** —— 不再用 Windows-FEM 资源补 AT1+penalty 细枝末节。
+
+### 必须做（直接服务当前 paper + 主线判断）
+
+**Task A — 把 Phase 1 FEM 证据包整理进 [docs/FEM.md](upload code/docs/FEM.md)**
+
+不是新计算，是**已经到位的证据收口**。必须明确包含：
+- `V7_FEM = 0.12%` (FEM-8 result)
+- exact-pair symmetry 的好结果（FEM-7: alpha_bar rel 2.98e-5）
+- `∫ ᾱ·(1-f) dV` integrated damage budget（FEM-7: 4.39e-2）
+- AT1+penalty 的 h-non-monotonic verdict（即"AT1+penalty 在 SENT 上不收敛"的结论文档化）
+
+**Task B — 确认 strict Carrara 线的 runner 能稳定跑**
+
+公式: `AT2 + Miehe spectral split + HISTORY` (这是 Carrara 2020 community-anchor 公式)。
+要求：
+- 至少 1 个 smoke + 1 个代表性载荷点（比如 u=0.12）
+- 目标不是立刻出完整论文图，而是确认 kernel bugfix 后这条线**真的可用**，不再是 "理论上想跑"
+
+**Task C — 把 PCC Phase 2 的输入参数接口准备好**
+
+等 Mac 给定 `α_T` (PCC concrete-specific) 后，Windows-FEM 能直接重跑：
+- PCC 材料参数（E~30GPa, ν~0.18 vs 当前 toy E=1, ν=0.3）
+- AT2 + Miehe spectral
+- FEM-only smoke (PIDL 暂不动)
+
+这一步**先做"脚本 ready"**，不必跑实际计算 — 等 Mac 给参数。
+
+### 值得做（高价值增强，但不该阻塞写作）
+
+**Task D — strict Carrara 6-case sweep**
+
+最值得的增强实验。目的：
+- 对齐 Carrara community anchor (Carrara 2020 CMAME)
+- 看 Basquin slope `m` 能不能从当前 `3.49` 更接近 community range `3.8–4.0`
+
+**Task E — strict Carrara 最小 mesh check**
+
+只选 1 个中间载荷点（比如 u=0.12 量级），跑两档 mesh：
+- ℓ/h = 5
+- ℓ/h = 10
+
+不追完美收敛，**确认 strict formulation 的 mesh sensitivity 是不是比当前 AT1+penalty 更可控**。
+
+**Task F — V7_FEM 再补 1 个 fracture-near cycle**
+
+现有 `V7_FEM = 0.12%` 是 peak elastic / cycle 0 状态。如果时间允许，再补 fracture 附近 cycle 的同口径 V7。这样后续能回答："FEM 边界质量在早期 vs 临破坏时是否都稳定"。
+
+### 暂缓（不优先）
+
+- AT1+penalty h-sweep 继续细化（已经够得出"不收敛"verdict）
+- wide/narrow XF 尾巴
+- 为 PIDL 每个新想法立刻配 FEM rerun（不应该让 Windows-FEM 被 PIDL 微调牵着走）
+
+### 1 周顺序建议
+
+| Day | 任务 |
+|---:|---|
+| 1 | Task A: 更新 docs/FEM.md，固定 Phase 1 evidence pack |
+| 2 | Task B: strict Carrara 1-case smoke，确认 runner / kernel / export 全通 |
+| 3-4 | Task D: strict Carrara 6-case sweep |
+| 5 | Task E: strict Carrara 1-point mesh check |
+| 6-7 | Task C: PCC Phase 2 脚本 ready + 等 α_T 后 smoke |
+
+### Acceptance / Reply
+
+每完成一个 Task 就 append 一个 `[done]` entry 到 `windows_fem_outbox.md`，含：
+- 关键数字（如 strict Carrara N_f 或 Basquin m）
+- 任何 blocker（如 kernel bug、参数未定）
+- 下一步打算
+
+### Priority
+
+**Task A: HIGH** — paper §4 evidence consolidation 直接 depends on this  
+**Task B/C: HIGH** — 解锁 Phase 2 主线  
+**Task D/E/F: MEDIUM** — 增强但非阻塞
+
+---
+
 ## 2026-05-07 · Request FEM-7: FEM-side symmetry + integrated damage budget @ u=0.12
 
 **Goal**: 给 paper §4 reframe 提供 FEM 端的对照数字。Mac 这边 PIDL 完成了 soft symmetry penalty 实验（commit 90f2297）+ Layer 3 red-team 反馈，现需 FEM 侧的：
