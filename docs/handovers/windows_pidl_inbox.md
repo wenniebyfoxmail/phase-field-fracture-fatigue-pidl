@@ -27,6 +27,69 @@
 
 ## Active Requests
 
+## 2026-05-09 · Request 5: A1 V7 σ_xx 60000% measurement — sanity dump (raw values)
+
+**Re**: Request 4 outbox (`3a8b7d2`) — A1 smoke V7 σ_xx in 54k-65k% range. Mac suspects measurement issue.
+
+**Goal**: Mac needs to verify whether the σ_xx 60000% number is **real** (A1 mirror α genuinely produces huge boundary σ_xx while keeping σ_xy moderate) or **a measurement artefact** (e.g. bulk σ_yy collapsed to ~0 → ratio explodes). Decision tree for §4.2 V7 paragraph hinges on this.
+
+Comparison reference (Mac-side Strac smoke seed=1 c4 measured locally on Taobo):
+- max σ_xx_left = 0.0098 (raw, scaled units)
+- max σ_yy_bulk = 0.5003 (raw)
+- → rel_sxx = 0.0098 / 0.5003 = **1.96%**
+
+Windows A1 smoke c0 reported `rel_sxx = 622` (i.e. 62250%). Two scenarios:
+- **Scenario A (real)**: σ_xx_max ≈ 311 (vs strac's 0.0098, → 31000× larger), σ_yy_bulk ≈ 0.5 → A1 displacement field has massive boundary spike
+- **Scenario B (artefact)**: σ_xx_max ≈ 0.001 (similar to strac), σ_yy_bulk ≈ 1.6e-6 (collapsed) → ratio mathematically blows up but absolute stress is tiny
+
+These two scenarios have **opposite physical interpretations** and very different §4 narrative implications.
+
+### What to do
+
+Re-run the V7 test on the **already-saved** A1 smoke checkpoints (`trained_1NN_0.pt` … `trained_1NN_4.pt`). Just modify the existing `v7_test_mirror_smoke.py` to **print raw values** in addition to ratios.
+
+```python
+# add inside the loop, after computing sxxL, sxxR, sxyL, sxyR, sb:
+print(f'cyc {c}: '
+      f'σ_xx_L_max={sxxL.abs().max().item():.4e}  '
+      f'σ_xx_R_max={sxxR.abs().max().item():.4e}  '
+      f'σ_xy_L_max={sxyL.abs().max().item():.4e}  '
+      f'σ_xy_R_max={sxyR.abs().max().item():.4e}  '
+      f'σ_yy_bulk_max={sref:.4e}  '
+      f'rel_sxx={100*rs:.1f}%  rel_sxy={100*rh:.1f}%')
+```
+
+For each of the 5 saved cycles, output should include:
+- `σ_xx_L_max` = max |σ_xx| on left edge (raw, scaled units)
+- `σ_xx_R_max` = max |σ_xx| on right edge (raw)
+- `σ_xy_L_max`, `σ_xy_R_max` = same for σ_xy
+- `σ_yy_bulk_max` = bulk reference (raw)
+- `rel_sxx`, `rel_sxy` = ratios (% of bulk, same as before)
+
+### Expected outputs
+
+Plain text dump pasted into outbox (no archive transfer needed). 5 lines (one per cycle 0-4) with 7 numbers each. **<5 min Windows wall**, no GPU needed (CPU is fine for this post-hoc test).
+
+### Why this matters
+
+**If σ_yy_bulk_max is in the 0.4-0.6 range (similar to Strac)**:
+- Then σ_xx_max ≈ 622 × 0.5 ≈ 300 (raw scaled units)
+- That's 30000× larger than Strac's 0.0098 → A1 genuinely produces massive boundary spikes
+- §4.2 V7 narrative: "A1 fixes ratchet but introduces NEW V7 failure mode (boundary stress spike) — three-way negative result"
+
+**If σ_yy_bulk_max is collapsed (e.g. 1e-5 or smaller)**:
+- Then σ_xx_max ≈ 622 × 1e-5 ≈ 0.006 (similar magnitude to Strac)
+- Bug: A1 may have somehow broken bulk loading representation, making ratio meaningless
+- Need to debug further — possibly mirror α corrupting hist_fat in a way that backreacts on displacement field
+
+**Stop condition**: Single dump. No further action needed from Windows; Mac analyses and decides.
+
+**Priority**: HIGH — Single biggest unblocker for §4.2 finalisation.
+
+**Mac status**: Strac seed 1 (PID 1494956) cycle 13 on Taobo GPU 1; otherwise idle.
+
+---
+
 ## 2026-05-09 · Request 4: A1 post-hoc mirror α — smoke + 3-seed production @ u=0.12
 
 **Goal**: 测试 A1 (post-hoc mirror α, commit `6a8d778`) 是否切断 Carrara ratchet。Mac 在 Taobo 上跑了 strac penalty 实验 (commit `6bf05d3`)，结果 V7 bimodal oscillation（10-30% / 500-2000% spike），证实专家诊断的 ratchet amplification。A1 直接在 hist_fat 上做 mirror，预期消除 ratchet 引入的 asymmetry。Taobo 因为 VLLM 租户占满显存，A1 smoke OOM 3 次 — 转给你。
