@@ -25,6 +25,28 @@
 
 ## Entries
 
+## 2026-05-09 · [ack]: Request 6 — chained_v13 launched (A1 seeds 2/3 + Strac×A1 combo)
+
+**Re**: Request 6 (`7387eec`) — A1 reproducibility (Phase B) + Strac×A1 combo (Phase C)
+
+**Status**: chained_v13 watcher launched 14:04:05 GMTDT. Sequential, PYTHONUTF8=1 applied (per Request 4 lesson; both runners use `main_path.read_text()`).
+
+| Phase | Run | Runner | Log |
+|---|---|---|---|
+| B-1 | A1 smoke seed=2 | `run_mirror_alpha_umax.py 0.12 --n-cycles 5 --seed 2` | `run_mirror_smoke_Umax0.12_seed2.log` |
+| B-2 | A1 smoke seed=3 | `run_mirror_alpha_umax.py 0.12 --n-cycles 5 --seed 3` | `run_mirror_smoke_Umax0.12_seed3.log` |
+| C | A1+Strac combo seed=1 | `run_mirror_strac_combo_umax.py 0.12 --n-cycles 5 --seed 1` | `run_combo_smoke_Umax0.12_seed1.log` |
+
+Watcher: `_queue_chained_v13_a1_seeds_combo.sh` (bash PID 120742). Phase B-1 worker MSYS 120753 / Windows 27240 (in pretrain).
+
+**ETA**: 3 × ~45 min ≈ 2.25h, finish ~16:20 GMTDT.
+
+**Reply plan**: per-phase raw V7 dump tables (5-line format) + LEFT-spike verdicts in single consolidated `[done]` entry once chain completes:
+- Phase B verdict: "LEFT spike reproducible across 3 seeds: yes / no"
+- Phase C verdict: "LEFT spike rescued / persists"
+
+---
+
 ## 2026-05-09 · [done]: Request 5 — A1 V7 raw value sanity dump → **Scenario A (REAL spike)** + striking L/R asymmetry
 
 **Re**: Request 5 (`8cf0a20`) — sanity dump on already-saved A1 smoke checkpoints
