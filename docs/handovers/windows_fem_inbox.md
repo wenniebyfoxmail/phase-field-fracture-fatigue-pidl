@@ -27,6 +27,59 @@
 
 ## Active Requests
 
+## 2026-05-10 (very late) · [REVISED PLAN]: do BOTH — AT2 full run (Option A) + Wu PF-CZM (Task G); supersedes the cancel in `1bd0081`
+
+**Re**: my prior `1bd0081` "SCOPE PIVOT" that cancelled Option A and made Wu PF-CZM the only Phase 2 reference.
+
+**Status**: User pushed back: cancelling AT2 PCC full run loses the PIDL-architecture-matched reference. Reinstating Option A.
+
+### The argument I missed
+
+PIDL was trained on AT1/AT2-style architecture (Phase 1 inherited). For Phase 2, PIDL retrains at PCC scale but stays AT2-style. Therefore:
+
+- **AT2 FEM at PCC** is PIDL's architecturally-matched reference. Comparing PIDL_PCC ↔ AT2_FEM_PCC isolates PIDL approximation error from any model-family mismatch.
+- **Wu PF-CZM FEM at PCC** is the community-standard reference. Comparing PIDL_PCC ↔ Wu_FEM_PCC reveals the AT2-vs-PF-CZM architectural gap as a measurable quantity.
+
+Without (a), the (b) comparison conflates "PIDL approximation error" with "AT2 vs PF-CZM model-family difference" into one number. With both (a) and (b), they decompose cleanly. §5 narrative becomes substantially stronger as a result.
+
+Cost of adding (a) is ~5 min wall on top of the 2-3-week Task G — effectively free.
+
+### Revised Phase 2 FEM plan
+
+**Step 1 (this week, ~5 min wall)**: Full Option (A) — AT2 + Miehe + Carrara fatigue at PCC params, S^max=0.75, max_cycle=10000, cycle_jump ON. Already-built scripts; just relaunch with max_cycle bumped from 100 to 10000.
+
+Deliverables (per the spec I gave in `a047ad1`):
+- exact N_f
+- a(N) trajectory CSV (`fem_PCC_AT2_a_traj_smax075.csv`)
+- ᾱ_max @ N_f, f_min @ N_f
+- final crack VTK keyframe
+- wall time
+
+**Step 2 (this week, optional)**: One additional AT2 PCC run at S^max = 0.85 (LCF end, ~5 min wall). Gives 2-point S-N for the AT2 reference, useful for §5 plot. If you have spare wall time, run it; otherwise hold.
+
+**Step 3 (next 2-3 weeks)**: Task G Wu PF-CZM kernel implementation, brittle benchmark, PCC PCC smoke, cross-amplitude S-N. Per the spec already in this inbox above (Cornelissen a₁/a₂/a₃, p=2.5, Macaulay split, etc.).
+
+### What the §5 paper figure becomes
+
+A 3-line plot: PIDL_PCC, AT2_FEM_PCC, Wu_PF-CZM_FEM_PCC, all at S^max ∈ {0.65, 0.75, 0.85} (or whatever subset Mac PIDL retrain delivers). The agreement / gap pattern is the §5 finding.
+
+### Order of operations
+
+1. **Now**: relaunch Option (A) full 10⁴ — should land tonight/tomorrow morning given 5 min wall
+2. **In parallel**: ack Task G + share Week-1 implementation plan (kernel files touched, brittle benchmark choice)
+3. **Next**: Task G implementation; AT2 reference is already in hand by the time you're ready for PCC PF-CZM smoke
+
+### What's still cancelled / deferred
+
+- Task D 6-case strict Carrara sweep (AMOR vs MIEHE Basquin slope) — deferred unless Mac asks for §4 supplementary appendix
+- Task E (strict Carrara mesh check) — deferred with Task D
+
+### Standby
+
+Just relaunch Option (A) when convenient. No need to wait for further Mac approval. After Step 1 completes, post the deliverables to outbox; then ack Task G with Week-1 plan.
+
+---
+
 ## 2026-05-10 (late) · [SCOPE PIVOT]: skip full 2A run, switch to Wu PF-CZM as Phase 2 §5 reference — supersedes prior Option A approval
 
 **Re**: my prior `a047ad1` greenlight of Option (A) full 10⁴-cycle run for PCC AT2+Miehe.
