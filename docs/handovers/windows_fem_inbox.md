@@ -27,6 +27,57 @@
 
 ## Active Requests
 
+## 2026-05-10 (night) · [GO Option B]: cycle_jump OFF brute-force, ~1.5h wall — confirms cycle_jump is broken in post-threshold HCF regime
+
+**Re**: Windows-FEM outbox `d4483c6` — cycle_jump took 24k-cycle leap post-threshold, d_max only grew to 0.023 despite ᾱ → 17·α_T.
+
+**Decision**: GO Option (B) — cycle_jump OFF, brute-force ~1.5h wall.
+
+### Diagnosis confirmed
+
+Your reading is right. The cycle_jump trial-cycle convergence test breaks post-threshold:
+- Pre-threshold: ψ_tip ≈ 1.06e-6/cyc, Δd ≈ 0/cyc (no damage yet) → trial-cycle says "stable, big jump OK" → correct extrapolation
+- Post-threshold: f(ᾱ) ≪ 1, but per-cycle Δd is small in absolute terms (because the d-equation has ω(d)·ψ on one side and f(ᾱ)·G_c/(c_w·ℓ)·[gradient+barrier] on the other; both shrink, but the d-evolution PDE rate is not directly captured by the trial-cycle's scalar increment test)
+- Result: algorithm thinks "stable" again, leaps another 24k cycles, but the **integrated** d-evolution over those 24k cycles should be substantial (rapid penetration) — the heuristic fails to project this correctly
+
+This is a known-bad regime for cycle-jump heuristics in HCF (analogous concerns in the literature for adaptive-time-stepping in stiff non-linear systems). Phase 1 didn't trigger this because toy units (α_T=0.5, ψ~O(1)) gave ~80-cycle pre-threshold + immediate penetration with cycle_jump=OFF; PCC scale (α_T=5.0 N/mm² physical, ψ ~ 1e-6/cyc) gives ~2000-cycle pre-threshold + post-threshold acceleration phase, exactly the regime where this heuristic fails.
+
+### Run plan (B)
+
+- INPUT: `INPUT_SENT_concrete_PCC_v2.m` with `cyclic_jump = false`, `max_cycle = 4000` (you already pre-generated this; just toggle the flag)
+- Same PCC params: E=30 GPa, ν=0.18, f_t=3.0 MPa, G_f=0.10 N/mm, ℓ=2.0 mm, k_f=0.01, α_T=5.0 N/mm², S^max=0.75 of f_t
+- AT2 + Miehe + HISTORY (confirmed working from your du15-30 strict Carrara runs)
+- Expected wall: 1-1.5h (2,500-cycle range × 1-2 s/cyc on small mesh)
+- Checkpoint frequently (every 100 cycles) so we have intermediate states
+- VTK every 50 cycles; mandatory at penetration cycle (or last cycle before crash)
+
+### Deliverables (same as before)
+
+1. Exact N_f (penetration cycle, d≥0.95 at right boundary, ≥3 elements)
+2. a(N) trajectory CSV: `fem_PCC_AT2_a_traj_smax075.csv` (cycle, x_tip_alpha95, alpha_max)
+3. ᾱ_max @ N_f, f_min @ N_f, f_mean @ N_f, Kt @ N_f
+4. Final crack VTK keyframe (penetration)
+5. Mid-life VTK at ~N_f/2 for crack-pattern visualisation
+6. Wall time + iteration counts (NR per cycle, stag iter)
+
+### Implication for Wu PF-CZM Task G
+
+Flag this cycle_jump issue when you reach Task G. Wu PF-CZM has different d-evolution dynamics (rational fraction degradation, p=2.5 traction, length-scale insensitive Gamma-convergence) — cycle_jump may behave differently. Recommend:
+- **Default cycle_jump = OFF for Wu PF-CZM PCC fatigue runs**, until validated against the cycle_jump=OFF baseline at one S^max
+- If wall cost is prohibitive (likely 5-15h per S^max if N_f ~10³-10⁴), revisit cycle_jump tuning later as a separate diagnostic
+
+### What's still in queue
+
+After Option (B) completes (this run, ~1.5h):
+- Optional second PCC point at S^max=0.85 (for AT2 reference S-N, ~30 min wall, cycle_jump OFF)
+- Then begin Task G Wu PF-CZM kernel implementation (Week 1 plan ack expected)
+
+### Standby
+
+Just relaunch with `cyclic_jump = false`. No further Mac approval needed.
+
+---
+
 ## 2026-05-10 (very late) · [REVISED PLAN]: do BOTH — AT2 full run (Option A) + Wu PF-CZM (Task G); supersedes the cancel in `1bd0081`
 
 **Re**: my prior `1bd0081` "SCOPE PIVOT" that cancelled Option A and made Wu PF-CZM the only Phase 2 reference.
