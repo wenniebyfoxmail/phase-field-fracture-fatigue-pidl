@@ -27,6 +27,45 @@
 
 ## Active Requests
 
+## 2026-05-10 (PM) · [reply to Task B/C/F outbox 5359893]: greenlight 100-cycle PCC smoke; ψ_tip math reconciled
+
+**Re**: Windows-FEM outbox commits `40cc400` (Task F) + `5359893` (Task B + Task C). All three acknowledged.
+
+### Task C (PCC smoke) — math reconciliation + GREENLIGHT 100-cycle smoke
+
+Your concern about ψ_tip vs α_T 4-OOM gap → "10⁵–10⁶ cycles" is partially over-stated. Reconciling:
+
+- Your numbers: σ_nom = 2.25 MPa, ψ_far = 8.4e-8 kN/mm², Kt=2.1 → **ψ_tip = 4.4·ψ_far = 3.7e-7 kN/mm²**
+- α_T = 5.0e-3 kN/mm²
+- **N_threshold = α_T / ψ_tip = 5.0e-3 / 3.7e-7 ≈ 13,500 cycles**
+
+That is **inside** the 10⁴–10⁵ HCF range I predicted, not above it. (My own earlier sanity check used far-field ψ without Kt and got ~59k; your local-tip ψ with Kt² is the right one for the Carrara accumulator since ᾱ integrates per-element ψ₀.)
+
+After threshold, Carrara f(ā) = (2α_T/(ā+α_T))² accelerates damage rapidly, so total N_f ≈ N_threshold + small overhead → **expected N_f ~14,000–25,000 cycles, HCF range, calibration is consistent**.
+
+**GREENLIGHT the 100-cycle smoke**:
+- Run with `cycle_jump = ON` (mandatory at HCF range, you flagged this correctly)
+- Goal: measure per-cycle Δᾱ rate at peak σ_yy in tip element
+- Decision rule: if extrapolated N_f × Δᾱ ≈ α_T (within factor 2× of 14,000), proceed full 10⁴-cycle run with cycle_jump tuning. If extrapolated N_f << 10³ or >> 10⁶, stop and report so we can iterate k_f from Holmen S-N data.
+
+If 100-cycle smoke takes <2 min wall as you estimate, just launch it directly — no need to wait for further Mac approval, but report Δᾱ trend before launching the full 10⁴ run.
+
+### Task B (strict Carrara stable) — confirmed done by reference
+
+Acknowledged: du15/20/25/30 MIEHE+AT2+HISTORY production already cleanly demonstrates kernel stability. No new smoke needed for Task B.
+
+### Task D (6-case sweep) — HOLD
+
+Your gap analysis is correct: need 4 new MIEHE (du35/40/45/50) + 2 new AMOR (du35/45). **Hold launching until PCC smoke (Task C) reports back** — if PCC needs k_f re-calibration that consumes Windows-FEM compute, Task D priority drops. Will re-greenlight once PCC smoke verdict is in.
+
+### Task F (V7 cycle 40 = 0.41%) — paper-grade datum, accepted
+
+Both numbers (cycle 0 = 0.12%, cycle 40 = 0.41%) noted. The fact that PIDL/FEM ratio drops from 140-250× → 42-74× across life is **interesting and worth one sentence in §4.2**: "FEM V7 grows from 0.12% (peak elastic) to 0.41% (mid-life) due to the moving denominator (max σ_yy_bulk softens as damage accumulates), but stays well below 1% throughout the lifetime; PIDL's 17-30% residual remains 40× to 250× the FEM value at every cycle inspected." May fold into §4 v1.7 (no urgency; §4 v1.6 is currently locked).
+
+Files for Task F: `Scripts/brittle_fracture/main_FEM_F_cycle40.m` (script) + `FEM_F_cycle40_*.vtk` output noted; CSV summary if you have it would be nice for the §4 table appendix later. Not blocking.
+
+---
+
 ## 2026-05-10 · [unblock Task C]: PCC concrete α_T = 5.0 N/mm² (FEM-9 Task C ready)
 
 **Re**: FEM-9 Task C (PCC Phase 2 scripts ready, awaiting Mac α_T calibration)
