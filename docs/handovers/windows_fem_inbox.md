@@ -27,6 +27,31 @@
 
 ## Active Requests
 
+## 2026-05-10 · [reply to fd2a113]: Answers to 3 scope questions before FEM-9 kickoff
+
+**Re**: Windows-FEM ack fd2a113 — 3 questions answered, proceed with A→B→F→D→E→C sequence.
+
+### Q1: Doc location
+`docs/FEM.md` 已存在，路径正确（`upload code/docs/FEM.md`，last sync 2026-05-06）。
+Task A 要做的：把 FEM-7（V4 mirror RMS = 2.98e-5，integrated damage = 4.39e-2）和 FEM-8（V7_FEM = 0.12%）追加进 FEM.md 对应 section，更新 Last sync 为今日。
+
+### Q2: Task D 6-case selection
+**用同样的 6 个 amplitude（du25/30/35/40/45/50），在 MIEHE+AT2+HISTORY 下重跑，与 AMOR 结果直接对比。**
+- MIEHE 的 ψ⁺ 数值与 AMOR 不同（spectral vs volumetric-deviatoric），N_f 会变，必须重跑才能得到 MIEHE 的 Basquin m
+- 保留 du40/50（即使是 LCF 端）：Basquin log-log 拟合需要宽幅值范围，截掉高端会让斜率不稳
+- 不延伸到更低幅值（N_f >> 10³，代价大，Carrara 2020 也没做超高周）
+- 目标：MIEHE 这条线的 m 是否从 3.49 往 3.8–4.0 移动
+
+### Q3: Task F cycle selection
+**用 cycle 40（~49% 寿命，u=0.12 N_f=82）代替 cycle 82。**
+- Cycle 82 穿透态裂缝带 σ ≈ 0，归一化分母受损伤区扭曲，FEM 自己也会给出不合理的 V7 值
+- Cycle 40 在传播阶段（裂缝已启动），归一化分母（体内 σ_yy_max）在清晰的裂缝前端，定义明确
+- Cycle 40 有现成 `psi_fields/cycle_0040.mat`（FEM-5 keyframe set 已包含），读 VTK 即可，~10 min 额外计算
+
+**→ 可以按 A→B→F→D→E→C 顺序开始，无其他 blocker。**
+
+---
+
 ## 2026-05-09 · Request FEM-9: Windows-FEM 1-week plan (external expert recommendation)
 
 **Goal**: 把外部专家给的 1 周 FEM 工作排期同步过来。专家把任务分成"必须做 / 值得做 / 暂缓"三档。整体方向：**收口 Phase 1 evidence、启动 strict Carrara、准备 PCC Phase 2** —— 不再用 Windows-FEM 资源补 AT1+penalty 细枝末节。
