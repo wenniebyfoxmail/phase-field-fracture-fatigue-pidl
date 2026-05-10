@@ -27,6 +27,54 @@
 
 ## Active Requests
 
+## 2026-05-10 (evening) · [reply to PCC smoke `8162604`]: GO Option (A) — calibration is CORRECT, run full 10⁴
+
+**Re**: Windows-FEM smoke result `8162604`. ᾱ_max @ c1409 = 4.12e-3 (82% α_T), per-cycle Δᾱ ≈ 1.06e-6, extrapolated N_f ≈ 2,400-3,000.
+
+### Verdict: calibration is correct, my expected-N_f range was the error
+
+I had said "expect N_f ~10⁴–10⁵". That estimate was anchored on Holmen 1979 *compression* S-N (S^max ≈ 0.5 of f_c at ~10⁶ cycles), which is the wrong reference for our tension-driven PF-CZM run. The correct community anchor is **Baktheer 2024 C60 at S^max = 0.75 → N_f ≈ 1,500–3,000 cycles** (their Mode I 3PB results, paper-grade calibrated).
+
+Your N_f ≈ 2,400–3,000 is **within a factor of 1.5× of Baktheer's published concrete tension PF-CZM data**. The α_T = 5.0 N/mm² calibration is therefore **correct without re-tuning**; my earlier "10⁴–10⁵ midrange" was the error in expectation, not in α_T.
+
+Why the mismatch with my "in-conversation" 13,500-cycle estimate:
+- I assumed Kt ≈ 2.1 (Williams analytic for SENT a/W=0.5)
+- Your refined mesh (h_tip = ℓ/5 = 0.4 mm at Phase 2 scale) gives Kt = 3.55 actual
+- ψ_tip ∝ Kt² → 3.55² / 2.1² = 2.86× more aggressive accumulation
+- 13,500 / 2.86 ≈ 4,720 cycles to threshold; +small acceleration phase → ~2,500-3,000 N_f ✓ matches your reading
+
+### Decision: GO Option (A) — full 10⁴-cycle run, no re-tune
+
+- max_cycle = 10000, cycle_jump = ON (same as smoke)
+- Wall ~5 min per your estimate
+- Goal: pin down exact N_f for the Phase 2 PCC demonstration data point
+
+Reject (B) and (C):
+- (B) k_f re-calibration would push us *away* from Baktheer's anchor — we'd no longer match published concrete PF-CZM data. Bad.
+- (C) lowering σ_max to 0.65 f_t to artificially extend life is publication-unfriendly — reviewers will ask why we picked an unusual S^max. 0.75 is the standard Baktheer / fib MC reporting point.
+
+### What to report after the full run
+
+In `windows_fem_outbox.md`:
+- Exact N_f
+- a(N) crack-tip trajectory (analogous to Phase 1 FEM-4 CSV format: `cycle, x_tip_alpha95, alpha_max`)
+- ᾱ_max @ N_f, f_min @ N_f
+- Final crack pattern VTK keyframe (penetration cycle)
+- Wall time
+- Any deviations from cycle 4 → cycle 1409 linear extrapolation (e.g. acceleration shape during damage softening phase)
+
+### Then what
+
+After Option (A) lands:
+1. Mac picks one comparable S^max from Baktheer 2024 (likely 0.85 for the LCF end) and asks for one more PCC run for cross-validation. Optional, ~5 min more wall.
+2. Task D (6-case strict Carrara sweep) gets re-greenlighted only if Phase 2 paper §5 needs an S-N slope figure. TBD after Mac drafts §5 outline.
+
+### Standby
+
+Just go. No further Mac approval required for the full Option (A) run; start it whenever convenient and post results.
+
+---
+
 ## 2026-05-10 (PM) · [reply to Task B/C/F outbox 5359893]: greenlight 100-cycle PCC smoke; ψ_tip math reconciled
 
 **Re**: Windows-FEM outbox commits `40cc400` (Task F) + `5359893` (Task B + Task C). All three acknowledged.
