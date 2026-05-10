@@ -26,6 +26,109 @@
 
 ## Entries
 
+## 2026-05-10 (night) · [stuck — confirmed]: PCC v2 NO-JUMP brute force at cycle 4000 — d barely grew (0.0087→0.0093). cycle_jump was NOT the bug; PCC parameter calibration needs revision
+
+- **Re**: Mac's `987592e` GO Option B (cycle_jump OFF brute force)
+- **Status**: ⚠️ run completed cleanly to max_cycle=4000 in ~22 min wall (0.33 sec/cycle pace), **NO penetration**. cycle_jump exonerated; the d-stalling is a genuine PCC parameter issue.
+
+### Side-by-side: cycle_jump ON vs OFF
+
+| Cycle | ᾱ_max (||fat||_inf) | d_max (||d||_inf) | Source |
+|---:|---:|---:|---|
+| 4 | 1.3e-5 | 0.00880 | cycle_jump ON, before first jump |
+| 1711 | 5.13e-3 | 0.00880 | cycle_jump ON, post-threshold start |
+| **4000** | **1.33e-2** (2.67·α_T) | **0.00929** | **NO JUMP, brute force** |
+| 25660 | 8.49e-2 (17·α_T) | 0.0233 | cycle_jump ON, jump-ended |
+
+Both runs show **d barely moves** even after fatigue accumulator ᾱ is well past α_T. Per-real-cycle Δd in nojump = (0.00929−0.00880)/4000 = **1.2e-7 per cycle**. At this rate, d=0.95 takes ~7,000,000 cycles. cycle_jump wasn't introducing error — the underlying physics in this parameter set is genuinely slow.
+
+### Root cause analysis
+
+In AT2 phase-field, damage growth requires ψ_eff > ψ_crit ≈ 3·Gc / (8·ℓ).
+
+- Gc = 1.0e-4 kN/mm, ℓ = 2.0 mm → **ψ_crit ≈ 1.875e-5 kN/mm²**
+- ψ_tip (elastic, no damage feedback) = **1.06e-6 kN/mm²** at S^max=0.75·f_t
+- Carrara fatigue f(ᾱ) factor: as ᾱ grows past α_T, f drops ↘ which scales the **driving force in the d-PDE** by f(ᾱ)
+- Effective driving force = f(ᾱ) · ψ_tip ≤ ψ_tip = 1.06e-6 << ψ_crit
+
+So the d-evolution PDE is **subcritical regardless of how much ᾱ accumulates**. Carrara fatigue accumulator never produces enough degradation to push ψ_eff over ψ_crit.
+
+### What this means
+
+Mac's Baktheer-2024 calibration (k_f=0.01 → α_T=5.0 N/mm²) gives the right N_threshold (~2,300 cycles to reach ᾱ=α_T, matches my smoke extrapolation). BUT past threshold, the AT2 phase-field needs **a different driving-force amplification** to actually start damage propagation. Either:
+
+1. **σ_max too low**: ψ_tip ∝ σ², need σ_max ≥ √(ψ_crit/ψ_tip_per_unit_σ²) · σ_current ≈ √(18) · 2.25 MPa ≈ 9.5 MPa = 3.2·f_t — physically unreasonable
+2. **ℓ too large**: ψ_crit ∝ 1/ℓ → halving ℓ to 1.0 mm doubles ψ_crit's reach but quadruples mesh elements + cost
+3. **G_c too high**: ψ_crit ∝ Gc → reduce Gc by 18× to bring ψ_crit ≈ ψ_tip; physically wrong (Gc is fracture energy, calibrated)
+4. **Different formulation needed**: this is Carrara's SENT-fatigue-AT2 working in toy units (Phase 1 du25 N_f=200 ✓), but at PCC scale with ℓ=2mm the elastic limit ψ_crit is ~10^-5 while ψ_tip is ~10^-6 — order-of-magnitude mismatch
+5. **k_f re-calibration**: per Baktheer, α_T = G_c/(k_f · ℓ). Reducing k_f doesn't help — that just lowers α_T (= ᾱ reaches threshold faster, but f-feedback still doesn't overcome ψ_crit gap)
+
+The cleanest fix is **path-aware**: this parameter set is structurally outside the regime where Carrara AT2 phase-field can produce penetration. Either Phase 2 needs a different formulation (e.g., Wu PF-CZM where degradation is not Carrara-based, the Task G plan), or the PCC parameter calibration needs revisiting at a deeper level than k_f.
+
+### What to do now
+
+I've already started **Task D 6-case Carrara sweep + Task E ℓ/h=10 mesh check** as user requested — these are all Phase-1 toy-units strict Carrara work, not affected by the PCC issue. The orchestrator (`run_DE_after_PCC.sh`) detected PCC completion and immediately fired du50_MIEHE → ... → du25_lh10_MIEHE. ETA ~9-10h overnight.
+
+For Phase 2 PCC: standby on your call. Suggested options:
+
+**(α) Revisit PCC formulation** — switch directly to Task G (Wu PF-CZM) since it has rational-fraction degradation that may handle this regime better. Skip the AT2 PCC reference data point.
+
+**(β) Adjust σ_max higher to test if penetration triggers** — try σ_max = 0.95·f_t = 2.85 MPa (just below tensile strength) to see if AT2 PCC can even produce penetration at extreme load. Useful as a sanity check that the formulation is functional, even if the loading is unphysical for HCF. ~30 min wall.
+
+**(γ) Re-calibrate Gc downward** — try Gc = 1e-5 kN/mm (= 10 N/m, 10× smaller, lowers ψ_crit by 10×). May contradict published concrete G_f, but tests whether AT2 can produce penetration in *some* concrete parameter regime. ~1.5h wall.
+
+**My recommendation**: (α) — go straight to Task G. The Wu PF-CZM is the publication-grade Phase 2 reference anyway; spending more time on AT2 PCC that may never penetrate is sunk cost. The current "PCC AT2 stalls at ᾱ=2.67·α_T with d_max=0.009" is a publishable observation in itself (the AT2 fatigue formulation has a regime where it cannot complete the failure cycle at concrete-scale loading).
+
+### Files
+
+- INPUT: `Scripts/fatigue_fracture/INPUT_SENT_concrete_PCC_v2_nojump.m`
+- driver: `Scripts/fatigue_fracture/main_SENT_concrete_PCC_v2_nojump.m`
+- output: `Scripts/fatigue_fracture/SENT_concrete_PCC_v2_nojump/` (4001 cycles in monitorcycle, 81 VTKs at vtk_freq=50)
+- log: `Scripts/fatigue_fracture/sweep_logs/SENT_concrete_PCC_v2_nojump.log`
+
+---
+
+## 2026-05-10 (night) · [in-flight]: Task D 6-case Carrara MIEHE/AMOR sweep + Task E ℓ/h=10 mesh check — orchestrator running
+
+- **Re**: user instruction 2026-05-10 night to "do D + E after PCC finishes"
+- **Status**: orchestrator armed and running. Waited for PCC nojump completion (~22:00), then fired sequence in size-priority order.
+
+### Run plan (orchestrator: `run_DE_after_PCC.sh`)
+
+| Order | Run | Expected N_f | Expected wall |
+|---:|---|---:|---:|
+| 1 | `du50_MIEHE` | ~2 cyc | ~2 min |
+| 2 | `du45_MIEHE` | ~10 cyc | ~6 min |
+| 3 | `du45` (AMOR) | ~10 cyc | ~3 min |
+| 4 | `du40_MIEHE` | ~26 cyc | ~16 min |
+| 5 | `du35` (AMOR) | ~55 cyc | ~16 min |
+| 6 | `du35_MIEHE` | ~55 cyc | ~33 min |
+| 7 | `du25_lh10_MIEHE` (Task E) | ~200 cyc on 143K-element mesh | **~6-10 h** (long pole) |
+
+Total ETA: ~7-11 h overnight. Master log: `sweep_logs/run_DE_master.log`.
+
+### Files generated for this sweep
+
+- mesh: `Dependencies/SENT_mesh/gen_carrara_quad_lh10_mesh.py` + `SENT_carrara_quad_lh10.inp` (143,407 nodes, 143,122 quads — 4.6× the ℓ/h=5 mesh)
+- INPUTs: `INPUT_SENT_carrara_du{35,45}.m` (AMOR), `INPUT_SENT_carrara_du{35,40,45,50}_MIEHE.m`, `INPUT_SENT_carrara_du25_lh10_MIEHE.m`
+- drivers: `main_SENT_carrara_*.m` (matching set)
+- orchestrator: `Scripts/fatigue_fracture/run_DE_after_PCC.sh`
+
+### What you'll get from me when this completes
+
+For Task D:
+- Updated AMOR vs MIEHE Basquin plot (now 6 AMOR + 6 MIEHE points each, vs current 4+4)
+- Refined m_AMOR and m_MIEHE estimates with the new high-amplitude end coverage
+- CSV in `_pidl_handoff_v3_items/carrara_results/`
+
+For Task E:
+- N_f at ℓ/h=5 vs ℓ/h=10 for du25 strict Carrara (MIEHE+AT2+HISTORY)
+- Comparison verdict: is strict Carrara more h-stable than Phase 1 AT1+PENALTY (FEM-D matrix)?
+
+Will outbox both as one consolidated [done] entry once the orchestrator completes (or partial entry if interrupted).
+
+---
+
 ## 2026-05-10 (evening) · [stuck + diagnostic]: PCC v2 full Option-A run — d-field never propagates despite ᾱ → 17×α_T; cycle_jump jumped 1711→25660 in one leap, suspected too aggressive
 
 - **Re**: Mac's `a047ad1` GO Option (A); my smoke result `8162604`
