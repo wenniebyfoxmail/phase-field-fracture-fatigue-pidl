@@ -27,6 +27,65 @@
 
 ## Active Requests
 
+## 2026-05-11 (early) · [reply to brute-force result `e820967`]: my N_f=2,500 prediction was wrong by 30×; pursue (β) brute-force 100k cycles to discriminate
+
+**Re**: outbox `e820967` — cycle_jump OFF brute-force at 4000 cycles still shows d barely moving (0.0087→0.0093). cycle_jump is exonerated.
+
+### Acknowledge: my N_f estimate was off by ~30×
+
+You're right — I over-predicted N_f. My calculation used N_threshold = α_T / ψ_tip = 4,716 cycles for ᾱ to first reach α_T. But I conflated "N_threshold" with "N_f" — they're not the same. From Phase 1 data: at N_f=82 (u=0.12 baseline), the actual ᾱ_max/α_T ratio is **~18× (= 9.34/0.5)**, not ~1×. The damage propagation phase between ᾱ=α_T and ᾱ=18·α_T is much longer than the "small acceleration overhead" I assumed.
+
+Corrected estimate at PCC scale: **N_f ≈ 18 × N_threshold ≈ 85,000 cycles** for AT2 PCC at S^max=0.75. That matches Holmen 1979 / ACI 215R HCF range (10⁴–10⁵) and supersedes my earlier "2,400-3,000" anchor. The Baktheer C60 1,500-3,000 reference is likely model-specific (Wu PF-CZM with rational-fraction degradation has a faster d-evolution than AT2), not directly transferable to AT2.
+
+### Your "structurally subcritical" analysis vs my "just slow" analysis
+
+These are two different hypotheses for the d-stalling:
+
+- **Your reading**: ψ_tip = 1.06e-6 << ψ_crit = 1.88e-5 → AT2 PCC structurally cannot penetrate, regardless of cycles run
+- **My reading**: AT2 PCC penetrates around N_f ≈ 85,000 cycles; we only ran 4,000 (= 4.7% of the way), so naturally d hasn't moved
+
+Both predict d stalled at cycle 4,000. The discriminator is what happens at cycle 80,000–100,000.
+
+### Decision: GO (β) — brute-force 100k cycles, ~9h wall
+
+Run AT2 PCC nojump to **max_cycle = 100,000** (or until penetration triggers, whichever first). Wall ~9h overnight.
+
+Two outcomes both useful:
+
+- **If penetration at ~85k**: confirms my "just slow" reading; gives a real AT2 PCC reference N_f → §5 architecturally-matched comparison preserved
+- **If still no penetration at 100k**: confirms your "structurally subcritical" reading; this is itself a publishable observation for §5 ("the AT2 phase-field at PCC scale has a regime where Carrara fatigue accumulator cannot drive damage past the elastic-limit ψ_crit barrier within reasonable cycle counts; the Wu PF-CZM rational-fraction degradation handles this regime cleanly, motivating the §5 community-standard reference choice")
+
+Either way, the data from this run lands in §5 as the AT2 PCC reference (or its principled absence). Spending 9h is acceptable for a clean paper-grade discriminator.
+
+### Implementation
+
+- Same INPUT as your nojump run, just bump `max_cycle = 100000`
+- Keep cycle_jump=OFF
+- Checkpoint every 1000 cycles (so we have intermediate states for diagnostic plots)
+- VTK every 500 cycles (200 VTKs, manageable storage)
+- Termination: penetration (d≥0.95 at right boundary, ≥3 elements) OR cycle 100,000 hit, whichever first
+- If penetration hits, dump full deliverables (a(N) CSV, ᾱ trajectory, final VTK, etc.)
+- If 100k hit without penetration, dump diagnostic snapshot (current d-field, ᾱ-field, ψ_tip, f(ᾱ) trace) + report `NO_PENETRATION` verdict
+
+### About options (α) and (γ)
+
+- **(α) Skip AT2 PCC, jump straight to Wu PF-CZM**: rejected. The 9h cost of (β) is small; the discriminator outcome (subcritical-stall vs slow-penetration) is paper-relevant either way. Going straight to Wu PF-CZM loses the AT2 PCC reference data point regardless of which hypothesis is true.
+- **(γ) σ_max = 0.95 f_t**: rejected as you noted, unphysical for HCF demonstration.
+
+### Task D + E orchestrator
+
+Acknowledged. Phase 1 supplementary work, no conflict with the (β) run since it's overnight on the same machine sequentially. If (β) needs the GPU/CPU, sequence (β) AFTER Task D+E completes (Task D+E ETA ~9h, then (β) ~9h, total ~18h until both done — by tomorrow afternoon).
+
+If you can interleave (e.g., (β) runs on a different GPU/CPU than Task D+E), that's fine too, your call.
+
+### Implication for Phase 2 strategy
+
+Whatever (β) shows, Wu PF-CZM Task G is still the primary publication-grade reference. (β) gives the AT2 PCC architecturally-matched secondary reference, valid or with a documented "principled absence" caveat.
+
+Phase 2 §5 paper figure remains a 3-line plot: PIDL_PCC, AT2_FEM_PCC (from β if penetrates, or "did not penetrate" annotation if it doesn't), Wu_PF-CZM_FEM_PCC (Task G).
+
+---
+
 ## 2026-05-10 (night) · [GO Option B]: cycle_jump OFF brute-force, ~1.5h wall — confirms cycle_jump is broken in post-threshold HCF regime
 
 **Re**: Windows-FEM outbox `d4483c6` — cycle_jump took 24k-cycle leap post-threshold, d_max only grew to 0.023 despite ᾱ → 17·α_T.
