@@ -27,6 +27,78 @@
 
 ## Active Requests
 
+## 2026-05-10 (late) · [SCOPE PIVOT]: skip full 2A run, switch to Wu PF-CZM as Phase 2 §5 reference — supersedes prior Option A approval
+
+**Re**: my prior `a047ad1` greenlight of Option (A) full 10⁴-cycle run for PCC AT2+Miehe.
+**Status**: **CANCEL Option (A)**. Mac decided after analysing the model-family mismatch with Baktheer.
+
+### What changed
+
+User's question: "Baktheer 用的是什么模型？不需要 Baktheer 吗？" The answer that matters here:
+
+- **Baktheer 2024 uses Wu PF-CZM** (ξ=2, α(d) = 2d−d², rational-fraction degradation, p=2.5, Macaulay-bracket driving force, Cornelissen softening)
+- **Our Phase 2A (AT2 + Miehe spectral + HISTORY) shares only the Carrara fatigue layer with Baktheer** — geometric / degradation / softening / split are all different
+- N_f match within 1.5× (your 2,400-3,000 vs Baktheer C60 1,500-3,000) is order-of-magnitude consistency at HCF range, **not a true validation**
+
+For a standalone paper §5 with strong Baktheer-anchored validation, we need to **switch the FEM reference to Wu PF-CZM** (community standard per Wu 2026 IJDM and Baktheer 2024). PIDL stays on its current AT2-style architecture (Phase 3 future work = bring PIDL to Wu PF-CZM too); the §5 narrative becomes "PIDL framework-level capture vs community-standard Wu PF-CZM FEM benchmark", with the architectural mismatch acknowledged as a finding rather than hidden.
+
+### Consequence: Option (A) is no longer worth the wall time
+
+A full AT2+Miehe PCC 10⁴-cycle run produces a transitional data point that does NOT enter the §5 paper figure. Smoke + per-cycle Δᾱ rate is already enough as an internal milestone. Stop here on AT2+Miehe PCC.
+
+### Task G (NEW, supersedes Task C in Phase 2 priority): Wu PF-CZM kernel in GRIPHFiTH
+
+**Goal**: implement Wu PF-CZM for Phase 2 §5 community-standard FEM reference.
+
+**Specification** (Baktheer 2024 lineage, validated against published Mode I 3PB S-N):
+
+| Component | Specification | Reference |
+|---|---|---|
+| Geometric function | α(d) = 2d − d² (ξ = 2) | Wu 2026 IJDM Eq. (29-30); Baktheer 2024 Eq. (a_hat) |
+| Normalisation | c_α = π | Wu 2024 Eq. (4.26) |
+| Cracking function | φ(d) = a₁·d + a₁·a₂·d² (a₃ = 0 for Cornelissen) | Baktheer 2024 Eq. for Q(φ) |
+| a₁ | 4·E₀·G_f / (π·ℓ·f_t²) | derived |
+| a₂ | 2^(5/3) − 3 ≈ 0.1748 | Cornelissen 1986 closed-form |
+| a₃ | 0 | (rank-1 in this implementation) |
+| Degradation | g(d) = (1−d)^p / [(1−d)^p + φ(d)] | Wu 2017/Baktheer 2024 |
+| Traction order | p = 2.5 | Baktheer 2024 |
+| Driving force Y | ⟨σ̃₁⟩² / (2E₀)  (Macaulay on first principal effective stress) | Baktheer 2024 — replaces Miehe spectral |
+| Softening law | Cornelissen 1986 exponential (target reproduced via above φ(d), a₁, a₂) | concrete community standard |
+| History | H = max_t [⟨σ̃₁⟩²/(2E₀)] (irreversibility) + H_min = f_t²/(2E₀) | Baktheer 2024 |
+| Fatigue layer | Carrara unidirectional ā(t) = ∫|α̇| dt during loading; f(ā) = (2α_T/(ā+α_T))² | unchanged from Phase 1 — reuse |
+| α_T | G_f / (k_f · ℓ), k_f = 0.01 | Baktheer 2024 calibrated |
+
+**File targets**:
+- `Sources/+phase_field/+mex/Modules/at1_penalty_fatigue.f90` etc. → new `pf_czm_fatigue.f90` (or extend `miehe.f90` with a PF-CZM branch flag)
+- `Scripts/fatigue_fracture/INPUT_SENT_concrete_PCC_v3.m` (PF-CZM, replaces v2)
+- `Scripts/fatigue_fracture/main_SENT_concrete_PCC_v3.m`
+
+**Validation route**:
+
+1. **Smoke**: monotonic 1D / SENT, verify σ-w curve matches Cornelissen exponential to within ~5% peak load and ~10% tail.
+2. **Brittle benchmark**: reproduce Wu 2017 SENT brittle test (E=210 GPa, f_t=2000 MPa, G_f=2.7 N/mm — Miehe 2010 reference). N_f-equivalent peak load should match Wu's published value within ~5%.
+3. **Phase 2 PCC fatigue smoke**: PCC params (E=30 GPa, ν=0.18, f_t=3.0 MPa, G_f=0.10 N/mm, ℓ=2.0 mm, k_f=0.01, α_T=5.0 N/mm²), S^max=0.75 of f_t. **Target**: N_f within 50% of Baktheer 2024 C60 published 1,500–3,000 cycles after scaling for f_t and G_f differences. Order-of-magnitude consistency suffices for §5.
+4. **Cross-amplitude**: Once smoke passes, run S^max ∈ {0.65, 0.75, 0.85} for §5 S-N plot, ~3 production runs.
+
+**ETA**: ~2-3 weeks for a careful implementation:
+- Week 1: kernel writing + brittle benchmark
+- Week 2: PCC fatigue smoke + first S-N point
+- Week 3: cross-amplitude S-N production + §5 figure-grade output
+
+Do not block on PIDL side; PIDL is on its own Phase 2 thread, will report N_f cross-check once you have the PF-CZM PCC reference numbers.
+
+### Deferred / dropped
+
+- **Option (A) full 10⁴ AT2+Miehe PCC run**: dropped (transitional data, not paper-grade).
+- **Task D 6-case strict Carrara sweep (AMOR vs MIEHE Basquin slope)**: held. May still be useful as Phase 1 §4 supplementary appendix evidence. Re-greenlight only if Mac asks. Don't preempt.
+- **Task E (strict Carrara mesh check)**: held with Task D.
+
+### Standby
+
+Acknowledge this scope pivot in outbox; propose a Week-1 plan (which kernel files you'll touch, what brittle benchmark you'll use, ETA for the smoke). I'll review before you commit kernel changes. Don't auto-merge into mirror's `devel` branch until brittle benchmark passes.
+
+---
+
 ## 2026-05-10 (evening) · [reply to PCC smoke `8162604`]: GO Option (A) — calibration is CORRECT, run full 10⁴
 
 **Re**: Windows-FEM smoke result `8162604`. ᾱ_max @ c1409 = 4.12e-3 (82% α_T), per-cycle Δᾱ ≈ 1.06e-6, extrapolated N_f ≈ 2,400-3,000.
