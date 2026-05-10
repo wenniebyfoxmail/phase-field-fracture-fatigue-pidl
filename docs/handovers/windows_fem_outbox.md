@@ -26,6 +26,88 @@
 
 ## Entries
 
+## 2026-05-10 · [done]: FEM-9 Task C — PCC v2 INPUT + mesh ready with Mac's calibrated α_T=5.0 N/mm²
+
+- **Re**: FEM-9 Task C, unblocked by Mac's `8f47402` PCC α_T calibration push 2026-05-10
+- **Status**: ✅ scripts ready, **NOT yet launched** (smoke run ETA depends on Mac's go-ahead given target N_f=10⁴-10⁵ + cycle_jump complexity)
+
+### What I built
+
+| File | Purpose |
+|---|---|
+| `Dependencies/SENT_mesh/gen_pcc_concrete_v2_mesh.py` | gmsh mesh gen with new ℓ=2 mm, h_tip=ℓ/5=0.4 mm |
+| `Dependencies/SENT_mesh/SENT_pcc_concrete_v2_quad.inp` | 2391 quads, 2443 nodes (vs Handoff F's 1107 — 2.2× denser due to h_tip 1→0.4) |
+| `Scripts/fatigue_fracture/INPUT_SENT_concrete_PCC_v2.m` | All Mac calibrated params injected |
+| `Scripts/fatigue_fracture/main_SENT_concrete_PCC_v2.m` | Driver |
+
+### Param crosswalk (Handoff F placeholder → v2 calibrated)
+
+| Param | Handoff F | v2 (Mac 2026-05-10) | Note |
+|---|---:|---:|---|
+| E | 30 kN/mm² | 30 kN/mm² | unchanged (30 GPa) |
+| ν | 0.18 | 0.18 | unchanged |
+| Gc | 8e-5 kN/mm (80 N/m) | **1e-4 kN/mm (100 N/m)** | +25% (Baktheer-2024 calibrated) |
+| ℓ | 5 mm | **2 mm** | −60% (Phase 2 regularization length) |
+| h_tip | 1 mm (= ℓ/5) | **0.4 mm (= ℓ/5)** | scales with ℓ |
+| α_T | 0.094 (placeholder) | **5.0e-3 kN/mm² (= 5.0 N/mm²)** | **53× larger (calibrated)** |
+| p | 2 | 2 | unchanged |
+| uy_final | 8.0e-3 mm | **7.5e-3 mm** | gives σ_nom = 0.75·f_t = 2.25 MPa per Mac smoke spec |
+| max_cycle | 100 | **10000** | HCF target N_f=10⁴-10⁵ |
+| cyclic_jump | OFF | **ON** | mandatory at HCF range or wall ≫ days |
+
+### Smoke launch decision pending
+
+The α_T = 5.0 calibration is a **53× threshold raise vs Handoff F**, which under Handoff F's elastic ψ_tip ≈ 4.2e-7 means... wait, that ψ_tip was at uy=8e-3 in toy units. New units: at uy=7.5e-3 with E=30 kN/mm², σ_nom = 2.25 MPa, so ψ_far ≈ σ²/(2E) = (2.25e-3)²/60 = 8.4e-8 kN/mm². Tip Kt ≈ 2.1 → ψ_tip ≈ 4.4·8.4e-8 = 3.7e-7. That's STILL way below α_T = 5.0e-3 (4 OOM gap).
+
+**Concern**: even with Mac's calibrated α_T, the elastic ψ_tip at σ_nom = 0.75·f_t looks ~4 OOM below threshold. fatigue accumulator will need to integrate ~10⁵-10⁶ cycles to even reach α_T, way beyond Mac's 10⁴-10⁵ expected range.
+
+Two possibilities:
+1. **My ψ calc is wrong** — Carrara fatigue formulation has nuances I'm missing (maybe the relevant ψ for fatigue is local, not far-field; or k_f calibration normalizes differently)
+2. **Need to wait for cycle_jump kick-in** — at HCF range, the framework adds "jump" cycles automatically when ψ_tip approaches saturation, fast-forwarding through stable regime
+
+**Proposal**: launch a **100-cycle smoke** first (~1-2 min wall) just to verify (a) compile + run, (b) f_alpha tracking, (c) extrapolate forward N_f order from the per-cycle Δᾱ growth rate. If Δᾱ rate × 10⁴ already gives Δᾱ ≫ α_T (= would penetrate in ~10⁴ cycles), proceed with full HCF run. If too slow, rerun with cycle_jump tuned higher.
+
+**Want me to launch the 100-cycle compile-+-run smoke now?** Won't actually run all 10⁴ cycles — will just measure per-cycle rate and report. ~1-2 min wall.
+
+---
+
+## 2026-05-10 · [done]: FEM-9 Task B — strict Carrara runner stable; existing MIEHE+AT2+HISTORY data at du15/20/25/30 already proves it
+
+- **Re**: FEM-9 Task B (HIGH, "确认 strict Carrara 线的 runner 能稳定跑")
+- **Status**: ✅ done by reference to existing data; no new run needed. Mac's spec asked for "至少 1 个 smoke + 1 个代表性载荷点" — we have **4 production runs** at the strict Carrara formulation (AT2 + Miehe spectral + HISTORY) all completed cleanly.
+
+### Existing strict Carrara data (post-kernel-bugfix `e7eb3f8`)
+
+| Δū (mm) | INPUT file | Output dir | N_f | Wall |
+|---:|---|---|---:|---:|
+| 1.5e-3 | `INPUT_SENT_carrara_du15_MIEHE.m` | `SENT_carrara_du15_MIEHE/` | **1132** | ~14 h (overnight)|
+| 2.0e-3 | `INPUT_SENT_carrara_du20_MIEHE.m` | `SENT_carrara_du20_MIEHE/` | **435** | ~5 h |
+| 2.5e-3 | `INPUT_SENT_carrara_du25.m` (was AMOR, switched to MIEHE) | `SENT_carrara_du25/` | **200** | ~2 h |
+| 3.0e-3 | `INPUT_SENT_carrara_du30_MIEHE.m` | `SENT_carrara_du30_MIEHE/` | **102** | ~1 h |
+
+### Runner confirmation
+
+- **Compile + run**: ✅ all 4 cases completed without crash. Patched MIEHE kernel (`e7eb3f8`) handles the spectral-split branch correctly under fatigue history loading.
+- **Crack pattern**: ✅ mode-I propagation along y=0 from notch tip, terminating at right boundary; consistent with AMOR results across same mesh.
+- **Quantitative**: MIEHE N_f within +1.9% to +4.1% of AMOR N_f at every Δū (see prior outbox `..._AMOR_vs_MIEHE_basquin.png` plot in `_pidl_handoff_v3_items/carrara_results/`).
+
+### Basquin slope MIEHE (4 points so far)
+
+Pre-Task-D estimate: m_MIEHE ≈ 3.5 (similar to AMOR's m=3.49). Mac's Task D 6-case sweep (du25/30/35/40/45/50) will refine this. The 4 existing points span Δū ∈ [1.5, 3.0]×10⁻³ which doesn't include the 4.0/4.5/5.0 amplitudes Mac wants.
+
+### What Task D actually needs (gap analysis vs Mac's spec)
+
+Mac's Task D 6-case set: **du25/30/35/40/45/50**. My existing MIEHE: du15/20/25/30. So Task D requires:
+
+- Already have: du25, du30 (MIEHE)
+- Need new MIEHE: **du35, du40, du45, du50** (4 runs)
+- Mac wants AMOR comparison, my AMOR has: du15/20/25/30/40/50 → still need new AMOR for **du35, du45** (2 runs)
+- Total Task D new runs: **6** (4 MIEHE + 2 AMOR) — compute time depends on N_f range; du40-50 are LCF (~5-50 cycles, fast); du35 maybe 50-80 cycles
+
+Standby on Task D until you confirm the 6-run plan; will queue overnight when greenlit.
+
+---
+
 ## 2026-05-10 · [done]: FEM-9 Task F — V7 at u=0.12 cycle 40 = 0.41% (3.4× peak elastic, still <1% well below PIDL WARN)
 
 - **Re**: FEM-9 Task F (per scope answer in `edde1c4`: cycle 40, ~49% life, traveling crack, clean σ_yy normalization)
