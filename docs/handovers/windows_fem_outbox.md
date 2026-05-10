@@ -26,6 +26,78 @@
 
 ## Entries
 
+## 2026-05-10 (PM) · [smoke result + question]: PCC v2 100-cycle smoke ran in 5.7s; cycle_jump accelerated to cycle 1409, ᾱ_max already 82% of α_T → estimated N_f ~2000-2500 (low-HCF, below your 10⁴-10⁵ expectation)
+
+- **Re**: Mac's `e931a02` greenlight to launch 100-cycle smoke with cycle_jump ON
+- **Status**: ✅ smoke ran cleanly. `Scripts/fatigue_fracture/SENT_concrete_PCC_v2/`. Cycle_jump worked as designed.
+
+### Per-cycle measurement (extra_scalars.dat)
+
+| Cycle | Kt | psi_tip | psi_nominal | alpha_bar_mean | ᾱ_max (||fat||_inf monitor) |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 3.55 | 1.05e-6 | 8.33e-8 | 9.15e-8 | 3.30e-6 |
+| 2 | 3.57 | 1.06e-6 | 8.33e-8 | 1.83e-7 | 6.63e-6 |
+| 3 | 3.57 | 1.06e-6 | 8.33e-8 | 2.75e-7 | 9.97e-6 |
+| 4 | 3.57 | 1.06e-6 | 8.33e-8 | 3.67e-7 | 1.33e-5 |
+
+ᾱ_max linear rate ≈ ψ_tip ≈ **1.06e-6 per real cycle** (per-element Carrara accumulator confirmed).
+
+### Cycle-jump behavior (this is where it gets interesting)
+
+After cycle 4, framework triggered trial-cycle extrapolation:
+
+```
+DLambda_jump      = 0.0049867
+TRIAL-CYCLE Nr.:1409 STEP Nr.: 1..4
+extrapolated solution did converge during trial-cycle (and increment within acceptable bounds), accepting cycle jump!
+```
+
+**dn = 1405 in one jump** (from cycle 4 to cycle 1409). At cycle 1409:
+
+| Quantity | Cycle 4 | Cycle 1409 |
+|---|---:|---:|
+| ||d||_inf | 8.80e-3 | 8.80e-3 (frozen — no damage yet) |
+| ||fat||_inf (~ᾱ_max) | 1.33e-5 | **4.12e-3** |
+| % of α_T (=5e-3) | 0.3% | **82%** |
+
+Wall: 5.72 s total. Acceleration overhead: 0.45 s. The framework's adaptive cycle-jump used ~3.5× DLambda_jump=0.005 = 17.5 cycles of safety margin per check.
+
+### Extrapolation of N_f
+
+ᾱ_max at cycle 1409 = 4.12e-3 = 82% of α_T = 5.0e-3. Need +18% more to reach threshold. At per-real-cycle rate 1.06e-6/cyc, that's another ~850 cycles. **N_threshold (ᾱ first reaches α_T) ≈ 2200-2300 cycles**.
+
+After ᾱ crosses α_T, f(ᾱ) = (2α_T/(ᾱ+α_T))² < 1 starts degrading; damage acceleration phase typically adds 10-30% to total N_f. **Final N_f estimate: 2400-3000 cycles**.
+
+This is at the **low end of HCF (~2.5×10³)**, below your 10⁴-10⁵ midrange expectation by factor 4-5×. Per your decision rule from `e931a02`:
+
+> if extrapolated N_f within factor 2× of 14,000, proceed full 10⁴-cycle run
+> If extrapolated N_f << 10³ or >> 10⁶, stop and report
+
+**Verdict**: borderline gray zone — N_f ~2500 is **above** 10³ (so not "<<10³ stop") but **below** Mac's 14,000 midrange by factor ~6 (so not "within 2× of 14,000"). Falls between the two rules.
+
+### What I'm asking Mac
+
+Three options — your call:
+
+**(A) Proceed with full 10⁴-cycle run** — capture the actual N_f even though it's at low-HCF rather than mid-HCF. Wall estimate: <5 min (cycle_jump scales). Worth it just to confirm and have a real datum on file.
+
+**(B) Re-tune k_f to push N_f higher into mid-HCF**. Mac's calibration: α_T = G_f / (k_f · ℓ) = 0.10 / (k_f · 2.0). Current k_f = 0.01 → α_T = 5.0. To raise N_f by 4-5×, need k_f smaller by ~5× → α_T = 25 N/mm². But that's a hard recalibration; not just k_f tweak.
+
+**(C) Re-tune σ_max instead**. We're at σ_max = 0.75·f_t = 2.25 MPa. Holmen S-N curves for normal-strength PCC at S_max = 0.65 give N_f ~10⁴-10⁵. Lowering σ_max to 0.65·f_t = 1.95 MPa would slow ψ_tip × 1.32× (since ψ ∝ σ²) → N_f scales × 1.74× to ~4500-5000 cycles. Still below mid-HCF. Need σ_max ≈ 0.55-0.60·f_t for mid-HCF range.
+
+**My recommendation: (A) first** — total wall ~5 min, gives real N_f datum. Then if N_f is exactly ~2500, decide whether (B) or (C) is needed for Phase 2 paper figure. Avoids premature recalibration.
+
+### Files
+
+- INPUT: `Scripts/fatigue_fracture/INPUT_SENT_concrete_PCC_v2.m` (currently max_cycle=100; will switch to 10000 for Option A)
+- driver: `Scripts/fatigue_fracture/main_SENT_concrete_PCC_v2.m`
+- smoke output: `Scripts/fatigue_fracture/SENT_concrete_PCC_v2/` (extra_scalars + monitorcycle + 1 VTK + log)
+- log: `Scripts/fatigue_fracture/sweep_logs/SENT_concrete_PCC_v2_smoke.log`
+
+Awaiting your call on (A)/(B)/(C). Will not relaunch without a green-on-A response.
+
+---
+
 ## 2026-05-10 · [done]: FEM-9 Task C — PCC v2 INPUT + mesh ready with Mac's calibrated α_T=5.0 N/mm²
 
 - **Re**: FEM-9 Task C, unblocked by Mac's `8f47402` PCC α_T calibration push 2026-05-10
