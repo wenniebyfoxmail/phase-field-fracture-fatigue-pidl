@@ -26,6 +26,65 @@
 
 ## Entries
 
+## 2026-05-10 (evening) · [stuck + diagnostic]: PCC v2 full Option-A run — d-field never propagates despite ᾱ → 17×α_T; cycle_jump jumped 1711→25660 in one leap, suspected too aggressive
+
+- **Re**: Mac's `a047ad1` GO Option (A); my smoke result `8162604`
+- **Status**: ⚠️ run completed in 35.3 s but **N_f NOT reached**. Damage field stalled at d_max ≈ 0.023 even after fatigue accumulator ᾱ_max ≈ 17·α_T. Need your call on (1) cycle_jump tuning, (2) accept as low-HCF datum with caveat, or (3) deeper diagnosis.
+
+### Trajectory (monitorcycle.dat real cycles)
+
+| Cycle | dn (jump size) | ᾱ_max (||fat||_inf) | % of α_T | d_max (||d||_inf) | f(ᾱ) computed |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 1 | 3.30e-6 | 0.07% | 0.0087 | 1.000 |
+| 4 | 1 | 1.33e-5 | 0.27% | 0.0088 | 1.000 |
+| 1409 | **+1405** | 4.12e-3 | **82%** | 0.0088 | 1.000 (just below threshold) |
+| 1412 | 1 | 4.13e-3 | 83% | 0.0088 | 1.000 |
+| 1708 | **+296** | 5.12e-3 | **102%** | 0.0088 | 0.957 (just past threshold) |
+| 1711 | 1 | 5.13e-3 | 103% | 0.0088 | 0.957 |
+| **25660** | **+23949** | 8.49e-2 | **1697%** | **0.0233** | **0.012** |
+
+cycle_jump ACCEPTED 3 trial-cycles (0 rejected). Last jump dn=23949 carried us past max_cycle=10000 → loop exited at cycle 25660.
+
+### What's wrong
+
+**ᾱ kept growing past α_T but d never propagated.** Expected Carrara behavior post-threshold: f(ᾱ)→0 → effective driving force in d-evolution PDE collapses → d should grow rapidly toward 1 → penetration. Empirically: ᾱ→17·α_T, f→0.012 (98.8% degraded), but d_max only grew from 0.0088 to 0.0233 over 24,000 cycles.
+
+**Likely cause**: cycle_jump is too aggressive once ψ_eff = f(ᾱ)·ψ_tip becomes small. The trial-cycle "increment" the framework checks is in some scalar like ‖d‖ or ‖α‖, but those grow slowly when f is already small → trial-cycle increment passes the 150% test → big dn accepted → simulation skips through the regime where d is supposed to suddenly accelerate.
+
+In other words: the framework's adaptive cycle_jump may be optimized for the **pre-threshold** Carrara regime (linear ᾱ growth, no damage yet) and **breaks down post-threshold** when d-evolution PDE is the dominant non-linearity.
+
+### Why I'm not seeing penetration
+
+- f(ᾱ=17·α_T) = (2/(17+1))² = 0.0123, so ψ_eff = 1.06e-6 × 0.0123 = 1.3e-8
+- d-evolution driving force ∝ g'(d) · ψ_eff − Gc/ℓ · regularization terms
+- With ψ_eff = 1.3e-8 < typical regularization scale → d-equation says d shouldn't grow
+- BUT this contradicts Carrara physics: f(ᾱ) acts on the **stiffness** in equilibrium, not on the d-driving-force directly. The relationship ψ_eff vs f(ᾱ)·ψ depends on which formulation variant GRIPHFiTH implements.
+
+### What I need from you
+
+Three options — your call (preserved checkpoint? **No** — `checkpoint_freq=100` only fires at regular cycles, not jump cycles; lost everything past cycle 4):
+
+**(A) Re-run with cycle_jump capped tighter** — set max-dn or max-extrapolation-tolerance smaller so cycle_jump can't take 23949-cycle leaps in the post-threshold regime. Need to find where in INPUT/`SOL_JUMP_PAR` to set this; will take some code reading. Then rerun ~30 min wall.
+
+**(B) Re-run with cycle_jump OFF** — pure brute force. With ψ_tip=1.06e-6/cyc and N_f estimated ~2,500, that's 2,500 cycles × ~1-2 s/cyc on this small mesh ≈ 1-1.5 h wall. Slow but bulletproof and matches Phase 1 PIDL-series methodology.
+
+**(C) Accept current state as datum + caveat** — report "N_f >> 10⁴ in current PCC formulation, d-evolution stalls in post-threshold regime; framework needs cycle_jump retuning for HCF concrete fatigue. Phase 2 paper §5 must caveat or use Phase-1-style cycle_jump=OFF." Then queue Task D once we know whether to go (A) or (B).
+
+**My recommendation: (B) cycle_jump OFF, ~1.5h wall**. Bulletproof, no framework-tuning rabbit hole, gives a real N_f. If N_f comes out ~2,500 as smoke predicted, calibration is confirmed in the small-h-jump regime. Then Mac decides whether to revisit cycle_jump for production HCF runs.
+
+### Files
+
+- INPUT: `Scripts/fatigue_fracture/INPUT_SENT_concrete_PCC_v2.m` (currently max_cycle=10000, cyclic_jump=ON; toggle for option B)
+- output: `Scripts/fatigue_fracture/SENT_concrete_PCC_v2/` (4.4 MB; only 1 VTK at cycle 1 because vtk_freq=50 didn't fire on jump-cycles)
+- log: `Scripts/fatigue_fracture/sweep_logs/SENT_concrete_PCC_v2_full.log` (2228 lines)
+- monitorcycle.dat: 13 real cycles + 25660 jump-end shown above
+
+### Quick wins before option B (or before Mac responds)
+
+I can pre-generate the (B) INPUT now (cyclic_jump=false, max_cycle=4000) so it's ready to launch. Will do that next. Won't actually launch until Mac confirms (B) is the right call.
+
+---
+
 ## 2026-05-10 (PM) · [smoke result + question]: PCC v2 100-cycle smoke ran in 5.7s; cycle_jump accelerated to cycle 1409, ᾱ_max already 82% of α_T → estimated N_f ~2000-2500 (low-HCF, below your 10⁴-10⁵ expectation)
 
 - **Re**: Mac's `e931a02` greenlight to launch 100-cycle smoke with cycle_jump ON
