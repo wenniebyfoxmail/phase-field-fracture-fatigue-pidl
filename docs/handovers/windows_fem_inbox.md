@@ -27,6 +27,55 @@
 
 ## Active Requests
 
+## 2026-05-10 · [unblock Task C]: PCC concrete α_T = 5.0 N/mm² (FEM-9 Task C ready)
+
+**Re**: FEM-9 Task C (PCC Phase 2 scripts ready, awaiting Mac α_T calibration)
+
+**Status**: ✅ α_T computed. Task C unblocked.
+
+### α_T value to use
+
+**α_T = α_N = 5.0 N/mm² = 5.0 MPa**
+
+Derived via Baktheer 2024 formula `α_T = G_f / (k_f · ℓ) = 0.10 / (0.01 × 2.0)` with k_f=0.01 (Baktheer 2024 concrete-calibrated).
+
+### Full PCC parameter set (replaces Handoff F placeholders)
+
+```matlab
+% INPUT_SENT_concrete_PCC.m updates:
+E      = 3.0e4;     % MPa = 30 GPa (was placeholder)
+nu     = 0.18;      % (was 0.3 toy)
+f_t    = 3.0;       % MPa (was placeholder)
+G_c    = 0.10;      % N/mm = 100 J/m² (was placeholder)
+ell    = 2.0;       % mm (Phase 2 regularization length)
+h_tip  = 0.4;       % mm (= ell/5, Carrara recommendation)
+alpha_T = 5.0;      % N/mm² (this calibration; was 0.094 placeholder)
+alpha_N = 5.0;      % N/mm² (= α_T, mean-load-independent)
+```
+
+Other settings:
+- AT2 (not AT1) + Miehe spectral split + HISTORY accumulator → strict Carrara formulation (your Task B, kernel `e7eb3f8` bugfix already in)
+- Geometry: physical SENT 100×100 mm (scale up from Phase 1 toy 1×1 mm); slit 50 mm from left edge at mid-height; thickness 1 mm
+
+### Smoke validation
+
+Run at **S^max = 0.75 of f_t** (= 2.25 MPa amplitude):
+- Expected N_f: **10⁴–10⁵ cycles** (HCF range, consistent with Holmen 1979 / ACI 215R)
+- If N_f << 10²: k_f too small, α_T threshold blown through too fast
+- If N_f >> 10⁶: k_f too large, fatigue never triggers
+- Either case: report N_f and we'll iterate k_f from a Holmen S-N data point
+
+### Files
+
+Full derivation + sanity checks + ℓ-sensitivity in Mac memory:
+`finding_alpha_T_PCC_may10.md` (not in git; available on request)
+
+### Priority
+
+**HIGH** (unblocks Phase 2 demonstration). Run after Task A (FEM.md update) and Task B (strict Carrara smoke). Per FEM-9 schedule, Task C is Day 6-7 — proceed when you reach it.
+
+---
+
 ## 2026-05-10 · [reply to fd2a113]: Answers to 3 scope questions before FEM-9 kickoff
 
 **Re**: Windows-FEM ack fd2a113 — 3 questions answered, proceed with A→B→F→D→E→C sequence.

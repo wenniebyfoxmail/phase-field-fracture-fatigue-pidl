@@ -13,42 +13,38 @@
 
 ## Current Question
 
-Phase 1 paper §4 的 framework-vs-field reframe 怎么落地：claim "PIDL captures Carrara framework" 在 V4 对称破缺 + AT1 h-non-monotonic 两道严谨性问题下能否成立？
+**Phase 2.1: 给 PCC concrete (E~30GPa, ν~0.18, ℓ~2 mm, G_f~100 J/m²) 反推一个物理可解释的 α_T，解锁 Windows-FEM Task C 的 PCC PF-CZM smoke。**
 
 ## Active Branches
 
-1. **Soft symmetry penalty production** — 3-term loss penalty (NN raw correction parity), λ_α=λ_u=λ_v=1.0; smoke verdict: V4 RMS 0.013 (24× baseline improvement), avg cycle 2.99 min (1.5× baseline); auto-pipeline launched N=300 production (Taobo PID 2888934, GPU 1, ETA ~13-15h) → next: 等 N_f 数字 + V4 在 fracture cycle 上的 RMS
-2. **§4 outline lock + Layer 3 red-team** — outline draft 完成（Layer 1）；待 soft sym production N_f 数据进 outline 后 lock 进 Layer 2，跑独立 subagent red-team review
-3. **Phase 2.1 PCC α_T 反推** — fib MC 2010 §5.1.11 公式 + Lee & Barr 2004 数据已就位，可以反推 α_T 替代 0.094 占位符 → next: 任选目标 N (e.g. 10⁵ at S_c,max=0.7) 反求，给 Windows-FEM 重跑 PCC smoke
+1. **α_T calibration for PCC** — Baktheer 2024 公式 α_T = G_f / (k_f · ℓ) 已确立，k_f=0.01 是混凝土标准值。当前 session 用具体 PCC 数字算出 α_T，cross-check 与 Holmen 1979 / ACI 215R 的 S-N 曲线趋势是否一致。Deliverable: α_T 数字 + memory entry + Windows-FEM inbox unblock Task C。
+2. **Phase 2 framework decision (2A vs 2B)** — Wu 2026 IJDM unified review 已读完，结论是 PF²-CZM (associated, ξ=2, α=2d−d²) 是混凝土单调凸软化的标准；μPF-CZM 仅当凹形软化 (沥青) 时必要。Phase 2A = Carrara extended (low effort)；Phase 2B = Wu PF-CZM (kernel rewrite, high effort)。Baktheer 2024 给的就是 2B blueprint (PF-CZM + Carrara fatigue + Macaulay split)。决策：2A 先做小工作量过渡，2B 在 Phase 3 升级。
+3. **Phase 1 §4 v1.6 LOCK** (passive) — 三轮 red-team 全部应用，hedging 完整。不再加新实验。备份 obsidian + commit by user discretion.
 
 ## Current Best Bet
 
-**Reframe 现在更强了**：N_f BIT-EXACT cross-method/seed + α_bar_domain 1.08-1.78× + ᾱ_max 9-94× (known limit) + **symmetry resolved via soft penalty (24× rms improvement at near-baseline cost)**. Wu 2026 IJDM published gives theoretical grounding. FEM h-non-monotonic via Mandal 2019. Hard y² prior route abandoned (12× slowdown structural; archived as "rejected design exploration").
+Phase 2 走 **2A (Carrara extended at PCC concrete units)**：动 config.py 物理参数 + α_T 反推，FEM kernel 不动。论文 §5 / Phase 2 章节定位为 "framework transition demonstration"，不是 Wu PF-CZM 完整实现。
 
 ## Best Next Discriminator
 
-Soft sym N=300 production N_f → 是否 match baseline 82 within ±10%。
-- If yes (N_f ∈ [74, 90]): paper §4 claim "PIDL satisfies geometric symmetry (V4 24× improved) AND maintains framework-level N_f match (Δ<10%)" — **strongest possible §4**
-- If no (N_f >> 82 OR no fracture): "soft symmetry preserves N_f at moderate λ; trade-off characterized" still defensible但 weaker
+α_T = G_f / (k_f · ℓ) 反推后，Windows-FEM 跑一个 PCC smoke (S^max=0.75, expect N_f ~ 10³-10⁴ for reasonable HCF) → 若 N_f 落在合理 HCF 区间 = α_T 校准成功；否则迭代 k_f 或重审 fib MC 2010 数据。
 
 ## Switch Condition
 
-如果 soft prod N_f deviates >20% from baseline 82 → paper §4 加 caveat "soft symmetry trade-off small but measurable on N_f"，OR retry with smaller λ (0.1) to reduce penalty pressure.
+如果 α_T 反推出的 PCC smoke N_f << 10² 或 >> 10⁶ → 说明 k_f=0.01 不能直接平移到 PCC concrete (Baktheer 用 C60 高强混凝土，PCC 是普通混凝土)，需要从 Holmen S-N 数据点反推一个 PCC-specific k_f。
 
 ## Parking Lot
 
-- Symmetric data augmentation (Option B) 作 generalization-friendly fallback
-- α-3 follow-up（已 closed out 2026-05-06，仅未来 work）
-- MIEHE+AT2 strict Carrara 6-case sweep（kernel 已 fix `e7eb3f8`，等 Mac 决策）
-- Oracle u=0.10/0.11 Tier C clean rerun（GPU 7, Queue D 进行中）
-- TAFM 2026 non-uniqueness paper 是否进 §4.7（专家提示，待读）
+- A1+Strac combo N=300 production (~18 GPU-days, 暂不做)
+- Hard y² 架构 production (12× slowdown, 暂不做)
+- Multi-seed combo smoke (N=5 × 2 more seeds, ~14h Windows, P3 优先级)
+- §4 v1.6 commit/push (drafts 不进 git，只复制到 obsidian — 已完成)
+- 论文 §5 / Phase 2 章节正文写作 (等 PCC smoke 数字回来再写)
 
 ## Recently Closed / Triggered
 
-- **Soft symmetry path B 2026-05-07**: smoke V4 RMS 0.013 (24× vs baseline 0.30), avg cycle 2.99 min (1.5× baseline), auto-pipeline GO·λ=1, production N=300 launched (PID 2888934, ETA ~13-15h). v1+v2 hard y² prior abandoned (12× slowdown structural).
-- **FEM h-convergence verdict B-FAIL 2026-05-06**: AT1+PENALTY 真 h-non-monotonic per Mandal 2019. Paper §FEM honest reframe in docs/FEM.md.
-- **Symmetry prior 实现验证 2026-05-06**: hard y² cycle 0 alpha mirror RMS = 0 at exact pairs (mathematical guarantee) but production-unviable due to RPROP slowdown.
-- **References 整理完毕 2026-05-06**: 15 PDFs 在 `references/`, README with Paradigm A/B/C explanation.
-- **α-3 closed out + Phase 2 unblocked 2026-05-06**: fib MC 2010 sufficient, Holmen 不需要.
-- **Tier C 4/5 done 2026-05-06**: enriched_v2 N_f=82 + Oracle u=0.12 N_f=85 + psiHack cold N_f=79 + tipw N_f=83; MIT-8 K=40 retry 仍跑; Queue D Oracle u=0.10/0.11 chained.
-- **OOD boundary 2026-05-05**: Umax≤0.13 reliable, 0.14 systematic −24% bias.
+- **Phase 1 §4 v1.6 lock 2026-05-10**: 三轮 red-team 全部应用 → §4.2 包含完整 V4+V7 14-method 表 + targeted-supervised reframe + 13 PIDL configs + falsifiable prediction (V4 ≥5× reduction relative to 0.07 baseline)。Backup at `obsidian/01 PINN/paper1/section4_v1.6_2026-05-10.md`. Memory: `finding_v4_v7_cross_method_may10.md`.
+- **Strac-alone V7 confirmed FAIL 2026-05-10**: Taobo seed1 N=300 cycle 87, V7=138% (FAIL). Bimodal as Phase F smoke predicted. 不再尝试 Strac-only path，combo (Sym+A1+Strac) 是唯一 V7 改进路径。
+- **A1+Strac combo Phase C 2026-05-09 done**: 5-cycle smoke V4=0 (by construction) + V7=15.8% (WARN range)。Multi-seed combo + N=300 production 暂不做（compute-prohibitive，18 GPU-days/seed）。
+- **References Wu 2026 + Wu 2024 + Baktheer 2024 read 2026-05-10**: 选 PF²-CZM associated (ξ=2) for Phase 2 concrete。
+- **FEM-9 dispatched 2026-05-09 + scope Q&A 2026-05-10**: A→B→F→D→E→C 7-task week plan。Task A 进行中（docs/FEM.md update）；Task C 等本 session 的 α_T。
