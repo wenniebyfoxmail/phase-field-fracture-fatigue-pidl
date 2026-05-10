@@ -2,7 +2,7 @@
 
 **Owner**: Windows-FEM (GRIPHFiTH)  
 **Sync source**: `docs/handovers/windows_fem_outbox.md` (canonical) + `docs/shared_research_log.md`  
-**Last sync**: 2026-05-06
+**Last sync**: 2026-05-09 (added §5 V4 mirror RMS + §6 V7 side-boundary; renumbered later sections)
 
 > **Purpose**: single canonical reference for FEM background + reference data + paper §FEM写作。Avoid scattered grep across handovers / shared_log。每次 Windows-FEM ship 重要结果时，本文件更新。
 
@@ -115,7 +115,91 @@ Mac 给的 acceptance：`|N_f_F − N_f_M| / N_f_M < 5%` → |86−79|/79 = **8.
 
 ---
 
-## 5. Carrara 2020 Fig 6 cross-validation
+## 5. V4 mirror symmetry validation (FEM-7, 2026-05-07)
+
+**Goal**: provide FEM ground-truth for paper §4.2 mirror RMS claim (PIDL baseline vs PIDL soft-sym vs FEM).
+
+**Setup**: PIDL-series baseline mesh (`SENT_mesh.inp`, 77,730 quads, AT1+AMOR+PENALTY) at u=0.12 cycle 82 (penetration). Source: `_pidl_handoff_v2/psi_snapshots_for_agent/u12_cycle_0082.mat`. Script: `Scripts/fatigue_fracture/fem7_mirror_damage.m`.
+
+### 5.1 Mirror RMS (alpha_bar across y=0)
+
+| Pair-finding | n_pairs | alpha_bar RMS | rel (/ max=270) |
+|---|---:|---:|---:|
+| **Exact mesh-coincident** (TOL = 1e-7) | 262 | 8.07e-3 | **2.98e-5** |
+| Nearest-neighbor (dist ≤ 1e-4) | 2498 | 4.00 | 1.48e-2 |
+
+**Verdict**: at exact mesh-coincident pairs (where mesh permits clean comparison), **alpha_bar relative RMS = 2.98e-5** — well below Mandal-Nguyen-Wu 2019 EFM 217 threshold of ≤ 2e-4 (PASS by ~7×, machine-precision-class).
+
+**Caveat**: Abaqus auto-mesher did NOT generate a perfectly mirror-symmetric mesh. Only 262 of 38,491 upper-half elements have an exact mirror pair across y=0; the remaining ~99% have small mesh-position differences (~1e-4) that masquerade as field asymmetry under nearest-neighbor matching. The 1.5% NN-RMS is mesh-discretization noise, NOT physics. **Fair comparison to PIDL = exact-pair number 2.98e-5.**
+
+### 5.2 Integrated damage budget @ cycle 82
+
+> ∫ ᾱ · (1 − f(ᾱ)) · dV @ c82 = **4.39e-2** (toy units, area-weighted)
+
+- α_T = 0.5, p = 2 (matches PIDL setting)
+- f(ᾱ) = min(1, [2α_T / (ᾱ + α_T)]²) — Carrara asymptotic Eq. 41
+- Mesh total area: 0.9995 (matches expected 1×1 SENT minus the slit)
+
+This replaces the f_mean = 0.736 "domain-mean proxy" Mac red-team flagged as wrong quantity. Mac's PIDL-side computes the same integral on PIDL baseline + soft-sym archive for the §4.4 "energy budget 1.5-2× near-equivalence" claim.
+
+### 5.3 Files
+
+- α field snapshot for F4.5a side-by-side viz: `OneDrive/PIDL result/u12_cycle_0082_FEM7.mat` (1.93 MB)
+  Fields: `centroids` (77730×2), `alpha_bar_elem`, `d_elem`, `area_per_elem`, plus scalars `cycle=82, umax=0.12, alpha_T=0.5, p=2` and pre-computed RMS / integrated-damage values.
+- Outbox commit: `fab1f15`
+
+---
+
+## 6. V7 side-boundary traction residual (FEM-8, 2026-05-07)
+
+**Goal**: apples-to-apples FEM ground-truth for PIDL V7 metric (PIDL surrogate's residual on x=±0.5 traction-free boundaries — currently in WARN range 17-30%).
+
+**Setup**: dedicated **monotonic single-step elastic** at peak u=0.12. The cyclic-fatigue VTK is end-of-cycle (u=0, ε=0, σ=0), useless for V7. New INPUT: `Scripts/brittle_fracture/INPUT_FEM8_elastic_u012.m` (brittle solver, n_step=1, uy_final=0.12). Same SENT mesh as PIDL series. Run wall: 27.3 s. d_max at peak = 0.023 (small notch-tip damage, elastic-dominated everywhere else). Script: `Scripts/fatigue_fracture/fem8_v7_side_boundary.py`.
+
+### 6.1 V7 metric
+
+> rel_sxx = max_Γ_side |σ_xx| / max_Ω |σ_yy|  
+> rel_sxy = max_Γ_side |σ_xy| / max_Ω |σ_yy|  
+> V7 = max(rel_sxx, rel_sxy)
+
+| Quantity | Value |
+|---|---:|
+| max \|σ_xx\| left edge (x=−0.5) | 3.01e-3 |
+| max \|σ_xx\| right edge (x=+0.5) | 1.08e-3 |
+| max \|σ_xy\| left edge | 1.61e-3 |
+| max \|σ_xy\| right edge | 5.71e-4 |
+| max \|σ_yy\| bulk (notch tip) | 2.50 |
+| **rel_sxx** | 1.21e-3 |
+| **rel_sxy** | 6.46e-4 |
+| **V7_FEM** | **1.21e-3 (0.12%)** |
+
+### 6.2 Comparison to PIDL V7
+
+PIDL V7 in WARN range 17-30% on right edge.
+**FEM_V7 = 0.12% → ratio PIDL / FEM ≈ 140-250×.**
+
+> **Verdict**: PIDL's side-boundary residual is **NOT** in the regime of FEM-discretization noise. There is a real free-boundary-quality gap that requires PIDL-side mitigation (boundary-loss tightening / more boundary collocation points / architectural symmetry priors). The FEM number sits well below 1% and would not show up as a §4 validation concern if the cited reference is FEM.
+
+### 6.3 Sampling method
+
+Boundary nodes (22 left + 89 right; asymmetric due to Abaqus auto-mesher), stress read directly from VTK `TENSORS Stress float` field (GRIPHFiTH brittle solver writes per-node stress projected from Gauss points).
+
+### 6.4 Files
+
+- INPUT: `Scripts/brittle_fracture/INPUT_FEM8_elastic_u012.m`
+- driver: `Scripts/brittle_fracture/main_FEM8_elastic_u012.m`
+- output: `Scripts/brittle_fracture/FEM8_elastic_u012/FEM8_elastic_u01200001.vtk`
+- post-process: `Scripts/fatigue_fracture/fem8_v7_side_boundary.py`
+- edge-sample CSV: `Scripts/fatigue_fracture/_pidl_handoff_v3_items/fem8_v7_side_samples.csv` (111 rows: edge, y, σ_xx, σ_xy, σ_yy, d) — for σ_xx(y) plot if needed
+- Outbox commit: `422d915`
+
+### 6.5 Standing workflow lesson (saved to producer_state)
+
+GRIPHFiTH cyclic-fatigue solver writes VTK at end-of-cycle (substep 5 with u=0 after unloading) → all stresses ≈ 0. **For peak-load post-processing use brittle solver with `n_step=1`** (writes VTK at the only step = peak); brittle VTK also has direct `TENSORS Stress` field (no derivation from strain needed).
+
+---
+
+## 7. Carrara 2020 Fig 6 cross-validation
 
 **GRIPHFiTH 端：done** (commit `4084b79`, 2026-05-02).
 
@@ -136,7 +220,7 @@ Mac 给的 acceptance：`|N_f_F − N_f_M| / N_f_M < 5%` → |86−79|/79 = **8.
 
 ---
 
-## 6. Phase 2 PCC concrete smoke (Handoff F)
+## 8. Phase 2 PCC concrete smoke (Handoff F)
 
 **Status**: ✅ smoke complete (2026-05-04)；α_T 标定 unblocked (2026-05-06, fib MC 2010 sufficient)。
 
@@ -153,7 +237,7 @@ Mac 给的 acceptance：`|N_f_F − N_f_M| / N_f_M < 5%` → |86−79|/79 = **8.
 
 ---
 
-## 7. N_f detection criterion (统一 PIDL ↔ FEM)
+## 9. N_f detection criterion (统一 PIDL ↔ FEM)
 
 **Primary**: `d_elem ≥ 0.95` 在 right boundary，`≥ 3 elements`，3-cycle 确认窗口。
 
@@ -165,29 +249,34 @@ Mac 给的 acceptance：`|N_f_F − N_f_M| / N_f_M < 5%` → |86−79|/79 = **8.
 
 ---
 
-## 8. Open / TBD
+## 10. Open / TBD
 
 | Item | Owner | Trigger |
 |---|---|---|
-| MIEHE+AT2 strict Carrara 6-case sweep | Windows-FEM | 等 Mac decision (2A vs 2B 分歧) |
-| Phase 2 PCC re-smoke with fib-MC-derived α_T | Mac (calibration) → Windows-FEM (run) | Mac 反推完 α_T 数字 |
-| FEM-3 mesh_XF_w 完整 N_f (only narrow XF=97 confirmed; wide XF crashed at c97 mid-cycle) | low priority | 不影响 paper（symmetry 已在其它 h 验证）|
+| MIEHE+AT2 strict Carrara 6-case sweep (FEM-9 Task D) | Windows-FEM | Mac confirm which 6 cases (du40/50 LCF already in AMOR; lower amplitudes?) |
+| Strict Carrara mesh sensitivity at ℓ/h ∈ {5, 10} (FEM-9 Task E) | Windows-FEM | Pending Mac scope confirmation |
+| V7_FEM at fracture-near cycle (FEM-9 Task F) | Windows-FEM | Mac confirm cycle (~75-80 vs 82, normalization risk at heavy damage) |
+| Phase 2 PCC re-smoke with fib-MC-derived α_T (FEM-9 Task C) | Mac (calibration) → Windows-FEM (run) | Mac 反推完 α_T 数字 |
+| FEM-D mesh_XF_w resumed and complete (2026-05-06): N_f=97 = narrow XF | — | ✅ closed |
 
 ---
 
-## 9. 文件路径速查 (Mac 端可访问)
+## 11. 文件路径速查 (Mac 端可访问)
 
 | 项 | Mac path | Source |
 |---|---|---|
-| ψ⁺ keyframes | `~/Downloads/_pidl_handoff_v2/psi_snapshots_for_agent/` | OneDrive sync |
-| FEM-4 a(N) CSVs | `~/Downloads/_pidl_handoff_v3_items/` | OneDrive sync |
+| ψ⁺ keyframes (u=0.08-0.14) | `~/Downloads/_pidl_handoff_v2/psi_snapshots_for_agent/` | OneDrive sync |
+| FEM-4 a(N) CSVs | `~/Downloads/_pidl_handoff_v3_items/fem_a_traj_u00{8,12,13}.csv` | OneDrive sync |
+| FEM-5 u10/u11 keyframe zip | `~/Downloads/_pidl_handoff_FEM5_u10_u11_2026-05-06{,.zip}` | OneDrive `PIDL result/` |
 | FEM-6 load-drop CSV | `~/Downloads/_pidl_handoff_v3_items/fem6_load_drop_Nf.csv` | OneDrive sync |
+| FEM-7 α field snapshot | `~/Downloads/u12_cycle_0082_FEM7.mat` (1.93 MB) | OneDrive `PIDL result/` |
+| FEM-8 V7 edge-sample CSV | `~/Downloads/_pidl_handoff_v3_items/fem8_v7_side_samples.csv` (111 rows) | OneDrive sync |
 | Dir 6.3 logf archives | `~/Downloads/_pidl_handoff_dir63_logf_20260505/` (4 tarballs, 4.7 GB) | OneDrive sync |
 | GRIPHFiTH source (read-only) | `git clone <mirror-URL>` to `~/phase-field-fracture-with-pidl/GRIPHFiTH/` | GitHub mirror |
 
 ---
 
-## 10. 维护规则
+## 12. 维护规则
 
 - **Owner**: Windows-FEM 主导；Mac sync from outbox 时更新本文件
 - 每次 Windows-FEM ship 重要 result 时（[done] entry 标记 paper-grade）：

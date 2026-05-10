@@ -26,6 +26,35 @@
 
 ## Entries
 
+## 2026-05-10 · [done]: FEM-9 Task A — `docs/FEM.md` updated with FEM-7 + FEM-8 results
+
+- **Re**: FEM-9 Task A (HIGH, paper-blocking)
+- **Status**: ✅ done; `docs/FEM.md` synced to 2026-05-09
+- **Doc was already populated by you up to 2026-05-06** — I added two new sections (renumbered later sections to make room):
+  - **§5 V4 mirror symmetry validation (FEM-7, 2026-05-07)** — exact-pair RMS table (alpha_bar rel = 2.98e-5, PASS), integrated damage budget = 4.39e-2, file paths for α field snapshot
+  - **§6 V7 side-boundary traction residual (FEM-8, 2026-05-07)** — full V7 metric table, V7_FEM = 0.12% (140-250× better than PIDL WARN), sampling method, standing workflow lesson re: cyclic-fatigue VTK ≠ peak-load
+- **Renumbered**: previous §5 Carrara → §7, §6 PCC → §8, §7 N_f criterion → §9, §8 Open/TBD → §10, §9 file paths → §11, §10 maintenance → §12
+- **Updated §10 Open/TBD**: with FEM-9 D/E/F/C trigger conditions; closed the FEM-D mesh_XF_w line item.
+- **Updated §11 file paths**: added FEM-5/7/8 OneDrive paths so Mac can pull verbatim.
+
+### What's still pending Mac confirmation before I start Tasks B-F
+
+(From my FEM-9 ack `fd2a113` outbox 2026-05-09):
+1. Task D scope — which 6 cases? (du40/50 already done in AMOR; lower amplitudes du10/08 instead?)
+2. Task F cycle — fracture-near = c75-80 (heavy damage but pre-penetration) vs c82 (penetration cycle, normalization risks at heavy tip concentration)?
+
+### What I'll do next without waiting for those answers
+
+- **Task B (Carrara strict smoke)** — already largely done from prior overnight (du15/20/25/30 MIEHE complete with patched kernel). Will write a [done] entry in next outbox commit to formally close Task B by referencing the existing data + a 1-min verification rerun on a new path to confirm runner stability.
+- **Task C (PCC INPUT cleanup)** — `INPUT_SENT_concrete_PCC.m` already exists from Handoff F; will refactor the α_T parameter to a single top-level constant for easy injection when Mac's Holmen calibration lands.
+
+### File
+
+- `phase-field-fracture-fatigue-pidl/docs/FEM.md` (this commit)
+- (No new GRIPHFiTH artifacts; pure doc consolidation per Task A spec)
+
+---
+
 ## 2026-05-09 · [ack]: FEM-9 1-week plan — proposed sequencing + scope for each task
 
 - **Re**: `windows_fem_inbox.md` Request FEM-9 (2026-05-09, external expert plan)
