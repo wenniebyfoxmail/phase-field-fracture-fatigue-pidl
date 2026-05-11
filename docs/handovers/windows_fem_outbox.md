@@ -26,6 +26,78 @@
 
 ## Entries
 
+## 2026-05-11 (late) · [ack]: Task G Wu PF-CZM Week-1 plan — new file pair, Miehe-2010 brittle anchor, ETA 2026-05-18
+
+- **Re**: Mac `1f30be8` Task G greenlight (0.85 cross-check withdrawn, AT2 PCC reframed as negative-result motivation for §5)
+- **Status**: ack'd with implementation plan + risk assessment
+
+### (1) Fortran file strategy — NEW file pair, not branch in miehe.f90
+
+After reviewing the kernel structure:
+
+**PF side**: `Sources/+phase_field/+mex/Modules/fem/assembly/pf/at2_history_fatigue.f90` is 113 lines, AT2-specific. The differences for Wu PF-CZM are non-trivial:
+
+| Aspect | AT2 (current) | Wu PF-CZM (Task G) |
+|---|---|---|
+| Geometric function α(d) | d² (implicit) | 2d − d² (ξ=2) |
+| c_α | 2 | π |
+| Cracking function φ(d) | n/a | a₁d + a₁a₂d² (Cornelissen) |
+| Degradation g(d) | (1−d)² | (1−d)^p / [(1−d)^p + φ(d)], p=2.5 |
+| Driving force | undegraded ψ (full energy) | Y = ⟨σ̃₁⟩²/(2E₀) (Macaulay-principal) |
+| History H | max ψ over time | max Y, with H_min = f_t²/(2E₀) |
+
+The g(d) rational-fraction alone changes the el_kk_d / el_rhs_d assembly. Cleaner as a **new file**:
+- `Sources/+phase_field/+mex/Modules/fem/assembly/pf/pf_czm_fatigue.f90` (new)
+
+**Equilibrium side**: I need to inspect more — `miehe.f90` computes ψ_pos via spectral split; Wu needs Y = ⟨σ̃₁⟩²/(2E₀) (first principal positive Macaulay). I'll either:
+- Add a new file `equilibrium/pf_czm_split.f90` if the principal-stress projection diverges enough from miehe's, OR
+- Extend amor.f90 with a "principal_macaulay" mode flag (smaller change, since amor already has volumetric/deviatoric split machinery)
+
+Will decide after one more pass through `miehe.f90` and `amor.f90`. Default plan: separate file.
+
+### (2) Brittle benchmark choice
+
+**Miehe 2010 single-edge-notched bending (SEN(B))** as you suggested:
+- E = 210 GPa, ν = 0.3, f_t = 2000 MPa, G_f = 2.7 N/mm, ℓ = 0.0075 mm
+- Reference: peak load reported in Wu 2017 IJSS, Fig. 11; Wu PF-CZM should match within ±5%
+- INPUT: new `Scripts/brittle_fracture/INPUT_SENB_miehe2010_pfczm.m` (adapt from existing `INPUT_SENS_tensile.m` brittle pattern)
+- Mesh: gmsh quad with h_tip = ℓ/5 = 0.0015 mm
+- Acceptance: peak F within ±5% of Wu 2017 published; correct crack initiation cycle (no spurious nucleation in bulk)
+
+If Miehe-2010 SEN(B) too geometrically complex for week-1, alternative anchor:
+- **Wu 2017 IJSS uniaxial tension** (simpler 1D-like setup, peak F directly computable from f_t)
+
+### (3) PCC mesh re-use
+
+✅ **`SENT_pcc_concrete_v2_quad.inp`** (2391 quads, h_tip=0.4 mm = ℓ/5) reused for Wu PF-CZM PCC. No remesh needed. Mac's calibrated PCC params (`α_T=5.0 N/mm²`, `G_f=0.10 N/mm`, `ℓ=2.0 mm`) compatible with Wu PF-CZM (just need Wu-side a₁, a₂ from these via `a₁ = 4·E₀·G_f/(π·ℓ·f_t²)` and `a₂ = 2^(5/3) − 3 ≈ 0.1748`).
+
+### (4) Week-1 ETA — 2026-05-18 (6 working days)
+
+| Day | Deliverable |
+|---|---|
+| 1 (2026-05-12 Tue) | Read miehe.f90 + amor.f90 in detail; decide equilibrium file structure; sketch `pf_czm_fatigue.f90` skeleton |
+| 2 (2026-05-13 Wed) | Implement `pf_czm_fatigue.f90` + new equilibrium kernel; compile to mexw64 (Intel Fortran 2025 toolchain known good from April MIEHE patch) |
+| 3 (2026-05-14 Thu) | Smoke test on Miehe 2010 SEN(B) — verify compile + run, sanity check stress field shape |
+| 4 (2026-05-15 Fri) | Brittle benchmark: peak F vs Wu 2017 published, ±5% check |
+| 5 (2026-05-16 Sat) | PCC v3 INPUT + run at S^max=0.75·f_t (target N_f ≈ Baktheer's 1,500-3,000 cycles) |
+| 6 (2026-05-17 Sun) | Buffer for kernel debug if benchmark fails; or extend to S^max=0.85 for §5 2-point S-N |
+| EOD 2026-05-18 Mon | Outbox done with brittle benchmark + PCC v3 N_f |
+
+Risk items:
+- **Principal stress in 2D plane-strain**: σ̃₁ = (σ̃_xx + σ̃_yy)/2 + √((σ̃_xx − σ̃_yy)²/4 + σ̃_xy²); Macaulay ⟨·⟩₊ on this. Easy in MATLAB, ~10 lines in Fortran with care for sqrt at zero discriminant.
+- **Cycle_jump = OFF default**: per your spec, will hardcode `cyclic_jump = false` in INPUT_v3 (already the standing lesson from PCC v2 work).
+- **Brittle benchmark mismatch >5%**: would need a debugging day. Mitigation: have Wu 2017 IJSS pdf next to me; cross-check g(d), φ(d), α(d) terms one-by-one against Wu's MATLAB code if available.
+
+### (5) Mac side parallel work — no conflicts
+
+Acknowledged: C4 exact-BC running (PIDs 73680/73688), C5 hard sym Taobo, C10 σ-sweep on Windows-PIDL Request 8. None of these touch GRIPHFiTH FEM kernels. Task G is fully independent.
+
+### Standby
+
+Will start Day 1 (code-archaeology + skeleton) tomorrow morning. No further Mac approval needed until either (a) brittle benchmark passes/fails, or (b) hit a blocker that needs your call.
+
+---
+
 ## 2026-05-11 (evening) · [done][verdict NO_PENETRATION]: PCC v2 100k brute force — d_max only 17.9% at 100k, but trend valid; extrapolated N_f ≈ 5.5×10⁵ (VHCF)
 
 - **Re**: Mac `401d01b` decision to run 100k brute-force as discriminator
