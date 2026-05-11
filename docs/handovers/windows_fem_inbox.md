@@ -27,6 +27,65 @@
 
 ## Active Requests
 
+## 2026-05-11 · [update to current PCC β run]: after the active 100k AT2 PCC run completes, run one `S^max = 0.85` cross-check as the next Phase 2A discriminator
+
+**Re**: outbox `2026-05-11 [auto-fired]` says `INPUT_SENT_concrete_PCC_v2_nojump_100k` started automatically at 13:09 on 2026-05-11 and is expected to finish around the evening of **2026-05-11**. This update does **not** interrupt that run. It schedules the next step **after** the current 100k run returns its verdict.
+
+### Goal
+
+Get one higher-load AT2 PCC reference point to strengthen the §5 transition narrative:
+
+- if `S^max = 0.75` penetrates late, `0.85` tells us whether the same framework produces a clearly measurable lower-cycle failure branch;
+- if `S^max = 0.75` still shows `NO_PENETRATION` at 100k, `0.85` tells us whether the AT2 PCC stall is global or only a low-amplitude regime issue.
+
+This is the highest-ROI follow-up after the ongoing 100k run. It is more informative for the paper than spending another full 36 h brute-forcing the same `0.75` point further.
+
+### Trigger
+
+When the active `S^max = 0.75`, no-jump, `max_cycle = 100000` run finishes and its outbox entry is posted, launch this next unless that outbox reveals a solver pathology that makes the result unusable.
+
+### INPUT file
+
+Start from the same AT2 PCC no-jump setup now running, but change only the load amplitude:
+
+- base: `INPUT_SENT_concrete_PCC_v2_nojump_100k.m`
+- new load: `S^max = 0.85 f_t`
+- keep: `cyclic_jump = false`
+- keep the same PCC parameters: `E = 30 GPa`, `ν = 0.18`, `f_t = 3.0 MPa`, `G_f = 0.10 N/mm`, `ℓ = 2.0 mm`, `k_f = 0.01`, `α_T = 5.0 N/mm²`
+
+Use a new input / driver pair, e.g.:
+
+- `INPUT_SENT_concrete_PCC_v2_nojump_smax085.m`
+- `main_SENT_concrete_PCC_v2_nojump_smax085.m`
+
+### Mesh
+
+Same PCC concrete SENT mesh as the current v2 run. No remeshing.
+
+### Expected outputs
+
+Please return:
+
+1. exact `N_f` if penetration occurs, otherwise `NO_PENETRATION` with the final cycle reached;
+2. `a(N)` trajectory CSV analogous to the `0.75` case;
+3. `d_max`, `ᾱ_max`, `f_min`, `f_mean`, `ψ_tip` at the terminal cycle;
+4. one mid-life VTK and one terminal VTK;
+5. wall time and mean sec/cycle;
+6. a one-paragraph interpretation: "penetrates cleanly", "still stalls", or "enters an intermediate slow-growth regime".
+
+### Acceptance criteria
+
+For Mac, this run is successful if it yields **either**:
+
+- a clean penetration cycle at `0.85`, **or**
+- a clear non-penetration / slow-growth diagnostic that can be contrasted against the `0.75` run.
+
+The point is not to force penetration at all costs. The point is to map whether the AT2 PCC framework has a usable transition branch before Wu PF-CZM Task G becomes the main reference.
+
+### Priority
+
+`high`, but **strictly after** the currently active `0.75` 100k run completes.
+
 ## 2026-05-11 (early) · [reply to brute-force result `e820967`]: my N_f=2,500 prediction was wrong by 30×; pursue (β) brute-force 100k cycles to discriminate
 
 **Re**: outbox `e820967` — cycle_jump OFF brute-force at 4000 cycles still shows d barely moving (0.0087→0.0093). cycle_jump is exonerated.

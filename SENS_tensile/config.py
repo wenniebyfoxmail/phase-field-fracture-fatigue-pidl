@@ -224,6 +224,21 @@ ansatz_dict = {
 symmetry_prior = False
 
 
+# ★ 2026-05-11 C4: exact-BC / distance-bubble trial function
+# SENT-specific hard representation for the side-traction branch.
+# Design goal:
+#   1. keep exact prescribed vertical displacement on top/bottom,
+#   2. build in the plane-strain Poisson lateral contraction particular solution,
+#   3. make NN correction and its x-derivative vanish on x=±0.5 via side-distance².
+# This is a geometry-specific, Sukumar-inspired exact-trial branch rather than a
+# generic ADF library implementation.
+exact_bc_dict = {
+    "enable": False,
+    "mode": "sent_plane_strain",
+    "nu": mat_prop_dict["mat_nu"],
+}
+
+
 # ★ 2026-05-11 C10: Fourier feature input layer (Tancik 2020 / Xu 2025 review)
 # Spectral-bias mitigation by prepending γ(x) = [cos(2π B x), sin(2π B x)] before NN.
 # For SENT phase-field at FEM peak width h_FEM ≈ 0.001 (toy units): set σ so 2π·σ·5 ≈ 1000
@@ -338,6 +353,10 @@ _williams_tag = "_williams_std" if williams_dict.get("enable", False) else ""
 _modes_str = "".join(ansatz_dict.get("modes", ["I"]))
 _ansatz_tag = f"_enriched_ansatz_mode{_modes_str}_v1" if ansatz_dict.get("enable", False) else ""
 _symmetry_tag = "_symY2" if symmetry_prior else ""
+_exact_bc_tag = (
+    f"_exactBCsent_nu{exact_bc_dict.get('nu', mat_prop_dict['mat_nu'])}"
+    if exact_bc_dict.get("enable", False) else ""
+)
 
 # ★ 2026-05-11 C10: Fourier feature tag
 _fourier_tag = (
@@ -370,6 +389,7 @@ model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             _williams_tag +        # ★ Direction 4 标签
                             _ansatz_tag +          # ★ Direction 5 标签
                             _symmetry_tag +        # ★ 2026-05-06 symmetry prior 标签
+                            _exact_bc_tag +        # ★ 2026-05-11 C4 exact-BC 标签
                             _fourier_tag +         # ★ 2026-05-11 C10 Fourier features 标签
                             _spAlphaT_tag +        # ★ Direction 6.1 标签
                             _psiHack_tag)          # ★ E2 sanity hack 标签
@@ -418,6 +438,10 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\nansatz_modes: {ansatz_dict.get("modes", ["I"])}')
     file.write(f'\n--- symmetry ---')
     file.write(f'\nsymmetry_prior: {symmetry_prior}')
+    file.write(f'\n--- exact_bc ---')
+    file.write(f'\nexact_bc_enable: {exact_bc_dict.get("enable", False)}')
+    file.write(f'\nexact_bc_mode: {exact_bc_dict.get("mode", "sent_plane_strain")}')
+    file.write(f'\nexact_bc_nu: {exact_bc_dict.get("nu", mat_prop_dict["mat_nu"])}')
     # ★ Direction 6.1: Spatial α_T 参数
     file.write(f'\n--- spatial_alpha_T ---')
     file.write(f'\nspAlphaT_enable: {_sp_cfg.get("enable", False)}')

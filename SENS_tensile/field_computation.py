@@ -50,6 +50,17 @@ class FieldComputation:
         Carrara framework requires symmetric solution under symmetric BCs）。
         Phase 3 非对称几何关闭此 flag。
 
+    ★ 2026-05-11 新增 — exact_bc_dict（C4 hard side-traction branch）
+    exact_bc_dict: dict | None
+        None 或 {"enable": False} → 原始 BC ansatz
+        {"enable": True, "mode": "sent_plane_strain", "nu": 0.3}
+          → use a SENT-specific exact-BC trial space:
+             - particular solution = uniform plane-strain uniaxial extension
+               with zero σ_xx, σ_xy on x=±0.5,
+             - NN correction multiplied by top-bottom bubble × side-distance²,
+               so correction and its x-derivative vanish on the side edges.
+        这是 Sukumar-style exact trial 的项目定制版，不是通用 ADF 库。
+
     fieldCalculation: applies BCs and constraint on alpha (needs to be customized for each problem)
     update_hist_alpha: alpha_field for use in the next loading step to enforce irreversibility
     '''
@@ -58,7 +69,8 @@ class FieldComputation:
                  williams_dict=None,
                  ansatz_dict=None,
                  l0=0.01,
-                 symmetry_prior=False):
+                 symmetry_prior=False,
+                 exact_bc_dict=None):
         self.net = net
         self.domain_extrema = domain_extrema
         self.theta = theta
@@ -99,6 +111,24 @@ class FieldComputation:
         if self.symmetry_prior and self.williams_enabled:
             print("[FieldComputation] WARNING: symmetry_prior=True ignored when williams_enabled=True "
                   "(Williams 8D feature 已包含 r,θ 几何信息，不叠加 y² 变换)")
+
+        # ★ 2026-05-11 C4 exact-BC branch
+        _eb = exact_bc_dict or {}
+        self.exact_bc_enabled = bool(_eb.get('enable', False))
+        self.exact_bc_mode = str(_eb.get('mode', 'sent_plane_strain'))
+        self.exact_bc_nu = float(_eb.get('nu', 0.3))
+        if self.exact_bc_enabled and self.exact_bc_mode != 'sent_plane_strain':
+            raise ValueError(f"Unsupported exact_bc_mode={self.exact_bc_mode!r}")
+
+    def _normalized_tb_bubble(self, inp, y0, yL):
+        """Top-bottom bubble in [0, 1], zero on y=y0 and y=yL."""
+        H = yL - y0
+        return 4.0 * (inp[:, 1] - y0) * (yL - inp[:, 1]) / (H * H)
+
+    def _normalized_side_bubble(self, inp, x0, xL):
+        """Side-distance bubble in [0, 1], zero on x=x0 and x=xL."""
+        W = xL - x0
+        return 4.0 * (inp[:, 0] - x0) * (xL - inp[:, 0]) / (W * W)
 
     def fieldCalculation(self, inp):
         """
@@ -178,11 +208,31 @@ class FieldComputation:
         alpha = self.alpha_constraint(out[:, 2])
 
         # 边界条件强制（使用物理坐标 inp，不受 Williams / Enriched Ansatz 影响）
-        # (y-y0)(yL-y) 在边界 y=y0 和 y=yL 处为 0
-        u = ((inp[:, -1]-y0)*(yL-inp[:, -1])*disp_u +
-             (inp[:, -1]-y0)/(yL-y0)*torch.cos(self.theta)) * self.lmbda
-        v = ((inp[:, -1]-y0)*(yL-inp[:, -1])*disp_v +
-             (inp[:, -1]-y0)/(yL-y0)*torch.sin(self.theta)) * self.lmbda
+        if self.exact_bc_enabled:
+            if not torch.allclose(torch.cos(self.theta), torch.zeros_like(self.theta), atol=1e-7):
+                raise ValueError("exact_bc sent_plane_strain currently supports vertical loading only")
+            if not torch.allclose(torch.sin(self.theta), torch.ones_like(self.theta), atol=1e-7):
+                raise ValueError("exact_bc sent_plane_strain currently expects theta=pi/2")
+
+            H = yL - y0
+            # Plane-strain uniaxial extension particular solution:
+            # eps_xx = -nu/(1-nu) * eps_yy  →  sigma_xx = 0, sigma_xy = 0.
+            epsxx_over_lambda = -self.exact_bc_nu / ((1.0 - self.exact_bc_nu) * H)
+            u_lift = epsxx_over_lambda * inp[:, 0]
+            v_lift = (inp[:, 1] - y0) / H
+
+            tb = self._normalized_tb_bubble(inp, y0, yL)
+            side = self._normalized_side_bubble(inp, x0, xL)
+            correction_bubble = tb * side.square()
+
+            u = (u_lift + correction_bubble * disp_u) * self.lmbda
+            v = (v_lift + correction_bubble * disp_v) * self.lmbda
+        else:
+            # (y-y0)(yL-y) 在边界 y=y0 和 y=yL 处为 0
+            u = ((inp[:, -1]-y0)*(yL-inp[:, -1])*disp_u +
+                 (inp[:, -1]-y0)/(yL-y0)*torch.cos(self.theta)) * self.lmbda
+            v = ((inp[:, -1]-y0)*(yL-inp[:, -1])*disp_v +
+                 (inp[:, -1]-y0)/(yL-y0)*torch.sin(self.theta)) * self.lmbda
 
         return u, v, alpha
 

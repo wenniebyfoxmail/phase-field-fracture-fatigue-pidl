@@ -189,6 +189,13 @@ def _rebuild_field_comp(archive: Path, cycle: int | None):
         }
 
     symmetry_prior = _as_bool(cfg.get("symmetry_prior", False), default=False)
+    exact_bc_dict = None
+    if _as_bool(cfg.get("exact_bc_enable", False), default=False):
+        exact_bc_dict = {
+            "enable": True,
+            "mode": cfg.get("exact_bc_mode", "sent_plane_strain"),
+            "nu": float(cfg.get("exact_bc_nu", mat_prop_dict["mat_nu"])),
+        }
     pffmodel, matprop, network = construct_model(
         pff_model_dict, mat_prop_dict, network_dict, domain_extrema, "cpu",
         williams_dict=williams_dict)
@@ -205,6 +212,7 @@ def _rebuild_field_comp(archive: Path, cycle: int | None):
         ansatz_dict=ansatz_dict,
         l0=mat_prop_dict["l0"],
         symmetry_prior=symmetry_prior,
+        exact_bc_dict=exact_bc_dict,
     )
 
     best = archive / "best_models"

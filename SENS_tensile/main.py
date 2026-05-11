@@ -28,7 +28,8 @@ field_comp = FieldComputation(net = network,
                               williams_dict = williams_dict,                 # ★ Direction 4
                               ansatz_dict  = ansatz_dict,                    # ★ Direction 5
                               l0 = mat_prop_dict["l0"],                      # ★ Direction 4
-                              symmetry_prior = symmetry_prior)               # ★ 2026-05-06
+                              symmetry_prior = symmetry_prior,               # ★ 2026-05-06
+                              exact_bc_dict = exact_bc_dict)                 # ★ 2026-05-11 C4
 field_comp.net = field_comp.net.to(device)
 field_comp.domain_extrema = field_comp.domain_extrema.to(device)
 field_comp.theta = field_comp.theta.to(device)
