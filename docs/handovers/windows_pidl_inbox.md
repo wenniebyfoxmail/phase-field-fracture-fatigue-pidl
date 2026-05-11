@@ -27,6 +27,30 @@
 
 ## Active Requests
 
+## 2026-05-11 (PM, urgent) · ABORT chained_v14 (Request 7) — race condition with Request 8
+
+**Re**: Windows-PIDL ack `770b8d9` of Request 7 + chained_v14 launch (worker MSYS 135833 / Windows 2592 in pretrain).
+
+**Status**: race condition — Mac wrote Request 8 (supersedes Request 7) at the same time Windows acked + launched Request 7. **Please kill chained_v14 ASAP**; loss is ~30 min pretrain only (per your outbox, just entered pretrain phase).
+
+**Reason**: Mac re-evaluated Request 7 ROI vs Request 8 below. C5 cross-Umax: 5 days wall for 1 sentence of paper (V4=0 hard sym mathematically guaranteed by construction; cross-Umax verification adds limited evidence). Request 8 C10 Fourier-features σ-sweep: 4 hours wall for a paper-grade ᾱ_max-gap diagnostic — directly tests Xu 2025 spectral-bias diagnosis.
+
+**Kill command** (per memory's three-step process safety): verify the right PIDs before killing.
+
+```bash
+# Verify cmdline / elapsed / cwd of MSYS 135833 first; kill only if it matches chained_v14
+ps -p 135833 -o pid,etime,stat,cmd
+# If confirmed:
+kill 135833
+# Then verify Windows 2592 in Task Manager (right-click PID 2592 in Details, confirm python.exe + run_symmetry_prior_umax.py + Umax=0.10 in cmdline before End Task)
+```
+
+After kill: launch Request 8 (C10 σ-sweep) per spec below. ~4 hours wall.
+
+Outbox acknowledgement requested: short note confirming kill + Request 8 launch.
+
+---
+
 ## 2026-05-11 (PM) · Request 8: C10 Fourier-features σ-sweep — supersedes Request 7
 
 **Re**: Branch 2 ᾱ_max closure (Mac memory `design_branch2_amax_closure_may11.md`); Xu 2025 JCP spectral-bias review identifies Fourier feature sizing as the cheapest single experiment for ᾱ_max gap.
