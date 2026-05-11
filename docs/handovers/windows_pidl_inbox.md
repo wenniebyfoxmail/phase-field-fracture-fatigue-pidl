@@ -27,7 +27,81 @@
 
 ## Active Requests
 
-## 2026-05-11 · Request 7: C5 hard symmetry cross-Umax sweep (Phase 1 Branch 1)
+## 2026-05-11 (PM) · Request 8: C10 Fourier-features σ-sweep — supersedes Request 7
+
+**Re**: Branch 2 ᾱ_max closure (Mac memory `design_branch2_amax_closure_may11.md`); Xu 2025 JCP spectral-bias review identifies Fourier feature sizing as the cheapest single experiment for ᾱ_max gap.
+
+**Status**: This supersedes Request 7 (C5 cross-Umax). Skip Request 7. Reason: V4 = 0 hard-sym closure is mathematically guaranteed by construction at any Umax (Zhang 2022 anchor); the cross-Umax verification adds 1 sentence to paper for 5-7 days Windows wall. C10 attacks the **harder** open problem (ᾱ_max gap, currently 9-94× lower than FEM) and is the cheapest test of the spectral-bias diagnosis.
+
+### What you need to do
+
+Run C10 Fourier-feature σ-sweep smoke at u=0.12. Runner is in repo (commit `5906852`):
+
+```bash
+cd SENS_tensile
+# Smoke: 4 σ values × 10 cycles each, single seed
+python run_fourier_features_umax.py 0.12 --n-cycles 10 --seed 1 --sigma 10
+python run_fourier_features_umax.py 0.12 --n-cycles 10 --seed 1 --sigma 30
+python run_fourier_features_umax.py 0.12 --n-cycles 10 --seed 1 --sigma 100
+python run_fourier_features_umax.py 0.12 --n-cycles 10 --seed 1 --sigma 300
+```
+
+Total wall estimate: ~30 min - 2h per smoke (inner NN input is 256 dim vs baseline 2, slight per-epoch slowdown), 4 σ × ~1h = **~4 hours Windows wall**.
+
+### Why σ sweep
+
+Phase 1 toy units; FEM peak width h_FEM ≈ 0.001 mm → target spectral frequency ~ 1/h ≈ 1000. With γ(x) = [cos(2π B x), sin(2π B x)] and B ~ N(0, σ²):
+- σ = 10 covers frequencies up to ~300 (5σ tail) — likely too low
+- σ = 30 covers ~1000 — matches target
+- σ = 100 covers ~3000 — overshoots, may help if true peak frequency is higher
+- σ = 300 covers ~10000 — likely too high, optimization may diverge
+
+Memory: April 19 Direction 2.1 tested σ=1 only and gave V4 0.376 (no improvement) — that was σ way too small. This sweep finds where (if anywhere) Fourier features start helping ᾱ_max.
+
+### What to look at per run (smoke verdict)
+
+For each σ, after 10 cycles report from the archive's `extra_scalars.dat`:
+
+| Metric | Baseline (no Fourier) | Target |
+|---|---:|---|
+| ᾱ_max @ cycle 10 | ~1.5 | target ≥ 3 (= 2× baseline) for "promising" |
+| ψ_tip @ cycle 5 | ~0.5 | target ≥ 1.5 |
+| Training stability | converges | no NaN, loss decreasing each cycle |
+| Wall per cycle | ~1.5 min | <5 min (else flag for tuning) |
+
+### Decision rule (after all 4 σ smoke runs)
+
+- **If any σ gives ᾱ_max ≥ 3 @ cycle 10**: proceed with full N=100 production at that σ (and σ-neighbours if positive at boundary), report N_f + V4 + V7 + final ᾱ_max
+- **If all 4 σ give ᾱ_max ~1.5** (baseline): C10 doesn't work in our regime → Fourier features can't close ᾱ_max gap on its own → strong evidence Deep Ritz volume-bias is dominant mechanism, not spectral bias
+- **If some σ training diverges**: report and we skip that σ
+
+### Deliverables
+
+For each σ smoke, write a single row to `windows_pidl_outbox.md`:
+
+```
+σ=<σ>: ᾱ_max@c10=<val>, ψ_tip@c5=<val>, wall=<min>, status=<OK|DIVERGE>
+```
+
+Plus link the 4 archives (e.g. `hl_8_..._N10_..._Umax0.12_fourier_sig30.0_nf128/`).
+
+### Priority
+
+**HIGH** — single cheapest discriminator for ᾱ_max gap diagnosis. Result in <1 day.
+
+### Standby
+
+Ack in outbox + launch when convenient. Mac is C5 u=0.12 × 3 seeds on Taobo (running).
+
+---
+
+## 2026-05-11 · Request 7: C5 hard symmetry cross-Umax sweep [WITHDRAWN by Request 8 same day]
+
+**[UPDATE 2026-05-11 PM]: WITHDRAWN. Hard sym V4=0 closure is mathematically guaranteed by construction; cross-Umax verification adds limited paper value (1 sentence) for 5-7 day wall. Replaced by Request 8 (C10 Fourier-features σ-sweep) which attacks the harder open ᾱ_max gap. If Request 8 finishes early and GPU is still free, may revisit single u=0.13 hard-sym verification at that time.**
+
+Original Request 7 below preserved for audit:
+
+---
 
 **Re**: Branch 1 V4/V7 hard-fix plan (Mac memory `design_branch1_v4v7_hardfix_may11.md`). Mac launched C5 at u=0.12 × 3 seeds on Taobo today; Windows-PIDL fills the cross-Umax slot.
 
