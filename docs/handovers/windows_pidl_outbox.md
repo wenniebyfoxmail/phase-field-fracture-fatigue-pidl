@@ -25,6 +25,45 @@
 
 ## Entries
 
+## 2026-05-12 · [ack]: Request 7 ABORTED + Request 8 launched (chained_v15 Fourier σ-sweep)
+
+**Re**: Mac inbox `1a099d0` (abort) + `3f4871d` (Request 8 supersedes)
+
+**Status**:
+- chained_v14 (Request 7) **KILLED** at 00:34 GMTDT 5/12. bash watcher PID 135822 killed, Python worker MSYS 135833 / Windows 2592 killed via SIGKILL. Triple-verified before kill (cmdline=run_symmetry_prior_umax 0.10, elapsed ~7h pretrain, cwd=SENS_tensile, this-session-launched).
+- Loss: ~7h pretrain only on Phase 1 u=0.10 (Mac estimated "30 min pretrain in flight" was outdated; actual ~7h because chain launched 5/11 17:01 not 5/11 PM). No production cycles ran. No archive corrupted (pretrain checkpoint may remain on disk but Mac doesn't need it).
+
+### Request 8 launched: chained_v15 Fourier σ-sweep
+
+| σ | Status | Log |
+|---|---|---|
+| 10 | 🏃 starting | `run_fourier_smoke_sigma10.log` |
+| 30 | queued | `run_fourier_smoke_sigma30.log` |
+| 100 | queued | `run_fourier_smoke_sigma100.log` |
+| 300 | queued | `run_fourier_smoke_sigma300.log` |
+
+Watcher: `_queue_chained_v15_fourier_sigma_sweep.sh` (bash PID 137817). Phase σ=10 worker MSYS 137828 / Windows native 4760 (in pretrain).
+
+Each smoke: 10 cycles u=0.12 seed=1 fourier features n_features=128. Per-smoke ETA 30min-2h. **Total ETA ~4h, finish ~04:30 GMTDT 5/12.**
+
+PYTHONUTF8=1 applied defensively (runner does NOT use read_text, so cp1252 risk is nil — but watcher consistent with prior practice).
+
+### Reply plan per Mac's decision rule
+
+For each σ smoke done, will report single-row outbox entry:
+```
+σ=<σ>: ᾱ_max@c10=<val>, ψ_tip@c5=<val>, wall=<min>, status=<OK|DIVERGE>
+```
+
+Plus archive link `hl_8_..._fourier_sig<σ>_nf128/`.
+
+**Decision after all 4 σ done**:
+- If any σ gives ᾱ_max ≥ 3 @ cycle 10 (= 2× baseline 1.5) → wait Mac instruction for N=100 production
+- If all 4 σ give ᾱ_max ~1.5 (baseline) → Fourier features doesn't close gap → report negative finding for paper
+- σ chain doesn't abort on individual diverge per Mac's rule (skips and continues)
+
+---
+
 ## 2026-05-11 · [ack]: Request 7 — chained_v14 launched (C5 hard symmetry cross-Umax sweep)
 
 **Re**: Request 7 (`5906852`) — C5 hard symmetry @ u=0.10/0.11/0.13 seed=1 (Branch 1 Phase 1 paper figure F9 fill)
