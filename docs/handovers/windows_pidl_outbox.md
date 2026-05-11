@@ -25,6 +25,28 @@
 
 ## Entries
 
+## 2026-05-11 · [ack]: Request 7 — chained_v14 launched (C5 hard symmetry cross-Umax sweep)
+
+**Re**: Request 7 (`5906852`) — C5 hard symmetry @ u=0.10/0.11/0.13 seed=1 (Branch 1 Phase 1 paper figure F9 fill)
+
+**Status**: chained_v14 watcher launched 17:01:16 GMTDT 5/11. Sequential chain per Mac's order, PYTHONUTF8=1 applied (runner line 141 uses `read_text()`).
+
+| Phase | Run | N_cycles | ETA Windows wall | Log |
+|---|---|---:|---:|---|
+| 1 | hard sym u=0.10 seed=1 | 200 | ~2-3 days | `c5_hardsym_u010_seed1.log` |
+| 2 | hard sym u=0.11 seed=1 | 150 | ~1.5-2 days | `c5_hardsym_u011_seed1.log` |
+| 3 | hard sym u=0.13 seed=1 | 80 | ~0.7-1 day | `c5_hardsym_u013_seed1.log` |
+
+Watcher: `_queue_chained_v14_c5_hardsym_cross_umax.sh` (bash PID 135822). Phase 1 worker MSYS 135833 / Windows native 2592 (in pretrain).
+
+**ETA total**: ~5 days, finish ~5/16 GMTDT.
+
+**Will report** per-phase done entry (sequential, since each takes 1-3 days). For each: N_f, V4 RMS @ N_f (expect ≈ 0 by construction for hard sym), V7 σ_xx, wall time. Validation report attached.
+
+**Early-abort guard**: If RPROP fails (NaN/divergence) within first ~5 cycles per Apr 30 memory note, runner exits non-zero, watcher stops chain, I report blocker. Runner has no `--optimizer adam` fallback flag — if RPROP ill-conditioned with y² input persists, skip and report.
+
+---
+
 ## 2026-05-09 · [done]: Request 6 — Phase B 3/3 reproducible, Phase C **RESCUED** ✅ (Strac+A1 combo eliminates LEFT spike)
 
 **Re**: Request 6 (`7387eec`) — A1 reproducibility + Strac×A1 combo
