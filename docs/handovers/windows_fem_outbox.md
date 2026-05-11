@@ -26,6 +26,69 @@
 
 ## Entries
 
+## 2026-05-11 (evening) · [done][verdict NO_PENETRATION]: PCC v2 100k brute force — d_max only 17.9% at 100k, but trend valid; extrapolated N_f ≈ 5.5×10⁵ (VHCF)
+
+- **Re**: Mac `401d01b` decision to run 100k brute-force as discriminator
+- **Status**: ✅ run completed cleanly in 33,266 s (= 9.24 h), max_cycle=100,000 reached, **NO PENETRATION**
+
+### Decisive numbers
+
+| Quantity | N=1 | N=100,000 | growth |
+|---|---:|---:|---:|
+| `d_max` (||d||_∞) | 0.0087 | **0.1789** | +1957% |
+| `alpha_bar_max` (||fat||_∞) | 3.30e-6 | **3.31e-1** (= 66.2 × α_T) | +10⁵ |
+| `alpha_bar_mean` | 9.15e-8 | 9.18e-3 (= 1.84 × α_T) | +10⁵ |
+| `f_mean` | 1.000 | 0.553 | −45% |
+| `psi_tip` | 1.05e-6 | 1.33e-6 | +27% (effectively frozen) |
+
+### Verdict
+
+Splits the difference between Mac's two hypotheses:
+
+- **"Structurally subcritical, no penetration ever"** (my earlier reading from cycle-4000 data): ❌ WRONG. d *does* grow at long timescale.
+- **"Just slow, N_f ≈ 85k"** (Mac's reading): ❌ Off by ~6×. Real linear-avg d-growth rate is 1.7e-6/cycle.
+
+**Correct verdict**: AT2 PCC at S^max=0.75·f_t with Mac's calibration produces **VHCF-range fatigue** (N_f ≈ 5.5×10⁵ cycles extrapolated). 100k cycles is **far too short** for AT2 PCC + this loading to penetrate. d-growth is genuinely happening but slow due to ψ_tip / ψ_crit ≈ 1/18 ratio (Carrara fatigue f(ᾱ) feedback only partially compensates).
+
+For §5 paper:
+- **AT2 PCC reference at S^max=0.75·f_t**: report "no penetration at 100k; linear extrapolation places N_f in VHCF range ~5×10⁵ — outside the cycle window expected for HCF S-N data points reported in literature"
+- Compare to **Baktheer Wu PF-CZM C60 N_f=1,500-3,000** at same S^max: the **architectural gap is large** — AT2 needs ~10²-10³× more cycles than Wu PF-CZM at the same loading. This *strengthens* the §5 narrative that Wu PF-CZM is the appropriate Phase 2 reference.
+
+### Why d grows slowly despite ᾱ at 66·α_T
+
+f(ᾱ=66·α_T) = (2 / 67)² ≈ 8.9e-4 → ψ_eff at tip = 1.33e-6 × 8.9e-4 = **1.2e-9** kN/mm² (sub-pico-scale). Phase-field driving force = ψ_eff − Gc/(c_w·ℓ) ≈ ψ_eff − 1.9e-5 → still very negative → d-evolution barely above noise floor. Yet ᾱ keeps growing because it integrates ψ_tip (the *raw*, undegraded ψ) per cycle, not ψ_eff.
+
+This is a Carrara-formulation-specific behavior: the fatigue accumulator does NOT see the degradation feedback, so it grows unbounded even when the phase-field can't keep up. In Wu PF-CZM, the rational-fraction degradation produces faster d-acceleration once ᾱ crosses α_T, giving the Baktheer-reported short N_f.
+
+### Diagnostic plot
+
+`_pidl_handoff_v3_items/carrara_results/fig_PCC_100k_diagnostic.png` — 4-panel: d_max(N), ᾱ_max(N), f_mean(N), ψ_tip(N) trajectories over 100k cycles.
+
+### Files
+
+- INPUT: `Scripts/fatigue_fracture/INPUT_SENT_concrete_PCC_v2_nojump_100k.m`
+- driver: `Scripts/fatigue_fracture/main_SENT_concrete_PCC_v2_nojump_100k.m`
+- output: `Scripts/fatigue_fracture/SENT_concrete_PCC_v2_nojump_100k/` (4 GB; 200 VTKs at vtk_freq=500, 100 checkpoints, full monitorcycle + extra_scalars)
+- analysis: `Scripts/fatigue_fracture/analyze_PCC_100k_diagnostic.py`
+- master log: `Scripts/fatigue_fracture/sweep_logs/run_PCC_100k_master.log`
+- run log: `Scripts/fatigue_fracture/sweep_logs/SENT_concrete_PCC_v2_nojump_100k.log`
+
+### Total Phase 2 / FEM-9 in flight
+
+| Task | Status | Wall |
+|---|---|---:|
+| FEM-9 A `docs/FEM.md` | ✅ done | <2h |
+| FEM-9 B strict Carrara runner | ✅ done by reference | 0 (existing data) |
+| FEM-9 C PCC v2 INPUT ready | ✅ done | <1h |
+| FEM-9 D 6-case Basquin | ✅ done (4 new runs, m_AMOR=3.77, m_MIEHE=3.72) | overnight |
+| FEM-9 E mesh check ℓ/h=5→10 | ✅ done (1% mesh-converged) | 11.1h (in D+E) |
+| FEM-9 F V7 cycle 40 | ✅ done | <1h |
+| PCC β 100k brute | ✅ done (VHCF verdict above) | 9.24h |
+
+**All FEM-9 Phase 1 + Phase 2 in-scope work complete.** Standby for Task G (Wu PF-CZM kernel implementation) Week-1 plan ack — should I draft the ack next or wait for your further direction?
+
+---
+
 ## 2026-05-11 · [done]: FEM-9 Task D + Task E — 6-point Basquin slopes both ≈ 3.77 (Carrara 2020 anchor 3.8-4.0); strict Carrara mesh-converged at 1% (vs AT1+PENALTY 12.8% non-monotonic)
 
 ### Task D results (6-case Basquin sweep, AMOR + MIEHE)
