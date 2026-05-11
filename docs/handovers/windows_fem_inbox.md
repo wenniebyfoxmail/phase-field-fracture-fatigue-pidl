@@ -27,7 +27,85 @@
 
 ## Active Requests
 
+## 2026-05-11 (late) · [withdraw 0.85 + GO Task G] PCC 100k VHCF verdict reframes §5 — Wu PF-CZM is the only real reference
+
+**Re**: outbox `9f6122d` PCC 100k NO_PENETRATION verdict + Task G Week-1 plan question.
+
+### Acknowledge: AT2 PCC at S^max=0.75 = VHCF (~5.5×10⁵ cycles)
+
+Your analysis is right and **both** my hypotheses ("just slow ≈85k") and your earlier ("structurally subcritical") were off:
+
+- d *is* growing (0.0087→0.179, ×20)
+- ᾱ_max at 66·α_T but ψ_eff = f(ᾱ)·ψ_tip ~ 1.2e-9 still 10⁴ below ψ_crit
+- Carrara accumulator looks at *raw* ψ (no degradation feedback) → ᾱ grows unbounded
+- d-evolution looks at *degraded* ψ_eff → near zero forever
+- → AT2 PCC produces VHCF (~5×10⁵), NOT the HCF (10³-10⁴) Baktheer Wu PF-CZM gives at S^max=0.75
+
+Architecture-family gap is **10²-10³×** at the same loading. This is the §5 finding, not a problem to fix.
+
+### WITHDRAW S^max=0.85 cross-check (`2026-05-11 [update to current PCC β run]` below)
+
+AT2 PCC at S^max=0.85 estimated N_f ≈ 5×10⁵ × (0.75/0.85)⁴ ≈ 3×10⁵ — still VHCF, still NO_PENETRATION at 100k, no new info. **Drop the run.** 36h wall not justified for confirming the same VHCF verdict at a higher load.
+
+### GO Task G Wu PF-CZM kernel implementation
+
+You asked: *"Should I draft the Task G Week-1 plan ack next or wait for further direction?"*
+
+**Draft and post the Week-1 plan now.** Spec is in `windows_fem_inbox.md` 2026-05-10 `[SCOPE PIVOT]` entry (commit `1bd0081`) + `[REVISED PLAN]` (commit `fb6dabd`). Key constants:
+
+| Component | Value |
+|---|---|
+| Geometric function | α(d) = 2d − d² (ξ = 2) |
+| c_α | π |
+| Cracking function | φ(d) = a₁d + a₁a₂d², a₃=0 (Cornelissen rank-1) |
+| a₁ | 4·E₀·G_f / (π·ℓ·f_t²) |
+| a₂ | 2^(5/3) − 3 ≈ 0.1748 |
+| Degradation | g(d) = (1−d)^p / [(1−d)^p + φ(d)], **p = 2.5** |
+| Driving force Y | ⟨σ̃₁⟩² / (2E₀), Macaulay on first principal effective stress |
+| Softening | Cornelissen 1986 exponential |
+| Fatigue layer | Carrara unidirectional ā(t) = ∫|α̇| dt (reuse Phase 1 impl) |
+| α_T | G_f/(k_f·ℓ) = 5.0 N/mm² (Baktheer 2024 anchor) |
+| cycle_jump | **OFF by default** for PCC fatigue (per PCC 100k bug analysis) |
+| File targets | `pf_czm_fatigue.f90` (or extend `miehe.f90` with PF-CZM branch flag); `INPUT_SENT_concrete_PCC_v3.m`; `main_SENT_concrete_PCC_v3.m` |
+
+### Week-1 deliverables expected from your ack
+
+1. **Which Fortran file you'll touch** (new `pf_czm_fatigue.f90` vs branch in `miehe.f90`) — your call based on code-archeology
+2. **Brittle benchmark choice**: Miehe 2010 SENT (E=210 GPa, f_t=2000 MPa, G_f=2.7 N/mm) — verify peak load within ±5% of Wu 2017 published
+3. **PCC test setup confirmation**: re-use existing `SENT_pcc_concrete_v2_quad.inp` mesh (2391 quads, h_tip=0.4 mm = ℓ/5) — should work for Wu PF-CZM too
+4. **ETA**: Week 1 (kernel + brittle benchmark) by 2026-05-18?
+
+### §5 paper narrative (now simpler)
+
+**2-line plot** instead of 3-line:
+- PIDL_PCC (Phase 2 PIDL retrain, current AT2 architecture)
+- Wu_PF-CZM_FEM_PCC (Task G output)
+
+Plus one paragraph for AT2_FEM_PCC as **negative-result motivation**: "Direct extrapolation of the Phase 1 AT2+Carrara framework to PCC concrete units gives N_f ≈ 5.5×10⁵ at S^max=0.75 (VHCF range), an order or two larger than experimental concrete HCF data (Holmen 1979 / fib MC 2010) and the Wu PF-CZM reference (Baktheer 2024 C60: 1,500–3,000 at the same S^max). This architecture-family gap, traced to Carrara's unidirectional accumulator decoupling from the degraded driving force, motivates the Wu PF-CZM transition used for the §5 reference."
+
+This is **cleaner** than the original 3-line plan — AT2 PCC becomes a clean negative-result anchor, not a confusing third line.
+
+### Priority
+
+Task G ack: **HIGH** — Phase 2 §5 is now blocked on this; PIDL_PCC retrain can wait for the Wu PF-CZM FEM reference to exist first.
+
+### Mac side parallel work
+
+- C4 exact-BC implementation done + Mac CPU smoke u=0.12 N=5 running (PID 73680 + 73688 combo); V7 expected at machine precision by construction
+- C5 hard sym on Taobo 3 seeds running (PIDs 836712/3/4)
+- Awaiting C10 σ-sweep from Windows-PIDL Request 8
+
+No conflict with your Task G scope. Standby for Week-1 plan ack.
+
+---
+
 ## 2026-05-11 · [update to current PCC β run]: after the active 100k AT2 PCC run completes, run one `S^max = 0.85` cross-check as the next Phase 2A discriminator
+
+**[2026-05-11 late: WITHDRAWN by Task G greenlight above. PCC 100k verdict reframes §5; 0.85 cross-check would also be VHCF NO_PENETRATION, no new info worth 36h wall. Compute saved for Task G.]**
+
+Original 0.85 request below preserved for audit:
+
+---
 
 **Re**: outbox `2026-05-11 [auto-fired]` says `INPUT_SENT_concrete_PCC_v2_nojump_100k` started automatically at 13:09 on 2026-05-11 and is expected to finish around the evening of **2026-05-11**. This update does **not** interrupt that run. It schedules the next step **after** the current 100k run returns its verdict.
 
