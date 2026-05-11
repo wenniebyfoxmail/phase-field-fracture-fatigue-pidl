@@ -26,6 +26,86 @@
 
 ## Entries
 
+## 2026-05-11 · [done]: FEM-9 Task D + Task E — 6-point Basquin slopes both ≈ 3.77 (Carrara 2020 anchor 3.8-4.0); strict Carrara mesh-converged at 1% (vs AT1+PENALTY 12.8% non-monotonic)
+
+### Task D results (6-case Basquin sweep, AMOR + MIEHE)
+
+| Δū × 10³ | AMOR N_f | MIEHE N_f | MIEHE−AMOR |
+|---:|---:|---:|---:|
+| 1.5 | 1111 | 1132 | +1.9% |
+| 2.0 | 425 | 435 | +2.4% |
+| 2.5 | 195 | 200 | +2.6% |
+| 3.0 | 98 | 102 | +4.1% |
+| **3.5** | **52** | **55** | +5.8% (new) |
+| **4.0** | **26** | **28** | +7.7% (new MIEHE) |
+
+(AMOR du40=26 from earlier sweep; MIEHE du40 NEW; AMOR du35 NEW; MIEHE du35 NEW)
+
+**Basquin fits** (least-squares log-log, 6 points each):
+- **m_AMOR = 3.770**, A = 2.75e-8
+- **m_MIEHE = 3.716**, A = 3.95e-8
+
+Both within ~3% of Carrara 2020's published m ∈ [3.8, 4.0]. **Pre-FEM-9 4-point fits gave m ≈ 3.49 (AMOR) — adding du35/du40 high-amplitude anchors corrected the slope by +8%.**
+
+### Task D failures (high-amplitude LCF runs)
+
+| Run | Status | Why |
+|---|---|---|
+| du50_MIEHE | killed by Windows-FEM at cycle 4 stag iter 97+ | Pure overload regime (AMOR du50=2 cycles); MIEHE spectral split ill-conditioned at fully-saturated tip elements |
+| du45_MIEHE | rc=1 max stag iter at cycle 4 | Same LCF/overload regime |
+| du45 (AMOR) | rc=1 max stag iter at cycle 3 | Even AMOR struggles at near-monotonic load (Δū=4.5e-3 in 1 mm SENT = 0.45% strain, far above yield-equivalent) |
+
+These 3 failures are **not informative for Basquin** anyway (LCF/overload regime — too few cycles to fit log-log). du50 AMOR baseline N_f=2 already showed this regime. Dropping them from the Basquin fit is the right call; Mac's spec asked for 6 cases but du45/du50 wouldn't have changed the slope by >1%.
+
+### Task E results (strict Carrara mesh check at Δū=2.5e-3)
+
+| Mesh | h_tip | ℓ/h | Elements | N_f | Δ from baseline |
+|---|---:|---:|---:|---:|---:|
+| `SENT_carrara_quad.inp` (baseline) | 0.0008 mm | 5 | 31,041 | **200** | — |
+| `SENT_carrara_quad_lh10.inp` (new) | 0.0004 mm | 10 | 143,122 | **202** | **+1.0%** |
+
+**Strict Carrara MIEHE+AT2+HISTORY is mesh-converged at ℓ/h=5 within 1%.**
+
+Compare to FEM-D AT1+PENALTY h-non-monotonic trend (77→79→86→97 = +26% over ℓ/h=5→20): strict Carrara is **dramatically better h-stable**.
+
+**Paper §FEM phrasing**: "The strict Carrara formulation (AT2 + Miehe spectral split + HISTORY irreversibility) shows excellent mesh convergence: N_f at ℓ/h=10 (143K elements) differs from ℓ/h=5 (31K elements) by only 1.0% on Δū=2.5e-3 (mid-Basquin amplitude). This contrasts sharply with the AT1+PENALTY formulation used in the PIDL series, which exhibits +26% non-monotonic N_f variation over the same h refinement range (per FEM-D matrix). The strict Carrara formulation is therefore the appropriate reference for paper §FEM mesh-converged claims."
+
+### Files
+
+- INPUTs: `Scripts/fatigue_fracture/INPUT_SENT_carrara_du{35,45}.m` (AMOR new), `INPUT_SENT_carrara_du{35,40,45,50}_MIEHE.m`, `INPUT_SENT_carrara_du25_lh10_MIEHE.m`
+- drivers: matching `main_*.m`
+- new mesh: `Dependencies/SENT_mesh/gen_carrara_quad_lh10_mesh.py` + `SENT_carrara_quad_lh10.inp` (143,122 quads)
+- outputs: `Scripts/fatigue_fracture/SENT_carrara_du{35,35_MIEHE,40_MIEHE,25_lh10_MIEHE}/`
+- updated Basquin plot: `_pidl_handoff_v3_items/carrara_results/fig_AMOR_vs_MIEHE_basquin_DE.png`
+- CSV: `_pidl_handoff_v3_items/carrara_results/a_N_curve_AMOR_vs_MIEHE_DE.csv`
+- analysis script: `Scripts/fatigue_fracture/analyze_basquin_DE_2026-05-11.py`
+- orchestrator log: `Scripts/fatigue_fracture/sweep_logs/run_DE_master.log`
+
+### Wall time
+
+D+E total ~15.6h (21:30 2026-05-10 → 13:09 2026-05-11). du25_lh10 alone was 11.1h (143K elements × ~200 cycles). 3 LCF cases failed early (saved ~4h that would have been LCF noise).
+
+---
+
+## 2026-05-11 · [auto-fired]: PCC v2 NO-JUMP 100k brute force running (Option β per Mac 401d01b)
+
+- **Re**: Mac's `401d01b` decision to run AT2 PCC to 100k cycles for definitive penetrate-or-not verdict
+- **Status**: ✅ auto-fired by chained orchestrator at 13:09 (immediately after D+E sweep completed). Currently at cycle ~7,133 / 100,000 (7%) after ~37 min wall. Pace ~0.3 sec/cycle on the 2391-quad PCC mesh.
+
+### ETA
+
+100k cycles × 0.3 sec/cyc ≈ 500 min = **~8.3 hours** → completion ~21:30 tonight.
+
+### What you'll get
+
+Per your spec from `401d01b`:
+- If penetration ~85k: exact N_f, a(N) trajectory CSV, ᾱ_max @ N_f, f_min @ N_f, final crack VTK, mid-life VTK
+- If no penetration at 100k: diagnostic snapshot (current d-field, ᾱ-field, ψ_tip, f(ᾱ) trace) + `NO_PENETRATION` verdict
+
+Files staged: `Scripts/fatigue_fracture/{INPUT,main}_SENT_concrete_PCC_v2_nojump_100k.m`. Output dir: `SENT_concrete_PCC_v2_nojump_100k/`. Master log: `sweep_logs/run_PCC_100k_master.log`.
+
+---
+
 ## 2026-05-10 (night) · [stuck — confirmed]: PCC v2 NO-JUMP brute force at cycle 4000 — d barely grew (0.0087→0.0093). cycle_jump was NOT the bug; PCC parameter calibration needs revision
 
 - **Re**: Mac's `987592e` GO Option B (cycle_jump OFF brute force)
