@@ -224,6 +224,18 @@ ansatz_dict = {
 symmetry_prior = False
 
 
+# ★ 2026-05-11 C10: Fourier feature input layer (Tancik 2020 / Xu 2025 review)
+# Spectral-bias mitigation by prepending γ(x) = [cos(2π B x), sin(2π B x)] before NN.
+# For SENT phase-field at FEM peak width h_FEM ≈ 0.001 (toy units): set σ so 2π·σ·5 ≈ 1000
+# → σ ≈ 30 (default conservative), σ_sweep ∈ {10, 30, 100} for production smoke.
+fourier_dict = {
+    "enable": False,
+    "sigma": 30.0,
+    "n_features": 128,
+    "seed": 0,
+}
+
+
 # Domain definition
 '''
 domain_extrema: tensor([[x_min, x_max], [y_min, y_max]])
@@ -327,6 +339,12 @@ _modes_str = "".join(ansatz_dict.get("modes", ["I"]))
 _ansatz_tag = f"_enriched_ansatz_mode{_modes_str}_v1" if ansatz_dict.get("enable", False) else ""
 _symmetry_tag = "_symY2" if symmetry_prior else ""
 
+# ★ 2026-05-11 C10: Fourier feature tag
+_fourier_tag = (
+    f"_fourier_sig{fourier_dict.get('sigma', 30.0)}_nf{fourier_dict.get('n_features', 128)}"
+    if fourier_dict.get("enable", False) else ""
+)
+
 # ★ Direction 6.1: Spatial α_T 标签（enable=True 时追加 _spAlphaT_b{β}_r{r_T}）
 _sp_cfg = _fat.get('spatial_alpha_T', {})
 _spAlphaT_tag = (
@@ -352,6 +370,7 @@ model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
                             _williams_tag +        # ★ Direction 4 标签
                             _ansatz_tag +          # ★ Direction 5 标签
                             _symmetry_tag +        # ★ 2026-05-06 symmetry prior 标签
+                            _fourier_tag +         # ★ 2026-05-11 C10 Fourier features 标签
                             _spAlphaT_tag +        # ★ Direction 6.1 标签
                             _psiHack_tag)          # ★ E2 sanity hack 标签
 model_path.mkdir(parents=True, exist_ok=True)

@@ -2,10 +2,10 @@ import torch
 import torch._dynamo   # ★ 顶层导入，避免函数内 import 触发 UnboundLocalError
 from pff_model import PFFModel
 from material_properties import MaterialProperties
-from network import NeuralNet, init_xavier
+from network import NeuralNet, FourierFeatureNet, init_xavier
 
 def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, device,
-                    williams_dict=None):
+                    williams_dict=None, fourier_dict=None):
     """
     构建 PFF 模型、材料属性和神经网络。
 
@@ -13,6 +13,13 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
     williams_dict : dict | None
         None 或 {"enable": False} → input_dimension = 2（原始行为）
         {"enable": True, ...}     → input_dimension = 8（Williams 特征）
+
+    ★ 2026-05-11 C10 新增参数
+    fourier_dict : dict | None
+        None 或 {"enable": False} → 标准 NeuralNet（原始行为）
+        {"enable": True, "sigma": 30.0, "n_features": 128, "seed": 0}
+                                  → FourierFeatureNet 包裹 NeuralNet, 输入加 γ(x)
+        互斥: williams_dict 和 fourier_dict 不可同时 enable。
     """
     # Phase field model
     pffmodel = PFFModel(PFF_model = PFF_model_dict["PFF_model"],
@@ -30,13 +37,34 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
     _williams_on = _wd.get('enable', False)
     in_dim = 8 if _williams_on else domain_extrema.shape[0]   # 8 or 2
 
+    # ★ 2026-05-11 C10: Fourier feature 启用时换用 FourierFeatureNet
+    _fd = fourier_dict or {}
+    _fourier_on = _fd.get('enable', False)
+    if _williams_on and _fourier_on:
+        raise ValueError("williams_dict and fourier_dict cannot both be enabled")
+
     # Neural network
-    network = NeuralNet(input_dimension=in_dim,
-                        output_dimension=domain_extrema.shape[0]+1,
-                        n_hidden_layers=network_dict["hidden_layers"],
-                        neurons=network_dict["neurons"],
-                        activation=network_dict["activation"],
-                        init_coeff=network_dict["init_coeff"])
+    if _fourier_on:
+        network = FourierFeatureNet(
+            input_dimension=in_dim,
+            output_dimension=domain_extrema.shape[0]+1,
+            n_hidden_layers=network_dict["hidden_layers"],
+            neurons=network_dict["neurons"],
+            activation=network_dict["activation"],
+            init_coeff=network_dict["init_coeff"],
+            n_features=_fd.get('n_features', 128),
+            sigma=_fd.get('sigma', 30.0),
+            seed=_fd.get('seed', network_dict.get('seed', 0)),
+        )
+        print(f"[construct_model] FourierFeatureNet enabled: σ={_fd.get('sigma', 30.0)}, "
+              f"n_features={_fd.get('n_features', 128)}, inner_dim={2*_fd.get('n_features', 128)}")
+    else:
+        network = NeuralNet(input_dimension=in_dim,
+                            output_dimension=domain_extrema.shape[0]+1,
+                            n_hidden_layers=network_dict["hidden_layers"],
+                            neurons=network_dict["neurons"],
+                            activation=network_dict["activation"],
+                            init_coeff=network_dict["init_coeff"])
     torch.manual_seed(network_dict["seed"])
     init_xavier(network)
 

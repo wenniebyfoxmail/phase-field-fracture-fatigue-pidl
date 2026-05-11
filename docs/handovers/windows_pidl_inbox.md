@@ -27,6 +27,63 @@
 
 ## Active Requests
 
+## 2026-05-11 · Request 7: C5 hard symmetry cross-Umax sweep (Phase 1 Branch 1)
+
+**Re**: Branch 1 V4/V7 hard-fix plan (Mac memory `design_branch1_v4v7_hardfix_may11.md`). Mac launched C5 at u=0.12 × 3 seeds on Taobo today; Windows-PIDL fills the cross-Umax slot.
+
+### Background
+
+Phase 1 §4.2 V4 closure currently rests on **soft sym (Queue E)** at λ=1 with V4 RMS ≈ 0.022 across 4 Umax. Hard sym (`run_symmetry_prior_umax.py`, y² input + odd parity output) was smoke-tested Apr 30 and gives V4 RMS = 0 at exact pairs by construction (machine precision). Memory archived it as "production-unviable" due to 12× compute slowdown — but on 8-GPU Taobo / Windows GPU, a single seed per Umax is feasible in 1-3 days each. With multi-machine, the full cross-Umax C5 grid completes in ~1 week.
+
+### What we need from you
+
+Run hard symmetry production at the 3 cross-Umax points not covered by Taobo:
+
+| Umax | Seed | Reason |
+|---|---|---|
+| 0.10 | 1 | cross-Umax LCF-side anchor |
+| 0.11 | 1 | between training amplitudes |
+| 0.13 | 1 | OOD direction, also Strac-alone has data here for comparison |
+
+(Mac is running u=0.12 × seeds 1/2/3 on Taobo GPU 1/2/3; will optionally do u=0.08 and 0.14 later if you finish your three first.)
+
+### Runner
+
+```bash
+cd SENS_tensile
+python run_symmetry_prior_umax.py 0.10 --n-cycles 200 --seed 1   # est. ~2-3 days wall
+python run_symmetry_prior_umax.py 0.11 --n-cycles 150 --seed 1   # est. ~1.5-2 days wall
+python run_symmetry_prior_umax.py 0.13 --n-cycles 80 --seed 1    # est. ~0.7-1 day wall
+```
+
+Run sequentially on a single Windows GPU (or split if you have multi-GPU). Total Windows wall: ~5 days for all three.
+
+### What to monitor
+
+For each run, after every 5-10 cycles confirm:
+- training is converging (loss decreasing per epoch in TBruns)
+- V4 mirror-pair RMS stays at machine precision (validation report `rms_alpha_skew` < 1e-3)
+- crack tip propagation is consistent with Phase 1 FEM (u=0.10 N_f≈170, u=0.11 N_f≈117, u=0.13 N_f≈57)
+
+If RPROP can't converge (training NaN, divergence) within first 5 cycles, stop and report. Memory note Apr 30 said RPROP ill-conditioned with y² input — if same issue persists, fall back to Adam (`--optimizer adam`) if runner supports it; otherwise skip and report.
+
+### Deliverables
+
+For each Umax:
+- Archive at `hl_8_Neurons_400_..._Umax<u>_symY2/` (full)
+- `validation_report.json` from `validate_pidl_archive.py` after run completes
+- One-line summary in outbox: N_f, V4 RMS @ N_f, V7 σ_xx, wall time
+
+### Priority
+
+**HIGH** — directly fills Branch 1 cross-Umax table for §4.2 paper figure F9 multi-seed + multi-Umax. Compatible with Mac's Taobo C5 u=0.12 runs (no overlap).
+
+### Standby
+
+Acknowledge in outbox + launch when convenient. Mac is also writing C10 Fourier features today; if your one-Windows-GPU is occupied with C5, that's fine — Mac will run C10 on Taobo / alternate machine.
+
+---
+
 ## 2026-05-09 · Request 6: A1 reproducibility (seeds 2/3) + Strac×A1 combo
 
 **Re**: Request 5 outbox (`9094c1d`) — A1 smoke seed=1 has σ_xx LEFT-edge spike (raw 240–280) with **L/R ratio ~2700×**. Need two follow-ups before §4.2 can be locked.

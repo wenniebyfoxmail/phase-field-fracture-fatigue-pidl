@@ -195,6 +195,54 @@ class NeuralNet(nn.Module):
             # 输出层不使用激活函数
             return self.output_layer(x)
 
+
+# ★ 2026-05-11 C10: Fourier feature input wrapper for spectral-bias mitigation.
+#   Anchor: Tancik et al. 2020 NeurIPS; Xu et al. 2025 JCP review §4.2.
+#   γ(x) = [cos(2π B·x), sin(2π B·x)],  B ∈ R^{n_features × input_dim},  B_ij ~ N(0, σ²)
+#   Effective frequencies covered: up to ~σ·5 (Gaussian 5σ tail).
+#   For our problem: FEM peak width ~ h_FEM = 0.001 (toy units, domain [-0.5, 0.5]),
+#                    frequency 1/h ≈ 1000 → set σ so 2π·σ·5 ≈ 1000 → σ ≈ 30-100.
+#   Per Xu 2025 review, the canonical formulation; σ choice is the only hyperparameter.
+class FourierFeatureNet(nn.Module):
+    """Wrap NeuralNet with a frozen random Fourier feature input layer.
+
+    Input dim 2 → 2·n_features (after sin/cos expansion).
+    NN inner layers see the expanded representation; output unchanged.
+
+    Args:
+      input_dimension : int   spatial input dim (2 for SENT)
+      output_dimension : int  NN output channels (3 for u_x, u_y, α)
+      n_features : int        number of Fourier frequencies (after expansion = 2·n_features)
+      sigma : float           standard deviation of B; sets effective frequency band
+      ...                     other args forwarded to inner NeuralNet
+    """
+
+    def __init__(self, input_dimension, output_dimension, n_hidden_layers, neurons,
+                 activation, init_coeff=1.0, n_features=128, sigma=30.0, seed=0):
+        super().__init__()
+        self.input_dimension = input_dimension
+        self.output_dimension = output_dimension
+        self.n_features = n_features
+        self.sigma = sigma
+        # Sample B once at init, register as buffer (frozen, moves with .to(device))
+        g = torch.Generator()
+        g.manual_seed(seed)
+        B = sigma * torch.randn(n_features, input_dimension, generator=g)
+        self.register_buffer('B', B)
+        # Inner NN takes 2·n_features input
+        self.inner = NeuralNet(2 * n_features, output_dimension, n_hidden_layers,
+                               neurons, activation, init_coeff)
+        # Expose name_activation / trainable_activation for outer code that introspects
+        self.name_activation = self.inner.name_activation
+        self.trainable_activation = self.inner.trainable_activation
+
+    def forward(self, x):
+        # x: (N, input_dimension) e.g. (N, 2)
+        proj = 2.0 * torch.pi * (x @ self.B.T)            # (N, n_features)
+        feat = torch.cat([torch.cos(proj), torch.sin(proj)], dim=-1)  # (N, 2·n_features)
+        return self.inner(feat)
+
+
 # =============================================================================
 # 辅助函数
 # =============================================================================
