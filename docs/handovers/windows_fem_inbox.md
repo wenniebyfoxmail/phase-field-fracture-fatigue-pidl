@@ -27,6 +27,92 @@
 
 ## Active Requests
 
+## 2026-05-12 (late) · [ack fat_deg placement Q]: GO with (α), confirmed by Baktheer 2024 Eq. 38 + page-9 prose
+
+**Re**: Outbox `1e92899` Task G Day 2 math question — fat_deg placement on the d-PDE residual/tangent.
+
+### Verdict: (α) is correct — apply the AT2-convention fix
+
+You're right. Day-1 placement on `g''·H` is wrong; fix to AT2 convention (fat_deg on geometric `G_c`-side only, NOT on elastic `g'·H`). Mac cross-checked Baktheer 2024 (the source paper for our Wu PF-CZM + Carrara fatigue formulation) — definitive.
+
+### Evidence from Baktheer 2024 (`references/Baktheer_etal_2024_arXiv_PFCZM_Fatigue_QuasiBrittle.pdf`)
+
+**Eq. 38** (Sec. 2.6 "Extension to fatigue loading", page 8):
+
+```
+D(φ, ∇φ, t) = ∫₀ᵗ f(ᾱ(t)) · G_f · γ(φ, ∇φ) dt
+```
+
+`f(ᾱ)` multiplies `G_f · γ(φ, ∇φ)` — the **dissipation/crack-density** integrand. Not the elastic driving force ψ⁺ / Y.
+
+**Page 9, last paragraph (explicit prose statement)**:
+
+> "It should be noted that, to account for fatigue degradation, the fracture energy G_f in (Eq. 46) and (Eq. 47) is replaced by the fatigue-degraded quantity f(ᾱ(t)) · G_f."
+
+Eq. 46 is Baktheer's residual; Eq. 47 is his Jacobian. **Both** get `G_f → f(ᾱ)·G_f`. The `g'(φ)·H` term in both equations is untouched.
+
+Three independent references converge on this:
+1. **Carrara 2020** CMAME (foundational unified PF + fatigue)
+2. **Baktheer 2024** (Eq. 38 + explicit page-9 prose, the direct source paper for our PF-CZM+fatigue)
+3. **Existing `at2_history_fatigue.f90:100`** in our codebase (`fat_deg*Gc/ell` on NtN, `fat_deg*Gc*ell` on BtB; `2*H` term unchanged)
+
+### What needs to change in commit (α)
+
+**1. Fortran kernel `pf_czm_fatigue.f90:193-195`** — your proposed diff is correct:
+
+```fortran
+coef_NtN_K = -gpp_d * H_t + fat_deg * (Gc / (c_alpha * ell)) * alpha_pp
+coef_NtN_R = -gp_d  * H_t + fat_deg * (Gc / (c_alpha * ell)) * alpha_p
+coef_BtB   = fat_deg * 2.0d0 * Gc * ell / c_alpha
+```
+
+(Sign convention as fixed in `cc9624e` is kept — only fat_deg position moves.)
+
+**2. Also fix Mac's DESIGN.md** (`pf_czm_fatigue_DESIGN.md` lines ~50-53 strong form, ~75 r_d, ~80 K_dd) in the same commit. The wrong placement originated in Mac's spec; you implemented it faithfully. Updated equations:
+
+Strong form:
+```
+−g'(d)·H + f(ᾱ)·G_c·[α'(d)/(c_α·ℓ) − (2ℓ/c_α)·Δd] = 0
+```
+
+r_d:
+```
+r_d = N^T · [−g'(d_GP)·H + fat_deg·(Gc/c_α/ℓ)·α'(d_GP)] − fat_deg·B^T·(2·Gc·ℓ/c_α)·∇d_GP
+```
+
+K_dd:
+```
+K_dd = N^T · [−g''(d_GP)·H + fat_deg·(Gc/(c_α·ℓ))·α''(d_GP)] · N + fat_deg·B^T·(2·Gc·ℓ/c_α)·B
+```
+
+### Bonus findings from same Baktheer pages (FYI, not blocking)
+
+- **Eq. 37**: `H_min = f_t² / (2·E_0)` — matches our P2 sub-item exactly. Init `history_vars_old(:, :, 1) = f_t²/(2·E)` in MATLAB driver at cycle 0, or add an `H_min` floor inside the Fortran kernel. Either works. Open item; no action needed in (α) commit.
+- **Eq. 40**: Baktheer uses `f(ᾱ) = (2α_T/(ᾱ+α_T))²` — **p_fat = 2** (not 2.5). Our `args.p` is configurable, so this is a default-value note: PCC v3 INPUT driver should set `args.p = 2` when anchoring against Baktheer's published N_f ≈ 1,500–3,000 at S^max=0.75. **Do not conflate with `args.traction_p = 2.5`** — that one is Wu degradation order (Baktheer page 5 Eq. 15 sets `p = 2.5` for the rational-fraction g(d), separate variable).
+- **Eq. 41**: `α_T = G_f / (k_f · ℓ)` — matches our PCC α_T calibration (`finding_alpha_T_PCC_may10.md`).
+- **Eq. 42**: ᾱ accumulator `∫|α̇|dt` during loading, 0 during unloading — matches our Carrara `H_p(g(d)·Y − g(d_prev)·Y_prev)`.
+
+### Reply expectation
+
+GO with (α). Run the Fortran + DESIGN.md fix in one commit. No need to wait the 6h auto-default — explicit ack here.
+
+Suggested Day-2 ordering after (α):
+
+1. (α) fix Fortran kernel + DESIGN.md update (this commit)
+2. P4 finite-difference sanity checks (g/g'/g'' analytical-vs-FD; K_dd vs r_d tangent) — 1-element, <30 min
+3. MATLAB wrappers (`+equilibrium/pf_czm.m`, `+pf/pf_czm_fatigue.m`)
+4. `build_pf_czm_mex.m`, compile to `.mexw64`
+5. H_min init in MATLAB driver (Baktheer Eq. 37)
+6. Miehe-2010 SEN(B) brittle benchmark (target ±5% peak load vs Wu 2017 Fig 11)
+7. PCC v3 fatigue smoke at S^max=0.75 (anchor: Baktheer 1,500–3,000)
+
+### Files referenced
+
+- Baktheer 2024 PDF: `references/Baktheer_etal_2024_arXiv_PFCZM_Fatigue_QuasiBrittle.pdf` (pages 5–9 contain Eqs. 9–42 of interest)
+- Carrara 2020 CMAME (foundational): in `references/` for cross-check on derivation
+
+---
+
 ## 2026-05-12 · [review of Day 1 push `98fbbca`]: 5 items to address BEFORE Day 2 wrapper code
 
 **Re**: Outbox `ee18265` Task G Day 1 — Wu PF-CZM Fortran kernel skeletons (`pf_czm.f90` + `pf_czm_fatigue.f90` + `pf_czm_fatigue_DESIGN.md`).
