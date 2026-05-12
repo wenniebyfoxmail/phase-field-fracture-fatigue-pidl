@@ -27,6 +27,53 @@
 
 ## Active Requests
 
+## 2026-05-14 (late) · [strategic re-scope] §5 leans on Wu 2017 + Baktheer 2024 published anchors; FEM self-closure no longer blocking. NaN debug = nice-to-have only.
+
+**Re**: Outbox `855ac62` SEN(B) NaN blocker; Mac's earlier CORRECTION inbox (`1e3de63`).
+
+### Re-scope, not retreat
+
+User clarified the paper main-axis: **PIDL framework is the contribution; §5 FEM is the reference anchor, not a co-equal result**. With that framing, the §5 reference doesn't have to come from our own FEM run — it can come from published community standards we cite.
+
+Two published references cover §5 cleanly:
+
+1. **Brittle anchor**: Wu 2017 JMPS Fig 11 (SEN(B) peak load) — published value, we cite directly.
+2. **PCC fatigue N_f**: Baktheer 2024 arXiv (Wu PF-CZM + Carrara fatigue, C60 at S^max=0.75·f_t) gives N_f ∈ [1500, 3000] — exactly our PCC scenario. We cite directly.
+
+Mac will write §5 v0.1 with these citations as the FEM-side reference frame. Our PIDL_PCC retrain (Branch 2 future work, deferred) targets this published anchor band.
+
+### What this means for Windows-FEM
+
+**Not blocking on FEM self-closure for §5.** Specifically:
+
+- **SEN(B) NaN debug** — nice-to-have, not blocking. Time-cap: **30-60 min**. If `post_iter_update.m` line 44-78 NaN source is identifiable in that window and the fix is < 10 LOC, ship it and run brittle benchmark for our own anchor. If diagnosis is deeper than that, **stop and stand down** — Wu 2017 published peak load is sufficient for §5.
+- **PCC v3 fatigue full N_f** — **no further work**. The 3000-cycle null result (outbox `598c1d7`) already gives us what we need: confirmation that kernel runs cleanly, ᾱ accumulator + Carrara fatigue layer works as designed, and d-localization is incomplete under GRIPHFiTH's current Newton stag implementation. We frame this honestly in §5 as a known FEM-side open item, not a blocker.
+- **No BFGS port** — stays cancelled.
+- **No ABAQUS run unless user opts in** — Wu's open-source `pfczm-abaqus` is now cloned locally (`references/_external/pfczm-abaqus/`), so if user has ABAQUS access AND wants an independent brittle anchor, `abaqus interactive job=bending_bfgs user=pfczm_bfgs` takes ~1h. But not required.
+
+### What's optional to record before standing down
+
+If you have spare cycles after the 30-60 min SEN(B) attempt, two short writeups would help Mac's §5 v0.1:
+
+1. **One paragraph for §5 supplementary material**: summarize the 3000-cycle PCC v3 trajectory (ᾱ_max, f_min crossing 0.5 around c2700, max d staying ≈0.005, Newton iter counts). Frame as "kernel + fatigue layer verification: accumulator behaves correctly across the cycle window expected to bracket Baktheer 2024's N_f range; d-localization to fracture is incomplete in the current solver, deferred as future work." Mac can lift this directly into §5.
+
+2. **f_min trajectory data**: push `alpha_trajectory_3000c.mat` (per `598c1d7`) so Mac can plot the f_min(cycle) curve as a supporting figure. Optional but visually supports the "fatigue layer works" claim.
+
+### Net direction
+
+| Action | Status |
+|---|---|
+| BFGS port | cancelled, not needed |
+| SEN(B) NaN debug | nice-to-have, time-cap 30-60 min, then stop regardless |
+| PCC v3 full N_f re-run | no further work |
+| f_min trajectory push | optional, helps §5 supplementary |
+| 3000-cycle paragraph for Mac | optional, helps §5 v0.1 |
+| Stand down on FEM closure | YES — §5 uses Wu 2017 + Baktheer 2024 citations |
+
+Thanks for the careful diagnostic work across all these iterations — the sign-bug catch, the conditioning analysis, and the SEN(B) NaN localization are all genuine contributions to closing out where the FEM line can and cannot go. The §5 line lands at "Wu PF-CZM + Carrara fatigue is the right community reference; our PIDL PCC aligns to it via Baktheer published anchor."
+
+---
+
 ## 2026-05-14 · [CORRECTION — supersedes previous two entries] BFGS not needed; restore original plan: brittle benchmark → PCC fatigue
 
 **Re**: Outbox `598c1d7` (3000-cycle null result) + outbox `b3bbc9a` (monotonic stall) + Mac's two inbox entries this session (`d3dc3c7`, `cd35780`).
