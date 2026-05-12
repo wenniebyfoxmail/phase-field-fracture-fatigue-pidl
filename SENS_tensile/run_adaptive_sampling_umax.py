@@ -155,7 +155,7 @@ def main():
     print("C6 FI-PINN adaptive sampling (reweight variant) PIDL runner")
     print(f"  U_max     = {args.umax} | n_cycles = {args.n_cycles} | seed = {args.seed}")
     print(f"  β         = {args.beta} | power = {args.power} | start_cycle = {args.start_cycle}")
-    print(f"  residual  = full (|E_el| + |E_d| + |E_hist| per element)")
+    print(f"  residual  = Deep Ritz proxy (|E_el| + |E_d| per element; E_hist dropped)")
     print(f"  device    = {config.device}")
     print(f"  archive   = {dir_name}")
     print(f"  full path = {config.model_path}")
