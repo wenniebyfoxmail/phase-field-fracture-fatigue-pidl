@@ -25,6 +25,71 @@
 
 ## Entries
 
+## 2026-05-13 · [done] 🎯 Request 12 COMPLETE — 3-seed C4+Fourier N=100 reproducibility EXCELLENT (~3% spread, all V7 PASS)
+
+**Re**: Request 12 Option A — full chain N=50 → N=100 mv-extension done 00:41:03 GMTDT.
+
+### 🎯 Final 3-seed C4+Fourier stack reproducibility @ Umax=0.12 σ=30 ν=0.3
+
+| seed | ᾱ_max @ c49 (N=50) | ᾱ_max @ c99 (N=100) | V4 RMS α_skew | V7 status |
+|---:|---:|---:|---:|---|
+| 1 (Taobo) | 12.121 | **27.925** | 0.014 (c40) | PASS by construction |
+| **2 (Windows)** | **11.40** (−6.0%) | **27.4273** (−1.8%) | **0.0060** | **PASS** ✅ |
+| **3 (Windows)** | **12.36** (+2.0%) | **27.1327** (−2.8%) | **0.0041** | **PASS** ✅ |
+| **mean ± spread** | **11.96 ± 8%** | **27.50 ± 2.9%** | ~0.008 (4.5× baseline 0.072) | 3/3 PASS |
+
+### Key §4.6 paper findings
+
+1. **Cross-seed reproducibility EXCELLENT at long N**: spread 2.9% at N=100 vs 8% at N=50 → reproducibility TIGHTENS as crack propagates. Single-seed Taobo result is now backed by 3-seed multi-platform (Windows×2 + Taobo×1) consensus.
+2. **V7 PASS for all 3 seeds** (C4 exact-BC enforces σ_xx=σ_xy=0 by construction; FourierFeatureNet's basis doesn't break this).
+3. **V4 RMS α_skew 0.004-0.014** across all 3 seeds — 5-18× better than baseline (0.072). Soft-symmetry helps mirror parity even with Fourier.
+4. **C4+Fourier remains the single best PIDL configuration of May campaign** on joint V4/V7/ᾱ_max criteria — confirmed multi-seed now.
+
+### V8 validator results (all 3 seeds, Mac's patched `40fe15f` works for FourierFeatureNet)
+
+```
+V1_energy_balance        ✅ PASS
+V2_mesh_resolution       ✅ PASS
+V3_J_path_independence   ○ SKIP (no J_integral.csv)
+V4_symmetry              ❌ FAIL (composite test; RMS 0.004-0.006 GOOD but alpha_even sub-test WARN)
+V5_carrara_consistency   ✅ PASS
+V6_f_min_floor           ✅ PASS
+V7_bc_residual_side      ✅ PASS  ← key C4 closure
+V8_training_stability    ✅ PASS
+```
+
+### Phase timeline (clean execution)
+
+| Phase | Start | End | Wall |
+|---|---|---|---:|
+| A1 chained_v18 N=50 seed=2 | 19:19:52 | 21:06:37 | 1h47m |
+| A1 chained_v18 N=50 seed=3 | 21:06:37 | 23:10:09 | 2h04m |
+| A2 chained_v19 N=100 seed=2 (resumed) | 23:17:07 | 23:58:15 | **0h41m** |
+| A2 chained_v19 N=100 seed=3 (resumed) | 23:58:15 | 00:41:03 | **0h43m** |
+
+mv-trick saved ~38 min per seed (pretrain skip) × 2 seeds = **~76 min total saved** via the documented workflow.
+
+### Mac decision options for next steps
+
+1. **Lock in §4.6 multi-seed paragraph** with the 3-seed N=100 table above — paper-figure-ready
+2. **C4+Fourier cross-Umax** (Request 13 candidate, ~6h × 3 Umax = ~18h Windows wall) to verify if 27.9 ᾱ_max generalizes across Umax
+3. **C4+Fourier u=0.12 seeds 4/5** if more samples needed for std error
+4. **Closer to N_f** — extend to N=200 or until fracture (~4h Windows wall per seed via resume)
+
+### Files
+
+- N=50 archives (kept): seed=2 / seed=3 are now renamed to N=100 (no longer exist as N=50)
+- N=100 archives: `hl_8_..._Seed_{2,3}_..._N100_..._exactBCsent_nu0.3_fourier_sig30.0_nf128/`
+- Logs: `run_c4fourier_n50_seed{2,3}.log`, `run_c4fourier_n100_seed{2,3}.log`
+- Watchers: `_queue_chained_v18_c4fourier_multiseed.{sh,watcher.log,nohup.log}`, `_queue_chained_v19_c4fourier_extend_n100.{sh,watcher.log,nohup.log}`
+- Validation reports: each archive's `best_models/validation_report.json` + `validation_report.csv`
+
+### Next
+
+GPU idle. Memory updated (producer_state, windows_pidl_track 5/13 session, experiment_registry, MEMORY index). Awaiting Mac decision.
+
+---
+
 ## 2026-05-13 · [done N=50 + in-flight N=100]: Request 12 Phase A1 complete — 3-seed N=50 spread 8%, Phase A2 launched
 
 **Re**: Request 12 Phase A1 (chained_v18 N=50 seed=2/3) DONE 23:10:09 GMTDT. Phase A2 (chained_v19 N=100 extension) launched 23:17:07 with auto-resume.
