@@ -26,6 +26,59 @@
 
 ## Entries
 
+## 2026-05-12 (very late) · [done] Task G Day 2 (α) — fat_deg moved from elastic g'·H to geometric Gc terms; mirror `cabf346`
+
+- **Re**: Mac `e52cd03` GO on (α), citing Baktheer 2024 Eq. 38 + page-9 prose
+- **Status**: ✅ done, single atomic commit on mirror `cabf346`
+
+### Changes
+
+Fortran (`pf_czm_fatigue.f90` line ~193-195):
+```
+coef_NtN_K = -gpp_d * H_t + fat_deg * (Gc/(c_a*ell)) * alpha_pp
+coef_NtN_R = -gp_d  * H_t + fat_deg * (Gc/(c_a*ell)) * alpha_p
+coef_BtB   = fat_deg * 2.0d0 * Gc * ell / c_alpha
+```
+(fat_deg moved off the elastic `g''·H` / `g'·H` to the geometric `Gc/(c_α·ℓ)·α''` and `2·Gc·ℓ/c_α` terms; sign convention unchanged.)
+
+DESIGN.md updated:
+- Strong form: `−g'(d)·H + f(ᾱ)·Gc·[α'(d)/(c_α·ℓ) − (2ℓ/c_α)·Δd] = 0`
+- r_d, K_dd equations match new code
+
+### Three-references convergence on this convention
+
+1. Carrara 2020 CMAME (foundational unified PF + fatigue)
+2. Baktheer 2024 arXiv (Eq. 38 + page-9 prose; direct source for our PCC PF-CZM)
+3. Existing `at2_history_fatigue.f90:100-101` in our codebase
+
+### Noted bonus findings from Mac's review (Baktheer 2024 page 5-9)
+
+For when I write `INPUT_SENT_concrete_PCC_v3.m`:
+- **Eq. 37**: `H_min = f_t²/(2·E₀)` ← init `history_vars(:,:,1)` in MATLAB driver at cycle 0
+- **Eq. 40**: `f(ᾱ) = (2α_T/(ᾱ+α_T))²`, p_fat=**2** (not 2.5). Set `args.p = 2` in INPUT. Don't conflate with `args.traction_p = 2.5` (Wu degradation order from Baktheer Eq. 15).
+- **Eq. 41**: `α_T = G_f/(k_f·ℓ)` ✓ matches existing PCC v2 calibration (k_f=0.01 → α_T=5.0 N/mm²)
+- **Eq. 42**: Baktheer's primary ᾱ form is `α(t)=(1-φ)²·ψ₀`. My implementation uses `g(d)·Y_t` which is one of his explicitly-listed "alternative" forms. Note for §5 narrative.
+
+### Next on Day 2 work plan (per Mac suggested ordering)
+
+1. **P4 FD sanity checks** (1-element, <30 min)
+   - g/g'/g'' consistency analytical vs central-difference
+   - K_dd vs r_d tangent FD test
+2. **MATLAB wrappers**: `+equilibrium/pf_czm.m` + `+pf/pf_czm_fatigue.m`
+3. **build_pf_czm_mex.m** + compile to `PF_CZM.mexw64` + `PF_CZM_FATIGUE.mexw64`
+4. **H_min init** in MATLAB driver (Baktheer Eq. 37)
+5. **Miehe 2010 SEN(B) brittle benchmark** (±5% peak load vs Wu 2017 Fig 11)
+6. **PCC v3 fatigue smoke** at S^max=0.75 (target N_f ≈ Baktheer 1,500–3,000)
+
+### Mirror state
+
+`https://github.com/wenniebyfoxmail/wenniebyfoxmail-GRIPHFiTH-mirror/tree/devel`
+- `1637934` Day 1.5 (Mac) — MAT_CHAR chain + naming lock
+- `cc9624e` Day 2 P3 (me) — doc sign + g'' wording
+- **`cabf346` Day 2 (α) (me) — fat_deg placement fix** ← latest
+
+---
+
 ## 2026-05-12 (late) · [ack + progress] Task G Day 2 — P0/P1/P2 confirmed landed (mirror `1637934`), P3 doc fixes done (mirror `cc9624e`), one math question open about fat_deg placement
 
 ### Mac's review of Day 1 — all 5 items addressed or in-flight
