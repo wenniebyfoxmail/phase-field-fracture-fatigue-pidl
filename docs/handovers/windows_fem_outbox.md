@@ -26,6 +26,102 @@
 
 ## Entries
 
+## 2026-05-13 (very late) · [progress + blocker] Task G Day 2 — mex wrappers built + framework wired + smoke runs; Newton stall recovers Wu non-PD-local exactly as warned
+
+### What's working
+
+| Item | Status | Where |
+|---|---|---|
+| g/g'/g'' FD sanity check | ✅ PASS (g' rel err 1.3e-7, g'' rel err 3.7e-8) | mirror `a1209dd` |
+| g'' formula bug fix (1 factor of w short) | ✅ caught + fixed by P4 FD check | same |
+| MAT_CHAR fat_deg→geometric ((α) fix) | ✅ done | mirror `cabf346` |
+| `pf_czm.f90` mex wrapper (110 lines, AMOR pattern) | ✅ done | mirror `f88722a` |
+| `pf_czm_HISTORY_fatigue.f90` mex wrapper (renamed to match framework `<diss_fct>_<irrev>_FATIGUE`) | ✅ done | same |
+| `build_pf_czm_mex.m` (model after `build_miehe_mex.m`, +`system_factors.f90`) | ✅ done | same |
+| **Both binaries compiled** `PF_CZM.mexw64` (111 KB) + `PF_CZM_HISTORY_FATIGUE.mexw64` | ✅ done (Intel oneAPI 2025 + MSVC 2022) | locally on Windows-FEM |
+| Framework `diss_fct` enum extended to allow `PF_CZM` | ✅ done | `System.m` + `+crack/params.m` + `material_characteristic.m` |
+| `material_characteristic.m` branch for `diss_fct='PF_CZM'` (zeros penalty params) | ✅ done | same |
+| Smoke INPUT (`INPUT_SENT_pf_czm_smoke.m`) + driver with H_min init per Baktheer Eq. 37 | ✅ done | same |
+| Smoke run reaches kernel + executes assembly | ✅ done (no segfault, no missing-symbol, etc.) | log preserved |
+
+### What's blocked
+
+**Vanilla Newton stalls inside the d-Newton loop with `Matrix is indefinite or singular to working precision` after a few iterations, NaN out at iter ~250.**
+
+This is **exactly the Wu non-PD-local property you predicted in P3** (Wu/Huang/Nguyen 2019 CMAME 112704). At d=0 with my Carrara/Miehe-style params (E=210, G_f=2.7e-3, ℓ=0.004, f_t=2, traction_p=2.5):
+
+```
+g(0) = 1
+g'(0) = -45.12
+g''(0) = +3830   <-- big positive (verified by FD check)
+α'(0) = +2
+α''(0) = -2
+H = H_min = f_t²/(2E) = 9.52e-3
+
+coef_NtN_K at d=0 = -g''·H + fat_deg·(Gc/(c_α·ℓ))·α''
+                  = -3830 × 9.52e-3 + 1·(0.0027/(π·0.004))·(-2)
+                  = -36.46 − 0.43
+                  = -36.89        ← NEGATIVE
+
+coef_BtB = fat_deg · 2·Gc·ℓ/c_α = 6.88e-6       ← positive but TINY
+```
+
+So K_dd's NtN term dominates with negative coefficient; Newton can't invert. **Math is consistent with Wu (verified vs `pfczm_bfgs.for`), just unsolvable with vanilla Newton in GRIPHFiTH.**
+
+### What's next (decision point for you)
+
+Two reasonable paths:
+
+**(I) Port Wu's BFGS monolithic solver** (`pfczm_bfgs.for`)
+- New file: `Sources/+phase_field/+mex/Modules/fem/solver/bfgs.f90`
+- Wrapper hook: extend `solve_fatigue_fracture.m` to dispatch BFGS when `diss_fct='PF_CZM'`
+- ~200-300 lines Fortran + ~50 lines MATLAB
+- Time: 1-2 days of careful work + benchmark
+- Lowest risk; matches Wu's official reference
+
+**(II) Augmented-Lagrangian wrap on existing Newton**
+- Add ε·I regularization to K_dd when it tests indefinite (locally), iterate with diminishing ε
+- ~50 lines MATLAB on top of existing `newton_raphson.m`
+- May not converge or be slow for Wu in damage region
+- Faster to try; lower-quality if Newton oscillates persistently
+
+**(III) Stage-by-stage damping at d-Newton level**
+- Use Wu's recommendation: cap Newton step magnitude, force `δd ≤ 0.05` per iter
+- Add line-search backtracking on residual norm with very aggressive cut
+- Easier still, ~20 lines in `newton_raphson.m`
+- May convert NaN-stall into slow-but-stable convergence
+
+**My recommendation: (III) first** (1-2h work, easy to revert), see if it gives convergence at all. If still stalls, escalate to (I). (II) probably not worth the in-between effort.
+
+### Math invariants (just compiled & sanity-checked)
+
+- α(d) = 2d − d², α''(d) = −2, c_α = π ✓
+- g(d) = (1-d)^p / [(1-d)^p + a₁d + a₁a₂d²], p=2.5 ✓
+- Carrara fatigue: Δᾱ = H_p(g(d)·Y − g(d_prev)·Y_prev), fat_deg = min(1, (2α_T/(ᾱ+α_T))^p_fat) ✓
+- fat_deg on geometric only (Baktheer Eq. 38) ✓
+- a₁ auto-derived in INPUT: 4·E·G_f / (π·ℓ·f_t²) = 45.12 ✓
+- H_min init in driver: f_t²/(2E) = 9.52e-3 ✓
+
+### Mirror commits (all `devel`)
+
+| Commit | What |
+|---|---|
+| `98fbbca` Day 1 | Fortran kernel skeletons |
+| `1637934` Day 1.5 (Mac) | MAT_CHAR chain |
+| `cc9624e` Day 2 P3 | doc fixes |
+| `cabf346` Day 2 (α) | fat_deg → geometric |
+| `a1209dd` Day 2 P4 | g'' formula fix + FD test |
+| `3cab6c8` | mex wrappers (initial naming) |
+| **`f88722a` Day 2** | wrapper rename + enum extensions + smoke INPUT |
+
+### Standing by for your call on (I)/(II)/(III)
+
+If you want me to just take (III) and report back in a few hours, ack with one word. If (I), give the green light + I'll start the BFGS port. If (II), same.
+
+If you want me to do something completely different (e.g. start hard at SEN(B) and ignore Wu non-PD for now since we're at compile-and-run smoke, not yet a benchmark), say so.
+
+---
+
 ## 2026-05-12 (very late) · [done] Task G Day 2 (α) — fat_deg moved from elastic g'·H to geometric Gc terms; mirror `cabf346`
 
 - **Re**: Mac `e52cd03` GO on (α), citing Baktheer 2024 Eq. 38 + page-9 prose
