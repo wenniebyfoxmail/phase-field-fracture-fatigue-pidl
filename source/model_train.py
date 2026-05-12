@@ -40,6 +40,9 @@ from fatigue_history import (update_fatigue_history, compute_fatigue_degrad,
 # ★ Direction 4: Williams ψ⁺ 重心估计裂尖坐标（可选，仅在 williams_enabled=True 时调用）
 from williams_features import compute_x_tip_psi
 
+# ★ 2026-05-13 Branch 2 C6: FI-PINN adaptive sampling via full-residual reweight
+from adaptive_sampling import compute_adaptive_weights
+
 
 # ── α 场快照辅助函数 ────────────────────────────────────────────────────────
 def _save_alpha_snapshot(inp, alpha, T_conn, cycle, snapshot_dir):
@@ -121,7 +124,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
           optimizer_dict, training_dict, coarse_mesh_file, fine_mesh_file,
           device, trainedModel_path, intermediateModel_path, writer,
           fatigue_dict=None,                         # ★ 新增参数
-          mit8_dict=None):                           # ★ MIT-8 supervised warmup
+          mit8_dict=None,                            # ★ MIT-8 supervised warmup
+          adaptive_sampling_dict=None):              # ★ 2026-05-13 Branch 2 C6
     '''
     Neural network training: pretraining with a coarser mesh in the first
     stage before the main training proceeds.
@@ -282,6 +286,23 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
               f"从 cycle {_tip_w_cfg.get('start_cycle',1)} 开始")
     else:
         _tip_w_cfg = None   # 统一置 None，后续只需判断 if _tip_w_cfg
+
+    # ★ 2026-05-13 Branch 2 C6: FI-PINN adaptive sampling (reweight variant)
+    # Mutually exclusive with tip_weight_cfg (both write into crack_tip_weights).
+    _adapt_cfg = adaptive_sampling_dict if (
+        adaptive_sampling_dict and adaptive_sampling_dict.get('enable', False)
+    ) else None
+    if _adapt_cfg is not None and _tip_w_cfg is not None:
+        raise ValueError(
+            "Mutual-exclusion violation: fatigue_dict['tip_weight_cfg'] and "
+            "adaptive_sampling_dict cannot both be enabled (both write into "
+            "crack_tip_weights). Disable one in config or the runner."
+        )
+    if _adapt_cfg is not None:
+        print(f"[AdaptiveSampling] C6 FI-PINN reweight enabled: "
+              f"β={_adapt_cfg.get('beta',2.0)}, p={_adapt_cfg.get('power',1.0)}, "
+              f"residual={_adapt_cfg.get('residual_source','full')}, "
+              f"从 cycle {_adapt_cfg.get('start_cycle',1)} 开始")
 
     # -------------------------------------------------------------------------
     # ★ 检测最新 step checkpoint，实现断点续训
@@ -648,6 +669,34 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     ).detach()
                 else:
                     crack_tip_weights = None   # 还未到启用圈数，本圈均匀
+
+            # ★ 2026-05-13 Branch 2 C6: full-residual adaptive reweight
+            # Same per-cycle timing as Direction 3: compute weights from end-of-cycle
+            # state, applied in next cycle's fit() via crack_tip_weights.
+            # Difference from Direction 3: residual source is full PDE proxy
+            # (|E_el_e| + |E_d_e| + |E_hist_e|) not just ψ⁺_e.
+            if _adapt_cfg is not None:
+                _as_beta        = _adapt_cfg.get('beta', 2.0)
+                _as_power       = _adapt_cfg.get('power', 1.0)
+                _as_start_cycle = _adapt_cfg.get('start_cycle', 1)
+                _as_source      = _adapt_cfg.get('residual_source', 'full')
+                if j >= _as_start_cycle:
+                    # Reuse the cycle-end forward pass already computed above (u_el, v_el, alpha_el)
+                    # via field_comp.fieldCalculation(inp) — but that happens AFTER this block in
+                    # the current control flow. To keep this block before the existing E_el log,
+                    # do an explicit no-grad forward here. Cost is one extra forward per cycle
+                    # (negligible vs the in-cycle training cost).
+                    with torch.no_grad():
+                        _u_as, _v_as, _alpha_as = field_comp.fieldCalculation(inp)
+                    crack_tip_weights = compute_adaptive_weights(
+                        inp, _u_as, _v_as, _alpha_as, hist_alpha,
+                        matprop, pffmodel, area_T, T_conn=T_conn,
+                        f_fatigue=f_fatigue,
+                        beta=_as_beta, power=_as_power,
+                        residual_source=_as_source,
+                    )
+                else:
+                    crack_tip_weights = None   # warmup cycles unweighted
 
             # ★ Direction 5: 记录 c_singular 当前值（每圈训练完毕后）
             if _ansatz_enabled and field_comp.c_singular is not None:

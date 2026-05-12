@@ -57,4 +57,5 @@ if __name__ == "__main__":
     train(field_comp, active_disp, pffmodel, matprop, crack_dict, numr_dict,
           optimizer_dict, training_dict, coarse_mesh_file, fine_mesh_file,
           device, trainedModel_path, intermediateModel_path, writer,
-          fatigue_dict=fatigue_dict)   # ★ 传入疲劳字典
+          fatigue_dict=fatigue_dict,                         # ★ 传入疲劳字典
+          adaptive_sampling_dict=adaptive_sampling_dict)     # ★ 2026-05-13 Branch 2 C6

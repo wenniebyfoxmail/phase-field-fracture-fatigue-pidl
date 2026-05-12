@@ -251,6 +251,36 @@ fourier_dict = {
 }
 
 
+# ★ 2026-05-13 Branch 2 C6: FI-PINN adaptive sampling via residual-driven loss reweight
+# ────────────────────────────────────────────────────────────────────────────────────
+# Background: PIDL ᾱ_max trails FEM 10-100× at crack tip. Tested mechanisms (Apr-May):
+#   - Direction 3 (tip_weight_cfg above): weight by ψ⁺_e alone — NEGATIVE for N_f
+#   - Direction 5 (ansatz_dict): single-mode XFEM enrichment — modest
+#   - C10 (fourier_dict): spectral lift σ=30 — partial positive (2.4× propagation)
+# C6 hypothesis (Gao et al. 2023 FI-PINN, SIAM SISC): uniform collocation density
+# under-weights the tip ROI because the tip is geometrically small (~5% of domain)
+# yet physically dominant. Reweight per-element loss by full PDE-residual proxy
+# (not ψ⁺ alone) so the NN is forced to fit the tip zone tighter.
+#
+# Weight formula (mirrors tip_weight_cfg, different residual source):
+#   r_e   = |E_el_e| + |E_d_e| + |E_hist_e|        ← per-element residual proxy
+#                                                   (from compute_energy_per_elem)
+#   w_e   = 1 + β · (r_e / r_mean)^p               ← element loss weight ≥ 1
+# Reweight is computed at end of cycle j from current α field, applied in cycle j+1's
+# fit() via the existing crack_tip_weights plumbing.
+#
+# Mutual exclusion: must not be enabled simultaneously with fatigue_dict.tip_weight_cfg
+# (both use crack_tip_weights; would double-count).
+adaptive_sampling_dict = {
+    "enable"      : False,       # default off; runner sets True
+    "beta"        : 2.0,         # weight magnitude; β=0 → uniform; β=1-5 typical
+    "power"       : 1.0,         # residual-ratio exponent; 1.0=linear, 2.0=quadratic emphasis
+    "start_cycle" : 1,           # which cycle to start reweighting (0=immediately after pretrain)
+    "residual_source": "full",   # "full" = E_el+E_d+E_hist (C6 FI-PINN); reserved for future
+                                 #   variants like "elastic_only" (would degenerate to Direction 3)
+}
+
+
 # Domain definition
 '''
 domain_extrema: tensor([[x_min, x_max], [y_min, y_max]])
