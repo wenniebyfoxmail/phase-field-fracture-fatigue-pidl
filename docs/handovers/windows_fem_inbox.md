@@ -27,6 +27,48 @@
 
 ## Active Requests
 
+## 2026-05-12 · [scheduling note]: drop day-by-day calendar for Task G — continuous work, ship when done
+
+**Re**: Task G Week-1 plan ack (outbox `0bae012`), specifically the 6-day calendar (Day 1 = read miehe/amor, Day 2 = implement kernel, ...).
+
+### What I want changed
+
+Skip the strict day-by-day schedule. Solo dev with no external deadline doesn't benefit from calendar structure — just work in priority order, ship deliverables when each is done. The "ETA 2026-05-18" framing is fine as a rough estimate; **don't treat it as a hard deadline that gates the next step**.
+
+If you finish kernel implementation on Day 3 instead of Day 5, immediately move to brittle benchmark. If a step takes 2× longer than estimated, that's fine — no blocking calendar.
+
+### Order of Task G deliverables (priority, not date)
+
+1. `pf_czm_fatigue.f90` + equilibrium-side decision (new file vs amor.f90 flag) — start now if idle
+2. Compile to mexw64, verify smoke build works
+3. Brittle Miehe-2010 SEN(B) benchmark — verify peak load within ±5% of Wu 2017
+4. PCC fatigue smoke at S^max=0.75 using `SENT_pcc_concrete_v2_quad.inp`
+5. Cross-amplitude S-N (3 points at S^max ∈ {0.65, 0.75, 0.85})
+
+Ship each deliverable to outbox as it completes. Mac side will pick up data and respond async; no need to batch.
+
+### Secondary tasks if you hit a blocker on Task G (do NOT do these if Task G is unblocked)
+
+If you genuinely can't make progress on Task G (waiting on something), pick from this list rather than idling:
+
+| Task | Value |
+|---|---|
+| Sync FEM-4 a(N) CSVs (u=0.08/0.10/0.11/0.12/0.13) to OneDrive `PIDL result/` if not already there | Mac figs F4/F5 currently rely on `~/Downloads/_pidl_handoff_v2/post_process/SENT_PIDL_*_timeseries.csv`; an OneDrive mirror would unblock Mac F10 (α-field side-by-side) |
+| Sync FEM-7 / FEM-8 .mat files to OneDrive | Same: Mac F10 needs `u12_cycle_0082_FEM7.mat` reliably |
+| `docs/FEM.md` update with Task D + E + F full numbers (per outbox `25975f5`) | One-line update — paper §FEM source of truth |
+| Castillon 2025 IJF SEN(B) benchmark run (mentioned in old May-5 outbox as `INPUT_SENT_castillon.m`, est 6-12h GPU) | LOW priority — only if Task G blocks |
+| Existing `claude/exp/alpha3-xfem-jump` branch state — what's on it that didn't merge to main? | Audit, no action — just curious if anything paper-grade is on that branch |
+
+### Why I'm sending this
+
+Mac is in heavy work mode (C4 implementation + V7 fix + memory updates + PIDL_Taobo dispatches all today). Don't want Windows-FEM idle waiting for Day-N calendar tick when there's substantial Task G work to do. **Just go.**
+
+### Standby
+
+No reply needed unless something blocks Task G — in that case ack the blocker in outbox and pick up a secondary item.
+
+---
+
 ## 2026-05-11 (late) · [withdraw 0.85 + GO Task G] PCC 100k VHCF verdict reframes §5 — Wu PF-CZM is the only real reference
 
 **Re**: outbox `9f6122d` PCC 100k NO_PENETRATION verdict + Task G Week-1 plan question.
