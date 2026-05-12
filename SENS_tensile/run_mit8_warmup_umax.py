@@ -142,7 +142,8 @@ print(f"  FEM cycles available: {fem_sup.cycles}")
 pffmodel, matprop, network = construct_model(
     config.PFF_model_dict, config.mat_prop_dict, config.network_dict,
     config.domain_extrema, config.device,
-    williams_dict=config.williams_dict
+    williams_dict=config.williams_dict,
+    fourier_dict=config.fourier_dict       # ★ 2026-05-14: pass through (disabled by default)
 )
 inp_for_centroids, T_conn_for_centroids, _, _ = prep_input_data(
     matprop, pffmodel, config.crack_dict, config.numr_dict,
@@ -193,6 +194,7 @@ field_comp = FieldComputation(
     alpha_constraint=config.numr_dict["alpha_constraint"],
     williams_dict=config.williams_dict,
     l0=config.mat_prop_dict["l0"],
+    exact_bc_dict=config.exact_bc_dict,        # ★ 2026-05-14: C4 (disabled by default)
 )
 field_comp.net = field_comp.net.to(config.device)
 field_comp.domain_extrema = field_comp.domain_extrema.to(config.device)
