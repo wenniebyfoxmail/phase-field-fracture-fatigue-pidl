@@ -27,6 +27,47 @@
 
 ## Active Requests
 
+## 2026-05-13 · Request 11: Extend C4+Fourier stack archive N=50 → N=100 via resume
+
+**Re**: Taobo C4+Fourier σ=30 N=50 seed=1 finished with ᾱ_max @ c49 = 12.121, vs Fourier-alone σ=30 N=50 = 14.26. Stack appears below Fourier alone at N=50 but per-cycle slope is identical (~0.29/cycle). Need N=100 to know if the gap closes (or widens) by N_f-region.
+
+### Source archive (on Taobo, currently sitting in /mnt/data2/drtao/projects/phase-field-pidl/SENS_tensile/)
+
+```
+hl_8_..._Seed_1_..._N50_R0.0_Umax0.12_exactBCsent_nu0.3_fourier_sig30.0_nf128/
+```
+
+### Task
+
+Rsync this archive from Taobo to your Windows machine (or run the extension on Taobo if you prefer — your call; Taobo has 5/8 GPUs running other things, so GPU contention is moderate). Then extend N=50 → N=100 via the archive-rename auto-resume trick you documented in outbox `68838ca`:
+
+```bash
+mv hl_8_..._N50_..._Umax0.12_exactBCsent_nu0.3_fourier_sig30.0_nf128 \
+   hl_8_..._N100_..._Umax0.12_exactBCsent_nu0.3_fourier_sig30.0_nf128
+python run_exact_bc_fourier_umax.py 0.12 --n-cycles 100 --seed 1 --sigma 30 --nu 0.3
+```
+
+The combo runner `run_exact_bc_fourier_umax.py` was added by Mac in commit `0e7a86d`. It should detect the existing N=50 checkpoint via the same resume guard as `run_fourier_features_umax.py`.
+
+### Why this priority
+
+Three data points then become directly comparable at N≈100:
+- **C4 alone** N=100: ᾱ_max=23.05 ✓ have
+- **Fourier alone** σ=30 N≈100: extrapolated ≈28.8 ← also worth extending in a separate request if GPU/wall allows
+- **C4+Fourier stack** N=100: extrapolated ≈26.6 from N=50 trajectory ← THIS REQUEST
+
+If the stack reaches ≥30 by N=100 → mitigations DO compound at long N (the original C4+Fourier hypothesis was 40+). If stack plateaus at ≤25 → architectural ceiling is C4's, additional spectral content doesn't help beyond N=50. Either is a §4.6/§4.7 paper finding.
+
+### Report when done
+
+- ᾱ_max @ N_f (and N_f itself) OR ᾱ_max @ c99 if no fracture
+- Full trajectory (cycle vs ᾱ_max)
+- V4 / V7 / V3 if you're set up to run them; Mac just pushed a validator patch (`40fe15f`) that handles Fourier archives, so the regular `validate_pidl_archive.py` should now work on this archive too — try it instead of the workaround script.
+
+### Priority: **medium** — gates Branch 2 vs single-method-stack interpretation. Mac runs C6 multi-seed in parallel (Taobo GPU 5/6); both lanes feed §4.6.
+
+---
+
 ## 2026-05-12 (very late) · Request 10: σ sub-sweep around σ=30 sweet spot — N=10 smoke @ σ ∈ {20, 40}
 
 **Re**: Outbox `68838ca` Request 8 N=50 σ=30 STRONG POSITIVE + Request 9 Part A V7 flag-back.
