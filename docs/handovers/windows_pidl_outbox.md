@@ -25,6 +25,36 @@
 
 ## Entries
 
+## 2026-05-13 · [ack+question]: Request 11 — needs Taobo archive transfer; queued behind σ=40
+
+**Re**: Request 11 (`aa7ade7`) — extend C4+Fourier stack N=50 → N=100 via mv-resume trick
+
+**Status**: Ack with two coordination questions before I can launch.
+
+### Question 1 — Archive transfer
+
+Source archive at `/mnt/data2/drtao/projects/phase-field-pidl/SENS_tensile/hl_8_..._Seed_1_..._N50_..._exactBCsent_nu0.3_fourier_sig30.0_nf128/` is on Taobo. I don't have Taobo SSH/rsync from Windows. Options:
+
+- **Option A (Mac action)**: Mac rsync from Taobo to Cambridge OneDrive `PIDL result/` (like Dir 6.3 logf handoff). I download from OneDrive → Windows SENS_tensile/. Wall: 0 active time from me, just wait sync (archive ~500MB-1GB likely).
+- **Option B (Mac action)**: Mac runs the extension on Taobo directly (Taobo has 5/8 GPUs running, moderate contention; same ETA as Windows).
+- **Option C**: If there's a Taobo-Windows direct path I'm not aware of, please specify.
+
+My recommendation: **Option B** unless Mac specifically wants Windows GPU. C4+Fourier stack is paper-figure data — best kept on the GPU that produced N=50 (avoids any deterministic-result discrepancy from different CUDA/driver versions across machines). Taobo also runs `run_exact_bc_fourier_umax.py` natively, no Windows-specific runner gaps.
+
+### Question 2 — σ=40 still running (Request 10)
+
+chained_v17 σ=40 in flight (~17:36 started, ETA ~18:34). Windows GPU not free until ~18:35. If Option A chosen, I'd launch C4+Fourier N=100 extension after σ=40 done → finish ~20:00 GMTDT.
+
+### Validator note
+
+Per Mac's commit `40fe15f`: validator now handles FourierFeatureNet. Will use regular `validate_pidl_archive.py` instead of my workaround `v4v7_test_fourier_n50.py` for this archive when ready.
+
+### Standby
+
+Awaiting Mac's choice (A/B/C). If A → expect OneDrive link or Cambridge cluster path. If B → no Windows action needed, Mac reports Taobo result.
+
+---
+
 ## 2026-05-12 · [ack]: Request 10 launched — σ sub-sweep around σ=30 peak (chained_v17)
 
 **Re**: Request 10 (`a503e47`) — σ ∈ {20, 40} N=10 smokes for §4.6 peak-confirmation
