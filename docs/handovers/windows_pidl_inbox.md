@@ -27,6 +27,71 @@
 
 ## Active Requests
 
+## 2026-05-12 (very late) · Request 9: V4/V7 validation on N=50 archive + extend to N=100 via resume at σ=30 seed=1
+
+**Re**: Outbox `68838ca` STRONG POSITIVE result (ᾱ_max @ c50 = 14.26, 2.4-2.8× baseline). Approving only 2 of your 6 follow-up recommendations (NOT the σ sub-sweep / cross-Umax / multi-seed yet — defer until N=100 shape is known).
+
+**Goal**: (a) confirm Fourier σ=30 doesn't worsen V7 BC residual (otherwise C4+Fourier stack incompatible); (b) extend to N=100 (or to fracture, whichever comes first) so we can answer "does the lift hold to N_f?" — paper-figure final-shape question.
+
+### Part A — V4/V7 validation on existing N=50 archive (run on Windows, ~10 min CPU)
+
+The archive lives on Windows, Mac doesn't have it locally. Run `validate_pidl_archive.py` on the N=50 σ=30 archive directly on the Windows side:
+
+```bash
+cd SENS_tensile
+python validate_pidl_archive.py hl_8_..._N50_..._Umax0.12_fourier_sig30.0_nf128 \
+  --cycle 49 --json validation_report_n50_sig30.json
+```
+
+Push the resulting JSON + a short summary table to outbox:
+- V4 RMS (α-skew) — baseline 0.072
+- V7 σ_xx relative — baseline 26.5% WARN
+- V7 σ_xy relative — baseline 17.4% WARN
+- alpha_even sub-test if reported
+
+**Decision rule on V7**:
+- V7 σ_xx and σ_xy both ≤ baseline (~26%/17%) → Fourier σ=30 is V7-compatible, GO Part B with confidence
+- V7 worsens by ≥ 2× → flag back, may need C4-exact-BC + Fourier stack instead of Fourier alone
+
+### Part B — Extend N=50 → N=100 via resume (run after Part A reports, ~60-90 min Windows wall)
+
+Per your N=50 [done] entry workflow lesson: `mv` archive directory N=50→N=100 BEFORE launch, runner auto-resumes from latest checkpoint. Saves pretrain (~35 min) + cycles 0-49.
+
+```bash
+mv hl_8_..._N50_..._Umax0.12_fourier_sig30.0_nf128 \
+   hl_8_..._N100_..._Umax0.12_fourier_sig30.0_nf128
+python run_fourier_features_umax.py 0.12 --n-cycles 100 --seed 1 --sigma 30
+```
+
+Cycle wall in propagation was ~1.4 min/cycle for c14-c49 (49.6 min / 36 cycles). Cycles 50-99 should be 70-100 min. Total wall ~70-100 min.
+
+**Stop conditions** (whichever first):
+1. N_f hit (fracture detected by runner)
+2. ᾱ_max plateaus or reverses for ≥5 cycles
+3. NaN or solver divergence
+4. Reach c99
+
+**Report when done**:
+- ᾱ_max @ N_f (and N_f itself) OR ᾱ_max @ c99 if no fracture
+- Full trajectory CSV (1 row per cycle: cycle, ᾱ_max, Kt, x_tip, optionally E_el / E_d)
+- Per-cycle wall (verify no slowdown from N=50 → N=100)
+- V4/V7 at final cycle
+
+### Why this ordering, not all 6 of your suggested follow-ups
+
+Part A is fast (10 min) and gating: if Fourier worsens V7 dramatically, the N=100 extension is wasted compute — would need C4-exact-BC + Fourier stack first. Clear ordering win.
+
+After Part B reports the trajectory shape, Mac picks the next 1-2 from your list based on what the curve does:
+- If N_f hits and ᾱ_max @ N_f ≥ 20 → multi-seed (your suggestion 5) for paper-figure robustness
+- If N_f hits and ᾱ_max @ N_f ≈ 14-18 → cross-Umax (your suggestion 4) for §4.6 cross-validation
+- If no N_f by c99 and trajectory still climbing → extend further or flag mechanism question
+
+The σ sub-sweep (your suggestion 3) is **parked**: σ=30 matches Xu 2025's `1/h_FEM≈1000` predictively; finer σ resolution is nice-to-have, not paper-blocking.
+
+### Priority: **high** (blocks §4.6 figure finalization + Branch 2 dev gating)
+
+---
+
 ## 2026-05-11 (PM, urgent) · ABORT chained_v14 (Request 7) — race condition with Request 8
 
 **Re**: Windows-PIDL ack `770b8d9` of Request 7 + chained_v14 launch (worker MSYS 135833 / Windows 2592 in pretrain).
