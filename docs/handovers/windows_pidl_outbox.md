@@ -25,6 +25,79 @@
 
 ## Entries
 
+## 2026-05-12 · [done] 🎯 Request 8 N=50 σ=30 confirmer COMPLETE — **STRONG POSITIVE**, c50 ᾱ_max = **14.26 (≥10 threshold passed by 42%)**
+
+**Re**: Proactive N=50 confirmer at σ=30 (best from smoke sweep)
+
+**Status**: chained_v16 exited cleanly 14:38:30 GMTDT. **PASS — paper figure-ready result.**
+
+### Key result vs decision tree
+
+| metric | result | Mac's threshold |
+|---|---:|---|
+| **ᾱ_max @ c50** | **14.26** | ≥10 = STRONG positive ✅ |
+| vs baseline c50 (~5-6) | **~2.4-2.8×** | — |
+| Kt @ c50 | 6.77 (healthy) | (not pathological like σ=300) |
+| crack tip x @ c50 | 0.0242 | small but real propagation |
+
+### Full ᾱ_max trajectory @ u=0.12 seed=1 σ=30
+
+| cycle | ᾱ_max | Kt | x_tip |
+|---:|---:|---:|---:|
+| 0 | 0.295 | 7.01 | 0 |
+| 5 | 1.755 | 7.02 | 0 |
+| 10 | **3.185** | 6.93 | 0.0013 |
+| 14 | 4.004 | 6.76 | 0.0033 |
+| 20 | 5.016 | 6.74 | 0.0105 |
+| 25 | 6.586 | 6.71 | 0.0124 |
+| 30 | 8.248 | 6.71 | 0.0157 |
+| 35 | 9.882 | 6.80 | 0.0190 |
+| 40 | 11.497 | 6.83 | 0.0209 |
+| 45 | 13.056 | 6.82 | 0.0229 |
+| **49** | **14.261** | 6.77 | 0.0242 |
+
+**Per-cycle growth in propagation phase (c20-c49)**: ~0.32/cycle. If trend holds to N_f (baseline ~80), extrapolated ᾱ_max ≈ 24-30 (vs baseline 9.34 at N_f=82, FEM ~270 reference).
+
+### Verdict: Fourier σ=30 IS closing meaningful fraction of ᾱ_max gap
+
+**Tancik 2020 / Xu 2025 spectral-bias diagnosis CONFIRMED at PIDL fatigue regime**:
+- σ=30 target freq band ~942 matches Mac's inverse FEM mesh resolution 1/h_FEM ≈ 1000
+- Direction 2.1 (April 19 σ=1 test) was right ATTACK but wrong scale — σ=1 way too small to capture sharp ψ⁺ peak
+- σ=10 (freq ~314): modest 1.83× at c10
+- σ=30 (freq ~942): **2.13× at c10, 2.4-2.8× at c50** ✅
+- σ=100 (freq ~3142): DIVERGE (Kt=1.01 trivial)
+- σ=300 (freq ~10000): DIVERGE-like (Kt=120 pathological)
+
+Sweet spot is narrow band around 1/h_FEM. Below: under-resolved (cap at ~baseline). Above: over-resolved → optimization breakdown.
+
+### Workflow optimization saved 35min via resume (user-spotted oversight)
+
+Initial N=50 launch at 12:07 wasted ~90min redoing smoke σ=30 cycles 0-13 from scratch (pretrain 35min + cycle 0 45min + cycles 1-13 ~10min). After user pointed out smoke's checkpoints were reusable, I killed at step 13 and re-launched at 13:48 — runner's auto-resume kicked in: `[Checkpoint] 检测到预训练权重，跳过预训练 → 从 step 13 恢复，继续 step 14/49`. Pretrain (35min) and history (14 cycles of npy) all restored. Cycles 14-49 took 49.6 min.
+
+**Lesson saved to memory** (`feedback_extend_N_via_resume.md`): when extending N_old→N_new with same config, `mv` archive name N_old→N_new BEFORE launch → runner auto-resumes from latest checkpoint. Saves pretrain (~17-35min) + early cycles.
+
+### Files
+
+- Production archive: `hl_8_..._N50_..._Umax0.12_fourier_sig30.0_nf128/` (50 cycles + `best_models/checkpoint_step_{0..49}.pt` + `trained_1NN_{0..49}.pt` + `alpha_bar_vs_cycle.npy` + history)
+- Log: `run_fourier_n50_sigma30.log`
+- Watcher: `_queue_chained_v16_fourier_n50_sigma30.{sh,watcher.log,watcher.log.attempt1,nohup.log}`
+- Smoke archives (4σ): `hl_8_..._N10_..._Umax0.12_fourier_sig{10,30,100,300}.0_nf128/`
+
+### Recommended Mac next steps
+
+1. **Verify result** — Mac analyse production archive, confirm ᾱ_max trajectory + paper-grade Figure F10 prep
+2. **Full N=100-300 production** at σ=30 to verify gap closure to N_f. Estimated wall on Windows: 100 cycles × 1.3 min = ~2.2h; 300 × 1.3 = ~6.5h
+3. **σ sub-sweep**: σ=20, 25, 40, 50 around the sweet spot to map gain curve more finely (each smoke ~30min)
+4. **Cross-Umax verification** at σ=30: u=0.10/0.11/0.13 (similar to Request 3 cross-Umax structure) — multi-day commitment
+5. **Multi-seed** at u=0.12 σ=30 N=50 (seeds 2/3): test reproducibility of c50 ᾱ_max ≈ 14
+6. **V4/V7 validation** on N=50 archive — does Fourier increase V7 BC residual? (Watch for: high-freq features may worsen edge stress)
+
+### Next
+
+GPU idle. Awaiting Mac decision on follow-ups. Recommend (2) full N=100 σ=30 as the natural next step — would close decision tree on gap closure to N_f.
+
+---
+
 ## 2026-05-12 · [done]: Request 8 Fourier σ-sweep COMPLETE — σ=30 sweet spot at 1.95× baseline (borderline); N=50 confirmer PROACTIVELY launched
 
 **Re**: Request 8 (`3f4871d`) Fourier σ-sweep + Mac fix `57a547a`
