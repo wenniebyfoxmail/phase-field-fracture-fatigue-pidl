@@ -25,6 +25,75 @@
 
 ## Entries
 
+## 2026-05-12 · [done Part A] 🚨 Request 9 Part A — **V7 σ_xx FLAGGED 2.8× WORSE than baseline** (Part B NOT auto-launched per Mac rule)
+
+**Re**: Request 9 (`dc62e3f`) Part A — V4/V7 validation on existing N=50 σ=30 archive
+
+**Status**: Part A complete. Mac's gating rule triggered — V7 worsens ≥2× → flag back. Part B (N=50→N=100 extension) NOT launched.
+
+### Result summary
+
+| metric | c49 result | baseline (Mac inbox) | ratio | verdict |
+|---|---:|---:|---:|---|
+| **V4 RMS α_skew** | **0.0035** | 0.072 | **0.05× (20× BETTER)** ✅ |
+| **V7 σ_xx rel** | **73.9%** | 26.5% WARN | **2.8× WORSE** 🚨 TRIGGERS FLAG |
+| V7 σ_xy rel | 19.1% | 17.4% WARN | 1.10× (essentially baseline) | ≈ |
+
+**Per Mac decision rule** (inbox lines 52-54):
+> V7 σ_xx and σ_xy both ≤ baseline (~26%/17%) → Fourier σ=30 is V7-compatible, GO Part B with confidence
+> **V7 worsens by ≥ 2× → flag back, may need C4-exact-BC + Fourier stack instead of Fourier alone**
+
+V7 σ_xx is 2.8× baseline → **NOT V7-compatible**. Part B (N=100 extension) gated, awaiting Mac decision.
+
+### Full V4/V7 trajectory across N=50
+
+| cyc | V4 α_skew | V7 sxx_L raw | V7 sxx_R raw | V7 sxy_L raw | V7 sxy_R raw | σ_yy_bulk | rel_sxx | rel_sxy |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 0.0029 | 32.57 | 9.69 | 6.40 | 5.03 | 22.40 | 145.4% | 28.6% |
+| 10 | 0.0031 | **79.67** | 9.94 | 9.13 | 4.94 | 34.01 | **234.3%** | 26.8% |
+| 20 | 0.0033 | 30.24 | 11.05 | 6.52 | 4.98 | 38.60 | 78.4% | 16.9% |
+| 30 | 0.0035 | 29.16 | 10.82 | 6.68 | 4.96 | 38.59 | 75.6% | 17.3% |
+| 40 | 0.0035 | 29.23 | 9.24 | 6.94 | 4.95 | 39.30 | 74.4% | 17.6% |
+| **49** | **0.0035** | **31.13** | 8.54 | 8.04 | 4.96 | 42.11 | **73.9%** | 19.1% |
+
+Observations:
+- **V4 α_skew is consistent ~0.003 across all cycles** — Fourier sinusoidal basis γ(x)=[cos(2πBx), sin(2πBx)] is structurally near-symmetric about y=0 (B matrix is dense random Gaussian, so cos/sin pairs have similar symmetry footprint on both halves)
+- **V7 σ_xx peaks at c10 at 234%** and **stabilises to ~75% by c20+** — sxx_L_max ~30 raw across propagation phase (vs baseline expected ~10 raw for 26.5% of σ_yy~38)
+- **V7 σ_xy stays ~17-29%** ≈ baseline — high-freq basis affects σ_xx more than σ_xy
+
+### Mechanism interpretation (speculative — Mac to verify)
+
+High-frequency Fourier basis γ(x) = [cos(2π B x), sin(2π B x)] with σ=30 → typical frequency content ~30 cycles per unit length. Near free edges x=±0.5, the NN has no boundary constraint, so high-freq components can "ring" — produce sinusoidal oscillations in σ_xx that don't decay. The σ_yy field (loaded direction) is anchored by displacement BC at top/bottom, so it doesn't ring as much.
+
+**This is a known trade-off in Fourier feature networks (Tancik 2020 §6 limitations)**: spectral lift at one frequency band comes with sharper modes everywhere, including at free boundaries.
+
+### Methodological note: validator workaround
+
+`validate_pidl_archive.py` doesn't natively handle `FourierFeatureNet` (state_dict mismatch — vanilla NeuralNet expects `input_layer.weight`, FourierFeatureNet has `inner.input_layer.weight`). V4 and V7 both SKIPPED with `RuntimeError: Error(s) in loading state_dict`.
+
+**Producer-side workaround**: wrote `SENS_tensile/v4v7_test_fourier_n50.py` that uses `construct_model(..., fourier_dict=...)` to instantiate the correct FourierFeatureNet, then loads checkpoint cleanly. V4 + V7 metrics above are from this script (mirror-symmetry α-skew RMS + free-edge σ_xx/σ_xy raw values + bulk σ_yy reference).
+
+Mac side could either: (1) patch `validate_pidl_archive.py` to detect `inner.*` prefix and route through FourierFeatureNet, OR (2) use my script directly when validating future Fourier archives.
+
+### Mac's two options per inbox decision rule
+
+1. **C4-exact-BC + Fourier stack** (Mac mentioned in inbox decision rule): combine soft-symmetry / hard-BC (C4 exact-BC implementation already exists, commit `4ec16c3`) with Fourier features. C4 should suppress edge ringing while keeping Fourier's ᾱ_max lift.
+2. **Reject Fourier σ=30 standalone**, retest at lower σ where ringing is milder (σ=10 had 1.83× ᾱ_max baseline but V7 status unknown — could be milder edge ringing)
+
+My recommendation: option (1). C4-exact-BC + Fourier σ=30 stack tests if mitigations are stackable (similar to A1+Strac pattern from Request 6). If V7 improves to ≤ baseline while ᾱ_max stays at 14+ → STRONG combined positive for paper.
+
+### Files
+
+- V4/V7 dump script: `SENS_tensile/v4v7_test_fourier_n50.py`
+- Validator-attempted JSON: `hl_8_..._N50_..._fourier_sig30.0_nf128/best_models/validation_report.json` (V4/V7 SKIPPED therein, see notes)
+- Archive still intact (no mv done): `hl_8_..._N50_..._Umax0.12_fourier_sig30.0_nf128/`
+
+### Next
+
+GPU idle. Awaiting Mac decision: C4+Fourier stack runner OR σ=10 V7 spot-check OR reject Fourier standalone.
+
+---
+
 ## 2026-05-12 · [done] 🎯 Request 8 N=50 σ=30 confirmer COMPLETE — **STRONG POSITIVE**, c50 ᾱ_max = **14.26 (≥10 threshold passed by 42%)**
 
 **Re**: Proactive N=50 confirmer at σ=30 (best from smoke sweep)
