@@ -102,7 +102,7 @@ PRIORITY_ARCHIVES = [
 ]
 
 
-def setup_pidl_pipeline(coeff_str="1.0", mesh_file=None):
+def setup_pidl_pipeline(coeff_str="1.0", mesh_file=None, exact_bc_dict=None):
     if mesh_file is None:
         mesh_file = FINE_MESH
     pffmodel, matprop, network = construct_model(
@@ -118,8 +118,21 @@ def setup_pidl_pipeline(coeff_str="1.0", mesh_file=None):
         lmbda=torch.tensor([0.0], device=DEVICE), theta=loading_angle,
         alpha_constraint=numr_dict["alpha_constraint"],
         williams_dict=None, l0=mat_prop_dict["l0"],
+        exact_bc_dict=exact_bc_dict,
     )
     return {"field_comp": field_comp, "matprop": matprop, "pffmodel": pffmodel}
+
+
+def detect_exact_bc_from_archive_name(name):
+    """Auto-detect C4 exact-BC settings from archive directory name.
+
+    Looks for `_exactBCsent_nu<value>` substring. Returns None for non-C4 archives.
+    """
+    import re
+    m = re.search(r"_exactBCsent_nu([\d.]+)", name)
+    if not m:
+        return None
+    return {"enable": True, "mode": "sent_plane_strain", "nu": float(m.group(1))}
 
 
 def make_contour_points(radii, n_theta, delta_face=0.05, x_tip=0.0):
@@ -344,13 +357,21 @@ def main() -> int:
     mesh_path = args.mesh if args.mesh else FINE_MESH
     print(f"Building PIDL pipeline (E={E_YOUNG}, ν={NU}, ℓ₀={L0}, mesh={Path(mesh_path).name})…")
     print(f"  contour radii: {CONTOUR_RADII}  n_theta={N_THETA}")
-    ctx = setup_pidl_pipeline(mesh_file=mesh_path)
 
     targets = []
     if args.archive:
         targets.append(args.archive)
     if args.all:
         targets.extend(PRIORITY_ARCHIVES)
+
+    # Build one ctx per archive so different settings (e.g. exact_bc nu)
+    # don't bleed across runs. Cheap — network skeleton is small.
+    archive_ctx = {}
+    for name in targets:
+        ebc = detect_exact_bc_from_archive_name(name)
+        if ebc is not None:
+            print(f"  [auto-detect] {name}: exact_bc enabled (nu={ebc['nu']})")
+        archive_ctx[name] = setup_pidl_pipeline(mesh_file=mesh_path, exact_bc_dict=ebc)
 
     skipped = []
     done = []
@@ -361,7 +382,7 @@ def main() -> int:
             skipped.append((name, "missing"))
             continue
         try:
-            process_archive(adir, ctx, every=args.every, force=args.force)
+            process_archive(adir, archive_ctx[name], every=args.every, force=args.force)
             done.append(name)
         except RuntimeError as e:
             msg = str(e)[:120]
