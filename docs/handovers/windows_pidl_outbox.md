@@ -25,6 +25,53 @@
 
 ## Entries
 
+## 2026-05-13 · [done N=50 + in-flight N=100]: Request 12 Phase A1 complete — 3-seed N=50 spread 8%, Phase A2 launched
+
+**Re**: Request 12 Phase A1 (chained_v18 N=50 seed=2/3) DONE 23:10:09 GMTDT. Phase A2 (chained_v19 N=100 extension) launched 23:17:07 with auto-resume.
+
+### Phase A1 result — 3-seed N=50 reproducibility ✅
+
+| seed | ᾱ_max @ c49 | vs Taobo seed=1 (12.121) |
+|---:|---:|---:|
+| **1 (Taobo)** | **12.121** | reference |
+| **2 (Windows)** | **11.40** | **−6.0%** |
+| **3 (Windows)** | **12.36** | **+2.0%** |
+
+**3-seed spread = 0.96 (8% relative to mean ~11.96)**, all within ±6% of mean. Paper §4.6 multi-seed evidence is **solid for the C4+Fourier stack at N=50**.
+
+Detailed trajectory comparison:
+- seed=2: c0=0.229 (Fourier-alone seed=1 c0=0.30, 0.76×) — C4 BC suppresses Fourier amplitude consistently
+- seed=3: c0=0.281 (higher than seed=2's 0.229, different NN init landscape)
+- Both seeds: per-cycle growth ~0.23-0.25 in propagation phase, healthy Kt ~6.5-7.0
+
+Wall times:
+- seed=2: 19:19:52 → 21:06:37 = 1h47m (pretrain 37.5 + cycle 0 26.9 + cycles 1-49 ~64 min)
+- seed=3: 21:06:37 → 23:10:09 = 2h04m (pretrain 40.2 + cycle 0 34.7 + cycles 1-49 ~70 min)
+
+### Phase A2 launched — chained_v19 N=100 extension
+
+mv-trick auto-resume verified PERFECT on seed=2:
+```
+[Checkpoint] 检测到预训练权重，跳过预训练
+[Checkpoint] 从 step 49 恢复，继续 step 50/99
+[Restore] E_el / alpha_bar / x_tip_alpha / time / Kt _vs_cycle.npy: loaded 50 cycles
+```
+
+| Phase | Action | Status |
+|---|---|---|
+| 1 | seed=2 N=50 → N=100 (cycles 50-99) | 🏃 resumed from step 49 |
+| 2 | seed=3 N=50 → N=100 (cycles 50-99) | queued |
+
+Per cycle in late propagation ~0.7-1 min × 50 cycles × 2 seeds = ~100-150 min total.
+
+**ETA**: ~01:40 GMTDT 5/13 (seed=2 ~24:00, seed=3 ~01:30)
+
+### Final outbox plan (when chained_v19 done)
+
+For each seed: ᾱ_max @ c99 + full trajectory + V4/V7 via patched validator `40fe15f`. Compare to Taobo seed=1 c99=27.925. 3-seed table for §4.6 paper figure.
+
+---
+
 ## 2026-05-13 · [info]: Request 12 plan revised — N=50 will complete, then mv-extend to N=100 (Option A)
 
 **Re**: Mac inbox `40b6543` Request 11 DONE @ N=100 ᾱ_max=27.925 + suggested follow-up "Request 12 = N=100 seeds 2/3" (vs earlier `03c3526` spec "N=50 seeds 2/3" that I already launched).
