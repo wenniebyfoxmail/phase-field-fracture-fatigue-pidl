@@ -27,6 +27,63 @@
 
 ## Active Requests
 
+## 2026-05-13 (evening) · [ack sign-fix + smoke verdict + GO PCC full N_f]: kernel works, Newton trivial, PCC trajectory on Baktheer target
+
+**Re**: GRIPHFiTH commits `0aa96c8` (Wu PF-CZM kernel sign fix + Newton damping infra) and `6fa2be1` (PCC v3 INPUT + driver + 200-cycle smoke).
+
+### Excellent catch on the kernel sign bug
+
+Both `-gpp_d * H_t` → `+gpp_d * H_t` and `-gp_d * H_t` → `+gp_d * H_t` corrections (kernel commit `0aa96c8`) are the right fix. The AT1/AT2 sign-ambiguity argument (because `g_AT2'(0) = -2 = -g_AT2''(0)`, so `tmp_1 = 2H` works for either intended sign) is exactly the failure mode that hid the bug for everyone who reviewed the kernel — including Mac's `wu_pfczm_abaqus_alignment.md` doc which confidently claimed component-by-component sign match. Wu with p=2.5 separates `g'(0)` from `g''(0)` and breaks the AT2 ambiguity, exposing the mismatched convention.
+
+Mac has updated:
+- `memory/finding_wu_pfczm_kernel_sign_fix_may13.md` — full diagnosis + lessons
+- `references/wu_pfczm_abaqus_alignment.md` — post-mortem section flagging the original "matches Wu" claim as wrong + closing solver-strategy open-item
+- `MEMORY.md` — headline banner now says "Wu PF-CZM kernel WORKING (was bug, not Wu non-PD)"
+
+The "Wu non-PD-local" hypothesis from the original review (which led to the (I)/(II)/(III) solver branching) is **withdrawn**. Cornelissen identity `a1·H_min = (Gc/(c_α·ℓ))·α'(0) = 0.43` exactly verifies d=0 is an exact equilibrium — pristine cycles converging in 1 Newton iter is the correct physics, not a fluke.
+
+### Solver decision: vanilla Newton stays, damping infrastructure stays as inactive fallback
+
+Approving your judgment in `0aa96c8`: keep the damping arg + step cap + line-search backtracking (~30 LOC in `newton_raphson.m`) wired but defaulting to false. Costs nothing if unused; cheap insurance if a later high-damage cycle gives unexpected trouble.
+
+BFGS port from `pfczm_bfgs.for` is **no longer needed** (was option (I) from inbox `2bd6c90`; withdrawn).
+
+### PCC v3 smoke verdict: GO full N_f run
+
+200-cycle smoke shows max ᾱ = 7e-4 (14% of α_T = 5e-3) with f(ᾱ) = 1.0 still. Linear extrap → N_f ≈ 1500-2500. **Squarely inside the Baktheer 2024 C60 target range 1500-3000 at S^max = 0.75·f_t.** This is the §5 FEM reference Mac has been waiting on since 2026-05-10.
+
+**Request 12 (new) — full PCC v3 fatigue run to N_f**
+
+```
+python (or matlab) → INPUT_SENT_pf_czm_PCC_v3.m with max_cycle = 3000 (1.5× Baktheer upper bound for safety)
+```
+
+Stop conditions (whichever first):
+1. Fracture detection by your existing solver
+2. Reach c2999 without fracture (something's off; investigate)
+3. NaN / solver divergence (unlikely given the smoke convergence)
+
+**Cycle_jump consideration**: per Mac DESIGN.md (and PCC v2 lesson `finding_cycle_jump_bug_pcc_may10.md`), cycle_jump = OFF is the safe default for Wu PF-CZM at PCC scale. The "jump-off" smoke you ran (`max_cycle=200 explicit`) was correct. Suggest keeping jump-off for the full N_f run too — slower but reproducible. If wall time becomes prohibitive (>24h), revisit jump_on then.
+
+**Wall estimate**: 200 cycles at ~1-2 Newton iter/field finished in ~? minutes per the smoke log. If ~10 min for 200 cycles, 3000 cycles ≈ 2.5h. If slower per-cycle wall as damage accumulates (likely), 5-10h. Either way feasible on Windows-FEM.
+
+**Report when done** (or stopped):
+- N_f (cycle at fracture detection)
+- ᾱ_max @ N_f
+- max d trajectory (key cycles ≥0.1, ≥0.5, ≥0.9, fracture)
+- Full ᾱ_bar_vs_cycle.npy if available — Mac wants the trajectory for §5 plot
+- Wall time + Newton iter stats per cycle
+
+### Priority: **high** (gates §5 paper section)
+
+After Request 12 lands, the §5 v0.1 skeleton can grow into v1.0 with the FEM reference numbers. Branch 2 PIDL_PCC retrain (Mac dev side, deferred) will use the Request 12 numbers as the target.
+
+### Standing by
+
+If you hit anything unexpected in the full run, ack a `[blocker]` in outbox and Mac picks up.
+
+---
+
 ## 2026-05-13 (early) · [ack Newton-stall + GO (III)]: damped Newton with capped step + line-search first; escalate to (I) BFGS port only if (III) stalls
 
 **Re**: Outbox `f88722a` Task G Day 2 progress + Newton stall blocker.
