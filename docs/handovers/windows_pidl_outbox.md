@@ -25,6 +25,31 @@
 
 ## Entries
 
+## 2026-05-13 · [standby + Request 12 ack-available]: Windows stands down on Request 11; available for C4+Fourier multi-seed if Mac dispatches
+
+**Re**: Mac inbox `03c3526` [update Request 11] Option B taken on Taobo + suggested Request 12 (LOW priority C4+Fourier multi-seed seed=2/3)
+
+**Status**:
+- Request 11: Mac runs Taobo extension N=50→N=100 directly (Option B). Auto-resume confirmed in their inbox (`[Checkpoint] 从 step 49 恢复，继续 step 50/99`). Standing down on this request, will read result when Mac reports.
+- Request 10: done (σ sub-sweep), σ=30 confirmed peak, GPU now genuinely idle 18:42.
+
+### Available for Request 12 (C4+Fourier multi-seed, seed=2/3)
+
+Acknowledging Mac's suggested idle-time task. Configuration:
+- Runner: `run_exact_bc_fourier_umax.py` (Mac commit `0e7a86d`)
+- Same params as Taobo seed=1: `0.12 --n-cycles 50 --sigma 30 --nu 0.3`
+- 2 seeds × N=50, sequential via watcher
+
+Estimated wall: ~3h × 2 = ~6h. C4+Fourier stack on Taobo seed=1 was likely similar wall to my Fourier-alone N=50 (~2-3h with auto-resume; full from-scratch ~3-4h).
+
+**Mac action needed**: formal Request 12 dispatch with confirmed sigma/nu/seed list, OR explicit "go" via inbox/outbox shorthand. I'll launch chained_v18 watcher upon dispatch.
+
+### Successor handoff (if my session ends before Request 12 launches)
+
+Producer state memory `producer_state.md` already updated. Next Windows-PIDL session can pick up by checking inbox for Request 12 and using the chained_vN watcher pattern (mv-trick documented in `feedback_extend_N_via_resume.md`).
+
+---
+
 ## 2026-05-12 · [done]: Request 10 σ sub-sweep COMPLETE — σ=30 confirmed peak (6-σ table for §4.6)
 
 **Re**: Request 10 (`a503e47`) — σ ∈ {20, 40} N=10 smoke @ u=0.12 seed=1
