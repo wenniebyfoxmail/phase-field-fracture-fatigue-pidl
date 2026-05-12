@@ -89,7 +89,7 @@ print("=" * 72)
 # Material props: switch to PCC normalized values
 config.mat_prop_dict["mat_E"]  = s.mat_E_norm    # = 1.0
 config.mat_prop_dict["mat_nu"] = s.mat_nu_norm   # = 0.18 (PCC, vs toy 0.3)
-config.mat_prop_dict["w1"]     = s.w1_norm       # ≈ 0.00344 for AT1 PCC
+config.mat_prop_dict["w1"]     = s.w1_norm       # = c_w (AT1: 8/3≈2.667, AT2: 2.0) post-P0 fix
 config.mat_prop_dict["l0"]     = s.l0_norm       # = 0.02 (vs toy 0.01)
 
 # PFF model: match scaling choice (must agree on c_w)
