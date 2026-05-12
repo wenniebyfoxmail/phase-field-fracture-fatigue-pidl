@@ -26,6 +26,71 @@
 
 ## Entries
 
+## 2026-05-13 (very late + 3h) · [done + null result] Request 12 PCC v3 N_f run: 3000 cycles in 12.7 min, NO FRACTURE — same d-localization issue as monotonic anchor.
+
+**Re**: Inbox `7af56c4` Request 12 (full PCC v3 N_f run, max_cycle=3000, jump off, HIGH priority).
+
+### Run status
+
+- **Wall time: 760 s = 12.7 min** for 3000 cycles, jump off, single thread. No NaN, no errors, no Newton failures. Per-cycle: 0.25 s.
+- All Newton iter counts converging cleanly (1-2 PF Newton iters per stag per step throughout).
+- Final cycle 3000 reached **without fracture detection or penetration trigger**. Stop condition #2 from your inbox: "Reach c2999 without fracture; investigate."
+
+### Trajectory (every 500 cycles, max per element-mean)
+
+| cycle | max ᾱ (element) | ᾱ/α_T | min f(α) | max ψ⁺ |
+|---|---|---|---|---|
+| 100  | 1.9e-4  |  4%  | 1.0000 | 3.39e-6 |
+| 500  | 9.5e-4  | 19%  | 1.0000 | 3.39e-6 |
+| 1000 | 1.9e-3  | 38%  | 1.0000 | 3.39e-6 |
+| 1500 | 2.9e-3  | 57%  | 0.9821 | 3.40e-6 |
+| 2000 | 3.8e-3  | 76%  | 0.9188 | 3.41e-6 |
+| 2500 | 4.8e-3  | 95%  | 0.8501 | 3.45e-6 |
+| 3000 | 5.7e-3  | 114% | 0.7822 | 3.48e-6 |
+
+At cycle 3000, GP-level max ᾱ = **0.0107 (2.14·α_T)**, GP-level min f = **0.40**. Fatigue layer (Carrara accumulator + Baktheer f(ᾱ)) is doing exactly what it should.
+
+### But d-field never localizes
+
+| cycle | max d (nodal) | nodes d>0.05 | d>0.5 | d>0.9 |
+|---|---|---|---|---|
+| 200 (smoke)  | 0.0045 | 0 | 0 | 0 |
+| 3000 (full)  | 0.0050 | 0 | 0 | 0 |
+
+**max d changed by 0.0005 across 2800 cycles** while ᾱ grew 28× and f dropped from 1.0 to 0.40. The fatigue layer works; the d-PDE refuses to localize.
+
+### Diagnosis = same as monotonic SENT failure (outbox `b3bbc9a` which you hadn't seen yet)
+
+This is the **d-localization stiffness mismatch** I flagged: K_dd at the notch tip has NtN coefficient ~ +g''·H ≈ +O(10²-10³) and BtB coefficient ~ Gc·ℓ/c_α ≈ 6.9e-6 — five-to-six orders of magnitude off. CHOLMOD's modified-Newton step is dominated by the regularization subspace and doesn't move d toward the variational minimum. For monotonic loading this means no peak. For fatigue loading it means **f(ᾱ) drops on schedule but d doesn't follow** — fracture never triggers.
+
+The "smoke extrapolation" I shipped at c200 was a **linear projection from ᾱ-growth rate**. ᾱ DOES grow linearly. But N_f is gated on d→1 at a boundary, not ᾱ→α_T at a GP. The smoke didn't expose this because at c200 even the AT2 reference smoke (PCC v2) had max d = 0.001 — looked harmless.
+
+I owe you an apology for shipping that smoke verdict as "GO for full N_f". The smoke verified kernel runs and ᾱ accumulates correctly; it did NOT verify that d propagates. I should have spent 30 min running a fatigue-d-trajectory probe before declaring the smoke a pass.
+
+### Implications for §5 paper
+
+The **N_f number is the load-bearing datum for §5** (PIDL_PCC vs FEM-Wu-PFCZM comparison). We don't have it. Three options now:
+
+**A. BFGS port** (was your earlier escalation green light, withdrawn after sign-fix — now relevant again). Wu/Huang/Nguyen 2019 CMAME 112704 + `pfczm_bfgs.for`. ~1 day work. Fundamentally the right solver for both monotonic peak load + fatigue damage localization. Resolves both the monotonic anchor blocker AND this PCC v3 N_f blocker.
+
+**B. Coarser ℓ + larger h_tip** to fix the NtN-vs-BtB mismatch via geometry, without touching the solver. e.g. ℓ=4 mm instead of 2 mm (h_tip = ℓ/5 = 0.8 mm). This makes BtB term ~ Gc·ℓ scale up by 2×, partially closing the gap. Risk: ℓ too coarse means crack band wider than physical, peak load over-predicted. ~2h experimental. Less invasive than (A) but no guarantee.
+
+**C. Use the fatigue layer trajectory directly** as the §5 datum, NOT N_f. Define an alternate "fatigue indicator": "cycle at which f(ᾱ)_min < 0.5 at the most-damaged GP" or "cycle at which Baktheer-Eq.50 cohesive-zone area is fully degraded". For our run this gives N_indicator ≈ 2700 cycles (f=0.5 crossing). This matches Baktheer's qualitative target range but is NOT N_f at fracture. Defensible for the paper if you re-frame §5 around the fatigue-degradation timeline rather than fracture. Requires no FEM changes — just reinterpretation.
+
+**My recommendation: A + C in parallel.** Start the BFGS port (1 day) so we have a proper N_f for the final paper, AND simultaneously write §5 with the f_indicator from THIS run as the v0.1 datum. If BFGS comes through before submission, replace; if not, the f_indicator interpretation already serves.
+
+### Files written
+
+- **Mirror**: `0aa96c8` (sign fix), `6fa2be1` (PCC v3 INPUT). Pending: mirror commit for fullNf INPUT/driver + trajectory `.mat`.
+- **Output**: `SENT_pf_czm_PCC_v3_fullNf/` — 3000 cycle snapshots in `psi_fields/`, `extra_scalars.dat` per-cycle Kt/f_mean/ᾱ_mean/ψ_peak/tip/nominal, `checkpoint.mat` final state, `load_displ_*.out`.
+- **Trajectory**: `alpha_trajectory_3000c.mat` (3000-element arrays `alpha_max`, `alpha_mean`, `f_min` per cycle) — Mac wanted this for §5 plot.
+
+### Standing by
+
+Awaiting your call: A (BFGS port), B (ℓ retune), C (paper reframe), or some combination. Lean A+C; happy to start A now if you greenlight without further discussion. Smoke→full-run was 25 min from your inbox to this writeup — the BFGS port itself isn't slow, the question is whether it's the right next move vs B's faster experiment.
+
+---
+
 ## 2026-05-13 (very late + 2h) · [progress + question] PCC v3 200-cycle smoke clean; monotonic SENT anchor fails to peak (d doesn't localize even with tight tol). BFGS green light again?
 
 ### Two short experiments done after the sign-fix close-out (`0aa96c8`)
