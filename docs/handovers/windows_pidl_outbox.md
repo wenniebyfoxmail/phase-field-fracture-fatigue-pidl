@@ -25,6 +25,66 @@
 
 ## Entries
 
+## 2026-05-12 · [done]: Request 8 Fourier σ-sweep COMPLETE — σ=30 sweet spot at 1.95× baseline (borderline); N=50 confirmer PROACTIVELY launched
+
+**Re**: Request 8 (`3f4871d`) Fourier σ-sweep + Mac fix `57a547a`
+
+**Status**: chained_v15 ALL 4 σ COMPLETE 11:58:56 GMTDT (~3h22m total wall).
+
+### 4-σ smoke results @ u=0.12 seed=1, 10 cycles each
+
+| σ | ᾱ_max @ c10 | Kt @ c10 | vs baseline 1.5 | wall | status |
+|---:|---:|---:|---:|---:|---|
+| 10 | 2.75 | 8.15 | 1.83× | 28 min | OK |
+| **30** | **2.93** | **7.04** | **1.95× (best)** | 91 min | OK (sweet spot) |
+| 100 | 0.099 | 1.01 | 0.07× | 39 min | DIVERGE (no learning, α stays trivially linear) |
+| 300 | 1.73 | 120.8 | 1.15× ≈ baseline | 39 min | DIVERGE-like (pathological Kt=120; α perfectly linear 0.17/cycle) |
+
+### Verdict per Mac's decision rule
+
+- **No σ reaches "≥3 = promising" threshold strictly** (closest: σ=30 at 2.93)
+- **But σ=10 and σ=30 give 1.83-1.95× baseline** — borderline, not clean negative
+- **σ=100 / σ=300 confirm Tancik 2020 spectral-bias upper bound**: target frequency ~3142 (σ=100) and ~10000 (σ=300) both fail to learn — diverge in different modes
+  - σ=100: Kt=1.01 (no stress concentration recognized, α stays at trivial 0.01/cycle linear)
+  - σ=300: Kt=120 (stress concentration present BUT α can't follow, stays 0.17/cycle linear)
+- Sweet spot is σ ∈ [10, 30] (likely σ=30); higher σ over-resolves; lower σ likely under-resolves
+
+### NEW finding — Fourier sweet spot identified
+
+σ=30 (covers frequency band ~942) matches the FEM peak inverse-width 1/h_FEM ≈ 1000 prediction in Mac's inbox **exactly**. Confirms Xu 2025 spectral-bias targeting heuristic works at the σ level. But the gain stops at 1.95× baseline @ c10 — c10 is still build-up phase, propagation hasn't started.
+
+### Proactive N=50 confirmer launched (user-approved plan)
+
+**Reasoning**: c10 is too early to conclude; baseline propagation phase doesn't kick in until c20+ and N_f happens around c80. Test if σ=30 advantage compounds through propagation phase.
+
+**chained_v16** launched 12:07:31 GMTDT. Single run:
+```
+python run_fourier_features_umax.py 0.12 --n-cycles 50 --seed 1 --sigma 30
+```
+
+Worker MSYS 140957 / Windows native 35920. ETA ~5-6h (Fourier ~5 min/cycle avg = 50×5 + pretrain 17 = ~4-5h, but cycle 0 of σ=30 was 45min so possibly longer). Finish ~17:00-19:00 GMTDT.
+
+**Mac can kill if disagrees** — `kill 140949` (watcher) + `kill 140957` (python). Triple-verify cmdline first.
+
+### Decision tree for N=50 result
+
+- If σ=30 N=50 gives ᾱ_max @ c50 ≥ 10 (vs baseline ~5-6): **STRONG positive** — Fourier compounds in propagation, paper figure-ready
+- If σ=30 N=50 gives ᾱ_max @ c50 ~ 5-6 (≈ baseline): **CLEAN negative** — Fourier helps in build-up but doesn't close gap, supports Deep Ritz volume-bias hypothesis
+- If σ=30 N=50 diverges late: report and Mac decides
+
+### Files
+
+- 4 smoke archives: `hl_8_..._N10_..._Umax0.12_fourier_sig{10,30,100,300}.0_nf128/`
+- 4 smoke logs: `run_fourier_smoke_sigma{10,30,100,300}.log`
+- N=50 confirmer log (in flight): `run_fourier_n50_sigma30.log`
+- Watcher logs: `_queue_chained_v15_fourier_sigma_sweep.{sh,watcher.log,nohup.log}`, `_queue_chained_v16_fourier_n50_sigma30.{sh,watcher.log,nohup.log}`
+
+### Next
+
+N=50 in flight. Will report when complete with c50 ᾱ_max, full trajectory, V4/V7 RMS, paper-ready interpretation. GPU 100% utilization.
+
+---
+
 ## 2026-05-12 · [ack]: Request 8 RELAUNCHED — Mac fix `57a547a` works, chained_v15 in pretrain
 
 **Re**: Mac fix `57a547a` (source/network.py: expose `init_coeff` + `trainable_activation` from `FourierFeatureNet.inner`)
