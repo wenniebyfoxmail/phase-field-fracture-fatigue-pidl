@@ -196,9 +196,44 @@ def _rebuild_field_comp(archive: Path, cycle: int | None):
             "mode": cfg.get("exact_bc_mode", "sent_plane_strain"),
             "nu": float(cfg.get("exact_bc_nu", mat_prop_dict["mat_nu"])),
         }
+
+    # ★ 2026-05-13 Fourier-aware reconstruction: if archive trained with C10
+    # FourierFeatureNet wrapper, replay it here too — otherwise NN state_dict
+    # load fails due to inner.* prefix mismatch.
+    fourier_dict = None
+    if (_as_bool(cfg.get("fourier_enable", False), default=False)
+            or "_fourier_sig" in archive.name):
+        # Parse "fourier: {'enable': True, 'sigma': 30.0, 'n_features': 128, 'seed': 0}"
+        # from model_settings.txt; fall back to archive-name parsing if not found.
+        import ast as _ast
+        fr_raw = cfg.get("fourier", None)
+        fr_parsed = {}
+        if fr_raw:
+            try:
+                fr_parsed = _ast.literal_eval(fr_raw)
+            except Exception:
+                fr_parsed = {}
+        # Archive-name fallback: e.g. "..._fourier_sig30.0_nf128"
+        if not fr_parsed:
+            import re as _re
+            m_sig = _re.search(r"_fourier_sig([\d.]+)", archive.name)
+            m_nf = _re.search(r"_nf(\d+)", archive.name)
+            fr_parsed = {
+                "sigma": float(m_sig.group(1)) if m_sig else 30.0,
+                "n_features": int(m_nf.group(1)) if m_nf else 128,
+                "seed": 0,
+            }
+        fourier_dict = {
+            "enable": True,
+            "sigma": float(fr_parsed.get("sigma", 30.0)),
+            "n_features": int(fr_parsed.get("n_features", 128)),
+            "seed": int(fr_parsed.get("seed", 0)),
+        }
+
     pffmodel, matprop, network = construct_model(
         pff_model_dict, mat_prop_dict, network_dict, domain_extrema, "cpu",
-        williams_dict=williams_dict)
+        williams_dict=williams_dict,
+        fourier_dict=fourier_dict)
     inp, T_conn, area_T, _ = prep_input_data(
         matprop, pffmodel, crack_dict, numr_dict,
         mesh_file=FINE_MESH, device="cpu")
@@ -660,13 +695,38 @@ def test_v7_bc_residual(archive: Path,
         return {"test": "V7_bc_residual_side", "status": "SKIP",
                 "reason": f"could not import NeuralNet: {e}"}
 
-    # Build NN matching archive arch
+    # Build NN matching archive arch.
+    # ★ 2026-05-13 Fourier-aware path: if archive used C10 FourierFeatureNet
+    # wrapper, build it via construct_model (same way training did) so the
+    # state_dict prefix `inner.*` aligns. Otherwise vanilla NeuralNet works.
     try:
-        net = NeuralNet(input_dimension=2, output_dimension=3,
-                        n_hidden_layers=arch["hl"],
-                        neurons=arch["neurons"],
-                        activation=arch["activation"],
-                        init_coeff=arch["init_coeff"])
+        archive_uses_fourier = "_fourier_sig" in archive.name
+        if archive_uses_fourier:
+            import re as _re
+            m_sig = _re.search(r"_fourier_sig([\d.]+)", archive.name)
+            m_nf = _re.search(r"_nf(\d+)", archive.name)
+            _sigma = float(m_sig.group(1)) if m_sig else 30.0
+            _nf = int(m_nf.group(1)) if m_nf else 128
+            from construct_model import construct_model
+            _fourier_dict_v7 = {"enable": True, "sigma": _sigma,
+                                "n_features": _nf, "seed": 0}
+            _pff = {"PFF_model": "AT1", "se_split": "volumetric", "tol_ir": 5e-3}
+            _mat = {"mat_E": 1.0, "mat_nu": 0.3, "w1": 1.0, "l0": 0.01}
+            _ndict = {"hidden_layers": arch["hl"], "neurons": arch["neurons"],
+                      "seed": int(arch.get("seed", 1)),
+                      "activation": arch["activation"],
+                      "init_coeff": arch["init_coeff"], "compile": False}
+            _, _, net = construct_model(_pff, _mat, _ndict,
+                                        torch.tensor([[-0.5, 0.5], [-0.5, 0.5]]),
+                                        "cpu",
+                                        williams_dict=None,
+                                        fourier_dict=_fourier_dict_v7)
+        else:
+            net = NeuralNet(input_dimension=2, output_dimension=3,
+                            n_hidden_layers=arch["hl"],
+                            neurons=arch["neurons"],
+                            activation=arch["activation"],
+                            init_coeff=arch["init_coeff"])
         sd = torch.load(str(nn_file), map_location="cpu", weights_only=False)
         net.load_state_dict(sd)
         net.eval()
