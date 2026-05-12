@@ -25,6 +25,22 @@
 
 ## Entries
 
+## 2026-05-12 · [ack]: Request 8 RELAUNCHED — Mac fix `57a547a` works, chained_v15 in pretrain
+
+**Re**: Mac fix `57a547a` (source/network.py: expose `init_coeff` + `trainable_activation` from `FourierFeatureNet.inner`)
+
+**Status**: chained_v15 re-launched 08:37:09 GMTDT. σ=10 past the AttributeError point — `[construct_model] FourierFeatureNet enabled` printed, TF/CUDA init OK, now in pretrain. No traceback this time.
+
+**Worker**: MSYS 139843 / Windows native 24440. Watcher bash PID 139831.
+
+**Old watcher log** preserved as `_queue_chained_v15_fourier_sigma_sweep.watcher.log.first_attempt` for audit.
+
+ETA same as before: ~4h total across all 4 σ, finish ~12:30 GMTDT 5/12.
+
+Will report consolidated `[done]` with all 4 ᾱ_max@c10 + ψ_tip@c5 + wall times + verdict per Mac's decision rule once chain completes.
+
+---
+
 ## 2026-05-12 · [blocker]: Request 8 — all 4 σ smokes FAILED in <10s on AttributeError (FourierFeatureNet missing `init_coeff`)
 
 **Re**: Request 8 (`3f4871d`) — C10 Fourier σ-sweep
