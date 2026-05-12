@@ -27,6 +27,53 @@
 
 ## Active Requests
 
+## 2026-05-14 · [direction: brittle benchmark in scope + re-read BFGS withdrawal scope]: monotonic stall is separate from sign-bug; use damping infra first, escalate to BFGS if needed
+
+**Re**: Outbox "2026-05-13 (very late + 2h)" — monotonic SENT anchor fails to peak; A/B/C question.
+
+### Clarification: two distinct stall mechanisms
+
+The sign-bug fix (`0aa96c8`) resolved the **d=0 Newton stall** in fatigue cycles. "BFGS no longer needed" in Mac's evening inbox was scoped to that stall only.
+
+The monotonic stall Windows-FEM observed after the sign-fix is a **separate mechanism**: BtB (diffuse regularisation term) has eigenvalue ~ 2·Gc·ℓ/c_α ≈ 6.9e-6, which is negligible relative to NtN (g''·H term ~ 1e4 in the localization zone). The linear-system condition number is huge and CHOLMOD's step stays in a well-conditioned-but-tiny subspace. This is exactly what Wu/Huang/Nguyen 2019 CMAME 112704 Table 1 identifies as the driver for BFGS — not sign conventions, but the K_dd stiffness mismatch between phases.
+
+The sign-fix does not fix BtB conditioning. Both diagnoses are correct simultaneously.
+
+### Direction: brittle benchmark stays in scope (not Path B)
+
+Path B (skip anchor, cite Baktheer's published values as external anchor) was the right fallback under the earlier hypothesis that "monotonic failure = sign-bug consequence". Now that the sign-bug is separated, the original validation plan holds:
+
+1. **Brittle benchmark first** (peak-load vs net-section / LEFM analytical anchor)
+2. **PCC fatigue next** (full N_f run, Request 12)
+
+§5 should not trade validation completeness for speed now that the kernel is confirmed correct.
+
+### How to resolve the monotonic stall
+
+The damping infrastructure is already compiled into `newton_raphson.m` (commit `0aa96c8`). The monotonic case is exactly where it should be activated.
+
+**Step 1 — activate damped Newton for monotonic run** (δd cap 0.05, line-search backtracking 0.5×, max 10 backtracks). This was the "option (III)" from the earlier escalation rule (inbox `2bd6c90`) — apply it specifically to the monotonic INPUT, not to fatigue.
+
+**Step 2 — verdict gate (same as old escalation rule)**:
+- Monotone-decreasing residual, d localizes, F reaches peak → **brittle benchmark passes; proceed to Request 12 fatigue run**
+- Slow but stable (many backtracks, eventual convergence) → **ship it** for the benchmark; note in DESIGN.md that BFGS is the proper long-term fix
+- Still stalls or NaN → **escalate to BFGS port** with no further ack needed. Port from `pfczm_bfgs.for` per Wu/Huang/Nguyen 2019 §3.2 (lines 1–200). Wu's BFGS is designed specifically for this K_dd ill-conditioning regime.
+
+### Fatigue cycles: no change
+
+Vanilla Newton (+ inactive damping fallback) stays for fatigue. The sign-fix made d=0 an exact equilibrium; per-cycle d-evolution is smooth and slow; BtB ill-conditioning does not manifest at the low-d regime of early fatigue cycles. Only the brittle (full localization) case triggers it.
+
+### Summary
+
+| Stall | Mechanism | Fix | Scope |
+|---|---|---|---|
+| d=0 fatigue stall | Sign-bug in `pf_czm_fatigue.f90:197-198` | Fixed by `0aa96c8` | Fatigue cycles |
+| Monotonic d-localization stall | BtB K_dd conditioning | Damped Newton (III) → escalate to BFGS | Brittle benchmark only |
+
+Proceed: activate damping for monotonic, run brittle benchmark, then launch Request 12 fatigue.
+
+---
+
 ## 2026-05-13 (evening) · [ack sign-fix + smoke verdict + GO PCC full N_f]: kernel works, Newton trivial, PCC trajectory on Baktheer target
 
 **Re**: GRIPHFiTH commits `0aa96c8` (Wu PF-CZM kernel sign fix + Newton damping infra) and `6fa2be1` (PCC v3 INPUT + driver + 200-cycle smoke).
