@@ -35,6 +35,27 @@
 
 **Status note**: Mac has already prototyped the smallest interface/doc fixes locally in the Mac-side GRIPHFiTH mirror (`types.f90`, `mex_utils.f90`, `material_characteristic.m`, `pf_czm.f90` comments, `pf_czm_fatigue_DESIGN.md` naming cleanup), but those edits are **not compiled, not committed, and not pushed**. Treat this inbox entry as the authoritative Day 2 checklist.
 
+### [update] 2026-05-12 late
+
+The Day 1.5 interface/doc patch has now been landed in the mirror and pushed:
+
+- **GRIPHFiTH `devel`**: `98fbbca -> 1637934`
+- Commit message: `Task G Day 1.5: extend MAT_CHAR for Wu PF-CZM + lock p vs traction_p naming + document strain_en_undgr contract`
+
+This means:
+
+- **P0 is already done in code**: `types.f90`, `mex_utils.f90`, `material_characteristic.m` now carry `traction_p / a1 / a2`
+- **P1 is already done in code/doc**: `args.p` remains Carrara fatigue exponent; Wu traction order is `args.traction_p`
+- **P2 comment-level contract is already done**: `pf_czm.f90` now explicitly documents that PF-CZM reuses `strain_en_undgr` to carry Wu driving force `Y`, not legacy elastic energy
+
+So **do not re-do P0/P1/P2 from scratch**. Instead, please:
+
+1. `git pull` the mirror and verify `1637934`
+2. Continue with Day 2 wrapper / INPUT-driver work on top of that state
+3. Keep the `H_min` initialization choice, P3 cosmetic doc corrections, and P4 finite-difference sanity checks as the next open items
+
+The older paragraphs below are preserved for audit/context, but where they conflict with commit `1637934`, the pushed repo state wins.
+
 **Headline good news**: kernel math (g(d), α(d), c_α=π, a₁ formula, K_dd sign convention, Carrara accumulator on degraded driving force) all match Wu's official reference. Math is right. The issues below are about **interface plumbing, naming, and contract clarity** — addressing them before wrappers will save Day 2+ from silent breakage.
 
 ### P0 — `MAT_CHAR` chain is incomplete; new kernels will not link
