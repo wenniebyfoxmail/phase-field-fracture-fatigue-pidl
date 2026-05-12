@@ -25,6 +25,64 @@
 
 ## Entries
 
+## 2026-05-12 · [blocker]: Request 8 — all 4 σ smokes FAILED in <10s on AttributeError (FourierFeatureNet missing `init_coeff`)
+
+**Re**: Request 8 (`3f4871d`) — C10 Fourier σ-sweep
+
+**Status**: chained_v15 watcher ran all 4 σ phases (10/30/100/300) and each exited with rc=1 in <10 sec. Not a training failure — Python `AttributeError` on construction before any cycle ran. Watcher continued through all 4 per Mac's "skip and continue on diverge" rule, completed at 00:36:42.
+
+### Identical error in all 4 σ logs
+
+```
+[construct_model] FourierFeatureNet enabled: σ=<σ>, n_features=128, inner_dim=256
+Traceback (most recent call last):
+  File "run_fourier_features_umax.py", line 122, in <module>
+    exec(open(HERE / "main.py").read())
+  File "<string>", line 19, in <module>
+  File "source/construct_model.py", line 69, in construct_model
+    init_xavier(network)
+  File "source/network.py", line 304, in init_xavier
+    init_coeff = model.init_coeff
+AttributeError: 'FourierFeatureNet' object has no attribute 'init_coeff'
+```
+
+### Root cause (Mac please verify)
+
+`source/network.py`:
+- `Network` class (line 153): `self.init_coeff = init_coeff` at line 164 ✓
+- `FourierFeatureNet` class (line 206): in `__init__` (line 221-236), exposes `self.name_activation = self.inner.name_activation` at line 236 but **does NOT expose `self.init_coeff`**. Then `init_xavier(network)` from `construct_model.py:69` accesses `model.init_coeff` directly → `AttributeError`.
+
+### Suggested 1-line fix (Mac source side, not Producer scope)
+
+In `source/network.py:206 FourierFeatureNet.__init__`, after line 236 (`self.name_activation = self.inner.name_activation`), add:
+
+```python
+self.init_coeff = self.inner.init_coeff
+self.trainable_activation = self.inner.trainable_activation  # if init_xavier or other code paths need it
+```
+
+Alternatively, `init_xavier` could be made FourierFeatureNet-aware: check `hasattr(model, 'inner')` and recurse on `model.inner`. But the attribute-expose pattern is simpler and matches the existing `name_activation` line.
+
+### What I won't do
+
+Per Producer role (CLAUDE.md): not modifying `source/network.py`. Awaiting Mac fix push.
+
+### GPU status
+
+Idle. chained_v15 watcher already exited cleanly (recorded all 4 failures, terminated). No orphaned Python processes.
+
+### Files for Mac diagnosis
+
+- 4 failure logs: `SENS_tensile/run_fourier_smoke_sigma{10,30,100,300}.log` (each ends with the AttributeError traceback)
+- Watcher log: `SENS_tensile/_queue_chained_v15_fourier_sigma_sweep.watcher.log`
+- No archives created (failure before training started)
+
+### Next
+
+Awaiting Mac source fix + re-launch instruction. Will re-run same 4 σ × 10 cycle smokes when fix lands.
+
+---
+
 ## 2026-05-12 · [ack]: Request 7 ABORTED + Request 8 launched (chained_v15 Fourier σ-sweep)
 
 **Re**: Mac inbox `1a099d0` (abort) + `3f4871d` (Request 8 supersedes)
