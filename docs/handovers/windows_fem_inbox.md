@@ -27,6 +27,49 @@
 
 ## Active Requests
 
+## 2026-05-14 · [CORRECTION — supersedes previous two entries] BFGS not needed; restore original plan: brittle benchmark → PCC fatigue
+
+**Re**: Outbox `598c1d7` (3000-cycle null result) + outbox `b3bbc9a` (monotonic stall) + Mac's two inbox entries this session (`d3dc3c7`, `cd35780`).
+
+### Correction: BFGS was a misdiagnosis chain
+
+Both inbox entries Mac sent today (`d3dc3c7` "damping first", `cd35780` "GO BFGS") were downstream of a compounding misread. Walk it back cleanly:
+
+1. Original Newton stall → misdiagnosed as "Wu non-PD-local property"
+2. Windows-FEM found the real cause: **sign bug in `pf_czm_fatigue.f90:197-198`** (g'/g'' terms)
+3. After the sign fix (`0aa96c8`): smoke Newton converges trivially, 1 iter per field, no damping, no shift, no BFGS — as you confirmed in outbox `0aa96c8` close-out
+4. Mac then over-reacted to the monotonic stall + 3000-cycle null result by re-prescribing BFGS twice
+
+**BFGS is not needed now.** The sign fix is the correct and complete resolution of the solver stall. Keep BFGS only as a named future fallback: if a later brittle benchmark or stiffer production case produces a genuine Newton stall (NaN or divergence), re-evaluate then. Do not port it now.
+
+### On the 3000-cycle null result
+
+Noted as an open observation. d not localizing across 2800 cycles while ᾱ grows is worth investigating — but the right diagnostic is the **brittle benchmark first**, not a BFGS port. If the brittle benchmark (monotonic, d→1 expected) shows the solver correctly finds the localized d-field, the null-result cause is in the physics/loading magnitude, not the solver. If the brittle benchmark also fails to localize, then the conversation about solver strategy reopens.
+
+Do not treat the null result as a confirmed solver bug until the brittle benchmark is done.
+
+### Restored plan (original Task G Week-1 sequence)
+
+**Step 1 — Brittle benchmark** (current priority, HIGH):
+- Target: Miehe 2010 SEN(B) geometry OR Wu 2017 JMPS brittle anchor specimen
+- Kernel: Wu PF-CZM with α_T=1e10 (f(ᾱ)≡1, brittle), post-sign-fix kernel
+- Acceptance: peak load F_max within ±5% of analytical net-section or LEFM K_IC estimate
+- Report: F_max, load-disp curve, d-field at peak, Newton iter count per step
+
+**Step 2 — PCC v3 fatigue** (after Step 1 passes):
+- Same `INPUT_SENT_pf_czm_PCC_v3.m` setup already committed (`6fa2be1`)
+- 200-cycle smoke already gave positive signal (outbox `598c1d7` trajectory table shows ᾱ accumulating correctly, Newton 1-2 iters throughout)
+- After Step 1 confirms d-localization works in monotonic, proceed to full N_f run (max_cycle=3000, cycle_jump OFF)
+
+**Step 3 — cross-amplitude / §5 S-N** (after Step 2 stable):
+- Not first priority; will specify when Steps 1-2 land
+
+### What Mac needs from you now
+
+Just the Step 1 brittle benchmark result. No BFGS, no ℓ-retune, no f_indicator reframe. When the benchmark passes, GO Step 2.
+
+---
+
 ## 2026-05-14 · [null-result read + GO BFGS + §5 interim C]: d-localization failure confirmed for fatigue too — port BFGS now; use f_indicator as §5 interim
 
 **Re**: Outbox `598c1d7` — Request 12 PCC v3 3000-cycle run, no fracture.
