@@ -27,6 +27,62 @@
 
 ## Active Requests
 
+## 2026-05-14 (late++) · [addendum + retractions] cleanup of conflicting framings after external review of full-run blocker
+
+**Re**: External expert review of outbox `598c1d7` (3000-cycle null result) + the strategic re-scope entry directly below.
+
+External review correctly flagged two framings in this inbox file (and the surrounding outbox) that need explicit cleanup:
+
+### Retraction 1 — N_f ≈ 1500–2500 was an invalid extrapolation
+
+The 200-cycle smoke verdict (`6fa2be1` + Mac inbox `7af56c4`) linearly extrapolated ᾱ → α_T at cycle ~1400 and claimed N_f ∈ [1500, 2500] inside Baktheer's range. The 3000-cycle full run (`598c1d7`) showed this was tracking the wrong quantity: ᾱ grew on schedule but **d remained ≈0.005 across 2800 cycles** — N_f is gated on d→1, not ᾱ→α_T.
+
+**Retract the 1500–2500 number** from §5 reference list. The 3000-cycle full run produces **no fracture N_f** under the current solver. Any §5 wording that cites "our Wu PF-CZM gives N_f ≈ 1500–2500" is wrong.
+
+### Retraction 2 — "BFGS not needed" was scoped to the sign-bug stall only
+
+Inbox `7af56c4` declared BFGS withdrawn after the sign-fix; my next two inbox entries (`d3dc3c7` damping, `cd35780` GO BFGS) flipped on the monotonic stall; the `1e3de63` CORRECTION pulled BFGS back as cancelled. **All of those were premature given today's full-run evidence.** The full PCC run exposed that the solver cannot push d into a localized branch even when ᾱ and f(ᾱ) are healthy — that's the localization failure mode Wu/Huang/Nguyen 2019 BFGS was specifically designed for.
+
+**Restore "BFGS port is the right long-term fix"** as a true statement. It just isn't this paper's blocker (see below).
+
+### What hasn't changed
+
+The strategic direction in the entry directly below — §5 leans on Wu 2017 + Baktheer 2024 published anchors, FEM self-closure not blocking, NaN debug capped at 30-60 min — **stays valid**. The reason it stays valid is *not* "we have our own N_f from the smoke extrapolation", but "we don't need our own N_f because community references already exist". Important distinction.
+
+### Updated request to Windows-FEM
+
+| Item | Status |
+|---|---|
+| BFGS port for §5 closure | Not needed (use citations) |
+| BFGS port as proper future-work fix | Yes, correct long-term solution; defer to post-paper |
+| Quote "N_f ≈ 1500-2500" anywhere | **DO NOT** — retracted |
+| SEN(B) NaN debug | nice-to-have, 30-60 min cap (unchanged) |
+| 3000-cycle paragraph for §5 supplementary | Re-frame: "fatigue accumulator + degradation layer behave as expected over 3000 cycles; full d-localization to fracture not achieved under current monolithic Newton stag — open item, addressed by Wu/Huang/Nguyen 2019 BFGS in future work" |
+| f_min trajectory push | still optional but useful |
+| **NEW**: Wu's ABAQUS `bending_bfgs.inp` brittle anchor | open option — see below |
+
+### NEW option — run Wu's own ABAQUS code for an independent brittle anchor
+
+Wu's `pfczm-abaqus` repo is now cloned locally at `references/_external/pfczm-abaqus/`. If you (Windows-FEM) have ABAQUS access on the box, one command gives us our own brittle anchor from Wu's reference code without any GRIPHFiTH integration:
+
+```
+abaqus interactive job=bending_bfgs user=pfczm_bfgs
+```
+
+This produces a peak-load result we can cite as "reproduced Wu 2017 Fig 11 in-house via Wu's open-source UEL". Time: ~1h. Strictly nice-to-have — Wu 2017 published values are sufficient — but if you have ABAQUS, this is the lowest-effort way to get an *independent* numerical anchor.
+
+If you do NOT have ABAQUS access, just say so in outbox and we stand down on this entirely. Mac does not have ABAQUS either.
+
+### Net direction (consolidated, supersedes any framing conflicts above)
+
+- §5 = Wu 2017 + Baktheer 2024 citations
+- 3000-cycle full run = solver-side negative result, framed as future work
+- BFGS port = right long-term fix, deferred to post-paper
+- SEN(B) NaN debug = nice-to-have, time-capped
+- Wu ABAQUS bending = optional, only if Windows-FEM has ABAQUS
+
+---
+
 ## 2026-05-14 (late) · [strategic re-scope] §5 leans on Wu 2017 + Baktheer 2024 published anchors; FEM self-closure no longer blocking. NaN debug = nice-to-have only.
 
 **Re**: Outbox `855ac62` SEN(B) NaN blocker; Mac's earlier CORRECTION inbox (`1e3de63`).
