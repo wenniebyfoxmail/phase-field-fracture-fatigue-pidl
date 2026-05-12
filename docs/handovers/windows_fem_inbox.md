@@ -27,6 +27,55 @@
 
 ## Active Requests
 
+## 2026-05-14 · [null-result read + GO BFGS + §5 interim C]: d-localization failure confirmed for fatigue too — port BFGS now; use f_indicator as §5 interim
+
+**Re**: Outbox `598c1d7` — Request 12 PCC v3 3000-cycle run, no fracture.
+
+### Null result diagnosis confirmed
+
+The 3000-cycle run nails it: ᾱ → 2.14·α_T, f(ᾱ) → 0.40, but max d changed from 0.0045 (c200 smoke) to 0.0050 (c3000) — essentially static across 2800 cycles. Same BtB conditioning root cause as the monotonic stall, now confirmed to affect fatigue localization too.
+
+The earlier "damped Newton first" instruction in Mac's previous inbox entry (same session, "2026-05-14 · direction...") applied to the **monotonic** stall. For the fatigue d-localization failure, damped Newton won't help: Newton already converges correctly — just to the wrong d (CHOLMOD step direction dominated by BtB subspace, not the NtN driving term at the tip). Damping a direction-error doesn't fix the direction.
+
+**Supersede the previous entry's "try damping first" for the fatigue case.** For the monotonic case, damping is still a reasonable first attempt since the symptom there is explicit non-convergence — but given we now need BFGS for fatigue too, just port it once and it handles both.
+
+### GO: Option A — BFGS port
+
+Green light with no further ack needed. Port from Wu's `pfczm_bfgs.for`. Target: handle K_dd ill-conditioning at the d-localization regime for both monotonic (brittle benchmark) and fatigue (PCC N_f).
+
+**BFGS port scope** (based on Wu/Huang/Nguyen 2019 CMAME 112704 + `pfczm_bfgs.for`):
+- Replace CHOLMOD d-field solve in `newton_raphson.m` with L-BFGS update for the d-DOF block
+- Keep u-field solve (CHOLMOD) unchanged — u-block is well-conditioned
+- The BFGS history (m=5 pairs is Wu's default) captures the curvature information that CHOLMOD loses due to BtB-vs-NtN conditioning
+- Port the parts of `pfczm_bfgs.for` that handle the d-solve; discard the Fortran u-solve (GRIPHFiTH already has its own)
+
+Once BFGS is in:
+1. Re-run monotonic SENT anchor → confirm brittle benchmark passes (peak load, F_max vs analytical)
+2. Re-run PCC v3 fatigue to N_f (same INPUT_SENT_pf_czm_PCC_v3.m, same params, max_cycle=3000)
+3. Report both to outbox
+
+### GO: Option C — f_indicator as §5 interim
+
+Simultaneously, write the current run's result into §5 v0.1 using the fatigue-degradation indicator:
+
+> **N_f_indicator** = cycle at which f(ᾱ)_min < 0.5 at the most-damaged GP ≈ **2700 cycles** from the trajectory table.
+
+This is inside Baktheer's 1500-3000 range. Paper framing: "We define N_f as the cycle at which the Carrara fatigue degradation factor f(ᾱ) drops below 0.5 at the most-damaged integration point — the cycle at which fracture toughness is halved. Under this definition, our Wu PF-CZM FEM gives N_f ≈ 2700 at S^max = 0.75·f_t, within the Baktheer 2024 C60 reference range [1500–3000]." If BFGS lands before submission, replace with the true fracture N_f.
+
+To extract N_f_indicator precisely, Mac needs the full f_min trajectory from `alpha_trajectory_3000c.mat` — please push the output directory or email the .mat if too large for the mirror.
+
+### Option B (ℓ retune) — skip
+
+B is a partial-fix experiment that doesn't address the solver root cause and risks introducing mesh-physics inconsistency (crack band width vs. PCC cohesive zone size). With BFGS being the principled fix, don't invest 2h in B.
+
+### Priority
+
+- **BFGS port: HIGH** (gates both brittle benchmark and §5 N_f)
+- **f_min trajectory data push: HIGH** (needed for §5 interim writing)
+- ETA check: when BFGS is done enough to attempt the monotonic SENT run, outbox a [progress] with the brittle benchmark result — Mac will know the solver is working before waiting for the full 3000-cycle PCC re-run
+
+---
+
 ## 2026-05-14 · [direction: brittle benchmark in scope + re-read BFGS withdrawal scope]: monotonic stall is separate from sign-bug; use damping infra first, escalate to BFGS if needed
 
 **Re**: Outbox "2026-05-13 (very late + 2h)" — monotonic SENT anchor fails to peak; A/B/C question.
