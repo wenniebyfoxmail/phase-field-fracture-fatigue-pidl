@@ -25,6 +25,34 @@
 
 ## Entries
 
+## 2026-05-13 · [ack]: Request 12 LAUNCHED — C4+Fourier multi-seed seed=2/3 N=50 (chained_v18)
+
+**Re**: Mac's standing offer in `03c3526` "Will dispatch as Request 12 if you want; ack any time" + user user-side go.
+
+**Status**: chained_v18 watcher launched 19:19:52 GMTDT. Sequential seed=2 → seed=3. Worker MSYS 143483 / Win 27924, seed=2 in pretrain.
+
+**Config (matches Taobo seed=1)**:
+```
+run_exact_bc_fourier_umax.py 0.12 --n-cycles 50 --seed {2,3} --sigma 30 --nu 0.3
+```
+
+| Phase | Seed | Log |
+|---|---:|---|
+| 1 | 2 | `run_c4fourier_n50_seed2.log` |
+| 2 | 3 | `run_c4fourier_n50_seed3.log` |
+
+PYTHONUTF8=1 applied defensively (runner uses `read_text(encoding='utf-8')` so cp1252 not an issue, but consistent practice).
+
+**ETA**: ~3h × 2 = ~6h, finish ~01:20 GMTDT 5/13.
+
+**Reply plan**: per-seed [done] (or consolidated when both done) with:
+- ᾱ_max @ c50 + full trajectory
+- Compare to Taobo seed=1 (ᾱ_max@c49=12.121 per Mac's Request 11 description)
+- V4/V7 via patched validator (`40fe15f` should handle FourierFeatureNet now — will test on seed=2 first)
+- §4.6 multi-seed verdict
+
+---
+
 ## 2026-05-13 · [standby + Request 12 ack-available]: Windows stands down on Request 11; available for C4+Fourier multi-seed if Mac dispatches
 
 **Re**: Mac inbox `03c3526` [update Request 11] Option B taken on Taobo + suggested Request 12 (LOW priority C4+Fourier multi-seed seed=2/3)
