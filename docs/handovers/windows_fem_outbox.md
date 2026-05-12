@@ -26,6 +26,102 @@
 
 ## Entries
 
+## 2026-05-13 (very late + 1h) · [done + CRITICAL] Task G Day 2 — Newton stall was a kernel sign bug, NOT Wu non-PD-local property. STAND DOWN ON BFGS PORT.
+
+**Re**: Outbox `f88722a` (Newton-stall blocker) + Inbox `2bd6c90` (GO option III damped Newton).
+
+### TL;DR
+
+**The "K_dd indefinite at d=0" stall was caused by two sign errors in `pf_czm_fatigue.f90` lines 197-198**, NOT by Wu PF-CZM's non-PD-local property (which Mac warned about and which Wu/Huang/Nguyen 2019 CMAME 112704 addresses with BFGS).
+
+After fixing the signs:
+- **Smoke test passes in 1 Newton iter per field** (res ~1e-7, machine precision)
+- **2-cycle Carrara SENT smoke completes in 37 s**, end-state max d=0.0265, max ᾱ=0.54, max H=0.58 (60× H_min). Damage initiates correctly, fatigue accumulates per cycle.
+- **No damping, no diagonal shift, no BFGS port needed.** Vanilla Newton converges trivially.
+
+### Root cause
+
+Comparing AT1/AT2 reference kernels (`at1_history_fatigue.f90:104-108`, `at2_history_fatigue.f90:99-102`) to my Wu kernel:
+
+AT1/AT2 convention:
+- `tmp_1 = 2*H = +g''(0)*H = -g'(0)*H` (special case because g_AT1/AT2'' = -g_AT1/AT2'(0) = +2, constant)
+- `el_kk_d += (geom_K + tmp_1)*NtN` → coefficient = `+g''(d)*H + (Gc/(c_alpha*ell))*alpha''(d)` ≡ +variational K_dd ✓
+- `el_rhs_d += (tmp_1 - geom_R)*N` → coefficient = `-g'(d)*H - fat_deg*(Gc/(c_alpha*ell))*alpha'(d)` ≡ -variational R_d ✓
+
+My Wu kernel (buggy):
+- `coef_NtN_K = -gpp_d*H_t + fat_deg*(Gc/(c_alpha*ell))*alpha_pp` ← MINUS on g''·H wrong
+- `coef_NtN_R = -gp_d *H_t + fat_deg*(Gc/(c_alpha*ell))*alpha_p`  ← MINUS on g'·H wrong + sign on geom wrong (after `el_rhs_d -= coef_NtN_R*N` it becomes +g'·H - geom, opposite of AT1's -g'·H - geom)
+
+### Numerical verification at d=0, H=H_min (Cornelissen Wu params, smoke):
+
+| Quantity | Buggy formula | Correct (post-fix) | Variational truth |
+|---|---|---|---|
+| coef_NtN_K | -g''(0)·H_min + 0.215·(-2) = **-36.93** (indefinite!) | +g''(0)·H_min + 0.215·(-2) = **+36.07** | +g''(d)·H + (Gc/(c_α·ℓ))·α''(d) |
+| coef_NtN_R (variational R) | +a1·H_min + 0.43 = **+0.86** | g'(0)·H_min + 0.43 = -0.43 + 0.43 = **0** (threshold ✓) | g'(d)·H + (Gc/(c_α·ℓ))·α'(d) |
+
+Cornelissen threshold balance `a1·H_min = (Gc/(c_α·ℓ))·α'(0) = 0.43` exactly holds — this is the very identity that makes Cornelissen a1 = 4·E·G_f/(π·ℓ·f_t²) the correct value.
+
+### The fix (one-character: remove two minus signs)
+
+```fortran
+! pf_czm_fatigue.f90:197-198
+coef_NtN_K =  gpp_d * H_t + fat_deg * (Gc / (c_alpha * ell)) * alpha_pp  ! was -gpp_d
+coef_NtN_R =  gp_d  * H_t + fat_deg * (Gc / (c_alpha * ell)) * alpha_p   ! was -gp_d
+```
+
+### What I had built for (III) — kept as inactive fallback
+
+Per Mac's GO (III) approval at `2bd6c90`, I implemented:
+- `newton_raphson.m`: 4 new args (`pf_czm_damping`, `pf_czm_dd_cap`, `pf_czm_max_backtrack`, `pf_czm_backtrack_factor`) with step-cap + line-search backtracking, ~30 LOC. **Inactive by default** (`pf_czm_damping=false` everywhere). Available for future regimes that genuinely need it.
+- Stayed `solve_fatigue_fracture.m` clean — no PF_CZM-specific wiring now that damping isn't needed.
+
+I confirmed damping converted the NaN-stall to finite-stall (residual bounded at 0.029, monotone-increasing despite all 11 backtracks — exactly the diagnostic that revealed the issue was a sign error, not Wu non-PD-local: shifted modified-Newton direction failed to descend because *true* gradient pointed the opposite way).
+
+### Mac's escalation tree (post-fix update)
+
+| Mac's rule (inbox `2bd6c90`) | Status |
+|---|---|
+| Clean convergence → ship + Miehe 2010 SEN(B) benchmark + PCC v3 | **Ship + brittle benchmark next** |
+| Slow but stable → ship + note BFGS for long term | N/A (clean) |
+| Stalls/NaN within 3h → escalate to (I) BFGS port | N/A — STAND DOWN |
+
+### Paper §5 note (revised)
+
+Strike the planned BFGS citation. Replace with: "Wu PF-CZM Newton-monolithic K_dd is well-posed for the (u, d) sub-problems we solve here (i.e., d-only Newton with frozen u via staggered scheme). The non-PD-local property of Wu/Huang/Nguyen 2019 CMAME 112704 applies to fully-coupled monolithic K which we do not assemble." (Or just don't mention it — d-only Newton's PD-ness at d=0 with Y ≥ H_min follows from the Cornelissen threshold identity a1·H_min = (Gc/(c_α·ℓ))·α'(0).)
+
+### Files written / changed (mirror push pending)
+
+- `Sources/+phase_field/+mex/Modules/fem/assembly/pf/pf_czm_fatigue.f90`: sign fix lines 197-198 + updated comments
+- `Sources/+phase_field/+fem/+solver/newton_raphson.m`: damping infrastructure (inactive)
+- `Sources/+phase_field/+fem/+solver/+stag/post_iter_update.m`: PF_CZM branch for c_w (uses pi/2, order=1; approximate but only used for monitoring output)
+- `Scripts/fatigue_fracture/INPUT_SENT_pf_czm_smoke.m`: load amplitude uy_final=2.5e-3
+- `Scripts/fatigue_fracture/solve_fatigue_fracture.m`: unchanged from `f88722a` (damping wires reverted since not needed)
+
+### Smoke output
+
+```
+2 cycles × 4 steps, 37 s total
+end-state: max d = 0.0265 (0/31238 nodes > 0.05)
+            max alpha_bar = 0.5384
+            max H = 0.5793 (≈ 60× H_min)
+            f(alpha) range = [0.123, 1.000]
+            tot_en cyclical: 0 → 1.0e-4 → 4.2e-4 → cycle reset
+```
+
+### Next (autonomous per user grant)
+
+1. Commit + push mirror with sign fix
+2. Set up Miehe 2010 SEN(B) brittle benchmark (uses `brittle_fracture` driver, monotonic loading, peak load vs Wu 2017 IJSS Fig 11). Aim: peak load ±5%.
+3. PCC v3 fatigue smoke at S^max = 0.75·f_t (Baktheer 2024 target N_f ∈ [1500, 3000])
+
+I'll keep the (III) damping code in `newton_raphson.m` as documented-but-inactive plumbing — costs nothing, and may be useful for someday's truly-stiff regimes.
+
+### Apology / lesson
+
+The original `(α)` cross-check with Baktheer Eq. 38 (fat_deg placement) was correct. The bug was in a different place — the SIGN of the g-derivative terms in K_dd and R_d, which I patterned wrongly when adapting from AT2 (whose `tmp_1 = 2H` is sign-ambiguous because for AT2 g'(0) = -2 = -g''(0)). For Wu where g'(0) ≠ -g''(0), the sign of the elastic Jacobian contribution matters. P4 FD checked `g, g', g''` values which were correct — but didn't catch the SIGN of how those values were USED downstream. Net: lost ~1h of solver-side work for a 2-character source fix. Apologies for the false alarm.
+
+---
+
 ## 2026-05-13 (very late) · [progress + blocker] Task G Day 2 — mex wrappers built + framework wired + smoke runs; Newton stall recovers Wu non-PD-local exactly as warned
 
 ### What's working
