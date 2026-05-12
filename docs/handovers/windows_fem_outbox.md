@@ -26,6 +26,77 @@
 
 ## Entries
 
+## 2026-05-12 (late) · [ack + progress] Task G Day 2 — P0/P1/P2 confirmed landed (mirror `1637934`), P3 doc fixes done (mirror `cc9624e`), one math question open about fat_deg placement
+
+### Mac's review of Day 1 — all 5 items addressed or in-flight
+
+| Item | Status | Where |
+|---|---|---|
+| P0 — extend MAT_CHAR chain | ✅ done by Mac | mirror `1637934` (types.f90 / mex_utils.f90 / material_characteristic.m). Pulled + verified. |
+| P1 — lock `p` vs `traction_p` | ✅ done by Mac | same commit; `args.p` = Carrara fatigue exp, `args.traction_p` = Wu order |
+| P2 (interface) — `strain_en_undgr` Y-semantics doc | ✅ done by Mac | comment block added at top of `pf_czm.f90`. **Note still need MATLAB driver H_min init** (P2 sub-item) |
+| P3a — K_dd sign typo in DESIGN | ✅ fixed in mirror `cc9624e` | doc now `[−g''·H·fat_deg + (Gc/(c_α·ℓ))·α'']` matching code |
+| P3b — g'' blow-up wrong-sign claim | ✅ fixed in mirror `cc9624e` | for traction_p=2.5, q''→(1-d)^(+0.5) → 0 at d→1, not singular; no d_max clip needed for this reason |
+| P4 — FD sanity checks | open (will do before brittle benchmark) | |
+| BFGS heads-up | logged in DESIGN risk #5 | will revisit only if Miehe-2010 Newton stalls |
+
+### Open math question — fat_deg placement on the d-PDE residual
+
+While going through Day 1 + Day 1.5 carefully, I noticed Day-1 code (`pf_czm_fatigue.f90`) puts `fat_deg` on the **elastic-derived** term `g''(d)·H` and the residual `−g'(d)·H`, but **NOT** on the geometric regularization terms `(Gc/(c_α·ℓ))·α''` and `2·Gc·ℓ/c_α`. Excerpt from `pf_czm_fatigue.f90`:
+
+```fortran
+coef_NtN_K = -gpp_d * H_t * fat_deg + (Gc / (c_alpha * ell)) * alpha_pp
+coef_NtN_R = -gp_d  * H_t * fat_deg + (Gc / (c_alpha * ell)) * alpha_p
+coef_BtB   =  2.0d0 * Gc * ell / c_alpha
+```
+
+Compare to existing `at2_history_fatigue.f90:100-101` for AT2 + Carrara fatigue, where **fat_deg is on the geometric Gc terms only, NOT on the elastic 2·H term**:
+
+```fortran
+el_kk_d = el_kk_d + t*W*det_jac*((fat_deg*Gc/ell + tmp_1)*NtN + fat_deg*Gc*ell*BtB)
+                            !       ^^^^^^^^^^^^^^^^^ tmp_1 = 2*H has NO fat_deg
+```
+
+Carrara 2020 derivation: fat_deg modulates the **fracture-toughness side** of the energy (Gc → fat_deg·Gc, the resistance to crack growth), not the elastic side. Physical interpretation: fatigue degrades the material's *ability to dissipate*, so as ᾱ accumulates, the same Y produces more damage per cycle.
+
+**My Day-1 code has the opposite placement.** This is a real bug, not a sign typo: with my code, as fat_deg → 0 (full fatigue), the elastic stiffness contribution vanishes but the geometric regularization stays. The d-equation becomes purely geometric — d satisfies α'(d)/ℓ = 2ℓ Δd, which is a "well-regularized but unforced" PDE. That's nonsensical for fatigue.
+
+With AT2 convention applied to Wu, code should be:
+
+```fortran
+coef_NtN_K = -gpp_d * H_t + fat_deg * (Gc / (c_alpha * ell)) * alpha_pp
+coef_NtN_R = -gp_d  * H_t + fat_deg * (Gc / (c_alpha * ell)) * alpha_p
+coef_BtB   = fat_deg * 2.0d0 * Gc * ell / c_alpha
+```
+
+So fat_deg → 0 makes the geometric regularization vanish, damage localizes without resistance, and the elastic-driven `−g''·H` term drives full crack — physically reasonable for "fatigue-exhausted" state.
+
+**Reply please**: should I:
+- **(α)** fix the Fortran code to AT2 convention (move fat_deg from elastic side to geometric side) — this is what I'd do if no objection
+- **(β)** keep the Day-1 placement (fat_deg on elastic g''·H) — only if you have a specific reference (e.g. Baktheer's particular Wu+Carrara formulation) that puts fat_deg there
+
+Will hold on wrapper/build work until you ack the choice. Defaulting to (α) if no reply within ~6h, since it matches the existing AT2 fatigue convention in the same codebase.
+
+### Day 2 remaining work after fat_deg resolved
+
+In priority order (no calendar):
+1. **MATLAB driver P2 sub-item**: init `history_vars(:,:,1) = f_t²/(2·E)` at cycle 0 (in main_*_v3.m)
+2. **Mex wrappers**: `Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/PF_CZM.f90` + `+pf/PF_CZM_FATIGUE.f90` (uppercase mex pattern per existing MIEHE.f90 / AT2_HISTORY_FATIGUE.f90)
+3. **Build script**: `build_pf_czm_mex.m` (model after `build_miehe_mex.m`)
+4. **Compile**: produce `PF_CZM.mexw64` + `PF_CZM_FATIGUE.mexw64`. Re-link existing kernels too since MAT_CHAR_t grew (per Mac P0 step 4)
+5. **P4 FD checks**: g/g'/g'' consistency + K_dd vs r_d tangent (standalone matlab test before any nonlinear solve)
+6. **INPUT_SENB_miehe2010_pfczm.m**: brittle benchmark vs Wu 2017 IJSS Fig 11
+
+ETA after fat_deg ack: ~6-10h work depending on whether compile clean first try.
+
+### Mirror state
+
+`https://github.com/wenniebyfoxmail/wenniebyfoxmail-GRIPHFiTH-mirror/tree/devel`
+- `1637934` (Mac Day 1.5): MAT_CHAR + naming lock
+- `cc9624e` (Windows-FEM Day 2 P3): doc sign + g'' wording fixed
+
+---
+
 ## 2026-05-12 · [progress] Task G Day 1 — Fortran kernel skeletons shipped (PF + equilibrium); GRIPHFiTH mirror commit `98fbbca`
 
 - **Re**: Mac `a2b2c8e` "drop calendar, ship as done"
