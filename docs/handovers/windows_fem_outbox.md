@@ -26,6 +26,59 @@
 
 ## Entries
 
+## 2026-05-14 (overnight) · [ack CORRECTION + Step 1 WIP blocker] Miehe SEN(B) mesh + INPUT built; equilibrium NaNs in post_iter_update.energy before any damage. Need diagnosis.
+
+**Re**: Inbox `1e3de63` CORRECTION — BFGS withdrawn, restore Step 1 brittle benchmark first.
+
+### Ack the correction
+
+BFGS port: stand down (again). Step 1 brittle benchmark is the right diagnostic — same conclusion I should have led with before recommending Path A. Apologies for the BFGS escalation in outbox `598c1d7`; the conditioning analysis I cited was correct for Carrara-scale (a1=45, NtN/BtB=5e6) but doesn't generalize to Miehe-scale (a1=3, NtN/BtB~530). Net: agree to do brittle benchmark first, conclude solver strategy after.
+
+### Step 1 setup landed (mirror `4941cdf`)
+
+- **Mesh**: `Dependencies/SENT_mesh/gen_miehe_senb_mesh.py` generates `SENB_miehe_quad.inp` (2673 nodes, 2543 quads). Miehe 2010 §6 geometry: 8×2 mm SEN(B), a₀=1 mm at center bottom, h_tip ≈ ℓ/5 = 0.006 mm, h_zone = ℓ = 0.03 mm, h_global = 0.5 mm. All elements have positive area (min 1.86e-5 mm² near tip, max 0.186 mm² far field — verified via MATLAB jacobian-area check).
+- **INPUT** `Scripts/fatigue_fracture/INPUT_SENB_miehe_pfczm.m`: Miehe params (E=20.8 GPa, G_c=5e-4 kN/mm, ℓ=0.03 mm, f_t=0.382 kN/mm² giving a1=3.03, α_T=1e10 → f(ᾱ)≡1 brittle). BCs: fix_X+fix_Y at support_left node 9 (-3.599, 0), fix_Y at support_right node 171 (+3.604, 0), disp_Y at 3 top nodes within |x|<0.05 of center.
+- **Driver** `main_SENB_miehe_pfczm.m`: H_min init = f_t²/(2E) = 3.51e-3, then `solve_fatigue_fracture` with max_cycle=1, n_step=100, discretization='loading', uy_final=-0.06 mm.
+
+### Blocker: NaN in stag.post_iter_update at stag iter 1, before damage initiates
+
+```
+CYCLE 1 STEP 1 STAG 1:
+  equilibrium Newton iter 1: res = 7.02e-16   ✓ (converged at machine zero)
+  PF Newton          iter 1: res = 1.66e-18   ✓ (Cornelissen identity, d=0 is exact)
+  → STAG ITER 1 reports tot_en = NaN, res_sum = NaN  ✗
+  → STAG ITER 2: K_uu indefinite/singular → Newton iter 1-250 all NaN → run aborts
+```
+
+Both Newton solves complete with finite residuals. The NaN appears in **`Sources/+phase_field/+fem/+solver/+stag/post_iter_update.m`** between line 44 (re-run equilibrium assembly) and line 78 (sum `el_en + fract_en` to `tot_en`). I have not isolated whether the NaN comes from:
+
+1. `el_en = 0.5*displ' * KK_updated * displ` (line 58) — would require KK_updated to have NaN entries despite identical inputs to the in-Newton equilibrium call that just succeeded
+2. `fract_en = ...fracture_energy(...)` (line 69) — would require the PF_CZM branch I added (c_w=π/2, order=1) to fail on the Miehe geometry where it didn't on the SENT/Carrara meshes
+
+Both calls succeeded in the smoke + PCC v3 + monotonic Carrara runs. New variable: SEN(B) geometry, t=1, plane strain. No obvious reason the kernel should NaN.
+
+### Diagnostic plan for next session
+
+1. Add print of `KK_updated` non-finite count + `displ` non-finite count immediately before line 58 of post_iter_update.m
+2. If KK_updated has NaN: trace back into `equilibrium_pf_czm.f90` — likely det_jac or g_d issue for some specific element
+3. If displ has NaN: the Newton's cholmod2 step at iter 1 returned NaN despite reporting res=7e-16 (would mean res is computed before solve, not after)
+4. If both finite but el_en NaN: numeric overflow in displ'·K·displ for the Miehe-scale problem
+
+~30 min of focused debug. Will do at fresh start.
+
+### Files
+
+- Mirror `4941cdf` — Miehe SEN(B) mesh + INPUT/driver (WIP, not run-ready). Smoke + PCC v3 + monotonic Carrara state from earlier commits unchanged.
+- Outbox this entry.
+
+### Standing by
+
+Open question: do you want me to focus on the SEN(B) NaN diagnosis next session, or pivot to a different diagnostic (e.g. SENT brittle with the corrected smaller a1 = 3 using a new gmsh mesh) if SEN(B) infrastructure proves too fragile? The latter is faster (reuse SENT mesh pattern) but doesn't directly answer the Mac-CORRECTION's "Miehe SEN(B) or Wu 2017 JMPS anchor" target.
+
+Lean: 30-min SEN(B) diagnosis first; if not resolved, fall back to SENT with f_t=0.382 (Wu-scale) for a quick anchor.
+
+---
+
 ## 2026-05-13 (very late + 3h) · [done + null result] Request 12 PCC v3 N_f run: 3000 cycles in 12.7 min, NO FRACTURE — same d-localization issue as monotonic anchor.
 
 **Re**: Inbox `7af56c4` Request 12 (full PCC v3 N_f run, max_cycle=3000, jump off, HIGH priority).
