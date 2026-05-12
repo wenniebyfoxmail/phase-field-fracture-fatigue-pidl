@@ -27,6 +27,96 @@
 
 ## Active Requests
 
+## 2026-05-12 · [review of Day 1 push `98fbbca`]: 5 items to address BEFORE Day 2 wrapper code
+
+**Re**: Outbox `ee18265` Task G Day 1 — Wu PF-CZM Fortran kernel skeletons (`pf_czm.f90` + `pf_czm_fatigue.f90` + `pf_czm_fatigue_DESIGN.md`).
+
+**Context**: Mac pulled the GRIPHFiTH mirror and read the three new files, plus cross-referenced against Wu's official open-source `jianyingwu/pfczm-abaqus` repo (Fortran/UMAT+UEL+BFGS, https://github.com/jianyingwu/pfczm-abaqus). Full alignment writeup at [`references/wu_pfczm_abaqus_alignment.md`](../../references/wu_pfczm_abaqus_alignment.md).
+
+**Status note**: Mac has already prototyped the smallest interface/doc fixes locally in the Mac-side GRIPHFiTH mirror (`types.f90`, `mex_utils.f90`, `material_characteristic.m`, `pf_czm.f90` comments, `pf_czm_fatigue_DESIGN.md` naming cleanup), but those edits are **not compiled, not committed, and not pushed**. Treat this inbox entry as the authoritative Day 2 checklist.
+
+**Headline good news**: kernel math (g(d), α(d), c_α=π, a₁ formula, K_dd sign convention, Carrara accumulator on degraded driving force) all match Wu's official reference. Math is right. The issues below are about **interface plumbing, naming, and contract clarity** — addressing them before wrappers will save Day 2+ from silent breakage.
+
+### P0 — `MAT_CHAR` chain is incomplete; new kernels will not link
+
+`pf_czm.f90:129` reads `MAT_CHAR(el_mat)%traction_p / %a1 / %a2`, and `pf_czm_fatigue.f90:149-152` reads the same plus uses existing `%p` as `p_fat`. But:
+
+- `Sources/+phase_field/+mex/Modules/types.f90:22-24` `MAT_CHAR_t` only has 12 legacy fields (`E, ni, G, K, lambda, Gc, ell, res_stiff, alpha_T, p, penalty_irrev, penalty_recov`). **No `traction_p`, `a1`, `a2`**.
+- `Sources/+phase_field/+mex/Modules/mex_utils.f90:206 mat_char_from_matlab` copies the same 12 fields only; will not see the new ones from MATLAB.
+- `Sources/+phase_field/+init/material_characteristic.m:42` `arguments` block accepts `args.p` (default 2) but not `traction_p / a1 / a2`.
+
+**Day 2 first task (atomic step before anything else)**: extend the chain in one commit:
+1. `types.f90` — add `traction_p, a1, a2` to `MAT_CHAR_t`.
+2. `mex_utils.f90` — add the three `cp_struct_field_real` calls in `mat_char_from_matlab`.
+3. `material_characteristic.m` — add `args.traction_p`, `args.a1`, `args.a2`. If you want auto-derive for `a1`, do it in the MATLAB factory with local access to `f_t`; do **not** widen `MAT_CHAR_t` further unless you really choose an in-kernel `H_min` path.
+4. Recompile existing `MIEHE.mexw64` / `AT2.mexw64` etc. — they don't read the new fields but the MAT_CHAR_t struct grew, so they need re-linking against new types.f90. Verify no existing kernel breaks.
+
+### P1 — `p` naming collision: lock `args.p` = Carrara fatigue exponent, `args.traction_p` = Wu order
+
+`material_characteristic.m:42` already exposes `args.p` as the Carrara fatigue exponent (used in `f(ᾱ) = (2α_T/(ᾱ+α_T))^p`). Default 2.
+
+DESIGN doc (`pf_czm_fatigue_DESIGN.md:145`) refers to a new `p = 2.5` for the Wu traction order. The Fortran side correctly already renamed this to `traction_p`. The MATLAB side **must not reuse `args.p` for the Wu traction order** — if Day 2 wires `args.p = 2.5` for PCC INPUT, it silently changes the fatigue law.
+
+**Lock**: `args.p` is reserved for Carrara fatigue exponent only. Wu traction order goes through a separate `args.traction_p` keyword. Please also fix the DESIGN doc text so future readers don't conflate.
+
+### P2 — `strain_en_undgr` container reused with different semantics; document the contract
+
+`pf_czm.f90:155-158` writes `Y = ⟨σ̃₁⟩₊² / (2E)` into `strain_en_undgr(element, G_pts)`. All existing equilibrium kernels (amor / miehe / iso / at2) populate this same array with the **undegraded elastic strain energy** ½ε:CC:ε (or its tensile split). Same Fortran array, different physical quantity.
+
+If any of the following still treats `strain_en_undgr` as elastic energy in the PF-CZM branch, the run will silently mis-converge:
+- MATLAB wrappers / monitor / post-proc
+- History initialization (especially `H_min = f_t²/(2E)` setting at cycle 0)
+- VTK output / diagnostics
+- Any cross-kernel projection / handoff
+
+**Requested**: add a comment block at top of `pf_czm.f90` and the wrapper noting that in the PF-CZM branch this array carries Y (principal-stress-based driving force), not strain energy. Audit any downstream reader in the PF-CZM dispatch path.
+
+Related sub-item: **history_vars_old(:,:,1) init at cycle 0**. The kernel does `H_t = max(history_vars_old(...,1), Y_t)`. If MATLAB inits this to 0, then sub-threshold cycles run with `H = Y_t < H_min`, allowing damage before f_t is reached. Wu's official `pfczm_bfgs.for` avoids this by clipping `max(smax, ft)` directly into Y. Two equivalent fixes:
+- Preferred low-intrusion Day 2 path: init `history_vars(:,:,1) = f_t²/(2·E)` at cycle 0 in the MATLAB driver.
+- More invasive alternative: add an `H_min` clip inside the Fortran kernel: `H_t = max(H_t, f_t²/(2E))`.
+
+Recommendation: do the first one now to keep Day 2 scope small. Only widen the kernel/type interface if you later decide the in-kernel clip is worth it.
+
+### P3 — DESIGN doc has two cosmetic errors that mislead readers
+
+(a) **`pf_czm_fatigue_DESIGN.md:80` K_dd sign on α''**. Doc reads `K_dd = N^T·[g''·H − (Gc/c_α/ℓ)·α'']·N + ...`. The Fortran code at `pf_czm_fatigue.f90:193` is actually `+ (Gc/(c_α·ℓ))·α_pp` (no minus). The **code matches Wu's official `pfczm_bfgs.for` exactly**; the doc has a sign typo. Please flip the doc sign.
+
+(b) **`pf_czm_fatigue_DESIGN.md:169` g''(d) blow-up claim**. Doc says `q'' = p(p-1)(1-d)^(p-2) = 2.5·1.5·(1-d)^(-0.5)` is singular at d→1. For p = 2.5, p−2 = +0.5, so the actual expression is `(1-d)^(+0.5)`, which goes to **0** at d→1, not infinity. φ(1) = a₁(1+a₂) > 0, so w(1) > 0 and g'' is bounded. **No singularity, no d_max < 0.99 clip needed for this reason.** (Other reasons may still motivate a d_max clip, but not g''.)
+
+### P4 — Add 2 finite-difference sanity checks BEFORE Miehe-2010 brittle benchmark
+
+These take <30 min to run, but catch sign/factor errors that would otherwise show up as opaque convergence failures in the benchmark. Highly recommended:
+
+1. **`g, g', g''` consistency**: pick d ∈ {0.1, 0.3, 0.5, 0.7, 0.9}; compute analytical g, g', g'' from `wu_degradation`; verify against central-difference of g (3 evals per d) and g' (3 evals per d) at FD step 1e-5. Max relative error should be < 1e-4 for g' and < 1e-2 for g''.
+
+2. **`K_dd` vs `r_d` tangent consistency**: single 4-node quad element, single GP, fixed pfield d_nodal, fixed strain. Perturb each d_node by ±1e-6 and verify `(r(d+ε) − r(d−ε)) / (2ε) ≈ K_dd` per Fortran assembly. Max relative error < 1e-3.
+
+Failure of either signals a sign error or a missed term — fix before any nonlinear solver runs.
+
+### Solver-strategy heads-up (not a blocker, but worth a thought)
+
+Wu's official repo ships **BFGS monolithic** (`pfczm_bfgs.for`) and **augmented-Lagrangian** (`pfczm_am.for`) solvers *specifically because* Wu's K_dd's N·N^T term is locally non-PD (α''=−2, plus `−g''·H·fat_deg` also < 0; only B·B stabilizes globally via 2ℓG_c/c_α). Vanilla Newton in GRIPHFiTH may stall — especially near d→0.99+.
+
+If during Miehe-2010 benchmark you see Newton stalls / oscillation / non-monotone residual: that's not a kernel bug, that's Wu's known property. Port BFGS from `pfczm_bfgs.for` rather than retuning kernel. Reference: Wu/Huang/Nguyen 2019 CMAME 112704.
+
+### Reply expectation
+
+No need to do all 5 items in one push. The priority ordering is the order they should land:
+- P0 first (compile/link). Without this, nothing else can be tested.
+- P1+P2 atomically with P0 since they touch the same MATLAB factory file.
+- P3 doc fix can ride along anytime.
+- P4 right before Miehe-2010 benchmark.
+
+A short `[ack]` in outbox confirming you saw this + plan is enough. If you disagree with any of P0–P4, push back in outbox — Mac is in code-review mode now and will respond async.
+
+### Files referenced
+
+- Day 1 push: GRIPHFiTH `devel` commit `98fbbca`
+- Wu official: https://github.com/jianyingwu/pfczm-abaqus (`pfczm_bfgs.for`, `pfczm_umat.for`)
+- Mac alignment doc: `upload code/references/wu_pfczm_abaqus_alignment.md`
+
+---
+
 ## 2026-05-12 · [scheduling note]: drop day-by-day calendar for Task G — continuous work, ship when done
 
 **Re**: Task G Week-1 plan ack (outbox `0bae012`), specifically the 6-day calendar (Day 1 = read miehe/amor, Day 2 = implement kernel, ...).
