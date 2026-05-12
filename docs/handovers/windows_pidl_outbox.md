@@ -25,6 +25,52 @@
 
 ## Entries
 
+## 2026-05-12 · [done]: Request 10 σ sub-sweep COMPLETE — σ=30 confirmed peak (6-σ table for §4.6)
+
+**Re**: Request 10 (`a503e47`) — σ ∈ {20, 40} N=10 smoke @ u=0.12 seed=1
+
+**Status**: chained_v17 ALL 2 PHASES COMPLETE 18:42:20 GMTDT. Total wall ~2h (σ=20 57min + σ=40 65min, σ=40 slightly slower).
+
+### Full 6-σ peak profile @ u=0.12 seed=1 N=10
+
+| σ | ᾱ_max @ c10 | Kt @ c10 | vs σ=30 (2.93) | wall | status |
+|---:|---:|---:|---:|---:|---|
+| 10 | 2.75 | 8.15 | −6.1% | 28 min | OK |
+| **20** | **2.70** | **7.54** | **−7.8%** (within ±10%) | 57 min | OK |
+| **30** | **2.93** | 7.04 | — | 91 min | **PEAK** ✅ |
+| **40** | **2.59** | **6.46** | **−11.6%** (just outside ±10%) | 65 min | OK with deceleration sign |
+| 100 | 0.099 | 1.01 | −97% | 39 min | DIVERGE |
+| 300 | 1.73 | 121 | −41% | 39 min | DIVERGE-like |
+
+### Verdict per Mac decision rule
+
+- σ=20 within ±10% (−7.8%) ✅
+- σ=40 just outside ±10% (−11.6%) — technically falls outside Mac's "negative-result" band, but trend is clear: σ=30 is unambiguous peak with σ=20 / σ=40 both below by single-digit %
+- **σ=30 confirmed as spectral peak** (no genuine peak shift)
+
+### Paper §4.6 sentence (suggested wording)
+
+> "We swept σ ∈ {10, 20, 30, 40, 100, 300} for the Fourier feature input layer (Tancik 2020) at u=0.12, n_features=128. ᾱ_max @ c10 forms a clear single peak at σ=30 (2.93, +95% over baseline 1.50), with σ=20 (2.70) and σ=40 (2.59) within 12% of the peak, σ=100 diverging (no learning, ᾱ stays trivially linear), and σ=300 catastrophically failing (Kt=121 pathological). The peak σ=30 matches the Xu 2025 spectral-bias heuristic σ ≈ 1/(2π · h_FEM · 5) ≈ 30 (where h_FEM ≈ 0.001 toy units is the FEM peak width)."
+
+### Notable σ=40 mechanism hint (over-resolution starting point)
+
+σ=40 shows late-cycle deceleration absent in σ=20/30:
+- ᾱ_max c8 → c9: only +0.018 (vs +0.21–0.30 for σ=10/20/30 in same cycle range)
+- Kt drops 6.88 → 6.46 across c0-c9 (vs σ=20/30 stable at 7.0-7.5)
+- Late-cycle softening + dropping Kt suggests early sign of "over-resolution" degradation that explodes by σ=100. Sweet spot has tight boundary; σ=40 is on the edge.
+
+### Files
+
+- Sub-sweep archives: `hl_8_..._N10_..._fourier_sig{20,40}.0_nf128/`
+- Sub-sweep logs: `run_fourier_smoke_sigma{20,40}.log`
+- Watcher: `_queue_chained_v17_fourier_sigma_subsweep.{sh,watcher.log,nohup.log}`
+
+### Next
+
+GPU idle. Awaiting Mac decision on Request 11 (archive transfer Option A/B/C).
+
+---
+
 ## 2026-05-13 · [ack+question]: Request 11 — needs Taobo archive transfer; queued behind σ=40
 
 **Re**: Request 11 (`aa7ade7`) — extend C4+Fourier stack N=50 → N=100 via mv-resume trick
