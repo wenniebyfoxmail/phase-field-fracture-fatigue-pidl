@@ -26,6 +26,73 @@
 
 ## Entries
 
+## 2026-05-12 · [progress] Task G Day 1 — Fortran kernel skeletons shipped (PF + equilibrium); GRIPHFiTH mirror commit `98fbbca`
+
+- **Re**: Mac `a2b2c8e` "drop calendar, ship as done"
+- **Status**: ✅ Day 1 deliverable shipped to GRIPHFiTH mirror `devel` branch (commit `98fbbca`, +570 lines)
+
+### What's in this commit
+
+| File | Lines | Purpose |
+|---|---:|---|
+| `Sources/+phase_field/+mex/Modules/fem/assembly/equilibrium/pf_czm.f90` | 155 | Wu PF-CZM equilibrium kernel (no split, sigma = g(d)·CC·eps, tangent K = g(d)·CC, driving force Y = ⟨σ̃₁⟩²₊ / (2 E₀) via Macaulay-projected first principal effective stress) |
+| `Sources/+phase_field/+mex/Modules/fem/assembly/pf/pf_czm_fatigue.f90` | 165 | Wu PF kernel + Carrara unidirectional fatigue. Rational-fraction degradation g(d) with p=2.5, Cornelissen φ(d), α(d)=2d−d², c_α=π. Carrara accumulator reused on degraded driving force g(d)·Y. |
+| `Sources/+phase_field/+mex/Modules/fem/assembly/pf/pf_czm_fatigue_DESIGN.md` | ~250 | Math summary + file structure + risks + TODO list for Day 2+ |
+
+### Decision on file structure (deviates slightly from my `0bae012` ack)
+
+**Both equilibrium AND phase-field as NEW files** (not branches in existing kernels):
+- Equilibrium: too different from `miehe.f90` (no split) AND from `amor.f90` (no vol/dev). Cleanest match is `iso.f90` (no-split template) + add (a) g(d) rational fraction (b) principal-stress driving-force projection. So `pf_czm.f90` is essentially "`iso.f90` with Wu degradation + principal-stress Y output". 
+- PF: g'(d), g''(d) rational-fraction derivatives are non-trivial; Wu α(d) = 2d−d² gives α''(d) = −2 (opposite sign from AT2's +2). Too divergent to flag inside `at2_history_fatigue.f90`. New `pf_czm_fatigue.f90`.
+
+### Key math verified in skeletons
+
+1. **Wu degradation**: `g(d) = (1-d)^p / [(1-d)^p + φ(d)]` with subroutine `wu_degradation` returning `g, g', g''` via quotient rule. Safety: clip `(1-d) ≥ 0` and check `w < 1e-30`.
+2. **Wu α(d) = 2d − d²**: subroutine `wu_alpha` returning `α, α', α''` — single-line each since closed-form.
+3. **Macaulay first principal in 2D**: subroutine `macaulay_sigma1_2D` with discriminant safety. Plane-strain assumed.
+4. **Newton tangent K_dd at GP**: `N^T·[−g''·H·fat_deg + (Gc/(c_α·ℓ))·α''] N + B^T·[2·Gc·ℓ/c_α] B`. Note: α''=−2 makes the NtN term negative in isolation, but g''·H·fat_deg dominates positively — Wu strong-coupling property.
+5. **Carrara fatigue layer**: Δᾱ = H_p(g(d)·Y − g(d_prev)·Y_prev) [Mac spec: Carrara accumulator on **degraded** driving force, not raw — different from AT2 fatigue impl]. fat_deg floor at 1e-6 to prevent solver stall.
+
+### MAT_CHAR additions needed (Day 2 work)
+
+`pf_czm.f90` reads `MAT_CHAR(el_mat)%E`, `%traction_p`, `%a1`, `%a2` (NEW fields). Need to extend `Sources/+phase_field/+init/material_characteristic.m` arguments-block to:
+- `f_t` (tensile strength, required for `a1` auto-derivation)
+- `traction_p = 2.5` (Baktheer 2024 default)
+- `a1` (auto from `4·E·G_f/(π·ℓ·f_t²)` if not given)
+- `a2 = 2^(5/3) - 3 ≈ 0.1748` (Cornelissen closed-form, fixed default)
+
+### Risks identified (in DESIGN.md)
+
+1. Principal stress sqrt at zero discriminant — handled with `if (disc < 0) disc = 0` and `max(0, s1)`
+2. g''(d) blow-up at d→1 — handled at d-Newton level via `(1-d)^p` clipping to ≥0
+3. fat_deg = 0 numerical stall — floor at 1e-6
+4. cycle_jump = OFF per PCC v2 lesson — hardcoded in INPUT_v3
+
+### Next (Day 2+ in priority order, no calendar)
+
+1. **MATLAB wrappers**: `Sources/+phase_field/+mex/+fem/+assembly/{+equilibrium,+pf}/pf_czm*.m` (model after `miehe.m` / `at2_history_fatigue.m`)
+2. **material_characteristic.m**: add `f_t`, `traction_p`, `a1`, `a2` to arguments block
+3. **build_pf_czm_mex.m**: compile to `mexw64` (model after `build_miehe_mex.m`)
+4. **Compile smoke**: verify build works
+5. **Miehe 2010 SEN(B) brittle benchmark**: INPUT, run, ±5% peak load check vs Wu 2017 IJSS Fig 11
+6. **PCC v3 INPUT**: at S^max=0.75·f_t, reuse `SENT_pcc_concrete_v2_quad.inp` mesh, target N_f ≈ 1,500-3,000
+
+### Where to read the code
+
+Pull GRIPHFiTH mirror:
+```
+git -C ~/phase-field-fracture-with-pidl/GRIPHFiTH pull
+ls Sources/+phase_field/+mex/Modules/fem/assembly/{equilibrium,pf}/pf_czm*.{f90,md}
+```
+
+Or one-by-one from `https://github.com/wenniebyfoxmail/wenniebyfoxmail-GRIPHFiTH-mirror/tree/devel/Sources/+phase_field/+mex/Modules/fem/assembly/`.
+
+### When to expect Day 2
+
+Likely tonight (2026-05-12 evening) — MATLAB wrappers are straightforward template-copy from existing kernels. Will outbox at compile-success or compile-blocker, whichever comes first.
+
+---
+
 ## 2026-05-11 (late) · [ack]: Task G Wu PF-CZM Week-1 plan — new file pair, Miehe-2010 brittle anchor, ETA 2026-05-18
 
 - **Re**: Mac `1f30be8` Task G greenlight (0.85 cross-check withdrawn, AT2 PCC reframed as negative-result motivation for §5)
