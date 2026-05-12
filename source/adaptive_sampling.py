@@ -57,7 +57,8 @@ def compute_adaptive_weights(inp, u, v, alpha, hist_alpha,
     Returns
     -------
     weights : torch.Tensor, shape (n_elements,)
-        Detached, non-negative tensor with values ≥ 1.0.
+        Detached, non-negative tensor **normalized to mean 1.0**, so that beta
+        only changes the spatial emphasis, not the global loss scale.
         weights.shape matches what `compute_energy(crack_tip_weights=...)` expects.
 
     Notes
@@ -70,12 +71,21 @@ def compute_adaptive_weights(inp, u, v, alpha, hist_alpha,
       is large. The pure FI-PINN residual is ||∂E/∂field||, but we don't have
       that scalar field-by-field; the element-energy magnitudes are the closest
       cheap proxy with the existing infrastructure.
+    - **Mean-1 normalization** (post-2026-05-13 P2 fix): for power≠1 the term
+      (r_e/r_mean)^power has mean > 1 by Jensen, so the raw `1 + β·(...)^p`
+      had mean > 1+β. Without normalization, increasing β simultaneously
+      increased loss-scale and spatial emphasis, confounding FI-PINN ablations.
+      We now divide by `weights.mean()` so changing β cleanly isolates the
+      process-zone emphasis effect from any loss-scale change. (Net effect on
+      LBFGS/RPROP step size of the dividing step is benign — it is exactly
+      equivalent to scaling the optimizer learning rate by a constant.)
     """
     if residual_source != "full":
         raise NotImplementedError(
             f"adaptive_sampling residual_source={residual_source!r} not implemented. "
             f"Use 'full' for C6 FI-PINN. 'elastic_only' would degenerate to Direction 3 "
-            f"(tip_weight_cfg), which is a different (negative-result) method."
+            f"(tip_weight_cfg), which is a different method (and currently still uses "
+            f"non-mean-normalized weights — see model_train.py)."
         )
 
     with torch.no_grad():
@@ -92,6 +102,10 @@ def compute_adaptive_weights(inp, u, v, alpha, hist_alpha,
     # Normalize by element mean (clamped against zero division for pristine cycles)
     r_mean = r_e.mean().clamp(min=1e-30)
 
-    # w_e = 1 + β · (r_e / r_mean)^p  ensures w_e ≥ 1 everywhere; uniform when β=0.
+    # Raw weights: w_e = 1 + β · (r_e / r_mean)^p  (≥ 1 everywhere; uniform when β=0).
     weights = 1.0 + beta * (r_e / r_mean).pow(power)
+
+    # Mean-1 normalization: keeps total loss scale invariant to β so that
+    # changing β only changes spatial weighting, not the LBFGS/RPROP step magnitude.
+    weights = weights / weights.mean().clamp(min=1e-30)
     return weights

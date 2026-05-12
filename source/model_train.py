@@ -500,6 +500,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
                 intermediateModel_path=None, writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,                    # ★ 传入疲劳退化函数
+                crack_tip_weights=crack_tip_weights,    # ★ 2026-05-13 P0 fix: thread C6/Dir3 reweight into LBFGS
                 supervised_dict=_supervised_dict,       # ★ MIT-8
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
@@ -519,6 +520,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 intermediateModel_path=intermediateModel_path,
                 writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,                    # ★ 传入疲劳退化函数
+                crack_tip_weights=crack_tip_weights,    # ★ 2026-05-13 P0 fix: thread C6/Dir3 reweight into RPROP
                 supervised_dict=_supervised_dict,       # ★ MIT-8
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
@@ -671,8 +673,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     crack_tip_weights = None   # 还未到启用圈数，本圈均匀
 
             # ★ 2026-05-13 Branch 2 C6: full-residual adaptive reweight
-            # Same per-cycle timing as Direction 3: compute weights from end-of-cycle
-            # state, applied in next cycle's fit() via crack_tip_weights.
+            # Timing: weights are computed at END of cycle j from current α field,
+            # applied during cycle (j+1)'s fit() via crack_tip_weights.
+            # Semantics of start_cycle (post-P2 fix): `start_cycle=N` means weights
+            # are ACTIVE in cycle N's fit() — so we need to compute them at end of
+            # cycle N-1, i.e. condition `j+1 >= start_cycle` ⇔ `j >= start_cycle-1`.
             # Difference from Direction 3: residual source is full PDE proxy
             # (|E_el_e| + |E_d_e| + |E_hist_e|) not just ψ⁺_e.
             if _adapt_cfg is not None:
@@ -680,12 +685,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 _as_power       = _adapt_cfg.get('power', 1.0)
                 _as_start_cycle = _adapt_cfg.get('start_cycle', 1)
                 _as_source      = _adapt_cfg.get('residual_source', 'full')
-                if j >= _as_start_cycle:
-                    # Reuse the cycle-end forward pass already computed above (u_el, v_el, alpha_el)
-                    # via field_comp.fieldCalculation(inp) — but that happens AFTER this block in
-                    # the current control flow. To keep this block before the existing E_el log,
-                    # do an explicit no-grad forward here. Cost is one extra forward per cycle
-                    # (negligible vs the in-cycle training cost).
+                # j+1 = next cycle's index; weights are active when next_cycle >= start_cycle
+                if (j + 1) >= _as_start_cycle:
+                    # Explicit no-grad forward here (the cycle-end forward downstream of
+                    # this block computes the same fields for the E_el log; we don't
+                    # share the result to keep this block self-contained for review).
+                    # Cost is one extra forward per cycle (negligible vs training cost).
                     with torch.no_grad():
                         _u_as, _v_as, _alpha_as = field_comp.fieldCalculation(inp)
                     crack_tip_weights = compute_adaptive_weights(
