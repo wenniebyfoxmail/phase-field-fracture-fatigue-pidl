@@ -67,13 +67,23 @@ def detect_fourier(archive):
 
 
 def default_cycles(archive, n=3):
-    """If --cycles not given, pick the last n available trained_1NN files."""
+    """If --cycles not given, pick the last n available trained_1NN files.
+
+    Filters out non-integer suffixes (e.g. `trained_1NN_initTraining.pt` from
+    the pretraining stage).
+    """
     best = archive / "best_models"
     if not best.is_dir():
         return []
-    ckpts = sorted(best.glob("trained_1NN_*.pt"),
-                   key=lambda p: int(p.stem.rsplit("_", 1)[-1]))
-    return [int(p.stem.rsplit("_", 1)[-1]) for p in ckpts[-n:]]
+    cyc_files = []
+    for p in best.glob("trained_1NN_*.pt"):
+        suffix = p.stem.rsplit("_", 1)[-1]
+        try:
+            cyc_files.append((int(suffix), p))
+        except ValueError:
+            continue   # skip non-numeric like 'initTraining'
+    cyc_files.sort()
+    return [c for c, _ in cyc_files[-n:]]
 
 
 def main():
