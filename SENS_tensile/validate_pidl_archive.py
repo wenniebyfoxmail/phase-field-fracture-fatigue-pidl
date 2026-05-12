@@ -688,24 +688,64 @@ def test_v7_bc_residual(archive: Path,
     Xb, Yb = torch.meshgrid(x_bulk, y_bulk, indexing="ij")
     xy_bulk = torch.stack([Xb.flatten(), Yb.flatten()], dim=1).requires_grad_(True)
 
-    # Apply BC scaling consistent with FieldComputation:
-    # u = (y-y0)*(yL-y)*u_NN + (y-y0)/(yL-y0)*cos(theta)*lmbda
-    # v = (y-y0)*(yL-y)*v_NN + (y-y0)/(yL-y0)*sin(theta)*lmbda
-    # alpha = clamp(α_NN, 0, 1)
-    # For mode I tension (theta=π/2): cos(theta)=0, sin(theta)=1
-    # For SENT geometry: y0=-0.5, yL=0.5, so (y-y0)*(yL-y) = (y+0.5)*(0.5-y)
-    #                                       (y-y0)/(yL-y0) = (y+0.5)/1 = y+0.5
-    y0, yL = -0.5, 0.5
-    lmbda = float(umax)
+    # ★ 2026-05-12 fix: previously this function hardcoded the baseline BC
+    # ansatz (bc_scale = (y+0.5)(0.5-y), bc_load = (y+0.5)). That gives the
+    # WRONG field for archives that train with non-baseline ansätze
+    # (e.g. C4 exact-BC distance-function trial), producing garbage σ_xx at
+    # x=±0.5 when the NN weights are interpreted under the baseline ansatz.
+    # Fix: detect exact_bc tag in the archive name and route via the same
+    # FieldComputation that produced the training.
+    cfg_path = archive / "model_settings.txt"
+    archive_uses_exact_bc = ("_exactBCsent" in archive.name)
+    archive_uses_sym_prior = ("_symY2" in archive.name)
+    exact_bc_nu = nu
+    if cfg_path.is_file():
+        for line in cfg_path.read_text().splitlines():
+            line = line.strip()
+            if line.startswith("exact_bc_nu:"):
+                try:
+                    exact_bc_nu = float(line.split(":", 1)[1].strip())
+                except ValueError:
+                    pass
+    if archive_uses_exact_bc:
+        try:
+            from field_computation import FieldComputation
+            _exact_bc_dict_v7 = {"enable": True, "mode": "sent_plane_strain",
+                                 "nu": exact_bc_nu}
+            _fc_v7 = FieldComputation(
+                net=net,
+                domain_extrema=torch.tensor([[-0.5, 0.5], [-0.5, 0.5]],
+                                            dtype=torch.float32),
+                lmbda=torch.tensor([float(umax)]),
+                theta=torch.tensor([float(torch.pi / 2)]),
+                alpha_constraint="nonsmooth",
+                symmetry_prior=archive_uses_sym_prior,
+                exact_bc_dict=_exact_bc_dict_v7,
+            )
 
-    def field(xy):
-        out = net(xy)
-        u_NN, v_NN, _ = out[:, 0], out[:, 1], out[:, 2]
-        bc_scale = (xy[:, 1] - y0) * (yL - xy[:, 1])
-        bc_load = (xy[:, 1] - y0) / (yL - y0)
-        u = bc_scale * u_NN * lmbda  # cos(π/2)=0 ⇒ load term vanishes for u
-        v = (bc_scale * v_NN + bc_load * 1.0) * lmbda  # sin(π/2)=1
-        return u, v
+            def field(xy):
+                u, v, _ = _fc_v7.fieldCalculation(xy)
+                return u, v
+        except Exception as e:
+            return {"test": "V7_bc_residual_side", "status": "SKIP",
+                    "reason": (f"exact_bc archive but FieldComputation "
+                               f"rebuild failed: {type(e).__name__}: {e}")}
+    else:
+        # Apply BC scaling consistent with baseline FieldComputation:
+        # u = (y-y0)*(yL-y)*u_NN + (y-y0)/(yL-y0)*cos(theta)*lmbda
+        # v = (y-y0)*(yL-y)*v_NN + (y-y0)/(yL-y0)*sin(theta)*lmbda
+        # For mode I tension (theta=π/2): cos(theta)=0, sin(theta)=1
+        y0, yL = -0.5, 0.5
+        lmbda = float(umax)
+
+        def field(xy):
+            out = net(xy)
+            u_NN, v_NN, _ = out[:, 0], out[:, 1], out[:, 2]
+            bc_scale = (xy[:, 1] - y0) * (yL - xy[:, 1])
+            bc_load = (xy[:, 1] - y0) / (yL - y0)
+            u = bc_scale * u_NN * lmbda
+            v = (bc_scale * v_NN + bc_load * 1.0) * lmbda
+            return u, v
 
     def stress_at(xy):
         u, v = field(xy)

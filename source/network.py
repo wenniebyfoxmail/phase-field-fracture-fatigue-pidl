@@ -232,9 +232,13 @@ class FourierFeatureNet(nn.Module):
         # Inner NN takes 2·n_features input
         self.inner = NeuralNet(2 * n_features, output_dimension, n_hidden_layers,
                                neurons, activation, init_coeff)
-        # Expose name_activation / trainable_activation for outer code that introspects
+        # Expose introspection attributes used by init_xavier and outer code
         self.name_activation = self.inner.name_activation
         self.trainable_activation = self.inner.trainable_activation
+        self.init_coeff = self.inner.init_coeff
+        # Also expose layer attrs so init_xavier's `init_weights` traversal finds nn.Linear
+        # (init_xavier calls self.apply(init_weights); since FourierFeatureNet wraps
+        # NeuralNet, .apply walks into inner.* sub-modules and gets all Linear layers)
 
     def forward(self, x):
         # x: (N, input_dimension) e.g. (N, 2)
