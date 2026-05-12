@@ -13,12 +13,8 @@ Stack:
 - C10 Fourier σ=30: spectral lift for tip-zone fine features
 - E2 oracle ψ⁺: drop-in replacement of ψ⁺ in B_{2ℓ₀}(tip) with FEM ψ⁺
 
-Usage (same as run_e2_reverse_umax.py + same args):
-    python run_A_oracle_psi_c4f_umax.py 0.12 --n-cycles 100 --seed 1
-
-Note: this wrapper enables C4 + Fourier in config, then execs the patched
-run_e2_reverse_umax.py (which now passes both dicts through to construct_model
-and FieldComputation).
+Usage (same args as run_e2_reverse_umax.py):
+    python run_A_oracle_psi_c4f_umax.py 0.12 --n-cycles 100
 """
 import sys
 from pathlib import Path
@@ -27,8 +23,14 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent / "source"))
 
-# Enable C4 + Fourier in config BEFORE the runner imports them
-import config
+# Save the user CLI args (needed for the inner runner's argparse)
+_user_argv = list(sys.argv)
+
+# Temporarily stub sys.argv with config-friendly positionals so `import config`
+# doesn't crash on `int(sys.argv[1])` when our first positional is the umax float.
+sys.argv = ["run_A_oracle_psi_c4f_umax.py", "8", "400", "1", "TrainableReLU", "1.0"]
+
+import config  # noqa: E402
 config.exact_bc_dict["enable"] = True
 config.exact_bc_dict["mode"] = "sent_plane_strain"
 config.exact_bc_dict["nu"] = config.mat_prop_dict["mat_nu"]
@@ -38,13 +40,15 @@ config.fourier_dict["sigma"] = 30.0
 config.fourier_dict["n_features"] = 128
 config.fourier_dict["seed"] = 0
 
+# Restore user argv for the inner runner's argparse
+sys.argv = _user_argv
+
 print("=" * 72)
 print("Run A: E2 oracle ψ⁺ + C4 exact-BC + C10 Fourier σ=30 stack")
 print(f"  exact_bc_dict.enable = {config.exact_bc_dict['enable']}")
 print(f"  fourier_dict.enable  = {config.fourier_dict['enable']} (σ={config.fourier_dict['sigma']})")
 print("=" * 72)
 
-# Hand off to the patched E2 reverse runner via exec
 main_path = HERE / "run_e2_reverse_umax.py"
 exec(compile(main_path.read_text(encoding="utf-8"), str(main_path), "exec"),
      {"__name__": "__main__", "__file__": str(main_path)})

@@ -16,8 +16,8 @@ Stack:
 - MIT-8 ψ⁺ MSE warmup: joint loss = physics + λ·MSE(log10 ψ⁺_PIDL, log10 ψ⁺_FEM)
   for cycles 1..K, then release (λ=0) for K+1..N
 
-Usage (same as run_mit8_warmup_umax.py + same args):
-    python run_B_mit8_c4f_umax.py 0.12 --K 40 --n-cycles 100 --lambda 1.0 --seed 1
+Usage (same args as run_mit8_warmup_umax.py):
+    python run_B_mit8_c4f_umax.py 0.12 --K 40 --n-cycles 100 --lambda 1.0
 """
 import sys
 from pathlib import Path
@@ -26,7 +26,10 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent / "source"))
 
-import config
+_user_argv = list(sys.argv)
+sys.argv = ["run_B_mit8_c4f_umax.py", "8", "400", "1", "TrainableReLU", "1.0"]
+
+import config  # noqa: E402
 config.exact_bc_dict["enable"] = True
 config.exact_bc_dict["mode"] = "sent_plane_strain"
 config.exact_bc_dict["nu"] = config.mat_prop_dict["mat_nu"]
@@ -35,6 +38,8 @@ config.fourier_dict["enable"] = True
 config.fourier_dict["sigma"] = 30.0
 config.fourier_dict["n_features"] = 128
 config.fourier_dict["seed"] = 0
+
+sys.argv = _user_argv
 
 print("=" * 72)
 print("Run B: MIT-8 ψ⁺ MSE warmup + C4 exact-BC + C10 Fourier σ=30 stack")
