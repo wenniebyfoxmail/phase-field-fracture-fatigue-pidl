@@ -227,7 +227,8 @@ def compute_J_at_cycle(ctx, nn_ckpt: Path, lmbda: float,
         th = theta_arr[sl]
         # Open contour: trapezoidal integration over θ in (−π+δ, π−δ).
         # NO wrap-around — excluding the spurious crack-face crossing.
-        J = r * np.trapezoid(integrand[sl], x=th)
+        _trapezoid = getattr(np, "trapezoid", np.trapz)
+        J = r * _trapezoid(integrand[sl], x=th)
         Js.append(float(J))
         # Plane stress: K_I = √(E·J). Keep sign for diagnostic of NN artifacts.
         K = np.sign(J) * np.sqrt(abs(J) * E_YOUNG)
