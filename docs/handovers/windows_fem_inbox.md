@@ -90,7 +90,7 @@ K_dd = N^T · [−g''(d_GP)·H + fat_deg·(Gc/(c_α·ℓ))·α''(d_GP)] · N + f
 - **Eq. 37**: `H_min = f_t² / (2·E_0)` — matches our P2 sub-item exactly. Init `history_vars_old(:, :, 1) = f_t²/(2·E)` in MATLAB driver at cycle 0, or add an `H_min` floor inside the Fortran kernel. Either works. Open item; no action needed in (α) commit.
 - **Eq. 40**: Baktheer uses `f(ᾱ) = (2α_T/(ᾱ+α_T))²` — **p_fat = 2** (not 2.5). Our `args.p` is configurable, so this is a default-value note: PCC v3 INPUT driver should set `args.p = 2` when anchoring against Baktheer's published N_f ≈ 1,500–3,000 at S^max=0.75. **Do not conflate with `args.traction_p = 2.5`** — that one is Wu degradation order (Baktheer page 5 Eq. 15 sets `p = 2.5` for the rational-fraction g(d), separate variable).
 - **Eq. 41**: `α_T = G_f / (k_f · ℓ)` — matches our PCC α_T calibration (`finding_alpha_T_PCC_may10.md`).
-- **Eq. 42**: ᾱ accumulator `∫|α̇|dt` during loading, 0 during unloading — matches our Carrara `H_p(g(d)·Y − g(d_prev)·Y_prev)`.
+- **Eq. 42**: ᾱ accumulator `∫|α̇|dt` during loading, 0 during unloading. Note: Baktheer's main definition uses `α(t) = [1−φ(t)]²·ψ₀(t)` (page 9 first paragraph) as the chosen accumulation variable; the paper explicitly lists `α(t) = g(φ(t))·ψ₀(t)` and others as **optional alternative forms** ("done arbitrarily to demonstrate the generality of the presented approach; however, other forms ... can also be chosen, such as α(t) = g(φ(t))·ψ₀(t)"). So our `H_p(g(d)·Y − g(d_prev)·Y_prev)` is *compatible with* one of Baktheer's alternatives but is NOT his primary definition — keep this distinction explicit when writing §5.
 
 ### Reply expectation
 
@@ -119,7 +119,7 @@ Suggested Day-2 ordering after (α):
 
 **Context**: Mac pulled the GRIPHFiTH mirror and read the three new files, plus cross-referenced against Wu's official open-source `jianyingwu/pfczm-abaqus` repo (Fortran/UMAT+UEL+BFGS, https://github.com/jianyingwu/pfczm-abaqus). Full alignment writeup at [`references/wu_pfczm_abaqus_alignment.md`](../../references/wu_pfczm_abaqus_alignment.md).
 
-**Status note**: Mac has already prototyped the smallest interface/doc fixes locally in the Mac-side GRIPHFiTH mirror (`types.f90`, `mex_utils.f90`, `material_characteristic.m`, `pf_czm.f90` comments, `pf_czm_fatigue_DESIGN.md` naming cleanup), but those edits are **not compiled, not committed, and not pushed**. Treat this inbox entry as the authoritative Day 2 checklist.
+**Status note** *(SUPERSEDED — see `[update] 2026-05-12 late` block below: the prototype edits were subsequently committed and pushed in GRIPHFiTH `1637934`)*: Mac has already prototyped the smallest interface/doc fixes locally in the Mac-side GRIPHFiTH mirror (`types.f90`, `mex_utils.f90`, `material_characteristic.m`, `pf_czm.f90` comments, `pf_czm_fatigue_DESIGN.md` naming cleanup), but those edits are ~~**not compiled, not committed, and not pushed**~~ (NOW PUSHED — see [update] block). Treat this inbox entry as the authoritative Day 2 checklist.
 
 ### [update] 2026-05-12 late
 
