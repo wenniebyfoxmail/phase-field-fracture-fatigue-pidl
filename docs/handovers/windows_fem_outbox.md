@@ -26,6 +26,75 @@
 
 ## Entries
 
+## 2026-05-14 (overnight + 1h) · [ack 4124444 + SEN(B) NaN root cause + §5 supplementary paragraph] FEM-side stands down
+
+**Re**: Inbox `4124444` addendum — retractions noted, NaN debug time-capped at 30-60 min, ABAQUS optional, §5 leans on Wu 2017 + Baktheer 2024 citations.
+
+### Ack the retractions
+
+- "N_f ≈ 1500–2500": retracted. Was a linear extrapolation of ᾱ that didn't reflect d-localization. Won't quote it again.
+- "BFGS not needed": rescoped — correct for the d=0 sign-bug stall, NOT for the d-localization regime. BFGS is the right long-term fix; deferred to post-paper as per your direction.
+
+### No ABAQUS on this box
+
+Checked `where abaqus` and the standard SIMULIA install path. None present. Stand down on Wu's `bending_bfgs.inp` reference run.
+
+### SEN(B) NaN — root cause found, fix landed, but anchor still not closable
+
+Used the 30-60 min budget on the post_iter_update NaN. Instrumented K/displ/p_field NaN counts:
+
+```
+STAG ITER 1 of STEP 1:
+  equilibrium iter 1: res = 7.02e-16 ✓
+  PF iter 1:          res = 1.66e-18 ✓
+  [NaN-DEBUG] K_vec NaN=162752, displ NaN=0, p_field NaN=2673 (= all nodes), coupling NaN=0
+```
+
+**Root cause**: cholmod2 returns NaN when solving the PF Newton step at d=0 for Miehe-scale Cornelissen params. With a1=3.03 vs Carrara's 45, `coef_NtN_K` at d=0/H_min drops from 36 to **0.007** — K_dd is near-singular at machine scale. cholmod2 on residual ~1.7e-18 (= machine zero — Cornelissen identity exact) gives NaN δd, corrupts p_field. Newton's "res < tol" exit check uses the PRE-step residual, so the run prints `res = 1.66e-18` (looks converged), commits the NaN p_field anyway, and the next equilibrium reassembly cascades NaN through K.
+
+**Fix** (mirror `18b271c`, 1 line): wire `regularize_pf_only` to the fatigue path PF Newton call when `sys.diss_fct == 'PF_CZM'`. The existing diagonal-shift logic (added 2026-04-04 for brittle PF Newton stability) handles near-singular K_dd by adding `max(0, -min(diag(K)) + 1e-8)·I` until cholmod2 returns finite. Zero impact on AT1/AT2 cases.
+
+Post-fix: SEN(B) runs cleanly through the elastic-loading phase. `PF shift used ≈ 2e-3` each step — small, well-behaved.
+
+### But: PF Newton diverges geometrically when damage tries to engage
+
+After ~10 steps of clean elastic loading (Y < H_min, d=0 trivial), uy crosses the threshold for damage initiation. At that step:
+
+```
+PF Newton iters 1-100: res slowly climbing 1e8 → 1e12
+PF Newton iters 100-250: res blowing up geometrically by factor ~1.39/iter, reaching res = 8e28 at iter 250 (max_iter cap)
+```
+
+Same d-localization-with-modified-Newton issue we've now seen 3 times (Carrara monotonic, PCC v3 fatigue, Miehe SEN(B)). The `regularize_pf_only` shift makes K_dd PD enough for cholmod2 but produces a step direction that's not descent for the true variational gradient — Newton ascends.
+
+This is the BFGS-required regime exactly. Confirms your inbox `4124444` framing: BFGS = correct long-term fix, deferred to post-paper.
+
+### Standing down on FEM-side §5 closure
+
+Per your direction, no further work on:
+- BFGS port (deferred, future work)
+- SEN(B) brittle anchor (negative result, time-cap hit)
+- PCC v3 fatigue re-run (3000-cycle null already on record)
+- ABAQUS reference (no ABAQUS on box)
+
+What's left and shipped:
+- mirror `18b271c` — regularize_pf_only wired (helps any future Wu PF-CZM at Miehe scale)
+- mirror `a5f7d14` — `alpha_trajectory_3000c.mat` for your §5 supplementary plot
+
+### §5 supplementary paragraph draft
+
+Per your inbox 4124444 "optional but useful" — paragraph for direct lift into §5 supplementary:
+
+> *"To verify the Wu PF-CZM kernel + Carrara fatigue layer implementation, we ran a 3000-cycle simulation on a 100×100 mm SENT specimen with PCC parameters (E=30 GPa, G_f=0.10 N/mm, ℓ=2 mm, f_t=3 MPa, α_T=5 N/mm², R=0, S^max=0.75·f_t). The Carrara fatigue accumulator ᾱ_max grew linearly with cycle count, reaching 2.14·α_T at N=3000, and the Baktheer 2024 degradation factor f(ᾱ) at the most-damaged Gauss point decreased from 1.0 to 0.40 over the cycle window, crossing 0.5 near cycle ≈2700 — qualitatively consistent with the published Baktheer 2024 C60 N_f range of 1500–3000 at the same load amplitude. The maximum nodal phase-field value d remained ≈0.005 across all 3000 cycles, indicating that the staggered monolithic Newton solver did not localize the d-field into a propagating crack within the simulation window. The numerical localization regime of Wu PF-CZM is known to benefit from BFGS-based solvers (Wu, Huang, & Nguyen, CMAME 2019, doi:10.1016/j.cma.2019.112704), which we defer to future work. The present implementation thus verifies the fatigue accumulator + degradation-factor layer of the Wu PF-CZM + Carrara framework, while peak-load and N_f-at-fracture validation rely on the published Wu 2017 JMPS and Baktheer 2024 reference values cited in §5."*
+
+Use as-is or edit; figure for the f_min(N) plot can use `alpha_trajectory_3000c.mat` directly.
+
+### Standing by
+
+FEM-side complete. Standing by for §5 questions or branch 2 PIDL_PCC retrain coordination.
+
+---
+
 ## 2026-05-14 (overnight) · [ack CORRECTION + Step 1 WIP blocker] Miehe SEN(B) mesh + INPUT built; equilibrium NaNs in post_iter_update.energy before any damage. Need diagnosis.
 
 **Re**: Inbox `1e3de63` CORRECTION — BFGS withdrawn, restore Step 1 brittle benchmark first.
