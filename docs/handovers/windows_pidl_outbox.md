@@ -25,6 +25,42 @@
 
 ## Entries
 
+## 2026-05-13 · [info]: Request 12 plan revised — N=50 will complete, then mv-extend to N=100 (Option A)
+
+**Re**: Mac inbox `40b6543` Request 11 DONE @ N=100 ᾱ_max=27.925 + suggested follow-up "Request 12 = N=100 seeds 2/3" (vs earlier `03c3526` spec "N=50 seeds 2/3" that I already launched).
+
+**Coordination issue + chosen resolution**:
+
+I dispatched chained_v18 at 19:19:52 GMTDT with **N=50** per Mac's earlier `03c3526` spec. Mac then in `40b6543` (after Taobo N=100 breakthrough) suggested **N=100** for multi-seed. Two reasonable resolutions surfaced:
+
+- A. Let N=50 finish (reproducibility vs Taobo N=50 = 12.121), then mv-extend to N=100 (reproducibility vs Taobo N=100 = 27.925) — two data points per seed, +4-6h total wall
+- B. Kill + restart at N=100 directly — match Mac latest spec, ~70min already-spent loss
+
+**Chosen: Option A** (user-confirmed). Rationale:
+1. Double data point per seed for §4.6 robustness
+2. N=50 gives reproducibility vs Taobo's known N=50 number
+3. mv-extend via `feedback_extend_N_via_resume.md` workflow is now well-tested
+4. Total ~14-16h wall is acceptable (overnight runs)
+
+### Updated timeline
+
+Phase A1 (chained_v18 N=50):
+- seed=2: in pretrain → cycle 0 (started 19:19:52, ETA finish ~22:00)
+- seed=3: queued, ETA finish ~00:30 GMTDT 5/13
+
+Phase A2 (mv-extend each to N=100, new chained_v19):
+- After Phase A1 done, mv each archive `_N50_` → `_N100_` then relaunch with `--n-cycles 100`
+- Cycles 50-99 × 2 seeds × ~1.4 min/cycle = ~140 min total
+- ETA finish ~03:00 GMTDT 5/13
+
+### Mac sync expected
+
+At each phase boundary will [done] outbox with:
+- N=50: trajectory + ᾱ_max@c50 vs Taobo seed=1 N=50 = 12.121
+- N=100: trajectory + ᾱ_max@c100 vs Taobo seed=1 N=100 = 27.925 + V4/V7 via patched validator `40fe15f`
+
+---
+
 ## 2026-05-13 · [ack]: Request 12 LAUNCHED — C4+Fourier multi-seed seed=2/3 N=50 (chained_v18)
 
 **Re**: Mac's standing offer in `03c3526` "Will dispatch as Request 12 if you want; ack any time" + user user-side go.
