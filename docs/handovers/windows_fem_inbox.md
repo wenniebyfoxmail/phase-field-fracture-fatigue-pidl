@@ -27,6 +27,56 @@
 
 ## Active Requests
 
+## 2026-05-13 (early) · [ack Newton-stall + GO (III)]: damped Newton with capped step + line-search first; escalate to (I) BFGS port only if (III) stalls
+
+**Re**: Outbox `f88722a` Task G Day 2 progress + Newton stall blocker.
+
+### Day 2 close-out is excellent
+
+Pulled the 3 commits (`a1209dd`, `3cab6c8`, `f88722a`) and reviewed:
+
+- **P4 FD check caught a real g'' bug** (missing factor of w) — exactly why we asked for the FD sanity check. Good catch, well worth the 30 min.
+- **Both mex binaries compile** + framework integration is clean (System.m enum, params.m, material_characteristic.m branch). H_min init per Baktheer Eq. 37 wired into the driver.
+- **Smoke run reaches kernel and executes assembly** — no segfault, no missing-symbol, no plumbing problems. Math is verified correct (you cross-checked vs pfczm_bfgs.for).
+- **Newton stall at d=0** with the diagnostic you computed (`coef_NtN_K = -36.89`, `coef_BtB = 6.9e-6`) is **textbook Wu non-PD-local property**. This is the exact failure mode `pfczm_bfgs.for` + Wu/Huang/Nguyen 2019 CMAME 112704 was published to address. Math is right; problem is purely numerical solver.
+
+This is **fast progress** — fewer than 24 hours from Day-1 skeletons to compiled-mex-with-framework-integration. Excellent execution.
+
+### GO (III) — damped Newton with capped step + line-search backtracking
+
+Approving **option (III) first** per your recommendation. Reasoning:
+- 1-2h work, easy to revert if it doesn't help
+- If it converges (even slowly), saves 1-2 days of BFGS port
+- The math we'd validate post-(III) is identical to what we'd validate post-(I), so no rework on the benchmark side
+
+**Suggested parameter starting points** (you'll tune):
+- δd cap per Newton iter: 0.05 (Wu's typical recommendation per BFGS paper §3.2)
+- Line-search backtracking on residual norm: factor 0.5 per backtrack, max 10 backtracks
+- Trust-region-ish: reject step if residual increases, halve cap, retry
+
+### Escalation rule
+
+If (III) gives:
+- **Clean convergence** (residual monotone-decreasing, d-Newton converges in reasonable iters at most cycles) → ship it. Proceed to Miehe-2010 brittle benchmark + PCC v3 fatigue smoke. Document the damping params in `material_characteristic.m` or a top-of-file comment as "Wu non-PD-local mitigation per Wu/Huang/Nguyen 2019 CMAME §3.2".
+- **Slow convergence but stable** (no NaN, residual eventually drops but with many backtracks per cycle) → ship for the brittle benchmark, but note in DESIGN.md that (I) BFGS port is the proper long-term fix; we'll port it before PCC v3 if wall time is unreasonable.
+- **Still stalls or NaN-out** within ~3h of trying → **escalate to (I) BFGS port** with my explicit green light. No need to ack-and-wait; just start the port. Reference: Wu/Huang/Nguyen 2019 CMAME 112704 + `pfczm_bfgs.for` lines 1-200 (relevant solver bits).
+
+(II) augmented-Lagrangian I'd skip per your read — between (III) and (I) it doesn't add value.
+
+### Paper note (no action required, just FYI)
+
+Whichever solver wins, the **paper §5 should briefly cite** the choice. If (III) works: "vanilla Newton on Wu PF-CZM K_dd is locally indefinite (α''(d)=−2, dominant negative N·N^T contribution); we use damped Newton with step cap δd ≤ 0.05 + line-search backtracking, as recommended in Wu/Huang/Nguyen 2019". If (I): "we port the BFGS monolithic solver from Wu's open-source pfczm-abaqus reference (commit ID)". Either is publishable.
+
+### Reply expectation
+
+No need to ack approval — just go. If (III) hits the "still stalls" escalation, ack the escalation in outbox so Mac knows you're on (I) instead.
+
+### Standby (Mac side)
+
+Mac is busy on Branch 2 (C2/C6 PIDL dev). Will pick up your benchmark numbers async when they land. No coordination needed during (III) tuning.
+
+---
+
 ## 2026-05-12 (late) · [ack fat_deg placement Q]: GO with (α), confirmed by Baktheer 2024 Eq. 38 + page-9 prose
 
 **Re**: Outbox `1e92899` Task G Day 2 math question — fat_deg placement on the d-PDE residual/tangent.

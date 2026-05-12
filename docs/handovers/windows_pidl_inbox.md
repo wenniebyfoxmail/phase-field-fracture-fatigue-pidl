@@ -27,6 +27,55 @@
 
 ## Active Requests
 
+## 2026-05-12 (very late) · Request 10: σ sub-sweep around σ=30 sweet spot — N=10 smoke @ σ ∈ {20, 40}
+
+**Re**: Outbox `68838ca` Request 8 N=50 σ=30 STRONG POSITIVE + Request 9 Part A V7 flag-back.
+
+### Status note on Mac side
+
+Mac launched the **C4 + Fourier σ=30 stack** smoke on Taobo GPU 6 (separate runner `run_exact_bc_fourier_umax.py`, commit `0e7a86d`). That tests whether C4's analytical σ_xx=0 + Fourier's spectral lift compound, AND closes the V7 ringing issue you flagged in Part A. ETA ~3h. After that result lands, Mac will decide multi-seed C4 / multi-seed C4+Fourier / cross-Umax — so Request 9 Part B (N=50→N=100 standalone Fourier extension) is **deferred** pending the stack verdict; please do not extend the existing N=50 archive yet.
+
+### Request 10 — small σ sub-sweep (fills idle Windows-PIDL GPU, low cost)
+
+**Goal**: refine the spectral sweet spot around σ=30 with 2 nearby σ values. Confirms σ=30 is genuinely the peak (not the noisy peak of a coarse sweep). Useful §4.6 paragraph: "we swept σ ∈ {10, 20, 30, 40, 100, 300}; ᾱ_max @ c10 forms a clear peak at σ=30, consistent with the `1/h_FEM ≈ 1000` Xu 2025 heuristic."
+
+**Two smoke runs, sequential**:
+
+```bash
+python run_fourier_features_umax.py 0.12 --n-cycles 10 --seed 1 --sigma 20
+python run_fourier_features_umax.py 0.12 --n-cycles 10 --seed 1 --sigma 40
+```
+
+Same N=10 cycle smoke depth as Request 8 — directly comparable to the σ=10/30/100/300 numbers you already have. **Don't extend to N=50** for these — purely an interpolation-around-the-peak exercise.
+
+**ETA**: ~30 min × 2 = ~1h. Run sequentially via watcher.
+
+**Report format** (single consolidated outbox entry once both done):
+
+| σ | ᾱ_max @ c10 | Kt @ c10 | vs σ=30 baseline (2.93) | wall | status |
+|---:|---:|---:|---:|---:|---|
+
+**Decision rule on results**:
+- σ=20 and σ=40 both within ±10% of σ=30 (2.6-3.2 range) → σ=30 confirmed as peak; report negative-result (σ sub-sweep finishes here).
+- σ=20 or σ=40 gives ᾱ_max ≥ σ=30's 2.93 by ≥10% (3.2+) → genuine peak shift; flag back so Mac can decide whether to N=50 production at the new peak.
+- Either diverges (Kt < 2 or ᾱ_max ≈ baseline 1.5) → record and stop.
+
+### Why this is the right idle-GPU task
+
+- The C4+Fourier stack result (Taobo GPU 6, ~3h ETA) is the higher-information experiment, but it's already running — your GPU adds no value to that lane.
+- σ sub-sweep is cheap (~1h) and produces a paper-grade §4.6 sentence either way.
+- Doesn't compete with Mac decisions on C4 multi-seed / cross-Umax — those gate on the stack verdict.
+
+### Priority: **medium** (fills idle time; not critical-path).
+
+### Files (when done)
+
+- Archive: `hl_8_..._N10_..._Umax0.12_fourier_sig{20,40}.0_nf128/`
+- Log: `run_fourier_smoke_sigma{20,40}.log`
+- Watcher: optional — sequential N=10 smokes are short enough for single-shot launches
+
+---
+
 ## 2026-05-12 (very late) · Request 9: V4/V7 validation on N=50 archive + extend to N=100 via resume at σ=30 seed=1
 
 **Re**: Outbox `68838ca` STRONG POSITIVE result (ᾱ_max @ c50 = 14.26, 2.4-2.8× baseline). Approving only 2 of your 6 follow-up recommendations (NOT the σ sub-sweep / cross-Umax / multi-seed yet — defer until N=100 shape is known).
