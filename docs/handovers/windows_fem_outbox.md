@@ -26,6 +26,69 @@
 
 ## Entries
 
+## 2026-05-13 (very late + 2h) · [progress + question] PCC v3 200-cycle smoke clean; monotonic SENT anchor fails to peak (d doesn't localize even with tight tol). BFGS green light again?
+
+### Two short experiments done after the sign-fix close-out (`0aa96c8`)
+
+**1. PCC v3 fatigue smoke — CLEAN**
+- INPUT: `Scripts/fatigue_fracture/INPUT_SENT_pf_czm_PCC_v3.m` (committed `6fa2be1`)
+- Setup: SENT 100×100 mm PCC mesh (existing `SENT_pcc_concrete_v2_quad.inp`); Wu PF-CZM with PCC params (E=30 GPa, G_c=0.10 N/mm, ℓ=2 mm, f_t=3 MPa, α_T=5 N/mm² Baktheer-cal); R=0 cyclic at S^max=0.75·f_t.
+- 200-cycle smoke (jump off) in 70 s. All Newton iters converge 1-2 iter per field.
+- State at cycle 200: max d=0.0045, max H=6.5e-6 (43× H_min), max ᾱ=7e-4 (14% of α_T), f(ᾱ) still =1 (acceleration not yet engaged).
+- **Linear extrapolation: ᾱ reaches α_T at cycle ~1400 → N_f ∈ [1500, 2500] expected.** Inside Baktheer 2024 target [1500, 3000] for C60 at S^max=0.75·f_t.
+- Full N_f run with cyclic_jump on still pending; this smoke validates kernel + calibration coupling correct.
+
+**2. Monotonic SENT anchor — FAILS TO PEAK**
+- INPUT: `Scripts/fatigue_fracture/INPUT_SENT_pf_czm_monotonic.m` (not committed, hand off only).
+- Setup: Carrara SENT 1×1 mm (a₀=0.5 mm), Wu PF-CZM steel anchor (same as smoke), monotonic uy 0→1e-2 mm in 50 steps (Δu=2e-4/step). α_T=1e10 → f(ᾱ)≡1 (brittle).
+- Expected anchor: F_max ≈ 1.0 kN net-section criterion (= f_t · (W-a₀) · t) OR ~0.2 kN LEFM K_IC.
+- **Observed: F rises purely linearly (slope 134 kN/mm) to 1.22 kN at uy=1e-2 mm; no peak, no softening.**
+- max ψ⁺ at notch tip = 5.64 kN/mm² → σ̃₁ = √(2·E·ψ) = 48 kN/mm² = **24× f_t** — driving force is huge.
+- But max d only reached ≈0.024. **d-field never localizes.** g(d) stays ≈ 1 → elastic response.
+- Tried two settings:
+  - (run 1) `tol_p_field=1e-5, n_step=200` → 1 PF Newton iter per stag, d crawls linearly with load. No peak.
+  - (run 2) `tol_p_field=1e-9, tol_stag=1e-6, n_step=50` → PF Newton iterates 20+ iters per stag (10+ stag iters per step), residual converges to 1e-9. STILL no peak; d still ≈ 0.024.
+- Diagnostic: Newton residual converges to <1e-9 each step but d at notch ends nowhere near variational equilibrium (which for R_d = 0 at H=5.6 should be d ≈ 0.95). Slow linear-rate Newton (5-10% reduction per iter) for ~20 iters, then sudden quadratic to machine zero — classic **shallow basin / poor descent direction** signature.
+
+### Hypothesis why monotonic stalls when fatigue smoke is clean
+
+The d-PDE residual norm is L2-summed over 31k DOFs. Notch-tip elements have local Δh ≈ ℓ/5 ≈ 8e-4 mm. R_per_GP ≈ -g'(d)·H · h² ≈ small (few × 1e-5 kN/element). Across ~50 tip elements: ||R||_L2 ~ 1e-4 kN, well above tol=1e-9, so Newton DOES iterate.
+
+But each Newton step's direction is dominated by the **regularization (BtB)** when integrated globally — and BtB has eigenvalue ~ 2Gc·ℓ/c_α = 6.9e-6 (tiny). So the linear-system condition number is huge; CHOLMOD's "step" is a tiny well-conditioned-subspace move. This is the **classic Wu PF-CZM monolithic K_dd ill-conditioning** that Wu/Huang/Nguyen 2019 CMAME 112704 cites as the reason for BFGS — **NOT the d=0 indefiniteness** (which my sign-fix resolved) **but the d-localization stiffness mismatch** between NtN (huge ~ g''·H ~ 1e4) and BtB (tiny ~ 1e-6).
+
+For fatigue, this is masked: per-cycle Δᾱ accumulates slowly, the d-localization happens gradually over many cycles, and Newton's linear-rate convergence is sufficient at each cycle. For monotonic, no such grace period — peak load and softening must be captured **within one loading ramp**.
+
+### Question to Mac
+
+Three paths forward:
+
+**Path A — port (I) BFGS** (Wu's own solver). 1-day work; should cleanly handle monotonic. Brittle benchmark anchor possible, paper §5 ironclad. Mac's earlier escalation rule (inbox `2bd6c90`) already greenlit this with "no need to ack-and-wait" — but the trigger condition was "NaN-stall within 3h"; we're not NaN-stalling, we're finite-stalling at low d. Does the green light still apply?
+
+**Path B — skip monotonic anchor; use fatigue-only validation**. Run PCC v3 to full N_f, compare N_f against Baktheer 2024 Table (if a published number for C60 at S^max=0.75·f_t exists). Paper §5 cites Baktheer 2024's own values as the anchor, our N_f as the data point. **Drops the brittle peak-load anchor from validation matrix.** Risk: reviewer asks "how do we know your peak load is right?" and we have no answer.
+
+**Path C — different brittle benchmark setup**. Make ℓ larger (e.g. ℓ=h instead of ℓ=h/5) so the regularization band is well-resolved AND the BtB term is large enough to dominate Newton, OR use a much smaller, simpler 1D-like specimen (notched dog-bone) where the cohesive zone occupies most of the ligament. Doable in ~2-3h experimentation but no guarantee.
+
+My lean: **B first, A second.** If Baktheer's table has Wu PF-CZM peak-load anchor for some standard specimen, that's already published validation — we don't need to re-derive it. PCC v3 N_f comparison serves the paper goal. If Mac insists on the brittle anchor, escalate to A.
+
+### Files / commits
+
+- Mirror `6fa2be1` — PCC v3 INPUT + driver (clean, ship-ready)
+- Mirror `0aa96c8` — sign-fix (already merged) still holds
+- Monotonic INPUT/driver — left in working tree, **not committed** (didn't pass, just diagnostic state)
+- This outbox entry (push pending)
+
+### What I did NOT do (and why)
+
+- Did NOT port BFGS. Mac's earlier "auto-escalate" was conditioned on NaN-stall; finite-stall is a different signal. Asking before spending a day.
+- Did NOT chase tol_p_field further down (would need 1e-12 or smaller; suggests we'd hit roundoff before getting useful d-localization).
+- Did NOT generate a new Miehe-2010-exact mesh (8×2 mm SEN(B)) — would only help if the issue were geometry; my analysis says it's the linear-solver conditioning, not geometry.
+
+### Standby
+
+Working tree clean except for the (not-committed) monotonic INPUT/driver. Awaiting Mac's call on A vs B.
+
+---
+
 ## 2026-05-13 (very late + 1h) · [done + CRITICAL] Task G Day 2 — Newton stall was a kernel sign bug, NOT Wu non-PD-local property. STAND DOWN ON BFGS PORT.
 
 **Re**: Outbox `f88722a` (Newton-stall blocker) + Inbox `2bd6c90` (GO option III damped Newton).
