@@ -259,13 +259,18 @@ fourier_dict = {
 #   - C10 (fourier_dict): spectral lift σ=30 — partial positive (2.4× propagation)
 # C6 hypothesis (Gao et al. 2023 FI-PINN, SIAM SISC): uniform collocation density
 # under-weights the tip ROI because the tip is geometrically small (~5% of domain)
-# yet physically dominant. Reweight per-element loss by full PDE-residual proxy
+# yet physically dominant. Reweight per-element loss by the Deep Ritz residual proxy
 # (not ψ⁺ alone) so the NN is forced to fit the tip zone tighter.
 #
 # Weight formula (mirrors tip_weight_cfg, different residual source):
-#   r_e   = |E_el_e| + |E_d_e| + |E_hist_e|        ← per-element residual proxy
-#                                                   (from compute_energy_per_elem)
-#   w_e   = 1 + β · (r_e / r_mean)^p               ← element loss weight ≥ 1
+#   r_e   = |E_el_e| + |E_d_e|                     ← per-element Deep Ritz residual
+#                                                   (E_hist dropped — it's a regularizer,
+#                                                    not a physics residual, and ≈ 0 by
+#                                                    the time C6 runs; see adaptive_sampling.py
+#                                                    module docstring for option-B variant)
+#   w_e   = 1 + β · (r_e / r_mean)^p               ← raw element weight
+#   w_e  ← w_e / mean(w_e)                         ← normalized to mean 1 so β only
+#                                                    changes spatial emphasis, not loss scale
 # Reweight is computed at end of cycle j from current α field, applied in cycle j+1's
 # fit() via the existing crack_tip_weights plumbing.
 #

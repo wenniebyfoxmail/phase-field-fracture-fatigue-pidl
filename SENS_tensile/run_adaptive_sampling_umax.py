@@ -1,15 +1,30 @@
 #!/usr/bin/env python3
 """run_adaptive_sampling_umax.py — Branch 2 C6 (Gao 2023 FI-PINN reweight variant).
 
-Per-cycle reweights the per-element Deep Ritz loss by the PDE-residual proxy
-|E_el_e| + |E_d_e| + |E_hist_e| computed at the previous cycle's α field.
-Reweight formula: w_e = 1 + β·(r_e / r_mean)^power.
+Per-cycle reweights the per-element Deep Ritz loss by the residual proxy
+**|E_el_e| + |E_d_e|** computed at the previous cycle's α field. Reweight
+formula: w_e = (1 + β·(r_e / r_mean)^power) / mean(·)  ← mean-1 normalized.
 
 Mechanism: forces NN to allocate more capacity to high-residual elements
 (typically tip ROI) without modifying the ansatz architecture. Differs from
-Direction 3 (`tip_weight_cfg`, ψ⁺-only proxy, negative result for N_f) by using
-the FULL residual proxy — the C6 hypothesis is that ψ⁺ alone misses the
-damage-side residual contribution that becomes dominant once d > 0.
+Direction 3 (`tip_weight_cfg`, ψ⁺-only proxy) by using both the elastic AND
+the dissipation contribution to the Deep Ritz functional — the C6 hypothesis
+is that ψ⁺ alone misses the damage-side residual contribution that becomes
+dominant once d > 0.
+
+Note on residual scope (2026-05-13 doc-correctness pass):
+The proxy is the Deep Ritz residual |E_el|+|E_d|, NOT |E_el|+|E_d|+|E_hist|.
+The irreversibility penalty E_hist is a regularizer layered on top of the
+energy functional, not a physics residual; it is also numerically ≈ 0 by
+the time the C6 block runs (hist_alpha was just refreshed at model_train.py:538).
+See source/adaptive_sampling.py module docstring for the option-B variant
+discussion if E_hist sensitivity ever matters.
+
+Note on Direction 3 history:
+The "Direction 3 negative result for N_f" claim from Apr-15 is suspect:
+crack_tip_weights was never forwarded into fit() until commit `f33069e`
+(2026-05-13 P0 fix). A clean re-test of Direction 3 with this fix is now
+possible — separate task.
 
 References:
   - Gao, Yan, Liang, Tan, Cheng 2023. FI-PINN. SIAM J. Sci. Comput. 45(4).

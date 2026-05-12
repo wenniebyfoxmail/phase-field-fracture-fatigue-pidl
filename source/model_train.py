@@ -672,14 +672,19 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 else:
                     crack_tip_weights = None   # 还未到启用圈数，本圈均匀
 
-            # ★ 2026-05-13 Branch 2 C6: full-residual adaptive reweight
+            # ★ 2026-05-13 Branch 2 C6: Deep Ritz residual adaptive reweight
             # Timing: weights are computed at END of cycle j from current α field,
             # applied during cycle (j+1)'s fit() via crack_tip_weights.
             # Semantics of start_cycle (post-P2 fix): `start_cycle=N` means weights
             # are ACTIVE in cycle N's fit() — so we need to compute them at end of
             # cycle N-1, i.e. condition `j+1 >= start_cycle` ⇔ `j >= start_cycle-1`.
-            # Difference from Direction 3: residual source is full PDE proxy
-            # (|E_el_e| + |E_d_e| + |E_hist_e|) not just ψ⁺_e.
+            # Residual proxy: |E_el_e| + |E_d_e| (Deep Ritz residual). E_hist
+            # (irreversibility penalty) is intentionally dropped — it's a regularizer
+            # not a physics residual, and is ≈ 0 here anyway (hist_alpha was refreshed
+            # at line 538 above). See source/adaptive_sampling.py module docstring
+            # for option-B variant if E_hist sensitivity ever matters.
+            # Difference from Direction 3: residual source includes E_d (dissipation
+            # term, dominant once d > 0), whereas Direction 3 uses ψ⁺ only.
             if _adapt_cfg is not None:
                 _as_beta        = _adapt_cfg.get('beta', 2.0)
                 _as_power       = _adapt_cfg.get('power', 1.0)
