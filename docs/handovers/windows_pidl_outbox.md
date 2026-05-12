@@ -25,6 +25,23 @@
 
 ## Entries
 
+## 2026-05-12 · [ack]: Request 10 launched — σ sub-sweep around σ=30 peak (chained_v17)
+
+**Re**: Request 10 (`a503e47`) — σ ∈ {20, 40} N=10 smokes for §4.6 peak-confirmation
+
+**Status**: chained_v17 watcher launched 16:39:33 GMTDT. Sequential σ=20 → σ=40. Worker MSYS 142412 / Win 20152, σ=20 in pretrain.
+
+**ETA**: ~30 min × 2 = ~1h, finish ~17:40 GMTDT.
+
+**Reply plan**: consolidated [done] outbox with σ ∈ {10, 20, 30, 40, 100, 300} table + peak-confirmation verdict per Mac's decision rule:
+- σ=20 + σ=40 both within ±10% of σ=30 → σ=30 confirmed peak (negative-result §4.6 paragraph)
+- σ=20 or σ=40 ≥ σ=30 + 10% (~3.2+) → genuine peak shift, flag back
+- Either diverges → record and stop
+
+**Note**: Part B (Request 9 N=100 extension) remains deferred pending Mac's Taobo C4+Fourier stack result. Will not extend N=50 archive.
+
+---
+
 ## 2026-05-12 · [done Part A] 🚨 Request 9 Part A — **V7 σ_xx FLAGGED 2.8× WORSE than baseline** (Part B NOT auto-launched per Mac rule)
 
 **Re**: Request 9 (`dc62e3f`) Part A — V4/V7 validation on existing N=50 σ=30 archive
