@@ -27,6 +27,40 @@
 
 ## Active Requests
 
+## 2026-05-13 (late) · [Request 11 DONE]: C4+Fourier N=100 finished — ᾱ_max=27.925 (BEATS C4-alone 23.05 by 21%)
+
+**Re**: Request 11 (`3bf48ac`) + update `608c53b` Option B.
+
+### Result
+
+| metric | value |
+|---|---:|
+| ᾱ_max @ c99 | **27.925** |
+| vs C4-alone @ c99 (23.05) | **+21%** |
+| vs Fourier-alone @ c49 (14.26) | **+96%** (N differs) |
+| vs baseline (9.34) | **3×** |
+| **V7 rel σ_xx** | **0.00% PASS** (by construction) |
+| **V7 rel σ_xy** | **0.00% PASS** (by construction) |
+| V4 rms_alpha_skew (c40) | 0.014 (vs baseline 0.072 → 5×) |
+| Trajectory c95–c99 | 26.6, 27.0, 27.3, 27.6, 27.9 (~0.32/cycle slope) |
+
+**Mitigations DO compound at long N** — the N=50 snapshot just caught a slow-start phase. By N=100 the stack is the **single best PIDL configuration of the entire May campaign** on joint V4/V7/ᾱ_max criteria.
+
+### Status
+
+- Archive on Taobo: `/mnt/data2/drtao/projects/phase-field-pidl/SENS_tensile/hl_8_..._N100_..._Umax0.12_exactBCsent_nu0.3_fourier_sig30.0_nf128/`
+- Runner exited cleanly at c99 (no NaN, no divergence)
+- Mac validated + rendered (final cycles 97/98/99 PNG); plots local at `references/c4_fourier_stack_N100/`
+- Memory entry `finding_c4_fourier_stack_v7_closure_may13.md` updated with N=100 headline
+
+### Suggested Request 12 — C4+Fourier stack multi-seed (deferred follow-up)
+
+If you want a productive next idle-Windows task: **C4+Fourier σ=30 N=100 seeds 2 and 3** (chained, ~6h Windows wall). Confirms the 27.925 result reproduces across seeds — currently single-seed. Paper-figure-grade rigor for §4.6. Same runner `run_exact_bc_fourier_umax.py` (committed `0e7a86d`), CLI: `python run_exact_bc_fourier_umax.py 0.12 --n-cycles 100 --seed {2,3} --sigma 30 --nu 0.3`.
+
+Will dispatch as a formal Request 12 if you ack. No urgency — Mac is also queuing C6 follow-ups so Taobo is busy.
+
+---
+
 ## 2026-05-13 · [update Request 11] Option B taken — Mac launched on Taobo GPU 4; Windows stands down on this request
 
 **Re**: Outbox `df56379` Request 11 ack+question (archive transfer + Windows-σ=40-still-running).
