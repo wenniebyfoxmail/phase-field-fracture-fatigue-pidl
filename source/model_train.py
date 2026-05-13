@@ -555,11 +555,25 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 torch.utils.data.TensorDataset(inp, outp),
                 batch_size=inp.shape[0], shuffle=False
             )
+            # ★ P0 fix (2026-05-14, expert review): _nominal_mask was built once
+            # before the loop from the ORIGINAL mesh and indexed psi_plus_elem
+            # at line ~715 below. After the S2 swap, psi_plus_elem lives on the
+            # refined mesh (≈81k vs 67k), so the boolean mask shape no longer
+            # matches and the index expression crashed in cycle 0. Rebuild
+            # _nominal_mask / _n_nominal on the post-swap mesh each cycle.
+            if T_conn is not None:
+                _T_np2 = T_conn.cpu().numpy() if isinstance(T_conn, torch.Tensor) else T_conn
+                _inp_np2 = inp.detach().cpu().numpy()
+                _cx2 = (_inp_np2[_T_np2[:, 0], 0] + _inp_np2[_T_np2[:, 1], 0] + _inp_np2[_T_np2[:, 2], 0]) / 3.0
+                _cy2 = (_inp_np2[_T_np2[:, 0], 1] + _inp_np2[_T_np2[:, 1], 1] + _inp_np2[_T_np2[:, 2], 1]) / 3.0
+                _nominal_mask = (np.abs(_cy2) > 0.3) & (_cx2 > -0.3)
+                _n_nominal = int(_nominal_mask.sum())
             if (j == start_j) or (j % 5 == 0):
                 print(
                     f"  [sidecar-S2 cycle {j}] tip={_tip_xy_now} | "
                     f"elem {_s2_diag['n_elem_before']}→{_s2_diag['n_elem_after']} | "
-                    f"marked={_s2_diag['n_marked']} | area_drift={_s2_diag['area_drift']:.1e}"
+                    f"marked={_s2_diag['n_marked']} | area_drift={_s2_diag['area_drift']:.1e} | "
+                    f"n_nominal={_n_nominal}"
                 )
 
         # ★ MIT-8: build per-cycle supervised_dict (None outside [1, K])
@@ -829,9 +843,28 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                             matprop, pffmodel, area_T, T_conn=T_conn,
                             f_fatigue=f_fatigue,
                         )
-                    _score_cur = (_E_el_e_s2.abs() + _E_d_e_s2.abs()).detach().cpu().numpy()
+                    # ★ P1 fix (2026-05-14, expert review): compute_energy_per_elem
+                    # returns element-INTEGRATED energy (= local density × area_e).
+                    # An integrated quantity carries a built-in geometric bias —
+                    # already-refined elements have ~1/4 the area of their parent,
+                    # so their integrated score is ~1/4× even when the underlying
+                    # error density is identical. Aggregating integrated quantities
+                    # via `aggregate_to_original` (area-weighted MEAN) compounds
+                    # this: a uniform 1-to-4 split returns ~1/4 the parent's
+                    # integrated value, systematically under-estimating refined
+                    # regions for next cycle's top-K.
+                    #
+                    # Fix: convert to DENSITY (integrated / area) before aggregating.
+                    # Density is invariant under uniform refinement (same local
+                    # smooth field) and the area-weighted MEAN of density is
+                    # exactly the density on the parent — round-trip exact.
+                    # select_top_score_elements then ranks elements by local error
+                    # density, which is the correct semantic for adaptive sampling.
+                    _score_integ = (_E_el_e_s2.abs() + _E_d_e_s2.abs()).detach().cpu().numpy()
+                    _area_safe = np.clip(_area_np_cur, 1e-30, None)
+                    _score_density_cur = _score_integ / _area_safe
                     _S2_state['score_orig'] = _agg_to_orig(
-                        _score_cur, _area_np_cur,
+                        _score_density_cur, _area_np_cur,
                         _parent_cur, _S2_state['n_elem_orig'],
                     )
 
