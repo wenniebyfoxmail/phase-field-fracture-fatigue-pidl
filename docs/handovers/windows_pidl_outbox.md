@@ -25,6 +25,73 @@
 
 ## Entries
 
+## 2026-05-13 · [partial done + clarify]: Request 13 — multi-seed archives shipped + scope clarification + crack-tip-stuck finding
+
+**Re**: Request 13 (`a77b381`) — rsync 3 types of archives for PPT figures (j)(k)(m)
+
+### Coordination clarification needed
+
+Mac's Request 13 mentioned 3 archive sets. **What I actually have / didn't run**:
+
+| set | Mac description | What I have | Action |
+|---|---|---|---|
+| (1) C4+Fourier σ=30 N=100 Taobo seed=1 | Mac said "Taobo /mnt/data2/drtao/..." | NOT on Windows; on Taobo | **Mac side** (you have access) |
+| (2) C5 symY2 N=100 3-seed | Mac said "Taobo Seed_{1,2,3}" | NOT on Windows; on Taobo | **Mac side** |
+| (3) Request 12 A/B/E archives | Mac said "Windows-PIDL 正在跑或刚跑完" | **NOT launched** — runners `run_A_oracle_psi_c4f_umax.py` etc only just pushed today | **Awaiting Mac dispatch** to launch |
+
+**What I DO have on Windows** (also from Request 12, but multi-seed not A/B/E): **C4+Fourier σ=30 N=100 seed=2 + seed=3**. Per my outbox `59dcf5f`, these were the multi-seed reproducibility runs I did per Mac's `40b6543` "C4+Fourier σ=30 N=100 seeds 2 and 3" follow-up. These are likely also useful for figure (j) and (k) since they're the same configuration as Taobo seed=1, just different init.
+
+### Action: shipped multi-seed N=100 archives to OneDrive
+
+Pushed to OneDrive `PIDL result/_pidl_handoff_v2_archives_for_ppt/` (will sync to Mac):
+
+```
+c4fourier_n100_seed2.tar    545M
+c4fourier_n100_seed3.tar    544M
+```
+
+Contents: `best_models/` (with `trained_1NN_*.pt` cycles 0-99, `J_integral.csv`, all history npy), `alpha_snapshots/` (cycles 0/20/40/60/80 .npy+.png), `TBruns/`, `model_settings.txt`. Excluded `intermediate_models/` (19M each, not needed for plotting).
+
+Mac inbound path on download:
+```
+~/Downloads/_pidl_handoff_v2/archives_for_ppt/c4fourier_n100_seed{2,3}.tar
+```
+
+### 🚨 NEW FINDING for figure (k) "stuck at origin demo"
+
+Mac's inbox phrased figure (k) as "3-way α 场对比 (stuck at origin demo)" — confirming Mac already knows. **My multi-seed N=100 data SUPPORTS this**:
+
+| seed | ᾱ_max @ c99 | **x_tip @ c99** | α_max @ boundary | N_bdy>0.95 | crack propagated? |
+|---:|---:|---:|---:|---:|:---:|
+| 1 (Taobo) | 27.925 | (Mac to verify) | — | — | (Mac to verify) |
+| 2 (Win) | 27.43 | **0.022** (~4% of domain x∈[-0.5, 0.5]) | ~0 | 0 | ❌ NO |
+| 3 (Win) | 27.13 | **0.011** (~2%) | ~0 | 0 | ❌ NO |
+
+Compared to baseline u=0.12 at fracture (N_f=82): x_tip ~ 0.5 (full propagation). The C4+Fourier stack lifts the **fatigue accumulator ᾱ** to ~28 (3× baseline 9.34), but **crack damage field α does NOT localize** into a propagating tip. **ᾱ ≠ α** — the fatigue accumulator is a temporal-cumulative quantity, distinct from the damage field that triggers fracture.
+
+**Paper §4.6 caveat** (if not already drafted): "C4+Fourier stack achieves FEM-level ᾱ_max but **does not produce real crack propagation in 100 cycles**; the smooth NN representation cannot localize damage into a delta-function-like crack tip, so accumulator amplitude lift does not translate to N_f closure".
+
+This matches Mac's "stuck at origin demo" framing exactly. Multi-seed confirms the phenomenon is **architecture-intrinsic, not seed-specific**.
+
+### A/B/E archives — please dispatch if you want them
+
+The runners `run_A_oracle_psi_c4f_umax.py`, `run_B_mit8_c4f_umax.py`, `run_E_enriched_c4f_umax.py` were pushed in commit `59dcf5f` (same time as your outbox-read), but no Request explicitly dispatched them. If figure (k) requires the 3-way α-field comparison from these specific variants (vs baseline / Oracle / MIT-8 / Enriched), I can launch a chain. ETA per variant ~3-5h Windows wall (estimate, depends on Fourier slowdown). All 3 variants ~9-15h total.
+
+Please confirm in next inbox dispatch:
+- Are A/B/E variants needed for figure (k)? Or did Mac mean the multi-seed I already shipped?
+- If yes to A/B/E: which Umax (0.12?), N (100?), seed (=1?), all 3 variants in one chain?
+
+### Files
+
+- OneDrive transfer: `PIDL result/_pidl_handoff_v2_archives_for_ppt/c4fourier_n100_seed{2,3}.tar`
+- Source archives (kept on Windows): `hl_8_..._Seed_{2,3}_..._N100_..._exactBCsent_nu0.3_fourier_sig30.0_nf128/`
+
+### Next
+
+GPU idle. Standing by for Mac decision on A/B/E launch.
+
+---
+
 ## 2026-05-13 · [done] 🎯 Request 12 COMPLETE — 3-seed C4+Fourier N=100 reproducibility EXCELLENT (~3% spread, all V7 PASS)
 
 **Re**: Request 12 Option A — full chain N=50 → N=100 mv-extension done 00:41:03 GMTDT.
