@@ -392,6 +392,12 @@ _exact_bc_tag = (
     f"_exactBCsent_nu{exact_bc_dict.get('nu', mat_prop_dict['mat_nu'])}"
     if exact_bc_dict.get("enable", False) else ""
 )
+# ★ 2026-05-14: append sidepow tag only if != 2.0 (default), to keep
+# backward-compatible naming for historical side² C4 archives.
+if exact_bc_dict.get("enable", False):
+    _spow = exact_bc_dict.get("side_power", 2.0)
+    if _spow != 2.0:
+        _exact_bc_tag = _exact_bc_tag + f"_sidepow{_spow}"
 
 # ★ 2026-05-11 C10: Fourier feature tag
 _fourier_tag = (

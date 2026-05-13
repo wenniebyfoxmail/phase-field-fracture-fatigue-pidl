@@ -117,6 +117,11 @@ class FieldComputation:
         self.exact_bc_enabled = bool(_eb.get('enable', False))
         self.exact_bc_mode = str(_eb.get('mode', 'sent_plane_strain'))
         self.exact_bc_nu = float(_eb.get('nu', 0.3))
+        # ★ 2026-05-14: configurable side-bubble power.
+        # side^2 (default, V7 PASS by construction) — historical C4.
+        # side^1 (linear gating) — V7 may WARN/FAIL but less aggressive NN damping,
+        #   diagnostic for "is side² over-constraining crack propagation?"
+        self.exact_bc_side_power = float(_eb.get('side_power', 2.0))
         if self.exact_bc_enabled and self.exact_bc_mode != 'sent_plane_strain':
             raise ValueError(f"Unsupported exact_bc_mode={self.exact_bc_mode!r}")
 
@@ -223,7 +228,11 @@ class FieldComputation:
 
             tb = self._normalized_tb_bubble(inp, y0, yL)
             side = self._normalized_side_bubble(inp, x0, xL)
-            correction_bubble = tb * side.square()
+            # ★ 2026-05-14: side_power configurable (default 2.0 = historical C4)
+            if self.exact_bc_side_power == 2.0:
+                correction_bubble = tb * side.square()
+            else:
+                correction_bubble = tb * side.pow(self.exact_bc_side_power)
 
             u = (u_lift + correction_bubble * disp_u) * self.lmbda
             v = (v_lift + correction_bubble * disp_v) * self.lmbda
