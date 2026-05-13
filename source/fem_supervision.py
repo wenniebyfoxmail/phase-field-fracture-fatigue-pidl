@@ -172,6 +172,87 @@ class FEMSupervision:
             out = out.to(device)
         return out
 
+    def alpha_target_at_cycle(self, cycle_idx: int,
+                              pidl_centroids: np.ndarray,
+                              *, device: torch.device | None = None,
+                              dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        """Return FEM d_elem (= α phase-field) target at given cycle, on PIDL collocation.
+
+        Mirrors psi_target_at_cycle() but loads from self.d_field instead of self.psi_raw.
+        d_elem ∈ [0, 1] is the phase-field damage variable at each FEM element.
+
+        ★ 2026-05-14: enables α-direct supervision per user request. Used when
+        supervised_dict.target_kind == 'alpha'.
+        """
+        if not self.d_field:
+            raise RuntimeError(
+                "FEM .mat files do not contain d_elem field — alpha supervision unavailable. "
+                "Re-export FEM snapshots with d_elem to use this path.")
+        if cycle_idx in self.d_field:
+            d = self._interpolate_to_pidl(self.d_field[cycle_idx], pidl_centroids)
+        else:
+            c_lo, c_hi = self._bracket_cycles(cycle_idx)
+            if c_lo not in self.d_field or c_hi not in self.d_field:
+                # If d_field is sparse, fall back to nearest available
+                avail = sorted(self.d_field.keys())
+                c_use = min(avail, key=lambda c: abs(c - cycle_idx))
+                d = self._interpolate_to_pidl(self.d_field[c_use], pidl_centroids)
+            else:
+                d_lo_pidl = self._interpolate_to_pidl(self.d_field[c_lo], pidl_centroids)
+                if c_hi == c_lo:
+                    d = d_lo_pidl
+                else:
+                    d_hi_pidl = self._interpolate_to_pidl(self.d_field[c_hi], pidl_centroids)
+                    t = (cycle_idx - c_lo) / (c_hi - c_lo)
+                    d = (1.0 - t) * d_lo_pidl + t * d_hi_pidl
+        out = torch.from_numpy(d).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def alpha_supervised_loss(self, alpha_pidl_per_elem: torch.Tensor,
+                              cycle_idx: int,
+                              pidl_centroids: np.ndarray,
+                              lambda_sup: float = 1.0,
+                              loss_kind: str = "mse_lin",
+                              mask: torch.Tensor | None = None) -> torch.Tensor:
+        """Compute λ·MSE(α_PIDL_per_elem, d_elem_FEM_interp).
+
+        ★ 2026-05-14: α-direct supervision (parallel to supervised_loss for ψ⁺).
+        α ∈ [0,1] is well-conditioned for linear MSE (no log transform needed).
+
+        Args:
+          alpha_pidl_per_elem: (n_elem,) — NN α projected to elements (node-mean over T_conn).
+          loss_kind: 'mse_lin' (default for α; no log since well-conditioned)
+                     'mse_log' (parallel to ψ⁺ for direct comparison; uses log(α+eps))
+          mask: bool tensor (n_elem,) — sparse anchor support.
+        """
+        target = self.alpha_target_at_cycle(
+            cycle_idx, pidl_centroids,
+            device=alpha_pidl_per_elem.device,
+            dtype=alpha_pidl_per_elem.dtype)
+        eps = 1e-12
+        if loss_kind == "mse_lin":
+            perel = (alpha_pidl_per_elem - target) ** 2
+        elif loss_kind == "mse_log":
+            perel = (torch.log10(alpha_pidl_per_elem.clamp(min=eps))
+                   - torch.log10(target.clamp(min=eps))) ** 2
+        elif loss_kind == "mse_rel":
+            perel = ((alpha_pidl_per_elem - target) / (target.abs() + eps)) ** 2
+        else:
+            raise ValueError(f"unknown loss_kind={loss_kind}")
+
+        if mask is None:
+            loss = perel.mean()
+        else:
+            mask_b = mask.to(perel.device).bool()
+            n = int(mask_b.sum().item())
+            if n == 0:
+                loss = perel.new_zeros(())
+            else:
+                loss = perel[mask_b].mean()
+        return lambda_sup * loss
+
     def _bracket_cycles(self, cycle_idx: int) -> tuple[int, int]:
         """Return (c_lo, c_hi) bracketing cycle_idx; equal if exact or out of range."""
         if cycle_idx <= self.cycles[0]:

@@ -59,6 +59,12 @@ parser.add_argument("--mask-x-min", type=float, default=0.45,
                     help="x_centroid lower bound for 'boundary' mask (default 0.45 = right edge zone).")
 parser.add_argument("--mask-y-abs-max", type=float, default=0.05,
                     help="|y_centroid| upper bound for 'crack_path' mask (default 0.05 = crack propagation strip).")
+# ★ 2026-05-14: supervision target — ψ⁺ (historical) or α direct
+parser.add_argument("--target", default="psi",
+                    choices=["psi", "alpha"],
+                    help="Supervision target: 'psi' = ψ⁺ MSE (historical MIT-8); "
+                         "'alpha' = direct phase-field α MSE against FEM d_elem "
+                         "(per-element via NN T_conn averaging).")
 args = parser.parse_args()
 
 if args.umax not in (0.08, 0.12):
@@ -107,6 +113,9 @@ _fatigue_tag = (
     f"_Umax{_fat['disp_max']}"
 )
 _mit8_tag = f"_mit8_K{args.K}_lam{args.lam}"
+# ★ 2026-05-14: append target tag when 'alpha' (default psi keeps historical naming)
+if args.target == "alpha":
+    _mit8_tag = _mit8_tag + "_targetalpha"
 # ★ 2026-05-14: append mask tag when not 'full' (default), keep backward-compat naming
 if args.mask_kind != "full":
     _mit8_tag = _mit8_tag + f"_mask{args.mask_kind}_xmin{args.mask_x_min}"
@@ -199,9 +208,10 @@ mit8_dict = {
     "lambda": float(args.lam),
     "fem_sup": fem_sup,
     "pidl_centroids": pidl_centroids,
-    "loss_kind": args.loss_kind,
+    "loss_kind": args.loss_kind if args.target == "psi" else "mse_lin",
     "every_n_epochs": int(args.supervised_every),
     "mask": mit8_mask,    # ★ 2026-05-14: None for full domain, tensor for sparse
+    "target_kind": args.target,    # ★ 2026-05-14: 'psi' (default) or 'alpha'
 }
 
 # Sanity: print FEM ψ⁺ stats interpolated to PIDL at first FEM cycle
