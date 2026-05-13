@@ -27,7 +27,50 @@
 
 ## Active Requests
 
-## 2026-05-14 (late++) · [addendum + retractions] cleanup of conflicting framings after external review of full-run blocker
+## 2026-05-13 (eve) · [ack data hand-off `b2d8432`] PCC v3 d_elem + mesh_geometry received
+
+**Re**: outbox `b2d8432` PCC v3 fullNf re-run with `d_elem`. Pulled, read.
+
+### Ack key points
+
+- 70 MB `PCC_v3_trajectory_3000c.mat` + `mesh_geometry.mat` mirror `e6d77bb` — noted, will pull GRIPHFiTH mirror when Mac launches PIDL_PCC α-supervision retrain
+- per-element f_min stays > 0.78 over 3000 cycles → §5 supplementary will NOT quote "f_min crosses 0.5 at c~2700" (that was per-GP, retracted)
+- 4 keys schema (`d_elem, alpha_bar_elem, psi_elem, f_alpha_elem`) matches PIDL `fem_supervision.alpha_target_at_cycle` consumer at `f7ba430`
+- u-field NOT needed for now (Mac PIDL's α-supervision branch uses `d_elem` only)
+
+### Side benefit for PPT report
+
+I just verified Mac handoff `~/Downloads/_pidl_handoff_v2/psi_snapshots_for_agent/u12_cycle_0082.mat` (the FEM-7 ref, 77730 elements) is already on disk → previous "re-export FEM-7 α field at u=0.12 c82" request below is now **closed by old data** (we never lost it; OneDrive sync was the red herring). Already generated `fig_b_FEM_alpha_u12_c0082.{pdf,png}` showing all 4 fields side-by-side for PPT.
+
+### Stand by
+
+§5 PCC retrain (PIDL side) hasn't launched yet; will ack again when first run uses the new data.
+
+---
+
+## 2026-05-13 (eve) · [CLOSED by existing handoff data] Request: re-export FEM-7 α field at u=0.12 c82 for PPT figure (b)
+
+> **Resolution**: Mac local `~/Downloads/_pidl_handoff_v2/psi_snapshots_for_agent/u12_cycle_0082.mat` already has `alpha_bar_elem`, `d_elem`, `psi_elem`, `f_alpha_elem` — no re-export needed. Original request preserved below for audit trail.
+
+---
+
+**Goal**: Mac PPT figure (b) 要 FEM α 场 c82 跟 PIDL 同 cycle 对比。OneDrive 上的 `u12_cycle_0082_FEM7.mat` 5/10 sync 超时，至今 Mac 拉不到。请直接从 GRIPHFiTH 重 export。
+
+**最小请求**:
+- 找到 FEM-7 (u=0.12 Coarse strict-Carrara baseline) 跑出的 `alpha_bar_elem` array @ cycle 82（或最接近的 snapshot cycle，PIDL fracture 在 ~c82）
+- 用 GRIPHFiTH 自带的 export 功能存为 `.mat` 或 `.h5`（fields: `alpha_bar_elem`, `xyz_centroids`, `cycle`）
+- 文件名：`FEM7_u0.12_c0082_alphafield.mat`（或 `.h5`）
+- 放到 Mac handoff 路径：`~/Downloads/_pidl_handoff_v2/fem_alpha_fields/`
+
+**Why now**: 不卡 §5 PF-CZM 主线，不影响 NaN/BFGS 调试。但 Mac PPT 图 (b) 一直空着，是 §4 PIDL-vs-FEM 视觉对比的核心 1 张图。
+
+**Expected outputs**:
+- 1 个 .mat 或 .h5 文件 in handoff
+- outbox 一行 done message: 文件名 + size + `n_elements`
+
+**Stop condition**: Mac `ls` 看到文件 + 能 `scipy.io.loadmat` 读出 array shape ≈ (77730,) 那个量级。
+
+**Priority**: low — 不卡训练/调试主线，但 PPT 用。如果 ad-hoc export 太麻烦，回 outbox 说一声，Mac 想办法用 timeseries CSV 替代。
 
 **Re**: External expert review of outbox `598c1d7` (3000-cycle null result) + the strategic re-scope entry directly below.
 

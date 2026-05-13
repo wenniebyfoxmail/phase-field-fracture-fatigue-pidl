@@ -27,6 +27,37 @@
 
 ## Active Requests
 
+## 2026-05-13 (eve) · Request 13: rsync archive bundles for PPT report figures
+
+**Goal**: Mac 在做 PIDL report PPT，发现 3 个关键 archive 没在 Mac 上，导致 figures (j) (k) (m) 缺数据。Windows-PIDL 把以下 3 类 archive 完整 rsync 到 Mac handoff folder (`~/Downloads/_pidl_handoff_v2/archives_for_ppt/`)。
+
+**目标 archive**:
+
+1. **C4+Fourier σ=30 N=100**（Request 11 结果，Taobo GPU 4 已经跑完，需要 sync 到 Windows 再到 Mac handoff，或直接 Taobo→Mac）
+   - 路径：Taobo `/mnt/data2/drtao/...` 中的 `..._exactBCsent_..._fourier_sig30_nf128_..._N100*` 完整 archive（不只是 alpha_snapshots/，要包括 best_models/ 全部 `trained_1NN_*.pt`）
+   - 用途：图 (j) C4+Fourier α 场 c50–c99 渲染
+
+2. **C5 (symY2) N=100 三 seed production**（Request 7 的后续 / Taobo 5/11 launched 838420/836712/836713）
+   - 路径：Taobo `..._symY2_..._N100_..._Seed_{1,2,3}` 三个 archive
+   - 用途：图 (m) 真正的 C5 hard-sym skew field，期望 V4=机器精度 0
+
+3. **Request 12 的 A/B/E archives**（Windows-PIDL 正在跑或刚跑完）
+   - `A_oracle_psi_c4f_umax`, `B_mit8_c4f_umax`, `E_enriched_c4f_umax` 三个 archive
+   - 用途：图 (k) 3-way α 场对比 (stuck at origin demo)
+
+**Mechanism**: Windows-PIDL 用 SMB / rsync over SSH 到 Mac handoff folder。Mac 的 inbound path：
+```
+~/Downloads/_pidl_handoff_v2/archives_for_ppt/<archive_name>/
+```
+
+**Expected outputs**: outbox 一条 done message + Mac 端 rsync 结束后 `ls` 路径确认 3 类 archive 全部到位（每类至少 `best_models/J_integral.csv` + `alpha_snapshots/alpha_cycle_*.npy` + 末几个 `trained_1NN_*.pt`）。
+
+**Stop condition**: Mac 能在本地用 `extract_psi_field.py` / `plot_C5_symY2_skew.py` / `render_late_cycles.py` 跑这 3 类 archive。
+
+**Priority**: medium —— 不卡训练，但卡 PPT。Request 12 部分可以等 12 跑完。
+
+---
+
 ## 2026-05-13 (late) · [Request 11 DONE]: C4+Fourier N=100 finished — ᾱ_max=27.925 (BEATS C4-alone 23.05 by 21%)
 
 **Re**: Request 11 (`3bf48ac`) + update `608c53b` Option B.
