@@ -306,6 +306,43 @@ sidecar_S1_dict = {
 }
 
 
+# ★ 2026-05-13 Sidecar S2: ADAPTIVE (cycle-wise) refinement.
+# ────────────────────────────────────────────────────────────────────────────
+# Spec: docs/sidecar_true_adaptive_sampling.md (Stage S2).
+# S1 was a STATIC tip prior — it refines around (0,0) once and never adapts.
+# As the crack propagates (x_tip → +0.22 by cycle 49 at Umax=0.12), the static
+# refinement zone becomes mis-aligned with the active tip, which is the
+# leading hypothesis for why S1's early-cycle +37-50% lift narrows to +5%
+# mid-cycle in the N=50 production data (see runs ledger).
+#
+# Two modes:
+#   - "tip_following" (S2a): each cycle, re-refine around the CURRENT x_tip
+#     (read from the running crack-tip history). Pure geometry, no score.
+#   - "score_driven"  (S2b): each cycle, re-refine the top `target_fraction`
+#     of elements by detached Deep Ritz residual |E_el_e|+|E_d_e| computed
+#     at the END of the PREVIOUS cycle. Score is detached so it acts only
+#     as a sampling-density signal, NOT as a loss reweight (sidecar Rule 1).
+#
+# Both modes maintain hist_fat / psi_plus_prev / score in the ORIGINAL
+# (un-refined) mesh's element coordinates throughout the run via the
+# expand-from-original / aggregate-to-original transport (see
+# `source/sidecar_sampling.py: aggregate_to_original`). Each cycle's
+# refinement is one-step from the canonical reference mesh — no compounding
+# interpolation error.
+#
+# Mutual exclusion: must not be enabled together with sidecar_S1_dict
+# (both refine the fine mesh, would compose ambiguously). Runner enforces.
+sidecar_S2_dict = {
+    "enable"          : False,        # default off; runner sets True
+    "mode"            : "tip_following",  # "tip_following" | "score_driven"
+    "tip_xy"          : (0.0, 0.0),   # initial / fallback tip when no x_tip history yet
+    "r_tip_sample"    : 0.05,         # refinement radius (S2a; also fallback in S2b cycle 0)
+    "n_refine_passes" : 1,            # 1 = standard 4× density boost
+    # S2b only:
+    "target_fraction" : 0.07,         # fraction of elements to refine (matches S1's r=0.05 footprint)
+    "min_count"       : 50,           # safety floor on n_marked
+}
+
 
 # Domain definition
 '''

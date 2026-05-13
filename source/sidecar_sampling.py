@@ -241,6 +241,363 @@ def refine_mesh_at_tip(
     return X, Y, T, area, {}
 
 
+# =============================================================================
+# Sidecar S2 helpers — adaptive (cycle-wise) refinement
+#
+# S2a (tip_following): re-derive the tip-centred mask each cycle from current x_tip
+# S2b (score_driven):  re-derive the mask from a detached per-element score
+#
+# Common machinery (refine_marked_elements + state remap) is shared with S1.
+# =============================================================================
+
+
+def refine_marked_elements(
+    X: np.ndarray,
+    Y: np.ndarray,
+    T: np.ndarray,
+    area: np.ndarray,
+    refine_mask: np.ndarray,
+    n_refine_passes: int = 1,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """1-to-4 red refinement of all triangles whose `refine_mask[i]` is True,
+    plus 1-to-2 / 1-to-3 green closure of non-red neighbours that share split
+    edges, so the resulting mesh remains edge-conforming.
+
+    This is the same algorithm used inside `refine_mesh_at_tip`, hoisted so
+    it can be re-driven by an arbitrary boolean mask (tip-radius, top-K
+    score, etc.). Area is exactly preserved per parent element, so the
+    quadrature integral ∫_Ω f dΩ ≈ Σ_e area_e · f(centroid_e) is invariant
+    under refinement and the Deep Ritz / Carrara loss is untouched.
+
+    Returns
+    -------
+    X_new, Y_new, T_new, area_new, parent_of_new : refined mesh in same
+        conventions as parse_mesh, plus a (n_elem_new,) int array giving the
+        index of the parent triangle in T (before refinement) that each new
+        triangle came from. Used by `remap_element_field` to carry per-element
+        state (hist_fat, psi_plus_prev, ...) forward across the swap.
+    """
+    X = np.asarray(X, dtype=np.float64).copy()
+    Y = np.asarray(Y, dtype=np.float64).copy()
+    T = np.asarray(T, dtype=np.int64).copy()
+    area = np.asarray(area, dtype=np.float64).copy()
+    refine_mask = np.asarray(refine_mask, dtype=bool).copy()
+
+    parent = np.arange(T.shape[0], dtype=np.int64)  # identity for current mesh
+
+    for _pass in range(int(n_refine_passes)):
+        n_red = int(refine_mask.sum())
+        if n_red == 0:
+            break
+
+        edge_mid: Dict[Tuple[int, int], int] = {}
+        new_nodes_X: list = []
+        new_nodes_Y: list = []
+        next_node_id = X.shape[0]
+
+        def _mid_node(a: int, b: int) -> int:
+            nonlocal next_node_id
+            key = (a, b) if a < b else (b, a)
+            if key in edge_mid:
+                return edge_mid[key]
+            new_nodes_X.append(0.5 * (X[a] + X[b]))
+            new_nodes_Y.append(0.5 * (Y[a] + Y[b]))
+            edge_mid[key] = next_node_id
+            next_node_id += 1
+            return edge_mid[key]
+
+        red_edges_split: Dict[Tuple[int, int], int] = {}
+        new_tris: list = []
+        new_parent: list = []
+
+        for tri_idx in np.where(refine_mask)[0]:
+            a, b, c = int(T[tri_idx, 0]), int(T[tri_idx, 1]), int(T[tri_idx, 2])
+            m_ab = _mid_node(a, b)
+            m_bc = _mid_node(b, c)
+            m_ca = _mid_node(c, a)
+            for (p, q, m) in ((a, b, m_ab), (b, c, m_bc), (c, a, m_ca)):
+                key = (p, q) if p < q else (q, p)
+                red_edges_split[key] = m
+            par = parent[tri_idx]
+            for tri in ((a, m_ab, m_ca), (m_ab, b, m_bc),
+                        (m_ca, m_bc, c), (m_ab, m_bc, m_ca)):
+                new_tris.append(tri)
+                new_parent.append(par)
+
+        for tri_idx in np.where(~refine_mask)[0]:
+            a, b, c = int(T[tri_idx, 0]), int(T[tri_idx, 1]), int(T[tri_idx, 2])
+            edges = (
+                ((a, b) if a < b else (b, a), a, b, c),
+                ((b, c) if b < c else (c, b), b, c, a),
+                ((c, a) if c < a else (a, c), c, a, b),
+            )
+            split_edges = [(ek, e0, e1, eo) for (ek, e0, e1, eo) in edges if ek in red_edges_split]
+            par = parent[tri_idx]
+            if len(split_edges) == 0:
+                new_tris.append((a, b, c))
+                new_parent.append(par)
+                continue
+            if len(split_edges) == 1:
+                ek, e0, e1, eo = split_edges[0]
+                m = red_edges_split[ek]
+                new_tris.append((e0, m, eo)); new_parent.append(par)
+                new_tris.append((m, e1, eo)); new_parent.append(par)
+                continue
+            if len(split_edges) == 2:
+                v_counts: Dict[int, int] = {a: 0, b: 0, c: 0}
+                for (ek, e0, e1, eo) in split_edges:
+                    v_counts[e0] += 1
+                    v_counts[e1] += 1
+                shared_v = max(v_counts, key=lambda k: v_counts[k])
+                if shared_v == a:
+                    sv, vL, vR = a, b, c
+                elif shared_v == b:
+                    sv, vL, vR = b, c, a
+                else:
+                    sv, vL, vR = c, a, b
+                m_svL = red_edges_split[(sv, vL) if sv < vL else (vL, sv)]
+                m_svR = red_edges_split[(sv, vR) if sv < vR else (vR, sv)]
+                new_tris.append((sv, m_svL, m_svR));  new_parent.append(par)
+                new_tris.append((m_svL, vL, vR));     new_parent.append(par)
+                new_tris.append((m_svL, vR, m_svR));  new_parent.append(par)
+                continue
+            # 3 shared edges → full red split (rare).
+            m_ab = red_edges_split[(a, b) if a < b else (b, a)]
+            m_bc = red_edges_split[(b, c) if b < c else (c, b)]
+            m_ca = red_edges_split[(c, a) if c < a else (a, c)]
+            for tri in ((a, m_ab, m_ca), (m_ab, b, m_bc),
+                        (m_ca, m_bc, c), (m_ab, m_bc, m_ca)):
+                new_tris.append(tri); new_parent.append(par)
+
+        if new_nodes_X:
+            X = np.concatenate([X, np.asarray(new_nodes_X, dtype=np.float64)])
+            Y = np.concatenate([Y, np.asarray(new_nodes_Y, dtype=np.float64)])
+        T = np.asarray(new_tris, dtype=np.int64)
+        area = _signed_area(X, Y, T)
+        parent = np.asarray(new_parent, dtype=np.int64)
+        # For subsequent passes, refine_mask must be re-derived by the caller;
+        # we mark NO elements for the next pass by default (caller decides).
+        refine_mask = np.zeros(T.shape[0], dtype=bool)
+
+    return X, Y, T, area, parent
+
+
+def remap_element_field(values_old: np.ndarray, parent_new: np.ndarray) -> np.ndarray:
+    """Carry a per-element field across a refinement step.
+
+    Each new triangle inherits the value of its parent in the pre-refinement
+    mesh. Because parents and children share centroid neighbourhoods (each
+    child is geometrically contained in its parent), this is the natural
+    element-wise transport: no interpolation drift, simple, deterministic.
+    """
+    return np.asarray(values_old)[np.asarray(parent_new, dtype=np.int64)]
+
+
+def aggregate_to_original(
+    values_current: np.ndarray,
+    area_current: np.ndarray,
+    parent: np.ndarray,
+    n_elem_orig: int,
+) -> np.ndarray:
+    """Inverse of `remap_element_field`: take a per-element field on the
+    refined mesh and aggregate it back to the original mesh by area-weighted
+    average over each parent's children.
+
+    Identity:  expand(aggregate(v)) == v   IFF v is constant on each parent's
+    child cluster. Otherwise the aggregation acts as a sub-grid smoother
+    (loses sub-parent variation, preserves the area-weighted mean).
+
+    Used by sidecar S2 to maintain hist_fat / psi_plus_prev / detached score
+    in the **original** (un-refined) mesh's element coordinates across
+    cycles, so that each cycle's refinement is a one-step transport from
+    the canonical reference mesh rather than a compounding sequence of
+    interpolations.
+    """
+    values_current = np.asarray(values_current, dtype=np.float64)
+    area_current = np.asarray(area_current, dtype=np.float64)
+    parent = np.asarray(parent, dtype=np.int64)
+    weighted_sum = np.zeros(int(n_elem_orig), dtype=np.float64)
+    area_sum = np.zeros(int(n_elem_orig), dtype=np.float64)
+    np.add.at(weighted_sum, parent, values_current * area_current)
+    np.add.at(area_sum, parent, area_current)
+    # Guard against zero-area parents (shouldn't happen but kept for safety)
+    area_sum = np.where(area_sum > 0, area_sum, 1.0)
+    return weighted_sum / area_sum
+
+
+def select_top_score_elements(
+    score: np.ndarray,
+    target_fraction: float = 0.07,
+    min_count: int = 50,
+) -> np.ndarray:
+    """Return a boolean mask marking the top-`target_fraction` elements by
+    `score`. Used by S2b (score-driven refinement).
+
+    `target_fraction` controls the budget: e.g. 0.07 selects ~7% of elements,
+    roughly comparable to the S1 static r=0.05 tip neighbourhood (6.80%) so
+    S1/S2a/S2b have a similar refinement cost.
+
+    `min_count` is a floor to avoid degenerate empty masks on small meshes.
+    """
+    score = np.asarray(score)
+    n = score.shape[0]
+    k = max(int(min_count), int(np.ceil(n * float(target_fraction))))
+    if k >= n:
+        return np.ones(n, dtype=bool)
+    # argpartition is O(n)
+    idx_top = np.argpartition(-score, k - 1)[:k]
+    mask = np.zeros(n, dtype=bool)
+    mask[idx_top] = True
+    return mask
+
+
+def adaptive_refine_for_cycle(
+    X_orig: np.ndarray,
+    Y_orig: np.ndarray,
+    T_orig: np.ndarray,
+    area_orig: np.ndarray,
+    cfg: dict,
+    tip_xy: Tuple[float, float] | None = None,
+    score: np.ndarray | None = None,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict]:
+    """Per-cycle adaptive refinement dispatcher for sidecar S2.
+
+    Always operates on the ORIGINAL (un-refined) mesh — refinement is not
+    cumulative across cycles. This keeps the mesh size bounded and the
+    history transport one-step (no compounding remap error).
+
+    Parameters
+    ----------
+    X_orig, Y_orig, T_orig, area_orig : the canonical parse_mesh output.
+    cfg : sidecar_S2_dict. Required keys: 'mode', 'r_tip_sample',
+          'n_refine_passes', 'tip_xy' (fallback for mode=tip_following if
+          tip_xy arg is None), 'target_fraction' (for score_driven).
+    tip_xy : current crack-tip position (used by S2a). If None, falls back
+        to cfg['tip_xy'].
+    score : per-element detached score for S2b. Required for mode='score_driven'.
+
+    Returns
+    -------
+    X_new, Y_new, T_new, area_new, parent_new, summary : same as
+        refine_marked_elements + a diagnostic summary dict.
+    """
+    mode = str(cfg.get("mode", "tip_following"))
+    n_passes = int(cfg.get("n_refine_passes", 1))
+    r_tip = float(cfg.get("r_tip_sample", 0.05))
+
+    # Build the mask for the first pass.
+    cx = (X_orig[T_orig[:, 0]] + X_orig[T_orig[:, 1]] + X_orig[T_orig[:, 2]]) / 3.0
+    cy = (Y_orig[T_orig[:, 0]] + Y_orig[T_orig[:, 1]] + Y_orig[T_orig[:, 2]]) / 3.0
+
+    if mode == "tip_following":
+        if tip_xy is None:
+            tip_xy = cfg.get("tip_xy", (0.0, 0.0))
+        tx, ty = float(tip_xy[0]), float(tip_xy[1])
+        refine_mask = (np.hypot(cx - tx, cy - ty) < r_tip)
+        diag = {"mode": mode, "tip_xy": (tx, ty), "r_tip_sample": r_tip,
+                "n_marked": int(refine_mask.sum())}
+    elif mode == "score_driven":
+        if score is None:
+            # First cycle: no prior score available, fall back to tip-radius.
+            tx, ty = float((tip_xy or cfg.get("tip_xy", (0.0, 0.0)))[0]), float((tip_xy or cfg.get("tip_xy", (0.0, 0.0)))[1])
+            refine_mask = (np.hypot(cx - tx, cy - ty) < r_tip)
+            diag = {"mode": mode, "fallback": "tip_radius (no prior score)",
+                    "tip_xy": (tx, ty), "n_marked": int(refine_mask.sum())}
+        else:
+            target_frac = float(cfg.get("target_fraction", 0.07))
+            min_count = int(cfg.get("min_count", 50))
+            refine_mask = select_top_score_elements(score, target_frac, min_count)
+            diag = {"mode": mode, "target_fraction": target_frac,
+                    "n_marked": int(refine_mask.sum()),
+                    "score_min": float(np.min(score)),
+                    "score_max": float(np.max(score)),
+                    "score_thr": float(np.min(score[refine_mask])) if refine_mask.any() else 0.0}
+    else:
+        raise ValueError(f"sidecar S2 unknown mode: {mode!r}")
+
+    # Single-pass refinement (n_passes>1 would refine same-radius nested children;
+    # for adaptive S2 we keep n_passes=1 since cycle-wise re-marking is the
+    # adaptation mechanism — repeated passes within one cycle would just blow
+    # up the mesh).
+    X, Y, T, area, parent = refine_marked_elements(
+        X_orig, Y_orig, T_orig, area_orig, refine_mask, n_refine_passes=1
+    )
+    for _ in range(max(0, n_passes - 1)):
+        # Optional extra pass: re-derive the mask in the NEW mesh using the
+        # same tip-radius criterion (S2a) or by inheriting the parent's mask
+        # bit (S2b — children of refined parents are also refined).
+        cx = (X[T[:, 0]] + X[T[:, 1]] + X[T[:, 2]]) / 3.0
+        cy = (Y[T[:, 0]] + Y[T[:, 1]] + Y[T[:, 2]]) / 3.0
+        if mode == "tip_following":
+            mask2 = (np.hypot(cx - tx, cy - ty) < r_tip)
+        else:
+            mask2 = refine_mask[parent]  # propagate refinement bit to children
+        X, Y, T, area, par2 = refine_marked_elements(X, Y, T, area, mask2, n_refine_passes=1)
+        parent = parent[par2]
+
+    diag["n_elem_before"] = int(T_orig.shape[0])
+    diag["n_elem_after"] = int(T.shape[0])
+    diag["n_nodes_after"] = int(X.shape[0])
+    diag["area_drift"] = float(abs(area.sum() - area_orig.sum()))
+    return X, Y, T, area, parent, diag
+
+
+def apply_s2_swap_for_cycle(
+    cfg: dict,
+    X_orig: np.ndarray,
+    Y_orig: np.ndarray,
+    T_orig: np.ndarray,
+    area_orig: np.ndarray,
+    n_elem_orig: int,
+    hist_fat_orig: np.ndarray,
+    psi_plus_prev_orig: np.ndarray,
+    s2_score_orig,
+    tip_xy: Tuple[float, float],
+    field_comp,
+    device,
+):
+    """Per-cycle mesh swap for sidecar S2.
+
+    Returns (inp, T_conn, area_T, hist_alpha, hist_fat, psi_plus_prev,
+             n_elem, elem_centroids, right_bdy_mask, parent, diag).
+
+    The caller is responsible for:
+      - rebuilding the DataLoader (training_set) from the new `inp`
+      - recomputing f_fatigue from the new hist_fat
+      - calling aggregate_to_original at the end of the cycle to refresh
+        hist_fat_orig / psi_plus_prev_orig / s2_score_orig for the next cycle
+    """
+    import torch  # local import — sidecar_sampling is otherwise torch-free
+
+    X_new, Y_new, T_new, area_new, parent, diag = adaptive_refine_for_cycle(
+        X_orig, Y_orig, T_orig, area_orig, cfg,
+        tip_xy=tip_xy, score=s2_score_orig,
+    )
+
+    inp = torch.from_numpy(np.column_stack((X_new, Y_new))).to(torch.float).to(device)
+    T_conn = torch.from_numpy(T_new).to(torch.long).to(device)
+    area_T = torch.from_numpy(area_new).to(torch.float).to(device)
+    n_elem = int(T_new.shape[0])
+
+    cx = (X_new[T_new[:, 0]] + X_new[T_new[:, 1]] + X_new[T_new[:, 2]]) / 3.0
+    cy = (Y_new[T_new[:, 0]] + Y_new[T_new[:, 1]] + Y_new[T_new[:, 2]]) / 3.0
+    elem_centroids = torch.from_numpy(np.column_stack((cx, cy))).to(torch.float).to(device).detach()
+
+    hist_fat = torch.from_numpy(remap_element_field(hist_fat_orig, parent)).to(torch.float).to(device)
+    psi_plus_prev = torch.from_numpy(remap_element_field(psi_plus_prev_orig, parent)).to(torch.float).to(device)
+
+    # Re-evaluate NN at the (possibly new) midpoint nodes so hist_alpha is
+    # consistent with the current NN state. Detach: hist_alpha is a saved
+    # snapshot, not part of any autograd graph this cycle.
+    with torch.no_grad():
+        _, _, alpha_new = field_comp.fieldCalculation(inp)
+    hist_alpha = alpha_new.detach()
+
+    right_bdy_mask = (inp[:, 0] > 0.48).detach()
+    return (
+        inp, T_conn, area_T, hist_alpha, hist_fat, psi_plus_prev,
+        n_elem, elem_centroids, right_bdy_mask, parent, diag,
+    )
 
 
 def maybe_refine_for_sidecar(

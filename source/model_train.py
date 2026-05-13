@@ -126,7 +126,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
           fatigue_dict=None,                         # ★ 新增参数
           mit8_dict=None,                            # ★ MIT-8 supervised warmup
           adaptive_sampling_dict=None,               # ★ 2026-05-13 Branch 2 C6
-          sidecar_S1_dict=None):                     # ★ 2026-05-12 sidecar S1 tip oversample
+          sidecar_S1_dict=None,                      # ★ 2026-05-12 sidecar S1 (static-tip oversample)
+          sidecar_S2_dict=None):                     # ★ 2026-05-13 sidecar S2 (adaptive / tip-following / score-driven)
     '''
     Neural network training: pretraining with a coarser mesh in the first
     stage before the main training proceeds.
@@ -228,6 +229,41 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         torch.utils.data.TensorDataset(inp, outp),
         batch_size=inp.shape[0], shuffle=False
     )
+
+    # =========================================================================
+    # ★ 2026-05-13 sidecar S2 (adaptive refinement) — stash original mesh
+    # and initialize per-original-mesh state buffers. The actual per-cycle
+    # mesh swap happens at the TOP of the for-loop body (see below).
+    # =========================================================================
+    _S2_enabled = sidecar_S2_dict is not None and sidecar_S2_dict.get('enable', False)
+    _S2_state = None
+    if _S2_enabled:
+        if sidecar_S1_dict is not None and sidecar_S1_dict.get('enable', False):
+            raise ValueError(
+                "sidecar S1 and S2 are mutually exclusive — both refine the fine "
+                "mesh. Disable one of them in the runner."
+            )
+        if numr_dict['gradient_type'] != 'numerical':
+            raise NotImplementedError(
+                "sidecar S2 currently only supports gradient_type='numerical' "
+                f"(got {numr_dict['gradient_type']!r})"
+            )
+        from utils import parse_mesh as _parse_mesh
+        _Xo, _Yo, _To, _ao = _parse_mesh(filename=str(fine_mesh_file), gradient_type='numerical')
+        _S2_state = {
+            'X_orig': _Xo, 'Y_orig': _Yo, 'T_orig': _To, 'area_orig': _ao,
+            'n_elem_orig': int(_To.shape[0]),
+            'hist_fat_orig': np.zeros(int(_To.shape[0]), dtype=np.float64),
+            'psi_plus_prev_orig': np.zeros(int(_To.shape[0]), dtype=np.float64),
+            'score_orig': None,    # set at end of each cycle for S2b
+            'parent': None,        # set each cycle by the swap helper
+        }
+        print(
+            f"[sidecar-S2] enabled (mode={sidecar_S2_dict.get('mode','tip_following')}); "
+            f"r_tip_sample={sidecar_S2_dict.get('r_tip_sample',0.05)}; "
+            f"target_fraction={sidecar_S2_dict.get('target_fraction',0.07)}; "
+            f"original mesh: {_S2_state['n_elem_orig']} elem"
+        )
 
     # -------------------------------------------------------------------------
     # ★ 疲劳变量初始化（仅 fatigue_on=True 时使用；否则下面 if 块永不执行）
@@ -470,12 +506,75 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # =========================================================================
     # 主循环：每次迭代对应一个加载步（单调模式）或一个完整循环（疲劳模式）
     # =========================================================================
+    # ★ S2 + resume guard (S2 requires fresh start until checkpoint format is extended)
+    if _S2_enabled and _did_restore:
+        raise NotImplementedError(
+            "sidecar S2 + checkpoint resume is not yet supported. The saved "
+            "hist_fat / psi_plus_prev live in a previous cycle's refined-mesh "
+            "coords which the new run cannot reconstruct without a snapshot of "
+            "that mesh's parent indices. Delete checkpoints and restart from scratch."
+        )
+
     for j, disp_i in enumerate(disp[start_j:], start=start_j):
         field_comp.lmbda = torch.tensor(disp_i).to(device)
         if (j % _log_every == 0) or _frac_detected or _dense_sampling:
             print(f'idx: {j}; displacement/amplitude: {field_comp.lmbda}')
         loss_data = list()
         start = time.time()
+
+        # ------------------------------------------------------------------
+        # ★ 2026-05-13 sidecar S2 per-cycle mesh swap. Operates on the
+        # ORIGINAL mesh + the previous-cycle aggregated state. Updates
+        # inp / T_conn / area_T / hist_alpha / hist_fat / psi_plus_prev /
+        # n_elem / elem_centroids / _right_bdy_mask / training_set.
+        # ------------------------------------------------------------------
+        if _S2_enabled and fatigue_on:
+            from sidecar_sampling import apply_s2_swap_for_cycle
+            _tip_xy_now = (
+                (float(_x_tip_history[-1]), 0.0)
+                if _x_tip_history else
+                tuple(sidecar_S2_dict.get('tip_xy', (0.0, 0.0)))
+            )
+            (inp, T_conn, area_T, hist_alpha, hist_fat, psi_plus_prev,
+             n_elem, elem_centroids, _right_bdy_mask, _parent_for_cycle,
+             _s2_diag) = apply_s2_swap_for_cycle(
+                sidecar_S2_dict,
+                _S2_state['X_orig'], _S2_state['Y_orig'],
+                _S2_state['T_orig'], _S2_state['area_orig'],
+                _S2_state['n_elem_orig'],
+                _S2_state['hist_fat_orig'], _S2_state['psi_plus_prev_orig'],
+                _S2_state['score_orig'],
+                _tip_xy_now, field_comp, device,
+            )
+            _S2_state['parent'] = _parent_for_cycle
+            f_fatigue = compute_fatigue_degrad(
+                hist_fat, fatigue_dict, elem_centroids=elem_centroids
+            )
+            outp = torch.zeros(inp.shape[0], 1).to(device)
+            training_set = DataLoader(
+                torch.utils.data.TensorDataset(inp, outp),
+                batch_size=inp.shape[0], shuffle=False
+            )
+            if (j == start_j) or (j % 5 == 0):
+                print(
+                    f"  [sidecar-S2 cycle {j}] tip={_tip_xy_now} | "
+                    f"elem {_s2_diag['n_elem_before']}→{_s2_diag['n_elem_after']} | "
+                    f"marked={_s2_diag['n_marked']} | area_drift={_s2_diag['area_drift']:.1e}"
+                )
+
+        # ★ MIT-8: build per-cycle supervised_dict (None outside [1, K])
+        _supervised_dict = None
+        if mit8_dict is not None and mit8_dict.get('enable', False):
+            _K = int(mit8_dict.get('K', 0))
+            if 1 <= j <= _K:
+                _supervised_dict = {
+                    'fem_sup': mit8_dict['fem_sup'],
+                    'cycle_idx': j,
+                    'lambda': float(mit8_dict.get('lambda', 1.0)),
+                    'pidl_centroids': mit8_dict['pidl_centroids'],
+                    'loss_kind': mit8_dict.get('loss_kind', 'mse_log'),
+                }
+                print(f"  [MIT-8] cycle {j}/{_K}: supervised lambda={_supervised_dict['lambda']}")
 
         # ------------------------------------------------------------------
         # 训练（与 Manav 完全相同的结构；仅多传 f_fatigue 和 crack_tip_weights）
@@ -700,6 +799,41 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     )
                 else:
                     crack_tip_weights = None   # warmup cycles unweighted
+
+            # ------------------------------------------------------------------
+            # ★ 2026-05-13 sidecar S2: aggregate state back to ORIGINAL mesh
+            # for transport into next cycle's mesh swap. Done here (after the
+            # C6 reweight block) so all per-element state on the current
+            # refined mesh is in its post-cycle state.
+            # ------------------------------------------------------------------
+            if _S2_enabled and _S2_state is not None and _S2_state['parent'] is not None:
+                from sidecar_sampling import aggregate_to_original as _agg_to_orig
+                _area_np_cur = area_T.detach().cpu().numpy()
+                _parent_cur = _S2_state['parent']
+                _S2_state['hist_fat_orig'] = _agg_to_orig(
+                    hist_fat.detach().cpu().numpy(), _area_np_cur,
+                    _parent_cur, _S2_state['n_elem_orig'],
+                )
+                _S2_state['psi_plus_prev_orig'] = _agg_to_orig(
+                    psi_plus_prev.detach().cpu().numpy(), _area_np_cur,
+                    _parent_cur, _S2_state['n_elem_orig'],
+                )
+                # S2b: compute detached Deep Ritz residual for NEXT cycle's mask
+                if sidecar_S2_dict.get('mode') == 'score_driven':
+                    with torch.no_grad():
+                        _u_s2, _v_s2, _a_s2 = field_comp.fieldCalculation(inp)
+                    from compute_energy import compute_energy_per_elem as _ce_per
+                    with torch.no_grad():
+                        _E_el_e_s2, _E_d_e_s2, _ = _ce_per(
+                            inp, _u_s2, _v_s2, _a_s2, hist_alpha,
+                            matprop, pffmodel, area_T, T_conn=T_conn,
+                            f_fatigue=f_fatigue,
+                        )
+                    _score_cur = (_E_el_e_s2.abs() + _E_d_e_s2.abs()).detach().cpu().numpy()
+                    _S2_state['score_orig'] = _agg_to_orig(
+                        _score_cur, _area_np_cur,
+                        _parent_cur, _S2_state['n_elem_orig'],
+                    )
 
             # ★ Direction 5: 记录 c_singular 当前值（每圈训练完毕后）
             if _ansatz_enabled and field_comp.c_singular is not None:
