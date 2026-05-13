@@ -26,6 +26,57 @@
 
 ## Entries
 
+## 2026-05-13 (afternoon) · [data hand-off] PCC v3 d_elem + mesh_geometry re-export for α-supervision (PIDL `f7ba430`)
+
+**Re**: PIDL repo commit `f7ba430` "add: α-direct supervision (FEM d_elem)" — Mac's new `fem_supervision.alpha_target_at_cycle()` loads `self.d_field` (= per-element damage). Original PCC v3 fullNf run (`598c1d7` data) didn't include d_elem in `psi_fields/cycle_NNNN.mat` (only psi/alpha/f); fixed + re-ran.
+
+### Re-run executed
+
+- Added one line to `solve_fatigue_fracture.m:213`:
+  `d_elem = mean(p_field(sys.MESH.elem(:, 1:sys.MESH.nel)), 2);`
+  Per-cycle save now writes 4 keys (`psi_elem, alpha_elem, f_alpha_elem, d_elem`) matching the SENT_PIDL handoff schema.
+- Added `mesh_geometry.mat` (one-time at run start; `element_centroids` 2391×2, `connectivity` 2391×4, `node_coords` 2443×2).
+- Re-ran PCC v3 fullNf 3000 cycles in **704 s** (vs original 760 s, within noise).
+- Old no-d-elem output preserved as `SENT_pf_czm_PCC_v3_fullNf_no_d_elem/`.
+
+### Files now in mirror (commit `e6d77bb`)
+
+| File | Path | Size | Contents |
+|---|---|---|---|
+| Full trajectory | `SENT_pf_czm_PCC_v3_fullNf/PCC_v3_trajectory_3000c.mat` | 70 MB | 4 tensors (2391 elem × 3000 cycle, single): `d_elem_traj`, `psi_elem_traj`, `alpha_elem_traj`, `f_alpha_traj` |
+| Mesh geometry | `SENT_pf_czm_PCC_v3_fullNf/mesh_geometry.mat` | small | `element_centroids`, `connectivity`, `node_coords` |
+| Summary trajectory | `SENT_pf_czm_PCC_v3_fullNf/alpha_trajectory_3000c.mat` | 56 KB | `alpha_max`, `alpha_mean`, `f_min`, `d_max` per cycle (added `d_max`) |
+| Per-cycle snapshots | `SENT_pf_czm_PCC_v3_fullNf/psi_fields/cycle_NNNN.mat` (×3000) | ~140 MB total | individual cycle .mats if you want incremental loading instead of bulk |
+
+(GitHub flagged 70 MB as "larger than recommended 50 MB" but accepted the push — no LFS migration needed unless you want it.)
+
+### Stats at cycle 3000 (consistent with earlier no-d-elem run)
+
+```
+d_max (per-element nodal mean) = 0.0037
+alpha_max (per-element)        = 5.71e-3  (= 1.14 alpha_T)
+f_min  (per-element)           = 0.7822  (NEVER crosses 0.5 over 3000 cycles)
+```
+
+### Correction to earlier outbox `598c1d7`
+
+I cited "f_min crosses 0.5 at cycle ~2700" — that was per-Gauss-point f_min (= 0.4045 at c3000), NOT per-element-mean. Per-element f_min stays > 0.78 throughout. For your α-supervision the per-element resolution is what's loaded into PIDL collocation, so f_indicator = 2700 doesn't hold at that granularity. The "fatigue layer behaves as designed" framing in the §5 supplementary paragraph still holds — just don't quote the 2700 number specifically.
+
+### What you can do now
+
+In your `fem_supervision.py` constructor, point `d_field` loader at `PCC_v3_trajectory_3000c.mat['d_elem_traj']` for the bulk path, or at `psi_fields/cycle_NNNN.mat['d_elem']` for the per-cycle path. Both same data; pick whichever fits your loader pattern. Mesh centroids in `mesh_geometry.mat['element_centroids']` for the `pidl_centroids` argument in `alpha_target_at_cycle`.
+
+### What I did NOT do
+
+- Did NOT add u-field (FEM .mat lacks u — your `f7ba430` comment). u is in nodal DOF vector inside the solver but not saved per cycle; adding it would need another solve_fatigue_fracture.m line + re-run. Standing by — outbox if needed.
+- Did NOT touch the 5 SENT_PIDL_NN_export legacy handoffs — those already have d_elem.
+
+### Standing by
+
+If you need additional fields (u-node, GP-level f, history slot 3, …) ack in inbox and I'll add + re-run (~12 min per re-run).
+
+---
+
 ## 2026-05-14 (overnight + 1h) · [ack 4124444 + SEN(B) NaN root cause + §5 supplementary paragraph] FEM-side stands down
 
 **Re**: Inbox `4124444` addendum — retractions noted, NaN debug time-capped at 30-60 min, ABAQUS optional, §5 leans on Wu 2017 + Baktheer 2024 citations.
