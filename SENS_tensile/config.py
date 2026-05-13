@@ -286,6 +286,27 @@ adaptive_sampling_dict = {
 }
 
 
+# ★ 2026-05-12 Sidecar S1: TRUE adaptive sampling — static-tip oversampling.
+# ────────────────────────────────────────────────────────────────────────────
+# Spec: docs/sidecar_true_adaptive_sampling.md (Stage S1)
+# Differs from C6 (`adaptive_sampling_dict` above): C6 reweights the loss
+# inside log10(sum E); S1 changes ONLY collocation density via 1-to-4 red
+# refinement near the tip — Deep Ritz / Carrara objective untouched, area
+# integral exactly conserved.
+#
+# Mutual exclusion: none mechanically required (S1 changes mesh, C6 changes
+# loss). But to keep the sidecar interpretable, runners should disable other
+# active variants (Williams / Fourier / exact-BC / tip_weight) unless the
+# spec is explicitly revised to allow stacks.
+sidecar_S1_dict = {
+    "enable"          : False,        # default off; runner sets True
+    "tip_xy"          : (0.0, 0.0),   # crack-tip coordinates in domain frame
+    "r_tip_sample"    : 0.05,         # refinement radius (centroid distance)
+    "n_refine_passes" : 1,            # 1 pass ≈ 4× density inside r_tip; 2 ≈ 16×
+}
+
+
+
 # Domain definition
 '''
 domain_extrema: tensor([[x_min, x_max], [y_min, y_max]])

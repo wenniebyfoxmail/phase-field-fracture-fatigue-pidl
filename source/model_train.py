@@ -125,7 +125,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
           device, trainedModel_path, intermediateModel_path, writer,
           fatigue_dict=None,                         # ★ 新增参数
           mit8_dict=None,                            # ★ MIT-8 supervised warmup
-          adaptive_sampling_dict=None):              # ★ 2026-05-13 Branch 2 C6
+          adaptive_sampling_dict=None,               # ★ 2026-05-13 Branch 2 C6
+          sidecar_S1_dict=None):                     # ★ 2026-05-12 sidecar S1 tip oversample
     '''
     Neural network training: pretraining with a coarser mesh in the first
     stage before the main training proceeds.
@@ -164,9 +165,14 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             torch.load(_init_ckpt, map_location=device))
     else:
         # ── 从头训练：执行预训练 ──────────────────────────────────────────────
+        # Pretrain stays on the unrefined coarse mesh — S1 targets the main
+        # fatigue stage on the fine mesh only (the coarse mesh is already
+        # fine near the initial crack and refining it adds no signal while
+        # slowing pretrain).
         inp, T_conn, area_T, hist_alpha = prep_input_data(
             matprop, pffmodel, crack_dict, numr_dict,
-            mesh_file=coarse_mesh_file, device=device
+            mesh_file=coarse_mesh_file, device=device,
+            sidecar_S1_dict=None, sidecar_label="coarse"
         )
         outp = torch.zeros(inp.shape[0], 1).to(device)
         training_set = DataLoader(
@@ -214,7 +220,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
     inp, T_conn, area_T, hist_alpha = prep_input_data(
         matprop, pffmodel, crack_dict, numr_dict,
-        mesh_file=fine_mesh_file, device=device
+        mesh_file=fine_mesh_file, device=device,
+        sidecar_S1_dict=sidecar_S1_dict, sidecar_label="fine"
     )
     outp = torch.zeros(inp.shape[0], 1).to(device)
     training_set = DataLoader(
@@ -469,20 +476,6 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             print(f'idx: {j}; displacement/amplitude: {field_comp.lmbda}')
         loss_data = list()
         start = time.time()
-
-        # ★ MIT-8: build per-cycle supervised_dict (None outside [1, K])
-        _supervised_dict = None
-        if mit8_dict is not None and mit8_dict.get('enable', False):
-            _K = int(mit8_dict.get('K', 0))
-            if 1 <= j <= _K:
-                _supervised_dict = {
-                    'fem_sup': mit8_dict['fem_sup'],
-                    'cycle_idx': j,
-                    'lambda': float(mit8_dict.get('lambda', 1.0)),
-                    'pidl_centroids': mit8_dict['pidl_centroids'],
-                    'loss_kind': mit8_dict.get('loss_kind', 'mse_log'),
-                }
-                print(f"  [MIT-8] cycle {j}/{_K}: supervised lambda={_supervised_dict['lambda']}")
 
         # ------------------------------------------------------------------
         # 训练（与 Manav 完全相同的结构；仅多传 f_fatigue 和 crack_tip_weights）
