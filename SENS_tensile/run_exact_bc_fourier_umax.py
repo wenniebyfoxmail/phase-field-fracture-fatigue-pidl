@@ -76,6 +76,13 @@ def main():
                    help="B-matrix random init seed (C10)")
     p.add_argument("--force-cpu", action="store_true",
                    help="Hide CUDA before importing config; Mac dev smoke")
+    # ★ 2026-05-14 (diagnostic for C4 over-constraint hypothesis)
+    p.add_argument("--side-power", type=float, default=2.0,
+                   help="Power on the side-distance bubble (default 2.0 = historical C4 "
+                        "giving V7 PASS by construction; 1.0 = linear gating, V7 may WARN).")
+    p.add_argument("--enable-ansatz", action="store_true",
+                   help="Enable Direction 5 enriched ansatz (output-end Williams √r·F^I(r,θ) "
+                        "additive enrichment with learnable K_I scalar c).")
     args = p.parse_args()
 
     if args.force_cpu:
@@ -90,7 +97,9 @@ def main():
     import config
 
     config.williams_dict["enable"] = False
-    config.ansatz_dict["enable"] = False
+    # ★ 2026-05-14: ansatz_dict (Direction 5) optionally enabled via --enable-ansatz.
+    # Keep all other ansatz fields at config defaults; just flip enable per CLI.
+    config.ansatz_dict["enable"] = bool(args.enable_ansatz)
     config.fatigue_dict["spatial_alpha_T"]["enable"] = False
     config.fatigue_dict["psi_hack"]["enable"] = False
     config.symmetry_prior = False
@@ -103,6 +112,7 @@ def main():
         "enable": True,
         "mode": "sent_plane_strain",
         "nu": float(args.nu),
+        "side_power": float(args.side_power),   # ★ 2026-05-14: configurable, default 2.0
     }
 
     config.fourier_dict["enable"] = True
@@ -116,6 +126,11 @@ def main():
         f"_aT{fat['alpha_T']}_N{fat['n_cycles']}_R{fat['R_ratio']}"
         f"_Umax{fat['disp_max']}"
     )
+    # ★ 2026-05-14: append _sidepow{P} when ≠ 2.0; _enriched_ansatz when enabled.
+    # Backward-compatible: default args.side_power=2.0 + no --enable-ansatz → identical
+    # tag to historical C4+Fourier archives (resume works on existing checkpoints).
+    sidepow_tag = f"_sidepow{args.side_power}" if args.side_power != 2.0 else ""
+    ansatz_tag = "_enriched_ansatz_modeI_v1" if args.enable_ansatz else ""
     dir_name = (
         "hl_" + str(config.network_dict["hidden_layers"])
         + "_Neurons_" + str(config.network_dict["neurons"])
@@ -126,7 +141,9 @@ def main():
         + "_gradient_" + str(config.numr_dict["gradient_type"])
         + fatigue_tag
         + f"_exactBCsent_nu{args.nu}"
+        + sidepow_tag
         + f"_fourier_sig{args.sigma}_nf{args.n_features}"
+        + ansatz_tag
     )
     config.model_path = here / Path(dir_name)
     config.trainedModel_path = config.model_path / Path("best_models/")
