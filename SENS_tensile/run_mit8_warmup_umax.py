@@ -48,6 +48,17 @@ parser.add_argument("--n-cycles", type=int, default=300,
 parser.add_argument("--supervised-every", type=int, default=1,
                     help="Compute supervised loss every N epochs (default 1 = "
                          "every epoch; use 10 for 10x speedup with amortization).")
+# ★ 2026-05-14: sparse boundary anchor mask
+parser.add_argument("--mask-kind", default="full",
+                    choices=["full", "boundary", "crack_path", "boundary_or_crack"],
+                    help="Element subset for supervised loss. full = all PIDL elems "
+                         "(historical MIT-8). boundary = elements within x_centroid > "
+                         "mask-x-min. crack_path = along |y_centroid| < mask-y-abs-max "
+                         "AND x_centroid > mask-x-min. boundary_or_crack = union.")
+parser.add_argument("--mask-x-min", type=float, default=0.45,
+                    help="x_centroid lower bound for 'boundary' mask (default 0.45 = right edge zone).")
+parser.add_argument("--mask-y-abs-max", type=float, default=0.05,
+                    help="|y_centroid| upper bound for 'crack_path' mask (default 0.05 = crack propagation strip).")
 args = parser.parse_args()
 
 if args.umax not in (0.08, 0.12):
@@ -96,6 +107,11 @@ _fatigue_tag = (
     f"_Umax{_fat['disp_max']}"
 )
 _mit8_tag = f"_mit8_K{args.K}_lam{args.lam}"
+# ★ 2026-05-14: append mask tag when not 'full' (default), keep backward-compat naming
+if args.mask_kind != "full":
+    _mit8_tag = _mit8_tag + f"_mask{args.mask_kind}_xmin{args.mask_x_min}"
+    if args.mask_kind in ("crack_path", "boundary_or_crack"):
+        _mit8_tag = _mit8_tag + f"_yabsmax{args.mask_y_abs_max}"
 
 _dir_name = (
     "hl_" + str(config.network_dict["hidden_layers"])
@@ -159,6 +175,23 @@ pidl_centroids = np.stack([cx, cy], axis=1)
 print(f"  PIDL elements: {pidl_centroids.shape[0]}  "
       f"(FEM elements: {fem_sup.fem_centroids.shape[0]})")
 
+# --- Build sparse boundary anchor mask (★ 2026-05-14) ----------------------
+mit8_mask = None
+if args.mask_kind != "full":
+    cx_t = torch.from_numpy(pidl_centroids[:, 0])
+    cy_t = torch.from_numpy(pidl_centroids[:, 1])
+    if args.mask_kind == "boundary":
+        mit8_mask = (cx_t.abs() >= args.mask_x_min)
+    elif args.mask_kind == "crack_path":
+        mit8_mask = (cy_t.abs() <= args.mask_y_abs_max) & (cx_t >= args.mask_x_min)
+    elif args.mask_kind == "boundary_or_crack":
+        boundary = (cx_t.abs() >= args.mask_x_min)
+        crack = (cy_t.abs() <= args.mask_y_abs_max) & (cx_t >= 0.0)
+        mit8_mask = boundary | crack
+    n_active = int(mit8_mask.sum().item())
+    print(f"  [mask] kind={args.mask_kind}  active_elems={n_active} / {len(cx_t)} "
+          f"({100*n_active/len(cx_t):.2f}%)")
+
 # --- Build mit8_dict --------------------------------------------------------
 mit8_dict = {
     "enable": True,
@@ -168,6 +201,7 @@ mit8_dict = {
     "pidl_centroids": pidl_centroids,
     "loss_kind": args.loss_kind,
     "every_n_epochs": int(args.supervised_every),
+    "mask": mit8_mask,    # ★ 2026-05-14: None for full domain, tensor for sparse
 }
 
 # Sanity: print FEM ψ⁺ stats interpolated to PIDL at first FEM cycle

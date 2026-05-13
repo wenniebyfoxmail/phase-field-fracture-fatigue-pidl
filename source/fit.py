@@ -205,7 +205,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                             cycle_idx=supervised_dict['cycle_idx'],
                             pidl_centroids=supervised_dict['pidl_centroids'],
                             lambda_sup=supervised_dict['lambda'],
-                            loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
+                            loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
+                            mask=supervised_dict.get('mask', None))  # ★ 2026-05-14: sparse anchor support
                         loss = loss + _every_n * loss_sup
 
                 # ★ 2026-05-07 Soft mirror-symmetry penalty (B path)
@@ -316,7 +317,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                         cycle_idx=supervised_dict['cycle_idx'],
                         pidl_centroids=supervised_dict['pidl_centroids'],
                         lambda_sup=supervised_dict['lambda'],
-                        loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
+                        loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
+                        mask=supervised_dict.get('mask', None))  # ★ 2026-05-14: sparse anchor support
                     # Scale up to compensate for the missed epochs
                     loss = loss + _every_n * loss_sup
 

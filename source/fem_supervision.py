@@ -187,7 +187,8 @@ class FEMSupervision:
                         cycle_idx: int,
                         pidl_centroids: np.ndarray,
                         lambda_sup: float = 1.0,
-                        loss_kind: str = "mse_log") -> torch.Tensor:
+                        loss_kind: str = "mse_log",
+                        mask: torch.Tensor | None = None) -> torch.Tensor:
         """Compute λ·loss(ψ⁺_PIDL_raw, ψ⁺_FEM_raw_interp) at cycle_idx.
 
         loss_kind:
@@ -195,6 +196,11 @@ class FEMSupervision:
               magnitude variation in ψ⁺_raw without dominating gradient at tip)
           'mse_lin' — plain MSE (will be dominated by tip element)
           'mse_rel' — MSE on relative error (ψ_p - ψ_f)/(ψ_f + eps), elementwise
+
+        ★ 2026-05-14: mask parameter for sparse boundary-anchor supervision.
+        mask: bool tensor (n_elem,) — True for elements included in MSE.
+            None = all elements (historical full-domain MIT-8 behavior).
+            Sparse boundary anchor: True only at boundary/crack-path indices.
         """
         target = self.psi_target_at_cycle(
             cycle_idx, pidl_centroids,
@@ -202,14 +208,24 @@ class FEMSupervision:
             dtype=psi_pidl_raw_per_elem.dtype)
         eps = 1e-12
         if loss_kind == "mse_log":
-            ratio = torch.log10(psi_pidl_raw_per_elem.clamp(min=eps)) \
-                  - torch.log10(target.clamp(min=eps))
-            loss = (ratio ** 2).mean()
+            perel = (torch.log10(psi_pidl_raw_per_elem.clamp(min=eps))
+                   - torch.log10(target.clamp(min=eps))) ** 2
         elif loss_kind == "mse_lin":
-            loss = ((psi_pidl_raw_per_elem - target) ** 2).mean()
+            perel = (psi_pidl_raw_per_elem - target) ** 2
         elif loss_kind == "mse_rel":
-            rel = (psi_pidl_raw_per_elem - target) / (target.abs() + eps)
-            loss = (rel ** 2).mean()
+            perel = ((psi_pidl_raw_per_elem - target) / (target.abs() + eps)) ** 2
         else:
             raise ValueError(f"unknown loss_kind={loss_kind}")
+
+        if mask is None:
+            loss = perel.mean()
+        else:
+            # Mask-weighted mean: divide by count of True entries
+            mask_b = mask.to(perel.device).bool()
+            n = int(mask_b.sum().item())
+            if n == 0:
+                # Defensive: empty mask gives no signal (skip supervised loss)
+                loss = perel.new_zeros(())
+            else:
+                loss = perel[mask_b].mean()
         return lambda_sup * loss
