@@ -155,6 +155,38 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     fatigue_on = fatigue_dict.get('fatigue_on', False)
 
     # =========================================================================
+    # ★ Early mutex guards for sidecar S2 (added 2026-05-14, expert review).
+    # Fires before any pretrain compute so a misconfigured config fails fast.
+    # The runner already disables conflicting variants, but callers who edit
+    # config directly (bypassing the runner) would otherwise silently train
+    # for one cycle before crashing inside fit() on a shape-mismatched
+    # crack_tip_weights tensor.
+    # =========================================================================
+    _S2_check = sidecar_S2_dict is not None and sidecar_S2_dict.get('enable', False)
+    if _S2_check:
+        if sidecar_S1_dict is not None and sidecar_S1_dict.get('enable', False):
+            raise ValueError(
+                "sidecar S1 and S2 are mutually exclusive — both refine the "
+                "fine mesh. Disable one in config or the runner."
+            )
+        _adapt_chk = (adaptive_sampling_dict if adaptive_sampling_dict is not None
+                      else fatigue_dict.get('adaptive_sampling', {}))
+        if isinstance(_adapt_chk, dict) and _adapt_chk.get('enable', False):
+            raise ValueError(
+                "sidecar S2 and adaptive_sampling_dict (C6 FI-PINN reweight) "
+                "are mutually exclusive: S2 changes mesh size per cycle while "
+                "C6 writes per-element crack_tip_weights → next cycle shape "
+                "mismatch in compute_energy. Disable one."
+            )
+        _tipw_chk = fatigue_dict.get('tip_weight_cfg', {})
+        if isinstance(_tipw_chk, dict) and _tipw_chk.get('enable', False):
+            raise ValueError(
+                "sidecar S2 and fatigue_dict.tip_weight_cfg (Direction 3) are "
+                "mutually exclusive: both touch crack_tip_weights on a mesh "
+                "that S2 mutates per cycle. Disable one."
+            )
+
+    # =========================================================================
     # 阶段1：预训练（粗网格，fatigue 始终关闭，与 Manav 原始完全一致）
     # ★ 若已有预训练权重（中断续训），直接加载并跳过预训练
     # =========================================================================
@@ -235,14 +267,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # and initialize per-original-mesh state buffers. The actual per-cycle
     # mesh swap happens at the TOP of the for-loop body (see below).
     # =========================================================================
-    _S2_enabled = sidecar_S2_dict is not None and sidecar_S2_dict.get('enable', False)
+    _S2_enabled = _S2_check   # already validated by early mutex guards above
     _S2_state = None
     if _S2_enabled:
-        if sidecar_S1_dict is not None and sidecar_S1_dict.get('enable', False):
-            raise ValueError(
-                "sidecar S1 and S2 are mutually exclusive — both refine the fine "
-                "mesh. Disable one of them in the runner."
-            )
         if numr_dict['gradient_type'] != 'numerical':
             raise NotImplementedError(
                 "sidecar S2 currently only supports gradient_type='numerical' "
