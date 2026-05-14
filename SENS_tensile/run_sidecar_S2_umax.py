@@ -86,6 +86,8 @@ def main():
                    help="S2b: fraction of elements to refine each cycle")
     p.add_argument("--min-count", type=int, default=50,
                    help="S2b: floor on n_marked elements (avoid degenerate masks)")
+    p.add_argument("--hysteresis-fraction", type=float, default=0.25,
+                   help="Skip re-refinement when |Δtip|_L1 < this × r_tip_sample (default 0.25)")
     p.add_argument("--tip-x0", type=float, default=0.0,
                    help="Initial tip x (used for cycle 0 in S2a if no tip history yet)")
     p.add_argument("--tip-y0", type=float, default=0.0)
@@ -128,6 +130,7 @@ def main():
     config.sidecar_S2_dict["n_refine_passes"] = int(args.n_passes)
     config.sidecar_S2_dict["target_fraction"] = float(args.target_fraction)
     config.sidecar_S2_dict["min_count"] = int(args.min_count)
+    config.sidecar_S2_dict["hysteresis_fraction"] = float(args.hysteresis_fraction)
 
     fat = config.fatigue_dict
     fatigue_tag = (

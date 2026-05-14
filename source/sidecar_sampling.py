@@ -393,6 +393,46 @@ def remap_element_field(values_old: np.ndarray, parent_new: np.ndarray) -> np.nd
     return np.asarray(values_old)[np.asarray(parent_new, dtype=np.int64)]
 
 
+def nearest_element_transport(
+    values_old: np.ndarray,
+    X_old: np.ndarray,
+    Y_old: np.ndarray,
+    T_old: np.ndarray,
+    X_new: np.ndarray,
+    Y_new: np.ndarray,
+    T_new: np.ndarray,
+) -> np.ndarray:
+    """Transport a per-element field from one refined mesh to another via
+    centroid-nearest-neighbour lookup (KDTree).
+
+    Use case: sidecar S2 maintains the cumulative fatigue field hist_fat in
+    REFINED-MESH coordinates throughout the run. When the refinement target
+    changes (tip moved past hysteresis, or new top-K from score), a new
+    refined mesh is built and hist_fat must be carried across.
+
+    Why this beats aggregate-to-original + expand-from-original (the previous
+    approach in sidecar_S2): cumulative quantities can have large sub-parent
+    variation (the tip-side child of a refined parent accumulates ᾱ much
+    faster than the back-side child). Aggregate-then-expand replaces every
+    child with the parent's area-weighted MEAN — destroying exactly the
+    sub-parent locality the refinement was meant to resolve. Centroid-nearest
+    transport preserves sub-parent variation: each new-mesh element inherits
+    the value of its geometrically closest old-mesh element, which for
+    overlapping refined meshes (only the tip neighbourhood differs cycle to
+    cycle) is almost always identity.
+
+    Cost: O((n_old + n_new) log n_old) via scipy.spatial.cKDTree.
+    """
+    from scipy.spatial import cKDTree
+    cx_old = (X_old[T_old[:, 0]] + X_old[T_old[:, 1]] + X_old[T_old[:, 2]]) / 3.0
+    cy_old = (Y_old[T_old[:, 0]] + Y_old[T_old[:, 1]] + Y_old[T_old[:, 2]]) / 3.0
+    cx_new = (X_new[T_new[:, 0]] + X_new[T_new[:, 1]] + X_new[T_new[:, 2]]) / 3.0
+    cy_new = (Y_new[T_new[:, 0]] + Y_new[T_new[:, 1]] + Y_new[T_new[:, 2]]) / 3.0
+    tree = cKDTree(np.column_stack((cx_old, cy_old)))
+    _, idx = tree.query(np.column_stack((cx_new, cy_new)), k=1)
+    return np.asarray(values_old, dtype=np.float64)[idx]
+
+
 def aggregate_to_original(
     values_current: np.ndarray,
     area_current: np.ndarray,

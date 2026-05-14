@@ -267,6 +267,13 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # and initialize per-original-mesh state buffers. The actual per-cycle
     # mesh swap happens at the TOP of the for-loop body (see below).
     # =========================================================================
+    # ★ 2026-05-14 expert review v2: hist_fat / psi_plus_prev are now maintained
+    # in CURRENT (refined) mesh coordinates throughout the run, and carried
+    # across cycle swaps via centroid-nearest transport (preserves sub-parent
+    # variation, unlike aggregate-then-expand). Only the S2b score still
+    # aggregates to ORIGINAL coords (needed so select_top_score_elements
+    # operates on the canonical reference mesh — refinement is always
+    # one-step from original to keep mesh size bounded).
     _S2_enabled = _S2_check   # already validated by early mutex guards above
     _S2_state = None
     if _S2_enabled:
@@ -277,19 +284,34 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             )
         from utils import parse_mesh as _parse_mesh
         _Xo, _Yo, _To, _ao = _parse_mesh(filename=str(fine_mesh_file), gradient_type='numerical')
+        _n_orig = int(_To.shape[0])
+        _hyst_frac = float(sidecar_S2_dict.get('hysteresis_fraction', 0.25))
+        _hyst = _hyst_frac * float(sidecar_S2_dict.get('r_tip_sample', 0.05))
         _S2_state = {
+            # Original (canonical reference) mesh — never mutated
             'X_orig': _Xo, 'Y_orig': _Yo, 'T_orig': _To, 'area_orig': _ao,
-            'n_elem_orig': int(_To.shape[0]),
-            'hist_fat_orig': np.zeros(int(_To.shape[0]), dtype=np.float64),
-            'psi_plus_prev_orig': np.zeros(int(_To.shape[0]), dtype=np.float64),
-            'score_orig': None,    # set at end of each cycle for S2b
-            'parent': None,        # set each cycle by the swap helper
+            'n_elem_orig': _n_orig,
+            # Current refined mesh — starts as identity (= original unrefined)
+            'X_curr': _Xo.copy(), 'Y_curr': _Yo.copy(),
+            'T_curr': _To.copy(), 'area_curr': _ao.copy(),
+            'parent_curr': np.arange(_n_orig, dtype=np.int64),  # identity mapping
+            'tip_at_refine': None,    # forces first refinement on cycle 0
+            # Per-element accumulated state in CURRENT mesh coords
+            'hist_fat_curr': np.zeros(_n_orig, dtype=np.float64),
+            'psi_plus_prev_curr': np.zeros(_n_orig, dtype=np.float64),
+            # S2b: detached score aggregated to ORIGINAL for next cycle's top-K
+            'score_orig_for_next': None,
+            # Hysteresis: skip re-refinement when tip hasn't moved by this L¹ distance
+            'hysteresis': _hyst,
+            # Stats
+            'n_swaps': 0, 'n_skips': 0,
         }
         print(
             f"[sidecar-S2] enabled (mode={sidecar_S2_dict.get('mode','tip_following')}); "
             f"r_tip_sample={sidecar_S2_dict.get('r_tip_sample',0.05)}; "
             f"target_fraction={sidecar_S2_dict.get('target_fraction',0.07)}; "
-            f"original mesh: {_S2_state['n_elem_orig']} elem"
+            f"hysteresis_frac={_hyst_frac} → threshold={_hyst:.4f}; "
+            f"original mesh: {_n_orig} elem | transport: nearest-element (KDTree)"
         )
 
     # -------------------------------------------------------------------------
@@ -550,58 +572,98 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         start = time.time()
 
         # ------------------------------------------------------------------
-        # ★ 2026-05-13 sidecar S2 per-cycle mesh swap. Operates on the
-        # ORIGINAL mesh + the previous-cycle aggregated state. Updates
-        # inp / T_conn / area_T / hist_alpha / hist_fat / psi_plus_prev /
-        # n_elem / elem_centroids / _right_bdy_mask / training_set.
+        # ★ 2026-05-14 sidecar S2 v2 (expert review): per-cycle mesh
+        # decision = hysteresis on tip motion. When tip has moved past
+        # `hysteresis` (L¹ distance), build a NEW refined mesh and TRANSPORT
+        # hist_fat / psi_plus_prev from the previous refined mesh via
+        # centroid-nearest lookup (preserves sub-parent variation). Otherwise
+        # keep the current mesh + state (no swap, no transport cost, no
+        # smoothing loss). First cycle always swaps to initialize.
         # ------------------------------------------------------------------
         if _S2_enabled and fatigue_on:
-            from sidecar_sampling import apply_s2_swap_for_cycle
+            from sidecar_sampling import (adaptive_refine_for_cycle,
+                                          nearest_element_transport)
             _tip_xy_now = (
                 (float(_x_tip_history[-1]), 0.0)
                 if _x_tip_history else
                 tuple(sidecar_S2_dict.get('tip_xy', (0.0, 0.0)))
             )
-            (inp, T_conn, area_T, hist_alpha, hist_fat, psi_plus_prev,
-             n_elem, elem_centroids, _right_bdy_mask, _parent_for_cycle,
-             _s2_diag) = apply_s2_swap_for_cycle(
-                sidecar_S2_dict,
-                _S2_state['X_orig'], _S2_state['Y_orig'],
-                _S2_state['T_orig'], _S2_state['area_orig'],
-                _S2_state['n_elem_orig'],
-                _S2_state['hist_fat_orig'], _S2_state['psi_plus_prev_orig'],
-                _S2_state['score_orig'],
-                _tip_xy_now, field_comp, device,
+            _last_tip = _S2_state['tip_at_refine']
+            _should_refine = (
+                _last_tip is None
+                or (abs(_tip_xy_now[0] - _last_tip[0]) + abs(_tip_xy_now[1] - _last_tip[1])
+                    > _S2_state['hysteresis'])
             )
-            _S2_state['parent'] = _parent_for_cycle
-            f_fatigue = compute_fatigue_degrad(
-                hist_fat, fatigue_dict, elem_centroids=elem_centroids
-            )
-            outp = torch.zeros(inp.shape[0], 1).to(device)
-            training_set = DataLoader(
-                torch.utils.data.TensorDataset(inp, outp),
-                batch_size=inp.shape[0], shuffle=False
-            )
-            # ★ P0 fix (2026-05-14, expert review): _nominal_mask was built once
-            # before the loop from the ORIGINAL mesh and indexed psi_plus_elem
-            # at line ~715 below. After the S2 swap, psi_plus_elem lives on the
-            # refined mesh (≈81k vs 67k), so the boolean mask shape no longer
-            # matches and the index expression crashed in cycle 0. Rebuild
-            # _nominal_mask / _n_nominal on the post-swap mesh each cycle.
-            if T_conn is not None:
-                _T_np2 = T_conn.cpu().numpy() if isinstance(T_conn, torch.Tensor) else T_conn
-                _inp_np2 = inp.detach().cpu().numpy()
-                _cx2 = (_inp_np2[_T_np2[:, 0], 0] + _inp_np2[_T_np2[:, 1], 0] + _inp_np2[_T_np2[:, 2], 0]) / 3.0
-                _cy2 = (_inp_np2[_T_np2[:, 0], 1] + _inp_np2[_T_np2[:, 1], 1] + _inp_np2[_T_np2[:, 2], 1]) / 3.0
-                _nominal_mask = (np.abs(_cy2) > 0.3) & (_cx2 > -0.3)
-                _n_nominal = int(_nominal_mask.sum())
-            if (j == start_j) or (j % 5 == 0):
-                print(
-                    f"  [sidecar-S2 cycle {j}] tip={_tip_xy_now} | "
-                    f"elem {_s2_diag['n_elem_before']}→{_s2_diag['n_elem_after']} | "
-                    f"marked={_s2_diag['n_marked']} | area_drift={_s2_diag['area_drift']:.1e} | "
-                    f"n_nominal={_n_nominal}"
+            if _should_refine:
+                _X_new, _Y_new, _T_new, _area_new, _parent_new, _s2_diag = adaptive_refine_for_cycle(
+                    _S2_state['X_orig'], _S2_state['Y_orig'],
+                    _S2_state['T_orig'], _S2_state['area_orig'],
+                    sidecar_S2_dict,
+                    tip_xy=_tip_xy_now,
+                    score=_S2_state['score_orig_for_next'],
                 )
+                # Transport from CURRENT refined mesh to NEW refined mesh
+                _hist_fat_new = nearest_element_transport(
+                    _S2_state['hist_fat_curr'],
+                    _S2_state['X_curr'], _S2_state['Y_curr'], _S2_state['T_curr'],
+                    _X_new, _Y_new, _T_new,
+                )
+                _psi_pp_new = nearest_element_transport(
+                    _S2_state['psi_plus_prev_curr'],
+                    _S2_state['X_curr'], _S2_state['Y_curr'], _S2_state['T_curr'],
+                    _X_new, _Y_new, _T_new,
+                )
+                # Update state to new mesh
+                _S2_state['X_curr'], _S2_state['Y_curr'] = _X_new, _Y_new
+                _S2_state['T_curr'], _S2_state['area_curr'] = _T_new, _area_new
+                _S2_state['parent_curr'] = _parent_new
+                _S2_state['tip_at_refine'] = _tip_xy_now
+                _S2_state['hist_fat_curr'] = _hist_fat_new
+                _S2_state['psi_plus_prev_curr'] = _psi_pp_new
+                _S2_state['n_swaps'] += 1
+                # Rebuild torch tensors on new mesh
+                inp = torch.from_numpy(np.column_stack((_X_new, _Y_new))).to(torch.float).to(device)
+                T_conn = torch.from_numpy(_T_new).to(torch.long).to(device)
+                area_T = torch.from_numpy(_area_new).to(torch.float).to(device)
+                n_elem = int(_T_new.shape[0])
+                _cx_new = (_X_new[_T_new[:, 0]] + _X_new[_T_new[:, 1]] + _X_new[_T_new[:, 2]]) / 3.0
+                _cy_new = (_Y_new[_T_new[:, 0]] + _Y_new[_T_new[:, 1]] + _Y_new[_T_new[:, 2]]) / 3.0
+                elem_centroids = torch.from_numpy(np.column_stack((_cx_new, _cy_new))).to(torch.float).to(device).detach()
+                hist_fat = torch.from_numpy(_hist_fat_new).to(torch.float).to(device)
+                psi_plus_prev = torch.from_numpy(_psi_pp_new).to(torch.float).to(device)
+                # Re-evaluate NN at new nodes for hist_alpha (per-node, no
+                # sub-parent variation issue since NN output is smooth)
+                with torch.no_grad():
+                    _, _, _alpha_new_eval = field_comp.fieldCalculation(inp)
+                hist_alpha = _alpha_new_eval.detach()
+                _right_bdy_mask = (inp[:, 0] > _right_bdy_x_min).detach()
+                _nominal_mask = (np.abs(_cy_new) > 0.3) & (_cx_new > -0.3)
+                _n_nominal = int(_nominal_mask.sum())
+                outp = torch.zeros(inp.shape[0], 1).to(device)
+                training_set = DataLoader(
+                    torch.utils.data.TensorDataset(inp, outp),
+                    batch_size=inp.shape[0], shuffle=False,
+                )
+                f_fatigue = compute_fatigue_degrad(
+                    hist_fat, fatigue_dict, elem_centroids=elem_centroids
+                )
+                if (j == start_j) or (j % 5 == 0):
+                    print(
+                        f"  [sidecar-S2 cycle {j}] REFINE tip={_tip_xy_now} | "
+                        f"elem {_s2_diag['n_elem_before']}→{_s2_diag['n_elem_after']} | "
+                        f"marked={_s2_diag['n_marked']} | area_drift={_s2_diag['area_drift']:.1e} | "
+                        f"swaps={_S2_state['n_swaps']} skips={_S2_state['n_skips']}"
+                    )
+            else:
+                _S2_state['n_skips'] += 1
+                if (j == start_j) or (j % 5 == 0):
+                    _dt = abs(_tip_xy_now[0] - _last_tip[0]) + abs(_tip_xy_now[1] - _last_tip[1])
+                    print(
+                        f"  [sidecar-S2 cycle {j}] SKIP-REFINE tip={_tip_xy_now} "
+                        f"(|Δtip|={_dt:.4f} ≤ {_S2_state['hysteresis']:.4f}) | "
+                        f"reuse mesh {n_elem} elem | "
+                        f"swaps={_S2_state['n_swaps']} skips={_S2_state['n_skips']}"
+                    )
 
         # ★ MIT-8: build per-cycle supervised_dict (None outside [1, K])
         _supervised_dict = None
@@ -842,57 +904,42 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     crack_tip_weights = None   # warmup cycles unweighted
 
             # ------------------------------------------------------------------
-            # ★ 2026-05-13 sidecar S2: aggregate state back to ORIGINAL mesh
-            # for transport into next cycle's mesh swap. Done here (after the
-            # C6 reweight block) so all per-element state on the current
-            # refined mesh is in its post-cycle state.
+            # ★ 2026-05-14 sidecar S2 v2 (expert review): hist_fat /
+            # psi_plus_prev now live in CURRENT refined-mesh coords and travel
+            # cycle-to-cycle via centroid-nearest transport — no aggregate-then-
+            # expand round-trip, no sub-parent smoothing loss. Sync the tensor
+            # state back to numpy so the next cycle's transport sees the
+            # post-cycle values.
             # ------------------------------------------------------------------
-            if _S2_enabled and _S2_state is not None and _S2_state['parent'] is not None:
-                from sidecar_sampling import aggregate_to_original as _agg_to_orig
+            if _S2_enabled and _S2_state is not None:
+                _S2_state['hist_fat_curr'] = hist_fat.detach().cpu().numpy()
+                _S2_state['psi_plus_prev_curr'] = psi_plus_prev.detach().cpu().numpy()
                 _area_np_cur = area_T.detach().cpu().numpy()
-                _parent_cur = _S2_state['parent']
-                _S2_state['hist_fat_orig'] = _agg_to_orig(
-                    hist_fat.detach().cpu().numpy(), _area_np_cur,
-                    _parent_cur, _S2_state['n_elem_orig'],
-                )
-                _S2_state['psi_plus_prev_orig'] = _agg_to_orig(
-                    psi_plus_prev.detach().cpu().numpy(), _area_np_cur,
-                    _parent_cur, _S2_state['n_elem_orig'],
-                )
-                # S2b: compute detached Deep Ritz residual for NEXT cycle's mask
+                _S2_state['area_curr'] = _area_np_cur
+                # S2b only: compute next cycle's selection score in ORIGINAL
+                # mesh coords. Score is a point-evaluated DENSITY (not a
+                # cumulative integral), so aggregate_to_original is the
+                # correct operation here — sub-parent variation in score
+                # density is small for a smooth Deep-Ritz residual, and the
+                # round-trip is exact under uniform refinement (P1 fix unit
+                # test). select_top_score_elements then ranks ORIGINAL-mesh
+                # elements by local error density for next cycle's top-K mask.
                 if sidecar_S2_dict.get('mode') == 'score_driven':
-                    with torch.no_grad():
-                        _u_s2, _v_s2, _a_s2 = field_comp.fieldCalculation(inp)
+                    from sidecar_sampling import aggregate_to_original as _agg_to_orig
                     from compute_energy import compute_energy_per_elem as _ce_per
                     with torch.no_grad():
+                        _u_s2, _v_s2, _a_s2 = field_comp.fieldCalculation(inp)
                         _E_el_e_s2, _E_d_e_s2, _ = _ce_per(
                             inp, _u_s2, _v_s2, _a_s2, hist_alpha,
                             matprop, pffmodel, area_T, T_conn=T_conn,
                             f_fatigue=f_fatigue,
                         )
-                    # ★ P1 fix (2026-05-14, expert review): compute_energy_per_elem
-                    # returns element-INTEGRATED energy (= local density × area_e).
-                    # An integrated quantity carries a built-in geometric bias —
-                    # already-refined elements have ~1/4 the area of their parent,
-                    # so their integrated score is ~1/4× even when the underlying
-                    # error density is identical. Aggregating integrated quantities
-                    # via `aggregate_to_original` (area-weighted MEAN) compounds
-                    # this: a uniform 1-to-4 split returns ~1/4 the parent's
-                    # integrated value, systematically under-estimating refined
-                    # regions for next cycle's top-K.
-                    #
-                    # Fix: convert to DENSITY (integrated / area) before aggregating.
-                    # Density is invariant under uniform refinement (same local
-                    # smooth field) and the area-weighted MEAN of density is
-                    # exactly the density on the parent — round-trip exact.
-                    # select_top_score_elements then ranks elements by local error
-                    # density, which is the correct semantic for adaptive sampling.
                     _score_integ = (_E_el_e_s2.abs() + _E_d_e_s2.abs()).detach().cpu().numpy()
                     _area_safe = np.clip(_area_np_cur, 1e-30, None)
                     _score_density_cur = _score_integ / _area_safe
-                    _S2_state['score_orig'] = _agg_to_orig(
+                    _S2_state['score_orig_for_next'] = _agg_to_orig(
                         _score_density_cur, _area_np_cur,
-                        _parent_cur, _S2_state['n_elem_orig'],
+                        _S2_state['parent_curr'], _S2_state['n_elem_orig'],
                     )
 
             # ★ Direction 5: 记录 c_singular 当前值（每圈训练完毕后）
