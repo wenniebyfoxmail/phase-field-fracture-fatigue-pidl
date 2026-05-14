@@ -88,6 +88,9 @@ def main():
                    help="S2b: floor on n_marked elements (avoid degenerate masks)")
     p.add_argument("--hysteresis-fraction", type=float, default=0.25,
                    help="Skip re-refinement when |Δtip|_L1 < this × r_tip_sample (default 0.25)")
+    p.add_argument("--plot-every", type=int, default=None,
+                   help="Override fatigue_dict.plot_every_n_cycles (default config=20). "
+                        "Set 1 for full per-cycle alpha snapshots (diagnostic plots).")
     p.add_argument("--tip-x0", type=float, default=0.0,
                    help="Initial tip x (used for cycle 0 in S2a if no tip history yet)")
     p.add_argument("--tip-y0", type=float, default=0.0)
@@ -131,6 +134,8 @@ def main():
     config.sidecar_S2_dict["target_fraction"] = float(args.target_fraction)
     config.sidecar_S2_dict["min_count"] = int(args.min_count)
     config.sidecar_S2_dict["hysteresis_fraction"] = float(args.hysteresis_fraction)
+    if args.plot_every is not None:
+        config.fatigue_dict["plot_every_n_cycles"] = int(args.plot_every)
 
     fat = config.fatigue_dict
     fatigue_tag = (
