@@ -431,6 +431,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # ★ Direction 4: Williams 特征开关 & ψ⁺ 重心裂尖历史
     # 通过 field_comp.williams_enabled 检测是否启用（无需额外参数传递）
     _williams_enabled = getattr(field_comp, 'williams_enabled', False)
+    # ★ 2026-05-14 C8 v0a: SDF ribbon also needs per-cycle x_tip update
+    _sdf_ribbon_enabled = getattr(field_comp, 'sdf_ribbon_enabled', False)
+    _tip_tracking_on = _williams_enabled or _sdf_ribbon_enabled
     _x_tip_psi_history = _restore_hist('x_tip_psi_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
 
     # ★ 每圈耗时记录（增量保存到 time_vs_cycle.npy）
@@ -593,26 +596,33 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             #   给出非物理的 x_tip 估计，如 -0.17，导致 cycle 1 Williams features 失真 → NN 伪解）
             # ★ Fix B: sanity check — 如果 ψ⁺ centroid 跑进预裂缝内部超过 0.02，拒绝更新
             # ★ Fix:   断裂确认期间冻结 x_tip，防止裂尖跳到右边界导致 Williams 特征失真
-            if _williams_enabled and T_conn is not None:
+            if _tip_tracking_on and T_conn is not None:
+                _tag = "SDF-rib" if _sdf_ribbon_enabled else "Williams"
                 if not _frac_detected:
                     if j == 0:
                         # Cycle 0: 保持 __init__ 时的初始值（crack_mouth 附近，物理先验）
-                        print(f"  [Williams]  x_tip_psi={field_comp.x_tip:.4f} "
+                        print(f"  [{_tag}]  x_tip_psi={field_comp.x_tip:.4f} "
                               f"(cycle 0, keep initial — psi+ unreliable before alpha converges)")
                     else:
                         _x_tip_psi_val = compute_x_tip_psi(inp, psi_plus_elem, T_conn, top_k=10)
                         _x_tip_floor   = _crack_mouth_x - 0.02   # 下界：不允许跑进预裂缝内
                         if _x_tip_psi_val < _x_tip_floor:
-                            print(f"  [Williams]  x_tip_psi={_x_tip_psi_val:.4f} "
+                            print(f"  [{_tag}]  x_tip_psi={_x_tip_psi_val:.4f} "
                                   f"rejected (< floor {_x_tip_floor:.4f}), "
                                   f"keep {field_comp.x_tip:.4f}")
                         else:
-                            field_comp.x_tip = _x_tip_psi_val
-                            print(f"  [Williams]  x_tip_psi={_x_tip_psi_val:.4f}")
+                            # ★ 2026-05-14 C8 v0a red-team C3: monotone clamp for ribbon
+                            # (Williams branch unchanged — only the new ribbon path adds the clamp)
+                            if _sdf_ribbon_enabled and _x_tip_psi_val < field_comp.x_tip:
+                                print(f"  [{_tag}]  x_tip_psi={_x_tip_psi_val:.4f} "
+                                      f"< prev {field_comp.x_tip:.4f}, monotone-clamped (no retreat)")
+                            else:
+                                field_comp.x_tip = _x_tip_psi_val
+                                print(f"  [{_tag}]  x_tip_psi={_x_tip_psi_val:.4f}")
                 else:
-                    print(f"  [Williams]  x_tip_psi={field_comp.x_tip:.4f} (frozen, fracture confirmed)")
+                    print(f"  [{_tag}]  x_tip_psi={field_comp.x_tip:.4f} (frozen, fracture confirmed)")
                 _x_tip_psi_history.append(field_comp.x_tip)
-            elif _williams_enabled:
+            elif _tip_tracking_on:
                 # 自动微分模式：T_conn=None，形心计算不可用，暂保持上一圈值
                 _x_tip_psi_history.append(field_comp.x_tip)
 
@@ -830,7 +840,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 _xt = np.array(_x_tip_history)
                 np.save(str(trainedModel_path / 'x_tip_alpha_vs_cycle.npy'), _xt)
                 np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),       _xt)
-            if _williams_enabled and _x_tip_psi_history:
+            if _tip_tracking_on and _x_tip_psi_history:
                 np.save(str(trainedModel_path / 'x_tip_psi_vs_cycle.npy'),
                         np.array(_x_tip_psi_history))
             if alpha_bar_history:
@@ -856,7 +866,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     np.array(_x_tip_history))
             np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),         # ★ 保留旧名称（向后兼容）
                     np.array(_x_tip_history))
-            if _williams_enabled and _x_tip_psi_history:                    # ★ Direction 4
+            if _tip_tracking_on and _x_tip_psi_history:                    # ★ Direction 4
                 np.save(str(trainedModel_path / 'x_tip_psi_vs_cycle.npy'),
                         np.array(_x_tip_psi_history))
             np.save(str(trainedModel_path / 'alpha_bar_vs_cycle.npy'),
@@ -881,7 +891,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 np.array(_x_tip_history))
         np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),             # ★ 保留旧名称（向后兼容）
                 np.array(_x_tip_history))
-    if fatigue_on and _williams_enabled and _x_tip_psi_history:            # ★ Direction 4
+    if fatigue_on and _tip_tracking_on and _x_tip_psi_history:            # ★ Direction 4 / C8 v0a
         np.save(str(trainedModel_path / 'x_tip_psi_vs_cycle.npy'),
                 np.array(_x_tip_psi_history))
     if fatigue_on and alpha_bar_history:

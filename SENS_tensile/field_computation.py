@@ -11,6 +11,8 @@ if str(_SOURCE_PATH) not in sys.path:
 from williams_features import compute_williams_features
 # ★ Direction 5: Enriched Ansatz —— 输出端 Williams 主奇异项增强
 from enriched_ansatz import compute_enrichment
+# ★ 2026-05-14 C8 v0a: SDF / discontinuity-ribbon input embedding
+from sdf_ribbon import compute_ribbon_gamma
 
 
 class FieldComputation:
@@ -70,7 +72,8 @@ class FieldComputation:
                  ansatz_dict=None,
                  l0=0.01,
                  symmetry_prior=False,
-                 exact_bc_dict=None):
+                 exact_bc_dict=None,
+                 sdf_ribbon_dict=None):
         self.net = net
         self.domain_extrema = domain_extrema
         self.theta = theta
@@ -111,6 +114,23 @@ class FieldComputation:
         if self.symmetry_prior and self.williams_enabled:
             print("[FieldComputation] WARNING: symmetry_prior=True ignored when williams_enabled=True "
                   "(Williams 8D feature 已包含 r,θ 几何信息，不叠加 y² 变换)")
+
+        # ★ 2026-05-14 C8 v1 (default uv_only) / v2 (all) SDF ribbon embedding
+        _rd = sdf_ribbon_dict or {}
+        self.sdf_ribbon_enabled = bool(_rd.get('enable', False))
+        self.sdf_ribbon_epsilon = float(_rd.get('epsilon', 1e-3))
+        self.sdf_ribbon_apply_to = str(_rd.get('apply_to', 'uv_only'))   # ★ v1 default
+        if self.sdf_ribbon_enabled and self.sdf_ribbon_apply_to not in ('uv_only', 'all'):
+            raise ValueError(
+                f"sdf_ribbon_dict.apply_to must be 'uv_only' or 'all', "
+                f"got {self.sdf_ribbon_apply_to!r}")
+        if self.sdf_ribbon_enabled and self.williams_enabled:
+            raise ValueError("sdf_ribbon_dict and williams_dict cannot both be enabled "
+                             "(both reshape NN input dimension)")
+        if self.sdf_ribbon_enabled and self.symmetry_prior:
+            raise ValueError("sdf_ribbon_dict and symmetry_prior cannot both be enabled "
+                             "(symmetry_prior uses (x, 8y²−1) input which conflicts with ribbon's "
+                             "sign(y)-antisymmetric γ feature)")
 
         # ★ 2026-05-11 C4 exact-BC branch
         _eb = exact_bc_dict or {}
@@ -159,6 +179,16 @@ class FieldComputation:
                 r_min=self.williams_r_min,
                 theta_mode=self.williams_theta_mode,
             )
+        elif self.sdf_ribbon_enabled:
+            # ★ 2026-05-14 C8: append γ = sign(y) · sigmoid(-(x-x_tip)/ε) as 3rd input
+            # apply_to='uv_only' (v1, default): SplitUVAlphaNet receives (x,y,γ) and
+            #                                   routes γ AWAY from the α head internally
+            #                                   (α-net only sees inp_with_gamma[:, 0:2]).
+            # apply_to='all'     (v2):          single NN, γ reaches u/v/α via shared weights.
+            # The concat below is identical in both cases — SplitNet does the routing.
+            gamma = compute_ribbon_gamma(inp, x_tip=self.x_tip,
+                                         epsilon=self.sdf_ribbon_epsilon)
+            inp_nn = torch.cat([inp, gamma], dim=1)            # shape (N, 3)
         elif self.symmetry_prior:
             # ★ 2026-05-06 mirror symmetry prior:
             # NN sees (x, y²) instead of (x, y). NN raw output is automatically

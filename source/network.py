@@ -290,6 +290,39 @@ def activations(activation, init_coeff, n_hidden_layers=1):
     return activations, trainable_activation
 
 
+class SplitUVAlphaNet(nn.Module):
+    """
+    ★ 2026-05-14 C8 v1 (uv_only): two-headed NN to isolate SDF embedding effect.
+
+    uv-net    : input (x, y, γ) → output (u_raw, v_raw)
+    alpha-net : input (x, y)    → output (α_raw,)
+
+    Why: the SDF ribbon γ is meant to give the NN a strong displacement
+    discontinuity feature. Feeding γ to the α head (all-head v2) lets α
+    "lock onto" the γ jump and over-localize → V4 d-skew failure mode.
+    The split keeps the experiment as a clean test of "does giving u-field
+    a discontinuity prior help reproduce ψ⁺-tip and downstream α-evolution",
+    without conflating with "α also sees the prior".
+
+    Output contract: concatenated (u_raw, v_raw, α_raw) shape (N, 3) so the
+    downstream FieldComputation contract is unchanged.
+
+    Caller is responsible for init (init_xavier on each sub-net separately
+    — `name_activation` and `init_coeff` live on NeuralNet, not on this wrapper).
+    """
+    def __init__(self, uv_net, alpha_net):
+        super().__init__()
+        self.uv_net    = uv_net
+        self.alpha_net = alpha_net
+
+    def forward(self, inp_with_gamma):
+        # inp_with_gamma shape (N, 3): columns [x, y, γ]
+        uv = self.uv_net(inp_with_gamma)            # (N, 2)
+        xy = inp_with_gamma[:, 0:2]                 # (N, 2) — drop γ for α head
+        a  = self.alpha_net(xy)                     # (N, 1)
+        return torch.cat([uv, a], dim=1)            # (N, 3)
+
+
 def init_xavier(model):
     """
         Xavier初始化

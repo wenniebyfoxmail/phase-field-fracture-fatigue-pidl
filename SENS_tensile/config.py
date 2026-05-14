@@ -251,6 +251,19 @@ fourier_dict = {
 }
 
 
+# ★ 2026-05-14 C8 v0a: SDF / discontinuity-ribbon embedding (cheap version of Zhao 2025 DENNs)
+# γ(x, y) = sign(y) · sigmoid(-(x - x_tip) / ε)  — extra NN input channel
+# Mutually exclusive with williams_dict (both reshape NN input dim).
+# Combinable with fourier_dict (Fourier projects all 3 channels).
+# x_tip is updated each cycle from ψ⁺ argmax with monotone clamp (model_train.py).
+sdf_ribbon_dict = {
+    "enable":   False,
+    "epsilon":  1e-3,      # sigmoid smoothing width (≈ FEM mesh scale h ~ 0.001)
+    "apply_to": "uv_only", # 'uv_only' (v1, red-team default): split NN, α-head NEVER sees γ
+                           # 'all'     (v2):                  single NN, γ reaches u/v/α heads
+}
+
+
 # ★ 2026-05-13 Branch 2 C6: FI-PINN adaptive sampling via residual-driven loss reweight
 # ────────────────────────────────────────────────────────────────────────────────────
 # Background: PIDL ᾱ_max trails FEM 10-100× at crack tip. Tested mechanisms (Apr-May):

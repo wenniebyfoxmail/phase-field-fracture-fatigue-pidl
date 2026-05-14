@@ -18,8 +18,9 @@ from model_train import train
 ## ############################################################################
 pffmodel, matprop, network = construct_model(PFF_model_dict, mat_prop_dict,
                                              network_dict, domain_extrema, device,
-                                             williams_dict=williams_dict,   # ★ Direction 4
-                                             fourier_dict=fourier_dict)     # ★ 2026-05-11 C10
+                                             williams_dict=williams_dict,    # ★ Direction 4
+                                             fourier_dict=fourier_dict,      # ★ 2026-05-11 C10
+                                             sdf_ribbon_dict=sdf_ribbon_dict) # ★ 2026-05-14 C8 v0a
 field_comp = FieldComputation(net = network,
                               domain_extrema = domain_extrema,
                               lmbda = torch.tensor([0.0], device = device),
@@ -29,7 +30,8 @@ field_comp = FieldComputation(net = network,
                               ansatz_dict  = ansatz_dict,                    # ★ Direction 5
                               l0 = mat_prop_dict["l0"],                      # ★ Direction 4
                               symmetry_prior = symmetry_prior,               # ★ 2026-05-06
-                              exact_bc_dict = exact_bc_dict)                 # ★ 2026-05-11 C4
+                              exact_bc_dict = exact_bc_dict,                 # ★ 2026-05-11 C4
+                              sdf_ribbon_dict = sdf_ribbon_dict)             # ★ 2026-05-14 C8 v0a
 field_comp.net = field_comp.net.to(device)
 field_comp.domain_extrema = field_comp.domain_extrema.to(device)
 field_comp.theta = field_comp.theta.to(device)
