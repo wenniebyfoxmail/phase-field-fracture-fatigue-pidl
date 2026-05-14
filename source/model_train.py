@@ -631,11 +631,23 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 elem_centroids = torch.from_numpy(np.column_stack((_cx_new, _cy_new))).to(torch.float).to(device).detach()
                 hist_fat = torch.from_numpy(_hist_fat_new).to(torch.float).to(device)
                 psi_plus_prev = torch.from_numpy(_psi_pp_new).to(torch.float).to(device)
-                # Re-evaluate NN at new nodes for hist_alpha (per-node, no
-                # sub-parent variation issue since NN output is smooth)
-                with torch.no_grad():
-                    _, _, _alpha_new_eval = field_comp.fieldCalculation(inp)
-                hist_alpha = _alpha_new_eval.detach()
+                # hist_alpha at start of new cycle:
+                # - FIRST swap (cycle start_j, n_swaps==1 since we just incremented):
+                #   use crack-geometry init (α=1 at initial crack nodes, 0 elsewhere)
+                #   — matches what S1's prep_input_data → hist_alpha_init produces.
+                #   Otherwise the irreversibility penalty would be inactive at the
+                #   initial crack on cycle 0 and the trajectory diverges from S1
+                #   (observed: -7% ᾱ_max at cycle 0 in v2 vs S1).
+                # - SUBSEQUENT swaps (cycle j>0): re-evaluate NN at new nodes.
+                #   The NN has been trained on prior cycles and its α field is
+                #   the right starting state for the new mesh.
+                if _S2_state['n_swaps'] == 1:
+                    from utils import hist_alpha_init as _hist_alpha_init
+                    hist_alpha = _hist_alpha_init(inp, matprop, pffmodel, crack_dict)
+                else:
+                    with torch.no_grad():
+                        _, _, _alpha_new_eval = field_comp.fieldCalculation(inp)
+                    hist_alpha = _alpha_new_eval.detach()
                 _right_bdy_mask = (inp[:, 0] > _right_bdy_x_min).detach()
                 _nominal_mask = (np.abs(_cy_new) > 0.3) & (_cx_new > -0.3)
                 _n_nominal = int(_nominal_mask.sum())
