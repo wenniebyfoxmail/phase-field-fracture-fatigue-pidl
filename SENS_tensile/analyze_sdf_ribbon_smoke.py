@@ -50,8 +50,12 @@ def load_metrics(archive_path: Path):
     out = {}
     out["alpha_bar"] = np.load(bm / "alpha_bar_vs_cycle.npy")    # (N, 3) cols [max, mean, ?]
     out["Kt"]        = np.load(bm / "Kt_vs_cycle.npy")           # (N,)
-    psi              = np.load(bm / "psi_peak_vs_cycle.npy")     # (N, 5) col1 = ψ_tip
-    out["psi_tip"]   = psi[:, 1]
+    psi_path = bm / "psi_peak_vs_cycle.npy"
+    if psi_path.exists():
+        psi              = np.load(psi_path)                     # (N, 5) col1 = ψ_tip
+        out["psi_tip"]   = psi[:, 1]
+    else:
+        out["psi_tip"]   = None                                  # ribbon archives lack this
     # x_tip — baseline has only x_tip_vs_cycle.npy; ribbon has
     # x_tip_alpha_vs_cycle.npy + x_tip_psi_vs_cycle.npy
     xt = None
@@ -74,49 +78,59 @@ def evaluate(name: str, m: dict, base: dict):
         print(f"  [{name}] only {len(m['alpha_bar'])} cycles available; "
               f"reading last cycle {n-1} instead of c{C_GATE}")
     c = n - 1
-    a_b   = float(m["alpha_bar"][c, 0])
-    kt_5  = float(m["Kt"][c])
+    # Use the LAST cycle of this archive, not a hard-coded C_GATE.
+    # If archive has n cycles, last = n-1. baseline ref also at n-1 for fair compare.
+    c_run  = len(m["alpha_bar"]) - 1
+    c_ref  = c_run                              # compare to baseline at same cycle index
+    a_b   = float(m["alpha_bar"][c_run, 0])
+    kt_5  = float(m["Kt"][c_run])
     kt_0  = float(m["Kt"][0])
-    psi_5 = float(m["psi_tip"][c])
-    xt_5  = float(m["x_tip"][c])
+    psi_5 = float(m["psi_tip"][c_run]) if m["psi_tip"] is not None else None
+    xt_5  = float(m["x_tip"][c_run])
 
-    a_b_base   = float(base["alpha_bar"][C_GATE, 0])
-    kt_5_base  = float(base["Kt"][C_GATE])
+    a_b_base   = float(base["alpha_bar"][c_ref, 0])
+    kt_5_base  = float(base["Kt"][c_ref])
     kt_0_base  = float(base["Kt"][0])
-    psi_5_base = float(base["psi_tip"][C_GATE])
-    xt_5_base  = float(base["x_tip"][C_GATE])
-
-    ratios = {
-        "α_bar_max":          a_b / a_b_base   if a_b_base   else float("nan"),
-        "Kt(c5)":             kt_5 / kt_5_base if kt_5_base  else float("nan"),
-        "Kt(c5)/Kt(c0)":      (kt_5 / kt_0) / (kt_5_base / kt_0_base),
-        "ψ_tip":              psi_5 / psi_5_base if psi_5_base else float("nan"),
-    }
+    psi_5_base = float(base["psi_tip"][c_ref])  if base["psi_tip"] is not None else None
+    xt_5_base  = float(base["x_tip"][c_ref])
 
     print(f"  archive: {name}")
+    print(f"    (comparing at c{c_run}; archive has {c_run+1} cycles)")
+
+    ratios = {
+        f"α_bar_max(c{c_run})":     a_b / a_b_base   if a_b_base   else float("nan"),
+        f"Kt(c{c_run})":            kt_5 / kt_5_base if kt_5_base  else float("nan"),
+        f"Kt(c{c_run})/Kt(c0)":     (kt_5 / kt_0) / (kt_5_base / kt_0_base),
+    }
+    if psi_5 is not None and psi_5_base is not None:
+        ratios[f"ψ_tip(c{c_run})"] = psi_5 / psi_5_base if psi_5_base else float("nan")
+
     print(f"    α_bar_max  = {a_b:7.4f}   (base {a_b_base:7.4f}, "
-          f"ratio {ratios['α_bar_max']:5.2f}×)  thr ≥ {a_b_base*1.3:.4f}")
-    print(f"    Kt(c5)     = {kt_5:7.4f}  (base {kt_5_base:7.4f}, "
-          f"ratio {ratios['Kt(c5)']:5.2f}×)  thr ≥ {kt_5_base*1.3:.4f}")
-    print(f"    Kt(c5)/Kt(c0) = {(kt_5/kt_0):5.3f}  (base "
-          f"{kt_5_base/kt_0_base:5.3f}, normalized ratio {ratios['Kt(c5)/Kt(c0)']:5.2f}×)  thr ≥ 1.20")
-    print(f"    ψ_tip      = {psi_5:7.4f}  (base {psi_5_base:7.4f}, "
-          f"ratio {ratios['ψ_tip']:5.2f}×)  thr ≥ {psi_5_base*1.3:.4f}")
-    print(f"    x_tip(c5)  = {xt_5:7.4f}  (base {xt_5_base:7.4f})  "
+          f"ratio {ratios[f'α_bar_max(c{c_run})']:5.2f}×)  thr ≥ {a_b_base*1.3:.4f}")
+    print(f"    Kt(c{c_run})     = {kt_5:7.4f}  (base {kt_5_base:7.4f}, "
+          f"ratio {ratios[f'Kt(c{c_run})']:5.2f}×)  thr ≥ {kt_5_base*1.3:.4f}")
+    print(f"    Kt(c{c_run})/Kt(c0) = {(kt_5/kt_0):5.3f}  (base "
+          f"{kt_5_base/kt_0_base:5.3f}, normalized ratio {ratios[f'Kt(c{c_run})/Kt(c0)']:5.2f}×)  thr ≥ 1.20")
+    if psi_5 is not None and psi_5_base is not None:
+        print(f"    ψ_tip      = {psi_5:7.4f}  (base {psi_5_base:7.4f}, "
+              f"ratio {ratios[f'ψ_tip(c{c_run})']:5.2f}×)  thr ≥ {psi_5_base*1.3:.4f}")
+    else:
+        print(f"    ψ_tip      = N/A (psi_peak_vs_cycle.npy not in ribbon archive)")
+    print(f"    x_tip(c{c_run})  = {xt_5:7.4f}  (base {xt_5_base:7.4f})  "
           f"strong+ ≥ 0.02; <0.005 is NOT NO-GO")
 
     # ─── combined verdict ────────────────────────────────────────────────
-    a_go   = ratios["α_bar_max"]   >= 1.30
-    kt_go  = ratios["Kt(c5)"]      >= 1.30
-    psi_go = ratios["ψ_tip"]       >= 1.30
-    ratio_kt_go = (kt_5 / kt_0)    >= 1.20
+    a_go   = ratios[f"α_bar_max(c{c_run})"] >= 1.30
+    kt_go  = ratios[f"Kt(c{c_run})"]        >= 1.30
+    psi_go = (ratios.get(f"ψ_tip(c{c_run})", 0) >= 1.30)
+    has_psi = f"ψ_tip(c{c_run})" in ratios
 
     n_low = sum(r <= 1.10 for r in ratios.values())
 
-    if a_go or (kt_go and psi_go):
-        verdict = "GO"
-    elif n_low >= 3:
-        verdict = "NO-GO (3+/4 scalar metrics ≤ 1.1×; please confirm with visual α inspection)"
+    if a_go or (kt_go and (psi_go if has_psi else True)):
+        verdict = "GO" if has_psi else "GO (ψ_tip absent; based on α_bar_max + Kt only)"
+    elif n_low >= len(ratios) - 1:
+        verdict = f"NO-GO ({n_low}/{len(ratios)} scalar metrics ≤ 1.1×; please confirm with visual α inspection)"
     else:
         verdict = "GRAY (adjudicate via seed-2 / visual)"
 

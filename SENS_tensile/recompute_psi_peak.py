@@ -67,6 +67,34 @@ def list_default_dirs():
     return dirs
 
 
+def _parse_sdf_ribbon_settings(model_dir: Path) -> dict | None:
+    """★ 2026-05-14 C8: parse SDF ribbon settings from model_settings.txt.
+
+    Returns None if not a ribbon archive, else dict with 'enable', 'epsilon',
+    'apply_to'.
+    """
+    if "sdfRibbon" not in model_dir.name:
+        return None
+    settings = model_dir / "model_settings.txt"
+    if not settings.exists():
+        # Fallback: parse from dir name pattern _sdfRibbon_eps<ε>_<apply_to>
+        import re
+        m = re.search(r"_sdfRibbon_eps([\d.eE+-]+)_(uv_only|all)", model_dir.name)
+        if not m:
+            raise ValueError(f"cannot parse SDF ribbon settings from {model_dir.name}")
+        return {"enable": True, "epsilon": float(m.group(1)),
+                "apply_to": m.group(2)}
+    out = {"enable": True}
+    for line in settings.read_text().splitlines():
+        if line.startswith("sdf_ribbon_epsilon:"):
+            out["epsilon"] = float(line.split(":", 1)[1].strip())
+        elif line.startswith("sdf_ribbon_apply_to:"):
+            out["apply_to"] = line.split(":", 1)[1].strip()
+    out.setdefault("epsilon", 1e-3)
+    out.setdefault("apply_to", "uv_only")
+    return out
+
+
 def recompute_psi_stats(model_dir: Path, williams_enabled: bool,
                         x_tip_per_cycle: np.ndarray | None,
                         ansatz_enabled: bool = False,
@@ -78,6 +106,9 @@ def recompute_psi_stats(model_dir: Path, williams_enabled: bool,
 
     ★ Direction 5: when ansatz_enabled=True, reconstructs enriched FieldComputation
     with c_singular loaded per-cycle from c_per_cycle (from c_singular_vs_cycle.npy).
+    ★ 2026-05-14 C8: when dir name contains "sdfRibbon", reconstructs SplitUVAlphaNet
+    (uv_only) or single NN (all-head) with γ injection in fieldCalculation; x_tip
+    restored per cycle from x_tip_psi_vs_cycle.npy (same plumbing as Williams).
     """
     best = model_dir / "best_models"
 
@@ -97,15 +128,22 @@ def recompute_psi_stats(model_dir: Path, williams_enabled: bool,
             "c_init": 0.01, "modes": ["I"],
         }
 
+    # ★ 2026-05-14 C8: SDF ribbon
+    sdf_ribbon_dict = _parse_sdf_ribbon_settings(model_dir)
+    if sdf_ribbon_dict is not None:
+        print(f"  [SDF-rib] detected: ε={sdf_ribbon_dict['epsilon']}, "
+              f"apply_to={sdf_ribbon_dict['apply_to']}")
+
     pffmodel, matprop, network = construct_model(
         PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, device,
-        williams_dict=williams_dict)
+        williams_dict=williams_dict,
+        sdf_ribbon_dict=sdf_ribbon_dict)
 
     inp, T_conn, area_T, _ = prep_input_data(
         matprop, pffmodel, crack_dict, numr_dict,
         mesh_file=fine_mesh_file, device=device)
 
-    # Build FieldComputation with or without ansatz
+    # Build FieldComputation with or without ansatz/ribbon
     _fc_kwargs = dict(
         net=network, domain_extrema=domain_extrema,
         lmbda=torch.tensor([0.0], device=device),
@@ -115,6 +153,8 @@ def recompute_psi_stats(model_dir: Path, williams_enabled: bool,
         l0=mat_prop_dict["l0"])
     if ansatz_dict is not None:
         _fc_kwargs["ansatz_dict"] = ansatz_dict
+    if sdf_ribbon_dict is not None:
+        _fc_kwargs["sdf_ribbon_dict"] = sdf_ribbon_dict
     field_comp = FieldComputation(**_fc_kwargs)
     field_comp.net = field_comp.net.to(device)
     field_comp.domain_extrema = field_comp.domain_extrema.to(device)
@@ -143,7 +183,9 @@ def recompute_psi_stats(model_dir: Path, williams_enabled: bool,
         if not model_file.is_file():
             break
 
-        if williams_enabled and x_tip_per_cycle is not None and j < len(x_tip_per_cycle):
+        # ★ Direction 4 / C8 v0a: restore per-cycle x_tip for any tip-tracking branch
+        _tip_tracking_now = williams_enabled or getattr(field_comp, "sdf_ribbon_enabled", False)
+        if _tip_tracking_now and x_tip_per_cycle is not None and j < len(x_tip_per_cycle):
             field_comp.x_tip = float(x_tip_per_cycle[j])
 
         # ★ Direction 5: restore c_singular for this cycle (from c_singular_vs_cycle.npy)
@@ -210,9 +252,11 @@ def main() -> int:
         williams_enabled = "williams" in d.name
         # ★ Direction 5: detect enriched_ansatz flavor
         ansatz_enabled = "enriched_ansatz" in d.name
+        # ★ 2026-05-14 C8 v0a: detect SDF ribbon flavor (tip-tracking same as Williams)
+        sdf_ribbon_enabled = "sdfRibbon" in d.name
 
         x_tip_per_cycle = None
-        if williams_enabled:
+        if williams_enabled or sdf_ribbon_enabled:
             for fname in ('x_tip_psi_vs_cycle.npy',
                           'x_tip_alpha_vs_cycle.npy',
                           'x_tip_vs_cycle.npy'):
