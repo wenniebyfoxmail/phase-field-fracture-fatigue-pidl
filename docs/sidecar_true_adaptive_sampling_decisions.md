@@ -78,3 +78,45 @@ The canonical branch spec lives in:
   - **Next productive question (NOT this sidecar)**: does S1 (mesh-side) stack with C4+Fourier (representation-side)? Run a 1-seed N=50 smoke of S1 + C4 + Fourier-σ30; if cycle-49 ᾱ_max > 30 (above C4+Fourier N=100 baseline 27.93), then promote. If S1 adds nothing on top, retire entirely.
   - **Reproducibility note**: 15% S1 spread means any future stack run NEEDS multi-seed. Do not present a 1-seed S1 stack number in the paper.
   - **Open follow-up**: investigate WHY S1 spread is so much wider than C4+Fourier — suspected cause is LBFGS conditioning on a non-uniform mesh (some triangles 4× smaller than neighbours → larger gradient-magnitude variance per parameter). If real, this is a methodological note for any future mesh-side adaptive sampling work.
+
+## 2026-05-13 · S2 reopened — override prior "skip S2" decision
+
+- **Decision**: **reopen** sidecar S2 (tip-following + score-driven). Override the 2026-05-13 "skip S2" decision above.
+- **Based on**: re-reading of S1 N=50 trajectory ("S1 mean lift" table in `runs.md`) and user discussion 2026-05-13.
+- **Reason**:
+  - Prior "skip S2" reasoning assumed the +18% N=50 ceiling was the upper bound for any geometric-prior variant. That bound was tied to **a single failure mode** (static refinement at (0,0) becomes misaligned as the tip propagates), not to the sampling-dilution hypothesis itself.
+  - At N=50 the tip moves to x≈0.22; the S1 r=0.05 zone at (0,0) becomes irrelevant past cycle ~10. S2's tip-following directly addresses this misalignment — the failure mode is by design.
+  - S1's mid-cycle narrowing (+50% → +5% at cycle 10-29) is consistent with this: the static prior provides early lift, then the tip leaves the refined zone, then the lift bleeds back only because ᾱ_max can still grow in the static zone.
+- **Implication**:
+  - Build S2a (tip_following): cycle-wise re-refinement using the current `_x_tip_history[-1]` as `tip_xy`. Pure geometry, no score.
+  - Build S2b (score_driven) in parallel: detached score `|E_el_e| + |E_d_e|` → top-K elements → next cycle's refinement mask. Detached so it is sampling-only, not loss reweight (sidecar Rule 1).
+  - Hold S1 N=100 / N=300 production until S2 N=5 smoke clears acceptance bar (≥ S1 cycle 4 ᾱ_max).
+  - Expert review will be requested at each design commit; explicit acceptance criteria recorded per stage.
+
+## 2026-05-14 · S2 v2 — transport replaced with nearest-element after v1 smoke failure
+
+- **Decision**: redesign S2 per-cycle state transport. Drop `aggregate_to_original`+`remap_element_field` (round-trip on ORIGINAL mesh) for `hist_fat`/`psi_plus_prev`. Replace with **centroid-nearest transport directly between consecutive refined meshes** (`sidecar_sampling.py:nearest_element_transport`, scipy.spatial.cKDTree). Add **hysteresis** on tip motion to skip re-refinement when |Δtip|_L1 < `hysteresis_fraction × r_tip_sample` (default 0.25 × 0.05 = 0.0125).
+- **Based on**: `runs.md` entry `asamp_S2_v2` (P0+P1 fixed, still -16…-18% vs S1 N=5).
+- **Reason**:
+  - v1 transport (aggregate → expand) does area-weighted MEAN over each parent's children. For a peaked quantity like `hist_fat` with one tip-side child holding 10 and others holding 0, the parent value becomes 2.5; on expand, all 4 children get 2.5 — sub-parent locality erased. This is a structural failure of the transport choice, not a numerical bug.
+  - Centroid-nearest preserves sub-parent variation: each new-mesh element inherits the closest old-mesh value. For overlapping refined meshes (only the tip neighbourhood differs cycle-to-cycle), most elements are identity-mapped, and the tip child keeps its peak value.
+  - Hysteresis on tip motion avoids burning compute on re-refinements that produce essentially the same mask (during stationary-tip cycles). Empirically the tip is stationary for the first ~10 cycles at Umax=0.12, so hysteresis preserves cycle 0's refinement for those.
+  - Unit-tested: identity transport returns the array bit-exact; peak preservation across overlapping refined meshes confirmed; integrals preserved.
+  - Density-aggregation for the S2b score is retained — score is point-evaluated (not cumulative), so the density mean over children IS the correct quantity for parent-level top-K selection.
+- **Implication**:
+  - First N=5 smoke of v2 narrowed the gap to -7% (down from -18% in v1). Direction is right; the remaining gap is no longer transport.
+  - Diagnostic: 3-seed S1 reference now sets cycle 4 = 2.43 ± 0.35. v2 cycle 4 = 2.308 is just inside one std below the mean. NOT a flat negative result; one more fix needed before accepting.
+
+## 2026-05-15 · S2 v2.1 — hist_alpha_init fix closes the last gap
+
+- **Decision**: on the first S2 mesh swap (`_S2_state['n_swaps'] == 1`), use `hist_alpha_init(inp, matprop, pffmodel, crack_dict)` (crack-geometry init) for `hist_alpha`. On subsequent swaps, NN re-evaluation is correct.
+- **Based on**: v2 cycle 4 was bit-stable in the SKIP-only regime (cycles 1-4 reuse cycle-0 mesh with nearest-transport never invoked), so the -7% had to live in cycle 0 mechanics alone. v2 set cycle-0 `hist_alpha` via `field_comp.fieldCalculation(inp)` at the pretrain NN state — α≈0 everywhere, NOT α=1 at the initial slit. S1's prep_input_data → `hist_alpha_init` path produces α=1 at initial crack nodes, which is what the irreversibility penalty needs.
+- **Reason**:
+  - v2.1 N=5 cycle 0 ᾱ_max = 0.5092 — bit-exact match to S1 cycle 0 (was 0.470 in v2).
+  - Cycles 1-4 follow the same exact-match (1.0712, 1.6308, 2.2080, 2.4709) since hysteresis SKIPs and the only difference between v2.1 and S1 in this regime is the cycle-0 initial state. With that fixed, S2 v2.1 ≡ S1 in static-tip regime to 4 decimals.
+- **Acceptance gate (expert)**: cycle 4 ᾱ_max within 1-2% of S1 ref. **Passed by far stronger margin** (0% gap, bit-exact). Promote to N=100 production seed=1 to test dynamic regime.
+- **Implication**:
+  - S2 v2.1 is a strict superset of S1: equivalent in static-tip regime, adaptive when tip moves past hysteresis.
+  - **Launch S2a N=100 seed=1 only.** Expert: defer seed=2/3 until first dynamic REFINE event confirms the moving-tip path is healthy (predicted ~cycle 10 from S1 ref x_tip = 0.023 at cycle 10).
+  - Hold S2b N=100 entirely until S2a single-seed verdict is in — S2b adds the score-mask variable on top of the dynamic mechanism, harder to interpret in isolation.
+  - Cancel the prior plan to launch S1 + C4 + Fourier stack until S2a-alone trajectory is collected — order of evidence: confirm dynamic mechanism first, then stack questions.

@@ -117,3 +117,110 @@ Copy this block for each completed run.
 - **Crack propagation**: S1 ≈ baseline (x_tip 0.214-0.227 vs base 0.217 at cycle 49); the +18% mean lift is in PEAK INTENSITY at the tip, not in propagation rate.
 - **Absolute scale**: S1 N=50 mean ᾱ_max = 9.08; C4+Fourier σ=30 N=100 ᾱ_max = **27.93**. S1 alone closes the gap to baseline but does NOT approach the strongest May campaign result.
 - **Verdict**: **MODEST POSITIVE, NOT TRANSFORMATIVE**. Sidecar hypothesis confirmed (sampling dilution explains some gap) but the effect size is small, transient in mid-cycle, and seed-dependent. S1 alone is NOT a replacement for C4+Fourier. Two productive follow-ups: (a) does S1 stack with C4 / Fourier — relevant to sidecar-spec "S3 hybrid" once promoted; (b) why the seed spread is so much looser than the architectural mitigations — possible signal that refinement disturbs LBFGS conditioning. Reproducibility issue should be flagged in any §4.7 paper paragraph that uses S1.
+
+## 2026-05-14 · asamp_S1_rt0.05_np1_N300_resume (3 seeds, DONE)
+
+- **Code state**: commit `888c3f2` (S1 only). Resume from N=50 archives by renaming `_N50_` → `_N300_` so the in-archive checkpoint loader picks up at cycle 50 (commit history at `model_train.py:310-348`).
+- **Sampler**: same as N=50 run (S1, r=0.05, n_passes=1)
+- **Seeds**: 1, 2, 3
+- **Umax**: 0.12
+- **Horizon**: N=300 nominal (all 3 seeds fractured before cycle 100, run stopped after confirmation window)
+- **Compute**: Taobo GPUs 2/3/5 (parallel resume from N=50 ckpt), wall ~2–3 h per seed for cycles 50–N_f
+- **Output**: `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl/SENS_tensile/hl_8_..._Seed_{1,2,3}_..._N300_..._sidecarS1_rt0.05_np1/`
+- **N_f result (first detection / confirmation cycle)**:
+  | seed | N_f detect | N_f confirm | ᾱ_max @ N_f | Kt @ N_f | x_tip @ N_f |
+  |------|------------|-------------|--------------|----------|-------------|
+  | 1 | 80 | 90 | 9.30 | 851 | 0.500 |
+  | 2 | 83 | 93 | 11.63 | 973 | 0.500 |
+  | 3 | 82 | 92 | 14.04 | 1092 | 0.500 |
+  | baseline (1 seed) | 84 | — | 9.21 | — | 0.500 |
+- **3-seed cycle-by-cycle reference** (stored at `SENS_tensile/S1_sidecar_3seed_reference.csv`, full 91 rows):
+  | cycle | ᾱ_max mean ± std | Kt mean ± std | x_tip mean ± std |
+  |-------|------------------|----------------|--------------------|
+  | 0 | 0.500 ± 0.079 | 8.74 ± 0.38 | 0.0009 ± 0.0000 |
+  | 4 | 2.428 ± 0.348 | 8.96 ± 0.34 | 0.0022 ± 0.0008 |
+  | 10 | 3.415 ± 0.139 | 10.21 ± 0.31 | 0.0228 ± 0.0009 |
+  | 20 | 5.308 ± 0.568 | 8.53 ± 0.06 | 0.0612 ± 0.0008 |
+  | 40 | 8.131 ± 1.096 | 9.30 ± 0.07 | 0.1605 ± 0.0040 |
+  | 50 | 9.177 ± 1.386 | 10.43 ± 0.11 | 0.2259 ± 0.0052 |
+  | 60 | 9.980 ± 1.621 | 12.23 ± 0.25 | 0.2980 ± 0.0065 |
+  | 80 | 11.032 ± 1.851 | 240 ± 304     | 0.4660 ± 0.0244 |
+- **Visual check (S1 seed=1, alpha snapshots saved at plot_every=20)**:
+  `SENS_tensile/hl_8_..._Seed_1_..._N300_..._sidecarS1_rt0.05_np1/diagnostics/tip_tracking_evidence_cycle_{0000,0020,0040,0060,0080}.png` — confirms `get_crack_tip` selects α-front (not boundary noise): candidates 2 → 167 → 299 → 490 → 771 as crack propagates; center (= previous-cycle tip) always trails current tip by ≤ one cycle's L∞ step.
+- **Verdict**: S1 fracture trajectory ≈ baseline. **N_f matches baseline within 1–4 cycles** (no systematic acceleration/delay). ᾱ_max at fracture is +27% mean lift vs baseline, consistent with cycle-49 lift, but with **20% spread** across seeds → reproducibility concern stays. Crack always exits at right boundary (x_tip = 0.500). **This reference is the comparison target for all subsequent S2 production runs.**
+
+## 2026-05-13 · asamp_S2_v1 (smoke, CRASHED at end of cycle 0)
+
+- **Code state**: commit `f623264` (S2 v1: aggregate-to-original + expand). PRE-bug-fix.
+- **Sampler**: `S2-{tipfol,scored}` per-cycle mesh swap via parent-index expand/aggregate
+- **Seeds**: 1
+- **Umax / Horizon**: 0.12 / N=5
+- **Crash**: IndexError at `model_train.py:716` — `_psi0[_nominal_mask]` shape mismatch. `_nominal_mask` was built once from ORIGINAL mesh (67276 elem) before the loop; S2 swap on cycle 0 produced 81186 elem; Kt-logging boolean index hit `dim is 81186 but corresponding boolean dimension is 67276`. Reported by expert review of `f623264`. Reproduced exactly on Taobo: both S2a (GPU 0) and S2b (GPU 1) crashed at end of cycle 0 after 9 min training.
+- **Verdict**: P0 design bug, captured in commit `5ee76f4` along with P1 (score-aggregation density bug, see below).
+
+## 2026-05-13 · asamp_S2_v2 (smoke, P0+P1 fixed)
+
+- **Code state**: commit `5ee76f4` (`_nominal_mask` rebuilt after swap + score density-aggregated). v1 transport unchanged (still aggregate→expand on original mesh).
+- **Sampler**: S2a tip_following / S2b score_driven, r_tip=0.05, target_fraction=0.07, n_passes=1
+- **Seeds**: 1 (both modes)
+- **Compute**: Taobo GPUs 0/1
+- **Cycle-by-cycle (S1 ref = `asamp_S1_rt0.05_np1_seed1_N5`)**:
+  | cycle | S1 ᾱ | S2a ᾱ | S2b ᾱ | S2a Kt | S2b Kt |
+  |-------|------|-------|-------|--------|--------|
+  | 0 | 0.509 | 0.470 | 0.470 | 9.05 | 9.05 |
+  | 1 | 1.071 | 0.925 | 0.894 | 9.06 | 8.72 |
+  | 2 | 1.631 | 1.277 | 1.250 | 8.74 | 8.44 |
+  | 3 | 2.208 | 1.712 | 1.650 | 9.06 | 8.54 |
+  | 4 | 2.471 | 2.015 | 2.068 | 8.91 | 8.44 |
+- **Observation**: per-cycle re-aggregation + re-expansion (round-trip on ORIGINAL mesh) destroys sub-parent variation in `hist_fat`/`psi_plus_prev`. The tip child of a refined parent accumulates ᾱ fast; the area-weighted mean over all 4 children washes that locality out. Cycle 4 ᾱ_max ≈ -16 to -18% vs S1 — the very locality the refinement was meant to resolve is what we destroy each cycle.
+- **Verdict**: **Mechanism wrong**, fixes don't address the structural transport issue. Expert flagged in next review. Drove v2 design.
+
+## 2026-05-14 · asamp_S2_v2 (smoke, transport replaced)
+
+- **Code state**: commit `218efaa` (nearest-element transport via scipy.spatial.cKDTree + hysteresis on tip motion; aggregate-to-original kept ONLY for score, not for hist_fat). Spec: `sidecar_sampling.py:nearest_element_transport`, `model_train.py:540-660`. `--hysteresis-fraction` default = 0.25.
+- **Sampler**: S2a tip_following / S2b score_driven, r_tip=0.05, target_fraction=0.07, hysteresis=0.0125 (= 0.25 × 0.05)
+- **Seeds**: 1 (both modes)
+- **Compute**: Taobo GPUs 0/1, wall ~45 min total
+- **REFINE/SKIP pattern**: cycle 0 always REFINE (init); cycles 1-4 all SKIP (|Δtip| L¹ stayed < 0.0125, x_tip max = 0.0026). swaps=1, skips=4 throughout.
+- **Cycle-by-cycle**:
+  | cycle | S1 ᾱ | S2 v1 | **S2 v2** | v2 vs S1 |
+  |-------|------|-------|-----------|-----------|
+  | 0 | 0.509 | 0.470 | 0.470 | -7.7% |
+  | 1 | 1.071 | 0.925 | 0.946 | -12% |
+  | 2 | 1.631 | 1.277 | 1.427 | -13% |
+  | 3 | 2.208 | 1.712 | 1.874 | -15% |
+  | 4 | 2.471 | 2.015 | **2.308** | **-7%** |
+- **Closes ~60% of v1 gap** (-18% → -7%). hysteresis works exactly as designed (cycle 0 REFINE then 4 SKIPs since tip is stationary). Remaining gap traced to cycle 0's `hist_alpha` re-evaluation via NN (gives α≈0 everywhere from pretrain state) instead of `hist_alpha_init(crack_geometry)` (α=1 at initial crack nodes). The irreversibility penalty was inactive at the initial slit on cycle 0 → energy balance shifted → ᾱ_max bleeds for all 5 cycles.
+- **Verdict**: Mechanically much better than v1, but cycle 0 hist_alpha init is the remaining wart. Drove v2.1.
+
+## 2026-05-15 · asamp_S2_v2.1 (smoke, hist_alpha_init fix)
+
+- **Code state**: commit `04f7969`. On `_S2_state['n_swaps'] == 1` (first swap), use `hist_alpha_init(inp, matprop, pffmodel, crack_dict)` from `utils.py:73`; otherwise NN re-eval. Same nearest-element transport + hysteresis as v2.
+- **Sampler**: identical to v2
+- **Seeds**: 1 (both modes)
+- **Compute**: Taobo GPUs 0/1
+- **Cycle-by-cycle**:
+  | cycle | S1 ᾱ | **S2a v2.1** | S2a Kt | S1 Kt |
+  |-------|------|--------------|--------|--------|
+  | 0 | 0.5092 | **0.5092** | 8.74 | 8.74 |
+  | 1 | 1.0712 | **1.0712** | 8.85 | 8.85 |
+  | 2 | 1.6308 | **1.6308** | 8.91 | 8.91 |
+  | 3 | 2.2080 | **2.2080** | 8.75 | 8.75 |
+  | 4 | 2.4709 | **2.4709** | 9.15 | 9.15 |
+- **S2a == S2b == S1 to 4 decimals at every cycle.** Verifies the v2 + v2.1 design is mathematically equivalent to S1 in the static-tip regime. Hysteresis SKIPs cycles 1-4 (no transport invoked), so the test isolates cycle-0 mechanics: with `hist_alpha_init` the initial condition matches S1 exactly; the rest follows.
+- **Verdict**: **Acceptance gate PASSED**. S2 v2.1 is a strict superset of S1's behaviour: equivalent in static-tip regime, capable of dynamic refinement when tip moves past hysteresis. Ready to promote to N=100 production where tip actually propagates.
+
+## 2026-05-15 · asamp_S2a_tipfol_N100_seed1 (production, in flight)
+
+- **Code state**: commits `888c3f2` … `8936928` (= up to runner `--plot-every`)
+- **Sampler**: S2a `tip_following`, r_tip=0.05, n_passes=1, hysteresis_fraction=0.25
+- **Seeds**: 1 (per expert: launch seed=2/3 only after first dynamic REFINE confirms healthy)
+- **Umax / Horizon**: 0.12 / N=100
+- **Compute**: Taobo GPU 2 (PID 582689), launch 2026-05-15 17:23 CST, `--plot-every 10` for diagnostics
+- **Output**: `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl/SENS_tensile/hl_8_..._N100_..._sidecarS2_tipfol_rt0.05_np1/`
+- **Acceptance gates (from expert)**:
+  1. cycle 4 ᾱ_max ≈ S1 ref (2.43 ± 0.35) — confirms implementation matches v2.1 smoke
+  2. REFINE/SKIP pattern: SKIP while |Δtip|<0.0125 then REFINE when tip moves past threshold. First dynamic REFINE expected ~cycle 10 (S1 ref x_tip = 0.0228 at cycle 10, well past hysteresis)
+  3. cycle 50/100 ᾱ_max ≥ S1 ref at same cycle (S1 cycle 50 = 9.18 ± 1.39); cycle 80+ Kt jump (fracture) at or near S1 N_f = 80-83
+- **Status**: cycle 1 done, ᾱ_max = 1.0712 (= S1 cycle 1 exact), Kt = 8.85 ✓
+- **Monitor**: background task `bvp7xf9ch` watching for 2nd REFINE log line (= first dynamic refine); ETA ~25 min from launch
