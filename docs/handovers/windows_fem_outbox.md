@@ -26,6 +26,20 @@
 
 ## Entries
 
+## 2026-05-15 (afternoon) · [data sync] PCC v3 trajectory + mesh + summary mirrored to OneDrive (no-mirror-access fallback)
+
+**Re**: prior outbox `b2d8432` shipped to GRIPHFiTH mirror `e6d77bb`. User asked for OneDrive copy too.
+
+Created `~/OneDrive - University of Cambridge/PIDL result/_pidl_handoff_PCC_v3_2026-05-15/`:
+- `PCC_v3_trajectory_3000c.mat` (70 MB, 4 tensors `d/psi/alpha/f × 2391 × 3000`)
+- `mesh_geometry.mat` (68 KB)
+- `alpha_trajectory_3000c.mat` (71 KB, with `d_max` curve added)
+- `README.md` with full schema + python load example + key state
+
+Same content as mirror `e6d77bb`. Mac pulls whichever channel is convenient.
+
+---
+
 ## 2026-05-13 (afternoon) · [data hand-off] PCC v3 d_elem + mesh_geometry re-export for α-supervision (PIDL `f7ba430`)
 
 **Re**: PIDL repo commit `f7ba430` "add: α-direct supervision (FEM d_elem)" — Mac's new `fem_supervision.alpha_target_at_cycle()` loads `self.d_field` (= per-element damage). Original PCC v3 fullNf run (`598c1d7` data) didn't include d_elem in `psi_fields/cycle_NNNN.mat` (only psi/alpha/f); fixed + re-ran.
