@@ -72,7 +72,8 @@ def main():
     n_sdf = len(sdf["alpha_bar"])
     n_base_show = min(60, len(base["alpha_bar"]))      # show up to c60 of baseline for context
 
-    fig, axes = plt.subplots(1, 5, figsize=(20, 4.0))
+    fig, axes_grid = plt.subplots(2, 3, figsize=(15, 9))
+    axes = axes_grid.flatten()           # 6 slots; 6th will be hidden
 
     def two_lines(ax, key, title, ylabel=None):
         if base[key] is None or sdf[key] is None:
@@ -114,9 +115,12 @@ def main():
                     bbox=dict(boxstyle="round,pad=0.2",
                               fc="lightyellow", ec="gray", alpha=0.85))
 
+    # Hide the unused 6th subplot
+    axes[5].axis("off")
+
     fig.suptitle("SDF ribbon (uv_only, ε=1e-3, seed=1) vs baseline — "
-                 "N=30 mechanism evidence (5-panel)", fontsize=12)
-    fig.tight_layout()
+                 "N=30 mechanism evidence (5-panel)", fontsize=13)
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
 
     if args.out is None:
         out_dir = Path(__file__).resolve().parent.parent / "references_local" / "sdf_ribbon_smoke"
