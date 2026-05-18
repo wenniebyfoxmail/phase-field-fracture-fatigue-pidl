@@ -258,7 +258,7 @@ def refine_marked_elements(
     area: np.ndarray,
     refine_mask: np.ndarray,
     n_refine_passes: int = 1,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """1-to-4 red refinement of all triangles whose `refine_mask[i]` is True,
     plus 1-to-2 / 1-to-3 green closure of non-red neighbours that share split
     edges, so the resulting mesh remains edge-conforming.
@@ -271,11 +271,23 @@ def refine_marked_elements(
 
     Returns
     -------
-    X_new, Y_new, T_new, area_new, parent_of_new : refined mesh in same
-        conventions as parse_mesh, plus a (n_elem_new,) int array giving the
-        index of the parent triangle in T (before refinement) that each new
-        triangle came from. Used by `remap_element_field` to carry per-element
-        state (hist_fat, psi_plus_prev, ...) forward across the swap.
+    X_new, Y_new, T_new, area_new, parent_of_new, midpoint_parents
+
+      - X_new, Y_new, T_new, area_new : refined mesh in parse_mesh conventions.
+      - parent_of_new : (n_elem_new,) int. Each new triangle's parent in the
+        pre-refinement T.
+      - midpoint_parents : (n_midpoints, 2) int. For each NEW node (those with
+        index ≥ n_old in X_new/Y_new), the two old-node indices that bracket
+        the split edge. Old nodes (index < n_old) preserve their old indices
+        in the new mesh, so the lineage map is sparse and stored only for
+        newly-added midpoints. Used by `edge_lineage_transport` for L2-safe
+        transfer of nodal irreversibility fields (hist_alpha).
+
+    Note: lineage is currently exact for n_refine_passes == 1. For multi-pass,
+    midpoint_parents tracks the latest split (parents may themselves be
+    midpoints from an earlier pass); this is still correct for transport as
+    long as values_old in `edge_lineage_transport` already reflects the
+    inter-pass state.
     """
     X = np.asarray(X, dtype=np.float64).copy()
     Y = np.asarray(Y, dtype=np.float64).copy()
@@ -284,6 +296,7 @@ def refine_marked_elements(
     refine_mask = np.asarray(refine_mask, dtype=bool).copy()
 
     parent = np.arange(T.shape[0], dtype=np.int64)  # identity for current mesh
+    midpoint_parents_all: list = []   # (a, b) per new midpoint, accumulates across passes
 
     for _pass in range(int(n_refine_passes)):
         n_red = int(refine_mask.sum())
@@ -293,6 +306,7 @@ def refine_marked_elements(
         edge_mid: Dict[Tuple[int, int], int] = {}
         new_nodes_X: list = []
         new_nodes_Y: list = []
+        pass_midpoint_parents: list = []
         next_node_id = X.shape[0]
 
         def _mid_node(a: int, b: int) -> int:
@@ -302,6 +316,7 @@ def refine_marked_elements(
                 return edge_mid[key]
             new_nodes_X.append(0.5 * (X[a] + X[b]))
             new_nodes_Y.append(0.5 * (Y[a] + Y[b]))
+            pass_midpoint_parents.append((key[0], key[1]))
             edge_mid[key] = next_node_id
             next_node_id += 1
             return edge_mid[key]
@@ -372,6 +387,7 @@ def refine_marked_elements(
         if new_nodes_X:
             X = np.concatenate([X, np.asarray(new_nodes_X, dtype=np.float64)])
             Y = np.concatenate([Y, np.asarray(new_nodes_Y, dtype=np.float64)])
+            midpoint_parents_all.extend(pass_midpoint_parents)
         T = np.asarray(new_tris, dtype=np.int64)
         area = _signed_area(X, Y, T)
         parent = np.asarray(new_parent, dtype=np.int64)
@@ -379,7 +395,10 @@ def refine_marked_elements(
         # we mark NO elements for the next pass by default (caller decides).
         refine_mask = np.zeros(T.shape[0], dtype=bool)
 
-    return X, Y, T, area, parent
+    midpoint_parents = (np.asarray(midpoint_parents_all, dtype=np.int64)
+                        if midpoint_parents_all else
+                        np.zeros((0, 2), dtype=np.int64))
+    return X, Y, T, area, parent, midpoint_parents
 
 
 def remap_element_field(values_old: np.ndarray, parent_new: np.ndarray) -> np.ndarray:
@@ -431,6 +450,62 @@ def nearest_element_transport(
     tree = cKDTree(np.column_stack((cx_old, cy_old)))
     _, idx = tree.query(np.column_stack((cx_new, cy_new)), k=1)
     return np.asarray(values_old, dtype=np.float64)[idx]
+
+
+def edge_lineage_transport(
+    values_old: np.ndarray,
+    midpoint_parents: np.ndarray,
+    n_old: int,
+    reduce: str = "max",
+) -> np.ndarray:
+    """L2 conservative transport of a per-node field across 1-to-4 red
+    refinement using edge lineage.
+
+    Old node indices are preserved in the new mesh (indices 0..n_old-1), so
+    they get exact copies of `values_old`. New midpoint nodes (indices
+    n_old..n_old+M-1) each come from splitting an edge (a, b); the midpoint
+    value is `reduce(values_old[a], values_old[b])` — defaults to `max` for
+    irreversibility fields (hist_alpha) so the floor is never weaker than
+    either endpoint.
+
+    Parameters
+    ----------
+    values_old : (n_old,) per-node field on the pre-refinement mesh
+    midpoint_parents : (M, 2) int array; row k = (a, b) for new node n_old+k
+    n_old : number of old nodes (indices in the new mesh < n_old are
+            inherited 1-to-1)
+    reduce : "max" (default, conservative for irreversibility), "mean"
+            (smoother), or "min" (weakest case).
+
+    Returns
+    -------
+    values_new : (n_old + M,) per-node field on the refined mesh.
+
+    Compared to nearest_node_transport: avoids the KDTree tie-break, which
+    would arbitrarily pick one endpoint when the midpoint is exactly between
+    two old nodes — and for hist_alpha that arbitrary choice can be
+    `α=0` (resetting irreversibility floor) when the two endpoints are 1 and
+    0. Edge-lineage with `max` reduction guarantees the conservative
+    direction for any irreversibility field.
+    """
+    values_old = np.asarray(values_old, dtype=np.float64)
+    mp = np.asarray(midpoint_parents, dtype=np.int64)
+    n_old = int(n_old)
+    M = int(mp.shape[0])
+    out = np.empty(n_old + M, dtype=np.float64)
+    out[:n_old] = values_old[:n_old]
+    if M > 0:
+        a_vals = values_old[mp[:, 0]]
+        b_vals = values_old[mp[:, 1]]
+        if reduce == "max":
+            out[n_old:] = np.maximum(a_vals, b_vals)
+        elif reduce == "min":
+            out[n_old:] = np.minimum(a_vals, b_vals)
+        elif reduce == "mean":
+            out[n_old:] = 0.5 * (a_vals + b_vals)
+        else:
+            raise ValueError(f"unknown reduce: {reduce!r}")
+    return out
 
 
 def nearest_node_transport(
@@ -592,7 +667,7 @@ def adaptive_refine_for_cycle(
     # for adaptive S2 we keep n_passes=1 since cycle-wise re-marking is the
     # adaptation mechanism — repeated passes within one cycle would just blow
     # up the mesh).
-    X, Y, T, area, parent = refine_marked_elements(
+    X, Y, T, area, parent, midpoint_parents = refine_marked_elements(
         X_orig, Y_orig, T_orig, area_orig, refine_mask, n_refine_passes=1
     )
     for _ in range(max(0, n_passes - 1)):
@@ -605,13 +680,21 @@ def adaptive_refine_for_cycle(
             mask2 = (np.hypot(cx - tx, cy - ty) < r_tip)
         else:
             mask2 = refine_mask[parent]  # propagate refinement bit to children
-        X, Y, T, area, par2 = refine_marked_elements(X, Y, T, area, mask2, n_refine_passes=1)
+        X, Y, T, area, par2, mp2 = refine_marked_elements(X, Y, T, area, mask2, n_refine_passes=1)
         parent = parent[par2]
+        # Multi-pass: append the new midpoints' parents. Note: these parents
+        # may themselves be midpoints from the previous pass — the lineage
+        # is still valid for edge_lineage_transport as long as `values_old`
+        # already reflects the inter-pass state.
+        if mp2.size:
+            midpoint_parents = np.concatenate([midpoint_parents, mp2], axis=0)
 
     diag["n_elem_before"] = int(T_orig.shape[0])
     diag["n_elem_after"] = int(T.shape[0])
     diag["n_nodes_after"] = int(X.shape[0])
     diag["area_drift"] = float(abs(area.sum() - area_orig.sum()))
+    diag["midpoint_parents"] = midpoint_parents
+    diag["n_old_nodes"] = int(X_orig.shape[0])
     return X, Y, T, area, parent, diag
 
 

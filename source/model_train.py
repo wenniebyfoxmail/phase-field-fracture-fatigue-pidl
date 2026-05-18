@@ -644,49 +644,80 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 elem_centroids = torch.from_numpy(np.column_stack((_cx_new, _cy_new))).to(torch.float).to(device).detach()
                 hist_fat = torch.from_numpy(_hist_fat_new).to(torch.float).to(device)
                 psi_plus_prev = torch.from_numpy(_psi_pp_new).to(torch.float).to(device)
-                # hist_alpha at start of new cycle (v3 transport semantics):
+                # hist_alpha at start of new cycle (v3.2 transport semantics):
                 # - FIRST swap (n_swaps==1): hist_alpha_init from crack geometry
                 #   (α=1 at initial crack nodes, 0 elsewhere). Identical to S1's
                 #   prep_input_data path.
-                # - SUBSEQUENT swaps: nearest-node transport of the previous mesh's
-                #   hist_alpha to the new mesh. Two cases handled by the single
-                #   KDTree (sidecar_sampling.nearest_node_transport):
-                #     * node kept across refinement (e.g. parent vertex of a
-                #       refined element) → KDTree distance 0 → exact copy
-                #     * new midpoint node → nearest old-node value (one of the
-                #       edge endpoints, typically)
-                #   Then take max with hist_alpha_init at new nodes (safety
-                #   floor: never undo the initial crack), clamp [0, 1].
-                #   v2.1 used NN.fieldCalculation re-eval here; theoretically
-                #   equivalent under smooth NN, but in practice S2a N=100 stalled
-                #   at -42% ᾱ_max vs S1 — explicit transport eliminates any
-                #   suspected NN-snapshot drift.
+                # - SUBSEQUENT swaps: L2 edge-lineage transport (preserves kept
+                #   nodes exactly; new midpoints take max(endpoint_a, endpoint_b)
+                #   of the split edge — conservative for irreversibility, avoids
+                #   the L1 nearest-node tie-randomness that the expert flagged).
+                #   Then take MAX with three other lower bounds:
+                #     a) hist_alpha_init at new nodes — never undo initial crack
+                #     b) NN.fieldCalculation at new nodes — NN's current α IS the
+                #        irreversibility floor (the trained-state lower bound);
+                #        transport must NEVER be below NN, because the NN was
+                #        already constrained by hist_alpha (penalty) up to this
+                #        point. NN can only LIFT, never RESET. Belt-and-suspenders
+                #        against any subtle transport gap.
+                #   Clamp [0, 1].
+                #   v2.1 used pure NN re-eval here; theoretically equivalent under
+                #   smooth NN but practically left S2a N=100 stalled at -42%.
+                #   v3 was L1 nearest-node, expert flagged tie-randomness.
+                #   v3.2 = L2 edge-lineage + NN-max floor = conservative on all axes.
                 from utils import hist_alpha_init as _hist_alpha_init
                 if _S2_state['n_swaps'] == 1:
                     hist_alpha = _hist_alpha_init(inp, matprop, pffmodel, crack_dict)
                     _ha_diag = "first-swap = hist_alpha_init"
                 else:
+                    from sidecar_sampling import edge_lineage_transport as _elt
+                    _mp = _s2_diag.get('midpoint_parents')
+                    _n_old_nodes = _s2_diag.get('n_old_nodes', len(_S2_state['X_curr_nodes']))
+                    # NB: edge_lineage_transport requires values_old indexed by
+                    # the SAME mesh that was passed into adaptive_refine_for_cycle.
+                    # That mesh is X_orig/Y_orig (refinement is always one-step
+                    # from canonical original). But hist_alpha_curr lives on the
+                    # CURRENT refined mesh which may differ from X_orig. So we
+                    # transport in two stages: (1) collapse hist_alpha_curr to
+                    # original-mesh nodes via nearest-node from curr→orig; (2)
+                    # then edge_lineage to new refined mesh. Step (1) is cheap
+                    # (small mesh-overlap delta only at the moving-tip zone).
                     from sidecar_sampling import nearest_node_transport as _nnt
-                    _X_new_np = _X_new
-                    _Y_new_np = _Y_new
-                    _ha_transferred = _nnt(
+                    _ha_on_orig = _nnt(
                         _S2_state['hist_alpha_curr'],
                         _S2_state['X_curr_nodes'], _S2_state['Y_curr_nodes'],
-                        _X_new_np, _Y_new_np,
+                        _S2_state['X_orig'], _S2_state['Y_orig'],
                     )
+                    if _mp is not None and _mp.size > 0:
+                        _ha_transferred = _elt(_ha_on_orig, _mp, _n_old_nodes, reduce='max')
+                    else:
+                        # No new midpoints (rare: zero red elements); identity
+                        _ha_transferred = _ha_on_orig
                     _ha_floor = _hist_alpha_init(inp, matprop, pffmodel, crack_dict).detach().cpu().numpy().ravel()
-                    _ha_new_np = np.clip(np.maximum(_ha_transferred, _ha_floor), 0.0, 1.0)
+                    # NN-max floor: NN.fieldCalculation gives the trained-state
+                    # smooth α, which is itself bounded below by accumulated
+                    # irreversibility. So max(transport, NN) is at least NN.
+                    with torch.no_grad():
+                        _, _, _alpha_nn_new = field_comp.fieldCalculation(inp)
+                    _ha_nn = _alpha_nn_new.detach().cpu().numpy().ravel()
+                    _ha_new_np = np.clip(
+                        np.maximum.reduce([_ha_transferred, _ha_floor, _ha_nn]),
+                        0.0, 1.0,
+                    )
                     _ha_old_stats = (_S2_state['hist_alpha_curr'].max(),
                                      float(np.percentile(_S2_state['hist_alpha_curr'], 99)),
                                      _S2_state['hist_alpha_curr'].mean())
                     _ha_new_stats = (_ha_new_np.max(),
                                      float(np.percentile(_ha_new_np, 99)),
                                      _ha_new_np.mean())
+                    _ha_nn_max = float(_ha_nn.max())
+                    _ha_nn_p99 = float(np.percentile(_ha_nn, 99))
                     hist_alpha = torch.from_numpy(_ha_new_np).to(torch.float).to(device)
-                    _ha_diag = (f"transport max {_ha_old_stats[0]:.3f}→{_ha_new_stats[0]:.3f} | "
+                    _ha_diag = (f"L2+NN-max max {_ha_old_stats[0]:.3f}→{_ha_new_stats[0]:.3f} | "
                                 f"p99 {_ha_old_stats[1]:.3f}→{_ha_new_stats[1]:.3f} | "
-                                f"mean {_ha_old_stats[2]:.4f}→{_ha_new_stats[2]:.4f}")
-                # Stash current-mesh node coords + initial hist_alpha (numpy) for next swap
+                                f"mean {_ha_old_stats[2]:.4f}→{_ha_new_stats[2]:.4f} | "
+                                f"NN p99={_ha_nn_p99:.3f}")
+                # Stash current-mesh node coords + post-transport hist_alpha (numpy) for next swap
                 _S2_state['hist_alpha_curr'] = hist_alpha.detach().cpu().numpy().ravel()
                 _S2_state['X_curr_nodes'] = _X_new
                 _S2_state['Y_curr_nodes'] = _Y_new

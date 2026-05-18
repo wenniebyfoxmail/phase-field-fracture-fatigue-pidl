@@ -11,11 +11,18 @@ Two modes (selected via --mode):
     end of the previous cycle. Score is detached so it acts only as a
     sampling-density signal, NOT as a loss reweight (sidecar Rule 1).
 
-In both modes, hist_fat / psi_plus_prev / score live in the ORIGINAL mesh's
-element coordinates throughout the run via the expand/aggregate transport
-(see `source/sidecar_sampling.py: aggregate_to_original`). Each cycle's
-refinement is a one-step operation from the canonical reference mesh — no
-compounding interpolation drift.
+State transport across cycle swaps (v3.2 design, 2026-05-15):
+  - hist_fat / psi_plus_prev (per-ELEMENT cumulative): nearest-element
+    transport between consecutive refined meshes (sidecar_sampling.
+    nearest_element_transport).
+  - hist_alpha (per-NODE irreversibility floor): L2 edge-lineage transport
+    (sidecar_sampling.edge_lineage_transport, conservative max reduction on
+    midpoint endpoints) PLUS a NN-prediction floor — transport must never be
+    weaker than the NN's current α (the trained-state lower bound).
+  - score (S2b only, per-ELEMENT density): density-aware aggregate to original
+    mesh's element coordinates, then top-K mask for next cycle's refinement.
+Each cycle's refinement is one-step from the canonical reference mesh — mesh
+size stays bounded.
 
 Mutual exclusion: must not be enabled with sidecar_S1, tip_weight_cfg,
 adaptive_sampling_dict (C6). Runner enforces.
