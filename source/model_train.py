@@ -299,6 +299,19 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # Per-element accumulated state in CURRENT mesh coords
             'hist_fat_curr': np.zeros(_n_orig, dtype=np.float64),
             'psi_plus_prev_curr': np.zeros(_n_orig, dtype=np.float64),
+            # ★ v3 (2026-05-15): per-NODE irreversibility floor in CURRENT mesh
+            # coords. Initialized lazily on first swap (cycle 0 uses hist_alpha_init).
+            # Carried across subsequent REFINE swaps via nearest_node_transport
+            # so that built-up α (irreversibility floor) at retained nodes is
+            # exact-copied and new midpoint nodes inherit nearest-old-node value.
+            # Previously v2 re-evaluated hist_alpha via NN.fieldCalculation each
+            # swap; theoretically equivalent (NN is smooth so midpoint ≈ avg of
+            # endpoints), but in practice S2a N=100 plateaued at -42% vs S1 from
+            # cycle 20 onward. Explicit transport rules out any subtle NN-snapshot
+            # vs accumulated-floor mismatch as the cause.
+            'hist_alpha_curr': None,
+            'X_curr_nodes': _Xo.copy(),  # node coords at last refine; for transport
+            'Y_curr_nodes': _Yo.copy(),
             # S2b: detached score aggregated to ORIGINAL for next cycle's top-K
             'score_orig_for_next': None,
             # Hysteresis: skip re-refinement when tip hasn't moved by this L¹ distance
@@ -631,23 +644,52 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 elem_centroids = torch.from_numpy(np.column_stack((_cx_new, _cy_new))).to(torch.float).to(device).detach()
                 hist_fat = torch.from_numpy(_hist_fat_new).to(torch.float).to(device)
                 psi_plus_prev = torch.from_numpy(_psi_pp_new).to(torch.float).to(device)
-                # hist_alpha at start of new cycle:
-                # - FIRST swap (cycle start_j, n_swaps==1 since we just incremented):
-                #   use crack-geometry init (α=1 at initial crack nodes, 0 elsewhere)
-                #   — matches what S1's prep_input_data → hist_alpha_init produces.
-                #   Otherwise the irreversibility penalty would be inactive at the
-                #   initial crack on cycle 0 and the trajectory diverges from S1
-                #   (observed: -7% ᾱ_max at cycle 0 in v2 vs S1).
-                # - SUBSEQUENT swaps (cycle j>0): re-evaluate NN at new nodes.
-                #   The NN has been trained on prior cycles and its α field is
-                #   the right starting state for the new mesh.
+                # hist_alpha at start of new cycle (v3 transport semantics):
+                # - FIRST swap (n_swaps==1): hist_alpha_init from crack geometry
+                #   (α=1 at initial crack nodes, 0 elsewhere). Identical to S1's
+                #   prep_input_data path.
+                # - SUBSEQUENT swaps: nearest-node transport of the previous mesh's
+                #   hist_alpha to the new mesh. Two cases handled by the single
+                #   KDTree (sidecar_sampling.nearest_node_transport):
+                #     * node kept across refinement (e.g. parent vertex of a
+                #       refined element) → KDTree distance 0 → exact copy
+                #     * new midpoint node → nearest old-node value (one of the
+                #       edge endpoints, typically)
+                #   Then take max with hist_alpha_init at new nodes (safety
+                #   floor: never undo the initial crack), clamp [0, 1].
+                #   v2.1 used NN.fieldCalculation re-eval here; theoretically
+                #   equivalent under smooth NN, but in practice S2a N=100 stalled
+                #   at -42% ᾱ_max vs S1 — explicit transport eliminates any
+                #   suspected NN-snapshot drift.
+                from utils import hist_alpha_init as _hist_alpha_init
                 if _S2_state['n_swaps'] == 1:
-                    from utils import hist_alpha_init as _hist_alpha_init
                     hist_alpha = _hist_alpha_init(inp, matprop, pffmodel, crack_dict)
+                    _ha_diag = "first-swap = hist_alpha_init"
                 else:
-                    with torch.no_grad():
-                        _, _, _alpha_new_eval = field_comp.fieldCalculation(inp)
-                    hist_alpha = _alpha_new_eval.detach()
+                    from sidecar_sampling import nearest_node_transport as _nnt
+                    _X_new_np = _X_new
+                    _Y_new_np = _Y_new
+                    _ha_transferred = _nnt(
+                        _S2_state['hist_alpha_curr'],
+                        _S2_state['X_curr_nodes'], _S2_state['Y_curr_nodes'],
+                        _X_new_np, _Y_new_np,
+                    )
+                    _ha_floor = _hist_alpha_init(inp, matprop, pffmodel, crack_dict).detach().cpu().numpy().ravel()
+                    _ha_new_np = np.clip(np.maximum(_ha_transferred, _ha_floor), 0.0, 1.0)
+                    _ha_old_stats = (_S2_state['hist_alpha_curr'].max(),
+                                     float(np.percentile(_S2_state['hist_alpha_curr'], 99)),
+                                     _S2_state['hist_alpha_curr'].mean())
+                    _ha_new_stats = (_ha_new_np.max(),
+                                     float(np.percentile(_ha_new_np, 99)),
+                                     _ha_new_np.mean())
+                    hist_alpha = torch.from_numpy(_ha_new_np).to(torch.float).to(device)
+                    _ha_diag = (f"transport max {_ha_old_stats[0]:.3f}→{_ha_new_stats[0]:.3f} | "
+                                f"p99 {_ha_old_stats[1]:.3f}→{_ha_new_stats[1]:.3f} | "
+                                f"mean {_ha_old_stats[2]:.4f}→{_ha_new_stats[2]:.4f}")
+                # Stash current-mesh node coords + initial hist_alpha (numpy) for next swap
+                _S2_state['hist_alpha_curr'] = hist_alpha.detach().cpu().numpy().ravel()
+                _S2_state['X_curr_nodes'] = _X_new
+                _S2_state['Y_curr_nodes'] = _Y_new
                 _right_bdy_mask = (inp[:, 0] > _right_bdy_x_min).detach()
                 _nominal_mask = (np.abs(_cy_new) > 0.3) & (_cx_new > -0.3)
                 _n_nominal = int(_nominal_mask.sum())
@@ -659,13 +701,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 f_fatigue = compute_fatigue_degrad(
                     hist_fat, fatigue_dict, elem_centroids=elem_centroids
                 )
-                if (j == start_j) or (j % 5 == 0):
-                    print(
-                        f"  [sidecar-S2 cycle {j}] REFINE tip={_tip_xy_now} | "
-                        f"elem {_s2_diag['n_elem_before']}→{_s2_diag['n_elem_after']} | "
-                        f"marked={_s2_diag['n_marked']} | area_drift={_s2_diag['area_drift']:.1e} | "
-                        f"swaps={_S2_state['n_swaps']} skips={_S2_state['n_skips']}"
-                    )
+                # Always print REFINE events (low-frequency; helps audit
+                # whether the transport preserves hist_alpha across swaps).
+                print(
+                    f"  [sidecar-S2 cycle {j}] REFINE tip={_tip_xy_now} | "
+                    f"elem {_s2_diag['n_elem_before']}→{_s2_diag['n_elem_after']} | "
+                    f"marked={_s2_diag['n_marked']} | area_drift={_s2_diag['area_drift']:.1e} | "
+                    f"swaps={_S2_state['n_swaps']} skips={_S2_state['n_skips']} | "
+                    f"hist_alpha {_ha_diag}"
+                )
             else:
                 _S2_state['n_skips'] += 1
                 if (j == start_j) or (j % 5 == 0):
@@ -743,6 +787,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         # Manav 原始：更新相场不可逆性历史变量 hist_alpha
         # ------------------------------------------------------------------
         hist_alpha = field_comp.update_hist_alpha(inp)
+
+        # ★ v3 (2026-05-15): sync per-node hist_alpha to _S2_state so the next
+        # REFINE event has the post-cycle floor available for nearest-node
+        # transport. No-op when S2 disabled or before any swap has occurred.
+        if _S2_enabled and _S2_state is not None and _S2_state['hist_alpha_curr'] is not None:
+            _S2_state['hist_alpha_curr'] = hist_alpha.detach().cpu().numpy().ravel()
 
         # ------------------------------------------------------------------
         # ★ 疲劳历史变量更新（仅 fatigue_on=True 时执行）

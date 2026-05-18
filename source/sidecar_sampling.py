@@ -433,6 +433,39 @@ def nearest_element_transport(
     return np.asarray(values_old, dtype=np.float64)[idx]
 
 
+def nearest_node_transport(
+    values_old: np.ndarray,
+    X_old: np.ndarray,
+    Y_old: np.ndarray,
+    X_new: np.ndarray,
+    Y_new: np.ndarray,
+) -> np.ndarray:
+    """Transport a per-NODE field from one mesh to another via nearest-node
+    KDTree lookup.
+
+    Use case: sidecar S2 v3 maintains `hist_alpha` (per-node irreversibility
+    floor) in the current refined-mesh's node coordinates. When the mesh
+    changes (REFINE event), node-level `hist_alpha` is carried across without
+    re-evaluating NN.fieldCalculation — preserves any built-up irreversibility
+    that the NN-smooth-interpolation might or might not inherit.
+
+    Two cases handled by the single KDTree:
+      - new node = old node (preserved across refinement): distance = 0 →
+        exact copy of value, identity transport.
+      - new node = midpoint of an old edge (added by refinement): distance > 0
+        → copy value of nearest old node (typically the closer of the two
+        edge endpoints).
+
+    Cost: O((n_old + n_new) log n_old) via scipy.spatial.cKDTree.
+    """
+    from scipy.spatial import cKDTree
+    tree = cKDTree(np.column_stack((np.asarray(X_old, dtype=np.float64),
+                                    np.asarray(Y_old, dtype=np.float64))))
+    _, idx = tree.query(np.column_stack((np.asarray(X_new, dtype=np.float64),
+                                          np.asarray(Y_new, dtype=np.float64))), k=1)
+    return np.asarray(values_old, dtype=np.float64)[idx]
+
+
 def aggregate_to_original(
     values_current: np.ndarray,
     area_current: np.ndarray,
