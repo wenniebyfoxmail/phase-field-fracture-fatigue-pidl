@@ -20,7 +20,9 @@ from compute_energy import compute_energy, gradients, strain_energy_with_split
 #   lambda_sup    : float — running weight for supervised loss (init 1.0)
 #   lambda_sym    : float — running weight for symmetry penalty (init 1.0)
 #   lambda_strac  : float — running weight for side-traction penalty (init 1.0)
+#   print_every   : int   — print gradient diagnostics every N Algo1 updates
 #   _step         : int   — internal update counter
+#   grad_stats_last : dict — latest raw gradient diagnostics
 # =============================================================================
 
 def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
@@ -37,10 +39,12 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
     if not params:
         return
 
-    def _probe(loss_scalar):
+    def _probe(loss_scalar, retain_graph=False):
         """Gradient of loss_scalar w.r.t. params; returns list of grad tensors."""
+        if not torch.is_tensor(loss_scalar) or not loss_scalar.requires_grad:
+            return []
         return torch.autograd.grad(
-            loss_scalar, params, allow_unused=True, retain_graph=False)
+            loss_scalar, params, allow_unused=True, retain_graph=retain_graph)
 
     def _max_grad(grads):
         vals = [g.abs().max().item() for g in grads if g is not None]
@@ -54,6 +58,10 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
         old = float(state.get(key, 1.0))
         state[key] = (1.0 - alpha_mom) * old + alpha_mom * float(lhat)
 
+    def _record_grad_stats(stats, name, grads):
+        stats[f'{name}_gmax'] = _max_grad(grads)
+        stats[f'{name}_gmean'] = _mean_grad(grads)
+
     # ── Probe 1: Deep Ritz physics loss ──────────────────────────────────────
     if T_conn is None:
         inp_p = inp_train.detach().clone().requires_grad_(True)
@@ -62,8 +70,24 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
     u_p, v_p, a_p = field_comp.fieldCalculation(inp_p)
     el, ed, eh = compute_energy(inp_p, u_p, v_p, a_p, hist_alpha,
                                 matprop, pffmodel, area_T, T_conn, f_fatigue)
-    lv = torch.log10(el + ed + eh)
-    max_phys = max(_max_grad(_probe(lv)), 1e-30)
+    eps = torch.as_tensor(1e-30, dtype=el.dtype, device=el.device)
+    lv_el = torch.log10(el + eps)
+    lv_ed = torch.log10(ed + eps)
+    lv_eh = torch.log10(eh + eps)
+    lv = torch.log10(el + ed + eh + eps)
+
+    grad_stats = {
+        'E_el': float(el.detach().item()),
+        'E_d': float(ed.detach().item()),
+        'E_hist': float(eh.detach().item()),
+        'E_total': float((el + ed + eh).detach().item()),
+    }
+    _record_grad_stats(grad_stats, 'logE_el', _probe(lv_el, retain_graph=True))
+    _record_grad_stats(grad_stats, 'logE_d', _probe(lv_ed, retain_graph=True))
+    _record_grad_stats(grad_stats, 'logE_hist', _probe(lv_eh, retain_graph=True))
+    g_phys = _probe(lv)
+    _record_grad_stats(grad_stats, 'logE_total', g_phys)
+    max_phys = max(grad_stats['logE_total_gmax'], 1e-30)
 
     # ── Probe 2: supervised ψ⁺ / α term ─────────────────────────────────────
     if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
@@ -91,6 +115,7 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
                 loss_kind=supervised_dict.get('loss_kind', 'mse_lin'),
                 mask=supervised_dict.get('mask', None))
         g_sup = _probe(l_sup)
+        _record_grad_stats(grad_stats, 'sup', g_sup)
         mean_sup = max(_mean_grad(g_sup), 1e-30)
         _ema('lambda_sup', max_phys / mean_sup)
 
@@ -98,6 +123,7 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
     if symmetry_dict is not None and symmetry_dict.get('enable', False):
         l_sym = _compute_symmetry_penalty(field_comp, inp_train, 1.0, 1.0, 1.0)
         g_sym = _probe(l_sym)
+        _record_grad_stats(grad_stats, 'sym', g_sym)
         mean_sym = max(_mean_grad(g_sym), 1e-30)
         _ema('lambda_sym', max_phys / mean_sym)
 
@@ -108,13 +134,24 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
             side_traction_dict.get('sigma_ref', 1.0),
             side_traction_dict.get('n_bdy_pts', 51))
         g_strac = _probe(l_strac)
+        _record_grad_stats(grad_stats, 'strac', g_strac)
         mean_strac = max(_mean_grad(g_strac), 1e-30)
         _ema('lambda_strac', max_phys / mean_strac)
 
     state['_step'] = state.get('_step', 0) + 1
-    # Log every 50 updates
-    if state['_step'] % 50 == 1:
-        print(f"  [Algo1] update#{state['_step']:04d} | max_phys={max_phys:.3e} | "
+    state['grad_stats_last'] = grad_stats
+
+    print_every = max(1, int(state.get('print_every', 1)))
+    if state['_step'] % print_every == 0:
+        def _fmt(name):
+            return (f"{grad_stats.get(name + '_gmax', 0.0):.3e}/"
+                    f"{grad_stats.get(name + '_gmean', 0.0):.3e}")
+
+        print(f"  [Algo1] update#{state['_step']:04d} | "
+              f"gmax/gmean logE total/el/ed/hist="
+              f"{_fmt('logE_total')} {_fmt('logE_el')} "
+              f"{_fmt('logE_d')} {_fmt('logE_hist')} | "
+              f"soft sup/sym/strac={_fmt('sup')} {_fmt('sym')} {_fmt('strac')} | "
               f"λ_sup={state.get('lambda_sup',1.0):.2f} "
               f"λ_sym={state.get('lambda_sym',1.0):.2f} "
               f"λ_strac={state.get('lambda_strac',1.0):.2f}")
