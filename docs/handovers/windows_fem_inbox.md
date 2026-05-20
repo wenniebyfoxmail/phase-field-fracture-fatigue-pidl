@@ -27,6 +27,139 @@
 
 ## Active Requests
 
+## 2026-05-20 · Request 13: reverse-BC FEM run to test whether PIDL default horizontal clamp explains the field gap
+
+**Goal**: Run a FEM controlled variant that deliberately matches the *old PIDL default essential BC* instead of the normal GRIPHFiTH anchor BC. This is a fast discriminator for the current Mac-PIDL question: does the FEM/PIDL gap mainly come from the horizontal-BC mismatch, or from PIDL representation/localization after BC effects are controlled?
+
+### What "reverse BC" means
+
+Normal GRIPHFiTH/PIDL-series FEM uses:
+
+```matlab
+'fix_X', bottom_left, ...
+'fix_Y', bottom, ...
+'disp_Y', top
+```
+
+This fixes horizontal rigid-body motion at one bottom-left anchor only. The old PIDL default hard ansatz is stricter: because the NN correction vanishes on top/bottom and the vertical loading angle has `cos(theta)=0`, it effectively imposes `u_x=0` on the whole top and bottom edges.
+
+For this request, **reverse the alignment direction**: do not change PIDL. Instead, change FEM to mimic the old PIDL default horizontal clamp:
+
+```matlab
+top         = find(MESH.node(:,2) ==  0.5);
+bottom      = find(MESH.node(:,2) == -0.5);
+top_bottom  = unique([top; bottom]);
+
+NODE_BOUNDARIES = phase_field.fem.bc.set_boundaries(...
+    'fix_X',  top_bottom, ...
+    'fix_Y',  bottom, ...
+    'disp_Y', top ...
+);
+```
+
+This is intentionally *not* the physically preferred FEM BC. It is a diagnostic FEM variant that asks: if FEM is forced to carry the same horizontal clamp as old PIDL, do `N_f`, `psi+`, `alpha_bar`, reaction, and symmetry move toward PIDL?
+
+### INPUT file
+
+Clone the existing Phase-1 toy-unit input:
+
+- source: `GRIPHFiTH/Scripts/fatigue_fracture/INPUT_SENT_PIDL_12.m`
+- new file suggestion: `GRIPHFiTH/Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_reverseBC.m`
+
+Keep everything else the same:
+
+- `split_type = 'AMOR'`
+- `diss_fct = 'AT1'`
+- `irrev = 'PENALTY'`
+- `E=1`, `Gc=0.01`, `ell=0.01`, `alpha_T=0.5`, `p=2`
+- `uy_final = 0.12`, `R=0`
+- `n_step = 8`
+- `max_cycle = 120` initially; auto-stop on penetration is fine
+
+Only change the horizontal essential BC from one-node `fix_X` to top+bottom `fix_X`.
+
+Please set a distinct `example_name`, e.g.
+
+```matlab
+example_name = 'SENT_PIDL_12_reverseBC';
+```
+
+Do not overwrite the existing `SENT_PIDL_12_export` or baseline outputs.
+
+### Mesh
+
+Use the same mesh as `INPUT_SENT_PIDL_12.m` / PIDL-series Phase-1 FEM baseline. Do not introduce a new mesh unless the existing input cannot be reused.
+
+### Expected outputs
+
+Please export enough data for Mac-PIDL to compare against both FEM original and PIDL default/femAnchor:
+
+1. Run log with wall time, cycle stop, and whether NaN occurred.
+2. Timeseries CSV or `.out` equivalent containing at least cycle, load/displacement/reaction if available, `d_max`, `alpha_bar_max`, `f_min`.
+3. Per-element snapshots at cycles:
+   - `1`
+   - `40`
+   - `70`
+   - `80`
+   - `82`
+   - first penetration / first boundary hit if different
+   - final stop cycle
+4. For each snapshot, fields:
+   - `d_elem`
+   - `psi_elem` or `psi_plus_elem`
+   - `alpha_elem` / `alpha_bar_elem`
+   - `f_alpha_elem`
+   - `element_centroids` or separate `mesh_geometry.mat`
+5. If easy, add a mirror-symmetry audit for `alpha_bar` at c82 using the same FEM-7 exact-pair logic; otherwise Mac will compute it after handoff.
+
+Suggested handoff directory:
+
+```text
+~/Downloads/_pidl_handoff_v2/reverseBC_u12/
+```
+
+Suggested filenames:
+
+```text
+mesh_geometry.mat
+u12_reverseBC_cycle_0001.mat
+u12_reverseBC_cycle_0040.mat
+u12_reverseBC_cycle_0070.mat
+u12_reverseBC_cycle_0080.mat
+u12_reverseBC_cycle_0082.mat
+u12_reverseBC_cycle_<hit>.mat
+SENT_PIDL_12_reverseBC_timeseries.csv
+README.md
+```
+
+### Acceptance criteria
+
+Mac will judge this run by directional movement, not by a single pass/fail:
+
+- If reverse-BC FEM `N_f`, reaction, `psi+` localization, or symmetry move strongly toward PIDL default, then the old PIDL horizontal clamp is a major confound.
+- If reverse-BC FEM still has FEM-like sharp `psi+` localization and near-perfect mirror symmetry while PIDL remains smeared/asymmetric, then BC mismatch is not the root cause; the remaining bottleneck is PIDL representation/localization/optimizer.
+- If reverse-BC FEM becomes numerically unstable or develops an obviously artificial crack path, report that too; instability itself is evidence that old PIDL's hard clamp defines a materially different boundary-value problem.
+
+Key comparisons Mac will run:
+
+```text
+FEM original BC        vs FEM reverse BC
+PIDL default old BC    vs FEM reverse BC
+PIDL femAnchorBC       vs FEM original BC
+```
+
+Metrics:
+
+- first boundary hit / penetration cycle
+- `psi+` tip/right-band probes
+- `alpha_bar` and `f(alpha)` right-band probes
+- reaction proxy / load-displacement curve
+- V4 mirror symmetry at c82 and at hit cycle
+
+### Priority
+
+**High**. This should be faster and cleaner than another PIDL production run, and it directly answers whether we should spend GPU time on `femAnchorBC + symmetry/localization` variants or first reframe the FEM/PIDL comparison as different essential-BC boundary-value problems.
+
 ## 2026-05-13 (eve) · [ack data hand-off `b2d8432`] PCC v3 d_elem + mesh_geometry received
 
 **Re**: outbox `b2d8432` PCC v3 fullNf re-run with `d_elem`. Pulled, read.
