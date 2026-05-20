@@ -125,7 +125,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
           device, trainedModel_path, intermediateModel_path, writer,
           fatigue_dict=None,                         # ★ 新增参数
           mit8_dict=None,                            # ★ MIT-8 supervised warmup
-          adaptive_sampling_dict=None):              # ★ 2026-05-13 Branch 2 C6
+          adaptive_sampling_dict=None,               # ★ 2026-05-13 Branch 2 C6
+          sidecar_S1_dict=None,                      # ★ forward-compat: static sidecar sampler
+          sidecar_S2_dict=None,                      # ★ forward-compat: adaptive sidecar sampler
+          grad_annealing_state=None):                # ★ 2026-05-19 Algorithm 1 (Wang 2020)
     '''
     Neural network training: pretraining with a coarser mesh in the first
     stage before the main training proceeds.
@@ -151,6 +154,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_dict is None:
         fatigue_dict = {}
     fatigue_on = fatigue_dict.get('fatigue_on', False)
+    if (sidecar_S1_dict or {}).get("enable", False) or (sidecar_S2_dict or {}).get("enable", False):
+        raise NotImplementedError(
+            "This model_train.py build accepts sidecar_S1/S2 arguments for "
+            "runner compatibility, but does not implement sidecar sampling."
+        )
 
     # =========================================================================
     # 阶段1：预训练（粗网格，fatigue 始终关闭，与 Manav 原始完全一致）
@@ -504,6 +512,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 supervised_dict=_supervised_dict,       # ★ MIT-8
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
+                grad_annealing_state=grad_annealing_state,  # ★ Algo1 (applies pre-computed λ; no update in LBFGS)
             )
             loss_data = loss_data + loss_data1
 
@@ -524,6 +533,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 supervised_dict=_supervised_dict,       # ★ MIT-8
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
+                grad_annealing_state=grad_annealing_state,  # ★ Algo1 (updates λ every update_every epochs)
             )
             loss_data = loss_data + loss_data2
 
@@ -655,7 +665,14 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # 修复前：prev = ψ⁺_peak → 第2圈起 Δᾱ = 0（不再累积！）
             # 修复后：prev = R²·ψ⁺_peak → 每圈累积 (1-R²)·ψ⁺_peak ✅
             R = fatigue_dict.get('R_ratio', 0.0)
-            psi_plus_prev = (R ** 2) * psi_plus_elem.clone()
+            # Controlled alignment Variant 4:
+            # explicit-cycle runners provide real load substeps inside each cycle,
+            # so the previous ψ⁺ should advance from substep to substep instead of
+            # being reset after every training step. Default behavior is unchanged.
+            if fatigue_dict.get('explicit_cycle_substeps', None):
+                psi_plus_prev = psi_plus_elem.clone()
+            else:
+                psi_plus_prev = (R ** 2) * psi_plus_elem.clone()
 
             # ★ 方向3：计算下一圈的裂尖自适应权重
             # 在当前圈 psi_plus_elem 更新后立即计算，供下一圈的 fit() 使用

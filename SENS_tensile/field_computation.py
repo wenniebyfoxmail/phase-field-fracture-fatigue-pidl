@@ -61,6 +61,12 @@ class FieldComputation:
                so correction and its x-derivative vanish on the side edges.
         这是 Sukumar-style exact trial 的项目定制版，不是通用 ADF 库。
 
+        {"enable": True, "mode": "fem_anchor"}
+          → GRIPHFiTH-style essential BC alignment:
+             - v=0 on bottom and v=lambda on top,
+             - u is fixed only at bottom-left anchor (x_min, y_min),
+             - horizontal displacement is free on the rest of top/bottom.
+
     fieldCalculation: applies BCs and constraint on alpha (needs to be customized for each problem)
     update_hist_alpha: alpha_field for use in the next loading step to enforce irreversibility
     '''
@@ -122,7 +128,7 @@ class FieldComputation:
         # side^1 (linear gating) — V7 may WARN/FAIL but less aggressive NN damping,
         #   diagnostic for "is side² over-constraining crack propagation?"
         self.exact_bc_side_power = float(_eb.get('side_power', 2.0))
-        if self.exact_bc_enabled and self.exact_bc_mode != 'sent_plane_strain':
+        if self.exact_bc_enabled and self.exact_bc_mode not in ('sent_plane_strain', 'fem_anchor'):
             raise ValueError(f"Unsupported exact_bc_mode={self.exact_bc_mode!r}")
 
     def _normalized_tb_bubble(self, inp, y0, yL):
@@ -220,22 +226,29 @@ class FieldComputation:
                 raise ValueError("exact_bc sent_plane_strain currently expects theta=pi/2")
 
             H = yL - y0
-            # Plane-strain uniaxial extension particular solution:
-            # eps_xx = -nu/(1-nu) * eps_yy  →  sigma_xx = 0, sigma_xy = 0.
-            epsxx_over_lambda = -self.exact_bc_nu / ((1.0 - self.exact_bc_nu) * H)
-            u_lift = epsxx_over_lambda * inp[:, 0]
-            v_lift = (inp[:, 1] - y0) / H
-
-            tb = self._normalized_tb_bubble(inp, y0, yL)
-            side = self._normalized_side_bubble(inp, x0, xL)
-            # ★ 2026-05-14: side_power configurable (default 2.0 = historical C4)
-            if self.exact_bc_side_power == 2.0:
-                correction_bubble = tb * side.square()
+            if self.exact_bc_mode == 'fem_anchor':
+                W = xL - x0
+                anchor_gate = ((inp[:, 0] - x0) / W).square() + ((inp[:, 1] - y0) / H).square()
+                v_bubble = (inp[:, -1] - y0) * (yL - inp[:, -1])
+                u = anchor_gate * disp_u * self.lmbda
+                v = (v_bubble * disp_v + (inp[:, -1] - y0) / H) * self.lmbda
             else:
-                correction_bubble = tb * side.pow(self.exact_bc_side_power)
+                # Plane-strain uniaxial extension particular solution:
+                # eps_xx = -nu/(1-nu) * eps_yy  →  sigma_xx = 0, sigma_xy = 0.
+                epsxx_over_lambda = -self.exact_bc_nu / ((1.0 - self.exact_bc_nu) * H)
+                u_lift = epsxx_over_lambda * inp[:, 0]
+                v_lift = (inp[:, 1] - y0) / H
 
-            u = (u_lift + correction_bubble * disp_u) * self.lmbda
-            v = (v_lift + correction_bubble * disp_v) * self.lmbda
+                tb = self._normalized_tb_bubble(inp, y0, yL)
+                side = self._normalized_side_bubble(inp, x0, xL)
+                # ★ 2026-05-14: side_power configurable (default 2.0 = historical C4)
+                if self.exact_bc_side_power == 2.0:
+                    correction_bubble = tb * side.square()
+                else:
+                    correction_bubble = tb * side.pow(self.exact_bc_side_power)
+
+                u = (u_lift + correction_bubble * disp_u) * self.lmbda
+                v = (v_lift + correction_bubble * disp_v) * self.lmbda
         else:
             # (y-y0)(yL-y) 在边界 y=y0 和 y=yL 处为 0
             u = ((inp[:, -1]-y0)*(yL-inp[:, -1])*disp_u +

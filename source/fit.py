@@ -6,6 +6,120 @@ from tqdm import tqdm
 from compute_energy import compute_energy, gradients, strain_energy_with_split
 
 
+# =============================================================================
+# Algorithm 1 — Wang, Teng & Perdikaris (2020) arXiv:2001.04536
+# Adaptive learning-rate annealing for PINN composite loss functions.
+#
+# Balances gradient magnitudes across loss terms so that BC/supervision
+# signals are not drowned out by the Deep Ritz physics loss.
+#
+# State dict keys (mutable, persists across cycles via model_train.py):
+#   enable        : bool  — master switch
+#   alpha_mom     : float — EMA momentum (paper default 0.9)
+#   update_every  : int   — update lambdas every N epochs (paper default 10)
+#   lambda_sup    : float — running weight for supervised loss (init 1.0)
+#   lambda_sym    : float — running weight for symmetry penalty (init 1.0)
+#   lambda_strac  : float — running weight for side-traction penalty (init 1.0)
+#   _step         : int   — internal update counter
+# =============================================================================
+
+def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
+                  area_T, T_conn, f_fatigue, supervised_dict, symmetry_dict,
+                  side_traction_dict, state):
+    """Wang 2020 Algo 1: update λ_i = (1-α)λ_i + α·(max|∇L_r| / mean|∇L_i|).
+
+    Uses torch.autograd.grad (not .backward) to avoid polluting .grad buffers.
+    Each BC term gets its own forward pass — adds ~N_terms extra passes per
+    update_every epochs (overhead < 30% for update_every=10).
+    """
+    alpha_mom = float(state.get('alpha_mom', 0.9))
+    params = [p for p in field_comp.parameters() if p.requires_grad]
+    if not params:
+        return
+
+    def _probe(loss_scalar):
+        """Gradient of loss_scalar w.r.t. params; returns list of grad tensors."""
+        return torch.autograd.grad(
+            loss_scalar, params, allow_unused=True, retain_graph=False)
+
+    def _max_grad(grads):
+        vals = [g.abs().max().item() for g in grads if g is not None]
+        return max(vals, default=1e-30)
+
+    def _mean_grad(grads):
+        vals = [g.abs().mean().item() for g in grads if g is not None]
+        return float(np.mean(vals)) if vals else 1e-30
+
+    def _ema(key, lhat):
+        old = float(state.get(key, 1.0))
+        state[key] = (1.0 - alpha_mom) * old + alpha_mom * float(lhat)
+
+    # ── Probe 1: Deep Ritz physics loss ──────────────────────────────────────
+    if T_conn is None:
+        inp_p = inp_train.detach().clone().requires_grad_(True)
+    else:
+        inp_p = inp_train
+    u_p, v_p, a_p = field_comp.fieldCalculation(inp_p)
+    el, ed, eh = compute_energy(inp_p, u_p, v_p, a_p, hist_alpha,
+                                matprop, pffmodel, area_T, T_conn, f_fatigue)
+    lv = torch.log10(el + ed + eh)
+    max_phys = max(_max_grad(_probe(lv)), 1e-30)
+
+    # ── Probe 2: supervised ψ⁺ / α term ─────────────────────────────────────
+    if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
+        _tk = supervised_dict.get('target_kind', 'psi')
+        if T_conn is None:
+            inp_p2 = inp_train.detach().clone().requires_grad_(True)
+        else:
+            inp_p2 = inp_train
+        u2, v2, a2 = field_comp.fieldCalculation(inp_p2)
+        if _tk == 'psi':
+            psi2 = _compute_psi_raw_per_elem(inp_p2, u2, v2, a2,
+                                             matprop, pffmodel, area_T, T_conn)
+            l_sup = supervised_dict['fem_sup'].supervised_loss(
+                psi2, cycle_idx=supervised_dict['cycle_idx'],
+                pidl_centroids=supervised_dict['pidl_centroids'],
+                lambda_sup=1.0,
+                loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
+                mask=supervised_dict.get('mask', None))
+        else:  # 'alpha'
+            a_elem = a2[T_conn].mean(dim=1) if T_conn is not None else a2
+            l_sup = supervised_dict['fem_sup'].alpha_supervised_loss(
+                a_elem, cycle_idx=supervised_dict['cycle_idx'],
+                pidl_centroids=supervised_dict['pidl_centroids'],
+                lambda_sup=1.0,
+                loss_kind=supervised_dict.get('loss_kind', 'mse_lin'),
+                mask=supervised_dict.get('mask', None))
+        g_sup = _probe(l_sup)
+        mean_sup = max(_mean_grad(g_sup), 1e-30)
+        _ema('lambda_sup', max_phys / mean_sup)
+
+    # ── Probe 3: soft symmetry penalty ───────────────────────────────────────
+    if symmetry_dict is not None and symmetry_dict.get('enable', False):
+        l_sym = _compute_symmetry_penalty(field_comp, inp_train, 1.0, 1.0, 1.0)
+        g_sym = _probe(l_sym)
+        mean_sym = max(_mean_grad(g_sym), 1e-30)
+        _ema('lambda_sym', max_phys / mean_sym)
+
+    # ── Probe 4: side-traction penalty ───────────────────────────────────────
+    if side_traction_dict is not None and side_traction_dict.get('enable', False):
+        l_strac = _compute_side_traction_penalty(
+            field_comp, matprop, 1.0, 1.0,
+            side_traction_dict.get('sigma_ref', 1.0),
+            side_traction_dict.get('n_bdy_pts', 51))
+        g_strac = _probe(l_strac)
+        mean_strac = max(_mean_grad(g_strac), 1e-30)
+        _ema('lambda_strac', max_phys / mean_strac)
+
+    state['_step'] = state.get('_step', 0) + 1
+    # Log every 50 updates
+    if state['_step'] % 50 == 1:
+        print(f"  [Algo1] update#{state['_step']:04d} | max_phys={max_phys:.3e} | "
+              f"λ_sup={state.get('lambda_sup',1.0):.2f} "
+              f"λ_sym={state.get('lambda_sym',1.0):.2f} "
+              f"λ_strac={state.get('lambda_strac',1.0):.2f}")
+
+
 def _compute_symmetry_penalty(field_comp, inp, lam_alpha, lam_u, lam_v):
     """Soft mirror-symmetry penalty for SENT (y → -y geometry symmetry).
 
@@ -150,14 +264,15 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
         f_fatigue=1.0, crack_tip_weights=None,
         supervised_dict=None,
         symmetry_dict=None,
-        side_traction_dict=None):
-    # ★ MIT-8 supervised_dict — see fit_with_early_stopping signature
-    # ★ 新增参数 f_fatigue：
-    #    - 标量 1.0（默认）：完全等价 Manav 原始行为
-    #    - Tensor (n_elem,)：逐元素疲劳退化函数，由 fatigue_history.compute_fatigue_degrad() 提供
-    # ★ 新增参数 crack_tip_weights（方向3：裂尖自适应损失加权）：
-    #    - None（默认）：均匀权重，完全等价原始代码
-    #    - Tensor (n_elem,)：w_e = 1 + β·(ψ⁺_e/ψ⁺_mean)^p，裂尖附近 w 大
+        side_traction_dict=None,
+        grad_annealing_state=None):
+    # ★ grad_annealing_state: if provided and enable=True, pre-computed λ values
+    #   from Algorithm 1 (updated during RPROP phase) are applied here.
+    #   LBFGS does not update λ — it uses whatever values RPROP computed last cycle.
+    _a1 = grad_annealing_state or {}
+    _lam_sup   = float(_a1.get('lambda_sup',   1.0))
+    _lam_sym   = float(_a1.get('lambda_sym',   1.0))
+    _lam_strac = float(_a1.get('lambda_strac', 1.0))
     loss_data = list()
 
     # Loop over epochs
@@ -196,6 +311,7 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
 
                 # ★ MIT-8 supervised term (Apr 25 + Apr 26 amortization)
                 # ★ 2026-05-14: target_kind='psi' (existing) or 'alpha' (new α-direct supervision)
+                # ★ 2026-05-19 Algo1: lambda overridden by _lam_sup when grad_annealing active
                 if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
                     _every_n = max(1, int(supervised_dict.get('every_n_epochs', 1)))
                     if (epoch % _every_n) == 0:
@@ -207,17 +323,16 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                                 psi_raw_pidl,
                                 cycle_idx=supervised_dict['cycle_idx'],
                                 pidl_centroids=supervised_dict['pidl_centroids'],
-                                lambda_sup=supervised_dict['lambda'],
+                                lambda_sup=_lam_sup,   # ★ Algo1-tuned or dict value
                                 loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
                                 mask=supervised_dict.get('mask', None))
                         elif _target_kind == 'alpha':
-                            # α per-node → per-element via T_conn averaging
                             alpha_per_elem = alpha[T_conn].mean(dim=1)
                             loss_sup = supervised_dict['fem_sup'].alpha_supervised_loss(
                                 alpha_per_elem,
                                 cycle_idx=supervised_dict['cycle_idx'],
                                 pidl_centroids=supervised_dict['pidl_centroids'],
-                                lambda_sup=supervised_dict['lambda'],
+                                lambda_sup=_lam_sup,   # ★ Algo1-tuned or dict value
                                 loss_kind=supervised_dict.get('loss_kind', 'mse_lin'),
                                 mask=supervised_dict.get('mask', None))
                         else:
@@ -225,26 +340,22 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                         loss = loss + _every_n * loss_sup
 
                 # ★ 2026-05-07 Soft mirror-symmetry penalty (B path)
-                # Activated by symmetry_dict={'enable': True, 'lambda_alpha':..., ...}
-                # Penalizes NN raw correction parity, NOT total field
                 if symmetry_dict is not None and symmetry_dict.get('enable', False):
                     loss_sym = _compute_symmetry_penalty(
                         field_comp, inp_train,
-                        lam_alpha=symmetry_dict.get('lambda_alpha', 1.0),
-                        lam_u    =symmetry_dict.get('lambda_u',     1.0),
-                        lam_v    =symmetry_dict.get('lambda_v',     1.0))
+                        lam_alpha=_lam_sym * symmetry_dict.get('lambda_alpha', 1.0),
+                        lam_u    =_lam_sym * symmetry_dict.get('lambda_u',     1.0),
+                        lam_v    =_lam_sym * symmetry_dict.get('lambda_v',     1.0))
                     loss = loss + loss_sym
                     if writer is not None:
                         writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_sym', loss_sym.item(), epoch)
 
                 # ★ 2026-05-08 Soft side-traction penalty
-                # Activated by side_traction_dict={'enable': True, 'lam_xx':..., 'lam_xy':..., 'sigma_ref':...}
-                # Enforces σ_xx ≈ 0, σ_xy ≈ 0 on x=±0.5 (traction-free side edges)
                 if side_traction_dict is not None and side_traction_dict.get('enable', False):
                     loss_strac = _compute_side_traction_penalty(
                         field_comp, matprop,
-                        lam_xx    =side_traction_dict.get('lam_xx',    1.0),
-                        lam_xy    =side_traction_dict.get('lam_xy',    1.0),
+                        lam_xx    =_lam_strac * side_traction_dict.get('lam_xx',    1.0),
+                        lam_xy    =_lam_strac * side_traction_dict.get('lam_xy',    1.0),
                         sigma_ref =side_traction_dict.get('sigma_ref', 1.0),
                         n_bdy_pts =side_traction_dict.get('n_bdy_pts', 51))
                     loss = loss + loss_strac
@@ -280,15 +391,16 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                             f_fatigue=1.0, crack_tip_weights=None,
                             supervised_dict=None,
                             symmetry_dict=None,
-                            side_traction_dict=None):
-    # ★ MIT-8 supervised_dict (Apr 25, optional, default None → identical behavior):
-    #    {'fem_sup': FEMSupervision, 'cycle_idx': int, 'lambda': float,
-    #     'pidl_centroids': np.ndarray, 'loss_kind': 'mse_log'|'mse_lin'|'mse_rel',
-    #     'every_n_epochs': int (default 1; >1 amortizes the supervised
-    #         pass — supervised loss only added every N epochs to reduce
-    #         per-cycle wall time while still biasing the trajectory)}
-    # ★ 新增参数 f_fatigue（同 fit）
-    # ★ 新增参数 crack_tip_weights（方向3，同 fit）
+                            side_traction_dict=None,
+                            grad_annealing_state=None):
+    # ★ grad_annealing_state (2026-05-19 Algorithm 1):
+    #   Mutable dict passed from model_train.train(). Persists across cycles.
+    #   Algo1 probes are run in RPROP only (not LBFGS) because RPROP's flat
+    #   loop allows clean separate backward passes via torch.autograd.grad.
+    _a1 = grad_annealing_state or {}
+    _a1_enabled    = bool(_a1.get('enable', False))
+    _a1_upd_every  = int(_a1.get('update_every', 10))
+
     loss_data = list()
     early_stopping = EarlyStopping(tol_steps=10, min_delta=min_delta, device=area_T.device)
     loss_prev = torch.tensor([0.0], device=area_T.device)
@@ -298,6 +410,18 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
         loop = tqdm(training_set_collocation, miniters=25, disable=True)
         # Loop over batches
         for j, (inp_train, outp_train)  in enumerate(loop):
+
+            # ── Algorithm 1 probe (before main step, no .grad pollution) ─────
+            if _a1_enabled and epoch > 0 and epoch % _a1_upd_every == 0:
+                _algo1_update(
+                    field_comp, inp_train, hist_alpha, matprop, pffmodel,
+                    area_T, T_conn, f_fatigue,
+                    supervised_dict, symmetry_dict, side_traction_dict, _a1)
+
+            # Read current Algo1 weights (updated above or from previous cycle)
+            _lam_sup   = float(_a1.get('lambda_sup',   1.0))
+            _lam_sym   = float(_a1.get('lambda_sym',   1.0))
+            _lam_strac = float(_a1.get('lambda_strac', 1.0))
 
             optimizer.zero_grad()
             if T_conn == None:
@@ -318,10 +442,7 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
 
             loss = loss_var + weight_decay*loss_reg
 
-            # ★ MIT-8 supervised term (Apr 25): joint physics + FEM ψ⁺ supervision.
-            # Apr 26 amortization: supervised loss only computed every N epochs
-            # to avoid 30× wall-time penalty per cycle. Default every_n=1
-            # (every epoch); use every_n=10 to add supervision once per 10 epochs.
+            # ★ MIT-8 supervised term (Apr 25 + Algo1 lambda override 2026-05-19)
             if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
                 _every_n = max(1, int(supervised_dict.get('every_n_epochs', 1)))
                 if (epoch % _every_n) == 0:
@@ -333,7 +454,7 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                             psi_raw_pidl,
                             cycle_idx=supervised_dict['cycle_idx'],
                             pidl_centroids=supervised_dict['pidl_centroids'],
-                            lambda_sup=supervised_dict['lambda'],
+                            lambda_sup=_lam_sup,   # ★ Algo1-tuned
                             loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
                             mask=supervised_dict.get('mask', None))
                     elif _target_kind == 'alpha':
@@ -342,31 +463,30 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                             alpha_per_elem,
                             cycle_idx=supervised_dict['cycle_idx'],
                             pidl_centroids=supervised_dict['pidl_centroids'],
-                            lambda_sup=supervised_dict['lambda'],
+                            lambda_sup=_lam_sup,   # ★ Algo1-tuned
                             loss_kind=supervised_dict.get('loss_kind', 'mse_lin'),
                             mask=supervised_dict.get('mask', None))
                     else:
                         raise ValueError(f"unknown supervised target_kind={_target_kind!r}; expected 'psi' or 'alpha'")
-                    # Scale up to compensate for the missed epochs
                     loss = loss + _every_n * loss_sup
 
-            # ★ 2026-05-07 Soft mirror-symmetry penalty (B path)
+            # ★ 2026-05-07 Soft mirror-symmetry penalty (Algo1 lambda override)
             if symmetry_dict is not None and symmetry_dict.get('enable', False):
                 loss_sym = _compute_symmetry_penalty(
                     field_comp, inp_train,
-                    lam_alpha=symmetry_dict.get('lambda_alpha', 1.0),
-                    lam_u    =symmetry_dict.get('lambda_u',     1.0),
-                    lam_v    =symmetry_dict.get('lambda_v',     1.0))
+                    lam_alpha=_lam_sym * symmetry_dict.get('lambda_alpha', 1.0),
+                    lam_u    =_lam_sym * symmetry_dict.get('lambda_u',     1.0),
+                    lam_v    =_lam_sym * symmetry_dict.get('lambda_v',     1.0))
                 loss = loss + loss_sym
                 if writer is not None:
                     writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_sym', loss_sym.item(), epoch)
 
-            # ★ 2026-05-08 Soft side-traction penalty
+            # ★ 2026-05-08 Soft side-traction penalty (Algo1 lambda override)
             if side_traction_dict is not None and side_traction_dict.get('enable', False):
                 loss_strac = _compute_side_traction_penalty(
                     field_comp, matprop,
-                    lam_xx    =side_traction_dict.get('lam_xx',    1.0),
-                    lam_xy    =side_traction_dict.get('lam_xy',    1.0),
+                    lam_xx    =_lam_strac * side_traction_dict.get('lam_xx',    1.0),
+                    lam_xy    =_lam_strac * side_traction_dict.get('lam_xy',    1.0),
                     sigma_ref =side_traction_dict.get('sigma_ref', 1.0),
                     n_bdy_pts =side_traction_dict.get('n_bdy_pts', 51))
                 loss = loss + loss_strac
