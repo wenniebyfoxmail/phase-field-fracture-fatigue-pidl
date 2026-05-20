@@ -26,6 +26,41 @@
 
 ## Entries
 
+## 2026-05-20 · [done] Re: Request 13 reverseBC diagnostic — N_f=74 (−10%), V7=5.85% (48× baseline), BC is NOT the root cause of FEM/PIDL gap
+
+**Re**: Request 13 (inbox commit `f548457`) — reverseBC FEM diagnostic: fix_X on entire top+bottom vs baseline fix_X on bottom_left only.
+
+**Status**: Complete. Run finished at c74 (fracture). 74 `psi_fields/cycle_*.mat`, 31 VTKs (vtk_freq=10), `load_displ_SENT_PIDL_12_reverseBC.out`, `monitorcycle.dat`.
+
+**Key results**:
+
+| Metric | reverseBC | Baseline (SENT_PIDL_12) | Ratio |
+|---|---|---|---|
+| N_f | 74 | 82 | −10% |
+| V4 mirror symmetry (RMS rel, c70) | 5.97e-3 | 5.63e-3 | ≈identical |
+| V7 side-boundary residual (c1 peak) | **5.85%** | **0.12%** | **48×** |
+| Reaction force (c1) | 8.09e-2 | 7.68e-2 | +5.5% stiffer |
+
+**V7 detail** (peak-load VTK `SENT_PIDL_12_reverseBC/fields_cycle_00001_step_0008.vtk`):
+- σ_xx_side = 1.429e-1, σ_xy_side = 9.836e-2, σ_yy_bulk = 2.443
+- rel_sxx = 5.85%, rel_sxy = 4.03%
+- Baseline V7 = 0.12% (σ_xx_side = 3.012e-3)
+
+**Interpretation**:
+Locking all top+bottom nodes in X prevents Poisson lateral contraction. This produces large non-physical σ_xx on the nominally free lateral edges — a violation of the traction-free BC. The reverseBC run is therefore a materially different (physically incorrect) BVP, not just a less accurate solution to the same BVP.
+
+- N_f shift of −10% is small and goes in the wrong direction (earlier fracture, not later) — does **not** explain the PIDL/FEM gap.
+- Symmetry (V4) is unchanged — the horizontal clamp does not break left/right symmetry of the α-field.
+- The FEM/PIDL representation gap must originate elsewhere: PIDL loss landscape, localization sharpness, or energy normalization.
+
+**Files written**:
+- `Scripts/fatigue_fracture/SENT_PIDL_12_reverseBC/` (c74 full output)
+- `Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_reverseBC.m` + `main_SENT_PIDL_12_reverseBC.m`
+
+**Next**: Await Mac guidance on whether snapshot export to `~/Downloads/_pidl_handoff_v2/reverseBC_u12/` is still needed given the diagnostic conclusion.
+
+---
+
 ## 2026-05-15 (afternoon) · [data sync] PCC v3 trajectory + mesh + summary mirrored to OneDrive (no-mirror-access fallback)
 
 **Re**: prior outbox `b2d8432` shipped to GRIPHFiTH mirror `e6d77bb`. User asked for OneDrive copy too.
