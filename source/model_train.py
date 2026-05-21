@@ -312,8 +312,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             'hist_alpha_curr': None,
             'X_curr_nodes': _Xo.copy(),  # node coords at last refine; for transport
             'Y_curr_nodes': _Yo.copy(),
+            # v4 cumulative add-only memory.  This is the monotone union of
+            # accepted tip disks; it must survive resume.
+            'past_tips': [],
             # S2b: detached score aggregated to ORIGINAL for next cycle's top-K
             'score_orig_for_next': None,
+            'score_curr': None,
             # Hysteresis: skip re-refinement when tip hasn't moved by this L¹ distance
             'hysteresis': _hyst,
             # Stats
@@ -321,9 +325,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         }
         print(
             f"[sidecar-S2] enabled (mode={sidecar_S2_dict.get('mode','tip_following')}); "
+            f"refine_mode={sidecar_S2_dict.get('refine_mode','cumulative')}; "
             f"r_tip_sample={sidecar_S2_dict.get('r_tip_sample',0.05)}; "
             f"target_fraction={sidecar_S2_dict.get('target_fraction',0.07)}; "
-            f"hysteresis_frac={_hyst_frac} → threshold={_hyst:.4f}; "
+            f"hysteresis_frac={_hyst_frac} -> threshold={_hyst:.4f}; "
             f"original mesh: {_n_orig} elem | transport: nearest-element (KDTree)"
         )
 
@@ -496,9 +501,29 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     ):
                         if _key in _s2_ckpt:
                             _S2_state[_key] = np.asarray(_s2_ckpt[_key])
+                    for _key in ('score_curr', 'score_orig_for_next'):
+                        if _key in _s2_ckpt and _s2_ckpt[_key] is not None:
+                            _S2_state[_key] = np.asarray(_s2_ckpt[_key])
                     for _key in ('tip_at_refine', 'n_swaps', 'n_skips'):
                         if _key in _s2_ckpt:
                             _S2_state[_key] = _s2_ckpt[_key]
+                    if 'past_tips' in _s2_ckpt:
+                        _S2_state['past_tips'] = [
+                            (float(_p[0]), float(_p[1])) for _p in _s2_ckpt['past_tips']
+                        ]
+                    elif (
+                        sidecar_S2_dict.get('refine_mode', 'cumulative') == 'cumulative'
+                        and int(_S2_state.get('n_swaps', 0)) > 0
+                    ):
+                        if int(_S2_state.get('n_swaps', 0)) == 1 and _S2_state.get('tip_at_refine') is not None:
+                            _p = _S2_state['tip_at_refine']
+                            _S2_state['past_tips'] = [(float(_p[0]), float(_p[1]))]
+                        else:
+                            raise NotImplementedError(
+                                "cumulative sidecar S2 checkpoint is missing 'past_tips'. "
+                                "This old v4 checkpoint cannot be safely resumed because "
+                                "the add-only refined-tube memory would be incomplete."
+                            )
 
                     _Xc = _S2_state['X_curr']
                     _Yc = _S2_state['Y_curr']
@@ -798,16 +823,26 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     _S2_state['past_tips'] = []
                 _r_tip = float(sidecar_S2_dict.get('r_tip_sample', 0.05))
                 _mode_v4 = sidecar_S2_dict.get('mode', 'tip_following')
-                _out = cumulative_refine_step(
-                    _S2_state['X_curr'], _S2_state['Y_curr'],
-                    _S2_state['T_curr'], _S2_state['area_curr'],
-                    _tip_xy_now, _r_tip, _S2_state['past_tips'],
-                    score_curr=_S2_state.get('score_curr'),
-                    mode=_mode_v4,
-                    target_fraction=float(sidecar_S2_dict.get('target_fraction', 0.07)),
-                    min_count=int(sidecar_S2_dict.get('min_count', 50)),
+                _force_first_refine = _last_tip is None
+                _tip_drift = (
+                    float('inf') if _force_first_refine else
+                    abs(_tip_xy_now[0] - _last_tip[0]) + abs(_tip_xy_now[1] - _last_tip[1])
                 )
-                _refined_v4 = _out[0]
+                _hyst_gate_open = _force_first_refine or (_tip_drift >= float(_S2_state['hysteresis']))
+                if _hyst_gate_open:
+                    _out = cumulative_refine_step(
+                        _S2_state['X_curr'], _S2_state['Y_curr'],
+                        _S2_state['T_curr'], _S2_state['area_curr'],
+                        _tip_xy_now, _r_tip, _S2_state['past_tips'],
+                        score_curr=_S2_state.get('score_curr'),
+                        mode=_mode_v4,
+                        target_fraction=float(sidecar_S2_dict.get('target_fraction', 0.07)),
+                        min_count=int(sidecar_S2_dict.get('min_count', 50)),
+                    )
+                    _refined_v4 = _out[0]
+                else:
+                    _out = None
+                    _refined_v4 = False
                 if _refined_v4:
                     (_, _X_new, _Y_new, _T_new, _area_new, _parent_v4, _mp_v4, _s2_diag) = _out
                     _first_refine = _S2_state['hist_alpha_curr'] is None
@@ -868,10 +903,14 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 else:
                     _S2_state['n_skips'] += 1
                     if (j == start_j) or (j % 5 == 0):
+                        if _out is None:
+                            _reason = f"hysteresis gate | drift={_tip_drift:.4g} < {_S2_state['hysteresis']:.4g}"
+                        else:
+                            _reason = f"in_zone={_out[7]['n_in_zone']} all already refined"
                         print(
                             f"  [sidecar-S2 cycle {j}] CUMUL-SKIP tip={_tip_xy_now} "
-                            f"(in_zone={_out[7]['n_in_zone']} all already refined) | "
-                            f"reuse {n_elem} elem | swaps={_S2_state['n_swaps']} skips={_S2_state['n_skips']}"
+                            f"({_reason}) | reuse {n_elem} elem | "
+                            f"swaps={_S2_state['n_swaps']} skips={_S2_state['n_skips']}"
                         )
 
             _should_refine = (
@@ -1526,9 +1565,14 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 'X_curr_nodes': _S2_state['X_curr_nodes'],
                 'Y_curr_nodes': _S2_state['Y_curr_nodes'],
                 'tip_at_refine': _S2_state['tip_at_refine'],
+                'past_tips': _S2_state.get('past_tips', []),
                 'n_swaps': _S2_state['n_swaps'],
                 'n_skips': _S2_state['n_skips'],
             }
+            if _S2_state.get('score_curr') is not None:
+                _ckpt_data['_S2_state']['score_curr'] = _S2_state['score_curr']
+            if _S2_state.get('score_orig_for_next') is not None:
+                _ckpt_data['_S2_state']['score_orig_for_next'] = _S2_state['score_orig_for_next']
         torch.save(_ckpt_data,
                    trainedModel_path / Path(f'checkpoint_step_{j}.pt'))
 

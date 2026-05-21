@@ -78,9 +78,11 @@ def _rewrite_model_settings(config, runner_name: str) -> None:
         f.write(f"\n--- sidecar S2 (adaptive refinement) ---")
         f.write(f"\nS2_enable: {sdct.get('enable')}")
         f.write(f"\nS2_mode: {sdct.get('mode')}")
+        f.write(f"\nS2_refine_mode: {sdct.get('refine_mode', 'cumulative')}")
         f.write(f"\nS2_tip_xy: {sdct.get('tip_xy')}")
         f.write(f"\nS2_r_tip_sample: {sdct.get('r_tip_sample')}")
         f.write(f"\nS2_n_refine_passes: {sdct.get('n_refine_passes')}")
+        f.write(f"\nS2_hysteresis_fraction: {sdct.get('hysteresis_fraction')}")
         f.write(f"\nS2_target_fraction: {sdct.get('target_fraction')}")
         f.write(f"\nS2_min_count: {sdct.get('min_count')}")
         f.write(f"\nS2_include_root_tip: {sdct.get('include_root_tip')}")
@@ -214,11 +216,17 @@ def main():
         f"_Umax{fat['disp_max']}"
     )
     if args.mode == "tip_following":
-        S2_suffix = f"_sidecarS2_{_mode_short(args.mode)}_rt{args.r_tip}_np{args.n_passes}"
+        S2_suffix = (
+            f"_sidecarS2_{args.refine_mode}_{_mode_short(args.mode)}"
+            f"_rt{args.r_tip}_np{args.n_passes}"
+        )
         if args.include_root_tip:
             S2_suffix += f"_rootrt{config.sidecar_S2_dict['r_root_sample']}"
     else:
-        S2_suffix = f"_sidecarS2_{_mode_short(args.mode)}_tf{args.target_fraction}_np{args.n_passes}"
+        S2_suffix = (
+            f"_sidecarS2_{args.refine_mode}_{_mode_short(args.mode)}"
+            f"_tf{args.target_fraction}_np{args.n_passes}"
+        )
     if args.tag_suffix.strip():
         _tag = args.tag_suffix.strip().replace(" ", "_")
         if not _tag.startswith("_"):
