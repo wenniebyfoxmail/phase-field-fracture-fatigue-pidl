@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from pathlib import Path
 import sys
+import os
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -18,6 +19,41 @@ for details of the model.
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
+
+
+def resolve_archive_dir(here, name):
+    """Resolve archive location, optionally redirecting heavy outputs.
+
+    If PIDL_ARCHIVE_DIR is set, the real archive lives under that directory and
+    a symlink is created at the usual SENS_tensile/<name> path for tooling that
+    expects local archive names. If the local path already exists as a real
+    directory, leave it untouched and use it; callers can move/copy it manually
+    before enabling redirect for resume.
+    """
+    local_path = Path(here) / Path(name)
+    archive_root = os.environ.get("PIDL_ARCHIVE_DIR", "").strip()
+    if not archive_root:
+        return local_path
+
+    real_path = Path(archive_root).expanduser() / Path(name)
+    real_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if local_path.is_symlink():
+        try:
+            if local_path.resolve() == real_path.resolve():
+                return real_path
+        except FileNotFoundError:
+            pass
+        local_path.unlink()
+    elif local_path.exists():
+        return local_path
+
+    local_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        local_path.symlink_to(real_path, target_is_directory=True)
+    except FileExistsError:
+        pass
+    return real_path
 
 
 
@@ -502,21 +538,22 @@ _psiHack_tag = (
     if _ph_cfg.get('enable', False) else ""
 )
 
-model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
-                            '_Neurons_'+str(network_dict["neurons"])+
-                            '_activation_'+network_dict["activation"]+
-                            '_coeff_'+str(network_dict["init_coeff"])+
-                            '_Seed_'+str(network_dict["seed"])+
-                            '_PFFmodel_'+str(PFF_model_dict["PFF_model"])+
-                            '_gradient_'+str(numr_dict["gradient_type"])+
-                            _fatigue_tag +
-                            _williams_tag +        # ★ Direction 4 标签
-                            _ansatz_tag +          # ★ Direction 5 标签
-                            _symmetry_tag +        # ★ 2026-05-06 symmetry prior 标签
-                            _exact_bc_tag +        # ★ 2026-05-11 C4 exact-BC 标签
-                            _fourier_tag +         # ★ 2026-05-11 C10 Fourier features 标签
-                            _spAlphaT_tag +        # ★ Direction 6.1 标签
-                            _psiHack_tag)          # ★ E2 sanity hack 标签
+_model_dir_name = ('hl_'+str(network_dict["hidden_layers"])+
+                   '_Neurons_'+str(network_dict["neurons"])+
+                   '_activation_'+network_dict["activation"]+
+                   '_coeff_'+str(network_dict["init_coeff"])+
+                   '_Seed_'+str(network_dict["seed"])+
+                   '_PFFmodel_'+str(PFF_model_dict["PFF_model"])+
+                   '_gradient_'+str(numr_dict["gradient_type"])+
+                   _fatigue_tag +
+                   _williams_tag +        # ★ Direction 4 标签
+                   _ansatz_tag +          # ★ Direction 5 标签
+                   _symmetry_tag +        # ★ 2026-05-06 symmetry prior 标签
+                   _exact_bc_tag +        # ★ 2026-05-11 C4 exact-BC 标签
+                   _fourier_tag +         # ★ 2026-05-11 C10 Fourier features 标签
+                   _spAlphaT_tag +        # ★ Direction 6.1 标签
+                   _psiHack_tag)          # ★ E2 sanity hack 标签
+model_path = resolve_archive_dir(PATH_ROOT, _model_dir_name)
 model_path.mkdir(parents=True, exist_ok=True)
 trainedModel_path = model_path/Path('best_models/')
 trainedModel_path.mkdir(parents=True, exist_ok=True)

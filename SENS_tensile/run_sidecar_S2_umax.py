@@ -275,7 +275,7 @@ def main():
         + fatigue_tag
         + S2_suffix
     )
-    config.model_path = _resolve_archive_dir(here, dir_name)
+    config.model_path = config.resolve_archive_dir(here, dir_name)
     config.trainedModel_path = config.model_path / Path("best_models/")
     config.intermediateModel_path = config.model_path / Path("intermediate_models/")
     config.model_path.mkdir(parents=True, exist_ok=True)
