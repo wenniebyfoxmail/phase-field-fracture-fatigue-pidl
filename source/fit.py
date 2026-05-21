@@ -1,3 +1,4 @@
+import math
 import torch
 import numpy as np
 from pathlib import Path
@@ -56,7 +57,9 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
 
     def _ema(key, lhat):
         old = float(state.get(key, 1.0))
-        state[key] = (1.0 - alpha_mom) * old + alpha_mom * float(lhat)
+        raw = (1.0 - alpha_mom) * old + alpha_mom * float(lhat)
+        lmax = float(state.get('lambda_max', float('inf')))
+        state[key] = min(raw, lmax)
 
     def _record_grad_stats(stats, name, grads):
         stats[f'{name}_gmax'] = _max_grad(grads)
@@ -257,6 +260,62 @@ def _compute_side_traction_penalty(field_comp, matprop, lam_xx, lam_xy,
     return lam_xx * L_xx + lam_xy * L_xy
 
 
+def _compute_j_path_penalty(field_comp, matprop, x_tip=0.0,
+                            radii=(0.05, 0.08, 0.12), n_theta=100,
+                            delta_face=0.05, eps=1e-12):
+    """Differentiable J-integral path-independence penalty.
+
+    For a valid elastic field the J-integral is contour-independent. We compute
+    J on several circular contours around the (moving) crack tip at (x_tip, 0)
+    and penalise their spread — squared coefficient of variation. No FEM target;
+    this is a self-consistency regulariser that improves near-tip field quality.
+
+    Contours sit at r ∈ {5ℓ, 8ℓ, 12ℓ}, outside the phase-field damage band, so
+    raw (undegraded) Hooke σ is LEFM-meaningful there. Open contour over
+    θ ∈ (−π+δ, π−δ) avoids the crack faces.
+
+    Returns a scalar penalty tensor (graph-attached for backward).
+    """
+    device = next(field_comp.net.parameters()).device
+    theta = torch.linspace(-math.pi + delta_face, math.pi - delta_face, n_theta,
+                           dtype=torch.float32, device=device)
+    cos_t, sin_t = torch.cos(theta), torch.sin(theta)
+
+    lmbda = matprop.mat_lmbda
+    mu    = matprop.mat_mu
+
+    J_per_r = []
+    for r in radii:
+        x = x_tip + r * cos_t
+        y = r * sin_t
+        xy = torch.stack([x, y], dim=1).requires_grad_(True)   # (n_theta, 2)
+        u, v, _ = field_comp.fieldCalculation(xy)
+
+        grad_u = torch.autograd.grad(u.sum(), xy, create_graph=True, retain_graph=True)[0]
+        grad_v = torch.autograd.grad(v.sum(), xy, create_graph=True, retain_graph=True)[0]
+        du_dx, du_dy = grad_u[:, 0], grad_u[:, 1]
+        dv_dx, dv_dy = grad_v[:, 0], grad_v[:, 1]
+
+        eps11 = du_dx
+        eps22 = dv_dy
+        eps12 = 0.5 * (du_dy + dv_dx)
+        sig11 = lmbda * (eps11 + eps22) + 2.0 * mu * eps11
+        sig22 = lmbda * (eps11 + eps22) + 2.0 * mu * eps22
+        sig12 = 2.0 * mu * eps12
+        W = 0.5 * (sig11 * eps11 + sig22 * eps22 + 2.0 * sig12 * eps12)
+
+        t1 = sig11 * cos_t + sig12 * sin_t      # σ_1j n_j
+        t2 = sig12 * cos_t + sig22 * sin_t      # σ_2j n_j
+        integrand = W * cos_t - t1 * du_dx - t2 * dv_dx
+        J = r * torch.trapz(integrand, theta)
+        J_per_r.append(J)
+
+    J_stack = torch.stack(J_per_r)
+    J_mean = J_stack.mean()
+    # squared coefficient of variation: dimensionless, scale-invariant
+    return J_stack.var(unbiased=False) / (J_mean.pow(2) + eps)
+
+
 def _compute_psi_raw_per_elem(inp, u, v, alpha, matprop, pffmodel, area_T, T_conn):
     """Compute UNDEGRADED ψ⁺_0 per element (E_el_p before g(α) multiply).
 
@@ -302,7 +361,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
         supervised_dict=None,
         symmetry_dict=None,
         side_traction_dict=None,
-        grad_annealing_state=None):
+        grad_annealing_state=None,
+        j_path_dict=None):
     # ★ grad_annealing_state: if provided and enable=True, pre-computed λ values
     #   from Algorithm 1 (updated during RPROP phase) are applied here.
     #   LBFGS does not update λ — it uses whatever values RPROP computed last cycle.
@@ -399,6 +459,17 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                     if writer is not None:
                         writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_strac', loss_strac.item(), epoch)
 
+                # ★ J-integral path-independence regulariser (no FEM target)
+                if j_path_dict is not None and j_path_dict.get('enable', False):
+                    loss_jpath = j_path_dict.get('lambda', 1.0) * _compute_j_path_penalty(
+                        field_comp, matprop,
+                        x_tip   =j_path_dict.get('x_tip', 0.0),
+                        radii   =j_path_dict.get('radii', (0.05, 0.08, 0.12)),
+                        n_theta =j_path_dict.get('n_theta', 100))
+                    loss = loss + loss_jpath
+                    if writer is not None:
+                        writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_jpath', loss_jpath.item(), epoch)
+
                 if writer is not None:
                     writer.add_scalars('U_p_'+str(field_comp.lmbda.item()), {'loss':loss.item(), "loss_E":loss_var.item()}, epoch)
 
@@ -429,7 +500,9 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                             supervised_dict=None,
                             symmetry_dict=None,
                             side_traction_dict=None,
-                            grad_annealing_state=None):
+                            grad_annealing_state=None,
+                            delta1_dataset=None,
+                            j_path_dict=None):
     # ★ grad_annealing_state (2026-05-19 Algorithm 1):
     #   Mutable dict passed from model_train.train(). Persists across cycles.
     #   Algo1 probes are run in RPROP only (not LBFGS) because RPROP's flat
@@ -437,6 +510,10 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
     _a1 = grad_annealing_state or {}
     _a1_enabled    = bool(_a1.get('enable', False))
     _a1_upd_every  = int(_a1.get('update_every', 10))
+
+    # ★ δ-1 element-level IS setup
+    _d1_active = delta1_dataset is not None
+    _d1_K = getattr(delta1_dataset, 'samples_per_epoch', None) if _d1_active else None
 
     loss_data = list()
     early_stopping = EarlyStopping(tol_steps=10, min_delta=min_delta, device=area_T.device)
@@ -460,14 +537,27 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
             _lam_sym   = float(_a1.get('lambda_sym',   1.0))
             _lam_strac = float(_a1.get('lambda_strac', 1.0))
 
+            # ★ δ-1: sample element subset for this epoch (p_e may have been updated by model_train)
+            if _d1_active:
+                _d1_loader = delta1_dataset.make_loader(samples_per_epoch=_d1_K)
+                _d1_elem_idx, _d1_imp_raw = next(iter(_d1_loader))
+                # imp_raw = 1/(p_e * n_elem) from ElementDataset.__getitem__; scale to 1/p_e
+                _d1_subset = _d1_elem_idx.long().to(area_T.device)
+                _d1_imp_w  = (_d1_imp_raw.float() * delta1_dataset.n_elem).to(area_T.device)
+            else:
+                _d1_subset = None
+                _d1_imp_w  = None
+
             optimizer.zero_grad()
             if T_conn == None:
                 inp_train.requires_grad = True
             u, v, alpha = field_comp.fieldCalculation(inp_train)
-            # ★ 传入 f_fatigue 和 crack_tip_weights
+            # ★ 传入 f_fatigue、crack_tip_weights、δ-1 element subset
             loss_E_el, loss_E_d, loss_hist = compute_energy(inp_train, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
                                                             f_fatigue=f_fatigue,
-                                                            crack_tip_weights=crack_tip_weights)
+                                                            crack_tip_weights=crack_tip_weights,
+                                                            element_subset=_d1_subset,
+                                                            importance_weights=_d1_imp_w)
             loss_var = torch.log10(loss_E_el + loss_E_d + loss_hist)
 
             # weight regularization
@@ -529,6 +619,17 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                 loss = loss + loss_strac
                 if writer is not None:
                     writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_strac', loss_strac.item(), epoch)
+
+            # ★ J-integral path-independence regulariser (no FEM target)
+            if j_path_dict is not None and j_path_dict.get('enable', False):
+                loss_jpath = j_path_dict.get('lambda', 1.0) * _compute_j_path_penalty(
+                    field_comp, matprop,
+                    x_tip   =j_path_dict.get('x_tip', 0.0),
+                    radii   =j_path_dict.get('radii', (0.05, 0.08, 0.12)),
+                    n_theta =j_path_dict.get('n_theta', 100))
+                loss = loss + loss_jpath
+                if writer is not None:
+                    writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_jpath', loss_jpath.item(), epoch)
 
             if writer is not None:
                     writer.add_scalars('U_p_'+str(field_comp.lmbda.item()), {'loss':loss.item(), "loss_E":loss_var.item()}, epoch)

@@ -128,7 +128,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
           adaptive_sampling_dict=None,               # ★ 2026-05-13 Branch 2 C6
           sidecar_S1_dict=None,                      # ★ forward-compat: static sidecar sampler
           sidecar_S2_dict=None,                      # ★ forward-compat: adaptive sidecar sampler
-          grad_annealing_state=None):                # ★ 2026-05-19 Algorithm 1 (Wang 2020)
+          grad_annealing_state=None,                 # ★ 2026-05-19 Algorithm 1 (Wang 2020)
+          delta1_dict=None,                          # ★ 2026-05-20 C6 δ-1 element-level IS
+          j_path_dict=None):                         # ★ 2026-05-20 J path-independence reg
     '''
     Neural network training: pretraining with a coarser mesh in the first
     stage before the main training proceeds.
@@ -229,6 +231,18 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         torch.utils.data.TensorDataset(inp, outp),
         batch_size=inp.shape[0], shuffle=False
     )
+
+    # ★ δ-1 element-level IS: create ElementDataset (uniform p_e init)
+    _d1_cfg = delta1_dict if (delta1_dict and delta1_dict.get('enable', False)) else None
+    _d1_dataset = None
+    if _d1_cfg is not None:
+        from dataset_element import ElementDataset, compute_residual_proxy
+        n_elem_tmp = area_T.shape[0]
+        _d1_dataset = ElementDataset(n_elem_tmp)
+        _d1_dataset.samples_per_epoch = _d1_cfg.get('samples_per_epoch', None)
+        _d1_start_cycle = int(_d1_cfg.get('start_cycle', 1))
+        print(f"[δ-1] ElementDataset ready: n_elem={n_elem_tmp}, "
+              f"K={_d1_dataset.samples_per_epoch or 'full'}, start_cycle={_d1_start_cycle}")
 
     # -------------------------------------------------------------------------
     # ★ 疲劳变量初始化（仅 fatigue_on=True 时使用；否则下面 if 块永不执行）
@@ -489,6 +503,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     'lambda': float(mit8_dict.get('lambda', 1.0)),
                     'pidl_centroids': mit8_dict['pidl_centroids'],
                     'loss_kind': mit8_dict.get('loss_kind', 'mse_log'),
+                    'target_kind': mit8_dict.get('target_kind', 'psi'),
                 }
                 print(f"  [MIT-8] cycle {j}/{_K}: supervised lambda={_supervised_dict['lambda']}")
 
@@ -513,6 +528,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
                 grad_annealing_state=grad_annealing_state,  # ★ Algo1 (applies pre-computed λ; no update in LBFGS)
+                j_path_dict=j_path_dict,                # ★ J path-independence reg
             )
             loss_data = loss_data + loss_data1
 
@@ -522,6 +538,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             optimizer = get_optimizer(NNparams, "RPROP")
             _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
             _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
+            # ★ δ-1: pass ElementDataset when IS is active for this cycle
+            _d1_active_cycle = (
+                _d1_dataset is not None and j >= _d1_start_cycle
+            )
             loss_data2 = fit_with_early_stopping(
                 field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
                 optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
@@ -534,6 +554,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
                 grad_annealing_state=grad_annealing_state,  # ★ Algo1 (updates λ every update_every epochs)
+                delta1_dataset=_d1_dataset if _d1_active_cycle else None,  # ★ δ-1
+                j_path_dict=j_path_dict,                # ★ J path-independence reg
             )
             loss_data = loss_data + loss_data2
 
@@ -546,6 +568,16 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         # Manav 原始：更新相场不可逆性历史变量 hist_alpha
         # ------------------------------------------------------------------
         hist_alpha = field_comp.update_hist_alpha(inp)
+
+        # ★ δ-1: update element sampling probabilities p_e from residual proxy
+        if _d1_dataset is not None and j >= (_d1_start_cycle - 1):
+            _d1_proxy = compute_residual_proxy(
+                inp, field_comp, hist_alpha, matprop, pffmodel,
+                area_T, T_conn, f_fatigue, device)
+            _d1_dataset.update_weights(_d1_proxy)
+            _d1_Keff = _d1_dataset.samples_per_epoch or _d1_dataset.n_elem
+            print(f"  [δ-1] p_e updated: proxy max={_d1_proxy.max():.3e}, "
+                  f"K={_d1_Keff}, eff. top-10%={(_d1_proxy > _d1_proxy.quantile(0.9)).sum().item()} elems")
 
         # ------------------------------------------------------------------
         # ★ 疲劳历史变量更新（仅 fatigue_on=True 时执行）

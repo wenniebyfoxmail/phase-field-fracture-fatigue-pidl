@@ -24,10 +24,14 @@ parser.add_argument("--K", type=int, default=40, help="Supervision cycles (defau
 parser.add_argument("--lam-init", type=float, default=1.0, help="Initial λ_sup before Algo1 tunes it")
 parser.add_argument("--algo1-alpha", type=float, default=0.9, help="Algo1 EMA momentum (default 0.9)")
 parser.add_argument("--algo1-every", type=int, default=10, help="Algo1 update interval (epochs, default 10)")
+parser.add_argument("--lambda-max", type=float, default=float('inf'),
+                    help="Cap on λ_sup after EMA update (e.g. 50). Default: no cap.")
 parser.add_argument("--n-cycles", type=int, default=100)
 parser.add_argument("--seed", type=int, default=1)
 parser.add_argument("--loss-kind", default="mse_log",
                     choices=["mse_log", "mse_lin", "mse_rel"])
+parser.add_argument("--target-kind", default="psi", choices=["psi", "alpha"],
+                    help="Supervise pointwise ψ⁺ (psi) or bounded damage α=d (alpha).")
 parser.add_argument("--supervised-every", type=int, default=1)
 args = parser.parse_args()
 
@@ -76,6 +80,8 @@ _dir_name = (
     + "_gradient_" + str(config.numr_dict["gradient_type"])
     + _fatigue_tag
     + f"_algo1_mit8_K{args.K}_lam{args.lam_init}_a{args.algo1_alpha}"
+    + (f"_tgt{args.target_kind}" if args.target_kind != "psi" else "")
+    + (f"_lmax{args.lambda_max:.0f}" if args.lambda_max != float('inf') else "")
 )
 config.model_path             = HERE / Path(_dir_name)
 config.trainedModel_path      = config.model_path / Path("best_models/")
@@ -88,6 +94,7 @@ with open(config.model_path / "model_settings.txt", "w") as f:
     f.write(f"runner: run_algo1_mit8_noc4_umax.py\n")
     f.write(f"umax: {args.umax}\nK: {args.K}\nlam_init: {args.lam_init}\n")
     f.write(f"algo1_alpha: {args.algo1_alpha}\nalgo1_every: {args.algo1_every}\n")
+    f.write(f"lambda_max: {args.lambda_max}\n")
     f.write(f"n_cycles: {args.n_cycles}\nseed: {args.seed}\n")
     f.write(f"C4: False\nFourier: False\n")
 
@@ -126,7 +133,7 @@ mit8_dict = {
     "pidl_centroids": pidl_centroids,
     "loss_kind": args.loss_kind,
     "every_n_epochs": int(args.supervised_every),
-    "target_kind": "psi",
+    "target_kind": args.target_kind,
 }
 
 # ── Algorithm 1 state ─────────────────────────────────────────────────────────
@@ -137,6 +144,7 @@ grad_annealing_state = {
     "lambda_sup": float(args.lam_init),   # tracks MIT-8 supervision weight
     "lambda_sym": 1.0,
     "lambda_strac": 1.0,
+    "lambda_max": float(args.lambda_max),  # cap applied in _ema(); inf = no cap
     "_step": 0,
 }
 
@@ -152,10 +160,11 @@ field_comp.net = field_comp.net.to(config.device)
 field_comp.domain_extrema = field_comp.domain_extrema.to(config.device)
 field_comp.theta = field_comp.theta.to(config.device)
 
+_lmax_str = f"{args.lambda_max:.0f}" if args.lambda_max != float('inf') else "∞"
 print("=" * 72)
 print("Experiment 1: Algorithm 1 + MIT-8 K=40, no C4, no Fourier")
 print(f"  umax={args.umax} | K={args.K} | lam_init={args.lam_init} | "
-      f"algo1_α={args.algo1_alpha} | update_every={args.algo1_every}")
+      f"algo1_α={args.algo1_alpha} | update_every={args.algo1_every} | λ_max={_lmax_str}")
 print(f"  n_cycles={args.n_cycles} | seed={args.seed}")
 print(f"  archive: {_dir_name}")
 print("=" * 72)
