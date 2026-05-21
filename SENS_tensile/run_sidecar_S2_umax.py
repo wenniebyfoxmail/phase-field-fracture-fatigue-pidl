@@ -51,6 +51,34 @@ def _mode_short(mode: str) -> str:
     return {"tip_following": "tipfol", "score_driven": "scored"}.get(mode, mode)
 
 
+def _resolve_archive_dir(here: Path, dir_name: str) -> Path:
+    """Resolve archive location, optionally redirecting the real dir to a big disk.
+
+    If PIDL_ARCHIVE_DIR is set, the archive lives at
+    `$PIDL_ARCHIVE_DIR/<dir_name>` and `here/<dir_name>` is a symlink to it.
+    Existing real directories under `here` are left untouched so old runs remain
+    auditable and resumeable until they are explicitly moved.
+    """
+    archive_link = here / dir_name
+    archive_root = os.environ.get("PIDL_ARCHIVE_DIR")
+    if not archive_root:
+        archive_link.mkdir(parents=True, exist_ok=True)
+        return archive_link
+
+    archive_real = Path(archive_root) / dir_name
+    if archive_link.exists() and not archive_link.is_symlink():
+        return archive_link
+
+    archive_real.mkdir(parents=True, exist_ok=True)
+    if archive_link.is_symlink():
+        if archive_link.resolve() != archive_real.resolve():
+            archive_link.unlink()
+            archive_link.symlink_to(archive_real, target_is_directory=True)
+    else:
+        archive_link.symlink_to(archive_real, target_is_directory=True)
+    return archive_link
+
+
 def _rewrite_model_settings(config, runner_name: str) -> None:
     fat = config.fatigue_dict
     sdct = config.sidecar_S2_dict
@@ -247,7 +275,7 @@ def main():
         + fatigue_tag
         + S2_suffix
     )
-    config.model_path = here / Path(dir_name)
+    config.model_path = _resolve_archive_dir(here, dir_name)
     config.trainedModel_path = config.model_path / Path("best_models/")
     config.intermediateModel_path = config.model_path / Path("intermediate_models/")
     config.model_path.mkdir(parents=True, exist_ok=True)
