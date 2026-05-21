@@ -155,6 +155,20 @@ fatigue_dict = {
         "eps"    : 1e-30,
     },
 
+    # ── Tip-patch hybrid quadrature diagnostic（默认关闭）──────────────────
+    # E_el/E_d inside a small disk around the current tip can be evaluated with
+    # Sobol points + autograd gradients while hist_alpha/hist_fat stay on the
+    # mesh. This tests whether mesh quadrature/gradient resolution limits Kt
+    # and fatigue accumulation without changing the history carrier.
+    "hybrid_quadrature": {
+        "enable": False,
+        "radius": 0.03,
+        "n_points": 512,
+        "replace_mesh_patch": True,
+        "seed": 0,
+        "hist_mode": "mesh",
+    },
+
     # ── E2 sanity hack (Apr 23 2026): ψ⁺ 裂尖放大 ──────────────────────────
     # 目的：验证 ψ⁺_raw 集中能力是否是 ᾱ_max ceiling 根因
     # 在 get_psi_plus_per_elem 输出上乘 Gaussian 放大乘子，

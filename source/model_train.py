@@ -459,6 +459,17 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             f"max_epochs={_reeq_n_epochs}; no fatigue-history update during reeq"
         )
 
+    _hybrid_quad_cfg = fatigue_dict.get('hybrid_quadrature', {})
+    _hybrid_quad_enabled = bool(_hybrid_quad_cfg.get('enable', False))
+    if _hybrid_quad_enabled:
+        print(
+            "[HybridQuadrature] enabled: "
+            f"radius={float(_hybrid_quad_cfg.get('radius', 0.03)):.4g}, "
+            f"n_points={int(_hybrid_quad_cfg.get('n_points', 512))}, "
+            f"replace_mesh_patch={bool(_hybrid_quad_cfg.get('replace_mesh_patch', True))}, "
+            "hist_mode=mesh"
+        )
+
     # -------------------------------------------------------------------------
     # ★ 检测最新 step checkpoint，实现断点续训
     # -------------------------------------------------------------------------
@@ -1116,6 +1127,26 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 }
                 print(f"  [MIT-8] cycle {j}/{_K}: supervised lambda={_supervised_dict['lambda']}")
 
+        _hybrid_quad_cycle = None
+        if _hybrid_quad_enabled:
+            _hybrid_quad_cycle = dict(_hybrid_quad_cfg)
+            _tip_for_hybrid = (
+                _tip_xy_now if '_tip_xy_now' in locals()
+                else (
+                    (float(_x_tip_history[-1]), 0.0)
+                    if _x_tip_history else
+                    tuple(sidecar_S2_dict.get('tip_xy', (0.0, 0.0)))
+                )
+            )
+            _hybrid_quad_cycle['tip_xy'] = _tip_for_hybrid
+            _hybrid_quad_cycle['seed'] = int(_hybrid_quad_cfg.get('seed', 0)) + int(j)
+            if (j == start_j) or (j % _log_every == 0):
+                print(
+                    f"  [HybridQuadrature cycle {j}] tip={_tip_for_hybrid} | "
+                    f"radius={float(_hybrid_quad_cycle.get('radius', 0.03)):.4g} | "
+                    f"n_points={int(_hybrid_quad_cycle.get('n_points', 512))}"
+                )
+
         if _reeq_enabled and _s2_refined_this_cycle:
             _reeq_start = time.time()
             _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
@@ -1139,6 +1170,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 supervised_dict=_supervised_dict,
                 symmetry_dict=_symmetry_dict,
                 side_traction_dict=_side_traction_dict,
+                hybrid_quad=_hybrid_quad_cycle,
             )
             _reeq_seconds = time.time() - _reeq_start
             _reeq_last_loss = float(_reeq_loss[-1]) if _reeq_loss else float('nan')
@@ -1171,6 +1203,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 supervised_dict=_supervised_dict,       # ★ MIT-8
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
+                hybrid_quad=_hybrid_quad_cycle,
             )
             loss_data = loss_data + loss_data1
 
@@ -1192,6 +1225,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 supervised_dict=_supervised_dict,       # ★ MIT-8
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
+                hybrid_quad=_hybrid_quad_cycle,
             )
             loss_data = loss_data + loss_data2
 

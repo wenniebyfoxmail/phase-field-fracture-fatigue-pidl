@@ -4,6 +4,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from compute_energy import compute_energy, gradients, strain_energy_with_split
+from hybrid_quadrature import compute_hybrid_patch_energy, prepare_hybrid_patch
 
 
 def _compute_symmetry_penalty(field_comp, inp, lam_alpha, lam_u, lam_v):
@@ -151,7 +152,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
         hist_loss_weight=1.0,
         supervised_dict=None,
         symmetry_dict=None,
-        side_traction_dict=None):
+        side_traction_dict=None,
+        hybrid_quad=None):
     # ★ MIT-8 supervised_dict — see fit_with_early_stopping signature
     # ★ 新增参数 f_fatigue：
     #    - 标量 1.0（默认）：完全等价 Manav 原始行为
@@ -160,6 +162,7 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
     #    - None（默认）：均匀权重，完全等价原始代码
     #    - Tensor (n_elem,)：w_e = 1 + β·(ψ⁺_e/ψ⁺_mean)^p，裂尖附近 w 大
     loss_data = list()
+    _hybrid_patch = prepare_hybrid_patch(hybrid_quad, training_set_collocation.dataset.tensors[0], area_T)
 
     # Loop over epochs
     for epoch in range(num_epochs):
@@ -172,15 +175,23 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                 if T_conn == None:
                     inp_train.requires_grad = True
 
-                # 1. 前向传播：计算位移和相场
-                u, v, alpha = field_comp.fieldCalculation(inp_train)
+                if _hybrid_patch is None:
+                    # 1. 前向传播：计算位移和相场
+                    u, v, alpha = field_comp.fieldCalculation(inp_train)
 
-                # 2. 计算能量（物理）
-                # ★ 传入 f_fatigue（疲劳退化函数）；默认 1.0 与 Manav 原始完全一致
-                # ★ 传入 crack_tip_weights（裂尖自适应加权）；None = 均匀
-                loss_E_el, loss_E_d, loss_hist = compute_energy(inp_train, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
-                                                                f_fatigue=f_fatigue,
-                                                                crack_tip_weights=crack_tip_weights)
+                    # 2. 计算能量（物理）
+                    # ★ 传入 f_fatigue（疲劳退化函数）；默认 1.0 与 Manav 原始完全一致
+                    # ★ 传入 crack_tip_weights（裂尖自适应加权）；None = 均匀
+                    loss_E_el, loss_E_d, loss_hist = compute_energy(inp_train, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
+                                                                    f_fatigue=f_fatigue,
+                                                                    crack_tip_weights=crack_tip_weights)
+                else:
+                    loss_E_el, loss_E_d, loss_hist = compute_hybrid_patch_energy(
+                        field_comp, inp_train, hist_alpha, matprop, pffmodel,
+                        area_T, T_conn, _hybrid_patch,
+                        f_fatigue=f_fatigue, crack_tip_weights=crack_tip_weights,
+                    )
+                    u = v = alpha = None
 
                 # 3. 损失函数 = log(总能量) ！！！
                 loss_var = torch.log10(loss_E_el + loss_E_d + hist_loss_weight * loss_hist)
@@ -199,6 +210,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                 if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
                     _every_n = max(1, int(supervised_dict.get('every_n_epochs', 1)))
                     if (epoch % _every_n) == 0:
+                        if u is None:
+                            u, v, alpha = field_comp.fieldCalculation(inp_train)
                         psi_raw_pidl = _compute_psi_raw_per_elem(
                             inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
                         loss_sup = supervised_dict['fem_sup'].supervised_loss(
@@ -266,7 +279,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                             hist_loss_weight=1.0,
                             supervised_dict=None,
                             symmetry_dict=None,
-                            side_traction_dict=None):
+                            side_traction_dict=None,
+                            hybrid_quad=None):
     # ★ MIT-8 supervised_dict (Apr 25, optional, default None → identical behavior):
     #    {'fem_sup': FEMSupervision, 'cycle_idx': int, 'lambda': float,
     #     'pidl_centroids': np.ndarray, 'loss_kind': 'mse_log'|'mse_lin'|'mse_rel',
@@ -276,6 +290,7 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
     # ★ 新增参数 f_fatigue（同 fit）
     # ★ 新增参数 crack_tip_weights（方向3，同 fit）
     loss_data = list()
+    _hybrid_patch = prepare_hybrid_patch(hybrid_quad, training_set_collocation.dataset.tensors[0], area_T)
     early_stopping = EarlyStopping(tol_steps=10, min_delta=min_delta, device=area_T.device)
     loss_prev = torch.tensor([0.0], device=area_T.device)
 
@@ -288,11 +303,19 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
             optimizer.zero_grad()
             if T_conn == None:
                 inp_train.requires_grad = True
-            u, v, alpha = field_comp.fieldCalculation(inp_train)
-            # ★ 传入 f_fatigue 和 crack_tip_weights
-            loss_E_el, loss_E_d, loss_hist = compute_energy(inp_train, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
-                                                            f_fatigue=f_fatigue,
-                                                            crack_tip_weights=crack_tip_weights)
+            if _hybrid_patch is None:
+                u, v, alpha = field_comp.fieldCalculation(inp_train)
+                # ★ 传入 f_fatigue 和 crack_tip_weights
+                loss_E_el, loss_E_d, loss_hist = compute_energy(inp_train, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
+                                                                f_fatigue=f_fatigue,
+                                                                crack_tip_weights=crack_tip_weights)
+            else:
+                loss_E_el, loss_E_d, loss_hist = compute_hybrid_patch_energy(
+                    field_comp, inp_train, hist_alpha, matprop, pffmodel,
+                    area_T, T_conn, _hybrid_patch,
+                    f_fatigue=f_fatigue, crack_tip_weights=crack_tip_weights,
+                )
+                u = v = alpha = None
             loss_var = torch.log10(loss_E_el + loss_E_d + hist_loss_weight * loss_hist)
 
             # weight regularization
@@ -311,6 +334,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
             if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
                 _every_n = max(1, int(supervised_dict.get('every_n_epochs', 1)))
                 if (epoch % _every_n) == 0:
+                    if u is None:
+                        u, v, alpha = field_comp.fieldCalculation(inp_train)
                     psi_raw_pidl = _compute_psi_raw_per_elem(
                         inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
                     loss_sup = supervised_dict['fem_sup'].supervised_loss(

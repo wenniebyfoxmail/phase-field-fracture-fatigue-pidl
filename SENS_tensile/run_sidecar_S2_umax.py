@@ -75,6 +75,11 @@ def _rewrite_model_settings(config, runner_name: str) -> None:
         f.write(f"\nadaptive_lambda_hist_min: {alh.get('min', 1e-3)}")
         f.write(f"\nadaptive_lambda_hist_max: {alh.get('max', 1.0)}")
         f.write(f"\nadaptive_lambda_hist_smooth: {alh.get('smooth', 1.0)}")
+        hq = fat.get('hybrid_quadrature', {})
+        f.write(f"\nhybrid_quadrature_enable: {hq.get('enable', False)}")
+        f.write(f"\nhybrid_quadrature_radius: {hq.get('radius', 0.03)}")
+        f.write(f"\nhybrid_quadrature_n_points: {hq.get('n_points', 512)}")
+        f.write(f"\nhybrid_quadrature_replace_mesh_patch: {hq.get('replace_mesh_patch', True)}")
         f.write(f"\n--- sidecar S2 (adaptive refinement) ---")
         f.write(f"\nS2_enable: {sdct.get('enable')}")
         f.write(f"\nS2_mode: {sdct.get('mode')}")
@@ -145,6 +150,14 @@ def main():
                    help="After each S2 REFINE, run an extra fit before fatigue-history update.")
     p.add_argument("--post-refine-reeq-epochs", type=int, default=3000,
                    help="Max epochs for the post-REFINE re-equilibration fit.")
+    p.add_argument("--hybrid-quad", action="store_true",
+                   help="Enable tip-patch Sobol/autograd quadrature diagnostic for E_el/E_d.")
+    p.add_argument("--hybrid-radius", type=float, default=0.03,
+                   help="Hybrid quadrature patch radius around the current tip.")
+    p.add_argument("--hybrid-points", type=int, default=512,
+                   help="Number of Sobol points in the hybrid quadrature patch.")
+    p.add_argument("--hybrid-additive", action="store_true",
+                   help="Add patch energy on top of mesh energy instead of replacing mesh patch E_el/E_d.")
     p.add_argument("--force-cpu", action="store_true")
     args = p.parse_args()
 
@@ -208,6 +221,14 @@ def main():
         "smooth": float(args.lambda_hist_smooth),
         "eps": 1e-30,
     }
+    config.fatigue_dict["hybrid_quadrature"] = {
+        "enable": bool(args.hybrid_quad),
+        "radius": float(args.hybrid_radius),
+        "n_points": int(args.hybrid_points),
+        "replace_mesh_patch": not bool(args.hybrid_additive),
+        "seed": int(args.seed),
+        "hist_mode": "mesh",
+    }
 
     fat = config.fatigue_dict
     fatigue_tag = (
@@ -236,6 +257,9 @@ def main():
         S2_suffix += "_adapthist"
     if args.post_refine_reeq:
         S2_suffix += f"_reeq{args.post_refine_reeq_epochs}"
+    if args.hybrid_quad:
+        _mode = "add" if args.hybrid_additive else "repl"
+        S2_suffix += f"_hybridq{_mode}_r{args.hybrid_radius}_p{args.hybrid_points}"
     dir_name = (
         "hl_" + str(config.network_dict["hidden_layers"])
         + "_Neurons_" + str(config.network_dict["neurons"])
