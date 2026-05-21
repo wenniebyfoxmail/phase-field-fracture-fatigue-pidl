@@ -85,10 +85,9 @@ _dir_name = (
     + _fatigue_tag
     + f"_delta1{_K_tag}_start{args.start_cycle}"
 )
-config.model_path             = HERE / Path(_dir_name)
+config.model_path             = config.resolve_archive_dir(HERE, _dir_name)
 config.trainedModel_path      = config.model_path / Path("best_models/")
 config.intermediateModel_path = config.model_path / Path("intermediate_models/")
-config.model_path.mkdir(parents=True, exist_ok=True)
 config.trainedModel_path.mkdir(parents=True, exist_ok=True)
 config.intermediateModel_path.mkdir(parents=True, exist_ok=True)
 
@@ -167,9 +166,8 @@ field_comp.net = field_comp.net.to(config.device)
 field_comp.domain_extrema = field_comp.domain_extrema.to(config.device)
 field_comp.theta = field_comp.theta.to(config.device)
 
-print("[δ-1] WARNING: element-level IS not yet wired into model_train.py.")
-print("  Running full-batch baseline until compute_energy TODO is done.")
-print("  See STUB comment above for integration plan.")
+print(f"[δ-1] Element-level IS ACTIVE: K={delta1_dict['samples_per_epoch'] or 'full'}, "
+      f"start_cycle={delta1_dict['start_cycle']}, source={delta1_dict['residual_source']}")
 
 train(
     field_comp, config.disp_cyclic, pffmodel, matprop,
@@ -180,6 +178,6 @@ train(
     config.trainedModel_path, config.intermediateModel_path,
     config.writer,
     fatigue_dict=config.fatigue_dict,
-    # delta1_dict=delta1_dict,       # uncomment after model_train TODO done
+    delta1_dict=delta1_dict,
     grad_annealing_state=grad_annealing_state,
 )

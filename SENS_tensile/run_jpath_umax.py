@@ -69,10 +69,9 @@ _dir_name = (
     + _fatigue_tag
     + f"_jpath_lam{args.lambda_j}_nt{args.n_theta}"
 )
-config.model_path             = HERE / Path(_dir_name)
+config.model_path             = config.resolve_archive_dir(HERE, _dir_name)
 config.trainedModel_path      = config.model_path / Path("best_models/")
 config.intermediateModel_path = config.model_path / Path("intermediate_models/")
-config.model_path.mkdir(parents=True, exist_ok=True)
 config.trainedModel_path.mkdir(parents=True, exist_ok=True)
 config.intermediateModel_path.mkdir(parents=True, exist_ok=True)
 

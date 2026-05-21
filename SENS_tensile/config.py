@@ -354,6 +354,39 @@ fine_mesh_file = "meshed_geom2.msh"
 ## ############################################################################
 PATH_ROOT = Path(__file__).parents[0]
 
+
+def resolve_archive_dir(here, dir_name):
+    """Return the archive path for `dir_name`, optionally redirected to a big disk.
+
+    If env var PIDL_ARCHIVE_DIR is set, the real archive lives at
+    `$PIDL_ARCHIVE_DIR/<dir_name>` (e.g. /mnt/data2 with TBs free) and a symlink
+    `<here>/<dir_name>` is created pointing to it — so ALL tooling that accesses
+    archives by the conventional `SENS_tensile/<name>` path keeps working
+    transparently (resume, validators, J-integral, plotting). If the env var is
+    unset, behaviour is unchanged (real dir under `here`).
+
+    Never clobbers an existing real directory at `<here>/<dir_name>` (returns it
+    as-is) so previously-trained archives on the root disk stay intact.
+    """
+    import os
+    sens_path = Path(here) / dir_name
+    base = os.environ.get("PIDL_ARCHIVE_DIR")
+    if base:
+        real = Path(base) / dir_name
+        # Don't shadow an existing real archive already on the root disk.
+        if sens_path.exists() and not sens_path.is_symlink():
+            return sens_path
+        real.mkdir(parents=True, exist_ok=True)
+        if sens_path.is_symlink():
+            if sens_path.resolve() != real.resolve():
+                sens_path.unlink()
+                sens_path.symlink_to(real, target_is_directory=True)
+        else:
+            sens_path.symlink_to(real, target_is_directory=True)
+        return sens_path
+    sens_path.mkdir(parents=True, exist_ok=True)
+    return sens_path
+
 # ★ 疲劳标签：不同 case 保存到不同目录，防止覆盖
 # fatigue_on=False → '_fatigue_off'
 # fatigue_on=True  → '_fatigue_on_<accum>_<degrad>_aT<alpha_T>_N<n_cycles>'
