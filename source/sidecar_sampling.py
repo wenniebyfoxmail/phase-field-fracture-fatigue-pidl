@@ -642,8 +642,21 @@ def adaptive_refine_for_cycle(
             tip_xy = cfg.get("tip_xy", (0.0, 0.0))
         tx, ty = float(tip_xy[0]), float(tip_xy[1])
         refine_mask = (np.hypot(cx - tx, cy - ty) < r_tip)
-        diag = {"mode": mode, "tip_xy": (tx, ty), "r_tip_sample": r_tip,
-                "n_marked": int(refine_mask.sum())}
+        if bool(cfg.get("include_root_tip", False)):
+            root_xy = cfg.get("root_tip_xy", cfg.get("tip_xy", (0.0, 0.0)))
+            rx, ry = float(root_xy[0]), float(root_xy[1])
+            r_root = float(cfg.get("r_root_sample", r_tip))
+            root_mask = (np.hypot(cx - rx, cy - ry) < r_root)
+            refine_mask = refine_mask | root_mask
+            diag = {"mode": mode, "tip_xy": (tx, ty), "r_tip_sample": r_tip,
+                    "include_root_tip": True, "root_tip_xy": (rx, ry),
+                    "r_root_sample": r_root,
+                    "n_marked_tip": int((np.hypot(cx - tx, cy - ty) < r_tip).sum()),
+                    "n_marked_root": int(root_mask.sum()),
+                    "n_marked": int(refine_mask.sum())}
+        else:
+            diag = {"mode": mode, "tip_xy": (tx, ty), "r_tip_sample": r_tip,
+                    "n_marked": int(refine_mask.sum())}
     elif mode == "score_driven":
         if score is None:
             # First cycle: no prior score available, fall back to tip-radius.
@@ -698,6 +711,97 @@ def adaptive_refine_for_cycle(
     return X, Y, T, area, parent, diag
 
 
+def cumulative_refine_step(
+    X_curr: np.ndarray,
+    Y_curr: np.ndarray,
+    T_curr: np.ndarray,
+    area_curr: np.ndarray,
+    tip_xy: Tuple[float, float],
+    r_tip_sample: float,
+    past_tips: list,
+    score_curr: np.ndarray | None = None,
+    mode: str = "tip_following",
+    target_fraction: float = 0.07,
+    min_count: int = 50,
+):
+    """v4 add-only incremental refinement (the literature-converged design).
+
+    Refines the CURRENT persistent mesh in place (NOT a rebuild from the
+    canonical original mesh) on the set of elements that are in the current
+    tip neighbourhood AND have not been refined before. History transport is
+    therefore lossless on retained elements (parent index is identity) and a
+    one-time direct-parent inherit on the freshly created children — there is
+    no repeated collapse-to-original / re-expand round trip, so no diffusion
+    of accumulated history across cycles.
+
+    "Already refined" is detected geometrically (index-stable): an element is
+    excluded if its centroid lies within r_tip_sample of ANY past tip in
+    `past_tips`. The union of all tip disks forms a refined tube along the
+    crack path, monotone (never coarsened).
+
+    Parameters
+    ----------
+    X_curr, Y_curr, T_curr, area_curr : the current persistent mesh.
+    tip_xy : current crack-tip (cx, cy).
+    r_tip_sample : refinement radius.
+    past_tips : list of (x, y) tips already refined around. Cycle 0 → [].
+    score_curr : per-element score on the CURRENT mesh (S2b only).
+    mode : "tip_following" | "score_driven".
+    target_fraction, min_count : S2b top-K budget.
+
+    Returns
+    -------
+    refined : bool — whether any new element was refined.
+    X_new, Y_new, T_new, area_new : new mesh (== current if refined is False).
+    parent : (n_elem_new,) int — parent index into T_curr for every new
+        element (identity for retained, refined-parent for children). Use
+        `values_curr[parent]` to transport per-element history losslessly.
+    midpoint_parents : (M, 2) — edge endpoints (into the CURRENT node set)
+        for each new midpoint node. Use `edge_lineage_transport(values_curr,
+        midpoint_parents, n_nodes_curr, 'max')` for per-node history.
+    diag : dict.
+    """
+    cx = (X_curr[T_curr[:, 0]] + X_curr[T_curr[:, 1]] + X_curr[T_curr[:, 2]]) / 3.0
+    cy = (Y_curr[T_curr[:, 0]] + Y_curr[T_curr[:, 1]] + Y_curr[T_curr[:, 2]]) / 3.0
+    tx, ty = float(tip_xy[0]), float(tip_xy[1])
+
+    if mode == "score_driven" and score_curr is not None:
+        in_zone = select_top_score_elements(score_curr, target_fraction, min_count)
+    else:
+        in_zone = (np.hypot(cx - tx, cy - ty) < r_tip_sample)
+
+    # Exclude elements already covered by a past tip disk (index-stable).
+    already = np.zeros(T_curr.shape[0], dtype=bool)
+    for (px, py) in past_tips:
+        already |= (np.hypot(cx - float(px), cy - float(py)) < r_tip_sample)
+
+    R_new = in_zone & (~already)
+    n_new = int(R_new.sum())
+    diag = {
+        "mode": mode, "tip_xy": (tx, ty), "n_in_zone": int(in_zone.sum()),
+        "n_already": int(already.sum()), "n_new_marked": n_new,
+        "n_elem_before": int(T_curr.shape[0]),
+    }
+    if n_new == 0:
+        diag["n_elem_after"] = int(T_curr.shape[0])
+        diag["area_drift"] = 0.0
+        diag["midpoint_parents"] = np.zeros((0, 2), dtype=np.int64)
+        diag["n_old_nodes"] = int(X_curr.shape[0])
+        return (False, X_curr, Y_curr, T_curr, area_curr,
+                np.arange(T_curr.shape[0], dtype=np.int64),
+                diag["midpoint_parents"], diag)
+
+    n_old_nodes = int(X_curr.shape[0])
+    X2, Y2, T2, a2, parent, mp = refine_marked_elements(
+        X_curr, Y_curr, T_curr, area_curr, R_new, n_refine_passes=1
+    )
+    diag["n_elem_after"] = int(T2.shape[0])
+    diag["area_drift"] = float(abs(a2.sum() - area_curr.sum()))
+    diag["midpoint_parents"] = mp
+    diag["n_old_nodes"] = n_old_nodes
+    return True, X2, Y2, T2, a2, parent, mp, diag
+
+
 def apply_s2_swap_for_cycle(
     cfg: dict,
     X_orig: np.ndarray,
@@ -714,6 +818,12 @@ def apply_s2_swap_for_cycle(
 ):
     """Per-cycle mesh swap for sidecar S2.
 
+    Deprecated helper: `model_train.train` now owns the S2 v3.2 swap path
+    directly because conservative `hist_alpha` transport needs the previous
+    current-mesh nodal history. This older helper only has `field_comp`, not
+    the needed `hist_alpha_curr` state, so using it would fall back to NN
+    re-evaluation and violate the v3.2 transport contract.
+
     Returns (inp, T_conn, area_T, hist_alpha, hist_fat, psi_plus_prev,
              n_elem, elem_centroids, right_bdy_mask, parent, diag).
 
@@ -723,6 +833,12 @@ def apply_s2_swap_for_cycle(
       - calling aggregate_to_original at the end of the cycle to refresh
         hist_fat_orig / psi_plus_prev_orig / s2_score_orig for the next cycle
     """
+    raise NotImplementedError(
+        "apply_s2_swap_for_cycle is deprecated for S2 v3.2; use the explicit "
+        "swap path in model_train.train so hist_alpha uses edge-lineage "
+        "transport plus NN-max floor instead of NN re-evaluation."
+    )
+
     import torch  # local import — sidecar_sampling is otherwise torch-free
 
     X_new, Y_new, T_new, area_new, parent, diag = adaptive_refine_for_cycle(

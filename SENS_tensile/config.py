@@ -141,6 +141,20 @@ fatigue_dict = {
         "start_cycle" : 1,           # 从第几圈开始加权（0 = 从预训练完成后第1圈就加权）
     },
 
+    # ── Wang-style adaptive λ_hist（默认关闭）──────────────────────────────
+    # REFINE 后打印各项参数梯度范数，并令
+    # λ_hat = max(||∇E_el||₂, ||∇E_d||₂) / ||∇E_hist||₂，clip 后用于后续 fit。
+    # 目的：只压低过强的 irreversibility penalty 梯度，避免它在新 mesh 上主导优化。
+    # enable=False 时 λ_hist=1，损失严格保持 log10(E_el + E_d + E_hist)。
+    "adaptive_lambda_hist": {
+        "enable" : False,
+        "initial": 1.0,
+        "min"    : 1e-3,
+        "max"    : 1.0,
+        "smooth" : 1.0,
+        "eps"    : 1e-30,
+    },
+
     # ── E2 sanity hack (Apr 23 2026): ψ⁺ 裂尖放大 ──────────────────────────
     # 目的：验证 ψ⁺_raw 集中能力是否是 ᾱ_max ceiling 根因
     # 在 get_psi_plus_per_elem 输出上乘 Gaussian 放大乘子，
@@ -323,12 +337,13 @@ sidecar_S1_dict = {
 #     at the END of the PREVIOUS cycle. Score is detached so it acts only
 #     as a sampling-density signal, NOT as a loss reweight (sidecar Rule 1).
 #
-# Both modes maintain hist_fat / psi_plus_prev / score in the ORIGINAL
-# (un-refined) mesh's element coordinates throughout the run via the
-# expand-from-original / aggregate-to-original transport (see
-# `source/sidecar_sampling.py: aggregate_to_original`). Each cycle's
-# refinement is one-step from the canonical reference mesh — no compounding
-# interpolation error.
+# S2 rebuilds each refined mesh from the canonical reference mesh, while
+# carrying per-cycle history directly between consecutive current meshes.
+# Hysteresis should be conservative: do not remesh while the tracked tip still
+# lies inside the previous refined ball. The May-19 diagnostic showed
+# hysteresis_fraction=0.25 remeshed too early (cycle 8 at x_tip≈0.014 for
+# r_tip=0.05), flattening alpha_bar; hysteresis_fraction=1.0 kept the mesh
+# stable and matched S1 through the same cycles.
 #
 # Mutual exclusion: must not be enabled together with sidecar_S1_dict
 # (both refine the fine mesh, would compose ambiguously). Runner enforces.
@@ -338,9 +353,25 @@ sidecar_S2_dict = {
     "tip_xy"          : (0.0, 0.0),   # initial / fallback tip when no x_tip history yet
     "r_tip_sample"    : 0.05,         # refinement radius (S2a; also fallback in S2b cycle 0)
     "n_refine_passes" : 1,            # 1 = standard 4× density boost
+    # ★ v4 (2026-05-20): refinement strategy
+    #   'cumulative' = add-only incremental refine on the CURRENT mesh; refined
+    #     zones along the crack path are NEVER coarsened, history transported by
+    #     parent index (lossless) → no repeated diffusion. (literature-converged)
+    #   'rebuild'    = legacy v2/v3.2 path (rebuild from original each remesh +
+    #     nearest-element transport). Kept for A/B comparison.
+    "refine_mode"     : "cumulative",
     # S2b only:
     "target_fraction" : 0.07,         # fraction of elements to refine (matches S1's r=0.05 footprint)
     "min_count"       : 50,           # safety floor on n_marked
+    "hysteresis_fraction": 1.0,        # remesh only after tip moves about one refine radius
+    "include_root_tip": False,         # S2a diagnostic option: union current tip + fixed root zone
+    "root_tip_xy"     : (0.0, 0.0),
+    "r_root_sample"   : 0.05,
+    "post_refine_reeq": {
+        "enable"  : False,             # extra fit after REFINE before fatigue-history update
+        "optimizer": "RPROP",
+        "n_epochs": 3000,
+    },
 }
 
 

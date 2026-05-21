@@ -69,6 +69,12 @@ def _rewrite_model_settings(config, runner_name: str) -> None:
         f.write(f"\nn_cycles: {fat.get('n_cycles')}")
         f.write(f"\ndisp_max: {fat.get('disp_max')}")
         f.write(f"\nalpha_T: {fat.get('alpha_T')}")
+        alh = fat.get('adaptive_lambda_hist', {})
+        f.write(f"\nadaptive_lambda_hist_enable: {alh.get('enable', False)}")
+        f.write(f"\nadaptive_lambda_hist_initial: {alh.get('initial', 1.0)}")
+        f.write(f"\nadaptive_lambda_hist_min: {alh.get('min', 1e-3)}")
+        f.write(f"\nadaptive_lambda_hist_max: {alh.get('max', 1.0)}")
+        f.write(f"\nadaptive_lambda_hist_smooth: {alh.get('smooth', 1.0)}")
         f.write(f"\n--- sidecar S2 (adaptive refinement) ---")
         f.write(f"\nS2_enable: {sdct.get('enable')}")
         f.write(f"\nS2_mode: {sdct.get('mode')}")
@@ -77,6 +83,13 @@ def _rewrite_model_settings(config, runner_name: str) -> None:
         f.write(f"\nS2_n_refine_passes: {sdct.get('n_refine_passes')}")
         f.write(f"\nS2_target_fraction: {sdct.get('target_fraction')}")
         f.write(f"\nS2_min_count: {sdct.get('min_count')}")
+        f.write(f"\nS2_include_root_tip: {sdct.get('include_root_tip')}")
+        f.write(f"\nS2_root_tip_xy: {sdct.get('root_tip_xy')}")
+        f.write(f"\nS2_r_root_sample: {sdct.get('r_root_sample')}")
+        reeq = sdct.get('post_refine_reeq', {})
+        f.write(f"\nS2_post_refine_reeq_enable: {reeq.get('enable', False)}")
+        f.write(f"\nS2_post_refine_reeq_optimizer: {reeq.get('optimizer', 'RPROP')}")
+        f.write(f"\nS2_post_refine_reeq_n_epochs: {reeq.get('n_epochs', 3000)}")
         f.write(f"\n[runner] {runner_name}")
 
 
@@ -93,14 +106,43 @@ def main():
                    help="S2b: fraction of elements to refine each cycle")
     p.add_argument("--min-count", type=int, default=50,
                    help="S2b: floor on n_marked elements (avoid degenerate masks)")
-    p.add_argument("--hysteresis-fraction", type=float, default=0.25,
-                   help="Skip re-refinement when |Δtip|_L1 < this × r_tip_sample (default 0.25)")
+    p.add_argument("--hysteresis-fraction", type=float, default=1.0,
+                   help="Skip re-refinement when |Δtip|_L1 < this × r_tip_sample (default 1.0)")
+    p.add_argument("--refine-mode", choices=["cumulative", "rebuild"], default="cumulative",
+                   help="cumulative=v4 add-only incremental refine (no diffusion); "
+                        "rebuild=legacy v2/v3.2 rebuild-from-original. Default cumulative.")
     p.add_argument("--plot-every", type=int, default=None,
                    help="Override fatigue_dict.plot_every_n_cycles (default config=20). "
                         "Set 1 for full per-cycle alpha snapshots (diagnostic plots).")
+    p.add_argument("--fracture-confirm-cycles", type=int, default=None,
+                   help="Override fatigue_dict.fracture_confirm_cycles for this run.")
     p.add_argument("--tip-x0", type=float, default=0.0,
                    help="Initial tip x (used for cycle 0 in S2a if no tip history yet)")
     p.add_argument("--tip-y0", type=float, default=0.0)
+    p.add_argument("--include-root-tip", action="store_true",
+                   help="S2a: refine the union of the current tip zone and a fixed root zone.")
+    p.add_argument("--root-tip-x", type=float, default=0.0,
+                   help="Fixed root-zone x coordinate for --include-root-tip.")
+    p.add_argument("--root-tip-y", type=float, default=0.0,
+                   help="Fixed root-zone y coordinate for --include-root-tip.")
+    p.add_argument("--r-root", type=float, default=None,
+                   help="Root refinement radius for --include-root-tip (default: --r-tip).")
+    p.add_argument("--tag-suffix", type=str, default="",
+                   help="Optional archive suffix for diagnostic reruns, e.g. diag_hf.")
+    p.add_argument("--adaptive-lambda-hist", action="store_true",
+                   help="Enable Wang-style REFINE-time adaptive weighting for E_hist.")
+    p.add_argument("--lambda-hist-min", type=float, default=1e-3,
+                   help="Lower clip for adaptive lambda_hist.")
+    p.add_argument("--lambda-hist-max", type=float, default=1.0,
+                   help="Upper clip for adaptive lambda_hist.")
+    p.add_argument("--lambda-hist-smooth", type=float, default=1.0,
+                   help="Moving-average update fraction for lambda_hist (1.0 = no smoothing).")
+    p.add_argument("--lambda-hist-initial", type=float, default=1.0,
+                   help="Initial lambda_hist before the first adaptive update.")
+    p.add_argument("--post-refine-reeq", action="store_true",
+                   help="After each S2 REFINE, run an extra fit before fatigue-history update.")
+    p.add_argument("--post-refine-reeq-epochs", type=int, default=3000,
+                   help="Max epochs for the post-REFINE re-equilibration fit.")
     p.add_argument("--force-cpu", action="store_true")
     args = p.parse_args()
 
@@ -141,8 +183,29 @@ def main():
     config.sidecar_S2_dict["target_fraction"] = float(args.target_fraction)
     config.sidecar_S2_dict["min_count"] = int(args.min_count)
     config.sidecar_S2_dict["hysteresis_fraction"] = float(args.hysteresis_fraction)
+    config.sidecar_S2_dict["refine_mode"] = args.refine_mode
+    config.sidecar_S2_dict["include_root_tip"] = bool(args.include_root_tip)
+    config.sidecar_S2_dict["root_tip_xy"] = (float(args.root_tip_x), float(args.root_tip_y))
+    config.sidecar_S2_dict["r_root_sample"] = (
+        float(args.r_root) if args.r_root is not None else float(args.r_tip)
+    )
+    config.sidecar_S2_dict["post_refine_reeq"] = {
+        "enable": bool(args.post_refine_reeq),
+        "optimizer": "RPROP",
+        "n_epochs": int(args.post_refine_reeq_epochs),
+    }
     if args.plot_every is not None:
         config.fatigue_dict["plot_every_n_cycles"] = int(args.plot_every)
+    if args.fracture_confirm_cycles is not None:
+        config.fatigue_dict["fracture_confirm_cycles"] = int(args.fracture_confirm_cycles)
+    config.fatigue_dict["adaptive_lambda_hist"] = {
+        "enable": bool(args.adaptive_lambda_hist),
+        "initial": float(args.lambda_hist_initial),
+        "min": float(args.lambda_hist_min),
+        "max": float(args.lambda_hist_max),
+        "smooth": float(args.lambda_hist_smooth),
+        "eps": 1e-30,
+    }
 
     fat = config.fatigue_dict
     fatigue_tag = (
@@ -152,8 +215,19 @@ def main():
     )
     if args.mode == "tip_following":
         S2_suffix = f"_sidecarS2_{_mode_short(args.mode)}_rt{args.r_tip}_np{args.n_passes}"
+        if args.include_root_tip:
+            S2_suffix += f"_rootrt{config.sidecar_S2_dict['r_root_sample']}"
     else:
         S2_suffix = f"_sidecarS2_{_mode_short(args.mode)}_tf{args.target_fraction}_np{args.n_passes}"
+    if args.tag_suffix.strip():
+        _tag = args.tag_suffix.strip().replace(" ", "_")
+        if not _tag.startswith("_"):
+            _tag = "_" + _tag
+        S2_suffix += _tag
+    elif args.adaptive_lambda_hist:
+        S2_suffix += "_adapthist"
+    if args.post_refine_reeq:
+        S2_suffix += f"_reeq{args.post_refine_reeq_epochs}"
     dir_name = (
         "hl_" + str(config.network_dict["hidden_layers"])
         + "_Neurons_" + str(config.network_dict["neurons"])
@@ -185,9 +259,24 @@ def main():
     if args.mode == "tip_following":
         print(f"  r_tip     = {args.r_tip} | n_passes = {args.n_passes}")
         print(f"  tip0      = ({args.tip_x0}, {args.tip_y0})  (first-cycle fallback)")
+        if args.include_root_tip:
+            print(
+                f"  root union= ({args.root_tip_x}, {args.root_tip_y}) | "
+                f"r_root = {config.sidecar_S2_dict['r_root_sample']}"
+            )
     else:
         print(f"  target_fraction = {args.target_fraction} | r_tip (cycle-0 fallback) = {args.r_tip}")
         print(f"  min_count = {args.min_count} | n_passes = {args.n_passes}")
+    if args.adaptive_lambda_hist:
+        print(
+            f"  λ_hist   = adaptive | initial={args.lambda_hist_initial} | "
+            f"clip=[{args.lambda_hist_min}, {args.lambda_hist_max}] | "
+            f"smooth={args.lambda_hist_smooth}"
+        )
+    else:
+        print("  λ_hist   = 1.0 (fixed)")
+    if args.post_refine_reeq:
+        print(f"  post-REFINE reeq = RPROP max_epochs={args.post_refine_reeq_epochs}")
     print(f"  device    = {config.device}")
     print(f"  archive   = {dir_name}")
     print(f"  full path = {config.model_path}")
