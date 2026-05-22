@@ -63,6 +63,7 @@
 - **代码进 git，结论进 memory**。不 commit 论文草稿、实验结论、生成数据。
 - **不覆盖** 别人的 shared_research_log entry。
 - **杀进程前三重验证**（cmdline + elapsed + cwd），默认假设其他窗口也在跑。
+- **不要在 Mac 跑训练 smoke**。Mac 只做轻量 import/unit sanity；任何需要进入 training loop 的 smoke、baseline、sweep、production run 都丢到 Taobo GPU / CSD3 / Windows producer，并先检查目标 GPU 是否空闲。
 
 ---
 
@@ -70,9 +71,9 @@
 
 | 机器 | 角色 | 权限边界 |
 |---|---|---|
-| Mac-PIDL | Dev | 可改所有 source/config/docs |
+| Mac-PIDL | Dev | 可改所有 source/config/docs；不跑训练 smoke |
 | Windows-PIDL | Producer | 只跑 case + 加新 runner + append log |
-| CSD3 | HPC Producer | GPU 训练 + append log |
+| Taobo GPU / CSD3 | GPU Producer | 训练 smoke / GPU 训练 + append log |
 
 详见 `docs/workflow_rules.md`。
 

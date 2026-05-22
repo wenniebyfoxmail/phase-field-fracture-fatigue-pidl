@@ -8,19 +8,21 @@ follow these rules.
 
 | Machine | Role | Responsibility |
 |---|---|---|
-| **Mac-PIDL** | **Dev** | All source code changes. Interactive experiments. Analysis & writing. Local Claude memory. |
+| **Mac-PIDL** | **Dev** | All source code changes. Analysis & writing. Local Claude memory. Only lightweight import/unit sanity; no training smoke. |
 | **Windows-PIDL** | **Producer** | Pull Mac's code. Run training cases. Report results via `docs/shared_research_log.md`. May add NEW runner scripts, but must not modify core. |
 | **Windows-FEM** | **Reference producer** | GRIPHFiTH FEM runs. Produces ground-truth data in `~/Downloads/_pidl_handoff_*/`. Reports via shared_research_log. |
+| **Taobo GPU / CSD3** | **GPU Producer** | Run training smoke, GPU baselines, sweeps, and production cases after checking GPU occupancy. |
 
 ## 2. Mac-PIDL (dev)
 
 ### What Mac CAN do
 - Modify anything under `source/`, `SENS_tensile/`, `docs/`, `fem/`
-- Commit + push freely after local smoke test
+- Commit + push after lightweight import/unit sanity and, when needed, a producer-side smoke
 - Refactor / add features / change signatures — but see §5 "red lines"
 
 ### What Mac MUST do
-- **Before push**: local smoke test (at minimum: `python -c "from source.compute_energy import get_psi_plus_per_elem"`-level import test; ideally run 1-2 training cycles)
+- **Before push**: run only lightweight import/unit sanity on Mac, e.g. `python -c "from source.compute_energy import get_psi_plus_per_elem"`. Do **not** run training-loop smoke on Mac.
+- **Training smoke placement**: any command that enters `main.py` training, even `--n-cycles 1` or `--n-cycles 30`, must run on Taobo GPU / CSD3 / Windows-PIDL after checking the target GPU is free. Record PID, GPU id, command, cwd, and log path.
 - **Commit message**: state whether the change is **"safe during running trainings"** or **"needs coordination"**. Examples:
 
   ```
