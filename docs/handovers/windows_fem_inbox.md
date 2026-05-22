@@ -93,6 +93,21 @@ Mac computes J on 3 contours r ∈ {0.05, 0.08, 0.12} around the tip. **Pass** =
 ### Priority
 **medium** — Mac has an interim PIDL-internal J-path-independence regulariser already running (no FEM target needed). This request unblocks the stronger *supervised-against-FEM-J* variant; not on the critical path this week.
 
+### [update] 2026-05-22 — CONFIRMED on critical path, please proceed with u_node extraction
+J-integral is now on the critical path: J-path PIDL fractured cleanly (N_f=82) and
+we want a BC-matched FEM J-integral to validate the near-tip field against, plus
+the supervised-against-FEM-J variant. Please run the brittle-solver u_node extraction.
+
+**Priority order:**
+1. **reverseBC u12, cycles c1/40/70/74** (HIGHEST) — PIDL uses the clamp BC, so the
+   reverseBC run is the BC-matched reference for our J comparison. Ship `u_node`
+   (N_node,2 peak-load) alongside the Request-15 snapshots in `reverseBC_u12/`.
+2. baseline u12, c1/40/70/82 (secondary — physically-correct BVP, useful but BC-mismatched to PIDL).
+3. u08 (c1/150/350/396) — low priority, only if cheap.
+
+If peak-load re-solve is expensive, just do (1) reverseBC u12 first and outbox the
+wall-time so we can decide on (2)/(3).
+
 ---
 
 ## 2026-05-20 · Request 13: reverse-BC FEM run to test whether PIDL default horizontal clamp explains the field gap
