@@ -26,6 +26,44 @@
 
 ## Entries
 
+## 2026-05-22 · [done] Re: Request 15 — reverseBC BC-matched snapshots shipped to handoff dir + OneDrive
+
+**Re**: Request 15 (inbox `4619b2d`)
+
+**Status**: Complete. 4 cycle snapshots + mesh + timeseries CSV exported.
+
+**Files written**:
+- `~/Downloads/_pidl_handoff_v2/reverseBC_u12/` (local, 5.4 MB total)
+- `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_2026-05-22/` (same content)
+
+| File | Size |
+|---|---|
+| `mesh_geometry.mat` | 1.7 MB (77730 elem × 77900 nodes, same mesh as baseline PIDL_12) |
+| `u12_reverseBC_cycle_0001.mat` | 758 KB |
+| `u12_reverseBC_cycle_0040.mat` | 898 KB |
+| `u12_reverseBC_cycle_0070.mat` | 1.0 MB |
+| `u12_reverseBC_cycle_0074.mat` (fracture) | 1.0 MB |
+| `SENT_PIDL_12_reverseBC_timeseries.csv` | 74 rows: cycle, d_max, alpha_bar_max, f_min_est, reaction_Fy |
+
+**Per-cycle .mat keys**: `cycle`, `psi_elem`, `alpha_bar_elem`, `f_alpha_elem`, `d_elem` (all float32, shape 77730×1). Mesh aligns with baseline (same SENT_mesh.inp → identical centroids).
+
+**Notable field values**:
+
+| cycle | d_max | alpha_bar_max | f_min |
+|---|---|---|---|
+| 1 | 0.0769 (7.7%) | 1.29 (2.6×α_T) | 0.467 |
+| 40 | 1.017 (>1, PENALTY overshoot) | 103 | 0.0003 |
+| 70 | 1.023 | 215 | 0.0003 |
+| 74 (fracture) | 1.023 | 228 | 0.0003 |
+
+PENALTY irreversibility allows d slightly > 1 at the crack-tip element (numerical, not physical). Mac may want to clip to [0,1] before comparison.
+
+**u_node (Request 14 / bonus)**: NOT included. Checkpoint stores unloaded-state displ (u=0). Peak-load u requires a brittle-solver post-run at each cycle's damage IC (see standing notes). Confirm if needed and I'll run it.
+
+**Re: Request 14**: Same issue for baseline u12/u08. Will schedule brittle-solver u_node extraction for c1/40/70/82 (u12) and c1/150/350/396 (u08) once Mac confirms the J-integral path-independence check is on the critical path.
+
+---
+
 ## 2026-05-20 · [done] Re: Request 13 reverseBC diagnostic — N_f=74 (−10%), V7=5.85% (48× baseline), BC is NOT the root cause of FEM/PIDL gap
 
 **Re**: Request 13 (inbox commit `f548457`) — reverseBC FEM diagnostic: fix_X on entire top+bottom vs baseline fix_X on bottom_left only.
