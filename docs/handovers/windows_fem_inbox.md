@@ -27,6 +27,74 @@
 
 ## Active Requests
 
+## 2026-05-21 · Request 15: ship reverseBC snapshots to handoff dir → BC-matched FEM reference for PIDL field comparison
+
+**Goal**: Mac now has a strong PIDL result (J-path-independence regulariser fractures cleanly, N_f=82) and did a field-level comparison vs FEM. But the comparison used the **baseline FEM** (`_pidl_handoff_v2/.../u12_cycle_*.mat`, fix_X bottom_left, traction-free laterals) while **PIDL's default BC clamps u_x=0 on top+bottom** (NN correction vanishes there + cosθ=0) — i.e. PIDL solves the **reverseBC** BVP, not the baseline one. So the comparison is BC-mismatched. The reverseBC FEM run (Request 13, outbox `2ce76ec`, N_f=74) is the **BC-matched** reference we actually need.
+
+### Ask
+The reverseBC run already produced 74 `psi_fields/cycle_*.mat` in
+`Scripts/fatigue_fracture/SENT_PIDL_12_reverseBC/`. Please ship the per-element
+field snapshots + mesh to a handoff dir so Mac can load them, mirroring the
+baseline schema:
+
+- **Destination**: `~/Downloads/_pidl_handoff_v2/reverseBC_u12/` (+ usual OneDrive/mirror copy)
+- **Cycles**: c1, c40, c70, and **c74 (fracture)** — minimum. (More is fine; these 4 mirror the baseline's c1/c40/c70/c82 sampling for a like-for-like field comparison.)
+- **Fields per cycle** (same keys as baseline snapshots): `psi_elem`, `alpha_bar_elem`, `f_alpha_elem`, `d_elem`.
+- **Mesh**: `mesh_geometry.mat` (`element_centroids`, `connectivity`, `node_coords`) — confirm it's the SAME mesh as baseline (so PIDL/FEM centroids align); if reverseBC used a different mesh, ship its own.
+- **Bonus (ties Request 14)**: if cheap, add `u_node` (N_node,2) per cycle so we can also compute the BC-matched FEM J-integral.
+
+### Note on cycle alignment
+PIDL J-path fractures at c82, reverseBC FEM at c74. For the comparison Mac will
+align by fraction-of-life / crack position, not absolute cycle — so the fracture
+snapshot (c74) is the important endpoint, plus a couple of mid-life cycles.
+
+### Acceptance
+Mac re-runs the field comparison (ψ⁺ max/p99/profile, ᾱ_max, α/d band, crack-tip x)
+against reverseBC instead of baseline. Expect the qualitative findings (PIDL ψ⁺
+bounded vs FEM singular, broader band, lower ᾱ) to persist — this run confirms they
+are not BC artifacts.
+
+### Priority
+**medium-high** — unblocks turning the provisional J-path field comparison into a
+paper-grade BC-matched result.
+
+---
+
+## 2026-05-20 · Request 14: export nodal displacement (u_x, u_y) at existing snapshot cycles → enables true FEM J-integral
+
+**Goal**: Make a *path-independent* fracture metric (J-integral / energy release rate G) available as a FEM reference. Mac wants to supervise/validate PIDL against J instead of pointwise ψ⁺, because the pointwise ψ⁺ singularity at the crack tip is structurally unlearnable by a smooth NN (confirmed: FEM has only 8/77730 elements with ψ⁺>0.5 at c1; a smooth NN cannot reproduce that spike, so pointwise-ψ⁺ supervision drives spurious tip degradation). J is a finite, contour-integrated scalar — learnable and physically meaningful.
+
+**Blocker this resolves**: current FEM dump (`u12_cycle_*.mat`, `u08_cycle_*.mat`) stores only element scalars (`psi_elem`, `alpha_bar_elem`, `f_alpha_elem`, `d_elem`). It does **not** store nodal displacement or Gauss-point stress, so the J-integral cannot be computed on the FEM side. (Documented as G2-followup in `compute_J_integral.py:42-44`.)
+
+### What to export
+
+For the **same runs and same cycles already exported** (no new simulation needed — just dump more fields from those existing solutions):
+
+- **u12** (Umax=0.12): cycles 1, 40, 70, 82
+- **u08** (Umax=0.08): cycles 1, 150, 350, 396
+
+Per cycle, add to the existing `.mat` (or a sibling `*_disp.mat`):
+
+| field | shape | meaning |
+|---|---|---|
+| `u_node` | (N_node, 2) | nodal displacement (u_x, u_y), **same node ordering as `mesh_geometry.mat`** |
+
+**Optional but valuable** (if cheap to dump): Gauss-point stress `sig_gp` (N_elem, n_gp, 3) = (σ_xx, σ_yy, σ_xy) and GP coords `xy_gp`. If omitted, Mac will recompute σ from `u_node` + mesh via shape-function gradients + Hooke (plane strain, E/ν from PCC params), which is adequate for J outside the damage band.
+
+### Mesh
+Reuse existing `mesh_geometry.mat` — must confirm `u_node` row order matches its node list.
+
+### Expected outputs
+Drop alongside existing snapshots in `psi_snapshots_for_agent/` (and mirror to OneDrive handoff as usual). Either extend the existing per-cycle `.mat` files or add `u12_cycle_XXXX_disp.mat`.
+
+### Acceptance criteria
+Mac computes J on 3 contours r ∈ {0.05, 0.08, 0.12} around the tip. **Pass** = J spread across the 3 radii < ~15% at an early cycle (c1 or c40), confirming path-independence and a valid FEM J reference. Large spread → contour radii or node-ordering issue to debug jointly.
+
+### Priority
+**medium** — Mac has an interim PIDL-internal J-path-independence regulariser already running (no FEM target needed). This request unblocks the stronger *supervised-against-FEM-J* variant; not on the critical path this week.
+
+---
+
 ## 2026-05-20 · Request 13: reverse-BC FEM run to test whether PIDL default horizontal clamp explains the field gap
 
 **Goal**: Run a FEM controlled variant that deliberately matches the *old PIDL default essential BC* instead of the normal GRIPHFiTH anchor BC. This is a fast discriminator for the current Mac-PIDL question: does the FEM/PIDL gap mainly come from the horizontal-BC mismatch, or from PIDL representation/localization after BC effects are controlled?
