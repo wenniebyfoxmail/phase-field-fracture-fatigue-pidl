@@ -35,7 +35,8 @@ import torch.nn as nn
 
 # Computes the total strain energy, damage energy and irreversibility penalty
 def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn=None,
-                   f_fatigue=1.0, crack_tip_weights=None):
+                   f_fatigue=1.0, crack_tip_weights=None,
+                   element_subset=None, importance_weights=None):
     """
     计算总能量
 
@@ -49,46 +50,49 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
     ★ 新增参数 crack_tip_weights（方向3：裂尖自适应损失加权）：
         - None（默认）：均匀权重，与原始完全一致
         - Tensor (n_elem,)：逐元素权重 w_e ≥ 1，裂尖区域 w 大
-          w_e = 1 + β·(ψ⁺_e / ψ⁺_mean)^p
-          效果：强制 NN 把更多"表达能力"分配给裂尖，改善 Kt 偏低问题
-          不改变物理模型，只改变优化优先级
+
+    ★ 新增参数 element_subset + importance_weights（C6 δ-1 元素级重要性采样）：
+        element_subset   : LongTensor (K,) — 采样的单元索引
+        importance_weights : Tensor (K,) — IS 权重 1/p_e (未归一化)
+        loss = mean(importance_weights * E[element_subset])
+        E[loss] ∝ Σ_e E_e（无偏估计，与全批成比例）
+        element_subset=None → 退化为原始全批行为
 
     参数：
     ------
     inp : torch.Tensor, shape (n_points, 2)
-        节点/高斯点坐标 (x, y)
     u, v : torch.Tensor, shape (n_points,)
-        位移分量
     alpha : torch.Tensor, shape (n_points,)
-        相场变量（当前步）
     hist_alpha : torch.Tensor, shape (n_points,)
-        相场历史（上一步），用于不可逆性约束
-    matprop : MaterialProperties
-        材料属性
-    pffmodel : PFFModel
-        相场模型（AT1/AT2）
-    area_elem : torch.Tensor, shape (n_elements,)
-        每个单元的面积
-    T_conn : torch.Tensor or None
-        单元连接关系，shape (n_elements, 3)
-    f_fatigue : float or torch.Tensor, shape (n_elements,)   ← ★ 新增
-        疲劳退化函数值。默认 1.0 = 无疲劳（完全等价原始代码）
-    crack_tip_weights : torch.Tensor or None, shape (n_elements,)   ← ★ 新增
-        裂尖自适应权重。None = 均匀（完全等价原始代码）
+    matprop, pffmodel, area_elem, T_conn : 同原始
+    f_fatigue : float or Tensor (n_elements,)
+    crack_tip_weights : Tensor (n_elements,) or None
+    element_subset : LongTensor (K,) or None   ← ★ δ-1
+    importance_weights : Tensor (K,) or None   ← ★ δ-1
 
     返回：
     ------
-    E_el_sum, E_d_sum, E_hist_sum : torch.Tensor  （与原始接口相同）
+    E_el_sum, E_d_sum, E_hist_sum : torch.Tensor
     """
-    # 计算每个单元的能量
     E_el, E_d, E_hist_penalty = compute_energy_per_elem(
         inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn,
-        f_fatigue=f_fatigue   # ★ 传入退化函数
+        f_fatigue=f_fatigue
     )
 
-    # ★ 方向3：裂尖自适应加权（crack_tip_weights=None 时完全等价原始代码）
-    if crack_tip_weights is not None:
-        # w_e ≥ 1，裂尖附近权重大 → 优化优先级高
+    # ★ δ-1 element-level IS: weighted mean over sampled subset
+    if element_subset is not None:
+        E_el_sub   = E_el[element_subset]
+        E_d_sub    = E_d[element_subset]
+        E_hist_sub = E_hist_penalty[element_subset]
+        if importance_weights is not None:
+            E_el_sum   = torch.mean(importance_weights * E_el_sub)
+            E_d_sum    = torch.mean(importance_weights * E_d_sub)
+            E_hist_sum = torch.mean(importance_weights * E_hist_sub)
+        else:
+            E_el_sum   = torch.mean(E_el_sub)
+            E_d_sum    = torch.mean(E_d_sub)
+            E_hist_sum = torch.mean(E_hist_sub)
+    elif crack_tip_weights is not None:
         E_el_sum   = torch.sum(crack_tip_weights * E_el)
         E_d_sum    = torch.sum(crack_tip_weights * E_d)
         E_hist_sum = torch.sum(crack_tip_weights * E_hist_penalty)
