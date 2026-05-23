@@ -120,3 +120,33 @@ The canonical branch spec lives in:
   - **Launch S2a N=100 seed=1 only.** Expert: defer seed=2/3 until first dynamic REFINE event confirms the moving-tip path is healthy (predicted ~cycle 10 from S1 ref x_tip = 0.023 at cycle 10).
   - Hold S2b N=100 entirely until S2a single-seed verdict is in — S2b adds the score-mask variable on top of the dynamic mechanism, harder to interpret in isolation.
   - Cancel the prior plan to launch S1 + C4 + Fourier stack until S2a-alone trajectory is collected — order of evidence: confirm dynamic mechanism first, then stack questions.
+
+## 2026-05-19 · S2 v3.2 — redefine dynamic remesh hysteresis
+
+- **Decision**: redefine the S2a production policy from `hysteresis_fraction=0.25` to `hysteresis_fraction=1.0`. Keep the CLI override for diagnostics. Do not promote root+tip union refinement.
+- **Based on**: `docs/sidecar_true_adaptive_sampling_runs.md` entry `asamp_S2a_v3.2_transport_and_hysteresis_diagnostics`, especially the paired N20 Taobo diagnostics:
+  - `diag_S2a_v32_N20_histfat_gpu2_20260518.log` (`h=0.25`)
+  - `hyst1_S2a_v32_N20_gpu5_20260519.log` (`h=1.0`)
+  - `union_S2a_v32_N20_root_tip_gpu4_20260519.log` (root+tip negative control)
+- **Reason**:
+  - v3.2 conservative `hist_alpha` transport and nearest-element `hist_fat` transport preserve history through REFINE; the old plateau is not a reset bug.
+  - With `h=0.25`, the first dynamic remesh fires at cycle 8 when the tip has moved only `x_tip≈0.014`, still deep inside the existing `r_tip=0.05` refined ball. That over-eager mesh rebuild flattens `alpha_bar_max` at `~2.6524`.
+  - With `h=1.0`, S2 skips that premature remesh and matches S1 seed 1 exactly through cycle 17. The first dynamic remesh occurs at cycle 18 when `x_tip≈0.0500`; after that, the N20 smoke ends with a small c19 gap (`4.2489` vs S1 `4.5003`, -5.6%) rather than the old c19 failure (`3.0310`, -32.7%).
+  - Root+tip union keeps the root zone refined but still plateaus (`c19≈2.6552`), so the fix is mesh stability, not adding a second refinement zone.
+- **Implication**:
+  - Production S2a should remesh only when the tracked tip has moved about one refine radius from the last refinement center.
+  - The next valid production run is a clean N100 S2a seed 1 with the new default (`h=1.0`), watching whether the post-remesh gap remains bounded or compounds after multiple dynamic remeshes.
+  - S2b remains on hold until S2a h=1.0 clears the dynamic-remesh gate.
+
+## 2026-05-20 · adaptive λ_hist opened as a diagnostic intervention
+
+- **Decision**: open a narrow N40 S2a experiment with adaptive `λ_hist`; do not change the default S2 objective.
+- **Based on**: post-REFINE gradient-norm diagnostic from the fixed-λ S2a N100 resume at cycle 29:
+  `||grad E_hist||_2=2.18e3` vs `||grad E_el||_2=4.57` and `||grad E_d||_2=8.43`.
+- **Reason**:
+  - The dynamic-remesh gap appears immediately after REFINE even when history transport is mostly preserved, so optimizer conditioning is now a plausible bottleneck.
+  - The Wang 2020 takeaway is about gradient imbalance, not raw loss magnitudes; balancing the `E_hist` gradient directly is the least invasive test.
+  - `λ_hist` is clipped to `[1e-3, 1]`, so it can only reduce an over-dominant history penalty and cannot amplify it beyond the original physics.
+- **Implication**:
+  - Run only N40 first, warm-started from the validated N20 `h=1.0` checkpoint, and inspect the first adaptive update around cycle 29 before promoting any longer horizon.
+  - Treat this as a diagnostic branch layered on S2a, not a replacement for the clean fixed-λ S2a production baseline.

@@ -224,3 +224,60 @@ Copy this block for each completed run.
   3. cycle 50/100 ᾱ_max ≥ S1 ref at same cycle (S1 cycle 50 = 9.18 ± 1.39); cycle 80+ Kt jump (fracture) at or near S1 N_f = 80-83
 - **Status**: cycle 1 done, ᾱ_max = 1.0712 (= S1 cycle 1 exact), Kt = 8.85 ✓
 - **Monitor**: background task `bvp7xf9ch` watching for 2nd REFINE log line (= first dynamic refine); ETA ~25 min from launch
+
+## 2026-05-18/19 · asamp_S2a_v3.2_transport_and_hysteresis_diagnostics
+
+- **Code state**: branch `claude/sidecar-adaptive-sampling`, HEAD `3e78f92` plus local diagnostic prints and the hysteresis default patch. v3.2 changes `hist_alpha` transport from nearest-node/NN re-eval to conservative L2 edge-lineage transport plus an NN-max floor. Diagnostic prints only report `hist_fat` transport and per-cycle `Δhist_fat`; they do not change the physics loss.
+- **Sampler**: S2a `tip_following`, `r_tip=0.05`, `n_passes=1`, seed 1, `Umax=0.12`.
+- **Static-regime gate**: N=5 v3.2 passed exactly against S1 seed 1:
+  | cycle | S1/S2 v3.2 ᾱ_max | Kt |
+  |-------|------------------:|---:|
+  | 0 | 0.5092 | 8.74 |
+  | 1 | 1.0712 | 8.85 |
+  | 2 | 1.6308 | 8.91 |
+  | 3 | 2.2080 | 8.75 |
+  | 4 | 2.4709 | 9.15 |
+- **Diagnostic A — old hysteresis (`hysteresis_fraction=0.25`, threshold 0.0125)**:
+  - Log: `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl/SENS_tensile/diag_S2a_v32_N20_histfat_gpu2_20260518.log`
+  - First dynamic REFINE at cycle 8 preserved history values:
+    `hist_fat old max=2.6524@(+0.0043,-0.0007) -> new max=2.6524@(+0.0043,-0.0007)`.
+  - But global ᾱ_max flattened after remesh:
+    | cycle | S1 seed1 ᾱ_max | S2 v3.2 h=0.25 ᾱ_max |
+    |-------|----------------:|----------------------:|
+    | 7 | 2.6524 | 2.6524 |
+    | 8 | 2.8793 | 2.6524 |
+    | 9 | 3.0978 | 2.6524 |
+    | 10 | 3.2782 | 2.6524 |
+    | 19 | 4.5003 | 3.0310 |
+  - Interpretation: not a `hist_alpha` or `hist_fat` reset. The remesh happened while the tracked tip was still inside the original refined ball (`x_tip≈0.014` vs `r_tip=0.05`), and the mesh/optimizer path changed too early.
+- **Diagnostic B — root+tip union refinement (`h=0.25`, root zone kept refined)**:
+  - Log: `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl/SENS_tensile/union_S2a_v32_N20_root_tip_gpu4_20260519.log`
+  - Result: negative. Keeping both root and current-tip zones refined did **not** restore accumulation; final cycle 19 stayed near `ᾱ_max=2.6552`.
+  - Interpretation: the plateau was not caused by losing root-zone density.
+- **Diagnostic C — conservative hysteresis (`hysteresis_fraction=1.0`, threshold 0.05)**:
+  - Log: `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl/SENS_tensile/hyst1_S2a_v32_N20_gpu5_20260519.log`
+  - Key behavior: cycles 8, 10, and 15 SKIP-REFINE while the tip remains inside the existing refined ball. First dynamic remesh is delayed until cycle 18, when `x_tip≈0.0500`.
+  - Result: exact S1 match through cycle 17; small post-remesh gap after cycle 18:
+    | cycle | S1 seed1 ᾱ_max | S2 v3.2 h=1.0 ᾱ_max | note |
+    |-------|----------------:|---------------------:|------|
+    | 7 | 2.6524 | 2.6524 | exact |
+    | 8 | 2.8793 | 2.8793 | exact |
+    | 9 | 3.0978 | 3.0978 | exact |
+    | 10 | 3.2782 | 3.2782 | exact |
+    | 11 | 3.4317 | 3.4317 | exact |
+    | 17 | 4.2465 | 4.2465 | exact, before first dynamic remesh |
+    | 18 | 4.3820 | 4.2475 | -3.1%, first dynamic remesh |
+    | 19 | 4.5003 | 4.2489 | -5.6%, still far better than h=0.25 |
+- **Verdict**: **S2 v3.2 transport is healthy; the major bad N20 result was an over-eager remesh policy.** Production default changed from `hysteresis_fraction=0.25` to `1.0`. Root+tip union is not the fix. `h=1.0` eliminates the c8 plateau and matches S1 exactly until the first truly necessary remesh at c18; after that remesh a small gap reappears. Next gate: run a clean N100 S2a seed 1 with the new default and monitor whether the post-remesh gap remains bounded or compounds.
+
+## 2026-05-20 · asamp_S2a_N40_adaptive_lambda_hist (launched)
+
+- **Code state**: branch `claude/sidecar-adaptive-sampling` plus local adaptive-λ patch. The default physics loss is unchanged unless `fatigue_dict["adaptive_lambda_hist"]["enable"] = True`; the N40 runner enables it explicitly.
+- **Motivation**: Wang-style PINN gradient-pathology diagnostic at S2 cycle 29 showed post-REFINE `E_hist` parameter-gradient norm dominating the physical terms:
+  `grad_l2(E_el)=4.57`, `grad_l2(E_d)=8.43`, `grad_l2(E_hist)=2182`. This suggests the post-remesh optimizer is dominated by the irreversibility penalty rather than the elastic/dissipation physics terms.
+- **Mechanism**: after each S2 REFINE, compute
+  `lambda_hat = max(||grad E_el||_2, ||grad E_d||_2) / ||grad E_hist||_2`, clipped to `[1e-3, 1]`, then use `log10(E_el + E_d + lambda_hist * E_hist)` for subsequent fit cycles. With the cycle-29 diagnostic numbers, the first update would be about `3.86e-3`.
+- **Run**: Taobo GPU3, PID `1515969`, log `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl/SENS_tensile/S2a_v32_N40_adapthist_gpu3_20260520_065714.log`.
+- **Archive**: `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl/SENS_tensile/hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N40_R0.0_Umax0.12_sidecarS2_tipfol_rt0.05_np1_adapthist/`.
+- **Warm start**: copied from the completed N20 `hyst1_diag` archive and patched `checkpoint_step_19.pt` with `_S2_state` so S2 resumes safely on the current refined mesh. Startup confirmed: restored `40761` nodes / `81300` elements, `swaps=2`, `skips=17`, `tip_at_refine=(0.05004344880580902, 0.0)`, then continued `step 20/39`.
+- **Watch points**: first adaptive λ update should occur at the next REFINE, expected near cycle 29. Check the log for `[AdaptiveLambdaHist cycle 29]` and then compare `alpha_bar_max` trajectory against the concurrent fixed-λ N100 diagnostic and the N20 `h=1.0` reference.
