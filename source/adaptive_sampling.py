@@ -47,7 +47,7 @@ from __future__ import annotations
 
 import torch
 
-from compute_energy import compute_energy_per_elem
+from residual_score import compute_residual_score, normalized_sampling_weights
 
 
 def compute_adaptive_weights(inp, u, v, alpha, hist_alpha,
@@ -112,26 +112,12 @@ def compute_adaptive_weights(inp, u, v, alpha, hist_alpha,
             f"non-mean-normalized weights — see model_train.py)."
         )
 
-    with torch.no_grad():
-        E_el_e, E_d_e, _E_hist_e = compute_energy_per_elem(
-            inp, u, v, alpha, hist_alpha,
-            matprop, pffmodel, area_elem, T_conn=T_conn,
-            f_fatigue=f_fatigue,
-        )
-
-    # Per-element Deep Ritz residual proxy: r_e = |E_el| + |E_d|.
-    # E_hist (irreversibility penalty) is intentionally NOT included — see
-    # module-level docstring for rationale. Detach so gradients don't flow into
-    # the next cycle's training through the weights.
-    r_e = (E_el_e.abs() + E_d_e.abs()).detach()
-
-    # Normalize by element mean (clamped against zero division for pristine cycles)
-    r_mean = r_e.mean().clamp(min=1e-30)
-
-    # Raw weights: w_e = 1 + β · (r_e / r_mean)^p  (≥ 1 everywhere; uniform when β=0).
-    weights = 1.0 + beta * (r_e / r_mean).pow(power)
-
-    # Mean-1 normalization: keeps total loss scale invariant to β so that
-    # changing β only changes spatial weighting, not the LBFGS/RPROP step magnitude.
-    weights = weights / weights.mean().clamp(min=1e-30)
-    return weights
+    score = compute_residual_score(
+        inp, u, v, alpha, hist_alpha,
+        matprop, pffmodel, area_elem, T_conn=T_conn,
+        f_fatigue=f_fatigue,
+        include_hist=False,
+    )
+    return normalized_sampling_weights(
+        score.score_integral, beta=beta, power=power, eps=1e-30
+    )

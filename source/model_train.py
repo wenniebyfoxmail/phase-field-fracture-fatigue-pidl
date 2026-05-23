@@ -1418,17 +1418,16 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 # elements by local error density for next cycle's top-K mask.
                 if sidecar_S2_dict.get('mode') == 'score_driven':
                     from sidecar_sampling import aggregate_to_original as _agg_to_orig
-                    from compute_energy import compute_energy_per_elem as _ce_per
+                    from residual_score import compute_residual_score as _res_score
                     with torch.no_grad():
                         _u_s2, _v_s2, _a_s2 = field_comp.fieldCalculation(inp)
-                        _E_el_e_s2, _E_d_e_s2, _ = _ce_per(
+                        _score_s2 = _res_score(
                             inp, _u_s2, _v_s2, _a_s2, hist_alpha,
                             matprop, pffmodel, area_T, T_conn=T_conn,
                             f_fatigue=f_fatigue,
+                            include_hist=False,
                         )
-                    _score_integ = (_E_el_e_s2.abs() + _E_d_e_s2.abs()).detach().cpu().numpy()
-                    _area_safe = np.clip(_area_np_cur, 1e-30, None)
-                    _score_density_cur = _score_integ / _area_safe
+                    _score_density_cur = _score_s2.score_density.detach().cpu().numpy()
                     if sidecar_S2_dict.get('refine_mode', 'cumulative') == 'cumulative':
                         # v4: cumulative_refine_step selects top-K directly on the
                         # CURRENT mesh, so keep the density score in current-mesh
