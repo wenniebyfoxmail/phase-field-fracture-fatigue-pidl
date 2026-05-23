@@ -293,3 +293,16 @@ Copy this block for each completed run.
 - **v4 add-only N20**: Taobo GPU5, PID `1922289`, log `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-adapthist-af5a533/SENS_tensile/logs/v4_N20_adapthist_gpu5_20260524_055926.log`.
   Archive: `.../hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N20_R0.0_Umax0.12_sidecarS2_cumulative_tipfol_rt0.05_np1_adapthist_sched1/`.
 - **Watch points**: compare `lambda_hist_vs_cycle.npy`, `alpha_bar_max_vs_cycle.npy`, and final fracture/tip trajectory against fixed-λ baseline and fixed-λ v4. If scheduled adaptive λ only helps v4 after remesh but hurts baseline, it is an optimizer-remesh rescue, not a new physical model.
+- **Startup correction**: both jobs reached the end of pretrain, then failed because the fresh clone was missing `meshed_geom2.msh` (`FileNotFoundError`). This is an environment/setup miss, not an adaptive-λ result.
+
+## 2026-05-24 · hard irreversibility baseline vs v4 N20 (launched)
+
+- **Code state**: commit `41e0bf1` on branch `claude/sidecar-adaptive-sampling`. Adds a diagnostic hard constraint:
+  `alpha = hist_alpha + (1 - hist_alpha) * alpha_free`, with `E_hist` soft-penalty weight set to `0`. The physical terms stay `E_el + E_d` with `lambda_el=lambda_d=1`.
+- **Run root**: rsynced worktree at `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-41e0bf1/`; archives redirected to `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-41e0bf1-runs/`. Both `meshed_geom1.msh` and `meshed_geom2.msh` copied from the main Taobo project before launch.
+- **Baseline N20 hard-irreversibility**: Taobo GPU4, PID `1949049`, log `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-41e0bf1/SENS_tensile/logs/baseline_N20_hardirr_gpu4_20260524_061842.log`.
+  Archive: `.../hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N20_R0.0_Umax0.12_baseline_hardirr/`.
+- **v4 add-only N20 hard-irreversibility**: Taobo GPU5, PID `1949050`, log `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-41e0bf1/SENS_tensile/logs/v4_N20_hardirr_gpu5_20260524_061842.log`.
+  Archive: `.../hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N20_R0.0_Umax0.12_sidecarS2_cumulative_tipfol_rt0.05_np1_hardirr/`.
+- **Startup verified**: logs show `irreversibility = hard transform | E_hist weight = 0` and `[HardIrreversibility] floor set (coarse pretrain)`.
+- **Watch points**: if this improves baseline and v4 field/fracture behavior, the soft irreversibility penalty was materially distorting optimization. If it worsens crack growth, the hard transform may overconstrain early damage and needs a smoother slack/reparameterization.
