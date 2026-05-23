@@ -105,6 +105,8 @@ class FieldComputation:
             self.alpha_constraint = torch.sigmoid
         else:
             self.alpha_constraint = NonsmoothSigmoid(2.0, 1e-3)
+        self.hard_irreversibility_enabled = False
+        self.hist_alpha_floor = None
 
         # ★ 2026-05-06 mirror symmetry prior (only for baseline branch, not Williams)
         self.symmetry_prior = bool(symmetry_prior)
@@ -206,6 +208,11 @@ class FieldComputation:
 
         # 约束相场在 [0, 1] 范围内
         alpha = self.alpha_constraint(out[:, 2])
+        if self.hard_irreversibility_enabled and self.hist_alpha_floor is not None:
+            floor = self.hist_alpha_floor.to(device=alpha.device, dtype=alpha.dtype)
+            if floor.numel() == alpha.numel():
+                floor = floor.clamp(0.0, 1.0)
+                alpha = floor + (1.0 - floor) * alpha
 
         # 边界条件强制（使用物理坐标 inp，不受 Williams / Enriched Ansatz 影响）
         if self.exact_bc_enabled:
@@ -240,6 +247,15 @@ class FieldComputation:
         _, _, pred_alpha = self.fieldCalculation(inp)
         pred_alpha = pred_alpha.detach()
         return pred_alpha
+
+    def set_hard_irreversibility(self, enabled=True):
+        self.hard_irreversibility_enabled = bool(enabled)
+
+    def set_hist_alpha_floor(self, hist_alpha):
+        if hist_alpha is None:
+            self.hist_alpha_floor = None
+        else:
+            self.hist_alpha_floor = hist_alpha.detach().reshape(-1)
 
     def parameters(self):
         """

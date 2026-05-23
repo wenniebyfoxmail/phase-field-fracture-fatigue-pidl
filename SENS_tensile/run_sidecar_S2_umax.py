@@ -105,6 +105,8 @@ def _rewrite_model_settings(config, runner_name: str) -> None:
         f.write(f"\nadaptive_lambda_hist_smooth: {alh.get('smooth', 1.0)}")
         f.write(f"\nadaptive_lambda_hist_update_every: {alh.get('update_every', 0)}")
         f.write(f"\nadaptive_lambda_hist_start_cycle: {alh.get('start_cycle', 0)}")
+        hirr = fat.get('hard_irreversibility', {})
+        f.write(f"\nhard_irreversibility_enable: {hirr.get('enable', False)}")
         f.write(f"\n--- sidecar S2 (adaptive refinement) ---")
         f.write(f"\nS2_enable: {sdct.get('enable')}")
         f.write(f"\nS2_mode: {sdct.get('mode')}")
@@ -176,6 +178,8 @@ def main():
                         "Default 0 keeps the legacy REFINE-only update.")
     p.add_argument("--lambda-hist-start-cycle", type=int, default=0,
                    help="First cycle eligible for scheduled lambda_hist updates.")
+    p.add_argument("--hard-irreversibility", action="store_true",
+                   help="Use hard alpha >= hist_alpha transform and remove the soft E_hist penalty.")
     p.add_argument("--post-refine-reeq", action="store_true",
                    help="After each S2 REFINE, run an extra fit before fatigue-history update.")
     p.add_argument("--post-refine-reeq-epochs", type=int, default=3000,
@@ -245,6 +249,11 @@ def main():
         "start_cycle": int(args.lambda_hist_start_cycle),
         "eps": 1e-30,
     }
+    config.fatigue_dict["hard_irreversibility"] = {
+        "enable": bool(args.hard_irreversibility),
+    }
+    if args.hard_irreversibility and args.adaptive_lambda_hist:
+        raise ValueError("--hard-irreversibility cannot be combined with --adaptive-lambda-hist")
 
     fat = config.fatigue_dict
     fatigue_tag = (
@@ -271,6 +280,8 @@ def main():
         S2_suffix += _tag
     elif args.adaptive_lambda_hist:
         S2_suffix += "_adapthist"
+    if args.hard_irreversibility:
+        S2_suffix += "_hardirr"
     if args.post_refine_reeq:
         S2_suffix += f"_reeq{args.post_refine_reeq_epochs}"
     dir_name = (
@@ -321,6 +332,8 @@ def main():
         )
     else:
         print("  λ_hist   = 1.0 (fixed)")
+    if args.hard_irreversibility:
+        print("  irreversibility = hard transform | E_hist weight = 0")
     if args.post_refine_reeq:
         print(f"  post-REFINE reeq = RPROP max_epochs={args.post_refine_reeq_epochs}")
     print(f"  device    = {config.device}")

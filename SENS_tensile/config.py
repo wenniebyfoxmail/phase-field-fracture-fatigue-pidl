@@ -195,6 +195,14 @@ fatigue_dict = {
         "eps"    : 1e-30,
     },
 
+    # ── Hard irreversibility diagnostic（默认关闭）──────────────────────────
+    # enable=True 时用 alpha = h + (1-h)*alpha_free 直接保证
+    # alpha_n >= hist_alpha，并把 E_hist 软惩罚权重置 0。
+    # 这是 constrained Deep Ritz 的诊断路径，不改变 E_el:E_d = 1:1。
+    "hard_irreversibility": {
+        "enable": False,
+    },
+
     # ── E2 sanity hack (Apr 23 2026): ψ⁺ 裂尖放大 ──────────────────────────
     # 目的：验证 ψ⁺_raw 集中能力是否是 ᾱ_max ceiling 根因
     # 在 get_psi_plus_per_elem 输出上乘 Gaussian 放大乘子，

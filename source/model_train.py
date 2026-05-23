@@ -153,6 +153,24 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_dict is None:
         fatigue_dict = {}
     fatigue_on = fatigue_dict.get('fatigue_on', False)
+    _hard_irr_cfg = fatigue_dict.get('hard_irreversibility', {})
+    _hard_irr_enabled = bool(_hard_irr_cfg.get('enable', False))
+    if hasattr(field_comp, 'set_hard_irreversibility'):
+        field_comp.set_hard_irreversibility(_hard_irr_enabled)
+    if _hard_irr_enabled:
+        print(
+            "[HardIrreversibility] enabled: "
+            "alpha = hist_alpha + (1 - hist_alpha) * alpha_free; E_hist weight = 0"
+        )
+
+    def _set_hard_irrev_floor(hist_alpha_t, label):
+        if _hard_irr_enabled and hasattr(field_comp, 'set_hist_alpha_floor'):
+            field_comp.set_hist_alpha_floor(hist_alpha_t)
+            print(
+                f"[HardIrreversibility] floor set ({label}): "
+                f"nodes={hist_alpha_t.numel()} max={hist_alpha_t.max().item():.4f} "
+                f"mean={hist_alpha_t.mean().item():.4e}"
+            )
 
     # =========================================================================
     # ★ Early mutex guards for sidecar S2 (added 2026-05-14, expert review).
@@ -207,6 +225,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             mesh_file=coarse_mesh_file, device=device,
             sidecar_S1_dict=None, sidecar_label="coarse"
         )
+        _set_hard_irrev_floor(hist_alpha, "coarse pretrain")
         outp = torch.zeros(inp.shape[0], 1).to(device)
         training_set = DataLoader(
             torch.utils.data.TensorDataset(inp, outp),
@@ -224,7 +243,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         loss_data1 = fit(
             field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
             optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
-            intermediateModel_path=None, writer=writer, training_dict=training_dict
+            intermediateModel_path=None, writer=writer, training_dict=training_dict,
+            hist_loss_weight=0.0 if _hard_irr_enabled else 1.0,
             # 预训练不传 f_fatigue，使用默认值 1.0
         )
         loss_data = loss_data + loss_data1
@@ -236,7 +256,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
             optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
             min_delta=optimizer_dict["optim_rel_tol_pretrain"],
-            intermediateModel_path=None, writer=writer, training_dict=training_dict
+            intermediateModel_path=None, writer=writer, training_dict=training_dict,
+            hist_loss_weight=0.0 if _hard_irr_enabled else 1.0,
         )
         loss_data = loss_data + loss_data2
 
@@ -256,6 +277,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         mesh_file=fine_mesh_file, device=device,
         sidecar_S1_dict=sidecar_S1_dict, sidecar_label="fine"
     )
+    _set_hard_irrev_floor(hist_alpha, "fine initial")
     outp = torch.zeros(inp.shape[0], 1).to(device)
     training_set = DataLoader(
         torch.utils.data.TensorDataset(inp, outp),
@@ -422,6 +444,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # log10(E_el + E_d + lambda_hist * E_hist).
     _alh_cfg = fatigue_dict.get('adaptive_lambda_hist', {})
     _alh_enabled = bool(_alh_cfg.get('enable', False))
+    if _hard_irr_enabled and _alh_enabled:
+        raise ValueError(
+            "hard_irreversibility and adaptive_lambda_hist are mutually exclusive: "
+            "hard irreversibility removes the soft E_hist penalty."
+        )
     _lambda_hist = float(_alh_cfg.get('initial', 1.0))
     _lambda_hist_min = float(_alh_cfg.get('min', 1e-3))
     _lambda_hist_max = float(_alh_cfg.get('max', 1.0))
@@ -445,6 +472,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             f"update_every={_lambda_hist_update_every}, "
             f"start_cycle={_lambda_hist_start_cycle}"
         )
+
+    def _current_hist_loss_weight():
+        return 0.0 if _hard_irr_enabled else _lambda_hist
 
     _reeq_cfg = sidecar_S2_dict.get('post_refine_reeq', {}) if _S2_enabled else {}
     _reeq_enabled = bool(_reeq_cfg.get('enable', False))
@@ -554,6 +584,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         torch.utils.data.TensorDataset(inp, outp),
                         batch_size=inp.shape[0], shuffle=False,
                     )
+                    _set_hard_irrev_floor(hist_alpha, "S2 checkpoint restore")
                     _S2_resume_restored = True
                     print(
                         f"[sidecar-S2 restore] restored current mesh: "
@@ -567,6 +598,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 ))
                 print(f"[AdaptiveLambdaHist] restored lambda_hist={_lambda_hist:.6g}")
             start_j = _last_j + 1
+            _set_hard_irrev_floor(hist_alpha, "checkpoint restore")
             _did_restore = True
             print(f"[Checkpoint] 从 step {_last_j} 恢复，继续 step {start_j}/{len(disp)-1}")
 
@@ -738,7 +770,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 area_T, T_conn=T_conn, f_fatigue=f_fatigue,
                 crack_tip_weights=crack_tip_weights,
             )
-            total = loss_E_el + loss_E_d + _lambda_hist * loss_hist
+            total = loss_E_el + loss_E_d + _current_hist_loss_weight() * loss_hist
             terms = [
                 ("E_el", loss_E_el),
                 ("E_d", loss_E_d),
@@ -907,6 +939,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         hist_alpha = torch.from_numpy(_ha_new_v4).to(torch.float).to(device)
                         _ha_diag_v4 = (f"L2+NNmax max {_S2_state['hist_alpha_curr'].max():.3f}→{_ha_new_v4.max():.3f} | "
                                        f"mean {_S2_state['hist_alpha_curr'].mean():.4f}→{_ha_new_v4.mean():.4f}")
+                    _set_hard_irrev_floor(hist_alpha, f"S2 cumulative refine cycle {j}")
                     # persist mesh + state
                     _S2_state['X_curr'], _S2_state['Y_curr'] = _X_new, _Y_new
                     _S2_state['T_curr'], _S2_state['area_curr'] = _T_new, _area_new
@@ -1070,6 +1103,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                                 f"p99 {_ha_old_stats[1]:.3f}→{_ha_new_stats[1]:.3f} | "
                                 f"mean {_ha_old_stats[2]:.4f}→{_ha_new_stats[2]:.4f} | "
                                 f"NN p99={_ha_nn_p99:.3f}")
+                _set_hard_irrev_floor(hist_alpha, f"S2 rebuild refine cycle {j}")
                 # Stash current-mesh node coords + post-transport hist_alpha (numpy) for next swap
                 _S2_state['hist_alpha_curr'] = hist_alpha.detach().cpu().numpy().ravel()
                 _S2_state['X_curr_nodes'] = _X_new
@@ -1155,7 +1189,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,
                 crack_tip_weights=crack_tip_weights,
-                hist_loss_weight=_lambda_hist,
+                hist_loss_weight=_current_hist_loss_weight(),
                 supervised_dict=_supervised_dict,
                 symmetry_dict=_symmetry_dict,
                 side_traction_dict=_side_traction_dict,
@@ -1187,7 +1221,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 intermediateModel_path=None, writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,                    # ★ 传入疲劳退化函数
                 crack_tip_weights=crack_tip_weights,    # ★ 2026-05-13 P0 fix: thread C6/Dir3 reweight into LBFGS
-                hist_loss_weight=_lambda_hist,           # ★ optional adaptive λ_hist; default 1.0
+                hist_loss_weight=_current_hist_loss_weight(),  # optional adaptive/hard irreversibility
                 supervised_dict=_supervised_dict,       # ★ MIT-8
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
@@ -1208,7 +1242,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,                    # ★ 传入疲劳退化函数
                 crack_tip_weights=crack_tip_weights,    # ★ 2026-05-13 P0 fix: thread C6/Dir3 reweight into RPROP
-                hist_loss_weight=_lambda_hist,           # ★ optional adaptive λ_hist; default 1.0
+                hist_loss_weight=_current_hist_loss_weight(),  # optional adaptive/hard irreversibility
                 supervised_dict=_supervised_dict,       # ★ MIT-8
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
@@ -1226,6 +1260,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         # Manav 原始：更新相场不可逆性历史变量 hist_alpha
         # ------------------------------------------------------------------
         hist_alpha = field_comp.update_hist_alpha(inp)
+        _set_hard_irrev_floor(hist_alpha, f"post-cycle {j}")
 
         # ★ v3 (2026-05-15): sync per-node hist_alpha to _S2_state so the next
         # REFINE event has the post-cycle floor available for nearest-node

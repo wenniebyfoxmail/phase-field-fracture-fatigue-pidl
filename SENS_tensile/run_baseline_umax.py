@@ -37,6 +37,8 @@ p.add_argument("--lambda-hist-update-every", type=int, default=1,
                help="Update lambda_hist every N cycles when adaptive mode is enabled.")
 p.add_argument("--lambda-hist-start-cycle", type=int, default=0,
                help="First cycle eligible for scheduled lambda_hist updates.")
+p.add_argument("--hard-irreversibility", action="store_true",
+               help="Use hard alpha >= hist_alpha transform and remove the soft E_hist penalty.")
 args = p.parse_args()
 
 # Inject sys.argv so main.py sees expected positional args
@@ -62,6 +64,11 @@ config.fatigue_dict["adaptive_lambda_hist"] = {
     "start_cycle": int(args.lambda_hist_start_cycle),
     "eps": 1e-30,
 }
+config.fatigue_dict["hard_irreversibility"] = {
+    "enable": bool(args.hard_irreversibility),
+}
+if args.hard_irreversibility and args.adaptive_lambda_hist:
+    raise ValueError("--hard-irreversibility cannot be combined with --adaptive-lambda-hist")
 config.rebuild_disp_cyclic()
 
 # 2) MANUALLY REBUILD model_path / trainedModel_path / intermediateModel_path
@@ -78,6 +85,8 @@ _fatigue_tag = (
 _baseline_suffix = "_baseline"
 if args.adaptive_lambda_hist:
     _baseline_suffix += "_adapthist"
+if args.hard_irreversibility:
+    _baseline_suffix += "_hardirr"
 _dir_name = (
     "hl_" + str(config.network_dict["hidden_layers"])
     + "_Neurons_" + str(config.network_dict["neurons"])
@@ -125,6 +134,8 @@ with open(config.model_path / Path("model_settings.txt"), "w") as f:
     f.write(f"\nadaptive_lambda_hist_smooth: {alh.get('smooth', 1.0)}")
     f.write(f"\nadaptive_lambda_hist_update_every: {alh.get('update_every', 1)}")
     f.write(f"\nadaptive_lambda_hist_start_cycle: {alh.get('start_cycle', 0)}")
+    hirr = _fat.get("hard_irreversibility", {})
+    f.write(f"\nhard_irreversibility_enable: {hirr.get('enable', False)}")
     f.write(f"\n[runner] run_baseline_umax.py (May-4 2026 bugfix version)")
 
 print("=" * 72)
@@ -139,10 +150,12 @@ if args.adaptive_lambda_hist:
     )
 else:
     print("  λ_hist   = 1.0 (fixed)")
+if args.hard_irreversibility:
+    print("  irreversibility = hard transform | E_hist weight = 0")
 print(f"  archive   = {_dir_name}")
 print(f"  full path = {config.model_path}")
 print("=" * 72)
 
 # Now exec main.py contents in current namespace (config already overridden + paths rebuilt)
 main_path = HERE / "main.py"
-exec(compile(main_path.read_text(), str(main_path), "exec"), {"__name__": "__main__", "__file__": str(main_path)})
+exec(compile(main_path.read_text(encoding="utf-8"), str(main_path), "exec"), {"__name__": "__main__", "__file__": str(main_path)})
