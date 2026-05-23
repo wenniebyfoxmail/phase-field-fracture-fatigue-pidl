@@ -281,3 +281,15 @@ Copy this block for each completed run.
 - **Archive**: `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl/SENS_tensile/hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N40_R0.0_Umax0.12_sidecarS2_tipfol_rt0.05_np1_adapthist/`.
 - **Warm start**: copied from the completed N20 `hyst1_diag` archive and patched `checkpoint_step_19.pt` with `_S2_state` so S2 resumes safely on the current refined mesh. Startup confirmed: restored `40761` nodes / `81300` elements, `swaps=2`, `skips=17`, `tip_at_refine=(0.05004344880580902, 0.0)`, then continued `step 20/39`.
 - **Watch points**: first adaptive λ update should occur at the next REFINE, expected near cycle 29. Check the log for `[AdaptiveLambdaHist cycle 29]` and then compare `alpha_bar_max` trajectory against the concurrent fixed-λ N100 diagnostic and the N20 `h=1.0` reference.
+
+## 2026-05-24 · baseline vs v4 scheduled adaptive_lambda_hist N20 (launched)
+
+- **Code state**: commit `af5a533` on branch `claude/sidecar-adaptive-sampling`. This adds scheduled adaptive-λ updates so the same gradient-balancing diagnostic can run on both fixed baseline mesh and v4 add-only refinement. Default config remains unchanged unless the runner passes `--adaptive-lambda-hist`.
+- **Mechanism**: at the start of each eligible cycle, compute parameter-gradient norms for `E_el`, `E_d`, and `E_hist`; set
+  `lambda_hat = max(||grad E_el||_2, ||grad E_d||_2) / ||grad E_hist||_2`, clipped to `[1e-3, 1]`; then fit with `log10(E_el + E_d + lambda_hist * E_hist)`.
+- **Run root**: fresh clone at `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-adapthist-af5a533/`; archives redirected to `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-adapthist-af5a533-runs/`.
+- **Baseline N20**: Taobo GPU4, PID `1922288`, log `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-adapthist-af5a533/SENS_tensile/logs/baseline_N20_adapthist_gpu4_20260524_055926.log`.
+  Archive: `.../hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N20_R0.0_Umax0.12_baseline_adapthist/`.
+- **v4 add-only N20**: Taobo GPU5, PID `1922289`, log `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-adapthist-af5a533/SENS_tensile/logs/v4_N20_adapthist_gpu5_20260524_055926.log`.
+  Archive: `.../hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N20_R0.0_Umax0.12_sidecarS2_cumulative_tipfol_rt0.05_np1_adapthist_sched1/`.
+- **Watch points**: compare `lambda_hist_vs_cycle.npy`, `alpha_bar_max_vs_cycle.npy`, and final fracture/tip trajectory against fixed-λ baseline and fixed-λ v4. If scheduled adaptive λ only helps v4 after remesh but hurts baseline, it is an optimizer-remesh rescue, not a new physical model.
