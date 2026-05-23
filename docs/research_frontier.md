@@ -13,38 +13,35 @@
 
 ## Current Question
 
-**Phase 2.1: 给 PCC concrete (E~30GPa, ν~0.18, ℓ~2 mm, G_f~100 J/m²) 反推一个物理可解释的 α_T，解锁 Windows-FEM Task C 的 PCC PF-CZM smoke。**
+**Tip-local net: 在固定 S1 crack-tip refined mesh 上，local correction head 是否能恢复 FEM-like crack-tip fatigue-history / phase-field localization，而不改物理 loss？**
 
 ## Active Branches
 
-1. **α_T calibration for PCC** — Baktheer 2024 公式 α_T = G_f / (k_f · ℓ) 已确立，k_f=0.01 是混凝土标准值。当前 session 用具体 PCC 数字算出 α_T，cross-check 与 Holmen 1979 / ACI 215R 的 S-N 曲线趋势是否一致。Deliverable: α_T 数字 + memory entry + Windows-FEM inbox unblock Task C。
-2. **Phase 2 framework decision (2A vs 2B)** — Wu 2026 IJDM unified review 已读完，结论是 PF²-CZM (associated, ξ=2, α=2d−d²) 是混凝土单调凸软化的标准；μPF-CZM 仅当凹形软化 (沥青) 时必要。Phase 2A = Carrara extended (low effort)；Phase 2B = Wu PF-CZM (kernel rewrite, high effort)。Baktheer 2024 给的就是 2B blueprint (PF-CZM + Carrara fatigue + Macaulay split)。决策：2A 先做小工作量过渡，2B 在 Phase 3 升级。
-3. **Phase 1 §4 v1.6 LOCK** (passive) — 三轮 red-team 全部应用，hedging 完整。不再加新实验。备份 obsidian + commit by user discretion.
+1. **Tip-local correction network** — Global NN + compact local head near current initial tip `(0,0)`, integrated at raw field output before existing BC/alpha constraints. Physical loss unchanged. First branch: `codex/exp/tip-local-net`.
+2. **S1 static process-zone oversampling baseline** — Use fixed S1 mesh (`r_tip=0.05`, `n_refine_passes=1`) as the comparator/isolation mesh. Do not use dynamic S2/v4 during the first test.
+3. **FEM field reference** — Treat FEM `psi` sanity checks as reference-quality for field localization, but do not overclaim exact crack-tip peak values.
 
 ## Current Best Bet
 
-Phase 2 走 **2A (Carrara extended at PCC concrete units)**：动 config.py 物理参数 + α_T 反推，FEM kernel 不动。论文 §5 / Phase 2 章节定位为 "framework transition demonstration"，不是 Wu PF-CZM 完整实现。
+Representation, not remeshing, is now the main bottleneck. Keep the Carrara/PIDL loss fixed and add a small tip-local approximation space so the global net can remain smooth while the local head carries the sharp process zone.
 
 ## Best Next Discriminator
 
-α_T = G_f / (k_f · ℓ) 反推后，Windows-FEM 跑一个 PCC smoke (S^max=0.75, expect N_f ~ 10³-10⁴ for reasonable HCF) → 若 N_f 落在合理 HCF 区间 = α_T 校准成功；否则迭代 k_f 或重审 fib MC 2010 数据。
+Run `Umax=0.12`, seed 1, S1 fixed mesh, `N=20` smoke. If stable, extend to `N=40`. Compare alpha line profile, process-zone `psi/alpha_bar`, localization width, crack-tip trajectory, far-field `psi`, and absence of far-side spurious damage.
 
 ## Switch Condition
 
-如果 α_T 反推出的 PCC smoke N_f << 10² 或 >> 10⁶ → 说明 k_f=0.01 不能直接平移到 PCC concrete (Baktheer 用 C60 高强混凝土，PCC 是普通混凝土)，需要从 Holmen S-N 数据点反推一个 PCC-specific k_f。
+If tip-local net is stable but does not improve localization metrics over S1, the failure is likely not just global spectral/representation capacity; return to mesh/history/conditioning diagnostics. If it destabilizes Kt or creates far-side damage, constrain or shrink the local head/window before broadening experiments.
 
 ## Parking Lot
 
-- A1+Strac combo N=300 production (~18 GPU-days, 暂不做)
-- Hard y² 架构 production (12× slowdown, 暂不做)
-- Multi-seed combo smoke (N=5 × 2 more seeds, ~14h Windows, P3 优先级)
-- §4 v1.6 commit/push (drafts 不进 git，只复制到 obsidian — 已完成)
-- 论文 §5 / Phase 2 章节正文写作 (等 PCC smoke 数字回来再写)
+- Dynamic S2/v4 remesh with local net (only after fixed S1 representation test)
+- Adaptive `lambda_hist` as diagnostic only, not main method
+- Wider local window / multi-head local net
+- PCC Phase 2 calibration thread (separate from this branch)
 
 ## Recently Closed / Triggered
 
-- **Phase 1 §4 v1.6 lock 2026-05-10**: 三轮 red-team 全部应用 → §4.2 包含完整 V4+V7 14-method 表 + targeted-supervised reframe + 13 PIDL configs + falsifiable prediction (V4 ≥5× reduction relative to 0.07 baseline)。Backup at `obsidian/01 PINN/paper1/section4_v1.6_2026-05-10.md`. Memory: `finding_v4_v7_cross_method_may10.md`.
-- **Strac-alone V7 confirmed FAIL 2026-05-10**: Taobo seed1 N=300 cycle 87, V7=138% (FAIL). Bimodal as Phase F smoke predicted. 不再尝试 Strac-only path，combo (Sym+A1+Strac) 是唯一 V7 改进路径。
-- **A1+Strac combo Phase C 2026-05-09 done**: 5-cycle smoke V4=0 (by construction) + V7=15.8% (WARN range)。Multi-seed combo + N=300 production 暂不做（compute-prohibitive，18 GPU-days/seed）。
-- **References Wu 2026 + Wu 2024 + Baktheer 2024 read 2026-05-10**: 选 PF²-CZM associated (ξ=2) for Phase 2 concrete。
-- **FEM-9 dispatched 2026-05-09 + scope Q&A 2026-05-10**: A→B→F→D→E→C 7-task week plan。Task A 进行中（docs/FEM.md update）；Task C 等本 session 的 α_T。
+- **2026-05-23 handoff**: FEM `psi` sanity checks passed; S1/S2/v3.2/v4/adaptive-`lambda_hist` reviewed. Decision: try local crack-tip correction network first on fixed S1 mesh.
+- **S1 static oversampling**: Early `alpha_bar_max` lifted but long-horizon field localization remained modest/seed-sensitive.
+- **S2/v4 dynamic/add-only refinement**: Mesh-side fixes reduce transport disturbance but do not change NN approximation space.

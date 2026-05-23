@@ -301,6 +301,22 @@ fourier_dict = {
 }
 
 
+# ★ 2026-05-23: Crack-tip local correction network.
+# Global NN handles the smooth bulk; a smaller local NN sees normalized
+# coordinates ((x-x_tip)/r_tip, (y-y_tip)/r_tip) and is tapered by a compact
+# polynomial window. It preserves the physical loss and FieldComputation path.
+tip_local_net_dict = {
+    "enable": False,
+    "x_tip": 0.0,
+    "y_tip": 0.0,
+    "r_tip": 0.05,
+    "window_radius": 0.05,
+    "hidden_layers": 3,
+    "neurons": 80,
+    "zero_init": True,
+}
+
+
 # ★ 2026-05-13 Branch 2 C6: FI-PINN adaptive sampling via residual-driven loss reweight
 # ────────────────────────────────────────────────────────────────────────────────────
 # Background: PIDL ᾱ_max trails FEM 10-100× at crack tip. Tested mechanisms (Apr-May):
@@ -524,6 +540,15 @@ _fourier_tag = (
     if fourier_dict.get("enable", False) else ""
 )
 
+# ★ 2026-05-23 tip-local correction network tag
+_tip_local_tag = (
+    f"_tipLocal_rt{tip_local_net_dict.get('r_tip', 0.05)}"
+    f"_wr{tip_local_net_dict.get('window_radius', tip_local_net_dict.get('r_tip', 0.05))}"
+    f"_h{tip_local_net_dict.get('hidden_layers', 3)}"
+    f"_n{tip_local_net_dict.get('neurons', 80)}"
+    if tip_local_net_dict.get("enable", False) else ""
+)
+
 # ★ Direction 6.1: Spatial α_T 标签（enable=True 时追加 _spAlphaT_b{β}_r{r_T}）
 _sp_cfg = _fat.get('spatial_alpha_T', {})
 _spAlphaT_tag = (
@@ -551,6 +576,7 @@ _model_dir_name = ('hl_'+str(network_dict["hidden_layers"])+
                    _symmetry_tag +        # ★ 2026-05-06 symmetry prior 标签
                    _exact_bc_tag +        # ★ 2026-05-11 C4 exact-BC 标签
                    _fourier_tag +         # ★ 2026-05-11 C10 Fourier features 标签
+                   _tip_local_tag +       # ★ 2026-05-23 tip-local correction net 标签
                    _spAlphaT_tag +        # ★ Direction 6.1 标签
                    _psiHack_tag)          # ★ E2 sanity hack 标签
 model_path = resolve_archive_dir(PATH_ROOT, _model_dir_name)
@@ -603,6 +629,15 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\nexact_bc_enable: {exact_bc_dict.get("enable", False)}')
     file.write(f'\nexact_bc_mode: {exact_bc_dict.get("mode", "sent_plane_strain")}')
     file.write(f'\nexact_bc_nu: {exact_bc_dict.get("nu", mat_prop_dict["mat_nu"])}')
+    file.write(f'\n--- tip_local_net ---')
+    file.write(f'\ntip_local_enable: {tip_local_net_dict.get("enable", False)}')
+    file.write(f'\ntip_local_x_tip: {tip_local_net_dict.get("x_tip", 0.0)}')
+    file.write(f'\ntip_local_y_tip: {tip_local_net_dict.get("y_tip", 0.0)}')
+    file.write(f'\ntip_local_r_tip: {tip_local_net_dict.get("r_tip", 0.05)}')
+    file.write(f'\ntip_local_window_radius: {tip_local_net_dict.get("window_radius", tip_local_net_dict.get("r_tip", 0.05))}')
+    file.write(f'\ntip_local_hidden_layers: {tip_local_net_dict.get("hidden_layers", 3)}')
+    file.write(f'\ntip_local_neurons: {tip_local_net_dict.get("neurons", 80)}')
+    file.write(f'\ntip_local_zero_init: {tip_local_net_dict.get("zero_init", True)}')
     # ★ Direction 6.1: Spatial α_T 参数
     file.write(f'\n--- spatial_alpha_T ---')
     file.write(f'\nspAlphaT_enable: {_sp_cfg.get("enable", False)}')

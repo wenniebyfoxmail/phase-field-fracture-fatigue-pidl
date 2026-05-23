@@ -247,6 +247,64 @@ class FourierFeatureNet(nn.Module):
         return self.inner(feat)
 
 
+class TipLocalNet(nn.Module):
+    """Global MLP plus a compact crack-tip correction MLP.
+
+    The wrapper preserves the raw output contract used by FieldComputation:
+    (u_raw, v_raw, alpha_raw). The correction is localized in physical
+    coordinates before the existing BC and alpha constraints are applied.
+    """
+
+    def __init__(self, input_dimension, output_dimension, n_hidden_layers, neurons,
+                 activation, init_coeff=1.0, x_tip=0.0, y_tip=0.0,
+                 r_tip=0.05, window_radius=None, tip_hidden_layers=3,
+                 tip_neurons=80, zero_init=True):
+        super().__init__()
+        if input_dimension != 2:
+            raise ValueError("TipLocalNet expects physical 2D coordinates as input")
+        if r_tip <= 0:
+            raise ValueError("TipLocalNet r_tip must be positive")
+
+        self.input_dimension = input_dimension
+        self.output_dimension = output_dimension
+        self.n_hidden_layers = n_hidden_layers
+        self.neurons = neurons
+        self.name_activation = activation
+        self.init_coeff = init_coeff
+        self.x_tip = float(x_tip)
+        self.y_tip = float(y_tip)
+        self.r_tip = float(r_tip)
+        self.window_radius = float(window_radius if window_radius is not None else r_tip)
+        self.zero_init = bool(zero_init)
+
+        self.global_net = NeuralNet(input_dimension, output_dimension, n_hidden_layers,
+                                    neurons, activation, init_coeff)
+        self.tip_net = NeuralNet(input_dimension, output_dimension, tip_hidden_layers,
+                                 tip_neurons, activation, init_coeff)
+
+        self.trainable_activation = (
+            self.global_net.trainable_activation or self.tip_net.trainable_activation
+        )
+
+    def _tip_window(self, x):
+        tip = x.new_tensor([self.x_tip, self.y_tip])
+        rel = x - tip
+        q = (rel[:, 0].square() + rel[:, 1].square()) / (self.window_radius ** 2)
+        return torch.clamp(1.0 - q, min=0.0).square().unsqueeze(-1)
+
+    def zero_local_output(self):
+        """Start exactly on the global-net hypothesis class."""
+        self.tip_net.output_layer.weight.data.zero_()
+        self.tip_net.output_layer.bias.data.zero_()
+
+    def forward(self, x):
+        global_out = self.global_net(x)
+        tip = x.new_tensor([self.x_tip, self.y_tip])
+        x_local = (x - tip) / self.r_tip
+        local_out = self.tip_net(x_local)
+        return global_out + self._tip_window(x) * local_out
+
+
 # =============================================================================
 # 辅助函数
 # =============================================================================
@@ -323,4 +381,3 @@ def init_xavier(model):
                 m.bias.data.fill_(0)
 
     model.apply(init_weights)
-
