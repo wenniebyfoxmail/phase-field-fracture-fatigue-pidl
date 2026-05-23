@@ -426,6 +426,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _lambda_hist_min = float(_alh_cfg.get('min', 1e-3))
     _lambda_hist_max = float(_alh_cfg.get('max', 1.0))
     _lambda_hist_smooth = float(_alh_cfg.get('smooth', 1.0))
+    _lambda_hist_update_every = int(_alh_cfg.get('update_every', 0) or 0)
+    _lambda_hist_start_cycle = int(_alh_cfg.get('start_cycle', 0) or 0)
     _lambda_hist_eps = float(_alh_cfg.get('eps', 1e-30))
     _lambda_hist_history = []
     if _lambda_hist_min <= 0 or _lambda_hist_max <= 0 or _lambda_hist_min > _lambda_hist_max:
@@ -439,7 +441,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         print(
             f"[AdaptiveLambdaHist] enabled: initial={_lambda_hist:.6g}, "
             f"clip=[{_lambda_hist_min:.3g}, {_lambda_hist_max:.3g}], "
-            f"smooth={_lambda_hist_smooth:.3g}"
+            f"smooth={_lambda_hist_smooth:.3g}, "
+            f"update_every={_lambda_hist_update_every}, "
+            f"start_cycle={_lambda_hist_start_cycle}"
         )
 
     _reeq_cfg = sidecar_S2_dict.get('post_refine_reeq', {}) if _S2_enabled else {}
@@ -724,8 +728,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             f"p99={np.percentile(vals, 99):.4e} | mean={vals.mean():.4e}"
         )
 
-    def _s2_print_post_refine_grad_diag(cycle_idx):
-        """Print per-term gradient stats after S2 REFINE, before fitting."""
+    def _s2_print_post_refine_grad_diag(cycle_idx, label="post-REFINE"):
+        """Print per-term gradient stats before fitting."""
         params = [p for p in field_comp.parameters() if p.requires_grad]
         with torch.enable_grad():
             u_g, v_g, alpha_g = field_comp.fieldCalculation(inp)
@@ -741,7 +745,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 ("E_hist", loss_hist),
                 ("log10_total", torch.log10(total.clamp(min=1e-30))),
             ]
-            print(f"  [sidecar-S2 cycle {cycle_idx}] post-REFINE grad norms (pre-fit)")
+            print(f"  [GradDiag cycle {cycle_idx}] {label} grad norms (pre-fit)")
             stats = {}
             for name, term in terms:
                 grads = torch.autograd.grad(
@@ -775,6 +779,36 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 }
             del u_g, v_g, alpha_g, loss_E_el, loss_E_d, loss_hist, total
             return stats
+
+    def _update_lambda_hist_from_grad_stats(cycle_idx, label):
+        """Update lambda_hist using Wang-style per-term parameter-gradient balance."""
+        nonlocal _lambda_hist
+        _grad_stats = _s2_print_post_refine_grad_diag(cycle_idx, label=label)
+        _phys_grad = max(
+            _grad_stats.get("E_el", {}).get("grad_l2", 0.0),
+            _grad_stats.get("E_d", {}).get("grad_l2", 0.0),
+        )
+        _hist_grad = _grad_stats.get("E_hist", {}).get("grad_l2", 0.0)
+        _lambda_hat = _phys_grad / max(_hist_grad, _lambda_hist_eps)
+        _lambda_hat = float(np.clip(
+            _lambda_hat, _lambda_hist_min, _lambda_hist_max
+        ))
+        _lambda_prev = _lambda_hist
+        _lambda_hist = (
+            (1.0 - _lambda_hist_smooth) * _lambda_hist
+            + _lambda_hist_smooth * _lambda_hat
+        )
+        _lambda_hist = float(np.clip(
+            _lambda_hist, _lambda_hist_min, _lambda_hist_max
+        ))
+        print(
+            f"  [AdaptiveLambdaHist cycle {cycle_idx}] {label} | "
+            f"phys_grad=max(E_el,E_d)={_phys_grad:.6e} | "
+            f"hist_grad={_hist_grad:.6e} | "
+            f"lambda_hat={_lambda_hat:.6e} | "
+            f"lambda_hist {_lambda_prev:.6e}->{_lambda_hist:.6e}"
+        )
+        return _grad_stats
 
     for j, disp_i in enumerate(disp[start_j:], start=start_j):
         field_comp.lmbda = torch.tensor(disp_i).to(device)
@@ -1065,32 +1099,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     f"  [sidecar-S2 cycle {j}] hist_fat transport | "
                     f"old {_hf_old_diag} -> new {_hf_new_diag}"
                 )
-                _s2_grad_stats = _s2_print_post_refine_grad_diag(j)
                 if _alh_enabled:
-                    _phys_grad = max(
-                        _s2_grad_stats.get("E_el", {}).get("grad_l2", 0.0),
-                        _s2_grad_stats.get("E_d", {}).get("grad_l2", 0.0),
-                    )
-                    _hist_grad = _s2_grad_stats.get("E_hist", {}).get("grad_l2", 0.0)
-                    _lambda_hat = _phys_grad / max(_hist_grad, _lambda_hist_eps)
-                    _lambda_hat = float(np.clip(
-                        _lambda_hat, _lambda_hist_min, _lambda_hist_max
-                    ))
-                    _lambda_prev = _lambda_hist
-                    _lambda_hist = (
-                        (1.0 - _lambda_hist_smooth) * _lambda_hist
-                        + _lambda_hist_smooth * _lambda_hat
-                    )
-                    _lambda_hist = float(np.clip(
-                        _lambda_hist, _lambda_hist_min, _lambda_hist_max
-                    ))
-                    print(
-                        f"  [AdaptiveLambdaHist cycle {j}] "
-                        f"phys_grad=max(E_el,E_d)={_phys_grad:.6e} | "
-                        f"hist_grad={_hist_grad:.6e} | "
-                        f"lambda_hat={_lambda_hat:.6e} | "
-                        f"lambda_hist {_lambda_prev:.6e}→{_lambda_hist:.6e}"
-                    )
+                    _s2_grad_stats = _update_lambda_hist_from_grad_stats(j, "post-REFINE")
+                else:
+                    _s2_grad_stats = _s2_print_post_refine_grad_diag(j, label="post-REFINE")
             elif _refine_mode != 'cumulative':
                 _S2_state['n_skips'] += 1
                 if (j == start_j) or (j % 5 == 0):
@@ -1101,6 +1113,14 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         f"reuse mesh {n_elem} elem | "
                         f"swaps={_S2_state['n_swaps']} skips={_S2_state['n_skips']}"
                     )
+
+        if (
+            fatigue_on and _alh_enabled and _lambda_hist_update_every > 0
+            and j >= _lambda_hist_start_cycle
+            and ((j - _lambda_hist_start_cycle) % _lambda_hist_update_every == 0)
+            and not _s2_refined_this_cycle
+        ):
+            _update_lambda_hist_from_grad_stats(j, "scheduled")
 
         # ★ MIT-8: build per-cycle supervised_dict (None outside [1, K])
         _supervised_dict = None

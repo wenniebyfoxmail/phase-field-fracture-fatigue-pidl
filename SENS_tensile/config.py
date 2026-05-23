@@ -182,12 +182,16 @@ fatigue_dict = {
     # λ_hat = max(||∇E_el||₂, ||∇E_d||₂) / ||∇E_hist||₂，clip 后用于后续 fit。
     # 目的：只压低过强的 irreversibility penalty 梯度，避免它在新 mesh 上主导优化。
     # enable=False 时 λ_hist=1，损失严格保持 log10(E_el + E_d + E_hist)。
+    # update_every=0 保持旧行为：只在 S2 REFINE 后更新；>0 则按周期更新，
+    # 用于 baseline/v4 的公平 A/B 诊断。
     "adaptive_lambda_hist": {
         "enable" : False,
         "initial": 1.0,
         "min"    : 1e-3,
         "max"    : 1.0,
         "smooth" : 1.0,
+        "update_every": 0,
+        "start_cycle": 0,
         "eps"    : 1e-30,
     },
 

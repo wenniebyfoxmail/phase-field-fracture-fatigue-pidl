@@ -103,6 +103,8 @@ def _rewrite_model_settings(config, runner_name: str) -> None:
         f.write(f"\nadaptive_lambda_hist_min: {alh.get('min', 1e-3)}")
         f.write(f"\nadaptive_lambda_hist_max: {alh.get('max', 1.0)}")
         f.write(f"\nadaptive_lambda_hist_smooth: {alh.get('smooth', 1.0)}")
+        f.write(f"\nadaptive_lambda_hist_update_every: {alh.get('update_every', 0)}")
+        f.write(f"\nadaptive_lambda_hist_start_cycle: {alh.get('start_cycle', 0)}")
         f.write(f"\n--- sidecar S2 (adaptive refinement) ---")
         f.write(f"\nS2_enable: {sdct.get('enable')}")
         f.write(f"\nS2_mode: {sdct.get('mode')}")
@@ -169,6 +171,11 @@ def main():
                    help="Moving-average update fraction for lambda_hist (1.0 = no smoothing).")
     p.add_argument("--lambda-hist-initial", type=float, default=1.0,
                    help="Initial lambda_hist before the first adaptive update.")
+    p.add_argument("--lambda-hist-update-every", type=int, default=0,
+                   help="If >0, update lambda_hist every N cycles even without a REFINE event. "
+                        "Default 0 keeps the legacy REFINE-only update.")
+    p.add_argument("--lambda-hist-start-cycle", type=int, default=0,
+                   help="First cycle eligible for scheduled lambda_hist updates.")
     p.add_argument("--post-refine-reeq", action="store_true",
                    help="After each S2 REFINE, run an extra fit before fatigue-history update.")
     p.add_argument("--post-refine-reeq-epochs", type=int, default=3000,
@@ -234,6 +241,8 @@ def main():
         "min": float(args.lambda_hist_min),
         "max": float(args.lambda_hist_max),
         "smooth": float(args.lambda_hist_smooth),
+        "update_every": int(args.lambda_hist_update_every),
+        "start_cycle": int(args.lambda_hist_start_cycle),
         "eps": 1e-30,
     }
 
@@ -307,7 +316,8 @@ def main():
         print(
             f"  λ_hist   = adaptive | initial={args.lambda_hist_initial} | "
             f"clip=[{args.lambda_hist_min}, {args.lambda_hist_max}] | "
-            f"smooth={args.lambda_hist_smooth}"
+            f"smooth={args.lambda_hist_smooth} | "
+            f"update_every={args.lambda_hist_update_every}"
         )
     else:
         print("  λ_hist   = 1.0 (fixed)")
