@@ -27,6 +27,29 @@
 
 ## Active Requests
 
+## 2026-05-23 · Request 16: ship mesh-variant psi data for crack-tip peak audit
+
+**Goal**: Finish the FEM `psi` audit by separating a global units/export issue from real crack-tip localization. Mac Stage-1 audit already shows the far-field `psi_elem` has the right order of magnitude, follows `Umax^2`, and matches the Carrara accumulator at cycle 1. The remaining question is whether the large crack-tip `psi_peak` scales with mesh size as expected for a singular/notch-localized field.
+
+**INPUT file**: No physics changes. Use existing Umax=0.12 runs:
+- baseline/export: `INPUT_SENT_PIDL_12_export.m` / `SENT_PIDL_12_export` if needed for reference.
+- gmsh h-sweep: `SENT_PIDL_12_fine`, `SENT_PIDL_12_mesh_C`, `SENT_PIDL_12_mesh_M`, `SENT_PIDL_12_mesh_F`, `SENT_PIDL_12_mesh_XF`, and/or the narrow/wide variants already completed in FEM-D.
+
+**Mesh**: Existing meshes are enough. Please include enough geometry to estimate `h_tip`: node coordinates + element connectivity or centroids/areas for each shipped mesh. If a `mesh_geometry.mat` already exists, send that; otherwise export a compact `mesh_geometry.mat` with `nodes`, `elements`, `centroids`, and `areas`.
+
+**Expected outputs**:
+- First preference: for each available mesh variant, ship `extra_scalars.dat` plus `mesh_geometry.mat` plus `psi_fields/cycle_0001.mat` and one near-fracture cycle (`cycle_Nf.mat`, or the last clean cycle before penetration).
+- If cheap, also include common intermediate cycles such as 40 and 70 where available.
+- If old `mesh_C/M/F` runs lack `psi_fields`, do not rerun everything immediately. Send any existing `extra_scalars.dat` first. If `extra_scalars.dat` lacks `psi_peak`, `psi_tip`, and `psi_nominal`, then rerun only the minimum needed C/XF bracket with current psi export.
+- Preferred handoff folder: OneDrive `PIDL result/_pidl_handoff_fem_psi_mesh_scaling_2026-05-23/`.
+
+**Acceptance criteria**:
+- Far-field/nominal `psi` should stay O(1e-3 to 1e-2) and should not drift materially with mesh refinement.
+- Crack-tip `psi_peak` or `psi_tip` may grow with refinement. If `psi_peak * h_tip` or a similar mesh-size-normalized quantity is roughly stable while far-field `psi` is stable, we treat the high peak as physical localization/singularity rather than a unit mismatch.
+- If far-field `psi_nominal` changes strongly with h, or if `psi_peak` changes erratically without relation to `h_tip`, then Mac will treat this as a FEM export/definition audit failure.
+
+**Priority**: high. This directly determines whether PIDL-vs-FEM field-level mismatch is a method gap or a reference-data/unit issue.
+
 ## 2026-05-14 (late++) · [addendum + retractions] cleanup of conflicting framings after external review of full-run blocker
 
 **Re**: External expert review of outbox `598c1d7` (3000-cycle null result) + the strategic re-scope entry directly below.
