@@ -326,3 +326,12 @@ Copy this block for each completed run.
   | 3 | 3.0214 | 3.0212 |
   | 4 | 3.7819 | 3.7747 |
 - **Interpretation**: strict `sigmoid(raw_alpha)` fixes the NaN failure of the first hard-constraint attempt. Over N5, hard baseline and hard v4 are essentially identical; this is expected because v4 only refines at cycle 0 and the tip has not moved far enough to exercise dynamic remesh behavior.
+
+## 2026-05-24 · hard irreversibility sigmoid N20 resume (launched)
+
+- **Basis**: resumed separately from the successful N5 sigmoid-hard archives above by copying each N5 archive to the corresponding N20 archive name, preserving `checkpoint_step_4.pt`, `trained_1NN_4.pt`, and history `.npy` files. This is a true resume, not a restart.
+- **Baseline N20 hard-irreversibility**: Taobo GPU5, PID `2214391`, log `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-6525a9f/SENS_tensile/logs/baseline_N20_hardirr_sigmoid_resume_gpu5_20260525_061852.log`.
+  Archive: `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-6525a9f-runs/hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N20_R0.0_Umax0.12_baseline_hardirr/`.
+- **v4 add-only N20 hard-irreversibility**: Taobo GPU6, PID `2214392`, log `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-6525a9f/SENS_tensile/logs/v4_N20_hardirr_sigmoid_resume_gpu6_20260525_061852.log`.
+  Archive: `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-6525a9f-runs/hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N20_R0.0_Umax0.12_sidecarS2_cumulative_tipfol_rt0.05_np1_hardirr/`.
+- **Startup verified**: both logs show `[Checkpoint] 从 step 4 恢复，继续 step 5/19`; v4 also restored the current refined mesh (`40704` nodes, `81186` elements, `swaps=1`, `skips=4`).
