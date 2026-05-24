@@ -317,3 +317,12 @@ Copy this block for each completed run.
 - **v4 add-only N5 hard-irreversibility**: Taobo GPU6, PID `1853758`, log `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-6525a9f/SENS_tensile/logs/v4_N5_hardirr_sigmoid_gpu6_20260525_054706.log`.
   Archive: `.../hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N5_R0.0_Umax0.12_sidecarS2_cumulative_tipfol_rt0.05_np1_hardirr/`.
 - **Startup verified**: both logs show hard transform enabled and coarse pretrain floor set; GPUs 5/6 active.
+- **Result**: both N5 smokes completed without NaNs.
+  | cycle | baseline ᾱ_max | v4 ᾱ_max |
+  |-------|----------------:|---------:|
+  | 0 | 0.74229 | 0.74772 |
+  | 1 | 1.4833 | 1.5096 |
+  | 2 | 2.2494 | 2.2685 |
+  | 3 | 3.0214 | 3.0212 |
+  | 4 | 3.7819 | 3.7747 |
+- **Interpretation**: strict `sigmoid(raw_alpha)` fixes the NaN failure of the first hard-constraint attempt. Over N5, hard baseline and hard v4 are essentially identical; this is expected because v4 only refines at cycle 0 and the tip has not moved far enough to exercise dynamic remesh behavior.
