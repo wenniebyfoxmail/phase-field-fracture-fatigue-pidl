@@ -306,3 +306,14 @@ Copy this block for each completed run.
   Archive: `.../hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N20_R0.0_Umax0.12_sidecarS2_cumulative_tipfol_rt0.05_np1_hardirr/`.
 - **Startup verified**: logs show `irreversibility = hard transform | E_hist weight = 0` and `[HardIrreversibility] floor set (coarse pretrain)`.
 - **Watch points**: if this improves baseline and v4 field/fracture behavior, the soft irreversibility penalty was materially distorting optimization. If it worsens crack growth, the hard transform may overconstrain early damage and needs a smoother slack/reparameterization.
+
+## 2026-05-24 · hard irreversibility with sigmoid alpha_free N5 smoke (launched)
+
+- **Code state**: commit `6525a9f` changes the hard-irreversibility branch so the free alpha is strictly bounded:
+  `alpha_free = sigmoid(raw_alpha)`, `alpha = hist_alpha + (1 - hist_alpha) * alpha_free`. This replaces the first N20 attempt's use of `NonsmoothSigmoid(raw_alpha)`, which produced NaNs.
+- **Run root**: rsynced worktree at `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-6525a9f/`; archives redirected to `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-6525a9f-runs/`.
+- **Baseline N5 hard-irreversibility**: Taobo GPU5, PID `1853757`, log `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-6525a9f/SENS_tensile/logs/baseline_N5_hardirr_sigmoid_gpu5_20260525_054706.log`.
+  Archive: `.../hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N5_R0.0_Umax0.12_baseline_hardirr/`.
+- **v4 add-only N5 hard-irreversibility**: Taobo GPU6, PID `1853758`, log `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-6525a9f/SENS_tensile/logs/v4_N5_hardirr_sigmoid_gpu6_20260525_054706.log`.
+  Archive: `.../hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N5_R0.0_Umax0.12_sidecarS2_cumulative_tipfol_rt0.05_np1_hardirr/`.
+- **Startup verified**: both logs show hard transform enabled and coarse pretrain floor set; GPUs 5/6 active.

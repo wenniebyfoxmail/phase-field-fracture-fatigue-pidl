@@ -160,6 +160,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if _hard_irr_enabled:
         print(
             "[HardIrreversibility] enabled: "
+            "alpha_free = sigmoid(raw_alpha); "
             "alpha = hist_alpha + (1 - hist_alpha) * alpha_free; E_hist weight = 0"
         )
 
