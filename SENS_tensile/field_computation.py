@@ -206,8 +206,13 @@ class FieldComputation:
             disp_u = out_disp[:, 0]
             disp_v = out_disp[:, 1]
 
-        # 约束相场在 [0, 1] 范围内
-        alpha = self.alpha_constraint(out[:, 2])
+        # 约束相场在 [0, 1] 范围内.  In hard-irreversibility mode the free
+        # alpha branch must be strictly bounded, otherwise the projection can
+        # still carry NaNs/overshoots into the history floor.
+        if self.hard_irreversibility_enabled and self.hist_alpha_floor is not None:
+            alpha = torch.sigmoid(out[:, 2])
+        else:
+            alpha = self.alpha_constraint(out[:, 2])
         if self.hard_irreversibility_enabled and self.hist_alpha_floor is not None:
             floor = self.hist_alpha_floor.to(device=alpha.device, dtype=alpha.dtype)
             if floor.numel() == alpha.numel():
