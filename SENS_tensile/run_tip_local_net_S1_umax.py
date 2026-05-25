@@ -55,6 +55,11 @@ def _rewrite_model_settings(config, runner_name: str) -> None:
         f.write(f"\ntip_local_hidden_layers: {tln.get('hidden_layers')}")
         f.write(f"\ntip_local_neurons: {tln.get('neurons')}")
         f.write(f"\ntip_local_zero_init: {tln.get('zero_init')}")
+        f.write(f"\ntip_local_arch: {tln.get('tip_arch')}")
+        f.write(f"\ntip_local_fourier_n_features: {tln.get('fourier_n_features')}")
+        f.write(f"\ntip_local_fourier_sigma: {tln.get('fourier_sigma')}")
+        f.write(f"\ntip_local_siren_omega0: {tln.get('siren_omega0')}")
+        f.write(f"\ntip_local_siren_hidden_omega0: {tln.get('siren_hidden_omega0')}")
         f.write(f"\ntip_local_output_mode: {tln.get('output_mode')}")
         f.write(f"\ntip_local_follow_tip: {tln.get('follow_tip')}")
         f.write(f"\ntip_local_follow_y_mode: {tln.get('follow_y_mode')}")
@@ -90,6 +95,12 @@ def main():
                    help="S1 static refinement passes")
     p.add_argument("--tip-hidden-layers", type=int, default=3)
     p.add_argument("--tip-neurons", type=int, default=80)
+    p.add_argument("--tip-arch", choices=("mlp", "fourier", "siren"), default="mlp",
+                   help="Representation used only by the compact local head")
+    p.add_argument("--tip-fourier-n-features", type=int, default=64)
+    p.add_argument("--tip-fourier-sigma", type=float, default=4.0)
+    p.add_argument("--tip-siren-omega0", type=float, default=30.0)
+    p.add_argument("--tip-siren-hidden-omega0", type=float, default=30.0)
     p.add_argument("--tip-x", type=float, default=0.0)
     p.add_argument("--tip-y", type=float, default=0.0)
     p.add_argument("--static-window", action="store_true",
@@ -145,6 +156,12 @@ def main():
     config.tip_local_net_dict["hidden_layers"] = int(args.tip_hidden_layers)
     config.tip_local_net_dict["neurons"] = int(args.tip_neurons)
     config.tip_local_net_dict["zero_init"] = True
+    config.tip_local_net_dict["tip_arch"] = str(args.tip_arch)
+    config.tip_local_net_dict["fourier_n_features"] = int(args.tip_fourier_n_features)
+    config.tip_local_net_dict["fourier_sigma"] = float(args.tip_fourier_sigma)
+    config.tip_local_net_dict["fourier_seed"] = int(args.seed)
+    config.tip_local_net_dict["siren_omega0"] = float(args.tip_siren_omega0)
+    config.tip_local_net_dict["siren_hidden_omega0"] = float(args.tip_siren_hidden_omega0)
     config.tip_local_net_dict["output_mode"] = str(args.output_mode)
     config.tip_local_net_dict["follow_tip"] = not bool(args.static_window)
     config.tip_local_net_dict["follow_y_mode"] = str(args.follow_y_mode)
@@ -158,6 +175,7 @@ def main():
     tip_tag = (
         f"_tipLocal_rt{args.r_tip}_wr{args.window_radius}"
         f"_h{args.tip_hidden_layers}_n{args.tip_neurons}"
+        f"{('_arch' + args.tip_arch) if args.tip_arch != 'mlp' else ''}"
         f"{('_mode' + args.output_mode) if args.output_mode != 'all' else ''}"
         f"{'_followTip' if config.tip_local_net_dict['follow_tip'] else ''}"
     )
@@ -193,7 +211,7 @@ def main():
     print(f"  tip_xy     = ({args.tip_x}, {args.tip_y})")
     print(f"  follow tip = {config.tip_local_net_dict['follow_tip']} | y_mode = {args.follow_y_mode}")
     print(f"  S1 r_tip   = {args.r_tip} | n_passes = {args.n_passes}")
-    print(f"  local head = {args.tip_hidden_layers}x{args.tip_neurons} | window = {args.window_radius} | mode = {args.output_mode}")
+    print(f"  local head = {args.tip_hidden_layers}x{args.tip_neurons} | arch = {args.tip_arch} | window = {args.window_radius} | mode = {args.output_mode}")
     print(f"  device     = {config.device}")
     print(f"  archive    = {dir_name}")
     print(f"  full path  = {config.model_path}")

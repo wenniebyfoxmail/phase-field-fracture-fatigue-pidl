@@ -87,12 +87,19 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
             tip_neurons=_td.get('neurons', 80),
             zero_init=_td.get('zero_init', True),
             output_mode=_td.get('output_mode', 'all'),
+            tip_arch=_td.get('tip_arch', 'mlp'),
+            tip_fourier_n_features=_td.get('fourier_n_features', 64),
+            tip_fourier_sigma=_td.get('fourier_sigma', 4.0),
+            tip_fourier_seed=_td.get('fourier_seed', network_dict.get('seed', 0)),
+            tip_siren_omega0=_td.get('siren_omega0', 30.0),
+            tip_siren_hidden_omega0=_td.get('siren_hidden_omega0', 30.0),
         )
         print(f"[construct_model] TipLocalNet enabled: tip=({_td.get('x_tip', 0.0)}, "
               f"{_td.get('y_tip', 0.0)}), r_tip={_td.get('r_tip', 0.05)}, "
               f"window_radius={_td.get('window_radius', _td.get('r_tip', 0.05))}, "
               f"local={_td.get('hidden_layers', 3)}x{_td.get('neurons', 80)}, "
-              f"output_mode={_td.get('output_mode', 'all')}")
+              f"output_mode={_td.get('output_mode', 'all')}, "
+              f"tip_arch={_td.get('tip_arch', 'mlp')}")
     else:
         network = NeuralNet(input_dimension=in_dim,
                             output_dimension=domain_extrema.shape[0]+1,

@@ -314,6 +314,14 @@ tip_local_net_dict = {
     "hidden_layers": 3,
     "neurons": 80,
     "zero_init": True,
+    # Local head representation. The global branch remains the baseline MLP;
+    # this only changes the compact crack-tip correction head.
+    "tip_arch": "mlp",  # "mlp" | "fourier" | "siren"
+    "fourier_n_features": 64,
+    "fourier_sigma": 4.0,
+    "fourier_seed": 0,
+    "siren_omega0": 30.0,
+    "siren_hidden_omega0": 30.0,
     # Which raw NN channels receive the local correction. "all" preserves the
     # current experiment; "uv" and "alpha" are representation ablations.
     "output_mode": "all",  # "all" | "uv" | "alpha"
@@ -554,6 +562,7 @@ _tip_local_tag = (
     f"_wr{tip_local_net_dict.get('window_radius', tip_local_net_dict.get('r_tip', 0.05))}"
     f"_h{tip_local_net_dict.get('hidden_layers', 3)}"
     f"_n{tip_local_net_dict.get('neurons', 80)}"
+    f"{('_arch' + tip_local_net_dict.get('tip_arch', 'mlp')) if tip_local_net_dict.get('tip_arch', 'mlp') != 'mlp' else ''}"
     f"{('_mode' + tip_local_net_dict.get('output_mode', 'all')) if tip_local_net_dict.get('output_mode', 'all') != 'all' else ''}"
     f"{'_followTip' if tip_local_net_dict.get('follow_tip', False) else ''}"
     if tip_local_net_dict.get("enable", False) else ""
@@ -648,6 +657,11 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\ntip_local_hidden_layers: {tip_local_net_dict.get("hidden_layers", 3)}')
     file.write(f'\ntip_local_neurons: {tip_local_net_dict.get("neurons", 80)}')
     file.write(f'\ntip_local_zero_init: {tip_local_net_dict.get("zero_init", True)}')
+    file.write(f'\ntip_local_arch: {tip_local_net_dict.get("tip_arch", "mlp")}')
+    file.write(f'\ntip_local_fourier_n_features: {tip_local_net_dict.get("fourier_n_features", 64)}')
+    file.write(f'\ntip_local_fourier_sigma: {tip_local_net_dict.get("fourier_sigma", 4.0)}')
+    file.write(f'\ntip_local_siren_omega0: {tip_local_net_dict.get("siren_omega0", 30.0)}')
+    file.write(f'\ntip_local_siren_hidden_omega0: {tip_local_net_dict.get("siren_hidden_omega0", 30.0)}')
     file.write(f'\ntip_local_output_mode: {tip_local_net_dict.get("output_mode", "all")}')
     file.write(f'\ntip_local_follow_tip: {tip_local_net_dict.get("follow_tip", False)}')
     file.write(f'\ntip_local_follow_y_mode: {tip_local_net_dict.get("follow_y_mode", "centerline")}')
