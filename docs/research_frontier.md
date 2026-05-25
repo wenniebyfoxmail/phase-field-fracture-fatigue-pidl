@@ -13,25 +13,25 @@
 
 ## Current Question
 
-**Phase 1 controlled alignment variants 能否区分 stop-rule / irreversibility / cycle-abstraction mismatch，还是主要差距仍是 localization capacity？**
+**Field-level mismatch 是否还能靠 sampling/refinement/loss/irreversibility 修掉，还是必须转向 representation-localization？**
 
 ## Active Branches
 
-1. **Controlled alignment variants (Phase 1)** (ACTIVE 5/19) — Variant 2 posthoc criterion audit implemented: baseline `u=0.12` crossed criteria give PIDL first hit N=80 vs FEM snapshot N=82, so detector mismatch is small. Variant 3 (`tol_ir=1e-3`, N=100), Variant 4 (explicit cycle, N=5 physical cycles / 25 substeps), and Variant 5 (GRIPHFiTH-style bottom-left `u_x` anchor, N=120) are running on Taobo GPU 2/3/4.
+1. **Representation-localization discriminator** (ACTIVE 5/25) — Sampling/refinement/loss/irreversibility diagnostics did not close the field gap. Next clean discriminator should be a representation-local method: separate tip-local SIREN/FBPINN patch or SDF/discontinuity embedding. Do not mix it with adaptive loss weighting in the first test.
 2. **Phase 2A units-transition smoke** (passive) — `run_pcc_baseline_umax.py` remains a PCC scaling/infrastructure check only, not a Baktheer `N_f` anchor. Mac now has PCC v3 trajectory under GRIPHFiTH; Taobo sync still needed before supervised PCC diagnostics.
 3. **§5 paper plan** (passive, locked 5/14) — §5 改成依赖 Wu 2017 + Baktheer 2024 出版引用，BFGS port 推到 post-paper。任何 §5 wording 不再 quote "N_f ≈ 1500-2500"（已 retract via inbox `4124444`）。
 
 ## Current Best Bet
 
-Phase 1 的 stop-rule mismatch 不是主因。FEM-anchor BC 明显降低 V7-global residual 并把 first-hit 从 baseline `~80` 推到 `93`，所以 essential BC 是真实 trajectory factor；但 tip-zone `psi+` 只提升约 `2-2.5x`，仍差 FEM many OOM。Symmetry 对照也支持这个判断：FEM fair V4 reference 是 exact-pair `2.98e-5`，而 PIDL fem-anchor BC 在 c82 full/right-band/corridor relative RMS 分别约 `4.7e-2 / 5.9e-2 / 1.5e-1`。主叙事仍应压在 representation/localization capacity。
+Field mismatch 仍未解决。Adaptive `lambda_hist` baseline/v4 N100 都断裂（baseline c82→c92 confirm, v4 c80→c90 confirm），但 late logs 显示 `hist_grad=0`、`lambda_hist=1.0`，并未形成真正的 loss balancing。v4 add-only refinement 去掉了 repeated rebuild/transport，但 α field 仍是 thin centerline-like，不是 FEM-like tip localization。Hard irreversibility sigmoid floor 避免 NaN，却在 c99 仍无 fracture，ᾱ_max≈75-76 而 `α_max@bdy=0`。结论：sampling/refinement/constraint bookkeeping 有用，但主瓶颈仍是 representation/localization。
 
 ## Best Next Discriminator
 
-Read remaining `tol_ir=1e-3` Taobo run when it finishes. For completed FEM-anchor BC, use `alignment_compare_baseline_vs_femAnchorBC.csv` plus `femAnchorBC_alpha_symmetry_audit.csv`: V7-global improves strongly, reaction early-cycle improves, but local `psi+` and mirror symmetry remain bottlenecks.
+Run one clean representation-local discriminator, preferably separate tip-local SIREN/FBPINN patch or SDF/discontinuity embedding, with baseline loss unchanged and no adaptive `lambda_hist` in the first pass. Gate by field-level comparison to reverseBC FEM, not only fracture cycle.
 
 ## Switch Condition
 
-若 Variant 3 或 4 让 first-hit / `alpha_bar_max` 移动 >10% 且 V4/V7 不恶化 → promote to N=100/N=300; 若变化 <5% → close as non-dominant alignment factor.
+If a representation-local method improves FEM field alignment near the tip without worsening V7/reaction, promote to N100. If it only shifts N_f or ᾱ_max while the α/ψ fields remain centerline-like, close it as another scalar-metric fix.
 
 ## Parking Lot
 
@@ -39,9 +39,7 @@ Read remaining `tol_ir=1e-3` Taobo run when it finishes. For completed FEM-ancho
 - Hard y² 架构 production (12× slowdown, 暂不做)
 - Multi-seed combo smoke (N=5 × 2 more seeds, ~14h Windows, P3 优先级)
 - Phase 2A ψ_per_cycle vs PCC v3 trajectory comparison (等 Taobo/PIDL result + trajectory sync)
-- §4 v1.6 commit/push (drafts 不进 git，只复制到 obsidian — 已完成)
-- 论文 §5 / Phase 2 章节正文写作 (等 PCC smoke 数字回来再写)
-- **Local spectral tip patch (SIREN, uv-only)** — design + skeleton at `.claude/worktrees/local-spectral-tip-patch/docs/branch_tip_local_spectral.md`. **Gate**: SDF/DENN N=5 smoke result; if SDF closes gap → skip; if SDF partial/fail → launch. No GPU until SDF gate clears. Spec is decoupled: no SDF / no C4 / no Fourier / no α-patch / no adaptive-sampling.
+- True residual-adaptive collocation sampler, detached from the objective weights
 
 ## Recently Closed / Triggered
 
@@ -49,3 +47,4 @@ Read remaining `tol_ir=1e-3` Taobo run when it finishes. For completed FEM-ancho
 - **Phase 2A infrastructure shipped 2026-05-14**: `source/scaling.py` (PCC↔non-dim Buckingham π) + `run_pcc_baseline_umax.py` (Phase 2A units-transition runner) committed (`fd4d944`, `8134163`). External expert P0 fix: `w1_norm = w1_phys/ψ_char` not `/σ_char` (was 775× wrong, would have artificially favored crack growth). α_T_norm=100 vs toy 0.5.
 - **Phase 1 §4 v1.6 lock 2026-05-10**: 三轮 red-team 全部应用 → §4.2 完整 V4+V7 14-method 表。Memory: `finding_v4_v7_cross_method_may10.md`.
 - **References Wu 2026 + Wu 2024 + Baktheer 2024 read 2026-05-10**: 选 PF²-CZM associated (ξ=2) for Phase 2 concrete。
+- **Adaptive sampling/refinement/hard-irreversibility diagnostics 2026-05-25**: baseline/v4 adaptive `lambda_hist` fractured but did not close field mismatch; hard irreversibility no-fracture by c99 with huge ᾱ; v4 add-only refinement useful as bookkeeping, not field closure.

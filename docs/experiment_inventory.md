@@ -1,6 +1,6 @@
 # Experiment Inventory — Purpose-Organized
 
-**Last updated**: 2026-05-05  
+**Last updated**: 2026-05-25
 **Scope**: All PIDL + FEM experiments across Mac / Windows-PIDL / Windows-FEM / Taobo  
 **Format**: purpose → experiments → [机器] result / verdict
 
@@ -49,6 +49,8 @@
 | **MIT-8** K=40（强监督，未摊销） | Mac | done | — |
 | **Dir 6.3 logf** @ u=0.12（对数 f-shape） | Windows | N_f=121（+46%），ᾱ_max=10.83（+16%）→ f-shape 对高 Umax 效果微弱 | ❌ ᾱ_max 无突破 |
 | **Dir 6.3 logf** @ u=0.08/0.09（低 Umax） | Windows | NO fracture in 300 cycles！低 Umax 传播彻底停止 | ❌❌ 使情况更糟；但发现 f-shape 控制低 Umax 传播运动学 |
+| **adaptive λ_hist** baseline/v4 @ u=0.12 N100 | Taobo | baseline: detected c82, confirmed c92, final ᾱ_max=12.08; v4: detected c80, confirmed c90, final ᾱ_max=11.86. Late logs show `hist_grad=0`, `λ_hist=1.0` | ❌ fractures but does not actively rebalance or close field gap |
+| **hard irreversibility** baseline/v4 @ u=0.12 N100 | Taobo | sigmoid floor avoids NaNs, but both runs no fracture by c99; ᾱ_max≈75-76 while `α_max@bdy=0` and tip remains near notch | ❌ negative constraint-form result |
 
 ---
 
@@ -62,6 +64,7 @@
 | **α-2** multi-head（主头+尖端门控头，default gate r_g=0.02） | Mac(dev)+Windows(prod) | T4 modal=0.30 FAIL（需≥0.70）| ❌ FAIL |
 | **α-2** tighter gate r_g=0.005 power=4 | Windows | T4 modal=0.30 FAIL → α-2 架构宣告无效 | ❌ DEAD |
 | **α-3** XFEM 跳跃增益（Heaviside 型连续+跳跃双头） | Windows | T4 modal=0.500 MARGINAL（最优 stationarity）；ᾱ_max@c9=3.04 | ⚠ MARGINAL → **CLOSED OUT 2026-05-06**：not pursued for Phase 1，Path C 给了更好 trajectory metrics |
+| **S2/v4 adaptive refinement** add-only cumulative tip-following | Taobo | v4 + adaptive `lambda_hist` N100: fracture detected c80, confirmed c90; final ᾱ_max=11.86, Kt=916; alpha field still thin/centerline-like | ❌ field mismatch not solved |
 | **Path C** supervised-α @ u=0.12 λ=0 seed=1 | Taobo | N_f=82 EXACT，ᾱ_max=12.08 | ✅ 确认 N_f match seed-robust |
 | **Path C** supervised-α @ u=0.12 λ=0 seed=2 (multi-seed) | Taobo | N_f=82 BIT-EXACT，ᾱ_max=10.17 | ✅ 框架级 N_f match 不依赖 seed |
 | **Path C** supervised-α @ u=0.12 λ=1 (R2) | Taobo | N_f=89，ᾱ_max=**108.9**（vs FEM 270 = 0.40×） | ✅ **最强 ᾱ_max 改善**（4× α-1/α-2/α-3 at c9=9.66）|
@@ -92,6 +95,7 @@
 | **Oracle** 5-Umax sweep（0.08–0.14）| Windows | N_f 全部在 FEM ±10% 内（0.14: −15% Pattern A）；ᾱ_max 11 个量级差异 | ✅ framework vs field level 核心证据 |
 | **Oracle** u=0.11 seed=1/2/3（三种初始化） | Windows | N_f={117,116,114}（Δ=3 cycles），ᾱ_max={11253,1140,3511}（10× 扩散）→ **3 distinct basins** | ✅ multimodal loss landscape 确认 |
 | **posthoc 5-metric 多档案分析**（Mac 分析脚本） | Mac（分析）| 3 新发现：(4) energy budget 守恒（ᾱ_bar_domain ratio=1.08-1.78×）；(5) Pattern A 是高 Umax 专属；(6) Path C a-N 跟踪 FEM 精度比纯物理高 3.4× | ✅ 重构 Ch2 §4 叙事 |
+| **2026-05 adaptive sampling/remesh/hard-ir diagnostic** | Taobo | adaptive λ_hist can fracture, but λ stays at 1.0 in late cycles; v4 add-only refinement fixes repeated rebuild/transport but not field localization; hard irreversibility traps α evolution | ✅ narrows root cause to representation/localization rather than remesh bookkeeping alone |
 
 ---
 
@@ -194,7 +198,7 @@ u=0.11 三 seed N_f spread=3 cycles，但 ᾱ_max 相差 10×（multimodal loss 
 | **1. Baseline** | PIDL u=0.12 精确复现 FEM，零 seed 方差 | ✅ 建立 |
 | **2. 输入/表示层干预** | Williams/Fourier/Enriched 均无法突破 ᾱ_max 天花板 | ❌ 全 NEGATIVE |
 | **3. 疲劳模型/损失干预** | spAlphaT/MIT-8/logf 均无法闭合差距；logf 在低 Umax 破坏传播 | ❌ 全 NEGATIVE |
-| **4. 架构干预** | α-1 微弱改善；α-2 dead；α-3 marginal；Path C 未完成 | ❌/⏳ 未闭合 |
+| **4. 架构干预** | α-1 微弱改善；α-2 dead；α-3 marginal；v4 add-only refinement未闭合field gap；Path C是supervised extension | ❌/⏳ 未闭合 |
 | **5. 机制诊断** | ᾱ_max = field-level；N_f = framework-level；两效应解耦；multimodality = Oracle-specific | ✅ 重大发现，重构 Ch2 |
 | **6. OOD 泛化** | ≤0.13 可靠（±10%）；0.14 系统性低估 −24%；OOD 边界确定 | ✅ §4.6 结论完整 |
 | **7. FEM 收敛** | ℓ/h=15 未收敛，ℓ/h=20 结果 pending | ⏳ FEM-3 待 |
