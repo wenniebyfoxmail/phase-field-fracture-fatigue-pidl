@@ -192,12 +192,34 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # 阶段1：预训练（粗网格，fatigue 始终关闭，与 Manav 原始完全一致）
     # ★ 若已有预训练权重（中断续训），直接加载并跳过预训练
     # =========================================================================
+    def _load_net_state_compat(path, label):
+        state = torch.load(path, map_location=device)
+        try:
+            field_comp.net.load_state_dict(state)
+            return
+        except RuntimeError as exc:
+            msg = str(exc)
+            if 'output_mask' not in msg or not hasattr(field_comp.net, 'output_mask'):
+                raise
+            result = field_comp.net.load_state_dict(state, strict=False)
+            missing = list(getattr(result, 'missing_keys', []))
+            unexpected = list(getattr(result, 'unexpected_keys', []))
+            allowed_missing = ['output_mask']
+            if unexpected or any(key not in allowed_missing for key in missing):
+                raise RuntimeError(
+                    f"Incompatible checkpoint while loading {label}: "
+                    f"missing={missing}, unexpected={unexpected}"
+                ) from exc
+            print(
+                f"[Checkpoint compat] loaded {label} with missing output_mask "
+                f"(new non-trainable TipLocalNet channel mask buffer)"
+            )
+
     _init_ckpt = trainedModel_path / Path('trained_1NN_initTraining.pt')
     if _init_ckpt.exists():
         # ── 断点续训：跳过预训练 ──────────────────────────────────────────────
         print(f"[Checkpoint] 检测到预训练权重，跳过预训练")
-        field_comp.net.load_state_dict(
-            torch.load(_init_ckpt, map_location=device))
+        _load_net_state_compat(_init_ckpt, 'pretrain state')
     else:
         # ── 从头训练：执行预训练 ──────────────────────────────────────────────
         # Pretrain stays on the unrefined coarse mesh — S1 targets the main
@@ -478,8 +500,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _net_file = trainedModel_path / Path(f'trained_1NN_{_last_j}.pt')
         if _net_file.exists():
             _ckpt = torch.load(_latest, map_location=device, weights_only=False)
-            field_comp.net.load_state_dict(
-                torch.load(_net_file, map_location=device))
+            _load_net_state_compat(_net_file, f'cycle {_last_j} network state')
             hist_alpha = _ckpt['hist_alpha'].to(device)
             if fatigue_on:
                 hist_fat      = _ckpt['hist_fat'].to(device)
