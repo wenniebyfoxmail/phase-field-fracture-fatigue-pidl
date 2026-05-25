@@ -258,7 +258,7 @@ class TipLocalNet(nn.Module):
     def __init__(self, input_dimension, output_dimension, n_hidden_layers, neurons,
                  activation, init_coeff=1.0, x_tip=0.0, y_tip=0.0,
                  r_tip=0.05, window_radius=None, tip_hidden_layers=3,
-                 tip_neurons=80, zero_init=True):
+                 tip_neurons=80, zero_init=True, output_mode="all"):
         super().__init__()
         if input_dimension != 2:
             raise ValueError("TipLocalNet expects physical 2D coordinates as input")
@@ -276,11 +276,24 @@ class TipLocalNet(nn.Module):
         self.r_tip = float(r_tip)
         self.window_radius = float(window_radius if window_radius is not None else r_tip)
         self.zero_init = bool(zero_init)
+        self.output_mode = str(output_mode)
+        if self.output_mode not in ("all", "uv", "alpha"):
+            raise ValueError("TipLocalNet output_mode must be one of: all, uv, alpha")
+        if self.output_mode in ("uv", "alpha") and output_dimension < 3:
+            raise ValueError("TipLocalNet uv/alpha output modes expect output_dimension >= 3")
 
         self.global_net = NeuralNet(input_dimension, output_dimension, n_hidden_layers,
                                     neurons, activation, init_coeff)
         self.tip_net = NeuralNet(input_dimension, output_dimension, tip_hidden_layers,
                                  tip_neurons, activation, init_coeff)
+        output_mask = torch.ones(1, output_dimension)
+        if self.output_mode == "uv":
+            output_mask.zero_()
+            output_mask[:, :2] = 1.0
+        elif self.output_mode == "alpha":
+            output_mask.zero_()
+            output_mask[:, 2] = 1.0
+        self.register_buffer("output_mask", output_mask)
 
         self.trainable_activation = (
             self.global_net.trainable_activation or self.tip_net.trainable_activation
@@ -302,12 +315,20 @@ class TipLocalNet(nn.Module):
         self.x_tip = float(x_tip)
         self.y_tip = float(y_tip)
 
-    def forward(self, x):
+    def tip_components(self, x):
+        """Return global/local pieces for diagnostics and ablations."""
         global_out = self.global_net(x)
         tip = x.new_tensor([self.x_tip, self.y_tip])
         x_local = (x - tip) / self.r_tip
-        local_out = self.tip_net(x_local)
-        return global_out + self._tip_window(x) * local_out
+        local_raw = self.tip_net(x_local)
+        local_masked = local_raw * self.output_mask
+        window = self._tip_window(x)
+        local_corr = window * local_masked
+        return global_out, local_raw, window, local_corr
+
+    def forward(self, x):
+        global_out, _, _, local_corr = self.tip_components(x)
+        return global_out + local_corr
 
 
 # =============================================================================

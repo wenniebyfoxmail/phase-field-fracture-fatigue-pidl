@@ -86,11 +86,13 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
             tip_hidden_layers=_td.get('hidden_layers', 3),
             tip_neurons=_td.get('neurons', 80),
             zero_init=_td.get('zero_init', True),
+            output_mode=_td.get('output_mode', 'all'),
         )
         print(f"[construct_model] TipLocalNet enabled: tip=({_td.get('x_tip', 0.0)}, "
               f"{_td.get('y_tip', 0.0)}), r_tip={_td.get('r_tip', 0.05)}, "
               f"window_radius={_td.get('window_radius', _td.get('r_tip', 0.05))}, "
-              f"local={_td.get('hidden_layers', 3)}x{_td.get('neurons', 80)}")
+              f"local={_td.get('hidden_layers', 3)}x{_td.get('neurons', 80)}, "
+              f"output_mode={_td.get('output_mode', 'all')}")
     else:
         network = NeuralNet(input_dimension=in_dim,
                             output_dimension=domain_extrema.shape[0]+1,

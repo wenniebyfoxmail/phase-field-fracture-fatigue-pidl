@@ -314,6 +314,9 @@ tip_local_net_dict = {
     "hidden_layers": 3,
     "neurons": 80,
     "zero_init": True,
+    # Which raw NN channels receive the local correction. "all" preserves the
+    # current experiment; "uv" and "alpha" are representation ablations.
+    "output_mode": "all",  # "all" | "uv" | "alpha"
     # If enabled by a runner, move the compact local correction window to the
     # previous cycle's alpha-tip before fitting the next cycle. This keeps the
     # extra capacity on the active process zone instead of the initial notch tip.
@@ -551,6 +554,7 @@ _tip_local_tag = (
     f"_wr{tip_local_net_dict.get('window_radius', tip_local_net_dict.get('r_tip', 0.05))}"
     f"_h{tip_local_net_dict.get('hidden_layers', 3)}"
     f"_n{tip_local_net_dict.get('neurons', 80)}"
+    f"{('_mode' + tip_local_net_dict.get('output_mode', 'all')) if tip_local_net_dict.get('output_mode', 'all') != 'all' else ''}"
     f"{'_followTip' if tip_local_net_dict.get('follow_tip', False) else ''}"
     if tip_local_net_dict.get("enable", False) else ""
 )
@@ -644,6 +648,7 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\ntip_local_hidden_layers: {tip_local_net_dict.get("hidden_layers", 3)}')
     file.write(f'\ntip_local_neurons: {tip_local_net_dict.get("neurons", 80)}')
     file.write(f'\ntip_local_zero_init: {tip_local_net_dict.get("zero_init", True)}')
+    file.write(f'\ntip_local_output_mode: {tip_local_net_dict.get("output_mode", "all")}')
     file.write(f'\ntip_local_follow_tip: {tip_local_net_dict.get("follow_tip", False)}')
     file.write(f'\ntip_local_follow_y_mode: {tip_local_net_dict.get("follow_y_mode", "centerline")}')
     # ★ Direction 6.1: Spatial α_T 参数

@@ -16,6 +16,12 @@ import sys
 from pathlib import Path
 
 
+def _enable_line_buffering() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(line_buffering=True)
+
+
 def _rewrite_model_settings(config, runner_name: str) -> None:
     fat = config.fatigue_dict
     s1 = config.sidecar_S1_dict
@@ -49,6 +55,7 @@ def _rewrite_model_settings(config, runner_name: str) -> None:
         f.write(f"\ntip_local_hidden_layers: {tln.get('hidden_layers')}")
         f.write(f"\ntip_local_neurons: {tln.get('neurons')}")
         f.write(f"\ntip_local_zero_init: {tln.get('zero_init')}")
+        f.write(f"\ntip_local_output_mode: {tln.get('output_mode')}")
         f.write(f"\ntip_local_follow_tip: {tln.get('follow_tip')}")
         f.write(f"\ntip_local_follow_y_mode: {tln.get('follow_y_mode')}")
         f.write(f"\n[runner] {runner_name}")
@@ -70,6 +77,7 @@ def _resolve_mesh_file(here: Path, filename: str) -> str:
 
 
 def main():
+    _enable_line_buffering()
     p = argparse.ArgumentParser()
     p.add_argument("umax", type=float)
     p.add_argument("--n-cycles", type=int, default=20)
@@ -88,6 +96,8 @@ def main():
                    help="Keep the local correction window fixed at --tip-x/--tip-y")
     p.add_argument("--follow-y-mode", choices=("centerline", "tip"), default="centerline",
                    help="Y coordinate policy when --static-window is not used")
+    p.add_argument("--output-mode", choices=("all", "uv", "alpha"), default="all",
+                   help="Raw NN channels corrected by the tip-local head")
     p.add_argument("--force-cpu", action="store_true")
     args = p.parse_args()
 
@@ -135,6 +145,7 @@ def main():
     config.tip_local_net_dict["hidden_layers"] = int(args.tip_hidden_layers)
     config.tip_local_net_dict["neurons"] = int(args.tip_neurons)
     config.tip_local_net_dict["zero_init"] = True
+    config.tip_local_net_dict["output_mode"] = str(args.output_mode)
     config.tip_local_net_dict["follow_tip"] = not bool(args.static_window)
     config.tip_local_net_dict["follow_y_mode"] = str(args.follow_y_mode)
 
@@ -147,6 +158,7 @@ def main():
     tip_tag = (
         f"_tipLocal_rt{args.r_tip}_wr{args.window_radius}"
         f"_h{args.tip_hidden_layers}_n{args.tip_neurons}"
+        f"{('_mode' + args.output_mode) if args.output_mode != 'all' else ''}"
         f"{'_followTip' if config.tip_local_net_dict['follow_tip'] else ''}"
     )
     s1_tag = f"_sidecarS1_rt{args.r_tip}_np{args.n_passes}"
@@ -181,7 +193,7 @@ def main():
     print(f"  tip_xy     = ({args.tip_x}, {args.tip_y})")
     print(f"  follow tip = {config.tip_local_net_dict['follow_tip']} | y_mode = {args.follow_y_mode}")
     print(f"  S1 r_tip   = {args.r_tip} | n_passes = {args.n_passes}")
-    print(f"  local head = {args.tip_hidden_layers}x{args.tip_neurons} | window = {args.window_radius}")
+    print(f"  local head = {args.tip_hidden_layers}x{args.tip_neurons} | window = {args.window_radius} | mode = {args.output_mode}")
     print(f"  device     = {config.device}")
     print(f"  archive    = {dir_name}")
     print(f"  full path  = {config.model_path}")

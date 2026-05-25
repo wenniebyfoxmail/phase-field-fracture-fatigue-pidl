@@ -22,6 +22,7 @@ import torch
 from torch.utils.data import DataLoader
 import time
 from pathlib import Path
+import csv
 import matplotlib
 matplotlib.use('Agg')          # 非交互后端，训练中安全调用
 import matplotlib.pyplot as plt
@@ -703,6 +704,89 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             print(f"[TipLocalNet] follow_tip=True | y_mode={_tip_local_follow_y_mode} | "
                   f"window_radius={getattr(field_comp.net, 'window_radius', float('nan')):.4f}")
 
+    _tip_local_diag_csv = trainedModel_path / Path('tip_local_diagnostics.csv')
+
+    def _l2_from_tensors(tensors):
+        sq_sum = 0.0
+        n_val = 0
+        for tensor in tensors:
+            if tensor is None:
+                continue
+            val = tensor.detach()
+            sq_sum += float((val * val).sum().item())
+            n_val += int(val.numel())
+        return sq_sum ** 0.5, n_val
+
+    def _param_l2(module):
+        return _l2_from_tensors([p for p in module.parameters() if p.requires_grad])[0]
+
+    def _grad_l2(module):
+        return _l2_from_tensors([p.grad for p in module.parameters() if p.requires_grad])[0]
+
+    def _channel_l2(tensor, channel):
+        if tensor.shape[-1] <= channel:
+            return float('nan')
+        val = tensor[:, channel]
+        return float(torch.linalg.vector_norm(val).detach().cpu().item())
+
+    def _write_tip_local_diag(cycle_idx):
+        if not _tip_local_enabled or not hasattr(field_comp.net, 'tip_components'):
+            return
+        eps = 1e-30
+        with torch.no_grad():
+            global_out, local_raw, window, local_corr = field_comp.net.tip_components(inp)
+            total_raw = global_out + local_corr
+            active_frac = float((window.squeeze(-1) > 0).float().mean().detach().cpu().item())
+            window_mean = float(window.mean().detach().cpu().item())
+            window_max = float(window.max().detach().cpu().item())
+            global_l2 = float(torch.linalg.vector_norm(global_out).detach().cpu().item())
+            local_raw_l2 = float(torch.linalg.vector_norm(local_raw).detach().cpu().item())
+            local_corr_l2 = float(torch.linalg.vector_norm(local_corr).detach().cpu().item())
+            total_raw_l2 = float(torch.linalg.vector_norm(total_raw).detach().cpu().item())
+
+        tip_param_l2 = _param_l2(field_comp.net.tip_net)
+        global_param_l2 = _param_l2(field_comp.net.global_net)
+        tip_grad_l2 = _grad_l2(field_comp.net.tip_net)
+        global_grad_l2 = _grad_l2(field_comp.net.global_net)
+        row = {
+            "cycle": int(cycle_idx),
+            "center_x": float(_tip_local_current_center[0]),
+            "center_y": float(_tip_local_current_center[1]),
+            "output_mode": getattr(field_comp.net, 'output_mode', 'all'),
+            "window_active_frac": active_frac,
+            "window_mean": window_mean,
+            "window_max": window_max,
+            "global_raw_l2": global_l2,
+            "local_raw_l2": local_raw_l2,
+            "local_corr_l2": local_corr_l2,
+            "total_raw_l2": total_raw_l2,
+            "local_raw_over_global": local_raw_l2 / max(global_l2, eps),
+            "local_corr_over_total": local_corr_l2 / max(total_raw_l2, eps),
+            "local_corr_u_l2": _channel_l2(local_corr, 0),
+            "local_corr_v_l2": _channel_l2(local_corr, 1),
+            "local_corr_alpha_l2": _channel_l2(local_corr, 2),
+            "global_param_l2": global_param_l2,
+            "tip_param_l2": tip_param_l2,
+            "tip_param_over_global": tip_param_l2 / max(global_param_l2, eps),
+            "global_grad_l2": global_grad_l2,
+            "tip_grad_l2": tip_grad_l2,
+            "tip_grad_over_global": tip_grad_l2 / max(global_grad_l2, eps),
+        }
+        header_needed = not _tip_local_diag_csv.exists()
+        with open(_tip_local_diag_csv, "a", newline="") as f:
+            writer_csv = csv.DictWriter(f, fieldnames=list(row.keys()))
+            if header_needed:
+                writer_csv.writeheader()
+            writer_csv.writerow(row)
+        print(
+            f"  [TipLocalNet diag] cycle {cycle_idx}: "
+            f"center=({row['center_x']:.4f},{row['center_y']:.4f}) | "
+            f"active={active_frac:.3f} | "
+            f"corr/total={row['local_corr_over_total']:.3e} | "
+            f"grad_tip/global={row['tip_grad_over_global']:.3e}",
+            flush=True,
+        )
+
     # ★ 每圈耗时记录（增量保存到 time_vs_cycle.npy）
     _time_history = _restore_hist('time_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
     _lambda_hist_history = _restore_hist('lambda_hist_vs_cycle.npy') if _alh_enabled else []
@@ -1256,6 +1340,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _time_history.append([j, _cycle_seconds])
         if _alh_enabled:
             _lambda_hist_history.append([j, _lambda_hist])
+        _write_tip_local_diag(j)
 
         # ------------------------------------------------------------------
         # Manav 原始：更新相场不可逆性历史变量 hist_alpha
