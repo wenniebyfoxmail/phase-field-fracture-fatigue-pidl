@@ -7,7 +7,8 @@ First smoke from the 2026-05-23 handoff:
 
 The runner keeps the physical loss unchanged, disables competing
 representation/loss variants, enables static S1 crack-tip refinement, and adds
-a compact local correction head near the initial tip.
+a compact local correction head. By default, the local head window follows the
+previous cycle's alpha-tip so it stays on the active process zone.
 """
 import argparse
 import os
@@ -48,6 +49,8 @@ def _rewrite_model_settings(config, runner_name: str) -> None:
         f.write(f"\ntip_local_hidden_layers: {tln.get('hidden_layers')}")
         f.write(f"\ntip_local_neurons: {tln.get('neurons')}")
         f.write(f"\ntip_local_zero_init: {tln.get('zero_init')}")
+        f.write(f"\ntip_local_follow_tip: {tln.get('follow_tip')}")
+        f.write(f"\ntip_local_follow_y_mode: {tln.get('follow_y_mode')}")
         f.write(f"\n[runner] {runner_name}")
 
 
@@ -81,6 +84,10 @@ def main():
     p.add_argument("--tip-neurons", type=int, default=80)
     p.add_argument("--tip-x", type=float, default=0.0)
     p.add_argument("--tip-y", type=float, default=0.0)
+    p.add_argument("--static-window", action="store_true",
+                   help="Keep the local correction window fixed at --tip-x/--tip-y")
+    p.add_argument("--follow-y-mode", choices=("centerline", "tip"), default="centerline",
+                   help="Y coordinate policy when --static-window is not used")
     p.add_argument("--force-cpu", action="store_true")
     args = p.parse_args()
 
@@ -128,6 +135,8 @@ def main():
     config.tip_local_net_dict["hidden_layers"] = int(args.tip_hidden_layers)
     config.tip_local_net_dict["neurons"] = int(args.tip_neurons)
     config.tip_local_net_dict["zero_init"] = True
+    config.tip_local_net_dict["follow_tip"] = not bool(args.static_window)
+    config.tip_local_net_dict["follow_y_mode"] = str(args.follow_y_mode)
 
     fat = config.fatigue_dict
     fatigue_tag = (
@@ -138,6 +147,7 @@ def main():
     tip_tag = (
         f"_tipLocal_rt{args.r_tip}_wr{args.window_radius}"
         f"_h{args.tip_hidden_layers}_n{args.tip_neurons}"
+        f"{'_followTip' if config.tip_local_net_dict['follow_tip'] else ''}"
     )
     s1_tag = f"_sidecarS1_rt{args.r_tip}_np{args.n_passes}"
     dir_name = (
@@ -169,6 +179,7 @@ def main():
     print("Tip-local correction net on fixed S1 mesh")
     print(f"  U_max      = {args.umax} | n_cycles = {args.n_cycles} | seed = {args.seed}")
     print(f"  tip_xy     = ({args.tip_x}, {args.tip_y})")
+    print(f"  follow tip = {config.tip_local_net_dict['follow_tip']} | y_mode = {args.follow_y_mode}")
     print(f"  S1 r_tip   = {args.r_tip} | n_passes = {args.n_passes}")
     print(f"  local head = {args.tip_hidden_layers}x{args.tip_neurons} | window = {args.window_radius}")
     print(f"  device     = {config.device}")

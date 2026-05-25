@@ -61,4 +61,5 @@ if __name__ == "__main__":
           fatigue_dict=fatigue_dict,                         # ★ 传入疲劳字典
           adaptive_sampling_dict=adaptive_sampling_dict,     # ★ 2026-05-13 Branch 2 C6
           sidecar_S1_dict=sidecar_S1_dict,                   # ★ 2026-05-12 sidecar S1
-          sidecar_S2_dict=sidecar_S2_dict)                   # ★ 2026-05-13 sidecar S2 adaptive
+          sidecar_S2_dict=sidecar_S2_dict,                   # ★ 2026-05-13 sidecar S2 adaptive
+          tip_local_net_dict=tip_local_net_dict)             # ★ 2026-05-25 moving tip-local window

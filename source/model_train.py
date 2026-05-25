@@ -127,7 +127,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
           mit8_dict=None,                            # ★ MIT-8 supervised warmup
           adaptive_sampling_dict=None,               # ★ 2026-05-13 Branch 2 C6
           sidecar_S1_dict=None,                      # ★ 2026-05-12 sidecar S1 (static-tip oversample)
-          sidecar_S2_dict=None):                     # ★ 2026-05-13 sidecar S2 (adaptive / tip-following / score-driven)
+          sidecar_S2_dict=None,                      # ★ 2026-05-13 sidecar S2 (adaptive / tip-following / score-driven)
+          tip_local_net_dict=None):                  # ★ 2026-05-25 moving tip-local window
     '''
     Neural network training: pretraining with a coarser mesh in the first
     stage before the main training proceeds.
@@ -660,6 +661,48 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _williams_enabled = getattr(field_comp, 'williams_enabled', False)
     _x_tip_psi_history = _restore_hist('x_tip_psi_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
 
+    # ★ 2026-05-25: Moving window for TipLocalNet.
+    # The local correction branch is only useful while its compact window
+    # overlaps the active crack tip.  For SENT, the alpha-tip x coordinate is
+    # already recorded per cycle; using the previous cycle's value before the
+    # next fit keeps the local branch on the propagating process zone without
+    # changing the physical energy functional.
+    _tip_local_cfg = tip_local_net_dict or {}
+    _tip_local_enabled = bool(_tip_local_cfg.get('enable', False)) and hasattr(field_comp.net, 'tip_net')
+    _tip_local_follow = _tip_local_enabled and bool(_tip_local_cfg.get('follow_tip', False))
+    _tip_local_follow_y_mode = str(_tip_local_cfg.get('follow_y_mode', 'centerline'))
+    _tip_local_window_x_history = _restore_hist('tip_local_window_x_vs_cycle.npy')
+    _tip_local_window_y_history = _restore_hist('tip_local_window_y_vs_cycle.npy')
+    _tip_local_alpha_tip_y_history = _restore_hist('tip_local_alpha_tip_y_vs_cycle.npy')
+    _tip_local_x0 = float(_tip_local_cfg.get('x_tip', getattr(field_comp.net, 'x_tip', 0.0)))
+    _tip_local_y0 = float(_tip_local_cfg.get('y_tip', getattr(field_comp.net, 'y_tip', 0.0)))
+    _tip_local_x_max = float(field_comp.domain_extrema[0, 1].detach().cpu().item())
+    _tip_local_current_center = (_tip_local_x0, _tip_local_y0)
+
+    def _set_tip_local_center(x_val, y_val, reason):
+        nonlocal _tip_local_current_center
+        if not _tip_local_enabled:
+            return
+        x_val = float(x_val)
+        y_val = float(y_val)
+        if hasattr(field_comp.net, 'set_tip_center'):
+            field_comp.net.set_tip_center(x_val, y_val)
+        else:
+            field_comp.net.x_tip = x_val
+            field_comp.net.y_tip = y_val
+        _tip_local_current_center = (x_val, y_val)
+        if (not _tip_local_window_x_history or
+                not _tip_local_window_y_history or
+                abs(float(_tip_local_window_x_history[-1]) - x_val) > 1e-12 or
+                abs(float(_tip_local_window_y_history[-1]) - y_val) > 1e-12):
+            print(f"  [TipLocalNet] window center=({x_val:.4f}, {y_val:.4f}) {reason}")
+
+    if _tip_local_enabled:
+        _set_tip_local_center(_tip_local_x0, _tip_local_y0, "(initial)")
+        if _tip_local_follow:
+            print(f"[TipLocalNet] follow_tip=True | y_mode={_tip_local_follow_y_mode} | "
+                  f"window_radius={getattr(field_comp.net, 'window_radius', float('nan')):.4f}")
+
     # ★ 每圈耗时记录（增量保存到 time_vs_cycle.npy）
     _time_history = _restore_hist('time_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
     _lambda_hist_history = _restore_hist('lambda_hist_vs_cycle.npy') if _alh_enabled else []
@@ -778,6 +821,18 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
     for j, disp_i in enumerate(disp[start_j:], start=start_j):
         field_comp.lmbda = torch.tensor(disp_i).to(device)
+        if _tip_local_follow:
+            if _x_tip_history:
+                _center_x = float(_x_tip_history[-1])
+                _center_x = max(_crack_mouth_x, min(_center_x, _tip_local_x_max))
+                if _tip_local_follow_y_mode == 'tip' and _tip_local_alpha_tip_y_history:
+                    _center_y = float(_tip_local_alpha_tip_y_history[-1])
+                else:
+                    _center_y = _tip_local_y0
+            else:
+                _center_x = _tip_local_x0
+                _center_y = _tip_local_y0
+            _set_tip_local_center(_center_x, _center_y, f"for cycle {j} from previous alpha-tip")
         if (j % _log_every == 0) or _frac_detected or _dense_sampling:
             print(f'idx: {j}; displacement/amplitude: {field_comp.lmbda}')
         loss_data = list()
@@ -1497,6 +1552,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             _x_tip_history.append(crack_length)
             _tip_x = crack_tip_xy[0].item()
             _tip_y = crack_tip_xy[1].item()
+            if _tip_local_enabled:
+                _tip_local_alpha_tip_y_history.append(float(_tip_y))
             if (j % _log_every == 0) or _frac_detected or _dense_sampling:
                 print(f"  [crack_tip]    = ({_tip_x:.4f}, {_tip_y:.4f})  "
                       f"L∞_length = {crack_length:.4f}  "
@@ -1550,6 +1607,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             _ckpt_data['_frac_detected']           = _frac_detected
             _ckpt_data['_frac_cycle']              = _frac_cycle
             _ckpt_data['_frac_confirm_remaining']  = _frac_confirm_remaining
+            if _tip_local_enabled:
+                _ckpt_data['_tip_local_center'] = _tip_local_current_center
         if _alh_enabled:
             _ckpt_data['_lambda_hist'] = _lambda_hist
         if _S2_enabled and _S2_state is not None:
@@ -1586,6 +1645,16 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 _xt = np.array(_x_tip_history)
                 np.save(str(trainedModel_path / 'x_tip_alpha_vs_cycle.npy'), _xt)
                 np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),       _xt)
+            if _tip_local_enabled:
+                _tip_local_window_x_history.append(_tip_local_current_center[0])
+                _tip_local_window_y_history.append(_tip_local_current_center[1])
+                np.save(str(trainedModel_path / 'tip_local_window_x_vs_cycle.npy'),
+                        np.array(_tip_local_window_x_history))
+                np.save(str(trainedModel_path / 'tip_local_window_y_vs_cycle.npy'),
+                        np.array(_tip_local_window_y_history))
+                if _tip_local_alpha_tip_y_history:
+                    np.save(str(trainedModel_path / 'tip_local_alpha_tip_y_vs_cycle.npy'),
+                            np.array(_tip_local_alpha_tip_y_history))
             if _williams_enabled and _x_tip_psi_history:
                 np.save(str(trainedModel_path / 'x_tip_psi_vs_cycle.npy'),
                         np.array(_x_tip_psi_history))

@@ -314,6 +314,11 @@ tip_local_net_dict = {
     "hidden_layers": 3,
     "neurons": 80,
     "zero_init": True,
+    # If enabled by a runner, move the compact local correction window to the
+    # previous cycle's alpha-tip before fitting the next cycle. This keeps the
+    # extra capacity on the active process zone instead of the initial notch tip.
+    "follow_tip": False,
+    "follow_y_mode": "centerline",  # "centerline" keeps y_tip=0 for SENT
 }
 
 
@@ -546,6 +551,7 @@ _tip_local_tag = (
     f"_wr{tip_local_net_dict.get('window_radius', tip_local_net_dict.get('r_tip', 0.05))}"
     f"_h{tip_local_net_dict.get('hidden_layers', 3)}"
     f"_n{tip_local_net_dict.get('neurons', 80)}"
+    f"{'_followTip' if tip_local_net_dict.get('follow_tip', False) else ''}"
     if tip_local_net_dict.get("enable", False) else ""
 )
 
@@ -638,6 +644,8 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\ntip_local_hidden_layers: {tip_local_net_dict.get("hidden_layers", 3)}')
     file.write(f'\ntip_local_neurons: {tip_local_net_dict.get("neurons", 80)}')
     file.write(f'\ntip_local_zero_init: {tip_local_net_dict.get("zero_init", True)}')
+    file.write(f'\ntip_local_follow_tip: {tip_local_net_dict.get("follow_tip", False)}')
+    file.write(f'\ntip_local_follow_y_mode: {tip_local_net_dict.get("follow_y_mode", "centerline")}')
     # ★ Direction 6.1: Spatial α_T 参数
     file.write(f'\n--- spatial_alpha_T ---')
     file.write(f'\nspAlphaT_enable: {_sp_cfg.get("enable", False)}')

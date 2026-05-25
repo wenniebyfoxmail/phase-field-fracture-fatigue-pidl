@@ -297,6 +297,11 @@ class TipLocalNet(nn.Module):
         self.tip_net.output_layer.weight.data.zero_()
         self.tip_net.output_layer.bias.data.zero_()
 
+    def set_tip_center(self, x_tip, y_tip=0.0):
+        """Move the compact local correction window in physical coordinates."""
+        self.x_tip = float(x_tip)
+        self.y_tip = float(y_tip)
+
     def forward(self, x):
         global_out = self.global_net(x)
         tip = x.new_tensor([self.x_tip, self.y_tip])
