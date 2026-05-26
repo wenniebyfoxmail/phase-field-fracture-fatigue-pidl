@@ -150,3 +150,17 @@ The canonical branch spec lives in:
 - **Implication**:
   - Run only N40 first, warm-started from the validated N20 `h=1.0` checkpoint, and inspect the first adaptive update around cycle 29 before promoting any longer horizon.
   - Treat this as a diagnostic branch layered on S2a, not a replacement for the clean fixed-λ S2a production baseline.
+
+## 2026-05-22 · v4 cumulative add-only VALIDATED — diffusion confirmed as the plateau cause
+
+- **Decision**: ACCEPT v4 cumulative add-only refinement as the correct S2a implementation. Close the "S2a is a method-negative" hypothesis — the ~4.25 plateau was an implementation artifact (state-variable diffusion), not physics.
+- **Based on**: runs-ledger entry `asamp_S2a_v4_cumulative_N100_seed1` (Taobo `pidl_archives/..._v4fix`, N_f=83).
+- **Reason**:
+  - v4 full ᾱ trajectory tracks S1 (cycle-20 5.84 vs S1 5.31 vs rebuild plateau 4.25; cycle-40 8.36 vs 8.13; N_f 83 vs S1 80-82; ᾱ_max(N_f) 11.35 vs ~11). It **escapes the 4.25 plateau** that ALL six rebuild-mode variants (nearest-elem, L2+NN-max, root+tip union, hysteresis, adaptive_lambda_hist, re-equilibration) hit regardless of intervention.
+  - Discriminating experiment is clean: same tip-following physics, only the transport implementation changed (rebuild-from-original + spatial transfer → add-only incremental + parent-index lossless transport). 4.25 → 11.3. This isolates the cause to **repeated state-variable diffusion across mesh transfers** (Perić-class transfer-operator smoothing; literature in `references/adaptive_sampling/`).
+  - Mechanism: v4 never rebuilds from the original mesh; retained elements keep exact history (parent index = identity), new children inherit directly from their parent once, and the refined wake is never coarsened. hist_fat integral conserved to 1.000000 in unit tests; ᾱ peak no longer削平.
+  - Mirror symmetry stays PIDL-class (crack-band RMS 0.017→0.058 to fracture; max|skew|~0.46 localized at the front), not degraded by adaptive refinement.
+- **Implication**:
+  - **Scientific takeaway**: correctly-implemented adaptive tip-following sampling ≈ static-tip S1 at Umax=0.12 SENS. The earlier −42% was purely the diffusion artifact. Adaptive sampling is a *correct, neutral-to-S1* mechanism here; its expected advantage (dense zone follows the crack) would manifest on geometries/horizons where a static zone fully misaligns — not strongly exercised by this case.
+  - **For the paper**: §4.7 can now state the sidecar conclusion cleanly — (a) sampling dilution explains a bounded part of the PIDL-FEM gap (S1 +18% vs baseline), (b) the dominant lever remains representation-side (C4+Fourier), (c) naive dynamic remeshing of a history-dependent PINN silently loses accumulation via state-variable diffusion; add-only/parent-index transport (or variable-node hierarchical refinement, per AMR-fatigue literature) is required.
+  - **Next (separate branch)**: the tip-local representation × adaptive-sampling stack (exp18: mlp/siren/fourier tip-local nets on the v4 cumulative mesh) is in flight on Taobo — that tests whether mesh-side v4 + representation-side tip-net exceeds either alone. Track under its own entries; not part of the v4-alone verdict.

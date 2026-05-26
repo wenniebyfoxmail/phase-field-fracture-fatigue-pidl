@@ -335,3 +335,27 @@ Copy this block for each completed run.
 - **v4 add-only N20 hard-irreversibility**: Taobo GPU6, PID `2214392`, log `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-6525a9f/SENS_tensile/logs/v4_N20_hardirr_sigmoid_resume_gpu6_20260525_061852.log`.
   Archive: `gpu-taobo:/mnt/data2/drtao/projects/phase-field-pidl-hardirr-6525a9f-runs/hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N20_R0.0_Umax0.12_sidecarS2_cumulative_tipfol_rt0.05_np1_hardirr/`.
 - **Startup verified**: both logs show `[Checkpoint] 从 step 4 恢复，继续 step 5/19`; v4 also restored the current refined mesh (`40704` nodes, `81186` elements, `swaps=1`, `skips=4`).
+
+## 2026-05-22 · asamp_S2a_v4_cumulative_N100_seed1 (DONE — validated)
+
+- **Code state**: commit `4cef8cc` (v4 cumulative add-only) + `15fc84c` (fit.py dep) + `6715329` (resumable). refine_mode='cumulative'.
+- **Sampler**: S2a tip_following, refine_mode=cumulative, r_tip=0.05, n_passes=1, hysteresis_fraction=1.0
+- **Seed**: 1 | **Umax**: 0.12 | **Horizon**: N=100 (fractured at N_f=83)
+- **Output**: `gpu-taobo:/mnt/data2/drtao/pidl_archives/hl_8_..._N100_..._sidecarS2_cumulative_tipfol_rt0.05_np1_v4fix/`
+- **Cycle-by-cycle (v4 vs S1 3-seed ref vs rebuild plateau)**:
+  | cycle | v4 ᾱ_max | S1 ref | rebuild variants |
+  |-------|----------|--------|------------------|
+  | 4  | 2.29  | 2.43  | 2.47 |
+  | 10 | 3.29  | 3.42  | 3.28 |
+  | 20 | **5.84** | 5.31 | **4.25 (plateau)** |
+  | 30 | 7.63  | 6.62  | — |
+  | 40 | 8.36  | 8.13  | 4.26 |
+  | 50 | 8.74  | 9.18  | 4.30 |
+  | 60 | 9.25  | 9.98  | 4.34 |
+  | 80 | 10.98 | 11.03 | — |
+  | 83 (N_f) | 11.35 | — | — |
+- **N_f**: v4=83 (baseline 84, S1 seeds 80-82) — matches.
+- **Kt**: healthy 8.6-18 through propagation, jumps 771→1044 at fracture (cycle 80+).
+- **Mirror symmetry (α(x,y) vs α(x,−y), symmetric probe grid)**: crack-band RMS grows 0.017 (c0) → 0.058 (N_f); tip-band RMS 0.02-0.04; max|skew| ~0.46 localized at crack front (front drifts ~1 element off centerline). PIDL-class (FEM baseline mirror_rms_d=0.007 is ~8× tighter); not degraded by adaptive refinement vs S1 (~0.02 early).
+- **Figures**: `references/adaptive_sampling/v4_phasefield_2026-05-22/v4_phasefield_evolution.png` (6-frame α evolution), `v4_symmetry_skew.png` (4-frame crack-front skew).
+- **Verdict**: **v4 cumulative add-only VALIDATED.** Full ᾱ trajectory tracks S1 and ESCAPES the 4.25 rebuild plateau (cycle-20 5.84 vs 4.25). N_f and ᾱ_max(N_f) match S1/baseline. Confirms the plateau in all rebuild variants (nearest-elem, L2+NN-max, union, hysteresis, adapthist, reeq) was **state-variable diffusion from repeated rebuild-from-original transfer**, NOT physical and NOT a tip-following pathology. Correctly-implemented adaptive tip-following ≈ static-tip S1 at this Umax. Gates 1/2/3 all passed.
