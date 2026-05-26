@@ -19,7 +19,6 @@ model_train.py  ★ 相比 Manav 原始版本的修改
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
 import time
 from pathlib import Path
 import matplotlib
@@ -179,10 +178,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             mesh_file=coarse_mesh_file, device=device
         )
         outp = torch.zeros(inp.shape[0], 1).to(device)
-        training_set = DataLoader(
-            torch.utils.data.TensorDataset(inp, outp),
-            batch_size=inp.shape[0], shuffle=False
-        )
+        # full-batch (batch_size=N) + shuffle=False: a DataLoader here just tore the
+        # tensor into N rows via __getitem__ and re-collated every optimizer step
+        # (profiled at ~50-70% of wall). Feed the single full batch directly instead.
+        training_set = [(inp, outp)]
         field_comp.lmbda = torch.tensor(disp[0]).to(device)
 
         loss_data = list()
@@ -227,10 +226,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         mesh_file=fine_mesh_file, device=device
     )
     outp = torch.zeros(inp.shape[0], 1).to(device)
-    training_set = DataLoader(
-        torch.utils.data.TensorDataset(inp, outp),
-        batch_size=inp.shape[0], shuffle=False
-    )
+    # full-batch (batch_size=N) + shuffle=False: DataLoader was pure overhead here
+    # (tore tensor into N rows + re-collated every optimizer step, ~50-70% of wall).
+    training_set = [(inp, outp)]
 
     # ★ δ-1 element-level IS: create ElementDataset (uniform p_e init)
     _d1_cfg = delta1_dict if (delta1_dict and delta1_dict.get('enable', False)) else None
