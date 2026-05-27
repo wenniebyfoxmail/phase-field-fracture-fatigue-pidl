@@ -4,7 +4,8 @@
 PIDL's current numerical-gradient path expects a Gmsh triangular mesh.  The
 GRIPHFiTH SENT reference mesh is stored as quadrilateral connectivity in
 mesh_geometry.mat, so this script splits every quad into two triangles and
-writes a lightweight Gmsh 2.2 ASCII file.
+writes a lightweight Gmsh 4.1 ASCII file compatible with the project's
+gmshparser dependency.
 """
 from __future__ import annotations
 
@@ -62,19 +63,23 @@ def load_and_split(mesh_mat: Path, diagonal: str) -> tuple[np.ndarray, np.ndarra
     return nodes, tri
 
 
-def write_gmsh22(path: Path, nodes: np.ndarray, tri: np.ndarray) -> None:
+def write_gmsh41(path: Path, nodes: np.ndarray, tri: np.ndarray) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="ascii") as f:
-        f.write("$MeshFormat\n2.2 0 8\n$EndMeshFormat\n")
+        f.write("$MeshFormat\n4.1 0 8\n$EndMeshFormat\n")
         f.write("$Nodes\n")
-        f.write(f"{len(nodes)}\n")
+        f.write(f"1 {len(nodes)} 1 {len(nodes)}\n")
+        f.write(f"2 1 0 {len(nodes)}\n")
+        for i in range(1, len(nodes) + 1):
+            f.write(f"{i}\n")
         for i, (x, y) in enumerate(nodes, start=1):
-            f.write(f"{i} {x:.16g} {y:.16g} 0\n")
+            f.write(f"{x:.16g} {y:.16g} 0\n")
         f.write("$EndNodes\n")
         f.write("$Elements\n")
-        f.write(f"{len(tri)}\n")
+        f.write(f"1 {len(tri)} 1 {len(tri)}\n")
+        f.write(f"2 1 2 {len(tri)}\n")
         for i, (a, b, c) in enumerate(tri, start=1):
-            f.write(f"{i} 2 0 {a + 1} {b + 1} {c + 1}\n")
+            f.write(f"{i} {a + 1} {b + 1} {c + 1}\n")
         f.write("$EndElements\n")
 
 
@@ -91,7 +96,7 @@ def main() -> None:
 
     nodes, tri = load_and_split(args.mesh_mat.expanduser(), args.diagonal)
     area = _tri_area(nodes, tri)
-    write_gmsh22(args.out, nodes, tri)
+    write_gmsh41(args.out, nodes, tri)
     print(f"Wrote {args.out}")
     print(f"  nodes     : {len(nodes)}")
     print(f"  triangles : {len(tri)}")
