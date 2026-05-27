@@ -27,6 +27,127 @@
 
 ## Active Requests
 
+## 2026-05-27 · Request 16: export FEM mechanism/energy diagnostics for cycle-matched PIDL comparison
+
+**Goal**: Build a mechanism-level FEM vs PIDL comparison, not just final `N_f` or final damage plots. Mac wants to identify where the nonlinear fatigue loop first diverges: displacement/strain, stress-energy concentration, fatigue history, damage width/smoothness, or irreversibility/history enforcement. The immediate target is the BC-matched reverseBC `u12` FEM reference, because current PIDL default is closest to that BVP.
+
+**Context / local FEM reference**:
+- FEM project root on Mac: `/Users/wenxiaofang/phase-field-fracture-with-pidl/GRIPHFiTH`
+- Relevant FEM setting family: `Scripts/fatigue_fracture/INPUT_SENT_PIDL_12*.m`
+- Existing reverseBC handoff: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_2026-05-22/`
+- Existing reverseBC snapshots contain `psi_elem`, `alpha_bar_elem`, `f_alpha_elem`, `d_elem`, plus `mesh_geometry.mat`.
+- Missing for energy/mechanism closure: peak-load `u_node`, exact/consistent FEM energy terms, and ideally stress/strain or GP-level fields.
+
+**INPUT file**: Prefer the already completed reverseBC `u12` run from Request 15 / outbox 2026-05-22. If re-running/post-processing is needed, use the same reverseBC clone of `INPUT_SENT_PIDL_12.m`:
+
+```matlab
+split_type = 'AMOR';
+diss_fct   = 'AT1';
+irrev      = 'PENALTY';
+E=1, ni=0.3, Gc=0.01, ell=0.01, alpha_T=0.5, p=2;
+uy_final=0.12, R=0, n_step=8;
+fix_X = top+bottom, fix_Y = bottom, disp_Y = top;
+```
+
+Please do not change the main reference mesh for this request. Mac will compare FEM and PIDL on a common evaluation grid by interpolation/evaluation. A coarse/fine FEM mesh convergence check is useful later, but should be a separate diagnostic so we do not mix mesh effects with mechanism effects.
+
+**Mesh**: Use the existing reverseBC mesh if possible: `mesh_geometry.mat` with 77,730 elements and 77,900 nodes. If any new output uses a different mesh, ship its own `mesh_geometry.mat` with node order and connectivity matching all nodal fields.
+
+**Expected outputs**:
+
+Please create a new handoff folder, e.g.
+
+`~/Downloads/_pidl_handoff_v2/reverseBC_u12_mechanism_energy/`
+
+and mirror to OneDrive as usual. Minimum cycle set:
+
+`c1, c20, c40, c60, c70, c74`
+
+If cheap, also export every 5 or 10 cycles as a lightweight CSV/table, but the six snapshots above are enough for first comparison.
+
+For each selected cycle, please export one `.mat` file with as many of the following as feasible:
+
+| field | shape | priority | why Mac needs it |
+|---|---:|---:|---|
+| `u_node` | `N_node x 2` | must | compute FEM strain/stress/elastic energy and compare displacement relaxation |
+| `d_node` or `p_field_node` | `N_node x 1` | high | compute damage gradients/smoothness directly; `d_elem` alone is not enough for gradients |
+| `d_elem` | `N_elem x 1` | must | damage shape, crack tip, width, boundary reach |
+| `psi_elem` | `N_elem x 1` | must | stress-energy concentration / Kt-style comparison |
+| `alpha_bar_elem` | `N_elem x 1` | must | fatigue history accumulation |
+| `f_alpha_elem` | `N_elem x 1` | must | fatigue degradation field |
+| `sigma_gp` | `N_elem x N_gp x 3` | high | stress concentration, local/global redistribution; components `(xx, yy, xy)` |
+| `strain_gp` | `N_elem x N_gp x 3` | medium-high | independent check of strain from `u_node` |
+| `psi_plus_gp` | `N_elem x N_gp` | high | distinguish peak singularity from element-averaged smoothing |
+| `d_gp` and/or `grad_d_gp` | `N_elem x N_gp`, `N_elem x N_gp x 2` | high | process-zone width and smoothness |
+| `xy_gp`, `w_gp`, `detJ_gp` or element areas | compatible GP shapes | high | allow Mac to integrate energy exactly/consistently |
+| FEM internal history variables | whatever native shape | medium | e.g. history slot(s), fatigue-history increment, penalty/irreversibility residual if available |
+
+Please also export one `energy_vs_cycle.csv` for all cycles up to fracture with columns as available:
+
+```text
+cycle
+reaction_Fy_peak
+top_displacement_peak
+W_ext_peak_or_cycle
+E_elastic_FEM
+E_damage_FEM
+E_total_FEM
+d_max
+alpha_bar_max
+f_min
+psi_plus_max
+psi_plus_p99
+crack_tip_x
+damage_width_alpha02
+damage_width_alpha05
+right_boundary_dmax
+right_boundary_N_d_gt_095
+```
+
+If GRIPHFiTH already computes internal energies, please export those exact solver values and document the formula/source variable. If not, export the raw `u_node`, `d_node`, GP fields, and quadrature weights so Mac can recompute:
+
+```text
+E_el = integral of degraded elastic energy density at peak load
+E_d  = AT1 fracture functional, using Gc=0.01 and ell=0.01
+```
+
+For PIDL comparison, Mac will keep PIDL's `E_hist` separate. FEM may not have an equivalent `E_hist` because irreversibility is enforced by PENALTY/history update rather than by the same NN loss term. If FEM has a penalty energy or irreversibility residual, please export it; otherwise state that FEM has no directly comparable `E_hist`.
+
+**Specific mechanism questions this should answer**:
+
+1. Local vs global: does FEM release elastic energy locally at the crack tip while PIDL relaxes a longer horizontal band?
+2. Gradient and smoothness: is FEM damage/process-zone width finite and smooth compared with PIDL's thin strip?
+3. Relaxation and concentration: after damage grows, where does FEM's `psi_plus` hotspot move, and how strong is it compared with PIDL's lower `Kt`?
+4. History amplification: does `alpha_bar` first diverge near the true tip, or only after PIDL has already taken a different damage path?
+5. Boundary reach: in FEM, does high damage remain a propagating process zone until fracture, or does it form the same continuous high-damage band to the right boundary that PIDL often shows?
+
+**Acceptance criteria**:
+
+Mac can build a cycle-matched table/figure containing, for FEM and PIDL on the same evaluation grid:
+
+```text
+cycle / fraction-of-life
+crack-tip x
+damage/process-zone width
+alpha/d max
+alpha_bar max
+f_min
+psi_plus max, p99, and Kt-style top-10 metric
+E_el and E_d
+right-boundary high-damage count
+```
+
+For PIDL only, Mac will add:
+
+```text
+E_hist
+grad_E_el, grad_E_d, grad_E_hist
+tip-patch corr/total
+tip-patch grad_tip/global
+```
+
+**Priority**: **high**. This is the cleanest way to decide whether the PIDL/FEM gap is driven by mesh/resolution, NN representation, fatigue-history update, energy balance, or crack-tip tracking.
+
 ## 2026-05-21 · Request 15: ship reverseBC snapshots to handoff dir → BC-matched FEM reference for PIDL field comparison
 
 **Goal**: Mac now has a strong PIDL result (J-path-independence regulariser fractures cleanly, N_f=82) and did a field-level comparison vs FEM. But the comparison used the **baseline FEM** (`_pidl_handoff_v2/.../u12_cycle_*.mat`, fix_X bottom_left, traction-free laterals) while **PIDL's default BC clamps u_x=0 on top+bottom** (NN correction vanishes there + cosθ=0) — i.e. PIDL solves the **reverseBC** BVP, not the baseline one. So the comparison is BC-mismatched. The reverseBC FEM run (Request 13, outbox `2ce76ec`, N_f=74) is the **BC-matched** reference we actually need.
