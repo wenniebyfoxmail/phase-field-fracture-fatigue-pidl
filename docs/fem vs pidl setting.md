@@ -734,3 +734,114 @@ Interpretation:
 > larger. Therefore the new BC variant is not a strict FEM reproduction; it is
 > a controlled alignment that isolates BC effects while leaving the
 > localization/symmetry representation gap exposed.
+
+## 12. May 27 Cross-Repository Setting Audit
+
+This audit compares the executable PIDL settings in
+`SENS_tensile/config.py`, `SENS_tensile/field_computation.py`, and the current
+runner scripts against the GRIPHFiTH/FEM inputs in
+`Scripts/fatigue_fracture/INPUT_SENT_PIDL*.m` and the PCC inputs. The purpose is
+to make the phase-specific comparison explicit: the Phase 1 toy setting is a
+controlled benchmark, while the Phase 2 PCC work is not yet an apples-to-apples
+FEM/PIDL reproduction.
+
+### 12.1 Phase map
+
+| Phase | Purpose | FEM setting | PIDL setting | Comparison status |
+|---|---|---|---|---|
+| Monotonic SENS / brittle | original PIDL-style monotonic check | SENS tensile, `AT1 + AMOR + PENALTY` | original PIDL monotonic schedule | fairly aligned |
+| Phase 1 toy SENT fatigue | main FEM-vs-PIDL benchmark | normalized SENT, `AT1 + AMOR + PENALTY` | normalized SENT, `AT1 + volumetric`, Carrara fatigue | aligned enough for life benchmark, not strict solver equivalence |
+| Phase 1 alignment variants | diagnose mismatch sources | reverseBC, mesh studies, AT2 variants | exact BC, FEM-anchor BC, symmetry, Fourier, oracle, etc. | controlled ablations |
+| Phase 2A PCC PIDL | units-transition smoke | not a direct FEM reference | toy geometry reused with PCC-scaled material | not apples-to-apples |
+| Phase 2 PCC FEM | concrete reference attempt | PCC geometry/material, AT2 or Wu PF-CZM | PIDL does not yet match kernel/geometry | trajectory/reference only |
+
+### 12.2 Phase 1 toy SENT: aligned items and mismatches
+
+| Item | FEM / GRIPHFiTH | PIDL | Match? |
+|---|---|---|---|
+| domain | nominal `[-0.5,0.5]^2` SENT | `domain_extrema = [[-0.5,0.5],[-0.5,0.5]]` | yes |
+| crack/notch | left-edge crack/notch from `x=-0.5` to `x=0`, separated Abaqus notch | `crack_dict`: `x_init=-0.5`, `L_crack=0.5`, angle `0` | nominally yes |
+| mesh/discretization | imported Abaqus quads, `SENT_mesh.inp`; reference series uses 77,730 quads | Gmsh triangular meshes `meshed_geom1.msh`, `meshed_geom2.msh`; NN trial space | method difference |
+| stress state | plane strain | plane-strain energy assumptions in validation code | yes |
+| material | `E=1`, `nu=0.3`, `Gc=0.01`, `ell=0.01` | `mat_E=1`, `mat_nu=0.3`, `w1=1`, `l0=0.01` | normalized match |
+| phase-field model | `AT1` | `AT1` | yes |
+| split | `AMOR` | `se_split='volumetric'` | yes |
+| irreversibility | FEM `PENALTY` | PIDL `tol_ir=5e-3` plus alpha constraint | not identical |
+| fatigue law | Carrara accumulator, asymptotic degradation | `accum_type='carrara'`, `degrad_type='asymptotic'` | yes |
+| fatigue parameters | `alpha_T=0.5`, `p=2.0` | `alpha_T=0.5`, square asymptotic law; `n_power=2.0` for variants | yes |
+| loading | cyclic, `R=0`, vertical `uy_final=0.08-0.14`, FEM substeps | cyclic abstraction, `R_ratio=0`, `disp_max=Umax`, one peak solve per cycle by default | nominal amplitude match; path differs |
+| failure event | boundary penetration, `d >= 0.95` | right-boundary `alpha > 0.95` with count/confirmation | similar concept, different implementation |
+
+The most important essential-BC mismatch is horizontal displacement. FEM baseline
+fixes `u_x` only at the bottom-left anchor, fixes `u_y` on the bottom, and
+prescribes `u_y` on the top. The default PIDL vertical-loading ansatz fixes
+`u=0` on both top and bottom because the correction bubble vanishes there and
+`cos(theta)=0`. This is why both directions of diagnostic exist:
+
+- FEM `INPUT_SENT_PIDL_12_reverseBC.m`: clamp `u_x` on top and bottom to mimic
+  old PIDL.
+- PIDL `run_fem_anchor_bc_umax.py`: use a FEM-anchor ansatz to mimic GRIPHFiTH's
+  single horizontal anchor.
+
+### 12.3 Loading-cycle comparison
+
+FEM Phase 1 resolves the loading branch inside each cycle, usually with
+`n_step=8`, `loading='cyclic'`, `discretization='loading'`, `R=0`, and
+`uy_final=Umax`. PIDL baseline uses `disp_cyclic = ones(n_cycles) * disp_max`;
+each training step is the peak state of one cycle, with unloading represented
+through the fatigue-history update/reset logic. Therefore `Umax` and `R` are
+aligned, but intra-cycle fatigue timing is not identical.
+
+For claims, this means `N_f` agreement is life-level evidence, not evidence that
+the two solvers followed the same fatigue-history path.
+
+### 12.4 Monotonic SENS / brittle setting
+
+The monotonic SENS check is a separate phase. FEM
+`Scripts/brittle_fracture/INPUT_SENS_tensile.m` uses:
+
+- `AT1 + AMOR + PENALTY`
+- `E=1`, `nu=0.3`, `Gc=0.01`, `ell=0.01`
+- bottom `u=v=0`, top `u=0`, `v=lambda`
+- crack prescribed through `non_hom_pf`
+- monotonic loading to `uy_final=0.2` in 40 uniform steps
+
+This is intended to match the original PIDL monotonic reference more closely
+than the cyclic fatigue SENT runs. PIDL's monotonic schedule is non-uniform:
+`linspace(0,0.075,4) + linspace(0.1,0.2,21)`, with the zero removed.
+
+### 12.5 Phase 2 PCC is not apples-to-apples
+
+| Item | FEM PCC v3 | PIDL Phase 2A |
+|---|---|---|
+| goal | concrete FEM reference attempt | units-transition smoke |
+| geometry | `100 x 100 mm` SENT, `a0=5 mm`, `a0/W=0.05` | toy half-width notch, `a0/W=0.5` |
+| mesh | PCC quad mesh, `h_tip ~= ell/5 = 0.4 mm` | Phase 1 PIDL toy mesh |
+| material | `E=30 GPa`, `nu=0.18`, `Gc=0.10 N/mm`, `ell=2 mm`, `ft=3 MPa` | same physical constants after nondimensional scaling |
+| kernel | Wu `PF_CZM` in v3, or `AT2 + MIEHE` in v2 | AT1 or AT2 PIDL kernel, default AT1 |
+| fatigue threshold | `alpha_T=5 N/mm^2` physical | normalized `alpha_T ~= 100` |
+| loading | `uy=7.5e-3 mm`, intended `sigma_max=0.75 ft` | intact-bar displacement-equivalent label, not cracked-SENT calibrated |
+
+Therefore Phase 2A PIDL should be described as a scaling/infrastructure smoke,
+not as a reproduction of FEM PCC or Baktheer fatigue life. The FEM PCC outputs
+can be used as trajectory diagnostics or supervision targets, but not as a clean
+`N_f` oracle for the current PIDL Phase 2A setup.
+
+### 12.6 Safe wording
+
+Safe:
+
+> PIDL is benchmarked against a FEM reference under a deliberately aligned toy
+> SENT setting. The comparison evaluates whether PIDL can recover FEM-scale
+> fatigue life, while field diagnostics test where the surrogate departs from
+> FEM.
+
+Unsafe:
+
+> PIDL reproduces FEM.
+
+Best short summary:
+
+> Phase 1 is a fair surrogate benchmark with named BC, cycle-abstraction, mesh,
+> and stop-rule mismatches. Phase 2A is a PCC scaling smoke, not a direct
+> FEM/PIDL reproduction setting.
