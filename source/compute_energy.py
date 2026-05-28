@@ -36,7 +36,8 @@ import torch.nn as nn
 # Computes the total strain energy, damage energy and irreversibility penalty
 def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn=None,
                    f_fatigue=1.0, crack_tip_weights=None,
-                   element_subset=None, importance_weights=None):
+                   element_subset=None, importance_weights=None,
+                   element_mask=None):
     """
     计算总能量
 
@@ -78,6 +79,12 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
         inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn,
         f_fatigue=f_fatigue
     )
+
+    if element_mask is not None:
+        mask = element_mask.to(device=E_el.device, dtype=E_el.dtype)
+        E_el = E_el * mask
+        E_d = E_d * mask
+        E_hist_penalty = E_hist_penalty * mask
 
     # ★ δ-1 element-level IS: weighted mean over sampled subset
     if element_subset is not None:
@@ -324,7 +331,7 @@ def strain_energy_with_split(strain_11, strain_22, strain_12, alpha, matprop, pf
     返回：
     ------
     E_el : 总弹性能（含退化）
-    E_el_p : 退化拉伸弹性能 g(α)·ψ⁺  ← ★ get_psi_plus_per_elem 使用此返回值
+    E_el_p : 未退化拉伸/正能量密度 ψ⁺_0；get_psi_plus_per_elem 再乘 g(α)
     """
     fun_EDegrade, _ = pffmodel.Edegrade(alpha)
 

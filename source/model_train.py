@@ -328,9 +328,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         # Used by: (a) spatial α_T modulation; (b) post-hoc mirror α ratchet break
         _sp_cfg     = fatigue_dict.get('spatial_alpha_T', {})
         _mirror_cfg = fatigue_dict.get('mirror_alpha_y',  {})
+        _void_cfg   = fatigue_dict.get('void_notch_mask', {})
         _need_centroids = (
             (_sp_cfg.get('enable', False) and T_conn is not None) or
-            (_mirror_cfg.get('enable', False) and T_conn is not None)
+            (_mirror_cfg.get('enable', False) and T_conn is not None) or
+            (_void_cfg.get('enable', False) and T_conn is not None)
         )
         if _need_centroids:
             _Tc = T_conn if isinstance(T_conn, torch.Tensor) else torch.as_tensor(T_conn, device=device)
@@ -345,6 +347,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _mirror_cfg.get('enable', False):
                 print(f"[mirrorα] Post-hoc mirror α (A1) enabled: "
                       f"hist_fat symmetrized about y=0 each cycle | n_elem={n_elem}")
+            if _void_cfg.get('enable', False):
+                print(f"[void-notch] enabled: x <= {_void_cfg.get('x_max', 0.0)}, "
+                      f"|y| <= {_void_cfg.get('half_width', 0.02)}")
         else:
             elem_centroids = None
             if _sp_cfg.get('enable', False):
@@ -353,6 +358,27 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _mirror_cfg.get('enable', False):
                 print("[mirrorα] WARNING: enable=True but T_conn is None "
                       "(autodiff mode); mirror α NOT applied")
+            if _void_cfg.get('enable', False):
+                print("[void-notch] WARNING: enable=True but T_conn is None "
+                      "(autodiff mode); void-like mask NOT applied")
+
+        _void_notch_mask = None
+        _void_energy_mask = None
+        if _void_cfg.get('enable', False) and elem_centroids is not None:
+            _vn_xmax = float(_void_cfg.get('x_max', 0.0))
+            _vn_hw = float(_void_cfg.get('half_width', 0.02))
+            _void_notch_mask = (
+                (elem_centroids[:, 0] <= _vn_xmax)
+                & (elem_centroids[:, 1].abs() <= _vn_hw)
+            )
+            if _void_cfg.get('mask_energy', True):
+                _void_energy_mask = (~_void_notch_mask).to(dtype=area_T.dtype)
+            print(f"[void-notch] mask elements: void_like={int(_void_notch_mask.sum().item())} "
+                  f"active={int((~_void_notch_mask).sum().item())} "
+                  f"mask_energy={_void_cfg.get('mask_energy', True)} "
+                  f"mask_fatigue={_void_cfg.get('mask_fatigue', True)}")
+        else:
+            _void_energy_mask = None
 
         # Pre-compute mirror index map once (mesh fixed across cycles)
         _mirror_idx = None
@@ -363,6 +389,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     else:
         f_fatigue = 1.0
         elem_centroids = None
+        _void_notch_mask = None
+        _void_energy_mask = None
         print("[Fatigue] fatigue_on=False → 等价 Manav 原始行为")
 
     # ★ 方向3：裂尖自适应权重初始化
@@ -614,6 +642,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
                 grad_annealing_state=grad_annealing_state,  # ★ Algo1 (applies pre-computed λ; no update in LBFGS)
+                element_mask=_void_energy_mask,         # ★ void-like notch diagnostic
                 j_path_dict=j_path_dict,                # ★ J path-independence reg
             )
             loss_data = loss_data + loss_data1
@@ -641,6 +670,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
                 grad_annealing_state=grad_annealing_state,  # ★ Algo1 (updates λ every update_every epochs)
                 delta1_dataset=_d1_dataset if _d1_active_cycle else None,  # ★ δ-1
+                element_mask=_void_energy_mask,         # ★ void-like notch diagnostic
                 j_path_dict=j_path_dict,                # ★ J path-independence reg
             )
             loss_data = loss_data + loss_data2
@@ -715,6 +745,13 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     fem_oracle_dict=_fem_oracle,
                 )
 
+            if (_void_notch_mask is not None
+                    and _void_cfg.get('mask_fatigue', True)):
+                psi_plus_elem = psi_plus_elem.clone()
+                psi_plus_prev = psi_plus_prev.clone()
+                psi_plus_elem[_void_notch_mask] = 0.0
+                psi_plus_prev[_void_notch_mask] = 0.0
+
             # ★ Direction 4: 用 ψ⁺ 重心估计裂尖坐标 → 更新 field_comp.x_tip
             # 必须在 update_fatigue_history 之前，确保本圈 psi_plus_elem 是峰值状态
             # ★ Fix B: cycle 0 保持初始 x_tip（α 场未收敛，ψ⁺ 分布被预裂缝污染，
@@ -758,6 +795,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             hist_fat = update_fatigue_history(
                 hist_fat, psi_plus_elem, psi_plus_prev, fatigue_dict
             )
+            if (_void_notch_mask is not None
+                    and _void_cfg.get('mask_fatigue', True)):
+                hist_fat = hist_fat.clone()
+                hist_fat[_void_notch_mask] = 0.0
 
             # ★ 2026-05-08 A1: post-hoc mirror α — break Carrara ratchet
             # Symmetrize ᾱ about y=0 BEFORE f(ᾱ) is computed for next cycle.
@@ -771,6 +812,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             f_fatigue = compute_fatigue_degrad(
                 hist_fat, fatigue_dict, elem_centroids=elem_centroids
             )
+            if (_void_notch_mask is not None
+                    and _void_cfg.get('mask_fatigue', True)):
+                f_fatigue = f_fatigue.clone()
+                f_fatigue[_void_notch_mask] = 1.0
 
             # ★ 重置 psi_plus_prev，正确模拟循环加载的卸载阶段
             # 原因：NN 只求解峰值状态，不显式模拟卸载。
@@ -868,7 +913,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 u_el, v_el, alpha_el = field_comp.fieldCalculation(inp)
                 E_el_val, _, _ = compute_energy(
                     inp, u_el, v_el, alpha_el, hist_alpha,
-                    matprop, pffmodel, area_T, T_conn, f_fatigue
+                    matprop, pffmodel, area_T, T_conn, f_fatigue,
+                    element_mask=_void_energy_mask
                 )
             E_el_scalar = float(E_el_val.item())
             E_el_history.append(E_el_scalar)

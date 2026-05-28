@@ -173,6 +173,20 @@ fatigue_dict = {
         "x_tip"  : 0.0,              # 固定裂尖 x（SENT 预裂缝 tip，与 ansatz_dict 一致）
         "y_tip"  : 0.0,              # 固定裂尖 y
     },
+
+    # ── 2026-05-28: void-like initial notch diagnostic ─────────────────────
+    # FEM represents the initial notch as void, while baseline PIDL represents
+    # it as a d=1 damaged material region. When enabled, this mask excludes the
+    # initial pre-crack corridor from the variational energy and fatigue-history
+    # update. It is a diagnostic approximation, not a true internal free-boundary
+    # geometry.
+    "void_notch_mask": {
+        "enable": False,
+        "x_max": 0.0,
+        "half_width": 0.02,
+        "mask_energy": True,
+        "mask_fatigue": True,
+    },
 }
 
 # ★ Direction 4: Williams 裂尖增强输入特征

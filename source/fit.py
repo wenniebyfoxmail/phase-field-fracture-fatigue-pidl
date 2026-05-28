@@ -28,7 +28,7 @@ from compute_energy import compute_energy, gradients, strain_energy_with_split
 
 def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
                   area_T, T_conn, f_fatigue, supervised_dict, symmetry_dict,
-                  side_traction_dict, state):
+                  side_traction_dict, state, element_mask=None):
     """Wang 2020 Algo 1: update λ_i = (1-α)λ_i + α·(max|∇L_r| / mean|∇L_i|).
 
     Uses torch.autograd.grad (not .backward) to avoid polluting .grad buffers.
@@ -72,7 +72,8 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
         inp_p = inp_train
     u_p, v_p, a_p = field_comp.fieldCalculation(inp_p)
     el, ed, eh = compute_energy(inp_p, u_p, v_p, a_p, hist_alpha,
-                                matprop, pffmodel, area_T, T_conn, f_fatigue)
+                                matprop, pffmodel, area_T, T_conn, f_fatigue,
+                                element_mask=element_mask)
     eps = torch.as_tensor(1e-30, dtype=el.dtype, device=el.device)
     lv_el = torch.log10(el + eps)
     lv_ed = torch.log10(ed + eps)
@@ -362,6 +363,7 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
         symmetry_dict=None,
         side_traction_dict=None,
         grad_annealing_state=None,
+        element_mask=None,
         j_path_dict=None):
     # ★ grad_annealing_state: if provided and enable=True, pre-computed λ values
     #   from Algorithm 1 (updated during RPROP phase) are applied here.
@@ -391,7 +393,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                 # ★ 传入 crack_tip_weights（裂尖自适应加权）；None = 均匀
                 loss_E_el, loss_E_d, loss_hist = compute_energy(inp_train, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
                                                                 f_fatigue=f_fatigue,
-                                                                crack_tip_weights=crack_tip_weights)
+                                                                crack_tip_weights=crack_tip_weights,
+                                                                element_mask=element_mask)
 
                 # 3. 损失函数 = log(总能量) ！！！
                 loss_var = torch.log10(loss_E_el + loss_E_d + loss_hist)
@@ -502,6 +505,7 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                             side_traction_dict=None,
                             grad_annealing_state=None,
                             delta1_dataset=None,
+                            element_mask=None,
                             j_path_dict=None):
     # ★ grad_annealing_state (2026-05-19 Algorithm 1):
     #   Mutable dict passed from model_train.train(). Persists across cycles.
@@ -530,7 +534,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                 _algo1_update(
                     field_comp, inp_train, hist_alpha, matprop, pffmodel,
                     area_T, T_conn, f_fatigue,
-                    supervised_dict, symmetry_dict, side_traction_dict, _a1)
+                    supervised_dict, symmetry_dict, side_traction_dict, _a1,
+                    element_mask=element_mask)
 
             # Read current Algo1 weights (updated above or from previous cycle)
             _lam_sup   = float(_a1.get('lambda_sup',   1.0))
@@ -557,7 +562,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                                                             f_fatigue=f_fatigue,
                                                             crack_tip_weights=crack_tip_weights,
                                                             element_subset=_d1_subset,
-                                                            importance_weights=_d1_imp_w)
+                                                            importance_weights=_d1_imp_w,
+                                                            element_mask=element_mask)
             loss_var = torch.log10(loss_E_el + loss_E_d + loss_hist)
 
             # weight regularization
