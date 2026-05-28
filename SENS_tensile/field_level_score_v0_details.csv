@@ -1,0 +1,272 @@
+method,evidence,component,field,metric,cycle,score,note
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,crack_strip_mean,40,1.4798232174442454,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,max,40,0.01106374137312905,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,p99,40,0.302503777051387,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,tip_2l0_mean,40,1.2419229269039995,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,tip_l0_mean,40,1.1438333844825164,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,top1_mean,40,0.12215337915516811,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,crack_strip_mean,40,7.928772129893726,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,max,40,9.848236351724205,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,p99,40,0.7776013226461223,
+baseline,same_probe_projected_FEM_to_PIDL,strict_boundary_band,psi_plus,right_band_mean,40,0.01723200622562359,
+baseline,same_probe_projected_FEM_to_PIDL,strict_tip_driver,psi_plus,tip_2l0_mean,40,11.286946847277878,
+baseline,same_probe_projected_FEM_to_PIDL,strict_tip_driver,psi_plus,tip_l0_mean,40,11.884811150206371,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,top1_mean,40,8.898874165784363,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,crack_strip_mean,40,0.44430276049000655,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,max,40,2.5931301076659405,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,p99,40,0.09478644624844769,
+baseline,same_probe_projected_FEM_to_PIDL,strict_boundary_band,alpha_bar,right_band_mean,40,0.06573430836218477,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,tip_2l0_mean,40,0.3972712600109517,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,tip_l0_mean,40,0.7969604602586501,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,top1_mean,40,0.23255877356230362,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,crack_strip_mean,40,0.028062126762033363,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,max,40,0.0,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,p99,40,0.0,
+baseline,same_probe_projected_FEM_to_PIDL,strict_boundary_band,fatigue_f,right_band_mean,40,0.03044656303546108,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,tip_2l0_mean,40,0.0527107578373655,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,tip_l0_mean,40,0.14642814834633308,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,top1_mean,40,0.0,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,crack_strip_mean,70,0.7295714771485579,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,max,70,0.024666784499134724,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,p99,70,0.051822255915655084,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,tip_2l0_mean,70,1.2091445193545718,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,tip_l0_mean,70,1.041577385592524,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,top1_mean,70,0.018424154330976338,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,crack_strip_mean,70,9.939606344881316,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,max,70,10.361006780392024,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,p99,70,6.011574360752862,
+baseline,same_probe_projected_FEM_to_PIDL,strict_boundary_band,psi_plus,right_band_mean,70,0.0062270195392933785,
+baseline,same_probe_projected_FEM_to_PIDL,strict_tip_driver,psi_plus,tip_2l0_mean,70,12.71468497702102,
+baseline,same_probe_projected_FEM_to_PIDL,strict_tip_driver,psi_plus,tip_l0_mean,70,13.1405698144487,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,top1_mean,70,10.565659149753094,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,crack_strip_mean,70,0.5452251642133333,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,max,70,3.1753001288185145,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,p99,70,0.08185806509409105,
+baseline,same_probe_projected_FEM_to_PIDL,strict_boundary_band,alpha_bar,right_band_mean,70,0.0330122079824676,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,tip_2l0_mean,70,0.6485881830706782,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,tip_l0_mean,70,1.210522019629514,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,top1_mean,70,0.553441536747756,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,crack_strip_mean,70,0.12114822862076047,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,max,70,0.0,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,p99,70,0.0,
+baseline,same_probe_projected_FEM_to_PIDL,strict_boundary_band,fatigue_f,right_band_mean,70,0.016131294387675743,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,tip_2l0_mean,70,0.062007750516970696,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,tip_l0_mean,70,0.1634493382388682,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,top1_mean,70,0.0,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,crack_strip_mean,82,0.4317358875754994,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,max,82,0.025808005018055653,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,p99,82,0.020728905040196977,
+baseline,same_probe_projected_FEM_to_PIDL,strict_boundary_band,damage_alpha,right_band_mean,82,0.2663162763711252,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,tip_2l0_mean,82,1.2279993623453955,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,tip_l0_mean,82,1.045073903256759,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,top1_mean,82,0.005788299247986688,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,crack_strip_mean,82,13.608244836324985,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,max,82,12.856666240769968,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,p99,82,15.123767468129232,
+baseline,same_probe_projected_FEM_to_PIDL,strict_boundary_band,psi_plus,right_band_mean,82,12.608719717739282,
+baseline,same_probe_projected_FEM_to_PIDL,strict_tip_driver,psi_plus,tip_2l0_mean,82,13.178923897466857,
+baseline,same_probe_projected_FEM_to_PIDL,strict_tip_driver,psi_plus,tip_l0_mean,82,13.466274272514799,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,top1_mean,82,13.645434362717836,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,crack_strip_mean,82,0.6147888247751165,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,max,82,3.3846662970266825,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,p99,82,0.14180396020140282,
+baseline,same_probe_projected_FEM_to_PIDL,strict_boundary_band,alpha_bar,right_band_mean,82,0.011268181469656469,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,tip_2l0_mean,82,0.7866218610648937,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,tip_l0_mean,82,1.4127445583979092,
+baseline,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,top1_mean,82,0.8050929931012785,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,crack_strip_mean,82,0.20873901980386847,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,max,82,0.0,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,p99,82,0.0,
+baseline,same_probe_projected_FEM_to_PIDL,strict_boundary_band,fatigue_f,right_band_mean,82,0.02095578525915232,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,tip_2l0_mean,82,0.06453003511784948,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,tip_l0_mean,82,0.16903617683954816,
+baseline,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,top1_mean,82,0.0,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,crack_strip_mean,40,1.3379739639891026,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,max,40,0.011115063040022785,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,p99,40,0.28846448544199405,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,tip_2l0_mean,40,1.195856763282108,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,tip_l0_mean,40,1.11550288963343,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,top1_mean,40,0.12085395321350859,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,crack_strip_mean,40,7.893582069143547,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,max,40,10.033724433220794,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,p99,40,0.8353172637482554,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_boundary_band,psi_plus,right_band_mean,40,0.032423731848597565,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_tip_driver,psi_plus,tip_2l0_mean,40,10.61319712081486,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_tip_driver,psi_plus,tip_l0_mean,40,10.949686413260553,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,top1_mean,40,8.955455301027513,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,crack_strip_mean,40,0.48691811792857975,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,max,40,2.238832385199409,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,p99,40,0.0202451764390538,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_boundary_band,alpha_bar,right_band_mean,40,0.000182355387652955,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,tip_2l0_mean,40,0.16080298105026292,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,tip_l0_mean,40,0.5105524563450434,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,top1_mean,40,0.03441214188269789,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,crack_strip_mean,40,0.04122865468344772,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,max,40,0.0,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,p99,40,0.0,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_boundary_band,fatigue_f,right_band_mean,40,1.3031084028777882e-07,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,tip_2l0_mean,40,0.02004480658558533,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,tip_l0_mean,40,0.044575858917466835,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,top1_mean,40,0.0,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,crack_strip_mean,70,0.530813627338715,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,max,70,0.024438887853205866,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,p99,70,0.049562659359167045,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,tip_2l0_mean,70,1.128058442494378,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,tip_l0_mean,70,0.9970761089685817,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,top1_mean,70,0.018484920166392974,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,crack_strip_mean,70,9.732859903254285,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,max,70,10.50601506295356,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,p99,70,6.02785690024003,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_boundary_band,psi_plus,right_band_mean,70,0.02387635776276759,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_tip_driver,psi_plus,tip_2l0_mean,70,11.916901854857622,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_tip_driver,psi_plus,tip_l0_mean,70,12.336663380106874,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,top1_mean,70,10.579009527871346,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,crack_strip_mean,70,0.529113099442589,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,max,70,2.7487558851756573,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,p99,70,0.013509303065996289,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_boundary_band,alpha_bar,right_band_mean,70,0.01603067095294617,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,tip_2l0_mean,70,0.3925980099420538,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,tip_l0_mean,70,0.8969416758762037,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,top1_mean,70,0.33041124683579304,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,crack_strip_mean,70,0.14754417202898665,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,max,70,0.0,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,p99,70,0.0,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_boundary_band,fatigue_f,right_band_mean,70,0.004227459094568052,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,tip_2l0_mean,70,0.013488383496488936,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,tip_l0_mean,70,0.05915253703978058,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,top1_mean,70,0.0,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,crack_strip_mean,82,0.23060563128669168,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,max,82,0.02556665726531491,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,p99,82,0.019111755884823035,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,tip_2l0_mean,82,1.1283827061132017,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,tip_l0_mean,82,0.9908680901053621,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,damage_alpha,top1_mean,82,0.006019188653345012,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,crack_strip_mean,82,10.814230185709247,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,max,82,10.779170544862437,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,p99,82,11.303632465691754,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_boundary_band,psi_plus,right_band_mean,82,7.252170994851899,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_tip_driver,psi_plus,tip_2l0_mean,82,12.280034288993956,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_tip_driver,psi_plus,tip_l0_mean,82,12.575826159263789,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,psi_plus,top1_mean,82,11.385651159583693,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,crack_strip_mean,82,0.5574933674279312,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,max,82,2.939576565180984,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,p99,82,0.07234539994994808,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_boundary_band,alpha_bar,right_band_mean,82,0.007303087961051464,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,tip_2l0_mean,82,0.5262325892902886,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,tip_l0_mean,82,1.0958648474083914,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_damage_history,alpha_bar,top1_mean,82,0.577712954910471,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,crack_strip_mean,82,0.2103534614707188,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,max,82,0.0,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,p99,82,0.0,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_boundary_band,fatigue_f,right_band_mean,82,0.017546506591132553,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,tip_2l0_mean,82,0.01204715052574696,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,tip_l0_mean,82,0.06430361321086647,
+femAnchorBC,same_probe_projected_FEM_to_PIDL,strict_probe,fatigue_f,top1_mean,82,0.0,
+baseline,same_probe_compact,compact_tip_driver,psi_plus,tip_2l0_mean,40,11.286946847277784,
+baseline,same_probe_compact,compact_boundary_band,psi_plus,right_band_mean,40,0.01723200622562119,
+baseline,same_probe_compact,compact_boundary_band,alpha_bar,right_band_mean,40,0.06573430836218457,
+baseline,same_probe_compact,compact_boundary_band,fatigue_f,right_band_mean,40,0.03044656303546108,
+baseline,same_probe_compact,compact_tip_driver,psi_plus,tip_2l0_mean,70,12.714684977021008,
+baseline,same_probe_compact,compact_boundary_band,psi_plus,right_band_mean,70,0.00622701953929282,
+baseline,same_probe_compact,compact_boundary_band,alpha_bar,right_band_mean,70,0.03301220798246739,
+baseline,same_probe_compact,compact_boundary_band,fatigue_f,right_band_mean,70,0.016131294387675743,
+baseline,same_probe_compact,compact_tip_driver,psi_plus,tip_2l0_mean,82,13.178923897466603,
+baseline,same_probe_compact,compact_boundary_band,psi_plus,right_band_mean,82,12.608719717739282,
+baseline,same_probe_compact,compact_boundary_band,alpha_bar,right_band_mean,82,0.011268181469656689,
+baseline,same_probe_compact,compact_boundary_band,fatigue_f,right_band_mean,82,0.02095578525915232,
+femAnchorBC,same_probe_compact,compact_tip_driver,psi_plus,tip_2l0_mean,40,10.613197120814853,
+femAnchorBC,same_probe_compact,compact_boundary_band,psi_plus,right_band_mean,40,0.03242373184860353,
+femAnchorBC,same_probe_compact,compact_boundary_band,alpha_bar,right_band_mean,40,0.00018235538765306602,
+femAnchorBC,same_probe_compact,compact_boundary_band,fatigue_f,right_band_mean,40,1.3031084028777882e-07,
+femAnchorBC,same_probe_compact,compact_tip_driver,psi_plus,tip_2l0_mean,70,11.91690185485761,
+femAnchorBC,same_probe_compact,compact_boundary_band,psi_plus,right_band_mean,70,0.02387635776276702,
+femAnchorBC,same_probe_compact,compact_boundary_band,alpha_bar,right_band_mean,70,0.01603067095294617,
+femAnchorBC,same_probe_compact,compact_boundary_band,fatigue_f,right_band_mean,70,0.004227459094568052,
+femAnchorBC,same_probe_compact,compact_tip_driver,psi_plus,tip_2l0_mean,82,12.280034288993882,
+femAnchorBC,same_probe_compact,compact_boundary_band,psi_plus,right_band_mean,82,7.25217099485195,
+femAnchorBC,same_probe_compact,compact_boundary_band,alpha_bar,right_band_mean,82,0.007303087961051464,
+femAnchorBC,same_probe_compact,compact_boundary_band,fatigue_f,right_band_mean,82,0.017546506591132553,
+baseline,energy_reaction_proxy,reaction_guardrail,reaction,dEel_dU / FEM_proxy,1,0.04253401632340265,large late-cycle values can be amplified by near-zero FEM reaction
+baseline,energy_reaction_proxy,reaction_guardrail,reaction,dEel_dU / FEM_proxy,40,0.06018555387468565,large late-cycle values can be amplified by near-zero FEM reaction
+baseline,energy_reaction_proxy,reaction_guardrail,reaction,dEel_dU / FEM_proxy,70,0.23885978142993672,large late-cycle values can be amplified by near-zero FEM reaction
+baseline,energy_reaction_proxy,reaction_guardrail,reaction,dEel_dU / FEM_proxy,80,4.337707664065778,large late-cycle values can be amplified by near-zero FEM reaction
+baseline,energy_reaction_proxy,reaction_guardrail,reaction,dEel_dU / FEM_proxy,82,1.8426058517979411,large late-cycle values can be amplified by near-zero FEM reaction
+femAnchorBC,energy_reaction_proxy,reaction_guardrail,reaction,dEel_dU / FEM_proxy,1,0.006899932332713663,large late-cycle values can be amplified by near-zero FEM reaction
+femAnchorBC,energy_reaction_proxy,reaction_guardrail,reaction,dEel_dU / FEM_proxy,40,0.05194080817217287,large late-cycle values can be amplified by near-zero FEM reaction
+femAnchorBC,energy_reaction_proxy,reaction_guardrail,reaction,dEel_dU / FEM_proxy,70,0.2539208454105628,large late-cycle values can be amplified by near-zero FEM reaction
+femAnchorBC,energy_reaction_proxy,reaction_guardrail,reaction,dEel_dU / FEM_proxy,80,0.5555286703935985,large late-cycle values can be amplified by near-zero FEM reaction
+femAnchorBC,energy_reaction_proxy,reaction_guardrail,reaction,dEel_dU / FEM_proxy,82,3.131269007045355,large late-cycle values can be amplified by near-zero FEM reaction
+baseline,boundary_residual_raw,v7_guardrail,v7,both_rms_t_over_ref,40,0.0267180321957368,"raw residual; lower is better, not a log-ratio to FEM"
+baseline,boundary_residual_raw,v7_guardrail,v7,abs_boundary_work/Eel,40,0.1511705043759932,"raw residual; lower is better, not a log-ratio to FEM"
+baseline,boundary_residual_raw,v7_guardrail,v7,both_rms_t_over_ref,70,0.019742556221089,"raw residual; lower is better, not a log-ratio to FEM"
+baseline,boundary_residual_raw,v7_guardrail,v7,abs_boundary_work/Eel,70,0.3619606169050922,"raw residual; lower is better, not a log-ratio to FEM"
+baseline,boundary_residual_raw,v7_guardrail,v7,both_rms_t_over_ref,80,0.0328756063435386,"raw residual; lower is better, not a log-ratio to FEM"
+baseline,boundary_residual_raw,v7_guardrail,v7,abs_boundary_work/Eel,80,2.525520695074533,"raw residual; lower is better, not a log-ratio to FEM"
+baseline,boundary_residual_raw,v7_guardrail,v7,both_rms_t_over_ref,82,0.0306079721848983,"raw residual; lower is better, not a log-ratio to FEM"
+baseline,boundary_residual_raw,v7_guardrail,v7,abs_boundary_work/Eel,82,2.5359919961876627,"raw residual; lower is better, not a log-ratio to FEM"
+baseline,boundary_residual_raw,v7_guardrail,v7,both_rms_t_over_ref,90,0.0318854005852106,"raw residual; lower is better, not a log-ratio to FEM"
+baseline,boundary_residual_raw,v7_guardrail,v7,abs_boundary_work/Eel,90,2.612878459657487,"raw residual; lower is better, not a log-ratio to FEM"
+femAnchorBC,boundary_residual_raw,v7_guardrail,v7,both_rms_t_over_ref,40,0.0061878749731964,"raw residual; lower is better, not a log-ratio to FEM"
+femAnchorBC,boundary_residual_raw,v7_guardrail,v7,abs_boundary_work/Eel,40,0.0712100052362895,"raw residual; lower is better, not a log-ratio to FEM"
+femAnchorBC,boundary_residual_raw,v7_guardrail,v7,both_rms_t_over_ref,70,0.008014138286932,"raw residual; lower is better, not a log-ratio to FEM"
+femAnchorBC,boundary_residual_raw,v7_guardrail,v7,abs_boundary_work/Eel,70,0.1155422763460949,"raw residual; lower is better, not a log-ratio to FEM"
+femAnchorBC,boundary_residual_raw,v7_guardrail,v7,both_rms_t_over_ref,80,0.0110203416672493,"raw residual; lower is better, not a log-ratio to FEM"
+femAnchorBC,boundary_residual_raw,v7_guardrail,v7,abs_boundary_work/Eel,80,0.1864993290611361,"raw residual; lower is better, not a log-ratio to FEM"
+femAnchorBC,boundary_residual_raw,v7_guardrail,v7,both_rms_t_over_ref,82,0.0125061438844384,"raw residual; lower is better, not a log-ratio to FEM"
+femAnchorBC,boundary_residual_raw,v7_guardrail,v7,abs_boundary_work/Eel,82,0.2237320216772236,"raw residual; lower is better, not a log-ratio to FEM"
+femAnchorBC,boundary_residual_raw,v7_guardrail,v7,both_rms_t_over_ref,90,0.0233045312815174,"raw residual; lower is better, not a log-ratio to FEM"
+femAnchorBC,boundary_residual_raw,v7_guardrail,v7,abs_boundary_work/Eel,90,0.5521844862192589,"raw residual; lower is better, not a log-ratio to FEM"
+PIDL baseline,native_summary_vs_FEM_summary,summary_history,alpha,alpha_bar_max,84,3.3786922830054,not same-probe; useful as summary-level field audit
+PIDL baseline,native_summary_vs_FEM_summary,summary_history,alpha,alpha_bar_mean_area,84,0.04359573277064684,not same-probe; useful as summary-level field audit
+PIDL baseline,native_summary_vs_FEM_summary,summary_fatigue,f,f_min,84,3.911798327698942,not same-probe; useful as summary-level field audit
+PIDL baseline,native_summary_vs_FEM_summary,summary_fatigue,f,f_mean_area,84,0.001820837906215917,not same-probe; useful as summary-level field audit
+PIDL baseline,native_summary_vs_FEM_summary,summary_damage,d,d_max,84,0.0391293022627779,not same-probe; useful as summary-level field audit
+PIDL baseline,native_summary_vs_FEM_summary,summary_damage,d,d_mean_area,84,0.962944457848183,not same-probe; useful as summary-level field audit
+PIDL baseline,native_summary_vs_FEM_summary,summary_morphology,area,area_alpha_bar_gt_0p5,84,0.08092718189074748,not same-probe; useful as summary-level field audit
+PIDL baseline,native_summary_vs_FEM_summary,summary_morphology,area,area_d_gt_0p5,84,1.0987896611229817,not same-probe; useful as summary-level field audit
+PIDL baseline,native_summary_vs_FEM_summary,summary_morphology,area,area_d_gt_0p9,84,1.2149650509096666,not same-probe; useful as summary-level field audit
+PIDL baseline,native_summary_vs_FEM_summary,summary_morphology,damage,x_tip_d_gt_0p5,84,0.0009164047241327911,x-tip distance normalized by l0
+PIDL baseline,native_summary_vs_FEM_summary,summary_morphology,damage,x_tip_d_gt_0p9,84,0.0019228935241699663,x-tip distance normalized by l0
+v4 add-only adaptive sampling,native_summary_vs_FEM_summary,summary_history,alpha,alpha_bar_max,83,3.1701551247375477,not same-probe; useful as summary-level field audit
+v4 add-only adaptive sampling,native_summary_vs_FEM_summary,summary_history,alpha,alpha_bar_mean_area,83,0.0490602237523181,not same-probe; useful as summary-level field audit
+v4 add-only adaptive sampling,native_summary_vs_FEM_summary,summary_fatigue,f,f_min,83,3.5141989256607555,not same-probe; useful as summary-level field audit
+v4 add-only adaptive sampling,native_summary_vs_FEM_summary,summary_fatigue,f,f_mean_area,83,0.0008212519971714213,not same-probe; useful as summary-level field audit
+v4 add-only adaptive sampling,native_summary_vs_FEM_summary,summary_damage,d,d_max,83,0.0393336670231445,not same-probe; useful as summary-level field audit
+v4 add-only adaptive sampling,native_summary_vs_FEM_summary,summary_damage,d,d_mean_area,83,0.9341557832216751,not same-probe; useful as summary-level field audit
+v4 add-only adaptive sampling,native_summary_vs_FEM_summary,summary_morphology,area,area_alpha_bar_gt_0p5,83,0.08834328076352498,not same-probe; useful as summary-level field audit
+v4 add-only adaptive sampling,native_summary_vs_FEM_summary,summary_morphology,area,area_d_gt_0p5,83,0.9661683543147601,not same-probe; useful as summary-level field audit
+v4 add-only adaptive sampling,native_summary_vs_FEM_summary,summary_morphology,area,area_d_gt_0p9,83,1.0375103858868366,not same-probe; useful as summary-level field audit
+v4 add-only adaptive sampling,native_summary_vs_FEM_summary,summary_morphology,damage,x_tip_d_gt_0p5,83,0.024869083588319185,x-tip distance normalized by l0
+v4 add-only adaptive sampling,native_summary_vs_FEM_summary,summary_morphology,damage,x_tip_d_gt_0p9,83,0.029869083588307532,x-tip distance normalized by l0
+Exp18 mlp_s1_alpha,exp18_summary_partial,partial_damage,alpha,alpha_snapshot_max_vs_d_max,82,0.03903868533589074,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s1_alpha,exp18_summary_partial,partial_damage,alpha,alpha_snapshot_mean_vs_d_mean_unweighted,82,0.5609328267834033,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s1_alpha,exp18_summary_partial,partial_morphology,frac,frac_alpha_gt_0p5_vs_area_d_gt_0p5,82,3.376481420289788,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s1_alpha,exp18_summary_partial,partial_morphology,frac,frac_alpha_gt_0p9_vs_area_d_gt_0p9,82,3.5069439123640933,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s1_alpha,exp18_summary_partial,partial_history,alpha,alpha_bar_max_final_vs_alpha_bar_max,82,3.714206071061669,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s1_alpha,exp18_summary_partial,partial_history,alpha,alpha_bar_mean_final_vs_alpha_bar_mean_unweighted,82,0.6167044667854217,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s1_alpha,exp18_summary_partial,partial_fatigue,f,f_min_or_f_slot_final_vs_f_min,82,4.542194753185022,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s1_alpha,exp18_summary_partial,partial_morphology,damage,x_tip_alpha_gt_0p5_vs_FEM,82,0.0450000000000117,partial only; x-tip distance normalized by l0
+Exp18 fourier_s2_all,exp18_summary_partial,partial_damage,alpha,alpha_snapshot_max_vs_d_max,79,0.038977246729470484,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 fourier_s2_all,exp18_summary_partial,partial_damage,alpha,alpha_snapshot_mean_vs_d_mean_unweighted,79,0.5484177601600035,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 fourier_s2_all,exp18_summary_partial,partial_morphology,frac,frac_alpha_gt_0p5_vs_area_d_gt_0p5,79,3.3276265742124496,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 fourier_s2_all,exp18_summary_partial,partial_morphology,frac,frac_alpha_gt_0p9_vs_area_d_gt_0p9,79,3.34462361232372,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 fourier_s2_all,exp18_summary_partial,partial_history,alpha,alpha_bar_max_final_vs_alpha_bar_max,79,3.517528758695767,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 fourier_s2_all,exp18_summary_partial,partial_history,alpha,alpha_bar_mean_final_vs_alpha_bar_mean_unweighted,79,0.25155778655675454,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 fourier_s2_all,exp18_summary_partial,partial_fatigue,f,f_min_or_f_slot_final_vs_f_min,79,4.174194977647421,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 fourier_s2_all,exp18_summary_partial,partial_morphology,damage,x_tip_alpha_gt_0p5_vs_FEM,79,0.0450000000000117,partial only; x-tip distance normalized by l0
+Exp18 mlp_s2_all,exp18_summary_partial,partial_damage,alpha,alpha_snapshot_max_vs_d_max,79,0.03943967685142682,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s2_all,exp18_summary_partial,partial_damage,alpha,alpha_snapshot_mean_vs_d_mean_unweighted,79,0.5856692829035012,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s2_all,exp18_summary_partial,partial_morphology,frac,frac_alpha_gt_0p5_vs_area_d_gt_0p5,79,3.335802093673794,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s2_all,exp18_summary_partial,partial_morphology,frac,frac_alpha_gt_0p9_vs_area_d_gt_0p9,79,3.3380885470712363,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s2_all,exp18_summary_partial,partial_history,alpha,alpha_bar_max_final_vs_alpha_bar_max,79,3.2147560845928123,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s2_all,exp18_summary_partial,partial_history,alpha,alpha_bar_mean_final_vs_alpha_bar_mean_unweighted,79,0.2469823825736371,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s2_all,exp18_summary_partial,partial_fatigue,f,f_min_or_f_slot_final_vs_f_min,79,3.5995550123372757,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 mlp_s2_all,exp18_summary_partial,partial_morphology,damage,x_tip_alpha_gt_0p5_vs_FEM,79,0.0450000000000117,partial only; x-tip distance normalized by l0
+Exp18 siren_s2_all_adapthist_wr010,exp18_summary_partial,partial_damage,alpha,alpha_snapshot_max_vs_d_max,79,0.037827992969316666,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 siren_s2_all_adapthist_wr010,exp18_summary_partial,partial_damage,alpha,alpha_snapshot_mean_vs_d_mean_unweighted,79,0.9697323068300433,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 siren_s2_all_adapthist_wr010,exp18_summary_partial,partial_morphology,frac,frac_alpha_gt_0p5_vs_area_d_gt_0p5,79,3.6256756176913245,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 siren_s2_all_adapthist_wr010,exp18_summary_partial,partial_morphology,frac,frac_alpha_gt_0p9_vs_area_d_gt_0p9,79,3.7816025322612212,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 siren_s2_all_adapthist_wr010,exp18_summary_partial,partial_history,alpha,alpha_bar_max_final_vs_alpha_bar_max,79,3.2578821988996016,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 siren_s2_all_adapthist_wr010,exp18_summary_partial,partial_history,alpha,alpha_bar_mean_final_vs_alpha_bar_mean_unweighted,79,0.25164782197798397,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 siren_s2_all_adapthist_wr010,exp18_summary_partial,partial_fatigue,f,f_min_or_f_slot_final_vs_f_min,79,3.6819293680284275,partial only: Exp18 artifact is not projected to the FEM/PIDL common probes
+Exp18 siren_s2_all_adapthist_wr010,exp18_summary_partial,partial_morphology,damage,x_tip_alpha_gt_0p5_vs_FEM,79,0.0450000000000117,partial only; x-tip distance normalized by l0

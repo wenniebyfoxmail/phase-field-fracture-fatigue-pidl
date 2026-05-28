@@ -27,6 +27,102 @@
 
 ## Active Requests
 
+## 2026-05-28 · Request 17: resend/regenerate reverseBC u12 snapshots for strict field-level metric
+
+**Goal**: Mac needs the full reverseBC `u12` FEM handoff locally so the new field-level scorer can compute a strict same-probe comparison against the intended aligned reference. Right now Mac only has strict same-probe CSVs for baseline/femAnchorBC; reverseBC appears only as a partial summary/outbox row, which is why `field_level_metric_results_2026-05-28.md` still shows femAnchorBC numeric scores but no reverseBC strict score.
+
+**INPUT file**: Use the already completed reverseBC `u12` reference if available:
+
+```matlab
+Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_reverseBC.m
+```
+
+Same setting as Request 15 / Request 16:
+
+```matlab
+split_type = 'AMOR';
+diss_fct   = 'AT1';
+irrev      = 'PENALTY';
+E=1, ni=0.3, Gc=0.01, ell=0.01, alpha_T=0.5, p=2;
+uy_final=0.12, R=0, n_step=8;
+fix_X = top+bottom, fix_Y = bottom, disp_Y = top;
+```
+
+If the previous run output still exists, please do **not** rerun. Just re-export / resend the existing `.mat` snapshots. If it does not exist, rerun only as needed to regenerate the same reference.
+
+**Mesh**: Please include `mesh_geometry.mat` matching the snapshot fields. Required keys:
+
+```text
+element_centroids
+connectivity
+node_coords
+```
+
+If this is the same mesh as original `SENT_PIDL_12`, please state that explicitly. If not, the shipped `mesh_geometry.mat` is mandatory.
+
+**Expected outputs**:
+
+Please create or refresh:
+
+```text
+~/Downloads/_pidl_handoff_v2/reverseBC_u12/
+```
+
+and mirror to OneDrive as usual, e.g.
+
+```text
+OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_2026-05-28/
+```
+
+Minimum required files:
+
+```text
+mesh_geometry.mat
+u12_reverseBC_cycle_0001.mat
+u12_reverseBC_cycle_0040.mat
+u12_reverseBC_cycle_0070.mat
+u12_reverseBC_cycle_0074.mat
+SENT_PIDL_12_reverseBC_timeseries.csv
+```
+
+Optional but useful:
+
+```text
+u12_reverseBC_cycle_0080.mat
+u12_reverseBC_cycle_0082.mat
+```
+
+Each cycle `.mat` must contain the strict metric fields:
+
+```text
+d_elem
+psi_elem
+alpha_bar_elem
+f_alpha_elem
+```
+
+These are enough for Mac to run the same projection logic as:
+
+```text
+SENS_tensile/posthoc_mesh_probe_alignment.py
+```
+
+and produce:
+
+```text
+SENS_tensile/alignment_mesh_probe_u012_reverseBC.csv
+```
+
+**Acceptance criteria**:
+
+- Mac can load every `.mat` file with `scipy.io.loadmat`.
+- `d_elem`, `psi_elem`, `alpha_bar_elem`, and `f_alpha_elem` all have length `N_elem`.
+- `mesh_geometry.mat` has the same `N_elem` and valid connectivity/node coordinates.
+- The cycle set includes at least `1, 40, 70, 74`.
+- Outbox states whether this is a resend of the existing run or a fresh rerun.
+
+**Priority**: high. This is the missing P0 row in the field-level metric table. No new PIDL architecture sweep should be interpreted before this reverseBC strict score exists.
+
 ## 2026-05-27 · Request 16: export FEM mechanism/energy diagnostics for cycle-matched PIDL comparison
 
 **Goal**: Build a mechanism-level FEM vs PIDL comparison, not just final `N_f` or final damage plots. Mac wants to identify where the nonlinear fatigue loop first diverges: displacement/strain, stress-energy concentration, fatigue history, damage width/smoothness, or irreversibility/history enforcement. The immediate target is the BC-matched reverseBC `u12` FEM reference, because current PIDL default is closest to that BVP.

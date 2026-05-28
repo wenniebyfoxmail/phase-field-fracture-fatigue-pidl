@@ -13,21 +13,21 @@
 
 ## Current Question
 
-**Field-level mismatch 是否还能靠 sampling/refinement/loss/irreversibility 修掉，还是必须转向 representation-localization？**
+**Field-level mismatch 是否需要更强的 discontinuity/domain-decomposition representation，而不是小型 tip-local heads？**
 
 ## Active Branches
 
-1. **Representation-localization discriminator** (ACTIVE 5/25) — Sampling/refinement/loss/irreversibility diagnostics did not close the field gap. Next clean discriminator should be a representation-local method: separate tip-local SIREN/FBPINN patch or SDF/discontinuity embedding. Do not mix it with adaptive loss weighting in the first test.
+1. **Representation-localization discriminator** (ACTIVE 5/28) — Sampling/refinement/loss/irreversibility did not close the field gap. Tip-local MLP/Fourier/SIREN Exp18 also changes `N_f`/scalar metrics but leaves alpha fields as coherent centerline/right-boundary, boundary-saturating paths. Next clean discriminator should be stronger: SDF/discontinuity embedding or FBPINN/domain-decomposed tip patch, not another small local head sweep.
 2. **Phase 2A units-transition smoke** (passive) — `run_pcc_baseline_umax.py` remains a PCC scaling/infrastructure check only, not a Baktheer `N_f` anchor. Mac now has PCC v3 trajectory under GRIPHFiTH; Taobo sync still needed before supervised PCC diagnostics.
 3. **§5 paper plan** (passive, locked 5/14) — §5 改成依赖 Wu 2017 + Baktheer 2024 出版引用，BFGS port 推到 post-paper。任何 §5 wording 不再 quote "N_f ≈ 1500-2500"（已 retract via inbox `4124444`）。
 
 ## Current Best Bet
 
-Field mismatch 仍未解决。Adaptive `lambda_hist` baseline/v4 N100 都断裂（baseline c82→c92 confirm, v4 c80→c90 confirm），但 late logs 显示 `hist_grad=0`、`lambda_hist=1.0`，并未形成真正的 loss balancing。v4 add-only refinement 去掉了 repeated rebuild/transport，但 α field 仍是 thin centerline-like，不是 FEM-like tip localization。Hard irreversibility sigmoid floor 避免 NaN，却在 c99 仍无 fracture，ᾱ_max≈75-76 而 `α_max@bdy=0`。结论：sampling/refinement/constraint bookkeeping 有用，但主瓶颈仍是 representation/localization。
+Field mismatch 仍未解决。Adaptive/refinement/hard-irreversibility failed to recover FEM-like fields. Tip-local Exp18 completed enough to decide: first hit `N≈75-81`, confirmed stop `N≈78-84`, `alpha_bar_max≈6.6-11.3`, but montage vs reverseBC FEM still shows coherent centerline/right-boundary, boundary-saturating paths. This should not be read as a measured claim that the PIDL high-alpha core is always narrower than FEM. Small local correction heads are not the missing representation.
 
 ## Best Next Discriminator
 
-Run one clean representation-local discriminator, preferably separate tip-local SIREN/FBPINN patch or SDF/discontinuity embedding, with baseline loss unchanged and no adaptive `lambda_hist` in the first pass. Gate by field-level comparison to reverseBC FEM, not only fracture cycle.
+Run one stronger representation-local discriminator with the field-level gate defined first. Metric plan/results started in `docs/field_level_comparison_metric_plan.md` and `docs/field_level_metric_results_2026-05-28.md`. For the current evidence base, use reverseBC FEM as the primary aligned field-level reference because most PIDL evidence is already organized that way and FEM is cheap to rerun; keep femAnchorBC PIDL as a secondary opposite-direction alignment diagnostic. Audit found that a Heaviside/XFEM jump-head discontinuity branch was already tried and only partially passed, so the cleaner next architecture discriminator is FBPINN/domain-decomposed tip patch unless we deliberately revive the jump-head branch with fixed tip tracking. No broad GPU sweep until the metric is fixed.
 
 ## Switch Condition
 
@@ -39,7 +39,7 @@ If a representation-local method improves FEM field alignment near the tip witho
 - Hard y² 架构 production (12× slowdown, 暂不做)
 - Multi-seed combo smoke (N=5 × 2 more seeds, ~14h Windows, P3 优先级)
 - Phase 2A ψ_per_cycle vs PCC v3 trajectory comparison (等 Taobo/PIDL result + trajectory sync)
-- True residual-adaptive collocation sampler, detached from the objective weights
+- True residual-adaptive collocation sampler, detached from objective weights
 
 ## Recently Closed / Triggered
 
@@ -48,3 +48,4 @@ If a representation-local method improves FEM field alignment near the tip witho
 - **Phase 1 §4 v1.6 lock 2026-05-10**: 三轮 red-team 全部应用 → §4.2 完整 V4+V7 14-method 表。Memory: `finding_v4_v7_cross_method_may10.md`.
 - **References Wu 2026 + Wu 2024 + Baktheer 2024 read 2026-05-10**: 选 PF²-CZM associated (ξ=2) for Phase 2 concrete。
 - **Adaptive sampling/refinement/hard-irreversibility diagnostics 2026-05-25**: baseline/v4 adaptive `lambda_hist` fractured but did not close field mismatch; hard irreversibility no-fracture by c99 with huge ᾱ; v4 add-only refinement useful as bookkeeping, not field closure.
+- **Tip-local Exp18 2026-05-28**: MLP/Fourier/SIREN × S1/S2/output-mode matrix mostly confirmed fracture around `N=75-84`, but final α fields remain coherent centerline/right-boundary paths rather than FEM-like process-zone envelopes. Artifacts: `docs/tiplocal_exp18_summary_2026-05-28.md` and `docs/figures/tiplocal_exp18_20260528/`.
