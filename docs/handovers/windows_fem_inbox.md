@@ -27,21 +27,24 @@
 
 ## Active Requests
 
-## 2026-05-28 · Request 18: strict diffuse-precrack initial-state alignment
+## 2026-05-28 · Request 18: strict soft diffuse-precrack initial-state alignment
 
 **Goal**: isolate whether the large FEM/PIDL difference is caused by the
 initial precrack/history convention. The current diffuse-precrack FEM is closer
 to PIDL than void FEM, but it initializes `alpha_bar=1` and therefore
 `f_alpha=0.4444` in the precrack band. Mac's current interpretation is that a
 pre-existing crack should be an initial damage/crack condition, not an initial
-fatigue-accumulation condition. Please run the strictly aligned initial-state
-variant below.
+fatigue-accumulation condition. Also, PIDL baseline uses a soft AT1-like
+`hist_alpha_init` precrack profile rather than a hard rectangular `d=1` band.
+Please run the strictly aligned initial-state variant below, with a soft
+precrack as the preferred case and a hard `d=1` case only as fallback if the
+soft profile is difficult in GRIPHFiTH.
 
 **INPUT file**: Please create a new input based on the completed diffuse
 precrack reverseBC run:
 
 ```matlab
-Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_diffuse_precrack_hist0_reverseBC.m
+Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC.m
 ```
 
 Keep the same base settings as the completed diffuse-precrack run:
@@ -54,13 +57,29 @@ E=1, ni=0.3, Gc=0.01, ell=0.01, alpha_T=0.5, p=2;
 uy_final=0.12, R=0, n_step=8;
 fix_X = top+bottom, fix_Y = bottom, disp_Y = top;
 material retained in the precrack band;
-hard d=1 precrack band, same geometry as the previous diffuse run.
+same precrack length/location as the previous diffuse run.
 ```
 
-Change only the initial fatigue/history convention:
+Preferred initial damage/precrack convention:
 
 ```text
-d / phase field in precrack band: 1
+phase field in precrack: soft AT1-like diffuse profile matching PIDL
+hist_alpha_init as closely as possible:
+
+for the straight precrack core, use a width controlled by ell/l0 = 0.01 and
+the same support idea as PIDL's AT1 profile, where damage peaks near 1 on the
+crack centreline and decays smoothly over roughly 2*ell.
+
+precrack length/location: x <= 0, y = 0 in centred coordinates
+or x <= 0.5, y = 0.5 in [0,1] FEM coordinates.
+```
+
+If a soft phase-field initial condition cannot be imposed cleanly, please use
+the hard `d=1` precrack as a fallback and state that clearly in the README.
+
+Strict fatigue/history convention:
+
+```text
 fatigue history alpha_bar in precrack band: 0
 fatigue history alpha_bar outside precrack: 0
 initial f_alpha everywhere: 1, unless the code recomputes a different value
@@ -88,17 +107,17 @@ Please export the same cyclewise mechanism package as the previous diffuse
 precrack run and mirror it to OneDrive, e.g.
 
 ```text
-OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_hist0_2026-05-28
+OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_2026-05-28
 ```
 
 Required files:
 
 ```text
-reverseBC_u12_diffuse_precrack_hist0_cyclewise_mechanism_metrics.csv
-reverseBC_u12_diffuse_precrack_hist0_element_fields_c1_cXX.mat
+reverseBC_u12_diffuse_precrack_soft_hist0_cyclewise_mechanism_metrics.csv
+reverseBC_u12_diffuse_precrack_soft_hist0_element_fields_c1_cXX.mat
 mesh_geometry.mat
-README_reverseBC_u12_diffuse_precrack_hist0.md
-INPUT_SENT_PIDL_12_diffuse_precrack_hist0_reverseBC.m
+README_reverseBC_u12_diffuse_precrack_soft_hist0.md
+INPUT_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC.m
 export_reverseBC_cyclewise_mechanism.m
 ```
 
@@ -122,6 +141,7 @@ Please add an initial-state audit to the README and/or CSV:
 
 ```text
 precrack d mean/max at cycle 0 or cycle 1 before loading
+precrack d profile description and whether it is soft or hard
 precrack alpha_bar mean/max at cycle 0 or cycle 1 before loading
 precrack f_alpha mean/min at cycle 0 or cycle 1 before loading
 outside-precrack alpha_bar mean/max at cycle 0 or cycle 1
@@ -133,8 +153,10 @@ whether any scalar energy is absolute or incremental relative to the initial sta
 
 - The run uses the same reverseBC and same diffuse-precrack geometry as the
   previous diffuse handoff.
-- The precrack has `d=1` but `alpha_bar=0` initially, unless blocked by code
-  structure and documented.
+- Preferred: the precrack uses a soft AT1-like phase-field profile and
+  `alpha_bar=0` initially.
+- Fallback: hard `d=1` precrack with `alpha_bar=0` initially, only if the soft
+  profile is blocked by code structure and documented.
 - `f_alpha` is not pre-degraded by artificial fatigue history at initialization.
 - The OneDrive payload includes cyclewise fields through available fracture.
 - The README explicitly separates absolute `E_d` from incremental/outside-
