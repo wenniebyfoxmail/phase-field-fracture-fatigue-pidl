@@ -30,7 +30,7 @@ def main() -> int:
                    default="/Users/wenxiaofang/phase-field-fracture-with-pidl/GRIPHFiTH")
     p.add_argument("--input-template",
                    default="Scripts/fatigue_fracture/INPUT_SENT_PIDL_12.m")
-    p.add_argument("--setting", default="reverseBC")
+    p.add_argument("--setting", default="standardFEM")
     args = p.parse_args()
 
     here = Path(__file__).resolve().parent

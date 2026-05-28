@@ -13,21 +13,21 @@
 
 ## Current Question
 
-**PIDL 在 reverseBC synthetic inverse problem 中能否识别 `alpha_T`，而不是用参数偏差补偿 field-level mismatch？**
+**PIDL 在 FEM-generated inverse problem 中能否识别 `alpha_T`，还是用参数偏差补偿 forward field mismatch？**
 
 ## Active Branches
 
-1. **Inverse-alphaT discriminator** (ACTIVE 5/28) — Use reverseBC FEM synthetic observations and fixed PIDL `E_irrev` weighting. FEM baseline is an outer-loop `alpha_T` grid; PIDL baseline is joint optimization of NN weights + positive trainable `alpha_T`.
+1. **Inverse-alphaT discriminator** (ACTIVE 5/28) — Use FEM synthetic observations and fixed PIDL `E_irrev` weighting. Primary target is standard FEM + PIDL `femAnchorBC`; reverseBC is only an aligned control. FEM baseline is an outer-loop `alpha_T` grid; PIDL baseline is joint optimization of NN weights + positive trainable `alpha_T`.
 2. **Representation-localization discriminator** (parked) — Tip-local/SDF methods remain the forward-problem closure path, but this branch asks whether inverse calibration exposes or compensates the same mismatch.
 3. **Phase 2A units-transition smoke** (passive) — `run_pcc_baseline_umax.py` remains a PCC scaling/infrastructure check only, not a Baktheer `N_f` anchor.
 
 ## Current Best Bet
 
-FEM 当然可以通过 outer-loop optimization 解 inverse problem；本 branch 不用 “FEM 不能 inverse” 作为 claim。第一轮公平比较：FEM 每个 `alpha_T` candidate 重跑 forward；PIDL 在同一个 differentiable training loop 中学习 NN field + `alpha_T`。PIDL 只算成功物理识别，若 recovered `alpha_T≈0.5` 且 field/trajectory 不恶化。
+FEM 当然可以通过 outer-loop optimization 解 inverse problem，而且本项目 FEM 很快，所以 FEM 是强 reference。第一轮不是证明 PIDL beats FEM，而是看 inverse calibration 是否暴露 baseline PIDL 的 field-level mismatch：若 `alpha_T` 偏离真值却改善 scalar metrics，就是 model-error compensation。
 
 ## Best Next Discriminator
 
-Run `SENS_tensile/fem_inverse_alphaT_grid.py` for the FEM manifest, then producer-side PIDL smoke with `run_inverse_alphaT_reversebc_umax.py 0.12 --alphaT-init 0.25 --fem-dir <reverseBC handoff>`. Do not run the training loop on Mac.
+Run `SENS_tensile/fem_inverse_alphaT_grid.py` for the FEM manifest, then producer-side PIDL smoke with `run_inverse_alphaT_fem_anchor_umax.py 0.12 --alphaT-init 0.25 --fem-dir <standard FEM handoff>`. Do not run the training loop on Mac.
 
 ## Switch Condition
 
