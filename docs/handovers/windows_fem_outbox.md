@@ -26,6 +26,57 @@
 
 ## Entries
 
+## 2026-05-28 · [done] Re: diffuse pre-crack FEM diagnostic — reverseBC u12 c1-c69 shipped
+
+**Re**: `docs/handovers/fem_diffuse_precrack_request_2026-05-28.md`
+
+**Status**: Complete. Ran the reciprocal FEM diagnostic with retained material plus a prescribed diffuse pre-crack band. The run `SENT_PIDL_12_diffuse_precrack_reverseBC` reached penetration at `N_f = 69`, and the requested cyclewise handoff is exported.
+
+**Run settings**:
+- Mesh: continuous material plate mesh from `specimen.internal.plate(... notch_type='phase_field' ...)`; no void slit, no duplicated crack-face nodes, and no traction-free internal crack boundary.
+- Mesh size: `45591` nodes, `45000` Q4 elements.
+- Diffuse pre-crack: requested centered mask `x <= 0`, `|y| <= 0.02`; implemented in plate coordinates as `x <= 0.5`, `|y - 0.5| <= 0.02`.
+- Initial/fixed fields: `5020` nodes prescribed as non-homogeneous phase-field Dirichlet nodes with `d=1`; `5000` centroid-selected elements initialized with `alpha_bar=1` and `f_alpha=0.444444444444`.
+- Model: `AT1 + AMOR + PENALTY`.
+- Material/fatigue: `E=1`, `nu=0.3`, `Gc=0.01`, `ell=0.01`, `alpha_T=0.5`, `p=2`.
+- Loading/BC: `u=0.12`, `R=0`, `fix_X` on top+bottom, `fix_Y` bottom, `disp_Y` top.
+
+**Files written**:
+- Local: `~/Downloads/_pidl_handoff_v2/reverseBC_u12_diffuse_precrack_2026-05-28/`
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_2026-05-28/`
+
+**Payload**:
+- `reverseBC_u12_diffuse_precrack_cyclewise_mechanism_metrics.csv` — 69 rows, one per cycle `c1-c69`.
+- `reverseBC_u12_diffuse_precrack_element_fields_c1_c69.mat` — compact all-cycle element fields.
+- `mesh_geometry.mat` — matching continuous-material diffuse pre-crack mesh geometry.
+- `README_reverseBC_u12_diffuse_precrack.md` — definitions, caveats, and pre-crack convention.
+- `INPUT_SENT_PIDL_12_diffuse_precrack_reverseBC.m`, `main_SENT_PIDL_12_diffuse_precrack_reverseBC.m`, `export_reverseBC_diffuse_precrack.m`, `export_reverseBC_cyclewise_mechanism.m`, `diffuse_precrack_metadata.mat` — copied into OneDrive for traceability.
+
+**Fields in the `.mat`**:
+- `node_coords` (`45591 x 2`)
+- `connectivity` (`45000 x 4`)
+- `element_centroids` (`45000 x 2`)
+- `element_area` (`45000 x 1`)
+- `cycles` (`69 x 1`, values `1:69`)
+- `d_elem`, `alpha_bar_elem`, `f_fatigue_elem`, `psi_plus_elem` (`45000 x 69`, columns match `cycles`)
+- `T` — same scalar table as the CSV
+- `metadata` — metric definitions plus `metadata.diffuse_precrack`
+
+**Verification**:
+- MATLAB loaded the `.mat`: node/element/field dimensions match the mesh and CSV has 69 rows.
+- SHA256 copy verification passed for the CSV, `.mat`, `mesh_geometry.mat`, and README in OneDrive.
+
+**Selected cycle snapshots**:
+- `c1`: `d_max = 1`, `alpha_bar_elem_max = 1.01374`, `f_fatigue_min = 0.436479`, `psi_plus_elem_max = 18.4954`, `Kt_proxy = 4.20553`, `x_tip_d095 = 0.499`, `right_boundary_d095_count = 0`.
+- `c40`: `d_max = 1`, `alpha_bar_elem_max = 1.56473`, `f_fatigue_min = 0.242092`, `psi_plus_elem_max = 1838.75`, `Kt_proxy = 22.0475`, `x_tip_d095 = 0.699`, `right_boundary_d095_count = 0`.
+- `c69`: `d_max = 1`, `alpha_bar_elem_max = 2.08230`, `f_fatigue_min = 0.155209`, `psi_plus_elem_max = 2418.71`, `Kt_proxy = 12.0980`, `x_tip_d095 = 0.999`, `right_boundary_d095_count = 2`.
+
+**Interpretation caveat**: `E_d` includes the energy of the prescribed/fixed diffuse pre-crack band. FEM does not export a PIDL-style separate irreversibility penalty, so the CSV keeps the available FEM elastic/damage/total energy and field-history proxies.
+
+**Next**: Mac can use this payload to compare void-notch FEM, PIDL, and retained-material diffuse pre-crack FEM under the same reverseBC/material/split settings.
+
+---
+
 ## 2026-05-28 · [done] Re: fine-mesh reverseBC field export — PIDL fine mesh c1-c69 shipped
 
 **Re**: User follow-up to run FEM on PIDL fine mesh with AT1/AMOR/PENALTY and reverseBC, then provide the field info required by the previous cyclewise inbox request.
