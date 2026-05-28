@@ -100,3 +100,28 @@ Then compare FEM and PIDL using the same reductions: max, p99.9, p99, mean,
 near-tip band width, and near-tip integrals. This is the cleanest way to decide
 whether the remaining gap is caused by driver definition, mesh/collocation
 resolution, or network representation.
+
+## Implemented PIDL Diagnostic Hook
+
+`source/model_train.py` now accepts:
+
+```python
+fatigue_dict["element_diagnostics"] = {
+    "enable": True,
+    "cycles": [40, 70, 75, 80],
+    "every_n_cycles": None,
+    "dense_sampling": True,
+    "on_fracture": True,
+}
+```
+
+When enabled, each selected cycle writes:
+
+```text
+element_diagnostics/element_fields_cycle_XXXX.npz
+```
+
+with element coordinates, area, `alpha_elem`, `hist_fat_elem`,
+`f_fatigue_elem`, `psi_plus_elem`, `E_el_elem`, `E_d_elem`, `E_hist_elem`, and
+`|E_el|+|E_d|` residual proxy. These files are designed to be compared directly
+against the FEM element-field handoff using consistent reductions.

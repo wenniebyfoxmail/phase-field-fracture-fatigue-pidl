@@ -32,7 +32,8 @@ from optim import *
 from plotting import plot_field
 
 # ★ 新增：疲劳相关函数（仅在 fatigue_on=True 时实际调用）
-from compute_energy import get_psi_plus_per_elem, compute_energy
+from compute_energy import (get_psi_plus_per_elem, compute_energy,
+                            compute_energy_per_elem)
 from fatigue_history import (update_fatigue_history, compute_fatigue_degrad,
                               mirror_y_indices, mirror_alpha_y)
 
@@ -72,6 +73,75 @@ def _save_alpha_snapshot(inp, alpha, T_conn, cycle, snapshot_dir):
     # ── npy: (N_nodes, 3) → [x, y, alpha] ────────────────────────────────────
     field_data = np.column_stack([inp_np[:, 0], inp_np[:, 1], alpha_np])
     np.save(snapshot_dir / f'alpha_cycle_{cycle:04d}.npy', field_data)
+
+
+def _parse_cycle_set(raw_cycles):
+    if raw_cycles is None:
+        return set()
+    if isinstance(raw_cycles, str):
+        raw_cycles = [c.strip() for c in raw_cycles.split(",") if c.strip()]
+    return {int(c) for c in raw_cycles}
+
+
+def _tensor_to_numpy(value, like_tensor=None):
+    if torch.is_tensor(value):
+        return value.detach().cpu().numpy()
+    if like_tensor is not None:
+        n = int(like_tensor.numel())
+        return np.full(n, float(value), dtype=np.float32)
+    return np.asarray(value)
+
+
+def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
+                              f_fatigue, psi_plus_elem, psi_plus_prev,
+                              matprop, pffmodel, area_T, cycle, out_dir):
+    """Save cycle-end element fields for FEM/PIDL mechanism comparison."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with torch.no_grad():
+        if T_conn is not None:
+            alpha_elem = (
+                alpha[T_conn[:, 0]] + alpha[T_conn[:, 1]] + alpha[T_conn[:, 2]]
+            ) / 3.0
+            elem_x = (
+                inp[T_conn[:, 0], 0] + inp[T_conn[:, 1], 0] + inp[T_conn[:, 2], 0]
+            ) / 3.0
+            elem_y = (
+                inp[T_conn[:, 0], 1] + inp[T_conn[:, 1], 1] + inp[T_conn[:, 2], 1]
+            ) / 3.0
+        else:
+            alpha_elem = alpha.flatten()
+            elem_x = inp[:, 0]
+            elem_y = inp[:, 1]
+
+        E_el_elem, E_d_elem, E_hist_elem = compute_energy_per_elem(
+            inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
+            f_fatigue=f_fatigue
+        )
+
+    hist_fat_np = _tensor_to_numpy(hist_fat, like_tensor=alpha_elem).reshape(-1)
+    f_fatigue_np = _tensor_to_numpy(f_fatigue, like_tensor=alpha_elem).reshape(-1)
+    psi_plus_np = _tensor_to_numpy(psi_plus_elem).reshape(-1)
+    psi_prev_np = _tensor_to_numpy(psi_plus_prev).reshape(-1)
+    E_el_np = _tensor_to_numpy(E_el_elem).reshape(-1)
+    E_d_np = _tensor_to_numpy(E_d_elem).reshape(-1)
+    E_hist_np = _tensor_to_numpy(E_hist_elem).reshape(-1)
+
+    np.savez_compressed(
+        out_dir / f"element_fields_cycle_{cycle:04d}.npz",
+        cycle=np.array([cycle], dtype=np.int32),
+        elem_x=_tensor_to_numpy(elem_x).reshape(-1).astype(np.float32),
+        elem_y=_tensor_to_numpy(elem_y).reshape(-1).astype(np.float32),
+        area_elem=_tensor_to_numpy(area_T).reshape(-1).astype(np.float32),
+        alpha_elem=_tensor_to_numpy(alpha_elem).reshape(-1).astype(np.float32),
+        hist_fat_elem=hist_fat_np.astype(np.float32),
+        f_fatigue_elem=f_fatigue_np.astype(np.float32),
+        psi_plus_elem=psi_plus_np.astype(np.float32),
+        psi_plus_prev_elem=psi_prev_np.astype(np.float32),
+        E_el_elem=E_el_np.astype(np.float32),
+        E_d_elem=E_d_np.astype(np.float32),
+        E_hist_elem=E_hist_np.astype(np.float32),
+        residual_abs_Eel_Ed=(np.abs(E_el_np) + np.abs(E_d_np)).astype(np.float32),
+    )
 
 
 # ── 裂缝尖端检测（通用，基于 L∞ 距离）──────────────────────────────────────
@@ -480,6 +550,24 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_on:
         _snapshot_dir.mkdir(parents=True, exist_ok=True)
 
+    # Optional full element-field diagnostics for cycle-matched FEM/PIDL studies.
+    # Default is off because saving every cycle can produce large archives.
+    _elem_diag_cfg = fatigue_dict.get('element_diagnostics', {}) or {}
+    _elem_diag_enabled = fatigue_on and _elem_diag_cfg.get('enable', False)
+    _elem_diag_cycles = _parse_cycle_set(_elem_diag_cfg.get('cycles', []))
+    _elem_diag_every = _elem_diag_cfg.get('every_n_cycles', None)
+    _elem_diag_dense = _elem_diag_cfg.get('dense_sampling', True)
+    _elem_diag_on_fracture = _elem_diag_cfg.get('on_fracture', True)
+    _elem_diag_dir = trainedModel_path.parent / Path(
+        _elem_diag_cfg.get('dir', 'element_diagnostics')
+    )
+    if _elem_diag_enabled:
+        _elem_diag_dir.mkdir(parents=True, exist_ok=True)
+        _every_msg = _elem_diag_every if _elem_diag_every else "off"
+        print(f"[ElementDiagnostics] enabled | cycles={sorted(_elem_diag_cycles)} "
+              f"| every={_every_msg} | dense={_elem_diag_dense} "
+              f"| out={_elem_diag_dir}")
+
     # =========================================================================
     # 主循环：每次迭代对应一个加载步（单调模式）或一个完整循环（疲劳模式）
     # =========================================================================
@@ -802,6 +890,23 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # ── α 场快照：常规每 _plot_every 圈；密集采样期或断裂确认期每圈保存 ──
             if j % _plot_every == 0 or _dense_sampling or _frac_detected:
                 _save_alpha_snapshot(inp, alpha_el, T_conn, j, _snapshot_dir)
+
+            _elem_diag_due = False
+            if _elem_diag_enabled:
+                _elem_diag_due = (
+                    j in _elem_diag_cycles
+                    or (_elem_diag_every is not None
+                        and int(_elem_diag_every) > 0
+                        and j % int(_elem_diag_every) == 0)
+                    or (_elem_diag_dense and _dense_sampling)
+                    or (_elem_diag_on_fracture and _frac_detected)
+                )
+            if _elem_diag_due:
+                _save_element_diagnostics(
+                    inp, T_conn, u_el, v_el, alpha_el, hist_alpha, hist_fat,
+                    f_fatigue, psi_plus_elem, psi_plus_prev,
+                    matprop, pffmodel, area_T, j, _elem_diag_dir
+                )
 
             # ── 裂缝尖端 L∞（仅用于日志和后处理，不再作为停止判据）──────────
             crack_tip_xy, crack_length = get_crack_tip(
