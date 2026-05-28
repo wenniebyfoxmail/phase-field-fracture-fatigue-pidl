@@ -26,6 +26,63 @@
 
 ## Entries
 
+## 2026-05-29 · [done] Re: Request 18 strict soft diffuse-precrack hist0 — reverseBC u12 c1-c69 shipped
+
+**Re**: `docs/handovers/windows_fem_inbox.md` Request 18, "strict soft diffuse-precrack initial-state alignment"
+
+**Status**: Complete. Created and ran `SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC`. The run reached penetration at `N_f = 69`, and the cyclewise mechanism handoff is exported and mirrored to OneDrive.
+
+**Run settings**:
+- Mesh: same continuous-material `specimen.internal.plate(... notch_type='phase_field' ...)` mesh as the previous diffuse-precrack handoff.
+- Mesh size: `45591` nodes, `45000` Q4 elements.
+- Notch convention: material retained; no void slit, no duplicated crack-face nodes, no traction-free internal crack boundary.
+- Initial pre-crack: soft AT1/PIDL-like squared-hat profile, support `x in [0,0.5]`, `|y-0.5| <= 2*ell`; not a hard `d=1` Dirichlet band.
+- Soft profile audit: `5170` support nodes with `d>0`, `251` core nodes with `d>=0.95`, `5432` support elements with element-mean `d>0`.
+- Initial fatigue/history: `alpha_bar=0` everywhere, `f_alpha=1` everywhere before loading.
+- Model: `AT1 + AMOR + PENALTY`.
+- Material/fatigue: `E=1`, `nu=0.3`, `Gc=0.01`, `ell=0.01`, `alpha_T=0.5`, `p=2`.
+- Irreversibility: GRIPHFiTH `tol_irrev = 1e-3`; AT1 penalty coefficient `421875`.
+- Loading/BC: `u=0.12`, `R=0`, `fix_X` on top+bottom, `fix_Y` bottom, `disp_Y` top.
+
+**Implementation note**:
+- Because the soft pre-crack is an initial condition rather than `non_hom_pf`, the solver penetration check was updated to accept `initial_precrack_exclusion_nodes`. This excludes only the initial pre-crack support from the boundary false-positive check; the actual propagation/right-boundary trigger remains active.
+
+**Files written**:
+- Local: `~/Downloads/_pidl_handoff_v2/reverseBC_u12_diffuse_precrack_soft_hist0_2026-05-28/`
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_2026-05-28/`
+
+**Payload**:
+- `reverseBC_u12_diffuse_precrack_soft_hist0_cyclewise_mechanism_metrics.csv` — 69 rows, one per cycle `c1-c69`.
+- `reverseBC_u12_diffuse_precrack_soft_hist0_element_fields_c1_c69.mat` — compact all-cycle element fields.
+- `mesh_geometry.mat` — matching continuous-material mesh.
+- `README_reverseBC_u12_diffuse_precrack_soft_hist0.md` — field definitions, initial-state audit, and energy caveats.
+- `INPUT_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC.m`, `main_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC.m`, `export_reverseBC_diffuse_precrack_soft_hist0.m`, `export_reverseBC_cyclewise_mechanism.m`, `solve_fatigue_fracture.m`, `diffuse_precrack_metadata.mat` — copied into OneDrive for auditability.
+
+**Fields in the `.mat`**:
+- `node_coords` (`45591 x 2`)
+- `connectivity` (`45000 x 4`)
+- `element_centroids` (`45000 x 2`)
+- `element_area` (`45000 x 1`)
+- `cycles` (`69 x 1`, values `1:69`)
+- `d_elem`, `alpha_bar_elem`, `f_fatigue_elem`, `psi_plus_elem` (`45000 x 69`, columns match `cycles`)
+- `T` — same scalar table as the CSV
+- `metadata.initial_state_audit` — pre-loading d/alpha/f audit
+
+**Verification**:
+- MATLAB loaded the OneDrive `.mat`: node/element/field dimensions match the mesh and CSV has 69 rows.
+- SHA256 copy verification passed for the CSV, `.mat`, `mesh_geometry.mat`, and README in OneDrive.
+
+**Selected cycle snapshots**:
+- `c1`: `d_max = 1.00008`, `alpha_bar_elem_max = 0.237152`, `f_fatigue_min = 1`, `psi_plus_elem_max = 684.292`, `Kt_proxy = 10.7979`, `x_tip_d095 = 0.489`, `right_boundary_d095_count = 0`.
+- `c40`: `d_max = 1.01797`, `alpha_bar_elem_max = 7.33189`, `f_fatigue_min = 0.0402044`, `psi_plus_elem_max = 1678.55`, `Kt_proxy = 13.0680`, `x_tip_d095 = 0.693`, `right_boundary_d095_count = 0`.
+- `c69`: `d_max = 1.02537`, `alpha_bar_elem_max = 19.5322`, `f_fatigue_min = 0.0145911`, `psi_plus_elem_max = 2433.66`, `Kt_proxy = 10.5621`, `x_tip_d095 = 0.999`, `right_boundary_d095_count = 2`.
+
+**Energy caveat**: FEM `E_d` is absolute and includes the initial soft pre-crack damage energy. The README states this explicitly; use incremental `E_d` from c1 for like-for-like evolution comparisons.
+
+**Next**: Mac can compare this strict soft/hist0 diffuse track against baseline PIDL to isolate the effect of removing artificial precrack fatigue history from the previous diffuse FEM handoff.
+
+---
+
 ## 2026-05-28 · [done] Re: diffuse pre-crack FEM diagnostic — reverseBC u12 c1-c69 shipped
 
 **Re**: `docs/handovers/fem_diffuse_precrack_request_2026-05-28.md`

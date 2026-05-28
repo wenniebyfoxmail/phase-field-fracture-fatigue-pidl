@@ -99,6 +99,7 @@
 | **2026-05 reverseBC FEM cyclewise field handoff** | Windows-FEM | `SENT_PIDL_12_reverseBC`, AT1+AMOR+PENALTY, u=0.12 reverseBC, full mesh `77730` elems, exported c1-c74 `d_elem/alpha_bar_elem/f_alpha_elem/psi_plus_elem`; N_f=74 | primary aligned FEM field reference |
 | **2026-05 PIDL-fine FEM reverseBC handoff** | Windows-FEM | `SENT_PIDL_12_fine_reverseBC`, PIDL fine mesh `10261` elems, same AT1+AMOR+PENALTY/reverseBC; exported c1-c69 fields; N_f=69 | isolates mesh coarsening effect |
 | **2026-05 diffuse pre-crack FEM diagnostic** | Windows-FEM | `SENT_PIDL_12_diffuse_precrack_reverseBC`, continuous material mesh `45000` elems, no void slit, fixed diffuse `d=1` band with `alpha_bar=1` initialized; exported c1-c69 fields; N_f=69 | separates void-notch geometry from phase-field damaged-band convention |
+| **2026-05 strict soft diffuse-precrack hist0 FEM diagnostic** | Windows-FEM | `SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC`, same continuous mesh `45000` elems, soft AT1/PIDL-like precrack profile, `alpha_bar=0` and `f_alpha=1` initially; exported c1-c69 fields; N_f=69 | strict diffuse-track reference for initial-state alignment |
 
 ---
 
