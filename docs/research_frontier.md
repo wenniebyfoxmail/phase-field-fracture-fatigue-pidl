@@ -13,25 +13,25 @@
 
 ## Current Question
 
-**Field-level mismatch 是否还能靠 sampling/refinement/loss/irreversibility 修掉，还是必须转向 representation-localization？**
+**PIDL 在 reverseBC synthetic inverse problem 中能否识别 `alpha_T`，而不是用参数偏差补偿 field-level mismatch？**
 
 ## Active Branches
 
-1. **Representation-localization discriminator** (ACTIVE 5/25) — Sampling/refinement/loss/irreversibility diagnostics did not close the field gap. Next clean discriminator should be a representation-local method: separate tip-local SIREN/FBPINN patch or SDF/discontinuity embedding. Do not mix it with adaptive loss weighting in the first test.
-2. **Phase 2A units-transition smoke** (passive) — `run_pcc_baseline_umax.py` remains a PCC scaling/infrastructure check only, not a Baktheer `N_f` anchor. Mac now has PCC v3 trajectory under GRIPHFiTH; Taobo sync still needed before supervised PCC diagnostics.
-3. **§5 paper plan** (passive, locked 5/14) — §5 改成依赖 Wu 2017 + Baktheer 2024 出版引用，BFGS port 推到 post-paper。任何 §5 wording 不再 quote "N_f ≈ 1500-2500"（已 retract via inbox `4124444`）。
+1. **Inverse-alphaT discriminator** (ACTIVE 5/28) — Use reverseBC FEM synthetic observations and fixed PIDL `E_irrev` weighting. FEM baseline is an outer-loop `alpha_T` grid; PIDL baseline is joint optimization of NN weights + positive trainable `alpha_T`.
+2. **Representation-localization discriminator** (parked) — Tip-local/SDF methods remain the forward-problem closure path, but this branch asks whether inverse calibration exposes or compensates the same mismatch.
+3. **Phase 2A units-transition smoke** (passive) — `run_pcc_baseline_umax.py` remains a PCC scaling/infrastructure check only, not a Baktheer `N_f` anchor.
 
 ## Current Best Bet
 
-Field mismatch 仍未解决。Adaptive `lambda_hist` baseline/v4 N100 都断裂（baseline c82→c92 confirm, v4 c80→c90 confirm），但 late logs 显示 `hist_grad=0`、`lambda_hist=1.0`，并未形成真正的 loss balancing。v4 add-only refinement 去掉了 repeated rebuild/transport，但 α field 仍是 thin centerline-like，不是 FEM-like tip localization。Hard irreversibility sigmoid floor 避免 NaN，却在 c99 仍无 fracture，ᾱ_max≈75-76 而 `α_max@bdy=0`。结论：sampling/refinement/constraint bookkeeping 有用，但主瓶颈仍是 representation/localization。
+FEM 当然可以通过 outer-loop optimization 解 inverse problem；本 branch 不用 “FEM 不能 inverse” 作为 claim。第一轮公平比较：FEM 每个 `alpha_T` candidate 重跑 forward；PIDL 在同一个 differentiable training loop 中学习 NN field + `alpha_T`。PIDL 只算成功物理识别，若 recovered `alpha_T≈0.5` 且 field/trajectory 不恶化。
 
 ## Best Next Discriminator
 
-Run one clean representation-local discriminator, preferably separate tip-local SIREN/FBPINN patch or SDF/discontinuity embedding, with baseline loss unchanged and no adaptive `lambda_hist` in the first pass. Gate by field-level comparison to reverseBC FEM, not only fracture cycle.
+Run `SENS_tensile/fem_inverse_alphaT_grid.py` for the FEM manifest, then producer-side PIDL smoke with `run_inverse_alphaT_reversebc_umax.py 0.12 --alphaT-init 0.25 --fem-dir <reverseBC handoff>`. Do not run the training loop on Mac.
 
 ## Switch Condition
 
-If a representation-local method improves FEM field alignment near the tip without worsening V7/reaction, promote to N100. If it only shifts N_f or ᾱ_max while the α/ψ fields remain centerline-like, close it as another scalar-metric fix.
+If PIDL improves observation loss or `N_f` using a biased `alpha_T`, classify as model-error compensation, not successful inverse identification. If fixed-`E_irrev` PIDL recovers `alpha_T≈0.5`, then test high-init and adaptive-`E_irrev` ablations.
 
 ## Parking Lot
 
@@ -40,6 +40,7 @@ If a representation-local method improves FEM field alignment near the tip witho
 - Multi-seed combo smoke (N=5 × 2 more seeds, ~14h Windows, P3 优先级)
 - Phase 2A ψ_per_cycle vs PCC v3 trajectory comparison (等 Taobo/PIDL result + trajectory sync)
 - True residual-adaptive collocation sampler, detached from the objective weights
+- Adaptive `E_irrev` inverse ablation after fixed-`E_irrev` baseline
 
 ## Recently Closed / Triggered
 

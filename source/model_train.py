@@ -41,6 +41,12 @@ from williams_features import compute_x_tip_psi
 
 # ★ 2026-05-13 Branch 2 C6: FI-PINN adaptive sampling via full-residual reweight
 from adaptive_sampling import compute_adaptive_weights
+from inverse_params import TrainablePositiveScalar, scalar_value
+
+
+def _resolve_f_fatigue(f_fatigue):
+    """Evaluate dynamic fatigue degradation callables inside each fresh graph."""
+    return f_fatigue() if callable(f_fatigue) else f_fatigue
 
 
 # ── α 场快照辅助函数 ────────────────────────────────────────────────────────
@@ -129,7 +135,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
           sidecar_S2_dict=None,                      # ★ forward-compat: adaptive sidecar sampler
           grad_annealing_state=None,                 # ★ 2026-05-19 Algorithm 1 (Wang 2020)
           delta1_dict=None,                          # ★ 2026-05-20 C6 δ-1 element-level IS
-          j_path_dict=None):                         # ★ 2026-05-20 J path-independence reg
+          j_path_dict=None,                          # ★ 2026-05-20 J path-independence reg
+          inverse_dict=None):                        # ★ 2026-05-28 inverse scalar calibration
     '''
     Neural network training: pretraining with a coarser mesh in the first
     stage before the main training proceeds.
@@ -155,6 +162,24 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_dict is None:
         fatigue_dict = {}
     fatigue_on = fatigue_dict.get('fatigue_on', False)
+    inverse_dict = inverse_dict or {}
+    _inverse_alpha_T = None
+    if inverse_dict.get("enable", False):
+        target = inverse_dict.get("target", "alpha_T")
+        if target != "alpha_T":
+            raise ValueError(f"unsupported inverse target {target!r}; expected 'alpha_T'")
+        _inverse_alpha_T = TrainablePositiveScalar(
+            float(inverse_dict.get("initial_value", fatigue_dict.get("alpha_T", 0.5))),
+            min_value=float(inverse_dict.get("min_value", 1.0e-4)),
+            max_value=inverse_dict.get("max_value", None),
+            device=device,
+        ).to(device)
+        field_comp.extra_trainable_params = list(_inverse_alpha_T.parameters())
+        fatigue_dict["alpha_T"] = _inverse_alpha_T
+        print(
+            f"[Inverse] trainable alpha_T enabled | init={scalar_value(_inverse_alpha_T):.6g} "
+            f"| min={_inverse_alpha_T.min_value:.3g} | max={_inverse_alpha_T.max_value}"
+        )
     if (sidecar_S1_dict or {}).get("enable", False) or (sidecar_S2_dict or {}).get("enable", False):
         raise NotImplementedError(
             "This model_train.py build accepts sidecar_S1/S2 arguments for "
@@ -252,7 +277,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         f_fatigue     = torch.ones(n_elem, device=device)
         print(f"[Fatigue] fatigue_on=True | accum='{fatigue_dict.get('accum_type','carrara')}' | "
               f"degrad='{fatigue_dict.get('degrad_type','asymptotic')}' | "
-              f"alpha_T={fatigue_dict.get('alpha_T', 1.0):.4g}")
+              f"alpha_T={scalar_value(fatigue_dict.get('alpha_T', 1.0)):.4g}")
 
         # ★ Direction 6.1 + 2026-05-08 A1: 预计算元素形心
         # Used by: (a) spatial α_T modulation; (b) post-hoc mirror α ratchet break
@@ -346,9 +371,14 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if fatigue_on:
                 hist_fat      = _ckpt['hist_fat'].to(device)
                 psi_plus_prev = _ckpt['psi_plus_prev'].to(device)
-                f_fatigue     = compute_fatigue_degrad(
-                    hist_fat, fatigue_dict, elem_centroids=elem_centroids
-                )
+                if _inverse_alpha_T is not None:
+                    f_fatigue = lambda hist=hist_fat: compute_fatigue_degrad(
+                        hist, fatigue_dict, elem_centroids=elem_centroids
+                    )
+                else:
+                    f_fatigue = compute_fatigue_degrad(
+                        hist_fat, fatigue_dict, elem_centroids=elem_centroids
+                    )
                 # ★ Stash fracture detection state (backwards-compat: old ckpts lack these keys)
                 _frac_state_from_ckpt = {
                     'detected':  _ckpt.get('_frac_detected',          False),
@@ -455,6 +485,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
     # ★ 每圈耗时记录（增量保存到 time_vs_cycle.npy）
     _time_history = _restore_hist('time_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
+    _inverse_alpha_T_history = _restore_hist('inverse_alpha_T_vs_cycle.npy')
 
     # ★ 每圈 Kt 日志：预计算元素形心 + 远场掩码（仅数值梯度模式有效）
     _Kt_history = _restore_hist('Kt_vs_cycle.npy')       # ★ 续训时从 .npy 恢复
@@ -571,7 +602,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         if _d1_dataset is not None and j >= (_d1_start_cycle - 1):
             _d1_proxy = compute_residual_proxy(
                 inp, field_comp, hist_alpha, matprop, pffmodel,
-                area_T, T_conn, f_fatigue, device)
+                area_T, T_conn, _resolve_f_fatigue(f_fatigue), device)
             _d1_dataset.update_weights(_d1_proxy)
             _d1_Keff = _d1_dataset.samples_per_epoch or _d1_dataset.n_elem
             print(f"  [δ-1] p_e updated: proxy max={_d1_proxy.max():.3e}, "
@@ -680,9 +711,14 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
             # 更新疲劳退化函数 f(ᾱ)（Carrara Eq.41 或 Eq.42）
             # ★ Direction 6.1: 传入 elem_centroids 支持空间调制 α_T
-            f_fatigue = compute_fatigue_degrad(
-                hist_fat, fatigue_dict, elem_centroids=elem_centroids
-            )
+            if _inverse_alpha_T is not None:
+                f_fatigue = lambda hist=hist_fat: compute_fatigue_degrad(
+                    hist, fatigue_dict, elem_centroids=elem_centroids
+                )
+            else:
+                f_fatigue = compute_fatigue_degrad(
+                    hist_fat, fatigue_dict, elem_centroids=elem_centroids
+                )
 
             # ★ 重置 psi_plus_prev，正确模拟循环加载的卸载阶段
             # 原因：NN 只求解峰值状态，不显式模拟卸载。
@@ -748,7 +784,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     crack_tip_weights = compute_adaptive_weights(
                         inp, _u_as, _v_as, _alpha_as, hist_alpha,
                         matprop, pffmodel, area_T, T_conn=T_conn,
-                        f_fatigue=f_fatigue,
+                        f_fatigue=_resolve_f_fatigue(f_fatigue),
                         beta=_as_beta, power=_as_power,
                         residual_source=_as_source,
                     )
@@ -763,8 +799,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 _c_val = None
 
             # 日志输出
-            f_min = f_fatigue.min().item()
-            f_mean = f_fatigue.mean().item()
+            _f_current = _resolve_f_fatigue(f_fatigue)
+            f_min = _f_current.min().item()
+            f_mean = _f_current.mean().item()
             alpha_bar_max = hist_fat.max().item()
             if (j % _log_every == 0) or _frac_detected or _dense_sampling:
                 _Kt_str = f"{_Kt:.2f}" if not np.isnan(_Kt) else "N/A"
@@ -774,13 +811,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             alpha_bar_history.append([alpha_bar_max,
                                        hist_fat.mean().item(),
                                        float(f_min)])
+            if _inverse_alpha_T is not None:
+                _inverse_alpha_T_history.append([j, scalar_value(_inverse_alpha_T)])
 
             # ── E_el 计算（用于断裂检测和后处理曲线）─────────────────────
             with torch.no_grad():
                 u_el, v_el, alpha_el = field_comp.fieldCalculation(inp)
                 E_el_val, _, _ = compute_energy(
                     inp, u_el, v_el, alpha_el, hist_alpha,
-                    matprop, pffmodel, area_T, T_conn, f_fatigue
+                    matprop, pffmodel, area_T, T_conn, _f_current
                 )
             E_el_scalar = float(E_el_val.item())
             E_el_history.append(E_el_scalar)
@@ -864,6 +903,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             _ckpt_data['_frac_detected']           = _frac_detected
             _ckpt_data['_frac_cycle']              = _frac_cycle
             _ckpt_data['_frac_confirm_remaining']  = _frac_confirm_remaining
+            if _inverse_alpha_T is not None:
+                _ckpt_data['inverse_alpha_T'] = scalar_value(_inverse_alpha_T)
         torch.save(_ckpt_data,
                    trainedModel_path / Path(f'checkpoint_step_{j}.pt'))
 
@@ -892,6 +933,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _time_history:
                 np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                         np.array(_time_history))   # shape (N,2): [cycle_idx, seconds]
+            if _inverse_alpha_T_history:
+                np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
+                        np.array(_inverse_alpha_T_history))
 
         # ── 断裂确认：判据持续满足 confirm_cycles 圈 → 停止 ──────────────
         if fatigue_on and _frac_detected and _frac_confirm_remaining <= 0:
@@ -917,6 +961,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _time_history:
                 np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                         np.array(_time_history))
+            if _inverse_alpha_T_history:
+                np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
+                        np.array(_inverse_alpha_T_history))
             break
 
     # 循环正常结束（跑完所有圈）也保存历史
@@ -943,3 +990,6 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_on and _time_history:
         np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                 np.array(_time_history))
+    if fatigue_on and _inverse_alpha_T_history:
+        np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
+                np.array(_inverse_alpha_T_history))

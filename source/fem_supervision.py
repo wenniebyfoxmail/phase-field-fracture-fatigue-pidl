@@ -91,6 +91,14 @@ class FEMSupervision:
             if m:
                 path_for[int(m.group(1))] = p
 
+        # Layout (a2) reverseBC handoff:
+        #   u12_reverseBC_cycle_0040.mat
+        reverse_re = re.compile(rf"^{re.escape(u_tag)}_reverseBC_cycle_(\d+)\.mat$")
+        for p in self.fem_dir.glob(f"{u_tag}_reverseBC_cycle_*.mat"):
+            m = reverse_re.match(p.name)
+            if m:
+                path_for[int(m.group(1))] = p
+
         # Layout (b) NESTED — only used to fill cycles not already found in flat
         nested_root = self.fem_dir / f"SENT_PIDL_{u_pct:02d}_export" / "psi_fields"
         if nested_root.is_dir():
