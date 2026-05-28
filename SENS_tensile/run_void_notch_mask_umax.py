@@ -83,8 +83,9 @@ def main() -> None:
         config.sidecar_S1_dict["enable"] = False
     if hasattr(config, "sidecar_S2_dict"):
         config.sidecar_S2_dict["enable"] = False
-    if hasattr(config, "tip_local_net_dict"):
-        config.tip_local_net_dict["enable"] = False
+    if not hasattr(config, "tip_local_net_dict"):
+        config.tip_local_net_dict = {"enable": False}
+    config.tip_local_net_dict["enable"] = False
     config.symmetry_prior = False
 
     config.coarse_mesh_file = coarse_mesh
