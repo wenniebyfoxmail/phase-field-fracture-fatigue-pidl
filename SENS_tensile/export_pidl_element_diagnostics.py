@@ -114,7 +114,7 @@ def tensor_np(value: torch.Tensor | float, like_tensor: torch.Tensor | None = No
 
 
 def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
-                 umax: float) -> dict[str, float | int | str]:
+                 umax: float, write_fields: bool = True) -> dict[str, float | int | str]:
     best = archive / "best_models"
     model_path = best / f"trained_1NN_{cycle}.pt"
     ckpt_path = best / f"checkpoint_step_{cycle}.pt"
@@ -155,7 +155,6 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
         elem_x = (inp[t_conn[:, 0], 0] + inp[t_conn[:, 1], 0] + inp[t_conn[:, 2], 0]) / 3.0
         elem_y = (inp[t_conn[:, 0], 1] + inp[t_conn[:, 1], 1] + inp[t_conn[:, 2], 1]) / 3.0
 
-    out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"element_fields_cycle_{cycle:04d}.npz"
     hist_np = tensor_np(hist_fat).reshape(-1)
     f_np = tensor_np(f_fatigue).reshape(-1)
@@ -163,25 +162,27 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
     e_el_np = tensor_np(e_el).reshape(-1)
     e_d_np = tensor_np(e_d).reshape(-1)
     e_hist_np = tensor_np(e_hist).reshape(-1)
-    np.savez_compressed(
-        out_path,
-        cycle=np.array([cycle], dtype=np.int32),
-        elem_x=tensor_np(elem_x).reshape(-1).astype(np.float32),
-        elem_y=tensor_np(elem_y).reshape(-1).astype(np.float32),
-        area_elem=tensor_np(area_t).reshape(-1).astype(np.float32),
-        alpha_elem=tensor_np(alpha_elem).reshape(-1).astype(np.float32),
-        hist_fat_elem=hist_np.astype(np.float32),
-        f_fatigue_elem=f_np.astype(np.float32),
-        psi_plus_elem=psi_np.astype(np.float32),
-        psi_plus_prev_elem=tensor_np(psi_prev).reshape(-1).astype(np.float32),
-        E_el_elem=e_el_np.astype(np.float32),
-        E_d_elem=e_d_np.astype(np.float32),
-        E_hist_elem=e_hist_np.astype(np.float32),
-        residual_abs_Eel_Ed=(np.abs(e_el_np) + np.abs(e_d_np)).astype(np.float32),
-    )
+    if write_fields:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(
+            out_path,
+            cycle=np.array([cycle], dtype=np.int32),
+            elem_x=tensor_np(elem_x).reshape(-1).astype(np.float32),
+            elem_y=tensor_np(elem_y).reshape(-1).astype(np.float32),
+            area_elem=tensor_np(area_t).reshape(-1).astype(np.float32),
+            alpha_elem=tensor_np(alpha_elem).reshape(-1).astype(np.float32),
+            hist_fat_elem=hist_np.astype(np.float32),
+            f_fatigue_elem=f_np.astype(np.float32),
+            psi_plus_elem=psi_np.astype(np.float32),
+            psi_plus_prev_elem=tensor_np(psi_prev).reshape(-1).astype(np.float32),
+            E_el_elem=e_el_np.astype(np.float32),
+            E_d_elem=e_d_np.astype(np.float32),
+            E_hist_elem=e_hist_np.astype(np.float32),
+            residual_abs_Eel_Ed=(np.abs(e_el_np) + np.abs(e_d_np)).astype(np.float32),
+        )
     return {
         "cycle": cycle,
-        "path": str(out_path),
+        "path": str(out_path) if write_fields else "",
         "n_elem": int(alpha_elem.numel()),
         "alpha_max": float(alpha_elem.max().detach().cpu()),
         "hist_max": float(hist_fat.max().detach().cpu()),
@@ -201,6 +202,8 @@ def main() -> int:
     parser.add_argument("--out-dir", type=Path, default=None)
     parser.add_argument("--umax", type=float, default=0.12)
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--summary-only", action="store_true",
+                        help="Write only the scalar CSV summary, not per-cycle NPZ field files.")
     args = parser.parse_args()
 
     archive = args.archive.resolve()
@@ -210,11 +213,15 @@ def main() -> int:
 
     rows = []
     for cycle in cycles:
-        rows.append(export_cycle(archive, cycle, out_dir, device, args.umax))
+        rows.append(export_cycle(
+            archive, cycle, out_dir, device, args.umax,
+            write_fields=not args.summary_only,
+        ))
         print(rows[-1])
 
     import csv
     csv_path = out_dir / "element_diagnostics_summary.csv"
+    out_dir.mkdir(parents=True, exist_ok=True)
     with csv_path.open("w", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
         writer.writeheader()
