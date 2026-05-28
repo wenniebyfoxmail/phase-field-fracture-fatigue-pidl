@@ -26,6 +26,50 @@
 
 ## Entries
 
+## 2026-05-28 · [done] Re: cyclewise FEM mechanism export — reverseBC u12 c1-c74 shipped
+
+**Re**: `docs/handovers/fem_cyclewise_mechanism_request_2026-05-28.md` (commit `0272625`, branch `codex/field-level-metric-representation`)
+
+**Status**: Complete. Post-processed the existing reverseBC `u=0.12` FEM run through its available final cycle (`c74`). No FEM rerun was needed.
+
+**Files written**:
+- Local: `~/Downloads/_pidl_handoff_v2/reverseBC_u12_cyclewise_mechanism_2026-05-28/`
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_cyclewise_mechanism_2026-05-28/`
+
+**Payload**:
+- `reverseBC_u12_cyclewise_mechanism_metrics.csv` — 74 rows, one per cycle `c1-c74`
+- `reverseBC_u12_cyclewise_element_fields_c1_c74.mat` — compact all-cycle element fields, 69.4 MB
+- `mesh_geometry.mat` — copied reference mesh geometry
+- `README_reverseBC_u12_cyclewise_mechanism.md` — definitions and caveats
+- `export_reverseBC_cyclewise_mechanism.m` — exporter script copied into OneDrive for traceability
+
+**Fields in the `.mat`**:
+- `node_coords` (`77900 x 2`)
+- `connectivity` (`77730 x 4`)
+- `element_centroids` (`77730 x 2`)
+- `element_area` (`77730 x 1`)
+- `cycles` (`74 x 1`, values `1:74`)
+- `d_elem`, `alpha_bar_elem`, `f_fatigue_elem`, `psi_plus_elem` (`77730 x 74`, columns match `cycles`)
+- `T` — same scalar table as the CSV
+- `metadata` — metric definitions and FEM setting notes
+
+**Definition notes**:
+- `d_elem`, `alpha_bar_elem`, `f_fatigue_elem`, and `psi_plus_elem` come from `SENT_PIDL_12_reverseBC/psi_fields/cycle_XXXX.mat`.
+- Source files store fatigue history as `alpha_elem`; export aliases it to `alpha_bar_elem`.
+- These are element means over Gauss/history data, not nodal projections. `psi_plus_elem` is the saved per-cycle peak/summary field.
+- `alpha_bar_monitor_max` comes from `monitorcycle.dat` column `||fat||_inf`; it differs from `alpha_bar_elem_max` because monitor output is a solver/internal-state maximum or norm, while `alpha_bar_elem` is element-averaged.
+- Nominal Kt denominator uses the requested mask: `abs(y) > 0.3` and `x > -0.3`.
+- Crack tip is defined as max centroid `x` among elements with `d_elem >= {0.95, 0.90, 0.50}`.
+- Near-tip width uses elements within `|x - x_tip| <= 2*sqrt(mean(element_area))`.
+
+**Verification**:
+- MATLAB loaded the `.mat`: field arrays are `77730 x 74`, CSV/table has 74 rows, cycles run from 1 to 74.
+- SHA256 copy verification passed for the CSV, `.mat`, `mesh_geometry.mat`, and README in OneDrive.
+
+**Next**: Mac can compute `SENS_tensile` cyclewise alignment/field-level metrics from the OneDrive payload. Additional GP-level stress/strain would require solver-side output changes or a rerun.
+
+---
+
 ## 2026-05-28 · [done] Re: Request 17 — reverseBC u12 P0 mesh-probe handoff regenerated
 
 **Re**: Request 17 (Mac note: missing P0 row for `SENS_tensile/alignment_mesh_probe_u012_reverseBC.csv`)
