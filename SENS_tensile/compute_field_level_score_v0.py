@@ -8,6 +8,7 @@ field proof.
 
 Inputs used by default:
   - alignment_mesh_probe_u012_baseline.csv
+  - alignment_mesh_probe_u012_reverseBC.csv
   - alignment_mesh_probe_u012_femAnchorBC.csv
   - alignment_compare_baseline_vs_femAnchorBC.csv
   - docs/figures/adaptive_sampling/.../field_level_compare_v4_baseline_fem.csv
@@ -280,6 +281,7 @@ def main() -> int:
 
     rows: list[dict] = []
     score_mesh_probe(SENS / "alignment_mesh_probe_u012_baseline.csv", "baseline", rows)
+    score_mesh_probe(SENS / "alignment_mesh_probe_u012_reverseBC.csv", "baseline_vs_reverseBC", rows)
     score_mesh_probe(SENS / "alignment_mesh_probe_u012_femAnchorBC.csv", "femAnchorBC", rows)
     score_direct_compare(SENS / "alignment_compare_baseline_vs_femAnchorBC.csv", rows)
 

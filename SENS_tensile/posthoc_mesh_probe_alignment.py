@@ -23,6 +23,10 @@ import pandas as pd
 import scipy.io as sio
 import torch
 from scipy.spatial import cKDTree
+try:
+    import h5py
+except ImportError:  # pragma: no cover - optional, only needed for MATLAB v7.3 handoffs
+    h5py = None
 
 HERE = Path(__file__).parent.resolve()
 sys.path.insert(0, str(HERE))
@@ -85,16 +89,70 @@ def point_in_triangle(p, v1, v2, v3, tol=1e-12) -> bool:
     return (a >= -tol) and (b >= -tol) and (c >= -tol)
 
 
-def fem_mesh():
-    mesh = sio.loadmat(str(FEM_DIR / "mesh_geometry.mat"))
-    centroids = np.asarray(mesh["element_centroids"], dtype=float)
-    nodes = np.asarray(mesh["node_coords"], dtype=float)
-    conn = np.asarray(mesh["connectivity"], dtype=int) - 1
+def orient_by_last_dim(arr: np.ndarray, n_cols: int) -> np.ndarray:
+    """Return MATLAB/HDF arrays as N x n_cols when they arrive transposed."""
+    a = np.asarray(arr)
+    if a.ndim == 2 and a.shape[0] == n_cols and a.shape[1] != n_cols:
+        return a.T
+    return a
+
+
+def fem_mesh_from_arrays(centroids: np.ndarray, nodes: np.ndarray, conn: np.ndarray):
+    centroids = orient_by_last_dim(np.asarray(centroids, dtype=float), 2)
+    nodes = orient_by_last_dim(np.asarray(nodes, dtype=float), 2)
+    conn = np.asarray(conn, dtype=int)
+    if conn.ndim == 2 and conn.shape[0] in (3, 4) and conn.shape[1] > conn.shape[0]:
+        conn = conn.T
+    if conn.min() == 1:
+        conn = conn - 1
     pts = nodes[conn]
     x = pts[:, :, 0]
     y = pts[:, :, 1]
     areas = 0.5 * np.abs(np.sum(x * np.roll(y, -1, axis=1) - y * np.roll(x, -1, axis=1), axis=1))
     return centroids, areas
+
+
+def fem_mesh():
+    mesh = sio.loadmat(str(FEM_DIR / "mesh_geometry.mat"))
+    return fem_mesh_from_arrays(mesh["element_centroids"], mesh["node_coords"], mesh["connectivity"])
+
+
+def load_combined_handoff(path: Path) -> dict:
+    """Load reverseBC P0 HDF5/MATLAB v7.3 combined handoff.
+
+    Windows-FEM exports arrays as n_cycle x n_elem under h5py because MATLAB
+    stores them transposed relative to scipy.io.loadmat v7 output.
+    """
+    if h5py is None:
+        raise RuntimeError("h5py is required to read MATLAB v7.3 combined handoff files")
+    with h5py.File(path, "r") as f:
+        cycles = np.asarray(f["cycles"], dtype=int).reshape(-1).tolist()
+        out = {
+            "cycles": cycles,
+            "centroids": np.asarray(f["element_centroids"], dtype=float),
+            "nodes": np.asarray(f["node_coords"], dtype=float),
+            "conn": np.asarray(f["connectivity"], dtype=int),
+            "fields": {},
+        }
+        for key in ["d_elem", "psi_elem", "alpha_bar_elem", "f_alpha_elem"]:
+            arr = np.asarray(f[key])
+            if arr.shape[0] == len(cycles):
+                arr = arr.T
+            out["fields"][key] = np.asarray(arr, dtype=float)
+    out["centroids"], out["areas"] = fem_mesh_from_arrays(out["centroids"], out["nodes"], out["conn"])
+    return out
+
+
+def load_fem_snapshot(cycle: int, umax: float, combined: dict | None):
+    if combined is not None:
+        idx = combined["cycles"].index(cycle)
+        return {
+            "d_elem": combined["fields"]["d_elem"][:, idx],
+            "psi_elem": combined["fields"]["psi_elem"][:, idx],
+            "alpha_bar_elem": combined["fields"]["alpha_bar_elem"][:, idx],
+            "f_alpha_elem": combined["fields"]["f_alpha_elem"][:, idx],
+        }
+    return sio.loadmat(str(FEM_DIR / f"u{int(round(umax * 100)):02d}_cycle_{cycle:04d}.mat"))
 
 
 def pidl_model_and_mesh(archive: Path, umax: float, cycle: int):
@@ -208,19 +266,27 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--archive", type=Path, default=HERE / DEFAULT_ARCHIVE)
     ap.add_argument("--umax", type=float, default=0.12)
-    ap.add_argument("--cycles", default="1,40,70,82")
+    ap.add_argument("--cycles", default=None)
+    ap.add_argument("--fem-combined-mat", type=Path, default=None,
+                    help="MATLAB v7.3 combined handoff with cycles and FEM fields")
     ap.add_argument("--out", type=Path, default=HERE / "alignment_mesh_probe_u012_baseline.csv")
     args = ap.parse_args()
 
-    cycles = [int(x) for x in args.cycles.split(",") if x.strip()]
-    fem_centroids, fem_areas = fem_mesh()
+    combined = load_combined_handoff(args.fem_combined_mat) if args.fem_combined_mat else None
+    if args.cycles:
+        cycles = [int(x) for x in args.cycles.split(",") if x.strip()]
+    elif combined is not None:
+        cycles = list(combined["cycles"])
+    else:
+        cycles = [1, 40, 70, 82]
+    fem_centroids, fem_areas = (combined["centroids"], combined["areas"]) if combined is not None else fem_mesh()
     first = pidl_model_and_mesh(args.archive, args.umax, cycles[0])
     assignment = build_assignment(fem_centroids, first["centroids"], first["inp"], first["conn"])
 
     rows = []
     for cycle in cycles:
         print(f"cycle {cycle}")
-        fem = sio.loadmat(str(FEM_DIR / f"u{int(round(args.umax * 100)):02d}_cycle_{cycle:04d}.mat"))
+        fem = load_fem_snapshot(cycle, args.umax, combined)
         pidl = first if cycle == cycles[0] else pidl_model_and_mesh(args.archive, args.umax, cycle)
         field_pairs = {
             "damage_alpha": (np.asarray(fem["d_elem"], dtype=float).reshape(-1), pidl["alpha"]),
