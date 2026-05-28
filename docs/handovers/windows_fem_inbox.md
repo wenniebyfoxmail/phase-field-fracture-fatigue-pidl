@@ -27,6 +27,121 @@
 
 ## Active Requests
 
+## 2026-05-28 · Request 18: strict diffuse-precrack initial-state alignment
+
+**Goal**: isolate whether the large FEM/PIDL difference is caused by the
+initial precrack/history convention. The current diffuse-precrack FEM is closer
+to PIDL than void FEM, but it initializes `alpha_bar=1` and therefore
+`f_alpha=0.4444` in the precrack band. Mac's current interpretation is that a
+pre-existing crack should be an initial damage/crack condition, not an initial
+fatigue-accumulation condition. Please run the strictly aligned initial-state
+variant below.
+
+**INPUT file**: Please create a new input based on the completed diffuse
+precrack reverseBC run:
+
+```matlab
+Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_diffuse_precrack_hist0_reverseBC.m
+```
+
+Keep the same base settings as the completed diffuse-precrack run:
+
+```matlab
+split_type = 'AMOR';
+diss_fct   = 'AT1';
+irrev      = 'PENALTY';
+E=1, ni=0.3, Gc=0.01, ell=0.01, alpha_T=0.5, p=2;
+uy_final=0.12, R=0, n_step=8;
+fix_X = top+bottom, fix_Y = bottom, disp_Y = top;
+material retained in the precrack band;
+hard d=1 precrack band, same geometry as the previous diffuse run.
+```
+
+Change only the initial fatigue/history convention:
+
+```text
+d / phase field in precrack band: 1
+fatigue history alpha_bar in precrack band: 0
+fatigue history alpha_bar outside precrack: 0
+initial f_alpha everywhere: 1, unless the code recomputes a different value
+from alpha_bar; if so, please report it explicitly.
+```
+
+Please also report the actual `tol_irrev` used by GRIPHFiTH. Mac currently
+believes FEM default is `tol_irrev=1e-3`, while PIDL default is `tol_ir=5e-3`,
+which is a 25x penalty-strength difference.
+
+**Mesh**: Use the same mesh as the completed diffuse-precrack handoff:
+
+```text
+_pidl_handoff_reverseBC_u12_diffuse_precrack_2026-05-28
+node_coords: 45591 x 2
+connectivity: 45000 x 4
+```
+
+If the mesh must change, please state the new node/element counts and include a
+fresh `mesh_geometry.mat`.
+
+**Expected outputs**:
+
+Please export the same cyclewise mechanism package as the previous diffuse
+precrack run and mirror it to OneDrive, e.g.
+
+```text
+OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_hist0_2026-05-28
+```
+
+Required files:
+
+```text
+reverseBC_u12_diffuse_precrack_hist0_cyclewise_mechanism_metrics.csv
+reverseBC_u12_diffuse_precrack_hist0_element_fields_c1_cXX.mat
+mesh_geometry.mat
+README_reverseBC_u12_diffuse_precrack_hist0.md
+INPUT_SENT_PIDL_12_diffuse_precrack_hist0_reverseBC.m
+export_reverseBC_cyclewise_mechanism.m
+```
+
+Please include the same fields and reductions as Request 16 / the previous
+diffuse handoff:
+
+```text
+d_elem
+alpha_bar_elem
+f_fatigue_elem or f_alpha_elem
+psi_plus_elem
+E_el, E_d, total energy
+damage/history/f/psi max-min-percentile reductions
+max/min locations
+x_tip_d095, x_tip_d090, x_tip_d050
+process-zone width metrics
+right-boundary d>=0.95 count and y-span
+```
+
+Please add an initial-state audit to the README and/or CSV:
+
+```text
+precrack d mean/max at cycle 0 or cycle 1 before loading
+precrack alpha_bar mean/max at cycle 0 or cycle 1 before loading
+precrack f_alpha mean/min at cycle 0 or cycle 1 before loading
+outside-precrack alpha_bar mean/max at cycle 0 or cycle 1
+whether E_d includes the initial precrack damage energy
+whether any scalar energy is absolute or incremental relative to the initial state
+```
+
+**Acceptance criteria**:
+
+- The run uses the same reverseBC and same diffuse-precrack geometry as the
+  previous diffuse handoff.
+- The precrack has `d=1` but `alpha_bar=0` initially, unless blocked by code
+  structure and documented.
+- `f_alpha` is not pre-degraded by artificial fatigue history at initialization.
+- The OneDrive payload includes cyclewise fields through available fracture.
+- The README explicitly separates absolute `E_d` from incremental/outside-
+  precrack `E_d` interpretation.
+
+**Priority**: high. This blocks strict FEM/PIDL mechanism interpretation.
+
 ## 2026-05-28 · Request 17: resend/regenerate reverseBC u12 snapshots for strict field-level metric
 
 **Goal**: Mac needs the full reverseBC `u12` FEM handoff locally so the new field-level scorer can compute a strict same-probe comparison against the intended aligned reference. Right now Mac only has strict same-probe CSVs for baseline/femAnchorBC; reverseBC appears only as a partial summary/outbox row, which is why `field_level_metric_results_2026-05-28.md` still shows femAnchorBC numeric scores but no reverseBC strict score.
