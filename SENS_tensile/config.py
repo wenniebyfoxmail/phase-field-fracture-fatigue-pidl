@@ -141,6 +141,20 @@ fatigue_dict = {
         "start_cycle" : 1,           # 从第几圈开始加权（0 = 从预训练完成后第1圈就加权）
     },
 
+    # ── Wang-style adaptive λ_hist（默认关闭）──────────────────────────────
+    # REFINE 后打印各项参数梯度范数，并令
+    # λ_hat = max(||∇E_el||₂, ||∇E_d||₂) / ||∇E_hist||₂，clip 后用于后续 fit。
+    # 目的：只压低过强的 irreversibility penalty 梯度，避免它在新 mesh 上主导优化。
+    # enable=False 时 λ_hist=1，损失严格保持 log10(E_el + E_d + E_hist)。
+    "adaptive_lambda_hist": {
+        "enable" : False,
+        "initial": 1.0,
+        "min"    : 1e-3,
+        "max"    : 1.0,
+        "smooth" : 1.0,
+        "eps"    : 1e-30,
+    },
+
     # ── E2 sanity hack (Apr 23 2026): ψ⁺ 裂尖放大 ──────────────────────────
     # 目的：验证 ψ⁺_raw 集中能力是否是 ᾱ_max ceiling 根因
     # 在 get_psi_plus_per_elem 输出上乘 Gaussian 放大乘子，
@@ -286,6 +300,74 @@ adaptive_sampling_dict = {
 }
 
 
+# ★ 2026-05-12 Sidecar S1: TRUE adaptive sampling — static-tip oversampling.
+# ────────────────────────────────────────────────────────────────────────────
+# Spec: docs/sidecar_true_adaptive_sampling.md (Stage S1)
+# Differs from C6 (`adaptive_sampling_dict` above): C6 reweights the loss
+# inside log10(sum E); S1 changes ONLY collocation density via 1-to-4 red
+# refinement near the tip — Deep Ritz / Carrara objective untouched, area
+# integral exactly conserved.
+#
+# Mutual exclusion: none mechanically required (S1 changes mesh, C6 changes
+# loss). But to keep the sidecar interpretable, runners should disable other
+# active variants (Williams / Fourier / exact-BC / tip_weight) unless the
+# spec is explicitly revised to allow stacks.
+sidecar_S1_dict = {
+    "enable"          : False,        # default off; runner sets True
+    "tip_xy"          : (0.0, 0.0),   # crack-tip coordinates in domain frame
+    "r_tip_sample"    : 0.05,         # refinement radius (centroid distance)
+    "n_refine_passes" : 1,            # 1 pass ≈ 4× density inside r_tip; 2 ≈ 16×
+}
+
+
+# ★ 2026-05-13 Sidecar S2: ADAPTIVE (cycle-wise) refinement.
+# ────────────────────────────────────────────────────────────────────────────
+# Spec: docs/sidecar_true_adaptive_sampling.md (Stage S2).
+# S1 was a STATIC tip prior — it refines around (0,0) once and never adapts.
+# As the crack propagates (x_tip → +0.22 by cycle 49 at Umax=0.12), the static
+# refinement zone becomes mis-aligned with the active tip, which is the
+# leading hypothesis for why S1's early-cycle +37-50% lift narrows to +5%
+# mid-cycle in the N=50 production data (see runs ledger).
+#
+# Two modes:
+#   - "tip_following" (S2a): each cycle, re-refine around the CURRENT x_tip
+#     (read from the running crack-tip history). Pure geometry, no score.
+#   - "score_driven"  (S2b): each cycle, re-refine the top `target_fraction`
+#     of elements by detached Deep Ritz residual |E_el_e|+|E_d_e| computed
+#     at the END of the PREVIOUS cycle. Score is detached so it acts only
+#     as a sampling-density signal, NOT as a loss reweight (sidecar Rule 1).
+#
+# S2 rebuilds each refined mesh from the canonical reference mesh, while
+# carrying per-cycle history directly between consecutive current meshes.
+# Hysteresis should be conservative: do not remesh while the tracked tip still
+# lies inside the previous refined ball. The May-19 diagnostic showed
+# hysteresis_fraction=0.25 remeshed too early (cycle 8 at x_tip≈0.014 for
+# r_tip=0.05), flattening alpha_bar; hysteresis_fraction=1.0 kept the mesh
+# stable and matched S1 through the same cycles.
+#
+# Mutual exclusion: must not be enabled together with sidecar_S1_dict
+# (both refine the fine mesh, would compose ambiguously). Runner enforces.
+sidecar_S2_dict = {
+    "enable"          : False,        # default off; runner sets True
+    "mode"            : "tip_following",  # "tip_following" | "score_driven"
+    "tip_xy"          : (0.0, 0.0),   # initial / fallback tip when no x_tip history yet
+    "r_tip_sample"    : 0.05,         # refinement radius (S2a; also fallback in S2b cycle 0)
+    "n_refine_passes" : 1,            # 1 = standard 4× density boost
+    # S2b only:
+    "target_fraction" : 0.07,         # fraction of elements to refine (matches S1's r=0.05 footprint)
+    "min_count"       : 50,           # safety floor on n_marked
+    "hysteresis_fraction": 1.0,        # remesh only after tip moves about one refine radius
+    "include_root_tip": False,         # S2a diagnostic option: union current tip + fixed root zone
+    "root_tip_xy"     : (0.0, 0.0),
+    "r_root_sample"   : 0.05,
+    "post_refine_reeq": {
+        "enable"  : False,             # extra fit after REFINE before fatigue-history update
+        "optimizer": "RPROP",
+        "n_epochs": 3000,
+    },
+}
+
+
 # Domain definition
 '''
 domain_extrema: tensor([[x_min, x_max], [y_min, y_max]])
@@ -392,12 +474,6 @@ _exact_bc_tag = (
     f"_exactBCsent_nu{exact_bc_dict.get('nu', mat_prop_dict['mat_nu'])}"
     if exact_bc_dict.get("enable", False) else ""
 )
-# ★ 2026-05-14: append sidepow tag only if != 2.0 (default), to keep
-# backward-compatible naming for historical side² C4 archives.
-if exact_bc_dict.get("enable", False):
-    _spow = exact_bc_dict.get("side_power", 2.0)
-    if _spow != 2.0:
-        _exact_bc_tag = _exact_bc_tag + f"_sidepow{_spow}"
 
 # ★ 2026-05-11 C10: Fourier feature tag
 _fourier_tag = (

@@ -58,4 +58,6 @@ if __name__ == "__main__":
           optimizer_dict, training_dict, coarse_mesh_file, fine_mesh_file,
           device, trainedModel_path, intermediateModel_path, writer,
           fatigue_dict=fatigue_dict,                         # ★ 传入疲劳字典
-          adaptive_sampling_dict=adaptive_sampling_dict)     # ★ 2026-05-13 Branch 2 C6
+          adaptive_sampling_dict=adaptive_sampling_dict,     # ★ 2026-05-13 Branch 2 C6
+          sidecar_S1_dict=sidecar_S1_dict,                   # ★ 2026-05-12 sidecar S1
+          sidecar_S2_dict=sidecar_S2_dict)                   # ★ 2026-05-13 sidecar S2 adaptive

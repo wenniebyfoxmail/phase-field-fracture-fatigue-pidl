@@ -148,6 +148,7 @@ class EarlyStopping:
 def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matprop, pffmodel,
         weight_decay, num_epochs, optimizer, intermediateModel_path=None, writer=None, training_dict={},
         f_fatigue=1.0, crack_tip_weights=None,
+        hist_loss_weight=1.0,
         supervised_dict=None,
         symmetry_dict=None,
         side_traction_dict=None):
@@ -182,7 +183,7 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                                                                 crack_tip_weights=crack_tip_weights)
 
                 # 3. 损失函数 = log(总能量) ！！！
-                loss_var = torch.log10(loss_E_el + loss_E_d + loss_hist)
+                loss_var = torch.log10(loss_E_el + loss_E_d + hist_loss_weight * loss_hist)
 
                 # 4. 权重正则化（防止过拟合）
                 # weight regularization
@@ -195,33 +196,17 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                 loss = loss_var + weight_decay*loss_reg
 
                 # ★ MIT-8 supervised term (Apr 25 + Apr 26 amortization)
-                # ★ 2026-05-14: target_kind='psi' (existing) or 'alpha' (new α-direct supervision)
                 if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
                     _every_n = max(1, int(supervised_dict.get('every_n_epochs', 1)))
                     if (epoch % _every_n) == 0:
-                        _target_kind = supervised_dict.get('target_kind', 'psi')
-                        if _target_kind == 'psi':
-                            psi_raw_pidl = _compute_psi_raw_per_elem(
-                                inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
-                            loss_sup = supervised_dict['fem_sup'].supervised_loss(
-                                psi_raw_pidl,
-                                cycle_idx=supervised_dict['cycle_idx'],
-                                pidl_centroids=supervised_dict['pidl_centroids'],
-                                lambda_sup=supervised_dict['lambda'],
-                                loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
-                                mask=supervised_dict.get('mask', None))
-                        elif _target_kind == 'alpha':
-                            # α per-node → per-element via T_conn averaging
-                            alpha_per_elem = alpha[T_conn].mean(dim=1)
-                            loss_sup = supervised_dict['fem_sup'].alpha_supervised_loss(
-                                alpha_per_elem,
-                                cycle_idx=supervised_dict['cycle_idx'],
-                                pidl_centroids=supervised_dict['pidl_centroids'],
-                                lambda_sup=supervised_dict['lambda'],
-                                loss_kind=supervised_dict.get('loss_kind', 'mse_lin'),
-                                mask=supervised_dict.get('mask', None))
-                        else:
-                            raise ValueError(f"unknown supervised target_kind={_target_kind!r}; expected 'psi' or 'alpha'")
+                        psi_raw_pidl = _compute_psi_raw_per_elem(
+                            inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
+                        loss_sup = supervised_dict['fem_sup'].supervised_loss(
+                            psi_raw_pidl,
+                            cycle_idx=supervised_dict['cycle_idx'],
+                            pidl_centroids=supervised_dict['pidl_centroids'],
+                            lambda_sup=supervised_dict['lambda'],
+                            loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
                         loss = loss + _every_n * loss_sup
 
                 # ★ 2026-05-07 Soft mirror-symmetry penalty (B path)
@@ -278,6 +263,7 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
 def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matprop, pffmodel,
                             weight_decay, num_epochs, optimizer, min_delta, intermediateModel_path=None, writer=None, training_dict={},
                             f_fatigue=1.0, crack_tip_weights=None,
+                            hist_loss_weight=1.0,
                             supervised_dict=None,
                             symmetry_dict=None,
                             side_traction_dict=None):
@@ -307,7 +293,7 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
             loss_E_el, loss_E_d, loss_hist = compute_energy(inp_train, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
                                                             f_fatigue=f_fatigue,
                                                             crack_tip_weights=crack_tip_weights)
-            loss_var = torch.log10(loss_E_el + loss_E_d + loss_hist)
+            loss_var = torch.log10(loss_E_el + loss_E_d + hist_loss_weight * loss_hist)
 
             # weight regularization
             loss_reg = 0.0
@@ -325,28 +311,14 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
             if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
                 _every_n = max(1, int(supervised_dict.get('every_n_epochs', 1)))
                 if (epoch % _every_n) == 0:
-                    _target_kind = supervised_dict.get('target_kind', 'psi')
-                    if _target_kind == 'psi':
-                        psi_raw_pidl = _compute_psi_raw_per_elem(
-                            inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
-                        loss_sup = supervised_dict['fem_sup'].supervised_loss(
-                            psi_raw_pidl,
-                            cycle_idx=supervised_dict['cycle_idx'],
-                            pidl_centroids=supervised_dict['pidl_centroids'],
-                            lambda_sup=supervised_dict['lambda'],
-                            loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
-                            mask=supervised_dict.get('mask', None))
-                    elif _target_kind == 'alpha':
-                        alpha_per_elem = alpha[T_conn].mean(dim=1)
-                        loss_sup = supervised_dict['fem_sup'].alpha_supervised_loss(
-                            alpha_per_elem,
-                            cycle_idx=supervised_dict['cycle_idx'],
-                            pidl_centroids=supervised_dict['pidl_centroids'],
-                            lambda_sup=supervised_dict['lambda'],
-                            loss_kind=supervised_dict.get('loss_kind', 'mse_lin'),
-                            mask=supervised_dict.get('mask', None))
-                    else:
-                        raise ValueError(f"unknown supervised target_kind={_target_kind!r}; expected 'psi' or 'alpha'")
+                    psi_raw_pidl = _compute_psi_raw_per_elem(
+                        inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
+                    loss_sup = supervised_dict['fem_sup'].supervised_loss(
+                        psi_raw_pidl,
+                        cycle_idx=supervised_dict['cycle_idx'],
+                        pidl_centroids=supervised_dict['pidl_centroids'],
+                        lambda_sup=supervised_dict['lambda'],
+                        loss_kind=supervised_dict.get('loss_kind', 'mse_log'))
                     # Scale up to compensate for the missed epochs
                     loss = loss + _every_n * loss_sup
 
