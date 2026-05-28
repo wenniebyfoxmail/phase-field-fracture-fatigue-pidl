@@ -26,6 +26,36 @@
 
 ## Entries
 
+## 2026-05-28 · [done] Re: Request 17 — reverseBC u12 P0 mesh-probe handoff regenerated
+
+**Re**: Request 17 (Mac note: missing P0 row for `SENS_tensile/alignment_mesh_probe_u012_reverseBC.csv`)
+
+**Status**: Complete. Regenerated a compact full reverseBC `u=0.12` FEM `.mat` handoff with mesh geometry and the four requested element field snapshots.
+
+**Files written**:
+- Local: `~/Downloads/_pidl_handoff_v2/reverseBC_u12_P0_mesh_probe_2026-05-28/`
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_P0_mesh_probe_2026-05-28/`
+
+**Main payload**: `reverseBC_u12_full_P0_mesh_probe_handoff.mat` (9.3 MB)
+
+**Variables included**:
+- `node_coords` (`77900 x 2`)
+- `connectivity` (`77730 x 4`)
+- `element_centroids` (`77730 x 2`)
+- `cycles = [1 40 70 74]`
+- `d_elem`, `psi_elem`, `alpha_bar_elem`, `f_alpha_elem` (`77730 x 4`, columns match `cycles`)
+- `cycle_data(1:4)` with per-cycle `d_elem`, `psi_elem`, `alpha_bar_elem`, `f_alpha_elem`
+
+**Notes**:
+- Source run: `GRIPHFiTH/Scripts/fatigue_fracture/SENT_PIDL_12_reverseBC`
+- Source files store fatigue history as `alpha_elem`; this handoff aliases it to `alpha_bar_elem`.
+- `mesh_geometry.mat` is copied alongside the bundle.
+- SHA256 copy verification passed for the `.mat`, `mesh_geometry.mat`, and README in OneDrive.
+
+**Next**: No FEM run needed for this P0 row unless Mac wants additional cycles or GP-level fields.
+
+---
+
 ## 2026-05-22 · [done] Re: Request 15 — reverseBC BC-matched snapshots shipped to handoff dir + OneDrive
 
 **Re**: Request 15 (inbox `4619b2d`)
