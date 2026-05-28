@@ -113,8 +113,22 @@ def tensor_np(value: torch.Tensor | float, like_tensor: torch.Tensor | None = No
     return np.asarray(value)
 
 
+def masked_stats(values: np.ndarray, mask: np.ndarray) -> dict[str, float]:
+    selected = values[mask]
+    if selected.size == 0:
+        return {"max": np.nan, "mean": np.nan, "min": np.nan, "sum": 0.0}
+    return {
+        "max": float(np.nanmax(selected)),
+        "mean": float(np.nanmean(selected)),
+        "min": float(np.nanmin(selected)),
+        "sum": float(np.nansum(selected)),
+    }
+
+
 def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
-                 umax: float, write_fields: bool = True) -> dict[str, float | int | str]:
+                 umax: float, write_fields: bool = True,
+                 precrack_half_width: float = 0.02,
+                 precrack_x_max: float = 0.0) -> dict[str, float | int | str]:
     best = archive / "best_models"
     model_path = best / f"trained_1NN_{cycle}.pt"
     ckpt_path = best / f"checkpoint_step_{cycle}.pt"
@@ -162,13 +176,23 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
     e_el_np = tensor_np(e_el).reshape(-1)
     e_d_np = tensor_np(e_d).reshape(-1)
     e_hist_np = tensor_np(e_hist).reshape(-1)
+    elem_x_np = tensor_np(elem_x).reshape(-1)
+    elem_y_np = tensor_np(elem_y).reshape(-1)
+    precrack_mask = (elem_x_np <= precrack_x_max) & (np.abs(elem_y_np) <= precrack_half_width)
+    outside_precrack = ~precrack_mask
+    hist_out = masked_stats(hist_np, outside_precrack)
+    f_out = masked_stats(f_np, outside_precrack)
+    psi_out = masked_stats(psi_np, outside_precrack)
+    e_el_out = masked_stats(e_el_np, outside_precrack)
+    e_d_out = masked_stats(e_d_np, outside_precrack)
+    e_hist_out = masked_stats(e_hist_np, outside_precrack)
     if write_fields:
         out_dir.mkdir(parents=True, exist_ok=True)
         np.savez_compressed(
             out_path,
             cycle=np.array([cycle], dtype=np.int32),
-            elem_x=tensor_np(elem_x).reshape(-1).astype(np.float32),
-            elem_y=tensor_np(elem_y).reshape(-1).astype(np.float32),
+            elem_x=elem_x_np.astype(np.float32),
+            elem_y=elem_y_np.astype(np.float32),
             area_elem=tensor_np(area_t).reshape(-1).astype(np.float32),
             alpha_elem=tensor_np(alpha_elem).reshape(-1).astype(np.float32),
             hist_fat_elem=hist_np.astype(np.float32),
@@ -192,6 +216,19 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
         "E_el": float(e_el.sum().detach().cpu()),
         "E_d": float(e_d.sum().detach().cpu()),
         "E_hist": float(e_hist.sum().detach().cpu()),
+        "precrack_half_width": float(precrack_half_width),
+        "precrack_x_max": float(precrack_x_max),
+        "n_elem_precrack_mask": int(precrack_mask.sum()),
+        "n_elem_outside_precrack": int(outside_precrack.sum()),
+        "hist_max_outside_precrack": hist_out["max"],
+        "hist_mean_outside_precrack": hist_out["mean"],
+        "f_min_outside_precrack": f_out["min"],
+        "f_mean_outside_precrack": f_out["mean"],
+        "psi_max_outside_precrack": psi_out["max"],
+        "psi_mean_outside_precrack": psi_out["mean"],
+        "E_el_outside_precrack": e_el_out["sum"],
+        "E_d_outside_precrack": e_d_out["sum"],
+        "E_hist_outside_precrack": e_hist_out["sum"],
     }
 
 
@@ -204,6 +241,10 @@ def main() -> int:
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--summary-only", action="store_true",
                         help="Write only the scalar CSV summary, not per-cycle NPZ field files.")
+    parser.add_argument("--precrack-half-width", type=float, default=0.02,
+                        help="Half-width of the initial pre-crack corridor to exclude in masked summaries.")
+    parser.add_argument("--precrack-x-max", type=float, default=0.0,
+                        help="Maximum x-coordinate of the initial pre-crack corridor.")
     args = parser.parse_args()
 
     archive = args.archive.resolve()
@@ -216,6 +257,8 @@ def main() -> int:
         rows.append(export_cycle(
             archive, cycle, out_dir, device, args.umax,
             write_fields=not args.summary_only,
+            precrack_half_width=args.precrack_half_width,
+            precrack_x_max=args.precrack_x_max,
         ))
         print(rows[-1])
 
