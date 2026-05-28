@@ -79,6 +79,12 @@ def build_comparison(fem_csv: Path, archive: Path, pidl_diag_csv: Path) -> pd.Da
 
     merged["ratio_E_el_pidl_over_fem"] = safe_ratio(merged["pidl_E_el"], merged["fem_E_el"])
     merged["ratio_E_d_pidl_over_fem"] = safe_ratio(merged["pidl_E_d"], merged["fem_E_d"])
+    merged["fem_E_d_increment_from_first"] = merged["fem_E_d"] - merged["fem_E_d"].iloc[0]
+    merged["pidl_E_d_increment_from_first"] = merged["pidl_E_d"] - merged["pidl_E_d"].iloc[0]
+    merged["ratio_E_d_increment_pidl_over_fem"] = safe_ratio(
+        merged["pidl_E_d_increment_from_first"],
+        merged["fem_E_d_increment_from_first"],
+    )
     merged["ratio_hist_max_pidl_over_fem_elem"] = safe_ratio(
         merged["pidl_hist_max"], merged["fem_alpha_bar_elem_max"],
     )
@@ -102,7 +108,7 @@ def plot_comparison(df: pd.DataFrame, out_png: Path, out_pdf: Path | None) -> No
     ax.plot(cycle, df["pidl_E_el"], label="PIDL E_el", lw=1.8)
     ax.plot(cycle, df["fem_E_d"], label="FEM E_d", lw=1.8)
     ax.plot(cycle, df["pidl_E_d"], label="PIDL E_d", lw=1.8)
-    ax.set_title("Integrated Energies")
+    ax.set_title("Absolute Energies")
     ax.set_xlabel("cycle")
     ax.set_ylabel("energy")
     ax.legend(fontsize=8)
@@ -110,7 +116,7 @@ def plot_comparison(df: pd.DataFrame, out_png: Path, out_pdf: Path | None) -> No
 
     ax = axes[0, 1]
     ax.semilogy(cycle, df["ratio_E_el_pidl_over_fem"], label="E_el ratio")
-    ax.semilogy(cycle, df["ratio_E_d_pidl_over_fem"], label="E_d ratio")
+    ax.semilogy(cycle, df["ratio_E_d_increment_pidl_over_fem"], label="incremental E_d ratio")
     ax.axhline(1.0, color="0.3", lw=1, ls="--")
     ax.set_title("PIDL / FEM Energy Ratio")
     ax.set_xlabel("cycle")

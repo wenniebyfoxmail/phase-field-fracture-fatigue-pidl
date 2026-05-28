@@ -41,6 +41,10 @@ The FEM README defines:
 - Crack tip as maximum element-centroid `x` where `d_elem >= threshold`.
 - Right-boundary fracture diagnostic as elements near the right boundary with
   `d_elem >= 0.95`.
+- FEM represents the notch as a void, while the current PIDL baseline represents
+  the pre-crack/notch as a damaged `d=1` region. Therefore absolute `E_d` is
+  not aligned at early cycles: PIDL pays a pre-existing diffuse crack/notch
+  surface energy that FEM does not integrate as material fracture energy.
 
 The PIDL cyclewise scalar diagnostics were recomputed post-hoc from saved
 network/checkpoint states using the same mesh as the baseline archive. The
@@ -52,7 +56,7 @@ state used by `trained_1NN_40.pt` and `checkpoint_step_40.pt`.
 The c40/c70 interpretation holds over the full available FEM window c1-c74.
 The mismatch is not only an endpoint accident.
 
-Selected values:
+Selected absolute values:
 
 | Cycle | FEM `E_el` | PIDL `E_el` | FEM `E_d` | PIDL `E_d` | FEM hist max | PIDL hist max | FEM `f_min` | PIDL `f_min` |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -61,12 +65,23 @@ Selected values:
 | 70 | 0.001162 | 0.001505 | 0.004719 | 0.007176 | 215.476 | 8.690 | 2.62e-4 | 1.18e-2 |
 | 74 | 0.000070 | 0.001235 | 0.005446 | 0.007361 | 227.955 | 8.830 | 2.60e-4 | 1.15e-2 |
 
+Because of the notch convention, compare incremental fracture/damage energy
+after subtracting the first available cycle:
+
+| Cycle | FEM `Delta E_d` from c1 | PIDL `Delta E_d` from c1 | PIDL/FEM |
+|---:|---:|---:|---:|
+| 10 | 0.000370 | -0.000008 | -0.023 |
+| 40 | 0.002159 | 0.000547 | 0.253 |
+| 70 | 0.004718 | 0.001705 | 0.361 |
+| 74 | 0.005445 | 0.001890 | 0.347 |
+
 Median PIDL/FEM ratios over c10-c74:
 
 | Ratio | Median |
 |---|---:|
 | `E_el` | 1.07 |
-| `E_d` | 2.64 |
+| absolute `E_d` | 2.64 |
+| incremental `E_d` from c1 | 0.261 |
 | history max | 0.067 |
 | history mean | 0.555 |
 | `f_min` | 51.79 |
@@ -75,7 +90,9 @@ Interpretation:
 
 - PIDL elastic energy is close for most of the trajectory, until FEM fractures
   near c74.
-- PIDL fracture/damage energy is too high throughout the trajectory.
+- Absolute PIDL `E_d` is higher, but this is dominated by the different notch
+  representation. The fairer incremental comparison shows PIDL accumulates too
+  little new fracture/damage energy after the initial state.
 - PIDL global/domain-mean history is only moderately low, but its local history
   peak is much too weak.
 - Because PIDL local history is too weak, its minimum degradation `f` remains
@@ -111,7 +128,7 @@ For the current baseline, the likely chain is:
 ```text
 weak local psi/history concentration
   -> weak local f degradation
-  -> damage spreads/dissipates through too much E_d
+  -> too little new fracture/damage energy after the pre-crack baseline
   -> tip motion and Kt proxy lag FEM near fracture
 ```
 
