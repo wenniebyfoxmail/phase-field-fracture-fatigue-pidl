@@ -26,6 +26,57 @@
 
 ## Entries
 
+## 2026-05-28 · [done] Re: fine-mesh reverseBC field export — PIDL fine mesh c1-c69 shipped
+
+**Re**: User follow-up to run FEM on PIDL fine mesh with AT1/AMOR/PENALTY and reverseBC, then provide the field info required by the previous cyclewise inbox request.
+
+**Status**: Complete. The new FEM run `SENT_PIDL_12_fine_reverseBC` finished at penetration cycle `N_f = 69`, and its field-level mechanism handoff has been exported.
+
+**Run settings**:
+- Mesh: `Dependencies/SENT_mesh/SENT_pidl_fine_lh5.inp`
+- Mesh size: `10401` nodes, `10261` Q4 elements
+- Model: `AT1 + AMOR + PENALTY`
+- Material/fatigue: `E=1`, `nu=0.3`, `Gc=0.01`, `ell=0.01`, `alpha_T=0.5`, `p=2`
+- Loading/BC: `u=0.12`, `R=0`, `fix_X` on top+bottom, `fix_Y` bottom, `disp_Y` top
+
+**Files written**:
+- Local: `~/Downloads/_pidl_handoff_v2/fine_reverseBC_u12_cyclewise_mechanism_2026-05-28/`
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_fine_reverseBC_u12_cyclewise_mechanism_2026-05-28/`
+
+**Payload**:
+- `fine_reverseBC_u12_cyclewise_mechanism_metrics.csv` — 69 rows, one per cycle `c1-c69`
+- `fine_reverseBC_u12_cyclewise_element_fields_c1_c69.mat` — compact all-cycle element fields
+- `mesh_geometry.mat` — matching fine mesh geometry
+- `README_fine_reverseBC_u12_cyclewise_mechanism.md` — definitions and caveats
+- `INPUT_SENT_PIDL_12_fine_reverseBC.m`, `main_SENT_PIDL_12_fine_reverseBC.m`, `export_reverseBC_cyclewise_mechanism.m` — copied into OneDrive for traceability
+
+**Fields in the `.mat`**:
+- `node_coords` (`10401 x 2`)
+- `connectivity` (`10261 x 4`)
+- `element_centroids` (`10261 x 2`)
+- `element_area` (`10261 x 1`)
+- `cycles` (`69 x 1`, values `1:69`)
+- `d_elem`, `alpha_bar_elem`, `f_fatigue_elem`, `psi_plus_elem` (`10261 x 69`, columns match `cycles`)
+- `T` — same scalar table as the CSV
+- `metadata` — metric definitions and FEM setting notes
+
+**Verification**:
+- MATLAB loaded the `.mat`: field arrays are `10261 x 69`, cycles run from `1` to `69`.
+- CSV has 69 rows.
+- SHA256 copy verification passed for the CSV, `.mat`, `mesh_geometry.mat`, and README in OneDrive.
+
+**Final-cycle snapshot**:
+- `d_max = 1.1364`
+- `alpha_bar_elem_max = 126.29`
+- `f_fatigue_min = 1.647e-4`
+- `psi_plus_elem_max = 6652.03`
+- `x_tip_d095 = 0.499`
+- `right_boundary_d095_count = 1`
+
+**Next**: Mac can compare this against the earlier full-mesh reverseBC cyclewise handoff to isolate mesh/coarsening effects under the same AT1/AMOR/reverseBC definition.
+
+---
+
 ## 2026-05-28 · [done] Re: cyclewise FEM mechanism export — reverseBC u12 c1-c74 shipped
 
 **Re**: `docs/handovers/fem_cyclewise_mechanism_request_2026-05-28.md` (commit `0272625`, branch `codex/field-level-metric-representation`)
