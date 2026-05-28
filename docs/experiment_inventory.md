@@ -1,6 +1,6 @@
 # Experiment Inventory — Purpose-Organized
 
-**Last updated**: 2026-05-25
+**Last updated**: 2026-05-28
 **Scope**: All PIDL + FEM experiments across Mac / Windows-PIDL / Windows-FEM / Taobo  
 **Format**: purpose → experiments → [机器] result / verdict
 
@@ -96,6 +96,9 @@
 | **Oracle** u=0.11 seed=1/2/3（三种初始化） | Windows | N_f={117,116,114}（Δ=3 cycles），ᾱ_max={11253,1140,3511}（10× 扩散）→ **3 distinct basins** | ✅ multimodal loss landscape 确认 |
 | **posthoc 5-metric 多档案分析**（Mac 分析脚本） | Mac（分析）| 3 新发现：(4) energy budget 守恒（ᾱ_bar_domain ratio=1.08-1.78×）；(5) Pattern A 是高 Umax 专属；(6) Path C a-N 跟踪 FEM 精度比纯物理高 3.4× | ✅ 重构 Ch2 §4 叙事 |
 | **2026-05 adaptive sampling/remesh/hard-ir diagnostic** | Taobo | adaptive λ_hist can fracture, but λ stays at 1.0 in late cycles; v4 add-only refinement fixes repeated rebuild/transport but not field localization; hard irreversibility traps α evolution | ✅ narrows root cause to representation/localization rather than remesh bookkeeping alone |
+| **2026-05 reverseBC FEM cyclewise field handoff** | Windows-FEM | `SENT_PIDL_12_reverseBC`, AT1+AMOR+PENALTY, u=0.12 reverseBC, full mesh `77730` elems, exported c1-c74 `d_elem/alpha_bar_elem/f_alpha_elem/psi_plus_elem`; N_f=74 | primary aligned FEM field reference |
+| **2026-05 PIDL-fine FEM reverseBC handoff** | Windows-FEM | `SENT_PIDL_12_fine_reverseBC`, PIDL fine mesh `10261` elems, same AT1+AMOR+PENALTY/reverseBC; exported c1-c69 fields; N_f=69 | isolates mesh coarsening effect |
+| **2026-05 diffuse pre-crack FEM diagnostic** | Windows-FEM | `SENT_PIDL_12_diffuse_precrack_reverseBC`, continuous material mesh `45000` elems, no void slit, fixed diffuse `d=1` band with `alpha_bar=1` initialized; exported c1-c69 fields; N_f=69 | separates void-notch geometry from phase-field damaged-band convention |
 
 ---
 
