@@ -23,7 +23,7 @@
 
 ## Current Best Bet
 
-Field mismatch 仍未解决。Soft-hist0/state-timing audit fixed the first-cycle bookkeeping trap: FEM c1 maps best to PIDL j0. Under this stricter protocol, FEM-mesh PIDL still falls to `alpha_bar` tip2 ≈0.47x FEM and active `psi_plus` tip2 ≈0.03x FEM by c69; `tol_ir=0.001` raises local damage but leaves the same late active-driver gap. Adaptive/refinement/hard-irreversibility and tip-local Exp18 changed scalar timing but did not recover FEM-like fields. Small local correction heads are not the missing representation.
+Field mismatch 仍未解决。Soft-hist0/state-timing audit fixed the first-cycle bookkeeping trap: FEM c1 maps best to PIDL j0. Request 21 cadence controls show FEM with unload retained fractures at c69-c70 for n_step=2/3/standard/10, while peak-only is the outlier (>c120), so substep count alone is unlikely to explain the PIDL late gap. Under the stricter protocol, FEM-mesh PIDL still falls to `alpha_bar` tip2 ≈0.47x FEM and active `psi_plus` tip2 ≈0.03x FEM by c69; `tol_ir=0.001` raises local damage but leaves the same late active-driver gap. Small local correction heads are not the missing representation.
 
 ## Best Next Discriminator
 
