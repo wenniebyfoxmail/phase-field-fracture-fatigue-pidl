@@ -17,7 +17,7 @@
 
 ## Active Branches
 
-1. **Inverse-alphaT discriminator** (ACTIVE 5/28) — Use FEM synthetic observations and fixed PIDL `E_irrev` weighting. Primary target is standard FEM + PIDL `femAnchorBC`; reverseBC is only an aligned control. FEM baseline is an outer-loop `alpha_T` grid; PIDL baseline is joint optimization of NN weights + positive trainable `alpha_T`.
+1. **Inverse-alphaT discriminator** (ACTIVE 5/29) — Use the new soft-hist0 diffuse-precrack reverseBC FEM handoff as the aligned target. First run fixed-`alpha_T=0.5` PIDL forward as the gate; only then run joint NN + positive trainable `alpha_T` inverse if the forward mismatch is interpretable.
 2. **Representation-localization discriminator** (parked) — Tip-local/SDF methods remain the forward-problem closure path, but this branch asks whether inverse calibration exposes or compensates the same mismatch.
 3. **Phase 2A units-transition smoke** (passive) — `run_pcc_baseline_umax.py` remains a PCC scaling/infrastructure check only, not a Baktheer `N_f` anchor.
 
@@ -27,7 +27,7 @@ FEM 当然可以通过 outer-loop optimization 解 inverse problem，而且本�
 
 ## Best Next Discriminator
 
-Run `SENS_tensile/fem_inverse_alphaT_grid.py` for the FEM manifest, then producer-side PIDL smoke with `run_inverse_alphaT_fem_anchor_umax.py 0.12 --alphaT-init 0.25 --fem-dir <standard FEM handoff>`. Do not run the training loop on Mac.
+Run producer-side PIDL smoke on Taobo with `run_reversebc_soft_hist0_forward_umax.py 0.12 --fem-dir <soft-hist0 reverseBC handoff>`. If fixed `alpha_T=0.5` still misses the FEM fields badly, treat inverse-alphaT as a model-discrepancy diagnostic before spending on broader inverse sweeps. Do not run the training loop on Mac.
 
 ## Switch Condition
 

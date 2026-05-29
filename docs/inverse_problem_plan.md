@@ -14,11 +14,18 @@ BC choice is secondary as long as the FEM target and PIDL setting are aligned. T
 
 Unknown parameter: scalar Carrara fatigue threshold `alpha_T`.
 
-Primary synthetic truth: standard GRIPHFiTH/FEM snapshots at `Umax=0.12`, `alpha_T=0.5`.
+Primary synthetic truth: soft diffuse-precrack, `alpha_bar=0`, `f_alpha=1`
+reverseBC FEM at `Umax=0.12`, `alpha_T=0.5`, `N_f=69`.
 
-Primary PIDL setting: `exact_bc_mode=fem_anchor`, baseline MLP, Carrara/asymptotic fatigue, fixed irreversibility penalty. Disable adaptive residual reweighting, tip weighting, spatial `alpha_T`, symmetry soft penalties, side-traction soft penalties, Williams, Fourier, and enriched ansatz.
+Primary PIDL setting: reverseBC-aligned baseline MLP, i.e. `exact_bc` disabled
+so the original hard ansatz clamps `u_x` on top and bottom. Carrara/asymptotic
+fatigue, fixed irreversibility penalty, no adaptive residual reweighting, tip
+weighting, spatial `alpha_T`, symmetry soft penalties, side-traction soft
+penalties, Williams, Fourier, or enriched ansatz.
 
-ReverseBC remains useful only as an aligned negative/control path, not as the main scientific target.
+The previous standard-FEM/femAnchorBC inverse run is now a historical negative
+diagnostic: `alpha_T` collapsed to the lower bound, consistent with
+model-discrepancy compensation.
 
 ## Why fixed E_irrev first
 
@@ -42,26 +49,24 @@ Use `SENS_tensile/fem_inverse_alphaT_grid.py` to create the manifest. Windows-FE
 
 ## PIDL prototype
 
-Primary runner:
+Forward gate:
 
 ```bash
-python SENS_tensile/run_inverse_alphaT_fem_anchor_umax.py 0.12 \
-  --fem-dir ~/Downloads/_pidl_handoff_v2/psi_snapshots_for_agent \
-  --alphaT-init 0.25 \
-  --n-cycles 100 \
-  --K 82 \
-  --lambda-alpha 1.0 \
-  --supervised-every 10
+python SENS_tensile/run_reversebc_soft_hist0_forward_umax.py 0.12 \
+  --fem-dir "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_2026-05-28" \
+  --n-cycles 69 \
+  --tol-ir 1e-3
 ```
 
-Control runner:
+Inverse runner, only after the forward gate:
 
 ```bash
 python SENS_tensile/run_inverse_alphaT_reversebc_umax.py 0.12 \
-  --fem-dir ~/Downloads/_pidl_handoff_v2/reverseBC_u12 \
+  --fem-dir "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_2026-05-28" \
   --alphaT-init 0.25 \
-  --n-cycles 90 \
-  --K 74 \
+  --n-cycles 69 \
+  --K 69 \
+  --tol-ir 1e-3 \
   --lambda-alpha 1.0 \
   --supervised-every 10
 ```

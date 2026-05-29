@@ -2,7 +2,7 @@
 """PIDL inverse-alpha_T prototype against reverseBC FEM snapshots.
 
 This runner is deliberately conservative:
-  - reverseBC/FEM-anchor essential BC via ``exact_bc_mode=fem_anchor``;
+  - baseline PIDL essential BCs, matching reverseBC FEM's top/bottom x clamp;
   - fixed Deep Ritz / irreversibility weighting;
   - no adaptive residual reweighting, sidecar sampling, tip weighting, or
     spatial alpha_T;
@@ -43,13 +43,15 @@ def main() -> int:
     p.add_argument("--alphaT-init", type=float, default=0.25)
     p.add_argument("--alphaT-min", type=float, default=0.05)
     p.add_argument("--alphaT-max", type=float, default=2.0)
-    p.add_argument("--K", type=int, default=74,
+    p.add_argument("--tol-ir", type=float, default=1e-3,
+                   help="PIDL irreversibility tolerance; 1e-3 matches the soft-hist0 FEM export.")
+    p.add_argument("--K", type=int, default=69,
                    help="Last cycle with FEM observation loss active.")
     p.add_argument("--lambda-alpha", type=float, default=1.0)
     p.add_argument("--supervised-every", type=int, default=10,
                    help="Apply observation loss every N optimizer epochs.")
     p.add_argument("--fem-dir", default="",
-                   help="Folder containing reverseBC u12_reverseBC_cycle_*.mat and mesh_geometry.mat.")
+                   help="Folder containing reverseBC per-cycle .mat files or a combined element_fields .mat.")
     p.add_argument("--mask-kind", default="boundary_or_crack",
                    choices=["full", "boundary", "crack_path", "boundary_or_crack"])
     p.add_argument("--mask-x-min", type=float, default=0.45)
@@ -74,12 +76,14 @@ def main() -> int:
     from input_data_from_mesh import prep_input_data
     from model_train import train
 
-    # ReverseBC/FEM-anchor baseline. Keep E_irrev and all loss weights fixed.
+    # ReverseBC baseline. Keep E_irrev and all loss weights fixed.
     config.williams_dict["enable"] = False
     config.ansatz_dict["enable"] = False
     config.fourier_dict["enable"] = False
-    config.exact_bc_dict["enable"] = True
-    config.exact_bc_dict["mode"] = "fem_anchor"
+    # reverseBC FEM fixes ux on top+bottom. That corresponds to the original
+    # PIDL ansatz (exact_bc disabled), not fem_anchor and not C4 plane strain.
+    config.exact_bc_dict["enable"] = False
+    config.exact_bc_dict["mode"] = "sent_plane_strain"
     config.symmetry_prior = False
     config.adaptive_sampling_dict["enable"] = False
     config.fatigue_dict["tip_weight_cfg"]["enable"] = False
@@ -90,6 +94,7 @@ def main() -> int:
 
     config.fatigue_dict["accum_type"] = "carrara"
     config.fatigue_dict["degrad_type"] = "asymptotic"
+    config.PFF_model_dict["tol_ir"] = float(args.tol_ir)
     config.fatigue_dict["alpha_T"] = 0.5  # reference value; train() replaces it with a scalar module
     config.fatigue_dict["disp_max"] = float(args.umax)
     config.fatigue_dict["n_cycles"] = int(args.n_cycles)
@@ -105,6 +110,7 @@ def main() -> int:
     )
     inv_tag = (
         f"_inverseAlphaT_reverseBC_K{args.K}_lamA{args.lambda_alpha:g}"
+        f"_tolir{args.tol_ir:g}"
         f"_mask{args.mask_kind}_fixedEirrev"
     )
     dir_name = (
@@ -194,7 +200,8 @@ def main() -> int:
     with open(config.model_path / "model_settings.txt", "w", encoding="utf-8") as f:
         f.write("runner: run_inverse_alphaT_reversebc_umax.py\n")
         f.write("purpose: reverseBC FEM inverse alpha_T prototype\n")
-        f.write("exact_bc_mode: fem_anchor\n")
+        f.write("exact_bc_enable: false\n")
+        f.write("exact_bc_mode: disabled_reverseBC_baseline\n")
         f.write("fixed_E_irrev: true\n")
         f.write(f"adaptive_sampling: {config.adaptive_sampling_dict['enable']}\n")
         f.write(f"umax: {args.umax}\n")
@@ -202,6 +209,7 @@ def main() -> int:
         f.write(f"seed: {args.seed}\n")
         f.write(f"alphaT_init: {args.alphaT_init}\n")
         f.write(f"alphaT_bounds: [{args.alphaT_min}, {args.alphaT_max}]\n")
+        f.write(f"tol_ir: {config.PFF_model_dict['tol_ir']}\n")
         f.write(f"fem_dir: {fem_sup.fem_dir}\n")
         f.write(f"fem_cycles: {fem_sup.cycles}\n")
         f.write(f"obs_target: alpha\n")
@@ -214,7 +222,8 @@ def main() -> int:
     print("PIDL inverse-alpha_T prototype against reverseBC FEM")
     print(f"  U_max       = {args.umax} | n_cycles = {args.n_cycles} | seed = {args.seed}")
     print(f"  alpha_T init/bounds = {args.alphaT_init} / [{args.alphaT_min}, {args.alphaT_max}]")
-    print(f"  BC          = exact_bc fem_anchor (reverseBC-compatible)")
+    print(f"  tol_ir      = {args.tol_ir:g}")
+    print("  BC          = baseline PIDL top/bottom ux clamp (reverseBC-compatible)")
     print("  E_irrev     = fixed weighting; no adaptive residual/lambda balancing")
     print(f"  FEM dir     = {fem_sup.fem_dir}")
     print(f"  FEM cycles  = {fem_sup.cycles}")
