@@ -72,9 +72,12 @@ def main() -> None:
     config.fatigue_dict["spatial_alpha_T"]["enable"] = False
     config.fatigue_dict["psi_hack"]["enable"] = False
     config.fatigue_dict["tip_weight_cfg"]["enable"] = False
-    config.adaptive_sampling_dict["enable"] = False
-    config.sidecar_S1_dict["enable"] = False
-    config.sidecar_S2_dict["enable"] = False
+    if hasattr(config, "adaptive_sampling_dict"):
+        config.adaptive_sampling_dict["enable"] = False
+    if hasattr(config, "sidecar_S1_dict"):
+        config.sidecar_S1_dict["enable"] = False
+    if hasattr(config, "sidecar_S2_dict"):
+        config.sidecar_S2_dict["enable"] = False
     if hasattr(config, "tip_local_net_dict"):
         config.tip_local_net_dict["enable"] = False
     config.symmetry_prior = False
