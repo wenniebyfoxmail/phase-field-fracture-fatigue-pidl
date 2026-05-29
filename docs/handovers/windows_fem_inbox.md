@@ -27,6 +27,142 @@
 
 ## Active Requests
 
+## 2026-05-29 · Request 19: one-factor FEM alignment diagnostics after soft-hist0
+
+**Goal**: run cheap one-factor FEM variants around the completed soft-hist0
+diffuse reference, so Mac can separate true PIDL mechanism gaps from remaining
+setting/numerical differences.
+
+Base reference:
+
+```text
+SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC
+OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_2026-05-28
+N_f = 69
+```
+
+Please keep this base fixed unless a variant explicitly changes one item:
+
+```matlab
+soft AT1-like diffuse precrack;
+alpha_bar = 0 initially;
+f_alpha = 1 initially;
+material retained in precrack;
+reverseBC: fix_X top+bottom, fix_Y bottom, disp_Y top;
+E=1, ni=0.3, Gc=0.01, ell=0.01, alpha_T=0.5, p=2;
+AT1 + AMOR + PENALTY.
+```
+
+## Variant A: FEM `tol_irrev=5e-3`
+
+**Question**: Is the remaining PIDL/FEM incremental `E_d` and crack-lag gap
+partly due to irreversibility strength? Current FEM uses `tol_irrev=1e-3`,
+while PIDL baseline uses `tol_ir=5e-3`.
+
+**INPUT file**:
+
+```matlab
+Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC_tolir5e3.m
+```
+
+Change only:
+
+```text
+tol_irrev = 5e-3
+```
+
+If GRIPHFiTH uses a different variable name for this tolerance, please state
+the exact variable and resulting AT1 penalty coefficient in the README.
+
+## Variant B: FEM one-peak-per-cycle history update
+
+**Question**: Does FEM's within-cycle substep history update explain the
+remaining gap? PIDL baseline effectively solves one peak state per cycle and
+updates fatigue history from that peak.
+
+**INPUT file**:
+
+```matlab
+Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC_peakonly.m
+```
+
+Preferred implementation:
+
+```text
+one peak load state per cycle for fatigue-history update,
+or n_step=1 peak-only if that is the clean GRIPHFiTH equivalent.
+```
+
+Please make clear in the README whether this is exactly one peak update per
+cycle or only an approximation. If this is not feasible without changing solver
+semantics too much, please report it as blocked rather than forcing a misleading
+variant.
+
+## Variant C: residual stiffness off or near-zero
+
+**Question**: Does FEM's residual stiffness `res_stiff=1e-6` matter near fully
+damaged zones? PIDL appears to use `g(alpha)=(1-alpha)^2` without FEM-style
+`eta`.
+
+**INPUT file**:
+
+```matlab
+Scripts/fatigue_fracture/INPUT_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC_resstiff0.m
+```
+
+Change only:
+
+```text
+res_stiff = 0
+```
+
+If exact zero causes singularity, use the smallest stable value you trust and
+report it.
+
+## Requested outputs for each completed variant
+
+Please export the same cyclewise package as Request 18:
+
+```text
+*_cyclewise_mechanism_metrics.csv
+*_element_fields_c1_cXX.mat
+mesh_geometry.mat
+README_*.md
+INPUT_*.m
+export_reverseBC_cyclewise_mechanism.m
+```
+
+Please include all current reductions plus these explicit reduction/audit
+items:
+
+```text
+p99 and p999 for d, alpha_bar, f_alpha, psi_plus
+near-tip integrals for d, alpha_bar, f_alpha, psi_plus within r <= ell, 2ell, 4ell
+cycle-0/1 initial precrack d profile audit
+native fracture cycle and harmonized right-boundary d>=0.95 count
+side-boundary stress/traction residual if available, or a note that it is not exported
+```
+
+Suggested OneDrive folders:
+
+```text
+_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_tolir5e3_2026-05-29
+_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_peakonly_2026-05-29
+_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_resstiff0_2026-05-29
+```
+
+**Acceptance criteria**:
+
+- Each variant changes exactly one factor from soft-hist0 base, or documents
+  why exact one-factor isolation is blocked.
+- README records `tol_irrev`, `res_stiff`, `n_step`/cycle update semantics,
+  and the initial precrack audit.
+- The exported fields can be loaded by Mac and compared on the common probe grid.
+
+**Priority**: high for Variant A and B; medium for Variant C. These are cheaper
+than broad PIDL architecture sweeps and directly test the remaining alignment
+suspects.
+
 ## 2026-05-28 · Request 18: strict soft diffuse-precrack initial-state alignment
 
 **Goal**: isolate whether the large FEM/PIDL difference is caused by the

@@ -33,9 +33,12 @@ def _tri_area(nodes: np.ndarray, tri: np.ndarray) -> np.ndarray:
     )
 
 
-def load_and_split(mesh_mat: Path, diagonal: str) -> tuple[np.ndarray, np.ndarray]:
+def load_and_split(mesh_mat: Path, diagonal: str, center: bool = False) -> tuple[np.ndarray, np.ndarray]:
     data = sio.loadmat(str(mesh_mat))
     nodes = np.asarray(data["node_coords"], dtype=np.float64)
+    if center:
+        nodes = nodes.copy()
+        nodes[:, :2] -= 0.5
     conn = np.asarray(data["connectivity"], dtype=np.int64)
     if conn.min() == 1:
         conn = conn - 1
@@ -92,9 +95,11 @@ def main() -> None:
                    help="Output .msh path")
     p.add_argument("--diagonal", choices=("13", "24"), default="13",
                    help="Quad split diagonal: 13 means nodes [1,3], 24 means [2,4]")
+    p.add_argument("--center", action="store_true",
+                   help="Shift [0,1] FEM coordinates to PIDL's [-0.5,0.5] frame")
     args = p.parse_args()
 
-    nodes, tri = load_and_split(args.mesh_mat.expanduser(), args.diagonal)
+    nodes, tri = load_and_split(args.mesh_mat.expanduser(), args.diagonal, center=args.center)
     area = _tri_area(nodes, tri)
     write_gmsh41(args.out, nodes, tri)
     print(f"Wrote {args.out}")

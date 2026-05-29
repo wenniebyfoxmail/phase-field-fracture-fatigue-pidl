@@ -35,6 +35,7 @@ Generated outputs:
 _analysis_fem_mechanism_20260528/soft_hist0_diffuse_fem_baseline_pidl_cyclewise_mechanism_comparison.csv
 _analysis_fem_mechanism_20260528/soft_hist0_diffuse_selected_cycle_comparison.csv
 _analysis_fem_mechanism_20260528/pidl_baseline_vs_fem_reference_ratio_summary_with_soft_hist0.csv
+SENS_tensile/alignment_mesh_probe_u012_soft_hist0_diffuse.csv
 _analysis_fem_mechanism_20260528/figures/soft_hist0_diffuse_fem_baseline_pidl_cyclewise_mechanism_comparison.png
 _analysis_fem_mechanism_20260528/figures/soft_hist0_diffuse_fem_baseline_pidl_cyclewise_mechanism_comparison.pdf
 ```
@@ -83,6 +84,34 @@ incremental E_d remains about 0.25x FEM
 
 So the setting alignment removes much of the apparent scalar-mechanism gap, but
 does not remove the PIDL under-dissipation / crack-lag issue.
+
+## Common-Probe Check
+
+The soft-hist0 FEM fields were also projected onto the PIDL element probes with
+FEM coordinates shifted from `[0,1]^2` to PIDL's `[-0.5,0.5]^2`. The projection
+had zero nearest-neighbour fallbacks after centering, so the coordinate mapping
+is now valid.
+
+Selected same-probe ratios:
+
+| Cycle | Field/metric | PIDL / projected FEM |
+|---:|---|---:|
+| 1 | damage `tip_2l0_mean` | 1.021 |
+| 1 | active `psi_plus` `tip_2l0_mean` | 1.034 |
+| 1 | `alpha_bar` p99 | 0.994 |
+| 40 | damage `tip_2l0_mean` | 1.087 |
+| 40 | raw `psi_plus` p99 | 1.107 |
+| 40 | `alpha_bar` max | 0.982 |
+| 40 | `fatigue_f` right-band mean | 0.999 |
+| 69 | damage p99 | 0.993 |
+| 69 | active `psi_plus` p99 | 1.378 |
+| 69 | `alpha_bar` max | 0.443 |
+| 69 | `alpha_bar` p99 | 0.210 |
+
+This says the aligned FEM/PIDL fields are genuinely close on many common-probe
+metrics through c40. Near c69, scalar means can still look close while the
+history distribution differs: FEM has a much larger late local `alpha_bar`
+peak/p99, and PIDL still lags in crack advance.
 
 ## Selected Cycle Values
 

@@ -8,7 +8,8 @@ same PIDL triangles.
 
 Fields compared:
   - alpha/damage: FEM d_elem vs PIDL alpha_elem
-  - psi_plus: FEM psi_elem vs PIDL degraded psi_plus_elem
+  - psi_plus_raw: FEM raw peak psi_elem vs PIDL raw psi+_0
+  - psi_plus_active: FEM g(d) * raw peak psi_elem vs PIDL g(alpha) * psi+_0
   - alpha_bar: FEM alpha_bar_elem vs PIDL hist_fat
   - fatigue factor: FEM f_alpha_elem vs Carrara f(PIDL hist_fat)
 """
@@ -40,7 +41,7 @@ sys.argv = _saved_argv
 from construct_model import construct_model
 from input_data_from_mesh import prep_input_data
 from field_computation import FieldComputation
-from compute_energy import gradients, get_psi_plus_per_elem
+from compute_energy import gradients, strain_energy_with_split
 
 DEVICE = torch.device("cpu")
 FEM_DIR = Path("/Users/wenxiaofang/Downloads/_pidl_handoff_v2/psi_snapshots_for_agent")
@@ -134,8 +135,17 @@ def load_combined_handoff(path: Path) -> dict:
             "conn": np.asarray(f["connectivity"], dtype=int),
             "fields": {},
         }
-        for key in ["d_elem", "psi_elem", "alpha_bar_elem", "f_alpha_elem"]:
-            arr = np.asarray(f[key])
+        aliases = {
+            "d_elem": ("d_elem",),
+            "psi_elem": ("psi_elem", "psi_plus_elem"),
+            "alpha_bar_elem": ("alpha_bar_elem",),
+            "f_alpha_elem": ("f_alpha_elem", "f_fatigue_elem"),
+        }
+        for key, candidates in aliases.items():
+            found = next((name for name in candidates if name in f), None)
+            if found is None:
+                raise KeyError(f"Missing FEM field for {key}; tried {candidates}")
+            arr = np.asarray(f[found])
             if arr.shape[0] == len(cycles):
                 arr = arr.T
             out["fields"][key] = np.asarray(arr, dtype=float)
@@ -183,8 +193,11 @@ def pidl_model_and_mesh(archive: Path, umax: float, cycle: int):
     field_comp.net.eval()
     with torch.no_grad():
         u, v, alpha = field_comp.fieldCalculation(inp)
+        s11, s22, s12, _, _ = gradients(inp, u, v, alpha, area_t, t_conn)
         alpha_elem_t = (alpha[t_conn[:, 0]] + alpha[t_conn[:, 1]] + alpha[t_conn[:, 2]]) / 3.0
-        psi_t = get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_t, t_conn)
+        _, psi_raw_t = strain_energy_with_split(s11, s22, s12, alpha_elem_t, matprop, pffmodel)
+        g_alpha_t, _ = pffmodel.Edegrade(alpha_elem_t)
+        psi_active_t = g_alpha_t * psi_raw_t
     step = torch.load(str(archive / "best_models" / f"checkpoint_step_{cycle}.pt"), map_location=DEVICE)
     hist_fat = step["hist_fat"].detach().cpu().numpy().reshape(-1)
     inp_np = inp.detach().cpu().numpy()
@@ -193,7 +206,8 @@ def pidl_model_and_mesh(archive: Path, umax: float, cycle: int):
     areas = area_t.detach().cpu().numpy().reshape(-1)
     return {
         "alpha": alpha_elem_t.detach().cpu().numpy().reshape(-1),
-        "psi_plus": psi_t.detach().cpu().numpy().reshape(-1),
+        "psi_plus_raw": psi_raw_t.detach().cpu().numpy().reshape(-1),
+        "psi_plus_active": psi_active_t.detach().cpu().numpy().reshape(-1),
         "alpha_bar": hist_fat,
         "f": carrara_f(hist_fat),
         "centroids": centroids,
@@ -250,13 +264,21 @@ def metrics(x: np.ndarray, areas: np.ndarray, centroids: np.ndarray) -> dict[str
     if xf.size == 0:
         return {}
     r = np.sqrt(centroids[:, 0] ** 2 + centroids[:, 1] ** 2)
+    tip_l0 = r <= 0.01
+    tip_2l0 = r <= 0.02
+    tip_4l0 = r <= 0.04
     return {
         "max": float(np.nanmax(x)),
+        "p999": float(np.nanpercentile(x, 99.9)),
         "p99": float(np.nanpercentile(x, 99.0)),
         "top1_mean": float(np.mean(np.sort(xf)[-max(1, xf.size // 100):])),
         "domain_mean": weighted_mean(x, areas, np.ones_like(finite, dtype=bool)),
-        "tip_l0_mean": weighted_mean(x, areas, r <= 0.01),
-        "tip_2l0_mean": weighted_mean(x, areas, r <= 0.02),
+        "tip_l0_mean": weighted_mean(x, areas, tip_l0),
+        "tip_2l0_mean": weighted_mean(x, areas, tip_2l0),
+        "tip_4l0_mean": weighted_mean(x, areas, tip_4l0),
+        "tip_l0_integral": float(np.nansum(x[tip_l0] * areas[tip_l0])),
+        "tip_2l0_integral": float(np.nansum(x[tip_2l0] * areas[tip_2l0])),
+        "tip_4l0_integral": float(np.nansum(x[tip_4l0] * areas[tip_4l0])),
         "crack_strip_mean": weighted_mean(x, areas, np.abs(centroids[:, 1]) <= 0.02),
         "right_band_mean": weighted_mean(x, areas, centroids[:, 0] >= 0.45),
     }
@@ -269,6 +291,8 @@ def main() -> int:
     ap.add_argument("--cycles", default=None)
     ap.add_argument("--fem-combined-mat", type=Path, default=None,
                     help="MATLAB v7.3 combined handoff with cycles and FEM fields")
+    ap.add_argument("--center-fem", action="store_true",
+                    help="Shift FEM coordinates by -0.5 in x/y for [0,1] diffuse-precrack handoffs")
     ap.add_argument("--out", type=Path, default=HERE / "alignment_mesh_probe_u012_baseline.csv")
     args = ap.parse_args()
 
@@ -280,6 +304,9 @@ def main() -> int:
     else:
         cycles = [1, 40, 70, 82]
     fem_centroids, fem_areas = (combined["centroids"], combined["areas"]) if combined is not None else fem_mesh()
+    if args.center_fem:
+        fem_centroids = fem_centroids.copy()
+        fem_centroids[:, :2] -= 0.5
     first = pidl_model_and_mesh(args.archive, args.umax, cycles[0])
     assignment = build_assignment(fem_centroids, first["centroids"], first["inp"], first["conn"])
 
@@ -288,9 +315,13 @@ def main() -> int:
         print(f"cycle {cycle}")
         fem = load_fem_snapshot(cycle, args.umax, combined)
         pidl = first if cycle == cycles[0] else pidl_model_and_mesh(args.archive, args.umax, cycle)
+        fem_d = np.asarray(fem["d_elem"], dtype=float).reshape(-1)
+        fem_psi_raw = np.asarray(fem["psi_elem"], dtype=float).reshape(-1)
+        fem_psi_active = ((1.0 - fem_d) ** 2 + 1e-6) * fem_psi_raw
         field_pairs = {
-            "damage_alpha": (np.asarray(fem["d_elem"], dtype=float).reshape(-1), pidl["alpha"]),
-            "psi_plus": (np.asarray(fem["psi_elem"], dtype=float).reshape(-1), pidl["psi_plus"]),
+            "damage_alpha": (fem_d, pidl["alpha"]),
+            "psi_plus_raw": (fem_psi_raw, pidl["psi_plus_raw"]),
+            "psi_plus_active": (fem_psi_active, pidl["psi_plus_active"]),
             "alpha_bar": (np.asarray(fem["alpha_bar_elem"], dtype=float).reshape(-1), pidl["alpha_bar"]),
             "fatigue_f": (np.asarray(fem["f_alpha_elem"], dtype=float).reshape(-1), pidl["f"]),
         }
