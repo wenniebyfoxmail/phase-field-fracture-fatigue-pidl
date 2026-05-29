@@ -73,6 +73,21 @@ def exact_bc_from_settings(archive: Path) -> dict | None:
     return None
 
 
+def mesh_from_settings(archive: Path, override: Path | None) -> str:
+    if override is not None:
+        return str(override)
+    settings = parse_settings(archive / "model_settings.txt")
+    raw = settings.get("fine_mesh_file", "")
+    if raw:
+        path = Path(raw).expanduser()
+        if path.is_file():
+            return str(path)
+        local = HERE / path.name
+        if local.is_file():
+            return str(local)
+    return FINE_MESH
+
+
 def carrara_f(alpha_bar: np.ndarray, alpha_t: float = 0.5) -> np.ndarray:
     out = np.ones_like(alpha_bar, dtype=float)
     mask = alpha_bar > alpha_t
@@ -165,7 +180,7 @@ def load_fem_snapshot(cycle: int, umax: float, combined: dict | None):
     return sio.loadmat(str(FEM_DIR / f"u{int(round(umax * 100)):02d}_cycle_{cycle:04d}.mat"))
 
 
-def pidl_model_and_mesh(archive: Path, umax: float, cycle: int):
+def pidl_model_and_mesh(archive: Path, umax: float, cycle: int, mesh_file: str):
     settings = parse_settings(archive / "model_settings.txt")
     net_cfg = dict(network_dict)
     if "seed" in settings:
@@ -176,7 +191,7 @@ def pidl_model_and_mesh(archive: Path, umax: float, cycle: int):
         PFF_model_dict, mat_prop_dict, net_cfg, domain_extrema, DEVICE, williams_dict=None
     )
     inp, t_conn, area_t, hist_alpha0 = prep_input_data(
-        matprop, pffmodel, crack_dict, numr_dict, mesh_file=FINE_MESH, device=DEVICE
+        matprop, pffmodel, crack_dict, numr_dict, mesh_file=mesh_file, device=DEVICE
     )
     field_comp = FieldComputation(
         net=network,
@@ -293,6 +308,8 @@ def main() -> int:
                     help="MATLAB v7.3 combined handoff with cycles and FEM fields")
     ap.add_argument("--center-fem", action="store_true",
                     help="Shift FEM coordinates by -0.5 in x/y for [0,1] diffuse-precrack handoffs")
+    ap.add_argument("--pidl-mesh", type=Path, default=None,
+                    help="PIDL .msh to use when reconstructing checkpoints. Defaults to archive model_settings fine_mesh_file, then meshed_geom2.msh.")
     ap.add_argument("--out", type=Path, default=HERE / "alignment_mesh_probe_u012_baseline.csv")
     args = ap.parse_args()
 
@@ -307,14 +324,16 @@ def main() -> int:
     if args.center_fem:
         fem_centroids = fem_centroids.copy()
         fem_centroids[:, :2] -= 0.5
-    first = pidl_model_and_mesh(args.archive, args.umax, cycles[0])
+    pidl_mesh = mesh_from_settings(args.archive, args.pidl_mesh)
+    print(f"PIDL mesh: {pidl_mesh}")
+    first = pidl_model_and_mesh(args.archive, args.umax, cycles[0], pidl_mesh)
     assignment = build_assignment(fem_centroids, first["centroids"], first["inp"], first["conn"])
 
     rows = []
     for cycle in cycles:
         print(f"cycle {cycle}")
         fem = load_fem_snapshot(cycle, args.umax, combined)
-        pidl = first if cycle == cycles[0] else pidl_model_and_mesh(args.archive, args.umax, cycle)
+        pidl = first if cycle == cycles[0] else pidl_model_and_mesh(args.archive, args.umax, cycle, pidl_mesh)
         fem_d = np.asarray(fem["d_elem"], dtype=float).reshape(-1)
         fem_psi_raw = np.asarray(fem["psi_elem"], dtype=float).reshape(-1)
         fem_psi_active = ((1.0 - fem_d) ** 2 + 1e-6) * fem_psi_raw

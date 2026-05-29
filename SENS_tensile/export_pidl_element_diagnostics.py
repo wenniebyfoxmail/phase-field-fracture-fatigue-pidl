@@ -51,7 +51,23 @@ def bool_setting(settings: dict[str, str], key: str) -> bool:
     return settings.get(key, "False").strip().lower() in {"1", "true", "yes"}
 
 
-def build_field_computation(archive: Path, device: torch.device, umax: float):
+def mesh_from_settings(archive: Path, override: Path | None = None) -> str:
+    if override is not None:
+        return str(override)
+    settings = parse_settings(archive / "model_settings.txt")
+    raw = settings.get("fine_mesh_file", "")
+    if raw:
+        path = Path(raw).expanduser()
+        if path.is_file():
+            return str(path)
+        local = HERE / path.name
+        if local.is_file():
+            return str(local)
+    return str(HERE / "meshed_geom2.msh")
+
+
+def build_field_computation(archive: Path, device: torch.device, umax: float,
+                            mesh_file: Path | None = None):
     settings = parse_settings(archive / "model_settings.txt")
     net_cfg = dict(config.network_dict)
     for key, target in [("hidden_layers", "hidden_layers"),
@@ -89,7 +105,7 @@ def build_field_computation(archive: Path, device: torch.device, umax: float):
     )
     inp, t_conn, area_t, _ = prep_input_data(
         matprop, pffmodel, config.crack_dict, config.numr_dict,
-        mesh_file=str(HERE / "meshed_geom2.msh"), device=device,
+        mesh_file=mesh_from_settings(archive, mesh_file), device=device,
     )
     field_comp = FieldComputation(
         net=network,
@@ -128,7 +144,8 @@ def masked_stats(values: np.ndarray, mask: np.ndarray) -> dict[str, float]:
 def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
                  umax: float, write_fields: bool = True,
                  precrack_half_width: float = 0.02,
-                 precrack_x_max: float = 0.0) -> dict[str, float | int | str]:
+                 precrack_x_max: float = 0.0,
+                 mesh_file: Path | None = None) -> dict[str, float | int | str]:
     best = archive / "best_models"
     model_path = best / f"trained_1NN_{cycle}.pt"
     ckpt_path = best / f"checkpoint_step_{cycle}.pt"
@@ -138,7 +155,7 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
         raise FileNotFoundError(ckpt_path)
 
     field_comp, pffmodel, matprop, inp, t_conn, area_t = build_field_computation(
-        archive, device, umax,
+        archive, device, umax, mesh_file,
     )
     field_comp.net.load_state_dict(safe_torch_load(model_path, device))
     field_comp.net.eval()
@@ -245,6 +262,8 @@ def main() -> int:
                         help="Half-width of the initial pre-crack corridor to exclude in masked summaries.")
     parser.add_argument("--precrack-x-max", type=float, default=0.0,
                         help="Maximum x-coordinate of the initial pre-crack corridor.")
+    parser.add_argument("--pidl-mesh", type=Path, default=None,
+                        help="PIDL .msh to use when reconstructing checkpoints. Defaults to archive model_settings fine_mesh_file, then meshed_geom2.msh.")
     args = parser.parse_args()
 
     archive = args.archive.resolve()
@@ -259,6 +278,7 @@ def main() -> int:
             write_fields=not args.summary_only,
             precrack_half_width=args.precrack_half_width,
             precrack_x_max=args.precrack_x_max,
+            mesh_file=args.pidl_mesh,
         ))
         print(rows[-1])
 
@@ -266,7 +286,7 @@ def main() -> int:
     csv_path = out_dir / "element_diagnostics_summary.csv"
     out_dir.mkdir(parents=True, exist_ok=True)
     with csv_path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     print(f"Wrote {csv_path}")
