@@ -26,6 +26,51 @@
 
 ## Entries
 
+## 2026-05-29 · [done] Re: Request 21 soft-hist0 substep/history controls — n_step 2/3/10 shipped
+
+**Re**: `docs/handovers/windows_fem_inbox.md` Request 21, "one-factor FEM substep/history-timing controls after PIDL state audit"
+
+**Status**: Complete. Ran the three requested one-factor cyclic substep/history-refresh cadence controls from the strict soft-hist0 reverseBC reference and refreshed the cyclewise mechanism exports.
+
+**Base held fixed**:
+- `SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC`
+- Continuous material mesh: `45591` nodes, `45000` Q4 elements.
+- Soft AT1/PIDL-like diffuse precrack profile; material retained.
+- Initial history: `alpha_bar=0`, `f_alpha=1`.
+- Model: `AT1 + AMOR + PENALTY`, `E=1`, `nu=0.3`, `Gc=0.01`, `ell=0.01`, `alpha_T=0.5`, `p=2`.
+- reverseBC: `u_max=0.12`, `tol_irrev=1e-3`, `res_stiff=1e-6`.
+
+**Variant results**:
+- Variant A requested `n_step=2`: custom retained peak/unload cadence with load factors `[1, 0]`; penetration `N_f=70`.
+- Variant B requested `n_step=3`: GRIPHFiTH retained load factors `[0.499999, 0.999999, ~0]`; penetration `N_f=70`.
+- Variant C requested `n_step=10`: GRIPHFiTH retained load factors `[0.199999, 0.399999, 0.599999, 0.799999, 0.999999, 0]`; penetration `N_f=69`.
+
+**Files written**:
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_soft_hist0_nstep2_2026-05-29/`
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_soft_hist0_nstep3_2026-05-29/`
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_soft_hist0_nstep10_2026-05-29/`
+
+**Payload per folder**:
+- `*_cyclewise_mechanism_metrics.csv`
+- `*_element_fields_c1_cXX.mat`
+- `mesh_geometry.mat`
+- `README_*.md`
+- Variant `INPUT_*.m`
+- Variant `main_*.m`
+- `export_reverseBC_cyclewise_mechanism.m`
+
+**Extra Request 21 mixed-c1 row**:
+- Added to Request 20 state-timing handoff: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_state_timing_2026-05-29/pidl_like_c1_mixed_row.csv`
+- MAT companion: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_state_timing_2026-05-29/pidl_like_c1_mixed_row.mat`
+- Definition: `d/alpha_bar/f = cycle1_unloaded_post_history_refresh`; `psi_plus = cycle1 psi_plus_peak_to_date`.
+
+**Verification**:
+- MATLAB load check from OneDrive passed for all three handoffs.
+- Each folder has `node_coords=45591x2`, `connectivity=45000x4`, `45000` element rows, one CSV row per exported cycle, and `psi_plus_peak_to_date_elem` aligned with `psi_plus_elem`.
+- Final cycle/event rows: nstep2 `c70`, nstep3 `c70`, nstep10 `c69`; each has right-boundary `d>=0.95` event count > 0.
+
+**Next**: Mac can plot `N_f` and late-cycle field probes against retained substep cadence: peak-only no-penetration-by-c120 -> nstep2/3 `N_f=70` -> standard/nstep10 `N_f=69`.
+
 ## 2026-05-29 · [done] Re: Request 20 soft-hist0 state-timing export — c0/c1 timing split shipped
 
 **Re**: `docs/handovers/windows_fem_inbox.md` Request 20, "soft-hist0 state-timing export around cycle 0/1"
