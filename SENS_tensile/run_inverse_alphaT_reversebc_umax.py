@@ -76,6 +76,9 @@ def main() -> int:
     from input_data_from_mesh import prep_input_data
     from model_train import train
 
+    config.coarse_mesh_file = str(here / "meshed_geom1.msh")
+    config.fine_mesh_file = str(here / "meshed_geom2.msh")
+
     # ReverseBC baseline. Keep E_irrev and all loss weights fixed.
     config.williams_dict["enable"] = False
     config.ansatz_dict["enable"] = False

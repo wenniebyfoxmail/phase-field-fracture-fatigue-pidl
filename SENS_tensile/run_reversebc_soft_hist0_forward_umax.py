@@ -37,6 +37,9 @@ def main() -> int:
 
     import config
 
+    config.coarse_mesh_file = str(here / "meshed_geom1.msh")
+    config.fine_mesh_file = str(here / "meshed_geom2.msh")
+
     config.williams_dict["enable"] = False
     config.ansatz_dict["enable"] = False
     config.fourier_dict["enable"] = False
