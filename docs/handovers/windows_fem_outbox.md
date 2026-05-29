@@ -26,6 +26,48 @@
 
 ## Entries
 
+## 2026-05-29 · [done] Re: Request 20 soft-hist0 state-timing export — c0/c1 timing split shipped
+
+**Re**: `docs/handovers/windows_fem_inbox.md` Request 20, "soft-hist0 state-timing export around cycle 0/1"
+
+**Status**: Complete. Replayed cycle 1 of `SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC` with the same settings and exported strict timing states. This is instrumentation/export only, not a new physics variant.
+
+**Files written**:
+- Local: `~/Downloads/_pidl_handoff_v2/reverseBC_u12_diffuse_precrack_soft_hist0_state_timing_2026-05-29/`
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_state_timing_2026-05-29/`
+
+**Payload**:
+- `state_timing_metrics.csv`
+- `state_timing_element_fields.mat`
+- `mesh_geometry.mat`
+- `README_reverseBC_u12_diffuse_precrack_soft_hist0_state_timing.md`
+- `export_reverseBC_soft_hist0_state_timing.m`
+- `INPUT_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC.m`
+- `solve_fatigue_fracture.m`
+
+**Exported states**:
+- `state0_initial_preload_prehistory`
+- `cycle1_step1_pre_history_refresh`, `cycle1_step1_post_history_refresh`
+- `cycle1_step2_pre_history_refresh`, `cycle1_step2_post_history_refresh`
+- `cycle1_step3_pre_history_refresh`, `cycle1_step3_post_history_refresh`
+- `cycle1_peak_pre_history_refresh`, `cycle1_peak_post_history_refresh`
+- `cycle1_unloaded_pre_history_refresh`, `cycle1_unloaded_post_history_refresh`
+
+**Timing note**:
+- GRIPHFiTH standard cycle 1 has five retained substeps after unloading-prune: load factors about `0.25, 0.50, 0.75, 1.00, 0`.
+- History/fatigue is refreshed after each converged substep.
+- Therefore `cycle1_peak_pre_history_refresh` means before the peak substep's refresh, but after earlier loading-substep refreshes. The README makes this explicit so the old c1 field is no longer treated as an initial-state comparison.
+
+**Old c1 match audit**:
+- MATLAB load check passed: `11` states, `45000` element rows, CSV rows match MAT state labels.
+- Old c1 handoff was found locally and compared.
+- `d`, `alpha_bar`, and `f_fatigue` match `cycle1_unloaded_post_history_refresh` exactly: max absolute differences are `0 / 0 / 0`.
+- Old `psi_plus` matches `cycle1_unloaded_post_history_refresh` `psi_plus_peak_to_date` exactly: max absolute difference `0`.
+- Old `psi_plus` does **not** exactly match current-state peak-post `psi_plus`: max absolute difference `0.3225`.
+- Conclusion: the old c1 handoff is mixed timing: end-of-cycle post-history `d/alpha/f`, plus peak-over-cycle `psi_plus`.
+
+**Next**: Mac can compare PIDL `hist_alpha_init` / pretraining alpha / `hist_fat=0` against `state0_initial_preload_prehistory`, then compare first loaded/peak states against the corresponding pre/post-refresh rows.
+
 ## 2026-05-29 · [done] Re: Request 19 one-factor FEM alignment diagnostics — three variants shipped
 
 **Re**: `docs/handovers/windows_fem_inbox.md` Request 19, "one-factor FEM alignment diagnostics after soft-hist0"

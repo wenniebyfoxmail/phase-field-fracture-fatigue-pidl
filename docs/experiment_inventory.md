@@ -101,6 +101,7 @@
 | **2026-05 diffuse pre-crack FEM diagnostic** | Windows-FEM | `SENT_PIDL_12_diffuse_precrack_reverseBC`, continuous material mesh `45000` elems, no void slit, fixed diffuse `d=1` band with `alpha_bar=1` initialized; exported c1-c69 fields; N_f=69 | separates void-notch geometry from phase-field damaged-band convention |
 | **2026-05 strict soft diffuse-precrack hist0 FEM diagnostic** | Windows-FEM | `SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC`, same continuous mesh `45000` elems, soft AT1/PIDL-like precrack profile, `alpha_bar=0` and `f_alpha=1` initially; exported c1-c69 fields; N_f=69 | strict diffuse-track reference for initial-state alignment |
 | **2026-05 Request 19 FEM one-factor alignment diagnostics** | Windows-FEM | Soft-hist0 baseline one-factor variants: `tol_irrev=5e-3` gave N_f=68; peak-only (`n_step=1`, one u=0.12 peak solve/cycle) had no penetration by c120; exact `res_stiff=0` was stable and gave N_f=69. All exports include p99/p999, near-tip integrals, precrack/event audits. | isolates irreversibility strength, within-cycle history update, and residual stiffness effects |
+| **2026-05 Request 20 FEM state-timing export** | Windows-FEM | Replayed soft-hist0 cycle 1 and exported 11 timing states from `state0_initial_preload_prehistory` through `cycle1_unloaded_post_history_refresh`. Audit shows old c1 handoff equals unloaded-post d/alpha/f and peak-to-date psi exactly. | splits c1 residual into initial, first loaded solve, and history-refresh timing effects |
 
 ---
 
