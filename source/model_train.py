@@ -19,8 +19,10 @@ model_train.py  ★ 相比 Manav 原始版本的修改
 
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 import time
 from pathlib import Path
+import csv
 import matplotlib
 matplotlib.use('Agg')          # 非交互后端，训练中安全调用
 import matplotlib.pyplot as plt
@@ -125,11 +127,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
           fatigue_dict=None,                         # ★ 新增参数
           mit8_dict=None,                            # ★ MIT-8 supervised warmup
           adaptive_sampling_dict=None,               # ★ 2026-05-13 Branch 2 C6
-          sidecar_S1_dict=None,                      # ★ forward-compat: static sidecar sampler
-          sidecar_S2_dict=None,                      # ★ forward-compat: adaptive sidecar sampler
-          grad_annealing_state=None,                 # ★ 2026-05-19 Algorithm 1 (Wang 2020)
-          delta1_dict=None,                          # ★ 2026-05-20 C6 δ-1 element-level IS
-          j_path_dict=None):                         # ★ 2026-05-20 J path-independence reg
+          sidecar_S1_dict=None,                      # ★ 2026-05-12 sidecar S1 (static-tip oversample)
+          sidecar_S2_dict=None,                      # ★ 2026-05-13 sidecar S2 (adaptive / tip-following / score-driven)
+          tip_local_net_dict=None):                  # ★ 2026-05-25 moving tip-local window
     '''
     Neural network training: pretraining with a coarser mesh in the first
     stage before the main training proceeds.
@@ -155,33 +155,87 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_dict is None:
         fatigue_dict = {}
     fatigue_on = fatigue_dict.get('fatigue_on', False)
-    if (sidecar_S1_dict or {}).get("enable", False) or (sidecar_S2_dict or {}).get("enable", False):
-        raise NotImplementedError(
-            "This model_train.py build accepts sidecar_S1/S2 arguments for "
-            "runner compatibility, but does not implement sidecar sampling."
-        )
+
+    # =========================================================================
+    # ★ Early mutex guards for sidecar S2 (added 2026-05-14, expert review).
+    # Fires before any pretrain compute so a misconfigured config fails fast.
+    # The runner already disables conflicting variants, but callers who edit
+    # config directly (bypassing the runner) would otherwise silently train
+    # for one cycle before crashing inside fit() on a shape-mismatched
+    # crack_tip_weights tensor.
+    # =========================================================================
+    _S2_check = sidecar_S2_dict is not None and sidecar_S2_dict.get('enable', False)
+    if _S2_check:
+        if sidecar_S1_dict is not None and sidecar_S1_dict.get('enable', False):
+            raise ValueError(
+                "sidecar S1 and S2 are mutually exclusive — both refine the "
+                "fine mesh. Disable one in config or the runner."
+            )
+        _adapt_chk = (adaptive_sampling_dict if adaptive_sampling_dict is not None
+                      else fatigue_dict.get('adaptive_sampling', {}))
+        if isinstance(_adapt_chk, dict) and _adapt_chk.get('enable', False):
+            raise ValueError(
+                "sidecar S2 and adaptive_sampling_dict (C6 FI-PINN reweight) "
+                "are mutually exclusive: S2 changes mesh size per cycle while "
+                "C6 writes per-element crack_tip_weights → next cycle shape "
+                "mismatch in compute_energy. Disable one."
+            )
+        _tipw_chk = fatigue_dict.get('tip_weight_cfg', {})
+        if isinstance(_tipw_chk, dict) and _tipw_chk.get('enable', False):
+            raise ValueError(
+                "sidecar S2 and fatigue_dict.tip_weight_cfg (Direction 3) are "
+                "mutually exclusive: both touch crack_tip_weights on a mesh "
+                "that S2 mutates per cycle. Disable one."
+            )
 
     # =========================================================================
     # 阶段1：预训练（粗网格，fatigue 始终关闭，与 Manav 原始完全一致）
     # ★ 若已有预训练权重（中断续训），直接加载并跳过预训练
     # =========================================================================
+    def _load_net_state_compat(path, label):
+        state = torch.load(path, map_location=device)
+        try:
+            field_comp.net.load_state_dict(state)
+            return
+        except RuntimeError as exc:
+            msg = str(exc)
+            if 'output_mask' not in msg or not hasattr(field_comp.net, 'output_mask'):
+                raise
+            result = field_comp.net.load_state_dict(state, strict=False)
+            missing = list(getattr(result, 'missing_keys', []))
+            unexpected = list(getattr(result, 'unexpected_keys', []))
+            allowed_missing = ['output_mask']
+            if unexpected or any(key not in allowed_missing for key in missing):
+                raise RuntimeError(
+                    f"Incompatible checkpoint while loading {label}: "
+                    f"missing={missing}, unexpected={unexpected}"
+                ) from exc
+            print(
+                f"[Checkpoint compat] loaded {label} with missing output_mask "
+                f"(new non-trainable TipLocalNet channel mask buffer)"
+            )
+
     _init_ckpt = trainedModel_path / Path('trained_1NN_initTraining.pt')
     if _init_ckpt.exists():
         # ── 断点续训：跳过预训练 ──────────────────────────────────────────────
         print(f"[Checkpoint] 检测到预训练权重，跳过预训练")
-        field_comp.net.load_state_dict(
-            torch.load(_init_ckpt, map_location=device))
+        _load_net_state_compat(_init_ckpt, 'pretrain state')
     else:
         # ── 从头训练：执行预训练 ──────────────────────────────────────────────
+        # Pretrain stays on the unrefined coarse mesh — S1 targets the main
+        # fatigue stage on the fine mesh only (the coarse mesh is already
+        # fine near the initial crack and refining it adds no signal while
+        # slowing pretrain).
         inp, T_conn, area_T, hist_alpha = prep_input_data(
             matprop, pffmodel, crack_dict, numr_dict,
-            mesh_file=coarse_mesh_file, device=device
+            mesh_file=coarse_mesh_file, device=device,
+            sidecar_S1_dict=None, sidecar_label="coarse"
         )
         outp = torch.zeros(inp.shape[0], 1).to(device)
-        # full-batch (batch_size=N) + shuffle=False: a DataLoader here just tore the
-        # tensor into N rows via __getitem__ and re-collated every optimizer step
-        # (profiled at ~50-70% of wall). Feed the single full batch directly instead.
-        training_set = [(inp, outp)]
+        training_set = DataLoader(
+            torch.utils.data.TensorDataset(inp, outp),
+            batch_size=inp.shape[0], shuffle=False
+        )
         field_comp.lmbda = torch.tensor(disp[0]).to(device)
 
         loss_data = list()
@@ -223,24 +277,84 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
     inp, T_conn, area_T, hist_alpha = prep_input_data(
         matprop, pffmodel, crack_dict, numr_dict,
-        mesh_file=fine_mesh_file, device=device
+        mesh_file=fine_mesh_file, device=device,
+        sidecar_S1_dict=sidecar_S1_dict, sidecar_label="fine"
     )
     outp = torch.zeros(inp.shape[0], 1).to(device)
-    # full-batch (batch_size=N) + shuffle=False: DataLoader was pure overhead here
-    # (tore tensor into N rows + re-collated every optimizer step, ~50-70% of wall).
-    training_set = [(inp, outp)]
+    training_set = DataLoader(
+        torch.utils.data.TensorDataset(inp, outp),
+        batch_size=inp.shape[0], shuffle=False
+    )
 
-    # ★ δ-1 element-level IS: create ElementDataset (uniform p_e init)
-    _d1_cfg = delta1_dict if (delta1_dict and delta1_dict.get('enable', False)) else None
-    _d1_dataset = None
-    if _d1_cfg is not None:
-        from dataset_element import ElementDataset, compute_residual_proxy
-        n_elem_tmp = area_T.shape[0]
-        _d1_dataset = ElementDataset(n_elem_tmp)
-        _d1_dataset.samples_per_epoch = _d1_cfg.get('samples_per_epoch', None)
-        _d1_start_cycle = int(_d1_cfg.get('start_cycle', 1))
-        print(f"[δ-1] ElementDataset ready: n_elem={n_elem_tmp}, "
-              f"K={_d1_dataset.samples_per_epoch or 'full'}, start_cycle={_d1_start_cycle}")
+    # =========================================================================
+    # ★ 2026-05-13 sidecar S2 (adaptive refinement) — stash original mesh
+    # and initialize per-original-mesh state buffers. The actual per-cycle
+    # mesh swap happens at the TOP of the for-loop body (see below).
+    # =========================================================================
+    # ★ 2026-05-14 expert review v2: hist_fat / psi_plus_prev are now maintained
+    # in CURRENT (refined) mesh coordinates throughout the run, and carried
+    # across cycle swaps via centroid-nearest transport (preserves sub-parent
+    # variation, unlike aggregate-then-expand). Only the S2b score still
+    # aggregates to ORIGINAL coords (needed so select_top_score_elements
+    # operates on the canonical reference mesh — refinement is always
+    # one-step from original to keep mesh size bounded).
+    _S2_enabled = _S2_check   # already validated by early mutex guards above
+    _S2_state = None
+    if _S2_enabled:
+        if numr_dict['gradient_type'] != 'numerical':
+            raise NotImplementedError(
+                "sidecar S2 currently only supports gradient_type='numerical' "
+                f"(got {numr_dict['gradient_type']!r})"
+            )
+        from utils import parse_mesh as _parse_mesh
+        _Xo, _Yo, _To, _ao = _parse_mesh(filename=str(fine_mesh_file), gradient_type='numerical')
+        _n_orig = int(_To.shape[0])
+        _hyst_frac = float(sidecar_S2_dict.get('hysteresis_fraction', 0.25))
+        _hyst = _hyst_frac * float(sidecar_S2_dict.get('r_tip_sample', 0.05))
+        _S2_state = {
+            # Original (canonical reference) mesh — never mutated
+            'X_orig': _Xo, 'Y_orig': _Yo, 'T_orig': _To, 'area_orig': _ao,
+            'n_elem_orig': _n_orig,
+            # Current refined mesh — starts as identity (= original unrefined)
+            'X_curr': _Xo.copy(), 'Y_curr': _Yo.copy(),
+            'T_curr': _To.copy(), 'area_curr': _ao.copy(),
+            'parent_curr': np.arange(_n_orig, dtype=np.int64),  # identity mapping
+            'tip_at_refine': None,    # forces first refinement on cycle 0
+            # Per-element accumulated state in CURRENT mesh coords
+            'hist_fat_curr': np.zeros(_n_orig, dtype=np.float64),
+            'psi_plus_prev_curr': np.zeros(_n_orig, dtype=np.float64),
+            # ★ v3.2 (2026-05-15): per-NODE irreversibility floor in CURRENT mesh
+            # coords. Initialized lazily on first swap (cycle 0 uses hist_alpha_init).
+            # Carried across subsequent REFINE swaps via conservative
+            # edge-lineage transport + NN-max floor, so retained nodes preserve
+            # built-up α and new midpoint nodes take max(endpoint_a, endpoint_b).
+            # Previously v2 re-evaluated hist_alpha via NN.fieldCalculation each
+            # swap; theoretically equivalent (NN is smooth so midpoint ≈ avg of
+            # endpoints), but in practice S2a N=100 plateaued at -42% vs S1 from
+            # cycle 20 onward. Explicit conservative transport rules out any
+            # subtle NN-snapshot vs accumulated-floor mismatch as the cause.
+            'hist_alpha_curr': None,
+            'X_curr_nodes': _Xo.copy(),  # node coords at last refine; for transport
+            'Y_curr_nodes': _Yo.copy(),
+            # v4 cumulative add-only memory.  This is the monotone union of
+            # accepted tip disks; it must survive resume.
+            'past_tips': [],
+            # S2b: detached score aggregated to ORIGINAL for next cycle's top-K
+            'score_orig_for_next': None,
+            'score_curr': None,
+            # Hysteresis: skip re-refinement when tip hasn't moved by this L¹ distance
+            'hysteresis': _hyst,
+            # Stats
+            'n_swaps': 0, 'n_skips': 0,
+        }
+        print(
+            f"[sidecar-S2] enabled (mode={sidecar_S2_dict.get('mode','tip_following')}); "
+            f"refine_mode={sidecar_S2_dict.get('refine_mode','cumulative')}; "
+            f"r_tip_sample={sidecar_S2_dict.get('r_tip_sample',0.05)}; "
+            f"target_fraction={sidecar_S2_dict.get('target_fraction',0.07)}; "
+            f"hysteresis_frac={_hyst_frac} -> threshold={_hyst:.4f}; "
+            f"original mesh: {_n_orig} elem | transport: nearest-element (KDTree)"
+        )
 
     # -------------------------------------------------------------------------
     # ★ 疲劳变量初始化（仅 fatigue_on=True 时使用；否则下面 if 块永不执行）
@@ -324,6 +438,51 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
               f"residual={_adapt_cfg.get('residual_source','full')}, "
               f"从 cycle {_adapt_cfg.get('start_cycle',1)} 开始")
 
+    # ★ 2026-05-20 Wang-style gradient balancing for the irreversibility term.
+    # Default is off, so the historical Deep Ritz loss is unchanged:
+    # log10(E_el + E_d + E_hist).  When enabled by a runner, REFINE diagnostics
+    # update lambda_hist from the ratio of physical-gradient norm to hist-term
+    # gradient norm, then subsequent fit() calls use
+    # log10(E_el + E_d + lambda_hist * E_hist).
+    _alh_cfg = fatigue_dict.get('adaptive_lambda_hist', {})
+    _alh_enabled = bool(_alh_cfg.get('enable', False))
+    _lambda_hist = float(_alh_cfg.get('initial', 1.0))
+    _lambda_hist_min = float(_alh_cfg.get('min', 1e-3))
+    _lambda_hist_max = float(_alh_cfg.get('max', 1.0))
+    _lambda_hist_smooth = float(_alh_cfg.get('smooth', 1.0))
+    _lambda_hist_eps = float(_alh_cfg.get('eps', 1e-30))
+    _lambda_hist_history = []
+    if _lambda_hist_min <= 0 or _lambda_hist_max <= 0 or _lambda_hist_min > _lambda_hist_max:
+        raise ValueError(
+            "adaptive_lambda_hist requires 0 < min <= max "
+            f"(got min={_lambda_hist_min}, max={_lambda_hist_max})"
+        )
+    _lambda_hist = float(np.clip(_lambda_hist, _lambda_hist_min, _lambda_hist_max))
+    _lambda_hist_smooth = float(np.clip(_lambda_hist_smooth, 0.0, 1.0))
+    if _alh_enabled:
+        print(
+            f"[AdaptiveLambdaHist] enabled: initial={_lambda_hist:.6g}, "
+            f"clip=[{_lambda_hist_min:.3g}, {_lambda_hist_max:.3g}], "
+            f"smooth={_lambda_hist_smooth:.3g}"
+        )
+
+    _reeq_cfg = sidecar_S2_dict.get('post_refine_reeq', {}) if _S2_enabled else {}
+    _reeq_enabled = bool(_reeq_cfg.get('enable', False))
+    _reeq_optimizer_name = str(_reeq_cfg.get('optimizer', 'RPROP')).upper()
+    _reeq_n_epochs = int(_reeq_cfg.get('n_epochs', 3000))
+    _reeq_history = []
+    if _reeq_enabled:
+        if _reeq_optimizer_name != 'RPROP':
+            raise NotImplementedError(
+                "post_refine_reeq currently supports optimizer='RPROP' only"
+            )
+        if _reeq_n_epochs <= 0:
+            raise ValueError("post_refine_reeq requires n_epochs > 0")
+        print(
+            f"[PostRefineReeq] enabled: optimizer={_reeq_optimizer_name}, "
+            f"max_epochs={_reeq_n_epochs}; no fatigue-history update during reeq"
+        )
+
     # -------------------------------------------------------------------------
     # ★ 检测最新 step checkpoint，实现断点续训
     # -------------------------------------------------------------------------
@@ -333,15 +492,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     )
     start_j = 0
     _did_restore = False   # ★ 标志位：True → 后续 history lists 从 .npy 初始化
+    _S2_resume_restored = False
     _frac_state_from_ckpt = {}  # stash for fracture detection state from checkpoint
     if _step_ckpts:
         _latest = _step_ckpts[-1]
         _last_j = int(_latest.stem.rsplit('_', 1)[-1])
         _net_file = trainedModel_path / Path(f'trained_1NN_{_last_j}.pt')
         if _net_file.exists():
-            _ckpt = torch.load(_latest, map_location=device)
-            field_comp.net.load_state_dict(
-                torch.load(_net_file, map_location=device))
+            _ckpt = torch.load(_latest, map_location=device, weights_only=False)
+            _load_net_state_compat(_net_file, f'cycle {_last_j} network state')
             hist_alpha = _ckpt['hist_alpha'].to(device)
             if fatigue_on:
                 hist_fat      = _ckpt['hist_fat'].to(device)
@@ -355,6 +514,77 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     'cycle':     _ckpt.get('_frac_cycle',             None),
                     'remaining': _ckpt.get('_frac_confirm_remaining', 0),
                 }
+            if _S2_enabled:
+                _s2_ckpt = _ckpt.get('_S2_state', None)
+                if _s2_ckpt is not None:
+                    for _key in (
+                        'X_curr', 'Y_curr', 'T_curr', 'area_curr',
+                        'parent_curr', 'hist_fat_curr', 'psi_plus_prev_curr',
+                        'hist_alpha_curr', 'X_curr_nodes', 'Y_curr_nodes',
+                    ):
+                        if _key in _s2_ckpt:
+                            _S2_state[_key] = np.asarray(_s2_ckpt[_key])
+                    for _key in ('score_curr', 'score_orig_for_next'):
+                        if _key in _s2_ckpt and _s2_ckpt[_key] is not None:
+                            _S2_state[_key] = np.asarray(_s2_ckpt[_key])
+                    for _key in ('tip_at_refine', 'n_swaps', 'n_skips'):
+                        if _key in _s2_ckpt:
+                            _S2_state[_key] = _s2_ckpt[_key]
+                    if 'past_tips' in _s2_ckpt:
+                        _S2_state['past_tips'] = [
+                            (float(_p[0]), float(_p[1])) for _p in _s2_ckpt['past_tips']
+                        ]
+                    elif (
+                        sidecar_S2_dict.get('refine_mode', 'cumulative') == 'cumulative'
+                        and int(_S2_state.get('n_swaps', 0)) > 0
+                    ):
+                        if int(_S2_state.get('n_swaps', 0)) == 1 and _S2_state.get('tip_at_refine') is not None:
+                            _p = _S2_state['tip_at_refine']
+                            _S2_state['past_tips'] = [(float(_p[0]), float(_p[1]))]
+                        else:
+                            raise NotImplementedError(
+                                "cumulative sidecar S2 checkpoint is missing 'past_tips'. "
+                                "This old v4 checkpoint cannot be safely resumed because "
+                                "the add-only refined-tube memory would be incomplete."
+                            )
+
+                    _Xc = _S2_state['X_curr']
+                    _Yc = _S2_state['Y_curr']
+                    _Tc = _S2_state['T_curr']
+                    _Ac = _S2_state['area_curr']
+                    inp = torch.from_numpy(np.column_stack((_Xc, _Yc))).to(torch.float).to(device)
+                    T_conn = torch.from_numpy(_Tc).to(torch.long).to(device)
+                    area_T = torch.from_numpy(_Ac).to(torch.float).to(device)
+                    n_elem = int(_Tc.shape[0])
+                    _cx_c = (_Xc[_Tc[:, 0]] + _Xc[_Tc[:, 1]] + _Xc[_Tc[:, 2]]) / 3.0
+                    _cy_c = (_Yc[_Tc[:, 0]] + _Yc[_Tc[:, 1]] + _Yc[_Tc[:, 2]]) / 3.0
+                    elem_centroids = torch.from_numpy(
+                        np.column_stack((_cx_c, _cy_c))
+                    ).to(torch.float).to(device).detach()
+                    hist_alpha = hist_alpha.reshape(-1).to(device)
+                    if fatigue_on:
+                        hist_fat = hist_fat.reshape(-1).to(device)
+                        psi_plus_prev = psi_plus_prev.reshape(-1).to(device)
+                        f_fatigue = compute_fatigue_degrad(
+                            hist_fat, fatigue_dict, elem_centroids=elem_centroids
+                        )
+                    outp = torch.zeros(inp.shape[0], 1).to(device)
+                    training_set = DataLoader(
+                        torch.utils.data.TensorDataset(inp, outp),
+                        batch_size=inp.shape[0], shuffle=False,
+                    )
+                    _S2_resume_restored = True
+                    print(
+                        f"[sidecar-S2 restore] restored current mesh: "
+                        f"{inp.shape[0]} nodes, {n_elem} elem | "
+                        f"swaps={_S2_state['n_swaps']} skips={_S2_state['n_skips']} | "
+                        f"tip_at_refine={_S2_state['tip_at_refine']}"
+                    )
+            if _alh_enabled and '_lambda_hist' in _ckpt:
+                _lambda_hist = float(np.clip(
+                    float(_ckpt['_lambda_hist']), _lambda_hist_min, _lambda_hist_max
+                ))
+                print(f"[AdaptiveLambdaHist] restored lambda_hist={_lambda_hist:.6g}")
             start_j = _last_j + 1
             _did_restore = True
             print(f"[Checkpoint] 从 step {_last_j} 恢复，继续 step {start_j}/{len(disp)-1}")
@@ -384,6 +614,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # -------------------------------------------------------------------------
     E_el_history       = _restore_hist('E_el_vs_cycle.npy')      # ★ 续训时从 .npy 恢复
     E_el_max           = max(E_el_history) if E_el_history else 0.0  # ★ 从恢复的 history 算 max
+    _energy_terms_history = _restore_hist('energy_terms_vs_cycle.npy')
+    _energy_grad_history = _restore_hist('energy_grad_norms_vs_cycle.npy')
     alpha_bar_history  = _restore_hist('alpha_bar_vs_cycle.npy')  # ★ 每圈 [ᾱ_max, ᾱ_mean, f_min]
     _frac_detected          = False   # 是否已触发断裂检测
     _frac_cycle             = None    # 首次检测到断裂的圈号
@@ -453,8 +685,136 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _williams_enabled = getattr(field_comp, 'williams_enabled', False)
     _x_tip_psi_history = _restore_hist('x_tip_psi_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
 
+    # ★ 2026-05-25: Moving window for TipLocalNet.
+    # The local correction branch is only useful while its compact window
+    # overlaps the active crack tip.  For SENT, the alpha-tip x coordinate is
+    # already recorded per cycle; using the previous cycle's value before the
+    # next fit keeps the local branch on the propagating process zone without
+    # changing the physical energy functional.
+    _tip_local_cfg = tip_local_net_dict or {}
+    _tip_local_enabled = bool(_tip_local_cfg.get('enable', False)) and hasattr(field_comp.net, 'tip_net')
+    _tip_local_follow = _tip_local_enabled and bool(_tip_local_cfg.get('follow_tip', False))
+    _tip_local_follow_y_mode = str(_tip_local_cfg.get('follow_y_mode', 'centerline'))
+    _tip_local_window_x_history = _restore_hist('tip_local_window_x_vs_cycle.npy')
+    _tip_local_window_y_history = _restore_hist('tip_local_window_y_vs_cycle.npy')
+    _tip_local_alpha_tip_y_history = _restore_hist('tip_local_alpha_tip_y_vs_cycle.npy')
+    _tip_local_x0 = float(_tip_local_cfg.get('x_tip', getattr(field_comp.net, 'x_tip', 0.0)))
+    _tip_local_y0 = float(_tip_local_cfg.get('y_tip', getattr(field_comp.net, 'y_tip', 0.0)))
+    _tip_local_x_max = float(field_comp.domain_extrema[0, 1].detach().cpu().item())
+    _tip_local_current_center = (_tip_local_x0, _tip_local_y0)
+
+    def _set_tip_local_center(x_val, y_val, reason):
+        nonlocal _tip_local_current_center
+        if not _tip_local_enabled:
+            return
+        x_val = float(x_val)
+        y_val = float(y_val)
+        if hasattr(field_comp.net, 'set_tip_center'):
+            field_comp.net.set_tip_center(x_val, y_val)
+        else:
+            field_comp.net.x_tip = x_val
+            field_comp.net.y_tip = y_val
+        _tip_local_current_center = (x_val, y_val)
+        if (not _tip_local_window_x_history or
+                not _tip_local_window_y_history or
+                abs(float(_tip_local_window_x_history[-1]) - x_val) > 1e-12 or
+                abs(float(_tip_local_window_y_history[-1]) - y_val) > 1e-12):
+            print(f"  [TipLocalNet] window center=({x_val:.4f}, {y_val:.4f}) {reason}")
+
+    if _tip_local_enabled:
+        _set_tip_local_center(_tip_local_x0, _tip_local_y0, "(initial)")
+        if _tip_local_follow:
+            print(f"[TipLocalNet] follow_tip=True | y_mode={_tip_local_follow_y_mode} | "
+                  f"window_radius={getattr(field_comp.net, 'window_radius', float('nan')):.4f}")
+
+    _tip_local_diag_csv = trainedModel_path / Path('tip_local_diagnostics.csv')
+
+    def _l2_from_tensors(tensors):
+        sq_sum = 0.0
+        n_val = 0
+        for tensor in tensors:
+            if tensor is None:
+                continue
+            val = tensor.detach()
+            sq_sum += float((val * val).sum().item())
+            n_val += int(val.numel())
+        return sq_sum ** 0.5, n_val
+
+    def _param_l2(module):
+        return _l2_from_tensors([p for p in module.parameters() if p.requires_grad])[0]
+
+    def _grad_l2(module):
+        return _l2_from_tensors([p.grad for p in module.parameters() if p.requires_grad])[0]
+
+    def _channel_l2(tensor, channel):
+        if tensor.shape[-1] <= channel:
+            return float('nan')
+        val = tensor[:, channel]
+        return float(torch.linalg.vector_norm(val).detach().cpu().item())
+
+    def _write_tip_local_diag(cycle_idx):
+        if not _tip_local_enabled or not hasattr(field_comp.net, 'tip_components'):
+            return
+        eps = 1e-30
+        with torch.no_grad():
+            global_out, local_raw, window, local_corr = field_comp.net.tip_components(inp)
+            total_raw = global_out + local_corr
+            active_frac = float((window.squeeze(-1) > 0).float().mean().detach().cpu().item())
+            window_mean = float(window.mean().detach().cpu().item())
+            window_max = float(window.max().detach().cpu().item())
+            global_l2 = float(torch.linalg.vector_norm(global_out).detach().cpu().item())
+            local_raw_l2 = float(torch.linalg.vector_norm(local_raw).detach().cpu().item())
+            local_corr_l2 = float(torch.linalg.vector_norm(local_corr).detach().cpu().item())
+            total_raw_l2 = float(torch.linalg.vector_norm(total_raw).detach().cpu().item())
+
+        tip_param_l2 = _param_l2(field_comp.net.tip_net)
+        global_param_l2 = _param_l2(field_comp.net.global_net)
+        tip_grad_l2 = _grad_l2(field_comp.net.tip_net)
+        global_grad_l2 = _grad_l2(field_comp.net.global_net)
+        row = {
+            "cycle": int(cycle_idx),
+            "center_x": float(_tip_local_current_center[0]),
+            "center_y": float(_tip_local_current_center[1]),
+            "tip_arch": getattr(field_comp.net, 'tip_arch', 'mlp'),
+            "output_mode": getattr(field_comp.net, 'output_mode', 'all'),
+            "window_active_frac": active_frac,
+            "window_mean": window_mean,
+            "window_max": window_max,
+            "global_raw_l2": global_l2,
+            "local_raw_l2": local_raw_l2,
+            "local_corr_l2": local_corr_l2,
+            "total_raw_l2": total_raw_l2,
+            "local_raw_over_global": local_raw_l2 / max(global_l2, eps),
+            "local_corr_over_total": local_corr_l2 / max(total_raw_l2, eps),
+            "local_corr_u_l2": _channel_l2(local_corr, 0),
+            "local_corr_v_l2": _channel_l2(local_corr, 1),
+            "local_corr_alpha_l2": _channel_l2(local_corr, 2),
+            "global_param_l2": global_param_l2,
+            "tip_param_l2": tip_param_l2,
+            "tip_param_over_global": tip_param_l2 / max(global_param_l2, eps),
+            "global_grad_l2": global_grad_l2,
+            "tip_grad_l2": tip_grad_l2,
+            "tip_grad_over_global": tip_grad_l2 / max(global_grad_l2, eps),
+        }
+        header_needed = not _tip_local_diag_csv.exists()
+        with open(_tip_local_diag_csv, "a", newline="") as f:
+            writer_csv = csv.DictWriter(f, fieldnames=list(row.keys()))
+            if header_needed:
+                writer_csv.writeheader()
+            writer_csv.writerow(row)
+        print(
+            f"  [TipLocalNet diag] cycle {cycle_idx}: "
+            f"center=({row['center_x']:.4f},{row['center_y']:.4f}) | "
+            f"active={active_frac:.3f} | "
+            f"corr/total={row['local_corr_over_total']:.3e} | "
+            f"grad_tip/global={row['tip_grad_over_global']:.3e}",
+            flush=True,
+        )
+
     # ★ 每圈耗时记录（增量保存到 time_vs_cycle.npy）
     _time_history = _restore_hist('time_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
+    _lambda_hist_history = _restore_hist('lambda_hist_vs_cycle.npy') if _alh_enabled else []
+    _reeq_history = _restore_hist('post_refine_reeq_vs_cycle.npy') if _reeq_enabled else []
 
     # ★ 每圈 Kt 日志：预计算元素形心 + 远场掩码（仅数值梯度模式有效）
     _Kt_history = _restore_hist('Kt_vs_cycle.npy')       # ★ 续训时从 .npy 恢复
@@ -483,12 +843,491 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # =========================================================================
     # 主循环：每次迭代对应一个加载步（单调模式）或一个完整循环（疲劳模式）
     # =========================================================================
+    # ★ S2 + resume guard: v3.2+ checkpoints must carry the current refined mesh.
+    if _S2_enabled and _did_restore and not _S2_resume_restored:
+        raise NotImplementedError(
+            "sidecar S2 checkpoint is missing '_S2_state'. The saved hist_fat / "
+            "psi_plus_prev live in a previous cycle's refined-mesh coords and "
+            "cannot be safely resumed without the current mesh snapshot."
+        )
+
+    def _s2_elem_field_diag(values_np, X_np, Y_np, T_np):
+        """Compact spatial stats for S2 transport diagnostics."""
+        vals = np.asarray(values_np, dtype=np.float64).ravel()
+        if vals.size == 0:
+            return "empty"
+        imax = int(np.argmax(vals))
+        cx = (X_np[T_np[:, 0]] + X_np[T_np[:, 1]] + X_np[T_np[:, 2]]) / 3.0
+        cy = (Y_np[T_np[:, 0]] + Y_np[T_np[:, 1]] + Y_np[T_np[:, 2]]) / 3.0
+        return (
+            f"max={vals[imax]:.4f}@({cx[imax]:+.4f},{cy[imax]:+.4f}) | "
+            f"p99={np.percentile(vals, 99):.4f} | mean={vals.mean():.4f}"
+        )
+
+    def _s2_elem_tensor_diag(values_t, centroids_t):
+        vals = values_t.detach().cpu().numpy().ravel()
+        pts = centroids_t.detach().cpu().numpy()
+        if vals.size == 0:
+            return "empty"
+        imax = int(np.argmax(vals))
+        return (
+            f"max={vals[imax]:.4e}@({pts[imax, 0]:+.4f},{pts[imax, 1]:+.4f}) | "
+            f"p99={np.percentile(vals, 99):.4e} | mean={vals.mean():.4e}"
+        )
+
+    def _s2_print_post_refine_grad_diag(cycle_idx):
+        """Print per-term gradient stats after S2 REFINE, before fitting."""
+        params = [p for p in field_comp.parameters() if p.requires_grad]
+        with torch.enable_grad():
+            u_g, v_g, alpha_g = field_comp.fieldCalculation(inp)
+            loss_E_el, loss_E_d, loss_hist = compute_energy(
+                inp, u_g, v_g, alpha_g, hist_alpha, matprop, pffmodel,
+                area_T, T_conn=T_conn, f_fatigue=f_fatigue,
+                crack_tip_weights=crack_tip_weights,
+            )
+            total = loss_E_el + loss_E_d + _lambda_hist * loss_hist
+            terms = [
+                ("E_el", loss_E_el),
+                ("E_d", loss_E_d),
+                ("E_hist", loss_hist),
+                ("log10_total", torch.log10(total.clamp(min=1e-30))),
+            ]
+            print(f"  [sidecar-S2 cycle {cycle_idx}] post-REFINE grad norms (pre-fit)")
+            stats = {}
+            for name, term in terms:
+                grads = torch.autograd.grad(
+                    term, params, retain_graph=True, allow_unused=True
+                )
+                abs_sum = 0.0
+                sq_sum = 0.0
+                abs_max = 0.0
+                n_val = 0
+                for grad in grads:
+                    if grad is None:
+                        continue
+                    g = grad.detach()
+                    abs_g = g.abs()
+                    abs_sum += float(abs_g.sum().item())
+                    sq_sum += float((g * g).sum().item())
+                    abs_max = max(abs_max, float(abs_g.max().item()))
+                    n_val += int(g.numel())
+                mean_abs = abs_sum / max(n_val, 1)
+                l2 = sq_sum ** 0.5
+                print(
+                    f"    {name}: value={float(term.detach().item()):.6e} | "
+                    f"grad_l2={l2:.6e} | grad_mean_abs={mean_abs:.6e} | "
+                    f"grad_max_abs={abs_max:.6e}"
+                )
+                stats[name] = {
+                    "value": float(term.detach().item()),
+                    "grad_l2": l2,
+                    "grad_mean_abs": mean_abs,
+                    "grad_max_abs": abs_max,
+                }
+            del u_g, v_g, alpha_g, loss_E_el, loss_E_d, loss_hist, total
+            return stats
+
+    _energy_terms_header = [
+        "cycle", "E_el", "E_d", "E_hist", "E_total",
+        "lambda_hist", "E_total_weighted",
+        "E_el_frac", "E_d_frac", "E_hist_frac",
+    ]
+    _energy_grad_header = [
+        "cycle", "grad_E_el_l2", "grad_E_d_l2", "grad_E_hist_l2",
+        "phys_grad_l2", "hist_grad_l2", "lambda_hat_balance",
+        "lambda_hist",
+    ]
+
+    def _write_history_csv(path, header, rows):
+        with open(path, "w", newline="") as f:
+            writer_csv = csv.writer(f)
+            writer_csv.writerow(header)
+            writer_csv.writerows(rows)
+
+    def _save_energy_diagnostics():
+        if _energy_terms_history:
+            np.save(str(trainedModel_path / 'energy_terms_vs_cycle.npy'),
+                    np.array(_energy_terms_history))
+            _write_history_csv(
+                trainedModel_path / Path('energy_terms_vs_cycle.csv'),
+                _energy_terms_header,
+                _energy_terms_history,
+            )
+        if _energy_grad_history:
+            np.save(str(trainedModel_path / 'energy_grad_norms_vs_cycle.npy'),
+                    np.array(_energy_grad_history))
+            _write_history_csv(
+                trainedModel_path / Path('energy_grad_norms_vs_cycle.csv'),
+                _energy_grad_header,
+                _energy_grad_history,
+            )
+
+    def _term_grad_l2(term, params, retain_graph):
+        grads = torch.autograd.grad(
+            term, params, retain_graph=retain_graph, allow_unused=True
+        )
+        sq_sum = 0.0
+        for grad in grads:
+            if grad is None:
+                continue
+            g = grad.detach()
+            sq_sum += float((g * g).sum().item())
+        return sq_sum ** 0.5
+
+    def _compute_energy_grad_norms():
+        params = [p for p in field_comp.parameters() if p.requires_grad]
+        if not params:
+            return float('nan'), float('nan'), float('nan')
+        with torch.enable_grad():
+            u_g, v_g, alpha_g = field_comp.fieldCalculation(inp)
+            loss_E_el, loss_E_d, loss_hist = compute_energy(
+                inp, u_g, v_g, alpha_g, hist_alpha, matprop, pffmodel,
+                area_T, T_conn=T_conn, f_fatigue=f_fatigue,
+                crack_tip_weights=crack_tip_weights,
+            )
+            grad_E_el = _term_grad_l2(loss_E_el, params, retain_graph=True)
+            grad_E_d = _term_grad_l2(loss_E_d, params, retain_graph=True)
+            grad_E_hist = _term_grad_l2(loss_hist, params, retain_graph=False)
+            del u_g, v_g, alpha_g, loss_E_el, loss_E_d, loss_hist
+        return grad_E_el, grad_E_d, grad_E_hist
+
     for j, disp_i in enumerate(disp[start_j:], start=start_j):
         field_comp.lmbda = torch.tensor(disp_i).to(device)
+        if _tip_local_follow:
+            if _x_tip_history:
+                _center_x = float(_x_tip_history[-1])
+                _center_x = max(_crack_mouth_x, min(_center_x, _tip_local_x_max))
+                if _tip_local_follow_y_mode == 'tip' and _tip_local_alpha_tip_y_history:
+                    _center_y = float(_tip_local_alpha_tip_y_history[-1])
+                else:
+                    _center_y = _tip_local_y0
+            else:
+                _center_x = _tip_local_x0
+                _center_y = _tip_local_y0
+            _set_tip_local_center(_center_x, _center_y, f"for cycle {j} from previous alpha-tip")
         if (j % _log_every == 0) or _frac_detected or _dense_sampling:
             print(f'idx: {j}; displacement/amplitude: {field_comp.lmbda}')
         loss_data = list()
         start = time.time()
+        _s2_refined_this_cycle = False
+
+        # ------------------------------------------------------------------
+        # ★ 2026-05-14 sidecar S2 v2 (expert review): per-cycle mesh
+        # decision = hysteresis on tip motion. When tip has moved past
+        # `hysteresis` (L¹ distance), build a NEW refined mesh and TRANSPORT
+        # hist_fat / psi_plus_prev from the previous refined mesh via
+        # centroid-nearest lookup (preserves sub-parent variation). Otherwise
+        # keep the current mesh + state (no swap, no transport cost, no
+        # smoothing loss). First cycle always swaps to initialize.
+        # ------------------------------------------------------------------
+        if _S2_enabled and fatigue_on:
+            from sidecar_sampling import (adaptive_refine_for_cycle,
+                                          nearest_element_transport)
+            _refine_mode = sidecar_S2_dict.get('refine_mode', 'cumulative')
+            _tip_xy_now = (
+                (float(_x_tip_history[-1]), 0.0)
+                if _x_tip_history else
+                tuple(sidecar_S2_dict.get('tip_xy', (0.0, 0.0)))
+            )
+            _last_tip = _S2_state['tip_at_refine']
+
+            # ==============================================================
+            # ★ v4 (2026-05-20): cumulative add-only incremental refinement.
+            # Refines the CURRENT persistent mesh in place (NOT a rebuild from
+            # original), only on elements not yet covered by a past tip disk.
+            # History transport is parent-index based: lossless on retained
+            # elements, one-time direct-parent inherit on new children → no
+            # repeated diffusion (the failure mode behind the ~4.4 plateau of
+            # the rebuild-from-original variants, confirmed by the AMR /
+            # state-variable-transfer literature, see references/adaptive_sampling/).
+            # ==============================================================
+            if _refine_mode == 'cumulative':
+                from sidecar_sampling import (cumulative_refine_step,
+                                              remap_element_field,
+                                              edge_lineage_transport)
+                from utils import hist_alpha_init as _hist_alpha_init
+                if _S2_state.get('past_tips') is None:
+                    _S2_state['past_tips'] = []
+                _r_tip = float(sidecar_S2_dict.get('r_tip_sample', 0.05))
+                _mode_v4 = sidecar_S2_dict.get('mode', 'tip_following')
+                _force_first_refine = _last_tip is None
+                _tip_drift = (
+                    float('inf') if _force_first_refine else
+                    abs(_tip_xy_now[0] - _last_tip[0]) + abs(_tip_xy_now[1] - _last_tip[1])
+                )
+                _hyst_gate_open = _force_first_refine or (_tip_drift >= float(_S2_state['hysteresis']))
+                if _hyst_gate_open:
+                    _out = cumulative_refine_step(
+                        _S2_state['X_curr'], _S2_state['Y_curr'],
+                        _S2_state['T_curr'], _S2_state['area_curr'],
+                        _tip_xy_now, _r_tip, _S2_state['past_tips'],
+                        score_curr=_S2_state.get('score_curr'),
+                        mode=_mode_v4,
+                        target_fraction=float(sidecar_S2_dict.get('target_fraction', 0.07)),
+                        min_count=int(sidecar_S2_dict.get('min_count', 50)),
+                    )
+                    _refined_v4 = _out[0]
+                else:
+                    _out = None
+                    _refined_v4 = False
+                if _refined_v4:
+                    (_, _X_new, _Y_new, _T_new, _area_new, _parent_v4, _mp_v4, _s2_diag) = _out
+                    _first_refine = _S2_state['hist_alpha_curr'] is None
+                    _hist_fat_new = remap_element_field(_S2_state['hist_fat_curr'], _parent_v4)
+                    _psi_pp_new = remap_element_field(_S2_state['psi_plus_prev_curr'], _parent_v4)
+                    inp = torch.from_numpy(np.column_stack((_X_new, _Y_new))).to(torch.float).to(device)
+                    T_conn = torch.from_numpy(_T_new).to(torch.long).to(device)
+                    area_T = torch.from_numpy(_area_new).to(torch.float).to(device)
+                    n_elem = int(_T_new.shape[0])
+                    _cx_v4 = (_X_new[_T_new[:, 0]] + _X_new[_T_new[:, 1]] + _X_new[_T_new[:, 2]]) / 3.0
+                    _cy_v4 = (_Y_new[_T_new[:, 0]] + _Y_new[_T_new[:, 1]] + _Y_new[_T_new[:, 2]]) / 3.0
+                    elem_centroids = torch.from_numpy(np.column_stack((_cx_v4, _cy_v4))).to(torch.float).to(device).detach()
+                    hist_fat = torch.from_numpy(_hist_fat_new).to(torch.float).to(device)
+                    psi_plus_prev = torch.from_numpy(_psi_pp_new).to(torch.float).to(device)
+                    if _first_refine:
+                        hist_alpha = _hist_alpha_init(inp, matprop, pffmodel, crack_dict)
+                        _ha_diag_v4 = "first-refine = hist_alpha_init"
+                    else:
+                        _ha_xfer = edge_lineage_transport(
+                            _S2_state['hist_alpha_curr'], _mp_v4,
+                            _s2_diag['n_old_nodes'], reduce='max',
+                        )
+                        _ha_floor = _hist_alpha_init(inp, matprop, pffmodel, crack_dict).detach().cpu().numpy().ravel()
+                        with torch.no_grad():
+                            _, _, _a_nn_v4 = field_comp.fieldCalculation(inp)
+                        _ha_nn_v4 = _a_nn_v4.detach().cpu().numpy().ravel()
+                        _ha_new_v4 = np.clip(np.maximum.reduce([_ha_xfer, _ha_floor, _ha_nn_v4]), 0.0, 1.0)
+                        hist_alpha = torch.from_numpy(_ha_new_v4).to(torch.float).to(device)
+                        _ha_diag_v4 = (f"L2+NNmax max {_S2_state['hist_alpha_curr'].max():.3f}→{_ha_new_v4.max():.3f} | "
+                                       f"mean {_S2_state['hist_alpha_curr'].mean():.4f}→{_ha_new_v4.mean():.4f}")
+                    # persist mesh + state
+                    _S2_state['X_curr'], _S2_state['Y_curr'] = _X_new, _Y_new
+                    _S2_state['T_curr'], _S2_state['area_curr'] = _T_new, _area_new
+                    _S2_state['X_curr_nodes'], _S2_state['Y_curr_nodes'] = _X_new, _Y_new
+                    _S2_state['hist_fat_curr'] = _hist_fat_new
+                    _S2_state['psi_plus_prev_curr'] = _psi_pp_new
+                    _S2_state['hist_alpha_curr'] = hist_alpha.detach().cpu().numpy().ravel()
+                    _S2_state['parent_curr'] = _parent_v4
+                    _S2_state['tip_at_refine'] = _tip_xy_now
+                    _S2_state['past_tips'].append(_tip_xy_now)
+                    _S2_state['n_swaps'] += 1
+                    _s2_refined_this_cycle = True
+                    _right_bdy_mask = (inp[:, 0] > _right_bdy_x_min).detach()
+                    _nominal_mask = (np.abs(_cy_v4) > 0.3) & (_cx_v4 > -0.3)
+                    _n_nominal = int(_nominal_mask.sum())
+                    outp = torch.zeros(inp.shape[0], 1).to(device)
+                    training_set = DataLoader(
+                        torch.utils.data.TensorDataset(inp, outp),
+                        batch_size=inp.shape[0], shuffle=False,
+                    )
+                    f_fatigue = compute_fatigue_degrad(hist_fat, fatigue_dict, elem_centroids=elem_centroids)
+                    print(
+                        f"  [sidecar-S2 cycle {j}] CUMUL-REFINE tip={_tip_xy_now} | "
+                        f"elem {_s2_diag['n_elem_before']}→{_s2_diag['n_elem_after']} | "
+                        f"new={_s2_diag['n_new_marked']} already={_s2_diag['n_already']} | "
+                        f"swaps={_S2_state['n_swaps']} | hist_alpha {_ha_diag_v4}"
+                    )
+                else:
+                    _S2_state['n_skips'] += 1
+                    if (j == start_j) or (j % 5 == 0):
+                        if _out is None:
+                            _reason = f"hysteresis gate | drift={_tip_drift:.4g} < {_S2_state['hysteresis']:.4g}"
+                        else:
+                            _reason = f"in_zone={_out[7]['n_in_zone']} all already refined"
+                        print(
+                            f"  [sidecar-S2 cycle {j}] CUMUL-SKIP tip={_tip_xy_now} "
+                            f"({_reason}) | reuse {n_elem} elem | "
+                            f"swaps={_S2_state['n_swaps']} skips={_S2_state['n_skips']}"
+                        )
+
+            _should_refine = (
+                _refine_mode != 'cumulative'
+                and (_last_tip is None
+                     or (abs(_tip_xy_now[0] - _last_tip[0]) + abs(_tip_xy_now[1] - _last_tip[1])
+                         > _S2_state['hysteresis']))
+            )
+            if _should_refine:
+                _X_new, _Y_new, _T_new, _area_new, _parent_new, _s2_diag = adaptive_refine_for_cycle(
+                    _S2_state['X_orig'], _S2_state['Y_orig'],
+                    _S2_state['T_orig'], _S2_state['area_orig'],
+                    sidecar_S2_dict,
+                    tip_xy=_tip_xy_now,
+                    score=_S2_state['score_orig_for_next'],
+                )
+                _hf_old_diag = _s2_elem_field_diag(
+                    _S2_state['hist_fat_curr'],
+                    _S2_state['X_curr'], _S2_state['Y_curr'], _S2_state['T_curr'],
+                )
+                # Transport from CURRENT refined mesh to NEW refined mesh
+                _hist_fat_new = nearest_element_transport(
+                    _S2_state['hist_fat_curr'],
+                    _S2_state['X_curr'], _S2_state['Y_curr'], _S2_state['T_curr'],
+                    _X_new, _Y_new, _T_new,
+                )
+                _psi_pp_new = nearest_element_transport(
+                    _S2_state['psi_plus_prev_curr'],
+                    _S2_state['X_curr'], _S2_state['Y_curr'], _S2_state['T_curr'],
+                    _X_new, _Y_new, _T_new,
+                )
+                _hf_new_diag = _s2_elem_field_diag(
+                    _hist_fat_new, _X_new, _Y_new, _T_new,
+                )
+                # Update state to new mesh
+                _S2_state['X_curr'], _S2_state['Y_curr'] = _X_new, _Y_new
+                _S2_state['T_curr'], _S2_state['area_curr'] = _T_new, _area_new
+                _S2_state['parent_curr'] = _parent_new
+                _S2_state['tip_at_refine'] = _tip_xy_now
+                _S2_state['hist_fat_curr'] = _hist_fat_new
+                _S2_state['psi_plus_prev_curr'] = _psi_pp_new
+                _S2_state['n_swaps'] += 1
+                # Rebuild torch tensors on new mesh
+                inp = torch.from_numpy(np.column_stack((_X_new, _Y_new))).to(torch.float).to(device)
+                T_conn = torch.from_numpy(_T_new).to(torch.long).to(device)
+                area_T = torch.from_numpy(_area_new).to(torch.float).to(device)
+                n_elem = int(_T_new.shape[0])
+                _cx_new = (_X_new[_T_new[:, 0]] + _X_new[_T_new[:, 1]] + _X_new[_T_new[:, 2]]) / 3.0
+                _cy_new = (_Y_new[_T_new[:, 0]] + _Y_new[_T_new[:, 1]] + _Y_new[_T_new[:, 2]]) / 3.0
+                elem_centroids = torch.from_numpy(np.column_stack((_cx_new, _cy_new))).to(torch.float).to(device).detach()
+                hist_fat = torch.from_numpy(_hist_fat_new).to(torch.float).to(device)
+                psi_plus_prev = torch.from_numpy(_psi_pp_new).to(torch.float).to(device)
+                # hist_alpha at start of new cycle (v3.2 transport semantics):
+                # - FIRST swap (n_swaps==1): hist_alpha_init from crack geometry
+                #   (α=1 at initial crack nodes, 0 elsewhere). Identical to S1's
+                #   prep_input_data path.
+                # - SUBSEQUENT swaps: L2 edge-lineage transport (preserves kept
+                #   nodes exactly; new midpoints take max(endpoint_a, endpoint_b)
+                #   of the split edge — conservative for irreversibility, avoids
+                #   the L1 nearest-node tie-randomness that the expert flagged).
+                #   Then take MAX with three other lower bounds:
+                #     a) hist_alpha_init at new nodes — never undo initial crack
+                #     b) NN.fieldCalculation at new nodes — NN's current α IS the
+                #        irreversibility floor (the trained-state lower bound);
+                #        transport must NEVER be below NN, because the NN was
+                #        already constrained by hist_alpha (penalty) up to this
+                #        point. NN can only LIFT, never RESET. Belt-and-suspenders
+                #        against any subtle transport gap.
+                #   Clamp [0, 1].
+                #   v2.1 used pure NN re-eval here; theoretically equivalent under
+                #   smooth NN but practically left S2a N=100 stalled at -42%.
+                #   v3 was L1 nearest-node, expert flagged tie-randomness.
+                #   v3.2 = L2 edge-lineage + NN-max floor = conservative on all axes.
+                from utils import hist_alpha_init as _hist_alpha_init
+                if _S2_state['n_swaps'] == 1:
+                    hist_alpha = _hist_alpha_init(inp, matprop, pffmodel, crack_dict)
+                    _ha_diag = "first-swap = hist_alpha_init"
+                else:
+                    from sidecar_sampling import edge_lineage_transport as _elt
+                    _mp = _s2_diag.get('midpoint_parents')
+                    _n_old_nodes = _s2_diag.get('n_old_nodes', len(_S2_state['X_curr_nodes']))
+                    # NB: edge_lineage_transport requires values_old indexed by
+                    # the SAME mesh that was passed into adaptive_refine_for_cycle.
+                    # That mesh is X_orig/Y_orig (refinement is always one-step
+                    # from canonical original). But hist_alpha_curr lives on the
+                    # CURRENT refined mesh which may differ from X_orig. So we
+                    # transport in two stages: (1) collapse hist_alpha_curr to
+                    # original-mesh nodes via nearest-node from curr→orig; (2)
+                    # then edge_lineage to new refined mesh. Step (1) is cheap
+                    # (small mesh-overlap delta only at the moving-tip zone).
+                    from sidecar_sampling import nearest_node_transport as _nnt
+                    _ha_on_orig = _nnt(
+                        _S2_state['hist_alpha_curr'],
+                        _S2_state['X_curr_nodes'], _S2_state['Y_curr_nodes'],
+                        _S2_state['X_orig'], _S2_state['Y_orig'],
+                    )
+                    if _mp is not None and _mp.size > 0:
+                        _ha_transferred = _elt(_ha_on_orig, _mp, _n_old_nodes, reduce='max')
+                    else:
+                        # No new midpoints (rare: zero red elements); identity
+                        _ha_transferred = _ha_on_orig
+                    _ha_floor = _hist_alpha_init(inp, matprop, pffmodel, crack_dict).detach().cpu().numpy().ravel()
+                    # NN-max floor: NN.fieldCalculation gives the trained-state
+                    # smooth α, which is itself bounded below by accumulated
+                    # irreversibility. So max(transport, NN) is at least NN.
+                    with torch.no_grad():
+                        _, _, _alpha_nn_new = field_comp.fieldCalculation(inp)
+                    _ha_nn = _alpha_nn_new.detach().cpu().numpy().ravel()
+                    _ha_new_np = np.clip(
+                        np.maximum.reduce([_ha_transferred, _ha_floor, _ha_nn]),
+                        0.0, 1.0,
+                    )
+                    _ha_old_stats = (_S2_state['hist_alpha_curr'].max(),
+                                     float(np.percentile(_S2_state['hist_alpha_curr'], 99)),
+                                     _S2_state['hist_alpha_curr'].mean())
+                    _ha_new_stats = (_ha_new_np.max(),
+                                     float(np.percentile(_ha_new_np, 99)),
+                                     _ha_new_np.mean())
+                    _ha_nn_max = float(_ha_nn.max())
+                    _ha_nn_p99 = float(np.percentile(_ha_nn, 99))
+                    hist_alpha = torch.from_numpy(_ha_new_np).to(torch.float).to(device)
+                    _ha_diag = (f"L2+NN-max max {_ha_old_stats[0]:.3f}→{_ha_new_stats[0]:.3f} | "
+                                f"p99 {_ha_old_stats[1]:.3f}→{_ha_new_stats[1]:.3f} | "
+                                f"mean {_ha_old_stats[2]:.4f}→{_ha_new_stats[2]:.4f} | "
+                                f"NN p99={_ha_nn_p99:.3f}")
+                # Stash current-mesh node coords + post-transport hist_alpha (numpy) for next swap
+                _S2_state['hist_alpha_curr'] = hist_alpha.detach().cpu().numpy().ravel()
+                _S2_state['X_curr_nodes'] = _X_new
+                _S2_state['Y_curr_nodes'] = _Y_new
+                _s2_refined_this_cycle = True
+                _right_bdy_mask = (inp[:, 0] > _right_bdy_x_min).detach()
+                _nominal_mask = (np.abs(_cy_new) > 0.3) & (_cx_new > -0.3)
+                _n_nominal = int(_nominal_mask.sum())
+                outp = torch.zeros(inp.shape[0], 1).to(device)
+                training_set = DataLoader(
+                    torch.utils.data.TensorDataset(inp, outp),
+                    batch_size=inp.shape[0], shuffle=False,
+                )
+                f_fatigue = compute_fatigue_degrad(
+                    hist_fat, fatigue_dict, elem_centroids=elem_centroids
+                )
+                # Always print REFINE events (low-frequency; helps audit
+                # whether the transport preserves hist_alpha across swaps).
+                print(
+                    f"  [sidecar-S2 cycle {j}] REFINE tip={_tip_xy_now} | "
+                    f"elem {_s2_diag['n_elem_before']}→{_s2_diag['n_elem_after']} | "
+                    f"marked={_s2_diag['n_marked']} | area_drift={_s2_diag['area_drift']:.1e} | "
+                    f"swaps={_S2_state['n_swaps']} skips={_S2_state['n_skips']} | "
+                    f"hist_alpha {_ha_diag}"
+                )
+                print(
+                    f"  [sidecar-S2 cycle {j}] hist_fat transport | "
+                    f"old {_hf_old_diag} -> new {_hf_new_diag}"
+                )
+                _s2_grad_stats = _s2_print_post_refine_grad_diag(j)
+                if _alh_enabled:
+                    _phys_grad = max(
+                        _s2_grad_stats.get("E_el", {}).get("grad_l2", 0.0),
+                        _s2_grad_stats.get("E_d", {}).get("grad_l2", 0.0),
+                    )
+                    _hist_grad = _s2_grad_stats.get("E_hist", {}).get("grad_l2", 0.0)
+                    _lambda_hat = _phys_grad / max(_hist_grad, _lambda_hist_eps)
+                    _lambda_hat = float(np.clip(
+                        _lambda_hat, _lambda_hist_min, _lambda_hist_max
+                    ))
+                    _lambda_prev = _lambda_hist
+                    _lambda_hist = (
+                        (1.0 - _lambda_hist_smooth) * _lambda_hist
+                        + _lambda_hist_smooth * _lambda_hat
+                    )
+                    _lambda_hist = float(np.clip(
+                        _lambda_hist, _lambda_hist_min, _lambda_hist_max
+                    ))
+                    print(
+                        f"  [AdaptiveLambdaHist cycle {j}] "
+                        f"phys_grad=max(E_el,E_d)={_phys_grad:.6e} | "
+                        f"hist_grad={_hist_grad:.6e} | "
+                        f"lambda_hat={_lambda_hat:.6e} | "
+                        f"lambda_hist {_lambda_prev:.6e}→{_lambda_hist:.6e}"
+                    )
+            elif _refine_mode != 'cumulative':
+                _S2_state['n_skips'] += 1
+                if (j == start_j) or (j % 5 == 0):
+                    _dt = abs(_tip_xy_now[0] - _last_tip[0]) + abs(_tip_xy_now[1] - _last_tip[1])
+                    print(
+                        f"  [sidecar-S2 cycle {j}] SKIP-REFINE tip={_tip_xy_now} "
+                        f"(|Δtip|={_dt:.4f} ≤ {_S2_state['hysteresis']:.4f}) | "
+                        f"reuse mesh {n_elem} elem | "
+                        f"swaps={_S2_state['n_swaps']} skips={_S2_state['n_skips']}"
+                    )
 
         # ★ MIT-8: build per-cycle supervised_dict (None outside [1, K])
         _supervised_dict = None
@@ -501,9 +1340,42 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     'lambda': float(mit8_dict.get('lambda', 1.0)),
                     'pidl_centroids': mit8_dict['pidl_centroids'],
                     'loss_kind': mit8_dict.get('loss_kind', 'mse_log'),
-                    'target_kind': mit8_dict.get('target_kind', 'psi'),
                 }
                 print(f"  [MIT-8] cycle {j}/{_K}: supervised lambda={_supervised_dict['lambda']}")
+
+        if _reeq_enabled and _s2_refined_this_cycle:
+            _reeq_start = time.time()
+            _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
+            _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
+            NNparams = field_comp.parameters()
+            optimizer = get_optimizer(NNparams, _reeq_optimizer_name)
+            print(
+                f"  [PostRefineReeq cycle {j}] start | "
+                f"optimizer={_reeq_optimizer_name} max_epochs={_reeq_n_epochs} | "
+                f"lambda_hist={_lambda_hist:.6e} | no hist_fat/psi_plus_prev update"
+            )
+            _reeq_loss = fit_with_early_stopping(
+                field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
+                optimizer_dict["weight_decay"], num_epochs=_reeq_n_epochs, optimizer=optimizer,
+                min_delta=optimizer_dict["optim_rel_tol"],
+                intermediateModel_path=None,
+                writer=writer, training_dict=training_dict,
+                f_fatigue=f_fatigue,
+                crack_tip_weights=crack_tip_weights,
+                hist_loss_weight=_lambda_hist,
+                supervised_dict=_supervised_dict,
+                symmetry_dict=_symmetry_dict,
+                side_traction_dict=_side_traction_dict,
+            )
+            _reeq_seconds = time.time() - _reeq_start
+            _reeq_last_loss = float(_reeq_loss[-1]) if _reeq_loss else float('nan')
+            _reeq_history.append([j, _reeq_seconds, len(_reeq_loss), _reeq_last_loss])
+            loss_data = loss_data + _reeq_loss
+            print(
+                f"  [PostRefineReeq cycle {j}] done | "
+                f"time={_reeq_seconds/60:.3f} min | "
+                f"steps={len(_reeq_loss)} | last_loss={_reeq_last_loss:.6e}"
+            )
 
         # ------------------------------------------------------------------
         # 训练（与 Manav 完全相同的结构；仅多传 f_fatigue 和 crack_tip_weights）
@@ -522,11 +1394,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 intermediateModel_path=None, writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,                    # ★ 传入疲劳退化函数
                 crack_tip_weights=crack_tip_weights,    # ★ 2026-05-13 P0 fix: thread C6/Dir3 reweight into LBFGS
+                hist_loss_weight=_lambda_hist,           # ★ optional adaptive λ_hist; default 1.0
                 supervised_dict=_supervised_dict,       # ★ MIT-8
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
-                grad_annealing_state=grad_annealing_state,  # ★ Algo1 (applies pre-computed λ; no update in LBFGS)
-                j_path_dict=j_path_dict,                # ★ J path-independence reg
             )
             loss_data = loss_data + loss_data1
 
@@ -536,10 +1407,6 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             optimizer = get_optimizer(NNparams, "RPROP")
             _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
             _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
-            # ★ δ-1: pass ElementDataset when IS is active for this cycle
-            _d1_active_cycle = (
-                _d1_dataset is not None and j >= _d1_start_cycle
-            )
             loss_data2 = fit_with_early_stopping(
                 field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
                 optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
@@ -548,12 +1415,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 writer=writer, training_dict=training_dict,
                 f_fatigue=f_fatigue,                    # ★ 传入疲劳退化函数
                 crack_tip_weights=crack_tip_weights,    # ★ 2026-05-13 P0 fix: thread C6/Dir3 reweight into RPROP
+                hist_loss_weight=_lambda_hist,           # ★ optional adaptive λ_hist; default 1.0
                 supervised_dict=_supervised_dict,       # ★ MIT-8
                 symmetry_dict=_symmetry_dict,           # ★ B path soft sym
                 side_traction_dict=_side_traction_dict, # ★ side-traction penalty
-                grad_annealing_state=grad_annealing_state,  # ★ Algo1 (updates λ every update_every epochs)
-                delta1_dataset=_d1_dataset if _d1_active_cycle else None,  # ★ δ-1
-                j_path_dict=j_path_dict,                # ★ J path-independence reg
             )
             loss_data = loss_data + loss_data2
 
@@ -561,21 +1426,20 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _cycle_seconds = end - start
         print(f"Execution time: {_cycle_seconds/60:.03f}minutes")
         _time_history.append([j, _cycle_seconds])
+        if _alh_enabled:
+            _lambda_hist_history.append([j, _lambda_hist])
+        _write_tip_local_diag(j)
 
         # ------------------------------------------------------------------
         # Manav 原始：更新相场不可逆性历史变量 hist_alpha
         # ------------------------------------------------------------------
         hist_alpha = field_comp.update_hist_alpha(inp)
 
-        # ★ δ-1: update element sampling probabilities p_e from residual proxy
-        if _d1_dataset is not None and j >= (_d1_start_cycle - 1):
-            _d1_proxy = compute_residual_proxy(
-                inp, field_comp, hist_alpha, matprop, pffmodel,
-                area_T, T_conn, f_fatigue, device)
-            _d1_dataset.update_weights(_d1_proxy)
-            _d1_Keff = _d1_dataset.samples_per_epoch or _d1_dataset.n_elem
-            print(f"  [δ-1] p_e updated: proxy max={_d1_proxy.max():.3e}, "
-                  f"K={_d1_Keff}, eff. top-10%={(_d1_proxy > _d1_proxy.quantile(0.9)).sum().item()} elems")
+        # ★ v3 (2026-05-15): sync per-node hist_alpha to _S2_state so the next
+        # REFINE event has the post-cycle floor available for nearest-node
+        # transport. No-op when S2 disabled or before any swap has occurred.
+        if _S2_enabled and _S2_state is not None and _S2_state['hist_alpha_curr'] is not None:
+            _S2_state['hist_alpha_curr'] = hist_alpha.detach().cpu().numpy().ravel()
 
         # ------------------------------------------------------------------
         # ★ 疲劳历史变量更新（仅 fatigue_on=True 时执行）
@@ -667,6 +1531,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 _Kt_history.append(_Kt)
 
             # 更新疲劳历史变量 ᾱ（Carrara Eq.39 或 Golahmar Eq.31）
+            _hist_fat_before_update = (
+                hist_fat.detach().clone()
+                if (_S2_enabled and fatigue_on) else None
+            )
             hist_fat = update_fatigue_history(
                 hist_fat, psi_plus_elem, psi_plus_prev, fatigue_dict
             )
@@ -677,6 +1545,13 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # under symmetric BCs so this is physically defensible.
             if _mirror_idx is not None:
                 hist_fat = mirror_alpha_y(hist_fat, _mirror_idx)
+
+            if _hist_fat_before_update is not None:
+                _delta_hist_fat = hist_fat - _hist_fat_before_update
+                print(
+                    f"  [sidecar-S2 cycle {j}] Δhist_fat | "
+                    f"{_s2_elem_tensor_diag(_delta_hist_fat, elem_centroids)}"
+                )
 
             # 更新疲劳退化函数 f(ᾱ)（Carrara Eq.41 或 Eq.42）
             # ★ Direction 6.1: 传入 elem_centroids 支持空间调制 α_T
@@ -695,14 +1570,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # 修复前：prev = ψ⁺_peak → 第2圈起 Δᾱ = 0（不再累积！）
             # 修复后：prev = R²·ψ⁺_peak → 每圈累积 (1-R²)·ψ⁺_peak ✅
             R = fatigue_dict.get('R_ratio', 0.0)
-            # Controlled alignment Variant 4:
-            # explicit-cycle runners provide real load substeps inside each cycle,
-            # so the previous ψ⁺ should advance from substep to substep instead of
-            # being reset after every training step. Default behavior is unchanged.
-            if fatigue_dict.get('explicit_cycle_substeps', None):
-                psi_plus_prev = psi_plus_elem.clone()
-            else:
-                psi_plus_prev = (R ** 2) * psi_plus_elem.clone()
+            psi_plus_prev = (R ** 2) * psi_plus_elem.clone()
 
             # ★ 方向3：计算下一圈的裂尖自适应权重
             # 在当前圈 psi_plus_elem 更新后立即计算，供下一圈的 fit() 使用
@@ -755,6 +1623,52 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 else:
                     crack_tip_weights = None   # warmup cycles unweighted
 
+            # ------------------------------------------------------------------
+            # ★ 2026-05-14 sidecar S2 v2 (expert review): hist_fat /
+            # psi_plus_prev now live in CURRENT refined-mesh coords and travel
+            # cycle-to-cycle via centroid-nearest transport — no aggregate-then-
+            # expand round-trip, no sub-parent smoothing loss. Sync the tensor
+            # state back to numpy so the next cycle's transport sees the
+            # post-cycle values.
+            # ------------------------------------------------------------------
+            if _S2_enabled and _S2_state is not None:
+                _S2_state['hist_fat_curr'] = hist_fat.detach().cpu().numpy()
+                _S2_state['psi_plus_prev_curr'] = psi_plus_prev.detach().cpu().numpy()
+                _area_np_cur = area_T.detach().cpu().numpy()
+                _S2_state['area_curr'] = _area_np_cur
+                # S2b only: compute next cycle's selection score in ORIGINAL
+                # mesh coords. Score is a point-evaluated DENSITY (not a
+                # cumulative integral), so aggregate_to_original is the
+                # correct operation here — sub-parent variation in score
+                # density is small for a smooth Deep-Ritz residual, and the
+                # round-trip is exact under uniform refinement (P1 fix unit
+                # test). select_top_score_elements then ranks ORIGINAL-mesh
+                # elements by local error density for next cycle's top-K mask.
+                if sidecar_S2_dict.get('mode') == 'score_driven':
+                    from sidecar_sampling import aggregate_to_original as _agg_to_orig
+                    from compute_energy import compute_energy_per_elem as _ce_per
+                    with torch.no_grad():
+                        _u_s2, _v_s2, _a_s2 = field_comp.fieldCalculation(inp)
+                        _E_el_e_s2, _E_d_e_s2, _ = _ce_per(
+                            inp, _u_s2, _v_s2, _a_s2, hist_alpha,
+                            matprop, pffmodel, area_T, T_conn=T_conn,
+                            f_fatigue=f_fatigue,
+                        )
+                    _score_integ = (_E_el_e_s2.abs() + _E_d_e_s2.abs()).detach().cpu().numpy()
+                    _area_safe = np.clip(_area_np_cur, 1e-30, None)
+                    _score_density_cur = _score_integ / _area_safe
+                    if sidecar_S2_dict.get('refine_mode', 'cumulative') == 'cumulative':
+                        # v4: cumulative_refine_step selects top-K directly on the
+                        # CURRENT mesh, so keep the density score in current-mesh
+                        # coords (no aggregate-to-original; parent_curr maps to the
+                        # previous mesh, not original).
+                        _S2_state['score_curr'] = _score_density_cur
+                    else:
+                        _S2_state['score_orig_for_next'] = _agg_to_orig(
+                            _score_density_cur, _area_np_cur,
+                            _S2_state['parent_curr'], _S2_state['n_elem_orig'],
+                        )
+
             # ★ Direction 5: 记录 c_singular 当前值（每圈训练完毕后）
             if _ansatz_enabled and field_comp.c_singular is not None:
                 _c_val = float(field_comp.c_singular.detach().cpu().item())
@@ -775,15 +1689,52 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                                        hist_fat.mean().item(),
                                        float(f_min)])
 
-            # ── E_el 计算（用于断裂检测和后处理曲线）─────────────────────
+            # ── Energy-term diagnostics（用于断裂检测、后处理和 loss-balance audit）──
             with torch.no_grad():
                 u_el, v_el, alpha_el = field_comp.fieldCalculation(inp)
-                E_el_val, _, _ = compute_energy(
+                E_el_val, E_d_val, E_hist_val = compute_energy(
                     inp, u_el, v_el, alpha_el, hist_alpha,
                     matprop, pffmodel, area_T, T_conn, f_fatigue
                 )
             E_el_scalar = float(E_el_val.item())
+            E_d_scalar = float(E_d_val.item())
+            E_hist_scalar = float(E_hist_val.item())
+            E_total_scalar = E_el_scalar + E_d_scalar + E_hist_scalar
+            E_total_weighted = E_el_scalar + E_d_scalar + _lambda_hist * E_hist_scalar
+            _energy_eps = 1e-30
             E_el_history.append(E_el_scalar)
+            _energy_terms_history.append([
+                j,
+                E_el_scalar,
+                E_d_scalar,
+                E_hist_scalar,
+                E_total_scalar,
+                float(_lambda_hist),
+                E_total_weighted,
+                E_el_scalar / max(E_total_scalar, _energy_eps),
+                E_d_scalar / max(E_total_scalar, _energy_eps),
+                E_hist_scalar / max(E_total_scalar, _energy_eps),
+            ])
+            grad_E_el, grad_E_d, grad_E_hist = _compute_energy_grad_norms()
+            phys_grad = max(grad_E_el, grad_E_d)
+            lambda_hat_balance = phys_grad / max(grad_E_hist, _lambda_hist_eps)
+            _energy_grad_history.append([
+                j,
+                grad_E_el,
+                grad_E_d,
+                grad_E_hist,
+                phys_grad,
+                grad_E_hist,
+                lambda_hat_balance,
+                float(_lambda_hist),
+            ])
+            if (j % _log_every == 0) or _frac_detected or _dense_sampling:
+                print(
+                    f"  [Energy terms {j}] E_el={E_el_scalar:.6e} | "
+                    f"E_d={E_d_scalar:.6e} | E_hist={E_hist_scalar:.6e} | "
+                    f"grad_l2(el,d,hist)=({grad_E_el:.3e}, {grad_E_d:.3e}, {grad_E_hist:.3e}) | "
+                    f"lambda_hat≈{lambda_hat_balance:.3e}"
+                )
             # ★ Fix: 断裂确认期间冻结 E_el_max，防止 NN 伪解抬高基线导致判据失效
             if not _frac_detected:
                 E_el_max = max(E_el_max, E_el_scalar)
@@ -811,6 +1762,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             _x_tip_history.append(crack_length)
             _tip_x = crack_tip_xy[0].item()
             _tip_y = crack_tip_xy[1].item()
+            if _tip_local_enabled:
+                _tip_local_alpha_tip_y_history.append(float(_tip_y))
             if (j % _log_every == 0) or _frac_detected or _dense_sampling:
                 print(f"  [crack_tip]    = ({_tip_x:.4f}, {_tip_y:.4f})  "
                       f"L∞_length = {crack_length:.4f}  "
@@ -864,6 +1817,31 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             _ckpt_data['_frac_detected']           = _frac_detected
             _ckpt_data['_frac_cycle']              = _frac_cycle
             _ckpt_data['_frac_confirm_remaining']  = _frac_confirm_remaining
+            if _tip_local_enabled:
+                _ckpt_data['_tip_local_center'] = _tip_local_current_center
+        if _alh_enabled:
+            _ckpt_data['_lambda_hist'] = _lambda_hist
+        if _S2_enabled and _S2_state is not None:
+            _ckpt_data['_S2_state'] = {
+                'X_curr': _S2_state['X_curr'],
+                'Y_curr': _S2_state['Y_curr'],
+                'T_curr': _S2_state['T_curr'],
+                'area_curr': _S2_state['area_curr'],
+                'parent_curr': _S2_state['parent_curr'],
+                'hist_fat_curr': _S2_state['hist_fat_curr'],
+                'psi_plus_prev_curr': _S2_state['psi_plus_prev_curr'],
+                'hist_alpha_curr': _S2_state['hist_alpha_curr'],
+                'X_curr_nodes': _S2_state['X_curr_nodes'],
+                'Y_curr_nodes': _S2_state['Y_curr_nodes'],
+                'tip_at_refine': _S2_state['tip_at_refine'],
+                'past_tips': _S2_state.get('past_tips', []),
+                'n_swaps': _S2_state['n_swaps'],
+                'n_skips': _S2_state['n_skips'],
+            }
+            if _S2_state.get('score_curr') is not None:
+                _ckpt_data['_S2_state']['score_curr'] = _S2_state['score_curr']
+            if _S2_state.get('score_orig_for_next') is not None:
+                _ckpt_data['_S2_state']['score_orig_for_next'] = _S2_state['score_orig_for_next']
         torch.save(_ckpt_data,
                    trainedModel_path / Path(f'checkpoint_step_{j}.pt'))
 
@@ -873,10 +1851,21 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if E_el_history:
                 np.save(str(trainedModel_path / 'E_el_vs_cycle.npy'),
                         np.array(E_el_history))
+            _save_energy_diagnostics()
             if _x_tip_history:
                 _xt = np.array(_x_tip_history)
                 np.save(str(trainedModel_path / 'x_tip_alpha_vs_cycle.npy'), _xt)
                 np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),       _xt)
+            if _tip_local_enabled:
+                _tip_local_window_x_history.append(_tip_local_current_center[0])
+                _tip_local_window_y_history.append(_tip_local_current_center[1])
+                np.save(str(trainedModel_path / 'tip_local_window_x_vs_cycle.npy'),
+                        np.array(_tip_local_window_x_history))
+                np.save(str(trainedModel_path / 'tip_local_window_y_vs_cycle.npy'),
+                        np.array(_tip_local_window_y_history))
+                if _tip_local_alpha_tip_y_history:
+                    np.save(str(trainedModel_path / 'tip_local_alpha_tip_y_vs_cycle.npy'),
+                            np.array(_tip_local_alpha_tip_y_history))
             if _williams_enabled and _x_tip_psi_history:
                 np.save(str(trainedModel_path / 'x_tip_psi_vs_cycle.npy'),
                         np.array(_x_tip_psi_history))
@@ -892,6 +1881,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _time_history:
                 np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                         np.array(_time_history))   # shape (N,2): [cycle_idx, seconds]
+            if _alh_enabled and _lambda_hist_history:
+                np.save(str(trainedModel_path / 'lambda_hist_vs_cycle.npy'),
+                        np.array(_lambda_hist_history))   # shape (N,2): [cycle_idx, lambda_hist]
+            if _reeq_enabled and _reeq_history:
+                np.save(str(trainedModel_path / 'post_refine_reeq_vs_cycle.npy'),
+                        np.array(_reeq_history))   # [cycle_idx, seconds, n_loss, last_loss]
 
         # ── 断裂确认：判据持续满足 confirm_cycles 圈 → 停止 ──────────────
         if fatigue_on and _frac_detected and _frac_confirm_remaining <= 0:
@@ -899,6 +1894,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                   f"First detected at cycle {_frac_cycle}.")
             np.save(str(trainedModel_path / 'E_el_vs_cycle.npy'),
                     np.array(E_el_history))
+            _save_energy_diagnostics()
             np.save(str(trainedModel_path / 'x_tip_alpha_vs_cycle.npy'),   # ★ α 基准名称更新
                     np.array(_x_tip_history))
             np.save(str(trainedModel_path / 'x_tip_vs_cycle.npy'),         # ★ 保留旧名称（向后兼容）
@@ -917,12 +1913,19 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _time_history:
                 np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                         np.array(_time_history))
+            if _alh_enabled and _lambda_hist_history:
+                np.save(str(trainedModel_path / 'lambda_hist_vs_cycle.npy'),
+                        np.array(_lambda_hist_history))
+            if _reeq_enabled and _reeq_history:
+                np.save(str(trainedModel_path / 'post_refine_reeq_vs_cycle.npy'),
+                        np.array(_reeq_history))
             break
 
     # 循环正常结束（跑完所有圈）也保存历史
     if fatigue_on and E_el_history:
         np.save(str(trainedModel_path / 'E_el_vs_cycle.npy'),
                 np.array(E_el_history))
+        _save_energy_diagnostics()
     if fatigue_on and _x_tip_history:
         np.save(str(trainedModel_path / 'x_tip_alpha_vs_cycle.npy'),       # ★ α 基准名称更新
                 np.array(_x_tip_history))
@@ -943,3 +1946,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_on and _time_history:
         np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                 np.array(_time_history))
+    if fatigue_on and _alh_enabled and _lambda_hist_history:
+        np.save(str(trainedModel_path / 'lambda_hist_vs_cycle.npy'),
+                np.array(_lambda_hist_history))
+    if fatigue_on and _reeq_enabled and _reeq_history:
+        np.save(str(trainedModel_path / 'post_refine_reeq_vs_cycle.npy'),
+                np.array(_reeq_history))

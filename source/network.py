@@ -247,6 +247,183 @@ class FourierFeatureNet(nn.Module):
         return self.inner(feat)
 
 
+class SirenLinear(nn.Linear):
+    """Linear layer with SIREN initialization, skipped by init_xavier()."""
+
+    def __init__(self, in_features, out_features, bias=True,
+                 is_first=False, omega_0=30.0):
+        self.is_first = bool(is_first)
+        self.omega_0 = float(omega_0)
+        super().__init__(in_features, out_features, bias=bias)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        with torch.no_grad():
+            if self.is_first:
+                bound = 1.0 / self.in_features
+            else:
+                bound = np.sqrt(6.0 / self.in_features) / self.omega_0
+            self.weight.uniform_(-bound, bound)
+            if self.bias is not None:
+                self.bias.uniform_(-bound, bound)
+
+
+class SineLayer(nn.Module):
+    """SIREN sine layer: sin(omega_0 * W x + b)."""
+
+    def __init__(self, in_features, out_features, is_first=False, omega_0=30.0):
+        super().__init__()
+        self.omega_0 = float(omega_0)
+        self.linear = SirenLinear(in_features, out_features, is_first=is_first,
+                                  omega_0=omega_0)
+
+    def forward(self, x):
+        return torch.sin(self.omega_0 * self.linear(x))
+
+
+class SirenNet(nn.Module):
+    """Compact SIREN network for local high-frequency correction fields."""
+
+    def __init__(self, input_dimension, output_dimension, n_hidden_layers,
+                 neurons, omega_0=30.0, hidden_omega_0=30.0):
+        super().__init__()
+        self.input_dimension = input_dimension
+        self.output_dimension = output_dimension
+        self.n_hidden_layers = n_hidden_layers
+        self.neurons = neurons
+        self.name_activation = "SIREN"
+        self.init_coeff = float(omega_0)
+        self.trainable_activation = False
+
+        if n_hidden_layers < 1:
+            raise ValueError("SirenNet expects at least one hidden layer")
+
+        self.input_layer = SineLayer(input_dimension, neurons, is_first=True,
+                                     omega_0=omega_0)
+        self.hidden_layers = nn.ModuleList([
+            SineLayer(neurons, neurons, is_first=False, omega_0=hidden_omega_0)
+            for _ in range(n_hidden_layers - 1)
+        ])
+        self.output_layer = SirenLinear(neurons, output_dimension, is_first=False,
+                                        omega_0=hidden_omega_0)
+
+    def forward(self, x):
+        x = self.input_layer(x)
+        for layer in self.hidden_layers:
+            x = layer(x)
+        return self.output_layer(x)
+
+
+class TipLocalNet(nn.Module):
+    """Global MLP plus a compact crack-tip correction MLP.
+
+    The wrapper preserves the raw output contract used by FieldComputation:
+    (u_raw, v_raw, alpha_raw). The correction is localized in physical
+    coordinates before the existing BC and alpha constraints are applied.
+    """
+
+    def __init__(self, input_dimension, output_dimension, n_hidden_layers, neurons,
+                 activation, init_coeff=1.0, x_tip=0.0, y_tip=0.0,
+                 r_tip=0.05, window_radius=None, tip_hidden_layers=3,
+                 tip_neurons=80, zero_init=True, output_mode="all",
+                 tip_arch="mlp", tip_fourier_n_features=64,
+                 tip_fourier_sigma=4.0, tip_fourier_seed=0,
+                 tip_siren_omega0=30.0, tip_siren_hidden_omega0=30.0):
+        super().__init__()
+        if input_dimension != 2:
+            raise ValueError("TipLocalNet expects physical 2D coordinates as input")
+        if r_tip <= 0:
+            raise ValueError("TipLocalNet r_tip must be positive")
+
+        self.input_dimension = input_dimension
+        self.output_dimension = output_dimension
+        self.n_hidden_layers = n_hidden_layers
+        self.neurons = neurons
+        self.name_activation = activation
+        self.init_coeff = init_coeff
+        self.x_tip = float(x_tip)
+        self.y_tip = float(y_tip)
+        self.r_tip = float(r_tip)
+        self.window_radius = float(window_radius if window_radius is not None else r_tip)
+        self.zero_init = bool(zero_init)
+        self.output_mode = str(output_mode)
+        self.tip_arch = str(tip_arch).lower()
+        if self.output_mode not in ("all", "uv", "alpha"):
+            raise ValueError("TipLocalNet output_mode must be one of: all, uv, alpha")
+        if self.output_mode in ("uv", "alpha") and output_dimension < 3:
+            raise ValueError("TipLocalNet uv/alpha output modes expect output_dimension >= 3")
+        if self.tip_arch not in ("mlp", "fourier", "siren"):
+            raise ValueError("TipLocalNet tip_arch must be one of: mlp, fourier, siren")
+
+        self.global_net = NeuralNet(input_dimension, output_dimension, n_hidden_layers,
+                                    neurons, activation, init_coeff)
+        if self.tip_arch == "mlp":
+            self.tip_net = NeuralNet(input_dimension, output_dimension, tip_hidden_layers,
+                                     tip_neurons, activation, init_coeff)
+        elif self.tip_arch == "fourier":
+            self.tip_net = FourierFeatureNet(
+                input_dimension, output_dimension, tip_hidden_layers, tip_neurons,
+                activation, init_coeff,
+                n_features=tip_fourier_n_features,
+                sigma=tip_fourier_sigma,
+                seed=tip_fourier_seed,
+            )
+        else:
+            self.tip_net = SirenNet(
+                input_dimension, output_dimension, tip_hidden_layers, tip_neurons,
+                omega_0=tip_siren_omega0,
+                hidden_omega_0=tip_siren_hidden_omega0,
+            )
+        output_mask = torch.ones(1, output_dimension)
+        if self.output_mode == "uv":
+            output_mask.zero_()
+            output_mask[:, :2] = 1.0
+        elif self.output_mode == "alpha":
+            output_mask.zero_()
+            output_mask[:, 2] = 1.0
+        self.register_buffer("output_mask", output_mask)
+
+        self.trainable_activation = (
+            self.global_net.trainable_activation or self.tip_net.trainable_activation
+        )
+
+    def _tip_window(self, x):
+        tip = x.new_tensor([self.x_tip, self.y_tip])
+        rel = x - tip
+        q = (rel[:, 0].square() + rel[:, 1].square()) / (self.window_radius ** 2)
+        return torch.clamp(1.0 - q, min=0.0).square().unsqueeze(-1)
+
+    def zero_local_output(self):
+        """Start exactly on the global-net hypothesis class."""
+        output_layer = getattr(self.tip_net, "output_layer", None)
+        if output_layer is None and hasattr(self.tip_net, "inner"):
+            output_layer = getattr(self.tip_net.inner, "output_layer", None)
+        if output_layer is None:
+            raise AttributeError("tip_net does not expose an output layer to zero")
+        output_layer.weight.data.zero_()
+        output_layer.bias.data.zero_()
+
+    def set_tip_center(self, x_tip, y_tip=0.0):
+        """Move the compact local correction window in physical coordinates."""
+        self.x_tip = float(x_tip)
+        self.y_tip = float(y_tip)
+
+    def tip_components(self, x):
+        """Return global/local pieces for diagnostics and ablations."""
+        global_out = self.global_net(x)
+        tip = x.new_tensor([self.x_tip, self.y_tip])
+        x_local = (x - tip) / self.r_tip
+        local_raw = self.tip_net(x_local)
+        local_masked = local_raw * self.output_mask
+        window = self._tip_window(x)
+        local_corr = window * local_masked
+        return global_out, local_raw, window, local_corr
+
+    def forward(self, x):
+        global_out, _, _, local_corr = self.tip_components(x)
+        return global_out + local_corr
+
+
 # =============================================================================
 # 辅助函数
 # =============================================================================
@@ -323,4 +500,3 @@ def init_xavier(model):
                 m.bias.data.fill_(0)
 
     model.apply(init_weights)
-

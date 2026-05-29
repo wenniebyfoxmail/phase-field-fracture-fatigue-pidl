@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from pathlib import Path
 import sys
+import os
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -18,6 +19,41 @@ for details of the model.
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
+
+
+def resolve_archive_dir(here, name):
+    """Resolve archive location, optionally redirecting heavy outputs.
+
+    If PIDL_ARCHIVE_DIR is set, the real archive lives under that directory and
+    a symlink is created at the usual SENS_tensile/<name> path for tooling that
+    expects local archive names. If the local path already exists as a real
+    directory, leave it untouched and use it; callers can move/copy it manually
+    before enabling redirect for resume.
+    """
+    local_path = Path(here) / Path(name)
+    archive_root = os.environ.get("PIDL_ARCHIVE_DIR", "").strip()
+    if not archive_root:
+        return local_path
+
+    real_path = Path(archive_root).expanduser() / Path(name)
+    real_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if local_path.is_symlink():
+        try:
+            if local_path.resolve() == real_path.resolve():
+                return real_path
+        except FileNotFoundError:
+            pass
+        local_path.unlink()
+    elif local_path.exists():
+        return local_path
+
+    local_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        local_path.symlink_to(real_path, target_is_directory=True)
+    except FileExistsError:
+        pass
+    return real_path
 
 
 
@@ -112,7 +148,7 @@ fatigue_dict = {
     # SENT 几何主判据已足够，关掉 fallback。其他几何或 baseline 需要时打开。
     "enable_E_fallback"      : False, # False: 只用主判据（α>0.95@boundary）| True: 保留 E_el fallback
     "fracture_E_drop_ratio"  : 0.1,  # E_el < ratio × E_el_max 时触发检测（仅 enable_E_fallback=True 时生效）
-    "fracture_confirm_cycles": 10,   # 触发后再观察 N 圈确认（防数值扰动）
+    "fracture_confirm_cycles": 3,    # 触发后再观察 N 圈确认（边界判据清晰，3圈即可）
     "crack_length_threshold" : 0.46, # 裂缝贯通判据：crack_length >= 此值 → 停止
                                      # 定义：L∞ 距离 = max(|Δx|, |Δy|) from crack_mouth=(0,0)
                                      # 等价于：x 或 y 方向投影任意一个达到 92% × 0.5
@@ -139,6 +175,20 @@ fatigue_dict = {
         "beta"        : 2.0,         # 加权强度；beta=0 → 均匀；推荐范围 1~5
         "power"       : 1.0,         # ψ⁺ 比值的幂次；1.0 = 线性加权；2.0 = 平方增强
         "start_cycle" : 1,           # 从第几圈开始加权（0 = 从预训练完成后第1圈就加权）
+    },
+
+    # ── Wang-style adaptive λ_hist（默认关闭）──────────────────────────────
+    # REFINE 后打印各项参数梯度范数，并令
+    # λ_hat = max(||∇E_el||₂, ||∇E_d||₂) / ||∇E_hist||₂，clip 后用于后续 fit。
+    # 目的：只压低过强的 irreversibility penalty 梯度，避免它在新 mesh 上主导优化。
+    # enable=False 时 λ_hist=1，损失严格保持 log10(E_el + E_d + E_hist)。
+    "adaptive_lambda_hist": {
+        "enable" : False,
+        "initial": 1.0,
+        "min"    : 1e-3,
+        "max"    : 1.0,
+        "smooth" : 1.0,
+        "eps"    : 1e-30,
     },
 
     # ── E2 sanity hack (Apr 23 2026): ψ⁺ 裂尖放大 ──────────────────────────
@@ -251,6 +301,38 @@ fourier_dict = {
 }
 
 
+# ★ 2026-05-23: Crack-tip local correction network.
+# Global NN handles the smooth bulk; a smaller local NN sees normalized
+# coordinates ((x-x_tip)/r_tip, (y-y_tip)/r_tip) and is tapered by a compact
+# polynomial window. It preserves the physical loss and FieldComputation path.
+tip_local_net_dict = {
+    "enable": False,
+    "x_tip": 0.0,
+    "y_tip": 0.0,
+    "r_tip": 0.05,
+    "window_radius": 0.05,
+    "hidden_layers": 3,
+    "neurons": 80,
+    "zero_init": True,
+    # Local head representation. The global branch remains the baseline MLP;
+    # this only changes the compact crack-tip correction head.
+    "tip_arch": "mlp",  # "mlp" | "fourier" | "siren"
+    "fourier_n_features": 64,
+    "fourier_sigma": 4.0,
+    "fourier_seed": 0,
+    "siren_omega0": 30.0,
+    "siren_hidden_omega0": 30.0,
+    # Which raw NN channels receive the local correction. "all" preserves the
+    # current experiment; "uv" and "alpha" are representation ablations.
+    "output_mode": "all",  # "all" | "uv" | "alpha"
+    # If enabled by a runner, move the compact local correction window to the
+    # previous cycle's alpha-tip before fitting the next cycle. This keeps the
+    # extra capacity on the active process zone instead of the initial notch tip.
+    "follow_tip": False,
+    "follow_y_mode": "centerline",  # "centerline" keeps y_tip=0 for SENT
+}
+
+
 # ★ 2026-05-13 Branch 2 C6: FI-PINN adaptive sampling via residual-driven loss reweight
 # ────────────────────────────────────────────────────────────────────────────────────
 # Background: PIDL ᾱ_max trails FEM 10-100× at crack tip. Tested mechanisms (Apr-May):
@@ -283,6 +365,81 @@ adaptive_sampling_dict = {
     "start_cycle" : 1,           # which cycle to start reweighting (0=immediately after pretrain)
     "residual_source": "full",   # "full" = E_el+E_d+E_hist (C6 FI-PINN); reserved for future
                                  #   variants like "elastic_only" (would degenerate to Direction 3)
+}
+
+
+# ★ 2026-05-12 Sidecar S1: TRUE adaptive sampling — static-tip oversampling.
+# ────────────────────────────────────────────────────────────────────────────
+# Spec: docs/sidecar_true_adaptive_sampling.md (Stage S1)
+# Differs from C6 (`adaptive_sampling_dict` above): C6 reweights the loss
+# inside log10(sum E); S1 changes ONLY collocation density via 1-to-4 red
+# refinement near the tip — Deep Ritz / Carrara objective untouched, area
+# integral exactly conserved.
+#
+# Mutual exclusion: none mechanically required (S1 changes mesh, C6 changes
+# loss). But to keep the sidecar interpretable, runners should disable other
+# active variants (Williams / Fourier / exact-BC / tip_weight) unless the
+# spec is explicitly revised to allow stacks.
+sidecar_S1_dict = {
+    "enable"          : False,        # default off; runner sets True
+    "tip_xy"          : (0.0, 0.0),   # crack-tip coordinates in domain frame
+    "r_tip_sample"    : 0.05,         # refinement radius (centroid distance)
+    "n_refine_passes" : 1,            # 1 pass ≈ 4× density inside r_tip; 2 ≈ 16×
+}
+
+
+# ★ 2026-05-13 Sidecar S2: ADAPTIVE (cycle-wise) refinement.
+# ────────────────────────────────────────────────────────────────────────────
+# Spec: docs/sidecar_true_adaptive_sampling.md (Stage S2).
+# S1 was a STATIC tip prior — it refines around (0,0) once and never adapts.
+# As the crack propagates (x_tip → +0.22 by cycle 49 at Umax=0.12), the static
+# refinement zone becomes mis-aligned with the active tip, which is the
+# leading hypothesis for why S1's early-cycle +37-50% lift narrows to +5%
+# mid-cycle in the N=50 production data (see runs ledger).
+#
+# Two modes:
+#   - "tip_following" (S2a): each cycle, re-refine around the CURRENT x_tip
+#     (read from the running crack-tip history). Pure geometry, no score.
+#   - "score_driven"  (S2b): each cycle, re-refine the top `target_fraction`
+#     of elements by detached Deep Ritz residual |E_el_e|+|E_d_e| computed
+#     at the END of the PREVIOUS cycle. Score is detached so it acts only
+#     as a sampling-density signal, NOT as a loss reweight (sidecar Rule 1).
+#
+# S2 rebuilds each refined mesh from the canonical reference mesh, while
+# carrying per-cycle history directly between consecutive current meshes.
+# Hysteresis should be conservative: do not remesh while the tracked tip still
+# lies inside the previous refined ball. The May-19 diagnostic showed
+# hysteresis_fraction=0.25 remeshed too early (cycle 8 at x_tip≈0.014 for
+# r_tip=0.05), flattening alpha_bar; hysteresis_fraction=1.0 kept the mesh
+# stable and matched S1 through the same cycles.
+#
+# Mutual exclusion: must not be enabled together with sidecar_S1_dict
+# (both refine the fine mesh, would compose ambiguously). Runner enforces.
+sidecar_S2_dict = {
+    "enable"          : False,        # default off; runner sets True
+    "mode"            : "tip_following",  # "tip_following" | "score_driven"
+    "tip_xy"          : (0.0, 0.0),   # initial / fallback tip when no x_tip history yet
+    "r_tip_sample"    : 0.05,         # refinement radius (S2a; also fallback in S2b cycle 0)
+    "n_refine_passes" : 1,            # 1 = standard 4× density boost
+    # ★ v4 (2026-05-20): refinement strategy
+    #   'cumulative' = add-only incremental refine on the CURRENT mesh; refined
+    #     zones along the crack path are NEVER coarsened, history transported by
+    #     parent index (lossless) → no repeated diffusion. (literature-converged)
+    #   'rebuild'    = legacy v2/v3.2 path (rebuild from original each remesh +
+    #     nearest-element transport). Kept for A/B comparison.
+    "refine_mode"     : "cumulative",
+    # S2b only:
+    "target_fraction" : 0.07,         # fraction of elements to refine (matches S1's r=0.05 footprint)
+    "min_count"       : 50,           # safety floor on n_marked
+    "hysteresis_fraction": 1.0,        # remesh only after tip moves about one refine radius
+    "include_root_tip": False,         # S2a diagnostic option: union current tip + fixed root zone
+    "root_tip_xy"     : (0.0, 0.0),
+    "r_root_sample"   : 0.05,
+    "post_refine_reeq": {
+        "enable"  : False,             # extra fit after REFINE before fatigue-history update
+        "optimizer": "RPROP",
+        "n_epochs": 3000,
+    },
 }
 
 
@@ -354,39 +511,6 @@ fine_mesh_file = "meshed_geom2.msh"
 ## ############################################################################
 PATH_ROOT = Path(__file__).parents[0]
 
-
-def resolve_archive_dir(here, dir_name):
-    """Return the archive path for `dir_name`, optionally redirected to a big disk.
-
-    If env var PIDL_ARCHIVE_DIR is set, the real archive lives at
-    `$PIDL_ARCHIVE_DIR/<dir_name>` (e.g. /mnt/data2 with TBs free) and a symlink
-    `<here>/<dir_name>` is created pointing to it — so ALL tooling that accesses
-    archives by the conventional `SENS_tensile/<name>` path keeps working
-    transparently (resume, validators, J-integral, plotting). If the env var is
-    unset, behaviour is unchanged (real dir under `here`).
-
-    Never clobbers an existing real directory at `<here>/<dir_name>` (returns it
-    as-is) so previously-trained archives on the root disk stay intact.
-    """
-    import os
-    sens_path = Path(here) / dir_name
-    base = os.environ.get("PIDL_ARCHIVE_DIR")
-    if base:
-        real = Path(base) / dir_name
-        # Don't shadow an existing real archive already on the root disk.
-        if sens_path.exists() and not sens_path.is_symlink():
-            return sens_path
-        real.mkdir(parents=True, exist_ok=True)
-        if sens_path.is_symlink():
-            if sens_path.resolve() != real.resolve():
-                sens_path.unlink()
-                sens_path.symlink_to(real, target_is_directory=True)
-        else:
-            sens_path.symlink_to(real, target_is_directory=True)
-        return sens_path
-    sens_path.mkdir(parents=True, exist_ok=True)
-    return sens_path
-
 # ★ 疲劳标签：不同 case 保存到不同目录，防止覆盖
 # fatigue_on=False → '_fatigue_off'
 # fatigue_on=True  → '_fatigue_on_<accum>_<degrad>_aT<alpha_T>_N<n_cycles>'
@@ -425,17 +549,23 @@ _exact_bc_tag = (
     f"_exactBCsent_nu{exact_bc_dict.get('nu', mat_prop_dict['mat_nu'])}"
     if exact_bc_dict.get("enable", False) else ""
 )
-# ★ 2026-05-14: append sidepow tag only if != 2.0 (default), to keep
-# backward-compatible naming for historical side² C4 archives.
-if exact_bc_dict.get("enable", False):
-    _spow = exact_bc_dict.get("side_power", 2.0)
-    if _spow != 2.0:
-        _exact_bc_tag = _exact_bc_tag + f"_sidepow{_spow}"
 
 # ★ 2026-05-11 C10: Fourier feature tag
 _fourier_tag = (
     f"_fourier_sig{fourier_dict.get('sigma', 30.0)}_nf{fourier_dict.get('n_features', 128)}"
     if fourier_dict.get("enable", False) else ""
+)
+
+# ★ 2026-05-23 tip-local correction network tag
+_tip_local_tag = (
+    f"_tipLocal_rt{tip_local_net_dict.get('r_tip', 0.05)}"
+    f"_wr{tip_local_net_dict.get('window_radius', tip_local_net_dict.get('r_tip', 0.05))}"
+    f"_h{tip_local_net_dict.get('hidden_layers', 3)}"
+    f"_n{tip_local_net_dict.get('neurons', 80)}"
+    f"{('_arch' + tip_local_net_dict.get('tip_arch', 'mlp')) if tip_local_net_dict.get('tip_arch', 'mlp') != 'mlp' else ''}"
+    f"{('_mode' + tip_local_net_dict.get('output_mode', 'all')) if tip_local_net_dict.get('output_mode', 'all') != 'all' else ''}"
+    f"{'_followTip' if tip_local_net_dict.get('follow_tip', False) else ''}"
+    if tip_local_net_dict.get("enable", False) else ""
 )
 
 # ★ Direction 6.1: Spatial α_T 标签（enable=True 时追加 _spAlphaT_b{β}_r{r_T}）
@@ -452,21 +582,23 @@ _psiHack_tag = (
     if _ph_cfg.get('enable', False) else ""
 )
 
-model_path = PATH_ROOT/Path('hl_'+str(network_dict["hidden_layers"])+
-                            '_Neurons_'+str(network_dict["neurons"])+
-                            '_activation_'+network_dict["activation"]+
-                            '_coeff_'+str(network_dict["init_coeff"])+
-                            '_Seed_'+str(network_dict["seed"])+
-                            '_PFFmodel_'+str(PFF_model_dict["PFF_model"])+
-                            '_gradient_'+str(numr_dict["gradient_type"])+
-                            _fatigue_tag +
-                            _williams_tag +        # ★ Direction 4 标签
-                            _ansatz_tag +          # ★ Direction 5 标签
-                            _symmetry_tag +        # ★ 2026-05-06 symmetry prior 标签
-                            _exact_bc_tag +        # ★ 2026-05-11 C4 exact-BC 标签
-                            _fourier_tag +         # ★ 2026-05-11 C10 Fourier features 标签
-                            _spAlphaT_tag +        # ★ Direction 6.1 标签
-                            _psiHack_tag)          # ★ E2 sanity hack 标签
+_model_dir_name = ('hl_'+str(network_dict["hidden_layers"])+
+                   '_Neurons_'+str(network_dict["neurons"])+
+                   '_activation_'+network_dict["activation"]+
+                   '_coeff_'+str(network_dict["init_coeff"])+
+                   '_Seed_'+str(network_dict["seed"])+
+                   '_PFFmodel_'+str(PFF_model_dict["PFF_model"])+
+                   '_gradient_'+str(numr_dict["gradient_type"])+
+                   _fatigue_tag +
+                   _williams_tag +        # ★ Direction 4 标签
+                   _ansatz_tag +          # ★ Direction 5 标签
+                   _symmetry_tag +        # ★ 2026-05-06 symmetry prior 标签
+                   _exact_bc_tag +        # ★ 2026-05-11 C4 exact-BC 标签
+                   _fourier_tag +         # ★ 2026-05-11 C10 Fourier features 标签
+                   _tip_local_tag +       # ★ 2026-05-23 tip-local correction net 标签
+                   _spAlphaT_tag +        # ★ Direction 6.1 标签
+                   _psiHack_tag)          # ★ E2 sanity hack 标签
+model_path = resolve_archive_dir(PATH_ROOT, _model_dir_name)
 model_path.mkdir(parents=True, exist_ok=True)
 trainedModel_path = model_path/Path('best_models/')
 trainedModel_path.mkdir(parents=True, exist_ok=True)
@@ -516,6 +648,23 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\nexact_bc_enable: {exact_bc_dict.get("enable", False)}')
     file.write(f'\nexact_bc_mode: {exact_bc_dict.get("mode", "sent_plane_strain")}')
     file.write(f'\nexact_bc_nu: {exact_bc_dict.get("nu", mat_prop_dict["mat_nu"])}')
+    file.write(f'\n--- tip_local_net ---')
+    file.write(f'\ntip_local_enable: {tip_local_net_dict.get("enable", False)}')
+    file.write(f'\ntip_local_x_tip: {tip_local_net_dict.get("x_tip", 0.0)}')
+    file.write(f'\ntip_local_y_tip: {tip_local_net_dict.get("y_tip", 0.0)}')
+    file.write(f'\ntip_local_r_tip: {tip_local_net_dict.get("r_tip", 0.05)}')
+    file.write(f'\ntip_local_window_radius: {tip_local_net_dict.get("window_radius", tip_local_net_dict.get("r_tip", 0.05))}')
+    file.write(f'\ntip_local_hidden_layers: {tip_local_net_dict.get("hidden_layers", 3)}')
+    file.write(f'\ntip_local_neurons: {tip_local_net_dict.get("neurons", 80)}')
+    file.write(f'\ntip_local_zero_init: {tip_local_net_dict.get("zero_init", True)}')
+    file.write(f'\ntip_local_arch: {tip_local_net_dict.get("tip_arch", "mlp")}')
+    file.write(f'\ntip_local_fourier_n_features: {tip_local_net_dict.get("fourier_n_features", 64)}')
+    file.write(f'\ntip_local_fourier_sigma: {tip_local_net_dict.get("fourier_sigma", 4.0)}')
+    file.write(f'\ntip_local_siren_omega0: {tip_local_net_dict.get("siren_omega0", 30.0)}')
+    file.write(f'\ntip_local_siren_hidden_omega0: {tip_local_net_dict.get("siren_hidden_omega0", 30.0)}')
+    file.write(f'\ntip_local_output_mode: {tip_local_net_dict.get("output_mode", "all")}')
+    file.write(f'\ntip_local_follow_tip: {tip_local_net_dict.get("follow_tip", False)}')
+    file.write(f'\ntip_local_follow_y_mode: {tip_local_net_dict.get("follow_y_mode", "centerline")}')
     # ★ Direction 6.1: Spatial α_T 参数
     file.write(f'\n--- spatial_alpha_T ---')
     file.write(f'\nspAlphaT_enable: {_sp_cfg.get("enable", False)}')
