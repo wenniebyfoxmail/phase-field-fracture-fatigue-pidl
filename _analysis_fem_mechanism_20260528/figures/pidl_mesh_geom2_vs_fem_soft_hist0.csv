@@ -1,0 +1,3 @@
+mesh,path,n_nodes,n_triangles,area_min,area_median,area_p99,n_tip_r4l0,n_precrack_strip
+old_geom2,/Users/wenxiaofang/phase-field-fracture-with-pidl/upload code/SENS_tensile/meshed_geom2.msh,33749,67276,7.900094558417332e-07,1.7320508075686995e-06,0.00047395377969392487,2919,11599
+fem_soft_hist0,/Users/wenxiaofang/phase-field-fracture-with-pidl/upload code/SENS_tensile/meshed_geom_fem_soft_hist0.msh,45591,90000,1.9999999999998318e-06,2.0000000000000215e-06,2.2500000000000818e-05,2516,10000
