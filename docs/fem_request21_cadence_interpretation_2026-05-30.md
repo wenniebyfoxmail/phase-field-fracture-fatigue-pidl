@@ -28,6 +28,19 @@ Generated figure:
 _analysis_fem_mechanism_20260528/figures/fem_request21_cadence_summary_20260530.png
 ```
 
+After retrying OneDrive hydration, the field CSV/MAT payloads were readable on
+Mac and the field reductions were regenerated from the exported element fields:
+
+```text
+_analysis_fem_mechanism_20260528/request21_fem_nstep/fem_request21_field_reductions_long.csv
+_analysis_fem_mechanism_20260528/request21_fem_nstep/fem_request21_selected_cycle_ratios.csv
+_analysis_fem_mechanism_20260528/request21_fem_nstep/fem_request21_c69_summary.csv
+_analysis_fem_mechanism_20260528/request21_fem_nstep/fem_request21_event_summary.csv
+_analysis_fem_mechanism_20260528/figures/fem_request21_field_reductions_20260530.png
+_analysis_fem_mechanism_20260528/figures/fem_request21_c69_ratio_heatmap_20260530.png
+_analysis_fem_mechanism_20260528/figures/fem_request21_event_ratio_heatmap_20260530.png
+```
+
 ## Reading
 
 The large effect is not the number of positive substeps.  The large effect is
@@ -40,6 +53,29 @@ FEM/PIDL late-cycle field gap is unlikely to be explained mainly by FEM using
 more positive substeps than PIDL.  A matched PIDL substep diagnostic may still
 be useful, but it is no longer the highest-probability explanation for the
 order-of-magnitude active-driver gap.
+
+The hydrated field reductions support this reading.  Up to c40, n_step=2/3/10
+track the standard soft-hist0 FEM closely in `alpha_bar`, active `psi_plus`,
+tip position, and common near-tip integrals.  By c69, n_step=10 is almost
+identical to the standard run (`E_d` ratio 1.001, `psi_plus` max ratio 1.000,
+common `2ell` near-tip `psi_plus` integral ratio 1.022, and the same
+`x_tip_d095=0.999`).  n_step=2/3 are at c69 one cycle before their penetration
+event, so their `x_tip_d095` is still 0.953; the late near-tip integral ratios
+then compare different local windows and should not be overread as a pure
+physics difference.
+
+The matched-event comparison removes that timing trap.  Comparing each variant
+at its own final/event cycle to standard c69 gives near identity in the active
+driver and tip position:
+
+| Variant | Event cycle | `E_d` ratio | `max(psi+)` ratio | `2ell psi+` ratio | `x_tip_d095` ratio |
+|---|---:|---:|---:|---:|---:|
+| n_step=2 | 70 | 0.996 | 1.002 | 1.023 | 1.000 |
+| n_step=3 | 70 | 0.998 | 1.002 | 1.022 | 1.000 |
+| n_step=10 | 69 | 1.001 | 1.000 | 1.022 | 1.000 |
+
+The main remaining small differences are in `alpha_bar` percentiles, not in
+whether the active driver or crack-tip event exists.
 
 ## Implication For PIDL
 
@@ -55,25 +91,22 @@ cycle-indexing or substep-count issue.
 
 ## Caveat
 
-The OneDrive field CSV/MAT payloads for Request 21 are present on Mac but were
-still cloud placeholders during this pass; local reads/copies timed out and
-produced zero-byte copies.  Field-level c20/c40/c69 probes should be run after
-macOS hydrates:
+The c69 ratio heatmap compares all variants at the same cycle, not at matched
+event phase.  This is useful for a fixed-cycle audit, but n_step=2/3 fracture at
+c70 whereas standard/n_step=10 fracture at c69.  For late near-tip integrals,
+use both views:
 
 ```text
-_pidl_handoff_reverseBC_u12_soft_hist0_nstep2_2026-05-29
-_pidl_handoff_reverseBC_u12_soft_hist0_nstep3_2026-05-29
-_pidl_handoff_reverseBC_u12_soft_hist0_nstep10_2026-05-29
+fixed cycle c69: shows where the one-cycle lag appears
+matched event cycle: needed before claiming a true local-integral difference
 ```
-
-The run-level conclusion above uses the pushed/verified outbox, not the
-unhydrated local placeholder files.
 
 ## Next Step
 
-1. Re-attempt local hydration and load the Request 21 CSV/MAT fields.
-2. Compare c20/c40/c69 field probes across n_step=2/3/10/standard:
-   `alpha_bar`, active `psi_plus`, `d`, near-tip integrals, and p99/p999.
-3. If field probes also differ only weakly between n_step=2/3/10, deprioritize
-   PIDL substep emulation and focus on branch-restart/staged-alpha/local-first
-   representation diagnostics.
+1. Use n_step=10 as the closest cadence control for strict FEM/PIDL comparison:
+   it matches standard FEM almost exactly while also using a denser retained
+   load cadence.
+2. Deprioritize PIDL substep emulation as the main explanation, and focus on
+   branch-restart/staged-alpha/local-first representation diagnostics.
+3. Keep both fixed-cycle and matched-event tables in future comparisons so
+   cycle timing does not masquerade as a field-shape difference.
