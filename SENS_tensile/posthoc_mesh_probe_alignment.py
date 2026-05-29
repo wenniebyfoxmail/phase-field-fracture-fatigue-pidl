@@ -64,6 +64,10 @@ def parse_settings(settings_path: Path) -> dict[str, str]:
     return out
 
 
+def bool_setting(settings: dict[str, str], key: str) -> bool:
+    return settings.get(key, "False").strip().lower() in {"1", "true", "yes", "on"}
+
+
 def exact_bc_from_settings(archive: Path) -> dict | None:
     settings = parse_settings(archive / "model_settings.txt")
     if settings.get("exact_bc_enable", "False").lower() == "true":
@@ -187,8 +191,26 @@ def pidl_model_and_mesh(archive: Path, umax: float, cycle: int, mesh_file: str):
         net_cfg["seed"] = int(settings["seed"])
     if "coeff" in settings:
         net_cfg["init_coeff"] = float(settings["coeff"])
+    williams_dict = None
+    if bool_setting(settings, "williams_enable") or "williams" in archive.name:
+        williams_dict = {
+            "enable": True,
+            "theta_mode": settings.get("williams_theta_mode", "atan2"),
+            "r_min": float(settings.get("williams_r_min", 1e-6)),
+        }
+    fourier_dict = None
+    if bool_setting(settings, "fourier_enable") or "fourier" in archive.name:
+        n_features = settings.get("fourier_n_freq", settings.get("fourier_n_features", 128))
+        fourier_dict = {
+            "enable": True,
+            "sigma": float(settings.get("fourier_sigma", 30.0)),
+            "n_features": int(float(n_features)),
+            "seed": int(float(settings.get("fourier_seed", net_cfg.get("seed", 0)))),
+        }
     pffmodel, matprop, network = construct_model(
-        PFF_model_dict, mat_prop_dict, net_cfg, domain_extrema, DEVICE, williams_dict=None
+        PFF_model_dict, mat_prop_dict, net_cfg, domain_extrema, DEVICE,
+        williams_dict=williams_dict,
+        fourier_dict=fourier_dict,
     )
     inp, t_conn, area_t, hist_alpha0 = prep_input_data(
         matprop, pffmodel, crack_dict, numr_dict, mesh_file=mesh_file, device=DEVICE
@@ -199,7 +221,7 @@ def pidl_model_and_mesh(archive: Path, umax: float, cycle: int, mesh_file: str):
         lmbda=torch.tensor([umax], device=DEVICE),
         theta=loading_angle,
         alpha_constraint=numr_dict["alpha_constraint"],
-        williams_dict=None,
+        williams_dict=williams_dict,
         l0=mat_prop_dict["l0"],
         exact_bc_dict=exact_bc_from_settings(archive),
     )
