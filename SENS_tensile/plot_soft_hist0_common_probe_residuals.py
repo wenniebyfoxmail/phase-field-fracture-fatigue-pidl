@@ -26,20 +26,20 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from posthoc_mesh_probe_alignment import (  # noqa: E402
-    DEFAULT_ARCHIVE,
     build_assignment,
     load_combined_handoff,
     load_fem_snapshot,
     pidl_model_and_mesh,
     project_to_pidl,
 )
-
-DEFAULT_FEM_MAT = (
-    Path.home()
-    / "Library/CloudStorage/OneDrive-UniversityofCambridge/PIDL result"
-    / "_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_2026-05-28"
-    / "reverseBC_u12_diffuse_precrack_soft_hist0_element_fields_c1_c69.mat"
+from pidl_fem_alignment_protocol import (  # noqa: E402
+    FEM_SOFT_HIST0_FIELDS,
+    PIDL_FEMMESH_ARCHIVE,
+    PIDL_FEMMESH_MESH,
+    PIDL_SAVED_INDEX_OFFSET_FOR_FEM_CYCLE,
 )
+
+DEFAULT_FEM_MAT = FEM_SOFT_HIST0_FIELDS
 
 FIELD_SPECS = {
     "damage_alpha": {
@@ -99,7 +99,7 @@ def fill_nan_from_nearest(values: np.ndarray, centroids: np.ndarray) -> np.ndarr
     return out
 
 
-def plot_field(field: str, rows: list[dict], triang: mtri.Triangulation, out_dir: Path) -> None:
+def plot_field(field: str, rows: list[dict], triang: mtri.Triangulation, out_dir: Path, prefix: str) -> None:
     spec = FIELD_SPECS[field]
     n = len(rows)
     fig, axes = plt.subplots(n, 3, figsize=(10.8, 2.65 * n), constrained_layout=True)
@@ -115,8 +115,8 @@ def plot_field(field: str, rows: list[dict], triang: mtri.Triangulation, out_dir
 
         panels = [
             (f"FEM c{row['cycle']}", fem, spec["cmap"], vmin, vmax),
-            (f"PIDL c{row['cycle']}", pidl, spec["cmap"], vmin, vmax),
-            (f"PIDL - FEM c{row['cycle']}", residual, "RdBu_r", -rlim, rlim),
+            (f"PIDL j{row['pidl_saved_index']}", pidl, spec["cmap"], vmin, vmax),
+            (f"PIDL j{row['pidl_saved_index']} - FEM c{row['cycle']}", residual, "RdBu_r", -rlim, rlim),
         ]
         for ax, (title, values, cmap, lo, hi) in zip(axes[row_i], panels):
             im = ax.tripcolor(triang, facecolors=values, shading="flat", cmap=cmap, vmin=lo, vmax=hi)
@@ -129,7 +129,7 @@ def plot_field(field: str, rows: list[dict], triang: mtri.Triangulation, out_dir
             fig.colorbar(im, ax=ax, fraction=0.044, pad=0.015)
 
     fig.suptitle(f"Soft-hist0 FEM vs PIDL common-probe residual: {spec['label']}", fontsize=12)
-    out_png = out_dir / f"soft_hist0_common_probe_residual_{field}.png"
+    out_png = out_dir / f"{prefix}_{field}.png"
     fig.savefig(out_png, dpi=220)
     plt.close(fig)
 
@@ -148,14 +148,17 @@ def summarize_field(values: np.ndarray, areas: np.ndarray) -> dict[str, float]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--archive", type=Path, default=HERE / DEFAULT_ARCHIVE)
+    parser.add_argument("--archive", type=Path, default=PIDL_FEMMESH_ARCHIVE)
     parser.add_argument("--fem-mat", type=Path, default=DEFAULT_FEM_MAT)
     parser.add_argument("--cycles", default="1,40,69")
+    parser.add_argument("--pidl-cycle-offset", type=int, default=PIDL_SAVED_INDEX_OFFSET_FOR_FEM_CYCLE)
+    parser.add_argument("--pidl-mesh", type=Path, default=PIDL_FEMMESH_MESH)
+    parser.add_argument("--prefix", default="femmesh_j0map_common_probe_residual")
     parser.add_argument("--out-dir", type=Path, default=HERE.parent / "_analysis_fem_mechanism_20260528/figures")
     parser.add_argument(
         "--out-csv",
         type=Path,
-        default=HERE.parent / "_analysis_fem_mechanism_20260528/soft_hist0_common_probe_residual_summary.csv",
+        default=HERE.parent / "_analysis_fem_mechanism_20260528/femmesh_j0map_common_probe_residual_summary.csv",
     )
     args = parser.parse_args()
 
@@ -163,7 +166,10 @@ def main() -> int:
     combined = load_combined_handoff(args.fem_mat)
     fem_centroids = combined["centroids"].copy()
     fem_centroids[:, :2] -= 0.5
-    first = pidl_model_and_mesh(args.archive, 0.12, cycles[0])
+    first_pidl_cycle = cycles[0] + args.pidl_cycle_offset
+    if first_pidl_cycle < 0:
+        raise ValueError(f"PIDL checkpoint index would be negative for FEM cycle {cycles[0]}")
+    first = pidl_model_and_mesh(args.archive, 0.12, first_pidl_cycle, str(args.pidl_mesh))
     assignment = build_assignment(fem_centroids, first["centroids"], first["inp"], first["conn"])
     triang = mtri.Triangulation(first["inp"][:, 0], first["inp"][:, 1], first["conn"])
 
@@ -171,8 +177,13 @@ def main() -> int:
     summary_rows = []
     for cycle in cycles:
         fem = load_fem_snapshot(cycle, 0.12, combined)
-        pidl = first if cycle == cycles[0] else pidl_model_and_mesh(args.archive, 0.12, cycle)
-        row = {"cycle": cycle}
+        pidl_cycle = cycle + args.pidl_cycle_offset
+        if pidl_cycle < 0:
+            raise ValueError(f"PIDL checkpoint index would be negative for FEM cycle {cycle}")
+        pidl = first if pidl_cycle == first_pidl_cycle else pidl_model_and_mesh(
+            args.archive, 0.12, pidl_cycle, str(args.pidl_mesh)
+        )
+        row = {"cycle": cycle, "pidl_saved_index": pidl_cycle}
         for field, spec in FIELD_SPECS.items():
             fem_native = spec["fem"](fem)
             pidl_native = spec["pidl"](pidl)
@@ -182,12 +193,19 @@ def main() -> int:
             row[f"{field}_pidl"] = pidl_native
             residual = pidl_native - fem_proj
             summary = summarize_field(residual, pidl["areas"])
-            summary_rows.append({"cycle": cycle, "field": field, **summary})
+            summary_rows.append({
+                "cycle": cycle,
+                "fem_cycle": cycle,
+                "pidl_saved_index": pidl_cycle,
+                "pidl_cycle_offset": args.pidl_cycle_offset,
+                "field": field,
+                **summary,
+            })
         rows_for_plot.append(row)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     for field in FIELD_SPECS:
-        plot_field(field, rows_for_plot, triang, args.out_dir)
+        plot_field(field, rows_for_plot, triang, args.out_dir, args.prefix)
 
     args.out_csv.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(summary_rows).to_csv(args.out_csv, index=False)

@@ -304,6 +304,9 @@ def main() -> int:
     ap.add_argument("--archive", type=Path, default=HERE / DEFAULT_ARCHIVE)
     ap.add_argument("--umax", type=float, default=0.12)
     ap.add_argument("--cycles", default=None)
+    ap.add_argument("--pidl-cycle-offset", type=int, default=0,
+                    help="PIDL saved checkpoint index minus FEM cycle index. "
+                         "Use -1 for the current soft-hist0 protocol: FEM c1 -> PIDL j0.")
     ap.add_argument("--fem-combined-mat", type=Path, default=None,
                     help="MATLAB v7.3 combined handoff with cycles and FEM fields")
     ap.add_argument("--center-fem", action="store_true",
@@ -326,14 +329,23 @@ def main() -> int:
         fem_centroids[:, :2] -= 0.5
     pidl_mesh = mesh_from_settings(args.archive, args.pidl_mesh)
     print(f"PIDL mesh: {pidl_mesh}")
-    first = pidl_model_and_mesh(args.archive, args.umax, cycles[0], pidl_mesh)
+    print(f"PIDL cycle offset: {args.pidl_cycle_offset}")
+    first_pidl_cycle = cycles[0] + args.pidl_cycle_offset
+    if first_pidl_cycle < 0:
+        raise ValueError(f"PIDL checkpoint index would be negative for FEM cycle {cycles[0]}")
+    first = pidl_model_and_mesh(args.archive, args.umax, first_pidl_cycle, pidl_mesh)
     assignment = build_assignment(fem_centroids, first["centroids"], first["inp"], first["conn"])
 
     rows = []
     for cycle in cycles:
-        print(f"cycle {cycle}")
+        pidl_cycle = cycle + args.pidl_cycle_offset
+        if pidl_cycle < 0:
+            raise ValueError(f"PIDL checkpoint index would be negative for FEM cycle {cycle}")
+        print(f"FEM cycle {cycle} -> PIDL saved index {pidl_cycle}")
         fem = load_fem_snapshot(cycle, args.umax, combined)
-        pidl = first if cycle == cycles[0] else pidl_model_and_mesh(args.archive, args.umax, cycle, pidl_mesh)
+        pidl = first if pidl_cycle == first_pidl_cycle else pidl_model_and_mesh(
+            args.archive, args.umax, pidl_cycle, pidl_mesh
+        )
         fem_d = np.asarray(fem["d_elem"], dtype=float).reshape(-1)
         fem_psi_raw = np.asarray(fem["psi_elem"], dtype=float).reshape(-1)
         fem_psi_active = ((1.0 - fem_d) ** 2 + 1e-6) * fem_psi_raw
@@ -353,6 +365,9 @@ def main() -> int:
                 pv = m_pidl[metric_name]
                 rows.append({
                     "cycle": cycle,
+                    "fem_cycle": cycle,
+                    "pidl_saved_index": pidl_cycle,
+                    "pidl_cycle_offset": args.pidl_cycle_offset,
                     "field": field,
                     "metric": metric_name,
                     "FEM_projected_to_PIDL": fv,
