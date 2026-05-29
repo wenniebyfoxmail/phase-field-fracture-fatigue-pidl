@@ -23,7 +23,7 @@
 
 ## Current Best Bet
 
-Field mismatch 仍未解决。Adaptive/refinement/hard-irreversibility failed to recover FEM-like fields. Tip-local Exp18 completed enough to decide: first hit `N≈75-81`, confirmed stop `N≈78-84`, `alpha_bar_max≈6.6-11.3`, but montage vs reverseBC FEM still shows coherent centerline/right-boundary, boundary-saturating paths. This should not be read as a measured claim that the PIDL high-alpha core is always narrower than FEM. Small local correction heads are not the missing representation.
+Field mismatch 仍未解决。Soft-hist0/state-timing audit fixed the first-cycle bookkeeping trap: FEM c1 maps best to PIDL j0. Under this stricter protocol, FEM-mesh PIDL still falls to `alpha_bar` tip2 ≈0.47x FEM and active `psi_plus` tip2 ≈0.03x FEM by c69; `tol_ir=0.001` raises local damage but leaves the same late active-driver gap. Adaptive/refinement/hard-irreversibility and tip-local Exp18 changed scalar timing but did not recover FEM-like fields. Small local correction heads are not the missing representation.
 
 ## Best Next Discriminator
 

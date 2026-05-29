@@ -86,6 +86,35 @@ Selected ratios:
 | psiHack | 40 | 1.084 | 0.870 | 0.466 | 0.342 |
 | psiHack | 69 | 1.437 | 5.650 | 0.479 | 0.027 |
 
+## Taobo Tiered Addendum
+
+Taobo now has a tiered inventory in:
+
+```text
+docs/taobo_tiered_comparison_plan_2026-05-29.md
+_analysis_fem_mechanism_20260528/taobo_tier_manifest_20260529.csv
+```
+
+The first strict/control Taobo rescore adds the `tol_ir=0.001` soft-hist0
+forward archive.  The `reverseBC_softHist0_forward_tolir0.001` archive and the
+controlled `tolir0.001_baseline` archive are checkpoint-identical at the sampled
+states, so they count as one method.
+
+Selected ratios:
+
+| Method | Cycle | damage tip_2l0 | alpha_bar tip_2l0 | alpha_bar p99 | active psi tip_2l0 |
+|---|---:|---:|---:|---:|---:|
+| softHist0/tol_ir=0.001 | 1 | 1.028 | 1.011 | 0.511 | 1.038 |
+| softHist0/tol_ir=0.001 | 20 | 1.118 | 1.057 | 1.026 | 1.692 |
+| softHist0/tol_ir=0.001 | 40 | 1.272 | 0.883 | 0.476 | 0.188 |
+| softHist0/tol_ir=0.001 | 69 | 1.464 | 0.516 | 0.216 | 0.033 |
+
+Reading: loosening `tol_ir` increases local damage and early local history, but
+does not recover the late near-tip active driver.  By c69, near-tip
+`alpha_bar` remains about 0.52x FEM and active `psi_plus` remains about 0.03x
+FEM.  This supports the current view that the late gap is a coupled
+history/driver/localisation issue, not just an irreversibility tolerance issue.
+
 ## Interpretation
 
 The old representation/sampling ideas do not simply become successful under
