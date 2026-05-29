@@ -27,6 +27,140 @@
 
 ## Active Requests
 
+## 2026-05-29 · Request 21: one-factor FEM substep/history-timing controls after PIDL state audit
+
+**Goal**: test whether the remaining soft-hist0 FEM/PIDL gap is mainly caused
+by cycle-history timing/substep refresh semantics, after Mac-side PIDL audit
+found that FEM c1 maps best to PIDL saved `j=0` but late-cycle
+`alpha_bar`/active `psi_plus`/incremental `E_d` still lag in PIDL.
+
+Please keep the strict soft-hist0 reverseBC reference fixed:
+
+```text
+Base: SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC
+material retained in precrack
+soft AT1/PIDL-like diffuse precrack
+initial alpha_bar = 0
+initial f_alpha = 1
+reverseBC: fix_X top+bottom, fix_Y bottom, disp_Y top
+u_max = 0.12
+E=1, nu=0.3, Gc=0.01, ell=0.01, alpha_T=0.5, p=2
+AT1 + AMOR + PENALTY
+tol_irrev = 1e-3 unless explicitly varied below
+res_stiff = 1e-6
+same retained-material diffuse mesh as Request 18/20
+```
+
+**Why this request**:
+
+Mac now has:
+
+```text
+docs/pidl_femmesh_state_timing_audit_2026-05-29.md
+```
+
+Key Mac-side result:
+
+```text
+FEM c1 mixed timing -> PIDL saved j=0 is better than -> PIDL saved j=1
+alpha_bar tip_2l0: j0/FEM = 0.985, j1/FEM = 1.968
+active psi_plus tip_2l0: j0/FEM = 1.013, j1/FEM = 1.011
+```
+
+So first-cycle timing is mostly clarified.  The remaining late-cycle gap is now
+more likely history-refresh/substep semantics or representation/localization,
+not just c1 indexing.
+
+**Requested FEM variants**:
+
+Please run the following as one-factor controls, changing only cyclic substep
+count/history-refresh cadence relative to the soft-hist0 baseline:
+
+```text
+Variant A: n_step = 2
+Variant B: n_step = 3
+Variant C: n_step = 10
+```
+
+Interpretation target:
+
+```text
+Request 19 peak-only n_step=1 -> no penetration by c120
+standard GRIPHFiTH retained substeps -> N_f=69
+```
+
+We need the curve between these endpoints.  If the code's `n_step` value is
+pruned or internally transformed, please document the retained load factors in
+the README, as in Request 20.
+
+**Expected outputs**:
+
+Suggested OneDrive folders:
+
+```text
+_pidl_handoff_reverseBC_u12_soft_hist0_nstep2_2026-05-29
+_pidl_handoff_reverseBC_u12_soft_hist0_nstep3_2026-05-29
+_pidl_handoff_reverseBC_u12_soft_hist0_nstep10_2026-05-29
+```
+
+For each variant, please include the same cyclewise mechanism format as
+Requests 18/19:
+
+```text
+*_cyclewise_mechanism_metrics.csv
+*_element_fields_c1_cXX.mat
+mesh_geometry.mat
+README_*.md
+INPUT_*.m
+main/run/export scripts for traceability
+```
+
+Required fields/reductions are the same as Request 19:
+
+```text
+d_elem
+alpha_bar_elem
+f_fatigue_elem / f_alpha_elem
+psi_plus_elem
+psi_plus_peak_to_date_elem, if available
+E_el, E_d, total_energy
+d/alpha_bar/f/psi max, p99, p999, mean
+near-tip integrals within r <= ell, 2ell, 4ell
+x/y max-d, max-alpha_bar, min-f, max-psi
+x_tip_d095, x_tip_d090, x_tip_d050
+right-boundary damage count/event audit
+```
+
+**Extra export request, no new FEM run if possible**:
+
+Please also export a small explicit "PIDL-like c1 mixed row" from the existing
+soft-hist0 state-timing data:
+
+```text
+damage/history/f = cycle1_unloaded_post_history_refresh
+psi_plus = cycle1 psi_plus_peak_to_date
+```
+
+This can be a CSV/MAT row or README table.  The goal is to prevent future
+scripts from silently reconstructing the old mixed c1 timing differently.
+
+**Acceptance criteria**:
+
+Mac can load each folder and verify:
+
+```text
+1. Same mesh/node/element counts as soft-hist0 baseline.
+2. README states actual retained load factors/history refresh points.
+3. CSV has one row per exported cycle and includes N_f/event criteria.
+4. MAT field arrays match CSV cycle count.
+5. Only substep/history cadence changed, not notch, mesh, material, fatigue law,
+   alpha_T, tol_irrev, or residual stiffness.
+```
+
+**Priority**: high.  FEM is currently the cheaper lever for alignment
+diagnosis.  Please keep this one-factor: do not combine with mesh/notch/fatigue
+law changes in the same run.
+
 ## 2026-05-29 · Request 20: soft-hist0 state-timing export around cycle 0/1
 
 **Goal**: separate three effects that are currently mixed inside the existing
