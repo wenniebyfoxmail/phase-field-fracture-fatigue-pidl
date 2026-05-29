@@ -45,6 +45,11 @@ The full reverseBC `u12` `.mat` handoff is a MATLAB v7.3/HDF5 combined file.
 `SENS_tensile/posthoc_mesh_probe_alignment.py` now supports this format through
 `--fem-combined-mat`.
 
+Definition audit added in `docs/fem_pidl_element_nodal_definitions_2026-05-28.md`.
+Important correction: FEM `psi_elem` is raw peak `psi+`, while older PIDL
+`psi_plus_elem` meant `g(alpha) * psi+_0`. The strict mesh-probe artifact now
+splits this into `psi_plus_raw` and `psi_plus_active`.
+
 Use matched cycles:
 
 - fixed physical cycles: `N = 40, 70, 82` for Phase-1 `Umax=0.12`;
@@ -59,8 +64,8 @@ For each matched cycle and region, compare:
 
 - damage field: FEM `d` vs PIDL `alpha`;
 - fatigue history: `alpha_bar`;
-- tensile driver: `psi_plus`;
-- degraded driver: `g(alpha) psi_plus`;
+- tensile driver: `psi_plus_raw`;
+- degraded/active driver: `psi_plus_active = g(alpha) psi_plus_raw`;
 - fatigue-weighted driver: `f(alpha_bar) psi_plus`.
 
 Regions:

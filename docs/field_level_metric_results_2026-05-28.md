@@ -13,6 +13,7 @@ Outputs:
 - `SENS_tensile/field_level_score_v0_details.csv`
 - `SENS_tensile/field_level_score_v0_summary.csv`
 - `SENS_tensile/alignment_mesh_probe_u012_reverseBC.csv`
+- `docs/fem_pidl_element_nodal_definitions_2026-05-28.md`
 
 This is a v0 scorer over existing artifacts. It separates:
 
@@ -27,15 +28,20 @@ was synced from OneDrive and scored. The strict row is now present as
 `baseline_vs_reverseBC`, meaning baseline PIDL evaluated against the reverseBC
 FEM reference on common PIDL probes.
 
+Update after the FEM/PIDL definition audit: the old `psi_plus` label was
+ambiguous. FEM exports raw peak `psi_elem`; older PIDL diagnostics stored
+`g(alpha) * psi+_0`. The mesh-probe script now reports both `psi_plus_raw` and
+`psi_plus_active`.
+
 ## Key Numbers
 
 Lower score is better. Log-ratio scores are absolute log errors unless noted.
 
 | Method | Evidence | Rollup component | Mean score | Reading |
 |---|---|---:|---:|---|
-| baseline_vs_reverseBC | strict same-probe available | strict field | 2.59 | Preferred aligned reference; better than original/femAnchorBC rollup but not closed |
-| femAnchorBC | strict same-probe available | strict field | 2.72 | Better than baseline, but not closed |
-| baseline | strict same-probe available | strict field | 3.06 | Strong field mismatch |
+| baseline_vs_reverseBC | strict same-probe available | strict field | 0.71 | Preferred aligned reference; better than original/femAnchorBC rollup but not closed |
+| femAnchorBC | strict same-probe available | strict field | 1.01 | Better than baseline, but not closed |
+| baseline | strict same-probe available | strict field | 1.25 | Strong field mismatch |
 | femAnchorBC | guardrail raw/log | V7/reaction | 0.35 | Clear guardrail improvement |
 | baseline | guardrail raw/log | V7/reaction | 0.99 | Worse boundary/reaction behavior |
 | v4 add-only adaptive sampling | summary-level | field summary | 0.90 | Small improvement over PIDL baseline |
@@ -47,10 +53,15 @@ Lower score is better. Log-ratio scores are absolute log errors unless noted.
 
 Important component-level results:
 
-- Strict tip-driver mismatch remains enormous:
-  - baseline strict `psi_plus` tip-driver mean: `12.61`;
-  - baseline_vs_reverseBC strict `psi_plus` tip-driver mean: `12.48`;
-  - femAnchorBC strict `psi_plus` tip-driver mean: `11.78`.
+- Strict raw tip-driver mismatch is now small after separating raw/active
+  definitions:
+  - baseline_vs_reverseBC strict `psi_plus_raw` tip-driver mean: `0.09`;
+  - femAnchorBC strict `psi_plus_raw` tip-driver mean: `0.13`;
+  - baseline strict `psi_plus_raw` tip-driver mean: `0.16`.
+- Strict active/degraded tip-driver mismatch remains large:
+  - femAnchorBC strict `psi_plus_active` tip-driver mean: `2.14`;
+  - baseline_vs_reverseBC strict `psi_plus_active` tip-driver mean: `2.62`;
+  - baseline strict `psi_plus_active` tip-driver mean: `2.97`.
 - Strict boundary-band score improves:
   - baseline: `1.31`;
   - baseline_vs_reverseBC: `0.02`;
@@ -76,8 +87,11 @@ Important component-level results:
    diagnostic, but not treating it as a field-level solution.
 
 2. **The dominant strict mismatch is still the tip driver.** The `psi_plus`
-   tip-region log errors are about 12, meaning the model is still orders of
-   magnitude away in the local driver on the same probes.
+   audit changes the diagnosis: raw peak `psi+` in the tip region is close for
+   reverseBC on common probes, but the active/degraded driver `g(alpha) * psi+`
+   is still orders of magnitude off. The remaining gap is therefore tied more
+   to damage localization/degradation coupling than to raw elastic driver
+   amplitude alone.
 
 3. **Adaptive/refinement is not the missing field mechanism.** It improves the
    summary score slightly, but not enough to change the research direction.

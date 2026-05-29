@@ -34,7 +34,7 @@ EPS = 1e-12
 L0 = 0.01
 
 STRICT_CYCLES = {40, 70, 82}
-STRICT_FIELDS = {"damage_alpha", "psi_plus", "alpha_bar", "fatigue_f"}
+STRICT_FIELDS = {"damage_alpha", "psi_plus_raw", "psi_plus_active", "alpha_bar", "fatigue_f"}
 STRICT_METRICS = {
     "max",
     "p99",
@@ -85,8 +85,10 @@ def score_mesh_probe(path: Path, method: str, rows: list[dict]):
         component = "strict_probe"
         field = str(r["field"])
         metric = str(r["metric"])
-        if field == "psi_plus" and "tip" in metric:
-            component = "strict_tip_driver"
+        if field == "psi_plus_raw" and "tip" in metric:
+            component = "strict_raw_tip_driver"
+        elif field == "psi_plus_active" and "tip" in metric:
+            component = "strict_active_tip_driver"
         elif "right_band" in metric:
             component = "strict_boundary_band"
         elif field in {"damage_alpha", "alpha_bar"}:
@@ -241,7 +243,7 @@ def summarize(details: pd.DataFrame) -> pd.DataFrame:
     )
 
     strict_components = {
-        "strict_probe", "strict_tip_driver", "strict_boundary_band",
+        "strict_probe", "strict_raw_tip_driver", "strict_active_tip_driver", "strict_boundary_band",
         "strict_damage_history", "compact_probe", "compact_tip_driver",
         "compact_boundary_band",
     }
