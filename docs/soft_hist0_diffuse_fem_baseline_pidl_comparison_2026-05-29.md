@@ -36,6 +36,11 @@ _analysis_fem_mechanism_20260528/soft_hist0_diffuse_fem_baseline_pidl_cyclewise_
 _analysis_fem_mechanism_20260528/soft_hist0_diffuse_selected_cycle_comparison.csv
 _analysis_fem_mechanism_20260528/pidl_baseline_vs_fem_reference_ratio_summary_with_soft_hist0.csv
 SENS_tensile/alignment_mesh_probe_u012_soft_hist0_diffuse.csv
+_analysis_fem_mechanism_20260528/soft_hist0_common_probe_residual_summary.csv
+_analysis_fem_mechanism_20260528/figures/soft_hist0_common_probe_residual_damage_alpha.png
+_analysis_fem_mechanism_20260528/figures/soft_hist0_common_probe_residual_alpha_bar.png
+_analysis_fem_mechanism_20260528/figures/soft_hist0_common_probe_residual_fatigue_f.png
+_analysis_fem_mechanism_20260528/figures/soft_hist0_common_probe_residual_psi_plus_active.png
 _analysis_fem_mechanism_20260528/figures/soft_hist0_diffuse_fem_baseline_pidl_cyclewise_mechanism_comparison.png
 _analysis_fem_mechanism_20260528/figures/soft_hist0_diffuse_fem_baseline_pidl_cyclewise_mechanism_comparison.pdf
 ```
@@ -112,6 +117,22 @@ This says the aligned FEM/PIDL fields are genuinely close on many common-probe
 metrics through c40. Near c69, scalar means can still look close while the
 history distribution differs: FEM has a much larger late local `alpha_bar`
 peak/p99, and PIDL still lags in crack advance.
+
+The residual-field figures visualize the same statement. Each row is one cycle;
+columns are FEM projected to PIDL probes, PIDL at those probes, and
+`PIDL - FEM`. The FEM projection is area-averaged where possible, with
+nearest-value gap filling used only for visualization so the plot does not show
+white holes where a PIDL triangle received no FEM centroid.
+
+Main visual readings:
+
+- damage residual: c1 is nearly zero in the precrack; by c69 PIDL and FEM both
+  form a band, but the band-tip position/shape differs near the right side;
+- fatigue-history residual: c40 is close around the crack path, while c69 shows
+  FEM developing a stronger late local history peak than PIDL;
+- active tensile-driver residual: early/c40 drivers are broadly aligned near
+  the tip, but c69 shows a shifted high-driver zone as the FEM crack reaches
+  the boundary and PIDL lags.
 
 ## Selected Cycle Values
 
