@@ -26,6 +26,50 @@
 
 ## Entries
 
+## 2026-05-29 · [done] Re: Request 19 one-factor FEM alignment diagnostics — three variants shipped
+
+**Re**: `docs/handovers/windows_fem_inbox.md` Request 19, "one-factor FEM alignment diagnostics after soft-hist0"
+
+**Status**: Complete. Ran and exported all three requested variants from the strict soft-hist0 diffuse-precrack baseline. All payloads are mirrored to OneDrive.
+
+**Base held fixed**:
+- Continuous material plate mesh: `45591` nodes, `45000` Q4 elements.
+- Soft AT1/PIDL-like diffuse precrack profile; material retained; no void slit or duplicate crack-face nodes.
+- Initial history: `alpha_bar=0`, `f_alpha=1`.
+- Model: `AT1 + AMOR + PENALTY`, `E=1`, `nu=0.3`, `Gc=0.01`, `ell=0.01`, `alpha_T=0.5`, `p=2`.
+- reverseBC: `fix_X` top+bottom, `fix_Y` bottom, `disp_Y` top, `u=0.12`.
+
+**Variant results**:
+- Variant A `tol_irrev=5e-3`: `SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC_tolir5e3`, AT1 penalty coefficient `16875`, `res_stiff=1e-6`, standard GRIPHFiTH cyclic substeps (`n_step=5` after unloading-prune), penetration `N_f=68`.
+- Variant B peak-only: `SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC_peakonly`, `tol_irrev=1e-3`, `res_stiff=1e-6`, `n_step=1`; one prescribed `u=0.12` peak solve per cycle with displacement reset before each cycle and damage/fatigue history retained. No penetration by configured `max_cycle=120`; exported c1-c120.
+- Variant C `res_stiff=0`: `SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC_resstiff0`, exact zero residual stiffness was stable, `tol_irrev=1e-3`, standard cyclic substeps (`n_step=5`), penetration `N_f=69`.
+
+**Files written**:
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_tolir5e3_2026-05-29/`
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_peakonly_2026-05-29/`
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_resstiff0_2026-05-29/`
+
+**Payload per folder**:
+- `*_cyclewise_mechanism_metrics.csv`
+- `*_element_fields_c1_cXX.mat`
+- `mesh_geometry.mat`
+- `README_*.md`
+- Variant `INPUT_*.m`
+- `export_reverseBC_cyclewise_mechanism.m`
+
+**Requested reductions/audits added**:
+- p99/p999 for `d`, `alpha_bar`, `f_fatigue`, `psi_plus`.
+- Near-tip area integrals for `d`, `alpha_bar`, `f_fatigue`, `psi_plus` within `r <= ell, 2ell, 4ell`.
+- Initial precrack audit in README/metadata.
+- Event audit in README/metadata: native final/fracture cycle, first right-boundary `d>=0.95`, first `x_tip_d095>=0.995`, first `d_max` thresholds, first `f_min` thresholds, first `alpha_bar_elem_max>=10`.
+- Side-boundary note: no explicit side-boundary traction residual is exported; side boundaries are natural/free under displacement-only reverseBC.
+
+**Verification**:
+- MATLAB load check passed for all three local handoffs: `node_coords=45591x2`, `connectivity=45000x4`, field arrays have `45000` rows, CSV rows match cycle count, and new Request-19 columns are present.
+- OneDrive folders were copied from the verified local export folders.
+
+**Next**: Mac can run the same field-probe comparison on these one-factor folders. The most diagnostic immediate contrast is baseline soft-hist0 c1-c69 vs tolir5e3 c1-c68 vs peakonly c1-c120.
+
 ## 2026-05-29 · [done] Re: Request 18 strict soft diffuse-precrack hist0 — reverseBC u12 c1-c69 shipped
 
 **Re**: `docs/handovers/windows_fem_inbox.md` Request 18, "strict soft diffuse-precrack initial-state alignment"

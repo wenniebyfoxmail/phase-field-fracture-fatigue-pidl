@@ -1,6 +1,6 @@
 # Experiment Inventory — Purpose-Organized
 
-**Last updated**: 2026-05-28
+**Last updated**: 2026-05-29
 **Scope**: All PIDL + FEM experiments across Mac / Windows-PIDL / Windows-FEM / Taobo  
 **Format**: purpose → experiments → [机器] result / verdict
 
@@ -100,6 +100,7 @@
 | **2026-05 PIDL-fine FEM reverseBC handoff** | Windows-FEM | `SENT_PIDL_12_fine_reverseBC`, PIDL fine mesh `10261` elems, same AT1+AMOR+PENALTY/reverseBC; exported c1-c69 fields; N_f=69 | isolates mesh coarsening effect |
 | **2026-05 diffuse pre-crack FEM diagnostic** | Windows-FEM | `SENT_PIDL_12_diffuse_precrack_reverseBC`, continuous material mesh `45000` elems, no void slit, fixed diffuse `d=1` band with `alpha_bar=1` initialized; exported c1-c69 fields; N_f=69 | separates void-notch geometry from phase-field damaged-band convention |
 | **2026-05 strict soft diffuse-precrack hist0 FEM diagnostic** | Windows-FEM | `SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC`, same continuous mesh `45000` elems, soft AT1/PIDL-like precrack profile, `alpha_bar=0` and `f_alpha=1` initially; exported c1-c69 fields; N_f=69 | strict diffuse-track reference for initial-state alignment |
+| **2026-05 Request 19 FEM one-factor alignment diagnostics** | Windows-FEM | Soft-hist0 baseline one-factor variants: `tol_irrev=5e-3` gave N_f=68; peak-only (`n_step=1`, one u=0.12 peak solve/cycle) had no penetration by c120; exact `res_stiff=0` was stable and gave N_f=69. All exports include p99/p999, near-tip integrals, precrack/event audits. | isolates irreversibility strength, within-cycle history update, and residual stiffness effects |
 
 ---
 
