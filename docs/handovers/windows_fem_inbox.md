@@ -27,6 +27,121 @@
 
 ## Active Requests
 
+## 2026-05-29 · Request 20: soft-hist0 state-timing export around cycle 0/1
+
+**Goal**: separate three effects that are currently mixed inside the existing
+`c1` comparison: initial diffuse-precrack mismatch, first loaded elastic/damage
+solve mismatch, and first fatigue/history-refresh mismatch. This should be an
+export/instrumentation task around the completed soft-hist0 reference, not a
+new physics variant unless the solver cannot re-export the requested states
+from saved data.
+
+Base reference:
+
+```text
+SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC
+OneDrive/PIDL result/_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_2026-05-28
+N_f = 69
+```
+
+Please keep the same settings:
+
+```matlab
+soft AT1-like diffuse precrack;
+alpha_bar = 0 initially;
+f_alpha = 1 initially;
+material retained in precrack;
+reverseBC: fix_X top+bottom, fix_Y bottom, disp_Y top;
+E=1, ni=0.3, Gc=0.01, ell=0.01, alpha_T=0.5, p=2;
+AT1 + AMOR + PENALTY;
+tol_irrev = 1e-3;
+res_stiff = 1e-6.
+```
+
+**Requested state labels and timing**:
+
+```text
+state0_initial_preload_prehistory
+  after mesh/precrack initialization;
+  before first displacement loading;
+  before first damage solve;
+  before any alpha_bar/f_alpha history refresh.
+
+cycle1_peak_pre_history_refresh
+  after solving the first peak U=0.12 state;
+  before updating alpha_bar/f_alpha for the first fatigue-history refresh.
+
+cycle1_peak_post_history_refresh
+  after the first fatigue-history refresh.
+  This should correspond to the existing c1 handoff if the old exporter used
+  the same timing.
+
+cycle1_unloaded_post_history_refresh, if available
+  after unloading/end-of-cycle state, with the same post-history fields.
+```
+
+If FEM has additional internal substeps in cycle 1, please either export all
+substeps with a `load_factor` column or state clearly which one each label
+represents.
+
+**Expected outputs**:
+
+OneDrive folder suggestion:
+
+```text
+_pidl_handoff_reverseBC_u12_diffuse_precrack_soft_hist0_state_timing_2026-05-29
+```
+
+Please include:
+
+```text
+state_timing_metrics.csv
+state_timing_element_fields.mat
+mesh_geometry.mat
+README_reverseBC_u12_diffuse_precrack_soft_hist0_state_timing.md
+export_state_timing.m, and any patched solver/export scripts needed for audit
+```
+
+For every exported state, please provide element fields on the same mesh:
+
+```text
+d_elem
+alpha_bar_elem
+f_alpha_elem / f_fatigue_elem
+psi_plus_elem, if physically meaningful at that state
+element_centroids
+element_area
+```
+
+For the CSV/README, please record:
+
+```text
+state_label
+cycle index
+load factor and displacement value
+loaded vs unloaded
+before/after damage solve
+before/after alpha_bar update
+before/after f_alpha update
+E_el, E_d, total energy if defined for the state
+p99/p999/max and near-tip r <= ell, 2ell, 4ell reductions for each field
+whether the initial_precrack_exclusion_nodes penetration guard is active
+whether the exported c1_post state numerically matches the old c1 handoff
+```
+
+**Acceptance criteria**:
+
+- Mac can compare PIDL `hist_alpha_init`, pretraining alpha, and `hist_fat=0`
+  against FEM `state0_initial_preload_prehistory`.
+- Mac can compare FEM `cycle1_peak_pre_history_refresh` against PIDL after the
+  first peak solve before history update, if/when PIDL exports that state.
+- The README makes the timing unambiguous enough that we no longer call the
+  existing `c1` field an "initial-state" comparison.
+
+**Priority**: high. This is the cleanest way to understand why residual fields
+are already visible at `c1` without mixing initialization, loading, and fatigue
+history in one bucket.
+
 ## 2026-05-29 · Request 19: one-factor FEM alignment diagnostics after soft-hist0
 
 **Goal**: run cheap one-factor FEM variants around the completed soft-hist0
