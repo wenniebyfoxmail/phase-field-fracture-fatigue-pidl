@@ -65,6 +65,10 @@ def local_patch_from_settings(settings: dict[str, str]) -> dict | None:
         "activation": settings.get("local_patch_activation", "TrainableReLU"),
         "init_coeff": float(settings.get("local_patch_init_coeff", 1.0)),
         "scale": float(settings.get("local_patch_scale", 1.0)),
+        "blend_mode": settings.get("local_patch_blend_mode", "additive"),
+        "n_patches": int(float(settings.get("local_patch_n_patches", 1))),
+        "x_start": float(settings.get("local_patch_x_start", 0.0)),
+        "x_end": float(settings.get("local_patch_x_end", 0.45)),
     }
 
 
@@ -197,6 +201,8 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
         psi_plus = get_psi_plus_per_elem(
             inp, u, v, alpha, matprop, pffmodel, area_t, t_conn,
         )
+        g_alpha, _ = pffmodel.Edegrade(alpha_elem)
+        psi_raw = psi_plus / torch.clamp(g_alpha, min=1e-30)
         e_el, e_d, e_hist = compute_energy_per_elem(
             inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_t, t_conn,
             f_fatigue=f_fatigue,
@@ -208,6 +214,8 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
     hist_np = tensor_np(hist_fat).reshape(-1)
     f_np = tensor_np(f_fatigue).reshape(-1)
     psi_np = tensor_np(psi_plus).reshape(-1)
+    psi_raw_np = tensor_np(psi_raw).reshape(-1)
+    g_alpha_np = tensor_np(g_alpha).reshape(-1)
     e_el_np = tensor_np(e_el).reshape(-1)
     e_d_np = tensor_np(e_d).reshape(-1)
     e_hist_np = tensor_np(e_hist).reshape(-1)
@@ -232,7 +240,10 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
             alpha_elem=tensor_np(alpha_elem).reshape(-1).astype(np.float32),
             hist_fat_elem=hist_np.astype(np.float32),
             f_fatigue_elem=f_np.astype(np.float32),
-            psi_plus_elem=psi_np.astype(np.float32),
+            psi_plus_elem=psi_np.astype(np.float32),  # backward-compatible active driver
+            psi_active_elem=psi_np.astype(np.float32),
+            psi_raw_elem=psi_raw_np.astype(np.float32),
+            g_alpha_elem=g_alpha_np.astype(np.float32),
             psi_plus_prev_elem=tensor_np(psi_prev).reshape(-1).astype(np.float32),
             E_el_elem=e_el_np.astype(np.float32),
             E_d_elem=e_d_np.astype(np.float32),

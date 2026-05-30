@@ -281,6 +281,10 @@ local_patch_dict = {
     "activation": "TrainableReLU",
     "init_coeff": 1.0,
     "scale": 1.0,
+    "blend_mode": "additive",
+    "n_patches": 1,
+    "x_start": 0.0,
+    "x_end": 0.45,
 }
 
 
@@ -568,6 +572,10 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\nlocal_patch_activation: {local_patch_dict.get("activation", "TrainableReLU")}')
     file.write(f'\nlocal_patch_init_coeff: {local_patch_dict.get("init_coeff", 1.0)}')
     file.write(f'\nlocal_patch_scale: {local_patch_dict.get("scale", 1.0)}')
+    file.write(f'\nlocal_patch_blend_mode: {local_patch_dict.get("blend_mode", "additive")}')
+    file.write(f'\nlocal_patch_n_patches: {local_patch_dict.get("n_patches", 1)}')
+    file.write(f'\nlocal_patch_x_start: {local_patch_dict.get("x_start", 0.0)}')
+    file.write(f'\nlocal_patch_x_end: {local_patch_dict.get("x_end", 0.45)}')
 
 ## #############################################################################
 ## #############################################################################

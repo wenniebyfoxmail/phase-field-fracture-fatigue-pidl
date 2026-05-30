@@ -137,3 +137,34 @@ uv-only patch:
 
 Initial Taobo health check: GPU0 and GPU1 active; archive directories created
 for all-output and alpha-only.  Logs had not flushed yet at launch time.
+
+## Result
+
+All three branches finished.
+
+| case | first right-boundary detection | confirmed | fixed c69 alpha_bar max | fixed c69 Kt | final alpha_bar max |
+|---|---:|---:|---:|---:|---:|
+| all-output patch | j81 | j84 | 8.67 | 15.16 | 9.96 |
+| alpha-only patch | j80 | j83 | 8.83 | 15.76 | 9.36 |
+| uv-only patch | j81 | j84 | 2.82 | 15.15 | 2.82 |
+
+Remote reduction from saved c69/event diagnostics:
+
+| case | cycle | alpha tip2 | alpha_bar tip2 | alpha_bar max | saved psi driver tip2 | E_d |
+|---|---:|---:|---:|---:|---:|---:|
+| all | 69 | 0.467 | 0.498 | 8.67 | 2.21e-4 | 0.00692 |
+| all | 84 | 0.475 | 0.500 | 9.96 | 4.15e-5 | 0.00768 |
+| alpha-only | 69 | 0.442 | 0.498 | 8.83 | 3.99e-4 | 0.00691 |
+| alpha-only | 83 | 0.444 | 0.502 | 9.36 | 2.23e-4 | 0.00760 |
+| uv-only | 69 | 0.477 | 0.492 | 2.82 | 1.93e-4 | 0.00694 |
+| uv-only | 84 | 0.484 | 0.494 | 2.82 | 3.83e-5 | 0.00770 |
+
+Important definition correction: `psi_plus_elem` in the saved PIDL diagnostics is
+already the active fatigue driver `g(alpha)*psi0`, not raw undegraded `psi0`.
+Future diagnostics now save both `psi_raw_elem` and `psi_active_elem`.
+
+Interpretation: this additive one-patch design is weak/negative.  All/alpha-only
+are baseline-like and still reach fracture through right-boundary saturation.
+Uv-only is worse for fatigue history.  The next representation discriminator
+should make local subdomains carry the raw field, not merely add a small
+correction.

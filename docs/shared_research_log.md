@@ -42,6 +42,43 @@
 
 ## Entries
 
+## 2026-05-30 · Mac-PIDL [finding+implementation]
+
+**Additive local patch weak/negative; FBPINN-chain discriminator prepared**
+
+The strict FEM-mesh additive local patch matrix finished:
+
+| case | detect/confirmed | c69 alpha_bar max | c69 Kt | final alpha_bar max |
+|---|---:|---:|---:|---:|
+| all-output patch | j81/j84 | 8.67 | 15.16 | 9.96 |
+| alpha-only patch | j80/j83 | 8.83 | 15.76 | 9.36 |
+| uv-only patch | j81/j84 | 2.82 | 15.15 | 2.82 |
+
+Remote c69/event reductions show all/alpha-only are baseline-like and still
+fracture through right-boundary saturation; uv-only suppresses fatigue history.
+The additive one-patch design is therefore closed as weak/negative.
+
+Definition correction: saved PIDL `psi_plus_elem` is already the active fatigue
+driver `g(alpha)*psi0`, not raw undegraded `psi0`.  New diagnostics now save
+both `psi_raw_elem` and `psi_active_elem`.
+
+Prepared the next strict representation discriminator:
+
+```text
+SENS_tensile/run_fem_mesh_fbpinn_umax.py
+```
+
+It uses a chain of overlapping local subdomain networks along x=0.00 -> 0.45
+with smooth partition blending:
+
+```text
+raw_output = (1-beta)*global_MLP + beta*local_subdomain_mix
+```
+
+so local nets carry the raw field inside their process-zone windows instead of
+being small additive corrections.  Artifact:
+`docs/fbpinn_chain_discriminator_2026-05-30.md`.
+
 ## 2026-05-30 · Mac-PIDL [implementation]
 
 **Strict FEM-mesh local-patch discriminator prepared**

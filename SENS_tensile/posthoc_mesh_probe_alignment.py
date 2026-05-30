@@ -92,6 +92,10 @@ def local_patch_from_settings(archive: Path) -> dict | None:
         "activation": settings.get("local_patch_activation", "TrainableReLU"),
         "init_coeff": float(settings.get("local_patch_init_coeff", 1.0)),
         "scale": float(settings.get("local_patch_scale", 1.0)),
+        "blend_mode": settings.get("local_patch_blend_mode", "additive"),
+        "n_patches": int(float(settings.get("local_patch_n_patches", 1))),
+        "x_start": float(settings.get("local_patch_x_start", 0.0)),
+        "x_end": float(settings.get("local_patch_x_end", 0.45)),
     }
 
 

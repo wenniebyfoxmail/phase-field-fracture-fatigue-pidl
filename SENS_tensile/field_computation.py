@@ -145,6 +145,8 @@ class FieldComputation:
         self.local_patch_wr = float(_lp.get('wr', 0.1))
         self.local_patch_scale = float(_lp.get('scale', 1.0))
         self.local_patch_output_mode = str(_lp.get('output_mode', 'all'))
+        self.local_patch_blend_mode = str(_lp.get('blend_mode', 'additive'))
+        self.local_patch_n_patches = int(_lp.get('n_patches', 1))
         if self.local_patch_enabled:
             if self.local_patch_wr <= 0.0:
                 raise ValueError("local_patch_dict['wr'] must be positive")
@@ -152,31 +154,78 @@ class FieldComputation:
                 raise ValueError(
                     "local_patch_dict['output_mode'] must be 'all', 'alpha_only', or 'uv_only'"
                 )
-            patch_net = NeuralNet(
-                input_dimension=2,
-                output_dimension=3,
-                n_hidden_layers=int(_lp.get('hidden_layers', 3)),
-                neurons=int(_lp.get('neurons', 80)),
-                activation=str(_lp.get('activation', 'TrainableReLU')),
-                init_coeff=float(_lp.get('init_coeff', 1.0)),
-            )
-            init_xavier(patch_net)
-            self.net.add_module('local_patch_net', patch_net)
+            if self.local_patch_blend_mode not in ('additive', 'partition'):
+                raise ValueError("local_patch_dict['blend_mode'] must be 'additive' or 'partition'")
+            if self.local_patch_n_patches < 1:
+                raise ValueError("local_patch_dict['n_patches'] must be >= 1")
+
+            if 'x_centers' in _lp:
+                x_centers = [float(x) for x in _lp['x_centers']]
+            elif self.local_patch_n_patches == 1:
+                x_centers = [self.local_patch_x_tip]
+            else:
+                x0 = float(_lp.get('x_start', 0.0))
+                x1 = float(_lp.get('x_end', 0.45))
+                x_centers = torch.linspace(x0, x1, self.local_patch_n_patches).tolist()
+            if 'y_centers' in _lp:
+                y_centers = [float(y) for y in _lp['y_centers']]
+            else:
+                y_centers = [self.local_patch_y_tip] * len(x_centers)
+            if len(x_centers) != len(y_centers):
+                raise ValueError("local_patch x_centers/y_centers length mismatch")
+            self.local_patch_centers = tuple(zip(x_centers, y_centers))
+            self.local_patch_n_patches = len(self.local_patch_centers)
+
+            def _make_patch_net():
+                patch_net = NeuralNet(
+                    input_dimension=2,
+                    output_dimension=3,
+                    n_hidden_layers=int(_lp.get('hidden_layers', 3)),
+                    neurons=int(_lp.get('neurons', 80)),
+                    activation=str(_lp.get('activation', 'TrainableReLU')),
+                    init_coeff=float(_lp.get('init_coeff', 1.0)),
+                )
+                init_xavier(patch_net)
+                return patch_net
+
+            if self.local_patch_n_patches == 1:
+                self.net.add_module('local_patch_net', _make_patch_net())
+            else:
+                self.net.add_module(
+                    'local_patch_nets',
+                    nn.ModuleList([_make_patch_net() for _ in self.local_patch_centers])
+                )
             print("[LocalPatch] enabled | "
                   f"mode={self.local_patch_output_mode} "
+                  f"blend={self.local_patch_blend_mode} "
+                  f"n={self.local_patch_n_patches} "
                   f"wr={self.local_patch_wr:.4f} "
-                  f"tip=({self.local_patch_x_tip:.4f},{self.local_patch_y_tip:.4f}) "
+                  f"centers={self.local_patch_centers} "
                   f"scale={self.local_patch_scale:.3g}")
 
     def _local_patch_output(self, inp):
         if not self.local_patch_enabled:
             return None
-        dx = (inp[:, 0] - self.local_patch_x_tip) / self.local_patch_wr
-        dy = (inp[:, 1] - self.local_patch_y_tip) / self.local_patch_wr
-        local_inp = torch.stack([dx, dy], dim=1)
-        r2 = dx.square() + dy.square()
-        chi = torch.clamp(1.0 - r2, min=0.0).square()
-        patch = self.net.local_patch_net(local_inp)
+        patches = []
+        chis = []
+        if self.local_patch_n_patches == 1:
+            patch_nets = [self.net.local_patch_net]
+        else:
+            patch_nets = list(self.net.local_patch_nets)
+        for patch_net, (x_c, y_c) in zip(patch_nets, self.local_patch_centers):
+            dx = (inp[:, 0] - x_c) / self.local_patch_wr
+            dy = (inp[:, 1] - y_c) / self.local_patch_wr
+            local_inp = torch.stack([dx, dy], dim=1)
+            r2 = dx.square() + dy.square()
+            chi = torch.clamp(1.0 - r2, min=0.0).square()
+            patches.append(patch_net(local_inp))
+            chis.append(chi)
+        chi_stack = torch.stack(chis, dim=1)
+        patch_stack = torch.stack(patches, dim=1)
+        chi_sum = chi_stack.sum(dim=1).clamp(min=0.0)
+        patch = (
+            chi_stack.unsqueeze(2) * patch_stack
+        ).sum(dim=1) / chi_sum.clamp(min=1e-12).unsqueeze(1)
 
         if self.local_patch_output_mode == 'alpha_only':
             mask = torch.tensor([0.0, 0.0, 1.0], dtype=patch.dtype, device=patch.device)
@@ -185,7 +234,11 @@ class FieldComputation:
             mask = torch.tensor([1.0, 1.0, 0.0], dtype=patch.dtype, device=patch.device)
             patch = patch * mask
 
-        return self.local_patch_scale * chi.unsqueeze(1) * patch
+        beta = chi_sum.clamp(max=1.0).unsqueeze(1)
+        return {
+            'patch': self.local_patch_scale * patch,
+            'beta': beta,
+        }
 
     def _normalized_tb_bubble(self, inp, y0, yL):
         """Top-bottom bubble in [0, 1], zero on y=y0 and y=yL."""
@@ -242,7 +295,10 @@ class FieldComputation:
         out = self.net(inp_nn)     # 神经网络输出（8D 或 2D 输入）
         patch_out = self._local_patch_output(inp)
         if patch_out is not None:
-            out = out + patch_out
+            if self.local_patch_blend_mode == 'partition':
+                out = (1.0 - patch_out['beta']) * out + patch_out['beta'] * patch_out['patch']
+            else:
+                out = out + patch_out['beta'] * patch_out['patch']
 
         # ★ 2026-05-06 mirror symmetry: enforce odd parity on disp_v_raw correction
         # disp_u_raw: even (NN raw output already even via y² input) — pass through
@@ -335,7 +391,9 @@ class FieldComputation:
     def local_patch_parameters(self):
         if not self.local_patch_enabled:
             return []
-        return list(self.net.local_patch_net.parameters())
+        if self.local_patch_n_patches == 1:
+            return list(self.net.local_patch_net.parameters())
+        return list(self.net.local_patch_nets.parameters())
     
 
 class NonsmoothSigmoid(nn.Module):

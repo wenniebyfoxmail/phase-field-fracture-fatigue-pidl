@@ -126,6 +126,13 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
     E_el_np = _tensor_to_numpy(E_el_elem).reshape(-1)
     E_d_np = _tensor_to_numpy(E_d_elem).reshape(-1)
     E_hist_np = _tensor_to_numpy(E_hist_elem).reshape(-1)
+    # `psi_plus_elem` is the active fatigue driver g(alpha)*psi0.  Save both
+    # the active value and the raw undegraded psi0 approximation to avoid the
+    # recurring FEM/PIDL comparison ambiguity.
+    with torch.no_grad():
+        g_alpha, _ = pffmodel.Edegrade(alpha_elem)
+    g_alpha_np = _tensor_to_numpy(g_alpha).reshape(-1)
+    psi_raw_np = psi_plus_np / np.maximum(g_alpha_np, 1e-30)
 
     np.savez_compressed(
         out_dir / f"element_fields_cycle_{cycle:04d}.npz",
@@ -136,7 +143,10 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         alpha_elem=_tensor_to_numpy(alpha_elem).reshape(-1).astype(np.float32),
         hist_fat_elem=hist_fat_np.astype(np.float32),
         f_fatigue_elem=f_fatigue_np.astype(np.float32),
-        psi_plus_elem=psi_plus_np.astype(np.float32),
+        psi_plus_elem=psi_plus_np.astype(np.float32),  # backward-compatible active driver
+        psi_active_elem=psi_plus_np.astype(np.float32),
+        psi_raw_elem=psi_raw_np.astype(np.float32),
+        g_alpha_elem=g_alpha_np.astype(np.float32),
         psi_plus_prev_elem=psi_prev_np.astype(np.float32),
         E_el_elem=E_el_np.astype(np.float32),
         E_d_elem=E_d_np.astype(np.float32),
