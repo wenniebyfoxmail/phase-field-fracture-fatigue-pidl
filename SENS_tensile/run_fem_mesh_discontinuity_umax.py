@@ -36,7 +36,7 @@ def main() -> None:
                    choices=("sdf_ribbon_uv_only", "xfem_jump_uv_only"))
     p.add_argument("--n-cycles", type=int, default=100)
     p.add_argument("--seed", type=int, default=1)
-    p.add_argument("--mesh-file", default="meshed_geom_fem_baseline.msh")
+    p.add_argument("--mesh-file", default="meshed_geom_fem_soft_hist0.msh")
     p.add_argument("--tag", default="")
     p.add_argument("--epsilon", type=float, default=1e-3)
     p.add_argument("--x-tip", type=float, default=0.0)

@@ -122,11 +122,11 @@ Initial Taobo plan:
 ```text
 python SENS_tensile/run_fem_mesh_discontinuity_umax.py 0.12 \
   --variant sdf_ribbon_uv_only --n-cycles 100 --seed 1 \
-  --mesh-file meshed_geom_fem_baseline.msh --epsilon 1e-3
+  --mesh-file meshed_geom_fem_soft_hist0.msh --epsilon 1e-3
 
 python SENS_tensile/run_fem_mesh_discontinuity_umax.py 0.12 \
   --variant xfem_jump_uv_only --n-cycles 100 --seed 1 \
-  --mesh-file meshed_geom_fem_baseline.msh --epsilon 1e-3
+  --mesh-file meshed_geom_fem_soft_hist0.msh --epsilon 1e-3
 ```
 
 Run these simultaneously only on separate GPUs.  Treat `sdf_ribbon_uv_only` as
