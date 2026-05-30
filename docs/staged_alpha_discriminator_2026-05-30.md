@@ -114,10 +114,17 @@ alpha-head-only:
   log: /mnt/data2/drtao/projects/pidl-align-soft-hist0-20260529/SENS_tensile/run_logs/femmesh_alphaHeadOnly_softHist0_u012_N100_seed1_20260530.log
 
 uv-head-only:
-  pending launch
+  PID: 1276196
+  GPU: 0
   schedule: uv1500 -> alpha0 -> joint10000
+  log: /mnt/data2/drtao/projects/pidl-align-soft-hist0-20260529/SENS_tensile/run_logs/femmesh_uvHeadOnly_softHist0_u012_N100_seed1_20260530.log
 
 head-stages-only:
-  pending launch
+  PID: 1276197
+  GPU: 1
   schedule: uv750 -> alpha750 -> joint0
+  log: /mnt/data2/drtao/projects/pidl-align-soft-hist0-20260529/SENS_tensile/run_logs/femmesh_headStagesOnly_softHist0_u012_N100_seed1_20260530.log
 ```
+
+Health check after launch: all four PIDs were alive.  GPU0/GPU1/GPU3/GPU5
+showed active compute/memory.  Logs had not flushed yet.
