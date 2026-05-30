@@ -96,3 +96,22 @@ Expected archive suffix:
 ```text
 _femmesh_softHist0_fbpinnChain_n6_wr0.12_x0.0to0.45_h3_n80_warm1500_j10000
 ```
+
+## Launch Status
+
+Synced source commit `a4b8380` to Taobo workspace:
+
+```text
+/mnt/data2/drtao/projects/pidl-align-soft-hist0-20260529
+```
+
+Remote py-compile passed before launch.  Main branch submitted:
+
+```text
+GPU: 0
+PID printed by launch command: 3026504
+log: run_logs/femmesh_fbpinnChain_n6_wr012_softHist0_u012_N100_seed1_20260530.log
+```
+
+Caveat: Taobo SSH became intermittent immediately after launch, so PID/GPU
+health still needs a follow-up verification check.
