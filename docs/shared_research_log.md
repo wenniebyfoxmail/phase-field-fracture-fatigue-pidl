@@ -42,6 +42,23 @@
 
 ## Entries
 
+## 2026-05-30 · Mac-PIDL [finding]
+
+**Strict FEM-mesh head-staging discriminator closed: optimiser ordering is not the field-gap mechanism**
+
+Four PIDL variants were run on the strict FEM-mesh soft-hist0 setup:
+
+| branch | schedule | outcome |
+|---|---|---|
+| staged-alpha | uv750 -> alpha750 -> joint10000 | event j80/j83 |
+| alpha-head-only | uv0 -> alpha1500 -> joint10000 | event j80/j83 |
+| uv-head-only | uv1500 -> alpha0 -> joint10000 | event j81/j84 |
+| head-stages-only | uv750 -> alpha750 -> joint0 | no fracture by j99 |
+
+Common-probe gate vs FEM n_step10 c69: joint-solve branches keep `alpha_bar` tip2 at about 0.35-0.37x FEM and active `psi+` tip2 at about 0.003-0.023x FEM. Event states raise `Delta E_d` only to about 0.40-0.44x FEM and still show active-driver collapse. The no-joint branch produces huge nonpropagating history (`alpha_bar` tip2 >4x FEM at j99) with raw `psi+` tip2 ~0.06x and negative incremental `E_d` vs FEM.
+
+Decision: close head-staging as a useful negative discriminator. Final joint elastic-damage relaxation is necessary, but optimiser ordering/output-head windows do not repair the local active-driver/history feedback. Next discriminator should strengthen representation/local authority (FBPINN/domain-decomposed tip patch or revived discontinuity/jump-head with fixed tip tracking), not add more head-stage schedules.
+
 ## 2026-05-05 · Mac-PIDL [finding]
 
 **u=0.14 pure-physics 5-seed sweep: systematic underestimate (mean −24%) + high variance (std=4.2) — OOD boundary confirmed**

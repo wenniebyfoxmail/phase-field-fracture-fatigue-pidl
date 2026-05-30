@@ -128,3 +128,53 @@ head-stages-only:
 
 Health check after launch: all four PIDs were alive.  GPU0/GPU1/GPU3/GPU5
 showed active compute/memory.  Logs had not flushed yet.
+
+## Result
+
+All four jobs completed.
+
+Scalar/event summary:
+
+| branch | schedule | first right-boundary detection | confirmed/last | c69 alpha_bar max | c69 Kt | final alpha_bar max |
+|---|---|---:|---:|---:|---:|---:|
+| strict FEM-mesh baseline | joint only | j82 | j85 | 9.94 | 14.29 | 11.39 |
+| staged-alpha | uv750 -> alpha750 -> joint10000 | j80 | j83 | 7.59 | 15.19 | 8.35 |
+| alpha-head-only | uv0 -> alpha1500 -> joint10000 | j80 | j83 | 7.54 | 15.38 | 8.04 |
+| uv-head-only | uv1500 -> alpha0 -> joint10000 | j81 | j84 | 8.52 | 14.69 | 9.89 |
+| head-stages-only | uv750 -> alpha750 -> joint0 | no event | j99 end | 29.00 | 7.58 | 41.03 |
+
+Field-level gate against FEM n_step10 c69 on common probes:
+
+| branch/state | damage tip2 | alpha_bar tip2 | raw psi+ tip2 | active psi+ tip2 | Delta E_d |
+|---|---:|---:|---:|---:|---:|
+| baseline fixed j68 | 1.01 | 0.37 | 1.58 | 0.023 | 0.25 |
+| staged fixed j68 | 1.07 | 0.35 | 1.57 | 0.019 | 0.29 |
+| alpha fixed j68 | 1.07 | 0.35 | 1.56 | 0.020 | 0.29 |
+| uv fixed j68 | 1.00 | 0.37 | 1.55 | 0.023 | 0.25 |
+| staged event j83 | 1.09 | 0.35 | 1.65 | 0.003 | 0.43 |
+| alpha event j83 | 1.09 | 0.35 | 1.65 | 0.003 | 0.44 |
+| uv event j84 | 1.01 | 0.37 | 1.65 | 0.007 | 0.40 |
+| no-joint last j99 | 0.74 | 4.13 | 0.06 | 4.81 | -0.14 |
+
+Diagnostic figure:
+
+```text
+_analysis_fem_mechanism_20260528/figures/staged_head_discriminator_gate_summary_20260530.png
+```
+
+## Interpretation
+
+Head-staging alone is not the missing mechanism.  The branches with a final
+joint solve still leave `alpha_bar` tip2 at only about 0.35-0.37x FEM and
+active `psi+` tip2 near zero.  Their event states increase `Delta E_d` to
+about 0.40-0.44x FEM, but this comes with boundary saturation and still does
+not restore local active-driver/history feedback.
+
+The no-joint branch is pathological: `alpha_bar` becomes huge, but crack
+propagation stalls (`x_tip` stays at 0), raw `psi+` near the tip collapses, and
+incremental `E_d` is negative relative to FEM.  This confirms the final joint
+elastic-damage relaxation is necessary, but not sufficient.
+
+Current decision: close head-staging as a useful negative discriminator.  The
+next test should strengthen local representation/authority rather than add more
+head-stage schedules.
