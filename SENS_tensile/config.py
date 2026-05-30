@@ -98,6 +98,12 @@ fatigue_dict = {
                                      # ★ E2 (Apr 23): switched back to carrara for ψ⁺ hack sanity
                                      #   Dir 6.2 golahmar+spAlphaT archived (N_f=154, ᾱ_max=10.66 ceiling)
 
+    # ── 2026-05-30: fatigue-history driver diagnostic ──────────────────────
+    # active_degraded: standard Carrara/FEM-aligned driver g(alpha_now)*psi_raw
+    # raw:             physics-changing diagnostic, uses psi_raw directly
+    # lagged_degraded: middle diagnostic, uses g(alpha_previous)*psi_raw_now
+    "history_driver_mode": "active_degraded",
+
     # Golahmar 幂律参数（accum_type='golahmar' 时有效）
     "n_power"      : 2.0,            # 幂律指数 n；控制 S-N 斜率（n=1 退化为 Carrara）
     "alpha_n"      : 0.1,            # 归一化能量密度 αₙ（与 ψ⁺ 量纲相同）
@@ -528,6 +534,7 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\ndisp_max: {_fat.get("disp_max")}')
     file.write(f'\nR_ratio: {_fat.get("R_ratio")}')
     file.write(f'\naccum_type: {_fat.get("accum_type")}')
+    file.write(f'\nhistory_driver_mode: {_fat.get("history_driver_mode", "active_degraded")}')
     file.write(f'\nn_power: {_fat.get("n_power")}')
     file.write(f'\nalpha_n: {_fat.get("alpha_n")}')
     file.write(f'\ndegrad_type: {_fat.get("degrad_type")}')

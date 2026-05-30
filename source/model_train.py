@@ -388,9 +388,19 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         hist_fat      = torch.zeros(n_elem, device=device)
         psi_plus_prev = torch.zeros(n_elem, device=device)
         f_fatigue     = torch.ones(n_elem, device=device)
+        _history_driver_mode = str(
+            fatigue_dict.get('history_driver_mode', 'active_degraded')
+        )
+        if _history_driver_mode not in (
+                'active_degraded', 'raw', 'lagged_degraded'):
+            raise ValueError(
+                "fatigue_dict['history_driver_mode'] must be one of "
+                "'active_degraded', 'raw', or 'lagged_degraded'"
+            )
         print(f"[Fatigue] fatigue_on=True | accum='{fatigue_dict.get('accum_type','carrara')}' | "
               f"degrad='{fatigue_dict.get('degrad_type','asymptotic')}' | "
-              f"alpha_T={fatigue_dict.get('alpha_T', 1.0):.4g}")
+              f"alpha_T={fatigue_dict.get('alpha_T', 1.0):.4g} | "
+              f"history_driver={_history_driver_mode}")
 
         # ★ Direction 6.1 + 2026-05-08 A1: 预计算元素形心
         # Used by: (a) spatial α_T modulation; (b) post-hoc mirror α ratchet break
@@ -848,6 +858,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         # ------------------------------------------------------------------
         # Manav 原始：更新相场不可逆性历史变量 hist_alpha
         # ------------------------------------------------------------------
+        hist_alpha_prev_for_driver = hist_alpha.detach().clone()
         hist_alpha = field_comp.update_hist_alpha(inp)
 
         # ★ δ-1: update element sampling probabilities p_e from residual proxy
@@ -917,6 +928,40 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 psi_plus_elem[_void_notch_mask] = 0.0
                 psi_plus_prev[_void_notch_mask] = 0.0
 
+            # The standard Carrara/PIDL and FEM setting accumulates fatigue
+            # from the active degraded driver g(alpha_now)*psi_raw.  The
+            # diagnostic branches below deliberately change only the history
+            # driver, while leaving the variational energy and fracture
+            # objective untouched.
+            history_driver_elem = psi_plus_elem
+            if _history_driver_mode != 'active_degraded':
+                with torch.no_grad():
+                    if T_conn is None:
+                        alpha_elem_now = alpha_eval.flatten()
+                        alpha_elem_lag = hist_alpha_prev_for_driver.flatten()
+                    else:
+                        alpha_elem_now = (
+                            alpha_eval[T_conn[:, 0]]
+                            + alpha_eval[T_conn[:, 1]]
+                            + alpha_eval[T_conn[:, 2]]
+                        ) / 3.0
+                        alpha_elem_lag = (
+                            hist_alpha_prev_for_driver[T_conn[:, 0]]
+                            + hist_alpha_prev_for_driver[T_conn[:, 1]]
+                            + hist_alpha_prev_for_driver[T_conn[:, 2]]
+                        ) / 3.0
+                    g_now, _ = pffmodel.Edegrade(alpha_elem_now)
+                    psi_raw_elem = psi_plus_elem / g_now.clamp(min=1e-30)
+                    if _history_driver_mode == 'raw':
+                        history_driver_elem = psi_raw_elem.detach()
+                    else:
+                        g_lag, _ = pffmodel.Edegrade(alpha_elem_lag)
+                        history_driver_elem = (g_lag * psi_raw_elem).detach()
+                if (_void_notch_mask is not None
+                        and _void_cfg.get('mask_fatigue', True)):
+                    history_driver_elem = history_driver_elem.clone()
+                    history_driver_elem[_void_notch_mask] = 0.0
+
             # ★ Direction 4: 用 ψ⁺ 重心估计裂尖坐标 → 更新 field_comp.x_tip
             # 必须在 update_fatigue_history 之前，确保本圈 psi_plus_elem 是峰值状态
             # ★ Fix B: cycle 0 保持初始 x_tip（α 场未收敛，ψ⁺ 分布被预裂缝污染，
@@ -958,7 +1003,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
             # 更新疲劳历史变量 ᾱ（Carrara Eq.39 或 Golahmar Eq.31）
             hist_fat = update_fatigue_history(
-                hist_fat, psi_plus_elem, psi_plus_prev, fatigue_dict
+                hist_fat, history_driver_elem, psi_plus_prev, fatigue_dict
             )
             if (_void_notch_mask is not None
                     and _void_cfg.get('mask_fatigue', True)):
@@ -998,9 +1043,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # so the previous ψ⁺ should advance from substep to substep instead of
             # being reset after every training step. Default behavior is unchanged.
             if fatigue_dict.get('explicit_cycle_substeps', None):
-                psi_plus_prev = psi_plus_elem.clone()
+                psi_plus_prev = history_driver_elem.clone()
             else:
-                psi_plus_prev = (R ** 2) * psi_plus_elem.clone()
+                psi_plus_prev = (R ** 2) * history_driver_elem.clone()
 
             # ★ 方向3：计算下一圈的裂尖自适应权重
             # 在当前圈 psi_plus_elem 更新后立即计算，供下一圈的 fit() 使用
