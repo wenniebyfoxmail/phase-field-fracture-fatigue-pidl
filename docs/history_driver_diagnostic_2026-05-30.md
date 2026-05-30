@@ -63,3 +63,33 @@ active psi tip2
 Delta E_d from c1
 right-boundary/event count
 ```
+
+## Taobo Launch
+
+Code directory:
+
+```text
+/mnt/data2/drtao/projects/pidl-history-driver-ddd30da
+```
+
+Launched 2026-05-30/31 from commit:
+
+```text
+ddd30da Add FEM-mesh history driver diagnostics
+```
+
+Jobs:
+
+| Variant | GPU | PID | Log |
+|---|---:|---:|---|
+| raw | 2 | 3167525 | `/mnt/data2/drtao/projects/pidl-history-driver-ddd30da/SENS_tensile/run_logs/femmesh_histdrv_raw_softHist0_u012_N100_seed1_20260530.log` |
+| lagged_degraded | 3 | 3169666 | `/mnt/data2/drtao/projects/pidl-history-driver-ddd30da/SENS_tensile/run_logs/femmesh_histdrv_laggedDegraded_softHist0_u012_N100_seed1_20260530.log` |
+
+Notes:
+
+```text
+The first raw launch failed before training because meshed_geom1.msh was absent
+from the isolated worktree sync.  The coarse mesh was then copied into the
+Taobo code directory and both jobs were relaunched.  At launch verification,
+GPU2 and GPU3 each showed ~3.4 GB memory and ~40% utilisation.
+```
