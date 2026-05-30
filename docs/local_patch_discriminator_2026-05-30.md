@@ -105,3 +105,35 @@ Expected archive suffix:
 ```text
 _femmesh_softHist0_localPatch_all_wr0.1_h3_n80_warm1500_j10000
 ```
+
+## Launch Status
+
+Synced committed source commit `a6818cf` from Mac to Taobo workspace:
+
+```text
+/mnt/data2/drtao/projects/pidl-align-soft-hist0-20260529
+```
+
+Launched three non-overlapping local-patch branches:
+
+```text
+all-output patch:
+  GPU: 0
+  PID: 2512224
+  log: run_logs/femmesh_localPatch_all_wr010_softHist0_u012_N100_seed1_20260530.log
+  archive: *_femmesh_softHist0_localPatch_all_wr0.1_h3_n80_warm1500_j10000
+
+alpha-only patch:
+  GPU: 1
+  PID: 2512842
+  log: run_logs/femmesh_localPatch_alphaOnly_wr010_softHist0_u012_N100_seed1_20260530.log
+  archive: *_femmesh_softHist0_localPatch_alpha_only_wr0.1_h3_n80_warm1500_j10000
+
+uv-only patch:
+  GPU: 0, queued after all-output patch in shell PID 2512220
+  log: run_logs/femmesh_localPatch_uvOnly_wr010_softHist0_u012_N100_seed1_20260530.log
+  archive: *_femmesh_softHist0_localPatch_uv_only_wr0.1_h3_n80_warm1500_j10000
+```
+
+Initial Taobo health check: GPU0 and GPU1 active; archive directories created
+for all-output and alpha-only.  Logs had not flushed yet at launch time.
