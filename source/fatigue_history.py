@@ -25,6 +25,14 @@ compute_energy.py 中 f_fatigue 默认为 1.0，完全恢复 Manav 原始行为�
 import torch
 
 
+def _alpha_T_tensor(alpha_T_base, hist_fat):
+    """Return alpha_T as a tensor aligned with ``hist_fat``."""
+    alpha_T_base = alpha_T_base() if callable(alpha_T_base) else alpha_T_base
+    if torch.is_tensor(alpha_T_base):
+        return alpha_T_base.to(device=hist_fat.device, dtype=hist_fat.dtype).expand_as(hist_fat)
+    return torch.full_like(hist_fat, float(alpha_T_base))
+
+
 def update_fatigue_history(hist_fat, psi_plus_elem, psi_plus_prev, fatigue_dict):
     """
     更新疲劳历史变量 ᾱ（逐元素）
@@ -123,9 +131,9 @@ def compute_fatigue_degrad(hist_fat, fatigue_dict, elem_centroids=None):
         dx    = elem_centroids[:, 0] - x_tip
         dy    = elem_centroids[:, 1] - y_tip
         r     = torch.sqrt(dx * dx + dy * dy + 1e-12)
-        alpha_T = alpha_T_base * (1.0 - beta * torch.exp(-r / r_T))
+        alpha_T = _alpha_T_tensor(alpha_T_base, hist_fat) * (1.0 - beta * torch.exp(-r / r_T))
     else:
-        alpha_T = torch.full_like(hist_fat, float(alpha_T_base))
+        alpha_T = _alpha_T_tensor(alpha_T_base, hist_fat)
 
     f    = torch.ones_like(hist_fat)   # 默认 f = 1（ᾱ ≤ α_T 区域）
     mask = hist_fat > alpha_T          # 需要退化的元素
@@ -151,7 +159,7 @@ def compute_fatigue_degrad(hist_fat, fatigue_dict, elem_centroids=None):
             f"Unknown degrad_type='{degrad_type}'. Choose 'asymptotic' or 'logarithmic'."
         )
 
-    return f.detach()
+    return f if alpha_T.requires_grad else f.detach()
 
 
 # =============================================================================

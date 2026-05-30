@@ -7,6 +7,11 @@ from tqdm import tqdm
 from compute_energy import compute_energy, gradients, strain_energy_with_split
 
 
+def _resolve_f_fatigue(f_fatigue):
+    """Evaluate dynamic fatigue degradation callables inside each fresh graph."""
+    return f_fatigue() if callable(f_fatigue) else f_fatigue
+
+
 # =============================================================================
 # Algorithm 1 — Wang, Teng & Perdikaris (2020) arXiv:2001.04536
 # Adaptive learning-rate annealing for PINN composite loss functions.
@@ -72,7 +77,8 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
         inp_p = inp_train
     u_p, v_p, a_p = field_comp.fieldCalculation(inp_p)
     el, ed, eh = compute_energy(inp_p, u_p, v_p, a_p, hist_alpha,
-                                matprop, pffmodel, area_T, T_conn, f_fatigue,
+                                matprop, pffmodel, area_T, T_conn,
+                                _resolve_f_fatigue(f_fatigue),
                                 element_mask=element_mask)
     eps = torch.as_tensor(1e-30, dtype=el.dtype, device=el.device)
     lv_el = torch.log10(el + eps)
@@ -392,7 +398,7 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                 # ★ 传入 f_fatigue（疲劳退化函数）；默认 1.0 与 Manav 原始完全一致
                 # ★ 传入 crack_tip_weights（裂尖自适应加权）；None = 均匀
                 loss_E_el, loss_E_d, loss_hist = compute_energy(inp_train, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
-                                                                f_fatigue=f_fatigue,
+                                                                f_fatigue=_resolve_f_fatigue(f_fatigue),
                                                                 crack_tip_weights=crack_tip_weights,
                                                                 element_mask=element_mask)
 
@@ -533,7 +539,7 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
             if _a1_enabled and epoch > 0 and epoch % _a1_upd_every == 0:
                 _algo1_update(
                     field_comp, inp_train, hist_alpha, matprop, pffmodel,
-                    area_T, T_conn, f_fatigue,
+                    area_T, T_conn, _resolve_f_fatigue(f_fatigue),
                     supervised_dict, symmetry_dict, side_traction_dict, _a1,
                     element_mask=element_mask)
 
@@ -559,7 +565,7 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
             u, v, alpha = field_comp.fieldCalculation(inp_train)
             # ★ 传入 f_fatigue、crack_tip_weights、δ-1 element subset
             loss_E_el, loss_E_d, loss_hist = compute_energy(inp_train, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
-                                                            f_fatigue=f_fatigue,
+                                                            f_fatigue=_resolve_f_fatigue(f_fatigue),
                                                             crack_tip_weights=crack_tip_weights,
                                                             element_subset=_d1_subset,
                                                             importance_weights=_d1_imp_w,

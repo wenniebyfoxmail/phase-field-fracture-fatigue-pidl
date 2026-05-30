@@ -386,6 +386,7 @@ class FieldComputation:
         params = list(self.net.parameters())
         if self.c_singular is not None:
             params.append(self.c_singular)
+        params.extend(getattr(self, "extra_trainable_params", []))
         return params
 
     def local_patch_parameters(self):

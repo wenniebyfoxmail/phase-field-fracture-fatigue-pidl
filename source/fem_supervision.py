@@ -4,7 +4,7 @@ fem_supervision.py — MIT-8 (Apr 25 2026; Apr 27 full-sweep update)
 Loads FEM ψ⁺_raw snapshots and provides per-cycle target tensors aligned
 to PIDL element centroids via nearest-neighbor interpolation.
 
-FEM data format. Two layouts are auto-detected inside the FEM dir:
+FEM data format. Three layouts are auto-detected inside the FEM dir:
 
   (a) FLAT (Mac handoff_v2):
         u<NN>_cycle_<NNNN>.mat                 e.g. u12_cycle_0040.mat
@@ -14,7 +14,12 @@ FEM data format. Two layouts are auto-detected inside the FEM dir:
         SENT_PIDL_<NN>_export/psi_fields/cycle_<NNNN>.mat
         mesh_geometry.mat                       (anywhere at top level)
 
-Both produce per-cycle .mat files with key `psi_elem` (N_FEM_elem, 1).
+  (c) COMPACT v7.3/HDF5 cyclewise export:
+        *_element_fields_c1_cXX.mat
+        mesh_geometry.mat
+
+The per-cycle files contain `psi_elem` (N_FEM_elem, 1). Compact files contain
+cycle-by-element fields such as `psi_plus_elem` and `d_elem`.
 
 The dir is resolved in this priority order:
     1. ctor arg `fem_dir` (explicit override)
@@ -55,6 +60,28 @@ def _u_tag(umax: float) -> str:
     return f"u{int(round(umax * 100)):02d}"
 
 
+def _orient_by_last_dim(arr: np.ndarray, n_cols: int) -> np.ndarray:
+    out = np.asarray(arr)
+    if out.ndim == 2 and out.shape[0] == n_cols and out.shape[1] != n_cols:
+        return out.T
+    return out
+
+
+def _center_if_unit_square(centroids: np.ndarray) -> np.ndarray:
+    out = np.asarray(centroids, dtype=np.float64).copy()
+    if out.ndim != 2 or out.shape[1] < 2:
+        return out
+    xy = out[:, :2]
+    if (
+        xy[:, 0].min() >= -1e-9
+        and xy[:, 1].min() >= -1e-9
+        and xy[:, 0].max() <= 1.0 + 1e-9
+        and xy[:, 1].max() <= 1.0 + 1e-9
+    ):
+        out[:, :2] = xy - 0.5
+    return out
+
+
 class FEMSupervision:
     """Loads FEM ψ⁺_raw snapshots, provides time + space interpolation."""
 
@@ -69,9 +96,11 @@ class FEMSupervision:
         if not self.cycles:
             raise ValueError(
                 f"No FEM snapshots for umax={umax} in {self.fem_dir}. "
-                f"Looked for both '{_u_tag(umax)}_cycle_*.mat' (flat) and "
+                f"Looked for '{_u_tag(umax)}_cycle_*.mat' (flat), "
+                f"'{_u_tag(umax)}_reverseBC_cycle_*.mat' (reverseBC), "
                 f"'SENT_PIDL_{int(round(umax*100)):02d}_export/psi_fields/"
-                f"cycle_*.mat' (nested).")
+                f"cycle_*.mat' (nested), and '*_element_fields_c*_c*.mat' "
+                f"(compact).")
         self._load_mesh()
         self._load_snapshots()
 
@@ -83,11 +112,20 @@ class FEMSupervision:
         u_tag = _u_tag(self.umax)
         u_pct = int(round(self.umax * 100))
         path_for: dict[int, Path] = {}
+        compact_path: Path | None = None
 
         # Layout (a) FLAT
         flat_re = re.compile(rf"^{re.escape(u_tag)}_cycle_(\d+)\.mat$")
         for p in self.fem_dir.glob(f"{u_tag}_cycle_*.mat"):
             m = flat_re.match(p.name)
+            if m:
+                path_for[int(m.group(1))] = p
+
+        # Layout (a2) reverseBC handoff:
+        #   u12_reverseBC_cycle_0040.mat
+        reverse_re = re.compile(rf"^{re.escape(u_tag)}_reverseBC_cycle_(\d+)\.mat$")
+        for p in self.fem_dir.glob(f"{u_tag}_reverseBC_cycle_*.mat"):
+            m = reverse_re.match(p.name)
             if m:
                 path_for[int(m.group(1))] = p
 
@@ -101,6 +139,27 @@ class FEMSupervision:
                     c = int(m.group(1))
                     path_for.setdefault(c, p)
 
+        # Layout (c) COMPACT — MATLAB v7.3/HDF5 all-cycle field handoff.
+        # Use only when no per-cycle files were found, so older layouts keep
+        # their exact behavior.
+        if not path_for:
+            for p in sorted(self.fem_dir.glob("*_element_fields_c*_c*.mat")):
+                try:
+                    import h5py
+                    with h5py.File(p, "r") as h5:
+                        if "cycles" not in h5:
+                            continue
+                        if "d_elem" not in h5 and "psi_plus_elem" not in h5:
+                            continue
+                        cycles = np.asarray(h5["cycles"]).ravel().astype(int)
+                except Exception:
+                    continue
+                compact_path = p
+                for c in cycles:
+                    path_for[int(c)] = p
+                break
+
+        self._compact_path = compact_path
         self._path_for = path_for
         self.cycles = sorted(path_for.keys())
 
@@ -114,8 +173,18 @@ class FEMSupervision:
         for c in candidates:
             if c.is_file():
                 mesh = sio.loadmat(str(c))
-                self.fem_centroids = np.asarray(
-                    mesh["element_centroids"], dtype=np.float64)
+                self.fem_centroids = _center_if_unit_square(
+                    _orient_by_last_dim(mesh["element_centroids"], 2)
+                )
+                return
+        compact_path = getattr(self, "_compact_path", None)
+        if compact_path is not None:
+            import h5py
+
+            with h5py.File(compact_path, "r") as h5:
+                self.fem_centroids = _center_if_unit_square(
+                    _orient_by_last_dim(np.asarray(h5["element_centroids"], dtype=np.float64), 2)
+                )
                 return
         raise FileNotFoundError(
             f"mesh_geometry.mat not found near {self.fem_dir}. "
@@ -125,6 +194,10 @@ class FEMSupervision:
         """Load all cycle snapshots into self.psi_raw[c] = array(N_FEM,)."""
         self.psi_raw: dict[int, np.ndarray] = {}
         self.d_field: dict[int, np.ndarray] = {}
+        compact_path = getattr(self, "_compact_path", None)
+        if compact_path is not None:
+            self._load_compact_hdf5_snapshots(compact_path)
+            return
         for c in self.cycles:
             fname = self._path_for[c]
             data = sio.loadmat(str(fname))
@@ -133,6 +206,40 @@ class FEMSupervision:
             d = data.get("d_elem", data.get("alpha_elem"))
             if d is not None:
                 self.d_field[c] = np.asarray(d, dtype=np.float64).ravel()
+
+    def _load_compact_hdf5_snapshots(self, fname: Path) -> None:
+        """Load compact MATLAB v7.3 all-cycle FEM fields."""
+        import h5py
+
+        with h5py.File(fname, "r") as h5:
+            cycles = np.asarray(h5["cycles"]).ravel().astype(int)
+
+            def by_cycle(name: str) -> np.ndarray | None:
+                if name not in h5:
+                    return None
+                arr = np.asarray(h5[name], dtype=np.float64)
+                if arr.ndim != 2:
+                    raise ValueError(f"{fname}:{name} must be 2-D, got {arr.shape}")
+                if arr.shape[0] == len(cycles):
+                    return arr
+                if arr.shape[1] == len(cycles):
+                    return arr.T
+                raise ValueError(
+                    f"{fname}:{name} shape {arr.shape} is incompatible with "
+                    f"{len(cycles)} cycles")
+
+            psi = by_cycle("psi_plus_elem")
+            if psi is None:
+                psi = by_cycle("psi_elem")
+            d = by_cycle("d_elem")
+            if d is None:
+                d = by_cycle("alpha_elem")
+
+        for i, c in enumerate(cycles):
+            if psi is not None:
+                self.psi_raw[int(c)] = psi[i].ravel()
+            if d is not None:
+                self.d_field[int(c)] = d[i].ravel()
 
     def _interpolate_to_pidl(self, fem_field: np.ndarray,
                              pidl_centroids: np.ndarray) -> np.ndarray:
