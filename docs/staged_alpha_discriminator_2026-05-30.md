@@ -37,12 +37,11 @@ Schedule per fatigue cycle:
 The current MLP has one shared trunk, so this is a head-staging proxy for FEM
 alternate minimisation.  It does not change the physics loss.
 
-## Intended Taobo Launch
+## Taobo Launch
 
 ```bash
 cd /mnt/data2/drtao/projects/pidl-align-soft-hist0-20260529/SENS_tensile
 mkdir -p run_logs
-PIDL_ARCHIVE_DIR=/mnt/data2/drtao/projects/pidl-align-soft-hist0-20260529/SENS_tensile \
 CUDA_VISIBLE_DEVICES=0 /usr/bin/python3 run_fem_mesh_staged_alpha_umax.py 0.12 \
   --n-cycles 100 \
   --seed 1 \
@@ -93,5 +92,14 @@ strict FEM-mesh baseline.
 
 ## Launch Status
 
-Prepared and pushed.  Taobo launch was not completed at this time because SSH
-to `172.16.100.2:22` timed out from the Mac shell.
+Launched on Taobo after SSH recovered:
+
+```text
+PID: 1261309
+GPU: 3
+log: /mnt/data2/drtao/projects/pidl-align-soft-hist0-20260529/SENS_tensile/run_logs/femmesh_stagedAlpha_softHist0_u012_N100_seed1_20260530.log
+```
+
+Initial check: process alive after about one minute; GPU3 compute and memory are
+active.  The log had not flushed yet, so progress should be checked by process,
+GPU, and archive files until stdout starts writing.
