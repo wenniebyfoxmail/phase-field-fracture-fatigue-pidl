@@ -21,6 +21,7 @@ import numpy as np
 import torch
 import time
 from pathlib import Path
+from contextlib import contextmanager
 import matplotlib
 matplotlib.use('Agg')          # 非交互后端，训练中安全调用
 import matplotlib.pyplot as plt
@@ -142,6 +143,43 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         E_hist_elem=E_hist_np.astype(np.float32),
         residual_abs_Eel_Ed=(np.abs(E_el_np) + np.abs(E_d_np)).astype(np.float32),
     )
+
+
+def _resolve_output_layer(net):
+    """Return the final 3-row output layer for plain/Fourier nets."""
+    raw_net = getattr(net, "_orig_mod", net)  # torch.compile wrapper, if present
+    if hasattr(raw_net, "output_layer"):
+        return raw_net.output_layer
+    if hasattr(raw_net, "inner") and hasattr(raw_net.inner, "output_layer"):
+        return raw_net.inner.output_layer
+    raise AttributeError("Could not locate output_layer for staged head training")
+
+
+@contextmanager
+def _head_only_phase(field_comp, rows, label):
+    """Temporarily optimise only selected rows of the final output head."""
+    output_layer = _resolve_output_layer(field_comp.net)
+    row_mask = torch.zeros_like(output_layer.weight)
+    row_mask[list(rows), :] = 1.0
+    bias_mask = torch.zeros_like(output_layer.bias)
+    bias_mask[list(rows)] = 1.0
+
+    old_requires_grad = {p: p.requires_grad for p in field_comp.parameters()}
+    hooks = []
+    try:
+        for p in old_requires_grad:
+            p.requires_grad_(False)
+        output_layer.weight.requires_grad_(True)
+        output_layer.bias.requires_grad_(True)
+        hooks.append(output_layer.weight.register_hook(lambda grad: grad * row_mask))
+        hooks.append(output_layer.bias.register_hook(lambda grad: grad * bias_mask))
+        print(f"  [StagedAlpha] {label}: output rows {list(rows)} active")
+        yield [output_layer.weight, output_layer.bias]
+    finally:
+        for hook in hooks:
+            hook.remove()
+        for p, requires_grad in old_requires_grad.items():
+            p.requires_grad_(requires_grad)
 
 
 # ── 裂缝尖端检测（通用，基于 L∞ 距离）──────────────────────────────────────
@@ -422,6 +460,18 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
               f"residual={_adapt_cfg.get('residual_source','full')}, "
               f"从 cycle {_adapt_cfg.get('start_cycle',1)} 开始")
 
+    # ★ 2026-05-30: controlled staged-alpha discriminator.
+    # This does not change the variational objective.  It only changes the
+    # optimiser path inside each cycle: uv output head -> alpha output head ->
+    # normal joint solve.  Because the current MLP has one shared trunk, this is
+    # deliberately a low-risk head-staging proxy for FEM alternate minimisation.
+    _staged_cfg = fatigue_dict.get('staged_alpha', {}) if fatigue_on else {}
+    _staged_alpha = bool(_staged_cfg.get('enable', False))
+    if _staged_alpha:
+        print(f"[StagedAlpha] enabled | uv_head={_staged_cfg.get('uv_head_epochs', 0)} "
+              f"| alpha_head={_staged_cfg.get('alpha_head_epochs', 0)} "
+              f"| joint={optimizer_dict.get('n_epochs_RPROP', 0)}")
+
     # -------------------------------------------------------------------------
     # ★ 检测最新 step checkpoint，实现断点续训
     # -------------------------------------------------------------------------
@@ -646,6 +696,46 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 j_path_dict=j_path_dict,                # ★ J path-independence reg
             )
             loss_data = loss_data + loss_data1
+
+        if _staged_alpha:
+            _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
+            _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
+            _d1_active_cycle = (
+                _d1_dataset is not None and j >= _d1_start_cycle
+            )
+            _stage_min_delta = float(_staged_cfg.get(
+                'optim_rel_tol', optimizer_dict["optim_rel_tol"]
+            ))
+
+            def _run_staged_head(_label, _rows, _epochs):
+                if int(_epochs) <= 0:
+                    return []
+                with _head_only_phase(field_comp, _rows, _label) as _params:
+                    _optim = get_optimizer(_params, "RPROP")
+                    return fit_with_early_stopping(
+                        field_comp, training_set, T_conn, area_T, hist_alpha,
+                        matprop, pffmodel,
+                        optimizer_dict["weight_decay"], num_epochs=int(_epochs),
+                        optimizer=_optim, min_delta=_stage_min_delta,
+                        intermediateModel_path=None, writer=writer,
+                        training_dict=training_dict,
+                        f_fatigue=f_fatigue,
+                        crack_tip_weights=crack_tip_weights,
+                        supervised_dict=_supervised_dict,
+                        symmetry_dict=_symmetry_dict,
+                        side_traction_dict=_side_traction_dict,
+                        grad_annealing_state=grad_annealing_state,
+                        delta1_dataset=_d1_dataset if _d1_active_cycle else None,
+                        element_mask=_void_energy_mask,
+                        j_path_dict=j_path_dict,
+                    )
+
+            loss_data = loss_data + _run_staged_head(
+                "uv-head stage", (0, 1), _staged_cfg.get('uv_head_epochs', 0)
+            )
+            loss_data = loss_data + _run_staged_head(
+                "alpha-head stage", (2,), _staged_cfg.get('alpha_head_epochs', 0)
+            )
 
         if optimizer_dict["n_epochs_RPROP"] > 0:
             n_epochs  = optimizer_dict["n_epochs_RPROP"]
