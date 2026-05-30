@@ -5,6 +5,24 @@
 
 ---
 
+## GitHub Source-of-Truth Rule
+
+跨机代码工作默认采用：
+
+```text
+Mac upload code/ edit -> local sanity check -> commit -> push GitHub
+-> rsync/pull exact committed files to Taobo/CSD3/Windows -> run jobs
+```
+
+含义：
+
+- GitHub 是共享代码源；Taobo/CSD3/Windows 是执行机器。
+- 只在 Taobo 本地 commit，只会存在于 Taobo 的 git repo；GitHub 不会自动知道。
+- 若执行机器临时热修了代码，必须回传到 Mac 或直接从该机器 push，且在 outbox/log 中写明 commit hash。
+- 训练日志、archives、生成图表和大结果仍留在执行机器或分析目录，不因运行而自动进入 git。
+
+---
+
 ## 通信通道职责边界
 
 | 通道 | 写什么 | 不写什么 |

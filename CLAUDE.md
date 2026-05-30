@@ -59,6 +59,7 @@
 ## 红线（任何机器、任何时候）
 
 - **默认 commit 代码/共享文档改动**：只要有代码、runner、workflow、handoff、规则等共享文件改动，完成验证后就 commit；纯实验参数/队列参数改动可以不 commit，但必须在日志/命令里记录清楚。push 仍按用户明确要求或跨机同步需要执行。
+- **GitHub 是共享代码源**：代码/runner/规则先在 Mac `upload code/` 修改、验证、commit，并 push 到 GitHub；Taobo/CSD3/Windows 作为执行机器同步这些已 push 文件后运行。只在 Taobo 本地 commit 不会自动进入 GitHub，除非 Taobo 也执行 `git push`。
 - **不 force push / reset --hard / rebase -i / amend** 已 push 的 commit。
 - **代码进 git，结论进 memory**。不 commit 论文草稿、实验结论、生成数据。
 - **不覆盖** 别人的 shared_research_log entry。

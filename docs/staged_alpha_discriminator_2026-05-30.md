@@ -92,7 +92,7 @@ strict FEM-mesh baseline.
 
 ## Launch Status
 
-Launched on Taobo after SSH recovered:
+Initial branch launched on Taobo after SSH recovered:
 
 ```text
 PID: 1261309
@@ -103,3 +103,21 @@ log: /mnt/data2/drtao/projects/pidl-align-soft-hist0-20260529/SENS_tensile/run_l
 Initial check: process alive after about one minute; GPU3 compute and memory are
 active.  The log had not flushed yet, so progress should be checked by process,
 GPU, and archive files until stdout starts writing.
+
+Additional matrix branches:
+
+```text
+alpha-head-only:
+  PID: 1267928
+  GPU: 5
+  schedule: uv0 -> alpha1500 -> joint10000
+  log: /mnt/data2/drtao/projects/pidl-align-soft-hist0-20260529/SENS_tensile/run_logs/femmesh_alphaHeadOnly_softHist0_u012_N100_seed1_20260530.log
+
+uv-head-only:
+  pending launch
+  schedule: uv1500 -> alpha0 -> joint10000
+
+head-stages-only:
+  pending launch
+  schedule: uv750 -> alpha750 -> joint0
+```
