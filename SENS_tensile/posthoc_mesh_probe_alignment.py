@@ -99,6 +99,24 @@ def local_patch_from_settings(archive: Path) -> dict | None:
     }
 
 
+def discontinuity_from_settings(archive: Path) -> dict | None:
+    settings = parse_settings(archive / "model_settings.txt")
+    if not bool_setting(settings, "discontinuity_enable"):
+        return None
+    return {
+        "enable": True,
+        "kind": settings.get("discontinuity_kind", "sdf_ribbon_uv_only"),
+        "x_tip": float(settings.get("discontinuity_x_tip", 0.0)),
+        "y_tip": float(settings.get("discontinuity_y_tip", 0.0)),
+        "epsilon": float(settings.get("discontinuity_epsilon", 1e-3)),
+        "heaviside_kind": settings.get("discontinuity_heaviside_kind", "soft"),
+        "jump_hidden_layers": int(float(settings.get("discontinuity_jump_hidden_layers", 4))),
+        "jump_neurons": int(float(settings.get("discontinuity_jump_neurons", 100))),
+        "jump_activation": settings.get("discontinuity_jump_activation", "ReLU"),
+        "jump_relative_input": bool_setting(settings, "discontinuity_jump_relative_input"),
+    }
+
+
 def mesh_from_settings(archive: Path, override: Path | None) -> str:
     if override is not None:
         return str(override)
@@ -233,6 +251,7 @@ def pidl_model_and_mesh(archive: Path, umax: float, cycle: int, mesh_file: str):
         PFF_model_dict, mat_prop_dict, net_cfg, domain_extrema, DEVICE,
         williams_dict=williams_dict,
         fourier_dict=fourier_dict,
+        discontinuity_dict=discontinuity_from_settings(archive),
     )
     inp, t_conn, area_t, hist_alpha0 = prep_input_data(
         matprop, pffmodel, crack_dict, numr_dict, mesh_file=mesh_file, device=DEVICE

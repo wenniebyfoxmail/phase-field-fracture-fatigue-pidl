@@ -2,10 +2,11 @@ import torch
 import torch._dynamo   # ★ 顶层导入，避免函数内 import 触发 UnboundLocalError
 from pff_model import PFFModel
 from material_properties import MaterialProperties
+from discontinuity_network import SDFRibbonUVOnlyNet, XFEMJumpUVOnlyNet
 from network import NeuralNet, FourierFeatureNet, init_xavier
 
 def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, device,
-                    williams_dict=None, fourier_dict=None):
+                    williams_dict=None, fourier_dict=None, discontinuity_dict=None):
     """
     构建 PFF 模型、材料属性和神经网络。
 
@@ -42,9 +43,46 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
     _fourier_on = _fd.get('enable', False)
     if _williams_on and _fourier_on:
         raise ValueError("williams_dict and fourier_dict cannot both be enabled")
+    _dd = discontinuity_dict or {}
+    _disc_on = _dd.get('enable', False)
+    if _disc_on and (_williams_on or _fourier_on):
+        raise ValueError("discontinuity_dict cannot be combined with Williams or Fourier features")
 
     # Neural network
-    if _fourier_on:
+    if _disc_on:
+        _kind = str(_dd.get('kind', 'sdf_ribbon_uv_only'))
+        if _kind == 'sdf_ribbon_uv_only':
+            network = SDFRibbonUVOnlyNet(
+                n_hidden_layers=network_dict["hidden_layers"],
+                neurons=network_dict["neurons"],
+                activation=network_dict["activation"],
+                init_coeff=network_dict["init_coeff"],
+                x_tip=_dd.get('x_tip', 0.0),
+                epsilon=_dd.get('epsilon', 1e-3),
+            )
+            print("[construct_model] SDFRibbonUVOnlyNet enabled: "
+                  f"x_tip={_dd.get('x_tip', 0.0)}, epsilon={_dd.get('epsilon', 1e-3)}")
+        elif _kind == 'xfem_jump_uv_only':
+            network = XFEMJumpUVOnlyNet(
+                n_hidden_c=network_dict["hidden_layers"],
+                neurons_c=network_dict["neurons"],
+                n_hidden_j=int(_dd.get('jump_hidden_layers', 4)),
+                neurons_j=int(_dd.get('jump_neurons', 100)),
+                activation_c=network_dict["activation"],
+                activation_j=str(_dd.get('jump_activation', 'ReLU')),
+                init_coeff=network_dict["init_coeff"],
+                x_tip=_dd.get('x_tip', 0.0),
+                y_tip=_dd.get('y_tip', 0.0),
+                heaviside_eps=_dd.get('epsilon', 1e-3),
+                heaviside_kind=_dd.get('heaviside_kind', 'soft'),
+                jump_relative_input=_dd.get('jump_relative_input', True),
+            )
+            print("[construct_model] XFEMJumpUVOnlyNet enabled: "
+                  f"x_tip={_dd.get('x_tip', 0.0)}, eps={_dd.get('epsilon', 1e-3)}, "
+                  f"jump={_dd.get('jump_hidden_layers', 4)}x{_dd.get('jump_neurons', 100)}")
+        else:
+            raise ValueError(f"Unsupported discontinuity_dict kind={_kind!r}")
+    elif _fourier_on:
         network = FourierFeatureNet(
             input_dimension=in_dim,
             output_dimension=domain_extrema.shape[0]+1,

@@ -287,6 +287,21 @@ local_patch_dict = {
     "x_end": 0.45,
 }
 
+# Discontinuity-representation discriminator.  Off by default and enabled only
+# by dedicated runners so the standard benchmark remains unchanged.
+discontinuity_dict = {
+    "enable": False,
+    "kind": "sdf_ribbon_uv_only",  # 'sdf_ribbon_uv_only' or 'xfem_jump_uv_only'
+    "x_tip": 0.0,
+    "y_tip": 0.0,
+    "epsilon": 1e-3,
+    "heaviside_kind": "soft",
+    "jump_hidden_layers": 4,
+    "jump_neurons": 100,
+    "jump_activation": "ReLU",
+    "jump_relative_input": True,
+}
+
 
 # ★ 2026-05-13 Branch 2 C6: FI-PINN adaptive sampling via residual-driven loss reweight
 # ────────────────────────────────────────────────────────────────────────────────────
@@ -576,6 +591,16 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\nlocal_patch_n_patches: {local_patch_dict.get("n_patches", 1)}')
     file.write(f'\nlocal_patch_x_start: {local_patch_dict.get("x_start", 0.0)}')
     file.write(f'\nlocal_patch_x_end: {local_patch_dict.get("x_end", 0.45)}')
+    file.write(f'\ndiscontinuity_enable: {discontinuity_dict.get("enable", False)}')
+    file.write(f'\ndiscontinuity_kind: {discontinuity_dict.get("kind", "sdf_ribbon_uv_only")}')
+    file.write(f'\ndiscontinuity_x_tip: {discontinuity_dict.get("x_tip", 0.0)}')
+    file.write(f'\ndiscontinuity_y_tip: {discontinuity_dict.get("y_tip", 0.0)}')
+    file.write(f'\ndiscontinuity_epsilon: {discontinuity_dict.get("epsilon", 1e-3)}')
+    file.write(f'\ndiscontinuity_heaviside_kind: {discontinuity_dict.get("heaviside_kind", "soft")}')
+    file.write(f'\ndiscontinuity_jump_hidden_layers: {discontinuity_dict.get("jump_hidden_layers", 4)}')
+    file.write(f'\ndiscontinuity_jump_neurons: {discontinuity_dict.get("jump_neurons", 100)}')
+    file.write(f'\ndiscontinuity_jump_activation: {discontinuity_dict.get("jump_activation", "ReLU")}')
+    file.write(f'\ndiscontinuity_jump_relative_input: {discontinuity_dict.get("jump_relative_input", True)}')
 
 ## #############################################################################
 ## #############################################################################

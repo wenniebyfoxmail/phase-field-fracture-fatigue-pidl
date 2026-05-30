@@ -72,6 +72,23 @@ def local_patch_from_settings(settings: dict[str, str]) -> dict | None:
     }
 
 
+def discontinuity_from_settings(settings: dict[str, str]) -> dict | None:
+    if not bool_setting(settings, "discontinuity_enable"):
+        return None
+    return {
+        "enable": True,
+        "kind": settings.get("discontinuity_kind", "sdf_ribbon_uv_only"),
+        "x_tip": float(settings.get("discontinuity_x_tip", 0.0)),
+        "y_tip": float(settings.get("discontinuity_y_tip", 0.0)),
+        "epsilon": float(settings.get("discontinuity_epsilon", 1e-3)),
+        "heaviside_kind": settings.get("discontinuity_heaviside_kind", "soft"),
+        "jump_hidden_layers": int(float(settings.get("discontinuity_jump_hidden_layers", 4))),
+        "jump_neurons": int(float(settings.get("discontinuity_jump_neurons", 100))),
+        "jump_activation": settings.get("discontinuity_jump_activation", "ReLU"),
+        "jump_relative_input": bool_setting(settings, "discontinuity_jump_relative_input"),
+    }
+
+
 def mesh_from_settings(archive: Path, override: Path | None = None) -> str:
     if override is not None:
         return str(override)
@@ -122,7 +139,9 @@ def build_field_computation(archive: Path, device: torch.device, umax: float,
     pffmodel, matprop, network = construct_model(
         config.PFF_model_dict, config.mat_prop_dict, net_cfg,
         config.domain_extrema, device,
-        williams_dict=williams_dict, fourier_dict=fourier_dict,
+        williams_dict=williams_dict,
+        fourier_dict=fourier_dict,
+        discontinuity_dict=discontinuity_from_settings(settings),
     )
     inp, t_conn, area_t, _ = prep_input_data(
         matprop, pffmodel, config.crack_dict, config.numr_dict,

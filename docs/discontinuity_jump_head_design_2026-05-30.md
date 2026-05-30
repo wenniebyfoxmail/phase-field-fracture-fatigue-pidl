@@ -87,3 +87,48 @@ psi_plus_elem    backward-compatible active driver
 psi_active_elem  active driver
 psi_raw_elem     undegraded raw tensile driver
 ```
+
+## Implemented Strict Discriminators
+
+Runner:
+
+```text
+SENS_tensile/run_fem_mesh_discontinuity_umax.py
+```
+
+Variants:
+
+```text
+sdf_ribbon_uv_only
+xfem_jump_uv_only
+```
+
+Both use the strict FEM-mesh soft-hist0 track and disable Williams/Fourier,
+exact BC, local patch, staged heads, residual weighting, and adaptive sampling.
+The only intended intervention is the representation:
+
+```text
+sdf_ribbon_uv_only:
+  uv_net sees (x, y, gamma), alpha_net sees (x, y)
+  gamma = sign(y) * sigmoid(-(x - x_tip) / epsilon)
+
+xfem_jump_uv_only:
+  output = continuous_NN(x, y) + H_eps(x - x_tip) * jump_uv_NN(x, y)
+  the jump correction applies to u/v only; alpha remains from the continuous head
+```
+
+Initial Taobo plan:
+
+```text
+python SENS_tensile/run_fem_mesh_discontinuity_umax.py 0.12 \
+  --variant sdf_ribbon_uv_only --n-cycles 100 --seed 1 \
+  --mesh-file meshed_geom_fem_baseline.msh --epsilon 1e-3
+
+python SENS_tensile/run_fem_mesh_discontinuity_umax.py 0.12 \
+  --variant xfem_jump_uv_only --n-cycles 100 --seed 1 \
+  --mesh-file meshed_geom_fem_baseline.msh --epsilon 1e-3
+```
+
+Run these simultaneously only on separate GPUs.  Treat `sdf_ribbon_uv_only` as
+the lower-risk discriminator and `xfem_jump_uv_only` as the sharper but riskier
+one.
