@@ -77,6 +77,24 @@ def exact_bc_from_settings(archive: Path) -> dict | None:
     return None
 
 
+def local_patch_from_settings(archive: Path) -> dict | None:
+    settings = parse_settings(archive / "model_settings.txt")
+    if not bool_setting(settings, "local_patch_enable"):
+        return None
+    return {
+        "enable": True,
+        "x_tip": float(settings.get("local_patch_x_tip", 0.0)),
+        "y_tip": float(settings.get("local_patch_y_tip", 0.0)),
+        "wr": float(settings.get("local_patch_wr", 0.1)),
+        "output_mode": settings.get("local_patch_output_mode", "all"),
+        "hidden_layers": int(float(settings.get("local_patch_hidden_layers", 3))),
+        "neurons": int(float(settings.get("local_patch_neurons", 80))),
+        "activation": settings.get("local_patch_activation", "TrainableReLU"),
+        "init_coeff": float(settings.get("local_patch_init_coeff", 1.0)),
+        "scale": float(settings.get("local_patch_scale", 1.0)),
+    }
+
+
 def mesh_from_settings(archive: Path, override: Path | None) -> str:
     if override is not None:
         return str(override)
@@ -224,6 +242,7 @@ def pidl_model_and_mesh(archive: Path, umax: float, cycle: int, mesh_file: str):
         williams_dict=williams_dict,
         l0=mat_prop_dict["l0"],
         exact_bc_dict=exact_bc_from_settings(archive),
+        local_patch_dict=local_patch_from_settings(archive),
     )
     ckpt = archive / "best_models" / f"trained_1NN_{cycle}.pt"
     field_comp.net.load_state_dict(torch.load(str(ckpt), map_location=DEVICE, weights_only=True))

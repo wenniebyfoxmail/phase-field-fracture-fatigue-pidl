@@ -11,6 +11,7 @@ if str(_SOURCE_PATH) not in sys.path:
 from williams_features import compute_williams_features
 # ★ Direction 5: Enriched Ansatz —— 输出端 Williams 主奇异项增强
 from enriched_ansatz import compute_enrichment
+from network import NeuralNet, init_xavier
 
 
 class FieldComputation:
@@ -76,7 +77,8 @@ class FieldComputation:
                  ansatz_dict=None,
                  l0=0.01,
                  symmetry_prior=False,
-                 exact_bc_dict=None):
+                 exact_bc_dict=None,
+                 local_patch_dict=None):
         self.net = net
         self.domain_extrema = domain_extrema
         self.theta = theta
@@ -131,6 +133,60 @@ class FieldComputation:
         if self.exact_bc_enabled and self.exact_bc_mode not in ('sent_plane_strain', 'fem_anchor'):
             raise ValueError(f"Unsupported exact_bc_mode={self.exact_bc_mode!r}")
 
+        # ★ 2026-05-30: local patch representation discriminator.
+        # This keeps the variational objective unchanged.  It only enriches the
+        # raw NN output by adding a compact-support local network near the crack
+        # tip.  The patch net is registered as a child of self.net so existing
+        # checkpoint files (field_comp.net.state_dict()) include its weights.
+        _lp = local_patch_dict or {}
+        self.local_patch_enabled = bool(_lp.get('enable', False))
+        self.local_patch_x_tip = float(_lp.get('x_tip', 0.0))
+        self.local_patch_y_tip = float(_lp.get('y_tip', 0.0))
+        self.local_patch_wr = float(_lp.get('wr', 0.1))
+        self.local_patch_scale = float(_lp.get('scale', 1.0))
+        self.local_patch_output_mode = str(_lp.get('output_mode', 'all'))
+        if self.local_patch_enabled:
+            if self.local_patch_wr <= 0.0:
+                raise ValueError("local_patch_dict['wr'] must be positive")
+            if self.local_patch_output_mode not in ('all', 'alpha_only', 'uv_only'):
+                raise ValueError(
+                    "local_patch_dict['output_mode'] must be 'all', 'alpha_only', or 'uv_only'"
+                )
+            patch_net = NeuralNet(
+                input_dimension=2,
+                output_dimension=3,
+                n_hidden_layers=int(_lp.get('hidden_layers', 3)),
+                neurons=int(_lp.get('neurons', 80)),
+                activation=str(_lp.get('activation', 'TrainableReLU')),
+                init_coeff=float(_lp.get('init_coeff', 1.0)),
+            )
+            init_xavier(patch_net)
+            self.net.add_module('local_patch_net', patch_net)
+            print("[LocalPatch] enabled | "
+                  f"mode={self.local_patch_output_mode} "
+                  f"wr={self.local_patch_wr:.4f} "
+                  f"tip=({self.local_patch_x_tip:.4f},{self.local_patch_y_tip:.4f}) "
+                  f"scale={self.local_patch_scale:.3g}")
+
+    def _local_patch_output(self, inp):
+        if not self.local_patch_enabled:
+            return None
+        dx = (inp[:, 0] - self.local_patch_x_tip) / self.local_patch_wr
+        dy = (inp[:, 1] - self.local_patch_y_tip) / self.local_patch_wr
+        local_inp = torch.stack([dx, dy], dim=1)
+        r2 = dx.square() + dy.square()
+        chi = torch.clamp(1.0 - r2, min=0.0).square()
+        patch = self.net.local_patch_net(local_inp)
+
+        if self.local_patch_output_mode == 'alpha_only':
+            mask = torch.tensor([0.0, 0.0, 1.0], dtype=patch.dtype, device=patch.device)
+            patch = patch * mask
+        elif self.local_patch_output_mode == 'uv_only':
+            mask = torch.tensor([1.0, 1.0, 0.0], dtype=patch.dtype, device=patch.device)
+            patch = patch * mask
+
+        return self.local_patch_scale * chi.unsqueeze(1) * patch
+
     def _normalized_tb_bubble(self, inp, y0, yL):
         """Top-bottom bubble in [0, 1], zero on y=y0 and y=yL."""
         H = yL - y0
@@ -184,6 +240,9 @@ class FieldComputation:
             inp_nn = inp   # 原始行为，无开销
 
         out = self.net(inp_nn)     # 神经网络输出（8D 或 2D 输入）
+        patch_out = self._local_patch_output(inp)
+        if patch_out is not None:
+            out = out + patch_out
 
         # ★ 2026-05-06 mirror symmetry: enforce odd parity on disp_v_raw correction
         # disp_u_raw: even (NN raw output already even via y² input) — pass through
@@ -272,6 +331,11 @@ class FieldComputation:
         if self.c_singular is not None:
             params.append(self.c_singular)
         return params
+
+    def local_patch_parameters(self):
+        if not self.local_patch_enabled:
+            return []
+        return list(self.net.local_patch_net.parameters())
     
 
 class NonsmoothSigmoid(nn.Module):

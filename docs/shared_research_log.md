@@ -42,6 +42,30 @@
 
 ## Entries
 
+## 2026-05-30 · Mac-PIDL [implementation]
+
+**Strict FEM-mesh local-patch discriminator prepared**
+
+Added a compact-support crack-tip patch representation for the next field-level
+test after head-staging closed negative:
+
+```text
+raw_output = global_MLP(x,y) + chi(r) * local_patch_MLP(local_coords)
+chi(r) = max(1 - r^2/wr^2, 0)^2
+```
+
+The default runner is `SENS_tensile/run_fem_mesh_local_patch_umax.py` with
+strict FEM-mesh soft-hist0 controls, `wr=0.10`, `output_mode=all`, a 3x80 local
+patch, and per-cycle `patch-only warm-up -> joint RPROP`.  The physics loss,
+fatigue law, history timing, and event criterion are unchanged.  The local patch
+is registered under `field_comp.net.local_patch_net`, so normal
+`trained_1NN_*.pt` files contain patch weights.  Common-probe and element-field
+posthoc tools now reconstruct local-patch archives from `model_settings.txt`.
+
+Gate: compare c20/c40/c69 and matched-event states to FEM standard/n_step10 via
+damage, `alpha_bar`, raw/active `psi+`, `Delta E_d`, and alpha/residual fields.
+Artifact: `docs/local_patch_discriminator_2026-05-30.md`.
+
 ## 2026-05-30 · Mac-PIDL [finding]
 
 **Strict FEM-mesh head-staging discriminator closed: optimiser ordering is not the field-gap mechanism**

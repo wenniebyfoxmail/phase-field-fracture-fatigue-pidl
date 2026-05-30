@@ -265,6 +265,25 @@ fourier_dict = {
 }
 
 
+# ★ 2026-05-30: compact-support local patch representation.
+# The patch is a small NN added to the raw global NN output inside
+# χ(r)=max(1-r²/wr²,0)².  It changes representation capacity near the tip but
+# does not add a new physics term to the loss.  Runners can optionally add a
+# patch-only warm-up phase via fatigue_dict["local_patch_training"].
+local_patch_dict = {
+    "enable": False,
+    "x_tip": 0.0,
+    "y_tip": 0.0,
+    "wr": 0.10,
+    "output_mode": "all",       # all | alpha_only | uv_only
+    "hidden_layers": 3,
+    "neurons": 80,
+    "activation": "TrainableReLU",
+    "init_coeff": 1.0,
+    "scale": 1.0,
+}
+
+
 # ★ 2026-05-13 Branch 2 C6: FI-PINN adaptive sampling via residual-driven loss reweight
 # ────────────────────────────────────────────────────────────────────────────────────
 # Background: PIDL ᾱ_max trails FEM 10-100× at crack tip. Tested mechanisms (Apr-May):
@@ -537,6 +556,18 @@ with open(model_path/Path('model_settings.txt'), 'w') as file:
     file.write(f'\nspAlphaT_r_T: {_sp_cfg.get("r_T", 0.1)}')
     file.write(f'\nspAlphaT_x_tip: {_sp_cfg.get("x_tip", 0.0)}')
     file.write(f'\nspAlphaT_y_tip: {_sp_cfg.get("y_tip", 0.0)}')
+    # ★ 2026-05-30: Local patch representation parameters
+    file.write(f'\n--- local_patch ---')
+    file.write(f'\nlocal_patch_enable: {local_patch_dict.get("enable", False)}')
+    file.write(f'\nlocal_patch_x_tip: {local_patch_dict.get("x_tip", 0.0)}')
+    file.write(f'\nlocal_patch_y_tip: {local_patch_dict.get("y_tip", 0.0)}')
+    file.write(f'\nlocal_patch_wr: {local_patch_dict.get("wr", 0.1)}')
+    file.write(f'\nlocal_patch_output_mode: {local_patch_dict.get("output_mode", "all")}')
+    file.write(f'\nlocal_patch_hidden_layers: {local_patch_dict.get("hidden_layers", 3)}')
+    file.write(f'\nlocal_patch_neurons: {local_patch_dict.get("neurons", 80)}')
+    file.write(f'\nlocal_patch_activation: {local_patch_dict.get("activation", "TrainableReLU")}')
+    file.write(f'\nlocal_patch_init_coeff: {local_patch_dict.get("init_coeff", 1.0)}')
+    file.write(f'\nlocal_patch_scale: {local_patch_dict.get("scale", 1.0)}')
 
 ## #############################################################################
 ## #############################################################################

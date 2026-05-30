@@ -182,6 +182,26 @@ def _head_only_phase(field_comp, rows, label):
             p.requires_grad_(requires_grad)
 
 
+@contextmanager
+def _local_patch_only_phase(field_comp):
+    """Temporarily optimise only the compact local patch parameters."""
+    patch_params = list(field_comp.local_patch_parameters())
+    if not patch_params:
+        raise RuntimeError("local_patch_training requested but local patch is disabled")
+
+    old_requires_grad = {p: p.requires_grad for p in field_comp.parameters()}
+    try:
+        for p in old_requires_grad:
+            p.requires_grad_(False)
+        for p in patch_params:
+            p.requires_grad_(True)
+        print(f"  [LocalPatch] patch-only warm-up: {len(patch_params)} tensors active")
+        yield patch_params
+    finally:
+        for p, requires_grad in old_requires_grad.items():
+            p.requires_grad_(requires_grad)
+
+
 # ── 裂缝尖端检测（通用，基于 L∞ 距离）──────────────────────────────────────
 def get_crack_tip(alpha_vals, node_coords, crack_mouth_xy, threshold=0.9,
                   x_min=None):
@@ -472,6 +492,19 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
               f"| alpha_head={_staged_cfg.get('alpha_head_epochs', 0)} "
               f"| joint={optimizer_dict.get('n_epochs_RPROP', 0)}")
 
+    # ★ 2026-05-30: local-patch authority discriminator.
+    # This freezes the global NN briefly and lets the compact support patch fit
+    # the same variational loss.  It changes optimiser authority only; the
+    # energy terms and fatigue/history update remain exactly the usual ones.
+    _patch_train_cfg = fatigue_dict.get('local_patch_training', {}) if fatigue_on else {}
+    _local_patch_training = bool(_patch_train_cfg.get('enable', False))
+    if _local_patch_training:
+        if not getattr(field_comp, 'local_patch_enabled', False):
+            raise ValueError("fatigue_dict['local_patch_training'] enabled but local_patch_dict is off")
+        print(f"[LocalPatch] training enabled | warm_epochs="
+              f"{_patch_train_cfg.get('warm_epochs', 0)} "
+              f"| joint={optimizer_dict.get('n_epochs_RPROP', 0)}")
+
     # -------------------------------------------------------------------------
     # ★ 检测最新 step checkpoint，实现断点续训
     # -------------------------------------------------------------------------
@@ -736,6 +769,38 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             loss_data = loss_data + _run_staged_head(
                 "alpha-head stage", (2,), _staged_cfg.get('alpha_head_epochs', 0)
             )
+
+        if _local_patch_training:
+            _patch_epochs = int(_patch_train_cfg.get('warm_epochs', 0))
+            if _patch_epochs > 0:
+                _symmetry_dict = fatigue_dict.get('symmetry_soft', None)
+                _side_traction_dict = fatigue_dict.get('side_traction_soft', None)
+                _d1_active_cycle = (
+                    _d1_dataset is not None and j >= _d1_start_cycle
+                )
+                _patch_min_delta = float(_patch_train_cfg.get(
+                    'optim_rel_tol', optimizer_dict["optim_rel_tol"]
+                ))
+                with _local_patch_only_phase(field_comp) as _patch_params:
+                    _patch_optim = get_optimizer(_patch_params, "RPROP")
+                    loss_data_patch = fit_with_early_stopping(
+                        field_comp, training_set, T_conn, area_T, hist_alpha,
+                        matprop, pffmodel,
+                        optimizer_dict["weight_decay"], num_epochs=_patch_epochs,
+                        optimizer=_patch_optim, min_delta=_patch_min_delta,
+                        intermediateModel_path=None, writer=writer,
+                        training_dict=training_dict,
+                        f_fatigue=f_fatigue,
+                        crack_tip_weights=crack_tip_weights,
+                        supervised_dict=_supervised_dict,
+                        symmetry_dict=_symmetry_dict,
+                        side_traction_dict=_side_traction_dict,
+                        grad_annealing_state=grad_annealing_state,
+                        delta1_dataset=_d1_dataset if _d1_active_cycle else None,
+                        element_mask=_void_energy_mask,
+                        j_path_dict=j_path_dict,
+                    )
+                loss_data = loss_data + loss_data_patch
 
         if optimizer_dict["n_epochs_RPROP"] > 0:
             n_epochs  = optimizer_dict["n_epochs_RPROP"]

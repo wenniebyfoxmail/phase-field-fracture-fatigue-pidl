@@ -51,6 +51,23 @@ def bool_setting(settings: dict[str, str], key: str) -> bool:
     return settings.get(key, "False").strip().lower() in {"1", "true", "yes"}
 
 
+def local_patch_from_settings(settings: dict[str, str]) -> dict | None:
+    if not bool_setting(settings, "local_patch_enable"):
+        return None
+    return {
+        "enable": True,
+        "x_tip": float(settings.get("local_patch_x_tip", 0.0)),
+        "y_tip": float(settings.get("local_patch_y_tip", 0.0)),
+        "wr": float(settings.get("local_patch_wr", 0.1)),
+        "output_mode": settings.get("local_patch_output_mode", "all"),
+        "hidden_layers": int(float(settings.get("local_patch_hidden_layers", 3))),
+        "neurons": int(float(settings.get("local_patch_neurons", 80))),
+        "activation": settings.get("local_patch_activation", "TrainableReLU"),
+        "init_coeff": float(settings.get("local_patch_init_coeff", 1.0)),
+        "scale": float(settings.get("local_patch_scale", 1.0)),
+    }
+
+
 def mesh_from_settings(archive: Path, override: Path | None = None) -> str:
     if override is not None:
         return str(override)
@@ -116,6 +133,7 @@ def build_field_computation(archive: Path, device: torch.device, umax: float,
         williams_dict=williams_dict,
         l0=config.mat_prop_dict["l0"],
         exact_bc_dict=exact_bc_dict,
+        local_patch_dict=local_patch_from_settings(settings),
     )
     field_comp.net = field_comp.net.to(device)
     return field_comp, pffmodel, matprop, inp, t_conn, area_t
