@@ -52,6 +52,27 @@ def exact_bc_from_settings(archive: Path) -> dict | None:
     return None
 
 
+def resolve_mesh_file(raw: str, archive: Path, override: Path | None = None) -> str:
+    if override is not None:
+        return str(override.expanduser().resolve())
+    candidate = Path(raw).expanduser()
+    if candidate.is_file():
+        return str(candidate)
+    local = HERE / candidate.name
+    if local.is_file():
+        return str(local)
+    pulled = archive / candidate.name
+    if pulled.is_file():
+        return str(pulled)
+    return str(candidate)
+
+
+def mesh_from_settings(archive: Path, override: Path | None = None) -> str:
+    settings = parse_settings(archive / "model_settings.txt")
+    raw = settings.get("fine_mesh_file") or str(config.fine_mesh_file)
+    return resolve_mesh_file(raw, archive, override)
+
+
 def carrara_f(alpha_bar: torch.Tensor, alpha_t: float = 0.5) -> torch.Tensor:
     out = torch.ones_like(alpha_bar)
     mask = alpha_bar > alpha_t
@@ -82,7 +103,8 @@ def probe_metrics(values: np.ndarray, areas: np.ndarray, centroids: np.ndarray) 
     }
 
 
-def build_model(archive: Path, umax: float, device: torch.device):
+def build_model(archive: Path, umax: float, device: torch.device,
+                mesh_override: Path | None = None):
     settings = parse_settings(archive / "model_settings.txt")
     net_cfg = dict(config.network_dict)
     if "seed" in settings:
@@ -90,6 +112,7 @@ def build_model(archive: Path, umax: float, device: torch.device):
     if "coeff" in settings:
         net_cfg["init_coeff"] = float(settings["coeff"])
 
+    mesh_file = mesh_from_settings(archive, mesh_override)
     pffmodel, matprop, network = construct_model(
         config.PFF_model_dict, config.mat_prop_dict, net_cfg,
         config.domain_extrema, device,
@@ -98,7 +121,7 @@ def build_model(archive: Path, umax: float, device: torch.device):
     )
     inp, t_conn, area_t, _ = prep_input_data(
         matprop, pffmodel, config.crack_dict, config.numr_dict,
-        mesh_file=config.fine_mesh_file, device=device,
+        mesh_file=mesh_file, device=device,
     )
     field_comp = FieldComputation(
         net=network,
@@ -111,7 +134,7 @@ def build_model(archive: Path, umax: float, device: torch.device):
         exact_bc_dict=exact_bc_from_settings(archive),
     )
     field_comp.net = field_comp.net.to(device)
-    return field_comp, pffmodel, matprop, inp, t_conn, area_t
+    return field_comp, pffmodel, matprop, inp, t_conn, area_t, mesh_file
 
 
 def safe_load(path: Path, device: torch.device):
@@ -180,6 +203,8 @@ def main() -> int:
     ap.add_argument("--lr", type=float, default=0.5)
     ap.add_argument("--weight-decay", type=float, default=1e-5)
     ap.add_argument("--device", default=None, help="cuda, cuda:0, or cpu; default uses config.device")
+    ap.add_argument("--mesh-file", type=Path, default=None,
+                    help="Override mesh used to reconstruct the checkpoint fields")
     ap.add_argument("--out-dir", type=Path, default=None)
     args = ap.parse_args()
 
@@ -188,7 +213,9 @@ def main() -> int:
     out_dir = args.out_dir or (archive / "optimizer_audit" / f"cycle_{args.cycle:04d}_lbfgs{args.max_iter}")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    field_comp, pffmodel, matprop, inp, t_conn, area_t = build_model(archive, args.umax, device)
+    field_comp, pffmodel, matprop, inp, t_conn, area_t, mesh_file = build_model(
+        archive, args.umax, device, args.mesh_file
+    )
     field_comp.net.load_state_dict(safe_load(archive / "best_models" / f"trained_1NN_{args.cycle}.pt", device))
     step = safe_load(archive / "best_models" / f"checkpoint_step_{args.cycle}.pt", device)
     hist_alpha = step["hist_alpha"].to(device)
@@ -233,8 +260,23 @@ def main() -> int:
         writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         writer.writeheader()
         writer.writerows(rows)
+    (out_dir / "lbfgs_polish_metadata.txt").write_text(
+        "\n".join([
+            f"archive={archive}",
+            f"cycle={args.cycle}",
+            f"umax={args.umax}",
+            f"device={device}",
+            f"mesh_file={mesh_file}",
+            f"max_iter={args.max_iter}",
+            f"lr={args.lr}",
+            f"weight_decay={args.weight_decay}",
+            "",
+        ]),
+        encoding="utf-8",
+    )
 
     print(f"saved {out_dir / 'lbfgs_polish_metrics.csv'}")
+    print(f"mesh={mesh_file}")
     for row in rows:
         print(
             f"{row['stage']}: loss={row['loss_total']:.8e} "
