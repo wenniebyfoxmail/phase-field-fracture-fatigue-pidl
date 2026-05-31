@@ -196,6 +196,52 @@ class NeuralNet(nn.Module):
             return self.output_layer(x)
 
 
+class SplitTrunkNet(nn.Module):
+    """Two independent MLP trunks for displacement and damage outputs.
+
+    ``NeuralNet`` uses one shared hidden representation and a 3-row final output
+    layer.  This diagnostic architecture instead builds one MLP for ``u,v`` and
+    a second MLP for ``alpha``.  The variational energy and boundary-condition
+    ansatz are unchanged; only the trial space/parameter sharing changes.
+    """
+
+    split_trunk_enabled = True
+
+    def __init__(self, input_dimension, n_hidden_layers, neurons, activation,
+                 init_coeff=1.0):
+        super().__init__()
+        self.input_dimension = input_dimension
+        self.output_dimension = 3
+        self.neurons = neurons
+        self.n_hidden_layers = n_hidden_layers
+        self.name_activation = activation
+        self.init_coeff = init_coeff
+        self.uv_net = NeuralNet(
+            input_dimension=input_dimension,
+            output_dimension=2,
+            n_hidden_layers=n_hidden_layers,
+            neurons=neurons,
+            activation=activation,
+            init_coeff=init_coeff,
+        )
+        self.alpha_net = NeuralNet(
+            input_dimension=input_dimension,
+            output_dimension=1,
+            n_hidden_layers=n_hidden_layers,
+            neurons=neurons,
+            activation=activation,
+            init_coeff=init_coeff,
+        )
+        self.trainable_activation = (
+            self.uv_net.trainable_activation or self.alpha_net.trainable_activation
+        )
+
+    def forward(self, x):
+        uv = self.uv_net(x)
+        alpha = self.alpha_net(x)
+        return torch.cat([uv, alpha], dim=1)
+
+
 # ★ 2026-05-11 C10: Fourier feature input wrapper for spectral-bias mitigation.
 #   Anchor: Tancik et al. 2020 NeurIPS; Xu et al. 2025 JCP review §4.2.
 #   γ(x) = [cos(2π B·x), sin(2π B·x)],  B ∈ R^{n_features × input_dim},  B_ij ~ N(0, σ²)
@@ -323,4 +369,3 @@ def init_xavier(model):
                 m.bias.data.fill_(0)
 
     model.apply(init_weights)
-

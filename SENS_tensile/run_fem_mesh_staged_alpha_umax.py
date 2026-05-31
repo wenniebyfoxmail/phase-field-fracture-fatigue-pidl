@@ -5,12 +5,12 @@ The physics objective, mesh, initial crack convention, and fracture criterion
 match ``run_fem_mesh_umax.py``.  The only intended discriminator is the
 per-cycle optimiser path:
 
-    uv output head -> alpha output head -> normal joint RPROP
+    uv output head/branch -> alpha output head/branch -> normal joint RPROP
 
-Because the current network uses one shared trunk, the first two stages only
-train selected rows of the final output layer.  This is a low-risk proxy for
-FEM-style alternate minimisation; it should be scored by field gates, not only
-by N_f.
+By default this is a low-risk proxy that trains selected rows of the final
+output layer.  With ``--split-trunk`` it uses independent uv and alpha MLP
+trunks, so the staged phases train whole physical branches rather than only
+final output rows.
 """
 from __future__ import annotations
 
@@ -62,6 +62,8 @@ def main() -> None:
                    help="Initial lr/step size for the uv-head stage.")
     p.add_argument("--alpha-lr", type=float, default=1e-5,
                    help="Initial lr/step size for the alpha-head stage.")
+    p.add_argument("--split-trunk", action="store_true",
+                   help="Use independent uv and alpha MLP trunks.")
     p.add_argument("--diagnostic-cycles", default="0,1,2,3,20,40,69,80,99",
                    help="Cycles for state/gradient export.")
     p.add_argument("--no-field-files", action="store_true",
@@ -110,6 +112,7 @@ def main() -> None:
     config.coarse_mesh_file = coarse_mesh
     config.fine_mesh_file = fem_mesh
     config.network_dict["compile"] = bool(args.compile)
+    config.network_dict["split_trunk"] = {"enable": bool(args.split_trunk)}
     config.optimizer_dict["n_epochs_RPROP"] = int(args.joint_epochs)
     config.fatigue_dict["disp_max"] = float(args.umax)
     config.fatigue_dict["n_cycles"] = int(args.n_cycles)
@@ -147,6 +150,7 @@ def main() -> None:
     tag = _mesh_tag(fem_mesh, args.tag)
     stage_tag = (
         f"_femmesh_{tag}_stagedAlpha"
+        f"{'_splitTrunk' if args.split_trunk else ''}"
         f"_uv{args.uv_head_epochs}-{args.uv_optimizer}{args.uv_lr:g}"
         f"_a{args.alpha_head_epochs}-{args.alpha_optimizer}{args.alpha_lr:g}"
         f"_j{args.joint_epochs}"
@@ -192,6 +196,7 @@ def main() -> None:
         f.write(f"alpha_optimizer: {args.alpha_optimizer}\n")
         f.write(f"uv_lr: {args.uv_lr}\n")
         f.write(f"alpha_lr: {args.alpha_lr}\n")
+        f.write(f"split_trunk: {bool(args.split_trunk)}\n")
         f.write(f"diagnostic_cycles: {args.diagnostic_cycles}\n")
         f.write(f"gradient_balance: {not bool(args.no_gradient_balance)}\n")
         f.write("purpose: strict FEM-mesh PIDL staged-alpha optimisation discriminator\n")
@@ -202,6 +207,7 @@ def main() -> None:
     print(f"  FEM mesh    = {fem_mesh}")
     print(f"  coarse mesh = {coarse_mesh}")
     print(f"  uv/alpha/j  = {args.uv_head_epochs}/{args.alpha_head_epochs}/{args.joint_epochs}")
+    print(f"  split trunk = {bool(args.split_trunk)}")
     print(f"  opt/lr      = uv {args.uv_optimizer}@{args.uv_lr:g} | "
           f"alpha {args.alpha_optimizer}@{args.alpha_lr:g}")
     print(f"  diagnostics= {args.diagnostic_cycles} | gradient={not bool(args.no_gradient_balance)}")

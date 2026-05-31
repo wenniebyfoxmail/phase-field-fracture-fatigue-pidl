@@ -226,13 +226,20 @@ def _gradient_stats(grads):
     }
 
 
-def _gradient_stats_for_group(params, grads, group_name, output_layer=None):
+def _gradient_stats_for_group(params, grads, group_name, output_layer=None,
+                              param_groups=None):
     vals = []
+    group_ids = None
+    if param_groups is not None:
+        group_ids = param_groups.get(group_name)
     for param, grad in zip(params, grads):
         if grad is None:
             continue
         if group_name == "all":
             vals.append(grad)
+        elif group_ids is not None:
+            if id(param) in group_ids:
+                vals.append(grad)
         elif group_name == "uv_head":
             if output_layer is not None and param is output_layer.weight:
                 vals.append(grad[0:2, :])
@@ -264,6 +271,7 @@ def _save_energy_gradient_balance(field_comp, inp, T_conn, hist_alpha, f_fatigue
         output_layer = _resolve_output_layer(field_comp.net)
     except AttributeError:
         output_layer = None
+    param_groups = _resolve_parameter_groups(field_comp.net, field_comp.parameters())
 
     if T_conn is None:
         inp_eval = inp.detach().clone().requires_grad_(True)
@@ -312,7 +320,8 @@ def _save_energy_gradient_balance(field_comp, inp, T_conn, hist_alpha, f_fatigue
         )
         for group in groups:
             stats = _gradient_stats_for_group(
-                params, grads, group, output_layer=output_layer)
+                params, grads, group, output_layer=output_layer,
+                param_groups=param_groups)
             for stat_name, stat_value in stats.items():
                 if group == "all":
                     row[f"{name}_{stat_name}"] = stat_value
@@ -461,26 +470,58 @@ def _resolve_output_layer(net):
     raise AttributeError("Could not locate output_layer for staged head training")
 
 
+def _resolve_parameter_groups(net, all_params=None):
+    """Return diagnostic parameter groups for split-trunk or shared-head nets."""
+    raw_net = getattr(net, "_orig_mod", net)  # torch.compile wrapper, if present
+    if getattr(raw_net, "split_trunk_enabled", False):
+        uv_ids = {id(p) for p in raw_net.uv_net.parameters()}
+        alpha_ids = {id(p) for p in raw_net.alpha_net.parameters()}
+        known_ids = uv_ids | alpha_ids
+        trunk_ids = set()
+        if all_params is not None:
+            trunk_ids = {id(p) for p in all_params if id(p) not in known_ids}
+        return {
+            "uv_head": uv_ids,
+            "alpha_head": alpha_ids,
+            "trunk_shared": trunk_ids,
+        }
+    return None
+
+
 @contextmanager
 def _head_only_phase(field_comp, rows, label):
-    """Temporarily optimise only selected rows of the final output head."""
-    output_layer = _resolve_output_layer(field_comp.net)
-    row_mask = torch.zeros_like(output_layer.weight)
-    row_mask[list(rows), :] = 1.0
-    bias_mask = torch.zeros_like(output_layer.bias)
-    bias_mask[list(rows)] = 1.0
-
+    """Temporarily optimise only a physical head/branch."""
+    raw_net = getattr(field_comp.net, "_orig_mod", field_comp.net)
     old_requires_grad = {p: p.requires_grad for p in field_comp.parameters()}
     hooks = []
     try:
         for p in old_requires_grad:
             p.requires_grad_(False)
-        output_layer.weight.requires_grad_(True)
-        output_layer.bias.requires_grad_(True)
-        hooks.append(output_layer.weight.register_hook(lambda grad: grad * row_mask))
-        hooks.append(output_layer.bias.register_hook(lambda grad: grad * bias_mask))
-        print(f"  [StagedAlpha] {label}: output rows {list(rows)} active")
-        yield [output_layer.weight, output_layer.bias]
+        if getattr(raw_net, "split_trunk_enabled", False):
+            if tuple(rows) == (0, 1):
+                active_params = list(raw_net.uv_net.parameters())
+                branch_name = "uv_net branch"
+            elif tuple(rows) == (2,):
+                active_params = list(raw_net.alpha_net.parameters())
+                branch_name = "alpha_net branch"
+            else:
+                raise ValueError(f"Unsupported split-trunk rows={rows}")
+            for p in active_params:
+                p.requires_grad_(True)
+            print(f"  [StagedAlpha] {label}: {branch_name} active")
+            yield active_params
+        else:
+            output_layer = _resolve_output_layer(field_comp.net)
+            row_mask = torch.zeros_like(output_layer.weight)
+            row_mask[list(rows), :] = 1.0
+            bias_mask = torch.zeros_like(output_layer.bias)
+            bias_mask[list(rows)] = 1.0
+            output_layer.weight.requires_grad_(True)
+            output_layer.bias.requires_grad_(True)
+            hooks.append(output_layer.weight.register_hook(lambda grad: grad * row_mask))
+            hooks.append(output_layer.bias.register_hook(lambda grad: grad * bias_mask))
+            print(f"  [StagedAlpha] {label}: output rows {list(rows)} active")
+            yield [output_layer.weight, output_layer.bias]
     finally:
         for hook in hooks:
             hook.remove()
