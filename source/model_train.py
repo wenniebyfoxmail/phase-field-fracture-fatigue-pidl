@@ -485,6 +485,21 @@ def _resolve_parameter_groups(net, all_params=None):
             "alpha_head": alpha_ids,
             "trunk_shared": trunk_ids,
         }
+    if getattr(raw_net, "xfem_jump_uv_only_enabled", False):
+        uv_ids = {id(p) for p in raw_net.jump.parameters()}
+        alpha_ids = set()
+        cont_output = getattr(raw_net.cont, "output_layer", None)
+        if cont_output is not None:
+            alpha_ids = {id(cont_output.weight), id(cont_output.bias)}
+        known_ids = uv_ids | alpha_ids
+        trunk_ids = set()
+        if all_params is not None:
+            trunk_ids = {id(p) for p in all_params if id(p) not in known_ids}
+        return {
+            "uv_head": uv_ids,
+            "alpha_head": alpha_ids,
+            "trunk_shared": trunk_ids,
+        }
     return None
 
 
