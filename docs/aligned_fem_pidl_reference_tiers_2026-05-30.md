@@ -185,3 +185,29 @@ the head-wise gradient table for `E_el`, `E_d`, and `E_hist` (`all`,
 `trunk_shared`, `uv_head`, `alpha_head`).  This is needed to distinguish
 whether a candidate is solving elastic relaxation through the displacement
 rows or mostly changing the damage row to reduce the coupled energy.
+
+## 2026-06-01 Strict Split-Trunk Test
+
+The first strict FEM-mesh true split-trunk discriminator is running on Taobo
+from commit `c1e8ac9`:
+
+```text
+workspace: /mnt/data2/drtao/projects/pidl-split-trunk-c1e8ac9
+archive:   /mnt/data2/drtao/pidl_archives/split_trunk_c1e8ac9
+GPU:       6
+PID:       1016134
+log:       /mnt/data2/drtao/projects/pidl-split-trunk-c1e8ac9/SENS_tensile/run_logs/femmesh_splitTrunk_stagedHead_uv10_headgrad_u012_N100_seed1_20260601.log
+runner:    SENS_tensile/run_fem_mesh_staged_alpha_umax.py --split-trunk
+mesh:      meshed_geom_fem_soft_hist0.msh
+schedule:  uv-net branch 750 RPROP lr=1e-4, alpha-net branch 750 RPROP lr=1e-5, joint 10000
+cycles:    N100, Umax=0.12, seed=1, fracture confirm cycles=3
+diagnostic cycles: 0,1,2,3,20,40,69,80,99
+```
+
+This is different from the row-head staged run above.  Here the network is a
+`SplitTrunkNet`: one MLP maps coordinates to `(u,v)` and a second independent
+MLP maps coordinates to `alpha`.  The staged phases therefore train whole
+physical branches, while the joint phase still minimises the same variational
+energy over all parameters.  Score this against the same gates as the row-head
+run: `alpha_bar`, raw versus active `psi+`, `Delta E_d`, process-zone width,
+and the head-wise gradient table.
