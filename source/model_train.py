@@ -1235,6 +1235,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         # ------------------------------------------------------------------
         # Manav 原始：更新相场不可逆性历史变量 hist_alpha
         # ------------------------------------------------------------------
+        if _grad_bal_should_probe(j):
+            _save_energy_gradient_balance(
+                field_comp, inp, T_conn, hist_alpha, f_fatigue,
+                matprop, pffmodel, area_T,
+                j, "post_fit_pre_alpha_history_refresh", disp_i,
+                _grad_bal_dir,
+                metadata=_state_metadata(j),
+                element_mask=_void_energy_mask,
+            )
         hist_alpha_prev_for_driver = hist_alpha.detach().clone()
         hist_alpha = field_comp.update_hist_alpha(inp)
 

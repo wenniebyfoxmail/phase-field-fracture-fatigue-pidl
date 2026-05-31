@@ -76,6 +76,13 @@ The key columns are `logE_el_gmax`, `logE_d_gmax`, `logE_hist_gmax` and their
 optimizer is not feeling the three energy terms equally, even when the scalar
 energies look similar.
 
+The exporter writes two gradient-balance stages:
+
+- `post_fit_pre_alpha_history_refresh`: solved field against the old alpha
+  history. Use this to judge whether `E_hist` is active in the optimisation.
+- `post_fit_pre_history_refresh`: after `hist_alpha` has been refreshed, before
+  fatigue-history refresh. Here `E_hist` is expected to be near zero.
+
 ## Runner
 
 Strict one-peak-per-cycle diagnostic:
