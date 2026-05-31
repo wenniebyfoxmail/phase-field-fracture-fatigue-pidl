@@ -18,6 +18,7 @@ model_train.py  ★ 相比 Manav 原始版本的修改
 """
 
 import csv
+import math
 import numpy as np
 import torch
 import time
@@ -225,15 +226,44 @@ def _gradient_stats(grads):
     }
 
 
+def _gradient_stats_for_group(params, grads, group_name, output_layer=None):
+    vals = []
+    for param, grad in zip(params, grads):
+        if grad is None:
+            continue
+        if group_name == "all":
+            vals.append(grad)
+        elif group_name == "uv_head":
+            if output_layer is not None and param is output_layer.weight:
+                vals.append(grad[0:2, :])
+            elif output_layer is not None and param is output_layer.bias:
+                vals.append(grad[0:2])
+        elif group_name == "alpha_head":
+            if output_layer is not None and param is output_layer.weight:
+                vals.append(grad[2:3, :])
+            elif output_layer is not None and param is output_layer.bias:
+                vals.append(grad[2:3])
+        elif group_name == "trunk_shared":
+            if output_layer is None or (
+                    param is not output_layer.weight
+                    and param is not output_layer.bias):
+                vals.append(grad)
+    return _gradient_stats(vals)
+
+
 def _save_energy_gradient_balance(field_comp, inp, T_conn, hist_alpha, f_fatigue,
                                   matprop, pffmodel, area_T, cycle, stage,
                                   disp_value, out_dir, metadata=None,
                                   element_mask=None):
-    """Probe gradients of log(E_el), log(E_d), and log(E_hist) w.r.t. NN params."""
+    """Probe energy-gradient balance, including output-head split diagnostics."""
     out_dir.mkdir(parents=True, exist_ok=True)
     params = [p for p in field_comp.parameters() if p.requires_grad]
     if not params:
         return None
+    try:
+        output_layer = _resolve_output_layer(field_comp.net)
+    except AttributeError:
+        output_layer = None
 
     if T_conn is None:
         inp_eval = inp.detach().clone().requires_grad_(True)
@@ -247,12 +277,22 @@ def _save_energy_gradient_balance(field_comp, inp, T_conn, hist_alpha, f_fatigue
         element_mask=element_mask,
     )
     eps = torch.as_tensor(1e-30, dtype=E_el.dtype, device=E_el.device)
-    log_terms = {
-        "logE_el": torch.log10(E_el + eps),
-        "logE_d": torch.log10(E_d + eps),
-        "logE_hist": torch.log10(E_hist + eps),
-        "logE_total": torch.log10(E_el + E_d + E_hist + eps),
-    }
+    E_total = E_el + E_d + E_hist
+    E_total_detached = E_total.detach().clamp(min=eps)
+    log10_factor = torch.as_tensor(math.log(10.0), dtype=E_el.dtype, device=E_el.device)
+    probe_terms = [
+        ("logE_el", torch.log10(E_el + eps)),
+        ("logE_d", torch.log10(E_d + eps)),
+        ("logE_hist", torch.log10(E_hist + eps)),
+        ("logE_total", torch.log10(E_total + eps)),
+        # These are the per-term gradient contributions to log10(E_total):
+        # ∇E_i / (ln(10) * E_total).  They are usually the fairest balance
+        # diagnostic for the actual variational loss.
+        ("contribE_el", E_el / (log10_factor * E_total_detached)),
+        ("contribE_d", E_d / (log10_factor * E_total_detached)),
+        ("contribE_hist", E_hist / (log10_factor * E_total_detached)),
+    ]
+    groups = ("all", "uv_head", "alpha_head", "trunk_shared")
     row = {
         "cycle": int(cycle),
         "stage": str(stage),
@@ -260,19 +300,23 @@ def _save_energy_gradient_balance(field_comp, inp, T_conn, hist_alpha, f_fatigue
         "E_el": float(E_el.detach().cpu()),
         "E_d": float(E_d.detach().cpu()),
         "E_hist": float(E_hist.detach().cpu()),
-        "E_total": float((E_el + E_d + E_hist).detach().cpu()),
+        "E_total": float(E_total.detach().cpu()),
     }
     if metadata:
         row.update(metadata)
-    for idx, (name, loss_scalar) in enumerate(log_terms.items()):
+    for idx, (name, loss_scalar) in enumerate(probe_terms):
         grads = torch.autograd.grad(
             loss_scalar, params,
             allow_unused=True,
-            retain_graph=(idx < len(log_terms) - 1),
+            retain_graph=(idx < len(probe_terms) - 1),
         )
-        stats = _gradient_stats(grads)
-        for stat_name, stat_value in stats.items():
-            row[f"{name}_{stat_name}"] = stat_value
+        for group in groups:
+            stats = _gradient_stats_for_group(
+                params, grads, group, output_layer=output_layer)
+            for stat_name, stat_value in stats.items():
+                if group == "all":
+                    row[f"{name}_{stat_name}"] = stat_value
+                row[f"{name}_{group}_{stat_name}"] = stat_value
 
     _append_csv_row(out_dir / "energy_gradient_balance.csv", row)
     print(
@@ -283,10 +327,16 @@ def _save_energy_gradient_balance(field_comp, inp, T_conn, hist_alpha, f_fatigue
         f"{row['logE_d_gmax']:.3e}/"
         f"{row['logE_hist_gmax']:.3e}/"
         f"{row['logE_total_gmax']:.3e} | "
-        f"grms={row['logE_el_grms']:.3e}/"
-        f"{row['logE_d_grms']:.3e}/"
-        f"{row['logE_hist_grms']:.3e}/"
-        f"{row['logE_total_grms']:.3e}"
+        f"contrib grms el/d/hist="
+        f"{row['contribE_el_grms']:.3e}/"
+        f"{row['contribE_d_grms']:.3e}/"
+        f"{row['contribE_hist_grms']:.3e} | "
+        f"uv={row['contribE_el_uv_head_grms']:.3e}/"
+        f"{row['contribE_d_uv_head_grms']:.3e}/"
+        f"{row['contribE_hist_uv_head_grms']:.3e} "
+        f"alpha={row['contribE_el_alpha_head_grms']:.3e}/"
+        f"{row['contribE_d_alpha_head_grms']:.3e}/"
+        f"{row['contribE_hist_alpha_head_grms']:.3e}"
     )
     return row
 

@@ -76,6 +76,31 @@ The key columns are `logE_el_gmax`, `logE_d_gmax`, `logE_hist_gmax` and their
 optimizer is not feeling the three energy terms equally, even when the scalar
 energies look similar.
 
+The probe also writes contribution-gradient columns:
+
+```text
+contribE_el_*
+contribE_d_*
+contribE_hist_*
+```
+
+These estimate each term's contribution to the actual objective
+`log10(E_el + E_d + E_hist)`, i.e. `grad(E_i)/(ln(10) * E_total)`. Use these
+columns for the main balance judgement; the raw `logE_*` columns are useful for
+detecting sharp local constraints but can exaggerate tiny energies.
+
+Each term is split by parameter group:
+
+```text
+*_uv_head_*       final output rows for u and v
+*_alpha_head_*    final output row for alpha
+*_trunk_shared_*  shared hidden/input parameters
+```
+
+This matters because `E_el` should mainly see the displacement head and shared
+trunk, while `E_d`/`E_hist` should strongly see the alpha head. Whole-network
+averages can hide that separation.
+
 The exporter writes two gradient-balance stages:
 
 - `post_fit_pre_alpha_history_refresh`: solved field against the old alpha
