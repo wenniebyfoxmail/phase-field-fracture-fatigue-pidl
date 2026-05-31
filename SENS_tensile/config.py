@@ -104,6 +104,16 @@ fatigue_dict = {
     # lagged_degraded: middle diagnostic, uses g(alpha_previous)*psi_raw_now
     "history_driver_mode": "active_degraded",
 
+    # ── 2026-05-31: early-cycle state-timing diagnostic ─────────────────────
+    # Opt-in export of c0/c1/c2/c3 pre-fit, post-fit/pre-history-refresh, and
+    # post-history-refresh states for strict FEM/PIDL timing alignment audits.
+    "state_timing_export": {
+        "enable": False,
+        "cycles": "0,1,2,3",
+        "write_fields": True,
+        "dir": "pidl_state_timing",
+    },
+
     # Golahmar 幂律参数（accum_type='golahmar' 时有效）
     "n_power"      : 2.0,            # 幂律指数 n；控制 S-N 斜率（n=1 退化为 Carrara）
     "alpha_n"      : 0.1,            # 归一化能量密度 αₙ（与 ψ⁺ 量纲相同）

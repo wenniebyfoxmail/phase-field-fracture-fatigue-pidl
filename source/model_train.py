@@ -17,6 +17,7 @@ model_train.py  ★ 相比 Manav 原始版本的修改
 =============================================================================
 """
 
+import csv
 import numpy as np
 import torch
 import time
@@ -153,6 +154,169 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         E_hist_elem=E_hist_np.astype(np.float32),
         residual_abs_Eel_Ed=(np.abs(E_el_np) + np.abs(E_d_np)).astype(np.float32),
     )
+
+
+def _element_node_mean(node_field, T_conn):
+    """Map a nodal field to element means for triangular/quadrilateral meshes."""
+    if T_conn is None:
+        return node_field.flatten()
+    return node_field[T_conn].mean(dim=1)
+
+
+def _element_xy(inp, T_conn):
+    if T_conn is None:
+        return inp[:, 0], inp[:, 1]
+    return inp[T_conn, 0].mean(dim=1), inp[T_conn, 1].mean(dim=1)
+
+
+def _stats_with_location(prefix, values, elem_x, elem_y, area=None):
+    arr = np.asarray(values, dtype=np.float64).reshape(-1)
+    finite = np.isfinite(arr)
+    row = {
+        f"{prefix}_mean": np.nan,
+        f"{prefix}_min": np.nan,
+        f"{prefix}_max": np.nan,
+        f"{prefix}_p99": np.nan,
+        f"{prefix}_p999": np.nan,
+        f"{prefix}_integral": np.nan,
+        f"{prefix}_argmax_x": np.nan,
+        f"{prefix}_argmax_y": np.nan,
+    }
+    if not finite.any():
+        return row
+    vals = arr[finite]
+    row[f"{prefix}_mean"] = float(np.mean(vals))
+    row[f"{prefix}_min"] = float(np.min(vals))
+    row[f"{prefix}_max"] = float(np.max(vals))
+    row[f"{prefix}_p99"] = float(np.percentile(vals, 99.0))
+    row[f"{prefix}_p999"] = float(np.percentile(vals, 99.9))
+    if area is not None:
+        area_arr = np.asarray(area, dtype=np.float64).reshape(-1)
+        row[f"{prefix}_integral"] = float(np.nansum(arr * area_arr))
+    idx = int(np.nanargmax(arr))
+    row[f"{prefix}_argmax_x"] = float(np.asarray(elem_x).reshape(-1)[idx])
+    row[f"{prefix}_argmax_y"] = float(np.asarray(elem_y).reshape(-1)[idx])
+    return row
+
+
+def _append_csv_row(path, row):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_header = not path.exists()
+    with path.open("a", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(row.keys()))
+        if write_header:
+            writer.writeheader()
+        writer.writerow(row)
+
+
+def _history_driver_from_mode(psi_plus_elem, alpha_eval, hist_alpha_prev,
+                              T_conn, pffmodel, mode, void_mask=None,
+                              mask_fatigue=True):
+    """Return the fatigue-history driver and raw psi diagnostic for one state."""
+    with torch.no_grad():
+        alpha_elem_now = _element_node_mean(alpha_eval.flatten(), T_conn)
+        g_now, _ = pffmodel.Edegrade(alpha_elem_now)
+        psi_raw_elem = psi_plus_elem / g_now.clamp(min=1e-30)
+        if mode == "raw":
+            history_driver_elem = psi_raw_elem.detach()
+        elif mode == "lagged_degraded":
+            alpha_elem_lag = _element_node_mean(hist_alpha_prev.flatten(), T_conn)
+            g_lag, _ = pffmodel.Edegrade(alpha_elem_lag)
+            history_driver_elem = (g_lag * psi_raw_elem).detach()
+        else:
+            history_driver_elem = psi_plus_elem.detach()
+
+    if void_mask is not None and mask_fatigue:
+        history_driver_elem = history_driver_elem.clone()
+        psi_raw_elem = psi_raw_elem.clone()
+        history_driver_elem[void_mask] = 0.0
+        psi_raw_elem[void_mask] = 0.0
+    return history_driver_elem, psi_raw_elem.detach(), g_now.detach()
+
+
+def _save_state_timing_export(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
+                              f_fatigue, psi_active_elem, psi_raw_elem,
+                              history_driver_elem, psi_plus_prev,
+                              matprop, pffmodel, area_T, cycle, disp_value,
+                              stage, out_dir, write_fields=True, metadata=None):
+    """Save one PIDL timing state for FEM/PIDL state-alignment audits."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    metadata = metadata or {}
+    with torch.no_grad():
+        alpha_elem = _element_node_mean(alpha.flatten(), T_conn)
+        hist_alpha_elem = _element_node_mean(hist_alpha.flatten(), T_conn)
+        elem_x, elem_y = _element_xy(inp, T_conn)
+        E_el_elem, E_d_elem, E_hist_elem = compute_energy_per_elem(
+            inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
+            f_fatigue=f_fatigue
+        )
+
+    elem_x_np = _tensor_to_numpy(elem_x).reshape(-1).astype(np.float32)
+    elem_y_np = _tensor_to_numpy(elem_y).reshape(-1).astype(np.float32)
+    area_np = _tensor_to_numpy(area_T).reshape(-1).astype(np.float32)
+    alpha_np = _tensor_to_numpy(alpha_elem).reshape(-1).astype(np.float32)
+    hist_alpha_np = _tensor_to_numpy(hist_alpha_elem).reshape(-1).astype(np.float32)
+    hist_fat_np = _tensor_to_numpy(hist_fat, like_tensor=alpha_elem).reshape(-1).astype(np.float32)
+    f_np = _tensor_to_numpy(f_fatigue, like_tensor=alpha_elem).reshape(-1).astype(np.float32)
+    psi_active_np = _tensor_to_numpy(psi_active_elem).reshape(-1).astype(np.float32)
+    psi_raw_np = _tensor_to_numpy(psi_raw_elem).reshape(-1).astype(np.float32)
+    hist_driver_np = _tensor_to_numpy(history_driver_elem).reshape(-1).astype(np.float32)
+    psi_prev_np = _tensor_to_numpy(psi_plus_prev, like_tensor=alpha_elem).reshape(-1).astype(np.float32)
+    E_el_np = _tensor_to_numpy(E_el_elem).reshape(-1).astype(np.float32)
+    E_d_np = _tensor_to_numpy(E_d_elem).reshape(-1).astype(np.float32)
+    E_hist_np = _tensor_to_numpy(E_hist_elem).reshape(-1).astype(np.float32)
+
+    row = {
+        "cycle": int(cycle),
+        "stage": str(stage),
+        "state_label": f"cycle{int(cycle):04d}_{stage}",
+        "disp": float(disp_value),
+        "E_el_total": float(np.nansum(E_el_np)),
+        "E_d_total": float(np.nansum(E_d_np)),
+        "E_hist_total": float(np.nansum(E_hist_np)),
+    }
+    row.update(metadata)
+    for name, values in (
+        ("alpha", alpha_np),
+        ("hist_alpha", hist_alpha_np),
+        ("alpha_bar", hist_fat_np),
+        ("f_fatigue", f_np),
+        ("psi_active", psi_active_np),
+        ("psi_raw", psi_raw_np),
+        ("history_driver", hist_driver_np),
+        ("psi_prev", psi_prev_np),
+        ("E_el_elem", E_el_np),
+        ("E_d_elem", E_d_np),
+        ("E_hist_elem", E_hist_np),
+    ):
+        row.update(_stats_with_location(name, values, elem_x_np, elem_y_np, area_np))
+
+    _append_csv_row(out_dir / "pidl_state_timing_summary.csv", row)
+
+    if write_fields:
+        safe_stage = str(stage).replace("/", "_").replace(" ", "_")
+        np.savez_compressed(
+            out_dir / f"pidl_state_cycle_{int(cycle):04d}_{safe_stage}.npz",
+            cycle=np.array([int(cycle)], dtype=np.int32),
+            stage=np.array([str(stage)]),
+            disp=np.array([float(disp_value)], dtype=np.float32),
+            elem_x=elem_x_np,
+            elem_y=elem_y_np,
+            area_elem=area_np,
+            alpha_elem=alpha_np,
+            hist_alpha_elem=hist_alpha_np,
+            alpha_bar_elem=hist_fat_np,
+            hist_fat_elem=hist_fat_np,
+            f_fatigue_elem=f_np,
+            psi_active_elem=psi_active_np,
+            psi_plus_elem=psi_active_np,
+            psi_raw_elem=psi_raw_np,
+            history_driver_elem=hist_driver_np,
+            psi_plus_prev_elem=psi_prev_np,
+            E_el_elem=E_el_np,
+            E_d_elem=E_d_np,
+            E_hist_elem=E_hist_np,
+        )
 
 
 def _resolve_output_layer(net):
@@ -304,11 +468,19 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # ★ 若已有预训练权重（中断续训），直接加载并跳过预训练
     # =========================================================================
     _init_ckpt = trainedModel_path / Path('trained_1NN_initTraining.pt')
+    _pretrain_cfg = (training_dict or {}).get('pretrain', {}) or {}
+    _pretrain_mode = str(_pretrain_cfg.get('mode', 'default'))
     if _init_ckpt.exists():
         # ── 断点续训：跳过预训练 ──────────────────────────────────────────────
         print(f"[Checkpoint] 检测到预训练权重，跳过预训练")
         field_comp.net.load_state_dict(
             torch.load(_init_ckpt, map_location=device))
+    elif _pretrain_mode == 'off':
+        print("[Pretrain] mode=off: skip coarse-mesh initial training; main solve starts from NN initialization")
+        (trainedModel_path / Path('pretrain_skipped.txt')).write_text(
+            "pretrain.mode=off; no trained_1NN_initTraining.pt was written\n",
+            encoding="utf-8"
+        )
     else:
         # ── 从头训练：执行预训练 ──────────────────────────────────────────────
         inp, T_conn, area_T, hist_alpha = prep_input_data(
@@ -325,28 +497,37 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         loss_data = list()
         start = time.time()
 
-        # L-BFGS 快速收敛 + RPROP 精细调整
-        n_epochs = max(optimizer_dict["n_epochs_LBFGS"], 1)
-        NNparams = field_comp.parameters()
-        optimizer = get_optimizer(NNparams, "LBFGS")
-        loss_data1 = fit(
-            field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
-            optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
-            intermediateModel_path=None, writer=writer, training_dict=training_dict
-            # 预训练不传 f_fatigue，使用默认值 1.0
-        )
-        loss_data = loss_data + loss_data1
+        # L-BFGS 快速收敛 + RPROP 精细调整.  Diagnostic runners may shorten
+        # or disable either stage without changing the main-cycle optimizer.
+        n_epochs = int(_pretrain_cfg.get(
+            'lbfgs_epochs', max(optimizer_dict["n_epochs_LBFGS"], 1)))
+        if n_epochs > 0:
+            NNparams = field_comp.parameters()
+            optimizer = get_optimizer(NNparams, "LBFGS")
+            loss_data1 = fit(
+                field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
+                optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
+                intermediateModel_path=None, writer=writer, training_dict=training_dict
+                # 预训练不传 f_fatigue，使用默认值 1.0
+            )
+            loss_data = loss_data + loss_data1
+        else:
+            print("[Pretrain] LBFGS stage disabled")
 
-        n_epochs = optimizer_dict["n_epochs_RPROP"]
-        NNparams = field_comp.parameters()
-        optimizer = get_optimizer(NNparams, "RPROP")
-        loss_data2 = fit_with_early_stopping(
-            field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
-            optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
-            min_delta=optimizer_dict["optim_rel_tol_pretrain"],
-            intermediateModel_path=None, writer=writer, training_dict=training_dict
-        )
-        loss_data = loss_data + loss_data2
+        n_epochs = int(_pretrain_cfg.get(
+            'rprop_epochs', optimizer_dict["n_epochs_RPROP"]))
+        if n_epochs > 0:
+            NNparams = field_comp.parameters()
+            optimizer = get_optimizer(NNparams, "RPROP")
+            loss_data2 = fit_with_early_stopping(
+                field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
+                optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
+                min_delta=optimizer_dict["optim_rel_tol_pretrain"],
+                intermediateModel_path=None, writer=writer, training_dict=training_dict
+            )
+            loss_data = loss_data + loss_data2
+        else:
+            print("[Pretrain] RPROP stage disabled")
 
         end = time.time()
         print(f"Execution time: {(end-start)/60:.03f}minutes")
@@ -699,6 +880,60 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
               f"| every={_every_msg} | dense={_elem_diag_dense} "
               f"| out={_elem_diag_dir}")
 
+    # Optional state-timing export for c0/c1/c2/c3 FEM/PIDL alignment.
+    # It records the same solved field before and after fatigue-history refresh.
+    _state_cfg = fatigue_dict.get('state_timing_export', {}) or {}
+    _state_export_enabled = fatigue_on and _state_cfg.get('enable', False)
+    _state_cycles = _parse_cycle_set(_state_cfg.get('cycles', '0,1,2,3'))
+    _state_every = _state_cfg.get('every_n_steps', None)
+    _state_write_fields = bool(_state_cfg.get('write_fields', True))
+    _state_dir = trainedModel_path.parent / Path(
+        _state_cfg.get('dir', 'pidl_state_timing')
+    )
+    if _state_export_enabled:
+        _state_dir.mkdir(parents=True, exist_ok=True)
+        print(f"[StateTiming] enabled | cycles={sorted(_state_cycles)} "
+              f"| every={_state_every or 'off'} | fields={_state_write_fields} "
+              f"| out={_state_dir}")
+
+    def _state_should_export(step_index):
+        if not _state_export_enabled:
+            return False
+        if step_index in _state_cycles:
+            return True
+        if _state_every is not None and int(_state_every) > 0:
+            return (step_index % int(_state_every)) == 0
+        return False
+
+    def _state_metadata(step_index):
+        explicit_substeps = fatigue_dict.get('explicit_cycle_substeps', None)
+        explicit_factors = fatigue_dict.get('explicit_cycle_factors', None) or []
+        if explicit_substeps:
+            n_sub = int(explicit_substeps)
+            substep_index = int(step_index % n_sub)
+            load_factor = (
+                float(explicit_factors[substep_index])
+                if substep_index < len(explicit_factors) else float('nan')
+            )
+            return {
+                "training_step": int(step_index),
+                "physical_cycle": int(step_index // n_sub),
+                "substep_index": substep_index,
+                "substeps_per_cycle": n_sub,
+                "load_factor": load_factor,
+                "history_driver_mode": str(fatigue_dict.get(
+                    'history_driver_mode', 'active_degraded')),
+            }
+        return {
+            "training_step": int(step_index),
+            "physical_cycle": int(step_index),
+            "substep_index": -1,
+            "substeps_per_cycle": 1,
+            "load_factor": 1.0,
+            "history_driver_mode": str(fatigue_dict.get(
+                'history_driver_mode', 'active_degraded')),
+        }
+
     # =========================================================================
     # 主循环：每次迭代对应一个加载步（单调模式）或一个完整循环（疲劳模式）
     # =========================================================================
@@ -708,6 +943,42 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             print(f'idx: {j}; displacement/amplitude: {field_comp.lmbda}')
         loss_data = list()
         start = time.time()
+
+        if _state_should_export(j):
+            _psi_hack = fatigue_dict.get('psi_hack', None)
+            if T_conn is not None:
+                with torch.no_grad():
+                    u_state, v_state, alpha_state = field_comp.fieldCalculation(inp)
+                psi_state = get_psi_plus_per_elem(
+                    inp, u_state, v_state, alpha_state,
+                    matprop, pffmodel, area_T, T_conn,
+                    psi_hack_dict=_psi_hack,
+                )
+            else:
+                inp_tmp = inp.detach().clone().requires_grad_(True)
+                u_state, v_state, alpha_state = field_comp.fieldCalculation(inp_tmp)
+                psi_state = get_psi_plus_per_elem(
+                    inp_tmp, u_state, v_state, alpha_state,
+                    matprop, pffmodel, area_T, T_conn=None,
+                    psi_hack_dict=_psi_hack,
+                )
+            if (_void_notch_mask is not None
+                    and _void_cfg.get('mask_fatigue', True)):
+                psi_state = psi_state.clone()
+                psi_state[_void_notch_mask] = 0.0
+            history_driver_state, psi_raw_state, _ = _history_driver_from_mode(
+                psi_state, alpha_state, hist_alpha, T_conn, pffmodel,
+                _history_driver_mode, void_mask=_void_notch_mask,
+                mask_fatigue=_void_cfg.get('mask_fatigue', True)
+            )
+            _save_state_timing_export(
+                inp, T_conn, u_state, v_state, alpha_state, hist_alpha,
+                hist_fat, f_fatigue, psi_state, psi_raw_state,
+                history_driver_state, psi_plus_prev, matprop, pffmodel,
+                area_T, j, disp_i, "pre_fit", _state_dir,
+                write_fields=_state_write_fields,
+                metadata=_state_metadata(j),
+            )
 
         # ★ MIT-8: build per-cycle supervised_dict (None outside [1, K])
         _supervised_dict = None
@@ -933,34 +1204,29 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # diagnostic branches below deliberately change only the history
             # driver, while leaving the variational energy and fracture
             # objective untouched.
-            history_driver_elem = psi_plus_elem
-            if _history_driver_mode != 'active_degraded':
-                with torch.no_grad():
-                    if T_conn is None:
-                        alpha_elem_now = alpha_eval.flatten()
-                        alpha_elem_lag = hist_alpha_prev_for_driver.flatten()
-                    else:
-                        alpha_elem_now = (
-                            alpha_eval[T_conn[:, 0]]
-                            + alpha_eval[T_conn[:, 1]]
-                            + alpha_eval[T_conn[:, 2]]
-                        ) / 3.0
-                        alpha_elem_lag = (
-                            hist_alpha_prev_for_driver[T_conn[:, 0]]
-                            + hist_alpha_prev_for_driver[T_conn[:, 1]]
-                            + hist_alpha_prev_for_driver[T_conn[:, 2]]
-                        ) / 3.0
-                    g_now, _ = pffmodel.Edegrade(alpha_elem_now)
-                    psi_raw_elem = psi_plus_elem / g_now.clamp(min=1e-30)
-                    if _history_driver_mode == 'raw':
-                        history_driver_elem = psi_raw_elem.detach()
-                    else:
-                        g_lag, _ = pffmodel.Edegrade(alpha_elem_lag)
-                        history_driver_elem = (g_lag * psi_raw_elem).detach()
-                if (_void_notch_mask is not None
-                        and _void_cfg.get('mask_fatigue', True)):
-                    history_driver_elem = history_driver_elem.clone()
-                    history_driver_elem[_void_notch_mask] = 0.0
+            history_driver_elem, psi_raw_elem, _ = _history_driver_from_mode(
+                psi_plus_elem, alpha_eval, hist_alpha_prev_for_driver,
+                T_conn, pffmodel, _history_driver_mode,
+                void_mask=_void_notch_mask,
+                mask_fatigue=_void_cfg.get('mask_fatigue', True)
+            )
+
+            hist_fat_pre_refresh = hist_fat.detach().clone()
+            f_fatigue_pre_refresh = (
+                f_fatigue.detach().clone() if torch.is_tensor(f_fatigue)
+                else f_fatigue
+            )
+            psi_plus_prev_pre_refresh = psi_plus_prev.detach().clone()
+            if _state_should_export(j):
+                _save_state_timing_export(
+                    inp, T_conn, u_eval, v_eval, alpha_eval, hist_alpha,
+                    hist_fat_pre_refresh, f_fatigue_pre_refresh,
+                    psi_plus_elem, psi_raw_elem, history_driver_elem,
+                    psi_plus_prev_pre_refresh, matprop, pffmodel, area_T,
+                    j, disp_i, "post_fit_pre_history_refresh", _state_dir,
+                    write_fields=_state_write_fields,
+                    metadata=_state_metadata(j),
+                )
 
             # ★ Direction 4: 用 ψ⁺ 重心估计裂尖坐标 → 更新 field_comp.x_tip
             # 必须在 update_fatigue_history 之前，确保本圈 psi_plus_elem 是峰值状态
@@ -1026,6 +1292,17 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     and _void_cfg.get('mask_fatigue', True)):
                 f_fatigue = f_fatigue.clone()
                 f_fatigue[_void_notch_mask] = 1.0
+
+            if _state_should_export(j):
+                _save_state_timing_export(
+                    inp, T_conn, u_eval, v_eval, alpha_eval, hist_alpha,
+                    hist_fat, f_fatigue, psi_plus_elem, psi_raw_elem,
+                    history_driver_elem, psi_plus_prev_pre_refresh,
+                    matprop, pffmodel, area_T, j, disp_i,
+                    "post_history_refresh_pre_prev_reset", _state_dir,
+                    write_fields=_state_write_fields,
+                    metadata=_state_metadata(j),
+                )
 
             # ★ 重置 psi_plus_prev，正确模拟循环加载的卸载阶段
             # 原因：NN 只求解峰值状态，不显式模拟卸载。
