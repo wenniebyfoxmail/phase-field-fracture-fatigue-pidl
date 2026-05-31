@@ -114,6 +114,14 @@ fatigue_dict = {
         "dir": "pidl_state_timing",
     },
 
+    # Print/export gradient norms of log(E_el), log(E_d), and log(E_hist)
+    # at selected post-fit/pre-history-refresh states. Diagnostic only.
+    "gradient_balance_probe": {
+        "enable": False,
+        "cycles": "0,1,2,3",
+        "dir": "gradient_balance",
+    },
+
     # Golahmar 幂律参数（accum_type='golahmar' 时有效）
     "n_power"      : 2.0,            # 幂律指数 n；控制 S-N 斜率（n=1 退化为 Carrara）
     "alpha_n"      : 0.1,            # 归一化能量密度 αₙ（与 ψ⁺ 量纲相同）

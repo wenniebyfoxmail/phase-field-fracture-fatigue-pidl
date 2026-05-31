@@ -72,6 +72,10 @@ def main() -> None:
                    help="'auto' or comma-separated training step/cycle indices to export.")
     p.add_argument("--no-field-files", action="store_true",
                    help="Write only the state-timing CSV, not per-state npz fields.")
+    p.add_argument("--gradient-balance", action="store_true",
+                   help="Print/export grad norms for log(E_el), log(E_d), log(E_hist).")
+    p.add_argument("--gradient-cycles", default="auto",
+                   help="'auto' or comma-separated training step/cycle indices for gradient probes.")
     p.add_argument("--fracture-confirm-cycles", type=int, default=3)
     p.add_argument("--plot-every", type=int, default=20)
     p.add_argument("--compile", action="store_true")
@@ -151,11 +155,21 @@ def main() -> None:
         int(len(factors)) if factors.size else None,
         args.state_cycles,
     )
+    gradient_cycles = _auto_state_cycles(
+        total_steps,
+        int(len(factors)) if factors.size else None,
+        args.gradient_cycles,
+    )
     config.fatigue_dict["state_timing_export"] = {
         "enable": True,
         "cycles": state_cycles,
         "write_fields": not bool(args.no_field_files),
         "dir": "pidl_state_timing",
+    }
+    config.fatigue_dict["gradient_balance_probe"] = {
+        "enable": bool(args.gradient_balance),
+        "cycles": gradient_cycles,
+        "dir": "gradient_balance",
     }
 
     pretrain_cfg = {"mode": args.pretrain_mode}
@@ -227,6 +241,8 @@ def main() -> None:
         f.write(f"substeps: {list(factors)}\n")
         f.write(f"state_cycles: {state_cycles}\n")
         f.write(f"write_state_fields: {not bool(args.no_field_files)}\n")
+        f.write(f"gradient_balance: {bool(args.gradient_balance)}\n")
+        f.write(f"gradient_cycles: {gradient_cycles}\n")
         f.write(f"pretrain: {pretrain_cfg}\n")
         f.write(f"joint_epochs: {config.optimizer_dict['n_epochs_RPROP']}\n")
         f.write(f"torch_compile: {bool(args.compile)}\n")
@@ -239,6 +255,7 @@ def main() -> None:
     print(f"  history     = {args.history_driver}")
     print(f"  substeps    = {list(factors) if factors.size else 'one-peak-per-cycle'}")
     print(f"  state export= {state_cycles}")
+    print(f"  grad balance= {bool(args.gradient_balance)} ({gradient_cycles})")
     print(f"  pretrain    = {pretrain_cfg}")
     print(f"  joint epochs= {config.optimizer_dict['n_epochs_RPROP']}")
     print(f"  archive     = {dir_name}")

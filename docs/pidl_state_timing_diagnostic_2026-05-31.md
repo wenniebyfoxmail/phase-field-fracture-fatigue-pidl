@@ -48,6 +48,34 @@ Each row/file includes element-level alpha, hist_alpha, alpha_bar/hist_fat,
 f_fatigue, psi_active, psi_raw, history_driver, psi_prev, and E_el/E_d/E_hist
 plus max/p99/p999/integral/location reductions.
 
+## Gradient-Balance Probe
+
+The same runner can print/export gradient norms for:
+
+```text
+log(E_el), log(E_d), log(E_hist), log(E_el + E_d + E_hist)
+```
+
+This is diagnostic only. It uses `torch.autograd.grad`, so it does not alter the
+optimizer gradients, loss weights, or physics objective.
+
+Enable it with:
+
+```bash
+--gradient-balance --gradient-cycles auto
+```
+
+The CSV is:
+
+```text
+gradient_balance/energy_gradient_balance.csv
+```
+
+The key columns are `logE_el_gmax`, `logE_d_gmax`, `logE_hist_gmax` and their
+`gmean`, `grms`, and `gnorm` counterparts. Very different magnitudes mean the
+optimizer is not feeling the three energy terms equally, even when the scalar
+energies look similar.
+
 ## Runner
 
 Strict one-peak-per-cycle diagnostic:
@@ -57,6 +85,7 @@ python SENS_tensile/run_fem_mesh_state_timing_umax.py 0.12 \
   --n-cycles 4 \
   --mesh-file meshed_geom_fem_soft_hist0.msh \
   --tag softHist0_stateTiming \
+  --gradient-balance \
   --compile
 ```
 
@@ -68,6 +97,7 @@ python SENS_tensile/run_fem_mesh_state_timing_umax.py 0.12 \
   --mesh-file meshed_geom_fem_soft_hist0.msh \
   --tag softHist0_stateTiming_substeps \
   --substeps 0.25,0.5,0.75,1,0 \
+  --gradient-balance \
   --compile
 ```
 

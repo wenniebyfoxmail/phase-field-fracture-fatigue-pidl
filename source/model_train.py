@@ -209,6 +209,88 @@ def _append_csv_row(path, row):
         writer.writerow(row)
 
 
+def _gradient_stats(grads):
+    vals = [g.detach().abs() for g in grads if g is not None]
+    if not vals:
+        return {"gmax": 0.0, "gmean": 0.0, "grms": 0.0, "gnorm": 0.0}
+    max_val = max(float(v.max().cpu()) for v in vals)
+    mean_val = float(np.mean([float(v.mean().cpu()) for v in vals]))
+    sq_sum = sum(float(torch.sum(v * v).cpu()) for v in vals)
+    n_val = sum(int(v.numel()) for v in vals)
+    return {
+        "gmax": max_val,
+        "gmean": mean_val,
+        "grms": float((sq_sum / max(n_val, 1)) ** 0.5),
+        "gnorm": float(sq_sum ** 0.5),
+    }
+
+
+def _save_energy_gradient_balance(field_comp, inp, T_conn, hist_alpha, f_fatigue,
+                                  matprop, pffmodel, area_T, cycle, stage,
+                                  disp_value, out_dir, metadata=None,
+                                  element_mask=None):
+    """Probe gradients of log(E_el), log(E_d), and log(E_hist) w.r.t. NN params."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    params = [p for p in field_comp.parameters() if p.requires_grad]
+    if not params:
+        return None
+
+    if T_conn is None:
+        inp_eval = inp.detach().clone().requires_grad_(True)
+    else:
+        inp_eval = inp
+    u_eval, v_eval, alpha_eval = field_comp.fieldCalculation(inp_eval)
+    E_el, E_d, E_hist = compute_energy(
+        inp_eval, u_eval, v_eval, alpha_eval, hist_alpha,
+        matprop, pffmodel, area_T, T_conn,
+        f_fatigue=f_fatigue,
+        element_mask=element_mask,
+    )
+    eps = torch.as_tensor(1e-30, dtype=E_el.dtype, device=E_el.device)
+    log_terms = {
+        "logE_el": torch.log10(E_el + eps),
+        "logE_d": torch.log10(E_d + eps),
+        "logE_hist": torch.log10(E_hist + eps),
+        "logE_total": torch.log10(E_el + E_d + E_hist + eps),
+    }
+    row = {
+        "cycle": int(cycle),
+        "stage": str(stage),
+        "disp": float(disp_value),
+        "E_el": float(E_el.detach().cpu()),
+        "E_d": float(E_d.detach().cpu()),
+        "E_hist": float(E_hist.detach().cpu()),
+        "E_total": float((E_el + E_d + E_hist).detach().cpu()),
+    }
+    if metadata:
+        row.update(metadata)
+    for idx, (name, loss_scalar) in enumerate(log_terms.items()):
+        grads = torch.autograd.grad(
+            loss_scalar, params,
+            allow_unused=True,
+            retain_graph=(idx < len(log_terms) - 1),
+        )
+        stats = _gradient_stats(grads)
+        for stat_name, stat_value in stats.items():
+            row[f"{name}_{stat_name}"] = stat_value
+
+    _append_csv_row(out_dir / "energy_gradient_balance.csv", row)
+    print(
+        f"  [GradBalance] cycle={int(cycle)} stage={stage} "
+        f"E=({row['E_el']:.3e},{row['E_d']:.3e},{row['E_hist']:.3e}) | "
+        f"gmax logE el/d/hist/total="
+        f"{row['logE_el_gmax']:.3e}/"
+        f"{row['logE_d_gmax']:.3e}/"
+        f"{row['logE_hist_gmax']:.3e}/"
+        f"{row['logE_total_gmax']:.3e} | "
+        f"grms={row['logE_el_grms']:.3e}/"
+        f"{row['logE_d_grms']:.3e}/"
+        f"{row['logE_hist_grms']:.3e}/"
+        f"{row['logE_total_grms']:.3e}"
+    )
+    return row
+
+
 def _history_driver_from_mode(psi_plus_elem, alpha_eval, hist_alpha_prev,
                               T_conn, pffmodel, mode, void_mask=None,
                               mask_fatigue=True):
@@ -896,6 +978,21 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
               f"| every={_state_every or 'off'} | fields={_state_write_fields} "
               f"| out={_state_dir}")
 
+    # Optional gradient-balance probe for E_el/E_d/E_hist.  This is diagnostic
+    # only: it uses autograd.grad and does not alter optimizer .grad buffers or
+    # loss weights.
+    _grad_bal_cfg = fatigue_dict.get('gradient_balance_probe', {}) or {}
+    _grad_bal_enabled = fatigue_on and _grad_bal_cfg.get('enable', False)
+    _grad_bal_cycles = _parse_cycle_set(_grad_bal_cfg.get('cycles', '0,1,2,3'))
+    _grad_bal_every = _grad_bal_cfg.get('every_n_steps', None)
+    _grad_bal_dir = trainedModel_path.parent / Path(
+        _grad_bal_cfg.get('dir', 'gradient_balance')
+    )
+    if _grad_bal_enabled:
+        _grad_bal_dir.mkdir(parents=True, exist_ok=True)
+        print(f"[GradBalance] enabled | cycles={sorted(_grad_bal_cycles)} "
+              f"| every={_grad_bal_every or 'off'} | out={_grad_bal_dir}")
+
     def _state_should_export(step_index):
         if not _state_export_enabled:
             return False
@@ -933,6 +1030,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             "history_driver_mode": str(fatigue_dict.get(
                 'history_driver_mode', 'active_degraded')),
         }
+
+    def _grad_bal_should_probe(step_index):
+        if not _grad_bal_enabled:
+            return False
+        if step_index in _grad_bal_cycles:
+            return True
+        if _grad_bal_every is not None and int(_grad_bal_every) > 0:
+            return (step_index % int(_grad_bal_every)) == 0
+        return False
 
     # =========================================================================
     # 主循环：每次迭代对应一个加载步（单调模式）或一个完整循环（疲劳模式）
@@ -1226,6 +1332,16 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     j, disp_i, "post_fit_pre_history_refresh", _state_dir,
                     write_fields=_state_write_fields,
                     metadata=_state_metadata(j),
+                )
+
+            if _grad_bal_should_probe(j):
+                _save_energy_gradient_balance(
+                    field_comp, inp, T_conn, hist_alpha,
+                    f_fatigue_pre_refresh, matprop, pffmodel, area_T,
+                    j, "post_fit_pre_history_refresh", disp_i,
+                    _grad_bal_dir,
+                    metadata=_state_metadata(j),
+                    element_mask=_void_energy_mask,
                 )
 
             # ★ Direction 4: 用 ψ⁺ 重心估计裂尖坐标 → 更新 field_comp.x_tip
