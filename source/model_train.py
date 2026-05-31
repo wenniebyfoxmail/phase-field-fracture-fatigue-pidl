@@ -823,7 +823,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if _staged_alpha:
         print(f"[StagedAlpha] enabled | uv_head={_staged_cfg.get('uv_head_epochs', 0)} "
               f"| alpha_head={_staged_cfg.get('alpha_head_epochs', 0)} "
-              f"| joint={optimizer_dict.get('n_epochs_RPROP', 0)}")
+              f"| joint={optimizer_dict.get('n_epochs_RPROP', 0)} "
+              f"| uv_opt={_staged_cfg.get('uv_optimizer', 'RPROP')}@{_staged_cfg.get('uv_lr', 'default')} "
+              f"| alpha_opt={_staged_cfg.get('alpha_optimizer', 'RPROP')}@{_staged_cfg.get('alpha_lr', 'default')}")
 
     # ★ 2026-05-30: local-patch authority discriminator.
     # This freezes the global NN briefly and lets the compact support patch fit
@@ -1187,11 +1189,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 'optim_rel_tol', optimizer_dict["optim_rel_tol"]
             ))
 
-            def _run_staged_head(_label, _rows, _epochs):
+            def _run_staged_head(_label, _rows, _epochs, _opt_type, _lr):
                 if int(_epochs) <= 0:
                     return []
                 with _head_only_phase(field_comp, _rows, _label) as _params:
-                    _optim = get_optimizer(_params, "RPROP")
+                    _optim = get_optimizer(_params, str(_opt_type), lr=_lr)
                     return fit_with_early_stopping(
                         field_comp, training_set, T_conn, area_T, hist_alpha,
                         matprop, pffmodel,
@@ -1211,10 +1213,14 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     )
 
             loss_data = loss_data + _run_staged_head(
-                "uv-head stage", (0, 1), _staged_cfg.get('uv_head_epochs', 0)
+                "uv-head stage", (0, 1), _staged_cfg.get('uv_head_epochs', 0),
+                _staged_cfg.get('uv_optimizer', 'RPROP'),
+                _staged_cfg.get('uv_lr', None),
             )
             loss_data = loss_data + _run_staged_head(
-                "alpha-head stage", (2,), _staged_cfg.get('alpha_head_epochs', 0)
+                "alpha-head stage", (2,), _staged_cfg.get('alpha_head_epochs', 0),
+                _staged_cfg.get('alpha_optimizer', 'RPROP'),
+                _staged_cfg.get('alpha_lr', None),
             )
 
         if _local_patch_training:

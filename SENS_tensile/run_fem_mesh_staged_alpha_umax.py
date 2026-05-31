@@ -56,6 +56,18 @@ def main() -> None:
     p.add_argument("--alpha-head-epochs", type=int, default=750)
     p.add_argument("--joint-epochs", type=int, default=10000)
     p.add_argument("--stage-rel-tol", type=float, default=5e-7)
+    p.add_argument("--uv-optimizer", default="RPROP", choices=("RPROP", "ADAM", "LBFGS"))
+    p.add_argument("--alpha-optimizer", default="RPROP", choices=("RPROP", "ADAM", "LBFGS"))
+    p.add_argument("--uv-lr", type=float, default=1e-4,
+                   help="Initial lr/step size for the uv-head stage.")
+    p.add_argument("--alpha-lr", type=float, default=1e-5,
+                   help="Initial lr/step size for the alpha-head stage.")
+    p.add_argument("--diagnostic-cycles", default="0,1,2,3,20,40,69,80,99",
+                   help="Cycles for state/gradient export.")
+    p.add_argument("--no-field-files", action="store_true",
+                   help="Write state-timing summary only, not per-cycle npz fields.")
+    p.add_argument("--no-gradient-balance", action="store_true",
+                   help="Disable routine E_el/E_d/E_hist head-wise gradient reporting.")
     p.add_argument("--compile", action="store_true",
                    help="Enable torch.compile for a speed diagnostic on CUDA.")
     p.add_argument("--force-cpu", action="store_true")
@@ -108,6 +120,21 @@ def main() -> None:
         "uv_head_epochs": int(args.uv_head_epochs),
         "alpha_head_epochs": int(args.alpha_head_epochs),
         "optim_rel_tol": float(args.stage_rel_tol),
+        "uv_optimizer": args.uv_optimizer,
+        "alpha_optimizer": args.alpha_optimizer,
+        "uv_lr": float(args.uv_lr),
+        "alpha_lr": float(args.alpha_lr),
+    }
+    config.fatigue_dict["state_timing_export"] = {
+        "enable": True,
+        "cycles": args.diagnostic_cycles,
+        "write_fields": not bool(args.no_field_files),
+        "dir": "pidl_state_timing",
+    }
+    config.fatigue_dict["gradient_balance_probe"] = {
+        "enable": not bool(args.no_gradient_balance),
+        "cycles": args.diagnostic_cycles,
+        "dir": "gradient_balance",
     }
     config.rebuild_disp_cyclic()
 
@@ -120,7 +147,9 @@ def main() -> None:
     tag = _mesh_tag(fem_mesh, args.tag)
     stage_tag = (
         f"_femmesh_{tag}_stagedAlpha"
-        f"_uv{args.uv_head_epochs}_a{args.alpha_head_epochs}_j{args.joint_epochs}"
+        f"_uv{args.uv_head_epochs}-{args.uv_optimizer}{args.uv_lr:g}"
+        f"_a{args.alpha_head_epochs}-{args.alpha_optimizer}{args.alpha_lr:g}"
+        f"_j{args.joint_epochs}"
         f"{'_compile' if args.compile else ''}"
     )
     dir_name = (
@@ -159,6 +188,12 @@ def main() -> None:
         f.write(f"alpha_head_epochs: {args.alpha_head_epochs}\n")
         f.write(f"joint_epochs: {args.joint_epochs}\n")
         f.write(f"stage_rel_tol: {args.stage_rel_tol}\n")
+        f.write(f"uv_optimizer: {args.uv_optimizer}\n")
+        f.write(f"alpha_optimizer: {args.alpha_optimizer}\n")
+        f.write(f"uv_lr: {args.uv_lr}\n")
+        f.write(f"alpha_lr: {args.alpha_lr}\n")
+        f.write(f"diagnostic_cycles: {args.diagnostic_cycles}\n")
+        f.write(f"gradient_balance: {not bool(args.no_gradient_balance)}\n")
         f.write("purpose: strict FEM-mesh PIDL staged-alpha optimisation discriminator\n")
 
     print("=" * 72)
@@ -167,6 +202,9 @@ def main() -> None:
     print(f"  FEM mesh    = {fem_mesh}")
     print(f"  coarse mesh = {coarse_mesh}")
     print(f"  uv/alpha/j  = {args.uv_head_epochs}/{args.alpha_head_epochs}/{args.joint_epochs}")
+    print(f"  opt/lr      = uv {args.uv_optimizer}@{args.uv_lr:g} | "
+          f"alpha {args.alpha_optimizer}@{args.alpha_lr:g}")
+    print(f"  diagnostics= {args.diagnostic_cycles} | gradient={not bool(args.no_gradient_balance)}")
     print(f"  compile     = {bool(args.compile)}")
     print(f"  device      = {config.device}")
     print(f"  archive     = {dir_name}")
