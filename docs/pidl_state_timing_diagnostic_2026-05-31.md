@@ -243,3 +243,22 @@ command:
 The selected state indices export all substeps for the first four physical
 cycles, then peak/unload pairs for later physical-cycle checkpoints. With five
 substeps per physical cycle, peak is `5*k+3` and unload is `5*k+4`.
+
+2026-06-01 02:32 CST status:
+
+```text
+head-wise one-peak diagnostic: completed, gradient CSV has 9 rows
+head-wise substep diagnostic: completed, gradient CSV has 41 rows
+long FEM-like field-value diagnostic: still running as PID 817654
+```
+
+Interpretation note:
+
+- `unload` means the explicit substep with load factor `0` in
+  `[0.25, 0.5, 0.75, 1.0, 0.0]`.
+- FEM-like timing is being tested because FEM alternates displacement and damage
+  solves inside each load step, while the PIDL baseline optimises one coupled NN
+  field for the step/cycle and refreshes histories only after training.
+- Therefore timing can change the measured field values: the alpha field, active
+  `psi_plus`, fatigue history `alpha_bar`, degradation `f`, and incremental
+  `E_d` are all downstream of when `hist_alpha` and `hist_fat` are refreshed.
