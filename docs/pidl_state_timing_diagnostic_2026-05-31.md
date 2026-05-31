@@ -118,3 +118,51 @@ Pretraining is not part of the fatigue law. It initializes the NN near the
 analytic precrack field so the first cyclic solve does not start from a random
 alpha/u/v field. It can, however, bias c0/c1 if the trained initial alpha is
 hotter than the analytic/FEM initial state, so short/off are diagnostic levers.
+
+## Taobo Launch
+
+Commit `9f5c242` was synced to:
+
+```text
+/mnt/data2/drtao/projects/pidl-state-timing-diagnostic-9f5c242
+```
+
+Archive root:
+
+```text
+/mnt/data2/drtao/pidl_archives/state_timing_9f5c242
+```
+
+Launched on 2026-05-31 22:50 CST:
+
+```text
+one-peak early-cycle diagnostic
+  PID: 482238
+  GPU: CUDA_VISIBLE_DEVICES=3
+  log: SENS_tensile/run_logs/stateTiming_onepeak_grad_u012_N4_seed1_20260531.log
+  command:
+    /usr/bin/python3 run_fem_mesh_state_timing_umax.py 0.12
+      --n-cycles 4 --seed 1
+      --mesh-file meshed_geom_fem_soft_hist0.msh
+      --tag softHist0_onepeak_grad
+      --state-cycles 0,1,2,3
+      --gradient-balance --gradient-cycles 0,1,2,3
+      --fracture-confirm-cycles 3 --plot-every 20
+
+FEM-like substep early-cycle diagnostic
+  PID: 482239
+  GPU: CUDA_VISIBLE_DEVICES=4
+  log: SENS_tensile/run_logs/stateTiming_substeps025_grad_u012_Nphys4_seed1_20260531.log
+  command:
+    /usr/bin/python3 run_fem_mesh_state_timing_umax.py 0.12
+      --n-cycles 4 --seed 1
+      --mesh-file meshed_geom_fem_soft_hist0.msh
+      --tag softHist0_substeps025_grad
+      --substeps 0.25,0.5,0.75,1,0
+      --state-cycles auto
+      --gradient-balance --gradient-cycles auto
+      --fracture-confirm-cycles 3 --plot-every 20
+```
+
+At 22:51 CST both processes were alive; no `[GradBalance]` lines had appeared
+yet, because the runs were still before the first post-fit export state.
