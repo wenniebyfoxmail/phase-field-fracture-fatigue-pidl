@@ -154,3 +154,34 @@ Best next experiments:
    without simply over-damaging the right boundary.
 3. Keep raw `psi+` and active/degraded `psi+` separated in every figure and
    table; raw agreement alone is now known to be insufficient.
+
+## 2026-06-01 Strict Staged-Head Test
+
+The first strict FEM-mesh staged-head discriminator is running on Taobo from
+commit `730101a`:
+
+```text
+workspace: /mnt/data2/drtao/projects/pidl-staged-head-730101a
+archive:   /mnt/data2/drtao/pidl_archives/staged_head_730101a
+GPU:       4
+PID:       1001885
+log:       /mnt/data2/drtao/projects/pidl-staged-head-730101a/SENS_tensile/run_logs/femmesh_stagedHead_uv10lr_headgrad_u012_N100_seed1_20260601.log
+runner:    SENS_tensile/run_fem_mesh_staged_alpha_umax.py
+mesh:      meshed_geom_fem_soft_hist0.msh
+schedule:  uv-head 750 RPROP lr=1e-4, alpha-head 750 RPROP lr=1e-5, joint 10000
+cycles:    N100, Umax=0.12, seed=1, fracture confirm cycles=3
+diagnostic cycles: 0,1,2,3,20,40,69,80,99
+```
+
+The staged-head implementation is a controlled optimizer-path intervention,
+not a new physics objective.  The current network still has a shared trunk and
+one final output layer; the "uv head" and "alpha head" are the corresponding
+rows of that output layer.  Therefore this test can strengthen/slacken the
+output-head stages with separate optimizers or learning rates, but it is not a
+true independently learned trunk for displacement and damage.
+
+From this point, future FEM/PIDL alignment diagnostics should keep exporting
+the head-wise gradient table for `E_el`, `E_d`, and `E_hist` (`all`,
+`trunk_shared`, `uv_head`, `alpha_head`).  This is needed to distinguish
+whether a candidate is solving elastic relaxation through the displacement
+rows or mostly changing the damage row to reduce the coupled energy.
