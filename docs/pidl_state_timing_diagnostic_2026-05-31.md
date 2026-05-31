@@ -101,6 +101,16 @@ This matters because `E_el` should mainly see the displacement head and shared
 trunk, while `E_d`/`E_hist` should strongly see the alpha head. Whole-network
 averages can hide that separation.
 
+Routine rule from 2026-06-01:
+
+- Any FEM/PIDL alignment diagnostic that changes timing, history, loss terms,
+  pretraining, or architecture should enable gradient-balance export.
+- Reports should include both scalar energies and gradient contributions for
+  `E_el`, `E_d`, and `E_hist`.
+- Use `contribE_*` and head groups (`uv_head`, `alpha_head`, `trunk_shared`)
+  for the main interpretation; use raw `logE_*` only to detect sharp constraint
+  behaviour.
+
 The exporter writes two gradient-balance stages:
 
 - `post_fit_pre_alpha_history_refresh`: solved field against the old alpha
@@ -198,3 +208,38 @@ FEM-like substep early-cycle diagnostic
 
 At 22:51 CST both processes were alive; no `[GradBalance]` lines had appeared
 yet, because the runs were still before the first post-fit export state.
+
+Additional head-wise gradient diagnostics were launched after commit `4db4674`:
+
+```text
+one-peak head-wise gradient diagnostic
+  PID: 805563
+  GPU: CUDA_VISIBLE_DEVICES=3
+  log: SENS_tensile/run_logs/stateTiming_onepeak_headgrad_u012_N4_seed1_20260601.log
+
+substep head-wise gradient diagnostic
+  PID: 805564
+  GPU: CUDA_VISIBLE_DEVICES=4
+  log: SENS_tensile/run_logs/stateTiming_substep_headgrad_u012_Nphys4_seed1_20260601.log
+```
+
+Longer FEM-like cycle PIDL field-value diagnostic:
+
+```text
+PID: 817654
+GPU: CUDA_VISIBLE_DEVICES=5
+log: SENS_tensile/run_logs/femlike_substep_fields_headgrad_u012_Nphys74_seed1_20260601.log
+command:
+  /usr/bin/python3 run_fem_mesh_state_timing_umax.py 0.12
+    --n-cycles 74 --seed 1
+    --mesh-file meshed_geom_fem_soft_hist0.msh
+    --tag s25fld
+    --substeps 0.25,0.5,0.75,1,0
+    --state-cycles 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,48,49,98,99,198,199,343,344,368,369
+    --gradient-balance
+    --gradient-cycles 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,48,49,98,99,198,199,343,344,368,369
+```
+
+The selected state indices export all substeps for the first four physical
+cycles, then peak/unload pairs for later physical-cycle checkpoints. With five
+substeps per physical cycle, peak is `5*k+3` and unload is `5*k+4`.
