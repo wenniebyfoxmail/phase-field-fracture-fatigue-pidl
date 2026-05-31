@@ -211,3 +211,39 @@ physical branches, while the joint phase still minimises the same variational
 energy over all parameters.  Score this against the same gates as the row-head
 run: `alpha_bar`, raw versus active `psi+`, `Delta E_d`, process-zone width,
 and the head-wise gradient table.
+
+## 2026-06-01 Strict Discontinuity Tests
+
+The strict FEM-mesh discontinuity discriminators are running on Taobo from
+commit `f17e77e`:
+
+```text
+workspace: /mnt/data2/drtao/projects/pidl-discontinuity-f17e77e
+archive:   /mnt/data2/drtao/pidl_archives/discontinuity_f17e77e
+mesh:      meshed_geom_fem_soft_hist0.msh
+cycles:    N100, Umax=0.12, seed=1, fracture confirm cycles=3
+diagnostic cycles: 0,1,2,3,20,40,69,80,99
+```
+
+Runs:
+
+```text
+sdf_ribbon_uv_only
+  GPU: 0
+  PID: 1044329
+  log: /mnt/data2/drtao/projects/pidl-discontinuity-f17e77e/SENS_tensile/run_logs/femmesh_discontinuity_sdfRibbon_uvOnly_u012_N100_seed1_20260601.log
+  archive suffix: _femmesh_softHist0_sdf_ribbon_uv_only_eps1e-03
+
+xfem_jump_uv_only
+  GPU: 1
+  PID: 1044328
+  log: /mnt/data2/drtao/projects/pidl-discontinuity-f17e77e/SENS_tensile/run_logs/femmesh_discontinuity_xfemJump_uvOnly_u012_N100_seed1_20260601.log
+  archive suffix: _femmesh_softHist0_xfem_jump_uv_only_eps1e-03
+```
+
+Both runs keep the same variational energy and aligned soft-hist0 FEM mesh.
+The only intended intervention is the representation: `sdf_ribbon_uv_only`
+adds a signed crack-ribbon feature to the displacement branch, while
+`xfem_jump_uv_only` adds a smoothed-Heaviside jump correction to displacement.
+Both export state-timing fields and head-wise `E_el/E_d/E_hist` gradient
+diagnostics.
