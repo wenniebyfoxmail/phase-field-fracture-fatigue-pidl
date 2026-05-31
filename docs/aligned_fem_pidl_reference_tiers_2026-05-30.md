@@ -180,6 +180,25 @@ rows of that output layer.  Therefore this test can strengthen/slacken the
 output-head stages with separate optimizers or learning rates, but it is not a
 true independently learned trunk for displacement and damage.
 
+Status update from 2026-06-01:
+
+```text
+completed
+first boundary hit: c80
+confirmed stop: c83
+c83 alpha_bar_max: 9.1923
+c83 Kt: 291.51
+c83 crack tip: (0.5000, 0.0000)
+c83 right-boundary alpha_max: 1.0000
+c83 N_bdy>0.95: 20
+```
+
+Early interpretation: row-head staging changes the path but does not remove
+the thin right-boundary hit.  At c80 the gradient probe still shows the
+displacement head receiving almost no contribution compared with the alpha
+head, so this remains a negative/limited optimiser-path discriminator rather
+than a mechanism closure.
+
 From this point, future FEM/PIDL alignment diagnostics should keep exporting
 the head-wise gradient table for `E_el`, `E_d`, and `E_hist` (`all`,
 `trunk_shared`, `uv_head`, `alpha_head`).  This is needed to distinguish
@@ -247,3 +266,24 @@ adds a signed crack-ribbon feature to the displacement branch, while
 `xfem_jump_uv_only` adds a smoothed-Heaviside jump correction to displacement.
 Both export state-timing fields and head-wise `E_el/E_d/E_hist` gradient
 diagnostics.
+
+Status update from 2026-06-01:
+
+```text
+sdf_ribbon_uv_only: running, latest checked around c19
+  c18 alpha_bar_max: 2.6405
+  c18 Kt: 8.57
+  c18 crack tip: (0.0500, 0.0000)
+  c18 right-boundary alpha_max: -0.0004
+
+xfem_jump_uv_only: running, latest checked around c26
+  c25 alpha_bar_max: 3.8752
+  c25 Kt: 8.74
+  c25 crack tip: (0.0780, 0.0000)
+  c25 right-boundary alpha_max: -0.0005
+```
+
+These early values show both discontinuity variants propagating gradually
+from the notch without immediate right-boundary saturation.  The `xfem_jump`
+variant is accumulating history faster than `sdf_ribbon` at the same early
+stage, but field-shape and active-driver gates are still pending.
