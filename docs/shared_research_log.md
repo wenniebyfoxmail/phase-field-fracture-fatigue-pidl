@@ -44,6 +44,26 @@
 
 ## 2026-05-31 · Mac-PIDL [finding+implementation]
 
+**M2S synthetic framework validation rung completed on latest FEM truth**
+
+Added `SENS_tensile/run_m2s_synthetic_validation.py` on branch
+`codex/m2s-framework-validation`.  The script treats the latest soft-hist0
+reverseBC FEM trajectory (`N_f=69`, c1-c69, 45000 elements) as truth and tests
+remaining-life prediction from three observation levels without using cycle
+index: `figure_damage`, `damage_field`, and `state_driver_raw_active`.
+
+Result on Taobo: ridge LOOCV MAE was `0.333` cycles for figure-like damage
+features, `0.214` cycles for richer damage-field reductions, and `1.40` cycles
+for the high-dimensional state-driver set.  Nearest-neighbor MAE was about
+`1.3-1.45` cycles for all sets.  The framework is therefore feasible at the
+single-trajectory synthetic M2S rung, but the benchmark is too easy: monotonic
+damage geometry almost directly encodes remaining life.  Hidden fields should
+not be claimed to add independent value until a multi-trajectory holdout
+benchmark breaks that one-to-one damage/RUL ordering.  Full record:
+`docs/m2s_framework_validation_2026-05-31.md`.
+
+## 2026-05-31 · Mac-PIDL [finding+implementation]
+
 **Strict FEM-mesh inverse `alpha_T` retry closed: scalar inversion is not identifiable**
 
 Added and launched `SENS_tensile/run_fem_mesh_inverse_alphaT_umax.py` on branch

@@ -52,6 +52,7 @@
 | **adaptive λ_hist** baseline/v4 @ u=0.12 N100 | Taobo | baseline: detected c82, confirmed c92, final ᾱ_max=12.08; v4: detected c80, confirmed c90, final ᾱ_max=11.86. Late logs show `hist_grad=0`, `λ_hist=1.0` | ❌ fractures but does not actively rebalance or close field gap |
 | **hard irreversibility** baseline/v4 @ u=0.12 N100 | Taobo | sigmoid floor avoids NaNs, but both runs no fracture by c99; ᾱ_max≈75-76 while `α_max@bdy=0` and tip remains near notch | ❌ negative constraint-form result |
 | **inverse `alpha_T` on strict FEM-mesh softHist0** @ u=0.12 | Taobo | Against latest soft-hist0 FEM `N_f=69`, trainable `alpha_T` collapsed to lower bound 0.05; PIDL detected j11/confirmed j14. Raw `psi+` tip2 became 4-8× FEM while active `g(alpha)psi+` stayed 0.06-0.26× FEM. | ❌ scalar inversion ill-posed; parameter compensation, not field recovery |
+| **M2S synthetic validation on FEM truth** @ softHist0 reverseBC | Taobo | FEM c1-c69 used as truth. RUL prediction without cycle index: figure-damage MAE 0.333 cycles, damage-field MAE 0.214, state-driver raw/active MAE 1.40. | ✅ first framework rung feasible; ⚠ single trajectory too easy, need multi-trajectory split |
 
 ---
 

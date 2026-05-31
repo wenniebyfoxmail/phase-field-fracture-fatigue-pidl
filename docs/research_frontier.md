@@ -13,13 +13,13 @@
 
 ## Current Question
 
-**Field-level mismatch 是否需要更强的 discontinuity/domain-decomposition representation，而不是小型 tip-local heads？**
+**如何把 road-DT/M2S framework 做成可信验证，同时不掩盖 PIDL forward field mismatch？**
 
 ## Active Branches
 
 1. **Representation-localization discriminator** (ACTIVE 5/30) — Sampling/refinement/loss/irreversibility did not close the field gap. Tip-local MLP/Fourier/SIREN Exp18, strict head-staging, and additive one-patch local correction change `N_f`/scalar metrics but leave the local driver/history mechanism broken. Current clean test is an FBPINN-style chain: several overlapping local subdomain nets blended by partition weights, so local nets carry the raw field inside process-zone windows. Artifacts: `docs/local_patch_discriminator_2026-05-30.md`, `docs/fbpinn_chain_discriminator_2026-05-30.md`.
-2. **Phase 2A units-transition smoke** (passive) — `run_pcc_baseline_umax.py` remains a PCC scaling/infrastructure check only, not a Baktheer `N_f` anchor. Mac now has PCC v3 trajectory under GRIPHFiTH; Taobo sync still needed before supervised PCC diagnostics.
-3. **§5 paper plan** (passive, locked 5/14) — §5 改成依赖 Wu 2017 + Baktheer 2024 出版引用，BFGS port 推到 post-paper。任何 §5 wording 不再 quote "N_f ≈ 1500-2500"（已 retract via inbox `4124444`）。
+2. **M2S framework validation** (ACTIVE 5/31) — First synthetic FEM-truth rung is complete: c1-c69 soft-hist0 FEM predicts RUL from figure/damage observations with sub-cycle MAE, but this is a single-trajectory observability test, not hidden-field value proof. Next rung must be multi-trajectory holdout. Artifact: `docs/m2s_framework_validation_2026-05-31.md`.
+3. **Phase 2A units-transition smoke** (passive) — `run_pcc_baseline_umax.py` remains a PCC scaling/infrastructure check only, not a Baktheer `N_f` anchor. Mac now has PCC v3 trajectory under GRIPHFiTH; Taobo sync still needed before supervised PCC diagnostics.
 
 ## Current Best Bet
 
@@ -27,7 +27,7 @@ Field mismatch 仍未解决。Soft-hist0/state-timing audit fixed the first-cycl
 
 ## Best Next Discriminator
 
-Run one stronger representation-local discriminator with the field-level gate defined first. Metric plan/results started in `docs/field_level_comparison_metric_plan.md`, `docs/field_level_metric_results_2026-05-28.md`, `docs/aligned_fem_pidl_reference_tiers_2026-05-30.md`, `docs/staged_alpha_discriminator_2026-05-30.md`, `docs/local_patch_discriminator_2026-05-30.md`, `docs/fbpinn_chain_discriminator_2026-05-30.md`, and `docs/inverse_problem_experiments_2026-05-31.md`; element/nodal definitions are pinned in `docs/fem_pidl_element_nodal_definitions_2026-05-28.md`. For the current evidence base, use reverseBC FEM standard/n_step10 as aligned references and FEM-mesh PIDL as the main benchmark. After splitting raw and active drivers, the gap is specifically active/degraded driver plus local history, not crack-tip position or scalar threshold calibration. Important correction: PIDL `psi_plus_elem` diagnostics were active `g(alpha)*psi0`, not raw `psi0`; new diagnostics save `psi_raw_elem` and `psi_active_elem`. No broad GPU sweep until the FBPINN-chain candidate exports c20/c40/c69 and matched-event fields.
+For forward PIDL, run one stronger representation-local discriminator with the field-level gate defined first. Metric plan/results started in `docs/field_level_comparison_metric_plan.md`, `docs/field_level_metric_results_2026-05-28.md`, `docs/aligned_fem_pidl_reference_tiers_2026-05-30.md`, `docs/staged_alpha_discriminator_2026-05-30.md`, `docs/local_patch_discriminator_2026-05-30.md`, `docs/fbpinn_chain_discriminator_2026-05-30.md`, and `docs/inverse_problem_experiments_2026-05-31.md`; element/nodal definitions are pinned in `docs/fem_pidl_element_nodal_definitions_2026-05-28.md`. For framework validation, the next meaningful step is a multi-trajectory FEM benchmark with holdout splits; the current single-trajectory M2S result proves feasibility, not hidden-state superiority.
 
 ## Switch Condition
 
