@@ -1,6 +1,6 @@
 # Experiment Inventory — Purpose-Organized
 
-**Last updated**: 2026-05-29
+**Last updated**: 2026-05-31
 **Scope**: All PIDL + FEM experiments across Mac / Windows-PIDL / Windows-FEM / Taobo  
 **Format**: purpose → experiments → [机器] result / verdict
 
@@ -51,6 +51,7 @@
 | **Dir 6.3 logf** @ u=0.08/0.09（低 Umax） | Windows | NO fracture in 300 cycles！低 Umax 传播彻底停止 | ❌❌ 使情况更糟；但发现 f-shape 控制低 Umax 传播运动学 |
 | **adaptive λ_hist** baseline/v4 @ u=0.12 N100 | Taobo | baseline: detected c82, confirmed c92, final ᾱ_max=12.08; v4: detected c80, confirmed c90, final ᾱ_max=11.86. Late logs show `hist_grad=0`, `λ_hist=1.0` | ❌ fractures but does not actively rebalance or close field gap |
 | **hard irreversibility** baseline/v4 @ u=0.12 N100 | Taobo | sigmoid floor avoids NaNs, but both runs no fracture by c99; ᾱ_max≈75-76 while `α_max@bdy=0` and tip remains near notch | ❌ negative constraint-form result |
+| **inverse `alpha_T` on strict FEM-mesh softHist0** @ u=0.12 | Taobo | Against latest soft-hist0 FEM `N_f=69`, trainable `alpha_T` collapsed to lower bound 0.05; PIDL detected j11/confirmed j14. Raw `psi+` tip2 became 4-8× FEM while active `g(alpha)psi+` stayed 0.06-0.26× FEM. | ❌ scalar inversion ill-posed; parameter compensation, not field recovery |
 
 ---
 

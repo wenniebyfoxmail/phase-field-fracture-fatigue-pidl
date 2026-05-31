@@ -42,6 +42,27 @@
 
 ## Entries
 
+## 2026-05-31 · Mac-PIDL [finding+implementation]
+
+**Strict FEM-mesh inverse `alpha_T` retry closed: scalar inversion is not identifiable**
+
+Added and launched `SENS_tensile/run_fem_mesh_inverse_alphaT_umax.py` on branch
+`codex/inverse-femmesh-soft-hist0` commit `215c3bd`.  Target was the latest fair
+reference, `SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC` (`N_f=69`),
+against the strict FEM-mesh soft-hist0 PIDL baseline.  Only `alpha_T` was
+trainable (`init=0.25`, bounds `[0.05,2.0]`); `E_irrev/tol_ir=5e-3` and all
+forward physics settings were fixed.
+
+Result: the inverse run collapsed `alpha_T` to the lower bound `0.05` from about
+`j=5`, detected boundary fracture at `j=11`, and confirmed at `j=14`, far earlier
+than FEM c69.  This is parameter compensation, not material recovery.
+
+Raw/active diagnostic confirmed the comparison trap: at c10/j9 raw `psi+` tip2
+was `8.06x` FEM but active `g(alpha)psi+` tip2 was only `0.057x`; at c15/j14 raw
+was `4.46x` but active was `0.259x`.  Therefore raw `psi+` amplitude alone is not
+the bottleneck.  The remaining mechanism is active/degraded driver plus local
+history feedback.  Full record: `docs/inverse_problem_experiments_2026-05-31.md`.
+
 ## 2026-05-30 · Mac-PIDL [finding+implementation]
 
 **Additive local patch weak/negative; FBPINN-chain discriminator prepared**
