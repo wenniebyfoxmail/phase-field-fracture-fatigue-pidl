@@ -1198,10 +1198,13 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _supervised_dict = None
         if mit8_dict is not None and mit8_dict.get('enable', False):
             _K = int(mit8_dict.get('K', 0))
-            if 1 <= j <= _K:
+            _start_j = int(mit8_dict.get('start_j', 1))
+            _cycle_offset = int(mit8_dict.get('cycle_offset', 0))
+            if _start_j <= j < _start_j + _K:
+                _target_cycle = int(j + _cycle_offset)
                 _supervised_dict = {
                     'fem_sup': mit8_dict['fem_sup'],
-                    'cycle_idx': j,
+                    'cycle_idx': _target_cycle,
                     'lambda': float(mit8_dict.get('lambda', 1.0)),
                     'pidl_centroids': mit8_dict['pidl_centroids'],
                     'loss_kind': mit8_dict.get('loss_kind', 'mse_log'),
@@ -1211,7 +1214,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     'fatigue_dict': fatigue_dict,
                 }
                 print(
-                    f"  [MIT-8] cycle {j}/{_K}: "
+                    f"  [MIT-8] cycle {j} target_cycle={_target_cycle} "
+                    f"window={_start_j}..{_start_j + _K - 1}: "
                     f"target={_supervised_dict['target_kind']} "
                     f"supervised lambda={_supervised_dict['lambda']}"
                 )

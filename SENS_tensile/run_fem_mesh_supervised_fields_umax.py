@@ -239,6 +239,10 @@ def main() -> None:
     mit8_dict = {
         "enable": True,
         "K": int(args.K),
+        # PIDL index j=0 is already the first loaded cycle in this runner.
+        # Map j=0 -> FEM c1 so an N20/K20 discriminator uses FEM c1..c20.
+        "start_j": 0,
+        "cycle_offset": 1,
         "lambda": float(args.lam),
         "fem_sup": fem_sup,
         "pidl_centroids": pidl_centroids,
@@ -253,6 +257,8 @@ def main() -> None:
         f.write(f"umax: {args.umax}\n")
         f.write(f"n_cycles: {args.n_cycles}\n")
         f.write(f"K: {args.K}\n")
+        f.write("supervision_start_j: 0\n")
+        f.write("supervision_cycle_offset: 1\n")
         f.write(f"target: {args.target}\n")
         f.write(f"lambda: {args.lam}\n")
         f.write(f"loss_kind: {loss_kind}\n")
