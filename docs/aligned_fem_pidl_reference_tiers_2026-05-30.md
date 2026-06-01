@@ -287,3 +287,50 @@ These early values show both discontinuity variants propagating gradually
 from the notch without immediate right-boundary saturation.  The `xfem_jump`
 variant is accumulating history faster than `sdf_ribbon` at the same early
 stage, but field-shape and active-driver gates are still pending.
+
+## 2026-06-01 FEM-Field Supervision Discriminator
+
+Commit `90dd3ad` adds strict FEM-mesh cyclewise field supervision against the
+local n-step10 soft-hist0 FEM handoff.  The four targets are run separately
+over c1-c20:
+
+```text
+workspace: /mnt/data2/drtao/projects/pidl-field-supervision-90dd3ad
+archive:   /mnt/data2/drtao/pidl_archives/field_supervision_90dd3ad
+runner:    SENS_tensile/run_fem_mesh_supervised_fields_umax.py
+mesh:      meshed_geom_fem_soft_hist0.msh
+FEM fields: _fem_handoff/nstep10/reverseBC_u12_soft_hist0_nstep10_element_fields_c1_c69.mat
+cycles:    N20, K20 supervision, Umax=0.12, seed=1
+diagnostic cycles: 0,1,2,3,10,20
+pretrain:  off for this first c1-c20 discriminator
+```
+
+Runs launched on Taobo:
+
+```text
+alpha
+  GPU: 4
+  PID: 2477446
+  log: /mnt/data2/drtao/projects/pidl-field-supervision-90dd3ad/SENS_tensile/run_logs/field_supervision_90dd3ad_pretrainoff/femmesh_sup_alpha_K20_u012_N20_seed1_90dd3ad.log
+
+alpha_bar
+  GPU: 0
+  PID: 2481607
+  log: /mnt/data2/drtao/projects/pidl-field-supervision-90dd3ad/SENS_tensile/run_logs/field_supervision_90dd3ad_pretrainoff/femmesh_sup_alpha_bar_K20_u012_N20_seed1_90dd3ad.log
+
+psi_raw
+  GPU: 1
+  PID: 2481782
+  log: /mnt/data2/drtao/projects/pidl-field-supervision-90dd3ad/SENS_tensile/run_logs/field_supervision_90dd3ad_pretrainoff/femmesh_sup_psi_raw_K20_u012_N20_seed1_90dd3ad.log
+
+psi_active
+  GPU: 7
+  PID: 2482085
+  log: /mnt/data2/drtao/projects/pidl-field-supervision-90dd3ad/SENS_tensile/run_logs/field_supervision_90dd3ad_pretrainoff/femmesh_sup_psi_active_K20_u012_N20_seed1_90dd3ad.log
+```
+
+Purpose: isolate whether the early PIDL/FEM divergence is most sensitive to
+the phase field itself, the fatigue/history refresh, the raw elastic driver,
+or the active degraded fatigue driver.  Score these runs using early-cycle
+state timing, `E_el/E_d/E_hist` gradient balance, `alpha_bar`, raw vs active
+`psi+`, and process-zone shape rather than only Nf.
