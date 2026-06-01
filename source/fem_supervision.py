@@ -301,12 +301,216 @@ class FEMSupervision:
         if mask is None:
             loss = perel.mean()
         else:
-            # Mask-weighted mean: divide by count of True entries
             mask_b = mask.to(perel.device).bool()
             n = int(mask_b.sum().item())
             if n == 0:
-                # Defensive: empty mask gives no signal (skip supervised loss)
                 loss = perel.new_zeros(())
             else:
                 loss = perel[mask_b].mean()
         return lambda_sup * loss
+
+
+def _load_mat_any(path: Path | str, variable_names: list[str] | None = None) -> dict:
+    """Load a MATLAB v7 or v7.3 file into a plain dict of arrays."""
+    path = Path(path)
+    try:
+        return {
+            k: v for k, v in sio.loadmat(str(path), variable_names=variable_names).items()
+            if not k.startswith("__")
+        }
+    except NotImplementedError:
+        import h5py
+
+        out: dict[str, np.ndarray] = {}
+        with h5py.File(path, "r") as h5:
+            names = variable_names if variable_names is not None else list(h5.keys())
+            for name in names:
+                if name in h5 and hasattr(h5[name], "shape"):
+                    out[name] = np.asarray(h5[name])
+        return out
+
+
+def _as_elem_by_cycle(arr: np.ndarray, n_elem: int | None = None) -> np.ndarray:
+    """Return compact FEM field as (n_elem, n_cycle), regardless of MATLAB/HDF orientation."""
+    arr = np.asarray(arr)
+    if arr.ndim == 1:
+        return arr.reshape(-1, 1)
+    if n_elem is not None:
+        if arr.shape[0] == n_elem:
+            return arr
+        if arr.shape[1] == n_elem:
+            return arr.T
+    return arr if arr.shape[0] >= arr.shape[1] else arr.T
+
+
+def _as_xy(arr: np.ndarray) -> np.ndarray:
+    """Return coordinate-like arrays as (n, 2)."""
+    arr = np.asarray(arr, dtype=np.float64)
+    if arr.ndim != 2:
+        raise ValueError(f"expected 2D coordinate array, got shape={arr.shape}")
+    if arr.shape[1] == 2:
+        return arr
+    if arr.shape[0] == 2:
+        return arr.T
+    raise ValueError(f"cannot interpret coordinate array shape={arr.shape}")
+
+
+class CyclewiseFEMFieldSupervision:
+    """FEM cyclewise field supervision for the strict soft-hist0 handoffs.
+
+    Supported target_kind values:
+      alpha      -> FEM d_elem
+      alpha_bar  -> FEM alpha_bar_elem
+      history    -> alias for alpha_bar
+      psi_active -> FEM psi_plus_elem, i.e. g(alpha) * psi_raw
+      psi_raw    -> FEM psi_raw_elem if exported, otherwise psi_plus_elem / g(d_elem)
+    """
+
+    _FIELD_ALIASES = {
+        "alpha": ("d_elem", "alpha_elem"),
+        "d": ("d_elem", "alpha_elem"),
+        "alpha_bar": ("alpha_bar_elem", "hist_fat_elem"),
+        "history": ("alpha_bar_elem", "hist_fat_elem"),
+        "hist_fat": ("alpha_bar_elem", "hist_fat_elem"),
+        "psi_active": ("psi_active_elem", "psi_plus_elem"),
+        "active": ("psi_active_elem", "psi_plus_elem"),
+        "psi": ("psi_raw_elem", "psi_elem", "psi_plus_elem"),
+        "psi_raw": ("psi_raw_elem", "psi_elem", "psi_plus_elem"),
+    }
+
+    def __init__(self, fields_mat: Path | str, mesh_mat: Path | str | None = None):
+        self.fields_mat = Path(fields_mat)
+        if not self.fields_mat.is_file():
+            raise FileNotFoundError(f"FEM fields .mat not found: {self.fields_mat}")
+        mesh_path = Path(mesh_mat) if mesh_mat is not None else self.fields_mat.parent / "mesh_geometry.mat"
+        self.mesh_mat = mesh_path if mesh_path.is_file() else None
+
+        core_names = [
+            "cycles", "d_elem", "alpha_elem", "alpha_bar_elem", "hist_fat_elem",
+            "psi_plus_elem", "psi_active_elem", "psi_plus_peak_to_date_elem",
+            "psi_raw_elem", "psi_elem", "element_centroids", "node_coords", "connectivity",
+        ]
+        data = _load_mat_any(self.fields_mat, variable_names=core_names)
+        mesh = _load_mat_any(self.mesh_mat) if self.mesh_mat is not None else {}
+        data = {**mesh, **data}
+
+        if "cycles" in data:
+            self.cycles = [int(round(x)) for x in np.asarray(data["cycles"]).ravel()]
+        else:
+            first = next(v for k, v in data.items() if k.endswith("_elem"))
+            n_cycle = min(np.asarray(first).shape)
+            self.cycles = list(range(1, n_cycle + 1))
+        self._cycle_to_col = {c: i for i, c in enumerate(self.cycles)}
+
+        if "element_centroids" in data:
+            self.fem_centroids = _as_xy(data["element_centroids"])
+        elif "node_coords" in data and "connectivity" in data:
+            nodes = _as_xy(data["node_coords"])
+            conn = np.asarray(data["connectivity"])
+            if conn.shape[0] in (3, 4) and conn.shape[1] != conn.shape[0]:
+                conn = conn.T
+            conn = conn.astype(np.int64)
+            if conn.min() == 1:
+                conn = conn - 1
+            self.fem_centroids = nodes[conn].mean(axis=1)
+        else:
+            raise ValueError(
+                f"No element_centroids or node_coords/connectivity in {self.fields_mat}"
+            )
+
+        n_elem = int(self.fem_centroids.shape[0])
+        self.fields: dict[str, np.ndarray] = {}
+        for key, value in data.items():
+            if key.endswith("_elem") or key in ("psi_elem",):
+                arr = _as_elem_by_cycle(value, n_elem=n_elem)
+                if arr.shape[0] == n_elem:
+                    self.fields[key] = np.asarray(arr, dtype=np.float64)
+
+        if "d_elem" in self.fields and "psi_plus_elem" in self.fields and "psi_raw_elem" not in self.fields:
+            d = np.clip(self.fields["d_elem"], None, 1.0)
+            g = np.maximum((1.0 - d) ** 2, 1e-12)
+            self.fields["psi_raw_elem"] = self.fields["psi_plus_elem"] / g
+
+    def available_targets(self) -> list[str]:
+        out = []
+        for target, names in self._FIELD_ALIASES.items():
+            if any(name in self.fields for name in names):
+                out.append(target)
+        return sorted(set(out))
+
+    def _field_name(self, target_kind: str) -> str:
+        target_kind = str(target_kind).lower()
+        for name in self._FIELD_ALIASES.get(target_kind, (target_kind,)):
+            if name in self.fields:
+                return name
+        raise RuntimeError(
+            f"FEM target {target_kind!r} unavailable in {self.fields_mat}. "
+            f"Fields present: {sorted(self.fields)}"
+        )
+
+    def _bracket_cycles(self, cycle_idx: int) -> tuple[int, int]:
+        if cycle_idx <= self.cycles[0]:
+            return self.cycles[0], self.cycles[0]
+        if cycle_idx >= self.cycles[-1]:
+            return self.cycles[-1], self.cycles[-1]
+        for i in range(len(self.cycles) - 1):
+            if self.cycles[i] <= cycle_idx <= self.cycles[i + 1]:
+                return self.cycles[i], self.cycles[i + 1]
+        return self.cycles[0], self.cycles[0]
+
+    def _field_at_cycle(self, field_name: str, cycle_idx: int) -> np.ndarray:
+        field = self.fields[field_name]
+        if cycle_idx in self._cycle_to_col:
+            return field[:, self._cycle_to_col[cycle_idx]]
+        c_lo, c_hi = self._bracket_cycles(cycle_idx)
+        lo = field[:, self._cycle_to_col[c_lo]]
+        if c_hi == c_lo:
+            return lo
+        hi = field[:, self._cycle_to_col[c_hi]]
+        t = (cycle_idx - c_lo) / (c_hi - c_lo)
+        return (1.0 - t) * lo + t * hi
+
+    def _interpolate_to_pidl(self, fem_field: np.ndarray,
+                             pidl_centroids: np.ndarray) -> np.ndarray:
+        from scipy.spatial import cKDTree
+        tree = cKDTree(self.fem_centroids)
+        _, idx = tree.query(pidl_centroids, k=1)
+        return np.asarray(fem_field, dtype=np.float64)[idx]
+
+    def target_at_cycle(self, target_kind: str, cycle_idx: int,
+                        pidl_centroids: np.ndarray,
+                        *, device: torch.device | None = None,
+                        dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        field_name = self._field_name(target_kind)
+        field = self._field_at_cycle(field_name, cycle_idx)
+        target = self._interpolate_to_pidl(field, pidl_centroids)
+        out = torch.from_numpy(target).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def field_supervised_loss(self, pred_per_elem: torch.Tensor,
+                              target_kind: str,
+                              cycle_idx: int,
+                              pidl_centroids: np.ndarray,
+                              lambda_sup: float = 1.0,
+                              loss_kind: str = "mse_log",
+                              mask: torch.Tensor | None = None) -> torch.Tensor:
+        target = self.target_at_cycle(
+            target_kind, cycle_idx, pidl_centroids,
+            device=pred_per_elem.device, dtype=pred_per_elem.dtype)
+        eps = 1e-12
+        if loss_kind == "mse_lin":
+            perel = (pred_per_elem - target) ** 2
+        elif loss_kind == "mse_log":
+            perel = (torch.log10(pred_per_elem.clamp(min=eps))
+                   - torch.log10(target.clamp(min=eps))) ** 2
+        elif loss_kind == "mse_rel":
+            perel = ((pred_per_elem - target) / (target.abs() + eps)) ** 2
+        else:
+            raise ValueError(f"unknown loss_kind={loss_kind}")
+
+        if mask is not None:
+            mask_b = mask.to(perel.device).bool()
+            return lambda_sup * (perel[mask_b].mean() if int(mask_b.sum()) else perel.new_zeros(()))
+        return lambda_sup * perel.mean()

@@ -93,7 +93,7 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
     _record_grad_stats(grad_stats, 'logE_total', g_phys)
     max_phys = max(grad_stats['logE_total_gmax'], 1e-30)
 
-    # ── Probe 2: supervised ψ⁺ / α term ─────────────────────────────────────
+    # ── Probe 2: supervised FEM field term ──────────────────────────────────
     if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
         _tk = supervised_dict.get('target_kind', 'psi')
         if T_conn is None:
@@ -101,23 +101,11 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
         else:
             inp_p2 = inp_train
         u2, v2, a2 = field_comp.fieldCalculation(inp_p2)
-        if _tk == 'psi':
-            psi2 = _compute_psi_raw_per_elem(inp_p2, u2, v2, a2,
-                                             matprop, pffmodel, area_T, T_conn)
-            l_sup = supervised_dict['fem_sup'].supervised_loss(
-                psi2, cycle_idx=supervised_dict['cycle_idx'],
-                pidl_centroids=supervised_dict['pidl_centroids'],
-                lambda_sup=1.0,
-                loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
-                mask=supervised_dict.get('mask', None))
-        else:  # 'alpha'
-            a_elem = a2[T_conn].mean(dim=1) if T_conn is not None else a2
-            l_sup = supervised_dict['fem_sup'].alpha_supervised_loss(
-                a_elem, cycle_idx=supervised_dict['cycle_idx'],
-                pidl_centroids=supervised_dict['pidl_centroids'],
-                lambda_sup=1.0,
-                loss_kind=supervised_dict.get('loss_kind', 'mse_lin'),
-                mask=supervised_dict.get('mask', None))
+        pred2 = _supervised_prediction_per_elem(
+            _tk, inp_p2, u2, v2, a2, matprop, pffmodel, area_T, T_conn,
+            supervised_dict)
+        l_sup = _supervised_field_loss(
+            supervised_dict, pred2, lambda_sup=1.0)
         g_sup = _probe(l_sup)
         _record_grad_stats(grad_stats, 'sup', g_sup)
         mean_sup = max(_mean_grad(g_sup), 1e-30)
@@ -334,6 +322,85 @@ def _compute_psi_raw_per_elem(inp, u, v, alpha, matprop, pffmodel, area_T, T_con
     return E_el_p   # graph-attached, so backward through u, v works
 
 
+def _alpha_per_elem(alpha, T_conn):
+    if T_conn is None:
+        return alpha.flatten()
+    return alpha[T_conn].mean(dim=1)
+
+
+def _compute_psi_active_per_elem(inp, u, v, alpha, matprop, pffmodel, area_T, T_conn):
+    psi_raw = _compute_psi_raw_per_elem(
+        inp, u, v, alpha, matprop, pffmodel, area_T, T_conn)
+    alpha_elem = _alpha_per_elem(alpha, T_conn)
+    g_alpha, _ = pffmodel.Edegrade(alpha_elem)
+    return g_alpha * psi_raw
+
+
+def _hist_candidate_per_elem(psi_active, supervised_dict):
+    """Differentiable candidate for post-refresh fatigue history alpha_bar."""
+    hist_fat = supervised_dict.get('hist_fat', None)
+    psi_plus_prev = supervised_dict.get('psi_plus_prev', None)
+    fatigue_dict = supervised_dict.get('fatigue_dict', {}) or {}
+    if hist_fat is None or psi_plus_prev is None:
+        raise ValueError(
+            "target_kind='alpha_bar/history' requires hist_fat and psi_plus_prev "
+            "in supervised_dict")
+    hist_fat = hist_fat.to(device=psi_active.device, dtype=psi_active.dtype)
+    psi_plus_prev = psi_plus_prev.to(device=psi_active.device, dtype=psi_active.dtype)
+    loading_type = fatigue_dict.get('loading_type', 'cyclic')
+    if loading_type == 'monotonic':
+        return hist_fat
+    delta_psi = torch.relu(psi_active - psi_plus_prev)
+    accum_type = fatigue_dict.get('accum_type', 'carrara')
+    if accum_type == 'carrara':
+        delta_alpha = delta_psi
+    elif accum_type == 'golahmar':
+        n = fatigue_dict.get('n_power', 1.0)
+        alpha_n = fatigue_dict.get('alpha_n', 1.0)
+        delta_alpha = (psi_active.clamp(min=1e-12) / alpha_n).pow(n - 1.0) * delta_psi
+    else:
+        raise ValueError(f"Unknown accum_type={accum_type!r}")
+    return hist_fat + delta_alpha
+
+
+def _supervised_prediction_per_elem(target_kind, inp, u, v, alpha, matprop,
+                                    pffmodel, area_T, T_conn, supervised_dict):
+    target_kind = str(target_kind).lower()
+    if target_kind in ('psi', 'psi_raw'):
+        return _compute_psi_raw_per_elem(
+            inp, u, v, alpha, matprop, pffmodel, area_T, T_conn)
+    if target_kind in ('psi_active', 'active'):
+        return _compute_psi_active_per_elem(
+            inp, u, v, alpha, matprop, pffmodel, area_T, T_conn)
+    if target_kind in ('alpha', 'd'):
+        return _alpha_per_elem(alpha, T_conn)
+    if target_kind in ('alpha_bar', 'history', 'hist_fat'):
+        psi_active = _compute_psi_active_per_elem(
+            inp, u, v, alpha, matprop, pffmodel, area_T, T_conn)
+        return _hist_candidate_per_elem(psi_active, supervised_dict)
+    raise ValueError(
+        f"unknown supervised target_kind={target_kind!r}; expected one of "
+        "'alpha', 'alpha_bar/history', 'psi_raw', or 'psi_active'")
+
+
+def _supervised_field_loss(supervised_dict, pred_per_elem, lambda_sup):
+    target_kind = supervised_dict.get('target_kind', 'psi')
+    fem_sup = supervised_dict['fem_sup']
+    kwargs = dict(
+        cycle_idx=supervised_dict['cycle_idx'],
+        pidl_centroids=supervised_dict['pidl_centroids'],
+        lambda_sup=lambda_sup,
+        loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
+        mask=supervised_dict.get('mask', None),
+    )
+    if hasattr(fem_sup, 'field_supervised_loss'):
+        return fem_sup.field_supervised_loss(
+            pred_per_elem, target_kind=target_kind, **kwargs)
+    if str(target_kind).lower() in ('alpha', 'd'):
+        return fem_sup.alpha_supervised_loss(pred_per_elem, **kwargs)
+    return fem_sup.supervised_loss(pred_per_elem, **kwargs)
+
+
 class EarlyStopping:
     '''
     If the relative decrease in the loss is < min_delta for # of consecutive steps = tolerance,
@@ -409,34 +476,17 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
 
                 loss = loss_var + weight_decay*loss_reg
 
-                # ★ MIT-8 supervised term (Apr 25 + Apr 26 amortization)
-                # ★ 2026-05-14: target_kind='psi' (existing) or 'alpha' (new α-direct supervision)
+                # ★ FEM supervised term (field target selected by target_kind)
                 # ★ 2026-05-19 Algo1: lambda overridden by _lam_sup when grad_annealing active
                 if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
                     _every_n = max(1, int(supervised_dict.get('every_n_epochs', 1)))
                     if (epoch % _every_n) == 0:
                         _target_kind = supervised_dict.get('target_kind', 'psi')
-                        if _target_kind == 'psi':
-                            psi_raw_pidl = _compute_psi_raw_per_elem(
-                                inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
-                            loss_sup = supervised_dict['fem_sup'].supervised_loss(
-                                psi_raw_pidl,
-                                cycle_idx=supervised_dict['cycle_idx'],
-                                pidl_centroids=supervised_dict['pidl_centroids'],
-                                lambda_sup=_lam_sup,   # ★ Algo1-tuned or dict value
-                                loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
-                                mask=supervised_dict.get('mask', None))
-                        elif _target_kind == 'alpha':
-                            alpha_per_elem = alpha[T_conn].mean(dim=1)
-                            loss_sup = supervised_dict['fem_sup'].alpha_supervised_loss(
-                                alpha_per_elem,
-                                cycle_idx=supervised_dict['cycle_idx'],
-                                pidl_centroids=supervised_dict['pidl_centroids'],
-                                lambda_sup=_lam_sup,   # ★ Algo1-tuned or dict value
-                                loss_kind=supervised_dict.get('loss_kind', 'mse_lin'),
-                                mask=supervised_dict.get('mask', None))
-                        else:
-                            raise ValueError(f"unknown supervised target_kind={_target_kind!r}; expected 'psi' or 'alpha'")
+                        pred_sup = _supervised_prediction_per_elem(
+                            _target_kind, inp_train, u, v, alpha, matprop,
+                            pffmodel, area_T, T_conn, supervised_dict)
+                        loss_sup = _supervised_field_loss(
+                            supervised_dict, pred_sup, lambda_sup=_lam_sup)
                         loss = loss + _every_n * loss_sup
 
                 # ★ 2026-05-07 Soft mirror-symmetry penalty (B path)
@@ -575,32 +625,16 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
 
             loss = loss_var + weight_decay*loss_reg
 
-            # ★ MIT-8 supervised term (Apr 25 + Algo1 lambda override 2026-05-19)
+            # ★ FEM supervised term (field target selected by target_kind)
             if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
                 _every_n = max(1, int(supervised_dict.get('every_n_epochs', 1)))
                 if (epoch % _every_n) == 0:
                     _target_kind = supervised_dict.get('target_kind', 'psi')
-                    if _target_kind == 'psi':
-                        psi_raw_pidl = _compute_psi_raw_per_elem(
-                            inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
-                        loss_sup = supervised_dict['fem_sup'].supervised_loss(
-                            psi_raw_pidl,
-                            cycle_idx=supervised_dict['cycle_idx'],
-                            pidl_centroids=supervised_dict['pidl_centroids'],
-                            lambda_sup=_lam_sup,   # ★ Algo1-tuned
-                            loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
-                            mask=supervised_dict.get('mask', None))
-                    elif _target_kind == 'alpha':
-                        alpha_per_elem = alpha[T_conn].mean(dim=1)
-                        loss_sup = supervised_dict['fem_sup'].alpha_supervised_loss(
-                            alpha_per_elem,
-                            cycle_idx=supervised_dict['cycle_idx'],
-                            pidl_centroids=supervised_dict['pidl_centroids'],
-                            lambda_sup=_lam_sup,   # ★ Algo1-tuned
-                            loss_kind=supervised_dict.get('loss_kind', 'mse_lin'),
-                            mask=supervised_dict.get('mask', None))
-                    else:
-                        raise ValueError(f"unknown supervised target_kind={_target_kind!r}; expected 'psi' or 'alpha'")
+                    pred_sup = _supervised_prediction_per_elem(
+                        _target_kind, inp_train, u, v, alpha, matprop,
+                        pffmodel, area_T, T_conn, supervised_dict)
+                    loss_sup = _supervised_field_loss(
+                        supervised_dict, pred_sup, lambda_sup=_lam_sup)
                     loss = loss + _every_n * loss_sup
 
             # ★ 2026-05-07 Soft mirror-symmetry penalty (Algo1 lambda override)

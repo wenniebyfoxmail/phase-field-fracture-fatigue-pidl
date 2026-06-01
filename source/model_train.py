@@ -1206,8 +1206,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     'pidl_centroids': mit8_dict['pidl_centroids'],
                     'loss_kind': mit8_dict.get('loss_kind', 'mse_log'),
                     'target_kind': mit8_dict.get('target_kind', 'psi'),
+                    'hist_fat': hist_fat,
+                    'psi_plus_prev': psi_plus_prev,
+                    'fatigue_dict': fatigue_dict,
                 }
-                print(f"  [MIT-8] cycle {j}/{_K}: supervised lambda={_supervised_dict['lambda']}")
+                print(
+                    f"  [MIT-8] cycle {j}/{_K}: "
+                    f"target={_supervised_dict['target_kind']} "
+                    f"supervised lambda={_supervised_dict['lambda']}"
+                )
 
         # ------------------------------------------------------------------
         # 训练（与 Manav 完全相同的结构；仅多传 f_fatigue 和 crack_tip_weights）
