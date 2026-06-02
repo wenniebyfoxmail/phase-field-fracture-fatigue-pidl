@@ -75,6 +75,7 @@ result_check.md
 
 It should contain:
 
+- artifact completeness and evidence maturity
 - run health/provenance
 - setting alignment audit
 - early state/timing check
@@ -86,6 +87,31 @@ It should contain:
 - interpretation in plain English
 - verdict label from this protocol
 - links to figures and metrics CSVs in `2_figures/`
+
+Use this template at the top of `result_check.md`:
+
+```text
+# Result Check: <run_id>
+
+## Artifact Completeness
+
+| gate | status | evidence path | note |
+|---|---|---|---|
+| sync/provenance | complete / partial / missing | 0_sync/... | ... |
+| early state timing | complete / partial / missing | 2_figures/... | ... |
+| FEM-reference residual fields | complete / partial / missing | 2_figures/... | ... |
+| cyclewise mechanism trajectory | complete / partial / missing | 2_figures/... | ... |
+| energy/incremental energy | complete / partial / missing | 2_figures/... | ... |
+| gradient/loss balance | complete / partial / missing | 2_figures/... | ... |
+| method-specific diagnostics | complete / partial / not-applicable | 2_figures/... | ... |
+
+Evidence maturity: complete / retrospective-partial / provisional / failed
+
+## Verdict
+
+State the verdict only after the completeness table.  If any required gate is
+missing, mark the verdict as provisional or retrospective-partial.
+```
 
 For method families, add a comparison note such as:
 
@@ -132,7 +158,9 @@ Before giving a final verdict on an experiment, check:
 ```
 
 If the folder is incomplete, state which part is missing and classify the
-result as provisional.
+result as provisional or retrospective-partial.  A retrospective-partial report
+is acceptable for old runs that lack state-timing or gradient exports, but it
+must not be presented as a full protocol pass.
 
 ## 3. Early State And Timing Alignment
 
