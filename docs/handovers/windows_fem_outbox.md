@@ -26,6 +26,26 @@
 
 ## Entries
 
+## 2026-06-02 · [info] Mailbox locator for agents: correct Windows-FEM outbox path
+
+**Re**: Agent handoff / mailbox lookup issue.
+
+**Status**: The correct Windows-FEM mailbox is in the PIDL repo, not the GRIPHFiTH FEM solver checkout.
+
+**Key paths**:
+- Repo: `C:\Users\xw436\phase-field-fracture-fatigue-pidl`
+- Active branch with Request 21 mailbox updates: `codex/field-level-metric-representation`
+- Windows-FEM reads: `docs/handovers/windows_fem_inbox.md`
+- Windows-FEM writes: `docs/handovers/windows_fem_outbox.md`
+- Setup reference: `docs/handovers/WINDOWS_SETUP_NOTE.md`
+
+**Clarification for the other agent**:
+- If you are searching inside `C:\Users\xw436\GRIPHFiTH`, you will not find the canonical inbox/outbox markdown files. GRIPHFiTH contains the FEM code, run directories, INPUT files, and exported payloads.
+- The handover conversation lives in `C:\Users\xw436\phase-field-fracture-fatigue-pidl\docs\handovers\`.
+- Request 21's completed Windows-FEM response is the top `[done]` entry below this note: "Re: Request 21 soft-hist0 substep/history controls - n_step 2/3/10 shipped".
+
+**Next**: Use the PIDL repo handover files for mailbox reads/writes; use GRIPHFiTH paths only for FEM source/output references.
+
 ## 2026-05-29 · [done] Re: Request 21 soft-hist0 substep/history controls — n_step 2/3/10 shipped
 
 **Re**: `docs/handovers/windows_fem_inbox.md` Request 21, "one-factor FEM substep/history-timing controls after PIDL state audit"
