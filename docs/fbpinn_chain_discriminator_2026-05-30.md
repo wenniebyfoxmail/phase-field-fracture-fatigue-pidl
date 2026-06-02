@@ -146,3 +146,35 @@ around c70.
 Interpretation: domain decomposition changed the propagation mode, but did not
 close the aligned FEM/PIDL field gap.  It needs field-gate analysis from the
 saved element diagnostics at j20/j40/j69 before being fully closed.
+
+## FEM n_step2 Field-Gate Analysis
+
+Completed on 2026-06-02:
+
+```text
+SENS_tensile/analyze_fbpinn_chain_vs_fem_nstep2.py
+```
+
+Main report:
+
+```text
+_analysis_fem_mechanism_20260528/experiments/fbpinn_chain_discriminator_20260530/1_analysis/fbpinn_chain_vs_fem_nstep2_result.md
+```
+
+Key c69 ratios against FEM Request21 n_step2:
+
+| metric | FBPINN/FEM |
+|---|---:|
+| damage_alpha tip2 | 1.04 |
+| alpha_bar tip2 | 0.553 |
+| alpha_bar p99 | 0.228 |
+| psi_raw tip2 | 1.37 |
+| psi_active tip2 | 0.037 |
+
+Reading: the FBPINN chain keeps near-tip damage amplitude close to FEM and
+avoids the baseline right-boundary saturation event, but it does not recover the
+FEM crack-driving mechanism.  The c69 residual field shows the active driver is
+off-location: FBPINN creates an interior active-psi packet, while FEM n_step2 is
+already concentrated near the right process region.  Treat this branch as
+diagnostic evidence that local representation changes propagation mode, not as
+a solution.
