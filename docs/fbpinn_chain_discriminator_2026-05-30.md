@@ -115,3 +115,34 @@ log: run_logs/femmesh_fbpinnChain_n6_wr012_softHist0_u012_N100_seed1_20260530.lo
 
 Caveat: Taobo SSH became intermittent immediately after launch, so PID/GPU
 health still needs a follow-up verification check.
+
+## Result Check
+
+Checked on Taobo on 2026-06-02:
+
+```text
+archive:
+/mnt/data2/drtao/projects/pidl-align-soft-hist0-20260529/SENS_tensile/
+hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N100_R0.0_Umax0.12_femmesh_softHist0_fbpinnChain_n6_wr0.12_x0.0to0.45_h3_n80_warm1500_j10000
+```
+
+The run completed to j99 with no right-boundary fracture event:
+
+| quantity | j0 | j68 | j99 |
+|---|---:|---:|---:|
+| alpha_bar max | 0.4257 | 10.69 | 14.54 |
+| alpha_bar mean | 0.005527 | 0.3138 | 0.3959 |
+| f_min | 1.0 | 0.007982 | 0.004422 |
+| x_tip_alpha | 0.0 | 0.256 | 0.406 |
+| Kt | 8.10 | 10.58 | 16.62 |
+| E_el | 0.004794 | 0.002541 | 0.001300 |
+
+The final log lines report `N_bdy>0.95=0` through j99.  This means the
+FBPINN-chain branch is not simply reproducing the baseline right-boundary
+saturation failure.  It also does not match FEM event timing: the crack tip
+tracker is only around x=0.406 at j99, while the FEM n_step2 reference fractures
+around c70.
+
+Interpretation: domain decomposition changed the propagation mode, but did not
+close the aligned FEM/PIDL field gap.  It needs field-gate analysis from the
+saved element diagnostics at j20/j40/j69 before being fully closed.
