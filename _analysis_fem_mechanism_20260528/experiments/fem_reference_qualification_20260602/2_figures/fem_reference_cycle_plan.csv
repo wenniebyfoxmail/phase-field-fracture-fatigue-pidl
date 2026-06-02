@@ -1,0 +1,11 @@
+cycle_or_state,required_level,comparison_purpose,fields_needed,notes
+state0_initial,required for full protocol,initial precrack and hist0 audit,"d/alpha,alpha_bar,f_fatigue,psi_raw/psi_active if meaningful",Use Request 20 state-timing if available.
+c1_pre_history,required for full protocol,first loaded-solve divergence check,"d/alpha,alpha_bar,f_fatigue,psi_raw,psi_active",Must not mix peak psi with unloaded damage unless labelled.
+c1_post_history,required,first PIDL/FEM cycle mapping check,"d/alpha,alpha_bar,f_fatigue,psi_raw,psi_active,E_el,E_d",This is the minimum early-cycle gate.
+c2_post_history,required,early accumulation slope,"d/alpha,alpha_bar,f_fatigue,psi_raw,psi_active,E_el,E_d",Helps identify chain-effect growth.
+c3_post_history,required,early accumulation slope,"d/alpha,alpha_bar,f_fatigue,psi_raw,psi_active,E_el,E_d",Required by protocol.
+c10_post_history,required,early-to-mid mechanism check,"d/alpha,alpha_bar,f_fatigue,psi_raw,psi_active,E_el,E_d",Used before fracture-near cycles.
+c20_post_history,recommended,mid-cycle field trajectory,"d/alpha,alpha_bar,f_fatigue,psi_raw,psi_active,E_el,E_d",Needed for N20/K20 supervision windows.
+c40_post_history,recommended,late pre-fracture trend,"d/alpha,alpha_bar,f_fatigue,psi_raw,psi_active,E_el,E_d",Good for slope/trajectory.
+c69_or_native_fem_event,required,reference event or final FEM available cycle,"d/alpha,alpha_bar,f_fatigue,psi_raw,psi_active,E_el,E_d,event audit",For soft-hist0 FEM Nf is about 69.
+matched_pidl_event,conditional,PIDL event-state comparison,"same fields as c69",Only meaningful if PIDL has event checkpoints and FEM event reference.
