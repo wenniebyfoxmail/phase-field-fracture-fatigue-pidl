@@ -92,6 +92,14 @@ fatigue_dict = {
     "disp_max"     : 0.12,          # 峰值位移振幅（Umax=0.12）
     "R_ratio"      : 0.0,            # 应力比 R = σ_min/σ_max；R=0 → 拉-拉循环
 
+    # ── 疲劳历史驱动诊断（默认保持原算法）──────────────────────────────────
+    # current_active: ᾱ uses g(alpha_current) * psi_raw_current, the historical default.
+    # lagged_g:      ᾱ uses g(hist_alpha_previous) * psi_raw_current; tests whether
+    #                current-cycle alpha relaxation kills the active driver too early.
+    # raw:           ᾱ uses psi_raw_current without degradation, a diagnostic ceiling
+    #                only, not a proposed physical fatigue law.
+    "history_driver_mode": "current_active",
+
     # ── 历史变量累积策略 ─────────────────────────────────────────────────────
     "accum_type"   : "carrara",      # 'carrara'  → Carrara Eq.39：线性累积 Δᾱ = H(Δψ⁺)·Δψ⁺
                                      # 'golahmar' → Golahmar Eq.31：幂律累积

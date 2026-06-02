@@ -102,7 +102,8 @@ def _tensor_to_numpy(value, like_tensor=None):
 
 def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
                               f_fatigue, psi_plus_elem, psi_plus_prev,
-                              matprop, pffmodel, area_T, cycle, out_dir):
+                              matprop, pffmodel, area_T, cycle, out_dir,
+                              psi_history_elem=None):
     """Save cycle-end element fields for FEM/PIDL mechanism comparison."""
     out_dir.mkdir(parents=True, exist_ok=True)
     with torch.no_grad():
@@ -130,6 +131,9 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
     f_fatigue_np = _tensor_to_numpy(f_fatigue, like_tensor=alpha_elem).reshape(-1)
     psi_plus_np = _tensor_to_numpy(psi_plus_elem).reshape(-1)
     psi_prev_np = _tensor_to_numpy(psi_plus_prev).reshape(-1)
+    psi_history_np = _tensor_to_numpy(
+        psi_history_elem if psi_history_elem is not None else psi_plus_elem
+    ).reshape(-1)
     E_el_np = _tensor_to_numpy(E_el_elem).reshape(-1)
     E_d_np = _tensor_to_numpy(E_d_elem).reshape(-1)
     E_hist_np = _tensor_to_numpy(E_hist_elem).reshape(-1)
@@ -152,6 +156,7 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         f_fatigue_elem=f_fatigue_np.astype(np.float32),
         psi_plus_elem=psi_plus_np.astype(np.float32),  # backward-compatible active driver
         psi_active_elem=psi_plus_np.astype(np.float32),
+        psi_history_driver_elem=psi_history_np.astype(np.float32),
         psi_raw_elem=psi_raw_np.astype(np.float32),
         g_alpha_elem=g_alpha_np.astype(np.float32),
         psi_plus_prev_elem=psi_prev_np.astype(np.float32),
@@ -497,11 +502,20 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             return _make_f_fatigue(hist_snapshot)
 
         f_fatigue = _fatigue_for_fit(hist_fat)
+        _history_driver_mode = fatigue_dict.get('history_driver_mode', 'current_active')
+        _valid_history_driver_modes = {'current_active', 'lagged_g', 'raw'}
+        if _history_driver_mode not in _valid_history_driver_modes:
+            raise ValueError(
+                "fatigue_dict['history_driver_mode'] must be one of "
+                f"{sorted(_valid_history_driver_modes)}, got {_history_driver_mode!r}"
+            )
+        print(f"[HistoryDriver] mode={_history_driver_mode}")
     else:
         f_fatigue = 1.0
         elem_centroids = None
         _void_notch_mask = None
         _void_energy_mask = None
+        _history_driver_mode = 'off'
 
         def _make_f_fatigue(_hist_snapshot):
             return f_fatigue
@@ -901,6 +915,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         # ------------------------------------------------------------------
         # Manav 原始：更新相场不可逆性历史变量 hist_alpha
         # ------------------------------------------------------------------
+        hist_alpha_prev_for_driver = hist_alpha.clone() if fatigue_on else None
         hist_alpha = field_comp.update_hist_alpha(inp)
 
         # ★ δ-1: update element sampling probabilities p_e from residual proxy
@@ -970,6 +985,32 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 psi_plus_elem[_void_notch_mask] = 0.0
                 psi_plus_prev[_void_notch_mask] = 0.0
 
+            psi_history_elem = psi_plus_elem
+            if _history_driver_mode != 'current_active':
+                if T_conn is not None:
+                    alpha_current_elem = (
+                        alpha_eval[T_conn[:, 0]]
+                        + alpha_eval[T_conn[:, 1]]
+                        + alpha_eval[T_conn[:, 2]]
+                    ) / 3.0
+                else:
+                    alpha_current_elem = alpha_eval.flatten()
+                g_current, _ = pffmodel.Edegrade(alpha_current_elem)
+                psi_raw_elem = (psi_plus_elem / g_current.clamp(min=1e-30)).detach()
+                if _history_driver_mode == 'raw':
+                    psi_history_elem = psi_raw_elem
+                elif _history_driver_mode == 'lagged_g':
+                    if T_conn is not None:
+                        alpha_lag_elem = (
+                            hist_alpha_prev_for_driver[T_conn[:, 0]]
+                            + hist_alpha_prev_for_driver[T_conn[:, 1]]
+                            + hist_alpha_prev_for_driver[T_conn[:, 2]]
+                        ) / 3.0
+                    else:
+                        alpha_lag_elem = hist_alpha_prev_for_driver.flatten()
+                    g_lag, _ = pffmodel.Edegrade(alpha_lag_elem)
+                    psi_history_elem = (g_lag * psi_raw_elem).detach()
+
             # ★ Direction 4: 用 ψ⁺ 重心估计裂尖坐标 → 更新 field_comp.x_tip
             # 必须在 update_fatigue_history 之前，确保本圈 psi_plus_elem 是峰值状态
             # ★ Fix B: cycle 0 保持初始 x_tip（α 场未收敛，ψ⁺ 分布被预裂缝污染，
@@ -1011,7 +1052,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
             # 更新疲劳历史变量 ᾱ（Carrara Eq.39 或 Golahmar Eq.31）
             hist_fat = update_fatigue_history(
-                hist_fat, psi_plus_elem, psi_plus_prev, fatigue_dict
+                hist_fat, psi_history_elem, psi_plus_prev, fatigue_dict
             )
             if (_void_notch_mask is not None
                     and _void_cfg.get('mask_fatigue', True)):
@@ -1045,9 +1086,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # so the previous ψ⁺ should advance from substep to substep instead of
             # being reset after every training step. Default behavior is unchanged.
             if fatigue_dict.get('explicit_cycle_substeps', None):
-                psi_plus_prev = psi_plus_elem.clone()
+                psi_plus_prev = psi_history_elem.clone()
             else:
-                psi_plus_prev = (R ** 2) * psi_plus_elem.clone()
+                psi_plus_prev = (R ** 2) * psi_history_elem.clone()
 
             # ★ 方向3：计算下一圈的裂尖自适应权重
             # 在当前圈 psi_plus_elem 更新后立即计算，供下一圈的 fit() 使用
@@ -1166,7 +1207,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 _save_element_diagnostics(
                     inp, T_conn, u_el, v_el, alpha_el, hist_alpha, hist_fat,
                     _f_current, psi_plus_elem, psi_plus_prev,
-                    matprop, pffmodel, area_T, j, _elem_diag_dir
+                    matprop, pffmodel, area_T, j, _elem_diag_dir,
+                    psi_history_elem=psi_history_elem
                 )
 
             # ── 裂缝尖端 L∞（仅用于日志和后处理，不再作为停止判据）──────────
@@ -1227,6 +1269,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         if fatigue_on:
             _ckpt_data['hist_fat']                 = hist_fat
             _ckpt_data['psi_plus_prev']            = psi_plus_prev
+            _ckpt_data['history_driver_mode']      = _history_driver_mode
+            _ckpt_data['psi_history_elem']         = psi_history_elem
             _ckpt_data['_frac_detected']           = _frac_detected
             _ckpt_data['_frac_cycle']              = _frac_cycle
             _ckpt_data['_frac_confirm_remaining']  = _frac_confirm_remaining
