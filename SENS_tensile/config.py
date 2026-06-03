@@ -72,7 +72,14 @@ w1: Gc/l0, where Gc is energy release rate.
 In the normalized formulation, mat_E=1, w1=1, and only nu and l0 are the properties to be set.
 '''
 numr_dict = {"alpha_constraint": 'nonsmooth', "gradient_type": 'numerical'}
-PFF_model_dict = {"PFF_model" : 'AT1', "se_split" : 'volumetric', "tol_ir" : 5e-3}
+PFF_model_dict = {
+    "PFF_model": 'AT1',
+    "se_split": 'volumetric',
+    "tol_ir": 5e-3,
+    # Default stays at 0.0 to preserve historical PIDL archives.  Use
+    # run_fem_mesh_res_stiff_umax.py for the strict FEM-style eta=1e-6 branch.
+    "residual_stiffness": 0.0,
+}
 mat_prop_dict = {"mat_E" : 1.0, "mat_nu" : 0.3, "w1" : 1.0, "l0" : 0.01}
 
 # ★ 新增：疲劳参数字典（所有新功能均可独立开关）

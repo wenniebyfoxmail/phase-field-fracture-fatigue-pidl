@@ -46,10 +46,12 @@ class PFFModel:
         控制相场不可逆性约束的严格程度
     """
 
-    def __init__(self, PFF_model = 'AT1', se_split = 'volumetric', tol_ir = 5e-3):
+    def __init__(self, PFF_model = 'AT1', se_split = 'volumetric', tol_ir = 5e-3,
+                 residual_stiffness = 0.0):
         self.PFF_model = PFF_model # AT1 或 AT2 模型
         self.se_split = se_split    # 应变能分解方式
         self.tol_ir = tol_ir    # 不可逆性容差阈值
+        self.residual_stiffness = residual_stiffness
 
         # 输入检查
         if self.se_split != 'volumetric':
@@ -60,7 +62,7 @@ class PFFModel:
 
     # degradation function for Young's modulus and its derivative w.r.t. \alpha: g(\alpha) and g'(\alpha)
     def Edegrade(self, alpha):
-        return (1 - alpha)**2, 2*(alpha - 1)
+        return (1 - alpha)**2 + self.residual_stiffness, 2*(alpha - 1)
 
     """
     退化函数及其导数

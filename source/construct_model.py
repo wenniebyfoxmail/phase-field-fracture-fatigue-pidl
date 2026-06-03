@@ -22,9 +22,14 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
         互斥: williams_dict 和 fourier_dict 不可同时 enable。
     """
     # Phase field model
+    residual_stiffness = PFF_model_dict.get(
+        "residual_stiffness",
+        PFF_model_dict.get("res_stiff", 0.0),
+    )
     pffmodel = PFFModel(PFF_model = PFF_model_dict["PFF_model"],
                         se_split = PFF_model_dict["se_split"],
-                        tol_ir = torch.tensor(PFF_model_dict["tol_ir"], device=device))
+                        tol_ir = torch.tensor(PFF_model_dict["tol_ir"], device=device),
+                        residual_stiffness = torch.tensor(residual_stiffness, device=device))
 
     # Material model
     matprop = MaterialProperties(mat_E = torch.tensor(mat_prop_dict["mat_E"], device=device),
