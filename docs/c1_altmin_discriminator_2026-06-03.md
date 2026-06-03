@@ -203,3 +203,38 @@ move toward FEM together.  A good result should not simply hide psi_raw by
 over-degrading g(alpha), and should not make E_hist dominate alpha-stage
 gradients by another order of magnitude.
 ```
+
+### Follow-up Branch Result
+
+All four branches completed on Taobo and were compared against FEM22 n_step2 c1
+peak together with the original `r3_a2000` baseline.
+
+Final uv-state summary:
+
+| branch | selected uv | psi_raw_max | psi_raw max / FEM | eps_eq tip2 / FEM | psi_active tip2 / FEM | final alpha-stage grad_logEhist |
+|---|---|---:|---:|---:|---:|---:|
+| baseline_r3_a2000 | r3_uv | 2409.9 | 3.51 | 1.012 | 1.042 | 1071.7 |
+| shortAlpha_a200 | r3_uv | 2519.1 | 3.67 | 1.034 | 1.069 | 1051.2 |
+| shortAlpha_a500 | r3_uv | 2422.9 | 3.53 | 1.012 | 1.046 | 1024.4 |
+| smallStagger_r6 | r6_uv | 2643.5 | 3.85 | 1.051 | 1.048 | 1149.4 |
+| alphaLR1e6_r6 | r6_uv | 2642.2 | 3.85 | 1.051 | 1.052 | 1094.3 |
+
+Interpretation:
+
+```text
+simple alpha softening does not fix the feedback loop.
+smaller repeated staggers do not fix it either.
+lower alpha RPROP lr to 1e-6 has little effect.
+```
+
+The useful result is negative but precise.  The final uv state remains
+deceptively close to FEM in tip-mean `eps_eq` and active driver, but the local
+raw maximum remains far too high.  The next lever should therefore target the
+alpha irreversibility/update formulation or the local stiffness/degradation
+response directly, rather than only changing epoch schedule or alpha LR.
+
+Local branch package:
+
+```text
+_analysis_fem_mechanism_20260528/experiments/c1_altmin_branch_matrix_20260603/
+```

@@ -1,0 +1,17 @@
+runner: run_fem_mesh_c1_altmin_probe.py
+umax: 0.12
+seed: 1
+mesh_file: /mnt/data2/drtao/projects/pidl-resstiff-69bb1b2-20260603/SENS_tensile/meshed_geom_fem_soft_hist0.msh
+init_ckpt: /mnt/data2/drtao/projects/pidl-resstiff-69bb1b2-20260603/SENS_tensile/hl_8_Neurons_400_activation_TrainableReLU_coeff_1.0_Seed_1_PFFmodel_AT1_gradient_numerical_fatigue_on_carrara_asy_aT0.5_N100_R0.0_Umax0.12_femmesh_softHist0_resStiff1e6_eta1em06/best_models/trained_1NN_initTraining.pt
+residual_stiffness: 1e-06
+initial_alpha: analytic
+rounds: 3
+uv_epochs: 2000
+alpha_epochs: 200
+joint_epochs: 0
+lr: 1e-05
+uv_lr: 1e-05
+alpha_lr: 1e-05
+joint_lr: 1e-05
+objective: fixed-field c1 alternate minimisation with unchanged E_el+E_d+E_hist physics
+outputs: element_diagnostics/c1_altmin_fields.npz and best_models/c1_altmin_trace.csv
