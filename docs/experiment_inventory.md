@@ -1,6 +1,6 @@
 # Experiment Inventory — Purpose-Organized
 
-**Last updated**: 2026-05-31
+**Last updated**: 2026-06-03
 **Scope**: All PIDL + FEM experiments across Mac / Windows-PIDL / Windows-FEM / Taobo  
 **Format**: purpose → experiments → [机器] result / verdict
 
@@ -105,6 +105,7 @@
 | **2026-05 Request 19 FEM one-factor alignment diagnostics** | Windows-FEM | Soft-hist0 baseline one-factor variants: `tol_irrev=5e-3` gave N_f=68; peak-only (`n_step=1`, one u=0.12 peak solve/cycle) had no penetration by c120; exact `res_stiff=0` was stable and gave N_f=69. All exports include p99/p999, near-tip integrals, precrack/event audits. | isolates irreversibility strength, within-cycle history update, and residual stiffness effects |
 | **2026-05 Request 20 FEM state-timing export** | Windows-FEM | Replayed soft-hist0 cycle 1 and exported 11 timing states from `state0_initial_preload_prehistory` through `cycle1_unloaded_post_history_refresh`. Audit shows old c1 handoff equals unloaded-post d/alpha/f and peak-to-date psi exactly. | splits c1 residual into initial, first loaded solve, and history-refresh timing effects |
 | **2026-05 Request 21 FEM substep/history cadence controls** | Windows-FEM | Soft-hist0 reverseBC one-factor cadence variants: requested `n_step=2` retained `[1,0]` and gave N_f=70; requested `n_step=3` retained `[0.499999,0.999999,0]` and gave N_f=70; requested `n_step=10` retained `[0.2,0.4,0.6,0.8,1,0]` and gave N_f=69. Added explicit PIDL-like c1 mixed row to Request 20 handoff. | maps remaining gap against within-cycle history-refresh cadence |
+| **2026-06 residual-stiffness PIDL discriminator** | Taobo+Mac | Strict FEM-mesh soft-hist0 PIDL with `g(alpha)=(1-alpha)^2+1e-6` finished first boundary hit j82, confirmed j85. Against FEM Request21 n_step2, early tip active driver is aligned (`psi_active` tip2 ≈1.00× FEM at j0-j3), but by c69 `alpha_bar` tip2 is 0.476×, `Delta alpha_bar` is 0.0187×, and `psi_active` tip2 is 0.0419× FEM while `psi_raw` is still 1.53× FEM. At j82-j85 `psi_raw_max≈2.4e3` but `psi_active_max≈1.2e-2` because the max raw energy sits in nearly fully damaged material. | ❌ residual stiffness alone does not close the mechanism gap; remaining issue is spatial co-location of raw stress, degradation, and fatigue/history increment |
 
 ---
 
