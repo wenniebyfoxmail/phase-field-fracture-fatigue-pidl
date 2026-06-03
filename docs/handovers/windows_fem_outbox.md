@@ -26,6 +26,68 @@
 
 ## Entries
 
+## 2026-06-03 · [done] Re: Request FEM-22 whole FEM field package for load/unload timing
+
+**Re**: `docs/handovers/windows_fem_inbox.md` Request FEM-22, "two FEM Excel exports for u=0.12 soft-hist0 load/unload mechanism".
+
+**Status**: Complete, with a broader payload than Excel only. Windows-FEM exported a raw-but-indexed whole-field package so Mac can make current field figures and future PIDL-FEM residual figures without another FEM re-export.
+
+**Variants included**:
+- `nstep2`: explicit peak/unload schedule, cycles c0-c5, `21` saved states.
+- `normal`: standard GRIPHFiTH soft-hist0 loading, cycles c0-c5, `51` saved states.
+- `nstep10`: retained nstep10 loading/unload schedule, cycles c0-c5, `61` saved states.
+
+**Files written**:
+- Local: `C:\Users\xw436\Downloads\_pidl_handoff_v2\fem_u012_soft_hist0_whole_field_package_20260603\`
+- OneDrive: `C:\Users\xw436\OneDrive - University of Cambridge\PIDL result\_pidl_handoff_fem_u012_soft_hist0_whole_field_package_20260603\`
+
+**Per-variant payload**:
+- `fem22_<variant>_c0_c5_region_summary.xlsx`
+- `fem22_<variant>_c0_c5_whole_fields.mat`
+- `mesh_geometry.mat`
+- `README_fem22_<variant>.md`
+- source input copy and `export_fem22_soft_hist0_whole_field_package.m`
+
+**Whole-field MAT contents**:
+- `node_coords`, `connectivity`, `element_centroids`, `element_area`
+- `T_states`, `T_regions`, `metadata`
+- `fields.u_node`
+- `fields.d_node`
+- `fields.d_elem`
+- `fields.alpha_bar_elem`
+- `fields.f_fatigue_elem`
+- `fields.damage_degradation_elem`
+- `fields.psi_plus_elem`
+- `fields.psi_raw_elem` (explicit alias of `psi_plus_elem`)
+- `fields.psi_plus_peak_to_date_elem`
+- `fields.active_psi_positive_elem`
+- `fields.psi_plus_gp`
+- `fields.psi_plus_peak_to_date_gp`
+- `fields.alpha_bar_gp`
+- `fields.f_fatigue_gp`
+- `fields.history_slot1_gp`
+
+**Excel summary contents**:
+- `states` sheet: cycle/substep/load_factor/uy/state timing labels and energies.
+- `region_stats` sheet: min/mean/p95/p99/max/area-integral for `wake_left_narrow`, `near_tip`, `right_boundary`, and `all`.
+- `README` sheet: aliases and conventions.
+
+**Verification**:
+- MATLAB load check passed for all three MAT files.
+- State counts: `nstep2=21`, `normal=51`, `nstep10=61`.
+- Shapes:
+  - `u_node = 45591 x 2 x N_state`
+  - `d_elem = 45000 x N_state`
+  - `psi_plus_gp = 45000 x 4 x N_state`
+- Excel files exist and were written beside each MAT file.
+
+**Notes for Mac**:
+- `psi_raw_elem` is not a separate FEM split in this replay; it is exported as an explicit alias of `psi_plus_elem` to prevent ambiguity.
+- `active_psi_positive_elem = ((1 - d_elem)^2 + res_stiff) .* psi_plus_elem`.
+- Coordinates include FEM coordinates and region definitions use PIDL-centered convention internally: `x_pidl = x_fem - 0.5`, `y_pidl = y_fem - 0.5`.
+
+**Next**: Mac can use the Excel files for quick inspection and the MAT files for all field/residual figures.
+
 ## 2026-05-29 · [done] Re: Request 21 soft-hist0 substep/history controls — n_step 2/3/10 shipped
 
 **Re**: `docs/handovers/windows_fem_inbox.md` Request 21, "one-factor FEM substep/history-timing controls after PIDL state audit"
