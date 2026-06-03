@@ -123,6 +123,12 @@ def main() -> int:
     parser.add_argument("--alpha-epochs", type=int, default=2000)
     parser.add_argument("--joint-epochs", type=int, default=0)
     parser.add_argument("--lr", type=float, default=1e-5)
+    parser.add_argument("--uv-lr", type=float, default=None,
+                        help="RPROP lr for uv substages. Defaults to --lr.")
+    parser.add_argument("--alpha-lr", type=float, default=None,
+                        help="RPROP lr for alpha substages. Defaults to --lr.")
+    parser.add_argument("--joint-lr", type=float, default=None,
+                        help="RPROP lr for optional joint substage. Defaults to --lr.")
     parser.add_argument("--log-every", type=int, default=250)
     parser.add_argument("--force-cpu", action="store_true")
     args = parser.parse_args()
@@ -320,11 +326,20 @@ def main() -> int:
             f"alpha_max={trace_rows[-1][9]:.4e} psi_raw_max={trace_rows[-1][10]:.4e}"
         )
 
+    def stage_lr(loss_kind: str) -> float:
+        if loss_kind == "uv":
+            return float(args.uv_lr if args.uv_lr is not None else args.lr)
+        if loss_kind == "alpha":
+            return float(args.alpha_lr if args.alpha_lr is not None else args.lr)
+        return float(args.joint_lr if args.joint_lr is not None else args.lr)
+
     def run_stage(label: str, rows: tuple[int, ...], epochs: int, loss_kind: str, stage_index: int):
         if int(epochs) <= 0:
             return
         with _head_rows_only(field_comp, rows, label) as active_params:
-            optimizer = torch.optim.Rprop(active_params, lr=float(args.lr), step_sizes=(1e-10, 50))
+            lr = stage_lr(loss_kind)
+            optimizer = torch.optim.Rprop(active_params, lr=lr, step_sizes=(1e-10, 50))
+            print(f"[AltMin] {label}: RPROP lr={lr:.3e}")
             for epoch in range(int(epochs)):
                 optimizer.zero_grad()
                 u_cur, v_cur, alpha_cur = forward_fields()
@@ -358,6 +373,10 @@ def main() -> int:
     print(f"  initial_alpha = {args.initial_alpha}")
     print(f"  rounds        = {args.rounds}")
     print(f"  uv/alpha/j    = {args.uv_epochs}/{args.alpha_epochs}/{args.joint_epochs}")
+    print(
+        "  lr uv/a/j     = "
+        f"{stage_lr('uv'):.3e}/{stage_lr('alpha'):.3e}/{stage_lr('joint'):.3e}"
+    )
     print(f"  archive       = {model_path}")
     print("=" * 72)
 
@@ -422,6 +441,10 @@ def main() -> int:
         fh.write(f"uv_epochs: {args.uv_epochs}\n")
         fh.write(f"alpha_epochs: {args.alpha_epochs}\n")
         fh.write(f"joint_epochs: {args.joint_epochs}\n")
+        fh.write(f"lr: {args.lr}\n")
+        fh.write(f"uv_lr: {stage_lr('uv')}\n")
+        fh.write(f"alpha_lr: {stage_lr('alpha')}\n")
+        fh.write(f"joint_lr: {stage_lr('joint')}\n")
         fh.write("objective: fixed-field c1 alternate minimisation with unchanged E_el+E_d+E_hist physics\n")
         fh.write("outputs: element_diagnostics/c1_altmin_fields.npz and best_models/c1_altmin_trace.csv\n")
 

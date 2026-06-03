@@ -172,3 +172,34 @@ Local analysis package:
 ```text
 _analysis_fem_mechanism_20260528/experiments/c1_altmin_20260603/
 ```
+
+## Follow-up Branch Matrix
+
+Requested after the first result: run several branches for priority 1
+soft/constrained alpha and priority 2 FEM-like repeated stagger.
+
+All branches keep the same strict setup:
+
+```text
+FEM-derived mesh: meshed_geom_fem_soft_hist0.msh
+initial checkpoint: residual-stiffness post-pretraining checkpoint
+residual stiffness: 1e-6
+physics: unchanged E_el + E_d + E_hist
+output: c1_altmin_fields.npz + c1_altmin_trace.csv
+```
+
+| branch | purpose | rounds | uv epochs | alpha epochs | uv lr | alpha lr |
+|---|---|---:|---:|---:|---:|---:|
+| `shortAlpha_a200` | test whether a shorter alpha move avoids rebuilding the hotspot | 3 | 2000 | 200 | 1e-5 | 1e-5 |
+| `shortAlpha_a500` | intermediate alpha authority | 3 | 2000 | 500 | 1e-5 | 1e-5 |
+| `smallStagger_r6` | FEM-like smaller repeated blocks | 6 | 500 | 100 | 1e-5 | 1e-5 |
+| `alphaLR1e6_r6` | separate optimizer authority: same small blocks but weaker alpha LR | 6 | 500 | 100 | 1e-5 | 1e-6 |
+
+Gate:
+
+```text
+Prefer branches where eps_eq tip2, psi_active tip2, alpha max, and psi_raw max
+move toward FEM together.  A good result should not simply hide psi_raw by
+over-degrading g(alpha), and should not make E_hist dominate alpha-stage
+gradients by another order of magnitude.
+```
