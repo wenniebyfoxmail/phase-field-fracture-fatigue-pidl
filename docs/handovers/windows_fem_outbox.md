@@ -26,6 +26,46 @@
 
 ## Entries
 
+## 2026-06-03 · [done] PIDL-aligned monotonic four-case handoff synced
+
+**Re**: user request to sync the monotonic results in the same handoff style as the FEM22 local package.
+
+**Status**: Complete. Windows-FEM packaged and mirrored the four PIDL-aligned monotonic runs for Mac-side plotting/comparison.
+
+**Files written**:
+- Local: `C:\Users\xw436\Downloads\_pidl_handoff_v2\pidl_aligned_monotonic_four_cases_20260603\`
+- OneDrive: `C:\Users\xw436\OneDrive - University of Cambridge\PIDL result\_pidl_handoff_pidl_aligned_monotonic_four_cases_20260603\`
+
+**Package contents**:
+- `monotonic_four_case_summary.csv`
+- `README_pidl_aligned_monotonic_four_cases.md`
+- Source driver/input copies:
+  - `INPUT_SENT_PIDL_12_fine_reverseBC_monotonic.m`
+  - `main_SENT_PIDL_12_fine_reverseBC_monotonic.m`
+  - `main_SENT_PIDL_12_fine_reverseBC_monotonic_fatigueoff.m`
+  - `main_SENT_PIDL_12_fine_reverseBC_monotonic_manvas_steps.m`
+  - `main_SENT_PIDL_12_fine_reverseBC_monotonic_fatigueoff_manvas_steps.m`
+- Per-case folders with `load_displ_*.out`, `extra_scalars.dat`, `monitorcycle.dat`, `crack_regularized.dat`, `cputime.dat`, `checkpoint.mat`, `peak_load_c1.vtk`, final `fields_*.vtk`, convergence logs, and `psi_fields/cycle_0001.mat` when present.
+
+**Cases included**:
+
+| folder | setting | first `u_y` | peak `F_y` | peak `u_y` | drop `u_y` | final `F_y` |
+|---|---|---:|---:|---:|---:|---:|
+| `umax012_fatigue_on` | `u_max=0.12`, fatigue on, old 8 linear steps | 0.015 | 0.081038 | 0.120 | none | 0.081038 |
+| `umax012_fatigue_off` | `u_max=0.12`, fatigue off, old 8 linear steps | 0.015 | 0.0810416 | 0.120 | none | 0.0810416 |
+| `umax020_fatigue_off` | `u_max=0.20`, fatigue off, Manvas/Mac explicit steps | 0.025 | 0.110845 | 0.165 | 0.170 | 0.000180055 |
+| `umax020_fatigue_on` | `u_max=0.20`, fatigue on, Manvas/Mac explicit steps | 0.025 | 0.107442 | 0.160 | 0.165 | 0.000184028 |
+
+**Common setting**: PIDL fine mesh `SENT_pidl_fine_lh5.inp`, reverseBC, `AT1 + AMOR + PENALTY`, `E=1`, `nu=0.3`, `Gc=0.01`, `ell=0.01`, `res_stiff=1e-6`, plane strain, `fix_X` top+bottom, `fix_Y` bottom, `disp_Y` top.
+
+**Important note**: the two `u_max=0.12` runs are the earlier 8-step monotonic runs, so their first displacement is `0.015`. The two `u_max=0.20` runs use the corrected Manvas/Mac displacement sequence beginning `0.025, 0.050, 0.075, 0.100`, then increments of `0.005` to `0.200`.
+
+**Verification**:
+- Local package and OneDrive package both contain `107` files, `71.69 MB`.
+- SHA256 copy verification passed for all files.
+
+**Next**: Mac can pull the OneDrive package and make the force-displacement, damage/psi field figures, and PIDL-FEM residual setup from the included VTK/checkpoint/psi-field payload.
+
 ## 2026-06-03 · [done] Re: Request FEM-22 whole FEM field package for load/unload timing
 
 **Re**: `docs/handovers/windows_fem_inbox.md` Request FEM-22, "two FEM Excel exports for u=0.12 soft-hist0 load/unload mechanism".
