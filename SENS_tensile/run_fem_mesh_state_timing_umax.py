@@ -66,6 +66,9 @@ def main() -> None:
     p.add_argument("--tag", default="")
     p.add_argument("--history-driver", default="active_degraded",
                    choices=("active_degraded", "raw", "lagged_degraded"))
+    p.add_argument("--history-update-timing", default="post_fit",
+                   choices=("post_fit", "pre_fit"),
+                   help="State used to refresh fatigue history. post_fit is baseline; pre_fit tests whether the current fitted alpha suppresses wake history.")
     p.add_argument("--substeps", default="",
                    help="Comma-separated load factors, e.g. 0.25,0.5,0.75,1,0. Empty = one peak per cycle.")
     p.add_argument("--state-cycles", default="auto",
@@ -132,6 +135,7 @@ def main() -> None:
     if args.joint_epochs is not None:
         config.optimizer_dict["n_epochs_RPROP"] = int(args.joint_epochs)
     config.fatigue_dict["history_driver_mode"] = args.history_driver
+    config.fatigue_dict["history_update_timing"] = args.history_update_timing
     config.fatigue_dict["disp_max"] = float(args.umax)
     config.fatigue_dict["n_cycles"] = int(args.n_cycles)
     config.fatigue_dict["fracture_confirm_cycles"] = int(args.fracture_confirm_cycles)
@@ -202,6 +206,7 @@ def main() -> None:
     tag = _mesh_tag(fem_mesh, args.tag)
     suffix = (
         f"_femmesh_{tag}_stateTiming_{args.history_driver}"
+        f"_histUpdate-{args.history_update_timing}"
         f"{sub_tag}_pretrain-{args.pretrain_mode}"
         f"{'_compile' if args.compile else ''}"
     )
@@ -238,6 +243,7 @@ def main() -> None:
         f.write(f"fine_mesh_file: {config.fine_mesh_file}\n")
         f.write(f"mesh_tag: {tag}\n")
         f.write(f"history_driver_mode: {args.history_driver}\n")
+        f.write(f"history_update_timing: {args.history_update_timing}\n")
         f.write(f"substeps: {list(factors)}\n")
         f.write(f"state_cycles: {state_cycles}\n")
         f.write(f"write_state_fields: {not bool(args.no_field_files)}\n")
@@ -253,6 +259,7 @@ def main() -> None:
     print(f"  U_max       = {args.umax} | physical cycles = {args.n_cycles} | steps = {total_steps}")
     print(f"  FEM mesh    = {fem_mesh}")
     print(f"  history     = {args.history_driver}")
+    print(f"  hist update = {args.history_update_timing}")
     print(f"  substeps    = {list(factors) if factors.size else 'one-peak-per-cycle'}")
     print(f"  state export= {state_cycles}")
     print(f"  grad balance= {bool(args.gradient_balance)} ({gradient_cycles})")

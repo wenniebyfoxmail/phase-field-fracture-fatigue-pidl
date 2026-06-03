@@ -2477,3 +2477,162 @@ main_fatigue_fracture(...)
 ## Archive
 
 [暂无]
+
+---
+
+## 2026-06-02 · Request FEM-22: two FEM Excel exports for u=0.12 soft-hist0 load/unload mechanism
+
+**Priority**: high. This directly tests whether the missing FEM/PIDL wake line is
+caused by degradation/history-driver timing.
+
+**Goal**: Please generate two self-contained Excel workbooks for the first few
+cycles of the `Umax=0.12`, reverseBC, soft-hist0 FEM baseline:
+
+1. `[0,1]` / peak-only FEM baseline.
+2. `nstep10` FEM baseline.
+
+The Mac-side compact MAT files only contain post-cycle fields. We now need true
+load/unload time-series fields from the FEM side.
+
+### Required workbooks
+
+```text
+fem_u012_soft_hist0_peakonly_load01_first_cycles.xlsx
+fem_u012_soft_hist0_nstep10_loadunload_first_cycles.xlsx
+```
+
+Suggested folder:
+
+```text
+_pidl_handoff_v2/fem_u012_soft_hist0_loadunload_excels_20260602/
+```
+
+### Required rows
+
+Include at least cycles:
+
+```text
+initial / c0
+c1
+c2
+c3
+c4
+c5
+```
+
+For the `[0,1]` / peak-only workbook, include states:
+
+```text
+initial
+cycle N load_factor 0
+cycle N load_factor 1.0
+cycle N unload/load_factor 0 if available
+post_history_update / post_cycle
+```
+
+For the nstep10 workbook, include the retained load/unload states:
+
+```text
+initial
+cycle N load_factor 0.2
+cycle N load_factor 0.4
+cycle N load_factor 0.6
+cycle N load_factor 0.8
+cycle N load_factor 1.0
+cycle N unload/load_factor 0
+post_history_update / post_cycle
+```
+
+If some states are not separable in GRIPHFiTH, include the closest available
+solver state and add a `state_note` column explaining exactly what it is.
+
+### Required columns
+
+Each workbook should have a scalar/region sheet with rows for:
+
+```text
+cycle
+substep_index
+load_factor
+uy_value
+state_label
+state_note
+region
+n_elem
+```
+
+Use these regions:
+
+```text
+wake_left_narrow: PIDL-centered -0.49 < x < -0.02 and |y| < 0.005
+near_tip:         PIDL-centered -0.02 < x < 0.03 and |y| < 0.03
+right_boundary:   PIDL-centered x > 0.45
+all
+```
+
+For each region/state, report min/mean/p95/p99/max for:
+
+```text
+alpha_elem or d_elem
+alpha_bar_elem
+f_fatigue_elem
+damage_degradation_elem = (1 - d_elem)^2 + res_stiff
+psi_positive_elem / psi_plus_elem
+psi_raw_elem if FEM has a distinct raw split; otherwise mark alias explicitly
+psi_plus_peak_to_date_elem / history-driver-like stored peak field
+active_psi_positive_elem = damage_degradation_elem * psi_positive_elem
+```
+
+### Required field package
+
+If feasible, add a second sheet or companion MAT/NPZ export with element-level
+fields for the same states:
+
+```text
+elem_x_fem01
+elem_y_fem01
+elem_x_pidl_centered = elem_x_fem01 - 0.5
+elem_y_pidl_centered = elem_y_fem01 - 0.5
+area_elem
+alpha/d
+alpha_bar
+f
+damage_degradation
+psi_positive/psi_plus
+psi_raw if distinct
+psi_plus_peak_to_date/history-driver field
+active_psi_positive
+```
+
+### Formatting request
+
+Please keep the Excel visually simple:
+
+- Freeze header rows.
+- Add filters.
+- Use only alternating sector backgrounds: one light grey sector, then no-fill
+  sector, repeated.
+- Do not use many different colours.
+- Add a `README` sheet explaining aliases, especially if `psi_raw` equals
+  `psi_plus`.
+
+### Acceptance criteria
+
+PASS if:
+
+- Both Excel files open.
+- Initial/c0 is included or clearly marked unavailable.
+- c1-c5 are included.
+- nstep10 has separate rows for the load/unload schedule, not just one
+  post-cycle row.
+- `[0,1]` / peak-only has separate load 0/load 1/unload or explicit notes if
+  unavailable.
+- `psi_positive`, `psi_raw`, and `active_psi_positive` are not visually or
+  semantically confused.
+
+Mac-side destination after receipt:
+
+```text
+/Users/wenxiaofang/phase-field-fracture-with-pidl/upload code/.codex/worktrees/pidl-state-timing-diagnostic/_analysis_fem_mechanism_20260528/experiments/fem_u012_soft_hist0_peakonly_load01_timeseries_20260602/
+/Users/wenxiaofang/phase-field-fracture-with-pidl/upload code/.codex/worktrees/pidl-state-timing-diagnostic/_analysis_fem_mechanism_20260528/experiments/fem_u012_soft_hist0_nstep10_timeseries_20260602/
+```

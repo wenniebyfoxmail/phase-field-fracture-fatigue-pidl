@@ -760,16 +760,25 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _history_driver_mode = str(
             fatigue_dict.get('history_driver_mode', 'active_degraded')
         )
+        _history_update_timing = str(
+            fatigue_dict.get('history_update_timing', 'post_fit')
+        )
         if _history_driver_mode not in (
                 'active_degraded', 'raw', 'lagged_degraded'):
             raise ValueError(
                 "fatigue_dict['history_driver_mode'] must be one of "
                 "'active_degraded', 'raw', or 'lagged_degraded'"
             )
+        if _history_update_timing not in ('post_fit', 'pre_fit'):
+            raise ValueError(
+                "fatigue_dict['history_update_timing'] must be one of "
+                "'post_fit' or 'pre_fit'"
+            )
         print(f"[Fatigue] fatigue_on=True | accum='{fatigue_dict.get('accum_type','carrara')}' | "
               f"degrad='{fatigue_dict.get('degrad_type','asymptotic')}' | "
               f"alpha_T={fatigue_dict.get('alpha_T', 1.0):.4g} | "
-              f"history_driver={_history_driver_mode}")
+              f"history_driver={_history_driver_mode} | "
+              f"history_update_timing={_history_update_timing}")
 
         # ★ Direction 6.1 + 2026-05-08 A1: 预计算元素形心
         # Used by: (a) spatial α_T modulation; (b) post-hoc mirror α ratchet break
@@ -1128,6 +1137,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 "load_factor": load_factor,
                 "history_driver_mode": str(fatigue_dict.get(
                     'history_driver_mode', 'active_degraded')),
+                "history_update_timing": str(fatigue_dict.get(
+                    'history_update_timing', 'post_fit')),
             }
         return {
             "training_step": int(step_index),
@@ -1137,6 +1148,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             "load_factor": 1.0,
             "history_driver_mode": str(fatigue_dict.get(
                 'history_driver_mode', 'active_degraded')),
+            "history_update_timing": str(fatigue_dict.get(
+                'history_update_timing', 'post_fit')),
         }
 
     def _grad_bal_should_probe(step_index):
@@ -1158,7 +1171,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         loss_data = list()
         start = time.time()
 
-        if _state_should_export(j):
+        _pre_fit_history_driver_elem = None
+        if _state_should_export(j) or (
+                fatigue_on and _history_update_timing == 'pre_fit'):
             _psi_hack = fatigue_dict.get('psi_hack', None)
             if T_conn is not None:
                 with torch.no_grad():
@@ -1185,14 +1200,16 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 _history_driver_mode, void_mask=_void_notch_mask,
                 mask_fatigue=_void_cfg.get('mask_fatigue', True)
             )
-            _save_state_timing_export(
-                inp, T_conn, u_state, v_state, alpha_state, hist_alpha,
-                hist_fat, f_fatigue, psi_state, psi_raw_state,
-                history_driver_state, psi_plus_prev, matprop, pffmodel,
-                area_T, j, disp_i, "pre_fit", _state_dir,
-                write_fields=_state_write_fields,
-                metadata=_state_metadata(j),
-            )
+            _pre_fit_history_driver_elem = history_driver_state.detach()
+            if _state_should_export(j):
+                _save_state_timing_export(
+                    inp, T_conn, u_state, v_state, alpha_state, hist_alpha,
+                    hist_fat, f_fatigue, psi_state, psi_raw_state,
+                    history_driver_state, psi_plus_prev, matprop, pffmodel,
+                    area_T, j, disp_i, "pre_fit", _state_dir,
+                    write_fields=_state_write_fields,
+                    metadata=_state_metadata(j),
+                )
 
         # ★ MIT-8: build per-cycle supervised_dict (None outside [1, K])
         _supervised_dict = None
@@ -1448,6 +1465,14 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 void_mask=_void_notch_mask,
                 mask_fatigue=_void_cfg.get('mask_fatigue', True)
             )
+            if _history_update_timing == 'pre_fit':
+                if _pre_fit_history_driver_elem is None:
+                    raise RuntimeError(
+                        "history_update_timing='pre_fit' requested but no "
+                        "pre-fit history driver was cached"
+                    )
+                history_driver_elem = _pre_fit_history_driver_elem
+            psi_plus_elem_for_history_export = psi_plus_elem
 
             hist_fat_pre_refresh = hist_fat.detach().clone()
             f_fatigue_pre_refresh = (
@@ -1459,7 +1484,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 _save_state_timing_export(
                     inp, T_conn, u_eval, v_eval, alpha_eval, hist_alpha,
                     hist_fat_pre_refresh, f_fatigue_pre_refresh,
-                    psi_plus_elem, psi_raw_elem, history_driver_elem,
+                    psi_plus_elem_for_history_export, psi_raw_elem, history_driver_elem,
                     psi_plus_prev_pre_refresh, matprop, pffmodel, area_T,
                     j, disp_i, "post_fit_pre_history_refresh", _state_dir,
                     write_fields=_state_write_fields,
@@ -1544,7 +1569,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _state_should_export(j):
                 _save_state_timing_export(
                     inp, T_conn, u_eval, v_eval, alpha_eval, hist_alpha,
-                    hist_fat, f_fatigue, psi_plus_elem, psi_raw_elem,
+                    hist_fat, f_fatigue, psi_plus_elem_for_history_export, psi_raw_elem,
                     history_driver_elem, psi_plus_prev_pre_refresh,
                     matprop, pffmodel, area_T, j, disp_i,
                     "post_history_refresh_pre_prev_reset", _state_dir,
