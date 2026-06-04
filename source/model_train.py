@@ -52,6 +52,60 @@ def _resolve_f_fatigue(f_fatigue):
     return f_fatigue() if callable(f_fatigue) else f_fatigue
 
 
+def _adaptive_lambda_hist_update(field_comp, inp, hist_alpha, matprop, pffmodel,
+                                 area_T, T_conn, f_fatigue, current_lambda,
+                                 cfg, element_mask=None):
+    """Balance the irreversibility penalty gradient against elastic/damage terms."""
+    params = [p for p in field_comp.parameters() if p.requires_grad]
+    if not params:
+        return float(current_lambda), {
+            "lambda_hat": float(current_lambda),
+            "grad_E_el": 0.0,
+            "grad_E_d": 0.0,
+            "grad_E_hist": 0.0,
+        }
+
+    u, v, alpha = field_comp.fieldCalculation(inp)
+    loss_E_el, loss_E_d, loss_hist = compute_energy(
+        inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
+        _resolve_f_fatigue(f_fatigue), element_mask=element_mask
+    )
+    eps = torch.as_tensor(1.0e-30, dtype=loss_E_el.dtype, device=loss_E_el.device)
+
+    def _grad_l2(loss_scalar, retain_graph=True):
+        grads = torch.autograd.grad(
+            torch.log10(loss_scalar + eps),
+            params,
+            allow_unused=True,
+            retain_graph=retain_graph,
+        )
+        total = torch.zeros((), dtype=loss_E_el.dtype, device=loss_E_el.device)
+        for grad in grads:
+            if grad is not None:
+                total = total + grad.detach().pow(2).sum()
+        return float(torch.sqrt(total).detach().cpu().item())
+
+    grad_E_el = _grad_l2(loss_E_el, retain_graph=True)
+    grad_E_d = _grad_l2(loss_E_d, retain_graph=True)
+    grad_E_hist = _grad_l2(loss_hist, retain_graph=False)
+
+    lam_min = float(cfg.get("lambda_hist_min", 1.0e-3))
+    lam_max = float(cfg.get("lambda_hist_max", 1.0))
+    smooth = float(cfg.get("lambda_hist_smooth", 0.0))
+    denom = max(grad_E_hist, 1.0e-30)
+    lambda_hat = max(grad_E_el, grad_E_d) / denom
+    lambda_hat = min(max(lambda_hat, lam_min), lam_max)
+    new_lambda = (smooth * float(current_lambda)) + ((1.0 - smooth) * lambda_hat)
+    new_lambda = min(max(new_lambda, lam_min), lam_max)
+
+    return float(new_lambda), {
+        "lambda_hat": float(lambda_hat),
+        "grad_E_el": float(grad_E_el),
+        "grad_E_d": float(grad_E_d),
+        "grad_E_hist": float(grad_E_hist),
+    }
+
+
 # ── α 场快照辅助函数 ────────────────────────────────────────────────────────
 def _save_alpha_snapshot(inp, alpha, T_conn, cycle, snapshot_dir):
     """保存第 cycle 圈的 α 场：
@@ -554,6 +608,23 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
               f"residual={_adapt_cfg.get('residual_source','full')}, "
               f"从 cycle {_adapt_cfg.get('start_cycle',1)} 开始")
 
+    # ★ 2026-06-03: adaptive lambda for the irreversibility/history penalty.
+    # This is intentionally separate from C6 adaptive sampling: it changes only
+    # the scalar multiplier on E_hist in the objective.
+    _lambda_hist_cfg = fatigue_dict.get("adaptive_lambda_hist", {}) if fatigue_on else {}
+    _lambda_hist_enabled = bool(_lambda_hist_cfg.get("enable", False))
+    _lambda_hist_weight = float(_lambda_hist_cfg.get("lambda_hist_initial", 1.0))
+    _lambda_hist_start_cycle = int(_lambda_hist_cfg.get("start_cycle", 1))
+    if _lambda_hist_enabled:
+        print(
+            "[AdaptiveLambdaHist] enabled | "
+            f"initial={_lambda_hist_weight:.3e} | "
+            f"bounds=[{float(_lambda_hist_cfg.get('lambda_hist_min', 1.0e-3)):.3e}, "
+            f"{float(_lambda_hist_cfg.get('lambda_hist_max', 1.0)):.3e}] | "
+            f"smooth={float(_lambda_hist_cfg.get('lambda_hist_smooth', 0.0)):.3f} | "
+            f"start_cycle={_lambda_hist_start_cycle}"
+        )
+
     # ★ 2026-05-30: controlled staged-alpha discriminator.
     # This does not change the variational objective.  It only changes the
     # optimiser path inside each cycle: uv output head -> alpha output head ->
@@ -602,6 +673,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 hist_fat      = _ckpt['hist_fat'].to(device)
                 psi_plus_prev = _ckpt['psi_plus_prev'].to(device)
                 f_fatigue     = _fatigue_for_fit(hist_fat)
+                if _lambda_hist_enabled and 'lambda_hist_weight' in _ckpt:
+                    _lambda_hist_weight = float(_ckpt['lambda_hist_weight'])
                 # ★ Stash fracture detection state (backwards-compat: old ckpts lack these keys)
                 _frac_state_from_ckpt = {
                     'detected':  _ckpt.get('_frac_detected',          False),
@@ -709,6 +782,14 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # ★ 每圈耗时记录（增量保存到 time_vs_cycle.npy）
     _time_history = _restore_hist('time_vs_cycle.npy')   # ★ 续训时从 .npy 恢复
 
+    _lambda_hist_history = _restore_hist('lambda_hist_vs_cycle.npy')
+    if _lambda_hist_enabled and _lambda_hist_history:
+        try:
+            _lambda_hist_weight = float(_lambda_hist_history[-1][1])
+            print(f"[AdaptiveLambdaHist] restored lambda_hist={_lambda_hist_weight:.6e}")
+        except (TypeError, IndexError, ValueError):
+            print("[AdaptiveLambdaHist] WARNING: could not parse restored lambda history")
+
     # ★ 每圈 Kt 日志：预计算元素形心 + 远场掩码（仅数值梯度模式有效）
     _Kt_history = _restore_hist('Kt_vs_cycle.npy')       # ★ 续训时从 .npy 恢复
     _Kt         = float('nan')   # 当前圈 Kt（初始化为 nan，日志安全输出）
@@ -804,6 +885,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 grad_annealing_state=grad_annealing_state,  # ★ Algo1 (applies pre-computed λ; no update in LBFGS)
                 element_mask=_void_energy_mask,         # ★ void-like notch diagnostic
                 j_path_dict=j_path_dict,                # ★ J path-independence reg
+                hist_loss_weight=_lambda_hist_weight,
             )
             loss_data = loss_data + loss_data1
 
@@ -838,6 +920,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         delta1_dataset=_d1_dataset if _d1_active_cycle else None,
                         element_mask=_void_energy_mask,
                         j_path_dict=j_path_dict,
+                        hist_loss_weight=_lambda_hist_weight,
                     )
 
             loss_data = loss_data + _run_staged_head(
@@ -876,6 +959,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         delta1_dataset=_d1_dataset if _d1_active_cycle else None,
                         element_mask=_void_energy_mask,
                         j_path_dict=j_path_dict,
+                        hist_loss_weight=_lambda_hist_weight,
                     )
                 loss_data = loss_data + loss_data_patch
 
@@ -904,6 +988,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 delta1_dataset=_d1_dataset if _d1_active_cycle else None,  # ★ δ-1
                 element_mask=_void_energy_mask,         # ★ void-like notch diagnostic
                 j_path_dict=j_path_dict,                # ★ J path-independence reg
+                hist_loss_weight=_lambda_hist_weight,
             )
             loss_data = loss_data + loss_data2
 
@@ -916,6 +1001,32 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         # Manav 原始：更新相场不可逆性历史变量 hist_alpha
         # ------------------------------------------------------------------
         hist_alpha_prev_for_driver = hist_alpha.clone() if fatigue_on else None
+        if (
+            fatigue_on
+            and _lambda_hist_enabled
+            and j >= (_lambda_hist_start_cycle - 1)
+        ):
+            _lambda_hist_weight, _lambda_stats = _adaptive_lambda_hist_update(
+                field_comp, inp, hist_alpha, matprop, pffmodel, area_T, T_conn,
+                f_fatigue, _lambda_hist_weight, _lambda_hist_cfg,
+                element_mask=_void_energy_mask,
+            )
+            _lambda_hist_history.append([
+                int(j),
+                float(_lambda_hist_weight),
+                float(_lambda_stats["lambda_hat"]),
+                float(_lambda_stats["grad_E_el"]),
+                float(_lambda_stats["grad_E_d"]),
+                float(_lambda_stats["grad_E_hist"]),
+            ])
+            print(
+                f"  [AdaptiveLambdaHist cycle {j}] "
+                f"lambda_hist={_lambda_hist_weight:.6e} "
+                f"lambda_hat={_lambda_stats['lambda_hat']:.6e} | "
+                f"grad_E_el={_lambda_stats['grad_E_el']:.6e} "
+                f"grad_E_d={_lambda_stats['grad_E_d']:.6e} "
+                f"grad_E_hist={_lambda_stats['grad_E_hist']:.6e}"
+            )
         hist_alpha = field_comp.update_hist_alpha(inp)
 
         # ★ δ-1: update element sampling probabilities p_e from residual proxy
@@ -1274,6 +1385,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             _ckpt_data['_frac_detected']           = _frac_detected
             _ckpt_data['_frac_cycle']              = _frac_cycle
             _ckpt_data['_frac_confirm_remaining']  = _frac_confirm_remaining
+            if _lambda_hist_enabled:
+                _ckpt_data['lambda_hist_weight'] = float(_lambda_hist_weight)
             if _inverse_alpha_T is not None:
                 _ckpt_data['inverse_alpha_T'] = scalar_value(_inverse_alpha_T)
         torch.save(_ckpt_data,
@@ -1304,6 +1417,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _time_history:
                 np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                         np.array(_time_history))   # shape (N,2): [cycle_idx, seconds]
+            if _lambda_hist_history:
+                np.save(str(trainedModel_path / 'lambda_hist_vs_cycle.npy'),
+                        np.array(_lambda_hist_history))
             if _inverse_alpha_T_history:
                 np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
                         np.array(_inverse_alpha_T_history))
@@ -1332,6 +1448,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _time_history:
                 np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                         np.array(_time_history))
+            if _lambda_hist_history:
+                np.save(str(trainedModel_path / 'lambda_hist_vs_cycle.npy'),
+                        np.array(_lambda_hist_history))
             if _inverse_alpha_T_history:
                 np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
                         np.array(_inverse_alpha_T_history))
@@ -1361,6 +1480,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_on and _time_history:
         np.save(str(trainedModel_path / 'time_vs_cycle.npy'),
                 np.array(_time_history))
+    if fatigue_on and _lambda_hist_history:
+        np.save(str(trainedModel_path / 'lambda_hist_vs_cycle.npy'),
+                np.array(_lambda_hist_history))
     if fatigue_on and _inverse_alpha_T_history:
         np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
                 np.array(_inverse_alpha_T_history))

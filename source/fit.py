@@ -370,7 +370,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
         side_traction_dict=None,
         grad_annealing_state=None,
         element_mask=None,
-        j_path_dict=None):
+        j_path_dict=None,
+        hist_loss_weight=1.0):
     # ★ grad_annealing_state: if provided and enable=True, pre-computed λ values
     #   from Algorithm 1 (updated during RPROP phase) are applied here.
     #   LBFGS does not update λ — it uses whatever values RPROP computed last cycle.
@@ -403,7 +404,7 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                                                                 element_mask=element_mask)
 
                 # 3. 损失函数 = log(总能量) ！！！
-                loss_var = torch.log10(loss_E_el + loss_E_d + loss_hist)
+                loss_var = torch.log10(loss_E_el + loss_E_d + hist_loss_weight * loss_hist)
 
                 # 4. 权重正则化（防止过拟合）
                 # weight regularization
@@ -512,7 +513,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                             grad_annealing_state=None,
                             delta1_dataset=None,
                             element_mask=None,
-                            j_path_dict=None):
+                            j_path_dict=None,
+                            hist_loss_weight=1.0):
     # ★ grad_annealing_state (2026-05-19 Algorithm 1):
     #   Mutable dict passed from model_train.train(). Persists across cycles.
     #   Algo1 probes are run in RPROP only (not LBFGS) because RPROP's flat
@@ -570,7 +572,7 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                                                             element_subset=_d1_subset,
                                                             importance_weights=_d1_imp_w,
                                                             element_mask=element_mask)
-            loss_var = torch.log10(loss_E_el + loss_E_d + loss_hist)
+            loss_var = torch.log10(loss_E_el + loss_E_d + hist_loss_weight * loss_hist)
 
             # weight regularization
             loss_reg = 0.0

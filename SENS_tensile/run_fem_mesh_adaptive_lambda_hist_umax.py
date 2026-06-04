@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Run PIDL on a triangularized FEM reference mesh.
-
-This is a mesh-effect diagnostic: the variational objective and architecture are
-kept at the baseline settings, while the main fatigue solve uses a mesh produced
-from GRIPHFiTH's FEM `mesh_geometry.mat` by `make_fem_mesh.py`.
-"""
+"""Run strict FEM-mesh PIDL with adaptive E_hist/lambda_hist balancing."""
 from __future__ import annotations
 
 import argparse
@@ -35,21 +30,23 @@ def _mesh_tag(mesh_file: str, explicit: str) -> str:
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("umax", type=float)
-    p.add_argument("--n-cycles", type=int, default=100)
-    p.add_argument("--seed", type=int, default=1)
-    p.add_argument("--mesh-file", default="meshed_geom_fem_baseline.msh",
-                   help="Triangular .msh generated from FEM mesh_geometry.mat")
-    p.add_argument("--coarse-mesh-file", default=None,
-                   help="Mesh used for pretraining; defaults to config.coarse_mesh_file.")
-    p.add_argument("--tag", default="", help="Archive tag suffix; defaults to mesh stem")
-    p.add_argument("--fracture-confirm-cycles", type=int, default=3)
-    p.add_argument("--plot-every", type=int, default=20)
-    p.add_argument("--compile", action="store_true",
-                   help="Enable torch.compile for a speed diagnostic on CUDA.")
-    p.add_argument("--force-cpu", action="store_true")
-    args = p.parse_args()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("umax", type=float)
+    parser.add_argument("--n-cycles", type=int, default=100)
+    parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument("--mesh-file", default="meshed_geom_fem_soft_hist0.msh")
+    parser.add_argument("--coarse-mesh-file", default="meshed_geom_fem_soft_hist0.msh")
+    parser.add_argument("--tag", default="softHist0")
+    parser.add_argument("--lambda-hist-min", type=float, default=1.0e-3)
+    parser.add_argument("--lambda-hist-max", type=float, default=1.0)
+    parser.add_argument("--lambda-hist-smooth", type=float, default=0.0)
+    parser.add_argument("--lambda-hist-initial", type=float, default=1.0)
+    parser.add_argument("--lambda-hist-start-cycle", type=int, default=1)
+    parser.add_argument("--fracture-confirm-cycles", type=int, default=3)
+    parser.add_argument("--plot-every", type=int, default=20)
+    parser.add_argument("--compile", action="store_true")
+    parser.add_argument("--force-cpu", action="store_true")
+    args = parser.parse_args()
 
     if args.force_cpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -64,9 +61,10 @@ def main() -> None:
     import config  # noqa: WPS433
 
     fem_mesh = _resolve_mesh_file(here, args.mesh_file)
-    coarse_mesh = _resolve_mesh_file(here, args.coarse_mesh_file or config.coarse_mesh_file)
+    coarse_mesh = _resolve_mesh_file(here, args.coarse_mesh_file)
 
-    # Baseline objective/architecture only.  This runner isolates mesh effects.
+    # Strict FEM-mesh controls: keep architecture/objective baseline, then add
+    # only adaptive lambda_hist on E_hist.
     config.williams_dict["enable"] = False
     config.ansatz_dict["enable"] = False
     config.fourier_dict["enable"] = False
@@ -91,6 +89,14 @@ def main() -> None:
     config.fatigue_dict["n_cycles"] = int(args.n_cycles)
     config.fatigue_dict["fracture_confirm_cycles"] = int(args.fracture_confirm_cycles)
     config.fatigue_dict["plot_every_n_cycles"] = int(args.plot_every)
+    config.fatigue_dict["adaptive_lambda_hist"] = {
+        "enable": True,
+        "lambda_hist_min": float(args.lambda_hist_min),
+        "lambda_hist_max": float(args.lambda_hist_max),
+        "lambda_hist_smooth": float(args.lambda_hist_smooth),
+        "lambda_hist_initial": float(args.lambda_hist_initial),
+        "start_cycle": int(args.lambda_hist_start_cycle),
+    }
     config.rebuild_disp_cyclic()
 
     fat = config.fatigue_dict
@@ -100,7 +106,7 @@ def main() -> None:
         f"_Umax{fat['disp_max']}"
     )
     tag = _mesh_tag(fem_mesh, args.tag)
-    suffix = f"_femmesh_{tag}{'_compile' if args.compile else ''}"
+    suffix = f"_femmesh_{tag}_adapthist{'_compile' if args.compile else ''}"
     dir_name = (
         "hl_" + str(config.network_dict["hidden_layers"])
         + "_Neurons_" + str(config.network_dict["neurons"])
@@ -124,22 +130,34 @@ def main() -> None:
         pass
     config.writer = config.SummaryWriter(config.model_path / Path("TBruns"))
 
-    with open(config.model_path / "model_settings.txt", "w", encoding="utf-8") as f:
-        f.write("runner: run_fem_mesh_umax.py\n")
-        f.write(f"umax: {args.umax}\n")
-        f.write(f"n_cycles: {args.n_cycles}\n")
-        f.write(f"seed: {args.seed}\n")
-        f.write(f"coarse_mesh_file: {config.coarse_mesh_file}\n")
-        f.write(f"fine_mesh_file: {config.fine_mesh_file}\n")
-        f.write(f"mesh_tag: {tag}\n")
-        f.write(f"torch_compile: {bool(args.compile)}\n")
-        f.write("purpose: PIDL main training on triangularized FEM reference mesh\n")
+    with open(config.model_path / "model_settings.txt", "w", encoding="utf-8") as handle:
+        handle.write("runner: run_fem_mesh_adaptive_lambda_hist_umax.py\n")
+        handle.write(f"umax: {args.umax}\n")
+        handle.write(f"n_cycles: {args.n_cycles}\n")
+        handle.write(f"seed: {args.seed}\n")
+        handle.write(f"coarse_mesh_file: {config.coarse_mesh_file}\n")
+        handle.write(f"fine_mesh_file: {config.fine_mesh_file}\n")
+        handle.write(f"mesh_tag: {tag}\n")
+        handle.write(f"torch_compile: {bool(args.compile)}\n")
+        handle.write("adaptive_lambda_hist: true\n")
+        handle.write(f"lambda_hist_min: {args.lambda_hist_min}\n")
+        handle.write(f"lambda_hist_max: {args.lambda_hist_max}\n")
+        handle.write(f"lambda_hist_smooth: {args.lambda_hist_smooth}\n")
+        handle.write(f"lambda_hist_initial: {args.lambda_hist_initial}\n")
+        handle.write(f"lambda_hist_start_cycle: {args.lambda_hist_start_cycle}\n")
+        handle.write("purpose: PIDL strict FEM-mesh training with adaptive E_hist/lambda_hist\n")
 
     print("=" * 72)
-    print("PIDL FEM-mesh runner")
+    print("PIDL FEM-mesh adaptive lambda_hist runner")
     print(f"  U_max       = {args.umax} | n_cycles = {args.n_cycles} | seed = {args.seed}")
     print(f"  FEM mesh    = {fem_mesh}")
     print(f"  coarse mesh = {coarse_mesh}")
+    print(
+        "  lambda_hist = "
+        f"init {args.lambda_hist_initial}, "
+        f"bounds [{args.lambda_hist_min}, {args.lambda_hist_max}], "
+        f"smooth {args.lambda_hist_smooth}, start cycle {args.lambda_hist_start_cycle}"
+    )
     print(f"  compile     = {bool(args.compile)}")
     print(f"  device      = {config.device}")
     print(f"  archive     = {dir_name}")
