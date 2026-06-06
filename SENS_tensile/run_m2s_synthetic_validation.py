@@ -75,6 +75,8 @@ def load_fem_handoff(path: Path) -> dict[str, np.ndarray]:
         conn = orient_conn(np.asarray(h5["connectivity"], dtype=int))
         if "area_per_elem" in h5:
             areas = np.asarray(h5["area_per_elem"], dtype=float).reshape(-1)
+        elif "element_area" in h5:
+            areas = np.asarray(h5["element_area"], dtype=float).reshape(-1)
         else:
             areas = polygon_areas(nodes, conn)
 

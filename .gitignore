@@ -30,6 +30,7 @@ nohup.out
 
 # ── Claude Code 内部文件（本地配置、worktree）────────────
 .claude/
+.codex/
 
 # ── 结果/草稿（原则：结论进 memory，不进 git；见 CLAUDE.md）
 paper_draft/

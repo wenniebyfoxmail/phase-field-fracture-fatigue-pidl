@@ -44,6 +44,37 @@
 
 ## 2026-05-31 · Mac-PIDL [finding+implementation]
 
+**M2S next-stage feasibility package completed**
+
+Added `SENS_tensile/run_m2s_next_stage_feasibility.py` on branch
+`codex/m2s-framework-validation`.  The package builds leave-one-trajectory-out
+RUL/crack/state holdout metrics and sparse/noisy virtual-sensor degradation
+curves, excluding cycle index from all inputs.  Outputs are local under
+`_analysis_m2s_next_stage_20260531/`: holdout summary CSV, sparse/noisy summary
+CSV, true-vs-predicted RUL figure, observation-quality figure, cycle feature
+table, prediction tables, and short report.
+
+Data used: three strict soft-hist0/reverseBC full-field cadence handoffs
+(`n_step=2/3/10`) plus the legacy five-Umax scalar FEM reductions in
+`~/Downloads/_pidl_handoff_v2/post_process`.  Main result: on the legacy
+five-Umax scalar holdout, damage-only RUL is poor (`MAE≈82-86` cycles), while
+state-driver proxies improve to `MAE≈35` cycles (`R2≈0.82`).  On the strict
+cadence full-field subset, all feature tiers remain near-trivial
+(`MAE≈0.8-1.2` cycles) because the trajectories are too similar.  Sparse/noisy
+mixed damage sensors on the strict field subset degrade from `MAE≈11.9` cycles
+with 4 clean sensors to `MAE≈1.55` cycles with 64 clean sensors; 64 sensors with
+0.10 damage noise still give `MAE≈2.88` cycles.
+
+Guardrail: this is a feasibility rung, not real deployment validation.  It gives
+evidence that multi-trajectory holdout splits are the right next M2S benchmark
+and that hidden state-driver proxies can matter in the scalar five-Umax stress
+test, but it does not yet prove strict full-field hidden-state superiority.  The
+production next step is to export strict soft-hist0/reverseBC full-field
+trajectories across `Umax`, `alpha_T`, and precrack severity and rerun the same
+package on that stricter family.
+
+## 2026-05-31 · Mac-PIDL [finding+implementation]
+
 **M2S synthetic framework validation rung completed on latest FEM truth**
 
 Added `SENS_tensile/run_m2s_synthetic_validation.py` on branch
