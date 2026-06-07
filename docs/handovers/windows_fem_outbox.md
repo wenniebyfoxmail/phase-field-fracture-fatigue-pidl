@@ -26,6 +26,38 @@
 
 ## Entries
 
+## 2026-06-07 · [done] Soft-hist0 monotonic 24-step VTK handoff uploaded
+
+**Re**: user request to upload all 24 VTK files for both latest PIDL-aligned monotonic runs.
+
+**Status**: Complete. Windows-FEM copied all per-load-step VTKs for the retained-material soft diffuse precrack / hist0 monotonic runs to OneDrive.
+
+**OneDrive package**:
+- `C:\Users\xw436\OneDrive - University of Cambridge\PIDL result\_pidl_handoff_soft_hist0_monotonic_24vtk_20260607\`
+
+**Folders**:
+- `fatigue_on\fields_000001_001.vtk` through `fatigue_on\fields_000001_024.vtk`
+- `fatigue_off\fields_000001_001.vtk` through `fatigue_off\fields_000001_024.vtk`
+
+**Companion files**:
+- `README_soft_hist0_monotonic_24vtk.md`
+- `fatigue_on\load_displ_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC_monotonic_manvas_steps.out`
+- `fatigue_off\load_displ_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC_monotonic_fatigueoff_manvas_steps.out`
+
+**Setting reminder**:
+- This is the latest PIDL-aligned retained-material setting, not the older void/slit-notch control.
+- Soft diffuse precrack / hist0 initialization, no void slit, no duplicated crack-face nodes.
+- reverseBC: `fix_X` top+bottom, `fix_Y` bottom, `disp_Y` top.
+- Displacement steps: `0.025, 0.050, 0.075, 0.100`, then `0.105:0.005:0.200`.
+
+**Verification**:
+- `fatigue_on`: 24 VTKs, `0.93 GB`.
+- `fatigue_off`: 24 VTKs, `0.93 GB`.
+- Total package: 51 files, `1.86 GB`.
+- SHA256 verification against Windows source VTKs passed.
+
+**Next**: Mac can pull this OneDrive package for all 24 field frames per case and use the included `load_displ_*.out` files to map VTK step index to displacement and force.
+
 ## 2026-06-03 · [done] PIDL-aligned monotonic four-case handoff synced
 
 **Re**: user request to sync the monotonic results in the same handoff style as the FEM22 local package.
