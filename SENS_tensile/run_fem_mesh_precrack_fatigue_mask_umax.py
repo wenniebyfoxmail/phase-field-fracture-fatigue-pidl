@@ -164,29 +164,24 @@ def main() -> None:
     config.disp_cyclic = disp_steps
 
     fat = config.fatigue_dict
-    fatigue_tag = (
-        f"_fatigue_on_{fat['accum_type']}_{fat['degrad_type'][:3]}"
-        f"_aT{fat['alpha_T']}_Ncyc{fat['n_cycles']}_Nstep{total_steps}"
-        f"_R{fat['R_ratio']}_Umax{fat['disp_max']}"
-    )
     mesh_tag = _mesh_tag(fem_mesh, args.tag)
-    sub_tag = "_substeps_" + "-".join(f"{x:g}" for x in factors)
-    suffix = (
-        f"_femmesh_{mesh_tag}_{args.history_driver_mode}"
-        f"_precrackFatigueMask_x{args.precrack_x_max:g}_hw{args.precrack_half_width:g}"
-        f"{sub_tag}"
-        f"{'_compile' if args.compile else ''}"
-    )
+    # Keep the archive directory below common filesystem filename limits.
+    short_sub = "-".join(f"{x:g}" for x in factors)
     dir_name = (
-        "hl_" + str(config.network_dict["hidden_layers"])
-        + "_Neurons_" + str(config.network_dict["neurons"])
-        + "_activation_" + config.network_dict["activation"]
-        + "_coeff_" + str(config.network_dict["init_coeff"])
-        + "_Seed_" + str(config.network_dict["seed"])
-        + "_PFFmodel_" + str(config.PFF_model_dict["PFF_model"])
-        + "_gradient_" + str(config.numr_dict["gradient_type"])
-        + fatigue_tag
-        + suffix
+        f"pfmask_hl{config.network_dict['hidden_layers']}"
+        f"_n{config.network_dict['neurons']}"
+        f"_seed{config.network_dict['seed']}"
+        f"_{config.PFF_model_dict['PFF_model']}"
+        f"_{config.numr_dict['gradient_type']}"
+        f"_{fat['accum_type']}_{fat['degrad_type'][:3]}"
+        f"_aT{fat['alpha_T']}"
+        f"_Ncyc{fat['n_cycles']}_Nstep{total_steps}"
+        f"_U{fat['disp_max']}"
+        f"_{mesh_tag}"
+        f"_{args.history_driver_mode}"
+        f"_x{args.precrack_x_max:g}_hw{args.precrack_half_width:g}"
+        f"_s{short_sub}"
+        f"{'_compile' if args.compile else ''}"
     )
     config.model_path = config.resolve_archive_dir(here, dir_name)
     config.trainedModel_path = config.model_path / Path("best_models/")
