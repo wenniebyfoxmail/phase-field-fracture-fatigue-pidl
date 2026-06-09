@@ -136,6 +136,10 @@ def main() -> None:
         f.write(f"coarse_mesh_file: {config.coarse_mesh_file}\n")
         f.write(f"fine_mesh_file: {config.fine_mesh_file}\n")
         f.write(f"mesh_tag: {tag}\n")
+        f.write("bc_mode: original_pidl_top_bottom_u_fixed_vertical_ramp\n")
+        f.write("bc_note: u=0 on top/bottom; v=0 bottom; v=lambda top; exact_bc/fem_anchor disabled\n")
+        f.write("precrack_format: retained_material_soft_hist_alpha_init_AT1_squared_hat\n")
+        f.write("void_notch_mask_enable: False\n")
         f.write(f"torch_compile: {bool(args.compile)}\n")
         f.write("purpose: strict baseline monotonic fatigue-on U=0.2 consistency comparison\n")
 

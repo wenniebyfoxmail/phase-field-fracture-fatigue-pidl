@@ -194,6 +194,7 @@ class FEMSupervision:
         """Load all cycle snapshots into self.psi_raw[c] = array(N_FEM,)."""
         self.psi_raw: dict[int, np.ndarray] = {}
         self.d_field: dict[int, np.ndarray] = {}
+        self.alpha_bar: dict[int, np.ndarray] = {}
         compact_path = getattr(self, "_compact_path", None)
         if compact_path is not None:
             self._load_compact_hdf5_snapshots(compact_path)
@@ -206,6 +207,9 @@ class FEMSupervision:
             d = data.get("d_elem", data.get("alpha_elem"))
             if d is not None:
                 self.d_field[c] = np.asarray(d, dtype=np.float64).ravel()
+            ab = data.get("alpha_bar_elem", data.get("hist_fat_elem"))
+            if ab is not None:
+                self.alpha_bar[c] = np.asarray(ab, dtype=np.float64).ravel()
 
     def _load_compact_hdf5_snapshots(self, fname: Path) -> None:
         """Load compact MATLAB v7.3 all-cycle FEM fields."""
@@ -234,12 +238,17 @@ class FEMSupervision:
             d = by_cycle("d_elem")
             if d is None:
                 d = by_cycle("alpha_elem")
+            alpha_bar = by_cycle("alpha_bar_elem")
+            if alpha_bar is None:
+                alpha_bar = by_cycle("hist_fat_elem")
 
         for i, c in enumerate(cycles):
             if psi is not None:
                 self.psi_raw[int(c)] = psi[i].ravel()
             if d is not None:
                 self.d_field[int(c)] = d[i].ravel()
+            if alpha_bar is not None:
+                self.alpha_bar[int(c)] = alpha_bar[i].ravel()
 
     def _interpolate_to_pidl(self, fem_field: np.ndarray,
                              pidl_centroids: np.ndarray) -> np.ndarray:
@@ -252,6 +261,24 @@ class FEMSupervision:
         _, idx = tree.query(pidl_centroids, k=1)
         return fem_field[idx]   # shape (N_PIDL,)
 
+    def _field_at_cycle(self, series: dict[int, np.ndarray],
+                        cycle_idx: int) -> np.ndarray:
+        """Return a FEM element field at cycle_idx, interpolating in cycle time."""
+        if not series:
+            raise RuntimeError("Requested FEM field series is unavailable.")
+        if cycle_idx in series:
+            return series[cycle_idx]
+
+        c_lo, c_hi = self._bracket_cycles(cycle_idx)
+        if c_lo not in series or c_hi not in series:
+            avail = sorted(series.keys())
+            c_use = min(avail, key=lambda c: abs(c - cycle_idx))
+            return series[c_use]
+        if c_hi == c_lo:
+            return series[c_lo]
+        t = (cycle_idx - c_lo) / (c_hi - c_lo)
+        return (1.0 - t) * series[c_lo] + t * series[c_hi]
+
     def psi_target_at_cycle(self, cycle_idx: int,
                             pidl_centroids: np.ndarray,
                             *, device: torch.device | None = None,
@@ -263,18 +290,30 @@ class FEMSupervision:
         the bracketing available cycles. Out-of-range requests clamp to
         nearest end.
         """
-        if cycle_idx in self.psi_raw:
-            psi = self._interpolate_to_pidl(self.psi_raw[cycle_idx], pidl_centroids)
-        else:
-            c_lo, c_hi = self._bracket_cycles(cycle_idx)
-            psi_lo_pidl = self._interpolate_to_pidl(self.psi_raw[c_lo], pidl_centroids)
-            if c_hi == c_lo:
-                psi = psi_lo_pidl
-            else:
-                psi_hi_pidl = self._interpolate_to_pidl(self.psi_raw[c_hi], pidl_centroids)
-                t = (cycle_idx - c_lo) / (c_hi - c_lo)
-                psi = (1.0 - t) * psi_lo_pidl + t * psi_hi_pidl
+        psi = self._interpolate_to_pidl(
+            self._field_at_cycle(self.psi_raw, cycle_idx), pidl_centroids
+        )
         out = torch.from_numpy(psi).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def active_target_at_cycle(self, cycle_idx: int,
+                               pidl_centroids: np.ndarray,
+                               *, residual_stiffness: float = 0.0,
+                               device: torch.device | None = None,
+                               dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        """Return FEM active fatigue driver g(d_FEM)·ψ⁺_raw at PIDL elements."""
+        if not self.d_field:
+            raise RuntimeError(
+                "FEM .mat files do not contain d_elem/alpha_elem; "
+                "active fatigue-driver oracle unavailable."
+            )
+        psi = self._field_at_cycle(self.psi_raw, cycle_idx)
+        d = self._field_at_cycle(self.d_field, cycle_idx)
+        g_fem = (1.0 - d) ** 2 + float(residual_stiffness)
+        active = self._interpolate_to_pidl(g_fem * psi, pidl_centroids)
+        out = torch.from_numpy(active).to(dtype=dtype)
         if device is not None:
             out = out.to(device)
         return out
@@ -295,24 +334,55 @@ class FEMSupervision:
             raise RuntimeError(
                 "FEM .mat files do not contain d_elem field — alpha supervision unavailable. "
                 "Re-export FEM snapshots with d_elem to use this path.")
-        if cycle_idx in self.d_field:
-            d = self._interpolate_to_pidl(self.d_field[cycle_idx], pidl_centroids)
-        else:
-            c_lo, c_hi = self._bracket_cycles(cycle_idx)
-            if c_lo not in self.d_field or c_hi not in self.d_field:
-                # If d_field is sparse, fall back to nearest available
-                avail = sorted(self.d_field.keys())
-                c_use = min(avail, key=lambda c: abs(c - cycle_idx))
-                d = self._interpolate_to_pidl(self.d_field[c_use], pidl_centroids)
-            else:
-                d_lo_pidl = self._interpolate_to_pidl(self.d_field[c_lo], pidl_centroids)
-                if c_hi == c_lo:
-                    d = d_lo_pidl
-                else:
-                    d_hi_pidl = self._interpolate_to_pidl(self.d_field[c_hi], pidl_centroids)
-                    t = (cycle_idx - c_lo) / (c_hi - c_lo)
-                    d = (1.0 - t) * d_lo_pidl + t * d_hi_pidl
+        d = self._interpolate_to_pidl(
+            self._field_at_cycle(self.d_field, cycle_idx), pidl_centroids
+        )
         out = torch.from_numpy(d).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def alpha_bar_target_at_cycle(self, cycle_idx: int,
+                                  pidl_centroids: np.ndarray,
+                                  *, device: torch.device | None = None,
+                                  dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        """Return FEM fatigue history alpha_bar at PIDL elements."""
+        if not self.alpha_bar:
+            raise RuntimeError(
+                "FEM .mat files do not contain alpha_bar_elem/hist_fat_elem; "
+                "delta-history oracle unavailable."
+            )
+        ab = self._interpolate_to_pidl(
+            self._field_at_cycle(self.alpha_bar, cycle_idx), pidl_centroids
+        )
+        out = torch.from_numpy(ab).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def alpha_bar_delta_target_at_cycle(
+        self,
+        cycle_idx: int,
+        pidl_centroids: np.ndarray,
+        *,
+        initial_zero: bool = True,
+        device: torch.device | None = None,
+        dtype: torch.dtype = torch.float32,
+    ) -> torch.Tensor:
+        """Return positive FEM alpha_bar increment for one physical cycle."""
+        if not self.alpha_bar:
+            raise RuntimeError(
+                "FEM .mat files do not contain alpha_bar_elem/hist_fat_elem; "
+                "delta-history oracle unavailable."
+            )
+        current = self._field_at_cycle(self.alpha_bar, cycle_idx)
+        if initial_zero and cycle_idx <= self.cycles[0]:
+            previous = np.zeros_like(current)
+        else:
+            previous = self._field_at_cycle(self.alpha_bar, cycle_idx - 1)
+        delta = np.maximum(current - previous, 0.0)
+        out_np = self._interpolate_to_pidl(delta, pidl_centroids)
+        out = torch.from_numpy(out_np).to(dtype=dtype)
         if device is not None:
             out = out.to(device)
         return out

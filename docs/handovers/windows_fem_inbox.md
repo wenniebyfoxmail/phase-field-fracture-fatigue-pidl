@@ -27,6 +27,219 @@
 
 ## Active Requests
 
+## 2026-06-09 · Request 23: explicit five-substep FEM state export to match PIDL diagnostics
+
+**Goal**: run/export FEM with every converged cyclic substep recorded, so Mac
+can compare FEM and PIDL by explicit global step instead of using peak-only
+states or load-scaled approximations for intermediate states.
+
+This should preferably be combined with Request 22 for the masked variant:
+
+```text
+SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC_precrackFatigueDriverMask
+```
+
+If possible, also re-export the original standard soft-hist0 reference with the
+same explicit step index, but do not delay the masked package for the optional
+baseline.
+
+Detailed export note:
+
+```text
+docs/handovers/fem_explicit_substep_export_request_2026-06-09.md
+```
+
+**INPUT file**: same as Request 22 for the primary package. Save state fields
+after every converged substep. For the precrack-fatigue-driver-mask variant,
+save after applying the PIDL-equivalent fatigue-driver/history mask.
+
+**Explicit mapping**:
+
+```text
+fem_global_step = 5*(cycle - 1) + (substep - 1)
+
+cycle c, substep 1, load 0.25 -> step 5*(c-1)+0 -> c<c>_step1
+cycle c, substep 2, load 0.50 -> step 5*(c-1)+1 -> c<c>_step2
+cycle c, substep 3, load 0.75 -> step 5*(c-1)+2 -> c<c>_step3
+cycle c, substep 4, load 1.00 -> step 5*(c-1)+3 -> c<c>_peak
+cycle c, substep 5, load 0.00 -> step 5*(c-1)+4 -> c<c>_unloaded
+```
+
+Key checks:
+
+```text
+c1_peak      = step 3
+c1_unloaded  = step 4
+c69_peak     = step 343
+c69_unloaded = step 344
+```
+
+**Mesh**: same mesh as the standard soft-hist0 reference. No remeshing and no
+change to material, BCs, loading, stop rule, or soft precrack damage profile.
+
+**Expected outputs**: suggested primary folder:
+
+```text
+~/Downloads/_pidl_handoff_v2/latest_align_soft_hist0_precrackFatigueDriverMask_explicit_steps_20260609/
+```
+
+Please include:
+
+```text
+latest_align_soft_hist0_precrackFatigueDriverMask_explicit_steps_state_fields.mat
+latest_align_soft_hist0_precrackFatigueDriverMask_explicit_steps_state_index.csv
+mesh_geometry.mat
+precrack_fatigue_driver_mask_region_audit.csv
+README_latest_align_soft_hist0_precrackFatigueDriverMask_explicit_steps.md
+INPUT_*.m
+solve_fatigue_fracture.m
+export script(s)
+run log
+```
+
+State records should include:
+
+```text
+state0_initial_unloaded_prehistory
+c1_step1 ... c1_unloaded
+c2_step1 ... c2_unloaded
+...
+c69_step1 ... c69_unloaded
+```
+
+So the expected package has:
+
+```text
+1 initial state + 69 cycles * 5 substeps = 346 state records
+```
+
+**Acceptance criteria**:
+
+1. Every converged substep has a state record and state-index row.
+2. State index contains physical cycle, substep, load factor, state label,
+   `fem_global_step`, and expected PIDL global step.
+3. `c1_peak` is step 3 and `c1_unloaded` is step 4.
+4. `c69_peak` is step 343 and `c69_unloaded` is step 344.
+5. README clearly labels raw mechanics fields versus post-mask
+   fatigue-driver/history fields.
+6. Mac can compare PIDL global diagnostic step-by-step against FEM without
+   using an intermediate-substep oracle approximation.
+
+**Priority**: high. This removes the remaining timing/export ambiguity in the
+FEM/PIDL comparison.
+
+## 2026-06-09 · Request 22: FEM+PIDL-equivalent precrack fatigue-driver mask
+
+### [update] 2026-06-09 correction
+
+Do **not** use the earlier standalone helper
+`apply_precrack_history_mask.m`; it has been withdrawn. The real PIDL run was
+explicitly launched with `mask_fatigue=True, mask_energy=False`, so FEM should
+match that mechanism: keep mechanics/fracture energy active, but block
+fatigue-driver/history accumulation on the old precrack line.
+
+**Goal**: run a FEM counterfactual that keeps the standard soft-hist0 retained
+precrack damage/mechanics profile, but applies a PIDL-equivalent
+fatigue-driver/history mask along the old left precrack line. This tests whether
+the current FEM/PIDL left-line field mismatch is a mask-policy difference rather
+than a PIDL failure.
+
+Mac-side finding from the PIDL precrack-mask run:
+
+```text
+left precrack line audit band:
+x <= 0.5 and |y - 0.5| <= 0.014
+
+c1_peak:
+PIDL alpha_bar/history mean = 0
+FEM  alpha_bar/history mean = 0.0159985
+
+c69_peak:
+PIDL alpha_bar/history mean = 0
+FEM  alpha_bar/history mean = 0.892614
+```
+
+**INPUT file**: clone the strict standard reference
+`INPUT_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC.m` and
+`solve_fatigue_fracture.m`. Suggested new run name:
+
+```text
+SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC_precrackFatigueDriverMask
+```
+
+Corrected patch note and MATLAB snippets:
+
+```text
+docs/handovers/fem_precrack_history_mask_request_2026-06-09.md
+```
+
+**Mask rule**: PIDL centered coordinates were `x <= 0.0, |y| <= 0.02`.
+Equivalent FEM plate coordinates:
+
+```text
+x <= 0.5 and |y - 0.5| <= 0.02  (= 2*ell)
+```
+
+Match PIDL's `mask_fatigue=True, mask_energy=False` policy. Keep raw mechanics
+and raw `psi_plus`; block only fatigue-driver/history accumulation:
+
+```text
+fatigue driver / Dalpha on mask -> 0
+alpha_bar / fatigue history on mask -> 0
+f_alpha / fatigue degradation on mask -> 1
+```
+
+Do **not** overwrite `p_field`, raw `psi_plus`, displacement, strain, stress,
+fracture/damage history H, or the raw mechanics solve. Raw mechanics should
+remain available for audit.
+
+**Mesh**: same mesh as the standard soft-hist0 reference. No remeshing and no
+change to the soft precrack damage profile.
+
+**Expected outputs**: suggested folder:
+
+```text
+~/Downloads/_pidl_handoff_v2/latest_align_soft_hist0_precrackFatigueDriverMask_20260609/
+```
+
+Please include:
+
+```text
+latest_align_soft_hist0_precrackFatigueDriverMask_state_fields.mat
+latest_align_soft_hist0_precrackFatigueDriverMask_state_index.csv
+mesh_geometry.mat
+precrack_fatigue_driver_mask_region_audit.csv
+README_latest_align_soft_hist0_precrackFatigueDriverMask.md
+INPUT_*.m
+solve_fatigue_fracture.m
+export script(s)
+run log
+```
+
+State labels should match the previous aligned export:
+
+```text
+state0_initial_unloaded_prehistory
+c1_step1, c1_step2, c1_step3, c1_peak, c1_unloaded
+c2/c3/c20/c40/c60/c69 peak and unloaded
+```
+
+**Acceptance criteria**:
+
+1. Same mesh, material, BCs, loading, soft precrack profile, and stop rule as
+   the standard soft-hist0 FEM reference.
+2. README states the exact mask region and confirms only fatigue-history state
+   is reset, and that mechanics/energy are not masked.
+3. Region audit verifies `alpha_bar ~= 0`, `Dalpha ~= 0`, and `f_alpha ~= 1`
+   are eliminated on the left precrack line at peak states.
+4. Raw mechanics fields are still exported separately, so Mac can distinguish
+   raw FEM mechanics from the masked fatigue-history oracle.
+5. Mac can compare PIDL precrack-mask against both original FEM and FEM+mask.
+
+**Priority**: high. This is the cleanest way to decide whether the current
+left-precrack-line discrepancy is a physical FEM/PIDL mismatch or simply a
+different fatigue-history mask policy.
+
 ## 2026-05-29 · Request 21: one-factor FEM substep/history-timing controls after PIDL state audit
 
 **Goal**: test whether the remaining soft-hist0 FEM/PIDL gap is mainly caused
