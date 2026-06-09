@@ -563,13 +563,26 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 "fatigue_dict['history_driver_mode'] must be one of "
                 f"{sorted(_valid_history_driver_modes)}, got {_history_driver_mode!r}"
             )
+        _history_driver_reduction = fatigue_dict.get('history_driver_reduction', {})
+        if (_history_driver_reduction or {}).get('enable', False) \
+                and _history_driver_mode != 'current_active':
+            raise ValueError(
+                "fatigue_dict['history_driver_reduction'] is currently valid only "
+                "with history_driver_mode='current_active'."
+            )
         print(f"[HistoryDriver] mode={_history_driver_mode}")
+        if (_history_driver_reduction or {}).get('enable', False):
+            print(
+                "[HistoryDriverReduction] "
+                f"mode={_history_driver_reduction.get('mode', 'probe_g_mean')}"
+            )
     else:
         f_fatigue = 1.0
         elem_centroids = None
         _void_notch_mask = None
         _void_energy_mask = None
         _history_driver_mode = 'off'
+        _history_driver_reduction = {}
 
         def _make_f_fatigue(_hist_snapshot):
             return f_fatigue
@@ -1077,6 +1090,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     matprop, pffmodel, area_T, T_conn,
                     psi_hack_dict=_psi_hack,
                     fem_oracle_dict=_fem_oracle,
+                    history_driver_reduction_dict=_history_driver_reduction,
                 )
             else:
                 # 自动微分模式：需要 inp 开启梯度
@@ -1087,6 +1101,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     matprop, pffmodel, area_T, T_conn=None,
                     psi_hack_dict=_psi_hack,
                     fem_oracle_dict=_fem_oracle,
+                    history_driver_reduction_dict=_history_driver_reduction,
                 )
 
             if (_void_notch_mask is not None

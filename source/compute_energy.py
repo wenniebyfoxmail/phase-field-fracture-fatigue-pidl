@@ -178,7 +178,8 @@ def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, are
 
 # ★ 新增函数：计算各元素退化拉伸应变能密度，供疲劳历史变量更新使用
 def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn=None,
-                          psi_hack_dict=None, fem_oracle_dict=None):
+                          psi_hack_dict=None, fem_oracle_dict=None,
+                          history_driver_reduction_dict=None):
     """
     ★ 新增函数（Manav 原始代码中不存在）
 
@@ -215,6 +216,35 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
     # Carrara Eq.39 要求累积退化能 g(α)·ψ⁺_0，避免裂尖奇异性
     g_alpha, _ = pffmodel.Edegrade(alpha_elem)
     psi_plus_elem = (g_alpha * E_el_p).detach()
+
+    # 2026-06-09 diagnostic: closer FEM-style reduction for the fatigue driver.
+    # The variational energy still uses the original element formula.  This
+    # option only changes the history accumulator input from
+    #     g(mean(alpha_nodes)) * psi_raw_elem
+    # to
+    #     mean_q[g(alpha_q)] * psi_raw_elem
+    # where alpha_q is linearly interpolated at three degree-2 triangle
+    # quadrature points.  For linear triangular displacement, psi_raw_elem is
+    # constant within the element; the missing piece is the nonlinear g(alpha).
+    _hdr = history_driver_reduction_dict or {}
+    if _hdr.get('enable', False) and T_conn is not None:
+        mode = _hdr.get('mode', 'probe_g_mean')
+        if mode != 'probe_g_mean':
+            raise ValueError(
+                "history_driver_reduction_dict['mode'] must be 'probe_g_mean', "
+                f"got {mode!r}"
+            )
+        a0 = alpha[T_conn[:, 0]]
+        a1 = alpha[T_conn[:, 1]]
+        a2 = alpha[T_conn[:, 2]]
+        q0 = (2.0 * a0 + a1 + a2) / 4.0
+        q1 = (a0 + 2.0 * a1 + a2) / 4.0
+        q2 = (a0 + a1 + 2.0 * a2) / 4.0
+        g0, _ = pffmodel.Edegrade(q0)
+        g1, _ = pffmodel.Edegrade(q1)
+        g2, _ = pffmodel.Edegrade(q2)
+        g_probe_mean = (g0 + g1 + g2) / 3.0
+        psi_plus_elem = (g_probe_mean * E_el_p).detach()
 
     # ★ E2 sanity hack (Apr 23 2026) — 验证 ψ⁺ 集中是否是 ᾱ_max ceiling 根因
     # 在裂尖邻域用 Gaussian 衰减乘子放大 ψ⁺，模拟 FEM 的应力集中能力

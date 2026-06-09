@@ -107,6 +107,19 @@ fatigue_dict = {
     #                only, not a proposed physical fatigue law.
     "history_driver_mode": "current_active",
 
+    # ── Fatigue-driver reduction diagnostic ─────────────────────────────────
+    # Disabled by default.  When enabled with history_driver_mode='current_active',
+    # the fatigue-history input changes from
+    #   g(mean(alpha_nodes)) * psi_raw_elem
+    # to a closer FEM-style element reduction
+    #   mean_q[g(alpha_q)] * psi_raw_elem
+    # using three triangle quadrature probes.  This does not change the Deep Ritz
+    # variational energy; it only changes the post-fit fatigue-history driver.
+    "history_driver_reduction": {
+        "enable": False,
+        "mode": "probe_g_mean",
+    },
+
     # ── 历史变量累积策略 ─────────────────────────────────────────────────────
     "accum_type"   : "carrara",      # 'carrara'  → Carrara Eq.39：线性累积 Δᾱ = H(Δψ⁺)·Δψ⁺
                                      # 'golahmar' → Golahmar Eq.31：幂律累积
