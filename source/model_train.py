@@ -34,7 +34,8 @@ from plotting import plot_field
 
 # ★ 新增：疲劳相关函数（仅在 fatigue_on=True 时实际调用）
 from compute_energy import (get_psi_plus_per_elem, compute_energy,
-                            compute_energy_per_elem)
+                            compute_energy_per_elem, gradients,
+                            stress as effective_stress)
 from fatigue_history import (update_fatigue_history, compute_fatigue_degrad,
                               mirror_y_indices, mirror_alpha_y)
 
@@ -106,6 +107,50 @@ def _adaptive_lambda_hist_update(field_comp, inp, hist_alpha, matprop, pffmodel,
     }
 
 
+def _energy_gradient_diagnostics(field_comp, inp, hist_alpha, matprop, pffmodel,
+                                 area_T, T_conn, f_fatigue, element_mask=None):
+    """Measure pre-history-refresh energy-term gradient norms."""
+    params = [p for p in field_comp.parameters() if p.requires_grad]
+    if not params:
+        return {
+            "E_el": 0.0,
+            "E_d": 0.0,
+            "E_hist": 0.0,
+            "grad_E_el": 0.0,
+            "grad_E_d": 0.0,
+            "grad_E_hist": 0.0,
+        }
+
+    u, v, alpha = field_comp.fieldCalculation(inp)
+    loss_E_el, loss_E_d, loss_hist = compute_energy(
+        inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
+        _resolve_f_fatigue(f_fatigue), element_mask=element_mask
+    )
+    eps = torch.as_tensor(1.0e-30, dtype=loss_E_el.dtype, device=loss_E_el.device)
+
+    def _grad_l2(loss_scalar, retain_graph=True):
+        grads = torch.autograd.grad(
+            torch.log10(loss_scalar + eps),
+            params,
+            allow_unused=True,
+            retain_graph=retain_graph,
+        )
+        total = torch.zeros((), dtype=loss_E_el.dtype, device=loss_E_el.device)
+        for grad in grads:
+            if grad is not None:
+                total = total + grad.detach().pow(2).sum()
+        return float(torch.sqrt(total).detach().cpu().item())
+
+    return {
+        "E_el": float(loss_E_el.detach().cpu().item()),
+        "E_d": float(loss_E_d.detach().cpu().item()),
+        "E_hist": float(loss_hist.detach().cpu().item()),
+        "grad_E_el": _grad_l2(loss_E_el, retain_graph=True),
+        "grad_E_d": _grad_l2(loss_E_d, retain_graph=True),
+        "grad_E_hist": _grad_l2(loss_hist, retain_graph=False),
+    }
+
+
 # ── α 场快照辅助函数 ────────────────────────────────────────────────────────
 def _save_alpha_snapshot(inp, alpha, T_conn, cycle, snapshot_dir):
     """保存第 cycle 圈的 α 场：
@@ -154,6 +199,20 @@ def _tensor_to_numpy(value, like_tensor=None):
     return np.asarray(value)
 
 
+def _principal_2d(xx, yy, xy):
+    mean = 0.5 * (xx + yy)
+    radius = torch.sqrt((0.5 * (xx - yy)) ** 2 + xy**2)
+    return mean + radius, mean - radius
+
+
+def _full_linear_stress(eps_xx, eps_yy, eps_xy, matprop):
+    trace = eps_xx + eps_yy
+    sig_xx = matprop.mat_lmbda * trace + 2.0 * matprop.mat_mu * eps_xx
+    sig_yy = matprop.mat_lmbda * trace + 2.0 * matprop.mat_mu * eps_yy
+    sig_xy = 2.0 * matprop.mat_mu * eps_xy
+    return sig_xx, sig_yy, sig_xy
+
+
 def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
                               f_fatigue, psi_plus_elem, psi_plus_prev,
                               matprop, pffmodel, area_T, cycle, out_dir,
@@ -180,6 +239,20 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
             inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
             f_fatigue=f_fatigue
         )
+        eps_xx, eps_yy, eps_xy, _, _ = gradients(
+            inp, u, v, alpha, area_T, T_conn
+        )
+        eps_trace = eps_xx + eps_yy
+        eps_eq = torch.sqrt(eps_xx**2 + eps_yy**2 + 2.0 * eps_xy**2)
+        eps_1, eps_2 = _principal_2d(eps_xx, eps_yy, eps_xy)
+        sig_raw_xx, sig_raw_yy, sig_raw_xy = _full_linear_stress(
+            eps_xx, eps_yy, eps_xy, matprop
+        )
+        sig_raw_1, sig_raw_2 = _principal_2d(sig_raw_xx, sig_raw_yy, sig_raw_xy)
+        sig_eff_xx, sig_eff_yy, sig_eff_xy = effective_stress(
+            eps_xx, eps_yy, eps_xy, alpha_elem, matprop, pffmodel
+        )
+        sig_eff_1, sig_eff_2 = _principal_2d(sig_eff_xx, sig_eff_yy, sig_eff_xy)
 
     hist_fat_np = _tensor_to_numpy(hist_fat, like_tensor=alpha_elem).reshape(-1)
     f_fatigue_np = _tensor_to_numpy(f_fatigue, like_tensor=alpha_elem).reshape(-1)
@@ -217,6 +290,23 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         E_el_elem=E_el_np.astype(np.float32),
         E_d_elem=E_d_np.astype(np.float32),
         E_hist_elem=E_hist_np.astype(np.float32),
+        eps_xx_elem=_tensor_to_numpy(eps_xx).reshape(-1).astype(np.float32),
+        eps_yy_elem=_tensor_to_numpy(eps_yy).reshape(-1).astype(np.float32),
+        eps_xy_elem=_tensor_to_numpy(eps_xy).reshape(-1).astype(np.float32),
+        eps_trace_elem=_tensor_to_numpy(eps_trace).reshape(-1).astype(np.float32),
+        eps_eq_elem=_tensor_to_numpy(eps_eq).reshape(-1).astype(np.float32),
+        eps_principal_1_elem=_tensor_to_numpy(eps_1).reshape(-1).astype(np.float32),
+        eps_principal_2_elem=_tensor_to_numpy(eps_2).reshape(-1).astype(np.float32),
+        sigma_raw_xx_elem=_tensor_to_numpy(sig_raw_xx).reshape(-1).astype(np.float32),
+        sigma_raw_yy_elem=_tensor_to_numpy(sig_raw_yy).reshape(-1).astype(np.float32),
+        sigma_raw_xy_elem=_tensor_to_numpy(sig_raw_xy).reshape(-1).astype(np.float32),
+        sigma_raw_principal_1_elem=_tensor_to_numpy(sig_raw_1).reshape(-1).astype(np.float32),
+        sigma_raw_principal_2_elem=_tensor_to_numpy(sig_raw_2).reshape(-1).astype(np.float32),
+        sigma_effective_xx_elem=_tensor_to_numpy(sig_eff_xx).reshape(-1).astype(np.float32),
+        sigma_effective_yy_elem=_tensor_to_numpy(sig_eff_yy).reshape(-1).astype(np.float32),
+        sigma_effective_xy_elem=_tensor_to_numpy(sig_eff_xy).reshape(-1).astype(np.float32),
+        sigma_effective_principal_1_elem=_tensor_to_numpy(sig_eff_1).reshape(-1).astype(np.float32),
+        sigma_effective_principal_2_elem=_tensor_to_numpy(sig_eff_2).reshape(-1).astype(np.float32),
         residual_abs_Eel_Ed=(np.abs(E_el_np) + np.abs(E_d_np)).astype(np.float32),
     )
 
@@ -846,6 +936,21 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
               f"| every={_every_msg} | dense={_elem_diag_dense} "
               f"| out={_elem_diag_dir}")
 
+    # Optional pre-history-refresh gradient diagnostics.  These are separate
+    # from adaptive lambda so fixed-energy experiments still record whether
+    # E_el, E_d, and E_hist have comparable optimisation authority.
+    _grad_diag_cfg = fatigue_dict.get('gradient_diagnostics', {}) or {}
+    _grad_diag_enabled = fatigue_on and _grad_diag_cfg.get('enable', False)
+    _grad_diag_cycles = _parse_cycle_set(_grad_diag_cfg.get('cycles', []))
+    _grad_diag_every = _grad_diag_cfg.get('every_n_cycles', None)
+    _grad_diag_dense = _grad_diag_cfg.get('dense_sampling', True)
+    _grad_diag_on_fracture = _grad_diag_cfg.get('on_fracture', True)
+    _grad_diag_history = _restore_hist('energy_gradient_terms_vs_cycle.npy')
+    if _grad_diag_enabled:
+        _every_msg = _grad_diag_every if _grad_diag_every else "off"
+        print(f"[GradientDiagnostics] enabled | cycles={sorted(_grad_diag_cycles)} "
+              f"| every={_every_msg} | dense={_grad_diag_dense}")
+
     # =========================================================================
     # 主循环：每次迭代对应一个加载步（单调模式）或一个完整循环（疲劳模式）
     # =========================================================================
@@ -1009,6 +1114,39 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _cycle_seconds = end - start
         print(f"Execution time: {_cycle_seconds/60:.03f}minutes")
         _time_history.append([j, _cycle_seconds])
+
+        _grad_diag_due = False
+        if _grad_diag_enabled:
+            _grad_diag_due = (
+                j in _grad_diag_cycles
+                or (_grad_diag_every is not None
+                    and int(_grad_diag_every) > 0
+                    and j % int(_grad_diag_every) == 0)
+                or (_grad_diag_dense and _dense_sampling)
+                or (_grad_diag_on_fracture and _frac_detected)
+            )
+        if _grad_diag_due:
+            _grad_stats = _energy_gradient_diagnostics(
+                field_comp, inp, hist_alpha, matprop, pffmodel,
+                area_T, T_conn, f_fatigue, element_mask=_void_energy_mask,
+            )
+            _grad_diag_history.append([
+                int(j),
+                float(_grad_stats["E_el"]),
+                float(_grad_stats["E_d"]),
+                float(_grad_stats["E_hist"]),
+                float(_grad_stats["grad_E_el"]),
+                float(_grad_stats["grad_E_d"]),
+                float(_grad_stats["grad_E_hist"]),
+            ])
+            print(
+                f"  [GradientDiagnostics step {j} pre-history-refresh] "
+                f"E=({_grad_stats['E_el']:.6e}, {_grad_stats['E_d']:.6e}, "
+                f"{_grad_stats['E_hist']:.6e}) | "
+                f"grad=({_grad_stats['grad_E_el']:.6e}, "
+                f"{_grad_stats['grad_E_d']:.6e}, "
+                f"{_grad_stats['grad_E_hist']:.6e})"
+            )
 
         # ------------------------------------------------------------------
         # Manav 原始：更新相场不可逆性历史变量 hist_alpha
@@ -1435,6 +1573,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _lambda_hist_history:
                 np.save(str(trainedModel_path / 'lambda_hist_vs_cycle.npy'),
                         np.array(_lambda_hist_history))
+            if _grad_diag_history:
+                np.save(str(trainedModel_path / 'energy_gradient_terms_vs_cycle.npy'),
+                        np.array(_grad_diag_history))
             if _inverse_alpha_T_history:
                 np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
                         np.array(_inverse_alpha_T_history))
@@ -1466,6 +1607,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _lambda_hist_history:
                 np.save(str(trainedModel_path / 'lambda_hist_vs_cycle.npy'),
                         np.array(_lambda_hist_history))
+            if _grad_diag_history:
+                np.save(str(trainedModel_path / 'energy_gradient_terms_vs_cycle.npy'),
+                        np.array(_grad_diag_history))
             if _inverse_alpha_T_history:
                 np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
                         np.array(_inverse_alpha_T_history))
@@ -1498,6 +1642,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_on and _lambda_hist_history:
         np.save(str(trainedModel_path / 'lambda_hist_vs_cycle.npy'),
                 np.array(_lambda_hist_history))
+    if fatigue_on and _grad_diag_history:
+        np.save(str(trainedModel_path / 'energy_gradient_terms_vs_cycle.npy'),
+                np.array(_grad_diag_history))
     if fatigue_on and _inverse_alpha_T_history:
         np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
                 np.array(_inverse_alpha_T_history))

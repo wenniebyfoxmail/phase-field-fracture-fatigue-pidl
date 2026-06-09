@@ -161,6 +161,13 @@ def main() -> None:
         "on_fracture": True,
         "dir": "element_diagnostics_precrack_fatigue_mask",
     }
+    config.fatigue_dict["gradient_diagnostics"] = {
+        "enable": True,
+        "cycles": diag_steps,
+        "every_n_cycles": 1,
+        "dense_sampling": True,
+        "on_fracture": True,
+    }
     config.disp_cyclic = disp_steps
 
     fat = config.fatigue_dict
@@ -210,6 +217,12 @@ def main() -> None:
         handle.write(f"explicit_cycle_factors: {fat['explicit_cycle_factors']}\n")
         handle.write(f"void_notch_mask: {fat['void_notch_mask']}\n")
         handle.write(f"element_diagnostics_steps: {diag_steps}\n")
+        handle.write("element_diagnostics_fields: mechanics+energy+driver\n")
+        handle.write("gradient_diagnostics: pre_history_refresh_every_step\n")
+        handle.write(
+            "gradient_diagnostics_columns: step,E_el,E_d,E_hist,"
+            "grad_E_el,grad_E_d,grad_E_hist\n"
+        )
         handle.write(
             "purpose: retained precrack benchmark; variational energy kept, "
             "fatigue/history masked in the precrack corridor\n"

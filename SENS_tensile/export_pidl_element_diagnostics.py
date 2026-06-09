@@ -21,7 +21,8 @@ sys.path.insert(0, str(HERE.parent / "source"))
 _saved_argv = sys.argv
 sys.argv = ["export_pidl_element_diagnostics", "8", "400", "1", "TrainableReLU", "1.0"]
 import config
-from compute_energy import (compute_energy_per_elem, get_psi_plus_per_elem)
+from compute_energy import (compute_energy_per_elem, get_psi_plus_per_elem,
+                            gradients, stress as effective_stress)
 from construct_model import construct_model
 from fatigue_history import compute_fatigue_degrad
 from field_computation import FieldComputation
@@ -151,6 +152,20 @@ def tensor_np(value: torch.Tensor | float, like_tensor: torch.Tensor | None = No
     return np.asarray(value)
 
 
+def principal_2d(xx: torch.Tensor, yy: torch.Tensor, xy: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    mean = 0.5 * (xx + yy)
+    radius = torch.sqrt((0.5 * (xx - yy)) ** 2 + xy**2)
+    return mean + radius, mean - radius
+
+
+def full_linear_stress(eps_xx: torch.Tensor, eps_yy: torch.Tensor, eps_xy: torch.Tensor, matprop):
+    trace = eps_xx + eps_yy
+    sig_xx = matprop.mat_lmbda * trace + 2.0 * matprop.mat_mu * eps_xx
+    sig_yy = matprop.mat_lmbda * trace + 2.0 * matprop.mat_mu * eps_yy
+    sig_xy = 2.0 * matprop.mat_mu * eps_xy
+    return sig_xx, sig_yy, sig_xy
+
+
 def masked_stats(values: np.ndarray, mask: np.ndarray) -> dict[str, float]:
     selected = values[mask]
     if selected.size == 0:
@@ -207,6 +222,20 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
             inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_t, t_conn,
             f_fatigue=f_fatigue,
         )
+        eps_xx, eps_yy, eps_xy, _, _ = gradients(
+            inp, u, v, alpha, area_t, t_conn
+        )
+        eps_trace = eps_xx + eps_yy
+        eps_eq = torch.sqrt(eps_xx**2 + eps_yy**2 + 2.0 * eps_xy**2)
+        eps_1, eps_2 = principal_2d(eps_xx, eps_yy, eps_xy)
+        sig_raw_xx, sig_raw_yy, sig_raw_xy = full_linear_stress(
+            eps_xx, eps_yy, eps_xy, matprop
+        )
+        sig_raw_1, sig_raw_2 = principal_2d(sig_raw_xx, sig_raw_yy, sig_raw_xy)
+        sig_eff_xx, sig_eff_yy, sig_eff_xy = effective_stress(
+            eps_xx, eps_yy, eps_xy, alpha_elem, matprop, pffmodel
+        )
+        sig_eff_1, sig_eff_2 = principal_2d(sig_eff_xx, sig_eff_yy, sig_eff_xy)
         elem_x = (inp[t_conn[:, 0], 0] + inp[t_conn[:, 1], 0] + inp[t_conn[:, 2], 0]) / 3.0
         elem_y = (inp[t_conn[:, 0], 1] + inp[t_conn[:, 1], 1] + inp[t_conn[:, 2], 1]) / 3.0
 
@@ -248,6 +277,23 @@ def export_cycle(archive: Path, cycle: int, out_dir: Path, device: torch.device,
             E_el_elem=e_el_np.astype(np.float32),
             E_d_elem=e_d_np.astype(np.float32),
             E_hist_elem=e_hist_np.astype(np.float32),
+            eps_xx_elem=tensor_np(eps_xx).reshape(-1).astype(np.float32),
+            eps_yy_elem=tensor_np(eps_yy).reshape(-1).astype(np.float32),
+            eps_xy_elem=tensor_np(eps_xy).reshape(-1).astype(np.float32),
+            eps_trace_elem=tensor_np(eps_trace).reshape(-1).astype(np.float32),
+            eps_eq_elem=tensor_np(eps_eq).reshape(-1).astype(np.float32),
+            eps_principal_1_elem=tensor_np(eps_1).reshape(-1).astype(np.float32),
+            eps_principal_2_elem=tensor_np(eps_2).reshape(-1).astype(np.float32),
+            sigma_raw_xx_elem=tensor_np(sig_raw_xx).reshape(-1).astype(np.float32),
+            sigma_raw_yy_elem=tensor_np(sig_raw_yy).reshape(-1).astype(np.float32),
+            sigma_raw_xy_elem=tensor_np(sig_raw_xy).reshape(-1).astype(np.float32),
+            sigma_raw_principal_1_elem=tensor_np(sig_raw_1).reshape(-1).astype(np.float32),
+            sigma_raw_principal_2_elem=tensor_np(sig_raw_2).reshape(-1).astype(np.float32),
+            sigma_effective_xx_elem=tensor_np(sig_eff_xx).reshape(-1).astype(np.float32),
+            sigma_effective_yy_elem=tensor_np(sig_eff_yy).reshape(-1).astype(np.float32),
+            sigma_effective_xy_elem=tensor_np(sig_eff_xy).reshape(-1).astype(np.float32),
+            sigma_effective_principal_1_elem=tensor_np(sig_eff_1).reshape(-1).astype(np.float32),
+            sigma_effective_principal_2_elem=tensor_np(sig_eff_2).reshape(-1).astype(np.float32),
             residual_abs_Eel_Ed=(np.abs(e_el_np) + np.abs(e_d_np)).astype(np.float32),
         )
     return {
