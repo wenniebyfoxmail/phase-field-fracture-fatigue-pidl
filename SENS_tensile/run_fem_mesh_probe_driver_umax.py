@@ -147,6 +147,13 @@ def main() -> None:
         "on_fracture": True,
         "dir": "element_diagnostics_probe_driver",
     }
+    config.fatigue_dict["gradient_diagnostics"] = {
+        "enable": True,
+        "cycles": diag_steps,
+        "every_n_cycles": 1,
+        "dense_sampling": True,
+        "on_fracture": True,
+    }
     config.disp_cyclic = disp_steps
 
     fat = config.fatigue_dict
@@ -195,6 +202,12 @@ def main() -> None:
         handle.write(f"explicit_cycle_factors: {fat['explicit_cycle_factors']}\n")
         handle.write(f"void_notch_mask_enable: {fat['void_notch_mask']['enable']}\n")
         handle.write(f"element_diagnostics_steps: {diag_steps}\n")
+        handle.write("element_diagnostics_fields: mechanics+energy+driver\n")
+        handle.write("gradient_diagnostics: pre_history_refresh_every_step\n")
+        handle.write(
+            "gradient_diagnostics_columns: step,E_el,E_d,E_hist,"
+            "grad_E_el,grad_E_d,grad_E_hist\n"
+        )
         handle.write(
             "purpose: strict FEM-mesh probe-averaged g(alpha) fatigue-driver "
             "reduction; variational energy unchanged\n"
@@ -211,6 +224,7 @@ def main() -> None:
     print("  reduction      = probe_g_mean")
     print("  void mask      = disabled")
     print(f"  elem diag      = {diag_steps}")
+    print("  gradient diag  = pre-history-refresh every step")
     print(f"  compile        = {bool(args.compile)}")
     print(f"  device         = {config.device}")
     print(f"  archive        = {dir_name}")
