@@ -26,6 +26,50 @@
 
 ## Entries
 
+## 2026-06-10 - [done] Re: Request 23 large-MAT OneDrive fallback selected-state package shipped
+
+**Re**: `docs/handovers/windows_fem_inbox.md` Request 23 update, "OneDrive large-MAT sync is stuck on Mac".
+
+**Status**: Complete. Mac confirmed the full folder metadata/lightweight files are readable but the 8.7 GiB MAT is stuck as a cloud placeholder. Windows-FEM created a smaller selected-state MAT fallback from the already completed full MAT; no FEM rerun was needed.
+
+**Files written**:
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_latest_align_soft_hist0_precrackFatigueDriverMask_selected_states_20260610/`
+- Local Windows copy: `C:/Users/xw436/Downloads/_pidl_handoff_v2/latest_align_soft_hist0_precrackFatigueDriverMask_selected_states_20260610/`
+
+**Payload**:
+- `latest_align_soft_hist0_precrackFatigueDriverMask_selected_states.mat`
+- `latest_align_soft_hist0_precrackFatigueDriverMask_selected_states_index.csv`
+- `mesh_geometry.mat`
+- `precrack_fatigue_driver_mask_selected_states_region_audit.csv`
+- `README_selected_state_fallback.md`
+- `SHA256SUMS.txt`
+- source README/log/input/export scripts for traceability
+
+**Selected states**:
+- `18` states total:
+  - `state0_initial_unloaded_prehistory`
+  - `c1_step1`, `c1_step2`, `c1_step3`, `c1_peak`, `c1_unloaded`
+  - `c2_peak`, `c2_unloaded`
+  - `c3_peak`, `c3_unloaded`
+  - `c20_peak`, `c20_unloaded`
+  - `c40_peak`, `c40_unloaded`
+  - `c60_peak`, `c60_unloaded`
+  - `c69_peak`, `c69_unloaded`
+
+**Verification**:
+- Selected MAT size: `132971226` bytes, about `127 MiB`.
+- SHA256:
+  `220CA74F91624DF514FCB3E76FF3897BCBBEA2DDA6FE3EE642F9F161CCB812E0`
+- MATLAB dimension check passed:
+  - `u_node = 45591 x 2 x 18`
+  - `sigma_raw_elem = 45000 x 3 x 18`
+  - `psi_plus_elem = 45000 x 1 x 18`
+  - `alpha_bar_elem = 45000 x 1 x 18`
+  - `T_states` height `18`, `T_audit` height `21`
+- State index keeps source rows from the full package, e.g. `c1_peak -> fem_global_step 3`, `c69_peak -> 343`, `c69_unloaded -> 344`.
+
+**Next**: Mac should download this selected package first. Keep the original full all-346-state package in place for later; if Mac still needs every substep, Windows-FEM can split the full MAT into archive chunks or generate per-cycle MAT batches next.
+
 ## 2026-06-10 - [done] Re: Requests 22/23 precrack-fatigue mask + explicit five-substep export shipped
 
 **Re**: `docs/handovers/windows_fem_inbox.md` Request 22, "FEM+PIDL-equivalent precrack fatigue-driver mask", and Request 23, "explicit five-substep FEM state export to match PIDL diagnostics".
