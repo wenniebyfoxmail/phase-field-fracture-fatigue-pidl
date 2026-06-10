@@ -26,6 +26,71 @@
 
 ## Entries
 
+## 2026-06-10 - [done] Re: Requests 22/23 precrack-fatigue mask + explicit five-substep export shipped
+
+**Re**: `docs/handovers/windows_fem_inbox.md` Request 22, "FEM+PIDL-equivalent precrack fatigue-driver mask", and Request 23, "explicit five-substep FEM state export to match PIDL diagnostics".
+
+**Status**: Complete. Ran/replayed the latest aligned soft-hist0 reverseBC FEM with the PIDL-equivalent old-precrack fatigue-history mask and exported every retained five-substep state through cycle 69.
+
+**Base held fixed**:
+- `SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC`
+- Continuous retained-material soft diffuse precrack, no void slit and no duplicated crack-face nodes.
+- Mesh: `45591` nodes, `45000` Q4 elements.
+- Initial fatigue history: `alpha_bar=0`, `f_alpha=1`.
+- Model: `AT1 + AMOR + PENALTY`, `E=1`, `nu=0.3`, `Gc=0.01`, `ell=0.01`, `alpha_T=0.5`, `p=2`, `tol_irrev=1e-3`, `res_stiff=1e-6`.
+- reverseBC, `u_max=0.12`, retained load factors `[0.25, 0.50, 0.75, 1.00, 0.00]`.
+
+**Mask policy**:
+- Plate-coordinate support: `x <= 0.5` and `|y - 0.5| <= 2*ell = 0.02`.
+- PIDL-equivalent policy: `mask_fatigue=True`, `mask_energy=False`.
+- Enforced after each converged substep history refresh: `alpha_bar -> 0`, fatigue-driver/slot-3 field -> `0`, `f_alpha -> 1` on the mask.
+- Raw mechanics, displacement, strain, raw `psi_plus`, and fracture history `H` are not overwritten.
+- Implementation note: this is post-refresh fatigue-history enforcement because the current AT1 penalty fatigue MEX does not expose separate mechanics-energy and fatigue-driver inputs. Masking `strain_en_undgr` inside the phase-field solve would also mask damage energy and would not match `mask_energy=False`.
+
+**Files written**:
+- OneDrive: `OneDrive/PIDL result/_pidl_handoff_latest_align_soft_hist0_precrackFatigueDriverMask_explicit_steps_20260609/`
+- Local Windows copy: `C:/Users/xw436/Downloads/_pidl_handoff_v2/latest_align_soft_hist0_precrackFatigueDriverMask_explicit_steps_20260609/`
+
+**Payload**:
+- `latest_align_soft_hist0_precrackFatigueDriverMask_explicit_steps_state_fields.mat`
+- `latest_align_soft_hist0_precrackFatigueDriverMask_explicit_steps_state_index.csv`
+- `mesh_geometry.mat`
+- `precrack_fatigue_driver_mask_region_audit.csv`
+- `README_latest_align_soft_hist0_precrackFatigueDriverMask_explicit_steps.md`
+- `INPUT_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC_precrackFatigueDriverMask.m`
+- `INPUT_SENT_PIDL_12_diffuse_precrack_soft_hist0_reverseBC.m`
+- `solve_fatigue_fracture.m`
+- `export_latest_align_precrack_mask_explicit_steps.m`
+- `run_latest_align_soft_hist0_precrackFatigueDriverMask_explicit_steps.log`
+
+**State export**:
+- `346` state records: `state0_initial_unloaded_prehistory` plus `69 cycles * 5 substeps`.
+- Mapping verified:
+  - `c1_step1 -> fem_global_step 0`
+  - `c1_peak -> fem_global_step 3`
+  - `c1_unloaded -> fem_global_step 4`
+  - `c69_peak -> fem_global_step 343`
+  - `c69_unloaded -> fem_global_step 344`
+
+**Field storage note**:
+- To keep the handoff tractable for OneDrive/Mac, the all-346-state MAT stores element-mean fields plus nodal `u/d` and mesh/GP geometry. The exporter computes GP fields internally before averaging, but does not write every all-state GP tensor.
+- Element arrays include `epsilon_elem`, `sigma_raw_elem`, `sigma_degraded_effective_elem`, `principal_strain_elem`, `principal_stress_raw_elem`, `principal_stress_degraded_effective_elem`, `von_mises_raw_elem`, `von_mises_degraded_effective_elem`, `psi_plus_elem`, `psi_minus_elem`, `g_stiffness_elem`, `g_psi_plus_elem`, `f_g_psi_plus_elem`, `d_elem`, `alpha_bar_elem`, `f_fatigue_elem`, plus raw-vs-masked fatigue diagnostics `raw_alpha_bar_elem`, `raw_Dalpha_elem`, `raw_f_fatigue_elem`, `masked_Dalpha_elem`.
+
+**Verification**:
+- Local and OneDrive file lists/sizes match.
+- MATLAB `whos`/dimension check passed:
+  - `u_node = 45591 x 2 x 346`
+  - `d_node = 45591 x 346`
+  - `sigma_raw_elem = 45000 x 3 x 346`
+  - `psi_plus_elem = 45000 x 1 x 346`
+  - `alpha_bar_elem = 45000 x 1 x 346`
+  - `T_states` height `346`, `T_audit` height `21`.
+- Mask audit sanity:
+  - `c1_peak` left-precrack audit line: `alpha_bar_mean=0`, `alpha_bar_max=0`, `f_fatigue_mean=1`, `f_fatigue_min=1`, `masked_Dalpha_mean=0`, while raw `psi_plus` remains nonzero.
+  - `c69_peak` left-precrack audit line: same fatigue-mask sanity holds; raw `psi_plus` remains nonzero.
+
+**Next**: Mac can compare the PIDL global diagnostic steps directly against FEM `fem_global_step`. If all-state GP tensors are needed later, Windows-FEM should generate split GP batches rather than one very large OneDrive MAT.
+
 ## 2026-05-29 · [done] Re: Request 21 soft-hist0 substep/history controls — n_step 2/3/10 shipped
 
 **Re**: `docs/handovers/windows_fem_inbox.md` Request 21, "one-factor FEM substep/history-timing controls after PIDL state audit"
