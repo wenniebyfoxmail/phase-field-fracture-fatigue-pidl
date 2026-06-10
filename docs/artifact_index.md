@@ -11,6 +11,8 @@ who produced it, and which summary doc uses it.
 | Taobo PIDL archive pull, 2026-06-08 | `result/taobo_pidl_archive_20260608/` | Large local download/package root. Keep out of Git; use manifests inside the folder for remote inventory. |
 | Matched BC/notch experiment package, 2026-06-08 | `experiment/matched_bc_notch_20260608/` | Local package with scripts, provenance, and summary tables. Promote only concise summaries if needed. |
 | FEM result packages | `fem_result/` | Local FEM/OneDrive package mirror. Keep payloads out of Git; record stable package names in handover docs. |
+| FEM/PIDL mechanism analysis tree, 2026-05/06 | `_analysis_fem_mechanism_20260528/` | Local generated analysis tree. It contains raw sync files, field dumps, local result checks, and generated figures; keep Git summaries in `docs/` instead. |
+| Generated docs figure images | `docs/figures/**/*.png` and `docs/figures/**/*.pdf` | Local rendered review figures. Git keeps the small CSV/JSON tables under `docs/figures/`, but image/PDF payloads are local artifacts. |
 | Brian review snapshot note | `BRIAN_README_2026-06-07.md` | Local untracked review-package note. Decide separately whether a cleaned version belongs in `docs/`. |
 
 ## External / Producer Artifacts
