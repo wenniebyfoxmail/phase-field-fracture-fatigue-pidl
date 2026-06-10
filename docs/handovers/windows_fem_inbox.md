@@ -29,6 +29,49 @@
 
 ## 2026-06-09 · Request 23: explicit five-substep FEM state export to match PIDL diagnostics
 
+### [update] 2026-06-10 · OneDrive large-MAT sync is stuck on Mac
+
+Mac can see the uploaded folder metadata:
+
+```text
+PIDL result/_pidl_handoff_latest_align_soft_hist0_precrackFatigueDriverMask_explicit_steps_20260609
+```
+
+The lightweight files are visible and readable, including the README, log,
+state index, and region audit. The quick checks pass:
+
+```text
+state_index rows = 346
+c1_peak      -> fem_global_step 3
+c1_unloaded  -> fem_global_step 4
+c69_peak     -> fem_global_step 343
+c69_unloaded -> fem_global_step 344
+left precrack alpha_bar = 0, masked_Dalpha = 0, f_fatigue = 1
+raw psi_plus remains nonzero
+```
+
+However the large MAT file is stuck as a OneDrive cloud placeholder on Mac:
+
+```text
+latest_align_soft_hist0_precrackFatigueDriverMask_explicit_steps_state_fields.mat
+logical size: 8.7 GiB
+local allocated blocks on Mac: 0 bytes
+```
+
+Please provide a smaller fallback so Mac can start analysis without waiting for
+the full OneDrive hydration. Preferred options:
+
+1. Upload a selected-state MAT package containing only:
+   `state0_initial_unloaded_prehistory`, all `c1` substeps, and peak/unload
+   states for `c2`, `c3`, `c20`, `c40`, `c60`, `c69`.
+2. Or split/compress the full 8.7 GiB MAT into smaller chunks, for example
+   1 GiB parts, and upload the parts plus checksum.
+3. Or upload per-state/per-cycle MAT files so Mac can download only
+   `c1_peak`, `c69_peak`, and the nearby diagnostic states first.
+
+Keep the existing full package in place; this is only a transfer workaround for
+OneDrive's stalled on-demand download.
+
 **Goal**: run/export FEM with every converged cyclic substep recorded, so Mac
 can compare FEM and PIDL by explicit global step instead of using peak-only
 states or load-scaled approximations for intermediate states.
