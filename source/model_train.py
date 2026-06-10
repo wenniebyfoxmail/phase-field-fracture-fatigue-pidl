@@ -91,7 +91,8 @@ def _oracle_cycle_scale(step_idx, cfg):
 
 def _adaptive_lambda_hist_update(field_comp, inp, hist_alpha, matprop, pffmodel,
                                  area_T, T_conn, f_fatigue, current_lambda,
-                                 cfg, element_mask=None):
+                                 cfg, element_mask=None,
+                                 g_stiffness_override=None):
     """Balance the irreversibility penalty gradient against elastic/damage terms."""
     params = [p for p in field_comp.parameters() if p.requires_grad]
     if not params:
@@ -105,7 +106,8 @@ def _adaptive_lambda_hist_update(field_comp, inp, hist_alpha, matprop, pffmodel,
     u, v, alpha = field_comp.fieldCalculation(inp)
     loss_E_el, loss_E_d, loss_hist = compute_energy(
         inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
-        _resolve_f_fatigue(f_fatigue), element_mask=element_mask
+        _resolve_f_fatigue(f_fatigue), element_mask=element_mask,
+        g_stiffness_override=g_stiffness_override,
     )
     eps = torch.as_tensor(1.0e-30, dtype=loss_E_el.dtype, device=loss_E_el.device)
 
@@ -144,7 +146,8 @@ def _adaptive_lambda_hist_update(field_comp, inp, hist_alpha, matprop, pffmodel,
 
 
 def _energy_gradient_diagnostics(field_comp, inp, hist_alpha, matprop, pffmodel,
-                                 area_T, T_conn, f_fatigue, element_mask=None):
+                                 area_T, T_conn, f_fatigue, element_mask=None,
+                                 g_stiffness_override=None):
     """Measure pre-history-refresh energy-term gradient norms."""
     params = [p for p in field_comp.parameters() if p.requires_grad]
     if not params:
@@ -160,7 +163,8 @@ def _energy_gradient_diagnostics(field_comp, inp, hist_alpha, matprop, pffmodel,
     u, v, alpha = field_comp.fieldCalculation(inp)
     loss_E_el, loss_E_d, loss_hist = compute_energy(
         inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
-        _resolve_f_fatigue(f_fatigue), element_mask=element_mask
+        _resolve_f_fatigue(f_fatigue), element_mask=element_mask,
+        g_stiffness_override=g_stiffness_override,
     )
     eps = torch.as_tensor(1.0e-30, dtype=loss_E_el.dtype, device=loss_E_el.device)
 
@@ -235,6 +239,28 @@ def _tensor_to_numpy(value, like_tensor=None):
     return np.asarray(value)
 
 
+def _element_to_node_projection(elem_values, T_conn, n_nodes, reduce="max"):
+    """Project element oracle values to nodes for hard hist_alpha floors."""
+    if T_conn is None:
+        return elem_values
+    conn = T_conn.to(device=elem_values.device, dtype=torch.long)
+    flat_nodes = conn.reshape(-1)
+    flat_vals = elem_values.reshape(-1).repeat_interleave(conn.shape[1])
+    if reduce == "mean":
+        out = torch.zeros(n_nodes, dtype=elem_values.dtype, device=elem_values.device)
+        cnt = torch.zeros(n_nodes, dtype=elem_values.dtype, device=elem_values.device)
+        out.scatter_add_(0, flat_nodes, flat_vals)
+        cnt.scatter_add_(0, flat_nodes, torch.ones_like(flat_vals))
+        return out / cnt.clamp(min=1.0)
+    if reduce != "max":
+        raise ValueError(f"unknown element-to-node reduce={reduce!r}")
+    out = torch.full(
+        (n_nodes,), -torch.inf, dtype=elem_values.dtype, device=elem_values.device
+    )
+    out.scatter_reduce_(0, flat_nodes, flat_vals, reduce="amax", include_self=True)
+    return torch.where(torch.isfinite(out), out, torch.zeros_like(out))
+
+
 def _principal_2d(xx, yy, xy):
     mean = 0.5 * (xx + yy)
     radius = torch.sqrt((0.5 * (xx - yy)) ** 2 + xy**2)
@@ -253,7 +279,12 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
                               f_fatigue, psi_plus_elem, psi_plus_prev,
                               matprop, pffmodel, area_T, cycle, out_dir,
                               psi_history_elem=None,
-                              history_increment_elem=None):
+                              history_increment_elem=None,
+                              alpha_feedback_target_elem=None,
+                              alpha_feedback_mask_elem=None,
+                              oracle_target_elem=None,
+                              oracle_mask_elem=None,
+                              g_stiffness_override_elem=None):
     """Save cycle-end element fields for FEM/PIDL mechanism comparison."""
     out_dir.mkdir(parents=True, exist_ok=True)
     with torch.no_grad():
@@ -274,7 +305,8 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
 
         E_el_elem, E_d_elem, E_hist_elem = compute_energy_per_elem(
             inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
-            f_fatigue=f_fatigue
+            f_fatigue=f_fatigue,
+            g_stiffness_override=g_stiffness_override_elem,
         )
         eps_xx, eps_yy, eps_xy, _, _ = gradients(
             inp, u, v, alpha, area_T, T_conn
@@ -287,7 +319,8 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         )
         sig_raw_1, sig_raw_2 = _principal_2d(sig_raw_xx, sig_raw_yy, sig_raw_xy)
         sig_eff_xx, sig_eff_yy, sig_eff_xy = effective_stress(
-            eps_xx, eps_yy, eps_xy, alpha_elem, matprop, pffmodel
+            eps_xx, eps_yy, eps_xy, alpha_elem, matprop, pffmodel,
+            g_stiffness_override=g_stiffness_override_elem,
         )
         sig_eff_1, sig_eff_2 = _principal_2d(sig_eff_xx, sig_eff_yy, sig_eff_xy)
 
@@ -307,12 +340,44 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
     E_el_np = _tensor_to_numpy(E_el_elem).reshape(-1)
     E_d_np = _tensor_to_numpy(E_d_elem).reshape(-1)
     E_hist_np = _tensor_to_numpy(E_hist_elem).reshape(-1)
+    if alpha_feedback_target_elem is None:
+        alpha_feedback_target_np = np.full_like(E_el_np, np.nan, dtype=np.float32)
+    else:
+        alpha_feedback_target_np = _tensor_to_numpy(
+            alpha_feedback_target_elem, like_tensor=alpha_elem
+        ).reshape(-1).astype(np.float32)
+    if alpha_feedback_mask_elem is None:
+        alpha_feedback_mask_np = np.zeros_like(E_el_np, dtype=np.float32)
+    else:
+        alpha_feedback_mask_np = _tensor_to_numpy(
+            alpha_feedback_mask_elem, like_tensor=alpha_elem
+        ).reshape(-1).astype(np.float32)
+    if oracle_target_elem is None:
+        oracle_target_np = np.full_like(E_el_np, np.nan, dtype=np.float32)
+    else:
+        oracle_target_np = _tensor_to_numpy(
+            oracle_target_elem, like_tensor=alpha_elem
+        ).reshape(-1).astype(np.float32)
+    if oracle_mask_elem is None:
+        oracle_mask_np = np.zeros_like(E_el_np, dtype=np.float32)
+    else:
+        oracle_mask_np = _tensor_to_numpy(
+            oracle_mask_elem, like_tensor=alpha_elem
+        ).reshape(-1).astype(np.float32)
     # `psi_plus_elem` is the active fatigue driver g(alpha)*psi0.  Save both
     # the active value and the raw undegraded psi0 approximation to avoid the
     # recurring FEM/PIDL comparison ambiguity.
     with torch.no_grad():
         g_alpha, _ = pffmodel.Edegrade(alpha_elem)
     g_alpha_np = _tensor_to_numpy(g_alpha).reshape(-1)
+    if g_stiffness_override_elem is None:
+        g_solver_np = g_alpha_np
+        g_override_np = np.full_like(E_el_np, np.nan, dtype=np.float32)
+    else:
+        g_solver_np = _tensor_to_numpy(
+            g_stiffness_override_elem, like_tensor=alpha_elem
+        ).reshape(-1)
+        g_override_np = g_solver_np.astype(np.float32)
     psi_raw_np = psi_plus_np / np.maximum(g_alpha_np, 1e-30)
 
     np.savez_compressed(
@@ -322,6 +387,10 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         elem_y=_tensor_to_numpy(elem_y).reshape(-1).astype(np.float32),
         area_elem=_tensor_to_numpy(area_T).reshape(-1).astype(np.float32),
         alpha_elem=_tensor_to_numpy(alpha_elem).reshape(-1).astype(np.float32),
+        alpha_feedback_target_elem=alpha_feedback_target_np,
+        alpha_feedback_mask_elem=alpha_feedback_mask_np,
+        oracle_target_elem=oracle_target_np,
+        oracle_mask_elem=oracle_mask_np,
         hist_fat_elem=hist_fat_np.astype(np.float32),
         f_fatigue_elem=f_fatigue_np.astype(np.float32),
         psi_plus_elem=psi_plus_np.astype(np.float32),  # backward-compatible active driver
@@ -330,6 +399,8 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         delta_alpha_bar_input_elem=history_increment_np.astype(np.float32),
         psi_raw_elem=psi_raw_np.astype(np.float32),
         g_alpha_elem=g_alpha_np.astype(np.float32),
+        g_solver_elem=g_solver_np.astype(np.float32),
+        g_stiffness_override_elem=g_override_np,
         psi_plus_prev_elem=psi_prev_np.astype(np.float32),
         E_el_elem=E_el_np.astype(np.float32),
         E_d_elem=E_d_np.astype(np.float32),
@@ -995,6 +1066,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         print(f"[GradientDiagnostics] enabled | cycles={sorted(_grad_diag_cycles)} "
               f"| every={_every_msg} | dense={_grad_diag_dense}")
 
+    _g_stiffness_override_current = None
+    _f_fatigue_override_current = None
+
     # =========================================================================
     # 主循环：每次迭代对应一个加载步（单调模式）或一个完整循环（疲劳模式）
     # =========================================================================
@@ -1007,6 +1081,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
         # ★ MIT-8: build per-cycle supervised_dict (None outside [1, K])
         _supervised_dict = None
+        _alpha_feedback_target_elem = None
+        _alpha_feedback_mask_elem = None
+        _oracle_target_elem = None
+        _oracle_mask_elem = None
         if mit8_dict is not None and mit8_dict.get('enable', False):
             _K = int(mit8_dict.get('K', 0))
             _fem_cycle = j + int(mit8_dict.get('fem_cycle_offset', 0))
@@ -1023,6 +1101,127 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 }
                 print(f"  [MIT-8] pidl j={j}, FEM c={_fem_cycle}/{_K}: "
                       f"supervised lambda={_supervised_dict['lambda']}")
+
+        # FEM soft-feedback oracle: force the NN field toward a mapped FEM
+        # alpha or psi target at peak substeps.  The target is pre-projected
+        # once per PIDL step, then reused inside all optimizer epochs.
+        _alpha_fb_cfg = (
+            fatigue_dict.get('alpha_feedback_oracle', None)
+            if fatigue_on else None
+        )
+        if _alpha_fb_cfg is not None and _alpha_fb_cfg.get('enable', False):
+            _mode_fb = _alpha_fb_cfg.get('mode', 'peak_supervised_alpha')
+            if _mode_fb not in {'peak_supervised_alpha', 'peak_supervised_psi_raw'}:
+                raise ValueError(
+                    "alpha_feedback_oracle mode must be "
+                    "'peak_supervised_alpha' or 'peak_supervised_psi_raw', "
+                    f"got {_mode_fb!r}"
+                )
+            _fem_cycle_fb, _, _substep_fb, _is_peak_fb = _oracle_cycle_scale(
+                int(j), _alpha_fb_cfg
+            )
+            _max_cycle_fb = int(_alpha_fb_cfg.get('max_cycle', 0))
+            _cycle_in_range_fb = (
+                _max_cycle_fb <= 0 or _fem_cycle_fb <= _max_cycle_fb
+            )
+            if _is_peak_fb and _cycle_in_range_fb:
+                if _supervised_dict is not None:
+                    raise ValueError(
+                        "alpha_feedback_oracle cannot be combined with another "
+                        "supervised_dict in the same step"
+                    )
+                _fem_sup_fb = _alpha_fb_cfg['fem_sup']
+                _pidl_centroids_fb = _alpha_fb_cfg['pidl_centroids']
+                if _mode_fb == 'peak_supervised_alpha':
+                    _target_fb = _fem_sup_fb.alpha_target_at_cycle(
+                        _fem_cycle_fb, _pidl_centroids_fb,
+                        device=inp.device, dtype=torch.float32,
+                    ).detach()
+                    _target_kind_fb = 'alpha'
+                    _default_loss_fb = 'mse_lin'
+                else:
+                    _target_fb = _fem_sup_fb.psi_target_at_cycle(
+                        _fem_cycle_fb, _pidl_centroids_fb,
+                        device=inp.device, dtype=torch.float32,
+                    ).detach()
+                    _target_kind_fb = 'psi'
+                    _default_loss_fb = 'mse_log'
+                _alpha_feedback_target_elem = _target_fb
+                _base_mask_fb = _alpha_fb_cfg.get('override_mask', None)
+                if _base_mask_fb is None:
+                    _alpha_feedback_mask_elem = torch.ones_like(
+                        _target_fb, dtype=torch.bool
+                    )
+                else:
+                    _alpha_feedback_mask_elem = _base_mask_fb.to(inp.device).bool()
+                _target_min_fb = _alpha_fb_cfg.get('target_mask_min', None)
+                if _target_min_fb is not None:
+                    _alpha_feedback_mask_elem = (
+                        _alpha_feedback_mask_elem
+                        & (_target_fb >= float(_target_min_fb))
+                    )
+                _supervised_dict = {
+                    'fem_sup': _fem_sup_fb,
+                    'cycle_idx': _fem_cycle_fb,
+                    'lambda': float(_alpha_fb_cfg.get('lambda', 1.0)),
+                    'pidl_centroids': _pidl_centroids_fb,
+                    'loss_kind': _alpha_fb_cfg.get('loss_kind', _default_loss_fb),
+                    'target_kind': _target_kind_fb,
+                    'target': _target_fb,
+                    'every_n_epochs': int(_alpha_fb_cfg.get('every_n_epochs', 1)),
+                    'mask': _alpha_feedback_mask_elem,
+                }
+                _oracle_target_elem = _target_fb
+                _oracle_mask_elem = _alpha_feedback_mask_elem
+                print(
+                    f"  [AlphaFeedback] pidl j={j} substep={_substep_fb}, "
+                    f"FEM c={_fem_cycle_fb}: {_target_kind_fb} supervision "
+                    f"lambda={_supervised_dict['lambda']}, "
+                    f"mask={int(_alpha_feedback_mask_elem.sum().item())}/"
+                    f"{int(_alpha_feedback_mask_elem.numel())}"
+                )
+
+        _g_oracle_cfg = (
+            fatigue_dict.get('g_stiffness_oracle', None)
+            if fatigue_on else None
+        )
+        if _g_oracle_cfg is not None and _g_oracle_cfg.get('enable', False):
+            _fem_cycle_g, _, _substep_g, _is_peak_g = _oracle_cycle_scale(
+                int(j), _g_oracle_cfg
+            )
+            _max_cycle_g = int(_g_oracle_cfg.get('max_cycle', 0))
+            _cycle_in_range_g = _max_cycle_g <= 0 or _fem_cycle_g <= _max_cycle_g
+            if _is_peak_g and _cycle_in_range_g:
+                _target_g = _g_oracle_cfg['fem_sup'].g_stiffness_target_at_cycle(
+                    _fem_cycle_g, _g_oracle_cfg['pidl_centroids'],
+                    residual_stiffness=float(_g_oracle_cfg.get(
+                        'fem_residual_stiffness',
+                        getattr(pffmodel, 'residual_stiffness', 0.0),
+                    )),
+                    device=inp.device, dtype=torch.float32,
+                ).detach()
+                _mask_g = _g_oracle_cfg.get('override_mask', None)
+                if _mask_g is not None:
+                    _mask_g = _mask_g.to(inp.device).bool()
+                    _base_g = (
+                        _g_stiffness_override_current
+                        if _g_stiffness_override_current is not None
+                        else torch.ones_like(_target_g)
+                    )
+                    _g_stiffness_override_current = torch.where(
+                        _mask_g, _target_g, _base_g
+                    ).detach()
+                else:
+                    _mask_g = torch.ones_like(_target_g, dtype=torch.bool)
+                    _g_stiffness_override_current = _target_g
+                _oracle_target_elem = _target_g
+                _oracle_mask_elem = _mask_g
+                print(
+                    f"  [GStiffnessOracle] pidl j={j} substep={_substep_g}, "
+                    f"FEM c={_fem_cycle_g}: g override "
+                    f"min/max={_target_g.min().item():.3e}/"
+                    f"{_target_g.max().item():.3e}"
+                )
 
         # ------------------------------------------------------------------
         # 训练（与 Manav 完全相同的结构；仅多传 f_fatigue 和 crack_tip_weights）
@@ -1048,6 +1247,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 element_mask=_void_energy_mask,         # ★ void-like notch diagnostic
                 j_path_dict=j_path_dict,                # ★ J path-independence reg
                 hist_loss_weight=_lambda_hist_weight,
+                g_stiffness_override=_g_stiffness_override_current,
             )
             loss_data = loss_data + loss_data1
 
@@ -1083,6 +1283,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         element_mask=_void_energy_mask,
                         j_path_dict=j_path_dict,
                         hist_loss_weight=_lambda_hist_weight,
+                        g_stiffness_override=_g_stiffness_override_current,
                     )
 
             loss_data = loss_data + _run_staged_head(
@@ -1122,6 +1323,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         element_mask=_void_energy_mask,
                         j_path_dict=j_path_dict,
                         hist_loss_weight=_lambda_hist_weight,
+                        g_stiffness_override=_g_stiffness_override_current,
                     )
                 loss_data = loss_data + loss_data_patch
 
@@ -1151,6 +1353,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 element_mask=_void_energy_mask,         # ★ void-like notch diagnostic
                 j_path_dict=j_path_dict,                # ★ J path-independence reg
                 hist_loss_weight=_lambda_hist_weight,
+                g_stiffness_override=_g_stiffness_override_current,
             )
             loss_data = loss_data + loss_data2
 
@@ -1173,6 +1376,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             _grad_stats = _energy_gradient_diagnostics(
                 field_comp, inp, hist_alpha, matprop, pffmodel,
                 area_T, T_conn, f_fatigue, element_mask=_void_energy_mask,
+                g_stiffness_override=_g_stiffness_override_current,
             )
             _grad_diag_history.append([
                 int(j),
@@ -1205,6 +1409,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 field_comp, inp, hist_alpha, matprop, pffmodel, area_T, T_conn,
                 f_fatigue, _lambda_hist_weight, _lambda_hist_cfg,
                 element_mask=_void_energy_mask,
+                g_stiffness_override=_g_stiffness_override_current,
             )
             _lambda_hist_history.append([
                 int(j),
@@ -1223,6 +1428,47 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 f"grad_E_hist={_lambda_stats['grad_E_hist']:.6e}"
             )
         hist_alpha = field_comp.update_hist_alpha(inp)
+        _hist_alpha_oracle_cfg = (
+            fatigue_dict.get('hist_alpha_oracle', None)
+            if fatigue_on else None
+        )
+        if (_hist_alpha_oracle_cfg is not None
+                and _hist_alpha_oracle_cfg.get('enable', False)):
+            _fem_cycle_ha, _, _substep_ha, _is_peak_ha = _oracle_cycle_scale(
+                int(j), _hist_alpha_oracle_cfg
+            )
+            _max_cycle_ha = int(_hist_alpha_oracle_cfg.get('max_cycle', 0))
+            _cycle_in_range_ha = (
+                _max_cycle_ha <= 0 or _fem_cycle_ha <= _max_cycle_ha
+            )
+            if _is_peak_ha and _cycle_in_range_ha:
+                _target_alpha_elem = _hist_alpha_oracle_cfg[
+                    'fem_sup'
+                ].alpha_target_at_cycle(
+                    _fem_cycle_ha, _hist_alpha_oracle_cfg['pidl_centroids'],
+                    device=inp.device, dtype=torch.float32,
+                ).detach()
+                _mask_ha = _hist_alpha_oracle_cfg.get('override_mask', None)
+                if _mask_ha is not None:
+                    _mask_ha = _mask_ha.to(inp.device).bool()
+                    _target_for_nodes = torch.where(
+                        _mask_ha, _target_alpha_elem, torch.zeros_like(_target_alpha_elem)
+                    )
+                else:
+                    _mask_ha = torch.ones_like(_target_alpha_elem, dtype=torch.bool)
+                    _target_for_nodes = _target_alpha_elem
+                _node_target = _element_to_node_projection(
+                    _target_for_nodes, T_conn, int(inp.shape[0]),
+                    reduce=_hist_alpha_oracle_cfg.get('node_reduce', 'max'),
+                )
+                hist_alpha = torch.maximum(hist_alpha, _node_target).detach()
+                _oracle_target_elem = _target_alpha_elem
+                _oracle_mask_elem = _mask_ha
+                print(
+                    f"  [HistAlphaOracle] pidl j={j} substep={_substep_ha}, "
+                    f"FEM c={_fem_cycle_ha}: projected hist_alpha floor "
+                    f"target max={_target_alpha_elem.max().item():.3e}"
+                )
 
         # ★ δ-1: update element sampling probabilities p_e from residual proxy
         if _d1_dataset is not None and j >= (_d1_start_cycle - 1):
@@ -1295,6 +1541,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     psi_hack_dict=_psi_hack,
                     fem_oracle_dict=_fem_oracle,
                     history_driver_reduction_dict=_history_driver_reduction,
+                    g_stiffness_override=_g_stiffness_override_current,
                 )
             else:
                 # 自动微分模式：需要 inp 开启梯度
@@ -1306,6 +1553,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     psi_hack_dict=_psi_hack,
                     fem_oracle_dict=_fem_oracle,
                     history_driver_reduction_dict=_history_driver_reduction,
+                    g_stiffness_override=_g_stiffness_override_current,
                 )
 
             if (_void_notch_mask is not None
@@ -1347,16 +1595,55 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     and _hist_inc_oracle_cfg.get('enable', False)):
                 _fem_sup_inc = _hist_inc_oracle_cfg['fem_sup']
                 _pidl_centroids_inc = _hist_inc_oracle_cfg['pidl_centroids']
-                _fem_cycle_inc, _, _, _is_peak_inc = _oracle_cycle_scale(
+                _fem_cycle_inc, _target_scale_inc, _substep_inc, _is_peak_inc = _oracle_cycle_scale(
                     int(j), _hist_inc_oracle_cfg
                 )
                 _mode_inc = _hist_inc_oracle_cfg.get('mode', 'cycle_delta_at_peak')
-                if _mode_inc != 'cycle_delta_at_peak':
+                if _mode_inc not in {'cycle_delta_at_peak', 'active_delta_substep'}:
                     raise ValueError(
                         "history_increment_oracle mode must be "
-                        f"'cycle_delta_at_peak', got {_mode_inc!r}"
+                        "'cycle_delta_at_peak' or 'active_delta_substep', "
+                        f"got {_mode_inc!r}"
                     )
-                if _is_peak_inc:
+                if _mode_inc == 'active_delta_substep':
+                    _active_base = _fem_sup_inc.active_target_at_cycle(
+                        _fem_cycle_inc, _pidl_centroids_inc,
+                        residual_stiffness=float(_hist_inc_oracle_cfg.get(
+                            'fem_residual_stiffness',
+                            getattr(pffmodel, 'residual_stiffness', 0.0),
+                        )),
+                        device=inp.device, dtype=torch.float32,
+                    ).detach()
+                    _factors_inc = _hist_inc_oracle_cfg.get('explicit_cycle_factors')
+                    _power_inc = float(_hist_inc_oracle_cfg.get('load_factor_power', 2.0))
+                    _base_scale_inc = float(_hist_inc_oracle_cfg.get('target_scale', 1.0))
+                    if _factors_inc is None:
+                        _prev_scale_inc = 0.0
+                    elif _substep_inc <= 0:
+                        _prev_scale_inc = 0.0
+                    else:
+                        _prev_scale_inc = _base_scale_inc * (
+                            float(_factors_inc[_substep_inc - 1]) ** _power_inc
+                        )
+                    _current_active = (_active_base * float(_target_scale_inc)).detach()
+                    _previous_active = (_active_base * float(_prev_scale_inc)).detach()
+                    history_increment_elem = torch.relu(
+                        _current_active - _previous_active
+                    ).detach()
+                    _mask_inc = _hist_inc_oracle_cfg.get('override_mask', None)
+                    if _mask_inc is not None:
+                        _mask_inc = _mask_inc.to(inp.device).bool()
+                        history_increment_elem = torch.where(
+                            _mask_inc,
+                            history_increment_elem,
+                            torch.zeros_like(history_increment_elem),
+                        )
+                    else:
+                        _mask_inc = torch.ones_like(history_increment_elem, dtype=torch.bool)
+                    psi_history_elem = _current_active
+                    _oracle_target_elem = _current_active
+                    _oracle_mask_elem = _mask_inc
+                elif _is_peak_inc:
                     history_increment_elem = _fem_sup_inc.alpha_bar_delta_target_at_cycle(
                         _fem_cycle_inc, _pidl_centroids_inc,
                         initial_zero=bool(_hist_inc_oracle_cfg.get('initial_zero', True)),
@@ -1368,12 +1655,17 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     ).detach()
                     _mask_inc = _hist_inc_oracle_cfg.get('override_mask', None)
                     if _mask_inc is not None:
+                        _mask_inc = _mask_inc.to(inp.device).bool()
                         history_increment_elem = torch.where(
-                            _mask_inc.to(inp.device).bool(),
+                            _mask_inc,
                             history_increment_elem,
                             torch.zeros_like(history_increment_elem),
                         )
+                    else:
+                        _mask_inc = torch.ones_like(history_increment_elem, dtype=torch.bool)
                     psi_history_elem = (psi_plus_prev + history_increment_elem).detach()
+                    _oracle_target_elem = history_increment_elem
+                    _oracle_mask_elem = _mask_inc
                 else:
                     history_increment_elem = torch.zeros_like(hist_fat)
 
@@ -1429,6 +1721,40 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 hist_fat = hist_fat.clone()
                 hist_fat[_void_notch_mask] = 0.0
 
+            _alpha_bar_state_cfg = fatigue_dict.get('alpha_bar_state_oracle', None)
+            if (_alpha_bar_state_cfg is not None
+                    and _alpha_bar_state_cfg.get('enable', False)):
+                _fem_cycle_ab, _, _substep_ab, _is_peak_ab = _oracle_cycle_scale(
+                    int(j), _alpha_bar_state_cfg
+                )
+                _max_cycle_ab = int(_alpha_bar_state_cfg.get('max_cycle', 0))
+                _cycle_in_range_ab = (
+                    _max_cycle_ab <= 0 or _fem_cycle_ab <= _max_cycle_ab
+                )
+                if _is_peak_ab and _cycle_in_range_ab:
+                    _hist_before_ab = hist_fat
+                    _target_ab = _alpha_bar_state_cfg[
+                        'fem_sup'
+                    ].alpha_bar_target_at_cycle(
+                        _fem_cycle_ab, _alpha_bar_state_cfg['pidl_centroids'],
+                        device=inp.device, dtype=torch.float32,
+                    ).detach()
+                    _mask_ab = _alpha_bar_state_cfg.get('override_mask', None)
+                    if _mask_ab is not None:
+                        _mask_ab = _mask_ab.to(inp.device).bool()
+                        hist_fat = torch.where(_mask_ab, _target_ab, hist_fat).detach()
+                    else:
+                        _mask_ab = torch.ones_like(_target_ab, dtype=torch.bool)
+                        hist_fat = _target_ab
+                    history_increment_elem = torch.relu(hist_fat - _hist_before_ab).detach()
+                    _oracle_target_elem = _target_ab
+                    _oracle_mask_elem = _mask_ab
+                    print(
+                        f"  [AlphaBarStateOracle] pidl j={j} substep={_substep_ab}, "
+                        f"FEM c={_fem_cycle_ab}: alpha_bar state max="
+                        f"{_target_ab.max().item():.3e}"
+                    )
+
             # ★ 2026-05-08 A1: post-hoc mirror α — break Carrara ratchet
             # Symmetrize ᾱ about y=0 BEFORE f(ᾱ) is computed for next cycle.
             # Resets the asymmetric memory build-up; SENT geometry is symmetric
@@ -1438,7 +1764,52 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
             # 更新疲劳退化函数 f(ᾱ)（Carrara Eq.41 或 Eq.42）
             # ★ Direction 6.1: 传入 elem_centroids 支持空间调制 α_T
-            f_fatigue = _fatigue_for_fit(hist_fat)
+            _f_fatigue_oracle_cfg = fatigue_dict.get('f_fatigue_oracle', None)
+            if (_f_fatigue_oracle_cfg is not None
+                    and _f_fatigue_oracle_cfg.get('enable', False)):
+                _fem_cycle_ff, _, _substep_ff, _is_peak_ff = _oracle_cycle_scale(
+                    int(j), _f_fatigue_oracle_cfg
+                )
+                _max_cycle_ff = int(_f_fatigue_oracle_cfg.get('max_cycle', 0))
+                _cycle_in_range_ff = (
+                    _max_cycle_ff <= 0 or _fem_cycle_ff <= _max_cycle_ff
+                )
+                if _is_peak_ff and _cycle_in_range_ff:
+                    _target_ff = _f_fatigue_oracle_cfg[
+                        'fem_sup'
+                    ].f_fatigue_target_at_cycle(
+                        _fem_cycle_ff, _f_fatigue_oracle_cfg['pidl_centroids'],
+                        device=inp.device, dtype=torch.float32,
+                    ).detach()
+                    _mask_ff = _f_fatigue_oracle_cfg.get('override_mask', None)
+                    if _mask_ff is not None:
+                        _mask_ff = _mask_ff.to(inp.device).bool()
+                        _base_ff = (
+                            _f_fatigue_override_current
+                            if _f_fatigue_override_current is not None
+                            else _fatigue_for_fit(hist_fat)
+                        )
+                        _f_fatigue_override_current = torch.where(
+                            _mask_ff, _target_ff, _base_ff
+                        ).detach()
+                    else:
+                        _mask_ff = torch.ones_like(_target_ff, dtype=torch.bool)
+                        _f_fatigue_override_current = _target_ff
+                    _oracle_target_elem = _target_ff
+                    _oracle_mask_elem = _mask_ff
+                    print(
+                        f"  [FFatigueOracle] pidl j={j} substep={_substep_ff}, "
+                        f"FEM c={_fem_cycle_ff}: f min/max="
+                        f"{_target_ff.min().item():.3e}/"
+                        f"{_target_ff.max().item():.3e}"
+                    )
+                f_fatigue = (
+                    _f_fatigue_override_current
+                    if _f_fatigue_override_current is not None
+                    else _fatigue_for_fit(hist_fat)
+                )
+            else:
+                f_fatigue = _fatigue_for_fit(hist_fat)
 
             # ★ 重置 psi_plus_prev，正确模拟循环加载的卸载阶段
             # 原因：NN 只求解峰值状态，不显式模拟卸载。
@@ -1540,7 +1911,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 E_el_val, _, _ = compute_energy(
                     inp, u_el, v_el, alpha_el, hist_alpha,
                     matprop, pffmodel, area_T, T_conn, _f_current,
-                    element_mask=_void_energy_mask
+                    element_mask=_void_energy_mask,
+                    g_stiffness_override=_g_stiffness_override_current,
                 )
             E_el_scalar = float(E_el_val.item())
             E_el_history.append(E_el_scalar)
@@ -1580,6 +1952,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     matprop, pffmodel, area_T, j, _elem_diag_dir,
                     psi_history_elem=psi_history_elem,
                     history_increment_elem=history_increment_elem,
+                    alpha_feedback_target_elem=_alpha_feedback_target_elem,
+                    alpha_feedback_mask_elem=_alpha_feedback_mask_elem,
+                    oracle_target_elem=_oracle_target_elem,
+                    oracle_mask_elem=_oracle_mask_elem,
+                    g_stiffness_override_elem=_g_stiffness_override_current,
                 )
 
             # ── 裂缝尖端 L∞（仅用于日志和后处理，不再作为停止判据）──────────

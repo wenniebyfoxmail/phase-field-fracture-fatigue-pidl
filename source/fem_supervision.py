@@ -195,6 +195,8 @@ class FEMSupervision:
         self.psi_raw: dict[int, np.ndarray] = {}
         self.d_field: dict[int, np.ndarray] = {}
         self.alpha_bar: dict[int, np.ndarray] = {}
+        self.f_fatigue: dict[int, np.ndarray] = {}
+        self._interp_index_cache: dict[tuple[bytes, tuple[int, ...], str], np.ndarray] = {}
         compact_path = getattr(self, "_compact_path", None)
         if compact_path is not None:
             self._load_compact_hdf5_snapshots(compact_path)
@@ -210,6 +212,9 @@ class FEMSupervision:
             ab = data.get("alpha_bar_elem", data.get("hist_fat_elem"))
             if ab is not None:
                 self.alpha_bar[c] = np.asarray(ab, dtype=np.float64).ravel()
+            ff = data.get("f_fatigue_elem")
+            if ff is not None:
+                self.f_fatigue[c] = np.asarray(ff, dtype=np.float64).ravel()
 
     def _load_compact_hdf5_snapshots(self, fname: Path) -> None:
         """Load compact MATLAB v7.3 all-cycle FEM fields."""
@@ -241,6 +246,7 @@ class FEMSupervision:
             alpha_bar = by_cycle("alpha_bar_elem")
             if alpha_bar is None:
                 alpha_bar = by_cycle("hist_fat_elem")
+            f_fatigue = by_cycle("f_fatigue_elem")
 
         for i, c in enumerate(cycles):
             if psi is not None:
@@ -249,16 +255,21 @@ class FEMSupervision:
                 self.d_field[int(c)] = d[i].ravel()
             if alpha_bar is not None:
                 self.alpha_bar[int(c)] = alpha_bar[i].ravel()
+            if f_fatigue is not None:
+                self.f_fatigue[int(c)] = f_fatigue[i].ravel()
 
     def _interpolate_to_pidl(self, fem_field: np.ndarray,
                              pidl_centroids: np.ndarray) -> np.ndarray:
         """Nearest-neighbor: for each PIDL element, find closest FEM element."""
-        # pidl_centroids: (N_PIDL, 2), fem_centroids: (N_FEM, 2)
-        # For each PIDL row, compute distance to all FEM rows, take argmin.
-        # N_PIDL is small (~6000), N_FEM is large (~78000), so brute-force OK.
         from scipy.spatial import cKDTree
-        tree = cKDTree(self.fem_centroids)
-        _, idx = tree.query(pidl_centroids, k=1)
+        pidl_arr = np.ascontiguousarray(np.asarray(pidl_centroids, dtype=np.float64))
+        key = (pidl_arr.tobytes(), pidl_arr.shape, str(pidl_arr.dtype))
+        idx = self._interp_index_cache.get(key)
+        if idx is None:
+            if not hasattr(self, "_fem_tree"):
+                self._fem_tree = cKDTree(self.fem_centroids)
+            _, idx = self._fem_tree.query(pidl_arr, k=1)
+            self._interp_index_cache[key] = idx
         return fem_field[idx]   # shape (N_PIDL,)
 
     def _field_at_cycle(self, series: dict[int, np.ndarray],
@@ -314,6 +325,25 @@ class FEMSupervision:
         g_fem = (1.0 - d) ** 2 + float(residual_stiffness)
         active = self._interpolate_to_pidl(g_fem * psi, pidl_centroids)
         out = torch.from_numpy(active).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def g_stiffness_target_at_cycle(self, cycle_idx: int,
+                                    pidl_centroids: np.ndarray,
+                                    *, residual_stiffness: float = 0.0,
+                                    device: torch.device | None = None,
+                                    dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        """Return FEM stiffness degradation g(d_FEM) at PIDL elements."""
+        if not self.d_field:
+            raise RuntimeError(
+                "FEM .mat files do not contain d_elem/alpha_elem; "
+                "stiffness oracle unavailable."
+            )
+        d = self._field_at_cycle(self.d_field, cycle_idx)
+        g_fem = (1.0 - d) ** 2 + float(residual_stiffness)
+        out_np = self._interpolate_to_pidl(g_fem, pidl_centroids)
+        out = torch.from_numpy(out_np).to(dtype=dtype)
         if device is not None:
             out = out.to(device)
         return out
@@ -383,6 +413,24 @@ class FEMSupervision:
         delta = np.maximum(current - previous, 0.0)
         out_np = self._interpolate_to_pidl(delta, pidl_centroids)
         out = torch.from_numpy(out_np).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def f_fatigue_target_at_cycle(self, cycle_idx: int,
+                                  pidl_centroids: np.ndarray,
+                                  *, device: torch.device | None = None,
+                                  dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        """Return FEM fatigue degradation factor f(alpha_bar) at PIDL elements."""
+        if not self.f_fatigue:
+            raise RuntimeError(
+                "FEM .mat files do not contain f_fatigue_elem; "
+                "fatigue-factor oracle unavailable."
+            )
+        f_val = self._interpolate_to_pidl(
+            self._field_at_cycle(self.f_fatigue, cycle_idx), pidl_centroids
+        )
+        out = torch.from_numpy(f_val).to(dtype=dtype)
         if device is not None:
             out = out.to(device)
         return out

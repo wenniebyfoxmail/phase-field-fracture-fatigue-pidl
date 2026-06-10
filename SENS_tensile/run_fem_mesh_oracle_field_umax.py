@@ -15,6 +15,36 @@ active_fem
 delta_alpha_bar
     Project FEM cycle-wise Delta alpha_bar and inject it into the accumulator
     at the peak substep. Tests whether correct history placement is sufficient.
+
+alpha_fem_feedback
+    Supervise PIDL alpha toward FEM alpha at mapped peak substeps. This tests
+    whether FEM-like damage, carried through the normal g(alpha) stiffness
+    degradation and irreversibility update, makes the mechanics redistribute
+    and penetrate like FEM.
+
+hard_hist_alpha
+    Project FEM alpha directly into PIDL hist_alpha at peak substeps. This is a
+    hard state oracle, not a supervised-learning method.
+
+fem_g_stiffness
+    Override the solver stiffness degradation g(alpha) with FEM g(d) at mapped
+    peak substeps and carry it between substeps.
+
+psi_raw_feedback
+    Supervise PIDL raw tensile energy psi toward FEM psi at mapped peak
+    substeps. This is the strongest all-cycle mechanics proxy available from
+    the compact FEM element-field handoff.
+
+psi_prev_oracle
+    Replace PIDL's substep psi-prev memory increment with a FEM active-driver
+    elastic oracle increment.
+
+alpha_bar_state
+    Project the full FEM alpha_bar state at peak substeps.
+
+f_fatigue_oracle
+    Project the FEM fatigue degradation factor f(alpha_bar) at peak substeps
+    and carry it into following solves.
 """
 from __future__ import annotations
 
@@ -86,7 +116,18 @@ def main() -> None:
     parser.add_argument("umax", type=float)
     parser.add_argument(
         "--oracle-kind",
-        choices=("raw_pidl_g", "active_fem", "delta_alpha_bar"),
+        choices=(
+            "raw_pidl_g",
+            "active_fem",
+            "delta_alpha_bar",
+            "alpha_fem_feedback",
+            "hard_hist_alpha",
+            "fem_g_stiffness",
+            "psi_raw_feedback",
+            "psi_prev_oracle",
+            "alpha_bar_state",
+            "f_fatigue_oracle",
+        ),
         required=True,
     )
     parser.add_argument("--n-cycles-physical", "--n-cycles", dest="n_cycles_physical",
@@ -102,6 +143,18 @@ def main() -> None:
     parser.add_argument("--diag-physical-cycles", default="1,2,3,20,40,60,69")
     parser.add_argument("--zone-radius", type=float, default=None,
                         help="If set, override only r <= zone-radius around the initial tip.")
+    parser.add_argument("--alpha-feedback-lambda", type=float, default=1000.0,
+                        help="Weight for alpha_fem_feedback supervision.")
+    parser.add_argument("--alpha-feedback-target-min", type=float, default=0.01,
+                        help="Only supervise FEM alpha targets above this value.")
+    parser.add_argument("--alpha-feedback-every-n-epochs", type=int, default=1,
+                        help="Apply alpha feedback loss every N optimizer epochs.")
+    parser.add_argument("--psi-feedback-lambda", type=float, default=100.0,
+                        help="Weight for psi_raw_feedback supervision.")
+    parser.add_argument("--psi-feedback-target-min", type=float, default=0.0,
+                        help="Only supervise FEM psi targets above this value.")
+    parser.add_argument("--psi-feedback-every-n-epochs", type=int, default=1,
+                        help="Apply psi feedback loss every N optimizer epochs.")
     parser.add_argument("--fracture-confirm-cycles", type=int, default=3)
     parser.add_argument("--plot-every", type=int, default=20)
     parser.add_argument("--compile", action="store_true")
@@ -139,6 +192,11 @@ def main() -> None:
     config.fatigue_dict["history_driver_reduction"] = {"enable": False}
     config.fatigue_dict["fem_oracle"] = {"enable": False}
     config.fatigue_dict["history_increment_oracle"] = {"enable": False}
+    config.fatigue_dict["alpha_feedback_oracle"] = {"enable": False}
+    config.fatigue_dict["hist_alpha_oracle"] = {"enable": False}
+    config.fatigue_dict["g_stiffness_oracle"] = {"enable": False}
+    config.fatigue_dict["alpha_bar_state_oracle"] = {"enable": False}
+    config.fatigue_dict["f_fatigue_oracle"] = {"enable": False}
     if hasattr(config, "adaptive_sampling_dict"):
         config.adaptive_sampling_dict["enable"] = False
     if hasattr(config, "sidecar_S1_dict"):
@@ -255,6 +313,95 @@ def main() -> None:
             "initial_zero": True,
             **oracle_cycle_cfg,
         }
+    elif args.oracle_kind == "psi_prev_oracle":
+        config.fatigue_dict["history_increment_oracle"] = {
+            "enable": True,
+            "fem_sup": fem_sup,
+            "pidl_centroids": pidl_centroids,
+            "override_mask": override_mask,
+            "mode": "active_delta_substep",
+            "fem_residual_stiffness": float(getattr(pffmodel, "residual_stiffness", 0.0)),
+            "elastic_oracle_approximation": True,
+            **oracle_cycle_cfg,
+        }
+    elif args.oracle_kind == "alpha_fem_feedback":
+        alpha_cycle_cfg = dict(oracle_cycle_cfg)
+        alpha_cycle_cfg["load_factor_power"] = 0.0
+        config.fatigue_dict["alpha_feedback_oracle"] = {
+            "enable": True,
+            "fem_sup": fem_sup,
+            "pidl_centroids": pidl_centroids,
+            "override_mask": override_mask,
+            "mode": "peak_supervised_alpha",
+            "lambda": float(args.alpha_feedback_lambda),
+            "loss_kind": "mse_lin",
+            "target_mask_min": float(args.alpha_feedback_target_min),
+            "every_n_epochs": int(args.alpha_feedback_every_n_epochs),
+            "max_cycle": int(max(fem_sup.cycles)),
+            **alpha_cycle_cfg,
+        }
+    elif args.oracle_kind == "psi_raw_feedback":
+        psi_cycle_cfg = dict(oracle_cycle_cfg)
+        psi_cycle_cfg["load_factor_power"] = 0.0
+        config.fatigue_dict["alpha_feedback_oracle"] = {
+            "enable": True,
+            "fem_sup": fem_sup,
+            "pidl_centroids": pidl_centroids,
+            "override_mask": override_mask,
+            "mode": "peak_supervised_psi_raw",
+            "lambda": float(args.psi_feedback_lambda),
+            "loss_kind": "mse_log",
+            "target_mask_min": float(args.psi_feedback_target_min),
+            "every_n_epochs": int(args.psi_feedback_every_n_epochs),
+            "max_cycle": int(max(fem_sup.cycles)),
+            **psi_cycle_cfg,
+        }
+    elif args.oracle_kind == "hard_hist_alpha":
+        alpha_cycle_cfg = dict(oracle_cycle_cfg)
+        alpha_cycle_cfg["load_factor_power"] = 0.0
+        config.fatigue_dict["hist_alpha_oracle"] = {
+            "enable": True,
+            "fem_sup": fem_sup,
+            "pidl_centroids": pidl_centroids,
+            "override_mask": override_mask,
+            "node_reduce": "max",
+            "max_cycle": int(max(fem_sup.cycles)),
+            **alpha_cycle_cfg,
+        }
+    elif args.oracle_kind == "fem_g_stiffness":
+        g_cycle_cfg = dict(oracle_cycle_cfg)
+        g_cycle_cfg["load_factor_power"] = 0.0
+        config.fatigue_dict["g_stiffness_oracle"] = {
+            "enable": True,
+            "fem_sup": fem_sup,
+            "pidl_centroids": pidl_centroids,
+            "override_mask": override_mask,
+            "fem_residual_stiffness": float(getattr(pffmodel, "residual_stiffness", 0.0)),
+            "max_cycle": int(max(fem_sup.cycles)),
+            **g_cycle_cfg,
+        }
+    elif args.oracle_kind == "alpha_bar_state":
+        ab_cycle_cfg = dict(oracle_cycle_cfg)
+        ab_cycle_cfg["load_factor_power"] = 0.0
+        config.fatigue_dict["alpha_bar_state_oracle"] = {
+            "enable": True,
+            "fem_sup": fem_sup,
+            "pidl_centroids": pidl_centroids,
+            "override_mask": override_mask,
+            "max_cycle": int(max(fem_sup.cycles)),
+            **ab_cycle_cfg,
+        }
+    elif args.oracle_kind == "f_fatigue_oracle":
+        ff_cycle_cfg = dict(oracle_cycle_cfg)
+        ff_cycle_cfg["load_factor_power"] = 0.0
+        config.fatigue_dict["f_fatigue_oracle"] = {
+            "enable": True,
+            "fem_sup": fem_sup,
+            "pidl_centroids": pidl_centroids,
+            "override_mask": override_mask,
+            "max_cycle": int(max(fem_sup.cycles)),
+            **ff_cycle_cfg,
+        }
 
     fat = config.fatigue_dict
     mesh_tag = _mesh_tag(fem_mesh, args.tag or f"oracle_{args.oracle_kind}")
@@ -304,6 +451,41 @@ def main() -> None:
     if args.oracle_kind == "delta_alpha_bar":
         delta_probe = fem_sup.alpha_bar_delta_target_at_cycle(c_probe, pidl_centroids)
         print(f"  FEM Delta alpha_bar c{c_probe} max = {delta_probe.max().item():.3e}")
+    if args.oracle_kind == "alpha_fem_feedback":
+        alpha_probe = fem_sup.alpha_target_at_cycle(c_probe, pidl_centroids)
+        alpha_mask_probe = alpha_probe >= float(args.alpha_feedback_target_min)
+        if args.zone_radius is not None:
+            alpha_mask_probe = alpha_mask_probe & override_mask.cpu().bool()
+        print(f"  FEM alpha c{c_probe} max = {alpha_probe.max().item():.3e}")
+        print(f"  alpha feedback lambda = {args.alpha_feedback_lambda:.3e}")
+        print(f"  alpha feedback mask c{c_probe} = "
+              f"{int(alpha_mask_probe.sum().item())}/{int(alpha_mask_probe.numel())}")
+    if args.oracle_kind == "psi_raw_feedback":
+        psi_mask_probe = raw_probe >= float(args.psi_feedback_target_min)
+        if args.zone_radius is not None:
+            psi_mask_probe = psi_mask_probe & override_mask.cpu().bool()
+        print(f"  psi feedback lambda = {args.psi_feedback_lambda:.3e}")
+        print(f"  psi feedback mask c{c_probe} = "
+              f"{int(psi_mask_probe.sum().item())}/{int(psi_mask_probe.numel())}")
+    if args.oracle_kind == "hard_hist_alpha":
+        alpha_probe = fem_sup.alpha_target_at_cycle(c_probe, pidl_centroids)
+        print(f"  FEM alpha c{c_probe} max = {alpha_probe.max().item():.3e}")
+        print("  hist_alpha projection = hard max element-to-node floor")
+    if args.oracle_kind == "fem_g_stiffness":
+        g_probe = fem_sup.g_stiffness_target_at_cycle(c_probe, pidl_centroids)
+        print(f"  FEM g(d) c{c_probe} min/max = "
+              f"{g_probe.min().item():.3e}/{g_probe.max().item():.3e}")
+    if args.oracle_kind == "psi_prev_oracle":
+        active_probe = fem_sup.active_target_at_cycle(c_probe, pidl_centroids)
+        print(f"  FEM active c{c_probe} max = {active_probe.max().item():.3e}")
+        print("  psi_prev oracle = load-factor-squared elastic active-driver approximation")
+    if args.oracle_kind == "alpha_bar_state":
+        ab_probe = fem_sup.alpha_bar_target_at_cycle(c_probe, pidl_centroids)
+        print(f"  FEM alpha_bar c{c_probe} max = {ab_probe.max().item():.3e}")
+    if args.oracle_kind == "f_fatigue_oracle":
+        ff_probe = fem_sup.f_fatigue_target_at_cycle(c_probe, pidl_centroids)
+        print(f"  FEM f_fatigue c{c_probe} min/max = "
+              f"{ff_probe.min().item():.3e}/{ff_probe.max().item():.3e}")
     print(f"  elem diag      = {diag_steps}")
     print("  gradient diag  = pre-history-refresh every step")
     print(f"  device         = {config.device}")
@@ -344,11 +526,53 @@ def main() -> None:
             f"history_increment_oracle_mode: "
             f"{fat.get('history_increment_oracle', {}).get('mode', 'none')}\n"
         )
+        handle.write(
+            f"alpha_feedback_oracle_enable: "
+            f"{fat.get('alpha_feedback_oracle', {}).get('enable', False)}\n"
+        )
+        handle.write(
+            f"alpha_feedback_oracle_mode: "
+            f"{fat.get('alpha_feedback_oracle', {}).get('mode', 'none')}\n"
+        )
+        handle.write(
+            f"alpha_feedback_lambda: "
+            f"{fat.get('alpha_feedback_oracle', {}).get('lambda', 'none')}\n"
+        )
+        handle.write(
+            f"alpha_feedback_target_mask_min: "
+            f"{fat.get('alpha_feedback_oracle', {}).get('target_mask_min', 'none')}\n"
+        )
+        handle.write(
+            f"hist_alpha_oracle_enable: "
+            f"{fat.get('hist_alpha_oracle', {}).get('enable', False)}\n"
+        )
+        handle.write(
+            f"g_stiffness_oracle_enable: "
+            f"{fat.get('g_stiffness_oracle', {}).get('enable', False)}\n"
+        )
+        handle.write(
+            f"alpha_bar_state_oracle_enable: "
+            f"{fat.get('alpha_bar_state_oracle', {}).get('enable', False)}\n"
+        )
+        handle.write(
+            f"f_fatigue_oracle_enable: "
+            f"{fat.get('f_fatigue_oracle', {}).get('enable', False)}\n"
+        )
+        handle.write(f"psi_feedback_lambda: {args.psi_feedback_lambda}\n")
+        handle.write(f"psi_feedback_target_mask_min: {args.psi_feedback_target_min}\n")
+        handle.write(
+            f"psi_prev_elastic_oracle_approximation: "
+            f"{fat.get('history_increment_oracle', {}).get('elastic_oracle_approximation', False)}\n"
+        )
         handle.write(f"explicit_cycle_substeps: {fat['explicit_cycle_substeps']}\n")
         handle.write(f"explicit_cycle_factors: {fat['explicit_cycle_factors']}\n")
         handle.write(f"peak_substep_index: {peak_substep_index}\n")
         handle.write(f"element_diagnostics_steps: {diag_steps}\n")
-        handle.write("element_diagnostics_fields: mechanics+energy+driver+delta_alpha_bar_input\n")
+        handle.write(
+            "element_diagnostics_fields: mechanics+energy+driver+"
+            "delta_alpha_bar_input+alpha_feedback_target+oracle_target+"
+            "g_solver+g_stiffness_override\n"
+        )
         handle.write(
             "state_mapping: cN_peak -> PIDL step 5*(N-1)+3 for default substeps\n"
         )

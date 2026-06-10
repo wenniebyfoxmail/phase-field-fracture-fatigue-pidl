@@ -37,7 +37,7 @@ import torch.nn as nn
 def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn=None,
                    f_fatigue=1.0, crack_tip_weights=None,
                    element_subset=None, importance_weights=None,
-                   element_mask=None):
+                   element_mask=None, g_stiffness_override=None):
     """
     计算总能量
 
@@ -77,7 +77,8 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
     """
     E_el, E_d, E_hist_penalty = compute_energy_per_elem(
         inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn,
-        f_fatigue=f_fatigue
+        f_fatigue=f_fatigue,
+        g_stiffness_override=g_stiffness_override,
     )
 
     if element_mask is not None:
@@ -112,7 +113,7 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
 
 
 def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn=None,
-                             f_fatigue=1.0):
+                             f_fatigue=1.0, g_stiffness_override=None):
     '''
     计算每个单元的能量。
 
@@ -147,7 +148,8 @@ def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, are
     # 步骤4: 弹性能 E_el = ∫ [g(α)Ψ⁺ + Ψ⁻] dΩ
     # =========================================================================
     E_el_elem, _ = strain_energy_with_split(
-        strain_11, strain_22, strain_12, alpha_elem, matprop, pffmodel
+        strain_11, strain_22, strain_12, alpha_elem, matprop, pffmodel,
+        g_stiffness_override=g_stiffness_override,
     )
     E_el = area_elem * E_el_elem
 
@@ -179,7 +181,8 @@ def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, are
 # ★ 新增函数：计算各元素退化拉伸应变能密度，供疲劳历史变量更新使用
 def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn=None,
                           psi_hack_dict=None, fem_oracle_dict=None,
-                          history_driver_reduction_dict=None):
+                          history_driver_reduction_dict=None,
+                          g_stiffness_override=None):
     """
     ★ 新增函数（Manav 原始代码中不存在）
 
@@ -215,7 +218,10 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
     # E_el_p = ψ⁺_0（未退化拉伸应变能密度）
     # Carrara Eq.39 要求累积退化能 g(α)·ψ⁺_0，避免裂尖奇异性
     g_alpha, _ = pffmodel.Edegrade(alpha_elem)
-    psi_plus_elem = (g_alpha * E_el_p).detach()
+    g_history = g_alpha
+    if g_stiffness_override is not None:
+        g_history = g_stiffness_override.to(device=g_alpha.device, dtype=g_alpha.dtype)
+    psi_plus_elem = (g_history * E_el_p).detach()
 
     # 2026-06-09 diagnostic: closer FEM-style reduction for the fatigue driver.
     # The variational energy still uses the original element formula.  This
@@ -354,7 +360,8 @@ def field_grads(inp, field, area_elem, T=None):
 
 
 # Computes the element-wise strain energy density after applying the prescribed split
-def strain_energy_with_split(strain_11, strain_22, strain_12, alpha, matprop, pffmodel):
+def strain_energy_with_split(strain_11, strain_22, strain_12, alpha, matprop, pffmodel,
+                             g_stiffness_override=None):
     """
     计算应变能（含分解），无修改，与 Manav 原始完全一致。
 
@@ -364,6 +371,10 @@ def strain_energy_with_split(strain_11, strain_22, strain_12, alpha, matprop, pf
     E_el_p : 未退化拉伸/正能量密度 ψ⁺_0；get_psi_plus_per_elem 再乘 g(α)
     """
     fun_EDegrade, _ = pffmodel.Edegrade(alpha)
+    if g_stiffness_override is not None:
+        fun_EDegrade = g_stiffness_override.to(
+            device=fun_EDegrade.device, dtype=fun_EDegrade.dtype
+        )
 
     if pffmodel.se_split == 'volumetric':
         mat_K = matprop.mat_lmbda + 2.0 / 3.0 * matprop.mat_mu
@@ -390,9 +401,14 @@ def strain_energy_with_split(strain_11, strain_22, strain_12, alpha, matprop, pf
 
 
 # Computes stress in each element
-def stress(strain_11, strain_22, strain_12, alpha, matprop, pffmodel):
+def stress(strain_11, strain_22, strain_12, alpha, matprop, pffmodel,
+           g_stiffness_override=None):
     """无修改，与 Manav 原始完全一致。"""
     fun_EDegrade, _ = pffmodel.Edegrade(alpha)
+    if g_stiffness_override is not None:
+        fun_EDegrade = g_stiffness_override.to(
+            device=fun_EDegrade.device, dtype=fun_EDegrade.dtype
+        )
 
     if pffmodel.se_split == 'volumetric':
         mat_K = matprop.mat_lmbda + 2.0 / 3.0 * matprop.mat_mu

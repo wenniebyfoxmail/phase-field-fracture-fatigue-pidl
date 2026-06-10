@@ -12,6 +12,72 @@ def _resolve_f_fatigue(f_fatigue):
     return f_fatigue() if callable(f_fatigue) else f_fatigue
 
 
+def _supervised_lambda(supervised_dict, grad_annealing_state):
+    """Return the active supervision weight for MIT-8/oracle target losses."""
+    base = 1.0
+    if supervised_dict is not None:
+        base = float(supervised_dict.get('lambda', 1.0))
+    state = grad_annealing_state or {}
+    if bool(state.get('enable', False)):
+        return float(state.get('lambda_sup', base))
+    return base
+
+
+def _target_supervised_loss(pred, target, lambda_sup, loss_kind, mask=None):
+    """Supervised MSE against a pre-projected target tensor."""
+    target = target.to(device=pred.device, dtype=pred.dtype)
+    eps = 1e-12
+    if loss_kind == "mse_lin":
+        perel = (pred - target) ** 2
+    elif loss_kind == "mse_log":
+        perel = (
+            torch.log10(pred.clamp(min=eps))
+            - torch.log10(target.clamp(min=eps))
+        ) ** 2
+    elif loss_kind == "mse_rel":
+        perel = ((pred - target) / (target.abs() + eps)) ** 2
+    else:
+        raise ValueError(f"unknown loss_kind={loss_kind}")
+    if mask is None:
+        loss = perel.mean()
+    else:
+        mask_b = mask.to(perel.device).bool()
+        loss = perel[mask_b].mean() if int(mask_b.sum().item()) else perel.new_zeros(())
+    return float(lambda_sup) * loss
+
+
+def _supervised_loss_from_dict(pred, supervised_dict, lambda_sup,
+                               default_loss_kind):
+    """Compute FEM supervision, using a cached target when provided."""
+    loss_kind = supervised_dict.get('loss_kind', default_loss_kind)
+    target = supervised_dict.get('target', None)
+    if target is not None:
+        return _target_supervised_loss(
+            pred, target, lambda_sup, loss_kind,
+            mask=supervised_dict.get('mask', None)
+        )
+    target_kind = supervised_dict.get('target_kind', 'psi')
+    if target_kind == 'psi':
+        return supervised_dict['fem_sup'].supervised_loss(
+            pred,
+            cycle_idx=supervised_dict['cycle_idx'],
+            pidl_centroids=supervised_dict['pidl_centroids'],
+            lambda_sup=lambda_sup,
+            loss_kind=loss_kind,
+            mask=supervised_dict.get('mask', None))
+    if target_kind == 'alpha':
+        return supervised_dict['fem_sup'].alpha_supervised_loss(
+            pred,
+            cycle_idx=supervised_dict['cycle_idx'],
+            pidl_centroids=supervised_dict['pidl_centroids'],
+            lambda_sup=lambda_sup,
+            loss_kind=loss_kind,
+            mask=supervised_dict.get('mask', None))
+    raise ValueError(
+        f"unknown supervised target_kind={target_kind!r}; expected 'psi' or 'alpha'"
+    )
+
+
 # =============================================================================
 # Algorithm 1 — Wang, Teng & Perdikaris (2020) arXiv:2001.04536
 # Adaptive learning-rate annealing for PINN composite loss functions.
@@ -33,7 +99,8 @@ def _resolve_f_fatigue(f_fatigue):
 
 def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
                   area_T, T_conn, f_fatigue, supervised_dict, symmetry_dict,
-                  side_traction_dict, state, element_mask=None):
+                  side_traction_dict, state, element_mask=None,
+                  g_stiffness_override=None):
     """Wang 2020 Algo 1: update λ_i = (1-α)λ_i + α·(max|∇L_r| / mean|∇L_i|).
 
     Uses torch.autograd.grad (not .backward) to avoid polluting .grad buffers.
@@ -79,7 +146,8 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
     el, ed, eh = compute_energy(inp_p, u_p, v_p, a_p, hist_alpha,
                                 matprop, pffmodel, area_T, T_conn,
                                 _resolve_f_fatigue(f_fatigue),
-                                element_mask=element_mask)
+                                element_mask=element_mask,
+                                g_stiffness_override=g_stiffness_override)
     eps = torch.as_tensor(1e-30, dtype=el.dtype, device=el.device)
     lv_el = torch.log10(el + eps)
     lv_ed = torch.log10(ed + eps)
@@ -110,20 +178,12 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
         if _tk == 'psi':
             psi2 = _compute_psi_raw_per_elem(inp_p2, u2, v2, a2,
                                              matprop, pffmodel, area_T, T_conn)
-            l_sup = supervised_dict['fem_sup'].supervised_loss(
-                psi2, cycle_idx=supervised_dict['cycle_idx'],
-                pidl_centroids=supervised_dict['pidl_centroids'],
-                lambda_sup=1.0,
-                loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
-                mask=supervised_dict.get('mask', None))
+            l_sup = _supervised_loss_from_dict(
+                psi2, supervised_dict, 1.0, 'mse_log')
         else:  # 'alpha'
             a_elem = a2[T_conn].mean(dim=1) if T_conn is not None else a2
-            l_sup = supervised_dict['fem_sup'].alpha_supervised_loss(
-                a_elem, cycle_idx=supervised_dict['cycle_idx'],
-                pidl_centroids=supervised_dict['pidl_centroids'],
-                lambda_sup=1.0,
-                loss_kind=supervised_dict.get('loss_kind', 'mse_lin'),
-                mask=supervised_dict.get('mask', None))
+            l_sup = _supervised_loss_from_dict(
+                a_elem, supervised_dict, 1.0, 'mse_lin')
         g_sup = _probe(l_sup)
         _record_grad_stats(grad_stats, 'sup', g_sup)
         mean_sup = max(_mean_grad(g_sup), 1e-30)
@@ -371,12 +431,13 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
         grad_annealing_state=None,
         element_mask=None,
         j_path_dict=None,
-        hist_loss_weight=1.0):
+        hist_loss_weight=1.0,
+        g_stiffness_override=None):
     # ★ grad_annealing_state: if provided and enable=True, pre-computed λ values
     #   from Algorithm 1 (updated during RPROP phase) are applied here.
     #   LBFGS does not update λ — it uses whatever values RPROP computed last cycle.
     _a1 = grad_annealing_state or {}
-    _lam_sup   = float(_a1.get('lambda_sup',   1.0))
+    _lam_sup   = _supervised_lambda(supervised_dict, _a1)
     _lam_sym   = float(_a1.get('lambda_sym',   1.0))
     _lam_strac = float(_a1.get('lambda_strac', 1.0))
     loss_data = list()
@@ -401,7 +462,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                 loss_E_el, loss_E_d, loss_hist = compute_energy(inp_train, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
                                                                 f_fatigue=_resolve_f_fatigue(f_fatigue),
                                                                 crack_tip_weights=crack_tip_weights,
-                                                                element_mask=element_mask)
+                                                                element_mask=element_mask,
+                                                                g_stiffness_override=g_stiffness_override)
 
                 # 3. 损失函数 = log(总能量) ！！！
                 loss_var = torch.log10(loss_E_el + loss_E_d + hist_loss_weight * loss_hist)
@@ -426,22 +488,12 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                         if _target_kind == 'psi':
                             psi_raw_pidl = _compute_psi_raw_per_elem(
                                 inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
-                            loss_sup = supervised_dict['fem_sup'].supervised_loss(
-                                psi_raw_pidl,
-                                cycle_idx=supervised_dict['cycle_idx'],
-                                pidl_centroids=supervised_dict['pidl_centroids'],
-                                lambda_sup=_lam_sup,   # ★ Algo1-tuned or dict value
-                                loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
-                                mask=supervised_dict.get('mask', None))
+                            loss_sup = _supervised_loss_from_dict(
+                                psi_raw_pidl, supervised_dict, _lam_sup, 'mse_log')
                         elif _target_kind == 'alpha':
-                            alpha_per_elem = alpha[T_conn].mean(dim=1)
-                            loss_sup = supervised_dict['fem_sup'].alpha_supervised_loss(
-                                alpha_per_elem,
-                                cycle_idx=supervised_dict['cycle_idx'],
-                                pidl_centroids=supervised_dict['pidl_centroids'],
-                                lambda_sup=_lam_sup,   # ★ Algo1-tuned or dict value
-                                loss_kind=supervised_dict.get('loss_kind', 'mse_lin'),
-                                mask=supervised_dict.get('mask', None))
+                            alpha_per_elem = alpha[T_conn].mean(dim=1) if T_conn is not None else alpha
+                            loss_sup = _supervised_loss_from_dict(
+                                alpha_per_elem, supervised_dict, _lam_sup, 'mse_lin')
                         else:
                             raise ValueError(f"unknown supervised target_kind={_target_kind!r}; expected 'psi' or 'alpha'")
                         loss = loss + _every_n * loss_sup
@@ -514,7 +566,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                             delta1_dataset=None,
                             element_mask=None,
                             j_path_dict=None,
-                            hist_loss_weight=1.0):
+                            hist_loss_weight=1.0,
+                            g_stiffness_override=None):
     # ★ grad_annealing_state (2026-05-19 Algorithm 1):
     #   Mutable dict passed from model_train.train(). Persists across cycles.
     #   Algo1 probes are run in RPROP only (not LBFGS) because RPROP's flat
@@ -543,10 +596,11 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                     field_comp, inp_train, hist_alpha, matprop, pffmodel,
                     area_T, T_conn, _resolve_f_fatigue(f_fatigue),
                     supervised_dict, symmetry_dict, side_traction_dict, _a1,
-                    element_mask=element_mask)
+                    element_mask=element_mask,
+                    g_stiffness_override=g_stiffness_override)
 
             # Read current Algo1 weights (updated above or from previous cycle)
-            _lam_sup   = float(_a1.get('lambda_sup',   1.0))
+            _lam_sup   = _supervised_lambda(supervised_dict, _a1)
             _lam_sym   = float(_a1.get('lambda_sym',   1.0))
             _lam_strac = float(_a1.get('lambda_strac', 1.0))
 
@@ -571,7 +625,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                                                             crack_tip_weights=crack_tip_weights,
                                                             element_subset=_d1_subset,
                                                             importance_weights=_d1_imp_w,
-                                                            element_mask=element_mask)
+                                                            element_mask=element_mask,
+                                                            g_stiffness_override=g_stiffness_override)
             loss_var = torch.log10(loss_E_el + loss_E_d + hist_loss_weight * loss_hist)
 
             # weight regularization
@@ -591,22 +646,12 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                     if _target_kind == 'psi':
                         psi_raw_pidl = _compute_psi_raw_per_elem(
                             inp_train, u, v, alpha, matprop, pffmodel, area_T, T_conn)
-                        loss_sup = supervised_dict['fem_sup'].supervised_loss(
-                            psi_raw_pidl,
-                            cycle_idx=supervised_dict['cycle_idx'],
-                            pidl_centroids=supervised_dict['pidl_centroids'],
-                            lambda_sup=_lam_sup,   # ★ Algo1-tuned
-                            loss_kind=supervised_dict.get('loss_kind', 'mse_log'),
-                            mask=supervised_dict.get('mask', None))
+                        loss_sup = _supervised_loss_from_dict(
+                            psi_raw_pidl, supervised_dict, _lam_sup, 'mse_log')
                     elif _target_kind == 'alpha':
-                        alpha_per_elem = alpha[T_conn].mean(dim=1)
-                        loss_sup = supervised_dict['fem_sup'].alpha_supervised_loss(
-                            alpha_per_elem,
-                            cycle_idx=supervised_dict['cycle_idx'],
-                            pidl_centroids=supervised_dict['pidl_centroids'],
-                            lambda_sup=_lam_sup,   # ★ Algo1-tuned
-                            loss_kind=supervised_dict.get('loss_kind', 'mse_lin'),
-                            mask=supervised_dict.get('mask', None))
+                        alpha_per_elem = alpha[T_conn].mean(dim=1) if T_conn is not None else alpha
+                        loss_sup = _supervised_loss_from_dict(
+                            alpha_per_elem, supervised_dict, _lam_sup, 'mse_lin')
                     else:
                         raise ValueError(f"unknown supervised target_kind={_target_kind!r}; expected 'psi' or 'alpha'")
                     loss = loss + _every_n * loss_sup
