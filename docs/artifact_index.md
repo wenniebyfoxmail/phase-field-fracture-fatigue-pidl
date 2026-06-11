@@ -13,6 +13,7 @@ who produced it, and which summary doc uses it.
 | FEM result packages | `fem_result/` | Local FEM/OneDrive package mirror. Keep payloads out of Git; record stable package names in handover docs. |
 | FEM/PIDL mechanism analysis tree, 2026-05/06 | `_analysis_fem_mechanism_20260528/` | Local generated analysis tree. It contains raw sync files, field dumps, local result checks, and generated figures; keep Git summaries in `docs/` instead. |
 | Generated docs figure images | `docs/figures/**/*.png` and `docs/figures/**/*.pdf` | Local rendered review figures. Git keeps the small CSV/JSON tables under `docs/figures/`, but image/PDF payloads are local artifacts. |
+| SDF discontinuity embedding archive, 2026-06-11 | `/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/before_strict_setting_alignment/pidl_result/sdf_discontinuity_embedding/` | Local archive for ignored `hl_*` outputs from branch `worktree-sdf-discontinuity-embedding`; branch purpose and credibility are tracked in `docs/branch_inventory.md`. |
 | Brian review snapshot note | `BRIAN_README_2026-06-07.md` | Local untracked review-package note. Decide separately whether a cleaned version belongs in `docs/`. |
 
 ## External / Producer Artifacts
