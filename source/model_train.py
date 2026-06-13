@@ -781,6 +781,29 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 "[HistoryDriverReduction] "
                 f"mode={_history_driver_reduction.get('mode', 'probe_g_mean')}"
             )
+        _lagged_stiffness_cfg = fatigue_dict.get('lagged_stiffness', {}) or {}
+        _lagged_stiffness_enabled = bool(
+            _lagged_stiffness_cfg.get('enable', False)
+        )
+        _lagged_stiffness_history_policy = _lagged_stiffness_cfg.get(
+            'history_policy', 'coupled'
+        )
+        _valid_lagged_stiffness_policies = {'coupled', 'solver_only'}
+        if (
+            _lagged_stiffness_enabled
+            and _lagged_stiffness_history_policy
+            not in _valid_lagged_stiffness_policies
+        ):
+            raise ValueError(
+                "fatigue_dict['lagged_stiffness']['history_policy'] must be "
+                f"one of {sorted(_valid_lagged_stiffness_policies)}, got "
+                f"{_lagged_stiffness_history_policy!r}"
+            )
+        if _lagged_stiffness_enabled:
+            print(
+                "[LaggedStiffness] solver g uses previous hist_alpha; "
+                f"history_policy={_lagged_stiffness_history_policy}"
+            )
     else:
         f_fatigue = 1.0
         elem_centroids = None
@@ -788,6 +811,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _void_energy_mask = None
         _history_driver_mode = 'off'
         _history_driver_reduction = {}
+        _lagged_stiffness_enabled = False
+        _lagged_stiffness_history_policy = 'off'
 
         def _make_f_fatigue(_hist_snapshot):
             return f_fatigue
@@ -1085,6 +1110,27 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _alpha_feedback_mask_elem = None
         _oracle_target_elem = None
         _oracle_mask_elem = None
+        if _lagged_stiffness_enabled:
+            if T_conn is None:
+                _alpha_lag_elem = hist_alpha.flatten()
+            else:
+                _alpha_lag_elem = (
+                    hist_alpha[T_conn[:, 0]]
+                    + hist_alpha[T_conn[:, 1]]
+                    + hist_alpha[T_conn[:, 2]]
+                ) / 3.0
+            _target_g_lag, _ = pffmodel.Edegrade(_alpha_lag_elem)
+            _g_stiffness_override_current = _target_g_lag.detach()
+            _oracle_target_elem = _g_stiffness_override_current
+            _oracle_mask_elem = torch.ones_like(
+                _g_stiffness_override_current, dtype=torch.bool
+            )
+            print(
+                f"  [LaggedStiffness] pidl j={j}: solver g(prev hist_alpha) "
+                f"min/max={_g_stiffness_override_current.min().item():.3e}/"
+                f"{_g_stiffness_override_current.max().item():.3e}; "
+                f"history_policy={_lagged_stiffness_history_policy}"
+            )
         if mit8_dict is not None and mit8_dict.get('enable', False):
             _K = int(mit8_dict.get('K', 0))
             _fem_cycle = j + int(mit8_dict.get('fem_cycle_offset', 0))
@@ -1532,6 +1578,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 for _key in ('moving_zone', 'moving_zone_alpha_thr', 'zone_radius'):
                     if _key in _fem_oracle_cfg:
                         _fem_oracle[_key] = _fem_oracle_cfg[_key]
+            _g_history_override_current = _g_stiffness_override_current
+            if (
+                _lagged_stiffness_enabled
+                and _lagged_stiffness_history_policy == 'solver_only'
+            ):
+                _g_history_override_current = None
             if T_conn is not None:
                 with torch.no_grad():
                     u_eval, v_eval, alpha_eval = field_comp.fieldCalculation(inp)
@@ -1541,7 +1593,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     psi_hack_dict=_psi_hack,
                     fem_oracle_dict=_fem_oracle,
                     history_driver_reduction_dict=_history_driver_reduction,
-                    g_stiffness_override=_g_stiffness_override_current,
+                    g_stiffness_override=_g_history_override_current,
                 )
             else:
                 # 自动微分模式：需要 inp 开启梯度
@@ -1553,7 +1605,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     psi_hack_dict=_psi_hack,
                     fem_oracle_dict=_fem_oracle,
                     history_driver_reduction_dict=_history_driver_reduction,
-                    g_stiffness_override=_g_stiffness_override_current,
+                    g_stiffness_override=_g_history_override_current,
                 )
 
             if (_void_notch_mask is not None
@@ -2018,6 +2070,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             _ckpt_data['hist_fat']                 = hist_fat
             _ckpt_data['psi_plus_prev']            = psi_plus_prev
             _ckpt_data['history_driver_mode']      = _history_driver_mode
+            _ckpt_data['lagged_stiffness_enabled'] = _lagged_stiffness_enabled
+            _ckpt_data['lagged_stiffness_history_policy'] = (
+                _lagged_stiffness_history_policy
+            )
             _ckpt_data['psi_history_elem']         = psi_history_elem
             _ckpt_data['_frac_detected']           = _frac_detected
             _ckpt_data['_frac_cycle']              = _frac_cycle

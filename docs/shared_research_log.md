@@ -42,6 +42,23 @@
 
 ## Entries
 
+## 2026-06-13 · Mac-PIDL [decision+implementation]
+
+**Opt-in lagged-stiffness solver discriminator for Alignment Check 2**
+
+Branch `codex/m2s-framework-validation`.  Added two explicit PIDL discriminator
+modes to `run_fem_mesh_oracle_field_umax.py`: `lagged_g_stiffness`, where the
+Deep Ritz solver and fatigue-history driver both use `g(hist_alpha_previous)`,
+and `lagged_g_solver_only`, where only the solver stiffness uses
+`g(hist_alpha_previous)` while the post-solve fatigue update recomputes the
+driver from current alpha.  Defaults and existing runners are unchanged; the
+hook is inactive unless `fatigue_dict["lagged_stiffness"]["enable"]` is set.
+
+Purpose: separate "previous-alpha stiffness in the solver" from the older
+`lagged_g` post-update history-driver test, which did not alter the variational
+solve.  This is safe during existing trainings because it is opt-in and does
+not change the default `current_active` path.
+
 ## 2026-05-31 · Mac-PIDL [finding+implementation]
 
 **M2S next-stage feasibility package completed**

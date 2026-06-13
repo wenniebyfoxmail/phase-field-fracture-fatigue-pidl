@@ -30,6 +30,18 @@ fem_g_stiffness
     Override the solver stiffness degradation g(alpha) with FEM g(d) at mapped
     peak substeps and carry it between substeps.
 
+lagged_g_stiffness
+    Use PIDL's previous irreversible alpha state to compute g(alpha) inside
+    the Deep Ritz stiffness solve. The same lagged stiffness is also used by
+    the post-solve fatigue-history driver, so this tests a coupled staggered
+    previous-alpha stiffness path.
+
+lagged_g_solver_only
+    Use PIDL's previous irreversible alpha state to compute g(alpha) inside
+    the Deep Ritz stiffness solve, but recompute the fatigue-history driver
+    from the current post-solve alpha. This isolates the solver/stiffness path
+    from the post-update fatigue accumulator.
+
 psi_raw_feedback
     Supervise PIDL raw tensile energy psi toward FEM psi at mapped peak
     substeps. This is the strongest all-cycle mechanics proxy available from
@@ -123,6 +135,8 @@ def main() -> None:
             "alpha_fem_feedback",
             "hard_hist_alpha",
             "fem_g_stiffness",
+            "lagged_g_stiffness",
+            "lagged_g_solver_only",
             "psi_raw_feedback",
             "psi_prev_oracle",
             "alpha_bar_state",
@@ -195,6 +209,7 @@ def main() -> None:
     config.fatigue_dict["alpha_feedback_oracle"] = {"enable": False}
     config.fatigue_dict["hist_alpha_oracle"] = {"enable": False}
     config.fatigue_dict["g_stiffness_oracle"] = {"enable": False}
+    config.fatigue_dict["lagged_stiffness"] = {"enable": False}
     config.fatigue_dict["alpha_bar_state_oracle"] = {"enable": False}
     config.fatigue_dict["f_fatigue_oracle"] = {"enable": False}
     if hasattr(config, "adaptive_sampling_dict"):
@@ -380,6 +395,18 @@ def main() -> None:
             "max_cycle": int(max(fem_sup.cycles)),
             **g_cycle_cfg,
         }
+    elif args.oracle_kind == "lagged_g_stiffness":
+        config.fatigue_dict["lagged_stiffness"] = {
+            "enable": True,
+            "source": "hist_alpha_previous",
+            "history_policy": "coupled",
+        }
+    elif args.oracle_kind == "lagged_g_solver_only":
+        config.fatigue_dict["lagged_stiffness"] = {
+            "enable": True,
+            "source": "hist_alpha_previous",
+            "history_policy": "solver_only",
+        }
     elif args.oracle_kind == "alpha_bar_state":
         ab_cycle_cfg = dict(oracle_cycle_cfg)
         ab_cycle_cfg["load_factor_power"] = 0.0
@@ -475,6 +502,13 @@ def main() -> None:
         g_probe = fem_sup.g_stiffness_target_at_cycle(c_probe, pidl_centroids)
         print(f"  FEM g(d) c{c_probe} min/max = "
               f"{g_probe.min().item():.3e}/{g_probe.max().item():.3e}")
+    if args.oracle_kind in {"lagged_g_stiffness", "lagged_g_solver_only"}:
+        lagged_cfg = fat.get("lagged_stiffness", {})
+        print("  lagged stiffness source = PIDL hist_alpha_previous")
+        print(
+            "  lagged stiffness history policy = "
+            f"{lagged_cfg.get('history_policy', 'none')}"
+        )
     if args.oracle_kind == "psi_prev_oracle":
         active_probe = fem_sup.active_target_at_cycle(c_probe, pidl_centroids)
         print(f"  FEM active c{c_probe} max = {active_probe.max().item():.3e}")
@@ -549,6 +583,18 @@ def main() -> None:
         handle.write(
             f"g_stiffness_oracle_enable: "
             f"{fat.get('g_stiffness_oracle', {}).get('enable', False)}\n"
+        )
+        handle.write(
+            f"lagged_stiffness_enable: "
+            f"{fat.get('lagged_stiffness', {}).get('enable', False)}\n"
+        )
+        handle.write(
+            f"lagged_stiffness_source: "
+            f"{fat.get('lagged_stiffness', {}).get('source', 'none')}\n"
+        )
+        handle.write(
+            f"lagged_stiffness_history_policy: "
+            f"{fat.get('lagged_stiffness', {}).get('history_policy', 'none')}\n"
         )
         handle.write(
             f"alpha_bar_state_oracle_enable: "
