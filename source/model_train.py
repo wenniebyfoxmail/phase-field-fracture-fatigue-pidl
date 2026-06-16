@@ -804,6 +804,78 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 "[LaggedStiffness] solver g uses previous hist_alpha; "
                 f"history_policy={_lagged_stiffness_history_policy}"
             )
+
+        _initial_state_cfg = fatigue_dict.get("initial_state_oracle", {}) or {}
+        if _initial_state_cfg.get("enable", False):
+            def _restart_tensor(value, like, name):
+                if value is None:
+                    return None
+                if torch.is_tensor(value):
+                    out = value.to(device=like.device, dtype=like.dtype).reshape(-1)
+                else:
+                    out = torch.as_tensor(
+                        value, device=like.device, dtype=like.dtype
+                    ).reshape(-1)
+                if out.numel() != like.numel():
+                    raise ValueError(
+                        f"initial_state_oracle['{name}'] has {out.numel()} values; "
+                        f"expected {like.numel()}"
+                    )
+                return out.detach().reshape_as(like)
+
+            _restart_cycle = _initial_state_cfg.get("fem_cycle", "unknown")
+            _hist_alpha0 = _restart_tensor(
+                _initial_state_cfg.get("hist_alpha", None),
+                hist_alpha,
+                "hist_alpha",
+            )
+            if _hist_alpha0 is not None:
+                hist_alpha = torch.maximum(hist_alpha, _hist_alpha0).detach()
+
+            _hist_fat0 = _restart_tensor(
+                _initial_state_cfg.get("hist_fat", None),
+                hist_fat,
+                "hist_fat",
+            )
+            if _hist_fat0 is not None:
+                _hist_fat_policy = _initial_state_cfg.get(
+                    "hist_fat_policy", "replace"
+                )
+                if _hist_fat_policy == "replace":
+                    hist_fat = _hist_fat0.detach()
+                elif _hist_fat_policy == "max":
+                    hist_fat = torch.maximum(hist_fat, _hist_fat0).detach()
+                else:
+                    raise ValueError(
+                        "initial_state_oracle['hist_fat_policy'] must be "
+                        f"'replace' or 'max', got {_hist_fat_policy!r}"
+                    )
+
+            _psi_prev0 = _restart_tensor(
+                _initial_state_cfg.get("psi_plus_prev", None),
+                psi_plus_prev,
+                "psi_plus_prev",
+            )
+            if _psi_prev0 is not None:
+                psi_plus_prev = _psi_prev0.detach()
+
+            _f_fatigue0 = _restart_tensor(
+                _initial_state_cfg.get("f_fatigue", None),
+                hist_fat,
+                "f_fatigue",
+            )
+            if _f_fatigue0 is not None:
+                f_fatigue = _f_fatigue0.detach()
+            else:
+                f_fatigue = _fatigue_for_fit(hist_fat)
+            _f0 = _resolve_f_fatigue(f_fatigue)
+            print(
+                f"[InitialStateOracle] FEM c={_restart_cycle} | "
+                f"hist_alpha max={hist_alpha.max().item():.6e} | "
+                f"hist_fat max={hist_fat.max().item():.6e} | "
+                f"psi_plus_prev max={psi_plus_prev.max().item():.6e} | "
+                f"f_min={_f0.min().item():.6e}"
+            )
     else:
         f_fatigue = 1.0
         elem_centroids = None
