@@ -34,6 +34,10 @@ def _mesh_tag(mesh_file: str, explicit: str) -> str:
     return stem.removeprefix("meshed_geom_").replace(" ", "_")
 
 
+def _parse_cycles(raw: str) -> list[int]:
+    return [int(x) for x in raw.split(",") if x.strip()]
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("umax", type=float)
@@ -44,6 +48,14 @@ def main() -> None:
     p.add_argument("--coarse-mesh-file", default=None,
                    help="Mesh used for pretraining; defaults to config.coarse_mesh_file.")
     p.add_argument("--tag", default="", help="Archive tag suffix; defaults to mesh stem")
+    p.add_argument("--history-driver-mode",
+                   choices=("current_active", "lagged_g", "raw"),
+                   default="current_active",
+                   help="Fatigue-history driver diagnostic; default preserves baseline.")
+    p.add_argument("--element-diagnostics-cycles", default="",
+                   help="Comma-separated cycle indices for full element diagnostics.")
+    p.add_argument("--element-diagnostics-dir", default="element_diagnostics",
+                   help="Output directory name inside the archive.")
     p.add_argument("--fracture-confirm-cycles", type=int, default=3)
     p.add_argument("--plot-every", type=int, default=20)
     p.add_argument("--compile", action="store_true",
@@ -89,8 +101,21 @@ def main() -> None:
     config.network_dict["compile"] = bool(args.compile)
     config.fatigue_dict["disp_max"] = float(args.umax)
     config.fatigue_dict["n_cycles"] = int(args.n_cycles)
+    config.fatigue_dict["history_driver_mode"] = args.history_driver_mode
     config.fatigue_dict["fracture_confirm_cycles"] = int(args.fracture_confirm_cycles)
     config.fatigue_dict["plot_every_n_cycles"] = int(args.plot_every)
+    if args.element_diagnostics_cycles.strip():
+        diag_cycles = _parse_cycles(args.element_diagnostics_cycles)
+        config.fatigue_dict["element_diagnostics"] = {
+            "enable": True,
+            "cycles": diag_cycles,
+            "every_n_cycles": None,
+            "dense_sampling": True,
+            "on_fracture": True,
+            "dir": args.element_diagnostics_dir,
+        }
+    else:
+        diag_cycles = []
     config.rebuild_disp_cyclic()
 
     fat = config.fatigue_dict
@@ -101,6 +126,8 @@ def main() -> None:
     )
     tag = _mesh_tag(fem_mesh, args.tag)
     suffix = f"_femmesh_{tag}{'_compile' if args.compile else ''}"
+    if args.history_driver_mode != "current_active":
+        suffix += f"_histdrv_{args.history_driver_mode}"
     dir_name = (
         "hl_" + str(config.network_dict["hidden_layers"])
         + "_Neurons_" + str(config.network_dict["neurons"])
@@ -132,6 +159,14 @@ def main() -> None:
         f.write(f"coarse_mesh_file: {config.coarse_mesh_file}\n")
         f.write(f"fine_mesh_file: {config.fine_mesh_file}\n")
         f.write(f"mesh_tag: {tag}\n")
+        f.write(f"history_driver_mode: {args.history_driver_mode}\n")
+        f.write("hist_alpha_update: max(previous,current)\n")
+        f.write(f"tol_ir: {config.PFF_model_dict['tol_ir']}\n")
+        f.write(f"alpha_constraint: {config.numr_dict['alpha_constraint']}\n")
+        f.write(f"residual_stiffness_eta: {config.PFF_model_dict.get('residual_stiffness', 0.0)}\n")
+        f.write(f"exact_bc_enable: {config.exact_bc_dict.get('enable', False)}\n")
+        f.write(f"element_diagnostics_cycles: {diag_cycles}\n")
+        f.write(f"element_diagnostics_dir: {args.element_diagnostics_dir if diag_cycles else ''}\n")
         f.write(f"torch_compile: {bool(args.compile)}\n")
         f.write("purpose: PIDL main training on triangularized FEM reference mesh\n")
 
@@ -140,6 +175,8 @@ def main() -> None:
     print(f"  U_max       = {args.umax} | n_cycles = {args.n_cycles} | seed = {args.seed}")
     print(f"  FEM mesh    = {fem_mesh}")
     print(f"  coarse mesh = {coarse_mesh}")
+    print(f"  history drv = {args.history_driver_mode}")
+    print(f"  elem diag   = {diag_cycles if diag_cycles else 'off'}")
     print(f"  compile     = {bool(args.compile)}")
     print(f"  device      = {config.device}")
     print(f"  archive     = {dir_name}")

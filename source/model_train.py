@@ -1473,7 +1473,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 f"grad_E_d={_lambda_stats['grad_E_d']:.6e} "
                 f"grad_E_hist={_lambda_stats['grad_E_hist']:.6e}"
             )
-        hist_alpha = field_comp.update_hist_alpha(inp)
+        hist_alpha_new = field_comp.update_hist_alpha(inp)
+        hist_alpha = torch.maximum(hist_alpha, hist_alpha_new).detach()
         _hist_alpha_oracle_cfg = (
             fatigue_dict.get('hist_alpha_oracle', None)
             if fatigue_on else None
