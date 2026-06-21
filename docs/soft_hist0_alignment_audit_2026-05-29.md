@@ -2,6 +2,10 @@
 
 Date: 2026-05-29
 
+Status: Historical alignment audit for the soft-hist0 comparison state as of
+2026-05-29. Use as provenance for old results, not as the current analysis
+protocol.
+
 ## Purpose
 
 This note audits the current "strict alignment" status before using FEM/PIDL

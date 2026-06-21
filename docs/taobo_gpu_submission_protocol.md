@@ -1,5 +1,8 @@
 # Taobo GPU Submission Protocol
 
+Status: Current operational protocol for Taobo GPU job submission, monitoring
+and shared-account safety. This is not a PIDL/FEM evidence-analysis protocol.
+
 Purpose: prevent accidental Mac training, dirty-repo launches, untracked Taobo jobs, and shared-account collisions.
 
 Taobo: `drtao@172.16.100.2`, 8x RTX 4090, shared account. Network/VPN is flaky. Design the workflow so SSH drops are harmless.

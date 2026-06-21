@@ -2,6 +2,12 @@
 
 Date: 2026-05-29
 
+Status: Historical and schedule-specific alignment note. The `j=c-1` mapping in
+this file is valid for one-step or one-state-per-cycle archives when the FEM and
+PIDL saved-state timing is verified. Do not use it as the default mapping for
+retained multi-substep runs; use
+`pidl_fem_diagnostic_analysis_protocol_2026-06-21.md` for new case analyses.
+
 ## What "History Timing" Means
 
 History timing is the moment in the nonlinear cycle loop when the solver updates

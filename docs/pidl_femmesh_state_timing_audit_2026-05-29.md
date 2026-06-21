@@ -2,6 +2,10 @@
 
 Date: 2026-05-29
 
+Status: Historical state-timing audit. Use as evidence about the saved-state
+timing problem in that archive family, not as a general mapping protocol for new
+PIDL/FEM cases.
+
 ## Purpose
 
 This audit checks the remaining cycle-index ambiguity after the soft-hist0 FEM

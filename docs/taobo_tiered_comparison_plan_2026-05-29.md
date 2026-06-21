@@ -2,6 +2,10 @@
 
 Date: 2026-05-29
 
+Status: Historical Taobo run-tiering and rescore plan. Use this to understand
+old-run inventory and ranking decisions; do not use it as the current
+case-level evidence protocol.
+
 ## Purpose
 
 This manifest prevents old Taobo runs from being compared as if they all

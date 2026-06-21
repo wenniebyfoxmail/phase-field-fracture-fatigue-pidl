@@ -2,6 +2,10 @@
 
 Date: 2026-05-28
 
+Status: Metric-design plan. Use this for field-score ideas and promotion
+criteria, but pair it with the current diagnostic analysis protocol before using
+any case as evidence.
+
 Purpose: define a common FEM/PIDL gate before launching another representation
 experiment. The metric should decide whether a new method improves field
 likeness, not merely `N_f`, `alpha_bar_max`, or visual impression.
