@@ -27,6 +27,66 @@
 
 ## Active Requests
 
+## 2026-06-24 · Request 24: pure Manav PIDL energy/state0 data handoff
+
+**Goal**: provide Windows-FEM with the pure Manav-style PIDL reproduction data
+and the Mac-side state0 comparison against the four FEM state0 handoff files.
+No FEM rerun is required by this request unless Windows-FEM wants to use these
+tables to audit the Manav-paper-like brittle recovery state0.
+
+**INPUT file**: none. This is a data handoff from Mac-PIDL.
+
+**Mesh / state0 context**:
+- Pure Manav PIDL reproduction uses `SENS_tensile/meshed_geom2.msh`,
+  `AT1`, volumetric split, `E=1`, `nu=0.3`, `w1=1`, `l0=0.01`,
+  8x400 `TrainableReLU`, `coeff=3.0`, seeds `1-8`.
+- Pure Manav PIDL `U=0` is a postprocessed initial anchor from
+  `hist_alpha_init`, not a trained solver/load step.
+- FEM fatigue soft-hist0 `state0` is the true unloaded FEM export. Mac checked
+  that fatigue-on and fatigue-off soft-hist0 state0 fields match exactly at
+  load zero: `u=0`, `psi_plus=0`, `alpha_bar=0`, `f_fatigue=1`, same
+  `d_node`, `d_elem`, and `g_stiffness`.
+
+**Files available on OneDrive**:
+
+```text
+OneDrive/PIDL result/_pidl_handoff_pure_manav_pidl_results_20260624/
+```
+
+Main contents:
+- `README_pure_manav_pidl_handoff_20260624.md`
+- `tables/manav_8seed_energy_mean_std.csv`
+- `tables/manav_8seed_energy_mean_std_with_pidl_initial_state.csv`
+- `tables/pure_manav_vs_fem_state0_comparison_20260624.csv`
+- `tables/pure_manav_pidl_vs_fem_key_energy_comparison_20260624.csv`
+- `tables/state0_pure_manav_vs_fem_four_state0_field_stats_20260624.csv`
+- `figures/manav_style_pidl8_mean_std_only_with_pidl_initial_state.*`
+- `figures/c3_monotonic_fem_pidl_alignment_state0_manav_style.*`
+
+**Mac-side key checks**:
+- Pure Manav PIDL state0: `E_el=0`, `E_d=0.004868508316576481`,
+  computed via `compute_energy.py` from `hist_alpha_init` on `meshed_geom2.msh`.
+- FEM fatigue soft-hist0 state0: `E_el=0`,
+  `E_d=0.005085139658691741`.
+- FEM/PIDL state0 damage-energy ratio is therefore about `1.0445`; the
+  area-weighted element damage means are close (`0.006805` FEM vs `0.006771`
+  PIDL), while node counts/means are not directly comparable because the
+  meshes and element types differ.
+- Along the monotonic curve, the main transition window is aligned around
+  `U=0.140--0.145`, but the exact drop shape differs: FEM is already almost
+  fully dropped at `U=0.145`, while the PIDL eight-seed mean is still averaged
+  over seeds that drop across the same interval.
+
+**Acceptance criteria**:
+1. Windows-FEM can read the OneDrive folder and confirm the listed CSVs.
+2. If using these data in future FEM notes, label the PIDL `U=0` row as
+   `postprocessed hist_alpha_init anchor`, not as a trained PIDL step.
+3. Do not mix brittle recovery state0, brittle analytic state0, and fatigue
+   soft-hist0 state0 as one single aligned state.
+
+**Priority**: medium. This is a provenance/data-consistency handoff rather than
+an urgent run request.
+
 ## 2026-06-09 · Request 23: explicit five-substep FEM state export to match PIDL diagnostics
 
 ### [update] 2026-06-10 · OneDrive large-MAT sync is stuck on Mac
