@@ -12,9 +12,14 @@ without changing the loading path.
 from __future__ import annotations
 
 import argparse
+import csv
 import os
 import sys
 from pathlib import Path
+from typing import Optional
+
+import numpy as np
+import torch
 
 
 def _resolve_mesh_file(here: Path, filename: str) -> str:
@@ -38,6 +43,146 @@ def _mesh_tag(mesh_file: str, explicit: str) -> str:
     return stem.removeprefix("meshed_geom_").replace(" ", "_")
 
 
+def _elem_mean(values: torch.Tensor, conn: Optional[torch.Tensor]) -> torch.Tensor:
+    if conn is None:
+        return values.reshape(-1)
+    return (values[conn[:, 0]] + values[conn[:, 1]] + values[conn[:, 2]]) / 3.0
+
+
+def _export_state0_initial(config, mesh_file: str) -> None:
+    """Write the explicit unloaded prehistory state used before load step 1."""
+    from compute_energy import compute_energy
+    from construct_model import construct_model
+    from input_data_from_mesh import prep_input_data
+
+    device = config.device
+    pffmodel, matprop, _ = construct_model(
+        config.PFF_model_dict,
+        config.mat_prop_dict,
+        config.network_dict,
+        config.domain_extrema,
+        device,
+        williams_dict=config.williams_dict,
+        fourier_dict=config.fourier_dict,
+    )
+    inp, t_conn, area_t, hist_alpha_init = prep_input_data(
+        matprop,
+        pffmodel,
+        config.crack_dict,
+        config.numr_dict,
+        mesh_file=mesh_file,
+        device=device,
+    )
+
+    zero_u = torch.zeros_like(hist_alpha_init)
+    zero_v = torch.zeros_like(hist_alpha_init)
+    with torch.no_grad():
+        e_el, e_d, e_hist = compute_energy(
+            inp,
+            zero_u,
+            zero_v,
+            hist_alpha_init,
+            hist_alpha_init,
+            matprop,
+            pffmodel,
+            area_t,
+            t_conn,
+            f_fatigue=1.0,
+        )
+
+    hist_elem = _elem_mean(hist_alpha_init, t_conn)
+    area_np = area_t.detach().cpu().numpy().reshape(-1)
+    hist_node_np = hist_alpha_init.detach().cpu().numpy().reshape(-1)
+    hist_elem_np = hist_elem.detach().cpu().numpy().reshape(-1)
+    inp_np = inp.detach().cpu().numpy()
+    if t_conn is None:
+        conn_np = np.empty((0, 3), dtype=np.int64)
+        centroid_np = np.empty((0, 2), dtype=np.float32)
+    else:
+        conn_np = t_conn.detach().cpu().numpy()
+        centroid_np = inp_np[conn_np].mean(axis=1)
+
+    state0_dir = config.model_path / "state0_initial_unloaded_prehistory"
+    state0_dir.mkdir(parents=True, exist_ok=True)
+
+    area_sum = float(np.sum(area_np))
+    elem_area_weighted_mean = float(np.sum(hist_elem_np * area_np) / area_sum)
+    energy_row = {
+        "state_label": "state0_initial_unloaded_prehistory",
+        "U": 0.0,
+        "step": -1,
+        "source": "runner_pre_training_export",
+        "mesh_file": mesh_file,
+        "E_el": float(e_el.detach().cpu()),
+        "E_d": float(e_d.detach().cpu()),
+        "E_hist": float(e_hist.detach().cpu()),
+        "hist_alpha_node_min": float(np.min(hist_node_np)),
+        "hist_alpha_node_max": float(np.max(hist_node_np)),
+        "hist_alpha_node_mean": float(np.mean(hist_node_np)),
+        "hist_alpha_node_count_gt0": int(np.sum(hist_node_np > 0.0)),
+        "hist_alpha_node_count_ge095": int(np.sum(hist_node_np >= 0.95)),
+        "hist_alpha_elem_min": float(np.min(hist_elem_np)),
+        "hist_alpha_elem_max": float(np.max(hist_elem_np)),
+        "hist_alpha_elem_mean": float(np.mean(hist_elem_np)),
+        "hist_alpha_elem_area_weighted_mean": elem_area_weighted_mean,
+        "hist_alpha_elem_count_gt0": int(np.sum(hist_elem_np > 0.0)),
+        "hist_alpha_elem_count_ge095": int(np.sum(hist_elem_np >= 0.95)),
+        "n_nodes": int(len(hist_node_np)),
+        "n_elements": int(len(hist_elem_np)),
+        "alpha_bar_initial": 0.0,
+        "f_fatigue_initial": 1.0,
+        "note": (
+            "Explicit postprocessed initial state before the first PIDL load step; "
+            "not a trained checkpoint."
+        ),
+    }
+    energy_csv = state0_dir / "state0_initial_unloaded_prehistory_energy.csv"
+    with energy_csv.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(energy_row))
+        writer.writeheader()
+        writer.writerow(energy_row)
+
+    np.savez_compressed(
+        state0_dir / "state0_initial_unloaded_prehistory_fields.npz",
+        state_label="state0_initial_unloaded_prehistory",
+        mesh_file=mesh_file,
+        nodes=inp_np,
+        connectivity=conn_np,
+        element_centroids=centroid_np,
+        element_area=area_np,
+        hist_alpha_init_node=hist_node_np,
+        hist_alpha_init_elem=hist_elem_np,
+        hist_fat_elem=np.zeros_like(hist_elem_np),
+        f_fatigue_elem=np.ones_like(hist_elem_np),
+    )
+
+    (state0_dir / "README_state0_initial_unloaded_prehistory.md").write_text(
+        "\n".join(
+            [
+                "# state0_initial_unloaded_prehistory",
+                "",
+                "This directory is written by `run_fem_mesh_monotonic_fatigue_off.py`",
+                "before `main.py` starts the first load-step training solve.",
+                "",
+                "Semantics:",
+                "- `U = 0`",
+                "- `step = -1`",
+                "- `u = v = 0`",
+                "- `alpha = hist_alpha = hist_alpha_init`",
+                "- `hist_fat = 0`",
+                "- `f_fatigue = 1`",
+                "- this is an initial-state diagnostic export, not a trained checkpoint",
+                "",
+                f"Energy CSV: `{energy_csv.name}`",
+                "Field NPZ: `state0_initial_unloaded_prehistory_fields.npz`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    print(f"[state0] exported {energy_csv}")
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--seed", type=int, default=1)
@@ -48,6 +193,7 @@ def main() -> None:
     p.add_argument("--plot-every", type=int, default=1)
     p.add_argument("--compile", action="store_true")
     p.add_argument("--force-cpu", action="store_true")
+    p.add_argument("--no-state0-export", action="store_true")
     args = p.parse_args()
 
     if args.force_cpu:
@@ -135,6 +281,7 @@ def main() -> None:
         f.write("precrack_format: retained_material_soft_hist_alpha_init_AT1_squared_hat\n")
         f.write("void_notch_mask_enable: False\n")
         f.write(f"torch_compile: {bool(args.compile)}\n")
+        f.write(f"state0_initial_unloaded_prehistory_export: {not args.no_state0_export}\n")
         f.write("purpose: strict baseline monotonic fatigue-off U=0.2 comparison\n")
 
     print("=" * 72)
@@ -148,6 +295,9 @@ def main() -> None:
     print(f"  archive     = {dir_name}")
     print(f"  full path   = {config.model_path}")
     print("=" * 72)
+
+    if not args.no_state0_export:
+        _export_state0_initial(config, fem_mesh)
 
     main_path = here / "main.py"
     exec(compile(main_path.read_text(encoding="utf-8"), str(main_path), "exec"),
