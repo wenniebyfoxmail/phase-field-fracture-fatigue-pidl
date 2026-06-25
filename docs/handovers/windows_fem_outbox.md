@@ -26,6 +26,33 @@
 
 ## Entries
 
+## 2026-06-25 · [done] Re: FEM/PIDL field-name cleanup - damage vs alpha_bar vs driver slot
+
+**Re**: FEM/PIDL alignment audit and state-field naming cleanup.
+
+**Status**: Complete and pushed.
+
+**Key results**:
+- New GRIPHFiTH `psi_fields/cycle_XXXX.mat` snapshots save `alpha_bar_elem`, not ambiguous `alpha_elem`.
+- `d_elem` is FEM damage / phase-field damage from `p_field`.
+- `alpha_bar_elem` is fatigue history accumulator from `history_vars(:,:,2)`.
+- `history_vars(:,:,3)` is degraded driver memory, not the increment. In the fatigue kernel the current increment is `Dalpha = max(current_driver - slot3, 0)`.
+- New VTK history labels use `alpha_bar`, `driver_degraded`, and `f(alpha_bar)`. Legacy readers still accept old `Dalpha` / `f(alpha)` labels where needed.
+- PIDL consumers no longer treat legacy FEM `alpha_elem` as a damage fallback; damage supervision now requires `d_elem`.
+
+**Code pushed**:
+- GRIPHFiTH mirror: `f482e8d` on `codex/reversebc-diffuse-precrack-audit`
+- PIDL repo code cleanup: `d051c69` on `main`
+
+**Files touched**:
+- GRIPHFiTH fatigue solver/export scripts under `Scripts/fatigue_fracture/`
+- GRIPHFiTH audit doc: `docs/fem_pidl_strict_alignment_audit_20260625.md`
+- PIDL consumers: `source/fem_supervision.py`, `SENS_tensile/compare_alpha_fields_pidl_fem.py`, `SENS_tensile/posthoc_alignment_criteria.py`, `SENS_tensile/plot_fem_damage_fields.py`, `SENS_tensile/plot_hero_fem_vs_pidl.py`
+
+**Next**: Mac should use `d_elem` for damage-vs-PIDL-alpha comparisons and `alpha_bar_elem` only for fatigue-history comparisons. Treat `alpha_elem` in old FEM snapshots as a legacy alias for `alpha_bar_elem`, not damage.
+
+---
+
 ## 2026-05-28 · [done] Re: Request 17 — reverseBC u12 P0 mesh-probe handoff regenerated
 
 **Re**: Request 17 (Mac note: missing P0 row for `SENS_tensile/alignment_mesh_probe_u012_reverseBC.csv`)
