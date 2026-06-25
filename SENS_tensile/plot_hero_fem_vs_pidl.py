@@ -62,8 +62,9 @@ def fem_load_mesh():
 
 def fem_load_cycle(u_tag: str, cycle: int) -> dict:
     m = sio.loadmat(FEM_DIR / f"u{u_tag}_cycle_{cycle:04d}.mat")
+    alpha_bar = m["alpha_bar_elem"] if "alpha_bar_elem" in m else m["alpha_elem"]
     return {
-        "alpha": m["alpha_elem"].flatten(),     # (77730,)
+        "alpha_bar": alpha_bar.flatten(),       # (77730,)
         "f":     m["f_alpha_elem"].flatten(),
         "psi":   m["psi_elem"].flatten(),
     }
@@ -260,7 +261,7 @@ def main() -> int:
     # === Determine global color scales (per-column) ===
     print("\nComputing color scales ...")
     # Collect all data
-    all_alpha = [fem_data["alpha"]] + [d["alpha"] for _, d in pidl_fields if d is not None]
+    all_alpha = [fem_data["alpha_bar"]] + [d["alpha"] for _, d in pidl_fields if d is not None]
     all_psi   = [fem_data["psi"]]   + [d["psi"]   for _, d in pidl_fields if d is not None]
 
     # For alpha (log): use percentile to avoid outlier skew
@@ -288,7 +289,7 @@ def main() -> int:
     # FEM: alpha/psi/f are per-QUAD (77730); tri_conn has 2×77730 triangles.
     # Duplicate each value to match (quad splits into 2 triangles sharing value).
     fem_data_dup = {
-        "alpha": np.concatenate([fem_data["alpha"], fem_data["alpha"]]),
+        "alpha": np.concatenate([fem_data["alpha_bar"], fem_data["alpha_bar"]]),
         "psi":   np.concatenate([fem_data["psi"],   fem_data["psi"]]),
         "f":     np.concatenate([fem_data["f"],     fem_data["f"]]),
     }

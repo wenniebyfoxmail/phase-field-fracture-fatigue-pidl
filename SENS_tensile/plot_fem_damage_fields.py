@@ -56,8 +56,9 @@ def load_cycle(u_max: str, cycle: int) -> dict:
     u_tag = u_max.split(".")[1]        # "0.12" → "12"
     p = DATA_DIR / f"u{u_tag}_cycle_{cycle:04d}.mat"
     m = sio.loadmat(p)
+    alpha_bar = m["alpha_bar_elem"] if "alpha_bar_elem" in m else m["alpha_elem"]
     return {
-        "alpha": m["alpha_elem"].flatten(),
+        "alpha_bar": alpha_bar.flatten(),
         "f":     m["f_alpha_elem"].flatten(),
         "psi":   m["psi_elem"].flatten(),
     }
@@ -145,7 +146,7 @@ def main() -> int:
     print("Plotting alpha_elem (ᾱ fatigue accumulator) ...")
     plot_field_grid(
         field_name="fatigue accumulator " + r"$\bar{\alpha}_\mathrm{elem}$",
-        data_key="alpha",
+        data_key="alpha_bar",
         use_log=True, cmap="plasma",
         title_suffix=r"$\bar{\alpha}_\mathrm{elem}$ (log)",
         clip_low=1e-5,

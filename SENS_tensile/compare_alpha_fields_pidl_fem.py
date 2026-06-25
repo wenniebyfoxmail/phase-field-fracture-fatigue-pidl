@@ -112,7 +112,7 @@ for fcyc, fpath in fem_cycle_files.items():
     # FEM α
     fem_data = sio.loadmat(fpath)
     fem_alpha_key = None
-    for k in ["alpha_elem", "alpha_e", "alpha", "phi_elem", "d_elem"]:
+    for k in ["d_elem", "phi_elem"]:
         if k in fem_data:
             fem_alpha_key = k
             break

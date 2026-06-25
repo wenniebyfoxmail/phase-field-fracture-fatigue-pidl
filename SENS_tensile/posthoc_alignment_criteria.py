@@ -113,7 +113,7 @@ def audit_pidl(archive: Path, threshold: float, nmin: int, cycles: list[int] | N
 
 def _load_fem_snapshot(path: Path) -> tuple[np.ndarray, np.ndarray]:
     data = sio.loadmat(path)
-    for key in ("d_elem", "alpha_elem", "alpha_e", "alpha", "phi_elem"):
+    for key in ("d_elem", "phi_elem"):
         if key in data:
             d = np.asarray(data[key]).reshape(-1)
             break

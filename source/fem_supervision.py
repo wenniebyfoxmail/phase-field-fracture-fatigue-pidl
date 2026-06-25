@@ -129,8 +129,9 @@ class FEMSupervision:
             fname = self._path_for[c]
             data = sio.loadmat(str(fname))
             self.psi_raw[c] = np.asarray(data["psi_elem"], dtype=np.float64).ravel()
-            # d_elem is optional in nested-layout files; tolerate absence
-            d = data.get("d_elem", data.get("alpha_elem"))
+            # d_elem is FEM damage. Do not fall back to legacy alpha_elem:
+            # in FEM cycle files alpha_elem meant alpha_bar, not damage.
+            d = data.get("d_elem")
             if d is not None:
                 self.d_field[c] = np.asarray(d, dtype=np.float64).ravel()
 
