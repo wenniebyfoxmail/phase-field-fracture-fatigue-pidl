@@ -305,9 +305,9 @@ def smoke_grid_model(
 ) -> tuple[float, float]:
     model.to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=3.0e-3)
+    x, target = make_grid_transition_batch(batch=3, height=height, width=width, device=device)
     first = last = math.nan
     for step in range(steps):
-        x, target = make_grid_transition_batch(batch=3, height=height, width=width, device=device)
         pred = model(x)
         loss = F.mse_loss(pred, target)
         opt.zero_grad(set_to_none=True)
