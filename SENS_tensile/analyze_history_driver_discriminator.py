@@ -101,6 +101,16 @@ def weighted_mean(values: np.ndarray, areas: np.ndarray, mask: np.ndarray) -> fl
 def metrics(values: np.ndarray, areas: np.ndarray, centroids: np.ndarray) -> dict[str, float]:
     finite = np.isfinite(values)
     r = np.hypot(centroids[:, 0], centroids[:, 1])
+    if not np.any(finite):
+        return {
+            "max": float("nan"),
+            "p999": float("nan"),
+            "p99": float("nan"),
+            "domain_mean": float("nan"),
+            "tip_2l0_mean": float("nan"),
+            "tip_2l0_integral": float("nan"),
+            "right_band_mean": float("nan"),
+        }
     out = {
         "max": float(np.nanmax(values)),
         "p999": float(np.nanpercentile(values[finite], 99.9)),
@@ -131,10 +141,18 @@ def load_pidl_npz(mode: str, saved_idx: int) -> dict[str, np.ndarray]:
     return {k: raw[k] for k in raw.files}
 
 
+def pidl_delta_alpha_bar(raw: dict[str, np.ndarray]) -> np.ndarray:
+    if "delta_alpha_bar_input_elem" in raw:
+        return raw["delta_alpha_bar_input_elem"]
+    # Legacy diagnostics did not save the increment separately.  Do not infer
+    # it from the history driver; that would mix driver magnitude with increment.
+    return np.full_like(raw["hist_fat_elem"], np.nan, dtype=float)
+
+
 def fields_from_npz(raw: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
     return {
         "alpha_bar": raw["hist_fat_elem"],
-        "delta_alpha_bar": raw["psi_history_driver_elem"],
+        "delta_alpha_bar": pidl_delta_alpha_bar(raw),
         "psi_raw": raw["psi_raw_elem"],
         "g_alpha": raw["g_alpha_elem"],
         "psi_active": raw["psi_active_elem"],

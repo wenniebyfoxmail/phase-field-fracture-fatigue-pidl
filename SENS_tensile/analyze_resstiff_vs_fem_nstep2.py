@@ -85,6 +85,16 @@ def reductions(values: np.ndarray, areas: np.ndarray, centroids: np.ndarray) -> 
     finite = np.isfinite(values)
     r = np.hypot(centroids[:, 0], centroids[:, 1])
     tip2 = r <= 0.02
+    if not np.any(finite):
+        return {
+            "max": float("nan"),
+            "p999": float("nan"),
+            "p99": float("nan"),
+            "domain_mean": float("nan"),
+            "tip_2l0_mean": float("nan"),
+            "tip_2l0_integral": float("nan"),
+            "right_band_mean": float("nan"),
+        }
     return {
         "max": float(np.nanmax(values)),
         "p999": float(np.nanpercentile(values[finite], 99.9)),
@@ -110,10 +120,18 @@ def load_pidl(saved_idx: int) -> dict[str, np.ndarray]:
     return {k: raw[k] for k in raw.files}
 
 
+def pidl_delta_alpha_bar(raw: dict[str, np.ndarray]) -> np.ndarray:
+    if "delta_alpha_bar_input_elem" in raw:
+        return raw["delta_alpha_bar_input_elem"]
+    # Legacy diagnostics did not save the increment separately.  Do not infer
+    # it from the history driver; that would mix driver magnitude with increment.
+    return np.full_like(raw["hist_fat_elem"], np.nan, dtype=float)
+
+
 def pidl_fields(raw: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
     return {
         "alpha_bar": raw["hist_fat_elem"],
-        "delta_alpha_bar": raw["psi_history_driver_elem"],
+        "delta_alpha_bar": pidl_delta_alpha_bar(raw),
         "psi_raw": raw["psi_raw_elem"],
         "g_alpha": raw["g_alpha_elem"],
         "psi_active": raw["psi_active_elem"],
@@ -198,11 +216,30 @@ def build_tables() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
                         ),
                     }
                 )
+            if field != FIELDS[-1]:
+                continue
             for selector, values in (
                 ("max_psi_raw", pfields["psi_raw"]),
                 ("max_psi_active", pfields["psi_active"]),
                 ("max_delta_alpha_bar", pfields["delta_alpha_bar"]),
             ):
+                if not np.any(np.isfinite(values)):
+                    extrema_rows.append(
+                        {
+                            "saved_index": saved_idx,
+                            "fem_cycle": fem_cycle,
+                            "selector": selector,
+                            "x": np.nan,
+                            "y": np.nan,
+                            "alpha_bar": np.nan,
+                            "psi_raw": np.nan,
+                            "g_alpha": np.nan,
+                            "psi_active": np.nan,
+                            "delta_alpha_bar": np.nan,
+                            "note": "unavailable in legacy PIDL diagnostics",
+                        }
+                    )
+                    continue
                 idx = int(np.nanargmax(values))
                 extrema_rows.append(
                     {
@@ -216,6 +253,7 @@ def build_tables() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
                         "g_alpha": float(pfields["g_alpha"][idx]),
                         "psi_active": float(pfields["psi_active"][idx]),
                         "delta_alpha_bar": float(pfields["delta_alpha_bar"][idx]),
+                        "note": "",
                     }
                 )
     return pd.DataFrame(rows), pd.DataFrame(scalar_rows), pd.DataFrame(extrema_rows)
