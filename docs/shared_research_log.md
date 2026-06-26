@@ -42,6 +42,26 @@
 
 ## Entries
 
+## 2026-06-26 · Mac-PIDL [decision+implementation]
+
+**Opt-in FEM-like irreversibility penalty quadrature for Alignment Check 2**
+
+Branch `codex/m2s-framework-validation`, commit `9547f27`.  Added an opt-in
+PIDL loss path for the irreversibility penalty:
+`numr_dict["irreversibility_penalty"] = {"enable": True, "mode": "fem_gp_tri3"}`.
+When enabled on FEM-mesh/T_conn runs, each triangle checks local recovery at
+the standard three-point triangle quadrature locations before averaging
+`ReLU(-(alpha_q - hist_alpha_q))^2`.  Default remains legacy/off, so existing
+and running trainings keep the old `ReLU(-mean_node_delta)^2` behavior.
+
+The strict FEM-mesh probe runner now accepts
+`--history-driver-reduction-mode fem_gp_tri3_g_mean` and `--fem-irr-penalty`
+for producer-side smoke/production tests.  Element diagnostics now save both
+`E_hist_legacy_elem` and `E_hist_fem_gp_tri3_elem`, while `E_hist_elem` remains
+the actual penalty used by the current run.  Mac verification was limited to
+`py_compile`, `git diff --check`, runner `--help`, and tensor-level formula
+sanity; no PIDL training was run on Mac.
+
 ## 2026-06-13 · Mac-PIDL [decision+implementation]
 
 **Opt-in lagged-stiffness solver discriminator for Alignment Check 2**
