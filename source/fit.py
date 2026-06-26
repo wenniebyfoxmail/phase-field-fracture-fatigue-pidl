@@ -100,7 +100,8 @@ def _supervised_loss_from_dict(pred, supervised_dict, lambda_sup,
 def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
                   area_T, T_conn, f_fatigue, supervised_dict, symmetry_dict,
                   side_traction_dict, state, element_mask=None,
-                  g_stiffness_override=None):
+                  g_stiffness_override=None,
+                  irreversibility_penalty_cfg=None):
     """Wang 2020 Algo 1: update λ_i = (1-α)λ_i + α·(max|∇L_r| / mean|∇L_i|).
 
     Uses torch.autograd.grad (not .backward) to avoid polluting .grad buffers.
@@ -147,7 +148,8 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
                                 matprop, pffmodel, area_T, T_conn,
                                 _resolve_f_fatigue(f_fatigue),
                                 element_mask=element_mask,
-                                g_stiffness_override=g_stiffness_override)
+                                g_stiffness_override=g_stiffness_override,
+                                irreversibility_penalty_cfg=irreversibility_penalty_cfg)
     eps = torch.as_tensor(1e-30, dtype=el.dtype, device=el.device)
     lv_el = torch.log10(el + eps)
     lv_ed = torch.log10(ed + eps)
@@ -432,7 +434,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
         element_mask=None,
         j_path_dict=None,
         hist_loss_weight=1.0,
-        g_stiffness_override=None):
+        g_stiffness_override=None,
+        irreversibility_penalty_cfg=None):
     # ★ grad_annealing_state: if provided and enable=True, pre-computed λ values
     #   from Algorithm 1 (updated during RPROP phase) are applied here.
     #   LBFGS does not update λ — it uses whatever values RPROP computed last cycle.
@@ -463,7 +466,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                                                                 f_fatigue=_resolve_f_fatigue(f_fatigue),
                                                                 crack_tip_weights=crack_tip_weights,
                                                                 element_mask=element_mask,
-                                                                g_stiffness_override=g_stiffness_override)
+                                                                g_stiffness_override=g_stiffness_override,
+                                                                irreversibility_penalty_cfg=irreversibility_penalty_cfg)
 
                 # 3. 损失函数 = log(总能量) ！！！
                 loss_var = torch.log10(loss_E_el + loss_E_d + hist_loss_weight * loss_hist)
@@ -567,7 +571,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                             element_mask=None,
                             j_path_dict=None,
                             hist_loss_weight=1.0,
-                            g_stiffness_override=None):
+                            g_stiffness_override=None,
+                            irreversibility_penalty_cfg=None):
     # ★ grad_annealing_state (2026-05-19 Algorithm 1):
     #   Mutable dict passed from model_train.train(). Persists across cycles.
     #   Algo1 probes are run in RPROP only (not LBFGS) because RPROP's flat
@@ -597,7 +602,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                     area_T, T_conn, _resolve_f_fatigue(f_fatigue),
                     supervised_dict, symmetry_dict, side_traction_dict, _a1,
                     element_mask=element_mask,
-                    g_stiffness_override=g_stiffness_override)
+                    g_stiffness_override=g_stiffness_override,
+                    irreversibility_penalty_cfg=irreversibility_penalty_cfg)
 
             # Read current Algo1 weights (updated above or from previous cycle)
             _lam_sup   = _supervised_lambda(supervised_dict, _a1)
@@ -626,7 +632,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                                                             element_subset=_d1_subset,
                                                             importance_weights=_d1_imp_w,
                                                             element_mask=element_mask,
-                                                            g_stiffness_override=g_stiffness_override)
+                                                            g_stiffness_override=g_stiffness_override,
+                                                            irreversibility_penalty_cfg=irreversibility_penalty_cfg)
             loss_var = torch.log10(loss_E_el + loss_E_d + hist_loss_weight * loss_hist)
 
             # weight regularization

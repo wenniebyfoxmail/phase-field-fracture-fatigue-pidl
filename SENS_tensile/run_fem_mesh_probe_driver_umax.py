@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
-"""Run strict FEM-mesh PIDL with probe-averaged fatigue driver reduction.
+"""Run strict FEM-mesh PIDL with opt-in fatigue-driver reduction.
 
-This discriminator keeps the variational energy/objective unchanged.  Only the
-post-fit fatigue-history driver changes from
+By default this discriminator keeps the variational energy/objective unchanged:
+only the post-fit fatigue-history driver changes from
 
     g(mean(alpha_nodes)) * psi_raw_elem
 
-to
+to either the archived probe rule or the FEM-like tri3 quadrature rule,
 
     mean_q[g(alpha_q)] * psi_raw_elem
 
-where alpha_q is evaluated at three triangle quadrature probes.  This is a
-closer FEM-style reduction for the nonlinear degradation factor in the history
-driver.
+where alpha_q is evaluated at three triangle points.  With
+``--fem-irr-penalty`` the irreversibility penalty also moves from
+``ReLU(-mean(delta_alpha_nodes))^2`` to local quadrature
+``mean_q(ReLU(-delta_alpha_q)^2)``.
 """
 from __future__ import annotations
 
@@ -78,6 +79,11 @@ def main() -> None:
     parser.add_argument("--tag", default="probeDriver_softHist0_stateTiming")
     parser.add_argument("--substeps", type=_parse_factors,
                         default=_parse_factors("0.25,0.5,0.75,1,0"))
+    parser.add_argument("--history-driver-reduction-mode",
+                        choices=("probe_g_mean", "fem_gp_tri3_g_mean"),
+                        default="probe_g_mean")
+    parser.add_argument("--fem-irr-penalty", action="store_true",
+                        help="Use FEM-like tri3 quadrature for the irreversibility penalty.")
     parser.add_argument("--diag-physical-cycles", default="1,2,3,20,40,60,69")
     parser.add_argument("--fracture-confirm-cycles", type=int, default=3)
     parser.add_argument("--plot-every", type=int, default=20)
@@ -135,7 +141,11 @@ def main() -> None:
     config.fatigue_dict["history_driver_mode"] = "current_active"
     config.fatigue_dict["history_driver_reduction"] = {
         "enable": True,
-        "mode": "probe_g_mean",
+        "mode": args.history_driver_reduction_mode,
+    }
+    config.numr_dict["irreversibility_penalty"] = {
+        "enable": bool(args.fem_irr_penalty),
+        "mode": "fem_gp_tri3",
     }
     config.fatigue_dict["fracture_confirm_cycles"] = int(args.fracture_confirm_cycles)
     config.fatigue_dict["plot_every_n_cycles"] = int(args.plot_every)
@@ -170,7 +180,8 @@ def main() -> None:
         f"_Ncyc{fat['n_cycles']}_Nstep{total_steps}"
         f"_U{fat['disp_max']}"
         f"_{mesh_tag}"
-        f"_current_active_probe_g_mean"
+        f"_current_active_{args.history_driver_reduction_mode}"
+        f"{'_femIrrGP3' if args.fem_irr_penalty else ''}"
         f"_s{sub_tag}"
         f"{'_compile' if args.compile else ''}"
     )
@@ -198,6 +209,9 @@ def main() -> None:
         handle.write(f"torch_compile: {bool(args.compile)}\n")
         handle.write("history_driver_mode: current_active\n")
         handle.write(f"history_driver_reduction: {fat['history_driver_reduction']}\n")
+        handle.write(
+            f"irreversibility_penalty: {config.numr_dict['irreversibility_penalty']}\n"
+        )
         handle.write(f"explicit_cycle_substeps: {fat['explicit_cycle_substeps']}\n")
         handle.write(f"explicit_cycle_factors: {fat['explicit_cycle_factors']}\n")
         handle.write(f"void_notch_mask_enable: {fat['void_notch_mask']['enable']}\n")
@@ -209,8 +223,8 @@ def main() -> None:
             "grad_E_el,grad_E_d,grad_E_hist\n"
         )
         handle.write(
-            "purpose: strict FEM-mesh probe-averaged g(alpha) fatigue-driver "
-            "reduction; variational energy unchanged\n"
+            "purpose: strict FEM-mesh fatigue-driver reduction with optional "
+            "FEM-like irreversibility penalty quadrature\n"
         )
 
     print("=" * 72)
@@ -221,7 +235,8 @@ def main() -> None:
     print(f"  FEM mesh       = {fem_mesh}")
     print(f"  coarse mesh    = {coarse_mesh}")
     print("  history driver = current_active")
-    print("  reduction      = probe_g_mean")
+    print(f"  reduction      = {args.history_driver_reduction_mode}")
+    print(f"  irr penalty    = {'fem_gp_tri3' if args.fem_irr_penalty else 'legacy'}")
     print("  void mask      = disabled")
     print(f"  elem diag      = {diag_steps}")
     print("  gradient diag  = pre-history-refresh every step")

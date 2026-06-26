@@ -71,7 +71,21 @@ mat_prop_dict:
 w1: Gc/l0, where Gc is energy release rate.
 In the normalized formulation, mat_E=1, w1=1, and only nu and l0 are the properties to be set.
 '''
-numr_dict = {"alpha_constraint": 'nonsmooth', "gradient_type": 'numerical'}
+numr_dict = {
+    "alpha_constraint": 'nonsmooth',
+    "gradient_type": 'numerical',
+
+    # Optional FEM-like irreversibility penalty quadrature.
+    # Default enable=False preserves the historical PIDL reduction:
+    #   ReLU(-mean_e(alpha - hist_alpha))^2.
+    # When enabled in T_conn/numerical mode, each triangle uses the standard
+    # three-point quadrature rule and mean_q(ReLU(-(alpha_q - hist_q))^2),
+    # matching the FEM-side local recovery check more closely.
+    "irreversibility_penalty": {
+        "enable": False,
+        "mode": "fem_gp_tri3",
+    },
+}
 PFF_model_dict = {
     "PFF_model": 'AT1',
     "se_split": 'volumetric',
@@ -117,6 +131,8 @@ fatigue_dict = {
     # variational energy; it only changes the post-fit fatigue-history driver.
     "history_driver_reduction": {
         "enable": False,
+        # probe_g_mean: legacy three interior probes used by archived diagnostics.
+        # fem_gp_tri3_g_mean: standard three-point triangle quadrature.
         "mode": "probe_g_mean",
     },
 

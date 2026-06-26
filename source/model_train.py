@@ -92,7 +92,8 @@ def _oracle_cycle_scale(step_idx, cfg):
 def _adaptive_lambda_hist_update(field_comp, inp, hist_alpha, matprop, pffmodel,
                                  area_T, T_conn, f_fatigue, current_lambda,
                                  cfg, element_mask=None,
-                                 g_stiffness_override=None):
+                                 g_stiffness_override=None,
+                                 irreversibility_penalty_cfg=None):
     """Balance the irreversibility penalty gradient against elastic/damage terms."""
     params = [p for p in field_comp.parameters() if p.requires_grad]
     if not params:
@@ -108,6 +109,7 @@ def _adaptive_lambda_hist_update(field_comp, inp, hist_alpha, matprop, pffmodel,
         inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
         _resolve_f_fatigue(f_fatigue), element_mask=element_mask,
         g_stiffness_override=g_stiffness_override,
+        irreversibility_penalty_cfg=irreversibility_penalty_cfg,
     )
     eps = torch.as_tensor(1.0e-30, dtype=loss_E_el.dtype, device=loss_E_el.device)
 
@@ -147,7 +149,8 @@ def _adaptive_lambda_hist_update(field_comp, inp, hist_alpha, matprop, pffmodel,
 
 def _energy_gradient_diagnostics(field_comp, inp, hist_alpha, matprop, pffmodel,
                                  area_T, T_conn, f_fatigue, element_mask=None,
-                                 g_stiffness_override=None):
+                                 g_stiffness_override=None,
+                                 irreversibility_penalty_cfg=None):
     """Measure pre-history-refresh energy-term gradient norms."""
     params = [p for p in field_comp.parameters() if p.requires_grad]
     if not params:
@@ -165,6 +168,7 @@ def _energy_gradient_diagnostics(field_comp, inp, hist_alpha, matprop, pffmodel,
         inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
         _resolve_f_fatigue(f_fatigue), element_mask=element_mask,
         g_stiffness_override=g_stiffness_override,
+        irreversibility_penalty_cfg=irreversibility_penalty_cfg,
     )
     eps = torch.as_tensor(1.0e-30, dtype=loss_E_el.dtype, device=loss_E_el.device)
 
@@ -284,7 +288,8 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
                               alpha_feedback_mask_elem=None,
                               oracle_target_elem=None,
                               oracle_mask_elem=None,
-                              g_stiffness_override_elem=None):
+                              g_stiffness_override_elem=None,
+                              irreversibility_penalty_cfg=None):
     """Save cycle-end element fields for FEM/PIDL mechanism comparison."""
     out_dir.mkdir(parents=True, exist_ok=True)
     with torch.no_grad():
@@ -307,6 +312,22 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
             inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
             f_fatigue=f_fatigue,
             g_stiffness_override=g_stiffness_override_elem,
+            irreversibility_penalty_cfg=irreversibility_penalty_cfg,
+        )
+        _, _, E_hist_legacy_elem = compute_energy_per_elem(
+            inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
+            f_fatigue=f_fatigue,
+            g_stiffness_override=g_stiffness_override_elem,
+            irreversibility_penalty_cfg=None,
+        )
+        _, _, E_hist_fem_gp_tri3_elem = compute_energy_per_elem(
+            inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
+            f_fatigue=f_fatigue,
+            g_stiffness_override=g_stiffness_override_elem,
+            irreversibility_penalty_cfg={
+                "enable": True,
+                "mode": "fem_gp_tri3",
+            },
         )
         eps_xx, eps_yy, eps_xy, _, _ = gradients(
             inp, u, v, alpha, area_T, T_conn
@@ -340,6 +361,8 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
     E_el_np = _tensor_to_numpy(E_el_elem).reshape(-1)
     E_d_np = _tensor_to_numpy(E_d_elem).reshape(-1)
     E_hist_np = _tensor_to_numpy(E_hist_elem).reshape(-1)
+    E_hist_legacy_np = _tensor_to_numpy(E_hist_legacy_elem).reshape(-1)
+    E_hist_fem_gp_tri3_np = _tensor_to_numpy(E_hist_fem_gp_tri3_elem).reshape(-1)
     if alpha_feedback_target_elem is None:
         alpha_feedback_target_np = np.full_like(E_el_np, np.nan, dtype=np.float32)
     else:
@@ -405,6 +428,8 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         E_el_elem=E_el_np.astype(np.float32),
         E_d_elem=E_d_np.astype(np.float32),
         E_hist_elem=E_hist_np.astype(np.float32),
+        E_hist_legacy_elem=E_hist_legacy_np.astype(np.float32),
+        E_hist_fem_gp_tri3_elem=E_hist_fem_gp_tri3_np.astype(np.float32),
         eps_xx_elem=_tensor_to_numpy(eps_xx).reshape(-1).astype(np.float32),
         eps_yy_elem=_tensor_to_numpy(eps_yy).reshape(-1).astype(np.float32),
         eps_xy_elem=_tensor_to_numpy(eps_xy).reshape(-1).astype(np.float32),
@@ -565,6 +590,26 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_dict is None:
         fatigue_dict = {}
     fatigue_on = fatigue_dict.get('fatigue_on', False)
+    _irreversibility_penalty_cfg = (numr_dict or {}).get(
+        "irreversibility_penalty", {}
+    ) or {}
+    _irr_cfg_enabled = (
+        bool(_irreversibility_penalty_cfg)
+        if isinstance(_irreversibility_penalty_cfg, bool)
+        else bool(_irreversibility_penalty_cfg.get("enable", False))
+    )
+    if _irr_cfg_enabled:
+        _irr_mode = (
+            _irreversibility_penalty_cfg.get("mode", "fem_gp_tri3")
+            if isinstance(_irreversibility_penalty_cfg, dict)
+            else "fem_gp_tri3"
+        )
+        if _irr_mode != "fem_gp_tri3":
+            raise ValueError(
+                "numr_dict['irreversibility_penalty']['mode'] must be "
+                f"'fem_gp_tri3', got {_irr_mode!r}"
+            )
+        print(f"[IrreversibilityPenalty] FEM-like triangle quadrature enabled: mode={_irr_mode}")
     inverse_dict = inverse_dict or {}
     _inverse_alpha_T = None
     if inverse_dict.get("enable", False):
@@ -622,7 +667,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         loss_data1 = fit(
             field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
             optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
-            intermediateModel_path=None, writer=writer, training_dict=training_dict
+            intermediateModel_path=None, writer=writer, training_dict=training_dict,
+            irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
             # 预训练不传 f_fatigue，使用默认值 1.0
         )
         loss_data = loss_data + loss_data1
@@ -634,7 +680,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             field_comp, training_set, T_conn, area_T, hist_alpha, matprop, pffmodel,
             optimizer_dict["weight_decay"], num_epochs=n_epochs, optimizer=optimizer,
             min_delta=optimizer_dict["optim_rel_tol_pretrain"],
-            intermediateModel_path=None, writer=writer, training_dict=training_dict
+            intermediateModel_path=None, writer=writer, training_dict=training_dict,
+            irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
         )
         loss_data = loss_data + loss_data2
 
@@ -775,6 +822,14 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 "fatigue_dict['history_driver_reduction'] is currently valid only "
                 "with history_driver_mode='current_active'."
             )
+        if (_history_driver_reduction or {}).get('enable', False):
+            _hdr_mode = _history_driver_reduction.get('mode', 'probe_g_mean')
+            _valid_hdr_modes = {'probe_g_mean', 'fem_gp_tri3_g_mean'}
+            if _hdr_mode not in _valid_hdr_modes:
+                raise ValueError(
+                    "fatigue_dict['history_driver_reduction']['mode'] must be "
+                    f"one of {sorted(_valid_hdr_modes)}, got {_hdr_mode!r}"
+                )
         print(f"[HistoryDriver] mode={_history_driver_mode}")
         if (_history_driver_reduction or {}).get('enable', False):
             print(
@@ -1366,6 +1421,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 j_path_dict=j_path_dict,                # ★ J path-independence reg
                 hist_loss_weight=_lambda_hist_weight,
                 g_stiffness_override=_g_stiffness_override_current,
+                irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
             )
             loss_data = loss_data + loss_data1
 
@@ -1402,6 +1458,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         j_path_dict=j_path_dict,
                         hist_loss_weight=_lambda_hist_weight,
                         g_stiffness_override=_g_stiffness_override_current,
+                        irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
                     )
 
             loss_data = loss_data + _run_staged_head(
@@ -1442,6 +1499,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         j_path_dict=j_path_dict,
                         hist_loss_weight=_lambda_hist_weight,
                         g_stiffness_override=_g_stiffness_override_current,
+                        irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
                     )
                 loss_data = loss_data + loss_data_patch
 
@@ -1472,6 +1530,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 j_path_dict=j_path_dict,                # ★ J path-independence reg
                 hist_loss_weight=_lambda_hist_weight,
                 g_stiffness_override=_g_stiffness_override_current,
+                irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
             )
             loss_data = loss_data + loss_data2
 
@@ -1495,6 +1554,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 field_comp, inp, hist_alpha, matprop, pffmodel,
                 area_T, T_conn, f_fatigue, element_mask=_void_energy_mask,
                 g_stiffness_override=_g_stiffness_override_current,
+                irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
             )
             _grad_diag_history.append([
                 int(j),
@@ -1528,6 +1588,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 f_fatigue, _lambda_hist_weight, _lambda_hist_cfg,
                 element_mask=_void_energy_mask,
                 g_stiffness_override=_g_stiffness_override_current,
+                irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
             )
             _lambda_hist_history.append([
                 int(j),
@@ -2038,6 +2099,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     matprop, pffmodel, area_T, T_conn, _f_current,
                     element_mask=_void_energy_mask,
                     g_stiffness_override=_g_stiffness_override_current,
+                    irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
                 )
             E_el_scalar = float(E_el_val.item())
             E_el_history.append(E_el_scalar)
@@ -2082,6 +2144,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     oracle_target_elem=_oracle_target_elem,
                     oracle_mask_elem=_oracle_mask_elem,
                     g_stiffness_override_elem=_g_stiffness_override_current,
+                    irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
                 )
 
             # ── 裂缝尖端 L∞（仅用于日志和后处理，不再作为停止判据）──────────

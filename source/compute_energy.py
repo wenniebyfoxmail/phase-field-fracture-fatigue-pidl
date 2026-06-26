@@ -37,7 +37,8 @@ import torch.nn as nn
 def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn=None,
                    f_fatigue=1.0, crack_tip_weights=None,
                    element_subset=None, importance_weights=None,
-                   element_mask=None, g_stiffness_override=None):
+                   element_mask=None, g_stiffness_override=None,
+                   irreversibility_penalty_cfg=None):
     """
     计算总能量
 
@@ -79,6 +80,7 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
         inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn,
         f_fatigue=f_fatigue,
         g_stiffness_override=g_stiffness_override,
+        irreversibility_penalty_cfg=irreversibility_penalty_cfg,
     )
 
     if element_mask is not None:
@@ -112,8 +114,52 @@ def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T
     return E_el_sum, E_d_sum, E_hist_sum
 
 
+def _legacy_irreversibility_penalty_sq(alpha, hist_alpha, T_conn):
+    dAlpha = alpha - hist_alpha
+    if T_conn is None:
+        dAlpha_elem = dAlpha
+    else:
+        dAlpha_elem = (
+            dAlpha[T_conn[:, 0]] + dAlpha[T_conn[:, 1]] + dAlpha[T_conn[:, 2]]
+        ) / 3
+    hist_penalty = nn.ReLU()(-dAlpha_elem)       # ⟨-Δα⟩₊ = ⟨Δα⟩₋
+    return hist_penalty**2
+
+
+def _triangle_gp3_irr_sq_mean(alpha, hist_alpha, T_conn):
+    """Mean_q ReLU(-(alpha_q - hist_q))^2 at 3-point triangle quadrature."""
+    a0 = alpha[T_conn[:, 0]]
+    a1 = alpha[T_conn[:, 1]]
+    a2 = alpha[T_conn[:, 2]]
+    h0 = hist_alpha[T_conn[:, 0]]
+    h1 = hist_alpha[T_conn[:, 1]]
+    h2 = hist_alpha[T_conn[:, 2]]
+
+    # Barycentric points: (2/3, 1/6, 1/6) and permutations, equal weights.
+    alpha_q0 = (4.0 * a0 + a1 + a2) / 6.0
+    alpha_q1 = (a0 + 4.0 * a1 + a2) / 6.0
+    alpha_q2 = (a0 + a1 + 4.0 * a2) / 6.0
+    hist_q0 = (4.0 * h0 + h1 + h2) / 6.0
+    hist_q1 = (h0 + 4.0 * h1 + h2) / 6.0
+    hist_q2 = (h0 + h1 + 4.0 * h2) / 6.0
+
+    p0 = torch.relu(-(alpha_q0 - hist_q0)) ** 2
+    p1 = torch.relu(-(alpha_q1 - hist_q1)) ** 2
+    p2 = torch.relu(-(alpha_q2 - hist_q2)) ** 2
+    return (p0 + p1 + p2) / 3.0
+
+
+def _irreversibility_penalty_enabled(cfg):
+    if cfg is None:
+        return False
+    if isinstance(cfg, bool):
+        return cfg
+    return bool(cfg.get("enable", False))
+
+
 def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn=None,
-                             f_fatigue=1.0, g_stiffness_override=None):
+                             f_fatigue=1.0, g_stiffness_override=None,
+                             irreversibility_penalty_cfg=None):
     '''
     计算每个单元的能量。
 
@@ -166,14 +212,29 @@ def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, are
     # =========================================================================
     # 步骤6: 不可逆性惩罚 E_irr = (1/2)γ_ir ∫ ⟨α - α_{n-1}⟩²₋ dΩ
     # =========================================================================
-    dAlpha = alpha - hist_alpha
-    if T_conn is None:
-        dAlpha_elem = dAlpha
+    if _irreversibility_penalty_enabled(irreversibility_penalty_cfg):
+        mode = (
+            irreversibility_penalty_cfg.get("mode", "fem_gp_tri3")
+            if isinstance(irreversibility_penalty_cfg, dict)
+            else "fem_gp_tri3"
+        )
+        if mode != "fem_gp_tri3":
+            raise ValueError(
+                "irreversibility_penalty_cfg['mode'] must be "
+                f"'fem_gp_tri3', got {mode!r}"
+            )
+        if T_conn is None:
+            hist_penalty_sq = _legacy_irreversibility_penalty_sq(
+                alpha, hist_alpha, T_conn
+            )
+        else:
+            hist_penalty_sq = _triangle_gp3_irr_sq_mean(alpha, hist_alpha, T_conn)
     else:
-        dAlpha_elem = (dAlpha[T_conn[:, 0]] + dAlpha[T_conn[:, 1]] + dAlpha[T_conn[:, 2]]) / 3
+        hist_penalty_sq = _legacy_irreversibility_penalty_sq(
+            alpha, hist_alpha, T_conn
+        )
 
-    hist_penalty  = nn.ReLU()(-dAlpha_elem)          # ⟨-Δα⟩₊ = ⟨Δα⟩₋
-    E_hist_penalty = 0.5 * matprop.w1 * weight_penalty * hist_penalty**2 * area_elem
+    E_hist_penalty = 0.5 * matprop.w1 * weight_penalty * hist_penalty_sq * area_elem
 
     return E_el, E_d, E_hist_penalty
 
@@ -235,17 +296,23 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
     _hdr = history_driver_reduction_dict or {}
     if _hdr.get('enable', False) and T_conn is not None:
         mode = _hdr.get('mode', 'probe_g_mean')
-        if mode != 'probe_g_mean':
+        if mode not in {'probe_g_mean', 'fem_gp_tri3_g_mean'}:
             raise ValueError(
-                "history_driver_reduction_dict['mode'] must be 'probe_g_mean', "
+                "history_driver_reduction_dict['mode'] must be 'probe_g_mean' "
+                "or 'fem_gp_tri3_g_mean', "
                 f"got {mode!r}"
             )
         a0 = alpha[T_conn[:, 0]]
         a1 = alpha[T_conn[:, 1]]
         a2 = alpha[T_conn[:, 2]]
-        q0 = (2.0 * a0 + a1 + a2) / 4.0
-        q1 = (a0 + 2.0 * a1 + a2) / 4.0
-        q2 = (a0 + a1 + 2.0 * a2) / 4.0
+        if mode == 'fem_gp_tri3_g_mean':
+            q0 = (4.0 * a0 + a1 + a2) / 6.0
+            q1 = (a0 + 4.0 * a1 + a2) / 6.0
+            q2 = (a0 + a1 + 4.0 * a2) / 6.0
+        else:
+            q0 = (2.0 * a0 + a1 + a2) / 4.0
+            q1 = (a0 + 2.0 * a1 + a2) / 4.0
+            q2 = (a0 + a1 + 2.0 * a2) / 4.0
         g0, _ = pffmodel.Edegrade(q0)
         g1, _ = pffmodel.Edegrade(q1)
         g2, _ = pffmodel.Edegrade(q2)
