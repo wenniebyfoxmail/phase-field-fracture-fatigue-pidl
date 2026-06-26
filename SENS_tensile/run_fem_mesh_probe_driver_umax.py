@@ -77,6 +77,15 @@ def main() -> None:
     parser.add_argument("--mesh-file", default="meshed_geom_fem_soft_hist0.msh")
     parser.add_argument("--coarse-mesh-file", default=None)
     parser.add_argument("--tag", default="probeDriver_softHist0_stateTiming")
+    parser.add_argument("--hidden-layers", type=int, default=8)
+    parser.add_argument("--neurons", type=int, default=400)
+    parser.add_argument("--init-coeff", default="1.0")
+    parser.add_argument("--epochs-rprop", type=int, default=None,
+                        help="Override config.optimizer_dict['n_epochs_RPROP'] for smoke runs.")
+    parser.add_argument("--epochs-lbfgs", type=int, default=None,
+                        help="Override config.optimizer_dict['n_epochs_LBFGS'] for smoke runs.")
+    parser.add_argument("--optim-rel-tol", type=float, default=None,
+                        help="Override main/pretrain early-stopping relative tolerance.")
     parser.add_argument("--substeps", type=_parse_factors,
                         default=_parse_factors("0.25,0.5,0.75,1,0"))
     parser.add_argument("--history-driver-reduction-mode",
@@ -94,7 +103,14 @@ def main() -> None:
     if args.force_cpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
-    sys.argv = ["main.py", "8", "400", str(args.seed), "TrainableReLU", "1.0"]
+    sys.argv = [
+        "main.py",
+        str(args.hidden_layers),
+        str(args.neurons),
+        str(args.seed),
+        "TrainableReLU",
+        str(args.init_coeff),
+    ]
 
     here = Path(__file__).resolve().parent
     os.chdir(here)
@@ -133,6 +149,13 @@ def main() -> None:
     config.coarse_mesh_file = coarse_mesh
     config.fine_mesh_file = fem_mesh
     config.network_dict["compile"] = bool(args.compile)
+    if args.epochs_rprop is not None:
+        config.optimizer_dict["n_epochs_RPROP"] = int(args.epochs_rprop)
+    if args.epochs_lbfgs is not None:
+        config.optimizer_dict["n_epochs_LBFGS"] = int(args.epochs_lbfgs)
+    if args.optim_rel_tol is not None:
+        config.optimizer_dict["optim_rel_tol"] = float(args.optim_rel_tol)
+        config.optimizer_dict["optim_rel_tol_pretrain"] = float(args.optim_rel_tol)
     config.fatigue_dict["disp_max"] = float(args.umax)
     config.fatigue_dict["n_cycles"] = int(args.n_cycles_physical)
     config.fatigue_dict["loading_type"] = "cyclic"
@@ -203,6 +226,12 @@ def main() -> None:
         handle.write(f"n_cycles_physical: {args.n_cycles_physical}\n")
         handle.write(f"n_training_steps: {total_steps}\n")
         handle.write(f"seed: {args.seed}\n")
+        handle.write(f"hidden_layers: {config.network_dict['hidden_layers']}\n")
+        handle.write(f"neurons: {config.network_dict['neurons']}\n")
+        handle.write(f"init_coeff: {args.init_coeff}\n")
+        handle.write(f"n_epochs_RPROP: {config.optimizer_dict['n_epochs_RPROP']}\n")
+        handle.write(f"n_epochs_LBFGS: {config.optimizer_dict['n_epochs_LBFGS']}\n")
+        handle.write(f"optim_rel_tol: {config.optimizer_dict['optim_rel_tol']}\n")
         handle.write(f"coarse_mesh_file: {config.coarse_mesh_file}\n")
         handle.write(f"fine_mesh_file: {config.fine_mesh_file}\n")
         handle.write(f"mesh_tag: {mesh_tag}\n")
@@ -231,6 +260,14 @@ def main() -> None:
     print("PIDL FEM-mesh probe-averaged fatigue-driver reduction")
     print(f"  U_max          = {args.umax} | physical cycles = {args.n_cycles_physical}")
     print(f"  training steps = {total_steps} | seed = {args.seed}")
+    print(
+        f"  network        = {config.network_dict['hidden_layers']}x"
+        f"{config.network_dict['neurons']}"
+    )
+    print(
+        f"  epochs         = RPROP {config.optimizer_dict['n_epochs_RPROP']} | "
+        f"LBFGS {config.optimizer_dict['n_epochs_LBFGS']}"
+    )
     print(f"  substeps       = {list(factors)}")
     print(f"  FEM mesh       = {fem_mesh}")
     print(f"  coarse mesh    = {coarse_mesh}")
