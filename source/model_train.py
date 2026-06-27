@@ -265,6 +265,93 @@ def _element_to_node_projection(elem_values, T_conn, n_nodes, reduce="max"):
     return torch.where(torch.isfinite(out), out, torch.zeros_like(out))
 
 
+def _element_mean_from_nodes(node_values, T_conn):
+    if T_conn is None:
+        return node_values.reshape(-1)
+    return (
+        node_values[T_conn[:, 0]]
+        + node_values[T_conn[:, 1]]
+        + node_values[T_conn[:, 2]]
+    ) / 3.0
+
+
+def _save_pre_step0_baseline_diagnostics(
+    inp,
+    T_conn,
+    area_T,
+    field_comp,
+    hist_alpha,
+    hist_fat,
+    f_fatigue,
+    psi_plus_prev,
+    disp0,
+    out_path,
+):
+    """Save the actual post-pretraining, pre-step0 history baseline."""
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    old_lambda = field_comp.lmbda
+    try:
+        field_comp.lmbda = torch.tensor([float(disp0)], device=inp.device, dtype=inp.dtype)
+        with torch.no_grad():
+            _, _, alpha_pretrain = field_comp.fieldCalculation(inp)
+            alpha_pretrain = alpha_pretrain.reshape(-1).detach()
+            hist_alpha = hist_alpha.reshape(-1).detach()
+            hist_fat = hist_fat.reshape(-1).detach()
+            psi_plus_prev = psi_plus_prev.reshape(-1).detach()
+            f_current = _resolve_f_fatigue(f_fatigue)
+            if not torch.is_tensor(f_current):
+                f_current = torch.full_like(hist_fat, float(f_current))
+            f_current = f_current.reshape(-1).detach()
+            hist_alpha_elem = _element_mean_from_nodes(hist_alpha, T_conn)
+            alpha_pretrain_elem = _element_mean_from_nodes(alpha_pretrain, T_conn)
+            if T_conn is None:
+                elem_x = inp[:, 0]
+                elem_y = inp[:, 1]
+                conn_np = np.empty((0, 3), dtype=np.int64)
+            else:
+                elem_x = (
+                    inp[T_conn[:, 0], 0]
+                    + inp[T_conn[:, 1], 0]
+                    + inp[T_conn[:, 2], 0]
+                ) / 3.0
+                elem_y = (
+                    inp[T_conn[:, 0], 1]
+                    + inp[T_conn[:, 1], 1]
+                    + inp[T_conn[:, 2], 1]
+                ) / 3.0
+                conn_np = _tensor_to_numpy(T_conn).astype(np.int64)
+    finally:
+        field_comp.lmbda = old_lambda
+    np.savez_compressed(
+        out_path,
+        state_label=np.array("pre_step0_post_pretraining_baseline"),
+        step_index=np.array([-1], dtype=np.int32),
+        next_step_index=np.array([0], dtype=np.int32),
+        next_step_displacement=np.array([float(disp0)], dtype=np.float32),
+        nodes=_tensor_to_numpy(inp).astype(np.float32),
+        connectivity=conn_np,
+        element_centroids=np.column_stack([
+            _tensor_to_numpy(elem_x).reshape(-1),
+            _tensor_to_numpy(elem_y).reshape(-1),
+        ]).astype(np.float32),
+        element_area=_tensor_to_numpy(area_T).reshape(-1).astype(np.float32),
+        hist_alpha_node=_tensor_to_numpy(hist_alpha).reshape(-1).astype(np.float32),
+        hist_alpha_elem=_tensor_to_numpy(hist_alpha_elem).reshape(-1).astype(np.float32),
+        alpha_pretrain_node=_tensor_to_numpy(alpha_pretrain).reshape(-1).astype(np.float32),
+        alpha_pretrain_elem=_tensor_to_numpy(alpha_pretrain_elem).reshape(-1).astype(np.float32),
+        alpha_pretrain_minus_hist_node=(
+            _tensor_to_numpy(alpha_pretrain - hist_alpha).reshape(-1).astype(np.float32)
+        ),
+        alpha_pretrain_minus_hist_elem=(
+            _tensor_to_numpy(alpha_pretrain_elem - hist_alpha_elem).reshape(-1).astype(np.float32)
+        ),
+        hist_fat_elem=_tensor_to_numpy(hist_fat).reshape(-1).astype(np.float32),
+        f_fatigue_elem=_tensor_to_numpy(f_current).reshape(-1).astype(np.float32),
+        psi_plus_prev_elem=_tensor_to_numpy(psi_plus_prev).reshape(-1).astype(np.float32),
+    )
+    print(f"[PreStep0Baseline] saved {out_path}")
+
+
 def _principal_2d(xx, yy, xy):
     mean = 0.5 * (xx + yy)
     radius = torch.sqrt((0.5 * (xx - yy)) ** 2 + xy**2)
@@ -1220,6 +1307,20 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
     _g_stiffness_override_current = None
     _f_fatigue_override_current = None
+
+    if fatigue_on and start_j == 0:
+        _save_pre_step0_baseline_diagnostics(
+            inp,
+            T_conn,
+            area_T,
+            field_comp,
+            hist_alpha,
+            hist_fat,
+            f_fatigue,
+            psi_plus_prev,
+            disp[0],
+            trainedModel_path.parent / Path("pre_step0_baseline_diagnostics.npz"),
+        )
 
     # =========================================================================
     # 主循环：每次迭代对应一个加载步（单调模式）或一个完整循环（疲劳模式）
