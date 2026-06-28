@@ -62,14 +62,14 @@ Unsafe claims:
 
 | Mechanism question | Short answer | Key evidence | Credibility | Next action |
 |---|---|---|---|---|
-| Monotonic controls and Case C | Latest monotonic fatigue-on code path does not accumulate fatigue history; monotonic fracture is a separate high-load control. | `mono_onoff_latest_ddc22eb_20260627_234645`; `mono_fatigue_off_f3b29cc_20260627`; `softHist0_monoU02_8seed_ec32214_20260623_172416` | supporting / diagnostic | Build the monotonic energy table and keep claims load-indexed. |
+| Monotonic controls and Case C | Latest monotonic fatigue-on code path does not accumulate fatigue history; monotonic fracture is a separate high-load control. | `mono_onoff_latest_ddc22eb_20260627_234645`; `mono_fatigue_off_f3b29cc_20260627`; `softHist0_monoU02_8seed_ec32214_20260623_172416` | supporting / diagnostic | Use the completed soft-hist0 FEM energy comparison only as load-indexed scalar evidence. |
 | State timing and mapping | Five-substep cyclic comparisons must use explicit state labels; clean regenerated cyclic records still show history/driver residuals after mapping is fixed. | `stateTiming_until_fracture_5fa9dd6_20260608`; `stateTiming_onepeak_substeps_diagnostics_20260531_0601`; `probe_driver_fullskill_8970066_20260609`; `precrack_fatigue_mask_complete_export_630111c_20260609`; `pf_softHist0_state0_seed1_*` | canonical for mapping; diagnostic for runs | Use the new retrospective decisions; exact substep event NPZ still needs posthoc export only if figures require it. |
 | History driver / wake mismatch | Raw or lagged driver variants change history magnitude and timing but are not clean fixes. | `history_driver_discriminator_20260602_0603`; `history_driver_wake_mismatch_trio_20260602`; `A_hist_alpha_max_raw_driver_fem_pretrain_20260616`; `lagged_g_stiffness_pair_20260613` | negative / diagnostic | Treat bounded/mixed driver as a new gated design only, not as "raw untried". |
 | C1 coupled solve / stiffness feedback | The first-cycle hotspot is created by coupled elastic-damage feedback, not by initial alpha/precrack alone or epoch scheduling alone. | `frozen_alpha_elastic_discriminator_20260603`; `c1_altmin_discriminator_20260603` | supporting / diagnostic | Use as the bridge from early-field mismatch to trajectory/history error. |
 | Oracle and restart causal channels | Under oracle/restart intervention, irreversible state/history feedback and near-critical state are sufficient to trigger penetration; stiffness or fatigue factor alone is not. | `oracle_six_run_comparison_20260610`; `oracle_hard_hist_alpha_20260610`; `oracle_alpha_bar_state_20260610`; `oracle_psi_raw_feedback_20260610`; `oracle_f_fatigue_20260610`; `oracle_fem_g_stiffness_20260610`; `F_fem_state_restart_pair_20260616_analysis` | supporting / diagnostic | Use as the main causal split, with the oracle caveat attached. |
 | Irreversibility / history update | Simple monotone history and hard transforms do not solve the field gap; FEM-like irreversibility penalty is useful but mixed. | `A_hist_alpha_max_pair_analysis_20260615`; `femlike_irr_penalty_b70cdf3_20260626`; `hardirr_41e0bf1_20260524`; `hardirr_6525a9f_20260525` | mixed supporting / negative | Do not rerun hard transform without bounded numerical guard and field gate. |
 | Representation / localization | Local heads, patches, split trunks, FBPINNs, all-FEM-mesh and SDF/XFEM features shift mode/timing but do not close active-driver/history localization. | `tiplocal_exp18_20260528`; `staged_alpha_discriminator_20260530`; `split_trunk_discriminator_20260601`; `local_patch_discriminator_20260530`; `fbpinn_chain_discriminator_20260530`; `allfemmesh_softHist0_fb06879_20260604`; `discontinuity_sdf_xfem_uvonly_f17e77e_20260601` | negative / diagnostic | Do not launch another architecture sweep without a predeclared active-driver/process-zone gate. |
-| Field supervision and direct forcing | Direct hidden-field forcing is too aggressive or incomplete unless normalized and gated. | `field_supervision_90dd3ad_20260601`; `oracle_triplet_8970066_20260609/{oracle_active_fem, oracle_delta_alpha_bar}`; `oracle_f_fatigue_20260610` | negative / diagnostic | Use the new field-supervision decision; rerun only with normalized/gated targets and an active-driver/process-zone gate. |
+| Field supervision and direct forcing | Direct hidden-field forcing is too aggressive or incomplete unless normalized and gated. | `field_supervision_90dd3ad_20260601`; `oracle_triplet_8970066_20260609`; `oracle_f_fatigue_20260610` | negative / diagnostic | Use the field-supervision and oracle-triplet decisions; rerun only with normalized/gated targets and an active-driver/process-zone gate. |
 | Inverse / scalar calibration | Scalar fatigue-parameter inversion compensates event timing by collapsing `alpha_T`; it does not repair the active-driver field. | `inverse_alphaT_femmesh_softHist0_20260531` | negative / diagnostic | Reuse only after a forward field mechanism improves. |
 | Surrogate / M2S adjacent work | Useful for framework/tooling, not forward PIDL mechanism closure. | `m2s_framework_validation_20260531`; `mesh_gnn_residual_discriminator_20260616`; `taobo_surrogate_smoke_fee0ccf_ecafe0e_20260625_26` | supporting for framework; diagnostic/tooling for PIDL | Next M2S rung needs multi-trajectory FEM; mesh-GNN only as targeted `psi_active` sidecar. |
 
@@ -97,6 +97,13 @@ Evidence:
   - The practical difference is stop policy: fatigue-off follows the same
     checkpoint trajectory through `U=0.195` and runs the one extra scheduled
     step to `U=0.2`.
+  - FEM soft-hist0 scalar energy comparison now lives at
+    `analysis/05_fem_comparison_result.md`; the generated table and figure
+    compare latest PIDL on/off against the FEM soft-hist0 VTK/postprocessed
+    energy curve by prescribed displacement `U`.
+  - In that scalar comparison, FEM soft-hist0 peaks in `E_el` at `U=0.140`,
+    while the latest PIDL on/off curves peak at `U=0.135`; all three have their
+    largest `E_el` drop over `U=0.140 -> 0.145`.
 - `mono_fatigue_off_f3b29cc_20260627`
   - Current strict monotonic fatigue-off control; event around `U=0.140--0.145`.
 - `softHist0_monoU02_8seed_ec32214_20260623_172416`
@@ -105,8 +112,11 @@ Evidence:
 
 Caveats:
 
-- Field-level FEM comparison for monotonic controls is not yet the main
-  evidence package.
+- The new FEM comparison is scalar energy only, not a pointwise field residual
+  or force-displacement validation.
+- The FEM reference is the legacy diagnostic soft-hist0 VTK/postprocessed energy
+  table with a state0 anchor; do not mix it with current brittle SENS or raw FEM
+  fatigue-kernel `Fract_en` without restating the energy convention.
 - Use load value, not cyclic state label, for monotonic comparisons.
 
 Credibility: supporting / diagnostic.
@@ -320,6 +330,10 @@ Evidence:
   `sdf_discontinuity_embedding_archive`
   - SDF/XFEM features shift event timing but remain diagnostic/negative, with a
     strict-vs-legacy caveat.
+  - Retrospective strict-vs-legacy boundary decision now lives at
+    `pidl-discontinuity-f17e77e/analysis/decision.md`. Count the f17e77e root
+    as the strict-ish evidence endpoint and the legacy SDF archive as lineage,
+    not as a second independent strict result.
 
 Caveats:
 
@@ -351,6 +365,11 @@ Evidence:
   - `oracle_triplet_8970066_20260609/{oracle_active_fem, oracle_delta_alpha_bar}`
     are useful channel checks but do not establish a standalone direct-forcing
     fix.
+  - `oracle_triplet_8970066_20260609/analysis/decision.md` aggregates
+    `oracle_raw_pidl_g`, `oracle_active_fem`, and `oracle_delta_alpha_bar`:
+    the family gives no clean oracle fix. Do not call all three negative,
+    because raw-PIDL-g is mixed: it recovers timing only by over-amplifying the
+    history/driver field.
 
 Caveats:
 
@@ -424,39 +443,42 @@ Completed in the 2026-06-28 evidence-matrix follow-up:
 - `stateTiming_substeps025_untilFrac_Nphys120_Nstep600/analysis/decision.md`
 - `pidl-allfemmesh-fb06879/analysis/decision.md`
 - `pidl-field-supervision-90dd3ad/analysis/decision.md`
+- `pidl-discontinuity-f17e77e/analysis/decision.md`
+- `oracle_triplet_8970066_20260609/analysis/decision.md`
+- `PIDL_mono_onoff_latest_ddc22eb_20260627_234645/analysis/decision.md`
+- `PIDL_mono_onoff_latest_ddc22eb_20260627_234645/analysis/05_fem_comparison_result.md`
 
 Highest-value remaining missing or weak endpoints:
 
-1. `discontinuity_sdf_xfem_uvonly_f17e77e_20260601`
-   - Why: must be cross-linked to legacy SDF archive to avoid double counting.
-   - Needed: strict-vs-legacy boundary note.
-2. `oracle_triplet_8970066_20260609`
-   - Why: the subcases have decisions, but the inventory also uses a triplet
-     family row.
-   - Needed: a compact aggregate endpoint that points to
-     `oracle_active_fem`, `oracle_delta_alpha_bar`, and `oracle_raw_pidl_g`.
+No immediate high-value missing decision endpoint remains from the 2026-06-28
+triage list.  The remaining weak endpoints are conditional: predecessor rows
+should stay as traceability unless cited directly, and exact state snapshots
+should be exported only if a figure needs them.
 
 ## Remaining Work Backlog
 
-Evidence endpoints:
+Completed evidence/figure endpoints:
 
-1. Write the strict-vs-legacy boundary note for
+1. Strict-vs-legacy boundary note for
    `discontinuity_sdf_xfem_uvonly_f17e77e_20260601`.
-2. Write the aggregate decision for `oracle_triplet_8970066_20260609`, pointing
-   to the three subcase endpoints.
-3. Keep the predecessor rows (`probe_driver_clean_*`,
+2. Aggregate decision for `oracle_triplet_8970066_20260609`, pointing to the
+   three subcase endpoints.
+3. FEM soft-hist0 scalar energy table/figure for
+   `mono_onoff_latest_ddc22eb_20260627_234645`.
+
+Evidence endpoints still conditional:
+
+1. Keep the predecessor rows (`probe_driver_clean_*`,
    `precrack_fatigue_mask_clean_*`) as traceability unless they become cited
    directly.
 
 Analysis / figure work:
 
-1. Generate the FEM-comparison monotonic energy table/figure for
-   `mono_onoff_latest_ddc22eb_20260627_234645` before using it in chapter text.
-2. Export or reconstruct exact `stateTiming` substep event states
+1. Export or reconstruct exact `stateTiming` substep event states
    `idx408-411` only if a figure needs those NPZ snapshots.
-3. Decide whether the eight-seed monotonic aggregate needs a seed-6 rerun before
+2. Decide whether the eight-seed monotonic aggregate needs a seed-6 rerun before
    any "eight-seed" claim.
-4. Defer full downloads of metadata-only Taobo roots until a specific
+3. Defer full downloads of metadata-only Taobo roots until a specific
    figure/checkpoint need exists: `pidl-allfemmesh-fb06879-runs` (1.1G),
    `phase-field-pidl-adapthist-af5a533` (2.2G), and
    `phase-field-pidl-hardirr-6525a9f-runs` (2.0G).
