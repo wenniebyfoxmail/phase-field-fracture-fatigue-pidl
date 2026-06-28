@@ -69,7 +69,7 @@ Unsafe claims:
 | Oracle and restart causal channels | Under oracle/restart intervention, irreversible state/history feedback and near-critical state are sufficient to trigger penetration; stiffness or fatigue factor alone is not. | `oracle_six_run_comparison_20260610`; `oracle_hard_hist_alpha_20260610`; `oracle_alpha_bar_state_20260610`; `oracle_psi_raw_feedback_20260610`; `oracle_f_fatigue_20260610`; `oracle_fem_g_stiffness_20260610`; `F_fem_state_restart_pair_20260616_analysis` | supporting / diagnostic | Use as the main causal split, with the oracle caveat attached. |
 | Irreversibility / history update | Simple monotone history and hard transforms do not solve the field gap; FEM-like irreversibility penalty is useful but mixed. | `A_hist_alpha_max_pair_analysis_20260615`; `femlike_irr_penalty_b70cdf3_20260626`; `hardirr_41e0bf1_20260524`; `hardirr_6525a9f_20260525` | mixed supporting / negative | Do not rerun hard transform without bounded numerical guard and field gate. |
 | Representation / localization | Local heads, patches, split trunks, FBPINNs, all-FEM-mesh and SDF/XFEM features shift mode/timing but do not close active-driver/history localization. | `tiplocal_exp18_20260528`; `staged_alpha_discriminator_20260530`; `split_trunk_discriminator_20260601`; `local_patch_discriminator_20260530`; `fbpinn_chain_discriminator_20260530`; `allfemmesh_softHist0_fb06879_20260604`; `discontinuity_sdf_xfem_uvonly_f17e77e_20260601` | negative / diagnostic | Do not launch another architecture sweep without a predeclared active-driver/process-zone gate. |
-| Field supervision and direct forcing | Direct hidden-field forcing is too aggressive or incomplete unless normalized and gated. | `field_supervision_90dd3ad_20260601`; `oracle_triplet_8970066_20260609/{oracle_active_fem, oracle_delta_alpha_bar}`; `oracle_f_fatigue_20260610` | negative / diagnostic | Add a field-supervision decision note before citing. |
+| Field supervision and direct forcing | Direct hidden-field forcing is too aggressive or incomplete unless normalized and gated. | `field_supervision_90dd3ad_20260601`; `oracle_triplet_8970066_20260609/{oracle_active_fem, oracle_delta_alpha_bar}`; `oracle_f_fatigue_20260610` | negative / diagnostic | Use the new field-supervision decision; rerun only with normalized/gated targets and an active-driver/process-zone gate. |
 | Inverse / scalar calibration | Scalar fatigue-parameter inversion compensates event timing by collapsing `alpha_T`; it does not repair the active-driver field. | `inverse_alphaT_femmesh_softHist0_20260531` | negative / diagnostic | Reuse only after a forward field mechanism improves. |
 | Surrogate / M2S adjacent work | Useful for framework/tooling, not forward PIDL mechanism closure. | `m2s_framework_validation_20260531`; `mesh_gnn_residual_discriminator_20260616`; `taobo_surrogate_smoke_fee0ccf_ecafe0e_20260625_26` | supporting for framework; diagnostic/tooling for PIDL | Next M2S rung needs multi-trajectory FEM; mesh-GNN only as targeted `psi_active` sidecar. |
 
@@ -314,6 +314,8 @@ Evidence:
 - `allfemmesh_softHist0_fb06879_20260604`
   - Using the FEM mesh for coarse/fine shifts event timing but does not
     establish field alignment.
+  - Retrospective decision now lives under the Taobo gap-import root at
+    `pidl-allfemmesh-fb06879/analysis/decision.md`.
 - `discontinuity_sdf_xfem_uvonly_f17e77e_20260601` and
   `sdf_discontinuity_embedding_archive`
   - SDF/XFEM features shift event timing but remain diagnostic/negative, with a
@@ -323,7 +325,8 @@ Caveats:
 
 - Some SDF and early tip-local assets predate the final strict-alignment
   protocol.
-- `allfemmesh` full run directory remains metadata-only locally.
+- `allfemmesh` full run directory remains metadata-only locally, so checkpoint
+  forensics still require a coordinated 1.1G transfer if figures need it.
 
 Credibility: negative / diagnostic.
 
@@ -338,8 +341,11 @@ Evidence:
 
 - `field_supervision_90dd3ad_20260601`
   - Default pretrain batch failed because `meshed_geom1.msh` was missing.
-  - Pretrain-off runs completed, but `psi_active` fractured by c1/c4 and
-    `psi_raw` by c13/c16, indicating unstable/aggressive forcing.
+  - Pretrain-off `alpha`/`alpha_bar` reached the logged N20 window without a
+    boundary-fracture stop, but `psi_active` fractured by c1/c4 and `psi_raw`
+    by c13/c16, indicating unstable/aggressive hidden-driver forcing.
+  - Retrospective decision now lives under the Taobo gap-import root at
+    `pidl-field-supervision-90dd3ad/analysis/decision.md`.
 - Oracle/direct forcing negatives:
   - `oracle_f_fatigue_20260610` fails the penetration gate.
   - `oracle_triplet_8970066_20260609/{oracle_active_fem, oracle_delta_alpha_bar}`
@@ -348,8 +354,9 @@ Evidence:
 
 Caveats:
 
-- `field_supervision_90dd3ad_20260601` still lacks a dedicated decision file;
-  current summary comes from imported logs and inventory synthesis.
+- The decision separates setup failure from the pretrain-off physical
+  diagnostic. Do not treat the default-pretrain missing-mesh failure as a
+  mechanism result.
 
 Credibility: negative / diagnostic.
 
@@ -415,35 +422,59 @@ Completed in the 2026-06-28 evidence-matrix follow-up:
 - `pf_softHist0_state0_seed1_meshsync_66b56e4_20260624_124900/analysis/decision.md`
 - `stateTiming_onepeak_untilFrac_Nphys100_Nstep100/analysis/decision.md`
 - `stateTiming_substeps025_untilFrac_Nphys120_Nstep600/analysis/decision.md`
+- `pidl-allfemmesh-fb06879/analysis/decision.md`
+- `pidl-field-supervision-90dd3ad/analysis/decision.md`
 
 Highest-value remaining missing or weak endpoints:
 
-1. `allfemmesh_softHist0_fb06879_20260604`
-   - Why: direct FEM-mesh representation negative control.
-   - Needed: decision note from available logs/metadata; full 1.1G download only
-     if figures or checkpoints are actually needed.
-2. `field_supervision_90dd3ad_20260601`
-   - Why: direct forcing is an obvious future idea and should be closed cleanly.
-   - Needed: decision note that separates setup failure from pretrain-off
-     over-forcing.
-3. `discontinuity_sdf_xfem_uvonly_f17e77e_20260601`
+1. `discontinuity_sdf_xfem_uvonly_f17e77e_20260601`
    - Why: must be cross-linked to legacy SDF archive to avoid double counting.
    - Needed: strict-vs-legacy boundary note.
-4. `oracle_triplet_8970066_20260609`
+2. `oracle_triplet_8970066_20260609`
    - Why: the subcases have decisions, but the inventory also uses a triplet
      family row.
    - Needed: a compact aggregate endpoint that points to
      `oracle_active_fem`, `oracle_delta_alpha_bar`, and `oracle_raw_pidl_g`.
 
-## Recommended Next Work
+## Remaining Work Backlog
+
+Evidence endpoints:
+
+1. Write the strict-vs-legacy boundary note for
+   `discontinuity_sdf_xfem_uvonly_f17e77e_20260601`.
+2. Write the aggregate decision for `oracle_triplet_8970066_20260609`, pointing
+   to the three subcase endpoints.
+3. Keep the predecessor rows (`probe_driver_clean_*`,
+   `precrack_fatigue_mask_clean_*`) as traceability unless they become cited
+   directly.
+
+Analysis / figure work:
 
 1. Generate the FEM-comparison monotonic energy table/figure for
    `mono_onoff_latest_ddc22eb_20260627_234645` before using it in chapter text.
-2. Write the next retrospective decisions for `allfemmesh_softHist0_fb06879`
-   and `field_supervision_90dd3ad` if these negative controls will be cited.
-3. Defer full downloads of the three metadata-only Taobo roots until a specific
-   figure/checkpoint need exists.
-4. For forward PIDL, do not launch another architecture sweep unless the
-   proposal names the active-driver/process-zone metric it will improve.
-5. For framework validation, prioritize multi-trajectory FEM M2S data over more
+2. Export or reconstruct exact `stateTiming` substep event states
+   `idx408-411` only if a figure needs those NPZ snapshots.
+3. Decide whether the eight-seed monotonic aggregate needs a seed-6 rerun before
+   any "eight-seed" claim.
+4. Defer full downloads of metadata-only Taobo roots until a specific
+   figure/checkpoint need exists: `pidl-allfemmesh-fb06879-runs` (1.1G),
+   `phase-field-pidl-adapthist-af5a533` (2.2G), and
+   `phase-field-pidl-hardirr-6525a9f-runs` (2.0G).
+
+Forward-research gates:
+
+1. Do not launch another architecture or representation sweep unless the
+   proposal names the active-driver/process-zone metric it is meant to improve.
+2. Do not rerun field supervision without target normalization, a gating
+   schedule, and an early-state residual table.
+3. Treat bounded/mixed history-driver ideas as new gated designs, not as
+   evidence that "raw driver was untried".
+4. For M2S/framework validation, prioritize multi-trajectory FEM data over more
    single-trajectory feature engineering.
+
+Writing integration:
+
+1. Use the decision files as claim boundaries when drafting the PIDL mechanism
+   story.
+2. Keep negative controls grouped by mechanism question instead of presenting
+   them as a chronological list of failed runs.
