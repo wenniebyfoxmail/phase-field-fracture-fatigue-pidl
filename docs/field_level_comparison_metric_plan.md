@@ -10,6 +10,10 @@ Purpose: define a common FEM/PIDL gate before launching another representation
 experiment. The metric should decide whether a new method improves field
 likeness, not merely `N_f`, `alpha_bar_max`, or visual impression.
 
+2026-06-28 update: the current launch gate is narrowed in
+`docs/active_driver_process_zone_metric_2026-06-28.md`. Use that document as
+the required pre-sweep checklist; keep this file as the broader design record.
+
 ## Scope
 
 First target is Phase-1 toy-unit SENT at `Umax=0.12`, reverse/FEM-anchor BC

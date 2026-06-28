@@ -109,6 +109,9 @@ Evidence:
 - `softHist0_monoU02_8seed_ec32214_20260623_172416`
   - Seven finite traces out of eight; useful but not a clean eight-seed aggregate
     until seed 6 is replaced or explained.
+- `softHist0_monoU02_seed6rerun_ec32214_20260628_221451`
+  - Exact-code seed 6 rerun launched on Taobo to replace the NaN trace; pending
+    completion and finite-check before any `8valid` aggregate.
 
 Caveats:
 
@@ -339,8 +342,8 @@ Caveats:
 
 - Some SDF and early tip-local assets predate the final strict-alignment
   protocol.
-- `allfemmesh` full run directory remains metadata-only locally, so checkpoint
-  forensics still require a coordinated 1.1G transfer if figures need it.
+- `allfemmesh` full run directory is now local, but checkpoint forensics should
+  still be done only if a specific figure or mechanism question needs it.
 
 Credibility: negative / diagnostic.
 
@@ -474,19 +477,22 @@ Evidence endpoints still conditional:
 
 Analysis / figure work:
 
-1. Export or reconstruct exact `stateTiming` substep event states
-   `idx408-411` only if a figure needs those NPZ snapshots.
-2. Decide whether the eight-seed monotonic aggregate needs a seed-6 rerun before
-   any "eight-seed" claim.
-3. Defer full downloads of metadata-only Taobo roots until a specific
-   figure/checkpoint need exists: `pidl-allfemmesh-fb06879-runs` (1.1G),
-   `phase-field-pidl-adapthist-af5a533` (2.2G), and
-   `phase-field-pidl-hardirr-6525a9f-runs` (2.0G).
+1. Use the generated `stateTiming` alpha montage for `idx408-411` only as
+   qualitative PIDL fracture-detection evidence; exact rich state NPZ fields are
+   still unavailable for those four event states.
+2. Seed 6 replacement rerun is active; wait for finite-check and a regenerated
+   `8valid` table/figure before making any "eight-seed" monotonic aggregate
+   claim.
+3. The former metadata-only Taobo roots are now downloaded under
+   `$PROJECT/local_archive/taobo_remote_gap_census_20260627/raw_remote/`;
+   organize them only when a figure/checkpoint need exists.
 
 Forward-research gates:
 
 1. Do not launch another architecture or representation sweep unless the
-   proposal names the active-driver/process-zone metric it is meant to improve.
+   proposal names which block of
+   `docs/active_driver_process_zone_metric_2026-06-28.md` it is meant to
+   improve.
 2. Do not rerun field supervision without target normalization, a gating
    schedule, and an early-state residual table.
 3. Treat bounded/mixed history-driver ideas as new gated designs, not as
