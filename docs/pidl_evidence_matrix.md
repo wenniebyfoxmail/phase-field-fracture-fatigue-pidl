@@ -63,7 +63,7 @@ Unsafe claims:
 | Mechanism question | Short answer | Key evidence | Credibility | Next action |
 |---|---|---|---|---|
 | Monotonic controls and Case C | Latest monotonic fatigue-on code path does not accumulate fatigue history; monotonic fracture is a separate high-load control. | `mono_onoff_latest_ddc22eb_20260627_234645`; `mono_fatigue_off_f3b29cc_20260627`; `softHist0_monoU02_8seed_ec32214_20260623_172416` | supporting / diagnostic | Build the monotonic energy table and keep claims load-indexed. |
-| State timing and mapping | Five-substep cyclic comparisons must use explicit state labels; clean regenerated cyclic records still show history/driver residuals after mapping is fixed. | `stateTiming_until_fracture_5fa9dd6_20260608`; `stateTiming_onepeak_substeps_diagnostics_20260531_0601`; `probe_driver_fullskill_8970066_20260609`; `precrack_fatigue_mask_complete_export_630111c_20260609`; `pf_softHist0_state0_seed1_*` | canonical for mapping; diagnostic for runs | Add decision files for state0 and until-fracture cases. |
+| State timing and mapping | Five-substep cyclic comparisons must use explicit state labels; clean regenerated cyclic records still show history/driver residuals after mapping is fixed. | `stateTiming_until_fracture_5fa9dd6_20260608`; `stateTiming_onepeak_substeps_diagnostics_20260531_0601`; `probe_driver_fullskill_8970066_20260609`; `precrack_fatigue_mask_complete_export_630111c_20260609`; `pf_softHist0_state0_seed1_*` | canonical for mapping; diagnostic for runs | Use the new retrospective decisions; exact substep event NPZ still needs posthoc export only if figures require it. |
 | History driver / wake mismatch | Raw or lagged driver variants change history magnitude and timing but are not clean fixes. | `history_driver_discriminator_20260602_0603`; `history_driver_wake_mismatch_trio_20260602`; `A_hist_alpha_max_raw_driver_fem_pretrain_20260616`; `lagged_g_stiffness_pair_20260613` | negative / diagnostic | Treat bounded/mixed driver as a new gated design only, not as "raw untried". |
 | C1 coupled solve / stiffness feedback | The first-cycle hotspot is created by coupled elastic-damage feedback, not by initial alpha/precrack alone or epoch scheduling alone. | `frozen_alpha_elastic_discriminator_20260603`; `c1_altmin_discriminator_20260603` | supporting / diagnostic | Use as the bridge from early-field mismatch to trajectory/history error. |
 | Oracle and restart causal channels | Under oracle/restart intervention, irreversible state/history feedback and near-critical state are sufficient to trigger penetration; stiffness or fatigue factor alone is not. | `oracle_six_run_comparison_20260610`; `oracle_hard_hist_alpha_20260610`; `oracle_alpha_bar_state_20260610`; `oracle_psi_raw_feedback_20260610`; `oracle_f_fatigue_20260610`; `oracle_fem_g_stiffness_20260610`; `F_fem_state_restart_pair_20260616_analysis` | supporting / diagnostic | Use as the main causal split, with the oracle caveat attached. |
@@ -138,9 +138,14 @@ Evidence:
     confirmed at 411, physical cycle about 81.6/82.2.
   - Exact event `.npz` snapshots at 408-411 were not scheduled before the early
     stop; this is an explicit limitation.
+  - Retrospective decisions now live under the two existing case folders:
+    `stateTiming_onepeak_untilFrac_Nphys100_Nstep100/analysis/decision.md` and
+    `stateTiming_substeps025_untilFrac_Nphys120_Nstep600/analysis/decision.md`.
 - `pf_softHist0_state0_seed1_*`
   - Validates explicit `state0_initial_unloaded_prehistory` export path for
-    monotonic soft-hist0; still needs a short decision file.
+    monotonic soft-hist0.
+  - Retrospective decisions now live in both the first-attempt folder and the
+    meshsync retry folder.
 - `probe_driver_fullskill_8970066_20260609` and
   `precrack_fatigue_mask_complete_export_630111c_20260609`
   - Clean regenerated state-mapped strict cyclic records.
@@ -402,29 +407,29 @@ Caveats:
 
 Credibility: supporting for framework; diagnostic/tooling for PIDL.
 
-## Decision-File Debt
+## Decision-File Endpoint Status
 
-Highest-value missing or weak endpoints:
+Completed in the 2026-06-28 evidence-matrix follow-up:
 
-1. `pf_softHist0_state0_seed1_66b56e4_20260624_124606` and
-   `pf_softHist0_state0_seed1_meshsync_66b56e4_20260624_124900`
-   - Why: state0/prehistory export is central to the mapping story.
-   - Needed: short retrospective `analysis/decision.md` or README endpoint.
-2. `stateTiming_until_fracture_5fa9dd6_20260608`
-   - Why: until-fracture state-timing result is now an imported Taobo gap run.
-   - Needed: case-level verdict that records the exact event-NPZ limitation.
-3. `allfemmesh_softHist0_fb06879_20260604`
+- `pf_softHist0_state0_seed1_66b56e4_20260624_124606/analysis/decision.md`
+- `pf_softHist0_state0_seed1_meshsync_66b56e4_20260624_124900/analysis/decision.md`
+- `stateTiming_onepeak_untilFrac_Nphys100_Nstep100/analysis/decision.md`
+- `stateTiming_substeps025_untilFrac_Nphys120_Nstep600/analysis/decision.md`
+
+Highest-value remaining missing or weak endpoints:
+
+1. `allfemmesh_softHist0_fb06879_20260604`
    - Why: direct FEM-mesh representation negative control.
    - Needed: decision note from available logs/metadata; full 1.1G download only
      if figures or checkpoints are actually needed.
-4. `field_supervision_90dd3ad_20260601`
+2. `field_supervision_90dd3ad_20260601`
    - Why: direct forcing is an obvious future idea and should be closed cleanly.
    - Needed: decision note that separates setup failure from pretrain-off
      over-forcing.
-5. `discontinuity_sdf_xfem_uvonly_f17e77e_20260601`
+3. `discontinuity_sdf_xfem_uvonly_f17e77e_20260601`
    - Why: must be cross-linked to legacy SDF archive to avoid double counting.
    - Needed: strict-vs-legacy boundary note.
-6. `oracle_triplet_8970066_20260609`
+4. `oracle_triplet_8970066_20260609`
    - Why: the subcases have decisions, but the inventory also uses a triplet
      family row.
    - Needed: a compact aggregate endpoint that points to
@@ -432,10 +437,10 @@ Highest-value missing or weak endpoints:
 
 ## Recommended Next Work
 
-1. Write the two highest-value retrospective decisions:
-   `stateTiming_until_fracture_5fa9dd6_20260608` and `pf_softHist0_state0_seed1_*`.
-2. Generate the FEM-comparison monotonic energy table/figure for
+1. Generate the FEM-comparison monotonic energy table/figure for
    `mono_onoff_latest_ddc22eb_20260627_234645` before using it in chapter text.
+2. Write the next retrospective decisions for `allfemmesh_softHist0_fb06879`
+   and `field_supervision_90dd3ad` if these negative controls will be cited.
 3. Defer full downloads of the three metadata-only Taobo roots until a specific
    figure/checkpoint need exists.
 4. For forward PIDL, do not launch another architecture sweep unless the
