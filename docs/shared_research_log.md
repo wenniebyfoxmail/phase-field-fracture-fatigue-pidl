@@ -42,6 +42,24 @@
 
 ## Entries
 
+## 2026-06-29 · Mac-PIDL [retraction+implementation]
+
+**Eight-step cyclic protocol now accepts absolute displacement steps**
+
+Branch `codex/m2s-framework-validation`.  The first eight-step Taobo ablation
+used the legacy `--substeps` interface with normalized factors
+`0.25,0.5,0.75,1,0.75,0.5,0.25,0`.  For `Umax=0.12` this generated the intended
+physical displacement sequence, but the interface and provenance were
+semantically ambiguous for FEM/PIDL alignment.  That run was stopped and should
+be treated as an aborted diagnostic, not formal eight-step evidence.
+
+`SENS_tensile/run_fem_mesh_probe_driver_umax.py` now supports
+`--displacement-steps` as the preferred alignment interface.  The protocol
+source is the absolute displacement list, e.g.
+`0.03,0.06,0.09,0.12,0.09,0.06,0.03,0`; any normalized factors are written only
+as derived internal compatibility data for legacy oracle helpers.  Settings and
+logs now print displacement steps and peak/unload displacement values directly.
+
 ## 2026-06-29 · Mac-PIDL [decision+implementation]
 
 **Variable-substep peak/unload mapping for cyclic recovery diagnostics**

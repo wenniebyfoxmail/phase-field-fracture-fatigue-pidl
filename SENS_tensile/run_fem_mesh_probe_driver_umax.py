@@ -46,10 +46,10 @@ def _mesh_tag(mesh_file: str, explicit: str) -> str:
     return stem.removeprefix("meshed_geom_").replace(" ", "_")
 
 
-def _parse_factors(raw: str) -> list[float]:
+def _parse_float_csv(raw: str) -> list[float]:
     vals = [float(x) for x in raw.split(",") if x.strip()]
     if len(vals) < 2:
-        raise argparse.ArgumentTypeError("need at least two substep factors")
+        raise argparse.ArgumentTypeError("need at least two comma-separated values")
     return vals
 
 
@@ -57,8 +57,8 @@ def _parse_cycles(raw: str) -> list[int]:
     return [int(x) for x in raw.split(",") if x.strip()]
 
 
-def _peak_substep_index(factors: np.ndarray) -> int:
-    return int(np.argmax(np.asarray(factors, dtype=float)))
+def _peak_substep_index(values: np.ndarray) -> int:
+    return int(np.argmax(np.asarray(values, dtype=float)))
 
 
 def _diag_steps(
@@ -102,8 +102,15 @@ def main() -> None:
                         help="Override config.optimizer_dict['n_epochs_LBFGS'] for smoke runs.")
     parser.add_argument("--optim-rel-tol", type=float, default=None,
                         help="Override main/pretrain early-stopping relative tolerance.")
-    parser.add_argument("--substeps", type=_parse_factors,
-                        default=_parse_factors("0.25,0.5,0.75,1,0"))
+    parser.add_argument("--substeps", type=_parse_float_csv,
+                        default=_parse_float_csv("0.25,0.5,0.75,1,0"),
+                        help=("Legacy per-cycle displacement factors multiplied "
+                              "by positional umax. Prefer --displacement-steps "
+                              "for FEM/PIDL alignment protocols."))
+    parser.add_argument("--displacement-steps", type=_parse_float_csv, default=None,
+                        help=("Absolute per-cycle displacement values. When set, "
+                              "these values are used directly and --substeps is "
+                              "ignored except for backwards compatibility."))
     parser.add_argument("--history-driver-reduction-mode",
                         choices=("probe_g_mean", "fem_gp_tri3_g_mean"),
                         default="probe_g_mean")
@@ -167,21 +174,44 @@ def main() -> None:
         config.tip_local_net_dict["enable"] = False
     config.symmetry_prior = False
 
-    factors = np.asarray(args.substeps, dtype=float)
-    cyclic_disp_steps = np.tile(factors * float(args.umax), int(args.n_cycles_physical))
+    if args.displacement_steps is not None:
+        cycle_disp_values = np.asarray(args.displacement_steps, dtype=float)
+        if np.any(cycle_disp_values < -1.0e-12):
+            raise ValueError("--displacement-steps must be non-negative")
+        if not np.isclose(
+            float(np.max(cycle_disp_values)),
+            float(args.umax),
+            rtol=1.0e-6,
+            atol=1.0e-12,
+        ):
+            raise ValueError(
+                "positional umax must equal max(--displacement-steps) for "
+                "unambiguous displacement-history provenance"
+            )
+        step_source = "absolute_displacement"
+    else:
+        factors = np.asarray(args.substeps, dtype=float)
+        cycle_disp_values = factors * float(args.umax)
+        step_source = "umax_scaled_factors_legacy"
+    if len(cycle_disp_values) < 2:
+        raise ValueError("need at least two displacement values per cycle")
+    if float(args.umax) <= 0.0:
+        raise ValueError("umax must be positive")
+    derived_factors = cycle_disp_values / float(args.umax)
+    cyclic_disp_steps = np.tile(cycle_disp_values, int(args.n_cycles_physical))
     if args.hard_alpha_recovery_step:
         disp_steps = np.concatenate(([0.0], cyclic_disp_steps))
     else:
         disp_steps = cyclic_disp_steps
     total_steps = int(len(disp_steps))
     recovery_step_offset = 1 if args.hard_alpha_recovery_step else 0
-    peak_substep = _peak_substep_index(factors)
-    unload_substep = int(len(factors) - 1)
+    peak_substep = _peak_substep_index(cycle_disp_values)
+    unload_substep = int(len(cycle_disp_values) - 1)
     diag_physical_cycles = _parse_cycles(args.diag_physical_cycles)
     diag_full_physical_cycles = _parse_cycles(args.diag_full_physical_cycles)
     diag_steps = _diag_steps(
         diag_physical_cycles,
-        len(factors),
+        len(cycle_disp_values),
         peak_substep=peak_substep,
         unload_substep=unload_substep,
         step_offset=recovery_step_offset,
@@ -201,8 +231,16 @@ def main() -> None:
     config.fatigue_dict["disp_max"] = float(args.umax)
     config.fatigue_dict["n_cycles"] = int(args.n_cycles_physical)
     config.fatigue_dict["loading_type"] = "cyclic"
-    config.fatigue_dict["explicit_cycle_substeps"] = int(len(factors))
-    config.fatigue_dict["explicit_cycle_factors"] = [float(x) for x in factors]
+    config.fatigue_dict["explicit_cycle_substeps"] = int(len(cycle_disp_values))
+    config.fatigue_dict["explicit_cycle_step_mode"] = step_source
+    config.fatigue_dict["explicit_cycle_displacements"] = [
+        float(x) for x in cycle_disp_values
+    ]
+    # Some legacy oracle helpers accept factors.  Keep them as a derived
+    # internal quantity while preserving displacement values as the source.
+    config.fatigue_dict["explicit_cycle_factors"] = [
+        float(x) for x in derived_factors
+    ]
     config.fatigue_dict["history_driver_mode"] = "current_active"
     config.fatigue_dict["history_driver_reduction"] = {
         "enable": True,
@@ -240,7 +278,10 @@ def main() -> None:
 
     fat = config.fatigue_dict
     mesh_tag = _mesh_tag(fem_mesh, args.tag)
-    sub_tag = "-".join(f"{x:g}" for x in factors)
+    if step_source == "absolute_displacement":
+        step_tag = "u" + "-".join(f"{x:g}" for x in cycle_disp_values)
+    else:
+        step_tag = "s" + "-".join(f"{x:g}" for x in derived_factors)
     dir_name = (
         f"probeDriver_hl{config.network_dict['hidden_layers']}"
         f"_n{config.network_dict['neurons']}"
@@ -255,7 +296,7 @@ def main() -> None:
         f"_current_active_{args.history_driver_reduction_mode}"
         f"{'_femIrrGP3' if args.fem_irr_penalty else ''}"
         f"{'_hardAlphaRecoverU0' if args.hard_alpha_recovery_step else ''}"
-        f"_s{sub_tag}"
+        f"_{step_tag}"
         f"{'_compile' if args.compile else ''}"
     )
     config.model_path = config.resolve_archive_dir(here, dir_name)
@@ -295,8 +336,15 @@ def main() -> None:
         handle.write(f"recovery_step_offset: {recovery_step_offset}\n")
         handle.write(f"peak_substep_index: {peak_substep}\n")
         handle.write(f"unload_substep_index: {unload_substep}\n")
+        handle.write(f"explicit_cycle_step_mode: {step_source}\n")
         handle.write(f"explicit_cycle_substeps: {fat['explicit_cycle_substeps']}\n")
-        handle.write(f"explicit_cycle_factors: {fat['explicit_cycle_factors']}\n")
+        handle.write(
+            f"explicit_cycle_displacements: {fat['explicit_cycle_displacements']}\n"
+        )
+        handle.write(
+            "derived_explicit_cycle_factors_for_internal_oracles: "
+            f"{fat['explicit_cycle_factors']}\n"
+        )
         handle.write(f"diag_physical_cycles: {diag_physical_cycles}\n")
         handle.write(f"diag_full_physical_cycles: {diag_full_physical_cycles}\n")
         handle.write(f"void_notch_mask_enable: {fat['void_notch_mask']['enable']}\n")
@@ -310,8 +358,8 @@ def main() -> None:
         if args.hard_alpha_recovery_step:
             handle.write(
                 "state_mapping: step0=U0_hard_alpha_recovery; "
-                f"cN_peak={recovery_step_offset}+{len(factors)}*(N-1)+{peak_substep}; "
-                f"cN_unloaded={recovery_step_offset}+{len(factors)}*(N-1)+{unload_substep}\n"
+                f"cN_peak={recovery_step_offset}+{len(cycle_disp_values)}*(N-1)+{peak_substep}; "
+                f"cN_unloaded={recovery_step_offset}+{len(cycle_disp_values)}*(N-1)+{unload_substep}\n"
             )
             handle.write(
                 "recovery_semantics: current NN alpha is set to hard target before "
@@ -335,10 +383,11 @@ def main() -> None:
         f"  epochs         = RPROP {config.optimizer_dict['n_epochs_RPROP']} | "
         f"LBFGS {config.optimizer_dict['n_epochs_LBFGS']}"
     )
-    print(f"  substeps       = {list(factors)}")
+    print(f"  step mode      = {step_source}")
+    print(f"  disp steps     = {list(cycle_disp_values)}")
     print(
-        f"  peak/unload    = substep {peak_substep} factor {factors[peak_substep]:g} | "
-        f"substep {unload_substep} factor {factors[unload_substep]:g}"
+        f"  peak/unload    = substep {peak_substep} U={cycle_disp_values[peak_substep]:g} | "
+        f"substep {unload_substep} U={cycle_disp_values[unload_substep]:g}"
     )
     print(f"  FEM mesh       = {fem_mesh}")
     print(f"  coarse mesh    = {coarse_mesh}")
@@ -349,8 +398,8 @@ def main() -> None:
         print(f"  recovery step  = step0 U=0 after hard alpha target {args.hard_alpha_target:g}")
         print(
             "  mapping        = "
-            f"cN_peak -> {recovery_step_offset}+{len(factors)}*(N-1)+{peak_substep}, "
-            f"cN_unloaded -> {recovery_step_offset}+{len(factors)}*(N-1)+{unload_substep}"
+            f"cN_peak -> {recovery_step_offset}+{len(cycle_disp_values)}*(N-1)+{peak_substep}, "
+            f"cN_unloaded -> {recovery_step_offset}+{len(cycle_disp_values)}*(N-1)+{unload_substep}"
         )
     print("  void mask      = disabled")
     print(f"  elem diag      = {diag_steps}")
