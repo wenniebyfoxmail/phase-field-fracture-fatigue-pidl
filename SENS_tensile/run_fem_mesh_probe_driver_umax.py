@@ -57,19 +57,30 @@ def _parse_cycles(raw: str) -> list[int]:
     return [int(x) for x in raw.split(",") if x.strip()]
 
 
+def _peak_substep_index(factors: np.ndarray) -> int:
+    return int(np.argmax(np.asarray(factors, dtype=float)))
+
+
 def _diag_steps(
     physical_cycles: list[int],
     n_substeps: int,
     *,
+    peak_substep: int,
+    unload_substep: int,
     step_offset: int = 0,
+    full_physical_cycles: list[int] | None = None,
 ) -> list[int]:
     steps = {0}
+    full_cycles = {int(c) for c in (full_physical_cycles or []) if int(c) >= 1}
     for cyc in physical_cycles:
         if cyc < 1:
             continue
         base = int(step_offset) + (cyc - 1) * n_substeps
-        steps.add(base + n_substeps - 2)
-        steps.add(base + n_substeps - 1)
+        if cyc in full_cycles:
+            steps.update(base + i for i in range(n_substeps))
+        else:
+            steps.add(base + int(peak_substep))
+            steps.add(base + int(unload_substep))
     return sorted(steps)
 
 
@@ -105,6 +116,10 @@ def main() -> None:
     parser.add_argument("--hard-alpha-target", type=float, default=1.0,
                         help="Uniform current alpha target for --hard-alpha-recovery-step.")
     parser.add_argument("--diag-physical-cycles", default="1,2,3,20,40,60,69")
+    parser.add_argument("--diag-full-physical-cycles", default="",
+                        help=("Physical cycles for which all substeps should be "
+                              "saved in element diagnostics. Other listed cycles "
+                              "save only peak and final unloaded states."))
     parser.add_argument("--fracture-confirm-cycles", type=int, default=3)
     parser.add_argument("--plot-every", type=int, default=20)
     parser.add_argument("--compile", action="store_true")
@@ -160,10 +175,17 @@ def main() -> None:
         disp_steps = cyclic_disp_steps
     total_steps = int(len(disp_steps))
     recovery_step_offset = 1 if args.hard_alpha_recovery_step else 0
+    peak_substep = _peak_substep_index(factors)
+    unload_substep = int(len(factors) - 1)
+    diag_physical_cycles = _parse_cycles(args.diag_physical_cycles)
+    diag_full_physical_cycles = _parse_cycles(args.diag_full_physical_cycles)
     diag_steps = _diag_steps(
-        _parse_cycles(args.diag_physical_cycles),
+        diag_physical_cycles,
         len(factors),
+        peak_substep=peak_substep,
+        unload_substep=unload_substep,
         step_offset=recovery_step_offset,
+        full_physical_cycles=diag_full_physical_cycles,
     )
 
     config.coarse_mesh_file = coarse_mesh
@@ -271,8 +293,12 @@ def main() -> None:
         )
         handle.write(f"initial_alpha_protocol: {fat['initial_alpha_protocol']}\n")
         handle.write(f"recovery_step_offset: {recovery_step_offset}\n")
+        handle.write(f"peak_substep_index: {peak_substep}\n")
+        handle.write(f"unload_substep_index: {unload_substep}\n")
         handle.write(f"explicit_cycle_substeps: {fat['explicit_cycle_substeps']}\n")
         handle.write(f"explicit_cycle_factors: {fat['explicit_cycle_factors']}\n")
+        handle.write(f"diag_physical_cycles: {diag_physical_cycles}\n")
+        handle.write(f"diag_full_physical_cycles: {diag_full_physical_cycles}\n")
         handle.write(f"void_notch_mask_enable: {fat['void_notch_mask']['enable']}\n")
         handle.write(f"element_diagnostics_steps: {diag_steps}\n")
         handle.write("element_diagnostics_fields: mechanics+energy+driver\n")
@@ -284,7 +310,8 @@ def main() -> None:
         if args.hard_alpha_recovery_step:
             handle.write(
                 "state_mapping: step0=U0_hard_alpha_recovery; "
-                "cN_peak=1+5*(N-1)+3; cN_unloaded=1+5*(N-1)+4\n"
+                f"cN_peak={recovery_step_offset}+{len(factors)}*(N-1)+{peak_substep}; "
+                f"cN_unloaded={recovery_step_offset}+{len(factors)}*(N-1)+{unload_substep}\n"
             )
             handle.write(
                 "recovery_semantics: current NN alpha is set to hard target before "
@@ -309,6 +336,10 @@ def main() -> None:
         f"LBFGS {config.optimizer_dict['n_epochs_LBFGS']}"
     )
     print(f"  substeps       = {list(factors)}")
+    print(
+        f"  peak/unload    = substep {peak_substep} factor {factors[peak_substep]:g} | "
+        f"substep {unload_substep} factor {factors[unload_substep]:g}"
+    )
     print(f"  FEM mesh       = {fem_mesh}")
     print(f"  coarse mesh    = {coarse_mesh}")
     print("  history driver = current_active")
@@ -316,7 +347,11 @@ def main() -> None:
     print(f"  irr penalty    = {'fem_gp_tri3' if args.fem_irr_penalty else 'legacy'}")
     if args.hard_alpha_recovery_step:
         print(f"  recovery step  = step0 U=0 after hard alpha target {args.hard_alpha_target:g}")
-        print("  mapping        = cN_peak -> 1+5*(N-1)+3, cN_unloaded -> 1+5*(N-1)+4")
+        print(
+            "  mapping        = "
+            f"cN_peak -> {recovery_step_offset}+{len(factors)}*(N-1)+{peak_substep}, "
+            f"cN_unloaded -> {recovery_step_offset}+{len(factors)}*(N-1)+{unload_substep}"
+        )
     print("  void mask      = disabled")
     print(f"  elem diag      = {diag_steps}")
     print("  gradient diag  = pre-history-refresh every step")

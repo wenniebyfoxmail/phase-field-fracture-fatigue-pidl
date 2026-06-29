@@ -44,6 +44,23 @@
 
 ## 2026-06-29 · Mac-PIDL [decision+implementation]
 
+**Variable-substep peak/unload mapping for cyclic recovery diagnostics**
+
+Branch `codex/m2s-framework-validation`.  Updated
+`SENS_tensile/run_fem_mesh_probe_driver_umax.py` so retained cyclic diagnostics
+no longer assume `peak = n_substeps - 2`.  The runner now identifies the peak
+substep as the first maximum load factor and the unloaded state as the final
+substep.  This matters for eight-substep protocols such as
+`[0.25,0.5,0.75,1,0.75,0.5,0.25,0]`, where the old hard-coded rule would have
+mislabelled the 0.25 unload-ramp state as peak.
+
+Added `--diag-full-physical-cycles` to save all substeps for selected cycles,
+so unloading-path ablations can inspect intermediate descending-load states
+rather than only peak and final unload.  Default behavior for the existing
+five-substep baseline remains unchanged.
+
+## 2026-06-29 · Mac-PIDL [decision+implementation]
+
 **Opt-in hard-alpha zero-load recovery discriminator for Alignment Check 2**
 
 Branch `codex/m2s-framework-validation`.  Added an opt-in runner path to
