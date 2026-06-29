@@ -286,8 +286,10 @@ def _save_pre_step0_baseline_diagnostics(
     psi_plus_prev,
     disp0,
     out_path,
+    protocol_metadata=None,
 ):
     """Save the actual post-pretraining, pre-step0 history baseline."""
+    protocol_metadata = protocol_metadata or {}
     out_path.parent.mkdir(parents=True, exist_ok=True)
     old_lambda = field_comp.lmbda
     try:
@@ -348,6 +350,16 @@ def _save_pre_step0_baseline_diagnostics(
         hist_fat_elem=_tensor_to_numpy(hist_fat).reshape(-1).astype(np.float32),
         f_fatigue_elem=_tensor_to_numpy(f_current).reshape(-1).astype(np.float32),
         psi_plus_prev_elem=_tensor_to_numpy(psi_plus_prev).reshape(-1).astype(np.float32),
+        initial_alpha_protocol=np.array(
+            str(protocol_metadata.get("initial_alpha_protocol", "none"))
+        ),
+        initial_alpha_target=np.array(
+            [float(protocol_metadata.get("initial_alpha_target", np.nan))],
+            dtype=np.float32,
+        ),
+        histories_preserved=np.array(
+            [bool(protocol_metadata.get("histories_preserved", True))]
+        ),
     )
     print(f"[PreStep0Baseline] saved {out_path}")
 
@@ -384,6 +396,11 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
             alpha_elem = (
                 alpha[T_conn[:, 0]] + alpha[T_conn[:, 1]] + alpha[T_conn[:, 2]]
             ) / 3.0
+            hist_alpha_elem = (
+                hist_alpha[T_conn[:, 0]]
+                + hist_alpha[T_conn[:, 1]]
+                + hist_alpha[T_conn[:, 2]]
+            ) / 3.0
             elem_x = (
                 inp[T_conn[:, 0], 0] + inp[T_conn[:, 1], 0] + inp[T_conn[:, 2], 0]
             ) / 3.0
@@ -392,6 +409,7 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
             ) / 3.0
         else:
             alpha_elem = alpha.flatten()
+            hist_alpha_elem = hist_alpha.flatten()
             elem_x = inp[:, 0]
             elem_y = inp[:, 1]
 
@@ -497,6 +515,10 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         elem_y=_tensor_to_numpy(elem_y).reshape(-1).astype(np.float32),
         area_elem=_tensor_to_numpy(area_T).reshape(-1).astype(np.float32),
         alpha_elem=_tensor_to_numpy(alpha_elem).reshape(-1).astype(np.float32),
+        hist_alpha_elem=_tensor_to_numpy(hist_alpha_elem).reshape(-1).astype(np.float32),
+        alpha_minus_hist_alpha_elem=(
+            _tensor_to_numpy(alpha_elem - hist_alpha_elem).reshape(-1).astype(np.float32)
+        ),
         alpha_feedback_target_elem=alpha_feedback_target_np,
         alpha_feedback_mask_elem=alpha_feedback_mask_np,
         oracle_target_elem=oracle_target_np,
@@ -546,6 +568,26 @@ def _resolve_output_layer(net):
     if hasattr(raw_net, "inner") and hasattr(raw_net.inner, "output_layer"):
         return raw_net.inner.output_layer
     raise AttributeError("Could not locate output_layer for staged head training")
+
+
+def _raw_alpha_value_for_target(field_comp, target_alpha):
+    """Invert the configured alpha constraint for a uniform initialization."""
+    target = float(np.clip(target_alpha, 1.0e-6, 1.0 - 1.0e-6))
+    constraint = field_comp.alpha_constraint
+    support = getattr(constraint, "support", None)
+    if support is not None:
+        return 2.0 * float(support) * (target - 0.5)
+    return float(np.log(target / (1.0 - target)))
+
+
+def _preset_uniform_current_alpha(field_comp, target_alpha):
+    """Set only the current NN alpha head to a spatially uniform target."""
+    output_layer = _resolve_output_layer(field_comp.net)
+    raw_alpha = _raw_alpha_value_for_target(field_comp, target_alpha)
+    with torch.no_grad():
+        output_layer.weight[2, :].zero_()
+        output_layer.bias[2].fill_(raw_alpha)
+    return raw_alpha
 
 
 @contextmanager
@@ -1267,6 +1309,66 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _nominal_mask = None
         _n_nominal    = 0
 
+    _initial_alpha_protocol_cfg = (
+        fatigue_dict.get("initial_alpha_protocol", {}) if fatigue_on else {}
+    ) or {}
+    _initial_alpha_protocol_active = bool(
+        _initial_alpha_protocol_cfg.get("enable", False)
+    )
+    _initial_alpha_protocol_metadata = {
+        "initial_alpha_protocol": "none",
+        "histories_preserved": True,
+    }
+    if _initial_alpha_protocol_active:
+        if start_j != 0:
+            print(
+                "[InitialAlphaProtocol] resume detected; skipping hard-alpha preset "
+                f"because start_j={start_j}"
+            )
+            _initial_alpha_protocol_active = False
+        else:
+            _mode_init_alpha = _initial_alpha_protocol_cfg.get(
+                "mode", "uniform_current_alpha"
+            )
+            if _mode_init_alpha != "uniform_current_alpha":
+                raise ValueError(
+                    "fatigue_dict['initial_alpha_protocol']['mode'] must be "
+                    f"'uniform_current_alpha', got {_mode_init_alpha!r}"
+                )
+            if (
+                _initial_alpha_protocol_cfg.get(
+                    "requires_first_displacement_zero", True
+                )
+                and abs(float(disp[0])) > 1.0e-12
+            ):
+                raise ValueError(
+                    "initial_alpha_protocol requires the first training step to "
+                    f"be U=0, got disp[0]={float(disp[0]):.6e}"
+                )
+            _target_alpha0 = float(
+                _initial_alpha_protocol_cfg.get("target_alpha", 1.0)
+            )
+            _raw_alpha0 = _preset_uniform_current_alpha(
+                field_comp, _target_alpha0
+            )
+            with torch.no_grad():
+                _, _, _alpha0_check = field_comp.fieldCalculation(inp)
+            _initial_alpha_protocol_metadata = {
+                "initial_alpha_protocol": _mode_init_alpha,
+                "initial_alpha_target": _target_alpha0,
+                "histories_preserved": bool(
+                    _initial_alpha_protocol_cfg.get("preserve_histories", True)
+                ),
+            }
+            print(
+                "[InitialAlphaProtocol] current NN alpha preset before step0 | "
+                f"mode={_mode_init_alpha} target={_target_alpha0:.6e} "
+                f"raw={_raw_alpha0:.6e} | alpha min/max="
+                f"{_alpha0_check.min().item():.6e}/"
+                f"{_alpha0_check.max().item():.6e} | "
+                "hist_alpha/hist_fat/f_fatigue/psi_plus_prev preserved"
+            )
+
     # α 快照目录（与 best_models/ 同级）
     _snapshot_dir = trainedModel_path.parent / Path('alpha_snapshots')
     if fatigue_on:
@@ -1320,6 +1422,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             psi_plus_prev,
             disp[0],
             trainedModel_path.parent / Path("pre_step0_baseline_diagnostics.npz"),
+            protocol_metadata=_initial_alpha_protocol_metadata,
         )
 
     # =========================================================================

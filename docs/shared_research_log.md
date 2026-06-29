@@ -42,6 +42,30 @@
 
 ## Entries
 
+## 2026-06-29 · Mac-PIDL [decision+implementation]
+
+**Opt-in hard-alpha zero-load recovery discriminator for Alignment Check 2**
+
+Branch `codex/m2s-framework-validation`.  Added an opt-in runner path to
+`SENS_tensile/run_fem_mesh_probe_driver_umax.py`:
+`--hard-alpha-recovery-step --hard-alpha-target 1.0`.  It prepends a single
+`U=0` recovery training step before the normal retained substep schedule and
+sets only the current NN alpha head to the hard target before that step.  The
+stored histories remain at the state0 baseline until the recovery step commits:
+`hist_alpha` is not set to 1, `hist_fat=0`, `f_fatigue=1`, and
+`psi_plus_prev=0`.
+
+Default behavior is unchanged.  With this flag, explicit five-substep state
+mapping is shifted by one PIDL step: step0 is `U0_hard_alpha_recovery`,
+`cN_peak -> 1+5*(N-1)+3`, and `cN_unloaded -> 1+5*(N-1)+4`.  The existing
+`pre_step0_baseline_diagnostics.npz` now records the initial-alpha protocol
+metadata so the audit can verify whether pretraining polluted the state0
+histories.  Runtime element diagnostics also now save `hist_alpha_elem` and
+`alpha_minus_hist_alpha_elem` so the recovery post-commit state can be audited
+without reconstructing this field from checkpoints.  Mac verification was
+limited to `py_compile`, `git diff --check`, and runner `--help`; no PIDL
+training was run on Mac.
+
 ## 2026-06-26 · Mac-PIDL [decision+implementation]
 
 **Opt-in FEM-like irreversibility penalty quadrature for Alignment Check 2**

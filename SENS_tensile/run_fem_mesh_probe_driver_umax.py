@@ -57,12 +57,17 @@ def _parse_cycles(raw: str) -> list[int]:
     return [int(x) for x in raw.split(",") if x.strip()]
 
 
-def _diag_steps(physical_cycles: list[int], n_substeps: int) -> list[int]:
+def _diag_steps(
+    physical_cycles: list[int],
+    n_substeps: int,
+    *,
+    step_offset: int = 0,
+) -> list[int]:
     steps = {0}
     for cyc in physical_cycles:
         if cyc < 1:
             continue
-        base = (cyc - 1) * n_substeps
+        base = int(step_offset) + (cyc - 1) * n_substeps
         steps.add(base + n_substeps - 2)
         steps.add(base + n_substeps - 1)
     return sorted(steps)
@@ -93,6 +98,12 @@ def main() -> None:
                         default="probe_g_mean")
     parser.add_argument("--fem-irr-penalty", action="store_true",
                         help="Use FEM-like tri3 quadrature for the irreversibility penalty.")
+    parser.add_argument("--hard-alpha-recovery-step", action="store_true",
+                        help=("Preset the current NN alpha field to a uniform hard "
+                              "value, run step 0 at U=0 for recovery, then continue "
+                              "the explicit cyclic schedule with histories preserved."))
+    parser.add_argument("--hard-alpha-target", type=float, default=1.0,
+                        help="Uniform current alpha target for --hard-alpha-recovery-step.")
     parser.add_argument("--diag-physical-cycles", default="1,2,3,20,40,60,69")
     parser.add_argument("--fracture-confirm-cycles", type=int, default=3)
     parser.add_argument("--plot-every", type=int, default=20)
@@ -142,9 +153,18 @@ def main() -> None:
     config.symmetry_prior = False
 
     factors = np.asarray(args.substeps, dtype=float)
-    disp_steps = np.tile(factors * float(args.umax), int(args.n_cycles_physical))
+    cyclic_disp_steps = np.tile(factors * float(args.umax), int(args.n_cycles_physical))
+    if args.hard_alpha_recovery_step:
+        disp_steps = np.concatenate(([0.0], cyclic_disp_steps))
+    else:
+        disp_steps = cyclic_disp_steps
     total_steps = int(len(disp_steps))
-    diag_steps = _diag_steps(_parse_cycles(args.diag_physical_cycles), len(factors))
+    recovery_step_offset = 1 if args.hard_alpha_recovery_step else 0
+    diag_steps = _diag_steps(
+        _parse_cycles(args.diag_physical_cycles),
+        len(factors),
+        step_offset=recovery_step_offset,
+    )
 
     config.coarse_mesh_file = coarse_mesh
     config.fine_mesh_file = fem_mesh
@@ -165,6 +185,13 @@ def main() -> None:
     config.fatigue_dict["history_driver_reduction"] = {
         "enable": True,
         "mode": args.history_driver_reduction_mode,
+    }
+    config.fatigue_dict["initial_alpha_protocol"] = {
+        "enable": bool(args.hard_alpha_recovery_step),
+        "mode": "uniform_current_alpha",
+        "target_alpha": float(args.hard_alpha_target),
+        "preserve_histories": True,
+        "requires_first_displacement_zero": True,
     }
     config.numr_dict["irreversibility_penalty"] = {
         "enable": bool(args.fem_irr_penalty),
@@ -205,6 +232,7 @@ def main() -> None:
         f"_{mesh_tag}"
         f"_current_active_{args.history_driver_reduction_mode}"
         f"{'_femIrrGP3' if args.fem_irr_penalty else ''}"
+        f"{'_hardAlphaRecoverU0' if args.hard_alpha_recovery_step else ''}"
         f"_s{sub_tag}"
         f"{'_compile' if args.compile else ''}"
     )
@@ -241,6 +269,8 @@ def main() -> None:
         handle.write(
             f"irreversibility_penalty: {config.numr_dict['irreversibility_penalty']}\n"
         )
+        handle.write(f"initial_alpha_protocol: {fat['initial_alpha_protocol']}\n")
+        handle.write(f"recovery_step_offset: {recovery_step_offset}\n")
         handle.write(f"explicit_cycle_substeps: {fat['explicit_cycle_substeps']}\n")
         handle.write(f"explicit_cycle_factors: {fat['explicit_cycle_factors']}\n")
         handle.write(f"void_notch_mask_enable: {fat['void_notch_mask']['enable']}\n")
@@ -251,6 +281,16 @@ def main() -> None:
             "gradient_diagnostics_columns: step,E_el,E_d,E_hist,"
             "grad_E_el,grad_E_d,grad_E_hist\n"
         )
+        if args.hard_alpha_recovery_step:
+            handle.write(
+                "state_mapping: step0=U0_hard_alpha_recovery; "
+                "cN_peak=1+5*(N-1)+3; cN_unloaded=1+5*(N-1)+4\n"
+            )
+            handle.write(
+                "recovery_semantics: current NN alpha is set to hard target before "
+                "step0; hist_alpha, hist_fat, f_fatigue, and psi_plus_prev remain "
+                "state0 baseline until step0 post-commit\n"
+            )
         handle.write(
             "purpose: strict FEM-mesh fatigue-driver reduction with optional "
             "FEM-like irreversibility penalty quadrature\n"
@@ -274,6 +314,9 @@ def main() -> None:
     print("  history driver = current_active")
     print(f"  reduction      = {args.history_driver_reduction_mode}")
     print(f"  irr penalty    = {'fem_gp_tri3' if args.fem_irr_penalty else 'legacy'}")
+    if args.hard_alpha_recovery_step:
+        print(f"  recovery step  = step0 U=0 after hard alpha target {args.hard_alpha_target:g}")
+        print("  mapping        = cN_peak -> 1+5*(N-1)+3, cN_unloaded -> 1+5*(N-1)+4")
     print("  void mask      = disabled")
     print(f"  elem diag      = {diag_steps}")
     print("  gradient diag  = pre-history-refresh every step")
