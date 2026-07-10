@@ -1,7 +1,8 @@
 # Residual-Stiffness Micro-Run Dispatch Handover
 
 Created: 2026-07-10T22:47:21+0100 BST
-Status: pre-launch / waiting for code sync
+Updated: 2026-07-10T23:05:00+0100 BST
+Status: pre-launch / code synced to GitHub branch
 
 ## Summary
 
@@ -15,9 +16,9 @@ The archived-output event-scale PIDL/FEM comparison is timing-aligned but mechan
 
 This dispatch tests only whether `residual_stiffness=1e-3` reaches the actual formal hard-recovery runner/export path and lifts active/raw in the c89 event-core masks.
 
-## Launch Blocker
+## Launch Gate
 
-Do not launch from a producer machine until the required Mac code changes are committed/pushed or transferred as an explicit snapshot.
+Mac-PIDL must not launch training. Producer launch is allowed only after pulling the synced branch/commit below and confirming the runner/export fields exist.
 
 Producer-visible code must include:
 
@@ -26,7 +27,15 @@ SENS_tensile/run_fem_mesh_probe_driver_umax.py supports --res-stiffness
 source/model_train.py exports psi_raw_from_g_alpha_elem, psi_raw_from_g_solver_elem, g_solver_override_active
 ```
 
-Current Mac-local file hashes to match:
+Producer-visible sync point:
+
+```text
+branch: codex/m2s-framework-validation
+commit: 2caf269
+commit subject: Add residual-stiffness micro-run gate
+```
+
+File hashes to match:
 
 ```text
 SENS_tensile/run_fem_mesh_probe_driver_umax.py
