@@ -506,7 +506,8 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
             g_stiffness_override_elem, like_tensor=alpha_elem
         ).reshape(-1)
         g_override_np = g_solver_np.astype(np.float32)
-    psi_raw_np = psi_plus_np / np.maximum(g_alpha_np, 1e-30)
+    psi_raw_from_g_alpha_np = psi_plus_np / np.maximum(g_alpha_np, 1e-30)
+    psi_raw_from_g_solver_np = psi_plus_np / np.maximum(g_solver_np, 1e-30)
 
     np.savez_compressed(
         out_dir / f"element_fields_cycle_{cycle:04d}.npz",
@@ -529,10 +530,16 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         psi_active_elem=psi_plus_np.astype(np.float32),
         psi_history_driver_elem=psi_history_np.astype(np.float32),
         delta_alpha_bar_input_elem=history_increment_np.astype(np.float32),
-        psi_raw_elem=psi_raw_np.astype(np.float32),
+        psi_raw_elem=psi_raw_from_g_alpha_np.astype(np.float32),
+        psi_raw_from_g_alpha_elem=psi_raw_from_g_alpha_np.astype(np.float32),
+        psi_raw_from_g_solver_elem=psi_raw_from_g_solver_np.astype(np.float32),
         g_alpha_elem=g_alpha_np.astype(np.float32),
         g_solver_elem=g_solver_np.astype(np.float32),
         g_stiffness_override_elem=g_override_np,
+        g_solver_override_active=np.array(
+            [g_stiffness_override_elem is not None],
+            dtype=np.bool_,
+        ),
         psi_plus_prev_elem=psi_prev_np.astype(np.float32),
         E_el_elem=E_el_np.astype(np.float32),
         E_d_elem=E_d_np.astype(np.float32),

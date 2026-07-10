@@ -18,7 +18,9 @@ where alpha_q is evaluated at three triangle points.  With
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -55,6 +57,41 @@ def _parse_float_csv(raw: str) -> list[float]:
 
 def _parse_cycles(raw: str) -> list[int]:
     return [int(x) for x in raw.split(",") if x.strip()]
+
+
+def _validate_res_stiffness(value: str | float) -> float:
+    eta = float(value)
+    if not np.isfinite(eta) or eta < 0.0:
+        raise argparse.ArgumentTypeError(
+            f"--res-stiffness must be finite and non-negative, got {value!r}"
+        )
+    return eta
+
+
+def _format_eta_tag(eta: float) -> str:
+    value = f"{float(eta):.3g}"
+    return (
+        f"eta{value}"
+        .replace(".", "p")
+        .replace("+", "")
+        .replace("-", "m")
+    )
+
+
+def _git_value(here: Path, *args: str) -> str:
+    try:
+        return subprocess.check_output(
+            ["git", *args],
+            cwd=here.parent,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except Exception:
+        return "unknown"
+
+
+def _file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _peak_substep_index(values: np.ndarray) -> int:
@@ -114,6 +151,10 @@ def main() -> None:
     parser.add_argument("--history-driver-reduction-mode",
                         choices=("probe_g_mean", "fem_gp_tri3_g_mean"),
                         default="probe_g_mean")
+    parser.add_argument("--res-stiffness", type=_validate_res_stiffness, default=0.0,
+                        help=("Residual stiffness eta in "
+                              "Edegrade(alpha)=(1-alpha)^2+eta. "
+                              "Default 0.0 preserves the formal baseline."))
     parser.add_argument("--fem-irr-penalty", action="store_true",
                         help="Use FEM-like tri3 quadrature for the irreversibility penalty.")
     parser.add_argument("--hard-alpha-recovery-step", action="store_true",
@@ -220,6 +261,7 @@ def main() -> None:
 
     config.coarse_mesh_file = coarse_mesh
     config.fine_mesh_file = fem_mesh
+    config.PFF_model_dict["residual_stiffness"] = float(args.res_stiffness)
     config.network_dict["compile"] = bool(args.compile)
     if args.epochs_rprop is not None:
         config.optimizer_dict["n_epochs_RPROP"] = int(args.epochs_rprop)
@@ -294,6 +336,7 @@ def main() -> None:
         f"_U{fat['disp_max']}"
         f"_{mesh_tag}"
         f"_current_active_{args.history_driver_reduction_mode}"
+        f"{'_' + _format_eta_tag(args.res_stiffness) if args.res_stiffness > 0.0 else ''}"
         f"{'_femIrrGP3' if args.fem_irr_penalty else ''}"
         f"{'_hardAlphaRecoverU0' if args.hard_alpha_recovery_step else ''}"
         f"_{step_tag}"
@@ -310,9 +353,16 @@ def main() -> None:
     except Exception:
         pass
     config.writer = config.SummaryWriter(config.model_path / Path("TBruns"))
+    runner_path = Path(__file__).resolve()
+    runner_git_commit = _git_value(here, "rev-parse", "HEAD")
+    runner_git_branch = _git_value(here, "rev-parse", "--abbrev-ref", "HEAD")
+    runner_sha256 = _file_sha256(runner_path)
 
     with open(config.model_path / "model_settings.txt", "w", encoding="utf-8") as handle:
         handle.write("runner: run_fem_mesh_probe_driver_umax.py\n")
+        handle.write(f"runner_git_commit: {runner_git_commit}\n")
+        handle.write(f"runner_git_branch: {runner_git_branch}\n")
+        handle.write(f"runner_sha256: {runner_sha256}\n")
         handle.write(f"umax: {args.umax}\n")
         handle.write(f"n_cycles_physical: {args.n_cycles_physical}\n")
         handle.write(f"n_training_steps: {total_steps}\n")
@@ -327,6 +377,12 @@ def main() -> None:
         handle.write(f"fine_mesh_file: {config.fine_mesh_file}\n")
         handle.write(f"mesh_tag: {mesh_tag}\n")
         handle.write(f"torch_compile: {bool(args.compile)}\n")
+        handle.write(f"residual_stiffness: {float(args.res_stiffness)}\n")
+        handle.write(
+            "PFF_model_dict.residual_stiffness: "
+            f"{config.PFF_model_dict['residual_stiffness']}\n"
+        )
+        handle.write("Edegrade_formula: (1-alpha)^2 + residual_stiffness\n")
         handle.write("history_driver_mode: current_active\n")
         handle.write(f"history_driver_reduction: {fat['history_driver_reduction']}\n")
         handle.write(
@@ -350,6 +406,13 @@ def main() -> None:
         handle.write(f"void_notch_mask_enable: {fat['void_notch_mask']['enable']}\n")
         handle.write(f"element_diagnostics_steps: {diag_steps}\n")
         handle.write("element_diagnostics_fields: mechanics+energy+driver\n")
+        handle.write(
+            "diagnostic_raw_export_semantics: "
+            "psi_raw_elem=psi_active/g_alpha legacy alias; "
+            "psi_raw_from_g_alpha_elem=psi_active/g_alpha; "
+            "psi_raw_from_g_solver_elem=psi_active/g_solver; "
+            "g_solver_override_active records whether solver override was active\n"
+        )
         handle.write("gradient_diagnostics: pre_history_refresh_every_step\n")
         handle.write(
             "gradient_diagnostics_columns: step,E_el,E_d,E_hist,"
@@ -393,6 +456,7 @@ def main() -> None:
     print(f"  coarse mesh    = {coarse_mesh}")
     print("  history driver = current_active")
     print(f"  reduction      = {args.history_driver_reduction_mode}")
+    print(f"  residual eta   = {args.res_stiffness:.3e}")
     print(f"  irr penalty    = {'fem_gp_tri3' if args.fem_irr_penalty else 'legacy'}")
     if args.hard_alpha_recovery_step:
         print(f"  recovery step  = step0 U=0 after hard alpha target {args.hard_alpha_target:g}")
