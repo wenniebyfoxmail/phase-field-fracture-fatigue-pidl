@@ -2,7 +2,7 @@
 
 Created: 2026-07-10T22:47:21+0100 BST
 Updated: 2026-07-10T23:05:00+0100 BST
-Status: pre-launch / code synced to GitHub branch
+Status: launched on Taobo / running at initial health check
 
 ## Summary
 
@@ -16,9 +16,28 @@ The archived-output event-scale PIDL/FEM comparison is timing-aligned but mechan
 
 This dispatch tests only whether `residual_stiffness=1e-3` reaches the actual formal hard-recovery runner/export path and lifts active/raw in the c89 event-core masks.
 
+## Launch Status
+
+Launched on Taobo after code sync and remote sanity checks.
+
+```text
+run_id: pf_resfloor_eta1em3_f9b4aee_20260711_060420
+host: Taobo GPUServer8
+branch: codex/m2s-framework-validation
+checkout commit: f9b4aee
+code commit with runner/export changes: 2caf269
+gpu: 5
+pid: 1485299
+remote_root: /mnt/data2/drtao/wennie/pf_resfloor_eta1em3_f9b4aee_20260711_060420
+log: /mnt/data2/drtao/wennie/pf_resfloor_eta1em3_f9b4aee_20260711_060420/logs/residual_floor_eta1e-3.log
+remote provenance: /mnt/data2/drtao/wennie/pf_resfloor_eta1em3_f9b4aee_20260711_060420/RUN_PROVENANCE.txt
+actual_runner_output_path: /mnt/data2/drtao/wennie/pf_resfloor_eta1em3_f9b4aee_20260711_060420/code/SENS_tensile/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_hard_d1_u0_recovery_resfloor_micro_current_active_fem_gp_tri3_g_mean_eta0p001_femIrrGP3_hardAlphaRecoverU0_s0.25-0.5-0.75-1-0
+initial health: PID running; GPU 5 active; log confirms residual eta 1.000e-03 and c89 diagnostic steps 441-445.
+```
+
 ## Launch Gate
 
-Mac-PIDL must not launch training. Producer launch is allowed only after pulling the synced branch/commit below and confirming the runner/export fields exist.
+Mac-PIDL did not run local training. Producer launch used the synced branch/commit below and confirmed the runner/export fields exist.
 
 Producer-visible code must include:
 
