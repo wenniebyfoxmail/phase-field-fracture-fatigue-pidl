@@ -786,6 +786,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             matprop, pffmodel, crack_dict, numr_dict,
             mesh_file=coarse_mesh_file, device=device
         )
+        from network import bind_mesh_graph
+        bind_mesh_graph(field_comp.net, T_conn, inp.shape[0])
         outp = torch.zeros(inp.shape[0], 1).to(device)
         # full-batch (batch_size=N) + shuffle=False: a DataLoader here just tore the
         # tensor into N rows via __getitem__ and re-collated every optimizer step
@@ -836,6 +838,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         matprop, pffmodel, crack_dict, numr_dict,
         mesh_file=fine_mesh_file, device=device
     )
+    from network import bind_mesh_graph
+    bind_mesh_graph(field_comp.net, T_conn, inp.shape[0])
     outp = torch.zeros(inp.shape[0], 1).to(device)
     # full-batch (batch_size=N) + shuffle=False: DataLoader was pure overhead here
     # (tore tensor into N rows + re-collated every optimizer step, ~50-70% of wall).

@@ -196,6 +196,80 @@ class NeuralNet(nn.Module):
             return self.output_layer(x)
 
 
+class MeshGraphNet(nn.Module):
+    """Node-field network with mean aggregation over the active FE mesh.
+
+    Connectivity is runtime state rather than checkpoint state because PIDL
+    uses different coarse and fine meshes. The graph must be rebound whenever
+    the training mesh changes.
+    """
+
+    def __init__(self, input_dimension, output_dimension, n_hidden_layers,
+                 neurons, activation, init_coeff=1.0):
+        super().__init__()
+        if n_hidden_layers < 1:
+            raise ValueError("MeshGraphNet requires at least one hidden layer")
+        self.input_dimension = input_dimension
+        self.output_dimension = output_dimension
+        self.neurons = neurons
+        self.n_hidden_layers = n_hidden_layers
+        self.name_activation = activation
+        self.init_coeff = init_coeff
+        self.input_layer = nn.Linear(input_dimension, neurons)
+        self.self_layers = nn.ModuleList(
+            [nn.Linear(neurons, neurons) for _ in range(n_hidden_layers)]
+        )
+        self.neighbor_layers = nn.ModuleList(
+            [nn.Linear(neurons, neurons, bias=False) for _ in range(n_hidden_layers)]
+        )
+        self.output_layer = nn.Linear(neurons, output_dimension)
+        self.activations, self.trainable_activation = activations(
+            activation, init_coeff, n_hidden_layers + 1
+        )
+        self.register_buffer("edge_src", torch.empty(0, dtype=torch.long), persistent=False)
+        self.register_buffer("edge_dst", torch.empty(0, dtype=torch.long), persistent=False)
+        self.register_buffer("degree", torch.empty(0), persistent=False)
+        self.graph_num_nodes = None
+
+    def bind_mesh(self, connectivity, num_nodes):
+        if connectivity is None:
+            raise ValueError("MeshGraphNet requires numerical-gradient mesh connectivity")
+        conn = torch.as_tensor(connectivity, dtype=torch.long, device=self.input_layer.weight.device)
+        if conn.ndim != 2 or conn.shape[1] < 2:
+            raise ValueError(f"invalid element connectivity shape {tuple(conn.shape)}")
+        pairs = []
+        for offset in range(1, conn.shape[1]):
+            pairs.append(torch.stack((conn, torch.roll(conn, shifts=-offset, dims=1)), dim=-1).reshape(-1, 2))
+        edges = torch.unique(torch.cat(pairs, dim=0), dim=0)
+        self.edge_src = edges[:, 0]
+        self.edge_dst = edges[:, 1]
+        self.degree = torch.bincount(self.edge_dst, minlength=int(num_nodes)).clamp_min(1).to(torch.float)
+        self.graph_num_nodes = int(num_nodes)
+
+    def _activate(self, index, value):
+        return self.activations[index](value) if self.trainable_activation else self.activations(value)
+
+    def forward(self, x):
+        if self.graph_num_nodes != x.shape[0] or self.edge_src.numel() == 0:
+            raise RuntimeError("MeshGraphNet graph is not bound to the current input mesh")
+        h = self._activate(0, self.input_layer(x))
+        for layer_index, (self_layer, neighbor_layer) in enumerate(
+            zip(self.self_layers, self.neighbor_layers), start=1
+        ):
+            neighbor_sum = torch.zeros_like(h)
+            neighbor_sum.index_add_(0, self.edge_dst, h[self.edge_src])
+            neighbor_mean = neighbor_sum / self.degree.to(h.dtype).unsqueeze(1)
+            h = self._activate(layer_index, self_layer(h) + neighbor_layer(neighbor_mean))
+        return self.output_layer(h)
+
+
+def bind_mesh_graph(model, connectivity, num_nodes):
+    """Bind connectivity through optional wrappers without affecting MLPs."""
+    target = getattr(model, "_orig_mod", model)
+    if hasattr(target, "bind_mesh"):
+        target.bind_mesh(connectivity, num_nodes)
+
+
 # ★ 2026-05-11 C10: Fourier feature input wrapper for spectral-bias mitigation.
 #   Anchor: Tancik et al. 2020 NeurIPS; Xu et al. 2025 JCP review §4.2.
 #   γ(x) = [cos(2π B·x), sin(2π B·x)],  B ∈ R^{n_features × input_dim},  B_ij ~ N(0, σ²)
@@ -323,4 +397,3 @@ def init_xavier(model):
                 m.bias.data.fill_(0)
 
     model.apply(init_weights)
-

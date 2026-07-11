@@ -2,10 +2,10 @@ import torch
 import torch._dynamo   # ★ 顶层导入，避免函数内 import 触发 UnboundLocalError
 from pff_model import PFFModel
 from material_properties import MaterialProperties
-from network import NeuralNet, FourierFeatureNet, init_xavier
+from network import NeuralNet, FourierFeatureNet, MeshGraphNet, init_xavier
 
 def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, device,
-                    williams_dict=None, fourier_dict=None):
+                    williams_dict=None, fourier_dict=None, graph_dict=None):
     """
     构建 PFF 模型、材料属性和神经网络。
 
@@ -45,11 +45,24 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
     # ★ 2026-05-11 C10: Fourier feature 启用时换用 FourierFeatureNet
     _fd = fourier_dict or {}
     _fourier_on = _fd.get('enable', False)
-    if _williams_on and _fourier_on:
-        raise ValueError("williams_dict and fourier_dict cannot both be enabled")
+    _gd = graph_dict or {}
+    _graph_on = _gd.get('enable', False)
+    if sum(bool(x) for x in (_williams_on, _fourier_on, _graph_on)) > 1:
+        raise ValueError("Williams, Fourier, and graph representations are mutually exclusive")
 
     # Neural network
-    if _fourier_on:
+    if _graph_on:
+        network = MeshGraphNet(
+            input_dimension=in_dim,
+            output_dimension=domain_extrema.shape[0]+1,
+            n_hidden_layers=network_dict["hidden_layers"],
+            neurons=network_dict["neurons"],
+            activation=network_dict["activation"],
+            init_coeff=network_dict["init_coeff"],
+        )
+        print(f"[construct_model] MeshGraphNet enabled: layers={network_dict['hidden_layers']}, "
+              f"width={network_dict['neurons']}")
+    elif _fourier_on:
         network = FourierFeatureNet(
             input_dimension=in_dim,
             output_dimension=domain_extrema.shape[0]+1,

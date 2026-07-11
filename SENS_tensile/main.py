@@ -19,7 +19,8 @@ from model_train import train
 pffmodel, matprop, network = construct_model(PFF_model_dict, mat_prop_dict,
                                              network_dict, domain_extrema, device,
                                              williams_dict=williams_dict,   # ★ Direction 4
-                                             fourier_dict=fourier_dict)     # ★ 2026-05-11 C10
+                                             fourier_dict=fourier_dict,
+                                             graph_dict=globals().get("graph_dict", None))
 field_comp = FieldComputation(net = network,
                               domain_extrema = domain_extrema,
                               lmbda = torch.tensor([0.0], device = device),

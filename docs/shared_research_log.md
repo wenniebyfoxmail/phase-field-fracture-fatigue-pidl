@@ -42,6 +42,20 @@
 
 ## Entries
 
+## 2026-07-11 · Mac-PIDL [decision+implementation]
+
+**Opt-in physics-trained Graph-PIDL architecture gate**
+
+Branch `codex/m2s-framework-validation`. Following the completed eta=1e-3
+micro-run (code-path pass, event timing shifted from step444 to step554), the
+representation branch is separated from residual stiffness. An opt-in
+`MeshGraphNet` replaces only the coordinate MLP and is trained by the unchanged
+variational/fatigue objective with eta=0; FEM remains the external mechanism
+reference and provides no field labels. Runtime FE connectivity is rebound for
+coarse and fine meshes. Existing MLP runs are unaffected unless
+`--graph-pidl` is supplied. Legacy c69 is excluded from the scientific test.
+Taobo will run a training-path smoke before any trajectory run.
+
 ## 2026-06-29 · Mac-PIDL [retraction+implementation]
 
 **Eight-step cyclic protocol now accepts absolute displacement steps**
