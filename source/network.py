@@ -381,19 +381,21 @@ def init_xavier(model):
     activation = model.name_activation
     init_coeff = model.init_coeff
     def init_weights(m):
-        if type(m) == nn.Linear and m.weight.requires_grad and m.bias.requires_grad:
+        if isinstance(m, nn.Linear) and m.weight.requires_grad:
             if activation == 'TrainableReLU' or activation == 'SteepReLU':
                 # ReLU类激活函数的增益计算
                 # 使用 leaky_relu 增益近似
                 g = nn.init.calculate_gain('leaky_relu', np.sqrt(init_coeff**2-1.0))
                 torch.nn.init.xavier_uniform_(m.weight, gain=g)
                 # torch.nn.init.xavier_normal_(m.weight, gain=g)
-                m.bias.data.fill_(0)
+                if m.bias is not None:
+                    m.bias.data.fill_(0)
 
             if activation == 'TrainableTanh' or activation == 'SteepTanh':
                 g = nn.init.calculate_gain('tanh')/init_coeff
                 torch.nn.init.xavier_uniform_(m.weight, gain=g)
                 # torch.nn.init.xavier_normal_(m.weight, gain=g)
-                m.bias.data.fill_(0)
+                if m.bias is not None:
+                    m.bias.data.fill_(0)
 
     model.apply(init_weights)

@@ -8,7 +8,7 @@ import torch
 SOURCE = Path(__file__).resolve().parents[1] / "source"
 sys.path.insert(0, str(SOURCE))
 
-from network import MeshGraphNet, bind_mesh_graph  # noqa: E402
+from network import MeshGraphNet, bind_mesh_graph, init_xavier  # noqa: E402
 
 
 def make_net():
@@ -47,3 +47,10 @@ def test_runtime_graph_is_not_stored_in_checkpoint():
     assert "edge_src" not in keys
     assert "edge_dst" not in keys
     assert "degree" not in keys
+
+
+def test_xavier_initializes_biasless_message_layers():
+    net = make_net()
+    init_xavier(net)
+    assert all(layer.bias is None for layer in net.neighbor_layers)
+    assert all(torch.isfinite(layer.weight).all() for layer in net.neighbor_layers)
