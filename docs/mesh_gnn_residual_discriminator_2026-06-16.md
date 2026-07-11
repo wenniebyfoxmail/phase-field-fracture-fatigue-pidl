@@ -2,6 +2,10 @@
 
 Date: 2026-06-16
 
+Status: **legacy soft-hist0 diagnostic only**. Do not use this c69 experiment
+as the current hard-recovery representation test. The c89 replacement is
+documented in `docs/hard_recovery_graph_residual_discriminator_v2_2026-07-10.md`.
+
 ## Question
 
 Can local mesh-neighbourhood information explain the strict FEM/PIDL field

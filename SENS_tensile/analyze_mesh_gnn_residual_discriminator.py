@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""Offline mesh-graph residual discriminator for FEM/PIDL field gaps.
+"""Legacy soft-hist0 mesh-graph residual discriminator for FEM/PIDL gaps.
 
 This is a post-hoc analysis tool, not a PIDL training runner.  It asks whether
 local mesh neighbourhood information can learn the FEM-PIDL residual in
 ``psi_active`` or ``alpha_bar`` on strict FEM-mesh checkpoints.  A positive
 offline result would justify a later online residual-correction experiment; a
 negative result closes this direction cheaply.
+
+Do not use this script for the current hard-recovery c89 claim. Its synthetic
+FEM active target combines cycle-peak raw psi with unloaded damage. Use
+``analyze_hard_recovery_graph_residual_discriminator.py`` for the state-safe
+peak-raw graph-vs-MLP diagnostic.
 """
 from __future__ import annotations
 
