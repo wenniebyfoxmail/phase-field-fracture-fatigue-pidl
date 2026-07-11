@@ -2,8 +2,8 @@
 
 Date: 2026-07-10
 
-Status: code-path accepted for offline producer execution; full multi-seed
-scientific result pending.
+Status: eta=0 multi-seed result complete; diagnostic-positive with localization
+caveats. Frozen eta=1e-3 comparison pending.
 
 ## Mechanism Question
 
@@ -84,6 +84,32 @@ Mac-safe checks completed:
 
 The one-epoch output is tooling evidence only and must not be interpreted as a
 scientific GNN verdict.
+
+## eta=0 Taobo Result
+
+The frozen three-seed run completed on Taobo from source commit `926c34c`.
+Local result endpoint:
+
+```text
+local_archive/after_strict_setting_alignment/pidl_result/
+hard_recovery_graph_raw_eta0_926c34c_20260711_141546/analysis/decision.md
+```
+
+On untouched c89, graph log-MAE was lower than the parameter-matched MLP for
+all three seeds in all primary high-driver masks. Mean graph-vs-MLP gains were:
+
+- `14.97%` in `fem_top1_clean`;
+- `14.30%` in `fem_pz_1200`;
+- `10.41%` in `fem_core_2400`.
+
+The localization result is mixed. The graph consistently improves over MLP,
+and restores some support in the strongest FEM core, but it does not uniformly
+improve over the uncorrected PIDL field at broader thresholds. Whole-domain
+graph log-MAE also remains slightly worse than uncorrected PIDL.
+
+Decision: the eta=0 raw residual contains reproducible neighbourhood signal,
+but this does not establish an independent representation bottleneck or justify
+online GNN coupling. Keep the exact protocol frozen for eta=1e-3.
 
 ## Full Offline Producer Command
 

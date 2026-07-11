@@ -1,7 +1,7 @@
 # Hard-Recovery eta=0 Graph Residual Taobo Run
 
 Created: 2026-07-11 14:42 BST
-Status: running
+Status: completed, downloaded, and analysed
 
 ## Purpose
 
@@ -56,6 +56,21 @@ At the first check, PID `2950237` was `Rl`; GPU6 used about `2516 MiB` with
 `77%` utilization. `analysis_manifest.json` was present. The log may remain
 quiet until model/test summaries are emitted.
 
+The run then completed normally, GPU6 returned idle, and the full package was
+downloaded. Return package SHA256:
+
+```text
+0bafa5510bb0a2e3a032670f752b535e7ff55303163689ccbe42687383ae8bda
+```
+
+Local case:
+
+```text
+/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/
+after_strict_setting_alignment/pidl_result/
+hard_recovery_graph_raw_eta0_926c34c_20260711_141546/
+```
+
 Read-only monitor commands:
 
 ```bash
@@ -71,3 +86,18 @@ ssh -F /dev/null drtao@172.16.100.2 \
 Do not promote a graph claim from whole-domain MAE. The graph must beat the
 parameter-matched MLP across seeds on untouched c89 in `fem_top1_clean`,
 `fem_pz_1200`, and `fem_core_2400`, with improved support localization.
+
+## Result
+
+Verdict: **mixed / diagnostic-positive**.
+
+- Graph beats MLP for all three seeds in all three primary c89 masks.
+- Mean graph-vs-MLP log-MAE gains are `14.97%`, `14.30%`, and `10.41%` for
+  `fem_top1_clean`, `fem_pz_1200`, and `fem_core_2400` respectively.
+- Graph improves strongest-core support, but broad-threshold localization is
+  not uniformly better than uncorrected PIDL.
+- Whole-domain graph log-MAE remains slightly worse than uncorrected PIDL.
+
+Claim boundary: neighbourhood structure exists in the eta=0 raw residual, but
+representation is not established as the primary mismatch and online GNN
+coupling is not promoted. Next action is the exact frozen eta=1e-3 repeat.
