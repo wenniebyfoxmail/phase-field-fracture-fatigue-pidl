@@ -177,6 +177,8 @@ def main() -> None:
     parser.add_argument("--graph-layers", type=int, default=None)
     parser.add_argument("--graph-neurons", type=int, default=None)
     parser.add_argument("--graph-scale", type=float, default=1.0)
+    parser.add_argument("--graph-bounded", action="store_true",
+                        help="Bound hybrid graph correction by scale*tanh(graph_output).")
     parser.add_argument("--force-cpu", action="store_true")
     args = parser.parse_args()
 
@@ -276,6 +278,7 @@ def main() -> None:
         "layers": args.graph_layers if args.graph_layers is not None else args.hidden_layers,
         "neurons": args.graph_neurons if args.graph_neurons is not None else args.neurons,
         "scale": float(args.graph_scale),
+        "bounded": bool(args.graph_bounded),
     }
     if args.graph_pidl and config.numr_dict["gradient_type"] != "numerical":
         raise ValueError("--graph-pidl requires numerical mesh gradients")

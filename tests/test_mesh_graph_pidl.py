@@ -91,3 +91,14 @@ def test_hybrid_can_reset_trained_graph_correction_before_recovery():
     net.zero_graph_output()
     assert torch.count_nonzero(net.graph.output_layer.weight) == 0
     assert torch.count_nonzero(net.graph.output_layer.bias) == 0
+
+
+def test_bounded_hybrid_correction_cannot_exceed_scale():
+    net = HybridMeshGraphNet(
+        2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8,
+        graph_scale=0.05, graph_bounded=True,
+    )
+    bind_mesh_graph(net, torch.tensor([[0, 1, 2], [1, 3, 2]]), 4)
+    x = torch.rand(4, 2)
+    correction = net(x) - net.base(x)
+    assert torch.max(torch.abs(correction)) <= 0.050001

@@ -268,7 +268,7 @@ class HybridMeshGraphNet(nn.Module):
 
     def __init__(self, input_dimension, output_dimension, n_hidden_layers,
                  neurons, activation, init_coeff=1.0, graph_layers=2,
-                 graph_neurons=32, graph_scale=1.0):
+                 graph_neurons=32, graph_scale=1.0, graph_bounded=False):
         super().__init__()
         self.name_activation = activation
         self.init_coeff = init_coeff
@@ -281,6 +281,7 @@ class HybridMeshGraphNet(nn.Module):
             activation, init_coeff,
         )
         self.graph_scale = float(graph_scale)
+        self.graph_bounded = bool(graph_bounded)
 
     @property
     def output_layer(self):
@@ -296,7 +297,10 @@ class HybridMeshGraphNet(nn.Module):
             nn.init.zeros_(self.graph.output_layer.bias)
 
     def forward(self, x):
-        return self.base(x) + self.graph_scale * self.graph(x)
+        correction = self.graph(x)
+        if self.graph_bounded:
+            correction = torch.tanh(correction)
+        return self.base(x) + self.graph_scale * correction
 
 
 def bind_mesh_graph(model, connectivity, num_nodes):

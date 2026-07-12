@@ -66,6 +66,7 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
                 graph_layers=int(_gd.get('layers', 2)),
                 graph_neurons=int(_gd.get('neurons', 32)),
                 graph_scale=float(_gd.get('scale', 1.0)),
+                graph_bounded=bool(_gd.get('bounded', False)),
             )
             print(f"[construct_model] HybridMeshGraphNet enabled: "
                   f"base={network_dict['hidden_layers']}x{network_dict['neurons']}, "
