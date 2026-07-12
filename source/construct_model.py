@@ -2,7 +2,9 @@ import torch
 import torch._dynamo   # ★ 顶层导入，避免函数内 import 触发 UnboundLocalError
 from pff_model import PFFModel
 from material_properties import MaterialProperties
-from network import NeuralNet, FourierFeatureNet, MeshGraphNet, init_xavier
+from network import (
+    NeuralNet, FourierFeatureNet, MeshGraphNet, HybridMeshGraphNet, init_xavier,
+)
 
 def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, device,
                     williams_dict=None, fourier_dict=None, graph_dict=None):
@@ -47,21 +49,40 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
     _fourier_on = _fd.get('enable', False)
     _gd = graph_dict or {}
     _graph_on = _gd.get('enable', False)
+    _graph_mode = str(_gd.get('mode', 'full'))
     if sum(bool(x) for x in (_williams_on, _fourier_on, _graph_on)) > 1:
         raise ValueError("Williams, Fourier, and graph representations are mutually exclusive")
 
     # Neural network
     if _graph_on:
-        network = MeshGraphNet(
-            input_dimension=in_dim,
-            output_dimension=domain_extrema.shape[0]+1,
-            n_hidden_layers=network_dict["hidden_layers"],
-            neurons=network_dict["neurons"],
-            activation=network_dict["activation"],
-            init_coeff=network_dict["init_coeff"],
-        )
-        print(f"[construct_model] MeshGraphNet enabled: layers={network_dict['hidden_layers']}, "
-              f"width={network_dict['neurons']}")
+        if _graph_mode == 'hybrid':
+            network = HybridMeshGraphNet(
+                input_dimension=in_dim,
+                output_dimension=domain_extrema.shape[0]+1,
+                n_hidden_layers=network_dict["hidden_layers"],
+                neurons=network_dict["neurons"],
+                activation=network_dict["activation"],
+                init_coeff=network_dict["init_coeff"],
+                graph_layers=int(_gd.get('layers', 2)),
+                graph_neurons=int(_gd.get('neurons', 32)),
+                graph_scale=float(_gd.get('scale', 1.0)),
+            )
+            print(f"[construct_model] HybridMeshGraphNet enabled: "
+                  f"base={network_dict['hidden_layers']}x{network_dict['neurons']}, "
+                  f"graph={_gd.get('layers', 2)}x{_gd.get('neurons', 32)}")
+        elif _graph_mode == 'full':
+            network = MeshGraphNet(
+                input_dimension=in_dim,
+                output_dimension=domain_extrema.shape[0]+1,
+                n_hidden_layers=int(_gd.get('layers', network_dict["hidden_layers"])),
+                neurons=int(_gd.get('neurons', network_dict["neurons"])),
+                activation=network_dict["activation"],
+                init_coeff=network_dict["init_coeff"],
+            )
+            print(f"[construct_model] MeshGraphNet enabled: layers={network.n_hidden_layers}, "
+                  f"width={network.neurons}")
+        else:
+            raise ValueError(f"unsupported graph mode {_graph_mode!r}")
     elif _fourier_on:
         network = FourierFeatureNet(
             input_dimension=in_dim,
@@ -85,6 +106,8 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
                             init_coeff=network_dict["init_coeff"])
     torch.manual_seed(network_dict["seed"])
     init_xavier(network)
+    if isinstance(network, HybridMeshGraphNet):
+        network.zero_graph_output()
 
     # ★ 速度优化：torch.compile（PyTorch ≥ 2.0），减少 Python launch overhead
     # 编译是惰性的（首次 forward 才真编译）→ 必须设 dynamo suppress_errors

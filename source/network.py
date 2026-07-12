@@ -263,6 +263,37 @@ class MeshGraphNet(nn.Module):
         return self.output_layer(h)
 
 
+class HybridMeshGraphNet(nn.Module):
+    """Coordinate MLP with a zero-initialized mesh-graph correction branch."""
+
+    def __init__(self, input_dimension, output_dimension, n_hidden_layers,
+                 neurons, activation, init_coeff=1.0, graph_layers=2,
+                 graph_neurons=32, graph_scale=1.0):
+        super().__init__()
+        self.name_activation = activation
+        self.init_coeff = init_coeff
+        self.base = NeuralNet(
+            input_dimension, output_dimension, n_hidden_layers, neurons,
+            activation, init_coeff,
+        )
+        self.graph = MeshGraphNet(
+            input_dimension, output_dimension, graph_layers, graph_neurons,
+            activation, init_coeff,
+        )
+        self.graph_scale = float(graph_scale)
+
+    def bind_mesh(self, connectivity, num_nodes):
+        self.graph.bind_mesh(connectivity, num_nodes)
+
+    def zero_graph_output(self):
+        nn.init.zeros_(self.graph.output_layer.weight)
+        if self.graph.output_layer.bias is not None:
+            nn.init.zeros_(self.graph.output_layer.bias)
+
+    def forward(self, x):
+        return self.base(x) + self.graph_scale * self.graph(x)
+
+
 def bind_mesh_graph(model, connectivity, num_nodes):
     """Bind connectivity through optional wrappers without affecting MLPs."""
     target = getattr(model, "_orig_mod", model)

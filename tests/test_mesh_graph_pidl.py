@@ -8,7 +8,9 @@ import torch
 SOURCE = Path(__file__).resolve().parents[1] / "source"
 sys.path.insert(0, str(SOURCE))
 
-from network import MeshGraphNet, bind_mesh_graph, init_xavier  # noqa: E402
+from network import (  # noqa: E402
+    HybridMeshGraphNet, MeshGraphNet, bind_mesh_graph, init_xavier,
+)
 
 
 def make_net():
@@ -54,3 +56,23 @@ def test_xavier_initializes_biasless_message_layers():
     init_xavier(net)
     assert all(layer.bias is None for layer in net.neighbor_layers)
     assert all(torch.isfinite(layer.weight).all() for layer in net.neighbor_layers)
+
+
+def test_hybrid_starts_as_exact_coordinate_mlp():
+    net = HybridMeshGraphNet(2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8)
+    init_xavier(net)
+    net.zero_graph_output()
+    coordinates = torch.rand(4, 2)
+    bind_mesh_graph(net, torch.tensor([[0, 1, 2], [1, 3, 2]]), 4)
+    assert torch.equal(net(coordinates), net.base(coordinates))
+
+
+def test_hybrid_graph_branch_receives_gradient_from_zero_output():
+    net = HybridMeshGraphNet(2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8)
+    init_xavier(net)
+    net.zero_graph_output()
+    coordinates = torch.rand(4, 2)
+    bind_mesh_graph(net, torch.tensor([[0, 1, 2], [1, 3, 2]]), 4)
+    net(coordinates).square().mean().backward()
+    assert net.graph.output_layer.weight.grad is not None
+    assert torch.count_nonzero(net.graph.output_layer.weight.grad) > 0

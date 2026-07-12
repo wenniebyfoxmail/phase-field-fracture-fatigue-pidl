@@ -173,6 +173,10 @@ def main() -> None:
     parser.add_argument("--compile", action="store_true")
     parser.add_argument("--graph-pidl", action="store_true",
                         help="Replace the coordinate MLP by a physics-trained mesh GNN.")
+    parser.add_argument("--graph-mode", choices=("full", "hybrid"), default="full")
+    parser.add_argument("--graph-layers", type=int, default=None)
+    parser.add_argument("--graph-neurons", type=int, default=None)
+    parser.add_argument("--graph-scale", type=float, default=1.0)
     parser.add_argument("--force-cpu", action="store_true")
     args = parser.parse_args()
 
@@ -265,7 +269,14 @@ def main() -> None:
     config.fine_mesh_file = fem_mesh
     config.PFF_model_dict["residual_stiffness"] = float(args.res_stiffness)
     config.network_dict["compile"] = bool(args.compile)
-    config.graph_dict = {"enable": bool(args.graph_pidl), "type": "mean_message_passing"}
+    config.graph_dict = {
+        "enable": bool(args.graph_pidl),
+        "type": "mean_message_passing",
+        "mode": args.graph_mode,
+        "layers": args.graph_layers if args.graph_layers is not None else args.hidden_layers,
+        "neurons": args.graph_neurons if args.graph_neurons is not None else args.neurons,
+        "scale": float(args.graph_scale),
+    }
     if args.graph_pidl and config.numr_dict["gradient_type"] != "numerical":
         raise ValueError("--graph-pidl requires numerical mesh gradients")
     if args.epochs_rprop is not None:
@@ -340,7 +351,7 @@ def main() -> None:
         f"_Ncyc{fat['n_cycles']}_Nstep{total_steps}"
         f"_U{fat['disp_max']}"
         f"_{mesh_tag}"
-        f"{'_graphPIDL' if args.graph_pidl else ''}"
+        f"{'_graphPIDL_' + args.graph_mode if args.graph_pidl else ''}"
         f"_current_active_{args.history_driver_reduction_mode}"
         f"{'_' + _format_eta_tag(args.res_stiffness) if args.res_stiffness > 0.0 else ''}"
         f"{'_femIrrGP3' if args.fem_irr_penalty else ''}"
@@ -383,7 +394,10 @@ def main() -> None:
         handle.write(f"fine_mesh_file: {config.fine_mesh_file}\n")
         handle.write(f"mesh_tag: {mesh_tag}\n")
         handle.write(f"torch_compile: {bool(args.compile)}\n")
-        handle.write(f"representation: {'MeshGraphNet' if args.graph_pidl else 'coordinate_MLP'}\n")
+        representation = (
+            f"GraphPIDL_{args.graph_mode}" if args.graph_pidl else "coordinate_MLP"
+        )
+        handle.write(f"representation: {representation}\n")
         handle.write(f"graph_dict: {config.graph_dict}\n")
         handle.write("supervision: physics_only_no_FEM_field_targets\n")
         handle.write(f"residual_stiffness: {float(args.res_stiffness)}\n")
@@ -451,7 +465,8 @@ def main() -> None:
         f"  network        = {config.network_dict['hidden_layers']}x"
         f"{config.network_dict['neurons']}"
     )
-    print(f"  representation = {'MeshGraphNet' if args.graph_pidl else 'coordinate MLP'}")
+    representation = f"GraphPIDL {args.graph_mode}" if args.graph_pidl else "coordinate MLP"
+    print(f"  representation = {representation}")
     print(
         f"  epochs         = RPROP {config.optimizer_dict['n_epochs_RPROP']} | "
         f"LBFGS {config.optimizer_dict['n_epochs_LBFGS']}"
