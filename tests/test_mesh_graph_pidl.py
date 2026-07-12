@@ -76,3 +76,8 @@ def test_hybrid_graph_branch_receives_gradient_from_zero_output():
     net(coordinates).square().mean().backward()
     assert net.graph.output_layer.weight.grad is not None
     assert torch.count_nonzero(net.graph.output_layer.weight.grad) > 0
+
+
+def test_hybrid_exposes_base_output_head_for_recovery_protocol():
+    net = HybridMeshGraphNet(2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8)
+    assert net.output_layer is net.base.output_layer

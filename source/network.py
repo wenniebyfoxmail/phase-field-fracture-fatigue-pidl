@@ -282,6 +282,11 @@ class HybridMeshGraphNet(nn.Module):
         )
         self.graph_scale = float(graph_scale)
 
+    @property
+    def output_layer(self):
+        """Expose the base head to existing staged/recovery utilities."""
+        return self.base.output_layer
+
     def bind_mesh(self, connectivity, num_nodes):
         self.graph.bind_mesh(connectivity, num_nodes)
 
