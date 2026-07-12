@@ -589,6 +589,12 @@ def _raw_alpha_value_for_target(field_comp, target_alpha):
 
 def _preset_uniform_current_alpha(field_comp, target_alpha):
     """Set only the current NN alpha head to a spatially uniform target."""
+    raw_net = getattr(field_comp.net, "_orig_mod", field_comp.net)
+    if hasattr(raw_net, "zero_graph_output"):
+        # Hybrid pretraining can make the graph correction spatially varying.
+        # Reset only its final correction head before imposing the same uniform
+        # hard-recovery state used by the coordinate baseline.
+        raw_net.zero_graph_output()
     output_layer = _resolve_output_layer(field_comp.net)
     raw_alpha = _raw_alpha_value_for_target(field_comp, target_alpha)
     with torch.no_grad():

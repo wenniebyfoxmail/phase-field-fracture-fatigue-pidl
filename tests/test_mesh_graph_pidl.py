@@ -81,3 +81,13 @@ def test_hybrid_graph_branch_receives_gradient_from_zero_output():
 def test_hybrid_exposes_base_output_head_for_recovery_protocol():
     net = HybridMeshGraphNet(2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8)
     assert net.output_layer is net.base.output_layer
+
+
+def test_hybrid_can_reset_trained_graph_correction_before_recovery():
+    net = HybridMeshGraphNet(2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8)
+    with torch.no_grad():
+        net.graph.output_layer.weight.fill_(1.0)
+        net.graph.output_layer.bias.fill_(1.0)
+    net.zero_graph_output()
+    assert torch.count_nonzero(net.graph.output_layer.weight) == 0
+    assert torch.count_nonzero(net.graph.output_layer.bias) == 0
