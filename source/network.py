@@ -268,8 +268,21 @@ class HybridMeshGraphNet(nn.Module):
 
     def __init__(self, input_dimension, output_dimension, n_hidden_layers,
                  neurons, activation, init_coeff=1.0, graph_layers=2,
-                 graph_neurons=32, graph_scale=1.0, graph_bounded=False):
+                 graph_neurons=32, graph_scale=1.0, graph_bounded=False,
+                 graph_correction_channels="all"):
         super().__init__()
+        channel_masks = {
+            "all": (1.0, 1.0, 1.0),
+            "alpha": (0.0, 0.0, 1.0),
+            "uv": (1.0, 1.0, 0.0),
+        }
+        if output_dimension != 3:
+            raise ValueError("HybridMeshGraphNet channel ablation requires three outputs (u, v, alpha_raw)")
+        if graph_correction_channels not in channel_masks:
+            raise ValueError(
+                "graph_correction_channels must be one of "
+                f"{tuple(channel_masks)}, got {graph_correction_channels!r}"
+            )
         self.name_activation = activation
         self.init_coeff = init_coeff
         self.base = NeuralNet(
@@ -282,6 +295,12 @@ class HybridMeshGraphNet(nn.Module):
         )
         self.graph_scale = float(graph_scale)
         self.graph_bounded = bool(graph_bounded)
+        self.graph_correction_channels = graph_correction_channels
+        self.register_buffer(
+            "graph_correction_mask",
+            torch.tensor(channel_masks[graph_correction_channels]),
+            persistent=False,
+        )
 
     @property
     def output_layer(self):
@@ -291,15 +310,32 @@ class HybridMeshGraphNet(nn.Module):
     def bind_mesh(self, connectivity, num_nodes):
         self.graph.bind_mesh(connectivity, num_nodes)
 
-    def zero_graph_output(self):
-        nn.init.zeros_(self.graph.output_layer.weight)
-        if self.graph.output_layer.bias is not None:
-            nn.init.zeros_(self.graph.output_layer.bias)
+    def zero_graph_output(self, rows=None):
+        """Reset all graph-output rows, or only selected raw-output channels."""
+        if rows is None:
+            rows = range(self.graph.output_layer.out_features)
+        row_index = torch.as_tensor(
+            list(rows), dtype=torch.long,
+            device=self.graph.output_layer.weight.device,
+        )
+        with torch.no_grad():
+            self.graph.output_layer.weight.index_fill_(0, row_index, 0.0)
+            if self.graph.output_layer.bias is not None:
+                self.graph.output_layer.bias.index_fill_(0, row_index, 0.0)
+
+    def representation_signature(self):
+        return (
+            f"hybrid|channels={self.graph_correction_channels}"
+            f"|bounded={str(self.graph_bounded).lower()}"
+            f"|scale={self.graph_scale:g}"
+            f"|graph={self.graph.n_hidden_layers}x{self.graph.neurons}"
+        )
 
     def forward(self, x):
         correction = self.graph(x)
         if self.graph_bounded:
             correction = torch.tanh(correction)
+        correction = correction * self.graph_correction_mask.to(correction.dtype)
         return self.base(x) + self.graph_scale * correction
 
 

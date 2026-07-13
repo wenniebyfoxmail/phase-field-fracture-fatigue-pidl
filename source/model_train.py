@@ -594,7 +594,7 @@ def _preset_uniform_current_alpha(field_comp, target_alpha):
         # Hybrid pretraining can make the graph correction spatially varying.
         # Reset only its final correction head before imposing the same uniform
         # hard-recovery state used by the coordinate baseline.
-        raw_net.zero_graph_output()
+        raw_net.zero_graph_output(rows=(2,))
     output_layer = _resolve_output_layer(field_comp.net)
     raw_alpha = _raw_alpha_value_for_target(field_comp, target_alpha)
     with torch.no_grad():
@@ -1173,6 +1173,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         trainedModel_path.glob('checkpoint_step_*.pt'),
         key=lambda p: int(p.stem.rsplit('_', 1)[-1])
     )
+    _raw_net = getattr(field_comp.net, "_orig_mod", field_comp.net)
+    _representation_signature = (
+        _raw_net.representation_signature()
+        if hasattr(_raw_net, "representation_signature") else None
+    )
     start_j = 0
     _did_restore = False   # ★ 标志位：True → 后续 history lists 从 .npy 初始化
     _frac_state_from_ckpt = {}  # stash for fracture detection state from checkpoint
@@ -1182,6 +1187,18 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _net_file = trainedModel_path / Path(f'trained_1NN_{_last_j}.pt')
         if _net_file.exists():
             _ckpt = torch.load(_latest, map_location=device)
+            _saved_signature = _ckpt.get('representation_signature')
+            if (
+                _representation_signature is not None
+                and _saved_signature is not None
+                and _saved_signature != _representation_signature
+            ):
+                raise RuntimeError(
+                    "checkpoint representation mismatch: "
+                    f"saved={_saved_signature!r}, current={_representation_signature!r}"
+                )
+            if _representation_signature is not None and _saved_signature is None:
+                print("[Checkpoint] WARNING: legacy checkpoint has no representation signature")
             field_comp.net.load_state_dict(
                 torch.load(_net_file, map_location=device))
             hist_alpha = _ckpt['hist_alpha'].to(device)
@@ -2423,6 +2440,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
         # ★ 保存断点续训 checkpoint（含 hist_alpha 及疲劳变量）
         _ckpt_data = {'hist_alpha': hist_alpha}
+        if _representation_signature is not None:
+            _ckpt_data['representation_signature'] = _representation_signature
         if fatigue_on:
             _ckpt_data['hist_fat']                 = hist_fat
             _ckpt_data['psi_plus_prev']            = psi_plus_prev

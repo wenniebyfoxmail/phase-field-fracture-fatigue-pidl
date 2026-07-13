@@ -67,10 +67,12 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
                 graph_neurons=int(_gd.get('neurons', 32)),
                 graph_scale=float(_gd.get('scale', 1.0)),
                 graph_bounded=bool(_gd.get('bounded', False)),
+                graph_correction_channels=str(_gd.get('correction_channels', 'all')),
             )
             print(f"[construct_model] HybridMeshGraphNet enabled: "
                   f"base={network_dict['hidden_layers']}x{network_dict['neurons']}, "
-                  f"graph={_gd.get('layers', 2)}x{_gd.get('neurons', 32)}")
+                  f"graph={_gd.get('layers', 2)}x{_gd.get('neurons', 32)}, "
+                  f"channels={_gd.get('correction_channels', 'all')}")
         elif _graph_mode == 'full':
             network = MeshGraphNet(
                 input_dimension=in_dim,

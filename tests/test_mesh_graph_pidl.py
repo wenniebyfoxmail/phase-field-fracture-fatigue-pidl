@@ -102,3 +102,57 @@ def test_bounded_hybrid_correction_cannot_exceed_scale():
     x = torch.rand(4, 2)
     correction = net(x) - net.base(x)
     assert torch.max(torch.abs(correction)) <= 0.050001
+
+
+@pytest.mark.parametrize(
+    ("channels", "inactive"),
+    (("alpha", (0, 1)), ("uv", (2,))),
+)
+def test_hybrid_channel_ablation_leaves_inactive_base_outputs_exact(channels, inactive):
+    net = HybridMeshGraphNet(
+        2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8,
+        graph_scale=0.05, graph_bounded=True,
+        graph_correction_channels=channels,
+    )
+    bind_mesh_graph(net, torch.tensor([[0, 1, 2], [1, 3, 2]]), 4)
+    x = torch.rand(4, 2)
+    output = net(x)
+    base = net.base(x)
+    assert torch.equal(output[:, inactive], base[:, inactive])
+
+
+def test_inactive_graph_output_rows_receive_zero_gradient():
+    net = HybridMeshGraphNet(
+        2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8,
+        graph_scale=0.05, graph_bounded=True,
+        graph_correction_channels="alpha",
+    )
+    bind_mesh_graph(net, torch.tensor([[0, 1, 2], [1, 3, 2]]), 4)
+    net(torch.rand(4, 2)).square().mean().backward()
+    grad = net.graph.output_layer.weight.grad
+    assert torch.count_nonzero(grad[0:2]) == 0
+    assert torch.count_nonzero(grad[2]) > 0
+
+
+def test_row_specific_graph_reset_preserves_other_channels():
+    net = HybridMeshGraphNet(2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8)
+    with torch.no_grad():
+        net.graph.output_layer.weight.fill_(1.0)
+        net.graph.output_layer.bias.fill_(1.0)
+    net.zero_graph_output(rows=(2,))
+    assert torch.count_nonzero(net.graph.output_layer.weight[0:2]) > 0
+    assert torch.count_nonzero(net.graph.output_layer.bias[0:2]) > 0
+    assert torch.count_nonzero(net.graph.output_layer.weight[2]) == 0
+    assert net.graph.output_layer.bias[2] == 0
+
+
+def test_channel_mask_is_runtime_only_and_signature_is_explicit():
+    net = HybridMeshGraphNet(
+        2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8,
+        graph_scale=0.05, graph_bounded=True,
+        graph_correction_channels="uv",
+    )
+    assert "graph_correction_mask" not in net.state_dict()
+    assert net.representation_signature() == (
+        "hybrid|channels=uv|bounded=true|scale=0.05|graph=2x8"
+    )

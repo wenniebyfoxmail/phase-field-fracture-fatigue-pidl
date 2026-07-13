@@ -179,8 +179,24 @@ def main() -> None:
     parser.add_argument("--graph-scale", type=float, default=1.0)
     parser.add_argument("--graph-bounded", action="store_true",
                         help="Bound hybrid graph correction by scale*tanh(graph_output).")
+    parser.add_argument(
+        "--graph-correction-channels",
+        choices=("all", "alpha", "uv"),
+        default="all",
+        help=("Hybrid-only raw-output channel ablation: all=(u,v,alpha_raw), "
+              "alpha=(alpha_raw only), uv=(u,v only)."),
+    )
     parser.add_argument("--force-cpu", action="store_true")
     args = parser.parse_args()
+
+    if args.graph_scale < 0.0:
+        parser.error("--graph-scale must be non-negative")
+    if args.graph_correction_channels != "all" and not (
+        args.graph_pidl and args.graph_mode == "hybrid"
+    ):
+        parser.error("non-all --graph-correction-channels requires --graph-pidl --graph-mode hybrid")
+    if args.graph_pidl and args.graph_mode == "hybrid" and not args.graph_bounded:
+        parser.error("hybrid channel diagnostics require --graph-bounded")
 
     if args.force_cpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -279,6 +295,7 @@ def main() -> None:
         "neurons": args.graph_neurons if args.graph_neurons is not None else args.neurons,
         "scale": float(args.graph_scale),
         "bounded": bool(args.graph_bounded),
+        "correction_channels": args.graph_correction_channels,
     }
     if args.graph_pidl and config.numr_dict["gradient_type"] != "numerical":
         raise ValueError("--graph-pidl requires numerical mesh gradients")
@@ -355,6 +372,7 @@ def main() -> None:
         f"_U{fat['disp_max']}"
         f"_{mesh_tag}"
         f"{'_graphPIDL_' + args.graph_mode if args.graph_pidl else ''}"
+        f"{'_' + args.graph_correction_channels if args.graph_pidl and args.graph_mode == 'hybrid' else ''}"
         f"_current_active_{args.history_driver_reduction_mode}"
         f"{'_' + _format_eta_tag(args.res_stiffness) if args.res_stiffness > 0.0 else ''}"
         f"{'_femIrrGP3' if args.fem_irr_penalty else ''}"
@@ -402,6 +420,10 @@ def main() -> None:
         )
         handle.write(f"representation: {representation}\n")
         handle.write(f"graph_dict: {config.graph_dict}\n")
+        handle.write(
+            "graph_scale_semantics: bounds additive raw-network-output correction; "
+            "it is not a bound on physical displacement or constrained alpha\n"
+        )
         handle.write("supervision: physics_only_no_FEM_field_targets\n")
         handle.write(f"residual_stiffness: {float(args.res_stiffness)}\n")
         handle.write(

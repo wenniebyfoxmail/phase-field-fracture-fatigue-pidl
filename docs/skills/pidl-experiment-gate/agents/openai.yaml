@@ -1,0 +1,4 @@
+interface:
+  display_name: "PIDL Experiment Gate"
+  short_description: "Gate PIDL/FEM attempts and record auditable experiment decisions."
+  default_prompt: "Use PIDL Experiment Gate to review this proposed PIDL/FEM attempt, ask GPT Pro first if needed, and record the decision/test ledger."
