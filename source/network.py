@@ -181,19 +181,22 @@ class NeuralNet(nn.Module):
         self.activations, self.trainable_activation = activations(activation, init_coeff, n_hidden_layers)
 
     def forward(self, x):
+        return self.output_layer(self.encode(x))
+
+    def encode(self, x):
+        """Return the final hidden representation without changing MLP semantics."""
         if self.trainable_activation:
             # 每一层使用独立的可训练激活函数
             x = self.activations[0](self.input_layer(x))
             for j, l in enumerate(self.hidden_layers):
                 x = self.activations[j+1](l(x))
-            return self.output_layer(x)
+            return x
         else:
             # 所有层共享同一个激活函数
             x = self.activations(self.input_layer(x))
             for j, l in enumerate(self.hidden_layers):
                 x = self.activations(l(x))
-            # 输出层不使用激活函数
-            return self.output_layer(x)
+            return x
 
 
 class MeshGraphNet(nn.Module):
@@ -337,6 +340,160 @@ class HybridMeshGraphNet(nn.Module):
             correction = torch.tanh(correction)
         correction = correction * self.graph_correction_mask.to(correction.dtype)
         return self.base(x) + self.graph_scale * correction
+
+
+class ChannelSeparatedMeshGraphNet(nn.Module):
+    """Coordinate MLP with independent UV and alpha graph corrections."""
+
+    def __init__(self, input_dimension, output_dimension, n_hidden_layers,
+                 neurons, activation, init_coeff=1.0, graph_layers=2,
+                 graph_neurons=32, graph_uv_scale=0.05,
+                 graph_alpha_scale=0.01, graph_bounded=True):
+        super().__init__()
+        if output_dimension != 3:
+            raise ValueError("ChannelSeparatedMeshGraphNet requires (u, v, alpha_raw)")
+        self.name_activation = activation
+        self.init_coeff = init_coeff
+        self.base = NeuralNet(
+            input_dimension, output_dimension, n_hidden_layers, neurons,
+            activation, init_coeff,
+        )
+        self.graph_uv = MeshGraphNet(
+            input_dimension, 2, graph_layers, graph_neurons,
+            activation, init_coeff,
+        )
+        self.graph_alpha = MeshGraphNet(
+            input_dimension, 1, graph_layers, graph_neurons,
+            activation, init_coeff,
+        )
+        self.graph_uv_scale = float(graph_uv_scale)
+        self.graph_alpha_scale = float(graph_alpha_scale)
+        self.graph_bounded = bool(graph_bounded)
+
+    @property
+    def output_layer(self):
+        return self.base.output_layer
+
+    def bind_mesh(self, connectivity, num_nodes):
+        self.graph_uv.bind_mesh(connectivity, num_nodes)
+        self.graph_alpha.bind_mesh(connectivity, num_nodes)
+
+    @staticmethod
+    def _zero_rows(layer, rows):
+        if not rows:
+            return
+        row_index = torch.as_tensor(
+            rows, dtype=torch.long, device=layer.weight.device,
+        )
+        with torch.no_grad():
+            layer.weight.index_fill_(0, row_index, 0.0)
+            if layer.bias is not None:
+                layer.bias.index_fill_(0, row_index, 0.0)
+
+    def zero_graph_output(self, rows=None):
+        requested = {0, 1, 2} if rows is None else set(rows)
+        self._zero_rows(
+            self.graph_uv.output_layer,
+            [row for row in (0, 1) if row in requested],
+        )
+        if 2 in requested:
+            self._zero_rows(self.graph_alpha.output_layer, [0])
+
+    def representation_signature(self):
+        return (
+            "channel_separated"
+            f"|bounded={str(self.graph_bounded).lower()}"
+            f"|uv_scale={self.graph_uv_scale:g}"
+            f"|alpha_scale={self.graph_alpha_scale:g}"
+            f"|graph={self.graph_uv.n_hidden_layers}x{self.graph_uv.neurons}"
+        )
+
+    def forward(self, x):
+        uv_correction = self.graph_uv(x)
+        alpha_correction = self.graph_alpha(x)
+        if self.graph_bounded:
+            uv_correction = torch.tanh(uv_correction)
+            alpha_correction = torch.tanh(alpha_correction)
+        correction = torch.cat((
+            self.graph_uv_scale * uv_correction,
+            self.graph_alpha_scale * alpha_correction,
+        ), dim=1)
+        return self.base(x) + correction
+
+
+class DamageLatentMeshGraphNet(nn.Module):
+    """Apply local graph refinement only to the MLP damage latent state."""
+
+    def __init__(self, input_dimension, output_dimension, n_hidden_layers,
+                 neurons, activation, init_coeff=1.0, graph_layers=2,
+                 graph_neurons=32, latent_scale=0.05,
+                 mask_x_min=-0.12, mask_x_max=0.50,
+                 mask_half_width=0.06, mask_transition=0.01):
+        super().__init__()
+        if output_dimension != 3:
+            raise ValueError("DamageLatentMeshGraphNet requires (u, v, alpha_raw)")
+        if mask_transition <= 0.0:
+            raise ValueError("mask_transition must be positive")
+        self.name_activation = activation
+        self.init_coeff = init_coeff
+        self.base = NeuralNet(
+            input_dimension, output_dimension, n_hidden_layers, neurons,
+            activation, init_coeff,
+        )
+        self.graph = MeshGraphNet(
+            neurons, neurons, graph_layers, graph_neurons,
+            activation, init_coeff,
+        )
+        self.damage_projection = nn.Linear(neurons, 1, bias=False)
+        self.latent_scale = float(latent_scale)
+        self.mask_x_min = float(mask_x_min)
+        self.mask_x_max = float(mask_x_max)
+        self.mask_half_width = float(mask_half_width)
+        self.mask_transition = float(mask_transition)
+
+    @property
+    def output_layer(self):
+        return self.base.output_layer
+
+    def bind_mesh(self, connectivity, num_nodes):
+        self.graph.bind_mesh(connectivity, num_nodes)
+
+    def zero_graph_output(self, rows=None):
+        if rows is not None and 2 not in set(rows):
+            return
+        with torch.no_grad():
+            self.graph.output_layer.weight.zero_()
+            if self.graph.output_layer.bias is not None:
+                self.graph.output_layer.bias.zero_()
+
+    def _damage_mask(self, x):
+        transition = self.mask_transition
+        x_coord = x[:, 0:1]
+        y_coord = x[:, 1:2]
+        mask = (
+            torch.sigmoid((x_coord - self.mask_x_min) / transition)
+            * torch.sigmoid((self.mask_x_max - x_coord) / transition)
+            * torch.sigmoid((self.mask_half_width - torch.abs(y_coord)) / transition)
+        )
+        return mask.detach()
+
+    def representation_signature(self):
+        return (
+            f"damage_latent|scale={self.latent_scale:g}"
+            f"|graph={self.graph.n_hidden_layers}x{self.graph.neurons}"
+            f"|mask=x[{self.mask_x_min:g},{self.mask_x_max:g}]"
+            f",yhalf={self.mask_half_width:g},t={self.mask_transition:g}"
+        )
+
+    def forward(self, x):
+        latent = self.base.encode(x)
+        latent_correction = torch.tanh(self.graph(latent))
+        base_output = self.base.output_layer(latent)
+        damage_adjustment = self.damage_projection(
+            self.latent_scale * self._damage_mask(x) * latent_correction,
+        )
+        correction = torch.cat((torch.zeros_like(base_output[:, :2]), damage_adjustment), dim=1)
+        return base_output + correction
 
 
 def bind_mesh_graph(model, connectivity, num_nodes):

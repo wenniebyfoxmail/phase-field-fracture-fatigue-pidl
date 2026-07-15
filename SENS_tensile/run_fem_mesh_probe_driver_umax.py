@@ -173,12 +173,23 @@ def main() -> None:
     parser.add_argument("--compile", action="store_true")
     parser.add_argument("--graph-pidl", action="store_true",
                         help="Replace the coordinate MLP by a physics-trained mesh GNN.")
-    parser.add_argument("--graph-mode", choices=("full", "hybrid"), default="full")
+    parser.add_argument(
+        "--graph-mode",
+        choices=("full", "hybrid", "channel_separated", "damage_latent"),
+        default="full",
+    )
     parser.add_argument("--graph-layers", type=int, default=None)
     parser.add_argument("--graph-neurons", type=int, default=None)
     parser.add_argument("--graph-scale", type=float, default=1.0)
+    parser.add_argument("--graph-uv-scale", type=float, default=0.05)
+    parser.add_argument("--graph-alpha-scale", type=float, default=0.01)
+    parser.add_argument("--graph-latent-scale", type=float, default=0.05)
+    parser.add_argument("--graph-mask-x-min", type=float, default=-0.12)
+    parser.add_argument("--graph-mask-x-max", type=float, default=0.50)
+    parser.add_argument("--graph-mask-half-width", type=float, default=0.06)
+    parser.add_argument("--graph-mask-transition", type=float, default=0.01)
     parser.add_argument("--graph-bounded", action="store_true",
-                        help="Bound hybrid graph correction by scale*tanh(graph_output).")
+                        help="Bound raw-output graph corrections with tanh.")
     parser.add_argument(
         "--graph-correction-channels",
         choices=("all", "alpha", "uv"),
@@ -189,14 +200,17 @@ def main() -> None:
     parser.add_argument("--force-cpu", action="store_true")
     args = parser.parse_args()
 
-    if args.graph_scale < 0.0:
-        parser.error("--graph-scale must be non-negative")
+    if min(args.graph_scale, args.graph_uv_scale, args.graph_alpha_scale,
+           args.graph_latent_scale) < 0.0:
+        parser.error("graph correction scales must be non-negative")
+    if args.graph_mask_transition <= 0.0:
+        parser.error("--graph-mask-transition must be positive")
     if args.graph_correction_channels != "all" and not (
         args.graph_pidl and args.graph_mode == "hybrid"
     ):
         parser.error("non-all --graph-correction-channels requires --graph-pidl --graph-mode hybrid")
-    if args.graph_pidl and args.graph_mode == "hybrid" and not args.graph_bounded:
-        parser.error("hybrid channel diagnostics require --graph-bounded")
+    if args.graph_pidl and args.graph_mode in ("hybrid", "channel_separated") and not args.graph_bounded:
+        parser.error("raw-output graph corrections require --graph-bounded")
 
     if args.force_cpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -294,6 +308,13 @@ def main() -> None:
         "layers": args.graph_layers if args.graph_layers is not None else args.hidden_layers,
         "neurons": args.graph_neurons if args.graph_neurons is not None else args.neurons,
         "scale": float(args.graph_scale),
+        "uv_scale": float(args.graph_uv_scale),
+        "alpha_scale": float(args.graph_alpha_scale),
+        "latent_scale": float(args.graph_latent_scale),
+        "mask_x_min": float(args.graph_mask_x_min),
+        "mask_x_max": float(args.graph_mask_x_max),
+        "mask_half_width": float(args.graph_mask_half_width),
+        "mask_transition": float(args.graph_mask_transition),
         "bounded": bool(args.graph_bounded),
         "correction_channels": args.graph_correction_channels,
     }
@@ -360,6 +381,13 @@ def main() -> None:
         step_tag = "u" + "-".join(f"{x:g}" for x in cycle_disp_values)
     else:
         step_tag = "s" + "-".join(f"{x:g}" for x in derived_factors)
+    graph_variant_tag = ""
+    if args.graph_pidl and args.graph_mode == "hybrid":
+        graph_variant_tag = f"_{args.graph_correction_channels}_s{args.graph_scale:g}"
+    elif args.graph_pidl and args.graph_mode == "channel_separated":
+        graph_variant_tag = f"_suv{args.graph_uv_scale:g}_sa{args.graph_alpha_scale:g}"
+    elif args.graph_pidl and args.graph_mode == "damage_latent":
+        graph_variant_tag = f"_slat{args.graph_latent_scale:g}"
     dir_name = (
         f"probeDriver_hl{config.network_dict['hidden_layers']}"
         f"_n{config.network_dict['neurons']}"
@@ -372,7 +400,7 @@ def main() -> None:
         f"_U{fat['disp_max']}"
         f"_{mesh_tag}"
         f"{'_graphPIDL_' + args.graph_mode if args.graph_pidl else ''}"
-        f"{'_' + args.graph_correction_channels if args.graph_pidl and args.graph_mode == 'hybrid' else ''}"
+        f"{graph_variant_tag}"
         f"_current_active_{args.history_driver_reduction_mode}"
         f"{'_' + _format_eta_tag(args.res_stiffness) if args.res_stiffness > 0.0 else ''}"
         f"{'_femIrrGP3' if args.fem_irr_penalty else ''}"
@@ -420,10 +448,22 @@ def main() -> None:
         )
         handle.write(f"representation: {representation}\n")
         handle.write(f"graph_dict: {config.graph_dict}\n")
-        handle.write(
-            "graph_scale_semantics: bounds additive raw-network-output correction; "
-            "it is not a bound on physical displacement or constrained alpha\n"
-        )
+        if args.graph_pidl and args.graph_mode == "channel_separated":
+            handle.write(
+                "graph_scale_semantics: uv_scale and alpha_scale independently "
+                "bound additive raw-output corrections; they do not bound physical "
+                "displacement or constrained alpha\n"
+            )
+        elif args.graph_pidl and args.graph_mode == "damage_latent":
+            handle.write(
+                "graph_scale_semantics: latent_scale bounds the graph update before "
+                "the alpha head; UV uses the unmodified MLP latent\n"
+            )
+        else:
+            handle.write(
+                "graph_scale_semantics: bounds additive raw-network-output correction; "
+                "it is not a bound on physical displacement or constrained alpha\n"
+            )
         handle.write("supervision: physics_only_no_FEM_field_targets\n")
         handle.write(f"residual_stiffness: {float(args.res_stiffness)}\n")
         handle.write(

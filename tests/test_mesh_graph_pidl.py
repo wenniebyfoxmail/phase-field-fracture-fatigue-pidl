@@ -9,7 +9,8 @@ SOURCE = Path(__file__).resolve().parents[1] / "source"
 sys.path.insert(0, str(SOURCE))
 
 from network import (  # noqa: E402
-    HybridMeshGraphNet, MeshGraphNet, bind_mesh_graph, init_xavier,
+    ChannelSeparatedMeshGraphNet, DamageLatentMeshGraphNet,
+    HybridMeshGraphNet, MeshGraphNet, NeuralNet, bind_mesh_graph, init_xavier,
 )
 
 
@@ -156,3 +157,93 @@ def test_channel_mask_is_runtime_only_and_signature_is_explicit():
     assert net.representation_signature() == (
         "hybrid|channels=uv|bounded=true|scale=0.05|graph=2x8"
     )
+
+
+def test_neural_net_encode_preserves_forward_semantics():
+    net = NeuralNet(2, 3, 2, 12, "TrainableReLU", 1.0)
+    x = torch.rand(4, 2)
+    assert torch.equal(net(x), net.output_layer(net.encode(x)))
+
+
+def test_channel_separated_starts_as_exact_coordinate_mlp():
+    net = ChannelSeparatedMeshGraphNet(
+        2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8,
+        graph_uv_scale=0.05, graph_alpha_scale=0.01,
+    )
+    init_xavier(net)
+    net.zero_graph_output()
+    x = torch.rand(4, 2)
+    bind_mesh_graph(net, torch.tensor([[0, 1, 2], [1, 3, 2]]), 4)
+    assert torch.equal(net(x), net.base(x))
+
+
+def test_channel_separated_alpha_reset_preserves_uv_graph():
+    net = ChannelSeparatedMeshGraphNet(
+        2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8,
+    )
+    with torch.no_grad():
+        net.graph_uv.output_layer.weight.fill_(1.0)
+        net.graph_alpha.output_layer.weight.fill_(1.0)
+    net.zero_graph_output(rows=(2,))
+    assert torch.count_nonzero(net.graph_uv.output_layer.weight) > 0
+    assert torch.count_nonzero(net.graph_alpha.output_layer.weight) == 0
+
+
+def test_channel_separated_respects_independent_bounds():
+    net = ChannelSeparatedMeshGraphNet(
+        2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8,
+        graph_uv_scale=0.05, graph_alpha_scale=0.01,
+    )
+    bind_mesh_graph(net, torch.tensor([[0, 1, 2], [1, 3, 2]]), 4)
+    x = torch.rand(4, 2)
+    correction = net(x) - net.base(x)
+    assert torch.max(torch.abs(correction[:, :2])) <= 0.050001
+    assert torch.max(torch.abs(correction[:, 2])) <= 0.010001
+
+
+def test_damage_latent_starts_as_exact_coordinate_mlp():
+    net = DamageLatentMeshGraphNet(
+        2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8,
+    )
+    init_xavier(net)
+    net.zero_graph_output()
+    x = torch.rand(4, 2)
+    bind_mesh_graph(net, torch.tensor([[0, 1, 2], [1, 3, 2]]), 4)
+    assert torch.equal(net(x), net.base(x))
+
+
+def test_damage_latent_graph_never_changes_uv_outputs():
+    net = DamageLatentMeshGraphNet(
+        2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8,
+    )
+    bind_mesh_graph(net, torch.tensor([[0, 1, 2], [1, 3, 2]]), 4)
+    x = torch.tensor([[0.0, 0.0], [0.1, 0.0], [0.2, 0.01], [0.3, 0.0]])
+    assert torch.equal(net(x)[:, :2], net.base(x)[:, :2])
+
+
+def test_damage_latent_graph_receives_gradient_after_hard_alpha_reset():
+    net = DamageLatentMeshGraphNet(
+        2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8,
+    )
+    init_xavier(net)
+    net.zero_graph_output(rows=(2,))
+    with torch.no_grad():
+        net.output_layer.weight[2].zero_()
+        net.output_layer.bias[2].fill_(1.0)
+    x = torch.tensor([[0.0, 0.0], [0.1, 0.0], [0.2, 0.01], [0.3, 0.0]])
+    bind_mesh_graph(net, torch.tensor([[0, 1, 2], [1, 3, 2]]), 4)
+    net(x).square().mean().backward()
+    grad = net.graph.output_layer.weight.grad
+    assert grad is not None
+    assert torch.count_nonzero(grad) > 0
+
+
+def test_damage_latent_mask_is_detached_and_spatially_local():
+    net = DamageLatentMeshGraphNet(
+        2, 3, 2, 12, "TrainableReLU", 1.0, 2, 8,
+    )
+    x = torch.tensor([[0.0, 0.0], [0.0, 0.3]], requires_grad=True)
+    mask = net._damage_mask(x)
+    assert not mask.requires_grad
+    assert mask[0] > 0.9
+    assert mask[1] < 1.0e-6

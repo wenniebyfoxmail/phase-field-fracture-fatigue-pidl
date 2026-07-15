@@ -3,7 +3,8 @@ import torch._dynamo   # ★ 顶层导入，避免函数内 import 触发 Unboun
 from pff_model import PFFModel
 from material_properties import MaterialProperties
 from network import (
-    NeuralNet, FourierFeatureNet, MeshGraphNet, HybridMeshGraphNet, init_xavier,
+    NeuralNet, FourierFeatureNet, MeshGraphNet, HybridMeshGraphNet,
+    ChannelSeparatedMeshGraphNet, DamageLatentMeshGraphNet, init_xavier,
 )
 
 def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, device,
@@ -73,6 +74,41 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
                   f"base={network_dict['hidden_layers']}x{network_dict['neurons']}, "
                   f"graph={_gd.get('layers', 2)}x{_gd.get('neurons', 32)}, "
                   f"channels={_gd.get('correction_channels', 'all')}")
+        elif _graph_mode == 'channel_separated':
+            network = ChannelSeparatedMeshGraphNet(
+                input_dimension=in_dim,
+                output_dimension=domain_extrema.shape[0]+1,
+                n_hidden_layers=network_dict["hidden_layers"],
+                neurons=network_dict["neurons"],
+                activation=network_dict["activation"],
+                init_coeff=network_dict["init_coeff"],
+                graph_layers=int(_gd.get('layers', 2)),
+                graph_neurons=int(_gd.get('neurons', 32)),
+                graph_uv_scale=float(_gd.get('uv_scale', 0.05)),
+                graph_alpha_scale=float(_gd.get('alpha_scale', 0.01)),
+                graph_bounded=bool(_gd.get('bounded', True)),
+            )
+            print("[construct_model] ChannelSeparatedMeshGraphNet enabled: "
+                  f"uv_scale={_gd.get('uv_scale', 0.05)}, "
+                  f"alpha_scale={_gd.get('alpha_scale', 0.01)}")
+        elif _graph_mode == 'damage_latent':
+            network = DamageLatentMeshGraphNet(
+                input_dimension=in_dim,
+                output_dimension=domain_extrema.shape[0]+1,
+                n_hidden_layers=network_dict["hidden_layers"],
+                neurons=network_dict["neurons"],
+                activation=network_dict["activation"],
+                init_coeff=network_dict["init_coeff"],
+                graph_layers=int(_gd.get('layers', 2)),
+                graph_neurons=int(_gd.get('neurons', 32)),
+                latent_scale=float(_gd.get('latent_scale', 0.05)),
+                mask_x_min=float(_gd.get('mask_x_min', -0.12)),
+                mask_x_max=float(_gd.get('mask_x_max', 0.50)),
+                mask_half_width=float(_gd.get('mask_half_width', 0.06)),
+                mask_transition=float(_gd.get('mask_transition', 0.01)),
+            )
+            print("[construct_model] DamageLatentMeshGraphNet enabled: "
+                  f"latent_scale={_gd.get('latent_scale', 0.05)}")
         elif _graph_mode == 'full':
             network = MeshGraphNet(
                 input_dimension=in_dim,
@@ -109,7 +145,7 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
                             init_coeff=network_dict["init_coeff"])
     torch.manual_seed(network_dict["seed"])
     init_xavier(network)
-    if isinstance(network, HybridMeshGraphNet):
+    if hasattr(network, "zero_graph_output"):
         network.zero_graph_output()
 
     # ★ 速度优化：torch.compile（PyTorch ≥ 2.0），减少 Python launch overhead

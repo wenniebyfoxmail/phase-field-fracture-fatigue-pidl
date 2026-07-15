@@ -42,6 +42,25 @@
 
 ## Entries
 
+## 2026-07-15 · Mac-PIDL [decision]
+
+**Graph architecture matrix approved: independent UV/damage branches plus damage-only latent coupling**
+
+The eta0 channel ablation separates timing from mechanism quality: alpha-only
+penetrates at c80 and fails timing; UV-only penetrates at c87 but loses the
+all-channel model's active-driver localization; all-channel s=0.05 retains the
+best energetic localization but penetrates at c79. This supports a coupled but
+asymmetric representation hypothesis rather than further tuning one shared
+output scale.
+
+Decision: run four matched physics-only cases after remote smoke gates. Three
+channel-separated cases keep `s_uv=0.05` and vary
+`s_alpha={0.005,0.01,0.02}`. One damage-only latent case uses scale 0.05 and a
+fixed detached FEM-independent soft corridor. All retain eta0, Formal 8x400,
+graph 2x32, hard recovery, seed 1, and the existing fatigue/history law. FEM
+remains the physical reference; same-cycle and own-event validation stay
+separate. Event timing alone cannot promote a model.
+
 ## 2026-07-11 · Mac-PIDL [decision+implementation]
 
 **Opt-in physics-trained Graph-PIDL architecture gate**
