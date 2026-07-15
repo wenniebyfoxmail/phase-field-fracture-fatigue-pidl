@@ -1,0 +1,38 @@
+{
+  "model_id": "synthetic_proxy_noise_stress_v1",
+  "calibration_status": "synthetic_only",
+  "approved_for_inference": false,
+  "calibration_metadata": {
+    "purpose": "deterministic missing-noisy code-path stress only"
+  },
+  "channels": {
+    "dic_tip_response": {
+      "sources": {
+        "mechanical_energy_tip_proxy": 1.0
+      },
+      "offset": 0.0,
+      "sigma": 0.07
+    },
+    "dic_strip_response": {
+      "sources": {
+        "mechanical_energy_strip_proxy": 1.0
+      },
+      "offset": 0.0,
+      "sigma": 1.41
+    },
+    "ae_log_event_rate": {
+      "sources": {
+        "ae_damage_activity_proxy": 1.0
+      },
+      "offset": 0.0,
+      "sigma": 0.0000054
+    },
+    "ae_log_energy_rate": {
+      "sources": {
+        "ae_history_activity_proxy": 1.0
+      },
+      "offset": 0.0,
+      "sigma": 0.000188
+    }
+  }
+}

@@ -27,6 +27,85 @@
 
 ## Active Requests
 
+## 2026-07-15 · Request 25: recover existing five-Umax full-field trajectories for reality assimilation
+
+**Goal**: recover or re-export the already completed FEM `Umax=0.08...0.12` trajectory family as cycle-resolved full fields so Mac can test reality-facing sequential assimilation on physical load holdout rather than numerical-cadence holdout.
+
+This is an **archive/export request only**. Do not launch a new FEM solve under this request. If the underlying states no longer exist, report exactly which Umax cases and fields are missing; a new-run design requires a separate reviewed request.
+
+**Existing evidence / likely source**:
+
+- Legacy scalar files were previously available as `SENT_PIDL_{08,09,10,11,12}_timeseries.csv` under `_pidl_handoff_v2/post_process`.
+- The retained family is `R=0`, Carrara fatigue, with historical failure/censor information already used by `docs/m2s_next_stage_feasibility_2026-05-31.md`.
+- Existing Windows/GRIPHFiTH archives or intermediate per-cycle MAT files are preferred; do not reconstruct hidden fields from scalar CSVs.
+
+**INPUT file**: none for recovery. Preserve the original run input, solver, mesh, state cadence and stop rule in each package. If several historical settings exist, return provenance first rather than silently choosing one.
+
+**Mesh**: original mesh for each existing FEM trajectory. Include `mesh_geometry.mat` and declare whether meshes/coordinate systems are identical across Umax.
+
+**Expected outputs**: one folder per Umax plus a family index, preferably:
+
+```text
+~/Downloads/_pidl_handoff_v2/reality_assimilation_five_umax_recovery_20260715/
+  family_index.csv
+  u08/...cycle_fields.mat
+  u09/...cycle_fields.mat
+  u10/...cycle_fields.mat
+  u11/...cycle_fields.mat
+  u12/...cycle_fields.mat
+```
+
+Minimum `family_index.csv` columns:
+
+```text
+trajectory_id, Umax, R_ratio, failure_cycle, censored, censor_cycle,
+input_file, solver_version, mesh_id, state_semantics, source_archive
+```
+
+Minimum cycle-resolved arrays:
+
+```text
+cycles
+element_centroids, node_coords, connectivity, area_per_elem
+d_elem or alpha_elem
+psi_elem or psi_plus_elem                 # raw mechanics driver
+alpha_bar_elem                            # oracle-only audit state
+f_alpha_elem or f_fatigue_elem            # oracle-only audit state
+```
+
+If already stored, also return nodal displacement and strain/stress fields so Mac can build an explicit DIC/sparse-strain observation model. Do not delay the minimum package to recompute fields that were never saved.
+
+**Acceptance criteria**:
+
+1. At least three distinct physical Umax trajectories are recovered; cadence variants at one Umax do not count.
+2. Every trajectory has an explicit failure or right-censor label and an unambiguous cycle/state mapping.
+3. Field arrays align with mesh elements and can be loaded without interpolating hidden state from scalar summaries.
+4. Raw mechanics, observable/rendered damage, and oracle-only fatigue/history fields are labelled separately.
+5. SHA256 or equivalent file checks and a short README preserve provenance.
+6. No new FEM computation is started under Request 25.
+
+**Priority**: high for the new reality-assimilation framework, but read-only/export-only. This is cheaper and more informative than designing a new sweep before archive availability is known.
+
+### [update] 2026-07-15 · Mac read-only recovery audit
+
+Mac found and loaded the eight FEM-5 sparse keyframes already present in OneDrive:
+
+```text
+_pidl_handoff_FEM5_u10_u11_2026-05-06/
+u10: c1, c80, c140, c170 (N_f=170)
+u11: c1, c55, c95, c117 (N_f=117)
+```
+
+Each file has `77730 x 1` `d_elem`, `psi_elem`, `alpha_bar_elem`, and `f_alpha_elem`. The outbox records that they use the same `SENT_mesh.inp`; Mac successfully paired them with the existing 77,730-element mesh geometry and the new sparse-keyframe importer. Spatial sanity passed: recovered crack-tip trajectories are `0 -> 0.1135 -> 0.3109 -> 0.4995` for u10 and `0 -> 0.1079 -> 0.3032 -> 0.4995` for u11.
+
+Still needed from Request 25: locate/re-export at least one more physically distinct trajectory, preferably the original u08 or u12 four-keyframe family, plus any denser/full-cycle archives still available. Mac can already consume sparse keyframes; a full-cycle package is preferred but no longer required for the first load-holdout benchmark.
+
+### [update] 2026-07-15 · physics-family guard and second recovery check
+
+Mac rechecked OneDrive and `~/Downloads/_pidl_handoff_v2`: no original FEM5 u08/u09 or compatible multi-keyframe u12 package has appeared. A reverseBC u12 cyclewise trajectory is readable, but its BC/constitutive/state provenance differs from the legacy FEM5 u10/u11 family and therefore cannot serve as the third scientific holdout.
+
+The assimilation manifest now requires `physics_family`. Mixed-family runs fail by default; an explicitly allowed tooling stress is automatically quarantined. The mixed u10/u11/reverseBC-u12 stress gives vision+load RUL MAE about 41 cycles and 90% coverage about 0.05, confirming the confounding rather than supplying useful validation. A read-only Taobo reachability probe also timed out, so no remote archive search or compute was started.
+
 ## 2026-06-24 · Request 24: pure Manav PIDL energy/state0 data handoff
 
 **Goal**: provide Windows-FEM with the pure Manav-style PIDL reproduction data
