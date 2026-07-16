@@ -226,23 +226,33 @@ def main() -> None:
         "candidate_names": np.asarray(list(candidates)),
         **auxiliaries,
     }
-    numerical: dict[str, dict[str, float | int | bool]] = {}
+    numerical: dict[str, dict[str, float | int | bool | str]] = {}
+    successful_candidates: list[str] = []
     for name, damage in candidates.items():
         started = time.perf_counter()
-        result = solve_amor_equilibrium(
-            kinematics,
-            damage,
-            prescribed_dofs,
-            prescribed_values,
-            youngs_modulus=args.youngs_modulus,
-            poisson_ratio=args.poisson_ratio,
-            residual_stiffness=args.residual_stiffness,
-            max_iterations=args.max_equilibrium_iterations,
-            tolerance=args.equilibrium_tolerance,
-            residual_tolerance=args.equilibrium_residual_tolerance,
-            minimum_pivot_ratio=args.minimum_pivot_ratio,
-        )
         phase_a[f"damage_{name}"] = damage
+        try:
+            result = solve_amor_equilibrium(
+                kinematics,
+                damage,
+                prescribed_dofs,
+                prescribed_values,
+                youngs_modulus=args.youngs_modulus,
+                poisson_ratio=args.poisson_ratio,
+                residual_stiffness=args.residual_stiffness,
+                max_iterations=args.max_equilibrium_iterations,
+                tolerance=args.equilibrium_tolerance,
+                residual_tolerance=args.equilibrium_residual_tolerance,
+                minimum_pivot_ratio=args.minimum_pivot_ratio,
+            )
+        except RuntimeError as error:
+            phase_a[f"raw_{name}"] = np.full(len(connectivity), np.nan)
+            numerical[name] = {
+                "converged": False,
+                "failure": str(error),
+                "wall_seconds": time.perf_counter() - started,
+            }
+            continue
         phase_a[f"raw_{name}"] = result.tensile_energy_element
         numerical[name] = {
             "converged": result.converged,
@@ -254,7 +264,12 @@ def main() -> None:
             "wall_seconds": time.perf_counter() - started,
         }
         if not result.converged:
-            raise RuntimeError(f"{name} equilibrium did not converge")
+            phase_a[f"raw_{name}"] = np.full(len(connectivity), np.nan)
+            numerical[name]["failure"] = "equilibrium iteration did not converge"
+            continue
+        successful_candidates.append(name)
+
+    phase_a["successful_candidate_names"] = np.asarray(successful_candidates)
 
     phase_a_path = args.out / "phase_a_damage_observation_equilibria.npz"
     np.savez_compressed(phase_a_path, **phase_a)
@@ -264,6 +279,12 @@ def main() -> None:
         sealed_raw = {name: np.asarray(sealed[f"raw_{name}"]).copy() for name in candidates}
     if sha256(phase_a_path) != phase_a_hash:
         raise RuntimeError("Phase-A observation artifact changed before Phase B")
+    required_equilibria = {"full_damage_oracle", "core95_skeleton_at1"}
+    missing_required = sorted(required_equilibria - set(successful_candidates))
+    if missing_required:
+        raise RuntimeError(
+            "required equilibrium candidates failed: " + ", ".join(missing_required)
+        )
 
     # Phase B loads the locked c87/c89 trajectory only after all reconstructions
     # and mechanics fields have been persisted and hashed.
@@ -292,10 +313,19 @@ def main() -> None:
     if Path(str(checkpoint_args.get("dataset", ""))).name != args.dataset.name:
         raise ValueError("checkpoint and runner dataset filenames differ")
 
-    rows: list[dict[str, str | int | float]] = []
+    rows: list[dict[str, str | int | float]] = [
+        {
+            "method": name,
+            "cycle": PROJECTED_CYCLE,
+            "phase": "equilibrium_failure",
+            "failure": str(numerical[name].get("failure", "unknown")),
+        }
+        for name in candidates
+        if name not in successful_candidates
+    ]
     predictions: dict[str, np.ndarray] = {}
     true_c86_element_damage = true_nodal_damage[connectivity].mean(axis=1)
-    for name in candidates:
+    for name in successful_candidates:
         candidate_element_damage = sealed_damage[name][connectivity].mean(axis=1)
         generated_c87 = build_observation_assimilated_state(
             state_np[SOURCE_CYCLE - 1],
@@ -441,6 +471,10 @@ def main() -> None:
             "peak_displacement": args.peak_displacement,
         },
         "numerical": numerical,
+        "successful_equilibrium_candidates": successful_candidates,
+        "failed_equilibrium_candidates": [
+            name for name in candidates if name not in successful_candidates
+        ],
         "primary_assets": [
             "phase_a_binary_crack_observation.npz",
             "phase_a_damage_observation_equilibria.npz",
