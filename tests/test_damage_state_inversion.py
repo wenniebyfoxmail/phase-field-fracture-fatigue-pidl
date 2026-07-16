@@ -25,9 +25,11 @@ from run_reaction_conditioned_damage_inversion_gate import (  # noqa: E402
     solve_damage,
 )
 from run_historical_damage_assimilation_gate import (  # noqa: E402
+    DAMAGE_INPUT_TOLERANCE,
     FIXED_BETA_GRID,
     PRIOR_CYCLE,
     absolute_p99_support,
+    clip_damage_with_tolerance,
     gate_pass,
 )
 
@@ -97,6 +99,18 @@ def test_historical_gate_locks_c84_and_probe_bracket_in_fixed_grid() -> None:
     assert np.any(np.isclose(FIXED_BETA_GRID, 2.0))
     assert np.any(np.isclose(FIXED_BETA_GRID, 2.5))
     assert np.all(np.diff(FIXED_BETA_GRID) > 0.0)
+
+
+def test_historical_gate_clips_only_small_fem_damage_undershoot() -> None:
+    raw = np.array([-7.86e-5, 0.25, 1.0 + 0.5 * DAMAGE_INPUT_TOLERANCE])
+    clipped = clip_damage_with_tolerance(raw, label="synthetic FEM")
+    np.testing.assert_allclose(clipped, [0.0, 0.25, 1.0])
+
+    with np.testing.assert_raises_regex(ValueError, "outside the allowed"):
+        clip_damage_with_tolerance(
+            np.array([-1.01 * DAMAGE_INPUT_TOLERANCE, 0.5]),
+            label="invalid FEM",
+        )
 
 
 def test_absolute_p99_support_and_locked_gate_are_target_thresholded() -> None:

@@ -65,6 +65,7 @@ OBSERVATION_CYCLE = 86
 PROJECTED_CYCLE = 87
 TEST_CYCLE = 89
 CORE_THRESHOLD = 0.95
+DAMAGE_INPUT_TOLERANCE = 1.0e-4
 VERTICAL_CONTROL_SHIFT = 0.05
 STEPS_PER_CYCLE = 8
 PEAK_STEP = 4
@@ -106,6 +107,25 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def clip_damage_with_tolerance(
+    damage: np.ndarray,
+    *,
+    label: str,
+) -> np.ndarray:
+    damage = np.asarray(damage, dtype=np.float64)
+    if not np.all(np.isfinite(damage)):
+        raise ValueError(f"{label} contains non-finite nodal damage")
+    minimum = float(np.min(damage))
+    maximum = float(np.max(damage))
+    if minimum < -DAMAGE_INPUT_TOLERANCE or maximum > 1.0 + DAMAGE_INPUT_TOLERANCE:
+        raise ValueError(
+            f"{label} nodal damage lies outside the allowed "
+            f"[-{DAMAGE_INPUT_TOLERANCE}, {1.0 + DAMAGE_INPUT_TOLERANCE}] range: "
+            f"min={minimum}, max={maximum}"
+        )
+    return np.clip(damage, 0.0, 1.0)
+
+
 def read_damage_vtk(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     mesh = meshio.read(path)
     if "quad" not in mesh.cells_dict or "d" not in mesh.point_data:
@@ -113,11 +133,9 @@ def read_damage_vtk(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     points = np.asarray(mesh.points, dtype=np.float64)[:, :2].copy()
     connectivity = np.asarray(mesh.cells_dict["quad"], dtype=np.int32).copy()
     damage = np.asarray(mesh.point_data["d"], dtype=np.float64).reshape(-1).copy()
-    if len(damage) != len(points) or not np.all(np.isfinite(damage)):
+    if len(damage) != len(points):
         raise ValueError(f"{path} contains an invalid nodal damage field")
-    if np.min(damage) < -1.0e-10 or np.max(damage) > 1.0 + 1.0e-10:
-        raise ValueError(f"{path} nodal damage lies outside [0, 1]")
-    return points, connectivity, np.clip(damage, 0.0, 1.0)
+    return points, connectivity, clip_damage_with_tolerance(damage, label=str(path))
 
 
 def require_matching_mesh(
