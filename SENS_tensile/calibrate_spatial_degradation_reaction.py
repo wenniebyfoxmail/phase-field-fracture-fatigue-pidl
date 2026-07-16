@@ -57,6 +57,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--equilibrium-residual-tolerance", type=float, default=1.0e-8)
     parser.add_argument("--minimum-pivot-ratio", type=float, default=1.0e-14)
     parser.add_argument("--bisection-iterations", type=int, default=10)
+    parser.add_argument("--outside-policy", choices=("keep", "prior"), default="keep")
     parser.add_argument("--allow-postlock-exploratory", action="store_true")
     args = parser.parse_args()
     if not args.allow_postlock_exploratory:
@@ -123,7 +124,11 @@ def main() -> None:
     kinematics = build_q4_kinematics(points, connectivity)
 
     def evaluate(amplification: float) -> tuple[dict[str, object], np.ndarray]:
-        calibrated_fraction = predicted_fraction.copy()
+        calibrated_fraction = (
+            predicted_fraction.copy()
+            if args.outside_policy == "keep"
+            else np.zeros_like(predicted_fraction)
+        )
         calibrated_fraction[front_mask] = np.clip(
             amplification * predicted_fraction[front_mask], 0.0, 1.0
         )
@@ -216,6 +221,7 @@ def main() -> None:
         "parameterization": (
             "tip-local scalar amplification of sealed GNN capacity fraction"
         ),
+        "outside_policy": args.outside_policy,
         "selection_input": "c86 peak reaction only",
         "postpeak_independence_note": (
             "postpeak reactions are displacement-scaled for fixed damage and are not "
