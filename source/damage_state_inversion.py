@@ -88,6 +88,33 @@ def amplify_damage(base_damage: np.ndarray, beta: float) -> np.ndarray:
     return np.clip(amplified, 0.0, 1.0)
 
 
+def merge_irreversible_damage(
+    prior: np.ndarray,
+    observed_profile: np.ndarray,
+    beta: float,
+) -> np.ndarray:
+    """Merge an amplified observation profile without healing prior damage.
+
+    Both inputs are damage fields on the same support.  A fresh array is
+    returned so callers can safely retain the historical prior and visible-profile
+    reconstruction as immutable provenance artifacts.
+    """
+    prior_array = np.asarray(prior, dtype=np.float64)
+    profile_array = np.asarray(observed_profile, dtype=np.float64)
+    if prior_array.shape != profile_array.shape:
+        raise ValueError("prior and observed profile must have matching shapes")
+    if prior_array.size == 0:
+        raise ValueError("damage fields must not be empty")
+    if (
+        not np.all(np.isfinite(prior_array))
+        or np.min(prior_array) < 0.0
+        or np.max(prior_array) > 1.0
+    ):
+        raise ValueError("prior damage must be finite and lie in [0, 1]")
+    amplified = amplify_damage(profile_array, beta)
+    return np.maximum(prior_array, amplified)
+
+
 def relative_reaction_error(predicted: float, observed: float) -> float:
     """Return an absolute reaction error normalized by the observed magnitude."""
     if not np.isfinite(predicted) or not np.isfinite(observed) or observed == 0.0:
