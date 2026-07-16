@@ -120,6 +120,9 @@ def main() -> None:
     front_mask = (centroids[:, 0] >= prior_tip_x - 4.0 * LENGTH_SCALE) & (
         np.abs(centroids[:, 1] - front_y) <= 6.0 * LENGTH_SCALE
     )
+    nodal_front_mask = (points[:, 0] >= prior_tip_x - 4.0 * LENGTH_SCALE) & (
+        np.abs(points[:, 1] - front_y) <= 6.0 * LENGTH_SCALE
+    )
 
     kinematics = build_q4_kinematics(points, connectivity)
 
@@ -140,6 +143,9 @@ def main() -> None:
             prior_nodal_damage,
             visible_nodal_core,
         )
+        if args.outside_policy == "prior":
+            restore_prior = ~nodal_front_mask & ~visible_nodal_core
+            nodal_damage[restore_prior] = prior_nodal_damage[restore_prior]
         result, reaction, wall = solve_candidate(
             kinematics, nodal_damage, peak_displacement, args
         )
@@ -213,6 +219,7 @@ def main() -> None:
         nodal_damage=calibrated_damage,
         amplification=np.asarray(best_amplification),
         front_mask=front_mask.astype(np.uint8),
+        nodal_front_mask=nodal_front_mask.astype(np.uint8),
         predicted_fraction=predicted_fraction,
         prior_element_damage=prior_element_damage,
     )
