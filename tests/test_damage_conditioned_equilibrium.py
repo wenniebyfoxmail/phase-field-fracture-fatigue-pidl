@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT / "source"))
 from damage_conditioned_equilibrium import (
     build_q4_kinematics,
     element_to_nodal_damage,
+    equilibrium_internal_force,
     plane_strain_tensors,
     sens_displacement_boundary_conditions,
     solve_amor_equilibrium,
@@ -67,6 +68,31 @@ def test_raw_tensile_energy_is_undegraded_under_fully_prescribed_affine_loading(
     undamaged = solve_amor_equilibrium(kinematics, np.zeros(4), dofs, values)
     damaged = solve_amor_equilibrium(kinematics, np.full(4, 0.75), dofs, values)
     np.testing.assert_allclose(damaged.tensile_energy_gauss, undamaged.tensile_energy_gauss)
+
+
+def test_top_reaction_tracks_degraded_global_stiffness() -> None:
+    points, cells = unit_quad()
+    kinematics = build_q4_kinematics(points, cells)
+    dofs, values = sens_displacement_boundary_conditions(points, 0.1)
+    undamaged = solve_amor_equilibrium(kinematics, np.zeros(4), dofs, values)
+    damaged = solve_amor_equilibrium(kinematics, np.full(4, 0.75), dofs, values)
+    force_undamaged = equilibrium_internal_force(
+        kinematics,
+        np.zeros(4),
+        undamaged.displacement,
+    )
+    force_damaged = equilibrium_internal_force(
+        kinematics,
+        np.full(4, 0.75),
+        damaged.displacement,
+    )
+    top_y = 2 * np.array([2, 3]) + 1
+    bottom_y = 2 * np.array([0, 1]) + 1
+    np.testing.assert_allclose(force_undamaged[top_y].sum(), -force_undamaged[bottom_y].sum())
+    np.testing.assert_allclose(
+        force_damaged[top_y].sum() / force_undamaged[top_y].sum(),
+        (1.0 - 0.75) ** 2,
+    )
 
 
 def test_free_interior_equilibrium_converges_with_symmetric_lateral_contraction() -> None:

@@ -220,7 +220,9 @@ def assemble_amor_stiffness(
     element_stiffness = np.zeros((len(kinematics.cells), 8, 8), dtype=np.float64)
     for gp in range(4):
         b = kinematics.b_matrices[:, gp]
-        damage_gp = element_damage @ kinematics.shape_values[gp]
+        damage_gp = np.einsum(
+            "ei,i->e", element_damage, kinematics.shape_values[gp], optimize=False
+        )
         degradation = (1.0 - damage_gp) ** 2 + residual_stiffness
         positive = signs[:, gp]
         constitutive = np.empty((len(b), 3, 3), dtype=np.float64)
@@ -263,6 +265,35 @@ def tensile_energy(
         stress_plus = np.einsum("eij,ej->ei", constitutive, strain)
         energy[:, gp] = 0.5 * np.einsum("ei,ei->e", strain, stress_plus)
     return energy, energy.mean(axis=1)
+
+
+def equilibrium_internal_force(
+    kinematics: Q4Kinematics,
+    nodal_damage: np.ndarray,
+    displacement: np.ndarray,
+    *,
+    youngs_modulus: float = 1.0,
+    poisson_ratio: float = 0.3,
+    residual_stiffness: float = 0.0,
+    thickness: float = 1.0,
+) -> np.ndarray:
+    """Return the converged nodal internal-force vector ``K(d, u) u``."""
+    displacement = np.asarray(displacement, dtype=np.float64).reshape(-1)
+    if displacement.shape != (2 * len(kinematics.points),):
+        raise ValueError("displacement length does not match the mesh")
+    matrix = assemble_amor_stiffness(
+        kinematics,
+        nodal_damage,
+        displacement,
+        youngs_modulus=youngs_modulus,
+        poisson_ratio=poisson_ratio,
+        residual_stiffness=residual_stiffness,
+        thickness=thickness,
+    )
+    force = np.asarray(matrix @ displacement).reshape(-1)
+    if not np.all(np.isfinite(force)):
+        raise RuntimeError("equilibrium internal force contains non-finite values")
+    return force
 
 
 def solve_amor_equilibrium(
