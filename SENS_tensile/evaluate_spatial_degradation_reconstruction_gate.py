@@ -294,6 +294,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--true-c86-damage-vtk", type=Path, required=True)
     parser.add_argument("--sealed-c86-observation", type=Path, required=True)
     parser.add_argument("--historical-candidates", type=Path, default=None)
+    parser.add_argument("--reaction-calibration-lock", type=Path, default=None)
     parser.add_argument("--load-displacement", type=Path, required=True)
     parser.add_argument("--multiscale-checkpoint", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
@@ -354,10 +355,26 @@ def main() -> None:
         visible_nodal_core,
     )
     selected_element_damage = predicted_nodal_damage[connectivity].mean(axis=1)
+    primary_name = selection["primary_tag"]
     candidates: dict[str, np.ndarray] = {
         selection["primary_tag"]: predicted_nodal_damage,
         "c84_persistence": prior_nodal_damage,
     }
+    if args.reaction_calibration_lock:
+        calibration = json.loads(
+            args.reaction_calibration_lock.read_text(encoding="utf-8")
+        )
+        calibrated_path = args.reaction_calibration_lock.parent / (
+            "reaction_calibrated_c86_damage.npz"
+        )
+        if sha256(calibrated_path) != calibration["field_sha256"]:
+            raise RuntimeError("reaction-calibrated damage hash mismatch")
+        calibrated = np.load(calibrated_path, allow_pickle=False)
+        calibrated_damage = np.asarray(calibrated["nodal_damage"], dtype=float)
+        if calibrated_damage.shape != prior_nodal_damage.shape:
+            raise ValueError("reaction-calibrated nodal damage shape mismatch")
+        primary_name = "reaction_calibrated_" + selection["primary_tag"]
+        candidates[primary_name] = calibrated_damage
     if args.historical_candidates:
         historical = np.load(args.historical_candidates, allow_pickle=False)
         for name in (
@@ -365,6 +382,9 @@ def main() -> None:
             "inferred_aligned_merged_c84_prior",
         ):
             candidates[name] = np.asarray(historical[f"damage_{name}"], dtype=float)
+
+    primary_nodal_damage = candidates[primary_name]
+    primary_element_damage = primary_nodal_damage[connectivity].mean(axis=1)
 
     # Post-lock truth opens only after the selection and reconstruction hashes
     # above have been verified.
@@ -424,13 +444,13 @@ def main() -> None:
         POSTPEAK_STEPS, postpeak_displacements, postpeak_reactions
     ):
         result, reaction, wall = solve_candidate(
-            kinematics, predicted_nodal_damage, float(displacement), args
+            kinematics, primary_nodal_damage, float(displacement), args
         )
         error = abs(reaction - observed) / abs(observed)
         primary_postpeak_errors.append(error)
         equilibrium_rows.append(
             {
-                "method": selection["primary_tag"],
+                "method": primary_name,
                 "step": step,
                 "predicted_reaction": reaction,
                 "observed_reaction": observed,
@@ -456,8 +476,9 @@ def main() -> None:
 
     downstream_rows: list[dict[str, object]] = []
     predictions: dict[str, np.ndarray] = {
-        "selected_nodal_damage": predicted_nodal_damage,
-        "selected_element_damage": selected_element_damage,
+        "selected_nodal_damage": primary_nodal_damage,
+        "selected_element_damage": primary_element_damage,
+        "uncalibrated_selected_element_damage": selected_element_damage,
         "true_c86_element_damage": true_element_damage,
     }
     gate_results = {}
@@ -557,10 +578,10 @@ def main() -> None:
         }
 
     # Isolate any remaining history dependence for the selected damage field.
-    selected_result = equilibrium_results[selection["primary_tag"]]
+    selected_result = equilibrium_results[primary_name]
     selected_oracle_history_c87 = build_observation_assimilated_state(
         state_np[OBSERVATION_CYCLE - 1],
-        selected_element_damage,
+        primary_element_damage,
         selected_result.tensile_energy_element,
         floor,
     )
@@ -583,7 +604,7 @@ def main() -> None:
     )
     predictions_path = args.out / "spatial_reconstruction_predictions.npz"
     np.savez_compressed(predictions_path, **predictions)
-    primary = selection["primary_tag"]
+    primary = primary_name
     primary_peak_error = next(
         float(row["relative_reaction_error"])
         for row in equilibrium_rows
@@ -596,6 +617,16 @@ def main() -> None:
         "selection_lock_sha256": sha256(args.selection_lock),
         "primary_tag": primary,
         "primary_reconstruction_sha256": selection["primary_reconstruction_sha256"],
+        "reaction_calibration_lock": (
+            str(args.reaction_calibration_lock.resolve())
+            if args.reaction_calibration_lock
+            else None
+        ),
+        "reaction_calibration_lock_sha256": (
+            sha256(args.reaction_calibration_lock)
+            if args.reaction_calibration_lock
+            else None
+        ),
         "execution_firewall": {
             "architecture_and_seed_locked_before_truth": True,
             "c86_diffuse_damage_opened_postlock": True,
