@@ -81,8 +81,13 @@ def parse_args() -> argparse.Namespace:
 
 
 def write_rows(path: Path, rows: list[dict[str, object]]) -> None:
+    fields: list[str] = []
+    for row in rows:
+        for key in row:
+            if key not in fields:
+                fields.append(key)
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
         writer.writerows(rows)
 
@@ -186,9 +191,27 @@ def main() -> None:
     rows: list[dict[str, object]] = []
     fields: dict[float, np.ndarray] = {}
     for amplification in AMPLIFICATION_GRID:
-        row, damage = evaluate(amplification)
-        rows.append(row)
-        fields[amplification] = damage
+        try:
+            row, damage = evaluate(amplification)
+        except RuntimeError as error:
+            rows.append(
+                {
+                    "amplification": amplification,
+                    "predicted_reaction": np.nan,
+                    "observed_reaction": observed_reaction,
+                    "relative_reaction_error": np.nan,
+                    "log_reaction_error": np.nan,
+                    "iterations": args.max_equilibrium_iterations,
+                    "active_set_stable": False,
+                    "normalized_residual": np.nan,
+                    "minimum_pivot_ratio": np.nan,
+                    "wall_seconds": np.nan,
+                    "failure": str(error),
+                }
+            )
+        else:
+            rows.append(row)
+            fields[amplification] = damage
 
     feasible = [
         row
@@ -208,7 +231,10 @@ def main() -> None:
         lower, upper = bracket
         for _ in range(args.bisection_iterations):
             middle = float(np.sqrt(lower * upper))
-            row, damage = evaluate(middle)
+            try:
+                row, damage = evaluate(middle)
+            except RuntimeError:
+                break
             rows.append(row)
             fields[middle] = damage
             residual = float(row["predicted_reaction"]) - observed_reaction
@@ -222,8 +248,14 @@ def main() -> None:
             else:
                 lower = middle
 
+    feasible = [
+        row
+        for row in rows
+        if np.isfinite(float(row["predicted_reaction"]))
+        and bool(row["active_set_stable"])
+    ]
     best = min(
-        rows,
+        feasible,
         key=lambda row: (float(row["log_reaction_error"]), float(row["amplification"])),
     )
     best_amplification = float(best["amplification"])
