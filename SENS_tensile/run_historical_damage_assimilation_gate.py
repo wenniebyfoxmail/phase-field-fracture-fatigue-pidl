@@ -246,6 +246,9 @@ def evaluate_damage(
                 top, observed_reaction
             ),
             "iterations": result.iterations,
+            "active_set_stable": result.active_set_stable,
+            "relative_update": result.relative_update,
+            "sign_changes": result.sign_changes,
             "normalized_free_residual": result.normalized_residual,
             "minimum_pivot_ratio": result.minimum_pivot_ratio,
             "wall_seconds": wall,

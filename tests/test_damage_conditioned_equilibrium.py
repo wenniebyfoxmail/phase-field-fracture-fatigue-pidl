@@ -102,6 +102,7 @@ def test_free_interior_equilibrium_converges_with_symmetric_lateral_contraction(
     result = solve_amor_equilibrium(kinematics, np.zeros(len(points)), dofs, values)
     displacement = result.displacement.reshape(-1, 2)
     assert result.converged
+    assert result.active_set_stable
     assert result.normalized_residual <= 1.0e-10
     assert result.minimum_pivot_ratio > 1.0e-14
     np.testing.assert_allclose(displacement[4, 0], 0.0, atol=1.0e-13)

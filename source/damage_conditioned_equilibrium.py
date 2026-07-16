@@ -34,6 +34,7 @@ class EquilibriumResult:
     tensile_energy_gauss: np.ndarray
     tensile_energy_element: np.ndarray
     converged: bool
+    active_set_stable: bool
     iterations: int
     relative_update: float
     sign_changes: int
@@ -313,10 +314,13 @@ def solve_amor_equilibrium(
 ) -> EquilibriumResult:
     """Solve the piecewise-linear AMOR equilibrium problem by active-set updates.
 
-    A finite displacement vector is not sufficient for acceptance.  The trace
-    active set must stabilize, the free-DOF equilibrium residual must pass a
-    relative gate, and each sparse factorization must retain a finite pivot
-    ratio above ``minimum_pivot_ratio``.
+    A finite displacement vector is not sufficient for acceptance. The
+    free-DOF equilibrium residual must pass a relative gate and each sparse
+    factorization must retain a finite pivot ratio above
+    ``minimum_pivot_ratio``. Trace-active-set stability is the normal stopping
+    rule. If a zero-trace active set cycles, the final state can still be
+    accepted only when the stiffness reassembled from its own trace signs
+    independently satisfies the same residual and pivot gates.
     """
     prescribed_dofs = np.asarray(prescribed_dofs, dtype=np.int32).reshape(-1)
     prescribed_values = np.asarray(prescribed_values, dtype=np.float64).reshape(-1)
@@ -392,12 +396,7 @@ def solve_amor_equilibrium(
         if relative_update <= tolerance and sign_changes == 0:
             converged = True
             break
-    if not converged:
-        raise RuntimeError(
-            "AMOR active set did not converge: "
-            f"iterations={max_iterations}, relative_update={relative_update:.3e}, "
-            f"sign_changes={sign_changes}"
-        )
+    active_set_stable = converged
 
     matrix = assemble_amor_stiffness(
         kinematics,
@@ -410,6 +409,25 @@ def solve_amor_equilibrium(
     )
     if not np.all(np.isfinite(matrix.data)):
         raise RuntimeError("final equilibrium stiffness contains non-finite entries")
+    if not active_set_stable and len(free):
+        try:
+            final_factor = splu(matrix[free][:, free].tocsc())
+        except RuntimeError as error:
+            raise RuntimeError("final equilibrium stiffness is singular") from error
+        final_pivots = np.abs(final_factor.U.diagonal())
+        final_pivot_ratio = float(
+            final_pivots.min()
+            / max(float(final_pivots.max()), np.finfo(float).eps)
+        )
+        if (
+            not np.isfinite(final_pivot_ratio)
+            or final_pivot_ratio < minimum_pivot_ratio
+        ):
+            raise RuntimeError(
+                "final equilibrium stiffness is numerically near-singular: "
+                f"pivot ratio {final_pivot_ratio:.3e}"
+            )
+        smallest_pivot_ratio = min(smallest_pivot_ratio, final_pivot_ratio)
     residual = matrix @ displacement
     residual_norm = float(np.linalg.norm(residual[free])) if len(free) else 0.0
     if len(free):
@@ -423,10 +441,19 @@ def solve_amor_equilibrium(
     else:
         normalized_residual = 0.0
     if not np.isfinite(normalized_residual) or normalized_residual > residual_tolerance:
+        if not active_set_stable:
+            raise RuntimeError(
+                "AMOR active set did not stabilize and its final-sign equilibrium "
+                "residual failed: "
+                f"iterations={max_iterations}, relative_update={relative_update:.3e}, "
+                f"sign_changes={sign_changes}, normalized_residual="
+                f"{normalized_residual:.3e}, tolerance={residual_tolerance:.3e}"
+            )
         raise RuntimeError(
             "equilibrium free residual failed: "
             f"normalized={normalized_residual:.3e}, tolerance={residual_tolerance:.3e}"
         )
+    converged = True
     energy_gp, energy_element = tensile_energy(
         kinematics,
         displacement,
@@ -439,6 +466,7 @@ def solve_amor_equilibrium(
         tensile_energy_gauss=energy_gp,
         tensile_energy_element=energy_element,
         converged=converged,
+        active_set_stable=active_set_stable,
         iterations=iteration,
         relative_update=relative_update,
         sign_changes=sign_changes,
