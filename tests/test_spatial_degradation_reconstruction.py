@@ -10,6 +10,10 @@ sys.path.insert(0, str(ROOT / "source"))
 sys.path.insert(0, str(ROOT / "SENS_tensile"))
 
 from prepare_spatial_degradation_reconstruction_dataset import element_core  # noqa: E402
+from evaluate_spatial_degradation_reconstruction_gate import (  # noqa: E402
+    c86_metrics,
+    element_z_to_nodal_damage,
+)
 from spatial_degradation_reconstruction import (  # noqa: E402
     OneRingDegradationReconstructor,
     PointwiseDegradationReconstructor,
@@ -103,3 +107,32 @@ def test_exact_reconstruction_has_lower_loss_than_perturbed():
     )
     assert torch.isfinite(perturbed.total)
     assert perturbed.total > exact.total
+
+
+def test_element_to_nodal_mapping_enforces_prior_and_visible_core():
+    connectivity = np.array([[0, 1, 2, 3]], dtype=np.int32)
+    mapped = element_z_to_nodal_damage(
+        np.array([0.1]),
+        connectivity,
+        np.array([1.0]),
+        np.array([0.0, 0.2, 0.0, 0.0]),
+        np.array([False, False, True, False]),
+    )
+    assert mapped[1] >= 0.2 - 1.0e-12
+    assert mapped[2] >= 0.95 - 1.0e-12
+
+
+def test_c86_metrics_exclude_observed_core_from_primary_error():
+    target = np.array([0.99, 0.2, 0.3])
+    prediction = np.array([0.95, 0.2, 0.3])
+    row = c86_metrics(
+        "test",
+        prediction,
+        target,
+        np.zeros(3),
+        np.array([True, False, False]),
+        np.array([[0.0, 0.0], [1.0, 0.0], [2.0, 0.0]]),
+        np.ones(3),
+    )
+    assert row["damage_mae"] == 0.0
+    assert row["z_mae"] == 0.0
