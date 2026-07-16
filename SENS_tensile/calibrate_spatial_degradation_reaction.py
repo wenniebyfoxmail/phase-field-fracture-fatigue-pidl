@@ -30,7 +30,19 @@ from evaluate_spatial_degradation_reconstruction_gate import (  # noqa: E402
 from spatial_degradation_reconstruction import Z_MAX, damage_to_z  # noqa: E402
 
 
-AMPLIFICATION_GRID = (1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0)
+AMPLIFICATION_GRID = (
+    0.125,
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    4.0,
+    8.0,
+    16.0,
+    32.0,
+    64.0,
+    128.0,
+)
 LENGTH_SCALE = 0.01
 
 
@@ -58,10 +70,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--minimum-pivot-ratio", type=float, default=1.0e-14)
     parser.add_argument("--bisection-iterations", type=int, default=10)
     parser.add_argument("--outside-policy", choices=("keep", "prior"), default="keep")
+    parser.add_argument("--power", type=float, default=1.0)
     parser.add_argument("--allow-postlock-exploratory", action="store_true")
     args = parser.parse_args()
     if not args.allow_postlock_exploratory:
         parser.error("pass --allow-postlock-exploratory to acknowledge scope")
+    if not 0.0 < args.power <= 1.0:
+        parser.error("--power must lie in (0, 1]")
     return args
 
 
@@ -133,7 +148,9 @@ def main() -> None:
             else np.zeros_like(predicted_fraction)
         )
         calibrated_fraction[front_mask] = np.clip(
-            amplification * predicted_fraction[front_mask], 0.0, 1.0
+            amplification * predicted_fraction[front_mask] ** args.power,
+            0.0,
+            1.0,
         )
         element_z = prior_element_z + capacity * calibrated_fraction
         nodal_damage = element_z_to_nodal_damage(
@@ -229,6 +246,7 @@ def main() -> None:
             "tip-local scalar amplification of sealed GNN capacity fraction"
         ),
         "outside_policy": args.outside_policy,
+        "power": args.power,
         "selection_input": "c86 peak reaction only",
         "postpeak_independence_note": (
             "postpeak reactions are displacement-scaled for fixed damage and are not "
