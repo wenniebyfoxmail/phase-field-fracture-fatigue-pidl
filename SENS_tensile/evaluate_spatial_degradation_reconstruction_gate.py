@@ -597,6 +597,38 @@ def main() -> None:
     )
     predictions["selected_true_c86_history_control_c87"] = selected_oracle_history_c87
     predictions["selected_true_c86_history_control_c89"] = selected_oracle_history_c89
+    for cycle, predicted in (
+        (PROJECTED_CYCLE, selected_oracle_history_c87),
+        (TEST_CYCLE, selected_oracle_history_c89),
+    ):
+        control_row = metric_row(
+            primary_name + "_true_c86_history_control",
+            cycle,
+            predicted,
+            state_np[cycle - 1],
+            areas,
+        )
+        control_iou = float(control_row["absolute_p99_iou"])
+        control_ratio = float(control_row["absolute_support_area_ratio"])
+        control_pass = gate_pass(
+            float(control_row["derived_active_log_mae"]),
+            float(control_row["derived_active_correlation"]),
+            control_iou,
+            control_ratio,
+        )
+        control_row.update(
+            {
+                "phase": "true_c86_history_control",
+                "history_semantics": "true_c86_oracle",
+                "gate_field": "active",
+                "gate_log_mae": control_row["derived_active_log_mae"],
+                "gate_correlation": control_row["derived_active_correlation"],
+                "gate_absolute_p99_iou": control_iou,
+                "gate_support_area_ratio": control_ratio,
+                "gate_pass": control_pass,
+            }
+        )
+        downstream_rows.append(control_row)
 
     write_rows(args.out / "downstream_mechanism_metrics.csv", downstream_rows)
     predictions["state_names"] = np.asarray(
