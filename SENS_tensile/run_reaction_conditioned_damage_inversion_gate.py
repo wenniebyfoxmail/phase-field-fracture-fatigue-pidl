@@ -175,6 +175,7 @@ def evaluate_beta(
                 "relative_reaction_error": np.inf,
             }
         )
+        print(json.dumps({"phase": "beta_evaluation", **row}), flush=True)
         return row
     balance = abs(top + bottom) / max(abs(top), abs(bottom), np.finfo(float).eps)
     row.update(
@@ -190,6 +191,7 @@ def evaluate_beta(
             "wall_seconds": wall,
         }
     )
+    print(json.dumps({"phase": "beta_evaluation", **row}), flush=True)
     return row
 
 
@@ -488,6 +490,18 @@ def main() -> None:
             name, damage, kinematics, args
         )
         final_results[name] = (damage, result, top, bottom, wall)
+        print(
+            json.dumps(
+                {
+                    "phase": "locked_candidate_equilibrium",
+                    "candidate": name,
+                    "reaction": top,
+                    "minimum_pivot_ratio": result.minimum_pivot_ratio,
+                    "wall_seconds": wall,
+                }
+            ),
+            flush=True,
+        )
 
     inferred_damage, inferred_result, _, _, _ = final_results[
         "reaction_inferred_aligned_skeleton"
