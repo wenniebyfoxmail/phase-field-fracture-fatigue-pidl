@@ -31,6 +31,7 @@
 | Monotonic latest-code fatigue-off/on pair | `supporting` | Confirms monotonic fatigue-on common checkpoints match fatigue-off when no fatigue history accumulates. | Case C semantic check; compare by load value, not cyclic label. | `local_archive/after_strict_setting_alignment/pidl_result/Alignment_check2_monotonic/PIDL_mono_onoff_latest_ddc22eb_20260627_234645/`. |
 | Hard-alpha U0 recovery ablations | `diagnostic` | Separates initial zero-load recovery and unload-path effects. | Five-step formal run belongs to the primary c89 comparison above; eight-step remains an unload-path ablation only. | `memory/successor_handoff.md`; local hard-alpha case notes. |
 | M2S next-stage feasibility | `supporting` | Tests road-DT/M2S forecast framework, separate from forward PIDL field closure. | Useful for validation planning; do not use to hide PIDL field mismatch. | `docs/m2s_next_stage_feasibility_2026-05-31.md`; `_analysis_m2s_next_stage_20260531/`. |
+| c86 damage-conditioned eta0 equilibrium projection | `diagnostic` | Shows that true diffuse c86 FEM damage is sufficient to reconstruct c87 raw mechanics and near-close c89 active support through a frozen operator. | Conditional mechanism closure only; do not call it autonomous PIDL or inspection-only recovery because full diffuse damage and hidden history/degradation are supplied. | Local `analysis/fem_damage_conditioned_equilibrium_20260716/decision.md`. |
 
 ## Negative Evidence To Keep, But Not Re-run Blindly
 
@@ -42,6 +43,7 @@
 | Adaptive `lambda_hist` and repaired hard irreversibility | `negative` | Keep as evidence against loss/constraint-only closure. Do not cite as aligned field evidence. |
 | Field-supervision direct forcing | `negative` | Keep as direct-forcing negative; rerun only with normalized/gated field loss and early process-zone criteria. |
 | Surrogate smoke roots | `diagnostic` | Tooling only. Do not use for physics claims. |
+| c86 binary-crack skeleton + fixed AT1 equilibrium assimilation | `negative` | Reject geometry-only damage reconstruction: c86 damage morphology looks close, but c87 raw and c89 active support spread to about 100x FEM area. Hard binary/full-resolution masks are eta0-singular. Near-core degradation amplitude, not crack location alone, is the missing state. Next gate must infer amplitude from c86 observables rather than tune target-cycle thresholds. Local `analysis/fem_visible_crack_equilibrium_20260716/decision.md`. |
 
 ## Quarantine / Deletion Queue
 
