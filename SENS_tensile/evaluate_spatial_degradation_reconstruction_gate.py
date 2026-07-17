@@ -295,6 +295,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sealed-c86-observation", type=Path, required=True)
     parser.add_argument("--historical-candidates", type=Path, default=None)
     parser.add_argument("--reaction-calibration-lock", type=Path, default=None)
+    parser.add_argument("--dic-candidate-manifest", type=Path, default=None)
+    parser.add_argument("--background-mode-manifest", type=Path, default=None)
+    parser.add_argument("--front-translation-manifest", type=Path, default=None)
     parser.add_argument("--load-displacement", type=Path, required=True)
     parser.add_argument("--multiscale-checkpoint", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
@@ -375,6 +378,58 @@ def main() -> None:
             raise ValueError("reaction-calibrated nodal damage shape mismatch")
         primary_name = "reaction_calibrated_" + selection["primary_tag"]
         candidates[primary_name] = calibrated_damage
+    if args.dic_candidate_manifest:
+        dic_manifest = json.loads(
+            args.dic_candidate_manifest.read_text(encoding="utf-8")
+        )
+        dic_path = args.dic_candidate_manifest.parent / (
+            "dic_conditioned_nodal_damage.npz"
+        )
+        expected_hash = dic_manifest["output_sha256"][dic_path.name]
+        if sha256(dic_path) != expected_hash:
+            raise RuntimeError("DIC-conditioned nodal damage hash mismatch")
+        dic_candidate = np.load(dic_path, allow_pickle=False)
+        dic_damage = np.asarray(dic_candidate["nodal_damage"], dtype=float)
+        if dic_damage.shape != prior_nodal_damage.shape:
+            raise ValueError("DIC-conditioned nodal damage shape mismatch")
+        primary_name = "dic_conditioned_nodal_inverse"
+        candidates[primary_name] = dic_damage
+    if args.background_mode_manifest:
+        background_manifest = json.loads(
+            args.background_mode_manifest.read_text(encoding="utf-8")
+        )
+        background_path = args.background_mode_manifest.parent / (
+            "background_mode_assimilated_nodal_damage.npz"
+        )
+        expected_hash = background_manifest["output_sha256"][background_path.name]
+        if sha256(background_path) != expected_hash:
+            raise RuntimeError("background-mode assimilated damage hash mismatch")
+        background_candidate = np.load(background_path, allow_pickle=False)
+        background_damage = np.asarray(
+            background_candidate["nodal_damage"], dtype=float
+        )
+        if background_damage.shape != prior_nodal_damage.shape:
+            raise ValueError("background-mode nodal damage shape mismatch")
+        primary_name = "local_gnn_global_background_assimilation"
+        candidates[primary_name] = background_damage
+    if args.front_translation_manifest:
+        translation_manifest = json.loads(
+            args.front_translation_manifest.read_text(encoding="utf-8")
+        )
+        translation_path = args.front_translation_manifest.parent / (
+            "front_translated_nodal_damage.npz"
+        )
+        expected_hash = translation_manifest["output_sha256"][translation_path.name]
+        if sha256(translation_path) != expected_hash:
+            raise RuntimeError("front-translated damage hash mismatch")
+        translation_candidate = np.load(translation_path, allow_pickle=False)
+        translation_damage = np.asarray(
+            translation_candidate["nodal_damage"], dtype=float
+        )
+        if translation_damage.shape != prior_nodal_damage.shape:
+            raise ValueError("front-translated nodal damage shape mismatch")
+        primary_name = "dic_selected_front_translation"
+        candidates[primary_name] = translation_damage
     if args.historical_candidates:
         historical = np.load(args.historical_candidates, allow_pickle=False)
         for name in (
@@ -657,6 +712,36 @@ def main() -> None:
         "reaction_calibration_lock_sha256": (
             sha256(args.reaction_calibration_lock)
             if args.reaction_calibration_lock
+            else None
+        ),
+        "dic_candidate_manifest": (
+            str(args.dic_candidate_manifest.resolve())
+            if args.dic_candidate_manifest
+            else None
+        ),
+        "dic_candidate_manifest_sha256": (
+            sha256(args.dic_candidate_manifest)
+            if args.dic_candidate_manifest
+            else None
+        ),
+        "background_mode_manifest": (
+            str(args.background_mode_manifest.resolve())
+            if args.background_mode_manifest
+            else None
+        ),
+        "background_mode_manifest_sha256": (
+            sha256(args.background_mode_manifest)
+            if args.background_mode_manifest
+            else None
+        ),
+        "front_translation_manifest": (
+            str(args.front_translation_manifest.resolve())
+            if args.front_translation_manifest
+            else None
+        ),
+        "front_translation_manifest_sha256": (
+            sha256(args.front_translation_manifest)
+            if args.front_translation_manifest
             else None
         ),
         "execution_firewall": {
