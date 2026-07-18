@@ -145,6 +145,12 @@ def aggregate(args: argparse.Namespace) -> tuple[list[dict], list[dict], list[tu
                 "best_validation_selection_composite"
             ],
         }
+        event_path = run_dir / "event_timing.json"
+        if event_path.exists():
+            event = json.loads(event_path.read_text(encoding="utf-8"))
+            summary["true_transition_cycle"] = event["true_event_cycle"]
+            summary["predicted_transition_cycle"] = event["predicted_event_cycle"]
+            summary["transition_cycle_absolute_error"] = event["absolute_cycle_error"]
         for label, comparison, horizon in (
             ("validation_h9", VALIDATION_COMPARISON, 9),
             ("evaluation_h1", CORE_COMPARISON, 1),
@@ -238,6 +244,7 @@ def architecture_table(summaries: list[dict]) -> list[dict]:
         "training_wall_seconds",
         "peak_cuda_memory_bytes",
         "inference_seconds_per_cycle",
+        "transition_cycle_absolute_error",
     ]
     table = []
     for family, rows in sorted(by_family.items()):
@@ -393,6 +400,42 @@ def plot_fields(
     plt.close(fig)
 
 
+def plot_transition_timing(
+    runs: list[tuple[Path, dict]],
+    output: Path,
+) -> None:
+    selected = median_run_per_family(runs)
+    available = [
+        (run_dir, manifest)
+        for run_dir, manifest in selected
+        if (run_dir / "event_timing.json").exists()
+    ]
+    if not available:
+        return
+    fig, axis = plt.subplots(figsize=(8.2, 4.2), constrained_layout=True)
+    first_event = json.loads(
+        (available[0][0] / "event_timing.json").read_text(encoding="utf-8")
+    )
+    true_cycles = [row["cycle"] for row in first_event["true_signal"]]
+    true_values = [row["raw_log_redistribution_rms"] for row in first_event["true_signal"]]
+    axis.plot(true_cycles, true_values, color="black", linewidth=2.5, label="FEM")
+    for run_dir, manifest in available:
+        event = json.loads((run_dir / "event_timing.json").read_text(encoding="utf-8"))
+        cycles = [row["cycle"] for row in event["predicted_signal"]]
+        values = [row["raw_log_redistribution_rms"] for row in event["predicted_signal"]]
+        axis.plot(cycles, values, marker="o", markersize=2.5, label=manifest["temporal_model"])
+    axis.axvline(first_event["true_event_cycle"], color="black", linestyle="--", linewidth=0.9)
+    axis.set_yscale("log")
+    axis.set_xlabel("target cycle")
+    axis.set_ylabel("area-weighted raw-log redistribution RMS")
+    axis.set_title("Secondary regime-transition timing diagnostic")
+    axis.grid(alpha=0.25)
+    axis.legend(fontsize=7, ncol=2)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output, dpi=220)
+    plt.close(fig)
+
+
 def main() -> None:
     args = parse_args()
     rows, summaries, runs = aggregate(args)
@@ -407,6 +450,10 @@ def main() -> None:
         args.out / "figures" / "fem_field_residual_support_c89.png",
         args.baseline_root,
     )
+    plot_transition_timing(
+        runs,
+        args.out / "figures" / "transition_timing_signals.png",
+    )
     manifest = {
         "runs": len(runs),
         "families": sorted({manifest["temporal_model"] for _, manifest in runs}),
@@ -418,6 +465,7 @@ def main() -> None:
             "tables/architecture_ablation_table.csv",
             "figures/rollout_horizon_curves.png",
             "figures/fem_field_residual_support_c89.png",
+            "figures/transition_timing_signals.png",
         ],
     }
     (args.out / "analysis_manifest.json").write_text(
