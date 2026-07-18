@@ -23,6 +23,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dataset", type=Path, required=True)
     parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--device", default="auto")
+    parser.add_argument(
+        "--peak-memory-floor",
+        type=int,
+        default=0,
+        help="Preserve a known training-process CUDA peak during reevaluation.",
+    )
     return parser.parse_args()
 
 
@@ -63,6 +69,9 @@ def main() -> None:
         args,
         checkpoint,
         training_seconds=float(previous_cost["training_wall_seconds"]),
+        peak_memory_floor=max(
+            int(previous_cost["peak_cuda_memory_bytes"]), cli.peak_memory_floor
+        ),
     )
 
 

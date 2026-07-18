@@ -646,6 +646,7 @@ def evaluate(
     checkpoint: Mapping,
     *,
     training_seconds: float,
+    peak_memory_floor: int = 0,
 ) -> None:
     context = int(checkpoint["selected_context"])
     rows: list[dict] = []
@@ -867,11 +868,12 @@ def evaluate(
         torch.cuda.synchronize()
     inference_seconds = time.perf_counter() - timing_started
     predicted_cycles = len(timed) - 1
-    peak_memory = (
+    measured_peak_memory = (
         int(torch.cuda.max_memory_allocated(next(model.parameters()).device))
         if next(model.parameters()).is_cuda
         else 0
     )
+    peak_memory = max(measured_peak_memory, int(peak_memory_floor))
 
     breakdown = parameter_breakdown(model)
     cost = {
