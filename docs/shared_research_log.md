@@ -42,6 +42,27 @@
 
 ## Entries
 
+## 2026-07-18 · Mac-PIDL [decision+implementation]
+
+**Leakage-safe temporal mesh-operator diagnostic is isolated and quarantined**
+
+Branch `codex/temporal-graph-transformer`, based on `a861da8`. A standalone,
+opt-in operator compares parameter-matched Markov, GRU, LSTM, TCN, causal
+temporal-only Transformer, and stable diagonal SSM blocks behind one shared
+fine/coarse graph encoder and directional irreversible decoder. No existing
+runner, config default, training loop, or active checkpoint contract changes;
+the feature branch is safe during running trainings and must not be merged or
+pulled by a producer except for this study.
+
+The protocol is sealed before GPU work: normalisation and training windows use
+c1-c67 only; context/checkpoint selection uses c67-c76; c77-c89 is explicitly
+a reused evaluation benchmark, not a virgin locked test. Cycle number,
+`cycle/89`, cycle-to-failure, and future loading are forbidden. The single
+physical trajectory limits every output to a quarantined within-trajectory
+diagnostic. Remote execution starts with a six-family two-step smoke, followed
+by the minimum matched three-seed matrix; FEM active-support/localisation gates
+remain primary over whole-domain MSE or event timing.
+
 ## 2026-07-15 · Mac-PIDL [decision]
 
 **Graph architecture matrix approved: independent UV/damage branches plus damage-only latent coupling**
