@@ -159,11 +159,23 @@ def aggregate(args: argparse.Namespace) -> tuple[list[dict], list[dict], list[tu
             ("evaluation_h5", CORE_COMPARISON, 5),
             ("evaluation_h10", CORE_COMPARISON, 10),
             ("evaluation_h13", CORE_COMPARISON, 13),
+            ("twenty_cycle_h20", "reused_twenty_cycle_rollout_c69_c89", 20),
+            ("raw_reset_c89", "oracle_c87_raw_reset_c76_c89", 13),
+            ("full_reset_c89", "oracle_c87_full_reset_c76_c89", 13),
+            ("true_history_restart_h2", "oracle_true_history_restart_c87_c89", 2),
         ):
             row = find_row(rows, comparison, horizon)
             if row is not None:
                 for metric in METRICS:
                     summary[f"{label}_{metric}"] = row[metric]
+        next_cycle_rows = [
+            row for row in rows
+            if row["comparison"] == "teacher_forced_reused_next_cycle"
+        ]
+        for metric in METRICS:
+            values = [float(row[metric]) for row in next_cycle_rows if metric in row]
+            if values:
+                summary[f"next_cycle_mean_{metric}"] = float(np.mean(values))
         summaries.append(summary)
 
     if args.baseline_root is not None:
@@ -242,6 +254,16 @@ def architecture_table(summaries: list[dict]) -> list[dict]:
         "evaluation_h13_absolute_p99_iou",
         "evaluation_h13_support_area_ratio",
         "evaluation_h13_centroid_offset",
+        "next_cycle_mean_active_log_mae",
+        "next_cycle_mean_absolute_p99_iou",
+        "twenty_cycle_h20_active_log_mae",
+        "twenty_cycle_h20_absolute_p99_iou",
+        "raw_reset_c89_active_log_mae",
+        "raw_reset_c89_absolute_p99_iou",
+        "full_reset_c89_active_log_mae",
+        "full_reset_c89_absolute_p99_iou",
+        "true_history_restart_h2_active_log_mae",
+        "true_history_restart_h2_absolute_p99_iou",
         "training_wall_seconds",
         "peak_cuda_memory_bytes",
         "inference_seconds_per_cycle",
