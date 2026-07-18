@@ -107,13 +107,34 @@ def aggregate(args: argparse.Namespace) -> tuple[list[dict], list[dict], list[tu
         family = manifest["temporal_model"]
         seed = int(manifest["seed"])
         stage = run_dir.parent.name
+        variant = "core"
+        if stage == "ablations":
+            prefix = f"{family}_"
+            suffix = f"_seed{seed}"
+            variant = run_dir.name
+            if variant.startswith(prefix):
+                variant = variant[len(prefix):]
+            if variant.endswith(suffix):
+                variant = variant[:-len(suffix)]
+        model_label = family if variant == "core" else f"{family}:{variant}"
         for row in rows:
-            all_rows.append({"stage": stage, "family": family, "seed": seed, **row})
+            all_rows.append(
+                {
+                    "stage": stage,
+                    "family": family,
+                    "variant": variant,
+                    "model_label": model_label,
+                    "seed": seed,
+                    **row,
+                }
+            )
 
         cost = manifest["cost"]
         summary = {
             "stage": stage,
             "family": family,
+            "variant": variant,
+            "model_label": model_label,
             "seed": seed,
             "selected_context": manifest["selected_context_validation_only"],
             "parameters": manifest["parameter_breakdown"]["total"],
@@ -143,9 +164,11 @@ def aggregate(args: argparse.Namespace) -> tuple[list[dict], list[dict], list[tu
 def architecture_table(summaries: list[dict]) -> list[dict]:
     by_family: dict[str, list[dict]] = defaultdict(list)
     for row in summaries:
-        by_family[str(row["family"])].append(row)
+        by_family[str(row["model_label"])].append(row)
     markov_by_seed = {
-        int(row["seed"]): row for row in by_family.get("markov", [])
+        int(row["seed"]): row
+        for row in by_family.get("markov", [])
+        if row["variant"] == "core"
     }
     columns = [
         "best_validation_selection_composite",
@@ -195,7 +218,10 @@ def architecture_table(summaries: list[dict]) -> list[dict]:
 
 
 def plot_horizons(rows: list[dict], path: Path) -> None:
-    selected = [row for row in rows if row["comparison"] == CORE_COMPARISON]
+    selected = [
+        row for row in rows
+        if row["comparison"] == CORE_COMPARISON and row["variant"] == "core"
+    ]
     families = sorted({str(row["family"]) for row in selected})
     fig, axes = plt.subplots(1, 3, figsize=(13, 3.8), constrained_layout=True)
     specs = (
@@ -239,6 +265,8 @@ def plot_horizons(rows: list[dict], path: Path) -> None:
 def median_run_per_family(runs: list[tuple[Path, dict]]) -> list[tuple[Path, dict]]:
     grouped: dict[str, list[tuple[Path, dict]]] = defaultdict(list)
     for run in runs:
+        if run[0].parent.name == "ablations":
+            continue
         grouped[str(run[1]["temporal_model"])].append(run)
     selected = []
     for family, candidates in sorted(grouped.items()):
