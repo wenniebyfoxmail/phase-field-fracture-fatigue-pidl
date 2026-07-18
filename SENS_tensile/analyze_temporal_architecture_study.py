@@ -105,6 +105,8 @@ def aggregate(args: argparse.Namespace) -> tuple[list[dict], list[dict], list[tu
     for run_dir, manifest in runs:
         with (run_dir / "fem_centred_metrics.csv").open(newline="", encoding="utf-8") as handle:
             rows = [numeric_row(row) for row in csv.DictReader(handle)]
+        with (run_dir / "training_history.csv").open(newline="", encoding="utf-8") as handle:
+            training_rows = [numeric_row(row) for row in csv.DictReader(handle)]
         family = manifest["temporal_model"]
         seed = int(manifest["seed"])
         stage = run_dir.parent.name
@@ -146,6 +148,14 @@ def aggregate(args: argparse.Namespace) -> tuple[list[dict], list[dict], list[tu
                 "best_validation_selection_composite"
             ],
         }
+        best_history = min(
+            training_rows,
+            key=lambda row: float(row["validation_selection_composite"]),
+        )
+        for context in (1, 3, 5, 10, 20):
+            key = f"validation_context_{context}"
+            if key in best_history and best_history[key] != "":
+                summary[f"validation_context_{context}_composite"] = best_history[key]
         event_path = run_dir / "event_timing.json"
         if event_path.exists():
             event = json.loads(event_path.read_text(encoding="utf-8"))
@@ -466,6 +476,42 @@ def plot_transition_timing(
     plt.close(fig)
 
 
+def plot_context_ablation(summaries: list[dict], output: Path) -> None:
+    core = [row for row in summaries if row["variant"] == "core"]
+    families = sorted({str(row["family"]) for row in core})
+    contexts = (1, 3, 5, 10, 20)
+    fig, axis = plt.subplots(figsize=(7.6, 4.2), constrained_layout=True)
+    for family in families:
+        rows = [row for row in core if row["family"] == family]
+        x, means, stds = [], [], []
+        for context in contexts:
+            key = f"validation_context_{context}_composite"
+            values = np.asarray([float(row[key]) for row in rows if key in row])
+            if not len(values):
+                continue
+            x.append(context)
+            means.append(values.mean())
+            stds.append(values.std(ddof=1) if len(values) > 1 else 0.0)
+        line = axis.plot(x, means, marker="o", label=family)[0]
+        axis.fill_between(
+            x,
+            np.asarray(means) - stds,
+            np.asarray(means) + stds,
+            color=line.get_color(),
+            alpha=0.12,
+        )
+    axis.set_xscale("log", base=10)
+    axis.set_xticks(contexts, labels=[str(value) for value in contexts])
+    axis.set_xlabel("inference context length k")
+    axis.set_ylabel("c67-c76 selection composite (lower is better)")
+    axis.set_title("Validation-only context ablation after shared variable-context training")
+    axis.grid(alpha=0.25)
+    axis.legend(fontsize=7, ncol=2)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output, dpi=220)
+    plt.close(fig)
+
+
 def main() -> None:
     args = parse_args()
     rows, summaries, runs = aggregate(args)
@@ -484,6 +530,10 @@ def main() -> None:
         runs,
         args.out / "figures" / "transition_timing_signals.png",
     )
+    plot_context_ablation(
+        summaries,
+        args.out / "figures" / "validation_context_ablation.png",
+    )
     manifest = {
         "runs": len(runs),
         "families": sorted({manifest["temporal_model"] for _, manifest in runs}),
@@ -496,6 +546,7 @@ def main() -> None:
             "figures/rollout_horizon_curves.png",
             "figures/fem_field_residual_support_c89.png",
             "figures/transition_timing_signals.png",
+            "figures/validation_context_ablation.png",
         ],
     }
     (args.out / "analysis_manifest.json").write_text(
