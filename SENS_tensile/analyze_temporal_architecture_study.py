@@ -158,6 +158,61 @@ def aggregate(args: argparse.Namespace) -> tuple[list[dict], list[dict], list[tu
                 for metric in METRICS:
                     summary[f"{label}_{metric}"] = row[metric]
         summaries.append(summary)
+
+    if args.baseline_root is not None:
+        manifest = json.loads(
+            (args.baseline_root / "RUN_MANIFEST.json").read_text(encoding="utf-8")
+        )
+        with (args.baseline_root / "fem_centred_metrics.csv").open(
+            newline="", encoding="utf-8"
+        ) as handle:
+            baseline_rows = [numeric_row(row) for row in csv.DictReader(handle)]
+        mapped_rows = []
+        for row in baseline_rows:
+            comparison = str(row["comparison"])
+            if comparison == "validation_rollout_from_c67":
+                origin = 67
+                mapped_comparison = VALIDATION_COMPARISON
+            elif comparison == "locked_rollout_from_c76":
+                origin = 76
+                mapped_comparison = CORE_COMPARISON
+            else:
+                continue
+            mapped = {
+                **row,
+                "comparison": mapped_comparison,
+                "origin_cycle": origin,
+                "horizon": int(float(row["cycle"])) - origin,
+                "active_log_mae": row["derived_active_log_mae"],
+                "active_correlation": row["derived_active_correlation"],
+                "support_area_ratio": row["absolute_support_area_ratio"],
+                "stage": "legacy_baseline",
+                "family": "current_multiscale",
+                "variant": "legacy_baseline",
+                "model_label": "current_multiscale",
+                "seed": int(manifest["seed"]),
+            }
+            mapped_rows.append(mapped)
+            all_rows.append(mapped)
+        baseline_summary = {
+            "stage": "legacy_baseline",
+            "family": "current_multiscale",
+            "variant": "legacy_baseline",
+            "model_label": "current_multiscale",
+            "seed": int(manifest["seed"]),
+            "selected_context": 1,
+            "parameters": int(manifest["parameter_count"]),
+        }
+        for label, comparison, horizon in (
+            ("validation_h9", VALIDATION_COMPARISON, 9),
+            ("evaluation_h13", CORE_COMPARISON, 13),
+        ):
+            row = find_row(mapped_rows, comparison, horizon)
+            if row is not None:
+                for metric in METRICS:
+                    if metric in row:
+                        baseline_summary[f"{label}_{metric}"] = row[metric]
+        summaries.append(baseline_summary)
     return all_rows, summaries, runs
 
 
@@ -206,6 +261,7 @@ def architecture_table(summaries: list[dict]) -> list[dict]:
             float(row["best_validation_selection_composite"])
             < float(markov["best_validation_selection_composite"])
             for row, markov in paired
+            if "best_validation_selection_composite" in row
         )
         result["c89_active_mae_wins_vs_markov"] = sum(
             float(row["evaluation_h13_active_log_mae"])
@@ -220,7 +276,8 @@ def architecture_table(summaries: list[dict]) -> list[dict]:
 def plot_horizons(rows: list[dict], path: Path) -> None:
     selected = [
         row for row in rows
-        if row["comparison"] == CORE_COMPARISON and row["variant"] == "core"
+        if row["comparison"] == CORE_COMPARISON
+        and row["variant"] in {"core", "legacy_baseline"}
     ]
     families = sorted({str(row["family"]) for row in selected})
     fig, axes = plt.subplots(1, 3, figsize=(13, 3.8), constrained_layout=True)
@@ -240,7 +297,11 @@ def plot_horizons(rows: list[dict], path: Path) -> None:
                 )
                 means.append(values.mean())
                 stds.append(values.std(ddof=1) if len(values) > 1 else 0.0)
-            line = axis.plot(horizons, means, marker="o", markersize=3, label=family)[0]
+            linestyle = "--" if family == "current_multiscale" else "-"
+            line = axis.plot(
+                horizons, means, marker="o", markersize=3,
+                linestyle=linestyle, label=family,
+            )[0]
             axis.fill_between(
                 horizons,
                 np.asarray(means) - stds,
