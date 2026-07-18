@@ -125,13 +125,16 @@ def render_heatmap(rows, out):
                          and int(r["train_end"]) == train_end and int(r["context_k"]) == k
                          and r["phase"] == "cutoff_rollout" and int(r["horizon"]) == h]
                 if match: matrix[i, j] = float(match[0]["derived_active_log_mae"])
-        image = ax.imshow(matrix, vmin=0, vmax=np.nanpercentile(matrix, 90), cmap="magma_r", aspect="auto")
+        vmax=np.nanpercentile(matrix, 95)
+        image = ax.imshow(matrix, vmin=0, vmax=vmax, cmap="magma_r", aspect="auto")
         ax.set_title(f"train through c{train_end}"); ax.set_xticks(range(4), HEADLINE_HORIZONS)
         ax.set_yticks(range(4), ALLOWED_CONTEXTS); ax.set_xlabel("rollout horizon")
         if train_end == ALLOWED_TRAIN_ENDS[0]: ax.set_ylabel("context k")
         for i in range(4):
             for j in range(4):
-                if np.isfinite(matrix[i, j]): ax.text(j, i, f"{matrix[i,j]:.2f}", ha="center", va="center", fontsize=8)
+                if np.isfinite(matrix[i, j]):
+                    colour="white" if matrix[i,j] > .62*vmax else "black"
+                    ax.text(j, i, f"{matrix[i,j]:.2f}", ha="center", va="center", fontsize=8, color=colour)
     fig.colorbar(image, ax=axes, label="derived active-driver log-MAE")
     fig.savefig(out / "context_length_x_rollout_horizon_heatmap.png", dpi=220)
     plt.close(fig)
@@ -145,8 +148,13 @@ def render_rollout_growth(rows, out):
                            and int(r["train_end"]) == 67 and int(r["context_k"]) == k
                            and r["phase"] in ("near_event_rollout", "locked_c89_final")),
                           key=lambda r: int(r["horizon"]))
-        ax.plot([int(r["horizon"]) for r in selected],
-                [float(r["derived_active_log_mae"]) for r in selected], marker="o", label=f"k={k}")
+        nonlocked=[r for r in selected if int(r["horizon"]) <= 10]
+        locked=[r for r in selected if int(r["horizon"]) == 13]
+        line=ax.plot([int(r["horizon"]) for r in nonlocked],
+                     [float(r["derived_active_log_mae"]) for r in nonlocked], marker="o", label=f"k={k}")[0]
+        if locked:
+            ax.plot([10,13],[float(nonlocked[-1]["derived_active_log_mae"]),float(locked[0]["derived_active_log_mae"])],
+                    marker="o",ls="--",color=line.get_color())
     ax.axhline(RELIABLE["derived_active_log_mae"], color="black", ls="--", lw=1, label="active gate")
     ax.set(xlabel="horizon from observed c76", ylabel="derived active-driver log-MAE",
            title="Near-event recurrent rollout error growth")
@@ -155,6 +163,8 @@ def render_rollout_growth(rows, out):
 
 def render_fields(data, target, prediction, out, label):
     import matplotlib.pyplot as plt
+    from matplotlib.colors import ListedColormap
+    from matplotlib.patches import Patch
     xy = np.asarray(data["coordinates"])
     pred_active = prediction[:, 3] + 2 * np.log10(np.maximum(1 - prediction[:, 0], 1e-12))
     fem_active = target[:, 3] + 2 * np.log10(np.maximum(1 - target[:, 0], 1e-12))
@@ -167,7 +177,10 @@ def render_fields(data, target, prediction, out, label):
     for i, (truth, pred, resid, name) in enumerate(fields):
         common=(np.nanpercentile(np.r_[truth,pred],1),np.nanpercentile(np.r_[truth,pred],99))
         for j,(values,title) in enumerate(((truth,"FEM"),(pred,label),(resid,f"{label} - FEM"))):
-            kw = {"cmap":"coolwarm"} if j==2 else {"cmap":"viridis","vmin":common[0],"vmax":common[1]}
+            if j==2:
+                bound=max(abs(np.nanpercentile(resid,1)),abs(np.nanpercentile(resid,99)))
+                kw={"cmap":"RdBu_r","vmin":-bound,"vmax":bound}
+            else: kw={"cmap":"viridis","vmin":common[0],"vmax":common[1]}
             sc=axes[i,j].scatter(xy[:,0],xy[:,1],c=values,s=.18,rasterized=True,**kw)
             axes[i,j].set_title(f"{name}: {title}"); axes[i,j].set_aspect("equal"); axes[i,j].axis("off")
             fig.colorbar(sc,ax=axes[i,j],shrink=.7)
@@ -179,8 +192,12 @@ def render_fields(data, target, prediction, out, label):
     fig,axes=plt.subplots(1,2,figsize=(9,4),constrained_layout=True)
     for ax,pmask,title in ((axes[0],pred_active>=tau,"common FEM p99"),(axes[1],pred_active>=taup,"own p99")):
         fmask=fem_active>=tau; code=fmask.astype(int)+2*pmask.astype(int)
-        ax.scatter(xy[:,0],xy[:,1],c=code,s=.25,cmap="viridis",vmin=0,vmax=3,rasterized=True)
+        colours=["#d9d9d9","#377eb8","#ff7f00","#f2d13d"]
+        ax.scatter(xy[:,0],xy[:,1],c=code,s=.25,cmap=ListedColormap(colours),vmin=-.5,vmax=3.5,rasterized=True)
         ax.set_title(title); ax.set_aspect("equal"); ax.axis("off")
+    axes[0].legend(handles=[Patch(color="#d9d9d9",label="neither"),Patch(color="#377eb8",label="FEM only"),
+                            Patch(color="#ff7f00",label="prediction only"),Patch(color="#f2d13d",label="overlap")],
+                   loc="upper right",fontsize=8,frameon=True)
     fig.savefig(out / "fem_active_support_panel_c89.png",dpi=220); plt.close(fig)
 
 
@@ -198,11 +215,15 @@ def write_decision(rows, out, selected_k, context_scores):
 
 ## Verdict
 
-- Minimum reliable training cutoff: **{f'c{minimum}' if minimum else 'none of c20/c40/c60/c67 passed the predeclared full FEM-centred one-step gate'}**.
-- Most useful history window: **k={selected_k}**, selected before opening c89 by mean c76-origin h10 active log-MAE across training cutoffs ({context_scores}).
+- Minimum reliable training cutoff among tested values: **{f'c{minimum}' if minimum else 'none of c20/c40/c60/c67 passed the predeclared full FEM-centred one-step gate'}**. Cutoffs below c20 were not tested.
+- Nominal global history choice: **k={selected_k}**, selected before opening c89 by mean c76-origin h10 active log-MAE across training cutoffs ({context_scores}). Treat near-ties as no robust context advantage.
 - Stable recurrent rollout under the full gate: **{max(stable) if stable else 0} cycles** from observed c76 for the c67-trained selected model.
 - First near-event failure: **{f'h={first_failure["horizon"]}, target c{first_failure["target_cycle"]}' if first_failure else 'not observed through c89'}**.
 - Locked c89: active log-MAE `{float(locked['derived_active_log_mae']):.4f}`, correlation `{float(locked['derived_active_correlation']):.4f}`, absolute-p99 IoU `{float(locked['absolute_p99_iou']):.4f}`, support ratio `{float(locked['absolute_support_area_ratio']):.3f}`.
+
+## Interpretation
+
+The minimum cutoff is sufficiency on the requested grid, not a universal lower bound. Persistence must remain visible because smooth one-step states can be easy without learning. Extra history is useful only when it extends the full FEM-centred support gate; lower log-MAE without p99 support overlap is not a stable rollout. A catastrophic c89 support expansion across every k means that more copies of the same four fields are insufficient and an additional regime-sensitive observation or state is required.
 
 ## Interpretation boundary
 
