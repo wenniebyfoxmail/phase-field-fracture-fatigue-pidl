@@ -11,6 +11,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import ListedColormap
 
 
 CORE_COMPARISON = "reused_evaluation_rollout_c76_c89"
@@ -356,6 +357,7 @@ def plot_fields(
     target_active = active_log(target)
     threshold = weighted_quantile(target_active, areas, 0.99)
     target_support = target_active >= threshold
+    support_cmap = ListedColormap(["#f2f2f2", "#2166ac", "#b2182b", "#1a9850"])
     candidates: list[tuple[str, np.ndarray]] = [("FEM", target)]
     if baseline_root is not None:
         baseline_npz = np.load(baseline_root / "locked_predictions.npz")
@@ -375,7 +377,13 @@ def plot_fields(
             (prediction_active, "active log10", "viridis", vmin, vmax),
             (prediction_active - target_active, "signed residual", "coolwarm", -4.0, 4.0),
             (np.abs(prediction_active - target_active), "absolute residual", "magma", 0.0, 4.0),
-            (overlap, "FEM/pred support", "tab10", 0.0, 3.0),
+            (
+                overlap,
+                "support: blue FEM, red pred, green overlap",
+                support_cmap,
+                0.0,
+                3.0,
+            ),
         )
         for column, (values, title, cmap, low, high) in enumerate(fields):
             axis = axes[row_index, column]
