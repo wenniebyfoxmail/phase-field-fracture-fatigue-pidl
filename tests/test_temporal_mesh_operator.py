@@ -27,6 +27,7 @@ from train_temporal_mesh_operator import (  # noqa: E402
     apply_observation_reset,
     compute_statistics,
     history_slice,
+    transition_timing,
     training_origins,
 )
 
@@ -219,3 +220,18 @@ def test_observation_resets_are_explicit() -> None:
     torch.testing.assert_close(full, observation)
     with pytest.raises(ValueError):
         apply_observation_reset(prediction, observation, "unknown")
+
+
+def test_transition_timing_uses_area_weighted_raw_redistribution() -> None:
+    base = tiny_history(1)[0]
+    c76 = base.clone()
+    c77 = base.clone()
+    c78 = base.clone()
+    c77[:, 3] += 0.1
+    c78[:, 3] += torch.tensor([0.1, 0.1, 0.1, 3.0, 3.0, 3.0])
+    event, signal = transition_timing(
+        {76: c76, 77: c77, 78: c78}, np.asarray([1, 1, 1, 2, 2, 2])
+    )
+    assert event == 78
+    assert [row["cycle"] for row in signal] == [77, 78]
+    assert signal[1]["raw_log_redistribution_rms"] > signal[0]["raw_log_redistribution_rms"]

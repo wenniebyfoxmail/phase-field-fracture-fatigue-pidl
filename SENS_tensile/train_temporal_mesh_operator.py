@@ -347,6 +347,29 @@ def selection_composite(metrics: Mapping[str, float]) -> float:
     )
 
 
+def transition_timing(
+    trajectory: Mapping[int, torch.Tensor],
+    areas: np.ndarray,
+) -> tuple[int, list[dict[str, float | int]]]:
+    """Secondary timing proxy from raw-driver spatial redistribution.
+
+    The signal is the FEM-area-weighted RMS change in log10 raw driver between
+    adjacent cycles.  It does not enter checkpoint or context selection.
+    """
+    cycles = sorted(trajectory)
+    weights = areas / areas.sum()
+    signal = []
+    for previous_cycle, cycle in zip(cycles[:-1], cycles[1:]):
+        previous = trajectory[previous_cycle].detach().cpu().numpy()[:, 3]
+        current = trajectory[cycle].detach().cpu().numpy()[:, 3]
+        jump = float(np.sqrt(np.sum(weights * (current - previous) ** 2)))
+        signal.append({"cycle": cycle, "raw_log_redistribution_rms": jump})
+    if not signal:
+        raise ValueError("transition timing requires at least two cycles")
+    event_cycle = int(max(signal, key=lambda row: row["raw_log_redistribution_rms"])["cycle"])
+    return event_cycle, signal
+
+
 def metrics_for_rollout(
     predictions: Mapping[int, torch.Tensor],
     states: torch.Tensor,
@@ -768,6 +791,10 @@ def evaluate(
         )
 
     write_csv(args.out / "fem_centred_metrics.csv", rows)
+    reused_cycles = np.asarray(sorted(reused), dtype=np.int64)
+    reused_states = np.stack(
+        [reused[int(cycle)].detach().cpu().numpy() for cycle in reused_cycles]
+    )
     np.savez_compressed(
         args.out / "reused_evaluation_predictions.npz",
         c76=states[VALIDATION_END - 1].detach().cpu().numpy(),
@@ -785,7 +812,31 @@ def evaluate(
             reset_cycle=87,
             reset_mode="raw",
         )[89].detach().cpu().numpy(),
+        cycles=reused_cycles,
+        predicted_states=reused_states,
         selected_context=np.asarray(context),
+    )
+
+    areas = np.asarray(data["areas"], dtype=np.float64).reshape(-1)
+    true_trajectory = {
+        cycle: states[cycle - 1] for cycle in range(VALIDATION_END, EVALUATION_END + 1)
+    }
+    predicted_event_cycle, predicted_signal = transition_timing(reused, areas)
+    true_event_cycle, true_signal = transition_timing(true_trajectory, areas)
+    event_timing = {
+        "status": "secondary reused-evaluation diagnostic",
+        "definition": (
+            "cycle with maximum FEM-area-weighted RMS redistribution of "
+            "log10 raw driver over c76-c89"
+        ),
+        "true_event_cycle": true_event_cycle,
+        "predicted_event_cycle": predicted_event_cycle,
+        "absolute_cycle_error": abs(predicted_event_cycle - true_event_cycle),
+        "true_signal": true_signal,
+        "predicted_signal": predicted_signal,
+    }
+    (args.out / "event_timing.json").write_text(
+        json.dumps(event_timing, indent=2) + "\n", encoding="utf-8"
     )
 
     # Seek-safe inference timing after one warm-up rollout.
@@ -887,6 +938,7 @@ def evaluate(
             "fem_centred_metrics.csv",
             "reused_evaluation_predictions.npz",
             "cost_metrics.json",
+            "event_timing.json",
         ],
     }
     (args.out / "RUN_MANIFEST.json").write_text(
