@@ -42,6 +42,29 @@
 
 ## Entries
 
+## 2026-07-18 · Mac-PIDL [finding+decision]
+
+**Temporal memory improves ordinary rollout but fails the late FEM transition; no promotion**
+
+On branch `codex/temporal-graph-transformer`, the sealed 18-run core matrix
+(six parameter-matched families × seeds 1/2/3) and 14 formal ablations
+completed on Taobo. Transformer had the best c67-c76 validation composite
+(0.549 +/- 0.074; diagonal SSM 0.565 +/- 0.075; Markov 0.698 +/- 0.171) and
+reduced short h5 error, but did not improve mean next-cycle error. TCN was
+stronger at h10-h20. Every family missed the sharp FEM c87 raw-driver
+redistribution and became a diffuse c89 failure: FEM-p99 IoU about 0.01 and
+support-area ratio about 97. A c87 observation reset restored high overlap,
+localising the failure to missing transition/state information rather than
+insufficient temporal-block capacity.
+
+Decision: do not promote Transformer or diagonal SSM, do not expand the
+single-trajectory architecture sweep, and retain the code only as a
+quarantined within-trajectory diagnostic. Any next rung requires multiple
+compatible FEM trajectories and a newly sealed trajectory-held-out test.
+c77-c89 is explicitly reused evaluation and cannot support a virgin-test or
+generalisation claim. Full local package:
+`local_archive/.../temporal_architecture_study_20260718/decision.md`.
+
 ## 2026-07-18 · Mac-PIDL [decision+implementation]
 
 **Leakage-safe temporal mesh-operator diagnostic is isolated and quarantined**

@@ -35,3 +35,30 @@ The reused c77-c89 interval is opened only after each run has selected its check
 ## Decision rule
 
 A temporal family is useful only if multiple seeds improve validation rollout and the reused evaluation is directionally consistent, with better FEM-like active support/localisation rather than diffuse smoothing. Whole-domain MSE or event timing alone cannot pass the gate. Seeds quantify optimisation stability only; without additional physical trajectories, Transformer or SSM generalisation remains unproved.
+
+## Completed result
+
+The staged campaign completed 18 core runs (six families × three seeds) and
+14 formal ablation runs. The final package validator passed all expected runs
+and eight analysis assets.
+
+- Transformer achieved the best c67-c76 validation composite
+  (`0.5493 +/- 0.0740`), followed by diagonal SSM (`0.5654 +/- 0.0751`).
+- Neither improved mean teacher-forced next-cycle active log MAE over Markov.
+- Transformer modestly improved c76-origin h5/h10 error over Markov, but TCN
+  was stronger at h10-h20.
+- All families missed the c87 raw-driver redistribution. At c89, FEM-p99 IoU
+  was about `0.01` and support-area ratio about `97`, which is a diffuse
+  mechanism failure.
+- A c87 observation reset restored c89 IoU to `0.891-0.956`, diagnosing
+  missing transition/state information rather than successful free rollout.
+- Parameter-matched ablations support the combined value of graph encoding,
+  autoregressive exposure, and multi-step loss; selected Transformer contexts
+  were not stable across seeds, so the gain cannot be assigned to temporal
+  memory alone.
+
+Final decision: **do not promote Transformer or diagonal SSM**. Retain the
+implementation as a quarantined within-trajectory diagnostic. Do not enlarge
+the single-trajectory architecture sweep; require multiple compatible FEM
+trajectories and a newly sealed trajectory-held-out test before revisiting a
+generalisation claim.
