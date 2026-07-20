@@ -27,6 +27,170 @@
 
 ## Active Requests
 
+## 2026-07-20 · Request 26: matched eta0 multi-Umax trajectories and sensor-ready exports
+
+**Goal**: build the smallest internally matched FEM trajectory family needed to test observed-state next-cycle forecasting, c87-like transition assimilation, and leave-one-physical-trajectory-out validation. The scientific question is whether changing only the applied cyclic amplitude produces enough transition diversity for a model to learn/identify late fracture-regime changes without mixing incompatible FEM families.
+
+This request belongs to `framework-validation` and `trajectory-sufficiency`. It does **not** calibrate PIDL, and it does not change the formal FEM physics. FEM remains the eta0 physical reference.
+
+### Experiment gate and decision consequence
+
+1. **Mechanism question**: under one fixed SENS/AT1/Carrara FEM family, can distinct `Umax` trajectories provide transferable pre-transition and transition-state evolution rather than one-trajectory cycle interpolation?
+2. **Claim change**: if the package contains at least three valid trajectories and leave-one-Umax-out evaluation succeeds later on Mac, the temporal/inverse studies may advance from single-trajectory diagnostics to physical-trajectory holdout. If not, all current transition claims remain single-trajectory/synthetic.
+3. **Cheaper diagnostic first**: audit and reuse the existing formal `Umax=0.12` trajectory and any exact-family archives. Do not rerun an already complete case. The legacy FEM5 `u10/u11` keyframes are a different `physics_family` and must not be mixed into this request.
+4. **Minimal primary asset**: `family_index.csv` plus one verified cycle-state package per Umax and one sensor-ready observation package per trajectory.
+5. **Registry path**: reply in `windows_fem_outbox.md` against Request 26. Mac will register the verified family in the reality-transition evidence matrix and run the common FEM-centred validation.
+
+### Fixed formal physics family
+
+Use the current formal SENS recovery baseline certified by:
+
+```text
+local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/
+analysis/baseline_case_audit_20260709/
+fem_semantics_certificate_SENS_recovery_u012_20260709.md
+```
+
+Hold all of the following fixed:
+
+```text
+geometry / BC / mesh / recovered state0 / precrack semantics
+split_type = AMOR
+diss_fct = AT1
+irrev = PENALTY
+E = 1.0
+nu = 0.3
+Gc = 0.01
+ell = 0.01
+alpha_T = 0.5
+res_stiff (eta) = 0.0
+R = 0.0
+n_step = 8 loading+unloading substeps per cycle
+tol_p_field = 4e-4
+SOL_STAG_PAR.tol = 4e-4
+regularize_pf_newton = true
+damage_upper_bound = 1.0
+right-layer penetration: x > 0.48, d > 0.95,
+  at least 3 nodes, 3 confirmation cycles
+```
+
+The **only intended physical intervention** is:
+
+```text
+Umax in {0.10, 0.11, 0.12}
+```
+
+- Reuse/re-export the certified `Umax=0.12` run if its required states are complete.
+- Run only missing `Umax=0.10` and `Umax=0.11` cases after a one-cycle code/export smoke.
+- Use `max_cycle=240` for new lower-amplitude cases so a trajectory may either fail or receive an explicit right-censor label. Do not alter physics to force failure.
+- If exact formal-family `Umax=0.10/0.11` runs already exist, verify provenance and export them instead of recomputing.
+
+**INPUT file**: copy the certified u0.12 launch/input pair and create clearly named one-factor variants for u0.10 and u0.11. Record source commit/file hashes and the exact changed lines. Do not silently reuse similarly named legacy FEM5 inputs.
+
+**Mesh**: identical formal SENS recovery mesh for all three trajectories. No remeshing. Export one canonical `mesh_geometry.mat` and verify the coordinate/connectivity hash is identical across the family.
+
+### Required state exports
+
+Export two explicitly labelled states for every completed cycle:
+
+```text
+cNNN_peak_post_refresh       # substep 4, peak load
+cNNN_unloaded_post_refresh   # substep 8, end of cycle
+```
+
+Do not mix a peak driver with an unloaded field without separate labels. Minimum arrays, aligned to the common mesh:
+
+```text
+cycles, state_labels, substeps, load_factors
+node_coords, connectivity, element_centroids, area_per_elem
+u_node                         # clean nodal displacement for synthetic DIC
+d_node, d_elem                 # damage, never named alpha_bar
+alpha_bar_elem                 # Carrara fatigue accumulator
+f_alpha_elem                   # fatigue degradation
+psi_raw_peak_elem              # raw tensile driver at peak substep 4
+psi_raw_cyclemax_elem           # cycle maximum, separately labelled
+psi_active_peak_elem            # GP mean of g(d)*psi_raw at peak; exact product before reduction
+g_stiffness_peak_elem           # exact degradation used in psi_active_peak_elem
+reaction_force_each_substep
+strain_elem_peak                # minimum tensor/components needed for sparse strain probes
+```
+
+If `psi_active_peak_elem` cannot be exported exactly from Gauss-point quantities, report the blocker. Do not substitute `mean(g)*mean(psi)` or an unlabeled product of element means.
+
+Large arrays may be written as MATLAB v7.3/HDF5 and split into per-cycle or 20-cycle chunks. Avoid one monolithic multi-GiB file. Preserve full precision for physics fields unless a documented float32 check shows negligible error.
+
+### Sensor-ready clean observation export
+
+For each trajectory, produce a deterministic, noise-free observation package derived from the same labelled peak states:
+
+```text
+synthetic_dic/
+  coordinates + u_x/u_y at the visible 2D nodes or registered grid
+load/
+  imposed displacement, reaction force, cycle and substep
+crack_observation/
+  continuous d field plus masks at d >= 0.25, 0.50, 0.75
+sparse_strain_source/
+  coordinates + clean strain components from which Mac can choose probe layouts
+```
+
+These are **synthetic observations from FEM**, not real experimental data and not oracle hidden-state labels. Do not add arbitrary noise on Windows. Mac will apply documented subsampling, registration and noise models later. Keep `alpha_bar`, `f_alpha`, `g_stiffness`, `psi_raw` and `psi_active` in an `oracle_audit` group, not in the deployable observation table.
+
+### Package layout
+
+Preferred handoff:
+
+```text
+~/Downloads/_pidl_handoff_v2/
+matched_eta0_multi_umax_sensor_exports_20260720/
+  README.md
+  family_index.csv
+  mesh_geometry.mat
+  u010/
+    state_index.csv
+    cycle_fields_*.mat
+    sensor_ready_*.mat or .csv
+    RUN_PROVENANCE.txt
+  u011/...
+  u012/...
+  QA/
+    field_semantics_audit.csv
+    mesh_hash_audit.csv
+    event_and_censor_audit.csv
+    SHA256SUMS.txt
+```
+
+Minimum `family_index.csv` columns:
+
+```text
+trajectory_id,physics_family,Umax,R_ratio,failure_first_hit_cycle,
+failure_confirmed_cycle,censored,censor_cycle,max_cycle,input_file,
+solver_commit,mesh_sha256,state_semantics,source_archive
+```
+
+### Acceptance criteria
+
+1. Three trajectories share the same declared `physics_family`; only `Umax` differs.
+2. The u0.12 control reproduces the certified c89 terminal/confirmed event semantics, or any deviation is explained before the family is accepted.
+3. Every cycle has unambiguous peak and unloaded state labels; all arrays match mesh dimensions and contain finite values.
+4. Damage stays within `[0,1]` up to numerical tolerance and is irreversible at comparable committed states.
+5. `psi_raw_peak`, `g_stiffness_peak`, and exact `psi_active_peak` satisfy a documented pointwise/GP-to-element consistency audit.
+6. Reaction-force/displacement histories are finite and synchronized with state labels.
+7. Every trajectory has either first-hit + confirmed event cycles or an explicit right-censor cycle.
+8. Sensor-ready channels contain only clean observables/proxies; oracle hidden fields are separated and labelled.
+9. Mesh/provenance hashes, README, runner/input copies and SHA256 verification are present.
+10. No claim of geometry/material generalization is made from this one-factor Umax family.
+
+### Execution order
+
+1. Audit existing exact-family archives and the certified u0.12 package.
+2. Implement/export one cycle from u0.11 as a code-path smoke and verify all field semantics.
+3. Continue u0.11, then u0.10; recover from checkpoints if needed.
+4. Re-export u0.12 only as needed for matched fields/observations; avoid a duplicate solve.
+5. Return `[progress]`, `[blocker]`, or `[done]` in `windows_fem_outbox.md` with exact paths and hashes.
+
+**Priority**: high. This is the next required data asset for fair multi-trajectory forecasting and reality-assimilation tests. Do not change constitutive parameters, eta, symmetry constraints, mesh, or event rules inside this request.
+
 ## 2026-07-15 · Request 25: recover existing five-Umax full-field trajectories for reality assimilation
 
 **Goal**: recover or re-export the already completed FEM `Umax=0.08...0.12` trajectory family as cycle-resolved full fields so Mac can test reality-facing sequential assimilation on physical load holdout rather than numerical-cadence holdout.
