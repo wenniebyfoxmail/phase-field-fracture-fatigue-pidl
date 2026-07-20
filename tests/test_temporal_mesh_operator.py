@@ -36,7 +36,13 @@ from evaluate_temporal_multi_origin_checkpoint import (  # noqa: E402
     load_sparse_c87,
     sha256,
 )
-from analyze_temporal_multi_origin import paired_differences  # noqa: E402
+from analyze_temporal_multi_origin import (  # noqa: E402
+    METRICS,
+    active_log,
+    paired_differences,
+    paired_pooled_same_regime,
+    pooled_same_regime_seed_rows,
+)
 
 
 def tiny_statistics() -> StateStatistics:
@@ -344,3 +350,33 @@ def test_paired_seed_intervals_use_same_seed_markov() -> None:
     assert active["descriptive_95_t_ci_low"] < active["mean_paired_difference"]
     assert active["descriptive_95_t_ci_high"] > active["mean_paired_difference"]
     assert active["inference_note"] == "n=3 descriptive interval; not a significance test"
+
+
+def test_analysis_active_log_and_pooled_same_regime_pairing() -> None:
+    state = tiny_history(1)[0]
+    assert active_log(state.numpy()).shape == (state.shape[0],)
+
+    rows = []
+    for family in ("markov", "gru", "lstm", "tcn", "transformer", "diagonal_ssm"):
+        offset = -0.1 if family == "transformer" else 0.0
+        for seed in (1, 2, 3):
+            for task in range(11):
+                common = {metric: 0.5 for metric in METRICS}
+                common["active_log_mae"] = 1.0 + offset
+                rows.append(
+                    {
+                        "family": family,
+                        "seed": seed,
+                        "comparison": "observed_fem_history_same_regime",
+                        "horizon": 1 + task % 3,
+                        **common,
+                    }
+                )
+    pooled = pooled_same_regime_seed_rows(rows)
+    paired = paired_pooled_same_regime(pooled)
+    active = next(
+        row for row in paired
+        if row["family"] == "transformer" and row["metric"] == "active_log_mae"
+    )
+    assert active["mean_paired_difference"] == pytest.approx(-0.1)
+    assert active["wins_out_of_3"] == 3

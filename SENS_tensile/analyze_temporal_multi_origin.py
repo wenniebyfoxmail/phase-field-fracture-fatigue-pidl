@@ -11,6 +11,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 from matplotlib.colors import ListedColormap
 
 from train_temporal_mesh_operator import area_weighted_quantile, derived_active_log10
@@ -181,6 +182,96 @@ def aggregate_summary(seed_rows: list[dict]) -> list[dict]:
             item[f"{metric}_mean"] = float(values.mean())
             item[f"{metric}_std"] = float(values.std(ddof=1))
         output.append(item)
+    return output
+
+
+def pooled_same_regime_seed_rows(rows: list[dict]) -> list[dict]:
+    """Average the 11 observed-origin h1--h3 tasks within each model/seed."""
+    grouped: dict[tuple[str, int], list[dict]] = defaultdict(list)
+    for row in rows:
+        if row["comparison"] == "observed_fem_history_same_regime":
+            grouped[(row["family"], int(row["seed"]))].append(row)
+    output = []
+    for (family, seed), group in sorted(grouped.items()):
+        if len(group) != 11:
+            raise ValueError(f"expected 11 same-regime tasks for {family} seed{seed}")
+        item = {
+            "family": family,
+            "seed": seed,
+            "comparison": "observed_fem_history_same_regime",
+            "horizon": "pooled_h1_h3",
+            "task_count": len(group),
+            "conditioning": "identical_true_FEM_history_to_each_origin",
+        }
+        for metric in METRICS:
+            item[metric] = float(np.mean([float(row[metric]) for row in group]))
+        output.append(item)
+    return output
+
+
+def aggregate_pooled_same_regime(pooled_seed_rows: list[dict]) -> list[dict]:
+    grouped: dict[str, list[dict]] = defaultdict(list)
+    for row in pooled_seed_rows:
+        grouped[row["family"]].append(row)
+    output = []
+    for family, group in sorted(grouped.items()):
+        if len(group) != 3:
+            raise ValueError(f"expected three pooled seeds for {family}")
+        item = {
+            "family": family,
+            "comparison": "observed_fem_history_same_regime",
+            "horizon": "pooled_h1_h3",
+            "seeds": len(group),
+            "task_count_per_seed": int(group[0]["task_count"]),
+            "conditioning": group[0]["conditioning"],
+        }
+        for metric in METRICS:
+            values = np.asarray([float(row[metric]) for row in group])
+            item[f"{metric}_mean"] = float(values.mean())
+            item[f"{metric}_std"] = float(values.std(ddof=1))
+        output.append(item)
+    return output
+
+
+def paired_pooled_same_regime(pooled_seed_rows: list[dict]) -> list[dict]:
+    lookup = {
+        (row["family"], int(row["seed"])): row
+        for row in pooled_seed_rows
+    }
+    output = []
+    for family in FAMILIES:
+        if family == "markov":
+            continue
+        for metric, favorable in PAIRED_METRICS:
+            differences = np.asarray([
+                float(lookup[(family, seed)][metric])
+                - float(lookup[("markov", seed)][metric])
+                for seed in (1, 2, 3)
+            ])
+            mean = float(differences.mean())
+            sd = float(differences.std(ddof=1))
+            half = T_CRIT_DF2 * sd / math.sqrt(3.0)
+            wins = int(np.sum(differences < 0.0)) if favorable == "lower" else int(np.sum(differences > 0.0))
+            output.append(
+                {
+                    "family": family,
+                    "reference": "markov",
+                    "comparison": "observed_fem_history_same_regime",
+                    "horizon": "pooled_h1_h3",
+                    "metric": metric,
+                    "difference_definition": "candidate_minus_same_seed_markov",
+                    "favorable_direction": favorable,
+                    "seed1_difference": float(differences[0]),
+                    "seed2_difference": float(differences[1]),
+                    "seed3_difference": float(differences[2]),
+                    "mean_paired_difference": mean,
+                    "paired_sd": sd,
+                    "descriptive_95_t_ci_low": mean - half,
+                    "descriptive_95_t_ci_high": mean + half,
+                    "wins_out_of_3": wins,
+                    "inference_note": "n=3 descriptive interval; not a significance test",
+                }
+            )
     return output
 
 
@@ -466,6 +557,9 @@ def main() -> None:
     seed_rows = per_seed_task_rows(rows)
     summary = aggregate_summary(seed_rows)
     paired = paired_differences(seed_rows)
+    pooled_seed_rows = pooled_same_regime_seed_rows(rows)
+    pooled_summary = aggregate_pooled_same_regime(pooled_seed_rows)
+    pooled_paired = paired_pooled_same_regime(pooled_seed_rows)
     historical = historical_rows(args.historical_multiscale_root)
     tables = args.out / "tables"
     figures = args.out / "figures"
@@ -473,6 +567,8 @@ def main() -> None:
     write_csv(tables / "per_seed_task_metrics.csv", seed_rows)
     write_csv(tables / "matched_multi_origin_summary.csv", summary)
     write_csv(tables / "paired_seed_differences_vs_markov.csv", paired)
+    write_csv(tables / "pooled_same_regime_summary.csv", pooled_summary)
+    write_csv(tables / "paired_pooled_same_regime_vs_markov.csv", pooled_paired)
     if historical:
         write_csv(tables / "historical_cycle_conditioned_multiscale.csv", historical)
     plot_figure_a(summary, figures / "figure_a_multi_origin_h1_h3.png")
@@ -506,6 +602,8 @@ def main() -> None:
             "tables/per_seed_task_metrics.csv",
             "tables/matched_multi_origin_summary.csv",
             "tables/paired_seed_differences_vs_markov.csv",
+            "tables/pooled_same_regime_summary.csv",
+            "tables/paired_pooled_same_regime_vs_markov.csv",
             "tables/historical_cycle_conditioned_multiscale.csv",
             "figures/figure_a_multi_origin_h1_h3.png",
             "figures/figure_b_representative_c78_c80_fields.png",

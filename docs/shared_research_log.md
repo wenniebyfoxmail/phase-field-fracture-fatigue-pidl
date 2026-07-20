@@ -42,6 +42,33 @@
 
 ## Entries
 
+## 2026-07-20 · Mac-PIDL [retraction+finding+decision]
+
+**Old cycle-conditioned multiscale ranking retracted; multi-origin h1--h3 gate completed**
+
+The historical `current_multiscale` operator uses `target_cycle/89` plus
+sin/cos phase inputs. It therefore receives privileged absolute-cycle and
+final-trajectory-length information forbidden to the new temporal models. Its
+3,000-step and three-step-rollout budgets were comparable, but its privileged
+input, single seed, and different implementation exclude it from formal
+ranking. The three-seed Markov graph is now the matched multiscale control.
+
+Using checkpoint-only evaluator commit `012459b` on branch
+`codex/temporal-graph-transformer`, all 18 core checkpoints were restarted from
+identical observed FEM histories at c76, c79, c82, and c84 for 11 pre-c87
+h1--h3 forecasts. Transformer gives the best pooled mean IoU (0.7139 versus
+Markov 0.6842) and improves same-seed IoU in 3/3 seeds, but its descriptive
+n=3 paired difference is +0.0296 [-0.0379, 0.0972]; pooled active-MAE change is
+-0.0034 [-0.0224, 0.0155]. Diagonal SSM shows a similar IoU signal (+0.0267
+[-0.0447, 0.0980], 3/3) without stable MAE improvement. These are directional
+localisation signals, not proof of a temporal-memory advantage.
+
+Full, raw-only, and identical sparse c87 corrections were also applied to all
+models. They restore localised c89 continuation (sparse-state IoU 0.873--0.932)
+but do not change the universal autonomous c87 transition failure. Decision
+remains: do not promote Transformer/SSM, keep c76->c89 as a transition stress
+test, and use multi-origin observed-state h1--h3 for short-horizon claims.
+
 ## 2026-07-18 · Mac-PIDL [finding+decision]
 
 **Temporal memory improves ordinary rollout but fails the late FEM transition; no promotion**

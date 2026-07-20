@@ -95,6 +95,8 @@ def main() -> None:
         "tables/per_seed_task_metrics.csv",
         "tables/matched_multi_origin_summary.csv",
         "tables/paired_seed_differences_vs_markov.csv",
+        "tables/pooled_same_regime_summary.csv",
+        "tables/paired_pooled_same_regime_vs_markov.csv",
         "tables/historical_cycle_conditioned_multiscale.csv",
         "figures/figure_a_multi_origin_h1_h3.png",
         "figures/figure_b_representative_c78_c80_fields.png",
@@ -126,7 +128,16 @@ def main() -> None:
         raise ValueError("paired table lacks Markov-only reference")
     if any(row["inference_note"] != "n=3 descriptive interval; not a significance test" for row in paired):
         raise ValueError("paired interval caveat is missing")
-    print("PASS: 18 matched checkpoints, 6 task labels, 11 analysis assets, historical baseline excluded")
+    pooled_path = args.analysis_root / "tables/paired_pooled_same_regime_vs_markov.csv"
+    with pooled_path.open(newline="", encoding="utf-8") as handle:
+        pooled = list(csv.DictReader(handle))
+    if not pooled or any(row["reference"] != "markov" for row in pooled):
+        raise ValueError("pooled paired table lacks Markov-only reference")
+    if any(row["horizon"] != "pooled_h1_h3" for row in pooled):
+        raise ValueError("pooled paired table has an incorrect horizon label")
+    if any(row["inference_note"] != "n=3 descriptive interval; not a significance test" for row in pooled):
+        raise ValueError("pooled paired interval caveat is missing")
+    print("PASS: 18 matched checkpoints, 6 task labels, 13 analysis assets, historical baseline excluded")
 
 
 if __name__ == "__main__":
