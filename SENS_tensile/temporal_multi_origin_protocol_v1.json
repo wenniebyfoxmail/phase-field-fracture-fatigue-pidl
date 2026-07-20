@@ -1,0 +1,68 @@
+{
+  "protocol_id": "temporal_multi_origin_reanalysis_v1_20260720",
+  "parent_protocol": "temporal_architecture_study_v1_20260718",
+  "execution": "checkpoint-only; no weight, context, architecture, or checkpoint changes",
+  "claim_scope": "single-trajectory conditional propagation diagnostic",
+  "matched_core": {
+    "families": [
+      "markov",
+      "gru",
+      "lstm",
+      "tcn",
+      "transformer",
+      "diagonal_ssm"
+    ],
+    "seeds": [1, 2, 3],
+    "formal_baseline": "markov graph"
+  },
+  "historical_reference": {
+    "name": "current_multiscale",
+    "ranking_eligible": false,
+    "label": "historical cycle-conditioned single-seed reference",
+    "privileged_inputs": [
+      "target_cycle/89",
+      "sin(2*pi*target_cycle/89)",
+      "cos(2*pi*target_cycle/89)"
+    ],
+    "other_mismatches": [
+      "single seed",
+      "different model implementation"
+    ],
+    "matched_training_facts": {
+      "steps": 3000,
+      "rollout_steps": 3
+    }
+  },
+  "dataset": {
+    "sha256": "bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419",
+    "trajectory_count": 1,
+    "physics_reference": "FEM eta=0"
+  },
+  "same_regime_observed_origins": {
+    "76": [1, 2, 3],
+    "79": [1, 2, 3],
+    "82": [1, 2, 3],
+    "84": [1, 2]
+  },
+  "sparse_c87": {
+    "sha256": "7f54156d865076c9974353d3426490ee32ccf482780386b3049f3d5c5dcae195",
+    "asset_key": "analysis_c87",
+    "config": "sparse_raw_probes__variational__adaptive__p0.1__n0__s42",
+    "selection": "c87-only; c89 was sealed during selection"
+  },
+  "task_labels": [
+    "observed_fem_history_same_regime",
+    "autonomous_transition_stress_c76_c89",
+    "free_history_c87_raw_reset",
+    "free_history_c87_full_reset",
+    "oracle_history_shared_sparse_c87_assimilation",
+    "free_history_shared_sparse_c87_assimilation"
+  ],
+  "paired_statistics": {
+    "reference": "same-seed markov graph",
+    "seeds": 3,
+    "interval": "two-sided descriptive 95% t interval, df=2",
+    "significance_claim": false
+  },
+  "c89_role": "autonomous-transition stress and post-assimilation evaluation only; no selection or tuning"
+}

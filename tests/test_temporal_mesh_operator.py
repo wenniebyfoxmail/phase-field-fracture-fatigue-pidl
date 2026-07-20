@@ -30,6 +30,13 @@ from train_temporal_mesh_operator import (  # noqa: E402
     transition_timing,
     training_origins,
 )
+from evaluate_temporal_multi_origin_checkpoint import (  # noqa: E402
+    SAME_REGIME_ORIGINS,
+    continue_from_history,
+    load_sparse_c87,
+    sha256,
+)
+from analyze_temporal_multi_origin import paired_differences  # noqa: E402
 
 
 def tiny_statistics() -> StateStatistics:
@@ -235,3 +242,105 @@ def test_transition_timing_uses_area_weighted_raw_redistribution() -> None:
     assert event == 78
     assert [row["cycle"] for row in signal] == [77, 78]
     assert signal[1]["raw_log_redistribution_rms"] > signal[0]["raw_log_redistribution_rms"]
+
+
+def test_same_regime_multi_origin_schedule_stops_before_c87() -> None:
+    expected = {76: 3, 79: 3, 82: 3, 84: 2}
+    assert SAME_REGIME_ORIGINS == expected
+    predicted_cycles = {
+        origin: tuple(range(origin + 1, origin + max_horizon + 1))
+        for origin, max_horizon in SAME_REGIME_ORIGINS.items()
+    }
+    assert predicted_cycles[84] == (85, 86)
+    assert all(cycle < 87 for cycles in predicted_cycles.values() for cycle in cycles)
+
+
+def test_continue_from_declared_history_preserves_origin_state() -> None:
+    torch.manual_seed(22)
+    model = TemporalMeshOperator(
+        temporal_family="markov",
+        local_dim=12,
+        token_dim=8,
+        temporal_width=16,
+        local_layers=1,
+        coarse_layers=1,
+        max_context=3,
+        transformer_heads=4,
+    )
+    history = [state for state in tiny_history(3)]
+    origin = history[-1].clone()
+    predictions = continue_from_history(
+        model,
+        history,
+        origin_cycle=87,
+        end_cycle=89,
+        context_length=1,
+        graph=tiny_graph(),
+        statistics=tiny_statistics(),
+    )
+    assert sorted(predictions) == [87, 88, 89]
+    torch.testing.assert_close(predictions[87], origin)
+    assert len(history) == 5
+
+
+def test_sparse_c87_asset_is_hash_and_shape_locked(tmp_path: Path) -> None:
+    analysis = tiny_history(1)[0].numpy()
+    path = tmp_path / "sparse.npz"
+    np.savez_compressed(
+        path,
+        analysis_c87=analysis,
+        observed_mask=np.asarray([True, False, True, False, True, False]),
+        predicted_c89=analysis,
+    )
+    loaded, mask = load_sparse_c87(
+        path,
+        sha256(path),
+        torch.Size(analysis.shape),
+        torch.device("cpu"),
+    )
+    torch.testing.assert_close(loaded, torch.from_numpy(analysis))
+    assert mask.sum() == 3
+    with pytest.raises(ValueError, match="hash mismatch"):
+        load_sparse_c87(
+            path,
+            "0" * 64,
+            torch.Size(analysis.shape),
+            torch.device("cpu"),
+        )
+
+
+def test_paired_seed_intervals_use_same_seed_markov() -> None:
+    rows = []
+    for seed, markov_value, transformer_value in (
+        (1, 1.0, 0.8),
+        (2, 1.1, 0.9),
+        (3, 0.9, 1.0),
+    ):
+        common = {
+            "seed": seed,
+            "comparison": "observed_fem_history_same_regime",
+            "horizon": 2,
+            "absolute_p99_iou": 0.5,
+            "support_log_distance": 0.2,
+            "log10_psi_raw_mae": 0.3,
+            "damage_mae": 0.01,
+            "centroid_offset": 0.02,
+        }
+        rows.append({"family": "markov", "active_log_mae": markov_value, **common})
+        rows.append(
+            {
+                "family": "transformer",
+                "active_log_mae": transformer_value,
+                **common,
+            }
+        )
+    paired = paired_differences(rows)
+    active = next(
+        row for row in paired
+        if row["family"] == "transformer" and row["metric"] == "active_log_mae"
+    )
+    assert active["wins_out_of_3"] == 2
+    assert active["mean_paired_difference"] == pytest.approx(-0.1)
+    assert active["descriptive_95_t_ci_low"] < active["mean_paired_difference"]
+    assert active["descriptive_95_t_ci_high"] > active["mean_paired_difference"]
+    assert active["inference_note"] == "n=3 descriptive interval; not a significance test"
