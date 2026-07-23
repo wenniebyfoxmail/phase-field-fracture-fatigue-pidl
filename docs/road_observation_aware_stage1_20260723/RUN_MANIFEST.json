@@ -1,0 +1,59 @@
+{
+  "checkpoints": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/markov_seed1/best_model.pt",
+      "sha256": "3852f7b6d0c6441b9f3338a64090a1cf60e4c5414af7b13827524c767ceb536a"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/tcn_seed1/best_model.pt",
+      "sha256": "a6b0f5cc2e9b88e51ed69044b2c031a1af2b560befc19f7b57b40c53c1137994"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/diagonal_ssm_seed1/best_model.pt",
+      "sha256": "fe6cbd704ef7df2f0b1b37ed89fe0077e3df66438caacd567a8fe34ff859b8f0"
+    }
+  ],
+  "claims_allowed": [
+    "legacy first-state path can be preserved when new inputs are absent"
+  ],
+  "claims_forbidden": [
+    "road generalisation",
+    "observation benefit",
+    "RUL calibration",
+    "transition prediction"
+  ],
+  "dataset": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/fem_anchored_mesh_operator_20260715/data/fem_cycle_peak_mechanism_graph.npz",
+    "sha256": "bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419"
+  },
+  "formal_families": [
+    "markov",
+    "tcn",
+    "diagonal_ssm"
+  ],
+  "origin_cycle": 76,
+  "outputs": [
+    "legacy_transfer_audit.csv",
+    "road_forecast_architecture_matrix.csv",
+    "recursive_vs_direct_multi_horizon_ablation.csv",
+    "road_forecast_input_contract_v1.json",
+    "agent_interface_status.json",
+    "decision.md",
+    "attempt.md"
+  ],
+  "road_feature_layout": {
+    "environment_dim": 2,
+    "global_observation_dim": 2,
+    "maintenance_dim": 1,
+    "node_observation_dim": 2,
+    "observation_space_version": "road_obs_v1",
+    "traffic_dim": 2
+  },
+  "status": "tooling_only",
+  "tests": {
+    "command": "/Users/wenxiaofang/miniconda3/bin/python3 -m pytest tests/test_road_observation_aware_operator.py tests/test_temporal_mesh_operator.py -q",
+    "passed": 33,
+    "failed": 0
+  },
+  "training_launched": false
+}

@@ -1,0 +1,64 @@
+{
+  "contract_id": "road_forecast_input_contract_v1",
+  "status": "provisional_until_agent1_agent2_freeze",
+  "latent_state": {
+    "name": "z_analysis",
+    "shape": "[inspection_time, mesh_element, 4]",
+    "channels": [
+      "damage",
+      "fatigue_history",
+      "fatigue_degradation",
+      "log10_raw_driver"
+    ],
+    "source": "Agent1 assimilation output or declared FEM oracle upper bound",
+    "not_a_sensor_measurement": true
+  },
+  "node_observation": {
+    "values_shape": "[inspection_time, mesh_element, node_channel]",
+    "mask_shape": "same as values; boolean",
+    "missing_value_policy": "value is zero-filled only after normalization; mask remains an input",
+    "examples_not_frozen": [
+      "registered crack probability",
+      "registered displacement or strain feature"
+    ]
+  },
+  "global_observation": {
+    "values_shape": "[inspection_time, global_channel]",
+    "mask_shape": "same as values; boolean",
+    "examples_not_frozen": [
+      "FWD deflection reduction",
+      "reaction or stiffness proxy"
+    ]
+  },
+  "known_history": {
+    "delta_t": "[inspection_time, 1], non-negative; positive after first inspection",
+    "traffic": "[inspection_time, traffic_channel] plus boolean mask",
+    "environment": "[inspection_time, environment_channel] plus boolean mask",
+    "maintenance": "[inspection_time, maintenance_channel], explicit known intervention state",
+    "maintenance_state_reset": "[inspection_time, 1] boolean; required true when a historical maintenance event changes the analysis-state semantics"
+  },
+  "future_scenario": {
+    "delta_t": "[scenario_horizon, 1], positive",
+    "traffic": "[scenario_horizon, traffic_channel] plus boolean mask",
+    "environment": "[scenario_horizon, environment_channel] plus boolean mask",
+    "maintenance": "[scenario_horizon, maintenance_channel]; a non-zero plan requires a declared maintenance-effect model id"
+  },
+  "outputs": {
+    "state_predictions": "direct monotone h1-h3 latent-state fields",
+    "hazard_probability": "discrete scenario-conditioned event hazard",
+    "cumulative_event_probability": "derived from discrete hazard",
+    "rul_distribution": "location and positive scale parameters"
+  },
+  "provenance_labels": [
+    "synthetic",
+    "real",
+    "oracle"
+  ],
+  "hard_rules": [
+    "FEM eta0 remains the physical numerical reference",
+    "synthetic and real observations must never share an unlabeled row",
+    "psi_raw, fatigue history, degradation, and active driver are not direct road measurements",
+    "cycle index, cycle/89, future failure cycle, and repeated windows as pseudo-road samples are forbidden",
+    "all compared models receive identical observed origins, masks, scenarios, seeds, and budgets"
+  ]
+}

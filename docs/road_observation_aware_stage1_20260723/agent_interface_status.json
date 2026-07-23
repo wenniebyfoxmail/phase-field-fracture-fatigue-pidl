@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-07-23",
+  "agent1_expected": {
+    "responsibility": "real-road observation operator and assimilated latent state",
+    "required_artifacts": [
+      "road_observation_operator_spec.json",
+      "assimilated_state_interface.npz"
+    ],
+    "status": "not_found_at_stage1_freeze"
+  },
+  "agent2_expected": {
+    "responsibility": "road time/load mapping and observation-request trigger",
+    "required_artifacts": [
+      "road_time_mapping_spec.json",
+      "observation_trigger_spec.json"
+    ],
+    "status": "not_found_at_stage1_freeze"
+  },
+  "fallback_policy": {
+    "allowed": "schema, legacy transfer, unit tests, and synthetic tooling smoke",
+    "forbidden": "invented real observations, fabricated traffic metadata, road/RUL claims, or expensive training"
+  }
+}
