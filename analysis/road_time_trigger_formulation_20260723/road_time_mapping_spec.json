@@ -1,0 +1,90 @@
+{
+  "current_benchmark": {
+    "available": [
+      "FEM fatigue cycle",
+      "one fixed loading/material trajectory"
+    ],
+    "mapping_claim": "No road-time conversion is supported by the current c1-c89 trajectory.",
+    "missing": [
+      "WIM/axle spectrum",
+      "ESAL calibration",
+      "calendar timestamps",
+      "temperature",
+      "moisture",
+      "maintenance"
+    ]
+  },
+  "leakage_prohibitions": [
+    "cycle/89",
+    "known failure cycle",
+    "cycle-to-failure",
+    "future load or observation not available at forecast issue time"
+  ],
+  "prohibited_equivalences": [
+    "FEM fatigue cycle != axle passage",
+    "FEM fatigue cycle != ESAL",
+    "FEM fatigue cycle != calendar interval",
+    "inspection epoch != model integration step"
+  ],
+  "recommended_step": {
+    "definition": "Close a block at a calibrated exposure increment, a maximum calendar duration, a material environment shift, an inspection, or maintenance, whichever occurs first.",
+    "fallback_without_wim": "Use inspection-to-inspection epochs and do not claim sub-inspection field timing.",
+    "name": "calibrated_equivalent_load_block_with_caps",
+    "why_not_fixed_calendar_only": "Traffic and environmental exposure can differ materially between equal calendar intervals.",
+    "why_not_fixed_esal_only": "Ageing, moisture, temperature, and maintenance are not represented by traffic count alone."
+  },
+  "required_road_inputs": {
+    "axle_spectrum": {
+      "type": "array",
+      "units": "counts by axle/load bin"
+    },
+    "cumulative_equivalent_load": {
+      "type": "float",
+      "units": "calibrated ESAL or exposure index"
+    },
+    "distance_from_last_inspection": {
+      "type": "float",
+      "units": "calendar time and equivalent load"
+    },
+    "load_distribution": {
+      "type": "array",
+      "units": "declared force or strain proxy bins"
+    },
+    "maintenance_history": {
+      "type": "events",
+      "units": "typed intervention records"
+    },
+    "moisture": {
+      "type": "series",
+      "units": "declared volumetric or proxy scale"
+    },
+    "temperature": {
+      "type": "series",
+      "units": "degC"
+    },
+    "timestamp": {
+      "type": "datetime",
+      "units": "ISO-8601 UTC"
+    }
+  },
+  "schema": "road_time_mapping_v1",
+  "selection_rule": {
+    "choose": "The simplest block definition passing all tests without future failure information.",
+    "development_only": "Compare candidate block definitions on physically diverse training trajectories.",
+    "tests": [
+      "h1-h3 field/support gate at identical observed origins",
+      "stability when each block is subdivided",
+      "no hidden maintenance or observation event inside a block",
+      "calibrated uncertainty under load/environment shift"
+    ]
+  },
+  "status": "interface_only_uncalibrated",
+  "time_axes": {
+    "axle_cycle": "Observed axle or axle-group passage from WIM/traffic records.",
+    "calendar_time": "UTC or local civil time used for ageing, weather, drainage, and inspection scheduling.",
+    "equivalent_load_index": "Cumulative calibrated traffic-damage exposure; ESAL is one possible convention, not a universal state clock.",
+    "fem_fatigue_cycle": "Numerical state update under one declared benchmark loading protocol; simulation-only index.",
+    "inspection_epoch": "Time at which image, FWD, strain, or other observations update the latent state.",
+    "load_block": "Forecast integration interval containing a declared axle spectrum and environment history."
+  }
+}

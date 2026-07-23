@@ -1,0 +1,153 @@
+{
+  "calibration_cycles": [
+    77,
+    78,
+    79
+  ],
+  "claim_class": "framework-validation",
+  "fem_is_audit_reference": true,
+  "limitations": [
+    "single FEM trajectory",
+    "no road-time calibration",
+    "no observed FWD/DIC/image innovation channels",
+    "three-cycle diagnostic envelope is not operational"
+  ],
+  "locked_stress_cycles": [
+    87,
+    89
+  ],
+  "prediction_assets": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/markov_seed1/reused_evaluation_predictions.npz",
+      "sha256": "1e6f69a7982847897cd0017784566f526e444cdf726dec024f6eb6a8478d11ee"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/markov_seed2/reused_evaluation_predictions.npz",
+      "sha256": "781d9b2406637bbca941f44c494d66c772ad7d74642377169f29dea0462560a4"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/markov_seed3/reused_evaluation_predictions.npz",
+      "sha256": "fd1ca5eb1be6642aa7ba00f9d19321d410cfbce67b33be4ef190628b072bfb66"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/gru_seed1/reused_evaluation_predictions.npz",
+      "sha256": "a37503446ef11d3292bffc8a779aa39f515640a8e8267130253aa4f79827b761"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/gru_seed2/reused_evaluation_predictions.npz",
+      "sha256": "d2ef4b789d583b91a88dcb1d9ca54e91056e6c9e42938c0872a34c0f281facc6"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/gru_seed3/reused_evaluation_predictions.npz",
+      "sha256": "abc72b517bba552384a1bd3c4045986478756900f727c25a49792529ae3b50d7"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/diagonal_ssm_seed1/reused_evaluation_predictions.npz",
+      "sha256": "a8f7fee7ef9f8063a8426e5e75f516816b8feb17243146cfafc443a2307b2c8a"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/diagonal_ssm_seed2/reused_evaluation_predictions.npz",
+      "sha256": "001d9c7b246ca1f8a3b17819c7d1ef589e91be9b87301e100324fed1689153c9"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/diagonal_ssm_seed3/reused_evaluation_predictions.npz",
+      "sha256": "17b1e158db5cd61c0128627ab8beeb4913bf05c499cc42963797a8c103aaa51e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/lstm_seed1/reused_evaluation_predictions.npz",
+      "sha256": "09c7564634742fc52b83d2f48ea101c73d31eaa99b76f39d5b75b570bec78249"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/lstm_seed2/reused_evaluation_predictions.npz",
+      "sha256": "83b5ec2d5e850cef572d07942b64c309fd4ab8236172b9be85457b3653f5c247"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/lstm_seed3/reused_evaluation_predictions.npz",
+      "sha256": "4608af424609e68004c912e8539159edb20df6c5e43879d6d266bef9082a8b61"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/tcn_seed1/reused_evaluation_predictions.npz",
+      "sha256": "7ae24024108e69092ae29aa3885410555f0f2e737be53c5ad8c1a233b9cdde43"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/tcn_seed2/reused_evaluation_predictions.npz",
+      "sha256": "c1e98cc77896eaecedd80302db561efe7de3952f5184b0b6308cc8e0e949fb5b"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/tcn_seed3/reused_evaluation_predictions.npz",
+      "sha256": "2d1856b07cb8d50ae2a4728bdf8434a67ec9cbd51c309c10584f47eef622a525"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/transformer_seed1/reused_evaluation_predictions.npz",
+      "sha256": "6cb71eee59506f30581dd749a8a735fe549744f1fa7ee885149c758a306a4201"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/transformer_seed2/reused_evaluation_predictions.npz",
+      "sha256": "285b1cb716cb95865c99a7476a05bc0de719a5038b2b5e84415409f706ecdb93"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/transformer_seed3/reused_evaluation_predictions.npz",
+      "sha256": "a3c1ef10c2d293cbf3f9b8e91e97f219ad2bde6a6456c7ed881fef7573bf135f"
+    }
+  ],
+  "primary_assets": [
+    {
+      "path": "road_time_mapping_spec.json",
+      "sha256": "630bbd878529fba18ed29c733c414433f51815e9243e7565697b6a81e2fd32c4"
+    },
+    {
+      "path": "road_forecast_horizon_spec.json",
+      "sha256": "f593a005a1175c5914ef0fd6b8855879180f726886abb69f48c0bec174d22fc5"
+    },
+    {
+      "path": "observation_trigger_spec.json",
+      "sha256": "94b4723dabfb4533efe748ce914677e01b5fa08a7c3f6bc9792feeadd5b393d3"
+    },
+    {
+      "path": "trigger_trajectory.csv",
+      "sha256": "451d94e2f263ade259ef114dd078d769d2c6594500b6158238ce4b5479c85702"
+    },
+    {
+      "path": "trigger_trajectory.png",
+      "sha256": "0f2b650680d87d7b60240ccd61413c2ab762bed8d47e04d874ce5a114f0eaef1"
+    },
+    {
+      "path": "trigger_trajectory.pdf",
+      "sha256": "90530da4b658cf2639201bf61a9f48067f19ef24d014a0b7b9c460a83f3d88dd"
+    },
+    {
+      "path": "short_to_long_rul_schematic.png",
+      "sha256": "c4d7828d762ff2768cc89191c1fba1b165d56de77683736106d4f5fd8669f9e9"
+    },
+    {
+      "path": "short_to_long_rul_schematic.pdf",
+      "sha256": "8692bac835259e21c240bcd5ee971d9a95f30ed9ccd338b1bd9491407904002c"
+    },
+    {
+      "path": "decision.md",
+      "sha256": "747e12dda522cdb1d30d4612c11c4977527208f65df75322d3bb5fa72202ca77"
+    },
+    {
+      "path": "00_task_brief.md",
+      "sha256": "9aaa08e1f400751526089d9813382ecc2967932c1cd97cfe4a14d3c7069b986f"
+    },
+    {
+      "path": "attempt.md",
+      "sha256": "27b9685a8b003711e28c0108e1d7f320ea7a53694d13af615190f9ea7ab109b9"
+    },
+    {
+      "path": "attempts.jsonl",
+      "sha256": "5925ed5146279f68c0e92a8ed3663f04e39bb612d20e8dd1d5ffe651279e6028"
+    }
+  ],
+  "schema": "road_time_trigger_formulation_v1",
+  "source_dataset": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/fem_anchored_mesh_operator_20260715/data/fem_cycle_peak_mechanism_graph.npz",
+    "sha256": "bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419"
+  },
+  "status": "quarantined_trigger_thresholds",
+  "temporal_package": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718",
+  "training_launched": false,
+  "trajectory_count": 1,
+  "trigger_uses_fem_truth": false
+}

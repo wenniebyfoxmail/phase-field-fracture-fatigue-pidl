@@ -1,0 +1,76 @@
+{
+  "agent1_assimilation_contract": {
+    "observation_spec_file": "road_observation_operator_spec.json",
+    "required_metadata": [
+      "timestamp",
+      "equivalent_load_index",
+      "coordinate_frame",
+      "registration_id",
+      "source_hashes",
+      "uncertainty_semantics"
+    ],
+    "required_state_arrays": [
+      "state_mean",
+      "state_ensemble_or_covariance",
+      "coordinates",
+      "areas",
+      "observation_mask"
+    ],
+    "state_channels": [
+      "damage",
+      "fatigue_history",
+      "fatigue_degradation",
+      "log10_psi_raw"
+    ]
+  },
+  "evaluation_tasks": {
+    "autonomous_transition": "sealed stress test only",
+    "conditional_short_horizon": "multi-origin observed-state h1-h3",
+    "post_transition": "same assimilated transition state for every model",
+    "road_generalization": "leave-one-trajectory/load/road-section-out; not currently available"
+  },
+  "long_horizon": {
+    "definition": "Predict scenario-conditioned threshold-crossing probability, event hazard, and RUL distribution.",
+    "not_allowed_as_primary": "Unlimited deterministic recursion of one short-horizon field operator.",
+    "preferred_methods": [
+      "direct multi-horizon distribution",
+      "hazard/survival head",
+      "particle or scenario ensemble"
+    ],
+    "required_conditioning": [
+      "future traffic scenarios",
+      "temperature/moisture scenarios",
+      "maintenance policy",
+      "transition-model uncertainty"
+    ],
+    "survival_identity": "S(h)=product_{j=1..h}(1-hazard_j); RUL is derived from the scenario-conditioned survival distribution."
+  },
+  "rolling_operation": [
+    "assimilate observations at t_n",
+    "forecast h1-h3 load blocks",
+    "propagate scenario and model uncertainty",
+    "evaluate trigger before each next block",
+    "request inspection or stop recursion when trigger fires",
+    "update latent state and RUL posterior after inspection"
+  ],
+  "schema": "road_forecast_horizon_v1",
+  "short_horizon": {
+    "definition": "Predict latent/field state for the next one to three calibrated load blocks after an assimilated inspection state.",
+    "evidence": "Matched FEM operators support same-regime h1-h3 conditional propagation on one trajectory only.",
+    "outputs": [
+      "state ensemble",
+      "crack geometry distribution",
+      "active-support diagnostic",
+      "observation predictions",
+      "uncertainty"
+    ]
+  },
+  "status": "road_interface_with_single_trajectory_diagnostic_evidence",
+  "stop_recursive_when": [
+    "hard observation innovation or data-quality gate",
+    "two consecutive model-uncertainty warnings",
+    "traffic/environment outside calibrated support",
+    "inspection overdue under the declared risk policy",
+    "maintenance changes the state semantics"
+  ]
+}
