@@ -1,0 +1,16 @@
+gap_id,producer,consumer,current_producer_semantics,current_consumer_expectation,required_resolution,status
+G01,Agent1,Agent3,"state_mean[N,4] plus state_std[N,4]","analysis_states[T,N,4] with no uncertainty tensor","Adapter must add inspection-time axis and preserve uncertainty as std/covariance/ensemble; uncalibrated NaN must remain explicit",open
+G02,Agent1,Agent2,"observed_channel_mask marks latent channels/locations updated by assimilation","observation innovation needs measured-channel masks","Do not alias these masks; create separate sensor/feature observation masks",open
+G03,Agent1,Agent3,"alpha_bar and log10_psi_raw","fatigue_history and log10_raw_driver","Freeze canonical names plus explicit legacy alias table",open
+G04,Agent1,Agent3,"fem_oracle synthetic_sensor real_observation","oracle synthetic real","Freeze canonical evidence enum and lossless mapping",open
+G05,Agent1,Agent2,"cycle required in current synthetic metadata","timestamp equivalent_load_index delta_t required; cycle leakage forbidden for road use","Retain simulation_index only for oracle/synthetic audit and require road-time fields for real provenance",open
+G06,Agent1,Agent2,"coordinate frame and registration not required in current NPZ metadata","coordinate_frame registration_id and source hashes required","Extend bundle metadata and reject missing registration for spatial observations",open
+G07,Agent1,Agent3,"state_std may be NaN when uncalibrated","current model sequence requires finite analysis states and has no uncertainty status","Carry uncertainty separately and never zero-fill uncalibrated uncertainty as certainty",open
+G08,Agent2,Agent3,"road load-block and future scenario specs are separate JSON documents","RoadFutureScenario has tensor fields but no frozen schema/hash link","Bind scenario tensors to a versioned scenario manifest and source hash",open
+G09,Agent2,Agent3,"model-only trigger plus provisional innovation hierarchy","forecaster returns fields/risk but no request-stop-continue orchestration","Implement a typed trigger handoff and closed-loop state machine",open
+G10,Agent2,Agent3,"audit_only FEM metrics coexist in diagnostic tables","operational trigger must not consume FEM truth","Add schema separation and automated leakage rejection",open
+G11,Agent3,Integration,"hazard and RUL heads exist but are untrained","long-horizon road output requested","Return unavailable/unvalidated until event-censor diversity and calibrated training exist",open
+G12,All,Integration,"one eta0 FEM trajectory and repeated windows","road generalization claim","Require independent trajectory/road-section grouped holdout; repeated windows are not independent assets",open
+G13,All,Integration,"h1-h3 uses FEM-cycle benchmark states","road h1-h3 must use calibrated equivalent-load or inspection blocks","Keep benchmark and road time semantics separate until WIM/environment calibration",open
+G14,All,Integration,"separate decision packages and hashes","one reproducible end-to-end decision package","Create central manifest referencing exact commits schemas hashes tests figures and evidence class",open
+
