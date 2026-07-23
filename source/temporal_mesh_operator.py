@@ -86,6 +86,7 @@ def normalized_mesh_features(
     log_area: torch.Tensor,
     statistics: StateStatistics,
     metadata: torch.Tensor | None = None,
+    node_metadata: torch.Tensor | None = None,
 ) -> torch.Tensor:
     """Build leakage-safe state and geometry features for one cycle.
 
@@ -98,6 +99,12 @@ def normalized_mesh_features(
         if metadata.ndim != 1:
             raise ValueError("metadata for one cycle must be one-dimensional")
         features.append(metadata.reshape(1, -1).expand(len(state), -1))
+    if node_metadata is not None:
+        if node_metadata.ndim != 2 or node_metadata.shape[0] != len(state):
+            raise ValueError(
+                "node_metadata for one cycle must have shape [elements, channels]"
+            )
+        features.append(node_metadata)
     return torch.cat(features, dim=-1)
 
 
@@ -155,6 +162,7 @@ class FactorizedMeshEncoder(nn.Module):
         graph: Mapping[str, torch.Tensor],
         statistics: StateStatistics,
         metadata_history: torch.Tensor | None = None,
+        node_metadata_history: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Return latest node features/local state and coarse history tokens.
 
@@ -164,19 +172,35 @@ class FactorizedMeshEncoder(nn.Module):
         """
         if history_states.ndim != 3 or history_states.shape[-1] != 4:
             raise ValueError("history_states must have shape [time, elements, 4]")
-        if metadata_history is not None and len(metadata_history) != len(history_states):
+        if (
+            metadata_history is not None
+            and len(metadata_history) != len(history_states)
+        ):
             raise ValueError("metadata_history length must equal history length")
+        if (
+            node_metadata_history is not None
+            and node_metadata_history.shape[:2] != history_states.shape[:2]
+        ):
+            raise ValueError(
+                "node_metadata_history must have shape [time, elements, channels]"
+            )
 
         tokens: list[torch.Tensor] = []
         latest_features: torch.Tensor | None = None
         for index, state in enumerate(history_states):
             metadata = None if metadata_history is None else metadata_history[index]
+            node_metadata = (
+                None
+                if node_metadata_history is None
+                else node_metadata_history[index]
+            )
             features = normalized_mesh_features(
                 state,
                 graph["coordinates"],
                 graph["log_area"],
                 statistics,
                 metadata,
+                node_metadata,
             )
             tokens.append(self._coarse_token(features, graph))
             latest_features = features
@@ -379,6 +403,7 @@ class TemporalMeshOperator(nn.Module):
         *,
         temporal_family: str,
         metadata_dim: int = 0,
+        node_metadata_dim: int = 0,
         local_dim: int = 48,
         token_dim: int = 48,
         temporal_width: int = 64,
@@ -389,9 +414,10 @@ class TemporalMeshOperator(nn.Module):
         transformer_heads: int = 4,
     ) -> None:
         super().__init__()
-        input_dim = 4 + 2 + 1 + metadata_dim
+        input_dim = 4 + 2 + 1 + metadata_dim + node_metadata_dim
         self.temporal_family = temporal_family
         self.metadata_dim = metadata_dim
+        self.node_metadata_dim = node_metadata_dim
         self.encoder = FactorizedMeshEncoder(
             input_dim,
             local_dim,
@@ -417,6 +443,7 @@ class TemporalMeshOperator(nn.Module):
         graph: Mapping[str, torch.Tensor],
         statistics: StateStatistics,
         metadata_history: torch.Tensor | None = None,
+        node_metadata_history: torch.Tensor | None = None,
         *,
         recurrent_ssm: bool = False,
     ) -> torch.Tensor:
@@ -425,6 +452,7 @@ class TemporalMeshOperator(nn.Module):
             graph,
             statistics,
             metadata_history,
+            node_metadata_history,
         )
         if isinstance(self.temporal, DiagonalSSMTemporal):
             predicted_token = self.temporal(token_history, recurrent=recurrent_ssm)
@@ -515,7 +543,11 @@ def temporal_mechanism_loss(
     pred_jump = active_prediction[dst] - active_prediction[src]
     target_jump = active_target[dst] - active_target[src]
     active_roughness = (pred_jump - target_jump).square().mean()
-    total = base + morphology_weight * morphology + active_roughness_weight * active_roughness
+    total = (
+        base
+        + morphology_weight * morphology
+        + active_roughness_weight * active_roughness
+    )
     return total, {
         **parts,
         "morphology": morphology.detach(),
@@ -560,7 +592,8 @@ def match_temporal_width(
     best = min(matches, key=lambda match: (match.relative_error, match.width))
     if best.relative_error > tolerance:
         raise ValueError(
-            f"{family} cannot match {target_parameters} parameters within {tolerance:.1%}; "
+            f"{family} cannot match {target_parameters} parameters within "
+            f"{tolerance:.1%}; "
             f"closest is width={best.width}, parameters={best.parameters}"
         )
     return best

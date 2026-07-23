@@ -1,0 +1,4 @@
+family,seed,selected_context,origin_cycle,legacy_parameters,road_parameters,first_raw_horizon_max_abs_error,strict_transfer_pass,road_observations,future_scenario,risk_head_status,scientific_status
+markov,1,1,76,328156,339815,0.0,True,absent,absent,random_untrained,tooling_only
+tcn,1,20,76,326356,338015,0.0,True,absent,absent,random_untrained,tooling_only
+diagonal_ssm,1,5,76,330028,341687,0.0,True,absent,absent,random_untrained,tooling_only

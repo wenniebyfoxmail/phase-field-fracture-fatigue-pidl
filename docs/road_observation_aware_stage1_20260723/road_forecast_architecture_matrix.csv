@@ -1,0 +1,6 @@
+family,role,matched_control,pooled_h1_h3_active_log_mae,pooled_h1_h3_fem_p99_iou,pooled_h1_h3_support_ratio,shared_sparse_c87_to_c89_iou,road_stage1_status,road_scientific_status,decision
+markov,formal control,true,0.0905,0.6842,1.034,0.8732,legacy transfer verified,tooling-only,retain as cheapest matched road control
+tcn,formal candidate,false,0.0873,0.6882,1.015,0.9141,legacy transfer verified,tooling-only,retain as direct/recursive temporal baseline
+diagonal_ssm,formal candidate,false,0.0911,0.7109,1.021,0.9320,legacy transfer verified,tooling-only,retain for conditional propagation after assimilated transition state
+transformer,secondary candidate,false,0.0871,0.7139,1.012,0.9112,interface implemented but no formal transfer audit in stage 1,tooling-only,do not prioritise until multiple trajectories and irregular observations exist
+current_multiscale,historical reference,false,,,,,not eligible for road interface ranking,quarantine,"cycle-conditioned single-seed reference; uses privileged cycle/89 input"
