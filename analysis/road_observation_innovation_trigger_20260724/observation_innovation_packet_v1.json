@@ -1,0 +1,168 @@
+{
+  "agent_contract_alignment": {
+    "agent1": "road_observation_operator_v1 and road_assimilated_state_v1",
+    "agent3": "road_forecast_input_contract_v1 node/global observations and known history"
+  },
+  "channels": {
+    "fwd_deflection_basin": {
+      "mask": "Boolean feature mask; missing is false and never interpreted as zero evidence.",
+      "predicted_values": "Observation-operator prediction at the same registration and time.",
+      "provenance": {
+        "evidence_class": [
+          "oracle_derived_proxy",
+          "real_observation",
+          "synthetic_sensor"
+        ],
+        "observation_operator_id": "Versioned H mapping latent state to this observation.",
+        "real_road_compatible": "False for synthetic/oracle-derived diagnostics.",
+        "source_hashes": "SHA-256 map for source assets.",
+        "source_id": "Immutable observation asset or synthetic operator identifier."
+      },
+      "registration": {
+        "coordinate_frame_id": "Road/mesh/image coordinate frame.",
+        "quality_score": "Optional [0,1] quality score.",
+        "registration_id": "Versioned transform or survey registration.",
+        "uncertainty": "Registration uncertainty in declared units."
+      },
+      "required": [
+        "feature_names",
+        "values",
+        "predicted_values",
+        "mask",
+        "uncertainty",
+        "provenance",
+        "registration",
+        "time"
+      ],
+      "time": {
+        "equivalent_load_index": "Calibrated exposure index or null when unavailable.",
+        "inspection_epoch_id": "Stable observation visit identifier.",
+        "integration_step_index": "Ordering index, never a cycle-to-failure feature.",
+        "timestamp": "ISO-8601 for real observations; null only for declared synthetic diagnostics."
+      },
+      "uncertainty": {
+        "observation_std": "Positive finite standard deviation for observed features, null when masked.",
+        "prediction_std": "Positive finite ensemble/operator standard deviation, null when masked.",
+        "semantics": "Must state whether calibrated, diagnostic floor, or unavailable."
+      },
+      "values": "Observed feature vector in declared physical or normalized units."
+    },
+    "registered_crack_geometry_image": {
+      "mask": "Boolean feature mask; missing is false and never interpreted as zero evidence.",
+      "predicted_values": "Observation-operator prediction at the same registration and time.",
+      "provenance": {
+        "evidence_class": [
+          "oracle_derived_proxy",
+          "real_observation",
+          "synthetic_sensor"
+        ],
+        "observation_operator_id": "Versioned H mapping latent state to this observation.",
+        "real_road_compatible": "False for synthetic/oracle-derived diagnostics.",
+        "source_hashes": "SHA-256 map for source assets.",
+        "source_id": "Immutable observation asset or synthetic operator identifier."
+      },
+      "registration": {
+        "coordinate_frame_id": "Road/mesh/image coordinate frame.",
+        "quality_score": "Optional [0,1] quality score.",
+        "registration_id": "Versioned transform or survey registration.",
+        "uncertainty": "Registration uncertainty in declared units."
+      },
+      "required": [
+        "feature_names",
+        "values",
+        "predicted_values",
+        "mask",
+        "uncertainty",
+        "provenance",
+        "registration",
+        "time"
+      ],
+      "time": {
+        "equivalent_load_index": "Calibrated exposure index or null when unavailable.",
+        "inspection_epoch_id": "Stable observation visit identifier.",
+        "integration_step_index": "Ordering index, never a cycle-to-failure feature.",
+        "timestamp": "ISO-8601 for real observations; null only for declared synthetic diagnostics."
+      },
+      "uncertainty": {
+        "observation_std": "Positive finite standard deviation for observed features, null when masked.",
+        "prediction_std": "Positive finite ensemble/operator standard deviation, null when masked.",
+        "semantics": "Must state whether calibrated, diagnostic floor, or unavailable."
+      },
+      "values": "Observed feature vector in declared physical or normalized units."
+    },
+    "strain_localization": {
+      "mask": "Boolean feature mask; missing is false and never interpreted as zero evidence.",
+      "predicted_values": "Observation-operator prediction at the same registration and time.",
+      "provenance": {
+        "evidence_class": [
+          "oracle_derived_proxy",
+          "real_observation",
+          "synthetic_sensor"
+        ],
+        "observation_operator_id": "Versioned H mapping latent state to this observation.",
+        "real_road_compatible": "False for synthetic/oracle-derived diagnostics.",
+        "source_hashes": "SHA-256 map for source assets.",
+        "source_id": "Immutable observation asset or synthetic operator identifier."
+      },
+      "registration": {
+        "coordinate_frame_id": "Road/mesh/image coordinate frame.",
+        "quality_score": "Optional [0,1] quality score.",
+        "registration_id": "Versioned transform or survey registration.",
+        "uncertainty": "Registration uncertainty in declared units."
+      },
+      "required": [
+        "feature_names",
+        "values",
+        "predicted_values",
+        "mask",
+        "uncertainty",
+        "provenance",
+        "registration",
+        "time"
+      ],
+      "time": {
+        "equivalent_load_index": "Calibrated exposure index or null when unavailable.",
+        "inspection_epoch_id": "Stable observation visit identifier.",
+        "integration_step_index": "Ordering index, never a cycle-to-failure feature.",
+        "timestamp": "ISO-8601 for real observations; null only for declared synthetic diagnostics."
+      },
+      "uncertainty": {
+        "observation_std": "Positive finite standard deviation for observed features, null when masked.",
+        "prediction_std": "Positive finite ensemble/operator standard deviation, null when masked.",
+        "semantics": "Must state whether calibrated, diagnostic floor, or unavailable."
+      },
+      "values": "Observed feature vector in declared physical or normalized units."
+    }
+  },
+  "hard_rules": [
+    "FEM audit metrics are never packet decision features",
+    "hidden phase-field fields are not relabelled as road measurements",
+    "missing channels use mask=false and are never zero evidence",
+    "synthetic/oracle-derived packets are not real-road validation"
+  ],
+  "operational_context": {
+    "data_quality": [
+      "warning",
+      "hard",
+      "missing_fraction",
+      "sensor_drift",
+      "registration_failure"
+    ],
+    "inspection_overdue": "Boolean from a declared inspection policy.",
+    "maintenance_event": "Boolean; true changes state semantics and forces reassimilation.",
+    "traffic_environment_ood": [
+      "warning",
+      "hard",
+      "score",
+      "provenance"
+    ]
+  },
+  "required_top_level": [
+    "packet_id",
+    "time",
+    "channels",
+    "operational_context"
+  ],
+  "schema_version": "observation_innovation_packet_v1",
+  "status": "provisional_reality_facing_interface"
+}

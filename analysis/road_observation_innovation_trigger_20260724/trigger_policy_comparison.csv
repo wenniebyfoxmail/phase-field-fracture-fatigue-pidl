@@ -1,0 +1,4 @@
+policy,first_request_step,first_stop_step,audit_only_hidden_support_failure_step,request_lead_steps_positive_is_early,request_relation,stop_lead_steps_positive_is_early,stop_relation,false_alarm_count_descriptive_single_trajectory,false_alarm_association_horizon_steps,false_alarm_rate_estimable
+model_only,83,84,81,-2,lag,-3,lag,0,3,False
+image_only_innovation,81,81,81,0,same_step,0,same_step,0,3,False
+image_plus_oracle_proxy,80,80,81,1,positive_lead,1,positive_lead,0,3,False

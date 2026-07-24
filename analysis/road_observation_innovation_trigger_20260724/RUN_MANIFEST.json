@@ -1,0 +1,178 @@
+{
+  "agent1_package": {
+    "manifest_sha256": "84e2d6c2564c4f18a879d16ff313d5b7db44f5324758e61d7ce2e2de03a0e436",
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/road_observation_latent_state_phase1_20260723"
+  },
+  "agent3_contract": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/temporal-graph-transformer/docs/road_observation_aware_stage1_20260723/road_forecast_input_contract_v1.json",
+    "sha256": "5b64987822a6b3d1e543f18734317af41d42125562d6968f65d3ee27fde9f37b"
+  },
+  "calibration_steps": [
+    77,
+    78,
+    79
+  ],
+  "claim_class": "framework-validation",
+  "hash_index": "HASHES.sha256",
+  "implementation_assets": [
+    {
+      "path": "source/road_observation_innovation.py",
+      "sha256": "c730c31e944e0d09049c533ff21ed2b0e4efad182988f7632481c50617baf31d"
+    },
+    {
+      "path": "SENS_tensile/analyze_observation_innovation_trigger.py",
+      "sha256": "33d260ae34b2740ae002530eeeea7b13e57e7cb5a3a00096ad5ce3848a4d8790"
+    },
+    {
+      "path": "tests/test_road_observation_innovation.py",
+      "sha256": "44c7ba562a84e445f044a6d184e45b475e0d4f647bc06ac5e0a81fd0a072a4dd"
+    }
+  ],
+  "limitations": [
+    "one eta0 FEM trajectory",
+    "no road-time mapping",
+    "image observation is synthetic",
+    "strain localization is oracle-derived rather than measured",
+    "FWD, traffic, environment, maintenance, and real data quality are absent",
+    "three calibration steps cannot establish operational false-alarm rate"
+  ],
+  "offline_observations": {
+    "fwd": "unavailable_masked",
+    "image": "synthetic_sensor",
+    "strain": "oracle_derived_proxy"
+  },
+  "prediction_assets": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/markov_seed1/reused_evaluation_predictions.npz",
+      "sha256": "1e6f69a7982847897cd0017784566f526e444cdf726dec024f6eb6a8478d11ee"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/markov_seed2/reused_evaluation_predictions.npz",
+      "sha256": "781d9b2406637bbca941f44c494d66c772ad7d74642377169f29dea0462560a4"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/markov_seed3/reused_evaluation_predictions.npz",
+      "sha256": "fd1ca5eb1be6642aa7ba00f9d19321d410cfbce67b33be4ef190628b072bfb66"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/gru_seed1/reused_evaluation_predictions.npz",
+      "sha256": "a37503446ef11d3292bffc8a779aa39f515640a8e8267130253aa4f79827b761"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/gru_seed2/reused_evaluation_predictions.npz",
+      "sha256": "d2ef4b789d583b91a88dcb1d9ca54e91056e6c9e42938c0872a34c0f281facc6"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/gru_seed3/reused_evaluation_predictions.npz",
+      "sha256": "abc72b517bba552384a1bd3c4045986478756900f727c25a49792529ae3b50d7"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/diagonal_ssm_seed1/reused_evaluation_predictions.npz",
+      "sha256": "a8f7fee7ef9f8063a8426e5e75f516816b8feb17243146cfafc443a2307b2c8a"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/diagonal_ssm_seed2/reused_evaluation_predictions.npz",
+      "sha256": "001d9c7b246ca1f8a3b17819c7d1ef589e91be9b87301e100324fed1689153c9"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_1/diagonal_ssm_seed3/reused_evaluation_predictions.npz",
+      "sha256": "17b1e158db5cd61c0128627ab8beeb4913bf05c499cc42963797a8c103aaa51e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/lstm_seed1/reused_evaluation_predictions.npz",
+      "sha256": "09c7564634742fc52b83d2f48ea101c73d31eaa99b76f39d5b75b570bec78249"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/lstm_seed2/reused_evaluation_predictions.npz",
+      "sha256": "83b5ec2d5e850cef572d07942b64c309fd4ab8236172b9be85457b3653f5c247"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/lstm_seed3/reused_evaluation_predictions.npz",
+      "sha256": "4608af424609e68004c912e8539159edb20df6c5e43879d6d266bef9082a8b61"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/tcn_seed1/reused_evaluation_predictions.npz",
+      "sha256": "7ae24024108e69092ae29aa3885410555f0f2e737be53c5ad8c1a233b9cdde43"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/tcn_seed2/reused_evaluation_predictions.npz",
+      "sha256": "c1e98cc77896eaecedd80302db561efe7de3952f5184b0b6308cc8e0e949fb5b"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/tcn_seed3/reused_evaluation_predictions.npz",
+      "sha256": "2d1856b07cb8d50ae2a4728bdf8434a67ec9cbd51c309c10584f47eef622a525"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/transformer_seed1/reused_evaluation_predictions.npz",
+      "sha256": "6cb71eee59506f30581dd749a8a735fe549744f1fa7ee885149c758a306a4201"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/transformer_seed2/reused_evaluation_predictions.npz",
+      "sha256": "285b1cb716cb95865c99a7476a05bc0de719a5038b2b5e84415409f706ecdb93"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/temporal_architecture_study_20260718/raw/core_2/transformer_seed3/reused_evaluation_predictions.npz",
+      "sha256": "a3c1ef10c2d293cbf3f9b8e91e97f219ad2bde6a6456c7ed881fef7573bf135f"
+    }
+  ],
+  "primary_assets": [
+    {
+      "path": "observation_innovation_packet_v1.json",
+      "sha256": "ff5059b96f8e35aaef526c10d54ea37710a744f4d3a57278dc6c3647ca72666f"
+    },
+    {
+      "path": "observation_innovation_trigger_spec_v1.json",
+      "sha256": "207723248cc8f6e609e62fbee85cc72a89b04ad0b815aa919026dac9845fb6dc"
+    },
+    {
+      "path": "synthetic_innovation_packets.jsonl",
+      "sha256": "d7b2b4fbcc0cd81578a9d8a8e814debaa662eea496133eeae783a6500ef09045"
+    },
+    {
+      "path": "innovation_trigger_trajectory.csv",
+      "sha256": "3883f40142aa45d4c164f681f921558b18fa2217bb1c85b927824a5263ad281a"
+    },
+    {
+      "path": "trigger_policy_comparison.csv",
+      "sha256": "5593d897a47077a872a01e64b6f29edd685f70df5c102f4386313f2792b56838"
+    },
+    {
+      "path": "innovation_trigger_comparison.png",
+      "sha256": "c4678987314e3d95adce9df4fb2b65bb7d148d3e736dfc265984a000fc3b56d0"
+    },
+    {
+      "path": "innovation_trigger_comparison.pdf",
+      "sha256": "843f46d2bcdaedd319b5290f2e16f787c9282b21eb96c6c414d98c944cee3c32"
+    },
+    {
+      "path": "decision.md",
+      "sha256": "82f7d4c3f91bfaf184d16ec124461d7585b917392938a4bb83404d56a1b7cf90"
+    },
+    {
+      "path": "00_task_brief.md",
+      "sha256": "3605b45b8471feac81ca89f2d802b58ab81305e2fa3e7d058a8ba9a36bca715f"
+    },
+    {
+      "path": "attempt.md",
+      "sha256": "cecc708b914ae84469d68ca5ced1d0b8f5dd8f73451bccb9b435d250edbe1b14"
+    },
+    {
+      "path": "attempts.jsonl",
+      "sha256": "d689c78f36fe0967adf466363b4cda9251ff9281f799ee9030dbe881670d0691"
+    }
+  ],
+  "runtime_uses_fem_audit": false,
+  "schema_version": "observation_innovation_trigger_package_v1",
+  "source_dataset": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/fem_anchored_mesh_operator_20260715/data/fem_cycle_peak_mechanism_graph.npz",
+    "sha256": "bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419"
+  },
+  "stage1_csv": {
+    "path": "analysis/road_time_trigger_formulation_20260723/trigger_trajectory.csv",
+    "sha256": "451d94e2f263ade259ef114dd078d769d2c6594500b6158238ce4b5479c85702"
+  },
+  "status": "quarantined_single_synthetic_trajectory",
+  "threshold_sweep": false,
+  "training_launched": false,
+  "trajectory_count": 1
+}

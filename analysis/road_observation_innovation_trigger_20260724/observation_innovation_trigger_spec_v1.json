@@ -1,0 +1,86 @@
+{
+  "audit_join": "audit_only_* columns are joined after runtime decisions and can be permuted without changing them",
+  "calibration_rule": "median/MAD envelope frozen on c77-c79 only; z=3 warning and z=5 hard thresholds inherited from stage 1 without sweep",
+  "calibration_steps": [
+    77,
+    78,
+    79
+  ],
+  "feature_envelopes": {
+    "registered_crack_geometry_image.centroid_x": {
+      "centre": 1.3531245548838298,
+      "hard_z": 5.0,
+      "scale": 0.6533909261774125,
+      "warn_z": 3.0
+    },
+    "registered_crack_geometry_image.centroid_y": {
+      "centre": 0.00390007493914299,
+      "hard_z": 5.0,
+      "scale": 0.0015176490324430901,
+      "warn_z": 3.0
+    },
+    "registered_crack_geometry_image.tip_x_p99": {
+      "centre": 2.7405943189929216,
+      "hard_z": 5.0,
+      "scale": 1.0920812941751776,
+      "warn_z": 3.0
+    },
+    "registered_crack_geometry_image.transverse_width": {
+      "centre": 0.0013509158609916578,
+      "hard_z": 5.0,
+      "scale": 0.001045013904969359,
+      "warn_z": 3.0
+    },
+    "registered_crack_geometry_image.visible_area_fraction": {
+      "centre": 1.6983768671736583,
+      "hard_z": 5.0,
+      "scale": 0.7828111687345828,
+      "warn_z": 3.0
+    },
+    "strain_localization.top1_centroid_x": {
+      "centre": 0.37860208956889124,
+      "hard_z": 5.0,
+      "scale": 0.018930104478444565,
+      "warn_z": 3.0
+    },
+    "strain_localization.top1_centroid_y": {
+      "centre": 0.36614187772940576,
+      "hard_z": 5.0,
+      "scale": 0.4481676187495859,
+      "warn_z": 3.0
+    },
+    "strain_localization.top1_width_x": {
+      "centre": 0.17704100981433235,
+      "hard_z": 5.0,
+      "scale": 0.05421795433837059,
+      "warn_z": 3.0
+    },
+    "strain_localization.top1_width_y": {
+      "centre": 0.5348385218483321,
+      "hard_z": 5.0,
+      "scale": 0.2407421542951468,
+      "warn_z": 3.0
+    }
+  },
+  "offline_channel_status": {
+    "fwd_deflection_basin": "unavailable and masked; no displacement/FWD response exists in the archive",
+    "registered_crack_geometry_image": "synthetic_sensor derived from FEM damage through a declared visibility/geometry operator",
+    "strain_localization": "oracle_derived_proxy from raw-energy localization; not a strain measurement"
+  },
+  "request_rule": "one hard declared innovation/OOD/data-quality/overdue/maintenance gate, or model warning corroborated by observation/OOD/data-quality warning",
+  "runtime_allowlist": [
+    "data quality, overdue inspection, and maintenance",
+    "declared observation innovation",
+    "model uncertainty and self-state/support drift",
+    "traffic/environment OOD"
+  ],
+  "runtime_prohibited": [
+    "FEM IoU or FEM field error",
+    "known transition/failure cycle",
+    "cycle-to-failure or target-cycle phase",
+    "future traffic, environment, observation, or maintenance"
+  ],
+  "schema_version": "observation_innovation_trigger_v1",
+  "status": "quarantined_single_synthetic_trajectory",
+  "stop_rule": "hard gate, model stop, or two consecutive soft warnings"
+}
