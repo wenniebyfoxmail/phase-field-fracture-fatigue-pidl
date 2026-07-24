@@ -1,0 +1,213 @@
+{
+  "arrays": {
+    "delta_t": {
+      "dtype": "float64",
+      "shape": [
+        "T"
+      ]
+    },
+    "delta_t_mask": {
+      "dtype": "bool",
+      "shape": [
+        "T"
+      ]
+    },
+    "environment_mask": {
+      "dtype": "bool",
+      "shape": [
+        "T",
+        "Q"
+      ]
+    },
+    "environment_values": {
+      "dtype": "float32",
+      "shape": [
+        "T",
+        "Q"
+      ]
+    },
+    "equivalent_load_index": {
+      "dtype": "float64",
+      "shape": [
+        "T"
+      ]
+    },
+    "equivalent_load_index_mask": {
+      "dtype": "bool",
+      "shape": [
+        "T"
+      ]
+    },
+    "global_observation_mask": {
+      "dtype": "bool",
+      "shape": [
+        "T",
+        "G"
+      ]
+    },
+    "global_observation_values": {
+      "dtype": "float32",
+      "shape": [
+        "T",
+        "G"
+      ]
+    },
+    "maintenance_event_id": {
+      "dtype": "unicode",
+      "shape": [
+        "T"
+      ]
+    },
+    "maintenance_reset": {
+      "dtype": "bool",
+      "shape": [
+        "T"
+      ]
+    },
+    "maintenance_reset_declared": {
+      "dtype": "bool",
+      "shape": [
+        "T"
+      ]
+    },
+    "node_observation_mask": {
+      "dtype": "bool",
+      "shape": [
+        "T",
+        "N",
+        "P"
+      ]
+    },
+    "node_observation_values": {
+      "dtype": "float32",
+      "meaning": "measurement-space node channels, distinct from latent-state channels",
+      "shape": [
+        "T",
+        "N",
+        "P"
+      ]
+    },
+    "observed_channel_mask": {
+      "dtype": "bool",
+      "meaning": "latent-state channels directly constrained by the declared assimilation",
+      "shape": [
+        "T",
+        "N",
+        "C"
+      ]
+    },
+    "state_covariance": {
+      "dtype": "float32",
+      "optional": true,
+      "shape": [
+        "T",
+        "N",
+        "C",
+        "C"
+      ]
+    },
+    "state_ensemble": {
+      "dtype": "float32",
+      "optional": true,
+      "shape": [
+        "M",
+        "T",
+        "N",
+        "C"
+      ]
+    },
+    "state_mean": {
+      "dtype": "float32",
+      "shape": [
+        "T",
+        "N",
+        "C"
+      ]
+    },
+    "state_segment_id": {
+      "dtype": "int32",
+      "shape": [
+        "T"
+      ]
+    },
+    "state_std": {
+      "dtype": "float32",
+      "optional": true,
+      "rule": "all NaN is permitted only when uncertainty_status is uncalibrated",
+      "shape": [
+        "T",
+        "N",
+        "C"
+      ]
+    },
+    "timestamp": {
+      "dtype": "unicode",
+      "shape": [
+        "T"
+      ]
+    },
+    "timestamp_mask": {
+      "dtype": "bool",
+      "shape": [
+        "T"
+      ]
+    },
+    "traffic_mask": {
+      "dtype": "bool",
+      "shape": [
+        "T",
+        "L"
+      ]
+    },
+    "traffic_values": {
+      "dtype": "float32",
+      "shape": [
+        "T",
+        "L"
+      ]
+    }
+  },
+  "claim_boundary": "interface validation is not real-road state inversion validation",
+  "evidence_classes": {
+    "oracle": "hidden FEM access, audit/upper-bound only",
+    "real": "measured road/laboratory observation with provenance",
+    "synthetic": "declared sensor rendering from a physical/simulation state"
+  },
+  "fairness_rule": "all predictors consume a byte-identical bundle and prior",
+  "maintenance_rule": "a reset requires declared metadata, event id, and a new state segment",
+  "mask_semantics": {
+    "global_observation_mask": "availability in asset/global measurement space",
+    "missing_values": "NaN with mask=false; normalization may zero-fill only after retaining mask",
+    "node_observation_mask": "availability in node measurement space",
+    "observed_channel_mask": "assimilation attribution in latent-state space"
+  },
+  "purpose": "predictor-independent observation-to-state handoff",
+  "required_metadata": [
+    "schema_version",
+    "evidence_class",
+    "coordinate_frame",
+    "registration_id",
+    "uncertainty_kind",
+    "uncertainty_status",
+    "source_sha256",
+    "source_schema_versions",
+    "real_road_compatible"
+  ],
+  "schema_version": "road_observation_state_bundle_v1",
+  "state_fields": [
+    "damage",
+    "fatigue_history",
+    "fatigue_degradation",
+    "log10_psi_raw"
+  ],
+  "uncertainty_compatibility": {
+    "exclusive_representation": [
+      "std",
+      "covariance",
+      "ensemble"
+    ],
+    "std_from_covariance": "sqrt(max(diag(covariance), 0))",
+    "std_from_ensemble": "sample standard deviation over M (ddof=1)",
+    "uncalibrated": "state_std must be NaN, never zero-filled certainty"
+  }
+}
