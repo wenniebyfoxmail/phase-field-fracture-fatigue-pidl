@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "source"))
 
 from road_observation_state_bundle import (  # noqa: E402
+    AGENT2_PACKET_VERSION,
     BUNDLE_VERSION,
     ENVIRONMENT_CHANNELS,
     GLOBAL_OBSERVATION_CHANNELS,
@@ -18,10 +19,13 @@ from road_observation_state_bundle import (  # noqa: E402
     STATE_FIELDS,
     TRAFFIC_CHANNELS,
     agent2_innovation_packet,
+    sha256,
     validate_agent2_packet,
     validate_bundle,
+    validate_downstream_contracts,
     validate_observation_channels,
     verify_sha256,
+    verify_source_lock,
 )
 
 
@@ -146,6 +150,43 @@ def test_missing_road_channels_remain_absent_in_agent2_packet(tmp_path: Path) ->
     _write_valid_bundle(path)
     packet = agent2_innovation_packet(path)
     assert validate_agent2_packet(packet) == []
+    assert packet["schema_version"] == AGENT2_PACKET_VERSION
     assert packet["decision_eligible"] is False
-    assert all(item["value"] is None and item["mask"] is False for item in packet["innovations"].values())
+    assert all(
+        all(value is None for value in item["values"])
+        and all(value is None for value in item["predicted_values"])
+        and not any(item["mask"])
+        for item in packet["channels"].values()
+    )
     assert packet["audit_only_oracle"]["values_exported_to_trigger"] is False
+    packet["decision_eligible"] = True
+    assert "fully masked Agent2 packet cannot be decision eligible" in validate_agent2_packet(packet)
+
+
+def test_downstream_contract_drift_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / "contract.json"
+    path.write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match="SHA-256 mismatch"):
+        verify_source_lock({"agent3": path}, {"agent3": "0" * 64})
+
+
+def test_final_downstream_contracts_match_hashes_and_semantics() -> None:
+    project = Path("/Users/wenxiaofang/phase-field-fracture-with-pidl")
+    agent2_rel = Path("analysis/road_observation_innovation_trigger_20260724/observation_innovation_packet_v1.json")
+    agent3_rel = Path("docs/road_observation_aware_stage1_20260723/road_forecast_input_contract_v1.json")
+    agent2 = ROOT / agent2_rel
+    if not agent2.is_file():
+        agent2 = project / ".codex/worktrees/data-efficient-cycle-forecast" / agent2_rel
+    agent3 = ROOT / agent3_rel
+    if not agent3.is_file():
+        agent3 = project / ".codex/worktrees/temporal-graph-transformer" / agent3_rel
+
+    assert sha256(agent2) == "ff5059b96f8e35aaef526c10d54ea37710a744f4d3a57278dc6c3647ca72666f"
+    assert sha256(agent3) == "681d68711f93e2af80621e4fe70b1bdb4b134a24c0c7ed880f2d9d9630a8415d"
+    packet_spec = json.loads(agent2.read_text(encoding="utf-8"))
+    forecast_contract = json.loads(agent3.read_text(encoding="utf-8"))
+    assert validate_downstream_contracts(packet_spec, forecast_contract) == []
+    forecast_contract["node_observation"]["forbidden_mapping"] = ""
+    assert "Agent3 must forbid latent-mask to observation-mask fabrication" in validate_downstream_contracts(
+        packet_spec, forecast_contract
+    )
