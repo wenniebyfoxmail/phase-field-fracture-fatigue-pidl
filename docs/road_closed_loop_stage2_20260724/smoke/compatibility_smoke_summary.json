@@ -1,0 +1,44 @@
+{
+  "agent1": {
+    "origin_id": "SENS_brittle_base_cyclic_u012_recovery_fatigueon_pidlstop_newtontol4em4:c87",
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/road_observation_latent_state_phase1_20260723/assimilated_state_c87_synthetic_reference.npz",
+    "real_road_compatible": false,
+    "sha256": "276bca62f3955c0948bd23891aa10dcca209f3e562605303b61b263d53759ffe",
+    "uncertainty_available": false
+  },
+  "agent2_hashes": {
+    "observation_trigger_spec.json": "94b4723dabfb4533efe748ce914677e01b5fa08a7c3f6bc9792feeadd5b393d3",
+    "road_forecast_horizon_spec.json": "f593a005a1175c5914ef0fd6b8855879180f726886abb69f48c0bec174d22fc5",
+    "road_time_mapping_spec.json": "630bbd878529fba18ed29c733c414433f51815e9243e7565697b6a81e2fd32c4"
+  },
+  "all_legacy_h1_transfer_pass": true,
+  "all_maintenance_stops": true,
+  "all_reassimilation_resumes": true,
+  "all_risk_unavailable": true,
+  "claims_allowed": [
+    "Agent1/2 v1 contracts execute through the Agent3 closed-loop API",
+    "legacy first raw state path is unchanged after zero-column transfer",
+    "missingness, irregular dt, maintenance stop, and re-assimilation paths execute"
+  ],
+  "claims_forbidden": [
+    "forecast performance improvement",
+    "road generalisation",
+    "calibrated uncertainty",
+    "hazard or RUL availability",
+    "transition prediction"
+  ],
+  "dataset": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/fem_anchored_mesh_operator_20260715/data/fem_cycle_peak_mechanism_graph.npz",
+    "sha256": "bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419"
+  },
+  "families": [
+    "markov",
+    "tcn",
+    "diagonal_ssm"
+  ],
+  "same_analysis_hash": true,
+  "same_mask_hash": true,
+  "same_scenario_hash": true,
+  "status": "pass_tooling_only",
+  "training_launched": false
+}

@@ -1,54 +1,92 @@
 {
   "contract_id": "road_forecast_input_contract_v1",
-  "status": "provisional_until_agent1_agent2_freeze",
+  "status": "frozen_compatible_with_agent1_agent2_v1",
+  "compatibility": {
+    "agent1_schema": "road_assimilated_state_v1",
+    "agent1_observation_spec": "road_observation_operator_v1",
+    "agent2_time_schema": "road_time_mapping_v1",
+    "agent2_horizon_schema": "road_forecast_horizon_v1",
+    "agent2_trigger_schema": "road_observation_trigger_v1",
+    "adapter_policy": "producer fields are never renamed in place; all aliases are explicit adapter mappings"
+  },
   "latent_state": {
     "name": "z_analysis",
     "shape": "[inspection_time, mesh_element, 4]",
-    "channels": [
+    "forecast_channels": [
       "damage",
       "fatigue_history",
       "fatigue_degradation",
-      "log10_raw_driver"
+      "log10_psi_raw"
     ],
-    "source": "Agent1 assimilation output or declared FEM oracle upper bound",
-    "not_a_sensor_measurement": true
+    "agent1_source_channels": [
+      "damage",
+      "alpha_bar",
+      "fatigue_degradation",
+      "log10_psi_raw"
+    ],
+    "explicit_adapter": {
+      "damage": "damage",
+      "alpha_bar": "fatigue_history",
+      "fatigue_degradation": "fatigue_degradation",
+      "log10_psi_raw": "log10_psi_raw"
+    },
+    "source": "Agent1 frozen assimilation output or a separately labelled FEM oracle upper bound",
+    "not_a_sensor_measurement": true,
+    "uncertainty_policy": "Agent1 state_std NaN with uncertainty_status=uncalibrated_not_available remains unavailable; it is never zero-filled"
   },
   "node_observation": {
     "values_shape": "[inspection_time, mesh_element, node_channel]",
     "mask_shape": "same as values; boolean",
-    "missing_value_policy": "value is zero-filled only after normalization; mask remains an input",
-    "examples_not_frozen": [
-      "registered crack probability",
-      "registered displacement or strain feature"
-    ]
+    "agent1_mask_adapter": "observed_channel_mask maps to node_observation_mask without changing values",
+    "missing_value_policy": "missing values remain NaN at the contract boundary and are zero-filled only after normalization; the mask remains an input",
+    "real_channel_examples": [
+      "registered crack probability and geometry",
+      "registered displacement or strain features",
+      "FWD-derived registered features"
+    ],
+    "oracle_warning": "Agent1 fem_raw_energy_upper_bound is synthetic FEM oracle evidence, not a real road observation"
   },
   "global_observation": {
     "values_shape": "[inspection_time, global_channel]",
     "mask_shape": "same as values; boolean",
-    "examples_not_frozen": [
-      "FWD deflection reduction",
-      "reaction or stiffness proxy"
+    "examples": [
+      "FWD deflection-basin feature",
+      "measured stiffness proxy"
     ]
   },
   "known_history": {
     "delta_t": "[inspection_time, 1], non-negative; positive after first inspection",
-    "traffic": "[inspection_time, traffic_channel] plus boolean mask",
-    "environment": "[inspection_time, environment_channel] plus boolean mask",
-    "maintenance": "[inspection_time, maintenance_channel], explicit known intervention state",
-    "maintenance_state_reset": "[inspection_time, 1] boolean; required true when a historical maintenance event changes the analysis-state semantics"
+    "traffic": "Agent2 axle spectrum, cumulative equivalent load, distance from last inspection, and load distribution after a frozen vectorizer, plus boolean mask",
+    "environment": "Agent2 temperature and moisture series after a frozen vectorizer, plus boolean mask",
+    "maintenance": "Agent2 typed maintenance history encoded by a frozen intervention vectorizer",
+    "maintenance_state_reset": "[inspection_time, 1] boolean; required true when maintenance changes analysis-state semantics",
+    "time_rule": "FEM fatigue cycle is never relabelled as axle passage, ESAL, calendar time, inspection epoch, or road load block"
   },
   "future_scenario": {
-    "delta_t": "[scenario_horizon, 1], positive",
-    "traffic": "[scenario_horizon, traffic_channel] plus boolean mask",
-    "environment": "[scenario_horizon, environment_channel] plus boolean mask",
-    "maintenance": "[scenario_horizon, maintenance_channel]; a non-zero plan requires a declared maintenance-effect model id"
+    "delta_t": "[scenario_horizon, 1], positive calibrated load-block duration/exposure",
+    "traffic": "scenario axle/load exposure after the same frozen vectorizer, plus boolean mask",
+    "environment": "scenario temperature/moisture after the same frozen vectorizer, plus boolean mask",
+    "maintenance": "typed future intervention; a non-zero plan requires a declared maintenance-effect model id",
+    "scenario_hash_rule": "scenario id, delta_t, masks, maintenance values, and maintenance model id are hashed together"
   },
   "outputs": {
-    "state_predictions": "direct monotone h1-h3 latent-state fields",
-    "hazard_probability": "discrete scenario-conditioned event hazard",
-    "cumulative_event_probability": "derived from discrete hazard",
-    "rul_distribution": "location and positive scale parameters"
+    "state_predictions": "direct h1-h3 latent-state fields only",
+    "state_output_status": "trained or tooling-only status is mandatory",
+    "trigger_decision": "continue, request_observation, or stop_and_request_observation",
+    "hazard_probability": "scenario-conditioned output only when the risk head is explicitly trained",
+    "cumulative_event_probability": "derived from trained discrete hazard only",
+    "rul_distribution": "trained location and scale only",
+    "untrained_risk_policy": "return unavailable_untrained with null tensors; never expose random heads"
   },
+  "closed_loop": [
+    "inspection observation",
+    "Agent1 assimilated state",
+    "direct h1-h3 forecast",
+    "Agent2 uncertainty/innovation/OOD trigger",
+    "continue, request, or stop",
+    "optional Agent1 re-assimilation",
+    "trained scenario-conditioned hazard/RUL or explicit unavailable"
+  ],
   "provenance_labels": [
     "synthetic",
     "real",
@@ -56,9 +94,11 @@
   ],
   "hard_rules": [
     "FEM eta0 remains the physical numerical reference",
-    "synthetic and real observations must never share an unlabeled row",
+    "synthetic and real observations never share an unlabeled row",
     "psi_raw, fatigue history, degradation, and active driver are not direct road measurements",
     "cycle index, cycle/89, future failure cycle, and repeated windows as pseudo-road samples are forbidden",
-    "all compared models receive identical observed origins, masks, scenarios, seeds, and budgets"
+    "all compared models receive identical analysis hash, observed origin, mask, scenario hash, seeds, and budgets",
+    "field prediction beyond h3 is not available from unlimited deterministic recursion",
+    "missing uncertainty and untrained risk heads are reported unavailable"
   ]
 }
