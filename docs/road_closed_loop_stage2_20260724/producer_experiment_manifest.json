@@ -18,19 +18,19 @@
     "registry": "Register every run by analysis-package set hash, scenario-table hash, family, seed, parameter count, split and evidence class before training."
   },
   "interface_gate": {
-    "closed_loop_smoke": "pass_tooling_only",
-    "agent1_v1": "compatible",
+    "closed_loop_smoke": "pass_corrected_tooling_only",
+    "agent1_road_observation_state_bundle_v1": "corrected_compatible",
     "agent2_v1": "compatible",
     "blocking_items": [
-      "Agent1 provides only one c87 assimilated-state package, not a longitudinal training package",
+      "Agent1 provides only one c87 observation-state bundle, not a longitudinal training package",
       "Agent2 traffic/environment vectorizer and calibrated road load blocks are not frozen",
       "No independent road section/load trajectory exists for road generalisation",
       "No event/censor diversity exists for hazard/RUL training"
     ]
   },
   "exact_inputs_when_unblocked": {
-    "analysis_states": "Agent1 road_assimilated_state_v1 packages at every declared observed origin; byte-identical across models",
-    "observations": "registered values, masks, uncertainty semantics and source hashes from one frozen Agent1 operator version",
+    "analysis_states": "Agent1 road_observation_state_bundle_v1 packages at every declared observed origin; byte-identical across models",
+    "observations": "independent node/global values and masks; observed_channel_mask is forbidden as measurement availability",
     "time_and_scenarios": "Agent2 road_time_mapping_v1 load blocks and one frozen traffic/environment/maintenance scenario table",
     "physical_reference": "FEM eta0 fields at the same origins and horizons; audit only, never a trigger input",
     "models": "Markov graph, TCN and diagonal SSM with common encoder/decoder/direct heads",

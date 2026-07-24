@@ -133,12 +133,12 @@ def scenario(horizon: int = 5) -> RoadFutureScenario:
 def test_layout_keeps_values_and_missingness_masks_separate() -> None:
     feature_layout = layout()
     assert feature_layout.history_node_dim == 4
-    assert feature_layout.history_global_dim == 15
+    assert feature_layout.history_global_dim == 18
     assert feature_layout.future_context_dim == 10
     global_features, node_features = prepare_history_features(
         sequence(), feature_layout, RoadFeatureStatistics.identity(feature_layout)
     )
-    assert global_features.shape == (3, 15)
+    assert global_features.shape == (3, 18)
     assert node_features.shape == (3, 6, 4)
     assert node_features[0, 0, 0] == 0
     assert node_features[0, 0, 2] == 0
@@ -189,9 +189,7 @@ def test_maintenance_requires_explicit_state_semantics() -> None:
         unmodelled.validate(layout())
 
 
-@pytest.mark.parametrize(
-    "family", FORMAL_ROAD_FAMILIES + SECONDARY_ROAD_FAMILIES
-)
+@pytest.mark.parametrize("family", FORMAL_ROAD_FAMILIES + SECONDARY_ROAD_FAMILIES)
 def test_observation_aware_families_produce_state_and_risk_outputs(family: str) -> None:
     torch.manual_seed(7)
     feature_layout = layout()
@@ -290,12 +288,8 @@ def test_rul_distribution_supports_events_and_right_censoring() -> None:
     location = torch.tensor(2.0, requires_grad=True)
     scale = torch.tensor(0.3, requires_grad=True)
     remaining_life = torch.tensor(8.0)
-    event_loss = lognormal_rul_nll(
-        location, scale, remaining_life, censored=False
-    )
-    censored_loss = lognormal_rul_nll(
-        location, scale, remaining_life, censored=True
-    )
+    event_loss = lognormal_rul_nll(location, scale, remaining_life, censored=False)
+    censored_loss = lognormal_rul_nll(location, scale, remaining_life, censored=True)
     assert torch.isfinite(event_loss)
     assert torch.isfinite(censored_loss)
     assert expected_lognormal_rul(location, scale) > 0

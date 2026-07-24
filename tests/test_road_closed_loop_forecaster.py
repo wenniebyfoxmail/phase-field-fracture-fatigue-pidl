@@ -15,14 +15,15 @@ sys.path.insert(0, str(ROOT / "source"))
 
 from fem_mechanism_operator import StateStatistics  # noqa: E402
 from road_closed_loop_forecaster import (  # noqa: E402
-    AGENT1_TO_FORECAST_FIELD,
+    Agent1InnovationPacket,
     Agent2TriggerEvaluator,
     RoadClosedLoopForecaster,
     TriggerEvidence,
-    adapt_agent1_to_observation_sequence,
+    adapt_bundle_to_observation_sequence,
     assert_graph_compatibility,
-    load_agent1_assimilated_state,
+    load_agent1_innovation_packet,
     load_agent2_contracts,
+    load_road_observation_state_bundle,
 )
 from road_observation_aware_operator import (  # noqa: E402
     RoadFeatureLayout,
@@ -32,10 +33,18 @@ from road_observation_aware_operator import (  # noqa: E402
 )
 
 
+CANONICAL_ROOT = Path(
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/"
+    "inverse-fracture-state-assimilation/analysis/"
+    "road_observation_state_bundle_v1_20260724"
+)
+CANONICAL_SHA = "b9bb52026737ed11a9463051f31e7c05057595ec0e015d8a6dec6127c2a4c86e"
+
+
 def layout() -> RoadFeatureLayout:
     return RoadFeatureLayout(
-        node_observation_dim=4,
-        global_observation_dim=0,
+        node_observation_dim=2,
+        global_observation_dim=1,
         traffic_dim=2,
         environment_dim=2,
         maintenance_dim=1,
@@ -44,7 +53,14 @@ def layout() -> RoadFeatureLayout:
 
 def graph() -> dict[str, torch.Tensor]:
     coordinates = torch.tensor(
-        [[0.0, 0.0], [0.25, 0.0], [0.5, 0.0], [0.75, 0.0], [1.0, 0.0], [1.25, 0.0]]
+        [
+            [0.0, 0.0],
+            [0.25, 0.0],
+            [0.5, 0.0],
+            [0.75, 0.0],
+            [1.0, 0.0],
+            [1.25, 0.0],
+        ]
     )
     src = torch.tensor([0, 1, 1, 2, 2, 3, 3, 4, 4, 5])
     dst = torch.tensor([1, 0, 2, 1, 3, 2, 4, 3, 5, 4])
@@ -90,42 +106,109 @@ def statistics() -> StateStatistics:
     )
 
 
-def write_agent1_bundle(path: Path) -> str:
+def write_bundle(
+    path: Path,
+    *,
+    decision_eligible: bool = False,
+    uncertainty_kind: str = "std",
+) -> str:
     current_graph = graph()
-    state = history()[-1].numpy().astype(np.float32)
-    observed = np.zeros_like(state, dtype=np.bool_)
-    observed[::2, 3] = True
+    state = history()[-1].numpy().astype(np.float32)[None, ...]
+    latent_attribution = np.zeros_like(state, dtype=np.bool_)
+    latent_attribution[:, ::2, 3] = True
     source = np.zeros_like(state, dtype=np.uint8)
-    source[observed] = 1
+    source[latent_attribution] = 1
+    node_values = np.full((1, 6, 2), np.nan, dtype=np.float32)
+    node_mask = np.zeros_like(node_values, dtype=np.bool_)
+    global_values = np.full((1, 1), np.nan, dtype=np.float32)
+    global_mask = np.zeros_like(global_values, dtype=np.bool_)
     metadata = {
-        "trajectory_id": "synthetic_trajectory",
-        "source_evidence_class": "fem_oracle",
-        "observation_operator_id": (
-            "road_observation_operator_v1:fem_raw_energy_upper_bound"
-        ),
-        "prior_id": "prior_c86",
-        "physics_family": "FEM_eta0",
+        "bundle_id": "synthetic_bundle",
+        "claim": "test only",
+        "coordinate_frame": "test_xy",
+        "evidence_class": "synthetic" if decision_eligible else "oracle",
         "fem_eta": 0.0,
-        "uncertainty_status": "uncalibrated_not_available",
+        "oracle_channels_decision_eligible": decision_eligible,
         "real_road_compatible": False,
-        "input_sha256": {"operator_dataset": "test"},
+        "registration_id": "identity",
+        "schema_version": "road_observation_state_bundle_v1",
+        "source_schema_versions": {"test": "v1"},
+        "source_sha256": {"test": "abc"},
+        "state_fields": [
+            "damage",
+            "fatigue_history",
+            "fatigue_degradation",
+            "log10_psi_raw",
+        ],
+        "training_run": False,
+        "uncertainty_kind": uncertainty_kind,
+        "uncertainty_status": (
+            "calibrated" if decision_eligible else "uncalibrated_not_available"
+        ),
     }
+    uncertainty_payload: dict[str, np.ndarray]
+    if uncertainty_kind == "std":
+        uncertainty_payload = {
+            "state_std": (
+                np.full_like(state, 0.1)
+                if decision_eligible
+                else np.full_like(state, np.nan)
+            )
+        }
+    elif uncertainty_kind == "covariance":
+        covariance = np.zeros((1, 6, 4, 4), dtype=np.float32)
+        diagonal = 0.01 if decision_eligible else np.nan
+        covariance[..., np.arange(4), np.arange(4)] = diagonal
+        uncertainty_payload = {"state_covariance": covariance}
+    elif uncertainty_kind == "ensemble":
+        if decision_eligible:
+            uncertainty_payload = {
+                "state_ensemble": np.stack([state - 0.1, state + 0.1])
+            }
+        else:
+            uncertainty_payload = {
+                "state_ensemble": np.full((2, *state.shape), np.nan, dtype=np.float32)
+            }
+    else:
+        raise ValueError("unknown test uncertainty kind")
     np.savez_compressed(
         path,
-        schema_version=np.asarray("road_assimilated_state_v1"),
+        schema_version=np.asarray("road_observation_state_bundle_v1"),
         metadata_json=np.asarray(json.dumps(metadata, sort_keys=True)),
-        cycle=np.asarray(87, dtype=np.int64),
-        state_fields=np.asarray(
-            ["damage", "alpha_bar", "fatigue_degradation", "log10_psi_raw"]
-        ),
+        cycle=np.asarray([87], dtype=np.int32),
+        state_fields=np.asarray(metadata["state_fields"]),
         coordinates=current_graph["coordinates"].numpy().astype(np.float32),
         areas=current_graph["areas"].numpy().astype(np.float32),
         edge_index=current_graph["edge_index"].numpy().astype(np.int64),
         edge_attr=current_graph["edge_attr"].numpy().astype(np.float32),
         state_mean=state,
-        state_std=np.full_like(state, np.nan),
-        observed_channel_mask=observed,
+        observed_channel_mask=latent_attribution,
         source_code=source,
+        node_observation_channels=np.asarray(["crack_probability", "strain_axial"]),
+        node_observation_evidence=np.asarray(["synthetic", "synthetic"]),
+        node_observation_values=node_values,
+        node_observation_mask=node_mask,
+        global_observation_channels=np.asarray(["fwd_center"]),
+        global_observation_evidence=np.asarray(["synthetic"]),
+        global_observation_values=global_values,
+        global_observation_mask=global_mask,
+        timestamp=np.asarray([""]),
+        timestamp_mask=np.asarray([False]),
+        equivalent_load_index=np.asarray([np.nan], dtype=np.float64),
+        equivalent_load_index_mask=np.asarray([False]),
+        delta_t=np.asarray([np.nan], dtype=np.float64),
+        delta_t_mask=np.asarray([False]),
+        traffic_channels=np.asarray(["esal_increment", "heavy_axle_count"]),
+        traffic_values=np.full((1, 2), np.nan, dtype=np.float32),
+        traffic_mask=np.zeros((1, 2), dtype=np.bool_),
+        environment_channels=np.asarray(["temperature", "moisture"]),
+        environment_values=np.full((1, 2), np.nan, dtype=np.float32),
+        environment_mask=np.zeros((1, 2), dtype=np.bool_),
+        maintenance_reset=np.asarray([False]),
+        maintenance_reset_declared=np.asarray([False]),
+        maintenance_event_id=np.asarray([""]),
+        state_segment_id=np.asarray([0], dtype=np.int32),
+        **uncertainty_payload,
     )
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -142,15 +225,25 @@ def write_agent2_specs(path: Path) -> None:
         "schema": "road_observation_trigger_v1",
         "current_offline_rule": {
             "envelopes": {
-                "signal_a": {"centre": 0.0, "scale": 1.0, "warn_z": 3.0, "hard_z": 5.0},
-                "signal_b": {"centre": 0.0, "scale": 1.0, "warn_z": 3.0, "hard_z": 5.0},
+                "signal_a": {
+                    "centre": 0.0,
+                    "scale": 1.0,
+                    "warn_z": 3.0,
+                    "hard_z": 5.0,
+                },
+                "signal_b": {
+                    "centre": 0.0,
+                    "scale": 1.0,
+                    "warn_z": 3.0,
+                    "hard_z": 5.0,
+                },
             }
         },
     }
     (path / "observation_trigger_spec.json").write_text(json.dumps(trigger))
 
 
-def future_scenario(*, maintenance: bool = False) -> RoadFutureScenario:
+def scenario(*, maintenance: bool = False) -> RoadFutureScenario:
     traffic = torch.full((3, 2), torch.nan)
     environment = torch.full((3, 2), torch.nan)
     maintenance_values = torch.zeros(3, 1)
@@ -168,190 +261,215 @@ def future_scenario(*, maintenance: bool = False) -> RoadFutureScenario:
     )
 
 
-def test_agent1_adapter_is_explicit_and_preserves_missing_uncertainty(
-    tmp_path: Path
-) -> None:
-    path = tmp_path / "analysis.npz"
-    digest = write_agent1_bundle(path)
-    analysis = load_agent1_assimilated_state(path, expected_sha256=digest)
-    assert analysis.cycle == 87
-    assert not analysis.uncertainty_available
-    assert torch.isnan(analysis.state_std).all()
-    assert AGENT1_TO_FORECAST_FIELD["alpha_bar"] == "fatigue_history"
-    assert analysis.mask_sha256
-    assert_graph_compatibility(analysis, graph())
+def make_orchestrator(
+    bundle,
+    contracts,
+    innovation_packet: Agent1InnovationPacket | None = None,
+) -> RoadClosedLoopForecaster:
+    model = RoadObservationAwareForecaster(
+        temporal_family="markov",
+        layout=layout(),
+        local_dim=12,
+        token_dim=8,
+        temporal_width=16,
+        local_layers=1,
+        coarse_layers=1,
+        max_context=5,
+        max_state_horizon=3,
+        max_risk_horizon=8,
+    )
+    result = RoadClosedLoopForecaster(
+        model,
+        graph=graph(),
+        state_statistics=statistics(),
+        road_statistics=RoadFeatureStatistics.identity(layout()),
+        trigger_contract=contracts.trigger,
+        state_heads_trained=False,
+        risk_heads_trained=False,
+        evidence_class="synthetic_tooling_smoke",
+    )
+    result.assimilate(bundle, innovation_packet)
+    return result
 
-    sequence = adapt_agent1_to_observation_sequence(
-        analysis,
+
+def test_latent_attribution_cannot_create_sensor_measurement(tmp_path: Path) -> None:
+    path = tmp_path / "bundle.npz"
+    digest = write_bundle(path)
+    bundle = load_road_observation_state_bundle(path, expected_sha256=digest)
+    assert bundle.observed_channel_mask.any()
+    assert not bundle.node_observation_mask.any()
+    sequence = adapt_bundle_to_observation_sequence(
+        bundle,
         history(),
         layout=layout(),
-        delta_t=torch.tensor([[0.0], [0.7], [1.6]]),
         asset_id="synthetic_asset",
+        history_delta_t=torch.tensor([[0.0], [0.7], [1.6]]),
     )
     sequence.validate(layout())
-    assert torch.equal(sequence.analysis_states[-1], analysis.state_mean)
-    assert torch.equal(
-        sequence.node_observation_mask[-1], analysis.observed_channel_mask
+    assert not sequence.node_observation_mask.any()
+    assert torch.isnan(sequence.node_observations).all()
+    assert not torch.equal(
+        sequence.node_observation_mask[..., :1],
+        bundle.observed_channel_mask[..., :1],
     )
-    assert torch.isnan(sequence.node_observations[0]).all()
-    assert torch.isnan(
-        sequence.node_observations[-1][~analysis.observed_channel_mask]
-    ).all()
 
 
-def test_agent2_contract_loader_and_trigger_handoff(tmp_path: Path) -> None:
-    write_agent2_specs(tmp_path / "agent2")
-    contracts = load_agent2_contracts(tmp_path / "agent2")
-    evaluator = Agent2TriggerEvaluator(contracts.trigger)
-    missing = evaluator.evaluate(TriggerEvidence())
-    assert missing.action == "continue"
-    assert missing.unavailable_signals == ("signal_a", "signal_b")
+def test_new_canonical_bundle_hash_loads() -> None:
+    path = CANONICAL_ROOT / "road_observation_state_bundle_c87_oracle.npz"
+    if not path.exists():
+        pytest.skip("canonical Agent1 package is not mounted")
+    bundle = load_road_observation_state_bundle(path, expected_sha256=CANONICAL_SHA)
+    assert bundle.package_sha256 == CANONICAL_SHA
+    assert bundle.state_mean.shape == (1, 86408, 4)
+    assert bundle.source_field_order == bundle.forecast_field_order
+    assert not bundle.decision_eligible
+    assert not bundle.uncertainty_available
 
-    candidate = evaluator.evaluate(
-        TriggerEvidence(model_internal={"signal_a": 3.1, "signal_b": 3.2})
+
+@pytest.mark.parametrize("uncertainty_kind", ["std", "covariance", "ensemble"])
+def test_calibrated_uncertainty_representations_derive_eligible_std(
+    tmp_path: Path, uncertainty_kind: str
+) -> None:
+    path = tmp_path / f"bundle_{uncertainty_kind}.npz"
+    write_bundle(
+        path,
+        decision_eligible=True,
+        uncertainty_kind=uncertainty_kind,
     )
-    assert candidate.candidate_model_warning
-    assert candidate.action == "continue"
-    corroborated = Agent2TriggerEvaluator(contracts.trigger).evaluate(
+    bundle = load_road_observation_state_bundle(path)
+    assert bundle.uncertainty_available
+    assert bundle.uncertainty_trigger_eligible
+    assert torch.isfinite(bundle.state_std).all()
+
+
+def test_decision_ineligible_packet_cannot_trigger_request_or_stop() -> None:
+    packet_path = CANONICAL_ROOT / "agent2_observation_innovation_packet.json"
+    if not packet_path.exists():
+        pytest.skip("canonical Agent1 packet is not mounted")
+    packet = load_agent1_innovation_packet(
+        packet_path, expected_bundle_sha256=CANONICAL_SHA
+    )
+    contract = {
+        "schema": "road_observation_trigger_v1",
+        "current_offline_rule": {
+            "envelopes": {
+                "signal": {
+                    "centre": 0.0,
+                    "scale": 1.0,
+                    "warn_z": 3.0,
+                    "hard_z": 5.0,
+                }
+            }
+        },
+    }
+    decision = Agent2TriggerEvaluator(contract).evaluate(
         TriggerEvidence(
-            model_internal={"signal_a": 3.1, "signal_b": 3.2},
-            exogenous_ood_warning=True,
+            model_internal={"signal": 100.0},
+            observation_innovation_hard=True,
+            decision_eligible=packet.decision_eligible,
+            eligibility_reason=packet.decision_eligibility_reason,
         )
     )
-    assert corroborated.action == "request_observation"
-    hard = Agent2TriggerEvaluator(contracts.trigger).evaluate(
-        TriggerEvidence(observation_innovation_hard=True)
-    )
-    assert hard.stop_forecast
-    assert hard.request_observation
+    assert decision.action == "continue"
+    assert not decision.request_observation
+    assert not decision.stop_forecast
+    assert decision.status == "rejected_ineligible_operational_evidence"
 
 
-def test_closed_loop_separates_short_fields_and_untrained_risk(tmp_path: Path) -> None:
-    agent1_path = tmp_path / "analysis.npz"
-    write_agent1_bundle(agent1_path)
-    analysis = load_agent1_assimilated_state(agent1_path)
-    agent2_dir = tmp_path / "agent2"
-    write_agent2_specs(agent2_dir)
-    contracts = load_agent2_contracts(agent2_dir)
-    torch.manual_seed(9)
-    model = RoadObservationAwareForecaster(
-        temporal_family="markov",
-        layout=layout(),
-        local_dim=12,
-        token_dim=8,
-        temporal_width=16,
-        local_layers=1,
-        coarse_layers=1,
-        max_context=5,
-        max_state_horizon=3,
-        max_risk_horizon=8,
-    )
-    orchestrator = RoadClosedLoopForecaster(
-        model,
-        graph=graph(),
-        state_statistics=statistics(),
-        road_statistics=RoadFeatureStatistics.identity(layout()),
-        trigger_contract=contracts.trigger,
-        state_heads_trained=False,
-        risk_heads_trained=False,
-        evidence_class="synthetic_tooling_smoke",
-    )
-    orchestrator.assimilate(analysis)
-    sequence = adapt_agent1_to_observation_sequence(
-        analysis,
-        history(),
-        layout=layout(),
-        delta_t=torch.tensor([[0.0], [0.6], [1.4]]),
-        asset_id="synthetic_asset",
-    )
-    result = orchestrator.forecast(sequence, future_scenario())
-    assert result.state_predictions is not None
-    assert result.state_predictions.shape == (3, 6, 4)
-    assert result.state_output_status == "tooling_only_untrained_direct_heads"
-    assert result.long_horizon_risk.status == "unavailable_untrained"
-    assert result.long_horizon_risk.hazard_probability is None
-    assert result.analysis_sha256 == analysis.package_sha256
-    assert result.observation_mask_sha256 == analysis.mask_sha256
-    assert result.scenario_sha256
-    with pytest.raises(ValueError, match="h1-h3"):
-        orchestrator.forecast(sequence, future_scenario(), state_horizon=4)
-
-
-def test_maintenance_or_hard_trigger_withholds_field_and_reassimilation_resets(
+def test_closed_loop_rejects_ineligible_packet_even_for_eligible_bundle(
     tmp_path: Path,
 ) -> None:
-    agent1_path = tmp_path / "analysis.npz"
-    write_agent1_bundle(agent1_path)
-    analysis = load_agent1_assimilated_state(agent1_path)
-    agent2_dir = tmp_path / "agent2"
-    write_agent2_specs(agent2_dir)
-    contracts = load_agent2_contracts(agent2_dir)
-    model = RoadObservationAwareForecaster(
-        temporal_family="markov",
-        layout=layout(),
-        local_dim=12,
-        token_dim=8,
-        temporal_width=16,
-        local_layers=1,
-        coarse_layers=1,
-        max_context=5,
-        max_state_horizon=3,
-        max_risk_horizon=8,
+    bundle_path = tmp_path / "eligible_bundle.npz"
+    write_bundle(bundle_path, decision_eligible=True)
+    bundle = load_road_observation_state_bundle(bundle_path)
+    packet = Agent1InnovationPacket(
+        path=tmp_path / "packet.json",
+        packet_sha256="packet-sha",
+        source_bundle_sha256=bundle.package_sha256,
+        decision_eligible=False,
+        decision_eligibility_reason="audit-only packet",
+        evidence_class="oracle",
+        document={},
     )
-    orchestrator = RoadClosedLoopForecaster(
-        model,
-        graph=graph(),
-        state_statistics=statistics(),
-        road_statistics=RoadFeatureStatistics.identity(layout()),
-        trigger_contract=contracts.trigger,
-        state_heads_trained=False,
-        risk_heads_trained=False,
-        evidence_class="synthetic_tooling_smoke",
-    )
-    orchestrator.assimilate(analysis)
-    sequence = adapt_agent1_to_observation_sequence(
-        analysis,
+    agent2 = tmp_path / "agent2"
+    write_agent2_specs(agent2)
+    contracts = load_agent2_contracts(agent2)
+    sequence = adapt_bundle_to_observation_sequence(
+        bundle,
         history(),
         layout=layout(),
-        delta_t=torch.tensor([[0.0], [1.0], [1.0]]),
         asset_id="synthetic_asset",
+        history_delta_t=torch.tensor([[0.0], [0.6], [1.4]]),
     )
-    stopped = orchestrator.forecast(
+    result = make_orchestrator(bundle, contracts, packet).forecast(
         sequence,
-        future_scenario(maintenance=True),
+        scenario(),
+        trigger_evidence=TriggerEvidence(
+            model_internal={"signal_a": 100.0, "signal_b": 100.0},
+            observation_innovation_hard=True,
+        ),
     )
+    assert result.trigger.action == "continue"
+    assert not result.trigger.request_observation
+    assert not result.trigger.stop_forecast
+    assert result.trigger.status == "rejected_ineligible_operational_evidence"
+
+
+def test_missing_observations_remain_missing_end_to_end(tmp_path: Path) -> None:
+    bundle_path = tmp_path / "bundle.npz"
+    write_bundle(bundle_path)
+    bundle = load_road_observation_state_bundle(bundle_path)
+    agent2 = tmp_path / "agent2"
+    write_agent2_specs(agent2)
+    contracts = load_agent2_contracts(agent2)
+    sequence = adapt_bundle_to_observation_sequence(
+        bundle,
+        history(),
+        layout=layout(),
+        asset_id="synthetic_asset",
+        history_delta_t=torch.tensor([[0.0], [0.6], [1.4]]),
+    )
+    assert torch.isnan(sequence.node_observations).all()
+    assert torch.isnan(sequence.global_observations).all()
+    result = make_orchestrator(bundle, contracts).forecast(sequence, scenario())
+    assert result.state_predictions is not None
+    assert result.state_predictions.shape == (3, 6, 4)
+    assert result.long_horizon_risk.status == "unavailable_untrained"
+    assert result.trigger.status == "rejected_ineligible_operational_evidence"
+
+
+def test_short_field_limit_and_system_maintenance_stop(tmp_path: Path) -> None:
+    bundle_path = tmp_path / "bundle.npz"
+    write_bundle(bundle_path)
+    bundle = load_road_observation_state_bundle(bundle_path)
+    agent2 = tmp_path / "agent2"
+    write_agent2_specs(agent2)
+    contracts = load_agent2_contracts(agent2)
+    sequence = adapt_bundle_to_observation_sequence(
+        bundle,
+        history(),
+        layout=layout(),
+        asset_id="synthetic_asset",
+        history_delta_t=torch.tensor([[0.0], [1.0], [2.0]]),
+    )
+    orchestrator = make_orchestrator(bundle, contracts)
+    stopped = orchestrator.forecast(sequence, scenario(maintenance=True))
     assert stopped.trigger.stop_forecast
+    assert stopped.trigger.request_observation
     assert stopped.state_predictions is None
-    assert stopped.state_output_status == "withheld_trigger_stop"
-    orchestrator.re_assimilate(analysis)
-    continued = orchestrator.forecast(sequence, future_scenario())
-    assert continued.trigger.consecutive_model_warnings == 0
-    assert continued.state_predictions is not None
+    orchestrator.re_assimilate(bundle)
+    resumed = orchestrator.forecast(sequence, scenario())
+    assert resumed.state_predictions is not None
+    with pytest.raises(ValueError, match="h1-h3"):
+        orchestrator.forecast(sequence, scenario(), state_horizon=4)
 
 
-def test_historical_maintenance_requires_reset(tmp_path: Path) -> None:
-    path = tmp_path / "analysis.npz"
-    write_agent1_bundle(path)
-    analysis = load_agent1_assimilated_state(path)
-    maintenance = torch.tensor([[0.0], [1.0], [0.0]])
-    reset = torch.tensor([[False], [True], [False]])
-    accepted = adapt_agent1_to_observation_sequence(
-        analysis,
-        history(),
-        layout=layout(),
-        delta_t=torch.tensor([[0.0], [1.0], [2.0]]),
-        asset_id="synthetic_asset",
-        maintenance=maintenance,
-        maintenance_state_reset=reset,
-    )
-    accepted.validate(layout())
-    rejected = adapt_agent1_to_observation_sequence(
-        analysis,
-        history(),
-        layout=layout(),
-        delta_t=torch.tensor([[0.0], [1.0], [2.0]]),
-        asset_id="synthetic_asset",
-        maintenance=maintenance,
-    )
-    with pytest.raises(ValueError, match="state reset"):
-        rejected.validate(layout())
+def test_graph_mismatch_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / "bundle.npz"
+    write_bundle(path)
+    bundle = load_road_observation_state_bundle(path)
+    bad_graph = graph()
+    bad_graph["coordinates"] = bad_graph["coordinates"].clone()
+    bad_graph["coordinates"][0, 0] = 9.0
+    with pytest.raises(ValueError, match="coordinates"):
+        assert_graph_compatibility(bundle, bad_graph)

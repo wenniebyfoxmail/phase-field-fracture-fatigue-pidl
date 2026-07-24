@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 from typing import Any
 
+import numpy as np
 import torch
 
 
@@ -19,10 +20,11 @@ sys.path.insert(0, str(ROOT / "source"))
 from fem_mechanism_operator import StateStatistics  # noqa: E402
 from road_closed_loop_forecaster import (  # noqa: E402
     RoadClosedLoopForecaster,
-    adapt_agent1_to_observation_sequence,
+    adapt_bundle_to_observation_sequence,
     assert_graph_compatibility,
-    load_agent1_assimilated_state,
+    load_agent1_innovation_packet,
     load_agent2_contracts,
+    load_road_observation_state_bundle,
     sha256_file,
 )
 from road_observation_aware_operator import (  # noqa: E402
@@ -39,6 +41,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--agent1-state", type=Path, required=True)
     parser.add_argument("--agent1-sha256", required=True)
+    parser.add_argument("--agent1-skeleton", type=Path, required=True)
+    parser.add_argument("--agent1-skeleton-sha256", required=True)
+    parser.add_argument("--agent1-trigger-packet", type=Path, required=True)
     parser.add_argument("--agent2-contracts", type=Path, required=True)
     parser.add_argument("--dataset", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path, action="append", required=True)
@@ -90,28 +95,61 @@ def main() -> None:
     args = parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     device = torch.device("cpu")
-    analysis = load_agent1_assimilated_state(
+    analysis = load_road_observation_state_bundle(
         args.agent1_state,
         expected_sha256=args.agent1_sha256,
         device=device,
+    )
+    if sha256_file(args.agent1_skeleton) != args.agent1_skeleton_sha256:
+        raise ValueError("Agent 1 Agent3 skeleton SHA-256 mismatch")
+    with np.load(args.agent1_skeleton, allow_pickle=False) as skeleton:
+        if (
+            str(np.asarray(skeleton["source_bundle_sha256"]).item())
+            != analysis.package_sha256
+        ):
+            raise ValueError("Agent3 skeleton points to a different bundle")
+        if not np.array_equal(
+            np.asarray(skeleton["z_analysis"]), analysis.state_mean.cpu().numpy()
+        ):
+            raise ValueError("Agent3 skeleton state differs from canonical bundle")
+        for name, expected in (
+            ("node_observation_values", analysis.node_observation_values),
+            ("node_observation_mask", analysis.node_observation_mask),
+            ("global_observation_values", analysis.global_observation_values),
+            ("global_observation_mask", analysis.global_observation_mask),
+        ):
+            actual = torch.from_numpy(np.asarray(skeleton[name])).to(expected)
+            matches = (
+                torch.equal(actual, expected)
+                if expected.dtype == torch.bool
+                else torch.allclose(actual, expected, equal_nan=True)
+            )
+            if not matches:
+                raise ValueError(f"Agent3 skeleton {name} differs from bundle")
+    packet = load_agent1_innovation_packet(
+        args.agent1_trigger_packet,
+        expected_bundle_sha256=analysis.package_sha256,
     )
     contracts = load_agent2_contracts(args.agent2_contracts)
     data, states, graph, _ = load_dataset(
         args.dataset, device, use_loading_metadata=False
     )
-    expected_dataset_hash = analysis.metadata["input_sha256"]["operator_dataset"]
+    expected_dataset_hash = analysis.metadata["legacy_metadata"]["input_sha256"][
+        "operator_dataset"
+    ]
     actual_dataset_hash = sha256_file(args.dataset)
     if actual_dataset_hash != expected_dataset_hash:
         raise ValueError("forecast dataset differs from Agent 1 operator dataset")
     assert_graph_compatibility(analysis, graph)
-    if analysis.cycle != 87:
+    origin_cycle = int(analysis.cycles[-1])
+    if origin_cycle != 87:
         raise ValueError("stage-2 compatibility smoke is frozen at c87")
 
     layout = RoadFeatureLayout(
-        node_observation_dim=4,
-        global_observation_dim=0,
-        traffic_dim=2,
-        environment_dim=2,
+        node_observation_dim=len(analysis.node_observation_channels),
+        global_observation_dim=len(analysis.global_observation_channels),
+        traffic_dim=len(analysis.traffic_channels),
+        environment_dim=len(analysis.environment_channels),
         maintenance_dim=1,
     )
     rows: list[dict[str, Any]] = []
@@ -143,22 +181,39 @@ def main() -> None:
         transfer = initialize_from_legacy_temporal_operator(road, legacy)
         road.eval()
         context = int(checkpoint["selected_context"])
-        original_history = history_slice(states, analysis.cycle, context)
-        sequence = adapt_agent1_to_observation_sequence(
+        original_history = history_slice(states, origin_cycle, context)
+        history_delta_t = torch.cat(
+            [
+                torch.zeros(1, 1),
+                torch.tensor(
+                    [[0.6 + 0.1 * (index % 3)] for index in range(context - 1)]
+                ),
+            ]
+        )
+        sequence = adapt_bundle_to_observation_sequence(
             analysis,
             original_history,
             layout=layout,
-            delta_t=torch.cat(
-                [
-                    torch.zeros(1, 1),
-                    torch.tensor(
-                        [[0.6 + 0.1 * (index % 3)] for index in range(context - 1)]
-                    ),
-                ]
-            ),
             asset_id="single_eta0_fem_c87_agent1_upper_bound",
-            provenance="oracle",
+            history_delta_t=history_delta_t,
         )
+        expected_node_count = int(analysis.node_observation_mask.sum())
+        bundle_time = len(analysis.state_mean)
+        node_mask_exact = torch.equal(
+            sequence.node_observation_mask[-bundle_time:],
+            analysis.node_observation_mask,
+        )
+        node_values_exact = torch.allclose(
+            sequence.node_observations[-bundle_time:],
+            analysis.node_observation_values,
+            equal_nan=True,
+        )
+        if (
+            int(sequence.node_observation_mask.sum()) != expected_node_count
+            or not node_mask_exact
+            or not node_values_exact
+        ):
+            raise ValueError("latent attribution leaked into node observation mask")
         statistics = checkpoint_statistics(checkpoint)
         with torch.no_grad():
             legacy_raw = legacy(
@@ -186,7 +241,7 @@ def main() -> None:
             risk_heads_trained=False,
             evidence_class="synthetic_fem_oracle_tooling_smoke",
         )
-        orchestrator.assimilate(analysis)
+        orchestrator.assimilate(analysis, packet)
         result = orchestrator.forecast(
             sequence,
             scenario(original_history, layout),
@@ -197,7 +252,7 @@ def main() -> None:
             maintenance_scenario(original_history, layout),
             recurrent_ssm=family == "diagonal_ssm",
         )
-        orchestrator.re_assimilate(analysis)
+        orchestrator.re_assimilate(analysis, packet)
         resumed = orchestrator.forecast(
             sequence,
             scenario(original_history, layout),
@@ -208,17 +263,22 @@ def main() -> None:
                 "family": family,
                 "seed": int(saved_args.seed),
                 "selected_context": context,
-                "origin_cycle": analysis.cycle,
+                "origin_cycle": origin_cycle,
                 "analysis_sha256": result.analysis_sha256,
                 "observation_mask_sha256": result.observation_mask_sha256,
                 "scenario_sha256": result.scenario_sha256,
                 "legacy_h1_raw_max_abs_error": transfer_error,
                 "legacy_h1_transfer_pass": transfer_error <= 1.0e-6,
-                "irregular_dt_pass": True,
+                "irregular_dt_available_count": int(sequence.delta_t_mask.sum()),
                 "missing_node_values": int(
                     torch.isnan(sequence.node_observations).sum()
                 ),
                 "observed_node_values": int(sequence.node_observation_mask.sum()),
+                "latent_attribution_values": int(analysis.observed_channel_mask.sum()),
+                "latent_to_sensor_leak_count": 0,
+                "missing_global_values": int(
+                    torch.isnan(sequence.global_observations).sum()
+                ),
                 "missing_traffic_values": int(torch.isnan(sequence.traffic).sum()),
                 "risk_status": result.long_horizon_risk.status,
                 "state_status": result.state_output_status,
@@ -226,6 +286,8 @@ def main() -> None:
                 "maintenance_withheld_fields": stopped.state_predictions is None,
                 "reassimilation_action": resumed.trigger.action,
                 "trigger_missing_signal_count": len(result.trigger.unavailable_signals),
+                "trigger_decision_eligible": packet.decision_eligible,
+                "trigger_status": result.trigger.status,
                 "transfer_scope": transfer["strict_equivalence_scope"],
                 "scientific_status": "tooling_only_no_training",
             }
@@ -258,21 +320,40 @@ def main() -> None:
         "all_reassimilation_resumes": all(
             row["reassimilation_action"] == "continue" for row in rows
         ),
+        "no_latent_to_sensor_leak": all(
+            row["latent_to_sensor_leak_count"] == 0 for row in rows
+        ),
+        "all_trigger_packets_rejected": all(
+            not row["trigger_decision_eligible"]
+            and row["trigger_status"] == "rejected_ineligible_operational_evidence"
+            for row in rows
+        ),
         "agent1": {
             "path": str(args.agent1_state),
             "sha256": analysis.package_sha256,
             "origin_id": analysis.origin_id,
             "uncertainty_available": analysis.uncertainty_available,
+            "uncertainty_trigger_eligible": analysis.uncertainty_trigger_eligible,
+            "decision_eligible": analysis.decision_eligible,
             "real_road_compatible": analysis.metadata["real_road_compatible"],
+            "skeleton": {
+                "path": str(args.agent1_skeleton),
+                "sha256": args.agent1_skeleton_sha256,
+            },
+            "innovation_packet": {
+                "path": str(args.agent1_trigger_packet),
+                "sha256": packet.packet_sha256,
+                "decision_eligible": packet.decision_eligible,
+            },
         },
         "agent2_hashes": contracts.hashes,
         "dataset": {"path": str(args.dataset), "sha256": actual_dataset_hash},
         "claims_allowed": [
-            "Agent1/2 v1 contracts execute through the Agent3 closed-loop API",
+            "Agent1 canonical observation-state bundle executes through Agent3",
             "legacy first raw state path is unchanged after zero-column transfer",
             (
-                "missingness, irregular dt, maintenance stop, and "
-                "re-assimilation paths execute"
+                "independent measurement missingness, irregular dt, maintenance "
+                "stop, and re-assimilation paths execute"
             ),
         ],
         "claims_forbidden": [
@@ -293,6 +374,8 @@ def main() -> None:
             "all_risk_unavailable",
             "all_maintenance_stops",
             "all_reassimilation_resumes",
+            "no_latent_to_sensor_leak",
+            "all_trigger_packets_rejected",
         )
     ):
         raise SystemExit("closed-loop compatibility smoke failed")

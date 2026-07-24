@@ -1,24 +1,32 @@
 {
-  "package_id": "road-closed-loop-stage2-20260724",
-  "status": "pass_tooling_only",
+  "package_id": "road-closed-loop-stage2-corrected-20260724",
+  "status": "pass_corrected_tooling_only",
+  "supersedes_commit": "f9b2557",
+  "supersession_reason": "observed_channel_mask was incorrectly treated as measurement availability",
   "claim_class": "schema_legacy_offline_compatibility",
   "training_launched": false,
   "real_road_validation": false,
   "trajectory_count": 1,
   "fem_reference": "eta0",
-  "phase2_dependency_scan": {
-    "agent1_phase2_package_found": false,
-    "agent2_phase2_package_found": false,
-    "fallback": "strict compatibility with published v1 schemas"
-  },
+  "agent1_source_commit": "d8a7ff383e1f774f986f9cd27e9833eaf19c3d55",
   "agent1_input": {
-    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/road_observation_latent_state_phase1_20260723/assimilated_state_c87_synthetic_reference.npz",
-    "sha256": "276bca62f3955c0948bd23891aa10dcca209f3e562605303b61b263d53759ffe",
-    "schema": "road_assimilated_state_v1",
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/inverse-fracture-state-assimilation/analysis/road_observation_state_bundle_v1_20260724/road_observation_state_bundle_c87_oracle.npz",
+    "sha256": "b9bb52026737ed11a9463051f31e7c05057595ec0e015d8a6dec6127c2a4c86e",
+    "schema": "road_observation_state_bundle_v1",
     "origin_cycle": 87,
-    "evidence": "fem_oracle",
+    "evidence": "oracle",
     "uncertainty": "uncalibrated_not_available",
+    "decision_eligible": false,
     "real_road_compatible": false
+  },
+  "agent1_skeleton": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/inverse-fracture-state-assimilation/analysis/road_observation_state_bundle_v1_20260724/agent3_history_sequence_skeleton.npz",
+    "sha256": "e482c52ceff47038493c7563a99133f5e6c4017009d482aea8707a1c58d83e74"
+  },
+  "agent1_innovation_packet": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/inverse-fracture-state-assimilation/analysis/road_observation_state_bundle_v1_20260724/agent2_observation_innovation_packet.json",
+    "sha256": "42772cf4de470c21aea97cfc4013f7a744931a942613ce0be43faa5ec0ee4850",
+    "decision_eligible": false
   },
   "agent2_inputs": [
     {
@@ -61,26 +69,27 @@
   "smoke_result": {
     "families": 3,
     "same_analysis_hash": true,
-    "same_mask_hash": true,
+    "same_independent_observation_mask_hash": true,
     "same_scenario_hash": true,
     "legacy_h1_max_abs_error": 0.0,
-    "irregular_dt": "pass",
-    "missing_masks": "pass",
-    "maintenance_stop": "pass",
-    "trigger_handoff": "pass",
-    "reassimilation": "pass",
+    "latent_to_sensor_leak_count": 0,
+    "missing_node_global_preserved": true,
+    "packet_rejected_as_operational_evidence": true,
+    "maintenance_system_stop": true,
     "risk_status": "unavailable_untrained"
   },
   "tests": {
     "command": "/Users/wenxiaofang/miniconda3/bin/python3 -m pytest -q",
-    "passed": 136,
+    "passed": 141,
     "failed": 0,
     "warnings": 4
   },
   "outputs": [
     "source/road_closed_loop_forecaster.py",
+    "source/road_observation_aware_operator.py",
     "SENS_tensile/audit_road_closed_loop_stage2.py",
     "tests/test_road_closed_loop_forecaster.py",
+    "tests/test_road_observation_aware_operator.py",
     "docs/road_observation_aware_stage1_20260723/road_forecast_input_contract_v1.json",
     "contract_compatibility_matrix.csv",
     "end_to_end_sequence.md",
@@ -92,9 +101,11 @@
     "HASHES.sha256"
   ],
   "claims_allowed": [
-    "Agent1 and Agent2 v1 contracts execute through the Agent3 closed-loop API",
-    "legacy h1 raw transfer remains exact for the three formal families",
-    "missing masks, irregular dt, maintenance stop, trigger handoff and re-assimilation execute"
+    "canonical Agent1 bundle and skeleton execute through the corrected API",
+    "independent observation arrays and missingness are preserved",
+    "latent assimilation attribution cannot create a sensor measurement",
+    "decision-ineligible oracle evidence is rejected operationally",
+    "legacy h1 raw transfer remains exact for the three formal families"
   ],
   "claims_forbidden": [
     "forecast performance improvement",

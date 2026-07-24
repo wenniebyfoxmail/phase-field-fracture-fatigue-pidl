@@ -1,51 +1,46 @@
 # Attempt ledger
 
-## Scope
+## Attempt 1: rejected
 
-Agent 3 stage 2 connects the frozen Agent1 latent-state bundle, Agent2 road
-time/horizon/trigger contracts, and the observation-aware forecaster. The run
-is schema, legacy-transfer and offline execution validation only.
+Commit `f9b2557` consumed legacy `road_assimilated_state_v1` and mapped
+`observed_channel_mask` to `node_observation_mask`. Review correctly rejected
+this: the former records latent assimilation attribution, not measurement
+availability. The original adapter and smoke verdict are superseded.
 
-## Contract audit
+## Attempt 2: corrected contract
 
-- Agent1 package SHA-256 verified: `276bca62f3955c0948bd23891aa10dcca209f3e562605303b61b263d53759ffe`.
-- Agent1 schema: `road_assimilated_state_v1`, c87, FEM eta0, synthetic FEM-oracle evidence.
-- Agent1 uncertainty is all NaN with explicit `uncalibrated_not_available` semantics.
-- Agent2 v1 time, horizon and trigger hashes were verified before use.
-- No Agent1/Agent2 phase-2 v1 package was present at implementation time; the
-  adapter accepts their published v1 schemas without changing source names.
+Source: Agent1 commit `d8a7ff3`, canonical bundle
+`b9bb52026737ed11a9463051f31e7c05057595ec0e015d8a6dec6127c2a4c86e`,
+and Agent3 skeleton
+`e482c52ceff47038493c7563a99133f5e6c4017009d482aea8707a1c58d83e74`.
 
-## Implementation
+Implemented:
 
-- Added strict Agent1/Agent2 loaders and SHA/schema/graph gates.
-- Added explicit `alpha_bar -> fatigue_history` adapter.
-- Added `RoadClosedLoopForecaster` and stateful Agent2 trigger evaluator.
-- Restricted field forecasts to direct h1-h3.
-- Hid random/untrained hazard and RUL tensors behind `unavailable_untrained`.
-- Added request/stop/re-assimilate handling for innovation, OOD, data quality,
-  overdue inspection and maintenance state changes.
+- direct loading of `road_observation_state_bundle_v1` T,N,C arrays;
+- canonical state registry with explicit legacy aliases;
+- independent node/global observation values and masks;
+- latent `observed_channel_mask` retained only for provenance;
+- timestamp/equivalent-load/delta-t masks;
+- traffic/environment channel registries and masks;
+- maintenance declaration, event-id and state-segment validation;
+- exclusive std/covariance/ensemble uncertainty handling;
+- operational rejection of `decision_eligible=false` evidence;
+- independent maintenance/overdue system safety gates;
+- regression tests for every review finding.
 
-## Real-package smoke
+## Corrected smoke
 
-The Markov, TCN and diagonal SSM seed-1 legacy checkpoints were transferred and
-executed at the same Agent1 c87 state. All used one analysis SHA, one observed
-mask SHA and one irregular-dt missing-exogenous scenario SHA.
-
-- Legacy h1 raw maximum absolute error: `0.0` for all three families.
-- Missing raw-energy mask: 8,641 observed values; all unobserved values remain missing.
-- Nine unavailable Agent2 model-internal trigger signals remain unavailable.
-- Maintenance state change: `stop_and_request_observation`; fields withheld.
-- Re-assimilation resets trigger history and permits execution again.
-- Hazard/RUL: `unavailable_untrained` for every model.
-
-## Failed or rejected paths
-
-- Rejected zero-filling Agent1 all-NaN uncertainty.
-- Rejected calling random stage-1 risk heads a forecast.
-- Rejected deterministic field recursion beyond h3.
-- Rejected training launch because longitudinal Agent1 observations, a frozen
-  Agent2 road vectorizer, trajectory holdouts and event/censor diversity are absent.
+- Canonical and skeleton hashes verified.
+- Agent3 skeleton state and independent observation arrays equal the canonical
+  bundle, including NaNs and masks.
+- Markov/TCN/diagonal SSM h1 legacy error: 0.0.
+- Node observation count equals the independent Agent1 node mask: 8,641.
+- No observation is created from latent attribution; leak count: 0.
+- Global, traffic and environment missing values remain missing end-to-end.
+- Oracle innovation packet is rejected as operational trigger evidence.
+- Maintenance still invokes the separate system safety stop.
+- No training launched; risk heads remain unavailable.
 
 ## Status
 
-`pass_tooling_only`; no producer training was launched.
+`pass_corrected_tooling_only`; the `f9b2557` semantic verdict is invalidated.
