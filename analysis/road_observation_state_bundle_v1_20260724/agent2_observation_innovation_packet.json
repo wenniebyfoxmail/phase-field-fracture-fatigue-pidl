@@ -1,0 +1,56 @@
+{
+  "audit_only_oracle": {
+    "channel": "log10_psi_raw_oracle",
+    "observed_node_count": 8641,
+    "values_exported_to_trigger": false
+  },
+  "decision_eligibility_reason": "only an oracle upper-bound state is present; deployable road innovations are missing",
+  "decision_eligible": false,
+  "equivalent_load_index": {
+    "available": false,
+    "value": null
+  },
+  "evidence_class": "oracle",
+  "forcing": {
+    "temperature_moisture": {
+      "available": false,
+      "mask": false,
+      "value": null
+    },
+    "wim_axle_spectrum": {
+      "available": false,
+      "mask": false,
+      "value": null
+    }
+  },
+  "innovations": {
+    "fwd_deflection_basin": {
+      "available": false,
+      "mask": false,
+      "value": null
+    },
+    "registered_crack_image": {
+      "available": false,
+      "mask": false,
+      "value": null
+    },
+    "strain_sensor": {
+      "available": false,
+      "mask": false,
+      "value": null
+    }
+  },
+  "maintenance": {
+    "declared": false,
+    "event_id": null,
+    "reset": false
+  },
+  "missingness_rule": "null plus mask=false; missing never means zero innovation",
+  "packet_version": "road_observation_innovation_packet_v1",
+  "source_bundle_sha256": "b9bb52026737ed11a9463051f31e7c05057595ec0e015d8a6dec6127c2a4c86e",
+  "source_bundle_version": "road_observation_state_bundle_v1",
+  "timestamp": {
+    "available": false,
+    "value": null
+  }
+}
