@@ -1,0 +1,106 @@
+{
+  "package_id": "road-closed-loop-stage2-20260724",
+  "status": "pass_tooling_only",
+  "claim_class": "schema_legacy_offline_compatibility",
+  "training_launched": false,
+  "real_road_validation": false,
+  "trajectory_count": 1,
+  "fem_reference": "eta0",
+  "phase2_dependency_scan": {
+    "agent1_phase2_package_found": false,
+    "agent2_phase2_package_found": false,
+    "fallback": "strict compatibility with published v1 schemas"
+  },
+  "agent1_input": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/road_observation_latent_state_phase1_20260723/assimilated_state_c87_synthetic_reference.npz",
+    "sha256": "276bca62f3955c0948bd23891aa10dcca209f3e562605303b61b263d53759ffe",
+    "schema": "road_assimilated_state_v1",
+    "origin_cycle": 87,
+    "evidence": "fem_oracle",
+    "uncertainty": "uncalibrated_not_available",
+    "real_road_compatible": false
+  },
+  "agent2_inputs": [
+    {
+      "name": "road_time_mapping_spec.json",
+      "schema": "road_time_mapping_v1",
+      "sha256": "630bbd878529fba18ed29c733c414433f51815e9243e7565697b6a81e2fd32c4"
+    },
+    {
+      "name": "road_forecast_horizon_spec.json",
+      "schema": "road_forecast_horizon_v1",
+      "sha256": "f593a005a1175c5914ef0fd6b8855879180f726886abb69f48c0bec174d22fc5"
+    },
+    {
+      "name": "observation_trigger_spec.json",
+      "schema": "road_observation_trigger_v1",
+      "sha256": "94b4723dabfb4533efe748ce914677e01b5fa08a7c3f6bc9792feeadd5b393d3"
+    }
+  ],
+  "operator_dataset": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/fem_anchored_mesh_operator_20260715/data/fem_cycle_peak_mechanism_graph.npz",
+    "sha256": "bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419"
+  },
+  "legacy_checkpoints": [
+    {
+      "family": "markov",
+      "seed": 1,
+      "sha256": "3852f7b6d0c6441b9f3338a64090a1cf60e4c5414af7b13827524c767ceb536a"
+    },
+    {
+      "family": "tcn",
+      "seed": 1,
+      "sha256": "a6b0f5cc2e9b88e51ed69044b2c031a1af2b560befc19f7b57b40c53c1137994"
+    },
+    {
+      "family": "diagonal_ssm",
+      "seed": 1,
+      "sha256": "fe6cbd704ef7df2f0b1b37ed89fe0077e3df66438caacd567a8fe34ff859b8f0"
+    }
+  ],
+  "smoke_result": {
+    "families": 3,
+    "same_analysis_hash": true,
+    "same_mask_hash": true,
+    "same_scenario_hash": true,
+    "legacy_h1_max_abs_error": 0.0,
+    "irregular_dt": "pass",
+    "missing_masks": "pass",
+    "maintenance_stop": "pass",
+    "trigger_handoff": "pass",
+    "reassimilation": "pass",
+    "risk_status": "unavailable_untrained"
+  },
+  "tests": {
+    "command": "/Users/wenxiaofang/miniconda3/bin/python3 -m pytest -q",
+    "passed": 136,
+    "failed": 0,
+    "warnings": 4
+  },
+  "outputs": [
+    "source/road_closed_loop_forecaster.py",
+    "SENS_tensile/audit_road_closed_loop_stage2.py",
+    "tests/test_road_closed_loop_forecaster.py",
+    "docs/road_observation_aware_stage1_20260723/road_forecast_input_contract_v1.json",
+    "contract_compatibility_matrix.csv",
+    "end_to_end_sequence.md",
+    "producer_experiment_manifest.json",
+    "smoke/closed_loop_compatibility_smoke.csv",
+    "smoke/compatibility_smoke_summary.json",
+    "attempt.md",
+    "decision.md",
+    "HASHES.sha256"
+  ],
+  "claims_allowed": [
+    "Agent1 and Agent2 v1 contracts execute through the Agent3 closed-loop API",
+    "legacy h1 raw transfer remains exact for the three formal families",
+    "missing masks, irregular dt, maintenance stop, trigger handoff and re-assimilation execute"
+  ],
+  "claims_forbidden": [
+    "forecast performance improvement",
+    "autonomous transition prediction",
+    "road generalisation",
+    "calibrated uncertainty",
+    "hazard or RUL availability"
+  ]
+}

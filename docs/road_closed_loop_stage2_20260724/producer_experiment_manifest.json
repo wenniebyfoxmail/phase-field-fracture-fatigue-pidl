@@ -1,0 +1,70 @@
+{
+  "experiment_id": "road_observation_aware_direct_h1_h3_producer_v1",
+  "status": "not_ready_do_not_launch",
+  "training_launched": false,
+  "formal_models": [
+    "markov",
+    "tcn",
+    "diagonal_ssm"
+  ],
+  "secondary_models": [
+    "transformer"
+  ],
+  "five_question_gate": {
+    "problem": "Does road-observation and scenario conditioning improve direct h1-h3 state/support forecasts from the same frozen analysis state?",
+    "claim_changed": "A pass supports conditional short-horizon propagation only; it does not support autonomous transition, road generalisation, hazard or RUL claims.",
+    "cheap_diagnostic": "The real c87 no-training compatibility smoke must preserve legacy h1 and execute masks, irregular dt, trigger and maintenance reset.",
+    "minimal_asset": "One hash-locked longitudinal synthetic-observation package plus matched scenario table, model registry row and FEM-centred evaluation output.",
+    "registry": "Register every run by analysis-package set hash, scenario-table hash, family, seed, parameter count, split and evidence class before training."
+  },
+  "interface_gate": {
+    "closed_loop_smoke": "pass_tooling_only",
+    "agent1_v1": "compatible",
+    "agent2_v1": "compatible",
+    "blocking_items": [
+      "Agent1 provides only one c87 assimilated-state package, not a longitudinal training package",
+      "Agent2 traffic/environment vectorizer and calibrated road load blocks are not frozen",
+      "No independent road section/load trajectory exists for road generalisation",
+      "No event/censor diversity exists for hazard/RUL training"
+    ]
+  },
+  "exact_inputs_when_unblocked": {
+    "analysis_states": "Agent1 road_assimilated_state_v1 packages at every declared observed origin; byte-identical across models",
+    "observations": "registered values, masks, uncertainty semantics and source hashes from one frozen Agent1 operator version",
+    "time_and_scenarios": "Agent2 road_time_mapping_v1 load blocks and one frozen traffic/environment/maintenance scenario table",
+    "physical_reference": "FEM eta0 fields at the same origins and horizons; audit only, never a trigger input",
+    "models": "Markov graph, TCN and diagonal SSM with common encoder/decoder/direct heads",
+    "seeds": [
+      1,
+      2,
+      3
+    ],
+    "parameter_match": "within 1 percent trainable parameters or report a predeclared matched-width exception",
+    "budget": "same optimizer, update count, early-stop rule and wall-clock cap",
+    "splits": "same observed origins; no repeated windows counted as independent road samples"
+  },
+  "tasks": {
+    "conditional_short_horizon": "multi-origin observed-state h1-h3",
+    "autonomous_transition": "sealed stress test reported separately",
+    "post_assimilation": "same frozen transition-state package for every model"
+  },
+  "required_outputs": [
+    "direct_h1_h3_fields.npz",
+    "recursive_vs_direct_multi_horizon.csv",
+    "fem_centred_field_support_metrics.csv",
+    "trigger_handoff.csv",
+    "parameter_budget.csv",
+    "state_rul_calibration_figures only when corresponding heads are trained",
+    "RUN_MANIFEST.json",
+    "HASHES.sha256",
+    "attempt.md",
+    "decision.md"
+  ],
+  "promotion_rules": [
+    "identical analysis, origin, mask and scenario hashes across families",
+    "direct h1-h3 improves FEM-centred field/support metrics without worse transition misses",
+    "uncertainty coverage and false-warning/missed-transition rates reported when uncertainty is trained",
+    "hazard/RUL remain unavailable unless trained with independent event and censor diversity",
+    "synthetic and real rows remain explicitly separated"
+  ]
+}

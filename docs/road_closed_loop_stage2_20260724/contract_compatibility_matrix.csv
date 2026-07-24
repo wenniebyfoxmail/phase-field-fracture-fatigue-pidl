@@ -1,0 +1,15 @@
+producer,producer_schema,source_field,adapter,agent3_field,status,scientific_boundary
+Agent1,road_assimilated_state_v1,state_mean.damage,identity,z_analysis.damage,compatible_v1,latent state not direct measurement
+Agent1,road_assimilated_state_v1,state_mean.alpha_bar,explicit alpha_bar_to_fatigue_history,z_analysis.fatigue_history,compatible_v1,producer field name retained in source package
+Agent1,road_assimilated_state_v1,state_mean.fatigue_degradation,identity,z_analysis.fatigue_degradation,compatible_v1,latent constitutive state
+Agent1,road_assimilated_state_v1,state_mean.log10_psi_raw,identity,z_analysis.log10_psi_raw,compatible_v1,FEM oracle in current package
+Agent1,road_assimilated_state_v1,state_std,NaN preserved as unavailable,analysis_uncertainty,unavailable_uncalibrated,never zero-fill certainty
+Agent1,road_assimilated_state_v1,observed_channel_mask,identity plus explicit NaN missing values,node_observation_mask,compatible_v1,only direct-update locations are true
+Agent1,road_assimilated_state_v1,source_code,validated 0/1/2 only,analysis provenance,compatible_v1,not used as forecast feature in stage2
+Agent1,road_assimilated_state_v1,coordinates/areas/edge_index/edge_attr,byte-equivalence gate,forecast graph,compatible_v1,mismatch is a hard error
+Agent2,road_time_mapping_v1,calibrated_equivalent_load_block_with_caps,delta_t and future scenario,RoadFutureScenario,interface_only_uncalibrated,FEM cycle is not road time
+Agent2,road_time_mapping_v1,axle spectrum/load distribution/future environment,frozen vectorizer plus masks,traffic/environment context,blocked_pending_vectorizer,current c87 smoke keeps them missing
+Agent2,road_forecast_horizon_v1,short_horizon,direct h1-h3 only,state_predictions,compatible_v1,no primary field recursion beyond h3
+Agent2,road_forecast_horizon_v1,long_horizon,trained scenario-conditioned head only,hazard/RUL,unavailable_untrained,current random heads hidden
+Agent2,road_observation_trigger_v1,current_offline_rule.envelopes,Agent2TriggerEvaluator,TriggerDecision,candidate_diagnostic,not road validated
+Agent2,road_observation_trigger_v1,maintenance changes semantics,hard stop and request,stop_and_request_observation,compatible_v1,re-assimilation required
