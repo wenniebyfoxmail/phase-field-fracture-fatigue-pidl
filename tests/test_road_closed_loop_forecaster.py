@@ -33,12 +33,8 @@ from road_observation_aware_operator import (  # noqa: E402
 )
 
 
-CANONICAL_ROOT = Path(
-    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/"
-    "inverse-fracture-state-assimilation/analysis/"
-    "road_observation_state_bundle_v1_20260724"
-)
-CANONICAL_SHA = "b9bb52026737ed11a9463051f31e7c05057595ec0e015d8a6dec6127c2a4c86e"
+CANONICAL_ROOT = ROOT / "analysis" / "road_observation_state_bundle_v1_20260724"
+CANONICAL_SHA = "e94027542484431d3a53222d930c81e9ed6c655b86a822ced1452fa8c4c0f253"
 
 
 def layout() -> RoadFeatureLayout:
@@ -374,6 +370,21 @@ def test_decision_ineligible_packet_cannot_trigger_request_or_stop() -> None:
     assert not decision.request_observation
     assert not decision.stop_forecast
     assert decision.status == "rejected_ineligible_operational_evidence"
+
+
+def test_final_packet_rejects_values_hidden_behind_false_mask(tmp_path: Path) -> None:
+    source = CANONICAL_ROOT / "agent2_observation_innovation_packet.json"
+    document = json.loads(source.read_text(encoding="utf-8"))
+    channel = document["channels"]["registered_crack_geometry_image"]
+    assert channel["mask"][0] is False
+    channel["values"][0] = 0.0
+    invalid = tmp_path / "invalid_packet.json"
+    invalid.write_text(json.dumps(document), encoding="utf-8")
+    with pytest.raises(ValueError, match="masked innovation values"):
+        load_agent1_innovation_packet(
+            invalid,
+            expected_bundle_sha256=CANONICAL_SHA,
+        )
 
 
 def test_closed_loop_rejects_ineligible_packet_even_for_eligible_bundle(

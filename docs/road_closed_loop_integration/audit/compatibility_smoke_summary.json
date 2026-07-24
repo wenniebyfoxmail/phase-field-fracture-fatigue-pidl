@@ -1,0 +1,57 @@
+{
+  "agent1": {
+    "decision_eligible": false,
+    "innovation_packet": {
+      "decision_eligible": false,
+      "path": "analysis/road_observation_state_bundle_v1_20260724/agent2_observation_innovation_packet.json",
+      "sha256": "ba2d84332012fba87ef616c9dca3b6d8c77717154f8fa6fc4a9c906d3c7222a0"
+    },
+    "origin_id": "c87_fem_oracle_upper_bound_adapter:c87",
+    "path": "analysis/road_observation_state_bundle_v1_20260724/road_observation_state_bundle_c87_oracle.npz",
+    "real_road_compatible": false,
+    "sha256": "e94027542484431d3a53222d930c81e9ed6c655b86a822ced1452fa8c4c0f253",
+    "skeleton": {
+      "path": "analysis/road_observation_state_bundle_v1_20260724/agent3_history_sequence_skeleton.npz",
+      "sha256": "5e5599d91d6caec35587892ce9f53d9672751c3a4b413af9d7a83f62f66bef88"
+    },
+    "uncertainty_available": false,
+    "uncertainty_trigger_eligible": false
+  },
+  "agent2_hashes": {
+    "observation_trigger_spec.json": "94b4723dabfb4533efe748ce914677e01b5fa08a7c3f6bc9792feeadd5b393d3",
+    "road_forecast_horizon_spec.json": "f593a005a1175c5914ef0fd6b8855879180f726886abb69f48c0bec174d22fc5",
+    "road_time_mapping_spec.json": "630bbd878529fba18ed29c733c414433f51815e9243e7565697b6a81e2fd32c4"
+  },
+  "all_legacy_h1_transfer_pass": true,
+  "all_maintenance_stops": true,
+  "all_reassimilation_resumes": true,
+  "all_risk_unavailable": true,
+  "all_trigger_packets_rejected": true,
+  "claims_allowed": [
+    "Agent1 canonical observation-state bundle executes through Agent3",
+    "legacy first raw state path is unchanged after zero-column transfer",
+    "independent measurement missingness, irregular dt, maintenance stop, and re-assimilation paths execute"
+  ],
+  "claims_forbidden": [
+    "forecast performance improvement",
+    "road generalisation",
+    "calibrated uncertainty",
+    "hazard or RUL availability",
+    "transition prediction"
+  ],
+  "dataset": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/fem_anchored_mesh_operator_20260715/data/fem_cycle_peak_mechanism_graph.npz",
+    "sha256": "bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419"
+  },
+  "families": [
+    "markov",
+    "tcn",
+    "diagonal_ssm"
+  ],
+  "no_latent_to_sensor_leak": true,
+  "same_analysis_hash": true,
+  "same_mask_hash": true,
+  "same_scenario_hash": true,
+  "status": "pass_tooling_only",
+  "training_launched": false
+}

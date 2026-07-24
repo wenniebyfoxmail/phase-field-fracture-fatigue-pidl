@@ -1,0 +1,9 @@
+stage,artifact,status,scientific_interpretation
+Observation to state,road_observation_state_bundle_v1,pass_tooling_only,"One FEM-oracle bundle; no real-road inversion"
+Short forecast,RoadClosedLoopForecaster h1-h3,pass_tooling_only,"Legacy h1 transfer exact; observation-aware heads untrained"
+Observation trigger,observation_innovation_trigger_v1,negative_reality_facing_result,"Image-only detects at failure step; positive lead requires oracle proxy"
+Re-assimilation,maintenance and packet state machine,pass_tooling_only,"Control path works; operational thresholds uncalibrated"
+Long-term risk,hazard and RUL interface,unavailable_untrained,"No event/censor diversity; no RUL claim"
+Road time,calibrated equivalent load block with caps,interface_only,"No WIM/environment/calendar mapping"
+Real-road validation,grouped road-section holdout,not_achieved,"Measured synchronized multi-asset data required"
+

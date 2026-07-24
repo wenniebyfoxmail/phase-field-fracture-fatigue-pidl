@@ -24,6 +24,7 @@ import numpy as np
 import torch
 
 from fem_mechanism_operator import StateStatistics
+from road_observation_innovation import validate_observation_innovation_packet
 from road_observation_aware_operator import (
     RoadFeatureLayout,
     RoadFeatureStatistics,
@@ -500,14 +501,35 @@ def load_agent1_innovation_packet(
     """Load the Agent1-to-Agent2 packet and enforce operational eligibility."""
     path = Path(path)
     document = json.loads(path.read_text(encoding="utf-8"))
-    if document.get("packet_version") != "road_observation_innovation_packet_v1":
+    final_schema = document.get("schema_version") == "observation_innovation_packet_v1"
+    legacy_schema = (
+        document.get("packet_version") == "road_observation_innovation_packet_v1"
+    )
+    if not (final_schema or legacy_schema):
         raise ValueError("unsupported Agent 1 innovation packet")
     if document.get("source_bundle_sha256") != expected_bundle_sha256:
         raise ValueError("innovation packet points to a different state bundle")
-    for channel in document.get("innovations", {}).values():
-        if not channel.get("available", False):
-            if channel.get("mask") is not False or channel.get("value") is not None:
-                raise ValueError("missing innovation must be null with mask=false")
+    if final_schema:
+        validate_observation_innovation_packet(document)
+        for channel in document["channels"].values():
+            for index, available in enumerate(channel["mask"]):
+                if available:
+                    continue
+                missing_values = (
+                    channel["values"][index],
+                    channel["predicted_values"][index],
+                    channel["uncertainty"]["observation_std"][index],
+                    channel["uncertainty"]["prediction_std"][index],
+                )
+                if any(value is not None for value in missing_values):
+                    raise ValueError(
+                        "masked innovation values and uncertainty must be null"
+                    )
+    else:
+        for channel in document.get("innovations", {}).values():
+            if not channel.get("available", False):
+                if channel.get("mask") is not False or channel.get("value") is not None:
+                    raise ValueError("missing innovation must be null with mask=false")
     oracle = document.get("audit_only_oracle", {})
     if oracle.get("values_exported_to_trigger") is not False:
         raise ValueError("oracle latent values cannot enter an operational trigger")
