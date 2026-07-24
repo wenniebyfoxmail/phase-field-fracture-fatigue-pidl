@@ -1,0 +1,73 @@
+{
+  "package_id": "road_closed_loop_integration_20260724",
+  "status": "prototype_integration_pass_scientific_road_validation_not_passed",
+  "claim_class": "framework_validation",
+  "integration_evidence_commit": "87ed606",
+  "branch": "codex/road-closed-loop-integration",
+  "source_commits": {
+    "agent1_final_contract": "099cb0d68f37f47cd4b3d87a27bde78c3b38014f",
+    "agent2_final_trigger": "19ca9c7",
+    "agent3_corrected_closed_loop": "e55070e4b29a1da39262e0138e2c4efc7240c195"
+  },
+  "training_launched": false,
+  "real_road_validation": false,
+  "fem_reference": "eta0",
+  "trajectory_count": 1,
+  "agent1_bundle": {
+    "schema": "road_observation_state_bundle_v1",
+    "sha256": "e94027542484431d3a53222d930c81e9ed6c655b86a822ced1452fa8c4c0f253",
+    "history_skeleton_sha256": "5e5599d91d6caec35587892ce9f53d9672751c3a4b413af9d7a83f62f66bef88",
+    "evidence_class": "oracle",
+    "decision_eligible": false,
+    "real_road_compatible": false
+  },
+  "closed_loop_audit": {
+    "families": ["markov", "tcn", "diagonal_ssm"],
+    "same_analysis_hash": true,
+    "same_observation_mask_hash": true,
+    "same_scenario_hash": true,
+    "legacy_h1_raw_max_abs_error": 0.0,
+    "latent_to_sensor_leak_count": 0,
+    "oracle_packet_rejected_operationally": true,
+    "maintenance_stop_and_reassimilation": true,
+    "risk_status": "unavailable_untrained"
+  },
+  "observation_trigger_audit": {
+    "model_only_request_step": 83,
+    "synthetic_image_request_step": 81,
+    "image_plus_oracle_request_step": 80,
+    "audit_only_hidden_support_failure_step": 81,
+    "reality_facing_verdict": "image_only_has_zero_early_warning_lead",
+    "oracle_verdict": "positive_one_step_lead_is_quarantined_upper_bound"
+  },
+  "verification": {
+    "pytest": "153 passed, 1 warning",
+    "three_package_sha256": "pass",
+    "clean_bundle_rebuild": "pass",
+    "final_no_training_closed_loop_audit": "pass"
+  },
+  "claims_allowed": [
+    "the three versioned interfaces execute in one closed-loop prototype",
+    "latent assimilation attribution cannot create sensor observations",
+    "identical origin, mask and scenario hashes reach the three formal families",
+    "untrained long-horizon outputs remain unavailable"
+  ],
+  "claims_forbidden": [
+    "real-road state inversion or forecast validation",
+    "positive road early-warning lead",
+    "autonomous c87 transition prediction",
+    "calibrated road time, uncertainty, hazard or RUL",
+    "road-section, geometry or material generalisation"
+  ],
+  "next_gate": {
+    "required_assets": "at least three independent longitudinal road or laboratory assets",
+    "required_channels": [
+      "registered repeated crack imagery",
+      "FWD basin or strain response",
+      "traffic or WIM exposure",
+      "temperature and moisture",
+      "maintenance provenance"
+    ],
+    "validation": "grouped leave-one-asset or road-section-out with calibrated uncertainty"
+  }
+}
