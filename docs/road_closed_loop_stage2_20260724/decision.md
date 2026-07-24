@@ -1,61 +1,77 @@
-# Decision: Agent 3 closed-loop integration, stage 2
+# Decision: corrected Agent 3 closed-loop integration
 
-## Verdict
+## Supersession notice
 
-The **interface and legacy compatibility gate passes**. The frozen Agent1 c87
-state, Agent2 v1 road contracts, and Agent3 forecaster now execute through one
-closed-loop API with strict hashes, explicit masks, irregular time intervals,
-trigger handoff, maintenance stop, and optional re-assimilation.
+Commit `f9b2557` **did not pass semantic review and is superseded**. Its adapter
+incorrectly mapped Agent1 `observed_channel_mask` into Agent3
+`node_observation_mask`, which could represent latent assimilation attribution
+as sensor availability. No scientific or operational claim may use that
+adapter or its original smoke package.
 
-This is not a forecast-performance result. The current Agent1 package is a
-single-trajectory FEM-oracle upper bound and explicitly says
-`real_road_compatible=false`. Observation uncertainty is unavailable, the
-direct h2-h3 road-aware heads are untrained, and hazard/RUL outputs are hidden.
+## Corrected verdict
 
-## What is now proven
+The corrected interface/legacy smoke passes against Agent1 commit `d8a7ff3`
+and frozen `road_observation_state_bundle_v1`.
 
-1. Agent1 `road_assimilated_state_v1` can be consumed without changing its
-   source field names. `alpha_bar` is mapped explicitly to Agent3
-   `fatigue_history`; graph mismatch is a hard error.
-2. The same c87 package, observed mask and scenario hash reach Markov, TCN and
-   diagonal SSM.
-3. Zero-column legacy transfer preserves the first raw state update exactly:
-   maximum absolute error `0.0` for all three seed-1 checkpoints.
-4. Missing observations and all-NaN uncertainty stay missing. Nine Agent2
-   model-internal trigger signals are unavailable rather than assigned zero.
-5. Maintenance/innovation/OOD hard gates can stop field production and request
-   a new observation; re-assimilation resets trigger state.
-6. The public API cannot return a primary field forecast beyond h3 and cannot
-   expose untrained hazard/RUL tensors.
+- Canonical bundle SHA: `b9bb52026737ed11a9463051f31e7c05057595ec0e015d8a6dec6127c2a4c86e`.
+- Agent3 skeleton SHA: `e482c52ceff47038493c7563a99133f5e6c4017009d482aea8707a1c58d83e74`.
+- Agent2 innovation packet: `decision_eligible=false`.
+- No training was launched.
 
-## What is not proven
+This remains tooling-only. The bundle is an FEM-oracle upper bound,
+`real_road_compatible=false`, with unavailable uncertainty and no calibrated
+road time/load mapping.
 
-- No observation-aware model has been trained.
-- h2-h3 field values from this smoke are not scientific predictions.
-- There is no evidence of improved c87 transition prediction.
-- No calibrated road load-block mapping, uncertainty, warning threshold,
-  hazard, RUL, real-road transfer, or leave-one-section-out generalisation exists.
-- Repeated FEM windows remain one trajectory, not independent road samples.
+## Corrected semantic boundary
+
+1. `state_mean[T,N,C]` supplies the analysis-state origin only.
+2. `observed_channel_mask[T,N,C]` remains latent assimilation provenance and
+   never enters a model observation tensor.
+3. Node/global measurements come only from independent
+   `*_observation_values` and `*_observation_mask` arrays.
+4. Missing observations, timestamp, equivalent load, delta-t, traffic and
+   environment remain NaN/empty plus `mask=false` until masked feature preparation.
+5. Exactly one uncertainty representation is accepted: std, covariance, or
+   ensemble. Derived uncertainty reaches a trigger only when calibrated and
+   decision-eligible.
+6. A maintenance reset requires a declaration, event id and new state segment.
+7. An ineligible observation packet cannot request or stop operationally.
+   Independent maintenance and inspection-overdue safety gates still stop.
+
+## Corrected real-package smoke
+
+Markov, TCN and diagonal SSM used one canonical state hash, independent
+observation-mask hash and scenario hash.
+
+- Legacy h1 raw transfer error: `0.0` for all three models.
+- Independent node observations: 8,641 available oracle-audit values from the
+  Agent1 observation arrays.
+- Latent attribution values: 8,641, retained separately; verified leak count: 0.
+- Global observations: all unavailable and remain NaN plus false masks.
+- Uncertainty: unavailable and not trigger-eligible.
+- Packet trigger status: `rejected_ineligible_operational_evidence`.
+- Maintenance scenario: fields withheld and observation requested by the
+  independent system safety gate.
+- Hazard/RUL: `unavailable_untrained`.
+
+The equal counts of independent oracle observations and latent attributions do
+not establish identity: the audit verifies exact equality to the independent
+Agent1 node arrays and contains a regression test preventing the latent mask
+from creating measurements.
+
+## What is and is not proven
+
+Proven: schema/hash/graph compatibility, independent observation transport,
+missingness preservation, eligibility rejection, maintenance segmentation,
+legacy h1 equivalence and h1-h3/risk API boundaries.
+
+Not proven: observation benefit, autonomous transition prediction, calibrated
+uncertainty, operational warning thresholds, hazard/RUL, real-road inversion or
+road-section generalisation.
 
 ## Producer decision
 
-Do **not** launch the parameter-matched Markov/TCN/SSM producer run yet. The
-code/interface gate is complete, but the minimal scientific asset is missing:
-a longitudinal set of hash-locked Agent1 analysis/observation packages and a
-frozen Agent2 traffic/environment load-block vectorizer. Hazard/RUL additionally
-requires independent event and censor diversity.
-
-When those inputs exist, the smallest justified run is three formal families,
-seeds 1/2/3, identical observed origins/masks/scenarios, parameters matched
-within 1%, and direct h1-h3 versus recursive h1 evaluation. Exact required
-inputs and outputs are frozen in `producer_experiment_manifest.json`.
-
-## Evidence locations
-
-- API: `source/road_closed_loop_forecaster.py`
-- Real-package audit: `SENS_tensile/audit_road_closed_loop_stage2.py`
-- Contract matrix: `contract_compatibility_matrix.csv`
-- Sequence: `end_to_end_sequence.md`
-- Smoke metrics: `smoke/closed_loop_compatibility_smoke.csv`
-- Smoke summary: `smoke/compatibility_smoke_summary.json`
-- Producer gate: `producer_experiment_manifest.json`
+Do not launch training. The next producer gate still requires longitudinal
+Agent1 bundles at matched observed origins, a frozen Agent2 road load/time
+vectorizer, independent physical trajectories/road sections, and event/censor
+diversity for risk heads.

@@ -1,8 +1,9 @@
 {
   "contract_id": "road_forecast_input_contract_v1",
-  "status": "frozen_compatible_with_agent1_agent2_v1",
+  "status": "corrected_compatible_with_road_observation_state_bundle_v1",
+  "supersedes": "f9b2557 adapter semantics; observed_channel_mask mapping was invalid",
   "compatibility": {
-    "agent1_schema": "road_assimilated_state_v1",
+    "agent1_schema": "road_observation_state_bundle_v1",
     "agent1_observation_spec": "road_observation_operator_v1",
     "agent2_time_schema": "road_time_mapping_v1",
     "agent2_horizon_schema": "road_forecast_horizon_v1",
@@ -18,26 +19,25 @@
       "fatigue_degradation",
       "log10_psi_raw"
     ],
-    "agent1_source_channels": [
+    "canonical_source_channels": [
       "damage",
-      "alpha_bar",
+      "fatigue_history",
       "fatigue_degradation",
       "log10_psi_raw"
     ],
-    "explicit_adapter": {
-      "damage": "damage",
+    "legacy_aliases": {
       "alpha_bar": "fatigue_history",
-      "fatigue_degradation": "fatigue_degradation",
-      "log10_psi_raw": "log10_psi_raw"
+      "log10_raw_driver": "log10_psi_raw"
     },
     "source": "Agent1 frozen assimilation output or a separately labelled FEM oracle upper bound",
     "not_a_sensor_measurement": true,
-    "uncertainty_policy": "Agent1 state_std NaN with uncertainty_status=uncalibrated_not_available remains unavailable; it is never zero-filled"
+    "uncertainty_policy": "exactly one of std/covariance/ensemble; derived std is trigger-eligible only when calibrated; unavailable remains NaN"
   },
   "node_observation": {
     "values_shape": "[inspection_time, mesh_element, node_channel]",
     "mask_shape": "same as values; boolean",
-    "agent1_mask_adapter": "observed_channel_mask maps to node_observation_mask without changing values",
+    "agent1_adapter": "read node_observation_values and node_observation_mask directly",
+    "forbidden_mapping": "observed_channel_mask is latent assimilation attribution and must never create a node measurement",
     "missing_value_policy": "missing values remain NaN at the contract boundary and are zero-filled only after normalization; the mask remains an input",
     "real_channel_examples": [
       "registered crack probability and geometry",
@@ -48,18 +48,20 @@
   },
   "global_observation": {
     "values_shape": "[inspection_time, global_channel]",
-    "mask_shape": "same as values; boolean",
+    "mask_shape": "same as values; boolean; read directly from Agent1 independent observation arrays",
     "examples": [
       "FWD deflection-basin feature",
       "measured stiffness proxy"
     ]
   },
   "known_history": {
-    "delta_t": "[inspection_time, 1], non-negative; positive after first inspection",
+    "timestamp": "Agent1 timestamp plus timestamp_mask; missing is empty plus mask=false",
+    "equivalent_load_index": "Agent1 values plus mask; missing is NaN plus mask=false",
+    "delta_t": "Agent1 values plus mask; available values are non-negative and positive after the first inspection",
     "traffic": "Agent2 axle spectrum, cumulative equivalent load, distance from last inspection, and load distribution after a frozen vectorizer, plus boolean mask",
     "environment": "Agent2 temperature and moisture series after a frozen vectorizer, plus boolean mask",
     "maintenance": "Agent2 typed maintenance history encoded by a frozen intervention vectorizer",
-    "maintenance_state_reset": "[inspection_time, 1] boolean; required true when maintenance changes analysis-state semantics",
+    "maintenance_state_reset": "requires maintenance_reset_declared, non-empty event id and a new state_segment_id",
     "time_rule": "FEM fatigue cycle is never relabelled as axle passage, ESAL, calendar time, inspection epoch, or road load block"
   },
   "future_scenario": {
@@ -99,6 +101,8 @@
     "cycle index, cycle/89, future failure cycle, and repeated windows as pseudo-road samples are forbidden",
     "all compared models receive identical analysis hash, observed origin, mask, scenario hash, seeds, and budgets",
     "field prediction beyond h3 is not available from unlimited deterministic recursion",
-    "missing uncertainty and untrained risk heads are reported unavailable"
+    "missing uncertainty and untrained risk heads are reported unavailable",
+    "decision_eligible=false evidence cannot produce an operational request or stop",
+    "system maintenance and inspection-overdue safety gates remain independent of packet eligibility"
   ]
 }

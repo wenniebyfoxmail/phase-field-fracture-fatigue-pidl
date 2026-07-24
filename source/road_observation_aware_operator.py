@@ -91,9 +91,10 @@ class RoadFeatureLayout:
 
     @property
     def history_global_dim(self) -> int:
-        # elapsed time + value/mask pairs + maintenance + explicit reset flag
+        # elapsed/equivalent-load value-mask pairs + observations/forcing + reset
         return (
-            1
+            2
+            + 2
             + 2 * self.global_observation_dim
             + 2 * self.traffic_dim
             + 2 * self.environment_dim
@@ -104,10 +105,7 @@ class RoadFeatureLayout:
     @property
     def future_context_dim(self) -> int:
         return (
-            1
-            + 2 * self.traffic_dim
-            + 2 * self.environment_dim
-            + self.maintenance_dim
+            1 + 2 * self.traffic_dim + 2 * self.environment_dim + self.maintenance_dim
         )
 
 
@@ -136,6 +134,14 @@ class RoadObservationSequence:
     provenance: str
     observation_space_version: str
     asset_id: str
+    delta_t_mask: torch.Tensor | None = None
+    equivalent_load_index: torch.Tensor | None = None
+    equivalent_load_index_mask: torch.Tensor | None = None
+    timestamp: tuple[str, ...] | None = None
+    timestamp_mask: torch.Tensor | None = None
+    maintenance_reset_declared: torch.Tensor | None = None
+    maintenance_event_id: tuple[str, ...] | None = None
+    state_segment_id: torch.Tensor | None = None
 
     def validate(self, layout: RoadFeatureLayout) -> None:
         if self.analysis_states.ndim != 3 or self.analysis_states.shape[-1] != 4:
@@ -155,12 +161,8 @@ class RoadObservationSequence:
         )
         _require_shape("delta_t", self.delta_t, (time, 1))
         _require_shape("traffic", self.traffic, (time, layout.traffic_dim))
-        _require_shape(
-            "environment", self.environment, (time, layout.environment_dim)
-        )
-        _require_shape(
-            "maintenance", self.maintenance, (time, layout.maintenance_dim)
-        )
+        _require_shape("environment", self.environment, (time, layout.environment_dim))
+        _require_shape("maintenance", self.maintenance, (time, layout.maintenance_dim))
         _require_shape(
             "maintenance_state_reset", self.maintenance_state_reset, (time, 1)
         )
@@ -174,10 +176,44 @@ class RoadObservationSequence:
         )
         _require_mask("traffic", self.traffic, self.traffic_mask)
         _require_mask("environment", self.environment, self.environment_mask)
-        if not torch.isfinite(self.delta_t).all() or (self.delta_t < 0).any():
-            raise ValueError("delta_t must be finite and non-negative")
-        if time > 1 and (self.delta_t[1:] <= 0).any():
-            raise ValueError("delta_t must be positive after the first inspection")
+        delta_t_mask = self.delta_t_mask
+        if delta_t_mask is None:
+            delta_t_mask = torch.ones_like(self.delta_t, dtype=torch.bool)
+        _require_mask("delta_t", self.delta_t, delta_t_mask)
+        if (self.delta_t[delta_t_mask] < 0).any():
+            raise ValueError("available delta_t must be non-negative")
+        if time > 1:
+            later_available = delta_t_mask[1:]
+            if (self.delta_t[1:][later_available] <= 0).any():
+                raise ValueError(
+                    "available delta_t must be positive after the first inspection"
+                )
+        if (self.equivalent_load_index is None) != (
+            self.equivalent_load_index_mask is None
+        ):
+            raise ValueError(
+                "equivalent load values and mask must be provided together"
+            )
+        if self.equivalent_load_index is not None:
+            _require_shape(
+                "equivalent_load_index", self.equivalent_load_index, (time, 1)
+            )
+            _require_mask(
+                "equivalent_load_index",
+                self.equivalent_load_index,
+                self.equivalent_load_index_mask,
+            )
+        if self.timestamp is not None and len(self.timestamp) != time:
+            raise ValueError("timestamp must match the history length")
+        if self.timestamp_mask is not None:
+            _require_shape("timestamp_mask", self.timestamp_mask, (time, 1))
+            if self.timestamp_mask.dtype != torch.bool:
+                raise ValueError("timestamp_mask must be boolean")
+            if self.timestamp is None:
+                raise ValueError("timestamp_mask requires timestamp values")
+            for value, available in zip(self.timestamp, self.timestamp_mask[:, 0]):
+                if bool(available) and not value:
+                    raise ValueError("available timestamp cannot be empty")
         if not torch.isfinite(self.maintenance).all():
             raise ValueError("maintenance features must be finite")
         if self.maintenance_state_reset.dtype != torch.bool:
@@ -191,6 +227,37 @@ class RoadObservationSequence:
                 "a historical maintenance event requires an explicit "
                 "post-maintenance state reset"
             )
+        if self.maintenance_reset_declared is not None:
+            _require_shape(
+                "maintenance_reset_declared",
+                self.maintenance_reset_declared,
+                (time, 1),
+            )
+            if self.maintenance_reset_declared.dtype != torch.bool:
+                raise ValueError("maintenance_reset_declared must be boolean")
+            reset = self.maintenance_state_reset[:, 0]
+            if not self.maintenance_reset_declared[:, 0][reset].all():
+                raise ValueError("maintenance reset must be explicitly declared")
+            if (
+                self.maintenance_event_id is None
+                or len(self.maintenance_event_id) != time
+            ):
+                raise ValueError("declared maintenance reset requires event ids")
+            if any(
+                not self.maintenance_event_id[index] for index in torch.where(reset)[0]
+            ):
+                raise ValueError(
+                    "declared maintenance reset requires a non-empty event id"
+                )
+            if self.state_segment_id is None:
+                raise ValueError("declared maintenance reset requires state_segment_id")
+            _require_shape("state_segment_id", self.state_segment_id, (time,))
+            for index in torch.where(reset)[0].tolist():
+                if (
+                    index == 0
+                    or self.state_segment_id[index] == self.state_segment_id[index - 1]
+                ):
+                    raise ValueError("maintenance reset must start a new state segment")
         if self.provenance not in ROAD_PROVENANCE:
             raise ValueError(f"provenance must be one of {ROAD_PROVENANCE}")
         if self.observation_space_version != layout.observation_space_version:
@@ -230,9 +297,7 @@ class RoadFutureScenario:
             (horizon, layout.maintenance_dim),
         )
         _require_mask("future traffic", self.traffic, self.traffic_mask)
-        _require_mask(
-            "future environment", self.environment, self.environment_mask
-        )
+        _require_mask("future environment", self.environment, self.environment_mask)
         if horizon == 0:
             raise ValueError("future scenario must contain at least one interval")
         if not torch.isfinite(self.delta_t).all() or (self.delta_t <= 0).any():
@@ -329,10 +394,35 @@ def prepare_history_features(
     """Return leakage-safe global and node metadata with explicit masks."""
     sequence.validate(layout)
     statistics.validate(layout)
-    log_delta_t = torch.log1p(sequence.delta_t)
+    delta_t_mask = sequence.delta_t_mask
+    if delta_t_mask is None:
+        delta_t_mask = torch.ones_like(sequence.delta_t, dtype=torch.bool)
+    safe_delta_t = torch.where(
+        delta_t_mask, sequence.delta_t, torch.zeros_like(sequence.delta_t)
+    )
+    log_delta_t = torch.log1p(safe_delta_t)
     log_delta_t = (
         log_delta_t - statistics.log_delta_t_mean.to(log_delta_t)
     ) / statistics.log_delta_t_std.to(log_delta_t).clamp_min(1.0e-8)
+    log_delta_t = torch.where(delta_t_mask, log_delta_t, torch.zeros_like(log_delta_t))
+    if sequence.equivalent_load_index is None:
+        equivalent_load = sequence.analysis_states.new_zeros((len(sequence.delta_t), 1))
+        equivalent_load_mask = torch.zeros_like(equivalent_load, dtype=torch.bool)
+    else:
+        equivalent_load_mask = sequence.equivalent_load_index_mask
+        safe_load = torch.where(
+            equivalent_load_mask,
+            sequence.equivalent_load_index,
+            torch.zeros_like(sequence.equivalent_load_index),
+        )
+        equivalent_load = torch.log1p(safe_load.clamp_min(0.0)).to(
+            sequence.analysis_states
+        )
+        equivalent_load = torch.where(
+            equivalent_load_mask,
+            equivalent_load,
+            torch.zeros_like(equivalent_load),
+        )
     global_observation = _masked_normalize(
         sequence.global_observations,
         sequence.global_observation_mask,
@@ -354,6 +444,9 @@ def prepare_history_features(
     global_metadata = torch.cat(
         [
             log_delta_t,
+            delta_t_mask.to(sequence.analysis_states.dtype),
+            equivalent_load,
+            equivalent_load_mask.to(sequence.analysis_states.dtype),
             global_observation,
             sequence.global_observation_mask.to(sequence.analysis_states.dtype),
             traffic,
@@ -477,9 +570,7 @@ class RoadObservationAwareForecaster(nn.Module):
         self.max_risk_horizon = max_risk_horizon
         self.core_feature_dim = 7
         input_dim = (
-            self.core_feature_dim
-            + layout.history_global_dim
-            + layout.history_node_dim
+            self.core_feature_dim + layout.history_global_dim + layout.history_node_dim
         )
         self.encoder = FactorizedMeshEncoder(
             input_dim,
@@ -537,9 +628,7 @@ class RoadObservationAwareForecaster(nn.Module):
         global_history, node_history = prepare_history_features(
             sequence, self.layout, road_statistics
         )
-        future_context = prepare_future_context(
-            scenario, self.layout, road_statistics
-        )
+        future_context = prepare_future_context(scenario, self.layout, road_statistics)
         latest_features, local, token_history = self.encoder(
             sequence.analysis_states,
             graph,
@@ -575,9 +664,9 @@ class RoadObservationAwareForecaster(nn.Module):
         cluster_count = predicted_token.shape[0]
         cluster_area = graph["areas"].new_zeros(cluster_count)
         cluster_area.index_add_(0, graph["cluster_index"], graph["areas"].reshape(-1))
-        global_token = (
-            predicted_token * cluster_area[:, None]
-        ).sum(dim=0) / cluster_area.sum().clamp_min(1.0e-8)
+        global_token = (predicted_token * cluster_area[:, None]).sum(
+            dim=0
+        ) / cluster_area.sum().clamp_min(1.0e-8)
         hazard_logits: list[torch.Tensor] = []
         for horizon, context in enumerate(future_context):
             hazard_input = torch.cat(
@@ -691,9 +780,7 @@ def lognormal_rul_nll(
     """
     if (remaining_life <= 0).any():
         raise ValueError("remaining_life must be positive")
-    distribution = torch.distributions.LogNormal(
-        location, scale.clamp_min(1.0e-6)
-    )
+    distribution = torch.distributions.LogNormal(location, scale.clamp_min(1.0e-6))
     if censored:
         survival = (1.0 - distribution.cdf(remaining_life)).clamp_min(1.0e-7)
         return -torch.log(survival).mean()

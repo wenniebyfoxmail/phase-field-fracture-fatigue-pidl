@@ -1,10 +1,21 @@
 {
   "agent1": {
-    "origin_id": "SENS_brittle_base_cyclic_u012_recovery_fatigueon_pidlstop_newtontol4em4:c87",
-    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/road_observation_latent_state_phase1_20260723/assimilated_state_c87_synthetic_reference.npz",
+    "decision_eligible": false,
+    "innovation_packet": {
+      "decision_eligible": false,
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/inverse-fracture-state-assimilation/analysis/road_observation_state_bundle_v1_20260724/agent2_observation_innovation_packet.json",
+      "sha256": "42772cf4de470c21aea97cfc4013f7a744931a942613ce0be43faa5ec0ee4850"
+    },
+    "origin_id": "c87_fem_oracle_upper_bound_adapter:c87",
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/inverse-fracture-state-assimilation/analysis/road_observation_state_bundle_v1_20260724/road_observation_state_bundle_c87_oracle.npz",
     "real_road_compatible": false,
-    "sha256": "276bca62f3955c0948bd23891aa10dcca209f3e562605303b61b263d53759ffe",
-    "uncertainty_available": false
+    "sha256": "b9bb52026737ed11a9463051f31e7c05057595ec0e015d8a6dec6127c2a4c86e",
+    "skeleton": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/inverse-fracture-state-assimilation/analysis/road_observation_state_bundle_v1_20260724/agent3_history_sequence_skeleton.npz",
+      "sha256": "e482c52ceff47038493c7563a99133f5e6c4017009d482aea8707a1c58d83e74"
+    },
+    "uncertainty_available": false,
+    "uncertainty_trigger_eligible": false
   },
   "agent2_hashes": {
     "observation_trigger_spec.json": "94b4723dabfb4533efe748ce914677e01b5fa08a7c3f6bc9792feeadd5b393d3",
@@ -15,10 +26,11 @@
   "all_maintenance_stops": true,
   "all_reassimilation_resumes": true,
   "all_risk_unavailable": true,
+  "all_trigger_packets_rejected": true,
   "claims_allowed": [
-    "Agent1/2 v1 contracts execute through the Agent3 closed-loop API",
+    "Agent1 canonical observation-state bundle executes through Agent3",
     "legacy first raw state path is unchanged after zero-column transfer",
-    "missingness, irregular dt, maintenance stop, and re-assimilation paths execute"
+    "independent measurement missingness, irregular dt, maintenance stop, and re-assimilation paths execute"
   ],
   "claims_forbidden": [
     "forecast performance improvement",
@@ -36,6 +48,7 @@
     "tcn",
     "diagonal_ssm"
   ],
+  "no_latent_to_sensor_leak": true,
   "same_analysis_hash": true,
   "same_mask_hash": true,
   "same_scenario_hash": true,

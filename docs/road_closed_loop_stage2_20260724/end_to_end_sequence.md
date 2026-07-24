@@ -10,10 +10,12 @@ sequenceDiagram
     participant Risk as Scenario hazard/RUL head
 
     Sensor->>A1: y_n, mask, registration, traffic/environment, provenance
-    A1->>State: road_assimilated_state_v1 + SHA-256
-    State->>A3: z_analysis, uncertainty semantics, graph, origin/mask hash
+    A1->>State: road_observation_state_bundle_v1 + SHA-256
+    State->>A3: z_analysis and latent attribution (separate)
+    State->>A3: independent node/global values and masks
+    State->>A3: time/load/environment/maintenance semantics
     A3->>A3: Direct h1-h3 field forecast
-    A3->>A2: Model uncertainty, innovation, OOD, data quality, maintenance
+    A3->>A2: Eligible calibrated uncertainty, innovation, OOD and data quality
     A2-->>A3: continue / request / stop_and_request
     alt continue
         A3-->>Sensor: h1-h3 fields with evidence status
@@ -31,6 +33,6 @@ sequenceDiagram
     end
 ```
 
-The current c87 execution is a synthetic FEM-oracle compatibility smoke. It
-does not contain real road observations, calibrated uncertainty, or trained
-risk heads.
+An ineligible packet is rejected before operational trigger evaluation.
+Maintenance and inspection-overdue safety gates remain independent. The c87
+execution is an FEM-oracle compatibility smoke, not real-road validation.
