@@ -15,7 +15,17 @@ import numpy as np
 
 BUNDLE_VERSION = "road_observation_state_bundle_v1"
 AGENT3_SKELETON_VERSION = "road_forecast_history_sequence_skeleton_v1"
-AGENT2_PACKET_VERSION = "road_observation_innovation_packet_v1"
+AGENT2_PACKET_VERSION = "observation_innovation_packet_v1"
+AGENT2_INNOVATION_CHANNELS = (
+    "registered_crack_geometry_image",
+    "fwd_deflection_basin",
+    "strain_localization",
+)
+AGENT2_EVIDENCE_CLASSES = (
+    "oracle_derived_proxy",
+    "real_observation",
+    "synthetic_sensor",
+)
 
 STATE_FIELDS = (
     "damage",
@@ -83,6 +93,43 @@ def verify_sha256(path: Path, expected: str) -> None:
     actual = sha256(path)
     if actual != expected:
         raise ValueError(f"SHA-256 mismatch for {path}: expected {expected}, got {actual}")
+
+
+def verify_source_lock(paths: Mapping[str, Path], expected: Mapping[str, str]) -> None:
+    """Reject missing, extra, or changed source assets."""
+    if set(paths) != set(expected):
+        missing = sorted(set(expected) - set(paths))
+        extra = sorted(set(paths) - set(expected))
+        raise ValueError(f"source lock keys differ; missing={missing}, extra={extra}")
+    for source_id, path in paths.items():
+        verify_sha256(path, expected[source_id])
+
+
+def validate_downstream_contracts(
+    agent2_packet_spec: Mapping[str, Any], agent3_contract: Mapping[str, Any]
+) -> list[str]:
+    """Check the final cross-agent semantics in addition to byte hashes."""
+    errors: list[str] = []
+    if agent2_packet_spec.get("schema_version") != AGENT2_PACKET_VERSION:
+        errors.append("Agent2 packet schema version is incompatible")
+    required_top = set(agent2_packet_spec.get("required_top_level", []))
+    if not {"packet_id", "time", "channels", "operational_context"}.issubset(required_top):
+        errors.append("Agent2 packet is missing required top-level fields")
+    if set(agent2_packet_spec.get("channels", {})) != set(AGENT2_INNOVATION_CHANNELS):
+        errors.append("Agent2 packet channels differ from the frozen channel set")
+    if agent3_contract.get("contract_id") != "road_forecast_input_contract_v1":
+        errors.append("Agent3 contract id is incompatible")
+    compatibility = agent3_contract.get("compatibility", {})
+    if compatibility.get("agent1_schema") != BUNDLE_VERSION:
+        errors.append("Agent3 does not target the canonical Agent1 bundle")
+    latent = agent3_contract.get("latent_state", {})
+    if tuple(latent.get("canonical_source_channels", [])) != STATE_FIELDS:
+        errors.append("Agent3 canonical state channel order differs")
+    node = agent3_contract.get("node_observation", {})
+    forbidden = str(node.get("forbidden_mapping", ""))
+    if "observed_channel_mask" not in forbidden or "never" not in forbidden:
+        errors.append("Agent3 must forbid latent-mask to observation-mask fabrication")
+    return errors
 
 
 def bundle_schema() -> dict[str, Any]:
@@ -505,32 +552,93 @@ def write_agent3_history_skeleton(bundle_path: Path, output_path: Path) -> dict[
 
 
 def agent2_innovation_packet(bundle_path: Path) -> dict[str, Any]:
-    """Create a missing-aware Agent2 trigger packet, excluding oracle fields."""
+    """Create the final Agent2 packet skeleton, excluding oracle values."""
     errors = validate_bundle(bundle_path)
     if errors:
         raise ValueError(f"invalid source bundle: {errors}")
     with np.load(bundle_path, allow_pickle=False) as package:
         metadata = json.loads(str(package["metadata_json"].item()))
+        bundle_hash = sha256(bundle_path)
         oracle_count = int(np.asarray(package["node_observation_mask"], dtype=bool)[:, :, NODE_OBSERVATION_CHANNELS.index("log10_psi_raw_oracle")].sum())
+        common_time = {
+            "timestamp": None,
+            "equivalent_load_index": None,
+            "inspection_epoch_id": "c87_oracle_adapter_not_road_time",
+            "integration_step_index": 0,
+        }
+        common_registration = {
+            "coordinate_frame_id": metadata["coordinate_frame"],
+            "registration_id": metadata["registration_id"],
+            "quality_score": None,
+            "uncertainty": "unavailable",
+        }
+        common_provenance = {
+            "evidence_class": {
+                "oracle": "oracle_derived_proxy",
+                "synthetic": "synthetic_sensor",
+                "real": "real_observation",
+            }[metadata["evidence_class"]],
+            "source_id": metadata.get("bundle_id", f"bundle:{bundle_hash}"),
+            "observation_operator_id": "unavailable_no_deployable_observation",
+            "source_hashes": metadata["source_sha256"],
+            "real_road_compatible": False,
+        }
+
+        def missing_channel(feature_names: Sequence[str]) -> dict[str, Any]:
+            count = len(feature_names)
+            return {
+                "feature_names": list(feature_names),
+                "values": [None] * count,
+                "predicted_values": [None] * count,
+                "mask": [False] * count,
+                "uncertainty": {
+                    "observation_std": [None] * count,
+                    "prediction_std": [None] * count,
+                    "semantics": "unavailable and fully masked; missing is not zero evidence",
+                },
+                "provenance": dict(common_provenance),
+                "registration": dict(common_registration),
+                "time": dict(common_time),
+            }
+
         return {
-            "packet_version": AGENT2_PACKET_VERSION,
+            "schema_version": AGENT2_PACKET_VERSION,
+            "packet_id": "agent1-c87-oracle-ineligible-skeleton",
             "source_bundle_version": BUNDLE_VERSION,
-            "source_bundle_sha256": sha256(bundle_path),
+            "source_bundle_sha256": bundle_hash,
             "evidence_class": metadata["evidence_class"],
             "decision_eligible": False,
             "decision_eligibility_reason": "only an oracle upper-bound state is present; deployable road innovations are missing",
-            "timestamp": {"value": None, "available": False},
-            "equivalent_load_index": {"value": None, "available": False},
-            "innovations": {
-                "registered_crack_image": {"value": None, "available": False, "mask": False},
-                "fwd_deflection_basin": {"value": None, "available": False, "mask": False},
-                "strain_sensor": {"value": None, "available": False, "mask": False},
+            "time": common_time,
+            "channels": {
+                "registered_crack_geometry_image": missing_channel((
+                    "visible_area_fraction", "tip_x_p99", "centroid_x",
+                    "centroid_y", "transverse_width",
+                )),
+                "fwd_deflection_basin": missing_channel((
+                    "central_deflection", "basin_curvature", "basin_area",
+                )),
+                "strain_localization": missing_channel((
+                    "top1_centroid_x", "top1_centroid_y", "top1_width_x", "top1_width_y",
+                )),
             },
-            "forcing": {
-                "wim_axle_spectrum": {"value": None, "available": False, "mask": False},
-                "temperature_moisture": {"value": None, "available": False, "mask": False},
+            "operational_context": {
+                "traffic_environment_ood": {
+                    "warning": False,
+                    "hard": False,
+                    "score": None,
+                    "provenance": "unavailable in the c87 FEM oracle bundle",
+                },
+                "data_quality": {
+                    "warning": False,
+                    "hard": False,
+                    "missing_fraction": 1.0,
+                    "sensor_drift": None,
+                    "registration_failure": False,
+                },
+                "inspection_overdue": False,
+                "maintenance_event": False,
             },
-            "maintenance": {"reset": False, "declared": False, "event_id": None},
             "audit_only_oracle": {
                 "channel": "log10_psi_raw_oracle",
                 "observed_node_count": oracle_count,
@@ -542,13 +650,53 @@ def agent2_innovation_packet(bundle_path: Path) -> dict[str, Any]:
 
 def validate_agent2_packet(packet: Mapping[str, Any]) -> list[str]:
     errors: list[str] = []
-    if packet.get("packet_version") != AGENT2_PACKET_VERSION:
+    if packet.get("schema_version") != AGENT2_PACKET_VERSION:
         errors.append("unexpected Agent2 packet version")
-    for group in ("innovations", "forcing"):
-        for name, item in packet.get(group, {}).items():
-            available = bool(item.get("available"))
-            if not available and (item.get("value") is not None or item.get("mask") is not False):
-                errors.append(f"missing Agent2 channel must be null with mask=false: {name}")
+    for key in ("packet_id", "time", "channels", "operational_context"):
+        if key not in packet:
+            errors.append(f"Agent2 packet lacks required top-level field: {key}")
+    channels = packet.get("channels", {})
+    if set(channels) != set(AGENT2_INNOVATION_CHANNELS):
+        errors.append("Agent2 packet must declare exactly the frozen channels")
+    for name in AGENT2_INNOVATION_CHANNELS:
+        item = channels.get(name, {})
+        required = {
+            "feature_names", "values", "predicted_values", "mask", "uncertainty",
+            "provenance", "registration", "time",
+        }
+        if not required.issubset(item):
+            errors.append(f"Agent2 channel lacks required fields: {name}")
+            continue
+        feature_names = list(item["feature_names"])
+        values = list(item["values"])
+        predicted = list(item["predicted_values"])
+        mask = list(item["mask"])
+        uncertainty = item.get("uncertainty", {})
+        observation_std = list(uncertainty.get("observation_std", []))
+        prediction_std = list(uncertainty.get("prediction_std", []))
+        if len({len(feature_names), len(values), len(predicted), len(mask), len(observation_std), len(prediction_std)}) != 1:
+            errors.append(f"Agent2 channel feature arrays differ in length: {name}")
+            continue
+        for index, available in enumerate(mask):
+            if not isinstance(available, bool):
+                errors.append(f"Agent2 channel mask must be boolean: {name}")
+                continue
+            if not available and any(
+                entry[index] is not None
+                for entry in (values, predicted, observation_std, prediction_std)
+            ):
+                errors.append(f"missing Agent2 channel entries must be null with mask=false: {name}")
+        provenance = item.get("provenance", {})
+        if provenance.get("evidence_class") not in AGENT2_EVIDENCE_CLASSES:
+            errors.append(f"Agent2 channel evidence class is invalid: {name}")
+        if provenance.get("evidence_class") != "real_observation" and provenance.get("real_road_compatible") is not False:
+            errors.append(f"non-real Agent2 channel cannot be road compatible: {name}")
+    has_observed_innovation = any(
+        any(bool(value) for value in channels.get(name, {}).get("mask", []))
+        for name in AGENT2_INNOVATION_CHANNELS
+    )
+    if not has_observed_innovation and packet.get("decision_eligible") is not False:
+        errors.append("fully masked Agent2 packet cannot be decision eligible")
     audit = packet.get("audit_only_oracle", {})
     if audit.get("values_exported_to_trigger") is not False:
         errors.append("oracle values cannot enter the Agent2 trigger packet")

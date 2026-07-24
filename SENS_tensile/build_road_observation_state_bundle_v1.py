@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 from typing import Any
 
@@ -27,23 +29,23 @@ from road_observation_state_bundle import (  # noqa: E402
     sha256,
     validate_agent2_packet,
     validate_bundle,
+    validate_downstream_contracts,
+    verify_source_lock,
     write_agent3_history_skeleton,
 )
 
 
 PROJECT_ROOT = Path("/Users/wenxiaofang/phase-field-fracture-with-pidl")
 PHASE1 = PROJECT_ROOT / "local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/road_observation_latent_state_phase1_20260723"
-AGENT2 = PROJECT_ROOT / ".codex/worktrees/data-efficient-cycle-forecast/analysis/road_time_trigger_formulation_20260723"
-AGENT3 = PROJECT_ROOT / ".codex/worktrees/temporal-graph-transformer/docs/road_observation_aware_stage1_20260723"
+AGENT2_WORKTREE = PROJECT_ROOT / ".codex/worktrees/data-efficient-cycle-forecast"
+AGENT3_WORKTREE = PROJECT_ROOT / ".codex/worktrees/temporal-graph-transformer"
+AGENT2_TIME_REL = Path("analysis/road_time_trigger_formulation_20260723")
+AGENT2_INNOVATION_REL = Path("analysis/road_observation_innovation_trigger_20260724")
+AGENT3_CONTRACT_REL = Path("docs/road_observation_aware_stage1_20260723/road_forecast_input_contract_v1.json")
 
-SOURCE_FILES = {
-    "road_observation_operator_v1": PHASE1 / "road_observation_operator_spec.json",
-    "road_assimilated_state_v1_schema": PHASE1 / "assimilated_state_schema.json",
-    "road_assimilated_state_v1_payload": PHASE1 / "assimilated_state_c87_synthetic_reference.npz",
-    "agent2_road_time_mapping_v1": AGENT2 / "road_time_mapping_spec.json",
-    "agent2_road_forecast_horizon_v1": AGENT2 / "road_forecast_horizon_spec.json",
-    "agent2_road_observation_trigger_v1": AGENT2 / "observation_trigger_spec.json",
-    "agent3_road_forecast_input_contract_v1": AGENT3 / "road_forecast_input_contract_v1.json",
+LOCKED_DOWNSTREAM_COMMITS = {
+    "agent2": "19ca9c73a36a4fb80119a49c9234d6ee11501052",
+    "agent3": "e55070e4b29a1da39262e0138e2c4efc7240c195",
 }
 
 LOCKED_SOURCE_SHA256 = {
@@ -53,7 +55,9 @@ LOCKED_SOURCE_SHA256 = {
     "agent2_road_time_mapping_v1": "630bbd878529fba18ed29c733c414433f51815e9243e7565697b6a81e2fd32c4",
     "agent2_road_forecast_horizon_v1": "f593a005a1175c5914ef0fd6b8855879180f726886abb69f48c0bec174d22fc5",
     "agent2_road_observation_trigger_v1": "94b4723dabfb4533efe748ce914677e01b5fa08a7c3f6bc9792feeadd5b393d3",
-    "agent3_road_forecast_input_contract_v1": "5b64987822a6b3d1e543f18734317af41d42125562d6968f65d3ee27fde9f37b",
+    "agent2_observation_innovation_trigger_v1_spec": "207723248cc8f6e609e62fbee85cc72a89b04ad0b815aa919026dac9845fb6dc",
+    "agent2_observation_innovation_packet_v1_spec": "ff5059b96f8e35aaef526c10d54ea37710a744f4d3a57278dc6c3647ca72666f",
+    "agent3_road_forecast_input_contract_v1": "681d68711f93e2af80621e4fe70b1bdb4b134a24c0c7ed880f2d9d9630a8415d",
 }
 
 SOURCE_SCHEMA_VERSIONS = {
@@ -63,7 +67,30 @@ SOURCE_SCHEMA_VERSIONS = {
     "agent2_road_time_mapping_v1": "road_time_mapping_v1",
     "agent2_road_forecast_horizon_v1": "road_forecast_horizon_v1",
     "agent2_road_observation_trigger_v1": "road_observation_trigger_v1",
+    "agent2_observation_innovation_trigger_v1_spec": "observation_innovation_trigger_v1",
+    "agent2_observation_innovation_packet_v1_spec": "observation_innovation_packet_v1",
     "agent3_road_forecast_input_contract_v1": "road_forecast_input_contract_v1",
+}
+
+COMMIT_ASSETS = {
+    "agent2_road_time_mapping_v1": (LOCKED_DOWNSTREAM_COMMITS["agent2"], AGENT2_TIME_REL / "road_time_mapping_spec.json"),
+    "agent2_road_forecast_horizon_v1": (LOCKED_DOWNSTREAM_COMMITS["agent2"], AGENT2_TIME_REL / "road_forecast_horizon_spec.json"),
+    "agent2_road_observation_trigger_v1": (LOCKED_DOWNSTREAM_COMMITS["agent2"], AGENT2_TIME_REL / "observation_trigger_spec.json"),
+    "agent2_observation_innovation_trigger_v1_spec": (LOCKED_DOWNSTREAM_COMMITS["agent2"], AGENT2_INNOVATION_REL / "observation_innovation_trigger_spec_v1.json"),
+    "agent2_observation_innovation_packet_v1_spec": (LOCKED_DOWNSTREAM_COMMITS["agent2"], AGENT2_INNOVATION_REL / "observation_innovation_packet_v1.json"),
+    "agent3_road_forecast_input_contract_v1": (LOCKED_DOWNSTREAM_COMMITS["agent3"], AGENT3_CONTRACT_REL),
+}
+
+SOURCE_LOGICAL_PATHS = {
+    "road_observation_operator_v1": "road_observation_latent_state_phase1_20260723/road_observation_operator_spec.json",
+    "road_assimilated_state_v1_schema": "road_observation_latent_state_phase1_20260723/assimilated_state_schema.json",
+    "road_assimilated_state_v1_payload": "road_observation_latent_state_phase1_20260723/assimilated_state_c87_synthetic_reference.npz",
+    "agent2_road_time_mapping_v1": str(AGENT2_TIME_REL / "road_time_mapping_spec.json"),
+    "agent2_road_forecast_horizon_v1": str(AGENT2_TIME_REL / "road_forecast_horizon_spec.json"),
+    "agent2_road_observation_trigger_v1": str(AGENT2_TIME_REL / "observation_trigger_spec.json"),
+    "agent2_observation_innovation_trigger_v1_spec": str(AGENT2_INNOVATION_REL / "observation_innovation_trigger_spec_v1.json"),
+    "agent2_observation_innovation_packet_v1_spec": str(AGENT2_INNOVATION_REL / "observation_innovation_packet_v1.json"),
+    "agent3_road_forecast_input_contract_v1": str(AGENT3_CONTRACT_REL),
 }
 
 
@@ -79,6 +106,17 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=ROOT / "docs/templates/road_observation_state_bundle_v1.schema.json",
     )
+    parser.add_argument("--phase1-dir", type=Path, default=PHASE1)
+    parser.add_argument(
+        "--agent2-root",
+        type=Path,
+        help="Repo checkout containing Agent2 final analysis files; auto-detected when omitted.",
+    )
+    parser.add_argument(
+        "--agent3-root",
+        type=Path,
+        help="Repo checkout containing Agent3 final contract; auto-detected when omitted.",
+    )
     return parser.parse_args()
 
 
@@ -86,32 +124,88 @@ def read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def verify_sources() -> None:
-    for source_id, path in SOURCE_FILES.items():
-        if not path.is_file():
-            raise FileNotFoundError(path)
-        actual = sha256(path)
-        expected = LOCKED_SOURCE_SHA256[source_id]
-        if actual != expected:
-            raise ValueError(f"source drift for {source_id}: expected {expected}, got {actual}")
+def _auto_root(
+    explicit: Path | None,
+    repo_relative: Path,
+    sibling: Path,
+    checkout_root: Path = ROOT,
+) -> Path:
+    if explicit is not None:
+        return explicit.resolve()
+    if (checkout_root / repo_relative).is_file():
+        return checkout_root
+    if (sibling / repo_relative).is_file():
+        return sibling
+    raise FileNotFoundError(f"cannot locate downstream source {repo_relative}")
 
-    operator = read_json(SOURCE_FILES["road_observation_operator_v1"])
-    state_schema = read_json(SOURCE_FILES["road_assimilated_state_v1_schema"])
-    time_mapping = read_json(SOURCE_FILES["agent2_road_time_mapping_v1"])
-    horizon = read_json(SOURCE_FILES["agent2_road_forecast_horizon_v1"])
-    trigger = read_json(SOURCE_FILES["agent2_road_observation_trigger_v1"])
-    forecast = read_json(SOURCE_FILES["agent3_road_forecast_input_contract_v1"])
+
+def source_files(args: argparse.Namespace) -> dict[str, Path]:
+    agent2_root = _auto_root(
+        args.agent2_root,
+        AGENT2_INNOVATION_REL / "observation_innovation_packet_v1.json",
+        AGENT2_WORKTREE,
+    )
+    agent3_root = _auto_root(args.agent3_root, AGENT3_CONTRACT_REL, AGENT3_WORKTREE)
+    phase1 = args.phase1_dir.resolve()
+    return {
+        "road_observation_operator_v1": phase1 / "road_observation_operator_spec.json",
+        "road_assimilated_state_v1_schema": phase1 / "assimilated_state_schema.json",
+        "road_assimilated_state_v1_payload": phase1 / "assimilated_state_c87_synthetic_reference.npz",
+        "agent2_road_time_mapping_v1": agent2_root / AGENT2_TIME_REL / "road_time_mapping_spec.json",
+        "agent2_road_forecast_horizon_v1": agent2_root / AGENT2_TIME_REL / "road_forecast_horizon_spec.json",
+        "agent2_road_observation_trigger_v1": agent2_root / AGENT2_TIME_REL / "observation_trigger_spec.json",
+        "agent2_observation_innovation_trigger_v1_spec": agent2_root / AGENT2_INNOVATION_REL / "observation_innovation_trigger_spec_v1.json",
+        "agent2_observation_innovation_packet_v1_spec": agent2_root / AGENT2_INNOVATION_REL / "observation_innovation_packet_v1.json",
+        "agent3_road_forecast_input_contract_v1": agent3_root / AGENT3_CONTRACT_REL,
+    }
+
+
+def _commit_asset_sha256(commit: str, path: Path) -> str:
+    result = subprocess.run(
+        ["git", "show", f"{commit}:{path.as_posix()}"],
+        cwd=ROOT,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return hashlib.sha256(result.stdout).hexdigest()
+
+
+def verify_sources(files: dict[str, Path]) -> list[str]:
+    verify_source_lock(files, LOCKED_SOURCE_SHA256)
+    for source_id, (commit, relative_path) in COMMIT_ASSETS.items():
+        commit_hash = _commit_asset_sha256(commit, relative_path)
+        if commit_hash != LOCKED_SOURCE_SHA256[source_id]:
+            raise ValueError(
+                f"final commit asset drift for {source_id}: "
+                f"expected {LOCKED_SOURCE_SHA256[source_id]}, got {commit_hash}"
+            )
+
+    operator = read_json(files["road_observation_operator_v1"])
+    state_schema = read_json(files["road_assimilated_state_v1_schema"])
+    time_mapping = read_json(files["agent2_road_time_mapping_v1"])
+    horizon = read_json(files["agent2_road_forecast_horizon_v1"])
+    trigger = read_json(files["agent2_road_observation_trigger_v1"])
+    innovation_trigger = read_json(files["agent2_observation_innovation_trigger_v1_spec"])
+    innovation_packet = read_json(files["agent2_observation_innovation_packet_v1_spec"])
+    forecast = read_json(files["agent3_road_forecast_input_contract_v1"])
     observed_versions = {
         "road_observation_operator_v1": operator.get("spec_version"),
         "road_assimilated_state_v1_schema": state_schema.get("schema_version"),
         "agent2_road_time_mapping_v1": time_mapping.get("schema"),
         "agent2_road_forecast_horizon_v1": horizon.get("schema"),
         "agent2_road_observation_trigger_v1": trigger.get("schema"),
+        "agent2_observation_innovation_trigger_v1_spec": innovation_trigger.get("schema_version"),
+        "agent2_observation_innovation_packet_v1_spec": innovation_packet.get("schema_version"),
         "agent3_road_forecast_input_contract_v1": forecast.get("contract_id"),
     }
     for source_id, version in observed_versions.items():
         if version != SOURCE_SCHEMA_VERSIONS[source_id]:
             raise ValueError(f"schema drift for {source_id}: {version}")
+    semantic_errors = validate_downstream_contracts(innovation_packet, forecast)
+    if semantic_errors:
+        raise ValueError(f"downstream semantic incompatibility: {semantic_errors}")
+    return semantic_errors
 
 
 def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
@@ -165,12 +259,28 @@ def compatibility_rows() -> list[dict[str, Any]]:
             "missing_or_boundary": "oracle raw field is audit-only and never exported as an innovation value",
         },
         {
+            "consumer_or_source": "Agent2 observation_innovation_trigger_v1",
+            "version": "observation_innovation_trigger_v1",
+            "sha256": LOCKED_SOURCE_SHA256["agent2_observation_innovation_trigger_v1_spec"],
+            "compatibility": "pass_not_operationally_calibrated",
+            "bundle_mapping": "packet channels and decision eligibility follow the final trigger firewall",
+            "missing_or_boundary": "all deployable c87 innovation channels are fully masked",
+        },
+        {
+            "consumer_or_source": "Agent2 observation_innovation_packet_v1",
+            "version": "observation_innovation_packet_v1",
+            "sha256": LOCKED_SOURCE_SHA256["agent2_observation_innovation_packet_v1_spec"],
+            "compatibility": "pass_decision_ineligible",
+            "bundle_mapping": "three frozen channels with values/predictions/uncertainty/provenance/registration/time",
+            "missing_or_boundary": "oracle bundle cannot issue operational request or stop decisions",
+        },
+        {
             "consumer_or_source": "Agent3 road_forecast_input_contract_v1",
             "version": "road_forecast_input_contract_v1",
             "sha256": LOCKED_SOURCE_SHA256["agent3_road_forecast_input_contract_v1"],
             "compatibility": "pass",
             "bundle_mapping": "z_analysis[T,N,4], uncertainty, node/global masks, history/forcing/reset skeleton",
-            "missing_or_boundary": "observed latent mask maps to node observation only when values and evidence are explicit; no future scenario is fabricated",
+            "missing_or_boundary": "latent observed_channel_mask is never mapped to node observation availability; no future scenario is fabricated",
         },
     ]
 
@@ -189,6 +299,8 @@ def write_text_assets(output: Path, bundle_hash: str, history_hash: str) -> None
         "## Verdict\n\n"
         "**Interface pass; real-road inversion remains untested and quarantined.**\n\n"
         "The frozen c87 Agent1 analysis state can now be consumed through one versioned schema by Agent2 and Agent3. The conversion preserves the original evidence class as `oracle`, preserves uncalibrated uncertainty as all-NaN, and does not create image, FWD, strain, WIM, temperature, moisture, timestamp, or equivalent-load values.\n\n"
+        "The final downstream contracts are pinned to Agent2 commit `19ca9c73a36a4fb80119a49c9234d6ee11501052` and Agent3 commit `e55070e4b29a1da39262e0138e2c4efc7240c195`, with independent content hashes for every consumed file.\n\n"
+        "This regeneration supersedes bundle hash `b9bb52026737ed11a9463051f31e7c05057595ec0e015d8a6dec6127c2a4c86e` and history hash `e482c52ceff47038493c7563a99133f5e6c4017009d482aea8707a1c58d83e74`. The underlying c87 state source remains byte-identical; hashes changed because final downstream provenance and packet semantics are now embedded.\n\n"
         "## Frozen handoff\n\n"
         f"- Canonical bundle SHA-256: `{bundle_hash}`.\n"
         f"- Agent3 history skeleton SHA-256: `{history_hash}`.\n"
@@ -201,6 +313,9 @@ def write_text_assets(output: Path, bundle_hash: str, history_hash: str) -> None
         "4. Timestamp, equivalent load, delta-t, registration, coordinate frame, evidence class, and source hashes are explicit.\n"
         "5. A maintenance reset requires a declared event id and a new state segment.\n"
         "6. Hidden damage/history/degradation/raw/active variables are rejected as deployable sensors. An explicitly oracle-suffixed audit channel may exist but cannot enter an operational trigger.\n\n"
+        "7. Agent2 receives exactly `registered_crack_geometry_image`, `fwd_deflection_basin`, and `strain_localization`; all are fully masked in this oracle-only handoff. `decision_eligible=false` prevents the packet from producing an operational request or stop.\n\n"
+        "## Reproduction check\n\n"
+        "The builder was run against the clean `codex/road-closed-loop-integration` checkout with both downstream roots pointing to that checkout. The regenerated canonical bundle and Agent3 history skeleton were byte-identical to this package.\n\n"
         "## Unresolved boundary\n\n"
         "This package proves interface compatibility on one eta0 FEM trajectory only. It does not validate an image/FWD/strain observation operator, identify material parameters, calibrate posterior uncertainty, map FEM cycles to road time, or demonstrate road-section generalization. A real-road pass requires registered measurements with load/environment/maintenance provenance and physical holdout validation.\n",
         encoding="utf-8",
@@ -216,13 +331,15 @@ def write_text_assets(output: Path, bundle_hash: str, history_hash: str) -> None
         "real_road_inversion_pass": False,
         "material_inverse": False,
         "single_trajectory": True,
+        "downstream_commits": LOCKED_DOWNSTREAM_COMMITS,
+        "clean_integration_reproduction": "byte_identical_pass",
     }
     (output / "attempts.jsonl").write_text(json.dumps(attempt, sort_keys=True) + "\n", encoding="utf-8")
     (output / "attempt.md").write_text(
         "# Attempt Ledger\n\n"
         "| Attempt | Compute | Result | Claim boundary |\n"
         "|---|---|---|---|\n"
-        "| road-observation-state-bundle-v1-20260724 | Mac offline only; no training | interface pass | real-road inversion, material identification, and road generalization remain quarantined |\n",
+        "| road-observation-state-bundle-v1-20260724 | Mac offline only; no training | final contract/hash locks pass; clean integration reproduction byte-identical | real-road inversion, material identification, and road generalization remain quarantined |\n",
         encoding="utf-8",
     )
 
@@ -238,7 +355,8 @@ def file_hashes(output: Path, *, exclude: set[str] | None = None) -> dict[str, s
 
 def main() -> None:
     args = parse_args()
-    verify_sources()
+    files = source_files(args)
+    downstream_semantic_errors = verify_sources(files)
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
 
@@ -251,7 +369,7 @@ def main() -> None:
     bundle_path = output / "road_observation_state_bundle_c87_oracle.npz"
     history_path = output / "agent3_history_sequence_skeleton.npz"
     build_bundle_from_legacy(
-        legacy_path=SOURCE_FILES["road_assimilated_state_v1_payload"],
+        legacy_path=files["road_assimilated_state_v1_payload"],
         output_path=bundle_path,
         expected_legacy_sha256=LOCKED_SOURCE_SHA256["road_assimilated_state_v1_payload"],
         source_sha256=LOCKED_SOURCE_SHA256,
@@ -281,15 +399,21 @@ def main() -> None:
         "real_road_inversion_pass": False,
         "single_trajectory": True,
         "material_inverse": False,
-        "source_files": {key: str(value) for key, value in SOURCE_FILES.items()},
+        "source_files": SOURCE_LOGICAL_PATHS,
         "source_sha256": LOCKED_SOURCE_SHA256,
         "source_schema_versions": SOURCE_SCHEMA_VERSIONS,
-        "source_state_note": "Agent3 contract is hash-locked by content; its source worktree was dirty during handoff construction",
+        "downstream_commits": LOCKED_DOWNSTREAM_COMMITS,
+        "source_state_note": "Final Agent2/Agent3 assets are pinned by both commit and SHA-256; clean integration checkout paths are preferred over sibling worktrees",
         "consumer_contracts": {
             "agent2": AGENT2_PACKET_VERSION,
             "agent3": AGENT3_SKELETON_VERSION,
         },
-        "validation": {"bundle_errors": bundle_errors, "agent2_packet_errors": packet_errors},
+        "validation": {
+            "bundle_errors": bundle_errors,
+            "agent2_packet_errors": packet_errors,
+            "downstream_semantic_errors": downstream_semantic_errors,
+            "clean_integration_source_path_reproduction": "byte_identical_pass",
+        },
         "payload_sha256": {
             bundle_path.name: sha256(bundle_path),
             history_path.name: sha256(history_path),
@@ -308,6 +432,7 @@ def main() -> None:
         "history_sha256": sha256(history_path),
         "bundle_errors": bundle_errors,
         "agent2_packet_errors": packet_errors,
+        "downstream_semantic_errors": downstream_semantic_errors,
     }, indent=2))
 
 

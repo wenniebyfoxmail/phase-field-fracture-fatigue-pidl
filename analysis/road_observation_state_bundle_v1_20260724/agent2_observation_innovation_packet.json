@@ -4,53 +4,247 @@
     "observed_node_count": 8641,
     "values_exported_to_trigger": false
   },
+  "channels": {
+    "fwd_deflection_basin": {
+      "feature_names": [
+        "central_deflection",
+        "basin_curvature",
+        "basin_area"
+      ],
+      "mask": [
+        false,
+        false,
+        false
+      ],
+      "predicted_values": [
+        null,
+        null,
+        null
+      ],
+      "provenance": {
+        "evidence_class": "oracle_derived_proxy",
+        "observation_operator_id": "unavailable_no_deployable_observation",
+        "real_road_compatible": false,
+        "source_hashes": {
+          "agent2_observation_innovation_packet_v1_spec": "ff5059b96f8e35aaef526c10d54ea37710a744f4d3a57278dc6c3647ca72666f",
+          "agent2_observation_innovation_trigger_v1_spec": "207723248cc8f6e609e62fbee85cc72a89b04ad0b815aa919026dac9845fb6dc",
+          "agent2_road_forecast_horizon_v1": "f593a005a1175c5914ef0fd6b8855879180f726886abb69f48c0bec174d22fc5",
+          "agent2_road_observation_trigger_v1": "94b4723dabfb4533efe748ce914677e01b5fa08a7c3f6bc9792feeadd5b393d3",
+          "agent2_road_time_mapping_v1": "630bbd878529fba18ed29c733c414433f51815e9243e7565697b6a81e2fd32c4",
+          "agent3_road_forecast_input_contract_v1": "681d68711f93e2af80621e4fe70b1bdb4b134a24c0c7ed880f2d9d9630a8415d",
+          "road_assimilated_state_v1_payload": "276bca62f3955c0948bd23891aa10dcca209f3e562605303b61b263d53759ffe",
+          "road_assimilated_state_v1_schema": "18f9191e3809e2905cf5a7adb3dbc26b63fdf050d4ae346c268c3c39af7dda31",
+          "road_observation_operator_v1": "b067ace595a1cb0055f680e0ac7c2e7e2866c4f17192d4ba8c56d5838e7bbacc"
+        },
+        "source_id": "c87_fem_oracle_upper_bound_adapter"
+      },
+      "registration": {
+        "coordinate_frame_id": "synthetic_fem_mesh_xy",
+        "quality_score": null,
+        "registration_id": "fem_mesh_identity",
+        "uncertainty": "unavailable"
+      },
+      "time": {
+        "equivalent_load_index": null,
+        "inspection_epoch_id": "c87_oracle_adapter_not_road_time",
+        "integration_step_index": 0,
+        "timestamp": null
+      },
+      "uncertainty": {
+        "observation_std": [
+          null,
+          null,
+          null
+        ],
+        "prediction_std": [
+          null,
+          null,
+          null
+        ],
+        "semantics": "unavailable and fully masked; missing is not zero evidence"
+      },
+      "values": [
+        null,
+        null,
+        null
+      ]
+    },
+    "registered_crack_geometry_image": {
+      "feature_names": [
+        "visible_area_fraction",
+        "tip_x_p99",
+        "centroid_x",
+        "centroid_y",
+        "transverse_width"
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "predicted_values": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "provenance": {
+        "evidence_class": "oracle_derived_proxy",
+        "observation_operator_id": "unavailable_no_deployable_observation",
+        "real_road_compatible": false,
+        "source_hashes": {
+          "agent2_observation_innovation_packet_v1_spec": "ff5059b96f8e35aaef526c10d54ea37710a744f4d3a57278dc6c3647ca72666f",
+          "agent2_observation_innovation_trigger_v1_spec": "207723248cc8f6e609e62fbee85cc72a89b04ad0b815aa919026dac9845fb6dc",
+          "agent2_road_forecast_horizon_v1": "f593a005a1175c5914ef0fd6b8855879180f726886abb69f48c0bec174d22fc5",
+          "agent2_road_observation_trigger_v1": "94b4723dabfb4533efe748ce914677e01b5fa08a7c3f6bc9792feeadd5b393d3",
+          "agent2_road_time_mapping_v1": "630bbd878529fba18ed29c733c414433f51815e9243e7565697b6a81e2fd32c4",
+          "agent3_road_forecast_input_contract_v1": "681d68711f93e2af80621e4fe70b1bdb4b134a24c0c7ed880f2d9d9630a8415d",
+          "road_assimilated_state_v1_payload": "276bca62f3955c0948bd23891aa10dcca209f3e562605303b61b263d53759ffe",
+          "road_assimilated_state_v1_schema": "18f9191e3809e2905cf5a7adb3dbc26b63fdf050d4ae346c268c3c39af7dda31",
+          "road_observation_operator_v1": "b067ace595a1cb0055f680e0ac7c2e7e2866c4f17192d4ba8c56d5838e7bbacc"
+        },
+        "source_id": "c87_fem_oracle_upper_bound_adapter"
+      },
+      "registration": {
+        "coordinate_frame_id": "synthetic_fem_mesh_xy",
+        "quality_score": null,
+        "registration_id": "fem_mesh_identity",
+        "uncertainty": "unavailable"
+      },
+      "time": {
+        "equivalent_load_index": null,
+        "inspection_epoch_id": "c87_oracle_adapter_not_road_time",
+        "integration_step_index": 0,
+        "timestamp": null
+      },
+      "uncertainty": {
+        "observation_std": [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "prediction_std": [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "semantics": "unavailable and fully masked; missing is not zero evidence"
+      },
+      "values": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    "strain_localization": {
+      "feature_names": [
+        "top1_centroid_x",
+        "top1_centroid_y",
+        "top1_width_x",
+        "top1_width_y"
+      ],
+      "mask": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "predicted_values": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "provenance": {
+        "evidence_class": "oracle_derived_proxy",
+        "observation_operator_id": "unavailable_no_deployable_observation",
+        "real_road_compatible": false,
+        "source_hashes": {
+          "agent2_observation_innovation_packet_v1_spec": "ff5059b96f8e35aaef526c10d54ea37710a744f4d3a57278dc6c3647ca72666f",
+          "agent2_observation_innovation_trigger_v1_spec": "207723248cc8f6e609e62fbee85cc72a89b04ad0b815aa919026dac9845fb6dc",
+          "agent2_road_forecast_horizon_v1": "f593a005a1175c5914ef0fd6b8855879180f726886abb69f48c0bec174d22fc5",
+          "agent2_road_observation_trigger_v1": "94b4723dabfb4533efe748ce914677e01b5fa08a7c3f6bc9792feeadd5b393d3",
+          "agent2_road_time_mapping_v1": "630bbd878529fba18ed29c733c414433f51815e9243e7565697b6a81e2fd32c4",
+          "agent3_road_forecast_input_contract_v1": "681d68711f93e2af80621e4fe70b1bdb4b134a24c0c7ed880f2d9d9630a8415d",
+          "road_assimilated_state_v1_payload": "276bca62f3955c0948bd23891aa10dcca209f3e562605303b61b263d53759ffe",
+          "road_assimilated_state_v1_schema": "18f9191e3809e2905cf5a7adb3dbc26b63fdf050d4ae346c268c3c39af7dda31",
+          "road_observation_operator_v1": "b067ace595a1cb0055f680e0ac7c2e7e2866c4f17192d4ba8c56d5838e7bbacc"
+        },
+        "source_id": "c87_fem_oracle_upper_bound_adapter"
+      },
+      "registration": {
+        "coordinate_frame_id": "synthetic_fem_mesh_xy",
+        "quality_score": null,
+        "registration_id": "fem_mesh_identity",
+        "uncertainty": "unavailable"
+      },
+      "time": {
+        "equivalent_load_index": null,
+        "inspection_epoch_id": "c87_oracle_adapter_not_road_time",
+        "integration_step_index": 0,
+        "timestamp": null
+      },
+      "uncertainty": {
+        "observation_std": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "prediction_std": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "semantics": "unavailable and fully masked; missing is not zero evidence"
+      },
+      "values": [
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  },
   "decision_eligibility_reason": "only an oracle upper-bound state is present; deployable road innovations are missing",
   "decision_eligible": false,
-  "equivalent_load_index": {
-    "available": false,
-    "value": null
-  },
   "evidence_class": "oracle",
-  "forcing": {
-    "temperature_moisture": {
-      "available": false,
-      "mask": false,
-      "value": null
-    },
-    "wim_axle_spectrum": {
-      "available": false,
-      "mask": false,
-      "value": null
-    }
-  },
-  "innovations": {
-    "fwd_deflection_basin": {
-      "available": false,
-      "mask": false,
-      "value": null
-    },
-    "registered_crack_image": {
-      "available": false,
-      "mask": false,
-      "value": null
-    },
-    "strain_sensor": {
-      "available": false,
-      "mask": false,
-      "value": null
-    }
-  },
-  "maintenance": {
-    "declared": false,
-    "event_id": null,
-    "reset": false
-  },
   "missingness_rule": "null plus mask=false; missing never means zero innovation",
-  "packet_version": "road_observation_innovation_packet_v1",
-  "source_bundle_sha256": "b9bb52026737ed11a9463051f31e7c05057595ec0e015d8a6dec6127c2a4c86e",
+  "operational_context": {
+    "data_quality": {
+      "hard": false,
+      "missing_fraction": 1.0,
+      "registration_failure": false,
+      "sensor_drift": null,
+      "warning": false
+    },
+    "inspection_overdue": false,
+    "maintenance_event": false,
+    "traffic_environment_ood": {
+      "hard": false,
+      "provenance": "unavailable in the c87 FEM oracle bundle",
+      "score": null,
+      "warning": false
+    }
+  },
+  "packet_id": "agent1-c87-oracle-ineligible-skeleton",
+  "schema_version": "observation_innovation_packet_v1",
+  "source_bundle_sha256": "e94027542484431d3a53222d930c81e9ed6c655b86a822ced1452fa8c4c0f253",
   "source_bundle_version": "road_observation_state_bundle_v1",
-  "timestamp": {
-    "available": false,
-    "value": null
+  "time": {
+    "equivalent_load_index": null,
+    "inspection_epoch_id": "c87_oracle_adapter_not_road_time",
+    "integration_step_index": 0,
+    "timestamp": null
   }
 }
