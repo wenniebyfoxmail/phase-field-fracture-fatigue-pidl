@@ -39,7 +39,7 @@ Three confounds make this smoke NOT a clean discriminator between Phase 2A
 - Surface any infrastructure bugs (NN output scaling, mesh quadrature, etc.)
   before more expensive Phase 2B work.
 
-## Expected trajectory (under corrected w1_norm=c_w, expert P0 fix 2026-05-14)
+## Expected trajectory (under the code-consistent w1_norm=1 correction)
 
 At `disp_ratio_intact=0.75` with σ_char Griffith scaling:
 - ψ_per_cycle_norm ≈ (0.058)²/2 ≈ 1.7e-3   (deep subcritical)
@@ -89,7 +89,7 @@ print("=" * 72)
 # Material props: switch to PCC normalized values
 config.mat_prop_dict["mat_E"]  = s.mat_E_norm    # = 1.0
 config.mat_prop_dict["mat_nu"] = s.mat_nu_norm   # = 0.18 (PCC, vs toy 0.3)
-config.mat_prop_dict["w1"]     = s.w1_norm       # = c_w (AT1: 8/3≈2.667, AT2: 2.0) post-P0 fix
+config.mat_prop_dict["w1"]     = s.w1_norm       # = 1 because w1_phys = G_c / ell
 config.mat_prop_dict["l0"]     = s.l0_norm       # = 0.02 (vs toy 0.01)
 
 # PFF model: match scaling choice (must agree on c_w)

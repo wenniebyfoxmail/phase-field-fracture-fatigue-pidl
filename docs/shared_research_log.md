@@ -42,6 +42,24 @@
 
 ## Entries
 
+## 2026-07-24 · Mac-PIDL [retraction+decision]
+
+**Correct PCC/road scaling convention before any new producer run**
+
+The implemented damage energy is `w1/c_w * [w(alpha)+ell^2|grad alpha|^2]`
+and `config.py` defines `w1=G_c/ell`. The legacy scaling utility instead used
+`w1_phys=c_w*G_c/ell`, giving `w1_norm=c_w`; this double-counted `c_w` and
+overstated the damage-energy coefficient by 8/3 for AT1. Branch
+`codex/road-rescaling-bridge` corrects the mapping to `w1_norm=1`, adds an exact
+dimensionless positive-control tool, and freezes the road observation/claim
+boundary. Existing PCC scaling outputs using `w1_norm=2.667` are units-smoke
+artifacts and must not be used as calibrated mechanism or fatigue-life evidence.
+
+This branch does not alter the training loss or defaults and does not affect
+the three active FEM trajectory producers. Any future use of
+`run_pcc_baseline_umax.py` must pull the corrected branch/commit and start a new
+provenance-labelled run; do not resume an old `w1_norm=2.667` checkpoint.
+
 ## 2026-07-15 · Mac-PIDL [decision]
 
 **Graph architecture matrix approved: independent UV/damage branches plus damage-only latent coupling**

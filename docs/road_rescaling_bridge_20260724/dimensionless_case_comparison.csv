@@ -1,0 +1,4 @@
+case,evidence_label,nu,ell_over_L,H_over_L,a0_over_L,u_max_over_u_ref,load_energy_ratio,alpha_T_over_psi_ref,h_over_ell,eta,R_ratio,pff_model,plane_condition
+formal_toy,normalized benchmark,0.3,0.01,1.0,0.5,0.12,0.0144,0.5,,0.0,0.0,AT1,plane_strain
+toy_exact_physical_realization,similarity demonstration only,0.3,0.01,1.0,0.5,0.12,0.0144,0.5,0.3333333333333333,0.0,0.0,AT1,plane_strain
+legacy_pcc_illustrative,"literature-derived preset, not road calibrated",0.18,0.02,1.0,0.5,0.05809475019311126,0.0033750000000000004,100.0,0.3333333333333333,0.0,0.0,AT1,plane_strain

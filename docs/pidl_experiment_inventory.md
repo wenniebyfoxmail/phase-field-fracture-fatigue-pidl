@@ -30,6 +30,12 @@ negative       useful failed attempt
 inconclusive   preserved for traceability only
 ```
 
+## 2026-07-24 Diagnostic Addendum
+
+| case_id | status | why run | key change | primary asset | claim boundary |
+|---|---|---|---|---|---|
+| `road_rescaling_bridge_20260724` | diagnostic | Test whether the formal toy can be dimensionalized consistently while the independent FEM road trajectories are produced | Correct `w1_phys` to `G_c/ell`; freeze the full dimensionless similarity and road-observation contract; no training | `docs/road_rescaling_bridge_20260724/decision.md` | dimensional similarity only; no road calibration, traffic-time mapping, or RUL claim |
+
 ## Census Scope
 
 Scanned roots:

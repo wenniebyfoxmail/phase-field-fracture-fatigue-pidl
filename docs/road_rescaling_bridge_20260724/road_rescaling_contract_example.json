@@ -1,0 +1,59 @@
+{
+  "claim_boundary": {
+    "cycle_to_traffic_mapping_available": false,
+    "dimensional_similarity_only": true,
+    "note": "Illustrative legacy PCC dimensionalization. It is not a road-calibrated case.",
+    "road_calibrated": false
+  },
+  "dimensionless": {
+    "H_over_L": 1.0,
+    "R_ratio": 0.0,
+    "a0_over_L": 0.5,
+    "alpha_T_over_psi_ref": 100.0,
+    "ell_over_L": 0.02,
+    "eta": 0.0,
+    "h_over_ell": 0.3333333333333333,
+    "load_energy_ratio": 0.0033750000000000004,
+    "mat_E": 1.0,
+    "nu": 0.18,
+    "pff_model": "AT1",
+    "plane_condition": "plane_strain",
+    "u_max_over_u_ref": 0.05809475019311126,
+    "w1": 1.0
+  },
+  "observations": {
+    "environment": null,
+    "geometry": null,
+    "maintenance": null,
+    "material_tests": null,
+    "structural_response": null,
+    "traffic_load": null
+  },
+  "physical": {
+    "E_phys": 30000.0,
+    "G_c_phys": 0.1,
+    "H_phys": 100.0,
+    "L_phys": 100.0,
+    "R_ratio": 0.0,
+    "W_phys": 100.0,
+    "a0_phys": 50.0,
+    "alpha_T_phys": 5.0,
+    "ell_phys": 2.0,
+    "evidence_class": "literature-derived-unverified",
+    "ft_phys": 3.0,
+    "material_label": "PCC illustrative legacy preset",
+    "mesh_h_phys": 0.6666666666666666,
+    "nu_phys": 0.18,
+    "pff_model": "AT1",
+    "plane_condition": "plane_strain",
+    "residual_stiffness": 0.0,
+    "u_max_phys": 0.0075
+  },
+  "scales": {
+    "L_ref": 100.0,
+    "psi_ref": 0.05,
+    "sigma_ref": 38.72983346207417,
+    "strain_ref": 0.0012909944487358056,
+    "u_ref": 0.12909944487358055
+  }
+}

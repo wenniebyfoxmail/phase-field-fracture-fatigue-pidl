@@ -1,0 +1,8 @@
+group,quantity,road_measurement,role,identifiability
+geometry,"L,H,layer thickness,a0,crack path","registered 2D/3D imaging, cores, GPR",direct geometry ratios,partial; surface images do not give crack depth
+elastic,effective modulus / structural stiffness,"FWD deflection bowl, strain or DIC under known load","constrain E(T,rate) and boundary response",system/layer inverse problem; not unique from one bowl
+fracture,G_c and process-zone/regularization scale ell,SCB or DC(T) on cores plus image/DIC calibration,set psi_ref=G_c/ell,"ell is model/calibration dependent, not directly observed"
+fatigue,alpha_T/psi_ref and degradation law,cyclic lab test with repeated field observations,calibrate fatigue activation and growth,not determined by E and G_c
+traffic,"load spectrum, axle spacing, speed, contact patch",WIM plus tire/contact assumptions,"build load blocks, R ratio and rate groups",WIM uncertainty must propagate
+environment,"temperature, moisture, ageing and reduced time",embedded/weather sensors and material master curves,condition viscoelastic parameters,missing from current brittle elastic toy
+maintenance,intervention time and changed geometry/material,asset management records,state reset / regime change,"must be explicit, never inferred as a cycle"

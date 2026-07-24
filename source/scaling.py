@@ -1,277 +1,345 @@
-"""scaling.py — Physical PCC ↔ PIDL-normalized unit conversion.
+"""Physical-to-PIDL scaling for phase-field fracture and fatigue.
 
-Phase 2A infrastructure (2026-05-14, Mac dev). Pure utility module; no PIDL
-imports. Defines the dimensionless mapping for running PCC concrete physics
-in the existing PIDL codebase that uses `mat_E=1` normalized units.
+The PIDL energy implementation uses
 
-## Non-dim scheme
+    E_d = (w1 / c_w) [w(alpha) + ell**2 |grad(alpha)|**2],
 
-Two reference quantities (Buckingham π):
-    L_char = W_phys                                    — domain width
-    sigma_char = sqrt(E_phys * G_f_phys / ell_phys)    — Griffith critical stress
+so ``w1`` has units of energy density and is exactly ``G_c / ell``.  The
+normalization below chooses
 
-Then (corrected normalization per external expert review, 2026-05-14):
-    mat_E_norm = E_phys / sigma_char² * sigma_char² / E_phys = 1     ✓ matches toy
-    domain_norm = [-W/(2*L_char), +W/(2*L_char)] = [-0.5, 0.5]      ✓ matches toy
-    l0_norm = ell_phys / L_char    (typically O(0.01-0.05))
-    w1_norm = w1_phys / psi_char    ← CORRECTED: was σ_char, now ψ_char
-              where w1_phys = G_f * c_w / ell_phys  (cohesive-driver stress, MPa)
-                    psi_char = sigma_char² / E_phys  (energy density scale, MPa)
-              c_w = 8/3 for AT1, c_w = 2 for AT2
-              Under Griffith σ_char: ψ_char = G_f/ell, so w1_norm = c_w
-              (= 8/3 ≈ 2.67 for AT1, = 2.0 for AT2 PCC)
-    alpha_T_norm = alpha_T_phys / psi_char
+    psi_ref = G_c / ell,
+    sigma_ref = sqrt(E G_c / ell),
+    u_ref = L_ref sqrt(G_c / (E ell)).
 
-## Why ψ_char (not σ_char) for w1_norm?
+This gives the code-compatible normalized values ``mat_E = 1`` and
+``w1 = 1``.  ``c_w`` remains inside the phase-field functional and must not be
+folded into ``w1`` a second time.
 
-PIDL's compute_energy.py builds the damage-energy integrand as
-    E_d_density = (w1/c_w) * [w(α) + l0² * |∇α|²]
-which has units of stress (MPa) — but represents an ENERGY DENSITY, not a stress.
-To non-dim correctly, the natural denominator is the energy-density scale
-ψ_char = σ_char²/E, not σ_char itself.
-
-The earlier "w1_norm = w1_phys/σ_char" gave 3.44e-3 for AT1 PCC — wrong by
-factor ~σ_char/ψ_char = E/σ_char ≈ 775×. That made damage cost vanishingly
-small in PIDL, which would (a) artificially favor crack growth and
-(b) confound any "Phase 2A null result" with a core scaling bug rather than
-true Carrara structural asymmetry. External expert review flagged this 2026-05-14.
-
-## What PCC reveals vs toy (corrected)
-
-α_T/ψ_char ratio measures fatigue/critical-energy gap:
-- toy: α_T_norm = 0.5, ψ_char_norm ≡ 1 by def. → ratio ≈ 0.5 (low-cycle regime)
-- PCC: α_T_norm = 100 → ratio ≈ 100 (much higher cycle count to activate fatigue)
-
-At S^max=0.75·f_t in normalized units:
-    σ_norm = 0.75·f_t / σ_char = 0.75·3 / 38.73 ≈ 0.058
-    ψ_per_cycle_norm ≈ σ_norm²/2 ≈ 1.7e-3   (NOT 0.56 as previously claimed)
-    N_f_pure_estimate = α_T_norm / ψ_per_cycle ≈ 100/1.7e-3 ≈ **6×10⁴ cycles**
-        for the linear pre-fatigue regime (f=1 still).
-
-This is deep VHCF — well beyond what PIDL can train in a paper-timescale run.
-Phase 2A first smoke at N=50 is expected to show ᾱ accumulating LINEARLY but
-very slowly (~50·1.7e-3 ≈ 0.085 = 0.085% of α_T), with f≈1 throughout and
-no observable d-localization. This is a "infrastructure transition" smoke,
-NOT a discriminator between Phase 2A and Phase 2B kernel adequacy.
-
-## Caveat — uncalibrated load mapping (P1, P2, P4 from expert review)
-
-`disp_for_stress_intact()` below assumes intact-bar kinematics
-u_top = (σ/E)·H, which is exact only for an uncracked uniform bar. With the
-SENT precrack at a₀=W/2 the compliance is higher, so the same prescribed
-displacement gives a nominal stress LESS than the target. The runner's
-`disp_ratio_intact` label is therefore an "intact-bar displacement-equivalent
-stress ratio", NOT a calibrated cracked-geometry nominal stress. Compare
-against Baktheer with this caveat.
-
-Also: this default `a0_phys = W/2 = 50 mm` reuses the toy half-width notch
-geometry so the existing toy mesh (`meshed_geom1.msh`) can be reused unchanged.
-Earlier FEM PCC line used `a0 = 5 mm` (a₀/W = 0.05). Phase 2A units transition
-is NOT geometrically equivalent to the FEM PCC line — geometry-vs-units
-effects are confounded here. Treat as Phase 2A units-transition smoke only.
+Matching these units is necessary for scale transfer, but it is not a road
+validation.  Geometry ratios, load shape, fatigue threshold, constitutive
+family, environment, and observation semantics must also match or be
+identified from data.
 """
 from __future__ import annotations
-from dataclasses import dataclass
+
+from dataclasses import asdict, dataclass
+from math import sqrt
+from typing import Any, Dict, Optional
+
+
+_CW = {"AT1": 8.0 / 3.0, "AT2": 2.0}
+
+
+def _positive(name: str, value: float) -> None:
+    if value <= 0:
+        raise ValueError(f"{name} must be positive, got {value}")
 
 
 @dataclass(frozen=True)
-class PCCScaling:
-    """Physical PCC parameters + derived characteristic scales + non-dim values.
+class PhaseFieldScaling:
+    """Dimensional material, geometry, load, and discretization contract.
 
-    Physical units: E in MPa, lengths in mm, G_f in N/mm, stresses in N/mm² (= MPa).
+    The default physical units are MPa, mm, and N/mm.  This is a unit system,
+    not a material assumption: any consistent stress-length system works.
 
-    Usage:
-        s = PCCScaling.baktheer_default(pff_model='AT1')
-        config.mat_prop_dict['mat_E'] = s.mat_E_norm
-        config.mat_prop_dict['mat_nu'] = s.mat_nu_norm
-        config.mat_prop_dict['w1']    = s.w1_norm
-        config.mat_prop_dict['l0']    = s.l0_norm
-        config.fatigue_dict['alpha_T']  = s.alpha_T_norm
-        config.fatigue_dict['disp_max'] = s.disp_for_stress_intact(0.75 * s.ft_phys)
+    ``alpha_T_phys`` is optional because it is a fatigue parameter that must be
+    calibrated rather than inferred from ``E`` and ``G_c`` alone.
     """
-    # ── Physical PCC parameters ─────────────────────────────────────────────
-    E_phys:       float    # Young's modulus (MPa)
-    nu_phys:      float    # Poisson ratio
-    G_f_phys:     float    # Fracture energy (N/mm)
-    ft_phys:      float    # Tensile strength (MPa) — used for loading target only
-    ell_phys:     float    # Phase-field length scale (mm)
-    alpha_T_phys: float    # Fatigue threshold (N/mm²) per Baktheer 2024
-    W_phys:       float    # Domain width (mm) — used as L_char
-    H_phys:       float    # Domain height (mm)
-    a0_phys:      float    # Initial crack length (mm)
-    pff_model:    str = 'AT1'   # 'AT1' or 'AT2' (determines c_w in w1 formula)
 
-    # ── Derived characteristic scales (auto-computed) ───────────────────────
-    L_char:       float = 0.0   # = W_phys
-    sigma_char:   float = 0.0   # = sqrt(E * G_f / ell)  (Griffith)
-    u_char:       float = 0.0   # = L_char * sigma_char / E_phys
-    psi_char:     float = 0.0   # = sigma_char² / E_phys  (energy density scale)
-    c_w:          float = 0.0   # 8/3 for AT1, 2 for AT2
+    E_phys: float
+    nu_phys: float
+    G_c_phys: float
+    ell_phys: float
+    L_phys: float
+    H_phys: float
+    a0_phys: float
+    u_max_phys: float
+    alpha_T_phys: Optional[float] = None
+    mesh_h_phys: Optional[float] = None
+    residual_stiffness: float = 0.0
+    R_ratio: float = 0.0
+    pff_model: str = "AT1"
+    plane_condition: str = "plane_strain"
+    material_label: str = "unspecified"
+    evidence_class: str = "illustrative"
 
-    def __post_init__(self):
-        c_w = {'AT1': 8.0/3.0, 'AT2': 2.0}[self.pff_model]
-        L_char = self.W_phys
-        sigma_char = (self.E_phys * self.G_f_phys / self.ell_phys) ** 0.5
-        u_char = L_char * sigma_char / self.E_phys
-        psi_char = sigma_char ** 2 / self.E_phys
-        for name, val in [('L_char', L_char), ('sigma_char', sigma_char),
-                          ('u_char', u_char), ('psi_char', psi_char), ('c_w', c_w)]:
-            object.__setattr__(self, name, val)
+    def __post_init__(self) -> None:
+        for name in ("E_phys", "G_c_phys", "ell_phys", "L_phys", "H_phys"):
+            _positive(name, float(getattr(self, name)))
+        if not 0 <= self.a0_phys <= self.L_phys:
+            raise ValueError("a0_phys must lie in [0, L_phys]")
+        if not -1.0 <= self.R_ratio <= 1.0:
+            raise ValueError("R_ratio must lie in [-1, 1]")
+        if not -1.0 < self.nu_phys < 0.5:
+            raise ValueError("nu_phys must lie in (-1, 0.5)")
+        if self.alpha_T_phys is not None:
+            _positive("alpha_T_phys", self.alpha_T_phys)
+        if self.mesh_h_phys is not None:
+            _positive("mesh_h_phys", self.mesh_h_phys)
+        if self.residual_stiffness < 0:
+            raise ValueError("residual_stiffness cannot be negative")
+        if self.pff_model not in _CW:
+            raise ValueError(f"pff_model must be one of {sorted(_CW)}")
+        if self.plane_condition not in {"plane_stress", "plane_strain", "3d"}:
+            raise ValueError("plane_condition must be plane_stress, plane_strain, or 3d")
 
-    # ── PIDL-compatible dimensionless values ────────────────────────────────
+    @property
+    def c_w(self) -> float:
+        return _CW[self.pff_model]
+
+    @property
+    def psi_ref(self) -> float:
+        """Reference energy density, ``G_c / ell``."""
+        return self.G_c_phys / self.ell_phys
+
+    @property
+    def sigma_ref(self) -> float:
+        """Reference stress implied by the code normalization."""
+        return sqrt(self.E_phys * self.psi_ref)
+
+    @property
+    def strain_ref(self) -> float:
+        return self.sigma_ref / self.E_phys
+
+    @property
+    def u_ref(self) -> float:
+        return self.L_phys * self.strain_ref
+
+    @property
+    def w1_phys(self) -> float:
+        """Code parameter in physical units: exactly ``G_c / ell``."""
+        return self.psi_ref
+
     @property
     def mat_E_norm(self) -> float:
-        """Always 1.0 — preserves existing PIDL toy convention."""
         return 1.0
 
     @property
     def mat_nu_norm(self) -> float:
-        """Poisson ratio is dimensionless."""
         return self.nu_phys
 
     @property
-    def l0_norm(self) -> float:
-        """l0_norm = ell / W. For PCC: 2/100 = 0.02 (close to toy 0.01)."""
-        return self.ell_phys / self.L_char
-
-    @property
-    def w1_phys(self) -> float:
-        """Cohesive-driver stress in physical units: w1 = G_f * c_w / ell."""
-        return self.G_f_phys * self.c_w / self.ell_phys
-
-    @property
     def w1_norm(self) -> float:
-        """w1_norm = w1_phys / psi_char.
-
-        CORRECTED 2026-05-14 (expert review P0): w1 is non-dim stand-in for
-        cohesive-driver stress in an ENERGY DENSITY integrand, so it must be
-        normalized by the energy-density scale ψ_char = σ²/E, not by σ_char.
-
-        Under Griffith σ_char = sqrt(E·G_f/ell): ψ_char = G_f/ell, and
-        w1_phys = G_f·c_w/ell, so analytically w1_norm = c_w.
-            AT1 PCC: w1_norm = 8/3 ≈ 2.667
-            AT2 PCC: w1_norm = 2.0
-
-        Prior buggy version (w1_phys/σ_char) gave 3.44e-3 — wrong by ~775×.
-        That made the damage cost vanishingly small, which would artificially
-        favor crack growth and confound any "Phase 2A null result" with
-        scaling bug rather than Carrara structural asymmetry.
-        """
-        return self.w1_phys / self.psi_char
+        return self.w1_phys / self.psi_ref
 
     @property
-    def G_c_norm(self) -> float:
-        """G_c in normalized units; sanity check."""
-        return self.G_f_phys / (self.sigma_char * self.L_char)
-
-    @property
-    def alpha_T_norm(self) -> float:
-        """alpha_T / psi_char.
-
-        Ratio measures the fatigue-relative-to-critical-energy gap:
-          toy ≈ 1.3 (low-cycle fatigue regime)
-          PCC ≈ 100 (VHCF / structural-asymmetry regime — Carrara prediction)
-        """
-        return self.alpha_T_phys / self.psi_char
-
-    @property
-    def W_norm(self) -> float:
-        return self.W_phys / self.L_char    # = 1.0 by construction
+    def l0_norm(self) -> float:
+        return self.ell_phys / self.L_phys
 
     @property
     def H_norm(self) -> float:
-        return self.H_phys / self.L_char
+        return self.H_phys / self.L_phys
 
     @property
     def a0_norm(self) -> float:
-        return self.a0_phys / self.L_char    # = 0.5 for SENT half-width notch
+        return self.a0_phys / self.L_phys
 
-    # ── Loading conversion ──────────────────────────────────────────────────
-    def disp_for_stress_intact(self, sigma_target_phys: float) -> float:
-        """Top-boundary displacement (normalized) under INTACT-BAR kinematics.
+    @property
+    def u_max_norm(self) -> float:
+        return self.u_max_phys / self.u_ref
 
-        ⚠ CAVEAT (P1 from expert review 2026-05-14):
-        This assumes uniform-strain compliance ε = σ/E, u_top = ε × H_phys —
-        valid only for an uncracked uniform bar. For a SENT specimen with
-        a precrack at a₀/W = 0.5, the effective compliance is significantly
-        higher, so the prescribed displacement gives a nominal far-field stress
-        LESS than the target. Use this as a displacement-equivalent label, NOT
-        as a calibrated nominal stress.
+    @property
+    def load_energy_ratio(self) -> float:
+        """``E (u/L)^2 / (G_c/ell)``; equals ``u_max_norm**2``."""
+        return self.u_max_norm**2
 
-        Returns:
-            u_norm such that the INTACT-bar interpretation maps it to
-            sigma_target_phys. The realized nominal stress in the cracked
-            geometry is smaller — calibrate separately if anchor needed.
-        """
-        eps_phys = sigma_target_phys / self.E_phys
-        u_phys = eps_phys * self.H_phys
-        return u_phys / self.u_char
+    @property
+    def alpha_T_norm(self) -> Optional[float]:
+        if self.alpha_T_phys is None:
+            return None
+        return self.alpha_T_phys / self.psi_ref
 
-    # Back-compat alias (deprecated — use disp_for_stress_intact for clarity)
-    disp_for_stress = disp_for_stress_intact
+    @property
+    def h_over_ell(self) -> Optional[float]:
+        if self.mesh_h_phys is None:
+            return None
+        return self.mesh_h_phys / self.ell_phys
 
-    def disp_phys_to_norm(self, u_phys_mm: float) -> float:
-        return u_phys_mm / self.u_char
+    @property
+    def ell_over_h(self) -> Optional[float]:
+        if self.mesh_h_phys is None:
+            return None
+        return self.ell_phys / self.mesh_h_phys
 
-    def disp_norm_to_phys(self, u_norm: float) -> float:
-        """Re-dimensionalize NN displacement output (mm)."""
-        return u_norm * self.u_char
+    def normalized_groups(self) -> Dict[str, Any]:
+        """Return groups that must be compared before a scale-transfer claim."""
+        return {
+            "mat_E": self.mat_E_norm,
+            "nu": self.mat_nu_norm,
+            "w1": self.w1_norm,
+            "ell_over_L": self.l0_norm,
+            "H_over_L": self.H_norm,
+            "a0_over_L": self.a0_norm,
+            "u_max_over_u_ref": self.u_max_norm,
+            "load_energy_ratio": self.load_energy_ratio,
+            "alpha_T_over_psi_ref": self.alpha_T_norm,
+            "h_over_ell": self.h_over_ell,
+            "eta": self.residual_stiffness,
+            "R_ratio": self.R_ratio,
+            "pff_model": self.pff_model,
+            "plane_condition": self.plane_condition,
+        }
 
-    def stress_norm_to_phys(self, sigma_norm: float) -> float:
-        """Re-dimensionalize stress (MPa)."""
-        return sigma_norm * self.sigma_char
+    def dimensional_scales(self) -> Dict[str, float]:
+        return {
+            "L_ref": self.L_phys,
+            "psi_ref": self.psi_ref,
+            "sigma_ref": self.sigma_ref,
+            "strain_ref": self.strain_ref,
+            "u_ref": self.u_ref,
+        }
 
-    def psi_norm_to_phys(self, psi_norm: float) -> float:
-        """Re-dimensionalize energy density (MPa = N/mm²)."""
-        return psi_norm * self.psi_char
+    def to_contract(self) -> Dict[str, Any]:
+        return {
+            "physical": asdict(self),
+            "scales": self.dimensional_scales(),
+            "dimensionless": self.normalized_groups(),
+            "claim_boundary": {
+                "dimensional_similarity_only": True,
+                "road_calibrated": False,
+                "cycle_to_traffic_mapping_available": False,
+            },
+        }
 
-    # ── Factory ─────────────────────────────────────────────────────────────
     @classmethod
-    def baktheer_default(cls, pff_model: str = 'AT1') -> "PCCScaling":
-        """Default PCC concrete params per Baktheer 2024 arXiv calibration.
+    def from_dimensionless_toy(
+        cls,
+        *,
+        E_phys: float,
+        G_c_phys: float,
+        ell_phys: float,
+        L_phys: float,
+        nu: float = 0.3,
+        ell_over_L: float = 0.01,
+        H_over_L: float = 1.0,
+        a0_over_L: float = 0.5,
+        u_max_norm: float = 0.12,
+        alpha_T_norm: float = 0.5,
+        h_over_ell: Optional[float] = None,
+        **kwargs: Any,
+    ) -> "PhaseFieldScaling":
+        """Create one physical realization of a dimensionless toy problem.
 
-        E=30 GPa, nu=0.18, G_f=0.10 N/mm, f_t=3 MPa, ell=2 mm, alpha_T=5 N/mm².
-        Domain: 100×100 mm SENT, a₀=50 mm (= W/2).
+        ``ell_phys`` and ``L_phys`` must already satisfy ``ell_over_L``.  This
+        explicit redundancy catches accidental coordinate-only rescaling.
         """
+        ratio = ell_phys / L_phys
+        if abs(ratio - ell_over_L) > 1e-10 * max(1.0, abs(ell_over_L)):
+            raise ValueError(
+                f"ell_phys/L_phys={ratio:g} does not match ell_over_L={ell_over_L:g}"
+            )
+        psi_ref = G_c_phys / ell_phys
+        u_ref = L_phys * sqrt(psi_ref / E_phys)
+        mesh_h = None if h_over_ell is None else h_over_ell * ell_phys
         return cls(
-            E_phys=30_000.0,
-            nu_phys=0.18,
-            G_f_phys=0.10,
-            ft_phys=3.0,
-            ell_phys=2.0,
-            alpha_T_phys=5.0,
-            W_phys=100.0,
-            H_phys=100.0,
-            a0_phys=50.0,
-            pff_model=pff_model,
+            E_phys=E_phys,
+            nu_phys=nu,
+            G_c_phys=G_c_phys,
+            ell_phys=ell_phys,
+            L_phys=L_phys,
+            H_phys=H_over_L * L_phys,
+            a0_phys=a0_over_L * L_phys,
+            u_max_phys=u_max_norm * u_ref,
+            alpha_T_phys=alpha_T_norm * psi_ref,
+            mesh_h_phys=mesh_h,
+            **kwargs,
         )
 
-    # ── Debug summary ───────────────────────────────────────────────────────
+    def disp_for_stress_intact(self, sigma_target_phys: float) -> float:
+        """Normalized displacement under an intact uniform-bar assumption.
+
+        This is not a calibrated cracked-geometry nominal stress.
+        """
+        u_phys = (sigma_target_phys / self.E_phys) * self.H_phys
+        return u_phys / self.u_ref
+
+    disp_for_stress = disp_for_stress_intact
+
+    def disp_phys_to_norm(self, value: float) -> float:
+        return value / self.u_ref
+
+    def disp_norm_to_phys(self, value: float) -> float:
+        return value * self.u_ref
+
+    def stress_norm_to_phys(self, value: float) -> float:
+        return value * self.sigma_ref
+
+    def psi_norm_to_phys(self, value: float) -> float:
+        return value * self.psi_ref
+
+
+@dataclass(frozen=True)
+class PCCScaling(PhaseFieldScaling):
+    """Backward-compatible PCC convenience wrapper.
+
+    The May 2026 implementation incorrectly used ``w1 = c_w G_c / ell``.
+    This class now follows the energy implementation and config contract:
+    ``w1 = G_c / ell`` and therefore ``w1_norm = 1``.
+    """
+
+    ft_phys: float = 3.0
+    W_phys: Optional[float] = None
+
+    def __post_init__(self) -> None:
+        if self.W_phys is not None and abs(self.W_phys - self.L_phys) > 1e-12:
+            raise ValueError("W_phys and L_phys must match")
+        super().__post_init__()
+
+    @property
+    def G_f_phys(self) -> float:
+        return self.G_c_phys
+
+    @property
+    def W_norm(self) -> float:
+        return 1.0
+
+    @property
+    def G_c_norm(self) -> float:
+        return self.G_c_phys / (self.sigma_ref * self.L_phys)
+
+    @classmethod
+    def baktheer_default(cls, pff_model: str = "AT1") -> "PCCScaling":
+        E = 30_000.0
+        G_c = 0.10
+        ell = 2.0
+        L = 100.0
+        H = 100.0
+        ft = 3.0
+        sigma_ref = sqrt(E * G_c / ell)
+        u_ref = L * sigma_ref / E
+        u_phys = (0.75 * ft / E) * H
+        return cls(
+            E_phys=E,
+            nu_phys=0.18,
+            G_c_phys=G_c,
+            ell_phys=ell,
+            L_phys=L,
+            H_phys=H,
+            a0_phys=50.0,
+            u_max_phys=u_phys,
+            alpha_T_phys=5.0,
+            mesh_h_phys=ell / 3.0,
+            pff_model=pff_model,
+            plane_condition="plane_strain",
+            material_label="PCC illustrative legacy preset",
+            evidence_class="literature-derived-unverified",
+            ft_phys=ft,
+            W_phys=L,
+        )
+
     def summary(self) -> str:
         return (
             f"PCC Scaling Summary ({self.pff_model})\n"
-            f"  Physical:  E={self.E_phys:.1f} MPa  nu={self.nu_phys}\n"
-            f"             G_f={self.G_f_phys} N/mm  f_t={self.ft_phys} MPa  ell={self.ell_phys} mm\n"
-            f"             alpha_T={self.alpha_T_phys} N/mm²\n"
-            f"             Domain {self.W_phys}x{self.H_phys} mm, a0={self.a0_phys} mm\n"
-            f"  Char scales:  c_w={self.c_w:.4f}\n"
-            f"             L_char={self.L_char:.1f} mm  sigma_char={self.sigma_char:.2f} MPa (Griffith)\n"
-            f"             u_char={self.u_char:.3e} mm  psi_char={self.psi_char:.3e} MPa\n"
-            f"             w1_phys={self.w1_phys:.4f} MPa (cohesive-driver stress)\n"
-            f"             G_c_norm={self.G_c_norm:.3e}\n"
-            f"  PIDL-ready (non-dim):\n"
-            f"             mat_E={self.mat_E_norm}  mat_nu={self.mat_nu_norm}\n"
-            f"             w1={self.w1_norm:.5f}  l0={self.l0_norm}\n"
-            f"             alpha_T={self.alpha_T_norm:.2f}  (vs toy 0.5; ratio ≈ {self.alpha_T_norm/0.5:.0f}×)\n"
-            f"             Domain [-0.5, 0.5]²  (W_norm={self.W_norm})  a0_norm={self.a0_norm}\n"
-            f"             [intact-bar kinematics labels; realized cracked-nominal stress is LESS]\n"
-            f"             u_norm(0.75·f_t)_intact = {self.disp_for_stress_intact(0.75 * self.ft_phys):.4f}\n"
-            f"             u_norm(0.50·f_t)_intact = {self.disp_for_stress_intact(0.50 * self.ft_phys):.4f}\n"
-            f"             u_norm(1.00·f_t)_intact = {self.disp_for_stress_intact(1.00 * self.ft_phys):.4f}\n"
+            f"  Physical: E={self.E_phys:g} MPa, nu={self.nu_phys:g}, "
+            f"G_c={self.G_c_phys:g} N/mm, ell={self.ell_phys:g} mm\n"
+            f"  Scales: psi_ref={self.psi_ref:.6g} MPa, "
+            f"sigma_ref={self.sigma_ref:.6g} MPa, u_ref={self.u_ref:.6g} mm\n"
+            f"  PIDL: E={self.mat_E_norm:g}, w1={self.w1_norm:g}, "
+            f"ell/L={self.l0_norm:g}, alpha_T={self.alpha_T_norm:g}, "
+            f"u_max={self.u_max_norm:.6g}\n"
+            "  Label: dimensional scaling only; not a road or fatigue-life validation"
         )
 
 
 if __name__ == "__main__":
-    print(PCCScaling.baktheer_default('AT1').summary())
-    print()
-    print(PCCScaling.baktheer_default('AT2').summary())
+    print(PCCScaling.baktheer_default().summary())

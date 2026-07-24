@@ -1,0 +1,13 @@
+group,formal_toy,candidate,candidate_over_toy,status_1pct_gate
+nu,0.3,0.18,0.6,mismatched
+ell_over_L,0.01,0.02,2.0,mismatched
+H_over_L,1.0,1.0,1.0,matched
+a0_over_L,0.5,0.5,1.0,matched
+u_max_over_u_ref,0.12,0.05809475019311126,0.4841229182759272,mismatched
+load_energy_ratio,0.0144,0.0033750000000000004,0.23437500000000003,mismatched
+alpha_T_over_psi_ref,0.5,100.0,200.0,mismatched
+h_over_ell,,0.3333333333333333,,unresolved
+eta,0.0,0.0,,matched
+R_ratio,0.0,0.0,,matched
+pff_model,AT1,AT1,,matched
+plane_condition,plane_strain,plane_strain,,matched

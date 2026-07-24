@@ -74,7 +74,7 @@ CUDA_VISIBLE_DEVICES=5 python3 -u run_pcc_baseline_umax.py 0.75 --n-cycles 50 --
 |---|---|---|
 | mat_E_norm | 1.0 | 1.0 |
 | mat_nu_norm | 0.3 | 0.18 |
-| w1_norm | 1.0 | **2.667** (= c_w_AT1 = 8/3, post-P0 fix) |
+| w1_norm | 1.0 | **1.0** (`w1_phys=G_c/ell`; `c_w` already appears in the energy functional) |
 | l0_norm | 0.01 | **0.02** (= 2 mm / 100 mm) |
 | α_T_norm | 0.5 | **100** (vs toy 0.5, ratio 200×) |
 | u_norm @ disp_ratio=0.75 | 0.12 | **0.0581** |

@@ -1,0 +1,127 @@
+{
+  "analysis": "road_rescaling_bridge_v1",
+  "exact_toy_realization": {
+    "claim_boundary": {
+      "cycle_to_traffic_mapping_available": false,
+      "dimensional_similarity_only": true,
+      "road_calibrated": false
+    },
+    "dimensionless": {
+      "H_over_L": 1.0,
+      "R_ratio": 0.0,
+      "a0_over_L": 0.5,
+      "alpha_T_over_psi_ref": 0.5,
+      "ell_over_L": 0.01,
+      "eta": 0.0,
+      "h_over_ell": 0.3333333333333333,
+      "load_energy_ratio": 0.0144,
+      "mat_E": 1.0,
+      "nu": 0.3,
+      "pff_model": "AT1",
+      "plane_condition": "plane_strain",
+      "u_max_over_u_ref": 0.12,
+      "w1": 1.0
+    },
+    "physical": {
+      "E_phys": 30000.0,
+      "G_c_phys": 0.12,
+      "H_phys": 100.0,
+      "L_phys": 100.0,
+      "R_ratio": 0.0,
+      "a0_phys": 50.0,
+      "alpha_T_phys": 0.06,
+      "ell_phys": 1.0,
+      "evidence_class": "illustrative",
+      "material_label": "one exact physical realization of the formal toy",
+      "mesh_h_phys": 0.3333333333333333,
+      "nu_phys": 0.3,
+      "pff_model": "AT1",
+      "plane_condition": "plane_strain",
+      "residual_stiffness": 0.0,
+      "u_max_phys": 0.024
+    },
+    "scales": {
+      "L_ref": 100.0,
+      "psi_ref": 0.12,
+      "sigma_ref": 60.0,
+      "strain_ref": 0.002,
+      "u_ref": 0.2
+    }
+  },
+  "formal_toy": {
+    "H_over_L": 1.0,
+    "R_ratio": 0.0,
+    "a0_over_L": 0.5,
+    "alpha_T_over_psi_ref": 0.5,
+    "ell_over_L": 0.01,
+    "eta": 0.0,
+    "h_over_ell": null,
+    "load_energy_ratio": 0.0144,
+    "mat_E": 1.0,
+    "nu": 0.3,
+    "pff_model": "AT1",
+    "plane_condition": "plane_strain",
+    "u_max_over_u_ref": 0.12,
+    "w1": 1.0
+  },
+  "hard_boundary": "Dimensional similarity is not material calibration, traffic-time mapping, or real-road validation.",
+  "legacy_pcc_illustrative": {
+    "claim_boundary": {
+      "cycle_to_traffic_mapping_available": false,
+      "dimensional_similarity_only": true,
+      "road_calibrated": false
+    },
+    "dimensionless": {
+      "H_over_L": 1.0,
+      "R_ratio": 0.0,
+      "a0_over_L": 0.5,
+      "alpha_T_over_psi_ref": 100.0,
+      "ell_over_L": 0.02,
+      "eta": 0.0,
+      "h_over_ell": 0.3333333333333333,
+      "load_energy_ratio": 0.0033750000000000004,
+      "mat_E": 1.0,
+      "nu": 0.18,
+      "pff_model": "AT1",
+      "plane_condition": "plane_strain",
+      "u_max_over_u_ref": 0.05809475019311126,
+      "w1": 1.0
+    },
+    "physical": {
+      "E_phys": 30000.0,
+      "G_c_phys": 0.1,
+      "H_phys": 100.0,
+      "L_phys": 100.0,
+      "R_ratio": 0.0,
+      "W_phys": 100.0,
+      "a0_phys": 50.0,
+      "alpha_T_phys": 5.0,
+      "ell_phys": 2.0,
+      "evidence_class": "literature-derived-unverified",
+      "ft_phys": 3.0,
+      "material_label": "PCC illustrative legacy preset",
+      "mesh_h_phys": 0.6666666666666666,
+      "nu_phys": 0.18,
+      "pff_model": "AT1",
+      "plane_condition": "plane_strain",
+      "residual_stiffness": 0.0,
+      "u_max_phys": 0.0075
+    },
+    "scales": {
+      "L_ref": 100.0,
+      "psi_ref": 0.05,
+      "sigma_ref": 38.72983346207417,
+      "strain_ref": 0.0012909944487358056,
+      "u_ref": 0.12909944487358055
+    }
+  },
+  "primary_assets": [
+    "dimensionless_case_comparison.csv",
+    "dimensionless_sensitivity_matrix.csv",
+    "road_observation_to_scale_map.csv",
+    "legacy_pcc_similarity_gate.csv",
+    "toy_to_road_rescaling_diagnostic.png",
+    "road_rescaling_contract_example.json"
+  ],
+  "training_run": false
+}

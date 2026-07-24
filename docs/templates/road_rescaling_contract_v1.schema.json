@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "road_rescaling_contract_v1.schema.json",
+  "title": "Road phase-field rescaling contract v1",
+  "type": "object",
+  "required": ["physical", "scales", "dimensionless", "observations", "claim_boundary"],
+  "properties": {
+    "physical": {
+      "type": "object",
+      "required": ["E_phys", "nu_phys", "G_c_phys", "ell_phys", "L_phys", "H_phys", "a0_phys", "u_max_phys", "pff_model", "plane_condition"],
+      "properties": {
+        "E_phys": {"type": "number", "exclusiveMinimum": 0},
+        "nu_phys": {"type": "number", "exclusiveMinimum": -1, "exclusiveMaximum": 0.5},
+        "G_c_phys": {"type": "number", "exclusiveMinimum": 0},
+        "ell_phys": {"type": "number", "exclusiveMinimum": 0},
+        "L_phys": {"type": "number", "exclusiveMinimum": 0},
+        "H_phys": {"type": "number", "exclusiveMinimum": 0},
+        "a0_phys": {"type": "number", "minimum": 0},
+        "u_max_phys": {"type": "number"},
+        "alpha_T_phys": {"type": ["number", "null"]},
+        "mesh_h_phys": {"type": ["number", "null"]},
+        "pff_model": {"enum": ["AT1", "AT2"]},
+        "plane_condition": {"enum": ["plane_stress", "plane_strain", "3d"]},
+        "evidence_class": {"enum": ["illustrative", "literature-derived-unverified", "lab-calibrated", "field-calibrated"]}
+      }
+    },
+    "scales": {
+      "type": "object",
+      "required": ["L_ref", "psi_ref", "sigma_ref", "strain_ref", "u_ref"]
+    },
+    "dimensionless": {
+      "type": "object",
+      "required": ["ell_over_L", "H_over_L", "a0_over_L", "u_max_over_u_ref", "load_energy_ratio", "alpha_T_over_psi_ref", "h_over_ell", "eta", "R_ratio", "pff_model", "plane_condition"]
+    },
+    "observations": {
+      "type": "object",
+      "required": ["geometry", "structural_response", "traffic_load", "environment", "material_tests", "maintenance"],
+      "additionalProperties": {"type": ["string", "array", "object", "null"]}
+    },
+    "claim_boundary": {
+      "type": "object",
+      "required": ["dimensional_similarity_only", "road_calibrated", "cycle_to_traffic_mapping_available"],
+      "properties": {
+        "dimensional_similarity_only": {"type": "boolean"},
+        "road_calibrated": {"type": "boolean"},
+        "cycle_to_traffic_mapping_available": {"type": "boolean"}
+      }
+    }
+  }
+}
