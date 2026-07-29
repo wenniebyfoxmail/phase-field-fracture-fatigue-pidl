@@ -1,0 +1,60 @@
+{
+  "allowed_families": [
+    "registered_crack_geometry",
+    "dic_displacement",
+    "strain_sensor",
+    "fwd_load_deflection",
+    "wim_traffic",
+    "temperature_time",
+    "maintenance_reset"
+  ],
+  "derived_estimate_firewall": {
+    "decision_eligible": false,
+    "dic_or_strain_to_psi_raw": "requires constitutive model, material parameters, kinematic assumption, and tensile split",
+    "direct_sensor_observation": false,
+    "storage": "derived_estimates only"
+  },
+  "evidence_classes": {
+    "real_measurement": "registered instrument/image observation with provenance",
+    "synthetic_sensor_smoke": "explicit measurement rendering used only for contract validation"
+  },
+  "forbidden_direct_channels": [
+    "active_driver",
+    "alpha",
+    "alpha_bar",
+    "damage",
+    "fatigue_degradation",
+    "fatigue_history",
+    "g",
+    "g_alpha",
+    "log10_psi_raw",
+    "psi_active",
+    "psi_raw",
+    "raw_driver"
+  ],
+  "handoff_version": "road_measurement_handoff_v1",
+  "missingness": "NaN/null plus mask=false; never zero-fill before preserving the mask",
+  "multi_trajectory_compatibility": {
+    "identity_keys": [
+      "asset_id",
+      "trajectory_id",
+      "inspection_id",
+      "state_segment_id"
+    ],
+    "rule": "future schemas require a versioned adapter; no inferred field names or shapes",
+    "stable_envelope": "road_measurement_handoff_v1"
+  },
+  "purpose": "real-measurable observation to predictor-independent inverse/forecast handoff",
+  "schema_version": "road_measurement_operator_v1",
+  "spatial_registration": {
+    "required": [
+      "coordinate_frame_id",
+      "target_frame_id",
+      "registration_id",
+      "transform_3x3",
+      "uncertainty_std_m",
+      "source_sha256"
+    ],
+    "rule": "spatial channels cannot enter assimilation without registration provenance"
+  }
+}

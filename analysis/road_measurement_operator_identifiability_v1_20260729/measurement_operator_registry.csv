@@ -1,0 +1,10 @@
+operator_id,family,inputs,outputs,units,spatial_registration,reality_status
+registered_crack_image_v1,registered_crack_geometry,registered image + segmentation,crack probability/mask,1,required,executable contract; real calibration pending
+registered_crack_geometry_v1,registered_crack_geometry,registered mask/measurement,width/length/tip,m,required,executable contract; real calibration pending
+registered_dic_displacement_v1,dic_displacement,DIC displacement,u_x/u_y,m,required,laboratory/field measurement adapter
+registered_strain_sensor_v1,strain_sensor,strain + sensor axis,axial strain,1,required,measurement adapter
+fwd_load_deflection_basin_v1,fwd_load_deflection,FWD load/offset/deflection,load and basin samples,N;m;m,required,measurement adapter
+wim_axle_load_speed_spectrum_v1,wim_traffic,axle load/speed,samples + spectrum,N;m/s,not required; asset/time linkage required,measurement adapter; no fabricated ESAL
+temperature_time_v1,temperature_time,timestamp/temperature,air/pavement temperature/time,degC;s,sensor location provenance,measurement adapter
+maintenance_reset_v1,maintenance_reset,maintenance record,event/reset/segment,category;bool,asset linkage required,event adapter
+derived_tensile_energy_v1,derived_latent_estimate,DIC/strain + constitutive model + tensile split,conditional psi_raw estimate,J/m^3,inherits source,not a sensor; decision_eligible=false

@@ -1,0 +1,7 @@
+level,observations,hidden_state_assimilation,material_parameter_inversion,forecast_update,minimum_evidence
+L0,time + temperature + WIM + maintenance,not identified,not identified,forcing/reset update only,timestamped load/environment provenance
+L1,L0 + registered crack image/mask/width/length,surface geometry partial,not identified,geometry-conditioned,repeatable registration and segmentation uncertainty
+L2,L1 + FWD load/deflection basin,geometry + stiffness response partial,confounded,state correction candidate,"known load, basin and temperature"
+L3,L2 + registered DIC or strain,mechanical state conditional,still conditional/non-unique,local mechanical correction candidate,constitutive assumptions declared for derived energy
+L4,repeated multimodal visits + WIM/environment/reset,conditional candidate,not automatic,operational candidate after holdout calibration,multiple visits and calibrated uncertainty
+L5,L4 across independent loads/assets/material evidence,testable,candidate only after rank/posterior checks,multi-asset validation candidate,"independent excitation, sensitivity rank and physical holdout"

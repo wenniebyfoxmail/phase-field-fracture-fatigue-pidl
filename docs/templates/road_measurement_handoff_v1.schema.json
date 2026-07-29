@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "array_payload_rule": "record and derived arrays are stored in the companion NPZ by ordinal index",
+  "properties": {
+    "adapter_status": {
+      "enum": [
+        "available",
+        "versioned_adapter_required_no_schema_guessing"
+      ]
+    },
+    "asset_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "claim_boundary": {
+      "type": "string"
+    },
+    "decision_eligibility_rule": {
+      "type": "string"
+    },
+    "decision_eligible": {
+      "type": "boolean"
+    },
+    "derived_estimates": {
+      "type": "array"
+    },
+    "inspection_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "records": {
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "road_measurement_handoff_v1"
+    },
+    "state_segment_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "target_adapter": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "target_schema_requested": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "trajectory_id": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "asset_id",
+    "trajectory_id",
+    "inspection_id",
+    "state_segment_id",
+    "target_schema_requested",
+    "adapter_status",
+    "records",
+    "derived_estimates",
+    "decision_eligible",
+    "claim_boundary",
+    "decision_eligibility_rule"
+  ],
+  "title": "road_measurement_handoff_v1",
+  "type": "object"
+}
