@@ -1,6 +1,6 @@
 # Attempt toy_to_road_evidence_goal_20260729
 
-- Status: `implemented`
+- Status: `tested`
 - Created: 2026-07-29T15:41:10+01:00
 - Closed: None
 - Type: `framework-validation`
@@ -44,6 +44,7 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 ## Code Changes
 - modify: `docs/skills/pidl-experiment-gate/SKILL.md` - Replaced universal c89 timing and threshold assumptions with versioned FEM reference and event-phase rules
 - add: `docs/toy_to_road_goal_20260729/00_goal_contract.md` - Added shared four-track scientific contract, readiness gates, and final decision classes
+- add: `source/toy_to_road_evidence_gate.py` - Added machine gate for corrected scale contract, versioned FEM states, independent-trajectory readiness, forecast freeze, and observation leakage
 
 ## Input Assets
 - `docs/road_rescaling_bridge_20260724/independent_review.md` (independent scale-transfer review; exists)
@@ -54,7 +55,7 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 - `docs/toy_to_road_goal_20260729/evidence_matrix.csv` (track-level evidence status; exists)
 
 ## Tests
-- None
+- pass: integration_contract_tests - 31 passed and 1 optional dependency test skipped; gate rejects Umax-only readiness, premature forecast training, missing event phase, latent sensor leakage, and unapproved architectures.
 
 ## Result Interpretation
 Not recorded.
