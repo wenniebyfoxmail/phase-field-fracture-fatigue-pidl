@@ -49,6 +49,7 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 - add: `docs/pi_transfer_controls_20260729/decision.md` - Integrated corrected scaling, F1a dimensional replay and F2 BC negative control; retained fresh F1b solve as blocker
 - add: `analysis/fem_multitrajectory_contract_20260729/decision.md` - Integrated validated 4-cell Hard5 factorial LOCO bundle while keeping road-like LOTO at 0/3
 - add: `docs/multi_trajectory_forecast_protocol_20260729/decision.md` - Integrated sealed Markov TCN Transformer protocol and explicit hazard RUL blockers; producer training awaits signed bundle consumption
+- add: `docs/multi_trajectory_forecast_protocol_20260729/producer_gate_20260729/producer_experiment_manifest.json` - Accepted signed 4-fold 36-job producer gate with one-percent parameter matching for Markov TCN Transformer
 
 ## Input Assets
 - `docs/road_rescaling_bridge_20260724/independent_review.md` (independent scale-transfer review; exists)
@@ -64,6 +65,7 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 - pass: scaling_control_integration - 41 passed; F2 blocker cleared, but exact-Pi positive control remains blocked because F1 used archived dimensional replay rather than a fresh solver run.
 - pass: fem_bundle_and_scope_gate - 43 passed; within-Hard5 factorial training is ready, road-like training remains false, and the gate preserves a separate fewer_than_three_road_like_trajectories blocker.
 - pass: forecast_protocol_integration - 66 passed and 2 optional fixture tests skipped; no training result is claimed yet.
+- pass: signed_forecast_producer_gate - 61 passed; within-Hard5 producer gate released, road-like and hazard/RUL gates remain closed.
 
 ## Result Interpretation
 Not recorded.
