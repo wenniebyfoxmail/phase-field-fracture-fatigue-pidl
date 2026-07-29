@@ -1,0 +1,49 @@
+{
+  "$id": "fem_trajectory_bundle_v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "family_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "independence_class": {
+      "enum": [
+        "independent_physical_trajectory",
+        "load_amplitude_sensitivity",
+        "controlled_factorial_combination",
+        "protocol_comparator"
+      ]
+    },
+    "schema_version": {
+      "const": "fem_trajectory_bundle_v1"
+    },
+    "states": {
+      "minItems": 1,
+      "type": "array"
+    },
+    "trajectory_id": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "trajectory_id",
+    "family_id",
+    "independence_class",
+    "claim_scope",
+    "source",
+    "physics",
+    "mesh",
+    "state_semantics",
+    "event",
+    "fields",
+    "observable_proxies",
+    "states",
+    "manifest_sha256"
+  ],
+  "title": "FEM fracture trajectory source-backed bundle",
+  "type": "object"
+}

@@ -1,0 +1,259 @@
+{
+  "bundle_reports": [
+    {
+      "checks": {
+        "cell_count": 86408,
+        "confirmed_cycle": 125,
+        "damage_extrema": {
+          "max": 0.9998115546280253,
+          "min": 0.0
+        },
+        "deep_state_shards_checked": 125,
+        "family_id": "hard5_eta0_5step_load_amplitude_family_20260729",
+        "first_hit_cycle": 122,
+        "pre_run_lock": {
+          "eta": 0.0,
+          "load_factors": [
+            0.25,
+            0.5,
+            0.75,
+            1.0,
+            0.0
+          ],
+          "n_substeps": 5,
+          "umax": 0.11
+        },
+        "state_count": 125,
+        "trajectory_id": "hard5_eta0_u011_5step_20260729"
+      },
+      "errors": [],
+      "valid": true,
+      "warnings": []
+    },
+    {
+      "checks": {
+        "cell_count": 86408,
+        "confirmed_cycle": 86,
+        "damage_extrema": {
+          "max": 1.0,
+          "min": 0.0
+        },
+        "deep_state_shards_checked": 89,
+        "family_id": "hard5_eta0_5step_load_amplitude_family_20260729",
+        "first_hit_cycle": 83,
+        "pre_run_lock": {
+          "eta": 0.0,
+          "load_factors": [
+            0.25,
+            0.5,
+            0.75,
+            1.0,
+            0.0
+          ],
+          "n_substeps": 5,
+          "umax": 0.12
+        },
+        "state_count": 89,
+        "trajectory_id": "hard5_eta0_u012_5step_20260729"
+      },
+      "errors": [],
+      "valid": true,
+      "warnings": []
+    },
+    {
+      "checks": {
+        "cell_count": 86408,
+        "confirmed_cycle": 62,
+        "damage_extrema": {
+          "max": 1.0,
+          "min": 0.0
+        },
+        "deep_state_shards_checked": 62,
+        "family_id": "hard5_eta0_5step_load_amplitude_family_20260729",
+        "first_hit_cycle": 59,
+        "pre_run_lock": {
+          "eta": 0.0,
+          "load_factors": [
+            0.25,
+            0.5,
+            0.75,
+            1.0,
+            0.0
+          ],
+          "n_substeps": 5,
+          "umax": 0.13
+        },
+        "state_count": 62,
+        "trajectory_id": "hard5_eta0_u013_5step_20260729"
+      },
+      "errors": [],
+      "valid": true,
+      "warnings": []
+    },
+    {
+      "checks": {
+        "cell_count": 86408,
+        "confirmed_cycle": 89,
+        "damage_extrema": {
+          "max": 0.9996984101286299,
+          "min": -2.2144351644673256e-05
+        },
+        "deep_state_shards_checked": 89,
+        "family_id": "hard5_eta0_u012_shared_geometry_2x2_factorial_20260729",
+        "first_hit_cycle": 86,
+        "state_count": 89,
+        "trajectory_id": "factorial_hard_8step_u012"
+      },
+      "errors": [],
+      "valid": true,
+      "warnings": [
+        "damage has solver-scale bound overshoot retained without clipping: min=-2.2144352e-05, max=0.99969841"
+      ]
+    },
+    {
+      "checks": {
+        "cell_count": 86408,
+        "confirmed_cycle": 86,
+        "damage_extrema": {
+          "max": 1.0,
+          "min": 0.0
+        },
+        "deep_state_shards_checked": 86,
+        "family_id": "hard5_eta0_u012_shared_geometry_2x2_factorial_20260729",
+        "first_hit_cycle": 83,
+        "state_count": 86,
+        "trajectory_id": "factorial_hard_5step_u012"
+      },
+      "errors": [],
+      "valid": true,
+      "warnings": []
+    },
+    {
+      "checks": {
+        "cell_count": 86408,
+        "confirmed_cycle": 86,
+        "damage_extrema": {
+          "max": 1.0,
+          "min": 0.0
+        },
+        "deep_state_shards_checked": 86,
+        "family_id": "hard5_eta0_u012_shared_geometry_2x2_factorial_20260729",
+        "first_hit_cycle": 83,
+        "state_count": 86,
+        "trajectory_id": "factorial_soft_8step_u012"
+      },
+      "errors": [],
+      "valid": true,
+      "warnings": []
+    },
+    {
+      "checks": {
+        "cell_count": 86408,
+        "confirmed_cycle": 87,
+        "damage_extrema": {
+          "max": 1.0,
+          "min": 0.0
+        },
+        "deep_state_shards_checked": 87,
+        "family_id": "hard5_eta0_u012_shared_geometry_2x2_factorial_20260729",
+        "first_hit_cycle": 84,
+        "state_count": 87,
+        "trajectory_id": "factorial_soft_5step_u012"
+      },
+      "errors": [],
+      "valid": true,
+      "warnings": []
+    }
+  ],
+  "deep_validation": true,
+  "factorial_source_audits": {
+    "factorial_hard_5step_u012": {
+      "checks": {
+        "scalar_row_counts": {
+          "crack_regularized.dat": 86,
+          "extra_scalars.dat": 86,
+          "monitorcycle.dat": 86
+        },
+        "state_shards": 86,
+        "vtk_files": 39,
+        "vtk_step_suffix": 5
+      },
+      "errors": [],
+      "valid": true
+    },
+    "factorial_hard_8step_u012": {
+      "checks": {
+        "scalar_row_counts": {
+          "crack_regularized.dat": 89,
+          "extra_scalars.dat": 89,
+          "monitorcycle.dat": 89
+        },
+        "state_shards": 89,
+        "vtk_files": 39,
+        "vtk_step_suffix": 8
+      },
+      "errors": [],
+      "valid": true
+    },
+    "factorial_soft_5step_u012": {
+      "checks": {
+        "scalar_row_counts": {
+          "crack_regularized.dat": 87,
+          "extra_scalars.dat": 87,
+          "monitorcycle.dat": 87
+        },
+        "state_shards": 87,
+        "vtk_files": 37,
+        "vtk_step_suffix": 5
+      },
+      "errors": [],
+      "valid": true
+    },
+    "factorial_soft_8step_u012": {
+      "checks": {
+        "scalar_row_counts": {
+          "crack_regularized.dat": 86,
+          "extra_scalars.dat": 86,
+          "monitorcycle.dat": 86
+        },
+        "state_shards": 86,
+        "vtk_files": 41,
+        "vtk_step_suffix": 8
+      },
+      "errors": [],
+      "valid": true
+    }
+  },
+  "factorial_split_report": {
+    "checks": {
+      "eligible_independence_class": "controlled_factorial_combination",
+      "eligible_trajectory_count": 4,
+      "fold_count": 4
+    },
+    "errors": [],
+    "valid": true,
+    "warnings": []
+  },
+  "mesh_group_audit": {
+    "claim": "shared mesh within the 2x2 factorial",
+    "expected_cell_count": 86408,
+    "factorial_vtk_mesh_content_sha256": {
+      "factorial_hard_5step_u012": "8e865f5eace05992490885c569f5ca8d9d1e37e10a3d2bd8ade176bfcd23ecf2",
+      "factorial_hard_8step_u012": "8e865f5eace05992490885c569f5ca8d9d1e37e10a3d2bd8ade176bfcd23ecf2",
+      "factorial_soft_5step_u012": "8e865f5eace05992490885c569f5ca8d9d1e37e10a3d2bd8ade176bfcd23ecf2",
+      "factorial_soft_8step_u012": "8e865f5eace05992490885c569f5ca8d9d1e37e10a3d2bd8ade176bfcd23ecf2"
+    },
+    "unique_factorial_mesh_count": 1,
+    "valid": true
+  },
+  "road_split_report": {
+    "checks": {
+      "eligible_independence_class": "independent_physical_trajectory",
+      "eligible_trajectory_count": 0,
+      "fold_count": 0
+    },
+    "errors": [],
+    "valid": true,
+    "warnings": []
+  }
+}

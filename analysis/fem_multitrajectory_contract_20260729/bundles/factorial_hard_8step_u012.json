@@ -1,0 +1,2202 @@
+{
+  "bundle_id": "bundle::factorial_hard_8step_u012",
+  "claim_scope": "shared_geometry_within_hard5_factorial_only",
+  "event": {
+    "confirmation_rule": "producer_declared_three_cycle_confirmation",
+    "confirmed": {
+      "cycle": 89,
+      "phase": "cycle_peak",
+      "role": "penetration_robustness"
+    },
+    "criterion": "at_least_3_nodes_d_ge_0.95_at_x_ge_0.48",
+    "first_hit": {
+      "cycle": 86,
+      "phase": "cycle_peak",
+      "role": "energetic_event"
+    },
+    "mixed_event_phase_forbidden": true
+  },
+  "family_id": "hard5_eta0_u012_shared_geometry_2x2_factorial_20260729",
+  "fields": {
+    "derived": {
+      "active_driver": "damage_degradation*raw_driver",
+      "damage_degradation": "(1-damage)^2"
+    },
+    "required_exported": [
+      "damage",
+      "alpha_bar",
+      "fatigue_degradation",
+      "damage_degradation",
+      "raw_driver",
+      "active_driver"
+    ],
+    "source_map": {
+      "alpha_bar": "alpha_bar_elem",
+      "damage": "d_elem",
+      "fatigue_degradation": "f_alpha_elem",
+      "raw_driver": "psi_elem"
+    }
+  },
+  "independence_class": "controlled_factorial_combination",
+  "manifest_sha256": "a138e03a18d1675a75715f1f8dba1f0632823d41ecfb0da3338b138d4533e5ae",
+  "mesh": {
+    "cell_count": 86408,
+    "content_sha256": "7ea77bf6d4621d746f174eb9c357c4bc554463eea8afb8665b00e918bcd937ab",
+    "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/fem_anchored_mesh_operator_20260715/data/fem_cycle_peak_mechanism_graph.npz",
+    "source_package_evidence": {
+      "cell_count": 86408,
+      "content_sha256": "8e865f5eace05992490885c569f5ca8d9d1e37e10a3d2bd8ade176bfcd23ecf2",
+      "path": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/peak_load_c1.vtk",
+      "point_count": 86756,
+      "source_sha256": "92066721c106d3846324d364c2d3588217f1a361982679af657d00536a658709"
+    },
+    "source_sha256": "bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419"
+  },
+  "observable_proxies": {
+    "crack_geometry_image": {
+      "availability": "synthetic_from_fem",
+      "deployment_equivalent": false,
+      "mask_recipe": "finite(damage)",
+      "note": "2D coupon damage is an oracle image proxy, not a road photograph.",
+      "uncertainty_recipe": "zero_only_for_deterministic_fem_audit",
+      "values_recipe": "damage"
+    },
+    "fwd_basin": {
+      "availability": "unavailable",
+      "deployment_equivalent": false,
+      "mask_recipe": "all_false",
+      "note": "The coupon archive has no FWD spatial deflection basin.",
+      "uncertainty_recipe": null,
+      "values_recipe": null
+    },
+    "strain_localization": {
+      "availability": "synthetic_oracle_proxy",
+      "deployment_equivalent": false,
+      "mask_recipe": "finite(raw_driver)",
+      "note": "Energy-derived localization is not measured strain and must remain labelled synthetic.",
+      "uncertainty_recipe": "zero_only_for_deterministic_fem_audit",
+      "values_recipe": "sqrt(max(raw_driver,0))"
+    }
+  },
+  "physics": {
+    "eta": 0.0,
+    "factorial_axes": {
+      "initial_tip_state": "hard_recovery",
+      "loading_history": "explicit_8step"
+    },
+    "initial_defect_family": "hard_zero_load_recovery_tip",
+    "loading_family": "explicit_8step",
+    "material_family": "shared_normalized_at1_carrara",
+    "n_substeps": 8,
+    "nominal_load_factors": [
+      0.25,
+      0.5,
+      0.75,
+      1.0,
+      0.75,
+      0.5,
+      0.25,
+      0.0
+    ],
+    "umax": 0.12
+  },
+  "schema_version": "fem_trajectory_bundle_v1",
+  "source": {
+    "package_id": "Umax_012_2x2::01_hard_8step_historical",
+    "package_inputs": {
+      "checkpoint.mat": {
+        "path": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/checkpoint.mat",
+        "sha256": "e82a018554f6aaea9bd290a8e6a0e769fe548984da6dc8820f7f8d8e6509a2f3"
+      },
+      "initial_state_metadata.mat": {
+        "path": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/initial_state_metadata.mat",
+        "sha256": "cd9a967582930ed99f1076900e7e0ca2a2bb23c61edaf43b0b7d397fbebba968"
+      },
+      "provenance::README.md": {
+        "path": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/analysis_2x2_factorial/README.md",
+        "sha256": "51b1fca24b3f6a545598e104bb4d9b3ed035cdbad072bbb8f955c53b21769fc0"
+      },
+      "provenance::file_manifest.csv": {
+        "path": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/file_manifest.csv",
+        "sha256": "0a3216a40a938fc5002a0228195282cb2f10b48f639b753daa09bf5b7861c5cd"
+      },
+      "provenance::summary.csv": {
+        "path": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/analysis_2x2_factorial/summary.csv",
+        "sha256": "cf938363b74287de7e67621bfd59ba0c57d8ab44a5e35512073849ec9a72b075"
+      },
+      "provenance::versions.csv": {
+        "path": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/versions.csv",
+        "sha256": "50e7a1061df7bde84f2f3c8fa98083b133b69f65272314ffaa072d18a17a010e"
+      }
+    },
+    "provenance_notes": [
+      "shared geometry/mesh/material/Umax/event rule",
+      "continuous producer package"
+    ],
+    "root": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical",
+    "state_shard_hashes": [
+      {
+        "cycle": 1,
+        "sha256": "dca87af025dce1ce5d155d61d492763ddae90b7ebe87d517783fd13353f48f50"
+      },
+      {
+        "cycle": 2,
+        "sha256": "ab2421c9f5c2a3fc8651d0f4257296df18b9de9a0f18103bcbeea6a7bd56bcc6"
+      },
+      {
+        "cycle": 3,
+        "sha256": "ba3c69b58fcc44dd394066b80911cfd98506c48436a810c9b0fe8bb3b6e9130e"
+      },
+      {
+        "cycle": 4,
+        "sha256": "bec7b41a1273dc4425e4b32db4813b8e7f757196cd25852d35415ca802a31f18"
+      },
+      {
+        "cycle": 5,
+        "sha256": "d636b9bba66a49714242937701d19d7a248ad995302213dc8fe0f8001dd0b986"
+      },
+      {
+        "cycle": 6,
+        "sha256": "c2d53f9068f422b9100c473667a71e56fbada7754ef2f7b5ad5b8fb3ac70dcc8"
+      },
+      {
+        "cycle": 7,
+        "sha256": "1c69e92c4581e0a0f1926fcbad2f931280fede09a8918784d24dfa42f6bd3916"
+      },
+      {
+        "cycle": 8,
+        "sha256": "e68ed4ff1dfe0bb2293b83e37c6cdae7d3efdbb295d078c48f7ecc9fc7d4f315"
+      },
+      {
+        "cycle": 9,
+        "sha256": "161d136214a41ce17ca37a22e72682a0c3bf9262cd62e309f2015c110d17f265"
+      },
+      {
+        "cycle": 10,
+        "sha256": "2635be8ef6d8e65f0def7adb1e13966377ac60919cd499d57717e4488e45bf23"
+      },
+      {
+        "cycle": 11,
+        "sha256": "dbdc00ba1d2b18a6a2db8542d75bf6ea9056201998feebf77148023be11e4411"
+      },
+      {
+        "cycle": 12,
+        "sha256": "be18a556afbaa126f70f3cb23d029d8703673c300445f90a1861ea719716c9b7"
+      },
+      {
+        "cycle": 13,
+        "sha256": "e463e10ce710d46484ee2fab374a55e50a8ebdf52ebeabef814d809c3fc49eb2"
+      },
+      {
+        "cycle": 14,
+        "sha256": "2e3e4095d930d6498db91728ab826a58484a4cb881d8b0b570e6a8f8482a49c7"
+      },
+      {
+        "cycle": 15,
+        "sha256": "e9781bbcd3b70e170901512a13dcd88d8e7d6ee8cbafd216dd91046b7abd4237"
+      },
+      {
+        "cycle": 16,
+        "sha256": "8c268dfac329590e382f75f9f4c6cad43b9ded5c23b295a2ad573c9ec9a52070"
+      },
+      {
+        "cycle": 17,
+        "sha256": "3715bc5e3d8dd92abc0c47c9c6d084617d740c70b63bc2b99fb271428e8636dc"
+      },
+      {
+        "cycle": 18,
+        "sha256": "d7d8c6eb751383af7a3f9cf4b13811e7c6d9013275049def5ce63f09ab1384fe"
+      },
+      {
+        "cycle": 19,
+        "sha256": "3b50ad0d1f5465bc9a33a04a0831c7d7ee13b44f0613c9f50074e8758e814fcc"
+      },
+      {
+        "cycle": 20,
+        "sha256": "8163dc4e5b1dd285c245abc657c17747607198363b398c8a42ac1f40ddec61bc"
+      },
+      {
+        "cycle": 21,
+        "sha256": "c01b40c9148e6038e20c771e943d598a8ce2daf799ff6d0a91962b96e87f680a"
+      },
+      {
+        "cycle": 22,
+        "sha256": "603836f20e25cf66bd468ff808ca6b515cf78e335e71e6eef8c701e083a1757d"
+      },
+      {
+        "cycle": 23,
+        "sha256": "c21bee966c801340089d0518e6583447c8b654ae20441f6562261aedaf2701f1"
+      },
+      {
+        "cycle": 24,
+        "sha256": "3339097787b52aa557228038915dfc2443b5c9a2db6eb4f9fd8b1cd05783d13b"
+      },
+      {
+        "cycle": 25,
+        "sha256": "daad4434ad01a391bd078576c8af1a82d23348c0379ee7e7e30541f314c5b879"
+      },
+      {
+        "cycle": 26,
+        "sha256": "4a19e4e76dfea64dbde2354de89414b006f6878ce61b4cfcdb4ef501972b347f"
+      },
+      {
+        "cycle": 27,
+        "sha256": "49d6750c2a68a3ef736fd24d66f6b4d43c89c3e61c22cebbf5d5afe3e984ba4b"
+      },
+      {
+        "cycle": 28,
+        "sha256": "011545b39be85340132a25e4713019ba1e9f8f7a19356613ccd3bc605c34b9ec"
+      },
+      {
+        "cycle": 29,
+        "sha256": "df6e79e3c503fc04f68e81b5f20a12bc625c665993277bfe822a0b5b73c0f29f"
+      },
+      {
+        "cycle": 30,
+        "sha256": "102b66bf62cbf42cc183835b157b6505225022f9c1a87d812f39da965ef5c5d5"
+      },
+      {
+        "cycle": 31,
+        "sha256": "3f8283de0cef7d8eb43ae997b25efcaa10b49ab8a1d193d0188bce5a67b83762"
+      },
+      {
+        "cycle": 32,
+        "sha256": "98f8e06d057e70ba3f6434f7a716010d9922c1df9b54d2de9b8aa66e03529cda"
+      },
+      {
+        "cycle": 33,
+        "sha256": "3355e0a2f9eebfa5fb62803dfb806ba2e4dd9d59098cd6ec58aa0d3390340406"
+      },
+      {
+        "cycle": 34,
+        "sha256": "847cad28d3ee61b5de31b2842c8ddd3b539dce903cfa5dcc8754e6336f12520f"
+      },
+      {
+        "cycle": 35,
+        "sha256": "6806227a40b35134c2b45a521c86b8dde4aae35deb7acda1b9d82c47e96685d0"
+      },
+      {
+        "cycle": 36,
+        "sha256": "c8f5a4e39e640452d6a42b151dfa94ea3edf44dd3257b78b86a0be1cdd88e321"
+      },
+      {
+        "cycle": 37,
+        "sha256": "fea9d41cd5e51d0a2f45b91d7dd3dd7fbba1a976fabe40cc75332cbd548f53b7"
+      },
+      {
+        "cycle": 38,
+        "sha256": "84f39ff4614b762b0b040fd552e1e3edeb03c19177ac31db8da50f6444bcfb99"
+      },
+      {
+        "cycle": 39,
+        "sha256": "7c412d3907b99e3ab75221e4b8576f799b042fcb84d02adb3c37f886029427cf"
+      },
+      {
+        "cycle": 40,
+        "sha256": "727f291ce276de5c2784fab4b7ee7322f3f8ad435319019016849273310e6779"
+      },
+      {
+        "cycle": 41,
+        "sha256": "276e588c2713344a028294e427711f394705e3c87fe13b4c766d21d954cb46de"
+      },
+      {
+        "cycle": 42,
+        "sha256": "5174d54b32cae2febfb7d3a51ede7a266a90efb4ba72ca46fc9b2328d7f02d4c"
+      },
+      {
+        "cycle": 43,
+        "sha256": "b124e7c19bb63488b98fa45eb8c7ac04724cb86ccb2429e0842999c58a324b81"
+      },
+      {
+        "cycle": 44,
+        "sha256": "a703931e97666ddae2163f6947599973e8d34caf652abad452b414bc21cd07dd"
+      },
+      {
+        "cycle": 45,
+        "sha256": "a5cc56593a1e9df2d4ac7a69a52154f5e4b7ace0138d25f67218bb19c0cf11ed"
+      },
+      {
+        "cycle": 46,
+        "sha256": "eb2ce6c265a7397defc1bad64dfb1c0ef93c3f6e4ffe46333072ae1071381848"
+      },
+      {
+        "cycle": 47,
+        "sha256": "2c5bd1c36554638a2f49dc2e6c40d58f2cb0ebe58cf1f2beb30330b032a9e7b3"
+      },
+      {
+        "cycle": 48,
+        "sha256": "101de66407a7a38a16d09009074418a022ce9351d40f0055b10ec6edf90cf82f"
+      },
+      {
+        "cycle": 49,
+        "sha256": "f717492b4d5b332f8432fe86fb40b59903ce62b9f698bcb5c6967c6cedeb2dcd"
+      },
+      {
+        "cycle": 50,
+        "sha256": "be54af7869106031ea41ae08250e5151c07184079c3d1671e68b29cfbacbf9e5"
+      },
+      {
+        "cycle": 51,
+        "sha256": "60e3f36ab9ec047ccd39972c83a80b892ed8e3ac0dd5d05e812d6731e1440786"
+      },
+      {
+        "cycle": 52,
+        "sha256": "c97e906cb3e8d271bd506a381d28d1e5dbd93baa006b110fc0561a6db324a60e"
+      },
+      {
+        "cycle": 53,
+        "sha256": "4807d0d246fc17d0cbe9a8b2c55686b731b39acd4a12be04af2748d0f932e4f8"
+      },
+      {
+        "cycle": 54,
+        "sha256": "cbf53d1e6be79b6770da9e8b9ee330f76e93bcbfab289d205c50799780c65b40"
+      },
+      {
+        "cycle": 55,
+        "sha256": "e48dab0cf3312f4f39e1e777ceae2f7f6758e4a409373e21fa8899fc9985529d"
+      },
+      {
+        "cycle": 56,
+        "sha256": "9cb51e080dcb863ef687fa2aebc80ecd6057e7dc449d789040127c3065f02484"
+      },
+      {
+        "cycle": 57,
+        "sha256": "5b7860c3dd1bacc1a3cd89b50a9c8deb01747747837289b35c203207cd88cdeb"
+      },
+      {
+        "cycle": 58,
+        "sha256": "b03f85ea92c316692c17b637dc27a686ce300b2545f4d602c942ae3c19f70403"
+      },
+      {
+        "cycle": 59,
+        "sha256": "4aae3457a9ec863ad01dd94a7b403d66d7fa6135c5ce2c93d035da320acd5e49"
+      },
+      {
+        "cycle": 60,
+        "sha256": "80714486781b44b06828cb2e521fef9f5139263c026735aba2e7b2e1457bf01e"
+      },
+      {
+        "cycle": 61,
+        "sha256": "979c289a0b5dc44f0f21f096d9337b9b4d753e7761a75d0963bdbd105819bafc"
+      },
+      {
+        "cycle": 62,
+        "sha256": "be1f852996fc4fdccb79b57da12718a55a390552e9ad0c028c02abd31e862f48"
+      },
+      {
+        "cycle": 63,
+        "sha256": "efc0d59628f8260b096cf7e7e153c73d92b53773f23c5913936ce80a0061c0e7"
+      },
+      {
+        "cycle": 64,
+        "sha256": "cd854ce0dd5c7bf69c50f8c0c958ddd93be89b5c3f73cd19b74a25a145d03379"
+      },
+      {
+        "cycle": 65,
+        "sha256": "0db8c08d280c882aae2ae7c15fa6ef4751e51069c8f5d525cedff29f6ce7747b"
+      },
+      {
+        "cycle": 66,
+        "sha256": "c94ab5ef0c367940cbae42a232b408a7e61165a635595be2e5a3246d13d36b33"
+      },
+      {
+        "cycle": 67,
+        "sha256": "d607584b2e8f69dfe032b0e9f0ed44e17c89aafd005adc12eeae1adcab3de385"
+      },
+      {
+        "cycle": 68,
+        "sha256": "41664ea90454a581dca538425877fd0f1b8dddb4f559928c9bebb14d21e43ae7"
+      },
+      {
+        "cycle": 69,
+        "sha256": "6090ea4c8f282940052b263b7e9d84d45fa24ab37c971fc44068f1cdedbb1ba8"
+      },
+      {
+        "cycle": 70,
+        "sha256": "6cad3bbd84e8633322cde110d60726575ebd027694fe36d193326111b275c74b"
+      },
+      {
+        "cycle": 71,
+        "sha256": "8156fd25827df4870d9514fc371b4c5f4494374acc464d60c75ba7ee8a8d137a"
+      },
+      {
+        "cycle": 72,
+        "sha256": "8e99bd4574d1fb3e7ca00ab02d41d45f77d56ae1a28589c0f46d134bb4f94399"
+      },
+      {
+        "cycle": 73,
+        "sha256": "a04e5202c73b93d9163e62056fc242d5e3c47c333e5cfe440b3107e79169b5fc"
+      },
+      {
+        "cycle": 74,
+        "sha256": "883dcf66da29f42f601285ec832b3b7eb71fc7ed3567392a04bcb415b5071f6a"
+      },
+      {
+        "cycle": 75,
+        "sha256": "9ff7d54a26cb66f79b323c375b2b5c96721576d747778cb304b591156c25c4e4"
+      },
+      {
+        "cycle": 76,
+        "sha256": "1875d9991ea2f3fb1f31a4a15ff2db0bee65f782b6f65c4ea099c9dc38d019d3"
+      },
+      {
+        "cycle": 77,
+        "sha256": "8040da504f3dce0a9b527db64e32d7dd0c4eb6ef9523fe4c3f19c17e1378f0fc"
+      },
+      {
+        "cycle": 78,
+        "sha256": "3a561e1b3cdb1f40e2276eb4701b34a5ed07f9b8959974b22cb5e5a87c9b4825"
+      },
+      {
+        "cycle": 79,
+        "sha256": "1ef5312cac0d9bec353777d87e37ac7cbc9364b442000171a462f36857075933"
+      },
+      {
+        "cycle": 80,
+        "sha256": "792c5f2c9054c124ab1bfe321288e363207d8497ee4cd778bef864701e50f049"
+      },
+      {
+        "cycle": 81,
+        "sha256": "15e5c0d8d0f1276a160b723daee6164bedbfe6251ad9cfb05330b4d166606d0b"
+      },
+      {
+        "cycle": 82,
+        "sha256": "4f92fe5fcb2dddd3f67a2f1a0294cd6629f8fd56e00e7e9ecefefd837dfa87da"
+      },
+      {
+        "cycle": 83,
+        "sha256": "b1796b5d199959cc9bc7895cfaf4744d787ef7f88ed8022de6b6892af8f1a8a5"
+      },
+      {
+        "cycle": 84,
+        "sha256": "79d008d3cd1ee162ea06e80403925534e35752fb1350ee70f55e1d214397e15d"
+      },
+      {
+        "cycle": 85,
+        "sha256": "a00393d44c58419d29ec25151d208b89cb482d205e2e4d0a6bdde8761d312935"
+      },
+      {
+        "cycle": 86,
+        "sha256": "6bf07f65d20c6a1fe63127a1ce27765f2cf330f8f4cf7dc043c07e8560ef0220"
+      },
+      {
+        "cycle": 87,
+        "sha256": "0970a59dabc8ad13ce2b7cd0f6263d74280176844924de1c4ad96c537424f2ac"
+      },
+      {
+        "cycle": 88,
+        "sha256": "8dbc38b493cdad24dd5bf915c44e429f955707f42420f8c0561f33c94d5e1736"
+      },
+      {
+        "cycle": 89,
+        "sha256": "681f2b2ba75ce2baca81aada968765e92d361c83f95821e8dfd2031f3535b90d"
+      }
+    ],
+    "storage_mode": "external_source_shards"
+  },
+  "state_semantics": {
+    "active_definition": "(1-damage)^2*raw_driver",
+    "all_fields_same_cycle_and_phase": true,
+    "fatigue_degradation_field": "f_alpha_elem",
+    "history_timing": "exported_with_cycle_peak_shard",
+    "loading_branch": "peak",
+    "phase": "cycle_peak",
+    "raw_driver_timing": "cycle_peak",
+    "raw_step_mapping": "1+n_substeps*(cycle-1)+(peak_substep_ordinal-1)",
+    "state_id": "cycle_peak_coherent_v1"
+  },
+  "states": [
+    {
+      "cycle": 1,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 4,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0001.mat",
+      "source_sha256": "dca87af025dce1ce5d155d61d492763ddae90b7ebe87d517783fd13353f48f50",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 2,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 12,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0002.mat",
+      "source_sha256": "ab2421c9f5c2a3fc8651d0f4257296df18b9de9a0f18103bcbeea6a7bd56bcc6",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 3,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 20,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0003.mat",
+      "source_sha256": "ba3c69b58fcc44dd394066b80911cfd98506c48436a810c9b0fe8bb3b6e9130e",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 4,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 28,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0004.mat",
+      "source_sha256": "bec7b41a1273dc4425e4b32db4813b8e7f757196cd25852d35415ca802a31f18",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 5,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 36,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0005.mat",
+      "source_sha256": "d636b9bba66a49714242937701d19d7a248ad995302213dc8fe0f8001dd0b986",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 6,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 44,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0006.mat",
+      "source_sha256": "c2d53f9068f422b9100c473667a71e56fbada7754ef2f7b5ad5b8fb3ac70dcc8",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 7,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 52,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0007.mat",
+      "source_sha256": "1c69e92c4581e0a0f1926fcbad2f931280fede09a8918784d24dfa42f6bd3916",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 8,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 60,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0008.mat",
+      "source_sha256": "e68ed4ff1dfe0bb2293b83e37c6cdae7d3efdbb295d078c48f7ecc9fc7d4f315",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 9,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 68,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0009.mat",
+      "source_sha256": "161d136214a41ce17ca37a22e72682a0c3bf9262cd62e309f2015c110d17f265",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 10,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 76,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0010.mat",
+      "source_sha256": "2635be8ef6d8e65f0def7adb1e13966377ac60919cd499d57717e4488e45bf23",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 11,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 84,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0011.mat",
+      "source_sha256": "dbdc00ba1d2b18a6a2db8542d75bf6ea9056201998feebf77148023be11e4411",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 12,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 92,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0012.mat",
+      "source_sha256": "be18a556afbaa126f70f3cb23d029d8703673c300445f90a1861ea719716c9b7",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 13,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 100,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0013.mat",
+      "source_sha256": "e463e10ce710d46484ee2fab374a55e50a8ebdf52ebeabef814d809c3fc49eb2",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 14,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 108,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0014.mat",
+      "source_sha256": "2e3e4095d930d6498db91728ab826a58484a4cb881d8b0b570e6a8f8482a49c7",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 15,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 116,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0015.mat",
+      "source_sha256": "e9781bbcd3b70e170901512a13dcd88d8e7d6ee8cbafd216dd91046b7abd4237",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 16,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 124,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0016.mat",
+      "source_sha256": "8c268dfac329590e382f75f9f4c6cad43b9ded5c23b295a2ad573c9ec9a52070",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 17,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 132,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0017.mat",
+      "source_sha256": "3715bc5e3d8dd92abc0c47c9c6d084617d740c70b63bc2b99fb271428e8636dc",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 18,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 140,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0018.mat",
+      "source_sha256": "d7d8c6eb751383af7a3f9cf4b13811e7c6d9013275049def5ce63f09ab1384fe",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 19,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 148,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0019.mat",
+      "source_sha256": "3b50ad0d1f5465bc9a33a04a0831c7d7ee13b44f0613c9f50074e8758e814fcc",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 20,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 156,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0020.mat",
+      "source_sha256": "8163dc4e5b1dd285c245abc657c17747607198363b398c8a42ac1f40ddec61bc",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 21,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 164,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0021.mat",
+      "source_sha256": "c01b40c9148e6038e20c771e943d598a8ce2daf799ff6d0a91962b96e87f680a",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 22,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 172,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0022.mat",
+      "source_sha256": "603836f20e25cf66bd468ff808ca6b515cf78e335e71e6eef8c701e083a1757d",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 23,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 180,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0023.mat",
+      "source_sha256": "c21bee966c801340089d0518e6583447c8b654ae20441f6562261aedaf2701f1",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 24,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 188,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0024.mat",
+      "source_sha256": "3339097787b52aa557228038915dfc2443b5c9a2db6eb4f9fd8b1cd05783d13b",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 25,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 196,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0025.mat",
+      "source_sha256": "daad4434ad01a391bd078576c8af1a82d23348c0379ee7e7e30541f314c5b879",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 26,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 204,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0026.mat",
+      "source_sha256": "4a19e4e76dfea64dbde2354de89414b006f6878ce61b4cfcdb4ef501972b347f",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 27,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 212,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0027.mat",
+      "source_sha256": "49d6750c2a68a3ef736fd24d66f6b4d43c89c3e61c22cebbf5d5afe3e984ba4b",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 28,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 220,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0028.mat",
+      "source_sha256": "011545b39be85340132a25e4713019ba1e9f8f7a19356613ccd3bc605c34b9ec",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 29,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 228,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0029.mat",
+      "source_sha256": "df6e79e3c503fc04f68e81b5f20a12bc625c665993277bfe822a0b5b73c0f29f",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 30,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 236,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0030.mat",
+      "source_sha256": "102b66bf62cbf42cc183835b157b6505225022f9c1a87d812f39da965ef5c5d5",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 31,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 244,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0031.mat",
+      "source_sha256": "3f8283de0cef7d8eb43ae997b25efcaa10b49ab8a1d193d0188bce5a67b83762",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 32,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 252,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0032.mat",
+      "source_sha256": "98f8e06d057e70ba3f6434f7a716010d9922c1df9b54d2de9b8aa66e03529cda",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 33,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 260,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0033.mat",
+      "source_sha256": "3355e0a2f9eebfa5fb62803dfb806ba2e4dd9d59098cd6ec58aa0d3390340406",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 34,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 268,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0034.mat",
+      "source_sha256": "847cad28d3ee61b5de31b2842c8ddd3b539dce903cfa5dcc8754e6336f12520f",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 35,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 276,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0035.mat",
+      "source_sha256": "6806227a40b35134c2b45a521c86b8dde4aae35deb7acda1b9d82c47e96685d0",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 36,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 284,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0036.mat",
+      "source_sha256": "c8f5a4e39e640452d6a42b151dfa94ea3edf44dd3257b78b86a0be1cdd88e321",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 37,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 292,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0037.mat",
+      "source_sha256": "fea9d41cd5e51d0a2f45b91d7dd3dd7fbba1a976fabe40cc75332cbd548f53b7",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 38,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 300,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0038.mat",
+      "source_sha256": "84f39ff4614b762b0b040fd552e1e3edeb03c19177ac31db8da50f6444bcfb99",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 39,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 308,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0039.mat",
+      "source_sha256": "7c412d3907b99e3ab75221e4b8576f799b042fcb84d02adb3c37f886029427cf",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 40,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 316,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0040.mat",
+      "source_sha256": "727f291ce276de5c2784fab4b7ee7322f3f8ad435319019016849273310e6779",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 41,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 324,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0041.mat",
+      "source_sha256": "276e588c2713344a028294e427711f394705e3c87fe13b4c766d21d954cb46de",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 42,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 332,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0042.mat",
+      "source_sha256": "5174d54b32cae2febfb7d3a51ede7a266a90efb4ba72ca46fc9b2328d7f02d4c",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 43,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 340,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0043.mat",
+      "source_sha256": "b124e7c19bb63488b98fa45eb8c7ac04724cb86ccb2429e0842999c58a324b81",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 44,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 348,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0044.mat",
+      "source_sha256": "a703931e97666ddae2163f6947599973e8d34caf652abad452b414bc21cd07dd",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 45,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 356,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0045.mat",
+      "source_sha256": "a5cc56593a1e9df2d4ac7a69a52154f5e4b7ace0138d25f67218bb19c0cf11ed",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 46,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 364,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0046.mat",
+      "source_sha256": "eb2ce6c265a7397defc1bad64dfb1c0ef93c3f6e4ffe46333072ae1071381848",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 47,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 372,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0047.mat",
+      "source_sha256": "2c5bd1c36554638a2f49dc2e6c40d58f2cb0ebe58cf1f2beb30330b032a9e7b3",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 48,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 380,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0048.mat",
+      "source_sha256": "101de66407a7a38a16d09009074418a022ce9351d40f0055b10ec6edf90cf82f",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 49,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 388,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0049.mat",
+      "source_sha256": "f717492b4d5b332f8432fe86fb40b59903ce62b9f698bcb5c6967c6cedeb2dcd",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 50,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 396,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0050.mat",
+      "source_sha256": "be54af7869106031ea41ae08250e5151c07184079c3d1671e68b29cfbacbf9e5",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 51,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 404,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0051.mat",
+      "source_sha256": "60e3f36ab9ec047ccd39972c83a80b892ed8e3ac0dd5d05e812d6731e1440786",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 52,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 412,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0052.mat",
+      "source_sha256": "c97e906cb3e8d271bd506a381d28d1e5dbd93baa006b110fc0561a6db324a60e",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 53,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 420,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0053.mat",
+      "source_sha256": "4807d0d246fc17d0cbe9a8b2c55686b731b39acd4a12be04af2748d0f932e4f8",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 54,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 428,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0054.mat",
+      "source_sha256": "cbf53d1e6be79b6770da9e8b9ee330f76e93bcbfab289d205c50799780c65b40",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 55,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 436,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0055.mat",
+      "source_sha256": "e48dab0cf3312f4f39e1e777ceae2f7f6758e4a409373e21fa8899fc9985529d",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 56,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 444,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0056.mat",
+      "source_sha256": "9cb51e080dcb863ef687fa2aebc80ecd6057e7dc449d789040127c3065f02484",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 57,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 452,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0057.mat",
+      "source_sha256": "5b7860c3dd1bacc1a3cd89b50a9c8deb01747747837289b35c203207cd88cdeb",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 58,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 460,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0058.mat",
+      "source_sha256": "b03f85ea92c316692c17b637dc27a686ce300b2545f4d602c942ae3c19f70403",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 59,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 468,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0059.mat",
+      "source_sha256": "4aae3457a9ec863ad01dd94a7b403d66d7fa6135c5ce2c93d035da320acd5e49",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 60,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 476,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0060.mat",
+      "source_sha256": "80714486781b44b06828cb2e521fef9f5139263c026735aba2e7b2e1457bf01e",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 61,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 484,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0061.mat",
+      "source_sha256": "979c289a0b5dc44f0f21f096d9337b9b4d753e7761a75d0963bdbd105819bafc",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 62,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 492,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0062.mat",
+      "source_sha256": "be1f852996fc4fdccb79b57da12718a55a390552e9ad0c028c02abd31e862f48",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 63,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 500,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0063.mat",
+      "source_sha256": "efc0d59628f8260b096cf7e7e153c73d92b53773f23c5913936ce80a0061c0e7",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 64,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 508,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0064.mat",
+      "source_sha256": "cd854ce0dd5c7bf69c50f8c0c958ddd93be89b5c3f73cd19b74a25a145d03379",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 65,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 516,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0065.mat",
+      "source_sha256": "0db8c08d280c882aae2ae7c15fa6ef4751e51069c8f5d525cedff29f6ce7747b",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 66,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 524,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0066.mat",
+      "source_sha256": "c94ab5ef0c367940cbae42a232b408a7e61165a635595be2e5a3246d13d36b33",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 67,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 532,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0067.mat",
+      "source_sha256": "d607584b2e8f69dfe032b0e9f0ed44e17c89aafd005adc12eeae1adcab3de385",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 68,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 540,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0068.mat",
+      "source_sha256": "41664ea90454a581dca538425877fd0f1b8dddb4f559928c9bebb14d21e43ae7",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 69,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 548,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0069.mat",
+      "source_sha256": "6090ea4c8f282940052b263b7e9d84d45fa24ab37c971fc44068f1cdedbb1ba8",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 70,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 556,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0070.mat",
+      "source_sha256": "6cad3bbd84e8633322cde110d60726575ebd027694fe36d193326111b275c74b",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 71,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 564,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0071.mat",
+      "source_sha256": "8156fd25827df4870d9514fc371b4c5f4494374acc464d60c75ba7ee8a8d137a",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 72,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 572,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0072.mat",
+      "source_sha256": "8e99bd4574d1fb3e7ca00ab02d41d45f77d56ae1a28589c0f46d134bb4f94399",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 73,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 580,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0073.mat",
+      "source_sha256": "a04e5202c73b93d9163e62056fc242d5e3c47c333e5cfe440b3107e79169b5fc",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 74,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 588,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0074.mat",
+      "source_sha256": "883dcf66da29f42f601285ec832b3b7eb71fc7ed3567392a04bcb415b5071f6a",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 75,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 596,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0075.mat",
+      "source_sha256": "9ff7d54a26cb66f79b323c375b2b5c96721576d747778cb304b591156c25c4e4",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 76,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 604,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0076.mat",
+      "source_sha256": "1875d9991ea2f3fb1f31a4a15ff2db0bee65f782b6f65c4ea099c9dc38d019d3",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 77,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 612,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0077.mat",
+      "source_sha256": "8040da504f3dce0a9b527db64e32d7dd0c4eb6ef9523fe4c3f19c17e1378f0fc",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 78,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 620,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0078.mat",
+      "source_sha256": "3a561e1b3cdb1f40e2276eb4701b34a5ed07f9b8959974b22cb5e5a87c9b4825",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 79,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 628,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0079.mat",
+      "source_sha256": "1ef5312cac0d9bec353777d87e37ac7cbc9364b442000171a462f36857075933",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 80,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 636,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0080.mat",
+      "source_sha256": "792c5f2c9054c124ab1bfe321288e363207d8497ee4cd778bef864701e50f049",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 81,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 644,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0081.mat",
+      "source_sha256": "15e5c0d8d0f1276a160b723daee6164bedbfe6251ad9cfb05330b4d166606d0b",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 82,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 652,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0082.mat",
+      "source_sha256": "4f92fe5fcb2dddd3f67a2f1a0294cd6629f8fd56e00e7e9ecefefd837dfa87da",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 83,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 660,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0083.mat",
+      "source_sha256": "b1796b5d199959cc9bc7895cfaf4744d787ef7f88ed8022de6b6892af8f1a8a5",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 84,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 668,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0084.mat",
+      "source_sha256": "79d008d3cd1ee162ea06e80403925534e35752fb1350ee70f55e1d214397e15d",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 85,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 676,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0085.mat",
+      "source_sha256": "a00393d44c58419d29ec25151d208b89cb482d205e2e4d0a6bdde8761d312935",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 86,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 684,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0086.mat",
+      "source_sha256": "6bf07f65d20c6a1fe63127a1ce27765f2cf330f8f4cf7dc043c07e8560ef0220",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 87,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 692,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0087.mat",
+      "source_sha256": "0970a59dabc8ad13ce2b7cd0f6263d74280176844924de1c4ad96c537424f2ac",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 88,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 700,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0088.mat",
+      "source_sha256": "8dbc38b493cdad24dd5bf915c44e429f955707f42420f8c0561f33c94d5e1736",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    },
+    {
+      "cycle": 89,
+      "derived_fields": {
+        "active_driver": "damage_degradation*raw_driver",
+        "damage_degradation": "(1-damage)^2"
+      },
+      "field_map": {
+        "alpha_bar": "alpha_bar_elem",
+        "damage": "d_elem",
+        "fatigue_degradation": "f_alpha_elem",
+        "raw_driver": "psi_elem"
+      },
+      "peak_substep_ordinal": 4,
+      "phase": "cycle_peak",
+      "raw_step_1_based": 708,
+      "source_file": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729/01_hard_8step_historical/psi_fields/cycle_0089.mat",
+      "source_sha256": "681f2b2ba75ce2baca81aada968765e92d361c83f95821e8dfd2031f3535b90d",
+      "state_semantics_id": "cycle_peak_coherent_v1"
+    }
+  ],
+  "trajectory_id": "factorial_hard_8step_u012"
+}
