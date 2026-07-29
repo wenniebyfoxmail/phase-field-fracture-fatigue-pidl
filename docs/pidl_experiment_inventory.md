@@ -40,7 +40,8 @@ inconclusive   preserved for traceability only
 
 | case_id | status | why run | key change | primary asset | claim boundary |
 |---|---|---|---|---|---|
-| `pi_transfer_controls_20260729` | diagnostic | Exercise corrected scaling with a complete-Pi positive replay and a categorical-BC negative control | Reusable matched/mismatched/unobservable audit; FEM-centred normalized field round trip; same-mesh archived BC contrast | `docs/pi_transfer_controls_20260729/decision.md` | scaling/tooling control only; no fresh F1 solve, road validation, traffic mapping, forecast, or inverse claim |
+| `pi_transfer_controls_20260729` | diagnostic | Exercise corrected scaling with an F1a complete-Pi replay and a categorical-BC negative control | Reusable matched/mismatched/unobservable audit; FEM-centred normalized field round trip; same-mesh archived BC contrast | `docs/pi_transfer_controls_20260729/decision.md` | F1a scaling/I-O only; no fresh-solver, road, traffic, forecast, or inverse claim |
+| `f1b_exact_pi_solver_invariance_20260729` | blocked | Test the missing fresh dimensional FEM solver-invariance gate | Hash-sealed Windows-FEM runner, complete thickness-aware Pi lock, new-root policy, event and four-field analyzer | `docs/f1b_exact_pi_solver_invariance_20260729/decision.md` | blocked pending an approved Windows-FEM producer; not passed and no road claim |
 
 ## Census Scope
 

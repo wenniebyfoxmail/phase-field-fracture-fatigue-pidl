@@ -56,6 +56,7 @@ class PhaseFieldScaling:
     u_max_phys: float
     alpha_T_phys: Optional[float] = None
     mesh_h_phys: Optional[float] = None
+    thickness_phys: Optional[float] = None
     residual_stiffness: float = 0.0
     R_ratio: float = 0.0
     pff_model: str = "AT1"
@@ -81,6 +82,8 @@ class PhaseFieldScaling:
             _positive("alpha_T_phys", self.alpha_T_phys)
         if self.mesh_h_phys is not None:
             _positive("mesh_h_phys", self.mesh_h_phys)
+        if self.thickness_phys is not None:
+            _positive("thickness_phys", self.thickness_phys)
         if self.residual_stiffness < 0:
             raise ValueError("residual_stiffness cannot be negative")
         if self.pff_model not in _CW:
@@ -169,6 +172,12 @@ class PhaseFieldScaling:
         return self.mesh_h_phys / self.ell_phys
 
     @property
+    def thickness_over_L(self) -> Optional[float]:
+        if self.thickness_phys is None:
+            return None
+        return self.thickness_phys / self.L_phys
+
+    @property
     def ell_over_h(self) -> Optional[float]:
         if self.mesh_h_phys is None:
             return None
@@ -191,6 +200,7 @@ class PhaseFieldScaling:
             "alpha_T_over_psi_ref": self.alpha_T_norm,
             "alpha_T_over_w1": self.alpha_T_norm,
             "h_over_ell": self.h_over_ell,
+            "thickness_over_L": self.thickness_over_L,
             "eta": self.residual_stiffness,
             "R_ratio": self.R_ratio,
             "pff_model": self.pff_model,
@@ -238,6 +248,7 @@ class PhaseFieldScaling:
         u_max_norm: float = 0.12,
         alpha_T_norm: float = 0.5,
         h_over_ell: Optional[float] = None,
+        thickness_over_L: Optional[float] = None,
         **kwargs: Any,
     ) -> "PhaseFieldScaling":
         """Create one physical realization of a dimensionless toy problem.
@@ -253,6 +264,9 @@ class PhaseFieldScaling:
         psi_ref = G_c_phys / ell_phys
         u_ref = L_phys * sqrt(psi_ref / E_phys)
         mesh_h = None if h_over_ell is None else h_over_ell * ell_phys
+        thickness = (
+            None if thickness_over_L is None else thickness_over_L * L_phys
+        )
         return cls(
             E_phys=E_phys,
             nu_phys=nu,
@@ -264,6 +278,7 @@ class PhaseFieldScaling:
             u_max_phys=u_max_norm * u_ref,
             alpha_T_phys=alpha_T_norm * psi_ref,
             mesh_h_phys=mesh_h,
+            thickness_phys=thickness,
             **kwargs,
         )
 

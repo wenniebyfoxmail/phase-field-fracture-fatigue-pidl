@@ -27,6 +27,83 @@
 
 ## Active Requests
 
+## 2026-07-29 · Request 26: F1b fresh exact-Pi dimensional solver-invariance control
+
+**Goal**: run one genuinely fresh GRIPHFiTH dimensional solve to determine
+whether the formal eta0 SENS trajectory is solver-invariant under the complete
+exact-Pi transformation. F1a replay is already accepted only as scaling/I-O;
+this request is the missing solver gate.
+
+**Source**: pull the pushed head of branch `codex/road-rescaling-bridge`. Use
+only the hash-sealed handoff:
+
+```text
+producer_handoffs/f1b_exact_pi_20260729/
+```
+
+The PowerShell launcher records the exact commit and refuses a dirty checkout,
+hash mismatch, or pre-existing output root.
+
+**INPUT file**:
+
+```text
+producer_handoffs/f1b_exact_pi_20260729/main_F1b_exact_pi_dimensional.m
+producer_handoffs/f1b_exact_pi_20260729/solve_fatigue_fracture_f1b.m
+producer_handoffs/f1b_exact_pi_20260729/newton_raphson_f1b.m
+producer_handoffs/f1b_exact_pi_20260729/INPUT_LOCK.json
+producer_handoffs/f1b_exact_pi_20260729/TOLERANCE_AUDIT.md
+```
+
+Key candidate values are `E=3`, `nu=0.3`, `Gc=0.3`, `ell=0.1`,
+`L=H=t=10`, `Umax=1.2`, `alpha_T=1.5`, `eta=0`, `R=0`, plane strain,
+AT1/AMOR, reverse BC, hard zero-load recovery, and explicit eight-step
+loading/unloading. Do not change numerical tolerances or event thresholds.
+The dimensional tolerances in the runner are intentionally not the original
+absolute values: equilibrium residual tolerance is `3e-4`, phase/recovery
+residual tolerance is `1.2`, the phase regularization floor is `3e-5`, and the
+staggered gate is `||R_u||/300 + ||R_d||/3000 <= 4e-4`. These preserve the
+reference dimensionless numerical problem. Reverting them to `1e-6/4e-4` or
+using the upstream raw force-plus-energy staggered sum invalidates the run.
+
+**Mesh**: use the formal SENS mesh topology and multiply every x/y coordinate
+by ten. Do not remesh. Thickness is also ten, preserving `t/L`; connectivity
+and element ordering must remain paired with the normalized reference.
+
+**Launch**:
+
+```powershell
+& "<shared-repo>\producer_handoffs\f1b_exact_pi_20260729\launch_F1b_exact_pi.ps1" `
+  -SharedRepo "<shared-repo>" `
+  -GripfithRoot "C:\Users\xw436\GRIPHFiTH" `
+  -OutputParent "C:\Users\xw436\GRIPHFiTH_F1b_outputs"
+```
+
+**Expected outputs**: return the complete newly created output root, including
+`F1B_INPUT_SNAPSHOT.json`, `F1B_PRODUCER_PROVENANCE.json`,
+`F1B_EVENT_METADATA.json`, `f1b_event_trace.dat`, `f1b_mesh_geometry.mat`, and
+all `psi_fields/cycle_NNNN.mat`. Do not rename, resume, or merge it with the c89
+reference.
+
+**Acceptance criteria**:
+
+1. Provenance proves `fresh_fem_solve=true`, clean source commit, matching input
+   lock hash, and a new output root.
+2. First-hit and confirmed-event cycle errors are each no more than one
+   explicitly resolved cycle relative to c86 and c89.
+3. At same-cycle c20/c40/c60 and first-hit/confirmed own-event states, linear
+   damage passes MAE/RMSE/correlation `0.002/0.005/0.995`; normalized history,
+   raw and active fields in log10 space pass `0.05/0.10/0.99`.
+4. At every comparison state, active FEM-p99 support passes IoU `>=0.90`, area
+   ratio `[0.90,1.10]`, and centroid shift no greater than one local reference
+   support-cell diameter.
+5. Any miss is reported as F1b `FAIL`; do not tune tolerances or rerun a revised
+   transform without a new reviewed request.
+6. If MATLAB/GRIPHFiTH/MEX is unavailable before a valid solve starts, report
+   the exact environment blocker. That remains `BLOCKED`, not passed.
+
+**Priority**: high. One FEM solve only. No PIDL training and no road-validation
+claim.
+
 ## 2026-07-15 · Request 25: recover existing five-Umax full-field trajectories for reality assimilation
 
 **Goal**: recover or re-export the already completed FEM `Umax=0.08...0.12` trajectory family as cycle-resolved full fields so Mac can test reality-facing sequential assimilation on physical load holdout rather than numerical-cadence holdout.
