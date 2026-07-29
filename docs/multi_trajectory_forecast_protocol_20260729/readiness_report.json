@@ -1,0 +1,36 @@
+{
+  "blockers": [
+    "Agent/FEM task 2 trajectory contract is not published",
+    "producer leave-one-combination-out split is not frozen and verified",
+    "road-aware parameter-count manifest is not verified within the sealed tolerance"
+  ],
+  "claims_allowed": [
+    "sealed protocol and consumer readiness logic are tooling-valid",
+    "leave-one-entire-trajectory-out folds are deterministic once bundles arrive"
+  ],
+  "claims_forbidden": [
+    "multi-trajectory forecast performance",
+    "trajectory or road-section generalisation",
+    "geometry or material generalisation",
+    "autonomous transition prediction",
+    "calibrated hazard or RUL"
+  ],
+  "contract_sha256": null,
+  "contract_status": "blocked_pending_contract",
+  "field_training_allowed": false,
+  "folds": [],
+  "independence_group_count": 0,
+  "independence_scopes": [],
+  "protocol_id": "road_multi_trajectory_forecast_reassessment_v1_20260729",
+  "risk_blockers": [],
+  "risk_training_allowed": false,
+  "status": "not_ready_no_training",
+  "task_readiness": {
+    "autonomous_transition_warning": false,
+    "observation_reset_conditional_propagation": false,
+    "observed_state_same_regime_h1_h3": false
+  },
+  "training_allowed": false,
+  "trajectory_count": 0,
+  "transition_training_allowed": false
+}

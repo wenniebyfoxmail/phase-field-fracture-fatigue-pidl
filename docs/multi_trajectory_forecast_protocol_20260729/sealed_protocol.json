@@ -1,0 +1,167 @@
+{
+  "protocol_id": "road_multi_trajectory_forecast_reassessment_v1_20260729",
+  "status": "sealed_tooling_only_pending_agent_fem_task2_contract",
+  "claim_class": "framework-validation",
+  "training_launched": false,
+  "producer_contract": {
+    "owner": "Agent/FEM task 2",
+    "path": null,
+    "schema_id": null,
+    "adapter_id": null,
+    "sha256": null,
+    "policy": "Agent3 must not copy, infer, or guess producer fields; a versioned reviewed adapter is required",
+    "potential_source": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729",
+    "potential_design": "hard/soft initial tip x 5/8-step loading-history 2x2 factorial",
+    "potential_status": "awaiting Agent2 signed bundle and split"
+  },
+  "physics_reference": {
+    "reference": "FEM eta0",
+    "canonical_state_fields": [
+      "damage",
+      "fatigue_history",
+      "fatigue_degradation",
+      "log10_psi_raw"
+    ],
+    "derived_fields": [
+      "psi_active"
+    ],
+    "synthetic_real_boundary": "FEM trajectories remain synthetic numerical references and are never labelled real-road validation"
+  },
+  "tasks": {
+    "observed_state_same_regime_h1_h3": {
+      "input": "observed or assimilated state at a hash-locked origin with identical observation, mask, time, load, environment, maintenance and scenario conditioning",
+      "targets": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "eligibility": "all targets remain inside the producer-declared event regime",
+      "claim": "conditional short-horizon field propagation"
+    },
+    "autonomous_transition_warning": {
+      "input": "observed state before a producer-declared transition with future scenario information available at forecast time",
+      "output": "transition probability or warning state, not an unlimited deterministic field rollout",
+      "metrics": [
+        "missed_transition",
+        "false_warning",
+        "warning_lead_interval",
+        "brier_score",
+        "calibration_error"
+      ],
+      "claim": "transition warning under held-out within-Hard5 numerical trajectories"
+    },
+    "observation_reset_conditional_propagation": {
+      "input": "hash-locked post-observation assimilated state at or after transition",
+      "targets": [
+        "h1",
+        "h2",
+        "h3"
+      ],
+      "claim": "conditional propagation after a new observation; never autonomous transition discovery"
+    }
+  },
+  "split": {
+    "method": "leave-one-entire-trajectory-out",
+    "group_key": "adapter-normalized independence_group_id",
+    "minimum_independent_trajectories": 4,
+    "factorial_alias": "leave-one-combination-out",
+    "required_factorial_combinations": [
+      "hard_tip__5step",
+      "hard_tip__8step",
+      "soft_tip__5step",
+      "soft_tip__8step"
+    ],
+    "allowed_generalisation_scope": "within-Hard5 initial-tip/loading-history factorial numerical trajectories",
+    "forbidden_generalisation_claims": [
+      "independent roads",
+      "road-section generalisation",
+      "geometry generalisation",
+      "material generalisation"
+    ],
+    "hard_rules": [
+      "all cycles and observation resets from a held-out independence group remain outside training and normalization",
+      "same-trajectory cycle windows never count as independent samples",
+      "normalization statistics are fitted inside each outer training fold only",
+      "no held-out trajectory is used for context, checkpoint, threshold or architecture selection",
+      "if any selection remains necessary, add an inner trajectory-level split before training"
+    ]
+  },
+  "model_matrix": {
+    "formal_baseline": "markov",
+    "finite_candidates": [
+      "tcn",
+      "transformer"
+    ],
+    "conditional_reference": "diagonal_ssm",
+    "excluded": [
+      "gru",
+      "lstm",
+      "current_multiscale",
+      "any new architecture"
+    ],
+    "context": {
+      "markov": 1,
+      "tcn": 3,
+      "transformer": 3,
+      "diagonal_ssm": 3
+    },
+    "seeds": [
+      1,
+      2,
+      3
+    ],
+    "fixed_steps": 3000,
+    "parameter_target": 329000,
+    "parameter_relative_tolerance": 0.01,
+    "same_optimizer_loss_and_budget": true,
+    "same_origin_mask_scenario_conditioning": true,
+    "architecture_selection_on_heldout": false
+  },
+  "fem_centred_metrics": {
+    "field": [
+      "damage_linear_mae_rmse_correlation",
+      "history_log10_mae_rmse_correlation",
+      "raw_driver_log10_mae_rmse_correlation",
+      "active_driver_log10_mae_rmse_correlation"
+    ],
+    "support": [
+      "area_weighted_absolute_fem_p99_iou",
+      "area_weighted_own_p99_iou",
+      "absolute_support_area_ratio",
+      "support_centroid_offset",
+      "support_width_error"
+    ],
+    "event": [
+      "producer_declared_event_phase",
+      "warning_lead_interval",
+      "missed_transition",
+      "false_warning"
+    ],
+    "uncertainty": [
+      "predictive_interval_coverage",
+      "predictive_interval_width",
+      "brier_score",
+      "calibration_error",
+      "negative_log_likelihood"
+    ],
+    "missing_policy": "unavailable uncertainty remains unavailable and never becomes zero variance",
+    "aggregation": "report every held-out trajectory first, then paired aggregate versus matched Markov"
+  },
+  "long_horizon": {
+    "field_output": "rolling h1-h3 after each new observed or assimilated state",
+    "transition_output": "scenario-conditioned hazard probability",
+    "rul_output": "RUL distribution only when event/censor and calibration gates pass",
+    "free_rollout_role": "stress diagnostic only",
+    "forbidden_claim": "free recursive rollout is a road long-horizon prediction"
+  },
+  "readiness_release_gate": [
+    "task2 signed contract/split path, schema id, adapter id and SHA256 are frozen",
+    "a reviewed adapter maps the producer contract into the Agent3 normalized inventory",
+    "all four hard/soft x 5/8-step combinations pass mechanism completeness, hash and provenance validation",
+    "every trajectory covers all three pre-registered tasks",
+    "observation and future scenario contracts are identical across compared models",
+    "road-aware parameter counts pass the one-percent gate",
+    "seeds, steps, optimizer, loss, origins, masks and future scenarios are frozen",
+    "hazard/RUL remains unavailable unless calibrated uncertainty and event/censor diversity pass"
+  ]
+}

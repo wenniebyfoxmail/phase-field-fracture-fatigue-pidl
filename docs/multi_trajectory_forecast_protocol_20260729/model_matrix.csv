@@ -1,0 +1,6 @@
+family,role,ranking_eligible,tasks,context,seeds,fixed_steps,parameter_target,relative_tolerance,conditioning,decision
+markov,formal matched graph baseline,true,all three,1,"1;2;3",3000,329000,0.01,identical origin mask scenario and budget,mandatory control in every outer fold
+tcn,finite temporal candidate,true,all three,3,"1;2;3",3000,329000,0.01,identical origin mask scenario and budget,no architecture or context sweep
+transformer,finite secondary candidate,true,all three,3,"1;2;3",3000,329000,0.01,identical origin mask scenario and budget,no architecture or context sweep
+diagonal_ssm,conditional propagation reference,false,observation-reset conditional propagation,3,"1;2;3",3000,329000,0.01,identical origin mask scenario and budget,reported separately and not promoted by this protocol
+current_multiscale,historical single-trajectory reference,false,none,,,0,,,excluded from formal ranking

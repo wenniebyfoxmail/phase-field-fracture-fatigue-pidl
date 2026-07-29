@@ -1,0 +1,26 @@
+{
+  "path": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729",
+  "path_exists": true,
+  "design": "hard/soft initial tip x 5/8-step loading-history 2x2 factorial",
+  "candidate_combinations": [
+    "hard_tip__5step",
+    "hard_tip__8step",
+    "soft_tip__5step",
+    "soft_tip__8step"
+  ],
+  "agent3_verdict": "candidate_source_only_not_counted",
+  "blocking_requirements": [
+    "Agent2 mechanism-completeness validation for all four trajectories",
+    "Agent2 signed trajectory bundle contract and SHA256 inventory",
+    "Agent2 locked leave-one-combination-out split",
+    "reviewed Agent3 adapter for the signed producer schema"
+  ],
+  "allowed_future_scope": "within-Hard5 factorial independent numerical trajectories",
+  "forbidden_claims": [
+    "independent roads",
+    "road-section generalisation",
+    "geometry generalisation",
+    "material generalisation"
+  ],
+  "training_allowed": false
+}
