@@ -1,0 +1,20 @@
+{
+  "analysis": "corrected_pi_transfer_controls_v1",
+  "claim_boundary": "F1 validates dimensional replay and normalization, not a fresh solver; F2 proves scalar Pi groups are insufficient when BC/model form changes.",
+  "cycle_to_traffic_mapping": false,
+  "f1_event_cycle_candidate": 89,
+  "f1_event_cycle_reference": 89,
+  "f1_evidence_class": "archived FEM exact-dimensional replay",
+  "f1_exact_pi_pass": true,
+  "f1_field_roundtrip_max_abs": 1.7763568394002505e-15,
+  "f2_boundary_condition_status": "mismatched",
+  "f2_delta_cycle": -8,
+  "f2_event_cycle_candidate": 74,
+  "f2_event_cycle_reference": 82,
+  "f2_evidence_class": "archived FEM BC negative control",
+  "f2_raw_active_status": "unobservable in FEM7 c82 archive",
+  "f2_scalar_pi_pass": true,
+  "fresh_fem_solve": false,
+  "road_validation": false,
+  "training_run": false
+}

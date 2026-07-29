@@ -1,0 +1,76 @@
+{
+  "analysis": "corrected_pi_transfer_controls_v1",
+  "claim_boundary": "F1 validates dimensional replay and normalization, not a fresh solver; F2 proves scalar Pi groups are insufficient when BC/model form changes.",
+  "companion_assets": [
+    {
+      "path": "00_gate.md",
+      "sha256": "a629799b16635cb014e74f91b15589c71eb5be940104a03835c18e7877b0478d"
+    },
+    {
+      "path": "decision.md",
+      "sha256": "ed8095281007fc81e17aefd9e634a8eb8434e08c1e51b4a69df62ab382b028c2"
+    }
+  ],
+  "cycle_to_traffic_mapping": false,
+  "f1_event_cycle_candidate": 89,
+  "f1_event_cycle_reference": 89,
+  "f1_evidence_class": "archived FEM exact-dimensional replay",
+  "f1_exact_pi_pass": true,
+  "f1_field_roundtrip_max_abs": 1.7763568394002505e-15,
+  "f2_boundary_condition_status": "mismatched",
+  "f2_delta_cycle": -8,
+  "f2_event_cycle_candidate": 74,
+  "f2_event_cycle_reference": 82,
+  "f2_evidence_class": "archived FEM BC negative control",
+  "f2_raw_active_status": "unobservable in FEM7 c82 archive",
+  "f2_scalar_pi_pass": true,
+  "fresh_fem_solve": false,
+  "git_sha_at_execution": "14b57591d365836b7a98111e0f5c8fdc30cb9c84",
+  "input_assets": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/extracted/SENS_brittle_base_cyclic_u012_recovery_fatigueon_pidlstop_newtontol4em4/fields_000089_008.vtk",
+      "sha256": "e664c78a38aa16f8bd292761fd3327d61acb4601976a350467c3cdcaa30f5821"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/extracted/SENS_brittle_base_cyclic_u012_recovery_fatigueon_pidlstop_newtontol4em4/psi_fields/cycle_0020.mat",
+      "sha256": "8163dc4e5b1dd285c245abc657c17747607198363b398c8a42ac1f40ddec61bc"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/extracted/SENS_brittle_base_cyclic_u012_recovery_fatigueon_pidlstop_newtontol4em4/psi_fields/cycle_0040.mat",
+      "sha256": "727f291ce276de5c2784fab4b7ee7322f3f8ad435319019016849273310e6779"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/extracted/SENS_brittle_base_cyclic_u012_recovery_fatigueon_pidlstop_newtontol4em4/psi_fields/cycle_0060.mat",
+      "sha256": "80714486781b44b06828cb2e521fef9f5139263c026735aba2e7b2e1457bf01e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/extracted/SENS_brittle_base_cyclic_u012_recovery_fatigueon_pidlstop_newtontol4em4/psi_fields/cycle_0089.mat",
+      "sha256": "681f2b2ba75ce2baca81aada968765e92d361c83f95821e8dfd2031f3535b90d"
+    },
+    {
+      "path": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/PIDL result/u12_cycle_0082_FEM7.mat",
+      "sha256": "2467c3299a8683d20733e191090a47514423938c160bef25830377ad67e62bde"
+    },
+    {
+      "path": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/PIDL result/_pidl_handoff_reverseBC_u12_cyclewise_mechanism_2026-05-28/reverseBC_u12_cyclewise_element_fields_c1_c74.mat",
+      "sha256": "f047a09d3c45364858f1fc06a5c353b0977e86a6a5cd686f2df896a86e3a80f1"
+    }
+  ],
+  "primary_assets": [
+    "pi_transfer_audit.csv",
+    "fem_centred_field_metrics.csv",
+    "event_state_map.csv",
+    "w1_provenance.csv",
+    "scale_contracts.json",
+    "normalized_control_fields.npz",
+    "f1_f2_fem_centred_fields.png",
+    "control_summary.json"
+  ],
+  "protected_scope": {
+    "forecast_files_modified": false,
+    "inverse_files_modified": false
+  },
+  "road_validation": false,
+  "runner": "SENS_tensile/run_pi_transfer_controls.py",
+  "training_run": false
+}

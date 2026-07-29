@@ -1,0 +1,3 @@
+definition,w1_norm,status,reason
+w1=G_c/ell,1.0,primary corrected scaling,c_w is already divided inside compute_energy.py
+w1=c_w*G_c/ell,c_w,quarantine provenance only,double-counts c_w in the implemented functional

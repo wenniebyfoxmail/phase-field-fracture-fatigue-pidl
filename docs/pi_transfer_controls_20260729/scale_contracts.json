@@ -1,0 +1,278 @@
+{
+  "F1_candidate": {
+    "claim_boundary": {
+      "cycle_to_traffic_mapping_available": false,
+      "dimensional_similarity_only": true,
+      "road_calibrated": false
+    },
+    "dimensionless": {
+      "E_uL2_over_w1": 0.0144,
+      "G_c_over_E_ell": 0.9999999999999998,
+      "H_over_L": 1.0,
+      "R_ratio": 0.0,
+      "a0_over_L": 0.5,
+      "alpha_T_over_psi_ref": 0.5,
+      "alpha_T_over_w1": 0.5,
+      "boundary_condition": "top_bottom_ux_clamp_reverse_bc",
+      "ell_over_L": 0.01,
+      "energy_split": "amor",
+      "eta": 0.0,
+      "geometry_form": "homogeneous_sent_square_void_notch",
+      "geometry_load_ratios": {
+        "loaded_edge_fraction": 1.0
+      },
+      "h_over_ell": 1.0,
+      "load_energy_ratio": 0.0144,
+      "load_form": "cyclic_edge_displacement",
+      "mat_E": 1.0,
+      "nu": 0.3,
+      "pff_model": "AT1",
+      "plane_condition": "plane_strain",
+      "u_max_over_u_ref": 0.12,
+      "w1": 1.0,
+      "w1_norm": 1.0
+    },
+    "physical": {
+      "E_phys": 3.0,
+      "G_c_phys": 0.3,
+      "H_phys": 10.0,
+      "L_phys": 10.0,
+      "R_ratio": 0.0,
+      "a0_phys": 5.0,
+      "alpha_T_phys": 1.4999999999999998,
+      "boundary_condition": "top_bottom_ux_clamp_reverse_bc",
+      "ell_phys": 0.1,
+      "energy_split": "amor",
+      "evidence_class": "similarity-control-only",
+      "geometry_form": "homogeneous_sent_square_void_notch",
+      "geometry_load_ratios": [
+        [
+          "loaded_edge_fraction",
+          1.0
+        ]
+      ],
+      "load_form": "cyclic_edge_displacement",
+      "material_label": "F1 exact-Pi dimensional realization",
+      "mesh_h_phys": 0.1,
+      "nu_phys": 0.3,
+      "pff_model": "AT1",
+      "plane_condition": "plane_strain",
+      "residual_stiffness": 0.0,
+      "u_max_phys": 1.1999999999999997
+    },
+    "scales": {
+      "L_ref": 10.0,
+      "psi_ref": 2.9999999999999996,
+      "sigma_ref": 2.9999999999999996,
+      "strain_ref": 0.9999999999999999,
+      "u_ref": 9.999999999999998
+    }
+  },
+  "F1_reference": {
+    "claim_boundary": {
+      "cycle_to_traffic_mapping_available": false,
+      "dimensional_similarity_only": true,
+      "road_calibrated": false
+    },
+    "dimensionless": {
+      "E_uL2_over_w1": 0.0144,
+      "G_c_over_E_ell": 1.0,
+      "H_over_L": 1.0,
+      "R_ratio": 0.0,
+      "a0_over_L": 0.5,
+      "alpha_T_over_psi_ref": 0.5,
+      "alpha_T_over_w1": 0.5,
+      "boundary_condition": "top_bottom_ux_clamp_reverse_bc",
+      "ell_over_L": 0.01,
+      "energy_split": "amor",
+      "eta": 0.0,
+      "geometry_form": "homogeneous_sent_square_void_notch",
+      "geometry_load_ratios": {
+        "loaded_edge_fraction": 1.0
+      },
+      "h_over_ell": 1.0,
+      "load_energy_ratio": 0.0144,
+      "load_form": "cyclic_edge_displacement",
+      "mat_E": 1.0,
+      "nu": 0.3,
+      "pff_model": "AT1",
+      "plane_condition": "plane_strain",
+      "u_max_over_u_ref": 0.12,
+      "w1": 1.0,
+      "w1_norm": 1.0
+    },
+    "physical": {
+      "E_phys": 1.0,
+      "G_c_phys": 0.01,
+      "H_phys": 1.0,
+      "L_phys": 1.0,
+      "R_ratio": 0.0,
+      "a0_phys": 0.5,
+      "alpha_T_phys": 0.5,
+      "boundary_condition": "top_bottom_ux_clamp_reverse_bc",
+      "ell_phys": 0.01,
+      "energy_split": "amor",
+      "evidence_class": "archived-fem-toy",
+      "geometry_form": "homogeneous_sent_square_void_notch",
+      "geometry_load_ratios": [
+        [
+          "loaded_edge_fraction",
+          1.0
+        ]
+      ],
+      "load_form": "cyclic_edge_displacement",
+      "material_label": "formal FEM normalized reference",
+      "mesh_h_phys": 0.01,
+      "nu_phys": 0.3,
+      "pff_model": "AT1",
+      "plane_condition": "plane_strain",
+      "residual_stiffness": 0.0,
+      "u_max_phys": 0.12
+    },
+    "scales": {
+      "L_ref": 1.0,
+      "psi_ref": 1.0,
+      "sigma_ref": 1.0,
+      "strain_ref": 1.0,
+      "u_ref": 1.0
+    }
+  },
+  "F2_candidate": {
+    "claim_boundary": {
+      "cycle_to_traffic_mapping_available": false,
+      "dimensional_similarity_only": true,
+      "road_calibrated": false
+    },
+    "dimensionless": {
+      "E_uL2_over_w1": 0.0144,
+      "G_c_over_E_ell": 1.0,
+      "H_over_L": 1.0,
+      "R_ratio": 0.0,
+      "a0_over_L": 0.5,
+      "alpha_T_over_psi_ref": 0.5,
+      "alpha_T_over_w1": 0.5,
+      "boundary_condition": "top_bottom_ux_clamp_reverse_bc",
+      "ell_over_L": 0.01,
+      "energy_split": "amor",
+      "eta": 0.0,
+      "geometry_form": "homogeneous_sent_square_void_notch",
+      "geometry_load_ratios": {
+        "loaded_edge_fraction": 1.0
+      },
+      "h_over_ell": 1.0,
+      "load_energy_ratio": 0.0144,
+      "load_form": "cyclic_edge_displacement",
+      "mat_E": 1.0,
+      "nu": 0.3,
+      "pff_model": "AT1",
+      "plane_condition": "plane_strain",
+      "u_max_over_u_ref": 0.12,
+      "w1": 1.0,
+      "w1_norm": 1.0
+    },
+    "physical": {
+      "E_phys": 1.0,
+      "G_c_phys": 0.01,
+      "H_phys": 1.0,
+      "L_phys": 1.0,
+      "R_ratio": 0.0,
+      "a0_phys": 0.5,
+      "alpha_T_phys": 0.5,
+      "boundary_condition": "top_bottom_ux_clamp_reverse_bc",
+      "ell_phys": 0.01,
+      "energy_split": "amor",
+      "evidence_class": "archived-fem-toy",
+      "geometry_form": "homogeneous_sent_square_void_notch",
+      "geometry_load_ratios": [
+        [
+          "loaded_edge_fraction",
+          1.0
+        ]
+      ],
+      "load_form": "cyclic_edge_displacement",
+      "material_label": "reverseBC archived FEM",
+      "mesh_h_phys": 0.01,
+      "nu_phys": 0.3,
+      "pff_model": "AT1",
+      "plane_condition": "plane_strain",
+      "residual_stiffness": 0.0,
+      "u_max_phys": 0.12
+    },
+    "scales": {
+      "L_ref": 1.0,
+      "psi_ref": 1.0,
+      "sigma_ref": 1.0,
+      "strain_ref": 1.0,
+      "u_ref": 1.0
+    }
+  },
+  "F2_reference": {
+    "claim_boundary": {
+      "cycle_to_traffic_mapping_available": false,
+      "dimensional_similarity_only": true,
+      "road_calibrated": false
+    },
+    "dimensionless": {
+      "E_uL2_over_w1": 0.0144,
+      "G_c_over_E_ell": 1.0,
+      "H_over_L": 1.0,
+      "R_ratio": 0.0,
+      "a0_over_L": 0.5,
+      "alpha_T_over_psi_ref": 0.5,
+      "alpha_T_over_w1": 0.5,
+      "boundary_condition": "bottom_left_ux_anchor_free_lateral",
+      "ell_over_L": 0.01,
+      "energy_split": "amor",
+      "eta": 0.0,
+      "geometry_form": "homogeneous_sent_square_void_notch",
+      "geometry_load_ratios": {
+        "loaded_edge_fraction": 1.0
+      },
+      "h_over_ell": 1.0,
+      "load_energy_ratio": 0.0144,
+      "load_form": "cyclic_edge_displacement",
+      "mat_E": 1.0,
+      "nu": 0.3,
+      "pff_model": "AT1",
+      "plane_condition": "plane_strain",
+      "u_max_over_u_ref": 0.12,
+      "w1": 1.0,
+      "w1_norm": 1.0
+    },
+    "physical": {
+      "E_phys": 1.0,
+      "G_c_phys": 0.01,
+      "H_phys": 1.0,
+      "L_phys": 1.0,
+      "R_ratio": 0.0,
+      "a0_phys": 0.5,
+      "alpha_T_phys": 0.5,
+      "boundary_condition": "bottom_left_ux_anchor_free_lateral",
+      "ell_phys": 0.01,
+      "energy_split": "amor",
+      "evidence_class": "archived-fem-toy",
+      "geometry_form": "homogeneous_sent_square_void_notch",
+      "geometry_load_ratios": [
+        [
+          "loaded_edge_fraction",
+          1.0
+        ]
+      ],
+      "load_form": "cyclic_edge_displacement",
+      "material_label": "FEM7 original-BC reference",
+      "mesh_h_phys": 0.01,
+      "nu_phys": 0.3,
+      "pff_model": "AT1",
+      "plane_condition": "plane_strain",
+      "residual_stiffness": 0.0,
+      "u_max_phys": 0.12
+    },
+    "scales": {
+      "L_ref": 1.0,
+      "psi_ref": 1.0,
+      "sigma_ref": 1.0,
+      "strain_ref": 1.0,
+      "u_ref": 1.0
+    }
+  }
+}
