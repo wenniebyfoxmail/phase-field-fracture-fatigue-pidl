@@ -1,0 +1,24 @@
+{
+  "status": "blocked_no_authenticated_producer_session",
+  "checked_at": "2026-07-29T16:39:51+01:00",
+  "training_launched": false,
+  "run_directory": null,
+  "gpu": null,
+  "pid": null,
+  "attempts": [
+    {
+      "producer": "Taobo",
+      "host": "172.16.100.2:22",
+      "tcp_reachable": true,
+      "authenticated": false,
+      "error": "kex_exchange_identification: read: Connection reset by peer"
+    },
+    {
+      "producer": "CSD3",
+      "host": "login-icelake.hpc.cam.ac.uk",
+      "tcp_reachable": true,
+      "authenticated": false,
+      "error": "Permission denied (publickey,keyboard-interactive,hostbased)"
+    }
+  ]
+}
