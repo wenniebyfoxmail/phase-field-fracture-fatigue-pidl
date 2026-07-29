@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from math import sqrt
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
 
 
 _CW = {"AT1": 8.0 / 3.0, "AT2": 2.0}
@@ -60,6 +60,11 @@ class PhaseFieldScaling:
     R_ratio: float = 0.0
     pff_model: str = "AT1"
     plane_condition: str = "plane_strain"
+    energy_split: str = "amor"
+    boundary_condition: str = "sent_reverse_bc"
+    geometry_form: str = "homogeneous_sent_square"
+    load_form: str = "cyclic_displacement"
+    geometry_load_ratios: tuple[tuple[str, Optional[float]], ...] = ()
     material_label: str = "unspecified"
     evidence_class: str = "illustrative"
 
@@ -82,6 +87,9 @@ class PhaseFieldScaling:
             raise ValueError(f"pff_model must be one of {sorted(_CW)}")
         if self.plane_condition not in {"plane_stress", "plane_strain", "3d"}:
             raise ValueError("plane_condition must be plane_stress, plane_strain, or 3d")
+        ratio_names = [name for name, _ in self.geometry_load_ratios]
+        if len(set(ratio_names)) != len(ratio_names):
+            raise ValueError("geometry_load_ratios names must be unique")
 
     @property
     def c_w(self) -> float:
@@ -121,6 +129,11 @@ class PhaseFieldScaling:
     @property
     def w1_norm(self) -> float:
         return self.w1_phys / self.psi_ref
+
+    @property
+    def G_c_over_E_ell(self) -> float:
+        """Fracture-energy-density ratio ``G_c / (E ell)``."""
+        return self.G_c_phys / (self.E_phys * self.ell_phys)
 
     @property
     def l0_norm(self) -> float:
@@ -167,17 +180,26 @@ class PhaseFieldScaling:
             "mat_E": self.mat_E_norm,
             "nu": self.mat_nu_norm,
             "w1": self.w1_norm,
+            "w1_norm": self.w1_norm,
+            "G_c_over_E_ell": self.G_c_over_E_ell,
             "ell_over_L": self.l0_norm,
             "H_over_L": self.H_norm,
             "a0_over_L": self.a0_norm,
             "u_max_over_u_ref": self.u_max_norm,
             "load_energy_ratio": self.load_energy_ratio,
+            "E_uL2_over_w1": self.load_energy_ratio,
             "alpha_T_over_psi_ref": self.alpha_T_norm,
+            "alpha_T_over_w1": self.alpha_T_norm,
             "h_over_ell": self.h_over_ell,
             "eta": self.residual_stiffness,
             "R_ratio": self.R_ratio,
             "pff_model": self.pff_model,
             "plane_condition": self.plane_condition,
+            "energy_split": self.energy_split,
+            "boundary_condition": self.boundary_condition,
+            "geometry_form": self.geometry_form,
+            "load_form": self.load_form,
+            "geometry_load_ratios": dict(self.geometry_load_ratios),
         }
 
     def dimensional_scales(self) -> Dict[str, float]:
@@ -266,6 +288,99 @@ class PhaseFieldScaling:
 
     def psi_norm_to_phys(self, value: float) -> float:
         return value * self.psi_ref
+
+
+_PI_TRANSFER_KEYS = (
+    "ell_over_L",
+    "h_over_ell",
+    "G_c_over_E_ell",
+    "alpha_T_over_w1",
+    "E_uL2_over_w1",
+    "nu",
+    "eta",
+    "R_ratio",
+    "pff_model",
+    "plane_condition",
+    "energy_split",
+    "boundary_condition",
+    "geometry_form",
+    "load_form",
+)
+
+
+def audit_pi_transfer(
+    reference: Mapping[str, Any],
+    candidate: Mapping[str, Any],
+    *,
+    relative_tolerance: float = 0.01,
+    absolute_tolerance: float = 1e-12,
+) -> list[Dict[str, Any]]:
+    """Classify canonical Pi groups as matched, mismatched, or unobservable.
+
+    ``geometry_load_ratios`` is expanded into one row per declared ratio. A
+    missing value is never silently treated as a match; it is explicitly
+    labelled ``unobservable``.
+    """
+    if relative_tolerance < 0 or absolute_tolerance < 0:
+        raise ValueError("audit tolerances cannot be negative")
+
+    rows: list[Dict[str, Any]] = []
+
+    def append_row(group: str, ref: Any, value: Any, category: str) -> None:
+        ratio = None
+        if ref is None or value is None:
+            status = "unobservable"
+        elif isinstance(ref, (int, float)) and isinstance(value, (int, float)):
+            scale = max(abs(float(ref)), abs(float(value)), absolute_tolerance)
+            delta = abs(float(value) - float(ref))
+            status = (
+                "matched"
+                if delta <= absolute_tolerance + relative_tolerance * scale
+                else "mismatched"
+            )
+            if abs(float(ref)) > absolute_tolerance:
+                ratio = float(value) / float(ref)
+        else:
+            status = "matched" if value == ref else "mismatched"
+        rows.append(
+            {
+                "group": group,
+                "category": category,
+                "reference": ref,
+                "candidate": value,
+                "candidate_over_reference": ratio,
+                "status": status,
+            }
+        )
+
+    numeric = {
+        "ell_over_L",
+        "h_over_ell",
+        "G_c_over_E_ell",
+        "alpha_T_over_w1",
+        "E_uL2_over_w1",
+        "nu",
+        "eta",
+        "R_ratio",
+    }
+    for key in _PI_TRANSFER_KEYS:
+        append_row(
+            key,
+            reference.get(key),
+            candidate.get(key),
+            "buckingham_pi" if key in numeric else "model_form",
+        )
+
+    ref_ratios = reference.get("geometry_load_ratios") or {}
+    cand_ratios = candidate.get("geometry_load_ratios") or {}
+    for key in sorted(set(ref_ratios) | set(cand_ratios)):
+        append_row(
+            f"geometry_load_ratio:{key}",
+            ref_ratios.get(key),
+            cand_ratios.get(key),
+            "geometry_load_ratio",
+        )
+    return rows
 
 
 @dataclass(frozen=True)

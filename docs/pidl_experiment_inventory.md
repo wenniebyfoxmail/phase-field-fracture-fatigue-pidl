@@ -36,6 +36,12 @@ inconclusive   preserved for traceability only
 |---|---|---|---|---|---|
 | `road_rescaling_bridge_20260724` | diagnostic | Test whether the formal toy can be dimensionalized consistently while the independent FEM road trajectories are produced | Correct `w1_phys` to `G_c/ell`; freeze the full dimensionless similarity and road-observation contract; no training | `docs/road_rescaling_bridge_20260724/decision.md` | dimensional similarity only; no road calibration, traffic-time mapping, or RUL claim |
 
+## 2026-07-29 Corrected Pi-Transfer Addendum
+
+| case_id | status | why run | key change | primary asset | claim boundary |
+|---|---|---|---|---|---|
+| `pi_transfer_controls_20260729` | diagnostic | Exercise corrected scaling with a complete-Pi positive replay and a categorical-BC negative control | Reusable matched/mismatched/unobservable audit; FEM-centred normalized field round trip; same-mesh archived BC contrast | `docs/pi_transfer_controls_20260729/decision.md` | scaling/tooling control only; no fresh F1 solve, road validation, traffic mapping, forecast, or inverse claim |
+
 ## Census Scope
 
 Scanned roots:

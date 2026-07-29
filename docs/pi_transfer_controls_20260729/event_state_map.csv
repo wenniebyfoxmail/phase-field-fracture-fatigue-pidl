@@ -1,0 +1,3 @@
+control,reference_event_cycle,candidate_event_cycle,delta_cycle,reference_phase,candidate_phase,status,note
+F1_exact_pi,89,89,0,archived FEM c89 confirmed event,same archived state after dimensional round trip,matched,replay control; not an independent event prediction
+F2_bc_negative,82,74,-8,penetration/event snapshot,terminal own-event cycle,mismatched,
