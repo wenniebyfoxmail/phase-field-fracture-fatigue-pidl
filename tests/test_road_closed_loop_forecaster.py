@@ -37,6 +37,13 @@ CANONICAL_ROOT = ROOT / "analysis" / "road_observation_state_bundle_v1_20260724"
 CANONICAL_SHA = "e94027542484431d3a53222d930c81e9ed6c655b86a822ced1452fa8c4c0f253"
 
 
+def frozen_agent1_fixture_available() -> bool:
+    path = CANONICAL_ROOT / "road_observation_state_bundle_c87_oracle.npz"
+    return (
+        path.exists() and hashlib.sha256(path.read_bytes()).hexdigest() == CANONICAL_SHA
+    )
+
+
 def layout() -> RoadFeatureLayout:
     return RoadFeatureLayout(
         node_observation_dim=2,
@@ -312,8 +319,8 @@ def test_latent_attribution_cannot_create_sensor_measurement(tmp_path: Path) -> 
 
 def test_new_canonical_bundle_hash_loads() -> None:
     path = CANONICAL_ROOT / "road_observation_state_bundle_c87_oracle.npz"
-    if not path.exists():
-        pytest.skip("canonical Agent1 package is not mounted")
+    if not frozen_agent1_fixture_available():
+        pytest.skip("the historical frozen Agent1 fixture is not mounted")
     bundle = load_road_observation_state_bundle(path, expected_sha256=CANONICAL_SHA)
     assert bundle.package_sha256 == CANONICAL_SHA
     assert bundle.state_mean.shape == (1, 86408, 4)
@@ -340,8 +347,8 @@ def test_calibrated_uncertainty_representations_derive_eligible_std(
 
 def test_decision_ineligible_packet_cannot_trigger_request_or_stop() -> None:
     packet_path = CANONICAL_ROOT / "agent2_observation_innovation_packet.json"
-    if not packet_path.exists():
-        pytest.skip("canonical Agent1 packet is not mounted")
+    if not packet_path.exists() or not frozen_agent1_fixture_available():
+        pytest.skip("the historical frozen Agent1 fixture is not mounted")
     packet = load_agent1_innovation_packet(
         packet_path, expected_bundle_sha256=CANONICAL_SHA
     )

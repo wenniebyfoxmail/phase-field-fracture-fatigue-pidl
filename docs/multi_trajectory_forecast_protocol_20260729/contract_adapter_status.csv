@@ -1,0 +1,5 @@
+producer,asset,status,schema_id,sha256,adapter_id,counted_trajectories,training_effect
+Agent/FEM task2,signed trajectory bundle contract,missing,,,,0,hard block
+Agent/FEM task2,signed leave-one-combination-out split,missing,,,,0,hard block
+Agent3,producer-specific reviewed adapter,pending producer schema,,,,0,hard block
+local candidate,Umax_012_all_versions_20260729,path present but mechanism completeness unsigned,,,,0,no training

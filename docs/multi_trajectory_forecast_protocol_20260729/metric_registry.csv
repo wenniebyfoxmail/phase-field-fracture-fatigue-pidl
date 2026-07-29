@@ -1,0 +1,14 @@
+category,metric,field_or_target,weighting,comparison,availability_rule
+field,mae_rmse_correlation,damage,element area,FEM eta0 at same held-out state,required
+field,log10_mae_rmse_correlation,fatigue_history,element area,FEM eta0 at same held-out state,required with one declared positive floor
+field,log10_mae_rmse_correlation,raw_driver,element area,FEM eta0 at same held-out state,required with one declared positive floor
+field,log10_mae_rmse_correlation,active_driver,element area,FEM eta0 at same held-out state,required with one declared positive floor
+support,absolute_p99_iou,active_driver,area-weighted FEM p99,FEM and model use the same FEM threshold,required
+support,own_p99_iou,active_driver,area-weighted own p99,location/ranking only,required and never cited as amplitude recovery
+support,support_area_ratio,active_driver,element area,model absolute support divided by FEM support,required beside absolute IoU
+morphology,centroid_offset_and_width_error,active_driver support,element area,FEM eta0 support geometry,required
+event,event_phase_and_warning_lead,transition,trajectory level,producer-declared phase,required for transition task
+event,false_warning_and_missed_transition,transition,trajectory level,held-out entire trajectory,required for transition task
+calibration,predictive_interval_coverage_and_width,state fields,trajectory first then aggregate,held-out entire trajectory,unavailable unless calibrated
+calibration,brier_and_calibration_error,transition hazard,trajectory first then aggregate,held-out entire trajectory,unavailable unless calibrated
+risk,negative_log_likelihood_and_rul_error,hazard and RUL,trajectory level,event and right-censored folds,unavailable without event/censor diversity
