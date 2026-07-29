@@ -1,0 +1,132 @@
+{
+  "available_independent_trajectory_ids": [
+    "factorial_soft_8step_u012",
+    "factorial_soft_5step_u012",
+    "factorial_hard_8step_u012",
+    "factorial_hard_5step_u012"
+  ],
+  "claim_boundary": "shared-geometry controlled numerical 2x2 gate only; not independent roads, material generalization, or geometry generalization",
+  "duplicate_factorial_combinations": [],
+  "eligible_independence_class": "controlled_factorial_combination",
+  "expected_factorial_combinations": [
+    [
+      "analytic_soft_profile",
+      "explicit_8step"
+    ],
+    [
+      "analytic_soft_profile",
+      "retained_5step"
+    ],
+    [
+      "hard_recovery",
+      "explicit_8step"
+    ],
+    [
+      "hard_recovery",
+      "retained_5step"
+    ]
+  ],
+  "folds": [
+    {
+      "cycle_split_forbidden": true,
+      "fold_id": "holdout_combination::factorial_soft_8step_u012",
+      "node_split_forbidden": true,
+      "test_trajectory_ids": [
+        "factorial_soft_8step_u012"
+      ],
+      "train_trajectory_ids": [
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ],
+      "unit_of_split": "complete_trajectory",
+      "window_crossing_forbidden": true
+    },
+    {
+      "cycle_split_forbidden": true,
+      "fold_id": "holdout_combination::factorial_soft_5step_u012",
+      "node_split_forbidden": true,
+      "test_trajectory_ids": [
+        "factorial_soft_5step_u012"
+      ],
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ],
+      "unit_of_split": "complete_trajectory",
+      "window_crossing_forbidden": true
+    },
+    {
+      "cycle_split_forbidden": true,
+      "fold_id": "holdout_combination::factorial_hard_8step_u012",
+      "node_split_forbidden": true,
+      "test_trajectory_ids": [
+        "factorial_hard_8step_u012"
+      ],
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_5step_u012"
+      ],
+      "unit_of_split": "complete_trajectory",
+      "window_crossing_forbidden": true
+    },
+    {
+      "cycle_split_forbidden": true,
+      "fold_id": "holdout_combination::factorial_hard_5step_u012",
+      "node_split_forbidden": true,
+      "test_trajectory_ids": [
+        "factorial_hard_5step_u012"
+      ],
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012"
+      ],
+      "unit_of_split": "complete_trajectory",
+      "window_crossing_forbidden": true
+    }
+  ],
+  "leakage_guards": {
+    "c69_legacy_allowed": false,
+    "cycle_level_random_split": false,
+    "duplicate_configuration_across_folds": false,
+    "event_cycle_as_feature": false,
+    "future_state_in_features": false,
+    "node_level_random_split": false,
+    "split_unit": "trajectory_id"
+  },
+  "lock_sha256": "5904af500cde315d8ee9f9087d3f5088c03b59b76cf23f8fbf7b80f6c3fb1691",
+  "minimum_independent_trajectories": 4,
+  "observed_factorial_combinations": [
+    [
+      "analytic_soft_profile",
+      "explicit_8step"
+    ],
+    [
+      "analytic_soft_profile",
+      "retained_5step"
+    ],
+    [
+      "hard_recovery",
+      "explicit_8step"
+    ],
+    [
+      "hard_recovery",
+      "retained_5step"
+    ]
+  ],
+  "primary_claim": "within_hard5_leave_one_factorial_combination_out",
+  "schema_version": "fem_loto_split_v1",
+  "shared_controls": {
+    "eta": 0.0,
+    "geometry": "shared",
+    "material": "shared_normalized_at1_carrara",
+    "mesh": "shared",
+    "umax": 0.12
+  },
+  "status": "ready",
+  "training_launch_allowed": true,
+  "training_launched": false
+}

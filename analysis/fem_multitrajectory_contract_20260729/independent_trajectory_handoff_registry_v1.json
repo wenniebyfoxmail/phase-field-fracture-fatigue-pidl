@@ -1,0 +1,31 @@
+{
+  "slots": [
+    {
+      "note": "Producer-reported independent trajectory is still awaiting a source package.",
+      "required_variation_axis": "initial_defect",
+      "slot_id": "independent_initial_defect_variant",
+      "source_path": null,
+      "source_sha256": null,
+      "status": "awaiting_handoff",
+      "trajectory_id": null
+    },
+    {
+      "note": "Producer-reported independent trajectory is still awaiting a source package.",
+      "required_variation_axis": "material_state",
+      "slot_id": "independent_material_variant",
+      "source_path": null,
+      "source_sha256": null,
+      "status": "awaiting_handoff",
+      "trajectory_id": null
+    },
+    {
+      "note": "Producer-reported independent trajectory is still awaiting a source package.",
+      "required_variation_axis": "loading_history",
+      "slot_id": "independent_loading_history_variant",
+      "source_path": null,
+      "source_sha256": null,
+      "status": "awaiting_handoff",
+      "trajectory_id": null
+    }
+  ]
+}

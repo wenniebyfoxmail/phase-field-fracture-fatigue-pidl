@@ -1,0 +1,32 @@
+{
+  "analysis_id": "fem_multitrajectory_contract_20260729",
+  "bundle_count": 7,
+  "bundle_manifest_hashes": {
+    "factorial_hard_5step_u012": "bac6360657107ccf350ac5be9cb2a45e4012750f0021d5d6a946b0b99d4b0c10",
+    "factorial_hard_8step_u012": "a138e03a18d1675a75715f1f8dba1f0632823d41ecfb0da3338b138d4533e5ae",
+    "factorial_soft_5step_u012": "d68d8874ecea8c2f507576c8ed0a651eae65c591b154ee82d2962cc2d2db28e8",
+    "factorial_soft_8step_u012": "bb5aef734ae28144faca02e9b43acc12aefb66050168f1485c8331bf37ebb6ad",
+    "hard5_eta0_u011_5step_20260729": "7fbcc883b4b4564afd9fede6d384fb8e031595a84511c303cc0e9f3dffd3f4c6",
+    "hard5_eta0_u012_5step_20260729": "ce36913ed75bbf2830a3016c442953317d6e968eff074e73c988704dbec118b3",
+    "hard5_eta0_u013_5step_20260729": "03df0de46dfb99cf228d0a18912fb780d3af96b2e949e7130d9b88a431b58079"
+  },
+  "contract_sha256": "43bdb37104015a765402837928c772079ef0a760c96180cc8b5deb7e6fa99bd4",
+  "controlled_factorial_combination_count": 4,
+  "created_at": "2026-07-29T15:15:27.606135+00:00",
+  "deep_validation": true,
+  "factorial_source": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729",
+  "factorial_split_lock_sha256": "5904af500cde315d8ee9f9087d3f5088c03b59b76cf23f8fbf7b80f6c3fb1691",
+  "factorial_split_status": "ready",
+  "hard5_source": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Hard5_eta0_5step_Umax_011_012_013_20260729",
+  "independent_road_like_count": 0,
+  "load_amplitude_sensitivity_count": 3,
+  "mesh_source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/fem_anchored_mesh_operator_20260715/data/fem_cycle_peak_mechanism_graph.npz",
+  "road_split_lock_sha256": "34b4b72a0ad419c3692948c9065bab4010d21ac19cef412e023f7e8cf41a7c70",
+  "road_split_status": "blocked_by_data",
+  "road_training_launch_allowed": false,
+  "scoped_factorial_training_launch_allowed": true,
+  "state_shard_count": 624,
+  "task_type": "ingestion_validation_and_split_preregistration_only",
+  "training_launched": false,
+  "training_run": false
+}
