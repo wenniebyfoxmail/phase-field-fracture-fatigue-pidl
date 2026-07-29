@@ -66,12 +66,24 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 - pass: fem_bundle_and_scope_gate - 43 passed; within-Hard5 factorial training is ready, road-like training remains false, and the gate preserves a separate fewer_than_three_road_like_trajectories blocker.
 - pass: forecast_protocol_integration - 66 passed and 2 optional fixture tests skipped; no training result is claimed yet.
 - pass: signed_forecast_producer_gate - 61 passed; within-Hard5 producer gate released, road-like and hazard/RUL gates remain closed.
+- pass: external_blocker_reporting - 71 passed; the machine gate preserves within-benchmark training readiness while separately reporting inaccessible F1b and forecast producers.
 
 ## Result Interpretation
-Not recorded.
+The four-track evidence contract is valid and the Hard5 factorial is ready for
+within-benchmark LOCO training. This is not road readiness. F1b still needs a
+fresh Windows-FEM solve; the signed 36-job forecast matrix still needs an
+authenticated GPU producer; road-like trajectories remain 0/3; and no real-road
+dataset has passed the measurement interface.
 
 ## Claim After Attempt
-Not recorded.
+Corrected scaling, factorial trajectory provenance, forecast protocol, and the
+measurement firewall are implemented and verified. Exact-Pi solver invariance,
+held-out forecast performance, road-trajectory generalization, and real-road
+identifiability remain unproven.
 
 ## Next Action
-Not recorded.
+Retry the approved Windows-FEM, Taobo, and CSD3 producers without changing the
+sealed inputs. On access recovery, run F1b and the 36-job Markov/TCN/Transformer
+LOCO matrix, download immutable outputs, and rerun this gate. Do not launch a
+new architecture or claim road validation while the road-like and real-data
+blockers remain.

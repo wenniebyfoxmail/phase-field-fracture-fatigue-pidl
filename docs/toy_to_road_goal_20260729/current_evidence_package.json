@@ -26,6 +26,7 @@
       "exact_pi_positive_control_passed": false,
       "exact_pi_replay_passed": true,
       "fresh_dimensional_solve": false,
+      "producer_access": "blocked",
       "model_form_negative_control_passed": true,
       "negative_control_raw_active_status": "unobservable_not_imputed"
     },
@@ -61,6 +62,10 @@
     "forecast": {
       "candidates": ["markov_graph", "tcn", "transformer"],
       "training_started": false,
+      "producer_gate_passed": true,
+      "producer_access": "blocked_authentication",
+      "declared_job_count": 36,
+      "completed_job_count": 0,
       "split_type": "leave-one-entire-trajectory-out",
       "tasks": [
         "observed_state_h1_h3",

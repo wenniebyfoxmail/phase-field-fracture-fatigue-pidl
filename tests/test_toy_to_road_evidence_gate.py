@@ -161,6 +161,20 @@ def test_factorial_trajectories_unlock_only_within_benchmark_training() -> None:
     assert "fewer_than_three_road_like_trajectories" in result.blockers
 
 
+def test_external_producer_blockers_are_reported_without_closing_readiness() -> None:
+    package = valid_package()
+    package["tracks"]["dimensionless_transfer"][
+        "exact_pi_positive_control_passed"
+    ] = False
+    package["tracks"]["dimensionless_transfer"]["producer_access"] = "blocked"
+    package["tracks"]["forecast"]["held_out_results_passed"] = False
+    package["tracks"]["forecast"]["producer_access"] = "blocked_authentication"
+    result = validate_package(package)
+    assert result.training_ready
+    assert "f1b_producer_access_blocked" in result.blockers
+    assert "forecast_producer_access_blocked" in result.blockers
+
+
 def test_latent_field_cannot_be_a_direct_sensor() -> None:
     package = valid_package()
     package["tracks"]["reality_observation"]["direct_channels"].append(

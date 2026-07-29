@@ -267,6 +267,8 @@ def validate_package(package: dict[str, Any]) -> GateResult:
     blockers: list[str] = []
     if not dimensionless.get("exact_pi_positive_control_passed", False):
         blockers.append("exact_pi_positive_control_not_passed")
+        if dimensionless.get("producer_access") == "blocked":
+            blockers.append("f1b_producer_access_blocked")
     if not dimensionless.get("model_form_negative_control_passed", False):
         blockers.append("model_form_negative_control_not_passed")
 
@@ -301,6 +303,8 @@ def validate_package(package: dict[str, Any]) -> GateResult:
     )
     if not tracks["forecast"].get("held_out_results_passed", False):
         blockers.append("held_out_trajectory_forecast_not_passed")
+        if tracks["forecast"].get("producer_access") == "blocked_authentication":
+            blockers.append("forecast_producer_access_blocked")
     if not tracks["reality_observation"].get("real_data_evaluated", False):
         blockers.append("real_road_data_not_evaluated")
 

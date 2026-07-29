@@ -1,8 +1,10 @@
 {
   "blockers": [
     "exact_pi_positive_control_not_passed",
+    "f1b_producer_access_blocked",
     "fewer_than_three_road_like_trajectories",
     "held_out_trajectory_forecast_not_passed",
+    "forecast_producer_access_blocked",
     "real_road_data_not_evaluated"
   ],
   "road_training_ready": false,
