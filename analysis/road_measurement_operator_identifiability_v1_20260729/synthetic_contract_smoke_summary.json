@@ -1,0 +1,59 @@
+{
+  "claim_boundary": "contract smoke only; no real-road, material-inverse, or forecast-performance claim",
+  "decision_eligible": false,
+  "derived_estimate_count": 0,
+  "direct_observation_channels": [
+    "air_temperature",
+    "dic_u_x",
+    "dic_u_y",
+    "elapsed_time",
+    "fwd_deflection",
+    "fwd_load",
+    "fwd_offset",
+    "maintenance_event_code",
+    "maintenance_reset",
+    "pavement_temperature",
+    "registered_crack_probability",
+    "strain_axial",
+    "wim_axle_load",
+    "wim_speed"
+  ],
+  "forbidden_latent_channel_export_count": 0,
+  "handoff_sha256": "d71ff7fbd036ae9c6948c656aa6f174dceb8e4efa51024945c99d91f1eecbee2",
+  "measurement_families_exercised": [
+    "registered_crack_geometry",
+    "dic_displacement",
+    "strain_sensor",
+    "fwd_load_deflection",
+    "wim_traffic",
+    "temperature_time",
+    "maintenance_reset"
+  ],
+  "output_evidence_class": "synthetic_sensor_smoke",
+  "sampled_node_count": 1351,
+  "source_cycle": 87,
+  "source_evidence_class": "oracle",
+  "source_node_count": 86408,
+  "source_sha256": "e94027542484431d3a53222d930c81e9ed6c655b86a822ced1452fa8c4c0f253",
+  "state_bundle_adapter": {
+    "adapter_version": "road_observation_state_bundle_v1_adapter_v1",
+    "decision_eligible": false,
+    "mapped": [
+      "registered_crack_image_v1:registered_crack_probability"
+    ],
+    "observed_node_entry_count": 1351,
+    "oracle_raw_entry_count": 0,
+    "state_mean_created": false,
+    "unmapped_count": 13
+  },
+  "status": "pass",
+  "synthetic_rendering": {
+    "coordinate_sample_sha256": "8f0875307ab7739043781a42af25049a1d7c124db59958b62de3f49dab4b2e8e",
+    "operator": "sigmoid((damage-0.5)/0.08)",
+    "sample_index_sha256": "1f51d779d528e9534a9ce91c8014a781870258c77f4a97b2e5f7cf9529a4990d",
+    "sample_stride": 64,
+    "source_latent": "damage",
+    "source_latent_exported_as_observation": false
+  },
+  "validation_errors": []
+}

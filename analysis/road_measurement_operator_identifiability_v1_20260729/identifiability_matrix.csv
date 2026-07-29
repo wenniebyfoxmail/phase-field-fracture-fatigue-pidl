@@ -1,0 +1,9 @@
+channel,direct_measurand,hidden_state,material_parameters,forecast_update,main_confounds
+registered crack image/mask/width/length,surface crack geometry,alpha geometry proxy only,weak/non-unique,yes,"visibility, segmentation, registration"
+DIC displacement,surface displacement,mechanical state partial,load/BC/model confounded,yes,"registration, illumination, out-of-plane motion"
+strain sensor,directional strain,local mechanics partial,conditional,yes,"orientation, drift, temperature"
+FWD load + basin,load-response stiffness,global/local stiffness partial,layer/thickness/damage confounded,yes,"temperature, support, layer structure"
+WIM axle/load/speed/spectrum,traffic forcing,no,no,forcing,"classification, calibration, missing vehicles"
+temperature/time,environment/time,no,temperature-dependence only,forcing,depth and spatial representativeness
+maintenance/reset,intervention event,state segmentation,no,mandatory reset,incomplete work records
+derived psi_raw estimate,none,conditional derived estimate,"assumed, not identified",ineligible unless assimilated with calibration,constitutive model and tensile split

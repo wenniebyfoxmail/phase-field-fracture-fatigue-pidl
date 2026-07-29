@@ -1,0 +1,95 @@
+{
+  "compute": "Mac offline contract validation",
+  "fem_reference": "eta0 single trajectory used only as synthetic contract source",
+  "forecast_validation": false,
+  "hidden_state_identification": false,
+  "implementation_sha256": {
+    "SENS_tensile/build_road_measurement_operator_package.py": "d3aacfd714e6b22e3607b8c0e6211eb67addd2d40bf87d76c049f850d5baaab7",
+    "source/road_measurement_operators.py": "9a84544130fa3c9c43d748531980cf5506d1461db53c5f90bfe5f3e15409039b"
+  },
+  "latent_as_sensor_allowed": false,
+  "material_parameter_inversion": false,
+  "multi_trajectory_policy": "stable handoff plus explicit versioned adapters; no future-schema guessing",
+  "output_sha256_before_manifest": {
+    "00_intent.md": "564aa504bdc1205d4ce0d72e899ed05592bfb15a0bd2b04deb9efa4a448cad1f",
+    "attempt.md": "b6c6a82669576e5166b6011619276fd6474955ae30cfc013e2b50bbd1ca1655c",
+    "attempts.jsonl": "4dd9a2ba1a7559745abb6ead015632132598f9ecab8eda5e2218a6701b6aa72e",
+    "decision.md": "cd12e5b1d9691d5e2812e13aa42a609fa4ef4e318db3342fd1a00bc395590071",
+    "identifiability_ladder.csv": "1226307118fee8c9f73eb84866fc5d8ba568f2d702668a3051ee15df7621e91b",
+    "identifiability_matrix.csv": "ec2932b705f74d6885be7117ffbb29e00f0c6b454e396293e6e24a3c3679ba27",
+    "measurement_operator_registry.csv": "677d50787308494f0dd0d92fc5b018f436f4c6d27849f25f926d50bdbd880201",
+    "road_measurement_handoff_v1.schema.json": "da686944b1d4d63f8402ad498242db14cd401601c472b8914236341e65b435eb",
+    "road_measurement_operator_spec.json": "6dc0dd2b250ae6b1bc725a8103a3403fe19009e1cfddf47e1cea09c85781cbd7",
+    "synthetic_contract_smoke_summary.json": "6cf2194edc3f7177aa66ca419aafb7cfa46d824d017c6d502dc6b5f32c8fdd43",
+    "synthetic_measurement_handoff_c87.npz": "d71ff7fbd036ae9c6948c656aa6f174dceb8e4efa51024945c99d91f1eecbee2"
+  },
+  "package_id": "road-measurement-operator-identifiability-v1-20260729",
+  "real_road_validation": false,
+  "schema_versions": {
+    "current_state_bundle_adapter": "road_observation_state_bundle_v1_adapter_v1",
+    "measurement_handoff": "road_measurement_handoff_v1",
+    "measurement_operator": "road_measurement_operator_v1"
+  },
+  "source": "analysis/road_observation_state_bundle_v1_20260724/road_observation_state_bundle_c87_oracle.npz",
+  "source_sha256": "e94027542484431d3a53222d930c81e9ed6c655b86a822ced1452fa8c4c0f253",
+  "synthetic_smoke": {
+    "claim_boundary": "contract smoke only; no real-road, material-inverse, or forecast-performance claim",
+    "decision_eligible": false,
+    "derived_estimate_count": 0,
+    "direct_observation_channels": [
+      "air_temperature",
+      "dic_u_x",
+      "dic_u_y",
+      "elapsed_time",
+      "fwd_deflection",
+      "fwd_load",
+      "fwd_offset",
+      "maintenance_event_code",
+      "maintenance_reset",
+      "pavement_temperature",
+      "registered_crack_probability",
+      "strain_axial",
+      "wim_axle_load",
+      "wim_speed"
+    ],
+    "forbidden_latent_channel_export_count": 0,
+    "handoff_sha256": "d71ff7fbd036ae9c6948c656aa6f174dceb8e4efa51024945c99d91f1eecbee2",
+    "measurement_families_exercised": [
+      "registered_crack_geometry",
+      "dic_displacement",
+      "strain_sensor",
+      "fwd_load_deflection",
+      "wim_traffic",
+      "temperature_time",
+      "maintenance_reset"
+    ],
+    "output_evidence_class": "synthetic_sensor_smoke",
+    "sampled_node_count": 1351,
+    "source_cycle": 87,
+    "source_evidence_class": "oracle",
+    "source_node_count": 86408,
+    "source_sha256": "e94027542484431d3a53222d930c81e9ed6c655b86a822ced1452fa8c4c0f253",
+    "state_bundle_adapter": {
+      "adapter_version": "road_observation_state_bundle_v1_adapter_v1",
+      "decision_eligible": false,
+      "mapped": [
+        "registered_crack_image_v1:registered_crack_probability"
+      ],
+      "observed_node_entry_count": 1351,
+      "oracle_raw_entry_count": 0,
+      "state_mean_created": false,
+      "unmapped_count": 13
+    },
+    "status": "pass",
+    "synthetic_rendering": {
+      "coordinate_sample_sha256": "8f0875307ab7739043781a42af25049a1d7c124db59958b62de3f49dab4b2e8e",
+      "operator": "sigmoid((damage-0.5)/0.08)",
+      "sample_index_sha256": "1f51d779d528e9534a9ce91c8014a781870258c77f4a97b2e5f7cf9529a4990d",
+      "sample_stride": 64,
+      "source_latent": "damage",
+      "source_latent_exported_as_observation": false
+    },
+    "validation_errors": []
+  },
+  "training_run": false
+}
