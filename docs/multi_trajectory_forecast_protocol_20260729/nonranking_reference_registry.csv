@@ -1,0 +1,3 @@
+family,role,ranking_eligible,promotable,tasks,status
+diagonal_ssm,conditional propagation reference,false,false,observation-reset conditional propagation,reported separately and never promoted by this protocol
+current_multiscale,historical single-trajectory reference,false,false,none,excluded from formal ranking

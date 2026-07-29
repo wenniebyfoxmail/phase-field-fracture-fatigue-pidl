@@ -345,6 +345,10 @@ def assess_readiness(
     records = probe.records
     folds: tuple[LeaveOneTrajectoryOutFold, ...] = ()
     task_readiness = {task: False for task in REQUIRED_TASKS}
+    required_groups_match = not required_independence_groups
+    observation_conditioning_match = False
+    scenario_conditioning_match = False
+    independence_scope_match = False
     if probe.status == "contract_loaded":
         validate_normalized_records(records)
         folds = build_leave_one_trajectory_out_folds(records)
@@ -360,6 +364,7 @@ def assess_readiness(
         if required_independence_groups:
             actual_groups = {record.independence_group_id for record in records}
             expected_groups = set(required_independence_groups)
+            required_groups_match = actual_groups == expected_groups
             if actual_groups != expected_groups:
                 missing = sorted(expected_groups - actual_groups)
                 unexpected = sorted(actual_groups - expected_groups)
@@ -372,12 +377,15 @@ def assess_readiness(
                 blockers.append(f"task coverage incomplete: {task}")
         observation_contracts = {record.observation_contract_id for record in records}
         scenario_contracts = {record.scenario_contract_id for record in records}
-        if len(observation_contracts) != 1:
+        observation_conditioning_match = len(observation_contracts) == 1
+        scenario_conditioning_match = len(scenario_contracts) == 1
+        if not observation_conditioning_match:
             blockers.append("observation conditioning differs across trajectories")
-        if len(scenario_contracts) != 1:
+        if not scenario_conditioning_match:
             blockers.append("future scenario conditioning differs across trajectories")
         independence_scopes = {record.independence_scope for record in records}
-        if len(independence_scopes) != 1:
+        independence_scope_match = len(independence_scopes) == 1
+        if not independence_scope_match:
             blockers.append("trajectory independence scope differs across bundles")
     if not producer_split_verified:
         blockers.append(
@@ -393,6 +401,10 @@ def assess_readiness(
     common_gate = (
         probe.status == "contract_loaded"
         and enough
+        and required_groups_match
+        and observation_conditioning_match
+        and scenario_conditioning_match
+        and independence_scope_match
         and producer_split_verified
         and capacity_manifest_verified
     )
@@ -419,15 +431,37 @@ def assess_readiness(
         and every_risk_training_fold_identifiable
         and calibrated
     )
-    if records and not calibrated:
+    blockers = sorted(set(blockers))
+    risk_blockers.extend(
+        f"upstream readiness: {item}"
+        for item in blockers
+        if item != f"task coverage incomplete: {TASK_SAME_REGIME}"
+    )
+    if not enough:
         risk_blockers.append(
-            "calibrated uncertainty is unavailable on at least one trajectory"
+            "upstream trajectory readiness: need at least "
+            f"{minimum_independent_trajectories} independent numerical trajectory "
+            f"groups; found {len(records)}"
         )
-    if records and not every_risk_training_fold_identifiable:
+    if not task_readiness[TASK_TRANSITION]:
+        risk_blockers.append(
+            f"upstream task readiness: {TASK_TRANSITION} is not ready"
+        )
+    if not task_readiness[TASK_RESET]:
+        risk_blockers.append(f"upstream task readiness: {TASK_RESET} is not ready")
+    if not records:
+        risk_blockers.append(
+            "calibrated uncertainty evidence is unavailable because no eligible "
+            "trajectory inventory is loaded"
+        )
+    elif not calibrated:
+        risk_blockers.append(
+            "calibrated uncertainty is unavailable on at least one eligible trajectory"
+        )
+    if not every_risk_training_fold_identifiable:
         risk_blockers.append(
             "every LOTO training fold needs both event and right-censored trajectories"
         )
-    blockers = sorted(set(blockers))
     risk_blockers = sorted(set(risk_blockers))
     training_allowed = (
         field_allowed and transition_allowed and task_readiness[TASK_RESET]
