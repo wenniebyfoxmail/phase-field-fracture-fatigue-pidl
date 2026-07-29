@@ -32,21 +32,29 @@
     "independent_fem": {
       "trajectories": [
         {
-          "trajectory_id": "hard5_eta0_u011_5step_20260729",
-          "variation_axes": ["load_amplitude"]
+          "trajectory_id": "factorial_hard_5step_u012",
+          "variation_axes": ["initial_defect", "loading_history"],
+          "independence_scope": "within_hard5_factorial"
         },
         {
-          "trajectory_id": "hard5_eta0_u012_5step_20260729",
-          "variation_axes": ["load_amplitude"]
+          "trajectory_id": "factorial_hard_8step_u012",
+          "variation_axes": ["initial_defect", "loading_history"],
+          "independence_scope": "within_hard5_factorial"
         },
         {
-          "trajectory_id": "hard5_eta0_u013_5step_20260729",
-          "variation_axes": ["load_amplitude"]
+          "trajectory_id": "factorial_soft_5step_u012",
+          "variation_axes": ["initial_defect", "loading_history"],
+          "independence_scope": "within_hard5_factorial"
+        },
+        {
+          "trajectory_id": "factorial_soft_8step_u012",
+          "variation_axes": ["initial_defect", "loading_history"],
+          "independence_scope": "within_hard5_factorial"
         }
       ],
       "split_lock": {
         "type": "leave-one-entire-trajectory-out",
-        "sha256": "",
+        "sha256": "5904af500cde315d8ee9f9087d3f5088c03b59b76cf23f8fbf7b80f6c3fb1691",
         "cycle_or_node_leakage": false
       }
     },

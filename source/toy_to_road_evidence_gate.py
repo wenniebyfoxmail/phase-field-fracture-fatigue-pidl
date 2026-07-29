@@ -65,6 +65,8 @@ class EvidenceValidationError(ValueError):
 class GateResult:
     valid: bool
     training_ready: bool
+    training_scope: str
+    road_training_ready: bool
     road_validation_ready: bool
     blockers: tuple[str, ...]
 
@@ -72,6 +74,9 @@ class GateResult:
         return {
             "valid": self.valid,
             "training_ready": self.training_ready,
+            "within_benchmark_training_ready": self.training_ready,
+            "training_scope": self.training_scope,
+            "road_training_ready": self.road_training_ready,
             "road_validation_ready": self.road_validation_ready,
             "blockers": list(self.blockers),
         }
@@ -124,13 +129,16 @@ def _validate_scale_contract(package: dict[str, Any]) -> None:
         raise EvidenceValidationError("legacy c_w-scaled runs must be quarantined")
 
 
-def _validate_independent_fem(track: dict[str, Any]) -> tuple[bool, list[str]]:
+def _validate_independent_fem(
+    track: dict[str, Any]
+) -> tuple[bool, bool, list[str]]:
     blockers: list[str] = []
     trajectories = track.get("trajectories", [])
     if not isinstance(trajectories, list):
         raise EvidenceValidationError("independent_fem.trajectories must be a list")
 
     independent = []
+    road_like = []
     for index, trajectory in enumerate(trajectories):
         if not isinstance(trajectory, dict):
             raise EvidenceValidationError(
@@ -139,9 +147,14 @@ def _validate_independent_fem(track: dict[str, Any]) -> tuple[bool, list[str]]:
         axes = set(trajectory.get("variation_axes", []))
         if axes & INDEPENDENT_VARIATION_AXES:
             independent.append(trajectory)
+        if trajectory.get("independence_scope") == "road_like":
+            road_like.append(trajectory)
 
     if len(independent) < 3:
         blockers.append("fewer_than_three_independent_trajectories")
+    road_ready = len(road_like) >= 3
+    if not road_ready:
+        blockers.append("fewer_than_three_road_like_trajectories")
 
     split = track.get("split_lock", {})
     if split.get("type") != "leave-one-entire-trajectory-out":
@@ -152,7 +165,12 @@ def _validate_independent_fem(track: dict[str, Any]) -> tuple[bool, list[str]]:
     if split.get("cycle_or_node_leakage") is not False:
         blockers.append("trajectory_leakage_not_excluded")
 
-    return not blockers, blockers
+    within_blockers = [
+        blocker
+        for blocker in blockers
+        if blocker != "fewer_than_three_road_like_trajectories"
+    ]
+    return not within_blockers, road_ready and not within_blockers, blockers
 
 
 def _validate_forecast(
@@ -252,7 +270,7 @@ def validate_package(package: dict[str, Any]) -> GateResult:
     if not dimensionless.get("model_form_negative_control_passed", False):
         blockers.append("model_form_negative_control_not_passed")
 
-    independent_ready, independent_blockers = _validate_independent_fem(
+    independent_ready, road_independent_ready, independent_blockers = _validate_independent_fem(
         tracks["independent_fem"]
     )
     blockers.extend(independent_blockers)
@@ -268,13 +286,14 @@ def validate_package(package: dict[str, Any]) -> GateResult:
     blockers.extend(observation_blockers)
 
     training_ready = independent_ready and not forecast_blockers
+    road_training_ready = road_independent_ready and not forecast_blockers
     dimensionless_ready = (
         dimensionless.get("exact_pi_positive_control_passed", False)
         and dimensionless.get("model_form_negative_control_passed", False)
     )
     road_validation_ready = (
         dimensionless_ready
-        and independent_ready
+        and road_training_ready
         and forecast_ready
         and observation_ready
         and tracks["forecast"].get("held_out_results_passed", False)
@@ -288,6 +307,14 @@ def validate_package(package: dict[str, Any]) -> GateResult:
     return GateResult(
         valid=True,
         training_ready=training_ready,
+        training_scope=(
+            "road_like_leave_one_trajectory_out"
+            if road_training_ready
+            else "within_benchmark_factorial"
+            if training_ready
+            else "not_ready"
+        ),
+        road_training_ready=road_training_ready,
         road_validation_ready=road_validation_ready,
         blockers=tuple(dict.fromkeys(blockers)),
     )

@@ -22,9 +22,21 @@ SHA_B = "b" * 64
 
 def valid_package() -> dict:
     trajectories = [
-        {"trajectory_id": "defect", "variation_axes": ["initial_defect"]},
-        {"trajectory_id": "material", "variation_axes": ["material_state"]},
-        {"trajectory_id": "history", "variation_axes": ["loading_history"]},
+        {
+            "trajectory_id": "defect",
+            "variation_axes": ["initial_defect"],
+            "independence_scope": "road_like",
+        },
+        {
+            "trajectory_id": "material",
+            "variation_axes": ["material_state"],
+            "independence_scope": "road_like",
+        },
+        {
+            "trajectory_id": "history",
+            "variation_axes": ["loading_history"],
+            "independence_scope": "road_like",
+        },
         {"trajectory_id": "u012", "variation_axes": ["load_amplitude"]},
     ]
     return {
@@ -104,6 +116,8 @@ def test_valid_complete_package_is_training_and_road_ready() -> None:
     result = validate_package(valid_package())
     assert result.valid
     assert result.training_ready
+    assert result.road_training_ready
+    assert result.training_scope == "road_like_leave_one_trajectory_out"
     assert result.road_validation_ready
     assert not result.blockers
 
@@ -117,6 +131,7 @@ def test_umax_only_family_does_not_unlock_training() -> None:
     package["tracks"]["forecast"]["training_started"] = False
     result = validate_package(package)
     assert not result.training_ready
+    assert not result.road_training_ready
     assert "fewer_than_three_independent_trajectories" in result.blockers
 
 
@@ -125,6 +140,25 @@ def test_training_before_independent_readiness_is_rejected() -> None:
     package["tracks"]["independent_fem"]["trajectories"] = []
     with pytest.raises(EvidenceValidationError, match="before independent FEM"):
         validate_package(package)
+
+
+def test_factorial_trajectories_unlock_only_within_benchmark_training() -> None:
+    package = valid_package()
+    package["tracks"]["independent_fem"]["trajectories"] = [
+        {
+            "trajectory_id": f"factorial_{index}",
+            "variation_axes": ["initial_defect", "loading_history"],
+            "independence_scope": "within_hard5_factorial",
+        }
+        for index in range(4)
+    ]
+    package["tracks"]["reality_observation"]["real_data_evaluated"] = False
+    result = validate_package(package)
+    assert result.training_ready
+    assert result.training_scope == "within_benchmark_factorial"
+    assert not result.road_training_ready
+    assert not result.road_validation_ready
+    assert "fewer_than_three_road_like_trajectories" in result.blockers
 
 
 def test_latent_field_cannot_be_a_direct_sensor() -> None:

@@ -1,12 +1,14 @@
 {
   "blockers": [
     "exact_pi_positive_control_not_passed",
-    "fewer_than_three_independent_trajectories",
-    "split_lock_sha256_missing",
+    "fewer_than_three_road_like_trajectories",
     "held_out_trajectory_forecast_not_passed",
     "real_road_data_not_evaluated"
   ],
+  "road_training_ready": false,
   "road_validation_ready": false,
-  "training_ready": false,
-  "valid": true
+  "training_ready": true,
+  "training_scope": "within_benchmark_factorial",
+  "valid": true,
+  "within_benchmark_training_ready": true
 }
