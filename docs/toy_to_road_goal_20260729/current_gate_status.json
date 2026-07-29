@@ -4,7 +4,6 @@
     "model_form_negative_control_not_passed",
     "fewer_than_three_independent_trajectories",
     "split_lock_sha256_missing",
-    "identifiability_matrix_missing",
     "held_out_trajectory_forecast_not_passed",
     "real_road_data_not_evaluated"
   ],

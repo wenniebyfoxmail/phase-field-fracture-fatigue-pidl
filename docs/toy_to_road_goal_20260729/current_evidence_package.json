@@ -76,10 +76,18 @@
         "elapsed_time",
         "maintenance_record"
       ],
-      "derived_channels": [],
+      "derived_channels": [
+        {
+          "name": "psi_raw_tensile_estimate",
+          "classification": "derived_latent_estimate",
+          "measurement_operator": "constitutive_model_plus_kinematics_plus_tensile_split",
+          "uncertainty": "required_but_not_yet_real_data_calibrated",
+          "units": "Pa"
+        }
+      ],
       "missingness_masked": true,
       "latent_to_sensor_firewall": true,
-      "identifiability_matrix": false,
+      "identifiability_matrix": true,
       "real_data_evaluated": false
     }
   }
