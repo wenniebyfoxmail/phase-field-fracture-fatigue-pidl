@@ -24,7 +24,10 @@
   "tracks": {
     "dimensionless_transfer": {
       "exact_pi_positive_control_passed": false,
-      "model_form_negative_control_passed": false
+      "exact_pi_replay_passed": true,
+      "fresh_dimensional_solve": false,
+      "model_form_negative_control_passed": true,
+      "negative_control_raw_active_status": "unobservable_not_imputed"
     },
     "independent_fem": {
       "trajectories": [

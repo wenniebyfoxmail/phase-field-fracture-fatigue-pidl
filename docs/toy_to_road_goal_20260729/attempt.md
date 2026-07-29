@@ -46,6 +46,7 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 - add: `docs/toy_to_road_goal_20260729/00_goal_contract.md` - Added shared four-track scientific contract, readiness gates, and final decision classes
 - add: `source/toy_to_road_evidence_gate.py` - Added machine gate for corrected scale contract, versioned FEM states, independent-trajectory readiness, forecast freeze, and observation leakage
 - add: `analysis/road_measurement_operator_identifiability_v1_20260729/decision.md` - Integrated executable measurement operators and identifiability ladder; real-road evidence remains missing
+- add: `docs/pi_transfer_controls_20260729/decision.md` - Integrated corrected scaling, F1a dimensional replay and F2 BC negative control; retained fresh F1b solve as blocker
 
 ## Input Assets
 - `docs/road_rescaling_bridge_20260724/independent_review.md` (independent scale-transfer review; exists)
@@ -58,6 +59,7 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 ## Tests
 - pass: integration_contract_tests - 31 passed and 1 optional dependency test skipped; gate rejects Umax-only readiness, premature forecast training, missing event phase, latent sensor leakage, and unapproved architectures.
 - pass: observation_interface_integration - 48 passed and 1 optional dependency test skipped; identifiability blocker cleared while real-road-data blocker remains.
+- pass: scaling_control_integration - 41 passed; F2 blocker cleared, but exact-Pi positive control remains blocked because F1 used archived dimensional replay rather than a fresh solver run.
 
 ## Result Interpretation
 Not recorded.
