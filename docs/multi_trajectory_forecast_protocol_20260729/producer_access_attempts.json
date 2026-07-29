@@ -1,6 +1,6 @@
 {
   "status": "blocked_no_authenticated_producer_session",
-  "checked_at": "2026-07-29T16:39:51+01:00",
+  "checked_at": "2026-07-29T17:13:00+01:00",
   "training_launched": false,
   "run_directory": null,
   "gpu": null,
@@ -11,6 +11,7 @@
       "host": "172.16.100.2:22",
       "tcp_reachable": true,
       "authenticated": false,
+      "vpn_configuration": "Tunnelblick client exists but is disconnected",
       "error": "kex_exchange_identification: read: Connection reset by peer"
     },
     {
@@ -18,6 +19,10 @@
       "host": "login-icelake.hpc.cam.ac.uk",
       "tcp_reachable": true,
       "authenticated": false,
+      "offered_key_fingerprints": [
+        "RSA SHA256:eIu6+ZyxFHS1o2fjjzVObwYm7RmQ88vVDMrUIZYtGH4",
+        "ED25519 SHA256:Gco9sNqRL5suJkftfEP4772aU/dG2yoH0KF14Ce06Mw"
+      ],
       "error": "Permission denied (publickey,keyboard-interactive,hostbased)"
     }
   ]

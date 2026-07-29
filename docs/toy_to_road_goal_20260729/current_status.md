@@ -28,3 +28,15 @@ training. It is not ready for a road-transfer claim.
 The active blockers are recorded in `current_gate_status.json`. Producer access
 is an execution blocker, not scientific evidence and not a failed numerical
 result.
+
+## Producer access diagnosis
+
+- Taobo: TCP port 22 is reachable, but SSH is reset during key exchange. The
+  configured Tunnelblick `client` VPN exists and is currently disconnected.
+  Connecting it requires explicit user confirmation because it changes network
+  state.
+- CSD3: the host is reachable. Both local RSA and ED25519 public keys are
+  offered and rejected, so the server-side authorized key or an interactive
+  authentication session must be restored.
+- Windows-FEM: the sealed F1b handoff is complete, but no approved producer or
+  fresh candidate output is available.
