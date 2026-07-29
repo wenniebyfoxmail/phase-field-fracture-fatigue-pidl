@@ -1,6 +1,6 @@
 # Attempt toy_to_road_evidence_goal_20260729
 
-- Status: `accepted`
+- Status: `blocked`
 - Created: 2026-07-29T15:41:10+01:00
 - Closed: None
 - Type: `framework-validation`
@@ -87,3 +87,9 @@ sealed inputs. On access recovery, run F1b and the 36-job Markov/TCN/Transformer
 LOCO matrix, download immutable outputs, and rerun this gate. Do not launch a
 new architecture or claim road validation while the road-like and real-data
 blockers remain.
+
+Blocked audit: the same producer-access condition was confirmed on three
+consecutive goal turns. Tunnelblick remained disconnected and requires explicit
+authorization before Codex may change VPN state; Taobo reset SSH during key
+exchange; CSD3 rejected both configured public keys; and no Windows-FEM F1b
+candidate appeared.

@@ -2,6 +2,11 @@
 
 Updated: 2026-07-29 (Europe/London)
 
+Goal execution status: `BLOCKED_EXTERNAL_ACCESS` after three consecutive
+producer-access audits. Resume without changing sealed inputs after explicit
+authorization to connect the Tunnelblick `client` VPN, restoration of CSD3
+authentication, or return of a fresh Windows-FEM F1b output.
+
 ## Current verdict
 
 The evidence package is valid and the four workstreams are integrated. The
@@ -40,3 +45,8 @@ result.
   authentication session must be restored.
 - Windows-FEM: the sealed F1b handoff is complete, but no approved producer or
   fresh candidate output is available.
+
+The third consecutive audit reproduced the same state: Tunnelblick disconnected,
+Taobo reset during SSH key exchange, CSD3 rejecting both configured public keys,
+and no F1b candidate output. The goal is therefore paused as externally blocked
+rather than repeatedly polling without an authorized state change.
