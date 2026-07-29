@@ -1,9 +1,5 @@
 {
-  "blockers": [
-    "Agent/FEM task 2 trajectory contract is not published",
-    "producer leave-one-combination-out split is not frozen and verified",
-    "road-aware parameter-count manifest is not verified within the sealed tolerance"
-  ],
+  "blockers": [],
   "claims_allowed": [
     "sealed protocol and consumer readiness logic are tooling-valid",
     "leave-one-entire-trajectory-out folds are deterministic once bundles arrive"
@@ -15,31 +11,96 @@
     "autonomous transition prediction",
     "calibrated hazard or RUL"
   ],
-  "contract_sha256": null,
-  "contract_status": "blocked_pending_contract",
-  "field_training_allowed": false,
-  "folds": [],
-  "independence_group_count": 0,
-  "independence_scopes": [],
+  "contract_sha256": "c32b594559362bf7b7a7b4892e74f8d1001bb8d5ac88c3a3776a8e8333aa57df",
+  "contract_status": "contract_loaded",
+  "field_training_allowed": true,
+  "folds": [
+    {
+      "fold_id": "loto__hard_tip__5step",
+      "held_out_independence_group": "hard_tip__5step",
+      "held_out_trajectory_ids": [
+        "factorial_hard_5step_u012"
+      ],
+      "training_independence_groups": [
+        "hard_tip__8step",
+        "soft_tip__5step",
+        "soft_tip__8step"
+      ],
+      "training_trajectory_ids": [
+        "factorial_hard_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_soft_8step_u012"
+      ]
+    },
+    {
+      "fold_id": "loto__hard_tip__8step",
+      "held_out_independence_group": "hard_tip__8step",
+      "held_out_trajectory_ids": [
+        "factorial_hard_8step_u012"
+      ],
+      "training_independence_groups": [
+        "hard_tip__5step",
+        "soft_tip__5step",
+        "soft_tip__8step"
+      ],
+      "training_trajectory_ids": [
+        "factorial_hard_5step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_soft_8step_u012"
+      ]
+    },
+    {
+      "fold_id": "loto__soft_tip__5step",
+      "held_out_independence_group": "soft_tip__5step",
+      "held_out_trajectory_ids": [
+        "factorial_soft_5step_u012"
+      ],
+      "training_independence_groups": [
+        "hard_tip__5step",
+        "hard_tip__8step",
+        "soft_tip__8step"
+      ],
+      "training_trajectory_ids": [
+        "factorial_hard_5step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_soft_8step_u012"
+      ]
+    },
+    {
+      "fold_id": "loto__soft_tip__8step",
+      "held_out_independence_group": "soft_tip__8step",
+      "held_out_trajectory_ids": [
+        "factorial_soft_8step_u012"
+      ],
+      "training_independence_groups": [
+        "hard_tip__5step",
+        "hard_tip__8step",
+        "soft_tip__5step"
+      ],
+      "training_trajectory_ids": [
+        "factorial_hard_5step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_soft_5step_u012"
+      ]
+    }
+  ],
+  "independence_group_count": 4,
+  "independence_scopes": [
+    "within_hard5_factorial_numerical_trajectory"
+  ],
   "protocol_id": "road_multi_trajectory_forecast_reassessment_v1_20260729",
   "risk_blockers": [
-    "calibrated uncertainty evidence is unavailable because no eligible trajectory inventory is loaded",
-    "every LOTO training fold needs both event and right-censored trajectories",
-    "upstream readiness: Agent/FEM task 2 trajectory contract is not published",
-    "upstream readiness: producer leave-one-combination-out split is not frozen and verified",
-    "upstream readiness: road-aware parameter-count manifest is not verified within the sealed tolerance",
-    "upstream task readiness: autonomous_transition_warning is not ready",
-    "upstream task readiness: observation_reset_conditional_propagation is not ready",
-    "upstream trajectory readiness: need at least 4 independent numerical trajectory groups; found 0"
+    "calibrated uncertainty is unavailable on at least one eligible trajectory",
+    "every LOTO training fold needs both event and right-censored trajectories"
   ],
   "risk_training_allowed": false,
-  "status": "not_ready_no_training",
+  "status": "ready_for_fair_training",
   "task_readiness": {
-    "autonomous_transition_warning": false,
-    "observation_reset_conditional_propagation": false,
-    "observed_state_same_regime_h1_h3": false
+    "autonomous_transition_warning": true,
+    "observation_reset_conditional_propagation": true,
+    "observed_state_same_regime_h1_h3": true
   },
-  "training_allowed": false,
-  "trajectory_count": 0,
-  "transition_training_allowed": false
+  "training_allowed": true,
+  "trajectory_count": 4,
+  "transition_training_allowed": true
 }

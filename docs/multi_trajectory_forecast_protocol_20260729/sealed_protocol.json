@@ -1,18 +1,20 @@
 {
   "protocol_id": "road_multi_trajectory_forecast_reassessment_v1_20260729",
-  "status": "sealed_tooling_only_pending_agent_fem_task2_contract",
+  "status": "sealed_ready_for_within_hard5_factorial_training",
   "claim_class": "framework-validation",
   "training_launched": false,
   "producer_contract": {
     "owner": "Agent/FEM task 2",
-    "path": null,
-    "schema_id": null,
-    "adapter_id": null,
-    "sha256": null,
-    "policy": "Agent3 must not copy, infer, or guess producer fields; a versioned reviewed adapter is required",
+    "path": "analysis/fem_multitrajectory_contract_20260729/RUN_MANIFEST.json",
+    "schema_id": "fem_multitrajectory_contract_v1",
+    "adapter_id": "agent2_factorial_loco_v1",
+    "sha256": "c32b594559362bf7b7a7b4892e74f8d1001bb8d5ac88c3a3776a8e8333aa57df",
+    "producer_commit": "90cf8a3703d03609ad7daf066d04ab051c2f7500",
+    "internal_loco_lock_sha256": "5904af500cde315d8ee9f9087d3f5088c03b59b76cf23f8fbf7b80f6c3fb1691",
+    "policy": "consume the immutable Agent2 package through the reviewed adapter; only four factorial bundles enter LOCO",
     "potential_source": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/Umax_012_all_versions_20260729",
     "potential_design": "hard/soft initial tip x 5/8-step loading-history 2x2 factorial",
-    "potential_status": "awaiting Agent2 signed bundle and split"
+    "potential_status": "four factorial trajectories signed; 348 cycle states eligible for scoped LOCO"
   },
   "physics_reference": {
     "reference": "FEM eta0",
@@ -119,6 +121,11 @@
     "fixed_steps": 3000,
     "parameter_target": 329000,
     "parameter_relative_tolerance": 0.01,
+    "shared_spatial_dimensions": {
+      "local_dim": 49,
+      "token_dim": 50,
+      "metadata_dim": 2
+    },
     "same_optimizer_loss_and_budget": true,
     "same_origin_mask_scenario_conditioning": true,
     "architecture_selection_on_heldout": false

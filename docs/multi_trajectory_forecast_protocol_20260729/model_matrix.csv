@@ -1,4 +1,4 @@
-family,role,ranking_eligible,tasks,context,seeds,fixed_steps,parameter_target,relative_tolerance,conditioning,decision
-markov,formal matched graph baseline,true,all three,1,"1;2;3",3000,329000,0.01,identical origin mask scenario and budget,mandatory control in every outer fold
-tcn,finite temporal candidate,true,all three,3,"1;2;3",3000,329000,0.01,identical origin mask scenario and budget,no architecture or context sweep
-transformer,finite secondary candidate,true,all three,3,"1;2;3",3000,329000,0.01,identical origin mask scenario and budget,no architecture or context sweep
+family,role,ranking_eligible,tasks,context,seeds,fixed_steps,local_dim,token_dim,metadata_dim,temporal_width,parameters,parameter_target,relative_tolerance,conditioning,decision
+markov,formal matched graph baseline,true,all three,1,"1;2;3",3000,49,50,2,463,328818,329000,0.01,identical origin loading scenario and budget,mandatory control in every outer fold
+tcn,finite temporal candidate,true,all three,3,"1;2;3",3000,49,50,2,334,328745,329000,0.01,identical origin loading scenario and budget,no architecture or context sweep
+transformer,finite secondary candidate,true,all three,3,"1;2;3",3000,49,50,2,124,328863,329000,0.01,identical origin loading scenario and budget,no architecture or context sweep
