@@ -22,7 +22,9 @@ Three tasks are separate and cannot be pooled into one headline result:
 
 Markov graph is the formal matched baseline. TCN and Transformer are the only
 ranking-eligible candidates. Diagonal SSM is retained as a separately reported
-conditional-propagation reference. GRU, LSTM, current_multiscale and new
+conditional-propagation reference and is explicitly non-ranking and
+non-promotable. The core candidate manifest contains only Markov, TCN and
+Transformer. GRU, LSTM, current_multiscale and new
 architectures are excluded.
 
 Every formal comparison uses seeds 1/2/3, 3000 fixed steps, the same optimizer,
@@ -72,7 +74,9 @@ Field output is rolling h1-h3 after each new observed/assimilated state.
 Longer-horizon output is scenario-conditioned transition hazard and RUL
 availability. Hazard/RUL remains unavailable unless every outer training fold
 contains both event and right-censored trajectories and uncertainty is
-calibrated. Unlimited free rollout is a stress diagnostic, not road prediction.
+calibrated. Whenever risk training is false, its report must also list inherited
+upstream readiness failures and these two risk-specific requirements. Unlimited
+free rollout is a stress diagnostic, not road prediction.
 
 ## Exact training release gate
 

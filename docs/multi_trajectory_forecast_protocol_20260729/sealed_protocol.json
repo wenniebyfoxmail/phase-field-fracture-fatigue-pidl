@@ -88,11 +88,17 @@
   },
   "model_matrix": {
     "formal_baseline": "markov",
+    "core_candidate_manifest": [
+      "markov",
+      "tcn",
+      "transformer"
+    ],
     "finite_candidates": [
       "tcn",
       "transformer"
     ],
     "conditional_reference": "diagonal_ssm",
+    "conditional_reference_policy": "diagonal_ssm is non-ranking and non-promotable",
     "excluded": [
       "gru",
       "lstm",

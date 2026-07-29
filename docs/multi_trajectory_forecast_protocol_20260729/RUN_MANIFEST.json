@@ -40,7 +40,7 @@
   ],
   "tests": {
     "command": "/Users/wenxiaofang/miniconda3/bin/python3 -m pytest -q",
-    "passed": 150,
+    "passed": 153,
     "skipped": 2,
     "failed": 0,
     "warnings": 4,
@@ -53,6 +53,7 @@
     "tests/test_road_closed_loop_forecaster.py",
     "docs/multi_trajectory_forecast_protocol_20260729/sealed_protocol.json",
     "docs/multi_trajectory_forecast_protocol_20260729/model_matrix.csv",
+    "docs/multi_trajectory_forecast_protocol_20260729/nonranking_reference_registry.csv",
     "docs/multi_trajectory_forecast_protocol_20260729/metric_registry.csv",
     "docs/multi_trajectory_forecast_protocol_20260729/contract_adapter_status.csv",
     "docs/multi_trajectory_forecast_protocol_20260729/potential_source_status.json",

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
 from pathlib import Path
@@ -179,6 +180,40 @@ def test_missing_reset_task_blocks_formal_training(tmp_path: Path) -> None:
     assert not report.training_allowed
 
 
+def test_same_regime_task_does_not_create_a_false_risk_blocker(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "producer.contract"
+    digest = frozen_file(path)
+    incomplete = {task: True for task in REQUIRED_TASKS}
+    incomplete[TASK_SAME_REGIME] = False
+    registry = TrajectoryAdapterRegistry()
+    registry.register(
+        schema_id="test_only_v1",
+        adapter_id="test_only_adapter",
+        loader=lambda _: [
+            record(1, tasks=incomplete, outcome="event"),
+            record(2, tasks=incomplete, outcome="right_censored"),
+            record(3, tasks=incomplete, outcome="event"),
+            record(4, tasks=incomplete, outcome="right_censored"),
+        ],
+    )
+    report = assess_readiness(
+        registry.probe(
+            FrozenTrajectoryContractRef(
+                path, digest, "test_only_v1", "test_only_adapter"
+            )
+        ),
+        protocol_id="sealed_test",
+        minimum_independent_trajectories=3,
+        producer_split_verified=True,
+        capacity_manifest_verified=True,
+    )
+    assert not report.training_allowed
+    assert report.risk_training_allowed
+    assert report.risk_blockers == ()
+
+
 def test_unverified_bundle_is_rejected_by_normalized_gate(tmp_path: Path) -> None:
     path = tmp_path / "producer.contract"
     digest = frozen_file(path)
@@ -253,7 +288,7 @@ def test_risk_requires_calibration_and_event_censor_diversity(tmp_path: Path) ->
     assert not missing.risk_training_allowed
     assert missing.blockers == ()
     assert set(missing.risk_blockers) == {
-        "calibrated uncertainty is unavailable on at least one trajectory",
+        "calibrated uncertainty is unavailable on at least one eligible trajectory",
         "every LOTO training fold needs both event and right-censored trajectories",
     }
 
@@ -276,7 +311,7 @@ def test_signed_split_and_exact_factorial_groups_are_hard_gates(
         probe,
         protocol_id="sealed_test",
         minimum_independent_trajectories=4,
-        producer_split_verified=False,
+        producer_split_verified=True,
         capacity_manifest_verified=True,
         required_independence_groups=(
             "hard_tip__5step",
@@ -286,7 +321,7 @@ def test_signed_split_and_exact_factorial_groups_are_hard_gates(
         ),
     )
     assert not report.training_allowed
-    assert any("split is not frozen" in item for item in report.blockers)
+    assert not report.field_training_allowed
     assert any("sealed factorial" in item for item in report.blockers)
 
 
@@ -311,7 +346,42 @@ def test_sealed_protocol_forbids_architecture_fishing_and_cycle_leakage() -> Non
     assert protocol["split"]["method"] == "leave-one-entire-trajectory-out"
     assert protocol["split"]["minimum_independent_trajectories"] == 4
     assert protocol["model_matrix"]["formal_baseline"] == "markov"
+    assert protocol["model_matrix"]["core_candidate_manifest"] == [
+        "markov",
+        "tcn",
+        "transformer",
+    ]
     assert protocol["model_matrix"]["finite_candidates"] == ["tcn", "transformer"]
+    assert protocol["model_matrix"]["conditional_reference"] == "diagonal_ssm"
+    assert "non-promotable" in protocol["model_matrix"][
+        "conditional_reference_policy"
+    ]
     assert "any new architecture" in protocol["model_matrix"]["excluded"]
     assert protocol["long_horizon"]["free_rollout_role"] == "stress diagnostic only"
     assert not protocol["training_launched"]
+
+
+def test_core_manifest_excludes_nonranking_references() -> None:
+    package = ROOT / "docs" / "multi_trajectory_forecast_protocol_20260729"
+    with (package / "model_matrix.csv").open(newline="", encoding="utf-8") as handle:
+        core = list(csv.DictReader(handle))
+    assert [row["family"] for row in core] == ["markov", "tcn", "transformer"]
+    assert all(row["ranking_eligible"] == "true" for row in core)
+
+    with (package / "nonranking_reference_registry.csv").open(
+        newline="", encoding="utf-8"
+    ) as handle:
+        references = {row["family"]: row for row in csv.DictReader(handle)}
+    assert references["diagonal_ssm"]["ranking_eligible"] == "false"
+    assert references["diagonal_ssm"]["promotable"] == "false"
+
+
+def test_published_not_ready_report_lists_explicit_risk_blockers() -> None:
+    package = ROOT / "docs" / "multi_trajectory_forecast_protocol_20260729"
+    report = json.loads((package / "readiness_report.json").read_text())
+    markdown = (package / "readiness_report.md").read_text(encoding="utf-8")
+    assert not report["risk_training_allowed"]
+    assert any("trajectory readiness" in item for item in report["risk_blockers"])
+    assert any("calibrated uncertainty" in item for item in report["risk_blockers"])
+    assert any("event and right-censored" in item for item in report["risk_blockers"])
+    assert "## Hazard/RUL blockers\n\n- none" not in markdown

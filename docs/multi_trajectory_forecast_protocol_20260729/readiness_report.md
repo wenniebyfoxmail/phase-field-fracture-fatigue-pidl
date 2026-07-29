@@ -24,7 +24,14 @@ not_ready_no_training. Training allowed: false.
 
 ## Hazard/RUL blockers
 
-- none
+- calibrated uncertainty evidence is unavailable because no eligible trajectory inventory is loaded
+- every LOTO training fold needs both event and right-censored trajectories
+- upstream readiness: Agent/FEM task 2 trajectory contract is not published
+- upstream readiness: producer leave-one-combination-out split is not frozen and verified
+- upstream readiness: road-aware parameter-count manifest is not verified within the sealed tolerance
+- upstream task readiness: autonomous_transition_warning is not ready
+- upstream task readiness: observation_reset_conditional_propagation is not ready
+- upstream trajectory readiness: need at least 4 independent numerical trajectory groups; found 0
 
 ## Boundary
 
