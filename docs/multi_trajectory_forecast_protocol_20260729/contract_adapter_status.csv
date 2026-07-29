@@ -1,5 +1,5 @@
 producer,asset,status,schema_id,sha256,adapter_id,counted_trajectories,training_effect
-Agent/FEM task2,signed trajectory bundle contract,missing,,,,0,hard block
-Agent/FEM task2,signed leave-one-combination-out split,missing,,,,0,hard block
-Agent3,producer-specific reviewed adapter,pending producer schema,,,,0,hard block
-local candidate,Umax_012_all_versions_20260729,path present but mechanism completeness unsigned,,,,0,no training
+Agent/FEM task2,signed trajectory bundle contract,verified,fem_multitrajectory_contract_v1,c32b594559362bf7b7a7b4892e74f8d1001bb8d5ac88c3a3776a8e8333aa57df,agent2_factorial_loco_v1,4,scoped field training released
+Agent/FEM task2,signed leave-one-combination-out split,verified,fem_loto_split_v1,5904af500cde315d8ee9f9087d3f5088c03b59b76cf23f8fbf7b80f6c3fb1691,agent2_factorial_loco_v1,4,complete-trajectory folds locked
+Agent3,producer-specific reviewed adapter,verified,fem_multitrajectory_contract_v1,c32b594559362bf7b7a7b4892e74f8d1001bb8d5ac88c3a3776a8e8333aa57df,agent2_factorial_loco_v1,4,excludes three Umax sensitivity bundles
+local materialisation,factorial_loco_temporal_dataset_20260729,verified,factorial_loco_fem_states_v1,see external RUN_MANIFEST,agent2_factorial_loco_v1,4,producer transfer ready

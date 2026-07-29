@@ -2,36 +2,28 @@
 
 ## Verdict
 
-not_ready_no_training. Training allowed: false.
+ready_for_fair_training. Training allowed: true.
 
-- Producer contract: blocked_pending_contract
-- Independent trajectories: 0
-- Field training allowed: false
-- Transition training allowed: false
+- Producer contract: contract_loaded
+- Independent trajectories: 4
+- Field training allowed: true
+- Transition training allowed: true
 - Risk training allowed: false
 
 ## Task readiness
 
-- observed_state_same_regime_h1_h3: false
-- autonomous_transition_warning: false
-- observation_reset_conditional_propagation: false
+- observed_state_same_regime_h1_h3: true
+- autonomous_transition_warning: true
+- observation_reset_conditional_propagation: true
 
 ## Blockers
 
-- Agent/FEM task 2 trajectory contract is not published
-- producer leave-one-combination-out split is not frozen and verified
-- road-aware parameter-count manifest is not verified within the sealed tolerance
+- none
 
 ## Hazard/RUL blockers
 
-- calibrated uncertainty evidence is unavailable because no eligible trajectory inventory is loaded
+- calibrated uncertainty is unavailable on at least one eligible trajectory
 - every LOTO training fold needs both event and right-censored trajectories
-- upstream readiness: Agent/FEM task 2 trajectory contract is not published
-- upstream readiness: producer leave-one-combination-out split is not frozen and verified
-- upstream readiness: road-aware parameter-count manifest is not verified within the sealed tolerance
-- upstream task readiness: autonomous_transition_warning is not ready
-- upstream task readiness: observation_reset_conditional_propagation is not ready
-- upstream trajectory readiness: need at least 4 independent numerical trajectory groups; found 0
 
 ## Boundary
 

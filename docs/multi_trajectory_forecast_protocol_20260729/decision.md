@@ -1,97 +1,59 @@
-# Decision: multi-trajectory forecast reassessment framework
+# Decision: signed factorial LOCO producer gate
 
-## Verdict
+## Readiness verdict
 
-The protocol/adapter readiness stage passes as tooling, but the producer gate is
-closed:
+The scoped producer gate passes for a controlled **within-Hard5 numerical
+factorial** experiment. It does not pass for roads.
 
-    not_ready_no_training
+- Agent2 producer commit: `90cf8a3703d03609ad7daf066d04ab051c2f7500`
+- Contract file SHA: `c32b594559362bf7b7a7b4892e74f8d1001bb8d5ac88c3a3776a8e8333aa57df`
+- Internal LOCO lock: `5904af500cde315d8ee9f9087d3f5088c03b59b76cf23f8fbf7b80f6c3fb1691`
+- Eligible inventory: four factorial trajectories, 348 cycle-peak states
+- Split: four complete-trajectory folds; no node, cycle or window crossing
+- Field and deterministic transition-warning training: ready
+- Calibrated hazard/RUL: blocked
 
-No forecast training was launched. Agent/FEM task2 has not yet published the
-signed trajectory bundle contract, per-bundle hashes or locked
-leave-one-combination-out split. Agent3 therefore has zero countable
-trajectories, even though the candidate 2x2 source directory exists.
+The producer package contains 624 states in total, but 276 belong to three Umax
+sensitivity trajectories. They are excluded from LOCO and do not count as new
+factorial trajectories.
 
-## What is sealed
+## Matched model gate
 
-Three tasks are separate and cannot be pooled into one headline result:
+Only Markov graph, TCN and Transformer are ranking eligible. They share the same
+graph encoder (`local_dim=49`, `token_dim=50`), two forecast-time loading
+schedule channels, loss, optimizer, three-step exposure, 3000 steps and seeds
+1/2/3. Temporal widths are fixed before training.
 
-1. observed-state, same-regime h1-h3 field propagation;
-2. autonomous transition warning;
-3. observation-reset conditional h1-h3 propagation.
+| Model | Context | Width | Parameters | Error from 329k |
+|---|---:|---:|---:|---:|
+| Markov | 1 | 463 | 328818 | 0.055% |
+| TCN | 3 | 334 | 328745 | 0.078% |
+| Transformer | 3 | 124 | 328863 | 0.042% |
 
-Markov graph is the formal matched baseline. TCN and Transformer are the only
-ranking-eligible candidates. Diagonal SSM is retained as a separately reported
-conditional-propagation reference and is explicitly non-ranking and
-non-promotable. The core candidate manifest contains only Markov, TCN and
-Transformer. GRU, LSTM, current_multiscale and new
-architectures are excluded.
+This is a 4 fold x 3 model x 3 seed matrix: 36 fixed jobs. No architecture,
+context or checkpoint selection is permitted on a held-out combination.
 
-Every formal comparison uses seeds 1/2/3, 3000 fixed steps, the same optimizer,
-loss, origin, masks, future scenarios and a road-aware parameter-count
-tolerance of one percent. Context is fixed before producer data are opened:
-Markov 1; TCN, Transformer and diagonal SSM 3.
+## Sealed evaluation
 
-## Trajectory split
+Each held-out trajectory is evaluated separately on:
 
-The candidate source is:
+1. observed-state same-regime rolling h1-h3;
+2. autonomous pre-transition warning using the producer's physical penetration
+   criterion on predicted fields;
+3. true-observation reset at first hit followed by conditional h1-h3.
 
-    Umax_012_all_versions_20260729
+Metrics remain FEM eta0 centred: damage linear residuals; history, raw and
+active log residuals; absolute/own p99 support; area ratio; centroid and width;
+and deterministic missed/false transition warnings. Results are paired against
+the same-fold, same-seed Markov control.
 
-It contains the hard/soft initial-tip x 5/8-step loading-history 2x2 factorial.
-Presence was checked, but Agent3 did not audit mechanism completeness or infer a
-producer schema.
+## Claim boundary
 
-Training becomes eligible only after Agent2 validates and signs all four
-combinations and freezes leave-one-combination-out. Every cycle, reset and
-normalization statistic belonging to the held-out combination remains outside
-training. Multiple cycle windows from one combination never count as multiple
-trajectories.
-
-Passing this split would support only within-Hard5 factorial numerical-trajectory
-assessment. It would not establish independent-road, road-section, geometry or
+Passing this run can support only held-out-combination performance within one
+shared geometry, mesh, material, Umax and synthetic FEM family. It cannot
+support road-like LOTO, independent roads, real-road validation, geometry or
 material generalisation.
 
-## FEM-centred evaluation
-
-Every held-out trajectory is reported individually before aggregation against
-the same-seed Markov control. FEM eta0 remains the physical numerical reference.
-The required suite includes:
-
-- damage linear MAE/RMSE/correlation;
-- history, raw-driver and active-driver log10 MAE/RMSE/correlation;
-- area-weighted FEM absolute-p99 and own-p99 support IoU;
-- absolute support-area ratio, centroid offset and width error;
-- producer-declared event phase, warning lead, false warning and missed transition;
-- interval coverage/width, Brier score, calibration error and NLL when eligible.
-
-Unavailable uncertainty remains unavailable. Own-p99 measures localisation only
-and cannot be cited as amplitude recovery.
-
-## Long horizon
-
-Field output is rolling h1-h3 after each new observed/assimilated state.
-Longer-horizon output is scenario-conditioned transition hazard and RUL
-availability. Hazard/RUL remains unavailable unless every outer training fold
-contains both event and right-censored trajectories and uncertainty is
-calibrated. Whenever risk training is false, its report must also list inherited
-upstream readiness failures and these two risk-specific requirements. Unlimited
-free rollout is a stress diagnostic, not road prediction.
-
-## Exact training release gate
-
-Training may start only when all are true:
-
-1. Agent2 signed contract, split, schema id and SHA256 inventory are frozen.
-2. A reviewed Agent3 adapter verifies every bundle path/hash and emits four
-   unique within-Hard5 independence groups.
-3. All four trajectories cover all three sealed tasks and use compatible
-   observation/scenario contracts.
-4. Leave-one-combination-out folds pass leakage tests.
-5. The road-aware Markov/TCN/Transformer parameter manifest passes one percent;
-   diagonal SSM remains a non-promotable conditional reference.
-6. Seeds, fixed steps, optimizer, loss, origins, masks and scenarios are frozen.
-7. No held-out combination is used for normalization, checkpoint, context or
-   threshold selection.
-
-Until then, this package authorises only adapter/validator maintenance.
+Hazard/RUL remains unavailable because all four trajectories terminate in an
+event and uncertainty is uncalibrated. Unlimited recursive rollout is not a
+road long-horizon forecast.

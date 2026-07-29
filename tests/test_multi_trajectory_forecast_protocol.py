@@ -376,12 +376,13 @@ def test_core_manifest_excludes_nonranking_references() -> None:
     assert references["diagonal_ssm"]["promotable"] == "false"
 
 
-def test_published_not_ready_report_lists_explicit_risk_blockers() -> None:
+def test_published_report_lists_explicit_risk_blockers() -> None:
     package = ROOT / "docs" / "multi_trajectory_forecast_protocol_20260729"
     report = json.loads((package / "readiness_report.json").read_text())
     markdown = (package / "readiness_report.md").read_text(encoding="utf-8")
     assert not report["risk_training_allowed"]
-    assert any("trajectory readiness" in item for item in report["risk_blockers"])
+    if not report["training_allowed"]:
+        assert any("readiness" in item for item in report["risk_blockers"])
     assert any("calibrated uncertainty" in item for item in report["risk_blockers"])
     assert any("event and right-censored" in item for item in report["risk_blockers"])
     assert "## Hazard/RUL blockers\n\n- none" not in markdown

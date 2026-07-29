@@ -1,0 +1,4 @@
+family,ranking_role,context,local_dim,token_dim,temporal_width,transformer_heads,metadata_dim,parameter_count,target,relative_error,within_one_percent
+markov,formal_control,1,49,50,463,not_applicable,2,328818,329000,0.000553191489362,true
+tcn,finite_candidate,3,49,50,334,not_applicable,2,328745,329000,0.000775075987842,true
+transformer,finite_candidate,3,49,50,124,4,2,328863,329000,0.00041641337386,true

@@ -16,6 +16,11 @@ from multi_trajectory_forecast_protocol import (  # noqa: E402
     TrajectoryAdapterRegistry,
     assess_readiness,
 )
+from fem_multitrajectory_contract_adapter import (  # noqa: E402
+    ADAPTER_ID as AGENT2_ADAPTER_ID,
+    SCHEMA_ID as AGENT2_SCHEMA_ID,
+    load_agent2_factorial_loco_contract,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -86,6 +91,12 @@ def main() -> None:
     args = parse_args()
     protocol = json.loads(args.protocol.read_text(encoding="utf-8"))
     registry = TrajectoryAdapterRegistry()
+    if args.producer_adapter_id == AGENT2_ADAPTER_ID:
+        registry.register(
+            schema_id=AGENT2_SCHEMA_ID,
+            adapter_id=AGENT2_ADAPTER_ID,
+            loader=load_agent2_factorial_loco_contract,
+        )
     reference = FrozenTrajectoryContractRef(
         path=args.producer_contract,
         expected_sha256=args.producer_contract_sha256,

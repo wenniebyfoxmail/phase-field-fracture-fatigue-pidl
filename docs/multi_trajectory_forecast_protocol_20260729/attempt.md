@@ -1,44 +1,39 @@
-# Attempt: sealed multi-trajectory forecast reassessment
+# Attempt: signed factorial LOCO producer release
 
-## PIDL Experiment Gate
+## Experiment gate
 
-- Mechanism question: can the existing matched forecast families generalise across held-out within-Hard5 numerical trajectories for short propagation, transition warning and post-observation continuation?
-- Claim changed if success: a producer run may test held-out-trajectory forecasting under identical observations and scenarios.
-- Claim changed if failure: the present temporal results remain single-trajectory diagnostics and cannot support road prediction.
-- Cheaper diagnostic first: validate the producer contract, hashes, trajectory independence, task coverage and parameter plan before any optimisation.
-- Minimal output asset: sealed protocol, readiness report, model/metric registries and deterministic tests.
-- Code/producer alignment: Mac performs adapter and validation only; no training is launched.
-- Success criteria: a frozen reviewed task2 adapter, all four pre-registered independent factorial combinations, complete task coverage and a one-percent capacity match.
-- Failure criteria: missing contract, duplicate independence groups, incomplete tasks, conditioning mismatch or unverified capacity.
-- Registry destination: remain quarantined in this branch until a fair producer package exists.
-- Decision: diagnose first; training prohibited.
+- Question: do fixed graph-temporal models transfer across held-out initial-tip
+  and loading-history combinations under a shared FEM eta0 system?
+- Claim changed by success: short field propagation, deterministic transition
+  warning and post-observation continuation can be assessed across held-out
+  numerical combinations.
+- Claim unchanged: no road, material or geometry generalisation; no calibrated
+  hazard/RUL.
+- Cheap diagnostic: verify Agent2 package hashes, embedded bundle/split hashes,
+  exact four-trajectory inventory, task coverage and 1% parameter counts.
+- Minimal producer asset: 36 fixed run manifests plus per-heldout FEM-centred
+  tables and representative fields.
+- Success: every fold/model/seed completes with finite loss/gradients and the
+  sealed metrics can be paired to Markov.
+- Failure: any contract/hash/leakage/capacity drift or non-finite producer run.
 
-## Contract search
+## Completed prelaunch checks
 
-No Agent/FEM task2 signed multi-trajectory contract/split was present in the
-registered worktrees or recent shared branches on 2026-07-29. The existing
-road_observation_state_bundle_v1 c87 package is a single-state/single-trajectory
-handoff and is not substituted for the missing producer contract.
+1. Cherry-picked Agent2 commit `90cf8a3` as immutable provenance.
+2. Verified every file listed in Agent2 `HASHES.sha256`.
+3. Recomputed each factorial bundle's embedded canonical manifest hash.
+4. Recomputed the LOCO embedded lock and verified complete-trajectory folds.
+5. Confirmed 4 eligible trajectories and 348 eligible states; Umax sensitivity
+   bundles are excluded.
+6. Generated a 398 MB materialised dataset with source-shard hash checks and a
+   second package-level `HASHES.sha256`; all assets pass.
+7. Frozen the 36-job Markov/TCN/Transformer matrix; all parameter errors are
+   below 0.1%.
+8. Readiness result: field/transition/reset training ready; risk training false.
 
-The directory
-Umax_012_all_versions_20260729 exists and contains the four candidate hard/soft
-initial-tip x 5/8-step loading-history combinations. File presence is not a
-mechanism-completeness audit. Agent3 records the source as pending and does not
-count any combination until Agent2 signs the bundle hashes and
-leave-one-combination-out split.
+## Producer status
 
-## Adopted design
-
-Agent3 uses an opaque contract reference plus a reviewed adapter registry. It
-does not inspect an unknown producer file merely to infer a likely schema.
-Adapters emit an Agent3-normalized inventory containing trajectory identity,
-independence group, bundle hash, physics reference, task coverage and
-uncertainty/outcome status. The producer's field names remain owned by task2.
-
-The formal model set is frozen to Markov, TCN and Transformer, with diagonal SSM
-retained only as a conditional-propagation reference. No training or architecture
-sweep belongs to this attempt.
-
-If the four combinations pass Agent2's gate, the strongest allowed claim scope
-is within-Hard5 factorial numerical-trajectory generalisation. They are not
-independent roads and do not test geometry or material generalisation.
+No Mac optimisation is permitted. Taobo was probed after the local gates, but
+the first SSH attempt was reset during key exchange. A launch is recorded only
+after a fresh remote directory, exact code commit, GPU, PID and log are
+available.

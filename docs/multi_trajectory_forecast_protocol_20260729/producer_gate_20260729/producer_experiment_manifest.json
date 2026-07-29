@@ -1,0 +1,666 @@
+{
+  "agent2_commit": "90cf8a3703d03609ad7daf066d04ab051c2f7500",
+  "claim_blocks": [
+    "independent roads",
+    "road-like LOTO",
+    "real-road validation",
+    "geometry generalization",
+    "material generalization",
+    "calibrated hazard/RUL"
+  ],
+  "claim_scope": "within-Hard5 shared-geometry numerical factorial only",
+  "contract_file_sha256": "c32b594559362bf7b7a7b4892e74f8d1001bb8d5ac88c3a3776a8e8333aa57df",
+  "contract_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/temporal-graph-transformer/analysis/fem_multitrajectory_contract_20260729/RUN_MANIFEST.json",
+  "job_count": 36,
+  "jobs": [
+    {
+      "context": 1,
+      "family": "markov",
+      "fold_id": "holdout_combination::factorial_soft_8step_u012",
+      "held_out_trajectory_id": "factorial_soft_8step_u012",
+      "job_id": "factorial_soft_8step_u012__markov__seed1",
+      "parameter_count": 328818,
+      "seed": 1,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 1,
+      "family": "markov",
+      "fold_id": "holdout_combination::factorial_soft_8step_u012",
+      "held_out_trajectory_id": "factorial_soft_8step_u012",
+      "job_id": "factorial_soft_8step_u012__markov__seed2",
+      "parameter_count": 328818,
+      "seed": 2,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 1,
+      "family": "markov",
+      "fold_id": "holdout_combination::factorial_soft_8step_u012",
+      "held_out_trajectory_id": "factorial_soft_8step_u012",
+      "job_id": "factorial_soft_8step_u012__markov__seed3",
+      "parameter_count": 328818,
+      "seed": 3,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "tcn",
+      "fold_id": "holdout_combination::factorial_soft_8step_u012",
+      "held_out_trajectory_id": "factorial_soft_8step_u012",
+      "job_id": "factorial_soft_8step_u012__tcn__seed1",
+      "parameter_count": 328745,
+      "seed": 1,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "tcn",
+      "fold_id": "holdout_combination::factorial_soft_8step_u012",
+      "held_out_trajectory_id": "factorial_soft_8step_u012",
+      "job_id": "factorial_soft_8step_u012__tcn__seed2",
+      "parameter_count": 328745,
+      "seed": 2,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "tcn",
+      "fold_id": "holdout_combination::factorial_soft_8step_u012",
+      "held_out_trajectory_id": "factorial_soft_8step_u012",
+      "job_id": "factorial_soft_8step_u012__tcn__seed3",
+      "parameter_count": 328745,
+      "seed": 3,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "transformer",
+      "fold_id": "holdout_combination::factorial_soft_8step_u012",
+      "held_out_trajectory_id": "factorial_soft_8step_u012",
+      "job_id": "factorial_soft_8step_u012__transformer__seed1",
+      "parameter_count": 328863,
+      "seed": 1,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "transformer",
+      "fold_id": "holdout_combination::factorial_soft_8step_u012",
+      "held_out_trajectory_id": "factorial_soft_8step_u012",
+      "job_id": "factorial_soft_8step_u012__transformer__seed2",
+      "parameter_count": 328863,
+      "seed": 2,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "transformer",
+      "fold_id": "holdout_combination::factorial_soft_8step_u012",
+      "held_out_trajectory_id": "factorial_soft_8step_u012",
+      "job_id": "factorial_soft_8step_u012__transformer__seed3",
+      "parameter_count": 328863,
+      "seed": 3,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 1,
+      "family": "markov",
+      "fold_id": "holdout_combination::factorial_soft_5step_u012",
+      "held_out_trajectory_id": "factorial_soft_5step_u012",
+      "job_id": "factorial_soft_5step_u012__markov__seed1",
+      "parameter_count": 328818,
+      "seed": 1,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 1,
+      "family": "markov",
+      "fold_id": "holdout_combination::factorial_soft_5step_u012",
+      "held_out_trajectory_id": "factorial_soft_5step_u012",
+      "job_id": "factorial_soft_5step_u012__markov__seed2",
+      "parameter_count": 328818,
+      "seed": 2,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 1,
+      "family": "markov",
+      "fold_id": "holdout_combination::factorial_soft_5step_u012",
+      "held_out_trajectory_id": "factorial_soft_5step_u012",
+      "job_id": "factorial_soft_5step_u012__markov__seed3",
+      "parameter_count": 328818,
+      "seed": 3,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "tcn",
+      "fold_id": "holdout_combination::factorial_soft_5step_u012",
+      "held_out_trajectory_id": "factorial_soft_5step_u012",
+      "job_id": "factorial_soft_5step_u012__tcn__seed1",
+      "parameter_count": 328745,
+      "seed": 1,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "tcn",
+      "fold_id": "holdout_combination::factorial_soft_5step_u012",
+      "held_out_trajectory_id": "factorial_soft_5step_u012",
+      "job_id": "factorial_soft_5step_u012__tcn__seed2",
+      "parameter_count": 328745,
+      "seed": 2,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "tcn",
+      "fold_id": "holdout_combination::factorial_soft_5step_u012",
+      "held_out_trajectory_id": "factorial_soft_5step_u012",
+      "job_id": "factorial_soft_5step_u012__tcn__seed3",
+      "parameter_count": 328745,
+      "seed": 3,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "transformer",
+      "fold_id": "holdout_combination::factorial_soft_5step_u012",
+      "held_out_trajectory_id": "factorial_soft_5step_u012",
+      "job_id": "factorial_soft_5step_u012__transformer__seed1",
+      "parameter_count": 328863,
+      "seed": 1,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "transformer",
+      "fold_id": "holdout_combination::factorial_soft_5step_u012",
+      "held_out_trajectory_id": "factorial_soft_5step_u012",
+      "job_id": "factorial_soft_5step_u012__transformer__seed2",
+      "parameter_count": 328863,
+      "seed": 2,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "transformer",
+      "fold_id": "holdout_combination::factorial_soft_5step_u012",
+      "held_out_trajectory_id": "factorial_soft_5step_u012",
+      "job_id": "factorial_soft_5step_u012__transformer__seed3",
+      "parameter_count": 328863,
+      "seed": 3,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_hard_8step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 1,
+      "family": "markov",
+      "fold_id": "holdout_combination::factorial_hard_8step_u012",
+      "held_out_trajectory_id": "factorial_hard_8step_u012",
+      "job_id": "factorial_hard_8step_u012__markov__seed1",
+      "parameter_count": 328818,
+      "seed": 1,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 1,
+      "family": "markov",
+      "fold_id": "holdout_combination::factorial_hard_8step_u012",
+      "held_out_trajectory_id": "factorial_hard_8step_u012",
+      "job_id": "factorial_hard_8step_u012__markov__seed2",
+      "parameter_count": 328818,
+      "seed": 2,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 1,
+      "family": "markov",
+      "fold_id": "holdout_combination::factorial_hard_8step_u012",
+      "held_out_trajectory_id": "factorial_hard_8step_u012",
+      "job_id": "factorial_hard_8step_u012__markov__seed3",
+      "parameter_count": 328818,
+      "seed": 3,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "tcn",
+      "fold_id": "holdout_combination::factorial_hard_8step_u012",
+      "held_out_trajectory_id": "factorial_hard_8step_u012",
+      "job_id": "factorial_hard_8step_u012__tcn__seed1",
+      "parameter_count": 328745,
+      "seed": 1,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "tcn",
+      "fold_id": "holdout_combination::factorial_hard_8step_u012",
+      "held_out_trajectory_id": "factorial_hard_8step_u012",
+      "job_id": "factorial_hard_8step_u012__tcn__seed2",
+      "parameter_count": 328745,
+      "seed": 2,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "tcn",
+      "fold_id": "holdout_combination::factorial_hard_8step_u012",
+      "held_out_trajectory_id": "factorial_hard_8step_u012",
+      "job_id": "factorial_hard_8step_u012__tcn__seed3",
+      "parameter_count": 328745,
+      "seed": 3,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "transformer",
+      "fold_id": "holdout_combination::factorial_hard_8step_u012",
+      "held_out_trajectory_id": "factorial_hard_8step_u012",
+      "job_id": "factorial_hard_8step_u012__transformer__seed1",
+      "parameter_count": 328863,
+      "seed": 1,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "transformer",
+      "fold_id": "holdout_combination::factorial_hard_8step_u012",
+      "held_out_trajectory_id": "factorial_hard_8step_u012",
+      "job_id": "factorial_hard_8step_u012__transformer__seed2",
+      "parameter_count": 328863,
+      "seed": 2,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "transformer",
+      "fold_id": "holdout_combination::factorial_hard_8step_u012",
+      "held_out_trajectory_id": "factorial_hard_8step_u012",
+      "job_id": "factorial_hard_8step_u012__transformer__seed3",
+      "parameter_count": 328863,
+      "seed": 3,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_5step_u012"
+      ]
+    },
+    {
+      "context": 1,
+      "family": "markov",
+      "fold_id": "holdout_combination::factorial_hard_5step_u012",
+      "held_out_trajectory_id": "factorial_hard_5step_u012",
+      "job_id": "factorial_hard_5step_u012__markov__seed1",
+      "parameter_count": 328818,
+      "seed": 1,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012"
+      ]
+    },
+    {
+      "context": 1,
+      "family": "markov",
+      "fold_id": "holdout_combination::factorial_hard_5step_u012",
+      "held_out_trajectory_id": "factorial_hard_5step_u012",
+      "job_id": "factorial_hard_5step_u012__markov__seed2",
+      "parameter_count": 328818,
+      "seed": 2,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012"
+      ]
+    },
+    {
+      "context": 1,
+      "family": "markov",
+      "fold_id": "holdout_combination::factorial_hard_5step_u012",
+      "held_out_trajectory_id": "factorial_hard_5step_u012",
+      "job_id": "factorial_hard_5step_u012__markov__seed3",
+      "parameter_count": 328818,
+      "seed": 3,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "tcn",
+      "fold_id": "holdout_combination::factorial_hard_5step_u012",
+      "held_out_trajectory_id": "factorial_hard_5step_u012",
+      "job_id": "factorial_hard_5step_u012__tcn__seed1",
+      "parameter_count": 328745,
+      "seed": 1,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "tcn",
+      "fold_id": "holdout_combination::factorial_hard_5step_u012",
+      "held_out_trajectory_id": "factorial_hard_5step_u012",
+      "job_id": "factorial_hard_5step_u012__tcn__seed2",
+      "parameter_count": 328745,
+      "seed": 2,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "tcn",
+      "fold_id": "holdout_combination::factorial_hard_5step_u012",
+      "held_out_trajectory_id": "factorial_hard_5step_u012",
+      "job_id": "factorial_hard_5step_u012__tcn__seed3",
+      "parameter_count": 328745,
+      "seed": 3,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "transformer",
+      "fold_id": "holdout_combination::factorial_hard_5step_u012",
+      "held_out_trajectory_id": "factorial_hard_5step_u012",
+      "job_id": "factorial_hard_5step_u012__transformer__seed1",
+      "parameter_count": 328863,
+      "seed": 1,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "transformer",
+      "fold_id": "holdout_combination::factorial_hard_5step_u012",
+      "held_out_trajectory_id": "factorial_hard_5step_u012",
+      "job_id": "factorial_hard_5step_u012__transformer__seed2",
+      "parameter_count": 328863,
+      "seed": 2,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012"
+      ]
+    },
+    {
+      "context": 3,
+      "family": "transformer",
+      "fold_id": "holdout_combination::factorial_hard_5step_u012",
+      "held_out_trajectory_id": "factorial_hard_5step_u012",
+      "job_id": "factorial_hard_5step_u012__transformer__seed3",
+      "parameter_count": 328863,
+      "seed": 3,
+      "status": "producer_ready_not_launched",
+      "steps": 3000,
+      "train_trajectory_ids": [
+        "factorial_soft_8step_u012",
+        "factorial_soft_5step_u012",
+        "factorial_hard_8step_u012"
+      ]
+    }
+  ],
+  "loco_internal_lock_sha256": "5904af500cde315d8ee9f9087d3f5088c03b59b76cf23f8fbf7b80f6c3fb1691",
+  "loco_split_file_sha256": "f19b8065cc2d7f79f6f3b89087db3b8a918402c44ad8aba7e6e5d3e7cde9fb3a",
+  "loco_split_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/temporal-graph-transformer/analysis/fem_multitrajectory_contract_20260729/within_hard5_factorial_loco_split_lock_v1.json",
+  "loss": "shared temporal_mechanism_loss, 3-step autoregressive exposure",
+  "manifest_id": "factorial_loco_graph_temporal_v1",
+  "models": {
+    "markov": {
+      "context": 1,
+      "local_dim": 49,
+      "metadata_dim": 2,
+      "parameter_breakdown": {
+        "decoder": 15891,
+        "encoder": 51282,
+        "temporal": 261645,
+        "total": 328818,
+        "trainable": 328818
+      },
+      "parameter_count": 328818,
+      "relative_error": 0.0005531914893617022,
+      "temporal_width": 463,
+      "token_dim": 50,
+      "transformer_heads": 4
+    },
+    "tcn": {
+      "context": 3,
+      "local_dim": 49,
+      "metadata_dim": 2,
+      "parameter_breakdown": {
+        "decoder": 15891,
+        "encoder": 51282,
+        "temporal": 261572,
+        "total": 328745,
+        "trainable": 328745
+      },
+      "parameter_count": 328745,
+      "relative_error": 0.0007750759878419452,
+      "temporal_width": 334,
+      "token_dim": 50,
+      "transformer_heads": 4
+    },
+    "transformer": {
+      "context": 3,
+      "local_dim": 49,
+      "metadata_dim": 2,
+      "parameter_breakdown": {
+        "decoder": 15891,
+        "encoder": 51282,
+        "temporal": 261690,
+        "total": 328863,
+        "trainable": 328863
+      },
+      "parameter_count": 328863,
+      "relative_error": 0.00041641337386018237,
+      "temporal_width": 124,
+      "token_dim": 50,
+      "transformer_heads": 4
+    }
+  },
+  "optimizer": {
+    "lr": 0.0003,
+    "name": "AdamW",
+    "weight_decay": 1e-06
+  },
+  "producer_adapter_id": "agent2_factorial_loco_v1",
+  "producer_schema_id": "fem_multitrajectory_contract_v1",
+  "risk_heads": "absent; calibrated hazard/RUL unavailable",
+  "seeds": [
+    1,
+    2,
+    3
+  ],
+  "status": "producer_ready_not_launched",
+  "steps": 3000
+}
