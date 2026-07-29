@@ -48,6 +48,7 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 - add: `analysis/road_measurement_operator_identifiability_v1_20260729/decision.md` - Integrated executable measurement operators and identifiability ladder; real-road evidence remains missing
 - add: `docs/pi_transfer_controls_20260729/decision.md` - Integrated corrected scaling, F1a dimensional replay and F2 BC negative control; retained fresh F1b solve as blocker
 - add: `analysis/fem_multitrajectory_contract_20260729/decision.md` - Integrated validated 4-cell Hard5 factorial LOCO bundle while keeping road-like LOTO at 0/3
+- add: `docs/multi_trajectory_forecast_protocol_20260729/decision.md` - Integrated sealed Markov TCN Transformer protocol and explicit hazard RUL blockers; producer training awaits signed bundle consumption
 
 ## Input Assets
 - `docs/road_rescaling_bridge_20260724/independent_review.md` (independent scale-transfer review; exists)
@@ -62,6 +63,7 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 - pass: observation_interface_integration - 48 passed and 1 optional dependency test skipped; identifiability blocker cleared while real-road-data blocker remains.
 - pass: scaling_control_integration - 41 passed; F2 blocker cleared, but exact-Pi positive control remains blocked because F1 used archived dimensional replay rather than a fresh solver run.
 - pass: fem_bundle_and_scope_gate - 43 passed; within-Hard5 factorial training is ready, road-like training remains false, and the gate preserves a separate fewer_than_three_road_like_trajectories blocker.
+- pass: forecast_protocol_integration - 66 passed and 2 optional fixture tests skipped; no training result is claimed yet.
 
 ## Result Interpretation
 Not recorded.
