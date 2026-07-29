@@ -1,0 +1,170 @@
+{
+  "analysis": "F1b_exact_pi_solver_invariance_v2",
+  "status_before_run": "producer_ready_not_executed",
+  "claim": "fresh dimensional FEM solver invariance only",
+  "reference": {
+    "case": "formal eta0 SENS hard-recovery explicit-8-step",
+    "E": 1.0,
+    "nu": 0.3,
+    "Gc": 0.01,
+    "ell": 0.01,
+    "L": 1.0,
+    "H": 1.0,
+    "thickness": 1.0,
+    "a0": 0.5,
+    "Umax": 0.12,
+    "alpha_T": 0.5,
+    "w1": 1.0,
+    "eta": 0.0,
+    "R": 0.0,
+    "plane_state": "plane_strain",
+    "pff_model": "AT1",
+    "energy_split": "AMOR",
+    "boundary_condition": "top_bottom_ux_clamp_reverse_bc",
+    "initial_crack": "non_hom_pf_then_zero_load_hard_recovery",
+    "loading": "cyclic_explicit_8_step_loading_unloading",
+    "first_hit_cycle": 86,
+    "confirmed_cycle": 89,
+    "event_rule": "x>=0.48,d>=0.95,>=3nodes,3_post_hit_confirmation_cycles",
+    "state_semantics": "cycle-peak raw plus cycle-output damage/history"
+  },
+  "candidate": {
+    "E": 3.0,
+    "nu": 0.3,
+    "Gc": 0.3,
+    "ell": 0.1,
+    "L": 10.0,
+    "H": 10.0,
+    "thickness": 10.0,
+    "a0": 5.0,
+    "Umax": 1.2,
+    "alpha_T": 1.5,
+    "w1": 3.0,
+    "eta": 0.0,
+    "R": 0.0,
+    "plane_state": "plane_strain",
+    "pff_model": "AT1",
+    "energy_split": "AMOR",
+    "boundary_condition": "top_bottom_ux_clamp_reverse_bc",
+    "initial_crack": "non_hom_pf_then_zero_load_hard_recovery",
+    "loading": "cyclic_explicit_8_step_loading_unloading",
+    "event_rule": "x>=4.8,d>=0.95,>=3nodes,3_post_hit_confirmation_cycles",
+    "state_semantics": "cycle-peak raw plus cycle-output damage/history"
+  },
+  "matched_dimensionless_groups": {
+    "ell_over_L": 0.01,
+    "H_over_L": 1.0,
+    "thickness_over_L": 1.0,
+    "a0_over_L": 0.5,
+    "h_over_ell": "exactly matched by tenfold coordinate scaling of the same mesh topology",
+    "Gc_over_E_ell": 1.0,
+    "alpha_T_over_w1": 0.5,
+    "E_U_over_L_squared_over_w1": 0.0144,
+    "nu": 0.3,
+    "eta": 0.0,
+    "R": 0.0
+  },
+  "numerical_contract": {
+    "mesh_transform": "same nodes/connectivity with x,y multiplied by 10",
+    "reference_force_residual_scale": 1.0,
+    "candidate_force_residual_scale": 300.0,
+    "reference_energy_residual_scale": 1.0,
+    "candidate_energy_residual_scale": 3000.0,
+    "tol_displ_dimensionless": 1e-6,
+    "reference_tol_displ_dimensional": 1e-6,
+    "candidate_tol_displ_dimensional": 0.0003,
+    "tol_phase_field_dimensionless": 0.0004,
+    "reference_tol_phase_field_dimensional": 0.0004,
+    "candidate_tol_phase_field_dimensional": 1.2,
+    "tol_staggered_dimensionless": 0.0004,
+    "staggered_rule": "norm(R_u)/force_scale + norm(R_d)/energy_scale <= 4e-4",
+    "reference_regularization_floor_dimensional": 1e-8,
+    "candidate_regularization_floor_dimensional": 3e-5,
+    "regularization_floor_dimensionless": 1e-8,
+    "max_iter_displ": 250,
+    "max_iter_phase_field": 250,
+    "max_iter_staggered": 1000,
+    "cycle_jump": false,
+    "max_cycle": 120,
+    "inactive_controls": {
+      "line_search": "disabled; line-search thresholds do not enter this run",
+      "cycle_jump": "disabled; jump tolerances do not enter this run",
+      "PF_CZM_damping": "inactive for AT1/AMOR"
+    },
+    "dimensionless_controls_retained": {
+      "tol_AT1_recovery": 0.001,
+      "tol_irreversibility": 0.001,
+      "damage_upper_bound": 1.0,
+      "crack_threshold": 0.95,
+      "minimum_hit_nodes": 3,
+      "confirmation_cycles": 3
+    },
+    "controlled_numerical_mismatches": [
+      "floating-point eps in the Kt diagnostic denominator; diagnostic only and not used by field evolution or event detection"
+    ],
+    "note": "Every active dimensional residual tolerance and hard-recovery tangent regularization floor is scaled to preserve the normalized numerical problem. The upstream dimensionally inconsistent staggered sum is overridden by the locked dimensionless rule."
+  },
+  "required_candidate_outputs": [
+    "F1B_INPUT_SNAPSHOT.json",
+    "F1B_PRODUCER_PROVENANCE.json",
+    "F1B_EVENT_METADATA.json",
+    "f1b_event_trace.dat",
+    "f1b_mesh_geometry.mat",
+    "psi_fields/cycle_0020.mat",
+    "psi_fields/cycle_0040.mat",
+    "psi_fields/cycle_0060.mat",
+    "psi_fields/<first_hit_cycle>.mat",
+    "psi_fields/<confirmed_cycle>.mat"
+  ],
+  "reference_provenance": {
+    "hard8_initial_state_metadata_sha256": "cd9a967582930ed99f1076900e7e0ca2a2bb23c61edaf43b0b7d397fbebba968",
+    "hard8_package_manifest_sha256": "0a3216a40a938fc5002a0228195282cb2f10b48f639b753daa09bf5b7861c5cd",
+    "cycle_0020_sha256": "8163dc4e5b1dd285c245abc657c17747607198363b398c8a42ac1f40ddec61bc",
+    "cycle_0040_sha256": "727f291ce276de5c2784fab4b7ee7322f3f8ad435319019016849273310e6779",
+    "cycle_0060_sha256": "80714486781b44b06828cb2e521fef9f5139263c026735aba2e7b2e1457bf01e",
+    "cycle_0086_sha256": "6bf07f65d20c6a1fe63127a1ce27765f2cf330f8f4cf7dc043c07e8560ef0220",
+    "cycle_0089_sha256": "681f2b2ba75ce2baca81aada968765e92d361c83f95821e8dfd2031f3535b90d"
+  },
+  "solver_provenance": {
+    "base_solver_snapshot_sha256": "ae1aa2ff4114c67b166e39b377e08a0d7e28761bb0afa038a388e1eb026e9252",
+    "base_newton_snapshot_sha256": "20afff63d79eeffd3e6a502b996485e47f64a3b550e19b396cd1bf90120ad76d",
+    "base_staggered_post_update_sha256": "c9ebc6e87ddc1e6340a6fe077903241656feedea5220488035fb49e3efe55831",
+    "base_input_sens_sha256": "3cc4ba07cf4b0d5a556457567b719c633e65a3519e1a734ddea00c608c292353",
+    "base_init_fatigue_sha256": "96365b7f0b6ecf02cd0e2209765310f29122f503b5c2272240f84fb24ea4098d",
+    "locked_derivative": "solve_fatigue_fracture_f1b.m",
+    "allowed_derivative_scope": "absolute output path, scaled far-field diagnostics, event export, dimensionally scaled Newton tolerances/regularization, and a dimensionless staggered convergence override; physical residual assembly and constitutive evolution remain unchanged"
+  },
+  "acceptance": {
+    "fresh_fem_solve_must_be_true": true,
+    "candidate_output_root_must_be_new": true,
+    "event_cycle_absolute_error_max": 1,
+    "normalized_fields": ["alpha", "alpha_bar_over_w1", "raw_over_w1", "active_over_w1"],
+    "same_cycle_comparisons": [20, 40, 60],
+    "own_event_comparisons": {
+      "first_hit": {"reference_cycle": 86, "candidate_cycle": "reported_first_hit_cycle"},
+      "confirmed": {"reference_cycle": 89, "candidate_cycle": "reported_confirmed_cycle"}
+    },
+    "field_gates": {
+      "alpha_linear": {"area_weighted_mae_max": 0.002, "area_weighted_rmse_max": 0.005, "correlation_min": 0.995},
+      "history_log10": {"area_weighted_mae_max": 0.05, "area_weighted_rmse_max": 0.1, "correlation_min": 0.99},
+      "raw_log10": {"area_weighted_mae_max": 0.05, "area_weighted_rmse_max": 0.1, "correlation_min": 0.99},
+      "active_log10": {"area_weighted_mae_max": 0.05, "area_weighted_rmse_max": 0.1, "correlation_min": 0.99}
+    },
+    "active_support_gates": {
+      "threshold": "area-weighted reference p99 at each comparison state",
+      "absolute_support_iou_min": 0.9,
+      "support_area_ratio_min": 0.9,
+      "support_area_ratio_max": 1.1,
+      "centroid_offset_max": "one reference active-support cell diameter, sqrt(area-weighted median support-cell area)"
+    },
+    "gate_basis": "Field thresholds are an engineering solver-invariance gate, not floating-point identity: alpha limits are five to twelve-and-a-half times the normalized phase residual tolerance; log-field limits allow at most 0.05 decades mean and 0.10 decades RMS; support may shift by no more than one local process-zone cell; event timing may differ by one explicitly resolved cycle.",
+    "gate_policy": "Any failed event or field criterion fails F1b; no threshold relaxation after seeing results."
+  },
+  "prohibited_claims": [
+    "road validation",
+    "traffic-cycle mapping",
+    "layered-pavement validation",
+    "temperature or rate transfer",
+    "PIDL training result"
+  ]
+}

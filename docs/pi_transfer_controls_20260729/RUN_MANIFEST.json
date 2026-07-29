@@ -1,22 +1,24 @@
 {
   "analysis": "corrected_pi_transfer_controls_v1",
-  "claim_boundary": "F1 validates dimensional replay and normalization, not a fresh solver; F2 proves scalar Pi groups are insufficient when BC/model form changes.",
+  "claim_boundary": "F1a validates dimensional replay and normalization only; F1b fresh-solver invariance is blocked; F2 proves scalar Pi groups are insufficient when BC/model form changes.",
   "companion_assets": [
     {
       "path": "00_gate.md",
-      "sha256": "a629799b16635cb014e74f91b15589c71eb5be940104a03835c18e7877b0478d"
+      "sha256": "25e64bb1fc045fa6838c4e2302a0125dc462e1aeb8ab063ffb3f9a6f297ba1e9"
     },
     {
       "path": "decision.md",
-      "sha256": "ed8095281007fc81e17aefd9e634a8eb8434e08c1e51b4a69df62ab382b028c2"
+      "sha256": "8086e72d676d4119cf7595c7923e1839fa92c34b9c27b2f601214c07362fe387"
     }
   ],
   "cycle_to_traffic_mapping": false,
   "f1_event_cycle_candidate": 89,
   "f1_event_cycle_reference": 89,
-  "f1_evidence_class": "archived FEM exact-dimensional replay",
-  "f1_exact_pi_pass": true,
-  "f1_field_roundtrip_max_abs": 1.7763568394002505e-15,
+  "f1a_evidence_class": "archived FEM exact-dimensional replay",
+  "f1a_field_roundtrip_max_abs": 1.7763568394002505e-15,
+  "f1a_scaling_io_pass": true,
+  "f1b_solver_invariance_pass": false,
+  "f1b_status": "blocked_no_confirmed_windows_fem_producer",
   "f2_boundary_condition_status": "mismatched",
   "f2_delta_cycle": -8,
   "f2_event_cycle_candidate": 74,
@@ -25,7 +27,7 @@
   "f2_raw_active_status": "unobservable in FEM7 c82 archive",
   "f2_scalar_pi_pass": true,
   "fresh_fem_solve": false,
-  "git_sha_at_execution": "14b57591d365836b7a98111e0f5c8fdc30cb9c84",
+  "git_sha_at_execution": "9e0d6a88b2ca0f1d7f7cc556c5cd99d7971a1145",
   "input_assets": [
     {
       "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/extracted/SENS_brittle_base_cyclic_u012_recovery_fatigueon_pidlstop_newtontol4em4/fields_000089_008.vtk",

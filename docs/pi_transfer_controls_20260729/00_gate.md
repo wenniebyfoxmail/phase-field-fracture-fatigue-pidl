@@ -37,7 +37,7 @@
 
 ## Acceptance Gates
 
-### F1 exact-Pi positive control
+### F1a exact-Pi scaling/I-O control
 
 - `ell/L`, `h/ell`, `G_c/(E ell)`, `alpha_T/w1`,
   `E(U/L)^2/w1`, `nu`, `eta`, `R`, plane state, PFF model, energy split, BC,
@@ -47,8 +47,12 @@
 - Area-weighted normalized `alpha`, `alpha_bar/w1`, `raw/w1`, and `active/w1`
   pass at every locked cycle with `max_abs <= 1e-12`, `MAE <= 1e-13`, and
   correlation `== 1` within floating-point tolerance.
-- Event phase/cycle maps to `c89 -> c89`; this is replay consistency, not event
-  prediction.
+- Event phase/cycle maps to `c89 -> c89` by construction; this is replay
+  consistency, not a solver-invariance result or event prediction.
+
+F1b is a separate fresh-solver gate under
+`docs/f1b_exact_pi_solver_invariance_20260729/` and is not passed by any F1a
+metric.
 
 ### F2 BC negative control
 
@@ -67,4 +71,3 @@
 - Legacy `w1 = c_w G_c/ell` remains provenance only and cannot be promoted.
 - No result may be described as a road, layered-pavement, temperature/rate, or
   traffic-cycle validation.
-

@@ -13,7 +13,7 @@ The legacy `w1 = c_w G_c/ell` convention remains quarantine provenance only,
 because `compute_energy.py` already applies the `1/c_w` factor inside the
 phase-field functional.
 
-## F1: Exact-Pi Positive Control
+## F1a: Exact-Pi Scaling/I-O Diagnostic
 
 F1 used an archived eta0 FEM trajectory at `c20/c40/c60/c89` and replayed its
 fields through two dimensional realizations:
@@ -45,9 +45,10 @@ largest error over all four cycles was `1.7764e-15`; all area-weighted MAEs
 were below `1e-13` and correlations were one to floating-point tolerance.
 The event-state map is `c89 -> c89` by construction.
 
-This is an **archived FEM exact-dimensional replay**. It validates the scaling,
-normalization, and field-I/O path. It is not a fresh dimensional FEM solve and
-therefore does not yet demonstrate independent solver invariance.
+This is an **archived FEM exact-dimensional replay**. It validates only the
+scaling, normalization, and field-I/O path. It does not satisfy F1b independent
+solver invariance; the c89 event is inherited by construction. F1b remains
+blocked pending an approved Windows-FEM producer output.
 
 ## F2: BC Negative Control
 

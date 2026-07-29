@@ -28,6 +28,7 @@
       "nu": 0.3,
       "pff_model": "AT1",
       "plane_condition": "plane_strain",
+      "thickness_over_L": 1.0,
       "u_max_over_u_ref": 0.12,
       "w1": 1.0,
       "w1_norm": 1.0
@@ -58,6 +59,7 @@
       "pff_model": "AT1",
       "plane_condition": "plane_strain",
       "residual_stiffness": 0.0,
+      "thickness_phys": 10.0,
       "u_max_phys": 1.1999999999999997
     },
     "scales": {
@@ -97,6 +99,7 @@
       "nu": 0.3,
       "pff_model": "AT1",
       "plane_condition": "plane_strain",
+      "thickness_over_L": 1.0,
       "u_max_over_u_ref": 0.12,
       "w1": 1.0,
       "w1_norm": 1.0
@@ -127,6 +130,7 @@
       "pff_model": "AT1",
       "plane_condition": "plane_strain",
       "residual_stiffness": 0.0,
+      "thickness_phys": 1.0,
       "u_max_phys": 0.12
     },
     "scales": {
@@ -166,6 +170,7 @@
       "nu": 0.3,
       "pff_model": "AT1",
       "plane_condition": "plane_strain",
+      "thickness_over_L": 1.0,
       "u_max_over_u_ref": 0.12,
       "w1": 1.0,
       "w1_norm": 1.0
@@ -196,6 +201,7 @@
       "pff_model": "AT1",
       "plane_condition": "plane_strain",
       "residual_stiffness": 0.0,
+      "thickness_phys": 1.0,
       "u_max_phys": 0.12
     },
     "scales": {
@@ -235,6 +241,7 @@
       "nu": 0.3,
       "pff_model": "AT1",
       "plane_condition": "plane_strain",
+      "thickness_over_L": 1.0,
       "u_max_over_u_ref": 0.12,
       "w1": 1.0,
       "w1_norm": 1.0
@@ -265,6 +272,7 @@
       "pff_model": "AT1",
       "plane_condition": "plane_strain",
       "residual_stiffness": 0.0,
+      "thickness_phys": 1.0,
       "u_max_phys": 0.12
     },
     "scales": {

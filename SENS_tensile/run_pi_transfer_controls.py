@@ -83,7 +83,7 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
             if key not in fields:
                 fields.append(key)
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -202,6 +202,7 @@ def _toy_realization(
         u_max_phys=0.12,
         alpha_T_phys=0.5,
         mesh_h_phys=0.01,
+        thickness_phys=1.0,
         residual_stiffness=0.0,
         R_ratio=0.0,
         pff_model="AT1",
@@ -223,6 +224,7 @@ def _physical_exact_realization() -> PhaseFieldScaling:
         ell_phys=0.1,
         L_phys=10.0,
         h_over_ell=1.0,
+        thickness_over_L=1.0,
         boundary_condition="top_bottom_ux_clamp_reverse_bc",
         energy_split="amor",
         geometry_form="homogeneous_sent_square_void_notch",
@@ -538,7 +540,7 @@ def _make_figure(
             cmap="coolwarm", vmin=-residual_max, vmax=residual_max,
         )
     fig.suptitle(
-        "Corrected Pi-transfer controls: exact dimensional replay and BC negative control",
+        "Corrected Pi-transfer controls: F1a dimensional replay and BC negative control",
         fontsize=12,
     )
     fig.savefig(path, dpi=180)
@@ -588,7 +590,7 @@ def main() -> None:
             "reference_phase": "archived FEM c89 confirmed event",
             "candidate_phase": "same archived state after dimensional round trip",
             "status": "matched",
-            "note": "replay control; not an independent event prediction",
+            "note": "F1a replay by construction; not an independent solver event",
         },
         *f2_events,
     ]
@@ -660,10 +662,12 @@ def main() -> None:
         "analysis": "corrected_pi_transfer_controls_v1",
         "training_run": False,
         "fresh_fem_solve": False,
-        "f1_evidence_class": "archived FEM exact-dimensional replay",
+        "f1a_evidence_class": "archived FEM exact-dimensional replay",
         "f2_evidence_class": "archived FEM BC negative control",
-        "f1_exact_pi_pass": f1_pi_pass,
-        "f1_field_roundtrip_max_abs": f1_max_error,
+        "f1a_scaling_io_pass": f1_pi_pass,
+        "f1a_field_roundtrip_max_abs": f1_max_error,
+        "f1b_solver_invariance_pass": False,
+        "f1b_status": "blocked_no_confirmed_windows_fem_producer",
         "f1_event_cycle_reference": 89,
         "f1_event_cycle_candidate": 89,
         "f2_scalar_pi_pass": f2_numeric_pi_pass,
@@ -675,7 +679,8 @@ def main() -> None:
         "road_validation": False,
         "cycle_to_traffic_mapping": False,
         "claim_boundary": (
-            "F1 validates dimensional replay and normalization, not a fresh solver; "
+            "F1a validates dimensional replay and normalization only; "
+            "F1b fresh-solver invariance is blocked; "
             "F2 proves scalar Pi groups are insufficient when BC/model form changes."
         ),
     }

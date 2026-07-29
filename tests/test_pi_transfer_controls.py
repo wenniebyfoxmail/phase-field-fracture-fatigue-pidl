@@ -26,6 +26,8 @@ def test_f1_realizations_match_complete_declared_pi_vector():
     )
     assert reference.w1_norm == pytest.approx(1.0)
     assert candidate.w1_norm == pytest.approx(1.0)
+    assert reference.thickness_over_L == pytest.approx(1.0)
+    assert candidate.thickness_over_L == pytest.approx(1.0)
     assert all(row["status"] == "matched" for row in rows)
 
 

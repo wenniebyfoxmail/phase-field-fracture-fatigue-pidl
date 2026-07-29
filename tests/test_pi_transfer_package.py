@@ -15,8 +15,10 @@ def _csv_rows(name: str):
 
 def test_control_summary_and_claim_boundary():
     summary = json.loads((PACKAGE / "control_summary.json").read_text())
-    assert summary["f1_exact_pi_pass"] is True
-    assert summary["f1_field_roundtrip_max_abs"] <= 1e-12
+    assert summary["f1a_scaling_io_pass"] is True
+    assert summary["f1a_field_roundtrip_max_abs"] <= 1e-12
+    assert summary["f1b_solver_invariance_pass"] is False
+    assert summary["f1b_status"].startswith("blocked")
     assert summary["f2_scalar_pi_pass"] is True
     assert summary["f2_boundary_condition_status"] == "mismatched"
     assert summary["road_validation"] is False
