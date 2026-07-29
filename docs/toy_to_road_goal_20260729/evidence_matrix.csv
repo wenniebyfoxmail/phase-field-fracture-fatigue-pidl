@@ -1,0 +1,5 @@
+track,mechanism_question,required_primary_asset,training_allowed_now,hard_blocker,status
+dimensionless_transfer,Does the corrected model preserve normalized mechanics under exact Pi scaling?,F1_F2_decision.md,no,F1 and F2 have not passed,in_progress
+independent_fem,Are at least three complete trajectories independent beyond Umax amplitude?,trajectory_bundle_manifest.json,no,Independent FEM handoff not yet verified,pending
+forecast,Do temporal models improve held-out-trajectory propagation or transition warning beyond matched Markov?,multi_trajectory_forecast_decision.md,no,Independent trajectory readiness gate not passed,pending
+reality_observation,Can measurable road data update latent state without hidden-field leakage?,measurement_operator_decision.md,no,Measurement operators and identifiability ladder not yet accepted,in_progress

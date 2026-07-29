@@ -140,9 +140,11 @@ python docs/skills/pidl-experiment-gate/scripts/pidl_result_package_check.py bou
 python docs/skills/pidl-experiment-gate/scripts/pidl_result_package_check.py bounded-alpha-micro --package <analysis-package>
 ```
 
-This check verifies required assets, c69/c89 mapping, denominator-safe primary
-masks, top5 quarantine, intervention-ranking presence, export-limit notes, and
-the no-production-run guard.
+This check verifies required assets, versioned event-state mapping,
+denominator-safe primary masks, top5 quarantine, intervention-ranking
+presence, export-limit notes, and the no-production-run guard. Legacy c69/c89
+labels must be treated as historical mappings rather than universal state
+identifiers.
 
 ## Registry Handoff
 
@@ -187,23 +189,46 @@ mechanism. They are not cycle-aligned prediction errors. Never substitute FEM
 c89 when a claimed same-cycle FEM c79 state is unavailable.
 
 The default trajectory is c20, c40, c60, last common pre-event, and each model's
-own event. Add c79 and c89 only when their state semantics and exports are
-available. Use the connected, confirmed penetration event, not a single noisy
-boundary cell.
+own event. Add named cycles such as c79 or c89 only when their state semantics,
+loading protocol, event phase, and exports are available. Use a connected
+penetration criterion with a declared confirmation window, not a single noisy
+boundary cell. Always retain both `first-hit` and `confirmed` labels; do not
+silently substitute one for the other.
+
+### Versioned FEM Reference
+
+Every comparison package must name an immutable FEM reference ID and record its
+loading substeps, material/model form, mesh hash, event rule, first-hit cycle,
+confirmed cycle, branch/substep, and snapshot hash. A cycle number alone is not
+a reference.
+
+Current Hard5 examples are deliberately distinct:
+
+```text
+hard5_eta0_u012_8step_legacy: first-hit c86, confirmed c89
+hard5_eta0_u012_5step_20260729: first-hit c83, confirmed c86
+```
+
+The legacy eight-step and current five-step trajectories may be compared as a
+protocol-sensitivity study. They must not be mixed inside a claimed
+same-state FEM/PIDL residual. Formal PIDL first-hit c89 should be compared to a
+declared FEM first-hit state when answering an own-event mechanism question,
+not automatically to FEM confirmed c89.
 
 ### Event Timing
 
-For the current benchmark, FEM has `N_f=89` and:
+Compute event error against the declared reference and the same event phase:
 
 ```text
-Delta N_f = N_f(model) - 89
-promotion timing gate: abs(Delta N_f) <= 3
-hard timing rejection: model event outside c84..c94
+Delta N_first_hit = N_first_hit(model) - N_first_hit(FEM reference)
+Delta N_confirmed = N_confirmed(model) - N_confirmed(FEM reference)
 ```
 
-The wider hard-rejection band is only a plausibility bound; passing it does not
-pass the tighter promotion gate. Event agreement is necessary but never proves
-mechanism agreement.
+Promotion and hard-rejection windows are benchmark-specific predeclared gates;
+they must not be inherited from the legacy c89 benchmark. Passing a timing gate
+never proves mechanism agreement. When loading discretization, event rule, or
+confirmation semantics differ, timing is descriptive protocol sensitivity and
+cannot be used as a prediction-accuracy gate.
 
 ### Field Metrics
 
@@ -237,10 +262,12 @@ IoU_absolute = area(A intersect B) / area(A union B)
 R_area = area(B) / area(A)
 ```
 
-The expected current FEM c89 value is approximately `5.71e-4`; verify it from
-the reference package rather than silently hard-coding it. `IoU_absolute`
-combines amplitude and location. Interpret `R_area << 1` as energetic
-under-support and `R_area >> 1` as over-diffusion.
+Compute the FEM threshold from the exact versioned reference snapshot. The
+legacy confirmed-c89 value near `5.71e-4` is not portable to a first-hit state:
+active support can collapse by orders of magnitude between first hit and
+confirmation. Never hard-code a threshold across event phases or loading
+protocols. `IoU_absolute` combines amplitude and location. Interpret
+`R_area << 1` as energetic under-support and `R_area >> 1` as over-diffusion.
 
 For location/ranking independent of absolute amplitude:
 
@@ -311,10 +338,12 @@ A candidate replaces Formal MLP eta0 only if all conditions pass:
 9. improvement is present along the trajectory, not only in final damage;
 10. runtime, convergence, and archive completeness pass declared limits.
 
-For the current benchmark, also require active-driver log-MAE at most 2.5 and
-correlation at least 0.20. Treat these numbers as benchmark-specific gates, not
-universal fracture constants. A model that improves damage but fails energetic
-support remains a representation diagnostic, not a promoted baseline.
+Any numerical log-MAE or correlation cutoffs must be stored with the versioned
+benchmark lock. Legacy thresholds such as active-driver log-MAE at most 2.5 and
+correlation at least 0.20 are not universal fracture constants and cannot be
+silently applied to a new FEM protocol or event phase. A model that improves
+damage but fails energetic support remains a representation diagnostic, not a
+promoted baseline.
 
 ## Output Template
 
