@@ -34,6 +34,8 @@
 ## Producer status
 
 No Mac optimisation is permitted. Taobo was probed after the local gates, but
-the first SSH attempt was reset during key exchange. A launch is recorded only
-after a fresh remote directory, exact code commit, GPU, PID and log are
-available.
+repeated SSH attempts were reset during key exchange. CSD3 reached its login
+banner but rejected the current credentials. No producer run exists. The exact
+recovery and launch sequence is frozen in `producer_handoff.md`; a launch is
+recorded only after a fresh remote directory, exact code commit, GPU, PID and
+log are available.

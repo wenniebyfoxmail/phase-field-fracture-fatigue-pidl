@@ -1,8 +1,16 @@
 {
   "package_id": "road-multi-trajectory-forecast-protocol-20260729",
-  "status": "ready_for_scoped_producer_training",
+  "status": "producer_ready_blocked_by_access",
   "claim_class": "within-Hard5 shared-geometry numerical factorial",
   "training_launched": false,
+  "producer_access": {
+    "status": "blocked_no_authenticated_producer_session",
+    "taobo": "TCP reachable; SSH key exchange reset by peer",
+    "csd3": "login reachable; current credentials rejected",
+    "run_directory": null,
+    "gpu": null,
+    "pid": null
+  },
   "producer_contract": {
     "agent2_commit": "90cf8a3703d03609ad7daf066d04ab051c2f7500",
     "status": "verified",
