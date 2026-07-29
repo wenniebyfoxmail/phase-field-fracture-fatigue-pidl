@@ -1,14 +1,17 @@
 import hashlib
 import json
+import sys
 from pathlib import Path
 
-import pytest
 import numpy as np
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 from SENS_tensile.analyze_f1b_exact_pi_solver import _support_metrics
 
 
-ROOT = Path(__file__).resolve().parents[1]
 HANDOFF = ROOT / "producer_handoffs" / "f1b_exact_pi_20260729"
 PACKAGE = ROOT / "docs" / "f1b_exact_pi_solver_invariance_20260729"
 
