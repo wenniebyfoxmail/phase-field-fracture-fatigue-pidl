@@ -82,6 +82,7 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 - pass: real_observation_inventory - PaveTrack_PD contains 8,928 unique real image-mask pairs across 165 locations, but lacks physical scale, timezone, cross-visit registration and paired mechanical/load/environment channels.
 - pass: pavetrack_visual_pilot - 4 tests passed; 24/24 selected image-mask pairs were hashed and all six package assets passed SHA-256 verification.
 - pass: pavetrack_registration_gate - 3 focused tests passed; count discrepancy reconciled, 118/23/24 location split locked and 18/21 registrations passed without imputing failures.
+- pass: pavetrack_primary_source_audit - Scientific Data 2025 confirms 8,928 tracking images and 165 locations; public GPS was clustered then removed, so image-space registration cannot be promoted to route/model coordinates.
 
 ## Result Interpretation
 The four-track evidence contract is valid and the Hard5 factorial LOCO matrix

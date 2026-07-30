@@ -95,8 +95,10 @@ Decision: **completed negative result; no architecture promoted**.
   transforms remain missing rather than being imputed.
 - The package still lacks physical pixel scale, timezone declaration,
   model-coordinate registration, mechanical sensors and measured maintenance
-  records. It can support an image-space geometry task, not hidden-state
-  assimilation, mechanism validation or RUL.
+  records. The source paper confirms that GPS was clustered and removed from
+  the public release for privacy, so route coordinates cannot be reconstructed
+  from these files. It can support an image-space geometry task, not
+  hidden-state assimilation, mechanism validation or RUL.
 
 Decision: **measurement interface and L1 real visual inventory accepted; real
 mechanical evaluation not accepted**.

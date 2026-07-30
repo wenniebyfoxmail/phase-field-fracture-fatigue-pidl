@@ -22,5 +22,7 @@ under the predeclared match, inlier, reprojection and projected-area gates.
 Failed transforms remain explicit missing registration; they are not imputed.
 Even passing transforms are only between consecutive pixel frames. No physical
 scale, timezone, model-coordinate registration, load, environment or measured
-maintenance channel exists, so the result cannot support hidden-state,
+maintenance channel exists. The source paper confirms that GPS was clustered
+and then removed for privacy, so route coordinates cannot be reconstructed
+from the public images. The result therefore cannot support hidden-state,
 mechanism or remaining-life claims.

@@ -354,6 +354,27 @@ def build_package(root: Path, pilot: Path, out: Path) -> None:
     write_csv(out / "pairwise_registration.csv", registration_rows)
     plot_registration_examples(root, detailed, out / "pairwise_registration_examples.png")
 
+    source_audit = """# PaveTrack source-metadata audit
+
+Primary source: Yang et al., *Scientific Data* 12, 1426 (2025),
+https://doi.org/10.1038/s41597-025-05748-5.
+
+The paper confirms that PaveTrack_PD contains 8,928 tracking images at 165
+locations. Chinese images were acquired from a mobile vehicle with an
+industrial camera. For privacy, nearby GPS observations were clustered at an
+approximately 5-20 m scale and the GPS data were then removed from the released
+images. The published matching baseline uses GPS clustering followed by
+SuperPoint/SuperGlue background matching and local-area matching.
+
+The released local JPEGs inspected by this package contain no EXIF camera, GPS,
+focal-length or timezone fields. The paper does not provide a physical
+pixel-to-road calibration for PaveTrack_PD. Therefore the SIFT/RANSAC transforms
+in this package are an independent image-space diagnostic, not a reproduction
+of the paper's full private-coordinate matching pipeline and not a route/model
+coordinate registration.
+"""
+    (out / "source_metadata_audit.md").write_text(source_audit, encoding="utf-8")
+
     passed = sum(bool(row["registration_passed"]) for row in registration_rows)
     total = len(registration_rows)
     decision = f"""# PaveTrack provenance, split and registration gate
@@ -380,7 +401,9 @@ under the predeclared match, inlier, reprojection and projected-area gates.
 Failed transforms remain explicit missing registration; they are not imputed.
 Even passing transforms are only between consecutive pixel frames. No physical
 scale, timezone, model-coordinate registration, load, environment or measured
-maintenance channel exists, so the result cannot support hidden-state,
+maintenance channel exists. The source paper confirms that GPS was clustered
+and then removed for privacy, so route coordinates cannot be reconstructed
+from the public images. The result therefore cannot support hidden-state,
 mechanism or remaining-life claims.
 """
     (out / "decision.md").write_text(decision, encoding="utf-8")
@@ -391,6 +414,7 @@ mechanism or remaining-life claims.
         "location_split_summary.csv",
         "pairwise_registration.csv",
         "pairwise_registration_examples.png",
+        "source_metadata_audit.md",
         "decision.md",
     ]
     manifest_payload = {
