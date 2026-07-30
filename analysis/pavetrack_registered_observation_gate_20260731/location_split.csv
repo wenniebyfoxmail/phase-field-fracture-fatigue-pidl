@@ -1,0 +1,166 @@
+reid,split,categories,unique_images,annotation_rows
+10,train,Transverse Crack,46,46
+1022,train,Alligator Crack,62,62
+1059,train,Alligator Crack|Patch|Pothole,90,149
+1081,train,Patch|Pothole,42,42
+1085,validation,Alligator Crack|Patch|Transverse Crack,33,48
+1103,train,Transverse Crack,110,110
+1110,validation,Alligator Crack|Transverse Crack,52,52
+1111,validation,Patch|Pothole,85,85
+1139,train,Patch|Pothole,35,35
+1174,train,Alligator Crack,20,20
+1195,train,Alligator Crack,89,89
+12,train,Patch|Pothole,64,64
+1205,train,Alligator Crack,53,53
+121,train,Alligator Crack,48,48
+1232,train,Patch|Pothole,12,12
+1246,train,Pothole|Transverse Crack,28,44
+130,train,Alligator Crack,66,66
+1374,train,Alligator Crack|Patch|Pothole|Transverse Crack,18,18
+139,train,Alligator Crack|Patch|Pothole|Transverse Crack,53,64
+1400,train,Alligator Crack|Patch|Pothole,15,15
+1459,train,Alligator Crack,108,108
+1496,validation,Patch|Pothole,68,68
+151,train,Patch|Pothole|Transverse Crack,12,13
+1521,train,Transverse Crack,51,51
+1535,train,Transverse Crack,42,42
+1551,train,Transverse Crack,91,91
+1577,train,Transverse Crack,98,98
+1583,test,Alligator Crack|Pothole,54,57
+1598,train,Patch|Transverse Crack,68,68
+1630,train,Alligator Crack|Transverse Crack,39,40
+1638,train,Transverse Crack,109,109
+1729,test,Patch|Pothole,28,28
+1733,train,Alligator Crack,31,31
+1805,validation,Alligator Crack|Pothole,93,153
+1829,test,Patch|Pothole,9,9
+185,test,Alligator Crack|Patch,43,43
+1860,test,Patch|Pothole,21,21
+1889,validation,Alligator Crack,17,17
+1949,train,Alligator Crack,66,66
+2027,train,Transverse Crack,113,113
+2028,test,Transverse Crack,105,105
+2048,train,Alligator Crack|Patch|Pothole,101,105
+2091,train,Transverse Crack,21,21
+2098,train,Pothole,8,8
+2198,test,Pothole,61,61
+220,train,Alligator Crack|Patch,33,33
+2227,validation,Pothole,110,110
+2246,validation,Alligator Crack|Patch|Pothole,38,38
+2260,train,Alligator Crack,46,46
+2291,train,Patch|Pothole|Transverse Crack,58,58
+2330,train,Patch|Pothole,39,39
+2371,train,Patch|Pothole,13,13
+24,train,Alligator Crack|Patch|Pothole|Transverse Crack,116,121
+241,train,Alligator Crack,38,38
+2428,train,Patch|Pothole,12,12
+244,train,Patch|Pothole,42,42
+2466,train,Alligator Crack|Patch|Pothole,41,41
+2485,train,Alligator Crack,23,23
+2509,test,Alligator Crack,40,40
+2528,validation,Alligator Crack|Patch|Pothole,28,35
+2533,train,Patch|Pothole,37,37
+2557,train,Transverse Crack,92,92
+2562,train,Alligator Crack,28,28
+2646,test,Patch|Pothole|Transverse Crack,60,60
+276,test,Alligator Crack|Patch|Pothole,65,76
+29,test,Alligator Crack|Patch,40,40
+2948,train,Transverse Crack,70,70
+3010,train,Patch|Pothole,44,44
+3215,train,Patch|Pothole,14,14
+3347,train,Alligator Crack|Patch|Pothole,40,43
+344,train,Alligator Crack|Patch|Transverse Crack,42,48
+344-2,train,Patch|Pothole,4,4
+3502,train,Pothole,103,103
+3512,train,Pothole,67,67
+3513,train,Alligator Crack,53,53
+353,train,Alligator Crack,12,12
+3531,train,Patch|Pothole,37,37
+3563,train,Alligator Crack|Patch,59,59
+357,train,Pothole|Transverse Crack,33,33
+3662,train,Alligator Crack,19,19
+3663,train,Pothole,58,58
+3664,train,Alligator Crack|Patch|Pothole,27,35
+3681,train,Alligator Crack|Patch|Pothole,58,59
+372,test,Alligator Crack|Patch|Pothole|Transverse Crack,98,135
+373,train,Alligator Crack|Patch|Pothole|Transverse Crack,70,70
+3776,train,Pothole,44,44
+378,train,Patch|Pothole,78,78
+3825,train,Alligator Crack|Patch|Pothole,41,45
+3839,train,Patch|Pothole,15,15
+3895,train,Pothole,74,74
+3924,train,Patch|Pothole,15,15
+393,train,Patch|Pothole|Transverse Crack,75,83
+4,train,Transverse Crack,32,32
+40,train,Alligator Crack,34,34
+4073,test,Alligator Crack,10,10
+4171,train,Pothole,99,99
+425,train,Transverse Crack,96,96
+430,train,Patch|Pothole,36,36
+4366,test,Pothole,103,103
+4491,validation,Pothole,124,124
+4494,train,Alligator Crack|Transverse Crack,101,101
+4524,validation,Alligator Crack|Patch,62,62
+462,train,Alligator Crack|Patch|Pothole|Transverse Crack,114,115
+4623,train,Alligator Crack|Patch|Pothole|Transverse Crack,41,67
+4667,train,Alligator Crack|Patch,67,67
+4668,validation,Alligator Crack|Patch|Transverse Crack,63,63
+468,test,Alligator Crack|Patch|Transverse Crack,47,47
+4774,validation,Transverse Crack,91,91
+4801,validation,Transverse Crack,37,37
+4818,test,Pothole,9,9
+4821,test,Pothole,39,39
+4855,train,Transverse Crack,63,63
+4872,train,Alligator Crack,67,67
+491-1,train,Patch|Pothole,28,28
+491-2,test,Patch|Pothole,28,28
+4925,train,Transverse Crack,101,101
+4947,test,Pothole,81,81
+4950,train,Alligator Crack,55,55
+4991,train,Transverse Crack,53,53
+5042,train,Transverse Crack,60,60
+5070,test,Transverse Crack,37,37
+5071,validation,Transverse Crack,48,48
+514,test,Transverse Crack,101,101
+516,train,Alligator Crack,44,44
+5193,train,Pothole,86,86
+5209,validation,Alligator Crack,67,67
+5276,train,Alligator Crack,45,45
+5508,train,Transverse Crack,103,103
+551,validation,Patch|Pothole|Transverse Crack,44,74
+566,train,Pothole,39,39
+5763,validation,Pothole,77,77
+577,train,Transverse Crack,80,80
+5854,test,Alligator Crack,50,50
+5885,train,Patch|Pothole,27,27
+5903,train,Pothole,39,39
+5904,test,Pothole,43,43
+5982,train,Transverse Crack,105,105
+6022,train,Transverse Crack,98,98
+6142,train,Transverse Crack,58,58
+6198,validation,Pothole,74,74
+6202,train,Transverse Crack,28,28
+6227,train,Alligator Crack|Transverse Crack,83,83
+625,train,Alligator Crack|Transverse Crack,58,58
+65,train,Alligator Crack|Patch|Transverse Crack,45,45
+696,validation,Transverse Crack,83,83
+702,train,Alligator Crack,54,54
+71,train,Patch|Pothole,16,16
+711,train,Alligator Crack|Patch,53,53
+718,test,Alligator Crack,78,78
+727,train,Patch|Transverse Crack,36,36
+728,train,Alligator Crack|Patch|Pothole|Transverse Crack,25,26
+73,train,Transverse Crack,27,27
+75,train,Patch|Pothole,31,31
+761-1,train,Alligator Crack|Patch|Transverse Crack,57,57
+761-2,train,Alligator Crack,50,50
+761-3,train,Patch|Pothole,57,57
+786,train,Alligator Crack|Pothole,76,77
+800,train,Alligator Crack|Patch,37,37
+818,train,Patch|Pothole,43,43
+821,train,Transverse Crack,30,30
+842,train,Transverse Crack,71,71
+941,validation,Alligator Crack|Patch,34,34
+95,validation,Patch|Transverse Crack,23,23
+956,train,Alligator Crack,62,62
+993,validation,Patch|Pothole|Transverse Crack,38,38

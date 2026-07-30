@@ -318,7 +318,11 @@ def validate_package(package: dict[str, Any]) -> GateResult:
     elif not forecast_task_gate_passed:
         blockers.append("held_out_trajectory_forecast_gate_not_passed")
     if not tracks["reality_observation"].get("real_data_evaluated", False):
-        blockers.append("real_road_data_not_evaluated")
+        blockers.append(
+            "real_mechanical_road_data_not_evaluated"
+            if tracks["reality_observation"].get("real_visual_data_evaluated", False)
+            else "real_road_data_not_evaluated"
+        )
 
     return GateResult(
         valid=True,

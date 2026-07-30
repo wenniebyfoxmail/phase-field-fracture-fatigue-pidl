@@ -1,0 +1,16 @@
+{
+  "counts_reconciled": true,
+  "cross_location_filename_collisions": 303,
+  "interpretation": "9447 workbook rows minus 200 exact duplicate triples equals 9247 manifest rows; 8928 unique location-image pairs minus 303 cross-location filename collisions equals the report's 8625 filename-only count",
+  "manifest_only_pairs": 0,
+  "manifest_only_triples": 0,
+  "manifest_rows": 9247,
+  "manifest_unique_location_image_category": 9247,
+  "unique_filename_only": 8625,
+  "unique_location_image_pairs": 8928,
+  "workbook_annotation_rows": 9447,
+  "workbook_exact_duplicate_annotation_rows": 200,
+  "workbook_only_pairs": 0,
+  "workbook_only_triples": 0,
+  "workbook_unique_location_image_category": 9247
+}

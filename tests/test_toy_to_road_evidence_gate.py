@@ -193,6 +193,17 @@ def test_completed_negative_forecast_is_not_reported_as_unevaluated() -> None:
     assert not result.road_validation_ready
 
 
+def test_real_visual_pilot_keeps_mechanical_road_gate_closed() -> None:
+    package = valid_package()
+    observation = package["tracks"]["reality_observation"]
+    observation["real_visual_data_evaluated"] = True
+    observation["real_data_evaluated"] = False
+    result = validate_package(package)
+    assert "real_road_data_not_evaluated" not in result.blockers
+    assert "real_mechanical_road_data_not_evaluated" in result.blockers
+    assert not result.road_validation_ready
+
+
 def test_latent_field_cannot_be_a_direct_sensor() -> None:
     package = valid_package()
     package["tracks"]["reality_observation"]["direct_channels"].append(

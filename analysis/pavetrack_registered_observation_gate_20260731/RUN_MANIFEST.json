@@ -1,0 +1,25 @@
+{
+  "outputs": [
+    "provenance_reconciliation.json",
+    "location_split.csv",
+    "location_split_summary.csv",
+    "pairwise_registration.csv",
+    "pairwise_registration_examples.png",
+    "decision.md"
+  ],
+  "registration_gate": {
+    "max_median_reprojection_px": 4.0,
+    "max_projected_area_ratio": 2.0,
+    "min_good_matches": 30,
+    "min_inlier_ratio": 0.25,
+    "min_inliers": 15,
+    "min_projected_area_ratio": 0.5
+  },
+  "registration_method": "sequential SIFT ratio-0.75 plus RANSAC homography",
+  "schema_version": "pavetrack_registration_gate_run_v1",
+  "script_sha256": "7240b4b4e46f624de7a5e51b1f9fa48a3b69cbc4ab64005fb49bd529327509cf",
+  "source_manifest_sha256": "81f2585a9e093f4c2c6e88587e43371ce75a1859d24c0da587248ac40c91b798",
+  "source_pilot_hashes_sha256": "bea3f0070c5a1a496206bc976e372791a902fa13bef0e0739e1ea51c95997293",
+  "source_workbook_sha256": "88a05c9e981784ca9be1beb10de8d532fb0cfd359a55f56cd29cc1d1b4f26a46",
+  "split_salt": "pavetrack_v1"
+}

@@ -19,7 +19,7 @@ under the locked promotion rule and the transition/reset task gates fail.
 | Corrected scaling / Pi transfer | Diagnostic partial | Run the sealed F1b input as a fresh Windows-MATLAB GRIPHFiTH solve and pass field/event gates. |
 | Multi-trajectory FEM | Accepted within Hard5 factorial | Acquire at least three road-like trajectories differing in defect, material state, geometry or load history. |
 | Markov / TCN / Transformer forecast | Completed negative result | No candidate promoted; transition warnings were all missed and reset propagation produced about 95x FEM active-support area. |
-| Real measurement / inverse interface | Interface accepted; visual inventory found | Register and evaluate PaveTrack_PD under reconciled provenance, time, scale and cross-visit alignment; add mechanical and load/environment observations for state/RUL claims. |
+| Real measurement / inverse interface | Interface, provenance and image-space gate accepted | Add physical scale, model-coordinate alignment, timezone and mechanical/load/environment observations for state/RUL claims. |
 
 ## Machine decision
 
@@ -39,11 +39,12 @@ unexecuted result.
 - F1b is Windows-MATLAB/GRIPHFiTH specific; no fresh candidate output exists.
 - The current four FEM trajectories share one Hard5 geometry, mesh, material
   family and Umax; they cannot count as independent roads.
-- PaveTrack_PD provides 8,928 real image-mask pairs across 165 locations. A
-  provenance-checked visual pilot sealed 24 observations from three long crack
-  sequences, but the dataset has no physical pixel scale, timezone declaration,
-  cross-visit registration or paired FWD/WIM/environment measurements. It has
-  not passed the mechanical measurement handoff.
+- PaveTrack_PD provides 8,928 real location-image-mask pairs across 165
+  locations. Counts are reconciled, a 118/23/24 location-level split is locked,
+  and 18/21 sampled pairwise image-space registrations pass. The dataset still
+  has no physical pixel scale, timezone declaration, model-coordinate
+  registration or paired FWD/WIM/environment measurements. It has not passed
+  the mechanical measurement handoff.
 
 The integrated decision is recorded in `decision.md` as
 `blocked_missing_evidence`.

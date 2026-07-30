@@ -53,6 +53,8 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 - add: `docs/toy_to_road_goal_20260729/decision.md` - Integrated the four tracks into a terminal blocked-missing-evidence road-transfer verdict
 - add: `SENS_tensile/analyze_pavetrack_visual_observation.py` - Added a deterministic visual-only real-road inventory with source hashing and image-space geometry
 - add: `analysis/pavetrack_real_observation_pilot_20260731/decision.md` - Sealed 24 observations from three long PaveTrack crack sequences without latent-field leakage
+- add: `SENS_tensile/audit_pavetrack_registration_and_split.py` - Reconciled workbook and manifest identity, froze location-level splits and gated pairwise image registration
+- add: `analysis/pavetrack_registered_observation_gate_20260731/decision.md` - Accepted provenance and image-space registration only while keeping mechanical assimilation blocked
 - modify: `SENS_tensile/analyze_factorial_loco_results.py` - Added strict run/budget checks, absolute model-task and horizon summaries, runtime, and FEM-centred transition/reset figures
 - modify: `source/toy_to_road_evidence_gate.py` - Separated completed held-out evaluation from forecast task acceptance
 
@@ -74,11 +76,12 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 - pass: external_blocker_reporting - 71 passed; the machine gate preserves within-benchmark training readiness while separately reporting inaccessible F1b and forecast producers.
 - pass: factorial_loco_execution - Taobo completed 36/36 fixed jobs; 254/254 downloaded files match the remote SHA-256 manifest.
 - pass: factorial_loco_analysis_tests - 30 focused tests passed; no temporal candidate met the locked promotion rule.
-- pass: final_full_regression - 245 passed, 2 skipped, 1 pre-existing Transformer nested-tensor warning.
+- pass: final_full_regression - 249 passed, 2 skipped, 1 pre-existing Transformer nested-tensor warning.
 - pass: producer_runtime_audit - VPN and Taobo are healthy, but sealed F1b remains Windows-MATLAB-only because Mac and Taobo lack MATLAB, GRIPHFiTH MEX and SuiteSparse.
 - pass: wider_trajectory_inventory - Hard5 factorial remains the only complete unified mechanism corpus; strict independent road-like count is 0/3.
 - pass: real_observation_inventory - PaveTrack_PD contains 8,928 unique real image-mask pairs across 165 locations, but lacks physical scale, timezone, cross-visit registration and paired mechanical/load/environment channels.
 - pass: pavetrack_visual_pilot - 4 tests passed; 24/24 selected image-mask pairs were hashed and all six package assets passed SHA-256 verification.
+- pass: pavetrack_registration_gate - 3 focused tests passed; count discrepancy reconciled, 118/23/24 location split locked and 18/21 registrations passed without imputing failures.
 
 ## Result Interpretation
 The four-track evidence contract is valid and the Hard5 factorial LOCO matrix

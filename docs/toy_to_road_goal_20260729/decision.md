@@ -84,13 +84,19 @@ Decision: **completed negative result; no architecture promoted**.
   direct sensor channels. Constitutive estimates remain labelled derived latent
   estimates.
 - A real local visual dataset exists: PaveTrack_PD contains 8,928 unique
-  image-mask pairs across 165 locations from 2022-04-18 to 2023-12-31. A
-  visual-only pilot sealed 24 image-mask observations from three long crack
-  sequences with source hashes and image-space geometry features.
-- The package lacks physical pixel scale, timezone declaration, cross-visit
-  registration, mechanical sensors and measured maintenance records. Its
-  manifest/report counts also disagree. It can support a visual-geometry pilot,
-  not hidden-state assimilation, mechanism validation or RUL.
+  location-image-mask pairs across 165 locations from 2022-04-18 to 2023-12-31.
+  A visual-only pilot sealed 24 observations from three long crack sequences
+  with source hashes and image-space geometry features.
+- The count discrepancy is resolved: 9,447 workbook annotations minus 200 exact
+  duplicate triples gives the 9,247-row manifest; 8,625 was a filename-only
+  count that merged 303 names reused at different locations.
+- A location-isolated split is frozen at 118/23/24 train/validation/test sites.
+  Pairwise SIFT/RANSAC registration passed 18/21 sampled transitions; failed
+  transforms remain missing rather than being imputed.
+- The package still lacks physical pixel scale, timezone declaration,
+  model-coordinate registration, mechanical sensors and measured maintenance
+  records. It can support an image-space geometry task, not hidden-state
+  assimilation, mechanism validation or RUL.
 
 Decision: **measurement interface and L1 real visual inventory accepted; real
 mechanical evaluation not accepted**.
@@ -110,6 +116,6 @@ mechanical evaluation not accepted**.
 2. Supply three complete trajectories that independently vary initial defect,
    material/geometry state and loading history, then repeat whole-trajectory
    LOTO without adding architectures.
-3. Register a PaveTrack visual subset with reconciled provenance, declared time
-   semantics, cross-visit registration and scale uncertainty; add FWD/WIM/
-   environment channels before any mechanical or RUL claim.
+3. Supply physical image scale and model-coordinate registration for PaveTrack;
+   add timezone, FWD/WIM/environment and measured maintenance channels before
+   any mechanical or RUL claim.

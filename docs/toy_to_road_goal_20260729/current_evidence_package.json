@@ -121,15 +121,30 @@
         "date_end": "2023-12-31",
         "physical_pixel_scale_available": false,
         "timezone_declared": false,
-        "cross_visit_registration_available": false,
+        "cross_visit_registration_available": "partial_pairwise_image_space",
+        "model_coordinate_registration_available": false,
         "paired_mechanical_channels_available": false,
-        "provenance_count_reconciled": false,
+        "provenance_count_reconciled": true,
         "decision_scope": "visual_geometry_pilot_only",
         "pilot_package": "analysis/pavetrack_real_observation_pilot_20260731",
         "selected_long_crack_sequences": 3,
         "sealed_observation_pairs": 24,
         "missing_selected_pairs": 0,
-        "latent_fields_used": false
+        "latent_fields_used": false,
+        "location_split": {
+          "type": "location_isolated_sha256_bucket_v1",
+          "train_locations": 118,
+          "validation_locations": 23,
+          "test_locations": 24,
+          "location_overlap": false
+        },
+        "pairwise_registration": {
+          "method": "sequential_sift_ransac_homography",
+          "passed": 18,
+          "total": 21,
+          "failed_transforms_imputed": false,
+          "package": "analysis/pavetrack_registered_observation_gate_20260731"
+        }
       }
     }
   }

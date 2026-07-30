@@ -4,7 +4,7 @@
     "f1b_producer_access_blocked",
     "fewer_than_three_road_like_trajectories",
     "held_out_trajectory_forecast_gate_not_passed",
-    "real_road_data_not_evaluated"
+    "real_mechanical_road_data_not_evaluated"
   ],
   "road_training_ready": false,
   "road_validation_ready": false,
