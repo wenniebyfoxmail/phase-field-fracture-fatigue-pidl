@@ -1,26 +1,25 @@
 # Toy-to-road goal status
 
-Updated: 2026-07-29 (Europe/London)
+Updated: 2026-07-31 (Europe/London)
 
-Goal execution status: `BLOCKED_EXTERNAL_ACCESS` after three consecutive
-producer-access audits. Resume without changing sealed inputs after explicit
-authorization to connect the Tunnelblick `client` VPN, restoration of CSD3
-authentication, or return of a fresh Windows-FEM F1b output.
+Goal execution status: `ACTIVE_PARTIAL_EVIDENCE`. The user authorized the
+Tunnelblick VPN, Taobo access was restored, and the sealed forecast matrix was
+completed. The goal is not road-ready.
 
 ## Current verdict
 
-The evidence package is valid and the four workstreams are integrated. The
-Hard5 factorial is ready for **within-benchmark** leave-one-trajectory-out
-training. It is not ready for a road-transfer claim.
+The evidence contract is valid. Within-Hard5 factorial LOTO has now been run to
+completion, but the temporal candidates do not beat the Markov graph control
+under the locked promotion rule and the transition/reset task gates fail.
 
 ## Track status
 
 | Track | Current status | What is still required |
 |---|---|---|
-| Corrected scaling / Pi transfer | Diagnostic partial | Run the sealed F1b input as a fresh Windows-FEM solve and pass the field/event gates. |
-| Multi-trajectory FEM | Accepted within Hard5 factorial | Acquire at least three road-like trajectories differing in defect, material state, or load history. |
-| Markov / TCN / Transformer forecast | Signed 36-job matrix ready | Run the sealed matrix on an authenticated Taobo or CSD3 producer and evaluate held-out trajectories. |
-| Real measurement / inverse interface | Interface accepted only | Ingest a registered real-road dataset through the versioned measurement adapters and evaluate identifiability. |
+| Corrected scaling / Pi transfer | Diagnostic partial | Run the sealed F1b input as a fresh Windows-MATLAB GRIPHFiTH solve and pass field/event gates. |
+| Multi-trajectory FEM | Accepted within Hard5 factorial | Acquire at least three road-like trajectories differing in defect, material state, geometry or load history. |
+| Markov / TCN / Transformer forecast | Completed negative result | No candidate promoted; transition warnings were all missed and reset propagation produced about 95x FEM active-support area. |
+| Real measurement / inverse interface | Interface accepted; visual inventory found | Register and evaluate PaveTrack_PD under reconciled provenance, time, scale and cross-visit alignment; add mechanical and load/environment observations for state/RUL claims. |
 
 ## Machine decision
 
@@ -30,23 +29,21 @@ training. It is not ready for a road-transfer claim.
 - `road_training_ready=false`
 - `road_validation_ready=false`
 
-The active blockers are recorded in `current_gate_status.json`. Producer access
-is an execution blocker, not scientific evidence and not a failed numerical
-result.
+Current blockers are recorded in `current_gate_status.json`. Forecast producer
+access is no longer a blocker. `held_out_evaluation_completed=true` is kept
+separate from `forecast_task_gate_passed=false`; a negative result is not an
+unexecuted result.
 
-## Producer access diagnosis
+## Remaining external boundary
 
-- Taobo: TCP port 22 is reachable, but SSH is reset during key exchange. The
-  configured Tunnelblick `client` VPN exists and is currently disconnected.
-  Connecting it requires explicit user confirmation because it changes network
-  state.
-- CSD3: the host is reachable. Both local RSA and ED25519 public keys are
-  offered and rejected, so the server-side authorized key or an interactive
-  authentication session must be restored.
-- Windows-FEM: the sealed F1b handoff is complete, but no approved producer or
-  fresh candidate output is available.
+- F1b is Windows-MATLAB/GRIPHFiTH specific; no fresh candidate output exists.
+- The current four FEM trajectories share one Hard5 geometry, mesh, material
+  family and Umax; they cannot count as independent roads.
+- PaveTrack_PD provides 8,928 real image-mask pairs across 165 locations. A
+  provenance-checked visual pilot sealed 24 observations from three long crack
+  sequences, but the dataset has no physical pixel scale, timezone declaration,
+  cross-visit registration or paired FWD/WIM/environment measurements. It has
+  not passed the mechanical measurement handoff.
 
-The third consecutive audit reproduced the same state: Tunnelblick disconnected,
-Taobo reset during SSH key exchange, CSD3 rejecting both configured public keys,
-and no F1b candidate output. The goal is therefore paused as externally blocked
-rather than repeatedly polling without an authorized state change.
+The integrated decision is recorded in `decision.md` as
+`blocked_missing_evidence`.

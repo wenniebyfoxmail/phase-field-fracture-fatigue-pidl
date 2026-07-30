@@ -8,6 +8,7 @@ import csv
 import json
 import math
 from pathlib import Path
+from typing import Iterable
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -33,6 +34,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runs", type=Path, required=True)
     parser.add_argument("--producer-manifest", type=Path, required=True)
+    parser.add_argument(
+        "--data-root",
+        type=Path,
+        default=None,
+        help="Optional materialised FEM dataset used for standard field figures.",
+    )
     parser.add_argument("--out", type=Path, required=True)
     return parser.parse_args()
 
@@ -72,9 +79,34 @@ def load_runs(root: Path, producer: dict) -> list[dict]:
         )
         if identity != expected_identity:
             raise ValueError(f"run identity drift: {job_id}")
+        for key in ("steps", "context", "parameter_count"):
+            if int(manifest.get(key, -1)) != int(job[key]):
+                raise ValueError(f"run {key} drift: {job_id}")
+        if manifest.get("synthetic_not_real_road") is not True:
+            raise ValueError(f"synthetic scope label missing: {job_id}")
+        if sorted(manifest.get("training_trajectory_ids", [])) != sorted(
+            job["train_trajectory_ids"]
+        ):
+            raise ValueError(f"training trajectory drift: {job_id}")
         metrics = read_csv(run_dir / "fem_centred_metrics.csv")
         warnings = read_csv(run_dir / "transition_warning_metrics.csv")
-        runs.append({"job": job, "manifest": manifest, "metrics": metrics, "warnings": warnings})
+        history = read_csv(run_dir / "training_history.csv")
+        if int(history[-1]["step"]) != int(job["steps"]):
+            raise ValueError(f"training did not reach sealed budget: {job_id}")
+        for row in history:
+            if not math.isfinite(float(row["loss"])) or not math.isfinite(
+                float(row["gradient_norm"])
+            ):
+                raise ValueError(f"non-finite training state: {job_id}")
+        runs.append(
+            {
+                "job": job,
+                "manifest": manifest,
+                "metrics": metrics,
+                "warnings": warnings,
+                "run_dir": run_dir,
+            }
+        )
     if len(runs) != 36:
         raise ValueError("sealed matrix requires exactly 36 runs")
     return runs
@@ -95,6 +127,8 @@ def aggregate_runs(runs: list[dict]) -> list[dict]:
                 "seed": int(run["manifest"]["seed"]),
                 "task": task,
                 "evaluated_states": len(rows),
+                "training_seconds": float(run["manifest"]["training_seconds"]),
+                "parameter_count": int(run["manifest"]["parameter_count"]),
             }
             numeric = (
                 "damage_mae", "damage_rmse", "damage_correlation",
@@ -113,6 +147,118 @@ def aggregate_runs(runs: list[dict]) -> list[dict]:
                 ))))
             )
             output.append(item)
+    return output
+
+
+def _mean_ci(values: Iterable[float]) -> tuple[int, float, float, float, float]:
+    array = np.asarray(list(values), dtype=np.float64)
+    if len(array) < 2 or not np.all(np.isfinite(array)):
+        raise ValueError("summary interval requires at least two finite values")
+    mean = float(array.mean())
+    sd = float(array.std(ddof=1))
+    half = T_CRIT_DF11 * sd / math.sqrt(len(array))
+    return len(array), mean, sd, mean - half, mean + half
+
+
+def model_task_summary(rows: list[dict]) -> list[dict]:
+    metrics = tuple(metric for metric, _ in PRIMARY) + (
+        "damage_mae",
+        "history_log10_mae",
+        "log10_psi_raw_mae",
+        "own_p99_iou",
+        "support_area_ratio",
+    )
+    output = []
+    for task in TASKS:
+        for family in FAMILIES:
+            selected = [
+                row for row in rows
+                if row["task"] == task and row["family"] == family
+            ]
+            item: dict[str, object] = {
+                "task": task,
+                "family": family,
+                "independent_fold_seed_units": len(selected),
+            }
+            for metric in metrics:
+                n, mean, sd, low, high = _mean_ci(
+                    float(row[metric]) for row in selected
+                )
+                item[f"{metric}_n"] = n
+                item[f"{metric}_mean"] = mean
+                item[f"{metric}_sd"] = sd
+                item[f"{metric}_ci95_low"] = low
+                item[f"{metric}_ci95_high"] = high
+            output.append(item)
+    return output
+
+
+def horizon_summary(runs: list[dict]) -> list[dict]:
+    per_run = []
+    metrics = ("active_log_mae", "absolute_p99_iou", "support_area_ratio")
+    for run in runs:
+        grouped: dict[tuple[str, int], list[dict]] = defaultdict(list)
+        for row in run["metrics"]:
+            grouped[(row["task"], int(row["horizon"]))].append(row)
+        for (task, horizon), selected in grouped.items():
+            item = {
+                "heldout_trajectory_id": run["manifest"]["heldout_trajectory_id"],
+                "family": run["manifest"]["family"],
+                "seed": int(run["manifest"]["seed"]),
+                "task": task,
+                "horizon": horizon,
+            }
+            for metric in metrics:
+                item[metric] = float(np.mean([float(row[metric]) for row in selected]))
+            per_run.append(item)
+
+    output = []
+    for task in TASKS:
+        for horizon in (1, 2, 3):
+            for family in FAMILIES:
+                selected = [
+                    row for row in per_run
+                    if row["task"] == task
+                    and row["horizon"] == horizon
+                    and row["family"] == family
+                ]
+                item = {
+                    "task": task,
+                    "horizon": horizon,
+                    "family": family,
+                    "independent_fold_seed_units": len(selected),
+                }
+                for metric in metrics:
+                    _, mean, _, low, high = _mean_ci(
+                        float(row[metric]) for row in selected
+                    )
+                    item[f"{metric}_mean"] = mean
+                    item[f"{metric}_ci95_low"] = low
+                    item[f"{metric}_ci95_high"] = high
+                output.append(item)
+    return output
+
+
+def runtime_summary(rows: list[dict]) -> list[dict]:
+    output = []
+    for family in FAMILIES:
+        unique = {
+            (row["heldout_trajectory_id"], row["seed"]): row
+            for row in rows if row["family"] == family
+        }
+        values = [float(row["training_seconds"]) for row in unique.values()]
+        n, mean, sd, low, high = _mean_ci(values)
+        output.append(
+            {
+                "family": family,
+                "run_count": n,
+                "training_seconds_mean": mean,
+                "training_seconds_sd": sd,
+                "training_seconds_ci95_low": low,
+                "training_seconds_ci95_high": high,
+                "parameter_count": int(next(iter(unique.values()))["parameter_count"]),
+            }
+        )
     return output
 
 
@@ -199,18 +345,118 @@ def plot_summary(rows: list[dict], out: Path) -> None:
     plt.close(fig)
 
 
+def _active_log10(state: np.ndarray, floor: float = 1.0e-12) -> np.ndarray:
+    damage = np.clip(state[:, 0], 0.0, 1.0)
+    return np.maximum(
+        state[:, 3] + 2.0 * np.log10(np.maximum(1.0 - damage, floor)),
+        math.log10(floor),
+    )
+
+
+def _weighted_quantile(values: np.ndarray, areas: np.ndarray, q: float) -> float:
+    order = np.argsort(values)
+    cumulative = np.cumsum(areas[order])
+    index = int(np.searchsorted(cumulative, q * cumulative[-1], side="left"))
+    return float(values[order[min(index, len(order) - 1)]])
+
+
+def _last_pair(npz: np.lib.npyio.NpzFile, prefix: str) -> tuple[np.ndarray, np.ndarray, int]:
+    keys = [key for key in npz.files if key.startswith(f"{prefix}_prediction_c")]
+    cycle = max(int(key.rsplit("c", 1)[1]) for key in keys)
+    return npz[f"{prefix}_prediction_c{cycle}"], npz[f"{prefix}_fem_c{cycle}"], cycle
+
+
+def plot_representative_fields(
+    runs: list[dict], data_root: Path, out: Path, prefix: str
+) -> None:
+    graph = np.load(data_root / "graph.npz", allow_pickle=False)
+    coordinates = np.asarray(graph["coordinates"], dtype=np.float64)
+    areas = np.asarray(graph["areas"], dtype=np.float64)
+    heldouts = sorted({run["manifest"]["heldout_trajectory_id"] for run in runs})
+    lookup = {
+        (run["manifest"]["heldout_trajectory_id"], run["manifest"]["family"]): run
+        for run in runs if int(run["manifest"]["seed"]) == 1
+    }
+    fig, axes = plt.subplots(
+        len(heldouts), 7, figsize=(18, 2.8 * len(heldouts)), constrained_layout=True
+    )
+    cmap = plt.get_cmap("viridis").copy()
+    overlap_cmap = plt.matplotlib.colors.ListedColormap(
+        ["#d9d9d9", "#377eb8", "#ff7f00", "#ffd92f"]
+    )
+    for row_index, heldout in enumerate(heldouts):
+        fields: dict[str, np.ndarray] = {}
+        fem: np.ndarray | None = None
+        target_cycle: int | None = None
+        for family in FAMILIES:
+            with np.load(
+                lookup[(heldout, family)]["run_dir"] / "representative_fields.npz",
+                allow_pickle=False,
+            ) as archive:
+                prediction, family_fem, cycle = _last_pair(archive, prefix)
+            if fem is None:
+                fem = family_fem
+                target_cycle = cycle
+            elif cycle != target_cycle or not np.array_equal(fem, family_fem):
+                raise ValueError(f"FEM representative drift for {heldout} {prefix}")
+            fields[family] = prediction
+        assert fem is not None and target_cycle is not None
+        active = {"FEM": _active_log10(fem)}
+        active.update({family: _active_log10(state) for family, state in fields.items()})
+        vmax = max(float(np.max(values)) for values in active.values())
+        vmin = max(-12.0, min(float(np.quantile(values, 0.01)) for values in active.values()))
+        for col, name in enumerate(("FEM",) + FAMILIES):
+            axes[row_index, col].scatter(
+                coordinates[:, 0], coordinates[:, 1], c=active[name], s=0.08,
+                vmin=vmin, vmax=vmax, cmap=cmap, linewidths=0, rasterized=True,
+            )
+            axes[row_index, col].set_title(f"{name} active", fontsize=8)
+        fem_threshold = _weighted_quantile(active["FEM"], areas, 0.99)
+        fem_mask = active["FEM"] >= fem_threshold
+        for offset, family in enumerate(FAMILIES, start=4):
+            pred_mask = active[family] >= fem_threshold
+            code = fem_mask.astype(np.int8) + 2 * pred_mask.astype(np.int8)
+            axes[row_index, offset].scatter(
+                coordinates[:, 0], coordinates[:, 1], c=code, s=0.08,
+                vmin=0, vmax=3, cmap=overlap_cmap, linewidths=0, rasterized=True,
+            )
+            axes[row_index, offset].set_title(f"{family} FEM-p99 overlap", fontsize=8)
+        axes[row_index, 0].set_ylabel(
+            f"{heldout.replace('factorial_', '')}\nc{target_cycle}", fontsize=8
+        )
+        for axis in axes[row_index]:
+            axis.set_aspect("equal")
+            axis.set_xticks([])
+            axis.set_yticks([])
+    fig.suptitle(
+        f"FEM-centred {prefix} h3 active field and absolute-support overlap (seed 1)\n"
+        "overlap: blue FEM-only, orange model-only, yellow intersection, grey neither",
+        fontsize=11,
+    )
+    fig.savefig(out / f"representative_{prefix}_active_support.png", dpi=220)
+    plt.close(fig)
+
+
 def main() -> None:
     args = parse_args()
     producer = json.loads(args.producer_manifest.read_text())
     runs = load_runs(args.runs, producer)
     args.out.mkdir(parents=True, exist_ok=True)
     summary = aggregate_runs(runs)
+    model_summary = model_task_summary(summary)
+    horizons = horizon_summary(runs)
     paired_rows = paired(summary)
     warnings = warning_summary(runs)
     write_csv(args.out / "per_run_task_summary.csv", summary)
+    write_csv(args.out / "model_task_summary.csv", model_summary)
+    write_csv(args.out / "horizon_summary.csv", horizons)
+    write_csv(args.out / "runtime_summary.csv", runtime_summary(summary))
     write_csv(args.out / "paired_vs_markov.csv", paired_rows)
     write_csv(args.out / "transition_warning_summary.csv", warnings)
     plot_summary(summary, args.out)
+    if args.data_root is not None:
+        plot_representative_fields(runs, args.data_root, args.out, "transition")
+        plot_representative_fields(runs, args.data_root, args.out, "reset")
 
     promotions = {}
     for family in ("tcn", "transformer"):
@@ -234,6 +480,11 @@ def main() -> None:
             "95% intervals for same-regime and reset tasks"
         ),
         "promotions": promotions,
+        "task_gate_passed": False,
+        "task_gate_failures": {
+            "transition_warning": "all 36 runs missed all six transition-positive states",
+            "reset_propagation": "all families produced about 95x FEM absolute active-support area",
+        },
         "calibrated_hazard_rul": "unavailable",
         "claim_scope": "within-Hard5 shared-geometry numerical factorial only",
         "claims_forbidden": [
@@ -242,16 +493,47 @@ def main() -> None:
         ],
     }
     (args.out / "decision.json").write_text(json.dumps(decision, indent=2) + "\n")
+    task_labels = {
+        "observed_state_same_regime_h1_h3": "observed-state h1-h3",
+        "autonomous_transition_warning": "transition warning",
+        "observation_reset_conditional_propagation": "first-hit reset h1-h3",
+    }
+    table = [
+        "| Task | Family | Active log-MAE | FEM-p99 IoU | Support ratio |",
+        "|---|---|---:|---:|---:|",
+    ]
+    for row in model_summary:
+        table.append(
+            f"| {task_labels[row['task']]} | {row['family']} | "
+            f"{row['active_log_mae_mean']:.4f} | "
+            f"{row['absolute_p99_iou_mean']:.5f} | "
+            f"{row['support_area_ratio_mean']:.2f} |"
+        )
     (args.out / "decision.md").write_text(
         "# Factorial LOCO decision\n\n"
-        f"Completed {len(runs)}/36 fixed runs. Promotion results: "
-        f"`{json.dumps(promotions, sort_keys=True)}`.\n\n"
+        "## Verdict\n\n"
+        f"Completed and verified {len(runs)}/36 fixed runs. Neither TCN nor "
+        "Transformer is promoted over the matched Markov graph control: "
+        f"`{json.dumps(promotions, sort_keys=True)}`. The held-out evaluation is "
+        "complete, but the forecast task gate fails.\n\n"
+        "## Absolute FEM-centred metrics\n\n"
+        + "\n".join(table)
+        + "\n\n"
+        "## Mechanism result\n\n"
+        "Same-regime h1-h3 errors are small, but neither temporal candidate has "
+        "favorable paired 95% intervals for both active log-MAE and FEM-p99 IoU. "
+        "All 36 runs miss every transition-positive warning state. After a true "
+        "first-hit observation reset, all three families diffuse the absolute "
+        "active support to about 95 times the FEM area; therefore the earlier "
+        "single-trajectory reset-recovery result does not generalize to this "
+        "four-trajectory factorial.\n\n"
+        "## Claim boundary\n\n"
         "These are synthetic shared-geometry within-Hard5 results. Calibrated "
-        "hazard/RUL, roads, geometry and material generalization remain blocked.\n"
+        "hazard/RUL, roads, geometry and material generalization remain blocked. "
+        "A negative model-promotion result is not an incomplete experiment.\n"
     )
     print(json.dumps(decision, indent=2))
 
 
 if __name__ == "__main__":
     main()
-

@@ -1,8 +1,8 @@
 {
   "protocol_id": "road_multi_trajectory_forecast_reassessment_v1_20260729",
-  "status": "sealed_ready_for_within_hard5_factorial_training",
+  "status": "completed_within_hard5_factorial_negative_result",
   "claim_class": "framework-validation",
-  "training_launched": false,
+  "training_launched": true,
   "producer_contract": {
     "owner": "Agent/FEM task 2",
     "path": "analysis/fem_multitrajectory_contract_20260729/RUN_MANIFEST.json",

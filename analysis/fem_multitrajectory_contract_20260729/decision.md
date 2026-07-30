@@ -20,3 +20,14 @@ The Umax 0.11/0.12/0.13 set passed 3/3 validation, but remains one load-amplitud
 Each accepted trajectory carries cycle-peak semantics, explicit substep-to-raw-step mapping, distinct first-hit and confirmed roles, immutable state/provenance hashes, mesh identity, and damage, alpha_bar, fatigue degradation, raw driver, derived damage degradation, and derived active driver. Crack-image and strain-localization channels are synthetic FEM proxies; FWD is unavailable, so none may be relabelled as real road measurement.
 
 Both split locks use complete trajectories. Node, cycle, and cross-window leakage are forbidden. Mixed 5/8-step states are allowed only as explicitly conditioned separate factorial trajectories, never silently merged under one loading protocol.
+
+## Wider local inventory audit
+
+A 2026-07-31 read-only inventory confirmed that no other local asset closes the
+road-like gate. Azinpour R=0.1/R=0.5 are one SENT load-ratio family and lack the
+unified elementwise history/raw/active event bundle. The richer Azinpour N100
+export is only an early prefix. The PCC PF-CZM archive stops without a complete
+fracture event. PaveTrack_PD is real imagery but is an observation dataset, not
+a FEM mechanism trajectory. Therefore the strict road-like count remains
+`0/3`; the four accepted Hard5 trajectories retain only their controlled
+factorial scope.

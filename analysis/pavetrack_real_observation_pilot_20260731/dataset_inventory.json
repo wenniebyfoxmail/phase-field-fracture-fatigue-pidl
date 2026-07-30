@@ -1,0 +1,20 @@
+{
+  "claim_scope": "L1 image-space crack geometry availability only",
+  "cross_visit_registration_available": false,
+  "duplicate_manifest_rows": 319,
+  "eligible_crack_sequences": 186,
+  "evidence_class": "real_measurement_visual_only",
+  "filename_timestamp_parseable": 8910,
+  "latent_fields_used": false,
+  "location_count": 165,
+  "manifest_rows": 9247,
+  "measured_maintenance_records_available": false,
+  "missing_image_or_mask_pairs": 0,
+  "paired_mechanical_channels_available": false,
+  "physical_pixel_scale_available": false,
+  "sampled_pairs": 24,
+  "schema_version": "pavetrack_visual_inventory_v1",
+  "selected_sequences": 3,
+  "timezone_declared": false,
+  "unique_image_mask_pairs": 8928
+}

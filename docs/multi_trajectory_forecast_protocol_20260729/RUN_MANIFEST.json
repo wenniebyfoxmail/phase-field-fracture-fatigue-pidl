@@ -1,15 +1,15 @@
 {
   "package_id": "road-multi-trajectory-forecast-protocol-20260729",
-  "status": "producer_ready_blocked_by_access",
+  "status": "completed_negative_result",
   "claim_class": "within-Hard5 shared-geometry numerical factorial",
-  "training_launched": false,
+  "training_launched": true,
   "producer_access": {
-    "status": "blocked_no_authenticated_producer_session",
-    "taobo": "TCP reachable; SSH key exchange reset by peer",
+    "status": "complete_verified",
+    "taobo": "GPUServer8 completed 36/36 jobs on GPUs 3,4,5",
     "csd3": "login reachable; current credentials rejected",
-    "run_directory": null,
-    "gpu": null,
-    "pid": null
+    "run_directory": "/mnt/data2/drtao/pidl_archives/pf_factorial_loco_b05180d_r3_20260729",
+    "gpu": "3,4,5",
+    "pid": 3010434
   },
   "producer_contract": {
     "agent2_commit": "90cf8a3703d03609ad7daf066d04ab051c2f7500",
@@ -50,16 +50,28 @@
       "calibrated predictive uncertainty is unavailable"
     ]
   },
+  "result": {
+    "declared_jobs": 36,
+    "completed_jobs": 36,
+    "failed_jobs": 0,
+    "remote_file_count": 254,
+    "remote_sha256_manifest": "6b292aeaed15f2d3beda482382bf884cb48eb12d90a5f19c5706f5540a085b33",
+    "tcn_promoted": false,
+    "transformer_promoted": false,
+    "forecast_task_gate_passed": false,
+    "local_archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/factorial_loco_matrix_20260729"
+  },
   "materialized_dataset": {
     "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/factorial_loco_temporal_dataset_20260729",
     "size": "398M",
     "hash_check": "PASS"
   },
   "tests": {
-    "full_suite_passed": 170,
+    "focused_suite_passed": 30,
+    "full_suite_passed": 241,
     "skipped": 2,
     "failed": 0,
-    "warnings": 4
+    "warnings": 1
   },
   "claims_forbidden": [
     "road-like LOTO",

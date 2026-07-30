@@ -293,18 +293,30 @@ def validate_package(package: dict[str, Any]) -> GateResult:
         dimensionless.get("exact_pi_positive_control_passed", False)
         and dimensionless.get("model_form_negative_control_passed", False)
     )
+    forecast = tracks["forecast"]
+    evaluation_completed = forecast.get(
+        "held_out_evaluation_completed",
+        forecast.get("held_out_results_passed", False),
+    )
+    forecast_task_gate_passed = forecast.get(
+        "forecast_task_gate_passed",
+        forecast.get("held_out_results_passed", False),
+    )
     road_validation_ready = (
         dimensionless_ready
         and road_training_ready
         and forecast_ready
         and observation_ready
-        and tracks["forecast"].get("held_out_results_passed", False)
+        and evaluation_completed
+        and forecast_task_gate_passed
         and tracks["reality_observation"].get("real_data_evaluated", False)
     )
-    if not tracks["forecast"].get("held_out_results_passed", False):
-        blockers.append("held_out_trajectory_forecast_not_passed")
-        if tracks["forecast"].get("producer_access") == "blocked_authentication":
+    if not evaluation_completed:
+        blockers.append("held_out_trajectory_forecast_not_evaluated")
+        if forecast.get("producer_access") == "blocked_authentication":
             blockers.append("forecast_producer_access_blocked")
+    elif not forecast_task_gate_passed:
+        blockers.append("held_out_trajectory_forecast_gate_not_passed")
     if not tracks["reality_observation"].get("real_data_evaluated", False):
         blockers.append("real_road_data_not_evaluated")
 

@@ -61,18 +61,25 @@
     },
     "forecast": {
       "candidates": ["markov_graph", "tcn", "transformer"],
-      "training_started": false,
+      "training_started": true,
       "producer_gate_passed": true,
-      "producer_access": "blocked_authentication",
+      "producer_access": "complete_verified",
       "declared_job_count": 36,
-      "completed_job_count": 0,
+      "completed_job_count": 36,
       "split_type": "leave-one-entire-trajectory-out",
       "tasks": [
         "observed_state_h1_h3",
         "transition_warning",
         "observation_reset_propagation"
       ],
-      "held_out_results_passed": false
+      "held_out_results_passed": false,
+      "held_out_evaluation_completed": true,
+      "forecast_task_gate_passed": false,
+      "candidate_promotions": {
+        "tcn": false,
+        "transformer": false
+      },
+      "result_archive_sha256_manifest": "6b292aeaed15f2d3beda482382bf884cb48eb12d90a5f19c5706f5540a085b33"
     },
     "reality_observation": {
       "direct_channels": [
@@ -104,7 +111,26 @@
       "missingness_masked": true,
       "latent_to_sensor_firewall": true,
       "identifiability_matrix": true,
-      "real_data_evaluated": false
+      "real_visual_data_evaluated": true,
+      "real_data_evaluated": false,
+      "real_visual_dataset_inventory": {
+        "dataset_id": "PaveTrack_PD_local_20260731",
+        "unique_image_mask_pairs": 8928,
+        "location_count": 165,
+        "date_start": "2022-04-18",
+        "date_end": "2023-12-31",
+        "physical_pixel_scale_available": false,
+        "timezone_declared": false,
+        "cross_visit_registration_available": false,
+        "paired_mechanical_channels_available": false,
+        "provenance_count_reconciled": false,
+        "decision_scope": "visual_geometry_pilot_only",
+        "pilot_package": "analysis/pavetrack_real_observation_pilot_20260731",
+        "selected_long_crack_sequences": 3,
+        "sealed_observation_pairs": 24,
+        "missing_selected_pairs": 0,
+        "latent_fields_used": false
+      }
     }
   }
 }

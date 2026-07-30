@@ -1,59 +1,63 @@
-# Decision: signed factorial LOCO producer gate
+# Decision: completed factorial LOCO forecast matrix
 
-## Readiness verdict
+## Verdict
 
-The scoped producer gate passes for a controlled **within-Hard5 numerical
-factorial** experiment. It does not pass for roads.
+The sealed within-Hard5 forecast experiment is complete. Taobo executed all
+36 fixed jobs (4 held-out trajectories x 3 model families x 3 seeds) for 3000
+steps. The downloaded archive preserved all 36 run directories and passed
+254/254 SHA-256 checks against the remote manifest.
 
-- Agent2 producer commit: `90cf8a3703d03609ad7daf066d04ab051c2f7500`
-- Contract file SHA: `c32b594559362bf7b7a7b4892e74f8d1001bb8d5ac88c3a3776a8e8333aa57df`
-- Internal LOCO lock: `5904af500cde315d8ee9f9087d3f5088c03b59b76cf23f8fbf7b80f6c3fb1691`
-- Eligible inventory: four factorial trajectories, 348 cycle-peak states
-- Split: four complete-trajectory folds; no node, cycle or window crossing
-- Field and deterministic transition-warning training: ready
-- Calibrated hazard/RUL: blocked
+Neither TCN nor Transformer is promoted over the matched Markov graph control.
+The held-out evaluation is complete, but the forecast task gate fails.
 
-The producer package contains 624 states in total, but 276 belong to three Umax
-sensitivity trajectories. They are excluded from LOCO and do not count as new
-factorial trajectories.
+## FEM-centred result
 
-## Matched model gate
+Values below are means over 12 independent fold-seed units. The full tables
+also report 95% intervals and paired same-fold, same-seed differences.
 
-Only Markov graph, TCN and Transformer are ranking eligible. They share the same
-graph encoder (`local_dim=49`, `token_dim=50`), two forecast-time loading
-schedule channels, loss, optimizer, three-step exposure, 3000 steps and seeds
-1/2/3. Temporal widths are fixed before training.
+| Task | Family | Active log-MAE | FEM-p99 IoU | Absolute support ratio |
+|---|---|---:|---:|---:|
+| observed-state h1-h3 | Markov | 0.0586 | 0.6301 | 0.698 |
+| observed-state h1-h3 | TCN | 0.0546 | 0.6024 | 0.677 |
+| observed-state h1-h3 | Transformer | 0.0530 | 0.6023 | 0.672 |
+| transition warning | Markov | 1.0559 | 0.4833 | 32.84 |
+| transition warning | TCN | 1.0553 | 0.4860 | 32.87 |
+| transition warning | Transformer | 1.0586 | 0.4844 | 32.89 |
+| first-hit reset h1-h3 | Markov | 2.6136 | 0.01045 | 94.51 |
+| first-hit reset h1-h3 | TCN | 2.6430 | 0.01041 | 94.77 |
+| first-hit reset h1-h3 | Transformer | 2.6493 | 0.01041 | 94.76 |
 
-| Model | Context | Width | Parameters | Error from 329k |
-|---|---:|---:|---:|---:|
-| Markov | 1 | 463 | 328818 | 0.055% |
-| TCN | 3 | 334 | 328745 | 0.078% |
-| Transformer | 3 | 124 | 328863 | 0.042% |
+In same-regime propagation, the temporal models reduce average active-field
+amplitude error slightly but worsen FEM-p99 localization. None of the primary
+paired 95% intervals excludes zero favorably for both active log-MAE and IoU.
 
-This is a 4 fold x 3 model x 3 seed matrix: 36 fixed jobs. No architecture,
-context or checkpoint selection is permitted on a held-out combination.
+All 36 runs miss every one of the six transition-positive warning states in
+their held-out trajectory. The event-state reset indexing was audited: the
+forecast history includes the true FEM first-hit state. Nevertheless, the next
+three predicted states spread absolute active support to about 95 times the FEM
+area. The earlier single-trajectory reset-recovery result therefore does not
+generalize to this four-trajectory factorial.
 
-## Sealed evaluation
+## Cost
 
-Each held-out trajectory is evaluated separately on:
+Mean training time was 304 s for Markov, 346 s for TCN and 363 s for
+Transformer. Parameter counts remain within the frozen 1% matching gate.
 
-1. observed-state same-regime rolling h1-h3;
-2. autonomous pre-transition warning using the producer's physical penetration
-   criterion on predicted fields;
-3. true-observation reset at first hit followed by conditional h1-h3.
+## Evidence
 
-Metrics remain FEM eta0 centred: damage linear residuals; history, raw and
-active log residuals; absolute/own p99 support; area ratio; centroid and width;
-and deterministic missed/false transition warnings. Results are paired against
-the same-fold, same-seed Markov control.
+Formal result package:
+
+`/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/factorial_loco_matrix_20260729`
+
+The analysis directory contains model/task and horizon summaries, paired
+intervals, runtime, transition-warning counts, the all-fold scatter plot, and
+FEM-centred transition/reset active-support montages. The remote result manifest
+SHA-256 is
+`6b292aeaed15f2d3beda482382bf884cb48eb12d90a5f19c5706f5540a085b33`.
 
 ## Claim boundary
 
-Passing this run can support only held-out-combination performance within one
-shared geometry, mesh, material, Umax and synthetic FEM family. It cannot
-support road-like LOTO, independent roads, real-road validation, geometry or
-material generalisation.
-
-Hazard/RUL remains unavailable because all four trajectories terminate in an
-event and uncertainty is uncalibrated. Unlimited recursive rollout is not a
-road long-horizon forecast.
+This is a synthetic, shared-geometry, within-Hard5 initial-tip/loading-history
+factorial. It is not road-like LOTO and provides no geometry, material, road or
+calibrated hazard/RUL generalization. A negative promotion result is still a
+completed experiment; it must not be relabelled as missing producer access.

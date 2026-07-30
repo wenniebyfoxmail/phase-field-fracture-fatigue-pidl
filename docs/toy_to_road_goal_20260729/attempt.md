@@ -1,6 +1,6 @@
 # Attempt toy_to_road_evidence_goal_20260729
 
-- Status: `blocked`
+- Status: `active_partial_evidence`
 - Created: 2026-07-29T15:41:10+01:00
 - Closed: None
 - Type: `framework-validation`
@@ -50,6 +50,11 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 - add: `analysis/fem_multitrajectory_contract_20260729/decision.md` - Integrated validated 4-cell Hard5 factorial LOCO bundle while keeping road-like LOTO at 0/3
 - add: `docs/multi_trajectory_forecast_protocol_20260729/decision.md` - Integrated sealed Markov TCN Transformer protocol and explicit hazard RUL blockers; producer training awaits signed bundle consumption
 - add: `docs/multi_trajectory_forecast_protocol_20260729/producer_gate_20260729/producer_experiment_manifest.json` - Accepted signed 4-fold 36-job producer gate with one-percent parameter matching for Markov TCN Transformer
+- add: `docs/toy_to_road_goal_20260729/decision.md` - Integrated the four tracks into a terminal blocked-missing-evidence road-transfer verdict
+- add: `SENS_tensile/analyze_pavetrack_visual_observation.py` - Added a deterministic visual-only real-road inventory with source hashing and image-space geometry
+- add: `analysis/pavetrack_real_observation_pilot_20260731/decision.md` - Sealed 24 observations from three long PaveTrack crack sequences without latent-field leakage
+- modify: `SENS_tensile/analyze_factorial_loco_results.py` - Added strict run/budget checks, absolute model-task and horizon summaries, runtime, and FEM-centred transition/reset figures
+- modify: `source/toy_to_road_evidence_gate.py` - Separated completed held-out evaluation from forecast task acceptance
 
 ## Input Assets
 - `docs/road_rescaling_bridge_20260724/independent_review.md` (independent scale-transfer review; exists)
@@ -67,29 +72,33 @@ Scaling, trajectory generalization, temporal architecture, and observation ident
 - pass: forecast_protocol_integration - 66 passed and 2 optional fixture tests skipped; no training result is claimed yet.
 - pass: signed_forecast_producer_gate - 61 passed; within-Hard5 producer gate released, road-like and hazard/RUL gates remain closed.
 - pass: external_blocker_reporting - 71 passed; the machine gate preserves within-benchmark training readiness while separately reporting inaccessible F1b and forecast producers.
+- pass: factorial_loco_execution - Taobo completed 36/36 fixed jobs; 254/254 downloaded files match the remote SHA-256 manifest.
+- pass: factorial_loco_analysis_tests - 30 focused tests passed; no temporal candidate met the locked promotion rule.
+- pass: final_full_regression - 245 passed, 2 skipped, 1 pre-existing Transformer nested-tensor warning.
+- pass: producer_runtime_audit - VPN and Taobo are healthy, but sealed F1b remains Windows-MATLAB-only because Mac and Taobo lack MATLAB, GRIPHFiTH MEX and SuiteSparse.
+- pass: wider_trajectory_inventory - Hard5 factorial remains the only complete unified mechanism corpus; strict independent road-like count is 0/3.
+- pass: real_observation_inventory - PaveTrack_PD contains 8,928 unique real image-mask pairs across 165 locations, but lacks physical scale, timezone, cross-visit registration and paired mechanical/load/environment channels.
+- pass: pavetrack_visual_pilot - 4 tests passed; 24/24 selected image-mask pairs were hashed and all six package assets passed SHA-256 verification.
 
 ## Result Interpretation
-The four-track evidence contract is valid and the Hard5 factorial is ready for
-within-benchmark LOCO training. This is not road readiness. F1b still needs a
-fresh Windows-FEM solve; the signed 36-job forecast matrix still needs an
-authenticated GPU producer; road-like trajectories remain 0/3; and no real-road
-dataset has passed the measurement interface.
+The four-track evidence contract is valid and the Hard5 factorial LOCO matrix
+is complete. This is not road readiness. F1b still needs a fresh Windows-FEM
+solve; road-like trajectories remain 0/3; and no real-road dataset has passed
+the measurement interface. TCN and Transformer are not promoted; all models
+miss transition warning and fail post-reset active-support localization.
 
 ## Claim After Attempt
-Corrected scaling, factorial trajectory provenance, forecast protocol, and the
-measurement firewall are implemented and verified. Exact-Pi solver invariance,
-held-out forecast performance, road-trajectory generalization, and real-road
+Corrected scaling, factorial trajectory provenance, completed held-out forecast
+performance, and the measurement firewall are implemented and verified.
+Exact-Pi solver invariance, road-trajectory generalization, and real-road
 identifiability remain unproven.
 
 ## Next Action
-Retry the approved Windows-FEM, Taobo, and CSD3 producers without changing the
-sealed inputs. On access recovery, run F1b and the 36-job Markov/TCN/Transformer
-LOCO matrix, download immutable outputs, and rerun this gate. Do not launch a
-new architecture or claim road validation while the road-like and real-data
-blockers remain.
+Run the unchanged F1b input on the approved Windows-FEM producer when available;
+acquire three road-like trajectories and a registered real-road observation
+dataset. Do not launch a new temporal architecture or claim road validation
+while these blockers remain.
 
-Blocked audit: the same producer-access condition was confirmed on three
-consecutive goal turns. Tunnelblick remained disconnected and requires explicit
-authorization before Codex may change VPN state; Taobo reset SSH during key
-exchange; CSD3 rejected both configured public keys; and no Windows-FEM F1b
-candidate appeared.
+Resumption audit: after explicit VPN authorization, Tunnelblick connected and
+Taobo completed the sealed forecast matrix. CSD3 credentials and Windows-FEM
+F1b remain unavailable, but Taobo is no longer an active blocker.

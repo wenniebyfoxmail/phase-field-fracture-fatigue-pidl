@@ -1,0 +1,18 @@
+{
+  "dataset_root": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/PaveTrack_PD/PaveTrack_PD",
+  "outputs": [
+    "dataset_inventory.json",
+    "selected_visual_sequences.csv",
+    "sampled_visual_observations.csv",
+    "sampled_mask_area_trajectories.png",
+    "decision.md"
+  ],
+  "parameters": {
+    "eligibility": "crack category; >=10 records; >=90 day span; same camera suffix",
+    "samples_per_sequence": 8,
+    "sequence_count": 3
+  },
+  "schema_version": "pavetrack_visual_pilot_run_v1",
+  "script_sha256": "7790200d0e83a62e6f17cca4d40feaf4bd20199275100c78dccc8852e6cab8f0",
+  "source_manifest_sha256": "81f2585a9e093f4c2c6e88587e43371ce75a1859d24c0da587248ac40c91b798"
+}

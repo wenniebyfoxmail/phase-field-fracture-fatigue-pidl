@@ -84,6 +84,8 @@ def valid_package() -> dict:
                     "observation_reset_propagation",
                 ],
                 "held_out_results_passed": True,
+                "held_out_evaluation_completed": True,
+                "forecast_task_gate_passed": True,
             },
             "reality_observation": {
                 "direct_channels": [
@@ -168,11 +170,27 @@ def test_external_producer_blockers_are_reported_without_closing_readiness() -> 
     ] = False
     package["tracks"]["dimensionless_transfer"]["producer_access"] = "blocked"
     package["tracks"]["forecast"]["held_out_results_passed"] = False
+    package["tracks"]["forecast"]["held_out_evaluation_completed"] = False
+    package["tracks"]["forecast"]["forecast_task_gate_passed"] = False
     package["tracks"]["forecast"]["producer_access"] = "blocked_authentication"
     result = validate_package(package)
     assert result.training_ready
     assert "f1b_producer_access_blocked" in result.blockers
     assert "forecast_producer_access_blocked" in result.blockers
+
+
+def test_completed_negative_forecast_is_not_reported_as_unevaluated() -> None:
+    package = valid_package()
+    forecast = package["tracks"]["forecast"]
+    forecast["held_out_results_passed"] = False
+    forecast["held_out_evaluation_completed"] = True
+    forecast["forecast_task_gate_passed"] = False
+    forecast["producer_access"] = "complete_verified"
+    result = validate_package(package)
+    assert "held_out_trajectory_forecast_not_evaluated" not in result.blockers
+    assert "forecast_producer_access_blocked" not in result.blockers
+    assert "held_out_trajectory_forecast_gate_not_passed" in result.blockers
+    assert not result.road_validation_ready
 
 
 def test_latent_field_cannot_be_a_direct_sensor() -> None:

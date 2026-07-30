@@ -358,7 +358,8 @@ def test_sealed_protocol_forbids_architecture_fishing_and_cycle_leakage() -> Non
     ]
     assert "any new architecture" in protocol["model_matrix"]["excluded"]
     assert protocol["long_horizon"]["free_rollout_role"] == "stress diagnostic only"
-    assert not protocol["training_launched"]
+    assert protocol["training_launched"]
+    assert protocol["status"] == "completed_within_hard5_factorial_negative_result"
 
 
 def test_core_manifest_excludes_nonranking_references() -> None:

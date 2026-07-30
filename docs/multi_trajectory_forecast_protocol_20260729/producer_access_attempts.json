@@ -1,10 +1,10 @@
 {
-  "status": "blocked_no_authenticated_producer_session",
-  "checked_at": "2026-07-29T17:13:00+01:00",
-  "training_launched": false,
-  "run_directory": null,
-  "gpu": null,
-  "pid": null,
+  "status": "resolved_taobo_complete_verified",
+  "checked_at": "2026-07-31T00:06:17+01:00",
+  "training_launched": true,
+  "run_directory": "/mnt/data2/drtao/pidl_archives/pf_factorial_loco_b05180d_r3_20260729",
+  "gpu": "3,4,5",
+  "pid": 3010434,
   "attempts": [
     {
       "producer": "Taobo",
@@ -24,6 +24,13 @@
         "ED25519 SHA256:Gco9sNqRL5suJkftfEP4772aU/dG2yoH0KF14Ce06Mw"
       ],
       "error": "Permission denied (publickey,keyboard-interactive,hostbased)"
+    },
+    {
+      "producer": "Taobo",
+      "host": "172.16.100.2:22",
+      "authenticated": true,
+      "vpn_configuration": "Tunnelblick client connected after explicit user authorization",
+      "result": "36 complete, 0 failed; 254/254 downloaded files passed remote SHA-256 manifest"
     }
   ]
 }
