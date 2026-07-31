@@ -1,0 +1,15 @@
+{
+  "schema_version": "toy_to_road_case_input_lock_v1",
+  "case_id": "T2_material_state",
+  "family_id": "toy_to_road_independent_fem_20260731",
+  "parent_lock_sha256": "9d8c9a63243df59731d8daa35775a4f18157ae5078aa8994f4d55e6552b9d43c",
+  "primary_variation_axis": "material_state",
+  "allowed_changed_parent_fields": ["material_state"],
+  "changed_parent_fields": ["material_state"],
+  "censor_cap": 150,
+  "parent_candidate_diff": {
+    "parent": {"material_state": {"Gc": 0.01, "Pi_ratio": 1.0}},
+    "candidate": {"material_state": {"Gc": 0.008, "Pi_ratio": 0.8}}
+  },
+  "candidate": {"material_state": {"Gc": 0.008, "Pi_ratio": 0.8}}
+}

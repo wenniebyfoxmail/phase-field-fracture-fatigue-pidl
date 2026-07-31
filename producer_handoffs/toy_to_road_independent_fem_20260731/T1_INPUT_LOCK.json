@@ -1,0 +1,15 @@
+{
+  "schema_version": "toy_to_road_case_input_lock_v1",
+  "case_id": "T1_initial_defect",
+  "family_id": "toy_to_road_independent_fem_20260731",
+  "parent_lock_sha256": "9d8c9a63243df59731d8daa35775a4f18157ae5078aa8994f4d55e6552b9d43c",
+  "primary_variation_axis": "initial_defect",
+  "allowed_changed_parent_fields": ["initial_defect"],
+  "changed_parent_fields": ["initial_defect"],
+  "censor_cap": 150,
+  "parent_candidate_diff": {
+    "parent": {"initial_defect": {"tip": [0.0, 0.0]}},
+    "candidate": {"initial_defect": {"tip": [0.125, 0.0]}}
+  },
+  "candidate": {"initial_defect": {"tip": [0.125, 0.0]}}
+}

@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 HANDOFF = ROOT / "producer_handoffs" / "toy_to_road_independent_fem_20260731"
@@ -50,3 +52,39 @@ def test_parent_lock_prohibits_road_sensor_claims_and_network_training() -> None
     assert not policy["pidl_network_training_authorized"]
     assert policy["claim_scope"] == "synthetic_whole_trajectory_loto_only"
     assert not policy["road_validation_authorized"]
+
+
+@pytest.mark.parametrize(
+    ("name", "axis"),
+    [
+        ("T1_INPUT_LOCK.json", "initial_defect"),
+        ("T2_INPUT_LOCK.json", "material_state"),
+        ("T3_INPUT_LOCK.json", "loading_history"),
+    ],
+)
+def test_case_lock_declares_exactly_one_primary_axis(name: str, axis: str) -> None:
+    lock = load_json(HANDOFF / name)
+    assert lock["primary_variation_axis"] == axis
+    assert lock["changed_parent_fields"] == lock["allowed_changed_parent_fields"]
+    assert lock["censor_cap"] == 150
+
+
+def test_t1_lock_fixes_the_initial_defect_tip() -> None:
+    lock = load_json(HANDOFF / "T1_INPUT_LOCK.json")
+    assert lock["candidate"]["initial_defect"]["tip"] == [0.125, 0.0]
+
+
+def test_t2_lock_fixes_material_state_values() -> None:
+    lock = load_json(HANDOFF / "T2_INPUT_LOCK.json")
+    material_state = lock["candidate"]["material_state"]
+    assert material_state["Gc"] == 0.008
+    assert material_state["Pi_ratio"] == 0.8
+
+
+def test_t3_lock_fixes_loading_blocks() -> None:
+    lock = load_json(HANDOFF / "T3_INPUT_LOCK.json")
+    assert lock["candidate"]["loading_history"]["blocks"] == [
+        [1, 30, 0.108],
+        [31, 60, 0.126],
+        [61, 150, 0.120],
+    ]
