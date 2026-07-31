@@ -1,0 +1,147 @@
+{
+  "created_at": "2026-07-31T11:41:05.447034+01:00",
+  "decision": {
+    "next_same_asset_packet": "MnROAD Cell 22 2009-2013",
+    "public_sources_downloaded_and_audited": true,
+    "real_mechanical_road_data_evaluated": false,
+    "real_visual_data_evaluated": true,
+    "sample_level_cross_source_fusion_allowed": false
+  },
+  "idics_summary": {
+    "contrast": "Varying",
+    "declared_increment_px_each_axis": 0.05,
+    "declared_noise_gray_levels": 1.5,
+    "image_count": 21,
+    "image_shape": "512x512",
+    "max_registration_absolute_error_px": 0.019999980926513672,
+    "method": "TexGen"
+  },
+  "ltpp_summary": {
+    "distress_dates": [
+      "20000628"
+    ],
+    "distress_file_count": 6,
+    "maintenance_dates_manual_visual": [
+      "1993-08-01",
+      "1996-09-01",
+      "2000-05-01"
+    ],
+    "maintenance_file_count": 1,
+    "maintenance_work_codes": "not_machine_verified",
+    "profile_dates": [
+      "19970411",
+      "19981215",
+      "19991103",
+      "20000625"
+    ],
+    "profile_file_count": 32,
+    "profile_sample_counts": [
+      6295
+    ],
+    "profile_sample_spacings_m": [
+      0.025
+    ]
+  },
+  "mnroad_summary": {
+    "cell22_active_2009_selected_models": {
+      "LE": 2,
+      "PG": 2,
+      "TC": 16,
+      "TE": 2
+    },
+    "cell22_selected_models": {
+      "LE": 5,
+      "PG": 8,
+      "TC": 92,
+      "TE": 5
+    },
+    "sensor_cells": 90,
+    "sensor_rows": 11395,
+    "sensor_top_models": {
+      "CE": 1351,
+      "EC": 251,
+      "ET": 231,
+      "EW": 231,
+      "FW": 683,
+      "PG": 188,
+      "RW": 683,
+      "TC": 2381,
+      "TD": 784,
+      "VW": 703,
+      "WM": 891,
+      "XV": 643
+    },
+    "traffic_channels": "FHWA classes C1-C15|total volume|heavy commercial|BESAL|CESAL",
+    "traffic_daily_lane_rows": 14018,
+    "traffic_date_end": "2013-09-21",
+    "traffic_date_start": "1994-07-15"
+  },
+  "pavetrack_packages": [
+    "analysis/pavetrack_real_observation_pilot_20260731",
+    "analysis/pavetrack_registered_observation_gate_20260731"
+  ],
+  "raw_assets": [
+    {
+      "bytes": 320058,
+      "relative_path": "idics/2D_Challenge_1.0_set_descriptions.xlsx",
+      "sha256": "9be065629b91ace879141f1fef021f7baada141634228180fd3aeb8b1b52552c",
+      "source_url": "https://drive.google.com/uc?id=1vEFb6IbAhsq80PB0gbba3ozD6263aEv8"
+    },
+    {
+      "bytes": 4899697,
+      "relative_path": "idics/Sample1.zip",
+      "sha256": "b439db10a4b03ec34eae7482a4844b7ab603131f0863e366929ad5f3a8911c45",
+      "source_url": "https://drive.google.com/uc?id=1UUL4-mzJhp0Ffl1E0e6gcbXdGSP_VXUh"
+    },
+    {
+      "bytes": 1073909,
+      "relative_path": "ltpp_06B410/DIS_MDS_MDP_06B410.zip",
+      "sha256": "5c1b465971b4078926bc6244db6a83428da86b05bda586cce6a8a0223268a09e",
+      "source_url": "https://s3.amazonaws.com/zip.aims.infopave.com/SDR29/AIMS/DIS/MDS_MDP/06/DIS_MDS_MDP_06B410.zip"
+    },
+    {
+      "bytes": 52060,
+      "relative_path": "ltpp_06B410/IMS-171.pdf",
+      "sha256": "41b15bbabbb77acf0364c8ca1c90124d6b7e10f35e1f16cb4432f22fa15bd2ab",
+      "source_url": "https://infopave.fhwa.dot.gov/InfoPave_Repository/files/IMS-171.pdf"
+    },
+    {
+      "bytes": 16572,
+      "relative_path": "ltpp_06B410/MNT_06B410.zip",
+      "sha256": "158b7aa1477b8c6c96f1d8ec3668d138b5a7708d7e60159d412498552ac7a6bb",
+      "source_url": "https://s3.amazonaws.com/zip.aims.infopave.com/SDR29/AIMS/MNT/06/MNT_06B410.zip"
+    },
+    {
+      "bytes": 1426234,
+      "relative_path": "ltpp_06B410/PRF_LPF_ERD_06B410.zip",
+      "sha256": "2d9a96b6832e67d85a03529ba352bb11e9d078cbc4eed860a5f0b491d2260c07",
+      "source_url": "https://s3.amazonaws.com/zip.aims.infopave.com/SDR29/AIMS/PRF/LPF_ERD/06/PRF_LPF_ERD_06B410.zip"
+    },
+    {
+      "bytes": 37366,
+      "relative_path": "mnroad/MnROAD_Monitoring_Schedule.pdf",
+      "sha256": "5a119c1f89ba8488d7a5e1b67659b6a238283eb3ef2f98f61628da424bf9a900",
+      "source_url": "https://www.dot.state.mn.us/mnroad/data/files/MnROAD%20Monitoring%20Schedule.pdf"
+    },
+    {
+      "bytes": 7032279,
+      "relative_path": "mnroad/mainline_traffic_calculator_1994_2013.xlsx",
+      "sha256": "f63958f9fb53714866d5ae296d801c2306993aa86453e811f77741398f177e57",
+      "source_url": "https://www.dot.state.mn.us/mnroad/files/mnroad-mainline-traffic-calculator-1994-07-2013-09-updated.xlsx"
+    },
+    {
+      "bytes": 420148,
+      "relative_path": "mnroad/mnroad-weather-2014.pdf",
+      "sha256": "5b2c385eb7f3539f289b4abd204e96060d98555d8032dacb3fd925590a2678ff",
+      "source_url": "https://www.dot.state.mn.us/mnroad/files/mnroad-weather-2014.pdf"
+    },
+    {
+      "bytes": 603113,
+      "relative_path": "mnroad/sensor_locations.xlsx",
+      "sha256": "4bfce2d5e2274e4643e9ddd59468a26bc873ac5c57f657e1d283aaab6f9f4711",
+      "source_url": "https://www.dot.state.mn.us/mnroad/instrumentation/sensor_locations.xlsx"
+    }
+  ],
+  "raw_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/public_road_observation_sources_20260731/raw",
+  "schema_version": "public_road_observation_audit_v1"
+}

@@ -26,7 +26,7 @@
       "exact_pi_positive_control_passed": false,
       "exact_pi_replay_passed": true,
       "fresh_dimensional_solve": false,
-      "producer_access": "blocked",
+      "producer_access": "handoff_ready_user_execution_pending",
       "model_form_negative_control_passed": true,
       "negative_control_raw_active_status": "unobservable_not_imputed"
     },
@@ -113,6 +113,34 @@
       "identifiability_matrix": true,
       "real_visual_data_evaluated": true,
       "real_data_evaluated": false,
+      "public_source_audit": {
+        "package": "analysis/public_road_observation_source_audit_20260731",
+        "public_sources_downloaded_and_audited": true,
+        "sample_level_cross_source_fusion_allowed": false,
+        "ltpp_06B410": {
+          "profile_runs": 32,
+          "profile_survey_dates": 4,
+          "distress_images": 6,
+          "distress_dates": 1,
+          "maintenance_dates_manual_visual": 3,
+          "decision_scope": "section_level_condition_and_reset_only"
+        },
+        "mnroad": {
+          "located_sensor_rows": 11395,
+          "sensor_cells": 90,
+          "daily_lane_traffic_rows": 14018,
+          "traffic_date_start": "1994-07-15",
+          "traffic_date_end": "2013-09-21",
+          "numeric_mechanical_time_series_evaluated": false,
+          "next_same_asset_packet": "Cell 22 2009-2013"
+        },
+        "idics_2d_sample1": {
+          "image_count": 21,
+          "declared_shift_px_per_frame_each_axis": 0.05,
+          "max_selected_registration_error_px": 0.02,
+          "decision_scope": "observation_operator_metrology_only"
+        }
+      },
       "real_visual_dataset_inventory": {
         "dataset_id": "PaveTrack_PD_local_20260731",
         "unique_image_mask_pairs": 8928,

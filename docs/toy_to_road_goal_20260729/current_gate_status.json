@@ -1,7 +1,7 @@
 {
   "blockers": [
     "exact_pi_positive_control_not_passed",
-    "f1b_producer_access_blocked",
+    "f1b_fresh_solver_result_pending",
     "fewer_than_three_road_like_trajectories",
     "held_out_trajectory_forecast_gate_not_passed",
     "real_mechanical_road_data_not_evaluated"

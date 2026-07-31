@@ -27,6 +27,28 @@
 
 ## Active Requests
 
+## 2026-07-31 · Request 27: three independent synthetic FEM trajectory variants
+
+**Goal**: produce three complete, mechanism-resolved FEM trajectories that
+independently vary initial-defect geometry, fracture-material state and physical
+loading history. These are required for a whole-trajectory synthetic LOTO gate;
+they are not three real roads.
+
+Follow the standalone producer note exactly:
+
+```text
+docs/handovers/fem_toy_to_road_execution_note_20260731.md
+```
+
+Request 26 remains a separate, unchanged F1b exact-Pi solver control. Do not
+merge Request 26 with this trajectory family. Existing Umax sweeps, hard/soft
+initial amplitudes and five/eight-substep factorial cases do not satisfy Request
+27. Return immutable roots plus hashes; Mac will perform the final mechanism,
+state-semantics and provenance acceptance audit.
+
+**Priority**: high after Request 26 is launched or its exact environment blocker
+is reported. No PIDL training and no road-validation claim.
+
 ## 2026-07-29 · Request 26: F1b fresh exact-Pi dimensional solver-invariance control
 
 **Goal**: run one genuinely fresh GRIPHFiTH dimensional solve to determine

@@ -99,6 +99,14 @@ Decision: **completed negative result; no architecture promoted**.
   the public release for privacy, so route coordinates cannot be reconstructed
   from these files. It can support an image-space geometry task, not
   hidden-state assimilation, mechanism validation or RUL.
+- A separate public-source audit downloaded and checked LTPP 06B410 profile,
+  distress and maintenance assets; MnROAD sensor-location, mainline traffic,
+  monitoring and weather assets; and iDICs 2D Sample1. LTPP now supports a
+  section-level condition/reset pilot. MnROAD exposes the correct physical
+  channel design, but the numeric strain, pressure, temperature, FWD and
+  distress time series are not in the downloaded payload. iDICs validates DIC
+  metrology rather than road transfer. Cross-source pretraining is allowed;
+  sample-level concatenation across unrelated assets is prohibited.
 
 Decision: **measurement interface and L1 real visual inventory accepted; real
 mechanical evaluation not accepted**.
@@ -118,6 +126,7 @@ mechanical evaluation not accepted**.
 2. Supply three complete trajectories that independently vary initial defect,
    material/geometry state and loading history, then repeat whole-trajectory
    LOTO without adding architectures.
-3. Supply physical image scale and model-coordinate registration for PaveTrack;
-   add timezone, FWD/WIM/environment and measured maintenance channels before
-   any mechanical or RUL claim.
+3. Obtain the requested same-asset MnROAD Cell 22 packet for 2009-2013 with
+   LE/TE strain, PG pressure, TC temperature, FWD, distress, WIM/ESAL and
+   maintenance metadata. PaveTrack remains a separate visual-only task unless
+   physical scale and co-located mechanical channels become available.

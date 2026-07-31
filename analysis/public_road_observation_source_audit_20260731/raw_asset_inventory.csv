@@ -1,0 +1,11 @@
+relative_path,bytes,sha256,source_url
+idics/2D_Challenge_1.0_set_descriptions.xlsx,320058,9be065629b91ace879141f1fef021f7baada141634228180fd3aeb8b1b52552c,https://drive.google.com/uc?id=1vEFb6IbAhsq80PB0gbba3ozD6263aEv8
+idics/Sample1.zip,4899697,b439db10a4b03ec34eae7482a4844b7ab603131f0863e366929ad5f3a8911c45,https://drive.google.com/uc?id=1UUL4-mzJhp0Ffl1E0e6gcbXdGSP_VXUh
+ltpp_06B410/DIS_MDS_MDP_06B410.zip,1073909,5c1b465971b4078926bc6244db6a83428da86b05bda586cce6a8a0223268a09e,https://s3.amazonaws.com/zip.aims.infopave.com/SDR29/AIMS/DIS/MDS_MDP/06/DIS_MDS_MDP_06B410.zip
+ltpp_06B410/IMS-171.pdf,52060,41b15bbabbb77acf0364c8ca1c90124d6b7e10f35e1f16cb4432f22fa15bd2ab,https://infopave.fhwa.dot.gov/InfoPave_Repository/files/IMS-171.pdf
+ltpp_06B410/MNT_06B410.zip,16572,158b7aa1477b8c6c96f1d8ec3668d138b5a7708d7e60159d412498552ac7a6bb,https://s3.amazonaws.com/zip.aims.infopave.com/SDR29/AIMS/MNT/06/MNT_06B410.zip
+ltpp_06B410/PRF_LPF_ERD_06B410.zip,1426234,2d9a96b6832e67d85a03529ba352bb11e9d078cbc4eed860a5f0b491d2260c07,https://s3.amazonaws.com/zip.aims.infopave.com/SDR29/AIMS/PRF/LPF_ERD/06/PRF_LPF_ERD_06B410.zip
+mnroad/MnROAD_Monitoring_Schedule.pdf,37366,5a119c1f89ba8488d7a5e1b67659b6a238283eb3ef2f98f61628da424bf9a900,https://www.dot.state.mn.us/mnroad/data/files/MnROAD%20Monitoring%20Schedule.pdf
+mnroad/mainline_traffic_calculator_1994_2013.xlsx,7032279,f63958f9fb53714866d5ae296d801c2306993aa86453e811f77741398f177e57,https://www.dot.state.mn.us/mnroad/files/mnroad-mainline-traffic-calculator-1994-07-2013-09-updated.xlsx
+mnroad/mnroad-weather-2014.pdf,420148,5b2c385eb7f3539f289b4abd204e96060d98555d8032dacb3fd925590a2678ff,https://www.dot.state.mn.us/mnroad/files/mnroad-weather-2014.pdf
+mnroad/sensor_locations.xlsx,603113,4bfce2d5e2274e4643e9ddd59468a26bc873ac5c57f657e1d283aaab6f9f4711,https://www.dot.state.mn.us/mnroad/instrumentation/sensor_locations.xlsx

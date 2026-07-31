@@ -16,10 +16,10 @@ under the locked promotion rule and the transition/reset task gates fail.
 
 | Track | Current status | What is still required |
 |---|---|---|
-| Corrected scaling / Pi transfer | Diagnostic partial | Run the sealed F1b input as a fresh Windows-MATLAB GRIPHFiTH solve and pass field/event gates. |
+| Corrected scaling / Pi transfer | Diagnostic partial; producer note ready | Run the sealed F1b input as a fresh Windows-MATLAB GRIPHFiTH solve and pass field/event gates. |
 | Multi-trajectory FEM | Accepted within Hard5 factorial | Acquire at least three road-like trajectories differing in defect, material state, geometry or load history. |
 | Markov / TCN / Transformer forecast | Completed negative result | No candidate promoted; transition warnings were all missed and reset propagation produced about 95x FEM active-support area. |
-| Real measurement / inverse interface | Interface, provenance and image-space gate accepted | Add physical scale, model-coordinate alignment, timezone and mechanical/load/environment observations for state/RUL claims. |
+| Real measurement / inverse interface | Visual, LTPP, MnROAD metadata/traffic and DIC metrology layers audited | Acquire one same-cell numeric MnROAD mechanical packet before state/RUL claims. |
 
 ## Machine decision
 
@@ -36,7 +36,8 @@ unexecuted result.
 
 ## Remaining external boundary
 
-- F1b is Windows-MATLAB/GRIPHFiTH specific; no fresh candidate output exists.
+- F1b is Windows-MATLAB/GRIPHFiTH specific; the execution note is ready but no
+  fresh candidate output exists.
 - The current four FEM trajectories share one Hard5 geometry, mesh, material
   family and Umax; they cannot count as independent roads.
 - PaveTrack_PD provides 8,928 real location-image-mask pairs across 165
@@ -45,6 +46,12 @@ unexecuted result.
   has no physical pixel scale, timezone declaration, model-coordinate
   registration or paired FWD/WIM/environment measurements. It has not passed
   the mechanical measurement handoff.
+- A public-source pilot now contains LTPP 06B410 dated profile/distress/
+  maintenance assets, MnROAD 11,395 located sensor records plus 14,018 daily
+  lane traffic rows, and iDICs 2D Sample1. These support section-level
+  deterioration, load-exposure design and observation-operator metrology,
+  respectively. They are not one fused road trajectory. The MnROAD numeric
+  strain/FWD/distress/environment packet remains absent.
 
 The integrated decision is recorded in `decision.md` as
 `blocked_missing_evidence`.

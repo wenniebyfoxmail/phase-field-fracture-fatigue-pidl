@@ -1,0 +1,5 @@
+source_id,evidence_class,date_start,date_end,spatial_registration,allowed_use,prohibited_use,audit_status
+ltpp_06B410,real road section,1997-04-11,2000-06-28,06B410 section and dated survey directories,section-level real deterioration trajectory,not crack-tip mechanics or full-field hidden-state truth,downloaded_and_checked
+mnroad,real instrumented pavement facility,1994-07-15,2013-09-21,cell/station/offset/depth sensor registry,load/environment/mechanical observation bridge after same-cell numeric export,metadata and WIM aggregates alone are not state assimilation,downloaded_and_checked
+pavetrack,real repeated crack imagery,2022-04-18,2023-12-31,location-isolated IDs; no public route coordinates or physical scale,visual crack morphology and registration pretraining,not mechanical validation or physical RUL without scale and co-located channels,downloaded_and_checked
+idics_2d,synthetic/experimental DIC benchmark,not_calendar_time,not_calendar_time,image coordinates with declared subpixel motion,DIC observation-operator metrology and noise calibration,not road-domain training or fracture-mechanism evidence,downloaded_and_checked
