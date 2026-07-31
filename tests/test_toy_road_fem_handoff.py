@@ -22,19 +22,25 @@ def test_parent_lock_is_latest_c83_c86_baseline() -> None:
     assert lock["state_semantics_id"] == "cycle_peak_coherent_v1"
 
 
-def test_parent_lock_names_the_physical_source_family_as_authoritative() -> None:
+def test_parent_lock_keeps_physical_source_and_analysis_bundle_authoritative() -> None:
     lock = load_json(HANDOFF / "PARENT_LOCK.json")
     assert (
         lock["physical_source_package_id"]
         == "Hard5_eta0_5step_Umax_011_012_013_20260729"
     )
-    assert "parent_package_id" not in lock
-    assert "parent_bundle_id" not in lock
-    assert "parent_bundle_manifest_sha256" not in lock
+    assert lock["physical_source_role"] == "consumed_physical_bytes_and_windows_paths"
+    analysis_bundle = lock["authoritative_analysis_bundle"]
+    assert analysis_bundle["role"] == "consumed_mac_analysis_bundle_contract"
+    assert analysis_bundle["bundle_id"] == "bundle::hard5_eta0_u012_5step_20260729"
     assert (
-        lock["non_authoritative_logical_mac_bundle_alias"]["package_id"]
+        analysis_bundle["package_id"]
         == "Hard5_eta0_5step_Umax_0.12_20260729"
     )
+    assert (
+        analysis_bundle["bundle_manifest_sha256"]
+        == "ce36913ed75bbf2830a3016c442953317d6e968eff074e73c988704dbec118b3"
+    )
+    assert "non_authoritative_logical_mac_bundle_alias" not in lock
 
 
 def test_parent_lock_prohibits_road_sensor_claims_and_network_training() -> None:

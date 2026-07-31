@@ -1,8 +1,10 @@
 {
   "schema_version": "toy_to_road_parent_lock_v1",
   "physical_source_package_id": "Hard5_eta0_5step_Umax_011_012_013_20260729",
+  "physical_source_role": "consumed_physical_bytes_and_windows_paths",
   "parent_reference_id": "hard5_eta0_u012_5step_20260729",
-  "non_authoritative_logical_mac_bundle_alias": {
+  "authoritative_analysis_bundle": {
+    "role": "consumed_mac_analysis_bundle_contract",
     "bundle_id": "bundle::hard5_eta0_u012_5step_20260729",
     "package_id": "Hard5_eta0_5step_Umax_0.12_20260729",
     "bundle_manifest_sha256": "ce36913ed75bbf2830a3016c442953317d6e968eff074e73c988704dbec118b3"
