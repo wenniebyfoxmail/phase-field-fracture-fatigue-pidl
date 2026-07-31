@@ -1,9 +1,12 @@
 {
   "schema_version": "toy_to_road_parent_lock_v1",
+  "physical_source_package_id": "Hard5_eta0_5step_Umax_011_012_013_20260729",
   "parent_reference_id": "hard5_eta0_u012_5step_20260729",
-  "parent_bundle_id": "bundle::hard5_eta0_u012_5step_20260729",
-  "parent_package_id": "Hard5_eta0_5step_Umax_0.12_20260729",
-  "parent_bundle_manifest_sha256": "ce36913ed75bbf2830a3016c442953317d6e968eff074e73c988704dbec118b3",
+  "non_authoritative_logical_mac_bundle_alias": {
+    "bundle_id": "bundle::hard5_eta0_u012_5step_20260729",
+    "package_id": "Hard5_eta0_5step_Umax_0.12_20260729",
+    "bundle_manifest_sha256": "ce36913ed75bbf2830a3016c442953317d6e968eff074e73c988704dbec118b3"
+  },
   "event": {
     "first_hit": 83,
     "confirmed": 86
@@ -34,6 +37,12 @@
     "event_rule": "at_least_3_connected_or_adjacent_right_boundary_nodes_d_ge_0.95_x_ge_0.48_at_cycle_peak",
     "confirmation_cycles": 3,
     "right_censor_cap": 150
+  },
+  "immutable_policy": {
+    "latent_fem_fields_are_direct_road_sensors": false,
+    "pidl_network_training_authorized": false,
+    "claim_scope": "synthetic_whole_trajectory_loto_only",
+    "road_validation_authorized": false
   },
   "mesh": {
     "num_elem": 86408,
