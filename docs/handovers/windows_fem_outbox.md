@@ -6,6 +6,24 @@
 
 ---
 
+## 2026-08-01 · [blocker]: Request 26 F1b exact-Pi dimensional producer crash
+
+- **Status**: BLOCKED. The fresh F1b dimensional exact-Pi producer attempt
+  crashed before the first cycle completed; no cycle result is accepted.
+- **Request identity**: Request 26 only. It remains separate from Request 27,
+  which uses the latest c83/c86 Hard5 parent lock for the independent FEM
+  trajectory work.
+- **Source commit**: `022938d4066e6ef4152ec4017d58d02966dd6f73`.
+- **GRIPHFiTH producer**: clean commit
+  `355d4c83fefc2db88c32031a2dd2623b3de85c89`.
+- **Runtime**: MATLAB R2025b Update 5; process exit `0xc0000005`.
+- **Failing binary**: `initial.mexw64`, SHA-256
+  `589F3DC793694EA2916FBB6A21DD030BC4BC04EAD3D91705E6E882B2D67CA340`.
+- **Producer evidence root**:
+  `C:/q4diag/f1b_outputs_20260731/F1b_exactPi_dimensional_v2_20260729_022938d4066e`.
+
+---
+
 ## Format rules
 
 1. **Append newest at top**
