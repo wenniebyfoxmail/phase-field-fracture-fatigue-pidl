@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory = $true)][string]$GripfithRoot,
     [Parameter(Mandatory = $true)][string]$ParentRoot,
     [Parameter(Mandatory = $true)][string]$OutputParent,
+    [Parameter(Mandatory = $true)][string]$QualificationRoot,
     [Parameter(Mandatory = $true)]
     [ValidateScript({
         if ($_ -cnotin @('T1_initial_defect','T2_material_state','T3_loading_history')) {
@@ -24,12 +25,191 @@ $HandoffRelative = 'producer_handoffs/toy_to_road_independent_fem_20260731'
 $HandoffDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ManifestPath = Join-Path $HandoffDir 'SHA256SUMS.txt'
 $OutputRoot = Join-Path $OutputParent $CaseId
+$ApprovedInitialSha256 = 'ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db'
+$LegacyInitialSha256 = '589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340'
 
 function Get-Sha256([string]$Path) {
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
         throw "Missing hash-gated file: $Path"
     }
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+
+function Assert-Sha([object]$Value, [int]$Length, [string]$Label) {
+    if ([string]$Value -cnotmatch "^[0-9a-f]{$Length}$") {
+        throw "$Label is missing or malformed."
+    }
+}
+
+function Assert-QualificationReceipt(
+    [object]$Value,
+    [string]$ReceiptSha256,
+    [string]$ExpectedGripCommit,
+    [string]$ExpectedParentLockSha256
+) {
+    $required = @('schema_version','passed','runtime_lock_sha256',
+        'runtime_initial_sha256','source_commit','q1_receipt_sha256',
+        'q1_result_sha256','q2_receipt_sha256','q2_input_lock_sha256',
+        'parent_lock_sha256','parent_cycle1_sha256','parent_reference_id',
+        'mesh_ordering_sha256','parent_vtk_mesh_sha256','mask_set_sha256')
+    foreach ($name in $required) {
+        if ($null -eq $Value.PSObject.Properties[$name]) {
+            throw "Qualification provenance is missing $name."
+        }
+    }
+    if ([string]$Value.schema_version -cne 'rebuilt_mex_family_qualification_receipt_v1' -or
+            $Value.passed -isnot [bool] -or $Value.passed -ne $true) {
+        throw 'Qualification receipt is absent, failed, or malformed.'
+    }
+    if ([string]$Value.runtime_initial_sha256 -ceq $LegacyInitialSha256) {
+        throw 'Legacy crashing initial MEX is rejected.'
+    }
+    if ([string]$Value.runtime_initial_sha256 -cne $ApprovedInitialSha256) {
+        throw 'Unknown rebuilt initial MEX hash is rejected.'
+    }
+    Assert-Sha $ReceiptSha256 64 'Qualification receipt SHA256'
+    foreach ($name in @('runtime_lock_sha256','runtime_initial_sha256',
+            'q1_receipt_sha256','q1_result_sha256','q2_receipt_sha256',
+            'q2_input_lock_sha256','parent_lock_sha256','parent_cycle1_sha256',
+            'mesh_ordering_sha256','parent_vtk_mesh_sha256','mask_set_sha256')) {
+        Assert-Sha $Value.$name 64 "Qualification $name"
+    }
+    Assert-Sha $Value.source_commit 40 'Qualification source commit'
+    if ([string]$Value.source_commit -cne $ExpectedGripCommit) {
+        throw 'Qualification source identity differs from the selected GRIPHFiTH source.'
+    }
+    if ([string]$Value.parent_lock_sha256 -cne $ExpectedParentLockSha256) {
+        throw 'Qualification parent identity differs from the family parent lock.'
+    }
+    if ([string]::IsNullOrWhiteSpace([string]$Value.parent_reference_id)) {
+        throw 'Qualification parent provenance is missing.'
+    }
+}
+
+function Get-Qualification([object]$Fixture, [string]$GripCommit,
+        [string]$ParentLockSha256) {
+    if ($null -ne $Fixture) {
+        $value = $Fixture.qualification_receipt
+        $digest = ([string]$Fixture.qualification_receipt_sha256).ToLowerInvariant()
+    } else {
+        $path = Join-Path $QualificationRoot 'FAMILY_QUALIFICATION_RECEIPT.json'
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+            throw 'Missing FAMILY_QUALIFICATION_RECEIPT.json; Q1/Q2 are not qualified.'
+        }
+        $value = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+        $digest = Get-Sha256 $path
+        $qualificationHandoff = Join-Path (Split-Path -Parent $HandoffDir) `
+            'rebuilt_initial_mex_qualification_20260801'
+        $runtimeLockPath = Join-Path $qualificationHandoff 'RUNTIME_LOCK.json'
+        $q2LockPath = Join-Path $qualificationHandoff 'Q2_INPUT_LOCK.json'
+        $checks = @(
+            @{ path = Join-Path $QualificationRoot 'Q1\Q1_RECEIPT.json'; sha = [string]$value.q1_receipt_sha256 },
+            @{ path = Join-Path $QualificationRoot 'Q1\Q1_RESULT.json'; sha = [string]$value.q1_result_sha256 },
+            @{ path = Join-Path $QualificationRoot 'Q2\Q2_RESULT.json'; sha = [string]$value.q2_receipt_sha256 },
+            @{ path = $runtimeLockPath; sha = [string]$value.runtime_lock_sha256 },
+            @{ path = $q2LockPath; sha = [string]$value.q2_input_lock_sha256 }
+        )
+        foreach ($check in $checks) {
+            if ((Get-Sha256 $check.path) -cne $check.sha) {
+                throw "Qualification artifact changed: $($check.path)"
+            }
+        }
+        $validation = "addpath(" + (ConvertTo-MatlabLiteral $qualificationHandoff) + ");" +
+            "validate_qualification_receipts(" +
+            (ConvertTo-MatlabLiteral $QualificationRoot) + ',' +
+            (ConvertTo-MatlabLiteral $runtimeLockPath) + ',' +
+            (ConvertTo-MatlabLiteral $q2LockPath) + ',' +
+            (ConvertTo-MatlabLiteral $parentLockPath) + ');'
+        & matlab -batch $validation
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Qualification provenance revalidation failed before family preflight.'
+        }
+    }
+    Assert-QualificationReceipt $value $digest $GripCommit $ParentLockSha256
+    return [ordered]@{ receipt = $value; sha256 = $digest }
+}
+
+function Assert-PackageManifest([string]$Root) {
+    $manifestPath = Join-Path $Root 'SHA256SUMS.txt'
+    if (-not (Test-Path $manifestPath -PathType Leaf)) {
+        throw 'Previous family member package manifest is missing.'
+    }
+    $listed = @()
+    foreach ($line in Get-Content -LiteralPath $manifestPath) {
+        if ($line -notmatch '^([0-9a-f]{64})  (.+)$') {
+            throw 'Previous family member package manifest is malformed.'
+        }
+        $relative = $Matches[2]
+        if ([IO.Path]::IsPathRooted($relative) -or $relative -match '(^|/)[.][.](/|$)') {
+            throw 'Previous family member package manifest contains an unsafe path.'
+        }
+        $path = Join-Path $Root $relative.Replace('/', '\')
+        if ((Get-Sha256 $path) -cne $Matches[1]) {
+            throw 'Previous family member package manifest validation failed.'
+        }
+        $listed += $relative
+    }
+    $actual = @(Get-ChildItem -LiteralPath $Root -Recurse -File | Where-Object {
+        $_.FullName -ne $manifestPath
+    } | ForEach-Object {
+        $_.FullName.Substring($Root.Length + 1).Replace('\', '/')
+    } | Sort-Object -CaseSensitive)
+    $expected = @($listed | Sort-Object -CaseSensitive)
+    if ([string]::Join("`n", $actual) -cne [string]::Join("`n", $expected)) {
+        throw 'Previous family member package contents differ from its manifest.'
+    }
+}
+
+function Assert-FamilySequence([object]$Fixture, [object]$Qualification) {
+    $expectedPrevious = switch ($CaseId) {
+        'T1_initial_defect' { @() }
+        'T2_material_state' { @('T1_initial_defect') }
+        'T3_loading_history' { @('T1_initial_defect','T2_material_state') }
+    }
+    if ($null -ne $Fixture) {
+        $records = @($Fixture.previous_family_members)
+    } else {
+        $records = @()
+        foreach ($previousCase in $expectedPrevious) {
+            $root = Join-Path $OutputParent $previousCase
+            $runtimePath = Join-Path $root 'FAMILY_RUNTIME_RECEIPT.json'
+            $runPath = Join-Path $root 'RUN_RESULT.json'
+            $summaryPath = Join-Path $root 'VALIDATION_SUMMARY.json'
+            $provenancePath = Join-Path $root 'PRODUCER_PROVENANCE.json'
+            if (-not (Test-Path $runtimePath -PathType Leaf) -or
+                    -not (Test-Path $runPath -PathType Leaf) -or
+                    -not (Test-Path $summaryPath -PathType Leaf) -or
+                    -not (Test-Path $provenancePath -PathType Leaf)) {
+                throw "Previous family member $previousCase is missing final evidence."
+            }
+            Assert-PackageManifest $root
+            $runtime = Get-Content $runtimePath -Raw | ConvertFrom-Json
+            $run = Get-Content $runPath -Raw | ConvertFrom-Json
+            $summary = Get-Content $summaryPath -Raw | ConvertFrom-Json
+            $records += [ordered]@{
+                case_id = $previousCase
+                complete = ($run.complete -eq $true -and $run.status -ceq 'complete' -and
+                    $summary.is_valid -eq $true)
+                qualification_receipt_sha256 = [string]$runtime.qualification_receipt_sha256
+                runtime_initial_sha256 = [string]$runtime.runtime_initial_sha256
+            }
+        }
+    }
+    if ($records.Count -ne $expectedPrevious.Count) {
+        throw 'Previous family member evidence is incomplete or out of sequence.'
+    }
+    for ($index = 0; $index -lt $expectedPrevious.Count; $index++) {
+        $record = $records[$index]
+        if ([string]$record.case_id -cne $expectedPrevious[$index] -or
+                $record.complete -isnot [bool] -or $record.complete -ne $true) {
+            throw 'Previous family member failed terminal validation.'
+        }
+        if ([string]$record.qualification_receipt_sha256 -cne $Qualification.sha256 -or
+                [string]$record.runtime_initial_sha256 -cne
+                [string]$Qualification.receipt.runtime_initial_sha256) {
+            throw 'Family runtime or qualification changed between cases.'
+        }
+    }
 }
 
 function Assert-PlainPath([string]$Path, [string]$Label) {
@@ -256,6 +436,23 @@ function ConvertTo-MatlabLiteral([string]$Value) {
     return "'" + $Value.Replace('\', '/').Replace("'", "''") + "'"
 }
 
+function New-RuntimeOverlay([string]$ArtifactPath) {
+    $root = Join-Path $OutputParent ('.toy-road-runtime-overlay-' + [Guid]::NewGuid().ToString('N'))
+    $leaf = Join-Path $root '+phase_field\+mex\+fem\+assembly\+equilibrium'
+    [IO.Directory]::CreateDirectory($leaf) | Out-Null
+    $target = Join-Path $leaf 'initial.mexw64'
+    try {
+        New-Item -ItemType HardLink -Path $target -Target $ArtifactPath -ErrorAction Stop | Out-Null
+        if ((Get-Sha256 $target) -cne $ApprovedInitialSha256) {
+            throw 'Runtime overlay initial MEX hash differs from the approved artifact.'
+        }
+        return [ordered]@{ root = $root; initial_path = $target }
+    } catch {
+        Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
+        throw
+    }
+}
+
 if (-not [string]::IsNullOrWhiteSpace($TestFixturePath) -and -not $PreflightOnly) {
     throw 'TestFixturePath is permitted only with PreflightOnly; test seams cannot invoke MATLAB.'
 }
@@ -326,7 +523,7 @@ if ($null -ne $fixture) {
         [ordered]@{ path = 'Dependencies/meshes/sens_mesh.m'; sha256 = 'dbf13237939425b61cde93b841ae2c24e7fccd291861df5508a34800bb9f4706' }
     )
     $runtimeRecords = @(
-        [ordered]@{ path = 'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/initial.mexw64'; file_path = (Join-Path $GripfithRoot 'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/initial.mexw64'); sha256 = '589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340' },
+        [ordered]@{ path = 'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/initial.mexw64'; file_path = (Join-Path (Split-Path -Parent $HandoffDir) 'rebuilt_initial_mex_qualification_20260801/runtime/initial.mexw64'); sha256 = $ApprovedInitialSha256 },
         [ordered]@{ path = 'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/AMOR.mexw64'; file_path = (Join-Path $GripfithRoot 'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/AMOR.mexw64'); sha256 = '64abee69f2c441730dc2efa4047ac45ab1d1b40e20c4822ed6e992adcd6b19e7' },
         [ordered]@{ path = 'Sources/+phase_field/+mex/+fem/+assembly/+pf/AT1_HISTORY_FATIGUE.mexw64'; file_path = (Join-Path $GripfithRoot 'Sources/+phase_field/+mex/+fem/+assembly/+pf/AT1_HISTORY_FATIGUE.mexw64'); sha256 = '53e8fd0b229817b7c14c52a5b6afaa957692f475057b79b9a9a10195ccb92e60' },
         [ordered]@{ path = 'CHOLMOD/MATLAB/cholmod2.mexw64'; file_path = 'C:/SuiteSparse/SuiteSparse-dev/CHOLMOD/MATLAB/cholmod2.mexw64'; sha256 = '86a2f15543eda1f7223a1733d935d37e9e2f4f2c2d8db3c4adc2c0f675c27329' }
@@ -349,6 +546,8 @@ if ($null -ne $fixture) {
 if ($gripCommit -ne $expectedGripCommit) {
     throw "GRIPHFiTH commit mismatch: expected $expectedGripCommit, found $gripCommit."
 }
+$qualification = Get-Qualification $fixture $gripCommit $parentLockSha256
+Assert-FamilySequence $fixture $qualification
 $gripSourceHashes = Assert-HashRecords $GripfithRoot $gripSourceRecords 'GRIPHFiTH source'
 $runtimeHashes = Assert-HashRecords '' $runtimeRecords 'Runtime MEX/SuiteSparse/CHOLMOD' -PathsAreAbsolute
 $parentSourceHashes = Assert-HashRecords $ParentRoot $parentRecords 'Parent'
@@ -360,12 +559,16 @@ $env:TOY_ROAD_CASE_ID = $CaseId
 $env:TOY_ROAD_OUTPUT_ROOT = $OutputRoot
 $env:TOY_ROAD_SOURCE_COMMIT = $sourceCommit
 $env:TOY_ROAD_LOCK_SHA256 = $caseLockSha256
+$env:TOY_ROAD_QUALIFICATION_SHA256 = $qualification.sha256
+$env:TOY_ROAD_RUNTIME_INITIAL_SHA256 = $qualification.receipt.runtime_initial_sha256
 
 $receipt = [ordered]@{
     TOY_ROAD_CASE_ID = $env:TOY_ROAD_CASE_ID
     TOY_ROAD_LOCK_SHA256 = $env:TOY_ROAD_LOCK_SHA256
     TOY_ROAD_OUTPUT_ROOT = $env:TOY_ROAD_OUTPUT_ROOT
     TOY_ROAD_SOURCE_COMMIT = $env:TOY_ROAD_SOURCE_COMMIT
+    TOY_ROAD_QUALIFICATION_SHA256 = $env:TOY_ROAD_QUALIFICATION_SHA256
+    TOY_ROAD_RUNTIME_INITIAL_SHA256 = $env:TOY_ROAD_RUNTIME_INITIAL_SHA256
 }
 if ($PreflightOnly) {
     if (-not [string]::IsNullOrWhiteSpace($ValidateRunResultPath)) {
@@ -376,7 +579,11 @@ if ($PreflightOnly) {
 }
 
 $suiteSparseRoot = 'C:/SuiteSparse/SuiteSparse-dev'
+$runtimeArtifactPath = Join-Path (Split-Path -Parent $HandoffDir) `
+    'rebuilt_initial_mex_qualification_20260801/runtime/initial.mexw64'
+$runtimeOverlay = New-RuntimeOverlay $runtimeArtifactPath
 $matlabPaths = @(
+    $runtimeOverlay.root,
     $HandoffDir,
     (Join-Path $GripfithRoot 'Sources'),
     "$suiteSparseRoot/CHOLMOD/MATLAB",
@@ -389,8 +596,16 @@ $addPath = ($matlabPaths | ForEach-Object {
     "addpath(" + (ConvertTo-MatlabLiteral $_) + ")"
 }) -join ';'
 $startedUtc = (Get-Date).ToUniversalTime().ToString('o')
-& matlab -batch "$addPath;main_toy_to_road_case"
-$matlabExit = $LASTEXITCODE
+try {
+    $expectedInitial = (ConvertTo-MatlabLiteral $runtimeOverlay.initial_path)
+    $runtimeCheck = "p=which('phase_field.mex.fem.assembly.equilibrium.initial');" +
+        "if ~strcmpi(strrep(p,'\','/'),strrep($expectedInitial,'\','/'));" +
+        "error('toyRoad:RuntimeOverlayMismatch','Rebuilt initial MEX overlay is not first.');end"
+    & matlab -batch "$addPath;$runtimeCheck;main_toy_to_road_case"
+    $matlabExit = $LASTEXITCODE
+} finally {
+    Remove-Item -LiteralPath $runtimeOverlay.root -Recurse -Force -ErrorAction SilentlyContinue
+}
 $finishedUtc = (Get-Date).ToUniversalTime().ToString('o')
 if ($matlabExit -ne 0) {
     throw "MATLAB case solve failed with exit code $matlabExit."
@@ -398,10 +613,26 @@ if ($matlabExit -ne 0) {
 $runResultPath = Join-Path $OutputRoot 'RUN_RESULT.json'
 $runResult = Assert-CompleteRunResult $runResultPath $CaseId
 
+$familyRuntimeReceipt = [ordered]@{
+    schema_version = 'toy_road_family_runtime_receipt_v1'
+    case_id = $CaseId
+    qualification_receipt_sha256 = $qualification.sha256
+    runtime_lock_sha256 = $qualification.receipt.runtime_lock_sha256
+    runtime_initial_sha256 = $qualification.receipt.runtime_initial_sha256
+    source_commit = $qualification.receipt.source_commit
+    q1_receipt_sha256 = $qualification.receipt.q1_receipt_sha256
+    q2_receipt_sha256 = $qualification.receipt.q2_receipt_sha256
+    parent_lock_sha256 = $qualification.receipt.parent_lock_sha256
+    parent_cycle1_sha256 = $qualification.receipt.parent_cycle1_sha256
+    mesh_ordering_sha256 = $qualification.receipt.mesh_ordering_sha256
+}
+$familyRuntimePath = Join-Path $OutputRoot 'FAMILY_RUNTIME_RECEIPT.json'
+Write-JsonCreateNew $familyRuntimePath $familyRuntimeReceipt
+
 $sourceBranchLines = @(Invoke-Git $SharedRepo @('branch', '--show-current'))
 $sourceBranch = ([string]$sourceBranchLines[0]).Trim()
 $launchReceipt = [ordered]@{
-    schema_version = 'toy_road_launch_receipt_v1'
+    schema_version = 'toy_road_launch_receipt_v2'
     case_id = $CaseId
     source_commit = $sourceCommit
     source_root = $resolvedShared.Replace('\', '/')
@@ -414,6 +645,13 @@ $launchReceipt = [ordered]@{
     griphfith_root = (Resolve-Path -LiteralPath $GripfithRoot).Path.Replace('\', '/')
     griphfith_source_hashes = $gripSourceHashes
     runtime_hashes = $runtimeHashes
+    qualification_receipt_sha256 = $qualification.sha256
+    runtime_lock_sha256 = $qualification.receipt.runtime_lock_sha256
+    runtime_initial_sha256 = $qualification.receipt.runtime_initial_sha256
+    q1_receipt_sha256 = $qualification.receipt.q1_receipt_sha256
+    q2_receipt_sha256 = $qualification.receipt.q2_receipt_sha256
+    qualification_parent_cycle1_sha256 = $qualification.receipt.parent_cycle1_sha256
+    qualification_mesh_ordering_sha256 = $qualification.receipt.mesh_ordering_sha256
     parent_root = (Resolve-Path -LiteralPath $ParentRoot).Path.Replace('\', '/')
     parent_source_hashes = $parentSourceHashes
     started_utc = $startedUtc

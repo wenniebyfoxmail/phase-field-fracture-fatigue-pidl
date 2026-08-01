@@ -47,22 +47,26 @@ def build_launcher_fixture(tmp_path: Path) -> dict:
     parent_lock = handoff / "PARENT_LOCK.json"
     parent_lock.write_text('{"schema_version":"fixture_parent"}\n', newline="\n")
     parent_hash = sha256(parent_lock)
-    case_lock = handoff / "T1_INPUT_LOCK.json"
-    case_lock.write_text(
-        json.dumps(
-            {
-                "case_id": "T1_initial_defect",
-                "parent_lock_sha256": parent_hash,
-            },
-            separators=(",", ":"),
+    for prefix, case_id in (
+        ("T1", "T1_initial_defect"),
+        ("T2", "T2_material_state"),
+        ("T3", "T3_loading_history"),
+    ):
+        case_lock = handoff / f"{prefix}_INPUT_LOCK.json"
+        case_lock.write_text(
+            json.dumps(
+                {"case_id": case_id, "parent_lock_sha256": parent_hash},
+                separators=(",", ":"),
+            )
+            + "\n",
+            newline="\n",
         )
-        + "\n",
-        newline="\n",
-    )
     source_paths = [
         "producer_handoffs/toy_to_road_independent_fem_20260731/PARENT_LOCK.json",
         "producer_handoffs/toy_to_road_independent_fem_20260731/README.md",
         "producer_handoffs/toy_to_road_independent_fem_20260731/T1_INPUT_LOCK.json",
+        "producer_handoffs/toy_to_road_independent_fem_20260731/T2_INPUT_LOCK.json",
+        "producer_handoffs/toy_to_road_independent_fem_20260731/T3_INPUT_LOCK.json",
         "producer_handoffs/toy_to_road_independent_fem_20260731/launch_toy_road_case.ps1",
     ]
     write_source_manifest(repo, source_paths)
@@ -105,6 +109,27 @@ def build_launcher_fixture(tmp_path: Path) -> dict:
         "process_inventory": [],
         "force_hardlink_failure": False,
         "required_source_paths": source_paths,
+        "qualification_receipt": {
+            "schema_version": "rebuilt_mex_family_qualification_receipt_v1",
+            "passed": True,
+            "runtime_lock_sha256": "a" * 64,
+            "runtime_initial_sha256": (
+                "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db"
+            ),
+            "source_commit": run_git(grip, "rev-parse", "HEAD"),
+            "q1_receipt_sha256": "b" * 64,
+            "q1_result_sha256": "c" * 64,
+            "q2_receipt_sha256": "d" * 64,
+            "q2_input_lock_sha256": "e" * 64,
+            "parent_lock_sha256": parent_hash,
+            "parent_cycle1_sha256": "f" * 64,
+            "parent_reference_id": "fixture_parent",
+            "mesh_ordering_sha256": "1" * 64,
+            "parent_vtk_mesh_sha256": "2" * 64,
+            "mask_set_sha256": "3" * 64,
+        },
+        "qualification_receipt_sha256": "4" * 64,
+        "previous_family_members": [],
     }
     fixture_path.write_text(json.dumps(fixture), newline="\n")
     return {
@@ -117,6 +142,7 @@ def build_launcher_fixture(tmp_path: Path) -> dict:
         "fixture_path": fixture_path,
         "source_paths": source_paths,
         "expected_commit": run_git(repo, "rev-parse", "HEAD"),
+        "qualification": tmp_path / "qualification",
     }
 
 
@@ -142,6 +168,8 @@ def run_launcher(
         str(fixture["parent"]),
         "-OutputParent",
         str(fixture["output"]),
+        "-QualificationRoot",
+        str(fixture["qualification"]),
         "-CaseId",
         case_id,
         "-ExpectedSourceCommit",
@@ -321,7 +349,62 @@ def test_launcher_preflight_is_single_case_and_cannot_invoke_matlab(tmp_path: Pa
         "TOY_ROAD_LOCK_SHA256": sha256(fixture["handoff"] / "T1_INPUT_LOCK.json"),
         "TOY_ROAD_OUTPUT_ROOT": str(fixture["output"] / "T1_initial_defect"),
         "TOY_ROAD_SOURCE_COMMIT": fixture["expected_commit"],
+        "TOY_ROAD_QUALIFICATION_SHA256": "4" * 64,
+        "TOY_ROAD_RUNTIME_INITIAL_SHA256": (
+            "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db"
+        ),
     }
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "expected"),
+    [
+        ("passed", False, "qualification"),
+        ("runtime_initial_sha256", "589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340", "legacy"),
+        ("runtime_initial_sha256", "9" * 64, "unknown"),
+        ("source_commit", "8" * 40, "source"),
+        ("parent_lock_sha256", "7" * 64, "parent"),
+    ],
+)
+def test_launcher_rejects_invalid_qualification_fixture(
+    tmp_path: Path, field: str, value: object, expected: str
+) -> None:
+    fixture = build_launcher_fixture(tmp_path)
+    fixture["fixture"]["qualification_receipt"][field] = value
+    save_launcher_fixture(fixture)
+    result = run_launcher(fixture)
+    assert result.returncode != 0
+    assert expected.lower() in (result.stderr + result.stdout).lower()
+
+
+def test_launcher_rejects_changed_runtime_and_prior_family_failure(tmp_path: Path) -> None:
+    fixture = build_launcher_fixture(tmp_path)
+    fixture["fixture"]["previous_family_members"] = [
+        {
+            "case_id": "T1_initial_defect",
+            "complete": True,
+            "qualification_receipt_sha256": "9" * 64,
+            "runtime_initial_sha256": fixture["fixture"]["qualification_receipt"]["runtime_initial_sha256"],
+        }
+    ]
+    save_launcher_fixture(fixture)
+    result = run_launcher(fixture, case_id="T2_material_state")
+    assert result.returncode != 0
+    assert "changed" in (result.stderr + result.stdout).lower()
+
+    fixture = build_launcher_fixture(tmp_path / "failure")
+    fixture["fixture"]["previous_family_members"] = [
+        {
+            "case_id": "T1_initial_defect",
+            "complete": False,
+            "qualification_receipt_sha256": fixture["fixture"]["qualification_receipt_sha256"],
+            "runtime_initial_sha256": fixture["fixture"]["qualification_receipt"]["runtime_initial_sha256"],
+        }
+    ]
+    save_launcher_fixture(fixture)
+    result = run_launcher(fixture, case_id="T2_material_state")
+    assert result.returncode != 0
+    assert "previous family member" in (result.stderr + result.stdout).lower()
 
 
 @pytest.mark.parametrize(
@@ -376,6 +459,7 @@ def test_launcher_preflight_fails_closed(
         fixture["fixture"]["expected_gripfith_commit"] = run_git(
             fixture["grip"], "rev-parse", "HEAD"
         )
+        fixture["fixture"]["qualification_receipt"]["source_commit"] = fixture["fixture"]["expected_gripfith_commit"]
         save_launcher_fixture(fixture)
     elif mutation == "runtime_hash":
         (fixture["grip"] / "runtime.mexw64").write_bytes(b"mutated runtime")
@@ -384,6 +468,7 @@ def test_launcher_preflight_fails_closed(
         fixture["fixture"]["expected_gripfith_commit"] = run_git(
             fixture["grip"], "rev-parse", "HEAD"
         )
+        fixture["fixture"]["qualification_receipt"]["source_commit"] = fixture["fixture"]["expected_gripfith_commit"]
         save_launcher_fixture(fixture)
     elif mutation == "parent_hash":
         (fixture["parent"] / "parent.bin").write_bytes(b"tampered parent")
