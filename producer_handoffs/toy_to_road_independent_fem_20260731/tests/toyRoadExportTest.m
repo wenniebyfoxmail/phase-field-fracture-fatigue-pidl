@@ -101,6 +101,20 @@ verifyEqual(testCase, state.mesh_ordering_id, "q4_node_connectivity_1_based_v1")
 verifyEqual(testCase, state.state_ordering_id, "component_blocked_u_then_v_v1");
 end
 
+function testCanonicalMeshHasherMatchesExporterAndGeometryPayload(testCase)
+[outputRoot, cleanup] = freshOutputRoot(); %#ok<ASGLU>
+input = syntheticInput(0.25 * ones(2, 4), ones(2, 4));
+
+state = export_toy_road_peak_state(input, outputRoot);
+canonicalHash = toy_road_mesh_sha256(input.node_coords, input.connectivity);
+driverText = string(fileread(fullfile(handoffDir(), 'main_toy_to_road_case.m')));
+
+verifyEqual(testCase, state.mesh_sha256, canonicalHash);
+verifyEqual(testCase, state.cycle_index.mesh_sha256, canonicalHash);
+verifyTrue(testCase, contains(driverText, ...
+    "'mesh_sha256', toy_road_mesh_sha256(coords, connectivity)"));
+end
+
 function testExporterPublishesCompleteMatV73ShardWithoutTemporaryLink(testCase)
 [outputRoot, cleanup, outputPath] = freshOutputRoot(); %#ok<ASGLU>
 input = syntheticInput(0.25 * ones(2, 4), ones(2, 4));

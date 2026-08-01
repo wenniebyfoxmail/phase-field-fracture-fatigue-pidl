@@ -29,7 +29,7 @@ reactionBottomXy = [sum(reactionX(input.bottom_node_ids)) ...
 crackThresholds = [0.50 0.75 0.90 0.95];
 dElem = mean(dGp, 2);
 crackMaskElem = dElem >= crackThresholds;
-meshSha256 = localMeshSha256(input.node_coords, input.connectivity);
+meshSha256 = toy_road_mesh_sha256(input.node_coords, input.connectivity);
 
 state = struct();
 state.node_coords = input.node_coords;
@@ -359,14 +359,6 @@ semantics = struct( ...
     'crack_mask_elem', "element_binary_by_threshold", ...
     'crack_tip_diagnostics', "derived_crack_diagnostic", ...
     'connected_right_boundary_diagnostics', "derived_crack_diagnostic");
-end
-
-function digest = localMeshSha256(coords, connectivity)
-hasher = java.security.MessageDigest.getInstance('SHA-256');
-hasher.update(typecast(double(coords(:)), 'uint8'));
-hasher.update(typecast(int64(connectivity(:)), 'uint8'));
-digestBytes = typecast(hasher.digest(), 'uint8');
-digest = lower(string(reshape(dec2hex(digestBytes, 2).', 1, [])));
 end
 
 function [outputPath, relativePath] = localCanonicalOutputPath(outputRoot, cycle)
