@@ -52,14 +52,16 @@ def test_qualification_source_inventory_is_exact_and_hash_valid() -> None:
         assert expected_hash == sha256(ROOT / relative)
 
 
-def test_qualification_readme_is_fail_closed_before_execution() -> None:
+def test_qualification_readme_records_q1_pass_and_q2_blocker() -> None:
     text = " ".join((HANDOFF / "README.md").read_text().split())
     for phrase in (
         "EvidenceLockUnsealed",
         "blocked_missing_parent_damage_degradation_field",
         "blocked_missing_parent_active_field",
-        "is intentionally absent",
+        "remains intentionally absent",
         "deterministic_internal_force_probe",
+        "Q1 passed",
+        "stopped before recovery",
         "must not start",
     ):
         assert phrase.lower() in text.lower()

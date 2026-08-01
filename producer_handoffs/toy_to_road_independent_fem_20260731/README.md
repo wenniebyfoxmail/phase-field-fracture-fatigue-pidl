@@ -13,9 +13,10 @@ parent or substitute for these cases.
 
 ## Qualification Status
 
-This family is not currently authorized for execution. The rebuilt-initial-MEX
-qualification source exists, but no production Q1/Q2 evidence has been sealed.
-The current state is `EvidenceLockUnsealed`, and
+This family is not currently authorized for execution. Production Q1 passed
+from the reviewed pre-execution source, but Q2 parent validation published the
+two blockers below and stopped before any solve. No passing Q2 evidence has
+been sealed. The current state is `EvidenceLockUnsealed`, and
 `QUALIFICATION_EVIDENCE_LOCK.json` is intentionally absent.
 
 The locked parent is also missing authoritative native/GP damage-degradation

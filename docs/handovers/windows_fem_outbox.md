@@ -6,6 +6,32 @@
 
 ---
 
+## 2026-08-01 - [blocker]: Rebuilt MEX Q1 passed; Q2 parent evidence blocked
+
+- **Re**: Request 27 rebuilt-`initial.mexw64` qualification for the independent
+  T1/T2/T3 toy-to-road FEM family.
+- **Reviewed source**: commit
+  `5dafe4e64aa42f6ac387f42ab3f788282c29a513`, pushed to
+  `codex/toy-road-evidence-integration`; tag
+  `toy-road-rebuilt-mex-preexecution-20260801`.
+- **Q1**: PASS. Eight index vectors exact; stiffness relative Frobenius
+  `1.4374484646311128e-16`; deterministic internal-force probe relative L2
+  `1.7835846492874314e-16`.
+- **Q2**: BLOCKED before recovery, `System`, Newton, or cycle 1:
+  `blocked_missing_parent_damage_degradation_field` and
+  `blocked_missing_parent_active_field`.
+- **Evidence root**:
+  `C:/q4diag/rebuilt_initial_mex_qualification_20260801_run1`.
+- **Artifact hashes**: Q1 metrics
+  `d33dfee849c7d1a9d0b63b7ff0cdf08e28f6023bfafd06a1b38d3ec3495c070a`;
+  Q1 receipt `8fd051e4bf806c9a593297b95377a1fcc434f2b16cba5f67cc9f597b2e54fc36`;
+  Q1 result `21b769af9e7c78b3d3bc45a8fc85671ccf455004c74cddfb29a6beb56499d96a`;
+  Q2 blocker `0361af32a6d202adbe86113080a0b2072c760f632b93d19c38cdc9e1830c6d64`.
+- **Family status**: `EvidenceLockUnsealed`. No T1/T2/T3 case was started.
+- **Next**: obtain and separately seal authoritative parent GP/native `g` and
+  `psi_active` evidence. Do not substitute `f_alpha_elem`, `(1-d)^2`, or a
+  product of element means.
+
 ## 2026-08-01 - [blocker]: Rebuilt-MEX source ready; evidence lock unsealed
 
 - **Re**: Request 27, rebuilt `initial.mexw64` qualification before the

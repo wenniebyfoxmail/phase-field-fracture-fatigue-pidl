@@ -47,20 +47,35 @@ active driver       = psi_active_elem = mean_GP(g_GP .* psi_raw_GP)
 Element-level approximations, `f_alpha_elem` as active, and a product of
 element means are forbidden.
 
-## Current Pre-Execution Status
+## Current Execution Status
 
-The source package is prepared for static and unit verification only. No
-production Q1 or Q2 has been run from this source state. The currently locked
-eight-file parent does not contain authoritative native/GP evidence for
-`g_elem` or `psi_active_elem`, so the expected fail-closed status is:
+The reviewed pre-execution source was sealed at commit `5dafe4e64aa42f6ac387f42ab3f788282c29a513`
+and tag `toy-road-rebuilt-mex-preexecution-20260801`. The production
+qualification was then run from a fresh output root:
+
+```text
+C:/q4diag/rebuilt_initial_mex_qualification_20260801_run1
+```
+
+Q1 passed with the approved rebuilt MEX. All eight index vectors were exact;
+the stiffness relative Frobenius error was `1.4374484646311128e-16`, and the
+`deterministic_internal_force_probe` relative L2 error was
+`1.7835846492874314e-16`. The Q1 result is bound to runtime SHA-256
+`ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db`
+and clean GRIPHFiTH commit `355d4c83fefc2db88c32031a2dd2623b3de85c89`.
+
+Q2 parent validation then confirmed that the locked eight-file parent does
+not contain authoritative native/GP evidence for `g_elem` or
+`psi_active_elem`. It published both fail-closed statuses:
 
 ```text
 blocked_missing_parent_damage_degradation_field
 blocked_missing_parent_active_field
 ```
 
-`QUALIFICATION_EVIDENCE_LOCK.json` is intentionally absent. Therefore the
-current state is exactly `EvidenceLockUnsealed`: there is no family
+The launcher stopped before recovery, `System`, Newton, or cycle 1.
+`QUALIFICATION_EVIDENCE_LOCK.json` remains intentionally absent. Therefore
+the current state is exactly `EvidenceLockUnsealed`: there is no family
 authorization, and T1/T2/T3 must not start.
 
 ## Static Verification
