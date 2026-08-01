@@ -1,0 +1,35 @@
+{
+  "schema_version": "rebuilt_initial_mex_q2_input_lock_v1",
+  "parent_lock_sha256": "f34cbfe1bc4fe2178aff590cbed3d4d65547e2a8a9ff300a9b2c5f70cc00f954",
+  "parent": {
+    "reference_id": "hard5_eta0_u012_5step_20260729",
+    "num_elem": 86408,
+    "mesh_ordering_sha256": "7ea77bf6d4621d746f174eb9c357c4bc554463eea8afb8665b00e918bcd937ab",
+    "cycle": 1,
+    "cycle1_relative_path": "u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/psi_fields/cycle_0001.mat",
+    "cycle1_sha256": "72925ac353f766475862858befcc611307e71faa392eb774d7ce5aa8a40d74d9",
+    "required_source_file_count": 8,
+    "state_semantics_id": "cycle_peak_coherent_v1",
+    "peak_substep_ordinal": 4
+  },
+  "required_field_map": {
+    "damage": "d_elem",
+    "history": "alpha_bar_elem",
+    "fatigue_degradation": "f_alpha_elem",
+    "raw_driver_aliases": ["psi_raw_elem", "psi_elem"],
+    "damage_degradation": "g_elem",
+    "active_driver": "psi_active_elem"
+  },
+  "negative_tolerance": 1e-14,
+  "supplement": {
+    "permitted": false,
+    "required_damage_degradation_semantics": "mean_gp(g_gp)",
+    "required_active_semantics": "mean_gp(g_gp.*psi_raw_gp)"
+  },
+  "prohibited_substitutes": [
+    "f_alpha_elem_as_active",
+    "(1-d_elem)^2_as_g_elem",
+    "(1-d_elem)^2.*psi_raw_elem_as_active",
+    "product_of_element_means_as_active"
+  ]
+}
