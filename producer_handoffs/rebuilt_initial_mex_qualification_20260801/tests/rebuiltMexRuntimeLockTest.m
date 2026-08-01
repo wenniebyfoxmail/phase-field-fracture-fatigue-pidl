@@ -247,19 +247,60 @@ classdef rebuiltMexRuntimeLockTest < matlab.unittest.TestCase
                 'rebuiltMex:InvalidRuntimeLock');
         end
 
-        function testRejectsWorkingTreeHashesInPlaceOfGitBlobHashes(testCase)
+        function testRejectsArchiveConvertedHashInPlaceOfRawBlobHash(testCase)
             fixtureRoot = makeRuntimeFixture(testCase);
             sourceHashesPath = fullfile(fixtureRoot, 'build', 'SOURCE_HASHES.json');
             sourceHashes = jsondecode(fileread(sourceHashesPath));
             target = find(strcmp({sourceHashes.locked_git_tree_inventory.path}, ...
                 'Sources/+phase_field/System.m'));
-            sourceHashes.locked_git_tree_inventory(target).sha256 = fileHash( ...
-                fullfile(griphfithRoot(), 'Sources/+phase_field/System.m'));
+            sourceHashes.locked_git_tree_inventory(target).sha256 = ...
+                '89846dbbd57ef72f5fe068376ab67ff5ce915d269f455a531c3fdb1747632305';
             writeJson(sourceHashesPath, sourceHashes);
             updateLockedBuildHash(fixtureRoot, 'source_hashes_sha256', sourceHashesPath);
 
             verifyError(testCase, @() validateFixture(fixtureRoot), ...
                 'rebuiltMex:SourceIdentityMismatch');
+        end
+
+        function testValidationIgnoresAmbientAutocrlf(testCase)
+            sourceRoot = makeSourceFixture(testCase);
+            fixtureRoot = makeRuntimeFixture(testCase);
+            settings = {'true', 'false'};
+            for index = 1:numel(settings)
+                runGit(sourceRoot, sprintf('config core.autocrlf %s', ...
+                    settings{index}));
+                receipt = validateFixture(fixtureRoot, sourceRoot);
+                verifyEqual(testCase, receipt.source_commit, lockedSourceCommit());
+                verifyTrue(testCase, receipt.source_clean);
+            end
+        end
+
+        function testAcceptsRawConsumedBytesAndRejectsConvertedBytes(testCase)
+            sourceRoot = makeSourceFixture(testCase);
+            fixtureRoot = makeRuntimeFixture(testCase);
+            relativePath = ...
+                'Sources/+phase_field/+mex/Modules/types.f90';
+            sourcePath = fullfile(sourceRoot, relativePath);
+            rawHash = gitBlobHash(sourceRoot, lockedSourceCommit(), relativePath);
+            verifyEqual(testCase, fileHash(sourcePath), rawHash);
+            validateFixture(fixtureRoot, sourceRoot);
+
+            runGit(sourceRoot, 'config core.autocrlf true');
+            convertLfToCrlf(sourcePath);
+            verifyNotEqual(testCase, fileHash(sourcePath), rawHash);
+            runGit(sourceRoot, sprintf( ...
+                'update-index --assume-unchanged -- "%s"', relativePath));
+            verifyEmpty(testCase, strtrim(runGit(sourceRoot, ...
+                'status --porcelain=v1 --untracked-files=all')));
+            try
+                validateFixture(fixtureRoot, sourceRoot);
+                verifyFail(testCase, 'Converted consumed bytes were accepted.');
+            catch exception
+                verifyEqual(testCase, exception.identifier, ...
+                    'rebuiltMex:SourceIdentityMismatch');
+                verifySubstring(testCase, exception.message, ...
+                    'consumed Fortran checkout file differs');
+            end
         end
 
         function testRejectsUntrackedCoveredSource(testCase)
@@ -488,9 +529,11 @@ function sourceRoot = makeSourceFixture(testCase)
     fixture = matlab.unittest.fixtures.TemporaryFolderFixture;
     testCase.applyFixture(fixture);
     sourceRoot = fullfile(fixture.Folder, 'griphfith');
-    [status, output] = system(sprintf('git clone --quiet --shared "%s" "%s"', ...
+    [status, output] = system(sprintf( ...
+        'git clone --quiet --shared --no-checkout "%s" "%s"', ...
         griphfithRoot(), sourceRoot));
     assert(status == 0, 'rebuiltMexRuntimeLockTest:GitClone', '%s', output);
+    runGit(sourceRoot, 'config core.autocrlf false');
     runGit(sourceRoot, sprintf('checkout --quiet %s', lockedSourceCommit()));
     dependencyPaths = { ...
         'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/AMOR.mexw64', ...
@@ -507,6 +550,52 @@ end
 function output = runGit(root, arguments)
     [status, output] = system(sprintf('git -C "%s" %s', root, arguments));
     assert(status == 0, 'rebuiltMexRuntimeLockTest:GitCommand', '%s', output);
+end
+
+function hash = gitBlobHash(root, commit, relativePath)
+    command = javaArray('java.lang.String', 7);
+    values = {'git', '-C', root, 'cat-file', 'blob', ...
+        [commit, ':', relativePath], ''};
+    for index = 1:6
+        command(index) = java.lang.String(values{index});
+    end
+    command(7) = [];
+    builder = java.lang.ProcessBuilder(command(1:6));
+    builder.redirectErrorStream(true);
+    outputPath = [tempname, '.blob'];
+    cleanup = onCleanup(@() deleteIfFile(outputPath));
+    builder.redirectOutput(java.io.File(outputPath));
+    process = builder.start();
+    status = process.waitFor();
+    assert(status == 0, 'rebuiltMexRuntimeLockTest:GitBlob', ...
+        'Unable to read raw Git blob %s.', relativePath);
+    bytes = readBytes(outputPath);
+    messageDigest = java.security.MessageDigest.getInstance('SHA-256');
+    messageDigest.update(bytes);
+    hash = lower(reshape(dec2hex(typecast(messageDigest.digest(), 'uint8'), 2)', 1, []));
+end
+
+function deleteIfFile(path)
+    if isfile(path)
+        delete(path);
+    end
+end
+
+function convertLfToCrlf(path)
+    bytes = readBytes(path).';
+    converted = zeros(1, numel(bytes) + nnz(bytes == 10), 'uint8');
+    outputIndex = 1;
+    for inputIndex = 1:numel(bytes)
+        if bytes(inputIndex) == 10
+            converted(outputIndex) = 13;
+            outputIndex = outputIndex + 1;
+        end
+        converted(outputIndex) = bytes(inputIndex);
+        outputIndex = outputIndex + 1;
+    end
+    fileId = fopen(path, 'wb');
+    cleanup = onCleanup(@() fclose(fileId));
+    fwrite(fileId, converted, 'uint8');
 end
 
 function value = isAbsolutePath(path)

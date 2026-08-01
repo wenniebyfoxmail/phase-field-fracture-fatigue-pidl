@@ -253,6 +253,7 @@ if ~isequal({covered.sha256}, expectedHashes)
     error('rebuiltMex:SourceIdentityMismatch', ...
         'A locked source SHA-256 does not match the expected Git blob.');
 end
+validateConsumedCheckout(sourceHashes.consumed_fortran, gripfithRoot);
 validateCoveredIndexFlags(gripfithRoot, {covered.path});
 end
 
@@ -266,13 +267,13 @@ expectedPaths = { ...
     'Sources/+phase_field/+mex/Modules/scalar_utils.f90', ...
     'Sources/+phase_field/+mex/Modules/types.f90'};
 expectedHashes = { ...
-    '47114bc347bf20e267df56961dcb1c3d9d823ce8262e21dbc40d1c10b041574b', ...
-    'bb1fc4fa2582d0b53e8742aace8c57ca96654eb4ba5ece2ac17f59bb9e4b0c3c', ...
-    'a8c60c59eb949d0fe60829df012055b163d977112bb3507aa5ee6618809147b7', ...
-    'd817366ab1f62acc7d1a669a72df0e52f8bc123f61e79ccda89cbcbb88523b67', ...
-    '43776d0a1943c028126cb6c5d08d2fc3460c594a61000ceacb76f5ca73f53d3e', ...
-    'c9d12848540496931c5d3a7e565041d86e3aa538652316ac96d72887ffcb2e8c', ...
-    '495d0e90bac142fb533c6b6cccb9d2326f0245adc3d9bc7d23029842563d04cf'};
+    '7b01879214121697ee4d2cae4ca33d6b1827630506b187869cc3ed4df18ffa1a', ...
+    '841d75a0073a71f5e11650509a68a6f569f908993a7b8edd897d57fd9f833d5b', ...
+    'cb34b087ec436b5602a0412e8853c6d060c75057643b12839c63918007751070', ...
+    '7598974feff3dd63535a8252fde429a1f3cf213b316fba932dd466590f4b8685', ...
+    'eeb012763a8fae176bad78350142e16fc004932798f0d49a21fa8aade0d6f272', ...
+    '27c199fe42048095e115b8e8cf1d3593429920c57a0e17910511c96e2e7116ea', ...
+    'fa5524117c035d13fa5d366581f30bbdcd430200ae9973a83be43d2ddbd9a409'};
 commandFragments = { ...
     "fullfile(base,'Sources','+phase_field','+mex','+fem','+assembly','+equilibrium','initial.f90')", ...
     "fullfile(md,'fem','assembly','equilibrium','initial.f90')", ...
@@ -316,35 +317,50 @@ if isequal(cachedCommit, commit) && isequal(cachedPaths, paths)
     hashes = cachedHashes;
     return
 end
-archivePath = [tempname, '.tar'];
-extractRoot = tempname;
-mkdir(extractRoot);
-cleanup = onCleanup(@() cleanupArchive(archivePath, extractRoot));
-[status, output] = system(sprintf( ...
-    'git -C "%s" archive --format=tar --output="%s" %s', ...
-    root, archivePath, commit));
-if status ~= 0
-    error('rebuiltMex:SourceIdentityMismatch', ...
-        'Unable to read locked Git blobs: %s', strtrim(output));
-end
-untar(archivePath, extractRoot);
 hashes = cell(size(paths));
 for index = 1:numel(paths)
-    blobPath = fullfile(extractRoot, strrep(paths{index}, '/', filesep));
-    requireFile(blobPath);
-    hashes{index} = sha256File(blobPath);
+    hashes{index} = gitBlobHash(root, commit, paths{index});
 end
 cachedCommit = commit;
 cachedPaths = paths;
 cachedHashes = hashes;
 end
 
-function cleanupArchive(archivePath, extractRoot)
-if isfile(archivePath)
-    delete(archivePath);
+function hash = gitBlobHash(root, commit, path)
+command = javaArray('java.lang.String', 7);
+values = {'git', '-C', root, 'cat-file', 'blob', [commit, ':', path], ''};
+for index = 1:6
+    command(index) = java.lang.String(values{index});
 end
-if isfolder(extractRoot)
-    rmdir(extractRoot, 's');
+command(7) = [];
+outputPath = [tempname, '.blob'];
+cleanup = onCleanup(@() deleteIfFile(outputPath));
+builder = java.lang.ProcessBuilder(command(1:6));
+builder.redirectErrorStream(true);
+builder.redirectOutput(java.io.File(outputPath));
+process = builder.start();
+status = process.waitFor();
+if status ~= 0
+    error('rebuiltMex:SourceIdentityMismatch', ...
+        'Unable to read raw Git blob %s.', path);
+end
+hash = sha256File(outputPath);
+end
+
+function deleteIfFile(path)
+if isfile(path)
+    delete(path);
+end
+end
+
+function validateConsumedCheckout(records, root)
+for index = 1:numel(records)
+    filePath = resolveRelative(root, records(index).path);
+    requireFile(filePath);
+    if ~strcmp(sha256File(filePath), records(index).sha256)
+        error('rebuiltMex:SourceIdentityMismatch', ...
+            'A consumed Fortran checkout file differs from its raw Git blob.');
+    end
 end
 end
 
