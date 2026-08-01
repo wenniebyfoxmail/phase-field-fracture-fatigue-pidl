@@ -149,6 +149,90 @@ verifyError(testCase, ...
     "toyRoad:InvalidInputLock");
 end
 
+function testT1MapMovesTipFixesBoundariesAndAuditsLocalMesh(testCase)
+[mapped, audit] = apply_t1_mesh_transfer(parentCoords(), parentConn(), 0.01);
+
+verifyEqual(testCase, min(mapped(:, 1)), -0.5, 'AbsTol', 1e-14);
+verifyEqual(testCase, max(mapped(:, 1)), 0.5, 'AbsTol', 1e-14);
+verifyEqual(testCase, mapped(parentTipNode(), :), [0.125 0], 'AbsTol', 1e-14);
+verifyTrue(testCase, audit.all_positive_jacobians);
+verifyTrue(testCase, audit.boundaries_fixed);
+verifyTrue(testCase, audit.notch_tip_identity_preserved);
+verifyGreaterThanOrEqual(testCase, audit.local_h_over_ell_ratio_min, 0.75);
+verifyLessThanOrEqual(testCase, audit.local_h_over_ell_ratio_max, 1.25);
+verifyNotEqual(testCase, audit.parent_mesh_sha256, audit.candidate_mesh_sha256);
+end
+
+function testT1MapRejectsInvertedOrQualityInvalidMesh(testCase)
+inverted = parentConn();
+inverted(1, :) = inverted(1, [1 4 3 2]);
+verifyError(testCase, ...
+    @() apply_t1_mesh_transfer(parentCoords(), inverted, 0.01), ...
+    "toyRoad:MeshTransferGateFailed");
+
+coarse = parentCoords();
+coarse(:, 2) = coarse(:, 2) * 3;
+verifyError(testCase, ...
+    @() apply_t1_mesh_transfer(coarse, parentConn(), 0.01), ...
+    "toyRoad:MeshTransferGateFailed");
+end
+
+function testEventRequiresThreeConnectedRightBoundaryNodes(testCase)
+state = emptyEventState();
+[coords, conn, chainIds] = rightBoundaryChain();
+
+state = advance_toy_road_event(state, coords, conn, 9, damageAt(coords, chainIds(1:2)));
+verifyTrue(testCase, isnan(state.first_hit));
+verifyEqual(testCase, state.consecutive_post_hit, 0);
+verifyFalse(testCase, state.hit);
+
+state = advance_toy_road_event(state, coords, conn, 10, damageAt(coords, chainIds(1:3)));
+verifyEqual(testCase, state.first_hit, 10);
+verifyTrue(testCase, isnan(state.confirmed));
+verifyEqual(testCase, state.consecutive_post_hit, 0);
+verifyEqual(testCase, state.connected_component_node_ids, sort(chainIds(1:3))');
+end
+
+function testEventConfirmsAfterThreePostHitCyclesAndPreservesFirstHit(testCase)
+state = emptyEventState();
+[coords, conn, chainIds] = rightBoundaryChain();
+hitDamage = damageAt(coords, chainIds(1:3));
+
+state = advance_toy_road_event(state, coords, conn, 10, hitDamage);
+state = advance_toy_road_event(state, coords, conn, 11, hitDamage);
+state = advance_toy_road_event(state, coords, conn, 12, hitDamage);
+verifyTrue(testCase, isnan(state.confirmed));
+verifyEqual(testCase, state.consecutive_post_hit, 2);
+
+state = advance_toy_road_event(state, coords, conn, 13, hitDamage);
+verifyEqual(testCase, state.first_hit, 10);
+verifyEqual(testCase, state.confirmed, 13);
+verifyEqual(testCase, state.consecutive_post_hit, 3);
+
+state = advance_toy_road_event(state, coords, conn, 14, damageAt(coords, chainIds(1:2)));
+verifyEqual(testCase, state.first_hit, 10);
+verifyEqual(testCase, state.confirmed, 13);
+verifyEqual(testCase, state.consecutive_post_hit, 0);
+
+resetState = emptyEventState();
+resetState = advance_toy_road_event(resetState, coords, conn, 10, hitDamage);
+resetState = advance_toy_road_event(resetState, coords, conn, 11, damageAt(coords, chainIds(1:2)));
+resetState = advance_toy_road_event(resetState, coords, conn, 12, hitDamage);
+verifyEqual(testCase, resetState.first_hit, 10);
+verifyTrue(testCase, isnan(resetState.confirmed));
+verifyEqual(testCase, resetState.consecutive_post_hit, 1);
+end
+
+function testEventUsesSharedQ4EdgesRatherThanCoordinateProximity(testCase)
+state = emptyEventState();
+[coords, conn, hitIds] = disconnectedRightBoundaryNodes();
+
+state = advance_toy_road_event(state, coords, conn, 10, damageAt(coords, hitIds));
+verifyTrue(testCase, isnan(state.first_hit));
+verifyFalse(testCase, state.hit);
+verifyEqual(testCase, state.connected_component_size, 1);
+end
+
 function copyRequiredLocks(sourceDir, targetDir)
 copyfile(fullfile(sourceDir, 'PARENT_LOCK.json'), targetDir);
 copyfile(fullfile(sourceDir, 'FAMILY_INPUT_LOCK.json'), targetDir);
@@ -172,4 +256,47 @@ end
 
 function value = lockDir()
 value = fileparts(fileparts(mfilename('fullpath')));
+end
+
+function coords = parentCoords()
+x = [-0.5 -0.01 0 0.01 0.5];
+y = [-0.01 0 0.01];
+[xGrid, yGrid] = meshgrid(x, y);
+coords = [reshape(xGrid.', [], 1) reshape(yGrid.', [], 1)];
+end
+
+function conn = parentConn()
+conn = [1 2 7 6; 2 3 8 7; 3 4 9 8; 4 5 10 9; ...
+        6 7 12 11; 7 8 13 12; 8 9 14 13; 9 10 15 14];
+end
+
+function nodeId = parentTipNode()
+nodeId = 8;
+end
+
+function state = emptyEventState()
+state = struct('first_hit', NaN, 'confirmed', NaN, ...
+    'consecutive_post_hit', 0, 'hit_node_ids', zeros(0, 1), ...
+    'connected_component_node_ids', zeros(0, 1), ...
+    'connected_component_size', 0, 'hit', false);
+end
+
+function [coords, conn, chainIds] = rightBoundaryChain()
+coords = [0.40 0.00; 0.50 0.02; 0.40 0.01; 0.40 0.02; ...
+          0.40 0.03; 0.50 0.01; 0.50 0.03; 0.50 0.00];
+conn = [1 8 6 3; 3 6 2 4; 4 2 7 5];
+chainIds = [8 6 2 7];
+end
+
+function damage = damageAt(coords, nodeIds)
+damage = zeros(size(coords, 1), 1);
+damage(nodeIds) = 0.95;
+end
+
+function [coords, conn, hitIds] = disconnectedRightBoundaryNodes()
+coords = [0.49 -0.01; 0.50 0.00; 0.49 0.01; 0.49 -0.02; ...
+          0.49 0.00; 0.50 0.01; 0.49 0.02; 0.49 -0.01; ...
+          0.49 0.01; 0.50 0.02; 0.49 0.03; 0.49 0.00];
+conn = [4 1 3 2; 8 5 7 6; 12 9 11 10];
+hitIds = [2 6 10];
 end
