@@ -1,0 +1,139 @@
+
+--------------------------------------------------------------------------------
+             Access violation detected at 2026-08-01 12:43:33 +0100
+--------------------------------------------------------------------------------
+
+Configuration:
+  Crash Decoding           : Disabled - No sandbox or build area path
+  Crash Mode               : continue (default)
+  Default Encoding         : UTF-8
+  Deployed                 : false
+  Graphics Driver          : Uninitialized hardware 
+  Graphics card 1          : Microsoft ( 0x0 ) Microsoft Remote Display Adapter Version 10.0.22621.3672 (2006-6-21)
+  Graphics card 2          : NVIDIA ( 0x10de ) NVIDIA GeForce RTX 2070 SUPER Version 32.0.15.9174 (2025-12-30)
+  Interpreter 0            : Executing request: 64657461696C2F44656661756C744D564D2E637070
+  MATLAB Architecture      : win64
+  MATLAB Entitlement ID    : 1345133
+  MATLAB Root              : C:\Program Files\MATLAB\R2025b
+  MATLAB Version           : 25.2.0.3177638 (R2025b) Update 5
+  OpenGL                   : hardware
+  Operating System         : Microsoft Windows 11 Pro
+  Process ID               : 10576
+  Processor ID             : x86 Family 25 Model 33 Stepping 0, AuthenticAMD
+  Session Key              : 7dr0nlxdp0nndg2tkc7wots19
+  Window System            : Version 10.0 (Build 22631)
+
+Fault Count: 1
+
+
+Abnormal termination:
+Access violation
+
+Current Thread: 'MCR 0 interpreter thread' id 22244
+
+Register State (from fault):
+  RAX = 00007ffdf171cf00  RBX = 00007ffdf1715e48
+  RCX = 00007ffdf171cf00  RDX = 0000000000000000
+  RSP = 000000215d7f58e8  RBP = 0000000000000002
+  RSI = 000001b26a076400  RDI = 00007ffdf171cf00
+ 
+   R8 = 0000000000000008   R9 = 00007ffef04f130d
+  R10 = 00007ffef04e0000  R11 = 000000215d7f50d0
+  R12 = 000000215d7f59c8  R13 = 0000000040000001
+  R14 = 000001b2691a0c10  R15 = 0000000000000001
+ 
+  RIP = 00007ffef04f130d  EFL = 00010202
+ 
+   CS = 0033   FS = 0053   GS = 002b
+
+Stack Trace (from fault):
+[  0] 0x00007ffef04f130d C:\Program Files\MATLAB\R2025b\bin\win64\VCRUNTIME140.dll+00070413 memmove+00000269
+[  1] 0x00007ffdf16a8e33 C:\q4diag\griphfith-f1b-355d4c83\Sources\+phase_field\+mex\+fem\+assembly\+equilibrium\initial.mexw64+00036403 MEXFILEREQUIREDAPIVERSION+00013379
+[  2] 0x00007ffdf16aa8e1 C:\q4diag\griphfith-f1b-355d4c83\Sources\+phase_field\+mex\+fem\+assembly\+equilibrium\initial.mexw64+00043233 MEXFILEREQUIREDAPIVERSION+00020209
+[  3] 0x00007ffdf16a1a57 C:\q4diag\griphfith-f1b-355d4c83\Sources\+phase_field\+mex\+fem\+assembly\+equilibrium\initial.mexw64+00006743 MEXFUNCTION+00002647
+[  4] 0x00007ffe476678cd C:\Program Files\MATLAB\R2025b\bin\win64\libmex.dll+00686285 mexfile::Inspector::needs_upgrade+00024173
+[  5] 0x00007ffe4766a8a2 C:\Program Files\MATLAB\R2025b\bin\win64\libmex.dll+00698530 MexRetrieveVersion+00009202
+[  6] 0x00007ffe4766a997 C:\Program Files\MATLAB\R2025b\bin\win64\libmex.dll+00698775 MexRetrieveVersion+00009447
+[  7] 0x00007ffe4766ab88 C:\Program Files\MATLAB\R2025b\bin\win64\libmex.dll+00699272 MexRetrieveVersion+00009944
+[  8] 0x00007ffe4764ccb8 C:\Program Files\MATLAB\R2025b\bin\win64\libmex.dll+00576696 mexUnlock+00018104
+[  9] 0x00007ffe47cf93e7 C:\Program Files\MATLAB\R2025b\bin\win64\m_dispatcher.dll+01217511 Mfh_error::lookup+00011207
+[ 10] 0x00007ffe47cfa7b0 C:\Program Files\MATLAB\R2025b\bin\win64\m_dispatcher.dll+01222576 Mfh_file::dispatch+00000176
+[ 11] 0x00007ffe32e63300 C:\Program Files\MATLAB\R2025b\bin\win64\mcos_impl.dll+04469504 mwboost::archive::detail::oserializer<mwboost::archive::text_oarchive,MathWorks::MatlabComponents::ComponentIdentifier>::save_object_data+00348496
+[ 12] 0x00007ffe32d5ffc7 C:\Program Files\MATLAB\R2025b\bin\win64\mcos_impl.dll+03407815 mcos::heterogeneous::mcosIsHeterogeneousArray+00053207
+[ 13] 0x00007ffe32d60591 C:\Program Files\MATLAB\R2025b\bin\win64\mcos_impl.dll+03409297 mcos::heterogeneous::mcosIsHeterogeneousArray+00054689
+[ 14] 0x00007ffe32d60a2f C:\Program Files\MATLAB\R2025b\bin\win64\mcos_impl.dll+03410479 mcos::heterogeneous::mcosIsHeterogeneousArray+00055871
+[ 15] 0x00007ffe32d647f7 C:\Program Files\MATLAB\R2025b\bin\win64\mcos_impl.dll+03426295 mcos::heterogeneous::mcosIsHeterogeneousArray+00071687
+[ 16] 0x00007ffe32ea0986 C:\Program Files\MATLAB\R2025b\bin\win64\mcos_impl.dll+04721030 namedArgsToCell+00000838
+[ 17] 0x00007ffe32fcde9a C:\Program Files\MATLAB\R2025b\bin\win64\mcos_impl.dll+05955226 mustBeA+00390154
+[ 18] 0x00007ffe32fcbaa6 C:\Program Files\MATLAB\R2025b\bin\win64\mcos_impl.dll+05946022 mustBeA+00380950
+[ 19] 0x00007ffe47bdcbc4 C:\Program Files\MATLAB\R2025b\bin\win64\m_dispatcher.dll+00052164
+[ 20] 0x00007ffe47bfca1d C:\Program Files\MATLAB\R2025b\bin\win64\m_dispatcher.dll+00182813 Mfh_MATLAB_fn_impl::dispatch+00000045
+[ 21] 0x00007ffe471c85bd C:\Program Files\MATLAB\R2025b\bin\win64\libmwlxemainservices.dll+00427453 coretypes::array::Array<MathWorks::String::detail::StringArrayVariant,MathWorks::String::detail::StringArrayPolicy,coretypes::array::ArrayTypeList<MathWorks::String::detail::StringArrayVariant> >::resize+00350461
+[ 22] 0x00007ffe471d73d4 C:\Program Files\MATLAB\R2025b\bin\win64\libmwlxemainservices.dll+00488404 coretypes::array::Array<MathWorks::String::detail::StringArrayVariant,MathWorks::String::detail::StringArrayPolicy,coretypes::array::ArrayTypeList<MathWorks::String::detail::StringArrayVariant> >::resize+00411412
+[ 23] 0x00007ffe42f92cf6 C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+06499574 MathWorks::lxe::ObservableXvaluePtr::~ObservableXvaluePtr+00006662
+[ 24] 0x00007ffe42f94b7b C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+06507387 MathWorks::lxe::ObservableXvaluePtr::~ObservableXvaluePtr+00014475
+[ 25] 0x00007ffe42f9590a C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+06510858 MathWorks::lxe::ObservableXvaluePtr::~ObservableXvaluePtr+00017946
+[ 26] 0x00007ffe42ea6888 C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+05531784 MathWorks::lxe::XvalueFactory::XvalueDeleter::XvalueDeleter+00267432
+[ 27] 0x00007ffe42ec6449 C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+05661769 MathWorks::lxe::XvalueFactory::XvalueDeleter::XvalueDeleter+00397417
+[ 28] 0x00007ffe42c587c6 C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+03114950 MathWorks::lxe::LXEConstants::IsIfElse+00548550
+[ 29] 0x00007ffe42c5c9d2 C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+03131858 MathWorks::lxe::LXEConstants::IsY+00012018
+[ 30] 0x00007ffe42c5a1f3 C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+03121651 MathWorks::lxe::LXEConstants::IsY+00001811
+[ 31] 0x00007ffe42c5dad5 C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+03136213 MathWorks::lxe::LXEConstants::IsY+00016373
+[ 32] 0x00007ffe42c5dd83 C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+03136899 MathWorks::lxe::LXEConstants::IsY+00017059
+[ 33] 0x00007ffe42c5d6ee C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+03135214 MathWorks::lxe::LXEConstants::IsY+00015374
+[ 34] 0x00007ffe42c59916 C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+03119382 MathWorks::lxe::LxeTypes::GetTypeXvalueOf+00000262
+[ 35] 0x00007ffe42d52cf2 C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+04140274 MathWorks::lxe::SetEngineImplUnlinkFlagForAllCallsOnStack+00048594
+[ 36] 0x00007ffe42d56885 C:\Program Files\MATLAB\R2025b\bin\win64\m_lxe.dll+04155525 MathWorks::lxe::SetEngineImplUnlinkFlagForAllCallsOnStack+00063845
+[ 37] 0x00007ffe472d54e6 C:\Program Files\MATLAB\R2025b\bin\win64\libmwlxemainservices.dll+01529062 FeatureTestObservableWorkspace+00216246
+[ 38] 0x00007ffe4720cef6 C:\Program Files\MATLAB\R2025b\bin\win64\libmwlxemainservices.dll+00708342 mwboost::archive::detail::pointer_oserializer<mwboost::archive::xml_oarchive,MathWorks::lxe::PreLineExecutionEvent>::save_object_ptr+00078390
+[ 39] 0x00007ffe4720ea04 C:\Program Files\MATLAB\R2025b\bin\win64\libmwlxemainservices.dll+00715268 mwboost::archive::detail::pointer_oserializer<mwboost::archive::xml_oarchive,MathWorks::lxe::PreLineExecutionEvent>::save_object_ptr+00085316
+[ 40] 0x00007ffe472978c7 C:\Program Files\MATLAB\R2025b\bin\win64\libmwlxemainservices.dll+01276103 mwboost::archive::detail::oserializer<mwboost::archive::text_oarchive,MathWorks::MatlabComponents::ComponentIdentifier>::save_object_data+00360295
+[ 41] 0x00007ffe472996c7 C:\Program Files\MATLAB\R2025b\bin\win64\libmwlxemainservices.dll+01283783 mwboost::archive::detail::oserializer<mwboost::archive::text_oarchive,MathWorks::MatlabComponents::ComponentIdentifier>::save_object_data+00367975
+[ 42] 0x00007ffe47298664 C:\Program Files\MATLAB\R2025b\bin\win64\libmwlxemainservices.dll+01279588 mwboost::archive::detail::oserializer<mwboost::archive::text_oarchive,MathWorks::MatlabComponents::ComponentIdentifier>::save_object_data+00363780
+[ 43] 0x00007ffe478c910c C:\Program Files\MATLAB\R2025b\bin\win64\m_interpreter.dll+00692492 inEvalCmdWithLocalReturnInDesiredWSAndPublishEvents+00000076
+[ 44] 0x00007ffe49b631f5   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00799221 iqm::InternalEvalPlugin::inEvalCmdWithLocalReturn+00000101
+[ 45] 0x00007ffe49b62c4c   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00797772 iqm::InternalEvalPlugin::execute+00000236
+[ 46] 0x00007ffe49b4267f   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00665215 iqm::Iqm::setupIqmFcnPtrs+00111535
+[ 47] 0x00007ffe49b15977   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00481655 iqm::Iqm::create+00038679
+[ 48] 0x00007ffe49ab0cd3   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00068819 iqm::BaseIqmPlugin::processMFileError+00001763
+[ 49] 0x00007ffe4ded7b4c C:\Program Files\MATLAB\R2025b\bin\win64\mlutil.dll+03242828 cmddistributor::IIPRunNowMessage::deliver+00000028
+[ 50] 0x00007ffe58590497 C:\Program Files\MATLAB\R2025b\bin\win64\libmwms.dll+01836183 foundation::msg_svc::exchange::MessageQueue::deliver+00000455
+[ 51] 0x00007ffe58591f91 C:\Program Files\MATLAB\R2025b\bin\win64\libmwms.dll+01843089 foundation::msg_svc::exchange::NoOpMessage::deliver+00003121
+[ 52] 0x00007ffe5857b3c2 C:\Program Files\MATLAB\R2025b\bin\win64\libmwms.dll+01749954 foundation::msg_svc::exchange::TerminatedException::operator=+00029202
+[ 53] 0x00007ffe5858846d C:\Program Files\MATLAB\R2025b\bin\win64\libmwms.dll+01803373 foundation::msg_svc::exchange::TerminatedException::operator=+00082621
+[ 54] 0x00007ffe585869ac C:\Program Files\MATLAB\R2025b\bin\win64\libmwms.dll+01796524 foundation::msg_svc::exchange::TerminatedException::operator=+00075772
+[ 55] 0x00007ffe4dd3a991 C:\Program Files\MATLAB\R2025b\bin\win64\mlutil.dll+01550737 cmddistributor::IIP::EventMgrBypass::operator=+00042113
+[ 56] 0x00007ffe4dd0f8c4 C:\Program Files\MATLAB\R2025b\bin\win64\mlutil.dll+01374404 cmddistributor::DebugLoopEvent::serializeExplicit+00020196
+[ 57] 0x00007ffe5ada36bc   C:\Program Files\MATLAB\R2025b\bin\win64\mvm.dll+00538300 mvm::MVM::setClientCapabilities+00010316
+[ 58] 0x00007ffe48aa5fe1   C:\Program Files\MATLAB\R2025b\bin\win64\mcr.dll+00221153 mwboost::archive::codecvt_null<wchar_t>::do_out+00003617
+[ 59] 0x00007ffe48aa5858   C:\Program Files\MATLAB\R2025b\bin\win64\mcr.dll+00219224 mwboost::archive::codecvt_null<wchar_t>::do_out+00001688
+[ 60] 0x00007ffe48a85e2e   C:\Program Files\MATLAB\R2025b\bin\win64\mcr.dll+00089646 mcrFunctionSignature::set_signature+00066462
+[ 61] 0x00007ffe48a9f572   C:\Program Files\MATLAB\R2025b\bin\win64\mcr.dll+00193906 mwboost::archive::codecvt_null<wchar_t>::`default constructor closure'+00015762
+[ 62] 0x00007ffe49b702da   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00852698 iqm::PackagedTaskPlugin::execute+00000074
+[ 63] 0x00007ffe49b4267f   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00665215 iqm::Iqm::setupIqmFcnPtrs+00111535
+[ 64] 0x00007ffe49b0e516   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00451862 iqm::Iqm::create+00008886
+[ 65] 0x00007ffe4da797e6 C:\Program Files\MATLAB\R2025b\bin\win64\libmwbridge.dll+00104422 ioReadLine+00000406
+[ 66] 0x00007ffe4da79615 C:\Program Files\MATLAB\R2025b\bin\win64\libmwbridge.dll+00103957 ioReadLine+00000165
+[ 67] 0x00007ffe4daaa3a0 C:\Program Files\MATLAB\R2025b\bin\win64\libmwbridge.dll+00304032 mnGetCommandLineBuffer+00000288
+[ 68] 0x00007ffe4daaa847 C:\Program Files\MATLAB\R2025b\bin\win64\libmwbridge.dll+00305223 mnParser+00000487
+[ 69] 0x00007ffe48adc57f   C:\Program Files\MATLAB\R2025b\bin\win64\mcr.dll+00443775 mcr::runtime::initializeIqm+00002623
+[ 70] 0x00007ffe48a85e2e   C:\Program Files\MATLAB\R2025b\bin\win64\mcr.dll+00089646 mcrFunctionSignature::set_signature+00066462
+[ 71] 0x00007ffe48a9f572   C:\Program Files\MATLAB\R2025b\bin\win64\mcr.dll+00193906 mwboost::archive::codecvt_null<wchar_t>::`default constructor closure'+00015762
+[ 72] 0x00007ffe49b702da   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00852698 iqm::PackagedTaskPlugin::execute+00000074
+[ 73] 0x00007ffe49b4267f   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00665215 iqm::Iqm::setupIqmFcnPtrs+00111535
+[ 74] 0x00007ffe49b0f49a   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00455834 iqm::Iqm::create+00012858
+[ 75] 0x00007ffe49b0f981   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00457089 iqm::Iqm::create+00014113
+[ 76] 0x00007ffe49b0ee0d   C:\Program Files\MATLAB\R2025b\bin\win64\iqm.dll+00454157 iqm::Iqm::create+00011181
+[ 77] 0x00007ffe48ab921c   C:\Program Files\MATLAB\R2025b\bin\win64\mcr.dll+00299548 mcrInstantiationError::operator=+00010668
+[ 78] 0x00007ffe48ab9cdf   C:\Program Files\MATLAB\R2025b\bin\win64\mcr.dll+00302303 mcrInstantiationError::operator=+00013423
+[ 79] 0x00007ffe48ab72e1   C:\Program Files\MATLAB\R2025b\bin\win64\mcr.dll+00291553 mcrInstantiationError::operator=+00002673
+[ 80] 0x00007ffedd1f8fba C:\Program Files\MATLAB\R2025b\bin\win64\mwboost_thread-vc143-mt-x64-1_81.dll+00036794 mwboost::detail::win32::handle_manager::swap+00000650
+[ 81] 0x00007ffefee29333                   C:\Windows\System32\ucrtbase.dll+00168755 recalloc+00000163
+[ 82] 0x00007fff004f257d                   C:\Windows\System32\KERNEL32.DLL+00075133 BaseThreadInitThunk+00000029
+[ 83] 0x00007fff01b2af28                      C:\Windows\SYSTEM32\ntdll.dll+00372520 RtlUserThreadStart+00000040
+
+
+This error was detected while a MEX-file was running. If the MEX-file
+is not an official MathWorks function, please examine its source code
+for errors. Please consult the External Interfaces Guide for information
+on debugging MEX-files.

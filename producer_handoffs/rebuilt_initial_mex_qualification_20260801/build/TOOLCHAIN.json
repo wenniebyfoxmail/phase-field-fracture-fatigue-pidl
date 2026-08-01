@@ -1,0 +1,9 @@
+{
+    "matlab_release":  "R2025b Update 5",
+    "matlab_version":  "25.2.0.3177638",
+    "architecture":  "win64",
+    "fortran_compiler":  "Intel(R) Fortran Compiler 2025.3.2 Build 20260112 (ifx.exe)",
+    "cpp_compiler":  "Microsoft Visual Studio 2022 Community; MSVC 14.44.35207",
+    "linker":  "Microsoft Visual Studio 2022 link.exe",
+    "mex_configuration":  "Intel oneAPI 2025 for Fortran with Microsoft Visual Studio 2022"
+}

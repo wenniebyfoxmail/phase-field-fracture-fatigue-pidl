@@ -1,0 +1,57 @@
+{
+    "schema_version":  "rebuilt_initial_mex_runtime_lock_v1",
+    "runtime":  {
+                    "artifact_relative_path":  "initial.mexw64",
+                    "initial_sha256":  "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db",
+                    "legacy_initial_sha256":  "589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340",
+                    "dependencies":  [
+                                         {
+                                             "name":  "AMOR",
+                                             "owner":  "griphfith",
+                                             "path":  "Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/AMOR.mexw64",
+                                             "sha256":  "64abee69f2c441730dc2efa4047ac45ab1d1b40e20c4822ed6e992adcd6b19e7"
+                                         },
+                                         {
+                                             "name":  "AT1_HISTORY_FATIGUE",
+                                             "owner":  "griphfith",
+                                             "path":  "Sources/+phase_field/+mex/+fem/+assembly/+pf/AT1_HISTORY_FATIGUE.mexw64",
+                                             "sha256":  "53e8fd0b229817b7c14c52a5b6afaa957692f475057b79b9a9a10195ccb92e60"
+                                         },
+                                         {
+                                             "name":  "cholmod2",
+                                             "owner":  "absolute",
+                                             "path":  "C:/SuiteSparse/SuiteSparse-dev/CHOLMOD/MATLAB/cholmod2.mexw64",
+                                             "sha256":  "86a2f15543eda1f7223a1733d935d37e9e2f4f2c2d8db3c4adc2c0f675c27329"
+                                         }
+                                     ]
+                },
+    "legacy_failure":  {
+                           "classification":  "blocked_before_cycle1: incompatible_legacy_runtime_binary",
+                           "exception_code":  "0xc0000005",
+                           "crash_dump_sha256":  "a7543a9bd1d3a5fa58baa942f331a35245ba7c287aec847d05a63a13577012c6",
+                           "crash_dump_relative_path":  "build/LEGACY_CRASH_DUMP.txt"
+                       },
+    "source":  {
+                   "commit":  "355d4c83fefc2db88c32031a2dd2623b3de85c89",
+                   "clean_receipt":  {
+                                         "git_status_porcelain":  "",
+                                         "is_clean":  true
+                                     },
+                   "source_hashes_relative_path":  "build/SOURCE_HASHES.json"
+               },
+    "build":  {
+                  "command_relative_path":  "build/BUILD_COMMAND.txt",
+                  "log_relative_path":  "build/BUILD_LOG.txt",
+                  "toolchain_relative_path":  "build/TOOLCHAIN.json",
+                  "command_sha256":  "201eabd998d4d0bc7ee14b6279c4a358c0ef80af90240134883f0a2cb9a5bff0",
+                  "log_sha256":  "cf97950c53a2bd109b66169e8b9143784336bc23c5f2234fd091bfafb325fd5b",
+                  "toolchain_sha256":  "befe373350916d37dbe73df9decf2542c647a8adb09543c515751cfbb3e8fbe0",
+                  "source_hashes_sha256":  "44f585d3fd83a19960397ff3a0b26da3fb1ac473e6d09a27359926e3a18e748e",
+                  "output_directory":  "C:/q4diag/initial_mex_rebuild_diag/out"
+              },
+    "qualification":  {
+                          "q1_receipt_relative_path":  "Q1_RECEIPT.json",
+                          "q2_receipt_relative_path":  "Q2_RECEIPT.json",
+                          "required_before_family":  true
+                      }
+}

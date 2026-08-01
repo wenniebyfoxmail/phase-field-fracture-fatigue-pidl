@@ -1,0 +1,32 @@
+Building with 'Intel oneAPI 2025 for Fortran with Microsoft Visual Studio 2022'.
+Intel(R) Fortran Compiler for applications running on Intel(R) 64, Version 2025.3.2 Build 20260112
+Copyright (C) 1985-2026 Intel Corporation. All rights reserved.
+
+Intel(R) Fortran Compiler for applications running on Intel(R) 64, Version 2025.3.2 Build 20260112
+Copyright (C) 1985-2026 Intel Corporation. All rights reserved.
+
+Intel(R) Fortran Compiler for applications running on Intel(R) 64, Version 2025.3.2 Build 20260112
+Copyright (C) 1985-2026 Intel Corporation. All rights reserved.
+
+Intel(R) Fortran Compiler for applications running on Intel(R) 64, Version 2025.3.2 Build 20260112
+Copyright (C) 1985-2026 Intel Corporation. All rights reserved.
+
+Intel(R) Fortran Compiler for applications running on Intel(R) 64, Version 2025.3.2 Build 20260112
+Copyright (C) 1985-2026 Intel Corporation. All rights reserved.
+
+Intel(R) Fortran Compiler for applications running on Intel(R) 64, Version 2025.3.2 Build 20260112
+Copyright (C) 1985-2026 Intel Corporation. All rights reserved.
+
+MEX completed successfully.
+Building with 'Intel oneAPI 2025 for Fortran with Microsoft Visual Studio 2022'.
+Intel(R) Fortran Compiler for applications running on Intel(R) 64, Version 2025.3.2 Build 20260112
+Copyright (C) 1985-2026 Intel Corporation. All rights reserved.
+
+Intel(R) Fortran Compiler for applications running on Intel(R) 64, Version 2025.3.2 Build 20260112
+Copyright (C) 1985-2026 Intel Corporation. All rights reserved.
+
+Intel(R) Fortran Compiler for applications running on Intel(R) 64, Version 2025.3.2 Build 20260112
+Copyright (C) 1985-2026 Intel Corporation. All rights reserved.
+
+MEX completed successfully.
+BUILD_OK bytes=525824
