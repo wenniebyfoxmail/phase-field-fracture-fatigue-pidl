@@ -646,7 +646,9 @@ def test_source_manifest_covers_exact_source_bytes_once() -> None:
     expected.update(
         {
             (HANDOFF / "README.md").relative_to(ROOT).as_posix(),
+            (HANDOFF / ".gitattributes").relative_to(ROOT).as_posix(),
             (HANDOFF / "launch_toy_road_case.ps1").relative_to(ROOT).as_posix(),
+            (ROOT / "tests/.gitattributes").relative_to(ROOT).as_posix(),
             Path(__file__).resolve().relative_to(ROOT).as_posix(),
         }
     )
@@ -669,3 +671,51 @@ def test_source_manifest_verifies_in_fresh_byte_preserving_copy(tmp_path: Path) 
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / relative, destination)
         assert sha256(destination) == expected_hash
+
+
+@pytest.mark.parametrize("autocrlf", ["true", "false"])
+def test_source_manifest_is_portable_across_autocrlf_checkouts(
+    tmp_path: Path, autocrlf: str
+) -> None:
+    attributes = HANDOFF / ".gitattributes"
+    text = attributes.read_text()
+    for pattern in ("*.m", "*.ps1", "*.json", "*.md", "*.txt", "*.py", "*.csv"):
+        assert f"{pattern} text eol=lf" in text
+
+    source = tmp_path / "source"
+    shutil.copytree(ROOT, source, ignore=shutil.ignore_patterns(".git", ".pytest_cache"))
+    run_git(source, "init")
+    run_git(source, "config", "user.email", "fixture@example.invalid")
+    run_git(source, "config", "user.name", "Fixture")
+    run_git(source, "config", "core.autocrlf", "false")
+    run_git(source, "add", ".")
+    run_git(source, "commit", "-m", "portable fixture")
+
+    checkout = tmp_path / f"checkout-{autocrlf}"
+    subprocess.run(
+        ["git", "-c", f"core.autocrlf={autocrlf}", "clone", str(source), str(checkout)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    manifest = checkout / HANDOFF.relative_to(ROOT) / "SHA256SUMS.txt"
+    manifest_paths = {
+        relative for _, relative in (
+            line.split("  ", 1) for line in manifest.read_text().splitlines() if line
+        )
+    }
+    assert "producer_handoffs/toy_to_road_independent_fem_20260731/.gitattributes" in manifest_paths
+    assert "tests/.gitattributes" in manifest_paths
+    for expected_hash, relative in (
+        line.split("  ", 1) for line in manifest.read_text().splitlines() if line
+    ):
+        assert sha256(checkout / relative) == expected_hash
+
+    target = checkout / "producer_handoffs/toy_to_road_independent_fem_20260731/launch_toy_road_case.ps1"
+    target.write_bytes(target.read_bytes().replace(b"\n", b"\r\n"))
+    expected = next(
+        value for value, relative in (
+            line.split("  ", 1) for line in manifest.read_text().splitlines() if line
+        ) if relative.endswith("launch_toy_road_case.ps1")
+    )
+    assert sha256(target) != expected

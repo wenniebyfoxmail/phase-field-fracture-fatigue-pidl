@@ -2,7 +2,9 @@ param(
     [Parameter(Mandatory = $true)][string]$GripfithRoot,
     [Parameter(Mandatory = $true)][string]$ParentRoot,
     [Parameter(Mandatory = $true)][string]$ParentLockPath,
-    [Parameter(Mandatory = $true)][string]$OutputRoot
+    [Parameter(Mandatory = $true)][string]$OutputRoot,
+    [switch]$ProcessGateTestOnly,
+    [string]$TestProcessInventoryPath = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -25,9 +27,43 @@ function Invoke-MatlabStage([string]$Name, [string]$Expression) {
     }
 }
 
+function Assert-NoRunningExperiment([object[]]$Inventory, [string]$Stage) {
+    $blocked = @($Inventory | Where-Object {
+        $name = [string]$_.name
+        $commandLine = [string]$_.command_line
+        $name -match '(?i)^matlab(\.exe)?$' -or
+        $name -match '(?i)^(abaqus|ansys|comsol|femsolver)(\.exe)?$' -or
+        $commandLine -match '(?i)(main_toy_to_road_case|solve_toy_to_road_case|run_q2_parent_cycle1_replay)'
+    })
+    if ($blocked.Count -gt 0) {
+        throw "Refusing qualification $Stage while a MATLAB/FEM experiment is active."
+    }
+}
+
+function Get-ProcessInventory {
+    return @(Get-CimInstance Win32_Process | ForEach-Object {
+        [ordered]@{ name = $_.Name; process_id = $_.ProcessId; command_line = $_.CommandLine }
+    })
+}
+
+if ($ProcessGateTestOnly) {
+    if ([string]::IsNullOrWhiteSpace($TestProcessInventoryPath)) {
+        throw 'ProcessGateTestOnly requires a controlled process inventory.'
+    }
+    $controlled = Get-Content -LiteralPath $TestProcessInventoryPath -Raw | ConvertFrom-Json
+    Assert-NoRunningExperiment @($controlled.before_q1) 'before Q1'
+    Assert-NoRunningExperiment @($controlled.before_q2) 'before Q2'
+    Write-Output 'Qualification process gates passed.'
+    return
+}
+if (-not [string]::IsNullOrWhiteSpace($TestProcessInventoryPath)) {
+    throw 'Test process inventory is forbidden for production qualification.'
+}
+
 if (Test-Path -LiteralPath $OutputRoot) {
     throw "Refusing to overwrite qualification output root: $OutputRoot"
 }
+Assert-NoRunningExperiment (Get-ProcessInventory) 'before Q1'
 [IO.Directory]::CreateDirectory($OutputRoot) | Out-Null
 try {
     $addHandoff = "addpath(" + (ConvertTo-MatlabLiteral $HandoffDir) + ")"
@@ -39,6 +75,7 @@ try {
     if (-not (Test-Path -LiteralPath (Join-Path $Q1Root 'Q1_RECEIPT.json') -PathType Leaf)) {
         throw 'Q1 completed without publishing its passing receipt; Q2 is refused.'
     }
+    Assert-NoRunningExperiment (Get-ProcessInventory) 'before Q2'
 
     $q2Config = "struct('output_root'," + (ConvertTo-MatlabLiteral $Q2Root) +
         ",'parent_root'," + (ConvertTo-MatlabLiteral $ParentRoot) +
@@ -57,6 +94,8 @@ try {
     $validation = "$addHandoff;validate_qualification_receipts(" +
         (ConvertTo-MatlabLiteral $OutputRoot) + ',' +
         (ConvertTo-MatlabLiteral $RuntimeLockPath) + ',' +
+        (ConvertTo-MatlabLiteral $RuntimeRoot) + ',' +
+        (ConvertTo-MatlabLiteral $GripfithRoot) + ',' +
         (ConvertTo-MatlabLiteral $Q2LockPath) + ',' +
         (ConvertTo-MatlabLiteral $ParentLockPath) + ',' +
         (ConvertTo-MatlabLiteral $FamilyReceiptPath) + ');'

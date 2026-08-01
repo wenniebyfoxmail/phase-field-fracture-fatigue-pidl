@@ -101,6 +101,7 @@ function Get-Qualification([object]$Fixture, [string]$GripCommit,
         $qualificationHandoff = Join-Path (Split-Path -Parent $HandoffDir) `
             'rebuilt_initial_mex_qualification_20260801'
         $runtimeLockPath = Join-Path $qualificationHandoff 'RUNTIME_LOCK.json'
+        $qualificationRuntimeRoot = Join-Path $qualificationHandoff 'runtime'
         $q2LockPath = Join-Path $qualificationHandoff 'Q2_INPUT_LOCK.json'
         $checks = @(
             @{ path = Join-Path $QualificationRoot 'Q1\Q1_RECEIPT.json'; sha = [string]$value.q1_receipt_sha256 },
@@ -118,6 +119,8 @@ function Get-Qualification([object]$Fixture, [string]$GripCommit,
             "validate_qualification_receipts(" +
             (ConvertTo-MatlabLiteral $QualificationRoot) + ',' +
             (ConvertTo-MatlabLiteral $runtimeLockPath) + ',' +
+            (ConvertTo-MatlabLiteral $qualificationRuntimeRoot) + ',' +
+            (ConvertTo-MatlabLiteral $GripfithRoot) + ',' +
             (ConvertTo-MatlabLiteral $q2LockPath) + ',' +
             (ConvertTo-MatlabLiteral $parentLockPath) + ');'
         & matlab -batch $validation
@@ -310,7 +313,9 @@ function Get-ProductionSourcePaths {
         ForEach-Object { $_.FullName.Substring((Resolve-Path $SharedRepo).Path.Length + 1).Replace('\', '/') }
     $paths += @(
         "$HandoffRelative/README.md",
+        "$HandoffRelative/.gitattributes",
         "$HandoffRelative/launch_toy_road_case.ps1",
+        'tests/.gitattributes',
         'tests/test_toy_road_fem_handoff.py'
     )
     return @($paths | Sort-Object -Unique)
@@ -583,7 +588,6 @@ $runtimeArtifactPath = Join-Path (Split-Path -Parent $HandoffDir) `
     'rebuilt_initial_mex_qualification_20260801/runtime/initial.mexw64'
 $runtimeOverlay = New-RuntimeOverlay $runtimeArtifactPath
 $matlabPaths = @(
-    $runtimeOverlay.root,
     $HandoffDir,
     (Join-Path $GripfithRoot 'Sources'),
     "$suiteSparseRoot/CHOLMOD/MATLAB",
@@ -595,6 +599,7 @@ $matlabPaths = @(
 $addPath = ($matlabPaths | ForEach-Object {
     "addpath(" + (ConvertTo-MatlabLiteral $_) + ")"
 }) -join ';'
+$addPath += ";addpath(" + (ConvertTo-MatlabLiteral $runtimeOverlay.root) + ",'-begin')"
 $startedUtc = (Get-Date).ToUniversalTime().ToString('o')
 try {
     $expectedInitial = (ConvertTo-MatlabLiteral $runtimeOverlay.initial_path)
