@@ -66,3 +66,45 @@ MATLAB Code Analyzer: 0 findings
 No production Q1/Q2/FEM path was triggered. The real parent blocker is
 unchanged: required parent damage-degradation and active-driver fields are
 absent, so T1/T2/T3 remain unauthorized.
+
+## Fix Round 2
+
+Closed the remaining synthetic-evidence authorization finding:
+
+- Production now pins the canonical `QUALIFICATION_EVIDENCE_LOCK.json` path
+  and a source-coded SHA-256. The current digest is an explicit unsealed
+  sentinel, so production fails with `EvidenceLockUnsealed` until real Task 6
+  qualification produces the lock and the source is resealed.
+- The lock schema binds exact paths, hashes, byte sizes, runtime/source/parent
+  identities, Q1 input, Q2 masks, mesh ordering, and all eight Q1/Q2 artifacts.
+- Production Q1 validation reruns the independent MATLAB reference and rebuilt
+  MEX comparator through `recompute_q1_initial_qualification_metrics` and
+  requires exact agreement with stored metrics and input identity.
+- Production Q2 validation reloads the canonical parent receipt, immutable
+  masks, and saved candidate state, reruns `compare_q2_cycle1_fields`, and
+  requires exact agreement with stored MAT and JSON metrics.
+- Synthetic locks are accepted only through
+  `validate_qualification_receipts_test_only`, guarded by the unit-test call
+  stack. Its receipt is `test_only_non_authorizing`, cannot be published, and
+  the family launcher permits fixtures only in `PreflightOnly` mode.
+
+Fix-round verification:
+
+```text
+Trust-chain receipt tests: 10 passed
+Other qualification tests: 56 passed
+Runtime-lock tests after isolated harness fix: 30 passed
+PowerShell launcher contracts: PASS, PASS
+MATLAB Code Analyzer: 0 findings
+Family manifest: 33/33 hashes valid
+Python family regression: interrupted by user; no final count reported
+```
+
+The first combined MATLAB run recorded `66 passed, 30 failed, 7 incomplete`:
+all 30 failures came from the receipt-test teardown removing the caller's
+handoff path before `rebuiltMexRuntimeLockTest`. Restoring the original path
+fixed that single harness issue; the affected runtime suite then passed 30/30.
+
+No production Q1, Q2, recovery, Newton, cycle, or FEM family path was run.
+No production family can be authorized until the real Task 6 evidence lock is
+generated, committed, and its exact digest replaces the unsealed sentinel.

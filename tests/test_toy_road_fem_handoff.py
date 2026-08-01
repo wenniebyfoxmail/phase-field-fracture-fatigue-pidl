@@ -110,8 +110,10 @@ def build_launcher_fixture(tmp_path: Path) -> dict:
         "force_hardlink_failure": False,
         "required_source_paths": source_paths,
         "qualification_receipt": {
-            "schema_version": "rebuilt_mex_family_qualification_receipt_v1",
+            "schema_version": "rebuilt_mex_family_qualification_receipt_v2",
             "passed": True,
+            "authorization_scope": "test_only_non_authorizing",
+            "qualification_evidence_lock_sha256": "0" * 64,
             "runtime_lock_sha256": "a" * 64,
             "runtime_initial_sha256": (
                 "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db"

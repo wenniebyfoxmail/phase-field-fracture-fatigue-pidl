@@ -12,6 +12,7 @@ $HandoffDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RuntimeLockPath = Join-Path $HandoffDir 'RUNTIME_LOCK.json'
 $RuntimeRoot = Join-Path $HandoffDir 'runtime'
 $Q2LockPath = Join-Path $HandoffDir 'Q2_INPUT_LOCK.json'
+$EvidenceLockPath = Join-Path $HandoffDir 'QUALIFICATION_EVIDENCE_LOCK.json'
 $Q1Root = Join-Path $OutputRoot 'Q1'
 $Q2Root = Join-Path $OutputRoot 'Q2'
 $FamilyReceiptPath = Join-Path $OutputRoot 'FAMILY_QUALIFICATION_RECEIPT.json'
@@ -90,6 +91,9 @@ try {
     if (-not (Test-Path -LiteralPath (Join-Path $Q2Root 'Q2_RESULT.json') -PathType Leaf)) {
         throw 'Q2 completed without a passing result; family launch is refused.'
     }
+    if (-not (Test-Path -LiteralPath $EvidenceLockPath -PathType Leaf)) {
+        throw 'QUALIFICATION_EVIDENCE_LOCK.json is not sealed; family receipt is refused.'
+    }
 
     $validation = "$addHandoff;validate_qualification_receipts(" +
         (ConvertTo-MatlabLiteral $OutputRoot) + ',' +
@@ -98,6 +102,7 @@ try {
         (ConvertTo-MatlabLiteral $GripfithRoot) + ',' +
         (ConvertTo-MatlabLiteral $Q2LockPath) + ',' +
         (ConvertTo-MatlabLiteral $ParentLockPath) + ',' +
+        (ConvertTo-MatlabLiteral $ParentRoot) + ',' +
         (ConvertTo-MatlabLiteral $FamilyReceiptPath) + ');'
     Invoke-MatlabStage 'Qualification receipt validation' $validation
 } catch {

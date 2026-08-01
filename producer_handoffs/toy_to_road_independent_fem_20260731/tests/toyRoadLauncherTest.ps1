@@ -7,6 +7,7 @@ $source = Get-Content -LiteralPath $launcherPath -Raw
 $required = @(
     '[string]$QualificationRoot',
     'FAMILY_QUALIFICATION_RECEIPT.json',
+    'qualification_evidence_lock_sha256',
     'FAMILY_RUNTIME_RECEIPT.json',
     'Assert-FamilySequence',
     'Previous family member failed terminal validation',
@@ -22,6 +23,11 @@ foreach ($token in $required) {
     if (-not $source.Contains($token)) {
         throw "Toy-road launcher qualification contract is missing: $token"
     }
+}
+if (-not $source.Contains('test_only_non_authorizing') -or
+        -not $source.Contains('Test fixtures cannot authorize a family launch') -or
+        -not $source.Contains('TestFixturePath is permitted only with PreflightOnly')) {
+    throw 'Synthetic qualification fixtures are not confined to non-authorizing preflight.'
 }
 if ($source.IndexOf('$addPath =') -gt $source.IndexOf('$addPath +=') -or
         -not $source.Contains(",'-begin')")) {

@@ -9,6 +9,7 @@ $required = @(
     'Q1', 'Q2', 'FAMILY_QUALIFICATION_RECEIPT.json',
     'run_q1_initial_mex_qualification', 'run_q2_parent_cycle1_replay',
     'validate_qualification_receipts', '[IO.FileMode]::CreateNew',
+    'QUALIFICATION_EVIDENCE_LOCK.json',
     'Assert-NoRunningExperiment', 'before_q1', 'before_q2'
 )
 foreach ($token in $required) {

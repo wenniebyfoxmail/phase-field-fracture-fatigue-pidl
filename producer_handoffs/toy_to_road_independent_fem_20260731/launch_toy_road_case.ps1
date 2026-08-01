@@ -50,6 +50,7 @@ function Assert-QualificationReceipt(
     $required = @('schema_version','passed','runtime_lock_sha256',
         'runtime_initial_sha256','source_commit','q1_receipt_sha256',
         'q1_result_sha256','q2_receipt_sha256','q2_input_lock_sha256',
+        'qualification_evidence_lock_sha256',
         'parent_lock_sha256','parent_cycle1_sha256','parent_reference_id',
         'mesh_ordering_sha256','parent_vtk_mesh_sha256','mask_set_sha256')
     foreach ($name in $required) {
@@ -57,7 +58,7 @@ function Assert-QualificationReceipt(
             throw "Qualification provenance is missing $name."
         }
     }
-    if ([string]$Value.schema_version -cne 'rebuilt_mex_family_qualification_receipt_v1' -or
+    if ([string]$Value.schema_version -cne 'rebuilt_mex_family_qualification_receipt_v2' -or
             $Value.passed -isnot [bool] -or $Value.passed -ne $true) {
         throw 'Qualification receipt is absent, failed, or malformed.'
     }
@@ -70,6 +71,7 @@ function Assert-QualificationReceipt(
     Assert-Sha $ReceiptSha256 64 'Qualification receipt SHA256'
     foreach ($name in @('runtime_lock_sha256','runtime_initial_sha256',
             'q1_receipt_sha256','q1_result_sha256','q2_receipt_sha256',
+            'qualification_evidence_lock_sha256',
             'q2_input_lock_sha256','parent_lock_sha256','parent_cycle1_sha256',
             'mesh_ordering_sha256','parent_vtk_mesh_sha256','mask_set_sha256')) {
         Assert-Sha $Value.$name 64 "Qualification $name"
@@ -91,6 +93,9 @@ function Get-Qualification([object]$Fixture, [string]$GripCommit,
     if ($null -ne $Fixture) {
         $value = $Fixture.qualification_receipt
         $digest = ([string]$Fixture.qualification_receipt_sha256).ToLowerInvariant()
+        if ([string]$value.authorization_scope -cne 'test_only_non_authorizing') {
+            throw 'Test fixtures cannot authorize a family launch.'
+        }
     } else {
         $path = Join-Path $QualificationRoot 'FAMILY_QUALIFICATION_RECEIPT.json'
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
@@ -122,7 +127,8 @@ function Get-Qualification([object]$Fixture, [string]$GripCommit,
             (ConvertTo-MatlabLiteral $qualificationRuntimeRoot) + ',' +
             (ConvertTo-MatlabLiteral $GripfithRoot) + ',' +
             (ConvertTo-MatlabLiteral $q2LockPath) + ',' +
-            (ConvertTo-MatlabLiteral $parentLockPath) + ');'
+            (ConvertTo-MatlabLiteral $parentLockPath) + ',' +
+            (ConvertTo-MatlabLiteral $ParentRoot) + ');'
         & matlab -batch $validation
         if ($LASTEXITCODE -ne 0) {
             throw 'Qualification provenance revalidation failed before family preflight.'
