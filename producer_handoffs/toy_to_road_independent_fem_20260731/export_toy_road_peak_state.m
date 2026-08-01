@@ -95,7 +95,7 @@ state.cycle_index = struct( ...
     'state_ordering_id', state.state_ordering_id);
 
 validate_toy_road_state(state);
-localAtomicSave(state, outputPath);
+publish_toy_road_state_atomic(state, outputPath);
 end
 
 function localValidateInput(input, outputPath)
@@ -372,71 +372,6 @@ end
 function [outputPath, relativePath] = localCanonicalOutputPath(outputRoot, cycle)
 relativePath = string(sprintf('states/cycle_%04d.mat', cycle));
 outputPath = fullfile(char(outputRoot), 'states', sprintf('cycle_%04d.mat', cycle));
-end
-
-function localAtomicSave(state, outputPath)
-outputDir = fileparts(outputPath);
-if ~isfolder(outputDir)
-    [created, message] = mkdir(outputDir);
-    if ~created
-        error('toyRoad:StateWriteFailed', ...
-            'Cannot create state output directory: %s', message);
-    end
-end
-
-if localPathExists(outputPath)
-    error('toyRoad:StateOutputExists', ...
-        'Refusing to overwrite existing state shard: %s', outputPath);
-end
-lockPath = [outputPath '.publish.lock'];
-try
-    lockFile = java.io.File(lockPath);
-    lockCreated = lockFile.createNewFile();
-catch exception
-    error('toyRoad:StateWriteFailed', ...
-        'Cannot create state publication lock: %s', exception.message);
-end
-if ~lockCreated
-    error('toyRoad:StatePublishConflict', ...
-        'Another publisher owns the state publication lock: %s', lockPath);
-end
-lockCleanup = onCleanup(@() localDeleteIfExists(lockPath));
-if localPathExists(outputPath)
-    error('toyRoad:StatePublishConflict', ...
-        'A state shard appeared while acquiring the publication lock: %s', outputPath);
-end
-
-tempPath = [tempname(outputDir) '.tmp.mat'];
-cleanup = onCleanup(@() localDeleteIfExists(tempPath));
-save(tempPath, '-struct', 'state', '-v7.3');
-if localPathExists(outputPath)
-    error('toyRoad:StatePublishConflict', ...
-        'A state shard appeared before atomic publication: %s', outputPath);
-end
-try
-    sourcePath = java.io.File(tempPath).toPath();
-    targetPath = java.io.File(outputPath).toPath();
-    % Omitting REPLACE_EXISTING makes a racing target a hard failure.
-    options = javaArray('java.nio.file.CopyOption', 0);
-    java.nio.file.Files.move(sourcePath, targetPath, options);
-catch exception
-    if localPathExists(outputPath)
-        error('toyRoad:StatePublishConflict', ...
-            'Atomic publication refused an existing state shard: %s', outputPath);
-    end
-    error('toyRoad:StateWriteFailed', ...
-        'Cannot atomically publish state shard: %s', exception.message);
-end
-end
-
-function value = localPathExists(path)
-value = isfile(path) || isfolder(path);
-end
-
-function localDeleteIfExists(path)
-if isfile(path)
-    delete(path);
-end
 end
 
 function value = localIsFiniteReal(value)

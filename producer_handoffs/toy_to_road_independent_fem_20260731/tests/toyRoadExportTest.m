@@ -122,6 +122,31 @@ files = files(~[files.isdir]);
 verifyEqual(testCase, string({files.name}), "cycle_0002.mat");
 end
 
+function testAtomicPublisherRequestsAtomicMoveWithoutReplacement(testCase)
+publisherPath = fullfile(handoffDir(), 'publish_toy_road_state_atomic.m');
+source = fileread(publisherPath);
+
+verifyNotEmpty(testCase, regexp(source, ...
+    'StandardCopyOption\.ATOMIC_MOVE', 'once'));
+verifyEmpty(testCase, regexp(source, ...
+    'StandardCopyOption\.REPLACE_EXISTING', 'once'));
+verifyNotEmpty(testCase, regexp(source, ...
+    'AtomicMoveNotSupportedException', 'once'));
+end
+
+function testFailedAtomicMoveLeavesNoTargetOrTemporaryShard(testCase)
+[outputRoot, cleanup, outputPath] = freshOutputRoot(); %#ok<ASGLU>
+state = struct('sentinel', 1);
+
+verifyError(testCase, ...
+    @() publish_toy_road_state_atomic(state, outputPath, @failAtomicMove), ...
+    "toyRoad:AtomicMoveNotSupported");
+verifyFalse(testCase, isfile(outputPath));
+statesDir = fileparts(outputPath);
+verifyEmpty(testCase, dir(fullfile(statesDir, '*.tmp.mat')));
+verifyFalse(testCase, isfile([outputPath '.publish.lock']));
+end
+
 function testExporterRejectsMismatchedFileDestination(testCase)
 [outputRoot, cleanup] = freshOutputRoot(); %#ok<ASGLU>
 mismatchedPath = fullfile(outputRoot, 'cycle_0002.mat');
@@ -394,6 +419,53 @@ verifyError(testCase, @() validate_toy_road_state(badShape), ...
     "toyRoad:StateValidationFailed");
 end
 
+function testPersistedV73CorruptionClassesAreRejected(testCase)
+[outputRoot, cleanup, outputPath] = freshOutputRoot(); %#ok<ASGLU>
+exportCrackedState(outputRoot);
+hdf5Info = h5info(outputPath);
+verifyNotEmpty(testCase, hdf5Info);
+validState = load(outputPath);
+
+badState = validState;
+badState.reaction_vector(3) = badState.reaction_vector(3) + 1;
+verifyPersistedStateRejected(testCase, outputPath, badState);
+
+badState = validState;
+badState.reaction_top_resultant = badState.reaction_top_resultant + 1;
+verifyPersistedStateRejected(testCase, outputPath, badState);
+
+badState = validState;
+badState.mesh_sha256 = repmat("0", 1, 1);
+verifyPersistedStateRejected(testCase, outputPath, badState);
+
+badState = validState;
+badState.strain_energy_active_elem(1) = ...
+    badState.strain_energy_active_elem(1) + 0.1;
+verifyPersistedStateRejected(testCase, outputPath, badState);
+
+badState = validState;
+badState.crack_tip_diagnostics.node_id = ...
+    badState.crack_tip_diagnostics.node_id + 1;
+verifyPersistedStateRejected(testCase, outputPath, badState);
+
+badState = validState;
+badState.connected_right_boundary_diagnostics.hit = false;
+verifyPersistedStateRejected(testCase, outputPath, badState);
+
+badState = validState;
+badState.Umax_N = -0.12;
+badState.cycle_index.Umax_N = -0.12;
+verifyPersistedStateRejected(testCase, outputPath, badState);
+
+badState = validState;
+badState.f_alpha_elem(1) = 1.01;
+verifyPersistedStateRejected(testCase, outputPath, badState);
+
+badState = validState;
+badState.psi_raw_elem(1) = NaN;
+verifyPersistedStateRejected(testCase, outputPath, badState);
+end
+
 function testValidatorRejectsGpDamageThatIsNotNativeQ4Interpolation(testCase)
 [outputRoot, cleanup] = freshOutputRoot(); %#ok<ASGLU>
 state = export_toy_road_peak_state( ...
@@ -490,6 +562,20 @@ function state = exportCrackedState(outputRoot)
 damageGp = [0.60 * ones(1, 4); 0.96 * ones(1, 4)];
 state = export_toy_road_peak_state( ...
     syntheticInput((1 - damageGp) .^ 2, ones(2, 4)), outputRoot);
+end
+
+function verifyPersistedStateRejected(testCase, outputPath, state)
+save(outputPath, '-struct', 'state', '-v7.3');
+hdf5Info = h5info(outputPath);
+verifyNotEmpty(testCase, hdf5Info);
+reloadedState = load(outputPath);
+verifyError(testCase, @() validate_toy_road_state(reloadedState), ...
+    "toyRoad:StateValidationFailed");
+end
+
+function failAtomicMove(~, ~)
+error('toyRoadTest:AtomicMoveNotSupportedException', ...
+    'java.nio.file.AtomicMoveNotSupportedException: injected test failure');
 end
 
 function value = allFiniteNumericFields(state)
