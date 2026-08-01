@@ -11,6 +11,26 @@ fields are not direct road sensors. This package authorizes no PIDL training
 and no road validation. F1b remains a separate blocked diagnostic and is not a
 parent or substitute for these cases.
 
+## Qualification Status
+
+This family is not currently authorized for execution. The rebuilt-initial-MEX
+qualification source exists, but no production Q1/Q2 evidence has been sealed.
+The current state is `EvidenceLockUnsealed`, and
+`QUALIFICATION_EVIDENCE_LOCK.json` is intentionally absent.
+
+The locked parent is also missing authoritative native/GP damage-degradation
+and active-driver evidence. Parent validation must report both
+`blocked_missing_parent_damage_degradation_field` and
+`blocked_missing_parent_active_field`, then stop before recovery, `System`,
+Newton, or cycle 1. Neither `f_alpha_elem` nor an element-mean approximation
+may be substituted for the active driver.
+
+T1/T2/T3 remain fail-closed until canonical Q1 and Q2 receipts are bound by a
+sealed qualification evidence lock. Once authorized, all three cases must use
+the same qualification receipt, runtime-lock digest, and rebuilt
+`initial.mexw64` SHA-256, in strict serial order with terminal validation
+between cases.
+
 ## Immutable Inputs
 
 The launcher requires:
@@ -24,7 +44,9 @@ The launcher requires:
   `Hard5_eta0_5step_Umax_011_012_013_20260729`, containing `MANIFEST.csv` and
   the `u012` directory;
 - `OutputParent`: an existing writable family output directory on a volume
-  that supports hard links; and
+  that supports hard links;
+- `QualificationRoot`: a completed immutable qualification root containing a
+  canonical family receipt bound to the sealed evidence lock; and
 - one `CaseId`: `T1_initial_defect`, `T2_material_state`, or
   `T3_loading_history`.
 
@@ -105,6 +127,11 @@ the input snapshot and final provenance to it.
 
 ## Launch
 
+Do not run the command below while the status is `EvidenceLockUnsealed` or
+either Q2 parent-field blocker remains. Static preflight instructions and the
+runtime/API evidence contract are in
+`producer_handoffs/rebuilt_initial_mex_qualification_20260801/README.md`.
+
 First run the non-solving preflight from a clean sealed checkout:
 
 ```powershell
@@ -113,6 +140,7 @@ First run the non-solving preflight from a clean sealed checkout:
   -GripfithRoot C:\q4diag\griphfith-f1b-355d4c83 `
   -ParentRoot 'C:\path\to\Hard5_eta0_5step_Umax_011_012_013_20260729' `
   -OutputParent C:\q4diag\toy_to_road_independent_fem_20260731 `
+  -QualificationRoot C:\q4diag\rebuilt_initial_mex_qualification_evidence `
   -CaseId T1_initial_defect `
   -ExpectedSourceCommit <full-40-character-sealed-commit> `
   -PreflightOnly

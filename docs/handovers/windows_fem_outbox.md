@@ -6,6 +6,30 @@
 
 ---
 
+## 2026-08-01 - [blocker]: Rebuilt-MEX source ready; evidence lock unsealed
+
+- **Re**: Request 27, rebuilt `initial.mexw64` qualification before the
+  independent T1/T2/T3 toy-to-road FEM family.
+- **Status**: Pre-execution/sealing source work is in progress at base commit
+  `7124a328050f7c7f21e230c809b60f045e53b357`. Production Q1/Q2 have not run,
+  no mutable qualification output exists, and no family case is authorized.
+- **Runtime identity**: approved rebuilt `initial.mexw64` SHA-256
+  `ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db`;
+  clean GRIPHFiTH source commit
+  `355d4c83fefc2db88c32031a2dd2623b3de85c89`.
+- **Current parent blockers**:
+  `blocked_missing_parent_damage_degradation_field` and
+  `blocked_missing_parent_active_field`.
+- **Evidence state**: `EvidenceLockUnsealed`.
+  `QUALIFICATION_EVIDENCE_LOCK.json` is intentionally absent, so Q1/Q2
+  receipts cannot authorize T1/T2/T3.
+- **Files written**: source-only README, LF/source inventory, updated family
+  source manifest, and this append-only status entry. No Q1/Q2/FEM result
+  files were created.
+- **Next**: independently review and seal a clean source commit; then obtain
+  authoritative parent native/GP `g` and `psi_active` evidence before running
+  Q2. Only a canonical Q1+Q2 pass may unlock strict serial T1 -> T2 -> T3.
+
 ## 2026-08-01 · [blocker]: Request 26 F1b exact-Pi dimensional producer crash
 
 - **Status**: BLOCKED. The fresh F1b dimensional exact-Pi producer attempt
