@@ -299,7 +299,33 @@ classdef rebuiltMexRuntimeLockTest < matlab.unittest.TestCase
                 verifyEqual(testCase, exception.identifier, ...
                     'rebuiltMex:SourceIdentityMismatch');
                 verifySubstring(testCase, exception.message, ...
-                    'consumed Fortran checkout file differs');
+                    'covered source checkout file differs');
+            end
+        end
+
+        function testRejectsHiddenConvertedCoveredSourceBytes(testCase)
+            sourceRoot = makeSourceFixture(testCase);
+            fixtureRoot = makeRuntimeFixture(testCase);
+            relativePath = 'Sources/+phase_field/System.m';
+            sourcePath = fullfile(sourceRoot, relativePath);
+            rawHash = gitBlobHash(sourceRoot, lockedSourceCommit(), relativePath);
+            verifyEqual(testCase, fileHash(sourcePath), rawHash);
+            validateFixture(fixtureRoot, sourceRoot);
+
+            convertLfToCrlf(sourcePath);
+            verifyNotEqual(testCase, fileHash(sourcePath), rawHash);
+            runGit(sourceRoot, sprintf( ...
+                'update-index --assume-unchanged -- "%s"', relativePath));
+            verifyEmpty(testCase, strtrim(runGit(sourceRoot, ...
+                'status --porcelain=v1 --untracked-files=all')));
+            try
+                validateFixture(fixtureRoot, sourceRoot);
+                verifyFail(testCase, 'Converted covered source bytes were accepted.');
+            catch exception
+                verifyEqual(testCase, exception.identifier, ...
+                    'rebuiltMex:SourceIdentityMismatch');
+                verifySubstring(testCase, exception.message, ...
+                    'covered source checkout file differs');
             end
         end
 

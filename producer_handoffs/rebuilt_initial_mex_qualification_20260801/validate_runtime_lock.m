@@ -253,7 +253,7 @@ if ~isequal({covered.sha256}, expectedHashes)
     error('rebuiltMex:SourceIdentityMismatch', ...
         'A locked source SHA-256 does not match the expected Git blob.');
 end
-validateConsumedCheckout(sourceHashes.consumed_fortran, gripfithRoot);
+validateCoveredCheckout(covered, gripfithRoot);
 validateCoveredIndexFlags(gripfithRoot, {covered.path});
 end
 
@@ -353,13 +353,13 @@ if isfile(path)
 end
 end
 
-function validateConsumedCheckout(records, root)
+function validateCoveredCheckout(records, root)
 for index = 1:numel(records)
     filePath = resolveRelative(root, records(index).path);
     requireFile(filePath);
     if ~strcmp(sha256File(filePath), records(index).sha256)
         error('rebuiltMex:SourceIdentityMismatch', ...
-            'A consumed Fortran checkout file differs from its raw Git blob.');
+            'A covered source checkout file differs from its raw Git blob.');
     end
 end
 end
