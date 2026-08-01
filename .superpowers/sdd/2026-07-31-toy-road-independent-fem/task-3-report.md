@@ -65,3 +65,25 @@ Output: `Totals: 17 Passed, 0 Failed, 0 Incomplete.`
 - This task implements helper-level validation only. The later trajectory
   orchestrator must call `apply_t1_mesh_transfer` before any future solve and
   retain the returned audit with its output provenance.
+
+## Fix Round 1: Event Sequence Safety
+
+### RED Evidence
+
+`matlab -batch "r=runtests('producer_handoffs/toy_to_road_independent_fem_20260731/tests'); assertSuccess(r)"`
+
+The new tests failed as intended. A c10 first hit followed by c12 was accepted
+without `toyRoad:InvalidEventSequence`; duplicate c10 and out-of-order c9 were
+also accepted. The returned state lacked `last_processed_cycle`.
+
+### GREEN Evidence
+
+`matlab -batch "r=runtests('producer_handoffs/toy_to_road_independent_fem_20260731/tests'); assertSuccess(r)"`
+
+Output: `Totals: 20 Passed, 0 Failed, 0 Incomplete.`
+
+`advance_toy_road_event` now records `last_processed_cycle` and rejects every
+gap, duplicate, or out-of-order call with `toyRoad:InvalidEventSequence`.
+The initial call may start at any positive cycle; each subsequent processed
+peak must be exactly the next physical cycle. Consequently, c10 followed by
+c12 cannot advance confirmation or later confirm at c14.

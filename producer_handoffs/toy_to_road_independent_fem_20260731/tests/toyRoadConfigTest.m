@@ -233,6 +233,42 @@ verifyFalse(testCase, state.hit);
 verifyEqual(testCase, state.connected_component_size, 1);
 end
 
+function testEventRejectsMissingPhysicalCycle(testCase)
+state = emptyEventState();
+[coords, conn, chainIds] = rightBoundaryChain();
+hitDamage = damageAt(coords, chainIds(1:3));
+
+state = advance_toy_road_event(state, coords, conn, 10, hitDamage);
+verifyError(testCase, ...
+    @() advance_toy_road_event(state, coords, conn, 12, hitDamage), ...
+    "toyRoad:InvalidEventSequence");
+end
+
+function testEventRejectsDuplicateAndOutOfOrderCycles(testCase)
+state = emptyEventState();
+[coords, conn, chainIds] = rightBoundaryChain();
+hitDamage = damageAt(coords, chainIds(1:3));
+
+state = advance_toy_road_event(state, coords, conn, 10, hitDamage);
+verifyError(testCase, ...
+    @() advance_toy_road_event(state, coords, conn, 10, hitDamage), ...
+    "toyRoad:InvalidEventSequence");
+verifyError(testCase, ...
+    @() advance_toy_road_event(state, coords, conn, 9, hitDamage), ...
+    "toyRoad:InvalidEventSequence");
+end
+
+function testEventRecordsLastProcessedCycle(testCase)
+state = emptyEventState();
+[coords, conn, chainIds] = rightBoundaryChain();
+hitDamage = damageAt(coords, chainIds(1:3));
+
+state = advance_toy_road_event(state, coords, conn, 10, hitDamage);
+verifyEqual(testCase, state.last_processed_cycle, 10);
+state = advance_toy_road_event(state, coords, conn, 11, hitDamage);
+verifyEqual(testCase, state.last_processed_cycle, 11);
+end
+
 function copyRequiredLocks(sourceDir, targetDir)
 copyfile(fullfile(sourceDir, 'PARENT_LOCK.json'), targetDir);
 copyfile(fullfile(sourceDir, 'FAMILY_INPUT_LOCK.json'), targetDir);

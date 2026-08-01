@@ -3,6 +3,7 @@ function state = advance_toy_road_event(state, node_coords, connectivity, cycle,
 
 state = localNormaliseState(state);
 localValidateInputs(node_coords, connectivity, cycle, peak_damage);
+localValidateCycleSequence(state.last_processed_cycle, cycle);
 
 candidateMask = node_coords(:, 1) >= 0.48 & peak_damage >= 0.95;
 hitNodeIds = find(candidateMask);
@@ -28,6 +29,7 @@ if isHit
 else
     state.consecutive_post_hit = 0;
 end
+state.last_processed_cycle = cycle;
 end
 
 function state = localNormaliseState(state)
@@ -44,6 +46,7 @@ state = localSetDefault(state, 'hit_node_ids', zeros(0, 1));
 state = localSetDefault(state, 'connected_component_node_ids', zeros(0, 1));
 state = localSetDefault(state, 'connected_component_size', 0);
 state = localSetDefault(state, 'hit', false);
+state = localSetDefault(state, 'last_processed_cycle', NaN);
 end
 
 function state = localSetDefault(state, fieldName, value)
@@ -66,6 +69,21 @@ isValidDamage = isnumeric(peakDamage) && isreal(peakDamage) && isvector(peakDama
 if ~(isValidCoords && isValidConnectivity && isValidCycle && isValidDamage)
     error('toyRoad:InvalidEventInput', ...
         'Inputs must contain finite coordinates, Q4 connectivity, a positive integer cycle, and nodal peak damage.');
+end
+end
+
+function localValidateCycleSequence(lastProcessedCycle, cycle)
+isValidLastCycle = isnumeric(lastProcessedCycle) && isreal(lastProcessedCycle) && ...
+    isscalar(lastProcessedCycle) && ...
+    (isnan(lastProcessedCycle) || (isfinite(lastProcessedCycle) && ...
+    lastProcessedCycle >= 1 && lastProcessedCycle == floor(lastProcessedCycle)));
+if ~isValidLastCycle
+    error('toyRoad:InvalidEventInput', ...
+        'state.last_processed_cycle must be NaN or a positive integer cycle.');
+end
+if ~isnan(lastProcessedCycle) && cycle ~= lastProcessedCycle + 1
+    error('toyRoad:InvalidEventSequence', ...
+        'Each event update must process exactly the next physical cycle.');
 end
 end
 
