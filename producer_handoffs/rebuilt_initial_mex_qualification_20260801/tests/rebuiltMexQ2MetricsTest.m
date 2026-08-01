@@ -84,8 +84,11 @@ classdef rebuiltMexQ2MetricsTest < matlab.unittest.TestCase
             outside = ~masks.fields.raw.mask;
             candidate.fields.raw.values(find(outside, 1)) = 2e-10;
 
-            verifyError(testCase, @() compare_q2_cycle1_fields( ...
-                parent, candidate, masks), 'rebuiltMexQ2:GateFailed');
+            failed = compare_q2_cycle1_fields(parent, candidate, masks);
+            verifyFalse(testCase, failed.passed);
+            verifyFalse(testCase, failed.fields.raw.passed);
+            verifyGreaterThan(testCase, ...
+                failed.fields.raw.outside_absolute_max_error, 1e-10);
 
             candidate = metricCandidate(parent);
             candidate.fields.raw.values(find(outside, 1)) = 5e-13;
@@ -126,8 +129,10 @@ classdef rebuiltMexQ2MetricsTest < matlab.unittest.TestCase
             candidate = metricCandidate(parent);
             support = masks.fields.history.mask;
             candidate.fields.history.values(support) = 1;
-            verifyError(testCase, @() compare_q2_cycle1_fields( ...
-                parent, candidate, masks), 'rebuiltMexQ2:GateFailed');
+            failed = compare_q2_cycle1_fields(parent, candidate, masks);
+            verifyFalse(testCase, failed.passed);
+            verifyFalse(testCase, failed.fields.history.passed);
+            verifyTrue(testCase, isnan(failed.fields.history.log10_correlation));
         end
 
         function testEveryImmutableThresholdFailsClosed(testCase)
@@ -170,12 +175,46 @@ classdef rebuiltMexQ2MetricsTest < matlab.unittest.TestCase
                 parent, candidate, masks), ...
                 'rebuiltMexQ2:ProhibitedFieldSubstitute');
         end
+
+        function testNumericalFailureReturnsAllDetailedMetrics(testCase)
+            parent = metricParent();
+            masks = build_q2_parent_masks(parent);
+            candidate = metricCandidate(parent);
+            candidate.fields.damage.values = candidate.fields.damage.values + 0.01;
+            candidate.fields.history.values(masks.fields.history.mask) = 1;
+            candidate.fields.fatigue_degradation.values(:) = 1 + 2e-12;
+
+            receipt = compare_q2_cycle1_fields(parent, candidate, masks);
+
+            verifyFalse(testCase, receipt.passed);
+            verifyEqual(testCase, sort(fieldnames(receipt.fields)), sort({ ...
+                'damage'; 'history'; 'fatigue_degradation'; 'raw'; ...
+                'damage_degradation'; 'active'}));
+            verifyFalse(testCase, receipt.fields.damage.passed);
+            verifyFalse(testCase, receipt.fields.history.passed);
+            verifyFalse(testCase, receipt.fields.fatigue_degradation.passed);
+            verifyTrue(testCase, receipt.fields.raw.passed);
+            verifyTrue(testCase, isfield(receipt.fields.damage, 'mae'));
+            verifyTrue(testCase, isfield(receipt.fields.history, 'log10_rmse'));
+            verifyTrue(testCase, isfield(receipt.fields.fatigue_degradation, ...
+                'absolute_max_error'));
+        end
+
+        function testMalformedCandidateStillThrows(testCase)
+            parent = metricParent();
+            masks = build_q2_parent_masks(parent);
+            candidate = metricCandidate(parent);
+            candidate.fields.raw.values(end) = [];
+            verifyError(testCase, @() compare_q2_cycle1_fields( ...
+                parent, candidate, masks), 'rebuiltMexQ2:InvalidCandidateField');
+        end
     end
 end
 
 function verifyGateFailure(testCase, parent, candidate, masks)
-verifyError(testCase, @() compare_q2_cycle1_fields(parent, candidate, masks), ...
-    'rebuiltMexQ2:GateFailed');
+receipt = compare_q2_cycle1_fields(parent, candidate, masks);
+verifyFalse(testCase, receipt.passed);
+verifyEqual(testCase, numel(fieldnames(receipt.fields)), 6);
 end
 
 function parent = metricParent()
