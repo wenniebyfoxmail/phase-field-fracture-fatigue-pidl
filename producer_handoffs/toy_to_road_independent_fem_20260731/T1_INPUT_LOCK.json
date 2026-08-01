@@ -11,5 +11,17 @@
     "parent": {"initial_defect": {"tip": [0.0, 0.0], "a0_over_L": 0.5}},
     "candidate": {"initial_defect": {"tip": [0.125, 0.0], "a0_over_L": 0.625}}
   },
+  "mesh_transfer": {
+    "semantics": "piecewise_affine_x_v1",
+    "left_affine_x_factor": 1.25,
+    "right_affine_x_factor": 0.75,
+    "quality_gate": {
+      "semantics": "mapped_incident_edge_length_over_corresponding_parent_incident_edge_length_v1",
+      "mapped_over_parent_edge_ratio_min": 0.75,
+      "mapped_over_parent_edge_ratio_max": 1.25,
+      "tolerance": 1e-12,
+      "absolute_h_over_ell_is_audit_only": true
+    }
+  },
   "candidate": {"initial_defect": {"tip": [0.125, 0.0], "a0_over_L": 0.625}}
 }

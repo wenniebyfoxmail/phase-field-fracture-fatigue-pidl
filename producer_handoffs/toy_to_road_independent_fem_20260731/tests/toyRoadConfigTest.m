@@ -158,22 +158,132 @@ verifyEqual(testCase, mapped(parentTipNode(), :), [0.125 0], 'AbsTol', 1e-14);
 verifyTrue(testCase, audit.all_positive_jacobians);
 verifyTrue(testCase, audit.boundaries_fixed);
 verifyTrue(testCase, audit.notch_tip_identity_preserved);
-verifyGreaterThanOrEqual(testCase, audit.local_h_over_ell_ratio_min, 0.75);
-verifyLessThanOrEqual(testCase, audit.local_h_over_ell_ratio_max, 1.25);
+verifyGreaterThanOrEqual(testCase, audit.mapped_over_parent_edge_ratio_min, 0.75);
+verifyLessThanOrEqual(testCase, audit.mapped_over_parent_edge_ratio_max, 1.25);
 verifyNotEqual(testCase, audit.parent_mesh_sha256, audit.candidate_mesh_sha256);
 end
 
-function testT1MapRejectsInvertedOrQualityInvalidMesh(testCase)
+function testT1MapAcceptsFineAbsoluteHOverEllWhenRelativeDistortionIsWithinBounds(testCase)
+[~, audit] = apply_t1_mesh_transfer(fineParentCoords(), parentConn(), 0.01);
+
+verifyEqual(testCase, audit.parent_h_over_ell_min, 0.2, 'AbsTol', 1e-12);
+verifyEqual(testCase, audit.parent_h_over_ell_max, 0.2, 'AbsTol', 1e-12);
+verifyEqual(testCase, audit.mapped_h_over_ell_min, 0.15, 'AbsTol', 1e-12);
+verifyEqual(testCase, audit.mapped_h_over_ell_max, 0.25, 'AbsTol', 1e-12);
+verifyEqual(testCase, audit.mapped_over_parent_edge_ratio_min, 0.75, ...
+    'AbsTol', 1e-12);
+verifyEqual(testCase, audit.mapped_over_parent_edge_ratio_max, 1.25, ...
+    'AbsTol', 1e-12);
+verifyEqual(testCase, audit.local_h_over_ell_ratio_min, ...
+    audit.mapped_h_over_ell_min, 'AbsTol', 0);
+verifyEqual(testCase, audit.local_h_over_ell_ratio_max, ...
+    audit.mapped_h_over_ell_max, 'AbsTol', 0);
+verifyEqual(testCase, string(audit.local_h_over_ell_ratio_semantics), ...
+    "mapped_incident_edge_h_over_ell_absolute_v1");
+end
+
+function testT1EdgeRatioGateRejectsRelativeDistortionOutsideBounds(testCase)
+parent = fineParentCoords();
+[mapped, audit] = apply_t1_mesh_transfer(parent, parentConn(), 0.01);
+tipNodeId = parentTipNode();
+parentEdgeLength = 0.002;
+
+aboveUpper = mapped;
+aboveUpper(tipNodeId - 1, 1) = mapped(tipNodeId, 1) - ...
+    (audit.mapped_over_parent_edge_ratio_limit_max + 2 * ...
+    audit.mapped_over_parent_edge_ratio_tolerance) * parentEdgeLength;
+verifyError(testCase, ...
+    @() audit_t1_mesh_transfer_edges( ...
+    parent, aboveUpper, parentConn(), tipNodeId, 0.01), ...
+    "toyRoad:MeshTransferGateFailed");
+
+belowLower = mapped;
+belowLower(tipNodeId + 1, 1) = mapped(tipNodeId, 1) + ...
+    (audit.mapped_over_parent_edge_ratio_limit_min - 2 * ...
+    audit.mapped_over_parent_edge_ratio_tolerance) * parentEdgeLength;
+verifyError(testCase, ...
+    @() audit_t1_mesh_transfer_edges( ...
+    parent, belowLower, parentConn(), tipNodeId, 0.01), ...
+    "toyRoad:MeshTransferGateFailed");
+end
+
+function testT1EdgeRatioGateLocksApprovedAffineFactorsAndTolerance(testCase)
+parent = fineParentCoords();
+[mapped, audit] = apply_t1_mesh_transfer(parent, parentConn(), 0.01);
+caseLock = jsondecode(fileread(fullfile(lockDir(), 'T1_INPUT_LOCK.json')));
+transferLock = caseLock.mesh_transfer;
+gateLock = transferLock.quality_gate;
+
+verifyEqual(testCase, transferLock.left_affine_x_factor, 1.25, 'AbsTol', 0);
+verifyEqual(testCase, transferLock.right_affine_x_factor, 0.75, 'AbsTol', 0);
+verifyEqual(testCase, audit.left_affine_x_factor, ...
+    transferLock.left_affine_x_factor, 'AbsTol', 0);
+verifyEqual(testCase, audit.right_affine_x_factor, ...
+    transferLock.right_affine_x_factor, 'AbsTol', 0);
+verifyEqual(testCase, gateLock.mapped_over_parent_edge_ratio_min, 0.75, ...
+    'AbsTol', 0);
+verifyEqual(testCase, gateLock.mapped_over_parent_edge_ratio_max, 1.25, ...
+    'AbsTol', 0);
+verifyEqual(testCase, gateLock.tolerance, 1e-12, 'AbsTol', 0);
+verifyEqual(testCase, audit.mapped_over_parent_edge_ratio_limit_min, ...
+    gateLock.mapped_over_parent_edge_ratio_min, 'AbsTol', 0);
+verifyEqual(testCase, audit.mapped_over_parent_edge_ratio_limit_max, ...
+    gateLock.mapped_over_parent_edge_ratio_max, 'AbsTol', 0);
+verifyEqual(testCase, audit.mapped_over_parent_edge_ratio_tolerance, ...
+    gateLock.tolerance, 'AbsTol', 0);
+verifyEqual(testCase, string(gateLock.semantics), ...
+    "mapped_incident_edge_length_over_corresponding_parent_incident_edge_length_v1");
+verifyTrue(testCase, gateLock.absolute_h_over_ell_is_audit_only);
+
+tipNodeId = parentTipNode();
+parentEdgeLength = 0.002;
+withinTolerance = mapped;
+withinTolerance(tipNodeId - 1, 1) = mapped(tipNodeId, 1) - ...
+    (1.25 + 0.5e-12) * parentEdgeLength;
+withinTolerance(tipNodeId + 1, 1) = mapped(tipNodeId, 1) + ...
+    (0.75 - 0.5e-12) * parentEdgeLength;
+edgeAudit = audit_t1_mesh_transfer_edges( ...
+    parent, withinTolerance, parentConn(), tipNodeId, 0.01);
+verifyGreaterThanOrEqual(testCase, edgeAudit.mapped_over_parent_edge_ratio_min, ...
+    0.75 - 1e-12);
+verifyLessThanOrEqual(testCase, edgeAudit.mapped_over_parent_edge_ratio_max, ...
+    1.25 + 1e-12);
+end
+
+function testT1IncidentEdgeCorrespondenceIsDeterministic(testCase)
+parent = fineParentCoords();
+[mapped, ~] = apply_t1_mesh_transfer(parent, parentConn(), 0.01);
+
+forward = audit_t1_mesh_transfer_edges( ...
+    parent, mapped, parentConn(), parentTipNode(), 0.01);
+reordered = audit_t1_mesh_transfer_edges( ...
+    parent, mapped, flipud(parentConn()), parentTipNode(), 0.01);
+
+verifyEqual(testCase, forward.incident_edge_node_ids, ...
+    reordered.incident_edge_node_ids);
+verifyEqual(testCase, forward.parent_incident_edge_lengths, ...
+    reordered.parent_incident_edge_lengths, 'AbsTol', 0);
+verifyEqual(testCase, forward.mapped_incident_edge_lengths, ...
+    reordered.mapped_incident_edge_lengths, 'AbsTol', 0);
+verifyEqual(testCase, forward.mapped_over_parent_edge_ratios, ...
+    reordered.mapped_over_parent_edge_ratios, 'AbsTol', 0);
+end
+
+function testT1EdgeRatioGateRejectsZeroLengthParentEdgeBeforeDivision(testCase)
+parent = fineParentCoords();
+parent(parentTipNode() + 1, :) = parent(parentTipNode(), :);
+
+verifyError(testCase, ...
+    @() audit_t1_mesh_transfer_edges( ...
+    parent, parent, parentConn(), parentTipNode(), 0.01), ...
+    "toyRoad:MeshTransferGateFailed");
+end
+
+function testT1MapRejectsInvertedMesh(testCase)
 inverted = parentConn();
 inverted(1, :) = inverted(1, [1 4 3 2]);
 verifyError(testCase, ...
     @() apply_t1_mesh_transfer(parentCoords(), inverted, 0.01), ...
-    "toyRoad:MeshTransferGateFailed");
-
-coarse = parentCoords();
-coarse(:, 2) = coarse(:, 2) * 3;
-verifyError(testCase, ...
-    @() apply_t1_mesh_transfer(coarse, parentConn(), 0.01), ...
     "toyRoad:MeshTransferGateFailed");
 end
 
@@ -297,6 +407,13 @@ end
 function coords = parentCoords()
 x = [-0.5 -0.01 0 0.01 0.5];
 y = [-0.01 0 0.01];
+[xGrid, yGrid] = meshgrid(x, y);
+coords = [reshape(xGrid.', [], 1) reshape(yGrid.', [], 1)];
+end
+
+function coords = fineParentCoords()
+x = [-0.5 -0.002 0 0.002 0.5];
+y = [-0.002 0 0.002];
 [xGrid, yGrid] = meshgrid(x, y);
 coords = [reshape(xGrid.', [], 1) reshape(yGrid.', [], 1)];
 end

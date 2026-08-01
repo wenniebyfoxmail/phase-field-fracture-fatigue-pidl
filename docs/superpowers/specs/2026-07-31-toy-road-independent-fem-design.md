@@ -63,9 +63,13 @@ y' = y
 The map fixes both external x boundaries and maps the existing conforming notch
 tip to `x=0.125`. Before sealing, a mesh audit must verify positive Jacobians,
 unchanged node/element counts and connectivity, exact boundary coordinates,
-and a candidate/reference local `h/ell` ratio in `[0.75, 1.25]` around the
-notch tip. The input lock records both mesh hashes and the exact node-wise
-mapping. Failure of any mesh audit blocks T1 before execution.
+and every mapped notch-tip incident-edge length divided by its corresponding
+parent incident-edge length in `[0.75, 1.25]` with tolerance `1e-12`. Absolute
+parent and mapped local `h/ell` ranges are audit evidence only and never drive
+the gate. Edge correspondence is deterministic from Q4 connectivity, and a
+zero-length parent edge fails before division. The input lock records the exact
+affine factors and relative gate limits. Failure of any mesh audit blocks T1
+before execution.
 
 ### T2: Fracture-Material State
 

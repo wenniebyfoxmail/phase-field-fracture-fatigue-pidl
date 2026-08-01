@@ -172,8 +172,8 @@ verifyEqual(testCase, min(mapped(:,1)), -0.5, 'AbsTol', 1e-14);
 verifyEqual(testCase, max(mapped(:,1)),  0.5, 'AbsTol', 1e-14);
 verifyEqual(testCase, mapped(parentTipNode(),:), [0.125 0], 'AbsTol', 1e-14);
 verifyTrue(testCase, audit.all_positive_jacobians);
-verifyGreaterThanOrEqual(testCase, audit.local_h_over_ell_ratio_min, 0.75);
-verifyLessThanOrEqual(testCase, audit.local_h_over_ell_ratio_max, 1.25);
+verifyGreaterThanOrEqual(testCase, audit.mapped_over_parent_edge_ratio_min, 0.75);
+verifyLessThanOrEqual(testCase, audit.mapped_over_parent_edge_ratio_max, 1.25);
 end
 ```
 
@@ -187,7 +187,7 @@ Expected: FAIL because both helpers are undefined.
 
 - [ ] **Step 4: Implement the piecewise-affine map and quality audit**
 
-Map x coordinates exactly as approved, preserve y and connectivity, compute signed Q4 corner/Jacobian checks, boundary invariants, notch-node identity, mesh hashes, and local edge-length ratios. Raise `toyRoad:MeshTransferGateFailed` before any solve when a gate fails.
+Map x coordinates exactly as approved, preserve y and connectivity, compute signed Q4 corner/Jacobian checks, boundary invariants, notch-node identity, mesh hashes, and deterministic mapped/parent incident-edge length ratios. Gate only the relative ratios in `[0.75, 1.25]`; export parent and mapped absolute `h/ell` ranges as audit-only values. Raise `toyRoad:MeshTransferGateFailed` before any solve when a gate fails.
 
 - [ ] **Step 5: Implement connected event advancement**
 

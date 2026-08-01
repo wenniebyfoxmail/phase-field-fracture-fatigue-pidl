@@ -180,6 +180,20 @@ verifyError(testCase, @() finalizeFixture( ...
 verifyNoFinalOutputs(testCase, outputRoot);
 end
 
+function testFinalizerRejectsT1MeshTransferAuditMutation(testCase)
+[outputRoot, launchReceipt, dependencies, cleanup] = ...
+    validPackage('case_id', "T1_initial_defect"); %#ok<ASGLU>
+meshPath = fullfile(outputRoot, 'mesh_geometry.mat');
+mesh = load(meshPath);
+mesh.mesh_transfer_audit.mapped_over_parent_edge_ratio_min = 0.1;
+replaceMat(meshPath, mesh);
+
+verifyError(testCase, @() finalizeFixture( ...
+    outputRoot, "T1_initial_defect", launchReceipt, dependencies), ...
+    'toyRoad:PackageValidationFailed');
+verifyNoFinalOutputs(testCase, outputRoot);
+end
+
 function testFinalizerRejectsMeshAndStateQuadratureMismatch(testCase)
 [meshRoot, meshReceipt, meshDependencies, meshCleanup] = validPackage(); %#ok<ASGLU>
 meshPath = fullfile(meshRoot, 'mesh_geometry.mat');

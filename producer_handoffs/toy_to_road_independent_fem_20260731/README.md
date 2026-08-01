@@ -55,6 +55,18 @@ column-major `double(parent_node_coords(:))` bytes followed by column-major
 86756-node count, and 86408-element count all agree with the pre-existing
 parent evidence; this additional identity does not replace physical authority.
 
+### T1 mesh-transfer quality gate
+
+T1 preserves the approved piecewise-affine x factors `1.25` on `x<=0` and
+`0.75` on `x>0`. Its quality gate compares each mapped notch-tip incident-edge
+length with the corresponding parent incident-edge length, using deterministic
+connectivity-derived edge correspondence. Every mapped/parent ratio must be in
+`[0.75, 1.25]` with tolerance `1e-12`; a zero-length parent edge fails before
+division. Parent and mapped absolute `h/ell` minima and maxima remain exported
+as audit evidence only and never drive this gate. The legacy
+`local_h_over_ell_ratio_min/max` names mean mapped absolute incident-edge
+`h/ell` and are retained only for compatibility.
+
 ## Safety Contract
 
 There is no resume path. Checkpoint or resume environment input is rejected.

@@ -172,6 +172,22 @@ def test_parent_lock_is_latest_c83_c86_baseline() -> None:
     assert lock["state_semantics_id"] == "cycle_peak_coherent_v1"
 
 
+def test_t1_lock_uses_relative_incident_edge_mesh_gate() -> None:
+    transfer = load_json(HANDOFF / "T1_INPUT_LOCK.json")["mesh_transfer"]
+    assert transfer["left_affine_x_factor"] == 1.25
+    assert transfer["right_affine_x_factor"] == 0.75
+    assert transfer["quality_gate"] == {
+        "semantics": (
+            "mapped_incident_edge_length_over_corresponding_parent_"
+            "incident_edge_length_v1"
+        ),
+        "mapped_over_parent_edge_ratio_min": 0.75,
+        "mapped_over_parent_edge_ratio_max": 1.25,
+        "tolerance": 1e-12,
+        "absolute_h_over_ell_is_audit_only": True,
+    }
+
+
 def test_parent_lock_distinguishes_legacy_and_task4_mesh_hash_semantics() -> None:
     mesh = load_json(HANDOFF / "PARENT_LOCK.json")["mesh"]
     assert mesh["content_sha256"] == (
