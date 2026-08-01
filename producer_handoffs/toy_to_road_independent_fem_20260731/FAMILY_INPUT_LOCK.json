@@ -112,7 +112,7 @@
     }
   },
   "axis_baselines": {
-    "initial_defect": {"tip": [0.0, 0.0]},
+    "initial_defect": {"tip": [0.0, 0.0], "a0_over_L": 0.5},
     "material_state": {"Gc": 0.01, "Pi_ratio": 1.0},
     "loading_history": {"blocks": [[1, 150, 0.12]]}
   },

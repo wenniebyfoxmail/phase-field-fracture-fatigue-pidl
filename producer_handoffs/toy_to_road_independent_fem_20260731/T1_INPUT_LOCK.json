@@ -8,8 +8,8 @@
   "changed_parent_fields": ["initial_defect"],
   "censor_cap": 150,
   "parent_candidate_diff": {
-    "parent": {"initial_defect": {"tip": [0.0, 0.0]}},
-    "candidate": {"initial_defect": {"tip": [0.125, 0.0]}}
+    "parent": {"initial_defect": {"tip": [0.0, 0.0], "a0_over_L": 0.5}},
+    "candidate": {"initial_defect": {"tip": [0.125, 0.0], "a0_over_L": 0.625}}
   },
-  "candidate": {"initial_defect": {"tip": [0.125, 0.0]}}
+  "candidate": {"initial_defect": {"tip": [0.125, 0.0], "a0_over_L": 0.625}}
 }

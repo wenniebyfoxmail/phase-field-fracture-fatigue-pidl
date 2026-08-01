@@ -77,3 +77,50 @@ authoritative-analysis-bundle roles and immutable policy.
 - No computational FEM experiment was run; only JSON/configuration validation
   tests were executed, sequentially, after confirming no `matlab` process was
   active.
+
+## Fix Round 1: Reviewer Findings
+
+### RED Evidence
+
+1. `py -3.12 -m pytest tests/test_toy_road_fem_handoff.py -q`
+
+   Output: `2 failed, 8 passed in 0.28s`. The T1 test raised
+   `KeyError: 'a0_over_L'`; the family-baseline contract lacked the approved
+   `a0_over_L: 0.5` value.
+
+2. `matlab -batch "r=runtests('producer_handoffs/toy_to_road_independent_fem_20260731/tests/toyRoadConfigTest.m'); assertSuccess(r)"`
+
+   Output: T1 raised `MATLAB:nonExistentField` for `a0_over_L`. The four
+   synchronized mutations of family geometry, `Gc`, `Pi_ratio`, and loading
+   baselines, plus the injected second candidate axis, each failed because the
+   builder did not throw the required `toyRoad:InvalidInputLock`.
+
+### GREEN Evidence
+
+1. `py -3.12 -m pytest tests/test_toy_road_fem_handoff.py -q`
+
+   Output: `10 passed in 0.04s`.
+
+2. `matlab -batch "r=runtests('producer_handoffs/toy_to_road_independent_fem_20260731/tests/toyRoadConfigTest.m'); assertSuccess(r)"`
+
+   Output: `Totals: 12 Passed, 0 Failed, 0 Incomplete.`
+
+### Implementation and Self-Review
+
+- T1 now seals parent `a0_over_L: 0.5` and candidate `a0_over_L: 0.625`, in
+  both the candidate and machine-readable diff, alongside tip `[0.125, 0]`.
+- Family axis baselines are exact-schema validated: approved geometry, parent
+  `Gc`, approved `Pi_ratio`, and the parent cap/amplitude loading block. The
+  builder creates unchanged geometry, Pi ratio, and loading defaults directly
+  from approved constants or `PARENT_LOCK.json`, never from mutable family
+  values.
+- Case diff and candidate structures now enforce exact field names at every
+  level. A second axis or any additional axis-specific field is rejected with
+  `toyRoad:InvalidInputLock` even when its duplicate machine-readable diff is
+  altered to match.
+
+### Concerns
+
+- The MATLAB SHA-256 implementation continues to use Java `MessageDigest`
+  because this MATLAB runtime lacks `hash`; the focused MATLAB suite remains
+  green. No FEM computational solve was run.

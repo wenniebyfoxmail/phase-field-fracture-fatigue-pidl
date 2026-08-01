@@ -71,7 +71,20 @@ def test_case_lock_declares_exactly_one_primary_axis(name: str, axis: str) -> No
 
 def test_t1_lock_fixes_the_initial_defect_tip() -> None:
     lock = load_json(HANDOFF / "T1_INPUT_LOCK.json")
-    assert lock["candidate"]["initial_defect"]["tip"] == [0.125, 0.0]
+    initial_defect = lock["candidate"]["initial_defect"]
+    parent_initial_defect = lock["parent_candidate_diff"]["parent"]["initial_defect"]
+    assert initial_defect["tip"] == [0.125, 0.0]
+    assert initial_defect["a0_over_L"] == 0.625
+    assert parent_initial_defect["a0_over_L"] == 0.5
+
+
+def test_family_axis_baselines_are_the_approved_parent_values() -> None:
+    family = load_json(HANDOFF / "FAMILY_INPUT_LOCK.json")
+    assert family["axis_baselines"] == {
+        "initial_defect": {"tip": [0.0, 0.0], "a0_over_L": 0.5},
+        "material_state": {"Gc": 0.01, "Pi_ratio": 1.0},
+        "loading_history": {"blocks": [[1, 150, 0.12]]},
+    }
 
 
 def test_t2_lock_fixes_material_state_values() -> None:

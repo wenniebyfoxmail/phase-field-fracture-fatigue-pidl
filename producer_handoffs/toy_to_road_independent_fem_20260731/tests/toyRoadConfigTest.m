@@ -18,6 +18,7 @@ end
 function testT1UsesTheLockedInitialDefect(testCase)
 cfg = build_toy_road_case_config("T1_initial_defect", lockDir());
 verifyEqual(testCase, cfg.initial_defect.tip, [0.125 0.0], 'AbsTol', 1e-14);
+verifyEqual(testCase, cfg.initial_defect.a0_over_L, 0.625, 'AbsTol', 1e-14);
 verifyEqual(testCase, cfg.physics.Gc, 0.01, 'AbsTol', 1e-14);
 end
 
@@ -72,10 +73,95 @@ verifyError(testCase, @() cfg.umax_for_cycle(1.5), "toyRoad:InvalidCycle");
 verifyError(testCase, @() cfg.umax_for_cycle(151), "toyRoad:InvalidCycle");
 end
 
+function testFamilyGeometryBaselineIsValidated(testCase)
+[tempDir, cleanup] = copiedLockDir();
+familyPath = fullfile(tempDir, 'FAMILY_INPUT_LOCK.json');
+family = jsondecode(fileread(familyPath));
+family.axis_baselines.initial_defect.tip = [0.1; 0.0];
+writeJson(familyPath, family);
+
+casePath = fullfile(tempDir, 'T1_INPUT_LOCK.json');
+caseLock = jsondecode(fileread(casePath));
+caseLock.parent_candidate_diff.parent.initial_defect.tip = [0.1; 0.0];
+writeJson(casePath, caseLock);
+
+verifyError(testCase, ...
+    @() build_toy_road_case_config("T1_initial_defect", tempDir), ...
+    "toyRoad:InvalidInputLock");
+end
+
+function testFamilyMaterialGcBaselineIsValidated(testCase)
+[tempDir, cleanup] = copiedLockDir();
+familyPath = fullfile(tempDir, 'FAMILY_INPUT_LOCK.json');
+family = jsondecode(fileread(familyPath));
+family.axis_baselines.material_state.Gc = 0.009;
+writeJson(familyPath, family);
+
+casePath = fullfile(tempDir, 'T2_INPUT_LOCK.json');
+caseLock = jsondecode(fileread(casePath));
+caseLock.parent_candidate_diff.parent.material_state.Gc = 0.009;
+writeJson(casePath, caseLock);
+
+verifyError(testCase, ...
+    @() build_toy_road_case_config("T2_material_state", tempDir), ...
+    "toyRoad:InvalidInputLock");
+end
+
+function testFamilyPiBaselineIsValidated(testCase)
+[tempDir, cleanup] = copiedLockDir();
+familyPath = fullfile(tempDir, 'FAMILY_INPUT_LOCK.json');
+family = jsondecode(fileread(familyPath));
+family.axis_baselines.material_state.Pi_ratio = 0.9;
+writeJson(familyPath, family);
+
+verifyError(testCase, ...
+    @() build_toy_road_case_config("T1_initial_defect", tempDir), ...
+    "toyRoad:InvalidInputLock");
+end
+
+function testFamilyLoadingBaselineIsValidated(testCase)
+[tempDir, cleanup] = copiedLockDir();
+familyPath = fullfile(tempDir, 'FAMILY_INPUT_LOCK.json');
+family = jsondecode(fileread(familyPath));
+family.axis_baselines.loading_history.blocks = [1 150 0.11];
+writeJson(familyPath, family);
+
+casePath = fullfile(tempDir, 'T3_INPUT_LOCK.json');
+caseLock = jsondecode(fileread(casePath));
+caseLock.parent_candidate_diff.parent.loading_history.blocks = [1 150 0.11];
+writeJson(casePath, caseLock);
+
+verifyError(testCase, ...
+    @() build_toy_road_case_config("T3_loading_history", tempDir), ...
+    "toyRoad:InvalidInputLock");
+end
+
+function testAdditionalCandidateAxisIsRejected(testCase)
+[tempDir, cleanup] = copiedLockDir();
+casePath = fullfile(tempDir, 'T1_INPUT_LOCK.json');
+caseLock = jsondecode(fileread(casePath));
+caseLock.candidate.material_state = struct('Gc', 0.008, 'Pi_ratio', 0.8);
+caseLock.parent_candidate_diff.candidate = caseLock.candidate;
+writeJson(casePath, caseLock);
+
+verifyError(testCase, ...
+    @() build_toy_road_case_config("T1_initial_defect", tempDir), ...
+    "toyRoad:InvalidInputLock");
+end
+
 function copyRequiredLocks(sourceDir, targetDir)
 copyfile(fullfile(sourceDir, 'PARENT_LOCK.json'), targetDir);
 copyfile(fullfile(sourceDir, 'FAMILY_INPUT_LOCK.json'), targetDir);
 copyfile(fullfile(sourceDir, 'T1_INPUT_LOCK.json'), targetDir);
+copyfile(fullfile(sourceDir, 'T2_INPUT_LOCK.json'), targetDir);
+copyfile(fullfile(sourceDir, 'T3_INPUT_LOCK.json'), targetDir);
+end
+
+function [tempDir, cleanup] = copiedLockDir()
+tempDir = tempname;
+mkdir(tempDir);
+cleanup = onCleanup(@() rmdir(tempDir, 's'));
+copyRequiredLocks(lockDir(), tempDir);
 end
 
 function writeJson(path, value)

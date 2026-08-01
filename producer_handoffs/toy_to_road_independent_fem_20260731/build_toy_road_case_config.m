@@ -24,7 +24,9 @@ try
         'FAMILY_INPUT_LOCK.json does not match PARENT_LOCK.json.');
     localEnsure(isequal(family.fixed_parent_fields, parent), ...
         'FAMILY_INPUT_LOCK.json changes a fixed parent field.');
-    localEnsure(family.censor_cap == 150, 'Family censor cap must be 150.');
+    localEnsure(family.censor_cap == parent.numerics.right_censor_cap, ...
+        'Family censor cap must match PARENT_LOCK.json.');
+    localValidateFamilyAxisBaselines(family, parent);
 
     localEnsure(string(caseLock.case_id) == string(caseId), ...
         'Case lock case_id does not match the requested case.');
@@ -40,6 +42,14 @@ try
     allowed = localStringList(caseLock.allowed_changed_parent_fields);
     localEnsure(isequal(changed, {axis}) && isequal(allowed, {axis}), ...
         'Exactly one allowed changed parent field is required.');
+    localEnsureExactFieldNames(caseLock.parent_candidate_diff, {'parent', 'candidate'}, ...
+        'Case diff must contain only parent and candidate sections.');
+    localEnsureExactFieldNames(caseLock.parent_candidate_diff.parent, {axis}, ...
+        'Case diff parent contains an unapproved axis.');
+    localEnsureExactFieldNames(caseLock.parent_candidate_diff.candidate, {axis}, ...
+        'Case diff candidate contains an unapproved axis.');
+    localEnsureExactFieldNames(caseLock.candidate, {axis}, ...
+        'Case candidate contains an unapproved axis.');
     localEnsure(isequal(caseLock.parent_candidate_diff.parent.(axis), ...
         family.axis_baselines.(axis)), ...
         'Case parent side does not match the family baseline.');
@@ -118,16 +128,50 @@ localEnsure(~parent.immutable_policy.latent_fem_fields_are_direct_road_sensors &
     'Parent immutable policy is invalid.');
 end
 
+function localValidateFamilyAxisBaselines(family, parent)
+localEnsureExactFieldNames(family.axis_baselines, ...
+    {'initial_defect', 'material_state', 'loading_history'}, ...
+    'Family axis baselines must contain exactly the approved axes.');
+
+initialDefect = family.axis_baselines.initial_defect;
+localEnsureExactFieldNames(initialDefect, {'tip', 'a0_over_L'}, ...
+    'Initial defect baseline contains an unapproved field.');
+localEnsure(isequal(reshape(initialDefect.tip, 1, []), [0.0 0.0]) && ...
+    initialDefect.a0_over_L == 0.5, ...
+    'Initial defect baseline is not the approved geometry.');
+
+materialState = family.axis_baselines.material_state;
+localEnsureExactFieldNames(materialState, {'Gc', 'Pi_ratio'}, ...
+    'Material state baseline contains an unapproved field.');
+localEnsure(materialState.Gc == parent.physics.Gc && materialState.Pi_ratio == 1.0, ...
+    'Material state baseline is not the approved parent state.');
+
+loadingHistory = family.axis_baselines.loading_history;
+localEnsureExactFieldNames(loadingHistory, {'blocks'}, ...
+    'Loading history baseline contains an unapproved field.');
+localEnsure(isequal(loadingHistory.blocks, ...
+    [1 parent.numerics.right_censor_cap parent.physics.umax]), ...
+    'Loading history baseline is not the approved parent loading.');
+end
+
 function localValidateCandidate(candidate, axis)
 switch axis
     case 'initial_defect'
+        localEnsureExactFieldNames(candidate.initial_defect, {'tip', 'a0_over_L'}, ...
+            'T1 candidate contains an unapproved initial defect field.');
         localEnsure(isequal(reshape(candidate.initial_defect.tip, 1, []), [0.125 0.0]), ...
             'T1 initial defect tip is invalid.');
+        localEnsure(candidate.initial_defect.a0_over_L == 0.625, ...
+            'T1 initial defect a0_over_L is invalid.');
     case 'material_state'
+        localEnsureExactFieldNames(candidate.material_state, {'Gc', 'Pi_ratio'}, ...
+            'T2 candidate contains an unapproved material state field.');
         localEnsure(candidate.material_state.Gc == 0.008 && ...
             candidate.material_state.Pi_ratio == 0.8, ...
             'T2 material state is invalid.');
     case 'loading_history'
+        localEnsureExactFieldNames(candidate.loading_history, {'blocks'}, ...
+            'T3 candidate contains an unapproved loading field.');
         blocks = candidate.loading_history.blocks;
         localEnsure(isequal(blocks, [1 30 0.108; 31 60 0.126; 61 150 0.120]), ...
             'T3 loading blocks are invalid.');
@@ -145,10 +189,10 @@ cfg.physical_source_role = parent.physical_source_role;
 cfg.authoritative_analysis_bundle = parent.authoritative_analysis_bundle;
 cfg.immutable_policy = parent.immutable_policy;
 cfg.physics = parent.physics;
-cfg.initial_defect = family.axis_baselines.initial_defect;
-cfg.initial_defect.tip = reshape(cfg.initial_defect.tip, 1, []);
-cfg.Pi_ratio = family.axis_baselines.material_state.Pi_ratio;
-cfg.loading_history = family.axis_baselines.loading_history;
+cfg.initial_defect = struct('tip', [0.0 0.0], 'a0_over_L', 0.5);
+cfg.Pi_ratio = 1.0;
+cfg.loading_history = struct('blocks', ...
+    [1 parent.numerics.right_censor_cap parent.physics.umax]);
 cfg.n_step = parent.physics.n_substeps;
 cfg.censor_cap = caseLock.censor_cap;
 cfg.event_contract = struct( ...
@@ -200,6 +244,10 @@ elseif iscell(value) && all(cellfun(@ischar, value))
 else
     error('toyRoad:InvalidInputLock', 'Changed-field lists must contain text values.');
 end
+end
+
+function localEnsureExactFieldNames(value, expectedNames, message)
+localEnsure(isstruct(value) && isequal(sort(fieldnames(value)), sort(expectedNames(:))), message);
 end
 
 function localEnsure(condition, message)
