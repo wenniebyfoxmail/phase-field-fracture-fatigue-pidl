@@ -1,7 +1,9 @@
-function state = export_toy_road_peak_state(input, output_path)
+function state = export_toy_road_peak_state(input, output_root)
 %EXPORT_TOY_ROAD_PEAK_STATE Export one coherent native-Q4 cycle peak.
 
-localValidateInput(input, output_path);
+localValidateInput(input, output_root);
+[outputPath, relativeStatePath] = localCanonicalOutputPath( ...
+    output_root, input.metadata.cycle);
 
 nodeCount = size(input.node_coords, 1);
 elementCount = size(input.connectivity, 1);
@@ -28,7 +30,6 @@ crackThresholds = [0.50 0.75 0.90 0.95];
 dElem = mean(dGp, 2);
 crackMaskElem = dElem >= crackThresholds;
 meshSha256 = localMeshSha256(input.node_coords, input.connectivity);
-stateFile = string(sprintf('cycle_%04d.mat', input.metadata.cycle));
 
 state = struct();
 state.node_coords = input.node_coords;
@@ -54,6 +55,9 @@ state.psi_active_elem = mean(psiActiveGp, 2);
 state.strain_elem = reshape(mean(strainGp, 2), elementCount, 3);
 state.strain_energy_raw_elem = state.psi_raw_elem;
 state.strain_energy_active_elem = state.psi_active_elem;
+state.reaction_vector = input.reaction_vector(:);
+state.top_node_ids = reshape(input.top_node_ids, 1, []);
+state.bottom_node_ids = reshape(input.bottom_node_ids, 1, []);
 state.reaction_top_xy = reactionTopXy;
 state.reaction_bottom_xy = reactionBottomXy;
 state.reaction_top_resultant = hypot(reactionTopXy(1), reactionTopXy(2));
@@ -77,19 +81,21 @@ state.state_ordering_id = string(input.metadata.state_ordering_id);
 state.mesh_sha256 = meshSha256;
 state.validation_tolerances = input.validation_tolerances;
 state.field_semantics = localFieldSemantics();
-state.cycle_index_row = struct( ...
+state.cycle_index = struct( ...
     'cycle', state.cycle, ...
     'Umax_N', state.Umax_N, ...
     'peak_substep_ordinal', state.peak_substep_ordinal, ...
     'raw_step_1_based', state.raw_step_1_based, ...
     'branch', state.branch, ...
     'phase', state.phase, ...
-    'state_file', stateFile, ...
+    'file', relativeStatePath, ...
     'mesh_sha256', state.mesh_sha256, ...
-    'state_semantics_id', state.state_semantics_id);
+    'state_semantics_id', state.state_semantics_id, ...
+    'mesh_ordering_id', state.mesh_ordering_id, ...
+    'state_ordering_id', state.state_ordering_id);
 
 validate_toy_road_state(state);
-localAtomicSave(state, output_path);
+localAtomicSave(state, outputPath);
 end
 
 function localValidateInput(input, outputPath)
@@ -106,12 +112,9 @@ for index = 1:numel(requiredFields)
     end
 end
 if ~(ischar(outputPath) || (isstring(outputPath) && isscalar(outputPath))) || ...
-        strlength(string(outputPath)) == 0
-    localInputError('output_path must be a nonempty character vector or string scalar.');
-end
-if isfile(outputPath)
-    error('toyRoad:StateOutputExists', ...
-        'Refusing to overwrite existing state shard: %s', char(outputPath));
+        strlength(string(outputPath)) == 0 || ~isfolder(outputPath)
+    error('toyRoad:InvalidPeakStateOutput', ...
+        'output_root must name an existing directory; the exporter derives states/cycle_NNNN.mat.');
 end
 
 nodeCoords = input.node_coords;
@@ -346,6 +349,11 @@ semantics = struct( ...
     'g_elem', "element_latent_fem_truth", ...
     'psi_active_elem', "element_latent_fem_truth", ...
     'strain_elem', "element_latent_fem_truth", ...
+    'reaction_vector', "nodal_component_blocked_x_then_y", ...
+    'reaction_top_xy', "boundary_resultant_xy", ...
+    'reaction_bottom_xy', "boundary_resultant_xy", ...
+    'reaction_top_resultant', "boundary_resultant_l2", ...
+    'reaction_bottom_resultant', "boundary_resultant_l2", ...
     'crack_mask_elem', "element_binary_by_threshold");
 end
 
@@ -357,26 +365,68 @@ digestBytes = typecast(hasher.digest(), 'uint8');
 digest = lower(string(reshape(dec2hex(digestBytes, 2).', 1, [])));
 end
 
+function [outputPath, relativePath] = localCanonicalOutputPath(outputRoot, cycle)
+relativePath = string(sprintf('states/cycle_%04d.mat', cycle));
+outputPath = fullfile(char(outputRoot), 'states', sprintf('cycle_%04d.mat', cycle));
+end
+
 function localAtomicSave(state, outputPath)
-outputPath = char(outputPath);
 outputDir = fileparts(outputPath);
-if isempty(outputDir)
-    outputDir = pwd;
-elseif ~isfolder(outputDir)
+if ~isfolder(outputDir)
     [created, message] = mkdir(outputDir);
     if ~created
         error('toyRoad:StateWriteFailed', ...
             'Cannot create state output directory: %s', message);
     end
 end
-tempPath = [tempname(outputDir) '.mat'];
+
+if localPathExists(outputPath)
+    error('toyRoad:StateOutputExists', ...
+        'Refusing to overwrite existing state shard: %s', outputPath);
+end
+lockPath = [outputPath '.publish.lock'];
+try
+    lockFile = java.io.File(lockPath);
+    lockCreated = lockFile.createNewFile();
+catch exception
+    error('toyRoad:StateWriteFailed', ...
+        'Cannot create state publication lock: %s', exception.message);
+end
+if ~lockCreated
+    error('toyRoad:StatePublishConflict', ...
+        'Another publisher owns the state publication lock: %s', lockPath);
+end
+lockCleanup = onCleanup(@() localDeleteIfExists(lockPath));
+if localPathExists(outputPath)
+    error('toyRoad:StatePublishConflict', ...
+        'A state shard appeared while acquiring the publication lock: %s', outputPath);
+end
+
+tempPath = [tempname(outputDir) '.tmp.mat'];
 cleanup = onCleanup(@() localDeleteIfExists(tempPath));
 save(tempPath, '-struct', 'state', '-v7.3');
-[moved, message] = movefile(tempPath, outputPath, 'f');
-if ~moved
-    error('toyRoad:StateWriteFailed', ...
-        'Cannot atomically publish state shard: %s', message);
+if localPathExists(outputPath)
+    error('toyRoad:StatePublishConflict', ...
+        'A state shard appeared before atomic publication: %s', outputPath);
 end
+try
+    sourcePath = java.io.File(tempPath).toPath();
+    targetPath = java.io.File(outputPath).toPath();
+    % Omitting REPLACE_EXISTING makes a racing target a hard failure.
+    options = javaArray('java.nio.file.CopyOption', 0);
+    java.nio.file.Files.move(sourcePath, targetPath, options);
+catch exception
+    if localPathExists(outputPath)
+        error('toyRoad:StatePublishConflict', ...
+            'Atomic publication refused an existing state shard: %s', outputPath);
+    end
+    error('toyRoad:StateWriteFailed', ...
+        'Cannot atomically publish state shard: %s', exception.message);
+end
+end
+
+function value = localPathExists(path)
+value = isfile(path) || isfolder(path);
 end
 
 function localDeleteIfExists(path)
