@@ -1,5 +1,9 @@
 # Task 6 Report: Immutable Launcher, Provenance, and Package Gates
 
+> Fix round 1/5 was completed on 2026-08-01. The original Task 6 evidence is
+> retained below as history; the final section, "Fix Round 1/5", supersedes
+> its implementation hashes, lock counts, and verification totals.
+
 ## Scope and commit
 
 Task 6 was implemented from base commit
@@ -216,3 +220,160 @@ digests there. No CRLF normalization was performed.
 - Keep all three trajectories synthetic and single-axis. Do not expose latent
   FEM fields as road sensors, train PIDL networks, claim road validation, or use
   the separately blocked F1b diagnostic as the parent.
+
+## Fix Round 1/5
+
+### Scope and implementation commit
+
+The critical mesh-binding and exact-provenance review was implemented and
+committed as:
+
+```text
+d2cba6dc1ac44861b21c16a12c5e68ef2231f4dd
+fix: bind toy-road producer evidence identities
+```
+
+The commit changes the launcher, finalizer, README, source manifest, parent,
+family, and three case locks, and their focused Python/MATLAB tests. The SDD
+ledger remains unchanged. No MATLAB trajectory, physical FEM cycle,
+equilibrium/MEX solve, or process termination was performed. MATLAB was used
+only for producer tests, read-only artifact inspection, and Code Analyzer.
+
+### Canonical parent mesh identity
+
+`PARENT_LOCK.mesh.content_sha256` remains the pre-existing legacy graph hash:
+
+```text
+7ea77bf6d4621d746f174eb9c357c4bc554463eea8afb8665b00e918bcd937ab
+```
+
+Its exact algorithm is the existing `fem_trajectory_bundle.py` graph-content
+algorithm: for `centroids`, `areas`, `connectivity`, and `edge_index`, in that
+order, hash the ASCII key, NumPy dtype text, int64 shape bytes, and contiguous
+array bytes. `mesh.source_sha256` is separately the raw analysis-graph NPZ
+digest:
+
+```text
+bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419
+```
+
+That legacy graph hash is not the Task 4 mesh hash. The additional canonical
+Task 4 parent identity is:
+
+```text
+4d01985bfe2e80afe7140ab1ead905ddce5843f8495a3558d2d4da3b237df5af
+```
+
+It was derived read-only from the already parent-hash-gated
+`peak_load_c1.vtk`: hash MATLAB column-major `double(parent_node_coords(:))`
+bytes followed by column-major `int64(connectivity(:))` bytes. The source has
+exactly 86756 nodes and 86408 Q4 elements. Its raw-byte SHA-256 is
+`acdc981269024cbb111f7d468c287f2d1ca09f3735131b56aca7fa2fbaec1615`;
+the existing normalized ASCII VTK geometry/topology digest is
+`8e865f5eace05992490885c569f5ca8d9d1e37e10a3d2bd8ade176bfcd23ecf2`.
+The lock records all four hash semantics explicitly without replacing the
+physical parent authority.
+
+Production finalization first validates these real PARENT_LOCK constants.
+T2 and T3 must reproduce the sealed parent hash from
+`parent_node_coords/connectivity` and keep `node_coords` byte-identical. T1
+must first reproduce that same sealed parent identity, then independently
+recompute `apply_t1_mesh_transfer` and match its resulting coordinates and
+candidate hash. Every state must match the case mesh hash and the exact locked
+Q4 quadrature points and weights from `mesh_geometry.mat`. The small test mesh
+is available only through the explicit
+`toy_road_finalizer_test_dependencies_v1` schema; the production three-argument
+launcher invocation uses the real dimensions and hash.
+
+### Exact provenance and launcher receipt
+
+The launcher now rejects non-canonical case spelling, dirty shared or
+GRIPHFiTH repositories, wrong commits, source/runtime/parent byte drift,
+existing output, resume input, running MATLAB/FEM inventory, and hard-link
+preflight failure before MATLAB. Its completion check requires JSON boolean
+`true`, exact case and status, an integral cycle in 1..150, exact terminal
+reason, and the matching canonical state path; right-censoring is valid only at
+c150. Both test seams return under `-PreflightOnly` and cannot invoke MATLAB.
+
+After that strict completion check, production creates the canonical
+`<output>/LAUNCH_RECEIPT.json` with `FileMode.CreateNew`. The receipt binds the
+launcher-verified source commit and roots, source manifest, case and parent
+locks, GRIPHFiTH commit, and exact normalized relative-path-to-SHA256 mappings
+for source, GRIPHFiTH, runtime, and all eight parent records. The finalizer
+accepts only that canonical receipt path. It rejects digest multisets,
+renamed/swapped mappings, duplicate and case-colliding paths, unsafe paths,
+missing/extra entries, all-one-character commits, symlinks/reparse points, and
+pre-existing final outputs. `RUN_RESULT.json` remains the sole completion
+marker.
+
+The source manifest deliberately excludes itself and contains no Git commit.
+Covered source is committed first; an evidence-report-only commit may follow
+without changing the manifest. Task 7 must pass the final clean HEAD as
+`-ExpectedSourceCommit`; the no-clobber launch receipt records that exact
+launcher-verified commit, avoiding a self-referential source hash.
+
+### Final hashes
+
+The 30-entry ordinal path-sorted, LF-only source manifest SHA-256 is:
+
+```text
+695ba35d6feb65361346f835e97ba4c01f07b7159ec9ef74a880e712f2f0097b
+```
+
+Current lock digests are:
+
+```text
+FAMILY_INPUT_LOCK.json 7891e343870b6f6b75a7e7649eb09fd071c5e29da6f567a013d3509b83453b70
+PARENT_LOCK.json       f34cbfe1bc4fe2178aff590cbed3d4d65547e2a8a9ff300a9b2c5f70cc00f954
+T1_INPUT_LOCK.json     7365488aab7de8fbbf7b846972b8d4a15a63226b1f7ae917c3409b5743084d60
+T2_INPUT_LOCK.json     e9eeddd072afefa8fa0d9833a861b5dc97bb362d16c9979f6f7a0da9d0c2a35c
+T3_INPUT_LOCK.json     581f446f9e82b329dbaf96eab2d68721bb66487524c9f4c17436e4e05c8d4f4b
+```
+
+### Strict TDD evidence
+
+The round began with failing tests before production changes:
+
+```text
+Python RED: 14 failed, 24 passed in 64.30s
+MATLAB RED after valid fixture: 17 failed, 3 incomplete
+```
+
+The failures covered missing real-lock mesh dimensions/identity, T1 map and
+quadrature checks, exact receipt mappings, canonical receipt binding,
+reparse-point rejection, strict completion parsing, and new launcher hash and
+case gates. Intermediate failures were debugged without executing a trajectory.
+
+Final verification on the committed covered bytes:
+
+```text
+Focused Python: 49 passed in 74.46s
+Full Python: 291 passed, 2 skipped, 1 inherited warning in 99.49s
+Full producer MATLAB: 98 passed, 0 failed, 0 incomplete
+Code Analyzer: 22 files, 7 inherited findings, 0 changed Task 6 findings
+Fresh byte-preserving copy: 30/30 source entries verified
+```
+
+The inherited analyzer findings remain in `apply_t1_mesh_transfer.m`,
+`build_toy_road_case_config.m`, and `toyRoadConfigTest.m`. The inherited Python
+warning remains the PyTorch nested-tensor warning in
+`source/temporal_mesh_operator.py:301`. The disposable full-suite virtual
+environment was removed after verification.
+
+### Task 7 concerns after fix round 1
+
+- Seal and record the final clean HEAD after the evidence-report commit, then
+  use that exact commit for every `-ExpectedSourceCommit` invocation.
+- Run the non-solving preflight again immediately before each physical case;
+  do not reuse its output root and do not run cases concurrently.
+- Preserve LF-sensitive covered bytes. Any covered edit or line-ending change
+  requires a regenerated manifest and a new source commit.
+- Retain `LAUNCH_RECEIPT.json` and verify the final output manifest. Never infer
+  completion from provenance, summary, or event metadata instead of
+  `RUN_RESULT.json`.
+- Keep the parent VTK, graph hashes, Task 4 mesh identity, GRIPHFiTH commit,
+  runtime hashes, and eight parent path mappings unchanged unless a later
+  approved design explicitly reseals them.
+- Do not resume, repair, or finalize partial roots; never auto-terminate an
+  existing experiment; preserve the synthetic-only, no-PIDL-training,
+  no-road-validation claim boundary.
