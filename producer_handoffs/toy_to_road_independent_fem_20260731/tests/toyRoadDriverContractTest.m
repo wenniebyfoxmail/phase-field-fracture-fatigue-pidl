@@ -63,6 +63,44 @@ verifyEmpty(testCase, dir(fullfile(outputDir, '*.tmp.json')));
 verifyEmpty(testCase, dir(fullfile(outputDir, '*.publish.lock')));
 end
 
+function testJsonWriterPreLinkFailureIsFailClosedAndPropagates(testCase)
+outputDir = tempname;
+mkdir(outputDir);
+cleanup = onCleanup(@() rmdir(outputDir, 's'));
+outputPath = fullfile(outputDir, 'pre_link.json');
+operations = struct('before_link', @throwPreLinkFailure);
+
+verifyError(testCase, @() write_toy_road_json( ...
+    outputPath, struct('complete', true), operations), ...
+    'toyRoad:InjectedPreLinkFailure');
+verifyFalse(testCase, isfile(outputPath));
+verifyEmpty(testCase, dir(fullfile(outputDir, '*.tmp.json')));
+verifyEmpty(testCase, dir(fullfile(outputDir, '*.publish.lock')));
+end
+
+function testJsonWriterPostLinkCleanupFailureReturnsCommittedSuccess(testCase)
+outputDir = tempname;
+mkdir(outputDir);
+cleanup = onCleanup(@() rmdir(outputDir, 's'));
+outputPath = fullfile(outputDir, 'RUN_RESULT.json');
+payload = struct('case_id', 'T2_material_state', 'complete', true, ...
+    'status', 'complete', 'terminal_cycle', 4, ...
+    'terminal_reason', 'confirmed', ...
+    'terminal_state_file', 'states/cycle_0004.mat');
+operations = struct('delete_temp', @throwPostLinkCleanupFailure);
+
+publication = write_toy_road_json(outputPath, payload, operations);
+
+verifyTrue(testCase, publication.committed);
+verifyTrue(testCase, publication.cleanup_pending);
+verifyEqual(testCase, publication.cleanup_error_identifier, ...
+    "toyRoad:InjectedPostLinkCleanupFailure");
+verifyTrue(testCase, isfile(outputPath));
+verifyEqual(testCase, jsondecode(fileread(outputPath)), payload);
+verifyNotEmpty(testCase, dir(fullfile(outputDir, '*.tmp.json')));
+verifyEmpty(testCase, dir(fullfile(outputDir, '*.publish.lock')));
+end
+
 function testActualDriverAndSolverSatisfyLockedContract(testCase)
 [mainText, solverText] = productionTexts();
 verifyEmpty(testCase, contractViolations(mainText, solverText));
@@ -292,4 +330,13 @@ end
 
 function value = handoffDir()
 value = fileparts(fileparts(mfilename('fullpath')));
+end
+
+function throwPreLinkFailure(varargin)
+error('toyRoad:InjectedPreLinkFailure', 'Injected before hard-link commit.');
+end
+
+function throwPostLinkCleanupFailure(varargin)
+error('toyRoad:InjectedPostLinkCleanupFailure', ...
+    'Injected after hard-link commit.');
 end

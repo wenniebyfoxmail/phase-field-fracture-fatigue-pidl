@@ -190,6 +190,7 @@ end
 function localPublishFailure(context, operators, exception)
 runPath = fullfile(context.output_root, 'RUN_RESULT.json');
 if isfile(runPath)
+    validate_toy_road_run_result(runPath, context.cfg.case_id);
     return;
 end
 eventPath = fullfile(context.output_root, 'EVENT_METADATA.json');

@@ -1,5 +1,16 @@
-function write_toy_road_json(outputPath, value)
+function publication = write_toy_road_json(outputPath, value, operations)
 %WRITE_TOY_ROAD_JSON Deterministically publish immutable JSON without clobbering.
+
+if nargin < 3
+    operations = struct();
+end
+operations = localResolveOperations(operations);
+publication = struct( ...
+    'committed', false, ...
+    'cleanup_pending', false, ...
+    'cleanup_error_identifier', "", ...
+    'cleanup_error_message', "", ...
+    'cleanup_pending_paths', strings(0, 1));
 
 if ~(ischar(outputPath) || (isstring(outputPath) && isscalar(outputPath))) || ...
         strlength(string(outputPath)) == 0
@@ -30,50 +41,95 @@ if ~lockCreated
     error('toyRoad:JsonPublishConflict', ...
         'Another writer owns the JSON publication lock: %s', lockPath);
 end
-lockCleanup = onCleanup(@() localDeleteIfExists(lockPath));
 if localPathExists(outputPath)
+    localBestEffortDelete(lockPath);
     error('toyRoad:JsonPublishConflict', ...
         'A JSON target appeared while acquiring the publication lock: %s', outputPath);
 end
 
-canonicalValue = localCanonicalize(value);
-jsonText = [jsonencode(canonicalValue) newline];
-jsonBytes = unicode2native(jsonText, 'UTF-8');
-tempPath = [tempname(outputDir) '.tmp.json'];
-tempCleanup = onCleanup(@() localDeleteIfExists(tempPath));
-fileId = fopen(tempPath, 'wb');
-if fileId == -1
-    error('toyRoad:JsonWriteFailed', ...
-        'Cannot create temporary JSON in %s.', outputDir);
+try
+    canonicalValue = localCanonicalize(value);
+    jsonText = [jsonencode(canonicalValue) newline];
+    jsonBytes = unicode2native(jsonText, 'UTF-8');
+    tempPath = [tempname(outputDir) '.tmp.json'];
+    fileId = fopen(tempPath, 'wb');
+    if fileId == -1
+        error('toyRoad:JsonWriteFailed', ...
+            'Cannot create temporary JSON in %s.', outputDir);
+    end
+    fileCleanup = onCleanup(@() localCloseIfOpen(fileId));
+    written = fwrite(fileId, jsonBytes, 'uint8');
+    if written ~= numel(jsonBytes)
+        error('toyRoad:JsonWriteFailed', ...
+            'Failed to write complete JSON bytes for %s.', outputPath);
+    end
+    clear fileCleanup
+    operations.before_link(outputPath, tempPath);
+catch exception
+    if exist('tempPath', 'var')
+        localBestEffortDelete(tempPath);
+    end
+    localBestEffortDelete(lockPath);
+    rethrow(exception);
 end
-fileCleanup = onCleanup(@() localCloseIfOpen(fileId));
-written = fwrite(fileId, jsonBytes, 'uint8');
-if written ~= numel(jsonBytes)
-    error('toyRoad:JsonWriteFailed', ...
-        'Failed to write complete JSON bytes for %s.', outputPath);
-end
-clear fileCleanup
 
 try
     tempJavaPath = java.io.File(tempPath).toPath();
     targetJavaPath = java.io.File(outputPath).toPath();
     java.nio.file.Files.createLink(targetJavaPath, tempJavaPath);
-    if ~java.nio.file.Files.isSameFile(tempJavaPath, targetJavaPath)
-        error('toyRoad:JsonWriteFailed', ...
-            'Published JSON is not linked to the completed temporary file.');
-    end
-    java.nio.file.Files.delete(tempJavaPath);
 catch exception
+    localBestEffortDelete(tempPath);
+    localBestEffortDelete(lockPath);
     if localPathExists(outputPath)
-        if strcmp(exception.identifier, 'toyRoad:JsonWriteFailed')
-            rethrow(exception);
-        end
         error('toyRoad:JsonPublishConflict', ...
             'No-clobber JSON publication refused an existing target: %s', outputPath);
     end
     error('toyRoad:JsonWriteFailed', ...
         'Cannot publish JSON with a same-directory hard link: %s', exception.message);
 end
+
+% Files.createLink is the publication linearization point. Nothing below may
+% turn the now-visible immutable target into a publication failure.
+publication.committed = true;
+publication = localPostCommitCleanup(publication, tempPath, lockPath, operations);
+end
+
+function operations = localResolveOperations(overrides)
+if ~isstruct(overrides) || ~isscalar(overrides)
+    error('toyRoad:InvalidJsonOperations', ...
+        'JSON publication operations must be a scalar struct.');
+end
+operations = struct( ...
+    'before_link', @(varargin) [], ...
+    'delete_temp', @localDeleteIfExists, ...
+    'delete_lock', @localDeleteIfExists);
+names = fieldnames(overrides);
+for index = 1:numel(names)
+    name = names{index};
+    if ~isfield(operations, name) || ~isa(overrides.(name), 'function_handle')
+        error('toyRoad:InvalidJsonOperations', ...
+            'Unknown or invalid JSON publication operation: %s.', name);
+    end
+    operations.(name) = overrides.(name);
+end
+end
+
+function publication = localPostCommitCleanup(publication, tempPath, lockPath, operations)
+paths = {tempPath, lockPath};
+cleanupFunctions = {operations.delete_temp, operations.delete_lock};
+for index = 1:numel(paths)
+    try
+        cleanupFunctions{index}(paths{index});
+    catch exception
+        if strlength(publication.cleanup_error_identifier) == 0
+            publication.cleanup_error_identifier = string(exception.identifier);
+            publication.cleanup_error_message = string(exception.message);
+        end
+    end
+end
+pending = cellfun(@localPathExists, paths);
+publication.cleanup_pending = any(pending);
+publication.cleanup_pending_paths = string(paths(pending)).';
 end
 
 function value = localCanonicalize(value)
@@ -106,5 +162,12 @@ end
 function localDeleteIfExists(path)
 if isfile(path)
     delete(path);
+end
+end
+
+function localBestEffortDelete(path)
+try
+    localDeleteIfExists(path);
+catch
 end
 end

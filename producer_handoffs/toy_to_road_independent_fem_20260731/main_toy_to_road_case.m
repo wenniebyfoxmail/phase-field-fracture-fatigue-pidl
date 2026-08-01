@@ -242,6 +242,7 @@ if ~isfolder(outputRoot)
 end
 runPath = fullfile(outputRoot, 'RUN_RESULT.json');
 if isfile(runPath)
+    validate_toy_road_run_result(runPath, environment.case_id);
     return;
 end
 eventPath = fullfile(outputRoot, 'EVENT_METADATA.json');
