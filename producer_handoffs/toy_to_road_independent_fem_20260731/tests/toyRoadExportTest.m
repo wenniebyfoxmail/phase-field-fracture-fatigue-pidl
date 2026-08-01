@@ -40,6 +40,14 @@ verifyEqual(testCase, state.field_semantics.u, "nodal");
 verifyEqual(testCase, state.field_semantics.d_elem, "element");
 verifyEqual(testCase, state.field_semantics.psi_active_elem, ...
     "element_latent_fem_truth");
+verifyEqual(testCase, state.field_semantics.strain_energy_raw_elem, ...
+    "element_latent_fem_truth");
+verifyEqual(testCase, state.field_semantics.strain_energy_active_elem, ...
+    "element_latent_fem_truth");
+verifyEqual(testCase, state.field_semantics.crack_tip_diagnostics, ...
+    "derived_crack_diagnostic");
+verifyEqual(testCase, state.field_semantics.connected_right_boundary_diagnostics, ...
+    "derived_crack_diagnostic");
 verifyEqual(testCase, state.state_semantics_id, "cycle_peak_coherent_v1");
 verifyTrue(testCase, allFiniteNumericFields(state));
 end
@@ -280,6 +288,112 @@ verifyError(testCase, @() validate_toy_road_state(badIndexPath), ...
     "toyRoad:StateValidationFailed");
 end
 
+function testValidatorRequiresAndRecomputesStrainEnergyAliases(testCase)
+[outputRoot, cleanup] = freshOutputRoot(); %#ok<ASGLU>
+state = export_toy_road_peak_state( ...
+    syntheticInput(0.25 * ones(2, 4), ones(2, 4)), outputRoot);
+missingRaw = rmfield(state, 'strain_energy_raw_elem');
+missingActive = rmfield(state, 'strain_energy_active_elem');
+badRaw = state;
+badRaw.strain_energy_raw_elem(1) = badRaw.strain_energy_raw_elem(1) + 0.1;
+badActive = state;
+badActive.strain_energy_active_elem(1) = ...
+    badActive.strain_energy_active_elem(1) + 0.1;
+
+verifyError(testCase, @() validate_toy_road_state(missingRaw), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(missingActive), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(badRaw), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(badActive), ...
+    "toyRoad:StateValidationFailed");
+end
+
+function testValidatorRecomputesNativeQ4StrainFromMeshAndDisplacement(testCase)
+[outputRoot, cleanup] = freshOutputRoot(); %#ok<ASGLU>
+state = export_toy_road_peak_state( ...
+    syntheticInput(0.25 * ones(2, 4), ones(2, 4)), outputRoot);
+state.strain_gp(:, :, 1) = state.strain_gp(:, :, 1) + 0.25;
+state.strain_elem = reshape(mean(state.strain_gp, 2), 2, 3);
+
+verifyError(testCase, @() validate_toy_road_state(state), ...
+    "toyRoad:StateValidationFailed");
+end
+
+function testValidatorRequiresAndRecomputesCrackTipDiagnostics(testCase)
+[outputRoot, cleanup] = freshOutputRoot(); %#ok<ASGLU>
+state = exportCrackedState(outputRoot);
+missing = rmfield(state, 'crack_tip_diagnostics');
+badFound = state;
+badFound.crack_tip_diagnostics.found = false;
+badNode = state;
+badNode.crack_tip_diagnostics.node_id = ...
+    badNode.crack_tip_diagnostics.node_id + 1;
+badCoordinates = state;
+badCoordinates.crack_tip_diagnostics.coordinates(1) = ...
+    badCoordinates.crack_tip_diagnostics.coordinates(1) + 0.1;
+badThreshold = state;
+badThreshold.crack_tip_diagnostics.threshold = 0.90;
+
+verifyError(testCase, @() validate_toy_road_state(missing), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(badFound), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(badNode), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(badCoordinates), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(badThreshold), ...
+    "toyRoad:StateValidationFailed");
+end
+
+function testValidatorRequiresAndRecomputesRightBoundaryDiagnostics(testCase)
+[outputRoot, cleanup] = freshOutputRoot(); %#ok<ASGLU>
+state = exportCrackedState(outputRoot);
+missing = rmfield(state, 'connected_right_boundary_diagnostics');
+badHit = state;
+badHit.connected_right_boundary_diagnostics.hit = false;
+badSize = state;
+badSize.connected_right_boundary_diagnostics.connected_component_size = 3;
+badCandidates = state;
+badCandidates.connected_right_boundary_diagnostics.candidate_node_ids = [5; 6; 7];
+badComponent = state;
+badComponent.connected_right_boundary_diagnostics.connected_component_node_ids = [5; 6; 7];
+badContract = state;
+badContract.connected_right_boundary_diagnostics.x_min = 0.49;
+
+verifyError(testCase, @() validate_toy_road_state(missing), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(badHit), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(badSize), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(badCandidates), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(badComponent), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(badContract), ...
+    "toyRoad:StateValidationFailed");
+end
+
+function testStandaloneValidatorRequiresScalarNonnegativeUmax(testCase)
+[outputRoot, cleanup] = freshOutputRoot(); %#ok<ASGLU>
+state = export_toy_road_peak_state( ...
+    syntheticInput(0.25 * ones(2, 4), ones(2, 4)), outputRoot);
+negative = state;
+negative.Umax_N = -0.12;
+negative.cycle_index.Umax_N = -0.12;
+badShape = state;
+badShape.Umax_N = [0.12 0.12];
+badShape.cycle_index.Umax_N = [0.12 0.12];
+
+verifyError(testCase, @() validate_toy_road_state(negative), ...
+    "toyRoad:StateValidationFailed");
+verifyError(testCase, @() validate_toy_road_state(badShape), ...
+    "toyRoad:StateValidationFailed");
+end
+
 function testValidatorRejectsGpDamageThatIsNotNativeQ4Interpolation(testCase)
 [outputRoot, cleanup] = freshOutputRoot(); %#ok<ASGLU>
 state = export_toy_road_peak_state( ...
@@ -370,6 +484,12 @@ input.validation_tolerances = struct( ...
     'range', 1e-12, ...
     'active_identity', 1e-12, ...
     'irreversibility', 1e-12);
+end
+
+function state = exportCrackedState(outputRoot)
+damageGp = [0.60 * ones(1, 4); 0.96 * ones(1, 4)];
+state = export_toy_road_peak_state( ...
+    syntheticInput((1 - damageGp) .^ 2, ones(2, 4)), outputRoot);
 end
 
 function value = allFiniteNumericFields(state)
