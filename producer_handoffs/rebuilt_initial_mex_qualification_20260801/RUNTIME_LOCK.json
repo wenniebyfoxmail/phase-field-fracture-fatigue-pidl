@@ -46,7 +46,7 @@
                   "command_sha256":  "201eabd998d4d0bc7ee14b6279c4a358c0ef80af90240134883f0a2cb9a5bff0",
                   "log_sha256":  "cf97950c53a2bd109b66169e8b9143784336bc23c5f2234fd091bfafb325fd5b",
                   "toolchain_sha256":  "befe373350916d37dbe73df9decf2542c647a8adb09543c515751cfbb3e8fbe0",
-                  "source_hashes_sha256":  "44f585d3fd83a19960397ff3a0b26da3fb1ac473e6d09a27359926e3a18e748e",
+                  "source_hashes_sha256":  "2d99c40b8372d4c9bc67a20d5f1455e3c045ddaf34ab2d1b521267f7c0fd4ad8",
                   "output_directory":  "C:/q4diag/initial_mex_rebuild_diag/out"
               },
     "qualification":  {

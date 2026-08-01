@@ -60,6 +60,10 @@ requireNonemptyFile(logPath);
 validateFileHash(commandPath, lock.build.command_sha256);
 validateFileHash(logPath, lock.build.log_sha256);
 validateFileHash(toolchainPath, lock.build.toolchain_sha256);
+requireEqual(lock.build.command_sha256, ...
+    '201eabd998d4d0bc7ee14b6279c4a358c0ef80af90240134883f0a2cb9a5bff0');
+requireEqual(lock.build.log_sha256, ...
+    'cf97950c53a2bd109b66169e8b9143784336bc23c5f2234fd091bfafb325fd5b');
 validateBuildCommand(commandPath);
 validateBuildLog(logPath);
 outputDirectory = validateBuildOutputDirectory( ...
@@ -72,7 +76,7 @@ toolchainReceipt = validateToolchain(toolchain);
 sourceHashesPath = resolveRelative(fileparts(lockPath), lock.source.source_hashes_relative_path);
 validateFileHash(sourceHashesPath, lock.build.source_hashes_sha256);
 sourceHashes = readJson(sourceHashesPath);
-validateSourceHashes(sourceHashes, gripfithRoot, lock.source.commit);
+validateSourceHashes(sourceHashes, gripfithRoot, lock.source.commit, commandPath);
 dependencyReceipt = validateDependencies(lock.runtime.dependencies, gripfithRoot);
 
 buildReceipt = struct( ...
@@ -110,7 +114,8 @@ if commitStatus ~= 0 || ~strcmp(strtrim(commit), expectedCommit)
     error('rebuiltMex:SourceIdentityMismatch', ...
         'The supplied GRIPHFiTH checkout is not at the locked commit.');
 end
-[statusStatus, sourceStatus] = system(sprintf('git -C "%s" status --porcelain', gripfithRoot));
+[statusStatus, sourceStatus] = system(sprintf( ...
+    'git -C "%s" status --porcelain=v1 --untracked-files=all', gripfithRoot));
 if statusStatus ~= 0 || ~isempty(strtrim(sourceStatus))
     error('rebuiltMex:SourceIdentityMismatch', ...
         'The supplied GRIPHFiTH checkout is not clean.');
@@ -190,10 +195,6 @@ if ~isAbsolutePath(char(value))
     invalidLock('The diagnostic build output directory must be absolute.');
 end
 outputDirectory = normalizePath(value);
-expected = normalizePath('C:/q4diag/initial_mex_rebuild_diag/out');
-if ~strcmp(outputDirectory, expected)
-    invalidLock('The build output directory is not the approved diagnostic root.');
-end
 sourceRoot = normalizePath(gripfithRoot);
 if strcmp(outputDirectory, sourceRoot) || startsWith(outputDirectory, [sourceRoot '/'])
     invalidLock('The build output directory must remain outside the source checkout.');
@@ -221,50 +222,81 @@ receipt = orderfields(struct( ...
     'mex_configuration', char(toolchain.mex_configuration)));
 end
 
-function validateSourceHashes(sourceHashes, gripfithRoot, expectedCommit)
+function validateSourceHashes(sourceHashes, gripfithRoot, expectedCommit, commandPath)
 requireFields(sourceHashes, {'schema_version', 'locked_commit', ...
-    'consumed_fortran', 'locked_git_tree_inventory', ...
-    'clean_checkout_inventory'});
+    'consumed_fortran', 'locked_git_tree_inventory'});
 requireEqual(sourceHashes.schema_version, 'rebuilt_initial_mex_source_hashes_v1');
 requireEqual(sourceHashes.locked_commit, expectedCommit);
-validateHashRecords(sourceHashes.consumed_fortran, gripfithRoot, 'consumed Fortran');
-validateHashRecords(sourceHashes.locked_git_tree_inventory, gripfithRoot, ...
+validateExactFortranRecords(sourceHashes.consumed_fortran, fileread(commandPath));
+validateRecordShape(sourceHashes.locked_git_tree_inventory, ...
     'locked Git tree inventory');
-validateHashRecords(sourceHashes.clean_checkout_inventory, gripfithRoot, ...
-    'clean source inventory');
-requireSameHashRecords(sourceHashes.locked_git_tree_inventory, ...
-    sourceHashes.clean_checkout_inventory);
 
 [status, output] = system(sprintf( ...
-    'git -C "%s" ls-files "*.m" "*.c" "*.cpp" "*.h"', gripfithRoot));
+    'git -C "%s" ls-tree -r --name-only %s', ...
+    gripfithRoot, expectedCommit));
 if status ~= 0
     error('rebuiltMex:SourceIdentityMismatch', ...
-        'Unable to inspect the locked clean-source inventory.');
+        'Unable to inspect the locked Git tree inventory.');
 end
-actualPaths = sort(nonemptyLines(output));
-lockedPaths = sort({sourceHashes.clean_checkout_inventory.path});
+treePaths = nonemptyLines(output);
+sourceExtensions = {'.m', '.c', '.cpp', '.h'};
+isSource = cellfun(@(path) any(endsWith(path, sourceExtensions)), treePaths);
+actualPaths = sort(treePaths(isSource));
+lockedPaths = sort({sourceHashes.locked_git_tree_inventory.path});
 if numel(actualPaths) ~= numel(lockedPaths) || ~isequal(actualPaths(:), lockedPaths(:))
     error('rebuiltMex:SourceIdentityMismatch', ...
         'The locked source inventory differs from the Git tree.');
 end
+covered = [sourceHashes.consumed_fortran; sourceHashes.locked_git_tree_inventory];
+expectedHashes = gitBlobHashes(gripfithRoot, expectedCommit, {covered.path});
+if ~isequal({covered.sha256}, expectedHashes)
+    error('rebuiltMex:SourceIdentityMismatch', ...
+        'A locked source SHA-256 does not match the expected Git blob.');
+end
+validateCoveredIndexFlags(gripfithRoot, {covered.path});
 end
 
-function requireSameHashRecords(left, right)
-[leftPaths, leftOrder] = sort({left.path});
-[rightPaths, rightOrder] = sort({right.path});
-if numel(leftPaths) ~= numel(rightPaths) || ~isequal(leftPaths(:), rightPaths(:))
-    error('rebuiltMex:SourceIdentityMismatch', ...
-        'The checkout inventory paths differ from the locked Git tree.');
+function validateExactFortranRecords(records, commandText)
+expectedPaths = { ...
+    'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/initial.f90', ...
+    'Sources/+phase_field/+mex/Modules/fem/assembly/equilibrium/initial.f90', ...
+    'Sources/+phase_field/+mex/Modules/array_utils.f90', ...
+    'Sources/+phase_field/+mex/Modules/matrix_utils.f90', ...
+    'Sources/+phase_field/+mex/Modules/mex_utils.f90', ...
+    'Sources/+phase_field/+mex/Modules/scalar_utils.f90', ...
+    'Sources/+phase_field/+mex/Modules/types.f90'};
+expectedHashes = { ...
+    '47114bc347bf20e267df56961dcb1c3d9d823ce8262e21dbc40d1c10b041574b', ...
+    'bb1fc4fa2582d0b53e8742aace8c57ca96654eb4ba5ece2ac17f59bb9e4b0c3c', ...
+    'a8c60c59eb949d0fe60829df012055b163d977112bb3507aa5ee6618809147b7', ...
+    'd817366ab1f62acc7d1a669a72df0e52f8bc123f61e79ccda89cbcbb88523b67', ...
+    '43776d0a1943c028126cb6c5d08d2fc3460c594a61000ceacb76f5ca73f53d3e', ...
+    'c9d12848540496931c5d3a7e565041d86e3aa538652316ac96d72887ffcb2e8c', ...
+    '495d0e90bac142fb533c6b6cccb9d2326f0245adc3d9bc7d23029842563d04cf'};
+commandFragments = { ...
+    "fullfile(base,'Sources','+phase_field','+mex','+fem','+assembly','+equilibrium','initial.f90')", ...
+    "fullfile(md,'fem','assembly','equilibrium','initial.f90')", ...
+    "fullfile(md,'array_utils.f90')", "fullfile(md,'matrix_utils.f90')", ...
+    "fullfile(md,'mex_utils.f90')", "fullfile(md,'scalar_utils.f90')", ...
+    "fullfile(md,'types.f90')"};
+validateRecordShape(records, 'consumed Fortran');
+if numel(records) ~= numel(expectedPaths)
+    invalidLock('The consumed Fortran set is not the exact approved seven inputs.');
 end
-leftHashes = {left(leftOrder).sha256};
-rightHashes = {right(rightOrder).sha256};
-if ~isequal(leftHashes(:), rightHashes(:))
-    error('rebuiltMex:SourceIdentityMismatch', ...
-        'The checkout inventory hashes differ from the locked Git tree.');
+[paths, order] = sort({records.path});
+[expectedPaths, expectedOrder] = sort(expectedPaths);
+if ~isequal(paths(:), expectedPaths(:)) || ...
+        ~isequal({records(order).sha256}.', expectedHashes(expectedOrder).')
+    invalidLock('The consumed Fortran paths or hashes are not the approved set.');
+end
+for index = 1:numel(commandFragments)
+    if ~contains(commandText, commandFragments{index})
+        invalidLock('A consumed Fortran input is absent from the exact build command.');
+    end
 end
 end
 
-function validateHashRecords(records, root, label)
+function validateRecordShape(records, label)
 if ~isstruct(records) || isempty(records) || ~all(isfield(records, {'path', 'sha256'}))
     invalidLock('The %s record set is malformed.', label);
 end
@@ -275,11 +307,63 @@ end
 for index = 1:numel(records)
     requireRelativePath(records(index).path);
     requireSha256(records(index).sha256);
-    filePath = resolveRelative(root, records(index).path);
-    requireFile(filePath);
-    if ~strcmp(sha256File(filePath), records(index).sha256)
+end
+end
+
+function hashes = gitBlobHashes(root, commit, paths)
+persistent cachedCommit cachedPaths cachedHashes
+if isequal(cachedCommit, commit) && isequal(cachedPaths, paths)
+    hashes = cachedHashes;
+    return
+end
+archivePath = [tempname, '.tar'];
+extractRoot = tempname;
+mkdir(extractRoot);
+cleanup = onCleanup(@() cleanupArchive(archivePath, extractRoot));
+[status, output] = system(sprintf( ...
+    'git -C "%s" archive --format=tar --output="%s" %s', ...
+    root, archivePath, commit));
+if status ~= 0
+    error('rebuiltMex:SourceIdentityMismatch', ...
+        'Unable to read locked Git blobs: %s', strtrim(output));
+end
+untar(archivePath, extractRoot);
+hashes = cell(size(paths));
+for index = 1:numel(paths)
+    blobPath = fullfile(extractRoot, strrep(paths{index}, '/', filesep));
+    requireFile(blobPath);
+    hashes{index} = sha256File(blobPath);
+end
+cachedCommit = commit;
+cachedPaths = paths;
+cachedHashes = hashes;
+end
+
+function cleanupArchive(archivePath, extractRoot)
+if isfile(archivePath)
+    delete(archivePath);
+end
+if isfolder(extractRoot)
+    rmdir(extractRoot, 's');
+end
+end
+
+function validateCoveredIndexFlags(root, coveredPaths)
+[status, output] = system(sprintf('git -C "%s" ls-files -v', root));
+if status ~= 0
+    error('rebuiltMex:SourceIdentityMismatch', ...
+        'Unable to inspect source index flags.');
+end
+lines = nonemptyLines(output);
+for index = 1:numel(lines)
+    line = lines{index};
+    if numel(line) < 3 || ~ismember(line(3:end), coveredPaths)
+        continue
+    end
+    flag = line(1);
+    if flag == 'S' || (flag >= 'a' && flag <= 'z')
         error('rebuiltMex:SourceIdentityMismatch', ...
-            'A locked %s hash does not match the clean source checkout.', label);
+            'Covered source uses skip-worktree or assume-unchanged.');
     end
 end
 end

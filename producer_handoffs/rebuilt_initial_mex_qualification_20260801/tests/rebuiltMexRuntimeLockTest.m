@@ -1,5 +1,21 @@
 classdef rebuiltMexRuntimeLockTest < matlab.unittest.TestCase
     methods (Test)
+        function testValidatesCommittedProductionPackage(testCase)
+            root = handoffRoot();
+            receipt = validate_runtime_lock(fullfile(root, 'RUNTIME_LOCK.json'), ...
+                fullfile(root, 'runtime'), griphfithRoot());
+
+            verifyEqual(testCase, receipt.initial_sha256, approvedInitialHash());
+            verifyEqual(testCase, receipt.lock_sha256, ...
+                fileHash(fullfile(root, 'RUNTIME_LOCK.json')));
+            verifyEqual(testCase, receipt.build.command_sha256, ...
+                '201eabd998d4d0bc7ee14b6279c4a358c0ef80af90240134883f0a2cb9a5bff0');
+            verifyEqual(testCase, receipt.build.log_sha256, ...
+                'cf97950c53a2bd109b66169e8b9143784336bc23c5f2234fd091bfafb325fd5b');
+            verifyEqual(testCase, receipt.source_commit, lockedSourceCommit());
+            verifyTrue(testCase, receipt.source_clean);
+        end
+
         function testAcceptsOnlyApprovedRuntimeWithCompleteProvenance(testCase)
             fixtureRoot = makeRuntimeFixture(testCase);
 
@@ -65,6 +81,26 @@ classdef rebuiltMexRuntimeLockTest < matlab.unittest.TestCase
             fixtureRoot = makeRuntimeFixture(testCase);
             logPath = fullfile(fixtureRoot, 'build', 'BUILD_LOG.txt');
             writeText(logPath, 'Build claimed successful without compiler output.');
+            updateLockedBuildHash(fixtureRoot, 'log_sha256', logPath);
+
+            verifyError(testCase, @() validateFixture(fixtureRoot), ...
+                'rebuiltMex:InvalidRuntimeLock');
+        end
+
+        function testRejectsBuildCommandMutationWithAllTokensPresent(testCase)
+            fixtureRoot = makeRuntimeFixture(testCase);
+            commandPath = fullfile(fixtureRoot, 'build', 'BUILD_COMMAND.txt');
+            appendText(commandPath, [newline, '% unauthorized command mutation']);
+            updateLockedBuildHash(fixtureRoot, 'command_sha256', commandPath);
+
+            verifyError(testCase, @() validateFixture(fixtureRoot), ...
+                'rebuiltMex:InvalidRuntimeLock');
+        end
+
+        function testRejectsBuildLogMutationWithAllTokensPresent(testCase)
+            fixtureRoot = makeRuntimeFixture(testCase);
+            logPath = fullfile(fixtureRoot, 'build', 'BUILD_LOG.txt');
+            appendText(logPath, [newline, 'unauthorized log mutation']);
             updateLockedBuildHash(fixtureRoot, 'log_sha256', logPath);
 
             verifyError(testCase, @() validateFixture(fixtureRoot), ...
@@ -190,6 +226,67 @@ classdef rebuiltMexRuntimeLockTest < matlab.unittest.TestCase
                 'rebuiltMex:InvalidRuntimeLock');
         end
 
+        function testRejectsMissingOrExtraFortranInputs(testCase)
+            fixtureRoot = makeRuntimeFixture(testCase);
+            sourceHashesPath = fullfile(fixtureRoot, 'build', 'SOURCE_HASHES.json');
+            sourceHashes = jsondecode(fileread(sourceHashesPath));
+            sourceHashes.consumed_fortran(end) = [];
+            writeJson(sourceHashesPath, sourceHashes);
+            updateLockedBuildHash(fixtureRoot, 'source_hashes_sha256', sourceHashesPath);
+            verifyError(testCase, @() validateFixture(fixtureRoot), ...
+                'rebuiltMex:InvalidRuntimeLock');
+
+            fixtureRoot = makeRuntimeFixture(testCase);
+            sourceHashesPath = fullfile(fixtureRoot, 'build', 'SOURCE_HASHES.json');
+            sourceHashes = jsondecode(fileread(sourceHashesPath));
+            sourceHashes.consumed_fortran(end + 1) = sourceHash( ...
+                'Sources/+phase_field/+mex/Modules/system_factors.f90');
+            writeJson(sourceHashesPath, sourceHashes);
+            updateLockedBuildHash(fixtureRoot, 'source_hashes_sha256', sourceHashesPath);
+            verifyError(testCase, @() validateFixture(fixtureRoot), ...
+                'rebuiltMex:InvalidRuntimeLock');
+        end
+
+        function testRejectsWorkingTreeHashesInPlaceOfGitBlobHashes(testCase)
+            fixtureRoot = makeRuntimeFixture(testCase);
+            sourceHashesPath = fullfile(fixtureRoot, 'build', 'SOURCE_HASHES.json');
+            sourceHashes = jsondecode(fileread(sourceHashesPath));
+            target = find(strcmp({sourceHashes.locked_git_tree_inventory.path}, ...
+                'Sources/+phase_field/System.m'));
+            sourceHashes.locked_git_tree_inventory(target).sha256 = fileHash( ...
+                fullfile(griphfithRoot(), 'Sources/+phase_field/System.m'));
+            writeJson(sourceHashesPath, sourceHashes);
+            updateLockedBuildHash(fixtureRoot, 'source_hashes_sha256', sourceHashesPath);
+
+            verifyError(testCase, @() validateFixture(fixtureRoot), ...
+                'rebuiltMex:SourceIdentityMismatch');
+        end
+
+        function testRejectsUntrackedCoveredSource(testCase)
+            sourceRoot = makeSourceFixture(testCase);
+            fixtureRoot = makeRuntimeFixture(testCase);
+            validateFixture(fixtureRoot, sourceRoot);
+            writeText(fullfile(sourceRoot, 'Sources', 'untracked_source.m'), 'x = 1;');
+
+            verifyError(testCase, @() validateFixture(fixtureRoot, sourceRoot), ...
+                'rebuiltMex:SourceIdentityMismatch');
+        end
+
+        function testRejectsAssumeUnchangedAndSkipWorktreeFlags(testCase)
+            flags = {'--assume-unchanged', '--skip-worktree'};
+            path = 'Sources/+phase_field/System.m';
+            for index = 1:numel(flags)
+                sourceRoot = makeSourceFixture(testCase);
+                fixtureRoot = makeRuntimeFixture(testCase);
+                validateFixture(fixtureRoot, sourceRoot);
+                runGit(sourceRoot, sprintf('update-index %s -- "%s"', ...
+                    flags{index}, path));
+
+                verifyError(testCase, @() validateFixture(fixtureRoot, sourceRoot), ...
+                    'rebuiltMex:SourceIdentityMismatch');
+            end
+        end
+
         function testRejectsChangedLockedGitTreeInventory(testCase)
             fixtureRoot = makeRuntimeFixture(testCase);
             sourceHashesPath = fullfile(fixtureRoot, 'build', 'SOURCE_HASHES.json');
@@ -260,52 +357,12 @@ function fixtureRoot = makeRuntimeFixture(testCase, varargin)
     mkdir(fullfile(fixtureRoot, 'build'));
     copyfile(approvedInitialPath(), fullfile(fixtureRoot, 'runtime', 'initial.mexw64'));
 
-    consumedFortran = [ ...
-        sourceHash('Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/initial.f90'); ...
-        sourceHash('Sources/+phase_field/+mex/Modules/fem/assembly/equilibrium/initial.f90'); ...
-        sourceHash('Sources/+phase_field/+mex/Modules/array_utils.f90'); ...
-        sourceHash('Sources/+phase_field/+mex/Modules/matrix_utils.f90'); ...
-        sourceHash('Sources/+phase_field/+mex/Modules/mex_utils.f90'); ...
-        sourceHash('Sources/+phase_field/+mex/Modules/scalar_utils.f90'); ...
-        sourceHash('Sources/+phase_field/+mex/Modules/types.f90')];
-    sourceHashes = struct( ...
-        'schema_version', 'rebuilt_initial_mex_source_hashes_v1', ...
-        'locked_commit', '355d4c83fefc2db88c32031a2dd2623b3de85c89', ...
-        'consumed_fortran', consumedFortran, ...
-        'locked_git_tree_inventory', cleanCheckoutInventory(), ...
-        'clean_checkout_inventory', cleanCheckoutInventory());
-    writeJson(fullfile(fixtureRoot, 'build', 'SOURCE_HASHES.json'), sourceHashes);
-
-    toolchain = struct( ...
-        'matlab_release', 'R2025b Update 5', ...
-        'matlab_version', '25.2.0.3177638', ...
-        'architecture', 'win64', ...
-        'fortran_compiler', ...
-            'Intel(R) Fortran Compiler 2025.3.2 Build 20260112 (ifx.exe)', ...
-        'cpp_compiler', ...
-            'Microsoft Visual Studio 2022 Community; MSVC 14.44.35207', ...
-        'linker', 'Microsoft Visual Studio 2022 link.exe', ...
-        'mex_configuration', ...
-            'Intel oneAPI 2025 for Fortran with Microsoft Visual Studio 2022');
-    writeJson(fullfile(fixtureRoot, 'build', 'TOOLCHAIN.json'), toolchain);
-    writeText(fullfile(fixtureRoot, 'build', 'BUILD_COMMAND.txt'), ...
-        ["src={fullfile(md,'types.f90'),fullfile(md,'scalar_utils.f90')," ...
-         "fullfile(md,'array_utils.f90'),fullfile(md,'matrix_utils.f90')," ...
-         "fullfile(md,'mex_utils.f90'),fullfile(md,'fem','assembly','equilibrium','initial.f90')};" newline ...
-         "mex('-c',['-I' bd],'COMPFLAGS=$COMPFLAGS /free /fpp',src{:},'-outdir',bd);" newline ...
-         "objs={fullfile(bd,'types.obj'),fullfile(bd,'scalar_utils.obj')," ...
-         "fullfile(bd,'array_utils.obj'),fullfile(bd,'matrix_utils.obj')," ...
-         "fullfile(bd,'mex_utils.obj'),fullfile(bd,'initial.obj')};" newline ...
-         "wrapper=fullfile(base,'Sources','+phase_field','+mex','+fem','+assembly','+equilibrium','initial.f90');" newline ...
-         "mex(['-I' bd],'COMPFLAGS=$COMPFLAGS /free /fpp',wrapper,objs{:}," ...
-         "'-lmwlapack','-lmwblas','-output','initial','-outdir',od);"]);
-    writeText(fullfile(fixtureRoot, 'build', 'BUILD_LOG.txt'), ...
-        ["Building with 'Intel oneAPI 2025 for Fortran with Microsoft Visual Studio 2022'." newline ...
-         "Intel(R) Fortran Compiler for applications running on Intel(R) 64, Version 2025.3.2 Build 20260112" newline ...
-         "MEX completed successfully." newline ...
-         "Building with 'Intel oneAPI 2025 for Fortran with Microsoft Visual Studio 2022'." newline ...
-         "MEX completed successfully." newline ...
-         "BUILD_OK bytes=525824" newline]);
+    provenanceFiles = {'SOURCE_HASHES.json', 'TOOLCHAIN.json', ...
+        'BUILD_COMMAND.txt', 'BUILD_LOG.txt'};
+    for index = 1:numel(provenanceFiles)
+        copyfile(fullfile(handoffRoot(), 'build', provenanceFiles{index}), ...
+            fullfile(fixtureRoot, 'build', provenanceFiles{index}));
+    end
     writeText(fullfile(fixtureRoot, 'build', 'LEGACY_CRASH_DUMP.txt'), ...
         'Access violation in the legacy initial.mexw64 runtime.');
 
@@ -359,21 +416,6 @@ function record = sourceHash(relativePath)
         'sha256', fileHash(fullfile(griphfithRoot(), relativePath)));
 end
 
-function inventory = cleanCheckoutInventory()
-    root = griphfithRoot();
-    command = sprintf('git -C "%s" ls-files "*.m" "*.c" "*.cpp" "*.h"', root);
-    [status, output] = system(command);
-    assert(status == 0, 'rebuiltMexRuntimeLockTest:GitInventory', ...
-        'Unable to enumerate the locked clean-source inventory.');
-    paths = splitlines(string(strtrim(output)));
-    paths = paths(paths ~= "");
-    inventory = repmat(struct('path', '', 'sha256', ''), numel(paths), 1);
-    for index = 1:numel(paths)
-        inventory(index).path = char(strrep(paths(index), '\\', '/'));
-        inventory(index).sha256 = fileHash(fullfile(root, paths(index)));
-    end
-end
-
 function writeJson(path, value)
     writeText(path, [jsonencode(value), newline]);
 end
@@ -385,13 +427,22 @@ function updateLockedBuildHash(fixtureRoot, fieldName, artifactPath)
     writeJson(lockPath, lock);
 end
 
-function receipt = validateFixture(fixtureRoot)
+function receipt = validateFixture(fixtureRoot, sourceRoot)
+    if nargin < 2
+        sourceRoot = griphfithRoot();
+    end
     receipt = validate_runtime_lock(fullfile(fixtureRoot, 'RUNTIME_LOCK.json'), ...
-        fullfile(fixtureRoot, 'runtime'), griphfithRoot());
+        fullfile(fixtureRoot, 'runtime'), sourceRoot);
 end
 
 function writeText(path, value)
     fileId = fopen(path, 'w');
+    cleanup = onCleanup(@() fclose(fileId));
+    fprintf(fileId, '%s', value);
+end
+
+function appendText(path, value)
+    fileId = fopen(path, 'a');
     cleanup = onCleanup(@() fclose(fileId));
     fprintf(fileId, '%s', value);
 end
@@ -409,11 +460,53 @@ function bytes = readBytes(path)
 end
 
 function value = approvedInitialPath()
-    value = 'C:/q4diag/initial_mex_rebuild_diag/out/initial.mexw64';
+    value = fullfile(handoffRoot(), 'runtime', 'initial.mexw64');
 end
 
 function value = griphfithRoot()
-    value = 'C:/q4diag/griphfith-f1b-355d4c83';
+    value = getenv('GRIPHFITH_SOURCE_ROOT');
+    if isempty(value)
+        value = 'C:/q4diag/griphfith-f1b-355d4c83';
+    end
+    assert(isfolder(value), 'rebuiltMexRuntimeLockTest:MissingSourceRoot', ...
+        'Set GRIPHFITH_SOURCE_ROOT to the locked clean source checkout.');
+end
+
+function value = handoffRoot()
+    value = fileparts(fileparts(mfilename('fullpath')));
+end
+
+function value = approvedInitialHash()
+    value = 'ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db';
+end
+
+function value = lockedSourceCommit()
+    value = '355d4c83fefc2db88c32031a2dd2623b3de85c89';
+end
+
+function sourceRoot = makeSourceFixture(testCase)
+    fixture = matlab.unittest.fixtures.TemporaryFolderFixture;
+    testCase.applyFixture(fixture);
+    sourceRoot = fullfile(fixture.Folder, 'griphfith');
+    [status, output] = system(sprintf('git clone --quiet --shared "%s" "%s"', ...
+        griphfithRoot(), sourceRoot));
+    assert(status == 0, 'rebuiltMexRuntimeLockTest:GitClone', '%s', output);
+    runGit(sourceRoot, sprintf('checkout --quiet %s', lockedSourceCommit()));
+    dependencyPaths = { ...
+        'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/AMOR.mexw64', ...
+        'Sources/+phase_field/+mex/+fem/+assembly/+pf/AT1_HISTORY_FATIGUE.mexw64'};
+    for index = 1:numel(dependencyPaths)
+        destination = fullfile(sourceRoot, dependencyPaths{index});
+        if ~isfolder(fileparts(destination))
+            mkdir(fileparts(destination));
+        end
+        copyfile(fullfile(griphfithRoot(), dependencyPaths{index}), destination);
+    end
+end
+
+function output = runGit(root, arguments)
+    [status, output] = system(sprintf('git -C "%s" %s', root, arguments));
+    assert(status == 0, 'rebuiltMexRuntimeLockTest:GitCommand', '%s', output);
 end
 
 function value = isAbsolutePath(path)
