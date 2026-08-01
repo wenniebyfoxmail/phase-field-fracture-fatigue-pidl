@@ -95,7 +95,7 @@ state.cycle_index = struct( ...
     'state_ordering_id', state.state_ordering_id);
 
 validate_toy_road_state(state);
-publish_toy_road_state_atomic(state, outputPath);
+publish_toy_road_state_no_clobber(state, outputPath);
 end
 
 function localValidateInput(input, outputPath)

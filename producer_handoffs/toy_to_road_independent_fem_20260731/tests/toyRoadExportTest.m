@@ -101,7 +101,7 @@ verifyEqual(testCase, state.mesh_ordering_id, "q4_node_connectivity_1_based_v1")
 verifyEqual(testCase, state.state_ordering_id, "component_blocked_u_then_v_v1");
 end
 
-function testExporterWritesAtomicMatV73Shard(testCase)
+function testExporterPublishesCompleteMatV73ShardWithoutTemporaryLink(testCase)
 [outputRoot, cleanup, outputPath] = freshOutputRoot(); %#ok<ASGLU>
 input = syntheticInput(0.25 * ones(2, 4), ones(2, 4));
 
@@ -120,31 +120,60 @@ verifyEqual(testCase, string(saved.cycle_index.file), ...
 files = dir(fullfile(outputRoot, 'states'));
 files = files(~[files.isdir]);
 verifyEqual(testCase, string({files.name}), "cycle_0002.mat");
+verifyEmpty(testCase, dir(fullfile(outputRoot, 'states', '*.tmp.mat')));
+verifyFalse(testCase, isfile([outputPath '.publish.lock']));
 end
 
-function testAtomicPublisherRequestsAtomicMoveWithoutReplacement(testCase)
-publisherPath = fullfile(handoffDir(), 'publish_toy_road_state_atomic.m');
+function testNoClobberPublisherUsesHardLinkWithoutCopyOrMove(testCase)
+publisherPath = fullfile(handoffDir(), ...
+    'publish_toy_road_state_no_clobber.m');
 source = fileread(publisherPath);
 
 verifyNotEmpty(testCase, regexp(source, ...
-    'StandardCopyOption\.ATOMIC_MOVE', 'once'));
+    'java\.nio\.file\.Files\.createLink', 'once'));
 verifyEmpty(testCase, regexp(source, ...
-    'StandardCopyOption\.REPLACE_EXISTING', 'once'));
-verifyNotEmpty(testCase, regexp(source, ...
-    'AtomicMoveNotSupportedException', 'once'));
+    'java\.nio\.file\.Files\.move', 'once'));
+verifyEmpty(testCase, regexp(source, ...
+    'java\.nio\.file\.Files\.copy', 'once'));
+verifyEmpty(testCase, regexp(source, 'REPLACE_EXISTING', 'once'));
 end
 
-function testFailedAtomicMoveLeavesNoTargetOrTemporaryShard(testCase)
+function testTargetAppearingAtPublicationIsPreservedByteForByte(testCase)
+[outputRoot, cleanup, outputPath] = freshOutputRoot(); %#ok<ASGLU>
+state = struct('sentinel', 1);
+sentinelBytes = uint8([0 1 2 13 10 127 128 254 255]);
+
+verifyError(testCase, ...
+    @() publish_toy_road_state_no_clobber(state, outputPath, ...
+    @(tempPath, targetPath) createRacingTargetThenLink( ...
+    tempPath, targetPath, sentinelBytes)), ...
+    "toyRoad:StatePublishConflict");
+verifyEqual(testCase, readBytes(outputPath), sentinelBytes);
+verifyNoTemporaryPublicationArtifacts(testCase, outputPath);
+end
+
+function testUnsupportedHardLinkLeavesNoAcceptedTargetOrArtifacts(testCase)
 [outputRoot, cleanup, outputPath] = freshOutputRoot(); %#ok<ASGLU>
 state = struct('sentinel', 1);
 
 verifyError(testCase, ...
-    @() publish_toy_road_state_atomic(state, outputPath, @failAtomicMove), ...
-    "toyRoad:AtomicMoveNotSupported");
+    @() publish_toy_road_state_no_clobber( ...
+    state, outputPath, @failUnsupportedHardLink), ...
+    "toyRoad:HardLinkNotSupported");
 verifyFalse(testCase, isfile(outputPath));
-statesDir = fileparts(outputPath);
-verifyEmpty(testCase, dir(fullfile(statesDir, '*.tmp.mat')));
-verifyFalse(testCase, isfile([outputPath '.publish.lock']));
+verifyNoTemporaryPublicationArtifacts(testCase, outputPath);
+end
+
+function testFailedHardLinkLeavesNoAcceptedTargetOrArtifacts(testCase)
+[outputRoot, cleanup, outputPath] = freshOutputRoot(); %#ok<ASGLU>
+state = struct('sentinel', 1);
+
+verifyError(testCase, ...
+    @() publish_toy_road_state_no_clobber( ...
+    state, outputPath, @failHardLinkIo), ...
+    "toyRoad:StateWriteFailed");
+verifyFalse(testCase, isfile(outputPath));
+verifyNoTemporaryPublicationArtifacts(testCase, outputPath);
 end
 
 function testExporterRejectsMismatchedFileDestination(testCase)
@@ -573,9 +602,20 @@ verifyError(testCase, @() validate_toy_road_state(reloadedState), ...
     "toyRoad:StateValidationFailed");
 end
 
-function failAtomicMove(~, ~)
-error('toyRoadTest:AtomicMoveNotSupportedException', ...
-    'java.nio.file.AtomicMoveNotSupportedException: injected test failure');
+function createRacingTargetThenLink(tempPath, targetPath, sentinelBytes)
+writeBytes(targetPath, sentinelBytes);
+java.nio.file.Files.createLink(java.io.File(targetPath).toPath(), ...
+    java.io.File(tempPath).toPath());
+end
+
+function failUnsupportedHardLink(~, ~)
+error('toyRoadTest:UnsupportedOperationException', ...
+    'java.lang.UnsupportedOperationException: injected hard-link failure');
+end
+
+function failHardLinkIo(~, ~)
+error('toyRoadTest:FileSystemException', ...
+    'java.nio.file.FileSystemException: injected hard-link I/O failure');
 end
 
 function value = allFiniteNumericFields(state)
@@ -603,6 +643,30 @@ if fileId < 0
 end
 cleanup = onCleanup(@() fclose(fileId));
 fwrite(fileId, value, 'char');
+end
+
+function writeBytes(path, value)
+fileId = fopen(path, 'wb');
+if fileId < 0
+    error('toyRoadTest:FixtureWriteFailed', 'Cannot write fixture: %s', path);
+end
+cleanup = onCleanup(@() fclose(fileId));
+fwrite(fileId, value, 'uint8');
+end
+
+function value = readBytes(path)
+fileId = fopen(path, 'rb');
+if fileId < 0
+    error('toyRoadTest:FixtureReadFailed', 'Cannot read fixture: %s', path);
+end
+cleanup = onCleanup(@() fclose(fileId));
+value = fread(fileId, Inf, '*uint8').';
+end
+
+function verifyNoTemporaryPublicationArtifacts(testCase, outputPath)
+statesDir = fileparts(outputPath);
+verifyEmpty(testCase, dir(fullfile(statesDir, '*.tmp.mat')));
+verifyFalse(testCase, isfile([outputPath '.publish.lock']));
 end
 
 function names = stateDirectoryNames(path)
