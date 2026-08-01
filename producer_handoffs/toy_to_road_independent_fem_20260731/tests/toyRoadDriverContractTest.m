@@ -124,6 +124,20 @@ verifyEqual(testCase, penaltyRecov, [-281.25 -225 -281.25], ...
     'AbsTol', 1e-14);
 end
 
+function testDriverUsesRecoveryHelperWithProductionDefaultsOnly(testCase)
+mainText = readTextOrEmpty(fullfile(handoffDir(), 'main_toy_to_road_case.m'));
+recoveryText = readTextOrEmpty(fullfile( ...
+    handoffDir(), 'recover_toy_road_initial_state.m'));
+
+verifyTrue(testCase, contains(mainText, ...
+    'recover_toy_road_initial_state(recoveryInput);'));
+verifyTrue(testCase, contains(recoveryText, ...
+    "'system_factory', @phase_field.System"));
+verifyTrue(testCase, contains(recoveryText, ...
+    "'newton_raphson', @phase_field.fem.solver.newton_raphson"));
+verifyFalse(testCase, contains(mainText, "'operators',"));
+end
+
 function testRunResultIsSoleCompletionMarkerAndLauncherDoesNotSwallow(testCase)
 [mainText, solverText] = productionTexts();
 
@@ -193,6 +207,14 @@ badSolver = solverText + newline + 'p_field = exportedState.d_node;';
 verifyNotEmpty(testCase, contractViolations(mainText, badSolver));
 end
 
+function testContractRejectsStaleRecoveryFieldAtSystemRebuild(testCase)
+[mainText, solverText] = productionTexts();
+badMain = replace(mainText, ...
+    'input.stress_state, pField, input.diss_fct);', ...
+    'input.stress_state, input.p_field, input.diss_fct);');
+verifyNotEmpty(testCase, contractViolations(badMain, solverText));
+end
+
 function violations = contractViolations(mainText, solverText)
 violations = strings(0, 1);
 requiredEnvironment = ["TOY_ROAD_CASE_ID", "TOY_ROAD_OUTPUT_ROOT", ...
@@ -216,21 +238,25 @@ requiredMain = [ ...
     "phase_field.fem.solver.stag.params('tol', 4e-4", ...
     "'line_search', false", ...
     "phase_field.fem.solver.cycl_jump.params('cycl_jump', false)", ...
-    "irrev = 'HISTORY'", "splitType = 'AMOR'", "dissFct = 'AT1'"];
+    "irrev = 'HISTORY'", "splitType = 'AMOR'", "dissFct = 'AT1'", ...
+    "recover_toy_road_initial_state(recoveryInput);", ...
+    "'system_factory', @phase_field.System", ...
+    "'newton_raphson', @phase_field.fem.solver.newton_raphson", ...
+    "input.stress_state, pField, input.diss_fct);"];
 for token = requiredMain
     if ~contains(mainText, token)
         violations(end + 1) = "missing_main_token_" + token; %#ok<AGROW>
     end
 end
 
-if countToken(mainText, 'phase_field.System(') < 2
+if countToken(mainText, 'operators.system_factory(') ~= 2
     violations(end + 1) = "system_not_rebuilt";
 end
-recoveryAt = firstPosition(mainText, 'phase_field.fem.solver.newton_raphson(');
-clipAt = firstPosition(mainText, 'p_field = min(max(p_field, 0.0), 1.0);');
-systemAt = lastPosition(mainText, 'phase_field.System(');
-resetAt = firstPosition(mainText, 'history_vars_old(:, :, 2:3) = 0.0;');
-fatigueAt = firstPosition(mainText, 'history_vars_old(:, :, 4) = 1.0;');
+recoveryAt = firstPosition(mainText, 'operators.newton_raphson(');
+clipAt = firstPosition(mainText, 'pField = min(max(recoveredField, 0.0), 1.0);');
+systemAt = lastPosition(mainText, 'operators.system_factory(');
+resetAt = firstPosition(mainText, 'historyVars(:, :, 2:3) = 0.0;');
+fatigueAt = firstPosition(mainText, 'historyVars(:, :, 4) = 1.0;');
 if ~(recoveryAt < clipAt && clipAt < systemAt && systemAt < resetAt && resetAt < fatigueAt)
     violations(end + 1) = "recovery_clip_rebuild_reset_order";
 end
@@ -283,6 +309,8 @@ end
 
 function [mainText, solverText] = productionTexts()
 mainText = readTextOrEmpty(fullfile(handoffDir(), 'main_toy_to_road_case.m'));
+mainText = mainText + newline + readTextOrEmpty(fullfile( ...
+    handoffDir(), 'recover_toy_road_initial_state.m'));
 solverText = readTextOrEmpty(fullfile(handoffDir(), 'solve_toy_to_road_case.m'));
 end
 
