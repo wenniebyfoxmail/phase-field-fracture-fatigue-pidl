@@ -4,12 +4,18 @@ param(
     [Parameter(Mandatory = $true)][string]$ParentRoot,
     [Parameter(Mandatory = $true)][string]$OutputParent,
     [Parameter(Mandatory = $true)]
-    [ValidateSet('T1_initial_defect','T2_material_state','T3_loading_history')]
+    [ValidateScript({
+        if ($_ -cnotin @('T1_initial_defect','T2_material_state','T3_loading_history')) {
+            throw 'CaseId must be exactly one sealed case ID with canonical case.'
+        }
+        return $true
+    })]
     [string]$CaseId,
     [Parameter(Mandatory = $true)][ValidatePattern('^[0-9a-fA-F]{40}$')]
     [string]$ExpectedSourceCommit,
     [switch]$PreflightOnly,
-    [string]$TestFixturePath = ''
+    [string]$TestFixturePath = '',
+    [string]$ValidateRunResultPath = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -24,6 +30,13 @@ function Get-Sha256([string]$Path) {
         throw "Missing hash-gated file: $Path"
     }
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+
+function Assert-PlainPath([string]$Path, [string]$Label) {
+    $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
+    if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+        throw "$Label is a forbidden symlink/reparse point: $Path"
+    }
 }
 
 function Invoke-Git([string]$Root, [string[]]$Arguments) {
@@ -51,22 +64,33 @@ function Assert-HashRecords(
     [switch]$PathsAreAbsolute
 ) {
     $verified = @()
+    $receiptPaths = @()
     foreach ($record in @($Records)) {
         $relative = [string]$record.path
         if ([string]::IsNullOrWhiteSpace($relative)) {
             throw "$Label contains an empty path."
         }
-        if ($PathsAreAbsolute) {
+        $filePath = [string]$record.file_path
+        if (-not [string]::IsNullOrWhiteSpace($filePath)) {
+            $path = $filePath
+        } elseif ($PathsAreAbsolute) {
             $path = $relative
         } else {
             $path = Join-Path $Root $relative
         }
+        Assert-PlainPath $path $Label
         $actual = Get-Sha256 $path
         $expected = ([string]$record.sha256).ToLowerInvariant()
         if ($actual -ne $expected) {
             throw "$Label SHA256 mismatch: $relative"
         }
-        $verified += [ordered]@{ path = $relative.Replace('\', '/'); sha256 = $actual }
+        $normalized = $relative.Replace('\', '/')
+        $receiptPaths += $normalized
+        $verified += [ordered]@{ path = $normalized; sha256 = $actual }
+    }
+    $folded = @($receiptPaths | ForEach-Object { $_.ToLowerInvariant() })
+    if (($folded | Select-Object -Unique).Count -ne $folded.Count) {
+        throw "$Label contains duplicate or case-colliding receipt paths."
     }
     return @($verified)
 }
@@ -125,7 +149,59 @@ function Assert-SourceManifest([string[]]$RequiredPaths) {
             throw "Source SHA256 mismatch: $($entry.path)"
         }
     }
-    return Get-Sha256 $ManifestPath
+    return [ordered]@{
+        manifest_sha256 = Get-Sha256 $ManifestPath
+        entries = $entries
+    }
+}
+
+function Assert-CompleteRunResult([string]$Path, [string]$ExpectedCaseId) {
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw 'Required RUN_RESULT.json sole completion marker is missing.'
+    }
+    try {
+        $runResult = Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
+    } catch {
+        throw "RUN_RESULT.json is not valid JSON: $($_.Exception.Message)"
+    }
+    $required = @('case_id','complete','status','terminal_cycle',
+        'terminal_reason','terminal_state_file')
+    foreach ($name in $required) {
+        if ($null -eq $runResult.PSObject.Properties[$name]) {
+            throw "RUN_RESULT.json is missing required field $name."
+        }
+    }
+    $cycle = $runResult.terminal_cycle
+    $numericCycle = $cycle -is [byte] -or $cycle -is [int16] -or
+        $cycle -is [int32] -or $cycle -is [int64] -or
+        $cycle -is [single] -or $cycle -is [double] -or $cycle -is [decimal]
+    if ($runResult.complete -isnot [bool] -or $runResult.complete -ne $true -or
+            [string]$runResult.status -cne 'complete' -or
+            [string]$runResult.case_id -cne $ExpectedCaseId -or
+            -not $numericCycle -or [double]$cycle -ne [Math]::Floor([double]$cycle) -or
+            [double]$cycle -lt 1 -or [double]$cycle -gt 150 -or
+            [string]$runResult.terminal_reason -cnotin @('confirmed','right_censored') -or
+            [string]$runResult.terminal_state_file -cne
+                ('states/cycle_{0:d4}.mat' -f [int]$cycle) -or
+            ([string]$runResult.terminal_reason -ceq 'right_censored' -and
+                [int]$cycle -ne 150)) {
+        throw 'RUN_RESULT.json is not a strict valid complete terminal result.'
+    }
+    return $runResult
+}
+
+function Write-JsonCreateNew([string]$Path, [object]$Value) {
+    $bytes = (New-Object Text.UTF8Encoding($false)).GetBytes(
+        (($Value | ConvertTo-Json -Depth 10) + "`n"))
+    $stream = $null
+    try {
+        $stream = [IO.File]::Open($Path, [IO.FileMode]::CreateNew,
+            [IO.FileAccess]::Write, [IO.FileShare]::None)
+        $stream.Write($bytes, 0, $bytes.Length)
+        $stream.Flush($true)
+    } finally {
+        if ($null -ne $stream) { $stream.Dispose() }
+    }
 }
 
 function Assert-NoResumeInput {
@@ -183,6 +259,9 @@ function ConvertTo-MatlabLiteral([string]$Value) {
 if (-not [string]::IsNullOrWhiteSpace($TestFixturePath) -and -not $PreflightOnly) {
     throw 'TestFixturePath is permitted only with PreflightOnly; test seams cannot invoke MATLAB.'
 }
+if (-not [string]::IsNullOrWhiteSpace($ValidateRunResultPath) -and -not $PreflightOnly) {
+    throw 'ValidateRunResultPath is permitted only with PreflightOnly; the test seam cannot invoke MATLAB.'
+}
 if (-not (Test-Path -LiteralPath $OutputParent -PathType Container)) {
     throw "Output parent must already exist: $OutputParent"
 }
@@ -213,7 +292,7 @@ if (-not [string]::IsNullOrWhiteSpace($TestFixturePath)) {
 } else {
     $requiredSourcePaths = @(Get-ProductionSourcePaths)
 }
-$sourceManifestSha256 = Assert-SourceManifest $requiredSourcePaths
+$sourceManifest = Assert-SourceManifest $requiredSourcePaths
 
 $parentLockPath = Join-Path $HandoffDir 'PARENT_LOCK.json'
 $caseLockPath = Join-Path $HandoffDir ($CaseId.Substring(0, 2) + '_INPUT_LOCK.json')
@@ -247,10 +326,10 @@ if ($null -ne $fixture) {
         [ordered]@{ path = 'Dependencies/meshes/sens_mesh.m'; sha256 = 'dbf13237939425b61cde93b841ae2c24e7fccd291861df5508a34800bb9f4706' }
     )
     $runtimeRecords = @(
-        [ordered]@{ path = (Join-Path $GripfithRoot 'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/initial.mexw64'); sha256 = '589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340' },
-        [ordered]@{ path = (Join-Path $GripfithRoot 'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/AMOR.mexw64'); sha256 = '64abee69f2c441730dc2efa4047ac45ab1d1b40e20c4822ed6e992adcd6b19e7' },
-        [ordered]@{ path = (Join-Path $GripfithRoot 'Sources/+phase_field/+mex/+fem/+assembly/+pf/AT1_HISTORY_FATIGUE.mexw64'); sha256 = '53e8fd0b229817b7c14c52a5b6afaa957692f475057b79b9a9a10195ccb92e60' },
-        [ordered]@{ path = 'C:/SuiteSparse/SuiteSparse-dev/CHOLMOD/MATLAB/cholmod2.mexw64'; sha256 = '86a2f15543eda1f7223a1733d935d37e9e2f4f2c2d8db3c4adc2c0f675c27329' }
+        [ordered]@{ path = 'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/initial.mexw64'; file_path = (Join-Path $GripfithRoot 'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/initial.mexw64'); sha256 = '589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340' },
+        [ordered]@{ path = 'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/AMOR.mexw64'; file_path = (Join-Path $GripfithRoot 'Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/AMOR.mexw64'); sha256 = '64abee69f2c441730dc2efa4047ac45ab1d1b40e20c4822ed6e992adcd6b19e7' },
+        [ordered]@{ path = 'Sources/+phase_field/+mex/+fem/+assembly/+pf/AT1_HISTORY_FATIGUE.mexw64'; file_path = (Join-Path $GripfithRoot 'Sources/+phase_field/+mex/+fem/+assembly/+pf/AT1_HISTORY_FATIGUE.mexw64'); sha256 = '53e8fd0b229817b7c14c52a5b6afaa957692f475057b79b9a9a10195ccb92e60' },
+        [ordered]@{ path = 'CHOLMOD/MATLAB/cholmod2.mexw64'; file_path = 'C:/SuiteSparse/SuiteSparse-dev/CHOLMOD/MATLAB/cholmod2.mexw64'; sha256 = '86a2f15543eda1f7223a1733d935d37e9e2f4f2c2d8db3c4adc2c0f675c27329' }
     )
     $parentRecords = @(
         [ordered]@{ path = 'u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/initial_state_metadata.mat'; sha256 = '0e0144b63ca93836c515b489b64ae768058588d7f2431d49c0b95607e35916d8' },
@@ -259,7 +338,8 @@ if ($null -ne $fixture) {
         [ordered]@{ path = 'u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/psi_fields/cycle_0001.mat'; sha256 = '72925ac353f766475862858befcc611307e71faa392eb774d7ce5aa8a40d74d9' },
         [ordered]@{ path = 'u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/psi_fields/cycle_0083.mat'; sha256 = 'b0e6a7119b1c265197de88938e5f65d4e7069e199e104812463b3b911b4f77e9' },
         [ordered]@{ path = 'u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/psi_fields/cycle_0086.mat'; sha256 = '0ce0426012e0d8aa563650e5d45bdee7214d28502378c420593f4b889a317a13' },
-        [ordered]@{ path = 'MANIFEST.csv'; sha256 = '0b0152fd18ecb16496c4c8683ed44573bf4721544d1719ad79675668e4d68580' }
+        [ordered]@{ path = 'MANIFEST.csv'; sha256 = '0b0152fd18ecb16496c4c8683ed44573bf4721544d1719ad79675668e4d68580' },
+        [ordered]@{ path = 'u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/peak_load_c1.vtk'; sha256 = 'acdc981269024cbb111f7d468c287f2d1ca09f3735131b56aca7fa2fbaec1615' }
     )
     $processInventory = @(Get-CimInstance Win32_Process | ForEach-Object {
         [ordered]@{ name = $_.Name; process_id = $_.ProcessId; command_line = $_.CommandLine }
@@ -288,6 +368,9 @@ $receipt = [ordered]@{
     TOY_ROAD_SOURCE_COMMIT = $env:TOY_ROAD_SOURCE_COMMIT
 }
 if ($PreflightOnly) {
+    if (-not [string]::IsNullOrWhiteSpace($ValidateRunResultPath)) {
+        Assert-CompleteRunResult $ValidateRunResultPath $CaseId | Out-Null
+    }
     Write-Output ($receipt | ConvertTo-Json -Compress)
     return
 }
@@ -313,46 +396,38 @@ if ($matlabExit -ne 0) {
     throw "MATLAB case solve failed with exit code $matlabExit."
 }
 $runResultPath = Join-Path $OutputRoot 'RUN_RESULT.json'
-if (-not (Test-Path -LiteralPath $runResultPath -PathType Leaf)) {
-    throw 'MATLAB returned successfully without the sole RUN_RESULT.json completion marker.'
-}
-$runResult = Get-Content -LiteralPath $runResultPath -Raw | ConvertFrom-Json
-if (-not [bool]$runResult.complete -or [string]$runResult.status -cne 'complete' -or
-        [string]$runResult.case_id -cne $CaseId) {
-    throw 'MATLAB returned without a valid complete RUN_RESULT.json marker.'
-}
+$runResult = Assert-CompleteRunResult $runResultPath $CaseId
 
 $sourceBranchLines = @(Invoke-Git $SharedRepo @('branch', '--show-current'))
 $sourceBranch = ([string]$sourceBranchLines[0]).Trim()
-$provenance = [ordered]@{
-    schema_version = 'toy_road_producer_provenance_v1'
+$launchReceipt = [ordered]@{
+    schema_version = 'toy_road_launch_receipt_v1'
     case_id = $CaseId
     source_commit = $sourceCommit
+    source_root = $resolvedShared.Replace('\', '/')
     source_branch = $sourceBranch
-    source_manifest_sha256 = $sourceManifestSha256
+    source_manifest_sha256 = $sourceManifest.manifest_sha256
+    source_hashes = @($sourceManifest.entries)
     case_lock_sha256 = $caseLockSha256
     parent_lock_sha256 = $parentLockSha256
     griphfith_commit = $gripCommit
+    griphfith_root = (Resolve-Path -LiteralPath $GripfithRoot).Path.Replace('\', '/')
     griphfith_source_hashes = $gripSourceHashes
     runtime_hashes = $runtimeHashes
+    parent_root = (Resolve-Path -LiteralPath $ParentRoot).Path.Replace('\', '/')
     parent_source_hashes = $parentSourceHashes
     started_utc = $startedUtc
     finished_utc = $finishedUtc
     matlab_exit_code = $matlabExit
 }
-$provenanceInput = [IO.Path]::GetTempFileName()
-try {
-    $json = $provenance | ConvertTo-Json -Depth 8
-    [IO.File]::WriteAllText($provenanceInput, $json, (New-Object Text.UTF8Encoding($false)))
-    $finalizeCommand = "$addPath;finalize_toy_road_package(" +
-        (ConvertTo-MatlabLiteral $OutputRoot) + ',' +
-        (ConvertTo-MatlabLiteral $CaseId) + ',' +
-        (ConvertTo-MatlabLiteral $provenanceInput) + ')'
-    & matlab -batch $finalizeCommand
-    $finalizeExit = $LASTEXITCODE
-} finally {
-    Remove-Item -LiteralPath $provenanceInput -Force -ErrorAction SilentlyContinue
-}
+$launchReceiptPath = Join-Path $OutputRoot 'LAUNCH_RECEIPT.json'
+Write-JsonCreateNew $launchReceiptPath $launchReceipt
+$finalizeCommand = "$addPath;finalize_toy_road_package(" +
+    (ConvertTo-MatlabLiteral $OutputRoot) + ',' +
+    (ConvertTo-MatlabLiteral $CaseId) + ',' +
+    (ConvertTo-MatlabLiteral $launchReceiptPath) + ')'
+& matlab -batch $finalizeCommand
+$finalizeExit = $LASTEXITCODE
 if ($finalizeExit -ne 0) {
     throw "MATLAB package finalization failed with exit code $finalizeExit."
 }

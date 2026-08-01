@@ -120,7 +120,13 @@ def build_launcher_fixture(tmp_path: Path) -> dict:
     }
 
 
-def run_launcher(fixture: dict, *, env: dict[str, str] | None = None) -> subprocess.CompletedProcess:
+def run_launcher(
+    fixture: dict,
+    *,
+    env: dict[str, str] | None = None,
+    case_id: str = "T1_initial_defect",
+    validate_run_result: Path | None = None,
+) -> subprocess.CompletedProcess:
     command = [
         "powershell.exe",
         "-NoProfile",
@@ -137,13 +143,15 @@ def run_launcher(fixture: dict, *, env: dict[str, str] | None = None) -> subproc
         "-OutputParent",
         str(fixture["output"]),
         "-CaseId",
-        "T1_initial_defect",
+        case_id,
         "-ExpectedSourceCommit",
         fixture["expected_commit"],
         "-PreflightOnly",
         "-TestFixturePath",
         str(fixture["fixture_path"]),
     ]
+    if validate_run_result is not None:
+        command.extend(["-ValidateRunResultPath", str(validate_run_result)])
     return subprocess.run(
         command,
         capture_output=True,
@@ -160,7 +168,36 @@ def test_parent_lock_is_latest_c83_c86_baseline() -> None:
     assert lock["physics"]["eta"] == 0.0
     assert lock["physics"]["n_substeps"] == 5
     assert lock["mesh"]["num_elem"] == 86408
+    assert lock["mesh"]["num_nodes"] == 86756
     assert lock["state_semantics_id"] == "cycle_peak_coherent_v1"
+
+
+def test_parent_lock_distinguishes_legacy_and_task4_mesh_hash_semantics() -> None:
+    mesh = load_json(HANDOFF / "PARENT_LOCK.json")["mesh"]
+    assert mesh["content_sha256"] == (
+        "7ea77bf6d4621d746f174eb9c357c4bc554463eea8afb8665b00e918bcd937ab"
+    )
+    assert mesh["content_sha256_semantics"] == (
+        "analysis_graph_npz_centroids_areas_connectivity_edge_index_v1"
+    )
+    assert mesh["source_sha256_semantics"] == "raw_analysis_graph_npz_bytes"
+    assert mesh["source_package_evidence_sha256_semantics"] == (
+        "normalized_ascii_vtk_geometry_topology_v1"
+    )
+    assert mesh["source_package_evidence_source_sha256"] == (
+        "acdc981269024cbb111f7d468c287f2d1ca09f3735131b56aca7fa2fbaec1615"
+    )
+    assert mesh["task4_parent_mesh_sha256"] == (
+        "4d01985bfe2e80afe7140ab1ead905ddce5843f8495a3558d2d4da3b237df5af"
+    )
+    assert mesh["task4_parent_mesh_sha256_semantics"] == (
+        "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1"
+    )
+    evidence = mesh["task4_parent_mesh_evidence"]
+    assert evidence["relative_path"] == (
+        "u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/peak_load_c1.vtk"
+    )
+    assert evidence["source_sha256"] == mesh["source_package_evidence_source_sha256"]
 
 
 def test_parent_lock_keeps_physical_source_and_analysis_bundle_authoritative() -> None:
@@ -279,6 +316,9 @@ def test_launcher_preflight_is_single_case_and_cannot_invoke_matlab(tmp_path: Pa
         ("source_hash", "Source SHA256 mismatch"),
         ("wrong_lock_hash", "parent lock SHA-256"),
         ("wrong_grip_commit", "GRIPHFiTH commit"),
+        ("dirty_grip", "GRIPHFiTH producer repo is dirty"),
+        ("grip_source_hash", "GRIPHFiTH source SHA256 mismatch"),
+        ("runtime_hash", "Runtime MEX/SuiteSparse/CHOLMOD SHA256 mismatch"),
         ("parent_hash", "Parent SHA256 mismatch"),
         ("running_matlab", "running MATLAB/FEM"),
         ("hardlink", "hard-link preflight"),
@@ -311,6 +351,24 @@ def test_launcher_preflight_fails_closed(
         (fixture["grip"] / "other.m").write_text("new commit\n", newline="\n")
         run_git(fixture["grip"], "add", ".")
         run_git(fixture["grip"], "commit", "-m", "move grip")
+    elif mutation == "dirty_grip":
+        (fixture["grip"] / "source.m").write_text("dirty source\n", newline="\n")
+    elif mutation == "grip_source_hash":
+        (fixture["grip"] / "source.m").write_text("mutated source\n", newline="\n")
+        run_git(fixture["grip"], "add", ".")
+        run_git(fixture["grip"], "commit", "-m", "mutate source")
+        fixture["fixture"]["expected_gripfith_commit"] = run_git(
+            fixture["grip"], "rev-parse", "HEAD"
+        )
+        save_launcher_fixture(fixture)
+    elif mutation == "runtime_hash":
+        (fixture["grip"] / "runtime.mexw64").write_bytes(b"mutated runtime")
+        run_git(fixture["grip"], "add", ".")
+        run_git(fixture["grip"], "commit", "-m", "mutate runtime")
+        fixture["fixture"]["expected_gripfith_commit"] = run_git(
+            fixture["grip"], "rev-parse", "HEAD"
+        )
+        save_launcher_fixture(fixture)
     elif mutation == "parent_hash":
         (fixture["parent"] / "parent.bin").write_bytes(b"tampered parent")
     elif mutation == "running_matlab":
@@ -344,6 +402,101 @@ def test_launcher_refuses_existing_output_and_resume_input(tmp_path: Path) -> No
     assert "checkpoint/resume" in (resume.stderr + resume.stdout).lower()
 
 
+def test_launcher_rejects_case_id_with_wrong_case(tmp_path: Path) -> None:
+    fixture = build_launcher_fixture(tmp_path)
+    result = run_launcher(fixture, case_id="t1_initial_defect")
+    assert result.returncode != 0
+    assert "ParameterArgumentValidationError" in (result.stderr + result.stdout)
+    assert not (fixture["output"] / "t1_initial_defect").exists()
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        {"complete": "false"},
+        {"complete": False},
+        {"terminal_reason": "failed"},
+        {"terminal_cycle": 0},
+        {"terminal_cycle": 151},
+        {"terminal_cycle": 1.5},
+        {"case_id": "T2_material_state"},
+        {"terminal_state_file": "states/cycle_9999.mat"},
+    ],
+)
+def test_launcher_strictly_rejects_malformed_completion_before_matlab(
+    tmp_path: Path, mutation: dict
+) -> None:
+    fixture = build_launcher_fixture(tmp_path)
+    run_result = {
+        "case_id": "T1_initial_defect",
+        "complete": True,
+        "status": "complete",
+        "terminal_cycle": 4,
+        "terminal_reason": "confirmed",
+        "terminal_state_file": "states/cycle_0004.mat",
+    }
+    run_result.update(mutation)
+    run_result_path = tmp_path / "RUN_RESULT.json"
+    run_result_path.write_text(json.dumps(run_result), newline="\n")
+    fake_bin = tmp_path / "fake-bin"
+    fake_bin.mkdir()
+    sentinel = tmp_path / "matlab-was-invoked"
+    (fake_bin / "matlab.cmd").write_text(
+        f'@echo invoked>"{sentinel}"\n', newline="\r\n"
+    )
+    env = os.environ.copy()
+    env["PATH"] = str(fake_bin) + os.pathsep + env["PATH"]
+
+    result = run_launcher(
+        fixture, env=env, validate_run_result=run_result_path
+    )
+
+    assert result.returncode != 0
+    assert "RUN_RESULT.json" in (result.stderr + result.stdout)
+    assert not sentinel.exists()
+
+
+def test_launcher_validates_complete_result_without_invoking_matlab(tmp_path: Path) -> None:
+    fixture = build_launcher_fixture(tmp_path)
+    run_result_path = tmp_path / "RUN_RESULT.json"
+    run_result_path.write_text(
+        json.dumps(
+            {
+                "case_id": "T1_initial_defect",
+                "complete": True,
+                "status": "complete",
+                "terminal_cycle": 4,
+                "terminal_reason": "confirmed",
+                "terminal_state_file": "states/cycle_0004.mat",
+            }
+        ),
+        newline="\n",
+    )
+    fake_bin = tmp_path / "fake-bin"
+    fake_bin.mkdir()
+    sentinel = tmp_path / "matlab-was-invoked"
+    (fake_bin / "matlab.cmd").write_text(
+        f'@echo invoked>"{sentinel}"\n', newline="\r\n"
+    )
+    env = os.environ.copy()
+    env["PATH"] = str(fake_bin) + os.pathsep + env["PATH"]
+
+    result = run_launcher(
+        fixture, env=env, validate_run_result=run_result_path
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert not sentinel.exists()
+
+
+def test_launcher_uses_no_clobber_launch_receipt_protocol() -> None:
+    text = (HANDOFF / "launch_toy_road_case.ps1").read_text()
+    assert "LAUNCH_RECEIPT.json" in text
+    assert "[IO.FileMode]::CreateNew" in text
+    assert "source_hashes" in text
+    assert "finalize_toy_road_package" in text
+
+
 def test_readme_fixes_scope_and_completion_contract() -> None:
     text = " ".join((HANDOFF / "README.md").read_text().split())
     required = [
@@ -359,9 +512,24 @@ def test_readme_fixes_scope_and_completion_contract() -> None:
         "must not pre-exist",
         "RUN_RESULT.json",
         "sole completion marker",
+        "LAUNCH_RECEIPT.json",
+        "commit receipt protocol",
+        "mesh.content_sha256",
+        "not the Task 4 mesh hash",
+        "4d01985bfe2e80afe7140ab1ead905ddce5843f8495a3558d2d4da3b237df5af",
     ]
     for phrase in required:
         assert phrase.lower() in text.lower()
+
+
+def test_finalizer_production_defaults_use_real_parent_mesh_lock() -> None:
+    text = (HANDOFF / "finalize_toy_road_package.m").read_text()
+    assert "localLoadParentMeshContract(parentLock, dependencies)" in text
+    assert "mesh.num_nodes == 86756" in text
+    assert "mesh.num_elem == 86408" in text
+    assert "4d01985bfe2e80afe7140ab1ead905ddce5843f8495a3558d2d4da3b237df5af" in text
+    launcher = (HANDOFF / "launch_toy_road_case.ps1").read_text()
+    assert "toy_road_finalizer_test_dependencies_v1" not in launcher
 
 
 def test_source_manifest_covers_exact_source_bytes_once() -> None:

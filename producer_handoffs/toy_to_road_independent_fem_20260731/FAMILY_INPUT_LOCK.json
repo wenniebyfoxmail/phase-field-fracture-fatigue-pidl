@@ -1,7 +1,7 @@
 {
   "schema_version": "toy_to_road_case_family_lock_v1",
   "family_id": "toy_to_road_independent_fem_20260731",
-  "parent_lock_sha256": "9d8c9a63243df59731d8daa35775a4f18157ae5078aa8994f4d55e6552b9d43c",
+  "parent_lock_sha256": "f34cbfe1bc4fe2178aff590cbed3d4d65547e2a8a9ff300a9b2c5f70cc00f954",
   "fixed_parent_fields": {
     "schema_version": "toy_to_road_parent_lock_v1",
     "physical_source_package_id": "Hard5_eta0_5step_Umax_011_012_013_20260729",
@@ -53,8 +53,18 @@
     "mesh": {
       "num_elem": 86408,
       "content_sha256": "7ea77bf6d4621d746f174eb9c357c4bc554463eea8afb8665b00e918bcd937ab",
+      "content_sha256_semantics": "analysis_graph_npz_centroids_areas_connectivity_edge_index_v1",
       "source_sha256": "bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419",
+      "source_sha256_semantics": "raw_analysis_graph_npz_bytes",
       "source_package_evidence_sha256": "8e865f5eace05992490885c569f5ca8d9d1e37e10a3d2bd8ade176bfcd23ecf2",
+      "source_package_evidence_sha256_semantics": "normalized_ascii_vtk_geometry_topology_v1",
+      "source_package_evidence_source_sha256": "acdc981269024cbb111f7d468c287f2d1ca09f3735131b56aca7fa2fbaec1615",
+      "task4_parent_mesh_sha256": "4d01985bfe2e80afe7140ab1ead905ddce5843f8495a3558d2d4da3b237df5af",
+      "task4_parent_mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
+      "task4_parent_mesh_evidence": {
+        "relative_path": "u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/peak_load_c1.vtk",
+        "source_sha256": "acdc981269024cbb111f7d468c287f2d1ca09f3735131b56aca7fa2fbaec1615"
+      },
       "num_nodes": 86756
     },
     "state_semantics_id": "cycle_peak_coherent_v1",
@@ -75,14 +85,17 @@
     "source_files": {
       "initial_state_metadata.mat": {
         "sha256": "0e0144b63ca93836c515b489b64ae768058588d7f2431d49c0b95607e35916d8",
+        "relative_path": "u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/initial_state_metadata.mat",
         "windows_path_hint": "C:/Users/xw436/OneDrive - University of Cambridge/griphfith/Hard5_eta0_5step_Umax_011_012_013_20260729/u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/initial_state_metadata.mat"
       },
       "state0_analysis.mat": {
         "sha256": "91b8f89ba3a211f08f1b79def5d2d50a973798e988deedc5c5c7e3b64a98ef11",
+        "relative_path": "u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/state0_analysis.mat",
         "windows_path_hint": "C:/Users/xw436/OneDrive - University of Cambridge/griphfith/Hard5_eta0_5step_Umax_011_012_013_20260729/u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/state0_analysis.mat"
       },
       "pre_run_lock.mat": {
         "sha256": "6cc63d42e596ef5a96882a02c3b34bb8257ce83b4db97eaf78770c286a701f37",
+        "relative_path": "u012/pre_run_lock.mat",
         "windows_path_hint": "C:/Users/xw436/OneDrive - University of Cambridge/griphfith/Hard5_eta0_5step_Umax_011_012_013_20260729/u012/pre_run_lock.mat"
       },
       "cycle_shards": {
@@ -90,24 +103,33 @@
           "cycle": 1,
           "raw_step_1_based": 4,
           "sha256": "72925ac353f766475862858befcc611307e71faa392eb774d7ce5aa8a40d74d9",
+          "relative_path": "u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/psi_fields/cycle_0001.mat",
           "windows_path_hint": "C:/Users/xw436/OneDrive - University of Cambridge/griphfith/Hard5_eta0_5step_Umax_011_012_013_20260729/u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/psi_fields/cycle_0001.mat"
         },
         "cycle_0083.mat": {
           "cycle": 83,
           "raw_step_1_based": 414,
           "sha256": "b0e6a7119b1c265197de88938e5f65d4e7069e199e104812463b3b911b4f77e9",
+          "relative_path": "u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/psi_fields/cycle_0083.mat",
           "windows_path_hint": "C:/Users/xw436/OneDrive - University of Cambridge/griphfith/Hard5_eta0_5step_Umax_011_012_013_20260729/u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/psi_fields/cycle_0083.mat"
         },
         "cycle_0086.mat": {
           "cycle": 86,
           "raw_step_1_based": 429,
           "sha256": "0ce0426012e0d8aa563650e5d45bdee7214d28502378c420593f4b889a317a13",
+          "relative_path": "u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/psi_fields/cycle_0086.mat",
           "windows_path_hint": "C:/Users/xw436/OneDrive - University of Cambridge/griphfith/Hard5_eta0_5step_Umax_011_012_013_20260729/u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/psi_fields/cycle_0086.mat"
         }
       },
       "parent_package_manifest": {
         "sha256": "0b0152fd18ecb16496c4c8683ed44573bf4721544d1719ad79675668e4d68580",
+        "relative_path": "MANIFEST.csv",
         "windows_path_hint": "C:/Users/xw436/OneDrive - University of Cambridge/griphfith/Hard5_eta0_5step_Umax_011_012_013_20260729/MANIFEST.csv"
+      },
+      "parent_mesh_evidence": {
+        "sha256": "acdc981269024cbb111f7d468c287f2d1ca09f3735131b56aca7fa2fbaec1615",
+        "relative_path": "u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/peak_load_c1.vtk",
+        "windows_path_hint": "C:/Users/xw436/OneDrive - University of Cambridge/griphfith/Hard5_eta0_5step_Umax_011_012_013_20260729/u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/peak_load_c1.vtk"
       }
     }
   },

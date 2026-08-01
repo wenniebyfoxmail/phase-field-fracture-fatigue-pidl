@@ -34,6 +34,27 @@ also verifies every case/parent lock, required GRIPHFiTH source, the approved
 AMOR and AT1-history-fatigue MEX binaries, the known F1b `initial.mexw64`
 binary, CHOLMOD `cholmod2.mexw64`, and every consumed parent artifact.
 
+### Parent mesh identities
+
+`PARENT_LOCK.mesh.content_sha256` is the legacy analysis-graph digest. It is
+computed by hashing, in order, the ASCII key, NumPy dtype text, int64 shape,
+and contiguous array bytes for `centroids`, `areas`, `connectivity`, and
+`edge_index`. It is not the Task 4 mesh hash. `mesh.source_sha256` is the raw
+analysis graph NPZ file digest.
+
+`mesh.source_package_evidence_sha256` is computed from the ASCII VTK geometry
+and topology only: normalize whitespace on each line from `DATASET` through
+the line before `CELL_DATA` or `POINT_DATA`, append LF after each normalized
+line, and hash those bytes. Its raw VTK source digest is separately locked.
+
+The canonical Task 4 parent identity is
+`4d01985bfe2e80afe7140ab1ead905ddce5843f8495a3558d2d4da3b237df5af`.
+It is derived from the hash-gated `peak_load_c1.vtk` by hashing MATLAB
+column-major `double(parent_node_coords(:))` bytes followed by column-major
+`int64(connectivity(:))` bytes. The normalized VTK digest, raw VTK digest,
+86756-node count, and 86408-element count all agree with the pre-existing
+parent evidence; this additional identity does not replace physical authority.
+
 ## Safety Contract
 
 There is no resume path. Checkpoint or resume environment input is rejected.
@@ -51,6 +72,24 @@ cannot be finalized, and no separate success marker is created.
 Task 5 environment variables, and returns before MATLAB invocation. The
 internal fixture seam is accepted only together with `-PreflightOnly`, so test
 configuration cannot launch MATLAB.
+
+## Commit receipt protocol
+
+The source manifest deliberately excludes itself and contains no Git commit,
+so sealing has no self-referential hash. After every covered edit, regenerate
+`SHA256SUMS.txt` from exact LF-sensitive bytes, verify it in a fresh
+byte-preserving copy, and commit the covered files plus manifest. A subsequent
+evidence-report-only commit does not change the covered source set. Select the
+final clean `HEAD` after those commits and pass that full hash as
+`-ExpectedSourceCommit`.
+
+The launcher verifies that exact commit and every exact normalized
+relative-path-to-SHA256 mapping before execution. After strict validation of
+the sole completion marker, it publishes `LAUNCH_RECEIPT.json` with
+`FileMode.CreateNew`; the receipt records the verified commit, roots, locks,
+and exact source, GRIPHFiTH, runtime, and parent mappings. The finalizer accepts
+only that canonical no-clobber receipt inside the fresh output root and binds
+the input snapshot and final provenance to it.
 
 ## Launch
 
@@ -71,10 +110,13 @@ Remove only `-PreflightOnly` to run that one selected case after reviewing the
 preflight. If Windows policy requires an execution-policy bypass, apply it only
 to the outer PowerShell caller; the sealed launcher does not embed a bypass.
 
-On successful MATLAB return, the launcher checks the complete
-`RUN_RESULT.json`, then starts a validation-only MATLAB process. The finalizer
+On successful MATLAB return, the launcher strictly checks the JSON boolean
+`complete`, exact case, status, terminal reason/cycle, and canonical terminal
+state path in `RUN_RESULT.json`, publishes `LAUNCH_RECEIPT.json` without
+clobbering, then starts a validation-only MATLAB process. The finalizer
 deeply validates state0, mesh, every state shard, cycle index, event lifecycle,
-case/source identities, and provenance before publishing deterministic
+case/source identities, exact receipt path mappings, and provenance before
+publishing deterministic
 no-clobber `PRODUCER_PROVENANCE.json`, `VALIDATION_SUMMARY.json`, and a sorted
 output `SHA256SUMS.txt`. Existing final outputs, missing files, unexpected
 files, symlinks, case-colliding paths, and manifest tampering fail closed.

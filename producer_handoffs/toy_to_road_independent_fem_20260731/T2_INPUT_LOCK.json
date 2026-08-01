@@ -2,7 +2,7 @@
   "schema_version": "toy_to_road_case_input_lock_v1",
   "case_id": "T2_material_state",
   "family_id": "toy_to_road_independent_fem_20260731",
-  "parent_lock_sha256": "9d8c9a63243df59731d8daa35775a4f18157ae5078aa8994f4d55e6552b9d43c",
+  "parent_lock_sha256": "f34cbfe1bc4fe2178aff590cbed3d4d65547e2a8a9ff300a9b2c5f70cc00f954",
   "primary_variation_axis": "material_state",
   "allowed_changed_parent_fields": ["material_state"],
   "changed_parent_fields": ["material_state"],
