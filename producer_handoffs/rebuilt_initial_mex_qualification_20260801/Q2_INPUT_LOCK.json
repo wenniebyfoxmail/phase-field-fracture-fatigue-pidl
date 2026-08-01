@@ -21,6 +21,21 @@
     "active_driver": "psi_active_elem"
   },
   "negative_tolerance": 1e-14,
+  "mesh_bridge": {
+    "semantics_id": "q2_source_to_parent_vtk_mesh_bridge_v1",
+    "replay_source_mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
+    "replay_source_mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
+    "parent_vtk_relative_path": "u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/peak_load_c1.vtk",
+    "parent_vtk_sha256": "acdc981269024cbb111f7d468c287f2d1ca09f3735131b56aca7fa2fbaec1615",
+    "parent_vtk_mesh_sha256": "4d01985bfe2e80afe7140ab1ead905ddce5843f8495a3558d2d4da3b237df5af",
+    "parent_vtk_mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
+    "connectivity_requirement": "exact_q4_row_and_local_node_order",
+    "num_node": 86756,
+    "num_elem": 86408,
+    "coordinate_max_abs_tolerance": 1e-14,
+    "reference_coordinate_max_abs_error": 4.9960036108132044e-16,
+    "reference_coordinate_rms_error": 2.4425164635939659e-16
+  },
   "supplement": {
     "permitted": false,
     "required_damage_degradation_semantics": "mean_gp(g_gp)",

@@ -4,7 +4,7 @@ function state = export_q2_cycle1_fields(input)
 validateInput(input);
 nElem = size(input.connectivity, 1);
 meshSha256 = q2_replay_mesh_sha256(input.node_coords, input.connectivity);
-if ~strcmp(meshSha256, input.parent_mesh_sha256)
+if ~strcmp(meshSha256, input.replay_source_mesh_sha256)
     error('rebuiltMexQ2:ReplayMeshMismatch', ...
         'Q2 export mesh differs from the locked canonical parent mesh.');
 end
@@ -48,7 +48,7 @@ end
 function validateInput(input)
 required = {'node_coords', 'connectivity', 'element_ids', 'quadrature_points', ...
     'p_field', 'history_vars', 'psi_raw_GP', 'eta', 'cycle', ...
-    'peak_substep_ordinal', 'parent_mesh_sha256'};
+    'peak_substep_ordinal', 'replay_source_mesh_sha256'};
 if ~isstruct(input) || ~isscalar(input) || ~all(isfield(input, required))
     invalidInput('Q2 export input is incomplete.');
 end
@@ -63,7 +63,7 @@ if ~finiteReal(connectivity) || size(connectivity, 2) ~= 4 || nElem < 1 || ...
 end
 if ~finiteReal(input.node_coords) || size(input.node_coords, 2) ~= 2 || ...
         size(input.node_coords, 1) ~= numel(input.p_field) || ...
-        isempty(regexp(char(input.parent_mesh_sha256), ...
+        isempty(regexp(char(input.replay_source_mesh_sha256), ...
         '^[0-9a-f]{64}$', 'once'))
     invalidInput('Q2 node coordinates or parent mesh identity are invalid.');
 end
