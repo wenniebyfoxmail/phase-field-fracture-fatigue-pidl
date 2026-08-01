@@ -65,6 +65,24 @@ classdef rebuiltMexQ1ReferenceTest < matlab.unittest.TestCase
             verifySize(testCase, outputs.eps_vector, [192 1]);
         end
 
+        function testFourPointGaussFixtureIntegratesQ4MassAndOperators(testCase)
+            input = fourPointElementInput();
+            outputs = callReference(input);
+
+            expectedMass = [4 2 1 2; 2 4 2 1; 1 2 4 2; 2 1 2 4] / 36;
+            verifyEqual(testCase, outputs.M_vector, ...
+                repmat(expectedMass(:), 3, 1), 'AbsTol', 1e-14);
+            verifyEqual(testCase, outputs.i_row, ...
+                repmat([1; 2; 3; 4; 5; 6; 7; 8], 8, 1));
+            verifyEqual(testCase, outputs.j_col, ...
+                repelem([1; 2; 3; 4; 5; 6; 7; 8], 8));
+            verifyEqual(testCase, norm(sparse(outputs.i_row, outputs.j_col, ...
+                outputs.K_vect) - sparse(outputs.j_col, outputs.i_row, ...
+                outputs.K_vect), 'fro'), 0, 'AbsTol', 1e-14);
+            verifyGreaterThan(testCase, norm(outputs.eps_vector), 0);
+            verifyGreaterThan(testCase, norm(outputs.sig0_vector), 0);
+        end
+
         function testRejectsNonpositiveJacobian(testCase)
             input = oneElementInput();
             input.MESH.elem = [1 4 3 2];
@@ -127,4 +145,30 @@ input.MESH.elem = [1 2 5 4; 2 3 6 5];
 input.MESH.elem_material_id = [1; 1];
 input.DOFS.num_dof = 12;
 input.field_vars = [0; 0.1; 0.2; 0.3; 0.4; 0.5];
+end
+
+function input = fourPointElementInput()
+input = oneElementInput();
+input.t = 1;
+input.MAT_CHAR.res_stiff = 0;
+input.field_vars = zeros(4, 1);
+point = 1 / sqrt(3);
+gaussPoints = [-point -point; point -point; point point; -point point];
+input.QUADRATURE.num_gauss_pts = 4;
+input.QUADRATURE.gauss_W = ones(4, 1);
+input.QUADRATURE.Nxi = zeros(4, 4);
+input.QUADRATURE.dNdxi = zeros(2, 4, 4);
+nodeSigns = [-1 -1; 1 -1; 1 1; -1 1];
+for gaussPoint = 1:4
+    xi = gaussPoints(gaussPoint, 1);
+    eta = gaussPoints(gaussPoint, 2);
+    sx = nodeSigns(:, 1);
+    sy = nodeSigns(:, 2);
+    input.QUADRATURE.Nxi(:, gaussPoint) = ...
+        0.25 * (1 + sx * xi) .* (1 + sy * eta);
+    input.QUADRATURE.dNdxi(1, :, gaussPoint) = ...
+        (0.25 * sx .* (1 + sy * eta)).';
+    input.QUADRATURE.dNdxi(2, :, gaussPoint) = ...
+        (0.25 * sy .* (1 + sx * xi)).';
+end
 end

@@ -74,7 +74,7 @@ classdef rebuiltMexQ1GateTest < matlab.unittest.TestCase
                 struct('output_root', outputRoot)), 'rebuiltMexQ1:OutputExists');
         end
 
-        function testRunnerPublishesRuntimeBoundPassingArtifacts(testCase)
+        function testProductionRunnerRejectsOperationsOverride(testCase)
             folder = matlab.unittest.fixtures.TemporaryFolderFixture;
             testCase.applyFixture(folder);
             fixture = q1Fixture();
@@ -94,23 +94,65 @@ classdef rebuiltMexQ1GateTest < matlab.unittest.TestCase
                 'runtime_root', 'fixture/runtime', ...
                 'source_root', 'fixture/source', 'operations', operations);
 
-            receipt = run_q1_initial_mex_qualification(config);
+            verifyError(testCase, @() run_q1_initial_mex_qualification(config), ...
+                'rebuiltMexQ1:InvalidConfig');
+            verifyFalse(testCase, isfolder(outputRoot));
+        end
 
-            verifyTrue(testCase, receipt.passed);
-            verifyEqual(testCase, receipt.runtime_lock_sha256, runtimeReceipt.lock_sha256);
-            verifyEqual(testCase, receipt.runtime_initial_sha256, runtimeReceipt.initial_sha256);
-            verifyEqual(testCase, receipt.source_commit, runtimeReceipt.source_commit);
-            verifyEqual(testCase, strlength(string(receipt.input_sha256)), 64);
-            verifyEqual(testCase, receipt.metrics.probe.name, ...
-                'deterministic_internal_force_probe');
-            verifyEqual(testCase, numel(fieldnames(receipt.metrics.output_shapes)), 12);
-            verifyTrue(testCase, isfile(fullfile(outputRoot, 'Q1_RESULT.json')));
-            verifyTrue(testCase, isfile(fullfile(outputRoot, 'Q1_METRICS.mat')));
-            verifyTrue(testCase, isfile(fullfile(outputRoot, 'Q1_RECEIPT.json')));
-            result = jsondecode(fileread(fullfile(outputRoot, 'Q1_RESULT.json')));
-            verifyTrue(testCase, result.passed);
-            verifyFalse(testCase, contains(lower(fileread( ...
-                fullfile(outputRoot, 'Q1_RECEIPT.json'))), 'residual'));
+        function testRuntimeResolverUsesApprovedArtifact(testCase)
+            runtimeRoot = fullfile(handoffRoot(), 'runtime');
+            receipt = runtimeReceipt(fullfile(runtimeRoot, 'initial.mexw64'), ...
+                approvedInitialHash());
+
+            resolved = resolve_q1_initial_runtime(receipt, runtimeRoot);
+
+            verifyEqual(testCase, canonicalPath(resolved), ...
+                canonicalPath(fullfile(runtimeRoot, 'initial.mexw64')));
+            verifyEqual(testCase, canonicalPath(which('initial')), canonicalPath(resolved));
+        end
+
+        function testRuntimeResolverRejectsWrongHashAndPath(testCase)
+            runtimeRoot = fullfile(handoffRoot(), 'runtime');
+            approvedPath = fullfile(runtimeRoot, 'initial.mexw64');
+            badHash = runtimeReceipt(approvedPath, repmat('d', 1, 64));
+            verifyError(testCase, @() resolve_q1_initial_runtime( ...
+                badHash, runtimeRoot), 'rebuiltMexQ1:RuntimeArtifactMismatch');
+
+            folder = matlab.unittest.fixtures.TemporaryFolderFixture;
+            testCase.applyFixture(folder);
+            copiedPath = fullfile(folder.Folder, 'initial.mexw64');
+            copyfile(approvedPath, copiedPath);
+            wrongPath = runtimeReceipt(copiedPath, approvedInitialHash());
+            verifyError(testCase, @() resolve_q1_initial_runtime( ...
+                wrongPath, runtimeRoot), 'rebuiltMexQ1:RuntimeResolutionMismatch');
+        end
+
+        function testNativeSensInputMatchesLockedAssumptions(testCase)
+            input = build_q1_native_input(griphfithRoot());
+
+            verifyEqual(testCase, input.MESH.num_node, 86756);
+            verifyEqual(testCase, input.MESH.num_elem, 86408);
+            verifyEqual(testCase, input.MESH.nel, 4);
+            verifyEqual(testCase, input.MESH.dim, 2);
+            verifyEqual(testCase, input.MESH.tensors, 3);
+            verifyEqual(testCase, input.QUADRATURE.num_gauss_pts, 4);
+            verifyEqual(testCase, input.t, 1.0);
+            verifyEqual(testCase, input.MAT_CHAR.E, 1.0);
+            verifyEqual(testCase, input.MAT_CHAR.ni, 0.3);
+            verifyEqual(testCase, input.MAT_CHAR.Gc, 0.01);
+            verifyEqual(testCase, input.MAT_CHAR.ell, 0.01);
+            verifyEqual(testCase, input.MAT_CHAR.res_stiff, 0.0);
+            verifyEqual(testCase, input.MAT_CHAR.alpha_T, 0.5);
+            verifyEqual(testCase, input.MAT_CHAR.p, 2.0);
+            verifyTrue(testCase, all(abs(input.MESH.node(input.top_node_ids, 2) - 0.5) <= 1e-12));
+            verifyTrue(testCase, all(abs(input.MESH.node(input.crack_node_ids, 2)) <= 1e-12));
+            verifyTrue(testCase, all(input.MESH.node(input.crack_node_ids, 1) <= 1e-12));
+            verifyEqual(testCase, find(input.field_vars == 1), input.crack_node_ids);
+            verifyTrue(testCase, all(input.field_vars == 0 | input.field_vars == 1));
+            verifyEqual(testCase, input.DOFS.non_hom_dirichlet_bc_pf(:), ...
+                input.crack_node_ids);
+            verifyEqual(testCase, input.state_semantics, ...
+                'unrecovered_native_sens_hard_crack');
         end
 
         function testSourceContainsNoEquilibriumMexReferenceCall(testCase)
@@ -149,4 +191,23 @@ end
 
 function value = handoffRoot()
 value = fileparts(fileparts(mfilename('fullpath')));
+end
+
+function value = griphfithRoot()
+value = getenv('GRIPHFITH_SOURCE_ROOT');
+if isempty(value)
+    value = 'C:/q4diag/griphfith-f1b-355d4c83';
+end
+end
+
+function value = approvedInitialHash()
+value = 'ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db';
+end
+
+function value = runtimeReceipt(path, hash)
+value = struct('runtime_artifact_path', path, 'initial_sha256', hash);
+end
+
+function value = canonicalPath(path)
+value = char(java.io.File(path).getCanonicalPath());
 end

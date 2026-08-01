@@ -24,18 +24,20 @@ if ~isfolder(outputRoot)
     end
 end
 
-operations = localOperations(config);
-runtimeReceipt = operations.validate_runtime(config.runtime_lock_path, ...
+runtimeReceipt = validate_runtime_lock(config.runtime_lock_path, ...
     config.runtime_root, config.source_root);
 localRequireRuntimeReceipt(runtimeReceipt);
-input = operations.build_input(config.source_root);
+resolve_q1_initial_runtime(runtimeReceipt, config.runtime_root);
+input = build_q1_native_input(config.source_root);
 inputSha256 = localHashInput(input);
 
 [referenceValues{1:12}] = assemble_initial_reference_q4( ...
     input.MESH, input.DOFS, input.t, input.QUADRATURE, ...
     input.MAT_CHAR, input.CC, input.field_vars);
 reference = cell2struct(referenceValues(:), localOutputNames(), 1);
-candidate = operations.call_initial(input, runtimeReceipt);
+[candidateValues{1:12}] = initial(input.MESH, input.DOFS, input.t, ...
+    input.QUADRATURE, input.MAT_CHAR, input.CC, input.field_vars);
+candidate = cell2struct(candidateValues(:), localOutputNames(), 1);
 metrics = compare_q1_initial_outputs(reference, candidate, input);
 
 metricsPath = fullfile(outputRoot, 'Q1_METRICS.mat');
@@ -62,39 +64,10 @@ receipt = orderfields(struct( ...
 localPublishJson(fullfile(outputRoot, 'Q1_RECEIPT.json'), receipt);
 end
 
-function operations = localOperations(config)
-operations = struct('validate_runtime', @validate_runtime_lock, ...
-    'build_input', @build_q1_native_input, 'call_initial', @localCallInitial);
-if isfield(config, 'operations')
-    names = fieldnames(config.operations);
-    for index = 1:numel(names)
-        name = names{index};
-        if ~isfield(operations, name) || ~isa(config.operations.(name), 'function_handle')
-            error('rebuiltMexQ1:InvalidConfig', ...
-                'Unknown or invalid Q1 operation: %s.', name);
-        end
-        operations.(name) = config.operations.(name);
-    end
-end
-end
-
-function outputs = localCallInitial(input, runtimeReceipt)
-runtimePath = fileparts(char(runtimeReceipt.runtime_artifact_path));
-addpath(runtimePath, '-begin');
-expectedPath = char(runtimeReceipt.runtime_artifact_path);
-resolvedPath = which('initial');
-if isempty(resolvedPath) || ~localSamePath(resolvedPath, expectedPath)
-    error('rebuiltMexQ1:RuntimeResolutionMismatch', ...
-        'MATLAB did not resolve the approved rebuilt initial binary.');
-end
-[values{1:12}] = initial(input.MESH, input.DOFS, input.t, ...
-    input.QUADRATURE, input.MAT_CHAR, input.CC, input.field_vars);
-outputs = cell2struct(values(:), localOutputNames(), 1);
-end
-
 function localRequireConfig(config)
 required = {'output_root', 'runtime_lock_path', 'runtime_root', 'source_root'};
-if ~isstruct(config) || ~isscalar(config) || ~all(isfield(config, required))
+if ~isstruct(config) || ~isscalar(config) || ...
+        ~isequal(sort(fieldnames(config)), sort(required(:)))
     error('rebuiltMexQ1:InvalidConfig', ...
         'Q1 config is missing required runtime or output fields.');
 end
@@ -224,12 +197,6 @@ function localDelete(path)
 if isfile(path)
     delete(path);
 end
-end
-
-function value = localSamePath(left, right)
-left = strrep(char(java.io.File(left).getCanonicalPath()), '\', '/');
-right = strrep(char(java.io.File(right).getCanonicalPath()), '\', '/');
-value = strcmpi(left, right);
 end
 
 function names = localOutputNames()
