@@ -41,6 +41,35 @@ follow these rules.
 
 - **Loss / architecture / training-loop changes**: open a `[decision]` entry in `docs/shared_research_log.md` BEFORE the push. Wait for Windows to acknowledge (reply in log) — then push.
 
+### Cross-machine remote-visibility hard gate
+
+Before Mac tells any producer to use a Git-backed registry row, source file,
+runner, or handoff document, Mac must verify the named object from the exact
+remote ref after fetching. A file found in the working tree, local `HEAD`, or a
+different remote branch does not pass this gate.
+
+For an experiment-registry handoff, use:
+
+```bash
+git fetch origin
+REMOTE_REF=origin/main
+REGISTRY=docs/pidl_experiment_inventory.md
+CASE_ID=hard5_c5_temporal_accumulation_gate_20260731
+
+git cat-file -e "$REMOTE_REF:$REGISTRY"
+git show "$REMOTE_REF:$REGISTRY" |
+  awk -v id="$CASE_ID" 'index($0, "| `" id "` |") == 1 {n++} END {exit(n == 1 ? 0 : 1)}'
+git rev-parse "$REMOTE_REF"
+git rev-parse "$REMOTE_REF:$REGISTRY"
+```
+
+The handoff must record the resulting remote commit and registry blob SHA. The
+producer must repeat the same checks after its own `git fetch` and before it
+creates a worktree or starts a process. If the path or the exactly-one case row
+is missing, stop as `invalid_repo_sync`; Mac must push the missing object or
+name an exact remote branch/commit. Do not create a replacement registry or
+duplicate case locally.
+
 ### Mac session template
 
 ```bash

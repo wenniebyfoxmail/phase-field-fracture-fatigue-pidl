@@ -49,6 +49,29 @@ state-semantics and provenance acceptance audit.
 **Priority**: high after Request 26 is launched or its exact environment blocker
 is reported. No PIDL training and no road-validation claim.
 
+### [update] 2026-08-02: Q1 accepted; historical Q2 parent is not recoverable from current archive
+
+The rebuilt `initial.mexw64` Q1 result is accepted as tooling evidence. Q2
+correctly stopped because the historical U0.12 cycle-1 package lacks native/GP
+`g` and active-driver arrays. Mac audited the complete local U0.12 archive and
+the original cycle-1 peak VTK. The detailed evidence and permitted next routes
+are fixed in:
+
+```text
+docs/handovers/rebuilt_mex_q2_parent_evidence_audit_20260802.md
+```
+
+Do not derive active from `f_alpha_elem`, `(1-d_elem)^2`, a product of element
+means, or the nodal `driver_degraded` VTK field. Do not start T1/T2/T3 under the
+current `EvidenceLockUnsealed` protocol.
+
+Windows-FEM may perform one read-only search for an original U0.12 cycle-1
+native payload containing per-GP `p_field/d`, raw driver and active driver for
+all five retained substeps. If it exists, return its exact path, variable
+inventory, state semantics and SHA-256 manifest without modifying it. If it
+does not exist, report `historical_q2_parent_irrecoverable`; a separately
+reviewed P0/P0-repeat protocol will then be required before T1/T2/T3.
+
 ## 2026-07-29 · Request 26: F1b fresh exact-Pi dimensional solver-invariance control
 
 **Goal**: run one genuinely fresh GRIPHFiTH dimensional solve to determine

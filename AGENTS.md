@@ -41,6 +41,11 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 - Do not overwrite existing shared log/handover entries. Append or add update subsections.
 - The parent repo is local scratch. The child repo `upload code/` is the GitHub-synced project.
 - If the working tree is dirty, preserve unrelated changes. Do not revert files you did not intentionally modify.
+- Before telling another machine to use a Git path, case id, runner, or registry
+  row, fetch the named remote and verify the object against the exact remote
+  ref. Local working-tree or local-`HEAD` existence is not evidence of remote
+  availability. Record the remote commit and required blob hash in the handoff;
+  see the remote-visibility gate in `docs/git_workflow.md`.
 
 ## Where Details Live
 
