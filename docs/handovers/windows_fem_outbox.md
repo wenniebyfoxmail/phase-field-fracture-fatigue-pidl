@@ -6,6 +6,49 @@
 
 ---
 
+## 2026-08-02 - [audit]: U0.12 c1 native-GP parent is irrecoverable from Windows producer storage
+
+- **Re**: Request 27 Route-A read-only search after Q1 PASS and historical Q2
+  parent-field blockers.
+- **Search mode**: read-only. No MATLAB/FEM solve, recovery, `System`, Newton,
+  checkpoint resume, or file modification was started.
+- **Enumerated roots**: `C:/q4diag`, the local GRIPHFiTH producer tree, and
+  `C:/Users/xw436/OneDrive - University of Cambridge/griphfith`, including the
+  2026-07-29 Hard5 U0.11/U0.12/U0.13 family, all U0.12 versions, native-Q4
+  dry runs, c2 diagnostics, and the sealed ferrite handoff/archive. The scan
+  enumerated 68,192 files, of which 2,948 paths matched U0.12/Hard5/loading5.
+- **Locked parent c1**: OneDrive `cycle_0001.mat`, SHA-256
+  `72925ac353f766475862858befcc611307e71faa392eb774d7ce5aa8a40d74d9`,
+  contains only four `86408 x 1` double arrays: `d_elem`,
+  `alpha_bar_elem`, `f_alpha_elem`, and `psi_elem`.
+- **Terminal checkpoint**: SHA-256
+  `6d6f34d9d42036e13a07bcbfdeb5b034b254bb30159778cddbe2eb7511b4f51e`
+  contains `displ`, `p_field`, `p_field_old`, and
+  `history_vars_old[86408,4,4]`, but represents the terminal state and does
+  not contain the five retained c1 substeps.
+- **VTK evidence**: c1 peak SHA-256
+  `acdc981269024cbb111f7d468c287f2d1ca09f3735131b56aca7fa2fbaec1615`
+  is one nodal peak state. `fields_000001_005.vtk`, SHA-256
+  `f1a2fcf746cba4215f2d4ddc7078d9862bb1b4f863378161f5de4fecd45cb3fa`,
+  is the c1 fifth/unloaded substep. The historical sequence contains
+  `fields_<cycle>_005.vtk`, not five c1 substep states.
+- **Native-Q4 inventory**: U0.12 has peak-native payloads only at c76, c87,
+  and c89. U0.11/U0.13 c1 peak-native files, the U0.13 c5 five-step GP probe,
+  and the instrumented U0.12 c2 peak are different trajectories/states and
+  are not substitutes.
+- **Additional visibility**: `U:/data` did not complete a recursive directory
+  listing within the bounded read-only window. It is not a declared producer
+  root, so this is recorded as `read_only_search_visibility_timeout`, not as
+  proof that every byte on that network volume is absent.
+- **Verdict for the declared Windows producer/archive roots**:
+  `historical_q2_parent_irrecoverable`. No immutable U0.12 c1 payload contains
+  all five retained substeps with native arrays sufficient to compute exact
+  `mean_GP(g_gp)` and `mean_GP(g_gp .* psi_raw_gp)`.
+- **Consequence**: historical Q2 remains blocked and must not be weakened.
+  Proceed only through a separately reviewed P0/P0R repeatability protocol;
+  historical U0.12 remains an external comparison without active-field
+  backward-equivalence claims.
+
 ## 2026-08-01 - [blocker]: Rebuilt MEX Q1 passed; Q2 parent evidence blocked
 
 - **Re**: Request 27 rebuilt-`initial.mexw64` qualification for the independent
