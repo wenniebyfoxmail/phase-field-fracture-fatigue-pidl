@@ -1,6 +1,11 @@
-# Toy-to-Road P0/P0R Repeatability Baseline Design
+# Toy-to-Road P0/P0R Repeatability Baseline Design v2
 
 Date: 2026-08-02
+
+Revision: v2 changes requested against remote commit
+`c8db4f9f879c20bb0683797d25a356f925938c3e`. This revision is specification
+only. No production runner may be written and no P0/P0R/T1/T2/T3 solve may
+start until v2 passes review.
 
 ## Decision And Scope
 
@@ -74,14 +79,25 @@ any point invalidates the family and requires a new protocol version; it may
 not be handled by rerunning only the remaining cases.
 
 Q1 is not rerun between family members. The old historical Q2 blocker is not
-silently converted into a pass. Instead, the new P0/P0R repeatability evidence
-becomes the cycle-level admission gate for this newly versioned family.
+silently converted into a pass. P0 and P0R must each pass a reference-independent
+same-process numerical-solution gate, and only then may P0/P0R repeatability
+become the cycle-level reproducibility gate for this newly versioned family.
+Repeatability cannot qualify an under-converged branch.
 
 ## P0 And P0R Input Identity
 
-`P0_INPUT_LOCK.json` and `P0R_INPUT_LOCK.json` contain identical physical,
-mesh, recovery, solver, cadence, exporter, runtime, and event fields. Their
-only allowed differences are:
+Input identity is split into two digests:
+
+- `physics_contract_sha256` hashes canonical physical, mesh, recovery, solver,
+  cadence, exporter, runtime, numerical-gate and event fields. It excludes
+  execution identity and must be exactly equal for P0 and P0R.
+- `execution_input_lock_sha256` hashes one complete execution lock, including
+  `physics_contract_sha256`, case ID, fresh roots, launch timestamp and
+  no-clobber receipt identity. It is expected to differ between P0 and P0R and
+  is validated only against that execution's own manifest.
+
+`P0_INPUT_LOCK.json` and `P0R_INPUT_LOCK.json` therefore contain the same
+`physics_contract_sha256`. Their execution layers may differ only in:
 
 - `case_id` (`P0_parent` versus `P0R_parent_repeat`);
 - fresh output-root identity;
@@ -91,6 +107,97 @@ Both launches start from independently reconstructed fresh state0. P0R may not
 read P0 state, checkpoint, output, event metadata, or solver cache. A shared
 read-only mesh/input artifact is permitted only when its exact hash is bound
 by both input locks.
+
+## C5 Peak Same-Process Numerical-Solution Gate
+
+P0 and P0R must each pass an independent reference-free gate at physical cycle
+5, retained peak substep 4. The gate runs inside the original one-shot MATLAB
+solve process after the normal staggered loop reports convergence and before
+the c5-peak history commit or any c6 work. It reassembles the governing
+operators at the converged `(u,d)` state without taking another Newton step.
+
+At entry to the c5 peak substep, the process snapshots the accepted lower-bound
+damage `d_lb` and pre-commit history `history_pre`. At the end of every
+completed stagger iteration it records the current damage. Let `d_prev_stag`
+be the immediately preceding completed stagger iterate; for the first stagger
+iteration it is the accepted damage at substep entry.
+
+The gate first forms `r_u_active=r_u(active_u_dofs)`,
+`r_d_active=r_d(active_d_dofs)`, `d_active=d(active_d_dofs)` and
+`d_lb_active=d_lb(active_d_dofs)`. It then computes:
+
+```text
+displacement_residual = norm(r_u_active(:), 2)
+raw_phase_residual = norm(r_d_active(:), 2)
+
+projected_phase_kkt = norm(
+    d_active(:) -
+    project_[d_lb_active,1](d_active(:) - r_d_active(:)),
+    inf)
+
+consecutive_stagger_delta = norm(d(:) - d_prev_stag(:), inf)
+
+primal_feasibility = max([
+    0;
+    d_lb(:) - d(:);
+    d(:) - 1
+])
+```
+
+Here `r_u` is the equilibrium residual reassembled with the converged damage
+and current traction, and `r_d` is the phase residual reassembled with the
+same instantaneous raw driver, `d_lb`, and `history_pre` used by the c5 peak
+phase solve. `project_[d_lb,1]` is the componentwise projection onto the
+irreversibility box. No residual is replaced by an energy difference.
+
+All four gates are mandatory:
+
+```text
+displacement_residual       <= 4e-4
+projected_phase_kkt          <= 4e-4
+consecutive_stagger_delta    <= 1e-3
+primal_feasibility           <= 1e-12
+```
+
+The process saves a no-clobber c5 peak stagger trace with one row per completed
+stagger iteration. Each row is computed by post-update same-process
+reassembly, not by the pre-update Newton stopping value, and contains iteration
+ordinal, displacement residual, raw phase residual, projected phase KKT,
+consecutive-stagger damage infinity norm and primal feasibility. The final row
+is bound into the gate receipt and the package manifest.
+
+This is a fixed-point/KKT qualification of the produced solution. It may not
+use a teacher field, historical replay, P0/P0R comparison, fixed stagger count,
+forced extra iterations or a post-process launched after the solver exits. A
+failure stops that execution before history commit and prevents P0/P0R
+repeatability evaluation.
+
+## Independent One-Shot Execution Environment
+
+Every P0, P0R, T1, T2 and T3 case uses a fresh one-shot `matlab -batch`
+process. Each receives
+independent, initially absent writable work, `TEMP`, `TMP`, MATLAB preference
+and application-cache roots. The launcher rejects paths shared with the other
+execution and exits the MATLAB process after success or failure; persistent
+MEX state cannot cross the process boundary.
+
+The physics contract fixes these process settings for all five solves:
+
+```text
+OMP_NUM_THREADS=1
+MKL_NUM_THREADS=1
+OPENBLAS_NUM_THREADS=1
+MKL_DYNAMIC=FALSE
+```
+
+Every execution receipt records and verifies the same Windows machine/CPU
+fingerprint, Windows build, MATLAB executable hash and release/update, MATLAB
+path ordering and hash, `version -blas`, `version -lapack`, thread environment,
+runtime-lock digest and MEX hashes. A mismatch fails before solving. The
+separate writable roots and launch-specific receipts remain part of
+`execution_input_lock_sha256`, not `physics_contract_sha256`. Case-specific
+writable roots are never added to the canonical MATLAB path, so the path hash
+remains meaningfully comparable across executions.
 
 ## Five-Substep Native GP Payload
 
@@ -102,9 +209,12 @@ arrays with stable Q4 element and Gauss-point ordering:
 substeps/cycle_NNNN.mat
 
 d_gp             [n_elem, 4, 5]
+alpha_bar_gp     [n_elem, 4, 5]
+f_alpha_gp       [n_elem, 4, 5]
 psi_raw_gp       [n_elem, 4, 5]
 g_gp             [n_elem, 4, 5]
 psi_active_gp    [n_elem, 4, 5]
+psi_raw_cyclemax_gp [n_elem, 4]
 ```
 
 The third dimension is exactly the retained-substep order
@@ -123,28 +233,51 @@ element_ordering_id
 gp_ordering_id
 state_semantics_id
 runtime_lock_sha256
-input_lock_sha256
+physics_contract_sha256
+execution_input_lock_sha256
 ```
 
 The fields have these semantics at every retained substep:
 
 ```text
-d_gp          = Q4 interpolation of the converged nodal phase field at each GP
-psi_raw_gp    = native undegraded AMOR tensile/raw driver at each GP
-g_gp          = native damage degradation used at that GP
+d_gp          = Q4 interpolation of converged nodal damage at the same substep
+alpha_bar_gp  = fatigue accumulation after that converged substep is committed
+f_alpha_gp    = fatigue degradation after that converged substep is committed
+psi_raw_gp    = instantaneous undegraded AMOR raw driver at that substep
+g_gp          = instantaneous damage degradation at that substep
+psi_active_gp = same-substep g_gp .* psi_raw_gp
+
+psi_raw_cyclemax_gp = max(psi_raw_gp, [], 3) over the five current-cycle
+                      instantaneous substeps; it is a separate diagnostic
+```
+
+For each retained substep, the converged `(u,d)` and instantaneous raw driver
+are captured before history mutation. The normal solver then commits that
+substep's history exactly once; `alpha_bar_gp` and `f_alpha_gp` are captured
+from this post-commit state. The shard declares
+`history_state_semantics=post_commit_after_converged_substep_v1`. No later
+substep or cycle may overwrite an earlier saved history slice.
+
+The exporter independently verifies both constitutive identities before
+publishing the shard:
+
+```text
+g_gp = (1 - d_gp).^2 + eta
 psi_active_gp = g_gp .* psi_raw_gp
 ```
 
-The exporter verifies `psi_active_gp == g_gp .* psi_raw_gp` before publishing
-the shard. It also derives element means using `mean(...,2)` over the four GPs;
-it never uses a product of element means. No `f_alpha` field may be labelled
-active.
+Both maximum absolute errors must be `<=1e-12`; `eta` is the locked scalar
+`0` for this family. The exporter also derives element means using
+`mean(...,2)` over the four GPs; it never uses a product of element means. No
+`f_alpha` field or cycle-maximum raw field may be labelled active.
 
-The coherent cycle peak is substep 4 before unloading. Existing compact peak
-state, event, mesh and cycle-index outputs are retained, but the peak GP fields
-must reference the same bytes already present in the cycle shard rather than
-being serialized a second time. Dense VTK output and unrelated visualization
-snapshots are disabled for all five solves.
+The coherent cycle peak is substep 4 before unloading. Peak active is exactly
+`g_gp(:,:,4).*psi_raw_gp(:,:,4)`; it may not use
+`psi_raw_cyclemax_gp`. Existing compact peak state, event, mesh and cycle-index
+outputs are retained, but the peak GP fields must reference the same bytes
+already present in the cycle shard rather than being serialized a second time.
+Dense VTK output and unrelated visualization snapshots are disabled for all
+five solves.
 
 One MAT shard per cycle is chosen instead of five files per cycle. It preserves
 all required states while reducing file count and redundant metadata. Field
@@ -154,15 +287,19 @@ precision, substep count, and state content may not be reduced for speed.
 
 Before a shard is accepted:
 
-- all arrays must have exact shape `[n_elem,4,5]` and contain finite doubles;
+- the six five-substep GP arrays must have exact shape `[n_elem,4,5]` and
+  contain finite doubles;
+- `psi_raw_cyclemax_gp` must have exact shape `[n_elem,4]`, equal
+  `max(psi_raw_gp,[],3)` within `1e-12`, and remain semantically separate from
+  every instantaneous and active field;
 - `d_gp` and `g_gp` must remain in `[0,1]` within range tolerance `1e-10`;
 - raw and active drivers must be non-negative within range tolerance `1e-10`;
   values are never clipped by the validator;
 - every negative value below tolerance fails the shard;
-- active-driver recomputation must have maximum absolute error `<=1e-12` for
-  every GP and substep;
-- cycle, substep, load, raw-step, branch, mesh, ordering, runtime and input
-  identities must be exact;
+- degradation-law and active-driver recomputations must each have maximum
+  absolute error `<=1e-12` for every GP and substep;
+- cycle, substep, load, raw-step, branch, case-declared mesh, ordering, runtime,
+  physics-contract and own execution-lock identities must be exact;
 - cycle shards must be consecutive from c1 through the terminal cycle;
 - the cycle-peak event state must be byte-identifiable with substep 4 of the
   same cycle shard.
@@ -179,21 +316,28 @@ P0R independently pass terminal package validation.
 
 The following identities must match exactly:
 
-- source, runtime, mesh, physical input, solver, recovery, exporter and event
-  contracts;
+- source, runtime, P0/P0R parent mesh, `physics_contract_sha256`, physical
+  input, solver, recovery, exporter, numerical-solution and event contracts;
 - state0 and mesh ordering metadata;
 - terminal reason and terminal cycle;
 - first-hit and confirmed cycles;
 - cycle/substep/load/raw-step/branch labels;
-- array shapes and the complete set of field names.
+- array shapes and the complete set of physical field names.
 
-For every saved numerical field at every cycle and retained substep, P0 is the
-reference and P0R is the candidate. The gate computes in double precision:
+`execution_input_lock_sha256`, case ID, fresh-root identity, timestamps and
+receipt identities are verified against each package's own manifest but are
+not compared for cross-run equality.
+
+For every saved physical numerical field at every cycle and retained substep,
+P0 is the reference and P0R is the candidate. Arrays of any dimensionality are
+vectorized before norm and maximum operations. The gate computes in double
+precision:
 
 ```text
-relative_L2 = norm(candidate-reference,2) /
-              max(norm(reference,2),1e-30)
-max_absolute = max(abs(candidate-reference))
+delta = candidate(:) - reference(:)
+reference_vector = reference(:)
+relative_L2 = norm(delta,2) / max(norm(reference_vector,2),1e-30)
+max_absolute = max(abs(delta))
 ```
 
 Both conditions are required:
@@ -221,11 +365,12 @@ The new protocol uses three immutable evidence layers:
 1. `HISTORICAL_Q2_CLOSURE.json` binds the historical blocker, Windows search
    scope, locked parent hashes, audit commit and
    `historical_q2_parent_irrecoverable` verdict.
-2. P0 and P0R each publish an independent validated package and no-clobber
-   producer provenance bound to the accepted Q1 runtime.
+2. P0 and P0R each publish an independent validated package, passing c5 peak
+   numerical-solution receipt and no-clobber producer provenance bound to the
+   accepted Q1 runtime.
 3. `P0_REPEATABILITY_EVIDENCE_LOCK.json` binds both complete package manifests,
-   repeatability metrics, PASS receipt, runtime lock, source commit, exporter
-   hash and protocol version.
+   both c5 numerical-solution PASS receipts, repeatability metrics, PASS
+   receipt, runtime lock, source commit, exporter hash and protocol version.
 
 T1 launcher authorization requires the canonical repeatability evidence lock;
 Q1 alone is insufficient. T2 additionally requires validated T1 terminal
@@ -235,7 +380,9 @@ The launcher rejects:
 - a missing or failed historical closure;
 - missing, failed, incomplete or mutable P0/P0R packages;
 - missing or failed repeatability evidence;
-- any source, runtime, exporter, mesh, or family-lock mismatch;
+- any source, runtime, exporter, family-lock, or case-declared mesh-hash
+  mismatch; T1 must match its predeclared mapped-mesh hash and is not required
+  to equal the P0 parent-mesh hash;
 - a pre-existing output root, resume/checkpoint input, or running FEM process;
 - an attempt to launch out of order;
 - any previous family-member terminal-validation failure.
@@ -253,13 +400,49 @@ P0 becomes the sole parent for T1/T2/T3. Differences between P0 and the
 historical trajectory are reported as version-boundary diagnostics, not tuned
 away and not used to alter the P0/P0R gate.
 
+## Primary Asset, Attempt Ledger And Registry
+
+The family has exactly one primary scientific/qualification asset:
+
+```text
+docs/toy_road_p0_repeatability_20260802/decision.md
+```
+
+That file is created in a pre-execution blocked state and updated only by the
+sealed evidence publication workflow to a terminal pass, failure or blocker.
+P0, P0R, T1, T2 and T3 must not create competing primary `decision.md` files.
+Per-case package receipts remain evidence linked from this decision.
+
+Every preflight, blocked launch, failed attempt and completed launch is appended
+to the canonical machine-readable attempt ledger:
+
+```text
+docs/toy_road_p0_repeatability_20260802/_pidl_attempt_ledger/attempts.jsonl
+```
+
+Each ledger entry records attempt ID, case role, source commit, physics-contract
+digest, execution-lock digest, runtime digest, roots, process/environment
+fingerprint, start/end state and linked immutable receipts. Existing entries
+are never rewritten or deleted. The repository's attempt-ledger tool renders
+the human-readable view at
+`docs/toy_road_p0_repeatability_20260802/attempt.md`; the rendered file is not a
+second ledger.
+
+`docs/pidl_experiment_inventory.md` contains exactly one registry row with case
+ID `toy_road_p0_repeatability_family_20260802` and the primary asset above.
+P0/P0R are producer repeatability and numerical-solution qualification runs,
+not two independent trajectories, training cases or LOTO members. The row's
+claim boundary states that only T1/T2/T3 are candidate synthetic transfer
+trajectories after all gates pass; none is real-road validation.
+
 ## Execution And Failure Policy
 
 Before each solve, the producer checks for an existing MATLAB/FEM experiment.
 Only one experiment may run at a time. The strict order is:
 
 ```text
-P0 -> validate -> P0R -> validate -> repeatability ->
+P0(c5 numerical gate) -> validate ->
+P0R(c5 numerical gate) -> validate -> repeatability ->
 T1 -> validate -> T2 -> validate -> T3 -> validate
 ```
 
@@ -273,19 +456,38 @@ decision and a fresh output root.
 Automated tests must demonstrate fail-closed behavior for:
 
 - P0/P0R physical-input differences outside the allowed identity fields;
+- unequal `physics_contract_sha256`, or an execution lock not self-consistent
+  with its own manifest;
 - P0R reading any P0 state, checkpoint, output or cache;
+- reused writable work/TEMP/TMP/preference/cache roots, persistent MATLAB/MEX
+  state, CPU/Windows/MATLAB-path/BLAS/thread-setting mismatch, or a process that
+  is not a fresh one-shot MATLAB invocation;
+- missing or failing c5 same-process displacement, projected-KKT,
+  consecutive-stagger or primal-feasibility gate;
+- a c5 gate produced post-process, by fixed iteration count, teacher comparison
+  or replay qualification, or without a complete stagger trace;
 - missing, reordered or duplicated substeps and cycles;
 - incorrect raw-step or peak-state identity;
 - missing, extra, wrong-shape, non-finite, illegal-range or clipped GP fields;
-- `f_alpha` or a product of element means substituted for active driver;
-- active GP product mismatch;
+- pre-commit history labelled post-commit, overwritten history slices, or a
+  missing `alpha_bar_gp`/`f_alpha_gp` five-step payload;
+- instantaneous raw, cycle-maximum raw and active fields relabelled or mixed;
+- `f_alpha`, cycle-maximum raw, or a product of element means substituted for
+  active driver;
+- degradation-law or active GP product mismatch;
 - repeatability at, below and above both `1e-12` thresholds;
+- matrix and three-dimensional repeatability inputs that prove vectorized norm
+  semantics;
 - zero-reference fields;
-- event, terminal, mesh, source, exporter or runtime mismatch;
+- event, terminal, case-declared mesh, source, exporter or runtime mismatch;
+- T1 correctly using its predeclared mapped-mesh hash while rejecting either
+  the P0 hash or an undeclared third mesh;
 - missing/failed/mutable repeatability evidence;
 - T1/T2/T3 launch out of order or after a prior failure;
 - runtime replacement between any two family members;
-- pre-existing output, resume input, or concurrent FEM execution.
+- pre-existing output, resume input, or concurrent FEM execution;
+- multiple primary decisions, multiple registry rows, missing attempt entries,
+  or P0/P0R counted as independent training/LOTO trajectories.
 
 The source manifest, runtime/API hashes, Python tests and MATLAB tests must all
 pass from a clean sealed checkout before P0 is launched. No controlled solver

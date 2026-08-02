@@ -6,6 +6,35 @@
 
 ---
 
+## 2026-08-02 - [review]: P0/P0R design v2 prepared; implementation remains blocked
+
+- **Re**: changes requested against P0/P0R design commit `c8db4f9`.
+- **Spec**:
+  `docs/superpowers/specs/2026-08-02-toy-road-p0-repeatability-design.md`.
+- **Numerical qualification**: P0 and P0R now independently require a
+  reference-free same-process c5 peak gate for displacement residual,
+  projected phase KKT, consecutive-stagger damage change and primal
+  feasibility, with a complete post-update stagger trace.
+- **Identity**: split into equal cross-run `physics_contract_sha256` and
+  execution-specific, self-verified `execution_input_lock_sha256`.
+- **Repeatability**: matrix and N-D fields are vectorized with `(:)` before L2
+  and maximum operations.
+- **GP semantics**: instantaneous raw, current-cycle raw maximum and peak
+  active are distinct; five-step `alpha_bar_gp` and `f_alpha_gp` are required;
+  history is post-commit; both `g=(1-d)^2+eta` and same-substep active product
+  are independently checked.
+- **Mesh identity**: every case matches its predeclared mesh hash; T1 is bound
+  to its mapped mesh and is not required to equal the P0 mesh.
+- **Process independence**: all five cases use fresh one-shot MATLAB processes,
+  isolated writable work/TEMP/cache roots, fixed thread settings and locked
+  Windows/CPU/MATLAB-path/BLAS provenance.
+- **Result governance**: one primary `decision.md`, one append-only attempt
+  ledger and exactly one experiment-inventory row; P0/P0R are qualification,
+  not independent training or LOTO trajectories.
+- **Status**: specification review only. No production runner was written and
+  no P0/P0R/T1/T2/T3 solve was started. Implementation remains blocked until
+  v2 is approved.
+
 ## 2026-08-02 - [audit]: U0.12 c1 native-GP parent is irrecoverable from Windows producer storage
 
 - **Re**: Request 27 Route-A read-only search after Q1 PASS and historical Q2
