@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.metadata
 import importlib.util
 import json
 import os
@@ -93,6 +94,33 @@ TRACE_COLUMNS = (
     "consecutive_stagger_delta",
     "primal_feasibility",
 )
+
+
+def test_exposes_exact_h5py_runtime_dependency_identity() -> None:
+    assert PROTOCOL.RUNTIME_DEPENDENCY_IDENTITY == {"h5py": "3.16.0"}
+    assert PROTOCOL.runtime_dependency_identity() == {"h5py": "3.16.0"}
+
+
+@pytest.mark.parametrize("installed_version", [None, "3.15.1", "3.16.1"])
+def test_import_fails_closed_on_missing_or_wrong_h5py_version(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    installed_version: str | None,
+) -> None:
+    def reported_version(distribution: str) -> str:
+        assert distribution == "h5py"
+        if installed_version is None:
+            raise importlib.metadata.PackageNotFoundError(distribution)
+        return installed_version
+
+    monkeypatch.setattr(importlib.metadata, "version", reported_version)
+    spec = importlib.util.spec_from_file_location(
+        f"toy_road_protocol_dependency_{installed_version}", MODULE_PATH
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    with pytest.raises(RuntimeError, match=r"h5py.*3\.16\.0"):
+        spec.loader.exec_module(module)
 
 
 def test_relative_l2_vectorizes_nd_fields() -> None:
@@ -248,6 +276,21 @@ def test_repeatability_rejects_two_internally_valid_different_events(
 
 
 @pytest.mark.parametrize(
+    ("first_hit_cycle", "timing"),
+    [(3, "early"), (1, "late")],
+)
+def test_repeatability_rejects_non_three_cycle_confirmation(
+    tmp_path: Path, first_hit_cycle: int, timing: str
+) -> None:
+    p0, _ = make_repeatability_packages(
+        tmp_path, p0_first_hit_cycle=first_hit_cycle
+    )
+    with pytest.raises(ProtocolError, match=f"confirmation|three|event|{timing}"):
+        PROTOCOL._validate_package(p0.resolve(), "P0", "P0_parent")
+    assert not (tmp_path / "P0_REPEATABILITY_EVIDENCE_LOCK.json").exists()
+
+
+@pytest.mark.parametrize(
     "role_overrides",
     [
         {"p0": "P0R_parent_repeat"},
@@ -343,6 +386,11 @@ def test_terminal_manifest_schema_and_protocol_are_exact(
         "threshold",
         "passed_false",
         "trace_hash",
+        "stagger_skipped",
+        "stagger_duplicated",
+        "stagger_reordered",
+        "stagger_fractional",
+        "reassembly_skipped",
     ],
 )
 def test_complete_case_local_c5_evidence_is_authenticated(
@@ -463,6 +511,7 @@ def make_repeatability_packages(
     *,
     p0_terminal_cycle: int = 5,
     p0r_terminal_cycle: int = 5,
+    p0_first_hit_cycle: int | None = None,
     p0_mat_format: str = "legacy",
     p0r_mat_format: str = "legacy",
     p0r_identity_overrides: dict[str, str] | None = None,
@@ -486,6 +535,7 @@ def make_repeatability_packages(
         roles["p0"],
         identities,
         terminal_cycle=p0_terminal_cycle,
+        first_hit_cycle=p0_first_hit_cycle,
         mat_format=p0_mat_format,
         lock_case_id=str(roles["p0"]),
         lock_nonce=p0_lock_nonce,
@@ -499,6 +549,7 @@ def make_repeatability_packages(
         roles["p0r"],
         p0r_identities,
         terminal_cycle=p0r_terminal_cycle,
+        first_hit_cycle=None,
         mat_format=p0r_mat_format,
         lock_case_id=p0r_lock_case_id or str(roles["p0r"]),
         lock_nonce=p0r_lock_nonce,
@@ -536,6 +587,7 @@ def _build_package(
     identities: dict[str, str],
     *,
     terminal_cycle: int,
+    first_hit_cycle: int | None,
     mat_format: str,
     lock_case_id: str,
     lock_nonce: str,
@@ -583,6 +635,7 @@ def _build_package(
 
     trace_path = root / "qualification" / "C5_STAGGER_TRACE.csv"
     trace_rows = complete_trace_rows(str(case_id))
+    _apply_c5_trace_defect(trace_rows, c5_defect)
     columns = list(TRACE_COLUMNS)
     if c5_defect == "missing_trace_column":
         columns.remove("raw_phase_residual")
@@ -596,10 +649,11 @@ def _build_package(
         root / "qualification" / "C5_NUMERICAL_GATE_RECEIPT.json", receipt
     )
 
+    event_first_hit = terminal_cycle - 3 if first_hit_cycle is None else first_hit_cycle
     event = {
         "authorization_scope": AUTHORIZATION_SCOPE,
         "case_id": case_id,
-        "first_hit_cycle": terminal_cycle - 1,
+        "first_hit_cycle": event_first_hit,
         "confirmed_cycle": terminal_cycle,
         "terminal_cycle": terminal_cycle,
         "peak_substep_ordinal": 4,
@@ -616,7 +670,7 @@ def _build_package(
             "case_id": case_id,
             "terminal_reason": "confirmed_penetration",
             "terminal_cycle": terminal_cycle,
-            "first_hit_cycle": terminal_cycle - 1,
+            "first_hit_cycle": event_first_hit,
             "confirmed_cycle": terminal_cycle,
         },
     )
@@ -842,6 +896,22 @@ def _apply_c5_defect(receipt: dict[str, object], defect: str | None) -> None:
         receipt["status"] = "FAIL"
     elif defect == "trace_hash":
         receipt["trace_sha256"] = "f" * 64
+
+
+def _apply_c5_trace_defect(
+    rows: list[dict[str, object]], defect: str | None
+) -> None:
+    if defect == "stagger_skipped":
+        rows[1]["stagger_iteration"] = 3
+    elif defect == "stagger_duplicated":
+        rows[1]["stagger_iteration"] = 1
+    elif defect == "stagger_reordered":
+        rows[0]["stagger_iteration"] = 2
+        rows[1]["stagger_iteration"] = 1
+    elif defect == "stagger_fractional":
+        rows[1]["stagger_iteration"] = 1.5
+    elif defect == "reassembly_skipped":
+        rows[1]["reassembly_ordinal"] = 3
 
 
 def mutate_manifest(root: Path, change: str) -> None:

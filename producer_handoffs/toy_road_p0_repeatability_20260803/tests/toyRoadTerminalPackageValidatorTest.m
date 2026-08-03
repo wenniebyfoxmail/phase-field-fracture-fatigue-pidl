@@ -59,6 +59,18 @@ refreshManifest(root);
 verifyInvalid(testCase, root);
 end
 
+function testRejectsEarlyTwoCycleConfirmation(testCase)
+root = makeTerminalPackage(testCase, "T1_initial_defect");
+replaceFirstHit(root, 3);
+verifyInvalid(testCase, root);
+end
+
+function testRejectsLateFourCycleConfirmation(testCase)
+root = makeTerminalPackage(testCase, "T1_initial_defect");
+replaceFirstHit(root, 1);
+verifyInvalid(testCase, root);
+end
+
 function testRejectsTerminalCycleMismatch(testCase)
 root = makeTerminalPackage(testCase, "T1_initial_defect");
 path = fullfile(root, 'TERMINAL_RESULT.json');
@@ -132,6 +144,36 @@ receipt = jsondecode(fileread(path));
 receipt.projected_phase_kkt_threshold = 1e-2;
 replaceJson(path, receipt);
 refreshManifest(root);
+verifyInvalid(testCase, root);
+end
+
+function testRejectsSkippedStaggerOrdinal(testCase)
+root = makeTerminalPackage(testCase, "T1_initial_defect");
+replaceC5Ordinals(root, [1; 3], [1; 2]);
+verifyInvalid(testCase, root);
+end
+
+function testRejectsDuplicatedStaggerOrdinal(testCase)
+root = makeTerminalPackage(testCase, "T1_initial_defect");
+replaceC5Ordinals(root, [1; 1], [1; 2]);
+verifyInvalid(testCase, root);
+end
+
+function testRejectsReorderedStaggerOrdinal(testCase)
+root = makeTerminalPackage(testCase, "T1_initial_defect");
+replaceC5Ordinals(root, [2; 1], [1; 2]);
+verifyInvalid(testCase, root);
+end
+
+function testRejectsFractionalStaggerOrdinal(testCase)
+root = makeTerminalPackage(testCase, "T1_initial_defect");
+replaceC5Ordinals(root, [1; 1.5], [1; 2]);
+verifyInvalid(testCase, root);
+end
+
+function testRejectsSkippedReassemblyOrdinal(testCase)
+root = makeTerminalPackage(testCase, "T1_initial_defect");
+replaceC5Ordinals(root, [1; 2], [1; 3]);
 verifyInvalid(testCase, root);
 end
 
@@ -294,13 +336,13 @@ writeJsonNoClobber(fullfile(root, 'qualification', ...
 
 cycle5Path = fullfile(root, 'substeps', 'cycle_0005.mat');
 event = struct('authorization_scope', char(scope), 'case_id', char(caseId), ...
-    'first_hit_cycle', 4, 'confirmed_cycle', 5, 'terminal_cycle', 5, ...
+    'first_hit_cycle', 2, 'confirmed_cycle', 5, 'terminal_cycle', 5, ...
     'peak_substep_ordinal', 4, 'cycle_shard', 'substeps/cycle_0005.mat', ...
     'cycle_shard_sha256', fileSha256(cycle5Path));
 writeJsonNoClobber(fullfile(root, 'EVENT_METADATA.json'), event);
 terminal = struct('authorization_scope', char(scope), 'case_id', char(caseId), ...
     'terminal_reason', 'confirmed_penetration', 'terminal_cycle', 5, ...
-    'first_hit_cycle', 4, 'confirmed_cycle', 5);
+    'first_hit_cycle', 2, 'confirmed_cycle', 5);
 writeJsonNoClobber(fullfile(root, 'TERMINAL_RESULT.json'), terminal);
 writeManifestNoClobber(root, contract, caseId, scope);
 end
@@ -352,6 +394,38 @@ receiptPath = fullfile(root, 'qualification', 'C5_NUMERICAL_GATE_RECEIPT.json');
 receipt = jsondecode(fileread(receiptPath));
 receipt.trace_sha256 = fileSha256(fullfile(root, 'qualification', ...
     'C5_STAGGER_TRACE.csv'));
+replaceJson(receiptPath, receipt);
+refreshManifest(root);
+end
+
+function replaceFirstHit(root, firstHit)
+eventPath = fullfile(root, 'EVENT_METADATA.json');
+event = jsondecode(fileread(eventPath));
+event.first_hit_cycle = firstHit;
+replaceJson(eventPath, event);
+terminalPath = fullfile(root, 'TERMINAL_RESULT.json');
+terminal = jsondecode(fileread(terminalPath));
+terminal.first_hit_cycle = firstHit;
+replaceJson(terminalPath, terminal);
+refreshManifest(root);
+end
+
+function replaceC5Ordinals(root, stagger, reassembly)
+tracePath = fullfile(root, 'qualification', 'C5_STAGGER_TRACE.csv');
+trace = readtable(tracePath, 'TextType', 'string', ...
+    'VariableNamingRule', 'preserve');
+trace.stagger_iteration = stagger;
+trace.reassembly_ordinal = reassembly;
+delete(tracePath);
+writetable(trace, tracePath);
+receiptPath = fullfile(root, 'qualification', ...
+    'C5_NUMERICAL_GATE_RECEIPT.json');
+receipt = jsondecode(fileread(receiptPath));
+receipt.trace_sha256 = fileSha256(tracePath);
+receipt.trace_row_count = height(trace);
+receipt.reassembly_count = height(trace);
+receipt.final_stagger_iteration = stagger(end);
+receipt.final_reassembly_ordinal = reassembly(end);
 replaceJson(receiptPath, receipt);
 refreshManifest(root);
 end

@@ -9,10 +9,10 @@ import os
 import re
 import stat
 import uuid
+from importlib import metadata
 from pathlib import Path
 from typing import Any
 
-import h5py
 import numpy as np
 from scipy.io import loadmat
 from scipy.io.matlab import mat_struct
@@ -20,6 +20,47 @@ from scipy.io.matlab import mat_struct
 
 class ProtocolError(RuntimeError):
     """Raised when a package or repeatability gate fails closed."""
+
+
+REQUIRED_H5PY_VERSION = "3.16.0"
+
+
+def _require_runtime_dependencies() -> dict[str, str]:
+    try:
+        installed = metadata.version("h5py")
+    except metadata.PackageNotFoundError as exception:
+        raise ProtocolError(
+            f"runtime dependency h5py must be exactly {REQUIRED_H5PY_VERSION}; "
+            "the distribution is missing"
+        ) from exception
+    if installed != REQUIRED_H5PY_VERSION:
+        raise ProtocolError(
+            f"runtime dependency h5py must be exactly {REQUIRED_H5PY_VERSION}; "
+            f"found {installed}"
+        )
+    return {"h5py": installed}
+
+
+RUNTIME_DEPENDENCY_IDENTITY = _require_runtime_dependencies()
+
+try:
+    import h5py
+except ImportError as exception:
+    raise ProtocolError(
+        f"runtime dependency h5py must be exactly {REQUIRED_H5PY_VERSION}; "
+        "the module cannot be imported"
+    ) from exception
+
+if h5py.__version__ != REQUIRED_H5PY_VERSION:
+    raise ProtocolError(
+        f"runtime dependency h5py must be exactly {REQUIRED_H5PY_VERSION}; "
+        f"module reports {h5py.__version__}"
+    )
+
+
+def runtime_dependency_identity() -> dict[str, str]:
+    """Return the exact Task 2 dependency identity for runtime receipts."""
+    return dict(RUNTIME_DEPENDENCY_IDENTITY)
 
 
 PROTOCOL_VERSION = "toy-road-p0-repeatability-v2.1"
@@ -535,6 +576,7 @@ def _validate_c5(snapshot: dict[str, Any], manifest: dict[str, Any], label: str)
             and parsed["case_id"] == manifest["case_id"]
             and parsed["cycle"] == 5
             and parsed["substep_ordinal"] == 4
+            and parsed["stagger_iteration"] == index
             and parsed["reassembly_ordinal"] == index
         ):
             raise ProtocolError(f"{label} c5 trace identity or chronology is invalid")
@@ -605,7 +647,7 @@ def _validate_event_terminal(
         and terminal["case_id"] == manifest["case_id"]
         and all(event[field] == terminal[field] for field in integer_fields)
         and terminal["terminal_cycle"] >= 5
-        and terminal["first_hit_cycle"] < terminal["confirmed_cycle"]
+        and terminal["confirmed_cycle"] == terminal["first_hit_cycle"] + 3
         and terminal["confirmed_cycle"] == terminal["terminal_cycle"]
         and terminal["terminal_reason"] == "confirmed_penetration"
     ):
