@@ -25,6 +25,100 @@ verifyTrue(testCase, metrics.is_valid);
 verifyTrue(testCase, metrics.chronology_ok);
 end
 
+function testRejectsNonzeroEtaDespiteConsistentDerivedFields(testCase)
+[shard, previous, state0, contract] = toyRoadShardFixture(1);
+contract.eta = 0.125;
+shard.g_gp = (1 - shard.d_gp).^2 + contract.eta;
+shard.psi_active_gp = shard.g_gp .* shard.psi_raw_gp;
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
+function testRejectsChangedAlphaTDespiteConsistentDerivedFields(testCase)
+[shard, previous, state0, contract] = toyRoadShardFixture(1);
+contract.alpha_T = 0.6;
+shard.f_alpha_gp = carrara(shard.alpha_bar_gp, contract);
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
+function testRejectsChangedExponentDespiteConsistentDerivedFields(testCase)
+[shard, previous, state0, contract] = toyRoadShardFixture(1);
+contract.p = 3;
+shard.f_alpha_gp = carrara(shard.alpha_bar_gp, contract);
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
+function testRejectsCorrectlyShapedNonnumericShardField(testCase)
+[shard, previous, state0, contract] = toyRoadShardFixture(1);
+shard.d_gp = cell(1, 4, 5);
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
+function testRejectsNonnumericState0Field(testCase)
+[shard, previous, state0, contract] = toyRoadShardFixture(1);
+state0.alpha_bar_gp = cell(1, 4);
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
+function testRejectsNonnumericPreviousField(testCase)
+[previous, ~, state0, contract] = toyRoadShardFixture(1);
+[shard, ~, ~, ~] = toyRoadShardFixture(2);
+previous.alpha_bar_gp = cell(1, 4, 5);
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
+function testRejectsMalformedNumericMetadata(testCase)
+[shard, previous, state0, contract] = toyRoadShardFixture(1);
+shard.load_factor = cell(1, 5);
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
+function testRejectsEmptyCellPreviousForFirstCycle(testCase)
+[shard, ~, state0, contract] = toyRoadShardFixture(1);
+verifyInvalid(testCase, shard, {}, state0, contract);
+end
+
+function testRejectsEmptyCharPreviousForFirstCycle(testCase)
+[shard, ~, state0, contract] = toyRoadShardFixture(1);
+verifyInvalid(testCase, shard, '', state0, contract);
+end
+
+function testRejectsEmptyStructPreviousForFirstCycle(testCase)
+[shard, ~, state0, contract] = toyRoadShardFixture(1);
+verifyInvalid(testCase, shard, struct([]), state0, contract);
+end
+
+function testRejectsMalformedCoordinatedMeshSha(testCase)
+[shard, previous, state0, contract] = toyRoadShardFixture(1);
+[shard.mesh_sha256, contract.mesh_sha256] = deal(repmat('z', 1, 64));
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
+function testRejectsUppercaseCoordinatedRuntimeSha(testCase)
+[shard, previous, state0, contract] = toyRoadShardFixture(1);
+[shard.runtime_lock_sha256, contract.runtime_lock_sha256] = deal(repmat('A', 1, 64));
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
+function testRejectsShortCoordinatedFamilySha(testCase)
+[shard, previous, state0, contract] = toyRoadShardFixture(1);
+[shard.family_contract_sha256, contract.family_contract_sha256] = deal(repmat('3', 1, 63));
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
+function testRejectsMalformedCoordinatedCasePhysicsSha(testCase)
+[shard, previous, state0, contract] = toyRoadShardFixture(1);
+[shard.case_physics_contract_sha256, contract.case_physics_contract_sha256] = ...
+    deal(repmat('q', 1, 64));
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
+function testRejectsUppercaseCoordinatedExecutionSha(testCase)
+[shard, previous, state0, contract] = toyRoadShardFixture(1);
+[shard.execution_input_lock_sha256, contract.execution_input_lock_sha256] = ...
+    deal(repmat('F', 1, 64));
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
 function testRejectsWrongElementGpSubstepShape(testCase)
 [shard, previous, state0, contract] = toyRoadShardFixture(1);
 shard.d_gp = zeros(1, 4, 4);
@@ -185,4 +279,9 @@ function verifyInvalid(testCase, shard, previous, state0, contract)
 verifyError(testCase, ...
     @() validate_toy_road_cycle_shard(shard, previous, state0, contract), ...
     'toyRoadP0:InvalidCycleShard');
+end
+
+function value = carrara(alpha, contract)
+value = min(1, ...
+    (1 - ((alpha - contract.alpha_T) ./ (alpha + contract.alpha_T))).^contract.p);
 end

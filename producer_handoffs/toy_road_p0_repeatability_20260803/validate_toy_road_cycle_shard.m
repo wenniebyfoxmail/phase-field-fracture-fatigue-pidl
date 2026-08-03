@@ -19,13 +19,19 @@ requiredContract = {'eta', 'alpha_T', 'p', 'mesh_sha256', ...
 localRequireFields(shard, requiredShard, 'shard');
 localRequireFields(state0, requiredState0, 'state0');
 localRequireFields(contract, requiredContract, 'contract');
-localRequire(localAllNumericFinite(shard) && localAllNumericFinite(state0) && ...
-    localAllNumericFinite(contract), 'All numeric values must be finite and real.');
+numericShard = {'cycle', 'd_node', 'd_gp', 'alpha_bar_gp', 'f_alpha_gp', ...
+    'psi_raw_gp', 'g_gp', 'psi_active_gp', 'psi_raw_cyclemax_gp', ...
+    'substep_ordinal', 'load_factor', 'raw_step_zero_based'};
+localRequireNumericFields(shard, numericShard, 'shard');
+localRequireNumericFields(state0, requiredState0, 'state0');
+localRequireNumericFields(contract, {'eta', 'alpha_T', 'p'}, 'contract');
 
 localRequire(localPositiveInteger(shard.cycle), 'cycle must be a positive integer.');
 localRequire(localNonnegativeScalar(contract.eta) && ...
     localPositiveScalar(contract.alpha_T) && localPositiveScalar(contract.p), ...
     'eta, alpha_T, and p must be finite nonnegative/positive real scalars.');
+localRequire(contract.eta == 0 && contract.alpha_T == 0.5 && contract.p == 2, ...
+    'eta, alpha_T, and p must match the locked physical constants.');
 
 nSubstep = 5;
 nGp = 4;
@@ -51,6 +57,10 @@ localRequire(isequal(shard.substep_ordinal, 1:nSubstep) && ...
     isequal(shard.raw_step_zero_based, 5 * (shard.cycle - 1) + (0:4)) && ...
     isequal(shard.branch, {'loading','loading','loading','loading','unloading'}), ...
     'Five-substep chronology metadata does not match the locked schedule.');
+shaFields = {'mesh_sha256', 'runtime_lock_sha256', 'family_contract_sha256', ...
+    'case_physics_contract_sha256', 'execution_input_lock_sha256'};
+localRequireCanonicalSha256Fields(shard, shaFields, 'shard');
+localRequireCanonicalSha256Fields(contract, shaFields, 'contract');
 localRequire(localTextEquals(shard.mesh_sha256, contract.mesh_sha256) && ...
     localTextEquals(shard.element_ordering_id, contract.element_ordering_id) && ...
     localTextEquals(shard.gp_ordering_id, contract.gp_ordering_id) && ...
@@ -136,7 +146,8 @@ end
 
 function [previousDamage, previousAlpha] = localPredecessor(shard, previous, state0, nNode, nElem, nGp)
 if shard.cycle == 1
-    localRequire(isempty(previous), 'previous must be empty only for cycle 1.');
+    localRequire(isa(previous, 'double') && isequal(previous, []), ...
+        'previous must be the literal empty double array for cycle 1.');
     previousDamage = state0.d_node;
     previousAlpha = state0.alpha_bar_gp;
     return;
@@ -145,7 +156,7 @@ end
 localRequire(isstruct(previous) && isscalar(previous), ...
     'previous must be the immediately preceding scalar shard.');
 localRequireFields(previous, {'cycle', 'd_node', 'alpha_bar_gp'}, 'previous');
-localRequire(localAllNumericFinite(previous), 'previous numeric values must be finite and real.');
+localRequireNumericFields(previous, {'cycle', 'd_node', 'alpha_bar_gp'}, 'previous');
 localRequire(localPositiveInteger(previous.cycle) && previous.cycle == shard.cycle - 1 && ...
     isequal(size(previous.d_node), [nNode 5]) && ...
     isequal(size(previous.alpha_bar_gp), [nElem nGp 5]), ...
@@ -161,15 +172,18 @@ for index = 1:numel(names)
 end
 end
 
-function value = localAllNumericFinite(input)
-value = true;
-if isstruct(input)
-    names = fieldnames(input);
-    for index = 1:numel(names)
-        value = value && localAllNumericFinite(input.(names{index}));
-    end
-elseif isnumeric(input)
-    value = isreal(input) && all(isfinite(input), 'all');
+function localRequireNumericFields(value, names, label)
+for index = 1:numel(names)
+    field = value.(names{index});
+    localRequire(isnumeric(field) && isreal(field) && all(isfinite(field), 'all'), ...
+        '%s.%s must be real numeric and finite.', label, names{index});
+end
+end
+
+function localRequireCanonicalSha256Fields(value, names, label)
+for index = 1:numel(names)
+    localRequire(localIsCanonicalSha256(value.(names{index})), ...
+        '%s.%s must be canonical lowercase SHA-256 text.', label, names{index});
 end
 end
 
@@ -194,6 +208,12 @@ actualIsText = (ischar(actual) && isrow(actual)) || ...
 expectedIsText = (ischar(expected) && isrow(expected)) || ...
     (isstring(expected) && isscalar(expected));
 value = actualIsText && expectedIsText && strcmp(string(actual), string(expected));
+end
+
+function value = localIsCanonicalSha256(input)
+isText = (ischar(input) && isrow(input)) || ...
+    (isstring(input) && isscalar(input));
+value = isText && ~isempty(regexp(char(input), '^[0-9a-f]{64}$', 'once'));
 end
 
 function localRequire(condition, message, varargin)
