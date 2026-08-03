@@ -33,11 +33,13 @@ request.authorization_receipt.authorized_entrypoint = ...
 marker = fullfile(testCase.TestData.root,'malicious_receipt_reached');
 request.authorization_receipt.status = ...
     ToyRoadP0MaliciousReceiptValue(marker);
+directoryBefore = builtin('cd');
 
 verifyError(testCase, @() run_toy_road_controlled_driver_harness(request), ...
     'toyRoadP0:ControlledHarnessRejected');
 verifyFalse(testCase,isfile(marker));
 verifyNoWritableRoots(testCase,request);
+verifyEqual(testCase,builtin('cd'),directoryBefore);
 end
 
 function testControlledHarnessRequiresExactValueOnlySchemas(testCase)
@@ -74,12 +76,51 @@ warning('off','all');
 setenv('TOY_ROAD_SHADOW_SYSTEM_MARKER',marker);
 addpath(shadowRoot,'-begin');
 clear('ToyRoadP0LocalControlledSystem');
+preloaded = ToyRoadP0LocalControlledSystem(zeros(4,1)); %#ok<NASGU>
+verifyTrue(testCase,isfile(marker), ...
+    'The attack fixture must preload the shadow class before the harness call.');
+delete(marker);
+directoryBefore = builtin('cd');
 
 [result,observations] = run_toy_road_controlled_driver_harness(request);
 
 verifyTrue(testCase,result.complete);
 verifyEqual(testCase,observations.solver_invocation_count,1);
 verifyFalse(testCase,isfile(marker));
+verifyTrue(testCase,isfolder(request.output_root));
+verifyEqual(testCase,builtin('cd'),directoryBefore);
+clear preloaded
+clear cleanup
+end
+
+function testClassSwapPathHelperCannotRunOnSuccessfulHarness(testCase)
+request = fixtureRequest(testCase.TestData.root, 'P0_parent');
+request.authorization_receipt.authorized_entrypoint = ...
+    'run_toy_road_controlled_driver_harness';
+attackRoot = fullfile(fileparts(mfilename('fullpath')), ...
+    'fixtures','class_resolution_attack');
+swapTarget = fullfile(testCase.TestData.root,'disposable_class_swap_target');
+cwdMarker = fullfile(testCase.TestData.root,'helper_cwd_marker');
+oldSwapTarget = getenv('TOY_ROAD_CLASS_SWAP_TARGET');
+oldCwdMarker = getenv('TOY_ROAD_HELPER_CWD_MARKER');
+oldAuthCwd = getenv('TOY_ROAD_CLASS_AUTH_CWD');
+warningState = warning;
+cleanup = onCleanup(@() restoreHelperPath(attackRoot,oldSwapTarget, ...
+    oldCwdMarker,oldAuthCwd,warningState));
+warning('off','all');
+setenv('TOY_ROAD_CLASS_SWAP_TARGET',swapTarget);
+setenv('TOY_ROAD_HELPER_CWD_MARKER',cwdMarker);
+setenv('TOY_ROAD_CLASS_AUTH_CWD',handoffDir());
+addpath(attackRoot,'-begin');
+directoryBefore = builtin('cd');
+
+[result,observations] = run_toy_road_controlled_driver_harness(request);
+
+verifyTrue(testCase,result.complete);
+verifyEqual(testCase,observations.solver_invocation_count,1);
+verifyFalse(testCase,isfile(swapTarget));
+verifyFalse(testCase,isfile(cwdMarker));
+verifyEqual(testCase,builtin('cd'),directoryBefore);
 verifyTrue(testCase,isfolder(request.output_root));
 clear cleanup
 end
@@ -164,6 +205,18 @@ if contains(path,[shadowRoot pathsep]) || endsWith(path,shadowRoot)
 end
 clear('ToyRoadP0LocalControlledSystem');
 setenv('TOY_ROAD_SHADOW_SYSTEM_MARKER',oldMarker);
+warning(warningState);
+end
+
+function restoreHelperPath(attackRoot,oldSwapTarget,oldCwdMarker,oldAuthCwd, ...
+        warningState)
+if contains(path,[attackRoot pathsep]) || endsWith(path,attackRoot)
+    rmpath(attackRoot);
+end
+clear('dec2hex');
+setenv('TOY_ROAD_CLASS_SWAP_TARGET',oldSwapTarget);
+setenv('TOY_ROAD_HELPER_CWD_MARKER',oldCwdMarker);
+setenv('TOY_ROAD_CLASS_AUTH_CWD',oldAuthCwd);
 warning(warningState);
 end
 
@@ -377,6 +430,7 @@ input = struct( ...
     'num_elem', 1, 'num_gauss_pts', 4, ...
     'sol_step_par', struct('n_step',5,'line_search',false), ...
     'sol_par', struct('max_iter_pf',25,'tol_p_field',4e-4), ...
+    'system_validation_mode','controlled_value_double_v1', ...
     'system_factory', @systemFactory, ...
     'recovery_newton', @recoveryNewton);
 end

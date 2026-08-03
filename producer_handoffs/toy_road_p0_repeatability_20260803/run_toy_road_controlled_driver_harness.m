@@ -40,6 +40,7 @@ end
             'num_gauss_pts',4, ...
             'sol_step_par',cfg.sol_step_par, ...
             'sol_par',struct('max_iter_pf',25,'tol_p_field',4e-4), ...
+            'system_validation_mode','controlled_value_double_v1', ...
             'system_factory',@systemFactory, ...
             'recovery_newton',@recoveryNewton);
     end
@@ -47,12 +48,17 @@ end
     function [system,record] = systemFactory(d)
         factoryInputs{end+1} = d;
         ordinal = numel(factoryInputs);
-        system = localCreateControlledSystem(d);
+        system = struct( ...
+            'sentinel_kind','toy_road_controlled_system_value_v1', ...
+            'construction_ordinal',double(ordinal), ...
+            'phase_field_input',d, ...
+            'DOFS',double((1:numel(d)).'), ...
+            'STIFFNESS_MATRIX',eye(numel(d)));
         record = struct( ...
-            'construction_ordinal',ordinal, ...
+            'construction_ordinal',double(ordinal), ...
             'phase_field',d, ...
-            'system_class',class(system), ...
-            'system_identity',sprintf('private_controlled_system_%d',ordinal));
+            'system_class','toy_road_controlled_system_value_v1', ...
+            'system_identity',sprintf('controlled_value_system_%d',ordinal));
     end
 
     function [d,history,residual,failed,details] = recoveryNewton(varargin)
@@ -237,34 +243,6 @@ for index = 1:numel(roles)
         return
     end
 end
-end
-
-function system = localCreateControlledSystem(phaseFieldInput)
-sourceRoot = fileparts(builtin('mfilename','fullpath'));
-classPath = fullfile(sourceRoot,'ToyRoadP0LocalControlledSystem.m');
-expectedHash = 'b9e2936798dc1f674ccbefdce6114abc9c26b44634103184ec7e1d6d551b0644';
-originalDirectory = builtin('cd');
-cleanup = onCleanup(@() builtin('cd',originalDirectory));
-builtin('cd',sourceRoot);
-resolved = builtin('which','ToyRoadP0LocalControlledSystem');
-if ~builtin('strcmp',localCanonicalPath(resolved),localCanonicalPath(classPath)) || ...
-        ~builtin('strcmp',localSha256(classPath),expectedHash)
-    error('toyRoadP0:ControlledSystemBindingRejected', ...
-        'The harness-only controlled System source binding is invalid.');
-end
-system = ToyRoadP0LocalControlledSystem(phaseFieldInput);
-clear cleanup
-end
-
-function value = localCanonicalPath(pathValue)
-value = char(java.io.File(pathValue).getCanonicalPath());
-end
-
-function value = localSha256(pathValue)
-bytes = java.nio.file.Files.readAllBytes(java.io.File(pathValue).toPath());
-digest = java.security.MessageDigest.getInstance('SHA-256');
-hashed = typecast(digest.digest(bytes),'uint8');
-value = lower(reshape(dec2hex(hashed,2).',1,[]));
 end
 
 function observation = localObserveContext(context)
