@@ -320,22 +320,58 @@ component = sort(queue(:));
 end
 
 function digest = localConnectivitySha256(connectivity)
-payload = sprintf('%dx%d:',size(connectivity,1),size(connectivity,2));
-payload = [payload sprintf('%d,',connectivity.')];
-digest = localSha256(unicode2native(payload,'UTF-8'));
+payload = [localUnsignedDecimalBytes(builtin('size',connectivity,1)) ...
+    builtin('uint8',120) ...
+    localUnsignedDecimalBytes(builtin('size',connectivity,2)) ...
+    builtin('uint8',58)];
+ordered = builtin('reshape',builtin('transpose',connectivity),1,[]);
+for index = 1:builtin('numel',ordered)
+    payload = [payload localUnsignedDecimalBytes(ordered(index)) ...
+        builtin('uint8',44)]; %#ok<AGROW>
+end
+digest = localSha256(payload);
 end
 
 function digest = localMeshSha256(coords,connectivity)
-bytes = [reshape(typecast(double(coords(:)),'uint8'),1,[]) ...
-    reshape(typecast(int64(connectivity(:)),'uint8'),1,[])];
+coordinateBytes = builtin('typecast',builtin('double',coords(:)),'uint8');
+connectivityBytes = builtin('typecast', ...
+    builtin('int64',connectivity(:)),'uint8');
+bytes = [builtin('reshape',coordinateBytes,1,[]) ...
+    builtin('reshape',connectivityBytes,1,[])];
 digest = localSha256(bytes);
 end
 
 function digest = localSha256(bytes)
 hasher = java.security.MessageDigest.getInstance('SHA-256');
 hasher.update(bytes);
-digestBytes = typecast(hasher.digest(),'uint8');
-digest = lower(reshape(dec2hex(digestBytes,2).',1,[]));
+digestBytes = builtin('reshape', ...
+    builtin('typecast',hasher.digest(),'uint8'),1,[]);
+highNibbles = builtin('bitshift',digestBytes,-4);
+lowNibbles = builtin('bitand',digestBytes,builtin('uint8',15));
+nibbles = builtin('reshape',[highNibbles;lowNibbles],1,[]);
+alphabet = '0123456789abcdef';
+digest = alphabet(builtin('double',nibbles)+1);
+if builtin('numel',digest) ~= 64
+    error('toyRoadP0:InvalidMeshDigest', ...
+        'SHA-256 must produce exactly 64 lowercase hexadecimal characters.');
+end
+end
+
+function bytes = localUnsignedDecimalBytes(value)
+value = builtin('double',value);
+buffer = builtin('zeros',1,32,'uint8');
+position = builtin('numel',buffer);
+while true
+    quotient = builtin('floor',value/10);
+    digit = value-10*quotient;
+    buffer(position) = builtin('uint8',48+digit);
+    position = position-1;
+    if quotient == 0
+        break
+    end
+    value = quotient;
+end
+bytes = buffer(position+1:end);
 end
 
 function localMeshGate(condition,message)

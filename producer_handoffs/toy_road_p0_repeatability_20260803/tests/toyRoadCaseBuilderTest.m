@@ -108,13 +108,10 @@ function testCanonicalMeshHashUsesReviewedNativeBytes(testCase)
 mesh = parentMeshFixture();
 cfg = build_toy_road_family_case('P0_parent', mesh);
 
-hasher = java.security.MessageDigest.getInstance('SHA-256');
-hasher.update(typecast(double(mesh.node_coords(:)), 'uint8'));
-hasher.update(typecast(int64(mesh.connectivity(:)), 'uint8'));
-bytes = typecast(hasher.digest(), 'uint8');
-expected = lower(reshape(dec2hex(bytes,2).',1,[]));
-
-verifyEqual(testCase, cfg.mesh.mesh_sha256, expected);
+verifyEqual(testCase,cfg.mesh.mesh_sha256, ...
+    'b568cafa8cf7c8e2475e8c4d3996bcdd3104ccb2947d3410de86d520b91527a7');
+verifyEqual(testCase,cfg.mesh.connectivity_sha256, ...
+    '093566af10c6586271ea8a038d42cd0b8d76bbcbc296c5523a717a32a8443576');
 verifyEqual(testCase, cfg.mesh.mesh_sha256_semantics, ...
     'sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1');
 end

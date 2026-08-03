@@ -103,14 +103,12 @@ swapTarget = fullfile(testCase.TestData.root,'disposable_class_swap_target');
 cwdMarker = fullfile(testCase.TestData.root,'helper_cwd_marker');
 oldSwapTarget = getenv('TOY_ROAD_CLASS_SWAP_TARGET');
 oldCwdMarker = getenv('TOY_ROAD_HELPER_CWD_MARKER');
-oldAuthCwd = getenv('TOY_ROAD_CLASS_AUTH_CWD');
 warningState = warning;
 cleanup = onCleanup(@() restoreHelperPath(attackRoot,oldSwapTarget, ...
-    oldCwdMarker,oldAuthCwd,warningState));
+    oldCwdMarker,warningState));
 warning('off','all');
 setenv('TOY_ROAD_CLASS_SWAP_TARGET',swapTarget);
 setenv('TOY_ROAD_HELPER_CWD_MARKER',cwdMarker);
-setenv('TOY_ROAD_CLASS_AUTH_CWD',handoffDir());
 addpath(attackRoot,'-begin');
 directoryBefore = builtin('cd');
 
@@ -122,6 +120,17 @@ verifyFalse(testCase,isfile(swapTarget));
 verifyFalse(testCase,isfile(cwdMarker));
 verifyEqual(testCase,builtin('cd'),directoryBefore);
 verifyTrue(testCase,isfolder(request.output_root));
+snapshot = jsondecode(fileread(fullfile(request.output_root,'INPUT_SNAPSHOT.json')));
+verifyEqual(testCase,snapshot.mesh_sha256, ...
+    '84e6e4ddb2c871737352a8a5a9195966439ca7116e34d784bdded47f3acca9e1');
+meshPayload = load(fullfile(request.output_root,'mesh_geometry.mat'));
+verifyEqual(testCase,meshPayload.mesh_geometry.connectivity_sha256, ...
+    '20ad66567a461d66db652c5ee9ed421fa6b83159552f785689c8929dc8284920');
+entries = dir(request.output_root);
+entries = entries(~ismember({entries.name},{'.','..'}));
+verifyEqual(testCase,sort({entries.name}),sort({ ...
+    'INPUT_SNAPSHOT.json','mesh_geometry.mat','state0_analysis.mat', ...
+    'RUNTIME_RECEIPT.json'}));
 clear cleanup
 end
 
@@ -208,15 +217,13 @@ setenv('TOY_ROAD_SHADOW_SYSTEM_MARKER',oldMarker);
 warning(warningState);
 end
 
-function restoreHelperPath(attackRoot,oldSwapTarget,oldCwdMarker,oldAuthCwd, ...
-        warningState)
+function restoreHelperPath(attackRoot,oldSwapTarget,oldCwdMarker,warningState)
 if contains(path,[attackRoot pathsep]) || endsWith(path,attackRoot)
     rmpath(attackRoot);
 end
 clear('dec2hex');
 setenv('TOY_ROAD_CLASS_SWAP_TARGET',oldSwapTarget);
 setenv('TOY_ROAD_HELPER_CWD_MARKER',oldCwdMarker);
-setenv('TOY_ROAD_CLASS_AUTH_CWD',oldAuthCwd);
 warning(warningState);
 end
 
