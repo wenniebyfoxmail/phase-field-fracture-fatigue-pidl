@@ -17,6 +17,8 @@ classdef ToyRoadP0SolverDouble < handle
         ExpectedGateHistory = []
         ExpectedGateTraction = []
         ExpectedRawDriver = []
+        EventFirstHitCycle = Inf
+        EventCycles = zeros(1,0)
     end
 
     methods
@@ -54,6 +56,7 @@ classdef ToyRoadP0SolverDouble < handle
                 'reassemble_phase', ...
                     @(varargin) self.reassemblePhase(varargin{:}), ...
                 'commit_history', @(varargin) self.commitHistory(varargin{:}), ...
+                'advance_event', @(varargin) self.advanceEvent(varargin{:}), ...
                 'observe', @(varargin) self.observe(varargin{:}), ...
                 'publish_failed_run', ...
                     @(varargin) self.publishFailedRun(varargin{:}));
@@ -161,6 +164,28 @@ classdef ToyRoadP0SolverDouble < handle
             end
             self.HistoryCommitCycleStep(end + 1,:) = [cycle ordinal];
             historyPost = historyPre + 1e-3;
+        end
+
+        function state = advanceEvent(self, state, ~, ~, cycle, ~)
+            self.EventCycles(end+1) = cycle;
+            if isempty(state)
+                state = struct('first_hit',NaN,'confirmed',NaN, ...
+                    'consecutive_post_hit',0,'hit',false);
+            end
+            state.hit = cycle >= self.EventFirstHitCycle;
+            if state.hit
+                if isnan(state.first_hit)
+                    state.first_hit = cycle;
+                    state.consecutive_post_hit = 0;
+                elseif isnan(state.confirmed)
+                    state.consecutive_post_hit = state.consecutive_post_hit+1;
+                    if state.consecutive_post_hit >= 3
+                        state.confirmed = cycle;
+                    end
+                end
+            else
+                state.consecutive_post_hit = 0;
+            end
         end
 
         function observe(self, event)

@@ -171,6 +171,25 @@ verifyLessThanOrEqual(testCase, ...
     result.c5_receipt.final_projected_phase_kkt, 4e-4);
 end
 
+
+function testConfirmedEventStopsAfterThreePostHitCycles(testCase)
+double = ToyRoadP0SolverDouble();
+double.EventFirstHitCycle = 6;
+context = double.makeContext(testCase.TestData.root, 'T1_initial_defect');
+context.cycle_limit = 12;
+
+result = solve_toy_road_family_case(context);
+
+verifyEqual(testCase, result.terminal_cycle, 9);
+verifyEqual(testCase, result.terminal_reason, 'confirmed');
+verifyEqual(testCase, result.event_state.first_hit, 6);
+verifyEqual(testCase, result.event_state.confirmed, 9);
+verifyEqual(testCase, double.EventCycles, 1:9);
+verifyFalse(testCase, any(double.CycleStarts == 10));
+verifyFalse(testCase, isfile(fullfile(testCase.TestData.root, ...
+    'substeps', 'cycle_0010.mat')));
+end
+
 function residual = lowerBoundRawResidual(original, snapshot, u, d, raw)
 residual = original(snapshot, u, d, raw);
 residual(:) = 0;
