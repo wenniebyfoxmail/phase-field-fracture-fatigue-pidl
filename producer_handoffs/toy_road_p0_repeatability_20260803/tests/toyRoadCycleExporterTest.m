@@ -74,9 +74,31 @@ verifyEqual(testCase, rawSource, 999 * ones(size(rawSource)));
 verifyEqual(testCase, capture.psi_raw_gp(:,:,1), expectedRaw);
 end
 
-function testInitRejectsConnectivityThatDoesNotMatchMeshContract(testCase)
+function testInitRejectsReorderedConnectivityWithRefreshedSelfDigest(testCase)
 [mesh, state0] = fixtureMeshAndState();
 mesh.connectivity(1,:) = mesh.connectivity(1,[2 1 3 4]);
+mesh.connectivity_sha256 = connectivitySha256(mesh.connectivity);
+verifyError(testCase, @() init_toy_road_cycle_capture( ...
+    1, [], state0, mesh, fixtureContract()), 'toyRoadP0:InvalidCycleCapture');
+end
+
+function testInitRejectsAlteredNodeCoordinates(testCase)
+[mesh, state0] = fixtureMeshAndState();
+mesh.node_coords(1,1) = mesh.node_coords(1,1) + 0.125;
+verifyError(testCase, @() init_toy_road_cycle_capture( ...
+    1, [], state0, mesh, fixtureContract()), 'toyRoadP0:InvalidCycleCapture');
+end
+
+function testInitRejectsNondoubleNodeCoordinates(testCase)
+[mesh, state0] = fixtureMeshAndState();
+mesh.node_coords = single(mesh.node_coords);
+verifyError(testCase, @() init_toy_road_cycle_capture( ...
+    1, [], state0, mesh, fixtureContract()), 'toyRoadP0:InvalidCycleCapture');
+end
+
+function testInitRejectsNonfiniteNodeCoordinates(testCase)
+[mesh, state0] = fixtureMeshAndState();
+mesh.node_coords(1,1) = NaN;
 verifyError(testCase, @() init_toy_road_cycle_capture( ...
     1, [], state0, mesh, fixtureContract()), 'toyRoadP0:InvalidCycleCapture');
 end
@@ -280,11 +302,12 @@ value = [0.10 0.11 0.12 0.13; 0.14 0.15 0.16 0.17];
 end
 
 function [mesh, state0] = fixtureMeshAndState()
-connectivity = [1:4; 5:8];
+[nodeCoords, connectivity] = canonicalMeshData();
 mesh = struct( ...
+    'node_coords', nodeCoords, ...
     'connectivity', connectivity, ...
     'connectivity_sha256', connectivitySha256(connectivity), ...
-    'mesh_sha256', repmat('1',1,64), ...
+    'mesh_sha256', meshSha256(nodeCoords, connectivity), ...
     'element_ordering_id', 'q4_connectivity_1_based_v1', ...
     'gp_ordering_id', 'q4_2x2_native_order_v1');
 state0 = struct('d_node', zeros(8,1), 'alpha_bar_gp', zeros(2,4));
@@ -308,8 +331,9 @@ value = min(1, (1 - ((alpha - 0.5) ./ (alpha + 0.5))).^2);
 end
 
 function contract = fixtureContract()
+[nodeCoords, connectivity] = canonicalMeshData();
 contract = struct('eta',0,'alpha_T',0.5,'p',2, ...
-    'mesh_sha256',repmat('1',1,64), ...
+    'mesh_sha256',meshSha256(nodeCoords, connectivity), ...
     'element_ordering_id','q4_connectivity_1_based_v1', ...
     'gp_ordering_id','q4_2x2_native_order_v1', ...
     'state_semantics_id','five_substep_post_commit_history_v1', ...
@@ -317,6 +341,11 @@ contract = struct('eta',0,'alpha_T',0.5,'p',2, ...
     'family_contract_sha256',repmat('3',1,64), ...
     'case_physics_contract_sha256',repmat('4',1,64), ...
     'execution_input_lock_sha256',repmat('5',1,64));
+end
+
+function [nodeCoords, connectivity] = canonicalMeshData()
+nodeCoords = [0 0; 1 0; 1 1; 0 1; 2 0; 3 0; 3 1; 2 1];
+connectivity = [1:4; 5:8];
 end
 
 function names = requiredShardFields()
@@ -333,6 +362,14 @@ payload = sprintf('%dx%d:', size(connectivity,1), size(connectivity,2));
 payload = [payload sprintf('%d,', connectivity.')];
 hasher = java.security.MessageDigest.getInstance('SHA-256');
 hasher.update(unicode2native(payload, 'UTF-8'));
+digestBytes = typecast(hasher.digest(), 'uint8');
+digest = lower(reshape(dec2hex(digestBytes, 2).', 1, []));
+end
+
+function digest = meshSha256(nodeCoords, connectivity)
+hasher = java.security.MessageDigest.getInstance('SHA-256');
+hasher.update(typecast(double(nodeCoords(:)), 'uint8'));
+hasher.update(typecast(int64(connectivity(:)), 'uint8'));
 digestBytes = typecast(hasher.digest(), 'uint8');
 digest = lower(reshape(dec2hex(digestBytes, 2).', 1, []));
 end
