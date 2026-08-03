@@ -3,6 +3,7 @@ classdef ToyRoadC5TraceForgedClassAttack < handle
 
     properties (SetAccess=private)
         ClassDispatchCount = 0
+        IsaDispatchCount = 0
         AppendDispatchCount = 0
         FinalizeDispatchCount = 0
     end
@@ -11,6 +12,11 @@ classdef ToyRoadC5TraceForgedClassAttack < handle
         function value = class(self)
             self.ClassDispatchCount = self.ClassDispatchCount + 1;
             value = 'ToyRoadC5Trace';
+        end
+
+        function value = isa(self, className)
+            self.IsaDispatchCount = self.IsaDispatchCount + 1;
+            value = strcmp(className, 'ToyRoadC5Trace');
         end
 
         function next = appendCompletedStagger(self, ~) %#ok<STOUT>

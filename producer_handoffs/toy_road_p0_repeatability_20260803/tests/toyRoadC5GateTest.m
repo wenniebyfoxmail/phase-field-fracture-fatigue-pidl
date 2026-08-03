@@ -301,13 +301,13 @@ verifyFalse(testCase, isfile(fullfile(testCase.TestData.root, ...
 verifyFalse(testCase, isfile(receiptPath(testCase.TestData.root)));
 end
 
-function testFacadesUseIsaOnlyAfterSealing(testCase)
+function testFacadesUseBuiltinIsaOnlyAfterSealing(testCase)
 facades = {'append_toy_road_c5_stagger_row.m', ...
     'finalize_toy_road_c5_gate.m'};
 for index = 1:numel(facades)
     source = fileread(fullfile(handoffDir(), facades{index}));
     verifyTrue(testCase, contains(source, ...
-        "isa(trace, 'ToyRoadC5Trace')"), facades{index});
+        "builtin('isa', trace, 'ToyRoadC5Trace')"), facades{index});
     verifyFalse(testCase, contains(source, ...
         'class(trace)'), facades{index});
 end
@@ -315,16 +315,22 @@ end
 
 function testUnrelatedForgedClassIsRejectedBeforeDispatch(testCase)
 appendAttack = ToyRoadC5TraceForgedClassAttack();
-finalizeAttack = ToyRoadC5TraceForgedClassAttack();
 
 verifyError(testCase, @() append_toy_road_c5_stagger_row( ...
     appendAttack, rowFixture(true)), 'toyRoadP0:InvalidC5Lifecycle');
 verifyEqual(testCase, appendAttack.ClassDispatchCount, 0);
+verifyEqual(testCase, appendAttack.IsaDispatchCount, 0);
 verifyEqual(testCase, appendAttack.AppendDispatchCount, 0);
 verifyEqual(testCase, appendAttack.FinalizeDispatchCount, 0);
+end
+
+function testUnrelatedForgedClassCannotDispatchFinalize(testCase)
+finalizeAttack = ToyRoadC5TraceForgedClassAttack();
+
 verifyError(testCase, @() finalize_toy_road_c5_gate(finalizeAttack), ...
     'toyRoadP0:InvalidC5Lifecycle');
 verifyEqual(testCase, finalizeAttack.ClassDispatchCount, 0);
+verifyEqual(testCase, finalizeAttack.IsaDispatchCount, 0);
 verifyEqual(testCase, finalizeAttack.AppendDispatchCount, 0);
 verifyEqual(testCase, finalizeAttack.FinalizeDispatchCount, 0);
 end
