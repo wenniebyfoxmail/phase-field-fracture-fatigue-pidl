@@ -89,6 +89,12 @@ verifyEqual(testCase, cfg.case_physics.material, struct( ...
 verifyEqual(testCase, cfg.case_physics.loading.load_factors, [.25 .5 .75 1 0]);
 verifyEqual(testCase, cfg.sol_step_par.n_step, 5);
 verifyFalse(testCase, cfg.sol_step_par.line_search);
+verifyEqual(testCase, cfg.sol_step_par.ux_increment, zeros(1,5));
+verifyEqual(testCase, cfg.sol_step_par.tx_increment, zeros(1,5));
+verifyEqual(testCase, cfg.sol_step_par.ty_increment, zeros(1,5));
+verifyEqual(testCase, ...
+    cumsum(cfg.sol_step_par.uy_increment)/cfg.sol_step_par.uy_final, ...
+    [.25 .5 .75 1 0], 'AbsTol', 1e-15);
 verifyFalse(testCase, cfg.sol_jump_par.cycle_jump);
 verifyFalse(testCase, cfg.resume_allowed);
 verifyEqual(testCase, cfg.case_physics.loading.R, 0);

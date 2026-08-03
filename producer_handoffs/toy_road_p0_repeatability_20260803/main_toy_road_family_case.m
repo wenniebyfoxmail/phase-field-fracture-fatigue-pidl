@@ -1,23 +1,17 @@
 function result = main_toy_road_family_case(varargin)
 %MAIN_TOY_ROAD_FAMILY_CASE Build state0 and run one authorized fresh case.
 
-if nargin == 0
-    request = localReadEnvironment();
-    dependencies = localProductionDependencies();
-    injected = false;
-elseif nargin == 2
-    request = varargin{1};
-    dependencies = varargin{2};
-    injected = true;
-else
-    error('toyRoadP0:InvalidDriverRequest', ...
-        'Use no inputs for production or request/dependencies for controlled tests.');
+if nargin ~= 0
+    error('toyRoadP0:AuthorizationRejected', ...
+        ['The production entrypoint accepts no injected request or callback. ' ...
+         'Task 6 authorization must enter through the locked environment.']);
 end
-localValidateRequest(request,injected);
-localValidateAuthorization(request,injected);
+request = localReadEnvironment();
+dependencies = localProductionDependencies();
+localValidateRequest(request);
+localValidateAuthorization(request);
 localValidateDependencies(dependencies);
-localValidateFreshRoots(request);
-localCreateWritableRoots(request);
+reserve_toy_road_writable_roots(request);
 
 parentMesh = dependencies.load_parent_mesh(request.input_assets_root);
 cfg = build_toy_road_family_case(request.case_id,parentMesh);
@@ -100,7 +94,7 @@ end
 value = receipt.authorization_scope;
 end
 
-function localValidateRequest(request,injected)
+function localValidateRequest(request)
 required = {'authorization_scope','authorization_receipt','case_id', ...
     'source_commit','runtime_lock_sha256','family_contract_sha256', ...
     'case_physics_contract_sha256','execution_input_lock_sha256', ...
@@ -129,20 +123,11 @@ if ~valid
     error('toyRoadP0:InvalidDriverRequest', ...
         'Driver request fields, identities, or paths are invalid.');
 end
-if injected && strcmp(char(request.authorization_scope),'production_authorized')
-    error('toyRoadP0:AuthorizationRejected', ...
-        'Production authorization may only enter through the no-input launcher path.');
-end
 end
 
-function localValidateAuthorization(request,injected)
+function localValidateAuthorization(request)
 scope = char(request.authorization_scope);
-if injected
-    allowed = strcmp(scope,'test_only_non_authorizing');
-else
-    allowed = strcmp(scope,'production_authorized');
-end
-if ~allowed
+if ~strcmp(scope,'production_authorized')
     error('toyRoadP0:AuthorizationRejected', ...
         'This authorization scope cannot execute the producer driver.');
 end
@@ -179,44 +164,6 @@ end
 if ~valid
     error('toyRoadP0:InvalidDriverDependencies', ...
         'Driver dependencies must contain only the declared callable interfaces.');
-end
-end
-
-function localValidateFreshRoots(request)
-writeFields = {'output_root','work_root','temp_root','tmp_root','pref_root','cache_root'};
-canonical = strings(1,numel(writeFields));
-for index = 1:numel(writeFields)
-    path = char(request.(writeFields{index}));
-    canonical(index) = lower(string(java.io.File(path).getCanonicalPath()));
-    if isfile(path) || isfolder(path)
-        error('toyRoadP0:FreshRootRequired', ...
-            'Writable root must be initially absent: %s',path);
-    end
-end
-if numel(unique(canonical)) ~= numel(canonical)
-    error('toyRoadP0:FreshRootRequired', ...
-        'Output, work, TEMP, TMP, preference, and cache roots must be distinct.');
-end
-if ~isfolder(request.input_assets_root)
-    error('toyRoadP0:InvalidDriverRequest', ...
-        'The read-only input-assets root must already exist.');
-end
-inputCanonical = lower(string(java.io.File( ...
-    char(request.input_assets_root)).getCanonicalPath()));
-if any(canonical == inputCanonical)
-    error('toyRoadP0:FreshRootRequired', ...
-        'A writable root cannot alias the input-assets root.');
-end
-end
-
-function localCreateWritableRoots(request)
-fields = {'output_root','work_root','temp_root','tmp_root','pref_root','cache_root'};
-for index = 1:numel(fields)
-    [created,message] = mkdir(request.(fields{index}));
-    if ~created
-        error('toyRoadP0:RootCreationFailed', ...
-            'Cannot create fresh %s: %s',fields{index},message);
-    end
 end
 end
 
@@ -346,20 +293,16 @@ material = phase_field.init.material_characteristic( ...
 solPar = phase_field.fem.solver.params( ...
     'tol_displ',1e-6,'tol_p_field',4e-4, ...
     'max_iter_displ',250,'max_iter_pf',250);
-stepPar = phase_field.fem.solver.step.params( ...
-    'n_step',5,'loading','cyclic','discretization','loading', ...
-    'uy_final',cfg.case_physics.loading.blocks(1,3), ...
-    'R',0,'line_search',false);
-stepPar.n_step = 5;
-stepPar.line_search = false;
+stepPar = build_toy_road_five_step_params( ...
+    cfg.case_physics.loading.blocks(1,3));
 assemblyPf = str2func( ...
     'phase_field.mex.fem.assembly.pf.AT1_HISTORY_FATIGUE');
 stressState = phase_field.StressState.PlaneStrain;
 pField = zeros(mesh.num_node,1);
 pField(dofs.non_hom_dirichlet_bc_pf) = 1;
 history = zeros(mesh.num_elem,quadrature.num_gauss_pts,4);
-factory = @(d) phase_field.System(material,geom,quadrature,dofs,boundaries, ...
-    stepPar,mesh,stressState,d,'AT1');
+factoryCallCount = 0;
+factory = @buildSystem;
 newton = @(sys,d,dOld,historyOld,zeroRaw,lockedSolPar) ...
     localProductionRecoveryNewton(assemblyPf,sys,d,dOld,historyOld, ...
     zeroRaw,lockedSolPar);
@@ -373,6 +316,17 @@ input = struct( ...
     'sol_par',solPar, ...
     'system_factory',factory, ...
     'recovery_newton',newton);
+
+    function [system,record] = buildSystem(d)
+        factoryCallCount = factoryCallCount + 1;
+        system = phase_field.System(material,geom,quadrature,dofs,boundaries, ...
+            stepPar,mesh,stressState,d,'AT1');
+        record = struct( ...
+            'construction_ordinal',factoryCallCount, ...
+            'phase_field',d, ...
+            'system_class',class(system), ...
+            'system_identity',sprintf('%s#%d',class(system),factoryCallCount));
+    end
 end
 
 function [d,history,residual,failed,details] = localProductionRecoveryNewton( ...

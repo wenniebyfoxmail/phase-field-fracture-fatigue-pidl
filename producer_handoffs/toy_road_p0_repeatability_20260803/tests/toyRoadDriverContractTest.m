@@ -16,41 +16,14 @@ testCase.TestData.root = root;
 testCase.addTeardown(@() removeRoot(root));
 end
 
-function testControlledDriverPublishesInputsThenUsesApprovedSolver(testCase)
+function testControlledInjectionCannotEnterProductionDriver(testCase)
 request = fixtureRequest(testCase.TestData.root, 'P0_parent');
 dependencies = fixtureDependencies();
 
-lastwarn('');
-result = main_toy_road_family_case(request, dependencies);
-[warningMessage,~] = lastwarn;
-
-verifyEmpty(testCase, warningMessage);
-verifyTrue(testCase, result.complete);
-verifyEqual(testCase, result.case_id, 'P0_parent');
-verifyTrue(testCase, isfile(fullfile(request.output_root, 'INPUT_SNAPSHOT.json')));
-verifyTrue(testCase, isfile(fullfile(request.output_root, 'mesh_geometry.mat')));
-verifyTrue(testCase, isfile(fullfile(request.output_root, 'state0_analysis.mat')));
-verifyTrue(testCase, isfile(fullfile(request.output_root, 'RUNTIME_RECEIPT.json')));
-verifyTrue(testCase, isfile(fullfile(request.output_root, ...
-    'substeps', 'cycle_0005.mat')));
-
-snapshot = jsondecode(fileread(fullfile(request.output_root, 'INPUT_SNAPSHOT.json')));
-verifyEqual(testCase, snapshot.case_id, request.case_id);
-verifyEqual(testCase, snapshot.source_commit, request.source_commit);
-verifyEqual(testCase, snapshot.runtime_lock_sha256, request.runtime_lock_sha256);
-verifyEqual(testCase, snapshot.family_contract_sha256, request.family_contract_sha256);
-verifyEqual(testCase, snapshot.case_physics_contract_sha256, ...
-    request.case_physics_contract_sha256);
-verifyEqual(testCase, snapshot.execution_input_lock_sha256, ...
-    request.execution_input_lock_sha256);
-verifyTrue(testCase, snapshot.fresh_state0);
-verifyFalse(testCase, snapshot.resume_allowed);
-
-statePayload = load(fullfile(request.output_root, 'state0_analysis.mat'));
-verifyEqual(testCase, statePayload.state0.d_node, 0.1*ones(4,1));
-verifyEqual(testCase, statePayload.state0.alpha_bar_gp, zeros(1,4));
-verifyEqual(testCase, statePayload.state0.history_vars(:,:,2:3), zeros(1,4,2));
-verifyEqual(testCase, statePayload.state0.history_vars(:,:,4), ones(1,4));
+verifyError(testCase, @() main_toy_road_family_case(request,dependencies), ...
+    'toyRoadP0:AuthorizationRejected');
+verifyFalse(testCase, isfolder(request.output_root));
+verifyFalse(testCase, isfolder(request.work_root));
 end
 
 function testAuthorizationMismatchStopsBeforeCreatingRoots(testCase)
@@ -77,14 +50,14 @@ end
 function testReusedOrAliasedWritableRootsFailClosed(testCase)
 request = fixtureRequest(testCase.TestData.root, 'P0_parent');
 mkdir(request.work_root);
-verifyError(testCase, @() main_toy_road_family_case( ...
-    request, fixtureDependencies()), 'toyRoadP0:FreshRootRequired');
+verifyError(testCase, @() reserve_toy_road_writable_roots(request), ...
+    'toyRoadP0:FreshRootRequired');
 verifyFalse(testCase, isfolder(request.output_root));
 
 rmdir(request.work_root);
 request.temp_root = request.cache_root;
-verifyError(testCase, @() main_toy_road_family_case( ...
-    request, fixtureDependencies()), 'toyRoadP0:FreshRootRequired');
+verifyError(testCase, @() reserve_toy_road_writable_roots(request), ...
+    'toyRoadP0:FreshRootRequired');
 verifyFalse(testCase, isfolder(request.output_root));
 end
 
@@ -93,7 +66,7 @@ request = fixtureRequest(testCase.TestData.root, 'P0R_parent_repeat');
 request.resume_root = fullfile(testCase.TestData.root, 'p0_output');
 
 verifyError(testCase, @() main_toy_road_family_case( ...
-    request, fixtureDependencies()), 'toyRoadP0:InvalidDriverRequest');
+    request, fixtureDependencies()), 'toyRoadP0:AuthorizationRejected');
 verifyFalse(testCase, isfolder(request.output_root));
 end
 
@@ -102,7 +75,7 @@ request = rmfield(fixtureRequest(testCase.TestData.root, 'T2_material_state'), .
     'execution_input_lock_sha256');
 
 verifyError(testCase, @() main_toy_road_family_case( ...
-    request, fixtureDependencies()), 'toyRoadP0:InvalidDriverRequest');
+    request, fixtureDependencies()), 'toyRoadP0:AuthorizationRejected');
 end
 
 function testEntrypointDeclaresProductionEnvironmentContract(testCase)
