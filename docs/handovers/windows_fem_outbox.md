@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-08-03 - [plan]: P0/P0R producer implementation plan prepared for review
+
+- **Approved design**: v2.1 at commit
+  `8c364c14c7ce84a9684d214861813b49d8f442f8`.
+- **Plan**:
+  `docs/superpowers/plans/2026-08-03-toy-road-p0-repeatability-producer.md`.
+- **Order**: state/package validators and tests, five-substep exporter,
+  same-process c5 gate, fresh case driver, three-layer locks/launcher, result
+  governance, then clean sealed preflight.
+- **Isolation**: the sealed 20260731 producer remains a read-only reference;
+  implementation uses a new `toy_road_p0_repeatability_20260803` handoff.
+- **Boundary**: the plan ends at reviewed sealed preflight. No production
+  runner implementation begins until this plan is approved, and no
+  P0/P0R/T1/T2/T3 execution is authorized by the plan.
+
 ## 2026-08-03 - [review]: P0/P0R design v2.1 prepared; zero execution retained
 
 - **Re**: changes requested against design v2 commit `300b295`.
