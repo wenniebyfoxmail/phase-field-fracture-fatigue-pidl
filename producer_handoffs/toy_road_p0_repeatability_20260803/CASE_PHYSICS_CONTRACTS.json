@@ -1,0 +1,280 @@
+{
+  "schema_version": "toy_road_case_physics_contracts_v1",
+  "protocol_version": "toy-road-p0-repeatability-v2.1",
+  "family_contract_sha256": "1af62deb41e60cd88853201ff9ee2d4a240975c8bf722453c1268b2c799a4b4d",
+  "cases": {
+    "P0_parent": {
+      "changed_axes": [],
+      "case_physics_contract_sha256": "b114c6f0ea46d5320d47f2df745a3480f6aa541874698a370e33cf6884249820",
+      "physics": {
+        "mesh": {
+          "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
+          "mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
+          "element_ordering_id": "q4_connectivity_1_based_v1",
+          "gp_ordering_id": "q4_2x2_native_order_v1",
+          "node_transform": {"semantics": "identity"}
+        },
+        "recovery": {
+          "mode": "hard_zero_load",
+          "project_damage_bounds": [0.0, 1.0],
+          "rebuild_system_after_projection": true,
+          "reset_post_recovery_fatigue_history": true
+        },
+        "material": {
+          "E": 1.0,
+          "nu": 0.3,
+          "Gc": 0.01,
+          "ell": 0.01,
+          "alpha_T": 0.5,
+          "p": 2,
+          "eta": 0.0,
+          "plane_state": "plane_strain",
+          "energy_split": "AMOR",
+          "phase_field_model": "AT1_history_fatigue"
+        },
+        "loading": {
+          "blocks": [[1, 150, 0.12]],
+          "load_factors": [0.25, 0.5, 0.75, 1.0, 0.0],
+          "R": 0.0,
+          "boundary_condition": "reverse_top_bottom_displacement"
+        },
+        "numerics": {
+          "tol_displacement": 1e-6,
+          "tol_phase_field": 0.0004,
+          "tol_staggered": 0.0004,
+          "line_search": false,
+          "cycle_jump": false,
+          "checkpoint_resume": false,
+          "right_censor_cap": 150
+        },
+        "event": {
+          "right_boundary_x_min": 0.48,
+          "damage_threshold": 0.95,
+          "minimum_connected_nodes": 3,
+          "confirmation_cycles": 3,
+          "evaluate_at_peak_substep_ordinal": 4
+        }
+      }
+    },
+    "P0R_parent_repeat": {
+      "changed_axes": [],
+      "case_physics_contract_sha256": "b114c6f0ea46d5320d47f2df745a3480f6aa541874698a370e33cf6884249820",
+      "physics": {
+        "mesh": {
+          "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
+          "mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
+          "element_ordering_id": "q4_connectivity_1_based_v1",
+          "gp_ordering_id": "q4_2x2_native_order_v1",
+          "node_transform": {"semantics": "identity"}
+        },
+        "recovery": {
+          "mode": "hard_zero_load",
+          "project_damage_bounds": [0.0, 1.0],
+          "rebuild_system_after_projection": true,
+          "reset_post_recovery_fatigue_history": true
+        },
+        "material": {
+          "E": 1.0,
+          "nu": 0.3,
+          "Gc": 0.01,
+          "ell": 0.01,
+          "alpha_T": 0.5,
+          "p": 2,
+          "eta": 0.0,
+          "plane_state": "plane_strain",
+          "energy_split": "AMOR",
+          "phase_field_model": "AT1_history_fatigue"
+        },
+        "loading": {
+          "blocks": [[1, 150, 0.12]],
+          "load_factors": [0.25, 0.5, 0.75, 1.0, 0.0],
+          "R": 0.0,
+          "boundary_condition": "reverse_top_bottom_displacement"
+        },
+        "numerics": {
+          "tol_displacement": 1e-6,
+          "tol_phase_field": 0.0004,
+          "tol_staggered": 0.0004,
+          "line_search": false,
+          "cycle_jump": false,
+          "checkpoint_resume": false,
+          "right_censor_cap": 150
+        },
+        "event": {
+          "right_boundary_x_min": 0.48,
+          "damage_threshold": 0.95,
+          "minimum_connected_nodes": 3,
+          "confirmation_cycles": 3,
+          "evaluate_at_peak_substep_ordinal": 4
+        }
+      }
+    },
+    "T1_initial_defect": {
+      "changed_axes": ["mesh.node_coords"],
+      "case_physics_contract_sha256": "8f13d4b3b8d747b92190925cb28c97713795f398129a3218503afba148004cb4",
+      "physics": {
+        "mesh": {
+          "mesh_sha256": "1db2b1074fc04b1bd8302f9810ea6f3a72a44485819b215eca8ccea85038a1d4",
+          "mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
+          "element_ordering_id": "q4_connectivity_1_based_v1",
+          "gp_ordering_id": "q4_2x2_native_order_v1",
+          "node_transform": {
+            "semantics": "piecewise_affine_x_v1",
+            "left_affine_x_factor": 1.25,
+            "right_affine_x_factor": 0.75,
+            "parent_tip": [0.0, 0.0],
+            "mapped_tip": [0.125, 0.0],
+            "mapped_over_parent_edge_ratio_bounds": [0.75, 1.25],
+            "gate_tolerance": 1e-12
+          }
+        },
+        "recovery": {
+          "mode": "hard_zero_load",
+          "project_damage_bounds": [0.0, 1.0],
+          "rebuild_system_after_projection": true,
+          "reset_post_recovery_fatigue_history": true
+        },
+        "material": {
+          "E": 1.0,
+          "nu": 0.3,
+          "Gc": 0.01,
+          "ell": 0.01,
+          "alpha_T": 0.5,
+          "p": 2,
+          "eta": 0.0,
+          "plane_state": "plane_strain",
+          "energy_split": "AMOR",
+          "phase_field_model": "AT1_history_fatigue"
+        },
+        "loading": {
+          "blocks": [[1, 150, 0.12]],
+          "load_factors": [0.25, 0.5, 0.75, 1.0, 0.0],
+          "R": 0.0,
+          "boundary_condition": "reverse_top_bottom_displacement"
+        },
+        "numerics": {
+          "tol_displacement": 1e-6,
+          "tol_phase_field": 0.0004,
+          "tol_staggered": 0.0004,
+          "line_search": false,
+          "cycle_jump": false,
+          "checkpoint_resume": false,
+          "right_censor_cap": 150
+        },
+        "event": {
+          "right_boundary_x_min": 0.48,
+          "damage_threshold": 0.95,
+          "minimum_connected_nodes": 3,
+          "confirmation_cycles": 3,
+          "evaluate_at_peak_substep_ordinal": 4
+        }
+      }
+    },
+    "T2_material_state": {
+      "changed_axes": ["material.Gc"],
+      "case_physics_contract_sha256": "489e880dca0a4afba9002a8d91011a35712dadf42a2b1cd59a274345c1dc7fb9",
+      "physics": {
+        "mesh": {
+          "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
+          "mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
+          "element_ordering_id": "q4_connectivity_1_based_v1",
+          "gp_ordering_id": "q4_2x2_native_order_v1",
+          "node_transform": {"semantics": "identity"}
+        },
+        "recovery": {
+          "mode": "hard_zero_load",
+          "project_damage_bounds": [0.0, 1.0],
+          "rebuild_system_after_projection": true,
+          "reset_post_recovery_fatigue_history": true
+        },
+        "material": {
+          "E": 1.0,
+          "nu": 0.3,
+          "Gc": 0.008,
+          "ell": 0.01,
+          "alpha_T": 0.5,
+          "p": 2,
+          "eta": 0.0,
+          "plane_state": "plane_strain",
+          "energy_split": "AMOR",
+          "phase_field_model": "AT1_history_fatigue"
+        },
+        "loading": {
+          "blocks": [[1, 150, 0.12]],
+          "load_factors": [0.25, 0.5, 0.75, 1.0, 0.0],
+          "R": 0.0,
+          "boundary_condition": "reverse_top_bottom_displacement"
+        },
+        "numerics": {
+          "tol_displacement": 1e-6,
+          "tol_phase_field": 0.0004,
+          "tol_staggered": 0.0004,
+          "line_search": false,
+          "cycle_jump": false,
+          "checkpoint_resume": false,
+          "right_censor_cap": 150
+        },
+        "event": {
+          "right_boundary_x_min": 0.48,
+          "damage_threshold": 0.95,
+          "minimum_connected_nodes": 3,
+          "confirmation_cycles": 3,
+          "evaluate_at_peak_substep_ordinal": 4
+        }
+      }
+    },
+    "T3_loading_history": {
+      "changed_axes": ["loading.blocks"],
+      "case_physics_contract_sha256": "543b43bf5142e147e9d26469ba6d30faeed76db58806f3cb66fb5dcd51bfc923",
+      "physics": {
+        "mesh": {
+          "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
+          "mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
+          "element_ordering_id": "q4_connectivity_1_based_v1",
+          "gp_ordering_id": "q4_2x2_native_order_v1",
+          "node_transform": {"semantics": "identity"}
+        },
+        "recovery": {
+          "mode": "hard_zero_load",
+          "project_damage_bounds": [0.0, 1.0],
+          "rebuild_system_after_projection": true,
+          "reset_post_recovery_fatigue_history": true
+        },
+        "material": {
+          "E": 1.0,
+          "nu": 0.3,
+          "Gc": 0.01,
+          "ell": 0.01,
+          "alpha_T": 0.5,
+          "p": 2,
+          "eta": 0.0,
+          "plane_state": "plane_strain",
+          "energy_split": "AMOR",
+          "phase_field_model": "AT1_history_fatigue"
+        },
+        "loading": {
+          "blocks": [[1, 30, 0.108], [31, 60, 0.126], [61, 150, 0.12]],
+          "load_factors": [0.25, 0.5, 0.75, 1.0, 0.0],
+          "R": 0.0,
+          "boundary_condition": "reverse_top_bottom_displacement"
+        },
+        "numerics": {
+          "tol_displacement": 1e-6,
+          "tol_phase_field": 0.0004,
+          "tol_staggered": 0.0004,
+          "line_search": false,
+          "cycle_jump": false,
+          "checkpoint_resume": false,
+          "right_censor_cap": 150
+        },
+        "event": {
+          "right_boundary_x_min": 0.48,
+          "damage_threshold": 0.95,
+          "minimum_connected_nodes": 3,
+          "confirmation_cycles": 3,
+          "evaluate_at_peak_substep_ordinal": 4
+        }
+      }
+    }
+  }
+}

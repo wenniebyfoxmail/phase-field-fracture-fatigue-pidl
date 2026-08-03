@@ -1,0 +1,27 @@
+{
+  "schema_version": "toy_road_historical_q2_closure_v1",
+  "protocol_version": "toy-road-p0-repeatability-v2.1",
+  "verdict": "historical_q2_parent_irrecoverable",
+  "audit_commit": "d2cdcbb8000e68aa9480148181ededcd5bfec489",
+  "windows_read_only_search_completed": true,
+  "windows_read_only_search_scope": [
+    "C:/Users/xw436/OneDrive - University of Cambridge/griphfith/Hard5_eta0_5step_Umax_011_012_013_20260729",
+    "C:/q4diag/toy-road-parent-20260729",
+    "C:/q4diag/hard5_parent_c2_src"
+  ],
+  "historical_parent_reference_id": "hard5_eta0_u012_5step_20260729",
+  "locked_parent_hashes": {
+    "initial_state_metadata_mat": "0e0144b63ca93836c515b489b64ae768058588d7f2431d49c0b95607e35916d8",
+    "state0_analysis_mat": "91b8f89ba3a211f08f1b79def5d2d50a973798e988deedc5c5c7e3b64a98ef11",
+    "pre_run_lock_mat": "6cc63d42e596ef5a96882a02c3b34bb8257ce83b4db97eaf78770c286a701f37",
+    "cycle_0001_mat": "72925ac353f766475862858befcc611307e71faa392eb774d7ce5aa8a40d74d9",
+    "cycle_0083_mat": "b0e6a7119b1c265197de88938e5f65d4e7069e199e104812463b3b911b4f77e9",
+    "cycle_0086_mat": "0ce0426012e0d8aa563650e5d45bdee7214d28502378c420593f4b889a317a13",
+    "parent_mesh_vtk": "acdc981269024cbb111f7d468c287f2d1ca09f3735131b56aca7fa2fbaec1615"
+  },
+  "missing_evidence": "cycle_1_five_substep_native_gp_payload_with_true_psi_active_gp",
+  "active_field_backward_equivalence_claimed": false,
+  "historical_q2_passed": false,
+  "replacement_parent": "P0_parent",
+  "claim_boundary": "Historical U0.12 remains external reference only; no g_gp or psi_active_gp backward-equivalence claim is permitted."
+}

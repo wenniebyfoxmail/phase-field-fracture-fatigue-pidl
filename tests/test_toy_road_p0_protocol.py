@@ -5,6 +5,7 @@ import importlib.metadata
 import importlib.util
 import json
 import os
+import copy
 import shutil
 import subprocess
 from pathlib import Path
@@ -94,6 +95,126 @@ TRACE_COLUMNS = (
     "consecutive_stagger_delta",
     "primal_feasibility",
 )
+
+
+def test_contract_digest_layers_are_correct() -> None:
+    contracts = PROTOCOL.load_contracts()
+    assert set(contracts) == {
+        "P0_parent",
+        "P0R_parent_repeat",
+        "T1_initial_defect",
+        "T2_material_state",
+        "T3_loading_history",
+    }
+    assert len({case.family_sha256 for case in contracts.values()}) == 1
+    assert (
+        contracts["P0_parent"].case_sha256
+        == contracts["P0R_parent_repeat"].case_sha256
+    )
+    assert (
+        contracts["T1_initial_defect"].case_sha256
+        != contracts["P0_parent"].case_sha256
+    )
+    assert contracts["T1_initial_defect"].changed_axes == ["mesh.node_coords"]
+    assert contracts["T2_material_state"].changed_axes == ["material.Gc"]
+    assert contracts["T3_loading_history"].changed_axes == ["loading.blocks"]
+    assert len({case.execution_sha256 for case in contracts.values()}) == 1
+    assert next(iter(contracts.values())).execution_sha256 == "not_applicable"
+
+
+def test_contract_files_bind_runtime_and_historical_closure() -> None:
+    family = json.loads((MODULE_PATH.parent / "FAMILY_CONTRACT.json").read_text("utf-8"))
+    closure = json.loads(
+        (MODULE_PATH.parent / "HISTORICAL_Q2_CLOSURE.json").read_text("utf-8")
+    )
+    contracts = PROTOCOL.load_contracts()
+    expected_family = PROTOCOL.canonical_json_sha256(family)
+    assert {case.family_sha256 for case in contracts.values()} == {expected_family}
+    runtime = family["runtime_identity"]
+    assert runtime["griphfith_source_commit"] == (
+        "355d4c83fefc2db88c32031a2dd2623b3de85c89"
+    )
+    assert runtime["initial_mexw64_sha256"] == (
+        "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db"
+    )
+    assert runtime["h5py_version"] == "3.16.0"
+    assert runtime["java_hard_link_required"] is True
+    assert runtime["mesh_sha256_semantics"] == (
+        "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1"
+    )
+    assert set(runtime["binary_sha256"]) == {
+        "initial",
+        "AMOR",
+        "AT1_HISTORY_FATIGUE",
+        "cholmod2",
+    }
+    assert closure["verdict"] == "historical_q2_parent_irrecoverable"
+    assert closure["active_field_backward_equivalence_claimed"] is False
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ("family_digest", "family"),
+        ("p0r_physics", "P0/P0R"),
+        ("t1_second_axis", "single-axis|T1"),
+        ("t2_second_axis", "single-axis|T2"),
+        ("t3_second_axis", "single-axis|T3"),
+    ],
+)
+def test_contract_mutations_fail_closed(mutation: str, message: str) -> None:
+    family = json.loads((MODULE_PATH.parent / "FAMILY_CONTRACT.json").read_text("utf-8"))
+    cases = json.loads(
+        (MODULE_PATH.parent / "CASE_PHYSICS_CONTRACTS.json").read_text("utf-8")
+    )
+    family = copy.deepcopy(family)
+    cases = copy.deepcopy(cases)
+    if mutation == "family_digest":
+        cases["family_contract_sha256"] = "0" * 64
+    elif mutation == "p0r_physics":
+        cases["cases"]["P0R_parent_repeat"]["physics"]["material"]["Gc"] = 0.009
+    elif mutation == "t1_second_axis":
+        cases["cases"]["T1_initial_defect"]["physics"]["material"]["Gc"] = 0.009
+    elif mutation == "t2_second_axis":
+        cases["cases"]["T2_material_state"]["physics"]["loading"]["R"] = 0.1
+    elif mutation == "t3_second_axis":
+        cases["cases"]["T3_loading_history"]["physics"]["material"]["Gc"] = 0.009
+    with pytest.raises(ProtocolError, match=message):
+        PROTOCOL.validate_contract_documents(family, cases)
+
+
+def test_execution_input_lock_is_launch_local_and_self_consistent(tmp_path: Path) -> None:
+    contracts = PROTOCOL.load_contracts()
+    roots = {
+        name: str(tmp_path / name)
+        for name in (
+            "output",
+            "work",
+            "temp",
+            "tmp",
+            "pref",
+            "cache",
+            "matlab_startup_pref",
+        )
+    }
+    lock = PROTOCOL.build_execution_input_lock(
+        role="P0_parent",
+        family_contract_sha256=contracts["P0_parent"].family_sha256,
+        case_physics_contract_sha256=contracts["P0_parent"].case_sha256,
+        source_commit="a" * 40,
+        runtime_lock_sha256="b" * 64,
+        roots=roots,
+        launch_timestamp_utc="2026-08-03T12:00:00.0000000Z",
+        no_clobber_receipt_id="fixture-no-clobber-1",
+    )
+    assert lock["case_id"] == "P0_parent"
+    assert lock["writable_roots"] == roots
+    digest = lock.pop("execution_input_lock_sha256")
+    assert digest == PROTOCOL.canonical_json_sha256(lock)
+    assert digest not in {
+        contracts["P0_parent"].family_sha256,
+        contracts["P0_parent"].case_sha256,
+    }
 
 
 def test_exposes_exact_h5py_runtime_dependency_identity() -> None:
@@ -195,6 +316,7 @@ def test_repeatability_accepts_legacy_packages_and_complete_c5_evidence(
     assert evidence == lock
     assert evidence["status"] == "PASS"
     assert evidence["authorization_scope"] == AUTHORIZATION_SCOPE
+    assert evidence["family_contract_sha256"] == "3" * 64
     assert evidence["p0_execution_input_lock_sha256"] != evidence[
         "p0r_execution_input_lock_sha256"
     ]

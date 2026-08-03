@@ -8,10 +8,11 @@ import math
 import os
 import re
 import stat
+import sys
 import uuid
 from importlib import metadata
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 import numpy as np
 from scipy.io import loadmat
@@ -64,6 +65,21 @@ def runtime_dependency_identity() -> dict[str, str]:
 
 
 PROTOCOL_VERSION = "toy-road-p0-repeatability-v2.1"
+HANDOFF_ROOT = Path(__file__).resolve().parent
+FAMILY_ROLES = (
+    "P0_parent",
+    "P0R_parent_repeat",
+    "T1_initial_defect",
+    "T2_material_state",
+    "T3_loading_history",
+)
+EXPECTED_CHANGED_AXES = {
+    "P0_parent": [],
+    "P0R_parent_repeat": [],
+    "T1_initial_defect": ["mesh.node_coords"],
+    "T2_material_state": ["material.Gc"],
+    "T3_loading_history": ["loading.blocks"],
+}
 THRESHOLD = 1e-12
 RANGE_TOLERANCE = 1e-10
 TRAJECTORY_FIELDS = (
@@ -185,6 +201,278 @@ TERMINAL_FIELDS = {
 }
 
 
+class CaseContract:
+    __slots__ = (
+        "role",
+        "family_sha256",
+        "case_sha256",
+        "changed_axes",
+        "physics",
+        "execution_sha256",
+    )
+
+    def __init__(
+        self,
+        *,
+        role: str,
+        family_sha256: str,
+        case_sha256: str,
+        changed_axes: list[str],
+        physics: Mapping[str, object],
+    ) -> None:
+        self.role = role
+        self.family_sha256 = family_sha256
+        self.case_sha256 = case_sha256
+        self.changed_axes = changed_axes
+        self.physics = physics
+        self.execution_sha256 = "not_applicable"
+
+
+def canonical_json_sha256(value: Mapping[str, object]) -> str:
+    """Hash one mapping with the protocol's canonical UTF-8 JSON encoding."""
+    if not isinstance(value, Mapping):
+        raise ProtocolError("canonical JSON digest input must be a mapping")
+    payload = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=True
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def load_contracts(root: Path | None = None) -> dict[str, CaseContract]:
+    contract_root = HANDOFF_ROOT if root is None else Path(root)
+    family = _read_contract_json(contract_root / "FAMILY_CONTRACT.json")
+    cases = _read_contract_json(contract_root / "CASE_PHYSICS_CONTRACTS.json")
+    return validate_contract_documents(family, cases)
+
+
+def validate_contract_documents(
+    family: Mapping[str, object], case_document: Mapping[str, object]
+) -> dict[str, CaseContract]:
+    family_value = _require_plain_mapping(family, "family contract")
+    case_value = _require_plain_mapping(case_document, "case contracts")
+    _require_exact_fields(
+        family_value,
+        {
+            "schema_version",
+            "protocol_version",
+            "runtime_identity",
+            "cadence",
+            "exporter_contract",
+            "numerical_gate_contract",
+            "event_contract",
+            "state_semantics",
+            "case_axis_table",
+        },
+        "family contract",
+    )
+    if (
+        family_value["schema_version"] != "toy_road_family_contract_v1"
+        or family_value["protocol_version"] != PROTOCOL_VERSION
+    ):
+        raise ProtocolError("family contract schema or protocol is invalid")
+    _require_exact_fields(
+        case_value,
+        {"schema_version", "protocol_version", "family_contract_sha256", "cases"},
+        "case contracts",
+    )
+    if (
+        case_value["schema_version"] != "toy_road_case_physics_contracts_v1"
+        or case_value["protocol_version"] != PROTOCOL_VERSION
+    ):
+        raise ProtocolError("case contract schema or protocol is invalid")
+
+    family_digest = canonical_json_sha256(family_value)
+    if case_value["family_contract_sha256"] != family_digest:
+        raise ProtocolError("case contracts do not bind the canonical family digest")
+    axis_table = _require_plain_mapping(
+        family_value["case_axis_table"], "family case-axis table"
+    )
+    if set(axis_table) != set(FAMILY_ROLES):
+        raise ProtocolError("family case-axis table does not declare exactly five roles")
+    cases = _require_plain_mapping(case_value["cases"], "case contract table")
+    if set(cases) != set(FAMILY_ROLES):
+        raise ProtocolError("case contract table does not contain exactly five roles")
+
+    entries: dict[str, dict[str, Any]] = {}
+    for role in FAMILY_ROLES:
+        entry = _require_plain_mapping(cases[role], f"{role} case contract")
+        _require_exact_fields(
+            entry,
+            {"changed_axes", "case_physics_contract_sha256", "physics"},
+            f"{role} case contract",
+        )
+        changed_axes = entry["changed_axes"]
+        if not isinstance(changed_axes, list) or not all(
+            isinstance(axis, str) and axis for axis in changed_axes
+        ):
+            raise ProtocolError(f"{role} changed_axes must be a text list")
+        if changed_axes != EXPECTED_CHANGED_AXES[role] or axis_table[role] != changed_axes:
+            raise ProtocolError(f"{role} changed-axis declaration is invalid")
+        physics = _require_plain_mapping(entry["physics"], f"{role} physics")
+        _require_exact_fields(
+            physics,
+            {"mesh", "recovery", "material", "loading", "numerics", "event"},
+            f"{role} physics",
+        )
+        entries[role] = entry
+
+    parent_physics = entries["P0_parent"]["physics"]
+    if entries["P0R_parent_repeat"]["physics"] != parent_physics:
+        raise ProtocolError("P0/P0R physics contracts must be exactly identical")
+    for role in FAMILY_ROLES[2:]:
+        observed = sorted(
+            {
+                _normalise_changed_axis(path)
+                for path in _mapping_leaf_differences(
+                    parent_physics, entries[role]["physics"]
+                )
+            }
+        )
+        if observed != EXPECTED_CHANGED_AXES[role]:
+            raise ProtocolError(
+                f"{role} violates its declared single-axis physics change"
+            )
+
+    output: dict[str, CaseContract] = {}
+    for role in FAMILY_ROLES:
+        entry = entries[role]
+        digest_payload = {
+            "family_contract_sha256": family_digest,
+            "physics": entry["physics"],
+        }
+        case_digest = canonical_json_sha256(digest_payload)
+        if entry["case_physics_contract_sha256"] != case_digest:
+            raise ProtocolError(f"{role} case physics digest is not self-consistent")
+        output[role] = CaseContract(
+            role=role,
+            family_sha256=family_digest,
+            case_sha256=case_digest,
+            changed_axes=list(entry["changed_axes"]),
+            physics=entry["physics"],
+        )
+    if output["P0_parent"].case_sha256 != output["P0R_parent_repeat"].case_sha256:
+        raise ProtocolError("P0/P0R case physics digests must match")
+    return output
+
+
+def build_execution_input_lock(
+    *,
+    role: str,
+    family_contract_sha256: str,
+    case_physics_contract_sha256: str,
+    source_commit: str,
+    runtime_lock_sha256: str,
+    roots: Mapping[str, str],
+    launch_timestamp_utc: str,
+    no_clobber_receipt_id: str,
+) -> dict[str, object]:
+    if role not in FAMILY_ROLES:
+        raise ProtocolError("execution lock role is not declared")
+    for label, value, length in (
+        ("family contract", family_contract_sha256, 64),
+        ("case physics contract", case_physics_contract_sha256, 64),
+        ("source commit", source_commit, 40),
+        ("runtime lock", runtime_lock_sha256, 64),
+    ):
+        if not isinstance(value, str) or re.fullmatch(
+            rf"[0-9a-f]{{{length}}}", value
+        ) is None:
+            raise ProtocolError(f"execution {label} identity is malformed")
+    root_value = _require_plain_mapping(roots, "execution writable roots")
+    expected_roots = {
+        "output",
+        "work",
+        "temp",
+        "tmp",
+        "pref",
+        "cache",
+        "matlab_startup_pref",
+    }
+    if set(root_value) != expected_roots or not all(
+        isinstance(value, str) and value for value in root_value.values()
+    ):
+        raise ProtocolError("execution writable roots are incomplete")
+    _require_disjoint_root_text(root_value)
+    if (
+        not isinstance(launch_timestamp_utc, str)
+        or re.fullmatch(r"[0-9T:.+\-]+Z", launch_timestamp_utc) is None
+        or not isinstance(no_clobber_receipt_id, str)
+        or not no_clobber_receipt_id
+    ):
+        raise ProtocolError("execution timestamp or no-clobber receipt is invalid")
+    lock: dict[str, object] = {
+        "schema_version": "toy_road_execution_input_lock_v1",
+        "protocol_version": PROTOCOL_VERSION,
+        "case_id": role,
+        "family_contract_sha256": family_contract_sha256,
+        "case_physics_contract_sha256": case_physics_contract_sha256,
+        "source_commit": source_commit,
+        "runtime_lock_sha256": runtime_lock_sha256,
+        "writable_roots": dict(root_value),
+        "launch_timestamp_utc": launch_timestamp_utc,
+        "no_clobber_receipt_id": no_clobber_receipt_id,
+        "resume_allowed": False,
+    }
+    lock["execution_input_lock_sha256"] = canonical_json_sha256(lock)
+    return lock
+
+
+def _read_contract_json(path: Path) -> dict[str, Any]:
+    try:
+        return _require_plain_mapping(json.loads(path.read_text("utf-8")), str(path))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exception:
+        raise ProtocolError(f"cannot read contract {path}: {exception}") from exception
+
+
+def _require_plain_mapping(value: object, label: str) -> dict[str, Any]:
+    if not isinstance(value, dict) or not all(isinstance(key, str) for key in value):
+        raise ProtocolError(f"{label} must be one JSON object")
+    return value
+
+
+def _mapping_leaf_differences(
+    reference: Mapping[str, object], candidate: Mapping[str, object], prefix: str = ""
+) -> list[str]:
+    keys = set(reference) | set(candidate)
+    differences: list[str] = []
+    for key in sorted(keys):
+        path = f"{prefix}.{key}" if prefix else key
+        if key not in reference or key not in candidate:
+            differences.append(path)
+            continue
+        left = reference[key]
+        right = candidate[key]
+        if isinstance(left, Mapping) and isinstance(right, Mapping):
+            differences.extend(_mapping_leaf_differences(left, right, path))
+        elif left != right:
+            differences.append(path)
+    return differences
+
+
+def _normalise_changed_axis(path: str) -> str:
+    if path.startswith("mesh."):
+        return "mesh.node_coords"
+    return path
+
+
+def _require_disjoint_root_text(roots: Mapping[str, object]) -> None:
+    canonical = {
+        name: os.path.normcase(os.path.abspath(str(value)))
+        for name, value in roots.items()
+    }
+    values = list(canonical.items())
+    for index, (left_name, left) in enumerate(values):
+        for right_name, right in values[index + 1 :]:
+            try:
+                common = os.path.commonpath([left, right])
+            except ValueError as exception:
+                raise ProtocolError("execution roots must share one Windows volume") from exception
+            if common in {left, right}:
+                raise ProtocolError(
+                    f"execution roots {left_name} and {right_name} are shared or nested"
+                )
+
+
 def relative_l2(candidate: np.ndarray, reference: np.ndarray) -> float:
     delta = np.asarray(candidate, dtype=np.float64).reshape(-1, order="F") - \
         np.asarray(reference, dtype=np.float64).reshape(-1, order="F")
@@ -274,6 +562,7 @@ def compare_repeatability(p0_root: Path, p0r_root: Path) -> dict[str, object]:
         "protocol_version": p0["manifest"]["protocol_version"],
         "source_commit": p0["manifest"]["source_commit"],
         "runtime_lock_sha256": p0["manifest"]["runtime_lock_sha256"],
+        "family_contract_sha256": p0["manifest"]["family_contract_sha256"],
         "exporter_sha256": p0["manifest"]["exporter_sha256"],
         "p0_manifest_sha256": p0["manifest_sha256"],
         "p0r_manifest_sha256": p0r["manifest_sha256"],
@@ -987,3 +1276,25 @@ def _publish_json_exclusive(destination: Path, value: object) -> None:
             temporary.unlink()
         except FileNotFoundError:
             pass
+
+
+def _contract_summary_cli() -> int:
+    if sys.argv[1:] != ["--contract-summary"]:
+        raise ProtocolError("unsupported protocol command")
+    contracts = load_contracts()
+    summary = {
+        "family_contract_sha256": next(iter(contracts.values())).family_sha256,
+        "cases": {
+            role: {
+                "case_physics_contract_sha256": contract.case_sha256,
+                "mesh_sha256": contract.physics["mesh"]["mesh_sha256"],
+            }
+            for role, contract in contracts.items()
+        },
+    }
+    print(json.dumps(summary, sort_keys=True, separators=(",", ":")))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_contract_summary_cli())
