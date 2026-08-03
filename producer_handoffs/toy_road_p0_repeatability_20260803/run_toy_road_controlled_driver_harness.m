@@ -1,0 +1,69 @@
+function result = run_toy_road_controlled_driver_harness(request,adapter)
+%RUN_TOY_ROAD_CONTROLLED_DRIVER_HARNESS Exercise the core with sealed doubles.
+
+if nargin ~= 2 || ~localControlledReceipt(request)
+    error('toyRoadP0:ControlledHarnessRejected', ...
+        'The controlled harness requires its non-authorizing test receipt.');
+end
+localValidateAdapter(adapter);
+dependencies = adapter.sealedDependencies();
+result = run_toy_road_driver_core(request,dependencies);
+end
+
+function valid = localControlledReceipt(request)
+valid = isstruct(request) && isscalar(request) && ...
+    isfield(request,'authorization_scope') && ...
+    localText(request.authorization_scope) && ...
+    strcmp(char(request.authorization_scope),'test_only_non_authorizing') && ...
+    isfield(request,'authorization_receipt') && ...
+    isstruct(request.authorization_receipt) && ...
+    isscalar(request.authorization_receipt);
+if ~valid
+    return
+end
+receipt = request.authorization_receipt;
+required = {'status','authorization_scope','authorized_entrypoint','case_id', ...
+    'source_commit','runtime_lock_sha256','family_contract_sha256', ...
+    'case_physics_contract_sha256','execution_input_lock_sha256'};
+requestFields = required(4:end);
+valid = all(isfield(receipt,required)) && ...
+    strcmp(char(receipt.status),'PASS') && ...
+    strcmp(char(receipt.authorization_scope),'test_only_non_authorizing') && ...
+    strcmp(char(receipt.authorized_entrypoint), ...
+        'run_toy_road_controlled_driver_harness');
+for index = 1:numel(requestFields)
+    name = requestFields{index};
+    valid = valid && isfield(request,name) && localText(receipt.(name)) && ...
+        localText(request.(name)) && ...
+        strcmpi(char(receipt.(name)),char(request.(name)));
+end
+end
+
+function localValidateAdapter(adapter)
+expectedClass = 'ToyRoadP0ControlledDriverAdapter';
+expectedIdentity = 'toy_road_p0_controlled_driver_adapter_v1';
+expectedPath = fullfile(fileparts(mfilename('fullpath')), ...
+    'tests',[expectedClass '.m']);
+valid = isobject(adapter) && isscalar(adapter) && isa(adapter,expectedClass);
+if valid
+    metadata = metaclass(adapter);
+    actualPath = which(expectedClass);
+    valid = metadata.Sealed && isprop(adapter,'CONTROLLED_IDENTITY') && ...
+        strcmp(adapter.CONTROLLED_IDENTITY,expectedIdentity) && ...
+        ~isempty(actualPath) && strcmpi(localCanonical(actualPath), ...
+        localCanonical(expectedPath));
+end
+if ~valid
+    error('toyRoadP0:ControlledHarnessRejected', ...
+        'Only the sealed repository-controlled driver adapter is accepted.');
+end
+end
+
+function value = localCanonical(path)
+value = char(java.io.File(path).getCanonicalPath());
+end
+
+function valid = localText(value)
+valid = (ischar(value) && isrow(value) && ~isempty(strtrim(value))) || ...
+    (isstring(value) && isscalar(value) && strlength(strtrim(value)) > 0);
+end

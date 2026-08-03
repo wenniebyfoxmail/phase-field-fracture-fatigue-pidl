@@ -26,6 +26,105 @@ verifyFalse(testCase, isfolder(request.output_root));
 verifyFalse(testCase, isfolder(request.work_root));
 end
 
+function testSealedControlledHarnessExecutesSuccessfulDriverCore(testCase)
+request = fixtureRequest(testCase.TestData.root, 'P0_parent');
+request.authorization_receipt.authorized_entrypoint = ...
+    'run_toy_road_controlled_driver_harness';
+adapter = ToyRoadP0ControlledDriverAdapter();
+
+result = run_toy_road_controlled_driver_harness(request,adapter);
+
+verifyTrue(testCase, result.complete);
+verifyEqual(testCase, result.case_id, request.case_id);
+verifyEqual(testCase, adapter.SolverInvocationCount, 1);
+verifyEqual(testCase, numel(adapter.FactoryInputs), 2);
+verifyEqual(testCase, adapter.FactoryInputs{1}, zeros(4,1));
+verifyEqual(testCase, adapter.FactoryInputs{2}, [0;0.25;0.75;1]);
+
+entries = dir(request.output_root);
+entries = entries(~ismember({entries.name},{'.','..'}));
+verifyFalse(testCase, any([entries.isdir]));
+verifyEqual(testCase, sort({entries.name}), sort({ ...
+    'INPUT_SNAPSHOT.json','mesh_geometry.mat','state0_analysis.mat', ...
+    'RUNTIME_RECEIPT.json'}));
+
+snapshot = jsondecode(fileread(fullfile( ...
+    request.output_root,'INPUT_SNAPSHOT.json')));
+verifyEqual(testCase, snapshot.case_id, request.case_id);
+verifyEqual(testCase, snapshot.runtime_lock_sha256,request.runtime_lock_sha256);
+verifyEqual(testCase, snapshot.family_contract_sha256, ...
+    request.family_contract_sha256);
+verifyEqual(testCase, snapshot.case_physics_contract_sha256, ...
+    request.case_physics_contract_sha256);
+verifyEqual(testCase, snapshot.execution_input_lock_sha256, ...
+    request.execution_input_lock_sha256);
+verifyTrue(testCase, snapshot.fresh_state0);
+verifyFalse(testCase, snapshot.resume_allowed);
+
+statePayload = load(fullfile(request.output_root,'state0_analysis.mat'));
+verifyEqual(testCase, statePayload.state0.d_node,[0;0.25;0.75;1]);
+verifyEqual(testCase, statePayload.state0.d_node_old, ...
+    statePayload.state0.d_node);
+verifyEqual(testCase, statePayload.state0.alpha_bar_gp,zeros(1,4));
+verifyEqual(testCase, statePayload.state0.history_vars(:,:,2:3), ...
+    zeros(1,4,2));
+verifyEqual(testCase, statePayload.state0.history_vars(:,:,4),ones(1,4));
+
+context = adapter.LastSolverContext;
+verifyEqual(testCase, context.authorization_scope,'test_only_non_authorizing');
+verifyEqual(testCase, context.case_id,request.case_id);
+verifyEqual(testCase, context.output_root,request.output_root);
+verifyEqual(testCase, context.state0.d_node,statePayload.state0.d_node);
+verifyEqual(testCase, context.state0.alpha_bar_gp,zeros(1,4));
+verifyEqual(testCase, context.contract.eta,0);
+verifyEqual(testCase, context.contract.runtime_lock_sha256, ...
+    request.runtime_lock_sha256);
+verifyEqual(testCase, context.contract.family_contract_sha256, ...
+    request.family_contract_sha256);
+verifyEqual(testCase, context.contract.case_physics_contract_sha256, ...
+    request.case_physics_contract_sha256);
+verifyEqual(testCase, context.contract.execution_input_lock_sha256, ...
+    request.execution_input_lock_sha256);
+verifyEqual(testCase, context.sol_step_template.n_step,5);
+verifyEqual(testCase, ...
+    cumsum(context.sol_step_template.uy_increment) / ...
+    context.sol_step_template.uy_final,[.25 .5 .75 1 0], ...
+    'AbsTol',1e-15);
+end
+
+function testControlledHarnessRejectsArbitraryOperatorsAndProductionScope(testCase)
+request = fixtureRequest(testCase.TestData.root, 'P0_parent');
+request.authorization_receipt.authorized_entrypoint = ...
+    'run_toy_road_controlled_driver_harness';
+operatorReached = false;
+
+    function result = productionLikeOperator(varargin)
+        operatorReached = true;
+        result = struct('complete',true);
+    end
+
+verifyError(testCase, @() run_toy_road_controlled_driver_harness( ...
+    request,@productionLikeOperator), 'toyRoadP0:ControlledHarnessRejected');
+verifyFalse(testCase, operatorReached);
+verifyFalse(testCase, isfolder(request.output_root));
+
+wrongClass = ToyRoadP0RecoverySystem(zeros(4,1));
+verifyError(testCase, @() run_toy_road_controlled_driver_harness( ...
+    request,wrongClass), 'toyRoadP0:ControlledHarnessRejected');
+verifyFalse(testCase, isfolder(request.output_root));
+
+request.authorization_scope = 'production_authorized';
+request.authorization_receipt.authorization_scope = 'production_authorized';
+adapter = ToyRoadP0ControlledDriverAdapter();
+verifyError(testCase, @() run_toy_road_controlled_driver_harness( ...
+    request,adapter), 'toyRoadP0:ControlledHarnessRejected');
+verifyEqual(testCase, adapter.SolverInvocationCount,0);
+verifyFalse(testCase, isfolder(request.output_root));
+
+verifyError(testCase, @() run_toy_road_driver_core(request,struct()), ...
+    'MATLAB:UndefinedFunction');
+end
+
 function testAuthorizationMismatchStopsBeforeCreatingRoots(testCase)
 request = fixtureRequest(testCase.TestData.root, 'P0_parent');
 request.authorization_receipt.case_id = 'P0R_parent_repeat';
