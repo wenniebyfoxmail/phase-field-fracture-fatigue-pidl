@@ -6,6 +6,26 @@
 
 ---
 
+## 2026-08-03 - [plan]: P0/P0R producer plan v1.1 prepared for review
+
+- **Re**: changes requested against plan commit `29d4a249`.
+- **C5 lifecycle**: replaced the post-convergence-only gate with
+  `begin_c5_trace -> append each completed stagger -> finalize after
+  convergence -> history commit after PASS`; controlled tests require matching
+  row/reassembly counts and exact ordering.
+- **Preflight boundary**: all five roles receive static-only, non-authorizing
+  receipts with dynamic chain `not_evaluated_no_execution`; production rejects
+  those receipts and checks only real predecessor evidence.
+- **Test corrections**: repeatability threshold arithmetic is tested directly
+  without mutating finalized shards; the KKT fixture is primal-feasible; the
+  current case c5 receipt is terminal-validation evidence, not a pre-launch
+  requirement.
+- **Sealing**: the immutable source commit is pushed first; preflight evidence
+  is then committed and tagged separately without changing sealed handoff
+  bytes, pushed, and followed by a clean-status/remote-hash check.
+- **Status**: plan-only v1.1. No runner implementation or FEM execution has
+  started.
+
 ## 2026-08-03 - [plan]: P0/P0R producer implementation plan prepared for review
 
 - **Approved design**: v2.1 at commit

@@ -1,4 +1,4 @@
-# Toy-to-Road P0/P0R Producer Implementation Plan
+# Toy-to-Road P0/P0R Producer Implementation Plan v1.1
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -7,6 +7,8 @@
 **Architecture:** Preserve `producer_handoffs/toy_to_road_independent_fem_20260731/` as a read-only historical implementation reference and create a new versioned handoff at `producer_handoffs/toy_road_p0_repeatability_20260803/`. MATLAB owns state capture, constitutive validation, same-process c5 qualification and terminal package validation; Python owns canonical JSON digests, repeatability comparison and attempt-ledger/manifest generation; PowerShell owns immutable runtime checks, one-shot process isolation and strict launch ordering. The implementation plan ends at a clean sealed preflight and does not authorize a trajectory solve.
 
 **Tech Stack:** MATLAB R2025b Update 5, GRIPHFiTH Q4 FEM/MEX at `355d4c83fefc2db88c32031a2dd2623b3de85c89`, rebuilt `initial.mexw64` SHA-256 `ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db`, PowerShell 5.1, Python 3 with pytest, JSON/JSONL/CSV/MAT v7.3, Git/SHA-256.
+
+**Revision:** v1.1 incorporates review against plan commit `29d4a2493ac95d38ccb6b04b725e5656cc412660`. This remains a plan-only artifact; implementation and FEM execution are not authorized by this revision.
 
 ## Global Constraints
 
@@ -182,12 +184,11 @@ end
 - [ ] **Step 2: Write failing Python repeatability tests**
 
 ```python
-def test_repeatability_vectorizes_nd_fields(tmp_path: Path) -> None:
-    p0, p0r = make_repeatability_packages(tmp_path)
-    perturb_mat_field(p0r / "substeps/cycle_0001.mat", "psi_active_gp", 5e-13)
-    result = compare_repeatability(p0, p0r)
-    assert result["passed"] is True
-    assert result["fields"]["psi_active_gp"]["relative_l2"] <= 1e-12
+def test_relative_l2_vectorizes_nd_fields() -> None:
+    reference = np.arange(24, dtype=np.float64).reshape((2, 3, 4), order="F")
+    candidate = reference.copy()
+    candidate[1, 2, 3] += 5e-13 * max(np.linalg.norm(reference.reshape(-1, order="F")), 1e-30)
+    assert relative_l2(candidate, reference) <= 1e-12
 
 def test_repeatability_rejects_equal_bad_c5_receipts(tmp_path: Path) -> None:
     p0, p0r = make_repeatability_packages(tmp_path, c5_passed=False)
@@ -197,7 +198,7 @@ def test_repeatability_rejects_equal_bad_c5_receipts(tmp_path: Path) -> None:
 
 Also cover matrix/3-D arrays, identically zero fields, shape mismatch, source/runtime/family/case digest mismatch, event mismatch, P0/P0R execution-lock inequality being permitted, and any threshold just above `1e-12` failing.
 
-In `tests/test_toy_road_p0_protocol.py`, define `ProtocolError` in the production module, `make_repeatability_packages` as a test helper that materializes two c1-c5 valid fixture packages with different execution locks, and `perturb_mat_field` as a test-only `h5py` update of one named numeric dataset. These helpers never create authorization receipts outside `tmp_path`.
+In `tests/test_toy_road_p0_protocol.py`, define `ProtocolError` in the production module and `make_repeatability_packages` as a test helper that materializes two c1-c5 valid fixture packages with different execution locks. Do not mutate a finalized shard to test numerical thresholds: that would invalidate the constitutive identities and manifest before repeatability is reached. Threshold arithmetic is tested directly through `relative_l2`; package-level tests use independently finalized, internally consistent packages.
 
 - [ ] **Step 3: Run both test files and verify RED**
 
@@ -292,15 +293,17 @@ git commit -m "feat: export five-step native Q4 cycle shards"
 ### Task 4: Implement and Integrate the Same-Process C5 Gate
 
 **Files:**
-- Create: `producer_handoffs/toy_road_p0_repeatability_20260803/evaluate_toy_road_c5_gate.m`
+- Create: `producer_handoffs/toy_road_p0_repeatability_20260803/begin_toy_road_c5_trace.m`
+- Create: `producer_handoffs/toy_road_p0_repeatability_20260803/append_toy_road_c5_stagger_row.m`
+- Create: `producer_handoffs/toy_road_p0_repeatability_20260803/finalize_toy_road_c5_gate.m`
 - Create: `producer_handoffs/toy_road_p0_repeatability_20260803/tests/toyRoadC5GateTest.m`
 - Create: `producer_handoffs/toy_road_p0_repeatability_20260803/solve_toy_road_family_case.m`
 - Create: `producer_handoffs/toy_road_p0_repeatability_20260803/tests/toyRoadSolverControlledTest.m`
 - Create: `producer_handoffs/toy_road_p0_repeatability_20260803/tests/ToyRoadP0SolverDouble.m`
 
 **Interfaces:**
-- Consumes: `receipt = evaluate_toy_road_c5_gate(gate_input, output_root)`, with converged `(u,d)`, `d_lb`, `history_pre`, active DOFs, current traction and function handles that reassemble equilibrium/phase residuals in the current MATLAB process.
-- Produces: `qualification/C5_STAGGER_TRACE.csv` and `qualification/C5_NUMERICAL_GATE_RECEIPT.json`; a failure throws before c5 history commit and before any c6 work.
+- Consumes: `trace = begin_toy_road_c5_trace(entry_input, output_root)` at c5/substep-4 entry; `trace = append_toy_road_c5_stagger_row(trace, row_input)` immediately after every completed stagger update; and `receipt = finalize_toy_road_c5_gate(trace)` only after the normal solver reports stagger convergence.
+- Produces: one same-process reassembly row per completed stagger in `qualification/C5_STAGGER_TRACE.csv`, followed by `qualification/C5_NUMERICAL_GATE_RECEIPT.json`; any append/finalize failure throws before c5 history commit and before any c6 work.
 
 - [ ] **Step 1: Write failing numerical-gate tests**
 
@@ -311,10 +314,14 @@ The test-local `gateFixture()` creates a fresh output root, two active displacem
 ```matlab
 function testProjectedKktUsesIrreversibilityBox(testCase)
 input = gateFixture();
-input.d = [0.3;0.8]; input.d_lb = [0.4;0.2]; input.r_d = [0.1;-0.1];
-receipt = evaluate_toy_road_c5_gate(input,testCase.TestData.root);
+input.d = [0.4;0.8]; input.d_lb = [0.4;0.2];
+input.r_d = [1e-4;-1e-4];
+trace = begin_toy_road_c5_trace(input,testCase.TestData.root);
+trace = append_toy_road_c5_stagger_row(trace,input);
+receipt = finalize_toy_road_c5_gate(trace);
 expected = norm(input.d-max(input.d_lb,min(1,input.d-input.r_d)),inf);
 verifyEqual(testCase,receipt.projected_phase_kkt,expected,'AbsTol',1e-15);
+verifyEqual(testCase,receipt.primal_feasibility,0,'AbsTol',0);
 end
 ```
 
@@ -324,9 +331,9 @@ end
 matlab -batch "r=runtests('producer_handoffs/toy_road_p0_repeatability_20260803/tests/toyRoadC5GateTest.m'); assertSuccess(r)"
 ```
 
-- [ ] **Step 3: Implement gate evaluation**
+- [ ] **Step 3: Implement the begin/append/finalize lifecycle**
 
-Reassemble `r_u` and `r_d` with the converged state and original c5 peak `history_pre`. Compute:
+`begin_toy_road_c5_trace` snapshots `d_lb`, `history_pre`, active DOFs, traction, trace path and the accepted substep-entry damage; it creates the CSV header exclusively and writes no metric row. Every `append_toy_road_c5_stagger_row` performs fresh same-process reassembly of `r_u` and `r_d` using that immutable entry snapshot plus the just-completed stagger `(u,d)`, then computes:
 
 ```matlab
 du = norm(r_u(active_u_dofs),2);
@@ -336,25 +343,30 @@ stag = norm(d-d_prev_stag,inf);
 primal = max([0;d_lb(:)-d(:);d(:)-1]);
 ```
 
-Publish one trace row after each completed stagger iteration by same-process post-update reassembly. The final receipt binds the trace hash and all thresholds.
+Append exactly one row containing stagger ordinal, displacement residual, raw phase residual, projected phase KKT, consecutive-stagger delta and primal feasibility. Update `d_prev_stag` only after the row is durably appended. `finalize_toy_road_c5_gate` requires at least one row, requires the final row to be the converged stagger, applies all four gates, and binds row count, reassembly count and trace hash into the receipt.
 
 - [ ] **Step 4: Integrate the gate into the controlled cycle loop**
 
-Start from the sealed logic in `solve_toy_to_road_case.m`, but instrument all five substeps and set the solver template to exactly five steps. At c5/substep 4 call the gate after stagger convergence and before the normal history commit. On failure, publish a failed run receipt and stop; never continue to unload or c6.
+Start from the sealed logic in `solve_toy_to_road_case.m`, but instrument all five substeps and set the solver template to exactly five steps. At c5/substep-4 entry call `begin_toy_road_c5_trace`. After every completed stagger update, including non-converged ones, call `append_toy_road_c5_stagger_row` before deciding whether to continue. Once the same appended row is declared converged, call `finalize_toy_road_c5_gate`; only PASS permits the normal history commit. On failure, publish a failed run receipt and never continue to unload or c6.
 
 - [ ] **Step 5: Verify the call ordering with a solver double**
 
-Assert this trace:
+Configure the solver double for three completed staggers and assert this trace:
 
 ```text
-c5_s4_stagger_converged
-c5_same_process_reassembly
+c5_trace_begin
+c5_stagger_1_update
+c5_stagger_1_reassembly_append
+c5_stagger_2_update
+c5_stagger_2_reassembly_append
+c5_stagger_3_update_converged
+c5_stagger_3_reassembly_append
 c5_gate_receipt_passed
 c5_s4_history_committed
 c5_s5_unload
 ```
 
-Also assert that P0, P0R, T1, T2 and T3 all take the identical gate path and that no case can inject a parent receipt.
+Assert `trace_row_count=3`, `same_process_reassembly_count=3`, exact ordinal order `[1,2,3]`, and one append for every completed stagger. Also assert that P0, P0R, T1, T2 and T3 all take the identical gate path and that no case can inject a parent receipt.
 
 - [ ] **Step 6: Run all MATLAB tests and verify GREEN**
 
@@ -442,7 +454,7 @@ git commit -m "feat: build fresh P0 family FEM cases"
 
 **Interfaces:**
 - Consumes: role in `{P0_parent,P0R_parent_repeat,T1_initial_defect,T2_material_state,T3_loading_history}`, clean source/runtime roots, Q1 qualification root, fresh output/work/TEMP/cache roots and prior immutable evidence.
-- Produces: canonical three-layer digests, one no-clobber execution lock and authorization for exactly one fresh `matlab -batch` process. `-PreflightOnly` performs every check but never invokes `main_toy_road_family_case`.
+- Produces: canonical three-layer digests and one no-clobber execution lock. Production mode may authorize exactly one fresh `matlab -batch` process after dynamic predecessor evidence passes. `-PreflightOnly` checks only static contract/runtime/path isolation, emits `authorization_scope=preflight_only_non_authorizing` with `dynamic_chain_status=not_evaluated_no_execution`, and never invokes `main_toy_road_family_case`.
 
 - [ ] **Step 1: Write failing digest tests**
 
@@ -460,7 +472,9 @@ Add mutation tests for any shared-family mismatch, P0/P0R physics mismatch, and 
 
 - [ ] **Step 2: Write failing launcher tests**
 
-Test rejection of the legacy crashing MEX hash, unknown MEX hash, missing Q1 receipt, absent source/compiler/runtime provenance, dirty source, wrong commit, wrong case mesh, shared writable roots, non-empty output root, existing MATLAB/FEM process, resume input, out-of-order role, previous family failure, missing case-local c5 receipt and runtime replacement between family members.
+Test static rejection of the legacy crashing MEX hash, unknown MEX hash, missing Q1 receipt, absent source/compiler/runtime provenance, dirty source, wrong commit, wrong case mesh, shared writable roots, non-empty output root, existing MATLAB/FEM process and resume input. In production-mode fixtures, separately test out-of-order role, previous family failure, missing predecessor terminal/c5 evidence and runtime replacement between family members. The launcher must not require the current case's c5 receipt before launch; that receipt is created during the solve and checked by the current case terminal validator.
+
+Add explicit tests that all five preflight-only receipts contain `authorization_scope=preflight_only_non_authorizing` and `dynamic_chain_status=not_evaluated_no_execution`, and that passing any such receipt to production authorization is rejected.
 
 - [ ] **Step 3: Run Python and PowerShell tests and verify RED**
 
@@ -493,11 +507,13 @@ T2 -> validated T1 including T1 c5 receipt -> own validation
 T3 -> validated T1+T2 including both c5 receipts -> own validation
 ```
 
-Before any production call, require no matching MATLAB/Octave process, exact rebuilt-MEX/Q1 identity, fixed machine/CPU/MATLAB/BLAS/thread provenance, isolated roots and a non-existing output root. Set `OMP_NUM_THREADS=1`, `MKL_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1`, `MKL_DYNAMIC=FALSE`.
+In production mode, the launcher checks only already completed predecessors: P0 has none; P0R requires validated P0; T1 requires the P0/P0R repeatability evidence lock; T2 requires T1 terminal plus T1 c5 PASS; T3 requires T1 and T2 terminal plus both c5 PASS receipts. The current case's terminal validator later checks its newly produced case-local c5 receipt. A preflight-only receipt is never accepted as predecessor or launch authorization.
+
+Before any production call, require no matching MATLAB/Octave process, exact rebuilt-MEX/Q1 identity, fixed machine/CPU/MATLAB/BLAS/thread provenance, isolated roots and a non-existing output root. Set `OMP_NUM_THREADS=1`, `MKL_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1`, `MKL_DYNAMIC=FALSE`. Preflight performs these same static checks but deliberately skips the dynamic chain and records why it was not evaluated.
 
 - [ ] **Step 6: Run launcher/digest tests and verify GREEN**
 
-Run Step 3 commands. Expected: PASS without invoking a real MATLAB solve; fixtures must carry `authorization_scope=test_only_non_authorizing`.
+Run Step 3 commands. Expected: PASS without invoking a real MATLAB solve. Unit fixtures carry `authorization_scope=test_only_non_authorizing`; real preflight receipts carry `authorization_scope=preflight_only_non_authorizing`. Both scopes are explicitly rejected by production mode.
 
 - [ ] **Step 7: Commit locks and launcher**
 
@@ -570,12 +586,13 @@ git commit -m "feat: govern P0 family evidence as one asset"
 
 **Files:**
 - Create: `producer_handoffs/toy_road_p0_repeatability_20260803/SHA256SUMS.txt`
+- Create: `docs/toy_road_p0_repeatability_20260802/preflight_evidence.json`
 - Modify: `docs/handovers/windows_fem_outbox.md`
 - Modify only when a test exposes a defect: files and tests created in Tasks 1-7.
 
 **Interfaces:**
 - Consumes: completed implementation, clean approved runtime and all unit/static tests.
-- Produces: one pushed sealed commit, immutable source/runtime hashes and a preflight PASS receipt; it does not produce P0/P0R/T1/T2/T3 outputs.
+- Produces: one immutable sealed-source commit, then a separate post-preflight evidence commit/tag that references the sealed-source commit without changing sealed handoff bytes; it does not produce P0/P0R/T1/T2/T3 outputs.
 
 - [ ] **Step 1: Run all Python tests**
 
@@ -605,23 +622,35 @@ Expected: PASS; the test fixture remains `test_only_non_authorizing`.
 
 Hash every consumed source/lock/test/README byte exactly once, excluding `SHA256SUMS.txt` itself. Verify from an LF-preserving temporary clone and require `git diff --check` plus a clean `git status --porcelain` after the manifest commit.
 
-- [ ] **Step 5: Commit, push and verify a fresh checkout**
+- [ ] **Step 5: Commit and push the sealed source, then verify a fresh checkout**
 
 ```powershell
-git add producer_handoffs/toy_road_p0_repeatability_20260803 docs/handovers/windows_fem_outbox.md
-git commit -m "build: seal P0 family producer preflight"
+git add producer_handoffs/toy_road_p0_repeatability_20260803
+git commit -m "build: seal P0 family producer source"
 git push origin HEAD:codex/toy-road-evidence-integration
 git -c core.autocrlf=false clone --branch codex/toy-road-evidence-integration --single-branch `
   https://github.com/wenniebyfoxmail/phase-field-fracture-fatigue-pidl.git `
   C:\q4diag\phase-field-fracture-fatigue-pidl-p0-sealed
 ```
 
-Require fresh-checkout `HEAD` equal to the pushed commit, empty status and complete source-manifest verification.
+Record this full commit as `SEALED_SOURCE_COMMIT`. Require fresh-checkout `HEAD==SEALED_SOURCE_COMMIT`, empty status and complete source-manifest verification. All preflight probes in Step 6 run from this checkout.
 
 - [ ] **Step 6: Execute preflight-only runtime qualification**
 
-Invoke `launch_toy_road_family_case.ps1 -PreflightOnly` for each role using distinct absent output/work/TEMP/cache paths. It may call `which`, hash files, validate Q1 receipts and load contracts, but it must not call recovery, construct `System`, enter Newton or create a cycle shard. Require five PASS receipts with one shared family digest, P0=P0R case digest, three declared variant digests and unique execution-lock digests.
+Invoke `launch_toy_road_family_case.ps1 -PreflightOnly` for each role using distinct absent output/work/TEMP/cache paths. It may call `which`, hash files, validate Q1 receipts and load contracts, but it must not call recovery, construct `System`, enter Newton or create a cycle shard. Require five static-preflight PASS receipts with one shared family digest, P0=P0R case digest, three declared variant digests, unique execution-lock digests, `authorization_scope=preflight_only_non_authorizing` and `dynamic_chain_status=not_evaluated_no_execution`. Do not require repeatability or predecessor terminal evidence during preflight.
 
-- [ ] **Step 7: Publish the sealed-preflight status only**
+- [ ] **Step 7: Publish and push a separate post-preflight evidence commit/tag**
 
-Append commit, runtime/API hashes, Python/MATLAB/PowerShell results and five preflight receipt hashes to `windows_fem_outbox.md`. Keep `decision.md` at `BLOCKED_PENDING_EXECUTION_AUTHORIZATION`. Do not launch P0; execution requires a separate explicit approval after this sealed preflight is reviewed.
+Write `preflight_evidence.json` with `SEALED_SOURCE_COMMIT`, runtime/API hashes, Python/MATLAB/PowerShell results, five receipt hashes and the two non-authorizing status fields. Append the same evidence summary to `windows_fem_outbox.md`. Do not modify any byte under `producer_handoffs/toy_road_p0_repeatability_20260803/`.
+
+```powershell
+git add docs/toy_road_p0_repeatability_20260802/preflight_evidence.json `
+  docs/handovers/windows_fem_outbox.md
+git commit -m "docs: record P0 producer sealed preflight"
+git tag toy-road-p0-producer-preflight-20260803
+git push origin HEAD:codex/toy-road-evidence-integration
+git push origin toy-road-p0-producer-preflight-20260803
+git status --porcelain
+```
+
+Require the final status output to be empty and remote branch/tag hashes to match local values. Keep `decision.md` at `BLOCKED_PENDING_EXECUTION_AUTHORIZATION`. The production launcher remains locked to `SEALED_SOURCE_COMMIT`, not the later evidence commit, and must reject every preflight-only receipt as authorization. Do not launch P0; execution requires a separate explicit approval after this sealed preflight is reviewed.
