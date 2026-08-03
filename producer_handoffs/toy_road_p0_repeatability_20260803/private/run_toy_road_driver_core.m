@@ -70,7 +70,8 @@ required = {'load_parent_mesh','build_recovery_input','build_solver_context', ..
 valid = isstruct(dependencies) && isscalar(dependencies) && ...
     isequal(sort(fieldnames(dependencies)),sort(required(:)));
 for index = 1:numel(required)
-    valid = valid && isa(dependencies.(required{index}),'function_handle');
+    valid = valid && builtin('isa',dependencies.(required{index}), ...
+        'function_handle');
 end
 if ~valid
     error('toyRoadP0:InvalidDriverDependencies', ...

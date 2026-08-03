@@ -30,16 +30,16 @@ function testSealedControlledHarnessExecutesSuccessfulDriverCore(testCase)
 request = fixtureRequest(testCase.TestData.root, 'P0_parent');
 request.authorization_receipt.authorized_entrypoint = ...
     'run_toy_road_controlled_driver_harness';
-adapter = ToyRoadP0ControlledDriverAdapter();
 
-result = run_toy_road_controlled_driver_harness(request,adapter);
+[result,observations] = run_toy_road_controlled_driver_harness(request);
 
 verifyTrue(testCase, result.complete);
 verifyEqual(testCase, result.case_id, request.case_id);
-verifyEqual(testCase, adapter.SolverInvocationCount, 1);
-verifyEqual(testCase, numel(adapter.FactoryInputs), 2);
-verifyEqual(testCase, adapter.FactoryInputs{1}, zeros(4,1));
-verifyEqual(testCase, adapter.FactoryInputs{2}, [0;0.25;0.75;1]);
+verifyFalse(testCase,containsExecutable(observations));
+verifyEqual(testCase,observations.solver_invocation_count,1);
+verifyEqual(testCase,numel(observations.factory_inputs),2);
+verifyEqual(testCase,observations.factory_inputs{1},zeros(4,1));
+verifyEqual(testCase,observations.factory_inputs{2},[0;0.25;0.75;1]);
 
 entries = dir(request.output_root);
 entries = entries(~ismember({entries.name},{'.','..'}));
@@ -70,7 +70,7 @@ verifyEqual(testCase, statePayload.state0.history_vars(:,:,2:3), ...
     zeros(1,4,2));
 verifyEqual(testCase, statePayload.state0.history_vars(:,:,4),ones(1,4));
 
-context = adapter.LastSolverContext;
+context = observations.bound_context;
 verifyEqual(testCase, context.authorization_scope,'test_only_non_authorizing');
 verifyEqual(testCase, context.case_id,request.case_id);
 verifyEqual(testCase, context.output_root,request.output_root);
@@ -104,25 +104,77 @@ operatorReached = false;
     end
 
 verifyError(testCase, @() run_toy_road_controlled_driver_harness( ...
-    request,@productionLikeOperator), 'toyRoadP0:ControlledHarnessRejected');
+    request,@productionLikeOperator), 'MATLAB:TooManyInputs');
 verifyFalse(testCase, operatorReached);
 verifyFalse(testCase, isfolder(request.output_root));
 
 wrongClass = ToyRoadP0RecoverySystem(zeros(4,1));
 verifyError(testCase, @() run_toy_road_controlled_driver_harness( ...
-    request,wrongClass), 'toyRoadP0:ControlledHarnessRejected');
+    request,wrongClass), 'MATLAB:TooManyInputs');
 verifyFalse(testCase, isfolder(request.output_root));
 
 request.authorization_scope = 'production_authorized';
 request.authorization_receipt.authorization_scope = 'production_authorized';
-adapter = ToyRoadP0ControlledDriverAdapter();
 verifyError(testCase, @() run_toy_road_controlled_driver_harness( ...
-    request,adapter), 'toyRoadP0:ControlledHarnessRejected');
-verifyEqual(testCase, adapter.SolverInvocationCount,0);
+    request), 'toyRoadP0:ControlledHarnessRejected');
 verifyFalse(testCase, isfolder(request.output_root));
 
 verifyError(testCase, @() run_toy_road_driver_core(request,struct()), ...
     'MATLAB:UndefinedFunction');
+end
+
+function testPathShadowCannotForgeSealedControlledIdentity(testCase)
+request = fixtureRequest(testCase.TestData.root, 'P0_parent');
+request.authorization_receipt.authorized_entrypoint = ...
+    'run_toy_road_controlled_driver_harness';
+forged = ToyRoadP0ForgedSealedAdapter();
+shadowRoot = fullfile(fileparts(mfilename('fullpath')), ...
+    'fixtures','isa_shadow');
+warningState = warning;
+warning('off','all');
+addpath(shadowRoot,'-begin');
+clear('isa');
+isaMarker = fullfile(testCase.TestData.root,'forged_isa_reached');
+operatorMarker = fullfile(testCase.TestData.root,'forged_operator_reached');
+oldIsaMarker = getenv('TOY_ROAD_FORGED_ISA_MARKER');
+oldOperatorMarker = getenv('TOY_ROAD_FORGED_OPERATOR_MARKER');
+setenv('TOY_ROAD_FORGED_ISA_MARKER',isaMarker);
+setenv('TOY_ROAD_FORGED_OPERATOR_MARKER',operatorMarker);
+
+exception = [];
+try
+    run_toy_road_controlled_driver_harness(request,forged);
+catch caught
+    exception = caught;
+end
+rmpath(shadowRoot);
+clear('isa');
+warning(warningState);
+setenv('TOY_ROAD_FORGED_ISA_MARKER',oldIsaMarker);
+setenv('TOY_ROAD_FORGED_OPERATOR_MARKER',oldOperatorMarker);
+
+verifyNotEmpty(testCase,exception);
+verifyEqual(testCase,exception.identifier,'MATLAB:TooManyInputs');
+verifyFalse(testCase,isfile(isaMarker));
+verifyFalse(testCase,isfile(operatorMarker));
+writeFields = {'output_root','work_root','temp_root','tmp_root', ...
+    'pref_root','cache_root'};
+for index = 1:numel(writeFields)
+    verifyFalse(testCase,isfolder(request.(writeFields{index})));
+end
+end
+
+function found = containsExecutable(value)
+found = builtin('isa',value,'function_handle') || isobject(value);
+if found
+    return
+end
+if isstruct(value)
+    names = fieldnames(value);
+    found = any(cellfun(@(name) containsExecutable(value.(name)),names));
+elseif iscell(value)
+    found = any(cellfun(@containsExecutable,value));
+end
 end
 
 function testAuthorizationMismatchStopsBeforeCreatingRoots(testCase)
