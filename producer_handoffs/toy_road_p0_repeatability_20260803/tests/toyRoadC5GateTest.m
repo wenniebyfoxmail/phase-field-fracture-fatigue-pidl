@@ -220,14 +220,62 @@ verifyError(testCase, @() finalize_toy_road_c5_gate(trace), ...
 verifyFalse(testCase, isfile(receiptPath(testCase.TestData.root)));
 end
 
-function testStructConversionFailsClosedWithoutExposingLifecycle(testCase)
+function testDirectStructConversionUsesExplicitGuard(testCase)
 trace = begin_toy_road_c5_trace(gateFixture(), testCase.TestData.root);
 warningState = warning('off', 'MATLAB:structOnObject');
 cleanup = onCleanup(@() warning(warningState));
 
-verifyError(testCase, @() struct(trace), 'toyRoadP0:OpaqueC5Trace');
+verifyError(testCase, @() struct(trace), ...
+    'toyRoadP0:C5StructConversionBlocked');
 verifyFalse(testCase, isfile(receiptPath(testCase.TestData.root)));
 clear cleanup
+end
+
+function testBuiltinStructCopyCannotMutateOrReplayLiveLifecycle(testCase)
+stale = begin_toy_road_c5_trace(gateFixture(), testCase.TestData.root);
+warningState = warning('off', 'MATLAB:structOnObject');
+cleanup = onCleanup(@() warning(warningState));
+copied = builtin('struct', stale);
+clear cleanup
+
+privateNames = {'AuthorizationScope','CaseId','EvidenceMethod','Snapshot', ...
+    'ReassembleEquilibrium','ReassemblePhase','TracePath','ReceiptPath', ...
+    'TraceSha256','TraceRowCount','ReassemblyCount','StaggerOrdinals', ...
+    'DPreviousStagger','LastRowConverged','LifecycleState'};
+verifyTrue(testCase, all(isfield(copied, privateNames)));
+for index = 1:numel(privateNames)
+    value = copied.(privateNames{index});
+    if isa(value, 'function_handle')
+        continue;
+    end
+    verifyFalse(testCase, isa(value, 'handle'), privateNames{index});
+    verifyFalse(testCase, isjava(value), privateNames{index});
+end
+verifyClass(testCase, copied.ReassembleEquilibrium, 'function_handle');
+verifyClass(testCase, copied.ReassemblePhase, 'function_handle');
+
+trace = append_toy_road_c5_stagger_row(stale, rowFixture(true));
+copied.LifecycleState = 1;
+copied.TraceSha256 = trace.trace_sha256;
+copied.TraceRowCount = 1;
+copied.ReassemblyCount = 1;
+copied.StaggerOrdinals = 1;
+copied.LastRowConverged = true;
+copied.Snapshot.d_lb(:) = 0;
+copied.ReassembleEquilibrium = @throwReassemblyFailure;
+copied.ReassemblePhase = @throwReassemblyFailure;
+writeBytes(trace.trace_path, [readBytes(trace.trace_path); ...
+    uint8('# builtin-copy tamper')'; uint8(newline)']);
+
+verifyError(testCase, @() append_toy_road_c5_stagger_row( ...
+    copied, rowFixture(true)), 'toyRoadP0:InvalidC5Lifecycle');
+verifyError(testCase, @() finalize_toy_road_c5_gate(copied), ...
+    'toyRoadP0:InvalidC5Lifecycle');
+verifyError(testCase, @() finalize_toy_road_c5_gate(stale), ...
+    'toyRoadP0:InvalidC5Lifecycle');
+verifyError(testCase, @() finalize_toy_road_c5_gate(trace), ...
+    'toyRoadP0:InvalidC5Lifecycle');
+verifyFalse(testCase, isfile(receiptPath(testCase.TestData.root)));
 end
 
 function testTraceClassAndCriticalMethodsAreSealed(testCase)
@@ -253,16 +301,32 @@ verifyFalse(testCase, isfile(fullfile(testCase.TestData.root, ...
 verifyFalse(testCase, isfile(receiptPath(testCase.TestData.root)));
 end
 
-function testFacadesRequireExactConcreteClass(testCase)
+function testFacadesUseIsaOnlyAfterSealing(testCase)
 facades = {'append_toy_road_c5_stagger_row.m', ...
     'finalize_toy_road_c5_gate.m'};
 for index = 1:numel(facades)
     source = fileread(fullfile(handoffDir(), facades{index}));
     verifyTrue(testCase, contains(source, ...
-        "strcmp(class(trace), 'ToyRoadC5Trace')"), facades{index});
-    verifyFalse(testCase, contains(source, ...
         "isa(trace, 'ToyRoadC5Trace')"), facades{index});
+    verifyFalse(testCase, contains(source, ...
+        'class(trace)'), facades{index});
 end
+end
+
+function testUnrelatedForgedClassIsRejectedBeforeDispatch(testCase)
+appendAttack = ToyRoadC5TraceForgedClassAttack();
+finalizeAttack = ToyRoadC5TraceForgedClassAttack();
+
+verifyError(testCase, @() append_toy_road_c5_stagger_row( ...
+    appendAttack, rowFixture(true)), 'toyRoadP0:InvalidC5Lifecycle');
+verifyEqual(testCase, appendAttack.ClassDispatchCount, 0);
+verifyEqual(testCase, appendAttack.AppendDispatchCount, 0);
+verifyEqual(testCase, appendAttack.FinalizeDispatchCount, 0);
+verifyError(testCase, @() finalize_toy_road_c5_gate(finalizeAttack), ...
+    'toyRoadP0:InvalidC5Lifecycle');
+verifyEqual(testCase, finalizeAttack.ClassDispatchCount, 0);
+verifyEqual(testCase, finalizeAttack.AppendDispatchCount, 0);
+verifyEqual(testCase, finalizeAttack.FinalizeDispatchCount, 0);
 end
 
 function testLifecycleStateHasNoReferenceSemanticToken(testCase)
@@ -271,6 +335,7 @@ source = fileread(fullfile(handoffDir(), 'ToyRoadC5Trace.m'));
 verifyFalse(testCase, contains(source, 'AtomicInteger'));
 verifyTrue(testCase, contains(source, ...
     'LifecycleState (1,1) double'));
+verifyFalse(testCase, contains(lower(source), 'opaque'));
 end
 
 function testMultipleCompletedStaggersHaveExactRowsReassembliesAndOrdinals(testCase)

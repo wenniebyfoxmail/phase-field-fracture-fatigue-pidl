@@ -1,5 +1,5 @@
 classdef (Sealed) ToyRoadC5Trace < handle
-    %TOYROADC5TRACE Opaque single-use handle for one c5 lifecycle lease.
+    %TOYROADC5TRACE Non-mutable single-use handle for one c5 lifecycle lease.
 
     properties (SetAccess=private, GetAccess=private)
         AuthorizationScope
@@ -260,8 +260,9 @@ classdef (Sealed) ToyRoadC5Trace < handle
         end
 
         function value = struct(~) %#ok<STOUT>
-            error('toyRoadP0:OpaqueC5Trace', ...
-                'ToyRoadC5Trace does not permit struct conversion.');
+            error('toyRoadP0:C5StructConversionBlocked', ...
+                ['Direct struct conversion is blocked; copied values are ' ...
+                'not lifecycle authority.']);
         end
     end
 
