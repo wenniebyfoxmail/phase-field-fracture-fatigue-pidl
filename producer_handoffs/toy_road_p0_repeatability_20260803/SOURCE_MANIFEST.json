@@ -1,0 +1,30 @@
+{
+  "schema_version": "toy_road_source_manifest_v1",
+  "protocol_version": "toy-road-p0-repeatability-v2.1",
+  "files": [
+    {"path": "CASE_PHYSICS_CONTRACTS.json", "sha256": "f9bcd9c087c072a088604fbb63e4900d6c14acb2cb6c2954b9818e3cc097de24"},
+    {"path": "FAMILY_CONTRACT.json", "sha256": "c4337ee3974e8de12187573006bcab64bbaff13b85b223668b30acc48bdea4af"},
+    {"path": "HISTORICAL_Q2_CLOSURE.json", "sha256": "6e7c4c989170ef69b7b5a99dc22d502bafd82e8e70b8eaae6de8387a2d6496f7"},
+    {"path": "ToyRoadC5Trace.m", "sha256": "5c8082bb61c2e6aff0fb55bcb517e57b911c4cb99c9f1b4f31733faf8e1d92fb"},
+    {"path": "append_toy_road_c5_stagger_row.m", "sha256": "80105ee7615dc57ef8d8b37f3d8ca4bfcb7f29556134a9f4dd5d8784b8e84b55"},
+    {"path": "begin_toy_road_c5_trace.m", "sha256": "c553e39009a6727eea254aaa544d927881f6fcc38381aff775c2a0b6a3c80977"},
+    {"path": "build_toy_road_family_case.m", "sha256": "92d98a7bdd4e75d82f861f6f0f8e5af0cadc0bf8bd067f158e9257087c87a52a"},
+    {"path": "build_toy_road_five_step_params.m", "sha256": "939e35712aa60b0defb0d2f5c67cbdeb5b6f3ba95b96cf8a947a111354c9a046"},
+    {"path": "capture_toy_road_substep.m", "sha256": "f6e47ecc80f60412a4c5b76cf3f315bda6c209eb670e1d46e56ac15fc29a1b25"},
+    {"path": "export_toy_road_cycle_shard.m", "sha256": "50dfb1c7eef087e522d27e5b46c0e7cc05575a682ed4ff4a69b8e4d128d98b11"},
+    {"path": "finalize_toy_road_c5_gate.m", "sha256": "dd344e9bba7e81c1354543381ec3530d76eb8ea7d9eb03a41d32119acdfac3d9"},
+    {"path": "init_toy_road_cycle_capture.m", "sha256": "8a12d6af5a4c4ecfbaace763de9a7cdd3119a1ae2efc690bec3dee3d3526a600"},
+    {"path": "invoke_toy_road_test_process_adapter.ps1", "sha256": "9c22b8463a86033c5d73dc734c7e0b173aa14588c88ec7f88a06148df37aafe1"},
+    {"path": "launch_toy_road_family_case.ps1", "sha256": "5b72487ea86b4514f99fd27d706111aae6d17ec94ee307072aad6d180f8c4271"},
+    {"path": "main_toy_road_family_case.m", "sha256": "98cf3ece060ef54d18a1f49a1e208cd4fbbd8e4e2866773fb81cb24a8fc7cebf"},
+    {"path": "private/run_toy_road_driver_core.m", "sha256": "978f4876139ebb11d55e921338c45af27121adbe7e806a8d4340d7e91e935ab2"},
+    {"path": "recover_toy_road_family_state.m", "sha256": "a363b21215e7367b25da2c61d42c7d7521eaad8fe0be668fab5b92506082d475"},
+    {"path": "reserve_toy_road_writable_roots.m", "sha256": "22902bd1cb8ed23813f9fa789e0f49854aac9889c99520bd64d134feee098461"},
+    {"path": "run_toy_road_controlled_driver_harness.m", "sha256": "4336969332e0aeeb5d2f623977c64e123c8e66e7ef3222307e2d6648b3670e3b"},
+    {"path": "run_toy_road_runtime_bridge.m", "sha256": "01c6040e326b17c8e174fc17338f83f420ad0ea58978ec263808c761b4fa2a36"},
+    {"path": "solve_toy_road_family_case.m", "sha256": "a7cb797471122c09b01986f7e5e98156e7c057207bfe3d637cb625ced18e5f24"},
+    {"path": "toy_road_protocol.py", "sha256": "ace00f57dac4891e388da7483b583989b445d8a99a60addf4ff6fc8718683d5a"},
+    {"path": "validate_toy_road_cycle_shard.m", "sha256": "e9836534226d749b47d26e2c0f2dd15472a01175646b053035f11f350aaad81c"},
+    {"path": "validate_toy_road_terminal_package.m", "sha256": "171daf9c90e6dfc6c7f2cd3a6c3ed079c26e7076c2777c9ea3f420fb642441b2"}
+  ]
+}

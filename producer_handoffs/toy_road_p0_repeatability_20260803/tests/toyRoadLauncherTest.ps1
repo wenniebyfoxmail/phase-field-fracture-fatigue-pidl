@@ -17,25 +17,22 @@ $LegacyInitial = '589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca3
 $GripCommit = '355d4c83fefc2db88c32031a2dd2623b3de85c89'
 $SourceCommit = 'a' * 40
 $RuntimeLockSha = 'a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7'
-$FamilySha = '1af62deb41e60cd88853201ff9ee2d4a240975c8bf722453c1268b2c799a4b4d'
-$CaseHashes = [ordered]@{
-    P0_parent = 'b114c6f0ea46d5320d47f2df745a3480f6aa541874698a370e33cf6884249820'
-    P0R_parent_repeat = 'b114c6f0ea46d5320d47f2df745a3480f6aa541874698a370e33cf6884249820'
-    T1_initial_defect = '8f13d4b3b8d747b92190925cb28c97713795f398129a3218503afba148004cb4'
-    T2_material_state = '489e880dca0a4afba9002a8d91011a35712dadf42a2b1cd59a274345c1dc7fb9'
-    T3_loading_history = '543b43bf5142e147e9d26469ba6d30faeed76db58806f3cb66fb5dcd51bfc923'
-}
-$MeshHashes = [ordered]@{
-    P0_parent = 'd9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b'
-    P0R_parent_repeat = 'd9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b'
-    T1_initial_defect = '1db2b1074fc04b1bd8302f9810ea6f3a72a44485819b215eca8ccea85038a1d4'
-    T2_material_state = 'd9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b'
-    T3_loading_history = 'd9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b'
+$summaryText = & $Python (Join-Path $HandoffDir 'toy_road_protocol.py') --contract-summary
+if ($LASTEXITCODE -ne 0) { throw 'Cannot load canonical Task 6 contracts.' }
+$ContractSummary = [string]@($summaryText)[-1] | ConvertFrom-Json
+$FamilySha = [string]$ContractSummary.family_contract_sha256
+$CaseHashes = [ordered]@{}
+$MeshHashes = [ordered]@{}
+foreach ($role in $Roles) {
+    $CaseHashes[$role] = [string]$ContractSummary.cases.$role.case_physics_contract_sha256
+    $MeshHashes[$role] = [string]$ContractSummary.cases.$role.mesh_sha256
 }
 
 function New-TestRoots([string]$Name) {
     $base = Join-Path $env:TEMP ("toy-road-task6-$Name-" + [Guid]::NewGuid().ToString('N'))
     [IO.Directory]::CreateDirectory($base) | Out-Null
+    $evidence = Join-Path $base 'evidence'
+    [IO.Directory]::CreateDirectory($evidence) | Out-Null
     return [ordered]@{
         base = $base
         output = Join-Path $base 'output'
@@ -46,7 +43,9 @@ function New-TestRoots([string]$Name) {
         cache = Join-Path $base 'cache'
         receipt = Join-Path $base 'receipt.json'
         lock = Join-Path $base 'execution-lock.json'
-        launch_marker = Join-Path $base 'matlab-launch-marker.txt'
+        evidence = $evidence
+        measurement_fixture = Join-Path $base 'runtime-measurement-fixture.json'
+        invocation_record = Join-Path $base 'test-adapter-invocation.json'
     }
 }
 
@@ -61,6 +60,9 @@ function New-TerminalEvidence([string]$Role) {
         case_physics_contract_sha256 = $CaseHashes[$Role]
         terminal_manifest_sha256 = '2' * 64
         c5_receipt_sha256 = '3' * 64
+        package_snapshot_sha256 = '4' * 64
+        authentication_receipt_path = 'fixture-only-terminal-auth'
+        authentication_receipt_sha256 = '5' * 64
     }
 }
 
@@ -80,6 +82,10 @@ function New-Fixture([string]$Role) {
                 p0r_manifest_sha256 = '5' * 64
                 p0_c5_receipt_sha256 = '6' * 64
                 p0r_c5_receipt_sha256 = '7' * 64
+                p0_package_snapshot_sha256 = '8' * 64
+                p0r_package_snapshot_sha256 = '9' * 64
+                authentication_receipt_path = 'fixture-only-repeatability-auth'
+                authentication_receipt_sha256 = 'a' * 64
             }
         }
         'T2_material_state' { $predecessors = @(New-TerminalEvidence 'T1_initial_defect') }
@@ -160,7 +166,22 @@ function New-Fixture([string]$Role) {
         family_failed = $false
         predecessors = $predecessors
         repeatability_evidence = $repeatability
-        launch_marker_path = ''
+        final_process_inventory = @()
+    }
+}
+
+function New-MeasurementFixture([object]$Fixture) {
+    return [ordered]@{
+        matlab = [ordered]@{
+            release = 'R2025b'
+            update = 'Update 5'
+            version = [string]$Fixture.runtime.matlab.version
+            computer = 'PCWIN64'
+            executable_sha256 = [string]$Fixture.runtime.matlab.executable_sha256
+            blas = [string]$Fixture.runtime.matlab.blas
+            lapack = [string]$Fixture.runtime.matlab.lapack
+        }
+        binary_sha256 = $Fixture.runtime.binaries
     }
 }
 
@@ -174,14 +195,19 @@ function Invoke-Launcher(
     [object]$Fixture,
     [switch]$Preflight,
     [scriptblock]$ArrangeRoots,
-    [string]$ResumeFrom = ''
+    [string]$ResumeFrom = '',
+    [int]$AdapterDelayMilliseconds = 0,
+    [scriptblock]$MutateMeasurement,
+    [string]$PythonOverride = $Python
 ) {
     $roots = New-TestRoots $Role
     try {
         if ($null -ne $ArrangeRoots) { & $ArrangeRoots $roots }
-        $Fixture.launch_marker_path = $roots.launch_marker
         $fixturePath = Join-Path $roots.base 'fixture.json'
         Write-Fixture $fixturePath $Fixture
+        $measurementFixture = New-MeasurementFixture $Fixture
+        if ($null -ne $MutateMeasurement) { & $MutateMeasurement $measurementFixture }
+        Write-Fixture $roots.measurement_fixture $measurementFixture
         $arguments = @(
             '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $Launcher,
             '-Role', $Role,
@@ -189,7 +215,7 @@ function Invoke-Launcher(
             '-GripfithRoot', $RepoRoot,
             '-QualificationRoot', $RepoRoot,
             '-InputAssetsRoot', $RepoRoot,
-            '-EvidenceRoot', $RepoRoot,
+            '-EvidenceRoot', $roots.evidence,
             '-OutputRoot', $roots.output,
             '-WorkRoot', $roots.work,
             '-TempRoot', $roots.temp,
@@ -199,8 +225,11 @@ function Invoke-Launcher(
             '-ExpectedSourceCommit', $SourceCommit,
             '-ReceiptPath', $roots.receipt,
             '-ExecutionLockPath', $roots.lock,
-            '-PythonExecutable', $Python,
-            '-TestFixturePath', $fixturePath
+            '-PythonExecutable', $PythonOverride,
+            '-TestFixturePath', $fixturePath,
+            '-TestMeasurementFixturePath', $roots.measurement_fixture,
+            '-TestInvocationRecordPath', $roots.invocation_record,
+            '-TestAdapterDelayMilliseconds', $AdapterDelayMilliseconds
         )
         if ($Preflight) { $arguments += '-PreflightOnly' }
         if (-not [string]::IsNullOrEmpty($ResumeFrom)) {
@@ -224,11 +253,15 @@ function Invoke-Launcher(
             $lockSha256 = (Get-FileHash -LiteralPath $roots.lock -Algorithm SHA256).Hash.ToLowerInvariant()
             $lock = Get-Content -LiteralPath $roots.lock -Raw | ConvertFrom-Json
         }
+        $invocation = $null
+        if (Test-Path -LiteralPath $roots.invocation_record -PathType Leaf) {
+            $invocation = Get-Content -LiteralPath $roots.invocation_record -Raw | ConvertFrom-Json
+        }
         return [ordered]@{
             exit = $exit
             output = $output
             receipt = $receipt
-            marker_exists = Test-Path -LiteralPath $roots.launch_marker
+            invocation = $invocation
             lock_exists = Test-Path -LiteralPath $roots.lock
             lock_sha256 = $lockSha256
             lock = $lock
@@ -242,7 +275,7 @@ function Assert-Rejected([object]$Result, [string]$Pattern) {
     if ($Result.exit -eq 0 -or $Result.output -notmatch $Pattern) {
         throw "Expected launcher rejection matching '$Pattern'. Output: $($Result.output)"
     }
-    if ($Result.marker_exists) { throw 'A rejected fixture reached the process-launch double.' }
+    if ($null -ne $Result.invocation) { throw 'A rejected fixture reached the process-launch double.' }
 }
 
 if (-not (Test-Path -LiteralPath $Launcher -PathType Leaf)) {
@@ -260,10 +293,14 @@ foreach ($role in $Roles) {
             [string]$result.receipt.status -cne 'PASS') {
         throw "Preflight receipt fields are invalid for $role."
     }
-    if ($result.marker_exists) { throw "Preflight invoked MATLAB for $role." }
+    if ($null -ne $result.invocation) { throw "Preflight invoked the process adapter for $role." }
     if (-not $result.lock_exists -or
             [string]$result.receipt.execution_input_lock_sha256 -cne [string]$result.lock_sha256) {
         throw "Preflight execution lock is absent or not self-consistent for $role."
+    }
+    if ([string]$result.lock.authorization_scope -cne
+            [string]$result.receipt.authorization_scope) {
+        throw "Execution lock does not carry its final authorization scope for $role."
     }
     $rootNames = @($result.lock.writable_roots.PSObject.Properties.Name)
     if ($rootNames.Count -ne 7 -or
@@ -275,12 +312,32 @@ foreach ($role in $Roles) {
     $preflightLockHashes += [string]$result.lock_sha256
     $preflightCaseHashes[$role] = [string]$result.receipt.case_physics_contract_sha256
 }
+
+$copiedLauncherRoot = Join-Path $env:TEMP ('toy-road-task6-copied-launcher-' + [Guid]::NewGuid().ToString('N'))
+try {
+    [IO.Directory]::CreateDirectory($copiedLauncherRoot) | Out-Null
+    $copiedLauncher = Join-Path $copiedLauncherRoot 'launch_toy_road_family_case.ps1'
+    Copy-Item -LiteralPath $Launcher -Destination $copiedLauncher
+    $originalLauncher = $Launcher
+    $Launcher = $copiedLauncher
+    Assert-Rejected (
+        Invoke-Launcher 'P0_parent' (New-Fixture 'P0_parent') -Preflight
+    ) 'canonical sealed handoff|SourceRoot.*handoff|executed bytes'
+} finally {
+    $Launcher = $originalLauncher
+    Remove-Item -LiteralPath $copiedLauncherRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
 if (($preflightLockHashes | Select-Object -Unique).Count -ne 5) {
     throw 'The five preflight execution input locks must be launch-unique.'
 }
 if ($preflightCaseHashes.P0_parent -cne $preflightCaseHashes.P0R_parent_repeat) {
     throw 'P0/P0R preflight case-physics digests must match.'
 }
+
+Assert-Rejected (
+    Invoke-Launcher 'P0_parent' (New-Fixture 'P0_parent') -Preflight `
+        -PythonOverride 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+) 'Python executable|fixed Task 6 protocol runtime'
 
 $staticCases = @(
     @{ name = 'legacy'; pattern = 'legacy|crashing'; mutate = { param($f) $f.runtime.initial_sha256 = $LegacyInitial; $f.runtime.binaries.initial = $LegacyInitial } },
@@ -340,11 +397,23 @@ foreach ($role in $Roles) {
     if ($result.exit -ne 0) { throw "Controlled production-chain check failed for $role`: $($result.output)" }
     if ($null -eq $result.receipt -or
             [string]$result.receipt.authorization_scope -cne 'test_only_non_authorizing' -or
-            [string]$result.receipt.dynamic_chain_status -cne 'passed_test_double_no_execution' -or
-            $result.marker_exists) {
+            [string]$result.receipt.dynamic_chain_status -cne 'passed_test_adapter_non_authorizing' -or
+            $null -eq $result.invocation -or
+            [int]$result.invocation.invocation_count -ne 1 -or
+            $result.invocation.producer_entrypoint_called -ne $false) {
         throw "Controlled production-chain receipt is invalid for $role."
     }
 }
+
+$mutatedMeasurement = Invoke-Launcher 'P0_parent' (New-Fixture 'P0_parent') `
+    -MutateMeasurement { param($measurement) $measurement.matlab.blas = 'mutated BLAS' }
+Assert-Rejected $mutatedMeasurement 'measurement fixture|differs.*lock|blas'
+
+$finalRace = New-Fixture 'P0_parent'
+$finalRace.final_process_inventory = @([ordered]@{
+    name = 'MATLAB.exe'; process_id = 43; command_line = 'matlab -batch solve'
+})
+Assert-Rejected (Invoke-Launcher 'P0_parent' $finalRace) 'running MATLAB|FEM'
 
 $outOfOrder = New-Fixture 'T2_material_state'
 $outOfOrder.predecessors = @()
@@ -383,6 +452,106 @@ if ($null -ne $currentC5Absent.PSObject.Properties['current_c5_receipt']) {
 $currentResult = Invoke-Launcher 'T2_material_state' $currentC5Absent
 if ($currentResult.exit -ne 0) {
     throw "Launcher incorrectly required current-case c5 evidence: $($currentResult.output)"
+}
+
+$mutexBase = Join-Path $env:TEMP ('toy-road-task6-mutex-' + [Guid]::NewGuid().ToString('N'))
+$firstProcess = $null
+try {
+    [IO.Directory]::CreateDirectory($mutexBase) | Out-Null
+    $sharedEvidence = Join-Path $mutexBase 'evidence'
+    [IO.Directory]::CreateDirectory($sharedEvidence) | Out-Null
+    $runs = @()
+    foreach ($ordinal in 1,2) {
+        $runRoot = Join-Path $mutexBase "run-$ordinal"
+        [IO.Directory]::CreateDirectory($runRoot) | Out-Null
+        $fixture = New-Fixture 'P0_parent'
+        $fixturePath = Join-Path $runRoot 'fixture.json'
+        $measurementPath = Join-Path $runRoot 'measurement.json'
+        $invocationPath = Join-Path $runRoot 'invocation.json'
+        Write-Fixture $fixturePath $fixture
+        Write-Fixture $measurementPath (New-MeasurementFixture $fixture)
+        $runs += [ordered]@{
+            root = $runRoot
+            fixture = $fixturePath
+            measurement = $measurementPath
+            invocation = $invocationPath
+            receipt = Join-Path $runRoot 'receipt.json'
+            lock = Join-Path $runRoot 'lock.json'
+            stdout = Join-Path $runRoot 'stdout.txt'
+            stderr = Join-Path $runRoot 'stderr.txt'
+            output = Join-Path $runRoot 'output'
+            work = Join-Path $runRoot 'work'
+            temp = Join-Path $runRoot 'temp'
+            tmp = Join-Path $runRoot 'tmp'
+            pref = Join-Path $runRoot 'pref'
+            cache = Join-Path $runRoot 'cache'
+        }
+    }
+    function Get-MutexLauncherArguments([object]$Run, [int]$Delay) {
+        return @(
+            '-NoProfile','-ExecutionPolicy','Bypass','-File',$Launcher,
+            '-Role','P0_parent','-SourceRoot',$RepoRoot,'-GripfithRoot',$RepoRoot,
+            '-QualificationRoot',$RepoRoot,'-InputAssetsRoot',$RepoRoot,
+            '-EvidenceRoot',$sharedEvidence,'-OutputRoot',$Run.output,
+            '-WorkRoot',$Run.work,'-TempRoot',$Run.temp,'-TmpRoot',$Run.tmp,
+            '-PrefRoot',$Run.pref,'-CacheRoot',$Run.cache,
+            '-ExpectedSourceCommit',$SourceCommit,'-ReceiptPath',$Run.receipt,
+            '-ExecutionLockPath',$Run.lock,'-PythonExecutable',$Python,
+            '-TestFixturePath',$Run.fixture,
+            '-TestMeasurementFixturePath',$Run.measurement,
+            '-TestInvocationRecordPath',$Run.invocation,
+            '-TestAdapterDelayMilliseconds',$Delay
+        )
+    }
+    $firstProcess = Start-Process -FilePath 'powershell.exe' -WindowStyle Hidden `
+        -ArgumentList (Get-MutexLauncherArguments $runs[0] 8000) `
+        -RedirectStandardOutput $runs[0].stdout -RedirectStandardError $runs[0].stderr `
+        -PassThru
+    $mutexPath = Join-Path $sharedEvidence '.toy-road-family-execution.mutex'
+    $deadline = (Get-Date).AddSeconds(30)
+    while (-not (Test-Path -LiteralPath $mutexPath) -and
+            -not $firstProcess.HasExited -and (Get-Date) -lt $deadline) {
+        Start-Sleep -Milliseconds 100
+    }
+    if (-not (Test-Path -LiteralPath $mutexPath)) {
+        throw 'First launcher did not acquire the family-wide mutex.'
+    }
+    $priorPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $secondOutput = & powershell @(Get-MutexLauncherArguments $runs[1] 0) 2>&1 | Out-String
+        $secondExit = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $priorPreference
+    }
+    if ($secondExit -eq 0 -or $secondOutput -notmatch 'mutex|Another toy-road family launcher') {
+        throw "Second launcher did not fail closed on mutex contention: $secondOutput"
+    }
+    if (Test-Path -LiteralPath $runs[1].invocation) {
+        throw 'Contending launcher reached the sealed process adapter.'
+    }
+    if (-not $firstProcess.WaitForExit(60000)) {
+        $firstError = if (Test-Path $runs[0].stderr) {
+            Get-Content -LiteralPath $runs[0].stderr -Raw
+        } else { '' }
+        $firstOutput = if (Test-Path $runs[0].stdout) {
+            Get-Content -LiteralPath $runs[0].stdout -Raw
+        } else { '' }
+        throw "First mutex-holder launcher failed or timed out. stdout=$firstOutput stderr=$firstError"
+    }
+    $firstInvocation = Get-Content -LiteralPath $runs[0].invocation -Raw | ConvertFrom-Json
+    $firstReceipt = Get-Content -LiteralPath $runs[0].receipt -Raw | ConvertFrom-Json
+    $firstError = Get-Content -LiteralPath $runs[0].stderr -Raw
+    if ([int]$firstInvocation.invocation_count -ne 1 -or
+            [string]$firstReceipt.status -cne 'PASS' -or
+            -not [string]::IsNullOrWhiteSpace($firstError)) {
+        throw 'Mutex-holder did not make exactly one sealed adapter invocation.'
+    }
+} finally {
+    if ($null -ne $firstProcess -and -not $firstProcess.HasExited) {
+        Stop-Process -Id $firstProcess.Id -Force -ErrorAction SilentlyContinue
+    }
+    Remove-Item -LiteralPath $mutexBase -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 Write-Output 'toyRoadLauncherTest: PASS'

@@ -6,6 +6,7 @@ import importlib.util
 import json
 import os
 import copy
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -118,6 +119,9 @@ def test_contract_digest_layers_are_correct() -> None:
     assert contracts["T1_initial_defect"].changed_axes == ["mesh.node_coords"]
     assert contracts["T2_material_state"].changed_axes == ["material.Gc"]
     assert contracts["T3_loading_history"].changed_axes == ["loading.blocks"]
+    assert {
+        case.physics["mesh"]["connectivity_sha256"] for case in contracts.values()
+    } == {"a751fe5bfdbbfdd08ccddc6880bae1852d31260560583725e678ebc24a85ceb8"}
     assert len({case.execution_sha256 for case in contracts.values()}) == 1
     assert next(iter(contracts.values())).execution_sha256 == "not_applicable"
 
@@ -152,6 +156,29 @@ def test_contract_files_bind_runtime_and_historical_closure() -> None:
     assert closure["active_field_backward_equivalence_claimed"] is False
 
 
+def test_source_manifest_binds_executed_launcher_protocol_and_producer_bytes(
+    tmp_path: Path,
+) -> None:
+    receipt = PROTOCOL.verify_source_manifest(MODULE_PATH.parent)
+    required = {
+        "CASE_PHYSICS_CONTRACTS.json",
+        "FAMILY_CONTRACT.json",
+        "HISTORICAL_Q2_CLOSURE.json",
+        "launch_toy_road_family_case.ps1",
+        "main_toy_road_family_case.m",
+        "toy_road_protocol.py",
+        "validate_toy_road_terminal_package.m",
+        "private/run_toy_road_driver_core.m",
+    }
+    assert required.issubset(receipt["files"])
+    copied = tmp_path / "producer_handoffs" / MODULE_PATH.parent.name
+    shutil.copytree(MODULE_PATH.parent, copied)
+    target = copied / "main_toy_road_family_case.m"
+    target.write_bytes(target.read_bytes() + b"\n% forged\n")
+    with pytest.raises(ProtocolError, match="source manifest|hash|bytes"):
+        PROTOCOL.verify_source_manifest(copied)
+
+
 @pytest.mark.parametrize(
     ("mutation", "message"),
     [
@@ -160,6 +187,12 @@ def test_contract_files_bind_runtime_and_historical_closure() -> None:
         ("t1_second_axis", "single-axis|T1"),
         ("t2_second_axis", "single-axis|T2"),
         ("t3_second_axis", "single-axis|T3"),
+        ("t1_connectivity", "single-axis|T1"),
+        ("t1_element_ordering", "single-axis|T1"),
+        ("t1_gp_ordering", "single-axis|T1"),
+        ("t1_hash_semantics", "single-axis|T1"),
+        ("t1_mesh_metadata", "single-axis|T1"),
+        ("t1_transform_metadata", "single-axis|T1"),
     ],
 )
 def test_contract_mutations_fail_closed(mutation: str, message: str) -> None:
@@ -179,6 +212,38 @@ def test_contract_mutations_fail_closed(mutation: str, message: str) -> None:
         cases["cases"]["T2_material_state"]["physics"]["loading"]["R"] = 0.1
     elif mutation == "t3_second_axis":
         cases["cases"]["T3_loading_history"]["physics"]["material"]["Gc"] = 0.009
+    elif mutation == "t1_connectivity":
+        cases["cases"]["T1_initial_defect"]["physics"]["mesh"][
+            "connectivity_sha256"
+        ] = "0" * 64
+    elif mutation == "t1_element_ordering":
+        cases["cases"]["T1_initial_defect"]["physics"]["mesh"][
+            "element_ordering_id"
+        ] = "forged_order"
+    elif mutation == "t1_gp_ordering":
+        cases["cases"]["T1_initial_defect"]["physics"]["mesh"][
+            "gp_ordering_id"
+        ] = "forged_gp_order"
+    elif mutation == "t1_hash_semantics":
+        cases["cases"]["T1_initial_defect"]["physics"]["mesh"][
+            "mesh_sha256_semantics"
+        ] = "forged_hash_semantics"
+    elif mutation == "t1_mesh_metadata":
+        cases["cases"]["T1_initial_defect"]["physics"]["mesh"][
+            "undeclared_metadata"
+        ] = "forged"
+    elif mutation == "t1_transform_metadata":
+        cases["cases"]["T1_initial_defect"]["physics"]["mesh"][
+            "node_transform"
+        ]["undeclared_metadata"] = "forged"
+    if mutation.startswith("t1_") and mutation != "t1_second_axis":
+        entry = cases["cases"]["T1_initial_defect"]
+        entry["case_physics_contract_sha256"] = PROTOCOL.canonical_json_sha256(
+            {
+                "family_contract_sha256": cases["family_contract_sha256"],
+                "physics": entry["physics"],
+            }
+        )
     with pytest.raises(ProtocolError, match=message):
         PROTOCOL.validate_contract_documents(family, cases)
 
@@ -198,23 +263,244 @@ def test_execution_input_lock_is_launch_local_and_self_consistent(tmp_path: Path
         )
     }
     lock = PROTOCOL.build_execution_input_lock(
+        authorization_scope="production_authorized",
         role="P0_parent",
         family_contract_sha256=contracts["P0_parent"].family_sha256,
         case_physics_contract_sha256=contracts["P0_parent"].case_sha256,
         source_commit="a" * 40,
         runtime_lock_sha256="b" * 64,
+        source_manifest_sha256="c" * 64,
+        runtime_expectations=canonical_runtime_expectations(tmp_path),
         roots=roots,
         launch_timestamp_utc="2026-08-03T12:00:00.0000000Z",
         no_clobber_receipt_id="fixture-no-clobber-1",
     )
+    assert lock["authorization_scope"] == "production_authorized"
     assert lock["case_id"] == "P0_parent"
+    assert lock["source_manifest_sha256"] == "c" * 64
+    assert lock["runtime_expectations"]["matlab"]["update"] == "Update 5"
     assert lock["writable_roots"] == roots
-    digest = lock.pop("execution_input_lock_sha256")
-    assert digest == PROTOCOL.canonical_json_sha256(lock)
+    assert "execution_input_lock_sha256" not in lock
+    digest = hashlib.sha256(PROTOCOL.canonical_json_bytes(lock)).hexdigest()
     assert digest not in {
         contracts["P0_parent"].family_sha256,
         contracts["P0_parent"].case_sha256,
     }
+
+
+def test_canonical_json_golden_vector_uses_ascii_escapes_and_exact_shape() -> None:
+    value = {
+        "authorization_scope": "test_only_non_authorizing",
+        "enabled": True,
+        "escaped": "line\nquote\"slash\\",
+        "roots": {
+            "cache": "C:/tmp/cache",
+            "matlab_startup_pref": "C:/tmp/startup",
+            "output": "C:/tmp/\u8f93\u51fa",
+            "pref": "C:/tmp/pref",
+            "temp": "C:/tmp/temp",
+            "tmp": "C:/tmp/tmp",
+            "work": "C:/tmp/work",
+        },
+    }
+    expected = (
+        b'{"authorization_scope":"test_only_non_authorizing","enabled":true,'
+        b'"escaped":"line\\nquote\\\"slash\\\\","roots":{"cache":"C:/tmp/cache",'
+        b'"matlab_startup_pref":"C:/tmp/startup","output":"C:/tmp/\\u8f93\\u51fa",'
+        b'"pref":"C:/tmp/pref","temp":"C:/tmp/temp","tmp":"C:/tmp/tmp",'
+        b'"work":"C:/tmp/work"}}'
+    )
+    assert PROTOCOL.canonical_json_bytes(value) == expected
+    assert PROTOCOL.canonical_json_sha256(value) == hashlib.sha256(expected).hexdigest()
+
+
+def test_execution_lock_cli_publishes_python_canonical_bytes_create_new(
+    tmp_path: Path,
+) -> None:
+    contracts = PROTOCOL.load_contracts()
+    request = {
+        "authorization_scope": "test_only_non_authorizing",
+        "role": "P0_parent",
+        "family_contract_sha256": contracts["P0_parent"].family_sha256,
+        "case_physics_contract_sha256": contracts["P0_parent"].case_sha256,
+        "source_commit": "a" * 40,
+        "runtime_lock_sha256": "b" * 64,
+        "source_manifest_sha256": "c" * 64,
+        "runtime_expectations": canonical_runtime_expectations(tmp_path),
+        "roots": {
+            name: str(tmp_path / name)
+            for name in (
+                "output",
+                "work",
+                "temp",
+                "tmp",
+                "pref",
+                "cache",
+                "matlab_startup_pref",
+            )
+        },
+        "launch_timestamp_utc": "2026-08-03T12:00:00.0000000Z",
+        "no_clobber_receipt_id": "fixture-\u8f93\u51fa",
+    }
+    request_path = tmp_path / "request.json"
+    output_path = tmp_path / "EXECUTION_INPUT_LOCK.json"
+    request_path.write_text(json.dumps(request, ensure_ascii=False), encoding="utf-8")
+    command = [
+        os.fspath(Path(os.sys.executable)),
+        os.fspath(MODULE_PATH),
+        "--emit-execution-lock",
+        os.fspath(request_path),
+        os.fspath(output_path),
+    ]
+    completed = subprocess.run(command, check=True, capture_output=True, text=True)
+    receipt = json.loads(completed.stdout)
+    expected = PROTOCOL.build_execution_input_lock(**request)
+    expected_bytes = PROTOCOL.canonical_json_bytes(expected)
+    assert output_path.read_bytes() == expected_bytes
+    assert receipt == {
+        "execution_input_lock_sha256": hashlib.sha256(expected_bytes).hexdigest()
+    }
+    repeated = subprocess.run(command, check=False, capture_output=True, text=True)
+    assert repeated.returncode != 0
+    assert output_path.read_bytes() == expected_bytes
+
+
+def test_execution_lock_schema_is_exact_across_python_and_matlab(tmp_path: Path) -> None:
+    contracts = PROTOCOL.load_contracts()
+    roots = {
+        name: str(tmp_path / name)
+        for name in (
+            "output",
+            "work",
+            "temp",
+            "tmp",
+            "pref",
+            "cache",
+            "matlab_startup_pref",
+        )
+    }
+    lock = PROTOCOL.build_execution_input_lock(
+        authorization_scope="production_authorized",
+        role="P0_parent",
+        family_contract_sha256=contracts["P0_parent"].family_sha256,
+        case_physics_contract_sha256=contracts["P0_parent"].case_sha256,
+        source_commit="a" * 40,
+        runtime_lock_sha256="b" * 64,
+        source_manifest_sha256="c" * 64,
+        runtime_expectations=canonical_runtime_expectations(tmp_path),
+        roots=roots,
+        launch_timestamp_utc="2026-08-03T12:00:00.0000000Z",
+        no_clobber_receipt_id="cross-component",
+    )
+    PROTOCOL.validate_execution_input_lock(lock, "P0_parent")
+    assert set(lock) == PROTOCOL.EXECUTION_INPUT_LOCK_FIELDS
+    malformed = dict(lock)
+    malformed.pop("authorization_scope")
+    with pytest.raises(ProtocolError, match="execution lock|schema|missing"):
+        PROTOCOL.validate_execution_input_lock(malformed, "P0_parent")
+    malformed_runtime = copy.deepcopy(lock)
+    del malformed_runtime["runtime_expectations"]["matlab"]["blas"]
+    with pytest.raises(ProtocolError, match="runtime|MATLAB|schema"):
+        PROTOCOL.validate_execution_input_lock(malformed_runtime, "P0_parent")
+
+    matlab = (MODULE_PATH.parent / "validate_toy_road_terminal_package.m").read_text(
+        "utf-8"
+    )
+    assert "protocolVersion = 'toy-road-p0-repeatability-v2.1';" in matlab
+    match = re.search(
+        r"executionLockFields\s*=\s*\{(?P<body>.*?)\};", matlab, re.DOTALL
+    )
+    assert match is not None
+    matlab_fields = set(re.findall(r"'([^']+)'", match.group("body")))
+    assert matlab_fields == PROTOCOL.EXECUTION_INPUT_LOCK_FIELDS
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "release",
+        "update",
+        "version",
+        "computer",
+        "executable_sha256",
+        "blas",
+        "lapack",
+        "absolute_path_order",
+        "initial",
+        "AMOR",
+        "AT1_HISTORY_FATIGUE",
+        "cholmod2",
+        "lock_digest",
+    ],
+)
+def test_runtime_measurement_is_not_self_compared(
+    tmp_path: Path, mutation: str
+) -> None:
+    lock = _fixture_execution_lock(tmp_path)
+    measurement = {
+        "schema_version": "toy_road_runtime_measurement_v1",
+        "protocol_version": PROTOCOL_VERSION,
+        "authorization_scope": "test_only_non_authorizing",
+        "status": "PASS",
+        "producer_entrypoint_authorized": False,
+        "execution_input_lock_sha256": hashlib.sha256(
+            PROTOCOL.canonical_json_bytes(lock)
+        ).hexdigest(),
+        "matlab": copy.deepcopy(lock["runtime_expectations"]["matlab"]),
+        "binary_sha256": copy.deepcopy(
+            lock["runtime_expectations"]["binary_sha256"]
+        ),
+    }
+    if mutation in measurement["matlab"]:
+        if mutation == "absolute_path_order":
+            measurement["matlab"][mutation][0], measurement["matlab"][mutation][1] = (
+                measurement["matlab"][mutation][1],
+                measurement["matlab"][mutation][0],
+            )
+        elif mutation == "executable_sha256":
+            measurement["matlab"][mutation] = "0" * 64
+        else:
+            measurement["matlab"][mutation] = "mutated"
+    elif mutation in measurement["binary_sha256"]:
+        measurement["binary_sha256"][mutation] = "0" * 64
+    else:
+        measurement["execution_input_lock_sha256"] = "0" * 64
+    with pytest.raises(ProtocolError, match="runtime|measurement|identity|lock"):
+        PROTOCOL.validate_runtime_measurement(lock, measurement)
+
+
+def test_runtime_measurement_accepts_exact_external_fixture(tmp_path: Path) -> None:
+    lock = _fixture_execution_lock(tmp_path)
+    measurement = PROTOCOL.build_test_runtime_measurement(lock)
+    PROTOCOL.validate_runtime_measurement(lock, measurement)
+
+
+def test_sealed_process_adapter_and_runtime_bridge_are_structurally_safe() -> None:
+    adapter_path = MODULE_PATH.parent / "invoke_toy_road_test_process_adapter.ps1"
+    bridge_path = MODULE_PATH.parent / "run_toy_road_runtime_bridge.m"
+    launcher_path = MODULE_PATH.parent / "launch_toy_road_family_case.ps1"
+    assert adapter_path.is_file()
+    assert bridge_path.is_file()
+    adapter = adapter_path.read_text("utf-8")
+    assert "TestAdapterMeasurementPath" not in adapter
+    assert not re.search(r"(?im)^\s*(Start-Process|Invoke-Expression|&\s*\$)", adapter)
+    assert not re.search(r"(?i)matlab\.exe(?![A-Za-z0-9_])", adapter)
+    assert "invocation_count = 1" in adapter
+    bridge = bridge_path.read_text("utf-8")
+    for required in (
+        "matlabRelease",
+        "version('-blas')",
+        "version('-lapack')",
+        "absolute_path_order",
+        "fileSha256",
+        "function digest = fileSha256(path)",
+        "localReleaseUpdate",
+        "main_toy_road_family_case",
+    ):
+        assert required in bridge
+    launcher = launcher_path.read_text("utf-8")
+    assert "run_toy_road_runtime_bridge" in launcher
+    assert "'-begin'" in launcher
 
 
 def test_exposes_exact_h5py_runtime_dependency_identity() -> None:
@@ -326,7 +612,123 @@ def test_repeatability_accepts_legacy_packages_and_complete_c5_evidence(
         "p0r_manifest_sha256",
         "p0_c5_receipt_sha256",
         "p0r_c5_receipt_sha256",
+        "p0_package_snapshot_sha256",
+        "p0r_package_snapshot_sha256",
     ))
+    assert evidence["schema_version"] == "toy_road_repeatability_evidence_v1"
+
+
+def test_terminal_evidence_authentication_binds_validated_package_snapshot(
+    tmp_path: Path,
+) -> None:
+    p0, _ = make_repeatability_packages(tmp_path)
+    receipt = PROTOCOL.authenticate_terminal_package(p0, "P0_parent")
+    assert receipt["schema_version"] == "toy_road_authenticated_terminal_v1"
+    assert receipt["status"] == "PASS"
+    assert receipt["case_id"] == "P0_parent"
+    assert len(receipt["package_snapshot_sha256"]) == 64
+    assert receipt["manifest_sha256"] == _sha256(p0 / "TERMINAL_MANIFEST.json")
+    assert receipt["c5_receipt_sha256"] == _sha256(
+        p0 / "qualification" / "C5_NUMERICAL_GATE_RECEIPT.json"
+    )
+    PROTOCOL.recheck_authenticated_package(receipt)
+
+    with (p0 / "TERMINAL_RESULT.json").open("ab") as stream:
+        stream.write(b" ")
+    with pytest.raises(ProtocolError, match="identity|snapshot|changed|hash"):
+        PROTOCOL.recheck_authenticated_package(receipt)
+
+
+def test_handwritten_terminal_pass_json_cannot_authenticate(tmp_path: Path) -> None:
+    package = tmp_path / "handwritten"
+    (package / "qualification").mkdir(parents=True)
+    _write_json_no_clobber(
+        package / "TERMINAL_MANIFEST.json",
+        {"authorization_scope": AUTHORIZATION_SCOPE, "case_id": "P0_parent"},
+    )
+    _write_json_no_clobber(
+        package / "qualification" / "C5_NUMERICAL_GATE_RECEIPT.json",
+        {"status": "PASS", "passed": True},
+    )
+    with pytest.raises(ProtocolError, match="schema|missing|manifest"):
+        PROTOCOL.authenticate_terminal_package(package, "P0_parent")
+
+
+def test_repeatability_evidence_authentication_is_bound_to_p0_p0r_bytes(
+    tmp_path: Path,
+) -> None:
+    p0, p0r = make_repeatability_packages(tmp_path)
+    compare_repeatability(p0, p0r)
+    evidence_path = tmp_path / "P0_REPEATABILITY_EVIDENCE_LOCK.json"
+    receipt = PROTOCOL.authenticate_repeatability_evidence(evidence_path, p0, p0r)
+    assert receipt["schema_version"] == "toy_road_authenticated_repeatability_v1"
+    assert receipt["status"] == "PASS"
+    assert receipt["family_contract_sha256"] == "3" * 64
+    assert receipt["repeatability_evidence_sha256"] == _sha256(evidence_path)
+    evidence_value = json.loads(evidence_path.read_text("utf-8"))
+    for name in (
+        "runtime_lock_sha256",
+        "p0_manifest_sha256",
+        "p0r_manifest_sha256",
+        "p0_c5_receipt_sha256",
+        "p0r_c5_receipt_sha256",
+        "p0_package_snapshot_sha256",
+        "p0r_package_snapshot_sha256",
+    ):
+        assert receipt[name] == evidence_value[name]
+    PROTOCOL.recheck_authenticated_repeatability(receipt)
+
+    value = json.loads(evidence_path.read_text("utf-8"))
+    value["p0_manifest_sha256"] = "f" * 64
+    _replace_json(evidence_path, value)
+    with pytest.raises(ProtocolError, match="repeatability|snapshot|changed|hash"):
+        PROTOCOL.recheck_authenticated_repeatability(receipt)
+
+
+def test_authentication_cli_publishes_immutable_receipt_and_rechecks(
+    tmp_path: Path,
+) -> None:
+    p0, _ = make_repeatability_packages(tmp_path)
+    receipt_path = tmp_path / "P0_AUTHENTICATED.json"
+    command = [
+        os.fspath(Path(os.sys.executable)),
+        os.fspath(MODULE_PATH),
+        "--authenticate-terminal",
+        os.fspath(p0),
+        "P0_parent",
+        os.fspath(receipt_path),
+    ]
+    completed = subprocess.run(command, check=True, capture_output=True, text=True)
+    assert json.loads(completed.stdout) == {
+        "authentication_receipt_sha256": _sha256(receipt_path)
+    }
+    recheck = subprocess.run(
+        [
+            os.fspath(Path(os.sys.executable)),
+            os.fspath(MODULE_PATH),
+            "--recheck-authentication",
+            os.fspath(receipt_path),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert json.loads(recheck.stdout) == {"status": "PASS"}
+    repeated = subprocess.run(command, check=False, capture_output=True, text=True)
+    assert repeated.returncode != 0
+
+
+def test_repeatability_evidence_symlink_cannot_authenticate(tmp_path: Path) -> None:
+    p0, p0r = make_repeatability_packages(tmp_path)
+    compare_repeatability(p0, p0r)
+    evidence = tmp_path / "P0_REPEATABILITY_EVIDENCE_LOCK.json"
+    alias = tmp_path / "repeatability-alias.json"
+    try:
+        os.symlink(evidence, alias)
+    except (OSError, NotImplementedError) as exception:
+        pytest.skip(f"file symlink creation unavailable: {exception}")
+    with pytest.raises(ProtocolError, match="link|reparse"):
+        PROTOCOL.authenticate_repeatability_evidence(alias, p0, p0r)
 
 
 def test_real_matlab_v73_and_legacy_packages_reach_complete_comparison(
@@ -703,6 +1105,67 @@ def canonical_identities() -> dict[str, str]:
     }
 
 
+def canonical_runtime_expectations(root: Path) -> dict[str, object]:
+    return {
+        "matlab": {
+            "release": "R2025b",
+            "update": "Update 5",
+            "version": "25.2.0.3177638",
+            "computer": "PCWIN64",
+            "executable_sha256": "a" * 64,
+            "blas": "locked BLAS identity",
+            "lapack": "locked LAPACK identity",
+            "absolute_path_order": [
+                str(root / name)
+                for name in (
+                    "runtime-overlay",
+                    "producer-handoff",
+                    "griphfith-sources",
+                    "suitesparse-cholmod",
+                    "suitesparse-amd",
+                    "suitesparse-colamd",
+                    "suitesparse-ccolamd",
+                    "suitesparse-camd",
+                )
+            ],
+        },
+        "binary_sha256": {
+            "initial": "b" * 64,
+            "AMOR": "c" * 64,
+            "AT1_HISTORY_FATIGUE": "d" * 64,
+            "cholmod2": "e" * 64,
+        },
+    }
+
+
+def _fixture_execution_lock(root: Path) -> dict[str, object]:
+    roots = {
+        name: str(root / name)
+        for name in (
+            "output",
+            "work",
+            "temp",
+            "tmp",
+            "pref",
+            "cache",
+            "matlab_startup_pref",
+        )
+    }
+    return PROTOCOL.build_execution_input_lock(
+        authorization_scope="test_only_non_authorizing",
+        role="P0_parent",
+        family_contract_sha256="1" * 64,
+        case_physics_contract_sha256="2" * 64,
+        source_commit="3" * 40,
+        runtime_lock_sha256="4" * 64,
+        source_manifest_sha256="5" * 64,
+        runtime_expectations=canonical_runtime_expectations(root),
+        roots=roots,
+        launch_timestamp_utc="2026-08-03T12:00:00.0000000Z",
+        no_clobber_receipt_id="runtime-measurement-fixture",
+    )
+
+
 def _build_package(
     root: Path,
     case_id: object,
@@ -722,11 +1185,37 @@ def _build_package(
     (root / "substeps").mkdir()
     (root / "qualification").mkdir()
 
-    lock = {
-        "authorization_scope": AUTHORIZATION_SCOPE,
-        "case_id": lock_case_id,
-        "fixture_nonce": lock_nonce,
+    lock_roots = {
+        name: str(root.parent / f"{root.name}-{name}")
+        for name in (
+            "output",
+            "work",
+            "temp",
+            "tmp",
+            "pref",
+            "cache",
+            "matlab_startup_pref",
+        )
     }
+    builder_role = (
+        lock_case_id
+        if lock_case_id in PROTOCOL.FAMILY_ROLES
+        else ("P0R_parent_repeat" if "P0R" in root.name else "P0_parent")
+    )
+    lock = PROTOCOL.build_execution_input_lock(
+        authorization_scope=AUTHORIZATION_SCOPE,
+        role=builder_role,
+        family_contract_sha256=identities["family_contract_sha256"],
+        case_physics_contract_sha256=identities["case_physics_contract_sha256"],
+        source_commit=identities["source_commit"],
+        runtime_lock_sha256=identities["runtime_lock_sha256"],
+        source_manifest_sha256="c" * 64,
+        runtime_expectations=canonical_runtime_expectations(root),
+        roots=lock_roots,
+        launch_timestamp_utc="2026-08-03T12:00:00.0000000Z",
+        no_clobber_receipt_id=lock_nonce,
+    )
+    lock["case_id"] = lock_case_id
     lock_path = root / "EXECUTION_INPUT_LOCK.json"
     _write_json_no_clobber(lock_path, lock)
     execution_digest = _sha256(lock_path)

@@ -17,12 +17,14 @@ param(
     [string]$ExpectedSourceCommit,
     [Parameter(Mandatory = $true)][string]$ReceiptPath,
     [Parameter(Mandatory = $true)][string]$ExecutionLockPath,
-    [string]$PythonExecutable = 'python',
-    [string]$MatlabExecutable = 'C:\Program Files\MATLAB\R2025b\bin\matlab.exe',
+    [string]$PythonExecutable = 'C:\Users\xw436\AppData\Local\Programs\Python\Python312\python.exe',
     [string]$SuiteSparseRoot = 'C:\SuiteSparse\SuiteSparse-dev',
     [string]$ResumeFrom = '',
     [switch]$PreflightOnly,
-    [string]$TestFixturePath = ''
+    [string]$TestFixturePath = '',
+    [string]$TestMeasurementFixturePath = '',
+    [string]$TestInvocationRecordPath = '',
+    [ValidateRange(0,10000)][int]$TestAdapterDelayMilliseconds = 0
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,7 +32,10 @@ $ProtocolVersion = 'toy-road-p0-repeatability-v2.1'
 $ApprovedGripfithCommit = '355d4c83fefc2db88c32031a2dd2623b3de85c89'
 $ApprovedInitialSha256 = 'ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db'
 $LegacyInitialSha256 = '589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340'
-$HandoffDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$MatlabExecutable = 'C:\Program Files\MATLAB\R2025b\bin\matlab.exe'
+$ApprovedPythonExecutable = 'C:\Users\xw436\AppData\Local\Programs\Python\Python312\python.exe'
+$ScriptPath = [IO.Path]::GetFullPath($MyInvocation.MyCommand.Path)
+$HandoffDir = Split-Path -Parent $ScriptPath
 $ExpectedThreads = [ordered]@{
     OMP_NUM_THREADS = '1'
     MKL_NUM_THREADS = '1'
@@ -139,6 +144,33 @@ function Resolve-PlainDirectory([string]$Path, [string]$Label) {
     return $item.FullName
 }
 
+function Assert-NoReparsePathChain([string]$Path, [string]$Label) {
+    $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
+    while ($null -ne $item) {
+        if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "$Label contains a forbidden link/reparse point: $($item.FullName)"
+        }
+        $parent = Split-Path -Parent $item.FullName
+        if ([string]::IsNullOrWhiteSpace($parent) -or $parent -ceq $item.FullName) { break }
+        $item = Get-Item -LiteralPath $parent -Force -ErrorAction Stop
+    }
+}
+
+function Assert-CanonicalExecutedSource([string]$ResolvedSource) {
+    Assert-NoReparsePathChain $ResolvedSource 'Producer source root'
+    Assert-NoReparsePathChain $ScriptPath 'Launcher path'
+    $expectedHandoff = [IO.Path]::GetFullPath((Join-Path $ResolvedSource `
+        'producer_handoffs\toy_road_p0_repeatability_20260803')).TrimEnd('\','/')
+    $actualHandoff = [IO.Path]::GetFullPath($HandoffDir).TrimEnd('\','/')
+    if (-not $actualHandoff.Equals($expectedHandoff, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Executed bytes are not inside the canonical sealed handoff under SourceRoot.'
+    }
+    $expectedLauncher = Join-Path $expectedHandoff 'launch_toy_road_family_case.ps1'
+    if (-not $ScriptPath.Equals($expectedLauncher, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Launcher path is not the canonical sealed SourceRoot entrypoint.'
+    }
+}
+
 function Get-CanonicalAbsentPath([string]$Path, [string]$Label) {
     if ([string]::IsNullOrWhiteSpace($Path)) { throw "$Label path is empty." }
     $full = [IO.Path]::GetFullPath($Path).TrimEnd('\','/')
@@ -201,6 +233,21 @@ function Get-ContractSummary {
     if ($LASTEXITCODE -ne 0) { throw "Canonical contract validation failed: $($output -join ' ')" }
     $lines = @($output)
     return ([string]$lines[-1] | ConvertFrom-Json)
+}
+
+function Get-SourceSealReceipt {
+    $protocolPath = Join-Path $HandoffDir 'toy_road_protocol.py'
+    $output = & $PythonExecutable $protocolPath --verify-source-manifest $HandoffDir 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "Sealed source-manifest verification failed: $($output -join ' ')"
+    }
+    return ([string]@($output)[-1] | ConvertFrom-Json)
+}
+
+function Get-LiveExperimentInventory {
+    return @(Get-CimInstance Win32_Process | ForEach-Object {
+        [ordered]@{ name = $_.Name; process_id = $_.ProcessId; command_line = $_.CommandLine }
+    })
 }
 
 function Assert-NoResumeInput {
@@ -332,9 +379,7 @@ function Get-ProductionState([object]$FamilyContract, [object]$ContractSummary) 
             result_sha256 = [string]$value.result_sha256
         }
     }
-    $processes = @(Get-CimInstance Win32_Process | ForEach-Object {
-        [ordered]@{ name = $_.Name; process_id = $_.ProcessId; command_line = $_.CommandLine }
-    })
+    $processes = @(Get-LiveExperimentInventory)
     if ($PreflightOnly) {
         $predecessors = @()
         $repeatability = $null
@@ -360,30 +405,35 @@ function Get-ProductionState([object]$FamilyContract, [object]$ContractSummary) 
         family_failed = $familyFailed
         predecessors = $predecessors
         repeatability_evidence = $repeatability
-        launch_marker_path = ''
+        final_process_inventory = @()
     }
 }
 
 function Get-ProductionTerminalEvidence([string]$CaseId) {
     $root = Join-Path $EvidenceRoot $CaseId
-    $manifestPath = Join-Path $root 'TERMINAL_MANIFEST.json'
-    $c5Path = Join-Path $root 'qualification\C5_NUMERICAL_GATE_RECEIPT.json'
-    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf) -or
-            -not (Test-Path -LiteralPath $c5Path -PathType Leaf)) {
-        throw "Predecessor $CaseId terminal/c5 evidence is missing."
+    $tokenPath = Join-Path (Split-Path -Parent $ReceiptPath) `
+        ('.' + $noClobberId + '.' + $CaseId + '.terminal-auth.json')
+    $protocolPath = Join-Path $HandoffDir 'toy_road_protocol.py'
+    $output = & $PythonExecutable $protocolPath --authenticate-terminal `
+        $root $CaseId $tokenPath 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "Predecessor $CaseId terminal package authentication failed: $($output -join ' ')"
     }
-    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
-    $c5 = Get-Content -LiteralPath $c5Path -Raw | ConvertFrom-Json
+    $token = Get-Content -LiteralPath $tokenPath -Raw | ConvertFrom-Json
+    $script:AuthenticationTokenPaths += $tokenPath
     return [ordered]@{
-        case_id = $CaseId
-        authorization_scope = [string]$manifest.authorization_scope
-        terminal_validation_status = 'PASS'
-        c5_status = [string]$c5.status
-        runtime_lock_sha256 = [string]$manifest.runtime_lock_sha256
-        family_contract_sha256 = [string]$manifest.family_contract_sha256
-        case_physics_contract_sha256 = [string]$manifest.case_physics_contract_sha256
-        terminal_manifest_sha256 = Get-Sha256 $manifestPath
-        c5_receipt_sha256 = Get-Sha256 $c5Path
+        case_id = [string]$token.case_id
+        authorization_scope = [string]$token.authorization_scope
+        terminal_validation_status = [string]$token.status
+        c5_status = [string]$token.status
+        runtime_lock_sha256 = [string]$token.runtime_lock_sha256
+        family_contract_sha256 = [string]$token.family_contract_sha256
+        case_physics_contract_sha256 = [string]$token.case_physics_contract_sha256
+        terminal_manifest_sha256 = [string]$token.manifest_sha256
+        c5_receipt_sha256 = [string]$token.c5_receipt_sha256
+        package_snapshot_sha256 = [string]$token.package_snapshot_sha256
+        authentication_receipt_path = $tokenPath
+        authentication_receipt_sha256 = Get-Sha256 $tokenPath
     }
 }
 
@@ -408,7 +458,32 @@ function Get-ProductionRepeatabilityEvidence {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw 'P0/P0R repeatability evidence is missing before T1.'
     }
-    return (Get-Content -LiteralPath $path -Raw | ConvertFrom-Json)
+    $tokenPath = Join-Path (Split-Path -Parent $ReceiptPath) `
+        ('.' + $noClobberId + '.repeatability-auth.json')
+    $protocolPath = Join-Path $HandoffDir 'toy_road_protocol.py'
+    $p0 = Join-Path $EvidenceRoot 'P0_parent'
+    $p0r = Join-Path $EvidenceRoot 'P0R_parent_repeat'
+    $output = & $PythonExecutable $protocolPath --authenticate-repeatability `
+        $path $p0 $p0r $tokenPath 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "P0/P0R repeatability authentication failed: $($output -join ' ')"
+    }
+    $token = Get-Content -LiteralPath $tokenPath -Raw | ConvertFrom-Json
+    $script:AuthenticationTokenPaths += $tokenPath
+    return [ordered]@{
+        authorization_scope = [string]$token.authorization_scope
+        status = [string]$token.status
+        runtime_lock_sha256 = [string]$token.runtime_lock_sha256
+        family_contract_sha256 = [string]$token.family_contract_sha256
+        p0_manifest_sha256 = [string]$token.p0_manifest_sha256
+        p0r_manifest_sha256 = [string]$token.p0r_manifest_sha256
+        p0_c5_receipt_sha256 = [string]$token.p0_c5_receipt_sha256
+        p0r_c5_receipt_sha256 = [string]$token.p0r_c5_receipt_sha256
+        p0_package_snapshot_sha256 = [string]$token.p0_package_snapshot_sha256
+        p0r_package_snapshot_sha256 = [string]$token.p0r_package_snapshot_sha256
+        authentication_receipt_path = $tokenPath
+        authentication_receipt_sha256 = Get-Sha256 $tokenPath
+    }
 }
 
 function Assert-RuntimeAndStaticContract(
@@ -542,7 +617,8 @@ function Assert-RuntimeAndStaticContract(
 function Assert-TerminalPredecessor([object]$Record, [string]$ExpectedRole, [object]$ContractSummary) {
     foreach ($name in @('case_id','authorization_scope','terminal_validation_status','c5_status',
             'runtime_lock_sha256','family_contract_sha256','case_physics_contract_sha256',
-            'terminal_manifest_sha256','c5_receipt_sha256')) {
+            'terminal_manifest_sha256','c5_receipt_sha256','package_snapshot_sha256',
+            'authentication_receipt_path','authentication_receipt_sha256')) {
         Get-RequiredProperty $Record $name "predecessor $ExpectedRole" | Out-Null
     }
     if ([string]$Record.authorization_scope -cin @('preflight_only_non_authorizing','test_only_non_authorizing')) {
@@ -564,6 +640,9 @@ function Assert-TerminalPredecessor([object]$Record, [string]$ExpectedRole, [obj
     }
     Assert-Hex $Record.terminal_manifest_sha256 64 "predecessor $ExpectedRole terminal manifest"
     Assert-Hex $Record.c5_receipt_sha256 64 "predecessor $ExpectedRole c5 receipt"
+    Assert-Hex $Record.package_snapshot_sha256 64 "predecessor $ExpectedRole package snapshot"
+    Assert-Hex $Record.authentication_receipt_sha256 64 `
+        "predecessor $ExpectedRole authentication receipt"
 }
 
 function Assert-DynamicChain([object]$State, [object]$ContractSummary) {
@@ -588,7 +667,9 @@ function Assert-DynamicChain([object]$State, [object]$ContractSummary) {
         $repeatability = Get-RequiredProperty $State 'repeatability_evidence' 'P0/P0R repeatability evidence'
         foreach ($name in @('authorization_scope','status','runtime_lock_sha256',
                 'family_contract_sha256','p0_manifest_sha256','p0r_manifest_sha256',
-                'p0_c5_receipt_sha256','p0r_c5_receipt_sha256')) {
+                'p0_c5_receipt_sha256','p0r_c5_receipt_sha256',
+                'p0_package_snapshot_sha256','p0r_package_snapshot_sha256',
+                'authentication_receipt_path','authentication_receipt_sha256')) {
             Get-RequiredProperty $repeatability $name 'P0/P0R repeatability evidence' | Out-Null
         }
         if ([string]$repeatability.authorization_scope -cin
@@ -604,8 +685,21 @@ function Assert-DynamicChain([object]$State, [object]$ContractSummary) {
             throw 'P0/P0R repeatability evidence is missing, failed, or runtime-replaced.'
         }
         foreach ($name in @('p0_manifest_sha256','p0r_manifest_sha256',
-                'p0_c5_receipt_sha256','p0r_c5_receipt_sha256')) {
+                'p0_c5_receipt_sha256','p0r_c5_receipt_sha256',
+                'p0_package_snapshot_sha256','p0r_package_snapshot_sha256',
+                'authentication_receipt_sha256')) {
             Assert-Hex $repeatability.$name 64 "repeatability $name hash"
+        }
+    }
+}
+
+function Assert-AuthenticatedEvidenceUnchanged([object]$State) {
+    if ([string]$State.authorization_scope -cne 'production_candidate') { return }
+    $protocolPath = Join-Path $HandoffDir 'toy_road_protocol.py'
+    foreach ($tokenPath in @($script:AuthenticationTokenPaths)) {
+        $output = & $PythonExecutable $protocolPath --recheck-authentication $tokenPath 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Authenticated predecessor evidence changed before launch: $($output -join ' ')"
         }
     }
 }
@@ -615,11 +709,19 @@ function ConvertTo-MatlabLiteral([string]$Value) {
 }
 
 Assert-NoResumeInput
+$resolvedPython = [IO.Path]::GetFullPath($PythonExecutable)
+if (-not $resolvedPython.Equals($ApprovedPythonExecutable,
+        [StringComparison]::OrdinalIgnoreCase) -or
+        -not (Test-Path -LiteralPath $resolvedPython -PathType Leaf)) {
+    throw 'Python executable is not the fixed Task 6 protocol runtime.'
+}
+$PythonExecutable = $resolvedPython
 $resolvedSource = Resolve-PlainDirectory $SourceRoot 'Producer source root'
+Assert-CanonicalExecutedSource $resolvedSource
 $resolvedGrip = Resolve-PlainDirectory $GripfithRoot 'GRIPHFiTH source root'
 Resolve-PlainDirectory $QualificationRoot 'Q1 qualification root' | Out-Null
 Resolve-PlainDirectory $InputAssetsRoot 'Input-assets root' | Out-Null
-Resolve-PlainDirectory $EvidenceRoot 'Evidence root' | Out-Null
+$resolvedEvidence = Resolve-PlainDirectory $EvidenceRoot 'Evidence root'
 $canonicalRoots = Assert-DisjointFreshRoots $WritableRoots
 if (Test-Path -LiteralPath $ReceiptPath) { throw 'Authorization receipt path already exists.' }
 if (Test-Path -LiteralPath $ExecutionLockPath) { throw 'Execution input lock path already exists.' }
@@ -638,137 +740,256 @@ if ([string]$closure.verdict -cne 'historical_q2_parent_irrecoverable' -or
     throw 'Historical Q2 closure is missing, failed, or makes a forbidden active-field claim.'
 }
 $ContractSummary = Get-ContractSummary
-
+$SourceSealReceipt = Get-SourceSealReceipt
+$SourceSealIdentity = ConvertTo-CanonicalJson $SourceSealReceipt
+$launchTimestamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffffffZ')
+$noClobberId = [Guid]::NewGuid().ToString('N')
+$script:AuthenticationTokenPaths = @()
 $isFixture = -not [string]::IsNullOrWhiteSpace($TestFixturePath)
 if ($isFixture) {
     if (-not (Test-Path -LiteralPath $TestFixturePath -PathType Leaf)) {
         throw 'Test fixture is missing.'
     }
-    $State = Get-Content -LiteralPath $TestFixturePath -Raw | ConvertFrom-Json
-    if ([string](Get-RequiredProperty $State 'authorization_scope' 'test fixture') -cne
-            'test_only_non_authorizing') {
-        throw 'Only test_only_non_authorizing fixtures are accepted by the test seam.'
+    Assert-NoReparsePathChain $TestFixturePath 'Test fixture'
+    if (-not $PreflightOnly -and (
+            [string]::IsNullOrWhiteSpace($TestMeasurementFixturePath) -or
+            [string]::IsNullOrWhiteSpace($TestInvocationRecordPath))) {
+        throw 'The sealed test adapter requires measurement and invocation-record paths.'
     }
-} else {
-    $State = Get-ProductionState $FamilyContract $ContractSummary
 }
 
-Assert-RuntimeAndStaticContract $State $FamilyContract $ContractSummary
-if (-not $PreflightOnly) {
-    Assert-DynamicChain $State $ContractSummary
-}
-
-$launchTimestamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffffffZ')
-$noClobberId = [Guid]::NewGuid().ToString('N')
-$lock = [ordered]@{
-    schema_version = 'toy_road_execution_input_lock_v1'
-    protocol_version = $ProtocolVersion
-    case_id = $Role
-    family_contract_sha256 = [string]$ContractSummary.family_contract_sha256
-    case_physics_contract_sha256 = [string]$ContractSummary.cases.$Role.case_physics_contract_sha256
-    source_commit = $ExpectedSourceCommit.ToLowerInvariant()
-    runtime_lock_sha256 = [string]$FamilyContract.runtime_identity.runtime_lock_sha256
-    writable_roots = [ordered]@{
-        output = $canonicalRoots.output
-        work = $canonicalRoots.work
-        temp = $canonicalRoots.temp
-        tmp = $canonicalRoots.tmp
-        pref = $canonicalRoots.pref
-        cache = $canonicalRoots.cache
-        matlab_startup_pref = $canonicalRoots.matlab_startup_pref
-    }
-    launch_timestamp_utc = $launchTimestamp
-    no_clobber_receipt_id = $noClobberId
-    resume_allowed = $false
-}
-$executionDigest = Write-CanonicalJsonCreateNew $ExecutionLockPath $lock
-
-if ($PreflightOnly) {
-    $scope = 'preflight_only_non_authorizing'
-    $dynamicStatus = 'not_evaluated_no_execution'
-    $entrypoint = ''
-} elseif ($isFixture) {
-    $scope = 'test_only_non_authorizing'
-    $dynamicStatus = 'passed_test_double_no_execution'
-    $entrypoint = ''
-} else {
-    $scope = 'production_authorized'
-    $dynamicStatus = 'passed_predecessor_chain'
-    $entrypoint = 'main_toy_road_family_case'
-}
-$receipt = [ordered]@{
-    schema_version = 'toy_road_launch_authorization_receipt_v1'
-    status = 'PASS'
-    authorization_scope = $scope
-    authorized_entrypoint = $entrypoint
-    dynamic_chain_status = $dynamicStatus
-    protocol_version = $ProtocolVersion
-    case_id = $Role
-    source_commit = $ExpectedSourceCommit.ToLowerInvariant()
-    runtime_lock_sha256 = [string]$FamilyContract.runtime_identity.runtime_lock_sha256
-    family_contract_sha256 = [string]$ContractSummary.family_contract_sha256
-    case_physics_contract_sha256 = [string]$ContractSummary.cases.$Role.case_physics_contract_sha256
-    execution_input_lock_sha256 = $executionDigest
-    q1_receipt_sha256 = [string]$FamilyContract.runtime_identity.q1.receipt_sha256
-    initial_mexw64_sha256 = $ApprovedInitialSha256
-    launch_timestamp_utc = $launchTimestamp
-    no_clobber_receipt_id = $noClobberId
-    current_case_c5_status = 'not_evaluated_before_execution'
-}
-Write-CanonicalJsonCreateNew $ReceiptPath $receipt | Out-Null
-
-if ($PreflightOnly -or $isFixture) {
-    Write-Output (ConvertTo-CanonicalJson $receipt)
-    return
-}
-
-$overlayRoot = Join-Path (Split-Path -Parent $OutputRoot) ('.toy-road-runtime-overlay-' + $noClobberId)
+$overlayRoot = Join-Path (Split-Path -Parent $OutputRoot) `
+    ('.toy-road-runtime-overlay-' + $noClobberId)
 $overlayLeaf = Join-Path $overlayRoot '+phase_field\+mex\+fem\+assembly\+equilibrium'
 $overlayInitial = Join-Path $overlayLeaf 'initial.mexw64'
-$initialArtifact = Join-Path $SourceRoot 'producer_handoffs\rebuilt_initial_mex_qualification_20260801\runtime\initial.mexw64'
-try {
-    [IO.Directory]::CreateDirectory($overlayLeaf) | Out-Null
-    New-Item -ItemType HardLink -Path $overlayInitial -Target $initialArtifact -ErrorAction Stop | Out-Null
-    if ((Get-Sha256 $overlayInitial) -cne $ApprovedInitialSha256) {
-        throw 'Runtime overlay does not contain the approved rebuilt initial MEX.'
+$paths = @(
+    [IO.Path]::GetFullPath($overlayRoot),
+    [IO.Path]::GetFullPath($HandoffDir),
+    [IO.Path]::GetFullPath((Join-Path $resolvedGrip 'Sources')),
+    [IO.Path]::GetFullPath((Join-Path $SuiteSparseRoot 'CHOLMOD\MATLAB')),
+    [IO.Path]::GetFullPath((Join-Path $SuiteSparseRoot 'AMD\MATLAB')),
+    [IO.Path]::GetFullPath((Join-Path $SuiteSparseRoot 'COLAMD\MATLAB')),
+    [IO.Path]::GetFullPath((Join-Path $SuiteSparseRoot 'CCOLAMD\MATLAB')),
+    [IO.Path]::GetFullPath((Join-Path $SuiteSparseRoot 'CAMD\MATLAB'))
+)
+$familyMutex = $null
+$familyMutexPath = Join-Path $resolvedEvidence '.toy-road-family-execution.mutex'
+if (-not $PreflightOnly) {
+    try {
+        $familyMutex = New-Object IO.FileStream($familyMutexPath,
+            [IO.FileMode]::CreateNew, [IO.FileAccess]::ReadWrite,
+            [IO.FileShare]::None, 4096, [IO.FileOptions]::DeleteOnClose)
+    } catch {
+        throw 'Another toy-road family launcher holds the family-wide execution mutex.'
     }
-    foreach ($name in $ExpectedThreads.Keys) { Set-Item -Path "Env:$name" -Value $ExpectedThreads[$name] }
-    $env:TEMP = $canonicalRoots.temp
-    $env:TMP = $canonicalRoots.tmp
-    $env:MATLAB_PREFDIR = $canonicalRoots.matlab_startup_pref
-    $env:MCR_CACHE_ROOT = $canonicalRoots.cache
-    $env:TOY_ROAD_CASE_ROLE = $Role
-    $env:TOY_ROAD_SOURCE_COMMIT = $ExpectedSourceCommit.ToLowerInvariant()
-    $env:TOY_ROAD_RUNTIME_LOCK_SHA256 = [string]$FamilyContract.runtime_identity.runtime_lock_sha256
-    $env:TOY_ROAD_FAMILY_CONTRACT_SHA256 = [string]$ContractSummary.family_contract_sha256
-    $env:TOY_ROAD_CASE_PHYSICS_CONTRACT_SHA256 = [string]$ContractSummary.cases.$Role.case_physics_contract_sha256
-    $env:TOY_ROAD_EXECUTION_INPUT_LOCK_SHA256 = $executionDigest
-    $env:TOY_ROAD_OUTPUT_ROOT = $canonicalRoots.output
-    $env:TOY_ROAD_WORK_ROOT = $canonicalRoots.work
-    $env:TOY_ROAD_TEMP_ROOT = $canonicalRoots.temp
-    $env:TOY_ROAD_TMP_ROOT = $canonicalRoots.tmp
-    $env:TOY_ROAD_PREF_ROOT = $canonicalRoots.pref
-    $env:TOY_ROAD_CACHE_ROOT = $canonicalRoots.cache
-    $env:TOY_ROAD_INPUT_ASSETS_ROOT = (Resolve-Path -LiteralPath $InputAssetsRoot).Path
-    $env:TOY_ROAD_AUTHORIZATION_RECEIPT = [IO.Path]::GetFullPath($ReceiptPath)
-    $paths = @(
-        $overlayRoot,
-        $HandoffDir,
-        (Join-Path $resolvedGrip 'Sources'),
-        (Join-Path $SuiteSparseRoot 'CHOLMOD\MATLAB'),
-        (Join-Path $SuiteSparseRoot 'AMD\MATLAB'),
-        (Join-Path $SuiteSparseRoot 'COLAMD\MATLAB'),
-        (Join-Path $SuiteSparseRoot 'CCOLAMD\MATLAB'),
-        (Join-Path $SuiteSparseRoot 'CAMD\MATLAB')
-    )
-    $addPath = ($paths | ForEach-Object { 'addpath(' + (ConvertTo-MatlabLiteral $_) + ")" }) -join ';'
-    $expectedInitial = ConvertTo-MatlabLiteral $overlayInitial
-    $batch = "$addPath;p=which('phase_field.mex.fem.assembly.equilibrium.initial');" +
-        "if ~strcmpi(strrep(p,'\','/'),strrep($expectedInitial,'\','/'));" +
-        "error('toyRoadP0:RuntimeOverlayMismatch','Approved rebuilt initial MEX is not first.');end;" +
-        "main_toy_road_family_case;"
-    & $MatlabExecutable -batch $batch
-    if ($LASTEXITCODE -ne 0) { throw "MATLAB family case failed with exit code $LASTEXITCODE." }
+}
+
+try {
+    if ($isFixture) {
+        $State = Get-Content -LiteralPath $TestFixturePath -Raw | ConvertFrom-Json
+        if ([string](Get-RequiredProperty $State 'authorization_scope' 'test fixture') -cne
+                'test_only_non_authorizing') {
+            throw 'Only test_only_non_authorizing fixtures are accepted by the test seam.'
+        }
+    } else {
+        $State = Get-ProductionState $FamilyContract $ContractSummary
+    }
+
+    Assert-RuntimeAndStaticContract $State $FamilyContract $ContractSummary
+    if (-not $PreflightOnly) { Assert-DynamicChain $State $ContractSummary }
+
+    if ($PreflightOnly) {
+        $scope = 'preflight_only_non_authorizing'
+        $dynamicStatus = 'not_evaluated_no_execution'
+        $entrypoint = ''
+    } elseif ($isFixture) {
+        $scope = 'test_only_non_authorizing'
+        $dynamicStatus = 'passed_test_adapter_non_authorizing'
+        $entrypoint = 'sealed_non_matlab_test_adapter'
+    } else {
+        $scope = 'production_authorized'
+        $dynamicStatus = 'passed_predecessor_chain'
+        $entrypoint = 'run_toy_road_runtime_bridge'
+    }
+    $releaseMatch = [regex]::Match([string]$State.runtime.matlab.release,
+        '^(?<release>R[0-9]{4}[ab])\s+(?<update>Update\s+[0-9]+)$')
+    if (-not $releaseMatch.Success) { throw 'Locked MATLAB release/update label is malformed.' }
+    $runtimeExpectations = [ordered]@{
+        matlab = [ordered]@{
+            release = $releaseMatch.Groups['release'].Value
+            update = $releaseMatch.Groups['update'].Value
+            version = [string]$State.runtime.matlab.version
+            computer = [string]$FamilyContract.runtime_identity.matlab.computer
+            executable_sha256 = [string]$State.runtime.matlab.executable_sha256
+            blas = [string]$State.runtime.matlab.blas
+            lapack = [string]$State.runtime.matlab.lapack
+            absolute_path_order = $paths
+        }
+        binary_sha256 = [ordered]@{
+            initial = [string]$State.runtime.binaries.initial
+            AMOR = [string]$State.runtime.binaries.AMOR
+            AT1_HISTORY_FATIGUE = [string]$State.runtime.binaries.AT1_HISTORY_FATIGUE
+            cholmod2 = [string]$State.runtime.binaries.cholmod2
+        }
+    }
+    $lockRequest = [ordered]@{
+        authorization_scope = $scope
+        role = $Role
+        family_contract_sha256 = [string]$ContractSummary.family_contract_sha256
+        case_physics_contract_sha256 = [string]$ContractSummary.cases.$Role.case_physics_contract_sha256
+        source_commit = $ExpectedSourceCommit.ToLowerInvariant()
+        runtime_lock_sha256 = [string]$FamilyContract.runtime_identity.runtime_lock_sha256
+        source_manifest_sha256 = [string]$SourceSealReceipt.source_manifest_sha256
+        runtime_expectations = $runtimeExpectations
+        roots = [ordered]@{
+            output = $canonicalRoots.output
+            work = $canonicalRoots.work
+            temp = $canonicalRoots.temp
+            tmp = $canonicalRoots.tmp
+            pref = $canonicalRoots.pref
+            cache = $canonicalRoots.cache
+            matlab_startup_pref = $canonicalRoots.matlab_startup_pref
+        }
+        launch_timestamp_utc = $launchTimestamp
+        no_clobber_receipt_id = $noClobberId
+    }
+    $lockRequestPath = Join-Path (Split-Path -Parent $ExecutionLockPath) `
+        ('.' + $noClobberId + '.execution-lock-request.json')
+    try {
+        Write-CanonicalJsonCreateNew $lockRequestPath $lockRequest | Out-Null
+        $protocolPath = Join-Path $HandoffDir 'toy_road_protocol.py'
+        $lockOutput = & $PythonExecutable $protocolPath --emit-execution-lock `
+            $lockRequestPath $ExecutionLockPath 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Canonical Python execution-lock emission failed: $($lockOutput -join ' ')"
+        }
+        $lockReceipt = [string]@($lockOutput)[-1] | ConvertFrom-Json
+        $executionDigest = [string](Get-RequiredProperty $lockReceipt `
+            'execution_input_lock_sha256' 'canonical execution-lock receipt')
+        Assert-Hex $executionDigest 64 'execution input lock SHA-256'
+        if ((Get-Sha256 $ExecutionLockPath) -cne $executionDigest) {
+            throw 'Canonical execution-lock bytes do not match the Python digest.'
+        }
+    } finally {
+        Remove-Item -LiteralPath $lockRequestPath -Force -ErrorAction SilentlyContinue
+    }
+    $receipt = [ordered]@{
+        schema_version = 'toy_road_launch_authorization_receipt_v1'
+        status = 'PASS'
+        authorization_scope = $scope
+        authorized_entrypoint = $entrypoint
+        dynamic_chain_status = $dynamicStatus
+        protocol_version = $ProtocolVersion
+        case_id = $Role
+        source_commit = $ExpectedSourceCommit.ToLowerInvariant()
+        source_manifest_sha256 = [string]$SourceSealReceipt.source_manifest_sha256
+        runtime_lock_sha256 = [string]$FamilyContract.runtime_identity.runtime_lock_sha256
+        family_contract_sha256 = [string]$ContractSummary.family_contract_sha256
+        case_physics_contract_sha256 = [string]$ContractSummary.cases.$Role.case_physics_contract_sha256
+        execution_input_lock_sha256 = $executionDigest
+        q1_receipt_sha256 = [string]$FamilyContract.runtime_identity.q1.receipt_sha256
+        initial_mexw64_sha256 = $ApprovedInitialSha256
+        launch_timestamp_utc = $launchTimestamp
+        no_clobber_receipt_id = $noClobberId
+        current_case_c5_status = 'not_evaluated_before_execution'
+    }
+    Write-CanonicalJsonCreateNew $ReceiptPath $receipt | Out-Null
+
+    if ($PreflightOnly) {
+        Write-Output (ConvertTo-CanonicalJson $receipt)
+        return
+    }
+
+    $initialArtifact = Join-Path $SourceRoot `
+        'producer_handoffs\rebuilt_initial_mex_qualification_20260801\runtime\initial.mexw64'
+    $runtimeMeasurementPath = Join-Path (Split-Path -Parent $ReceiptPath) `
+        ('.' + $noClobberId + '.runtime-measurement.json')
+    try {
+        [IO.Directory]::CreateDirectory($overlayLeaf) | Out-Null
+        if (-not $isFixture) {
+            New-Item -ItemType HardLink -Path $overlayInitial -Target $initialArtifact `
+                -ErrorAction Stop | Out-Null
+            if ((Get-Sha256 $overlayInitial) -cne $ApprovedInitialSha256) {
+                throw 'Runtime overlay does not contain the approved rebuilt initial MEX.'
+            }
+        }
+        foreach ($name in $ExpectedThreads.Keys) {
+            Set-Item -Path "Env:$name" -Value $ExpectedThreads[$name]
+        }
+        $env:TEMP = $canonicalRoots.temp
+        $env:TMP = $canonicalRoots.tmp
+        $env:MATLAB_PREFDIR = $canonicalRoots.matlab_startup_pref
+        $env:MCR_CACHE_ROOT = $canonicalRoots.cache
+        $env:TOY_ROAD_CASE_ROLE = $Role
+        $env:TOY_ROAD_SOURCE_COMMIT = $ExpectedSourceCommit.ToLowerInvariant()
+        $env:TOY_ROAD_RUNTIME_LOCK_SHA256 = [string]$FamilyContract.runtime_identity.runtime_lock_sha256
+        $env:TOY_ROAD_FAMILY_CONTRACT_SHA256 = [string]$ContractSummary.family_contract_sha256
+        $env:TOY_ROAD_CASE_PHYSICS_CONTRACT_SHA256 = [string]$ContractSummary.cases.$Role.case_physics_contract_sha256
+        $env:TOY_ROAD_EXECUTION_INPUT_LOCK_SHA256 = $executionDigest
+        $env:TOY_ROAD_OUTPUT_ROOT = $canonicalRoots.output
+        $env:TOY_ROAD_WORK_ROOT = $canonicalRoots.work
+        $env:TOY_ROAD_TEMP_ROOT = $canonicalRoots.temp
+        $env:TOY_ROAD_TMP_ROOT = $canonicalRoots.tmp
+        $env:TOY_ROAD_PREF_ROOT = $canonicalRoots.pref
+        $env:TOY_ROAD_CACHE_ROOT = $canonicalRoots.cache
+        $env:TOY_ROAD_INPUT_ASSETS_ROOT = (Resolve-Path -LiteralPath $InputAssetsRoot).Path
+        $env:TOY_ROAD_AUTHORIZATION_RECEIPT = [IO.Path]::GetFullPath($ReceiptPath)
+        $addPathCommands = @()
+        for ($index = $paths.Count - 1; $index -ge 0; $index--) {
+            $addPathCommands += 'addpath(' + (ConvertTo-MatlabLiteral $paths[$index]) + ",'-begin')"
+        }
+        $bridgeCall = 'run_toy_road_runtime_bridge(' +
+            (ConvertTo-MatlabLiteral ([IO.Path]::GetFullPath($ExecutionLockPath))) + ',' +
+            (ConvertTo-MatlabLiteral ([IO.Path]::GetFullPath($runtimeMeasurementPath))) + ')'
+        $batch = (($addPathCommands + $bridgeCall) -join ';') + ';'
+
+        $finalSourceSeal = Get-SourceSealReceipt
+        if ((ConvertTo-CanonicalJson $finalSourceSeal) -cne $SourceSealIdentity) {
+            throw 'Sealed producer source identity changed before process invocation.'
+        }
+        Assert-AuthenticatedEvidenceUnchanged $State
+        if ($isFixture) {
+            Assert-NoRunningExperiment @(
+                Get-RequiredProperty $State 'final_process_inventory' 'final process inventory')
+        } else {
+            Assert-NoRunningExperiment @(Get-LiveExperimentInventory)
+        }
+
+        if ($isFixture) {
+            Assert-NoReparsePathChain $TestMeasurementFixturePath `
+                'Test runtime measurement fixture'
+            if (Test-Path -LiteralPath $TestInvocationRecordPath) {
+                throw 'Test adapter invocation record must be initially absent.'
+            }
+            $adapter = Join-Path $HandoffDir 'invoke_toy_road_test_process_adapter.ps1'
+            $batchBase64 = [Convert]::ToBase64String(
+                (New-Object Text.UTF8Encoding($false)).GetBytes($batch))
+            & powershell -NoProfile -ExecutionPolicy Bypass -File $adapter `
+                -ExecutionLockPath $ExecutionLockPath `
+                -MeasurementFixturePath $TestMeasurementFixturePath `
+                -MeasurementReceiptPath $runtimeMeasurementPath `
+                -InvocationRecordPath $TestInvocationRecordPath `
+                -BatchCommandBase64 $batchBase64 `
+                -DelayMilliseconds $TestAdapterDelayMilliseconds
+            if ($LASTEXITCODE -ne 0) {
+                throw "Sealed non-MATLAB test adapter failed with exit code $LASTEXITCODE."
+            }
+        } else {
+            & $MatlabExecutable -batch $batch
+            if ($LASTEXITCODE -ne 0) {
+                throw "MATLAB family case failed with exit code $LASTEXITCODE."
+            }
+        }
+        $measurementOutput = & $PythonExecutable (Join-Path $HandoffDir 'toy_road_protocol.py') `
+            --validate-runtime-measurement $ExecutionLockPath $runtimeMeasurementPath 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Runtime measurement receipt validation failed: $($measurementOutput -join ' ')"
+        }
+        Write-Output (ConvertTo-CanonicalJson $receipt)
+    } finally {
+        Remove-Item -LiteralPath $overlayRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
 } finally {
-    Remove-Item -LiteralPath $overlayRoot -Recurse -Force -ErrorAction SilentlyContinue
+    if ($null -ne $familyMutex) { $familyMutex.Dispose() }
+    Remove-Item -LiteralPath $familyMutexPath -Force -ErrorAction SilentlyContinue
 }

@@ -199,6 +199,55 @@ TERMINAL_FIELDS = {
     "first_hit_cycle",
     "confirmed_cycle",
 }
+REPEATABILITY_EVIDENCE_FIELDS = {
+    "schema_version",
+    "authorization_scope",
+    "status",
+    "protocol_version",
+    "source_commit",
+    "runtime_lock_sha256",
+    "family_contract_sha256",
+    "exporter_sha256",
+    "p0_manifest_sha256",
+    "p0r_manifest_sha256",
+    "p0_c5_receipt_sha256",
+    "p0r_c5_receipt_sha256",
+    "p0_execution_input_lock_sha256",
+    "p0r_execution_input_lock_sha256",
+    "p0_package_snapshot_sha256",
+    "p0r_package_snapshot_sha256",
+    "threshold_relative_l2",
+    "threshold_max_absolute",
+    "trajectory_max_relative_l2",
+    "trajectory_max_absolute",
+    "field_metrics",
+}
+EXECUTION_INPUT_LOCK_FIELDS = {
+    "schema_version",
+    "protocol_version",
+    "authorization_scope",
+    "case_id",
+    "family_contract_sha256",
+    "case_physics_contract_sha256",
+    "source_commit",
+    "runtime_lock_sha256",
+    "source_manifest_sha256",
+    "runtime_expectations",
+    "writable_roots",
+    "launch_timestamp_utc",
+    "no_clobber_receipt_id",
+    "resume_allowed",
+}
+RUNTIME_MEASUREMENT_FIELDS = {
+    "schema_version",
+    "protocol_version",
+    "authorization_scope",
+    "status",
+    "producer_entrypoint_authorized",
+    "execution_input_lock_sha256",
+    "matlab",
+    "binary_sha256",
+}
 
 
 class CaseContract:
@@ -228,14 +277,18 @@ class CaseContract:
         self.execution_sha256 = "not_applicable"
 
 
-def canonical_json_sha256(value: Mapping[str, object]) -> str:
-    """Hash one mapping with the protocol's canonical UTF-8 JSON encoding."""
+def canonical_json_bytes(value: Mapping[str, object]) -> bytes:
+    """Encode one mapping with the protocol's canonical ASCII JSON bytes."""
     if not isinstance(value, Mapping):
-        raise ProtocolError("canonical JSON digest input must be a mapping")
-    payload = json.dumps(
+        raise ProtocolError("canonical JSON input must be a mapping")
+    return json.dumps(
         value, sort_keys=True, separators=(",", ":"), ensure_ascii=True
-    )
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    ).encode("ascii")
+
+
+def canonical_json_sha256(value: Mapping[str, object]) -> str:
+    """Hash one mapping using the protocol's sole canonical JSON encoding."""
+    return hashlib.sha256(canonical_json_bytes(value)).hexdigest()
 
 
 def load_contracts(root: Path | None = None) -> dict[str, CaseContract]:
@@ -243,6 +296,90 @@ def load_contracts(root: Path | None = None) -> dict[str, CaseContract]:
     family = _read_contract_json(contract_root / "FAMILY_CONTRACT.json")
     cases = _read_contract_json(contract_root / "CASE_PHYSICS_CONTRACTS.json")
     return validate_contract_documents(family, cases)
+
+
+def verify_source_manifest(root: Path) -> dict[str, object]:
+    source_root = Path(root)
+    _require_no_reparse_chain(source_root, "producer handoff root")
+    manifest_path = source_root / "SOURCE_MANIFEST.json"
+    _require_no_reparse_chain(manifest_path, "source manifest")
+    try:
+        manifest_bytes = manifest_path.read_bytes()
+    except OSError as exception:
+        raise ProtocolError(f"cannot read source manifest: {exception}") from exception
+    manifest = _read_json_bytes(manifest_bytes, "source manifest")
+    _require_exact_fields(
+        manifest,
+        {"schema_version", "protocol_version", "files"},
+        "source manifest",
+    )
+    if (
+        manifest["schema_version"] != "toy_road_source_manifest_v1"
+        or manifest["protocol_version"] != PROTOCOL_VERSION
+    ):
+        raise ProtocolError("source manifest schema or protocol is invalid")
+    entries = manifest["files"]
+    if not isinstance(entries, list) or not entries:
+        raise ProtocolError("source manifest files must be a nonempty list")
+    declared: dict[str, str] = {}
+    for entry in entries:
+        if not isinstance(entry, dict) or set(entry) != {"path", "sha256"}:
+            raise ProtocolError("source manifest file entry schema is malformed")
+        relative = entry["path"]
+        digest = entry["sha256"]
+        if not isinstance(relative, str) or not _canonical_relative_path(relative):
+            raise ProtocolError("source manifest path is not canonical")
+        if not _is_sha256(digest):
+            raise ProtocolError("source manifest hash is not canonical")
+        if relative in declared or relative.casefold() in {
+            path.casefold() for path in declared
+        }:
+            raise ProtocolError("source manifest paths are not unique")
+        declared[relative] = digest
+    if list(declared) != sorted(declared):
+        raise ProtocolError("source manifest paths are not sorted")
+
+    discovered = {
+        path.relative_to(source_root).as_posix()
+        for path in source_root.iterdir()
+        if path.is_file()
+        and path.name != "SOURCE_MANIFEST.json"
+        and path.suffix in {".m", ".py", ".ps1", ".json"}
+    }
+    private_root = source_root / "private"
+    if private_root.is_dir():
+        discovered.update(
+            path.relative_to(source_root).as_posix()
+            for path in private_root.rglob("*")
+            if path.is_file() and path.suffix in {".m", ".py", ".ps1", ".json"}
+        )
+    if set(declared) != discovered:
+        raise ProtocolError("source manifest does not close over producer source files")
+
+    identities: dict[str, dict[str, int]] = {}
+    for relative, expected in declared.items():
+        path = source_root / Path(relative)
+        _require_no_reparse_chain(path, f"source manifest path {relative}")
+        try:
+            with path.open("rb") as stream:
+                payload = stream.read()
+                info = os.fstat(stream.fileno())
+        except OSError as exception:
+            raise ProtocolError(f"cannot read source manifest path {relative}: {exception}") from exception
+        if _sha256_bytes(payload) != expected:
+            raise ProtocolError(f"source manifest hash does not match bytes: {relative}")
+        identities[relative] = {
+            "device": int(info.st_dev),
+            "inode": int(info.st_ino),
+            "size": int(info.st_size),
+            "mtime_ns": int(info.st_mtime_ns),
+            "ctime_ns": int(info.st_ctime_ns),
+        }
+    return {
+        "source_manifest_sha256": _sha256_bytes(manifest_bytes),
+        "files": dict(declared),
+        "identities": identities,
+    }
 
 
 def validate_contract_documents(
@@ -357,15 +494,24 @@ def validate_contract_documents(
 
 def build_execution_input_lock(
     *,
+    authorization_scope: str,
     role: str,
     family_contract_sha256: str,
     case_physics_contract_sha256: str,
     source_commit: str,
     runtime_lock_sha256: str,
+    source_manifest_sha256: str,
+    runtime_expectations: Mapping[str, object],
     roots: Mapping[str, str],
     launch_timestamp_utc: str,
     no_clobber_receipt_id: str,
 ) -> dict[str, object]:
+    if authorization_scope not in {
+        "production_authorized",
+        "preflight_only_non_authorizing",
+        "test_only_non_authorizing",
+    }:
+        raise ProtocolError("execution lock authorization_scope is invalid")
     if role not in FAMILY_ROLES:
         raise ProtocolError("execution lock role is not declared")
     for label, value, length in (
@@ -373,6 +519,7 @@ def build_execution_input_lock(
         ("case physics contract", case_physics_contract_sha256, 64),
         ("source commit", source_commit, 40),
         ("runtime lock", runtime_lock_sha256, 64),
+        ("source manifest", source_manifest_sha256, 64),
     ):
         if not isinstance(value, str) or re.fullmatch(
             rf"[0-9a-f]{{{length}}}", value
@@ -393,6 +540,7 @@ def build_execution_input_lock(
     ):
         raise ProtocolError("execution writable roots are incomplete")
     _require_disjoint_root_text(root_value)
+    runtime_value = _validate_runtime_expectations(runtime_expectations)
     if (
         not isinstance(launch_timestamp_utc, str)
         or re.fullmatch(r"[0-9T:.+\-]+Z", launch_timestamp_utc) is None
@@ -403,18 +551,158 @@ def build_execution_input_lock(
     lock: dict[str, object] = {
         "schema_version": "toy_road_execution_input_lock_v1",
         "protocol_version": PROTOCOL_VERSION,
+        "authorization_scope": authorization_scope,
         "case_id": role,
         "family_contract_sha256": family_contract_sha256,
         "case_physics_contract_sha256": case_physics_contract_sha256,
         "source_commit": source_commit,
         "runtime_lock_sha256": runtime_lock_sha256,
+        "source_manifest_sha256": source_manifest_sha256,
+        "runtime_expectations": runtime_value,
         "writable_roots": dict(root_value),
         "launch_timestamp_utc": launch_timestamp_utc,
         "no_clobber_receipt_id": no_clobber_receipt_id,
         "resume_allowed": False,
     }
-    lock["execution_input_lock_sha256"] = canonical_json_sha256(lock)
     return lock
+
+
+def validate_execution_input_lock(
+    lock: Mapping[str, object], expected_case_id: str
+) -> None:
+    value = _require_plain_mapping(lock, "execution lock")
+    _require_exact_fields(value, EXECUTION_INPUT_LOCK_FIELDS, "execution lock")
+    if value["case_id"] != expected_case_id:
+        raise ProtocolError("execution lock case_id is inconsistent")
+    rebuilt = build_execution_input_lock(
+        authorization_scope=value["authorization_scope"],
+        role=value["case_id"],
+        family_contract_sha256=value["family_contract_sha256"],
+        case_physics_contract_sha256=value["case_physics_contract_sha256"],
+        source_commit=value["source_commit"],
+        runtime_lock_sha256=value["runtime_lock_sha256"],
+        source_manifest_sha256=value["source_manifest_sha256"],
+        runtime_expectations=_require_plain_mapping(
+            value["runtime_expectations"], "runtime expectations"
+        ),
+        roots=_require_plain_mapping(value["writable_roots"], "execution roots"),
+        launch_timestamp_utc=value["launch_timestamp_utc"],
+        no_clobber_receipt_id=value["no_clobber_receipt_id"],
+    )
+    if value != rebuilt:
+        raise ProtocolError("execution lock is not the canonical immutable schema")
+
+
+def _validate_runtime_expectations(
+    expectations: Mapping[str, object],
+) -> dict[str, object]:
+    value = _require_plain_mapping(expectations, "runtime expectations")
+    _require_exact_fields(
+        value, {"matlab", "binary_sha256"}, "runtime expectations"
+    )
+    matlab = _require_plain_mapping(value["matlab"], "runtime MATLAB expectations")
+    matlab_fields = {
+        "release",
+        "update",
+        "version",
+        "computer",
+        "executable_sha256",
+        "blas",
+        "lapack",
+        "absolute_path_order",
+    }
+    _require_exact_fields(matlab, matlab_fields, "runtime MATLAB expectations")
+    for field in matlab_fields - {"absolute_path_order", "executable_sha256"}:
+        _require_nonempty_text(matlab[field], f"runtime MATLAB {field}")
+    if not _is_sha256(matlab["executable_sha256"]):
+        raise ProtocolError("runtime MATLAB executable identity is malformed")
+    paths = matlab["absolute_path_order"]
+    if (
+        not isinstance(paths, list)
+        or len(paths) != 8
+        or not all(isinstance(path, str) and os.path.isabs(path) for path in paths)
+        or len({os.path.normcase(os.path.abspath(path)) for path in paths}) != 8
+    ):
+        raise ProtocolError("runtime MATLAB absolute path order is invalid")
+    binaries = _require_plain_mapping(
+        value["binary_sha256"], "runtime binary expectations"
+    )
+    _require_exact_fields(
+        binaries,
+        {"initial", "AMOR", "AT1_HISTORY_FATIGUE", "cholmod2"},
+        "runtime binary expectations",
+    )
+    if not all(_is_sha256(digest) for digest in binaries.values()):
+        raise ProtocolError("runtime binary expectation hash is malformed")
+    return {"matlab": dict(matlab), "binary_sha256": dict(binaries)}
+
+
+def build_test_runtime_measurement(
+    execution_lock: Mapping[str, object],
+) -> dict[str, object]:
+    lock = _require_plain_mapping(execution_lock, "execution lock")
+    validate_execution_input_lock(lock, str(lock.get("case_id", "")))
+    if lock["authorization_scope"] != "test_only_non_authorizing":
+        raise ProtocolError("test runtime measurement requires test-only scope")
+    expectations = _require_plain_mapping(
+        lock["runtime_expectations"], "runtime expectations"
+    )
+    return {
+        "schema_version": "toy_road_runtime_measurement_v1",
+        "protocol_version": PROTOCOL_VERSION,
+        "authorization_scope": "test_only_non_authorizing",
+        "status": "PASS",
+        "producer_entrypoint_authorized": False,
+        "execution_input_lock_sha256": _sha256_bytes(canonical_json_bytes(lock)),
+        "matlab": json.loads(json.dumps(expectations["matlab"])),
+        "binary_sha256": dict(
+            _require_plain_mapping(
+                expectations["binary_sha256"], "runtime binary expectations"
+            )
+        ),
+    }
+
+
+def validate_runtime_measurement(
+    execution_lock: Mapping[str, object], measurement: Mapping[str, object]
+) -> None:
+    lock = _require_plain_mapping(execution_lock, "execution lock")
+    validate_execution_input_lock(lock, str(lock.get("case_id", "")))
+    value = _require_plain_mapping(measurement, "runtime measurement")
+    _require_exact_fields(value, RUNTIME_MEASUREMENT_FIELDS, "runtime measurement")
+    if (
+        value["schema_version"] != "toy_road_runtime_measurement_v1"
+        or value["protocol_version"] != PROTOCOL_VERSION
+        or value["authorization_scope"] != lock["authorization_scope"]
+        or value["status"] != "PASS"
+        or not isinstance(value["producer_entrypoint_authorized"], bool)
+    ):
+        raise ProtocolError("runtime measurement schema, scope, or status is invalid")
+    if lock["authorization_scope"] == "production_authorized":
+        if value["producer_entrypoint_authorized"] is not True:
+            raise ProtocolError("runtime measurement did not authorize producer entrypoint")
+    elif value["producer_entrypoint_authorized"] is not False:
+        raise ProtocolError("non-authorizing runtime measurement cannot authorize producer")
+    if value["execution_input_lock_sha256"] != _sha256_bytes(
+        canonical_json_bytes(lock)
+    ):
+        raise ProtocolError("runtime measurement execution lock identity is invalid")
+    expectations = _require_plain_mapping(
+        lock["runtime_expectations"], "runtime expectations"
+    )
+    measured_matlab = _require_plain_mapping(
+        value["matlab"], "runtime MATLAB measurement"
+    )
+    measured_binaries = _require_plain_mapping(
+        value["binary_sha256"], "runtime binary measurement"
+    )
+    _validate_runtime_expectations(
+        {"matlab": measured_matlab, "binary_sha256": measured_binaries}
+    )
+    if measured_matlab != expectations["matlab"] or measured_binaries != expectations[
+        "binary_sha256"
+    ]:
+        raise ProtocolError("runtime measurement identity differs from locked expectations")
 
 
 def _read_contract_json(path: Path) -> dict[str, Any]:
@@ -449,8 +737,20 @@ def _mapping_leaf_differences(
     return differences
 
 
+T1_COORDINATE_DERIVED_PATHS = {
+    "mesh.mesh_sha256",
+    "mesh.node_transform.semantics",
+    "mesh.node_transform.left_affine_x_factor",
+    "mesh.node_transform.right_affine_x_factor",
+    "mesh.node_transform.parent_tip",
+    "mesh.node_transform.mapped_tip",
+    "mesh.node_transform.mapped_over_parent_edge_ratio_bounds",
+    "mesh.node_transform.gate_tolerance",
+}
+
+
 def _normalise_changed_axis(path: str) -> str:
-    if path.startswith("mesh."):
+    if path in T1_COORDINATE_DERIVED_PATHS:
         return "mesh.node_coords"
     return path
 
@@ -507,6 +807,16 @@ def compare_repeatability(p0_root: Path, p0r_root: Path) -> dict[str, object]:
 
     p0 = _validate_package(p0_canonical, "P0", "P0_parent")
     p0r = _validate_package(p0r_canonical, "P0R", "P0R_parent_repeat")
+    evidence = _build_repeatability_evidence(p0, p0r)
+    _verify_package_snapshot(p0)
+    _verify_package_snapshot(p0r)
+    _publish_json_exclusive(destination, evidence)
+    return evidence
+
+
+def _build_repeatability_evidence(
+    p0: dict[str, Any], p0r: dict[str, Any]
+) -> dict[str, object]:
     if p0["manifest"]["execution_input_lock_sha256"] == p0r["manifest"][
         "execution_input_lock_sha256"
     ]:
@@ -557,6 +867,7 @@ def compare_repeatability(p0_root: Path, p0r_root: Path) -> dict[str, object]:
             )
 
     evidence: dict[str, object] = {
+        "schema_version": "toy_road_repeatability_evidence_v1",
         "authorization_scope": p0["manifest"]["authorization_scope"],
         "status": "PASS",
         "protocol_version": p0["manifest"]["protocol_version"],
@@ -574,16 +885,191 @@ def compare_repeatability(p0_root: Path, p0r_root: Path) -> dict[str, object]:
         "p0r_execution_input_lock_sha256": p0r["manifest"][
             "execution_input_lock_sha256"
         ],
+        "p0_package_snapshot_sha256": _package_snapshot_sha256(p0["snapshot"]),
+        "p0r_package_snapshot_sha256": _package_snapshot_sha256(p0r["snapshot"]),
         "threshold_relative_l2": THRESHOLD,
         "threshold_max_absolute": THRESHOLD,
         "trajectory_max_relative_l2": maximum_relative,
         "trajectory_max_absolute": maximum_absolute,
         "field_metrics": field_metrics,
     }
-    _verify_package_snapshot(p0)
-    _verify_package_snapshot(p0r)
-    _publish_json_exclusive(destination, evidence)
+    _require_exact_fields(
+        evidence, REPEATABILITY_EVIDENCE_FIELDS, "repeatability evidence"
+    )
     return evidence
+
+
+def authenticate_terminal_package(
+    package_root: Path, expected_case_id: str
+) -> dict[str, object]:
+    if expected_case_id not in FAMILY_ROLES:
+        raise ProtocolError("authenticated terminal case role is not declared")
+    canonical = _canonical_package_root(Path(package_root), expected_case_id)
+    package = _validate_package(canonical, expected_case_id, expected_case_id)
+    return _terminal_authentication_receipt(package)
+
+
+def _terminal_authentication_receipt(package: dict[str, Any]) -> dict[str, object]:
+    snapshot = package["snapshot"]
+    manifest = package["manifest"]
+    files = [
+        {
+            "path": relative,
+            "sha256": _sha256_bytes(snapshot["bytes"][relative]),
+            "identity": snapshot["identities"][relative],
+        }
+        for relative in sorted(snapshot["bytes"])
+    ]
+    return {
+        "schema_version": "toy_road_authenticated_terminal_v1",
+        "protocol_version": PROTOCOL_VERSION,
+        "status": "PASS",
+        "authorization_scope": manifest["authorization_scope"],
+        "case_id": manifest["case_id"],
+        "package_root": str(package["root"]),
+        "package_snapshot_sha256": _package_snapshot_sha256(snapshot),
+        "manifest_sha256": package["manifest_sha256"],
+        "c5_receipt_sha256": package["c5_receipt_sha256"],
+        "execution_input_lock_sha256": manifest["execution_input_lock_sha256"],
+        "runtime_lock_sha256": manifest["runtime_lock_sha256"],
+        "family_contract_sha256": manifest["family_contract_sha256"],
+        "case_physics_contract_sha256": manifest["case_physics_contract_sha256"],
+        "files": files,
+    }
+
+
+def recheck_authenticated_package(receipt: Mapping[str, object]) -> None:
+    value = _require_plain_mapping(receipt, "authenticated terminal receipt")
+    expected = {
+        "schema_version",
+        "protocol_version",
+        "status",
+        "authorization_scope",
+        "case_id",
+        "package_root",
+        "package_snapshot_sha256",
+        "manifest_sha256",
+        "c5_receipt_sha256",
+        "execution_input_lock_sha256",
+        "runtime_lock_sha256",
+        "family_contract_sha256",
+        "case_physics_contract_sha256",
+        "files",
+    }
+    _require_exact_fields(value, expected, "authenticated terminal receipt")
+    if (
+        value["schema_version"] != "toy_road_authenticated_terminal_v1"
+        or value["protocol_version"] != PROTOCOL_VERSION
+        or value["status"] != "PASS"
+    ):
+        raise ProtocolError("authenticated terminal receipt status is invalid")
+    root = _canonical_package_root(Path(str(value["package_root"])), "authenticated")
+    if str(root) != value["package_root"]:
+        raise ProtocolError("authenticated package root identity changed")
+    snapshot = _capture_package_bytes(root, "authenticated")
+    expected_files = value["files"]
+    if not isinstance(expected_files, list):
+        raise ProtocolError("authenticated terminal file identities are malformed")
+    actual_files = [
+        {
+            "path": relative,
+            "sha256": _sha256_bytes(snapshot["bytes"][relative]),
+            "identity": snapshot["identities"][relative],
+        }
+        for relative in sorted(snapshot["bytes"])
+    ]
+    if actual_files != expected_files or _package_snapshot_sha256(snapshot) != value[
+        "package_snapshot_sha256"
+    ]:
+        raise ProtocolError("authenticated package snapshot identity changed")
+
+
+def authenticate_repeatability_evidence(
+    evidence_path: Path, p0_root: Path, p0r_root: Path
+) -> dict[str, object]:
+    input_path = Path(evidence_path)
+    _require_no_reparse_chain(input_path, "repeatability evidence")
+    path = input_path.resolve(strict=True)
+    payload, identity = _read_file_snapshot(path, "repeatability evidence")
+    evidence = _read_json_bytes(payload, "repeatability evidence")
+    _require_exact_fields(
+        evidence, REPEATABILITY_EVIDENCE_FIELDS, "repeatability evidence"
+    )
+    p0 = _validate_package(
+        _canonical_package_root(Path(p0_root), "P0"), "P0", "P0_parent"
+    )
+    p0r = _validate_package(
+        _canonical_package_root(Path(p0r_root), "P0R"),
+        "P0R",
+        "P0R_parent_repeat",
+    )
+    expected = _build_repeatability_evidence(p0, p0r)
+    if evidence != expected:
+        raise ProtocolError("repeatability evidence is not bound to authenticated packages")
+    return {
+        "schema_version": "toy_road_authenticated_repeatability_v1",
+        "protocol_version": PROTOCOL_VERSION,
+        "status": "PASS",
+        "authorization_scope": evidence["authorization_scope"],
+        "family_contract_sha256": evidence["family_contract_sha256"],
+        "runtime_lock_sha256": evidence["runtime_lock_sha256"],
+        "p0_manifest_sha256": evidence["p0_manifest_sha256"],
+        "p0r_manifest_sha256": evidence["p0r_manifest_sha256"],
+        "p0_c5_receipt_sha256": evidence["p0_c5_receipt_sha256"],
+        "p0r_c5_receipt_sha256": evidence["p0r_c5_receipt_sha256"],
+        "p0_package_snapshot_sha256": evidence["p0_package_snapshot_sha256"],
+        "p0r_package_snapshot_sha256": evidence["p0r_package_snapshot_sha256"],
+        "repeatability_path": str(path),
+        "repeatability_evidence_sha256": _sha256_bytes(payload),
+        "repeatability_identity": identity,
+        "p0": _terminal_authentication_receipt(p0),
+        "p0r": _terminal_authentication_receipt(p0r),
+    }
+
+
+def recheck_authenticated_repeatability(receipt: Mapping[str, object]) -> None:
+    value = _require_plain_mapping(receipt, "authenticated repeatability receipt")
+    expected = {
+        "schema_version",
+        "protocol_version",
+        "status",
+        "authorization_scope",
+        "family_contract_sha256",
+        "runtime_lock_sha256",
+        "p0_manifest_sha256",
+        "p0r_manifest_sha256",
+        "p0_c5_receipt_sha256",
+        "p0r_c5_receipt_sha256",
+        "p0_package_snapshot_sha256",
+        "p0r_package_snapshot_sha256",
+        "repeatability_path",
+        "repeatability_evidence_sha256",
+        "repeatability_identity",
+        "p0",
+        "p0r",
+    }
+    _require_exact_fields(value, expected, "authenticated repeatability receipt")
+    if (
+        value["schema_version"] != "toy_road_authenticated_repeatability_v1"
+        or value["protocol_version"] != PROTOCOL_VERSION
+        or value["status"] != "PASS"
+    ):
+        raise ProtocolError("authenticated repeatability receipt status is invalid")
+    input_path = Path(str(value["repeatability_path"]))
+    _require_no_reparse_chain(input_path, "repeatability evidence")
+    path = input_path.resolve(strict=True)
+    payload, identity = _read_file_snapshot(path, "repeatability evidence")
+    if (
+        _sha256_bytes(payload) != value["repeatability_evidence_sha256"]
+        or identity != value["repeatability_identity"]
+    ):
+        raise ProtocolError("authenticated repeatability snapshot changed")
+    recheck_authenticated_package(
+        _require_plain_mapping(value["p0"], "authenticated P0 receipt")
+    )
+    recheck_authenticated_package(
+        _require_plain_mapping(value["p0r"], "authenticated P0R receipt")
+    )
 
 
 def _validate_package(root: Path, label: str, expected_case_id: str) -> dict[str, Any]:
@@ -622,9 +1108,8 @@ def _validate_package(root: Path, label: str, expected_case_id: str) -> dict[str
     if execution_digest != manifest["execution_input_lock_sha256"]:
         raise ProtocolError(f"{label} execution lock is inconsistent with its manifest")
     lock = _read_json_bytes(lock_bytes, f"{label} execution lock")
-    if lock.get("authorization_scope") != authorization_scope or lock.get(
-        "case_id"
-    ) != expected_case_id:
+    validate_execution_input_lock(lock, expected_case_id)
+    if lock["authorization_scope"] != authorization_scope:
         raise ProtocolError(f"{label} execution lock case_id or scope is inconsistent")
 
     _validate_c5(snapshot, manifest, label)
@@ -689,7 +1174,6 @@ def _validate_package(root: Path, label: str, expected_case_id: str) -> dict[str
         )
         shards.append(shard)
 
-    _verify_package_snapshot({"root": root, "snapshot": snapshot})
     return {
         "root": root,
         "snapshot": snapshot,
@@ -1049,10 +1533,11 @@ def _h5_class(node: h5py.Group | h5py.Dataset) -> str:
 
 
 def _capture_package_bytes(root: Path, label: str) -> dict[str, Any]:
-    _require_not_link_or_reparse(root, f"{label} package root")
+    _require_no_reparse_chain(root, f"{label} package root")
     if not root.is_dir():
         raise ProtocolError(f"{label} package root is missing")
     files: dict[str, bytes] = {}
+    identities: dict[str, dict[str, int]] = {}
     folded: dict[str, str] = {}
 
     def visit(directory: Path) -> None:
@@ -1071,15 +1556,44 @@ def _capture_package_bytes(root: Path, label: str) -> dict[str, Any]:
             if entry.is_dir(follow_symlinks=False):
                 visit(path)
             elif entry.is_file(follow_symlinks=False):
-                try:
-                    files[relative] = path.read_bytes()
-                except OSError as exception:
-                    raise ProtocolError(f"cannot read {label} package path {relative}: {exception}") from exception
+                payload, identity = _read_file_snapshot(
+                    path, f"{label} package path {relative}"
+                )
+                files[relative] = payload
+                identities[relative] = identity
             else:
                 raise ProtocolError(f"{label} package contains a non-file path")
 
     visit(root)
-    return {"bytes": files}
+    return {"bytes": files, "identities": identities}
+
+
+def _read_file_snapshot(path: Path, label: str) -> tuple[bytes, dict[str, int]]:
+    _require_not_link_or_reparse(path, label)
+    try:
+        with path.open("rb") as stream:
+            payload = stream.read()
+            info = os.fstat(stream.fileno())
+    except OSError as exception:
+        raise ProtocolError(f"cannot read {label}: {exception}") from exception
+    identity = {
+        "device": int(info.st_dev),
+        "inode": int(info.st_ino),
+        "size": int(info.st_size),
+        "mtime_ns": int(info.st_mtime_ns),
+    }
+    if len(payload) != identity["size"]:
+        raise ProtocolError(f"{label} changed while it was being read")
+    return payload, identity
+
+
+def _package_snapshot_sha256(snapshot: Mapping[str, object]) -> str:
+    files = _require_plain_mapping(snapshot.get("bytes"), "package snapshot bytes")
+    digest_map = {
+        relative: _sha256_bytes(bytes(payload))
+        for relative, payload in sorted(files.items())
+    }
+    return canonical_json_sha256(digest_map)
 
 
 def _validate_manifest_closure(
@@ -1136,6 +1650,15 @@ def _require_not_link_or_reparse(path: Path, label: str) -> None:
     reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
     if stat.S_ISLNK(info.st_mode) or bool(attributes & reparse):
         raise ProtocolError(f"{label} must not be a link or reparse point")
+
+
+def _require_no_reparse_chain(path: Path, label: str) -> None:
+    current = Path(os.path.abspath(path))
+    while True:
+        _require_not_link_or_reparse(current, label)
+        if current.parent == current:
+            break
+        current = current.parent
 
 
 def _read_json_bytes(payload: bytes | None, label: str) -> dict[str, Any]:
@@ -1278,9 +1801,26 @@ def _publish_json_exclusive(destination: Path, value: object) -> None:
             pass
 
 
+def _publish_bytes_exclusive(destination: Path, payload: bytes) -> None:
+    temporary = destination.with_name(f".{destination.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        with temporary.open("xb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(temporary, destination)
+    except FileExistsError as exception:
+        raise ProtocolError(f"canonical output already exists: {destination}") from exception
+    except OSError as exception:
+        raise ProtocolError(f"cannot publish canonical output: {exception}") from exception
+    finally:
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
+
+
 def _contract_summary_cli() -> int:
-    if sys.argv[1:] != ["--contract-summary"]:
-        raise ProtocolError("unsupported protocol command")
     contracts = load_contracts()
     summary = {
         "family_contract_sha256": next(iter(contracts.values())).family_sha256,
@@ -1296,5 +1836,127 @@ def _contract_summary_cli() -> int:
     return 0
 
 
+def _emit_execution_lock_cli(request_path: str, output_path: str) -> int:
+    request = _read_contract_json(Path(request_path))
+    expected = {
+        "authorization_scope",
+        "role",
+        "family_contract_sha256",
+        "case_physics_contract_sha256",
+        "source_commit",
+        "runtime_lock_sha256",
+        "source_manifest_sha256",
+        "runtime_expectations",
+        "roots",
+        "launch_timestamp_utc",
+        "no_clobber_receipt_id",
+    }
+    _require_exact_fields(request, expected, "execution lock request")
+    lock = build_execution_input_lock(**request)
+    payload = canonical_json_bytes(lock)
+    _publish_bytes_exclusive(Path(output_path), payload)
+    print(
+        json.dumps(
+            {"execution_input_lock_sha256": hashlib.sha256(payload).hexdigest()},
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    return 0
+
+
+def _verify_source_manifest_cli(root: str) -> int:
+    receipt = verify_source_manifest(Path(root))
+    print(canonical_json_bytes(receipt).decode("ascii"))
+    return 0
+
+
+def _publish_authentication_receipt(
+    output_path: str, receipt: Mapping[str, object]
+) -> int:
+    payload = canonical_json_bytes(receipt)
+    _publish_bytes_exclusive(Path(output_path), payload)
+    print(
+        json.dumps(
+            {"authentication_receipt_sha256": _sha256_bytes(payload)},
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    return 0
+
+
+def _authenticate_terminal_cli(root: str, role: str, output_path: str) -> int:
+    return _publish_authentication_receipt(
+        output_path, authenticate_terminal_package(Path(root), role)
+    )
+
+
+def _authenticate_repeatability_cli(
+    evidence_path: str,
+    p0_root: str,
+    p0r_root: str,
+    output_path: str,
+) -> int:
+    return _publish_authentication_receipt(
+        output_path,
+        authenticate_repeatability_evidence(
+            Path(evidence_path), Path(p0_root), Path(p0r_root)
+        ),
+    )
+
+
+def _recheck_authentication_cli(receipt_path: str) -> int:
+    input_path = Path(receipt_path)
+    _require_no_reparse_chain(input_path, "authentication receipt")
+    path = input_path.resolve(strict=True)
+    payload, _ = _read_file_snapshot(path, "authentication receipt")
+    receipt = _read_json_bytes(payload, "authentication receipt")
+    schema = receipt.get("schema_version")
+    if schema == "toy_road_authenticated_terminal_v1":
+        recheck_authenticated_package(receipt)
+    elif schema == "toy_road_authenticated_repeatability_v1":
+        recheck_authenticated_repeatability(receipt)
+    else:
+        raise ProtocolError("authentication receipt schema is not approved")
+    print('{"status":"PASS"}')
+    return 0
+
+
+def _validate_runtime_measurement_cli(
+    execution_lock_path: str, measurement_path: str
+) -> int:
+    lock = _read_contract_json(Path(execution_lock_path))
+    measurement = _read_contract_json(Path(measurement_path))
+    validate_runtime_measurement(lock, measurement)
+    print('{"status":"PASS"}')
+    return 0
+
+
+def _main_cli() -> int:
+    arguments = sys.argv[1:]
+    if arguments == ["--contract-summary"]:
+        return _contract_summary_cli()
+    if len(arguments) == 3 and arguments[0] == "--emit-execution-lock":
+        return _emit_execution_lock_cli(arguments[1], arguments[2])
+    if len(arguments) == 2 and arguments[0] == "--verify-source-manifest":
+        return _verify_source_manifest_cli(arguments[1])
+    if len(arguments) == 4 and arguments[0] == "--authenticate-terminal":
+        return _authenticate_terminal_cli(arguments[1], arguments[2], arguments[3])
+    if len(arguments) == 5 and arguments[0] == "--authenticate-repeatability":
+        return _authenticate_repeatability_cli(
+            arguments[1], arguments[2], arguments[3], arguments[4]
+        )
+    if len(arguments) == 2 and arguments[0] == "--recheck-authentication":
+        return _recheck_authentication_cli(arguments[1])
+    if len(arguments) == 3 and arguments[0] == "--validate-runtime-measurement":
+        return _validate_runtime_measurement_cli(arguments[1], arguments[2])
+    raise ProtocolError("unsupported protocol command")
+
+
 if __name__ == "__main__":
-    raise SystemExit(_contract_summary_cli())
+    try:
+        raise SystemExit(_main_cli())
+    except ProtocolError as exception:
+        print(str(exception), file=sys.stderr)
+        raise SystemExit(2) from exception

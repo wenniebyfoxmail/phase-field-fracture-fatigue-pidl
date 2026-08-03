@@ -5,10 +5,11 @@
   "cases": {
     "P0_parent": {
       "changed_axes": [],
-      "case_physics_contract_sha256": "b114c6f0ea46d5320d47f2df745a3480f6aa541874698a370e33cf6884249820",
+      "case_physics_contract_sha256": "c1d7b1460b9bc404907ab29d0297cba65d6bd3225f6caac09e430ca8f9b8f504",
       "physics": {
         "mesh": {
           "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
+          "connectivity_sha256": "a751fe5bfdbbfdd08ccddc6880bae1852d31260560583725e678ebc24a85ceb8",
           "mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
           "element_ordering_id": "q4_connectivity_1_based_v1",
           "gp_ordering_id": "q4_2x2_native_order_v1",
@@ -58,10 +59,11 @@
     },
     "P0R_parent_repeat": {
       "changed_axes": [],
-      "case_physics_contract_sha256": "b114c6f0ea46d5320d47f2df745a3480f6aa541874698a370e33cf6884249820",
+      "case_physics_contract_sha256": "c1d7b1460b9bc404907ab29d0297cba65d6bd3225f6caac09e430ca8f9b8f504",
       "physics": {
         "mesh": {
           "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
+          "connectivity_sha256": "a751fe5bfdbbfdd08ccddc6880bae1852d31260560583725e678ebc24a85ceb8",
           "mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
           "element_ordering_id": "q4_connectivity_1_based_v1",
           "gp_ordering_id": "q4_2x2_native_order_v1",
@@ -111,10 +113,11 @@
     },
     "T1_initial_defect": {
       "changed_axes": ["mesh.node_coords"],
-      "case_physics_contract_sha256": "8f13d4b3b8d747b92190925cb28c97713795f398129a3218503afba148004cb4",
+      "case_physics_contract_sha256": "938355b56d300e455145275b507e4c31032f9b467fd65d3dee6748f0b5012f02",
       "physics": {
         "mesh": {
           "mesh_sha256": "1db2b1074fc04b1bd8302f9810ea6f3a72a44485819b215eca8ccea85038a1d4",
+          "connectivity_sha256": "a751fe5bfdbbfdd08ccddc6880bae1852d31260560583725e678ebc24a85ceb8",
           "mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
           "element_ordering_id": "q4_connectivity_1_based_v1",
           "gp_ordering_id": "q4_2x2_native_order_v1",
@@ -172,10 +175,11 @@
     },
     "T2_material_state": {
       "changed_axes": ["material.Gc"],
-      "case_physics_contract_sha256": "489e880dca0a4afba9002a8d91011a35712dadf42a2b1cd59a274345c1dc7fb9",
+      "case_physics_contract_sha256": "cf639acc1730e4f28d3ac8524193d1ba9e61cf9f1593db75c4e797624a8f0fd4",
       "physics": {
         "mesh": {
           "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
+          "connectivity_sha256": "a751fe5bfdbbfdd08ccddc6880bae1852d31260560583725e678ebc24a85ceb8",
           "mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
           "element_ordering_id": "q4_connectivity_1_based_v1",
           "gp_ordering_id": "q4_2x2_native_order_v1",
@@ -225,10 +229,11 @@
     },
     "T3_loading_history": {
       "changed_axes": ["loading.blocks"],
-      "case_physics_contract_sha256": "543b43bf5142e147e9d26469ba6d30faeed76db58806f3cb66fb5dcd51bfc923",
+      "case_physics_contract_sha256": "952cf10ab0bbf48a6835e7bbbf8ce442c428aa4255280a3be0a0f33a85f85c0e",
       "physics": {
         "mesh": {
           "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
+          "connectivity_sha256": "a751fe5bfdbbfdd08ccddc6880bae1852d31260560583725e678ebc24a85ceb8",
           "mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
           "element_ordering_id": "q4_connectivity_1_based_v1",
           "gp_ordering_id": "q4_2x2_native_order_v1",
