@@ -264,6 +264,13 @@ shard.alpha_bar_gp(:,:,1) = previous.alpha_bar_gp(:,:,5) - 2e-12;
 verifyInvalid(testCase, shard, previous, state0, contract);
 end
 
+function testRejectsCrossCycleDamageBelowPreviousFinalSubstep(testCase)
+[previous, ~, state0, contract] = toyRoadShardFixture(1);
+[shard, ~, ~, ~] = toyRoadShardFixture(2);
+shard.d_node(:,1) = previous.d_node(:,5) - 2e-12;
+verifyInvalid(testCase, shard, previous, state0, contract);
+end
+
 function testRejectsPreviousForFirstCycle(testCase)
 [shard, ~, state0, contract] = toyRoadShardFixture(1);
 [previous, ~, ~, ~] = toyRoadShardFixture(1);
