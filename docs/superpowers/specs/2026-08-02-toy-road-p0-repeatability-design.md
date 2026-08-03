@@ -1,11 +1,11 @@
-# Toy-to-Road P0/P0R Repeatability Baseline Design v2
+# Toy-to-Road P0/P0R Repeatability Baseline Design v2.1
 
-Date: 2026-08-02
+Date: 2026-08-03
 
-Revision: v2 changes requested against remote commit
-`c8db4f9f879c20bb0683797d25a356f925938c3e`. This revision is specification
+Revision: v2.1 incorporates review against remote commit
+`300b295f474f455045752eb19ac988e472231a3a`. This revision is specification
 only. No production runner may be written and no P0/P0R/T1/T2/T3 solve may
-start until v2 passes review.
+start until v2.1 passes review.
 
 ## Decision And Scope
 
@@ -19,12 +19,12 @@ semantics.
 The approved replacement is a new, versioned synthetic-family baseline:
 
 ```text
-P0 -> terminal validation
-P0R -> terminal validation
+P0(c5 numerical gate) -> terminal validation
+P0R(c5 numerical gate) -> terminal validation
 P0/P0R repeatability gate
-T1 -> terminal validation
-T2 -> terminal validation
-T3 -> terminal validation
+T1(c5 numerical gate) -> terminal validation
+T2(c5 numerical gate) -> terminal validation
+T3(c5 numerical gate) -> terminal validation
 ```
 
 P0 and P0R are independent executions of the same unmodified Hard5 U0.12
@@ -79,25 +79,31 @@ any point invalidates the family and requires a new protocol version; it may
 not be handled by rerunning only the remaining cases.
 
 Q1 is not rerun between family members. The old historical Q2 blocker is not
-silently converted into a pass. P0 and P0R must each pass a reference-independent
-same-process numerical-solution gate, and only then may P0/P0R repeatability
-become the cycle-level reproducibility gate for this newly versioned family.
-Repeatability cannot qualify an under-converged branch.
+silently converted into a pass. P0, P0R, T1, T2 and T3 must each pass the same
+reference-independent same-process numerical-solution gate in their own state
+and geometry, and only then may their terminal packages be accepted. P0/P0R
+repeatability is a separate cycle-level reproducibility gate; it cannot qualify
+an under-converged branch or authorize a variant that fails its own gate.
 
 ## P0 And P0R Input Identity
 
-Input identity is split into two digests:
+Input identity is split into three digests:
 
-- `physics_contract_sha256` hashes canonical physical, mesh, recovery, solver,
-  cadence, exporter, runtime, numerical-gate and event fields. It excludes
-  execution identity and must be exactly equal for P0 and P0R.
+- `family_contract_sha256` hashes the shared runtime/environment, cadence,
+  exporter, numerical-gate, event, state-semantics and complete predeclared
+  case-axis contract. It must be exactly equal for all five cases.
+- `case_physics_contract_sha256` hashes `family_contract_sha256` plus one
+  case's canonical physical, mesh, recovery, material and loading fields. It
+  must be equal for P0 and P0R. T1, T2 and T3 have different case digests that
+  encode only their already predeclared single-axis change.
 - `execution_input_lock_sha256` hashes one complete execution lock, including
-  `physics_contract_sha256`, case ID, fresh roots, launch timestamp and
-  no-clobber receipt identity. It is expected to differ between P0 and P0R and
-  is validated only against that execution's own manifest.
+  both parent digests, case ID, fresh roots, launch timestamp and no-clobber
+  receipt identity. It is unique to each launch and is validated only against
+  that execution's own manifest.
 
 `P0_INPUT_LOCK.json` and `P0R_INPUT_LOCK.json` therefore contain the same
-`physics_contract_sha256`. Their execution layers may differ only in:
+`family_contract_sha256` and `case_physics_contract_sha256`. Their execution
+layers may differ only in:
 
 - `case_id` (`P0_parent` versus `P0R_parent_repeat`);
 - fresh output-root identity;
@@ -110,11 +116,13 @@ by both input locks.
 
 ## C5 Peak Same-Process Numerical-Solution Gate
 
-P0 and P0R must each pass an independent reference-free gate at physical cycle
-5, retained peak substep 4. The gate runs inside the original one-shot MATLAB
-solve process after the normal staggered loop reports convergence and before
-the c5-peak history commit or any c6 work. It reassembles the governing
-operators at the converged `(u,d)` state without taking another Newton step.
+Each of P0, P0R, T1, T2 and T3 must pass an independent reference-free gate at
+its own physical cycle 5, retained peak substep 4. The gate runs inside that
+case's original one-shot MATLAB solve process after the normal staggered loop
+reports convergence and before the c5-peak history commit or any c6 work. It
+reassembles the governing operators at the converged `(u,d)` state without
+taking another Newton step. Passing P0 does not qualify a changed geometry,
+material or loading history.
 
 At entry to the c5 peak substep, the process snapshots the accepted lower-bound
 damage `d_lb` and pre-commit history `history_pre`. At the end of every
@@ -169,8 +177,9 @@ is bound into the gate receipt and the package manifest.
 This is a fixed-point/KKT qualification of the produced solution. It may not
 use a teacher field, historical replay, P0/P0R comparison, fixed stagger count,
 forced extra iterations or a post-process launched after the solver exits. A
-failure stops that execution before history commit and prevents P0/P0R
-repeatability evaluation.
+failure stops that execution before history commit. A P0/P0R failure prevents
+repeatability evaluation; a T1/T2/T3 failure prevents terminal acceptance and
+authorization of every later family member.
 
 ## Independent One-Shot Execution Environment
 
@@ -195,7 +204,8 @@ fingerprint, Windows build, MATLAB executable hash and release/update, MATLAB
 path ordering and hash, `version -blas`, `version -lapack`, thread environment,
 runtime-lock digest and MEX hashes. A mismatch fails before solving. The
 separate writable roots and launch-specific receipts remain part of
-`execution_input_lock_sha256`, not `physics_contract_sha256`. Case-specific
+`execution_input_lock_sha256`, not `case_physics_contract_sha256`. The shared
+machine/runtime settings are bound by `family_contract_sha256`. Case-specific
 writable roots are never added to the canonical MATLAB path, so the path hash
 remains meaningfully comparable across executions.
 
@@ -209,6 +219,7 @@ arrays with stable Q4 element and Gauss-point ordering:
 substeps/cycle_NNNN.mat
 
 d_gp             [n_elem, 4, 5]
+d_node           [n_node, 5]
 alpha_bar_gp     [n_elem, 4, 5]
 f_alpha_gp       [n_elem, 4, 5]
 psi_raw_gp       [n_elem, 4, 5]
@@ -233,7 +244,8 @@ element_ordering_id
 gp_ordering_id
 state_semantics_id
 runtime_lock_sha256
-physics_contract_sha256
+family_contract_sha256
+case_physics_contract_sha256
 execution_input_lock_sha256
 ```
 
@@ -289,17 +301,42 @@ Before a shard is accepted:
 
 - the six five-substep GP arrays must have exact shape `[n_elem,4,5]` and
   contain finite doubles;
+- `d_node` must have exact shape `[n_node,5]` and contain finite doubles;
 - `psi_raw_cyclemax_gp` must have exact shape `[n_elem,4]`, equal
   `max(psi_raw_gp,[],3)` within `1e-12`, and remain semantically separate from
   every instantaneous and active field;
+- for each substep, `d_lb_node` is the immediately preceding accepted nodal
+  damage in chronological order, using state0 before c1/substep 1; nodal damage
+  must satisfy
+  `max([0; d_lb_node(:)-d_node(:); d_node(:)-1]) <= 1e-12` with no clipping;
 - `d_gp` and `g_gp` must remain in `[0,1]` within range tolerance `1e-10`;
+- `alpha_bar_gp` must be non-negative within tolerance `1e-12` and must not
+  decrease by more than `1e-12` from its chronological predecessor across both
+  substep and cycle boundaries; the predecessor of c1/substep 1 is the locked
+  state0 history;
+- `f_alpha_gp` must remain in `[0,1]` within tolerance `1e-12`;
 - raw and active drivers must be non-negative within range tolerance `1e-10`;
   values are never clipped by the validator;
 - every negative value below tolerance fails the shard;
-- degradation-law and active-driver recomputations must each have maximum
-  absolute error `<=1e-12` for every GP and substep;
+- damage-degradation, fatigue-degradation and active-driver recomputations must
+  each have maximum absolute error `<=1e-12` for every GP and substep. The
+  fatigue reference uses the locked GRIPHFiTH Carrara implementation exactly,
+  without an algebraic rewrite:
+
+  ```text
+  f_alpha_expected = min(1, ...
+      (1 - ((alpha_bar_gp - alpha_T) ./ ...
+            (alpha_bar_gp + alpha_T))).^p)
+  alpha_T = 0.5
+  p = 2
+  ```
+
+  It is evaluated from the post-commit `alpha_bar_gp` slice and compared to the
+  independently exported `f_alpha_gp`; recomputing both from one exporter
+  temporary is not a legality test;
 - cycle, substep, load, raw-step, branch, case-declared mesh, ordering, runtime,
-  physics-contract and own execution-lock identities must be exact;
+  family-contract, case-physics-contract and own execution-lock identities must
+  be exact;
 - cycle shards must be consecutive from c1 through the terminal cycle;
 - the cycle-peak event state must be byte-identifiable with substep 4 of the
   same cycle shard.
@@ -316,8 +353,9 @@ P0R independently pass terminal package validation.
 
 The following identities must match exactly:
 
-- source, runtime, P0/P0R parent mesh, `physics_contract_sha256`, physical
-  input, solver, recovery, exporter, numerical-solution and event contracts;
+- source, runtime, P0/P0R parent mesh, `family_contract_sha256`,
+  `case_physics_contract_sha256`, physical input, solver, recovery, exporter,
+  numerical-solution and event contracts;
 - state0 and mesh ordering metadata;
 - terminal reason and terminal cycle;
 - first-hit and confirmed cycles;
@@ -365,22 +403,26 @@ The new protocol uses three immutable evidence layers:
 1. `HISTORICAL_Q2_CLOSURE.json` binds the historical blocker, Windows search
    scope, locked parent hashes, audit commit and
    `historical_q2_parent_irrecoverable` verdict.
-2. P0 and P0R each publish an independent validated package, passing c5 peak
-   numerical-solution receipt and no-clobber producer provenance bound to the
-   accepted Q1 runtime.
+2. P0 and P0R each publish an independent validated package, passing its own c5
+   peak numerical-solution receipt and no-clobber producer provenance bound to
+   the accepted Q1 runtime. Every T1/T2/T3 terminal manifest likewise binds that
+   case's complete c5 stagger trace and PASS receipt; a parent receipt cannot be
+   reused by a variant.
 3. `P0_REPEATABILITY_EVIDENCE_LOCK.json` binds both complete package manifests,
    both c5 numerical-solution PASS receipts, repeatability metrics, PASS
    receipt, runtime lock, source commit, exporter hash and protocol version.
 
 T1 launcher authorization requires the canonical repeatability evidence lock;
 Q1 alone is insufficient. T2 additionally requires validated T1 terminal
-evidence, and T3 additionally requires validated T1 and T2 terminal evidence.
+evidence including the T1 c5 PASS receipt, and T3 additionally requires
+validated T1 and T2 terminal evidence including both case-local c5 PASS
+receipts.
 The launcher rejects:
 
 - a missing or failed historical closure;
 - missing, failed, incomplete or mutable P0/P0R packages;
 - missing or failed repeatability evidence;
-- any source, runtime, exporter, family-lock, or case-declared mesh-hash
+- any source, runtime, exporter, family-contract, or case-declared mesh-hash
   mismatch; T1 must match its predeclared mapped-mesh hash and is not required
   to equal the P0 parent-mesh hash;
 - a pre-existing output root, resume/checkpoint input, or running FEM process;
@@ -420,11 +462,11 @@ to the canonical machine-readable attempt ledger:
 docs/toy_road_p0_repeatability_20260802/_pidl_attempt_ledger/attempts.jsonl
 ```
 
-Each ledger entry records attempt ID, case role, source commit, physics-contract
-digest, execution-lock digest, runtime digest, roots, process/environment
-fingerprint, start/end state and linked immutable receipts. Existing entries
-are never rewritten or deleted. The repository's attempt-ledger tool renders
-the human-readable view at
+Each ledger entry records attempt ID, case role, source commit, family-contract
+digest, case-physics-contract digest, execution-lock digest, runtime digest,
+roots, process/environment fingerprint, start/end state and linked immutable
+receipts. Existing entries are never rewritten or deleted. The repository's
+attempt-ledger tool renders the human-readable view at
 `docs/toy_road_p0_repeatability_20260802/attempt.md`; the rendered file is not a
 second ledger.
 
@@ -443,7 +485,9 @@ Only one experiment may run at a time. The strict order is:
 ```text
 P0(c5 numerical gate) -> validate ->
 P0R(c5 numerical gate) -> validate -> repeatability ->
-T1 -> validate -> T2 -> validate -> T3 -> validate
+T1(c5 numerical gate) -> validate ->
+T2(c5 numerical gate) -> validate ->
+T3(c5 numerical gate) -> validate
 ```
 
 Any failure stops the family. The launcher never terminates an unrelated
@@ -456,21 +500,28 @@ decision and a fresh output root.
 Automated tests must demonstrate fail-closed behavior for:
 
 - P0/P0R physical-input differences outside the allowed identity fields;
-- unequal `physics_contract_sha256`, or an execution lock not self-consistent
-  with its own manifest;
+- unequal `family_contract_sha256` among any of the five cases;
+- unequal P0/P0R `case_physics_contract_sha256`, or a T1/T2/T3 case digest that
+  does not encode exactly its predeclared single-axis change relative to P0;
+- an `execution_input_lock_sha256` not self-consistent with its own manifest;
 - P0R reading any P0 state, checkpoint, output or cache;
 - reused writable work/TEMP/TMP/preference/cache roots, persistent MATLAB/MEX
   state, CPU/Windows/MATLAB-path/BLAS/thread-setting mismatch, or a process that
   is not a fresh one-shot MATLAB invocation;
-- missing or failing c5 same-process displacement, projected-KKT,
-  consecutive-stagger or primal-feasibility gate;
+- missing or failing case-local c5 same-process displacement, projected-KKT,
+  consecutive-stagger or primal-feasibility gate for any of P0, P0R, T1, T2 or
+  T3, or a terminal manifest missing its own trace and PASS receipt;
 - a c5 gate produced post-process, by fixed iteration count, teacher comparison
   or replay qualification, or without a complete stagger trace;
 - missing, reordered or duplicated substeps and cycles;
 - incorrect raw-step or peak-state identity;
-- missing, extra, wrong-shape, non-finite, illegal-range or clipped GP fields;
+- missing, extra, wrong-shape, non-finite, illegal-range or clipped GP/nodal
+  fields;
 - pre-commit history labelled post-commit, overwritten history slices, or a
   missing `alpha_bar_gp`/`f_alpha_gp` five-step payload;
+- negative or chronologically decreasing `alpha_bar_gp`, out-of-range
+  `f_alpha_gp`, mismatch with the locked Carrara formula, or nodal damage that
+  violates `d_lb <= d <= 1`;
 - instantaneous raw, cycle-maximum raw and active fields relabelled or mixed;
 - `f_alpha`, cycle-maximum raw, or a product of element means substituted for
   active driver;

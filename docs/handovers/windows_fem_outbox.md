@@ -6,6 +6,26 @@
 
 ---
 
+## 2026-08-03 - [review]: P0/P0R design v2.1 prepared; zero execution retained
+
+- **Re**: changes requested against design v2 commit `300b295`.
+- **Spec**:
+  `docs/superpowers/specs/2026-08-02-toy-road-p0-repeatability-design.md`.
+- **Case-local numerical qualification**: P0, P0R, T1, T2 and T3 must each
+  pass the same reference-independent, same-process fixed-point/KKT gate at
+  physical c5 peak substep 4. Every terminal manifest binds that case's own
+  stagger trace and PASS receipt; no parent receipt qualifies a variant.
+- **State legality**: the validator now requires chronological non-negative and
+  irreversible `alpha_bar_gp`, bounded `f_alpha_gp`, exact agreement with the
+  locked Carrara formula, and nodal `d_lb <= d <= 1` at every retained substep.
+- **Identity**: `family_contract_sha256` is common to all five cases;
+  `case_physics_contract_sha256` is equal only for P0/P0R and encodes each
+  predeclared T1/T2/T3 single-axis change; `execution_input_lock_sha256` is
+  unique and self-verified per launch.
+- **Status**: specification-only v2.1. No production runner was written and no
+  P0/P0R/T1/T2/T3 solve was started. Implementation remains blocked pending
+  v2.1 review approval.
+
 ## 2026-08-02 - [review]: P0/P0R design v2 prepared; implementation remains blocked
 
 - **Re**: changes requested against P0/P0R design commit `c8db4f9`.
