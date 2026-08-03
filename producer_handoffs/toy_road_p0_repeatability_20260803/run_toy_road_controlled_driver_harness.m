@@ -47,7 +47,7 @@ end
     function [system,record] = systemFactory(d)
         factoryInputs{end+1} = d;
         ordinal = numel(factoryInputs);
-        system = ToyRoadP0LocalControlledSystem(d);
+        system = localCreateControlledSystem(d);
         record = struct( ...
             'construction_ordinal',ordinal, ...
             'phase_field',d, ...
@@ -116,32 +116,155 @@ end
 end
 
 function valid = localControlledReceipt(request)
-valid = isstruct(request) && isscalar(request) && ...
-    isfield(request,'authorization_scope') && ...
-    localText(request.authorization_scope) && ...
-    strcmp(char(request.authorization_scope),'test_only_non_authorizing') && ...
-    isfield(request,'authorization_receipt') && ...
-    isstruct(request.authorization_receipt) && ...
-    isscalar(request.authorization_receipt);
+requestFields = {'authorization_scope','authorization_receipt','case_id', ...
+    'source_commit','runtime_lock_sha256','family_contract_sha256', ...
+    'case_physics_contract_sha256','execution_input_lock_sha256', ...
+    'output_root','work_root','temp_root','tmp_root','pref_root','cache_root', ...
+    'input_assets_root'};
+receiptFields = {'status','authorization_scope','authorized_entrypoint', ...
+    'case_id','source_commit','runtime_lock_sha256','family_contract_sha256', ...
+    'case_physics_contract_sha256','execution_input_lock_sha256'};
+
+% Reject executable values before field conversion or caller-controlled dispatch.
+valid = localValueOnly(request) && localExactFields(request,requestFields);
 if ~valid
     return
 end
 receipt = request.authorization_receipt;
-required = {'status','authorization_scope','authorized_entrypoint','case_id', ...
-    'source_commit','runtime_lock_sha256','family_contract_sha256', ...
-    'case_physics_contract_sha256','execution_input_lock_sha256'};
-requestFields = required(4:end);
-valid = all(isfield(receipt,required)) && ...
-    strcmp(char(receipt.status),'PASS') && ...
-    strcmp(char(receipt.authorization_scope),'test_only_non_authorizing') && ...
-    strcmp(char(receipt.authorized_entrypoint), ...
-        'run_toy_road_controlled_driver_harness');
-for index = 1:numel(requestFields)
-    name = requestFields{index};
-    valid = valid && isfield(request,name) && localText(receipt.(name)) && ...
-        localText(request.(name)) && ...
-        strcmpi(char(receipt.(name)),char(request.(name)));
+valid = localExactFields(receipt,receiptFields) && ...
+    localExactChar(request.authorization_scope,'test_only_non_authorizing') && ...
+    localExactChar(receipt.status,'PASS') && ...
+    localExactChar(receipt.authorization_scope,'test_only_non_authorizing') && ...
+    localExactChar(receipt.authorized_entrypoint, ...
+        'run_toy_road_controlled_driver_harness') && ...
+    localCaseId(request.case_id) && ...
+    localLowerHex(request.source_commit,40) && ...
+    localLowerHex(request.runtime_lock_sha256,64) && ...
+    localLowerHex(request.family_contract_sha256,64) && ...
+    localLowerHex(request.case_physics_contract_sha256,64) && ...
+    localLowerHex(request.execution_input_lock_sha256,64);
+if ~valid
+    return
 end
+
+identityFields = receiptFields(4:end);
+for index = 1:numel(identityFields)
+    name = identityFields{index};
+    valid = valid && localExactChar(receipt.(name),request.(name));
+end
+pathFields = requestFields(9:end);
+for index = 1:numel(pathFields)
+    valid = valid && localNonemptyCharRow(request.(pathFields{index}));
+end
+end
+
+function valid = localValueOnly(value)
+if builtin('isa',value,'char')
+    valid = builtin('size',value,1) == 1;
+    return
+end
+if ~builtin('isa',value,'struct')
+    valid = false;
+    return
+end
+if builtin('numel',value) ~= 1
+    valid = false;
+    return
+end
+names = builtin('fieldnames',value);
+valid = true;
+for index = 1:numel(names)
+    if ~localValueOnly(value.(names{index}))
+        valid = false;
+        return
+    end
+end
+end
+
+function valid = localExactFields(value,required)
+valid = builtin('isa',value,'struct') && builtin('numel',value) == 1;
+if ~valid
+    return
+end
+actual = builtin('fieldnames',value);
+if numel(actual) ~= numel(required)
+    valid = false;
+    return
+end
+for index = 1:numel(required)
+    found = false;
+    for candidate = 1:numel(actual)
+        if builtin('strcmp',actual{candidate},required{index})
+            found = true;
+            break
+        end
+    end
+    if ~found
+        valid = false;
+        return
+    end
+end
+end
+
+function valid = localExactChar(value,expected)
+valid = builtin('isa',value,'char') && builtin('size',value,1) == 1 && ...
+    builtin('size',value,2) == builtin('size',expected,2) && ...
+    builtin('strcmp',value,expected);
+end
+
+function valid = localNonemptyCharRow(value)
+valid = builtin('isa',value,'char') && builtin('size',value,1) == 1 && ...
+    builtin('size',value,2) > 0 && ~any(value == char(0)) && ...
+    any(~isspace(value));
+end
+
+function valid = localLowerHex(value,requiredLength)
+valid = builtin('isa',value,'char') && builtin('size',value,1) == 1 && ...
+    builtin('size',value,2) == requiredLength;
+if valid
+    valid = all((value >= '0' & value <= '9') | ...
+        (value >= 'a' & value <= 'f'));
+end
+end
+
+function valid = localCaseId(value)
+roles = {'P0_parent','P0R_parent_repeat','T1_initial_defect', ...
+    'T2_material_state','T3_loading_history'};
+valid = false;
+for index = 1:numel(roles)
+    if localExactChar(value,roles{index})
+        valid = true;
+        return
+    end
+end
+end
+
+function system = localCreateControlledSystem(phaseFieldInput)
+sourceRoot = fileparts(builtin('mfilename','fullpath'));
+classPath = fullfile(sourceRoot,'ToyRoadP0LocalControlledSystem.m');
+expectedHash = 'b9e2936798dc1f674ccbefdce6114abc9c26b44634103184ec7e1d6d551b0644';
+originalDirectory = builtin('cd');
+cleanup = onCleanup(@() builtin('cd',originalDirectory));
+builtin('cd',sourceRoot);
+resolved = builtin('which','ToyRoadP0LocalControlledSystem');
+if ~builtin('strcmp',localCanonicalPath(resolved),localCanonicalPath(classPath)) || ...
+        ~builtin('strcmp',localSha256(classPath),expectedHash)
+    error('toyRoadP0:ControlledSystemBindingRejected', ...
+        'The harness-only controlled System source binding is invalid.');
+end
+system = ToyRoadP0LocalControlledSystem(phaseFieldInput);
+clear cleanup
+end
+
+function value = localCanonicalPath(pathValue)
+value = char(java.io.File(pathValue).getCanonicalPath());
+end
+
+function value = localSha256(pathValue)
+bytes = java.nio.file.Files.readAllBytes(java.io.File(pathValue).toPath());
+digest = java.security.MessageDigest.getInstance('SHA-256');
+hashed = typecast(digest.digest(bytes),'uint8');
+value = lower(reshape(dec2hex(hashed,2).',1,[]));
 end
 
 function observation = localObserveContext(context)
@@ -165,9 +288,4 @@ if isstruct(value)
 elseif iscell(value)
     found = any(cellfun(@localContainsExecutable,value));
 end
-end
-
-function valid = localText(value)
-valid = (ischar(value) && isrow(value) && ~isempty(strtrim(value))) || ...
-    (isstring(value) && isscalar(value) && strlength(strtrim(value)) > 0);
 end

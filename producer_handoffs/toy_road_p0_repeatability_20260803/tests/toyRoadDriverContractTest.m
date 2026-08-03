@@ -26,6 +26,64 @@ verifyFalse(testCase, isfolder(request.output_root));
 verifyFalse(testCase, isfolder(request.work_root));
 end
 
+function testControlledHarnessRejectsExecutableReceiptBeforeDispatch(testCase)
+request = fixtureRequest(testCase.TestData.root, 'P0_parent');
+request.authorization_receipt.authorized_entrypoint = ...
+    'run_toy_road_controlled_driver_harness';
+marker = fullfile(testCase.TestData.root,'malicious_receipt_reached');
+request.authorization_receipt.status = ...
+    ToyRoadP0MaliciousReceiptValue(marker);
+
+verifyError(testCase, @() run_toy_road_controlled_driver_harness(request), ...
+    'toyRoadP0:ControlledHarnessRejected');
+verifyFalse(testCase,isfile(marker));
+verifyNoWritableRoots(testCase,request);
+end
+
+function testControlledHarnessRequiresExactValueOnlySchemas(testCase)
+request = fixtureRequest(testCase.TestData.root, 'P0_parent');
+request.authorization_receipt.authorized_entrypoint = ...
+    'run_toy_road_controlled_driver_harness';
+request.authorization_receipt.unexpected = 'not_allowed';
+
+verifyError(testCase, @() run_toy_road_controlled_driver_harness(request), ...
+    'toyRoadP0:ControlledHarnessRejected');
+verifyNoWritableRoots(testCase,request);
+
+request = fixtureRequest(testCase.TestData.root, 'P0_parent');
+request.authorization_receipt.authorized_entrypoint = ...
+    'run_toy_road_controlled_driver_harness';
+request.unexpected = 'not_allowed';
+verifyError(testCase, @() run_toy_road_controlled_driver_harness(request), ...
+    'toyRoadP0:ControlledHarnessRejected');
+verifyNoWritableRoots(testCase,request);
+end
+
+function testControlledSystemShadowCannotRunOnSuccessfulHarness(testCase)
+request = fixtureRequest(testCase.TestData.root, 'P0_parent');
+request.authorization_receipt.authorized_entrypoint = ...
+    'run_toy_road_controlled_driver_harness';
+shadowRoot = fullfile(fileparts(mfilename('fullpath')), ...
+    'fixtures','controlled_system_shadow');
+marker = fullfile(testCase.TestData.root,'shadow_system_reached');
+oldMarker = getenv('TOY_ROAD_SHADOW_SYSTEM_MARKER');
+warningState = warning;
+cleanup = onCleanup(@() restoreShadowPath( ...
+    shadowRoot,oldMarker,warningState));
+warning('off','all');
+setenv('TOY_ROAD_SHADOW_SYSTEM_MARKER',marker);
+addpath(shadowRoot,'-begin');
+clear('ToyRoadP0LocalControlledSystem');
+
+[result,observations] = run_toy_road_controlled_driver_harness(request);
+
+verifyTrue(testCase,result.complete);
+verifyEqual(testCase,observations.solver_invocation_count,1);
+verifyFalse(testCase,isfile(marker));
+verifyTrue(testCase,isfolder(request.output_root));
+clear cleanup
+end
+
 function testSealedControlledHarnessExecutesSuccessfulDriverCore(testCase)
 request = fixtureRequest(testCase.TestData.root, 'P0_parent');
 request.authorization_receipt.authorized_entrypoint = ...
@@ -90,6 +148,23 @@ verifyEqual(testCase, ...
     cumsum(context.sol_step_template.uy_increment) / ...
     context.sol_step_template.uy_final,[.25 .5 .75 1 0], ...
     'AbsTol',1e-15);
+end
+
+function verifyNoWritableRoots(testCase,request)
+writeFields = {'output_root','work_root','temp_root','tmp_root', ...
+    'pref_root','cache_root'};
+for index = 1:numel(writeFields)
+    verifyFalse(testCase,isfolder(request.(writeFields{index})));
+end
+end
+
+function restoreShadowPath(shadowRoot,oldMarker,warningState)
+if contains(path,[shadowRoot pathsep]) || endsWith(path,shadowRoot)
+    rmpath(shadowRoot);
+end
+clear('ToyRoadP0LocalControlledSystem');
+setenv('TOY_ROAD_SHADOW_SYSTEM_MARKER',oldMarker);
+warning(warningState);
 end
 
 function testControlledHarnessRejectsArbitraryOperatorsAndProductionScope(testCase)
