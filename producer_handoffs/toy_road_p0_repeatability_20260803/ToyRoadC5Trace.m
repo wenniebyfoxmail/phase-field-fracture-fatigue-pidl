@@ -1,4 +1,4 @@
-classdef ToyRoadC5Trace < handle
+classdef (Sealed) ToyRoadC5Trace < handle
     %TOYROADC5TRACE Opaque single-use handle for one c5 lifecycle lease.
 
     properties (SetAccess=private, GetAccess=private)
@@ -16,7 +16,7 @@ classdef ToyRoadC5Trace < handle
         StaggerOrdinals
         DPreviousStagger
         LastRowConverged
-        LifecycleState
+        LifecycleState (1,1) double = NaN
     end
 
     properties (Dependent, SetAccess=private)
@@ -122,10 +122,11 @@ classdef ToyRoadC5Trace < handle
             self.StaggerOrdinals = zeros(1,0);
             self.DPreviousStagger = dPrevious;
             self.LastRowConverged = false;
-            self.LifecycleState = ...
-                java.util.concurrent.atomic.AtomicInteger(0);
+            self.LifecycleState = 0;
         end
+    end
 
+    methods (Sealed)
         function next = appendCompletedStagger(self, rowInput)
             self.validateActiveLifecycle();
             required = {'u','d','stagger_converged'};
@@ -150,9 +151,9 @@ classdef ToyRoadC5Trace < handle
                 'the c5 trace bytes changed outside the active lifecycle.');
 
             count = self.TraceRowCount;
-            localLifecycleRequire(self.LifecycleState.compareAndSet( ...
-                count, -(count + 1)), ...
+            localLifecycleRequire(self.LifecycleState == count, ...
                 'the c5 lifecycle was consumed by another append or finalize call.');
+            self.LifecycleState = -(count + 1);
             [rU, rawDriver] = self.ReassembleEquilibrium( ...
                 self.Snapshot, u, d);
             rD = self.ReassemblePhase(self.Snapshot, u, d, rawDriver);
@@ -202,9 +203,9 @@ classdef ToyRoadC5Trace < handle
             traceSha256 = localFileSha256(self.TracePath);
             localLifecycleRequire(strcmp(traceSha256, self.TraceSha256), ...
                 'the c5 trace bytes changed outside the active lifecycle.');
-            localLifecycleRequire(self.LifecycleState.compareAndSet( ...
-                count, -(1000000 + count)), ...
+            localLifecycleRequire(self.LifecycleState == count, ...
                 'the c5 lifecycle was already finalized, copied or poisoned.');
+            self.LifecycleState = -(1000000 + count);
 
             rows = self.readValidatedRows(count);
             last = count;
@@ -258,6 +259,13 @@ classdef ToyRoadC5Trace < handle
             localPublishJsonExclusive(self.ReceiptPath, receipt);
         end
 
+        function value = struct(~) %#ok<STOUT>
+            error('toyRoadP0:OpaqueC5Trace', ...
+                'ToyRoadC5Trace does not permit struct conversion.');
+        end
+    end
+
+    methods
         function value = get.authorization_scope(self)
             value = self.AuthorizationScope;
         end
@@ -317,9 +325,7 @@ classdef ToyRoadC5Trace < handle
                 localFiniteDoubleColumn(self.DPreviousStagger) && ...
                 islogical(self.LastRowConverged) && ...
                 isscalar(self.LastRowConverged) && ...
-                isa(self.LifecycleState, ...
-                    'java.util.concurrent.atomic.AtomicInteger') && ...
-                self.LifecycleState.get() == count;
+                self.LifecycleState == count;
             localLifecycleRequire(valid, ...
                 'the c5 lifecycle is stale, reordered, finalized or poisoned.');
         end
@@ -340,8 +346,7 @@ classdef ToyRoadC5Trace < handle
             next.StaggerOrdinals = 1:ordinal;
             next.DPreviousStagger = d;
             next.LastRowConverged = converged;
-            next.LifecycleState = ...
-                java.util.concurrent.atomic.AtomicInteger(ordinal);
+            next.LifecycleState = ordinal;
         end
 
         function rows = readValidatedRows(self, count)

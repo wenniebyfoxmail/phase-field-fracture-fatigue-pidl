@@ -4,6 +4,8 @@ end
 
 function setupOnce(testCase)
 addpath(handoffDir());
+addpath(fixtureDir());
+testCase.addTeardown(@() rmpath(fixtureDir()));
 testCase.addTeardown(@() rmpath(handoffDir()));
 end
 
@@ -216,6 +218,59 @@ verifyTrue(testCase, assignmentRejected( ...
 verifyError(testCase, @() finalize_toy_road_c5_gate(trace), ...
     'toyRoadP0:InvalidC5Lifecycle');
 verifyFalse(testCase, isfile(receiptPath(testCase.TestData.root)));
+end
+
+function testStructConversionFailsClosedWithoutExposingLifecycle(testCase)
+trace = begin_toy_road_c5_trace(gateFixture(), testCase.TestData.root);
+warningState = warning('off', 'MATLAB:structOnObject');
+cleanup = onCleanup(@() warning(warningState));
+
+verifyError(testCase, @() struct(trace), 'toyRoadP0:OpaqueC5Trace');
+verifyFalse(testCase, isfile(receiptPath(testCase.TestData.root)));
+clear cleanup
+end
+
+function testTraceClassAndCriticalMethodsAreSealed(testCase)
+metadata = ?ToyRoadC5Trace;
+verifyTrue(testCase, metadata.Sealed);
+methodNames = {metadata.MethodList.Name};
+critical = {'appendCompletedStagger','finalizeGate','struct'};
+for index = 1:numel(critical)
+    selected = strcmp(methodNames, critical{index});
+    verifyEqual(testCase, sum(selected), 1, critical{index});
+    verifyTrue(testCase, metadata.MethodList(selected).Sealed, ...
+        critical{index});
+end
+end
+
+function testSubclassWithForgedDispatchCannotLoad(testCase)
+rejected = operationRejected(@() ToyRoadC5TraceSubclassAttack( ...
+    gateFixture(), testCase.TestData.root));
+
+verifyTrue(testCase, rejected);
+verifyFalse(testCase, isfile(fullfile(testCase.TestData.root, ...
+    'qualification', 'C5_STAGGER_TRACE.csv')));
+verifyFalse(testCase, isfile(receiptPath(testCase.TestData.root)));
+end
+
+function testFacadesRequireExactConcreteClass(testCase)
+facades = {'append_toy_road_c5_stagger_row.m', ...
+    'finalize_toy_road_c5_gate.m'};
+for index = 1:numel(facades)
+    source = fileread(fullfile(handoffDir(), facades{index}));
+    verifyTrue(testCase, contains(source, ...
+        "strcmp(class(trace), 'ToyRoadC5Trace')"), facades{index});
+    verifyFalse(testCase, contains(source, ...
+        "isa(trace, 'ToyRoadC5Trace')"), facades{index});
+end
+end
+
+function testLifecycleStateHasNoReferenceSemanticToken(testCase)
+source = fileread(fullfile(handoffDir(), 'ToyRoadC5Trace.m'));
+
+verifyFalse(testCase, contains(source, 'AtomicInteger'));
+verifyTrue(testCase, contains(source, ...
+    'LifecycleState (1,1) double'));
 end
 
 function testMultipleCompletedStaggersHaveExactRowsReassembliesAndOrdinals(testCase)
@@ -434,6 +489,15 @@ function assignTraceProperty(trace, name, value)
 trace.(name) = value;
 end
 
+function rejected = operationRejected(callback)
+rejected = false;
+try
+    callback();
+catch
+    rejected = true;
+end
+end
+
 function removeRoot(root)
 if isfolder(root)
     rmdir(root, 's');
@@ -442,4 +506,8 @@ end
 
 function value = handoffDir()
 value = fileparts(fileparts(mfilename('fullpath')));
+end
+
+function value = fixtureDir()
+value = fullfile(fileparts(mfilename('fullpath')), 'fixtures');
 end
