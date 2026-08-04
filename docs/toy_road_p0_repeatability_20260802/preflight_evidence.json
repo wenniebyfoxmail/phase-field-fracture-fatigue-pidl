@@ -1,68 +1,136 @@
 {
-  "schema_version": "toy_road_p0_sealed_preflight_evidence_v1",
-  "status": "PASS_NON_AUTHORIZING",
-  "sealed_source_commit": "19861e214dabbfa66b5df806fcf5e055af88e0d1",
-  "source_branch": "codex/toy-road-evidence-integration",
-  "authorization_scope": "preflight_only_non_authorizing",
-  "dynamic_chain_status": "not_evaluated_no_execution",
-  "decision_status": "BLOCKED_PENDING_EXECUTION_AUTHORIZATION",
-  "production_execution_authorized": false,
-  "fem_cycles_executed": 0,
-  "fresh_checkout": {
-    "path": "C:/q4diag/phase-field-fracture-fatigue-pidl-p0-sealed-19861e2",
-    "head_matches_sealed_source_commit": true,
-    "git_status_clean": true,
-    "source_manifest_verified": true
-  },
-  "tests": {
-    "python": {"passed": 432, "skipped": 2, "failed": 0, "warnings": 1},
-    "matlab": {"release": "R2025b Update 5", "passed": 173, "failed": 0, "incomplete": 0},
-    "powershell_launcher_suite": {"status": "PASS"},
-    "noncanonical_system_python_diagnostic": {
-      "status": "collection_failed_missing_optional_dependencies",
-      "collection_errors": 13,
-      "used_for_admission": false
-    }
-  },
-  "source_hashes": {
-    "source_manifest_sha256": "53228f52ee0d7f192bf2b9894cfb67c23395e0304823e8741102c7205d02b2df",
-    "handoff_sha256sums_sha256": "c61cb0126a1b85eeeb765fa6faa37ef64726dca49ced9aee8ca18038685c8ac6",
-    "handoff_sha256sums_file_count": 49
-  },
-  "runtime_hashes": {
-    "runtime_lock_sha256": "a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7",
-    "initial_mexw64_sha256": "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db",
-    "AMOR_mexw64_sha256": "64abee69f2c441730dc2efa4047ac45ab1d1b40e20c4822ed6e992adcd6b19e7",
-    "AT1_HISTORY_FATIGUE_mexw64_sha256": "53e8fd0b229817b7c14c52a5b6afaa957692f475057b79b9a9a10195ccb92e60",
-    "cholmod2_mexw64_sha256": "86a2f15543eda1f7223a1733d935d37e9e2f4f2c2d8db3c4adc2c0f675c27329",
-    "q1_receipt_sha256": "8fd051e4bf806c9a593297b95377a1fcc434f2b16cba5f67cc9f597b2e54fc36"
-  },
-  "matlab_api_audit": {
-    "status": "PASS",
-    "resolved": 18,
-    "required": 18,
-    "rebuilt_initial_resolved_from_overlay": true,
-    "log_sha256": "f0b6d335fa2395a7121a63845df75ee17551d55c89b5c41408b092864e3d8b4b"
-  },
-  "family_contract_sha256": "1af62deb41e60cd88853201ff9ee2d4a240975c8bf722453c1268b2c799a4b4d",
-  "receipts": [
-    {"case_id": "P0_parent", "case_physics_contract_sha256": "c1d7b1460b9bc404907ab29d0297cba65d6bd3225f6caac09e430ca8f9b8f504", "execution_input_lock_sha256": "2fdcc9e4799ac182c3340482e2174f271201cab0bce6798793eeb2a236e8fe51", "receipt_sha256": "7b91b8ac23ec5061e2b2970a92cd1da340c9854344d5f500955d5bb77d65af0f"},
-    {"case_id": "P0R_parent_repeat", "case_physics_contract_sha256": "c1d7b1460b9bc404907ab29d0297cba65d6bd3225f6caac09e430ca8f9b8f504", "execution_input_lock_sha256": "7ea5ac80d25d406d0610c7d162194847e2b00baa72c89a40ffb00e4b95f5f0ab", "receipt_sha256": "ef378e59f6481f7d63173d497c014c52ca0c26c5a186c8d414f651468da2e86b"},
-    {"case_id": "T1_initial_defect", "case_physics_contract_sha256": "938355b56d300e455145275b507e4c31032f9b467fd65d3dee6748f0b5012f02", "execution_input_lock_sha256": "7368f0107d293100f3de30caee1fc6204b626409e16fbcb4a5791f26c8122d3f", "receipt_sha256": "ed152143660d11288a252ce4bafc1c61c2c3a07e33ec151d593c32d9d022d2bb"},
-    {"case_id": "T2_material_state", "case_physics_contract_sha256": "cf639acc1730e4f28d3ac8524193d1ba9e61cf9f1593db75c4e797624a8f0fd4", "execution_input_lock_sha256": "c524a36fb9ed8da899efc5142d47748b4182f655e335d4d513ca5b2c5ba3732b", "receipt_sha256": "80319e31659f61ec390a5e9bf40bca891ffd458038b03de2db18b4243e94dcbe"},
-    {"case_id": "T3_loading_history", "case_physics_contract_sha256": "952cf10ab0bbf48a6835e7bbbf8ce442c428aa4255280a3be0a0f33a85f85c0e", "execution_input_lock_sha256": "0d24ac0455b6c1602e2dea66726684035426fcbee9b68e86660675fab6081a85", "receipt_sha256": "8d0dad3ba7eb0f1701fea1a4763297577cc826e5606f22e1497abd2d9870b8fd"}
-  ],
-  "terminal_audit": {
-    "all_writable_roots_absent": true,
-    "cycle_shard_count": 0,
-    "matlab_or_fem_process_count_after_preflight": 0,
-    "execution_lock_digests_unique": true,
-    "p0_p0r_physics_contract_equal": true,
-    "variant_contracts_predeclared_and_distinct": true
-  },
-  "superseded_preflight_diagnostics": [
-    "5f940816d95957d2711f50a6ce72ca0383b6e413: Java 8 source-file probe incompatibility",
-    "65755ef1a94fb83a6a039965dc5ac0d6a0e1a2e1: OrderedDictionary provenance accessor mismatch",
-    "626820a422da2c2627fd051857f821a659a3c4c0: single-line git output indexed as one character"
-  ]
+    "schema_version":  "toy_road_p0_sealed_preflight_evidence_v2",
+    "status":  "PASS_NON_AUTHORIZING",
+    "sealed_source_commit":  "eeda43d9faef01622731e877c5048a78f3c5003a",
+    "source_branch":  "codex/toy-road-evidence-integration",
+    "authorization_scope":  "preflight_only_non_authorizing",
+    "dynamic_chain_status":  "not_evaluated_no_execution",
+    "decision_status":  "BLOCKED_PENDING_EXECUTION_AUTHORIZATION",
+    "production_execution_authorized":  false,
+    "fem_cycles_executed":  0,
+    "fresh_checkout":  {
+                           "path":  "C:/q4diag/phase-field-fracture-fatigue-pidl-p0-sealed-lf-eeda43d",
+                           "core_autocrlf":  "false",
+                           "head_matches_sealed_source_commit":  true,
+                           "git_status_clean":  true,
+                           "source_manifest_verified":  true,
+                           "tracked_sha256sums_verified":  52
+                       },
+    "python_protocol_runtime":  {
+                                    "path":  "C:/Users/xw436/AppData/Local/Programs/Python/Python312/python.exe",
+                                    "sha256":  "15b41a488c356c0e331facdea6c836a6cec021f12d5fde9844e7ca4a1aa0361a",
+                                    "checked_before_each_protocol_call":  true
+                                },
+    "one_shot_p0_wrapper":  {
+                                "path":  "C:/q4diag/toy-road-p0-one-shot/eeda43d9faef01622731e877c5048a78f3c5003a/invoke_P0_parent_once.ps1",
+                                "sha256":  "47a0995b7d77b9922df1ee4dff63a73dcdfe6e67c62c51b272f480f3403f7315",
+                                "fixed_role":  "P0_parent",
+                                "fixed_source_commit":  "eeda43d9faef01622731e877c5048a78f3c5003a",
+                                "authorization_token_present":  false,
+                                "status":  "GENERATED_NON_AUTHORIZING_PENDING_TOKEN"
+                            },
+    "dedicated_producer":  {
+                               "machine_name":  "CITPC12",
+                               "exclusive_control":  "no_manual_or_agent_matlab_fem",
+                               "enforced_interval":  "future authorization consumption through P0 terminal validation",
+                               "attestation_present":  false,
+                               "active":  false
+                           },
+    "tests":  {
+                  "python":  {
+                                 "runtime":  "C:/q4diag/.task7-toy-road-test-venv/Scripts/python.exe",
+                                 "runtime_sha256":  "864530d708039551a2c672ddd65e5900fbc08b0981479679723a5b468f8082bc",
+                                 "passed":  434,
+                                 "skipped":  2,
+                                 "failed":  0,
+                                 "warnings":  1
+                             },
+                  "matlab":  {
+                                 "release":  "R2025b Update 5",
+                                 "passed":  173,
+                                 "failed":  0,
+                                 "incomplete":  0
+                             },
+                  "powershell_launcher_suite":  {
+                                                    "status":  "PASS"
+                                                },
+                  "powershell_one_shot_wrapper_suite":  {
+                                                            "status":  "PASS"
+                                                        },
+                  "fixed_protocol_python_diagnostic":  {
+                                                           "status":  "collection_failed_missing_optional_dependencies",
+                                                           "collection_errors":  13,
+                                                           "used_for_admission":  false
+                                                       }
+              },
+    "source_hashes":  {
+                          "source_manifest_sha256":  "0f1809c26b16f4676c9a027204ebf9720828bbbfcc1d3e48097b5711c10c7ffb",
+                          "handoff_sha256sums_sha256":  "8699dad368e1635e89f2bbe7ecc238f58af1929000d2cd0e3bca80e2c0669153",
+                          "handoff_sha256sums_file_count":  52
+                      },
+    "runtime_hashes":  {
+                           "runtime_lock_sha256":  "a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7",
+                           "initial_mexw64_sha256":  "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db",
+                           "AMOR_mexw64_sha256":  "64abee69f2c441730dc2efa4047ac45ab1d1b40e20c4822ed6e992adcd6b19e7",
+                           "AT1_HISTORY_FATIGUE_mexw64_sha256":  "53e8fd0b229817b7c14c52a5b6afaa957692f475057b79b9a9a10195ccb92e60",
+                           "cholmod2_mexw64_sha256":  "86a2f15543eda1f7223a1733d935d37e9e2f4f2c2d8db3c4adc2c0f675c27329",
+                           "q1_receipt_sha256":  "8fd051e4bf806c9a593297b95377a1fcc434f2b16cba5f67cc9f597b2e54fc36"
+                       },
+    "matlab_api_audit":  {
+                             "status":  "PASS",
+                             "resolved":  18,
+                             "required":  18,
+                             "rebuilt_initial_resolved_from_overlay":  true,
+                             "log_path":  "C:/q4diag/toy-road-p0-preflight-eeda43d/api-audit.txt",
+                             "log_sha256":  "26da6974ade3b53c1a49819f97aa0cd9a03325a810fe3180606586b0a5e5e27b"
+                         },
+    "family_contract_sha256":  "1af62deb41e60cd88853201ff9ee2d4a240975c8bf722453c1268b2c799a4b4d",
+    "receipts":  [
+                     {
+                         "case_id":  "P0_parent",
+                         "case_physics_contract_sha256":  "c1d7b1460b9bc404907ab29d0297cba65d6bd3225f6caac09e430ca8f9b8f504",
+                         "execution_input_lock_sha256":  "d6a1541f5f25a2fcdfe2e891d715bcbf3009a89aa3fa4b04f28cbc7b0a95bff0",
+                         "receipt_sha256":  "e5f82c938b7271bfc86efeca6545d1dd3f87d0385a219a11634b20414128e94d"
+                     },
+                     {
+                         "case_id":  "P0R_parent_repeat",
+                         "case_physics_contract_sha256":  "c1d7b1460b9bc404907ab29d0297cba65d6bd3225f6caac09e430ca8f9b8f504",
+                         "execution_input_lock_sha256":  "940d75d8897da173f2e14d232319fb51eb9d7282c37913de2e2151fe140798ff",
+                         "receipt_sha256":  "b6c48c9df925a06db836132ed763d5bf48bdf32fe850aca48a2ccbcf627000ef"
+                     },
+                     {
+                         "case_id":  "T1_initial_defect",
+                         "case_physics_contract_sha256":  "938355b56d300e455145275b507e4c31032f9b467fd65d3dee6748f0b5012f02",
+                         "execution_input_lock_sha256":  "68a3f482cd59c79644e3b40d111e64e2193802c84c8392d33c5ef0ed988234ee",
+                         "receipt_sha256":  "4de6a247779de8a68bda994631c129bbd692db16cf0ebc4215c228e659210f2b"
+                     },
+                     {
+                         "case_id":  "T2_material_state",
+                         "case_physics_contract_sha256":  "cf639acc1730e4f28d3ac8524193d1ba9e61cf9f1593db75c4e797624a8f0fd4",
+                         "execution_input_lock_sha256":  "006f7f5270452f60dd8a1c7426fe5356cad77a57ae420c5150f5ac449a591483",
+                         "receipt_sha256":  "2edfc0eb2d6e078f43aca79df670dd528244b77002b5dbf9da4915f4b860357a"
+                     },
+                     {
+                         "case_id":  "T3_loading_history",
+                         "case_physics_contract_sha256":  "952cf10ab0bbf48a6835e7bbbf8ce442c428aa4255280a3be0a0f33a85f85c0e",
+                         "execution_input_lock_sha256":  "1e38e8a50d9cdcbc62174339cc4b272243c0ef2a741d5f874c0039af8b24f32e",
+                         "receipt_sha256":  "b77d31590785a1ed02d852c1ae43b305ed994a938473b9e86c6abca3a1d444ab"
+                     }
+                 ],
+    "terminal_audit":  {
+                           "all_writable_roots_absent":  true,
+                           "cycle_shard_count":  0,
+                           "matlab_or_fem_process_count_after_preflight":  0,
+                           "execution_lock_digests_unique":  true,
+                           "p0_p0r_physics_contract_equal":  true,
+                           "variant_contracts_predeclared_and_distinct":  true
+                       },
+    "superseded_preflight_diagnostics":  [
+                                             "toy-road-p0-producer-preflight-20260803 remains immutable and is not moved",
+                                             "8dfb348966c4c777c7605a68b1485245c4a918b3: SHA256SUMS incorrectly included ignored __pycache__ and was superseded before preflight",
+                                             "c9cfed9983d13219a9fe85a97f4b85b1704e2803: preflight passed but append-only two-record governance helper still parsed JSONL as one JSON document; superseded before evidence commit",
+                                             "c9cfed9 non-LF diagnostic clone: six unrelated legacy asset hashes changed under core.autocrlf=true",
+                                             "first post-seal wrapper generation attempt: PowerShell execution policy rejection before artifact creation",
+                                             "first API audit assertion: slash-direction comparison only; all 18 resolutions were present and path-normalized reruns passed"
+                                         ]
 }

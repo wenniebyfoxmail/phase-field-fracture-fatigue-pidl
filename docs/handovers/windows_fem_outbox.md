@@ -6,6 +6,34 @@
 
 ---
 
+## 2026-08-04 - P0 producer independent-review corrections preflight
+
+- New sealed source: `eeda43d9faef01622731e877c5048a78f3c5003a`
+- Python protocol runtime: fixed path plus SHA-256
+  `15b41a488c356c0e331facdea6c836a6cec021f12d5fde9844e7ca4a1aa0361a`
+- Final TOCTOU gate: Git HEAD, clean status, source manifest, predecessor
+  authentication, and process inventory rechecked before MATLAB
+- LF-preserving fresh clone: source manifest and `52/52` tracked checksums PASS
+- Python admission tests: `434 passed, 2 skipped`
+- MATLAB tests: `173/173`
+- PowerShell launcher and P0 one-shot wrapper tests: PASS
+- MATLAB API audit: `18/18`; rebuilt `initial` resolved from overlay
+- Static preflight: `P0 -> P0R -> T1 -> T2 -> T3`, all PASS
+- Scope: `preflight_only_non_authorizing`; dynamic chain not evaluated
+- P0-only wrapper: fixed to the new source commit, SHA-256
+  `47a0995b7d77b9922df1ee4dff63a73dcdfe6e67c62c51b272f480f3403f7315`
+- Execution authorization JSON: absent; FEM cycles executed: `0`
+- Dedicated producer: `CITPC12`, required only after a future one-shot P0
+  authorization is consumed and until P0 terminal validation completes
+- Decision: `BLOCKED_PENDING_EXECUTION_AUTHORIZATION`; next state is independent
+  evidence review for P0 only. P0R/T1/T2/T3 remain unauthorized.
+
+The old preflight tag is unchanged and retained as superseded evidence. The new
+post-preflight commit is evidence-only; no source or test bytes are changed in
+that commit.
+
+---
+
 ## 2026-08-04 - Toy-road P0 producer sealed preflight
 
 - Sealed source commit: `19861e214dabbfa66b5df806fcf5e055af88e0d1`

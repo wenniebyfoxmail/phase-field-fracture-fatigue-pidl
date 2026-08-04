@@ -47,7 +47,7 @@ inconclusive   preserved for traceability only
 
 | case_id | status | why run | key change | primary asset | claim boundary |
 |---|---|---|---|---|---|
-| `toy_road_p0_repeatability_family_20260802` | blocked pending execution authorization | Qualify one synthetic FEM producer before any toy-to-road trajectory comparison | P0/P0R are one producer-qualification pair; T1/T2/T3 remain sequential future synthetic trajectories under one rebuilt-MEX runtime | `docs/toy_road_p0_repeatability_20260802/decision.md` | synthetic transfer evidence only; not real-road validation, training evidence, traffic-time calibration, or RUL evidence |
+| `toy_road_p0_repeatability_family_20260802` | blocked pending P0 authorization review | Qualify one synthetic FEM producer before any toy-to-road trajectory comparison | Revised sealed preflight `eeda43d9fa`; P0-only wrapper generated without an authorization token; P0/P0R remain one producer-qualification pair and T1/T2/T3 remain sequential future synthetic trajectories | `docs/toy_road_p0_repeatability_20260802/decision.md` | synthetic transfer evidence only; not real-road validation, training evidence, traffic-time calibration, or RUL evidence |
 
 ## Census Scope
 

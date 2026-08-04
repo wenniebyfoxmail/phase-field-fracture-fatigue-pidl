@@ -8,10 +8,18 @@ or deployment claim.
 
 ## Current Decision
 
-The approved v2.1 producer and v1.1 implementation plan reached a clean sealed
-preflight at source commit `19861e214dabbfa66b5df806fcf5e055af88e0d1`.
-Production execution is not authorized. All five preflight receipts are
-non-authorizing and cannot be used to launch P0, P0R, T1, T2, or T3.
+The independent review corrections reached a new LF-preserving clean sealed
+preflight at source commit `eeda43d9faef01622731e877c5048a78f3c5003a`.
+The launcher now locks the Python executable SHA-256, rechecks Git and source
+identity immediately before MATLAB, and requires an external commit-fixed
+one-shot wrapper plus dedicated-producer attestation for P0. Production
+execution is not authorized. All five preflight receipts are non-authorizing
+and cannot be used to launch P0, P0R, T1, T2, or T3.
+
+The generated P0-only wrapper contains no execution authorization token. The
+next decision is an independent review of the new evidence; only a later
+explicit `P0_PARENT_EXECUTION_AUTHORIZED` record may authorize `P0_parent`.
+P0R remains blocked behind P0 terminal validation and its c5 receipt.
 
 P0/P0R are one producer qualification pair. They are not independent training
 or LOTO trajectories. Only after a separately authorized, same-runtime P0/P0R
@@ -25,6 +33,9 @@ cases.
   equivalence is not claimed.
 - Every case requires its own c5 same-process fixed-point/KKT receipt.
 - All five cases must share the sealed rebuilt-MEX runtime identity.
+- Windows host `CITPC12` must remain a dedicated producer from P0 one-shot
+  authorization consumption through P0 terminal validation; no human or other
+  agent may start MATLAB/FEM during that interval.
 - The family has one registry row and one append-only attempt ledger.
 - Future terminal receipts link here; they do not create new primary decisions.
 
