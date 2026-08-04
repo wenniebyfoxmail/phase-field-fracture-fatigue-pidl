@@ -34,6 +34,7 @@ $ApprovedInitialSha256 = 'ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427
 $LegacyInitialSha256 = '589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340'
 $MatlabExecutable = 'C:\Program Files\MATLAB\R2025b\bin\matlab.exe'
 $ApprovedPythonExecutable = 'C:\Users\xw436\AppData\Local\Programs\Python\Python312\python.exe'
+$ApprovedPythonSha256 = '15b41a488c356c0e331facdea6c836a6cec021f12d5fde9844e7ca4a1aa0361a'
 $ScriptPath = [IO.Path]::GetFullPath($MyInvocation.MyCommand.Path)
 $HandoffDir = Split-Path -Parent $ScriptPath
 $ExpectedThreads = [ordered]@{
@@ -86,6 +87,19 @@ function Get-Sha256([string]$Path) {
         throw "Missing hash-gated file: $Path"
     }
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+
+function Assert-ApprovedPythonIdentity {
+    $resolved = [IO.Path]::GetFullPath($PythonExecutable)
+    if (-not $resolved.Equals($ApprovedPythonExecutable,
+            [StringComparison]::OrdinalIgnoreCase) -or
+            -not (Test-Path -LiteralPath $resolved -PathType Leaf)) {
+        throw 'Python executable is not the fixed Task 6 protocol runtime.'
+    }
+    if ((Get-Sha256 $resolved) -cne $ApprovedPythonSha256) {
+        throw 'Python executable SHA-256 is not the approved protocol runtime identity.'
+    }
+    $script:PythonExecutable = $resolved
 }
 
 function Write-BytesCreateNew([string]$Path, [byte[]]$Bytes) {
@@ -235,6 +249,7 @@ function Get-CleanGitState([string]$Root) {
 }
 
 function Get-ContractSummary {
+    Assert-ApprovedPythonIdentity
     $protocolPath = Join-Path $HandoffDir 'toy_road_protocol.py'
     $output = & $PythonExecutable $protocolPath --contract-summary 2>&1
     if ($LASTEXITCODE -ne 0) { throw "Canonical contract validation failed: $($output -join ' ')" }
@@ -243,12 +258,32 @@ function Get-ContractSummary {
 }
 
 function Get-SourceSealReceipt {
+    Assert-ApprovedPythonIdentity
     $protocolPath = Join-Path $HandoffDir 'toy_road_protocol.py'
     $output = & $PythonExecutable $protocolPath --verify-source-manifest $HandoffDir 2>&1
     if ($LASTEXITCODE -ne 0) {
         throw "Sealed source-manifest verification failed: $($output -join ' ')"
     }
     return ([string]@($output)[-1] | ConvertFrom-Json)
+}
+
+function Assert-FinalSourceIdentity([object]$State, [bool]$IsFixture) {
+    if ($IsFixture) {
+        $finalGitState = $State.source
+        if ($null -ne $State.PSObject.Properties['final_source_git']) {
+            $finalGitState = $State.final_source_git
+        }
+    } else {
+        $finalGitState = Get-CleanGitState $SourceRoot
+    }
+    if ($finalGitState.clean -ne $true -or
+            [string]$finalGitState.commit -cne $ExpectedSourceCommit.ToLowerInvariant()) {
+        throw 'Producer Git HEAD or clean status changed before MATLAB invocation.'
+    }
+    $finalSourceSeal = Get-SourceSealReceipt
+    if ((ConvertTo-CanonicalJson $finalSourceSeal) -cne $SourceSealIdentity) {
+        throw 'Sealed producer source identity changed before process invocation.'
+    }
 }
 
 function Get-LiveExperimentInventory {
@@ -417,6 +452,7 @@ function Get-ProductionTerminalEvidence([string]$CaseId) {
     $tokenPath = Join-Path (Split-Path -Parent $ReceiptPath) `
         ('.' + $noClobberId + '.' + $CaseId + '.terminal-auth.json')
     $protocolPath = Join-Path $HandoffDir 'toy_road_protocol.py'
+    Assert-ApprovedPythonIdentity
     $output = & $PythonExecutable $protocolPath --authenticate-terminal `
         $root $CaseId $tokenPath 2>&1
     if ($LASTEXITCODE -ne 0) {
@@ -466,6 +502,7 @@ function Get-ProductionRepeatabilityEvidence {
     $protocolPath = Join-Path $HandoffDir 'toy_road_protocol.py'
     $p0 = Join-Path $EvidenceRoot 'P0_parent'
     $p0r = Join-Path $EvidenceRoot 'P0R_parent_repeat'
+    Assert-ApprovedPythonIdentity
     $output = & $PythonExecutable $protocolPath --authenticate-repeatability `
         $path $p0 $p0r $tokenPath 2>&1
     if ($LASTEXITCODE -ne 0) {
@@ -700,6 +737,7 @@ function Assert-AuthenticatedEvidenceUnchanged([object]$State) {
     if ([string]$State.authorization_scope -cne 'production_candidate') { return }
     $protocolPath = Join-Path $HandoffDir 'toy_road_protocol.py'
     foreach ($tokenPath in @($script:AuthenticationTokenPaths)) {
+        Assert-ApprovedPythonIdentity
         $output = & $PythonExecutable $protocolPath --recheck-authentication $tokenPath 2>&1
         if ($LASTEXITCODE -ne 0) {
             throw "Authenticated predecessor evidence changed before launch: $($output -join ' ')"
@@ -712,13 +750,7 @@ function ConvertTo-MatlabLiteral([string]$Value) {
 }
 
 Assert-NoResumeInput
-$resolvedPython = [IO.Path]::GetFullPath($PythonExecutable)
-if (-not $resolvedPython.Equals($ApprovedPythonExecutable,
-        [StringComparison]::OrdinalIgnoreCase) -or
-        -not (Test-Path -LiteralPath $resolvedPython -PathType Leaf)) {
-    throw 'Python executable is not the fixed Task 6 protocol runtime.'
-}
-$PythonExecutable = $resolvedPython
+Assert-ApprovedPythonIdentity
 $resolvedSource = Resolve-PlainDirectory $SourceRoot 'Producer source root'
 Assert-CanonicalExecutedSource $resolvedSource
 $resolvedGrip = Resolve-PlainDirectory $GripfithRoot 'GRIPHFiTH source root'
@@ -758,6 +790,15 @@ if ($isFixture) {
             [string]::IsNullOrWhiteSpace($TestMeasurementFixturePath) -or
             [string]::IsNullOrWhiteSpace($TestInvocationRecordPath))) {
         throw 'The sealed test adapter requires measurement and invocation-record paths.'
+    }
+}
+if (-not $PreflightOnly -and -not $isFixture -and $Role -ceq 'P0_parent') {
+    if ([string]::IsNullOrWhiteSpace(
+            [string]$env:TOY_ROAD_P0_ONE_SHOT_AUTHORIZATION_ID) -or
+            [string]$env:TOY_ROAD_DEDICATED_PRODUCER_ATTESTED -cne 'true' -or
+            [string]$env:TOY_ROAD_DEDICATED_PRODUCER_MACHINE -cne 'CITPC12' -or
+            [string]$env:COMPUTERNAME -cne 'CITPC12') {
+        throw 'P0_parent requires the sealed one-shot authorization wrapper and dedicated producer attestation.'
     }
 }
 
@@ -882,6 +923,7 @@ try {
     try {
         Write-CanonicalJsonCreateNew $lockRequestPath $lockRequest | Out-Null
         $protocolPath = Join-Path $HandoffDir 'toy_road_protocol.py'
+        Assert-ApprovedPythonIdentity
         $lockOutput = & $PythonExecutable $protocolPath --emit-execution-lock `
             $lockRequestPath $ExecutionLockPath 2>&1
         if ($LASTEXITCODE -ne 0) {
@@ -967,10 +1009,7 @@ try {
             (ConvertTo-MatlabLiteral ([IO.Path]::GetFullPath($runtimeMeasurementPath))) + ')'
         $batch = (($addPathCommands + $bridgeCall) -join ';') + ';'
 
-        $finalSourceSeal = Get-SourceSealReceipt
-        if ((ConvertTo-CanonicalJson $finalSourceSeal) -cne $SourceSealIdentity) {
-            throw 'Sealed producer source identity changed before process invocation.'
-        }
+        Assert-FinalSourceIdentity $State $isFixture
         Assert-AuthenticatedEvidenceUnchanged $State
         if ($isFixture) {
             Assert-NoRunningExperiment @(
@@ -1004,6 +1043,7 @@ try {
                 throw "MATLAB family case failed with exit code $LASTEXITCODE."
             }
         }
+        Assert-ApprovedPythonIdentity
         $measurementOutput = & $PythonExecutable (Join-Path $HandoffDir 'toy_road_protocol.py') `
             --validate-runtime-measurement $ExecutionLockPath $runtimeMeasurementPath 2>&1
         if ($LASTEXITCODE -ne 0) {

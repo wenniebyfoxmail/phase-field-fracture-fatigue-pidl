@@ -415,6 +415,18 @@ $finalRace.final_process_inventory = @([ordered]@{
 })
 Assert-Rejected (Invoke-Launcher 'P0_parent' $finalRace) 'running MATLAB|FEM'
 
+$finalDirtySource = New-Fixture 'P0_parent'
+$finalDirtySource | Add-Member -NotePropertyName final_source_git -NotePropertyValue `
+    ([ordered]@{ commit = $SourceCommit; clean = $false })
+Assert-Rejected (Invoke-Launcher 'P0_parent' $finalDirtySource) `
+    'Git HEAD|clean status|source identity'
+
+$finalReplacedSource = New-Fixture 'P0_parent'
+$finalReplacedSource | Add-Member -NotePropertyName final_source_git -NotePropertyValue `
+    ([ordered]@{ commit = '0' * 40; clean = $true })
+Assert-Rejected (Invoke-Launcher 'P0_parent' $finalReplacedSource) `
+    'Git HEAD|clean status|source identity'
+
 $outOfOrder = New-Fixture 'T2_material_state'
 $outOfOrder.predecessors = @()
 Assert-Rejected (Invoke-Launcher 'T2_material_state' $outOfOrder) 'predecessor|order|T1'

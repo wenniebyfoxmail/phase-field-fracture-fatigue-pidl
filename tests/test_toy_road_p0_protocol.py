@@ -118,7 +118,7 @@ def test_family_has_one_primary_asset_and_registry_row() -> None:
     assert "not real-road validation" in decision
     assert "P0/P0R" in decision and "producer qualification" in decision
     evidence = json.loads(PREFLIGHT_EVIDENCE.read_text(encoding="utf-8"))
-    assert evidence["sealed_source_commit"] == "19861e214dabbfa66b5df806fcf5e055af88e0d1"
+    assert re.fullmatch(r"[0-9a-f]{40}", evidence["sealed_source_commit"])
     assert evidence["authorization_scope"] == "preflight_only_non_authorizing"
     assert evidence["dynamic_chain_status"] == "not_evaluated_no_execution"
     assert evidence["production_execution_authorized"] is False
@@ -135,17 +135,20 @@ def test_family_has_one_primary_asset_and_registry_row() -> None:
     assert "decision.md" in rows[0]
 
 
-def test_family_attempt_ledger_has_one_immutable_provenance_record() -> None:
+def test_family_attempt_ledger_preserves_original_and_tracks_latest_transition() -> None:
     assert ATTEMPT_LEDGER.is_file()
     records = [
         json.loads(line)
         for line in ATTEMPT_LEDGER.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
-    assert len(records) == 1
-    record = records[0]
-    assert record["attempt_id"] == "toy-road-p0-family-producer-implementation-20260803"
-    assert record["role"] == "producer_qualification_and_future_synthetic_family"
+    assert len(records) in (1, 2)
+    original = records[0]
+    assert original["attempt_id"] == "toy-road-p0-family-producer-implementation-20260803"
+    assert original["role"] == "producer_qualification_and_future_synthetic_family"
+    assert original["end_state"] == "blocked_pending_sealed_preflight"
+    assert original["next_action"].startswith("Complete Tasks 7 and 8")
+    record = records[-1]
     assert re.fullmatch(r"[0-9a-f]{40}", record["source_commit"])
     for field in (
         "family_contract_sha256",
@@ -155,11 +158,67 @@ def test_family_attempt_ledger_has_one_immutable_provenance_record() -> None:
         "environment_fingerprint_sha256",
     ):
         assert re.fullmatch(r"[0-9a-f]{64}", record[field])
-    assert record["start_state"] == "implementation_authorized_execution_blocked"
-    assert record["end_state"] == "blocked_pending_sealed_preflight"
+    if len(records) == 2:
+        assert record["attempt_id"] == "toy-road-p0-independent-review-transition-20260804"
+        assert record["start_state"] == "blocked_pending_execution_authorization"
+        assert record["end_state"] == "blocked_pending_p0_authorization_review"
+        assert "Tasks 7 and 8" not in record["next_action"]
+    else:
+        assert record is original
     assert record["immutable_receipt_links"]
     assert ATTEMPT_VIEW.is_file()
     assert record["attempt_id"] in ATTEMPT_VIEW.read_text(encoding="utf-8")
+
+
+def test_launcher_hash_gates_python_before_protocol_and_rechecks_source_before_matlab() -> None:
+    launcher = (
+        MODULE_PATH.parent / "launch_toy_road_family_case.ps1"
+    ).read_text(encoding="utf-8")
+    approved_python_sha256 = (
+        "15b41a488c356c0e331facdea6c836a6cec021f12d5fde9844e7ca4a1aa0361a"
+    )
+    assert f"$ApprovedPythonSha256 = '{approved_python_sha256}'" in launcher
+    assert "function Assert-ApprovedPythonIdentity" in launcher
+    assert launcher.index("Assert-ApprovedPythonIdentity") < launcher.index(
+        "$ContractSummary = Get-ContractSummary"
+    )
+    assert "function Assert-FinalSourceIdentity" in launcher
+    final_check = launcher.rindex("Assert-FinalSourceIdentity")
+    matlab_call = launcher.rindex("& $MatlabExecutable -batch $batch")
+    assert final_check < matlab_call
+    final_identity = launcher[
+        launcher.index("function Assert-FinalSourceIdentity") :
+        launcher.index("function Get-LiveExperimentInventory")
+    ]
+    assert "Get-CleanGitState" in final_identity
+    assert "Get-SourceSealReceipt" in final_identity
+
+
+def test_post_seal_p0_wrapper_generator_is_commit_fixed_and_fail_closed() -> None:
+    generator = MODULE_PATH.parent / "new_toy_road_p0_one_shot_wrapper.ps1"
+    assert generator.is_file()
+    source = generator.read_text(encoding="utf-8")
+    assert "P0_parent" in source
+    assert "ExpectedSourceCommit" in source
+    assert "P0_PARENT_EXECUTION_AUTHORIZED" in source
+    assert "preflight_only_non_authorizing" in source
+    assert "CreateNew" in source
+    assert "consumed" in source.lower()
+    assert "dedicated_producer_attested" in source
+    assert "no_manual_or_agent_matlab_fem" in source
+    launcher = (
+        MODULE_PATH.parent / "launch_toy_road_family_case.ps1"
+    ).read_text(encoding="utf-8")
+    assert "TOY_ROAD_P0_ONE_SHOT_AUTHORIZATION_ID" in launcher
+    assert "TOY_ROAD_DEDICATED_PRODUCER_ATTESTED" in launcher
+    policy = json.loads(
+        (MODULE_PATH.parent / "DEDICATED_PRODUCER_POLICY.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert policy["case_id"] == "P0_parent"
+    assert policy["machine_name"] == "CITPC12"
+    assert policy["preflight_authorizes_execution"] is False
 
 
 def test_attempt_ledger_append_preserves_existing_bytes_and_rejects_duplicate(

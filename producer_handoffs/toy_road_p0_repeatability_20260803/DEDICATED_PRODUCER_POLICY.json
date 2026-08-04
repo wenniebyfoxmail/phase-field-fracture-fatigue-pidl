@@ -1,0 +1,15 @@
+{
+  "schema_version": "toy_road_dedicated_producer_policy_v1",
+  "case_id": "P0_parent",
+  "machine_name": "CITPC12",
+  "exclusive_control": "no_manual_or_agent_matlab_fem",
+  "starts_at": "one_shot_authorization_consumption",
+  "ends_at": "P0_parent_terminal_validation_complete",
+  "requirements": [
+    "No human may start MATLAB or another FEM process during the exclusive interval.",
+    "No other agent may start MATLAB or another FEM process during the exclusive interval.",
+    "The one-shot authorization must attest dedicated_producer_attested=true.",
+    "The launcher process inventory and family-wide mutex remain fail-closed controls."
+  ],
+  "preflight_authorizes_execution": false
+}
