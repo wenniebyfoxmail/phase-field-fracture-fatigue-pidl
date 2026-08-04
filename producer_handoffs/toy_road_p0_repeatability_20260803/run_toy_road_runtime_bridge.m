@@ -95,7 +95,7 @@ options(1) = java.nio.file.StandardOpenOption.CREATE_NEW;
 options(2) = java.nio.file.StandardOpenOption.WRITE;
 stream = java.nio.file.Files.newOutputStream(java.nio.file.Paths.get(filePath, ...
     javaArray('java.lang.String', 0)), options);
-cleanup = onCleanup(@() stream.close()); %#ok<NASGU>
+cleanup = onCleanup(@() stream.close());
 bytes = unicode2native(jsonencode(value), 'UTF-8');
 stream.write(bytes, 0, numel(bytes));
 stream.flush();
@@ -114,10 +114,15 @@ path = char(path);
 localRequire(isfile(path), ['Cannot hash missing runtime file: ' path]);
 fileId = fopen(path, 'rb');
 localRequire(fileId >= 0, ['Cannot read runtime file: ' path]);
-cleanup = onCleanup(@() fclose(fileId)); %#ok<NASGU>
+cleanup = onCleanup(@() fclose(fileId));
 bytes = fread(fileId, Inf, '*uint8');
 hasher = java.security.MessageDigest.getInstance('SHA-256');
 hasher.update(bytes);
 digestBytes = typecast(hasher.digest(), 'uint8');
-digest = lower(reshape(dec2hex(digestBytes, 2).', 1, []));
+hexDigits = '0123456789abcdef';
+byteValues = double(reshape(digestBytes, 1, []));
+highNibbles = floor(byteValues / 16) + 1;
+lowNibbles = mod(byteValues, 16) + 1;
+encoded = [hexDigits(highNibbles); hexDigits(lowNibbles)];
+digest = builtin('reshape', encoded, 1, []);
 end

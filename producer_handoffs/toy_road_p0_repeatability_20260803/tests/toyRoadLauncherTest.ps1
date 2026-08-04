@@ -458,12 +458,12 @@ $mutexBase = Join-Path $env:TEMP ('toy-road-task6-mutex-' + [Guid]::NewGuid().To
 $firstProcess = $null
 try {
     [IO.Directory]::CreateDirectory($mutexBase) | Out-Null
-    $sharedEvidence = Join-Path $mutexBase 'evidence'
-    [IO.Directory]::CreateDirectory($sharedEvidence) | Out-Null
     $runs = @()
     foreach ($ordinal in 1,2) {
         $runRoot = Join-Path $mutexBase "run-$ordinal"
         [IO.Directory]::CreateDirectory($runRoot) | Out-Null
+        $evidenceRoot = Join-Path $runRoot 'evidence'
+        [IO.Directory]::CreateDirectory($evidenceRoot) | Out-Null
         $fixture = New-Fixture 'P0_parent'
         $fixturePath = Join-Path $runRoot 'fixture.json'
         $measurementPath = Join-Path $runRoot 'measurement.json'
@@ -485,6 +485,7 @@ try {
             tmp = Join-Path $runRoot 'tmp'
             pref = Join-Path $runRoot 'pref'
             cache = Join-Path $runRoot 'cache'
+            evidence = $evidenceRoot
         }
     }
     function Get-MutexLauncherArguments([object]$Run, [int]$Delay) {
@@ -492,7 +493,7 @@ try {
             '-NoProfile','-ExecutionPolicy','Bypass','-File',$Launcher,
             '-Role','P0_parent','-SourceRoot',$RepoRoot,'-GripfithRoot',$RepoRoot,
             '-QualificationRoot',$RepoRoot,'-InputAssetsRoot',$RepoRoot,
-            '-EvidenceRoot',$sharedEvidence,'-OutputRoot',$Run.output,
+            '-EvidenceRoot',$Run.evidence,'-OutputRoot',$Run.output,
             '-WorkRoot',$Run.work,'-TempRoot',$Run.temp,'-TmpRoot',$Run.tmp,
             '-PrefRoot',$Run.pref,'-CacheRoot',$Run.cache,
             '-ExpectedSourceCommit',$SourceCommit,'-ReceiptPath',$Run.receipt,
@@ -507,7 +508,7 @@ try {
         -ArgumentList (Get-MutexLauncherArguments $runs[0] 8000) `
         -RedirectStandardOutput $runs[0].stdout -RedirectStandardError $runs[0].stderr `
         -PassThru
-    $mutexPath = Join-Path $sharedEvidence '.toy-road-family-execution.mutex'
+    $mutexPath = Join-Path $runs[0].evidence '.toy-road-family-execution.mutex'
     $deadline = (Get-Date).AddSeconds(30)
     while (-not (Test-Path -LiteralPath $mutexPath) -and
             -not $firstProcess.HasExited -and (Get-Date) -lt $deadline) {

@@ -501,6 +501,9 @@ def test_sealed_process_adapter_and_runtime_bridge_are_structurally_safe() -> No
     launcher = launcher_path.read_text("utf-8")
     assert "run_toy_road_runtime_bridge" in launcher
     assert "'-begin'" in launcher
+    assert "[Threading.Mutex]" in launcher
+    assert "dec2hex" not in bridge
+    assert "hexDigits" in bridge
 
 
 def test_exposes_exact_h5py_runtime_dependency_identity() -> None:

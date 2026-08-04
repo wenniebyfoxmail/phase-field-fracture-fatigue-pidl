@@ -773,13 +773,34 @@ $paths = @(
     [IO.Path]::GetFullPath((Join-Path $SuiteSparseRoot 'CAMD\MATLAB'))
 )
 $familyMutex = $null
+$familyMutexOwned = $false
+$familyMutexMarker = $null
 $familyMutexPath = Join-Path $resolvedEvidence '.toy-road-family-execution.mutex'
 if (-not $PreflightOnly) {
     try {
-        $familyMutex = New-Object IO.FileStream($familyMutexPath,
+        $familyMutexName = 'Local\GRIPHFiTH_ToyRoad_' +
+            [string]$ContractSummary.family_contract_sha256
+        $createdNew = $false
+        $familyMutex = [Threading.Mutex]::new($true, $familyMutexName,
+            [ref]$createdNew)
+        if (-not $createdNew) {
+            $familyMutex.Dispose()
+            $familyMutex = $null
+            throw 'Another toy-road family launcher holds the family-wide execution mutex.'
+        }
+        $familyMutexOwned = $true
+        $familyMutexMarker = New-Object IO.FileStream($familyMutexPath,
             [IO.FileMode]::CreateNew, [IO.FileAccess]::ReadWrite,
             [IO.FileShare]::None, 4096, [IO.FileOptions]::DeleteOnClose)
     } catch {
+        if ($familyMutexOwned -and $null -ne $familyMutex) {
+            $familyMutex.ReleaseMutex()
+            $familyMutexOwned = $false
+        }
+        if ($null -ne $familyMutex) {
+            $familyMutex.Dispose()
+            $familyMutex = $null
+        }
         throw 'Another toy-road family launcher holds the family-wide execution mutex.'
     }
 }
@@ -990,6 +1011,10 @@ try {
         Remove-Item -LiteralPath $overlayRoot -Recurse -Force -ErrorAction SilentlyContinue
     }
 } finally {
+    if ($null -ne $familyMutexMarker) { $familyMutexMarker.Dispose() }
+    if ($familyMutexOwned -and $null -ne $familyMutex) {
+        $familyMutex.ReleaseMutex()
+    }
     if ($null -ne $familyMutex) { $familyMutex.Dispose() }
     Remove-Item -LiteralPath $familyMutexPath -Force -ErrorAction SilentlyContinue
 }
