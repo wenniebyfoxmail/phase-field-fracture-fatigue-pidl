@@ -504,6 +504,9 @@ def test_sealed_process_adapter_and_runtime_bridge_are_structurally_safe() -> No
     assert "[Threading.Mutex]" in launcher
     assert "dec2hex" not in bridge
     assert "hexDigits" in bridge
+    attributes = (MODULE_PATH.parent / ".gitattributes").read_text("ascii")
+    for pattern in ("*.json", "*.m", "*.ps1", "*.py"):
+        assert f"{pattern} text eol=lf" in attributes
 
 
 def test_exposes_exact_h5py_runtime_dependency_identity() -> None:
