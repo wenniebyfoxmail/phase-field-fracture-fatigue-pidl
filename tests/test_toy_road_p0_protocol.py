@@ -597,6 +597,8 @@ def test_sealed_process_adapter_and_runtime_bridge_are_structurally_safe() -> No
     assert "& $MatlabExecutable -batch $javaBatch" in launcher
     assert "$Value -is [Collections.IDictionary]" in launcher
     assert "$Value.Contains($Name)" in launcher
+    assert "$commitLines = @(Invoke-Git $Root @('rev-parse','HEAD'))" in launcher
+    assert "([string]$commitLines[0]).Trim().ToLowerInvariant()" in launcher
     assert "dec2hex" not in bridge
     assert "hexDigits" in bridge
     attributes = (MODULE_PATH.parent / ".gitattributes").read_text("ascii")

@@ -229,7 +229,8 @@ function Invoke-Git([string]$Root, [string[]]$Arguments) {
 
 function Get-CleanGitState([string]$Root) {
     $status = @(Invoke-Git $Root @('status','--porcelain','--untracked-files=all'))
-    $commit = ([string](Invoke-Git $Root @('rev-parse','HEAD'))[0]).Trim().ToLowerInvariant()
+    $commitLines = @(Invoke-Git $Root @('rev-parse','HEAD'))
+    $commit = ([string]$commitLines[0]).Trim().ToLowerInvariant()
     return [ordered]@{ commit = $commit; clean = ($status.Count -eq 0) }
 }
 
