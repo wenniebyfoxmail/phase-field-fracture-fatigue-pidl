@@ -592,6 +592,9 @@ def test_sealed_process_adapter_and_runtime_bridge_are_structurally_safe() -> No
     assert "run_toy_road_runtime_bridge" in launcher
     assert "'-begin'" in launcher
     assert "[Threading.Mutex]" in launcher
+    assert ".java-source.java" not in launcher
+    assert "java.nio.file.Files.createLink" in launcher
+    assert "& $MatlabExecutable -batch $javaBatch" in launcher
     assert "dec2hex" not in bridge
     assert "hexDigits" in bridge
     attributes = (MODULE_PATH.parent / ".gitattributes").read_text("ascii")

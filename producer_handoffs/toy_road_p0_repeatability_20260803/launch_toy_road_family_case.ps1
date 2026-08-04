@@ -275,21 +275,22 @@ function Assert-NoRunningExperiment([object[]]$Inventory) {
     }
 }
 
-function Test-NativeAndJavaHardLinks([string]$Parent, [string]$JavaExecutable) {
+function Test-NativeAndJavaHardLinks([string]$Parent) {
     $token = [Guid]::NewGuid().ToString('N')
     $source = Join-Path $Parent ".$token.source"
     $native = Join-Path $Parent ".$token.native"
     $javaTarget = Join-Path $Parent ".$token.java"
-    $javaSource = Join-Path $Parent ".$token.java-source.java"
     try {
         [IO.File]::WriteAllBytes($source, [byte[]](1,2,3,4))
         New-Item -ItemType HardLink -Path $native -Target $source -ErrorAction Stop | Out-Null
         if ((Get-Sha256 $native) -cne (Get-Sha256 $source)) {
             throw 'Native hard-link identity failed.'
         }
-        $program = 'import java.nio.file.*; class HardLinkProbe { public static void main(String[] a) throws Exception { Files.createLink(Paths.get(a[1]),Paths.get(a[0])); } }'
-        [IO.File]::WriteAllText($javaSource,$program,(New-Object Text.UTF8Encoding($false)))
-        & $JavaExecutable $javaSource $source $javaTarget 2>&1 | Out-Null
+        $sourceLiteral = "'" + $source.Replace('\','/').Replace("'","''") + "'"
+        $targetLiteral = "'" + $javaTarget.Replace('\','/').Replace("'","''") + "'"
+        $javaBatch = "java.nio.file.Files.createLink(java.io.File($targetLiteral).toPath()," +
+            "java.io.File($sourceLiteral).toPath())"
+        & $MatlabExecutable -batch $javaBatch 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $javaTarget -PathType Leaf) -or
                 (Get-Sha256 $javaTarget) -cne (Get-Sha256 $source)) {
             throw 'Java hard-link identity failed.'
@@ -297,7 +298,7 @@ function Test-NativeAndJavaHardLinks([string]$Parent, [string]$JavaExecutable) {
     } catch {
         throw "Required hard-link support failed: $($_.Exception.Message)"
     } finally {
-        Remove-Item -LiteralPath $javaTarget,$native,$javaSource,$source -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $javaTarget,$native,$source -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -308,12 +309,7 @@ function Get-ProductionState([object]$FamilyContract, [object]$ContractSummary) 
     $runtimeRoot = Join-Path $SourceRoot 'producer_handoffs\rebuilt_initial_mex_qualification_20260801'
     $initialPath = Join-Path $runtimeRoot 'runtime\initial.mexw64'
     $runtimeIdentity = $FamilyContract.runtime_identity
-    $matlabRoot = Split-Path -Parent (Split-Path -Parent $MatlabExecutable)
-    $javaExecutable = Join-Path $matlabRoot 'sys\java\jre\win64\jre\bin\java.exe'
-    if (-not (Test-Path -LiteralPath $javaExecutable -PathType Leaf)) {
-        throw 'MATLAB Java runtime is missing; Java hard-link support cannot be qualified.'
-    }
-    Test-NativeAndJavaHardLinks (Split-Path -Parent $ReceiptPath) $javaExecutable
+    Test-NativeAndJavaHardLinks (Split-Path -Parent $ReceiptPath)
     $pathIdentity = ConvertTo-CanonicalJson $runtimeIdentity.matlab.path_ordering
     $pathBytes = (New-Object Text.UTF8Encoding($false)).GetBytes($pathIdentity)
     $pathHasher = [Security.Cryptography.SHA256]::Create()

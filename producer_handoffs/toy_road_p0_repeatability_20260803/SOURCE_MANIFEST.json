@@ -16,7 +16,7 @@
     {"path": "finalize_toy_road_family_package.m", "sha256": "a0b4559835aeb0d22bb55306b976f21bab169b4e726991d5115dc1b2fccc65d8"},
     {"path": "init_toy_road_cycle_capture.m", "sha256": "8a12d6af5a4c4ecfbaace763de9a7cdd3119a1ae2efc690bec3dee3d3526a600"},
     {"path": "invoke_toy_road_test_process_adapter.ps1", "sha256": "9c22b8463a86033c5d73dc734c7e0b173aa14588c88ec7f88a06148df37aafe1"},
-    {"path": "launch_toy_road_family_case.ps1", "sha256": "9f10eacc759398cdf7099768f02f83d5e55f830c1a81652488572d7edd629460"},
+    {"path": "launch_toy_road_family_case.ps1", "sha256": "71b8491a5068fd215d419568b3c27f74acf6e94356afd71ca8f3478696cde61a"},
     {"path": "main_toy_road_family_case.m", "sha256": "98cf3ece060ef54d18a1f49a1e208cd4fbbd8e4e2866773fb81cb24a8fc7cebf"},
     {"path": "private/run_toy_road_driver_core.m", "sha256": "978f4876139ebb11d55e921338c45af27121adbe7e806a8d4340d7e91e935ab2"},
     {"path": "recover_toy_road_family_state.m", "sha256": "a363b21215e7367b25da2c61d42c7d7521eaad8fe0be668fab5b92506082d475"},
