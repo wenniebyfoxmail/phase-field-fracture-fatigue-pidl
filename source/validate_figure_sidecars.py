@@ -21,8 +21,7 @@ def main() -> None:
         raise SystemExit(f"not a figure directory: {root}")
 
     figures = sorted(
-        path
-        for path in root.rglob("*")
+        path for path in root.rglob("*")
         if path.is_file() and path.suffix.lower() in FIGURE_SUFFIXES
     )
     errors: list[str] = []
