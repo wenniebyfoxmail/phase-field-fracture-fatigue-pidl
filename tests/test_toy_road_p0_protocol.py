@@ -237,7 +237,9 @@ def test_attempt_ledger_validate_and_render_do_not_rewrite_jsonl(
     tmp_path: Path,
 ) -> None:
     ledger = tmp_path / "attempts.jsonl"
-    record = json.loads(ATTEMPT_LEDGER.read_text(encoding="utf-8"))
+    record = json.loads(
+        ATTEMPT_LEDGER.read_text(encoding="utf-8").splitlines()[0]
+    )
     original = (json.dumps(record, ensure_ascii=False) + "\n").encode("utf-8")
     ledger.write_bytes(original)
     script = ROOT / "docs/skills/pidl-experiment-gate/scripts/pidl_attempt_ledger.py"
