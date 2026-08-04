@@ -23,6 +23,38 @@ class ProtocolError(RuntimeError):
     """Raised when a package or repeatability gate fails closed."""
 
 
+def append_attempt_record(ledger: Path, record: Mapping[str, object]) -> None:
+    """Append one canonical JSONL record without rewriting prior bytes."""
+    attempt_id = record.get("attempt_id")
+    if not isinstance(attempt_id, str) or not attempt_id:
+        raise ProtocolError("attempt_id must be nonempty text")
+    ledger = Path(ledger)
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    lock = ledger.with_name(f".{ledger.name}.append.lock")
+    try:
+        lock_fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError as exception:
+        raise ProtocolError("attempt ledger append is already in progress") from exception
+    try:
+        os.close(lock_fd)
+        existing = ledger.read_bytes() if ledger.exists() else b""
+        if existing and not existing.endswith(b"\n"):
+            raise ProtocolError("attempt ledger is not canonical newline-delimited JSON")
+        for line in existing.splitlines():
+            try:
+                prior = json.loads(line)
+            except json.JSONDecodeError as exception:
+                raise ProtocolError("attempt ledger contains invalid JSON") from exception
+            if prior.get("attempt_id") == attempt_id:
+                raise ProtocolError(f"attempt_id already exists: {attempt_id}")
+        with ledger.open("ab") as stream:
+            stream.write(canonical_json_bytes(dict(record)) + b"\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+    finally:
+        lock.unlink(missing_ok=True)
+
+
 REQUIRED_H5PY_VERSION = "3.16.0"
 
 

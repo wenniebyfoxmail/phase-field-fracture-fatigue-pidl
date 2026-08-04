@@ -13,6 +13,7 @@
     {"path": "capture_toy_road_substep.m", "sha256": "f6e47ecc80f60412a4c5b76cf3f315bda6c209eb670e1d46e56ac15fc29a1b25"},
     {"path": "export_toy_road_cycle_shard.m", "sha256": "50dfb1c7eef087e522d27e5b46c0e7cc05575a682ed4ff4a69b8e4d128d98b11"},
     {"path": "finalize_toy_road_c5_gate.m", "sha256": "dd344e9bba7e81c1354543381ec3530d76eb8ea7d9eb03a41d32119acdfac3d9"},
+    {"path": "finalize_toy_road_family_package.m", "sha256": "a0b4559835aeb0d22bb55306b976f21bab169b4e726991d5115dc1b2fccc65d8"},
     {"path": "init_toy_road_cycle_capture.m", "sha256": "8a12d6af5a4c4ecfbaace763de9a7cdd3119a1ae2efc690bec3dee3d3526a600"},
     {"path": "invoke_toy_road_test_process_adapter.ps1", "sha256": "9c22b8463a86033c5d73dc734c7e0b173aa14588c88ec7f88a06148df37aafe1"},
     {"path": "launch_toy_road_family_case.ps1", "sha256": "9f10eacc759398cdf7099768f02f83d5e55f830c1a81652488572d7edd629460"},
@@ -23,7 +24,7 @@
     {"path": "run_toy_road_controlled_driver_harness.m", "sha256": "4336969332e0aeeb5d2f623977c64e123c8e66e7ef3222307e2d6648b3670e3b"},
     {"path": "run_toy_road_runtime_bridge.m", "sha256": "097504ffd22033cb4dbf7187d25647d1a5675f2fa3906656683b5b29ebb2f73b"},
     {"path": "solve_toy_road_family_case.m", "sha256": "a7cb797471122c09b01986f7e5e98156e7c057207bfe3d637cb625ced18e5f24"},
-    {"path": "toy_road_protocol.py", "sha256": "ace00f57dac4891e388da7483b583989b445d8a99a60addf4ff6fc8718683d5a"},
+    {"path": "toy_road_protocol.py", "sha256": "78f13dd3d1e5b46e7b640d151d47d7a784f71ba36620d29fbd10e93a269b43e9"},
     {"path": "validate_toy_road_cycle_shard.m", "sha256": "e9836534226d749b47d26e2c0f2dd15472a01175646b053035f11f350aaad81c"},
     {"path": "validate_toy_road_terminal_package.m", "sha256": "171daf9c90e6dfc6c7f2cd3a6c3ed079c26e7076c2777c9ea3f420fb642441b2"}
   ]

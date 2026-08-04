@@ -358,7 +358,6 @@ def cmd_render(args: argparse.Namespace) -> None:
     records = read_records(ledger)
     record = find_record(records, args.attempt_id)
     refresh_assets(record)
-    write_records(ledger, records)
     out = Path(args.out).expanduser() if args.out else attempt_dir(ledger, args.attempt_id) / "attempt.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(render_markdown(record), encoding="utf-8")
@@ -370,7 +369,6 @@ def cmd_validate(args: argparse.Namespace) -> None:
     records = read_records(ledger)
     for record in records:
         refresh_assets(record)
-    write_records(ledger, records)
     if args.attempt_id:
         candidates = [find_record(records, args.attempt_id)]
     else:

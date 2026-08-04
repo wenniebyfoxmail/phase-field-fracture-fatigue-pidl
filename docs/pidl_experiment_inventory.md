@@ -43,6 +43,12 @@ inconclusive   preserved for traceability only
 | `pi_transfer_controls_20260729` | diagnostic | Exercise corrected scaling with an F1a complete-Pi replay and a categorical-BC negative control | Reusable matched/mismatched/unobservable audit; FEM-centred normalized field round trip; same-mesh archived BC contrast | `docs/pi_transfer_controls_20260729/decision.md` | F1a scaling/I-O only; no fresh-solver, road, traffic, forecast, or inverse claim |
 | `f1b_exact_pi_solver_invariance_20260729` | blocked | Test the missing fresh dimensional FEM solver-invariance gate | Hash-sealed Windows-FEM runner, complete thickness-aware Pi lock, new-root policy, event and four-field analyzer | `docs/f1b_exact_pi_solver_invariance_20260729/decision.md` | blocked pending an approved Windows-FEM producer; not passed and no road claim |
 
+## 2026-08-02 Toy-Road Producer Addendum
+
+| case_id | status | why run | key change | primary asset | claim boundary |
+|---|---|---|---|---|---|
+| `toy_road_p0_repeatability_family_20260802` | blocked pending sealed preflight | Qualify one synthetic FEM producer before any toy-to-road trajectory comparison | P0/P0R are one producer-qualification pair; T1/T2/T3 remain sequential future synthetic trajectories under one rebuilt-MEX runtime | `docs/toy_road_p0_repeatability_20260802/decision.md` | synthetic transfer evidence only; not real-road validation, training evidence, traffic-time calibration, or RUL evidence |
+
 ## Census Scope
 
 Scanned roots:

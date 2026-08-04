@@ -33,6 +33,17 @@ SPEC.loader.exec_module(PROTOCOL)
 ProtocolError = PROTOCOL.ProtocolError
 compare_repeatability = PROTOCOL.compare_repeatability
 relative_l2 = PROTOCOL.relative_l2
+append_attempt_record = PROTOCOL.append_attempt_record
+
+PRIMARY_DECISION = (
+    ROOT / "docs" / "toy_road_p0_repeatability_20260802" / "decision.md"
+)
+ATTEMPT_LEDGER = (
+    PRIMARY_DECISION.parent / "_pidl_attempt_ledger" / "attempts.jsonl"
+)
+ATTEMPT_VIEW = PRIMARY_DECISION.parent / "attempt.md"
+INVENTORY = ROOT / "docs" / "pidl_experiment_inventory.md"
+FAMILY_REGISTRY_ID = "toy_road_p0_repeatability_family_20260802"
 
 PROTOCOL_VERSION = "toy-road-p0-repeatability-v2.1"
 AUTHORIZATION_SCOPE = "test_only_non_authorizing"
@@ -96,6 +107,85 @@ TRACE_COLUMNS = (
     "consecutive_stagger_delta",
     "primal_feasibility",
 )
+
+
+def test_family_has_one_primary_asset_and_registry_row() -> None:
+    assert PRIMARY_DECISION.is_file()
+    decision = PRIMARY_DECISION.read_text(encoding="utf-8")
+    assert "BLOCKED_PENDING_SEALED_PREFLIGHT" in decision
+    assert "synthetic FEM transfer family" in decision
+    assert "not real-road validation" in decision
+    assert "P0/P0R" in decision and "producer qualification" in decision
+
+    rows = [
+        line
+        for line in INVENTORY.read_text(encoding="utf-8").splitlines()
+        if FAMILY_REGISTRY_ID in line
+    ]
+    assert len(rows) == 1
+    assert "synthetic" in rows[0].lower()
+    assert "decision.md" in rows[0]
+
+
+def test_family_attempt_ledger_has_one_immutable_provenance_record() -> None:
+    assert ATTEMPT_LEDGER.is_file()
+    records = [
+        json.loads(line)
+        for line in ATTEMPT_LEDGER.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert len(records) == 1
+    record = records[0]
+    assert record["attempt_id"] == "toy-road-p0-family-producer-implementation-20260803"
+    assert record["role"] == "producer_qualification_and_future_synthetic_family"
+    assert re.fullmatch(r"[0-9a-f]{40}", record["source_commit"])
+    for field in (
+        "family_contract_sha256",
+        "case_physics_contract_sha256",
+        "execution_input_lock_sha256",
+        "runtime_lock_sha256",
+        "environment_fingerprint_sha256",
+    ):
+        assert re.fullmatch(r"[0-9a-f]{64}", record[field])
+    assert record["start_state"] == "implementation_authorized_execution_blocked"
+    assert record["end_state"] == "blocked_pending_sealed_preflight"
+    assert record["immutable_receipt_links"]
+    assert ATTEMPT_VIEW.is_file()
+    assert record["attempt_id"] in ATTEMPT_VIEW.read_text(encoding="utf-8")
+
+
+def test_attempt_ledger_append_preserves_existing_bytes_and_rejects_duplicate(
+    tmp_path: Path,
+) -> None:
+    ledger = tmp_path / "attempts.jsonl"
+    append_attempt_record(ledger, {"attempt_id": "first", "status": "open"})
+    original = ledger.read_bytes()
+    append_attempt_record(ledger, {"attempt_id": "second", "status": "open"})
+    assert ledger.read_bytes().startswith(original)
+    with pytest.raises(ProtocolError, match="attempt_id already exists"):
+        append_attempt_record(ledger, {"attempt_id": "first", "status": "open"})
+
+
+def test_attempt_ledger_validate_and_render_do_not_rewrite_jsonl(
+    tmp_path: Path,
+) -> None:
+    ledger = tmp_path / "attempts.jsonl"
+    record = json.loads(ATTEMPT_LEDGER.read_text(encoding="utf-8"))
+    original = (json.dumps(record, ensure_ascii=False) + "\n").encode("utf-8")
+    ledger.write_bytes(original)
+    script = ROOT / "docs/skills/pidl-experiment-gate/scripts/pidl_attempt_ledger.py"
+    subprocess.run(
+        ["py", "-3", str(script), "validate", "--ledger", str(ledger)],
+        check=True,
+    )
+    subprocess.run(
+        [
+            "py", "-3", str(script), "render", "--ledger", str(ledger),
+            "--attempt-id", record["attempt_id"], "--out", str(tmp_path / "attempt.md"),
+        ],
+        check=True,
+    )
+    assert ledger.read_bytes() == original
 
 
 def test_contract_digest_layers_are_correct() -> None:
