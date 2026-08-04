@@ -21,7 +21,7 @@ def _sha256(path: Path) -> str:
 
 
 def test_f1b_input_lock_is_complete_and_not_a_road_claim():
-    lock = json.loads((HANDOFF / "INPUT_LOCK.json").read_text())
+    lock = json.loads((HANDOFF / "INPUT_LOCK.json").read_text(encoding="utf-8"))
     reference = lock["reference"]
     candidate = lock["candidate"]
     assert candidate["L"] / reference["L"] == pytest.approx(10.0)
@@ -49,7 +49,7 @@ def test_f1b_input_lock_is_complete_and_not_a_road_claim():
 
 
 def test_f1b_hash_seal_matches_every_locked_input():
-    lines = (HANDOFF / "SHA256SUMS.txt").read_text().splitlines()
+    lines = (HANDOFF / "SHA256SUMS.txt").read_text(encoding="utf-8").splitlines()
     assert lines
     for line in lines:
         expected, relative = line.split(maxsplit=1)
@@ -57,7 +57,7 @@ def test_f1b_hash_seal_matches_every_locked_input():
 
 
 def test_f1b_solver_uses_confirmed_right_layer_event():
-    solver = (HANDOFF / "solve_fatigue_fracture_f1b.m").read_text()
+    solver = (HANDOFF / "solve_fatigue_fracture_f1b.m").read_text(encoding="utf-8")
     assert "x_coords >= penetration_right_x_min" in solver
     assert "penetration_hit_nodes >= penetration_min_nodes" in solver
     assert "SOL_CYCL_VAR.n_cycle - penetration_first_hit_cycle >= penetration_confirm_cycles" in solver
@@ -65,9 +65,9 @@ def test_f1b_solver_uses_confirmed_right_layer_event():
 
 
 def test_f1b_solver_preserves_dimensionless_nonlinear_controls():
-    main = (HANDOFF / "main_F1b_exact_pi_dimensional.m").read_text()
-    solver = (HANDOFF / "solve_fatigue_fracture_f1b.m").read_text()
-    newton = (HANDOFF / "newton_raphson_f1b.m").read_text()
+    main = (HANDOFF / "main_F1b_exact_pi_dimensional.m").read_text(encoding="utf-8")
+    solver = (HANDOFF / "solve_fatigue_fracture_f1b.m").read_text(encoding="utf-8")
+    newton = (HANDOFF / "newton_raphson_f1b.m").read_text(encoding="utf-8")
     assert "f1b_force_scale = 3.0 * 10.0 * 10.0" in main
     assert "f1b_energy_scale = 3.0 * 10.0^2 * 10.0" in main
     assert "f1b_force_scale * f1b_tol_displ_norm" in main
@@ -80,8 +80,8 @@ def test_f1b_solver_preserves_dimensionless_nonlinear_controls():
 
 
 def test_f1b_gate_uses_solver_mesh_tolerances_and_own_event_states():
-    gate = (PACKAGE / "00_gate.md").read_text()
-    analyzer = (ROOT / "SENS_tensile" / "analyze_f1b_exact_pi_solver.py").read_text()
+    gate = (PACKAGE / "00_gate.md").read_text(encoding="utf-8")
+    analyzer = (ROOT / "SENS_tensile" / "analyze_f1b_exact_pi_solver.py").read_text(encoding="utf-8")
     assert "floating-point identity" in gate.lower()
     assert "same-cycle c20/c40/c60" in gate
     assert "first-hit/confirmed own-event" in gate
@@ -91,7 +91,7 @@ def test_f1b_gate_uses_solver_mesh_tolerances_and_own_event_states():
 
 
 def test_f1b_launcher_refuses_dirty_or_existing_output():
-    launcher = (HANDOFF / "launch_F1b_exact_pi.ps1").read_text()
+    launcher = (HANDOFF / "launch_F1b_exact_pi.ps1").read_text(encoding="utf-8")
     assert "Shared repo is dirty" in launcher
     assert "GRIPHFiTH producer repo is dirty" in launcher
     assert "GRIPHFiTH source hash mismatch" in launcher
