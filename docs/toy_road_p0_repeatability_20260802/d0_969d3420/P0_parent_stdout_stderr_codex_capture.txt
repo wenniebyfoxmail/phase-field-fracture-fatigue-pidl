@@ -1,0 +1,10 @@
+Script completed
+Wall time 0.0 seconds
+Output:
+powershell.exe : {Error using run_toy_road_runtime_bridge>localRequire (line 106)
+At line:2 char:4093
++ ... ring('o'))";& powershell -NoProfile -ExecutionPolicy Bypass -File $wr ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ({Error using r...uire (line 106):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

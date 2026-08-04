@@ -1,0 +1,12 @@
+{
+    "schema_version":  "toy_road_p0_log_availability_v1",
+    "codex_capture_source":  "C:\\Users\\xw436\\.codex\\sessions\\2026\\07\\15\\rollout-2026-07-15T10-30-10-019f651c-a9e7-75e3-9b0c-de688d38e2a1.jsonl",
+    "codex_capture_call_id":  "call_rtvAgcDpCZ11ei2fvvxH3hPJ",
+    "codex_capture_complete_for_tool_output":  true,
+    "captured_file":  "P0_parent_stdout_stderr_codex_capture.txt",
+    "tee_log_expected_path":  "C:\\q4diag\\toy-road-p0-production-eeda43d-969d3420\\P0_parent.wrapper.log",
+    "tee_log_exists":  false,
+    "matlab_predicate_message_present":  false,
+    "known_text":  "Error using run_toy_road_runtime_bridge\u003elocalRequire (line 106)",
+    "interpretation":  "No more specific predicate text was emitted into the persisted stdout/stderr capture."
+}

@@ -1,0 +1,70 @@
+{
+    "schema_version":  "toy_road_p0_d0_evidence_manifest_v1",
+    "status":  "D0_ZERO_EXECUTION_EVIDENCE_RECOVERED",
+    "authorization_id":  "969d3420-77ab-435b-bf4b-a20667550bcd",
+    "source_commit":  "eeda43d9faef01622731e877c5048a78f3c5003a",
+    "evidence_commit":  "2a640a93413f014cb305cb29895f93137ed6d1a3",
+    "matlab_started_during_D0":  false,
+    "fem_cycles":  0,
+    "matlab_fem_process_count_before":  0,
+    "matlab_fem_process_count_after":  0,
+    "sealed_source_modified":  false,
+    "original_evidence_deleted":  false,
+    "files":  [
+                  {
+                      "file":  "P0_parent.execution-lock.json",
+                      "bytes":  2793,
+                      "sha256":  "c7910105c137d49fb572eb82b401c416897f423d788a32a91a0d3dbdad7c4d0d",
+                      "original_source":  "C:\\q4diag\\toy-road-p0-production-eeda43d-969d3420\\receipts\\P0_parent.execution-lock.json"
+                  },
+                  {
+                      "file":  "P0_parent.launch-receipt.json",
+                      "bytes":  1177,
+                      "sha256":  "42ef0f89c409ebdd090efda56b6e9c7d5f4fba4aa2395515d7d8fa219c548187",
+                      "original_source":  "C:\\q4diag\\toy-road-p0-production-eeda43d-969d3420\\receipts\\P0_parent.launch-receipt.json"
+                  },
+                  {
+                      "file":  "P0_parent_authorization_969d3420-77ab-435b-bf4b-a20667550bcd.json",
+                      "bytes":  977,
+                      "sha256":  "b2085e4f84ba7833fdfe6aab3a5d71c834e167ca36788663bc7c30110f08900b",
+                      "original_source":  "C:\\q4diag\\toy-road-p0-one-shot\\eeda43d9faef01622731e877c5048a78f3c5003a\\P0_parent_authorization_969d3420-77ab-435b-bf4b-a20667550bcd.json"
+                  },
+                  {
+                      "file":  "P0_parent_authorization_969d3420-77ab-435b-bf4b-a20667550bcd.json.consumed",
+                      "bytes":  37,
+                      "sha256":  "27a644c53c88f341acf196d3b2a5ce96edf6d8c1a882bc948264358630731e89",
+                      "original_source":  "C:\\q4diag\\toy-road-p0-one-shot\\eeda43d9faef01622731e877c5048a78f3c5003a\\P0_parent_authorization_969d3420-77ab-435b-bf4b-a20667550bcd.json.consumed"
+                  },
+                  {
+                      "file":  "P0_parent_LOG_AVAILABILITY.json",
+                      "bytes":  797,
+                      "sha256":  "d9ce23fcc6584d5c3807a19255431c1c81590320daeb1fe3293c806165e7bb19",
+                      "original_source":  "generated_D0_provenance"
+                  },
+                  {
+                      "file":  "P0_parent_PATH_ORDER_AND_BATCH_PROVENANCE.json",
+                      "bytes":  1375,
+                      "sha256":  "c6bd5af86bb1981d6bf893fd6751e2310ef61c32c7346ce17a777f5b037a246f",
+                      "original_source":  "generated_D0_provenance"
+                  },
+                  {
+                      "file":  "P0_parent_RUNTIME_BRIDGE_FAILURE.json",
+                      "bytes":  1514,
+                      "sha256":  "de92d705d962eb0f40752174edad4a30630312fd328843d0df5ed0ca6f39d67c",
+                      "original_source":  "C:\\q4diag\\toy-road-p0-production-eeda43d-969d3420\\P0_parent_RUNTIME_BRIDGE_FAILURE.json"
+                  },
+                  {
+                      "file":  "P0_parent_stdout_stderr_codex_capture.txt",
+                      "bytes":  471,
+                      "sha256":  "17e77259c696551da3ee951c00809486a0d122d8a3d023be438c5ddb7067b18e",
+                      "original_source":  "C:\\Users\\xw436\\.codex\\sessions\\2026\\07\\15\\rollout-2026-07-15T10-30-10-019f651c-a9e7-75e3-9b0c-de688d38e2a1.jsonl"
+                  },
+                  {
+                      "file":  "preflight_api-audit.txt",
+                      "bytes":  2313,
+                      "sha256":  "26da6974ade3b53c1a49819f97aa0cd9a03325a810fe3180606586b0a5e5e27b",
+                      "original_source":  "C:\\q4diag\\toy-road-p0-preflight-eeda43d\\api-audit.txt"
+                  }
+              ],
+    "created_at_utc":  "2026-08-04T13:40:17.5126280Z"
+}
