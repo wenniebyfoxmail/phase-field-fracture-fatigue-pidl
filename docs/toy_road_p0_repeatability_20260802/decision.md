@@ -1,6 +1,6 @@
 # Toy-Road P0 Repeatability Family Decision
 
-Status: `BLOCKED_PENDING_SEALED_PREFLIGHT`
+Status: `BLOCKED_PENDING_EXECUTION_AUTHORIZATION`
 
 This is the single primary asset for the synthetic FEM transfer family. It is
 not real-road validation and carries no traffic-time, field-calibration, RUL,
@@ -8,8 +8,9 @@ or deployment claim.
 
 ## Current Decision
 
-Implementation of the approved v2.1 producer and v1.1 execution plan is in
-progress. Production execution is not authorized. Preflight receipts are
+The approved v2.1 producer and v1.1 implementation plan reached a clean sealed
+preflight at source commit `19861e214dabbfa66b5df806fcf5e055af88e0d1`.
+Production execution is not authorized. All five preflight receipts are
 non-authorizing and cannot be used to launch P0, P0R, T1, T2, or T3.
 
 P0/P0R are one producer qualification pair. They are not independent training
@@ -31,5 +32,5 @@ cases.
 
 - Attempt ledger: `_pidl_attempt_ledger/attempts.jsonl`
 - Rendered attempt: `attempt.md`
+- Sealed preflight evidence: `preflight_evidence.json`
 - Producer handoff: `producer_handoffs/toy_road_p0_repeatability_20260803/`
-

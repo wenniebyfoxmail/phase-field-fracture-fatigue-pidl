@@ -6,6 +6,26 @@
 
 ---
 
+## 2026-08-04 - Toy-road P0 producer sealed preflight
+
+- Sealed source commit: `19861e214dabbfa66b5df806fcf5e055af88e0d1`
+- Python: `432 passed, 2 skipped`
+- MATLAB: `173/173`
+- PowerShell fail-closed launcher suite: `PASS`
+- Runtime binaries: `4/4` locked hashes
+- MATLAB API path audit: `18/18`, rebuilt `initial` resolved from overlay
+- Static preflight: `P0 -> P0R -> T1 -> T2 -> T3`, all `PASS`
+- Scope: `preflight_only_non_authorizing`
+- Dynamic chain: `not_evaluated_no_execution`
+- FEM cycles executed: `0`
+- Decision: `BLOCKED_PENDING_EXECUTION_AUTHORIZATION`
+- Primary evidence: `docs/toy_road_p0_repeatability_20260802/preflight_evidence.json`
+
+No P0/P0R/T1/T2/T3 production solve was launched. A separate explicit
+execution authorization is still required.
+
+---
+
 ## 2026-08-03 - [plan]: P0/P0R producer plan v1.1 prepared for review
 
 - **Re**: changes requested against plan commit `29d4a249`.

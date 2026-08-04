@@ -1,0 +1,68 @@
+{
+  "schema_version": "toy_road_p0_sealed_preflight_evidence_v1",
+  "status": "PASS_NON_AUTHORIZING",
+  "sealed_source_commit": "19861e214dabbfa66b5df806fcf5e055af88e0d1",
+  "source_branch": "codex/toy-road-evidence-integration",
+  "authorization_scope": "preflight_only_non_authorizing",
+  "dynamic_chain_status": "not_evaluated_no_execution",
+  "decision_status": "BLOCKED_PENDING_EXECUTION_AUTHORIZATION",
+  "production_execution_authorized": false,
+  "fem_cycles_executed": 0,
+  "fresh_checkout": {
+    "path": "C:/q4diag/phase-field-fracture-fatigue-pidl-p0-sealed-19861e2",
+    "head_matches_sealed_source_commit": true,
+    "git_status_clean": true,
+    "source_manifest_verified": true
+  },
+  "tests": {
+    "python": {"passed": 432, "skipped": 2, "failed": 0, "warnings": 1},
+    "matlab": {"release": "R2025b Update 5", "passed": 173, "failed": 0, "incomplete": 0},
+    "powershell_launcher_suite": {"status": "PASS"},
+    "noncanonical_system_python_diagnostic": {
+      "status": "collection_failed_missing_optional_dependencies",
+      "collection_errors": 13,
+      "used_for_admission": false
+    }
+  },
+  "source_hashes": {
+    "source_manifest_sha256": "53228f52ee0d7f192bf2b9894cfb67c23395e0304823e8741102c7205d02b2df",
+    "handoff_sha256sums_sha256": "c61cb0126a1b85eeeb765fa6faa37ef64726dca49ced9aee8ca18038685c8ac6",
+    "handoff_sha256sums_file_count": 49
+  },
+  "runtime_hashes": {
+    "runtime_lock_sha256": "a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7",
+    "initial_mexw64_sha256": "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db",
+    "AMOR_mexw64_sha256": "64abee69f2c441730dc2efa4047ac45ab1d1b40e20c4822ed6e992adcd6b19e7",
+    "AT1_HISTORY_FATIGUE_mexw64_sha256": "53e8fd0b229817b7c14c52a5b6afaa957692f475057b79b9a9a10195ccb92e60",
+    "cholmod2_mexw64_sha256": "86a2f15543eda1f7223a1733d935d37e9e2f4f2c2d8db3c4adc2c0f675c27329",
+    "q1_receipt_sha256": "8fd051e4bf806c9a593297b95377a1fcc434f2b16cba5f67cc9f597b2e54fc36"
+  },
+  "matlab_api_audit": {
+    "status": "PASS",
+    "resolved": 18,
+    "required": 18,
+    "rebuilt_initial_resolved_from_overlay": true,
+    "log_sha256": "f0b6d335fa2395a7121a63845df75ee17551d55c89b5c41408b092864e3d8b4b"
+  },
+  "family_contract_sha256": "1af62deb41e60cd88853201ff9ee2d4a240975c8bf722453c1268b2c799a4b4d",
+  "receipts": [
+    {"case_id": "P0_parent", "case_physics_contract_sha256": "c1d7b1460b9bc404907ab29d0297cba65d6bd3225f6caac09e430ca8f9b8f504", "execution_input_lock_sha256": "2fdcc9e4799ac182c3340482e2174f271201cab0bce6798793eeb2a236e8fe51", "receipt_sha256": "7b91b8ac23ec5061e2b2970a92cd1da340c9854344d5f500955d5bb77d65af0f"},
+    {"case_id": "P0R_parent_repeat", "case_physics_contract_sha256": "c1d7b1460b9bc404907ab29d0297cba65d6bd3225f6caac09e430ca8f9b8f504", "execution_input_lock_sha256": "7ea5ac80d25d406d0610c7d162194847e2b00baa72c89a40ffb00e4b95f5f0ab", "receipt_sha256": "ef378e59f6481f7d63173d497c014c52ca0c26c5a186c8d414f651468da2e86b"},
+    {"case_id": "T1_initial_defect", "case_physics_contract_sha256": "938355b56d300e455145275b507e4c31032f9b467fd65d3dee6748f0b5012f02", "execution_input_lock_sha256": "7368f0107d293100f3de30caee1fc6204b626409e16fbcb4a5791f26c8122d3f", "receipt_sha256": "ed152143660d11288a252ce4bafc1c61c2c3a07e33ec151d593c32d9d022d2bb"},
+    {"case_id": "T2_material_state", "case_physics_contract_sha256": "cf639acc1730e4f28d3ac8524193d1ba9e61cf9f1593db75c4e797624a8f0fd4", "execution_input_lock_sha256": "c524a36fb9ed8da899efc5142d47748b4182f655e335d4d513ca5b2c5ba3732b", "receipt_sha256": "80319e31659f61ec390a5e9bf40bca891ffd458038b03de2db18b4243e94dcbe"},
+    {"case_id": "T3_loading_history", "case_physics_contract_sha256": "952cf10ab0bbf48a6835e7bbbf8ce442c428aa4255280a3be0a0f33a85f85c0e", "execution_input_lock_sha256": "0d24ac0455b6c1602e2dea66726684035426fcbee9b68e86660675fab6081a85", "receipt_sha256": "8d0dad3ba7eb0f1701fea1a4763297577cc826e5606f22e1497abd2d9870b8fd"}
+  ],
+  "terminal_audit": {
+    "all_writable_roots_absent": true,
+    "cycle_shard_count": 0,
+    "matlab_or_fem_process_count_after_preflight": 0,
+    "execution_lock_digests_unique": true,
+    "p0_p0r_physics_contract_equal": true,
+    "variant_contracts_predeclared_and_distinct": true
+  },
+  "superseded_preflight_diagnostics": [
+    "5f940816d95957d2711f50a6ce72ca0383b6e413: Java 8 source-file probe incompatibility",
+    "65755ef1a94fb83a6a039965dc5ac0d6a0e1a2e1: OrderedDictionary provenance accessor mismatch",
+    "626820a422da2c2627fd051857f821a659a3c4c0: single-line git output indexed as one character"
+  ]
+}

@@ -42,6 +42,7 @@ ATTEMPT_LEDGER = (
     PRIMARY_DECISION.parent / "_pidl_attempt_ledger" / "attempts.jsonl"
 )
 ATTEMPT_VIEW = PRIMARY_DECISION.parent / "attempt.md"
+PREFLIGHT_EVIDENCE = PRIMARY_DECISION.parent / "preflight_evidence.json"
 INVENTORY = ROOT / "docs" / "pidl_experiment_inventory.md"
 FAMILY_REGISTRY_ID = "toy_road_p0_repeatability_family_20260802"
 
@@ -112,10 +113,17 @@ TRACE_COLUMNS = (
 def test_family_has_one_primary_asset_and_registry_row() -> None:
     assert PRIMARY_DECISION.is_file()
     decision = PRIMARY_DECISION.read_text(encoding="utf-8")
-    assert "BLOCKED_PENDING_SEALED_PREFLIGHT" in decision
+    assert "BLOCKED_PENDING_EXECUTION_AUTHORIZATION" in decision
     assert "synthetic FEM transfer family" in decision
     assert "not real-road validation" in decision
     assert "P0/P0R" in decision and "producer qualification" in decision
+    evidence = json.loads(PREFLIGHT_EVIDENCE.read_text(encoding="utf-8"))
+    assert evidence["sealed_source_commit"] == "19861e214dabbfa66b5df806fcf5e055af88e0d1"
+    assert evidence["authorization_scope"] == "preflight_only_non_authorizing"
+    assert evidence["dynamic_chain_status"] == "not_evaluated_no_execution"
+    assert evidence["production_execution_authorized"] is False
+    assert evidence["fem_cycles_executed"] == 0
+    assert len(evidence["receipts"]) == 5
 
     rows = [
         line
