@@ -55,6 +55,12 @@ $WritableRoots = [ordered]@{
 
 function Get-RequiredProperty([object]$Value, [string]$Name, [string]$Label) {
     if ($null -eq $Value) { throw "$Label is missing." }
+    if ($Value -is [Collections.IDictionary]) {
+        if (-not $Value.Contains($Name)) {
+            throw "$Label is missing required provenance field $Name."
+        }
+        return $Value[$Name]
+    }
     $property = $Value.PSObject.Properties[$Name]
     if ($null -eq $property) { throw "$Label is missing required provenance field $Name." }
     return $property.Value
