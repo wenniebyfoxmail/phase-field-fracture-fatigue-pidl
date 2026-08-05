@@ -1,0 +1,1 @@
+{"schema_version":"toy_road_d1_terminal_v1","status":"D1_DIAGNOSTIC_EVIDENCE_COMPLETE","diagnostic_result":"PASS","production_authorized":false,"authorization_consumed":false,"automatic_retry_performed":false,"producer_invocation_count":0,"fem_cycle_count":0,"matlab_process_count_before":0,"matlab_process_count_after":0,"child_exit_code":0,"production_output_absent":true}
