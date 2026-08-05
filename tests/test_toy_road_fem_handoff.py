@@ -12,6 +12,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 HANDOFF = ROOT / "producer_handoffs" / "toy_to_road_independent_fem_20260731"
+P0_HANDOFF = ROOT / "producer_handoffs" / "toy_road_p0_repeatability_20260803"
 
 
 def load_json(path: Path) -> dict:
@@ -721,3 +722,37 @@ def test_source_manifest_is_portable_across_autocrlf_checkouts(
         ) if relative.endswith("launch_toy_road_case.ps1")
     )
     assert sha256(target) != expected
+
+
+def test_p0_handoff_documents_and_hashes_d1_phase_a_files() -> None:
+    readme = " ".join((P0_HANDOFF / "README.md").read_text("utf-8").split())
+    for phrase in (
+        "diagnostic_only_non_authorizing",
+        "zero FEM cycles",
+        "exactly ten files",
+        "exactly nine",
+        "D1_LAUNCHER_RECOVERY.json",
+        "pre_matlab_candidate_commit",
+        "does not authorize P0",
+    ):
+        assert phrase.lower() in readme.lower()
+    entries = {
+        relative: digest
+        for digest, relative in (
+            line.split("  ", 1)
+            for line in (P0_HANDOFF / "SHA256SUMS.txt").read_text("ascii").splitlines()
+            if line
+        )
+    }
+    required = {
+        "new_toy_road_d1_diagnostic_lock.ps1",
+        "toy_road_d1_protocol.py",
+        "run_toy_road_runtime_diagnostic.m",
+        "launch_toy_road_runtime_diagnostic.ps1",
+        "invoke_toy_road_d1_test_process_adapter.ps1",
+        "tests/toyRoadD1RuntimeDiagnosticTest.m",
+        "tests/toyRoadD1LauncherTest.ps1",
+    }
+    assert required <= set(entries)
+    for relative in required:
+        assert entries[relative] == sha256(P0_HANDOFF / relative)
