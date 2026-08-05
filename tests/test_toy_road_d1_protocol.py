@@ -343,3 +343,28 @@ def test_matlab_unit_test_source_cannot_enter_launcher_or_producer() -> None:
     ).read_text("utf-8")
     assert plan.count("matlab -batch") == 1
     assert "pre_matlab_candidate_commit" in plan
+
+
+def test_d1_launcher_and_adapter_are_structurally_non_production() -> None:
+    launcher = (HANDOFF / "launch_toy_road_runtime_diagnostic.ps1").read_text("utf-8")
+    adapter = (HANDOFF / "invoke_toy_road_d1_test_process_adapter.ps1").read_text(
+        "utf-8"
+    )
+    assert "run_toy_road_runtime_diagnostic" in launcher
+    assert "D1_EXACT_BATCH_COMMAND.txt" in launcher
+    assert "D1_LAUNCHER_RECOVERY.json" in launcher
+    assert "D1_SHA256SUMS.txt" in launcher
+    assert "automatic_retry_performed=$false" in launcher
+    for forbidden in (
+        "ExecutionAuthorizationPath",
+        "AuthorizationId",
+        "ProductionOutputRoot",
+        "main_toy_road_family_case",
+        "solve_toy_road_family_case",
+        "recover_toy_road_family_state",
+    ):
+        assert forbidden not in launcher
+    assert "diagnostic_invocation_count=1" in adapter
+    assert "producer_invocation_count=0" in adapter
+    assert "fem_cycle_count=0" in adapter
+    assert "matlab.exe" not in adapter.lower()
