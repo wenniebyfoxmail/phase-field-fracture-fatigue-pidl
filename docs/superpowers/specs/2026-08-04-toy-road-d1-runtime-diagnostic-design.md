@@ -1,10 +1,15 @@
-# Toy-Road D1 Diagnostic-Only Runtime Probe Design v1
+# Toy-Road D1 Diagnostic-Only Runtime Probe Design v1.1
 
 Date: 2026-08-04
 
-Status: approved for specification and implementation-plan documentation only.
+Status: v1.1 review-correction specification and implementation-plan
+documentation only.
 This document does not authorize implementation, MATLAB execution, FEM
 execution, or a new P0 production authorization.
+
+Revision: v1.1 fixes the authorization-field test, thread-setting provenance,
+validator filename, complete-versus-partial artifact lifecycle, and MATLAB
+unit-test authorization boundary identified in review of v1.
 
 ## Decision And Scope
 
@@ -47,9 +52,14 @@ not a FEM numerical-convergence or physical-model failure.
    roots. It has no production output-root parameter and must reject a path
    equal to or nested beneath any quarantined production root.
 5. D1 uses the same MATLAB executable, rebuilt `initial.mexw64`, AMOR,
-   AT1-history-fatigue, `cholmod2`, SuiteSparse, MATLAB release/update,
-   BLAS/LAPACK identity and thread/environment settings recorded by the old
-   execution lock.
+   AT1-history-fatigue, `cholmod2`, SuiteSparse, MATLAB release/update and
+   BLAS/LAPACK identity recorded by the old execution lock. Thread settings do
+   not come from that lock. They are independently fixed to
+   `OMP_NUM_THREADS=1`, `MKL_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1` and
+   `MKL_DYNAMIC=FALSE` from the sealed production launcher
+   `producer_handoffs/toy_road_p0_repeatability_20260803/launch_toy_road_family_case.ps1`
+   at source commit `eeda43d9faef01622731e877c5048a78f3c5003a`, SHA-256
+   `03d415ad96a484e9a98565fced0d6b8d2f90ffb781d48192a445d19ed5d5e728`.
 6. Exactly one D1 MATLAB process may be launched after implementation, review
    and resealing. Specification and plan work launch no MATLAB process.
 7. D1 PASS remains `diagnostic_only_non_authorizing`; D1 FAIL remains terminal
@@ -73,7 +83,7 @@ The components are:
 - `run_toy_road_runtime_diagnostic.m`: creates the diagnostic receipt before
   evaluating runtime predicates, persists every predicate result, and records
   structured exception details on failure.
-- `validate_toy_road_runtime_diagnostic.py`: validates lock derivation,
+- `toy_road_d1_protocol.py`: validates lock derivation,
   receipt chronology, predicate completeness, hashes and non-authorizing
   terminal evidence. It has no production launch operation.
 
@@ -95,10 +105,18 @@ D1_LOCK_TRANSFORMATION.json
 `D1_DIAGNOSTIC_LOCK.json` has
 `schema_version=toy_road_runtime_diagnostic_lock_v1`,
 `authorization_scope=diagnostic_only_non_authorizing`, and
-`producer_entrypoint_authorized=false`. It retains the complete runtime
-expectations and thread/environment settings byte-for-value after canonical
-normalization. It omits production role, authorization receipt, production
-output root, dynamic predecessor evidence and producer entrypoint fields.
+`producer_entrypoint_authorized=false`. It retains the MATLAB and binary
+runtime expectations from the old execution lock byte-for-value after
+canonical normalization. It omits production role, authorization artifact
+references, production output root, dynamic predecessor evidence and producer
+entrypoint fields. The four thread settings are added from the separately
+sealed launcher source identified above, never attributed to the old lock.
+
+The lock validator permits the required `authorization_scope` field. It
+precisely forbids `authorization_path`, `authorization_id`,
+`authorization_sha256`, `production_authorization_artifact` and
+`consumed_marker_path`, plus any path ending in `.consumed`. It must not use a
+substring-level ban on the word `authorization`.
 
 Only these path changes are legal:
 
@@ -106,8 +124,9 @@ Only these path changes are legal:
 - writable work, TEMP, TMP, preference and cache roots become fresh D1 roots;
 - the diagnostic evidence root is newly introduced.
 
-No MATLAB, MEX, SuiteSparse, compiler, release/update, BLAS/LAPACK, thread or
-non-relocated path identity may change.
+No MATLAB, MEX, SuiteSparse, compiler, release/update, BLAS/LAPACK or
+non-relocated path identity may change. The four fixed thread values must equal
+the sealed-launcher values exactly.
 
 `D1_LOCK_TRANSFORMATION.json` records:
 
@@ -117,6 +136,8 @@ non-relocated path identity may change.
 - transformation schema and ordered replacement list;
 - every old/new path pair and replacement reason;
 - unchanged-field digest before and after transformation;
+- thread-setting source path, source commit, source-file SHA-256 and four exact
+  name/value pairs;
 - `authorization_artifact_read=false` and
   `production_output_root_present=false`.
 
@@ -143,6 +164,7 @@ The exact batch command is UTF-8 without BOM and is the exact string passed to
 - MATLAB executable path and SHA-256;
 - exact ordered `addpath(...,'-begin')` construction;
 - complete environment variable names and values used by the child;
+- thread-setting provenance path, source commit and source-file SHA-256;
 - overlay source/destination paths and hashes;
 - all fresh diagnostic roots;
 - exact batch-command SHA-256;
@@ -160,8 +182,12 @@ The MATLAB probe creates `D1_RUNTIME_DIAGNOSTIC.json` immediately on entry with
 status `IN_PROGRESS`, an empty ordered predicate array and
 `producer_entrypoint_authorized=false`. Every completed predicate is persisted
 before the next predicate begins. Persistence uses create-new for the initial
-file and atomic same-directory replace for later versions; duplicate initial
-receipt creation fails closed.
+file and atomic same-directory replace for later versions. Each replacement is
+first written as `.D1_RUNTIME_DIAGNOSTIC.json.<uuid>.tmp`, flushed and then
+renamed over the receipt. A successful replace removes its temporary file.
+Any temporary file left by interruption is immutable crash evidence: it is
+listed by name and SHA-256 in recovery evidence and is never silently deleted
+or promoted. Duplicate initial receipt creation fails closed.
 
 Every predicate row contains exactly:
 
@@ -235,7 +261,8 @@ FAIL states. The launcher does not repair, delete or rerun them.
 
 ## Terminal Evidence
 
-After the MATLAB process exits, the launcher writes:
+After the MATLAB process exits normally or returns a catchable error, the
+launcher writes:
 
 ```text
 D1_PROCESS_AFTER.json
@@ -254,9 +281,20 @@ complete D1 evidence package only when all non-production invariants hold. It
 never maps D1 status to a P0 launch decision. A crash or partial package is
 recorded as D1 incomplete/failed and remains non-authorizing.
 
+The launcher has an outermost `try/catch/finally` after evidence-root
+reservation. A launcher exception before `D1_TERMINAL.json` creates
+`D1_LAUNCHER_RECOVERY.json` with create-new semantics, recording the launcher
+exception type/message/stack, PowerShell exit stage, files observed with
+SHA-256, outstanding atomic temporary files, child PID/exit status when known,
+and explicit unknown values when a postcondition cannot be measured. An
+uncatchable PowerShell host termination may leave only the already persisted
+subset and captured host exit log; validation classifies it as partial without
+inventing a recovery or terminal record.
+
 ## Artifact Schema
 
-One fresh D1 evidence root contains only:
+A complete terminal PASS or FAIL D1 evidence root contains exactly these ten
+files:
 
 ```text
 D1_DIAGNOSTIC_LOCK.json
@@ -270,6 +308,15 @@ D1_TERMINAL.json
 D1_SHA256SUMS.txt
 MATLAB_STDOUT_STDERR.txt
 ```
+
+`D1_SHA256SUMS.txt` contains exactly nine sorted entries and validates the
+other nine files; it never lists or validates itself.
+
+A crash or partial D1 root contains a declared subset of the ten files above
+and may additionally contain `D1_LAUNCHER_RECOVERY.json` plus immutable
+`.D1_RUNTIME_DIAGNOSTIC.json.<uuid>.tmp` files. The recovery record inventories
+every observed regular or temporary file and its SHA-256. A partial package is
+never padded to ten files and cannot be reported as terminal PASS or FAIL.
 
 No file is named as a production authorization, production launch receipt,
 cycle shard, checkpoint or terminal FEM package. No `.consumed` file is
@@ -288,7 +335,7 @@ The implementation must pass these tests before D1 execution is considered:
 | Old quarantine protection | All old evidence hashes unchanged before and after fixtures |
 | Initial receipt | `IN_PROGRESS` exists before first runtime predicate |
 | Partial predicate failure | Completed rows persist; first failure is named |
-| Crash fixture | Structured internal-error/partial terminal evidence; no retry |
+| Crash fixture | Declared subset plus recovery/temp inventory; no padding or retry |
 | Duplicate receipt | Create-new rejection; existing bytes unchanged |
 | Path mismatch | Full paths and first mismatching index persisted |
 | Binary missing | `which -all`, selected path and unreadable state persisted |
@@ -302,8 +349,12 @@ The implementation must pass these tests before D1 execution is considered:
 
 Tests must cover both the PowerShell launcher boundary and the real MATLAB
 probe logic. A simulated adapter alone is insufficient for the per-predicate
-receipt behavior. MATLAB unit tests may invoke the probe with controlled
-diagnostic fixtures, but they may not invoke the producer or FEM.
+receipt behavior. Implementation authorization does not authorize MATLAB.
+After the MATLAB source and tests are written and pass static review, a
+separate `test_only_non_authorizing_matlab_unit_test` authorization is required.
+It may invoke only the named unit-test file directly; it must reject and never
+run the real D1 launcher, producer or FEM. Failure consumes that test
+authorization and does not permit an automatic rerun.
 
 ## Explicit Non-Production Proof
 
@@ -330,8 +381,8 @@ Any failed proof blocks D1 execution and leaves all five family cases blocked.
 
 The work is separated into immutable commits:
 
-1. this D1 specification commit;
-2. a D1 implementation-plan commit;
+1. this D1 v1.1 specification commit;
+2. a D1 v1.1 implementation-plan commit;
 3. later source/test implementation commits followed by one clean sealed
    source commit;
 4. only after review, one D1 execution and a separate evidence-only commit.
