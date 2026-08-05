@@ -553,6 +553,30 @@ def test_complete_d1_package_rejects_hash_tampering(tmp_path: Path) -> None:
         PROTOCOL.validate_d1_package(root)
 
 
+def test_complete_pass_accepts_matlab_empty_first_failure_array(tmp_path: Path) -> None:
+    root = tmp_path / "package"
+    _complete_d1_package(root, "PASS")
+    receipt_path = root / "D1_RUNTIME_DIAGNOSTIC.json"
+    receipt = json.loads(receipt_path.read_text("utf-8"))
+    receipt["first_failed_predicate"] = []
+    receipt_path.write_bytes(PROTOCOL.canonical_json_bytes(receipt))
+    files = {
+        path.name: path.read_bytes()
+        for path in root.iterdir()
+        if path.is_file() and path.name != "D1_SHA256SUMS.txt"
+    }
+    (root / "D1_SHA256SUMS.txt").write_text(
+        "".join(
+            f"{hashlib.sha256(files[name]).hexdigest()}  {name}\n"
+            for name in sorted(files)
+        ),
+        "ascii",
+        newline="",
+    )
+
+    assert PROTOCOL.validate_d1_package(root)["diagnostic_result"] == "PASS"
+
+
 @pytest.mark.parametrize(
     "mutation",
     ["missing", "reordered", "wrong_ordinal", "failure_after_first", "bad_first_failure", "missing_exception"],

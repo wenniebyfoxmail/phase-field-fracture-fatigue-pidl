@@ -458,7 +458,7 @@ def _validate_predicate_chronology(receipt: Mapping[str, object], result: object
     if result == "PASS":
         if len(predicates) != len(EXPECTED_PREDICATE_NAMES) or failures:
             raise D1ProtocolError("D1 PASS predicate chronology is incomplete")
-        if receipt.get("first_failed_predicate") is not None:
+        if receipt.get("first_failed_predicate") not in (None, []):
             raise D1ProtocolError("D1 PASS has a first failed predicate")
         return
     if len(failures) != 1 or failures[0] != len(predicates) - 1:
