@@ -1,4 +1,4 @@
-# Toy-Road D1 Diagnostic-Only Runtime Probe Implementation Plan v1
+# Toy-Road D1 Diagnostic-Only Runtime Probe Implementation Plan v1.1
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,14 +8,19 @@
 
 **Tech Stack:** MATLAB R2025b Update 5, PowerShell 5.1, Python 3 with pytest, canonical JSON, SHA-256, Git, existing GRIPHFiTH runtime binaries and SuiteSparse/CHOLMOD runtime.
 
+**Revision:** v1.1 fixes the authorization-field test, thread-setting source,
+validator filename contract, complete-versus-partial artifact lifecycle and
+MATLAB unit-test authorization boundary identified in review of v1.
+
 ## Global Constraints
 
-- Approved design: `docs/superpowers/specs/2026-08-04-toy-road-d1-runtime-diagnostic-design.md` at commit `9232785134751aaa09ef0cf4e2ea0a02ad2c3b23`.
+- Approved design: `docs/superpowers/specs/2026-08-04-toy-road-d1-runtime-diagnostic-design.md` v1.1 at commit `630894a91605937707a1b8c2faa5922e7cdd6e92`.
 - D1 is diagnostic only. It must never call or indirectly reach `main_toy_road_family_case`, recovery, `System`, Newton, cycle 1 or a FEM solve.
 - D1 must not read, validate, copy, create or consume a production authorization or `.consumed` marker.
 - The complete `969d3420` quarantine is immutable and read-only. Tests use copies or synthetic fixtures, never modify the original.
 - D1 uses fresh diagnostic evidence/work/TEMP/TMP/preference/cache/overlay roots and has no production output-root parameter.
-- Runtime expectations retain the same MATLAB executable, release/update/version/computer, BLAS/LAPACK, rebuilt `initial.mexw64`, AMOR, AT1-history-fatigue, `cholmod2`, SuiteSparse and thread/environment identity.
+- Runtime expectations retain the same MATLAB executable, release/update/version/computer, BLAS/LAPACK, rebuilt `initial.mexw64`, AMOR, AT1-history-fatigue, `cholmod2` and SuiteSparse identity from the old execution lock.
+- Thread settings do not come from the old execution lock. Fix `OMP_NUM_THREADS=1`, `MKL_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1` and `MKL_DYNAMIC=FALSE` from `producer_handoffs/toy_road_p0_repeatability_20260803/launch_toy_road_family_case.ps1` at `eeda43d9faef01622731e877c5048a78f3c5003a`, file SHA-256 `03d415ad96a484e9a98565fced0d6b8d2f90ffb781d48192a445d19ed5d5e728`.
 - Lock transformation may replace only the explicitly declared overlay and fresh writable diagnostic roots. It must record old/new lock SHA-256 and an independently verified unchanged-field digest.
 - Exact batch command, environment, path construction, launcher/probe hashes and source commit are persisted before MATLAB starts.
 - Every runtime predicate persists `name`, `expected`, `measured_raw`, `measured_normalized` and `pass` before the next predicate.
@@ -23,8 +28,10 @@
 - Terminal evidence records pre/post process counts, production-output absence, `producer_invocation_count=0`, `fem_cycle_count=0` and unchanged quarantine hashes.
 - Spec, plan, source implementation/seal and D1 evidence are separate commits.
 - This specification/plan documentation phase starts no MATLAB process. During
-  later Tasks 1-6, MATLAB may be used only for separately authorized unit-test
-  processes that are statically proven unable to enter producer/FEM code;
+  later Tasks 1-6, implementation authorization alone still permits no MATLAB.
+  After MATLAB source/tests and static review are complete, exactly one
+  separately authorized `test_only_non_authorizing_matlab_unit_test` process
+  may run the named test suite directly and must not run the real D1 launcher;
   Task 7 is the only real D1 runtime probe and remains forbidden until a later
   explicit human authorization is recorded.
 - Only one MATLAB/FEM experiment may run at a time. No launcher may stop an existing process automatically.
@@ -67,7 +74,6 @@ Add fixtures with one production lock and explicit overlay/writable-root replace
 diagnostic["schema_version"] == "toy_road_runtime_diagnostic_lock_v1"
 diagnostic["authorization_scope"] == "diagnostic_only_non_authorizing"
 diagnostic["producer_entrypoint_authorized"] is False
-"authorization" not in json.dumps(diagnostic).lower()
 "production_authorized" not in json.dumps(diagnostic)
 transformation["authorization_artifact_read"] is False
 transformation["production_output_root_present"] is False
@@ -76,8 +82,16 @@ transformation["diagnostic_lock_sha256"] == sha256(diagnostic_bytes)
 transformation["unchanged_fields_sha256_before"] == transformation["unchanged_fields_sha256_after"]
 ```
 
-Parametrize undeclared changes to MATLAB identity, binary hashes, thread values,
+Assert exact forbidden keys are absent at every depth:
+`authorization_path`, `authorization_id`, `authorization_sha256`,
+`production_authorization_artifact` and `consumed_marker_path`. Assert no
+`.consumed` path or file is read or created. Do not use a substring ban on
+`authorization`, because `authorization_scope` is required.
+
+Parametrize undeclared changes to MATLAB identity, binary hashes,
 non-overlay paths and source-lock digest; each must raise `D1ProtocolError`.
+Independently verify the four thread values and their sealed-launcher source
+path, commit and SHA-256; reject any changed value or provenance field.
 Verify a relocation targeting the quarantine, failed production root, or a
 non-absent D1 root is rejected.
 
@@ -95,9 +109,11 @@ interfaces do not exist.
 - [ ] **Step 3: Implement canonical derivation and validation**
 
 Use sorted-key compact UTF-8 JSON with no BOM/newline. Deep-copy the allowed
-runtime/environment fields, remove all production-role/authorization/output
-fields, apply only declared path replacements, and calculate both unchanged
-digests from canonical projections that exclude the declared replacements.
+MATLAB/binary runtime fields, remove production role/output fields and the
+five exact forbidden authorization-artifact keys, apply only declared path
+replacements, and calculate both unchanged digests from canonical projections
+that exclude the declared replacements. Add the four thread values only from
+the sealed-launcher provenance fixed in Global Constraints.
 Write outputs using exclusive create. The PowerShell wrapper accepts no
 authorization argument and delegates canonical emission to the approved Python
 executable after checking its path and SHA-256.
@@ -157,18 +173,7 @@ receipt.fem_cycle_count = 0;
 Precreate the receipt with sentinel bytes and verify duplicate invocation fails
 without changing those bytes.
 
-- [ ] **Step 2: Run focused MATLAB tests and verify RED**
-
-Run MATLAB unit tests only; do not run the real diagnostic launcher:
-
-```powershell
-matlab -batch "r=testsuite('producer_handoffs/toy_road_p0_repeatability_20260803/tests/toyRoadD1RuntimeDiagnosticTest.m');assertSuccess(run(r));"
-```
-
-Expected: tests fail because the D1 probe does not exist. Confirm the test suite
-contains no producer/FEM call before invoking MATLAB.
-
-- [ ] **Step 3: Implement append-before-next-predicate persistence**
+- [ ] **Step 2: Implement append-before-next-predicate persistence**
 
 Create the initial receipt using Java `CREATE_NEW`. For every predicate, measure
 raw data, normalize separately, append exactly one row with ordinal/name/
@@ -176,7 +181,7 @@ expected/measured_raw/measured_normalized/pass/timestamp, then atomically replac
 the receipt in the same directory before continuing. Stop at the first failed
 predicate.
 
-- [ ] **Step 4: Add path mismatch and binary hash mismatch tests**
+- [ ] **Step 3: Add path mismatch and binary hash mismatch tests**
 
 Use controlled measurement fixtures to assert:
 
@@ -186,7 +191,7 @@ Use controlled measurement fixtures to assert:
 - each binary stores complete `which -all`, selected path, readability and hash;
 - missing/unreadable and hash-mismatch predicates persist expected/measured data.
 
-- [ ] **Step 5: Add partial/crash/structured exception tests**
+- [ ] **Step 4: Add partial/crash/structured exception tests**
 
 Inject failures after selected predicate ordinals and assert completed rows
 remain. Require `first_failed_predicate`, identifier, message, stack entries and
@@ -194,13 +199,34 @@ extended report. An unclassified fixture exception must become
 `diagnostic_internal_error`. Assert `producer_invocation_count=0` and
 `fem_cycle_count=0` in every terminal state.
 
-- [ ] **Step 6: Add static dynamic-dispatch prohibitions**
+- [ ] **Step 5: Add static dynamic-dispatch prohibitions**
 
 The Python test suite reads the MATLAB source and rejects `eval`, `evalin`,
 `feval`, `str2func`, `run(`, function handles supplied by JSON, and all producer,
 recovery, solver, `System`, Newton and cycle entrypoints.
 
-- [ ] **Step 7: Run Task 2 tests and commit**
+- [ ] **Step 6: Complete source/test static review without MATLAB**
+
+After the complete test source and diagnostic source are written, run Python
+source-graph checks and a read-only review proving the test file cannot call
+the real D1 launcher, producer or FEM. Implementation authorization permits
+these source/static steps but does not permit MATLAB.
+
+- [ ] **Step 7: Request a separate MATLAB unit-test authorization**
+
+Request one authorization with scope
+`test_only_non_authorizing_matlab_unit_test`, fixed to the reviewed source
+commit and exactly this direct command:
+
+```powershell
+matlab -batch "r=testsuite('producer_handoffs/toy_road_p0_repeatability_20260803/tests/toyRoadD1RuntimeDiagnosticTest.m');assertSuccess(run(r));"
+```
+
+It must reject the real D1 launcher and all producer/FEM entrypoints. A failure
+consumes the authorization; do not edit conditions or rerun without a new
+review and authorization.
+
+- [ ] **Step 8: Run the one authorized MATLAB unit-test batch and commit**
 
 Run:
 
@@ -210,8 +236,10 @@ py -3 -m pytest tests/test_toy_road_d1_protocol.py -q
 git diff --check
 ```
 
-Expected: all focused MATLAB and Python D1 tests pass; no FEM process or cycle
-artifact is created.
+Run the Python checks before and after the single authorized MATLAB unit-test
+batch. Expected: all focused MATLAB and Python D1 tests pass; no real D1
+launcher, FEM process or cycle artifact is created. Record authorization
+consumption and post-test process count. Do not rerun on failure.
 
 Commit:
 
@@ -281,8 +309,16 @@ Create only fresh D1 overlay and writable roots.
 Capture combined MATLAB stdout/stderr without truncation. After process exit,
 write `D1_PROCESS_AFTER.json`, validate zero producer/cycles and production
 output absence, rehash quarantine files, then write `D1_TERMINAL.json` and
-`D1_SHA256SUMS.txt`. A PASS or FAIL diagnostic receipt completes D1 evidence;
-partial/crash states remain non-authorizing failures. Never retry.
+`D1_SHA256SUMS.txt`. A complete PASS/FAIL package has exactly ten files;
+`D1_SHA256SUMS.txt` has exactly nine sorted entries and never hashes itself.
+Partial/crash states contain only the files actually persisted plus declared
+recovery/temp evidence and remain non-authorizing failures. Never retry.
+
+Wrap all post-reservation launcher work in an outermost `try/catch/finally`.
+On a catchable launcher exception before terminal creation, exclusively create
+`D1_LAUNCHER_RECOVERY.json` containing stage, exception, observed file hashes,
+child status and outstanding `.D1_RUNTIME_DIAGNOSTIC.json.<uuid>.tmp` files.
+An uncatchable host termination remains a partial subset and is not padded.
 
 - [ ] **Step 6: Test partial/crash/duplicate/path/binary outcomes through adapter**
 
@@ -410,7 +446,8 @@ git commit -m "test: prove D1 cannot enter production"
 Require every new executable D1 source in `SOURCE_MANIFEST.json` with exact
 SHA-256, every handoff file in sorted `SHA256SUMS.txt`, and README text that
 states diagnostic-only scope, zero cycles, no production authorization,
-one-shot/no-retry behavior and the ten artifact names.
+one-shot/no-retry behavior, the exactly-ten complete schema, nine-entry package
+checksum rule, and declared recovery/temporary-file subset semantics.
 
 - [ ] **Step 2: Verify RED**
 
@@ -447,7 +484,7 @@ git commit -m "docs: seal D1 diagnostic handoff contract"
 
 ---
 
-### Task 6: Full Regression, Independent Review And Clean Seal
+### Task 6: Full Regression, Unit-Test Authorization, Independent Review And Clean Seal
 
 **Files:**
 - Modify only if tests or review find a defect: files already listed in Tasks 1-5.
@@ -457,37 +494,43 @@ git commit -m "docs: seal D1 diagnostic handoff contract"
 - Consumes: reviewed Task 1-5 commits.
 - Produces: one clean source commit fixed by a source manifest, a review report and a proposed non-authorizing D1 invocation; it does not launch MATLAB.
 
-- [ ] **Step 1: Run full Python, PowerShell and MATLAB unit suites**
+- [ ] **Step 1: Run full Python and PowerShell suites plus MATLAB static review**
 
-Run the repository's complete Python tests, both launcher suites and all
-handoff MATLAB unit tests. MATLAB tests must be unit fixtures only and must be
-preceded/followed by process and cycle-artifact checks.
+Run the repository's complete Python tests and both launcher suites. Inspect
+the complete MATLAB source/test call graph without starting MATLAB.
 
 ```powershell
 py -3 -m pytest -q
 powershell -NoProfile -ExecutionPolicy Bypass -File producer_handoffs/toy_road_p0_repeatability_20260803/tests/toyRoadD1LauncherTest.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File producer_handoffs/toy_road_p0_repeatability_20260803/tests/toyRoadLauncherTest.ps1
-matlab -batch "r=testsuite('producer_handoffs/toy_road_p0_repeatability_20260803/tests');assertSuccess(run(r));"
 ```
 
 Require no production output, cycle shard, checkpoint, authorization or
 `.consumed` artifact from tests.
 
-- [ ] **Step 2: Run immutable-boundary audits**
+- [ ] **Step 2: Obtain and consume one test-only MATLAB authorization**
+
+Only after MATLAB source/tests and static review are fixed, request an explicit
+`test_only_non_authorizing_matlab_unit_test` authorization naming the source commit and direct
+unit-test command. Run exactly one MATLAB batch against the named unit tests,
+not the real D1 launcher. Record pre/post process counts and zero FEM cycles.
+Failure stops sealing and does not permit an automatic retry.
+
+- [ ] **Step 3: Run immutable-boundary audits**
 
 Recompute the entire `969d3420` D0 checksum list and require 10/10 equality.
 Verify the failed production root remains unchanged, sealed production source
 is clean, and no MATLAB/FEM process remains. Run `git diff --check`, source-
 manifest verification and SHA256SUMS verification.
 
-- [ ] **Step 3: Request independent read-only review**
+- [ ] **Step 4: Request independent read-only review**
 
 The reviewer checks every frozen requirement, the exact source graph, batch
 generation, authorization isolation, old-evidence protection, receipt atomicity,
 test matrix and source hashes. Changes requested by review follow fresh TDD
 cycles and separate commits; do not amend reviewed commits silently.
 
-- [ ] **Step 4: Create and push the sealed source commit**
+- [ ] **Step 5: Create and push the sealed source commit**
 
 After all reviews/tests pass, update only source manifests/hashes needed to fix
 the final executable bytes, commit, push and verify a clean worktree. Record:
@@ -500,7 +543,7 @@ Python/MATLAB/PowerShell test totals
 review_commit_or_receipt
 ```
 
-- [ ] **Step 5: Stop before D1 execution**
+- [ ] **Step 6: Stop before D1 execution**
 
 Report the sealed commit, test matrix, artifact schema and seven-part explicit
 non-production proof from the design. State:
@@ -518,7 +561,7 @@ explicitly names the sealed source commit and permits exactly one D1 run.
 ### Task 7: Future One-Shot D1 Evidence Run (Explicit Authorization Required)
 
 **Files:**
-- Create after authorization: one external fresh D1 evidence root containing the ten artifacts defined by the design.
+- Create after authorization: one external fresh D1 evidence root containing exactly ten files for terminal PASS/FAIL, or the declared partial/crash subset and recovery/temp evidence defined by the design.
 - Later create in Git: one evidence-only directory under `docs/toy_road_p0_repeatability_20260802/`.
 - Do not modify: sealed source commit or `969d3420` quarantine.
 
@@ -562,7 +605,8 @@ a future new P0 one-shot authorization.
 ## Execution Handoff
 
 After this plan is committed, implementation remains blocked pending explicit
-implementation authorization. Once authorized, Task 1 source implementation
-uses test-driven development and per-task review; any MATLAB unit-test process
-also requires the authorization boundary stated above. Task 7 remains
-separately blocked even if Tasks 1-6 complete successfully.
+implementation authorization. That authorization permits source/test writing
+and non-MATLAB checks only. A separately issued test-only authorization is
+required for exactly one direct MATLAB unit-test batch after static review;
+it cannot run the real D1 launcher. Task 7 remains separately blocked even if
+Tasks 1-6 complete successfully.
