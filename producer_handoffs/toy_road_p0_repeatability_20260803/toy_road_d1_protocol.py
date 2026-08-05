@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import sys
 from pathlib import Path, PureWindowsPath
 from typing import Any, Mapping
@@ -44,6 +45,18 @@ WRITABLE_ROOT_NAMES = {
     "pref",
     "cache",
     "matlab_startup_pref",
+}
+COMPLETE_PACKAGE_FILES = {
+    "D1_DIAGNOSTIC_LOCK.json",
+    "D1_LOCK_TRANSFORMATION.json",
+    "D1_EXACT_BATCH_COMMAND.txt",
+    "D1_LAUNCH_PROVENANCE.json",
+    "D1_PROCESS_BEFORE.json",
+    "D1_RUNTIME_DIAGNOSTIC.json",
+    "D1_PROCESS_AFTER.json",
+    "D1_TERMINAL.json",
+    "D1_SHA256SUMS.txt",
+    "MATLAB_STDOUT_STDERR.txt",
 }
 
 
@@ -246,6 +259,162 @@ def derive_diagnostic_lock_files(
         "diagnostic_lock_sha256": hashlib.sha256(diagnostic_bytes).hexdigest(),
         "transformation_sha256": hashlib.sha256(transformation_bytes).hexdigest(),
     }
+
+
+def validate_d1_package(root: Path) -> dict[str, object]:
+    package = Path(root)
+    if not package.is_dir():
+        raise D1ProtocolError("D1 package root is missing")
+    files = {path.name: path for path in package.iterdir() if path.is_file()}
+    if any(name.lower().endswith(".consumed") for name in files):
+        raise D1ProtocolError("D1 package contains a forbidden .consumed artifact")
+    if set(files) == COMPLETE_PACKAGE_FILES:
+        return _validate_complete_d1_package(files)
+    return _validate_partial_d1_package(files)
+
+
+def _validate_complete_d1_package(files: Mapping[str, Path]) -> dict[str, object]:
+    sums_path = files["D1_SHA256SUMS.txt"]
+    try:
+        lines = sums_path.read_text("ascii").splitlines()
+    except (OSError, UnicodeDecodeError) as exception:
+        raise D1ProtocolError("D1 checksum file is unreadable") from exception
+    if len(lines) != 9:
+        raise D1ProtocolError("D1 checksum file must contain exactly nine entries")
+    expected_names = COMPLETE_PACKAGE_FILES - {"D1_SHA256SUMS.txt"}
+    checksums: dict[str, str] = {}
+    for line in lines:
+        match = re.fullmatch(r"([0-9a-f]{64})  ([A-Za-z0-9_.-]+)", line)
+        if match is None or match.group(2) in checksums:
+            raise D1ProtocolError("D1 checksum line is malformed or duplicated")
+        checksums[match.group(2)] = match.group(1)
+    if set(checksums) != expected_names:
+        raise D1ProtocolError("D1 checksum names differ from the nine package files")
+    for name, digest in checksums.items():
+        actual = hashlib.sha256(files[name].read_bytes()).hexdigest()
+        if actual != digest:
+            raise D1ProtocolError(f"D1 package SHA-256 mismatch: {name}")
+
+    lock = _read_json_bytes(files["D1_DIAGNOSTIC_LOCK.json"].read_bytes(), "D1 lock")
+    transformation = _read_json_bytes(
+        files["D1_LOCK_TRANSFORMATION.json"].read_bytes(), "D1 transformation"
+    )
+    provenance = _read_json_bytes(
+        files["D1_LAUNCH_PROVENANCE.json"].read_bytes(), "D1 launch provenance"
+    )
+    before = _read_json_bytes(files["D1_PROCESS_BEFORE.json"].read_bytes(), "D1 process before")
+    after = _read_json_bytes(files["D1_PROCESS_AFTER.json"].read_bytes(), "D1 process after")
+    receipt = _read_json_bytes(
+        files["D1_RUNTIME_DIAGNOSTIC.json"].read_bytes(), "D1 diagnostic receipt"
+    )
+    terminal = _read_json_bytes(files["D1_TERMINAL.json"].read_bytes(), "D1 terminal")
+    if lock.get("schema_version") != DIAGNOSTIC_LOCK_SCHEMA:
+        raise D1ProtocolError("D1 package lock schema is invalid")
+    if lock.get("authorization_scope") != DIAGNOSTIC_SCOPE:
+        raise D1ProtocolError("D1 package lock scope is invalid")
+    if transformation.get("schema_version") != TRANSFORMATION_SCHEMA:
+        raise D1ProtocolError("D1 package transformation schema is invalid")
+    lock_sha = hashlib.sha256(files["D1_DIAGNOSTIC_LOCK.json"].read_bytes()).hexdigest()
+    transform_sha = hashlib.sha256(
+        files["D1_LOCK_TRANSFORMATION.json"].read_bytes()
+    ).hexdigest()
+    batch_bytes = files["D1_EXACT_BATCH_COMMAND.txt"].read_bytes()
+    if transformation.get("diagnostic_lock_sha256") != lock_sha:
+        raise D1ProtocolError("D1 transformation lock SHA-256 is invalid")
+    if provenance.get("diagnostic_lock_sha256") != lock_sha:
+        raise D1ProtocolError("D1 provenance lock SHA-256 is invalid")
+    if provenance.get("transformation_sha256") != transform_sha:
+        raise D1ProtocolError("D1 provenance transformation SHA-256 is invalid")
+    if provenance.get("batch_sha256") != hashlib.sha256(batch_bytes).hexdigest():
+        raise D1ProtocolError("D1 provenance batch SHA-256 is invalid")
+    batch = batch_bytes.decode("utf-8")
+    if len(re.findall(r"run_toy_road_runtime_diagnostic\s*\(", batch)) != 1:
+        raise D1ProtocolError("D1 batch does not contain exactly one diagnostic call")
+    if any(name in batch for name in _forbidden_entrypoint_names()):
+        raise D1ProtocolError("D1 batch contains a production entrypoint")
+    if provenance.get("authorization_path_present") is not False:
+        raise D1ProtocolError("D1 provenance contains an authorization path")
+    if provenance.get("production_output_parameter_present") is not False:
+        raise D1ProtocolError("D1 provenance contains a production output parameter")
+    for label, inventory in (("before", before), ("after", after)):
+        if inventory.get("schema_version") != "toy_road_d1_process_inventory_v1":
+            raise D1ProtocolError(f"D1 {label} process inventory schema is invalid")
+        if inventory.get("count") != 0 or inventory.get("processes") != []:
+            raise D1ProtocolError(f"D1 {label} process inventory is nonzero")
+    if receipt.get("schema_version") != "toy_road_runtime_diagnostic_v1":
+        raise D1ProtocolError("D1 diagnostic receipt schema is invalid")
+    result = receipt.get("status")
+    if result not in {"PASS", "FAIL"}:
+        raise D1ProtocolError("D1 diagnostic receipt is not terminal")
+    for value in (lock, receipt):
+        if value.get("authorization_scope") != DIAGNOSTIC_SCOPE:
+            raise D1ProtocolError("D1 artifact scope is invalid")
+        if value.get("producer_entrypoint_authorized") is not False:
+            raise D1ProtocolError("D1 artifact authorizes a producer")
+    required_terminal = {
+        "schema_version": "toy_road_d1_terminal_v1",
+        "status": "D1_DIAGNOSTIC_EVIDENCE_COMPLETE",
+        "diagnostic_result": result,
+        "production_authorized": False,
+        "authorization_consumed": False,
+        "automatic_retry_performed": False,
+        "producer_invocation_count": 0,
+        "fem_cycle_count": 0,
+        "matlab_process_count_before": 0,
+        "matlab_process_count_after": 0,
+        "production_output_absent": True,
+    }
+    for field, expected in required_terminal.items():
+        if terminal.get(field) != expected:
+            raise D1ProtocolError(f"D1 terminal field is invalid: {field}")
+    if receipt.get("producer_invocation_count") != 0 or receipt.get("fem_cycle_count") != 0:
+        raise D1ProtocolError("D1 diagnostic receipt reports producer or FEM activity")
+    return {
+        "status": "D1_DIAGNOSTIC_EVIDENCE_ACCEPTED",
+        "diagnostic_result": result,
+        "production_authorized": False,
+    }
+
+
+def _validate_partial_d1_package(files: Mapping[str, Path]) -> dict[str, object]:
+    allowed = COMPLETE_PACKAGE_FILES | {"D1_LAUNCHER_RECOVERY.json"}
+    for name in files:
+        if name in allowed or re.fullmatch(
+            r"\.D1_RUNTIME_DIAGNOSTIC\.json\.[0-9A-Fa-f-]+\.tmp", name
+        ):
+            continue
+        raise D1ProtocolError(f"D1 partial package contains undeclared file: {name}")
+    if "D1_TERMINAL.json" in files or "D1_SHA256SUMS.txt" in files:
+        raise D1ProtocolError("D1 partial package must not claim terminal completion")
+    recovery_path = files.get("D1_LAUNCHER_RECOVERY.json")
+    if recovery_path is not None:
+        recovery = _read_json_bytes(recovery_path.read_bytes(), "D1 launcher recovery")
+        required = {
+            "schema_version": "toy_road_d1_launcher_recovery_v1",
+            "status": "PARTIAL_FAIL",
+            "authorization_scope": DIAGNOSTIC_SCOPE,
+            "producer_invocation_count": 0,
+            "fem_cycle_count": 0,
+            "automatic_retry_performed": False,
+        }
+        for field, expected in required.items():
+            if recovery.get(field) != expected:
+                raise D1ProtocolError(f"D1 recovery field is invalid: {field}")
+    if not files:
+        raise D1ProtocolError("D1 partial package is empty")
+    return {
+        "status": "D1_DIAGNOSTIC_EVIDENCE_PARTIAL",
+        "diagnostic_result": "PARTIAL_FAIL",
+        "production_authorized": False,
+    }
+
+
+def _forbidden_entrypoint_names() -> tuple[str, ...]:
+    return (
+        "main_" + "toy_road_family_case",
+        "solve_" + "toy_road_family_case",
+        "recover_" + "toy_road_family_state",
+    )
 
 
 def _unchanged_projection_from_source(source: Mapping[str, object], overlay: str) -> dict[str, object]:

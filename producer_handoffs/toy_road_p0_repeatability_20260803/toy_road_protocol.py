@@ -602,6 +602,7 @@ def build_execution_input_lock(
 def validate_execution_input_lock(
     lock: Mapping[str, object], expected_case_id: str
 ) -> None:
+    _reject_d1_diagnostic_artifact(lock, "execution lock")
     value = _require_plain_mapping(lock, "execution lock")
     _require_exact_fields(value, EXECUTION_INPUT_LOCK_FIELDS, "execution lock")
     if value["case_id"] != expected_case_id:
@@ -698,6 +699,8 @@ def build_test_runtime_measurement(
 def validate_runtime_measurement(
     execution_lock: Mapping[str, object], measurement: Mapping[str, object]
 ) -> None:
+    _reject_d1_diagnostic_artifact(execution_lock, "execution lock")
+    _reject_d1_diagnostic_artifact(measurement, "runtime measurement")
     lock = _require_plain_mapping(execution_lock, "execution lock")
     validate_execution_input_lock(lock, str(lock.get("case_id", "")))
     value = _require_plain_mapping(measurement, "runtime measurement")
@@ -742,6 +745,15 @@ def _read_contract_json(path: Path) -> dict[str, Any]:
         return _require_plain_mapping(json.loads(path.read_text("utf-8")), str(path))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exception:
         raise ProtocolError(f"cannot read contract {path}: {exception}") from exception
+
+
+def _reject_d1_diagnostic_artifact(value: object, label: str) -> None:
+    if isinstance(value, Mapping) and value.get("schema_version") in {
+        "toy_road_runtime_diagnostic_lock_v1",
+        "toy_road_runtime_diagnostic_v1",
+        "toy_road_d1_terminal_v1",
+    }:
+        raise ProtocolError(f"D1 diagnostic artifact cannot be used as {label}")
 
 
 def _require_plain_mapping(value: object, label: str) -> dict[str, Any]:

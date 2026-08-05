@@ -19,6 +19,14 @@ assert SPEC is not None and SPEC.loader is not None
 PROTOCOL = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(PROTOCOL)
 
+PRODUCTION_PATH = HANDOFF / "toy_road_protocol.py"
+PRODUCTION_SPEC = importlib.util.spec_from_file_location(
+    "toy_road_protocol_for_d1_tests", PRODUCTION_PATH
+)
+assert PRODUCTION_SPEC is not None and PRODUCTION_SPEC.loader is not None
+PRODUCTION = importlib.util.module_from_spec(PRODUCTION_SPEC)
+PRODUCTION_SPEC.loader.exec_module(PRODUCTION)
+
 D1ProtocolError = PROTOCOL.D1ProtocolError
 
 SOURCE_COMMIT = "eeda43d9faef01622731e877c5048a78f3c5003a"
@@ -368,3 +376,143 @@ def test_d1_launcher_and_adapter_are_structurally_non_production() -> None:
     assert "producer_invocation_count=0" in adapter
     assert "fem_cycle_count=0" in adapter
     assert "matlab.exe" not in adapter.lower()
+
+
+def _complete_d1_package(root: Path, diagnostic_status: str = "PASS") -> None:
+    lock = {
+        "schema_version": "toy_road_runtime_diagnostic_lock_v1",
+        "authorization_scope": "diagnostic_only_non_authorizing",
+        "producer_entrypoint_authorized": False,
+    }
+    transformation = {
+        "schema_version": "toy_road_runtime_lock_transformation_v1",
+        "diagnostic_lock_sha256": hashlib.sha256(
+            PROTOCOL.canonical_json_bytes(lock)
+        ).hexdigest(),
+        "authorization_artifact_read": False,
+        "production_output_root_present": False,
+    }
+    receipt = {
+        "schema_version": "toy_road_runtime_diagnostic_v1",
+        "status": diagnostic_status,
+        "authorization_scope": "diagnostic_only_non_authorizing",
+        "producer_entrypoint_authorized": False,
+        "producer_invocation_count": 0,
+        "fem_cycle_count": 0,
+        "first_failed_predicate": None if diagnostic_status == "PASS" else "matlab_blas",
+    }
+    batch = "run_toy_road_runtime_diagnostic('D1_DIAGNOSTIC_LOCK.json','D1_RUNTIME_DIAGNOSTIC.json');"
+    files: dict[str, bytes] = {
+        "D1_DIAGNOSTIC_LOCK.json": PROTOCOL.canonical_json_bytes(lock),
+        "D1_LOCK_TRANSFORMATION.json": PROTOCOL.canonical_json_bytes(transformation),
+        "D1_EXACT_BATCH_COMMAND.txt": batch.encode("utf-8"),
+        "D1_LAUNCH_PROVENANCE.json": PROTOCOL.canonical_json_bytes(
+            {
+                "schema_version": "toy_road_d1_launch_provenance_v1",
+                "authorization_scope": "diagnostic_only_non_authorizing",
+                "diagnostic_lock_sha256": hashlib.sha256(
+                    PROTOCOL.canonical_json_bytes(lock)
+                ).hexdigest(),
+                "transformation_sha256": hashlib.sha256(
+                    PROTOCOL.canonical_json_bytes(transformation)
+                ).hexdigest(),
+                "batch_sha256": hashlib.sha256(batch.encode("utf-8")).hexdigest(),
+                "authorization_path_present": False,
+                "production_output_parameter_present": False,
+            }
+        ),
+        "D1_PROCESS_BEFORE.json": PROTOCOL.canonical_json_bytes(
+            {"schema_version": "toy_road_d1_process_inventory_v1", "count": 0, "processes": []}
+        ),
+        "D1_RUNTIME_DIAGNOSTIC.json": PROTOCOL.canonical_json_bytes(receipt),
+        "D1_PROCESS_AFTER.json": PROTOCOL.canonical_json_bytes(
+            {"schema_version": "toy_road_d1_process_inventory_v1", "count": 0, "processes": []}
+        ),
+        "D1_TERMINAL.json": PROTOCOL.canonical_json_bytes(
+            {
+                "schema_version": "toy_road_d1_terminal_v1",
+                "status": "D1_DIAGNOSTIC_EVIDENCE_COMPLETE",
+                "diagnostic_result": diagnostic_status,
+                "production_authorized": False,
+                "authorization_consumed": False,
+                "automatic_retry_performed": False,
+                "producer_invocation_count": 0,
+                "fem_cycle_count": 0,
+                "matlab_process_count_before": 0,
+                "matlab_process_count_after": 0,
+                "production_output_absent": True,
+            }
+        ),
+        "MATLAB_STDOUT_STDERR.txt": b"diagnostic output\n",
+    }
+    root.mkdir()
+    for name, payload in files.items():
+        (root / name).write_bytes(payload)
+    sums = "".join(
+        f"{hashlib.sha256(files[name]).hexdigest()}  {name}\n" for name in sorted(files)
+    )
+    (root / "D1_SHA256SUMS.txt").write_text(sums, "ascii", newline="")
+
+
+@pytest.mark.parametrize("status", ["PASS", "FAIL"])
+def test_complete_d1_package_validates_without_authorizing_production(
+    tmp_path: Path, status: str
+) -> None:
+    root = tmp_path / "package"
+    _complete_d1_package(root, status)
+
+    result = PROTOCOL.validate_d1_package(root)
+
+    assert result == {
+        "status": "D1_DIAGNOSTIC_EVIDENCE_ACCEPTED",
+        "diagnostic_result": status,
+        "production_authorized": False,
+    }
+
+
+def test_complete_d1_package_rejects_hash_tampering(tmp_path: Path) -> None:
+    root = tmp_path / "package"
+    _complete_d1_package(root)
+    (root / "D1_RUNTIME_DIAGNOSTIC.json").write_bytes(b"{}")
+
+    with pytest.raises(D1ProtocolError, match="SHA-256|checksum"):
+        PROTOCOL.validate_d1_package(root)
+
+
+def test_partial_d1_package_is_preserved_but_not_accepted_as_terminal(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "partial"
+    root.mkdir()
+    recovery = {
+        "schema_version": "toy_road_d1_launcher_recovery_v1",
+        "status": "PARTIAL_FAIL",
+        "authorization_scope": "diagnostic_only_non_authorizing",
+        "producer_invocation_count": 0,
+        "fem_cycle_count": 0,
+        "automatic_retry_performed": False,
+        "observed_files": [],
+    }
+    (root / "D1_LAUNCHER_RECOVERY.json").write_bytes(
+        PROTOCOL.canonical_json_bytes(recovery)
+    )
+
+    result = PROTOCOL.validate_d1_package(root)
+
+    assert result["status"] == "D1_DIAGNOSTIC_EVIDENCE_PARTIAL"
+    assert result["production_authorized"] is False
+
+
+def test_production_protocol_explicitly_rejects_d1_schemas() -> None:
+    d1_lock = {
+        "schema_version": "toy_road_runtime_diagnostic_lock_v1",
+        "authorization_scope": "diagnostic_only_non_authorizing",
+    }
+    d1_receipt = {
+        "schema_version": "toy_road_runtime_diagnostic_v1",
+        "authorization_scope": "diagnostic_only_non_authorizing",
+    }
+    with pytest.raises(PRODUCTION.ProtocolError, match="D1 diagnostic"):
+        PRODUCTION.validate_execution_input_lock(d1_lock, "P0_parent")
+    with pytest.raises(PRODUCTION.ProtocolError, match="D1 diagnostic"):
+        PRODUCTION.validate_runtime_measurement(d1_lock, d1_receipt)
