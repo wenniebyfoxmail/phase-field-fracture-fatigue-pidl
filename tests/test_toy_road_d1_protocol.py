@@ -404,6 +404,8 @@ def test_d1_launcher_and_adapter_are_structurally_non_production() -> None:
     assert "D1_LAUNCHER_RECOVERY.json" in launcher
     assert "D1_SHA256SUMS.txt" in launcher
     assert "automatic_retry_performed=$false" in launcher
+    assert "(Escape-Matlab $handoffDir)+\",'-end')\"" in launcher
+    assert "$childOutput=@(& $matlab -batch $batch 2>&1)" in launcher
     for required in (
         "SourceExecutionLockPath",
         "--validate-lock",

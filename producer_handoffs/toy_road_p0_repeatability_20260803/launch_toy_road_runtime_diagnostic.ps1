@@ -153,6 +153,7 @@ try{
     for($index=$paths.Count-1;$index -ge 0;$index--){
         $pathCommands += 'addpath('+(Escape-Matlab ([string]$paths[$index]))+",'-begin')"
     }
+    $pathCommands += 'addpath('+(Escape-Matlab $handoffDir)+",'-end')"
     $receiptPath=Join-Path $evidence 'D1_RUNTIME_DIAGNOSTIC.json'
     $probeCall='run_toy_road_runtime_diagnostic('+(Escape-Matlab $lockOut)+','+
         (Escape-Matlab $receiptPath)+')'
@@ -196,8 +197,16 @@ try{
             -StdoutStderrPath $stdoutPath -ExitCode $TestAdapterExitCode
         $childExit=$LASTEXITCODE
     }else{
-        & $matlab -batch $batch 2>&1 | Set-Content -LiteralPath $stdoutPath -Encoding UTF8
-        $childExit=$LASTEXITCODE
+        $priorErrorAction=$ErrorActionPreference
+        $ErrorActionPreference='Continue'
+        try{
+            $childOutput=@(& $matlab -batch $batch 2>&1)
+            $childExit=$LASTEXITCODE
+        }finally{
+            $ErrorActionPreference=$priorErrorAction
+        }
+        $childText=($childOutput|ForEach-Object{[string]$_}) -join "`n"
+        Write-BytesCreateNew $stdoutPath $utf8.GetBytes($childText+"`n")
     }
     $stage='after_child_process'
     if(-not (Test-Path -LiteralPath $receiptPath -PathType Leaf)){
