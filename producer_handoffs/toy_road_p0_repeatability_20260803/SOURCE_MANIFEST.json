@@ -108,7 +108,7 @@
                   },
                   {
                       "path":  "run_toy_road_runtime_diagnostic.m",
-                      "sha256":  "949d7220bfb7202c147f302264bb14b4e82713f73fdda3cab73626af9f5b3c15"
+                      "sha256":  "4d1a723bcf7c0e91d5845d209ed0129ac1f39d4e0c7344475b71a39fec0a9ad8"
                   },
                   {
                       "path":  "solve_toy_road_family_case.m",

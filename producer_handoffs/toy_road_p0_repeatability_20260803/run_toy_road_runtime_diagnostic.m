@@ -127,9 +127,14 @@ receipt.completed_predicate_count = 0;
 end
 
 function [receipt, name] = localAppend(receipt, receiptPath, name, expected, raw, normalized, passed)
-row = struct('ordinal',numel(receipt.predicates)+1,'name',name, ...
-    'expected',expected,'measured_raw',raw,'measured_normalized',normalized, ...
-    'pass',logical(passed),'measured_at_utc',localUtcNow());
+row = struct;
+row.ordinal = numel(receipt.predicates) + 1;
+row.name = name;
+row.expected = expected;
+row.measured_raw = raw;
+row.measured_normalized = normalized;
+row.pass = logical(passed);
+row.measured_at_utc = localUtcNow();
 receipt.predicates(end+1,1) = row;
 receipt.completed_predicate_count = numel(receipt.predicates);
 if ~passed
