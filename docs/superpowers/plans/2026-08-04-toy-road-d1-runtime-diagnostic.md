@@ -1,4 +1,4 @@
-# Toy-Road D1 Diagnostic-Only Runtime Probe Implementation Plan v1.1
+# Toy-Road D1 Diagnostic-Only Runtime Probe Implementation Plan v1.2
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,9 +8,11 @@
 
 **Tech Stack:** MATLAB R2025b Update 5, PowerShell 5.1, Python 3 with pytest, canonical JSON, SHA-256, Git, existing GRIPHFiTH runtime binaries and SuiteSparse/CHOLMOD runtime.
 
-**Revision:** v1.1 fixes the authorization-field test, thread-setting source,
-validator filename contract, complete-versus-partial artifact lifecycle and
-MATLAB unit-test authorization boundary identified in review of v1.
+**Revision:** v1.2 retains the v1.1 contract fixes and removes the duplicate
+MATLAB authorization sequence. Phase A writes and statically reviews all
+source/tests, then freezes one `pre_matlab_candidate_commit`. Only after that
+commit is independently reviewed may one separately authorized fixed MATLAB
+unit-test batch run. Real D1 execution remains a later authorization.
 
 ## Global Constraints
 
@@ -27,13 +29,14 @@ MATLAB unit-test authorization boundary identified in review of v1.
 - D1 PASS cannot authorize or launch P0. D1 FAIL cannot mutate expectations or automatically retry.
 - Terminal evidence records pre/post process counts, production-output absence, `producer_invocation_count=0`, `fem_cycle_count=0` and unchanged quarantine hashes.
 - Spec, plan, source implementation/seal and D1 evidence are separate commits.
-- This specification/plan documentation phase starts no MATLAB process. During
-  later Tasks 1-6, implementation authorization alone still permits no MATLAB.
-  After MATLAB source/tests and static review are complete, exactly one
+- Phase A Tasks 1-6 start no MATLAB process. They write and statically review
+  all source/tests, run Python/PowerShell/adapter checks and freeze one pushed
+  `pre_matlab_candidate_commit`.
+- After independent review of that exact candidate, Task 7 permits at most one
   separately authorized `test_only_non_authorizing_matlab_unit_test` process
-  may run the named test suite directly and must not run the real D1 launcher;
-  Task 7 is the only real D1 runtime probe and remains forbidden until a later
-  explicit human authorization is recorded.
+  running one fixed batch directly against all D1 MATLAB unit tests. It must
+  not run the real D1 launcher. Task 8 is the only real D1 runtime probe and
+  remains forbidden until another explicit human authorization is recorded.
 - Only one MATLAB/FEM experiment may run at a time. No launcher may stop an existing process automatically.
 
 ## File Structure
@@ -212,34 +215,25 @@ source-graph checks and a read-only review proving the test file cannot call
 the real D1 launcher, producer or FEM. Implementation authorization permits
 these source/static steps but does not permit MATLAB.
 
-- [ ] **Step 7: Request a separate MATLAB unit-test authorization**
+- [ ] **Step 7: Freeze the MATLAB unit-test command without running it**
 
-Request one authorization with scope
-`test_only_non_authorizing_matlab_unit_test`, fixed to the reviewed source
-commit and exactly this direct command:
+Record the single canonical future batch defined in Task 7 by its exact
+SHA-256 in the static test contract. Static checks must prove it names only the
+unit-test file and does not invoke
+the real D1 launcher or producer/FEM entrypoints. Do not execute it in Phase A.
 
-```powershell
-matlab -batch "r=testsuite('producer_handoffs/toy_road_p0_repeatability_20260803/tests/toyRoadD1RuntimeDiagnosticTest.m');assertSuccess(run(r));"
-```
-
-It must reject the real D1 launcher and all producer/FEM entrypoints. A failure
-consumes the authorization; do not edit conditions or rerun without a new
-review and authorization.
-
-- [ ] **Step 8: Run the one authorized MATLAB unit-test batch and commit**
+- [ ] **Step 8: Run non-MATLAB checks and commit source/tests**
 
 Run:
 
 ```powershell
-matlab -batch "r=testsuite('producer_handoffs/toy_road_p0_repeatability_20260803/tests/toyRoadD1RuntimeDiagnosticTest.m');assertSuccess(run(r));"
 py -3 -m pytest tests/test_toy_road_d1_protocol.py -q
 git diff --check
 ```
 
-Run the Python checks before and after the single authorized MATLAB unit-test
-batch. Expected: all focused MATLAB and Python D1 tests pass; no real D1
-launcher, FEM process or cycle artifact is created. Record authorization
-consumption and post-test process count. Do not rerun on failure.
+Expected: Python/static checks pass; the MATLAB source/test files and future
+batch are present but no MATLAB process, real D1 launcher, FEM process or cycle
+artifact is created.
 
 Commit:
 
@@ -484,7 +478,7 @@ git commit -m "docs: seal D1 diagnostic handoff contract"
 
 ---
 
-### Task 6: Full Regression, Unit-Test Authorization, Independent Review And Clean Seal
+### Task 6: Full Non-MATLAB Regression And Pre-MATLAB Candidate Seal
 
 **Files:**
 - Modify only if tests or review find a defect: files already listed in Tasks 1-5.
@@ -508,57 +502,87 @@ powershell -NoProfile -ExecutionPolicy Bypass -File producer_handoffs/toy_road_p
 Require no production output, cycle shard, checkpoint, authorization or
 `.consumed` artifact from tests.
 
-- [ ] **Step 2: Obtain and consume one test-only MATLAB authorization**
-
-Only after MATLAB source/tests and static review are fixed, request an explicit
-`test_only_non_authorizing_matlab_unit_test` authorization naming the source commit and direct
-unit-test command. Run exactly one MATLAB batch against the named unit tests,
-not the real D1 launcher. Record pre/post process counts and zero FEM cycles.
-Failure stops sealing and does not permit an automatic retry.
-
-- [ ] **Step 3: Run immutable-boundary audits**
+- [ ] **Step 2: Run immutable-boundary audits**
 
 Recompute the entire `969d3420` D0 checksum list and require 10/10 equality.
 Verify the failed production root remains unchanged, sealed production source
 is clean, and no MATLAB/FEM process remains. Run `git diff --check`, source-
 manifest verification and SHA256SUMS verification.
 
-- [ ] **Step 4: Request independent read-only review**
+- [ ] **Step 3: Request independent read-only review**
 
 The reviewer checks every frozen requirement, the exact source graph, batch
 generation, authorization isolation, old-evidence protection, receipt atomicity,
 test matrix and source hashes. Changes requested by review follow fresh TDD
 cycles and separate commits; do not amend reviewed commits silently.
 
-- [ ] **Step 5: Create and push the sealed source commit**
+- [ ] **Step 4: Create and push the pre-MATLAB candidate commit**
 
-After all reviews/tests pass, update only source manifests/hashes needed to fix
-the final executable bytes, commit, push and verify a clean worktree. Record:
+After all non-MATLAB reviews/tests pass, update only source manifests/hashes
+needed to fix the final executable bytes, commit, push and verify a clean
+worktree. This exact commit is `pre_matlab_candidate_commit`; no MATLAB result
+is claimed. Record:
 
 ```text
-sealed_source_commit
+pre_matlab_candidate_commit
 source_manifest_sha256
 handoff_sha256s_sha256
 Python/MATLAB/PowerShell test totals
 review_commit_or_receipt
 ```
 
-- [ ] **Step 6: Stop before D1 execution**
+- [ ] **Step 5: Stop before any MATLAB authorization**
 
 Report the sealed commit, test matrix, artifact schema and seven-part explicit
 non-production proof from the design. State:
 
 ```text
-D1 MATLAB execution: NOT AUTHORIZED
+D1 MATLAB unit tests: NOT AUTHORIZED
+D1 runtime execution: NOT AUTHORIZED
 P0/P0R/T1/T2/T3: BLOCKED
 ```
 
-Do not create a D1 root and do not launch MATLAB until a new human authorization
-explicitly names the sealed source commit and permits exactly one D1 run.
+Return Python/PowerShell/static totals, manifests, zero-call proof, D0 rehash and
+zero process count. Do not create a D1 root or launch MATLAB. A later test-only
+authorization must name the exact candidate and fixed batch.
 
 ---
 
-### Task 7: Future One-Shot D1 Evidence Run (Explicit Authorization Required)
+### Task 7: Future One-Shot MATLAB Unit-Test Batch (Explicit Authorization Required)
+
+**Files:**
+- Read only: all files fixed by `pre_matlab_candidate_commit`.
+- Create externally: one test-only authorization consumption record and complete stdout/stderr log.
+- Do not modify: candidate source/tests, D1 runtime roots or `969d3420` quarantine.
+
+**Interfaces:**
+- Consumes: independently reviewed `pre_matlab_candidate_commit` and one authorization with scope `test_only_non_authorizing_matlab_unit_test` fixed to the exact batch below.
+- Produces: one MATLAB unit-test result and process/cycle absence evidence; never D1 runtime or production evidence.
+
+- [ ] **Step 1: Verify the candidate and one-shot authorization**
+
+Require clean checkout at the named candidate, source/hash manifests valid,
+zero MATLAB/FEM processes, and an unconsumed test-only authorization. The
+authorization must reject the real D1 launcher and all production schemas.
+
+- [ ] **Step 2: Run exactly one fixed batch**
+
+```powershell
+matlab -batch "r=testsuite('producer_handoffs/toy_road_p0_repeatability_20260803/tests/toyRoadD1RuntimeDiagnosticTest.m');assertSuccess(run(r));"
+```
+
+Do not run a second MATLAB command. Capture complete stdout/stderr and record
+authorization consumption, before/after process counts and FEM cycles zero.
+
+- [ ] **Step 3: Stop for review**
+
+If the batch fails, preserve evidence and do not edit or rerun. Any source/test
+change requires a new Phase A candidate and a new authorization. If it passes,
+report evidence for independent review; real D1 remains unauthorized.
+
+---
+
+### Task 8: Future One-Shot D1 Evidence Run (Explicit Authorization Required)
 
 **Files:**
 - Create after authorization: one external fresh D1 evidence root containing exactly ten files for terminal PASS/FAIL, or the declared partial/crash subset and recovery/temp evidence defined by the design.
@@ -604,9 +628,8 @@ a future new P0 one-shot authorization.
 
 ## Execution Handoff
 
-After this plan is committed, implementation remains blocked pending explicit
-implementation authorization. That authorization permits source/test writing
-and non-MATLAB checks only. A separately issued test-only authorization is
-required for exactly one direct MATLAB unit-test batch after static review;
-it cannot run the real D1 launcher. Task 7 remains separately blocked even if
-Tasks 1-6 complete successfully.
+Phase A authorization permits Tasks 1-6 source/test writing and non-MATLAB
+checks only. It ends at a pushed `pre_matlab_candidate_commit`. Task 7 requires
+one separately issued test-only authorization fixed to that commit and batch;
+it cannot run the real D1 launcher. Task 8 remains separately blocked even if
+the Task 7 unit-test batch passes.
