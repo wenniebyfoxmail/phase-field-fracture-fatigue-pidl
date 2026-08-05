@@ -670,6 +670,13 @@ def test_sealed_process_adapter_and_runtime_bridge_are_structurally_safe() -> No
     assert "([string]$commitLines[0]).Trim().ToLowerInvariant()" in launcher
     assert "dec2hex" not in bridge
     assert "hexDigits" in bridge
+    assert "first_mismatch_index" in bridge
+    assert "expected_absolute_path" in bridge
+    assert "actual_absolute_path" in bridge
+    assert "localWritePathFailure" in bridge
+    assert "New-CanonicalMatlabPathContract" in launcher
+    assert "$pathContract.absolute_path_order" in launcher
+    assert "$pathContract.add_path_commands" in launcher
     attributes = (MODULE_PATH.parent / ".gitattributes").read_text("ascii")
     for pattern in ("*.json", "*.m", "*.ps1", "*.py"):
         assert f"{pattern} text eol=lf" in attributes

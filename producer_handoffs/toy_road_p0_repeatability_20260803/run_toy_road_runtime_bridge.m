@@ -18,13 +18,21 @@ matlabIdentity.lapack = version('-lapack');
 
 actualPath = strsplit(path, pathsep);
 expectedPath = cellstr(string(lock.runtime_expectations.matlab.absolute_path_order));
-localRequire(numel(actualPath) >= numel(expectedPath), ...
-    'MATLAB path is shorter than the locked path prefix.');
-actualPrefix = actualPath(1:numel(expectedPath));
-actualPrefix = cellfun(@localCanonicalPath, actualPrefix, 'UniformOutput', false);
-expectedPath = cellfun(@localCanonicalPath, expectedPath, 'UniformOutput', false);
-localRequire(isequal(actualPrefix, expectedPath), ...
-    'Measured absolute MATLAB path precedence differs from the lock.');
+expectedNormalized = cellfun(@localCanonicalPath, expectedPath, 'UniformOutput', false);
+actualNormalized = cellfun(@localCanonicalPath, actualPath, 'UniformOutput', false);
+if numel(actualPath) < numel(expectedPath)
+    localWritePathFailure(measurementReceiptPath, lock, executionLockPath, ...
+        expectedPath, actualPath, expectedNormalized, actualNormalized, ...
+        numel(actualPath) + 1, 'MATLAB path is shorter than the locked path prefix.');
+end
+actualPrefix = actualNormalized(1:numel(expectedNormalized));
+mismatchIndex = find(~strcmp(actualPrefix(:), expectedNormalized(:)), 1, 'first');
+if ~isempty(mismatchIndex)
+    localWritePathFailure(measurementReceiptPath, lock, executionLockPath, ...
+        expectedPath, actualPath, expectedNormalized, actualNormalized, ...
+        mismatchIndex, 'Measured absolute MATLAB path precedence differs from the lock.');
+end
+expectedPath = expectedNormalized;
 matlabIdentity.absolute_path_order = actualPrefix;
 
 binaryIdentity = struct;
@@ -64,6 +72,28 @@ receipt.binary_sha256 = binaryIdentity;
 localWriteJsonCreateNew(measurementReceiptPath, receipt);
 
 main_toy_road_family_case;
+end
+
+function localWritePathFailure(receiptPath, lock, lockPath, expectedRaw, ...
+        actualRaw, expectedNormalized, actualNormalized, mismatchIndex, message)
+receipt = struct;
+receipt.schema_version = 'toy_road_runtime_measurement_v1';
+receipt.protocol_version = lock.protocol_version;
+receipt.authorization_scope = lock.authorization_scope;
+receipt.status = 'FAIL';
+receipt.producer_entrypoint_authorized = false;
+receipt.execution_input_lock_sha256 = fileSha256(lockPath);
+receipt.first_failed_predicate = 'matlab_path_precedence';
+receipt.first_mismatch_index = mismatchIndex;
+receipt.expected_absolute_path = expectedRaw;
+receipt.actual_absolute_path = actualRaw;
+receipt.expected_normalized_path = expectedNormalized;
+receipt.actual_normalized_path = actualNormalized;
+receipt.matlab_identifier = 'toyRoadP0:RuntimeQualificationFailed';
+receipt.message = message;
+localWriteJsonCreateNew(receiptPath, receipt);
+error('toyRoadP0:RuntimeQualificationFailed', '%s First mismatch index: %d.', ...
+    message, mismatchIndex);
 end
 
 function value = localReadJson(filePath, label)

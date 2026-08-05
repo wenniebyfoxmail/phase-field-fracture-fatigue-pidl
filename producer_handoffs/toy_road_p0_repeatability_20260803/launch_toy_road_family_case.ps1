@@ -749,6 +749,18 @@ function ConvertTo-MatlabLiteral([string]$Value) {
     return "'" + $Value.Replace('\','/').Replace("'","''") + "'"
 }
 
+function New-CanonicalMatlabPathContract([string[]]$AbsolutePathOrder) {
+    $canonical = @($AbsolutePathOrder | ForEach-Object { [IO.Path]::GetFullPath($_) })
+    $commands = @()
+    for ($index = $canonical.Count - 1; $index -ge 0; $index--) {
+        $commands += 'addpath(' + (ConvertTo-MatlabLiteral $canonical[$index]) + ",'-begin')"
+    }
+    return [pscustomobject]@{
+        absolute_path_order = $canonical
+        add_path_commands = $commands
+    }
+}
+
 Assert-NoResumeInput
 Assert-ApprovedPythonIdentity
 $resolvedSource = Resolve-PlainDirectory $SourceRoot 'Producer source root'
@@ -816,6 +828,8 @@ $paths = @(
     [IO.Path]::GetFullPath((Join-Path $SuiteSparseRoot 'CCOLAMD\MATLAB')),
     [IO.Path]::GetFullPath((Join-Path $SuiteSparseRoot 'CAMD\MATLAB'))
 )
+$pathContract = New-CanonicalMatlabPathContract $paths
+$paths = @($pathContract.absolute_path_order)
 $familyMutex = $null
 $familyMutexOwned = $false
 $familyMutexMarker = $null
@@ -1000,10 +1014,7 @@ try {
         $env:TOY_ROAD_CACHE_ROOT = $canonicalRoots.cache
         $env:TOY_ROAD_INPUT_ASSETS_ROOT = (Resolve-Path -LiteralPath $InputAssetsRoot).Path
         $env:TOY_ROAD_AUTHORIZATION_RECEIPT = [IO.Path]::GetFullPath($ReceiptPath)
-        $addPathCommands = @()
-        for ($index = $paths.Count - 1; $index -ge 0; $index--) {
-            $addPathCommands += 'addpath(' + (ConvertTo-MatlabLiteral $paths[$index]) + ",'-begin')"
-        }
+        $addPathCommands = @($pathContract.add_path_commands)
         $bridgeCall = 'run_toy_road_runtime_bridge(' +
             (ConvertTo-MatlabLiteral ([IO.Path]::GetFullPath($ExecutionLockPath))) + ',' +
             (ConvertTo-MatlabLiteral ([IO.Path]::GetFullPath($runtimeMeasurementPath))) + ')'

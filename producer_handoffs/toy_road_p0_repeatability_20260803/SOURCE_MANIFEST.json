@@ -68,7 +68,7 @@
                   },
                   {
                       "path":  "launch_toy_road_family_case.ps1",
-                      "sha256":  "03d415ad96a484e9a98565fced0d6b8d2f90ffb781d48192a445d19ed5d5e728"
+                      "sha256":  "fa81745954058d71ec0c36d8047b671145617e2972ef8b21046b36c08913511f"
                   },
                   {
                       "path":  "launch_toy_road_runtime_diagnostic.ps1",
@@ -104,7 +104,7 @@
                   },
                   {
                       "path":  "run_toy_road_runtime_bridge.m",
-                      "sha256":  "097504ffd22033cb4dbf7187d25647d1a5675f2fa3906656683b5b29ebb2f73b"
+                      "sha256":  "35d883f543d369902a942ad37ff88725893fa7c5a358fc318973a7914c86097b"
                   },
                   {
                       "path":  "run_toy_road_runtime_diagnostic.m",
