@@ -2,6 +2,13 @@ function tests = toyRoadD1RuntimeDiagnosticTest
 tests = functiontests(localfunctions);
 end
 
+function setupOnce(testCase)
+testFile = mfilename('fullpath');
+handoffRoot = fileparts(fileparts(testFile));
+testCase.TestData.pathCleanup = onCleanup(@() rmpath(handoffRoot));
+addpath(handoffRoot,'-begin');
+end
+
 function testExactFixturePasses(testCase)
 [lock, measured] = localFixture(testCase.TestData.root);
 receiptPath = fullfile(testCase.TestData.root,'pass.json');
