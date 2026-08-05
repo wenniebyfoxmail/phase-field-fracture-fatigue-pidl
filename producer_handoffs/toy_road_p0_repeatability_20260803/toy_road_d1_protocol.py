@@ -58,6 +58,32 @@ COMPLETE_PACKAGE_FILES = {
     "D1_SHA256SUMS.txt",
     "MATLAB_STDOUT_STDERR.txt",
 }
+EXPECTED_PREDICATE_NAMES = (
+    "diagnostic_lock_schema",
+    "diagnostic_authorization_scope",
+    "producer_entrypoint_not_authorized",
+    "matlab_path_length",
+    "matlab_path_prefix",
+    "matlab_release",
+    "matlab_update",
+    "matlab_version",
+    "matlab_computer",
+    "matlab_executable_sha256",
+    "matlab_blas",
+    "matlab_lapack",
+    "binary_initial_resolved",
+    "binary_initial_readable",
+    "binary_initial_sha256",
+    "binary_AMOR_resolved",
+    "binary_AMOR_readable",
+    "binary_AMOR_sha256",
+    "binary_AT1_HISTORY_FATIGUE_resolved",
+    "binary_AT1_HISTORY_FATIGUE_readable",
+    "binary_AT1_HISTORY_FATIGUE_sha256",
+    "binary_cholmod2_resolved",
+    "binary_cholmod2_readable",
+    "binary_cholmod2_sha256",
+)
 
 
 def canonical_json_bytes(value: object) -> bytes:
@@ -178,6 +204,7 @@ def validate_diagnostic_lock(
     source_lock: Mapping[str, object],
     diagnostic_lock: Mapping[str, object],
     transformation: Mapping[str, object],
+    source_execution_lock_sha256: str | None = None,
 ) -> None:
     source = _require_mapping(source_lock, "source execution lock")
     diagnostic = _require_mapping(diagnostic_lock, "diagnostic lock")
@@ -199,7 +226,9 @@ def validate_diagnostic_lock(
     _validate_thread_source(transform.get("thread_setting_source"))
     if diagnostic.get("thread_environment") != THREAD_SETTINGS:
         raise D1ProtocolError("diagnostic thread environment differs from sealed launcher")
-    expected_source_sha = canonical_json_sha256(source)
+    expected_source_sha = source_execution_lock_sha256 or canonical_json_sha256(source)
+    if re.fullmatch(r"[0-9a-f]{64}", expected_source_sha) is None:
+        raise D1ProtocolError("source execution lock SHA-256 is invalid")
     if diagnostic.get("source_execution_lock_sha256") != expected_source_sha:
         raise D1ProtocolError("diagnostic source execution lock SHA-256 differs")
     if transform.get("source_execution_lock_sha256") != expected_source_sha:
@@ -225,6 +254,29 @@ def validate_diagnostic_lock(
         raise D1ProtocolError("before unchanged-fields SHA-256 differs")
     if transform.get("unchanged_fields_sha256_after") != after_sha:
         raise D1ProtocolError("after unchanged-fields SHA-256 differs")
+    source_writable = _require_mapping(source.get("writable_roots"), "source writable roots")
+    diagnostic_writable = _require_mapping(
+        diagnostic.get("writable_roots"), "diagnostic writable roots"
+    )
+    expected_replacements = [
+        {
+            "field": "runtime_expectations.matlab.absolute_path_order[0]",
+            "old": old_overlay,
+            "new": new_overlay,
+            "reason": "fresh_diagnostic_overlay",
+        }
+    ]
+    for name in sorted(WRITABLE_ROOT_NAMES):
+        expected_replacements.append(
+            {
+                "field": f"writable_roots.{name}",
+                "old": source_writable.get(name),
+                "new": diagnostic_writable.get(name),
+                "reason": "fresh_diagnostic_writable_root",
+            }
+        )
+    if replacements != expected_replacements:
+        raise D1ProtocolError("lock transformation replacements differ from reconstructed values")
 
 
 def derive_diagnostic_lock_files(
@@ -369,11 +421,58 @@ def _validate_complete_d1_package(files: Mapping[str, Path]) -> dict[str, object
             raise D1ProtocolError(f"D1 terminal field is invalid: {field}")
     if receipt.get("producer_invocation_count") != 0 or receipt.get("fem_cycle_count") != 0:
         raise D1ProtocolError("D1 diagnostic receipt reports producer or FEM activity")
+    _validate_predicate_chronology(receipt, result)
     return {
         "status": "D1_DIAGNOSTIC_EVIDENCE_ACCEPTED",
         "diagnostic_result": result,
         "production_authorized": False,
     }
+
+
+def _validate_predicate_chronology(receipt: Mapping[str, object], result: object) -> None:
+    predicates = receipt.get("predicates")
+    if not isinstance(predicates, list) or not predicates:
+        raise D1ProtocolError("D1 predicate chronology is missing")
+    if len(predicates) > len(EXPECTED_PREDICATE_NAMES):
+        raise D1ProtocolError("D1 predicate chronology has extra rows")
+    names: list[str] = []
+    passes: list[bool] = []
+    required_fields = {
+        "ordinal", "name", "expected", "measured_raw", "measured_normalized",
+        "pass", "measured_at_utc",
+    }
+    for index, row in enumerate(predicates):
+        if not isinstance(row, Mapping) or set(row) != required_fields:
+            raise D1ProtocolError("D1 predicate row schema is invalid")
+        if row.get("ordinal") != index + 1:
+            raise D1ProtocolError("D1 predicate ordinal is invalid")
+        if row.get("name") != EXPECTED_PREDICATE_NAMES[index]:
+            raise D1ProtocolError("D1 predicate names or order are invalid")
+        if not isinstance(row.get("pass"), bool):
+            raise D1ProtocolError("D1 predicate pass value is invalid")
+        names.append(str(row["name"]))
+        passes.append(bool(row["pass"]))
+    if receipt.get("completed_predicate_count") != len(predicates):
+        raise D1ProtocolError("D1 completed predicate count is invalid")
+    failures = [index for index, passed in enumerate(passes) if not passed]
+    if result == "PASS":
+        if len(predicates) != len(EXPECTED_PREDICATE_NAMES) or failures:
+            raise D1ProtocolError("D1 PASS predicate chronology is incomplete")
+        if receipt.get("first_failed_predicate") is not None:
+            raise D1ProtocolError("D1 PASS has a first failed predicate")
+        return
+    if len(failures) != 1 or failures[0] != len(predicates) - 1:
+        raise D1ProtocolError("D1 FAIL chronology must stop at its first failure")
+    if receipt.get("first_failed_predicate") != names[failures[0]]:
+        raise D1ProtocolError("D1 first failed predicate differs from chronology")
+    exception = receipt.get("matlab_exception")
+    if not isinstance(exception, Mapping):
+        raise D1ProtocolError("D1 FAIL structured exception is missing")
+    for field in ("identifier", "message", "extended_report"):
+        if not isinstance(exception.get(field), str) or not exception[field]:
+            raise D1ProtocolError("D1 FAIL structured exception is incomplete")
+    if not isinstance(exception.get("stack"), list):
+        raise D1ProtocolError("D1 FAIL structured exception stack is invalid")
 
 
 def _validate_partial_d1_package(files: Mapping[str, Path]) -> dict[str, object]:
@@ -532,12 +631,18 @@ def _main_cli() -> int:
         print(canonical_json_bytes(receipt).decode("ascii"))
         return 0
     if len(arguments) == 4 and arguments[0] == "--validate-lock":
-        source = _read_json_bytes(Path(arguments[1]).read_bytes(), "source execution lock")
+        source_bytes = Path(arguments[1]).read_bytes()
+        source = _read_json_bytes(source_bytes, "source execution lock")
         diagnostic = _read_json_bytes(Path(arguments[2]).read_bytes(), "diagnostic lock")
         transformation = _read_json_bytes(
             Path(arguments[3]).read_bytes(), "lock transformation"
         )
-        validate_diagnostic_lock(source, diagnostic, transformation)
+        validate_diagnostic_lock(
+            source,
+            diagnostic,
+            transformation,
+            hashlib.sha256(source_bytes).hexdigest(),
+        )
         print('{"status":"PASS"}')
         return 0
     raise D1ProtocolError("unsupported D1 protocol command")

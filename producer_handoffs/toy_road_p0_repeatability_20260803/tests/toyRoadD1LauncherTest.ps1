@@ -4,6 +4,7 @@ $HandoffDir = Split-Path -Parent $TestDir
 $RepoRoot = Split-Path -Parent (Split-Path -Parent $HandoffDir)
 $Launcher = Join-Path $HandoffDir 'launch_toy_road_runtime_diagnostic.ps1'
 $Adapter = Join-Path $HandoffDir 'invoke_toy_road_d1_test_process_adapter.ps1'
+$Protocol = Join-Path $HandoffDir 'toy_road_d1_protocol.py'
 $Python = ([string](& py -3 -c "import sys;print(sys.executable)")).Trim()
 $PythonSha = (Get-FileHash $Python -Algorithm SHA256).Hash.ToLowerInvariant()
 
@@ -13,89 +14,119 @@ function Write-Utf8Json([string]$Path,[object]$Value) {
     [IO.File]::WriteAllBytes($Path,$bytes)
 }
 
-function New-Fixture([string]$Root) {
-    $paths = @((Join-Path $Root 'overlay'),$HandoffDir)
-    $lock = [ordered]@{
-        schema_version = 'toy_road_runtime_diagnostic_lock_v1'
-        authorization_scope = 'diagnostic_only_non_authorizing'
-        producer_entrypoint_authorized = $false
+function New-Fixture([string]$Root,[string]$Status='PASS') {
+    $oldOverlay=Join-Path $Root 'quarantine\old-overlay'
+    $initialSource=Join-Path $oldOverlay '+phase_field\+mex\+fem\+assembly\+equilibrium\initial.mexw64'
+    [IO.Directory]::CreateDirectory((Split-Path -Parent $initialSource))|Out-Null
+    [IO.File]::WriteAllBytes($initialSource,[byte[]](9,8,7,6))
+    $initialSha=(Get-FileHash $initialSource -Algorithm SHA256).Hash.ToLowerInvariant()
+    $sourceLock = [ordered]@{
+        schema_version = 'toy_road_execution_input_lock_v1'
+        protocol_version='toy-road-p0-repeatability-v2.1'
+        authorization_scope='production_authorized';case_id='P0_parent'
         source_commit = 'eeda43d9faef01622731e877c5048a78f3c5003a'
-        source_manifest_sha256 = ('1' * 64)
-        source_execution_lock_sha256 = ('2' * 64)
+        source_manifest_sha256=('1'*64);runtime_lock_sha256=('2'*64)
+        family_contract_sha256=('3'*64);case_physics_contract_sha256=('4'*64)
+        launch_timestamp_utc='2026-08-04T13:17:28Z';no_clobber_receipt_id='fixture'
+        resume_allowed=$false
         runtime_expectations = [ordered]@{
             matlab = [ordered]@{
-                absolute_path_order = $paths
+                absolute_path_order = @($oldOverlay,$HandoffDir)
                 release = 'R2025b'; update = 'Update 5'; version = '25.2.0'
                 computer = 'PCWIN64'; executable_sha256 = ('3' * 64)
                 blas = 'BLAS'; lapack = 'LAPACK'
             }
             binary_sha256 = [ordered]@{
-                initial=('4'*64); AMOR=('5'*64)
+                initial=$initialSha; AMOR=('5'*64)
                 AT1_HISTORY_FATIGUE=('6'*64); cholmod2=('7'*64)
             }
         }
-        thread_environment = [ordered]@{
-            OMP_NUM_THREADS='1'; MKL_NUM_THREADS='1'
-            OPENBLAS_NUM_THREADS='1'; MKL_DYNAMIC='FALSE'
+        writable_roots=[ordered]@{
+            output=(Join-Path $Root 'quarantine\output');work=(Join-Path $Root 'quarantine\work')
+            temp=(Join-Path $Root 'quarantine\temp');tmp=(Join-Path $Root 'quarantine\tmp')
+            pref=(Join-Path $Root 'quarantine\pref');cache=(Join-Path $Root 'quarantine\cache')
+            matlab_startup_pref=(Join-Path $Root 'quarantine\matlab-pref')
         }
-        thread_setting_source = [ordered]@{
+    }
+    $diagnosticRoot=Join-Path $Root 'evidence'
+    $threadSource=[ordered]@{
             path='producer_handoffs/toy_road_p0_repeatability_20260803/launch_toy_road_family_case.ps1'
             source_commit='eeda43d9faef01622731e877c5048a78f3c5003a'
             sha256='03d415ad96a484e9a98565fced0d6b8d2f90ffb781d48192a445d19ed5d5e728'
             settings=[ordered]@{OMP_NUM_THREADS='1';MKL_NUM_THREADS='1';OPENBLAS_NUM_THREADS='1';MKL_DYNAMIC='FALSE'}
-        }
-        diagnostic_root = (Join-Path $Root 'evidence')
-        writable_roots = [ordered]@{
-            work=(Join-Path $Root 'work');temp=(Join-Path $Root 'temp')
-            tmp=(Join-Path $Root 'tmp');pref=(Join-Path $Root 'pref')
-            cache=(Join-Path $Root 'cache')
-            matlab_startup_pref=(Join-Path $Root 'matlab-pref')
-        }
     }
-    $transform = [ordered]@{
-        schema_version='toy_road_runtime_lock_transformation_v1'
-        source_execution_lock_sha256=('2'*64)
-        diagnostic_lock_sha256=('8'*64)
-        replacements=@()
-        unchanged_fields_sha256_before=('9'*64)
-        unchanged_fields_sha256_after=('9'*64)
-        thread_setting_source=$lock.thread_setting_source
-        authorization_artifact_read=$false
-        production_output_root_present=$false
+    $relocation=[ordered]@{
+        diagnostic_root=$diagnosticRoot;old_overlay=$oldOverlay
+        new_overlay=(Join-Path $diagnosticRoot 'overlay')
+        writable_roots=[ordered]@{
+            work=(Join-Path $diagnosticRoot 'work');temp=(Join-Path $diagnosticRoot 'temp')
+            tmp=(Join-Path $diagnosticRoot 'tmp');pref=(Join-Path $diagnosticRoot 'pref')
+            cache=(Join-Path $diagnosticRoot 'cache')
+            matlab_startup_pref=(Join-Path $diagnosticRoot 'matlab-pref')
+        }
+        quarantine_roots=@((Join-Path $Root 'quarantine'));thread_source=$threadSource
+    }
+    $predicateNames=@('diagnostic_lock_schema','diagnostic_authorization_scope',
+        'producer_entrypoint_not_authorized','matlab_path_length','matlab_path_prefix',
+        'matlab_release','matlab_update','matlab_version','matlab_computer',
+        'matlab_executable_sha256','matlab_blas','matlab_lapack',
+        'binary_initial_resolved','binary_initial_readable','binary_initial_sha256',
+        'binary_AMOR_resolved','binary_AMOR_readable','binary_AMOR_sha256',
+        'binary_AT1_HISTORY_FATIGUE_resolved','binary_AT1_HISTORY_FATIGUE_readable',
+        'binary_AT1_HISTORY_FATIGUE_sha256','binary_cholmod2_resolved',
+        'binary_cholmod2_readable','binary_cholmod2_sha256')
+    $limit=if($Status -ceq 'FAIL'){10}else{23}
+    $predicates=@(for($i=0;$i -le $limit;$i++){
+        [ordered]@{ordinal=$i+1;name=$predicateNames[$i];expected='expected'
+            measured_raw='measured';measured_normalized='measured'
+            pass=($Status -ceq 'PASS' -or $i -lt $limit);measured_at_utc='2026-08-05T10:00:00.000Z'}
+    })
+    $firstFailed=$null
+    $matlabException=@{}
+    if($Status -ceq 'FAIL'){
+        $firstFailed=$predicateNames[$limit]
+        $matlabException=[ordered]@{identifier='toyRoadD1:PredicateFailed'
+            message='fixture failure';stack=@();extended_report='fixture failure'}
     }
     $receipt = [ordered]@{
-        schema_version='toy_road_runtime_diagnostic_v1';status='PASS'
+        schema_version='toy_road_runtime_diagnostic_v1';status=$Status
         authorization_scope='diagnostic_only_non_authorizing'
-        producer_entrypoint_authorized=$false;predicates=@()
-        first_failed_predicate=$null;producer_invocation_count=0
-        fem_cycle_count=0;completed_predicate_count=24
+        producer_entrypoint_authorized=$false;predicates=$predicates
+        first_failed_predicate=$firstFailed
+        producer_invocation_count=0;fem_cycle_count=0;completed_predicate_count=$predicates.Count
+        matlab_exception=$matlabException
     }
     $sourceIdentity = [ordered]@{
         authorization_scope='test_only_non_authorizing'
-        source_commit=$lock.source_commit
+        source_commit=$sourceLock.source_commit
         source_clean=$true
     }
+    $sourcePath=Join-Path $Root 'source-lock.json'
+    $relocationPath=Join-Path $Root 'relocation.json'
     $lockPath=Join-Path $Root 'input-lock.json'
     $transformPath=Join-Path $Root 'input-transform.json'
     $receiptPath=Join-Path $Root 'measurement.json'
     $identityPath=Join-Path $Root 'source-identity.json'
-    Write-Utf8Json $lockPath $lock
-    Write-Utf8Json $transformPath $transform
+    Write-Utf8Json $sourcePath $sourceLock
+    Write-Utf8Json $relocationPath $relocation
+    & $Python $Protocol --derive-lock $sourcePath $relocationPath $lockPath $transformPath | Out-Null
+    if($LASTEXITCODE -ne 0){throw 'Fixture lock derivation failed.'}
     Write-Utf8Json $receiptPath $receipt
     Write-Utf8Json $identityPath $sourceIdentity
-    return [ordered]@{lock=$lockPath;transform=$transformPath;measurement=$receiptPath;identity=$identityPath;evidence=$lock.diagnostic_root}
+    return [ordered]@{source=$sourcePath;lock=$lockPath;transform=$transformPath;measurement=$receiptPath;identity=$identityPath;evidence=$diagnosticRoot}
 }
 
-function Invoke-Fixture([int]$AdapterExitCode=0) {
+function Invoke-Fixture([int]$AdapterExitCode=0,[string]$Status='PASS') {
     $root=Join-Path $env:TEMP ('toy-road-d1-launcher-'+[Guid]::NewGuid().ToString('N'))
     [IO.Directory]::CreateDirectory($root) | Out-Null
-    $fixture=New-Fixture $root
+    $fixture=New-Fixture $root $Status
     $fakeMatlab=Join-Path $root 'matlab.exe'
     [IO.File]::WriteAllBytes($fakeMatlab,[byte[]](1,2,3))
     $matlabSha=(Get-FileHash $fakeMatlab -Algorithm SHA256).Hash.ToLowerInvariant()
     $arguments=@('-NoProfile','-ExecutionPolicy','Bypass','-File',$Launcher,
         '-SourceRoot',$RepoRoot,'-ExpectedSourceCommit','eeda43d9faef01622731e877c5048a78f3c5003a',
         '-DiagnosticLockPath',$fixture.lock,'-TransformationPath',$fixture.transform,
+        '-SourceExecutionLockPath',$fixture.source,
         '-EvidenceRoot',$fixture.evidence,'-MatlabExecutable',$fakeMatlab,
         '-ApprovedMatlabSha256',$matlabSha,'-PythonExecutable',$Python,
         '-ApprovedPythonSha256',$PythonSha,'-TestOnlyNonAuthorizing',
@@ -134,6 +165,20 @@ try {
         throw 'Exact batch is not diagnostic-only.'
     }
 } finally {Remove-Item $pass.root -Recurse -Force -ErrorAction SilentlyContinue}
+
+$fail=Invoke-Fixture 17 'FAIL'
+try {
+    if($fail.exit -ne 0){throw "Terminal FAIL fixture did not complete: $($fail.output)"}
+    $files=@(Get-ChildItem $fail.evidence -File)
+    if($files.Count -ne 10){throw "Terminal FAIL package has $($files.Count) files."}
+    $terminal=Get-Content (Join-Path $fail.evidence 'D1_TERMINAL.json') -Raw|ConvertFrom-Json
+    if($terminal.diagnostic_result -cne 'FAIL' -or $terminal.child_exit_code -ne 17){
+        throw 'Terminal FAIL package lost its diagnostic result or child exit code.'
+    }
+    if(Test-Path (Join-Path $fail.evidence 'D1_LAUNCHER_RECOVERY.json')){
+        throw 'Terminal FAIL package was incorrectly classified as a crash.'
+    }
+} finally {Remove-Item $fail.root -Recurse -Force -ErrorAction SilentlyContinue}
 
 $crash=Invoke-Fixture 17
 try {

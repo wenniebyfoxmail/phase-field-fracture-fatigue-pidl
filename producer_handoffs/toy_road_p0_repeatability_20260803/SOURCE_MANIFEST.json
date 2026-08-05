@@ -60,7 +60,7 @@
                   },
                   {
                       "path":  "invoke_toy_road_d1_test_process_adapter.ps1",
-                      "sha256":  "4691bc1793ab5d0e5e9e34fcfd355961e4b7a6532d57dddb78495e721c3a1c00"
+                      "sha256":  "29898058de811885addedece575a6cd997eaf942e3cb5298d2904312a61b0306"
                   },
                   {
                       "path":  "invoke_toy_road_test_process_adapter.ps1",
@@ -72,7 +72,7 @@
                   },
                   {
                       "path":  "launch_toy_road_runtime_diagnostic.ps1",
-                      "sha256":  "a9cb72c253f755dbd4524661b58328e2fda39be88528d359f88a7fae64a3452c"
+                      "sha256":  "cd8740b9fc3c461864fe5a0be1e5ff0f6ef3cd4a0990a6bfeb35606720ea6fdf"
                   },
                   {
                       "path":  "main_toy_road_family_case.m",
@@ -108,7 +108,7 @@
                   },
                   {
                       "path":  "run_toy_road_runtime_diagnostic.m",
-                      "sha256":  "06106652ea42505c3cd05422a27721882d1bbbe9fcd1d828507b86d2ce3babe7"
+                      "sha256":  "949d7220bfb7202c147f302264bb14b4e82713f73fdda3cab73626af9f5b3c15"
                   },
                   {
                       "path":  "solve_toy_road_family_case.m",
@@ -116,7 +116,7 @@
                   },
                   {
                       "path":  "toy_road_d1_protocol.py",
-                      "sha256":  "65f1d19cf9a13993e71f2bbec1ef93643414d243e04c65ef41fa2e5fd42337ad"
+                      "sha256":  "0ca1394d20431a16b42a8a786213678b299bcee67d5dec213fc7ab72785aa054"
                   },
                   {
                       "path":  "toy_road_protocol.py",

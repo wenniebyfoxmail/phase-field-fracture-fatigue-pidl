@@ -34,6 +34,9 @@ verifyError(testCase,@() run_toy_road_runtime_diagnostic( ...
 receipt = jsondecode(fileread(receiptPath));
 verifyEqual(testCase,receipt.first_failed_predicate,'matlab_path_prefix');
 verifyEqual(testCase,receipt.path_diagnostic.first_path_mismatch_index,1);
+verifyEqual(testCase,receipt.predicates(end).name,'matlab_path_prefix');
+verifyFalse(testCase,receipt.predicates(end).pass);
+verifyEqual(testCase,receipt.matlab_exception.identifier,'toyRoadD1:PredicateFailed');
 end
 
 function testBinaryHashMismatchNamesPredicate(testCase)
@@ -46,6 +49,8 @@ verifyError(testCase,@() run_toy_road_runtime_diagnostic( ...
 receipt = jsondecode(fileread(receiptPath));
 verifyEqual(testCase,receipt.first_failed_predicate,'binary_initial_sha256');
 verifyEqual(testCase,receipt.binary_diagnostic.initial.sha256,repmat('f',1,64));
+verifyEqual(testCase,receipt.predicates(end).name,'binary_initial_sha256');
+verifyFalse(testCase,receipt.predicates(end).pass);
 end
 
 function testMissingBinaryRecordsResolutionFailure(testCase)

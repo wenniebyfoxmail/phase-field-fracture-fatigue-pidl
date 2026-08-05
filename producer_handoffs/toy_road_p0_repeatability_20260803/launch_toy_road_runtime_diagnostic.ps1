@@ -4,6 +4,7 @@ param(
     [ValidatePattern('^[0-9a-fA-F]{40}$')][string]$ExpectedSourceCommit,
     [Parameter(Mandatory = $true)][string]$DiagnosticLockPath,
     [Parameter(Mandatory = $true)][string]$TransformationPath,
+    [Parameter(Mandatory = $true)][string]$SourceExecutionLockPath,
     [Parameter(Mandatory = $true)][string]$EvidenceRoot,
     [Parameter(Mandatory = $true)][string]$MatlabExecutable,
     [Parameter(Mandatory = $true)]
@@ -24,6 +25,7 @@ $source=[IO.Path]::GetFullPath($SourceRoot)
 $evidence=[IO.Path]::GetFullPath($EvidenceRoot)
 $inputLock=[IO.Path]::GetFullPath($DiagnosticLockPath)
 $inputTransform=[IO.Path]::GetFullPath($TransformationPath)
+$sourceLockPath=[IO.Path]::GetFullPath($SourceExecutionLockPath)
 $matlab=[IO.Path]::GetFullPath($MatlabExecutable)
 $python=[IO.Path]::GetFullPath($PythonExecutable)
 $commit=$ExpectedSourceCommit.ToLowerInvariant()
@@ -69,7 +71,8 @@ function Get-ObservedFiles([string]$Root){
 }
 
 try{
-    foreach($path in @($inputLock,$inputTransform,$probe,$protocol,$matlab,$python)){
+    foreach($path in @($inputLock,$inputTransform,$sourceLockPath,$probe,$protocol,
+            $matlab,$python)){
         if(-not (Test-Path -LiteralPath $path -PathType Leaf)){throw "Required D1 input is missing: $path"}
     }
     Assert-FileIdentity $matlab $ApprovedMatlabSha256 'MATLAB executable'
@@ -95,6 +98,8 @@ try{
             throw 'D1 source checkout must be clean.'
         }
     }
+    & $python $protocol --validate-lock $sourceLockPath $inputLock $inputTransform | Out-Null
+    if($LASTEXITCODE -ne 0){throw 'D1 source-to-diagnostic lock transformation is invalid.'}
     $before=@(Get-ExperimentProcesses)
     if($before.Count -ne 0){throw 'An existing MATLAB/FEM process blocks D1.'}
 
@@ -105,6 +110,7 @@ try{
     Write-BytesCreateNew $lockOut ([IO.File]::ReadAllBytes($inputLock))
     Write-BytesCreateNew $transformOut ([IO.File]::ReadAllBytes($inputTransform))
     $lock=Get-Content -LiteralPath $lockOut -Raw|ConvertFrom-Json
+    $transform=Get-Content -LiteralPath $transformOut -Raw|ConvertFrom-Json
     if([string]$lock.authorization_scope -cne 'diagnostic_only_non_authorizing' -or
             $lock.producer_entrypoint_authorized -ne $false){throw 'D1 lock is not diagnostic-only.'}
     if([IO.Path]::GetFullPath([string]$lock.diagnostic_root) -cne $evidence){
@@ -114,6 +120,25 @@ try{
         $root=[IO.Path]::GetFullPath([string]$property.Value)
         if(Test-Path -LiteralPath $root){throw "D1 writable root already exists: $root"}
         [IO.Directory]::CreateDirectory($root)|Out-Null
+    }
+    $overlayReplacement=@($transform.replacements | Where-Object {
+        [string]$_.field -ceq 'runtime_expectations.matlab.absolute_path_order[0]'})
+    if($overlayReplacement.Count -ne 1){throw 'D1 overlay transformation is missing or duplicated.'}
+    $oldOverlay=[IO.Path]::GetFullPath([string]$overlayReplacement[0].old)
+    $newOverlay=[IO.Path]::GetFullPath([string]$overlayReplacement[0].new)
+    if(Test-Path -LiteralPath $newOverlay){throw 'Fresh D1 rebuilt-MEX overlay already exists.'}
+    $initialCandidates=@(Get-ChildItem -LiteralPath $oldOverlay -Recurse -File -Filter 'initial.mexw64')
+    if($initialCandidates.Count -ne 1){throw 'Approved rebuilt initial.mexw64 source is not unique.'}
+    $overlaySource=$initialCandidates[0].FullName
+    if((Get-Sha256 $overlaySource) -cne [string]$lock.runtime_expectations.binary_sha256.initial){
+        throw 'Approved rebuilt initial.mexw64 source hash differs from lock.'
+    }
+    $relativeInitial=$overlaySource.Substring($oldOverlay.TrimEnd('\').Length+1)
+    $overlayTarget=Join-Path $newOverlay $relativeInitial
+    [IO.Directory]::CreateDirectory((Split-Path -Parent $overlayTarget))|Out-Null
+    New-Item -ItemType HardLink -Path $overlayTarget -Target $overlaySource | Out-Null
+    if((Get-Sha256 $overlayTarget) -cne [string]$lock.runtime_expectations.binary_sha256.initial){
+        throw 'Fresh rebuilt-MEX overlay target hash differs from lock.'
     }
     foreach($property in $lock.thread_environment.PSObject.Properties){
         Set-Item -Path "Env:$($property.Name)" -Value ([string]$property.Value)
@@ -143,8 +168,12 @@ try{
         authorization_scope='diagnostic_only_non_authorizing'
         source_commit=$commit;launcher_path=$scriptPath;launcher_sha256=Get-Sha256 $scriptPath
         probe_path=$probe;probe_sha256=Get-Sha256 $probe
+        source_execution_lock_path=$sourceLockPath
+        source_execution_lock_sha256=Get-Sha256 $sourceLockPath
         diagnostic_lock_sha256=Get-Sha256 $lockOut
         transformation_sha256=Get-Sha256 $transformOut
+        overlay_source_path=$overlaySource;overlay_target_path=$overlayTarget
+        overlay_initial_sha256=Get-Sha256 $overlayTarget
         matlab_path=$matlab;matlab_sha256=Get-Sha256 $matlab
         python_path=$python;python_sha256=Get-Sha256 $python
         path_construction=$pathCommands;environment=$lock.thread_environment
@@ -170,7 +199,6 @@ try{
         & $matlab -batch $batch 2>&1 | Set-Content -LiteralPath $stdoutPath -Encoding UTF8
         $childExit=$LASTEXITCODE
     }
-    if($childExit -ne 0){throw "D1 diagnostic child failed with exit code $childExit."}
     $stage='after_child_process'
     if(-not (Test-Path -LiteralPath $receiptPath -PathType Leaf)){
         throw 'D1 diagnostic receipt is missing after child exit.'
@@ -179,6 +207,12 @@ try{
     if([string]$receipt.authorization_scope -cne 'diagnostic_only_non_authorizing' -or
             $receipt.producer_invocation_count -ne 0 -or $receipt.fem_cycle_count -ne 0){
         throw 'D1 diagnostic receipt violates the non-production boundary.'
+    }
+    if([string]$receipt.status -notin @('PASS','FAIL')){
+        throw 'D1 diagnostic receipt is not terminal.'
+    }
+    if($childExit -ne 0 -and [string]$receipt.status -cne 'FAIL'){
+        throw "D1 diagnostic child failed without a terminal FAIL receipt: $childExit."
     }
     $after=@(Get-ExperimentProcesses)
     Write-JsonCreateNew (Join-Path $evidence 'D1_PROCESS_AFTER.json') ([ordered]@{

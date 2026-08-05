@@ -45,6 +45,33 @@ FORBIDDEN_KEYS = {
     "consumed_marker_path",
 }
 
+EXPECTED_PREDICATES = [
+    "diagnostic_lock_schema",
+    "diagnostic_authorization_scope",
+    "producer_entrypoint_not_authorized",
+    "matlab_path_length",
+    "matlab_path_prefix",
+    "matlab_release",
+    "matlab_update",
+    "matlab_version",
+    "matlab_computer",
+    "matlab_executable_sha256",
+    "matlab_blas",
+    "matlab_lapack",
+    "binary_initial_resolved",
+    "binary_initial_readable",
+    "binary_initial_sha256",
+    "binary_AMOR_resolved",
+    "binary_AMOR_readable",
+    "binary_AMOR_sha256",
+    "binary_AT1_HISTORY_FATIGUE_resolved",
+    "binary_AT1_HISTORY_FATIGUE_readable",
+    "binary_AT1_HISTORY_FATIGUE_sha256",
+    "binary_cholmod2_resolved",
+    "binary_cholmod2_readable",
+    "binary_cholmod2_sha256",
+]
+
 
 def _source_lock(tmp_path: Path) -> dict[str, object]:
     production = tmp_path / "quarantine" / "P0_parent"
@@ -193,6 +220,20 @@ def test_validator_rejects_identity_or_provenance_mutation(
     cursor[parts[-1]] = mutation[1]
 
     with pytest.raises(D1ProtocolError):
+        PROTOCOL.validate_diagnostic_lock(source, diagnostic, transformation)
+
+
+@pytest.mark.parametrize("replacement_index", range(7))
+def test_validator_reconstructs_every_declared_lock_replacement(
+    tmp_path: Path, replacement_index: int
+) -> None:
+    source = _source_lock(tmp_path)
+    diagnostic, transformation = PROTOCOL.derive_diagnostic_lock(
+        source, _relocation(tmp_path, source)
+    )
+    transformation["replacements"][replacement_index]["field"] += ".forged"
+
+    with pytest.raises(D1ProtocolError, match="replacement|transformation"):
         PROTOCOL.validate_diagnostic_lock(source, diagnostic, transformation)
 
 
@@ -363,6 +404,14 @@ def test_d1_launcher_and_adapter_are_structurally_non_production() -> None:
     assert "D1_LAUNCHER_RECOVERY.json" in launcher
     assert "D1_SHA256SUMS.txt" in launcher
     assert "automatic_retry_performed=$false" in launcher
+    for required in (
+        "SourceExecutionLockPath",
+        "--validate-lock",
+        "New-Item -ItemType HardLink",
+        "overlay_source_path",
+        "overlay_target_path",
+    ):
+        assert required in launcher
     for forbidden in (
         "ExecutionAuthorizationPath",
         "AuthorizationId",
@@ -392,6 +441,21 @@ def _complete_d1_package(root: Path, diagnostic_status: str = "PASS") -> None:
         "authorization_artifact_read": False,
         "production_output_root_present": False,
     }
+    failure_index = 10 if diagnostic_status == "FAIL" else None
+    predicates = [
+        {
+            "ordinal": index + 1,
+            "name": name,
+            "expected": "expected",
+            "measured_raw": "measured",
+            "measured_normalized": "measured",
+            "pass": failure_index is None or index < failure_index,
+            "measured_at_utc": "2026-08-05T10:00:00.000Z",
+        }
+        for index, name in enumerate(EXPECTED_PREDICATES)
+        if failure_index is None or index <= failure_index
+    ]
+    first_failure = EXPECTED_PREDICATES[failure_index] if failure_index is not None else None
     receipt = {
         "schema_version": "toy_road_runtime_diagnostic_v1",
         "status": diagnostic_status,
@@ -399,7 +463,15 @@ def _complete_d1_package(root: Path, diagnostic_status: str = "PASS") -> None:
         "producer_entrypoint_authorized": False,
         "producer_invocation_count": 0,
         "fem_cycle_count": 0,
-        "first_failed_predicate": None if diagnostic_status == "PASS" else "matlab_blas",
+        "predicates": predicates,
+        "completed_predicate_count": len(predicates),
+        "first_failed_predicate": first_failure,
+        "matlab_exception": {} if diagnostic_status == "PASS" else {
+            "identifier": "toyRoadD1:PredicateFailed",
+            "message": f"D1 runtime predicate failed: {first_failure}",
+            "stack": [],
+            "extended_report": "predicate failure",
+        },
     }
     batch = "run_toy_road_runtime_diagnostic('D1_DIAGNOSTIC_LOCK.json','D1_RUNTIME_DIAGNOSTIC.json');"
     files: dict[str, bytes] = {
@@ -476,6 +548,50 @@ def test_complete_d1_package_rejects_hash_tampering(tmp_path: Path) -> None:
     (root / "D1_RUNTIME_DIAGNOSTIC.json").write_bytes(b"{}")
 
     with pytest.raises(D1ProtocolError, match="SHA-256|checksum"):
+        PROTOCOL.validate_d1_package(root)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["missing", "reordered", "wrong_ordinal", "failure_after_first", "bad_first_failure", "missing_exception"],
+)
+def test_complete_d1_package_rejects_invalid_predicate_chronology(
+    tmp_path: Path, mutation: str
+) -> None:
+    root = tmp_path / "package"
+    _complete_d1_package(root, "FAIL")
+    receipt_path = root / "D1_RUNTIME_DIAGNOSTIC.json"
+    receipt = json.loads(receipt_path.read_text("utf-8"))
+    if mutation == "missing":
+        receipt["predicates"].pop(2)
+    elif mutation == "reordered":
+        receipt["predicates"][0], receipt["predicates"][1] = (
+            receipt["predicates"][1], receipt["predicates"][0]
+        )
+    elif mutation == "wrong_ordinal":
+        receipt["predicates"][2]["ordinal"] = 99
+    elif mutation == "failure_after_first":
+        receipt["predicates"][-2]["pass"] = False
+    elif mutation == "bad_first_failure":
+        receipt["first_failed_predicate"] = "matlab_release"
+    else:
+        receipt["matlab_exception"] = {}
+    receipt_path.write_bytes(PROTOCOL.canonical_json_bytes(receipt))
+    files = {
+        path.name: path.read_bytes()
+        for path in root.iterdir()
+        if path.is_file() and path.name != "D1_SHA256SUMS.txt"
+    }
+    (root / "D1_SHA256SUMS.txt").write_text(
+        "".join(
+            f"{hashlib.sha256(files[name]).hexdigest()}  {name}\n"
+            for name in sorted(files)
+        ),
+        "ascii",
+        newline="",
+    )
+
+    with pytest.raises(D1ProtocolError, match="predicate|exception|chronology|ordinal"):
         PROTOCOL.validate_d1_package(root)
 
 

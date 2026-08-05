@@ -46,9 +46,8 @@ Write-CreateNew $InvocationRecordPath $utf8.GetBytes(
     ($record|ConvertTo-Json -Depth 10 -Compress))
 Write-CreateNew $StdoutStderrPath $utf8.GetBytes(
     "D1 test adapter invocation; no MATLAB process started.`n")
-if($ExitCode -ne 0){exit $ExitCode}
 if(-not (Test-Path -LiteralPath $DiagnosticReceiptFixturePath -PathType Leaf)){
     throw 'D1 diagnostic receipt fixture is missing.'
 }
 Write-CreateNew $DiagnosticReceiptPath ([IO.File]::ReadAllBytes($DiagnosticReceiptFixturePath))
-exit 0
+exit $ExitCode
