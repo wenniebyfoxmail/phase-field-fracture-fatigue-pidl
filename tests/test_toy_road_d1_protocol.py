@@ -283,3 +283,63 @@ def test_powershell_derivation_wrapper_has_no_authorization_surface(
     second = subprocess.run(command, capture_output=True, text=True, check=False)
     assert second.returncode != 0
     assert "exists" in (second.stdout + second.stderr).lower()
+
+
+def test_matlab_probe_is_structurally_diagnostic_only() -> None:
+    probe_path = HANDOFF / "run_toy_road_runtime_diagnostic.m"
+    probe = probe_path.read_text("utf-8")
+    assert probe.startswith("function run_toy_road_runtime_diagnostic(")
+    for required in (
+        "toy_road_runtime_diagnostic_v1",
+        "diagnostic_only_non_authorizing",
+        "producer_entrypoint_authorized",
+        "first_failed_predicate",
+        "diagnostic_internal_error",
+        "measured_raw",
+        "measured_normalized",
+        "which(",
+        "'-all'",
+        "getReport",
+        "java.nio.file.StandardOpenOption.CREATE_NEW",
+        ".D1_RUNTIME_DIAGNOSTIC.json.",
+        "java.nio.file.StandardCopyOption.ATOMIC_MOVE",
+        "producer_invocation_count",
+        "fem_cycle_count",
+    ):
+        assert required in probe
+    forbidden_patterns = (
+        r"\bmain_toy_road_family_case\b",
+        r"\bsolve_toy_road_family_case\b",
+        r"\brecover_toy_road_family_state\b",
+        r"\bSystem\s*\(",
+        r"\bNewton\b",
+        r"\beval(?:in)?\s*\(",
+        r"\bfeval\s*\(",
+        r"\bstr2func\s*\(",
+        r"\brun\s*\(",
+    )
+    for pattern in forbidden_patterns:
+        assert not __import__("re").search(pattern, probe, flags=__import__("re").IGNORECASE)
+
+
+def test_matlab_unit_test_source_cannot_enter_launcher_or_producer() -> None:
+    test_path = HANDOFF / "tests" / "toyRoadD1RuntimeDiagnosticTest.m"
+    test_source = test_path.read_text("utf-8")
+    assert "run_toy_road_runtime_diagnostic" in test_source
+    for forbidden in (
+        "launch_toy_road_runtime_diagnostic",
+        "launch_toy_road_family_case",
+        "main_toy_road_family_case",
+        "solve_toy_road_family_case",
+        "recover_toy_road_family_state",
+    ):
+        assert forbidden not in test_source
+    plan = (
+        ROOT
+        / "docs"
+        / "superpowers"
+        / "plans"
+        / "2026-08-04-toy-road-d1-runtime-diagnostic.md"
+    ).read_text("utf-8")
+    assert plan.count("matlab -batch") == 1
+    assert "pre_matlab_candidate_commit" in plan
