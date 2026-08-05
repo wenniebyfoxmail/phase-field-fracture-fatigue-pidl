@@ -76,7 +76,7 @@
                   },
                   {
                       "path":  "main_toy_road_family_case.m",
-                      "sha256":  "98cf3ece060ef54d18a1f49a1e208cd4fbbd8e4e2866773fb81cb24a8fc7cebf"
+                      "sha256":  "503a1d17fd0b89201690146f8f0eaad1db416e727397dfd10905ba5b2a916b97"
                   },
                   {
                       "path":  "new_toy_road_d1_diagnostic_lock.ps1",
@@ -104,7 +104,7 @@
                   },
                   {
                       "path":  "run_toy_road_runtime_bridge.m",
-                      "sha256":  "35d883f543d369902a942ad37ff88725893fa7c5a358fc318973a7914c86097b"
+                      "sha256":  "74fd38f20a13a78109202a277e365132adec8137b1efc1a2f310fd7a574c88e3"
                   },
                   {
                       "path":  "run_toy_road_runtime_diagnostic.m",

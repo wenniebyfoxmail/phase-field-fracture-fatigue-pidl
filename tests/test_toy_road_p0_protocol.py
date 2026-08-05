@@ -674,9 +674,17 @@ def test_sealed_process_adapter_and_runtime_bridge_are_structurally_safe() -> No
     assert "expected_absolute_path" in bridge
     assert "actual_absolute_path" in bridge
     assert "localWritePathFailure" in bridge
+    assert "authorized_entrypoint = 'main_toy_road_family_case'" in bridge
+    assert "upstream_authorized_entrypoint = 'run_toy_road_runtime_bridge'" in bridge
+    assert "upstream_launch_receipt_sha256" in bridge
+    assert "setenv('TOY_ROAD_AUTHORIZATION_RECEIPT'" in bridge
     assert "New-CanonicalMatlabPathContract" in launcher
     assert "$pathContract.absolute_path_order" in launcher
     assert "$pathContract.add_path_commands" in launcher
+    main_source = (MODULE_PATH.parent / "main_toy_road_family_case.m").read_text("utf-8")
+    assert "upstream_launch_receipt_sha256" in main_source
+    assert "upstream_authorized_entrypoint" in main_source
+    assert "fileSha256(receipt.upstream_launch_receipt_path)" in main_source
     attributes = (MODULE_PATH.parent / ".gitattributes").read_text("ascii")
     for pattern in ("*.json", "*.m", "*.ps1", "*.py"):
         assert f"{pattern} text eol=lf" in attributes

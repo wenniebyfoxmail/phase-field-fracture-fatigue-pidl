@@ -67,10 +67,26 @@ receipt.authorization_scope = lock.authorization_scope;
 receipt.status = 'PASS';
 receipt.producer_entrypoint_authorized = true;
 receipt.execution_input_lock_sha256 = fileSha256(executionLockPath);
+upstreamReceiptPath = getenv('TOY_ROAD_AUTHORIZATION_RECEIPT');
+localRequire(isfile(upstreamReceiptPath), 'Upstream launch receipt is missing.');
+upstreamReceipt = localReadJson(upstreamReceiptPath, 'upstream launch receipt');
+localRequire(isfield(upstreamReceipt, 'authorized_entrypoint') && ...
+    strcmp(upstreamReceipt.authorized_entrypoint, 'run_toy_road_runtime_bridge'), ...
+    'Upstream launch receipt does not authorize the runtime bridge.');
+receipt.authorized_entrypoint = 'main_toy_road_family_case';
+receipt.upstream_authorized_entrypoint = 'run_toy_road_runtime_bridge';
+receipt.upstream_launch_receipt_path = localCanonicalPath(upstreamReceiptPath);
+receipt.upstream_launch_receipt_sha256 = fileSha256(upstreamReceiptPath);
+receipt.case_id = lock.case_id;
+receipt.source_commit = lock.source_commit;
+receipt.runtime_lock_sha256 = lock.runtime_lock_sha256;
+receipt.family_contract_sha256 = lock.family_contract_sha256;
+receipt.case_physics_contract_sha256 = lock.case_physics_contract_sha256;
 receipt.matlab = matlabIdentity;
 receipt.binary_sha256 = binaryIdentity;
 localWriteJsonCreateNew(measurementReceiptPath, receipt);
 
+setenv('TOY_ROAD_AUTHORIZATION_RECEIPT', localCanonicalPath(measurementReceiptPath));
 main_toy_road_family_case;
 end
 
