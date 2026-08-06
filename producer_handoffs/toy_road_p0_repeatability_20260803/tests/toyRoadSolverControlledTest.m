@@ -88,6 +88,22 @@ for count = [1 2 5]
 end
 end
 
+function testC5ContinuesPastNativeConvergenceUntilDamageFixedPoint(testCase)
+double = ToyRoadP0SolverDouble();
+double.C5StaggerCount = 5;
+double.C5NativeConvergenceAt = 3;
+
+result = solve_toy_road_family_case( ...
+    double.makeContext(testCase.TestData.root, 'P0_parent'));
+
+verifyEqual(testCase, double.CompletedC5Staggers, 1:5);
+verifyEqual(testCase, result.c5_stagger_ordinals, 1:5);
+receipt = jsondecode(fileread(fullfile(testCase.TestData.root, ...
+    'qualification', 'C5_NUMERICAL_GATE_RECEIPT.json')));
+verifyEqual(testCase, receipt.final_consecutive_stagger_delta, 5e-4, ...
+    'AbsTol', 1e-12);
+end
+
 function testGateFailurePublishesFailedRunBeforeCommitUnloadOrCycleSix(testCase)
 double = ToyRoadP0SolverDouble();
 double.C5MetricFailure = 'displacement';

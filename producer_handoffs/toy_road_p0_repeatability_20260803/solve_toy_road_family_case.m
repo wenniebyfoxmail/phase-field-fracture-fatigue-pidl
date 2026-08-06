@@ -58,6 +58,7 @@ for cycle = 1:context.cycle_limit
                 'reassemble_equilibrium', operators.reassemble_equilibrium, ...
                 'reassemble_phase', operators.reassemble_phase);
             c5Trace = begin_toy_road_c5_trace(entry, context.output_root);
+            c5PreviousDamage = dLb;
             operators.observe('c5_trace_begin');
         end
 
@@ -68,6 +69,10 @@ for cycle = 1:context.cycle_limit
                 cycle, substep, stagger, state, traction, dLb, historyPre);
             localValidateCompletedState(state, psiRaw, context.state0);
             if isGateSubstep
+                damageFixedPoint = max(abs(state.d-c5PreviousDamage), ...
+                    [], 'all') <= 1e-3;
+                c5PreviousDamage = state.d;
+                converged = converged && damageFixedPoint;
                 if converged
                     updateEvent = sprintf('c5_stagger_%d_update_converged', stagger);
                 else

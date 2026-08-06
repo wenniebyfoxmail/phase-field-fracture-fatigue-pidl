@@ -1,6 +1,7 @@
 classdef ToyRoadP0SolverDouble < handle
     properties
         C5StaggerCount = 3
+        C5NativeConvergenceAt = []
         C5FinalDelta = 5e-4
         C5MetricFailure = ''
         FailReassemblyOrdinal = 0
@@ -115,7 +116,11 @@ classdef ToyRoadP0SolverDouble < handle
                     state.d(1) = 1 + 2e-12;
                 end
                 self.CompletedC5Staggers(end + 1) = stagger;
-                converged = stagger == target;
+                nativeTarget = self.C5NativeConvergenceAt;
+                if isempty(nativeTarget)
+                    nativeTarget = target;
+                end
+                converged = stagger >= nativeTarget;
             else
                 state.d(1) = state.d(1) + 1e-4;
                 converged = true;
