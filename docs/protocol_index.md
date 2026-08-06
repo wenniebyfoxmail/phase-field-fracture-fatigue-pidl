@@ -21,6 +21,10 @@ For Codex agent execution rules, use the local skill:
 
 - `/Users/wenxiaofang/.codex/skills/pidl-run-analysis-workflow/SKILL.md`
 
+For any longitudinal real-road natural-evolution dataset, start with:
+
+- `docs/real_road_natural_evolution_episode_policy_20260806.md`
+
 The Codex skill is an agent workflow: folder layout, provenance capture,
 download checks, analysis package generation and decision output. The docs
 protocol is the shared scientific analysis protocol: what evidence a PIDL/FEM
@@ -34,6 +38,7 @@ case must support before it can be used.
 | `docs/taobo_gpu_submission_protocol.md` | Current | Taobo GPU launch, sync and monitoring discipline | Operational protocol, not analysis evidence. |
 | `docs/git_workflow.md` | Current | Mac/Windows/Taobo source-control workflow | Shared code-truth and sync rules. |
 | `/Users/wenxiaofang/.codex/skills/pidl-run-analysis-workflow/SKILL.md` | Current local Codex skill | Agent execution workflow | Local to this Mac, not part of the GitHub repo. |
+| `docs/real_road_natural_evolution_episode_policy_20260806.md` | Current | Episode construction, intervention/reset boundaries, and terminal censoring for real-road trajectories | Maintenance is a boundary, not a default feature; intervention studies require a separate track. |
 
 ## Schedule And Alignment History
 

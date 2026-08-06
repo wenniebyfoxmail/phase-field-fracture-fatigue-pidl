@@ -31,6 +31,17 @@
 8. 多 agent 只做边界清晰的 sidecar（文献提取、日志检查、结果整理、对比分析）
 9. 主问题不并行、不委派；研究判断留在主 agent
 
+## Real-Road Natural-Evolution Data Rule
+
+- 研究“自然裂缝发展”时，维修/重建/罩面/封缝/补坑等事件默认只用于
+  episode 分段与 censoring，不作为默认预测特征；干预效果必须另建 track。
+- source 与 target 必须属于同一物理资产、注册面板和 construction/结构状态，
+  且区间内无已记录 reset，也不得跨 Out-of-Study 或其他 terminal boundary。
+- 必须在读取拟合 outcome 前冻结 episode manifest；不得因裂缝长度下降而反推
+  “发生维修”并删行。记录缺失只能称 `no documented intervention`，不能称
+  “确认未维修”。
+- 完整规则见 `docs/real_road_natural_evolution_episode_policy_20260806.md`。
+
 ---
 
 ## Self-check
