@@ -1,11 +1,11 @@
 {
   "schema_version": "toy_road_case_physics_contracts_v1",
   "protocol_version": "toy-road-p0-repeatability-v2.1",
-  "family_contract_sha256": "a8b551de122d08a7257b0a1a52012a6d19ba40b4b9dfcae15abf3ae9a79ffa80",
+  "family_contract_sha256": "fbd80ce8eba999ec8ee74fc56bbe27bb917b41dcb375f93809a9296d2da654b8",
   "cases": {
     "P0_parent": {
       "changed_axes": [],
-      "case_physics_contract_sha256": "bc25e536a163a6e7912b4f998b6480a444d4c543027a6caa7375ca54c3fdb37f",
+      "case_physics_contract_sha256": "443c197643cce6f76f74c4bd04a2ad74c7d030e3e28788ce3fecc91d7cc3efa4",
       "physics": {
         "mesh": {
           "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
@@ -59,7 +59,7 @@
     },
     "P0R_parent_repeat": {
       "changed_axes": [],
-      "case_physics_contract_sha256": "bc25e536a163a6e7912b4f998b6480a444d4c543027a6caa7375ca54c3fdb37f",
+      "case_physics_contract_sha256": "443c197643cce6f76f74c4bd04a2ad74c7d030e3e28788ce3fecc91d7cc3efa4",
       "physics": {
         "mesh": {
           "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
@@ -113,7 +113,7 @@
     },
     "T1_initial_defect": {
       "changed_axes": ["mesh.node_coords"],
-      "case_physics_contract_sha256": "ab68445a7ed7897612c04d9e9a2574f05fc67b1472adea1cbbfb55380453fe44",
+      "case_physics_contract_sha256": "416205445959bfe7f1daa88e161bee796ba6305157c23c6e7355d7ca4e26281c",
       "physics": {
         "mesh": {
           "mesh_sha256": "1db2b1074fc04b1bd8302f9810ea6f3a72a44485819b215eca8ccea85038a1d4",
@@ -175,7 +175,7 @@
     },
     "T2_material_state": {
       "changed_axes": ["material.Gc"],
-      "case_physics_contract_sha256": "c153d6155fcf100d2152bf39b70bbd46e92b77e7733d99e615812b7d8146bd2a",
+      "case_physics_contract_sha256": "e28e73926b70ac83884a27ed7a3628e026d5fae6c82fdf8bab1203d3dcd19b95",
       "physics": {
         "mesh": {
           "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
@@ -229,7 +229,7 @@
     },
     "T3_loading_history": {
       "changed_axes": ["loading.blocks"],
-      "case_physics_contract_sha256": "64fbb1e4a58ca07f01d6e75e920e2861478cc3137be6655965c7d9ca1e606060",
+      "case_physics_contract_sha256": "c440b195144b602859412258234faadb73c3bd6291265c7f8c43c0558518f788",
       "physics": {
         "mesh": {
           "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",

@@ -30,6 +30,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProtocolVersion = 'toy-road-p0-repeatability-v2.1'
 $ApprovedGripfithCommit = 'fc19b6017add6b075dd24fa9525a5e8daa99090c'
+$ApprovedQ1GripfithCommit = '355d4c83fefc2db88c32031a2dd2623b3de85c89'
 $ApprovedInitialSha256 = 'ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db'
 $LegacyInitialSha256 = '589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340'
 $MatlabExecutable = 'C:\Program Files\MATLAB\R2025b\bin\matlab.exe'
@@ -635,7 +636,7 @@ function Assert-RuntimeAndStaticContract(
     }
     if ([string]$q1.schema_version -cne 'rebuilt_initial_mex_q1_receipt_v1' -or
             $q1.passed -ne $true -or $q1.source_clean -ne $true -or
-            [string]$q1.source_commit -cne $ApprovedGripfithCommit -or
+            [string]$q1.source_commit -cne $ApprovedQ1GripfithCommit -or
             [string]$q1.runtime_initial_sha256 -cne $ApprovedInitialSha256 -or
             [string]$q1.runtime_lock_sha256 -cne [string]$runtimeIdentity.runtime_lock_sha256 -or
             [string]$q1.receipt_sha256 -cne [string]$runtimeIdentity.q1.receipt_sha256 -or

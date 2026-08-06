@@ -15,7 +15,7 @@
                                              "name":  "AT1_HISTORY_FATIGUE",
                                              "owner":  "griphfith",
                                              "path":  "Sources/+phase_field/+mex/+fem/+assembly/+pf/AT1_HISTORY_FATIGUE.mexw64",
-                                             "sha256":  "db237d045ffe5c34dd8723665da5a71950ea4293c8e6d7606195e2a771f5cfe0"
+                                             "sha256":  "53e8fd0b229817b7c14c52a5b6afaa957692f475057b79b9a9a10195ccb92e60"
                                          },
                                          {
                                              "name":  "cholmod2",
@@ -32,7 +32,7 @@
                            "crash_dump_relative_path":  "build/LEGACY_CRASH_DUMP.txt"
                        },
     "source":  {
-                   "commit":  "fc19b6017add6b075dd24fa9525a5e8daa99090c",
+                   "commit":  "355d4c83fefc2db88c32031a2dd2623b3de85c89",
                    "clean_receipt":  {
                                          "git_status_porcelain":  "",
                                          "is_clean":  true

@@ -300,6 +300,9 @@ def test_contract_files_bind_runtime_and_historical_closure() -> None:
     assert runtime["initial_mexw64_sha256"] == (
         "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db"
     )
+    assert runtime["runtime_lock_sha256"] == (
+        "a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7"
+    )
     assert runtime["h5py_version"] == "3.16.0"
     assert runtime["java_hard_link_required"] is True
     assert runtime["mesh_sha256_semantics"] == (
@@ -315,6 +318,9 @@ def test_contract_files_bind_runtime_and_historical_closure() -> None:
         "db237d045ffe5c34dd8723665da5a71950ea4293c8e6d7606195e2a771f5cfe0"
     )
     assert runtime["build_provenance"]["source_modified_for_rebuild"] is False
+    launcher = (MODULE_PATH.parent / "launch_toy_road_family_case.ps1").read_text()
+    assert "$ApprovedQ1GripfithCommit = " in launcher
+    assert "[string]$q1.source_commit -cne $ApprovedQ1GripfithCommit" in launcher
     assert closure["verdict"] == "historical_q2_parent_irrecoverable"
     assert closure["active_field_backward_equivalence_claimed"] is False
 

@@ -2,7 +2,7 @@
   "schema_version": "toy_road_family_contract_v1",
   "protocol_version": "toy-road-p0-repeatability-v2.1",
   "runtime_identity": {
-    "runtime_lock_sha256": "0fd24204ee6a19b6afb704fde956cc6479433d022684eec187c85ab13b8c450d",
+    "runtime_lock_sha256": "a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7",
     "griphfith_source_commit": "fc19b6017add6b075dd24fa9525a5e8daa99090c",
     "griphfith_source_clean_required": true,
     "initial_mexw64_sha256": "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db",

@@ -4,7 +4,7 @@
     "files":  [
                   {
                       "path":  "CASE_PHYSICS_CONTRACTS.json",
-                      "sha256":  "e04cc9db128db0a666e381bc9634fa48bf8399cdba56579bd9089152da102f40"
+                      "sha256":  "166a572307753da09d9cba134c8c7fd9882e86e8e7ba6e9106e204fb67a949e6"
                   },
                   {
                       "path":  "DEDICATED_PRODUCER_POLICY.json",
@@ -12,7 +12,7 @@
                   },
                   {
                       "path":  "FAMILY_CONTRACT.json",
-                      "sha256":  "ebce1526b758d6cffa8018de9cfefe444d73ef7019ee28ce10223ba1ea9030a5"
+                      "sha256":  "f7a1769d69f87024dd0f6823ad83478bdae2c39ea0a445059d179a2a8dc3a223"
                   },
                   {
                       "path":  "HISTORICAL_Q2_CLOSURE.json",
@@ -68,7 +68,7 @@
                   },
                   {
                       "path":  "launch_toy_road_family_case.ps1",
-                      "sha256":  "3de8b26fc8f730770c1762bd850b8d09938a868c3313c66dba9180d60796c4c9"
+                      "sha256":  "a6f11a7ce092c4f3afcf064c650202db93dcfa1b0a676c2f432629abc04d24dd"
                   },
                   {
                       "path":  "launch_toy_road_runtime_diagnostic.ps1",

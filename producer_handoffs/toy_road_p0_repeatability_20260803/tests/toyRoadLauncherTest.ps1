@@ -15,8 +15,9 @@ $Roles = @(
 $ApprovedInitial = 'ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db'
 $LegacyInitial = '589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340'
 $GripCommit = 'fc19b6017add6b075dd24fa9525a5e8daa99090c'
+$Q1GripCommit = '355d4c83fefc2db88c32031a2dd2623b3de85c89'
 $SourceCommit = 'a' * 40
-$RuntimeLockSha = '0fd24204ee6a19b6afb704fde956cc6479433d022684eec187c85ab13b8c450d'
+$RuntimeLockSha = 'a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7'
 $summaryText = & $Python (Join-Path $HandoffDir 'toy_road_protocol.py') --contract-summary
 if ($LASTEXITCODE -ne 0) { throw 'Cannot load canonical Task 6 contracts.' }
 $ContractSummary = [string]@($summaryText)[-1] | ConvertFrom-Json
@@ -150,9 +151,9 @@ function New-Fixture([string]$Role) {
             schema_version = 'rebuilt_initial_mex_q1_receipt_v1'
             passed = $true
             source_clean = $true
-            source_commit = $GripCommit
+            source_commit = $Q1GripCommit
             runtime_initial_sha256 = $ApprovedInitial
-            runtime_lock_sha256 = '0fd24204ee6a19b6afb704fde956cc6479433d022684eec187c85ab13b8c450d'
+            runtime_lock_sha256 = 'a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7'
             receipt_sha256 = '8fd051e4bf806c9a593297b95377a1fcc434f2b16cba5f67cc9f597b2e54fc36'
             result_sha256 = '21b769af9e7c78b3d3bc45a8fc85671ccf455004c74cddfb29a6beb56499d96a'
         }
