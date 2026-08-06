@@ -34,7 +34,7 @@ California 126 条 section 的官方 viewer 全量审计得到 20 条重复地�
 
 
 
-**LTPP enriched-input track（no fit）**：固定 30-row v3 sensitivity amendment 已获批，仅进入 input freeze 与 prior-predictive preflight；完整证据与门控维护在 `experiments/ltpp_geoforecast_enriched_input_track.md`。
+**LTPP enriched-input track（no fit）**：固定 30×11 输入已通过，但 28/28 个 prior-predictive checks 均因物理尺度过宽失败（超限 8.2%–27.8%，门槛 ≤1%）；尚未读 outcome 或拟合模型，下一步仅允许外审一个 prior-calibration amendment。完整证据维护在 `experiments/ltpp_geoforecast_enriched_input_track.md`。
 
 ## Breakthrough / Publication Gates
 
