@@ -2,7 +2,7 @@
 
 Canonical track document
 
-Status: `V4_PRIOR_PREFLIGHT_PASS__FIT_AUTHORIZATION_REQUIRED__NO_FIT`
+Status: `PRIMARY_NEGATIVE__ORACLE_DIAGNOSTIC_COMPLETE`
 
 ## Mechanism question
 
@@ -47,6 +47,7 @@ All `local` paths above are rooted at
 | enriched-input v3 prior-predictive gate | `FAILED__NO_FIT` | `ltpp_geoforecast_enriched_input_v3_prior_predictive_blocked_20260806.md` |
 | enriched-input v4 prior amendment | `APPROVED_FOR_PREFLIGHT_ONLY__NO_FIT` | `ltpp_geoforecast_enriched_input_preregistration_v4_prior_amendment_candidate_20260806.md` |
 | enriched-input v4 prior preflight | `PASS__FIT_AUTHORIZATION_REQUIRED__NO_FIT` | `ltpp_geoforecast_enriched_input_v4_prior_preflight_pass_20260806.md` |
+| enriched-input frozen posterior | `PRIMARY_NEGATIVE__ORACLE_DIAGNOSTIC_COMPLETE` | `ltpp_geoforecast_enriched_input_posterior_result_20260806.md` |
 
 ## V2 terminal decision
 
@@ -57,7 +58,7 @@ row for the required prior complete year 1995. Construction 2 has AADTT but a
 null ESAL. V2 prohibits substitution, imputation, row removal, or source-year
 leakage, so prior-predictive checking and fitting did not run.
 
-## Current gate: posterior-fit authorization
+## Frozen posterior result
 
 - **Mechanism question:** unchanged from v2.
 - **Completed input gate:** the exact 30x11 table and regenerated LOSO/24+6
@@ -72,20 +73,33 @@ leakage, so prior-predictive checking and fitting did not run.
   exceedance fractions were 0.0000--0.0040 against the unchanged 0.01 gate.
 - **Tail disclosure:** rare individual draws reached about 179,895 m. They do
   not fail the frozen frequency gate, but remain disclosed for fit review.
-- **Fit authorization:** still `NO_FIT`; v4 approval covered preflight only.
+- **Fit authorization:** ChatGPT Pro explicitly issued
+  `AUTHORIZE_FROZEN_POSTERIOR_FIT`; the authorization receipt is sealed at
+  SHA-256 `4ba69691...e27f`.
+- **Execution validity:** all 28 primary NUTS fits passed final diagnostics;
+  eight used the one allowed retry, with zero final divergences.
+- **Primary result:** no M1/M0, M2/M1, M3/M2, or M3/B0 contrast passed the
+  frozen LOSO gate. M3 worsened pooled MAE by 4.13% relative to persistence and
+  improved only 3/6 sections.
+- **Oracle result:** O3 changed matched 29-row LOSO MAE by only `-0.0093 m`
+  and remains non-confirmatory; it does not rescue the primary result.
 
 ## Current decision
 
-Keep inputs, splits, priors, likelihood, seeds, metrics, and order frozen. Seal
-the passing v4 receipt and do not access outcomes before fit authorization.
+Close this experiment as a computationally valid negative result. Do not tune
+the frozen model, replace metrics, clip predictive tails, or promote O3. The
+supported claim is limited to lack of stable incremental predictive value in
+this six-section, 30-transition sensitivity protocol.
 
 ## Next action
 
-Submit the sealed v4 result and bounded fit-authorization request to ChatGPT
-Pro. Do not start posterior fitting before an explicit authorization headline.
+Use persistence as the honest point baseline for this panel. Any larger panel,
+spatial target, alternative likelihood, or different representation must be a
+new preregistered experiment rather than a continuation of this track.
 
 ## Research-frontier handoff
 
-The fixed 30-row table and externally approved v4 prior preflight passed all 28
-checks without reading outcomes. Separate posterior-fit authorization remains
-required; full evidence remains in this track.
+The authorized frozen posterior experiment completed as a valid negative
+result: no enriched input block passed its LOSO increment gate, M3 worsened MAE
+4.13% versus persistence, and the O3 realized-exposure diagnostic was
+negligible. Full evidence remains in this track and its result document.

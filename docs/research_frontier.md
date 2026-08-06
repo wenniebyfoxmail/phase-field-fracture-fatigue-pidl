@@ -34,7 +34,7 @@ California 126 条 section 的官方 viewer 全量审计得到 20 条重复地�
 
 
 
-**LTPP enriched-input track（no fit）**：固定 30×11 输入与外审后的 v4 prior preflight 均通过（28/28；超限比例 0%–0.4%，门槛 ≤1%），但尚未读取 outcome 或拟合 posterior；下一步仅是单独申请 frozen fit authorization。完整证据维护在 `experiments/ltpp_geoforecast_enriched_input_track.md`。
+**LTPP enriched-input track（有效负结果）**：经 Pro 授权的冻结 posterior 已完成；四个 LOSO 增量比较均未通过，完整 M3 相对 persistence 的 MAE 反而恶化 4.13%（仅 3/6 section 改善），O3 realized-exposure 诊断在匹配 29 行仅改善 0.0093 m，不能挽救主结论。该结果只说明六路段/30-transition 协议下未见稳定增量预测价值；完整证据维护在 `experiments/ltpp_geoforecast_enriched_input_track.md`。
 
 ## Breakthrough / Publication Gates
 
