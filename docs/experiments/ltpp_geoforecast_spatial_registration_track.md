@@ -28,16 +28,19 @@ separately reviewed scalar-length analysis.
 | State | Status | Evidence |
 |---|---|---|
 | Existing nominal rectification | coordinate comparison only | `../ltpp_06_1253_rectification_gate_20260805.md` |
-| v1 conditional internal-grid audit | approved for one preflight only | `ltpp_geoforecast_spatial_registration_audit_preregistration_v1_20260806.md` |
+| v1 conditional internal-grid audit | `SPATIAL_REGISTRATION_NOT_QUALIFIED__NO_2D_MODEL` | `ltpp_geoforecast_spatial_registration_audit_v1_result_20260806.md` |
 
 ## Active gate
 
-Only the eight frozen `06-1253` states may be audited. Every date must pass the
-fixed held-out printed-grid error gate before this section can enter any 2-D
-crack-position or tip algorithm. Failure cannot be rescued by deleting dates,
-changing the detector, or trying homography/TPS/piecewise transforms inside v1.
+The v1 gate is terminal: only `2/8` dates qualified. Three dates had insufficient
+fixed controls and three additional dates failed spatial-error thresholds. The
+current carrier cannot enter any 2-D crack-position or tip algorithm. Failure
+cannot be rescued by deleting dates, changing the detector, or trying
+homography/TPS/piecewise transforms inside v1.
 
 ## Next action
 
-Freeze the v1 preregistration and code, run synthetic unit tests, then execute
-exactly one read-only `06-1253` preflight. No 2-D model training is authorized.
+Keep scalar-length work separate and explicitly measurement-noise limited. Any
+future spatial route requires a new, independently reviewed registration or
+acquisition track with external validation; no 2-D model training is authorized
+on the current eight-date carrier.
