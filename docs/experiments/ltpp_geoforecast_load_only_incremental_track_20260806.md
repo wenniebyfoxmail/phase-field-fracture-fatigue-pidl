@@ -25,17 +25,19 @@ interpretable.
 
 ## Candidate data and fixed comparison
 
-The candidate row set starts from the already qualified v3 30-transition set
-across the same six sections. The natural-evolution episode audit found one
-additional eligibility question: `06-1253-T07` crosses the 2011-06-01
-Out-of-Study terminal monitoring boundary. This is not evidence of maintenance,
-but it fails the new prospective episode policy. The final row set is therefore
-not frozen. No row may be added, removed, imputed, or requalified until Pro
-decides how this single terminal-censoring exception is handled. If the load-
-only input audit finds a missing or invalid value, the track returns to
-`BLOCKED_INPUT_COVERAGE__NO_FIT` and no rescue is tried.
+The candidate row set starts from the qualified v3 30-transition set across the
+same six sections, then applies one named input-only eligibility exclusion:
+`06-1253-T07` is excluded because it crosses the 2011-06-01 Out-of-Study
+terminal monitoring boundary. This is not evidence of maintenance and the
+exclusion was chosen before any load-only outcome fitting. The proposed frozen
+set is therefore 29 transitions, with 24 development transitions and 5 fixed
+future-time transitions. No further row may be added, removed, imputed, or
+requalified. If the load-only input audit finds a missing or invalid value, the
+track returns to `BLOCKED_INPUT_COVERAGE__NO_FIT` and no rescue is tried.
 
-Evidence: `docs/experiments/ltpp_geoforecast_natural_episode_audit_20260806.md`.
+Evidence and decision record:
+`docs/experiments/ltpp_geoforecast_natural_episode_audit_20260806.md` and
+`docs/experiments/ltpp_geoforecast_load_only_t07_exclusion_amendment_20260806.md`.
 The completed enriched-input result is unchanged and is not retroactively
 requalified.
 
@@ -81,7 +83,8 @@ For Pro review, the candidate retains the previous engineering gate:
 
 - at least 10% pooled MAE reduction;
 - improvement in at least 4 of 6 held-out sections;
-- 90% interval coverage of exactly 26--28 of 30 rows;
+- 90% interval coverage of exactly 25--27 of 29 rows (the integer equivalent
+  of the unchanged 85%--95% band; proposed, not yet Pro-frozen);
 - CRPS worsening no greater than 5%.
 
 If the matched G/G+L comparison fails, the load channel is reported as not
@@ -93,11 +96,12 @@ factor; it would not establish causality.
 
 The following input-only checks must pass first:
 
-1. Verify all 30 rows have valid G1--G3 and T1 under the exact source-year and
+1. Verify all 29 retained rows have valid G1--G3 and T1 under the exact
+   source-year and
    construction join rule.
 2. Verify T1 is positive, finite, and not constant in any LOSO training fold.
-3. Resolve and freeze the terminal-censoring status of `06-1253-T07` under the
-   episode policy; regenerate the fixed row list and split receipt once.
+3. Verify that `06-1253-T07` is the only excluded transition and regenerate the
+   fixed 29-row list and split receipt once.
 4. Produce a row-level coverage/join receipt and hash it.
 5. Verify the runner, environment lock, and split receipt without reading the
    outcome field.
@@ -118,9 +122,9 @@ same confirmatory experiment.
 This document is a candidate protocol, not a frozen preregistration. ChatGPT
 Pro review is required for:
 
-- whether the 30-row reuse is acceptable for this sensitivity track;
-- whether `06-1253-T07` should be retained as a declared terminal-censoring
-  sensitivity row or excluded before input freeze;
+- whether the fixed 29-row reuse is acceptable for this sensitivity track;
+- whether the one named pre-fit exclusion and the resulting 25--27 coverage
+  count are correctly specified;
 - whether G1--G3 are the correct minimal baseline;
 - whether T1 alone is the right load representation;
 - whether the inherited success gate is appropriate;

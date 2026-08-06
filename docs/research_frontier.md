@@ -36,7 +36,7 @@ California 126 条 section 的官方 viewer 全量审计得到 20 条重复地�
 
 **LTPP enriched-input track（有效负结果）**：经 Pro 授权的冻结 posterior 已完成；四个 LOSO 增量比较均未通过，完整 M3 相对 persistence 的 MAE 反而恶化 4.13%（仅 3/6 section 改善），O3 realized-exposure 诊断在匹配 29 行仅改善 0.0093 m，不能挽救主结论。该结果只说明六路段/30-transition 协议下未见稳定增量预测价值；完整证据维护在 `experiments/ltpp_geoforecast_enriched_input_track.md`。
 
-**LTPP load-only incremental track（候选、未冻结）**：拟只比较 `G = 几何+预测间隔` 与 `G+L = G+单一年度 ESAL`，不加入气候、水分、结构、FWD 或其他交通变量；当前 30-row 候选集通过 no-documented-maintenance 检查，但 `06-1253-T07` 跨 2011-06-01 Out-of-Study terminal boundary，须由该 track 在 input freeze 前处理，禁止拟合。完整协议维护在 `experiments/ltpp_geoforecast_load_only_incremental_track_20260806.md`，审计见 `experiments/ltpp_geoforecast_natural_episode_audit_20260806.md`。
+**LTPP load-only incremental track（29-row候选、未冻结）**：拟只比较 `G = 几何+预测间隔` 与 `G+L = G+单一年度 ESAL`，不加入气候、水分、结构、FWD 或其他交通变量；已按用户选择在任何拟合前排除跨 terminal boundary 的 `06-1253-T07`，形成 24 development + 5 future-time 候选集，等待 Pro 审核，禁止拟合。完整协议维护在 `experiments/ltpp_geoforecast_load_only_incremental_track_20260806.md`。
 
 ## Breakthrough / Publication Gates
 

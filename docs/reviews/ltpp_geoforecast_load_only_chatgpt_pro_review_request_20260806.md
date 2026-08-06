@@ -12,15 +12,16 @@ Please answer:
 
 1. Is the G versus G+L comparison scientifically interpretable as a one-channel
    incremental-prediction test?
-2. Is reusing the fixed 30-row, six-section v3 set acceptable, given that
-   `06-1253-T07` crosses the 2011-06-01 Out-of-Study terminal boundary, or must
-   the row be excluded/retained only as a declared sensitivity analysis?
+2. Is the fixed 29-row, six-section set acceptable after the single pre-fit
+   exclusion of `06-1253-T07` for crossing the 2011-06-01 Out-of-Study terminal
+   boundary, or must it be treated only as an exploratory sensitivity analysis?
 3. Are G1 source length, G2 source area, and G3 horizon the correct minimal
    baseline for isolating load?
 4. Is `TRF_TREND.ANNUAL_ESAL_TREND` with latest complete pre-source year and
    source-active construction the correct single load feature?
-5. Are the proposed LOSO, future-time, positive-growth endpoint, model family,
-   and inherited success gates acceptable?
+5. Are the proposed LOSO, 24-development + 5-future-time split,
+   positive-growth endpoint, model family, and 25--27 coverage gate for 29 rows
+   acceptable?
 6. Is the input-only preflight sufficient, and what additional fail-closed
    check is minimally required?
 
