@@ -1,7 +1,7 @@
 # LTPP enriched-input forecast preflight
 
 Date: 2026-08-06  
-Status: `CHATGPT_PRO_APPROVED_FOR_INPUT_FREEZE__NO_FIT`
+Status: `BLOCKED_INPUT_COVERAGE__NO_FIT`
 
 Update: the six requested technical revisions are now specified in
 `ltpp_geoforecast_enriched_input_preregistration_v2_20260806.md`. The revised
@@ -10,8 +10,11 @@ is a non-confirmatory oracle diagnostic. This preflight still does not authorize
 fitting. After the requested rationales and prior-predictive gate were applied,
 ChatGPT Pro returned `APPROVE_FOR_INPUT_FREEZE` for the exact preregistration
 artifact with SHA-256 `3b93cdb71be7c32ea6a7524d14ab2b3d3a619a13fcbed9be596d9e2d5c824992`.
-The immutable 31-row feature package, hash preflight, and prior-predictive
-receipt remain outstanding, so outcome fitting is still forbidden.
+The official input freeze then found that `06-2041-T01` has no
+`TRF_TREND(CONSTRUCTION_NO=3, YEAR=1995)` row. Only 30/31 transitions therefore
+have all 11 features. The fail-closed builder exited `2`; no prior-predictive
+check or outcome fit was run. See
+`ltpp_geoforecast_enriched_input_freeze_blocked_20260806.md`.
 
 ## PIDL Experiment Gate
 
@@ -35,9 +38,9 @@ receipt remain outstanding, so outcome fitting is still forbidden.
 - **Failure criteria:** missing coverage, source-after-target leakage, stale FWD
   treated as synchronous, or no frozen improvement over persistence.
 - **Registry destination:** `docs/research_frontier.md` and this bounded record.
-- **Decision:** `input freeze only`; ChatGPT Pro approved acquisition and
-  hashing of the 31-row source-cutoff feature table. The formal claim-changing
-  ablation remains blocked until every immutable pre-fit gate passes.
+- **Decision:** `BLOCKED_INPUT_COVERAGE`; retain v2 as a terminal input-gate
+  result. Do not substitute another construction/year, impute ESAL, remove the
+  transition, run prior-predictive checks, or fit outcomes.
 
 ## Official live availability audit
 
