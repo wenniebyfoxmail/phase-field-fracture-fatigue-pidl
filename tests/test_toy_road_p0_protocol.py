@@ -315,7 +315,10 @@ def test_contract_files_bind_runtime_and_historical_closure() -> None:
         "cholmod2",
     }
     assert runtime["binary_sha256"]["AT1_HISTORY_FATIGUE"] == (
-        "db237d045ffe5c34dd8723665da5a71950ea4293c8e6d7606195e2a771f5cfe0"
+        "3d9989b7fcc89ea36f1de196cad86cfcef3406c7365ac82bd6c58280a0cc9298"
+    )
+    assert runtime["binary_sha256"]["AMOR"] == (
+        "e200dbb757172c3927bcd72f4f093c5a6b17dab52fcbd72505e34e0434924b9a"
     )
     assert runtime["build_provenance"]["source_modified_for_rebuild"] is False
     launcher = (MODULE_PATH.parent / "launch_toy_road_family_case.ps1").read_text()

@@ -106,8 +106,8 @@ function New-Fixture([string]$Role) {
             initial_sha256 = $ApprovedInitial
             binaries = [ordered]@{
                 initial = $ApprovedInitial
-                AMOR = '64abee69f2c441730dc2efa4047ac45ab1d1b40e20c4822ed6e992adcd6b19e7'
-                AT1_HISTORY_FATIGUE = 'db237d045ffe5c34dd8723665da5a71950ea4293c8e6d7606195e2a771f5cfe0'
+                AMOR = 'e200dbb757172c3927bcd72f4f093c5a6b17dab52fcbd72505e34e0434924b9a'
+                AT1_HISTORY_FATIGUE = '3d9989b7fcc89ea36f1de196cad86cfcef3406c7365ac82bd6c58280a0cc9298'
                 cholmod2 = '86a2f15543eda1f7223a1733d935d37e9e2f4f2c2d8db3c4adc2c0f675c27329'
             }
             compiler = [ordered]@{

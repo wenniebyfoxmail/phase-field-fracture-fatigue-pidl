@@ -4,7 +4,7 @@
     "files":  [
                   {
                       "path":  "CASE_PHYSICS_CONTRACTS.json",
-                      "sha256":  "166a572307753da09d9cba134c8c7fd9882e86e8e7ba6e9106e204fb67a949e6"
+                      "sha256":  "46912bf0ddf4466b05a4ec3a014ea9f6dfbc2f8254386f423a9e964672c86045"
                   },
                   {
                       "path":  "DEDICATED_PRODUCER_POLICY.json",
@@ -12,7 +12,7 @@
                   },
                   {
                       "path":  "FAMILY_CONTRACT.json",
-                      "sha256":  "f7a1769d69f87024dd0f6823ad83478bdae2c39ea0a445059d179a2a8dc3a223"
+                      "sha256":  "132acfe586e63e740f8ec91ba825186bdb07c5a0f86af69c3345f519fe3d7e73"
                   },
                   {
                       "path":  "HISTORICAL_Q2_CLOSURE.json",
