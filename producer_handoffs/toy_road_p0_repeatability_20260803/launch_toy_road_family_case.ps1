@@ -29,7 +29,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ProtocolVersion = 'toy-road-p0-repeatability-v2.1'
-$ApprovedGripfithCommit = '355d4c83fefc2db88c32031a2dd2623b3de85c89'
+$ApprovedGripfithCommit = 'fc19b6017add6b075dd24fa9525a5e8daa99090c'
 $ApprovedInitialSha256 = 'ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db'
 $LegacyInitialSha256 = '589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340'
 $MatlabExecutable = 'C:\Program Files\MATLAB\R2025b\bin\matlab.exe'

@@ -14,9 +14,9 @@ $Roles = @(
 )
 $ApprovedInitial = 'ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db'
 $LegacyInitial = '589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340'
-$GripCommit = '355d4c83fefc2db88c32031a2dd2623b3de85c89'
+$GripCommit = 'fc19b6017add6b075dd24fa9525a5e8daa99090c'
 $SourceCommit = 'a' * 40
-$RuntimeLockSha = 'a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7'
+$RuntimeLockSha = '0fd24204ee6a19b6afb704fde956cc6479433d022684eec187c85ab13b8c450d'
 $summaryText = & $Python (Join-Path $HandoffDir 'toy_road_protocol.py') --contract-summary
 if ($LASTEXITCODE -ne 0) { throw 'Cannot load canonical Task 6 contracts.' }
 $ContractSummary = [string]@($summaryText)[-1] | ConvertFrom-Json
@@ -106,7 +106,7 @@ function New-Fixture([string]$Role) {
             binaries = [ordered]@{
                 initial = $ApprovedInitial
                 AMOR = '64abee69f2c441730dc2efa4047ac45ab1d1b40e20c4822ed6e992adcd6b19e7'
-                AT1_HISTORY_FATIGUE = '53e8fd0b229817b7c14c52a5b6afaa957692f475057b79b9a9a10195ccb92e60'
+                AT1_HISTORY_FATIGUE = 'db237d045ffe5c34dd8723665da5a71950ea4293c8e6d7606195e2a771f5cfe0'
                 cholmod2 = '86a2f15543eda1f7223a1733d935d37e9e2f4f2c2d8db3c4adc2c0f675c27329'
             }
             compiler = [ordered]@{
@@ -152,7 +152,7 @@ function New-Fixture([string]$Role) {
             source_clean = $true
             source_commit = $GripCommit
             runtime_initial_sha256 = $ApprovedInitial
-            runtime_lock_sha256 = 'a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7'
+            runtime_lock_sha256 = '0fd24204ee6a19b6afb704fde956cc6479433d022684eec187c85ab13b8c450d'
             receipt_sha256 = '8fd051e4bf806c9a593297b95377a1fcc434f2b16cba5f67cc9f597b2e54fc36'
             result_sha256 = '21b769af9e7c78b3d3bc45a8fc85671ccf455004c74cddfb29a6beb56499d96a'
         }

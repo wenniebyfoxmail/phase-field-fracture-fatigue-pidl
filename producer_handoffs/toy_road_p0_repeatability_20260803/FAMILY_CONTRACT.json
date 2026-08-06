@@ -2,8 +2,8 @@
   "schema_version": "toy_road_family_contract_v1",
   "protocol_version": "toy-road-p0-repeatability-v2.1",
   "runtime_identity": {
-    "runtime_lock_sha256": "a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7",
-    "griphfith_source_commit": "355d4c83fefc2db88c32031a2dd2623b3de85c89",
+    "runtime_lock_sha256": "0fd24204ee6a19b6afb704fde956cc6479433d022684eec187c85ab13b8c450d",
+    "griphfith_source_commit": "fc19b6017add6b075dd24fa9525a5e8daa99090c",
     "griphfith_source_clean_required": true,
     "initial_mexw64_sha256": "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db",
     "legacy_crashing_initial_mexw64_sha256": "589f3dc793694ea2916fbb6a21dd030bc4bc04ead3d91705e6e882b2d67ca340",
@@ -12,7 +12,7 @@
     "binary_sha256": {
       "initial": "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db",
       "AMOR": "64abee69f2c441730dc2efa4047ac45ab1d1b40e20c4822ed6e992adcd6b19e7",
-      "AT1_HISTORY_FATIGUE": "53e8fd0b229817b7c14c52a5b6afaa957692f475057b79b9a9a10195ccb92e60",
+      "AT1_HISTORY_FATIGUE": "db237d045ffe5c34dd8723665da5a71950ea4293c8e6d7606195e2a771f5cfe0",
       "cholmod2": "86a2f15543eda1f7223a1733d935d37e9e2f4f2c2d8db3c4adc2c0f675c27329"
     },
     "build_provenance": {

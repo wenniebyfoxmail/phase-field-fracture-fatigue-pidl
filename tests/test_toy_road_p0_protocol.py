@@ -295,7 +295,7 @@ def test_contract_files_bind_runtime_and_historical_closure() -> None:
     assert {case.family_sha256 for case in contracts.values()} == {expected_family}
     runtime = family["runtime_identity"]
     assert runtime["griphfith_source_commit"] == (
-        "355d4c83fefc2db88c32031a2dd2623b3de85c89"
+        "fc19b6017add6b075dd24fa9525a5e8daa99090c"
     )
     assert runtime["initial_mexw64_sha256"] == (
         "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db"
@@ -311,6 +311,10 @@ def test_contract_files_bind_runtime_and_historical_closure() -> None:
         "AT1_HISTORY_FATIGUE",
         "cholmod2",
     }
+    assert runtime["binary_sha256"]["AT1_HISTORY_FATIGUE"] == (
+        "db237d045ffe5c34dd8723665da5a71950ea4293c8e6d7606195e2a771f5cfe0"
+    )
+    assert runtime["build_provenance"]["source_modified_for_rebuild"] is False
     assert closure["verdict"] == "historical_q2_parent_irrecoverable"
     assert closure["active_field_backward_equivalence_claimed"] is False
 
