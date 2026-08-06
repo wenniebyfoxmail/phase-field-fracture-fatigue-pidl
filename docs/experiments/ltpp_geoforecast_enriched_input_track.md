@@ -2,7 +2,7 @@
 
 Canonical track document
 
-Status: `V3_PRIOR_FAILED__V4_EXTERNAL_REVIEW_REQUIRED__NO_FIT`
+Status: `V4_PRIOR_PREFLIGHT_PASS__FIT_AUTHORIZATION_REQUIRED__NO_FIT`
 
 ## Mechanism question
 
@@ -44,8 +44,9 @@ All `local` paths above are rooted at
 | enriched-input v2 input freeze | `BLOCKED_INPUT_COVERAGE__NO_FIT` | `ltpp_geoforecast_enriched_input_freeze_blocked_20260806.md` |
 | enriched-input v3 complete-case amendment | `APPROVED_FOR_30_ROW_INPUT_FREEZE__NO_FIT` | `ltpp_geoforecast_enriched_input_preregistration_v3_amendment_candidate_20260806.md` |
 | enriched-input v3 input freeze | `PASS_30_BY_11__NO_FIT` | `ltpp_geoforecast_enriched_input_v3_prior_predictive_blocked_20260806.md` |
-| enriched-input v3 prior-predictive gate | `REVIEW_REQUIRED__NO_FIT` | `ltpp_geoforecast_enriched_input_v3_prior_predictive_blocked_20260806.md` |
-| enriched-input v4 prior amendment | `CANDIDATE__EXTERNAL_REVIEW_REQUIRED__NO_FIT` | `ltpp_geoforecast_enriched_input_preregistration_v4_prior_amendment_candidate_20260806.md` |
+| enriched-input v3 prior-predictive gate | `FAILED__NO_FIT` | `ltpp_geoforecast_enriched_input_v3_prior_predictive_blocked_20260806.md` |
+| enriched-input v4 prior amendment | `APPROVED_FOR_PREFLIGHT_ONLY__NO_FIT` | `ltpp_geoforecast_enriched_input_preregistration_v4_prior_amendment_candidate_20260806.md` |
+| enriched-input v4 prior preflight | `PASS__FIT_AUTHORIZATION_REQUIRED__NO_FIT` | `ltpp_geoforecast_enriched_input_v4_prior_preflight_pass_20260806.md` |
 
 ## V2 terminal decision
 
@@ -56,7 +57,7 @@ row for the required prior complete year 1995. Construction 2 has AADTT but a
 null ESAL. V2 prohibits substitution, imputation, row removal, or source-year
 leakage, so prior-predictive checking and fitting did not run.
 
-## Current gate: v4 prior-amendment review
+## Current gate: posterior-fit authorization
 
 - **Mechanism question:** unchanged from v2.
 - **Completed input gate:** the exact 30x11 table and regenerated LOSO/24+6
@@ -65,23 +66,26 @@ leakage, so prior-predictive checking and fitting did not run.
   exceeded the 1% cap gate; observed exceedance fractions were 8.2%--27.8%.
 - **Evidence boundary:** no outcome field was read and no posterior or ablation
   was fitted. This diagnoses implausibly broad priors, not feature value.
-- **Minimal candidate change:** replace only the four prior scales with
+- **Approved amendment:** ChatGPT Pro approved exactly one v4 preflight using
   `Normal(0,1)`, `Normal(0,0.1)`, `HalfNormal(0.5)`, and `HalfNormal(0.5)`.
-  Candidate SHA-256 is `d8fa9840...5565`; it has not been executed.
-- **Fit authorization:** `NO_FIT`; the failed prior check is terminal for v3.
+- **Completed cheaper diagnostic:** all 28 model/design checks passed; fold
+  exceedance fractions were 0.0000--0.0040 against the unchanged 0.01 gate.
+- **Tail disclosure:** rare individual draws reached about 179,895 m. They do
+  not fail the frozen frequency gate, but remain disclosed for fit review.
+- **Fit authorization:** still `NO_FIT`; v4 approval covered preflight only.
 
 ## Current decision
 
-Keep the qualified 30x11 inputs frozen, record v3 as failed at prior scale, and
-do not fit outcomes or compare multiple prior rescues.
+Keep inputs, splits, priors, likelihood, seeds, metrics, and order frozen. Seal
+the passing v4 receipt and do not access outcomes before fit authorization.
 
 ## Next action
 
-Submit the v4 amendment and its bounded review request to ChatGPT Pro. Do not
-execute the amended prior check before explicit approval.
+Submit the sealed v4 result and bounded fit-authorization request to ChatGPT
+Pro. Do not start posterior fitting before an explicit authorization headline.
 
 ## Research-frontier handoff
 
-The fixed 30-row LTPP enriched-input table passed, but all 28 prior-predictive
-checks failed the physical-scale ceiling before any outcome fit. A separately
-reviewed prior amendment is now required; full evidence remains in this track.
+The fixed 30-row table and externally approved v4 prior preflight passed all 28
+checks without reading outcomes. Separate posterior-fit authorization remains
+required; full evidence remains in this track.
