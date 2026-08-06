@@ -1,6 +1,6 @@
 # LTPP load-only incremental forecast track
 
-Status: `INPUT_PREFLIGHT_PASS__FIT_AUTHORIZATION_REQUIRED__NO_FIT`
+Status: `PRIMARY_NEGATIVE__LOAD_ONLY_COMPLETE`
 
 This is a new, deliberately narrow experiment. It does not reopen, retune, or
 rescue the completed enriched-input track. No outcome fitting is authorized by
@@ -124,10 +124,14 @@ The result must be registered in this track and in `docs/research_frontier.md`;
 it must not be folded into the closed enriched-input result as if it were the
 same confirmatory experiment.
 
-## Fit authorization state
+## Posterior result
 
-ChatGPT Pro issued `APPROVE_LOAD_ONLY_INPUT_PREFLIGHT`, not fit
-authorization. The next and only requested decision is
-`APPROVE_LOAD_ONLY_POSTERIOR_FIT` for the frozen G versus G+L comparison.
-Until that headline is issued, posterior fitting and ablation scoring remain
-prohibited.
+ChatGPT Pro issued `APPROVE_LOAD_ONLY_POSTERIOR_FIT` for the frozen G versus
+G+L comparison. The posterior fit completed with valid sampler diagnostics,
+but the load increment failed the preregistered LOSO gate: G+L MAE was 0.376%
+worse than G and improved only 2/6 sections. Full evidence is in
+`ltpp_geoforecast_load_only_posterior_result_20260806.md`.
+
+Close this track as a valid single-channel negative result. Do not add another
+feature, alter T1, change the endpoint, or search architectures inside this
+track.
