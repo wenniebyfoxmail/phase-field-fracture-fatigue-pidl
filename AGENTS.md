@@ -42,6 +42,37 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 - The parent repo is local scratch. The child repo `upload code/` is the GitHub-synced project.
 - If the working tree is dirty, preserve unrelated changes. Do not revert files you did not intentionally modify.
 
+## Research Figure Documentation
+
+- Every newly generated research figure (`.png`, `.pdf`, `.svg`, `.jpg`, or
+  `.jpeg`) must have a same-stem `.md` sidecar in the same directory. Multiple
+  render formats of the same figure may share that one sidecar.
+- The sidecar must explain the figure question, exact data provenance, how to
+  read axes/colours/lines, every panel, the main numerical takeaway, limitations,
+  and the claim boundary. Use `docs/templates/research_figure_sidecar.md`.
+- Prefer generating the sidecar from the plotting script so values cannot drift
+  from the rendered figure. Before handoff, run
+  `python source/validate_figure_sidecars.py <figure-directory>`.
+
+## Research Track Documentation
+
+- Every research track must have one stable canonical document under
+  `docs/experiments/`, normally `<track>_track.md`. It owns the full mechanism
+  question, claim boundary, experiment states, evidence links, active gate, and
+  next action.
+- Every claim-changing experiment within that track must have its own dated
+  preregistration/decision document and, when applicable, attempt ledger. Do
+  not use `docs/research_frontier.md` as the experiment record.
+- Update order is mandatory: first update the track/experiment document and its
+  receipts; only then update `docs/research_frontier.md` with a concise status
+  and link to the canonical track document.
+- Keep raw/generated payloads in `local_archive/` or an external producer
+  store. Git tracks compact summaries, manifests, hashes, code, and decision
+  notes.
+- A frontier entry should state only current status, claim boundary, and next
+  discriminator. Detailed history, tables, commands, and alternative designs
+  belong in the canonical track document.
+
 ## Where Details Live
 
 - `CLAUDE.md` — project session protocol and red lines.
