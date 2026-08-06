@@ -19,6 +19,24 @@ PRIOR_DRAWS = 500
 PRIOR_CAP_M = 100.189733
 EXCEEDANCE_LIMIT = 0.01
 NU = 4.0
+V4_AMENDMENT_SHA256 = (
+    "d8fa9840581b1aa0ad9a19a11bd892fdf3ac6d5325ecacb1454f2c9a7f955565"
+)
+V4_APPROVAL_SHA256 = (
+    "2e7013b3dd3bf10bf795c8586939d21f36d293f7fe52ea128579ad5548b70bac"
+)
+ORIGINAL_PRIOR_SCALES = {
+    "alpha": 2.5,
+    "beta": 1.0,
+    "sigma": 1.0,
+    "sigma_section": 1.0,
+}
+V4_PRIOR_SCALES = {
+    "alpha": 1.0,
+    "beta": 0.1,
+    "sigma": 0.5,
+    "sigma_section": 0.5,
+}
 
 MODELS = {
     "M0": (
@@ -158,13 +176,50 @@ def finite_or_string(value: float) -> float | str:
     return value if math.isfinite(value) else "Infinity"
 
 
+def resolve_prior_protocol(
+    amendment_path: Path | None, approval_path: Path | None
+) -> tuple[dict[str, float], dict]:
+    if amendment_path is None and approval_path is None:
+        return ORIGINAL_PRIOR_SCALES, {
+            "name": "v3_original_priors",
+            "amendment": None,
+            "amendment_sha256": None,
+            "approval": None,
+            "approval_sha256": None,
+        }
+    if amendment_path is None or approval_path is None:
+        raise ValueError("V4 execution requires both --prior-amendment and --approval")
+    amendment_path = amendment_path.resolve()
+    approval_path = approval_path.resolve()
+    amendment_hash = sha256(amendment_path)
+    approval_hash = sha256(approval_path)
+    if amendment_hash != V4_AMENDMENT_SHA256:
+        raise ValueError(
+            f"V4 amendment hash mismatch: {amendment_hash} != {V4_AMENDMENT_SHA256}"
+        )
+    if approval_hash != V4_APPROVAL_SHA256:
+        raise ValueError(
+            f"V4 approval hash mismatch: {approval_hash} != {V4_APPROVAL_SHA256}"
+        )
+    return V4_PRIOR_SCALES, {
+        "name": "v4_externally_approved_prior_amendment",
+        "amendment": str(amendment_path),
+        "amendment_sha256": amendment_hash,
+        "approval": str(approval_path),
+        "approval_sha256": approval_hash,
+    }
+
+
 def run_fold(
     rows_by_id: dict[str, dict[str, str]],
     train_ids: list[str],
     eval_ids: list[str],
     features: tuple[str, ...],
     seed: int,
+    prior_scales: dict[str, float] | None = None,
 ) -> dict:
+    if prior_scales is None:
+        prior_scales = ORIGINAL_PRIOR_SCALES
     standardized, zero_variance = standardized_eval(
         rows_by_id, train_ids, eval_ids, features
     )
@@ -174,10 +229,17 @@ def run_fold(
     rng = random.Random(seed)
     predictions = []
     for _ in range(PRIOR_DRAWS):
-        alpha = rng.gauss(0.0, 2.5)
-        beta = [rng.gauss(0.0, 1.0) if index in active_indices else 0.0 for index in range(len(features))]
-        sigma = abs(rng.gauss(0.0, 1.0))
-        sigma_section = abs(rng.gauss(0.0, 1.0))
+        alpha = rng.gauss(0.0, prior_scales["alpha"])
+        beta = [
+            rng.gauss(0.0, prior_scales["beta"])
+            if index in active_indices
+            else 0.0
+            for index in range(len(features))
+        ]
+        sigma = abs(rng.gauss(0.0, prior_scales["sigma"]))
+        sigma_section = abs(
+            rng.gauss(0.0, prior_scales["sigma_section"])
+        )
         evaluation_sections = sorted(
             {rows_by_id[row_id]["section"] for row_id in eval_ids}
         )
@@ -217,11 +279,16 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--feature-manifest", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--prior-amendment", type=Path)
+    parser.add_argument("--approval", type=Path)
     args = parser.parse_args()
     script_path = Path(__file__).resolve()
     manifest_path = args.feature_manifest.resolve()
     input_root = manifest_path.parent
     output = args.output.resolve()
+    prior_scales, prior_protocol = resolve_prior_protocol(
+        args.prior_amendment, args.approval
+    )
     output.mkdir(parents=True, exist_ok=False)
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -264,6 +331,7 @@ def main() -> int:
                 fold["test_transition_ids"],
                 features,
                 260807 + 100 * model_index + fold_index,
+                prior_scales,
             )
             results.append(
                 {
@@ -281,6 +349,7 @@ def main() -> int:
             future["test_transition_ids"],
             features,
             260807 + 100 * model_index + 6,
+            prior_scales,
         )
         results.append(
             {
@@ -310,12 +379,13 @@ def main() -> int:
         "feature_table_sha256": sha256(feature_path),
         "split_receipt_sha256": sha256(split_path),
         "model_feature_counts": {name: len(features) for name, features in MODELS.items()},
+        "prior_protocol": prior_protocol,
         "prior_contract": {
             "joint_draws": PRIOR_DRAWS,
-            "alpha": "Normal(0,2.5)",
-            "beta": "Normal(0,1)",
-            "sigma": "HalfNormal(1)",
-            "sigma_section": "HalfNormal(1)",
+            "alpha": f"Normal(0,{prior_scales['alpha']})",
+            "beta": f"Normal(0,{prior_scales['beta']})",
+            "sigma": f"HalfNormal({prior_scales['sigma']})",
+            "sigma_section": f"HalfNormal({prior_scales['sigma_section']})",
             "likelihood": "StudentT(nu=4,mu,sigma)",
             "inverse": "max(0, exp(y)-1)",
             "prior_cap_m": PRIOR_CAP_M,
