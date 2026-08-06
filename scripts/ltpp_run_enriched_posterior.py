@@ -9,6 +9,7 @@ import hashlib
 import json
 import math
 import platform
+import subprocess
 import sys
 import time
 from datetime import datetime, timezone
@@ -36,6 +37,9 @@ SPLIT_RECEIPT_SHA256 = (
 )
 V4_PREFLIGHT_SHA256 = (
     "8689fec9d6644bc3f62a77cdcae3e1409139b5aad095498cb578b8cabde1d644"
+)
+ENVIRONMENT_LOCK_SHA256 = (
+    "446c20589b9bb2b0b6059a2e3953a36274f591d4b28741bb86e9232435cce180"
 )
 
 CHAINS = 4
@@ -81,6 +85,26 @@ def write_csv(path: Path, rows: list[dict]) -> None:
         writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
+
+
+def git_receipt(repository: Path) -> dict:
+    def run(*arguments: str) -> str:
+        return subprocess.run(
+            ["git", *arguments],
+            cwd=repository,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+
+    status = run("status", "--porcelain=v1")
+    return {
+        "repository": str(repository),
+        "commit": run("rev-parse", "HEAD"),
+        "branch": run("branch", "--show-current"),
+        "dirty": bool(status),
+        "status_porcelain": status.splitlines(),
+    }
 
 
 def verify_and_load_inputs(args: argparse.Namespace) -> dict:
@@ -585,6 +609,7 @@ def main() -> int:
     parser.add_argument("--v4-preflight-report", type=Path, required=True)
     parser.add_argument("--transitions", type=Path, required=True)
     parser.add_argument("--transition-manifest", type=Path, required=True)
+    parser.add_argument("--environment-lock", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     inputs = verify_and_load_inputs(args)
@@ -594,6 +619,10 @@ def main() -> int:
     posterior_root.mkdir()
     script_path = Path(__file__).resolve()
     dependency_path = Path(__file__).with_name("ltpp_run_enriched_prior_predictive.py").resolve()
+    repository = script_path.parents[1]
+    environment_lock = require_hash(
+        args.environment_lock, ENVIRONMENT_LOCK_SHA256, "environment lock"
+    )
 
     rows_by_id = {row["transition_id"]: row for row in inputs["feature_rows"]}
     qualified_ids = inputs["split"]["transition_ids"]
@@ -617,6 +646,9 @@ def main() -> int:
         "arviz_version": az.__version__,
         "numpy_version": np.__version__,
         "argv": sys.argv,
+        "git": git_receipt(repository),
+        "environment_lock": str(environment_lock),
+        "environment_lock_sha256": sha256(environment_lock),
         "input_hashes": {name: sha256(path) for name, path in inputs["paths"].items()},
         "outcome_receipt": outcome_path.name,
         "outcome_receipt_sha256": sha256(outcome_path),
