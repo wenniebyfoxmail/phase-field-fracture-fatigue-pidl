@@ -2,7 +2,7 @@
 
 Canonical track document
 
-Status: `V2_BLOCKED_INPUT_COVERAGE__V3_EXTERNAL_REVIEW_REQUIRED__NO_FIT`
+Status: `V2_BLOCKED__V3_APPROVED_FOR_30_ROW_INPUT_FREEZE__NO_FIT`
 
 ## Mechanism question
 
@@ -42,7 +42,7 @@ All `local` paths above are rooted at
 | six-section adjudicated persistence/state-space benchmark | `RELIABILITY_NEGATIVE` | `../ltpp_geoforecast_algorithm_plan_20260805.md` |
 | enriched-input preregistration v2 | `APPROVED_FOR_INPUT_FREEZE` | `ltpp_geoforecast_enriched_input_preregistration_v2_20260806.md` |
 | enriched-input v2 input freeze | `BLOCKED_INPUT_COVERAGE__NO_FIT` | `ltpp_geoforecast_enriched_input_freeze_blocked_20260806.md` |
-| enriched-input v3 complete-case amendment | `CANDIDATE__EXTERNAL_REVIEW_REQUIRED__NO_FIT` | `ltpp_geoforecast_enriched_input_preregistration_v3_amendment_candidate_20260806.md` |
+| enriched-input v3 complete-case amendment | `APPROVED_FOR_30_ROW_INPUT_FREEZE__NO_FIT` | `ltpp_geoforecast_enriched_input_preregistration_v3_amendment_candidate_20260806.md` |
 
 ## V2 terminal decision
 
@@ -53,7 +53,7 @@ row for the required prior complete year 1995. Construction 2 has AADTT but a
 null ESAL. V2 prohibits substitution, imputation, row removal, or source-year
 leakage, so prior-predictive checking and fitting did not run.
 
-## Current gate: v3 design review
+## Current gate: v3 30-row input freeze
 
 - **Mechanism question:** unchanged from v2.
 - **Cheaper diagnostic:** exact input coverage audit is complete; only one row
@@ -61,31 +61,29 @@ leakage, so prior-predictive checking and fitting did not run.
 - **Minimal candidate change:** freeze a 30-transition complete-case set by
   excluding only `06-2041-T01`, with all features, algorithm, ordering, and
   thresholds otherwise unchanged.
-- **Researcher-degree-of-freedom risk:** the excluded row's historical outcome
-  existed in the earlier benchmark, even though no enriched model was fitted.
-  External review must decide whether a fixed input-only exclusion is still
-  acceptable for a confirmatory information-value experiment.
-- **Success condition for this gate:** ChatGPT Pro explicitly approves the
-  30-row amendment and its revised integer coverage rule.
-- **Failure condition:** reviewer requires a replacement independent section,
-  a different missing-data design, or rejects confirmatory status.
-- **Fit authorization:** `NO_FIT` until review approval, new hashes, a complete
-  30x11 table, split receipt, code receipt, and prior-predictive pass exist.
+- **External disposition:** ChatGPT Pro returned
+  `APPROVE_V3_30_ROW_INPUT_FREEZE` for amendment SHA-256
+  `f2490cd99b07912567ab52aabcf2ba9472b9514de3dd0fe1c1b1bba4e85ec70d`.
+- **Success condition for this gate:** a complete fixed 30x11 table, regenerated
+  split receipt, code/environment receipt, all hashes, and the fixed prior-
+  predictive check pass.
+- **Failure condition:** any remaining input is missing, any source-after-cutoff
+  value appears, a split/hash differs, or prior predictive exceeds its gate.
+- **Fit authorization:** still `NO_FIT`; Pro approval authorizes preflight only.
 
 ## Current decision
 
-Keep v2 terminal. Present exactly one minimal v3 amendment for external review;
-do not compare multiple rescue rules and do not inspect enriched-model results.
+Keep v2 terminal and execute only the approved named 30-row v3 pre-fit package.
+Do not compare rescue rules or inspect enriched-model outcomes.
 
 ## Next action
 
-Submit
-`ltpp_geoforecast_enriched_input_chatgpt_pro_v3_review_request_20260806.md`
-with the v2 preregistration, v2 blocked decision, and v3 amendment candidate.
-Adopt the review before changing the builder or freezing a 30-row package.
+Freeze the exact 30x11 source-cutoff table, regenerate the LOSO and 24+6 split
+receipt, record code/environment hashes, and run the fixed prior-predictive
+check. Stop before posterior fitting unless every gate passes.
 
 ## Research-frontier handoff
 
 LTPP enriched-input v2 stopped at a preregistered 30/31 coverage failure before
-any fit. A single 30-row complete-case v3 amendment is awaiting external review;
-the full state and evidence are maintained in this track document.
+any fit. The fixed 30-row v3 sensitivity amendment is approved for input freeze
+and prior-predictive preflight only; full evidence remains in this track.
