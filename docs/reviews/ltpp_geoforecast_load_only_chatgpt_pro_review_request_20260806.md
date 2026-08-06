@@ -12,8 +12,9 @@ Please answer:
 
 1. Is the G versus G+L comparison scientifically interpretable as a one-channel
    incremental-prediction test?
-2. Is reusing the fixed 30-row, six-section v3 set acceptable, or must this be
-   treated only as an exploratory sensitivity analysis?
+2. Is reusing the fixed 30-row, six-section v3 set acceptable, given that
+   `06-1253-T07` crosses the 2011-06-01 Out-of-Study terminal boundary, or must
+   the row be excluded/retained only as a declared sensitivity analysis?
 3. Are G1 source length, G2 source area, and G3 horizon the correct minimal
    baseline for isolating load?
 4. Is `TRF_TREND.ANNUAL_ESAL_TREND` with latest complete pre-source year and

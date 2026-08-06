@@ -25,10 +25,19 @@ interpretable.
 
 ## Candidate data and fixed comparison
 
-The candidate row set is the already qualified v3 30-transition set across the
-same six sections. No row may be added, removed, imputed, or requalified for
-this proposal. If the load-only input audit finds a missing or invalid value,
-the track returns to `BLOCKED_INPUT_COVERAGE__NO_FIT` and no rescue is tried.
+The candidate row set starts from the already qualified v3 30-transition set
+across the same six sections. The natural-evolution episode audit found one
+additional eligibility question: `06-1253-T07` crosses the 2011-06-01
+Out-of-Study terminal monitoring boundary. This is not evidence of maintenance,
+but it fails the new prospective episode policy. The final row set is therefore
+not frozen. No row may be added, removed, imputed, or requalified until Pro
+decides how this single terminal-censoring exception is handled. If the load-
+only input audit finds a missing or invalid value, the track returns to
+`BLOCKED_INPUT_COVERAGE__NO_FIT` and no rescue is tried.
+
+Evidence: `docs/experiments/ltpp_geoforecast_natural_episode_audit_20260806.md`.
+The completed enriched-input result is unchanged and is not retroactively
+requalified.
 
 Two models are proposed:
 
@@ -87,8 +96,10 @@ The following input-only checks must pass first:
 1. Verify all 30 rows have valid G1--G3 and T1 under the exact source-year and
    construction join rule.
 2. Verify T1 is positive, finite, and not constant in any LOSO training fold.
-3. Produce a row-level coverage/join receipt and hash it.
-4. Verify the runner, environment lock, and split receipt without reading the
+3. Resolve and freeze the terminal-censoring status of `06-1253-T07` under the
+   episode policy; regenerate the fixed row list and split receipt once.
+4. Produce a row-level coverage/join receipt and hash it.
+5. Verify the runner, environment lock, and split receipt without reading the
    outcome field.
 
 Any failure is fail-closed. No T1 imputation, construction substitution,
@@ -108,6 +119,8 @@ This document is a candidate protocol, not a frozen preregistration. ChatGPT
 Pro review is required for:
 
 - whether the 30-row reuse is acceptable for this sensitivity track;
+- whether `06-1253-T07` should be retained as a declared terminal-censoring
+  sensitivity row or excluded before input freeze;
 - whether G1--G3 are the correct minimal baseline;
 - whether T1 alone is the right load representation;
 - whether the inherited success gate is appropriate;
