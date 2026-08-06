@@ -57,30 +57,58 @@ The existing v1 automatic line candidates are Tier C. They are useful for
 diagnostic/development purposes only and are not independent final controls,
 because the full candidate receipt and v1 outcomes have already been observed.
 
-## Required v2 split before any model selection
+## Fixed v2 control roles before any model selection
 
-For every date, an independent reviewer must freeze a control inventory before
-transform selection:
+Tier B collection follows the separately frozen
+`ltpp_geoforecast_spatial_registration_v2_tier_b_annotation_protocol_20260807.md`.
+The only Tier B candidates for the current eight-date route are the 66 printed
+grid intersections `G[i,j]`, where `i = 0..10` and `j = 0..5`; their physical
+coordinates are exactly `(15.24 * i / 10, 5.00 * j / 5)` metres. No crack,
+WIM box, repair box, distress mark, or handwritten annotation may be a
+candidate or substitute.
 
-- development controls: at least 6 non-collinear Tier A/B points when a model
-  has more than translation and diagonal scale;
-- final audit controls: at least 8 non-collinear Tier A/B points, disjoint from
-  development controls and withheld from all model/threshold choices;
-- at least two final controls must constrain each relevant frame edge or
-  boundary region, where the source geometry permits this;
-- every point must have a source-image crop/overlay for manual review and a
-  reason code identifying the stable non-damage reference.
+For every date, the control identity and role are frozen as follows:
 
-If these conditions cannot be met for every date, no final v2 gate may run.
+- **final audit:** `G[0,0]`, `G[10,0]`, `G[0,5]`, `G[10,5]`, `G[2,2]`,
+  `G[8,2]`, `G[2,3]`, and `G[8,3]`;
+- **development selection:** `G[5,0]`, `G[5,5]`, `G[0,2]`, `G[0,3]`,
+  `G[10,2]`, `G[10,3]`, `G[3,1]`, and `G[7,4]`;
+- **fit:** every other Tier A/B point that passes the frozen Tier B consensus
+  rule.
+
+The final set is held by an annotation custodian and never disclosed to the
+implementer or used in fitting, model choice, thresholds, missing-data
+decisions, or image-processing choices. The eight final IDs intentionally
+span all frame corners and both interior bands. A date is ineligible for a
+final v2 gate if any final or development ID is missing, ambiguous, or fails
+the annotation-consensus rule; there is no replacement, reassignment, or date
+deletion. A date also fails preflight if its fit set has fewer than eight
+non-collinear points.
 
 ## Candidate models and selection
 
-The future v2 implementation must test in this fixed order:
+The future v2 implementation must test independently for each date in this
+fixed order, always fitting only the frozen fit set:
 
 1. translation plus independent x/y scale (diagonal affine);
-2. full affine, only if the first model fails the frozen development rule;
-3. homography, only if affine fails and at least four independent non-collinear
-   final-quality controls support it.
+2. full affine, only if the diagonal-affine model fails the frozen development
+   rule;
+3. homography, only if affine fails the frozen development rule and the fit
+   set contains at least eight non-collinear points.
+
+For each candidate model, development errors are computed only on the eight
+development controls. A candidate **fails development** if any of its
+development median, linear p95, or maximum errors exceeds respectively
+`0.05 m`, `0.10 m`, or `0.20 m`, or if its coordinate mapping reverses either
+axis or maps any source-frame corner outside the declared physical rectangle by
+more than `0.20 m`. The first model in the ladder that does not fail is selected
+for that date. If homography fails or is ineligible, the date fails preflight.
+No model is selected because it is merely numerically better after a simpler
+model passes.
+
+Homography eligibility and selection therefore depend only on fit and
+development Tier A/B controls. Final audit controls may meet the same quality
+standard but never determine whether homography is tried, selected, or tuned.
 
 Local non-rigid models are excluded from the final route unless a separate
 review proves that they preserve crack geometry; this experiment does not make
@@ -88,7 +116,8 @@ that case.
 
 Model selection, tie-breaking, thresholds, quantile calculation, pixel-to-metre
 conversion, image orientation, and crop policy must be frozen before final
-controls are revealed. Final metrics use:
+controls are revealed. The selected transform is not refitted after development
+selection. Final metrics use:
 
 ```python
 median = numpy.median(errors)
@@ -109,7 +138,9 @@ relaxation, metric changes, or post-hoc model changes terminate the route as
 
 ## External review status
 
-`PENDING_V2_EXTERNAL_REVIEW`
-
-The review request must assess this protocol before any v2 transform is tuned
-or any final audit is executed.
+The first external methodological review returned
+`REVISE_V2_PROTOCOL_BEFORE_DIAGNOSTIC`; its three blocking findings are adopted
+in this revision. The revised protocol is
+`PENDING_MINIMAL_REVISION_REVIEW`. No v2 transform may be tuned and no final
+audit may execute until the reviewer returns
+`APPROVE_V2_AVAILABILITY_DIAGNOSTIC_ONLY`.
