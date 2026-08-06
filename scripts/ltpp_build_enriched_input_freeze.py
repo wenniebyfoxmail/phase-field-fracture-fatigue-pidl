@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the preregistered 31-row LTPP enriched input table without outcomes."""
+"""Build the preregistered LTPP enriched input table without outcomes."""
 
 from __future__ import annotations
 
@@ -9,7 +9,8 @@ import csv
 import hashlib
 import json
 import math
-import shutil
+import platform
+import sys
 from collections import defaultdict
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
@@ -31,6 +32,11 @@ FEATURE_COLUMNS = (
     "F1_D0_566_micrometres",
     "F2_fwd_age_years",
 )
+
+V3_AMENDMENT_SHA256 = (
+    "f2490cd99b07912567ab52aabcf2ba9472b9514de3dd0fe1c1b1bba4e85ec70d"
+)
+V3_EXCLUDED_TRANSITION_IDS = ("06-2041-T01",)
 
 
 def sha256(path: Path) -> str:
@@ -274,6 +280,110 @@ def structure_conversion(dictionary_path: Path) -> float:
     return factor
 
 
+def select_transition_set(
+    transitions: list[dict],
+    exclude_transition_ids: list[str],
+    amendment_path: Path | None,
+) -> tuple[list[dict], dict]:
+    """Apply the only externally approved v3 transition-set amendment."""
+    if not exclude_transition_ids:
+        if amendment_path is not None:
+            raise ValueError("--amendment is only valid with the approved exclusion")
+        return transitions, {
+            "protocol": "v2_31_row",
+            "excluded_transition_ids": [],
+            "amendment": None,
+            "amendment_sha256": None,
+        }
+    if tuple(exclude_transition_ids) != V3_EXCLUDED_TRANSITION_IDS:
+        raise ValueError(
+            "Only the exact approved exclusion 06-2041-T01 is permitted"
+        )
+    if amendment_path is None:
+        raise ValueError("The approved v3 amendment is required for row exclusion")
+    amendment_path = amendment_path.resolve()
+    amendment_hash = sha256(amendment_path)
+    if amendment_hash != V3_AMENDMENT_SHA256:
+        raise ValueError(
+            f"V3 amendment hash mismatch: {amendment_hash} != {V3_AMENDMENT_SHA256}"
+        )
+    transition_ids = [row["transition_id"] for row in transitions]
+    if len(transition_ids) != len(set(transition_ids)):
+        raise ValueError("Original transition IDs are not unique")
+    if set(exclude_transition_ids) - set(transition_ids):
+        raise ValueError("Approved excluded transition is absent from source set")
+    selected = [
+        row for row in transitions if row["transition_id"] not in exclude_transition_ids
+    ]
+    if len(selected) != 30:
+        raise ValueError(f"Approved v3 set must contain 30 rows, found {len(selected)}")
+    return selected, {
+        "protocol": "v3_30_row_complete_input_sensitivity",
+        "excluded_transition_ids": list(exclude_transition_ids),
+        "amendment": str(amendment_path),
+        "amendment_sha256": amendment_hash,
+    }
+
+
+def build_split_receipt(transitions: list[dict], protocol: dict) -> dict:
+    """Create deterministic outcome-free LOSO and future-time split assignments."""
+    ordered = sorted(transitions, key=lambda row: row["transition_id"])
+    ids = [row["transition_id"] for row in ordered]
+    sections = sorted({row["section"] for row in ordered})
+    loso = []
+    for section in sections:
+        test_ids = [row["transition_id"] for row in ordered if row["section"] == section]
+        train_ids = [row["transition_id"] for row in ordered if row["section"] != section]
+        loso.append(
+            {
+                "held_out_section": section,
+                "train_transition_ids": train_ids,
+                "test_transition_ids": test_ids,
+                "train_count": len(train_ids),
+                "test_count": len(test_ids),
+            }
+        )
+    development_ids = [
+        row["transition_id"] for row in ordered if bool(row["development_transition"])
+    ]
+    future_ids = [
+        row["transition_id"] for row in ordered if bool(row["future_time_test"])
+    ]
+    if set(development_ids) & set(future_ids) or set(development_ids + future_ids) != set(ids):
+        raise ValueError("Development/future split is not a disjoint partition")
+    if protocol["protocol"] == "v3_30_row_complete_input_sensitivity":
+        expected_loso = {
+            "06-1253": 7,
+            "06-2041": 6,
+            "06-2647": 4,
+            "06-8149": 5,
+            "06-8150": 4,
+            "06-8201": 4,
+        }
+        actual_loso = {row["held_out_section"]: row["test_count"] for row in loso}
+        if actual_loso != expected_loso:
+            raise ValueError(f"Unexpected v3 LOSO counts: {actual_loso}")
+        if len(development_ids) != 24 or len(future_ids) != 6:
+            raise ValueError(
+                f"Expected v3 future split 24+6, found {len(development_ids)}+{len(future_ids)}"
+            )
+    return {
+        "status": "PASS_FIXED_OUTCOME_FREE_SPLITS",
+        "protocol": protocol["protocol"],
+        "transition_count": len(ids),
+        "transition_ids": ids,
+        "excluded_transition_ids": protocol["excluded_transition_ids"],
+        "loso": loso,
+        "future_time": {
+            "train_transition_ids": development_ids,
+            "test_transition_ids": future_ids,
+            "train_count": len(development_ids),
+            "test_count": len(future_ids),
+        },
+        "outcome_fields_used": [],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--transitions", type=Path, required=True)
@@ -282,7 +392,10 @@ def main() -> int:
     parser.add_argument("--raw-root", type=Path, required=True)
     parser.add_argument("--climate-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--exclude-transition-id", action="append", default=[])
+    parser.add_argument("--amendment", type=Path)
     args = parser.parse_args()
+    builder_path = Path(__file__).resolve()
     transitions_path = args.transitions.resolve()
     transition_manifest_path = args.transition_manifest.resolve()
     baseline_path = args.baseline_manifest.resolve()
@@ -296,9 +409,13 @@ def main() -> int:
         raise ValueError("Transition manifest is not qualified")
     if sha256(transitions_path) != transition_manifest["transitions_sha256"]:
         raise ValueError("Transition JSON does not match the frozen manifest")
-    transitions = json.loads(transitions_path.read_text(encoding="utf-8"))
-    if len(transitions) != 31:
-        raise ValueError(f"Expected 31 transitions, found {len(transitions)}")
+    source_transitions = json.loads(transitions_path.read_text(encoding="utf-8"))
+    if len(source_transitions) != 31:
+        raise ValueError(f"Expected 31 source transitions, found {len(source_transitions)}")
+    transitions, protocol = select_transition_set(
+        source_transitions, args.exclude_transition_id, args.amendment
+    )
+    required_transition_count = len(transitions)
     raw_manifest_path = raw_root / "raw_data_manifest.json"
     raw_manifest = json.loads(raw_manifest_path.read_text(encoding="utf-8"))
     if raw_manifest.get("status") != "PASS_OFFICIAL_ENRICHED_TABLES_FROZEN":
@@ -438,9 +555,14 @@ def main() -> int:
 
     coverage_path = output / "coverage_report.json"
     coverage = {
-        "status": "PASS_31_BY_11_SOURCE_CUTOFF_COVERAGE" if not errors else "BLOCKED_INPUT_COVERAGE",
+        "status": (
+            f"PASS_{required_transition_count}_BY_11_SOURCE_CUTOFF_COVERAGE"
+            if not errors
+            else "BLOCKED_INPUT_COVERAGE"
+        ),
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
-        "required_transition_count": 31,
+        "protocol": protocol,
+        "required_transition_count": required_transition_count,
         "required_feature_count": 11,
         "complete_transition_count": len(rows),
         "errors": errors,
@@ -450,22 +572,32 @@ def main() -> int:
     if errors:
         print(json.dumps({"status": coverage["status"], "errors": errors}, indent=2))
         return 2
-    if len(rows) != 31 or len({row["transition_id"] for row in rows}) != 31:
-        raise ValueError("Feature table does not have 31 unique transitions")
+    if len(rows) != required_transition_count or len({row["transition_id"] for row in rows}) != required_transition_count:
+        raise ValueError(
+            f"Feature table does not have {required_transition_count} unique transitions"
+        )
     rows.sort(key=lambda row: row["transition_id"])
-    feature_path = output / "enriched_input_features_31x11.csv"
+    feature_path = output / f"enriched_input_features_{required_transition_count}x11.csv"
     with feature_path.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
 
-    copied_baseline = output / "frozen_baseline_manifest.json"
-    shutil.copyfile(baseline_path, copied_baseline)
-    if sha256(copied_baseline) != sha256(baseline_path):
-        raise ValueError("Frozen baseline manifest copy is not byte-identical")
+    split_receipt = build_split_receipt(transitions, protocol)
+    split_receipt.update(
+        {
+            "source_transition_manifest": str(transition_manifest_path),
+            "source_transition_manifest_sha256": sha256(transition_manifest_path),
+            "source_baseline_manifest": str(baseline_path),
+            "source_baseline_manifest_sha256": sha256(baseline_path),
+        }
+    )
+    split_path = output / "split_receipt.json"
+    split_path.write_text(json.dumps(split_receipt, indent=2) + "\n", encoding="utf-8")
     manifest = {
-        "status": "PASS_31_BY_11_ENRICHED_INPUTS_FROZEN__NO_OUTCOMES__NO_FIT",
+        "status": f"PASS_{required_transition_count}_BY_11_ENRICHED_INPUTS_FROZEN__NO_OUTCOMES__NO_FIT",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "protocol": protocol,
         "feature_columns": list(FEATURE_COLUMNS),
         "transition_count": len(rows),
         "feature_count": len(FEATURE_COLUMNS),
@@ -473,6 +605,8 @@ def main() -> int:
         "feature_table_sha256": sha256(feature_path),
         "coverage_report": coverage_path.name,
         "coverage_report_sha256": sha256(coverage_path),
+        "split_receipt": split_path.name,
+        "split_receipt_sha256": sha256(split_path),
         "transition_manifest": str(transition_manifest_path),
         "transition_manifest_sha256": sha256(transition_manifest_path),
         "transitions_sha256": sha256(transitions_path),
@@ -480,9 +614,15 @@ def main() -> int:
         "raw_data_manifest_sha256": sha256(raw_manifest_path),
         "climate_raw_manifest": str(climate_manifest_path),
         "climate_raw_manifest_sha256": sha256(climate_manifest_path),
-        "frozen_baseline_manifest": copied_baseline.name,
-        "frozen_baseline_manifest_sha256": sha256(copied_baseline),
         "source_baseline_manifest_sha256": sha256(baseline_path),
+        "code_environment_receipt": {
+            "builder": str(builder_path),
+            "builder_sha256": sha256(builder_path),
+            "python_version": platform.python_version(),
+            "python_implementation": platform.python_implementation(),
+            "platform": platform.platform(),
+            "argv": sys.argv,
+        },
         "trailing_climate_window": "[source_timestamp-365.25 days, source_timestamp)",
         "thickness_conversion": "stored inches multiplied by official dictionary factor 25.4 to mm",
         "outcome_columns_present": [],
