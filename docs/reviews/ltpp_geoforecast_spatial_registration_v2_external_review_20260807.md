@@ -46,10 +46,16 @@ and delegates Tier B collection to the companion blind dual-annotation
 protocol. This is the minimal requested revision. No transform experiment,
 control-point collection, or final audit has been run.
 
-## Current status
+## Re-review decision
 
-`PENDING_MINIMAL_REVISION_REVIEW`
+`APPROVE_V2_AVAILABILITY_DIAGNOSTIC_ONLY`
 
-The reviewer must now assess only whether the three blocking findings are
-closed. A future approval would authorize Tier A/B availability work only, not
-the final v2 gate or 2-D modelling.
+The reviewer confirmed that all three blocking findings are closed and that no
+frozen threshold, p95 convention, 8/8 requirement, model order, one-shot
+condition, or v1 negative result changed during revision.
+
+## Authorization boundary
+
+This approval authorizes Tier A/B independent-control collection and mechanical
+adjudication only. It does not authorize transform tuning, disclosure of final
+controls, the one-shot final v2 registration gate, or 2-D crack-model training.

@@ -29,7 +29,7 @@ separately reviewed scalar-length analysis.
 |---|---|---|
 | Existing nominal rectification | coordinate comparison only | `../ltpp_06_1253_rectification_gate_20260805.md` |
 | v1 conditional internal-grid audit | `SPATIAL_REGISTRATION_NOT_QUALIFIED__NO_2D_MODEL` | `ltpp_geoforecast_spatial_registration_audit_v1_result_20260806.md` |
-| v2 independent-control availability diagnostic | `EXPLORATORY_REGISTRATION_IMPROVEMENT`; external review requires protocol revision before Tier A/B collection | `ltpp_geoforecast_spatial_registration_improvement_v2_diagnosis_20260806.md` |
+| v2 independent-control availability work | `APPROVE_V2_AVAILABILITY_DIAGNOSTIC_ONLY`; blind Tier B collection may begin, final gate remains closed | `ltpp_geoforecast_spatial_registration_v2_tier_b_availability_20260807.md` |
 
 ## Active gate
 
@@ -38,9 +38,9 @@ fixed controls and three additional dates failed spatial-error thresholds. The
 current carrier cannot enter any 2-D crack-position or tip algorithm. Failure
 cannot be rescued by deleting dates, changing the detector, or trying
 homography/TPS/piecewise transforms inside v1.
-The v2 read-only inventory found no independent final controls. The first
-external review required a minimal protocol revision before Tier A/B collection;
-the revised protocol is pending review.
+The v2 read-only inventory found no independent final controls. A minimal
+external re-review approved only blind Tier A/B availability collection; no
+transform fitting, final-control disclosure, or final gate is authorized.
 
 ## Next action
 
