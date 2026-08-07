@@ -63,3 +63,24 @@ The completed MVP also has a downstream visual-inspection package at
 `local_archive/real_road_acquisition/ltpp_06_1253_spatial_registration_mvp_temporal_views_20260807/`.
 Its adjacent-date blends and absolute pixel differences are explicitly not
 crack-growth measurements.
+
+## Tier-C exploratory grid follow-up
+
+The next MVP package uses a fixed re-extraction of all 66 printed-grid
+intersections on the page-frame canvas: 11 longitudinal lines times 6
+transverse lines. The v2 final/development candidate identities are excluded;
+eight fresh non-reserved intersections are development-only and the remaining
+42 are fit-only. It is a one-shot Tier-C developer diagnostic, not an
+independent v2 control set or qualification audit.
+
+### Execution result
+
+The code-receipted package is
+`local_archive/real_road_acquisition/ltpp_06_1253_exploratory_tier_c_grid_registration_mvp_20260807_code_receipt/`.
+All eight dates produced 66 candidates each; the 16 v2-reserved locations were
+excluded, leaving 8 development and 42 fit locations per date. Under the fixed
+projection-peak extraction and deterministic model ladder, only 2012 selected
+diagonal affine. The other seven dates had no model below the displayed Tier-C
+diagnostic thresholds. This is evidence that this automatic control extractor
+is not an 8-date solution; it is not an independent qualification failure or a
+reason to alter the v1/v2 gate.

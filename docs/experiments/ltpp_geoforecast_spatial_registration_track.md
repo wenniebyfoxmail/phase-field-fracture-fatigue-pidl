@@ -31,6 +31,7 @@ separately reviewed scalar-length analysis.
 | v1 conditional internal-grid audit | `SPATIAL_REGISTRATION_NOT_QUALIFIED__NO_2D_MODEL` | `ltpp_geoforecast_spatial_registration_audit_v1_result_20260806.md` |
 | v2 independent-control availability work | `APPROVE_V2_AVAILABILITY_DIAGNOSTIC_ONLY`; blind Tier B collection may begin, final gate remains closed | `ltpp_geoforecast_spatial_registration_v2_tier_b_availability_20260807.md` |
 | page-frame engineering MVP | `EXPLORATORY_REGISTRATION_MVP_COMPLETED__NOT_QUALIFIED`; delivery path completed, no independent physical controls | `ltpp_geoforecast_spatial_registration_mvp_20260807.md` |
+| Tier-C automatic-grid MVP | 1/8 development-only selections; automatic extraction is not an eight-date solution | `ltpp_geoforecast_spatial_registration_mvp_20260807.md` |
 
 ## Active gate
 
