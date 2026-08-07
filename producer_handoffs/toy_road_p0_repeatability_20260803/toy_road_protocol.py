@@ -280,6 +280,17 @@ RUNTIME_MEASUREMENT_FIELDS = {
     "matlab",
     "binary_sha256",
 }
+PRODUCTION_RUNTIME_CHAIN_FIELDS = {
+    "authorized_entrypoint",
+    "upstream_authorized_entrypoint",
+    "upstream_launch_receipt_path",
+    "upstream_launch_receipt_sha256",
+    "case_id",
+    "source_commit",
+    "runtime_lock_sha256",
+    "family_contract_sha256",
+    "case_physics_contract_sha256",
+}
 
 
 class CaseContract:
@@ -704,7 +715,10 @@ def validate_runtime_measurement(
     lock = _require_plain_mapping(execution_lock, "execution lock")
     validate_execution_input_lock(lock, str(lock.get("case_id", "")))
     value = _require_plain_mapping(measurement, "runtime measurement")
-    _require_exact_fields(value, RUNTIME_MEASUREMENT_FIELDS, "runtime measurement")
+    expected_fields = set(RUNTIME_MEASUREMENT_FIELDS)
+    if lock["authorization_scope"] == "production_authorized":
+        expected_fields.update(PRODUCTION_RUNTIME_CHAIN_FIELDS)
+    _require_exact_fields(value, expected_fields, "runtime measurement")
     if (
         value["schema_version"] != "toy_road_runtime_measurement_v1"
         or value["protocol_version"] != PROTOCOL_VERSION
@@ -722,6 +736,8 @@ def validate_runtime_measurement(
         canonical_json_bytes(lock)
     ):
         raise ProtocolError("runtime measurement execution lock identity is invalid")
+    if lock["authorization_scope"] == "production_authorized":
+        _validate_production_runtime_chain(lock, value)
     expectations = _require_plain_mapping(
         lock["runtime_expectations"], "runtime expectations"
     )
@@ -738,6 +754,50 @@ def validate_runtime_measurement(
         "binary_sha256"
     ]:
         raise ProtocolError("runtime measurement identity differs from locked expectations")
+
+
+def _validate_production_runtime_chain(
+    lock: Mapping[str, object], measurement: Mapping[str, object]
+) -> None:
+    identity_fields = (
+        "case_id",
+        "source_commit",
+        "runtime_lock_sha256",
+        "family_contract_sha256",
+        "case_physics_contract_sha256",
+    )
+    if (
+        measurement["authorized_entrypoint"] != "main_toy_road_family_case"
+        or measurement["upstream_authorized_entrypoint"]
+        != "run_toy_road_runtime_bridge"
+        or any(measurement[name] != lock[name] for name in identity_fields)
+    ):
+        raise ProtocolError("runtime measurement production chain identity is invalid")
+    upstream_path = Path(str(measurement["upstream_launch_receipt_path"]))
+    if not upstream_path.is_absolute() or not upstream_path.is_file():
+        raise ProtocolError("runtime measurement upstream launch receipt is absent")
+    upstream_digest = str(measurement["upstream_launch_receipt_sha256"])
+    try:
+        measured_upstream_digest = _sha256_bytes(upstream_path.read_bytes())
+    except OSError as exception:
+        raise ProtocolError("runtime measurement upstream launch receipt is unreadable") from exception
+    if not _is_sha256(upstream_digest) or measured_upstream_digest != upstream_digest:
+        raise ProtocolError("runtime measurement upstream launch receipt hash is invalid")
+    try:
+        upstream = _require_plain_mapping(
+            json.loads(upstream_path.read_text("utf-8")), "upstream launch receipt"
+        )
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exception:
+        raise ProtocolError("runtime measurement upstream launch receipt is unreadable") from exception
+    expected_upstream = {
+        "status": "PASS",
+        "authorization_scope": "production_authorized",
+        "authorized_entrypoint": "run_toy_road_runtime_bridge",
+        "execution_input_lock_sha256": measurement["execution_input_lock_sha256"],
+        **{name: lock[name] for name in identity_fields},
+    }
+    if any(upstream.get(name) != expected for name, expected in expected_upstream.items()):
+        raise ProtocolError("runtime measurement upstream launch receipt identity is invalid")
 
 
 def _read_contract_json(path: Path) -> dict[str, Any]:

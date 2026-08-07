@@ -120,7 +120,7 @@
                   },
                   {
                       "path":  "toy_road_protocol.py",
-                      "sha256":  "072f537d2fd25a1059b008ee5d77c06c2e38ab1648c1b42398730112a00a5803"
+                      "sha256":  "c56ac0ccc7db771e2728437ca706a6d7c705a1eb77107618f83d778220e21299"
                   },
                   {
                       "path":  "validate_toy_road_cycle_shard.m",

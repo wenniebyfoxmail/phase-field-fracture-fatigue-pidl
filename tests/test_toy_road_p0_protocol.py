@@ -647,6 +647,50 @@ def test_runtime_measurement_accepts_exact_external_fixture(tmp_path: Path) -> N
     PROTOCOL.validate_runtime_measurement(lock, measurement)
 
 
+def test_runtime_measurement_accepts_two_stage_production_chain(tmp_path: Path) -> None:
+    lock = _fixture_execution_lock(tmp_path)
+    lock["authorization_scope"] = "production_authorized"
+    launch_path = tmp_path / "P0_parent.launch-receipt.json"
+    launch = {
+        "status": "PASS",
+        "authorization_scope": "production_authorized",
+        "authorized_entrypoint": "run_toy_road_runtime_bridge",
+        "case_id": lock["case_id"],
+        "source_commit": lock["source_commit"],
+        "runtime_lock_sha256": lock["runtime_lock_sha256"],
+        "family_contract_sha256": lock["family_contract_sha256"],
+        "case_physics_contract_sha256": lock["case_physics_contract_sha256"],
+        "execution_input_lock_sha256": hashlib.sha256(
+            PROTOCOL.canonical_json_bytes(lock)
+        ).hexdigest(),
+    }
+    launch_path.write_bytes(PROTOCOL.canonical_json_bytes(launch))
+    measurement = {
+        "schema_version": "toy_road_runtime_measurement_v1",
+        "protocol_version": PROTOCOL_VERSION,
+        "authorization_scope": "production_authorized",
+        "status": "PASS",
+        "producer_entrypoint_authorized": True,
+        "execution_input_lock_sha256": launch["execution_input_lock_sha256"],
+        "authorized_entrypoint": "main_toy_road_family_case",
+        "upstream_authorized_entrypoint": "run_toy_road_runtime_bridge",
+        "upstream_launch_receipt_path": str(launch_path.resolve()),
+        "upstream_launch_receipt_sha256": hashlib.sha256(
+            launch_path.read_bytes()
+        ).hexdigest(),
+        "case_id": lock["case_id"],
+        "source_commit": lock["source_commit"],
+        "runtime_lock_sha256": lock["runtime_lock_sha256"],
+        "family_contract_sha256": lock["family_contract_sha256"],
+        "case_physics_contract_sha256": lock["case_physics_contract_sha256"],
+        "matlab": copy.deepcopy(lock["runtime_expectations"]["matlab"]),
+        "binary_sha256": copy.deepcopy(
+            lock["runtime_expectations"]["binary_sha256"]
+        ),
+    }
+    PROTOCOL.validate_runtime_measurement(lock, measurement)
+
+
 def test_sealed_process_adapter_and_runtime_bridge_are_structurally_safe() -> None:
     adapter_path = MODULE_PATH.parent / "invoke_toy_road_test_process_adapter.ps1"
     bridge_path = MODULE_PATH.parent / "run_toy_road_runtime_bridge.m"
