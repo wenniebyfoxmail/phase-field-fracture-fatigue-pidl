@@ -58,3 +58,8 @@ It produced all eight registered maps, a contact sheet, a temporal mean image,
 per-date structural QC, and a complete SHA-256 manifest. Its recorded result
 is `EXPLORATORY_REGISTRATION_MVP_COMPLETED__NOT_QUALIFIED`; no physical-error
 metric is reported or implied.
+
+The completed MVP also has a downstream visual-inspection package at
+`local_archive/real_road_acquisition/ltpp_06_1253_spatial_registration_mvp_temporal_views_20260807/`.
+Its adjacent-date blends and absolute pixel differences are explicitly not
+crack-growth measurements.
