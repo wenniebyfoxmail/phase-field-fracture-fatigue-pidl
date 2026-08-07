@@ -2,7 +2,7 @@
 
 - **主要工作时间：** 2026-08-05 至 2026-08-07
 - **总结归档日期：** 2026-08-07
-- **阶段状态：** 标注与裁决完成；标量预测、富集输入、识别和配准均已完成首轮门控
+- **阶段状态：** 标注与裁决完成；标量预测、富集输入和 load-only 增量实验已完成首轮门控；自动识别和二维配准未通过资格门
 - **文档角色：** 本文件是面向阅读的阶段总结，不替代各实验预注册、结果文件或哈希证据
 - **证据总索引：** `docs/experiments/ltpp_geoforecast_evidence_archive_20260807.md`
 
@@ -14,6 +14,55 @@
 - ESAL、交通、结构、FWD 暂未显示增量预测价值；
 - 自动裂缝识别未达标；
 - 跨日期二维配准未达标，因此不能研究裂缝尖端位置或二维演化。
+
+## 本对话框的研究目的、方法、工作、结论与证据位置
+
+本节把本次对话中形成的研究链条压缩成一个可追溯入口；各项具体规则、结果和哈希仍以链接到的实验文档为准。
+
+### 研究目的
+
+我们不是单纯寻找一个“更强的模型”，而是建立一个小规模、可审计、无时间泄漏的 LTPP 道路裂缝预测基准，逐步回答：
+
+1. 人工裁决后的扫描图标签是否足以支持可重复的时序任务；
+2. 当前裂缝状态能否预测下一调查时段的裂缝长度增长；
+3. 在未见过的路段上，增加气候、交通、结构、FWD，或只增加单一荷载通道，是否带来稳定的增量预测价值；
+4. 什么时候应停止并报告负结果，而不是继续事后调参。
+
+研究边界已冻结：这是预测信息价值和任务可行性研究，不是因果推断；标量长度预测、二维空间配准和原图裂缝识别是三个分开的问题。
+
+### 采用的方法
+
+- **数据与标签：** 对 6 条 LTPP section 的扫描图进行 AI/人工盲配对、逐项裁决，并冻结最终 GeoJSON 与 SHA-256 manifest。
+- **时序构造：** 将 37 个调查状态组成原始 31 条相邻 transition；以 source 状态预测下一调查状态，保留 25 条 development transition 和 6 条 future-time transition。
+- **验证：** 主要采用 Leave-One-Section-Out（LOSO），并单独保留未来时间轴检查；所有标准化、正则和先验只在训练折内确定。
+- **标量目标：** 预测下一时段新增裂缝长度 `ΔL = max(0, L_target - L_source)`，以 persistence 作为不可省略的诚实基准，主要指标为 MAE。
+- **模型与增量实验：** 先测试分层状态空间模型；随后冻结 Geometry+Climate → +Traffic → +Structure → +FWD 的 enriched-input 消融；在该轨道失败后，另开只增加一个 `ANNUAL_ESAL_TREND` 的 load-only track。各轨道在 input freeze、prior-predictive 和 outcome fitting 之间实行 fail-closed，不以结果驱动删行或改算法。
+- **二维与识别资格：** 单独审核跨日期空间配准，以及从原始扫描图自动识别裂缝的 B0/B1 方法；不把这两项结果混入标量预测结论。
+
+### 已完成的工作
+
+- 完成 37 张 AI 标注、37 张人工标注和 139 项分歧裁决，冻结 37 个状态、249 个最终几何对象（其中 232 个裂缝对象）。
+- 建立时间线网页、transition 表、persistence 和局部基准，并完成最终 6 路段 LOSO 评估。
+- 完成分层状态空间模型、30-row enriched-input sensitivity experiment，以及 29-row load-only 单因素 ESAL experiment；全部保留预检、split receipt、诊断和 sealed evaluation 哈希。
+- 完成自然发展 episode 审核、自动裂缝识别 B0/B1 评估和 06-1253 八日期二维配准审计。
+
+### 得到的结论
+
+- **标签和实现层面：** 标注、裁决、数据连接、采样器诊断和结果封存均可审计；失败不是因为 NUTS 未收敛或代码没有运行。
+- **标量预测层面：** persistence 仍是最可靠的控制。分层状态空间模型没有稳定改善；在 enriched-input 轨道中，完整 M3 相对 B0 的 LOSO MAE 反而恶化 `4.132%`，只在 `3/6` 个 section 改善。
+- **单一荷载层面：** load-only 的 `G+L`（几何状态 + 单一年度 ESAL）相对 `G` 恶化 `0.376%`，仅 `2/6` 个 section 改善，未通过预设整体门槛。因此本数据和当前任务定义下，没有证据表明该单一 ESAL 通道具有稳定增量预测价值。
+- **二维与识别层面：** 空间配准正式结果为 `2/8`，自动识别 B0/B1 也未达标；因此不能声称已经预测裂缝位置、尖端或现场裂缝物理真值。
+- **科学解释边界：** 这些是“在当前 6 路段、观测频率、特征连接和任务定义下未观察到增量预测收益”的负结果，不等于交通、结构、FWD 或气候在物理上不重要，也不构成因果结论或对整个 LTPP 的推广。
+
+### 证据在哪里
+
+- **阶段总索引：** [LTPP evidence archive](/Users/wenxiaofang/phase-field-fracture-with-pidl/upload code/docs/experiments/ltpp_geoforecast_evidence_archive_20260807.md)
+- **标注与裁决：** 本文第 1 节；最终 manifest 位于 `local_archive/real_road_acquisition/ltpp_geoforecast_blind_vectorization_v1_20260805/adjudicated/adjudicated_manifest.json`。
+- **分层状态空间结果：** 本文第 4 节及对应结果文档。
+- **富集输入结果：** [enriched-input posterior result](/Users/wenxiaofang/phase-field-fracture-with-pidl/upload code/docs/experiments/ltpp_geoforecast_enriched_input_posterior_result_20260806.md)，sealed evaluation SHA-256：`f3a18f4fc9bdd186da8d1e42fad44d688030e5569f17f36a720f76e53e26c6d2`。
+- **load-only 结果：** [load-only posterior result](/Users/wenxiaofang/phase-field-fracture-with-pidl/upload code/docs/experiments/ltpp_geoforecast_load_only_posterior_result_20260806.md)，sealed evaluation SHA-256：`c0f0d2006661b514e332c3446fa8257f536d69010006fd8e8dd2998cb7d4ba03`。
+- **自然发展、识别、配准：** 本文第 7–9 节及各节列出的代码、结果文档和原始 JSON。
+- **本对话的决策背景：** 对话中引用的 `LTPP 消融预检分析` 与 `LTPP load-only track` 是讨论和审核记录；正式可复现实验以本仓库的 dated preregistration、result、receipt、manifest 和 archive 为准。
 
 ## 1. 标注、双盲比较和最终裁决
 
