@@ -33,6 +33,7 @@ separately reviewed scalar-length analysis.
 | page-frame engineering MVP | `EXPLORATORY_REGISTRATION_MVP_COMPLETED__NOT_QUALIFIED`; delivery path completed, no independent physical controls | `ltpp_geoforecast_spatial_registration_mvp_20260807.md` |
 | Tier-C automatic-grid MVP | 1/8 development-only selections; automatic extraction is not an eight-date solution | `ltpp_geoforecast_spatial_registration_mvp_20260807.md` |
 | same-date official-page layout inventory | read-only diagnosis of page-level versus date-level printed-grid loss | `ltpp_geoforecast_spatial_registration_layout_inventory_20260807.md` |
+| non-damage registration MVP result | `EXPLORATORY_REGISTRATION_MVP__NOT_VALIDATED_FOR_2D_MODEL`; 1995 has no date-level vertical-grid support | `ltpp_geoforecast_non_damage_registration_mvp_result_20260807.md` |
 
 ## Active gate
 
@@ -46,6 +47,10 @@ external re-review approved only blind Tier A/B availability collection; no
 transform fitting, final-control disclosure, or final gate is authorized.
 The separate page-frame MVP is a delivery-path smoke only: it may render
 common-canvas images but cannot make a physical registration or 2-D claim.
+The completed non-damage MVP records the concrete limiting source condition:
+1995 lacks source-proven internal vertical controls throughout its official
+0–500 ft page set. No automatic model or page-frame transform can establish
+the missing longitudinal physical correspondence.
 
 ## Next action
 
