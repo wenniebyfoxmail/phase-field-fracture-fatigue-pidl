@@ -1,0 +1,49 @@
+{
+  "audit_date": "2026-08-05",
+  "source": "LTPP InfoPave SDR 39 Manual Distress Survey Viewer",
+  "viewer_endpoint": "/DynamicView/GetDistressImages",
+  "rejected_local_candidate": {
+    "submitted_code": "06B410",
+    "official_status_response": "Invalid section ID provided.",
+    "decision": "not a current InfoPave section route"
+  },
+  "primary_candidate": {
+    "section_id": "06-1253",
+    "ldw_section_id": 2056,
+    "state": "California",
+    "pavement_description": "Asphalt Concrete on Unbound Granular Base",
+    "construction_numbers": 1,
+    "viewer_construction_resets": 0,
+    "survey_count": 9,
+    "segments_per_survey": 10,
+    "survey_dates": [
+      "1991-06-10",
+      "1995-10-24",
+      "1997-02-28",
+      "1998-04-07",
+      "2001-09-13",
+      "2003-05-14",
+      "2007-11-06",
+      "2012-04-17",
+      "2015-03-02"
+    ],
+    "geometry_route_status": "candidate_pending_same_segment_coordinate_audit",
+    "forcing_join_status": "not_extracted",
+    "moisture_status": "not_available_in_current_evidence",
+    "minimum_route_pass": false
+  },
+  "maintenance_semantics_control": {
+    "section_id": "06-0202",
+    "ldw_section_id": 1259,
+    "pavement_description": "new or reconstructed JPCC",
+    "construction_1_surveys": 4,
+    "construction_2_surveys": 9,
+    "construction_3_surveys": 1,
+    "reset_events": [
+      "2004 lane-shoulder longitudinal joint sealing",
+      "2015 crack sealing and joint sealing"
+    ],
+    "authorized_use": "maintenance-reset semantics control, not primary asphalt phase-field route"
+  },
+  "preserved_raw_responses": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/real_road_acquisition/ltpp_candidate_audit_20260805"
+}

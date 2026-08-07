@@ -1,0 +1,25 @@
+{
+  "protocol_id": "ltpp_06_1253_pilot_scope_decision_v1",
+  "decision_date": "2026-08-05",
+  "section": "06-1253",
+  "spatial_scope_ft": [0, 50],
+  "expand_manual_vectorization": false,
+  "primary_dates": [
+    "1991-06-10",
+    "1995-10-24",
+    "1997-02-28",
+    "1998-04-07",
+    "2001-09-13",
+    "2003-05-14",
+    "2007-11-06"
+  ],
+  "auxiliary_post_out_of_study_dates": [
+    "2012-04-17",
+    "2015-03-02"
+  ],
+  "out_of_study_date": "2011-06-01",
+  "mon_dis_role": "full-section trend and plausibility reference only",
+  "mon_dis_quantitative_ground_truth_authorized": false,
+  "annotation_grade": "single_annotator_exploratory_observation",
+  "authorized_next_operation": "qualify_structured_continuous_field_adapter_then_rerun_frozen_climate_free_ab"
+}

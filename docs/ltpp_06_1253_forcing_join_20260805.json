@@ -1,0 +1,110 @@
+{
+  "audit_date": "2026-08-05",
+  "source": "FHWA LTPP InfoPave official Section Timeline and Cross-Section Viewer APIs",
+  "section": "06-1253",
+  "ldw_section_id": 2056,
+  "frozen_raw_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/real_road_acquisition/ltpp_06_1253_forcing_20260805",
+  "raw_file_count": 62,
+  "raw_hash_manifest": "raw_files.sha256",
+  "geometry_surveys": [
+    "1991-06-10",
+    "1995-10-24",
+    "1997-02-28",
+    "1998-04-07",
+    "2001-09-13",
+    "2003-05-14",
+    "2007-11-06",
+    "2012-04-17",
+    "2015-03-02"
+  ],
+  "climate": {
+    "temperature": {
+      "status": "available",
+      "years": [1991, 2012],
+      "months_per_year": 12,
+      "raw_values": 264
+    },
+    "precipitation": {
+      "status": "available",
+      "years": [1991, 2012],
+      "months_per_year": 12,
+      "raw_values": 264
+    },
+    "humidity": {
+      "status": "absent"
+    },
+    "wind": {
+      "status": "absent"
+    },
+    "endpoint_caveat": "Values are monthly bins. Survey endpoints fall within months, so interval aggregation must declare its endpoint convention."
+  },
+  "traffic": {
+    "status": "sparse_snapshots_only",
+    "observed_months": [
+      "1991-02",
+      "1991-10",
+      "1992-02",
+      "1992-05",
+      "1992-10"
+    ],
+    "fields": [
+      "average_daily_volume",
+      "days_of_data",
+      "average_daily_percent_trucks"
+    ],
+    "prohibition": "Do not interpolate or label these five snapshots as continuous 1991-2015 traffic forcing."
+  },
+  "fwd": {
+    "status": "available_until_2003",
+    "events": [
+      {"date": "1989-11-14", "rows": 21},
+      {"date": "1991-06-10", "rows": 21},
+      {"date": "1993-07-14", "rows": 6},
+      {"date": "1995-10-24", "rows": 21},
+      {"date": "1997-02-28", "rows": 21},
+      {"date": "1998-04-07", "rows": 21},
+      {"date": "2003-05-15", "rows": 21}
+    ],
+    "fields": [
+      "DEFLECTION_EVENT",
+      "STATE_CODE",
+      "SHRP_ID",
+      "TEST_DATE",
+      "STATION",
+      "PEAK_DEFL_1"
+    ],
+    "leakage_rule": "The 2003-05-15 FWD event is forbidden when predicting the 2003-05-14 distress map."
+  },
+  "structure": {
+    "section_status": "Out of Study",
+    "accepted_date": "1988-06-29",
+    "placed_out_of_study_date": "2011-06-01",
+    "construction_count": 1,
+    "pavement_type": "Asphalt Concrete on Unbound Granular Base",
+    "layers": [
+      {"code": "AC", "material": "Chip Seal", "thickness_in": 0.2},
+      {"code": "AC", "material": "Hot Mixed, Hot Laid AC, Dense Graded", "thickness_in": 3.6},
+      {"code": "GB", "material": "Crushed Gravel", "thickness_in": 15.3},
+      {"code": "SS", "material": "Coarse-Grained Soil: Clayey Gravel with Sand", "thickness_in": 14.8}
+    ]
+  },
+  "maintenance_rehabilitation": {
+    "timeline_event_found": false,
+    "interpretation": "No maintenance or rehabilitation event was exposed by this timeline response. This is not proof that no unrecorded work occurred."
+  },
+  "route_decision": {
+    "authorized": [
+      "physical-grid geometry rectification and vectorization",
+      "no-hidden-label temporal prediction through 2012 using declared monthly temperature and precipitation",
+      "spatial-section stability checks across the ten 50-ft panels",
+      "FWD as an intermittent mechanical covariate with date-aware missingness"
+    ],
+    "not_authorized": [
+      "continuous traffic forcing after 1992",
+      "moisture or humidity mechanism selection",
+      "traffic-temperature-moisture support recovery claims from this section alone",
+      "using 2003-05-15 FWD to predict the 2003-05-14 map",
+      "treating hand-drawn line width as physical crack width"
+    ]
+  }
+}

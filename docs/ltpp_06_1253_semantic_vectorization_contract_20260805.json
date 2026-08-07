@@ -1,0 +1,87 @@
+{
+  "contract_version": "ltpp_06_1253_semantic_vectorization_v2_line_area",
+  "input_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/real_road_acquisition/ltpp_06_1253_rectified_grid_v3_20260805",
+  "input_gate": {
+    "name": "ltpp_06_1253_regular_physical_grid_v1",
+    "passed": 9,
+    "total": 9,
+    "hash_manifest": "derived_files.sha256"
+  },
+  "coordinate_reference": {
+    "physical_extent_m": [15.24, 5.0],
+    "image_shape_px": [500, 1524],
+    "origin": "lower_left",
+    "x_m": "x_pixel / 100",
+    "y_m": "(500 - y_pixel) / 100"
+  },
+  "primary_annotation": {
+    "input": "rectified_grid.png only",
+    "automatic_candidate_overlay_visible": false,
+    "other_survey_dates_visible": false,
+    "survey_date_visible": false,
+    "geometry": {
+      "LineString": "visible centreline of a line-type mapped crack; minimum 2 vertices",
+      "Polygon": "mapped extent of an area-type distress; minimum 3 distinct vertices and closed exterior ring"
+    },
+    "allowed_distress_family": [
+      "transverse_crack",
+      "longitudinal_crack",
+      "fatigue_or_alligator_crack",
+      "block_crack",
+      "other_crack",
+      "uncertain"
+    ],
+    "required_attributes": [
+      "blind_map_id",
+      "feature_id",
+      "line_id",
+      "geometry_role",
+      "distress_family",
+      "confidence",
+      "review_status",
+      "evidence_note"
+    ]
+  },
+  "exclusions": [
+    "survey grid",
+    "map frame",
+    "lane or shoulder boundary",
+    "handwritten distress code",
+    "circle around a code",
+    "X or hatch symbol inside an area distress",
+    "dimension or calculation text",
+    "line implied only by a later survey"
+  ],
+  "review": {
+    "second_annotation_independent": true,
+    "second_annotator_blinded_to_primary": true,
+    "adjudication_required_for_unmatched_geometries": true,
+    "automatic_candidates_allowed_only_after_primary_lock": true,
+    "future_date_maps_allowed_during_adjudication": false
+  },
+  "qualification": {
+    "all_primary_geometries_reviewed": true,
+    "all_unmatched_geometries_adjudicated": true,
+    "mean_matched_centerline_distance_m_max": 0.10,
+    "matched_tip_distance_m_max": 0.20,
+    "mean_matched_area_iou_min": 0.65,
+    "mean_matched_area_centroid_distance_m_max": 0.20,
+    "geometry_level_f1_min": 0.80,
+    "uncertain_geometry_excluded_from_confirmatory_metrics": true
+  },
+  "output": {
+    "format": "GeoJSON FeatureCollection",
+    "coordinates": "metres in local lower-left road frame",
+    "one_file_per_blind_map": true,
+    "mapping_from_blind_id_to_date": "sealed until both annotations are locked",
+    "status_before_review": "not_qualified"
+  },
+  "prohibitions": [
+    "do not use automatic v1-v5 masks as labels",
+    "do not copy a crack from an earlier or later date",
+    "do not infer physical crack width from drawn line width",
+    "do not interpret mapped area outlines or fill symbols as natural crack branches",
+    "do not report exact initiation time between surveys",
+    "do not train PIDL before the reviewed GeoJSON package passes"
+  ]
+}

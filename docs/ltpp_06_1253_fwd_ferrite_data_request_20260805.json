@@ -1,0 +1,112 @@
+{
+  "contract_date": "2026-08-05",
+  "section": {
+    "state_code": "06",
+    "shrp_id": "1253",
+    "panel_station_ft": [0.0, 50.0],
+    "panel_station_m": [0.0, 15.24],
+    "transverse_extent_m": [0.0, 5.0]
+  },
+  "evidence_label_if_qualified": "ltpp_observation_plus_ferrite_prior",
+  "authorized_action": "acquire_and_qualify_fwd_only",
+  "ferrite_execution_authorized": false,
+  "test_dates": [
+    "1989-11-14",
+    "1991-06-10",
+    "1993-07-14",
+    "1995-10-24",
+    "1997-02-28",
+    "1998-04-07",
+    "2003-05-15"
+  ],
+  "leakage_rules": [
+    {
+      "fwd_date": "2003-05-15",
+      "forbidden_target": "2003-05-14",
+      "reason": "FWD observation occurs one day after the distress-map target"
+    }
+  ],
+  "required_tables": {
+    "MON_DEFL_MASTER": [
+      "STATE_CODE", "SHRP_ID", "TEST_DATE", "DEFL_UNIT_ID",
+      "device_or_serial", "pass_count", "quality_metadata"
+    ],
+    "MON_DEFL_LOC_INFO": [
+      "STATE_CODE", "SHRP_ID", "TEST_DATE", "TEST_TIME", "DEFL_UNIT_ID",
+      "POINT_NO_or_POINT_LOC", "point_location_unit", "LANE_NO", "LANE_SPEC",
+      "CONFIGURATION_NO", "air_temperature", "surface_temperature", "quality_flags"
+    ],
+    "MON_DEFL_DROP_DATA": [
+      "STATE_CODE", "SHRP_ID", "TEST_DATE", "TEST_TIME",
+      "POINT_NO_or_POINT_LOC", "LANE_NO", "DROP_NO", "drop_height_or_level",
+      "DROP_LOAD_plate_pressure", "pressure_unit_kPa", "PEAK_DEFL_1_through_sensor_count",
+      "deflection_unit", "NON_DECREASING_DEFL", "quality_flags"
+    ],
+    "MON_DEFL_DEV_CONFIG": [
+      "CONFIGURATION_NO", "device_or_unit", "validity",
+      "load_plate_radius", "radius_unit", "sensor_count",
+      "load_cell_calibration", "temperature_sensor_calibration", "quality_flags"
+    ],
+    "MON_DEFL_DEV_SENSORS": [
+      "CONFIGURATION_NO", "SENSOR_NO", "CENTER_OFFSET", "offset_unit",
+      "sensor_calibration", "serial_number", "CENTER_OFFSET_FLAG", "quality_flags"
+    ],
+    "MON_DEFL_TEMP_DEPTHS": [
+      "STATE_CODE", "SHRP_ID", "TEST_DATE", "official_finer_keys",
+      "measurement_depth", "depth_unit", "quality_flags"
+    ],
+    "MON_DEFL_TEMP_VALUES": [
+      "STATE_CODE", "SHRP_ID", "TEST_DATE", "official_finer_keys",
+      "measurement_time", "temperature", "temperature_unit", "quality_flags"
+    ],
+    "structure_and_material": [
+      "EXPERIMENT_SECTION", "applicable_INV_tables", "applicable_TST_tables",
+      "construction_validity", "layer_thickness", "material_identity", "laboratory_properties"
+    ],
+    "optional_backcalculation": [
+      "BAKCAL_BASIN", "BAKCAL_PASS", "BAKCAL_STRUCTURE_LAYERS", "BAKCAL_LAYER_LINK",
+      "BAKCAL_MODULUS_BASIN_MASTER", "BAKCAL_MODULUS_BASIN_LAYER",
+      "BAKCAL_MODULUS_SECTION_MASTER", "BAKCAL_MODULUS_SECTION_LAYER",
+      "BAKCAL_BEST_FIT_BASIN_MASTER", "BAKCAL_BEST_FIT_BASIN_LAYER",
+      "BAKCAL_BEST_FIT_SECTION_MASTER", "BAKCAL_BEST_FIT_SECTION_LAYER",
+      "BAKCAL_BEST_FIT_LAYERS"
+    ]
+  },
+  "minimum_join_contract": [
+    "MASTER_to_LOC_INFO: STATE_CODE,SHRP_ID,TEST_DATE,DEFL_UNIT_ID",
+    "LOC_INFO_to_DROP_DATA: release-defined point key including STATE_CODE,SHRP_ID,TEST_DATE,TEST_TIME,LANE_NO,POINT_NO_or_equivalent",
+    "LOC_INFO_to_DEV_CONFIG: CONFIGURATION_NO plus release-required device/validity keys",
+    "LOC_INFO_to_DEV_SENSORS: CONFIGURATION_NO with one accepted row per sensor",
+    "temperature: STATE_CODE,SHRP_ID,TEST_DATE plus every official finer key",
+    "structure/backcalculation: section,construction,layer/point,validity keys from the release dictionary"
+  ],
+  "required_join_audit": [
+    "unmatched_row_counts", "duplicate_key_counts", "many_to_many_expansion",
+    "excluded_row_ledger", "panel_overlap_station_list"
+  ],
+  "raw_provenance": [
+    "release_version", "extraction_timestamp", "query_or_filter",
+    "data_dictionaries", "code_tables", "units", "null_codes",
+    "quality_flags", "raw_sha256_manifest"
+  ],
+  "qualification_requirements": [
+    "at_least_one_panel_overlapping_full_basin_with_measured_load",
+    "load_plate_radius_sensor_count_offsets_units_and_calibration_present",
+    "declared_missing_sensor_and_non_decreasing_basin_rules_pass",
+    "date_valid_layer_structure_or_explicit_uncertainty",
+    "frozen_raw_join_and_leakage_audits",
+    "predeclared_ferrite_model_and_non_identifiability_protocol",
+    "held_out_date_point_or_load_level_for_basin_prediction"
+  ],
+  "failure_decision": "STOP_BEFORE_FERRITE",
+  "first_allowed_output": "fwd_qualification_report.json",
+  "prohibitions": [
+    "do_not_treat_PEAK_DEFL_1_as_a_full_basin",
+    "do_not_treat_DROP_LOAD_kPa_plate_pressure_as_total_force",
+    "do_not_infer_units_from_magnitude",
+    "do_not_replace_missing_fields_with_constants_or_zeros",
+    "do_not_relabel_existing_SENT_producer_as_a_road_model",
+    "do_not_call_ferrite_fields_observed_road_mechanics",
+    "do_not_use_2003_05_15_fwd_for_2003_05_14_prediction"
+  ]
+}

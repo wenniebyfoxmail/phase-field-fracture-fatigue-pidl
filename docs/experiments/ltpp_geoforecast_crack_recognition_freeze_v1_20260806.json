@@ -1,0 +1,43 @@
+{
+  "status": "PASS_STAGE1_READ_ONLY__B0_FREEZE_PENDING",
+  "created_at": "2026-08-06",
+  "track": "ltpp_geoforecast_crack_recognition_track.md",
+  "preregistration": "ltpp_geoforecast_crack_recognition_preregistration_v1_20260806.md",
+  "preregistration_sha256": "75ba69e2a4b79925605653b5c4ec5659058c94b939621c76dbdc2cae51d636f5",
+  "input_manifest_sha256": "6a9422bdcef707fa861b05ad0c817d6deaa4e4ad03ea636c46c5820f8b01f4ad",
+  "stage1_audit_sha256": "636b2bf1e0fdc1ab7b348d87ec99a79826c15651c32feed9e439d0da792cf244",
+  "stage1_audit_script_sha256": "53342b00e5f814799592a69b81d9359d1b31194faaaf5bcb6e6282ef78574f90",
+  "row_set": {
+    "image_count": 37,
+    "label_count": 37,
+    "total_geometries": 249,
+    "crack_geometries": 232,
+    "uncertain_geometries": 2
+  },
+  "split": {
+    "type": "leave_one_section_out",
+    "held_out_sections": ["06-1253", "06-2041", "06-2647", "06-8149", "06-8150", "06-8201"],
+    "random_crop_splits_forbidden": true
+  },
+  "coordinate_frame": {
+    "extent_m": [0, 0, 15.24, 5],
+    "image_shape_px": [1524, 500],
+    "pixel_scale_px_per_m": 100,
+    "gold_centerline_width_px": 1,
+    "matching_tolerance_m": 0.1,
+    "endpoint_tolerance_m": 0.2
+  },
+  "confounder_boundary": {
+    "handwriting_count": 199,
+    "boundary_count": 67,
+    "grid_frame_arrow_dimension_wim_patch_hatching": "present but not independently enumerated in frozen schema; retained as explicit audit categories"
+  },
+  "environment": {
+    "python": "3.12.2 miniconda",
+    "opencv": "4.13.0",
+    "numpy": "2.2.6",
+    "scikit_image": "0.26.0"
+  },
+  "heldout_scores_read": false,
+  "next_action": "Implement and hash B0, then complete the freeze receipt before any held-out evaluation."
+}

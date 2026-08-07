@@ -1,0 +1,64 @@
+{
+  "protocol_id": "ltpp_geoforecast_multisection_candidate_gate_v1",
+  "minimum_climate_complete_surveys": 5,
+  "candidates": [
+    {
+      "section": "06-1253",
+      "ldw_section_id": 2056,
+      "construction_number": 1,
+      "survey_dates": ["1991-06-10", "1995-10-24", "1997-02-28", "1998-04-07", "2001-09-13", "2003-05-14", "2007-11-06", "2012-04-17", "2015-03-02"],
+      "rectification_result": "local_archive/real_road_acquisition/ltpp_06_1253_rectified_grid_v3_20260805/grid_gate_results.json",
+      "manual_station_review": "PASS_PRINTED_0_TO_50_FT_ALL_DATES"
+    },
+    {
+      "section": "06-2041",
+      "ldw_section_id": 2060,
+      "construction_number": 3,
+      "survey_dates": ["1996-03-20", "1998-10-20", "2001-11-08", "2003-05-13", "2007-11-12", "2009-12-01", "2012-04-24", "2015-02-25"],
+      "rectification_result": "local_archive/real_road_acquisition/ltpp_california_candidate_rectification_v2_20260805/06-2041/grid_gate_results.json",
+      "manual_station_review": "PASS_PRINTED_0_TO_50_FT_ALL_DATES"
+    },
+    {
+      "section": "06-8149",
+      "ldw_section_id": 2160,
+      "construction_number": 2,
+      "survey_dates": ["1997-02-21", "1999-03-01", "2000-03-13", "2003-01-30", "2005-03-17", "2007-03-15"],
+      "rectification_result": "local_archive/real_road_acquisition/ltpp_california_candidate_rectification_v2_20260805/06-8149/grid_gate_results.json",
+      "manual_station_review": "PASS_PRINTED_0_TO_50_FT_ALL_DATES"
+    },
+    {
+      "section": "06-2647",
+      "ldw_section_id": 2063,
+      "construction_number": 1,
+      "survey_dates": ["1994-11-04", "1998-02-20", "2001-10-09", "2003-03-12", "2007-03-09"],
+      "rectification_result": "local_archive/real_road_acquisition/ltpp_california_candidate_rectification_rank8_13_20260805/06-2647/grid_gate_results.json",
+      "manual_station_review": "PASS_PRINTED_0_TO_50_FT_ALL_DATES"
+    },
+    {
+      "section": "06-8150",
+      "ldw_section_id": 2158,
+      "construction_number": 3,
+      "survey_dates": ["2000-03-22", "2003-01-22", "2005-03-15", "2007-03-14", "2009-11-16"],
+      "rectification_result": "local_archive/real_road_acquisition/ltpp_california_candidate_rectification_rank14_18_20260805/06-8150/grid_gate_results.json",
+      "manual_station_review": "PASS_PRINTED_0_TO_50_FT_ALL_DATES"
+    },
+    {
+      "section": "06-8201",
+      "ldw_section_id": 2156,
+      "construction_number": 1,
+      "survey_dates": ["1994-10-31", "1998-04-16", "2000-03-23", "2003-01-23", "2005-03-10"],
+      "rectification_result": "local_archive/real_road_acquisition/ltpp_california_candidate_rectification_rank14_18_20260805/06-8201/grid_gate_results.json",
+      "manual_station_review": "PASS_PRINTED_0_TO_50_FT_ALL_DATES"
+    }
+  ],
+  "excluded_after_visual_station_review": [
+    {
+      "section": "06-0563",
+      "reason": "Viewer labels first item as 0-50 ft, but printed physical stations vary across dates (including 400-450 ft and 100-150 ft)."
+    },
+    {
+      "section": "06-0569",
+      "reason": "Viewer labels first item as 0-50 ft, but printed physical stations vary across dates (including 100-150 ft and 400-450 ft)."
+    }
+  ]
+}

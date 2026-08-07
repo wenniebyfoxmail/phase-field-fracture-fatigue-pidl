@@ -1,0 +1,53 @@
+{
+  "audit_date": "2026-08-05",
+  "section_id": "06-1253",
+  "ldw_section_id": 2056,
+  "pavement": "Asphalt Concrete on Unbound Granular Base",
+  "source": "LTPP InfoPave SDR 39 Manual Distress Survey Viewer",
+  "download": {
+    "survey_dates": 9,
+    "segments_per_date": 10,
+    "maps": 90,
+    "total_bytes": 18994135,
+    "width_px_range": [2861, 5871],
+    "height_px_range": [918, 2457],
+    "original_mode": "RGBA with black ink encoded by alpha",
+    "manifest": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/real_road_acquisition/ltpp_06_1253_maps_20260805/map_manifest.csv"
+  },
+  "frozen_geometry_sample": {
+    "segment": "0-50 feet",
+    "dates": [
+      "1991-06-10",
+      "1995-10-24",
+      "1997-02-28",
+      "1998-04-07",
+      "2001-09-13",
+      "2003-05-14",
+      "2007-11-06",
+      "2012-04-17",
+      "2015-03-02"
+    ],
+    "physical_grid_longitudinal": "0-50 ft, equivalent to approximately 0-15.24 m",
+    "physical_grid_lateral": "0-5 m",
+    "same_nominal_physical_coordinate_frame": true,
+    "direct_pixel_registration": false,
+    "grid_rectification_required": true
+  },
+  "semantics": {
+    "manual_distress_lines_and_codes": true,
+    "ready_made_pixel_masks": false,
+    "crack_width_from_drawn_line_width_authorized": false,
+    "tip_or_line_location_after_grid_rectification_authorized": true,
+    "initiation_time_semantics": "interval censored between survey dates",
+    "first_seven_viewer_event_descriptions": "Transverse profile data was collected.",
+    "final_two_viewer_event_descriptions": "Distress data collected.",
+    "visual_content": "all nine selected maps contain manual distress drawings on the section grid"
+  },
+  "gate_decision": {
+    "repeated_physical_geometry_available": true,
+    "geometry_route": "conditional_pass_pending_grid_rectification_and_vectorization",
+    "forcing_join": "pending",
+    "moisture": "missing",
+    "complete_real_road_fts_route": "fail_not_yet_complete"
+  }
+}

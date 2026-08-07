@@ -1,0 +1,10 @@
+interval_id,source_survey,target_survey,geometry_target,climate_temp_precip,traffic,fwd,structure,mr_reset,moisture,authorization
+0,,1991-06-10,initial_state,monthly_series_starts_1991,"1991 Feb and Oct snapshots only","1989-11-14 and target-day 1991-06-10",single_construction_four_layers,no_timeline_mr_event,absent,initialization_only
+1,1991-06-10,1995-10-24,yes,complete_month_bins,"partial: 1991-1992 five snapshots","1993-07-14 and target-day 1995-10-24",fixed,no_timeline_mr_event,absent,geometry_climate_authorized_traffic_not_continuous
+2,1995-10-24,1997-02-28,yes,complete_month_bins,absent,target-day_1997-02-28,fixed,no_timeline_mr_event,absent,geometry_climate_authorized
+3,1997-02-28,1998-04-07,yes,complete_month_bins,absent,target-day_1998-04-07,fixed,no_timeline_mr_event,absent,geometry_climate_authorized
+4,1998-04-07,2001-09-13,yes,complete_month_bins,absent,source_boundary_only_1998-04-07,fixed,no_timeline_mr_event,absent,geometry_climate_authorized
+5,2001-09-13,2003-05-14,yes,complete_month_bins,absent,"2003-05-15 is one day after target and prohibited",fixed,no_timeline_mr_event,absent,geometry_climate_authorized_fwd_future_leakage_prohibited
+6,2003-05-14,2007-11-06,yes,complete_month_bins,absent,2003-05-15_inside_interval,fixed,no_timeline_mr_event,absent,geometry_climate_authorized
+7,2007-11-06,2012-04-17,yes,complete_month_bins_through_target,absent,none,fixed,"section marked out-of-study 2011-06-01",absent,geometry_climate_authorized_with_out_of_study_caveat
+8,2012-04-17,2015-03-02,yes,"partial: May-Dec 2012 only; 2013-2015 absent",absent,none,fixed,"section already out-of-study",absent,geometry_target_only_forcing_incomplete

@@ -1,0 +1,70 @@
+{
+  "status": "PREREGISTERED_NOT_LAUNCHED",
+  "section": "06-1253",
+  "evidence_label": "ltpp_observation_plus_ferrite_prior",
+  "model": {
+    "physics": "quasi_static_axisymmetric_linear_elasticity",
+    "prohibited_substitutes": ["plane_strain_SENT", "phase_field_teacher", "3d_before_axisymmetric_falsification"],
+    "domain_m": {"primary_radius": 6.4, "primary_depth": 6.4, "extended_radius": 9.6, "extended_depth": 9.6},
+    "plate_radius_m": 0.15,
+    "layers": [
+      {"name": "effective_surface", "thickness_m": 0.09652},
+      {"name": "granular_base", "thickness_m": 0.38862},
+      {"name": "subgrade", "thickness_m": null}
+    ],
+    "parameter_bounds": {
+      "E_surface_20C_GPa": [0.5, 15.0],
+      "beta_T_per_C": [0.0, 0.12],
+      "E_base_MPa": [50.0, 800.0],
+      "E_subgrade_MPa": [20.0, 300.0]
+    },
+    "poisson_scenarios": {
+      "low": [0.30, 0.30, 0.35],
+      "nominal": [0.35, 0.35, 0.40],
+      "high": [0.40, 0.40, 0.45]
+    }
+  },
+  "split": {
+    "calibration_dates": ["1989-11-14", "1991-06-10", "1993-07-14", "1995-10-24", "1997-02-28", "1998-04-07"],
+    "internal_validation": "leave_one_complete_date_out",
+    "final_holdout": "2003-05-15",
+    "holdout_label": "frozen_code_level_temporal_holdout_not_analyst_blind",
+    "map_prohibition": "never_use_2003-05-15_FWD_to_predict_2003-05-14_map"
+  },
+  "observation_gate": {
+    "metric": "1.4826_MAD_over_abs_median_of_pressure_normalized_repeat_deflection",
+    "tests": ["within_drop_height_repeatability", "across_drop_height_linearity"],
+    "median_max": 0.05,
+    "p90_max": 0.10,
+    "failure": "FAIL_OBSERVED_LOAD_LINEARITY"
+  },
+  "numerical_gates": {
+    "reaction_relative_max": 1e-5,
+    "double_pressure_linearity_relative_max": 1e-8,
+    "homogeneous_halfspace_relative_max": 0.01,
+    "medium_fine_sensor": "max(0.5_um,1_percent)",
+    "medium_fine_objective_relative_max": 0.005,
+    "domain_sensor": "max(0.5_um,0.5_percent)"
+  },
+  "predictive_gates": {
+    "lodo_median_zone_balanced_rms_relative_max": 0.10,
+    "lodo_any_date_max": 0.15,
+    "holdout_2003_common_seven_max": 0.10,
+    "holdout_2003_any_zone_max": 0.15,
+    "baseline_relative_improvement_min": 0.10,
+    "ensemble_90_coverage": [0.80, 1.00],
+    "median_interval_width_over_observed_max": 0.30,
+    "paired_plus_minus_305_pass_fraction_min": 0.75
+  },
+  "identifiability": {
+    "initializations_per_poisson_scenario_per_fold": 16,
+    "profile_points_per_parameter_min": 15,
+    "near_optimal_objective_fraction": 0.02,
+    "p95_over_p5_max": 3.0,
+    "absolute_parameter_correlation_max": 0.95
+  },
+  "authorization": {
+    "current": "observation_linearity_and_numerical_gates_only",
+    "not_authorized": ["PIDL_training", "phase_field_labels", "real_road_mechanics_claim", "real_FTS_before_adjudicated_geometry"]
+  }
+}
