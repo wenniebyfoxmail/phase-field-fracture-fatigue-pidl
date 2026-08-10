@@ -35,6 +35,7 @@ separately reviewed scalar-length analysis.
 | same-date official-page layout inventory | read-only diagnosis of page-level versus date-level printed-grid loss | `ltpp_geoforecast_spatial_registration_layout_inventory_20260807.md` |
 | non-damage registration MVP result | `EXPLORATORY_REGISTRATION_MVP__NOT_VALIDATED_FOR_2D_MODEL`; 1995 has no date-level vertical-grid support | `ltpp_geoforecast_non_damage_registration_mvp_result_20260807.md` |
 | eight-date outer-solid-range inventory | `EXPLORATORY_SOLID_OUTER_BOUNDARY_INVENTORY__NOT_QUALIFIED`; owner accepted 1991 only, rejected 2001/2003/2007/2012, with 1998 fail closed | `ltpp_geoforecast_eight_date_solid_outer_boundary_inventory_result_20260810.md` |
+| frame-range amendment protocol | external review requested; no amended detector executed | `../reviews/ltpp_geoforecast_frame_range_amendment_external_review_request_20260810.md` |
 
 ## Active gate
 
