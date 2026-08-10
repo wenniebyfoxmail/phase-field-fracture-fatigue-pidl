@@ -1063,6 +1063,100 @@ def test_actual_p0_p0r_projection_hashes_are_identical() -> None:
     )
 
 
+def _runtime_identity_fixture() -> dict[str, object]:
+    return {
+        "source_commit": "a" * 40,
+        "source_manifest_sha256": "b" * 64,
+        "case_physics_contract_sha256": "c" * 64,
+        "runtime_lock_sha256": "d" * 64,
+        "matlab": {
+            "release": "R2025b",
+            "update": "Update 5",
+            "version": "25.2.0.3177638",
+            "computer": "PCWIN64",
+            "executable_sha256": "e" * 64,
+            "blas": "locked BLAS",
+            "lapack": "locked LAPACK",
+        },
+        "binary_sha256": {
+            "initial": "1" * 64,
+            "AMOR": "2" * 64,
+            "AT1_HISTORY_FATIGUE": "3" * 64,
+            "cholmod2": "4" * 64,
+        },
+        "thread_settings": {
+            "OMP_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_DYNAMIC": "FALSE",
+        },
+        "launcher_sha256": "5" * 64,
+    }
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        ("source_commit",),
+        ("source_manifest_sha256",),
+        ("case_physics_contract_sha256",),
+        ("runtime_lock_sha256",),
+        ("matlab", "version"),
+        ("matlab", "executable_sha256"),
+        ("binary_sha256", "initial"),
+        ("binary_sha256", "AMOR"),
+        ("binary_sha256", "AT1_HISTORY_FATIGUE"),
+        ("binary_sha256", "cholmod2"),
+        ("thread_settings", "OMP_NUM_THREADS"),
+        ("thread_settings", "MKL_NUM_THREADS"),
+        ("thread_settings", "OPENBLAS_NUM_THREADS"),
+        ("thread_settings", "MKL_DYNAMIC"),
+    ],
+)
+def test_runtime_identity_rejects_each_mismatch(path: tuple[str, ...]) -> None:
+    module = _load_adjudication_module()
+    p0 = _runtime_identity_fixture()
+    p0r = copy.deepcopy(p0)
+    current = p0r
+    for name in path[:-1]:
+        current = current[name]  # type: ignore[assignment,index]
+    current[path[-1]] = "f" * 64  # type: ignore[index]
+    with pytest.raises(module.AdjudicationError, match="identity|mismatch"):
+        module.require_equal_producer_runtime_identity(p0, p0r)
+
+
+def test_runtime_identity_accepts_exact_match() -> None:
+    module = _load_adjudication_module()
+    identity = _runtime_identity_fixture()
+    module.require_equal_producer_runtime_identity(identity, copy.deepcopy(identity))
+
+
+def test_actual_p0_p0r_producer_runtime_identities_are_identical() -> None:
+    p0_root = Path(r"C:\q4diag\toy-road-p0-production-d17efe6-run1\output")
+    p0r_root = Path(r"C:\q4diag\toy-road-p0r-production-d17efe6-run1\output")
+    producer = Path(
+        r"C:\q4diag\phase-field-fracture-fatigue-pidl-p0-sealed-d17efe6"
+        r"\producer_handoffs\toy_road_p0_repeatability_20260803"
+    )
+    if not p0_root.is_dir() or not p0r_root.is_dir() or not producer.is_dir():
+        pytest.skip("immutable production evidence is not mounted")
+    module = _load_adjudication_module()
+    p0 = PROTOCOL._validate_package(p0_root, "P0", "P0_parent")
+    p0r = PROTOCOL._validate_package(p0r_root, "P0R", "P0R_parent_repeat")
+    p0_identity = module.extract_producer_runtime_identity(p0, producer)
+    p0r_identity = module.extract_producer_runtime_identity(p0r, producer)
+    module.require_equal_producer_runtime_identity(p0_identity, p0r_identity)
+    assert p0_identity["source_commit"] == (
+        "d17efe6118ded31d7085d08cd85fdb0d31c09659"
+    )
+    assert p0_identity["thread_settings"] == {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_DYNAMIC": "FALSE",
+    }
+
+
 def test_repeatability_accepts_legacy_packages_and_complete_c5_evidence(
     tmp_path: Path,
 ) -> None:

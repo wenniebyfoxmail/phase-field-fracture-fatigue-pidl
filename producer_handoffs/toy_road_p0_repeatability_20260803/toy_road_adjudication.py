@@ -4,6 +4,7 @@ from collections.abc import Mapping
 import hashlib
 import json
 from pathlib import Path
+import re
 
 import numpy as np
 
@@ -196,3 +197,111 @@ def physical_input_projection_sha256(projection: Mapping[str, object]) -> str:
     if projection.get("schema_version") != PROJECTION_SCHEMA:
         raise AdjudicationError("physical input projection schema is invalid")
     return hashlib.sha256(_canonical_json_bytes(dict(projection))).hexdigest()
+
+
+def require_equal_producer_runtime_identity(
+    p0: Mapping[str, object], p0r: Mapping[str, object]
+) -> None:
+    if p0 != p0r:
+        raise AdjudicationError("producer/runtime identity mismatch")
+
+
+def _sha256_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _extract_thread_settings(launcher_bytes: bytes) -> dict[str, str]:
+    try:
+        text = launcher_bytes.decode("utf-8")
+    except UnicodeDecodeError as exception:
+        raise AdjudicationError("producer launcher is not UTF-8") from exception
+    names = {
+        "OMP_NUM_THREADS",
+        "MKL_NUM_THREADS",
+        "OPENBLAS_NUM_THREADS",
+        "MKL_DYNAMIC",
+    }
+    observed: dict[str, str] = {}
+    pattern = re.compile(
+        r"^\s*(OMP_NUM_THREADS|MKL_NUM_THREADS|OPENBLAS_NUM_THREADS|MKL_DYNAMIC)\s*=\s*'([^']+)'\s*$",
+        re.MULTILINE,
+    )
+    for name, value in pattern.findall(text):
+        if name in observed:
+            raise AdjudicationError(f"duplicate thread setting {name}")
+        observed[name] = value
+    expected = {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_DYNAMIC": "FALSE",
+    }
+    if set(observed) != names or observed != expected:
+        raise AdjudicationError("producer thread settings identity mismatch")
+    return observed
+
+
+def extract_producer_runtime_identity(
+    package: Mapping[str, object], producer_root: Path
+) -> dict[str, object]:
+    snapshot = package.get("snapshot")
+    manifest = package.get("manifest")
+    if not isinstance(snapshot, dict) or not isinstance(snapshot.get("bytes"), dict):
+        raise AdjudicationError("validated package snapshot is missing")
+    if not isinstance(manifest, dict):
+        raise AdjudicationError("validated package manifest is missing")
+    package_bytes = snapshot["bytes"]
+    lock_bytes = package_bytes.get("EXECUTION_INPUT_LOCK.json")
+    runtime_bytes = package_bytes.get("RUNTIME_RECEIPT.json")
+    if not isinstance(lock_bytes, bytes) or not isinstance(runtime_bytes, bytes):
+        raise AdjudicationError("package runtime identity artifacts are missing")
+    lock = _strict_json_object(lock_bytes, "execution input lock")
+    runtime = _strict_json_object(runtime_bytes, "runtime receipt")
+    expectations = lock.get("runtime_expectations")
+    if not isinstance(expectations, dict):
+        raise AdjudicationError("runtime expectations are missing")
+    matlab = expectations.get("matlab")
+    binary = expectations.get("binary_sha256")
+    if not isinstance(matlab, dict) or not isinstance(binary, dict):
+        raise AdjudicationError("runtime MATLAB or binary identity is missing")
+    _require_exact_fields(
+        binary, {"initial", "AMOR", "AT1_HISTORY_FATIGUE", "cholmod2"}, "binary identity"
+    )
+    matlab_fields = {
+        "release",
+        "update",
+        "version",
+        "computer",
+        "executable_sha256",
+        "blas",
+        "lapack",
+        "absolute_path_order",
+    }
+    _require_exact_fields(matlab, matlab_fields, "MATLAB identity")
+    for field in ("source_commit", "runtime_lock_sha256"):
+        if runtime.get(field) != lock.get(field):
+            raise AdjudicationError(f"runtime receipt {field} identity mismatch")
+    for field in ("computer", "blas", "lapack"):
+        if runtime.get(field) != matlab.get(field):
+            raise AdjudicationError(f"runtime receipt MATLAB {field} identity mismatch")
+    manifest_path = Path(producer_root) / "SOURCE_MANIFEST.json"
+    launcher_path = Path(producer_root) / "launch_toy_road_family_case.ps1"
+    try:
+        manifest_bytes = manifest_path.read_bytes()
+        launcher_bytes = launcher_path.read_bytes()
+    except OSError as exception:
+        raise AdjudicationError(f"cannot read sealed producer identity: {exception}") from exception
+    if _sha256_bytes(manifest_bytes) != lock.get("source_manifest_sha256"):
+        raise AdjudicationError("producer source manifest identity mismatch")
+    return {
+        "source_commit": lock.get("source_commit"),
+        "source_manifest_sha256": lock.get("source_manifest_sha256"),
+        "case_physics_contract_sha256": manifest.get(
+            "case_physics_contract_sha256"
+        ),
+        "runtime_lock_sha256": lock.get("runtime_lock_sha256"),
+        "matlab": {name: matlab[name] for name in matlab_fields - {"absolute_path_order"}},
+        "binary_sha256": dict(binary),
+        "thread_settings": _extract_thread_settings(launcher_bytes),
+        "launcher_sha256": _sha256_bytes(launcher_bytes),
+    }
