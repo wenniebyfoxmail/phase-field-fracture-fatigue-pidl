@@ -38,6 +38,7 @@ separately reviewed scalar-length analysis.
 | frame-range amendment protocol | external review requested; no amended detector executed | `../reviews/ltpp_geoforecast_frame_range_amendment_external_review_request_20260810.md` |
 | lattice-envelope frame-range MVP | `EXPLORATORY_LATTICE_ENVELOPE_FRAME_RANGE_MVP__NOT_QUALIFIED`; improves 2003/1998/2012 candidate generation but still fails 1991/2001/2007 range conditions | `ltpp_geoforecast_lattice_envelope_frame_range_mvp_result_20260810.md` |
 | no-OCR complete-main-grid tooling MVP | `EXPLORATORY_MAIN_GRID_TOOLING_MVP__NOT_QUALIFIED`; all eight seen development pages fail closed because no single `11 x 6`, 66-intersection component survives scanned dashed/fragmented strokes | `ltpp_geoforecast_img2table_main_grid_mvp_result_20260810.md` |
+| outer-boundary/intersection-topology MVP v2 | `EXPLORATORY_OUTER_FRAME_TOPOLOGY_TOOLING_MVP__NOT_QUALIFIED`; after passing fixed synthetic adversaries and threshold boundaries, all eight seen development pages fail closed because no uniquely eligible fully observed outer frame exists | `ltpp_geoforecast_outer_boundary_intersection_topology_mvp_v2_result_20260810.md` |
 
 ## Active gate
 
@@ -65,6 +66,9 @@ would need separate preregistration and review before it is executed.
 The one lattice-envelope MVP is a separate exploratory attempt, not that
 approved amendment: its visible range failures keep it quarantined from
 cropping, control extraction, and all registration claims.
+The separately approved outer-boundary/intersection-topology MVP v2 is also
+terminal: its one development run returned no eligible frame on all eight
+pages. It must not be loosened or rerun under the same experiment name.
 
 ## Next action
 
