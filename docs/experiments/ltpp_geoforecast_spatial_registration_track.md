@@ -36,6 +36,7 @@ separately reviewed scalar-length analysis.
 | non-damage registration MVP result | `EXPLORATORY_REGISTRATION_MVP__NOT_VALIDATED_FOR_2D_MODEL`; 1995 has no date-level vertical-grid support | `ltpp_geoforecast_non_damage_registration_mvp_result_20260807.md` |
 | eight-date outer-solid-range inventory | `EXPLORATORY_SOLID_OUTER_BOUNDARY_INVENTORY__NOT_QUALIFIED`; owner accepted 1991 only, rejected 2001/2003/2007/2012, with 1998 fail closed | `ltpp_geoforecast_eight_date_solid_outer_boundary_inventory_result_20260810.md` |
 | frame-range amendment protocol | external review requested; no amended detector executed | `../reviews/ltpp_geoforecast_frame_range_amendment_external_review_request_20260810.md` |
+| lattice-envelope frame-range MVP | `EXPLORATORY_LATTICE_ENVELOPE_FRAME_RANGE_MVP__NOT_QUALIFIED`; improves 2003/1998/2012 candidate generation but still fails 1991/2001/2007 range conditions | `ltpp_geoforecast_lattice_envelope_frame_range_mvp_result_20260810.md` |
 
 ## Active gate
 
@@ -60,6 +61,9 @@ v2 audit control.
 Its owner review also rejects a universal use of the outer-solid-frame heuristic:
 it can select internal page geometry. A later amended frame-range diagnostic
 would need separate preregistration and review before it is executed.
+The one lattice-envelope MVP is a separate exploratory attempt, not that
+approved amendment: its visible range failures keep it quarantined from
+cropping, control extraction, and all registration claims.
 
 ## Next action
 
