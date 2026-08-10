@@ -75,18 +75,19 @@ function New-Fixture([string]$Role) {
         'P0R_parent_repeat' { $predecessors = @(New-TerminalEvidence 'P0_parent') }
         'T1_initial_defect' {
             $repeatability = [ordered]@{
-                authorization_scope = 'production_authorized'
                 status = 'PASS'
-                runtime_lock_sha256 = $RuntimeLockSha
-                family_contract_sha256 = $FamilySha
+                authorization_capability = 'none'
+                production_execution_authorized = $false
                 p0_manifest_sha256 = '4' * 64
                 p0r_manifest_sha256 = '5' * 64
                 p0_c5_receipt_sha256 = '6' * 64
                 p0r_c5_receipt_sha256 = '7' * 64
                 p0_package_snapshot_sha256 = '8' * 64
                 p0r_package_snapshot_sha256 = '9' * 64
-                authentication_receipt_path = 'fixture-only-repeatability-auth'
-                authentication_receipt_sha256 = 'a' * 64
+                p0_projection_sha256 = 'a' * 64
+                p0r_projection_sha256 = 'a' * 64
+                adjudication_receipt_path = 'fixture-only-adjudication'
+                adjudication_receipt_sha256 = 'b' * 64
             }
         }
         'T2_material_state' { $predecessors = @(New-TerminalEvidence 'T1_initial_defect') }
@@ -449,6 +450,19 @@ $malformedRepeatabilityBinding.repeatability_evidence.p0_c5_receipt_sha256 = 'no
 Assert-Rejected (
     Invoke-Launcher 'T1_initial_defect' $malformedRepeatabilityBinding
 ) 'repeatability.*hash|malformed'
+
+$adjudicationCannotAuthorize = New-Fixture 'T1_initial_defect'
+$adjudicationCannotAuthorize.repeatability_evidence.authorization_capability = 'production'
+$adjudicationCannotAuthorize.repeatability_evidence.production_execution_authorized = $true
+Assert-Rejected (
+    Invoke-Launcher 'T1_initial_defect' $adjudicationCannotAuthorize
+) 'adjudication.*authorizing|authorization'
+
+$projectionMismatch = New-Fixture 'T1_initial_defect'
+$projectionMismatch.repeatability_evidence.p0r_projection_sha256 = 'c' * 64
+Assert-Rejected (
+    Invoke-Launcher 'T1_initial_defect' $projectionMismatch
+) 'adjudication|projection'
 
 $preflightAsPredecessor = New-Fixture 'T2_material_state'
 $preflightAsPredecessor.predecessors[0].authorization_scope = 'preflight_only_non_authorizing'

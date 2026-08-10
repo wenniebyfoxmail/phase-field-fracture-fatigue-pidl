@@ -68,7 +68,7 @@
                   },
                   {
                       "path":  "launch_toy_road_family_case.ps1",
-                      "sha256":  "a6f11a7ce092c4f3afcf064c650202db93dcfa1b0a676c2f432629abc04d24dd"
+                      "sha256":  "34a792eef1cc31d2e9d99ec4fa4985d4cfea2e39e16ab7203f01bfa6e1b46f18"
                   },
                   {
                       "path":  "launch_toy_road_runtime_diagnostic.ps1",

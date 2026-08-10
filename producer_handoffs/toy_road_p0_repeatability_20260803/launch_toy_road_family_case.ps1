@@ -494,36 +494,31 @@ function Get-ProductionPredecessors {
 
 function Get-ProductionRepeatabilityEvidence {
     if ($Role -cne 'T1_initial_defect') { return $null }
-    $path = Join-Path $EvidenceRoot 'P0_REPEATABILITY_EVIDENCE_LOCK.json'
+    $path = Join-Path $EvidenceRoot 'P0R_EXTERNAL_REPEATABILITY_ADJUDICATION_V1.json'
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
-        throw 'P0/P0R repeatability evidence is missing before T1.'
+        throw 'Versioned P0/P0R adjudication PASS is missing before T1.'
     }
-    $tokenPath = Join-Path (Split-Path -Parent $ReceiptPath) `
-        ('.' + $noClobberId + '.repeatability-auth.json')
-    $protocolPath = Join-Path $HandoffDir 'toy_road_protocol.py'
-    $p0 = Join-Path $EvidenceRoot 'P0_parent'
-    $p0r = Join-Path $EvidenceRoot 'P0R_parent_repeat'
+    $protocolPath = Join-Path $HandoffDir 'toy_road_adjudication.py'
     Assert-ApprovedPythonIdentity
-    $output = & $PythonExecutable $protocolPath --authenticate-repeatability `
-        $path $p0 $p0r $tokenPath 2>&1
+    $output = & $PythonExecutable $protocolPath recheck $path 2>&1
     if ($LASTEXITCODE -ne 0) {
-        throw "P0/P0R repeatability authentication failed: $($output -join ' ')"
+        throw "P0/P0R adjudication recheck failed: $($output -join ' ')"
     }
-    $token = Get-Content -LiteralPath $tokenPath -Raw | ConvertFrom-Json
-    $script:AuthenticationTokenPaths += $tokenPath
+    $token = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
     return [ordered]@{
-        authorization_scope = [string]$token.authorization_scope
         status = [string]$token.status
-        runtime_lock_sha256 = [string]$token.runtime_lock_sha256
-        family_contract_sha256 = [string]$token.family_contract_sha256
-        p0_manifest_sha256 = [string]$token.p0_manifest_sha256
-        p0r_manifest_sha256 = [string]$token.p0r_manifest_sha256
-        p0_c5_receipt_sha256 = [string]$token.p0_c5_receipt_sha256
-        p0r_c5_receipt_sha256 = [string]$token.p0r_c5_receipt_sha256
-        p0_package_snapshot_sha256 = [string]$token.p0_package_snapshot_sha256
-        p0r_package_snapshot_sha256 = [string]$token.p0r_package_snapshot_sha256
-        authentication_receipt_path = $tokenPath
-        authentication_receipt_sha256 = Get-Sha256 $tokenPath
+        authorization_capability = [string]$token.authorization_capability
+        production_execution_authorized = [bool]$token.production_execution_authorized
+        p0_manifest_sha256 = [string]$token.p0.terminal_manifest_sha256
+        p0r_manifest_sha256 = [string]$token.p0r.terminal_manifest_sha256
+        p0_c5_receipt_sha256 = [string]$token.p0.c5_receipt_sha256
+        p0r_c5_receipt_sha256 = [string]$token.p0r.c5_receipt_sha256
+        p0_package_snapshot_sha256 = [string]$token.p0.package_snapshot_sha256
+        p0r_package_snapshot_sha256 = [string]$token.p0r.package_snapshot_sha256
+        p0_projection_sha256 = [string]$token.p0.physical_input_projection_sha256
+        p0r_projection_sha256 = [string]$token.p0r.physical_input_projection_sha256
+        adjudication_receipt_path = $path
+        adjudication_receipt_sha256 = Get-Sha256 $path
     }
 }
 
@@ -706,29 +701,26 @@ function Assert-DynamicChain([object]$State, [object]$ContractSummary) {
     }
     if ($Role -ceq 'T1_initial_defect') {
         $repeatability = Get-RequiredProperty $State 'repeatability_evidence' 'P0/P0R repeatability evidence'
-        foreach ($name in @('authorization_scope','status','runtime_lock_sha256',
-                'family_contract_sha256','p0_manifest_sha256','p0r_manifest_sha256',
+        foreach ($name in @('status','authorization_capability','production_execution_authorized',
+                'p0_manifest_sha256','p0r_manifest_sha256',
                 'p0_c5_receipt_sha256','p0r_c5_receipt_sha256',
                 'p0_package_snapshot_sha256','p0r_package_snapshot_sha256',
-                'authentication_receipt_path','authentication_receipt_sha256')) {
+                'p0_projection_sha256','p0r_projection_sha256',
+                'adjudication_receipt_path','adjudication_receipt_sha256')) {
             Get-RequiredProperty $repeatability $name 'P0/P0R repeatability evidence' | Out-Null
         }
-        if ([string]$repeatability.authorization_scope -cin
-                @('preflight_only_non_authorizing','test_only_non_authorizing')) {
-            throw 'Preflight/test receipt cannot authorize production repeatability evidence.'
-        }
-        if ([string]$repeatability.authorization_scope -cne 'production_authorized' -or
-                [string]$repeatability.status -cne 'PASS' -or
-                [string]$repeatability.runtime_lock_sha256 -cne
-                    [string]$FamilyContract.runtime_identity.runtime_lock_sha256 -or
-                [string]$repeatability.family_contract_sha256 -cne
-                    [string]$ContractSummary.family_contract_sha256) {
-            throw 'P0/P0R repeatability evidence is missing, failed, or runtime-replaced.'
+        if ([string]$repeatability.status -cne 'PASS' -or
+                [string]$repeatability.authorization_capability -cne 'none' -or
+                [bool]$repeatability.production_execution_authorized -ne $false -or
+                [string]$repeatability.p0_projection_sha256 -cne
+                    [string]$repeatability.p0r_projection_sha256) {
+            throw 'P0/P0R versioned adjudication is missing, failed, or authorizing.'
         }
         foreach ($name in @('p0_manifest_sha256','p0r_manifest_sha256',
                 'p0_c5_receipt_sha256','p0r_c5_receipt_sha256',
                 'p0_package_snapshot_sha256','p0r_package_snapshot_sha256',
-                'authentication_receipt_sha256')) {
+                'p0_projection_sha256','p0r_projection_sha256',
+                'adjudication_receipt_sha256')) {
             Assert-Hex $repeatability.$name 64 "repeatability $name hash"
         }
     }
@@ -812,6 +804,12 @@ if (-not $PreflightOnly -and -not $isFixture -and $Role -ceq 'P0_parent') {
             [string]$env:TOY_ROAD_DEDICATED_PRODUCER_MACHINE -cne 'CITPC12' -or
             [string]$env:COMPUTERNAME -cne 'CITPC12') {
         throw 'P0_parent requires the sealed one-shot authorization wrapper and dedicated producer attestation.'
+    }
+}
+if (-not $PreflightOnly -and -not $isFixture -and $Role -ceq 'T1_initial_defect') {
+    if ([string]::IsNullOrWhiteSpace(
+            [string]$env:TOY_ROAD_T1_ONE_SHOT_AUTHORIZATION_ID)) {
+        throw 'T1_initial_defect requires a separate one-shot T1 authorization wrapper.'
     }
 }
 
