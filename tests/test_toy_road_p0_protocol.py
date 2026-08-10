@@ -835,6 +835,26 @@ def test_tiny_nonzero_reference_is_not_misclassified_after_norm_underflow() -> N
         )
 
 
+@pytest.mark.parametrize(
+    "payload",
+    [
+        b'{"case_id":"P0","case_id":"P0R"}',
+        b'{"value":NaN}',
+        b'{"value":Infinity}',
+        b'{"value":-Infinity}',
+    ],
+)
+def test_strict_json_rejects_ambiguous_or_nonfinite_values(payload: bytes) -> None:
+    with pytest.raises(ProtocolError, match="duplicate|finite|JSON"):
+        PROTOCOL._read_json_bytes(payload, "strict fixture")
+
+
+def test_strict_json_accepts_one_finite_object() -> None:
+    assert PROTOCOL._read_json_bytes(b'{"value":1.25}', "strict fixture") == {
+        "value": 1.25
+    }
+
+
 def test_repeatability_accepts_legacy_packages_and_complete_c5_evidence(
     tmp_path: Path,
 ) -> None:

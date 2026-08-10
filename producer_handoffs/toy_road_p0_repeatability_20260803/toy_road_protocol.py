@@ -1765,13 +1765,32 @@ def _require_no_reparse_chain(path: Path, label: str) -> None:
         current = current.parent
 
 
+def _strict_json_loads(payload: bytes, label: str) -> object:
+    def reject_duplicate_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        value: dict[str, object] = {}
+        for key, item in pairs:
+            if key in value:
+                raise ValueError(f"duplicate JSON key {key!r}")
+            value[key] = item
+        return value
+
+    def reject_nonfinite(token: str) -> object:
+        raise ValueError(f"non-finite JSON number {token}")
+
+    try:
+        return json.loads(
+            payload.decode("utf-8"),
+            object_pairs_hook=reject_duplicate_keys,
+            parse_constant=reject_nonfinite,
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exception:
+        raise ProtocolError(f"cannot read {label}: {exception}") from exception
+
+
 def _read_json_bytes(payload: bytes | None, label: str) -> dict[str, Any]:
     if payload is None:
         raise ProtocolError(f"{label} is missing")
-    try:
-        value = json.loads(payload.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as exception:
-        raise ProtocolError(f"cannot read {label}: {exception}") from exception
+    value = _strict_json_loads(payload, label)
     if not isinstance(value, dict):
         raise ProtocolError(f"{label} must be one JSON object")
     return value
