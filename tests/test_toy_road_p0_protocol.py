@@ -25,6 +25,7 @@ MODULE_PATH = (
     / "toy_road_p0_repeatability_20260803"
     / "toy_road_protocol.py"
 )
+ADJUDICATION_PATH = MODULE_PATH.with_name("toy_road_adjudication.py")
 SPEC = importlib.util.spec_from_file_location("toy_road_protocol", MODULE_PATH)
 assert SPEC is not None and SPEC.loader is not None
 PROTOCOL = importlib.util.module_from_spec(SPEC)
@@ -34,6 +35,17 @@ ProtocolError = PROTOCOL.ProtocolError
 compare_repeatability = PROTOCOL.compare_repeatability
 relative_l2 = PROTOCOL.relative_l2
 append_attempt_record = PROTOCOL.append_attempt_record
+
+
+def _load_adjudication_module() -> Any:
+    assert ADJUDICATION_PATH.is_file(), "adjudication module must exist"
+    spec = importlib.util.spec_from_file_location(
+        "toy_road_adjudication", ADJUDICATION_PATH
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 PRIMARY_DECISION = (
     ROOT / "docs" / "toy_road_p0_repeatability_20260802" / "decision.md"
@@ -853,6 +865,202 @@ def test_strict_json_accepts_one_finite_object() -> None:
     assert PROTOCOL._read_json_bytes(b'{"value":1.25}', "strict fixture") == {
         "value": 1.25
     }
+
+
+def test_physical_input_projection_module_exposes_versioned_interface() -> None:
+    module = _load_adjudication_module()
+    assert module.PROJECTION_SCHEMA == "toy_road_physical_input_projection_v1"
+    assert callable(module.build_physical_input_projection)
+    assert callable(module.physical_input_projection_sha256)
+    assert callable(module.semantic_initial_state_sha256)
+
+
+def _projection_snapshot(case_id: str = "P0_parent") -> dict[str, object]:
+    contracts = json.loads(
+        (MODULE_PATH.parent / "CASE_PHYSICS_CONTRACTS.json").read_text("utf-8")
+    )
+    physics = copy.deepcopy(contracts["cases"]["P0_parent"]["physics"])
+    physics["mesh"].pop("node_transform")
+    physics["mesh"]["node_coords"] = [
+        [-0.5, -0.5],
+        [0.5, -0.5],
+        [0.5, 0.5],
+        [-0.5, 0.5],
+    ]
+    physics["mesh"]["connectivity"] = [[1, 2, 3, 4]]
+    physics["loading"]["blocks"] = physics["loading"]["blocks"][0]
+    return {
+        "schema_version": "toy_road_p0_input_snapshot_v1",
+        "authorization_scope": "production_authorized",
+        "case_id": case_id,
+        "source_commit": "a" * 40,
+        "runtime_lock_sha256": "b" * 64,
+        "family_contract_sha256": "c" * 64,
+        "case_physics_contract_sha256": "d" * 64,
+        "execution_input_lock_sha256": "e" * 64,
+        "input_assets_root": r"C:\fixture\meshes",
+        "mesh_sha256": contracts["cases"]["P0_parent"]["physics"]["mesh"][
+            "mesh_sha256"
+        ],
+        "changed_axes": [],
+        "cycle_jump": False,
+        "fresh_state0": True,
+        "line_search": False,
+        "resume_allowed": False,
+        "case_physics": physics,
+    }
+
+
+def _projection_state0() -> dict[str, np.ndarray]:
+    return {
+        "d_node": np.array([[0.0], [0.2], [0.5]], dtype=np.float64),
+        "alpha_bar_gp": np.zeros((2, 4), dtype=np.float64),
+    }
+
+
+def _snapshot_bytes(value: dict[str, object]) -> bytes:
+    return json.dumps(
+        value, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode("ascii") + b"\n"
+
+
+def test_physical_input_projection_ignores_case_id_only() -> None:
+    module = _load_adjudication_module()
+    p0 = module.build_physical_input_projection(
+        _snapshot_bytes(_projection_snapshot("P0_parent")), _projection_state0()
+    )
+    p0r = module.build_physical_input_projection(
+        _snapshot_bytes(_projection_snapshot("P0R_parent_repeat")),
+        _projection_state0(),
+    )
+    assert p0 == p0r
+    assert module.physical_input_projection_sha256(p0) == (
+        module.physical_input_projection_sha256(p0r)
+    )
+
+
+def test_semantic_initial_state_changes_projection_hash() -> None:
+    module = _load_adjudication_module()
+    snapshot = _snapshot_bytes(_projection_snapshot())
+    baseline = module.build_physical_input_projection(snapshot, _projection_state0())
+    changed = _projection_state0()
+    changed["d_node"][1, 0] += 0.01
+    candidate = module.build_physical_input_projection(snapshot, changed)
+    assert module.physical_input_projection_sha256(candidate) != (
+        module.physical_input_projection_sha256(baseline)
+    )
+
+
+def _representative_projection_mutations() -> list[tuple[tuple[object, ...], object]]:
+    return [
+        (("mesh", "mesh_sha256"), "f" * 64),
+        (("mesh", "connectivity_sha256"), "e" * 64),
+        (("material", "Gc"), 0.0101),
+        (("loading", "R"), 0.01),
+        (("loading", "load_factors", 1), 0.24),
+        (("numerics", "tol_staggered"), 2e-3),
+        (("numerics", "right_censor_cap"), 151),
+        (("recovery", "mode"), "different-recovery"),
+        (("recovery", "project_damage_bounds"), [0.0, 0.9]),
+        (("event", "damage_threshold"), 0.94),
+        (("event", "confirmation_cycles"), 4),
+    ]
+
+
+def _replace_nested(value: object, path: tuple[object, ...], replacement: object) -> None:
+    current = value
+    for part in path[:-1]:
+        current = current[part]  # type: ignore[index]
+    current[path[-1]] = replacement  # type: ignore[index]
+
+
+@pytest.mark.parametrize(("path", "replacement"), _representative_projection_mutations())
+def test_each_allowlisted_physical_or_numerical_field_changes_projection_hash(
+    path: tuple[object, ...], replacement: object
+) -> None:
+    module = _load_adjudication_module()
+    baseline_snapshot = _projection_snapshot()
+    candidate_snapshot = copy.deepcopy(baseline_snapshot)
+    _replace_nested(candidate_snapshot["case_physics"], path, replacement)
+    state0 = _projection_state0()
+    baseline = module.build_physical_input_projection(
+        _snapshot_bytes(baseline_snapshot), state0
+    )
+    candidate = module.build_physical_input_projection(
+        _snapshot_bytes(candidate_snapshot), state0
+    )
+    assert module.physical_input_projection_sha256(candidate) != (
+        module.physical_input_projection_sha256(baseline)
+    )
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["missing_snapshot", "extra_snapshot", "missing_physics", "extra_physics"],
+)
+def test_projection_rejects_missing_or_extra_closed_fields(mutation: str) -> None:
+    module = _load_adjudication_module()
+    snapshot = _projection_snapshot()
+    if mutation == "missing_snapshot":
+        del snapshot["case_id"]
+    elif mutation == "extra_snapshot":
+        snapshot["undeclared"] = "forbidden"
+    elif mutation == "missing_physics":
+        del snapshot["case_physics"]["event"]  # type: ignore[index]
+    else:
+        snapshot["case_physics"]["undeclared"] = {}  # type: ignore[index]
+    with pytest.raises(module.AdjudicationError, match="missing|extra|fields"):
+        module.build_physical_input_projection(
+            _snapshot_bytes(snapshot), _projection_state0()
+        )
+
+
+def test_projection_rejects_bool_integer_confusion_and_nonfinite_state() -> None:
+    module = _load_adjudication_module()
+    snapshot = _projection_snapshot()
+    snapshot["case_physics"]["numerics"]["right_censor_cap"] = True  # type: ignore[index]
+    with pytest.raises(module.AdjudicationError, match="type|integer|bool"):
+        module.build_physical_input_projection(
+            _snapshot_bytes(snapshot), _projection_state0()
+        )
+    state0 = _projection_state0()
+    state0["alpha_bar_gp"][0, 0] = np.inf
+    with pytest.raises(module.AdjudicationError, match="finite"):
+        module.build_physical_input_projection(
+            _snapshot_bytes(_projection_snapshot()), state0
+        )
+
+
+def test_projection_rejects_invalid_projection_schema() -> None:
+    module = _load_adjudication_module()
+    projection = module.build_physical_input_projection(
+        _snapshot_bytes(_projection_snapshot()), _projection_state0()
+    )
+    projection["schema_version"] = "toy_road_physical_input_projection_v0"
+    with pytest.raises(module.AdjudicationError, match="schema"):
+        module.physical_input_projection_sha256(projection)
+
+
+def test_actual_p0_p0r_projection_hashes_are_identical() -> None:
+    p0 = Path(r"C:\q4diag\toy-road-p0-production-d17efe6-run1\output")
+    p0r = Path(r"C:\q4diag\toy-road-p0r-production-d17efe6-run1\output")
+    if not p0.is_dir() or not p0r.is_dir():
+        pytest.skip("immutable production P0/P0R packages are not mounted")
+    module = _load_adjudication_module()
+    p0_snapshot = (p0 / "INPUT_SNAPSHOT.json").read_bytes()
+    p0r_snapshot = (p0r / "INPUT_SNAPSHOT.json").read_bytes()
+    assert hashlib.sha256(p0_snapshot).hexdigest() != hashlib.sha256(
+        p0r_snapshot
+    ).hexdigest()
+    p0_state = PROTOCOL.read_mat_struct(p0 / "STATE0.mat", "state0")
+    p0r_state = PROTOCOL.read_mat_struct(p0r / "STATE0.mat", "state0")
+    p0_projection = module.build_physical_input_projection(p0_snapshot, p0_state)
+    p0r_projection = module.build_physical_input_projection(
+        p0r_snapshot, p0r_state
+    )
+    assert module.physical_input_projection_sha256(p0_projection) == (
+        module.physical_input_projection_sha256(p0r_projection)
+    )
 
 
 def test_repeatability_accepts_legacy_packages_and_complete_c5_evidence(
