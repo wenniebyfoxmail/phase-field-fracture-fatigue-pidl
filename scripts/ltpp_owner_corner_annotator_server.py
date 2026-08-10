@@ -40,6 +40,17 @@ POINTS = (
 STATUS_INCOMPLETE = "OWNER_CORNER_COLLECTION_INCOMPLETE__EXPLORATORY_ONLY"
 STATUS_LOCKED = "OWNER_CORNERS_LOCKED_PENDING_VISUAL_REVIEW__EXPLORATORY_ONLY"
 PREREGISTRATION = Path(__file__).resolve().parents[1] / "docs" / "experiments" / "ltpp_geoforecast_owner_corner_carrier_mvp_preregistration_20260810.md"
+AMENDMENT = Path(__file__).resolve().parents[1] / "docs" / "experiments" / "ltpp_geoforecast_owner_corner_carrier_mvp_amendment_v2_20260810.md"
+SUGGESTED_POINTS = {
+    "19910610": [[218, 242], [2582, 176], [2589, 778], [218, 844]],
+    "19951024": [[526, 175], [2572, 171], [2570, 830], [524, 831]],
+    "19970228": [[599, 251], [2642, 251], [2637, 897], [519, 897]],
+    "19980407": [[588, 259], [2627, 258], [2622, 903], [582, 903]],
+    "20010913": [[585, 242], [2631, 242], [2631, 942], [585, 942]],
+    "20030514": [[570, 138], [2601, 138], [2601, 866], [570, 866]],
+    "20071106": [[572, 106], [2601, 109], [2598, 796], [567, 796]],
+    "20120417": [[560, 196], [2770, 185], [2769, 903], [560, 911]],
+}
 
 
 def sha256(path: Path) -> str:
@@ -70,6 +81,8 @@ def initial_record(date: str, source_sha256: str, width: int, height: int) -> di
         "source_width_px": width,
         "source_height_px": height,
         "point_order": [item[0] for item in POINTS],
+        "suggested_points_source_px": SUGGESTED_POINTS[date],
+        "suggestion_provenance": "agent_proposed_owner_visible_construction_candidate",
         "points_source_px": [],
         "locked": False,
         "locked_at_utc": None,
@@ -140,6 +153,8 @@ def initialize_packet(source_root: Path, packet_root: Path, expected_hashes: dic
             "implementation_sha256": sha256(Path(__file__).resolve()),
             "preregistration_path": str(PREREGISTRATION),
             "preregistration_sha256": sha256(PREREGISTRATION),
+            "amendment_path": str(AMENDMENT),
+            "amendment_sha256": sha256(AMENDMENT),
             "dates": list(EXPECTED_DATES),
             "point_order": [item[0] for item in POINTS],
             "physical_rectangle_ft": {"width": 50.0, "height": 15.0},
@@ -236,26 +251,27 @@ def finalize_if_complete(packet_root: Path) -> bool:
 
 HTML = r'''<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>LTPP 四角审阅</title>
 <style>
-:root{--ink:#17211b;--paper:#f4f0e6;--cyan:#00cbd1}*{box-sizing:border-box}body{margin:0;font:15px system-ui;color:var(--ink);background:var(--paper)}header{padding:12px 18px;border-bottom:2px solid var(--ink);background:#fff}main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:12px;padding:12px}.viewport{height:76vh;overflow:auto;border:1px solid var(--ink);background:#bbb}.stage{position:relative;width:max-content;background:white}.stage img{display:block;max-width:none}.stage svg{position:absolute;inset:0;overflow:visible;cursor:crosshair}.side{background:#fff;padding:12px;border:1px solid var(--ink)}button,select{width:100%;padding:8px;margin:5px 0}.date{padding:6px;border-bottom:1px dotted #aaa;cursor:pointer}.date.active{background:#ffe28a}.date.locked{color:#087443;font-weight:700}.steps{line-height:1.6;padding-left:24px}.next{font-size:18px;font-weight:800;color:#9b1c31}.loupe{width:260px;height:180px;border:1px solid #333;background:#fff}.warn{color:#a3172a}.ok{color:#087443}.legend span{display:inline-block;margin-right:8px;font-weight:700}@media(max-width:900px){main{grid-template-columns:1fr}.viewport{height:58vh}}
+:root{--ink:#17211b;--paper:#f4f0e6;--cyan:#00cbd1}*{box-sizing:border-box}body{margin:0;font:15px system-ui;color:var(--ink);background:var(--paper)}header{padding:12px 18px;border-bottom:2px solid var(--ink);background:#fff}main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:12px;padding:12px}.viewport{height:76vh;overflow:auto;border:1px solid var(--ink);background:#bbb}.stage{position:relative;width:max-content;background:white}.stage img{display:block;max-width:none}.stage svg{position:absolute;inset:0;overflow:visible;cursor:crosshair}.side{background:#fff;padding:12px;border:1px solid var(--ink)}button,select{width:100%;padding:8px;margin:5px 0}.date{padding:6px;border-bottom:1px dotted #aaa;cursor:pointer}.date.active{background:#ffe28a}.date.locked{color:#087443;font-weight:700}.steps{line-height:1.6;padding-left:24px}.next{font-size:18px;font-weight:800;color:#9b1c31}.loupe{width:260px;height:180px;border:1px solid #333;background:#fff}.warn{color:#a3172a}.ok{color:#087443}.legend span{display:inline-block;margin-right:8px;font-weight:700}.candidate{background:#e8fbfc;border:2px solid #008b91}@media(max-width:900px){main{grid-template-columns:1fr}.viewport{height:58vh}}
 </style></head><body><header><b>LTPP 0–50 ft 外框四角（探索性构造点）</b>　<span class="warn">不是最终审计，不使用裂缝形状</span></header>
 <main><section class="viewport" id="viewport"><div class="stage" id="stage"><img id="image"><svg id="overlay"></svg></div></section><aside class="side">
 <div id="dates"></div><p class="next" id="next"></p><ol class="steps"><li>左上 TL：外侧实线交点</li><li>右上 TR：外侧实线交点</li><li>右下 BR：外侧实线交点</li><li>左下 BL：外侧实线交点</li></ol>
 <p class="legend"><span style="color:#d600ff">TL</span><span style="color:#ff7800">TR</span><span style="color:#006eff">BR</span><span style="color:#00a850">BL</span></p>
 <label>缩放<select id="zoom"><option value="0.5">50%</option><option value="0.75">75%</option><option value="1" selected>100%</option><option value="1.5">150%</option><option value="2">200%</option><option value="3">300%</option></select></label>
-<canvas class="loupe" id="loupe" width="260" height="180"></canvas><button id="undo">撤销最后一点</button><button id="reset">重置本年</button><button id="save">保存草稿</button><button id="lock">锁定本年四角</button><p id="feedback"></p>
+<canvas class="loupe" id="loupe" width="260" height="180"></canvas><button class="candidate" id="adopt">采用当前空心候选四角</button><button id="undo">撤销最后一点</button><button id="reset">重置本年</button><button id="save">保存草稿</button><button id="lock">锁定本年四角</button><p id="feedback"></p>
 <p><small>只点最外侧矩形实线的四个交点。不要点内部虚线交点、裂缝与虚线交点、尺寸刻度或手写标记。</small></p></aside></main>
 <script>
 const names=['TL 左上','TR 右上','BR 右下','BL 左下'],colors=['#d600ff','#ff7800','#006eff','#00a850'];let dates=[],current='',record=null,zoom=1;
 const image=document.getElementById('image'),stage=document.getElementById('stage'),overlay=document.getElementById('overlay'),feedback=document.getElementById('feedback'),loupe=document.getElementById('loupe'),ctx=loupe.getContext('2d');
 function say(text,bad=false){feedback.textContent=text;feedback.className=bad?'warn':'ok'}
 function pointMarkup(p,i){const x=p[0]*zoom,y=p[1]*zoom,r=17;return `<g><circle cx="${x}" cy="${y}" r="${r}" fill="white" stroke="${colors[i]}" stroke-width="7"/><line x1="${x-r*1.7}" y1="${y}" x2="${x+r*1.7}" y2="${y}" stroke="${colors[i]}" stroke-width="4"/><line x1="${x}" y1="${y-r*1.7}" x2="${x}" y2="${y+r*1.7}" stroke="${colors[i]}" stroke-width="4"/><text x="${x+r+8}" y="${y-r}" fill="${colors[i]}" font-size="24" font-weight="800" paint-order="stroke" stroke="white" stroke-width="5">${names[i]}</text></g>`}
-function render(){if(!record)return;const w=record.source_width_px*zoom,h=record.source_height_px*zoom;image.style.width=w+'px';image.style.height=h+'px';stage.style.width=w+'px';stage.style.height=h+'px';overlay.setAttribute('width',w);overlay.setAttribute('height',h);overlay.setAttribute('viewBox',`0 0 ${w} ${h}`);let html='';if(record.points_source_px.length>1){const ps=record.points_source_px.map(p=>`${p[0]*zoom},${p[1]*zoom}`).join(' ');html+=`<polyline points="${ps}" fill="none" stroke="#00cbd1" stroke-width="8"/>`}if(record.points_source_px.length===4){const p=record.points_source_px[0];html+=`<line x1="${record.points_source_px[3][0]*zoom}" y1="${record.points_source_px[3][1]*zoom}" x2="${p[0]*zoom}" y2="${p[1]*zoom}" stroke="#00cbd1" stroke-width="8"/>`}record.points_source_px.forEach((p,i)=>html+=pointMarkup(p,i));overlay.innerHTML=html;document.getElementById('next').textContent=record.locked?'本年已锁定':record.points_source_px.length<4?'下一点：'+names[record.points_source_px.length]:'四点齐全，请检查青色围合线';['undo','reset','save','lock'].forEach(id=>document.getElementById(id).disabled=record.locked);document.getElementById('lock').disabled=record.locked||record.points_source_px.length!==4;document.getElementById('dates').innerHTML=dates.map(d=>`<div data-date="${d.survey_date}" class="date ${d.survey_date===current?'active':''} ${d.locked?'locked':''}">${d.survey_date}　${d.locked?'✓ 已锁定':d.count+'/4'}</div>`).join('');document.querySelectorAll('.date').forEach(el=>el.onclick=()=>load(el.dataset.date));}
+function render(){if(!record)return;const w=record.source_width_px*zoom,h=record.source_height_px*zoom;image.style.width=w+'px';image.style.height=h+'px';stage.style.width=w+'px';stage.style.height=h+'px';overlay.setAttribute('width',w);overlay.setAttribute('height',h);overlay.setAttribute('viewBox',`0 0 ${w} ${h}`);let html='';if(record.points_source_px.length===0){const ps=record.suggested_points_source_px.map(p=>`${p[0]*zoom},${p[1]*zoom}`).join(' ');html+=`<polygon points="${ps}" fill="none" stroke="#008b91" stroke-width="7" stroke-dasharray="18 12"/>`;record.suggested_points_source_px.forEach((p,i)=>{const x=p[0]*zoom,y=p[1]*zoom;html+=`<circle cx="${x}" cy="${y}" r="18" fill="none" stroke="${colors[i]}" stroke-width="6" stroke-dasharray="7 5"/><text x="${x+27}" y="${y-18}" fill="${colors[i]}" font-size="23" font-weight="800" paint-order="stroke" stroke="white" stroke-width="5">候选 ${names[i]}</text>`})}if(record.points_source_px.length>1){const ps=record.points_source_px.map(p=>`${p[0]*zoom},${p[1]*zoom}`).join(' ');html+=`<polyline points="${ps}" fill="none" stroke="#00cbd1" stroke-width="8"/>`}if(record.points_source_px.length===4){const p=record.points_source_px[0];html+=`<line x1="${record.points_source_px[3][0]*zoom}" y1="${record.points_source_px[3][1]*zoom}" x2="${p[0]*zoom}" y2="${p[1]*zoom}" stroke="#00cbd1" stroke-width="8"/>`}record.points_source_px.forEach((p,i)=>html+=pointMarkup(p,i));overlay.innerHTML=html;document.getElementById('next').textContent=record.locked?'本年已锁定':record.points_source_px.length===0?'请检查空心候选；可采用或手动点 TL':record.points_source_px.length<4?'下一点：'+names[record.points_source_px.length]:'四点齐全，请检查青色围合线';['adopt','undo','reset','save','lock'].forEach(id=>document.getElementById(id).disabled=record.locked);document.getElementById('adopt').disabled=record.locked||record.points_source_px.length!==0;document.getElementById('lock').disabled=record.locked||record.points_source_px.length!==4;document.getElementById('dates').innerHTML=dates.map(d=>`<div data-date="${d.survey_date}" class="date ${d.survey_date===current?'active':''} ${d.locked?'locked':''}">${d.survey_date}　${d.locked?'✓ 已锁定':d.count+'/4'}</div>`).join('');document.querySelectorAll('.date').forEach(el=>el.onclick=()=>load(el.dataset.date));}
 async function refreshDates(){dates=await fetch('/api/dates').then(r=>r.json())}
 async function load(date){current=date;record=await fetch('/api/record/'+date).then(r=>r.json());image.src='/image/'+date+'?v='+Date.now();image.onload=render;await refreshDates();render();say(record.locked?'该年份已锁定。':'请按固定顺序点击。')}
 overlay.onclick=e=>{if(record.locked||record.points_source_px.length>=4)return;const box=overlay.getBoundingClientRect();record.points_source_px.push([Math.round((e.clientX-box.left)/zoom),Math.round((e.clientY-box.top)/zoom)]);render();say('已记录 '+names[record.points_source_px.length-1])};
 overlay.onmousemove=e=>{if(!image.complete)return;const box=overlay.getBoundingClientRect(),x=(e.clientX-box.left)/zoom,y=(e.clientY-box.top)/zoom,sw=52,sh=36;ctx.fillStyle='white';ctx.fillRect(0,0,260,180);ctx.imageSmoothingEnabled=false;ctx.drawImage(image,x-sw/2,y-sh/2,sw,sh,0,0,260,180);ctx.strokeStyle='#e00035';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(130,0);ctx.lineTo(130,180);ctx.moveTo(0,90);ctx.lineTo(260,90);ctx.stroke()};
 async function save(){const response=await fetch('/api/record/'+current,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(record)});const text=await response.text();if(!response.ok){say(text,true);return false}await refreshDates();render();say('草稿已保存。');return true}
 document.getElementById('undo').onclick=()=>{record.points_source_px.pop();render();say('已撤销。')};document.getElementById('reset').onclick=()=>{if(confirm('重置本年四点？')){record.points_source_px=[];render();say('本年已重置。')}};document.getElementById('save').onclick=save;
+document.getElementById('adopt').onclick=()=>{record.points_source_px=record.suggested_points_source_px.map(p=>[p[0],p[1]]);render();say('已采用候选，但尚未保存或锁定；请逐角检查。')};
 document.getElementById('lock').onclick=async()=>{if(!confirm('确认四点都在外侧实线交点，并锁定本年？锁定后本包不能修改。'))return;if(!await save())return;const response=await fetch('/api/lock/'+current,{method:'POST'});const text=await response.text();if(!response.ok)return say(text,true);await refreshDates();const next=dates.find(d=>!d.locked);if(next)await load(next.survey_date);else{await load(current);say('8 年均已锁定；审阅叠加图已生成。')}};
 document.getElementById('zoom').onchange=e=>{zoom=Number(e.target.value);render()};(async()=>{await refreshDates();await load(dates[0].survey_date)})();
 </script></body></html>'''
@@ -323,7 +339,10 @@ class Handler(BaseHTTPRequestHandler):
                 payload = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
             except (ValueError, json.JSONDecodeError):
                 return self.fail("invalid JSON")
-            immutable = ("survey_date", "classification", "source_sha256", "source_width_px", "source_height_px", "point_order")
+            immutable = (
+                "survey_date", "classification", "source_sha256", "source_width_px", "source_height_px",
+                "point_order", "suggested_points_source_px", "suggestion_provenance",
+            )
             if not isinstance(payload, dict) or any(payload.get(key) != current.get(key) for key in immutable) or payload.get("locked"):
                 return self.fail("immutable record fields changed")
             error = validate_points(payload.get("points_source_px"), current["source_width_px"], current["source_height_px"])

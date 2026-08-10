@@ -17,6 +17,16 @@ def test_validate_points_accepts_clockwise_outer_rectangle():
     assert MODULE.validate_points([[10, 10], [190, 12], [188, 90], [11, 88]], 200, 100, True) is None
 
 
+def test_every_suggestion_is_a_valid_complete_quadrilateral():
+    dimensions = {
+        "19910610": (3006, 964), "19951024": (2895, 929), "19970228": (2982, 951),
+        "19980407": (2987, 961), "20010913": (2982, 958), "20030514": (2956, 948),
+        "20071106": (2984, 954), "20120417": (3153, 1033),
+    }
+    for date, points in MODULE.SUGGESTED_POINTS.items():
+        assert MODULE.validate_points(points, *dimensions[date], True) is None
+
+
 def test_validate_points_rejects_wrong_order_and_small_shape():
     assert "order" in MODULE.validate_points([[10, 10], [11, 88], [188, 90], [190, 12]], 200, 100, True)
     assert "small" in MODULE.validate_points([[80, 40], [120, 40], [120, 60], [80, 60]], 200, 100, True)
