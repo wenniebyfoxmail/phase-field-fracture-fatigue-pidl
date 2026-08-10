@@ -1157,6 +1157,68 @@ def test_actual_p0_p0r_producer_runtime_identities_are_identical() -> None:
     }
 
 
+def test_actual_external_adjudication_receipt_is_complete_and_non_authorizing(
+    tmp_path: Path,
+) -> None:
+    p0_root = Path(r"C:\q4diag\toy-road-p0-production-d17efe6-run1\output")
+    p0r_root = Path(r"C:\q4diag\toy-road-p0r-production-d17efe6-run1\output")
+    producer = Path(
+        r"C:\q4diag\phase-field-fracture-fatigue-pidl-p0-sealed-d17efe6"
+        r"\producer_handoffs\toy_road_p0_repeatability_20260803"
+    )
+    if not p0_root.is_dir() or not p0r_root.is_dir() or not producer.is_dir():
+        pytest.skip("immutable production evidence is not mounted")
+    module = _load_adjudication_module()
+    destination = tmp_path / "P0R_EXTERNAL_ADJUDICATION.json"
+    receipt = module.adjudicate_repeatability(
+        p0_root, p0r_root, producer, destination
+    )
+    assert json.loads(destination.read_text("ascii")) == receipt
+    assert receipt["schema_version"] == (
+        "toy_road_external_repeatability_adjudication_v1"
+    )
+    assert receipt["status"] == "PASS"
+    assert receipt["authorization_capability"] == "none"
+    assert receipt["production_execution_authorized"] is False
+    assert "authorization_id" not in receipt
+    assert receipt["threshold_relative_l2"] == 1e-12
+    assert receipt["threshold_max_absolute"] == 1e-12
+    assert receipt["trajectory_max_relative_l2"] == 0.0
+    assert receipt["trajectory_max_absolute"] == 0.0
+    assert receipt["p0"]["cycle_shard_count"] == 73
+    assert receipt["p0r"]["cycle_shard_count"] == 73
+    for role in ("p0", "p0r"):
+        value = receipt[role]
+        for field in (
+            "terminal_manifest_sha256",
+            "full_input_snapshot_sha256",
+            "physical_input_projection_sha256",
+            "package_snapshot_sha256",
+            "c5_receipt_sha256",
+            "cycle_shard_inventory_sha256",
+        ):
+            assert re.fullmatch(r"[0-9a-f]{64}", value[field])
+        assert set(value["producer_runtime_identity"]["binary_sha256"]) == {
+            "initial",
+            "AMOR",
+            "AT1_HISTORY_FATIGUE",
+            "cholmod2",
+        }
+    assert any(
+        difference["path"] == "case_id"
+        and difference["p0"] == "P0_parent"
+        and difference["p0r"] == "P0R_parent_repeat"
+        for difference in receipt["excluded_provenance_differences"]
+    )
+    assert receipt["adjudicator_identity"]["sha256"] == _sha256(
+        ADJUDICATION_PATH
+    )
+    assert receipt["terminal_validator_identity"]["sha256"] == _sha256(
+        MODULE_PATH
+    )
+    module.recheck_adjudication_receipt(destination)
+
+
 def test_repeatability_accepts_legacy_packages_and_complete_c5_evidence(
     tmp_path: Path,
 ) -> None:
