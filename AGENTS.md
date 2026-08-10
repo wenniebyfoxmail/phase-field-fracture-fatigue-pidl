@@ -11,6 +11,25 @@ This file is the cross-agent entry point for the shared GitHub repo. It applies 
 
 ## Taobo GPU Submission
 
+### Canonical Taobo storage path
+
+When an agent says “Taobo `/mnt/data`”, treat it as the large-data mount
+family, not a literal directory. On the current Taobo host the canonical
+primary mount is `/mnt/data2` (not `/mnt/data`); `/mnt/data3` is the secondary
+large-disk/backup mount. New Wennie project runs and caches must use:
+
+```text
+/mnt/data2/drtao/wennie/<fresh_run_id>/
+/mnt/data2/drtao/pidl_archives/<fresh_run_id>/
+```
+
+Never write large outputs, JIT caches, temporary compiler files, or archives
+to `/`, `/tmp`, or `/home/drtao`. Put task-owned `TMPDIR`, `.jitcache`, and
+`XDG_CACHE_HOME` under the fresh `/mnt/data2/drtao/wennie/<run_id>/` root.
+Do not create or assume a literal `/mnt/data` symlink. Before launch, check
+`df -h / /mnt/data2 /mnt/data3`; if `/mnt/data2` is unavailable, stop and
+report rather than silently falling back to the root filesystem.
+
 Before sending any job to Taobo, read:
 
 - `docs/taobo_gpu_submission_protocol.md`
@@ -80,3 +99,17 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 - `docs/taobo_gpu_submission_protocol.md` — exact Taobo submission, sync, launch, and tracking checklist.
 - `docs/research_frontier.md` — current research frontier.
 - `docs/handovers/` — cross-machine task inbox/outbox.
+
+## Project-Local Skills
+
+- `docs/skills/pidl-experiment-gate/SKILL.md` — use before proposing,
+  launching, reviewing, cleaning, or registering any PIDL/FEM/surrogate
+  experiment. It enforces the five-question experiment gate and prevents orphan
+  runs.
+- `docs/skills/project_skill_inventory_2026-07-06.md` — current map from
+  project skills/workflows to code entrypoints and producer machines.
+- `docs/skills/paper-ledger-to-paper/SKILL.md` — use for evolving mechanism
+  result sections before compressing them into paper prose.
+- `docs/aligned_result_registry_2026-07-06.md` — daily curated evidence
+  registry after strict-setting cleanup; use the large
+  `docs/pidl_experiment_inventory.md` only as the full audit ledger.

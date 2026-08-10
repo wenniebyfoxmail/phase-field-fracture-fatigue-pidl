@@ -5,6 +5,18 @@ and shared-account safety. This is not a PIDL/FEM evidence-analysis protocol.
 
 Purpose: prevent accidental Mac training, dirty-repo launches, untracked Taobo jobs, and shared-account collisions.
 
+## Canonical storage naming
+
+`/mnt/data` is project shorthand for Taobo's large-data mount family. On the
+current host, the actual primary mount is `/mnt/data2` and the secondary mount
+is `/mnt/data3`; literal `/mnt/data` and `/mnt/data1` do not exist. Use
+`/mnt/data2/drtao/wennie/<fresh_run_id>/` for new project runs and
+`/mnt/data2/drtao/pidl_archives/<fresh_run_id>/` for archives. Keep task-owned
+`TMPDIR`, `.jitcache`, and `XDG_CACHE_HOME` under the fresh run root. Never
+write large data to `/`, `/tmp`, or `/home/drtao`, and never silently create a
+fallback on the root filesystem. Check all three mounts with `df -h` before
+launch.
+
 Taobo: `drtao@172.16.100.2`, 8x RTX 4090, shared account. Network/VPN is flaky. Design the workflow so SSH drops are harmless.
 
 ## 1. Decide Whether The Task Belongs On Taobo
