@@ -34,7 +34,7 @@ separately reviewed scalar-length analysis.
 | Tier-C automatic-grid MVP | 1/8 development-only selections; automatic extraction is not an eight-date solution | `ltpp_geoforecast_spatial_registration_mvp_20260807.md` |
 | same-date official-page layout inventory | read-only diagnosis of page-level versus date-level printed-grid loss | `ltpp_geoforecast_spatial_registration_layout_inventory_20260807.md` |
 | non-damage registration MVP result | `EXPLORATORY_REGISTRATION_MVP__NOT_VALIDATED_FOR_2D_MODEL`; 1995 has no date-level vertical-grid support | `ltpp_geoforecast_non_damage_registration_mvp_result_20260807.md` |
-| eight-date outer-solid-range inventory | `EXPLORATORY_SOLID_OUTER_BOUNDARY_INVENTORY__NOT_QUALIFIED`; 7 candidate ranges and 1 fail-closed no-candidate, all non-1991 dates await owner review | `ltpp_geoforecast_eight_date_solid_outer_boundary_inventory_result_20260810.md` |
+| eight-date outer-solid-range inventory | `EXPLORATORY_SOLID_OUTER_BOUNDARY_INVENTORY__NOT_QUALIFIED`; owner accepted 1991 only, rejected 2001/2003/2007/2012, with 1998 fail closed | `ltpp_geoforecast_eight_date_solid_outer_boundary_inventory_result_20260810.md` |
 
 ## Active gate
 
@@ -56,6 +56,9 @@ The later outer-solid-range inventory is deliberately narrower: it records
 only a potential road-map extent for the 0–50 ft source page. It must not be
 mistaken for an accepted crop, grid-control set, transform, or independent
 v2 audit control.
+Its owner review also rejects a universal use of the outer-solid-frame heuristic:
+it can select internal page geometry. A later amended frame-range diagnostic
+would need separate preregistration and review before it is executed.
 
 ## Next action
 

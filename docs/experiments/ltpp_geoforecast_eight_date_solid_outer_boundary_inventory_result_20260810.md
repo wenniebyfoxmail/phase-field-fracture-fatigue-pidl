@@ -8,14 +8,14 @@ The unchanged 1991-accepted outer-solid-rectangle rule was applied once to the o
 
 | Date | Rule result | Range (deskewed source pixels) | Aspect |
 |---|---|---:|---:|
-| 19910610 | pending review; owner previously confirmed range | 2370 × 694 | 3.4150 |
+| 19910610 | owner accepted; small visible deviations retained | 2370 × 694 | 3.4150 |
 | 19951024 | pending review | 1967 × 654 | 3.0076 |
 | 19970228 | pending review | 2039 × 645 | 3.1612 |
 | 19980407 | `NO_CANDIDATE__FAIL_CLOSED` | — | — |
-| 20010913 | pending review | 2046 × 580 | 3.5276 |
-| 20030514 | pending review; visibly small candidate retained for review | 369 × 110 | 3.3545 |
-| 20071106 | pending review; visibly small candidate retained for review | 942 × 288 | 3.2708 |
-| 20120417 | pending review | 2316 × 713 | 3.2482 |
+| 20010913 | owner rejected; `y=0–0.5 m` is clipped | 2046 × 580 | 3.5276 |
+| 20030514 | owner rejected; overall range is wrong | 369 × 110 | 3.3545 |
+| 20071106 | owner rejected; overall range is wrong | 942 × 288 | 3.2708 |
+| 20120417 | owner rejected; left boundary is wrong | 2316 × 713 | 3.2482 |
 
 ## Evidence
 
@@ -23,4 +23,4 @@ The immutable local package is `local_archive/real_road_acquisition/ltpp_06_1253
 
 ## Interpretation and next action
 
-No candidate is a permitted crop, control point, or registration transform. The next discriminator is an owner accept/reject review of each full-size frame. A rejection remains a source-range limitation; it does not authorize post-hoc threshold tuning. Only visually accepted ranges may proceed to a separate conservative grid-control-candidate diagnostic; v2 still also requires independent Tier A/B controls before its final gate.
+No candidate is a permitted crop, control point, or registration transform. Owner review accepted only 1991 and rejected the 2001, 2003, 2007, and 2012 candidates; 1995 and 1997 remain pending, while 1998 is fail closed. A rejection remains a source-range limitation; it does not authorize post-hoc threshold tuning. Any follow-up must use a separately preregistered method, then obtain review before execution. v2 still requires independent Tier A/B controls before its final gate.
