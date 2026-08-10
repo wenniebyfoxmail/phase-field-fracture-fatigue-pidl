@@ -41,10 +41,11 @@ STATUS_INCOMPLETE = "OWNER_CORNER_COLLECTION_INCOMPLETE__EXPLORATORY_ONLY"
 STATUS_LOCKED = "OWNER_CORNERS_LOCKED_PENDING_VISUAL_REVIEW__EXPLORATORY_ONLY"
 PREREGISTRATION = Path(__file__).resolve().parents[1] / "docs" / "experiments" / "ltpp_geoforecast_owner_corner_carrier_mvp_preregistration_20260810.md"
 AMENDMENT = Path(__file__).resolve().parents[1] / "docs" / "experiments" / "ltpp_geoforecast_owner_corner_carrier_mvp_amendment_v2_20260810.md"
+CANDIDATE_CORRECTION = Path(__file__).resolve().parents[1] / "docs" / "experiments" / "ltpp_geoforecast_owner_corner_carrier_mvp_candidate_correction_v3_20260810.md"
 SUGGESTED_POINTS = {
-    "19910610": [[218, 242], [2582, 176], [2589, 778], [218, 844]],
+    "19910610": [[218, 150], [2582, 83], [2589, 778], [218, 844]],
     "19951024": [[526, 175], [2572, 171], [2570, 830], [524, 831]],
-    "19970228": [[599, 251], [2642, 251], [2637, 897], [519, 897]],
+    "19970228": [[599, 251], [2642, 251], [2637, 897], [592, 897]],
     "19980407": [[588, 259], [2627, 258], [2622, 903], [582, 903]],
     "20010913": [[585, 242], [2631, 242], [2631, 942], [585, 942]],
     "20030514": [[570, 138], [2601, 138], [2601, 866], [570, 866]],
@@ -155,6 +156,8 @@ def initialize_packet(source_root: Path, packet_root: Path, expected_hashes: dic
             "preregistration_sha256": sha256(PREREGISTRATION),
             "amendment_path": str(AMENDMENT),
             "amendment_sha256": sha256(AMENDMENT),
+            "candidate_correction_path": str(CANDIDATE_CORRECTION),
+            "candidate_correction_sha256": sha256(CANDIDATE_CORRECTION),
             "dates": list(EXPECTED_DATES),
             "point_order": [item[0] for item in POINTS],
             "physical_rectangle_ft": {"width": 50.0, "height": 15.0},
