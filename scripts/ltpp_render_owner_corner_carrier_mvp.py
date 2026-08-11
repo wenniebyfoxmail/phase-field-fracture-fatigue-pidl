@@ -18,12 +18,12 @@ DATES = (
     "19910610", "19951024", "19970228", "19980407",
     "20010913", "20030514", "20071106", "20120417",
 )
-PX_PER_FT = 30
-WIDTH_FT, HEIGHT_FT = 50, 15
-WIDTH_PX, HEIGHT_PX = WIDTH_FT * PX_PER_FT + 1, HEIGHT_FT * PX_PER_FT + 1
-METRES_PER_PIXEL = 0.3048 / PX_PER_FT
+PX_PER_M = 100
+WIDTH_M, HEIGHT_M = 15.24, 5.00
+WIDTH_PX, HEIGHT_PX = 1524, 500
+METRES_PER_PIXEL = 1 / PX_PER_M
 STATUS = "EXPLORATORY_OWNER_CORNER_CARRIER_RENDERED__NOT_QUALIFIED"
-PREREGISTRATION = Path(__file__).resolve().parents[1] / "docs" / "experiments" / "ltpp_geoforecast_owner_corner_carrier_render_mvp_preregistration_20260811.md"
+PREREGISTRATION = Path(__file__).resolve().parents[1] / "docs" / "experiments" / "ltpp_geoforecast_owner_corner_carrier_render_mvp_v2_preregistration_20260811.md"
 OWNER_ACCEPTANCE = Path(__file__).resolve().parents[1] / "docs" / "reviews" / "ltpp_geoforecast_owner_corner_carrier_visual_acceptance_20260811.md"
 TARGET = np.float32(((0, 0), (WIDTH_PX - 1, 0), (WIDTH_PX - 1, HEIGHT_PX - 1), (0, HEIGHT_PX - 1)))
 
@@ -88,13 +88,14 @@ def transform_and_warp(image: np.ndarray, source: np.ndarray) -> tuple[np.ndarra
 def target_grid_overlay(image: np.ndarray) -> np.ndarray:
     overlay = image.copy()
     layer = overlay.copy()
-    for foot in range(WIDTH_FT + 1):
-        x = foot * PX_PER_FT
-        colour, width = ((0, 80, 230), 2) if foot % 5 == 0 else ((20, 190, 70), 1)
+    for half_metre in range(31):
+        x = min(WIDTH_PX - 1, round(half_metre * 0.5 * PX_PER_M))
+        colour, width = ((0, 80, 230), 2) if half_metre % 2 == 0 else ((20, 190, 70), 1)
         cv2.line(layer, (x, 0), (x, HEIGHT_PX - 1), colour, width, cv2.LINE_AA)
-    for foot in range(HEIGHT_FT + 1):
-        y = (HEIGHT_FT - foot) * PX_PER_FT
-        colour, width = ((0, 80, 230), 2) if foot % 5 == 0 else ((20, 190, 70), 1)
+    cv2.line(layer, (WIDTH_PX - 1, 0), (WIDTH_PX - 1, HEIGHT_PX - 1), (0, 80, 230), 2, cv2.LINE_AA)
+    for half_metre in range(11):
+        y = min(HEIGHT_PX - 1, round((HEIGHT_M - half_metre * 0.5) * PX_PER_M))
+        colour, width = ((0, 80, 230), 2) if half_metre % 2 == 0 else ((20, 190, 70), 1)
         cv2.line(layer, (0, y), (WIDTH_PX - 1, y), colour, width, cv2.LINE_AA)
     cv2.addWeighted(layer, 0.42, overlay, 0.58, 0, overlay)
     return overlay
@@ -178,16 +179,16 @@ def run(packet: Path, output: Path) -> dict:
         grid = target_grid_overlay(warped)
         write_figure(
             registered_dir / f"{date}.png", warped,
-            "What does this survey map look like on the accepted 50 ft x 15 ft carrier?",
+            "What does this survey map look like on the accepted 15.24 m x 5.00 m carrier?",
             f"Frozen owner-corner packet `{owner_file}`; source date {date}; four-point projective construction.",
-            "Array columns run 0-50 ft left-to-right; rows run 15-0 ft top-to-bottom at 30 px/ft.",
+            "Array columns run 0-15.24 m left-to-right; rows run 5-0 m top-to-bottom at nominal 0.01 m/px.",
             "Construction-control render only; not independent registration validation or crack-growth evidence.",
         )
         write_figure(
             grid_dir / f"{date}.png", grid,
             "Do printed grid lines visually agree with the exact target carrier grid?",
             f"Registered {date} map plus deterministic target grid.",
-            "Green lines mark 1-ft intervals; orange lines mark 5-ft intervals.",
+            "Green lines mark 0.5 m intervals; orange lines mark 1.0 m intervals.",
             "Visual structural check only. Added lines do not validate physical registration error.",
         )
         registered.append((date, warped)); grids.append((date, grid))
@@ -195,7 +196,7 @@ def run(packet: Path, output: Path) -> dict:
             "survey_date": date, "source_sha256": record["source_sha256"],
             "source_width_px": image.shape[1], "source_height_px": image.shape[0],
             "output_width_px": WIDTH_PX, "output_height_px": HEIGHT_PX,
-            "pixel_intervals_per_foot": PX_PER_FT, "metres_per_pixel_interval": METRES_PER_PIXEL,
+            "nominal_pixels_per_metre": PX_PER_M, "metres_per_pixel": METRES_PER_PIXEL,
             "corner_reprojection_max_px": reprojection, "centre_jacobian_determinant": determinant,
             "matrix_finite": bool(np.isfinite(matrix).all()), "status": "STRUCTURAL_RENDER_COMPLETED",
         })
@@ -217,14 +218,14 @@ def run(packet: Path, output: Path) -> dict:
         output / "registered_contact_sheet.png", contact_sheet(registered),
         "Are all eight accepted frames rendered completely and with consistent orientation?",
         "Eight registered maps from the locked owner-corner packet.",
-        "Each panel is the same exact 50 ft x 15 ft carrier.",
+        "Each panel uses the same 15.24 m x 5.00 m carrier.",
         "Contact sheet is an engineering visual check, not registration qualification.",
     )
     write_figure(
         output / "target_grid_overlay_contact_sheet.png", contact_sheet(grids),
         "Do target-grid references show any obvious large-scale grid mismatch after rendering?",
         "Eight registered maps with the same deterministic target grid.",
-        "Green is 1-ft spacing and orange is 5-ft spacing.",
+        "Green is 0.5 m spacing and orange is 1.0 m spacing; the right edge is 15.24 m.",
         "No independent controls are assessed; small coloured offsets require later independent audit.",
     )
     write_figure(
@@ -245,8 +246,8 @@ def run(packet: Path, output: Path) -> dict:
         "preregistration_path": str(PREREGISTRATION), "preregistration_sha256": sha256(PREREGISTRATION),
         "owner_acceptance_path": str(OWNER_ACCEPTANCE), "owner_acceptance_sha256": sha256(OWNER_ACCEPTANCE),
         "dates": list(DATES),
-        "physical_carrier": {"width_ft": WIDTH_FT, "height_ft": HEIGHT_FT, "width_m": 15.24, "height_m": 4.572,
-                             "pixel_intervals_per_foot": PX_PER_FT, "metres_per_pixel_interval": METRES_PER_PIXEL,
+        "physical_carrier": {"width_m": WIDTH_M, "height_m": HEIGHT_M,
+                             "nominal_pixels_per_metre": PX_PER_M, "metres_per_pixel": METRES_PER_PIXEL,
                              "width_px": WIDTH_PX, "height_px": HEIGHT_PX},
         "controls": "locked owner-visible outer-frame construction controls; no cracks or cross-date features",
         "qualification_metrics_computed": False, "final_gate_run": False,
@@ -255,7 +256,7 @@ def run(packet: Path, output: Path) -> dict:
     (output / "mvp_result.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     (output / "decision.md").write_text(
         f"# Owner-corner carrier render MVP decision\n\n## Status\n\n`{STATUS}`\n\n"
-        "All eight locked maps were rendered on an exact 1501 x 451 px, 30 px/ft carrier. "
+        "All eight locked maps were rendered on the frozen 1524 x 500 px, 0.01 m/px carrier. "
         "This completes the exploratory rendering loop only. The construction corners cannot validate their own homography, "
         "so v1 remains negative and the 2-D route remains closed pending independent controls and a one-shot audit.\n",
         encoding="utf-8",

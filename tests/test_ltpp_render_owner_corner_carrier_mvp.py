@@ -14,9 +14,9 @@ SPEC.loader.exec_module(MODULE)
 
 
 def test_exact_physical_carrier_quantisation():
-    assert (MODULE.WIDTH_PX, MODULE.HEIGHT_PX) == (1501, 451)
-    assert MODULE.METRES_PER_PIXEL == 0.01016
-    assert np.array_equal(MODULE.TARGET, np.float32([[0, 0], [1500, 0], [1500, 450], [0, 450]]))
+    assert (MODULE.WIDTH_PX, MODULE.HEIGHT_PX) == (1524, 500)
+    assert MODULE.METRES_PER_PIXEL == 0.01
+    assert np.array_equal(MODULE.TARGET, np.float32([[0, 0], [1523, 0], [1523, 499], [0, 499]]))
 
 
 def test_synthetic_projective_warp_reprojects_corners_and_preserves_orientation():
@@ -25,7 +25,7 @@ def test_synthetic_projective_warp_reprojects_corners_and_preserves_orientation(
     cv2.polylines(image, [source.astype(np.int32)], True, (0, 0, 0), 5)
     validated = MODULE.validate_source_points(source.tolist(), image.shape[1], image.shape[0])
     warped, matrix, error, determinant = MODULE.transform_and_warp(image, validated)
-    assert warped.shape == (451, 1501, 3)
+    assert warped.shape == (500, 1524, 3)
     assert np.isfinite(matrix).all()
     assert error < 1e-3
     assert determinant > 0
