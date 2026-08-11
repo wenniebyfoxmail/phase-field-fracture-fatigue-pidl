@@ -43,6 +43,7 @@ separately reviewed scalar-length analysis.
 | owner-corner carrier render MVP v2 | engineering carrier `PASS` on all eight owner-confirmed official 0–50 ft maps at `15.24 m x 5.00 m`; status remains `EXPLORATORY_OWNER_CORNER_CARRIER_RENDERED__NOT_QUALIFIED` because corners are construction controls | `ltpp_geoforecast_owner_corner_carrier_render_mvp_v2_result_20260811.md` |
 | owner-carrier Tier B replacement packet | external review returned `APPROVE_OWNER_CARRIER_TIER_B_COLLECTION_ONLY`, blocking issues none; immutable 8+8 blind packet may enter eligible two-person annotation, but consensus/final gate have not run | `ltpp_geoforecast_spatial_registration_v2_owner_carrier_tier_b_packet_result_20260811.md`; `../reviews/ltpp_geoforecast_spatial_registration_v2_owner_carrier_packet_external_review_20260811.md` |
 | geometry-assisted grid-control pilot | `EXPLORATORY_AI_ASSISTED_CONTROL_PILOT_READY__NOT_INDEPENDENT`; 66 projective suggestions per date plus explicit i/j guides and user correction, isolated from formal A/B controls | `ltpp_geoforecast_geometry_assisted_grid_control_pilot_result_20260811.md` |
+| geometry-assisted development8 MVP v2 | `EXPLORATORY_DEVELOPMENT8_REVIEW_READY__NO_FINAL_GATE`; reduced to the eight pre-frozen development identities per date, with a frozen physical-error evaluator and no final controls | `ltpp_geoforecast_geometry_assisted_development8_mvp_v2_readiness_20260811.md` |
 
 ## Active gate
 

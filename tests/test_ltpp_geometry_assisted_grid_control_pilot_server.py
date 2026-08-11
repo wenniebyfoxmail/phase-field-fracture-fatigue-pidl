@@ -20,6 +20,13 @@ def test_task_order_has_all_66_points_and_starts_top_left():
     assert values[-1] == "G[10,0]"
 
 
+def test_development8_profile_is_exactly_the_prefrozen_identity_set():
+    assert MODULE.task_order("development8") == [
+        "G[5,0]", "G[5,5]", "G[0,2]", "G[0,3]",
+        "G[10,2]", "G[10,3]", "G[3,1]", "G[7,4]",
+    ]
+
+
 def test_projective_suggestions_use_i_left_to_right_and_j_bottom_to_top():
     points = [[10, 20], [110, 20], [110, 70], [10, 70]]
     result = MODULE.suggested_source_points(points)

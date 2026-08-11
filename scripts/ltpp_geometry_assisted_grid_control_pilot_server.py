@@ -27,6 +27,7 @@ EXPECTED_OWNER_SHA256 = "3f86fc7c0d28d578387d5e8d99295faf8e9bc4d45e437f4d1e18194
 MARGIN_PX = 48
 STATUS = "EXPLORATORY_AI_ASSISTED_CONTROL_PILOT__NOT_INDEPENDENT"
 VALID_STATUSES = {"usable", "missing_print", "occluded", "ambiguous", "unreviewed"}
+DEVELOPMENT = ((5, 0), (5, 5), (0, 2), (0, 3), (10, 2), (10, 3), (3, 1), (7, 4))
 
 
 def sha256(path: Path) -> str:
@@ -41,7 +42,11 @@ def candidate_id(i: int, j: int) -> str:
     return f"G[{i},{j}]"
 
 
-def task_order() -> list[str]:
+def task_order(profile: str = "all66") -> list[str]:
+    if profile == "development8":
+        return [candidate_id(i, j) for i, j in DEVELOPMENT]
+    if profile != "all66":
+        raise ValueError(f"unknown task profile: {profile}")
     return [candidate_id(i, j) for j in range(5, -1, -1) for i in range(11)]
 
 
@@ -80,7 +85,7 @@ def atomic_json(path: Path, payload: dict) -> None:
     temporary.replace(path)
 
 
-def initialize(owner_packet: Path, pilot_root: Path, preregistration: Path) -> None:
+def initialize(owner_packet: Path, pilot_root: Path, preregistration: Path, profile: str = "all66") -> None:
     if pilot_root.exists():
         raise ValueError(f"refusing to overwrite pilot: {pilot_root}")
     owner_file = owner_packet / "owner_corners.json"
@@ -109,7 +114,7 @@ def initialize(owner_packet: Path, pilot_root: Path, preregistration: Path) -> N
             raise ValueError(f"cannot write pilot image: {date}")
         suggestions = suggested_source_points(record["points_source_px"])
         tasks = {}
-        for candidate in task_order():
+        for candidate in task_order(profile):
             source_x, source_y = suggestions[candidate]
             crop_point = [round(source_x - left, 3), round(source_y - top, 3)]
             tasks[candidate] = {
@@ -122,6 +127,7 @@ def initialize(owner_packet: Path, pilot_root: Path, preregistration: Path) -> N
             "schema_version": "ltpp_geometry_assisted_grid_control_pilot_v1",
             "classification": STATUS,
             "survey_date": date,
+            "task_profile": profile,
             "locked": False,
             "crop_source_px": {"left": left, "top": top, "right": right, "bottom": bottom},
             "tasks": tasks,
@@ -138,6 +144,8 @@ def initialize(owner_packet: Path, pilot_root: Path, preregistration: Path) -> N
         "owner_corners_sha256": sha256(owner_file),
         "preregistration_sha256": sha256(preregistration),
         "assistance": "four-corner projective suggestion only; human-adjusted development pilot",
+        "task_profile": profile,
+        "task_ids": task_order(profile),
         "formal_tier_b_controls_created": False,
         "final_gate_run": False,
         "inputs": input_rows,
@@ -146,12 +154,12 @@ def initialize(owner_packet: Path, pilot_root: Path, preregistration: Path) -> N
 
 HTML = r'''<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>格网点辅助校正 Pilot</title>
 <style>*{box-sizing:border-box}body{margin:0;font:15px system-ui;background:#f3efe5;color:#17211b}header{padding:12px 18px;background:white;border-bottom:2px solid #17211b}.warn{color:#a3172a;font-weight:800}main{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:12px;padding:12px}.viewport{height:72vh;overflow:auto;border:1px solid #333;background:#999}.stage{position:relative;width:max-content;background:white}.stage img{display:block}.stage svg{position:absolute;inset:0}.side{background:#fff;padding:12px;border:1px solid #333}.legend{padding:10px;background:#e9f8f8;border-left:6px solid #00a7b5;line-height:1.55}.current{font-size:18px;font-weight:800;padding:10px;background:#fff0b8}.tasks{height:260px;overflow:auto;display:grid;grid-template-columns:repeat(6,1fr);gap:3px}.task{padding:5px 2px;border:1px solid #bbb;background:#eee;cursor:pointer;font-size:12px}.task.active{background:#ffdc56;border:2px solid #9b1c31}.task.done{color:#087443;background:#e5f6ec}button,select,textarea{width:100%;margin:5px 0;padding:8px}textarea{height:48px}.rowcol{stroke-width:4;stroke-dasharray:12 8;opacity:.72}.dot{fill:#18a55b;stroke:white;stroke-width:2}.activeDot{fill:#ff2d75;stroke:#111;stroke-width:4}.label{font:700 22px system-ui;fill:#9b1c31;paint-order:stroke;stroke:white;stroke-width:5px}.footer{font-size:12px;color:#666}@media(max-width:900px){main{grid-template-columns:1fr}.viewport{height:55vh}}</style></head><body>
-<header><b>66点几何辅助校正 Pilot</b>　<span class="warn">开发期辅助记录，不是独立 Tier B / final controls</span></header>
+<header><b>格网点几何辅助校正 Pilot</b>　<span class="warn">开发期辅助记录，不是独立 Tier B / final controls</span></header>
 <main><section class="viewport" id="viewport"><div class="stage"><img id="image"><svg id="overlay"></svg></div></section><aside class="side">
 <div class="legend"><b>先认方向：</b><br>① <b>i = 横向位置</b>，从左→右 0–10，对应竖直打印线。<br>② <b>j = 纵向位置</b>，从下→上 0–5，对应水平打印线。<br>粉色点是当前目标；青色竖导线显示 i，橙色横导线显示 j。</div>
 <label>日期<select id="date"></select></label><div class="current" id="current"></div><div class="tasks" id="tasks"></div>
 <button id="accept">建议点正确 → usable</button><label>或标记<select id="kind"><option value="usable">usable（点击图像可移动）</option><option value="missing_print">missing_print</option><option value="occluded">occluded</option><option value="ambiguous">ambiguous</option></select></label>
-<textarea id="note" placeholder="可选备注"></textarea><button id="prev">← 上一个</button><button id="next">下一个 →</button><button id="save">保存当前日期草稿</button><button id="lock">完成66项并锁定本日期</button><p id="feedback"></p><p class="footer">绿色小点=几何建议；点击图像会把当前粉色点移动到你的点击位置。只校正打印格网，不沿裂缝找点。</p>
+<textarea id="note" placeholder="可选备注"></textarea><button id="prev">← 上一个</button><button id="next">下一个 →</button><button id="save">保存当前日期草稿</button><button id="lock">完成当前任务并锁定本日期</button><p id="feedback"></p><p class="footer">绿色小点=几何建议；点击图像会把当前粉色点移动到你的点击位置。只校正打印格网，不沿裂缝找点。</p>
 </aside></main><script>
 let dates=[],record={},current='',selected='',order=[];const image=document.getElementById('image'),overlay=document.getElementById('overlay'),feedback=document.getElementById('feedback'),viewport=document.getElementById('viewport');
 function parseId(id){const m=id.match(/G\[(\d+),(\d+)\]/);return [+m[1],+m[2]]}function say(t,bad=false){feedback.textContent=t;feedback.style.color=bad?'#a3172a':'#087443'}
@@ -255,11 +263,12 @@ def main() -> int:
     parser.add_argument("--pilot-root", type=Path, required=True)
     parser.add_argument("--preregistration", type=Path, required=True)
     parser.add_argument("--initialize", action="store_true")
+    parser.add_argument("--profile", choices=("all66", "development8"), default="all66")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8771)
     args = parser.parse_args()
     if args.initialize:
-        initialize(args.owner_packet.resolve(), args.pilot_root.resolve(), args.preregistration.resolve())
+        initialize(args.owner_packet.resolve(), args.pilot_root.resolve(), args.preregistration.resolve(), args.profile)
     server = Server((args.host, args.port), args.pilot_root)
     print(json.dumps({"url": f"http://{args.host}:{args.port}", "status": STATUS, "dates": len(DATES)}), flush=True)
     try:
