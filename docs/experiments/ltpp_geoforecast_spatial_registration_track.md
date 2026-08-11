@@ -40,6 +40,7 @@ separately reviewed scalar-length analysis.
 | no-OCR complete-main-grid tooling MVP | `EXPLORATORY_MAIN_GRID_TOOLING_MVP__NOT_QUALIFIED`; all eight seen development pages fail closed because no single `11 x 6`, 66-intersection component survives scanned dashed/fragmented strokes | `ltpp_geoforecast_img2table_main_grid_mvp_result_20260810.md` |
 | outer-boundary/intersection-topology MVP v2 | `EXPLORATORY_OUTER_FRAME_TOPOLOGY_TOOLING_MVP__NOT_QUALIFIED`; after passing fixed synthetic adversaries and threshold boundaries, all eight seen development pages fail closed because no uniquely eligible fully observed outer frame exists | `ltpp_geoforecast_outer_boundary_intersection_topology_mvp_v2_result_20260810.md` |
 | frame-candidate review MVP v3 | `EXPLORATORY_FRAME_CANDIDATE_REVIEW__NOT_QUALIFIED`; frozen owner review yields engineering-page candidates for 1991/1995/1997/2012 only, while 1998/2001/2003/2007 fail closed | `ltpp_geoforecast_frame_candidate_review_mvp_v3_result_20260810.md` |
+| owner-corner carrier render MVP v2 | engineering carrier `PASS` on all eight owner-confirmed official 0–50 ft maps at `15.24 m x 5.00 m`; status remains `EXPLORATORY_OWNER_CORNER_CARRIER_RENDERED__NOT_QUALIFIED` because corners are construction controls | `ltpp_geoforecast_owner_corner_carrier_render_mvp_v2_result_20260811.md` |
 
 ## Active gate
 
@@ -73,6 +74,14 @@ pages. It must not be loosened or rerun under the same experiment name.
 The later v3 candidate review establishes only four unambiguous engineering
 page frames. It is therefore not an all-eight common canvas and cannot be
 used for scientific cropping, controls, or registration.
+The separately named owner-corner carrier MVP then completed an all-eight
+engineering canvas using explicit owner-confirmed outer-frame corners on the
+already isolated official maps. Its first render used a wrong 4.572 m
+transverse convention and is retained as a failed exploratory result. Corrected
+render v2 uses the frozen `15.24 m x 5.00 m`, `1524 x 500 px` convention and
+passes structural/visual carrier checks. Because the visible corners construct
+the homographies, this does not supply independent internal residuals and does
+not change the active registration or 2-D gate.
 
 ## Next action
 
