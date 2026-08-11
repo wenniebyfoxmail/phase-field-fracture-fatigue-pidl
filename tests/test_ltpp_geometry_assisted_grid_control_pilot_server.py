@@ -27,6 +27,13 @@ def test_development8_profile_is_exactly_the_prefrozen_identity_set():
     ]
 
 
+def test_post1991_profile_is_the_exact_seven_date_subseries():
+    assert MODULE.POST1991_DATES == (
+        "19951024", "19970228", "19980407", "20010913",
+        "20030514", "20071106", "20120417",
+    )
+
+
 def test_projective_suggestions_use_i_left_to_right_and_j_bottom_to_top():
     points = [[10, 20], [110, 20], [110, 70], [10, 70]]
     result = MODULE.suggested_source_points(points)

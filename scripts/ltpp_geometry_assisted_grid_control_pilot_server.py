@@ -23,6 +23,7 @@ DATES = (
     "19910610", "19951024", "19970228", "19980407",
     "20010913", "20030514", "20071106", "20120417",
 )
+POST1991_DATES = DATES[1:]
 EXPECTED_OWNER_SHA256 = "3f86fc7c0d28d578387d5e8d99295faf8e9bc4d45e437f4d1e181940e96a4803"
 MARGIN_PX = 48
 STATUS = "EXPLORATORY_AI_ASSISTED_CONTROL_PILOT__NOT_INDEPENDENT"
@@ -85,7 +86,13 @@ def atomic_json(path: Path, payload: dict) -> None:
     temporary.replace(path)
 
 
-def initialize(owner_packet: Path, pilot_root: Path, preregistration: Path, profile: str = "all66") -> None:
+def initialize(
+    owner_packet: Path,
+    pilot_root: Path,
+    preregistration: Path,
+    profile: str = "all66",
+    dates: tuple[str, ...] = DATES,
+) -> None:
     if pilot_root.exists():
         raise ValueError(f"refusing to overwrite pilot: {pilot_root}")
     owner_file = owner_packet / "owner_corners.json"
@@ -93,14 +100,14 @@ def initialize(owner_packet: Path, pilot_root: Path, preregistration: Path, prof
         raise ValueError("unexpected owner-corner receipt")
     owner = json.loads(owner_file.read_text(encoding="utf-8"))
     records = {row["survey_date"]: row for row in owner["records"]}
-    if tuple(records) != DATES or any(not records[date].get("locked") for date in DATES):
+    if tuple(records) != DATES or any(not records[date].get("locked") for date in dates):
         raise ValueError("exact locked eight-date owner packet required")
     images = pilot_root / "images"
     record_dir = pilot_root / "records"
     images.mkdir(parents=True)
     record_dir.mkdir()
     input_rows = []
-    for date in DATES:
+    for date in dates:
         record = records[date]
         source_path = owner_packet / "images" / f"{date}.png"
         if sha256(source_path) != record["source_sha256"]:
@@ -146,6 +153,7 @@ def initialize(owner_packet: Path, pilot_root: Path, preregistration: Path, prof
         "assistance": "four-corner projective suggestion only; human-adjusted development pilot",
         "task_profile": profile,
         "task_ids": task_order(profile),
+        "dates": list(dates),
         "formal_tier_b_controls_created": False,
         "final_gate_run": False,
         "inputs": input_rows,
@@ -181,6 +189,9 @@ class Server(ThreadingHTTPServer):
         self.root = pilot_root.resolve()
         self.images = self.root / "images"
         self.records = self.root / "records"
+        self.dates = tuple(sorted(path.stem for path in self.records.glob("*.json")))
+        if not self.dates or any(date not in DATES for date in self.dates):
+            raise ValueError("pilot must contain a nonempty frozen date subset")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -199,14 +210,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def date_from(self, prefix: str) -> str | None:
         value = urlparse(self.path).path.removeprefix(prefix)
-        return value if value in DATES else None
+        return value if value in self.server.dates else None
 
     def do_GET(self) -> None:
         path = urlparse(self.path).path
         if path == "/":
             return self.send(HTML.encode(), "text/html; charset=utf-8")
         if path == "/api/dates":
-            return self.send(json.dumps(DATES).encode(), "application/json")
+            return self.send(json.dumps(self.server.dates).encode(), "application/json")
         if path.startswith("/api/record/"):
             date = self.date_from("/api/record/")
             return self.send((self.server.records / f"{date}.json").read_bytes(), "application/json") if date else self.fail("invalid date", 404)
@@ -264,13 +275,15 @@ def main() -> int:
     parser.add_argument("--preregistration", type=Path, required=True)
     parser.add_argument("--initialize", action="store_true")
     parser.add_argument("--profile", choices=("all66", "development8"), default="all66")
+    parser.add_argument("--date-profile", choices=("all8", "post1991_7"), default="all8")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8771)
     args = parser.parse_args()
+    dates = DATES if args.date_profile == "all8" else POST1991_DATES
     if args.initialize:
-        initialize(args.owner_packet.resolve(), args.pilot_root.resolve(), args.preregistration.resolve(), args.profile)
+        initialize(args.owner_packet.resolve(), args.pilot_root.resolve(), args.preregistration.resolve(), args.profile, dates)
     server = Server((args.host, args.port), args.pilot_root)
-    print(json.dumps({"url": f"http://{args.host}:{args.port}", "status": STATUS, "dates": len(DATES)}), flush=True)
+    print(json.dumps({"url": f"http://{args.host}:{args.port}", "status": STATUS, "dates": len(server.dates)}), flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

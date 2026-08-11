@@ -29,3 +29,10 @@ def test_metrics_use_linear_p95():
     assert value["median_error_m"] == 3.5
     assert value["p95_error_m"] == np.quantile(np.arange(8), 0.95, method="linear")
     assert value["maximum_error_m"] == 7.0
+
+
+def test_evaluator_uses_the_same_frozen_seven_date_subseries():
+    assert MODULE.POST1991_DATES == (
+        "19951024", "19970228", "19980407", "20010913",
+        "20030514", "20071106", "20120417",
+    )

@@ -18,6 +18,7 @@ DATES = (
     "19910610", "19951024", "19970228", "19980407",
     "20010913", "20030514", "20071106", "20120417",
 )
+POST1991_DATES = DATES[1:]
 DEVELOPMENT_IDS = ("G[5,0]", "G[5,5]", "G[0,2]", "G[0,3]", "G[10,2]", "G[10,3]", "G[3,1]", "G[7,4]")
 EXPECTED_OWNER_SHA256 = "3f86fc7c0d28d578387d5e8d99295faf8e9bc4d45e437f4d1e181940e96a4803"
 ID_PATTERN = re.compile(r"G\[(\d+),(\d+)\]")
@@ -65,7 +66,7 @@ def write_sidecar(path: Path, date: str) -> None:
     )
 
 
-def evaluate(owner_packet: Path, pilot_root: Path, output: Path) -> dict:
+def evaluate(owner_packet: Path, pilot_root: Path, output: Path, dates: tuple[str, ...] = DATES) -> dict:
     if output.exists():
         raise ValueError(f"refusing to overwrite output: {output}")
     owner_file = owner_packet / "owner_corners.json"
@@ -79,7 +80,7 @@ def evaluate(owner_packet: Path, pilot_root: Path, output: Path) -> dict:
     point_rows = []
     date_rows = []
     complete_dates = 0
-    for date in DATES:
+    for date in dates:
         record = json.loads((pilot_root / "records" / f"{date}.json").read_text(encoding="utf-8"))
         if record.get("task_profile") != "development8" or tuple(record["tasks"]) != DEVELOPMENT_IDS:
             raise ValueError(f"unexpected development task inventory: {date}")
@@ -130,9 +131,9 @@ def evaluate(owner_packet: Path, pilot_root: Path, output: Path) -> dict:
     with (output / "per_date_metrics.csv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=date_rows[0].keys()); writer.writeheader(); writer.writerows(date_rows)
     result = {
-        "status": "EXPLORATORY_DEVELOPMENT8_EVALUATED__NOT_QUALIFIED",
+        "status": "EXPLORATORY_7_DATE_DEVELOPMENT8_EVALUATED__NOT_QUALIFIED" if dates == POST1991_DATES else "EXPLORATORY_DEVELOPMENT8_EVALUATED__NOT_QUALIFIED",
         "complete_dates": complete_dates,
-        "total_dates": len(DATES),
+        "total_dates": len(dates),
         "final_controls_used": False,
         "final_gate_run": False,
         "dates": date_rows,
@@ -148,8 +149,10 @@ def main() -> int:
     parser.add_argument("--owner-packet", type=Path, required=True)
     parser.add_argument("--pilot-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--date-profile", choices=("all8", "post1991_7"), default="all8")
     args = parser.parse_args()
-    print(json.dumps(evaluate(args.owner_packet.resolve(), args.pilot_root.resolve(), args.output.resolve())))
+    dates = DATES if args.date_profile == "all8" else POST1991_DATES
+    print(json.dumps(evaluate(args.owner_packet.resolve(), args.pilot_root.resolve(), args.output.resolve(), dates)))
     return 0
 
 
