@@ -116,7 +116,7 @@
                   },
                   {
                       "path":  "toy_road_adjudication.py",
-                      "sha256":  "0ff9e0bdf53763c9f3db0408b2e08a8d0dd1d808dd2442768a725ebbad2d4a2d"
+                      "sha256":  "b8d9fb169c7759ffe96cd881a0280bdeb4b8a669e857f984ed6d277b179b7a33"
                   },
                   {
                       "path":  "toy_road_d1_protocol.py",

@@ -1158,7 +1158,7 @@ def test_actual_p0_p0r_producer_runtime_identities_are_identical() -> None:
 
 
 def test_actual_external_adjudication_receipt_is_complete_and_non_authorizing(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     p0_root = Path(r"C:\q4diag\toy-road-p0-production-d17efe6-run1\output")
     p0r_root = Path(r"C:\q4diag\toy-road-p0r-production-d17efe6-run1\output")
@@ -1216,6 +1216,7 @@ def test_actual_external_adjudication_receipt_is_complete_and_non_authorizing(
     assert receipt["terminal_validator_identity"]["sha256"] == _sha256(
         MODULE_PATH
     )
+    monkeypatch.setattr(module, "_git_commit", lambda _path: "0" * 40)
     module.recheck_adjudication_receipt(destination)
 
 

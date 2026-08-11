@@ -434,7 +434,10 @@ def _package_binding(
 
 
 def _build_adjudication(
-    p0_root: Path, p0r_root: Path, producer_root: Path
+    p0_root: Path,
+    p0r_root: Path,
+    producer_root: Path,
+    bound_tool_identities: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
     validator = _load_terminal_validator()
     p0 = validator._validate_package(Path(p0_root).resolve(), "P0", "P0_parent")
@@ -457,6 +460,20 @@ def _build_adjudication(
     metrics = _trajectory_metrics(validator, p0, p0r)
     module_path = Path(__file__).resolve()
     validator_path = module_path.with_name("toy_road_protocol.py")
+    if bound_tool_identities is None:
+        adjudicator_identity = {
+            "commit": _git_commit(module_path.parent),
+            "sha256": _sha256_bytes(module_path.read_bytes()),
+        }
+        terminal_validator_identity = {
+            "commit": _git_commit(validator_path.parent),
+            "sha256": _sha256_bytes(validator_path.read_bytes()),
+        }
+    else:
+        adjudicator_identity = dict(bound_tool_identities["adjudicator_identity"])
+        terminal_validator_identity = dict(
+            bound_tool_identities["terminal_validator_identity"]
+        )
     return {
         "schema_version": "toy_road_external_repeatability_adjudication_v1",
         "status": "PASS",
@@ -477,14 +494,8 @@ def _build_adjudication(
         "excluded_provenance_differences": _excluded_provenance_differences(
             p0_snapshot, p0r_snapshot
         ),
-        "adjudicator_identity": {
-            "commit": _git_commit(module_path.parent),
-            "sha256": _sha256_bytes(module_path.read_bytes()),
-        },
-        "terminal_validator_identity": {
-            "commit": _git_commit(validator_path.parent),
-            "sha256": _sha256_bytes(validator_path.read_bytes()),
-        },
+        "adjudicator_identity": adjudicator_identity,
+        "terminal_validator_identity": terminal_validator_identity,
         "inputs": {
             "p0_root": str(Path(p0_root).resolve()),
             "p0r_root": str(Path(p0r_root).resolve()),
@@ -513,8 +524,30 @@ def recheck_adjudication_receipt(path: Path) -> None:
     inputs = receipt.get("inputs")
     if not isinstance(inputs, dict) or set(inputs) != {"p0_root", "p0r_root", "producer_root"}:
         raise AdjudicationError("adjudication receipt inputs are invalid")
+    adjudicator_identity = receipt.get("adjudicator_identity")
+    terminal_validator_identity = receipt.get("terminal_validator_identity")
+    identity_fields = {"commit", "sha256"}
+    if (
+        not isinstance(adjudicator_identity, dict)
+        or set(adjudicator_identity) != identity_fields
+        or not isinstance(terminal_validator_identity, dict)
+        or set(terminal_validator_identity) != identity_fields
+    ):
+        raise AdjudicationError("adjudication receipt tool identities are invalid")
+    module_path = Path(__file__).resolve()
+    validator_path = module_path.with_name("toy_road_protocol.py")
+    if adjudicator_identity["sha256"] != _sha256_bytes(module_path.read_bytes()):
+        raise AdjudicationError("adjudicator bytes differ from the receipt identity")
+    if terminal_validator_identity["sha256"] != _sha256_bytes(validator_path.read_bytes()):
+        raise AdjudicationError("terminal validator bytes differ from the receipt identity")
     rebuilt = _build_adjudication(
-        Path(inputs["p0_root"]), Path(inputs["p0r_root"]), Path(inputs["producer_root"])
+        Path(inputs["p0_root"]),
+        Path(inputs["p0r_root"]),
+        Path(inputs["producer_root"]),
+        {
+            "adjudicator_identity": adjudicator_identity,
+            "terminal_validator_identity": terminal_validator_identity,
+        },
     )
     if receipt != rebuilt:
         raise AdjudicationError("adjudication receipt does not match bound evidence")
