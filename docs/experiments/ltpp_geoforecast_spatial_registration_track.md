@@ -41,6 +41,7 @@ separately reviewed scalar-length analysis.
 | outer-boundary/intersection-topology MVP v2 | `EXPLORATORY_OUTER_FRAME_TOPOLOGY_TOOLING_MVP__NOT_QUALIFIED`; after passing fixed synthetic adversaries and threshold boundaries, all eight seen development pages fail closed because no uniquely eligible fully observed outer frame exists | `ltpp_geoforecast_outer_boundary_intersection_topology_mvp_v2_result_20260810.md` |
 | frame-candidate review MVP v3 | `EXPLORATORY_FRAME_CANDIDATE_REVIEW__NOT_QUALIFIED`; frozen owner review yields engineering-page candidates for 1991/1995/1997/2012 only, while 1998/2001/2003/2007 fail closed | `ltpp_geoforecast_frame_candidate_review_mvp_v3_result_20260810.md` |
 | owner-corner carrier render MVP v2 | engineering carrier `PASS` on all eight owner-confirmed official 0–50 ft maps at `15.24 m x 5.00 m`; status remains `EXPLORATORY_OWNER_CORNER_CARRIER_RENDERED__NOT_QUALIFIED` because corners are construction controls | `ltpp_geoforecast_owner_corner_carrier_render_mvp_v2_result_20260811.md` |
+| owner-carrier Tier B replacement packet | immutable 8+8 blind review candidate built from the accepted official-map source windows; `PENDING_EXTERNAL_REVIEW__DO_NOT_ANNOTATE`, with 0/16 records locked and no consensus/final gate | `ltpp_geoforecast_spatial_registration_v2_owner_carrier_tier_b_packet_result_20260811.md` |
 
 ## Active gate
 
@@ -82,6 +83,11 @@ render v2 uses the frozen `15.24 m x 5.00 m`, `1524 x 500 px` convention and
 passes structural/visual carrier checks. Because the visible corners construct
 the homographies, this does not supply independent internal residuals and does
 not change the active registration or 2-D gate.
+The obsolete Tier B packets were tied to earlier automatic crop bounds and are
+not valid for that accepted carrier. A separately named replacement packet is
+now frozen from the exact official-map source pixels and accepted frame window,
+but it remains a review candidate: all annotations are empty, the sealed map
+was not opened, and neither consensus nor any registration gate has run.
 
 ## Next action
 
@@ -89,4 +95,5 @@ Keep scalar-length work separate and explicitly measurement-noise limited. Any
 future spatial route requires a new, independently reviewed registration or
 acquisition track with external validation; no 2-D model training is authorized
 on the current eight-date carrier. The immediate v2 action is independent
-Tier A/B control adjudication, not transform tuning.
+approval of the owner-carrier packet amendment, followed—only if approved—by
+two-person blind Tier B control adjudication, not transform tuning.
