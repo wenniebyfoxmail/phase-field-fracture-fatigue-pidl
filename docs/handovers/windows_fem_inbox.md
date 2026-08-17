@@ -27,6 +27,83 @@
 
 ## Active Requests
 
+## 2026-08-17 · Request 28: first-detect same-state and transition-pair export
+
+**Goal**: audit and plan the minimum exact FEM export needed for two explicitly
+separate products: (P0) same-state event-peak packets and (P1) cross-cycle
+transition pairs. Preserve first-detect U0.11 c122, U0.12 c83 and U0.13 c59;
+do not substitute the `+3` confirmation cycles.
+
+**Full forwardable note**:
+`docs/handovers/windows_griphfith_request_28_first_detect_peak_state_export_20260817.md`.
+
+**Time semantics**: c0/state0 is the zero-load recovered state after fatigue
+history reset; c1 is the first computed cycle. Every cycle is
+`s1=.25 -> s2=.50 -> s3=.75 -> s4=1.00 peak -> s5~=0 unload`, and every
+converged substep immediately commits `p_field_old` and `history_vars_old`.
+Damage is irreversible. `fields_<cycle>_005.vtk` is that cycle's committed s5
+state.
+
+**INPUT file**: audit the exact completed Hard5 eta0 5-step cases under
+`Hard5_eta0_5step_Umax_011_012_013_20260729`, their complete checkpoints and
+capture paths. Do not replay until Windows reports the minimum exact range for
+P0 and for P0+P1. No physics, initialization, tolerance, mesh, cadence, commit
+order or event-criterion changes.
+
+**Mesh**: exact shared native Q4 mesh, expected 86,756 nodes and 86,408 cells;
+no remesh or reordering.
+
+**Expected outputs**:
+
+- P0 `same-state`: c122/s4, c83/s4 and c59/s4 post-commit packets, each with
+  `u_node + d_node + psi_raw_peak_elem` from the same cycle/substep.
+- P1 `transition-pair`: c121/s5 -> c122/s4, c82/s5 -> c83/s4 and
+  c58/s5 -> c59/s4, indexed as separate input/target states rather than one FEM
+  snapshot.
+- First return a provisional state index and replay plan; payload replay is not
+  authorized by this correction alone.
+
+**Non-substitution rule**: c83/s5 cannot replace missing c82/s5 because it has
+already undergone the full c83 damage/fatigue evolution. Do not infer c82 from
+c83, and do not approximate c82 nodal damage from `d_elem`.
+
+**Reusable code boundary**: original per-step VTK, `peak_load_c1.vtk` s4
+logic, `phase_field.audit.capture_peak_state`, and toy-road substep capture may
+be reused as capture mechanisms. Toy-road numerical results are not July
+Hard5 canonical data.
+
+**Acceptance criteria**: every output row declares source cycle, source
+substep, state timing, semantic class and required fields. Same-state packets
+must use cN/s4 `u+d+energy` together. Transition pairs must retain both indexed
+states. Mesh hashes must match; no confirmation state or later-VTK
+substitution is allowed.
+
+**Priority**: high semantics audit. Reply in the outbox with the minimum replay
+plan before launching. This does not authorize PIDL retraining or a new
+architecture sweep.
+
+### [update] 2026-08-17 · Windows audit accepted; full replay remains blocked
+
+Windows confirmed that all three P0 s4 peaks are missing, U0.12 c82/s5 is
+missing, and U0.11 c121/s5 plus U0.13 c58/s5 are only partial exports without
+complete native GP history/restart state. The only checkpoints are terminal
+c125/c89/c62 and cannot be reversed. Exact replay must therefore start from
+each case's canonical c0/state0 initialization.
+
+P0-only and P0+P1 have the same replay cycle ranges: U0.11 through c122/s4,
+U0.12 through c83/s4 and U0.13 through c59/s4. Select P0+P1 for the eventual
+replay because P1 adds capture payload but no cycles.
+
+**Current decision**: do not launch the three full replays yet. First extend
+the post-commit capture hook and run one U0.13 c0->c1/s5 instrumentation smoke,
+capturing c1/s4 same-state and c1/s5 committed history. The smoke must verify
+timing labels, full history/psi payload, mesh/index integrity and
+non-perturbation against retained canonical c1 fields. Post the smoke plan and
+predeclared numeric comparison tolerances in the outbox before running it.
+
+After the smoke passes, request explicit human GO for the full P0+P1 replay.
+No replay is authorized by this update alone.
+
 ## 2026-07-20 · Request 26: matched eta0 multi-Umax trajectories and sensor-ready exports
 
 **Goal**: build the smallest internally matched FEM trajectory family needed to test observed-state next-cycle forecasting, c87-like transition assimilation, and leave-one-physical-trajectory-out validation. The scientific question is whether changing only the applied cyclic amplitude produces enough transition diversity for a model to learn/identify late fracture-regime changes without mixing incompatible FEM families.
