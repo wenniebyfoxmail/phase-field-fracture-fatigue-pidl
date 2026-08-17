@@ -1,4 +1,4 @@
-# Windows-FEM Request 28 — first-detect causal damage and peak-displacement export
+# Windows-FEM Request 28 — first-detect same-state and transition-pair export
 
 Date: 2026-08-17
 
@@ -6,214 +6,300 @@ From: Mac-PIDL
 
 To: Windows-FEM / GRIPHFiTH
 
-Priority: high, minimal state export
+Priority: high, state-semantics correction and minimal-export planning
 
 Evidence class: `state-semantics` / `tooling-only`; diagnostic only
 
-## Why this is needed
+Status: **scope corrected; audit existing assets and report the minimum replay plan before replaying**
 
-The Taobo Phase-A diagnostic established that event-time mechanics must be
-paired causally:
+## Corrected request decision
+
+Request 28 needs two different data products, with different meanings. They
+must never be merged or described as one converged FEM state.
+
+1. **Primary P0 — same-state event-peak packet**
+   - At each first-detect event, export `u`, `d`, and the declared energetic
+     fields from the same physical `cycle/substep`, after that substep has
+     converged and been committed.
+   - This is the data required for the XDEM-inspired enriched-vs-plain
+     displacement-to-energy observation diagnostic.
+2. **Secondary P1 — cross-cycle transition pair**
+   - Pair the previous cycle's committed unload state with the next cycle's
+     committed event-peak state: `c(N-1)/s5 -> cN/s4`.
+   - This is a valid ML input-target pair and a mechanics-transition
+     diagnostic, but it is **not** a same-state FEM snapshot.
+
+The Windows side should first audit what can be directly exported and then
+report the minimum replay range for P0 alone and for P0+P1. Do not start a new
+replay merely from the old wording of Request 28.
+
+## Authoritative Hard-5 time semantics
+
+The following semantics were checked against the original Hard-5 solver source
+and supersede the earlier ambiguous wording:
+
+- `c0/state0` is the zero-load recovered initial state after fatigue history
+  reset. It is not the first loading cycle.
+- The first actual computed loading cycle is `c1`.
+- Every Hard-5 cycle has the retained order:
+
+  ```text
+  s1 = 0.25
+  s2 = 0.50
+  s3 = 0.75
+  s4 = 1.00 peak
+  s5 ~= 0.00 unload
+  ```
+
+- After every converged substep, the solver immediately commits
+  `p_field_old` and `history_vars_old`.
+- Damage is irreversible. Unloading reduces displacement and stress but does
+  not restore earlier damage.
+- `fields_<cycle>_005.vtk` is that cycle's committed s5 unload state.
+- Therefore `c83/s5` cannot replace missing `c82/s5`: it has already passed
+  through the entire c83 damage/fatigue evolution. This is a later-state
+  substitution error, not a claim that c82 is influenced by a future state.
+- No later VTK may be inverted, projected, or relabelled as an earlier missing
+  nodal state.
+
+## Locked event cycles
+
+The `first_detect` events remain fixed:
+
+| Umax | first-detect event | confirmation excluded |
+|---:|---:|---:|
+| 0.11 | c122 | c125 |
+| 0.12 | c83 | c86 |
+| 0.13 | c59 | c62 |
+
+Do not replace first detect with the `+3` confirmation cycle and do not
+redefine the event from the new exports.
+
+## P0 required outputs — same-state event peaks
+
+Every row below is one physical FEM state. All required fields in a row must
+come from the same converged and committed substep.
+
+| output ID | source cycle | source substep | load factor | state timing | semantic class | required fields |
+|---|---:|---:|---:|---|---|---|
+| `u011_c122_s4_same_state` | c122 | s4 | 1.00 | post-convergence, post-commit | `same-state` | `u_node`, `d_node`, `psi_raw_peak_elem`, mesh/index metadata |
+| `u012_c083_s4_same_state` | c83 | s4 | 1.00 | post-convergence, post-commit | `same-state` | `u_node`, `d_node`, `psi_raw_peak_elem`, mesh/index metadata |
+| `u013_c059_s4_same_state` | c59 | s4 | 1.00 | post-convergence, post-commit | `same-state` | `u_node`, `d_node`, `psi_raw_peak_elem`, mesh/index metadata |
+
+Also export the following if they are available from the same capture without
+changing solver semantics:
 
 ```text
-damage(first_detect - 1, unloaded) -> displacement/energy(first_detect, peak)
+alpha_bar_elem
+f_alpha_elem
+psi_active_peak_elem       # only if computed from the exact declared GP product
+reaction_force
+top_boundary_node_ids
+bottom_boundary_node_ids
 ```
 
-Using post-`first_detect` unloaded damage against the same cycle's peak field
-gave a numerically converged but physically mistimed reconstruction. The
-causal pairing recovered correlation about 0.9985 for U0.11 and U0.13, but a
-fair three-case enriched-vs-plain test is still blocked because:
+Do not combine cN/s4 displacement with cN/s5 damage and call it same-state.
+The same-state primary packet requires both `u_node` and `d_node` at cN/s4.
 
-1. U0.12 c82 native nodal damage was not retained; element-to-node projection
-   was inadequate.
-2. Existing `fields_<cycle>_005.vtk` files are substep-5 unloaded states, so
-   their nodal displacement is zero and cannot be used as synthetic DIC.
-3. Native substep-4 peak displacement is missing at the three locked
-   first-detect cycles.
+## P1 required outputs — explicit transition pairs
 
-This request only fills those state-export gaps. It does not change the FEM
-model and does not request PIDL training.
+Each pair has one source state and one target state. Preserve both rows in the
+index; do not collapse them into a single `state_label`.
 
-## Locked event table
+| pair ID | role | source cycle | source substep | load factor | state timing | semantic class | required fields |
+|---|---|---:|---:|---:|---|---|---|
+| `u011_c121s5_to_c122s4` | input | c121 | s5 | ~0.00 | post-convergence, post-commit | `transition-input` | `d_node`, committed fatigue/history fields, mesh/index metadata |
+| `u011_c121s5_to_c122s4` | target | c122 | s4 | 1.00 | post-convergence, post-commit | `transition-target` | reference to the complete P0 c122/s4 packet |
+| `u012_c082s5_to_c083s4` | input | c82 | s5 | ~0.00 | post-convergence, post-commit | `transition-input` | `d_node`, committed fatigue/history fields, mesh/index metadata |
+| `u012_c082s5_to_c083s4` | target | c83 | s4 | 1.00 | post-convergence, post-commit | `transition-target` | reference to the complete P0 c83/s4 packet |
+| `u013_c058s5_to_c059s4` | input | c58 | s5 | ~0.00 | post-convergence, post-commit | `transition-input` | `d_node`, committed fatigue/history fields, mesh/index metadata |
+| `u013_c058s5_to_c059s4` | target | c59 | s4 | 1.00 | post-convergence, post-commit | `transition-target` | reference to the complete P0 c59/s4 packet |
 
-| Umax | case directory | causal damage source | peak displacement target | confirmation excluded |
-|---:|---|---|---|---|
-| 0.11 | `u011/SENS_hard5_u011_eta0_canonical_v1/` | c121, substep 5, unloaded post-commit | c122, substep 4, load factor 1.00 | c125 |
-| 0.12 | `u012/SENS_hard5_u012_eta0_formal_pidl_native_q4_v1/` | **c82, substep 5, unloaded post-commit** | c83, substep 4, load factor 1.00 | c86 |
-| 0.13 | `u013/SENS_hard5_u013_eta0_canonical_v1/` | c58, substep 5, unloaded post-commit | c59, substep 4, load factor 1.00 | c62 |
+For `committed fatigue/history fields`, export the native retained arrays and
+their native names/shapes needed to identify `history_vars_old`; additionally
+provide `alpha_bar_elem` and `f_alpha_elem` if those are the existing canonical
+reductions. Do not fabricate a reduction that the original solver did not
+store.
 
-The first-detect cycles are fixed at `122/83/59`. Do not replace them with
-confirmation cycles `125/86/62` and do not redefine failure from the new
-exports.
+U0.12 c82/s5 complete nodal damage is currently missing. `c83/s5` cannot be
+used to fill it, and c82 nodal damage must not be approximated from `d_elem`.
+If exact P1 U0.12 data is required, it must be captured by an exact canonical
+replay that reaches and commits c82/s5 before continuing to c83/s4.
 
-## Source archive
+## Source archive and solver identity
 
-Use only the existing matched family:
+Use only the matched July Hard-5 family:
 
 ```text
 OneDrive/.../griphfith/
   Hard5_eta0_5step_Umax_011_012_013_20260729/
 ```
 
-The retained load factors are:
+Preserve the exact completed-case physics, initialization and ordering. Do not
+alter AMOR/AT1, eta, fatigue law, tolerances, boundary conditions, Umax, load
+cadence, commit order or event detector.
 
-```text
-substep 1  0.25
-substep 2  0.50
-substep 3  0.75
-substep 4  1.00  <- peak state requested
-substep 5  0.00  <- unloaded prior-cycle damage requested
-```
+The replay origin is canonical `c0/state0` unless Windows can prove that a
+retained checkpoint contains the complete committed solver state required to
+continue exactly. A damage-only VTK is not a complete restart checkpoint.
 
-Preserve the exact completed-case physics, mesh and ordering. Do not alter
-AMOR/AT1, eta, fatigue law, tolerances, boundary conditions, Umax, load cadence
-or event detector.
+## Existing capture code that may be reused
 
-## Execution order
+The following mechanisms may be reused after source/provenance inspection:
 
-1. Inspect existing checkpoints/native staging/state files first.
-2. If the requested state can be exported from an existing checkpoint, export
-   it without rerunning the trajectory.
-3. If a state was never retained, replay only from the nearest verified
-   checkpoint through the requested cycle in a fresh output directory.
-4. Never overwrite the canonical case directories.
-5. If exact recovery is impossible, stop and report which state/checkpoint is
-   missing. Do not fill c82 nodal damage by interpolating `d_elem`.
+- original solver per-step VTK output;
+- the s4 peak export logic used for `peak_load_c1.vtk`;
+- `phase_field.audit.capture_peak_state`;
+- toy-road substep capture/export mechanism.
 
-## Required arrays
+Toy-road code may contribute capture mechanics only. Toy-road states, outputs,
+manifests or numerical results are not July Hard-5 canonical data and must not
+be copied into this package as physical payloads.
 
-Create one common mesh file:
+## Required common mesh and state index
+
+Create one common mesh payload:
 
 ```text
 mesh_geometry.mat or mesh_geometry.npz
   node_coords             [Nnode, 2 or 3]
   connectivity_q4         [Nelem, 4]
-  node_ids                [Nnode] if file ordering is not canonical
-  element_ids             [Nelem] if file ordering is not canonical
+  node_ids                [Nnode] if ordering is not self-evident
+  element_ids             [Nelem] if ordering is not self-evident
 ```
 
-For each Umax export the two state classes:
+Expected mesh size is 86,756 nodes and 86,408 Q4 cells. Verify hashes rather
+than relying only on counts.
+
+`state_index.csv` must contain at least:
 
 ```text
-prior_unloaded_damage
-  d_node                  [Nnode]
-  physical_cycle
-  substep = 5
-  load_factor = 0.0
-  state_label = cNNN_unloaded_post_commit
-
-event_peak_displacement
-  u_node                  [Nnode, 2 or 3]
-  physical_cycle
-  substep = 4
-  load_factor = 1.0
-  imposed_Umax
-  state_label = cNNN_peak_post_commit
+output_id,pair_id,pair_role,semantic_class,umax,
+source_cycle,source_substep,load_factor,state_timing,
+array_file,required_fields_present,node_count,element_count,
+mesh_sha256,source_kind,source_checkpoint,source_case,export_timestamp
 ```
 
-If it is essentially free to include them, also export `d_node` at the peak
-state, top/bottom boundary node IDs and reaction at substep 4. These are audit
-fields, not additional scientific targets.
+Allowed semantic labels:
 
-Do not substitute:
+```text
+same-state
+transition-input
+transition-target
+```
 
-- unloaded `u_node` from substep 5;
-- element-centred damage for c82 nodal damage;
-- a monotonic elastic run with no fatigue history;
-- confirmation-cycle fields;
-- remeshed or reordered arrays without an explicit index map.
+Allowed `source_kind` labels:
+
+```text
+direct_existing_export
+checkpoint_replay
+canonical_state0_replay
+```
+
+Do not leave timing or source kind implicit.
 
 ## Preferred package
 
 ```text
-hard5_first_detect_peak_state_export_20260817/
+hard5_first_detect_state_semantics_export_20260817/
   README.md
   state_index.csv
   mesh_geometry.mat
-  u011/
-    c121_unloaded_post_commit_damage.mat
-    c122_peak_post_commit_displacement.mat
-  u012/
-    c082_unloaded_post_commit_damage.mat
-    c083_peak_post_commit_displacement.mat
-  u013/
-    c058_unloaded_post_commit_damage.mat
-    c059_peak_post_commit_displacement.mat
+  same_state_peak/
+    u011_c122_s4_same_state.mat
+    u012_c083_s4_same_state.mat
+    u013_c059_s4_same_state.mat
+  transition_pair/
+    u011_c121_s5_input.mat
+    u012_c082_s5_input.mat
+    u013_c058_s5_input.mat
+    # targets reference the matching same_state_peak files
   provenance/
     source_paths.txt
     source_commit.txt
     source_file_hashes.txt
+    capture_code_paths_and_hashes.txt
     export_or_replay_commands.txt
     runtime_versions.txt
-    replay_logs/                 # only if replay was necessary
+    replay_plan.md
+    replay_logs/                 # only after replay is separately authorized
   SHA256SUMS
 ```
 
-`state_index.csv` columns:
+## Audit and replay-planning sequence
 
-```text
-umax,physical_cycle,substep,load_factor,state_label,array_file,
-node_count,element_count,mesh_sha256,source_kind,source_checkpoint,
-source_case,export_timestamp
-```
+1. Audit existing direct exports, complete restart checkpoints and capture
+   code for all six state times.
+2. Fill a provisional `state_index.csv` with `available`, `missing`, or
+   `incomplete_restart_state` for each required output.
+3. Propose the minimum exact replay range separately for:
+   - P0 same-state peak packets only;
+   - P0 plus all P1 transition inputs.
+4. State whether each replay must begin from canonical c0/state0 or can begin
+   from a verified complete checkpoint.
+5. Do not launch replay until the resulting plan is posted in the Windows-FEM
+   outbox and its scope is confirmed.
+6. Never overwrite canonical case directories; every replay must use a fresh
+   output root.
 
-Use `source_kind=direct_export` or `checkpoint_replay`; do not leave it
-implicit.
+## Acceptance checks
 
-## Acceptance checks before handoff
-
-1. All three cases use the same coordinate/connectivity hashes, expected
-   `Nnode=86756` and `Nelem=86408`.
-2. Every requested array is finite and its first dimension matches the mesh.
-3. `d_node` lies in `[0,1]`, up to explicitly reported roundoff only.
-4. Each peak row is substep 4 with `load_factor=1.0`.
-5. On top-edge nodes, peak `u_y` matches the declared Umax within the solver's
-   export precision; report max and mean explicitly.
-6. Peak displacement is nonzero and the corresponding unloaded displacement
-   is not accidentally shipped in its place.
-7. The causal source cycles are exactly c121/c82/c58 and event targets exactly
-   c122/c83/c59.
-8. No c125/c86/c62 confirmation field enters the requested package.
-9. `SHA256SUMS` covers every payload, state index, README and provenance file.
-10. If replay is used, report the nearest checkpoint, replay start/end cycles,
-    command, source commit/dirty state, runtime version and a non-perturbation
-    comparison against at least one already retained anchor.
+1. `c0/state0` is labelled zero-load recovered/reset initialization; c1 is
+   labelled the first computed loading cycle.
+2. Every row records source cycle, source substep, load factor, state timing,
+   semantic class and required fields.
+3. P0 rows contain `u_node`, `d_node` and `psi_raw_peak_elem` from exactly the
+   same cN/s4 post-commit state.
+4. P1 inputs are exactly c121/s5, c82/s5 and c58/s5; targets are explicit
+   references to c122/s4, c83/s4 and c59/s4.
+5. No cN/s5 field is relabelled as cN/s4, and no c83 field substitutes c82.
+6. No c125/c86/c62 confirmation state enters the requested package.
+7. Every array is finite, matches the indexed mesh and preserves native
+   precision unless a documented equivalence check authorizes otherwise.
+8. `d_node` lies in `[0,1]`, up to explicitly reported solver roundoff only.
+9. Peak top-edge `u_y` matches Umax 0.11/0.12/0.13 within export precision.
+10. Common coordinate/connectivity hashes match across the three cases.
+11. `SHA256SUMS` covers every payload, index, README and provenance file.
+12. Any replay includes the exact origin state, commit/dirty status, runtime,
+    command, capture-code hashes and a non-perturbation check against a retained
+    canonical anchor.
 
 ## Experiment gate
 
-- **Mechanism question**: does an exact FEM peak-displacement observation
-  contain enough near-tip information for a crack-enriched representation to
-  outperform a plain displacement-gradient representation at first detect?
-- **Claim changed if successful later on Mac**: XDEM-style enrichment remains
-  a viable displacement-to-energy observation bridge within this matched
-  three-Umax family.
-- **Claim changed if unsuccessful later on Mac**: stop the enrichment route;
-  do not escalate to KAN/RBF/LoRA or PIDL retraining.
-- **Cheaper diagnostic first**: completed. Archive audit and fixed-damage
-  micro-solve found the exact missing states; no production sweep is needed.
-- **Minimal output asset**: the six indexed state exports, common mesh,
-  provenance and hashes.
+- **Mechanism question**: at one exact first-detect peak state, does a
+  crack-enriched representation recover energetic localization from nodal
+  displacement better than a plain displacement-gradient representation?
+- **Primary claim changed later on Mac**: only the P0 same-state packet can
+  support the observation-representation diagnostic.
+- **Secondary claim**: P1 may support a transition-input/target diagnostic but
+  cannot be cited as a same-state displacement-to-energy mapping.
+- **Claim if unsuccessful**: stop the enrichment route; do not escalate to
+  KAN/RBF/LoRA or PIDL retraining.
+- **Cheaper diagnostic first**: audit direct exports, checkpoints and capture
+  paths before replay.
+- **Minimal output asset now**: provisional state index plus a minimum replay
+  plan. No FEM replay is authorized by this correction alone.
 - **Registry destination**: reply under Request 28 in
-  `docs/handovers/windows_fem_outbox.md`. Mac will validate the package and
-  update the diagnostic decision; Windows-FEM should not make a PIDL or paper
-  claim from the export alone.
-- **Decision**: export/replay only the missing states; no broader FEM sweep.
+  `docs/handovers/windows_fem_outbox.md`.
+- **Decision**: audit and plan first.
 
-## Outbox response requested
+## Outbox response requested before replay
 
-Please report one of:
+Please report:
 
 ```text
-COMPLETE
-  package path
-  direct export vs checkpoint replay per state
-  state_index and SHA256 verification result
-  mesh/node/cell counts and hashes
-  top-edge peak-u audit for all Umax
+AUDIT_COMPLETE
+  availability of each P0 and P1 row
+  exact source/export/checkpoint for every available row
+  missing committed solver state for every unavailable row
+  minimum replay start/end for P0 only
+  minimum replay start/end for P0+P1
+  whether replay must start from canonical c0/state0
+  capture mechanism selected and its source/hash
+  proposed fresh output roots
 
 BLOCKED
-  exact missing checkpoint/state
+  exact missing source/checkpoint/capture path
   checks already attempted
-  whether a minimal replay from an earlier checkpoint is possible
-  estimated replay scope, without launching it unless it stays within this request
+  why an exact canonical replay cannot be constructed
 ```

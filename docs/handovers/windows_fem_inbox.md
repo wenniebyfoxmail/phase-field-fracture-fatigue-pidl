@@ -27,40 +27,60 @@
 
 ## Active Requests
 
-## 2026-08-17 · Request 28: first-detect causal damage and peak-displacement export
+## 2026-08-17 · Request 28: first-detect same-state and transition-pair export
 
-**Goal**: complete the minimum FEM state package needed for the frozen
-XDEM-inspired enriched-vs-plain observation diagnostic. Preserve the locked
-`first_detect` events U0.11 c122, U0.12 c83 and U0.13 c59; do not substitute
-the `+3` confirmation cycles.
+**Goal**: audit and plan the minimum exact FEM export needed for two explicitly
+separate products: (P0) same-state event-peak packets and (P1) cross-cycle
+transition pairs. Preserve first-detect U0.11 c122, U0.12 c83 and U0.13 c59;
+do not substitute the `+3` confirmation cycles.
 
 **Full forwardable note**:
 `docs/handovers/windows_griphfith_request_28_first_detect_peak_state_export_20260817.md`.
 
-**INPUT file**: reuse the exact completed Hard5 eta0 5-step cases under
-`Hard5_eta0_5step_Umax_011_012_013_20260729`. Prefer checkpoint/state export;
-if an asset was never retained, replay only from the nearest verified
-checkpoint in a fresh directory. No physics, tolerance, mesh, cadence or event
-criterion changes.
+**Time semantics**: c0/state0 is the zero-load recovered state after fatigue
+history reset; c1 is the first computed cycle. Every cycle is
+`s1=.25 -> s2=.50 -> s3=.75 -> s4=1.00 peak -> s5~=0 unload`, and every
+converged substep immediately commits `p_field_old` and `history_vars_old`.
+Damage is irreversible. `fields_<cycle>_005.vtk` is that cycle's committed s5
+state.
+
+**INPUT file**: audit the exact completed Hard5 eta0 5-step cases under
+`Hard5_eta0_5step_Umax_011_012_013_20260729`, their complete checkpoints and
+capture paths. Do not replay until Windows reports the minimum exact range for
+P0 and for P0+P1. No physics, initialization, tolerance, mesh, cadence, commit
+order or event-criterion changes.
 
 **Mesh**: exact shared native Q4 mesh, expected 86,756 nodes and 86,408 cells;
 no remesh or reordering.
 
-**Expected outputs**: one self-contained handoff with c121/c82/c58 unloaded
-post-commit nodal damage and c122/c83/c59 substep-4 peak post-commit nodal
-displacement, plus state index, mesh/connectivity, provenance, logs and
-SHA256SUMS. U0.12 c82 nodal damage and all three peak displacements are the
-currently missing assets.
+**Expected outputs**:
 
-**Acceptance criteria**: state index proves `source=first_detect-1` and
-`target=first_detect`; peak rows use substep 4/load factor 1.0 and top-edge
-`u_y` matches 0.11/0.12/0.13; mesh hashes match across cases; all arrays are
-finite; damage lies in `[0,1]`; no confirmation state is used. If exact state
-recovery is impossible, report the blocker instead of approximating nodal
-damage from element data.
+- P0 `same-state`: c122/s4, c83/s4 and c59/s4 post-commit packets, each with
+  `u_node + d_node + psi_raw_peak_elem` from the same cycle/substep.
+- P1 `transition-pair`: c121/s5 -> c122/s4, c82/s5 -> c83/s4 and
+  c58/s5 -> c59/s4, indexed as separate input/target states rather than one FEM
+  snapshot.
+- First return a provisional state index and replay plan; payload replay is not
+  authorized by this correction alone.
 
-**Priority**: high, export-only diagnostic. This unlocks a frozen comparison;
-it does not authorize PIDL retraining or a new architecture sweep.
+**Non-substitution rule**: c83/s5 cannot replace missing c82/s5 because it has
+already undergone the full c83 damage/fatigue evolution. Do not infer c82 from
+c83, and do not approximate c82 nodal damage from `d_elem`.
+
+**Reusable code boundary**: original per-step VTK, `peak_load_c1.vtk` s4
+logic, `phase_field.audit.capture_peak_state`, and toy-road substep capture may
+be reused as capture mechanisms. Toy-road numerical results are not July
+Hard5 canonical data.
+
+**Acceptance criteria**: every output row declares source cycle, source
+substep, state timing, semantic class and required fields. Same-state packets
+must use cN/s4 `u+d+energy` together. Transition pairs must retain both indexed
+states. Mesh hashes must match; no confirmation state or later-VTK
+substitution is allowed.
+
+**Priority**: high semantics audit. Reply in the outbox with the minimum replay
+plan before launching. This does not authorize PIDL retraining or a new
+architecture sweep.
 
 ## 2026-07-20 · Request 26: matched eta0 multi-Umax trajectories and sensor-ready exports
 
