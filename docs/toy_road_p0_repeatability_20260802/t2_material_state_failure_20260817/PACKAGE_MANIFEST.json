@@ -1,0 +1,108 @@
+{
+  "artifact_aggregate_sha256": "889fad89502d402f6caeb061baf267298e8c73a4b117d0c1bc1803688c8ca73b",
+  "artifact_file_count": 19,
+  "artifacts": [
+    {
+      "bytes": 1258,
+      "path": "artifacts/T2_material_state.stderr.log",
+      "sha256": "59a4348314a5e3ca0970ab17f548b3d2f46a95d0ac24bf7805e6b606aec6738f"
+    },
+    {
+      "bytes": 2642517,
+      "path": "artifacts/T2_material_state.stdout.log",
+      "sha256": "56c66197b2857f3364c85426b5570bef9c3b4b37a6a3789e74bac8e0e5c80736"
+    },
+    {
+      "bytes": 6,
+      "path": "artifacts/launcher.pid",
+      "sha256": "1d359897e931f6d3f493ae8bbf25f93d1f541d796a27146c79c377d9c4bde3d6"
+    },
+    {
+      "bytes": 5910288,
+      "path": "artifacts/output/INPUT_SNAPSHOT.json",
+      "sha256": "51da49657f7c6fb2199dde97cc36f26dcba30fea2ff39ee64adf6295c999d9ae"
+    },
+    {
+      "bytes": 653,
+      "path": "artifacts/output/RUNTIME_RECEIPT.json",
+      "sha256": "fb1b4f094037c3ed5ab3386a3e06ab2d81922d541dd4c254a57edd049a7c8add"
+    },
+    {
+      "bytes": 232,
+      "path": "artifacts/output/RUN_RESULT.json",
+      "sha256": "e93ae2d9f534f05bc6c18bc8273a79c999776e8dd44a8b21632928416cdc146d"
+    },
+    {
+      "bytes": 2214930,
+      "path": "artifacts/output/mesh_geometry.mat",
+      "sha256": "7bfa725985cf62ffd64d32b5086a9ba8bc552b5273f934c57a4e1f8eb2f1746f"
+    },
+    {
+      "bytes": 142964,
+      "path": "artifacts/output/qualification/C5_STAGGER_TRACE.csv",
+      "sha256": "77c7558893d4aca7eb0d3600ee62481aa2d76aec6ee6f9564f1f725946782a31"
+    },
+    {
+      "bytes": 203079,
+      "path": "artifacts/output/state0_analysis.mat",
+      "sha256": "13610da2a6016eee70d872ee483c03d75ca902ae6b99f478cfde80a181e622b5"
+    },
+    {
+      "bytes": 39942581,
+      "path": "artifacts/output/substeps/cycle_0001.mat",
+      "sha256": "0aba3b287c1fbb876e8e4da1d96052ec319eaf2f6a4de69db44f2fad5d7f6f94"
+    },
+    {
+      "bytes": 39999025,
+      "path": "artifacts/output/substeps/cycle_0002.mat",
+      "sha256": "22561c17a310e475a634f3a3a691cad6bb50ef0d7340ad1304890d9d577ba848"
+    },
+    {
+      "bytes": 40038461,
+      "path": "artifacts/output/substeps/cycle_0003.mat",
+      "sha256": "709cf18698ac8529a92990f87bdd5bcebd32e25969ed32650635824431a6590b"
+    },
+    {
+      "bytes": 40093047,
+      "path": "artifacts/output/substeps/cycle_0004.mat",
+      "sha256": "f20459eae410b5cd80ef88ce55f7bdaf8e921f043fccb43207af4ee5a4dfb40e"
+    },
+    {
+      "bytes": 19064,
+      "path": "artifacts/receipts/.0335ab1604604ce7b5a2337373897d28.T1_initial_defect.terminal-auth.json",
+      "sha256": "f1f10b3e4823137358330b600df5bdab5b3565dbbef8ae009d621ce6cc790b47"
+    },
+    {
+      "bytes": 2414,
+      "path": "artifacts/receipts/.0335ab1604604ce7b5a2337373897d28.runtime-measurement.json",
+      "sha256": "531d8333e0aa6872ad8b82cbc59d43465befa4077ca8953d3c0522e393267597"
+    },
+    {
+      "bytes": 2681,
+      "path": "artifacts/receipts/T2_EXECUTION_INPUT_LOCK.json",
+      "sha256": "a7ccff1083bd0c86a7111a8e5a6256a5836688602e3dd269ed77a53c4cbe5869"
+    },
+    {
+      "bytes": 1185,
+      "path": "artifacts/receipts/T2_LAUNCH_RECEIPT.json",
+      "sha256": "e4f76858e8552a1769c360e5651bee818d83f08068dc3841f8b3490f85349162"
+    },
+    {
+      "bytes": 2690,
+      "path": "artifacts/receipts/T2_PREFLIGHT_LOCK.json",
+      "sha256": "d232a86601629943fc4ac8fc0a601c710650da83aa306cd11903614c0667a471"
+    },
+    {
+      "bytes": 1169,
+      "path": "artifacts/receipts/T2_PREFLIGHT_RECEIPT.json",
+      "sha256": "03ff04c52be51ba9f2d657f3d4b43d20f1ebf4aef0bf7bcdda57ee18f54ce0c9"
+    }
+  ],
+  "case_id": "T2_material_state",
+  "excluded_predecessor_reason": "bound by authenticated terminal/package hashes; bytes are not duplicated",
+  "excluded_predecessor_tree": "evidence/T1_initial_defect",
+  "generated_at_utc": "2026-08-17T12:57:50.139308Z",
+  "schema_version": "toy_road_t2_immutable_failure_package_v1",
+  "source_run_root": "C:\\q4diag\\toy-road-t2-production-7c56ff3-run1",
+  "status": "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE_AT_C5_S4"
+}

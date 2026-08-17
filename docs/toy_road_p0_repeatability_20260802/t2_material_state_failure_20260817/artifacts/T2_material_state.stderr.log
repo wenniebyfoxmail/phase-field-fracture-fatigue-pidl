@@ -1,0 +1,25 @@
+{Error using solve_toy_road_family_case>localRunCycles (line 97)
+Stagger convergence failed at cycle 5 substep 4.
+
+Error in solve_toy_road_family_case (line 6)
+    result = localRunCycles(context);
+             ^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_toy_road_driver_core (line 31)
+result = dependencies.solve_family_case(context);
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in main_toy_road_family_case (line 13)
+result = run_toy_road_driver_core(request,dependencies);
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_toy_road_runtime_bridge (line 90)
+main_toy_road_family_case;
+^^^^^^^^^^^^^^^^^^^^^^^^^
+} 
+ERROR: MATLAB error Exit Status: 0x00000001
+MATLAB family case failed with exit code 1.
+At C:\q4diag\phase-field-fracture-fatigue-pidl-toy-road-impl\producer_handoffs\toy_road_p0_repeatability_20260803\launc
+h_toy_road_family_case.ps1:1053 char:17
++ ...             throw "MATLAB family case failed with exit code $LASTEXIT ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (MATLAB family c...th exit code 1.:String) [], RuntimeException
+    + FullyQualifiedErrorId : MATLAB family case failed with exit code 1.
+ 

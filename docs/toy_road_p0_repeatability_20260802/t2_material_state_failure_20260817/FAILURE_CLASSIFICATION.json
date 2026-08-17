@@ -1,0 +1,21 @@
+{
+  "automatic_retry_performed": false,
+  "c5_trace_rows": 1000,
+  "case_id": "T2_material_state",
+  "completed_cycle_shards": 4,
+  "failure_cycle": 5,
+  "failure_layer": "coupled_damage_fixed_point",
+  "failure_substep": 4,
+  "final_consecutive_stagger_delta": 0.017208937431083808,
+  "final_displacement_residual": 3.1270608912044176e-05,
+  "final_primal_feasibility": 0.0,
+  "final_projected_phase_kkt": 6.471332646418304e-06,
+  "fixed_point_tolerance": 0.001,
+  "minimum_consecutive_stagger_delta": 0.004144143195156769,
+  "monitor_energy_role": "auxiliary_not_fatigue_consistent_objective",
+  "newton_failure": false,
+  "schema_version": "toy_road_t2_failure_classification_v1",
+  "serial_chain_t3_status": "PAUSED",
+  "stagger_iteration_cap": 1000,
+  "status": "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE_AT_C5_S4"
+}

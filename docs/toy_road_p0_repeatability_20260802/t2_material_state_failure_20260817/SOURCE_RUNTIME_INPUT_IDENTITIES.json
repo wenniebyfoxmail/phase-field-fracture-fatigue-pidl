@@ -1,0 +1,59 @@
+{
+  "input": {
+    "execution_input_lock_sha256": "a7ccff1083bd0c86a7111a8e5a6256a5836688602e3dd269ed77a53c4cbe5869",
+    "input_snapshot_sha256": "51da49657f7c6fb2199dde97cc36f26dcba30fea2ff39ee64adf6295c999d9ae",
+    "material_Gc": 0.008,
+    "mesh_sha256": "d9ad5545e42e4d700600a69f18b625f90456253295095fdf644c55b7968b068b",
+    "physical_input_projection_sha256": "83fa354911b091d2f272bfbec82b98f40a04c8dfbd688c2f57b8391c6fe34413"
+  },
+  "predecessor": {
+    "c5_receipt_sha256": "13e3dfc46d877704f56410970685995e7cd05efac037e9003186847013cb45a5",
+    "case_id": "T1_initial_defect",
+    "package_snapshot_sha256": "1c282de499ca7060094ac3139cf18a7f80baff844587054d1a43a89372479771",
+    "terminal_auth_receipt_sha256": "f1f10b3e4823137358330b600df5bdab5b3565dbbef8ae009d621ce6cc790b47",
+    "terminal_manifest_sha256": "8038149bbfc118b9cd98bc73c630e2dfbbdea1b229b284f0023ab4050c4e9601"
+  },
+  "producer": {
+    "case_physics_contract_sha256": "a9210c5c52a3063b04cc08a7e8ec16acf98dd8c243c304b5fecdf9040b00d7b6",
+    "family_contract_sha256": "a53cd26a457801fe87cce9afea19ca1ea21e1009567b06fb3bb813fe7c3279d2",
+    "source_commit": "7c56ff383187cdee2f45e1b15d707f148f386302",
+    "source_manifest_sha256": "61e12721da19ce37c2f065804d2a151b6bd80981196687f6f3fe292dca48b89e"
+  },
+  "runtime": {
+    "binary_sha256": {
+      "AMOR": "e200dbb757172c3927bcd72f4f093c5a6b17dab52fcbd72505e34e0434924b9a",
+      "AT1_HISTORY_FATIGUE": "3d9989b7fcc89ea36f1de196cad86cfcef3406c7365ac82bd6c58280a0cc9298",
+      "cholmod2": "86a2f15543eda1f7223a1733d935d37e9e2f4f2c2d8db3c4adc2c0f675c27329",
+      "initial": "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db"
+    },
+    "matlab": {
+      "absolute_path_order": [
+        "C:\\q4diag\\toy-road-t2-production-7c56ff3-run1\\.toy-road-runtime-overlay-0335ab1604604ce7b5a2337373897d28",
+        "C:\\q4diag\\phase-field-fracture-fatigue-pidl-toy-road-impl\\producer_handoffs\\toy_road_p0_repeatability_20260803",
+        "C:\\q4diag\\griphfith-pf-rebuild-355d4c83\\Sources",
+        "C:\\SuiteSparse\\SuiteSparse-dev\\CHOLMOD\\MATLAB",
+        "C:\\SuiteSparse\\SuiteSparse-dev\\AMD\\MATLAB",
+        "C:\\SuiteSparse\\SuiteSparse-dev\\COLAMD\\MATLAB",
+        "C:\\SuiteSparse\\SuiteSparse-dev\\CCOLAMD\\MATLAB",
+        "C:\\SuiteSparse\\SuiteSparse-dev\\CAMD\\MATLAB"
+      ],
+      "blas": "Intel(R) oneAPI Math Kernel Library Version 2024.1-Product Build 20240215 for Intel(R) 64 architecture applications (CNR branch auto)",
+      "computer": "PCWIN64",
+      "executable_sha256": "322158960d70ea723d7bf6e5bb06f6b058b1489a85624d6c6a2be83be4944c2d",
+      "lapack": "Intel(R) oneAPI Math Kernel Library Version 2024.1-Product Build 20240215 for Intel(R) 64 architecture applications (CNR branch auto) supporting Linear Algebra PACKage (LAPACK 3.11.0)",
+      "release": "R2025b",
+      "update": "Update 5",
+      "version": "25.2.0.3177638"
+    },
+    "runtime_lock_sha256": "a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7",
+    "thread_settings": {
+      "MKL_DYNAMIC": "FALSE",
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "thread_settings_source": "launch_toy_road_family_case.ps1",
+    "thread_settings_source_sha256": "34a792eef1cc31d2e9d99ec4fa4985d4cfea2e39e16ab7203f01bfa6e1b46f18"
+  },
+  "schema_version": "toy_road_t2_failure_identity_v1"
+}
