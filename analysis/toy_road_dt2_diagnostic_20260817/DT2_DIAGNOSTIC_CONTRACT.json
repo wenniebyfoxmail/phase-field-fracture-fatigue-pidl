@@ -1,0 +1,25 @@
+{
+  "schema_version": "toy_road_dt2_diagnostic_contract_v1",
+  "authorization_scope": "diagnostic_only_nonproduction",
+  "case_id": "D-T2_c5_s4_iterate_dynamics",
+  "base_case_id": "T2_material_state",
+  "base_source_commit": "7c56ff383187cdee2f45e1b15d707f148f386302",
+  "original_t2_status": "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE_AT_C5_S4",
+  "observer_only": true,
+  "solver_modified": false,
+  "convergence_thresholds_modified": false,
+  "fixed_point_tolerance": 0.001,
+  "stagger_iteration_cap": 1000,
+  "stop_boundary": "terminal c5/s4 result only",
+  "serial_chain_t3_authorized": false,
+  "captured_fields": [
+    "d_0_to_d_1000",
+    "u_1_to_u_1000",
+    "d_lb",
+    "history_pre",
+    "active_u_dofs",
+    "active_d_dofs",
+    "traction"
+  ],
+  "fatigue_objective_policy": "reassemble offline from saved iterates and locked history; monitor tot_en is auxiliary only"
+}
