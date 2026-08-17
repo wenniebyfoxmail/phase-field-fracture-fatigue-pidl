@@ -53,6 +53,24 @@ trajectory passes them:
 - `c122/c83/c59 s4`: first-detect peak displacement plus same-state damage and
   available history/process-zone fields, labelled `same-state peak`.
 
+Also capture the following **in-path early-origin s4 peaks**; these add payload
+only and do not extend any replay:
+
+| case | early-origin s4 cycles |
+|---|---|
+| U0.11 | c10, c15, c20, c40 |
+| U0.12 | c13, c18, c20, c23, c40 |
+| U0.13 | c9, c14, c19, c20, c40 |
+
+For every early-origin row, require at minimum `u_node`, `d_node`, cycle,
+substep, load factor and mesh/index identity. If the tested capture hook can
+write them without changing solver state, retain the same committed
+history/process-zone payload used by the c1 smoke (`alpha_bar`, raw/active
+driver, strain and full GP history). Label every row `same-state early-origin
+peak`. These cycles correspond to the frozen retrospective rules `c*`,
+`c*+5`, `c*+10`, c20 and c40; they are diagnostic inputs, not independently
+validated deployment triggers.
+
 Use the proposed fresh roots only if they are still absent:
 
 ```text

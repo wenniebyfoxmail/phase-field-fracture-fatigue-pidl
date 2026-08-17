@@ -21,6 +21,13 @@ not replay cycles. Keep the same-state peak and cross-cycle transition-input
 semantics separate. All original acceptance criteria and no-substitution rules
 remain binding.
 
+The same authorized replay must additionally capture the early-origin s4 peak
+states passed in trajectory: U0.11 c10/c15/c20/c40; U0.12
+c13/c18/c20/c23/c40; U0.13 c9/c14/c19/c20/c40. At minimum export same-state
+`u_node` and `d_node` with timing/mesh identity; retain the full tested capture
+payload when non-perturbing. These extra captures add no replay cycles and are
+required for the displacement-POD/physical-coordinate early first-detect gate.
+
 ## Why this is needed
 
 The Taobo Phase-A diagnostic established that event-time mechanics must be
