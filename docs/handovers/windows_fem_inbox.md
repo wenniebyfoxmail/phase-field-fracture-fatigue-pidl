@@ -27,6 +27,41 @@
 
 ## Active Requests
 
+## 2026-08-17 · Request 28: first-detect causal damage and peak-displacement export
+
+**Goal**: complete the minimum FEM state package needed for the frozen
+XDEM-inspired enriched-vs-plain observation diagnostic. Preserve the locked
+`first_detect` events U0.11 c122, U0.12 c83 and U0.13 c59; do not substitute
+the `+3` confirmation cycles.
+
+**Full forwardable note**:
+`docs/handovers/windows_griphfith_request_28_first_detect_peak_state_export_20260817.md`.
+
+**INPUT file**: reuse the exact completed Hard5 eta0 5-step cases under
+`Hard5_eta0_5step_Umax_011_012_013_20260729`. Prefer checkpoint/state export;
+if an asset was never retained, replay only from the nearest verified
+checkpoint in a fresh directory. No physics, tolerance, mesh, cadence or event
+criterion changes.
+
+**Mesh**: exact shared native Q4 mesh, expected 86,756 nodes and 86,408 cells;
+no remesh or reordering.
+
+**Expected outputs**: one self-contained handoff with c121/c82/c58 unloaded
+post-commit nodal damage and c122/c83/c59 substep-4 peak post-commit nodal
+displacement, plus state index, mesh/connectivity, provenance, logs and
+SHA256SUMS. U0.12 c82 nodal damage and all three peak displacements are the
+currently missing assets.
+
+**Acceptance criteria**: state index proves `source=first_detect-1` and
+`target=first_detect`; peak rows use substep 4/load factor 1.0 and top-edge
+`u_y` matches 0.11/0.12/0.13; mesh hashes match across cases; all arrays are
+finite; damage lies in `[0,1]`; no confirmation state is used. If exact state
+recovery is impossible, report the blocker instead of approximating nodal
+damage from element data.
+
+**Priority**: high, export-only diagnostic. This unlocks a frozen comparison;
+it does not authorize PIDL retraining or a new architecture sweep.
+
 ## 2026-07-20 · Request 26: matched eta0 multi-Umax trajectories and sensor-ready exports
 
 **Goal**: build the smallest internally matched FEM trajectory family needed to test observed-state next-cycle forecasting, c87-like transition assimilation, and leave-one-physical-trajectory-out validation. The scientific question is whether changing only the applied cyclic amplitude produces enough transition diversity for a model to learn/identify late fracture-regime changes without mixing incompatible FEM families.
