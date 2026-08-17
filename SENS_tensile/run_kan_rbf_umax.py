@@ -13,6 +13,8 @@ import os
 import sys
 from pathlib import Path
 
+import numpy as np
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -21,7 +23,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--epochs", type=int, default=300)
     parser.add_argument("--mesh-file", default="meshed_geom_fem_soft_hist0.msh")
-    parser.add_argument("--tag", default="kanUV_rbfAlpha_micro_v1")
+    parser.add_argument("--tag", default="kanUV_rbfAlpha_fiveStep_micro_v1")
     parser.add_argument("--force-cpu", action="store_true")
     args = parser.parse_args()
 
@@ -72,6 +74,10 @@ def main() -> None:
     config.optimizer_dict["n_epochs_LBFGS"] = 0
     config.fatigue_dict["disp_max"] = float(args.umax)
     config.fatigue_dict["n_cycles"] = int(args.n_cycles)
+    factors = np.asarray([0.25, 0.50, 0.75, 1.00, 0.00], dtype=float)
+    config.fatigue_dict["loading_type"] = "cyclic"
+    config.fatigue_dict["explicit_cycle_substeps"] = int(len(factors))
+    config.fatigue_dict["explicit_cycle_factors"] = [float(x) for x in factors]
     config.fatigue_dict["fracture_confirm_cycles"] = 3
     config.fatigue_dict["plot_every_n_cycles"] = 1
     config.fatigue_dict["element_diagnostics"] = {
@@ -82,7 +88,7 @@ def main() -> None:
         "on_fracture": True,
         "dir": "element_diagnostics",
     }
-    config.rebuild_disp_cyclic()
+    config.disp_cyclic = np.tile(factors * float(args.umax), int(args.n_cycles))
 
     tag = (
         f"kanUV_rbfAlpha_Umax{args.umax}_N{args.n_cycles}_seed{args.seed}"
