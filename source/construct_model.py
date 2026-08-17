@@ -4,7 +4,8 @@ from pff_model import PFFModel
 from material_properties import MaterialProperties
 from network import (
     NeuralNet, FourierFeatureNet, MeshGraphNet, HybridMeshGraphNet,
-    ChannelSeparatedMeshGraphNet, DamageLatentMeshGraphNet, init_xavier,
+    ChannelSeparatedMeshGraphNet, DamageLatentMeshGraphNet, KANRBFFieldNet,
+    init_xavier,
 )
 
 def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema, device,
@@ -55,7 +56,28 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
         raise ValueError("Williams, Fourier, and graph representations are mutually exclusive")
 
     # Neural network
-    if _graph_on:
+    _model_type = str(network_dict.get("model_type", "MLP")).lower()
+    if _model_type == "kan_rbf" and any((_williams_on, _fourier_on, _graph_on)):
+        raise ValueError("KAN-RBF is mutually exclusive with Williams, Fourier, and graph modes")
+
+    if _model_type == "kan_rbf":
+        _kr = network_dict.get("kan_rbf", {})
+        network = KANRBFFieldNet(
+            input_dimension=in_dim,
+            output_dimension=domain_extrema.shape[0] + 1,
+            domain_extrema=domain_extrema,
+            kan_width=int(_kr.get("kan_width", 32)),
+            kan_basis=int(_kr.get("kan_basis", 9)),
+            rbf_x_centres=int(_kr.get("rbf_x_centres", 41)),
+            rbf_y_centres=int(_kr.get("rbf_y_centres", 17)),
+            rbf_y_extent=float(_kr.get("rbf_y_extent", 0.20)),
+            rbf_sigma_x=float(_kr.get("rbf_sigma_x", 0.08)),
+            rbf_sigma_y=float(_kr.get("rbf_sigma_y", 0.035)),
+        )
+        print("[construct_model] KANRBFFieldNet enabled: "
+              f"KAN width={_kr.get('kan_width', 32)}, basis={_kr.get('kan_basis', 9)}, "
+              f"phase centres={_kr.get('rbf_x_centres', 41)}x{_kr.get('rbf_y_centres', 17)}")
+    elif _graph_on:
         if _graph_mode == 'hybrid':
             network = HybridMeshGraphNet(
                 input_dimension=in_dim,

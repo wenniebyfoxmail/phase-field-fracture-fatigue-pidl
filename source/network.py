@@ -199,6 +199,106 @@ class NeuralNet(nn.Module):
             return x
 
 
+class GaussianKANLayer(nn.Module):
+    """Small FastKAN-style layer using univariate Gaussian edge functions.
+
+    For every input coordinate, each output channel learns a weighted sum of
+    one-dimensional Gaussian basis functions.  The additive edge functions are
+    the Kolmogorov-Arnold part; this is deliberately compact for a tooling
+    micro-test and is not presented as a canonical KAN implementation.
+    """
+
+    def __init__(self, input_dimension, output_dimension, num_basis=9):
+        super().__init__()
+        if num_basis < 3:
+            raise ValueError("GaussianKANLayer requires at least three basis functions")
+        self.input_dimension = int(input_dimension)
+        self.output_dimension = int(output_dimension)
+        self.num_basis = int(num_basis)
+        centres = torch.linspace(-1.0, 1.0, self.num_basis)
+        self.register_buffer("centres", centres)
+        self.bandwidth = float(2.0 / (self.num_basis - 1))
+        self.spline_weight = nn.Parameter(
+            torch.empty(self.output_dimension, self.input_dimension, self.num_basis)
+        )
+        self.base = nn.Linear(self.input_dimension, self.output_dimension)
+        self.bias = nn.Parameter(torch.zeros(self.output_dimension))
+        nn.init.normal_(self.spline_weight, mean=0.0, std=0.03)
+
+    def forward(self, x):
+        basis = torch.exp(
+            -((x.unsqueeze(-1) - self.centres) / self.bandwidth).square()
+        )
+        spline = torch.einsum("nik,oik->no", basis, self.spline_weight)
+        return spline + self.base(x) + self.bias
+
+
+class KANRBFFieldNet(nn.Module):
+    """KAN displacement head plus a spatial Gaussian-RBF phase-field head.
+
+    The displacement head uses univariate Gaussian KAN edge functions.  The
+    phase head uses two-dimensional anisotropic RBFs concentrated around the
+    expected horizontal crack corridor.  ``FieldComputation`` still applies
+    the existing displacement boundary-condition ansatz and alpha constraint.
+    """
+
+    def __init__(
+        self,
+        input_dimension,
+        output_dimension,
+        domain_extrema,
+        kan_width=32,
+        kan_basis=9,
+        rbf_x_centres=41,
+        rbf_y_centres=17,
+        rbf_y_extent=0.20,
+        rbf_sigma_x=0.08,
+        rbf_sigma_y=0.035,
+    ):
+        super().__init__()
+        if int(input_dimension) != 2 or int(output_dimension) != 3:
+            raise ValueError("KANRBFFieldNet currently supports 2D input and (u,v,alpha) output")
+        self.input_dimension = 2
+        self.output_dimension = 3
+        self.name_activation = "TrainableTanh"
+        self.init_coeff = 1.0
+        self.n_hidden_layers = 1
+        self.neurons = int(kan_width)
+
+        extrema = torch.as_tensor(domain_extrema, dtype=torch.float32)
+        self.register_buffer("domain_min", extrema[:, 0].clone())
+        self.register_buffer("domain_span", (extrema[:, 1] - extrema[:, 0]).clone())
+
+        self.displacement_kan = GaussianKANLayer(2, int(kan_width), int(kan_basis))
+        self.displacement_output = nn.Linear(int(kan_width), 2)
+
+        x_centres = torch.linspace(-1.0, 1.0, int(rbf_x_centres))
+        y_centres = torch.linspace(
+            -float(rbf_y_extent), float(rbf_y_extent), int(rbf_y_centres)
+        )
+        grid_x, grid_y = torch.meshgrid(x_centres, y_centres, indexing="ij")
+        self.register_buffer(
+            "phase_centres", torch.stack([grid_x.reshape(-1), grid_y.reshape(-1)], dim=1)
+        )
+        self.register_buffer(
+            "phase_sigmas", torch.tensor([float(rbf_sigma_x), float(rbf_sigma_y)])
+        )
+        self.phase_weight = nn.Parameter(torch.zeros(self.phase_centres.shape[0]))
+        self.phase_bias = nn.Parameter(torch.tensor(-2.0))
+
+    def _normalize(self, x):
+        return 2.0 * (x - self.domain_min) / self.domain_span - 1.0
+
+    def forward(self, x):
+        x_norm = self._normalize(x)
+        hidden = torch.tanh(self.displacement_kan(x_norm))
+        displacement = self.displacement_output(hidden)
+        delta = (x_norm.unsqueeze(1) - self.phase_centres.unsqueeze(0)) / self.phase_sigmas
+        phase_basis = torch.exp(-0.5 * delta.square().sum(dim=2))
+        phase_raw = phase_basis @ self.phase_weight + self.phase_bias
+        return torch.cat([displacement, phase_raw.unsqueeze(1)], dim=1)
+
+
 class MeshGraphNet(nn.Module):
     """Node-field network with mean aggregation over the active FE mesh.
 
