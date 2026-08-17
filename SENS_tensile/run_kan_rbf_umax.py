@@ -58,7 +58,8 @@ def main() -> None:
     config.williams_dict["enable"] = False
     config.ansatz_dict["enable"] = False
     config.fourier_dict["enable"] = False
-    config.graph_dict["enable"] = False
+    if hasattr(config, "graph_dict"):
+        config.graph_dict["enable"] = False
     config.local_patch_dict["enable"] = False
     config.exact_bc_dict["enable"] = False
     config.symmetry_prior = False
