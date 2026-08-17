@@ -242,6 +242,117 @@ hard5_first_detect_state_semantics_export_20260817/
 6. Never overwrite canonical case directories; every replay must use a fresh
    output root.
 
+## Windows audit result — 2026-08-17
+
+Status: `AUDIT_COMPLETE`; no replay started.
+
+### P0 same-state peaks
+
+| output | status | evidence |
+|---|---|---|
+| U0.11 c122/s4 | missing | only `fields_000122_005.vtk` exists; no s4 VTK or complete s4 checkpoint |
+| U0.12 c83/s4 | missing | only `fields_000083_005.vtk` exists; no s4 VTK or complete s4 checkpoint |
+| U0.13 c59/s4 | missing | only `fields_000059_005.vtk` exists; no s4 VTK or complete s4 checkpoint |
+
+Every retained `fields_<cycle>_005.vtk` is s5 unload and is not a P0 s4
+same-state packet.
+
+### P1 transition inputs
+
+| input | status | evidence boundary |
+|---|---|---|
+| U0.11 c121/s5 | partial | nodal VTK plus element reductions exist; complete native GP history/restart state is absent |
+| U0.12 c82/s5 | missing | only element reductions exist; no nodal damage or complete restart state |
+| U0.13 c58/s5 | partial | nodal VTK plus element reductions exist; complete native GP history/restart state is absent |
+
+The partial rows are useful for audit only. They are not complete transition
+inputs under Request 28. U0.12 c83/s5 remains prohibited as a substitute for
+c82/s5.
+
+### Restart audit
+
+Each case retains only one terminal checkpoint:
+
+```text
+U0.11 terminal c125
+U0.12 terminal c89
+U0.13 terminal c62
+```
+
+There is no target-adjacent step/cycle checkpoint. A terminal checkpoint
+cannot run backward, so every exact replay must follow the original Hard-5
+solver from canonical c0/state0.
+
+### Minimum exact replay ranges
+
+| case | P0 only | P0+P1 |
+|---|---|---|
+| U0.11 | c0 -> c122/s4 | c0 -> c122/s4, additionally capture c121/s5 |
+| U0.12 | c0 -> c83/s4 | c0 -> c83/s4, additionally capture c82/s5 |
+| U0.13 | c0 -> c59/s4 | c0 -> c59/s4, additionally capture c58/s5 |
+
+P1 adds no replay cycles. It only adds capture payload at states traversed by
+the P0 replay.
+
+### Audited capture path
+
+The hook must run only after the current substep has converged and after
+`p_field_old` and `history_vars_old` have been committed. The following may be
+reused:
+
+- original Hard-5 per-step VTK output;
+- `peak_load_c1.vtk` s4 peak export pattern;
+- `phase_field.audit.capture_peak_state` audit structure;
+- toy-road substep capture/export mechanism only.
+
+`capture_peak_state` is insufficient unchanged because it lacks the complete
+history/psi payload and some timing paths are pre-history-refresh. Extend it
+for Request 28 rather than silently accepting its current output contract.
+
+Proposed full-run roots, after authorization:
+
+```text
+C:/q4runs/request28_first_detect_20260817_v1/u011
+C:/q4runs/request28_first_detect_20260817_v1/u012
+C:/q4runs/request28_first_detect_20260817_v1/u013
+```
+
+## Mac gate decision after audit
+
+**Future replay selection**: P0+P1. It has the same cycle ranges as P0-only and
+preserves both same-state and transition evidence without a second replay.
+
+**Current execution decision**: full replay remains blocked. Run the following
+cheaper instrumentation gate first only after its plan is posted:
+
+```text
+case: U0.13 Hard-5 canonical
+range: c0/state0 -> c1/s5
+captures:
+  c1/s4 post-convergence, post-commit same-state packet
+  c1/s5 post-convergence, post-commit committed-history packet
+purpose:
+  prove state timing and semantic labels
+  prove complete native history/psi payload and shapes
+  prove mesh/index and SHA manifest coverage
+  prove the hook does not perturb the canonical c1 result
+```
+
+Before this smoke starts, the Windows outbox must declare:
+
+1. exact hook location relative to convergence and both commits;
+2. complete field/array names and native shapes at c1/s4 and c1/s5;
+3. capture source files and hashes;
+4. fresh smoke output root;
+5. canonical c1 comparison assets;
+6. predeclared numerical equivalence tolerances derived from export precision,
+   not selected after seeing the smoke result;
+7. pass/fail and cleanup behavior.
+
+After the smoke passes, request explicit human GO before starting the three
+full P0+P1 replays. Neither this audit nor this decision note authorizes full
+replay.
+
 ## Acceptance checks
 
 1. `c0/state0` is labelled zero-load recovered/reset initialization; c1 is
@@ -275,31 +386,31 @@ hard5_first_detect_state_semantics_export_20260817/
   cannot be cited as a same-state displacement-to-energy mapping.
 - **Claim if unsuccessful**: stop the enrichment route; do not escalate to
   KAN/RBF/LoRA or PIDL retraining.
-- **Cheaper diagnostic first**: audit direct exports, checkpoints and capture
-  paths before replay.
-- **Minimal output asset now**: provisional state index plus a minimum replay
-  plan. No FEM replay is authorized by this correction alone.
+- **Cheaper diagnostic first**: archive/restart audit is complete. The next
+  gate is a c0->c1/s5 post-commit capture smoke before full replay.
+- **Minimal output asset now**: capture-smoke plan with hook timing, complete
+  payload schema, predeclared equivalence tolerances and fresh output root.
 - **Registry destination**: reply under Request 28 in
   `docs/handovers/windows_fem_outbox.md`.
-- **Decision**: audit and plan first.
+- **Decision**: submit the smoke plan first; no smoke or full replay is
+  authorized by this update alone.
 
-## Outbox response requested before replay
+## Next outbox response requested
 
 Please report:
 
 ```text
-AUDIT_COMPLETE
-  availability of each P0 and P1 row
-  exact source/export/checkpoint for every available row
-  missing committed solver state for every unavailable row
-  minimum replay start/end for P0 only
-  minimum replay start/end for P0+P1
-  whether replay must start from canonical c0/state0
-  capture mechanism selected and its source/hash
-  proposed fresh output roots
+CAPTURE_SMOKE_PLAN
+  exact hook location after convergence and both state commits
+  c1/s4 and c1/s5 native field names and shapes
+  capture source paths and SHA256
+  U0.13 c0->c1/s5 command and fresh output root
+  retained canonical c1 comparison assets
+  predeclared numeric equivalence tolerances
+  pass/fail checks and cleanup behavior
 
 BLOCKED
-  exact missing source/checkpoint/capture path
+  exact missing source/capture path
   checks already attempted
-  why an exact canonical replay cannot be constructed
+  why a non-perturbing post-commit capture smoke cannot be constructed
 ```

@@ -82,6 +82,28 @@ substitution is allowed.
 plan before launching. This does not authorize PIDL retraining or a new
 architecture sweep.
 
+### [update] 2026-08-17 · Windows audit accepted; full replay remains blocked
+
+Windows confirmed that all three P0 s4 peaks are missing, U0.12 c82/s5 is
+missing, and U0.11 c121/s5 plus U0.13 c58/s5 are only partial exports without
+complete native GP history/restart state. The only checkpoints are terminal
+c125/c89/c62 and cannot be reversed. Exact replay must therefore start from
+each case's canonical c0/state0 initialization.
+
+P0-only and P0+P1 have the same replay cycle ranges: U0.11 through c122/s4,
+U0.12 through c83/s4 and U0.13 through c59/s4. Select P0+P1 for the eventual
+replay because P1 adds capture payload but no cycles.
+
+**Current decision**: do not launch the three full replays yet. First extend
+the post-commit capture hook and run one U0.13 c0->c1/s5 instrumentation smoke,
+capturing c1/s4 same-state and c1/s5 committed history. The smoke must verify
+timing labels, full history/psi payload, mesh/index integrity and
+non-perturbation against retained canonical c1 fields. Post the smoke plan and
+predeclared numeric comparison tolerances in the outbox before running it.
+
+After the smoke passes, request explicit human GO for the full P0+P1 replay.
+No replay is authorized by this update alone.
+
 ## 2026-07-20 · Request 26: matched eta0 multi-Umax trajectories and sensor-ready exports
 
 **Goal**: build the smallest internally matched FEM trajectory family needed to test observed-state next-cycle forecasting, c87-like transition assimilation, and leave-one-physical-trajectory-out validation. The scientific question is whether changing only the applied cyclic amplitude produces enough transition diversity for a model to learn/identify late fracture-regime changes without mixing incompatible FEM families.
