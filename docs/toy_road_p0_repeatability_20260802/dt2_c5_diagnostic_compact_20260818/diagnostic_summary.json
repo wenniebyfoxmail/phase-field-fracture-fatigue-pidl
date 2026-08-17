@@ -1,0 +1,57 @@
+{
+  "classification": "NONPERIODIC_NONCONTRACTION",
+  "completed_rows": 1000,
+  "definitions": {
+    "phase_objective": "integral H(1-d)^2 + 3/8*f*Gc/ell*d + 3/8*f*Gc*ell*|grad d|^2; H and f reassembled from locked history and u/d iterates",
+    "process_zone": "abs(delta_d) weighted; support abs(delta_d)>=max(1e-8,0.01*max(abs(delta_d)))",
+    "tot_en": "auxiliary monitor only; excluded from classification and fatigue-consistent objective"
+  },
+  "final": {
+    "adjacent_delta_angle_deg": 101.46478245271169,
+    "adjacent_delta_cosine": -0.19876557416322463,
+    "centroid_x": 0.12609201630359376,
+    "centroid_y": 0.0009134695639540504,
+    "delta_l2": 0.04745309264895572,
+    "fatigue_factor_mean": 0.9998355203469181,
+    "fatigue_factor_min": 0.3843579230837301,
+    "fatigue_gradient_fracture": 0.002447457030234002,
+    "fatigue_local_fracture": 0.0029844930628070586,
+    "history_driving": 0.005154830308287499,
+    "iteration": 1000,
+    "lag2_state_l2": 0.057881562845082016,
+    "lag3_state_l2": 0.08156968113825709,
+    "lower_bound_active_count": 82079,
+    "lower_bound_active_jaccard": 0.9997807257976099,
+    "phase_objective_total": 0.010586780401328561,
+    "rms_width": 0.016279032629726586,
+    "support_count": 334,
+    "support_threshold": 0.00017208937431083807,
+    "update_support_jaccard": 0.6962750716332379
+  },
+  "run_result": {
+    "authorization_scope": "production_authorized",
+    "case_id": "T2_material_state",
+    "complete": false,
+    "error_identifier": "toyRoadP0:StaggeredSolveFailed",
+    "error_message": "Stagger convergence failed at cycle 5 substep 4.",
+    "status": "failed"
+  },
+  "run_root": "C:\\q4diag\\toy-road-dt2-c5-diagnostic-5629525-run2",
+  "schema_version": "toy_road_dt2_offline_diagnostic_v1",
+  "source_sha256": {
+    "output\\RUN_RESULT.json": "e93ae2d9f534f05bc6c18bc8273a79c999776e8dd44a8b21632928416cdc146d",
+    "output\\mesh_geometry.mat": "b866a8c303689f644633400e552b31df07c6087fec0b0106b5932f031b922b0f",
+    "output\\qualification\\C5_STAGGER_TRACE.csv": "77c7558893d4aca7eb0d3600ee62481aa2d76aec6ee6f9564f1f725946782a31",
+    "output\\qualification\\DT2_C5_ITERATES.mat": "0734ccccf40e87b34ab55ee6daaa14d37ca992cf24dc17fec7e884b5be9e5ed2"
+  },
+  "tail_100": {
+    "lag2_to_adjacent_ratio": 1.8577185513038776,
+    "median_adjacent_delta_angle_deg": 41.993955897407126,
+    "median_adjacent_delta_cosine": 0.7431982856629236,
+    "median_adjacent_delta_l2": 0.031362693070218134,
+    "median_lag2_state_l2": 0.058263056735393795,
+    "median_lag3_state_l2": 0.08536689131432923,
+    "median_lower_bound_active_jaccard": 0.9999025768421543,
+    "median_update_support_jaccard": 0.7990500264642003
+  }
+}

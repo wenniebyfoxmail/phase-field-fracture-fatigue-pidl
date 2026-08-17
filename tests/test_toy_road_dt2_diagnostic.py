@@ -1,8 +1,18 @@
+import importlib.util
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 DT2 = ROOT / "analysis" / "toy_road_dt2_diagnostic_20260817"
+
+
+def _load_analyzer():
+    path = DT2 / "analyze_dt2_c5_iterates.py"
+    spec = importlib.util.spec_from_file_location("dt2_analyzer", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_dt2_observer_delegates_without_changing_solver_or_gate() -> None:
@@ -50,3 +60,8 @@ def test_dt2_launcher_is_fresh_single_process_and_does_not_authorize_t3() -> Non
     assert '[roots["receipts"], roots["matlab_startup_pref"], initial_target.parent]' in launcher
     assert "cwd=run_root" in launcher
     assert "iterate_path.parent.mkdir()" not in launcher
+
+
+def test_dt2_analyzer_exposes_read_only_callable_api() -> None:
+    analyzer = _load_analyzer()
+    assert callable(analyzer.analyze)
