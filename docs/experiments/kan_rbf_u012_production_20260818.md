@@ -1,6 +1,6 @@
 # U0.12 KAN+RBF producer discriminator
 
-Status: running; quarantine.
+Status: stopped at the frozen c1 same-state gate; quarantine.
 
 ## Frozen question
 
@@ -39,3 +39,21 @@ not widen the network or introduce a second architecture hypothesis.
   them.
 - The run is not automatically promoted to paper evidence. External GPT Pro
   architecture review is unavailable, so the result remains quarantined.
+
+## Result and stop decision
+
+The production cap materially improved KAN displacement relative to the
+300-epoch micro, but did not close the field gap:
+
+- whole-domain displacement relative L2: KAN `0.070660`, Formal MLP `0.020951`
+- process-zone displacement relative L2: KAN `0.047378`, Formal MLP `0.020677`
+- whole-domain damage RMSE: KAN `0.041369`, Formal MLP `0.006744`
+- damage >= 0.95 support ratio relative to FEM: KAN `2.318552`, Formal MLP
+  `1.003144`
+
+Visual QA retained the two representation failures seen in the micro: an overly
+smooth crack-face displacement jump and parallel RBF ghost-damage bands. PID
+`539448` was identity-checked and terminated after complete steps 0--6, while
+optimizing c2/s3. No first-detect event occurred, and the partial trajectory is
+not a censored lifetime datum. The exact compact 1,468-parameter formulation is
+rejected; this is not a KAN-family rejection.
