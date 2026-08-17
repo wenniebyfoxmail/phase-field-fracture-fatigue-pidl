@@ -29,6 +29,47 @@
 
 ## 2026-08-17 · Request 28: first-detect causal damage and peak-displacement export
 
+### [update] 2026-08-18 — minimum P0+P1 replay authorized after capture smoke
+
+Mac verified the OneDrive package
+`Request28_capture_smoke_20260817_v1`: `CAPTURE_SMOKE_PASSED`, the hook is
+post-commit, c1/s4 and c1/s5 arrays are finite, and peak/unload timing is
+correct. The user has now explicitly authorized proceeding (`go`).
+
+Please launch the already-audited minimum **P0+P1** replays from each case's
+canonical `c0/state0` initialization path:
+
+| case | replay stop | extra in-path capture |
+|---|---|---|
+| U0.11 | c122/s4 | c121/s5 |
+| U0.12 | c83/s4 | c82/s5 |
+| U0.13 | c59/s4 | c58/s5 |
+
+This does not add replay cycles beyond P0. Capture both state classes while the
+trajectory passes them:
+
+- `c121/c82/c58 s5`: prior-cycle committed unloaded damage/history state,
+  labelled `transition-input`;
+- `c122/c83/c59 s4`: first-detect peak displacement plus same-state damage and
+  available history/process-zone fields, labelled `same-state peak`.
+
+Use the proposed fresh roots only if they are still absent:
+
+```text
+C:/q4runs/request28_first_detect_20260817_v1/u011
+C:/q4runs/request28_first_detect_20260817_v1/u012
+C:/q4runs/request28_first_detect_20260817_v1/u013
+```
+
+If any root already contains a partial run, preserve it and use a new
+timestamped root; do not clean or overwrite it. Run only one MATLAB/FEM replay
+at a time. Do not use c83/s5 to fill c82/s5, do not substitute confirmation
+cycles c125/c86/c62, and do not import toy-road numerical state. Upload the
+self-contained package to OneDrive and reply in `windows_fem_outbox.md` with
+state index, hashes, source/runtime lock, replay logs, non-perturbation anchors,
+and first-detect audit. Stop at the three declared s4 targets; no broader FEM
+sweep is authorized.
+
 **Goal**: complete the minimum FEM state package needed for the frozen
 XDEM-inspired enriched-vs-plain observation diagnostic. Preserve the locked
 `first_detect` events U0.11 c122, U0.12 c83 and U0.13 c59; do not substitute

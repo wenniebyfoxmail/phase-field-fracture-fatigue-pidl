@@ -10,6 +10,17 @@ Priority: high, minimal state export
 
 Evidence class: `state-semantics` / `tooling-only`; diagnostic only
 
+## 2026-08-18 authorization update
+
+The bounded U0.13 c0-to-c1 capture smoke passed and Mac verified the shared
+OneDrive payload. The user then explicitly authorized proceeding. Windows-FEM
+may now run the minimum P0+P1 replay already defined by this request, from each
+canonical `c0/state0` initialization path through c122/s4, c83/s4 and c59/s4,
+respectively. Capture c121/s5, c82/s5 and c58/s5 in path. P1 adds payload only,
+not replay cycles. Keep the same-state peak and cross-cycle transition-input
+semantics separate. All original acceptance criteria and no-substitution rules
+remain binding.
+
 ## Why this is needed
 
 The Taobo Phase-A diagnostic established that event-time mechanics must be
