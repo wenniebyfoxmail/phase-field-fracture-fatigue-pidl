@@ -1,0 +1,41 @@
+# U0.12 KAN+RBF producer discriminator
+
+Status: running; quarantine.
+
+## Frozen question
+
+Does the exact compact KAN-displacement/RBF-phase representation from the c1
+micro diagnostic become competitive when given the retained production
+optimizer budget and full five-substep lifetime trajectory?
+
+This run changes optimizer budget and trajectory/output retention only. It does
+not widen the network or introduce a second architecture hypothesis.
+
+## Launch record
+
+- run id: `pf_kan_rbf_prod_d680ea3_20260818_004350`
+- producer commit: `d680ea3`
+- branch: `codex/kan-rbf-u012-micro`
+- sync: Mac worktree rsync snapshot; not pushed
+- Taobo code root: `/mnt/data2/drtao/wennie/pf_kan_rbf_prod_d680ea3_20260818_004350/code`
+- Taobo archive root: `/mnt/data2/drtao/pidl_archives/pf_kan_rbf_prod_d680ea3_20260818_004350`
+- GPU: physical GPU 0
+- PID: `539448`
+- launch time: 2026-08-18 00:43 Europe/London
+- command: `/usr/bin/python3 -u run_kan_rbf_production_umax.py 0.12 --n-cycles 120 --seed 1 --epochs 10000`
+- log: `/mnt/data2/drtao/wennie/pf_kan_rbf_prod_d680ea3_20260818_004350/logs/kan_rbf_u012_prod.log`
+- initial health: CUDA available; 8 GPUs visible; GPU 0 initially empty; process
+  cwd/cmdline and GPU occupancy verified after launch.
+
+## Frozen semantics and gates
+
+- `c0/state0` is initialization; the first physical cycle is `c1`.
+- One physical cycle is `s1=0.25, s2=0.50, s3=0.75, s4=1.00, s5=0`.
+- PIDL step `5*(c-1)+3` is the same-cycle s4 peak; `+4` is s5 unload.
+- Primary event is `first_detect`; the later confirmation index is reported
+  separately.
+- Compare c1/s4 fields to the same FEM state and retained Formal MLP first.
+- Then compare divergence trajectory and first-detect timing if the run reaches
+  them.
+- The run is not automatically promoted to paper evidence. External GPT Pro
+  architecture review is unavailable, so the result remains quarantined.
