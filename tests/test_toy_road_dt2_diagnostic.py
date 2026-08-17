@@ -46,3 +46,7 @@ def test_dt2_launcher_is_fresh_single_process_and_does_not_authorize_t3() -> Non
     assert '"thresholds_modified": False' in launcher
     assert "TOY_ROAD_DT2_ITERATE_PATH" in launcher
     assert "T3_loading_history" not in launcher
+    assert "run_root.mkdir(parents=True, exist_ok=False)" in launcher
+    assert '[roots["receipts"], roots["matlab_startup_pref"], initial_target.parent]' in launcher
+    assert "cwd=run_root" in launcher
+    assert "iterate_path.parent.mkdir()" not in launcher

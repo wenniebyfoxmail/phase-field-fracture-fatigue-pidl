@@ -4,7 +4,6 @@ import argparse
 import hashlib
 import json
 import os
-import shutil
 import subprocess
 import uuid
 from datetime import datetime, timezone
@@ -80,7 +79,8 @@ def launch(run_root: Path, repo_root: Path, base_run: Path, gripfith_root: Path,
     roots["matlab_startup_pref"] = run_root / "pref.matlab-startup"
     runtime_overlay = run_root / "runtime-overlay"
     initial_target = runtime_overlay / "+phase_field" / "+mex" / "+fem" / "+assembly" / "+equilibrium" / "initial.mexw64"
-    for path in [*roots.values(), initial_target.parent]:
+    run_root.mkdir(parents=True, exist_ok=False)
+    for path in [roots["receipts"], roots["matlab_startup_pref"], initial_target.parent]:
         path.mkdir(parents=True, exist_ok=False)
     os.link(initial_source, initial_target)
 
@@ -143,7 +143,6 @@ def launch(run_root: Path, repo_root: Path, base_run: Path, gripfith_root: Path,
 
     measurement_path = roots["receipts"] / "DT2_RUNTIME_MEASUREMENT.json"
     iterate_path = roots["output"] / "qualification" / "DT2_C5_ITERATES.mat"
-    iterate_path.parent.mkdir()
     prefix = os.pathsep.join(str(path.resolve()) for path in matlab_paths)
     batch = f"path([{matlab_literal(prefix)} pathsep path]);run_toy_road_runtime_bridge({matlab_literal(str(lock_path))},{matlab_literal(str(measurement_path))});"
     env = os.environ.copy()
@@ -161,7 +160,7 @@ def launch(run_root: Path, repo_root: Path, base_run: Path, gripfith_root: Path,
     stdout = (run_root / "DT2.stdout.log").open("xb")
     stderr = (run_root / "DT2.stderr.log").open("xb")
     try:
-        process = subprocess.Popen([str(matlab), "-batch", batch], cwd=roots["work"], env=env, stdout=stdout, stderr=stderr, creationflags=0x08000000 | 0x00000200)
+        process = subprocess.Popen([str(matlab), "-batch", batch], cwd=run_root, env=env, stdout=stdout, stderr=stderr, creationflags=0x08000000 | 0x00000200)
     finally:
         stdout.close(); stderr.close()
     (run_root / "launcher.pid").write_text(str(process.pid) + "\n", encoding="ascii")
