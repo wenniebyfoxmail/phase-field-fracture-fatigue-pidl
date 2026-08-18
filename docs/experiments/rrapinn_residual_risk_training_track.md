@@ -1,6 +1,6 @@
 # RRaPINN residual-risk PIDL training track
 
-Status: `G2 complete / G3 packet preparation active / producer blocked`
+Status: `G3 producer smoke complete / G4 preregistration permitted / G4 launch blocked`
 Owner: Mac-PIDL
 Updated: 2026-08-18
 
@@ -48,8 +48,8 @@ identify the effect of the risk loss.
 | G1 residual semantics/export | failed | Can genuine discrete residuals be computed and independently verified? | Closed NO-GO |
 | G1b mechanical-only qualification | complete | Does autograd mechanics match independent analytic assembly with safe provenance and boundary populations? | Qualified offline v2 |
 | G2 risk utility + risk-off equivalence | complete | Is the loss implementation finite, differentiable and exactly opt-in? | Passed unit/integration review; no training |
-| G3 paired short smoke | packet preparation | Does risk-off reproduce A and risk-on run safely? | Taobo only after a separate packet review and user authorization |
-| G4 U0.12 development pilot | blocked | Does B improve residual and FEM field tails? | Separate approval |
+| G3 paired short smoke | complete | Does risk-off reproduce A and risk-on run safely? | Producer PASS only; no prediction claim |
+| G4 U0.12 development pilot | preregistration permitted; launch blocked | Does B improve residual and FEM field tails? | Separate review and user approval |
 | G5 U0.13 validation | blocked | Does the frozen configuration transfer without tuning? | Separate approval |
 | G6 U0.11 locked final test | blocked | Does the frozen candidate generalize across amplitude? | Separate approval |
 
@@ -97,8 +97,38 @@ the earlier non-fail-closed directory is superseded for promotion purposes.
 G2 is locked in `rrapinn_mechanical_g2_gate_20260818.md`. It passed independent
 review with the mechanical-risk and adjacent damage regressions (47 tests),
 compile/diff checks and review-time hash stability. This closes implementation
-semantics only. G3 must still qualify clean-checkout provenance, exact A/B
-configuration, checkpoint/restart and bounded producer cost before any run.
+semantics only. G3 subsequently tested clean-checkout provenance, exact A/B
+configuration, checkpoint write/reload and bounded producer cost in a separate,
+authorized producer smoke.
+
+## G3 result
+
+The authorized three-arm Taobo smoke completed from exact producer commit
+`add6ed06e79fdd3d8e77cc935fa104a3e23468fd`. The local case endpoint is
+`local_archive/after_strict_setting_alignment/pidl_result/rrapinn_g3_smoke_add6ed0_20260818`;
+the retained heavy archives remain under
+`/mnt/data2/drtao/pidl_archives/pf_rrapinn_g3_add6ed0_20260818_204000`.
+
+All arms produced finite steps 0--5 and passed checkpoint reload. Arm A
+(configuration absent) and arm B (risk explicitly off) matched exactly in
+losses, model tensors and saved state. Arm C used the locked ME85 intervention
+with `lambda=0.000549728557462236`, physical scale `0.12` and 44,411 interior
+nodes. Its mechanical-risk scalars were finite, its optimized model diverged
+from A after the initial state, and its runtime was approximately `1.29x` A,
+below the `3x` stop threshold. The remote fail-closed validator passed all 32
+checks, and the downloaded compact evidence package passed all 28 individual
+hash checks.
+
+Independent review accepted the producer execution but requested an honest
+evidence amendment: the frozen packet named both `stdout.log` and
+`external_stdout.log`, whereas the completed run retained only the three
+external stdout logs; the first failed shell-wrapper attempt also lacked an
+immutable stderr/command receipt. `04_postrun_amendment.md` records both facts.
+No missing logs were reconstructed and no scientific rerun was performed.
+
+G3 therefore qualifies the producer path only. It permits drafting and
+reviewing a frozen G4 U0.12 preregistration, but it does not authorize G4
+launch, longer training, U0.13/U0.11 access, or a fracture-prediction claim.
 
 ## Provisional A/B contract after G1
 
