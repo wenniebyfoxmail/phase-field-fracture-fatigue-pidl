@@ -3,9 +3,33 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 from pathlib import Path
+
+PLACEHOLDER = "${G3_PRODUCER_COMMIT}"
+
+
+def _replace(value, head: str):
+    if isinstance(value, str):
+        return value.replace(PLACEHOLDER, head)
+    if isinstance(value, list):
+        return [_replace(item, head) for item in value]
+    if isinstance(value, dict):
+        return {key: _replace(item, head) for key, item in value.items()}
+    return value
+
+
+def validate_frozen_receipt(repo: Path, packet: dict, head: str) -> None:
+    template_path = repo / "docs" / "experiments" / "rrapinn_g3_smoke_packet.json"
+    raw = template_path.read_bytes()
+    expected = _replace(json.loads(raw), head)
+    expected["template_sha256"] = hashlib.sha256(raw).hexdigest()
+    expected["launch_receipt_frozen"] = True
+    expected["training_authorized"] = False
+    if packet != expected:
+        raise RuntimeError("frozen receipt does not exactly reconstruct from tracked template")
 
 
 def main() -> None:
@@ -32,8 +56,7 @@ def main() -> None:
     }
     if any(auth.get(key) != value for key, value in required_auth.items()):
         raise RuntimeError("missing or mismatched explicit G3 user authorization receipt")
-    if packet.get("launch_receipt_frozen") is not True or packet.get("required_head_commit") != head:
-        raise RuntimeError("launch receipt does not lock the current producer HEAD")
+    validate_frozen_receipt(args.repo.resolve(), packet, head)
     if subprocess.check_output(
         ["git", "-C", str(args.repo), "status", "--porcelain"], text=True
     ).strip():

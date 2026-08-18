@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -17,6 +19,10 @@ STEPS = tuple(range(6))
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def finite_losses(run: Path) -> tuple[bool, dict[int, np.ndarray]]:
@@ -53,6 +59,7 @@ def tensors_exact(left: dict, right: dict) -> bool:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--receipt", type=Path, required=True)
+    ap.add_argument("--repo", type=Path, required=True)
     ap.add_argument("--arm", action="append", required=True,
                     help="NAME=/absolute/run/path; exactly A_absent, B_off, C_on")
     ap.add_argument("--log", action="append", required=True,
@@ -66,8 +73,15 @@ def main() -> None:
     if set(arms) != set(MODES) or set(logs) != set(MODES):
         raise ValueError("exactly three named arm paths and logs are required")
     receipt = load_json(args.receipt)
+    repo = args.repo.resolve()
     expected_head = receipt["required_head_commit"]
-    checks = {"receipt_frozen": receipt.get("launch_receipt_frozen") is True}
+    actual_runner_sha = sha256(repo / "SENS_tensile" / "run_fem_mesh_probe_driver_umax.py")
+    checks = {
+        "receipt_frozen": receipt.get("launch_receipt_frozen") is True,
+        "repo_head": subprocess.check_output(
+            ["git", "-C", str(repo), "rev-parse", "HEAD"], text=True
+        ).strip() == expected_head,
+    }
     loaded = {}
     for name, mode in MODES.items():
         run = Path(arms[name]).resolve()
@@ -75,8 +89,12 @@ def main() -> None:
         metrics = load_json(run / "g3_smoke_metrics.json")
         log_text = Path(logs[name]).read_text(encoding="utf-8", errors="replace")
         checks[f"{name}:head"] = provenance.get("runner_git_commit") == expected_head
+        checks[f"{name}:runner_sha"] = provenance.get("runner_sha256") == actual_runner_sha
         checks[f"{name}:mode"] = provenance.get("mechanical_risk_mode") == mode
         checks[f"{name}:init"] = provenance.get("init_checkpoint", {}).get("sha256") == receipt["init_checkpoint_sha256"]
+        checks[f"{name}:init_file_sha"] = sha256(
+            run / "best_models" / "trained_1NN_initTraining.pt"
+        ) == receipt["init_checkpoint_sha256"]
         checks[f"{name}:returned"] = metrics.get("execution_returned") is True
         checks[f"{name}:six_checkpoints"] = metrics.get("checkpoint_count") == 6
         checks[f"{name}:log_finite"] = re.search(r"(?<![A-Za-z])[+-]?(?:nan|inf)(?![A-Za-z])", log_text, re.I) is None
