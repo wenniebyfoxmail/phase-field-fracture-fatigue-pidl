@@ -851,6 +851,74 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # (tore tensor into N rows + re-collated every optimizer step, ~50-70% of wall).
     training_set = [(inp, outp)]
 
+    # Mechanical-only residual risk is opt-in and fine-mesh only. Geometry and
+    # physical scale are fixed once; no current-residual normalization is used.
+    _mechanical_risk_cfg = None
+    _mechanical_risk_raw = fatigue_dict.get('mechanical_residual_risk', None)
+    if (_mechanical_risk_raw or {}).get('enable', False):
+        if T_conn is None:
+            raise ValueError(
+                "mechanical_residual_risk requires numerical triangle gradients"
+            )
+        from mechanical_residual_risk import (
+            interior_free_node_mask,
+            nodal_lumped_dual_area,
+        )
+        import math
+        _missing_scale = [
+            key for key in ('Umax', 'E_ref', 'L_ref')
+            if key not in _mechanical_risk_raw
+        ]
+        if _missing_scale:
+            raise ValueError(
+                "mechanical_residual_risk requires explicit physical scale keys: "
+                f"{_missing_scale}"
+            )
+        _risk_umax = float(_mechanical_risk_raw['Umax'])
+        _risk_Eref = float(_mechanical_risk_raw['E_ref'])
+        _risk_Lref = float(_mechanical_risk_raw['L_ref'])
+        if not all(math.isfinite(x) for x in (_risk_umax, _risk_Eref, _risk_Lref)):
+            raise ValueError(
+                "mechanical_residual_risk Umax/E_ref/L_ref must be finite"
+            )
+        if _risk_umax <= 0.0 or _risk_Eref <= 0.0 or _risk_Lref <= 0.0:
+            raise ValueError(
+                "mechanical_residual_risk Umax/E_ref/L_ref must be positive"
+            )
+        _risk_scale = _risk_Eref * _risk_umax / (_risk_Lref ** 2)
+        if not math.isfinite(_risk_scale) or _risk_scale <= 0.0:
+            raise ValueError(
+                "mechanical_residual_risk fixed scale E_ref*Umax/L_ref^2 must be positive"
+            )
+        _void_cfg_for_risk = fatigue_dict.get('void_notch_mask', {}) or {}
+        if (
+            fatigue_on
+            and _void_cfg_for_risk.get('enable', False)
+            and _void_cfg_for_risk.get('mask_energy', True)
+        ):
+            raise ValueError(
+                "mechanical_residual_risk cannot be combined with void-notch element masking in G2"
+            )
+        _mechanical_risk_cfg = dict(_mechanical_risk_raw)
+        _risk_domain = torch.stack([
+            torch.stack([inp[:, 0].min(), inp[:, 0].max()]),
+            torch.stack([inp[:, 1].min(), inp[:, 1].max()]),
+        ])
+        _mechanical_risk_cfg['node_mask'] = interior_free_node_mask(
+            inp, _risk_domain
+        )
+        _mechanical_risk_cfg['dual_area'] = nodal_lumped_dual_area(
+            T_conn, area_T, int(inp.shape[0])
+        )
+        _mechanical_risk_cfg['scale'] = _risk_scale
+        print(
+            "[MechanicalRisk] enabled | "
+            f"alpha={_mechanical_risk_cfg.get('alpha', 0.85):.3f} "
+            f"lambda={_mechanical_risk_cfg.get('lambda', 0.0):.3e} "
+            f"scale={_risk_scale:.6e} "
+            f"interior_nodes={int(_mechanical_risk_cfg['node_mask'].sum().item())}"
+        )
+
     # ★ δ-1 element-level IS: create ElementDataset (uniform p_e init)
     _d1_cfg = delta1_dict if (delta1_dict and delta1_dict.get('enable', False)) else None
     _d1_dataset = None
@@ -1660,6 +1728,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 hist_loss_weight=_lambda_hist_weight,
                 g_stiffness_override=_g_stiffness_override_current,
                 irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
+                mechanical_risk_dict=_mechanical_risk_cfg,
             )
             loss_data = loss_data + loss_data1
 
@@ -1697,6 +1766,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         hist_loss_weight=_lambda_hist_weight,
                         g_stiffness_override=_g_stiffness_override_current,
                         irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
+                        mechanical_risk_dict=_mechanical_risk_cfg,
                     )
 
             loss_data = loss_data + _run_staged_head(
@@ -1738,6 +1808,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         hist_loss_weight=_lambda_hist_weight,
                         g_stiffness_override=_g_stiffness_override_current,
                         irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
+                        mechanical_risk_dict=_mechanical_risk_cfg,
                     )
                 loss_data = loss_data + loss_data_patch
 
@@ -1769,6 +1840,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 hist_loss_weight=_lambda_hist_weight,
                 g_stiffness_override=_g_stiffness_override_current,
                 irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
+                mechanical_risk_dict=_mechanical_risk_cfg,
             )
             loss_data = loss_data + loss_data2
 
