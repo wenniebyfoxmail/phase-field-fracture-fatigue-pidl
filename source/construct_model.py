@@ -5,6 +5,7 @@ from material_properties import MaterialProperties
 from network import (
     NeuralNet, FourierFeatureNet, MeshGraphNet, HybridMeshGraphNet,
     ChannelSeparatedMeshGraphNet, DamageLatentMeshGraphNet, KANRBFFieldNet,
+    TopologyKANSingleFrontRBFNet,
     init_xavier,
 )
 
@@ -57,8 +58,10 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
 
     # Neural network
     _model_type = str(network_dict.get("model_type", "MLP")).lower()
-    if _model_type == "kan_rbf" and any((_williams_on, _fourier_on, _graph_on)):
-        raise ValueError("KAN-RBF is mutually exclusive with Williams, Fourier, and graph modes")
+    if _model_type in {"kan_rbf", "topology_kan_singlefront_rbf"} and any(
+        (_williams_on, _fourier_on, _graph_on)
+    ):
+        raise ValueError("KAN-RBF models are mutually exclusive with Williams, Fourier, and graph modes")
 
     if _model_type == "kan_rbf":
         _kr = network_dict.get("kan_rbf", {})
@@ -77,6 +80,27 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
         print("[construct_model] KANRBFFieldNet enabled: "
               f"KAN width={_kr.get('kan_width', 32)}, basis={_kr.get('kan_basis', 9)}, "
               f"phase centres={_kr.get('rbf_x_centres', 41)}x{_kr.get('rbf_y_centres', 17)}")
+    elif _model_type == "topology_kan_singlefront_rbf":
+        _kr = network_dict.get("topology_kan_singlefront_rbf", {})
+        network = TopologyKANSingleFrontRBFNet(
+            input_dimension=in_dim,
+            output_dimension=domain_extrema.shape[0] + 1,
+            domain_extrema=domain_extrema,
+            kan_width=int(_kr.get("kan_width", 64)),
+            kan_basis=int(_kr.get("kan_basis", 15)),
+            topology_eps_y=float(_kr.get("topology_eps_y", 0.02)),
+            topology_eps_x=float(_kr.get("topology_eps_x", 0.04)),
+            initial_tip_x=float(_kr.get("initial_tip_x", 0.0)),
+            front_centres=int(_kr.get("front_centres", 81)),
+            front_width=float(_kr.get("front_width", 0.025)),
+            corridor_sigma_y=float(_kr.get("corridor_sigma_y", 0.02)),
+            phase_bias=float(_kr.get("phase_bias", -2.0)),
+            phase_weight_init=float(_kr.get("phase_weight_init", -4.0)),
+        )
+        print("[construct_model] TopologyKANSingleFrontRBFNet enabled: "
+              f"KAN width={_kr.get('kan_width', 64)}, basis={_kr.get('kan_basis', 15)}, "
+              f"front centres={_kr.get('front_centres', 81)}, "
+              f"corridor sigma y={_kr.get('corridor_sigma_y', 0.02)}")
     elif _graph_on:
         if _graph_mode == 'hybrid':
             network = HybridMeshGraphNet(

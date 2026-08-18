@@ -299,6 +299,112 @@ class KANRBFFieldNet(nn.Module):
         return torch.cat([displacement, phase_raw.unsqueeze(1)], dim=1)
 
 
+class TopologyKANSingleFrontRBFNet(nn.Module):
+    """Topology-aware KAN displacement with a single-front phase corridor.
+
+    The displacement branch receives explicit crack-side and initial-crack-face
+    coordinates.  The phase branch is deliberately more restrictive than a 2D
+    RBF grid: a single even Gaussian corridor in ``y`` multiplies a positive,
+    monotonically decreasing sum of logistic RBF fronts in ``x``.  Therefore it
+    cannot create parallel ghost corridors or detached damage islands.
+    """
+
+    def __init__(
+        self,
+        input_dimension,
+        output_dimension,
+        domain_extrema,
+        kan_width=64,
+        kan_basis=15,
+        topology_eps_y=0.02,
+        topology_eps_x=0.04,
+        initial_tip_x=0.0,
+        front_centres=81,
+        front_width=0.025,
+        corridor_sigma_y=0.02,
+        phase_bias=-2.0,
+        phase_weight_init=-4.0,
+    ):
+        super().__init__()
+        if int(input_dimension) != 2 or int(output_dimension) != 3:
+            raise ValueError(
+                "TopologyKANSingleFrontRBFNet supports 2D input and (u,v,alpha) output"
+            )
+        if min(float(topology_eps_y), float(topology_eps_x),
+               float(front_width), float(corridor_sigma_y)) <= 0.0:
+            raise ValueError("topology and phase widths must be positive")
+        if int(front_centres) < 3:
+            raise ValueError("front_centres must be at least three")
+
+        self.input_dimension = 2
+        self.output_dimension = 3
+        self.name_activation = "TrainableTanh"
+        self.init_coeff = 1.0
+        self.n_hidden_layers = 1
+        self.neurons = int(kan_width)
+
+        extrema = torch.as_tensor(domain_extrema, dtype=torch.float32)
+        self.register_buffer("domain_min", extrema[:, 0].clone())
+        self.register_buffer("domain_span", (extrema[:, 1] - extrema[:, 0]).clone())
+        tip_norm = 2.0 * (
+            float(initial_tip_x) - float(extrema[0, 0])
+        ) / float(extrema[0, 1] - extrema[0, 0]) - 1.0
+        self.register_buffer("initial_tip_x_norm", torch.tensor(tip_norm))
+        self.topology_eps_y = float(topology_eps_y)
+        self.topology_eps_x = float(topology_eps_x)
+
+        # [x, y, crack-side sign, initial-face side, distance to crack line]
+        self.displacement_kan = GaussianKANLayer(5, int(kan_width), int(kan_basis))
+        self.displacement_output = nn.Linear(int(kan_width), 2)
+
+        self.register_buffer(
+            "front_centres", torch.linspace(-1.0, 1.0, int(front_centres))
+        )
+        self.front_width = float(front_width)
+        self.corridor_sigma_y = float(corridor_sigma_y)
+        self.front_raw_weight = nn.Parameter(
+            torch.full((int(front_centres),), float(phase_weight_init))
+        )
+        # Fixed zero-damage background under the legacy nonsmooth alpha map.
+        self.register_buffer("phase_bias", torch.tensor(float(phase_bias)))
+
+    def _normalize(self, x):
+        return 2.0 * (x - self.domain_min) / self.domain_span - 1.0
+
+    def topology_features(self, x_norm):
+        side = torch.tanh(x_norm[:, 1] / self.topology_eps_y)
+        behind_initial_tip = torch.sigmoid(
+            (self.initial_tip_x_norm - x_norm[:, 0]) / self.topology_eps_x
+        )
+        initial_face_side = side * behind_initial_tip
+        line_distance = torch.sqrt(x_norm[:, 1].square() + 1.0e-8)
+        return torch.stack(
+            [x_norm[:, 0], x_norm[:, 1], side, initial_face_side, line_distance],
+            dim=1,
+        )
+
+    def phase_raw_field(self, x_norm):
+        # Each positive logistic term switches off once as x advances. Their
+        # sum is therefore a single connected, monotonically decreasing front.
+        switches = torch.sigmoid(
+            (self.front_centres.unsqueeze(0) - x_norm[:, 0:1]) / self.front_width
+        )
+        positive_weights = torch.nn.functional.softplus(self.front_raw_weight)
+        front_profile = switches @ positive_weights
+        corridor = torch.exp(
+            -0.5 * (x_norm[:, 1] / self.corridor_sigma_y).square()
+        )
+        return self.phase_bias + corridor * front_profile
+
+    def forward(self, x):
+        x_norm = self._normalize(x)
+        topology = self.topology_features(x_norm)
+        hidden = torch.tanh(self.displacement_kan(topology))
+        displacement = self.displacement_output(hidden)
+        phase_raw = self.phase_raw_field(x_norm)
+        return torch.cat([displacement, phase_raw.unsqueeze(1)], dim=1)
+
+
 class MeshGraphNet(nn.Module):
     """Node-field network with mean aggregation over the active FE mesh.
 

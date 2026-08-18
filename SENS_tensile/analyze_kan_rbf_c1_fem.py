@@ -27,7 +27,11 @@ SOURCE = HERE.parent / "source"
 if str(SOURCE) not in sys.path:
     sys.path.insert(0, str(SOURCE))
 
-from network import KANRBFFieldNet, NeuralNet  # noqa: E402
+from network import (  # noqa: E402
+    KANRBFFieldNet,
+    NeuralNet,
+    TopologyKANSingleFrontRBFNet,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -37,6 +41,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mlp-checkpoint", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--umax", type=float, default=0.12)
+    parser.add_argument(
+        "--kan-kind",
+        choices=("compact_rbf_grid", "topology_singlefront"),
+        default="compact_rbf_grid",
+    )
     return parser.parse_args()
 
 
@@ -65,18 +74,33 @@ def evaluate_in_batches(net: torch.nn.Module, xy: np.ndarray) -> np.ndarray:
     return torch.cat(outputs, dim=0).cpu().numpy()
 
 
-def load_kan(checkpoint: Path) -> torch.nn.Module:
+def load_kan(checkpoint: Path, kind: str) -> torch.nn.Module:
     extrema = torch.tensor([[-0.5, 0.5], [-0.5, 0.5]], dtype=torch.float32)
-    net = KANRBFFieldNet(
-        2, 3, extrema,
-        kan_width=32,
-        kan_basis=9,
-        rbf_x_centres=41,
-        rbf_y_centres=17,
-        rbf_y_extent=0.20,
-        rbf_sigma_x=0.08,
-        rbf_sigma_y=0.035,
-    )
+    if kind == "topology_singlefront":
+        net = TopologyKANSingleFrontRBFNet(
+            2, 3, extrema,
+            kan_width=64,
+            kan_basis=15,
+            topology_eps_y=0.02,
+            topology_eps_x=0.04,
+            initial_tip_x=0.0,
+            front_centres=81,
+            front_width=0.025,
+            corridor_sigma_y=0.02,
+            phase_bias=-2.0,
+            phase_weight_init=-4.0,
+        )
+    else:
+        net = KANRBFFieldNet(
+            2, 3, extrema,
+            kan_width=32,
+            kan_basis=9,
+            rbf_x_centres=41,
+            rbf_y_centres=17,
+            rbf_y_extent=0.20,
+            rbf_sigma_x=0.08,
+            rbf_sigma_y=0.035,
+        )
     net.load_state_dict(torch.load(checkpoint, map_location="cpu"))
     return net
 
@@ -184,7 +208,17 @@ def main() -> None:
     d_fem = np.asarray(mesh.point_data["d"], dtype=np.float64).reshape(-1)
     weights = nodal_lumped_areas(xy, quads)
 
-    raw_kan = evaluate_in_batches(load_kan(args.kan_checkpoint), xy)
+    candidate_label = (
+        "TopologyKAN_SingleFrontRBF"
+        if args.kan_kind == "topology_singlefront"
+        else "KAN_RBF"
+    )
+    candidate_title = (
+        "Topology-KAN single-front"
+        if args.kan_kind == "topology_singlefront"
+        else "KAN-RBF"
+    )
+    raw_kan = evaluate_in_batches(load_kan(args.kan_checkpoint, args.kan_kind), xy)
     raw_mlp = evaluate_in_batches(load_mlp(args.mlp_checkpoint), xy)
     u_kan, d_kan = constrained_fields(raw_kan, xy, args.umax)
     u_mlp, d_mlp = constrained_fields(raw_mlp, xy, args.umax)
@@ -197,7 +231,7 @@ def main() -> None:
         "right_boundary_band_x045": xy[:, 0] >= 0.45,
     }
     metrics = []
-    for architecture, u_pred, d_pred in [("KAN_RBF", u_kan, d_kan), ("Formal_MLP_eta0", u_mlp, d_mlp)]:
+    for architecture, u_pred, d_pred in [(candidate_label, u_kan, d_kan), ("Formal_MLP_eta0", u_mlp, d_mlp)]:
         for label, mask in regions.items():
             metrics.append(region_metrics(label, architecture, mask, weights, u_pred, d_pred, u_fem, d_fem))
     with (tables / "c1_same_state_metrics.csv").open("w", newline="", encoding="utf-8") as handle:
@@ -206,7 +240,7 @@ def main() -> None:
         writer.writerows(metrics)
 
     iou_rows = []
-    for architecture, d_pred in [("KAN_RBF", d_kan), ("Formal_MLP_eta0", d_mlp)]:
+    for architecture, d_pred in [(candidate_label, d_kan), ("Formal_MLP_eta0", d_mlp)]:
         for threshold in (0.25, 0.50, 0.75, 0.95):
             fem_mask = d_fem >= threshold
             pred_mask = d_pred >= threshold
@@ -227,7 +261,7 @@ def main() -> None:
     figure_path = figures / "c1_same_state_fields.png"
     render_fields(figure_path, xy, quads, [
         ("FEM", u_fem, d_fem),
-        ("KAN-RBF", u_kan, d_kan),
+        (candidate_title, u_kan, d_kan),
         ("Formal MLP eta0", u_mlp, d_mlp),
     ])
     (figures / "c1_same_state_fields.md").write_text(
@@ -249,7 +283,8 @@ Limitations and claim boundary: this is a quarantined cheap diagnostic, not an e
     manifest = {
         "claim_class": "diagnostic_quarantine",
         "state": "U0.12_c1_s4_peak_same_state",
-        "mapping": {"FEM": "cycle 1 substep 4", "KAN_RBF": "step 3", "Formal_MLP_eta0": "step 3"},
+        "mapping": {"FEM": "cycle 1 substep 4", candidate_label: "step 3", "Formal_MLP_eta0": "step 3"},
+        "candidate_kind": args.kan_kind,
         "evaluation": "direct network evaluation at FEM nodes; area-weighted nodal metrics",
         "fem_vtk": str(args.fem_vtk.resolve()),
         "kan_checkpoint": str(args.kan_checkpoint.resolve()),
@@ -261,7 +296,7 @@ Limitations and claim boundary: this is a quarantined cheap diagnostic, not an e
 
     global_rows = {row["architecture"]: row for row in metrics if row["region"] == "whole_domain"}
     pz_rows = {row["architecture"]: row for row in metrics if row["region"].startswith("process_zone")}
-    decision = f"""# Decision — KAN-RBF c1 same-state cheap diagnostic
+    decision = f"""# Decision — {candidate_title} c1 same-state diagnostic
 
 Verdict: **negative for immediate promotion; diagnostic/quarantine**.
 
@@ -271,9 +306,9 @@ Gate: FEM and both PIDL checkpoints are evaluated at the same c1/s4 peak state. 
 
 Key result:
 
-- Whole-domain displacement relative L2: KAN-RBF `{global_rows['KAN_RBF']['u_relative_l2_area_weighted']:.6f}`; Formal MLP eta0 `{global_rows['Formal_MLP_eta0']['u_relative_l2_area_weighted']:.6f}`.
-- Process-zone displacement relative L2: KAN-RBF `{pz_rows['KAN_RBF']['u_relative_l2_area_weighted']:.6f}`; Formal MLP eta0 `{pz_rows['Formal_MLP_eta0']['u_relative_l2_area_weighted']:.6f}`.
-- Whole-domain damage RMSE: KAN-RBF `{global_rows['KAN_RBF']['damage_rmse_area_weighted']:.6f}`; Formal MLP eta0 `{global_rows['Formal_MLP_eta0']['damage_rmse_area_weighted']:.6f}`.
+- Whole-domain displacement relative L2: candidate `{global_rows[candidate_label]['u_relative_l2_area_weighted']:.6f}`; Formal MLP eta0 `{global_rows['Formal_MLP_eta0']['u_relative_l2_area_weighted']:.6f}`.
+- Process-zone displacement relative L2: candidate `{pz_rows[candidate_label]['u_relative_l2_area_weighted']:.6f}`; Formal MLP eta0 `{pz_rows['Formal_MLP_eta0']['u_relative_l2_area_weighted']:.6f}`.
+- Whole-domain damage RMSE: candidate `{global_rows[candidate_label]['damage_rmse_area_weighted']:.6f}`; Formal MLP eta0 `{global_rows['Formal_MLP_eta0']['damage_rmse_area_weighted']:.6f}`.
 
 Interpretation: the current KAN-RBF formulation does not pass the cheap field-accuracy gate. Visual QA agrees with the scalar metrics: the compact KAN displacement smooths over the crack-face jump and the RBF phase head creates faint parallel ghost bands. The result rejects immediate connection to first-detect forecasting and rejects a full-lifetime KAN run. It does not prove KAN as a model family is inferior because parameter count, initialization, code vintage, and optimizer budget differ.
 
