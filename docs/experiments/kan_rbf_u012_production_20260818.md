@@ -57,3 +57,23 @@ smooth crack-face displacement jump and parallel RBF ghost-damage bands. PID
 optimizing c2/s3. No first-detect event occurred, and the partial trajectory is
 not a censored lifetime datum. The exact compact 1,468-parameter formulation is
 rejected; this is not a KAN-family rejection.
+
+## Topology-coordinate / single-front follow-up
+
+Commit `b5fb5a9` replaced the free 2D phase RBF grid with a monotone x-front
+inside one even y-corridor and supplied five topology coordinates to a
+5,459-parameter displacement KAN. The quarantined Taobo run
+`pf_topologykan_c1_b5fb5a9_20260818_010801` completed U0.12 c1 only.
+
+The intervention removed parallel ghost corridors, halved whole-domain
+displacement relative L2 (`0.070660 -> 0.033636`), improved damage >= 0.95 IoU
+(`0.431304 -> 0.506549`), and reduced support over-width (`2.318552 ->
+1.974141`). It nevertheless worsened process-zone displacement relative L2
+(`0.047378 -> 0.077971`) and process-zone damage RMSE (`0.067406 -> 0.088816`).
+The single corridor is too thick and extends too far ahead of the FEM c1 tip.
+
+Verdict: mixed morphology improvement but failed frozen joint gate. No lifetime
+continuation. Close coupled KAN+RBF architecture work; retain KAN only as a
+possible displacement representation within the separate low-dimensional
+physical-coordinate route. GPT Pro review remains unavailable, so this result
+is quarantine.
