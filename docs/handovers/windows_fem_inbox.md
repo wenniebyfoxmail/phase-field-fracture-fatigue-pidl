@@ -27,6 +27,38 @@
 
 ## Active Requests
 
+## 2026-08-18 · Request 29: fixed-calendar peak states for fatigue exposure
+
+**Goal**: export the minimum nine early/intermediate s4 peak states needed to
+test a frozen load-normalized displacement exposure coordinate against the
+simple `cycle * Umax` fatigue clock.
+
+**Full forwardable note**:
+`docs/handovers/windows_griphfith_request_29_fixed_calendar_exposure_export_20260818.md`.
+
+**INPUT file**: exact Hard5 eta0 five-substep U0.11/U0.12/U0.13 family under
+`Hard5_eta0_5step_Umax_011_012_013_20260729`. Reuse the corrected Request 28
+post-commit capture hook. No physics, mesh, cadence, tolerance or detector
+change.
+
+**Mesh**: exact shared native Q4 mesh, expected 86,756 nodes and 86,408 cells;
+no remesh or reorder.
+
+**Expected outputs**: exactly c10/c20/c40 s4 post-commit peak snapshots for
+each Umax, with native nodal displacement/damage, history/fatigue/driver
+payload, state index, three existing c1 peak references, provenance and hashes.
+If direct export is unavailable, replay each case only from canonical c0/state0
+through c40 in a fresh root. Do not add c50, event or confirmation states.
+
+**Acceptance criteria**: 9/9 rows use substep 4/load factor 1.0 and Request 28
+post-commit timing; mesh hashes match; top-edge displacement matches Umax;
+arrays are finite and damage bounded; s5 unload/psi inversion/reconstructed
+displacement is never substituted; replay ends at c40 and matches an existing
+anchor.
+
+**Priority**: high, minimal export. A later pass authorizes only a denser
+fixed-calendar diagnostic, not PIDL/KAN/RBF training or an early-warning claim.
+
 ## 2026-05-27 · Request 16: export FEM mechanism/energy diagnostics for cycle-matched PIDL comparison
 
 **Goal**: Build a mechanism-level FEM vs PIDL comparison, not just final `N_f` or final damage plots. Mac wants to identify where the nonlinear fatigue loop first diverges: displacement/strain, stress-energy concentration, fatigue history, damage width/smoothness, or irreversibility/history enforcement. The immediate target is the BC-matched reverseBC `u12` FEM reference, because current PIDL default is closest to that BVP.
