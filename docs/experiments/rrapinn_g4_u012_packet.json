@@ -1,0 +1,119 @@
+{
+  "schema": "rrapinn-g4-u012-preregistration-v1",
+  "design_frozen": true,
+  "training_authorized": false,
+  "producer": "Taobo only after a separate independent gate and explicit user authorization",
+  "claim_class": "late-stage-u012-field-mechanism-and-first-detect-pilot",
+  "development_case": "U0.12",
+  "producer_input_allowlist": [
+    {"id": "u012_c60_restart_bundle_manifest", "status": "blocked_pending_hash"},
+    {"id": "u012_c76_c82_c83_exact_peak_fem_manifest", "status": "blocked_pending_hash"},
+    {"id": "u012_contained_domain_projector_manifest", "status": "blocked_pending_hash"},
+    {"id": "u012_g4_analysis_manifest", "status": "blocked_pending_hash"}
+  ],
+  "start_state": {
+    "label": "c60_unloaded_post_commit",
+    "raw_step": 300,
+    "next_raw_step": 301,
+    "checkpoint_sha256": "771bf8122c34097ddaee55e9952c3bef187aa320dfcd02eed148febe6e10e729",
+    "model_sha256": "1316984f53297075dccadd38efd04972ce3942caa294b4b0a4f61c3c87b10d41",
+    "history_length": 301,
+    "future_history_forbidden": true
+  },
+  "state_mapping": {
+    "recovery_step_offset": 1,
+    "substeps_per_cycle": 5,
+    "displacements": [0.03, 0.06, 0.09, 0.12, 0.0],
+    "peak_substep_index": 3,
+    "unload_substep_index": 4
+  },
+  "arms": [
+    {
+      "role": "control",
+      "mechanical_risk_mode": "absent"
+    },
+    {
+      "role": "candidate",
+      "mechanical_risk_mode": "on",
+      "alpha": 0.85,
+      "lambda": 0.000549728557462236,
+      "E_ref": 1.0,
+      "L_ref": 1.0
+    }
+  ],
+  "optimizer": {
+    "rprop_epochs": 10000,
+    "lbfgs_epochs": 0,
+    "relative_tolerance": 5e-7
+  },
+  "evaluation_states": [
+    {"physical_cycle": 76, "state": "peak", "purpose": "guaranteed_pre_event_trajectory_guard"},
+    {"physical_cycle": 82, "state": "peak", "purpose": "same_cycle_transition_stress", "per_arm_event_status_required": true}
+  ],
+  "first_detect": {
+    "truth_cycle": 83,
+    "confirmation_cycle_used": false,
+    "control_expected_cycle": 89,
+    "candidate_allowed_cycles": [80, 86],
+    "candidate_must_be_strictly_closer_to_truth": true,
+    "hard_outer_cycle": 92,
+    "boundary_x_min": 0.48,
+    "damage_threshold": 0.95,
+    "minimum_nodes": 3,
+    "energy_fallback_is_headline": false
+  },
+  "residual_gate": {
+    "population": "interior_free_nodes",
+    "weighting": "nodal_lumped_dual_area",
+    "c76_cvar99_candidate_over_control_max": 0.9,
+    "c82_cvar99_candidate_over_control_max": 0.8,
+    "mean_candidate_over_control_max": 1.05,
+    "required_summaries": ["mean", "p95", "p99", "cvar95", "cvar99", "worst_1pct_area_mass"]
+  },
+  "field_gate": {
+    "headline_domain": "hash_locked_contained_projection_only",
+    "c82_active_log_cvar99_candidate_over_control_max": 0.8,
+    "c82_active_log_mean_candidate_over_control_max": 0.95,
+    "c82_raw_log_cvar99_candidate_over_control_max": 0.9,
+    "c76_active_mean_and_cvar99_candidate_over_control_max": 1.1,
+    "c82_damage_history_fatigue_error_candidate_over_control_max": 1.1,
+    "damage_iou_thresholds": [0.25, 0.5, 0.75],
+    "absolute_support_iou_min": 0.1,
+    "absolute_support_iou_gain_min": 0.05,
+    "absolute_support_area_ratio_range": [0.5, 2.0],
+    "own_top1_iou_must_improve": true,
+    "active_correlation_min": 0.2,
+    "active_correlation_gain_min": 0.05,
+    "asymmetry_amplification_max": 1.1,
+    "morphology_outputs": ["connected_components", "crack_tip", "centroid", "forward_extent", "width", "mirror_asymmetry"],
+    "persistent_one_sided_lobe_fails": true,
+    "c82_per_arm_pre_post_event_label_required": true
+  },
+  "lambda_audit": {
+    "physical_cycles": [60, 76, 82],
+    "risk_contribution_over_abs_base_loss_max": 0.05,
+    "retuning_permitted": false
+  },
+  "blind_analysis": {
+    "opaque_arm_ids": true,
+    "metrics_sealed_before_unblinding": true,
+    "analysis_and_input_hashes_required": true,
+    "arm_map_unavailable_to_analyzer": true
+  },
+  "runtime_gate": {
+    "common_physical_cycle_interval": [61, 82],
+    "wall_time_per_step_candidate_over_control_max": 3.0,
+    "peak_memory_candidate_over_control_max": 3.0
+  },
+  "launch_blockers": [
+    "qualified_c60_restart_materializer",
+    "true_mechanical_residual_field_export",
+    "exact_peak_c76_c82_c83_fem_bundle",
+    "boundary_only_first_detect_receipt",
+    "c60_to_c61_control_replay_sentinel",
+    "c60_c76_c82_lambda_contribution_audit",
+    "contained_domain_projector",
+    "g4_validator_blind_analyzer_runtime_receipt"
+  ],
+  "promotion_boundary": "A full G4 pass permits only a separately gated full-from-initialization U0.12 confirmation."
+}

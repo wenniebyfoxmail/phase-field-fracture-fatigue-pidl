@@ -1,6 +1,6 @@
 # RRaPINN residual-risk PIDL training track
 
-Status: `G3 producer smoke complete / G4 preregistration permitted / G4 launch blocked`
+Status: `G3 complete / G4 c60 pilot preregistration frozen / G4 launch blocked`
 Owner: Mac-PIDL
 Updated: 2026-08-18
 
@@ -49,7 +49,7 @@ identify the effect of the risk loss.
 | G1b mechanical-only qualification | complete | Does autograd mechanics match independent analytic assembly with safe provenance and boundary populations? | Qualified offline v2 |
 | G2 risk utility + risk-off equivalence | complete | Is the loss implementation finite, differentiable and exactly opt-in? | Passed unit/integration review; no training |
 | G3 paired short smoke | complete | Does risk-off reproduce A and risk-on run safely? | Producer PASS only; no prediction claim |
-| G4 U0.12 development pilot | preregistration permitted; launch blocked | Does B improve residual and FEM field tails? | Separate review and user approval |
+| G4 U0.12 c60-branch development pilot | preregistration frozen; launch blocked on eight prerequisites | Does B improve residual/FEM field tails and first-detect over c61--event? | Separate implementation gate, review and user approval |
 | G5 U0.13 validation | blocked | Does the frozen configuration transfer without tuning? | Separate approval |
 | G6 U0.11 locked final test | blocked | Does the frozen candidate generalize across amplitude? | Separate approval |
 
@@ -130,6 +130,27 @@ G3 therefore qualifies the producer path only. It permits drafting and
 reviewing a frozen G4 U0.12 preregistration, but it does not authorize G4
 launch, longer training, U0.13/U0.11 access, or a fracture-prediction claim.
 
+## G4 frozen pilot design
+
+The G4 design is frozen in
+`rrapinn_mechanical_g4_u012_pilot_20260818.md` and its machine-readable packet.
+It branches matched A/B continuations from the Formal U0.12 c60 unloaded state
+(step300), not from c82. A c82 branch would inherit nearly the entire baseline
+trajectory and cannot support a first-detect causal claim; a full replay from
+initialization is reserved for confirmation only if this cheaper pilot passes.
+
+G4 requires all residual, FEM-field and first-detect categories to pass. The
+control must first reproduce the baseline boundary event at c89, while the
+candidate must move strictly closer to FEM first-detect c83 and remain within
+c80--c86. The +3 confirmation state is not an evaluation target.
+
+Launch remains blocked until eight prerequisites are independently qualified:
+c60 restart materialization, true residual exports, exact-peak c76/c82/c83 FEM
+truth, a boundary-only first-detect receipt, an A replay sentinel, a bounded
+lambda-trajectory audit, a contained-domain projector, and the final blind
+analyzer/producer validator/runtime receipt. Closing those blockers still does
+not itself authorize training.
+
 ## Provisional A/B contract after G1
 
 - A and B share commit, initialization, seed, architecture, mesh, optimizer,
@@ -144,9 +165,10 @@ launch, longer training, U0.13/U0.11 access, or a fracture-prediction claim.
 - Field evaluation cycles remain c82/c55/c121 and use first detect, never
   confirmation.
 
-Numerical risk weights, threshold update and clipping bounds remain deliberately
-unfrozen until G1 reports residual/gradient scales. They must be frozen in a new
-dated training preregistration before G3 and cannot be tuned on U0.13 or U0.11.
+Historically, numerical risk weights were left unfrozen until the residual and
+gradient-scale gates completed. G3/G4 now freeze the ME85 choice to
+`alpha=0.85` and `lambda=0.000549728557462236`; no clipping or dynamic threshold
+update is added, and these values cannot be tuned on U0.13 or U0.11.
 
 ## Promotion gates
 
