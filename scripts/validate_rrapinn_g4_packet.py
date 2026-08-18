@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 
-EXPECTED_CANONICAL_SHA256 = "cf517a127e0abebfd6fc21600388e0250934ec6d15ef62cf624f581236ef8432"
+EXPECTED_CANONICAL_SHA256 = "5f2ce2fb06b01e8e5dbfbd99310cafecb7090cc43e882c583ad4d07dfc959c94"
 EXPECTED_BLOCKERS = {
     "qualified_c60_restart_materializer",
     "true_mechanical_residual_field_export",
@@ -49,6 +49,12 @@ def _contains_heldout_identifier(payload: dict) -> bool:
 
 def validate(payload: dict) -> dict:
     arms = payload.get("arms", [])
+    snapshot = payload.get("qualification_snapshot", {})
+    prerequisite_status = {
+        row.get("id"): row.get("status")
+        for row in snapshot.get("prelaunch_prerequisites", [])
+        if isinstance(row, dict)
+    }
     checks = {
         "schema": payload.get("schema") == "rrapinn-g4-u012-preregistration-v1",
         "frozen_not_authorized": payload.get("design_frozen") is True
@@ -103,7 +109,40 @@ def validate(payload: dict) -> dict:
         and payload.get("field_gate", {}).get("absolute_support_area_ratio_range") == [0.5, 2.0],
         "blind_before_unblind": payload.get("blind_analysis", {}).get("opaque_arm_ids") is True
         and payload.get("blind_analysis", {}).get("metrics_sealed_before_unblinding") is True,
-        "all_blockers_open": set(payload.get("launch_blockers", [])) == EXPECTED_BLOCKERS,
+        "requirement_catalog_complete": set(payload.get("launch_blockers", []))
+        == EXPECTED_BLOCKERS,
+        "current_external_input_blocker_exact": snapshot.get(
+            "current_external_input_blockers"
+        )
+        == ["exact_peak_c76_c82_c83_fem_bundle"]
+        and prerequisite_status.get("exact_peak_c76_c82_c83_fem_bundle")
+        == "blocked_external_request_27",
+        "post_run_evidence_not_misclassified": snapshot.get(
+            "post_run_evidence_not_prelaunch_blockers"
+        )
+        == [
+            "full_ab_runtime_receipts",
+            "sealed_blind_metrics",
+            "per_arm_first_detect_receipts",
+        ]
+        and prerequisite_status.get("g4_validator_blind_analyzer_runtime_receipt")
+        == "framework_qualified_full_ab_receipts_post_run",
+        "post_request27_prelaunch_closure_explicit": snapshot.get(
+            "prelaunch_closure_after_request_27"
+        )
+        == [
+            "independently_validate_exact_peak_fem_package",
+            "lock_fem_and_input_hashes_into_packet",
+            "seal_analysis_code_hash",
+            "fresh_independent_launch_gate",
+            "explicit_user_launch_authorization",
+        ],
+        "archive_routing_qualified": snapshot.get("archive_routing")
+        == "qualified_canonical_target_via_checkout_compatibility_symlink",
+        "host_path_access_ledger_required": payload.get("runtime_gate", {}).get(
+            "host_path_access_ledger_required"
+        )
+        is True,
         "complete_packet_frozen": _canonical_sha256(payload) == EXPECTED_CANONICAL_SHA256,
     }
     return {

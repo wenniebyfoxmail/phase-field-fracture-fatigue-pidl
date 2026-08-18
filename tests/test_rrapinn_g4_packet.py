@@ -49,6 +49,29 @@ def test_g4_validator_rejects_future_history_and_missing_blocker():
     assert validator.validate(payload)["status"] == "fail"
 
 
+def test_g4_validator_rejects_false_prerequisite_closure_or_postrun_conflation():
+    validator = load_validator()
+    payload = packet()
+    payload["qualification_snapshot"]["current_external_input_blockers"] = []
+    assert validator.validate(payload)["status"] == "fail"
+
+    payload = packet()
+    payload["qualification_snapshot"]["post_run_evidence_not_prelaunch_blockers"] = []
+    assert validator.validate(payload)["status"] == "fail"
+
+    payload = packet()
+    payload["qualification_snapshot"]["archive_routing"] = "repair_pending"
+    assert validator.validate(payload)["status"] == "fail"
+
+    payload = packet()
+    payload["qualification_snapshot"]["prelaunch_closure_after_request_27"].pop()
+    assert validator.validate(payload)["status"] == "fail"
+
+    payload = packet()
+    payload["runtime_gate"]["host_path_access_ledger_required"] = False
+    assert validator.validate(payload)["status"] == "fail"
+
+
 def test_g4_validator_rejects_state_event_field_and_runtime_mutations():
     validator = load_validator()
     mutations = [

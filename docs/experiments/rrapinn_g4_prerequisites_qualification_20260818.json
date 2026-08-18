@@ -1,19 +1,21 @@
 {
   "schema": "rrapinn-g4-prerequisites-offline-qualification-v1",
-  "status": "PASS_OFFLINE_FRAMEWORK_G4_LAUNCH_BLOCKED",
+  "status": "PASS_OFFLINE_AND_BOUNDED_PRODUCER_SMOKE_G4_LAUNCH_BLOCKED",
   "training_launched": false,
   "training_authorized": false,
   "development_case": "U0.12",
   "held_out_amplitudes_accessed": false,
   "independent_review": {
-    "verdict": "APPROVE_OFFLINE_PREREQUISITES_ONLY",
+    "offline_verdict": "APPROVE_OFFLINE_PREREQUISITES_ONLY",
+    "producer_smoke_verdict": "APPROVE_PRODUCER_SMOKE_PACKET_ONLY",
+    "packet_freeze_verdict": "APPROVE_FREEZE_PACKET_ONLY_DO_NOT_LAUNCH",
     "p0_count": 0,
     "p1_count": 0,
     "training_authorized": false
   },
   "tests": {
     "status": "pass",
-    "count": 80,
+    "count": 84,
     "scope": "G4 plus adjacent G3 and mechanical-residual tests",
     "full_repository_collection": "blocked_by_unrelated_missing_optional_dependency_arviz"
   },
@@ -35,13 +37,33 @@
     "excluded_fallback_rows": 1295,
     "constant_max_abs_error": 0.0
   },
+  "producer_smoke": {
+    "commit": "fb9538553557dcde29ff50ff14973af2921570bc",
+    "run_id": "pf_rrapinn_g4_prereq_fb95385_20260818T215547Z",
+    "arm_a_steps": [301, 305],
+    "arm_b": "preflight_only_not_executed",
+    "replay": "PASS_EXACT_DECODED_REPLAY",
+    "residual_step": 304,
+    "boundary_rows": 5,
+    "boundary_triggered": false,
+    "external_wall_time_seconds": 175.02,
+    "maximum_rss_kib": 1588324,
+    "exit_status": 0
+  },
+  "archive_routing": {
+    "status": "PASS_CANONICAL_TARGET_VIA_CHECKOUT_COMPATIBILITY_SYMLINK",
+    "canonical_root": "/mnt/data2/drtao/pidl_archives/pf_rrapinn_g4_prereq_fb95385_20260818T215547Z",
+    "target_size_mib": 233,
+    "execution_receipt_present": true
+  },
   "externally_blocked": [
-    "u012_c82_c83_exact_peak_native_q4_fem_export",
-    "taobo_a_replay_step301_to_305",
-    "taobo_true_residual_and_boundary_hook_smoke",
-    "external_runtime_receipts",
-    "final_blind_metrics"
+    "u012_c76_c82_c83_exact_peak_native_q4_fem_export_request_27"
   ],
-  "next_gate": "prepare_and_independently_review_taobo_prerequisite_smoke_packet",
-  "claim_boundary": "Offline tooling qualification only; no G4 efficacy or fracture-prediction claim."
+  "post_run_evidence_pending_not_prelaunch_inputs": [
+    "full_ab_runtime_receipts",
+    "sealed_blind_metrics",
+    "per_arm_first_detect_receipts"
+  ],
+  "next_gate": "after_request_27_arrives_validate_and_hash_lock_inputs_then_fresh_independent_launch_gate",
+  "claim_boundary": "Offline and bounded producer-tooling qualification only; no G4 efficacy or fracture-prediction claim."
 }

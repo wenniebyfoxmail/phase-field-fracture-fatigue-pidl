@@ -161,10 +161,12 @@ offline tests. The separately authorized Taobo prerequisite smoke at commit
 `fb953855` then passed the exact A replay, real step304 residual hook, five-step
 boundary trace and external A runtime gate; independent review returned
 `APPROVE_PRODUCER_SMOKE_PACKET_ONLY`. B was preflighted but not executed.
-The c82/c83 exact-peak native-Q4 FEM exports remain missing, full A/B runtime
-and sealed metrics do not exist, and archive redirect behavior needs repair or
-verification. Therefore the track remains at `G4 launch blocked`; no
-U0.13/U0.11 access is permitted.
+The c76/c82/c83 exact-peak native-Q4 FEM exports remain missing and full A/B
+runtime and sealed metrics do not yet exist. A later live read-only audit
+verified that the checkout result path is a compatibility symlink to the
+declared Taobo archive root, so archive routing is not a blocker. The track
+remains at `G4 launch blocked` on Request 27 and a future explicit launch gate;
+no U0.13/U0.11 access is permitted.
 
 ## Provisional A/B contract after G1
 

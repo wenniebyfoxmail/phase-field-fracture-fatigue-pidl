@@ -6,11 +6,47 @@
   "claim_class": "late-stage-u012-field-mechanism-and-first-detect-pilot",
   "development_case": "U0.12",
   "producer_input_allowlist": [
-    {"id": "u012_c60_restart_bundle_manifest", "status": "blocked_pending_hash"},
-    {"id": "u012_c76_c82_c83_exact_peak_fem_manifest", "status": "blocked_pending_hash"},
-    {"id": "u012_contained_domain_projector_manifest", "status": "blocked_pending_hash"},
-    {"id": "u012_g4_analysis_manifest", "status": "blocked_pending_hash"}
+    {"id": "u012_c60_restart_bundle_manifest", "status": "qualified", "sha256": "df581bb790e91660a5a4be735fc0f3e11c699f329b0f4ce05af36b31fa2c03e9"},
+    {"id": "u012_c76_c82_c83_exact_peak_fem_manifest", "status": "blocked_request_27_package_absent"},
+    {"id": "u012_contained_domain_projector_manifest", "status": "qualified", "content_sha256": "a69f4cb2df0a42e8b514b87a53289a8edc919d4d8f1cd9853948b764e5ea729d", "npz_sha256": "a6068a3d718f1343c761cb772e31aed45ce348c72066cb3af646678703998cff"},
+    {
+      "id": "u012_g4_analysis_manifest",
+      "status": "prelaunch_framework_qualified",
+      "pending_prelaunch": ["exact_peak_fem_input_hashes", "sealed_analysis_code_hash"],
+      "post_run_outputs": ["sealed_metrics", "runtime_receipts", "per_arm_first_detect_receipts"]
+    }
   ],
+  "qualification_snapshot": {
+    "as_of": "2026-08-19",
+    "smoke_guard_commit": "fb9538553557dcde29ff50ff14973af2921570bc",
+    "smoke_verdict": "APPROVE_PRODUCER_SMOKE_PACKET_ONLY",
+    "archive_routing": "qualified_canonical_target_via_checkout_compatibility_symlink",
+    "prelaunch_prerequisites": [
+      {"id": "qualified_c60_restart_materializer", "status": "pass_offline"},
+      {"id": "true_mechanical_residual_field_export", "status": "pass_bounded_producer_smoke"},
+      {"id": "exact_peak_c76_c82_c83_fem_bundle", "status": "blocked_external_request_27"},
+      {"id": "boundary_only_first_detect_receipt", "status": "pass_bounded_producer_trace_capability"},
+      {"id": "c60_to_c61_control_replay_sentinel", "status": "pass_exact_decoded_replay"},
+      {"id": "c60_c76_c82_lambda_contribution_audit", "status": "pass_offline"},
+      {"id": "contained_domain_projector", "status": "pass_offline"},
+      {"id": "g4_validator_blind_analyzer_runtime_receipt", "status": "framework_qualified_full_ab_receipts_post_run"}
+    ],
+    "current_external_input_blockers": [
+      "exact_peak_c76_c82_c83_fem_bundle"
+    ],
+    "prelaunch_closure_after_request_27": [
+      "independently_validate_exact_peak_fem_package",
+      "lock_fem_and_input_hashes_into_packet",
+      "seal_analysis_code_hash",
+      "fresh_independent_launch_gate",
+      "explicit_user_launch_authorization"
+    ],
+    "post_run_evidence_not_prelaunch_blockers": [
+      "full_ab_runtime_receipts",
+      "sealed_blind_metrics",
+      "per_arm_first_detect_receipts"
+    ]
+  },
   "start_state": {
     "label": "c60_unloaded_post_commit",
     "raw_step": 300,
@@ -103,7 +139,8 @@
   "runtime_gate": {
     "common_physical_cycle_interval": [61, 82],
     "wall_time_per_step_candidate_over_control_max": 3.0,
-    "peak_memory_candidate_over_control_max": 3.0
+    "peak_memory_candidate_over_control_max": 3.0,
+    "host_path_access_ledger_required": true
   },
   "launch_blockers": [
     "qualified_c60_restart_materializer",
@@ -115,5 +152,6 @@
     "contained_domain_projector",
     "g4_validator_blind_analyzer_runtime_receipt"
   ],
+  "launch_blocker_semantics": "catalog_of_required_prerequisites; current status is qualification_snapshot.prelaunch_prerequisites",
   "promotion_boundary": "A full G4 pass permits only a separately gated full-from-initialization U0.12 confirmation."
 }

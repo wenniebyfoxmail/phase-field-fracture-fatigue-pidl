@@ -4,8 +4,10 @@ Status: **PREREGISTRATION FROZEN; LAUNCH BLOCKED**.
 
 This document freezes the scientific design and decision thresholds. It is not
 a launch receipt. No producer command may be derived from it until every
-machine-readable blocker in `rrapinn_g4_u012_packet.json` is closed by a new
-review and the user separately authorizes launch.
+machine-readable prelaunch prerequisite in `rrapinn_g4_u012_packet.json` is
+closed by a new review and the user separately authorizes launch. Full-run
+receipts and sealed metrics are post-run evidence, not circular prelaunch
+requirements.
 
 ## Five-question experiment gate
 
@@ -153,6 +155,9 @@ accuracy. The c76 guard remains the trajectory-level pre-event evidence.
 - Freeze and hash the analysis code, metric schema, exact-peak FEM files,
   projector and masks before launch.
 - Write and hash the sealed metrics table before opening the arm map.
+- Before launch, validate and hash-lock the Request 27 FEM/input files and seal
+  the analysis-code hash. During each arm, record a host-level path-access
+  ledger alongside the runtime receipt.
 - Stop on NaN/Inf, missing checkpoint/export, hash or state mismatch, an A
   replay sentinel failure, two consecutive predeclared field regressions, or
   B/A wall-time-per-step or peak-memory ratio above 3 on their common c61--c82
@@ -161,18 +166,31 @@ accuracy. The c76 guard remains the trajectory-level pre-event evidence.
 All three categories -- residual, FEM field, and first-detect -- must pass. A
 residual-only gain is diagnostic and cannot promote the candidate.
 
-## Launch blockers
+## Qualification snapshot and remaining launch blocker
 
-1. no fail-closed c60 restart-bundle materializer compatible with fresh output;
-2. no optimizer-post/pre-history-refresh true residual field exporter;
-3. no synchronized exact-peak c76/c82/c83 FEM field bundle and manifest;
-4. no independent boundary-only first-detect receipt;
-5. no c60-to-c61 A replay sentinel against historical step305;
-6. no frozen c60/c76/c82 lambda-contribution audit with a 5% ceiling at every
-   audited state;
-7. no frozen contained-domain FEM-to-PIDL projector and hash;
-8. no G4 producer validator, blind analyzer and runtime receipt.
+The frozen requirement catalog remains unchanged, but its current status is:
 
-The next permitted work is implementation and offline qualification of these
-eight prerequisites. G4 launch, longer training and held-out amplitude access
-require a separate independent gate and explicit user authorization.
+| Requirement | Status before a full A/B run |
+|---|---|
+| fail-closed c60 restart materializer | pass offline |
+| optimizer-post/pre-history-refresh residual exporter | pass bounded Taobo A smoke |
+| synchronized exact-peak c76/c82/c83 FEM bundle | **blocked: Windows-FEM Request 27 package absent** |
+| boundary-only first-detect receipt capability | pass bounded producer trace |
+| c60-to-c61 A replay sentinel | `PASS_EXACT_DECODED_REPLAY` |
+| frozen c60/c76/c82 lambda audit | pass offline; 0.795%/0.972%/1.000% |
+| contained-domain projector | pass offline and hash locked |
+| producer validator, blind analyzer and runtime-receipt framework | framework qualified; full A/B receipts are generated only by the run |
+
+The Taobo archive root is also qualified: the conventional result path under
+the checkout is a compatibility symlink whose resolved target is the declared
+`/mnt/data2/drtao/pidl_archives/<run_id>/...` root. This is not a launch
+blocker and does not require a rerun.
+
+Therefore the only unresolved external input prerequisite is Request 27's
+native-Q4 exact-peak FEM package. After it arrives, its files must be
+independently validated and hash-locked, the analysis-code hash must be sealed,
+and a fresh launch gate must pass. Full A/B runtime receipts, sealed metrics,
+per-arm first-detect receipts and the host path-access ledgers are required
+outputs of a future run, not prelaunch inputs. Even after Request 27 arrives
+and validates, G4 launch still requires explicit user authorization. Longer
+training and held-out amplitude access remain unauthorized.

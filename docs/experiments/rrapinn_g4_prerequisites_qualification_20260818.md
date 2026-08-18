@@ -58,15 +58,19 @@ and `PASS_EXACT_DECODED_REPLAY`. External wall time was 2:55.02, maximum RSS
 1,588,324 KiB and exit status zero.
 
 Independent packet review returned `APPROVE_PRODUCER_SMOKE_PACKET_ONLY` with
-P0=0, P1=0 and two P2 caveats: the archive redirect resolved inside the fresh
-`/mnt/data2` checkout rather than the declared archive root, and the downloaded
-packet cannot provide host-level proof of every path access. Neither caveat
-authorizes broadening the run.
+P0=0, P1=0 and two provisional P2 caveats. A later live read-only routing audit
+closed the first: the path inside the fresh checkout is a compatibility
+symlink, `readlink -f` resolves it beneath the declared
+`/mnt/data2/drtao/pidl_archives/<run_id>/...` root, and the 233 MiB target
+contains the execution receipt (`ROUTING_TARGET_PASS` and
+`ROUTING_CONTENT_PASS`). The remaining caveat is narrower: the downloaded
+minimal packet cannot independently prove every host-level path access. It
+does not authorize broadening the run.
 
 ## Decision
 
 The bounded producer smoke is qualified for tooling only. It cannot replace
 the missing c82/c83 FEM exact-peak export, prove a residual-tail improvement,
-or authorize the full c61--event A/B pilot. Repair/verify archive routing and
-obtain the missing FEM truth before presenting a new launch gate. A separate
-explicit user `go` remains mandatory.
+or authorize the full c61--event A/B pilot. Obtain and validate the missing
+Request 27 FEM truth before presenting a new launch gate. A separate explicit
+user `go` remains mandatory.
