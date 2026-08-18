@@ -6,6 +6,17 @@ path detaches damage and computes an interior free-node mean-excess utility.
 from __future__ import annotations
 
 import math
+import json
+import os
+import tempfile
+import ctypes
+import errno
+import hashlib
+import platform
+import shutil
+from pathlib import Path
+
+import numpy as np
 import torch
 
 from compute_energy import compute_energy_per_elem
@@ -81,12 +92,12 @@ def interior_free_node_mask(inp, domain_extrema, atol=1e-7):
     return mask
 
 
-def mechanical_mean_excess_from_fields(
+def mechanical_residual_fields_from_fields(
     inp, u, v, damage, matprop, pffmodel, element_area, connectivity,
-    *, node_mask, dual_area, scale, alpha=0.85, element_mask=None,
+    *, node_mask, dual_area, scale, element_mask=None,
     g_stiffness_override=None,
 ):
-    """Build the differentiable mechanical residual risk from physical fields."""
+    """Return the true autograd mechanical residual before history refresh."""
     if connectivity is None:
         raise ValueError("mechanical residual risk requires numerical triangle gradients")
     if not math.isfinite(float(scale)) or not float(scale) > 0:
@@ -122,8 +133,30 @@ def mechanical_mean_excess_from_fields(
         + (residual_v / (dual_area * float(scale))) ** 2
         + torch.as_tensor(1e-24, dtype=u.dtype, device=u.device)
     )
-    selected = intensive[node_mask]
-    weights = dual_area[node_mask]
+    return {
+        "residual_u": residual_u,
+        "residual_v": residual_v,
+        "intensive": intensive,
+        "dual_area": dual_area,
+        "node_mask": node_mask,
+        "scale": float(scale),
+    }
+
+
+def mechanical_mean_excess_from_fields(
+    inp, u, v, damage, matprop, pffmodel, element_area, connectivity,
+    *, node_mask, dual_area, scale, alpha=0.85, element_mask=None,
+    g_stiffness_override=None,
+):
+    """Build the differentiable mechanical residual risk from physical fields."""
+    fields = mechanical_residual_fields_from_fields(
+        inp, u, v, damage, matprop, pffmodel, element_area, connectivity,
+        node_mask=node_mask, dual_area=dual_area, scale=scale,
+        element_mask=element_mask,
+        g_stiffness_override=g_stiffness_override,
+    )
+    selected = fields["intensive"][node_mask]
+    weights = fields["dual_area"][node_mask]
     utility, threshold = weighted_mean_excess(selected, weights, alpha=alpha)
     diagnostics = {
         "threshold": threshold,
@@ -133,6 +166,146 @@ def mechanical_mean_excess_from_fields(
         "alpha": float(alpha),
     }
     return utility, diagnostics
+
+
+def weighted_tail_summary(values, weights):
+    """Exact weighted quantiles and upper-tail means with fractional boundary mass."""
+    values = np.asarray(values, dtype=np.float64).reshape(-1)
+    weights = np.asarray(weights, dtype=np.float64).reshape(-1)
+    if values.shape != weights.shape or values.size == 0:
+        raise ValueError("tail-summary values and weights must be aligned and non-empty")
+    if not np.all(np.isfinite(values)) or not np.all(np.isfinite(weights)):
+        raise ValueError("tail-summary values and weights must be finite")
+    if np.any(weights <= 0.0):
+        raise ValueError("tail-summary weights must be positive")
+    total_weight = float(weights.sum())
+
+    def quantile(q):
+        order = np.argsort(values, kind="stable")
+        idx = np.searchsorted(np.cumsum(weights[order]), q * total_weight, side="left")
+        return float(values[order[min(int(idx), values.size - 1)]])
+
+    def upper_tail(fraction):
+        order = np.argsort(-values, kind="stable")
+        remaining = fraction * total_weight
+        weighted_sum = 0.0
+        selected_weight = 0.0
+        selected_mass = 0.0
+        total_mass = float(np.sum(values * weights))
+        for idx in order:
+            take = min(float(weights[idx]), remaining)
+            weighted_sum += take * float(values[idx])
+            selected_mass += take * float(values[idx])
+            selected_weight += take
+            remaining -= take
+            if remaining <= max(1e-15 * total_weight, 0.0):
+                break
+        if selected_weight <= 0.0:
+            raise ValueError("tail-summary selected no positive area")
+        return {
+            "mean": weighted_sum / selected_weight,
+            "selected_area_fraction": selected_weight / total_weight,
+            "residual_mass_fraction": selected_mass / total_mass if total_mass > 0 else 0.0,
+        }
+
+    tail95 = upper_tail(0.05)
+    tail99 = upper_tail(0.01)
+    return {
+        "mean": float(np.average(values, weights=weights)),
+        "p95": quantile(0.95),
+        "p99": quantile(0.99),
+        "cvar95": float(tail95["mean"]),
+        "cvar99": float(tail99["mean"]),
+        "worst_1pct_area_residual_mass_fraction": float(tail99["residual_mass_fraction"]),
+        "worst_1pct_selected_area_fraction": float(tail99["selected_area_fraction"]),
+    }
+
+
+def export_mechanical_residual_fields(
+    output_dir, *, raw_step, physical_cycle, substep_index, displacement,
+    inp, u, v, damage, matprop, pffmodel, element_area, connectivity,
+    node_mask, dual_area, scale, g_stiffness_override=None,
+):
+    """Write one optimizer-post, pre-history-refresh true-residual receipt."""
+    fields = mechanical_residual_fields_from_fields(
+        inp, u, v, damage, matprop, pffmodel, element_area, connectivity,
+        node_mask=node_mask, dual_area=dual_area, scale=scale,
+        g_stiffness_override=g_stiffness_override,
+    )
+    mask_np = fields["node_mask"].detach().cpu().numpy().astype(bool)
+    intensive_np = fields["intensive"].detach().cpu().numpy()
+    dual_np = fields["dual_area"].detach().cpu().numpy()
+    summary = weighted_tail_summary(intensive_np[mask_np], dual_np[mask_np])
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stem = f"mechanical_residual_step_{int(raw_step):04d}"
+    step_dir = output_dir / stem
+    if step_dir.exists():
+        raise FileExistsError(f"refusing to overwrite mechanical residual receipt: {stem}")
+    temporary = Path(tempfile.mkdtemp(prefix=f".{stem}.build-", dir=output_dir))
+    npz_path = temporary / "fields.npz"
+    json_path = temporary / "receipt.json"
+    payload = {
+        "schema": "rrapinn-true-mechanical-residual-v1",
+        "definition": "autograd_dEelastic_duv_per_nodal_dual_area",
+        "state_timing": "optimizer_post_pre_history_refresh",
+        "raw_step": int(raw_step),
+        "physical_cycle": int(physical_cycle),
+        "substep_index": int(substep_index),
+        "displacement": float(displacement),
+        "scale": float(scale),
+        "npz": "fields.npz",
+        "summary": summary,
+    }
+    try:
+        with npz_path.open("xb") as handle:
+            np.savez_compressed(
+                handle,
+                residual_u=fields["residual_u"].detach().cpu().numpy(),
+                residual_v=fields["residual_v"].detach().cpu().numpy(),
+                intensive=intensive_np,
+                dual_area=dual_np,
+                interior_free_mask=mask_np,
+                coordinates=inp.detach().cpu().numpy(),
+                connectivity=connectivity.detach().cpu().numpy(),
+                damage=damage.detach().cpu().numpy(),
+                raw_step=np.asarray(int(raw_step)),
+                physical_cycle=np.asarray(int(physical_cycle)),
+                substep_index=np.asarray(int(substep_index)),
+                displacement=np.asarray(float(displacement)),
+                scale=np.asarray(float(scale)),
+            )
+        payload["npz_sha256"] = hashlib.sha256(npz_path.read_bytes()).hexdigest()
+        with json_path.open("x", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+        _publish_directory_exclusive(temporary, step_dir)
+    except Exception:
+        shutil.rmtree(temporary, ignore_errors=True)
+        raise
+    return payload
+
+
+def _publish_directory_exclusive(source: Path, destination: Path) -> None:
+    """Atomic no-clobber directory publication for one residual receipt pair."""
+    libc = ctypes.CDLL(None, use_errno=True)
+    system = platform.system()
+    if system == "Darwin" and hasattr(libc, "renamex_np"):
+        result = libc.renamex_np(
+            os.fsencode(source), os.fsencode(destination), ctypes.c_uint(0x00000004)
+        )
+    elif system == "Linux" and hasattr(libc, "renameat2"):
+        result = libc.renameat2(
+            ctypes.c_int(-100), os.fsencode(source),
+            ctypes.c_int(-100), os.fsencode(destination), ctypes.c_uint(1),
+        )
+    else:
+        raise RuntimeError("exclusive atomic directory publication is unsupported")
+    if result != 0:
+        error = ctypes.get_errno()
+        if error in (errno.EEXIST, errno.ENOTEMPTY):
+            raise FileExistsError(f"refusing to replace existing receipt: {destination}")
+        raise OSError(error, os.strerror(error), str(destination))
 
 
 def add_mechanical_residual_risk(

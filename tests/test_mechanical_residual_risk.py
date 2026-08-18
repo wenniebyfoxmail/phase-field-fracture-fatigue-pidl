@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import numpy as np
 import torch
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -12,11 +13,13 @@ sys.path.insert(0, str(ROOT / "source"))
 
 from mechanical_residual_risk import (
     add_mechanical_residual_risk,
+    export_mechanical_residual_fields,
     interior_free_node_mask,
     mechanical_mean_excess_from_fields,
     nodal_lumped_dual_area,
     weighted_mean_excess,
     weighted_quantile_detached,
+    weighted_tail_summary,
 )
 from fit import fit, fit_with_early_stopping
 
@@ -158,6 +161,19 @@ def test_weighted_quantile_tie_is_deterministic():
     weights = torch.tensor([0.2, 0.2, 0.4, 0.2], dtype=torch.float64)
     q = weighted_quantile_detached(values, weights, 0.5)
     assert q.item() == 2.0
+
+
+def test_exact_fractional_weighted_tail_summary():
+    summary = weighted_tail_summary(
+        np.asarray([1.0, 2.0, 10.0]),
+        np.asarray([0.8, 0.1, 0.1]),
+    )
+    assert summary["mean"] == pytest.approx(2.0)
+    assert summary["p95"] == pytest.approx(10.0)
+    assert summary["cvar95"] == pytest.approx(10.0)
+    assert summary["cvar99"] == pytest.approx(10.0)
+    assert summary["worst_1pct_selected_area_fraction"] == pytest.approx(0.01)
+    assert summary["worst_1pct_area_residual_mass_fraction"] == pytest.approx(0.05)
 
 
 @pytest.mark.parametrize("alpha", [0.0, 1.0, -0.1, 1.1])
@@ -311,6 +327,32 @@ def test_enabled_wrapper_adds_only_configured_coefficient():
     assert combined.item() == pytest.approx(
         base.item() + 0.25 * diagnostics["risk_mean_excess"].item()
     )
+
+
+def test_true_residual_receipt_is_published_as_one_directory(tmp_path):
+    inp, conn, areas = structured_triangles()
+    bounds = torch.tensor([[-0.5, 0.5], [-0.5, 0.5]], dtype=torch.float64)
+    mask = interior_free_node_mask(inp, bounds)
+    dual = nodal_lumped_dual_area(conn, areas, len(inp))
+    raw = torch.nn.Parameter(0.02 * torch.randn(len(inp), 3, dtype=torch.float64))
+    payload = export_mechanical_residual_fields(
+        tmp_path, raw_step=379, physical_cycle=76, substep_index=3,
+        displacement=0.12, inp=inp, u=raw[:, 0], v=raw[:, 1],
+        damage=torch.sigmoid(raw[:, 2]), matprop=DummyMaterial(),
+        pffmodel=DummyPFF(), element_area=areas, connectivity=conn,
+        node_mask=mask, dual_area=dual, scale=0.12,
+    )
+    step_dir = tmp_path / "mechanical_residual_step_0379"
+    assert {path.name for path in step_dir.iterdir()} == {"fields.npz", "receipt.json"}
+    assert payload["state_timing"] == "optimizer_post_pre_history_refresh"
+    with pytest.raises(FileExistsError, match="overwrite"):
+        export_mechanical_residual_fields(
+            tmp_path, raw_step=379, physical_cycle=76, substep_index=3,
+            displacement=0.12, inp=inp, u=raw[:, 0], v=raw[:, 1],
+            damage=torch.sigmoid(raw[:, 2]), matprop=DummyMaterial(),
+            pffmodel=DummyPFF(), element_area=areas, connectivity=conn,
+            node_mask=mask, dual_area=dual, scale=0.12,
+        )
 
 
 def test_enabled_wrapper_rejects_empty_mask_and_nonpositive_scale():

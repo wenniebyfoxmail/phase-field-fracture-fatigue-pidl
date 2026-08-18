@@ -151,6 +151,18 @@ lambda-trajectory audit, a contained-domain projector, and the final blind
 analyzer/producer validator/runtime receipt. Closing those blockers still does
 not itself authorize training.
 
+### G4 prerequisite implementation update
+
+The offline qualification is recorded in
+`rrapinn_g4_prerequisites_qualification_20260818.md`. The restart materializer,
+true-residual numerical core/hook, boundary receipt logic, fixed-lambda audit,
+contained-only projector and producer/blind evidence contracts pass their
+offline tests. This does not close producer-dependent evidence: the A replay,
+real hook smoke, external runtime receipts and sealed metrics do not yet exist.
+The c82/c83 exact-peak native-Q4 FEM exports also remain missing and are now
+requested as Windows-FEM Request 27. Therefore the track remains at
+`G4 launch blocked`; no U0.13/U0.11 access is permitted.
+
 ## Provisional A/B contract after G1
 
 - A and B share commit, initialization, seed, architecture, mesh, optimizer,

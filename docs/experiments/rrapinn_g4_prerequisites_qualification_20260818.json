@@ -1,0 +1,47 @@
+{
+  "schema": "rrapinn-g4-prerequisites-offline-qualification-v1",
+  "status": "PASS_OFFLINE_FRAMEWORK_G4_LAUNCH_BLOCKED",
+  "training_launched": false,
+  "training_authorized": false,
+  "development_case": "U0.12",
+  "held_out_amplitudes_accessed": false,
+  "independent_review": {
+    "verdict": "APPROVE_OFFLINE_PREREQUISITES_ONLY",
+    "p0_count": 0,
+    "p1_count": 0,
+    "training_authorized": false
+  },
+  "tests": {
+    "status": "pass",
+    "count": 80,
+    "scope": "G4 plus adjacent G3 and mechanical-residual tests",
+    "full_repository_collection": "blocked_by_unrelated_missing_optional_dependency_arviz"
+  },
+  "artifacts": {
+    "restart_manifest_sha256": "df581bb790e91660a5a4be735fc0f3e11c699f329b0f4ce05af36b31fa2c03e9",
+    "contained_projector_npz_sha256": "a6068a3d718f1343c761cb772e31aed45ce348c72066cb3af646678703998cff",
+    "contained_projector_deterministic_sha256": "a69f4cb2df0a42e8b514b87a53289a8edc919d4d8f1cd9853948b764e5ea729d",
+    "lambda_audit_manifest_sha256": "63731e96d167725c19638a88c0ffee0cbb6ee43693cb6bee2dd8e74748c31353"
+  },
+  "lambda_contribution_ratios": {
+    "c60_peak_step299": 0.00795415,
+    "c76_peak_step379": 0.00971830,
+    "c82_peak_step409": 0.01000000
+  },
+  "projector": {
+    "method": "centroid_containment_assignment",
+    "conservative_overlap": false,
+    "headline_rows": 85113,
+    "excluded_fallback_rows": 1295,
+    "constant_max_abs_error": 0.0
+  },
+  "externally_blocked": [
+    "u012_c82_c83_exact_peak_native_q4_fem_export",
+    "taobo_a_replay_step301_to_305",
+    "taobo_true_residual_and_boundary_hook_smoke",
+    "external_runtime_receipts",
+    "final_blind_metrics"
+  ],
+  "next_gate": "prepare_and_independently_review_taobo_prerequisite_smoke_packet",
+  "claim_boundary": "Offline tooling qualification only; no G4 efficacy or fracture-prediction claim."
+}

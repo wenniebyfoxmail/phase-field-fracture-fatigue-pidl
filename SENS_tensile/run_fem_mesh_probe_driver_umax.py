@@ -211,10 +211,20 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--mechanical-risk-alpha", type=float, default=0.85)
     parser.add_argument("--mechanical-risk-e-ref", type=float, default=1.0)
     parser.add_argument("--mechanical-risk-l-ref", type=float, default=1.0)
+    parser.add_argument("--mechanical-residual-export-steps", default="",
+                        help="Comma-separated raw steps for true optimizer-post residual exports.")
+    parser.add_argument("--boundary-first-detect-receipt", action="store_true",
+                        help="Emit boundary-only per-step trace and immutable first-detect receipt.")
+    parser.add_argument("--hard-stop-physical-cycle", type=int, default=None,
+                        help="Stop after the unloaded state of this physical cycle.")
     parser.add_argument("--init-checkpoint", default=None,
                         help="Shared pretraining state_dict copied into each G3 arm.")
     parser.add_argument("--init-checkpoint-sha256", default=None,
                         help="Required expected SHA-256 when --init-checkpoint is used.")
+    parser.add_argument("--resume-bundle", default=None,
+                        help="Frozen c60 restart-bundle directory for G4 preparation.")
+    parser.add_argument("--resume-bundle-manifest-sha256", default=None,
+                        help="Required manifest SHA-256 when --resume-bundle is used.")
     parser.add_argument("--preflight-only", action="store_true",
                         help="Validate arguments and print canonical JSON; create no run directory.")
     parser.add_argument("--require-clean-git", action="store_true")
@@ -267,11 +277,75 @@ def _validate_checkpoint_args(args: argparse.Namespace) -> dict | None:
     return {"path": str(path), "sha256": actual}
 
 
+def _validate_restart_args(args: argparse.Namespace) -> dict | None:
+    if bool(args.resume_bundle) != bool(args.resume_bundle_manifest_sha256):
+        raise ValueError(
+            "--resume-bundle and --resume-bundle-manifest-sha256 are required together"
+        )
+    if args.resume_bundle and args.init_checkpoint:
+        raise ValueError("--resume-bundle and --init-checkpoint are mutually exclusive")
+    if not args.resume_bundle:
+        return None
+    frozen_displacements = [0.03, 0.06, 0.09, 0.12, 0.0]
+    if (
+        not np.isclose(float(args.umax), 0.12)
+        or args.displacement_steps is None
+        or not np.array_equal(np.asarray(args.displacement_steps), frozen_displacements)
+        or not args.hard_alpha_recovery_step
+        or args.history_driver_reduction_mode != "fem_gp_tri3_g_mean"
+        or not args.fem_irr_penalty
+        or args.hard_stop_physical_cycle != 92
+        or _parse_cycles(args.mechanical_residual_export_steps) != [379, 409]
+        or not args.boundary_first_detect_receipt
+        or int(args.n_cycles_physical) < 92
+        or args.epochs_rprop != 10000
+        or args.epochs_lbfgs != 0
+        or args.optim_rel_tol != 5e-7
+        or args.mechanical_risk_mode not in {"absent", "on"}
+        or int(args.seed) != 1
+        or int(args.hidden_layers) != 8
+        or int(args.neurons) != 400
+        or float(args.res_stiffness) != 0.0
+        or args.graph_pidl
+        or args.compile
+        or args.force_cpu
+        or not args.fresh_output_required
+        or not args.require_clean_git
+        or not args.required_head_commit
+    ):
+        raise ValueError("G4 resume arguments do not match the frozen U0.12 protocol")
+    if args.mechanical_risk_mode == "on" and (
+        args.mechanical_risk_lambda != 0.000549728557462236
+        or args.mechanical_risk_alpha != 0.85
+        or args.mechanical_risk_e_ref != 1.0
+        or args.mechanical_risk_l_ref != 1.0
+    ):
+        raise ValueError("G4 risk-on intervention does not match the frozen ME85 contract")
+    mesh = Path(args.mesh_file).expanduser()
+    if not mesh.is_absolute():
+        mesh = Path(__file__).resolve().parent / mesh
+    from rrapinn_g4_restart import SOURCE_MESH_SHA256
+    if not mesh.is_file() or _file_sha256(mesh) != SOURCE_MESH_SHA256:
+        raise ValueError("G4 resume mesh does not match the frozen U0.12 mesh")
+    expected = args.resume_bundle_manifest_sha256.lower()
+    if len(expected) != 64 or any(ch not in "0123456789abcdef" for ch in expected):
+        raise ValueError("--resume-bundle-manifest-sha256 must be 64 lowercase hex characters")
+    from rrapinn_g4_restart import validate_bundle
+
+    payload = validate_bundle(Path(args.resume_bundle).expanduser(), expected)
+    return {
+        "path": payload["bundle_root"],
+        "manifest_sha256": payload["manifest_sha256"],
+        "start_state": payload["start_state"],
+    }
+
+
 def _preflight_record(args: argparse.Namespace) -> dict:
     risk = _mechanical_risk_config(args)
     checkpoint = _validate_checkpoint_args(args)
+    restart = _validate_restart_args(args)
     return {
-        "schema": "rrapinn-g3-runner-preflight-v1",
+        "schema": "rrapinn-runner-preflight-v2",
         "training_launched": False,
         "umax": float(args.umax),
         "seed": int(args.seed),
@@ -283,6 +357,12 @@ def _preflight_record(args: argparse.Namespace) -> dict:
         "mechanical_risk_mode": args.mechanical_risk_mode,
         "mechanical_residual_risk": risk,
         "init_checkpoint": checkpoint,
+        "resume_bundle": restart,
+        "mechanical_residual_export_steps": _parse_cycles(
+            args.mechanical_residual_export_steps
+        ),
+        "boundary_first_detect_receipt": bool(args.boundary_first_detect_receipt),
+        "hard_stop_physical_cycle": args.hard_stop_physical_cycle,
         "require_clean_git": bool(args.require_clean_git),
         "fresh_output_required": bool(args.fresh_output_required),
         "required_head_commit": args.required_head_commit,
@@ -296,6 +376,7 @@ def main(argv: list[str] | None = None) -> None:
     try:
         risk_config = _mechanical_risk_config(args)
         init_checkpoint = _validate_checkpoint_args(args)
+        restart_bundle = _validate_restart_args(args)
     except ValueError as exc:
         parser.error(str(exc))
 
@@ -491,6 +572,28 @@ def main(argv: list[str] | None = None) -> None:
         "dense_sampling": True,
         "on_fracture": True,
     }
+    _residual_export_steps = _parse_cycles(args.mechanical_residual_export_steps)
+    config.fatigue_dict["mechanical_residual_diagnostics"] = {
+        "enable": bool(_residual_export_steps),
+        "steps": _residual_export_steps,
+        "dir": "mechanical_residual_diagnostics",
+        "Umax": float(args.umax),
+        "E_ref": float(args.mechanical_risk_e_ref),
+        "L_ref": float(args.mechanical_risk_l_ref),
+        "explicit_cycle_displacements": [float(x) for x in cycle_disp_values],
+        "step_offset": recovery_step_offset,
+    }
+    config.fatigue_dict["boundary_first_detect_receipt"] = {
+        "enable": bool(args.boundary_first_detect_receipt),
+        "dir": "boundary_first_detect",
+        "explicit_cycle_displacements": [float(x) for x in cycle_disp_values],
+        "step_offset": recovery_step_offset,
+        "x_min": 0.48,
+        "damage_threshold": 0.95,
+        "minimum_nodes": 3,
+        "hard_stop_physical_cycle": args.hard_stop_physical_cycle,
+        "minimum_archive_raw_step": 409 if args.resume_bundle else None,
+    }
     config.disp_cyclic = disp_steps
 
     fat = config.fatigue_dict
@@ -533,8 +636,17 @@ def main(argv: list[str] | None = None) -> None:
     if args.fresh_output_required and any(config.model_path.iterdir()):
         raise RuntimeError(f"fresh G3 output required but archive is non-empty: {config.model_path}")
     config.model_path.mkdir(parents=True, exist_ok=True)
-    config.trainedModel_path.mkdir(parents=True, exist_ok=True)
     config.intermediateModel_path.mkdir(parents=True, exist_ok=True)
+    if restart_bundle is not None:
+        from rrapinn_g4_restart import stage_bundle
+
+        stage_bundle(
+            Path(restart_bundle["path"]),
+            config.trainedModel_path,
+            restart_bundle["manifest_sha256"],
+        )
+    else:
+        config.trainedModel_path.mkdir(parents=True, exist_ok=True)
     if init_checkpoint is not None:
         init_destination = config.trainedModel_path / "trained_1NN_initTraining.pt"
         if init_destination.exists():
@@ -566,6 +678,10 @@ def main(argv: list[str] | None = None) -> None:
         "mechanical_risk_mode": args.mechanical_risk_mode,
         "mechanical_residual_risk": risk_config,
         "init_checkpoint": init_checkpoint,
+        "resume_bundle": restart_bundle,
+        "mechanical_residual_export_steps": _residual_export_steps,
+        "boundary_first_detect_receipt": bool(args.boundary_first_detect_receipt),
+        "hard_stop_physical_cycle": args.hard_stop_physical_cycle,
         "training_authorized_by_packet": False,
         "note": "Presence of this file is not user authorization; launch authorization is external.",
     }
@@ -586,6 +702,12 @@ def main(argv: list[str] | None = None) -> None:
         handle.write(f"n_epochs_RPROP: {config.optimizer_dict['n_epochs_RPROP']}\n")
         handle.write(f"n_epochs_LBFGS: {config.optimizer_dict['n_epochs_LBFGS']}\n")
         handle.write(f"optim_rel_tol: {config.optimizer_dict['optim_rel_tol']}\n")
+        handle.write(f"resume_bundle: {restart_bundle}\n")
+        handle.write(f"mechanical_residual_export_steps: {_residual_export_steps}\n")
+        handle.write(
+            f"boundary_first_detect_receipt: {bool(args.boundary_first_detect_receipt)}\n"
+        )
+        handle.write(f"hard_stop_physical_cycle: {args.hard_stop_physical_cycle}\n")
         handle.write(f"coarse_mesh_file: {config.coarse_mesh_file}\n")
         handle.write(f"fine_mesh_file: {config.fine_mesh_file}\n")
         handle.write(f"mesh_tag: {mesh_tag}\n")

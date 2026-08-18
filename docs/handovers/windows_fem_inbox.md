@@ -27,6 +27,60 @@
 
 ## Active Requests
 
+## 2026-08-18 · Request 27: G4 U0.12 c76/c82/c83 exact-peak native-Q4 export
+
+**Goal**: close only the missing FEM input gate for the frozen RRaPINN G4
+U0.12 pilot. Export synchronized, exact peak-load native-Q4 fields at physical
+cycles 76, 82 and 83. This is an archive/export task, not a request for a new
+solve and not permission to access or run U0.11/U0.13.
+
+**INPUT file**: reuse the certified formal U0.12 eta0 trajectory under
+`Hard5_eta0_5step_Umax_011_012_013_20260729/u012/` and identify the exact
+original input/solver commit in provenance. Do not use the existing simplified
+`psi_fields/cycle_0082.mat` or `cycle_0083.mat`: their mixed timing cannot
+satisfy this request. The existing c76 native-Q4 file may be reused only after
+its state semantics and hash pass the same audit.
+
+**Mesh**: the original formal U0.12 native Q4 mesh, unchanged. Include node
+coordinates, Q4 connectivity, element centroids, element area and a geometry
+hash shared by all three cycle files.
+
+**Expected outputs**:
+
+```text
+~/Downloads/_pidl_handoff_v2/rrapinn_g4_u012_exact_peak_20260818/
+  manifest.json
+  cycle_0076_peak_native_q4.mat
+  cycle_0082_peak_native_q4.mat
+  cycle_0083_peak_native_q4.mat
+  SHA256SUMS.txt
+  README.md
+```
+
+Each cycle file must bind `physical_cycle`, exact solver substep, imposed
+displacement/load factor and `state_timing=peak_post_refresh`. Required aligned
+fields are `d_node`, `d_elem`, `alpha_bar_elem`, `f_alpha_elem`,
+`psi_raw_peak_elem`, `g_stiffness_peak_elem`, and the exact GP-derived
+`psi_active_peak_elem`, plus geometry. If the exact active product cannot be
+exported, report a blocker; do not approximate it with a product of unrelated
+element means.
+
+**Acceptance criteria**:
+
+1. All three assets are exact peak states from one U0.12 physics family and
+   one mesh; no mixed unloaded/peak channels.
+2. Dimensions, finite values, damage bounds and cycle/substep/load labels pass.
+3. `psi_active_peak_elem` has a documented GP-to-element definition and a
+   pointwise consistency audit against its raw/stiffness sources.
+4. `manifest.json` records every file SHA256, geometry hash, solver/input
+   provenance and semantic label.
+5. FEM first-detect remains c83; confirmation c86 is recorded only as context
+   and never substituted for the truth.
+6. Reply in `windows_fem_outbox.md` with `[done]` or an exact `[blocker]`.
+
+**Priority**: high. G4 launch remains blocked until this package is independently
+validated; preparing this request does not authorize a solve or G4 training.
+
 ## 2026-07-20 · Request 26: matched eta0 multi-Umax trajectories and sensor-ready exports
 
 **Goal**: build the smallest internally matched FEM trajectory family needed to test observed-state next-cycle forecasting, c87-like transition assimilation, and leave-one-physical-trajectory-out validation. The scientific question is whether changing only the applied cyclic amplitude produces enough transition diversity for a model to learn/identify late fracture-regime changes without mixing incompatible FEM families.

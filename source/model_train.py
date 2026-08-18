@@ -919,6 +919,45 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             f"interior_nodes={int(_mechanical_risk_cfg['node_mask'].sum().item())}"
         )
 
+    # True residual diagnostics are configured independently of the risk arm,
+    # so A and B are evaluated from the same residual definition and geometry.
+    _mech_diag_cfg = fatigue_dict.get('mechanical_residual_diagnostics', {}) or {}
+    _mech_diag_enabled = fatigue_on and bool(_mech_diag_cfg.get('enable', False))
+    _mech_diag_steps = _parse_cycle_set(_mech_diag_cfg.get('steps', []))
+    _mech_diag_dir = trainedModel_path.parent / Path(
+        _mech_diag_cfg.get('dir', 'mechanical_residual_diagnostics')
+    )
+    _mech_diag_node_mask = None
+    _mech_diag_dual_area = None
+    _mech_diag_scale = None
+    if _mech_diag_enabled:
+        import math
+        from mechanical_residual_risk import (
+            interior_free_node_mask,
+            nodal_lumped_dual_area,
+        )
+        if T_conn is None:
+            raise ValueError("mechanical residual diagnostics require triangle connectivity")
+        _diag_umax = float(_mech_diag_cfg.get('Umax', float('nan')))
+        _diag_eref = float(_mech_diag_cfg.get('E_ref', float('nan')))
+        _diag_lref = float(_mech_diag_cfg.get('L_ref', float('nan')))
+        if not all(math.isfinite(x) and x > 0.0 for x in (_diag_umax, _diag_eref, _diag_lref)):
+            raise ValueError("mechanical residual diagnostic scale inputs must be finite and positive")
+        _mech_diag_scale = _diag_eref * _diag_umax / (_diag_lref ** 2)
+        _diag_domain = torch.stack([
+            torch.stack([inp[:, 0].min(), inp[:, 0].max()]),
+            torch.stack([inp[:, 1].min(), inp[:, 1].max()]),
+        ])
+        _mech_diag_node_mask = interior_free_node_mask(inp, _diag_domain)
+        _mech_diag_dual_area = nodal_lumped_dual_area(
+            T_conn, area_T, int(inp.shape[0])
+        )
+        _mech_diag_dir.mkdir(parents=True, exist_ok=True)
+        print(
+            "[MechanicalResidualDiagnostics] optimizer-post/pre-history-refresh | "
+            f"steps={sorted(_mech_diag_steps)} | out={_mech_diag_dir}"
+        )
+
     # ★ δ-1 element-level IS: create ElementDataset (uniform p_e init)
     _d1_cfg = delta1_dict if (delta1_dict and delta1_dict.get('enable', False)) else None
     _d1_dataset = None
@@ -1509,6 +1548,35 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         print(f"[GradientDiagnostics] enabled | cycles={sorted(_grad_diag_cycles)} "
               f"| every={_every_msg} | dense={_grad_diag_dense}")
 
+    _boundary_receipt_cfg = fatigue_dict.get('boundary_first_detect_receipt', {}) or {}
+    _boundary_receipt_enabled = fatigue_on and bool(
+        _boundary_receipt_cfg.get('enable', False)
+    )
+    _boundary_receipt_dir = trainedModel_path.parent / Path(
+        _boundary_receipt_cfg.get('dir', 'boundary_first_detect')
+    )
+    if _boundary_receipt_enabled:
+        _boundary_receipt_dir.mkdir(parents=True, exist_ok=True)
+    _boundary_hard_stop_cycle = _boundary_receipt_cfg.get(
+        'hard_stop_physical_cycle', None
+    )
+    _boundary_min_archive_step = int(
+        _boundary_receipt_cfg.get('minimum_archive_raw_step') or 0
+    )
+    _boundary_hard_stop_step = None
+    if _boundary_receipt_enabled and _boundary_hard_stop_cycle is not None:
+        _boundary_displacements = _boundary_receipt_cfg.get(
+            'explicit_cycle_displacements', []
+        )
+        _boundary_step_offset = int(_boundary_receipt_cfg.get('step_offset', 1))
+        if int(_boundary_hard_stop_cycle) <= 0 or not _boundary_displacements:
+            raise ValueError("boundary hard-stop cycle mapping is invalid")
+        _boundary_hard_stop_step = (
+            _boundary_step_offset
+            + (int(_boundary_hard_stop_cycle) - 1) * len(_boundary_displacements)
+            + len(_boundary_displacements) - 1
+        )
+
     _g_stiffness_override_current = None
     _f_fatigue_override_current = None
 
@@ -1882,6 +1950,38 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 f"grad=({_grad_stats['grad_E_el']:.6e}, "
                 f"{_grad_stats['grad_E_d']:.6e}, "
                 f"{_grad_stats['grad_E_hist']:.6e})"
+            )
+
+        if _mech_diag_enabled and j in _mech_diag_steps:
+            from mechanical_residual_risk import export_mechanical_residual_fields
+
+            _u_res, _v_res, _alpha_res = field_comp.fieldCalculation(inp)
+            _diag_displacements = _mech_diag_cfg.get('explicit_cycle_displacements', [])
+            _diag_nsub = len(_diag_displacements)
+            _diag_offset = int(_mech_diag_cfg.get('step_offset', 0))
+            if _diag_nsub <= 0 or j < _diag_offset:
+                raise ValueError("mechanical residual diagnostic step mapping is invalid")
+            _diag_adjusted = int(j) - _diag_offset
+            _diag_cycle = _diag_adjusted // _diag_nsub + 1
+            _diag_substep = _diag_adjusted % _diag_nsub
+            export_mechanical_residual_fields(
+                _mech_diag_dir,
+                raw_step=int(j),
+                physical_cycle=int(_diag_cycle),
+                substep_index=int(_diag_substep),
+                displacement=float(_diag_displacements[_diag_substep]),
+                inp=inp,
+                u=_u_res,
+                v=_v_res,
+                damage=_alpha_res,
+                matprop=matprop,
+                pffmodel=pffmodel,
+                element_area=area_T,
+                connectivity=T_conn,
+                node_mask=_mech_diag_node_mask,
+                dual_area=_mech_diag_dual_area,
+                scale=_mech_diag_scale,
+                g_stiffness_override=_g_stiffness_override_current,
             )
 
         # ------------------------------------------------------------------
@@ -2422,6 +2522,31 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             alpha_bdy_max = float(alpha_bdy.max().item()) if _right_bdy_mask.sum() > 0 else 0.0
             n_bdy_frac    = int((alpha_bdy > _alpha_bdy_frac).sum().item())
 
+            if _boundary_receipt_enabled:
+                from boundary_first_detect import (
+                    observe_boundary,
+                    record_boundary_observation,
+                )
+                _boundary_observation = observe_boundary(
+                    int(j),
+                    alpha_el.detach().cpu().numpy(),
+                    inp.detach().cpu().numpy(),
+                    displacements=_boundary_receipt_cfg[
+                        'explicit_cycle_displacements'
+                    ],
+                    step_offset=int(_boundary_receipt_cfg.get('step_offset', 1)),
+                    x_min=float(_boundary_receipt_cfg.get('x_min', 0.48)),
+                    threshold=float(
+                        _boundary_receipt_cfg.get('damage_threshold', 0.95)
+                    ),
+                    minimum_nodes=int(_boundary_receipt_cfg.get('minimum_nodes', 3)),
+                )
+                record_boundary_observation(
+                    _boundary_receipt_dir / 'boundary_event_trace.jsonl',
+                    _boundary_receipt_dir / 'first_detect.json',
+                    _boundary_observation,
+                )
+
             # 预警：α > 0.90 → 开始逐圈密集采样
             if not _dense_sampling and alpha_bdy_max >= _alpha_bdy_warn:
                 _dense_sampling = True
@@ -2568,8 +2693,37 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
                         np.array(_inverse_alpha_T_history))
 
-        # ── 断裂确认：判据持续满足 confirm_cycles 圈 → 停止 ──────────────
-        if fatigue_on and _frac_detected and _frac_confirm_remaining <= 0:
+        _boundary_first_receipt_exists = (
+            _boundary_receipt_enabled
+            and (_boundary_receipt_dir / 'first_detect.json').is_file()
+        )
+        from boundary_first_detect import g4_archive_stop_decision
+        _g4_stop_decision = g4_archive_stop_decision(
+            raw_step=int(j),
+            hard_stop_raw_step=_boundary_hard_stop_step,
+            minimum_archive_raw_step=_boundary_min_archive_step,
+            boundary_receipt_enabled=_boundary_receipt_enabled,
+            boundary_receipt_exists=_boundary_first_receipt_exists,
+            fracture_confirmed=bool(
+                fatigue_on and _frac_detected and _frac_confirm_remaining <= 0
+            ),
+        )
+        if _g4_stop_decision in {"right_censor", "hard_stop_with_boundary"}:
+            if _g4_stop_decision == "right_censor":
+                from boundary_first_detect import write_right_censor_receipt
+                write_right_censor_receipt(
+                    _boundary_receipt_dir / 'right_censor.json',
+                    physical_cycle=int(_boundary_hard_stop_cycle),
+                    last_raw_step=int(j),
+                )
+            print(
+                f"  [Boundary hard stop] completed physical cycle "
+                f"{int(_boundary_hard_stop_cycle)} at raw step {j}."
+            )
+            break
+
+        # ── 断裂确认：G4 only stops here after an actual boundary receipt ──
+        if _g4_stop_decision == "fracture_confirmed":
             print(f"  [Fracture confirmed] Stopping at cycle {j}. "
                   f"First detected at cycle {_frac_cycle}.")
             np.save(str(trainedModel_path / 'E_el_vs_cycle.npy'),
