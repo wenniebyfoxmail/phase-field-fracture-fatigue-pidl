@@ -29,6 +29,17 @@
 
 ## 2026-08-18 · Request 29: fixed-calendar peak states for fatigue exposure
 
+### [update] 2026-08-18 — HOLD before execution; archival contract first
+
+Do not start replay. Freeze and qualify the reusable every-cycle s4 analysis
+snapshot plus s5 restart scheme first. Draft contract:
+`docs/handovers/windows_griphfith_archival_contract_v1_20260818.md`.
+
+Request 29 remains the nine-state scientific consumer. Replaying only to c40
+cannot be described as the final c0 replay for the full trajectories; replaying
+to first detect is a separate, materially larger tooling scope requiring
+explicit approval. Current status: `HOLD_BEFORE_EXECUTION`.
+
 **Goal**: export the minimum nine early/intermediate s4 peak states needed to
 test a frozen load-normalized displacement exposure coordinate against the
 simple `cycle * Umax` fatigue clock.

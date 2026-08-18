@@ -10,6 +10,19 @@ Priority: high, minimal diagnostic export
 
 Evidence class: `state-semantics` / `field-mechanism` input only
 
+## [update] 2026-08-18 — HOLD before execution
+
+Do not start Request 29 replay yet. A general every-cycle analysis/restart
+archive is being frozen so a replay that already passes c10/c20/c40 does not
+discard those states again. See
+`docs/handovers/windows_griphfith_archival_contract_v1_20260818.md`.
+
+This hold does not silently expand Request 29. Its scientific consumer remains
+exactly the nine c10/c20/c40 states below. A full replay to first detect is a
+separate tooling scope and requires explicit approval after schema, storage,
+restart-equivalence and timing gates. Until then, status is
+`HOLD_BEFORE_EXECUTION`, not `ACCEPTED`, `BLOCKED` or `COMPLETE`.
+
 ## Goal
 
 Export the nine exact fixed-calendar s4 peak states required to test whether a
@@ -181,4 +194,3 @@ BLOCKED
   checks attempted
   minimum replay/capture change needed
 ```
-
