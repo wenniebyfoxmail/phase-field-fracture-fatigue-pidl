@@ -5,6 +5,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from compute_energy import compute_energy, gradients, strain_energy_with_split
+from mechanical_residual_risk import add_mechanical_residual_risk
 
 
 def _resolve_f_fatigue(f_fatigue):
@@ -435,7 +436,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
         j_path_dict=None,
         hist_loss_weight=1.0,
         g_stiffness_override=None,
-        irreversibility_penalty_cfg=None):
+        irreversibility_penalty_cfg=None,
+        mechanical_risk_dict=None):
     # ★ grad_annealing_state: if provided and enable=True, pre-computed λ values
     #   from Algorithm 1 (updated during RPROP phase) are applied here.
     #   LBFGS does not update λ — it uses whatever values RPROP computed last cycle.
@@ -481,6 +483,22 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                             loss_reg += torch.sum(param**2)
 
                 loss = loss_var + weight_decay*loss_reg
+
+                # Opt-in mechanical equilibrium tail risk. Disabled/default
+                # returns the exact same base-loss tensor without residual work.
+                loss, _risk_diag = add_mechanical_residual_risk(
+                    loss,
+                    config=mechanical_risk_dict,
+                    inp=inp_train, u=u, v=v, damage=alpha,
+                    matprop=matprop, pffmodel=pffmodel,
+                    element_area=area_T, connectivity=T_conn,
+                    element_mask=element_mask,
+                    g_stiffness_override=g_stiffness_override,
+                )
+                if writer is not None and _risk_diag is not None:
+                    writer.add_scalar(
+                        'U_p_'+str(field_comp.lmbda.item())+'/loss_mechanical_risk',
+                        _risk_diag['risk_mean_excess'].item(), epoch)
 
                 # ★ MIT-8 supervised term (Apr 25 + Apr 26 amortization)
                 # ★ 2026-05-14: target_kind='psi' (existing) or 'alpha' (new α-direct supervision)
@@ -572,7 +590,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                             j_path_dict=None,
                             hist_loss_weight=1.0,
                             g_stiffness_override=None,
-                            irreversibility_penalty_cfg=None):
+                            irreversibility_penalty_cfg=None,
+                            mechanical_risk_dict=None):
     # ★ grad_annealing_state (2026-05-19 Algorithm 1):
     #   Mutable dict passed from model_train.train(). Persists across cycles.
     #   Algo1 probes are run in RPROP only (not LBFGS) because RPROP's flat
@@ -645,6 +664,22 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
 
             loss = loss_var + weight_decay*loss_reg
 
+            # Opt-in mechanical equilibrium tail risk. Disabled/default
+            # returns the exact same base-loss tensor without residual work.
+            loss, _risk_diag = add_mechanical_residual_risk(
+                loss,
+                config=mechanical_risk_dict,
+                inp=inp_train, u=u, v=v, damage=alpha,
+                matprop=matprop, pffmodel=pffmodel,
+                element_area=area_T, connectivity=T_conn,
+                element_mask=element_mask,
+                g_stiffness_override=g_stiffness_override,
+            )
+            if writer is not None and _risk_diag is not None:
+                writer.add_scalar(
+                    'U_p_'+str(field_comp.lmbda.item())+'/loss_mechanical_risk',
+                    _risk_diag['risk_mean_excess'].item(), epoch)
+
             # ★ MIT-8 supervised term (Apr 25 + Algo1 lambda override 2026-05-19)
             if supervised_dict is not None and supervised_dict.get('lambda', 0.0) > 0:
                 _every_n = max(1, int(supervised_dict.get('every_n_epochs', 1)))
@@ -714,9 +749,14 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
             loss.backward()
             optimizer.step()
             
-        early_stopping(loss, loss_prev)
+        _risk_enabled = bool(
+            mechanical_risk_dict is not None
+            and mechanical_risk_dict.get('enable', False)
+        )
+        _loss_for_stop = loss.detach() if _risk_enabled else loss
+        early_stopping(_loss_for_stop, loss_prev)
         if early_stopping.early_stop:
             break
-        loss_prev = loss
+        loss_prev = _loss_for_stop
 
     return loss_data
