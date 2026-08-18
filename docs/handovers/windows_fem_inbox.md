@@ -40,6 +40,10 @@ cannot be described as the final c0 replay for the full trajectories; replaying
 to first detect is a separate, materially larger tooling scope requiring
 explicit approval. Current status: `HOLD_BEFORE_EXECUTION`.
 
+External review completed with verdict
+`MODIFY_AND_FREEZE_ARCHIVAL_CONTRACT_BEFORE_REPLAY`. Next gate: schema freeze
+only; no FEM run is authorized.
+
 **Goal**: export the minimum nine early/intermediate s4 peak states needed to
 test a frozen load-normalized displacement exposure coordinate against the
 simple `cycle * Umax` fatigue clock.

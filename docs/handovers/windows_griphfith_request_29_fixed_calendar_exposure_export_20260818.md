@@ -23,6 +23,11 @@ separate tooling scope and requires explicit approval after schema, storage,
 restart-equivalence and timing gates. Until then, status is
 `HOLD_BEFORE_EXECUTION`, not `ACCEPTED`, `BLOCKED` or `COMPLETE`.
 
+External architecture review has now returned
+`MODIFY_AND_FREEZE_ARCHIVAL_CONTRACT_BEFORE_REPLAY`. The next gate is schema
+freeze only. It does not authorize c0→c2, c1–c10, c40, first-detect replay or
+Request 29 execution.
+
 ## Goal
 
 Export the nine exact fixed-calendar s4 peak states required to test whether a
