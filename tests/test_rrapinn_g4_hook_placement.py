@@ -20,3 +20,12 @@ def test_boundary_receipt_is_separate_from_energy_fallback_trigger():
     observation_block_end = text.index("# 预警", observation)
     block = text[observation:observation_block_end]
     assert "_E_triggered" not in block
+
+
+def test_prerequisite_smoke_guard_wraps_the_real_training_loop():
+    text = (ROOT / "source" / "model_train.py").read_text(encoding="utf-8")
+    guard = text.index("validate_start(", text.index("_g4_smoke_enabled"))
+    loop = text.index("for j, disp_i in enumerate(disp[start_j:]", guard)
+    receipt = text.index("rrapinn-g4-prerequisite-smoke-execution-v1", loop)
+    assert guard < loop < receipt
+    assert "natural_schedule_exhaustion" in text[receipt:]

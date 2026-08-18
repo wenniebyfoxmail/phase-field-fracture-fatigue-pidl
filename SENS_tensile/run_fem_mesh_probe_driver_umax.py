@@ -227,6 +227,12 @@ def _build_parser() -> argparse.ArgumentParser:
                         help="Required manifest SHA-256 when --resume-bundle is used.")
     parser.add_argument("--preflight-only", action="store_true",
                         help="Validate arguments and print canonical JSON; create no run directory.")
+    parser.add_argument(
+        "--g4-prerequisite-smoke",
+        action="store_true",
+        help=("Fail-closed c60-to-c61 producer smoke.  This mode naturally "
+              "exhausts after raw step 305 and cannot execute the risk-on arm."),
+    )
     parser.add_argument("--require-clean-git", action="store_true")
     parser.add_argument("--fresh-output-required", action="store_true")
     parser.add_argument("--required-head-commit", default=None)
@@ -278,6 +284,11 @@ def _validate_checkpoint_args(args: argparse.Namespace) -> dict | None:
 
 
 def _validate_restart_args(args: argparse.Namespace) -> dict | None:
+    if args.g4_prerequisite_smoke:
+        if not args.resume_bundle or not args.resume_bundle_manifest_sha256:
+            raise ValueError("G4 prerequisite smoke requires the frozen resume bundle")
+        if args.mechanical_risk_mode == "on" and not args.preflight_only:
+            raise ValueError("G4 prerequisite smoke risk-on arm is preflight-only")
     if bool(args.resume_bundle) != bool(args.resume_bundle_manifest_sha256):
         raise ValueError(
             "--resume-bundle and --resume-bundle-manifest-sha256 are required together"
@@ -287,17 +298,14 @@ def _validate_restart_args(args: argparse.Namespace) -> dict | None:
     if not args.resume_bundle:
         return None
     frozen_displacements = [0.03, 0.06, 0.09, 0.12, 0.0]
-    if (
+    common_invalid = (
         not np.isclose(float(args.umax), 0.12)
         or args.displacement_steps is None
         or not np.array_equal(np.asarray(args.displacement_steps), frozen_displacements)
         or not args.hard_alpha_recovery_step
         or args.history_driver_reduction_mode != "fem_gp_tri3_g_mean"
         or not args.fem_irr_penalty
-        or args.hard_stop_physical_cycle != 92
-        or _parse_cycles(args.mechanical_residual_export_steps) != [379, 409]
         or not args.boundary_first_detect_receipt
-        or int(args.n_cycles_physical) < 92
         or args.epochs_rprop != 10000
         or args.epochs_lbfgs != 0
         or args.optim_rel_tol != 5e-7
@@ -312,6 +320,20 @@ def _validate_restart_args(args: argparse.Namespace) -> dict | None:
         or not args.fresh_output_required
         or not args.require_clean_git
         or not args.required_head_commit
+    )
+    if args.g4_prerequisite_smoke:
+        smoke_invalid = (
+            args.hard_stop_physical_cycle is not None
+            or _parse_cycles(args.mechanical_residual_export_steps) != [304]
+            or int(args.n_cycles_physical) != 61
+            or args.mechanical_risk_mode not in {"absent", "on"}
+        )
+        if common_invalid or smoke_invalid:
+            raise ValueError("G4 prerequisite smoke arguments do not match the frozen contract")
+    elif common_invalid or (
+        args.hard_stop_physical_cycle != 92
+        or _parse_cycles(args.mechanical_residual_export_steps) != [379, 409]
+        or int(args.n_cycles_physical) < 92
     ):
         raise ValueError("G4 resume arguments do not match the frozen U0.12 protocol")
     if args.mechanical_risk_mode == "on" and (
@@ -366,6 +388,15 @@ def _preflight_record(args: argparse.Namespace) -> dict:
         "require_clean_git": bool(args.require_clean_git),
         "fresh_output_required": bool(args.fresh_output_required),
         "required_head_commit": args.required_head_commit,
+        "g4_prerequisite_smoke": bool(args.g4_prerequisite_smoke),
+        "total_displacement_steps": 306 if args.g4_prerequisite_smoke else None,
+        "resume_start_raw_step": 301 if args.g4_prerequisite_smoke else None,
+        "last_executable_raw_step": 305 if args.g4_prerequisite_smoke else None,
+        "execution_authorized": (
+            bool(args.g4_prerequisite_smoke)
+            and args.mechanical_risk_mode == "absent"
+            and not args.preflight_only
+        ),
     }
 
 
@@ -592,7 +623,17 @@ def main(argv: list[str] | None = None) -> None:
         "damage_threshold": 0.95,
         "minimum_nodes": 3,
         "hard_stop_physical_cycle": args.hard_stop_physical_cycle,
-        "minimum_archive_raw_step": 409 if args.resume_bundle else None,
+        "minimum_archive_raw_step": (
+            305 if args.g4_prerequisite_smoke else (409 if args.resume_bundle else None)
+        ),
+    }
+    config.fatigue_dict["g4_prerequisite_smoke"] = {
+        "enable": bool(args.g4_prerequisite_smoke),
+        "total_displacement_steps": 306,
+        "start_raw_step": 301,
+        "end_raw_step": 305,
+        "allowed_raw_steps": [301, 302, 303, 304, 305],
+        "risk_intervention": "absent",
     }
     config.disp_cyclic = disp_steps
 
@@ -627,6 +668,7 @@ def main(argv: list[str] | None = None) -> None:
         f"{'_femIrrGP3' if args.fem_irr_penalty else ''}"
         f"{'_hardAlphaRecoverU0' if args.hard_alpha_recovery_step else ''}"
         f"_mechRisk-{args.mechanical_risk_mode}"
+        f"{'_g4PrereqSmoke' if args.g4_prerequisite_smoke else ''}"
         f"_{step_tag}"
         f"{'_compile' if args.compile else ''}"
     )
@@ -682,6 +724,7 @@ def main(argv: list[str] | None = None) -> None:
         "mechanical_residual_export_steps": _residual_export_steps,
         "boundary_first_detect_receipt": bool(args.boundary_first_detect_receipt),
         "hard_stop_physical_cycle": args.hard_stop_physical_cycle,
+        "g4_prerequisite_smoke": bool(args.g4_prerequisite_smoke),
         "training_authorized_by_packet": False,
         "note": "Presence of this file is not user authorization; launch authorization is external.",
     }
@@ -708,6 +751,7 @@ def main(argv: list[str] | None = None) -> None:
             f"boundary_first_detect_receipt: {bool(args.boundary_first_detect_receipt)}\n"
         )
         handle.write(f"hard_stop_physical_cycle: {args.hard_stop_physical_cycle}\n")
+        handle.write(f"g4_prerequisite_smoke: {bool(args.g4_prerequisite_smoke)}\n")
         handle.write(f"coarse_mesh_file: {config.coarse_mesh_file}\n")
         handle.write(f"fine_mesh_file: {config.fine_mesh_file}\n")
         handle.write(f"mesh_tag: {mesh_tag}\n")

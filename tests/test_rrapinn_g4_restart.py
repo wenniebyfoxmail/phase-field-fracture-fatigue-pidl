@@ -179,3 +179,64 @@ def test_runner_resume_requires_the_full_frozen_protocol(tmp_path: Path):
     assert runner._validate_restart_args(parser.parse_args(frozen))["start_state"]["raw_step"] == 300
     with pytest.raises(ValueError, match="frozen U0.12 protocol"):
         runner._validate_restart_args(parser.parse_args(frozen[:-2]))
+
+
+def test_runner_prerequisite_smoke_is_exact_and_risk_on_cannot_execute(tmp_path: Path):
+    bundle = make_bundle(tmp_path / "bundle")
+    manifest_sha = sha256(bundle / "manifest.json")
+    spec = importlib.util.spec_from_file_location(
+        "g4_smoke_runner", ROOT / "SENS_tensile" / "run_fem_mesh_probe_driver_umax.py"
+    )
+    assert spec and spec.loader
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+    parser = runner._build_parser()
+    smoke = [
+        "0.12", "--resume-bundle", str(bundle),
+        "--resume-bundle-manifest-sha256", manifest_sha,
+        "--g4-prerequisite-smoke", "--n-cycles-physical", "61",
+        "--mechanical-risk-mode", "absent",
+        "--mechanical-residual-export-steps", "304",
+        "--boundary-first-detect-receipt", "--hard-alpha-recovery-step",
+        "--displacement-steps", "0.03,0.06,0.09,0.12,0",
+        "--history-driver-reduction-mode", "fem_gp_tri3_g_mean",
+        "--fem-irr-penalty", "--epochs-rprop", "10000",
+        "--epochs-lbfgs", "0", "--optim-rel-tol", "5e-7",
+        "--fresh-output-required", "--require-clean-git",
+        "--required-head-commit", "a" * 40,
+    ]
+    args = parser.parse_args(smoke)
+    assert runner._validate_restart_args(args)["start_state"]["next_raw_step"] == 301
+    assert runner._preflight_record(args)["last_executable_raw_step"] == 305
+    for bad_cycles in ("60", "62"):
+        bad = smoke.copy()
+        bad[bad.index("61")] = bad_cycles
+        with pytest.raises(ValueError, match="prerequisite smoke"):
+            runner._validate_restart_args(parser.parse_args(bad))
+    risk_on = smoke.copy()
+    risk_on[risk_on.index("absent")] = "on"
+    risk_on += ["--mechanical-risk-lambda", "0.000549728557462236"]
+    with pytest.raises(ValueError, match="prerequisite smoke"):
+        runner._validate_restart_args(parser.parse_args(risk_on))
+    risk_on.append("--preflight-only")
+    assert runner._validate_restart_args(parser.parse_args(risk_on))
+
+    for mutation in (
+        ["--mechanical-risk-mode", "off"],
+        ["--hard-stop-physical-cycle", "92"],
+        ["--mechanical-residual-export-steps", "305"],
+    ):
+        bad = smoke.copy()
+        flag, value = mutation
+        if flag in bad:
+            bad[bad.index(flag) + 1] = value
+        else:
+            bad += mutation
+        with pytest.raises(ValueError, match="prerequisite smoke"):
+            runner._validate_restart_args(parser.parse_args(bad))
+
+    no_resume = smoke.copy()
+    start = no_resume.index("--resume-bundle")
+    del no_resume[start:start + 4]
+    with pytest.raises(ValueError, match="requires the frozen resume bundle"):
+        runner._validate_restart_args(parser.parse_args(no_resume))

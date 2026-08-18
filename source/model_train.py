@@ -20,6 +20,7 @@ model_train.py  ★ 相比 Manav 原始版本的修改
 import numpy as np
 import torch
 import time
+import json
 from pathlib import Path
 from contextlib import contextmanager
 import matplotlib
@@ -46,6 +47,7 @@ from williams_features import compute_x_tip_psi
 from adaptive_sampling import compute_adaptive_weights
 
 from inverse_params import TrainablePositiveScalar, scalar_value
+from rrapinn_g4_smoke_contract import validate_completion, validate_start
 
 
 def _resolve_f_fatigue(f_fatigue):
@@ -1325,6 +1327,23 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             _did_restore = True
             print(f"[Checkpoint] 从 step {_last_j} 恢复，继续 step {start_j}/{len(disp)-1}")
 
+    _g4_smoke_cfg = fatigue_dict.get('g4_prerequisite_smoke', {}) or {}
+    _g4_smoke_enabled = fatigue_on and bool(_g4_smoke_cfg.get('enable', False))
+    _g4_smoke_expected_steps = [301, 302, 303, 304, 305]
+    _g4_smoke_actual_steps = []
+    _g4_smoke_natural_exhaustion = False
+    if _g4_smoke_enabled:
+        validate_start(
+            displacement_count=len(disp),
+            start_raw_step=start_j,
+            configured_steps=_g4_smoke_cfg.get('allowed_raw_steps'),
+            configured_count=_g4_smoke_cfg.get('total_displacement_steps'),
+            configured_start=_g4_smoke_cfg.get('start_raw_step'),
+            configured_end=_g4_smoke_cfg.get('end_raw_step'),
+            risk_intervention=_g4_smoke_cfg.get('risk_intervention'),
+            risk_key_present='mechanical_residual_risk' in fatigue_dict,
+        )
+
     # -------------------------------------------------------------------------
     # ★ Helper: 从 .npy 恢复逐 cycle history list（修正长期 bug）
     # 之前 restore 只恢复 NN 权重 + hist_alpha/hist_fat，逐 cycle history lists
@@ -1599,6 +1618,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # 主循环：每次迭代对应一个加载步（单调模式）或一个完整循环（疲劳模式）
     # =========================================================================
     for j, disp_i in enumerate(disp[start_j:], start=start_j):
+        if _g4_smoke_enabled:
+            if int(j) not in _g4_smoke_expected_steps:
+                raise RuntimeError(f"G4 prerequisite smoke observed forbidden raw step {j}")
+            _g4_smoke_actual_steps.append(int(j))
         field_comp.lmbda = torch.tensor(disp_i).to(device)
         if (j % _log_every == 0) or _frac_detected or _dense_sampling:
             print(f'idx: {j}; displacement/amplitude: {field_comp.lmbda}')
@@ -2756,6 +2779,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
                         np.array(_inverse_alpha_T_history))
             break
+    else:
+        _g4_smoke_natural_exhaustion = True
 
     # 循环正常结束（跑完所有圈）也保存历史
     if fatigue_on and E_el_history:
@@ -2790,3 +2815,23 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_on and _inverse_alpha_T_history:
         np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
                 np.array(_inverse_alpha_T_history))
+    if _g4_smoke_enabled:
+        validate_completion(
+            actual_raw_steps=_g4_smoke_actual_steps,
+            natural_exhaustion=_g4_smoke_natural_exhaustion,
+        )
+        _smoke_receipt = {
+            "schema": "rrapinn-g4-prerequisite-smoke-execution-v1",
+            "training_authorized": False,
+            "risk_intervention": "absent",
+            "total_displacement_steps": len(disp),
+            "resume_start_raw_step": start_j,
+            "actual_raw_steps": _g4_smoke_actual_steps,
+            "archive_endpoint_raw_step": _g4_smoke_actual_steps[-1],
+            "termination": "natural_schedule_exhaustion",
+            "claim_boundary": "Tooling-only producer smoke; no efficacy or G4 launch claim.",
+        }
+        _smoke_receipt_path = trainedModel_path.parent / 'g4_prerequisite_smoke_execution.json'
+        with _smoke_receipt_path.open('x', encoding='utf-8') as _handle:
+            json.dump(_smoke_receipt, _handle, indent=2, sort_keys=True)
+            _handle.write('\n')
