@@ -781,11 +781,26 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # ★ 若已有预训练权重（中断续训），直接加载并跳过预训练
     # =========================================================================
     _init_ckpt = trainedModel_path / Path('trained_1NN_initTraining.pt')
+    _pretrain_cfg = (training_dict or {}).get('pretrain', {}) or {}
+    _pretrain_mode = str(_pretrain_cfg.get('mode', 'default'))
+    if _pretrain_mode not in {'default', 'off'}:
+        raise ValueError(
+            f"unsupported pretrain.mode={_pretrain_mode!r}; expected 'default' or 'off'"
+        )
     if _init_ckpt.exists():
         # ── 断点续训：跳过预训练 ──────────────────────────────────────────────
         print(f"[Checkpoint] 检测到预训练权重，跳过预训练")
         field_comp.net.load_state_dict(
             torch.load(_init_ckpt, map_location=device))
+    elif _pretrain_mode == 'off':
+        print(
+            "[Pretrain] mode=off: skip coarse-mesh initial training; "
+            "main solve starts from the seeded NN initialization"
+        )
+        (trainedModel_path / Path('pretrain_skipped.txt')).write_text(
+            "pretrain.mode=off; no trained_1NN_initTraining.pt was written\n",
+            encoding='utf-8',
+        )
     else:
         # ── 从头训练：执行预训练 ──────────────────────────────────────────────
         inp, T_conn, area_T, hist_alpha = prep_input_data(

@@ -17,6 +17,12 @@ def main() -> None:
     parser.add_argument("--epochs", type=int, default=10000)
     parser.add_argument("--mesh-file", default="meshed_geom_fem_soft_hist0.msh")
     parser.add_argument("--tag", default="topologyKAN_singleFrontRBF_c1_gate_v1")
+    parser.add_argument(
+        "--pretrain-mode",
+        choices=("default", "off"),
+        default="default",
+        help="Use the legacy coarse-mesh pretraining or start from seeded initialization.",
+    )
     parser.add_argument("--force-cpu", action="store_true")
     args = parser.parse_args()
 
@@ -69,6 +75,7 @@ def main() -> None:
     config.fine_mesh_file = args.mesh_file
     config.optimizer_dict["n_epochs_RPROP"] = int(args.epochs)
     config.optimizer_dict["n_epochs_LBFGS"] = 0
+    config.training_dict["pretrain"] = {"mode": args.pretrain_mode}
 
     factors = np.asarray([0.25, 0.50, 0.75, 1.00, 0.00], dtype=float)
     config.fatigue_dict["disp_max"] = float(args.umax)
@@ -90,7 +97,7 @@ def main() -> None:
 
     tag = (
         f"topologyKAN_singleFrontRBF_Umax{args.umax}_c1_seed{args.seed}"
-        f"_ep{args.epochs}_{args.tag}"
+        f"_ep{args.epochs}_pretrain-{args.pretrain_mode}_{args.tag}"
     )
     config.model_path = config.resolve_archive_dir(here, tag)
     config.trainedModel_path = config.model_path / "best_models"
@@ -115,18 +122,19 @@ def main() -> None:
             "n_training_steps: 5",
             "loading: five-substep 0.25,0.50,0.75,1.00,unload",
             f"epochs_per_solve_cap: {args.epochs}",
+            f"pretrain_mode: {args.pretrain_mode}",
             "early_stopping_rel_tol: 5e-7",
             f"mesh: {args.mesh_file}",
             f"architecture: {model_cfg}",
             "gate: improve c1/s4 displacement, damage RMSE, and high-damage support versus compact KAN-RBF",
-            "external_gpt_pro_review: unavailable; result remains quarantine",
+            "external_gpt_pro_review: approved exactly one pretrain-off c1 discriminator; no rescue sweep or lifetime escalation",
         ]) + "\n",
         encoding="utf-8",
     )
 
     print("=" * 72)
     print("Topology-KAN + single-front RBF c1 field gate")
-    print(f"Umax={args.umax} epochs={args.epochs}")
+    print(f"Umax={args.umax} epochs={args.epochs} pretrain_mode={args.pretrain_mode}")
     print(f"archive={config.model_path}")
     print(f"device={config.device}")
     print("claim_class=field-mechanism-discriminator-quarantine")
