@@ -80,3 +80,26 @@ seed, width change, second rescue or automatic lifetime launch is allowed.
 Ghost-band removal must be described as constraint-enforced topology behavior,
 not learned fracture-mechanism recovery. The result remains quarantine because
 the field gate failed; the external-review gap is now closed.
+
+## Final pretraining-off discriminator
+
+The single GPT-Pro-permitted follow-up ran at commit `edc1655` as
+`pf_topologykan_singlefront_pretrainoff_c1_edc1655_20260818_1130`. It kept the
+same 5,459-parameter architecture, seed, U0.12 c1 five-substep protocol,
+losses, masks, 10,000 RPROP cap and stopping; only legacy coarse pretraining
+was disabled. The archive contains `pretrain_skipped.txt` and no
+`trained_1NN_initTraining.pt`.
+
+The result is practically unchanged from default pretraining. Whole/process-
+zone displacement relative L2 are `0.033747/0.077930`, whole/process-zone
+damage RMSE are `0.041258/0.088791`, and damage>=0.95 IoU/support are
+`0.506549/1.974141`. It still loses to compact KAN in both process-zone errors,
+so the frozen conjunctive gate fails. Pretraining is not the missing cause.
+
+Final decision: close the tested coupled KAN+RBF route. No tuning, alternate
+seed, width change, second rescue or lifetime run. This does not reject KAN as
+a displacement-only basis; that is now a separate low-dimensional physical-
+coordinate question.
+
+Primary decision:
+`local_archive/after_strict_setting_alignment/pidl_result/pf_topologykan_singlefront_pretrainoff_u012_c1_20260818/analysis/decision.md`.
