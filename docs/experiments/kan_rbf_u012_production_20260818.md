@@ -73,7 +73,10 @@ displacement relative L2 (`0.070660 -> 0.033636`), improved damage >= 0.95 IoU
 The single corridor is too thick and extends too far ahead of the FEM c1 tip.
 
 Verdict: mixed morphology improvement but failed frozen joint gate. No lifetime
-continuation. Close coupled KAN+RBF architecture work; retain KAN only as a
-possible displacement representation within the separate low-dimensional
-physical-coordinate route. GPT Pro review remains unavailable, so this result
-is quarantine.
+continuation. Post-run GPT Pro review accepts no-lifetime and closure of broad
+coupled sweeps, but permits exactly one identical pretraining-off c1 diagnostic
+to resolve the initialization/pretraining confounder. No tuning, alternate
+seed, width change, second rescue or automatic lifetime launch is allowed.
+Ghost-band removal must be described as constraint-enforced topology behavior,
+not learned fracture-mechanism recovery. The result remains quarantine because
+the field gate failed; the external-review gap is now closed.
