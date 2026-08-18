@@ -71,6 +71,37 @@ arrays, irreversibility and native-peak equality. U0.12 c82/s5 is the replayed
 nodal state and is not substituted from c83 or `d_elem`. Request 28 is complete;
 no additional FEM replay is authorized by this acceptance.
 
+## 2026-07-30 · Request 27: Hard5 U0.13 c5 GP/stagger driver probe
+
+**Goal**: fresh replay the locked Hard5 U0.13 case only through cycle 5 and
+export the minimum per-Gauss-point/per-stagger state needed to locate the c5
+raw-`psi` divergence between canonical GRIPHFiTH (`peak=1.2301`) and the Mac
+Ferrite adapter (`peak≈0.45--0.47`). This is instrumentation only; do not change
+physics, tolerances, mesh, state0, or gates.
+
+**Full forwardable note**:
+`docs/handovers/windows_griphfith_request_27_u013_c5_probe_20260730.md`.
+
+**INPUT file**: fresh copy of the existing
+`SENS_hard5_u013_eta0_canonical_v1` driver/source, limited to c1--c5. Never
+overwrite or resume backward from the canonical directory.
+
+**Mesh**: exact existing 86,408-cell native Q4 mesh and ordering; no remesh.
+
+**Expected outputs**: a fresh `hard5_u013_c5_gp_stagger_probe_20260730`
+handoff containing c4-unload/c5 committed anchors, all c5 substeps, the c5 peak
+step-4 stagger trace at four GPs per element, mesh/quadrature, indices,
+cycle-level non-perturbation audit, source/provenance/logs and SHA256SUMS.
+
+**Acceptance criteria**: 25/25 substeps converge; instrumented c1--c5 fields
+reproduce the canonical archive; c5 GP cycle-maximum mean matches canonical
+`psi_elem` with target max-abs `<=1e-12`; all timing labels and residuals are
+explicit. If fresh replay does not reproduce canonical fields, stop and report
+a provenance blocker rather than changing settings.
+
+**Priority**: high diagnostic; blocks Q2, corpus generation and network
+training. Do not start Request 26 or any other sweep as part of this request.
+
 ## 2026-07-20 · Request 26: matched eta0 multi-Umax trajectories and sensor-ready exports
 
 **Goal**: build the smallest internally matched FEM trajectory family needed to test observed-state next-cycle forecasting, c87-like transition assimilation, and leave-one-physical-trajectory-out validation. The scientific question is whether changing only the applied cyclic amplitude produces enough transition diversity for a model to learn/identify late fracture-regime changes without mixing incompatible FEM families.
