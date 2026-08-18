@@ -62,6 +62,15 @@ damage from element data.
 **Priority**: high, export-only diagnostic. This unlocks a frozen comparison;
 it does not authorize PIDL retraining or a new architecture sweep.
 
+### [update] 2026-08-18 — COMPLETE and independently accepted
+
+Received `hard5_first_detect_state_semantics_export_20260817`. Mac verified all
+15 hashes, all 31 producer checks, exact c121/c82/c58 s5 transition semantics,
+exact c122/c83/c59 s4 same-state semantics, commit timing, finite/bounded
+arrays, irreversibility and native-peak equality. U0.12 c82/s5 is the replayed
+nodal state and is not substituted from c83 or `d_elem`. Request 28 is complete;
+no additional FEM replay is authorized by this acceptance.
+
 ## 2026-07-20 · Request 26: matched eta0 multi-Umax trajectories and sensor-ready exports
 
 **Goal**: build the smallest internally matched FEM trajectory family needed to test observed-state next-cycle forecasting, c87-like transition assimilation, and leave-one-physical-trajectory-out validation. The scientific question is whether changing only the applied cyclic amplitude produces enough transition diversity for a model to learn/identify late fracture-regime changes without mixing incompatible FEM families.

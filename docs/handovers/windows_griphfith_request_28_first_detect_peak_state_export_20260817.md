@@ -217,3 +217,24 @@ BLOCKED
   whether a minimal replay from an earlier checkpoint is possible
   estimated replay scope, without launching it unless it stays within this request
 ```
+
+## Mac acceptance update — 2026-08-18
+
+Windows-FEM returned
+`hard5_first_detect_state_semantics_export_20260817`. Mac independently
+recomputed all 15 package hashes, inspected all 31 producer check flags, and
+verified the six state cycle/substep/load labels, commit flags, finite/bounded
+arrays, transition irreversibility, native-peak equality and first-hit event
+cycles. The package passes the Request 28 state-semantics gate.
+
+The U0.12 c82/s5 state is accepted as a replayed post-commit nodal snapshot;
+no c83 state or element reduction is used as its substitute. The missing
+U0.12 VTK anchor remains explicitly unavailable and does not invalidate the
+replay payload.
+
+Independent evidence:
+
+`local_archive/after_strict_setting_alignment/fem/request28_first_detect_state_semantics_export_20260817/analysis/decision.md`
+
+Scope remains narrow: the package contains three immediate pre-event -> event
+pairs, not the earlier forecast-origin sequence needed to validate early RUL.
