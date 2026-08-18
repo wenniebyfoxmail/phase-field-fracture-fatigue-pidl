@@ -19,7 +19,9 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -121,7 +123,7 @@ def _diag_steps(
     return sorted(steps)
 
 
-def main() -> None:
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("umax", type=float)
     parser.add_argument("--n-cycles-physical", "--n-cycles", dest="n_cycles_physical",
@@ -198,7 +200,108 @@ def main() -> None:
               "alpha=(alpha_raw only), uv=(u,v only)."),
     )
     parser.add_argument("--force-cpu", action="store_true")
-    args = parser.parse_args()
+    parser.add_argument(
+        "--mechanical-risk-mode",
+        choices=("absent", "off", "on"),
+        default="absent",
+        help=("G3 tri-state intervention: absent removes the config key, off "
+              "installs an explicitly disabled key, and on enables the frozen risk term."),
+    )
+    parser.add_argument("--mechanical-risk-lambda", type=float, default=None)
+    parser.add_argument("--mechanical-risk-alpha", type=float, default=0.85)
+    parser.add_argument("--mechanical-risk-e-ref", type=float, default=1.0)
+    parser.add_argument("--mechanical-risk-l-ref", type=float, default=1.0)
+    parser.add_argument("--init-checkpoint", default=None,
+                        help="Shared pretraining state_dict copied into each G3 arm.")
+    parser.add_argument("--init-checkpoint-sha256", default=None,
+                        help="Required expected SHA-256 when --init-checkpoint is used.")
+    parser.add_argument("--preflight-only", action="store_true",
+                        help="Validate arguments and print canonical JSON; create no run directory.")
+    parser.add_argument("--require-clean-git", action="store_true")
+    parser.add_argument("--fresh-output-required", action="store_true")
+    parser.add_argument("--required-head-commit", default=None)
+    return parser
+
+
+def _mechanical_risk_config(args: argparse.Namespace) -> dict | None:
+    mode = args.mechanical_risk_mode
+    coefficient = args.mechanical_risk_lambda
+    if not 0.0 < float(args.mechanical_risk_alpha) < 1.0:
+        raise ValueError("--mechanical-risk-alpha must lie strictly between zero and one")
+    if not np.isfinite(args.mechanical_risk_e_ref) or args.mechanical_risk_e_ref <= 0.0:
+        raise ValueError("--mechanical-risk-e-ref must be finite and positive")
+    if not np.isfinite(args.mechanical_risk_l_ref) or args.mechanical_risk_l_ref <= 0.0:
+        raise ValueError("--mechanical-risk-l-ref must be finite and positive")
+    if mode == "on":
+        if coefficient is None or not np.isfinite(coefficient) or coefficient <= 0.0:
+            raise ValueError("risk-on requires a finite positive --mechanical-risk-lambda")
+        return {
+            "enable": True,
+            "lambda": float(coefficient),
+            "alpha": float(args.mechanical_risk_alpha),
+            "Umax": float(args.umax),
+            "E_ref": float(args.mechanical_risk_e_ref),
+            "L_ref": float(args.mechanical_risk_l_ref),
+        }
+    if coefficient is not None:
+        raise ValueError("--mechanical-risk-lambda is only valid in risk-on mode")
+    if mode == "off":
+        return {"enable": False}
+    return None
+
+
+def _validate_checkpoint_args(args: argparse.Namespace) -> dict | None:
+    if bool(args.init_checkpoint) != bool(args.init_checkpoint_sha256):
+        raise ValueError("--init-checkpoint and --init-checkpoint-sha256 are required together")
+    if not args.init_checkpoint:
+        return None
+    path = Path(args.init_checkpoint).expanduser().resolve()
+    if not path.is_file():
+        raise ValueError(f"initial checkpoint does not exist: {path}")
+    expected = args.init_checkpoint_sha256.lower()
+    if len(expected) != 64 or any(ch not in "0123456789abcdef" for ch in expected):
+        raise ValueError("--init-checkpoint-sha256 must be 64 lowercase hex characters")
+    actual = _file_sha256(path)
+    if actual != expected:
+        raise ValueError(f"initial checkpoint SHA-256 mismatch: expected {expected}, got {actual}")
+    return {"path": str(path), "sha256": actual}
+
+
+def _preflight_record(args: argparse.Namespace) -> dict:
+    risk = _mechanical_risk_config(args)
+    checkpoint = _validate_checkpoint_args(args)
+    return {
+        "schema": "rrapinn-g3-runner-preflight-v1",
+        "training_launched": False,
+        "umax": float(args.umax),
+        "seed": int(args.seed),
+        "hidden_layers": int(args.hidden_layers),
+        "neurons": int(args.neurons),
+        "n_cycles_physical": int(args.n_cycles_physical),
+        "epochs_rprop": args.epochs_rprop,
+        "epochs_lbfgs": args.epochs_lbfgs,
+        "mechanical_risk_mode": args.mechanical_risk_mode,
+        "mechanical_residual_risk": risk,
+        "init_checkpoint": checkpoint,
+        "require_clean_git": bool(args.require_clean_git),
+        "fresh_output_required": bool(args.fresh_output_required),
+        "required_head_commit": args.required_head_commit,
+    }
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+
+    try:
+        risk_config = _mechanical_risk_config(args)
+        init_checkpoint = _validate_checkpoint_args(args)
+    except ValueError as exc:
+        parser.error(str(exc))
+
+    if args.preflight_only:
+        print(json.dumps(_preflight_record(args), indent=2, sort_keys=True))
+        return
 
     if min(args.graph_scale, args.graph_uv_scale, args.graph_alpha_scale,
            args.graph_latent_scale) < 0.0:
@@ -225,6 +328,16 @@ def main() -> None:
     ]
 
     here = Path(__file__).resolve().parent
+    if args.require_clean_git:
+        status = _git_value(here, "status", "--porcelain")
+        if status:
+            raise RuntimeError("--require-clean-git failed: tracked or untracked changes present")
+    if args.required_head_commit:
+        actual_head = _git_value(here, "rev-parse", "HEAD")
+        if actual_head != args.required_head_commit:
+            raise RuntimeError(
+                f"producer HEAD mismatch: expected {args.required_head_commit}, got {actual_head}"
+            )
     os.chdir(here)
     sys.path.insert(0, str(here))
     sys.path.insert(0, str(here.parent / "source"))
@@ -243,6 +356,7 @@ def main() -> None:
     config.fatigue_dict["psi_hack"]["enable"] = False
     config.fatigue_dict["tip_weight_cfg"]["enable"] = False
     config.fatigue_dict["void_notch_mask"]["enable"] = False
+    config.local_patch_dict["enable"] = False
     if hasattr(config, "adaptive_sampling_dict"):
         config.adaptive_sampling_dict["enable"] = False
     if hasattr(config, "sidecar_S1_dict"):
@@ -345,6 +459,10 @@ def main() -> None:
         "enable": True,
         "mode": args.history_driver_reduction_mode,
     }
+    if risk_config is None:
+        config.fatigue_dict.pop("mechanical_residual_risk", None)
+    else:
+        config.fatigue_dict["mechanical_residual_risk"] = risk_config
     config.fatigue_dict["initial_alpha_protocol"] = {
         "enable": bool(args.hard_alpha_recovery_step),
         "mode": "uniform_current_alpha",
@@ -405,15 +523,28 @@ def main() -> None:
         f"{'_' + _format_eta_tag(args.res_stiffness) if args.res_stiffness > 0.0 else ''}"
         f"{'_femIrrGP3' if args.fem_irr_penalty else ''}"
         f"{'_hardAlphaRecoverU0' if args.hard_alpha_recovery_step else ''}"
+        f"_mechRisk-{args.mechanical_risk_mode}"
         f"_{step_tag}"
         f"{'_compile' if args.compile else ''}"
     )
     config.model_path = config.resolve_archive_dir(here, dir_name)
     config.trainedModel_path = config.model_path / Path("best_models/")
     config.intermediateModel_path = config.model_path / Path("intermediate_models/")
+    if args.fresh_output_required and any(config.model_path.iterdir()):
+        raise RuntimeError(f"fresh G3 output required but archive is non-empty: {config.model_path}")
     config.model_path.mkdir(parents=True, exist_ok=True)
     config.trainedModel_path.mkdir(parents=True, exist_ok=True)
     config.intermediateModel_path.mkdir(parents=True, exist_ok=True)
+    if init_checkpoint is not None:
+        init_destination = config.trainedModel_path / "trained_1NN_initTraining.pt"
+        if init_destination.exists():
+            existing_sha = _file_sha256(init_destination)
+            if existing_sha != init_checkpoint["sha256"]:
+                raise RuntimeError(
+                    f"refusing to overwrite different initialization checkpoint: {init_destination}"
+                )
+        else:
+            shutil.copy2(init_checkpoint["path"], init_destination)
     try:
         config.writer.close()
     except Exception:
@@ -423,6 +554,22 @@ def main() -> None:
     runner_git_commit = _git_value(here, "rev-parse", "HEAD")
     runner_git_branch = _git_value(here, "rev-parse", "--abbrev-ref", "HEAD")
     runner_sha256 = _file_sha256(runner_path)
+    provenance_path = config.model_path / "RUN_PROVENANCE.json"
+    provenance = {
+        "schema": "rrapinn-g3-run-provenance-v1",
+        "status": "prepared_not_completed",
+        "runner_git_commit": runner_git_commit,
+        "runner_git_branch": runner_git_branch,
+        "runner_sha256": runner_sha256,
+        "required_head_commit": args.required_head_commit,
+        "git_clean_required": bool(args.require_clean_git),
+        "mechanical_risk_mode": args.mechanical_risk_mode,
+        "mechanical_residual_risk": risk_config,
+        "init_checkpoint": init_checkpoint,
+        "training_authorized_by_packet": False,
+        "note": "Presence of this file is not user authorization; launch authorization is external.",
+    }
+    provenance_path.write_text(json.dumps(provenance, indent=2), encoding="utf-8")
 
     with open(config.model_path / "model_settings.txt", "w", encoding="utf-8") as handle:
         handle.write("runner: run_fem_mesh_probe_driver_umax.py\n")
@@ -492,6 +639,13 @@ def main() -> None:
         handle.write(f"diag_physical_cycles: {diag_physical_cycles}\n")
         handle.write(f"diag_full_physical_cycles: {diag_full_physical_cycles}\n")
         handle.write(f"void_notch_mask_enable: {fat['void_notch_mask']['enable']}\n")
+        handle.write("local_patch_enable: False\n")
+        handle.write("adaptive_sampling_enable: False\n")
+        handle.write("delta1_enable: False\n")
+        handle.write("j_path_enable: False\n")
+        handle.write(f"mechanical_risk_mode: {args.mechanical_risk_mode}\n")
+        handle.write(f"mechanical_residual_risk: {fat.get('mechanical_residual_risk', '<absent>')}\n")
+        handle.write(f"init_checkpoint: {init_checkpoint}\n")
         handle.write(f"element_diagnostics_steps: {diag_steps}\n")
         handle.write("element_diagnostics_fields: mechanics+energy+driver\n")
         handle.write(
@@ -556,6 +710,8 @@ def main() -> None:
             f"cN_unloaded -> {recovery_step_offset}+{len(cycle_disp_values)}*(N-1)+{unload_substep}"
         )
     print("  void mask      = disabled")
+    print("  other sampling = local_patch/adaptive/delta1/J-path disabled")
+    print(f"  mechanical risk= {args.mechanical_risk_mode} | {risk_config}")
     print(f"  elem diag      = {diag_steps}")
     print("  gradient diag  = pre-history-refresh every step")
     print(f"  compile        = {bool(args.compile)}")
@@ -567,6 +723,26 @@ def main() -> None:
     main_path = here / "main.py"
     exec(compile(main_path.read_text(encoding="utf-8"), str(main_path), "exec"),
          {"__name__": "__main__", "__file__": str(main_path)})
+    checkpoint_rows = []
+    for path in sorted(config.trainedModel_path.glob("checkpoint_step_*.pt")):
+        checkpoint_rows.append({"name": path.name, "sha256": _file_sha256(path)})
+    if args.fresh_output_required and not checkpoint_rows:
+        raise RuntimeError("G3 smoke completed without writing a step checkpoint")
+    metrics = {
+        "schema": "rrapinn-g3-smoke-metrics-v1",
+        "execution_returned": True,
+        "mechanical_risk_mode": args.mechanical_risk_mode,
+        "mechanical_residual_risk": risk_config,
+        "checkpoint_count": len(checkpoint_rows),
+        "checkpoints": checkpoint_rows,
+        "claim_boundary": "Producer smoke completion only; no efficacy claim.",
+    }
+    (config.model_path / "g3_smoke_metrics.json").write_text(
+        json.dumps(metrics, indent=2), encoding="utf-8"
+    )
+    provenance["status"] = "execution_returned_pending_cross_arm_validation"
+    provenance["checkpoint_count"] = len(checkpoint_rows)
+    provenance_path.write_text(json.dumps(provenance, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":
