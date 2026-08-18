@@ -151,17 +151,20 @@ lambda-trajectory audit, a contained-domain projector, and the final blind
 analyzer/producer validator/runtime receipt. Closing those blockers still does
 not itself authorize training.
 
-### G4 prerequisite implementation update
+### G4 prerequisite implementation and producer-smoke update
 
 The offline qualification is recorded in
 `rrapinn_g4_prerequisites_qualification_20260818.md`. The restart materializer,
 true-residual numerical core/hook, boundary receipt logic, fixed-lambda audit,
 contained-only projector and producer/blind evidence contracts pass their
-offline tests. This does not close producer-dependent evidence: the A replay,
-real hook smoke, external runtime receipts and sealed metrics do not yet exist.
-The c82/c83 exact-peak native-Q4 FEM exports also remain missing and are now
-requested as Windows-FEM Request 27. Therefore the track remains at
-`G4 launch blocked`; no U0.13/U0.11 access is permitted.
+offline tests. The separately authorized Taobo prerequisite smoke at commit
+`fb953855` then passed the exact A replay, real step304 residual hook, five-step
+boundary trace and external A runtime gate; independent review returned
+`APPROVE_PRODUCER_SMOKE_PACKET_ONLY`. B was preflighted but not executed.
+The c82/c83 exact-peak native-Q4 FEM exports remain missing, full A/B runtime
+and sealed metrics do not exist, and archive redirect behavior needs repair or
+verification. Therefore the track remains at `G4 launch blocked`; no
+U0.13/U0.11 access is permitted.
 
 ## Provisional A/B contract after G1
 
