@@ -15,6 +15,10 @@ from analysis.toy_road_t3_mechanism_20260819.evidence import (
     validate_t3_bindings,
     verify_compact_evidence,
 )
+from analysis.toy_road_t3_mechanism_20260819.mirror_to_onedrive import (
+    mirror_verified,
+    validate_source_tree,
+)
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -135,3 +139,59 @@ def test_sha256_file_matches_direct_hash(tmp_path: Path) -> None:
     path = tmp_path / "payload.bin"
     path.write_bytes(b"toy-road-t3")
     assert sha256_file(path) == _sha(path)
+
+
+def _tiny_mirror_source(tmp_path: Path) -> tuple[Path, list[Path]]:
+    output = tmp_path / "source-output"
+    (output / "substeps").mkdir(parents=True)
+    (output / "TERMINAL_MANIFEST.json").write_text("manifest", encoding="utf-8")
+    (output / "substeps" / "cycle_0001.mat").write_bytes(b"cycle-one")
+    evidence = tmp_path / "external.json"
+    evidence.write_text('{"status":"PASS"}', encoding="utf-8")
+    return output, [evidence]
+
+
+def test_mirror_refuses_existing_destination(tmp_path: Path) -> None:
+    output, evidence = _tiny_mirror_source(tmp_path)
+    destination = tmp_path / "destination"
+    destination.mkdir()
+    with pytest.raises(FileExistsError, match="destination exists"):
+        mirror_verified(output, evidence, destination)
+
+
+def test_validate_source_tree_rejects_symlink(tmp_path: Path) -> None:
+    output, _ = _tiny_mirror_source(tmp_path)
+    link = output / "linked-cycle.mat"
+    try:
+        link.symlink_to(output / "substeps" / "cycle_0001.mat")
+    except OSError:
+        pytest.skip("Windows symlink creation is unavailable")
+    with pytest.raises(ValueError, match="link/reparse point"):
+        validate_source_tree(output)
+
+
+def test_mirror_verifies_every_source_and_destination_byte(tmp_path: Path) -> None:
+    output, evidence = _tiny_mirror_source(tmp_path)
+    destination = tmp_path / "destination"
+    result = mirror_verified(output, evidence, destination)
+    assert result["status"] == "LOCAL_MIRROR_VERIFIED"
+    assert result["payload_file_count"] == 3
+    assert (destination / "output" / "substeps" / "cycle_0001.mat").read_bytes() == b"cycle-one"
+    assert (destination / "external_evidence" / "external.json").is_file()
+    assert (destination / "ONEDRIVE_PACKAGE.json").is_file()
+    assert (destination / "SHA256SUMS.txt").is_file()
+
+
+def test_mirror_fails_when_copy_is_corrupted(tmp_path: Path) -> None:
+    output, evidence = _tiny_mirror_source(tmp_path)
+    destination = tmp_path / "destination"
+
+    def corrupt_copy(source: Path, target: Path) -> None:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        payload = bytearray(Path(source).read_bytes())
+        payload[0] ^= 1
+        target.write_bytes(payload)
+
+    with pytest.raises(ValueError, match="copied payload SHA-256 mismatch"):
+        mirror_verified(output, evidence, destination, copier=corrupt_copy)
+    assert not (destination / "ONEDRIVE_PACKAGE.json").exists()
