@@ -4,6 +4,8 @@ import hashlib
 import json
 from pathlib import Path
 
+import h5py
+import numpy as np
 import pytest
 
 from analysis.toy_road_t3_mechanism_20260819.evidence import (
@@ -18,6 +20,15 @@ from analysis.toy_road_t3_mechanism_20260819.evidence import (
 from analysis.toy_road_t3_mechanism_20260819.mirror_to_onedrive import (
     mirror_verified,
     validate_source_tree,
+)
+from analysis.toy_road_t3_mechanism_20260819.mechanism import (
+    build_comparison_pairs,
+    classify_memory,
+    element_geometry,
+    load_mesh,
+    load_peak_fields,
+    process_zone,
+    reduce_field,
 )
 
 
@@ -195,3 +206,146 @@ def test_mirror_fails_when_copy_is_corrupted(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="copied payload SHA-256 mismatch"):
         mirror_verified(output, evidence, destination, copier=corrupt_copy)
     assert not (destination / "ONEDRIVE_PACKAGE.json").exists()
+
+
+def _matlab_string(value: str) -> np.ndarray:
+    return np.asarray([ord(char) for char in value], dtype=np.uint16)[:, None]
+
+
+def _write_synthetic_mesh(path: Path) -> None:
+    nodes = np.asarray(
+        [[0.0, 0.0], [1.0, 0.0], [2.0, 0.0], [0.0, 1.0], [1.0, 1.0], [2.0, 1.0]]
+    )
+    connectivity = np.asarray([[1, 2, 5, 4], [2, 3, 6, 5]], dtype=float)
+    with h5py.File(path, "w") as handle:
+        group = handle.create_group("mesh_geometry")
+        group.create_dataset("node_coords", data=nodes.T)
+        group.create_dataset("connectivity", data=connectivity.T)
+        for key, value in {
+            "mesh_sha256": "a" * 64,
+            "connectivity_sha256": "b" * 64,
+            "element_ordering_id": "element-order",
+            "gp_ordering_id": "gp-order",
+        }.items():
+            group.create_dataset(key, data=_matlab_string(value))
+
+
+def _write_synthetic_shard(
+    path: Path,
+    *,
+    cycle: int = 31,
+    ordinals: tuple[int, ...] = (1, 2, 3, 4, 5),
+    nan_field: bool = False,
+) -> None:
+    nstep, nelem, nnode = len(ordinals), 2, 6
+    peak_index = ordinals.index(4) if 4 in ordinals else 0
+    d_node = np.zeros((nstep, nnode), dtype=float)
+    d_node[peak_index, :] = np.linspace(0.0, 1.0, nnode)
+    gp = np.zeros((nstep, 4, nelem), dtype=float)
+    gp[peak_index, :, 0] = 1.0
+    gp[peak_index, :, 1] = 3.0
+    with h5py.File(path, "w") as handle:
+        group = handle.create_group("shard")
+        group.create_dataset("cycle", data=np.asarray([[cycle]], dtype=float))
+        group.create_dataset("substep_ordinal", data=np.asarray(ordinals, dtype=float)[:, None])
+        group.create_dataset("load_factor", data=np.linspace(0.25, 0.0, nstep)[:, None])
+        group.create_dataset("d_node", data=d_node)
+        for key in (
+            "d_gp",
+            "alpha_bar_gp",
+            "f_alpha_gp",
+            "g_gp",
+            "psi_raw_gp",
+            "psi_active_gp",
+        ):
+            values = gp.copy()
+            if nan_field and key == "alpha_bar_gp":
+                values[peak_index, 0, 0] = np.nan
+            group.create_dataset(key, data=values)
+        group.create_dataset("psi_raw_cyclemax_gp", data=gp[peak_index])
+        for key, value in {
+            "mesh_sha256": "a" * 64,
+            "element_ordering_id": "element-order",
+            "gp_ordering_id": "gp-order",
+            "runtime_lock_sha256": "c" * 64,
+            "family_contract_sha256": "d" * 64,
+            "case_physics_contract_sha256": "e" * 64,
+            "execution_input_lock_sha256": "f" * 64,
+        }.items():
+            group.create_dataset(key, data=_matlab_string(value))
+
+
+def test_load_mesh_converts_one_based_connectivity_and_computes_area(tmp_path: Path) -> None:
+    path = tmp_path / "mesh_geometry.mat"
+    _write_synthetic_mesh(path)
+    mesh = load_mesh(path)
+    assert mesh.connectivity.tolist() == [[0, 1, 4, 3], [1, 2, 5, 4]]
+    geometry = element_geometry(mesh)
+    np.testing.assert_allclose(geometry.areas, [1.0, 1.0])
+    np.testing.assert_allclose(geometry.centroids, [[0.5, 0.5], [1.5, 0.5]])
+
+
+def test_load_peak_fields_selects_stored_ordinal_four(tmp_path: Path) -> None:
+    path = tmp_path / "cycle_0031.mat"
+    _write_synthetic_shard(path)
+    fields = load_peak_fields(path, 31)
+    assert fields.cycle == 31
+    assert fields.substep_ordinal == 4
+    np.testing.assert_allclose(fields.d_node, np.linspace(0.0, 1.0, 6))
+    np.testing.assert_allclose(fields.gp_fields["alpha_bar_gp"].mean(axis=1), [1.0, 3.0])
+
+
+def test_loader_rejects_missing_s4_and_nan(tmp_path: Path) -> None:
+    missing = tmp_path / "missing.mat"
+    _write_synthetic_shard(missing, ordinals=(1, 2, 3, 5))
+    with pytest.raises(ValueError, match="exactly one stored substep ordinal 4"):
+        load_peak_fields(missing, 31)
+
+    invalid = tmp_path / "nan.mat"
+    _write_synthetic_shard(invalid, nan_field=True)
+    with pytest.raises(ValueError, match="non-finite dataset: alpha_bar_gp"):
+        load_peak_fields(invalid, 31)
+
+
+def test_reduce_field_matches_known_weighted_integral_and_percentiles() -> None:
+    values = np.asarray([1.0, 3.0])
+    areas = np.asarray([1.0, 1.0])
+    centroids = np.asarray([[0.5, 0.5], [1.5, 0.5]])
+    reduced = reduce_field(values, areas, centroids)
+    assert reduced["area_weighted_integral"] == pytest.approx(4.0)
+    assert reduced["area_weighted_mean"] == pytest.approx(2.0)
+    assert reduced["p50"] == pytest.approx(1.0)
+    assert reduced["p95"] == pytest.approx(3.0)
+    assert reduced["weighted_centroid_x"] == pytest.approx(1.25)
+
+
+def test_process_zone_uses_predeclared_threshold(tmp_path: Path) -> None:
+    path = tmp_path / "mesh_geometry.mat"
+    _write_synthetic_mesh(path)
+    geometry = element_geometry(load_mesh(path))
+    result = process_zone(np.asarray([0.0, 0.02]), geometry)
+    assert result["threshold"] == pytest.approx(0.0002)
+    assert result["support_area"] == pytest.approx(1.0)
+    assert result["centroid_x"] == pytest.approx(1.5)
+    assert result["centroid_y"] == pytest.approx(0.5)
+
+
+def test_comparison_pairs_include_p0_only_c73_without_t3_extrapolation() -> None:
+    pairs = build_comparison_pairs()
+    assert pairs["same_cycle"] == [20, 30, 31, 40, 60, 61, 68, 70, 71]
+    assert pairs["own_event"] == [("first_hit", 70, 68), ("confirmed", 73, 71)]
+    assert pairs["transitions"] == [(30, 31), (60, 61)]
+    assert pairs["p0_only"] == [73]
+
+
+def test_memory_requires_persistence_and_spatial_colocation() -> None:
+    assert (
+        classify_memory(
+            {"departure": True, "persistence": True, "spatial_colocation": True}
+        )
+        == "PERSISTENT_MEMORY_OBSERVED"
+    )
+    for missing in ("departure", "persistence", "spatial_colocation"):
+        evidence = {"departure": True, "persistence": True, "spatial_colocation": True}
+        evidence[missing] = False
+        assert classify_memory(evidence) == "MEMORY_NOT_ESTABLISHED"
