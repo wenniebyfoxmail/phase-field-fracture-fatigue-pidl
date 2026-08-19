@@ -128,10 +128,34 @@ def main() -> None:
                               "saved in element diagnostics. Other listed cycles "
                               "save only peak and final unloaded states."))
     parser.add_argument("--fracture-confirm-cycles", type=int, default=3)
+    parser.add_argument(
+        "--fixed-horizon",
+        action="store_true",
+        help=("Suppress the legacy raw-step fracture stop by setting its "
+              "confirmation window beyond this run. Diagnostics remain active."),
+    )
+    parser.add_argument(
+        "--recovery-only",
+        action="store_true",
+        help=("Run only the hard-alpha U=0 recovery/commit step. Requires "
+              "--hard-alpha-recovery-step and is intended to produce a shared fork."),
+    )
+    parser.add_argument(
+        "--archive-name",
+        default=None,
+        help="Explicit fresh archive directory name for gated producer workflows.",
+    )
     parser.add_argument("--plot-every", type=int, default=20)
     parser.add_argument("--compile", action="store_true")
     parser.add_argument("--force-cpu", action="store_true")
     args = parser.parse_args()
+
+    if args.recovery_only and not args.hard_alpha_recovery_step:
+        parser.error("--recovery-only requires --hard-alpha-recovery-step")
+    if args.archive_name is not None:
+        archive_name = args.archive_name.strip()
+        if not archive_name or archive_name in {".", ".."} or "/" in archive_name:
+            parser.error("--archive-name must be one non-empty path component")
 
     if args.force_cpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -203,6 +227,8 @@ def main() -> None:
         disp_steps = np.concatenate(([0.0], cyclic_disp_steps))
     else:
         disp_steps = cyclic_disp_steps
+    if args.recovery_only:
+        disp_steps = np.asarray([0.0], dtype=float)
     total_steps = int(len(disp_steps))
     recovery_step_offset = 1 if args.hard_alpha_recovery_step else 0
     peak_substep = _peak_substep_index(cycle_disp_values)
@@ -257,7 +283,11 @@ def main() -> None:
         "enable": bool(args.fem_irr_penalty),
         "mode": "fem_gp_tri3",
     }
-    config.fatigue_dict["fracture_confirm_cycles"] = int(args.fracture_confirm_cycles)
+    legacy_confirmation_steps = int(args.fracture_confirm_cycles)
+    if args.fixed_horizon:
+        legacy_confirmation_steps = total_steps + 1
+    config.fatigue_dict["fracture_confirm_cycles"] = legacy_confirmation_steps
+    config.fatigue_dict["disable_fracture_early_stop"] = bool(args.fixed_horizon)
     config.fatigue_dict["plot_every_n_cycles"] = int(args.plot_every)
     config.fatigue_dict["element_diagnostics"] = {
         "enable": True,
@@ -299,6 +329,8 @@ def main() -> None:
         f"_{step_tag}"
         f"{'_compile' if args.compile else ''}"
     )
+    if args.archive_name is not None:
+        dir_name = args.archive_name.strip()
     config.model_path = config.resolve_archive_dir(here, dir_name)
     config.trainedModel_path = config.model_path / Path("best_models/")
     config.intermediateModel_path = config.model_path / Path("intermediate_models/")
@@ -316,6 +348,17 @@ def main() -> None:
         handle.write(f"umax: {args.umax}\n")
         handle.write(f"n_cycles_physical: {args.n_cycles_physical}\n")
         handle.write(f"n_training_steps: {total_steps}\n")
+        handle.write(f"fixed_horizon: {bool(args.fixed_horizon)}\n")
+        handle.write(f"recovery_only: {bool(args.recovery_only)}\n")
+        handle.write(
+            "legacy_fracture_detector_semantics: raw retained steps; "
+            f"confirmation_steps={legacy_confirmation_steps}; "
+            f"stop_disabled={bool(args.fixed_horizon)}\n"
+        )
+        handle.write(
+            "cross_step_optimizer_state: none; RPROP/LBFGS optimizers are "
+            "recreated inside every retained-state solve and are not checkpointed\n"
+        )
         handle.write(f"seed: {args.seed}\n")
         handle.write(f"hidden_layers: {config.network_dict['hidden_layers']}\n")
         handle.write(f"neurons: {config.network_dict['neurons']}\n")
@@ -327,6 +370,17 @@ def main() -> None:
         handle.write(f"fine_mesh_file: {config.fine_mesh_file}\n")
         handle.write(f"mesh_tag: {mesh_tag}\n")
         handle.write(f"torch_compile: {bool(args.compile)}\n")
+        handle.write("exact_bc: False\n")
+        handle.write(
+            "BC_semantics: bottom u=v=0; top u=0 and v=prescribed_U; "
+            "horizontal displacement is fixed on both full horizontal edges\n"
+        )
+        handle.write(
+            f"material: E={config.mat_prop_dict['mat_E']}, "
+            f"nu={config.mat_prop_dict['mat_nu']}, l0={config.mat_prop_dict['l0']}, "
+            f"w1={config.mat_prop_dict['w1']}, "
+            f"residual_stiffness={config.PFF_model_dict.get('residual_stiffness', 0.0)}\n"
+        )
         handle.write("history_driver_mode: current_active\n")
         handle.write(f"history_driver_reduction: {fat['history_driver_reduction']}\n")
         handle.write(
@@ -350,6 +404,13 @@ def main() -> None:
         handle.write(f"void_notch_mask_enable: {fat['void_notch_mask']['enable']}\n")
         handle.write(f"element_diagnostics_steps: {diag_steps}\n")
         handle.write("element_diagnostics_fields: mechanics+energy+driver\n")
+        handle.write(
+            "driver_export_semantics: psi_raw_elem is direct undegraded tensile "
+            "energy from strain_energy_with_split; psi_solver_active_elem uses "
+            "the solver centroid degradation; psi_active_elem is the actual GP3-"
+            "reduced current-active history driver; g_history_driver_elem="
+            "psi_active_elem/psi_raw_elem\n"
+        )
         handle.write("gradient_diagnostics: pre_history_refresh_every_step\n")
         handle.write(
             "gradient_diagnostics_columns: step,E_el,E_d,E_hist,"
@@ -375,6 +436,10 @@ def main() -> None:
     print("PIDL FEM-mesh probe-averaged fatigue-driver reduction")
     print(f"  U_max          = {args.umax} | physical cycles = {args.n_cycles_physical}")
     print(f"  training steps = {total_steps} | seed = {args.seed}")
+    print(
+        f"  horizon mode   = {'fixed (legacy stop suppressed)' if args.fixed_horizon else 'legacy stop'}"
+    )
+    print(f"  recovery only  = {bool(args.recovery_only)}")
     print(
         f"  network        = {config.network_dict['hidden_layers']}x"
         f"{config.network_dict['neurons']}"

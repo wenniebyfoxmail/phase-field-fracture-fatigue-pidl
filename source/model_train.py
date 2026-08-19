@@ -35,6 +35,7 @@ from plotting import plot_field
 # ★ 新增：疲劳相关函数（仅在 fatigue_on=True 时实际调用）
 from compute_energy import (get_psi_plus_per_elem, compute_energy,
                             compute_energy_per_elem, gradients,
+                            strain_energy_with_split,
                             stress as effective_stress)
 from fatigue_history import (update_fatigue_history, compute_fatigue_degrad,
                               mirror_y_indices, mirror_alpha_y)
@@ -388,7 +389,8 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
                               oracle_target_elem=None,
                               oracle_mask_elem=None,
                               g_stiffness_override_elem=None,
-                              irreversibility_penalty_cfg=None):
+                              irreversibility_penalty_cfg=None,
+                              state_metadata=None):
     """Save cycle-end element fields for FEM/PIDL mechanism comparison."""
     out_dir.mkdir(parents=True, exist_ok=True)
     with torch.no_grad():
@@ -440,6 +442,9 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         eps_trace = eps_xx + eps_yy
         eps_eq = torch.sqrt(eps_xx**2 + eps_yy**2 + 2.0 * eps_xy**2)
         eps_1, eps_2 = _principal_2d(eps_xx, eps_yy, eps_xy)
+        _, psi_raw_true = strain_energy_with_split(
+            eps_xx, eps_yy, eps_xy, alpha_elem, matprop, pffmodel
+        )
         sig_raw_xx, sig_raw_yy, sig_raw_xy = _full_linear_stress(
             eps_xx, eps_yy, eps_xy, matprop
         )
@@ -492,9 +497,10 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         oracle_mask_np = _tensor_to_numpy(
             oracle_mask_elem, like_tensor=alpha_elem
         ).reshape(-1).astype(np.float32)
-    # `psi_plus_elem` is the active fatigue driver g(alpha)*psi0.  Save both
-    # the active value and the raw undegraded psi0 approximation to avoid the
-    # recurring FEM/PIDL comparison ambiguity.
+    # `psi_plus_elem` is the actual active/history driver used by the update.
+    # It may use a nonlinear GP3 reduction of g(alpha), so dividing it by the
+    # centroid g(alpha) does NOT recover raw psi0. Export raw psi0 directly
+    # from the strain-energy split and record the effective history reduction.
     with torch.no_grad():
         g_alpha, _ = pffmodel.Edegrade(alpha_elem)
     g_alpha_np = _tensor_to_numpy(g_alpha).reshape(-1)
@@ -506,11 +512,32 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
             g_stiffness_override_elem, like_tensor=alpha_elem
         ).reshape(-1)
         g_override_np = g_solver_np.astype(np.float32)
-    psi_raw_np = psi_plus_np / np.maximum(g_alpha_np, 1e-30)
+    psi_raw_np = _tensor_to_numpy(psi_raw_true).reshape(-1)
+    g_history_np = psi_plus_np / np.maximum(psi_raw_np, 1e-30)
+    psi_solver_active_np = g_solver_np * psi_raw_np
 
     np.savez_compressed(
         out_dir / f"element_fields_cycle_{cycle:04d}.npz",
         cycle=np.array([cycle], dtype=np.int32),
+        physical_cycle=np.array(
+            [int((state_metadata or {}).get("physical_cycle", -1))], dtype=np.int32
+        ),
+        substep_index=np.array(
+            [int((state_metadata or {}).get("substep_index", -1))], dtype=np.int32
+        ),
+        prescribed_displacement=np.array(
+            [float((state_metadata or {}).get("prescribed_displacement", np.nan))],
+            dtype=np.float64,
+        ),
+        normalized_displacement=np.array(
+            [float((state_metadata or {}).get("normalized_displacement", np.nan))],
+            dtype=np.float64,
+        ),
+        loading_branch=np.array(str((state_metadata or {}).get("loading_branch", "unknown"))),
+        state_label=np.array(str((state_metadata or {}).get("state_label", "unknown"))),
+        energy_export_timing=np.array(
+            "post_commit_recomputed_from_converged_fields_not_optimization_objective"
+        ),
         elem_x=_tensor_to_numpy(elem_x).reshape(-1).astype(np.float32),
         elem_y=_tensor_to_numpy(elem_y).reshape(-1).astype(np.float32),
         area_elem=_tensor_to_numpy(area_T).reshape(-1).astype(np.float32),
@@ -527,9 +554,11 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         f_fatigue_elem=f_fatigue_np.astype(np.float32),
         psi_plus_elem=psi_plus_np.astype(np.float32),  # backward-compatible active driver
         psi_active_elem=psi_plus_np.astype(np.float32),
+        psi_solver_active_elem=psi_solver_active_np.astype(np.float32),
         psi_history_driver_elem=psi_history_np.astype(np.float32),
         delta_alpha_bar_input_elem=history_increment_np.astype(np.float32),
         psi_raw_elem=psi_raw_np.astype(np.float32),
+        g_history_driver_elem=g_history_np.astype(np.float32),
         g_alpha_elem=g_alpha_np.astype(np.float32),
         g_solver_elem=g_solver_np.astype(np.float32),
         g_stiffness_override_elem=g_override_np,
@@ -1226,6 +1255,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
     _E_drop_ratio   = fatigue_dict.get('fracture_E_drop_ratio',   0.5)
     _confirm_cycles = fatigue_dict.get('fracture_confirm_cycles',  3)   # 边界判据已很明确，3圈即可
+    _disable_fracture_early_stop = bool(
+        fatigue_dict.get('disable_fracture_early_stop', False)
+    )
+    if _disable_fracture_early_stop:
+        print("[FixedHorizon] legacy raw-step fracture stop disabled; event diagnostics remain active")
     _plot_every     = fatigue_dict.get('plot_every_n_cycles',      20)
     # ★ Fix A: E_el fallback 判据 warmup 期
     # 原因：cycle 0-1 NN 可能产生伪解（尤其 Williams features 下 x_tip 尚未稳定），
@@ -1312,9 +1346,10 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _initial_alpha_protocol_cfg = (
         fatigue_dict.get("initial_alpha_protocol", {}) if fatigue_on else {}
     ) or {}
-    _initial_alpha_protocol_active = bool(
+    _initial_alpha_protocol_configured = bool(
         _initial_alpha_protocol_cfg.get("enable", False)
     )
+    _initial_alpha_protocol_active = _initial_alpha_protocol_configured
     _initial_alpha_protocol_metadata = {
         "initial_alpha_protocol": "none",
         "histories_preserved": True,
@@ -2337,6 +2372,47 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     or (_elem_diag_on_fracture and _frac_detected)
                 )
             if _elem_diag_due:
+                _explicit_n = int(fatigue_dict.get('explicit_cycle_substeps', 0) or 0)
+                _recovery_offset = 1 if _initial_alpha_protocol_configured else 0
+                if _initial_alpha_protocol_configured and j == 0:
+                    _state_metadata = {
+                        "physical_cycle": 0,
+                        "substep_index": -1,
+                        "prescribed_displacement": float(disp[j]),
+                        "normalized_displacement": 0.0,
+                        "loading_branch": "recovery",
+                        "state_label": "state0_recovery_post_commit",
+                    }
+                elif _explicit_n > 0:
+                    _local_step = j - _recovery_offset
+                    _substep = _local_step % _explicit_n
+                    _physical_cycle = _local_step // _explicit_n + 1
+                    _values = fatigue_dict.get('explicit_cycle_displacements', [])
+                    _peak_substep = int(np.argmax(np.asarray(_values, dtype=float)))
+                    _branch = "loading" if _substep <= _peak_substep else "unloading"
+                    if _substep == _peak_substep:
+                        _stage = "peak"
+                    elif _substep == _explicit_n - 1:
+                        _stage = "unloaded"
+                    else:
+                        _stage = f"{_branch}_{float(disp[j]) / float(fatigue_dict['disp_max']):g}"
+                    _state_metadata = {
+                        "physical_cycle": _physical_cycle,
+                        "substep_index": _substep,
+                        "prescribed_displacement": float(disp[j]),
+                        "normalized_displacement": float(disp[j]) / float(fatigue_dict['disp_max']),
+                        "loading_branch": _branch,
+                        "state_label": f"c{_physical_cycle}_{_stage}",
+                    }
+                else:
+                    _state_metadata = {
+                        "physical_cycle": j,
+                        "substep_index": 0,
+                        "prescribed_displacement": float(disp[j]),
+                        "normalized_displacement": float(disp[j]) / float(fatigue_dict['disp_max']),
+                        "loading_branch": "unspecified",
+                        "state_label": f"step{j}",
+                    }
                 _save_element_diagnostics(
                     inp, T_conn, u_el, v_el, alpha_el, hist_alpha, hist_fat,
                     _f_current, psi_plus_elem, psi_plus_prev,
@@ -2349,6 +2425,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     oracle_mask_elem=_oracle_mask_elem,
                     g_stiffness_override_elem=_g_stiffness_override_current,
                     irreversibility_penalty_cfg=_irreversibility_penalty_cfg,
+                    state_metadata=_state_metadata,
                 )
 
             # ── 裂缝尖端 L∞（仅用于日志和后处理，不再作为停止判据）──────────
@@ -2461,7 +2538,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         np.array(_inverse_alpha_T_history))
 
         # ── 断裂确认：判据持续满足 confirm_cycles 圈 → 停止 ──────────────
-        if fatigue_on and _frac_detected and _frac_confirm_remaining <= 0:
+        if (fatigue_on and _frac_detected and _frac_confirm_remaining <= 0
+                and not _disable_fracture_early_stop):
             print(f"  [Fracture confirmed] Stopping at cycle {j}. "
                   f"First detected at cycle {_frac_cycle}.")
             np.save(str(trainedModel_path / 'E_el_vs_cycle.npy'),
