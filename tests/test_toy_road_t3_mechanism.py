@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import h5py
@@ -123,6 +125,7 @@ def test_compact_locator_is_portable_and_non_authorizing(tmp_path: Path) -> None
             "griphfith/toy-road-evidence/T3_loading_history/"
             "manifest-455b149b14276598ad87e4bcea6b6a2916de6e59d3812f791d66e61b1344bb01"
         ),
+        upload_state="ONEDRIVE_UPLOAD_VERIFIED",
     )
     assert result["status"] == "PASS"
     locator = load_json_strict(destination / "ONEDRIVE_PACKAGE.json")
@@ -131,6 +134,7 @@ def test_compact_locator_is_portable_and_non_authorizing(tmp_path: Path) -> None
     assert locator["authorization_capability"] is None
     assert locator["follow_on_authorized"] is False
     assert locator["cycle_shard_count"] == 71
+    assert locator["upload_state"] == "ONEDRIVE_UPLOAD_VERIFIED"
     assert verify_compact_evidence(destination)["status"] == "PASS"
 
 
@@ -145,6 +149,51 @@ def test_verify_compact_evidence_detects_modified_file(tmp_path: Path) -> None:
     target.write_bytes(target.read_bytes() + b" ")
     with pytest.raises(ValueError, match="compact evidence SHA-256 mismatch"):
         verify_compact_evidence(destination)
+
+
+def test_verify_compact_evidence_rejects_unlisted_extra_file(tmp_path: Path) -> None:
+    destination = tmp_path / "compact"
+    build_compact_evidence(
+        _real_paths(),
+        destination,
+        "griphfith/toy-road-evidence/T3_loading_history/manifest-455b149b",
+    )
+    (destination / "UNLISTED.txt").write_text("not bound", encoding="utf-8")
+    with pytest.raises(ValueError, match="unlisted compact evidence file"):
+        verify_compact_evidence(destination)
+
+
+def test_verify_compact_cli_runs_by_file_path_outside_repo(tmp_path: Path) -> None:
+    destination = tmp_path / "compact"
+    build_compact_evidence(
+        _real_paths(),
+        destination,
+        "griphfith/toy-road-evidence/T3_loading_history/manifest-455b149b",
+    )
+    script = (
+        REPO
+        / "analysis"
+        / "toy_road_t3_mechanism_20260819"
+        / "verify_compact_evidence.py"
+    )
+    completed = subprocess.run(
+        [sys.executable, str(script), str(destination)],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout)["status"] == "PASS"
+    for name in ("mirror_to_onedrive.py", "run_analysis.py"):
+        help_result = subprocess.run(
+            [sys.executable, str(script.with_name(name)), "--help"],
+            cwd=tmp_path,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert help_result.returncode == 0, help_result.stderr
 
 
 def test_sha256_file_matches_direct_hash(tmp_path: Path) -> None:
@@ -430,6 +479,9 @@ def test_run_analysis_emits_required_tables_and_summary(tmp_path: Path) -> None:
     assert summary["delta_n_first"] == -2
     assert summary["delta_n_confirmed"] == -2
     assert summary["t3_c73_status"] == "UNAVAILABLE"
+    assert summary["memory_evidence"]["baseline_cycle"] == 30
+    assert "post_c30_departure" in summary["memory_evidence"]
+    assert "post_c30_persistence" in summary["memory_evidence"]
     for name in (
         "cycle_field_reductions.csv",
         "same_cycle_differences.csv",

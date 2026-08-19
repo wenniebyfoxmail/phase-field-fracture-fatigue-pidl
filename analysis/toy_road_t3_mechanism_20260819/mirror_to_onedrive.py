@@ -5,9 +5,13 @@ import json
 import os
 import shutil
 import stat
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Iterable
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from analysis.toy_road_t3_mechanism_20260819.evidence import (
     EXPECTED_CASE,

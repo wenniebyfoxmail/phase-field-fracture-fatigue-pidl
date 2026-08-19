@@ -183,12 +183,21 @@ def build_compact_evidence(
     paths: EvidencePaths,
     destination: Path,
     onedrive_relative_path: str,
+    *,
+    upload_state: str = "LOCAL_MIRROR_NOT_YET_BUILT",
 ) -> dict[str, Any]:
     binding = validate_t3_bindings(paths)
     destination = Path(destination)
     if destination.exists():
         raise FileExistsError(f"compact evidence destination exists: {destination}")
     portable = _validate_portable_path(onedrive_relative_path)
+    allowed_upload_states = {
+        "LOCAL_MIRROR_NOT_YET_BUILT",
+        "LOCAL_MIRROR_VERIFIED",
+        "ONEDRIVE_UPLOAD_VERIFIED",
+    }
+    if upload_state not in allowed_upload_states:
+        raise ValueError(f"invalid OneDrive upload state: {upload_state}")
     destination.mkdir(parents=True, exist_ok=False)
     allowlist = {
         "T3_AUTHENTICATED_TERMINAL.json": paths.authenticated_terminal,
@@ -212,7 +221,7 @@ def build_compact_evidence(
         "terminal_adjudication_sha256": EXPECTED_ADJUDICATION,
         "cycle_shard_count": EXPECTED_SHARDS,
         "onedrive_relative_path": portable,
-        "upload_state": "LOCAL_MIRROR_NOT_YET_BUILT",
+        "upload_state": upload_state,
         "authorization_capability": None,
         "follow_on_authorized": False,
     }
@@ -248,6 +257,15 @@ def verify_compact_evidence(root: Path) -> dict[str, Any]:
             raise ValueError(f"compact evidence SHA-256 mismatch: {record['path']}")
         if path.stat().st_size != record["size"]:
             raise ValueError(f"compact evidence size mismatch: {record['path']}")
+    listed = {record["path"] for record in inventory.get("files", [])}
+    expected_files = listed | {"COMPACT_EVIDENCE_INVENTORY.json", "SHA256SUMS.txt"}
+    actual_files = {path.name for path in root.iterdir() if path.is_file()}
+    extras = sorted(actual_files - expected_files)
+    missing = sorted(expected_files - actual_files)
+    if extras:
+        raise ValueError(f"unlisted compact evidence file: {extras[0]}")
+    if missing:
+        raise ValueError(f"missing compact evidence file: {missing[0]}")
     locator = load_json_strict(root / "ONEDRIVE_PACKAGE.json")
     if locator.get("authorization_capability") is not None or locator.get("follow_on_authorized") is not False:
         raise ValueError("compact evidence locator carries authorization capability")

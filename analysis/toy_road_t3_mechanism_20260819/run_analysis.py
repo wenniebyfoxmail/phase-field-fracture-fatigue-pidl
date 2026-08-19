@@ -5,6 +5,7 @@ import csv
 import hashlib
 import json
 import math
+import sys
 from collections import deque
 from pathlib import Path
 from typing import Any, Iterable
@@ -14,6 +15,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from analysis.toy_road_t3_mechanism_20260819.evidence import (
     load_json_strict,
@@ -428,9 +432,22 @@ def run_analysis(p0_root: Path, t3_root: Path, destination: Path) -> dict[str, A
                 row.update({"case_id": case, "start_cycle": start, "end_cycle": end})
                 transition_rows.append(row)
 
-    alpha_c60 = t3["snapshots"][60]["history"] - p0["snapshots"][60]["history"]
-    alpha_c61 = t3["snapshots"][61]["history"] - p0["snapshots"][61]["history"]
-    alpha_c68 = t3["snapshots"][68]["history"] - p0["snapshots"][68]["history"]
+    alpha_baseline = t3["snapshots"][30]["history"] - p0["snapshots"][30]["history"]
+    alpha_c60 = (
+        t3["snapshots"][60]["history"]
+        - p0["snapshots"][60]["history"]
+        - alpha_baseline
+    )
+    alpha_c61 = (
+        t3["snapshots"][61]["history"]
+        - p0["snapshots"][61]["history"]
+        - alpha_baseline
+    )
+    alpha_c68 = (
+        t3["snapshots"][68]["history"]
+        - p0["snapshots"][68]["history"]
+        - alpha_baseline
+    )
     delta_t3_c68 = np.maximum(
         t3["snapshots"][68]["damage"] - t3["snapshots"].get(67, t3["snapshots"][68])["damage"],
         0.0,
@@ -438,10 +455,33 @@ def run_analysis(p0_root: Path, t3_root: Path, destination: Path) -> dict[str, A
     difference_floor = max(1e-14, 0.01 * float(np.max(np.abs(alpha_c68), initial=0.0)))
     zone_floor = max(1e-8, 0.01 * float(delta_t3_c68.max(initial=0.0)))
     overlap = (np.abs(alpha_c68) >= difference_floor) & (delta_t3_c68 >= zone_floor)
+    departure = bool(np.max(np.abs(alpha_c60), initial=0.0) > 1e-14)
+    persistence = bool(
+        np.max(np.abs(alpha_c61), initial=0.0) > 1e-14
+        and np.max(np.abs(alpha_c68), initial=0.0) > 1e-14
+    )
+    spatial_colocation = bool(np.any(overlap))
     memory_evidence = {
-        "departure": bool(np.max(np.abs(alpha_c60), initial=0.0) > 1e-14),
-        "persistence": bool(np.max(np.abs(alpha_c61), initial=0.0) > 1e-14 and np.max(np.abs(alpha_c68), initial=0.0) > 1e-14),
-        "spatial_colocation": bool(np.any(overlap)),
+        "baseline_cycle": 30,
+        "baseline_definition": "(T3-P0)_c - (T3-P0)_c30",
+        "post_c30_departure": departure,
+        "post_c30_persistence": persistence,
+        "departure": departure,
+        "persistence": persistence,
+        "spatial_colocation": spatial_colocation,
+        "baseline_max_abs_history_difference": float(
+            np.max(np.abs(alpha_baseline), initial=0.0)
+        ),
+        "c60_post_c30_max_abs_history_signal": float(
+            np.max(np.abs(alpha_c60), initial=0.0)
+        ),
+        "c61_post_c30_max_abs_history_signal": float(
+            np.max(np.abs(alpha_c61), initial=0.0)
+        ),
+        "c68_post_c30_max_abs_history_signal": float(
+            np.max(np.abs(alpha_c68), initial=0.0)
+        ),
+        "c68_overlap_area": float(geometry.areas[overlap].sum()),
     }
     memory_status = classify_memory(memory_evidence)
 
@@ -501,7 +541,7 @@ The compact tables and figures compare T3 c30→c31 and c60→c61 against the sa
 
 ## History/degradation persistence
 
-Predeclared classification: **{memory_status}**. Evidence flags: departure={str(memory_evidence['departure']).lower()}, persistence={str(memory_evidence['persistence']).lower()}, spatial_colocation={str(memory_evidence['spatial_colocation']).lower()}.
+Predeclared classification: **{memory_status}**. To avoid attributing the c1–30 low-amplitude block to the c31–60 high-amplitude block, the memory signal is baseline corrected as `(T3-P0)_c - (T3-P0)_c30`. Evidence flags: post-c30 departure={str(memory_evidence['post_c30_departure']).lower()}, post-c30 persistence={str(memory_evidence['post_c30_persistence']).lower()}, spatial_colocation={str(memory_evidence['spatial_colocation']).lower()}.
 
 ## Process-zone and crack-tip response
 
