@@ -30,6 +30,7 @@ from analysis.toy_road_t3_mechanism_20260819.mechanism import (
     process_zone,
     reduce_field,
 )
+from analysis.toy_road_t3_mechanism_20260819.run_analysis import run_analysis
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -236,19 +237,24 @@ def _write_synthetic_shard(
     cycle: int = 31,
     ordinals: tuple[int, ...] = (1, 2, 3, 4, 5),
     nan_field: bool = False,
+    field_scale: float = 1.0,
+    peak_load: float = 1.0,
+    case_contract_sha: str = "e" * 64,
 ) -> None:
     nstep, nelem, nnode = len(ordinals), 2, 6
     peak_index = ordinals.index(4) if 4 in ordinals else 0
     d_node = np.zeros((nstep, nnode), dtype=float)
     d_node[peak_index, :] = np.linspace(0.0, 1.0, nnode)
     gp = np.zeros((nstep, 4, nelem), dtype=float)
-    gp[peak_index, :, 0] = 1.0
-    gp[peak_index, :, 1] = 3.0
+    gp[peak_index, :, 0] = 1.0 * field_scale
+    gp[peak_index, :, 1] = 3.0 * field_scale
     with h5py.File(path, "w") as handle:
         group = handle.create_group("shard")
         group.create_dataset("cycle", data=np.asarray([[cycle]], dtype=float))
         group.create_dataset("substep_ordinal", data=np.asarray(ordinals, dtype=float)[:, None])
-        group.create_dataset("load_factor", data=np.linspace(0.25, 0.0, nstep)[:, None])
+        loads = np.linspace(0.25, 0.0, nstep)
+        loads[peak_index] = peak_load
+        group.create_dataset("load_factor", data=loads[:, None])
         group.create_dataset("d_node", data=d_node)
         for key in (
             "d_gp",
@@ -269,7 +275,7 @@ def _write_synthetic_shard(
             "gp_ordering_id": "gp-order",
             "runtime_lock_sha256": "c" * 64,
             "family_contract_sha256": "d" * 64,
-            "case_physics_contract_sha256": "e" * 64,
+            "case_physics_contract_sha256": case_contract_sha,
             "execution_input_lock_sha256": "f" * 64,
         }.items():
             group.create_dataset(key, data=_matlab_string(value))
@@ -349,3 +355,139 @@ def test_memory_requires_persistence_and_spatial_colocation() -> None:
         evidence = {"departure": True, "persistence": True, "spatial_colocation": True}
         evidence[missing] = False
         assert classify_memory(evidence) == "MEMORY_NOT_ESTABLISHED"
+
+
+def _write_synthetic_trajectory(root: Path, *, case_id: str, terminal_cycle: int) -> None:
+    root.mkdir(parents=True)
+    _write_synthetic_mesh(root / "mesh_geometry.mat")
+    substeps = root / "substeps"
+    substeps.mkdir()
+    is_t3 = case_id == "T3_loading_history"
+    for cycle in range(1, terminal_cycle + 1):
+        if is_t3:
+            peak_load = 0.108 if cycle <= 30 else 0.126 if cycle <= 60 else 0.120
+            field_scale = 1.0 if cycle <= 30 else 1.1
+            case_sha = "9" * 64
+        else:
+            peak_load = 0.120
+            field_scale = 1.0
+            case_sha = "8" * 64
+        _write_synthetic_shard(
+            substeps / f"cycle_{cycle:04d}.mat",
+            cycle=cycle,
+            field_scale=field_scale,
+            peak_load=peak_load,
+            case_contract_sha=case_sha,
+        )
+    if is_t3:
+        first_hit, confirmed = 68, 71
+    else:
+        first_hit, confirmed = 70, 73
+    (root / "TERMINAL_RESULT.json").write_text(
+        json.dumps(
+            {
+                "case_id": case_id,
+                "terminal_reason": "confirmed_penetration",
+                "terminal_cycle": confirmed,
+                "first_hit_cycle": first_hit,
+                "confirmed_cycle": confirmed,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (root / "EVENT_METADATA.json").write_text(
+        json.dumps(
+            {
+                "case_id": case_id,
+                "terminal_cycle": confirmed,
+                "first_hit_cycle": first_hit,
+                "confirmed_cycle": confirmed,
+                "peak_substep_ordinal": 4,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_run_analysis_refuses_existing_results(tmp_path: Path) -> None:
+    p0 = tmp_path / "p0"
+    t3 = tmp_path / "t3"
+    _write_synthetic_trajectory(p0, case_id="P0_parent", terminal_cycle=73)
+    _write_synthetic_trajectory(t3, case_id="T3_loading_history", terminal_cycle=71)
+    destination = tmp_path / "results"
+    destination.mkdir()
+    with pytest.raises(FileExistsError, match="results destination exists"):
+        run_analysis(p0, t3, destination)
+
+
+def test_run_analysis_emits_required_tables_and_summary(tmp_path: Path) -> None:
+    p0 = tmp_path / "p0"
+    t3 = tmp_path / "t3"
+    _write_synthetic_trajectory(p0, case_id="P0_parent", terminal_cycle=73)
+    _write_synthetic_trajectory(t3, case_id="T3_loading_history", terminal_cycle=71)
+    destination = tmp_path / "results"
+    summary = run_analysis(p0, t3, destination)
+    assert summary["delta_n_first"] == -2
+    assert summary["delta_n_confirmed"] == -2
+    assert summary["t3_c73_status"] == "UNAVAILABLE"
+    for name in (
+        "cycle_field_reductions.csv",
+        "same_cycle_differences.csv",
+        "own_event_differences.csv",
+        "block_transition_differences.csv",
+        "process_zone_trajectory.csv",
+        "mechanism_summary.json",
+        "P0_T3_MECHANISM_REPORT.md",
+        "ANALYSIS_INPUT_INVENTORY.json",
+        "SHA256SUMS.txt",
+        "FIGURE_METADATA.json",
+    ):
+        assert (destination / name).is_file(), name
+
+
+def test_report_separates_event_result_from_mechanism_claim(tmp_path: Path) -> None:
+    p0 = tmp_path / "p0"
+    t3 = tmp_path / "t3"
+    _write_synthetic_trajectory(p0, case_id="P0_parent", terminal_cycle=73)
+    _write_synthetic_trajectory(t3, case_id="T3_loading_history", terminal_cycle=71)
+    destination = tmp_path / "results"
+    run_analysis(p0, t3, destination)
+    report = (destination / "P0_T3_MECHANISM_REPORT.md").read_text(encoding="utf-8")
+    assert "ΔN_first=-2" in report
+    assert "ΔN_confirmed=-2" in report
+    assert "event timing alone" in report
+    assert (
+        "PERSISTENT_MEMORY_OBSERVED" in report
+        or "MEMORY_NOT_ESTABLISHED" in report
+    )
+
+
+def test_figures_use_common_limits_and_label_missing_t3_c73(tmp_path: Path) -> None:
+    p0 = tmp_path / "p0"
+    t3 = tmp_path / "t3"
+    _write_synthetic_trajectory(p0, case_id="P0_parent", terminal_cycle=73)
+    _write_synthetic_trajectory(t3, case_id="T3_loading_history", terminal_cycle=71)
+    destination = tmp_path / "results"
+    run_analysis(p0, t3, destination)
+    metadata = load_json_strict(destination / "FIGURE_METADATA.json")
+    assert metadata["common_color_limits"] is True
+    assert metadata["t3_c73_status"] == "UNAVAILABLE"
+    assert len(metadata["figure_files"]) >= 7
+    assert all((destination / name).is_file() for name in metadata["figure_files"])
+
+
+def test_analysis_code_does_not_import_or_invoke_fem_launcher() -> None:
+    source = (
+        REPO
+        / "analysis"
+        / "toy_road_t3_mechanism_20260819"
+        / "run_analysis.py"
+    ).read_text(encoding="utf-8")
+    for forbidden in (
+        "main_toy_road_family_case",
+        "run_toy_road_runtime_bridge",
+        "launch_t3_sibling",
+        "subprocess",
+        "matlab.engine",
+    ):
+        assert forbidden not in source
