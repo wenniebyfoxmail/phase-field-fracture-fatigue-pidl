@@ -1,0 +1,11 @@
+{
+  "schema_version": "toy_road_qualified_trajectory_registry_v1",
+  "status": "PASS",
+  "authorization_capability": null,
+  "trajectories": {
+    "P0_parent": {"status": "QUALIFIED", "first_hit": 70, "confirmed": 73},
+    "T1_initial_defect": {"status": "QUALIFIED"},
+    "T2_material_state": {"status": "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE_AT_C5_S4", "cycle": 5, "substep": 4},
+    "T3_loading_history": {"status": "QUALIFIED", "first_hit": 68, "confirmed": 71, "terminal_manifest_sha256": "455b149b14276598ad87e4bcea6b6a2916de6e59d3812f791d66e61b1344bb01"}
+  }
+}

@@ -23,6 +23,7 @@ who produced it, and which summary doc uses it.
 | Taobo PIDL archives | `/mnt/data2/drtao/pidl_archives/` | Remote archive root for GPU runs. Record run-specific archive paths in handovers or result docs. |
 | Taobo project workspaces | `/mnt/data2/drtao/projects/` | Remote code/run workspaces. Do not mirror full trees into Git. |
 | Windows FEM/PIDL handoffs | `~/Downloads/_pidl_handoff_v2/` and OneDrive `PIDL result/` packages | Producer package locations. Use `docs/handovers/windows_fem_outbox.md` and `docs/handovers/windows_pidl_outbox.md` as authoritative handover records. |
+| Qualified T3 loading-history review, 2026-08-21 | OneDrive `PIDL result/toy_road_p0_repeatability_20260802/t3_loading_history_20260818/` manifest directory; archived at `docs/toy_road_p0_repeatability_20260802/t3_loading_history_20260818/T3_INDEPENDENT_REVIEW_RECEIPT_20260821.md` | Independent non-authorizing review of the 97-file T3 package and its Git/OneDrive bindings. |
 | CSD3 work area | `~/rds/hpc-work/` on CSD3 | HPC-side code, logs, and archives. Use `docs/handovers/csd3_outbox.md` for returned results. |
 
 ## Indexing Template
