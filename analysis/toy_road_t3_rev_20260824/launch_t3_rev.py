@@ -1007,6 +1007,14 @@ def launch_t3_rev(
     except (OSError, LaunchError) as error:
         _raise_prepared_failure(seal_path, run_root, receipts, error)
     try:
+        require_final_launch_inputs(
+            repo_root, seal_path, extension_root, sealed_base_root, manifest, runtime,
+            matlab, griphfith_root, input_assets_root, roots, shadow_hashes,
+            shadow_payloads, expected_binaries,
+        )
+    except Exception as error:
+        _raise_prepared_failure(seal_path, run_root, receipts, error)
+    try:
         final_processes = matlab_processes()
     except Exception as error:
         _raise_prepared_failure(seal_path, run_root, receipts, error)
@@ -1022,11 +1030,6 @@ def launch_t3_rev(
         _raise_prepared_failure(seal_path, run_root, receipts, error)
     try:
         try:
-            require_final_launch_inputs(
-                repo_root, seal_path, extension_root, sealed_base_root, manifest, runtime,
-                matlab, griphfith_root, input_assets_root, roots, shadow_hashes,
-                shadow_payloads, expected_binaries,
-            )
             write_json_create_new(launch_receipt_path, launch_receipt)
             process = Popen(
                 [str(matlab), "-batch", batch], cwd=run_root, env=env, stdout=stdout, stderr=stderr,

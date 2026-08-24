@@ -724,6 +724,40 @@ def test_second_busy_check_prevents_popen_and_records_consumed_root(
         module.launch_t3_rev(**different_root)
 
 
+def test_final_revalidation_precedes_race_closing_busy_check(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A process appearing during final input checks is observed before logs or credentials."""
+    module = load_module("launch_t3_rev")
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+    events: list[str] = []
+    busy = False
+    real_final = module.require_final_launch_inputs
+
+    def processes():
+        events.append("busy")
+        return ([{"ProcessId": 73, "Name": "MATLAB.exe"}] if busy else [])
+
+    def final_inputs(*args, **kwargs):
+        nonlocal busy
+        events.append("final_inputs")
+        real_final(*args, **kwargs)
+        busy = True
+
+    monkeypatch.setattr(module, "matlab_processes", processes)
+    monkeypatch.setattr(module, "require_final_launch_inputs", final_inputs)
+    monkeypatch.setattr(module, "open_launch_logs", lambda _root: pytest.fail("logs opened"))
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    with pytest.raises(module.BusyExperimentError, match="final process check"):
+        module.launch_t3_rev(**inputs)
+    assert events == ["busy", "final_inputs", "busy"]
+    assert module.seal_consumption_marker(inputs["seal_path"]).is_file()
+    busy_receipt = strict_json(inputs["run_root"] / "receipts" / "BUSY_NO_LAUNCH.json")
+    assert busy_receipt["status"] == "BUSY_NO_LAUNCH"
+    assert not (inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").exists()
+    assert not (inputs["run_root"] / "T3_REV.stdout.log").exists()
+
+
 def test_two_root_concurrent_claim_has_no_pass_receipt_for_loser(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     module = load_module("launch_t3_rev")
@@ -800,16 +834,14 @@ def test_extension_mutation_between_preflight_and_final_check_has_no_pass_receip
     _allow_test_matlab_identity(module, monkeypatch)
     manifest = strict_json(inputs["extension_root"] / "EXTENSION_SOURCE_MANIFEST.json")
     shadow = inputs["extension_root"] / manifest["shadow_files"][0]["path"]
-    checks = 0
+    real_final = module.require_final_launch_inputs
 
-    def mutate_on_final_busy_check():
-        nonlocal checks
-        checks += 1
-        if checks == 2:
-            shadow.write_bytes(shadow.read_bytes() + b"\n% raced mutation\n")
-        return []
+    def mutate_during_final_revalidation(*args, **kwargs):
+        shadow.write_bytes(shadow.read_bytes() + b"\n% raced mutation\n")
+        return real_final(*args, **kwargs)
 
-    monkeypatch.setattr(module, "matlab_processes", mutate_on_final_busy_check)
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "require_final_launch_inputs", mutate_during_final_revalidation)
     monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
     with pytest.raises(module.LaunchError, match="extension|shadow|final"):
         module.launch_t3_rev(**inputs)
