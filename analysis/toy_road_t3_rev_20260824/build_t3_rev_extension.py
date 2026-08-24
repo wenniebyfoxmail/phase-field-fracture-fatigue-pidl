@@ -87,20 +87,76 @@ def _json_values_are_canonical(value: object) -> bool:
 
 def read_strict_contract(path: Path) -> dict[str, object]:
     contract = _read_strict_json(path)
-    expected = {
-        "authorization_capability": None,
-        "base_source_commit": BASE_SOURCE_COMMIT,
-        "base_source_manifest_sha256": BASE_SOURCE_MANIFEST_SHA256,
-        "case_id": CASE_ID,
-        "changed_axes": ["loading.blocks"],
-        "follow_on_authorized": False,
-        "loading_blocks": [[1, 30, 0.126], [31, 60, 0.108], [61, 150, 0.12]],
-        "resume_allowed": False,
-        "schema_version": "toy_road_t3_rev_contract_v1",
+    expected_fields = {
+        "authorization_capability",
+        "base_source_commit",
+        "base_source_manifest_sha256",
+        "case_id",
+        "changed_axes",
+        "follow_on_authorized",
+        "loading_blocks",
+        "resume_allowed",
+        "schema_version",
     }
-    if contract != expected:
-        raise ExtensionError("T3-rev contract contents are not exact")
+    if set(contract) != expected_fields:
+        raise ExtensionError("T3-rev contract fields must be exact")
+    if contract["authorization_capability"] is not None:
+        raise ExtensionError("authorization_capability must be JSON null")
+    _require_exact_text(contract, "base_source_commit", BASE_SOURCE_COMMIT)
+    _require_exact_text(
+        contract, "base_source_manifest_sha256", BASE_SOURCE_MANIFEST_SHA256
+    )
+    _require_exact_text(contract, "case_id", CASE_ID)
+    _require_exact_text(
+        contract, "schema_version", "toy_road_t3_rev_contract_v1"
+    )
+    _require_exact_false(contract, "follow_on_authorized")
+    _require_exact_false(contract, "resume_allowed")
+    changed_axes = contract["changed_axes"]
+    if (
+        type(changed_axes) is not list
+        or len(changed_axes) != 1
+        or type(changed_axes[0]) is not str
+        or changed_axes[0] != "loading.blocks"
+    ):
+        raise ExtensionError("changed_axes must be exactly [loading.blocks]")
+    expected_blocks = ((1, 30, 0.126), (31, 60, 0.108), (61, 150, 0.12))
+    blocks = contract["loading_blocks"]
+    if type(blocks) is not list or len(blocks) != len(expected_blocks):
+        raise ExtensionError("loading_blocks must contain exactly three blocks")
+    for row_index, (row, expected) in enumerate(zip(blocks, expected_blocks)):
+        if type(row) is not list or len(row) != 3:
+            raise ExtensionError(f"loading_blocks[{row_index}] must be a three-value JSON array")
+        for column_index, expected_value in enumerate(expected[:2]):
+            value = row[column_index]
+            if type(value) is not int:
+                raise ExtensionError(
+                    f"loading_blocks[{row_index}][{column_index}] must be a JSON integer"
+                )
+            if value != expected_value:
+                raise ExtensionError("T3-rev contract contents are not exact")
+        amplitude = row[2]
+        if type(amplitude) is not float:
+            raise ExtensionError(f"loading_blocks[{row_index}][2] must be a JSON float")
+        if amplitude != expected[2]:
+            raise ExtensionError("T3-rev contract contents are not exact")
     return contract
+
+
+def _require_exact_text(contract: Mapping[str, object], field: str, expected: str) -> None:
+    value = contract[field]
+    if type(value) is not str:
+        raise ExtensionError(f"{field} must be a JSON string")
+    if value != expected:
+        raise ExtensionError("T3-rev contract contents are not exact")
+
+
+def _require_exact_false(contract: Mapping[str, object], field: str) -> None:
+    value = contract[field]
+    if type(value) is not bool:
+        raise ExtensionError(f"{field} must be a JSON boolean")
+    if value is not False:
+        raise ExtensionError(f"{field} must be false")
 
 
 def inventory_tree(root: Path) -> dict[str, str]:

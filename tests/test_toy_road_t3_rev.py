@@ -98,3 +98,22 @@ def test_extension_contract_rejects_noncanonical_json(tmp_path: Path, bad_payloa
     path.write_text(bad_payload)
     with pytest.raises(module.ExtensionError):
         module.read_strict_contract(path)
+
+
+@pytest.mark.parametrize(("field", "value", "error"), [
+    ("follow_on_authorized", 0, "follow_on_authorized must be a JSON boolean"),
+    ("resume_allowed", 0, "resume_allowed must be a JSON boolean"),
+    ("loading_blocks", [[1.0, 30, 0.126], [31, 60, 0.108], [61, 150, 0.12]],
+     "loading_blocks\\[0\\]\\[0\\] must be a JSON integer"),
+])
+def test_extension_contract_rejects_complete_type_confusion(
+        tmp_path: Path, field: str, value: object, error: str) -> None:
+    module = load_module("build_t3_rev_extension")
+    contract = json.loads(
+        (ROOT / "analysis/toy_road_t3_rev_20260824/T3_REV_CONTRACT.json").read_text()
+    )
+    contract[field] = value
+    path = tmp_path / "bad.json"
+    path.write_text(json.dumps(contract, sort_keys=True, separators=(",", ":")))
+    with pytest.raises(module.ExtensionError, match=error):
+        module.read_strict_contract(path)
