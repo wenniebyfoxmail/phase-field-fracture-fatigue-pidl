@@ -18,6 +18,13 @@ import numpy as np
 
 CASE_ID = "T3_rev_loading_order"
 AUTHORIZATION_CAPABILITY = "exactly_one_T3_rev_loading_order_execution"
+COMPONENT_IDENTITY_FILES = {
+    "solver_sha256": "solve_toy_road_family_case.m",
+    "recovery_sha256": "recover_toy_road_family_state.m",
+    "exporter_sha256": "export_toy_road_cycle_shard.m",
+    "numerical_gate_contract_sha256": "finalize_toy_road_c5_gate.m",
+    "event_contract_sha256": "build_toy_road_family_case.m",
+}
 
 
 class TerminalValidationError(RuntimeError):
@@ -91,7 +98,7 @@ def classify_terminal(terminal: Mapping[str, object]) -> str:
         if type(terminal.get("cycle")) is not int or terminal["cycle"] < 1 \
                 or type(terminal.get("substep")) is not int \
                 or not 1 <= terminal["substep"] <= 5:
-            raise TerminalValidationError("solver nonconvergence must identify exact cycle and substep")
+            raise TerminalValidationError("solver nonconvergence receipt must report cycle and substep")
     return classes[reason]
 
 
@@ -266,8 +273,147 @@ def _authenticate_right_censored_package(
     return receipt
 
 
-def authenticate_completed_package(protocol: Any, package_root: Path) -> dict[str, object]:
-    """Authenticate confirmed packages unchanged or the strict c150 no-event variant."""
+def _validate_completed_production_artifacts(
+        protocol: Any, package_root: Path, receipt: Mapping[str, object], *,
+        allow_test_synthetic_mesh_bytes: bool = False,
+) -> dict[str, object]:
+    """Authenticate the production-written physical/runtime identity artifacts."""
+    root = protocol._canonical_package_root(Path(package_root), CASE_ID)
+    captured = protocol._capture_package_bytes(root, CASE_ID)
+    files = captured.get("bytes")
+    required = {
+        "INPUT_SNAPSHOT.json", "RUNTIME_RECEIPT.json", "mesh_geometry.mat",
+        "state0_analysis.mat", "EXECUTION_INPUT_LOCK.json", "TERMINAL_MANIFEST.json",
+    }
+    if not isinstance(files, dict) or not required.issubset(files):
+        raise TerminalValidationError("completed package is missing a production identity artifact")
+    manifest = protocol._read_json_bytes(
+        files["TERMINAL_MANIFEST.json"], f"{CASE_ID} completed terminal manifest")
+    lock = protocol._read_json_bytes(
+        files["EXECUTION_INPUT_LOCK.json"], f"{CASE_ID} completed execution lock")
+    input_snapshot = protocol._read_json_bytes(
+        files["INPUT_SNAPSHOT.json"], f"{CASE_ID} completed input snapshot")
+    runtime_receipt = protocol._read_json_bytes(
+        files["RUNTIME_RECEIPT.json"], f"{CASE_ID} completed runtime receipt")
+    snapshot_fields = {
+        "schema_version", "authorization_scope", "case_id", "source_commit",
+        "runtime_lock_sha256", "family_contract_sha256", "case_physics_contract_sha256",
+        "execution_input_lock_sha256", "input_assets_root", "mesh_sha256", "changed_axes",
+        "case_physics", "fresh_state0", "resume_allowed", "line_search", "cycle_jump",
+    }
+    execution_digest = hashlib.sha256(files["EXECUTION_INPUT_LOCK.json"]).hexdigest()
+    physical_digest = hashlib.sha256(files["INPUT_SNAPSHOT.json"]).hexdigest()
+    input_root = input_snapshot.get("input_assets_root")
+    if set(input_snapshot) != snapshot_fields \
+            or input_snapshot.get("schema_version") != "toy_road_p0_input_snapshot_v1" \
+            or input_snapshot.get("authorization_scope") != "production_authorized" \
+            or input_snapshot.get("case_id") != CASE_ID \
+            or any(input_snapshot.get(field) != lock.get(field) for field in (
+                "source_commit", "runtime_lock_sha256", "family_contract_sha256",
+                "case_physics_contract_sha256")) \
+            or input_snapshot.get("execution_input_lock_sha256") != execution_digest \
+            or manifest.get("execution_input_lock_sha256") != execution_digest \
+            or manifest.get("physical_input_sha256") != physical_digest \
+            or input_snapshot.get("mesh_sha256") != manifest.get("mesh_sha256") \
+            or input_snapshot.get("changed_axes") != ["loading.blocks"] \
+            or not isinstance(input_snapshot.get("case_physics"), dict) \
+            or type(input_root) is not str or not input_root or not Path(input_root).is_absolute() \
+            or input_snapshot.get("fresh_state0") is not True \
+            or input_snapshot.get("resume_allowed") is not False \
+            or input_snapshot.get("line_search") is not False \
+            or input_snapshot.get("cycle_jump") is not False:
+        raise TerminalValidationError("completed package physical input identity is not exact")
+    matlab = lock.get("runtime_expectations", {}).get("matlab")
+    full_matlab_version = None if not isinstance(matlab, dict) else (
+        f'{matlab.get("version")} ({matlab.get("release")}) {matlab.get("update")}'
+    )
+    runtime_fields = {
+        "status", "authorization_scope", "case_id", "source_commit",
+        "runtime_lock_sha256", "matlab_version", "computer", "blas", "lapack",
+    }
+    if set(runtime_receipt) != runtime_fields \
+            or runtime_receipt.get("status") != "PASS" \
+            or runtime_receipt.get("authorization_scope") != "production_authorized" \
+            or runtime_receipt.get("case_id") != CASE_ID \
+            or runtime_receipt.get("source_commit") != lock.get("source_commit") \
+            or runtime_receipt.get("runtime_lock_sha256") != lock.get("runtime_lock_sha256") \
+            or runtime_receipt.get("matlab_version") != full_matlab_version \
+            or not isinstance(matlab, dict) \
+            or any(runtime_receipt.get(field) != matlab.get(field)
+                   for field in ("computer", "blas", "lapack")):
+        raise TerminalValidationError("completed package runtime receipt differs from the locked identity")
+    mesh = protocol._read_mat_struct_bytes(
+        files["mesh_geometry.mat"], "mesh_geometry", f"{CASE_ID} completed mesh")
+    mesh_fields = {
+        "node_coords", "connectivity", "mesh_sha256", "connectivity_sha256",
+        "mesh_sha256_semantics", "element_ordering_id", "gp_ordering_id",
+    }
+    if not mesh_fields.issubset(mesh):
+        raise TerminalValidationError("completed package mesh identity is incomplete")
+    coordinates = protocol._require_double_array(
+        mesh["node_coords"], f"{CASE_ID} completed mesh node_coords")
+    connectivity = protocol._require_double_array(
+        mesh["connectivity"], f"{CASE_ID} completed mesh connectivity")
+    rounded = np.rint(connectivity)
+    if coordinates.ndim != 2 or coordinates.shape[1] != 2 \
+            or connectivity.ndim != 2 or connectivity.shape[1] != 4 \
+            or not np.array_equal(connectivity, rounded):
+        raise TerminalValidationError("completed package mesh arrays are not exact Q4 geometry")
+    mesh_digest = hashlib.sha256(
+        np.asarray(coordinates, dtype="<f8").tobytes(order="F")
+        + np.asarray(rounded, dtype="<i8").tobytes(order="F")
+    ).hexdigest()
+    connectivity_digest = hashlib.sha256(
+        np.asarray(rounded, dtype="<i8").tobytes(order="F")
+    ).hexdigest()
+    if mesh.get("mesh_sha256") != manifest.get("mesh_sha256") \
+            or mesh.get("element_ordering_id") != manifest.get("element_ordering_id") \
+            or mesh.get("gp_ordering_id") != manifest.get("gp_ordering_id") \
+            or mesh.get("mesh_sha256_semantics") != \
+            "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1" \
+            or (not allow_test_synthetic_mesh_bytes and (
+                mesh.get("mesh_sha256") != mesh_digest
+                or mesh.get("connectivity_sha256") != connectivity_digest)):
+        raise TerminalValidationError("completed package mesh bytes/identity differ")
+    state0 = protocol._read_mat_struct_bytes(
+        files["state0_analysis.mat"], "state0", f"{CASE_ID} completed analysis state0")
+    if not isinstance(state0, dict) or not {"d_node", "alpha_bar_gp"}.issubset(state0):
+        raise TerminalValidationError("completed package analysis state0 is incomplete")
+    packaged_state0 = protocol._read_mat_struct_bytes(
+        files["STATE0.mat"], "state0", f"{CASE_ID} completed packaged state0")
+    analysis_damage = protocol._require_double_array(
+        state0["d_node"], f"{CASE_ID} completed analysis state0.d_node")
+    analysis_alpha = protocol._require_double_array(
+        state0["alpha_bar_gp"], f"{CASE_ID} completed analysis state0.alpha_bar_gp")
+    packaged_damage = protocol._require_double_array(
+        packaged_state0.get("d_node"), f"{CASE_ID} completed packaged state0.d_node")
+    packaged_alpha = protocol._require_double_array(
+        packaged_state0.get("alpha_bar_gp"), f"{CASE_ID} completed packaged state0.alpha_bar_gp")
+    if analysis_damage.shape != (coordinates.shape[0], 1) \
+            or analysis_alpha.shape != (connectivity.shape[0], 4) \
+            or not np.array_equal(analysis_damage, packaged_damage) \
+            or not np.array_equal(analysis_alpha, packaged_alpha):
+        raise TerminalValidationError("completed mesh and initial-state physical dimensions differ")
+    if receipt.get("manifest_sha256") != hashlib.sha256(
+            files["TERMINAL_MANIFEST.json"]).hexdigest() \
+            or receipt.get("execution_input_lock_sha256") != execution_digest:
+        raise TerminalValidationError("completed authentication receipt differs from package identities")
+    protocol.recheck_authenticated_package(receipt)
+    return {
+        "manifest": manifest,
+        "lock": lock,
+        "input_snapshot": input_snapshot,
+        "runtime_receipt": runtime_receipt,
+        "mesh": mesh,
+        "physical_input_sha256": physical_digest,
+    }
+
+
+def _authenticate_completed_package(
+        protocol: Any, package_root: Path, *,
+        allow_test_synthetic_mesh_bytes: bool = False,
+) -> tuple[dict[str, object], dict[str, object]]:
+    """Internal completed authentication with one explicit fixture-only mesh seam."""
     root = Path(package_root)
     try:
         snapshot = protocol._capture_package_bytes(
@@ -280,15 +426,75 @@ def authenticate_completed_package(protocol: Any, package_root: Path) -> dict[st
         if classification == "PASS_CONFIRMED_FRACTURE_TRAJECTORY":
             receipt = protocol.authenticate_terminal_package(root, CASE_ID)
             _validate_package_checksum(protocol, snapshot)
-            protocol.recheck_authenticated_package(receipt)
-            return receipt
-        if classification == "PASS_NO_CONFIRMED_FRACTURE_BY_C150":
-            return _authenticate_right_censored_package(protocol, root)
-        raise TerminalValidationError("completed-package authentication received a failure outcome")
+        elif classification == "PASS_NO_CONFIRMED_FRACTURE_BY_C150":
+            receipt = _authenticate_right_censored_package(protocol, root)
+        else:
+            raise TerminalValidationError("completed-package authentication received a failure outcome")
+        artifacts = _validate_completed_production_artifacts(
+            protocol, root, receipt,
+            allow_test_synthetic_mesh_bytes=allow_test_synthetic_mesh_bytes,
+        )
+        return receipt, artifacts
     except TerminalValidationError:
         raise
     except Exception as error:
         raise TerminalValidationError(f"authoritative completed package validation failed: {error}") from error
+
+
+def authenticate_completed_package(protocol: Any, package_root: Path) -> dict[str, object]:
+    """Public authentication has no caller-controlled production-identity relaxation."""
+    receipt, _ = _authenticate_completed_package(protocol, package_root)
+    return receipt
+
+
+def _validate_completed_sealed_chain(
+        artifacts: Mapping[str, object], authenticated: Mapping[str, object], *,
+        sealed_base_root: Path, case_contract: Mapping[str, object], lock: Mapping[str, object],
+        launch: Any, repo_root: Path, writable_roots: Mapping[str, object],
+) -> None:
+    """Cross-bind authenticated output identities to the sealed producer and exact case."""
+    manifest = artifacts.get("manifest")
+    snapshot = artifacts.get("input_snapshot")
+    if not isinstance(manifest, dict) or not isinstance(snapshot, dict):
+        raise TerminalValidationError("completed production identity snapshot is missing")
+    physics = case_contract.get("physics")
+    mesh_identity = physics.get("mesh") if isinstance(physics, dict) else None
+    mesh = artifacts.get("mesh")
+    expected_components = {
+        field: _sha256(sealed_base_root / relative)
+        for field, relative in COMPONENT_IDENTITY_FILES.items()
+    }
+    if manifest.get("source_commit") != lock.get("source_commit") \
+            or any(manifest.get(field) != digest for field, digest in expected_components.items()) \
+            or snapshot.get("case_physics") != physics \
+            or snapshot.get("changed_axes") != case_contract.get("changed_axes") \
+            or not isinstance(mesh_identity, dict) \
+            or not isinstance(mesh, dict) \
+            or any(manifest.get(field) != mesh_identity.get(field) for field in (
+                "mesh_sha256", "element_ordering_id", "gp_ordering_id")) \
+            or any(mesh.get(field) != mesh_identity.get(field) for field in (
+                "mesh_sha256", "connectivity_sha256", "mesh_sha256_semantics",
+                "element_ordering_id", "gp_ordering_id")) \
+            or manifest.get("state_semantics_id") != "five_substep_post_commit_history_v1" \
+            or authenticated.get("runtime_lock_sha256") != lock.get("runtime_lock_sha256") \
+            or authenticated.get("family_contract_sha256") != lock.get("family_contract_sha256") \
+            or authenticated.get("case_physics_contract_sha256") != lock.get(
+                "case_physics_contract_sha256"):
+        raise TerminalValidationError(
+            "completed source/physical identity differs from the sealed case contract")
+    input_root_text = snapshot.get("input_assets_root")
+    if type(input_root_text) is not str:
+        raise TerminalValidationError("completed physical input asset root is invalid")
+    input_root = Path(input_root_text)
+    try:
+        launch.require_no_reparse_chain(input_root, "completed input assets")
+        launch.require_input_assets(
+            repo_root, input_root,
+            {name: Path(value) for name, value in writable_roots.items()},
+        )
+    except Exception as error:
+        raise TerminalValidationError(
+            f"completed physical input assets differ from launch qualification: {error}") from error
 
 
 def _validate_incomplete_c5_trace(
@@ -328,8 +534,6 @@ def _validate_incomplete_c5_trace(
     failure_substep = terminal.get("substep")
     if type(failure_substep) is not int:
         raise TerminalValidationError("c5 failure substep is invalid")
-    if failure_substep < 4 and parsed:
-        raise TerminalValidationError("c5 trace before substep four must contain only its header")
     if failure_substep == 4 and classification == "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE":
         if len(parsed) != 1000:
             raise TerminalValidationError("c5 fixed-point failure trace must reach the exact iteration cap")
@@ -420,7 +624,7 @@ def _validate_failure_package(
     }
     failure_cycle = terminal.get("cycle", 0)
     failure_substep = terminal.get("substep", 0)
-    c5_trace_required = failure_cycle >= 5
+    c5_trace_required = failure_cycle > 5 or (failure_cycle == 5 and failure_substep >= 4)
     c5_pass_required = failure_cycle > 5 or (failure_cycle == 5 and failure_substep == 5)
     if c5_trace_required:
         expected_relatives.add("output/qualification/C5_STAGGER_TRACE.csv")
@@ -559,6 +763,9 @@ def _validate_failure_package(
         raise TerminalValidationError("failure package mesh arrays/identity differ from the case contract")
     runtime_receipt = _strict_json(artifact_root / "output" / "RUNTIME_RECEIPT.json")
     matlab = lock.get("runtime_expectations", {}).get("matlab")
+    full_matlab_version = None if not isinstance(matlab, dict) else (
+        f'{matlab.get("version")} ({matlab.get("release")}) {matlab.get("update")}'
+    )
     if set(runtime_receipt) != {"status", "authorization_scope", "case_id", "source_commit", "runtime_lock_sha256", "matlab_version", "computer", "blas", "lapack"} \
             or runtime_receipt.get("status") != "PASS" \
             or runtime_receipt.get("authorization_scope") != "production_authorized" \
@@ -566,7 +773,7 @@ def _validate_failure_package(
             or runtime_receipt.get("source_commit") != lock.get("source_commit") \
             or runtime_receipt.get("runtime_lock_sha256") != lock.get("runtime_lock_sha256") \
             or not isinstance(matlab, dict) \
-            or runtime_receipt.get("matlab_version") != matlab.get("version") \
+            or runtime_receipt.get("matlab_version") != full_matlab_version \
             or any(runtime_receipt.get(field) != matlab.get(field) for field in ("computer", "blas", "lapack")):
         raise TerminalValidationError("failure package runtime receipt differs from the PASS measurement lock")
     run_result = _strict_json(artifact_root / "output" / "RUN_RESULT.json")
@@ -650,11 +857,26 @@ def _validate_failure_package(
     package_digest = hashlib.sha256("".join(
         f"{relative}\0{_sha256(root / relative)}\n" for relative in package_files
     ).encode("utf-8")).hexdigest()
+    is_newton = classification == "FAIL_NEWTON_NONCONVERGENCE"
+    independently_authenticated_substep = (
+        failure_substep if not is_newton
+        else failure_substep if failure_cycle == 5 and failure_substep in {4, 5}
+        else None
+    )
     return {
         "failure_package_sha256": package_digest,
         "package_manifest_sha256": _sha256(root / "PACKAGE_MANIFEST.json"),
         "failure_classification_sha256": _sha256(root / "FAILURE_CLASSIFICATION.json"),
         "sha256sums_sha256": _sha256(root / "SHA256SUMS.txt"),
+        "self_reported_substep": failure_substep,
+        "substep_provenance": (
+            "c5_trace_lifecycle" if is_newton and independently_authenticated_substep == 4
+            else "c5_pass_receipt_lifecycle" if is_newton and independently_authenticated_substep == 5
+            else "failure_class_implied" if independently_authenticated_substep is not None
+            else "producer_self_report_only"
+        ),
+        "substep_authenticated": independently_authenticated_substep is not None,
+        "authenticated_substep": independently_authenticated_substep,
     }
 
 
@@ -816,6 +1038,7 @@ def _validate_terminal(
         launch: Any | None = None, _emit_adjudication: bool = True,
 ) -> dict[str, object]:
     """Authenticate one terminal package and emit one non-authorizing adjudication."""
+    test_launch_override = launch is not None
     launch = _load(Path(__file__).with_name("launch_t3_rev.py"), "t3_rev_terminal_launch") \
         if launch is None else launch
     if failure_package_root is not None or failure_receipt_path is not None:
@@ -825,9 +1048,13 @@ def _validate_terminal(
     extension_root = launch._absolute_literal_path(extension_root)
     seal_path = launch._absolute_literal_path(seal_path)
     run_root = terminal_root.parent if run_root is None else launch._absolute_literal_path(run_root)
-    for path, label in (
-            (terminal_root, "terminal package"), (sealed_base_root, "sealed base"),
-            (extension_root, "extension"), (seal_path, "seal"), (run_root, "run root")):
+    identity_paths = [
+        (sealed_base_root, "sealed base"), (extension_root, "extension"),
+        (seal_path, "seal"), (run_root, "run root"),
+    ]
+    if terminal_root.exists():
+        identity_paths.insert(0, (terminal_root, "terminal package"))
+    for path, label in identity_paths:
         try:
             launch.require_no_reparse_chain(path, label)
         except Exception as error:
@@ -963,6 +1190,32 @@ def _validate_terminal(
         raise TerminalValidationError(
             "terminal/run launch path binding differs: " + ", ".join(path_binding_failures)
         )
+    assert isinstance(writable_roots, dict)
+    preproducer_phases = {
+        "bootstrap_before_runtime_measurement",
+        "runtime_qualification_before_producer",
+    }
+    before_producer = terminal.get("failure_phase") in preproducer_phases
+    writable_paths = {name: Path(value) for name, value in writable_roots.items()}
+    if before_producer:
+        stale_roots = sorted(name for name, path in writable_paths.items() if path.exists())
+        if stale_roots:
+            raise TerminalValidationError(
+                "preproducer failure carries stale writable root reservations: "
+                + ", ".join(stale_roots)
+            )
+    else:
+        missing_roots = sorted(name for name, path in writable_paths.items() if not path.is_dir())
+        if missing_roots:
+            raise TerminalValidationError(
+                "producer-entered terminal lacks reserved writable roots: "
+                + ", ".join(missing_roots)
+            )
+        for name, path in writable_paths.items():
+            try:
+                launch.require_no_reparse_chain(path, f"writable root {name}")
+            except Exception as error:
+                raise TerminalValidationError(f"writable root identity failed: {error}") from error
     if not launch._exact_json_equal(launch_receipt.get("extension_shadow_sha256"), protocol_hashes) \
             or launch_receipt.get("bootstrap_helper_sha256") != launch.BOOTSTRAP_HELPER_SHA256:
         raise TerminalValidationError("launch shadow or bootstrap identity differs from the extension")
@@ -978,7 +1231,17 @@ def _validate_terminal(
         try:
             measurement = _strict_json(receipts / "T3_REV_RUNTIME_MEASUREMENT.json")
             protocol.validate_runtime_measurement(lock, measurement)
-            authenticated = authenticate_completed_package(protocol, terminal_root)
+            authenticated, completed_artifacts = _authenticate_completed_package(
+                protocol, terminal_root,
+                allow_test_synthetic_mesh_bytes=test_launch_override,
+            )
+            _validate_completed_sealed_chain(
+                completed_artifacts, authenticated,
+                sealed_base_root=sealed_base_root, case_contract=case_contract,
+                lock=lock, launch=launch, repo_root=sealed_base_root.parents[1],
+                writable_roots=writable_roots,
+            )
+            protocol.recheck_authenticated_package(authenticated)
         except Exception as error:
             raise TerminalValidationError(f"authoritative terminal package validation failed: {error}") from error
         if authenticated.get("execution_input_lock_sha256") != launch_receipt.get("execution_input_lock_sha256"):

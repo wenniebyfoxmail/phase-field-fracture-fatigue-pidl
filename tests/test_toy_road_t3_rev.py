@@ -1859,17 +1859,36 @@ def _write_state0(path: Path) -> None:
 
 
 def _write_mesh(path: Path, identities: dict[str, str]) -> None:
+    coordinates = np.asarray([
+        [0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0],
+    ], dtype=np.float64)
+    connectivity = np.asarray([[1.0, 2.0, 3.0, 4.0]], dtype=np.float64)
     with h5py.File(path, "w") as handle:
         group = handle.create_group("mesh_geometry")
         group.attrs["MATLAB_class"] = np.bytes_("struct")
-        _matlab_dataset(group, "node_coords", np.asarray([
-            [0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0],
-        ], dtype=np.float64))
-        _matlab_dataset(group, "connectivity", np.asarray([[1.0, 2.0, 3.0, 4.0]]))
+        _matlab_dataset(group, "node_coords", coordinates)
+        _matlab_dataset(group, "connectivity", connectivity)
         _matlab_char(group, "mesh_sha256", identities["mesh_sha256"])
-        _matlab_char(group, "connectivity_sha256", "a" * 64)
+        _matlab_char(group, "connectivity_sha256", identities["connectivity_sha256"])
+        _matlab_char(group, "mesh_sha256_semantics", identities["mesh_sha256_semantics"])
         _matlab_char(group, "element_ordering_id", identities["element_ordering_id"])
         _matlab_char(group, "gp_ordering_id", identities["gp_ordering_id"])
+
+
+def _toy_mesh_identity() -> dict[str, str]:
+    coordinates = np.asarray([
+        [0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0],
+    ], dtype="<f8")
+    connectivity = np.asarray([[1, 2, 3, 4]], dtype="<i8")
+    connectivity_bytes = connectivity.tobytes(order="F")
+    return {
+        "mesh_sha256": hashlib.sha256(
+            coordinates.tobytes(order="F") + connectivity_bytes).hexdigest(),
+        "connectivity_sha256": hashlib.sha256(connectivity_bytes).hexdigest(),
+        "mesh_sha256_semantics": "sha256_matlab_column_major_float64_coords_then_int64_connectivity_v1",
+        "element_ordering_id": "q4_connectivity_1_based_v1",
+        "gp_ordering_id": "q4_2x2_native_order_v1",
+    }
 
 
 def _write_cycle_shard(
@@ -1947,6 +1966,17 @@ def _write_package_checksum(root: Path) -> None:
     )
 
 
+def _reclose_completed_package(root: Path) -> None:
+    """Reclose a mutated completed fixture so semantic checks, not stale hashes, decide it."""
+    manifest = strict_json(root / "TERMINAL_MANIFEST.json")
+    snapshot = root / "INPUT_SNAPSHOT.json"
+    if snapshot.is_file():
+        manifest["physical_input_sha256"] = hashlib.sha256(snapshot.read_bytes()).hexdigest()
+    _write_package_checksum(root)
+    manifest["files"] = _terminal_manifest_entries(root)
+    _write_canonical_json(root / "TERMINAL_MANIFEST.json", manifest)
+
+
 def _generated_terminal_protocol(tmp_path: Path):
     builder = load_module("build_t3_rev_extension")
     extension = tmp_path / "extension"
@@ -1968,7 +1998,10 @@ def _build_authenticated_terminal_package(
         forbidden_first_hit: int | None = None, offset: float = 0.0,
         offsets: dict[int, float] | None = None,
         execution_lock: dict[str, object] | None = None,
-        case_id: str = "T3_rev_loading_order", include_mesh: bool = False) -> Path:
+        case_id: str = "T3_rev_loading_order", include_mesh: bool = False,
+        case_physics: dict[str, object] | None = None,
+        input_assets_root: Path | None = None,
+        component_identities: dict[str, str] | None = None) -> Path:
     root.mkdir(parents=True)
     (root / "substeps").mkdir()
     (root / "qualification").mkdir()
@@ -2005,12 +2038,13 @@ def _build_authenticated_terminal_package(
     lock_bytes = protocol.canonical_json_bytes(lock)
     (root / "EXECUTION_INPUT_LOCK.json").write_bytes(lock_bytes)
     execution_digest = hashlib.sha256(lock_bytes).hexdigest()
+    mesh_identity = _toy_mesh_identity()
     identities = {
         "protocol_version": protocol.PROTOCOL_VERSION,
         "source_commit": str(lock["source_commit"]),
-        "mesh_sha256": "b" * 64,
-        "element_ordering_id": "q4_connectivity_1_based_v1",
-        "gp_ordering_id": "q4_2x2_native_order_v1",
+        "mesh_sha256": mesh_identity["mesh_sha256"],
+        "element_ordering_id": mesh_identity["element_ordering_id"],
+        "gp_ordering_id": mesh_identity["gp_ordering_id"],
         "state_semantics_id": "five_substep_post_commit_history_v1",
         "runtime_lock_sha256": str(lock["runtime_lock_sha256"]),
         "family_contract_sha256": str(lock["family_contract_sha256"]),
@@ -2022,9 +2056,49 @@ def _build_authenticated_terminal_package(
         "numerical_gate_contract_sha256": "0" * 64,
         "event_contract_sha256": "1" * 64,
     }
+    if component_identities is not None:
+        identities.update({
+            name: value for name, value in component_identities.items()
+            if name in identities
+        })
     _write_state0(root / "STATE0.mat")
-    if include_mesh:
-        _write_mesh(root / "mesh_geometry.mat", identities)
+    _write_state0(root / "state0_analysis.mat")
+    mesh_file_identity = {**mesh_identity, **{
+        name: (component_identities or identities)[name] for name in (
+            "mesh_sha256", "connectivity_sha256", "mesh_sha256_semantics",
+            "element_ordering_id", "gp_ordering_id")
+        if name in (component_identities or identities)
+    }}
+    _write_mesh(root / "mesh_geometry.mat", mesh_file_identity)
+    snapshot = {
+        "schema_version": "toy_road_p0_input_snapshot_v1",
+        "authorization_scope": "production_authorized",
+        "case_id": case_id,
+        "source_commit": lock["source_commit"],
+        "runtime_lock_sha256": lock["runtime_lock_sha256"],
+        "family_contract_sha256": lock["family_contract_sha256"],
+        "case_physics_contract_sha256": lock["case_physics_contract_sha256"],
+        "execution_input_lock_sha256": execution_digest,
+        "input_assets_root": str((input_assets_root or root.parent / "input-assets").resolve()),
+        "mesh_sha256": identities["mesh_sha256"],
+        "changed_axes": ["loading.blocks"],
+        "case_physics": case_physics or {"mesh": mesh_file_identity},
+        "fresh_state0": True,
+        "resume_allowed": False,
+        "line_search": False,
+        "cycle_jump": False,
+    }
+    _write_canonical_json(root / "INPUT_SNAPSHOT.json", snapshot)
+    identities["physical_input_sha256"] = hashlib.sha256(
+        (root / "INPUT_SNAPSHOT.json").read_bytes()).hexdigest()
+    matlab = lock["runtime_expectations"]["matlab"]
+    _write_canonical_json(root / "RUNTIME_RECEIPT.json", {
+        "status": "PASS", "authorization_scope": "production_authorized",
+        "case_id": case_id, "source_commit": lock["source_commit"],
+        "runtime_lock_sha256": lock["runtime_lock_sha256"],
+        "matlab_version": f'{matlab["version"]} ({matlab["release"]}) {matlab["update"]}',
+        "computer": matlab["computer"], "blas": matlab["blas"], "lapack": matlab["lapack"],
+    })
     for cycle in range(1, terminal_cycle + 1):
         _write_cycle_shard(
             root / "substeps" / f"cycle_{cycle:04d}.mat",
@@ -2150,6 +2224,33 @@ def _write_pass_runtime_measurement(protocol, run_root: Path) -> dict[str, objec
     return measurement
 
 
+def _rev_completed_identity_kwargs(inputs: dict[str, Path]) -> dict[str, object]:
+    case_contract = strict_json(
+        inputs["extension_root"] / "CASE_PHYSICS_CONTRACTS.json"
+    )["cases"]["T3_rev_loading_order"]
+    published = strict_json(
+        inputs["repo_root"] / "analysis" / "toy_road_t3_mechanism_20260819" /
+        "evidence" / "TERMINAL_MANIFEST.json"
+    )
+    identities = {
+        name: published[name] for name in (
+            "solver_sha256", "recovery_sha256", "exporter_sha256",
+            "numerical_gate_contract_sha256", "event_contract_sha256",
+        )
+    }
+    identities.update({
+        name: case_contract["physics"]["mesh"][name] for name in (
+            "mesh_sha256", "connectivity_sha256", "mesh_sha256_semantics",
+            "element_ordering_id", "gp_ordering_id",
+        )
+    })
+    return {
+        "case_physics": case_contract["physics"],
+        "input_assets_root": inputs["input_assets_root"],
+        "component_identities": identities,
+    }
+
+
 def _launched_terminal_fixture(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     launch = load_module("launch_t3_rev")
     inputs = _launcher_inputs(launch, tmp_path)
@@ -2183,7 +2284,10 @@ def _launched_terminal_fixture(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
         terminal_cycle=5,
         right_censored=False,
         execution_lock=lock,
+        **_rev_completed_identity_kwargs(inputs),
     )
+    for path in lock["writable_roots"].values():
+        Path(path).mkdir(parents=True, exist_ok=True)
     return launch, protocol, inputs
 
 
@@ -2207,6 +2311,95 @@ def test_terminal_validator_authenticates_complete_launch_to_package_chain(
     )
     assert result["authorization_capability"] is None
     assert result["follow_on_authorized"] is False
+
+
+@pytest.mark.parametrize("missing", [
+    "INPUT_SNAPSHOT.json", "RUNTIME_RECEIPT.json", "mesh_geometry.mat",
+])
+def test_completed_authentication_requires_each_production_identity_artifact(
+        tmp_path: Path, missing: str) -> None:
+    """A hash-closed completed package still needs every producer identity artifact."""
+    _, protocol = _generated_terminal_protocol(tmp_path)
+    root = _build_authenticated_terminal_package(
+        protocol, tmp_path / "completed", terminal_cycle=5, right_censored=False,
+    )
+    (root / missing).unlink()
+    _reclose_completed_package(root)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="production identity artifact"):
+        module.authenticate_completed_package(protocol, root)
+
+
+def test_completed_authentication_rejects_short_matlab_version_token(tmp_path: Path) -> None:
+    """Completed output follows the same archived full-version receipt schema as failures."""
+    _, protocol = _generated_terminal_protocol(tmp_path)
+    root = _build_authenticated_terminal_package(
+        protocol, tmp_path / "completed", terminal_cycle=5, right_censored=False,
+    )
+    receipt = strict_json(root / "RUNTIME_RECEIPT.json")
+    receipt["matlab_version"] = "25.2.0.3177638"
+    _write_canonical_json(root / "RUNTIME_RECEIPT.json", receipt)
+    _reclose_completed_package(root)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="runtime receipt"):
+        module.authenticate_completed_package(protocol, root)
+
+
+def test_completed_authentication_rejects_reclosed_mesh_array_tamper(tmp_path: Path) -> None:
+    """Mesh metadata cannot hide changed geometry bytes in a reclosed package."""
+    _, protocol = _generated_terminal_protocol(tmp_path)
+    root = _build_authenticated_terminal_package(
+        protocol, tmp_path / "completed", terminal_cycle=5, right_censored=False,
+    )
+    with h5py.File(root / "mesh_geometry.mat", "r+") as handle:
+        handle["mesh_geometry/connectivity"][0, 0] = 2.0
+    _reclose_completed_package(root)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="mesh bytes|mesh.*identity"):
+        module.authenticate_completed_package(protocol, root)
+
+
+def test_completed_chain_rejects_reclosed_altered_physical_identity(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Rehashing a changed case snapshot cannot detach it from the sealed case contract."""
+    launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    output = inputs["run_root"] / "output"
+    snapshot = strict_json(output / "INPUT_SNAPSHOT.json")
+    snapshot["case_physics"]["loading"]["blocks"][0][2] = 0.127
+    _write_canonical_json(output / "INPUT_SNAPSHOT.json", snapshot)
+    _reclose_completed_package(output)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="physical|case contract"):
+        module._validate_terminal(
+            output,
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+def test_completed_chain_rejects_reclosed_altered_source_identity(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A replacement source claim cannot be made authoritative by rehashing the package."""
+    launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    output = inputs["run_root"] / "output"
+    snapshot = strict_json(output / "INPUT_SNAPSHOT.json")
+    snapshot["source_commit"] = "0" * 40
+    _write_canonical_json(output / "INPUT_SNAPSHOT.json", snapshot)
+    manifest = strict_json(output / "TERMINAL_MANIFEST.json")
+    manifest["source_commit"] = "0" * 40
+    _write_canonical_json(output / "TERMINAL_MANIFEST.json", manifest)
+    _reclose_completed_package(output)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="source|physical|identity"):
+        module._validate_terminal(
+            output,
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
 
 
 def _prepare_numerical_failure(
@@ -2280,11 +2473,15 @@ def _prepare_numerical_failure(
         ).reshape(-1, 1)
         handle["mesh_geometry/connectivity_sha256"][...] = connectivity_codes
     expectations = lock["runtime_expectations"]["matlab"]
+    full_matlab_version = (
+        f'{expectations["version"]} ({expectations["release"]}) '
+        f'{expectations["update"]}'
+    )
     _write_canonical_json(output / "RUNTIME_RECEIPT.json", {
         "status": "PASS", "authorization_scope": "production_authorized",
         "case_id": "T3_rev_loading_order", "source_commit": lock["source_commit"],
         "runtime_lock_sha256": lock["runtime_lock_sha256"],
-        "matlab_version": expectations["version"], "computer": expectations["computer"],
+        "matlab_version": full_matlab_version, "computer": expectations["computer"],
         "blas": expectations["blas"], "lapack": expectations["lapack"],
     })
     if classification == "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE":
@@ -2306,7 +2503,7 @@ def _prepare_numerical_failure(
 
     trace = output / "qualification" / "C5_STAGGER_TRACE.csv"
     receipt = output / "qualification" / "C5_NUMERICAL_GATE_RECEIPT.json"
-    c5_trace_required = cycle >= 5
+    c5_trace_required = cycle > 5 or (cycle == 5 and substep >= 4)
     c5_pass_required = cycle > 5 or (cycle == 5 and substep == 5)
     if not c5_trace_required:
         trace.unlink(missing_ok=True)
@@ -2322,7 +2519,7 @@ def _prepare_numerical_failure(
                     "T2_material_state", "T3_rev_loading_order"),
                 encoding="ascii", newline="\n",
             )
-        else:
+        elif substep == 4:
             trace.write_text(
                 ",".join(protocol.TRACE_COLUMNS) + "\n", encoding="ascii", newline="\n",
             )
@@ -2465,6 +2662,9 @@ def _reclose_failure_package(inputs: dict[str, Path]) -> None:
 
 @pytest.mark.parametrize(("classification", "cycle", "substep", "newton_layer"), [
     ("FAIL_NEWTON_NONCONVERGENCE", 5, 1, "phase_newton"),
+    ("FAIL_NEWTON_NONCONVERGENCE", 5, 2, "displacement_newton"),
+    ("FAIL_NEWTON_NONCONVERGENCE", 5, 3, "phase_newton"),
+    ("FAIL_NEWTON_NONCONVERGENCE", 5, 4, "displacement_newton"),
     ("FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE", 5, 4, "phase_newton"),
     ("FAIL_NEWTON_NONCONVERGENCE", 5, 5, "displacement_newton"),
     ("FAIL_NEWTON_NONCONVERGENCE", 6, 4, "phase_newton"),
@@ -2479,7 +2679,8 @@ def test_terminal_validator_authenticates_exact_numerical_failure_package(
         newton_layer=newton_layer,
     )
     output = inputs["run_root"] / "output"
-    assert (output / "qualification" / "C5_STAGGER_TRACE.csv").is_file()
+    expect_trace = cycle > 5 or (cycle == 5 and substep >= 4)
+    assert (output / "qualification" / "C5_STAGGER_TRACE.csv").is_file() is expect_trace
     expect_pass_receipt = cycle > 5 or (cycle == 5 and substep == 5)
     assert (output / "qualification" / "C5_NUMERICAL_GATE_RECEIPT.json").is_file() \
         is expect_pass_receipt
@@ -2495,6 +2696,67 @@ def test_terminal_validator_authenticates_exact_numerical_failure_package(
     assert result["classification"] == classification
     assert result["status"] == classification
     assert result["phase_evidence"]["failure_package_sha256"]
+    expected_authenticated_substep = substep if cycle == 5 and substep in {4, 5} else None
+    assert result["phase_evidence"]["substep_authenticated"] is (
+        expected_authenticated_substep is not None)
+    assert result["phase_evidence"]["authenticated_substep"] == expected_authenticated_substep
+    assert result["phase_evidence"]["self_reported_substep"] == substep
+
+
+def test_numerical_failure_requires_archived_full_matlab_version_receipt(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The production receipt uses MATLAB's full archived `version` string."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
+    live = inputs["run_root"] / "output" / "RUNTIME_RECEIPT.json"
+    copied = inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / \
+        "output" / "RUNTIME_RECEIPT.json"
+    for path in (live, copied):
+        receipt = strict_json(path)
+        assert receipt["matlab_version"] == "25.2.0.3177638 (R2025b) Update 5"
+        receipt["matlab_version"] = "25.2.0.3177638"
+        _write_canonical_json(path, receipt)
+    _reclose_failure_package(inputs)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="runtime receipt"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+def test_post_c5_newton_substep_remains_self_reported_after_reclosure(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A package-local substep rewrite cannot manufacture independent exact evidence."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(
+        protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE", cycle=6, substep=1,
+    )
+    package_failure = inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / \
+        "FAILURE_CLASSIFICATION.json"
+    failure = strict_json(package_failure)
+    failure["failure_substep"] = 3
+    _write_canonical_json(package_failure, failure)
+    terminal_path = inputs["run_root"] / "receipts" / "T3_REV_TERMINAL_FAILURE.json"
+    terminal = strict_json(terminal_path)
+    terminal["substep"] = 3
+    _write_canonical_json(terminal_path, terminal)
+    _reclose_failure_package(inputs)
+    module = load_module("validate_t3_rev_terminal")
+    result = module._validate_terminal(
+        inputs["run_root"] / "output",
+        sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+        "toy_road_p0_repeatability_20260803",
+        extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+        run_root=inputs["run_root"], launch=launch,
+    )
+    assert result["classification"] == "FAIL_NEWTON_NONCONVERGENCE"
+    assert result["phase_evidence"]["self_reported_substep"] == 3
+    assert result["phase_evidence"]["substep_authenticated"] is False
+    assert result["phase_evidence"]["authenticated_substep"] is None
 
 
 @pytest.mark.parametrize("tamper", ["copied_artifact", "undeclared_shard"])
@@ -2584,6 +2846,20 @@ def _prepare_phase_failure(inputs: dict[str, Path], phase: str) -> None:
             shutil.rmtree(path)
         else:
             path.unlink()
+    lock = strict_json(receipts / "T3_REV_EXECUTION_INPUT_LOCK.json")
+    writable_roots = [Path(value) for value in lock["writable_roots"].values()]
+    if phase in {
+            "bootstrap_before_runtime_measurement",
+            "runtime_qualification_before_producer",
+    }:
+        for path in writable_roots:
+            if path.is_dir():
+                shutil.rmtree(path)
+            else:
+                path.unlink(missing_ok=True)
+    else:
+        for path in writable_roots:
+            path.mkdir(parents=True, exist_ok=True)
     measurement_path = receipts / "T3_REV_RUNTIME_MEASUREMENT.json"
     if phase == "bootstrap_before_runtime_measurement":
         measurement_path.unlink()
@@ -2646,6 +2922,9 @@ def test_terminal_validator_authenticates_phase_specific_startup_and_runtime_fai
     """Bootstrap, genuine FAIL qualification, and post-PASS failures stay distinct."""
     launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
     _prepare_phase_failure(inputs, phase)
+    lock = strict_json(inputs["run_root"] / "receipts" / "T3_REV_EXECUTION_INPUT_LOCK.json")
+    roots_exist = [Path(value).is_dir() for value in lock["writable_roots"].values()]
+    assert all(roots_exist) is (phase == "producer_after_pass_runtime_measurement")
     module = load_module("validate_t3_rev_terminal")
     result = module._validate_terminal(
         inputs["run_root"] / "output",
@@ -2656,6 +2935,27 @@ def test_terminal_validator_authenticates_phase_specific_startup_and_runtime_fai
     )
     assert result["classification"] == classification
     assert result["phase_evidence"]["failure_phase"] == phase
+
+
+@pytest.mark.parametrize("phase", [
+    "bootstrap_before_runtime_measurement",
+    "runtime_qualification_before_producer",
+])
+def test_preproducer_failure_rejects_even_empty_stale_writable_root(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, phase: str) -> None:
+    """Before producer entry, an empty output reservation is still stale producer state."""
+    launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_phase_failure(inputs, phase)
+    (inputs["run_root"] / "output").mkdir()
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="writable root|producer roots"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
 
 
 def test_post_authorization_runtime_failure_rejects_synthetic_fail_measurement(
@@ -2694,10 +2994,10 @@ def test_phase_failure_rejects_producer_artifacts_outside_its_exact_closure(
     launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
     _prepare_phase_failure(inputs, phase)
     shard = inputs["run_root"] / "output" / "substeps" / "cycle_0001.mat"
-    shard.parent.mkdir()
+    shard.parent.mkdir(parents=True)
     shard.write_bytes(b"not authorized in this phase")
     module = load_module("validate_t3_rev_terminal")
-    with pytest.raises(module.TerminalValidationError, match="artifacts|closure"):
+    with pytest.raises(module.TerminalValidationError, match="artifacts|closure|writable root"):
         module._validate_terminal(
             inputs["run_root"] / "output",
             sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
@@ -2799,6 +3099,7 @@ def test_analyzer_end_to_end_uses_hash_qualified_protocols_and_event_rows(
     _build_authenticated_terminal_package(
         rev_protocol, rev_root, terminal_cycle=80, right_censored=False,
         offsets={20: 2e-12}, execution_lock=rev_lock, include_mesh=True,
+        **_rev_completed_identity_kwargs(inputs),
     )
     base_protocol_path = BASE / "toy_road_protocol.py"
     base_digest = hashlib.sha256(base_protocol_path.read_bytes()).hexdigest()
@@ -2809,6 +3110,7 @@ def test_analyzer_end_to_end_uses_hash_qualified_protocols_and_event_rows(
     _build_authenticated_terminal_package(
         base_protocol, t3_root, terminal_cycle=71, right_censored=False,
         case_id="T3_loading_history", include_mesh=True,
+        component_identities=_rev_completed_identity_kwargs(inputs)["component_identities"],
     )
     module = load_module("analyze_t3_rev")
     summary = module._analyze_t3_rev(
