@@ -22,6 +22,7 @@ from typing import Any, Mapping
 CASE_ID = "T3_rev_loading_order"
 AUTHORIZATION_CAPABILITY = "exactly_one_T3_rev_loading_order_execution"
 SUITESPARSE_ROOT = Path(r"C:\SuiteSparse\SuiteSparse-dev")
+AUTHORIZATION_STATE_ROOT = Path(r"C:\q4diag\toy-road-authorization-state\t3-rev-seal-v1")
 QUALIFIED_SOURCE_COMMIT = "355d4c83fefc2db88c32031a2dd2623b3de85c89"
 QUALIFIED_SOURCE_COUNT = 221
 CREATE_NO_WINDOW = 0x08000000
@@ -44,6 +45,10 @@ class LaunchError(RuntimeError):
 
 class PreparedLaunchError(LaunchError):
     """Raised after a validated launch has claimed a root but failed during preparation."""
+
+
+class LaunchCredentialError(LaunchError):
+    """Raised when a started bootstrap cannot receive its create-once authorization receipt."""
 
 
 def sha256(path: Path) -> str:
@@ -285,13 +290,14 @@ def _require_seal(seal_path: Path, repo_commit: str) -> dict[str, object]:
 
 
 def seal_consumption_marker(seal_path: Path) -> Path:
-    """Return the seal-scoped immutable marker shared by every possible run root."""
-    seal_path = Path(seal_path).resolve()
-    return seal_path.with_name(f"{seal_path.name}.T3_REV_CONSUMED.json")
+    """Return the machine-global immutable registry key for these exact seal bytes."""
+    return _absolute_literal_path(AUTHORIZATION_STATE_ROOT) / f"{sha256(Path(seal_path))}.json"
 
 
 def _require_unconsumed_seal(seal_path: Path) -> None:
     marker = seal_consumption_marker(seal_path)
+    if marker.parent.exists():
+        require_no_reparse_chain(marker.parent, "authorization state registry")
     if marker.exists():
         raise LaunchError(f"seal already consumed and cannot authorize another run root: {marker}")
 
@@ -300,9 +306,13 @@ def consume_seal(seal_path: Path, run_root: Path) -> dict[str, object]:
     """Atomically bind this exact seal to one root before the final idle check."""
     seal_path, run_root = Path(seal_path).resolve(), Path(run_root).resolve()
     marker = seal_consumption_marker(seal_path)
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    require_no_reparse_chain(marker.parent, "authorization state registry")
     value = {
         "schema_version": "toy_road_t3_rev_seal_consumption_v1",
         "case_id": CASE_ID,
+        "composite_producer": "sealed_T3_base_plus_T3_rev_case_definition_extension",
+        "authorization_capability": AUTHORIZATION_CAPABILITY,
         "seal_sha256": sha256(seal_path),
         "run_root": str(run_root),
         "resume_allowed": False,
@@ -727,6 +737,40 @@ def materialize_runtime_overlay(
     os.link(initial_source, initial_target)
 
 
+def require_materialized_runtime_overlay(
+        runtime_overlay: Path, shadow_hashes: Mapping[str, str],
+        expected_binaries: object) -> None:
+    """Close every file, directory, byte, and reparse identity in the launch overlay."""
+    if not isinstance(expected_binaries, dict) or type(expected_binaries.get("initial")) is not str:
+        raise LaunchError("runtime overlay initial MEX identity is malformed")
+    initial_relative = "+phase_field/+mex/+fem/+assembly/+equilibrium/initial.mexw64"
+    expected_files = dict(shadow_hashes)
+    expected_files[initial_relative] = expected_binaries["initial"]
+    expected_directories: set[str] = set()
+    for relative in expected_files:
+        parent = Path(relative).parent
+        while str(parent) != ".":
+            expected_directories.add(parent.as_posix())
+            parent = parent.parent
+    require_no_reparse_chain(runtime_overlay, "materialized runtime overlay")
+    actual_files: set[str] = set()
+    actual_directories: set[str] = set()
+    for path in runtime_overlay.rglob("*"):
+        relative = path.relative_to(runtime_overlay).as_posix()
+        require_no_reparse_chain(path, f"materialized runtime overlay path {relative}")
+        if path.is_dir():
+            actual_directories.add(relative)
+        elif path.is_file():
+            actual_files.add(relative)
+        else:
+            raise LaunchError(f"materialized runtime overlay has a non-file path: {relative}")
+    if actual_files != set(expected_files) or actual_directories != expected_directories:
+        raise LaunchError("materialized runtime overlay inventory is not the exact qualified closure")
+    for relative, expected_digest in expected_files.items():
+        if sha256(runtime_overlay / Path(relative)) != expected_digest:
+            raise LaunchError(f"materialized runtime overlay bytes differ: {relative}")
+
+
 def build_future_execution_lock(
         generated_protocol: Any, runtime: Mapping[str, object], expected_binaries: object,
         family_hash: str, case_hash: str, matlab_paths: list[Path],
@@ -833,10 +877,55 @@ def open_launch_logs(run_root: Path) -> tuple[Any, Any]:
     return stdout, stderr
 
 
+def publish_launch_receipt(
+        launch_receipt_path: Path, launch_receipt: Mapping[str, object]) -> None:
+    """Atomically publish the bootstrap credential only after process creation succeeds."""
+    temporary = launch_receipt_path.with_name(
+        f".{launch_receipt_path.name}.{uuid.uuid4().hex}.tmp"
+    )
+    if launch_receipt_path.exists():
+        raise LaunchCredentialError("launch credential path already exists")
+    try:
+        write_json_create_new(temporary, launch_receipt)
+        os.replace(temporary, launch_receipt_path)
+    except Exception:
+        if temporary.exists():
+            temporary.unlink()
+        if launch_receipt_path.exists():
+            launch_receipt_path.unlink()
+        raise
+
+
+def raise_launch_credential_failure(
+        receipts: Path, launch_receipt_path: Path, process: Any, error: Exception) -> None:
+    """Record a started-but-unauthorized bootstrap without retrying or exposing PASS."""
+    if launch_receipt_path.exists():
+        launch_receipt_path.unlink()
+    failure = receipts / "LAUNCH_CREDENTIAL_FAILED.json"
+    try:
+        write_json_create_new(failure, {
+            "schema_version": "toy_road_t3_rev_launch_credential_failed_v1",
+            "status": "LAUNCH_CREDENTIAL_FAILED",
+            "case_id": CASE_ID,
+            "process_started": True,
+            "pid": process.pid,
+            "resume_allowed": False,
+            "retry_allowed": False,
+            "new_authorization_required": True,
+            "error_type": type(error).__name__,
+        })
+    except OSError:
+        pass
+    raise LaunchCredentialError(
+        f"MATLAB bootstrap started but launch credential publication failed: {error}"
+    ) from error
+
+
 def require_final_launch_inputs(
         repo_root: Path, seal_path: Path, extension_root: Path, sealed_base_root: Path,
         manifest: Mapping[str, object], runtime: Mapping[str, object], matlab: Path,
-        griphfith_root: Path, input_assets_root: Path, roots: Mapping[str, Path],
+        griphfith_root: Path, input_assets_root: Path, runtime_overlay: Path,
+        roots: Mapping[str, Path],
         initial_shadow_hashes: Mapping[str, str], initial_shadow_payloads: Mapping[str, bytes],
         expected_binaries: object) -> None:
     """Repeat every mutable identity check at the last no-process boundary."""
@@ -869,6 +958,7 @@ def require_final_launch_inputs(
     require_runtime_binaries(repo_root, griphfith_root, expected_binaries)
     require_qualified_griphfith_sources(repo_root, griphfith_root)
     require_input_assets(repo_root, input_assets_root, roots)
+    require_materialized_runtime_overlay(runtime_overlay, initial_shadow_hashes, expected_binaries)
 
 
 def launch_t3_rev(
@@ -972,6 +1062,12 @@ def launch_t3_rev(
     prefix = os.pathsep.join(str(path) for path in matlab_paths)
     batch = (
         f"path([{matlab_literal(prefix)} pathsep path]);"
+        f"launch_receipt={matlab_literal(str(launch_receipt_path))};"
+        "launch_wait=tic;"
+        "while ~isfile(launch_receipt);"
+        "if toc(launch_wait)>30;"
+        "error('toyRoad:LaunchCredentialTimeout','Launch credential was not published');"
+        "end;pause(0.05);end;"
         f"run_toy_road_runtime_bridge({matlab_literal(str(lock_path))},{matlab_literal(str(measurement_path))});"
     )
     env = os.environ.copy()
@@ -1009,7 +1105,7 @@ def launch_t3_rev(
     try:
         require_final_launch_inputs(
             repo_root, seal_path, extension_root, sealed_base_root, manifest, runtime,
-            matlab, griphfith_root, input_assets_root, roots, shadow_hashes,
+            matlab, griphfith_root, input_assets_root, runtime_overlay, roots, shadow_hashes,
             shadow_payloads, expected_binaries,
         )
     except Exception as error:
@@ -1030,13 +1126,18 @@ def launch_t3_rev(
         _raise_prepared_failure(seal_path, run_root, receipts, error)
     try:
         try:
-            write_json_create_new(launch_receipt_path, launch_receipt)
             process = Popen(
                 [str(matlab), "-batch", batch], cwd=run_root, env=env, stdout=stdout, stderr=stderr,
                 creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
             )
         except Exception as error:
             _raise_prepared_failure(seal_path, run_root, receipts, error)
+        try:
+            publish_launch_receipt(launch_receipt_path, launch_receipt)
+        except Exception as error:
+            raise_launch_credential_failure(
+                receipts, launch_receipt_path, process, error
+            )
     finally:
         stdout.close()
         stderr.close()

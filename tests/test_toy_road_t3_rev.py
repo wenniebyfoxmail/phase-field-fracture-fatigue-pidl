@@ -501,6 +501,7 @@ def _launcher_inputs(module, tmp_path: Path) -> dict[str, Path]:
     cholmod.parent.mkdir(parents=True)
     cholmod.write_bytes(b"cholmod2")
     module.SUITESPARSE_ROOT = suite_root
+    module.AUTHORIZATION_STATE_ROOT = tmp_path / "authorization-state"
     assets = tmp_path / "assets"
     assets.mkdir()
     (assets / "sens_mesh.m").write_bytes(b"test qualified sens mesh")
@@ -537,6 +538,7 @@ def _allow_test_matlab_identity(
     )
     monkeypatch.setattr(module, "require_qualified_runtime_paths", lambda *args: None, raising=False)
     monkeypatch.setattr(module, "require_qualified_griphfith_sources", lambda *args: None, raising=False)
+    monkeypatch.setattr(module, "require_materialized_runtime_overlay", lambda *args: None, raising=False)
     if allow_input_assets:
         monkeypatch.setattr(
             module, "input_asset_sha256",
@@ -688,6 +690,113 @@ def test_io_failure_after_root_claim_is_consumed_prepared_no_launch(
     assert receipt["resume_allowed"] is False
 
 
+@pytest.mark.parametrize("mutation", ["changed", "extra", "missing", "reparse"])
+def test_final_overlay_closure_rejects_post_materialization_mutation(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, mutation: str) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    real_overlay_validator = module.require_materialized_runtime_overlay
+    _allow_test_matlab_identity(module, monkeypatch)
+    monkeypatch.setattr(module, "require_materialized_runtime_overlay", real_overlay_validator)
+    real_final = module.require_final_launch_inputs
+
+    def mutate_overlay(*args, **kwargs):
+        overlay = inputs["run_root"] / ".toy-road-runtime-overlay"
+        manifest = strict_json(inputs["extension_root"] / "EXTENSION_SOURCE_MANIFEST.json")
+        target = overlay / manifest["shadow_files"][0]["path"]
+        if mutation == "changed":
+            target.write_bytes(target.read_bytes() + b"\n% post-materialization mutation\n")
+        elif mutation == "extra":
+            (overlay / "unexpected.m").write_text("% extra", encoding="utf-8")
+        elif mutation == "missing":
+            target.unlink()
+        else:
+            replacement = tmp_path / "replacement.m"
+            replacement.write_bytes(target.read_bytes())
+            target.unlink()
+            try:
+                target.symlink_to(replacement)
+            except OSError:
+                pytest.skip("file symlink creation is unavailable")
+        return real_final(*args, **kwargs)
+
+    monkeypatch.setattr(module, "require_final_launch_inputs", mutate_overlay)
+    with pytest.raises(module.PreparedLaunchError, match="consumed/prepared"):
+        module.launch_t3_rev(**inputs)
+    assert not (inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").exists()
+
+
+def test_exact_materialized_overlay_closure_is_accepted(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    inputs = _launcher_inputs(module, tmp_path)
+    real_overlay_validator = module.require_materialized_runtime_overlay
+    _allow_test_matlab_identity(module, monkeypatch)
+    monkeypatch.setattr(module, "require_materialized_runtime_overlay", real_overlay_validator)
+
+    class Process:
+        pid = 7531
+
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: Process())
+    assert module.launch_t3_rev(**inputs)["status"] == "LAUNCHED"
+
+
+def test_identical_seal_copies_share_one_global_content_addressed_claim(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    _allow_test_matlab_identity(module, monkeypatch)
+
+    class Process:
+        pid = 8642
+
+    popen_calls = 0
+    def fake_popen(*args, **kwargs):
+        nonlocal popen_calls
+        popen_calls += 1
+        return Process()
+
+    monkeypatch.setattr(module, "Popen", fake_popen)
+    inputs = _launcher_inputs(module, tmp_path)
+    copied_seal = tmp_path / "copied" / "T3_REV_SEAL.json"
+    copied_seal.parent.mkdir()
+    shutil.copy2(inputs["seal_path"], copied_seal)
+    module.launch_t3_rev(**inputs)
+    replay = dict(inputs)
+    replay["seal_path"] = copied_seal
+    replay["run_root"] = tmp_path / "replay-run"
+    with pytest.raises(module.LaunchError, match="seal.*consumed"):
+        module.launch_t3_rev(**replay)
+    assert popen_calls == 1
+    assert not replay["run_root"].exists()
+
+
+def test_credential_publication_failure_after_popen_is_fail_closed(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+
+    class Process:
+        pid = 9753
+
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: Process())
+    monkeypatch.setattr(
+        module.os, "replace", lambda *a, **k: (_ for _ in ()).throw(OSError("replace failed"))
+    )
+    with pytest.raises(module.LaunchCredentialError, match="credential"):
+        module.launch_t3_rev(**inputs)
+    receipts = inputs["run_root"] / "receipts"
+    assert not (receipts / "T3_REV_LAUNCH_RECEIPT.json").exists()
+    failed = strict_json(receipts / "LAUNCH_CREDENTIAL_FAILED.json")
+    assert failed["status"] == "LAUNCH_CREDENTIAL_FAILED"
+    assert failed["process_started"] is True
+
+
 def test_busy_refusal_precedes_root_creation(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """An occupied experiment machine cannot consume a fresh run root."""
     module = load_module("launch_t3_rev")
@@ -823,7 +932,7 @@ def test_late_no_launch_failure_invalidates_pass_credential(
     receipt = inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.json"
     assert not receipt.exists()
     invalidated = inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.INVALIDATED.json"
-    assert invalidated.exists() is (failure == "popen")
+    assert not invalidated.exists()
     assert strict_json(inputs["run_root"] / "receipts" / "PREPARED_NO_LAUNCH.json")["status"] == "PREPARED_NO_LAUNCH"
 
 
@@ -864,6 +973,8 @@ def test_launcher_popen_uses_locked_paths_and_environment(
             tmp_path / "run" / "receipts" / "T3_REV_EXECUTION_INPUT_LOCK.json"
         )
         assert all(not Path(path).exists() for path in lock["writable_roots"].values())
+        assert not (tmp_path / "run" / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").exists()
+        assert "while ~isfile(" in args[0][2]
         captured["args"] = args
         captured["kwargs"] = kwargs
         return Process()
@@ -956,6 +1067,7 @@ def test_launcher_rejects_tampered_extension_identity_before_root_creation(
 def test_seal_consumption_marker_is_atomic_across_run_roots(tmp_path: Path) -> None:
     """Concurrent claims for one seal leave exactly one immutable owner marker."""
     module = load_module("launch_t3_rev")
+    module.AUTHORIZATION_STATE_ROOT = tmp_path / "authorization-state"
     seal = tmp_path / "T3_REV_SEAL.json"
     seal.write_text("{}", encoding="utf-8")
     roots = [tmp_path / "first", tmp_path / "second"]
