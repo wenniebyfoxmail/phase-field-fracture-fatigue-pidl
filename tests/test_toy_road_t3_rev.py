@@ -4,6 +4,7 @@ import json
 import importlib.util
 from pathlib import Path
 import shutil
+import subprocess
 
 import pytest
 
@@ -11,6 +12,12 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "docs/toy_road_p0_repeatability_20260802/QUALIFIED_TRAJECTORY_REGISTRY_20260824.json"
 BASE = ROOT / "producer_handoffs/toy_road_p0_repeatability_20260803"
+
+
+def repository_head() -> str:
+    return subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
+    ).strip()
 
 
 def load_module(name: str):
@@ -138,7 +145,7 @@ def test_diff_verifier_accepts_exact_generated_extension(tmp_path: Path) -> None
     builder = load_module("build_t3_rev_extension")
     verify = load_module("verify_extension_diff")
     extension = tmp_path / "extension"
-    builder.build_extension(BASE, extension, "a" * 40)
+    builder.build_extension(BASE, extension, repository_head())
 
     result = verify.verify_extension_diff(BASE, extension)
 
@@ -147,3 +154,62 @@ def test_diff_verifier_accepts_exact_generated_extension(tmp_path: Path) -> None
         "numerical_algorithm_changed": False,
         "allowed_shadow_files": list(builder.ALLOWED_SHADOW_FILES),
     }
+
+
+@pytest.mark.parametrize(("field", "value"), [
+    ("schema_version", "tampered_schema"),
+    ("case_id", "P0_parent"),
+    ("repo_commit", "75eaf67ada8b3629142a85a51bc06779e557b619"),
+    ("base_source_commit", "0" * 40),
+    ("base_source_manifest_sha256", "0" * 64),
+    ("contract_sha256", "0" * 64),
+    ("source_diff_inventory_sha256", "0" * 64),
+])
+def test_diff_verifier_rejects_tampered_manifest_claim(
+        tmp_path: Path, field: str, value: str) -> None:
+    """Every manifest identity claim must independently bind the overlay."""
+    builder = load_module("build_t3_rev_extension")
+    verify = load_module("verify_extension_diff")
+    extension = tmp_path / "extension"
+    builder.build_extension(BASE, extension, repository_head())
+    path = extension / "EXTENSION_SOURCE_MANIFEST.json"
+    manifest = strict_json(path)
+    manifest[field] = value
+    path.write_text(json.dumps(manifest, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+
+    with pytest.raises(verify.DiffError):
+        verify.verify_extension_diff(BASE, extension)
+
+
+def test_diff_verifier_rejects_tampered_shadow_hash(tmp_path: Path) -> None:
+    """The manifest must bind each generated shadow to its actual bytes."""
+    builder = load_module("build_t3_rev_extension")
+    verify = load_module("verify_extension_diff")
+    extension = tmp_path / "extension"
+    builder.build_extension(BASE, extension, repository_head())
+    path = extension / "EXTENSION_SOURCE_MANIFEST.json"
+    manifest = strict_json(path)
+    shadow_files = manifest["shadow_files"]
+    assert isinstance(shadow_files, list)
+    shadow_files[0]["sha256"] = "0" * 64
+    path.write_text(json.dumps(manifest, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+
+    with pytest.raises(verify.DiffError):
+        verify.verify_extension_diff(BASE, extension)
+
+
+def test_diff_verifier_rejects_tampered_hunk_inventory(tmp_path: Path) -> None:
+    """The hunk inventory must describe the exact generated source changes."""
+    builder = load_module("build_t3_rev_extension")
+    verify = load_module("verify_extension_diff")
+    extension = tmp_path / "extension"
+    builder.build_extension(BASE, extension, repository_head())
+    path = extension / "SOURCE_DIFF_INVENTORY.json"
+    inventory = strict_json(path)
+    hunks = inventory["hunks"]
+    assert isinstance(hunks, list)
+    hunks[0]["classification"] = "role_allowlist"
+    path.write_text(json.dumps(inventory, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+
+    with pytest.raises(verify.DiffError):
+        verify.verify_extension_diff(BASE, extension)

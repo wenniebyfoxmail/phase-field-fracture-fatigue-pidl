@@ -7,6 +7,7 @@ import importlib.util
 import json
 import math
 from pathlib import Path
+import subprocess
 import sys
 import types
 from typing import Any, Mapping
@@ -94,7 +95,7 @@ def _load_builder() -> Any:
     return module
 
 
-def _expected_generated_sources(base_root: Path) -> tuple[dict[str, bytes], list[dict[str, str]]]:
+def _expected_overlay(base_root: Path) -> tuple[dict[str, bytes], dict[str, object], Any]:
     builder = _load_builder()
     try:
         files, hunks = builder._patch_sources(base_root)
@@ -111,7 +112,41 @@ def _expected_generated_sources(base_root: Path) -> tuple[dict[str, bytes], list
         {"path": path, "classification": "contract_data"}
         for path in ("FAMILY_CONTRACT.json", "CASE_PHYSICS_CONTRACTS.json")
     )
-    return files, hunks
+    inventory: dict[str, object] = {
+        "schema_version": "toy_road_t3_rev_source_diff_inventory_v1",
+        "case_id": builder.CASE_ID,
+        "hunks": hunks,
+    }
+    return files, inventory, builder
+
+
+def _repository_head(base_root: Path) -> str:
+    try:
+        return subprocess.run(
+            ["git", "-C", str(base_root.parents[1]), "rev-parse", "HEAD"],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+    except (OSError, subprocess.CalledProcessError) as exception:
+        raise DiffError("cannot resolve the repository commit for this extension") from exception
+
+
+def _expected_manifest(
+        base_root: Path, expected_files: Mapping[str, bytes],
+        expected_inventory: Mapping[str, object], builder: Any) -> dict[str, object]:
+    inventory_bytes = builder.canonical_json_bytes(expected_inventory)
+    return {
+        "schema_version": "toy_road_t3_rev_extension_source_manifest_v1",
+        "case_id": builder.CASE_ID,
+        "repo_commit": _repository_head(base_root),
+        "base_source_commit": builder.BASE_SOURCE_COMMIT,
+        "base_source_manifest_sha256": builder.BASE_SOURCE_MANIFEST_SHA256,
+        "contract_sha256": _sha256(builder.CONTRACT_PATH.read_bytes()),
+        "source_diff_inventory_sha256": _sha256(inventory_bytes),
+        "shadow_files": [
+            {"path": relative, "sha256": _sha256(expected_files[relative])}
+            for relative in builder.ALLOWED_SHADOW_FILES
+        ],
+    }
 
 
 def require_exact_shadow_set(manifest: Mapping[str, object], allowed: tuple[str, ...]) -> None:
@@ -139,15 +174,12 @@ def require_exact_shadow_set(manifest: Mapping[str, object], allowed: tuple[str,
 
 
 def require_classified_hunks(
-        base_root: Path, extension_root: Path, inventory: Mapping[str, object]) -> None:
+        base_root: Path, extension_root: Path, inventory: Mapping[str, object],
+        expected_files: Mapping[str, bytes] | None = None,
+        expected_inventory: Mapping[str, object] | None = None) -> None:
     """Prove every shadow is the deterministic Task 2 role/loading insertion."""
-    builder = _load_builder()
-    expected_files, expected_hunks = _expected_generated_sources(base_root)
-    expected_inventory = {
-        "schema_version": "toy_road_t3_rev_source_diff_inventory_v1",
-        "case_id": builder.CASE_ID,
-        "hunks": expected_hunks,
-    }
+    if expected_files is None or expected_inventory is None:
+        expected_files, expected_inventory, _ = _expected_overlay(base_root)
     if inventory != expected_inventory:
         raise DiffError("unclassified hunk inventory or classification mismatch")
     for relative, expected in expected_files.items():
@@ -162,19 +194,14 @@ def require_classified_hunks(
             raise DiffError(f"unclassified source change in {relative}")
 
 
-def _verify_manifest_hashes(
-        extension_root: Path, manifest: Mapping[str, object], allowed: tuple[str, ...]) -> None:
-    entries = manifest["shadow_files"]
-    assert isinstance(entries, list)
-    for relative, entry in zip(allowed, entries):
-        assert isinstance(entry, dict)
-        expected = entry["sha256"]
-        if not isinstance(expected, str) or _sha256((extension_root / relative).read_bytes()) != expected:
-            raise DiffError(f"extension manifest hash mismatch: {relative}")
-    inventory_path = extension_root / "SOURCE_DIFF_INVENTORY.json"
-    digest = manifest["source_diff_inventory_sha256"]
-    if not isinstance(digest, str) or _sha256(inventory_path.read_bytes()) != digest:
-        raise DiffError("extension manifest inventory hash mismatch")
+def _require_expected_manifest(
+        extension_root: Path, manifest: Mapping[str, object],
+        expected_manifest: Mapping[str, object], builder: Any) -> None:
+    if manifest != expected_manifest:
+        raise DiffError("extension manifest claims do not match the authoritative overlay")
+    expected_bytes = builder.canonical_json_bytes(expected_manifest)
+    if (extension_root / "EXTENSION_SOURCE_MANIFEST.json").read_bytes() != expected_bytes:
+        raise DiffError("extension manifest bytes are not canonical authoritative bytes")
 
 
 def _verify_numerical_identities(base_root: Path, extension_root: Path) -> None:
@@ -203,9 +230,18 @@ def verify_extension_diff(base_root: Path, extension_root: Path) -> dict[str, ob
         raise DiffError(f"base source identity is invalid: {exception}") from exception
     manifest = strict_json(extension_root / "EXTENSION_SOURCE_MANIFEST.json")
     inventory = strict_json(extension_root / "SOURCE_DIFF_INVENTORY.json")
+    expected_files, expected_inventory, expected_builder = _expected_overlay(base_root)
+    expected_manifest = _expected_manifest(
+        base_root, expected_files, expected_inventory, expected_builder
+    )
     require_exact_shadow_set(manifest, builder.ALLOWED_SHADOW_FILES)
-    require_classified_hunks(base_root, extension_root, inventory)
-    _verify_manifest_hashes(extension_root, manifest, builder.ALLOWED_SHADOW_FILES)
+    require_classified_hunks(
+        base_root, extension_root, inventory, expected_files, expected_inventory
+    )
+    if (extension_root / "SOURCE_DIFF_INVENTORY.json").read_bytes() != \
+            builder.canonical_json_bytes(expected_inventory):
+        raise DiffError("source diff inventory bytes are not canonical authoritative bytes")
+    _require_expected_manifest(extension_root, manifest, expected_manifest, builder)
     _verify_numerical_identities(base_root, extension_root)
     expected_paths = {*builder.ALLOWED_SHADOW_FILES,
                       "EXTENSION_SOURCE_MANIFEST.json", "SOURCE_DIFF_INVENTORY.json"}

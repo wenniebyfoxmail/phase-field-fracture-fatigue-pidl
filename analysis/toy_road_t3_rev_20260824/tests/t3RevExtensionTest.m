@@ -8,11 +8,11 @@ repositoryRoot = fileparts(fileparts(fileparts(fileparts(mfilename('fullpath')))
 baseRoot = fullfile(repositoryRoot, 'producer_handoffs', ...
     'toy_road_p0_repeatability_20260803');
 extensionRoot = tempname;
+testCase.addTeardown(@() removeRoot(extensionRoot));
 buildGeneratedExtension(repositoryRoot, baseRoot, extensionRoot);
 testCase.TestData.baseRoot = baseRoot;
 testCase.TestData.extensionRoot = extensionRoot;
 testCase.TestData.mesh = canonicalMesh();
-testCase.addTeardown(@() removeRoot(extensionRoot));
 end
 
 function testLegacyRolesAreBehaviorallyIdentical(testCase)
@@ -70,29 +70,40 @@ verifyEqual(testCase, extensionReceipt.final_primal_feasibility, 0, ...
     'AbsTol', 0);
 end
 
+function testC5FailureRestoresPathAndDeletesTemporaryRoot(testCase)
+outputRoot = tempname;
+pathBefore = path;
+badFixture = c5Fixture();
+badFixture.raw = zeros(1,4);
+
+verifyError(testCase, @() c5Receipt(testCase.TestData.extensionRoot, ...
+    testCase.TestData.baseRoot, 'T3_rev_loading_order', outputRoot, badFixture), ...
+    'toyRoadT3Rev:InvalidFixture');
+verifyEqual(testCase, path, pathBefore);
+verifyFalse(testCase, isfolder(outputRoot));
+end
+
 function cfg = buildFromRoot(root, caseId, mesh)
+pathBefore = path;
 clear build_toy_road_family_case
 addpath(root, '-begin');
+cleanup = onCleanup(@() restoreBuilderPath(pathBefore));
 cfg = build_toy_road_family_case(caseId, mesh);
-rmpath(root);
-clear build_toy_road_family_case
+clear cleanup
 end
 
 function receipt = c5Receipt(root, baseRoot, caseId, outputRoot, fixture)
 mkdir(outputRoot);
+pathBefore = path;
 clear ToyRoadC5Trace begin_toy_road_c5_trace append_toy_road_c5_stagger_row finalize_toy_road_c5_gate
 addpath(baseRoot, '-begin');
 addpath(root, '-begin');
+cleanup = onCleanup(@() restoreC5Environment(pathBefore, outputRoot));
 trace = begin_toy_road_c5_trace(c5Entry(caseId, fixture), outputRoot);
 trace = append_toy_road_c5_stagger_row(trace, c5Row(fixture));
 receipt = finalize_toy_road_c5_gate(trace);
 clear trace
-rmpath(root);
-if ~strcmp(root, baseRoot)
-    rmpath(baseRoot);
-end
-clear ToyRoadC5Trace begin_toy_road_c5_trace append_toy_road_c5_stagger_row finalize_toy_road_c5_gate
-removeRoot(outputRoot);
+clear cleanup
 end
 
 function input = c5Entry(caseId, fixture)
@@ -181,6 +192,17 @@ function removeRoot(root)
 if isfolder(root)
     rmdir(root, 's');
 end
+end
+
+function restoreBuilderPath(pathBefore)
+path(pathBefore);
+clear build_toy_road_family_case
+end
+
+function restoreC5Environment(pathBefore, outputRoot)
+path(pathBefore);
+clear ToyRoadC5Trace begin_toy_road_c5_trace append_toy_road_c5_stagger_row finalize_toy_road_c5_gate
+removeRoot(outputRoot);
 end
 
 function value = slashPath(value)
