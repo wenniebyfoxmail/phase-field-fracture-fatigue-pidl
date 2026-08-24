@@ -173,11 +173,36 @@ def _validate_package_checksum(protocol: Any, snapshot: Mapping[str, object]) ->
 
 def _validate_trajectory_running_envelope(
         protocol: Any, state0_damage: np.ndarray, state0_alpha: np.ndarray,
-        shards: Iterable[Mapping[str, object]], label: str) -> None:
+        shards: Iterable[Mapping[str, object]], connectivity: np.ndarray,
+        label: str) -> None:
     """Prevent individually tolerated irreversible-state regressions from accumulating."""
     threshold = protocol.THRESHOLD
     running_damage = np.asarray(state0_damage[:, 0], dtype=np.float64).copy()
     running_alpha = np.asarray(state0_alpha, dtype=np.float64).copy()
+    connectivity_values = protocol._require_double_array(
+        connectivity, f"{label} trajectory connectivity")
+    rounded_connectivity = np.rint(connectivity_values)
+    if connectivity_values.ndim != 2 or connectivity_values.shape[1] != 4 \
+            or not np.array_equal(connectivity_values, rounded_connectivity) \
+            or np.any(rounded_connectivity < 1) \
+            or np.any(rounded_connectivity > running_damage.shape[0]) \
+            or any(len(set(row)) != 4 for row in rounded_connectivity.astype(np.int64)):
+        raise TerminalValidationError(
+            f"{label} trajectory connectivity is not valid one-based Q4 connectivity"
+        )
+    node_indices = rounded_connectivity.astype(np.int64) - 1
+    gauss = 1 / math.sqrt(3)
+    gauss_points = np.asarray([
+        [-gauss, -gauss], [gauss, -gauss],
+        [gauss, gauss], [-gauss, gauss],
+    ], dtype=np.float64)
+    shape_operator = np.empty((4, 4), dtype=np.float64)
+    for ordinal, (xi, eta) in enumerate(gauss_points):
+        shape_operator[ordinal, :] = 0.25 * np.asarray([
+            (1 - xi) * (1 - eta), (1 + xi) * (1 - eta),
+            (1 + xi) * (1 + eta), (1 - xi) * (1 + eta),
+        ])
+    running_gp_damage: np.ndarray | None = None
     if np.any(running_damage < -threshold) or np.any(running_damage > 1 + threshold):
         raise TerminalValidationError(f"{label} state0 damage is outside the trajectory envelope")
     if np.any(running_alpha < -threshold):
@@ -198,9 +223,19 @@ def _validate_trajectory_running_envelope(
             raise TerminalValidationError(
                 f"{label} cycle {cycle} history is outside the trajectory envelope"
             )
+        if gp_damage.shape != (node_indices.shape[0], 4, damage.shape[1]):
+            raise TerminalValidationError(
+                f"{label} cycle {cycle} GP damage dimensions differ from authenticated Q4 geometry"
+            )
         for substep in range(damage.shape[1]):
             current_damage = damage[:, substep]
+            current_gp_damage = gp_damage[:, :, substep]
             current_alpha = alpha[:, :, substep]
+            if running_gp_damage is not None \
+                    and np.any(current_gp_damage < running_gp_damage - threshold):
+                raise TerminalValidationError(
+                    f"{label} cycle {cycle} GP damage fell below its running maximum"
+                )
             if np.any(current_damage < running_damage - threshold):
                 raise TerminalValidationError(
                     f"{label} cycle {cycle} damage fell below its running maximum"
@@ -209,12 +244,24 @@ def _validate_trajectory_running_envelope(
                 raise TerminalValidationError(
                     f"{label} cycle {cycle} history fell below its running maximum"
                 )
+            element_damage = current_damage[node_indices]
+            expected_gp_damage = (shape_operator @ element_damage.T).T
+            if np.any(np.abs(current_gp_damage - expected_gp_damage) > threshold):
+                raise TerminalValidationError(
+                    f"{label} cycle {cycle} substep {substep + 1} GP damage differs from the "
+                    "sealed Q4 nodal-to-GP interpolation"
+                )
+            if running_gp_damage is None:
+                running_gp_damage = current_gp_damage.copy()
+            else:
+                np.maximum(running_gp_damage, current_gp_damage, out=running_gp_damage)
             np.maximum(running_damage, current_damage, out=running_damage)
             np.maximum(running_alpha, current_alpha, out=running_alpha)
 
 
 def _validate_snapshot_running_envelope(
-        protocol: Any, snapshot: Mapping[str, object], label: str) -> None:
+        protocol: Any, snapshot: Mapping[str, object], connectivity: np.ndarray,
+        label: str) -> None:
     files = snapshot.get("bytes")
     if not isinstance(files, dict):
         raise TerminalValidationError(f"{label} authenticated snapshot bytes are missing")
@@ -234,7 +281,7 @@ def _validate_snapshot_running_envelope(
                 files[relative], "shard", f"{label} trajectory cycle {cycle}")
 
     _validate_trajectory_running_envelope(
-        protocol, state0_damage, state0_alpha, authenticated_shards(), label)
+        protocol, state0_damage, state0_alpha, authenticated_shards(), connectivity, label)
 
 
 def _authenticate_right_censored_package(
@@ -500,12 +547,13 @@ def _authenticate_completed_package(
             raise TerminalValidationError(
                 "completed trajectory gate snapshot differs from authoritative authentication"
             )
-        _validate_snapshot_running_envelope(
-            protocol, snapshot, f"{CASE_ID} completed package")
         artifacts = _validate_completed_production_artifacts(
             protocol, root, receipt,
             allow_test_synthetic_mesh_bytes=allow_test_synthetic_mesh_bytes,
         )
+        _validate_snapshot_running_envelope(
+            protocol, snapshot, artifacts["mesh"]["connectivity"],
+            f"{CASE_ID} completed package")
         return receipt, artifacts
     except TerminalValidationError:
         raise
@@ -945,7 +993,8 @@ def _validate_failure_package(
 
     _validate_trajectory_running_envelope(
         protocol, state0_damage, state0_alpha,
-        authenticated_failure_shards(), f"{CASE_ID} failure package",
+        authenticated_failure_shards(), rounded_connectivity,
+        f"{CASE_ID} failure package",
     )
     for item in artifacts:
         relative = item["path"]

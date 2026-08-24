@@ -2988,10 +2988,50 @@ def test_numerical_failure_rejects_sequential_shard_state_regression(
 def _set_cumulative_shard_field(path: Path, field: str, value: float) -> None:
     """Mutate one irreversible field while preserving its qualified constitutive identity."""
     with h5py.File(path, "r+") as handle:
-        handle[f"shard/{field}"][...] = value
-        if field == "alpha_bar_gp":
+        if field == "d_node":
+            stored_damage = np.asarray(handle["shard/d_node"])
+            stored_damage[:, 0] = value
+            handle["shard/d_node"][...] = stored_damage
+            damage = stored_damage.T
+            gauss = 1 / np.sqrt(3)
+            points = np.asarray([
+                [-gauss, -gauss], [gauss, -gauss],
+                [gauss, gauss], [-gauss, gauss],
+            ])
+            operator = np.asarray([
+                0.25 * np.asarray([
+                    (1 - xi) * (1 - eta), (1 + xi) * (1 - eta),
+                    (1 + xi) * (1 + eta), (1 - xi) * (1 + eta),
+                ])
+                for xi, eta in points
+            ])
+            with h5py.File(path.parent.parent / "mesh_geometry.mat", "r") as mesh_handle:
+                connectivity = np.asarray(
+                    mesh_handle["mesh_geometry/connectivity"]
+                ).T.astype(np.int64) - 1
+            element_damage = damage[connectivity]
+            gp_damage = np.einsum("gj,ejs->egs", operator, element_damage)
+            stored_gp_damage = np.transpose(gp_damage, (2, 1, 0))
+            handle["shard/d_gp"][...] = stored_gp_damage
+            g_value = (1.0 - stored_gp_damage) ** 2
+            handle["shard/g_gp"][...] = g_value
+            handle["shard/psi_active_gp"][...] = (
+                g_value * np.asarray(handle["shard/psi_raw_gp"])
+            )
+        elif field == "alpha_bar_gp":
+            handle["shard/alpha_bar_gp"][...] = value
             f_alpha = min(1.0, (1.0 - ((value - 0.5) / (value + 0.5))) ** 2)
             handle["shard/f_alpha_gp"][...] = f_alpha
+        elif field == "d_gp":
+            # The captured GP field is derived from d_node.  Keep that identity exact
+            # so this fixture reaches the independent GP running-maximum check.
+            handle["shard/d_node"][...] = value
+            handle["shard/d_gp"][...] = value
+            g_value = (1.0 - value) ** 2
+            handle["shard/g_gp"][...] = g_value
+            handle["shard/psi_active_gp"][...] = (
+                g_value * np.asarray(handle["shard/psi_raw_gp"])
+            )
 
 
 def _stored_final_shard_sample(path: Path, field: str) -> float:
@@ -3010,8 +3050,21 @@ def _set_gp_damage_with_constitutive_fields(path: Path, value: float) -> None:
         )
 
 
+def _set_uniform_damage_with_constitutive_fields(path: Path, value: float) -> None:
+    """Keep the captured Q4 nodal-to-GP identity exact while mutating damage."""
+    with h5py.File(path, "r+") as handle:
+        handle["shard/d_node"][...] = value
+        handle["shard/d_gp"][...] = value
+        g_value = (1.0 - value) ** 2
+        handle["shard/g_gp"][...] = g_value
+        handle["shard/psi_active_gp"][...] = (
+            g_value * np.asarray(handle["shard/psi_raw_gp"])
+        )
+
+
 @pytest.mark.parametrize(("field", "peak"), [
     ("d_node", 0.09104),
+    ("d_gp", 0.09104),
     ("alpha_bar_gp", 0.00104),
 ])
 @pytest.mark.parametrize("right_censored", [False, True])
@@ -3043,14 +3096,20 @@ def test_completed_package_accepts_running_envelope_tolerance_boundary(
         protocol, tmp_path / f"completed-boundary-{right_censored}",
         terminal_cycle=150 if right_censored else 5, right_censored=right_censored,
     )
-    for field in ("d_node", "alpha_bar_gp"):
-        peak = _stored_final_shard_sample(
-            root / "substeps" / "cycle_0001.mat", field)
-        for cycle, multiplier in ((2, 0.5), (3, 1.0)):
-            _set_cumulative_shard_field(
-                root / "substeps" / f"cycle_{cycle:04d}.mat",
-                field, peak - multiplier * protocol.THRESHOLD,
-            )
+    peak_damage = _stored_final_shard_sample(
+        root / "substeps" / "cycle_0001.mat", "d_gp")
+    for cycle, multiplier in ((2, 0.5), (3, 1.0)):
+        _set_uniform_damage_with_constitutive_fields(
+            root / "substeps" / f"cycle_{cycle:04d}.mat",
+            peak_damage - multiplier * protocol.THRESHOLD,
+        )
+    peak_alpha = _stored_final_shard_sample(
+        root / "substeps" / "cycle_0001.mat", "alpha_bar_gp")
+    for cycle, multiplier in ((2, 0.5), (3, 1.0)):
+        _set_cumulative_shard_field(
+            root / "substeps" / f"cycle_{cycle:04d}.mat",
+            "alpha_bar_gp", peak_alpha - multiplier * protocol.THRESHOLD,
+        )
     _reclose_completed_package(root)
     receipt = load_module("validate_t3_rev_terminal").authenticate_completed_package(
         protocol, root)
@@ -3073,8 +3132,28 @@ def test_completed_package_rejects_gp_damage_outside_task6_absolute_bounds(
         module.authenticate_completed_package(protocol, root)
 
 
+@pytest.mark.parametrize("right_censored", [False, True])
+def test_completed_package_rejects_gp_damage_not_interpolated_from_authenticated_nodes(
+        tmp_path: Path, right_censored: bool) -> None:
+    """The sealed capture source makes Q4 nodal-to-GP interpolation independently checkable."""
+    _, protocol = _generated_terminal_protocol(tmp_path)
+    root = _build_authenticated_terminal_package(
+        protocol, tmp_path / f"completed-gp-interpolation-{right_censored}",
+        terminal_cycle=150 if right_censored else 5, right_censored=right_censored,
+    )
+    baseline = _stored_final_shard_sample(
+        root / "substeps" / "cycle_0002.mat", "d_gp")
+    _set_gp_damage_with_constitutive_fields(
+        root / "substeps" / "cycle_0002.mat", baseline + 5e-12)
+    _reclose_completed_package(root)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="Q4 nodal-to-GP interpolation"):
+        module.authenticate_completed_package(protocol, root)
+
+
 @pytest.mark.parametrize(("field", "peak"), [
     ("d_node", 0.092),
+    ("d_gp", 0.092),
     ("alpha_bar_gp", 0.002),
 ])
 def test_numerical_failure_rejects_accumulated_sub_tolerance_state_regression(
@@ -3106,16 +3185,26 @@ def test_numerical_failure_accepts_running_envelope_tolerance_boundary(
     """Failure evidence exactly at the accumulated tolerance boundary remains admissible."""
     launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
     _prepare_numerical_failure(protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
-    for field in ("d_node", "alpha_bar_gp"):
-        peak = _stored_final_shard_sample(
-            inputs["run_root"] / "output" / "substeps" / "cycle_0002.mat", field)
-        for cycle, multiplier in ((3, 0.5), (4, 1.0)):
-            relative = Path(f"output/substeps/cycle_{cycle:04d}.mat")
-            for path in (
-                    inputs["run_root"] / relative,
-                    inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / relative):
-                _set_cumulative_shard_field(
-                    path, field, peak - multiplier * protocol.THRESHOLD)
+    peak_damage = _stored_final_shard_sample(
+        inputs["run_root"] / "output" / "substeps" / "cycle_0002.mat", "d_gp")
+    for cycle, multiplier in ((3, 0.5), (4, 1.0)):
+        relative = Path(f"output/substeps/cycle_{cycle:04d}.mat")
+        for path in (
+                inputs["run_root"] / relative,
+                inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / relative):
+            _set_uniform_damage_with_constitutive_fields(
+                path, peak_damage - multiplier * protocol.THRESHOLD)
+    peak_alpha = _stored_final_shard_sample(
+        inputs["run_root"] / "output" / "substeps" / "cycle_0002.mat",
+        "alpha_bar_gp",
+    )
+    for cycle, multiplier in ((3, 0.5), (4, 1.0)):
+        relative = Path(f"output/substeps/cycle_{cycle:04d}.mat")
+        for path in (
+                inputs["run_root"] / relative,
+                inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / relative):
+            _set_cumulative_shard_field(
+                path, "alpha_bar_gp", peak_alpha - multiplier * protocol.THRESHOLD)
     _reclose_failure_package(inputs)
     result = load_module("validate_t3_rev_terminal")._validate_terminal(
         inputs["run_root"] / "output",
@@ -3125,6 +3214,29 @@ def test_numerical_failure_accepts_running_envelope_tolerance_boundary(
         run_root=inputs["run_root"], launch=launch,
     )
     assert result["classification"] == "FAIL_NEWTON_NONCONVERGENCE"
+
+
+def test_numerical_failure_rejects_gp_damage_not_interpolated_from_authenticated_nodes(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Failure shards retain the same sealed Q4 capture identity as completed shards."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
+    relative = Path("output/substeps/cycle_0003.mat")
+    baseline = _stored_final_shard_sample(inputs["run_root"] / relative, "d_gp")
+    for path in (
+            inputs["run_root"] / relative,
+            inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / relative):
+        _set_gp_damage_with_constitutive_fields(path, baseline + 5e-12)
+    _reclose_failure_package(inputs)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="Q4 nodal-to-GP interpolation"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
 
 
 def test_numerical_failure_rejects_out_of_range_mesh_connectivity_before_hash_claim(
