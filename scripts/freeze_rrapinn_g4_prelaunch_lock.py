@@ -219,7 +219,7 @@ def build_lock(
             },
         },
         "locked_code": {
-            "code_root": str(code_root),
+            "code_root_scope": "repo",
             "deterministic_sha256": deterministic_code_hash(code_root, analysis_code),
             "files": code_records,
         },

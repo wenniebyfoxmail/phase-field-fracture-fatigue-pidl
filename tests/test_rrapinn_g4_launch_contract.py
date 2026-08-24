@@ -40,7 +40,10 @@ def test_lock_and_authorization_are_both_required(tmp_path: Path):
         "producer_contract": {
             "restart_manifest_sha256": CANONICAL_RESTART_MANIFEST_SHA256,
         },
-        "locked_code": {"files": [{"path": "source/x.py", "sha256": _sha(code)}]},
+        "locked_code": {
+            "code_root_scope": "repo",
+            "files": [{"path": "source/x.py", "sha256": _sha(code)}],
+        },
         "artifacts": {"packet": {
             "scope": "bundle", "path": artifact.name, "sha256": _sha(artifact),
         }},

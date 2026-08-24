@@ -51,6 +51,8 @@ def load_and_verify_prelaunch_lock(
         raise LaunchContractError("prelaunch lock identity/state mismatch")
     root = repo_root.resolve()
     code = payload.get("locked_code", {})
+    if code.get("code_root_scope") != "repo" or "code_root" in code:
+        raise LaunchContractError("locked code root is not portable")
     for record in code.get("files", []):
         path = (root / record["path"]).resolve()
         try:
