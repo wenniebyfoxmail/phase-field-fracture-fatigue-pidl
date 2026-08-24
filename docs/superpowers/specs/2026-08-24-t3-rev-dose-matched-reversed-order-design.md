@@ -12,9 +12,13 @@ T3:      c1-c30 0.108, c31-c60 0.126, c61-c150 0.120
 T3-rev:  c1-c30 0.126, c31-c60 0.108, c61-c150 0.120
 ```
 
-T3 and T3-rev therefore have the same amplitude histogram over c1-c60. Their
-only intended difference is loading order. T3-rev runs from a fresh initial
-state and fresh roots; it never resumes or mutates T3.
+T3 and T3-rev therefore have the same prescribed amplitude histogram and cycle
+count over c1-c60. This is only a nominal loading-dose match: it does not assume
+that dissipated energy, fatigue-history increments, degradation, or any other
+constitutive accumulated quantity is equal. Those responses are outputs of the
+path-dependent system. The only intended input difference is loading order.
+T3-rev runs from a fresh initial state and fresh roots; it never resumes or
+mutates T3.
 
 ## Scientific purpose
 
@@ -36,6 +40,18 @@ cases have received the same first-60-cycle amplitude histogram. A nonzero
 difference at c60 and later is evidence of order/path dependence for this
 sealed producer. It is not, by itself, proof of constitutive correctness or a
 unique physical mechanism.
+
+Three outcome patterns are predeclared:
+
+1. If T3 and T3-rev remain numerically indistinguishable within the existing
+   tolerances after c60, the experiment does not resolve a material order effect
+   for these blocks. This favors, but does not prove, an exposure-dominated
+   explanation.
+2. If their stored fields or event trajectories remain different after c60,
+   loading-order/path dependence is observed under the sealed producer.
+3. If early differences appear but converge before fracture, order affects the
+   intermediate stored state while the terminal fracture trajectory is
+   comparatively insensitive at the measured resolution.
 
 ## Predecessor and evidence graph
 
