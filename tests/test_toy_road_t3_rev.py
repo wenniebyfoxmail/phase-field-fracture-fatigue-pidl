@@ -1593,3 +1593,96 @@ def test_launcher_cli_maps_documented_flags_to_exact_launch_keywords(
     assert module.main() == 0
     assert captured == values
     assert json.loads(capsys.readouterr().out) == {"pid": 0, "status": "DRY_RUN"}
+
+
+def _order_rows(*signals: tuple[int, float, float]) -> list[dict[str, float]]:
+    """Small, explicit reduction fixture for the predeclared T3/T3-rev boundary."""
+    return [
+        {"cycle": float(cycle), "max_abs": maximum, "relative_l2": relative}
+        for cycle, maximum, relative in signals
+    ]
+
+
+def test_predeclared_order_effect_classes() -> None:
+    """The c60 boundary separates unresolved, persistent, and transient order effects."""
+    module = load_module("analyze_t3_rev")
+    tolerance = {"max_abs": 1e-12, "relative_l2": 1e-12}
+    assert module.classify_order_effect(_order_rows(
+        (60, 1e-12, 1e-12), (61, 0.0, 0.0), (62, 0.0, 0.0),
+    ), tolerance) == "ORDER_EFFECT_NOT_RESOLVED_WITHIN_TOLERANCE"
+    assert module.classify_order_effect(_order_rows(
+        (60, 2e-12, 0.0), (61, 0.0, 2e-12), (62, 0.0, 0.0),
+    ), tolerance) == "PERSISTENT_LOADING_ORDER_DEPENDENCE_OBSERVED"
+    assert module.classify_order_effect(_order_rows(
+        (60, 2e-12, 0.0), (61, 1e-12, 1e-12), (62, 0.0, 0.0),
+    ), tolerance) == "TRANSIENT_ORDER_EFFECT_TERMINAL_TRAJECTORY_INSENSITIVE"
+
+
+def test_order_effect_requires_consecutive_post_c60_rows() -> None:
+    """Missing evidence is unavailable; it is never treated as a converged trajectory."""
+    module = load_module("analyze_t3_rev")
+    tolerance = {"max_abs": 1e-12, "relative_l2": 1e-12}
+    assert module.classify_order_effect(_order_rows(
+        (60, 2e-12, 0.0), (62, 0.0, 0.0),
+    ), tolerance) == "UNAVAILABLE"
+
+
+@pytest.mark.parametrize("rows, tolerance", [
+    (_order_rows((60, 0.0, 0.0), (61, 0.0, 0.0), (61, 0.0, 0.0)),
+     {"max_abs": 1e-12, "relative_l2": 1e-12}),
+    (_order_rows((60, 0.0, 0.0), (61, 0.0, 0.0)),
+     {"max_abs": 1e-12, "relative_l2": 1e-12, "extra": 0.0}),
+])
+def test_order_effect_rejects_duplicate_rows_and_extra_tolerances(
+        rows: list[dict[str, float]], tolerance: dict[str, float]) -> None:
+    """A tampered reduction or tolerance object cannot silently change the decision rule."""
+    with pytest.raises(ValueError):
+        load_module("analyze_t3_rev").classify_order_effect(rows, tolerance)
+
+
+@pytest.mark.parametrize("terminal, expected", [
+    ({"terminal_reason": "confirmed", "confirmed_cycle": 80},
+     "PASS_CONFIRMED_FRACTURE_TRAJECTORY"),
+    ({"terminal_reason": "right_censored", "terminal_cycle": 150},
+     "PASS_NO_CONFIRMED_FRACTURE_BY_C150"),
+    ({"terminal_reason": "coupled_fixed_point_nonconvergence", "cycle": 64, "substep": 4},
+     "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE"),
+    ({"terminal_reason": "newton_nonconvergence", "cycle": 64, "substep": 4},
+     "FAIL_NEWTON_NONCONVERGENCE"),
+    ({"terminal_reason": "startup_failure"}, "FAIL_STARTUP"),
+    ({"terminal_reason": "runtime_failure"}, "FAIL_RUNTIME"),
+])
+def test_terminal_classes_remain_distinct(terminal: dict[str, object], expected: str) -> None:
+    """Terminal outcomes cannot be collapsed into a generic unsuccessful result."""
+    assert load_module("validate_t3_rev_terminal").classify_terminal(terminal) == expected
+
+
+@pytest.mark.parametrize("terminal", [
+    {"terminal_reason": "right_censored", "terminal_cycle": 149},
+    {"terminal_reason": "coupled_fixed_point_nonconvergence", "cycle": True, "substep": 4},
+    {"terminal_reason": "unclassified_failure"},
+])
+def test_terminal_classification_rejects_wrong_cycle_type_and_unknown_reason(
+        terminal: dict[str, object]) -> None:
+    """Type/semantic substitutions cannot turn a failure into an accepted terminal result."""
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError):
+        module.classify_terminal(terminal)
+
+
+def test_terminal_validator_requires_authoritative_canonical_lock_bytes(tmp_path: Path) -> None:
+    """Whitespace-equivalent JSON cannot replace the bytes hashed into the launch credential."""
+    module = load_module("validate_t3_rev_terminal")
+
+    class Protocol:
+        @staticmethod
+        def canonical_json_bytes(value: object) -> bytes:
+            assert value == {"case_id": "T3_rev_loading_order"}
+            return b'{"case_id":"T3_rev_loading_order"}'
+
+    path = tmp_path / "lock.json"
+    path.write_bytes(b'{"case_id":"T3_rev_loading_order"}')
+    module.require_canonical_lock_bytes(Protocol(), path, {"case_id": "T3_rev_loading_order"})
+    path.write_bytes(b'{ "case_id": "T3_rev_loading_order" }\n')
+    with pytest.raises(module.TerminalValidationError, match="canonical"):
+        module.require_canonical_lock_bytes(Protocol(), path, {"case_id": "T3_rev_loading_order"})
