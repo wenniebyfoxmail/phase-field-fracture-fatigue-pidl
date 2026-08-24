@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import threading
 
 import pytest
@@ -1213,3 +1214,41 @@ def test_launcher_has_single_nonresume_case_scope() -> None:
     assert '"resume_allowed": False' in text
     for forbidden in ("T2-CONT", "retry_experiment", "follow_on_case"):
         assert forbidden not in text
+
+
+def test_launcher_cli_maps_documented_flags_to_exact_launch_keywords(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """The public CLI spelling must call the Python launch boundary without keyword drift."""
+    module = load_module("launch_t3_rev")
+    values = {
+        "repo_root": tmp_path / "repo",
+        "run_root": tmp_path / "run",
+        "seal_path": tmp_path / "seal.json",
+        "extension_root": tmp_path / "extension",
+        "template_run": tmp_path / "template",
+        "griphfith_root": tmp_path / "griphfith",
+        "input_assets_root": tmp_path / "assets",
+        "matlab": tmp_path / "matlab.exe",
+    }
+    captured: dict[str, object] = {}
+
+    def fake_launch(**kwargs):
+        captured.update(kwargs)
+        return {"status": "DRY_RUN", "pid": 0}
+
+    monkeypatch.setattr(module, "launch_t3_rev", fake_launch)
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    monkeypatch.setattr(sys, "argv", [
+        "launch_t3_rev.py",
+        "--repo-root", str(values["repo_root"]),
+        "--run-root", str(values["run_root"]),
+        "--seal", str(values["seal_path"]),
+        "--extension-root", str(values["extension_root"]),
+        "--template-run", str(values["template_run"]),
+        "--gripfith-root", str(values["griphfith_root"]),
+        "--input-assets-root", str(values["input_assets_root"]),
+        "--matlab", str(values["matlab"]),
+    ])
+    assert module.main() == 0
+    assert captured == values
+    assert json.loads(capsys.readouterr().out) == {"pid": 0, "status": "DRY_RUN"}
