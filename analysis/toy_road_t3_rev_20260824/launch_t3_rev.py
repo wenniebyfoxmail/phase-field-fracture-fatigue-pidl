@@ -270,6 +270,50 @@ def require_bridge_authorization_receipt(receipt: Mapping[str, object]) -> None:
         raise LaunchError("launch receipt bridge identity fields are malformed")
 
 
+def require_bridge_execution_lock(lock: Mapping[str, object]) -> None:
+    """Pure fail-closed validation of every execution-lock field read before main."""
+    required = {
+        "schema_version", "authorization_scope", "protocol_version", "case_id",
+        "case_physics_contract_sha256", "family_contract_sha256", "source_commit",
+        "source_manifest_sha256", "runtime_lock_sha256", "launch_timestamp_utc",
+        "no_clobber_receipt_id", "resume_allowed", "writable_roots",
+        "runtime_expectations", "extension_source_manifest_sha256", "thread_environment",
+    }
+    if set(lock) != required or lock.get("schema_version") != "toy_road_execution_input_lock_v1" \
+            or lock.get("authorization_scope") != "production_authorized" \
+            or lock.get("protocol_version") != "toy-road-p0-repeatability-v2.1" \
+            or lock.get("case_id") != CASE_ID or lock.get("resume_allowed") is not False:
+        raise LaunchError("execution lock bridge schema or authorization is invalid")
+    digests = ("case_physics_contract_sha256", "family_contract_sha256", "source_manifest_sha256",
+               "runtime_lock_sha256", "extension_source_manifest_sha256")
+    if type(lock.get("source_commit")) is not str or len(lock["source_commit"]) != 40 \
+            or any(char not in "0123456789abcdef" for char in lock["source_commit"]) \
+            or any(type(lock.get(field)) is not str or len(lock[field]) != 64
+                   or any(char not in "0123456789abcdef" for char in lock[field]) for field in digests):
+        raise LaunchError("execution lock bridge hashes are malformed")
+    roots = lock.get("writable_roots")
+    expected_roots = {"output", "work", "temp", "tmp", "pref", "cache", "receipts", "matlab_startup_pref"}
+    if not isinstance(roots, dict) or set(roots) != expected_roots \
+            or not all(type(value) is str and value and Path(value).is_absolute() for value in roots.values()):
+        raise LaunchError("execution lock writable roots are malformed")
+    expected_threads = {"OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_DYNAMIC": "FALSE"}
+    if not _exact_json_equal(lock.get("thread_environment"), expected_threads):
+        raise LaunchError("execution lock thread environment is malformed")
+    runtime = lock.get("runtime_expectations")
+    if not isinstance(runtime, dict) or set(runtime) != {"binary_sha256", "matlab"} \
+            or not isinstance(runtime.get("binary_sha256"), dict) \
+            or set(runtime["binary_sha256"]) != {"initial", "AMOR", "AT1_HISTORY_FATIGUE", "cholmod2"} \
+            or any(type(value) is not str or len(value) != 64 for value in runtime["binary_sha256"].values()):
+        raise LaunchError("execution lock runtime binary mapping is malformed")
+    matlab = runtime.get("matlab")
+    expected_matlab = {"absolute_path_order", "release", "update", "version", "computer", "executable_sha256", "blas", "lapack"}
+    if not isinstance(matlab, dict) or set(matlab) != expected_matlab \
+            or type(matlab.get("absolute_path_order")) is not list or not matlab["absolute_path_order"] \
+            or not all(type(path) is str and path and Path(path).is_absolute() for path in matlab["absolute_path_order"]) \
+            or any(type(matlab.get(field)) is not str and field != "absolute_path_order" for field in expected_matlab):
+        raise LaunchError("execution lock MATLAB mapping is malformed")
+
+
 def _require_extension(
         repo_root: Path, extension_root: Path, seal: Mapping[str, object]) -> tuple[Path, dict[str, object], dict[str, object]]:
     sealed_base_root = repo_root / "producer_handoffs" / "toy_road_p0_repeatability_20260803"
@@ -437,6 +481,7 @@ def launch_t3_rev(
         "case_id": CASE_ID,
         "case_physics_contract_sha256": case_hash,
         "family_contract_sha256": family_hash,
+        "runtime_lock_sha256": runtime["runtime_lock_sha256"],
         "source_commit": repo_commit,
         "launch_timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "no_clobber_receipt_id": uuid.uuid4().hex,
@@ -456,6 +501,7 @@ def launch_t3_rev(
         },
     }
     lock["runtime_expectations"] = runtime_expectations
+    require_bridge_execution_lock(lock)
     lock_path = roots["receipts"] / "T3_REV_EXECUTION_INPUT_LOCK.json"
     write_json_create_new(lock_path, lock)
     launch_receipt_path = roots["receipts"] / "T3_REV_LAUNCH_RECEIPT.json"

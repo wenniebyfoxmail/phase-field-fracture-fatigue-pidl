@@ -593,6 +593,8 @@ def test_launcher_popen_uses_locked_paths_and_environment(
     assert env["TOY_ROAD_CASE_ROLE"] == "T3_rev_loading_order"
     assert env["OMP_NUM_THREADS"] == "1"
     lock = strict_json(tmp_path / "run" / "receipts" / "T3_REV_EXECUTION_INPUT_LOCK.json")
+    module.require_bridge_execution_lock(lock)
+    assert lock["runtime_lock_sha256"] == "a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7"
     template_lock = strict_json(inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json")
     assert lock["source_commit"] == _git(["rev-parse", "HEAD"], inputs["repo_root"])
     assert lock["family_contract_sha256"] != template_lock["family_contract_sha256"]
