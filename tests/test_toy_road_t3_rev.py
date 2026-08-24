@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import importlib.util
+import hashlib
 from pathlib import Path
 import shutil
 import subprocess
@@ -10,6 +11,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+ANALYSIS = ROOT / "analysis" / "toy_road_t3_rev_20260824"
 REGISTRY = ROOT / "docs/toy_road_p0_repeatability_20260802/QUALIFIED_TRAJECTORY_REGISTRY_20260824.json"
 BASE = ROOT / "producer_handoffs/toy_road_p0_repeatability_20260803"
 
@@ -398,3 +400,245 @@ def test_seal_rejects_runtime_boolean_integer_confusion(tmp_path: Path) -> None:
 
     adjudication = _tampered_t3_adjudication(tmp_path, mutate)
     _assert_runtime_mapping_rejected(adjudication)
+
+
+def _launcher_inputs(module, tmp_path: Path) -> dict[str, Path]:
+    """Make immutable-looking inputs; MATLAB itself is always mocked."""
+    builder = load_module("build_t3_rev_extension")
+    repo = tmp_path / "repo"
+    base = repo / "producer_handoffs" / "toy_road_p0_repeatability_20260803"
+    shutil.copytree(BASE, base)
+    terminal = repo / "analysis" / "toy_road_t3_mechanism_20260819" / "evidence"
+    terminal.mkdir(parents=True)
+    shutil.copy2(
+        ROOT / "analysis/toy_road_t3_mechanism_20260819/evidence/TERMINAL_MANIFEST.json",
+        terminal / "TERMINAL_MANIFEST.json",
+    )
+    initial = repo / "producer_handoffs" / "rebuilt_initial_mex_qualification_20260801" / "runtime"
+    initial.mkdir(parents=True)
+    shutil.copy2(
+        ROOT / "producer_handoffs/rebuilt_initial_mex_qualification_20260801/runtime/initial.mexw64",
+        initial / "initial.mexw64",
+    )
+    _git(["init", "-q"], repo)
+    _git(["config", "user.email", "test@example.invalid"], repo)
+    _git(["config", "user.name", "Launcher Test"], repo)
+    _git(["add", "."], repo)
+    _git(["commit", "-qm", "test fixture"], repo)
+    commit = _git(["rev-parse", "HEAD"], repo)
+    extension = tmp_path / "extension"
+    builder.build_extension(base, extension, commit)
+    manifest_path = extension / "EXTENSION_SOURCE_MANIFEST.json"
+    manifest = strict_json(manifest_path)
+    cases = strict_json(extension / "CASE_PHYSICS_CONTRACTS.json")
+    case_table = cases["cases"]
+    assert isinstance(case_table, dict)
+    case = case_table["T3_rev_loading_order"]
+    assert isinstance(case, dict)
+
+    seal_builder = load_module("build_t3_rev_seal")
+    seal = {
+        "schema_version": "toy_road_t3_rev_seal_v1",
+        "status": "PASS",
+        "case_id": "T3_rev_loading_order",
+        "authorization_capability": "exactly_one_T3_rev_loading_order_execution",
+        "resume_allowed": False,
+        "follow_on_authorized": False,
+        "extension_identity": {
+            "composite_producer": "sealed_T3_base_plus_T3_rev_case_definition_extension",
+            "repository_commit": commit,
+            "base_source_commit": manifest["base_source_commit"],
+            "base_source_manifest_sha256": manifest["base_source_manifest_sha256"],
+            "extension_source_manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+            "extension_contract_sha256": hashlib.sha256(
+                (ANALYSIS / "T3_REV_CONTRACT.json").read_bytes()
+            ).hexdigest(),
+            "source_diff_inventory_sha256": hashlib.sha256(
+                (extension / "SOURCE_DIFF_INVENTORY.json").read_bytes()
+            ).hexdigest(),
+            "extension_family_contract_sha256": hashlib.sha256(
+                (extension / "FAMILY_CONTRACT.json").read_bytes()
+            ).hexdigest(),
+            "verification": {
+                "status": "PASS",
+                "numerical_algorithm_changed": False,
+                "allowed_shadow_files": list(builder.ALLOWED_SHADOW_FILES),
+            },
+        },
+        "predecessor_evidence": {},
+        "physics_closure": {},
+        "runtime_identity": seal_builder.EXPECTED_EXECUTION,
+    }
+    seal_path = tmp_path / "T3_REV_SEAL.json"
+    seal_path.write_text(json.dumps(seal, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    template = tmp_path / "template" / "receipts"
+    template.mkdir(parents=True)
+    shutil.copy2(
+        ROOT / "docs/toy_road_p0_repeatability_20260802/t2_material_state_failure_20260817/"
+        "artifacts/receipts/T2_EXECUTION_INPUT_LOCK.json",
+        template / "T2_EXECUTION_INPUT_LOCK.json",
+    )
+    matlab = tmp_path / "matlab.exe"
+    matlab.write_bytes(b"test executable")
+    griphfith = tmp_path / "griphfith"
+    (griphfith / "Sources").mkdir(parents=True)
+    assets = tmp_path / "assets"
+    assets.mkdir()
+    return {
+        "repo_root": repo,
+        "run_root": tmp_path / "run",
+        "seal_path": seal_path,
+        "extension_root": extension,
+        "template_run": template.parent,
+        "griphfith_root": griphfith,
+        "input_assets_root": assets,
+        "matlab": matlab,
+    }
+
+
+def call_launcher(module, run_root: Path, tmp_path: Path) -> dict[str, object]:
+    inputs = _launcher_inputs(module, tmp_path)
+    inputs["run_root"] = run_root
+    return module.launch_t3_rev(**inputs)
+
+
+def test_busy_refusal_precedes_root_creation(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """An occupied experiment machine cannot consume a fresh run root."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [{"ProcessId": 1, "Name": "MATLAB.exe"}])
+    run = tmp_path / "run"
+    with pytest.raises(module.BusyExperimentError):
+        call_launcher(module, run, tmp_path)
+    assert not run.exists()
+
+
+def test_second_busy_check_prevents_popen_and_records_consumed_root(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A process that appears during setup consumes the root without a launch."""
+    module = load_module("launch_t3_rev")
+    inputs = _launcher_inputs(module, tmp_path)
+    run = tmp_path / "run"
+    inputs["run_root"] = run
+    checks = iter([[], [{"ProcessId": 2, "Name": "MATLAB.exe"}]])
+    monkeypatch.setattr(module, "matlab_processes", lambda: next(checks))
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    with pytest.raises(module.BusyExperimentError, match="final process check"):
+        module.launch_t3_rev(**inputs)
+    receipt = strict_json(run / "receipts" / "BUSY_NO_LAUNCH.json")
+    assert receipt["status"] == "BUSY_NO_LAUNCH"
+    assert receipt["resume_allowed"] is False
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    with pytest.raises(FileExistsError):
+        module.launch_t3_rev(**inputs)
+
+
+def test_launcher_popen_uses_locked_paths_and_environment(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The sole launch boundary passes the T3-rev lock and qualified path order."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    captured: dict[str, object] = {}
+
+    class Process:
+        pid = 4321
+
+    def fake_popen(*args, **kwargs):
+        captured["args"] = args
+        captured["kwargs"] = kwargs
+        return Process()
+
+    inputs = _launcher_inputs(module, tmp_path)
+    inputs["run_root"] = tmp_path / "run"
+    monkeypatch.setattr(module, "Popen", fake_popen)
+    result = module.launch_t3_rev(**inputs)
+    assert result["status"] == "LAUNCHED"
+    args = captured["args"]
+    kwargs = captured["kwargs"]
+    assert isinstance(args, tuple) and args[0][1] == "-batch"
+    assert isinstance(kwargs, dict)
+    assert kwargs["creationflags"] == 0x08000000 | 0x00000200
+    env = kwargs["env"]
+    assert isinstance(env, dict)
+    assert env["TOY_ROAD_CASE_ROLE"] == "T3_rev_loading_order"
+    assert env["OMP_NUM_THREADS"] == "1"
+    lock = strict_json(tmp_path / "run" / "receipts" / "T3_REV_EXECUTION_INPUT_LOCK.json")
+    template_lock = strict_json(inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json")
+    assert lock["source_commit"] == _git(["rev-parse", "HEAD"], inputs["repo_root"])
+    assert lock["family_contract_sha256"] != template_lock["family_contract_sha256"]
+    assert lock["case_physics_contract_sha256"] != template_lock["case_physics_contract_sha256"]
+    assert env["TOY_ROAD_FAMILY_CONTRACT_SHA256"] == lock["family_contract_sha256"]
+    assert env["TOY_ROAD_CASE_PHYSICS_CONTRACT_SHA256"] == lock["case_physics_contract_sha256"]
+    expected_paths = [
+        str(tmp_path / "run" / ".toy-road-runtime-overlay"),
+        str(inputs["extension_root"]),
+        str(inputs["repo_root"] / "producer_handoffs" / "toy_road_p0_repeatability_20260803"),
+        str(tmp_path / "griphfith" / "Sources"),
+        r"C:\SuiteSparse\SuiteSparse-dev\CHOLMOD\MATLAB",
+        r"C:\SuiteSparse\SuiteSparse-dev\AMD\MATLAB",
+        r"C:\SuiteSparse\SuiteSparse-dev\COLAMD\MATLAB",
+        r"C:\SuiteSparse\SuiteSparse-dev\CCOLAMD\MATLAB",
+        r"C:\SuiteSparse\SuiteSparse-dev\CAMD\MATLAB",
+    ]
+    matlab = lock["runtime_expectations"]["matlab"]
+    assert matlab["absolute_path_order"] == expected_paths
+
+
+def test_launcher_rejects_tampered_extension_identity_before_root_creation(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A mutable extension manifest cannot bypass the seal's composite identity."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    inputs = _launcher_inputs(module, tmp_path)
+    manifest = strict_json(inputs["extension_root"] / "EXTENSION_SOURCE_MANIFEST.json")
+    manifest["base_source_commit"] = "0" * 40
+    (inputs["extension_root"] / "EXTENSION_SOURCE_MANIFEST.json").write_text(
+        json.dumps(manifest, sort_keys=True, separators=(",", ":")), encoding="utf-8"
+    )
+    with pytest.raises(module.LaunchError, match="extension|composite"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+
+
+def test_launcher_requires_clean_committed_repository(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A fresh root cannot be consumed by uncommitted launch source."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    (inputs["repo_root"] / "uncommitted-launch-change.txt").write_text("dirty", encoding="utf-8")
+    with pytest.raises(module.LaunchError, match="clean"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+
+
+@pytest.mark.parametrize("target", ["seal", "template_lock"])
+def test_launcher_rejects_tampered_seal_or_runtime_input_before_root_creation(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, target: str) -> None:
+    """Neither a mutable capability nor a borrowed runtime lock can be substituted."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    if target == "seal":
+        payload = strict_json(inputs["seal_path"])
+        payload["authorization_capability"] = "unbounded"
+        inputs["seal_path"].write_text(
+            json.dumps(payload, sort_keys=True, separators=(",", ":")), encoding="utf-8"
+        )
+    else:
+        path = inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
+        payload = strict_json(path)
+        payload["runtime_lock_sha256"] = "0" * 64
+        path.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    with pytest.raises(module.LaunchError, match="seal|runtime"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+
+
+def test_launcher_has_single_nonresume_case_scope() -> None:
+    text = (ANALYSIS / "launch_t3_rev.py").read_text(encoding="utf-8")
+    assert '"TOY_ROAD_CASE_ROLE": "T3_rev_loading_order"' in text
+    assert '"resume_allowed": False' in text
+    for forbidden in ("T2-CONT", "T2_material_state", "retry_experiment", "follow_on_case"):
+        assert forbidden not in text
