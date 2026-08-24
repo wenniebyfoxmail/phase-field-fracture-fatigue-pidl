@@ -23,8 +23,10 @@ def packet() -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def test_g4_design_is_frozen_but_launch_blocked():
-    assert load_validator().validate(packet())["status"] == "pass_frozen_design_launch_blocked"
+def test_g4_design_is_ready_for_prelaunch_lock_but_training_unauthorized():
+    assert load_validator().validate(packet())["status"] == (
+        "pass_ready_for_prelaunch_lock_training_unauthorized"
+    )
 
 
 def test_g4_validator_rejects_authorization_or_threshold_drift():
@@ -52,7 +54,9 @@ def test_g4_validator_rejects_future_history_and_missing_blocker():
 def test_g4_validator_rejects_false_prerequisite_closure_or_postrun_conflation():
     validator = load_validator()
     payload = packet()
-    payload["qualification_snapshot"]["current_external_input_blockers"] = []
+    payload["qualification_snapshot"]["current_external_input_blockers"] = [
+        "exact_peak_c76_c82_c83_fem_bundle"
+    ]
     assert validator.validate(payload)["status"] == "fail"
 
     payload = packet()

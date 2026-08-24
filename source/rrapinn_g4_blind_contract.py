@@ -42,7 +42,12 @@ REQUIRED_METRIC_KEYS = frozenset(
         "active_log_mean", "active_log_cvar99", "raw_log_cvar99",
         "absolute_support_iou", "absolute_support_area_ratio",
         "own_top1_support_iou", "active_correlation", "damage_mae",
-        "history_log_mae", "fatigue_factor_mae", "mirror_asymmetry",
+        "history_log_mae", "fatigue_factor_mae",
+        "damage_iou_025", "damage_iou_050", "damage_iou_075",
+        "damage_components_025", "damage_crack_tip_x_025",
+        "damage_centroid_x_025", "damage_centroid_y_025",
+        "damage_forward_extent_025", "damage_width_025",
+        "damage_one_sided_support_025", "mirror_asymmetry",
     )]
     + [("event", "headline", "first_detect_cycle")]
 )

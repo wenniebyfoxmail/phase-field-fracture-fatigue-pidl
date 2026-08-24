@@ -220,3 +220,17 @@ After each completed gate, add one row to `docs/pidl_experiment_inventory.md`.
 Only a completed three-gate A/B result may enter
 `docs/aligned_result_registry_2026-07-06.md`. The current research frontier is
 not changed by this diagnostic track.
+
+### 2026-08-24 G4 exact-input integration
+
+The Request 27 v2.1 package passes exact identity, geometry, state and
+first-detect checks. FEM truth remains c83 first detect; c86 is confirmation.
+The exact-geometry projector v2 replaces v1 because one of 85,113 headline
+assignments changes. A treatment-blind analyzer now calculates residual tails,
+FEM field tails/support, the 0.25/0.5/0.75 damage IoUs, frozen-grid morphology
+and first-detect in one 72-row two-arm metric grid. A new launcher contract
+requires both an immutable prelaunch lock and a separate user authorization
+receipt before any stdout directory or training subprocess is created.
+
+State: `integration in progress; training unauthorized`. U0.13/U0.11 remain
+outside the allowed input set.

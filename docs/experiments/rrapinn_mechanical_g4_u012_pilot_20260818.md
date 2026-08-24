@@ -194,3 +194,25 @@ per-arm first-detect receipts and the host path-access ledgers are required
 outputs of a future run, not prelaunch inputs. Even after Request 27 arrives
 and validates, G4 launch still requires explicit user authorization. Longer
 training and held-out amplitude access remain unauthorized.
+
+## 2026-08-24 exact-input integration amendment
+
+Request 27 is now closed by native-Q4 package
+`hard5_u012_exact_peak_native_q4_c76_c82_c83_20260824_v2.1`. All 20 package
+hash records pass. The sparse c76/c82/c83 first-detect counts are `0/0/22`;
+the c83 all-history identity is a hash-locked `historical_reference_receipt`,
+not a continuous-history scan. c86 remains confirmation only.
+
+The old projector is superseded for this package. Rebuilding against exact
+double-precision centroids changes one contained assignment (FEM row 57509)
+while preserving 85,113 headline and 1,295 excluded fallback rows. The real
+blind analyzer now computes the complete residual, field, event and reported
+morphology grid. Because the contained Q4 domain is not elementwise
+mirror-closed, mirror asymmetry uses a frozen 64x64 area-weighted grid about
+`y=0`, comparing only reflected occupied-cell pairs and requiring at least 50%
+paired-area coverage; the exact domain provides 51.9323%.
+
+This amendment closes the external input blocker but does not authorize
+training. The remaining sequence is clean integration commit, immutable
+prelaunch lock, fresh independent launch gate, then a separate exact user
+authorization receipt bound to the lock and commit.

@@ -7,36 +7,47 @@
   "development_case": "U0.12",
   "producer_input_allowlist": [
     {"id": "u012_c60_restart_bundle_manifest", "status": "qualified", "sha256": "df581bb790e91660a5a4be735fc0f3e11c699f329b0f4ce05af36b31fa2c03e9"},
-    {"id": "u012_c76_c82_c83_exact_peak_fem_manifest", "status": "blocked_request_27_package_absent"},
-    {"id": "u012_contained_domain_projector_manifest", "status": "qualified", "content_sha256": "a69f4cb2df0a42e8b514b87a53289a8edc919d4d8f1cd9853948b764e5ea729d", "npz_sha256": "a6068a3d718f1343c761cb772e31aed45ce348c72066cb3af646678703998cff"},
+    {
+      "id": "u012_c76_c82_c83_exact_peak_fem_manifest",
+      "status": "qualified_request_27_v2_1",
+      "manifest_sha256": "3a3d4cdd83a7dbb0303c9d77ad84e042cd661e3cfc9dee0b0fb7cca24fe5126e",
+      "sha256s_sha256": "319ed492d93766f0ff442e04e9f1684e645b0a538ea01f45b7078da1b8fe85e1",
+      "validation_receipt_sha256": "c3635dee895df0655fe38fe9ecbd9fe5a7014db4743fb45272270f36432583d8"
+    },
+    {
+      "id": "u012_contained_domain_projector_manifest",
+      "status": "qualified_exact_geometry_v2",
+      "builder_content_sha256": "2782085ab78cbfd82a04b485422d642fb0b81275d56b695673fc5f43aa6612e7",
+      "analysis_content_sha256": "be764b01573109a9585eaf1f1e596ca1ca1ed15878acdcb4c1e5afc1e105d422",
+      "npz_sha256": "4dfc62e0dc14990254dff01d650e6c3962d725dd934e360b95ae6a593695c253",
+      "builder_manifest_sha256": "e6310d56a88cba9d5824096d1c071a2234ae79079e7750464e8cbe3412401af1",
+      "mapping_source_sha256": "8c1e38508f664ddeb64bd5f8319af0a78216e37987090b42a9aae87c968ef32f",
+      "supersedes_npz_sha256": "a6068a3d718f1343c761cb772e31aed45ce348c72066cb3af646678703998cff"
+    },
     {
       "id": "u012_g4_analysis_manifest",
-      "status": "prelaunch_framework_qualified",
-      "pending_prelaunch": ["exact_peak_fem_input_hashes", "sealed_analysis_code_hash"],
+      "status": "real_analyzer_implemented_pending_prelaunch_lock",
+      "pending_prelaunch": ["sealed_analysis_code_hash", "clean_integration_commit"],
       "post_run_outputs": ["sealed_metrics", "runtime_receipts", "per_arm_first_detect_receipts"]
     }
   ],
   "qualification_snapshot": {
-    "as_of": "2026-08-19",
+    "as_of": "2026-08-24",
     "smoke_guard_commit": "fb9538553557dcde29ff50ff14973af2921570bc",
     "smoke_verdict": "APPROVE_PRODUCER_SMOKE_PACKET_ONLY",
     "archive_routing": "qualified_canonical_target_via_checkout_compatibility_symlink",
     "prelaunch_prerequisites": [
       {"id": "qualified_c60_restart_materializer", "status": "pass_offline"},
       {"id": "true_mechanical_residual_field_export", "status": "pass_bounded_producer_smoke"},
-      {"id": "exact_peak_c76_c82_c83_fem_bundle", "status": "blocked_external_request_27"},
+      {"id": "exact_peak_c76_c82_c83_fem_bundle", "status": "pass_exact_request_27_v2_1"},
       {"id": "boundary_only_first_detect_receipt", "status": "pass_bounded_producer_trace_capability"},
       {"id": "c60_to_c61_control_replay_sentinel", "status": "pass_exact_decoded_replay"},
       {"id": "c60_c76_c82_lambda_contribution_audit", "status": "pass_offline"},
-      {"id": "contained_domain_projector", "status": "pass_offline"},
-      {"id": "g4_validator_blind_analyzer_runtime_receipt", "status": "framework_qualified_full_ab_receipts_post_run"}
+      {"id": "contained_domain_projector", "status": "pass_exact_geometry_v2"},
+      {"id": "g4_validator_blind_analyzer_runtime_receipt", "status": "real_analyzer_pass_local_full_ab_receipts_post_run"}
     ],
-    "current_external_input_blockers": [
-      "exact_peak_c76_c82_c83_fem_bundle"
-    ],
+    "current_external_input_blockers": [],
     "prelaunch_closure_after_request_27": [
-      "independently_validate_exact_peak_fem_package",
-      "lock_fem_and_input_hashes_into_packet",
       "seal_analysis_code_hash",
       "fresh_independent_launch_gate",
       "explicit_user_launch_authorization"
@@ -123,6 +134,15 @@
     "asymmetry_amplification_max": 1.1,
     "morphology_outputs": ["connected_components", "crack_tip", "centroid", "forward_extent", "width", "mirror_asymmetry"],
     "persistent_one_sided_lobe_fails": true,
+    "morphology_definition": {
+      "grid": "64x64_fixed_square_-0.5_to_0.5",
+      "damage_support_threshold": 0.25,
+      "connectivity": "four_neighbor",
+      "mirror_axis": "y=0",
+      "mirror_weighting": "minimum_paired_cell_area",
+      "mirror_min_paired_area_coverage": 0.5,
+      "actual_exact_domain_paired_area_coverage": 0.5193230827427459
+    },
     "c82_per_arm_pre_post_event_label_required": true
   },
   "lambda_audit": {

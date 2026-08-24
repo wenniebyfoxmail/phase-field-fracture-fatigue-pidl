@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 
-EXPECTED_CANONICAL_SHA256 = "5f2ce2fb06b01e8e5dbfbd99310cafecb7090cc43e882c583ad4d07dfc959c94"
+EXPECTED_CANONICAL_SHA256 = "c8a86bcb24ee9458a1dd89fd3d7099daf248b03a564a4736cbbc27e23b17dcbe"
 EXPECTED_BLOCKERS = {
     "qualified_c60_restart_materializer",
     "true_mechanical_residual_field_export",
@@ -49,6 +49,11 @@ def _contains_heldout_identifier(payload: dict) -> bool:
 
 def validate(payload: dict) -> dict:
     arms = payload.get("arms", [])
+    allowlist = {
+        row.get("id"): row
+        for row in payload.get("producer_input_allowlist", [])
+        if isinstance(row, dict)
+    }
     snapshot = payload.get("qualification_snapshot", {})
     prerequisite_status = {
         row.get("id"): row.get("status")
@@ -107,16 +112,45 @@ def validate(payload: dict) -> dict:
         ) == "hash_locked_contained_projection_only"
         and payload.get("field_gate", {}).get("absolute_support_iou_min") == 0.1
         and payload.get("field_gate", {}).get("absolute_support_area_ratio_range") == [0.5, 2.0],
+        "morphology_definition": payload.get("field_gate", {}).get(
+            "morphology_definition"
+        ) == {
+            "grid": "64x64_fixed_square_-0.5_to_0.5",
+            "damage_support_threshold": 0.25,
+            "connectivity": "four_neighbor",
+            "mirror_axis": "y=0",
+            "mirror_weighting": "minimum_paired_cell_area",
+            "mirror_min_paired_area_coverage": 0.5,
+            "actual_exact_domain_paired_area_coverage": 0.5193230827427459,
+        },
         "blind_before_unblind": payload.get("blind_analysis", {}).get("opaque_arm_ids") is True
         and payload.get("blind_analysis", {}).get("metrics_sealed_before_unblinding") is True,
         "requirement_catalog_complete": set(payload.get("launch_blockers", []))
         == EXPECTED_BLOCKERS,
-        "current_external_input_blocker_exact": snapshot.get(
+        "exact_fem_input_qualified": snapshot.get(
             "current_external_input_blockers"
-        )
-        == ["exact_peak_c76_c82_c83_fem_bundle"]
+        ) == []
         and prerequisite_status.get("exact_peak_c76_c82_c83_fem_bundle")
-        == "blocked_external_request_27",
+        == "pass_exact_request_27_v2_1"
+        and allowlist.get("u012_c76_c82_c83_exact_peak_fem_manifest") == {
+            "id": "u012_c76_c82_c83_exact_peak_fem_manifest",
+            "status": "qualified_request_27_v2_1",
+            "manifest_sha256": "3a3d4cdd83a7dbb0303c9d77ad84e042cd661e3cfc9dee0b0fb7cca24fe5126e",
+            "sha256s_sha256": "319ed492d93766f0ff442e04e9f1684e645b0a538ea01f45b7078da1b8fe85e1",
+            "validation_receipt_sha256": "c3635dee895df0655fe38fe9ecbd9fe5a7014db4743fb45272270f36432583d8",
+        },
+        "exact_projector_v2_qualified": prerequisite_status.get(
+            "contained_domain_projector"
+        ) == "pass_exact_geometry_v2"
+        and allowlist.get("u012_contained_domain_projector_manifest", {}).get(
+            "status"
+        ) == "qualified_exact_geometry_v2"
+        and allowlist.get("u012_contained_domain_projector_manifest", {}).get(
+            "builder_content_sha256"
+        ) == "2782085ab78cbfd82a04b485422d642fb0b81275d56b695673fc5f43aa6612e7"
+        and allowlist.get("u012_contained_domain_projector_manifest", {}).get(
+            "npz_sha256"
+        ) == "4dfc62e0dc14990254dff01d650e6c3962d725dd934e360b95ae6a593695c253",
         "post_run_evidence_not_misclassified": snapshot.get(
             "post_run_evidence_not_prelaunch_blockers"
         )
@@ -126,13 +160,11 @@ def validate(payload: dict) -> dict:
             "per_arm_first_detect_receipts",
         ]
         and prerequisite_status.get("g4_validator_blind_analyzer_runtime_receipt")
-        == "framework_qualified_full_ab_receipts_post_run",
+        == "real_analyzer_pass_local_full_ab_receipts_post_run",
         "post_request27_prelaunch_closure_explicit": snapshot.get(
             "prelaunch_closure_after_request_27"
         )
         == [
-            "independently_validate_exact_peak_fem_package",
-            "lock_fem_and_input_hashes_into_packet",
             "seal_analysis_code_hash",
             "fresh_independent_launch_gate",
             "explicit_user_launch_authorization",
@@ -146,7 +178,7 @@ def validate(payload: dict) -> dict:
         "complete_packet_frozen": _canonical_sha256(payload) == EXPECTED_CANONICAL_SHA256,
     }
     return {
-        "status": "pass_frozen_design_launch_blocked" if all(checks.values()) else "fail",
+        "status": "pass_ready_for_prelaunch_lock_training_unauthorized" if all(checks.values()) else "fail",
         "checks": checks,
     }
 
