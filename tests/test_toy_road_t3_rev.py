@@ -245,6 +245,22 @@ def build_test_seal(
         ROOT / "analysis/toy_road_t3_mechanism_20260819/evidence/TERMINAL_MANIFEST.json",
         terminal / "TERMINAL_MANIFEST.json",
     )
+    shutil.copy2(
+        ROOT / "analysis/toy_road_t3_mechanism_20260819/evidence/"
+        "T3_SIBLING_TERMINAL_ADJUDICATION.json",
+        terminal / "T3_SIBLING_TERMINAL_ADJUDICATION.json",
+    )
+    predecessor_docs = repo / "docs" / "toy_road_p0_repeatability_20260802"
+    review = predecessor_docs / "t3_loading_history_20260818" / \
+        "T3_INDEPENDENT_REVIEW_RECEIPT_20260821.md"
+    review.parent.mkdir(parents=True)
+    shutil.copy2(
+        ROOT / "docs/toy_road_p0_repeatability_20260802/t3_loading_history_20260818/"
+        "T3_INDEPENDENT_REVIEW_RECEIPT_20260821.md",
+        review,
+    )
+    registry = predecessor_docs / "QUALIFIED_TRAJECTORY_REGISTRY_20260824.json"
+    shutil.copy2(REGISTRY, registry)
     _git(["init", "-q"], repo)
     _git(["config", "user.email", "test@example.invalid"], repo)
     _git(["config", "user.name", "Seal Test"], repo)
@@ -423,6 +439,22 @@ def _launcher_inputs(module, tmp_path: Path) -> dict[str, Path]:
         ROOT / "analysis/toy_road_t3_mechanism_20260819/evidence/TERMINAL_MANIFEST.json",
         terminal / "TERMINAL_MANIFEST.json",
     )
+    shutil.copy2(
+        ROOT / "analysis/toy_road_t3_mechanism_20260819/evidence/"
+        "T3_SIBLING_TERMINAL_ADJUDICATION.json",
+        terminal / "T3_SIBLING_TERMINAL_ADJUDICATION.json",
+    )
+    predecessor_docs = repo / "docs" / "toy_road_p0_repeatability_20260802"
+    review = predecessor_docs / "t3_loading_history_20260818" / \
+        "T3_INDEPENDENT_REVIEW_RECEIPT_20260821.md"
+    review.parent.mkdir(parents=True)
+    shutil.copy2(
+        ROOT / "docs/toy_road_p0_repeatability_20260802/t3_loading_history_20260818/"
+        "T3_INDEPENDENT_REVIEW_RECEIPT_20260821.md",
+        review,
+    )
+    registry = predecessor_docs / "QUALIFIED_TRAJECTORY_REGISTRY_20260824.json"
+    shutil.copy2(REGISTRY, registry)
     initial = repo / "producer_handoffs" / "rebuilt_initial_mex_qualification_20260801" / "runtime"
     initial.mkdir(parents=True)
     shutil.copy2(
@@ -443,51 +475,13 @@ def _launcher_inputs(module, tmp_path: Path) -> dict[str, Path]:
     commit = _git(["rev-parse", "HEAD"], repo)
     extension = tmp_path / "extension"
     builder.build_extension(base, extension, commit)
-    manifest_path = extension / "EXTENSION_SOURCE_MANIFEST.json"
-    manifest = strict_json(manifest_path)
-    cases = strict_json(extension / "CASE_PHYSICS_CONTRACTS.json")
-    case_table = cases["cases"]
-    assert isinstance(case_table, dict)
-    case = case_table["T3_rev_loading_order"]
-    assert isinstance(case, dict)
-
     seal_builder = load_module("build_t3_rev_seal")
-    seal = {
-        "schema_version": "toy_road_t3_rev_seal_v1",
-        "status": "PASS",
-        "case_id": "T3_rev_loading_order",
-        "authorization_capability": "exactly_one_T3_rev_loading_order_execution",
-        "resume_allowed": False,
-        "follow_on_authorized": False,
-        "extension_identity": {
-            "composite_producer": "sealed_T3_base_plus_T3_rev_case_definition_extension",
-            "repository_commit": commit,
-            "base_source_commit": manifest["base_source_commit"],
-            "base_source_manifest_sha256": manifest["base_source_manifest_sha256"],
-            "extension_source_manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
-            "extension_contract_sha256": hashlib.sha256(
-                (ANALYSIS / "T3_REV_CONTRACT.json").read_bytes()
-            ).hexdigest(),
-            "source_diff_inventory_sha256": hashlib.sha256(
-                (extension / "SOURCE_DIFF_INVENTORY.json").read_bytes()
-            ).hexdigest(),
-            "extension_family_contract_sha256": hashlib.sha256(
-                (extension / "FAMILY_CONTRACT.json").read_bytes()
-            ).hexdigest(),
-            "verification": {
-                "status": "PASS",
-                "numerical_algorithm_changed": False,
-                "allowed_shadow_files": list(builder.ALLOWED_SHADOW_FILES),
-            },
-        },
-        "predecessor_evidence": {},
-        "physics_closure": {},
-        "runtime_identity": seal_builder.EXPECTED_EXECUTION,
-    }
-    seal_path = tmp_path / "T3_REV_SEAL.json"
-    seal_path.write_bytes(
-        json.dumps(seal, sort_keys=True, separators=(",", ":")).encode("ascii") + b"\n"
+    seal_destination = tmp_path / "seal"
+    seal_builder.build_seal(
+        repo, extension, terminal / "T3_SIBLING_TERMINAL_ADJUDICATION.json",
+        review, registry, seal_destination,
     )
+    seal_path = seal_destination / "T3_REV_SEAL.json"
     template = tmp_path / "template" / "receipts"
     template.mkdir(parents=True)
     shutil.copy2(
@@ -529,6 +523,25 @@ def call_launcher(module, run_root: Path, tmp_path: Path) -> dict[str, object]:
     inputs = _launcher_inputs(module, tmp_path)
     inputs["run_root"] = run_root
     return module.launch_t3_rev(**inputs)
+
+
+@pytest.mark.parametrize("section", ["predecessor_evidence", "physics_closure"])
+def test_seal_evidence_revalidation_rejects_complete_canonical_tampering(
+        tmp_path: Path, section: str) -> None:
+    """Canonical lookalike seals cannot alter predecessor hashes or physics closure."""
+    launcher = load_module("launch_t3_rev")
+    inputs = _launcher_inputs(launcher, tmp_path)
+    seal_builder = load_module("build_t3_rev_seal")
+    seal = strict_json(inputs["seal_path"])
+    seal_builder.require_seal_evidence(
+        inputs["repo_root"], inputs["extension_root"], seal)
+    if section == "predecessor_evidence":
+        seal[section]["qualified_trajectory_registry_sha256"] = "0" * 64
+    else:
+        seal[section]["first_60_histogram_equal_to_t3"] = False
+    with pytest.raises(seal_builder.SealError, match="predecessor|physics"):
+        seal_builder.require_seal_evidence(
+            inputs["repo_root"], inputs["extension_root"], seal)
 
 
 def _allow_test_matlab_identity(
@@ -2197,7 +2210,9 @@ def test_terminal_validator_authenticates_complete_launch_to_package_chain(
 
 
 def _prepare_numerical_failure(
-        protocol, inputs: dict[str, Path], classification: str) -> None:
+        protocol, inputs: dict[str, Path], classification: str, *,
+        cycle: int = 6, substep: int = 4,
+        newton_layer: str = "phase_newton") -> None:
     run_root = inputs["run_root"]
     output = run_root / "output"
     lock_path = run_root / "receipts" / "T3_REV_EXECUTION_INPUT_LOCK.json"
@@ -2226,10 +2241,13 @@ def _prepare_numerical_failure(
         "family_contract_sha256": lock["family_contract_sha256"],
         "case_physics_contract_sha256": lock["case_physics_contract_sha256"],
     }
-    for cycle in range(1, 6):
-        shard_path = output / "substeps" / f"cycle_{cycle:04d}.mat"
+    completed = cycle - 1
+    for shard_path in (output / "substeps").glob("cycle_*.mat"):
         shard_path.unlink()
-        _write_cycle_shard(shard_path, cycle, shard_identities, execution_digest)
+    for completed_cycle in range(1, completed + 1):
+        shard_path = output / "substeps" / f"cycle_{completed_cycle:04d}.mat"
+        _write_cycle_shard(
+            shard_path, completed_cycle, shard_identities, execution_digest)
     snapshot = {
         "schema_version": "toy_road_p0_input_snapshot_v1",
         "authorization_scope": "production_authorized",
@@ -2255,6 +2273,12 @@ def _prepare_numerical_failure(
         "mesh_geometry.mat",
         output / "mesh_geometry.mat",
     )
+    with h5py.File(output / "mesh_geometry.mat", "r+") as handle:
+        connectivity_codes = np.asarray(
+            [ord(character) for character in mesh_identity["connectivity_sha256"]],
+            dtype=np.uint16,
+        ).reshape(-1, 1)
+        handle["mesh_geometry/connectivity_sha256"][...] = connectivity_codes
     expectations = lock["runtime_expectations"]["matlab"]
     _write_canonical_json(output / "RUNTIME_RECEIPT.json", {
         "status": "PASS", "authorization_scope": "production_authorized",
@@ -2268,13 +2292,40 @@ def _prepare_numerical_failure(
         layer = "coupled_damage_fixed_point"
         newton_failure = False
         error_identifier = "toyRoadP0:StaggeredSolveFailed"
-        error_message = "Stagger convergence failed at cycle 6 substep 4."
+        error_message = f"Stagger convergence failed at cycle {cycle} substep {substep}."
     else:
         terminal_reason = "newton_nonconvergence"
-        layer = "phase_newton"
+        layer = newton_layer
         newton_failure = True
-        error_identifier = "toyRoadP0:PhaseSolveFailed"
-        error_message = "The phase Newton solve failed."
+        if layer == "displacement_newton":
+            error_identifier = "toyRoadP0:DisplacementSolveFailed"
+            error_message = "The displacement Newton solve failed."
+        else:
+            error_identifier = "toyRoadP0:PhaseSolveFailed"
+            error_message = "The phase Newton solve failed."
+
+    trace = output / "qualification" / "C5_STAGGER_TRACE.csv"
+    receipt = output / "qualification" / "C5_NUMERICAL_GATE_RECEIPT.json"
+    c5_trace_required = cycle >= 5
+    c5_pass_required = cycle > 5 or (cycle == 5 and substep == 5)
+    if not c5_trace_required:
+        trace.unlink(missing_ok=True)
+        receipt.unlink(missing_ok=True)
+    elif not c5_pass_required:
+        receipt.unlink(missing_ok=True)
+        if substep == 4 and classification == "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE":
+            source_trace = ROOT / "docs" / "toy_road_p0_repeatability_20260802" / \
+                "t2_material_state_failure_20260817" / "artifacts" / "output" / \
+                "qualification" / "C5_STAGGER_TRACE.csv"
+            trace.write_text(
+                source_trace.read_text(encoding="ascii").replace(
+                    "T2_material_state", "T3_rev_loading_order"),
+                encoding="ascii", newline="\n",
+            )
+        else:
+            trace.write_text(
+                ",".join(protocol.TRACE_COLUMNS) + "\n", encoding="ascii", newline="\n",
+            )
     _write_canonical_json(output / "RUN_RESULT.json", {
         "authorization_scope": "production_authorized", "case_id": "T3_rev_loading_order",
         "complete": False, "status": "failed", "error_identifier": error_identifier,
@@ -2286,12 +2337,14 @@ def _prepare_numerical_failure(
         "launcher.pid", "T3_REV.stdout.log", "T3_REV.stderr.log",
         "output/INPUT_SNAPSHOT.json", "output/mesh_geometry.mat", "output/RUN_RESULT.json",
         "output/RUNTIME_RECEIPT.json", "output/state0_analysis.mat",
-        "output/qualification/C5_STAGGER_TRACE.csv",
-        "output/qualification/C5_NUMERICAL_GATE_RECEIPT.json",
         "receipts/T3_REV_EXECUTION_INPUT_LOCK.json", "receipts/T3_REV_LAUNCH_RECEIPT.json",
         "receipts/T3_REV_RUNTIME_MEASUREMENT.json",
-        *[f"output/substeps/cycle_{cycle:04d}.mat" for cycle in range(1, 6)],
+        *[f"output/substeps/cycle_{item:04d}.mat" for item in range(1, completed + 1)],
     ]
+    if c5_trace_required:
+        required_relatives.append("output/qualification/C5_STAGGER_TRACE.csv")
+    if c5_pass_required:
+        required_relatives.append("output/qualification/C5_NUMERICAL_GATE_RECEIPT.json")
     package = run_root / "T3_REV_FAILURE_PACKAGE"
     package.mkdir()
     artifacts: list[dict[str, object]] = []
@@ -2318,9 +2371,9 @@ def _prepare_numerical_failure(
     failure = {
         "schema_version": "toy_road_t3_rev_failure_classification_v1",
         "case_id": "T3_rev_loading_order", "status": classification,
-        "failure_cycle": 6, "failure_substep": 4, "failure_layer": layer,
+        "failure_cycle": cycle, "failure_substep": substep, "failure_layer": layer,
         "newton_failure": newton_failure, "fixed_point_tolerance": 1e-3,
-        "stagger_iteration_cap": 1000, "completed_cycle_shards": 5,
+        "stagger_iteration_cap": 1000, "completed_cycle_shards": completed,
         "automatic_retry_performed": False,
     }
     identities = {
@@ -2367,7 +2420,7 @@ def _prepare_numerical_failure(
         "status": classification, "case_id": "T3_rev_loading_order",
         "terminal_reason": terminal_reason,
         "failure_phase": "producer_after_pass_runtime_measurement",
-        "cycle": 6, "substep": 4,
+        "cycle": cycle, "substep": substep,
         "seal_sha256": identities["launch"]["seal_sha256"],
         "run_root": str(run_root),
         "launch_receipt_sha256": identities["launch"]["launch_receipt_sha256"],
@@ -2379,15 +2432,58 @@ def _prepare_numerical_failure(
     _write_canonical_json(run_root / "receipts" / "T3_REV_TERMINAL_FAILURE.json", terminal)
 
 
-@pytest.mark.parametrize("classification", [
-    "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE",
-    "FAIL_NEWTON_NONCONVERGENCE",
+def _reclose_failure_package(inputs: dict[str, Path]) -> None:
+    """Reclose a deliberately mutated failure fixture so semantic validators are reached."""
+    run_root = inputs["run_root"]
+    package = run_root / "T3_REV_FAILURE_PACKAGE"
+    manifest_path = package / "PACKAGE_MANIFEST.json"
+    manifest = strict_json(manifest_path)
+    artifacts = manifest["artifacts"]
+    for item in artifacts:
+        path = package / item["path"]
+        item["bytes"] = path.stat().st_size
+        item["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+    manifest["artifact_aggregate_sha256"] = hashlib.sha256(json.dumps(
+        artifacts, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+    ).encode("utf-8")).hexdigest()
+    _write_canonical_json(manifest_path, manifest)
+    sums_paths = sorted(
+        (path for path in package.rglob("*")
+         if path.is_file() and path.name != "SHA256SUMS.txt"),
+        key=lambda path: path.relative_to(package).as_posix(),
+    )
+    (package / "SHA256SUMS.txt").write_text("".join(
+        f"{hashlib.sha256(path.read_bytes()).hexdigest()}  "
+        f"{path.relative_to(package).as_posix()}\n" for path in sums_paths
+    ), encoding="ascii", newline="\n")
+    terminal_path = run_root / "receipts" / "T3_REV_TERMINAL_FAILURE.json"
+    terminal = strict_json(terminal_path)
+    terminal["failure_package_manifest_sha256"] = hashlib.sha256(
+        manifest_path.read_bytes()).hexdigest()
+    _write_canonical_json(terminal_path, terminal)
+
+
+@pytest.mark.parametrize(("classification", "cycle", "substep", "newton_layer"), [
+    ("FAIL_NEWTON_NONCONVERGENCE", 5, 1, "phase_newton"),
+    ("FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE", 5, 4, "phase_newton"),
+    ("FAIL_NEWTON_NONCONVERGENCE", 5, 5, "displacement_newton"),
+    ("FAIL_NEWTON_NONCONVERGENCE", 6, 4, "phase_newton"),
 ])
 def test_terminal_validator_authenticates_exact_numerical_failure_package(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, classification: str) -> None:
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, classification: str,
+        cycle: int, substep: int, newton_layer: str) -> None:
     """Numerical failures remain distinct and require a closed immutable dossier."""
     launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
-    _prepare_numerical_failure(protocol, inputs, classification)
+    _prepare_numerical_failure(
+        protocol, inputs, classification, cycle=cycle, substep=substep,
+        newton_layer=newton_layer,
+    )
+    output = inputs["run_root"] / "output"
+    assert (output / "qualification" / "C5_STAGGER_TRACE.csv").is_file()
+    expect_pass_receipt = cycle > 5 or (cycle == 5 and substep == 5)
+    assert (output / "qualification" / "C5_NUMERICAL_GATE_RECEIPT.json").is_file() \
+        is expect_pass_receipt
+    assert (output / "substeps" / "cycle_0005.mat").is_file() is (cycle > 5)
     module = load_module("validate_t3_rev_terminal")
     result = module._validate_terminal(
         inputs["run_root"] / "output",
@@ -2425,6 +2521,60 @@ def test_terminal_validator_rejects_tampered_numerical_failure_closure(
         )
 
 
+def test_terminal_validator_rejects_mesh_connectivity_metadata_mismatch(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The mesh's connectivity digest must equal both computed bytes and the case identity."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
+    live_mesh = inputs["run_root"] / "output" / "mesh_geometry.mat"
+    copied_mesh = inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / \
+        "output" / "mesh_geometry.mat"
+    for path in (live_mesh, copied_mesh):
+        with h5py.File(path, "r+") as handle:
+            handle["mesh_geometry/connectivity_sha256"][...] = np.asarray(
+                [ord(character) for character in "0" * 64], dtype=np.uint16,
+            ).reshape(-1, 1)
+    _reclose_failure_package(inputs)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="mesh arrays/identity"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+def test_terminal_validator_rejects_reclosed_c5_failure_trace_that_passed(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """An iteration-cap receipt cannot claim failure after its final c5 delta converged."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(
+        protocol, inputs, "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE",
+        cycle=5, substep=4,
+    )
+    live_trace = inputs["run_root"] / "output" / "qualification" / "C5_STAGGER_TRACE.csv"
+    copied_trace = inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / \
+        "output" / "qualification" / "C5_STAGGER_TRACE.csv"
+    for path in (live_trace, copied_trace):
+        lines = path.read_text(encoding="ascii").splitlines()
+        final = lines[-1].split(",")
+        final[protocol.TRACE_COLUMNS.index("consecutive_stagger_delta")] = "0.0005"
+        lines[-1] = ",".join(final)
+        path.write_text("\n".join(lines) + "\n", encoding="ascii", newline="\n")
+    _reclose_failure_package(inputs)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="nonconvergence"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
 def _prepare_phase_failure(inputs: dict[str, Path], phase: str) -> None:
     run_root = inputs["run_root"]
     receipts = run_root / "receipts"
@@ -2435,24 +2585,41 @@ def _prepare_phase_failure(inputs: dict[str, Path], phase: str) -> None:
         else:
             path.unlink()
     measurement_path = receipts / "T3_REV_RUNTIME_MEASUREMENT.json"
-    if phase != "producer_after_pass_runtime_measurement":
+    if phase == "bootstrap_before_runtime_measurement":
         measurement_path.unlink()
-    classification = "FAIL_STARTUP" if phase == "matlab_startup_before_runtime_measurement" else "FAIL_RUNTIME"
+    classification = "FAIL_STARTUP" if phase == "bootstrap_before_runtime_measurement" else "FAIL_RUNTIME"
     terminal_reason = "startup_failure" if classification == "FAIL_STARTUP" else "runtime_failure"
     identifiers = {
-        "matlab_startup_before_runtime_measurement": "MATLAB:startup",
-        "bootstrap_or_runtime_bridge_before_measurement": "toyRoadP0:RuntimeBridgeFailed",
-        "producer_after_pass_runtime_measurement": "toyRoadP0:ProducerRuntimeFailed",
+        "bootstrap_before_runtime_measurement": "toyRoad:LaunchCredentialTimeout",
+        "runtime_qualification_before_producer": "toyRoadP0:RuntimeQualificationFailed",
+        "producer_after_pass_runtime_measurement": "toyRoadP0:MissingInputAsset",
     }
-    message = f"fixture failure in {phase}"
+    if phase == "bootstrap_before_runtime_measurement":
+        message = "Exact launch credential was not published"
+    elif phase == "runtime_qualification_before_producer":
+        message = "Measured absolute MATLAB path precedence differs from the lock. First mismatch index: 1."
+        lock_path = receipts / "T3_REV_EXECUTION_INPUT_LOCK.json"
+        lock = strict_json(lock_path)
+        expected = lock["runtime_expectations"]["matlab"]["absolute_path_order"]
+        actual = [r"C:\unexpected\runtime-overlay", *expected[1:]]
+        _write_canonical_json(measurement_path, {
+            "schema_version": "toy_road_runtime_measurement_v1",
+            "protocol_version": lock["protocol_version"],
+            "authorization_scope": lock["authorization_scope"],
+            "status": "FAIL", "producer_entrypoint_authorized": False,
+            "execution_input_lock_sha256": hashlib.sha256(lock_path.read_bytes()).hexdigest(),
+            "first_failed_predicate": "matlab_path_precedence",
+            "first_mismatch_index": 1,
+            "expected_absolute_path": expected, "actual_absolute_path": actual,
+            "expected_normalized_path": expected, "actual_normalized_path": actual,
+            "matlab_identifier": "toyRoadP0:RuntimeQualificationFailed",
+            "message": "Measured absolute MATLAB path precedence differs from the lock.",
+        })
+    else:
+        message = "The locked SENS mesh source is absent: " + str(
+            inputs["input_assets_root"] / "sens_mesh.m")
     with (run_root / "T3_REV.stderr.log").open("ab") as stream:
         stream.write((message + "\n").encode("utf-8"))
-    if phase == "producer_after_pass_runtime_measurement":
-        _write_canonical_json(output / "RUN_RESULT.json", {
-            "authorization_scope": "production_authorized", "case_id": "T3_rev_loading_order",
-            "complete": False, "status": "failed", "error_identifier": identifiers[phase],
-            "error_message": message,
-        })
     launch_path = receipts / "T3_REV_LAUNCH_RECEIPT.json"
     _write_canonical_json(receipts / "T3_REV_TERMINAL_FAILURE.json", {
         "schema_version": "toy_road_t3_rev_terminal_failure_v1", "status": classification,
@@ -2469,14 +2636,14 @@ def _prepare_phase_failure(inputs: dict[str, Path], phase: str) -> None:
 
 
 @pytest.mark.parametrize(("phase", "classification"), [
-    ("matlab_startup_before_runtime_measurement", "FAIL_STARTUP"),
-    ("bootstrap_or_runtime_bridge_before_measurement", "FAIL_RUNTIME"),
+    ("bootstrap_before_runtime_measurement", "FAIL_STARTUP"),
+    ("runtime_qualification_before_producer", "FAIL_RUNTIME"),
     ("producer_after_pass_runtime_measurement", "FAIL_RUNTIME"),
 ])
 def test_terminal_validator_authenticates_phase_specific_startup_and_runtime_failures(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, phase: str,
         classification: str) -> None:
-    """Pre-measurement failures and post-PASS producer failures use distinct evidence."""
+    """Bootstrap, genuine FAIL qualification, and post-PASS failures stay distinct."""
     launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
     _prepare_phase_failure(inputs, phase)
     module = load_module("validate_t3_rev_terminal")
@@ -2516,6 +2683,55 @@ def test_post_authorization_runtime_failure_rejects_synthetic_fail_measurement(
         )
 
 
+@pytest.mark.parametrize("phase", [
+    "bootstrap_before_runtime_measurement",
+    "runtime_qualification_before_producer",
+    "producer_after_pass_runtime_measurement",
+])
+def test_phase_failure_rejects_producer_artifacts_outside_its_exact_closure(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, phase: str) -> None:
+    """No phase may inherit or smuggle a shard outside its declared lifecycle."""
+    launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_phase_failure(inputs, phase)
+    shard = inputs["run_root"] / "output" / "substeps" / "cycle_0001.mat"
+    shard.parent.mkdir()
+    shard.write_bytes(b"not authorized in this phase")
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="artifacts|closure"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+def test_runtime_qualification_failure_rejects_false_mismatch_claim(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A genuine FAIL measurement must identify its actual first path mismatch."""
+    launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_phase_failure(inputs, "runtime_qualification_before_producer")
+    measurement_path = inputs["run_root"] / "receipts" / "T3_REV_RUNTIME_MEASUREMENT.json"
+    measurement = strict_json(measurement_path)
+    measurement["first_mismatch_index"] = 2
+    _write_canonical_json(measurement_path, measurement)
+    terminal_path = inputs["run_root"] / "receipts" / "T3_REV_TERMINAL_FAILURE.json"
+    terminal = strict_json(terminal_path)
+    terminal["runtime_measurement_sha256"] = hashlib.sha256(
+        measurement_path.read_bytes()).hexdigest()
+    _write_canonical_json(terminal_path, terminal)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="measurement semantics"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
 def test_public_analyzer_rejects_caller_selected_protocols(tmp_path: Path) -> None:
     """Protocol authority is derived from published/sealed identities, never a caller path."""
     module = load_module("analyze_t3_rev")
@@ -2524,6 +2740,18 @@ def test_public_analyzer_rejects_caller_selected_protocols(tmp_path: Path) -> No
             tmp_path / "t3", tmp_path / "rev", tmp_path / "analysis",
             seal_path=tmp_path / "seal.json", t3_protocol_path=tmp_path / "attacker.py",
         )
+
+
+def test_analyzer_requires_published_t3_adjudication_hash_chain(tmp_path: Path) -> None:
+    """A merely authenticated lookalike receipt cannot replace the published T3 chain."""
+    module = load_module("analyze_t3_rev")
+    authentication = strict_json(
+        ROOT / "analysis/toy_road_t3_mechanism_20260819/evidence/"
+        "T3_AUTHENTICATED_TERMINAL.json"
+    )
+    authentication["package_snapshot_sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="published adjudication hashes"):
+        module._require_published_t3_chain(ROOT, tmp_path, authentication)
 
 
 def test_authenticated_analysis_snapshot_rejects_post_auth_byte_substitution(tmp_path: Path) -> None:
@@ -2553,7 +2781,7 @@ def test_authenticated_analysis_snapshot_rejects_post_auth_byte_substitution(tmp
 
 def test_analyzer_end_to_end_uses_hash_qualified_protocols_and_event_rows(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """Two genuine packages reduce through sealed authority and the published event boundary."""
+    """Asymmetric genuine packages snapshot only their own available event cycles."""
     launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
     rev_root = inputs["run_root"] / "output"
     shutil.rmtree(rev_root)
@@ -2569,7 +2797,7 @@ def test_analyzer_end_to_end_uses_hash_qualified_protocols_and_event_rows(
         "test_analyzer_rev_protocol", rev_digest,
     )
     _build_authenticated_terminal_package(
-        rev_protocol, rev_root, terminal_cycle=62, right_censored=False,
+        rev_protocol, rev_root, terminal_cycle=80, right_censored=False,
         offsets={20: 2e-12}, execution_lock=rev_lock, include_mesh=True,
     )
     base_protocol_path = BASE / "toy_road_protocol.py"
@@ -2579,7 +2807,7 @@ def test_analyzer_end_to_end_uses_hash_qualified_protocols_and_event_rows(
     )
     t3_root = tmp_path / "t3"
     _build_authenticated_terminal_package(
-        base_protocol, t3_root, terminal_cycle=62, right_censored=False,
+        base_protocol, t3_root, terminal_cycle=71, right_censored=False,
         case_id="T3_loading_history", include_mesh=True,
     )
     module = load_module("analyze_t3_rev")
@@ -2590,7 +2818,7 @@ def test_analyzer_end_to_end_uses_hash_qualified_protocols_and_event_rows(
         launch_authority=launch, repository_root=inputs["repo_root"],
     )
     assert summary["order_effect_classification"] == \
-        "TRANSIENT_ORDER_EFFECT_TERMINAL_TRAJECTORY_INSENSITIVE"
+        "PERSISTENT_LOADING_ORDER_DEPENDENCE_OBSERVED"
     own_rows = list(csv.DictReader(
         (tmp_path / "analysis" / "own_event_differences.csv").open(
             encoding="utf-8", newline="")))

@@ -8,6 +8,7 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 from typing import Any, Mapping
@@ -324,6 +325,48 @@ def _require_physics(extension_root: Path) -> dict[str, object]:
         "t3_rev_loading_blocks": rev_blocks,
         "extension_case_contracts_sha256": sha256(cases_path),
     }
+
+
+def require_seal_evidence(
+        repo_root: Path, extension_root: Path, seal: Mapping[str, object]) -> None:
+    """Revalidate every predecessor and physics byte named by an existing seal."""
+    repo_root, extension_root = Path(repo_root).resolve(), Path(extension_root).resolve()
+    evidence_root = repo_root / "analysis" / "toy_road_t3_mechanism_20260819" / "evidence"
+    terminal_path = evidence_root / "TERMINAL_MANIFEST.json"
+    adjudication_path = evidence_root / "T3_SIBLING_TERMINAL_ADJUDICATION.json"
+    docs_root = repo_root / "docs" / "toy_road_p0_repeatability_20260802"
+    review_path = docs_root / "t3_loading_history_20260818" / \
+        "T3_INDEPENDENT_REVIEW_RECEIPT_20260821.md"
+    registry_path = docs_root / "QUALIFIED_TRAJECTORY_REGISTRY_20260824.json"
+    predecessor = seal.get("predecessor_evidence")
+    expected_fields = {
+        "t3_terminal_adjudication_sha256", "t3_terminal_manifest_sha256",
+        "independent_review_receipt_sha256", "qualified_trajectory_registry_sha256",
+    }
+    if not isinstance(predecessor, dict) or set(predecessor) != expected_fields \
+            or any(type(predecessor.get(field)) is not str
+                   or re.fullmatch(r"[0-9a-f]{64}", predecessor[field]) is None
+                   for field in expected_fields):
+        raise SealError("seal predecessor evidence schema is not exact")
+    expected_hashes = {
+        "t3_terminal_adjudication_sha256": sha256(adjudication_path),
+        "t3_terminal_manifest_sha256": sha256(terminal_path),
+        "independent_review_receipt_sha256": sha256(review_path),
+        "qualified_trajectory_registry_sha256": sha256(registry_path),
+    }
+    if predecessor != expected_hashes \
+            or expected_hashes["t3_terminal_adjudication_sha256"] != T3_ADJUDICATION_SHA256 \
+            or expected_hashes["t3_terminal_manifest_sha256"] != T3_TERMINAL_MANIFEST_SHA256:
+        raise SealError("seal predecessor evidence differs from the published bytes")
+    _require_review_non_authorizing(review_path)
+    registry = read_json(registry_path)
+    _require_registry(registry)
+    terminal = read_json(terminal_path)
+    _require_t3_adjudication(read_json(adjudication_path), terminal)
+    physics = seal.get("physics_closure")
+    expected_physics = _require_physics(extension_root)
+    if not _exact_json_equal(physics, expected_physics):
+        raise SealError("seal physics closure differs from the extension contracts")
 
 
 def _write_new(path: Path, value: Mapping[str, object]) -> None:

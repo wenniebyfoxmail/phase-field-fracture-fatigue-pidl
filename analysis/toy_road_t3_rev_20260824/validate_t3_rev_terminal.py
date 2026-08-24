@@ -3,7 +3,10 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import csv
+import io
 import json
+import math
 import os
 import re
 import sys
@@ -288,6 +291,58 @@ def authenticate_completed_package(protocol: Any, package_root: Path) -> dict[st
         raise TerminalValidationError(f"authoritative completed package validation failed: {error}") from error
 
 
+def _validate_incomplete_c5_trace(
+        protocol: Any, payload: bytes, terminal: Mapping[str, object],
+        classification: str) -> None:
+    """Validate the exact c5 trace state at a failure before the PASS receipt exists."""
+    if not payload.endswith(b"\n") or b"\r" in payload:
+        raise TerminalValidationError("incomplete c5 trace bytes are not canonical")
+    try:
+        reader = csv.DictReader(io.StringIO(payload.decode("ascii"), newline=""))
+        if tuple(reader.fieldnames or ()) != protocol.TRACE_COLUMNS:
+            raise TerminalValidationError("incomplete c5 trace columns are invalid")
+        rows = list(reader)
+    except (UnicodeDecodeError, csv.Error) as error:
+        raise TerminalValidationError(f"incomplete c5 trace is malformed: {error}") from error
+    parsed: list[dict[str, float | int | str]] = []
+    for index, row in enumerate(rows, start=1):
+        if set(row) != set(protocol.TRACE_COLUMNS) or any(value is None for value in row.values()):
+            raise TerminalValidationError("incomplete c5 trace row is malformed")
+        try:
+            cycle = protocol._parse_csv_int(row["cycle"], "failure c5 cycle")
+            substep = protocol._parse_csv_int(row["substep_ordinal"], "failure c5 substep")
+            stagger = protocol._parse_csv_int(row["stagger_iteration"], "failure c5 iteration")
+            reassembly = protocol._parse_csv_int(row["reassembly_ordinal"], "failure c5 reassembly")
+            metrics = {
+                field: protocol._parse_csv_float(row[field], f"failure c5 {field}")
+                for field in protocol.TRACE_COLUMNS[6:]
+            }
+        except Exception as error:
+            raise TerminalValidationError(f"incomplete c5 trace value is invalid: {error}") from error
+        if row["authorization_scope"] != "production_authorized" \
+                or row["case_id"] != CASE_ID or cycle != 5 or substep != 4 \
+                or stagger != index or reassembly != index \
+                or any(not math.isfinite(float(value)) or value < 0 for value in metrics.values()):
+            raise TerminalValidationError("incomplete c5 trace identity or chronology is invalid")
+        parsed.append({**metrics, "stagger_iteration": stagger})
+    failure_substep = terminal.get("substep")
+    if type(failure_substep) is not int:
+        raise TerminalValidationError("c5 failure substep is invalid")
+    if failure_substep < 4 and parsed:
+        raise TerminalValidationError("c5 trace before substep four must contain only its header")
+    if failure_substep == 4 and classification == "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE":
+        if len(parsed) != 1000:
+            raise TerminalValidationError("c5 fixed-point failure trace must reach the exact iteration cap")
+        final = parsed[-1]
+        if float(final["displacement_residual"]) > 4e-4 \
+                or float(final["projected_phase_kkt"]) > 4e-4 \
+                or float(final["primal_feasibility"]) > 1e-12 \
+                or float(final["consecutive_stagger_delta"]) <= 1e-3:
+            raise TerminalValidationError("c5 fixed-point trace does not prove exact nonconvergence")
+    elif failure_substep == 4 and len(parsed) >= 1000:
+        raise TerminalValidationError("c5 Newton failure cannot be recast as iteration-cap failure")
+
+
 def _validate_failure_package(
         failure_root: Path, terminal: Mapping[str, object], classification: str,
         lock: Mapping[str, object], protocol: Any, run_root: Path,
@@ -363,14 +418,27 @@ def _validate_failure_package(
         "receipts/T3_REV_RUNTIME_MEASUREMENT.json",
         *[f"output/substeps/cycle_{cycle:04d}.mat" for cycle in range(1, completed + 1)],
     }
-    if terminal.get("cycle", 0) > 5:
-        expected_relatives.update({
-            "output/qualification/C5_STAGGER_TRACE.csv",
-            "output/qualification/C5_NUMERICAL_GATE_RECEIPT.json",
-        })
+    failure_cycle = terminal.get("cycle", 0)
+    failure_substep = terminal.get("substep", 0)
+    c5_trace_required = failure_cycle >= 5
+    c5_pass_required = failure_cycle > 5 or (failure_cycle == 5 and failure_substep == 5)
+    if c5_trace_required:
+        expected_relatives.add("output/qualification/C5_STAGGER_TRACE.csv")
+    if c5_pass_required:
+        expected_relatives.add("output/qualification/C5_NUMERICAL_GATE_RECEIPT.json")
     expected_artifact_paths = sorted(f"artifacts/{relative}" for relative in expected_relatives)
     if paths != expected_artifact_paths:
         raise TerminalValidationError("failure package artifact closure is not the exact phase-specific set")
+    expected_live_output = sorted(
+        relative.removeprefix("output/") for relative in expected_relatives
+        if relative.startswith("output/")
+    )
+    actual_live_output = sorted(
+        path.relative_to(run_root / "output").as_posix()
+        for path in (run_root / "output").rglob("*") if path.is_file()
+    )
+    if actual_live_output != expected_live_output:
+        raise TerminalValidationError("live numerical-failure output closure is not exact")
     package_files = sorted(
         path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file()
     )
@@ -484,8 +552,7 @@ def _validate_failure_package(
     if mesh.get("mesh_sha256") != mesh_digest \
             or mesh_digest != snapshot.get("mesh_sha256") \
             or connectivity_digest != mesh_identity.get("connectivity_sha256") \
-            or type(mesh.get("connectivity_sha256")) is not str \
-            or len(mesh["connectivity_sha256"]) != 64 \
+            or mesh.get("connectivity_sha256") != connectivity_digest \
             or mesh.get("mesh_sha256_semantics") != mesh_identity.get("mesh_sha256_semantics") \
             or mesh.get("element_ordering_id") != mesh_identity.get("element_ordering_id") \
             or mesh.get("gp_ordering_id") != mesh_identity.get("gp_ordering_id"):
@@ -515,7 +582,7 @@ def _validate_failure_package(
         )
     else:
         expected_error = (
-            "toyRoadP0:EquilibriumSolveFailed" if observed_layer == "displacement_newton"
+            "toyRoadP0:DisplacementSolveFailed" if observed_layer == "displacement_newton"
             else "toyRoadP0:PhaseSolveFailed",
             "The displacement Newton solve failed." if observed_layer == "displacement_newton"
             else "The phase Newton solve failed.",
@@ -523,7 +590,7 @@ def _validate_failure_package(
     if (run_result.get("error_identifier"), run_result.get("error_message")) != expected_error \
             or expected_error[1] not in (artifact_root / "T3_REV.stderr.log").read_text(encoding="utf-8"):
         raise TerminalValidationError("failure package numerical error class/message differs")
-    if terminal.get("cycle", 0) > 5:
+    if c5_pass_required:
         c5_snapshot = {"bytes": {
             "qualification/C5_STAGGER_TRACE.csv": (
                 artifact_root / "output" / "qualification" / "C5_STAGGER_TRACE.csv"
@@ -535,6 +602,12 @@ def _validate_failure_package(
         protocol._validate_c5(c5_snapshot, {
             "authorization_scope": "production_authorized", "case_id": CASE_ID,
         }, CASE_ID)
+    elif c5_trace_required:
+        _validate_incomplete_c5_trace(
+            protocol,
+            (artifact_root / "output" / "qualification" / "C5_STAGGER_TRACE.csv").read_bytes(),
+            terminal, classification,
+        )
     state0 = protocol._read_mat_struct_bytes(
         (artifact_root / "output" / "state0_analysis.mat").read_bytes(),
         "state0", f"{CASE_ID} failure state0"
@@ -585,6 +658,74 @@ def _validate_failure_package(
     }
 
 
+def _validate_failed_runtime_measurement(
+        protocol: Any, lock: Mapping[str, object], measurement_path: Path,
+        terminal: Mapping[str, object]) -> None:
+    """Validate the only producer-written FAIL receipt: path-prefix qualification."""
+    measurement = _strict_json(measurement_path)
+    fields = {
+        "schema_version", "protocol_version", "authorization_scope", "status",
+        "producer_entrypoint_authorized", "execution_input_lock_sha256",
+        "first_failed_predicate", "first_mismatch_index", "expected_absolute_path",
+        "actual_absolute_path", "expected_normalized_path", "actual_normalized_path",
+        "matlab_identifier", "message",
+    }
+    expected_paths = lock.get("runtime_expectations", {}).get("matlab", {}).get(
+        "absolute_path_order")
+    expected_raw = measurement.get("expected_absolute_path")
+    actual_raw = measurement.get("actual_absolute_path")
+    expected_normalized = measurement.get("expected_normalized_path")
+    actual_normalized = measurement.get("actual_normalized_path")
+    mismatch = measurement.get("first_mismatch_index")
+    normalized_expected_raw = [
+        str(Path(value).resolve()) for value in expected_raw
+    ] if isinstance(expected_raw, list) and all(type(value) is str for value in expected_raw) else None
+    normalized_actual_raw = [
+        str(Path(value).resolve()) for value in actual_raw
+    ] if isinstance(actual_raw, list) and all(type(value) is str for value in actual_raw) else None
+    if set(measurement) != fields \
+            or measurement.get("schema_version") != "toy_road_runtime_measurement_v1" \
+            or measurement.get("protocol_version") != lock.get("protocol_version") \
+            or measurement.get("authorization_scope") != lock.get("authorization_scope") \
+            or measurement.get("status") != "FAIL" \
+            or measurement.get("producer_entrypoint_authorized") is not False \
+            or measurement.get("execution_input_lock_sha256") != _sha256(
+                measurement_path.parent / "T3_REV_EXECUTION_INPUT_LOCK.json") \
+            or measurement.get("first_failed_predicate") != "matlab_path_precedence" \
+            or measurement.get("matlab_identifier") != "toyRoadP0:RuntimeQualificationFailed" \
+            or type(mismatch) is not int or mismatch < 1 \
+            or not all(isinstance(value, list) for value in (
+                expected_raw, actual_raw, expected_normalized, actual_normalized)) \
+            or expected_raw != expected_paths \
+            or expected_normalized != normalized_expected_raw \
+            or actual_normalized != normalized_actual_raw \
+            or len(expected_raw) != len(expected_normalized) \
+            or len(actual_raw) != len(actual_normalized) \
+            or not all(type(value) is str and value for collection in (
+                expected_raw, actual_raw, expected_normalized, actual_normalized)
+                       for value in collection):
+        raise TerminalValidationError("runtime qualification FAIL measurement schema is not exact")
+    shorter = len(actual_normalized) < len(expected_normalized)
+    if shorter:
+        expected_mismatch = len(actual_normalized) + 1
+        expected_message = "MATLAB path is shorter than the locked path prefix."
+    else:
+        differing = [
+            index for index, (actual, expected) in enumerate(
+                zip(actual_normalized[:len(expected_normalized)], expected_normalized), start=1)
+            if actual != expected
+        ]
+        if not differing:
+            raise TerminalValidationError("runtime qualification FAIL receipt proves no path mismatch")
+        expected_mismatch = differing[0]
+        expected_message = "Measured absolute MATLAB path precedence differs from the lock."
+    expected_terminal_message = f"{expected_message} First mismatch index: {expected_mismatch}."
+    if mismatch != expected_mismatch or measurement.get("message") != expected_message \
+            or terminal.get("error_message") != expected_terminal_message \
+            or measurement_path.read_bytes() != protocol.canonical_json_bytes(measurement):
+        raise TerminalValidationError("runtime qualification FAIL measurement semantics differ")
+
+
 def _validate_startup_or_runtime_failure(
         terminal: Mapping[str, object], classification: str, receipts: Path,
         launch_receipt: Mapping[str, object], seal_sha256: str, run_root: Path,
@@ -598,11 +739,12 @@ def _validate_startup_or_runtime_failure(
     }
     phase = terminal.get("failure_phase")
     expected = {
-        "matlab_startup_before_runtime_measurement": ("FAIL_STARTUP", "MATLAB:startup"),
-        "bootstrap_or_runtime_bridge_before_measurement": (
-            "FAIL_RUNTIME", "toyRoadP0:RuntimeBridgeFailed"),
+        "bootstrap_before_runtime_measurement": (
+            "FAIL_STARTUP", "toyRoad:LaunchCredentialTimeout"),
+        "runtime_qualification_before_producer": (
+            "FAIL_RUNTIME", "toyRoadP0:RuntimeQualificationFailed"),
         "producer_after_pass_runtime_measurement": (
-            "FAIL_RUNTIME", "toyRoadP0:ProducerRuntimeFailed"),
+            "FAIL_RUNTIME", "toyRoadP0:MissingInputAsset"),
     }
     expected_outcome = expected.get(phase)
     if set(terminal) != fields \
@@ -618,17 +760,37 @@ def _validate_startup_or_runtime_failure(
             or terminal.get("seal_sha256") != seal_sha256 or terminal.get("run_root") != str(run_root) \
             or terminal.get("launch_receipt_sha256") != _sha256(receipts / "T3_REV_LAUNCH_RECEIPT.json"):
         raise TerminalValidationError("startup/runtime failure receipt class, phase, or binding is not exact")
+    if phase == "bootstrap_before_runtime_measurement" \
+            and terminal.get("error_message") != "Exact launch credential was not published":
+        raise TerminalValidationError("bootstrap failure message is not the launched helper error")
+    if phase == "producer_after_pass_runtime_measurement" \
+            and re.fullmatch(r"The locked SENS mesh source is absent: .+[\\/]sens_mesh\.m",
+                             str(terminal.get("error_message"))) is None:
+        raise TerminalValidationError("post-authorization failure message is not the producer error")
     required_logs = (run_root / "T3_REV.stdout.log", run_root / "T3_REV.stderr.log")
     if not all(path.is_file() for path in required_logs):
         raise TerminalValidationError("startup/runtime failure does not retain both launch logs")
     if terminal["error_message"] not in required_logs[1].read_text(encoding="utf-8"):
         raise TerminalValidationError("startup/runtime failure message is absent from stderr")
     measurement_path = receipts / "T3_REV_RUNTIME_MEASUREMENT.json"
-    if phase in {
-            "matlab_startup_before_runtime_measurement",
-            "bootstrap_or_runtime_bridge_before_measurement"}:
+    output_files = sorted(
+        path.relative_to(run_root / "output").as_posix()
+        for path in (run_root / "output").rglob("*") if path.is_file()
+    )
+    if (run_root / "T3_REV_FAILURE_PACKAGE").exists():
+        raise TerminalValidationError("startup/runtime failure cannot carry a numerical failure package")
+    if phase == "bootstrap_before_runtime_measurement":
         if measurement_path.exists() or terminal.get("runtime_measurement_sha256") is not None:
             raise TerminalValidationError("pre-measurement failure cannot carry runtime measurement evidence")
+        if output_files:
+            raise TerminalValidationError("pre-measurement failure cannot carry producer output artifacts")
+    elif phase == "runtime_qualification_before_producer":
+        if not measurement_path.is_file() \
+                or terminal.get("runtime_measurement_sha256") != _sha256(measurement_path):
+            raise TerminalValidationError("runtime qualification failure does not bind its FAIL measurement")
+        _validate_failed_runtime_measurement(protocol, lock, measurement_path, terminal)
+        if output_files:
+            raise TerminalValidationError("runtime qualification failure cannot carry producer artifacts")
     else:
         if not measurement_path.is_file() \
                 or terminal.get("runtime_measurement_sha256") != _sha256(measurement_path):
@@ -638,15 +800,8 @@ def _validate_startup_or_runtime_failure(
         except Exception as error:
             raise TerminalValidationError(
                 f"post-authorization runtime failure measurement is not genuine PASS: {error}") from error
-        result = _strict_json(run_root / "output" / "RUN_RESULT.json")
-        expected_result = {
-            "authorization_scope": "production_authorized", "case_id": CASE_ID,
-            "complete": False, "status": "failed",
-            "error_identifier": terminal["error_identifier"],
-            "error_message": terminal["error_message"],
-        }
-        if result != expected_result:
-            raise TerminalValidationError("post-authorization producer RUN_RESULT is not exact")
+        if output_files:
+            raise TerminalValidationError("post-authorization runtime failure output closure is not exact")
     return {
         "failure_phase": phase,
         "stdout_sha256": _sha256(required_logs[0]),
@@ -658,7 +813,7 @@ def _validate_terminal(
         terminal_root: Path, *, sealed_base_root: Path, extension_root: Path,
         seal_path: Path, run_root: Path | None = None, destination: Path | None = None,
         failure_package_root: Path | None = None, failure_receipt_path: Path | None = None,
-        launch: Any | None = None,
+        launch: Any | None = None, _emit_adjudication: bool = True,
 ) -> dict[str, object]:
     """Authenticate one terminal package and emit one non-authorizing adjudication."""
     launch = _load(Path(__file__).with_name("launch_t3_rev.py"), "t3_rev_terminal_launch") \
@@ -679,7 +834,7 @@ def _validate_terminal(
             raise TerminalValidationError(f"{label} path identity failed: {error}") from error
     receipts = run_root / "receipts"
     destination = receipts / "T3_REV_TERMINAL_ADJUDICATION.json" if destination is None else Path(destination)
-    if launch._literal_path_text(destination) != launch._literal_path_text(
+    if _emit_adjudication and launch._literal_path_text(destination) != launch._literal_path_text(
             receipts / "T3_REV_TERMINAL_ADJUDICATION.json"):
         raise TerminalValidationError("terminal adjudication must remain in the run receipt directory")
     verifier = _load(Path(__file__).with_name("verify_extension_diff.py"), "t3_rev_terminal_diff")
@@ -753,6 +908,12 @@ def _validate_terminal(
     seal_builder = _load(Path(__file__).with_name("build_t3_rev_seal.py"), "t3_rev_terminal_seal")
     if not launch._exact_json_equal(runtime_identity, seal_builder.EXPECTED_EXECUTION):
         raise TerminalValidationError("sealed runtime/MATLAB/four-MEX identity is not the qualified exact mapping")
+    try:
+        seal_builder.require_seal_evidence(
+            sealed_base_root.parents[1], extension_root, seal)
+    except Exception as error:
+        raise TerminalValidationError(
+            f"sealed predecessor/physics closure failed: {error}") from error
     cases = _strict_json(extension_root / "CASE_PHYSICS_CONTRACTS.json")
     case_table = cases.get("cases")
     case_contract = case_table.get(CASE_ID) if isinstance(case_table, dict) else None
@@ -881,7 +1042,8 @@ def _validate_terminal(
         "authorization_capability": None,
         "follow_on_authorized": False,
     }
-    _write_create_once(destination, result)
+    if _emit_adjudication:
+        _write_create_once(destination, result)
     return result
 
 

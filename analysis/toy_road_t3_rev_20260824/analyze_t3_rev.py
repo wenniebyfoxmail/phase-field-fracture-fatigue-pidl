@@ -8,6 +8,7 @@ import json
 import math
 import sys
 import tempfile
+import types
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -32,6 +33,7 @@ FIXED_CYCLES = (20, 30, 31, 40, 60, 61)
 EXACT_TOLERANCES = {"max_abs": 1e-12, "relative_l2": 1e-12}
 QUALIFIED_T3_PROTOCOL_SHA256 = "db51a9cb54810711c2bdfe7ee35a705179e2852c7b069995d69693579c1e84a9"
 QUALIFIED_T3_MANIFEST_SHA256 = "455b149b14276598ad87e4bcea6b6a2916de6e59d3812f791d66e61b1344bb01"
+QUALIFIED_T3_ADJUDICATION_SHA256 = "9c0a0783bd6c59d825300538336258350df63c294f38f7febf29dae905c00300"
 
 
 def _finite_number(value: object, label: str) -> float:
@@ -159,15 +161,16 @@ def _sha256(path: Path) -> str:
 
 
 def _load_exact_protocol(protocol_path: Path, expected_sha256: str, module_name: str) -> Any:
-    if not protocol_path.is_file() or _sha256(protocol_path) != expected_sha256:
+    if not protocol_path.is_file():
         raise ValueError(f"qualified protocol byte identity differs: {protocol_path}")
-    spec = importlib.util.spec_from_file_location(module_name, protocol_path)
-    if spec is None or spec.loader is None:
-        raise ValueError("cannot load hash-qualified protocol")
-    protocol = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(protocol)
+    payload = protocol_path.read_bytes()
+    if hashlib.sha256(payload).hexdigest() != expected_sha256:
+        raise ValueError(f"qualified protocol byte identity differs: {protocol_path}")
+    protocol = types.ModuleType(module_name)
+    protocol.__file__ = str(protocol_path)
+    exec(compile(payload, str(protocol_path), "exec"), protocol.__dict__)
     if _sha256(protocol_path) != expected_sha256:
-        raise ValueError("qualified protocol changed while it was imported")
+        raise ValueError("qualified protocol changed while verified bytes were executed")
     return protocol
 
 
@@ -178,6 +181,63 @@ def _authenticate_package(protocol: Any, package_root: Path, case_id: str) -> di
         return receipt
     except Exception as error:
         raise ValueError(f"{case_id} terminal package is not authenticated: {error}") from error
+
+
+def _require_published_t3_chain(
+        repo_root: Path, package_root: Path,
+        authentication: Mapping[str, object]) -> None:
+    """Bind the live authenticated package to the published T3 adjudication chain."""
+    evidence_root = repo_root / "analysis" / "toy_road_t3_mechanism_20260819" / "evidence"
+    adjudication_path = evidence_root / "T3_SIBLING_TERMINAL_ADJUDICATION.json"
+    terminal_manifest_path = evidence_root / "TERMINAL_MANIFEST.json"
+    if _sha256(adjudication_path) != QUALIFIED_T3_ADJUDICATION_SHA256 \
+            or _sha256(terminal_manifest_path) != QUALIFIED_T3_MANIFEST_SHA256:
+        raise ValueError("published T3 adjudication or terminal manifest bytes differ")
+    adjudication = _strict_json(adjudication_path)
+    published_manifest = _strict_json(terminal_manifest_path)
+    seal_builder_path = Path(__file__).with_name("build_t3_rev_seal.py")
+    spec = importlib.util.spec_from_file_location("t3_rev_analysis_t3_chain", seal_builder_path)
+    if spec is None or spec.loader is None:
+        raise ValueError("cannot load published T3 adjudication validator")
+    seal_builder = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(seal_builder)
+    try:
+        execution = seal_builder._require_t3_adjudication(adjudication, published_manifest)
+    except Exception as error:
+        raise ValueError(f"published T3 adjudication is invalid: {error}") from error
+    evidence = adjudication.get("evidence_sha256")
+    terminal_result = adjudication.get("terminal_result")
+    files = authentication.get("files")
+    if not isinstance(evidence, dict) or not isinstance(terminal_result, dict) \
+            or not isinstance(files, list):
+        raise ValueError("published T3 adjudication chain is incomplete")
+    authenticated_hashes = {
+        item.get("path"): item.get("sha256") for item in files if isinstance(item, dict)
+    }
+    expected_bindings = {
+        "TERMINAL_MANIFEST.json": evidence.get("terminal_manifest"),
+        "EXECUTION_INPUT_LOCK.json": evidence.get("execution_input_lock"),
+        "INPUT_SNAPSHOT.json": evidence.get("input_snapshot"),
+        "qualification/C5_NUMERICAL_GATE_RECEIPT.json": evidence.get("c5_receipt"),
+    }
+    if any(authenticated_hashes.get(path) != digest for path, digest in expected_bindings.items()) \
+            or authentication.get("manifest_sha256") != QUALIFIED_T3_MANIFEST_SHA256 \
+            or authentication.get("package_snapshot_sha256") != evidence.get("package_snapshot"):
+        raise ValueError("live T3 package does not match the published adjudication hashes")
+    if authentication.get("execution_input_lock_sha256") != evidence.get("execution_input_lock") \
+            or authentication.get("runtime_lock_sha256") != execution.get("runtime_lock_sha256") \
+            or authentication.get("family_contract_sha256") != execution.get("family_contract_sha256") \
+            or authentication.get("case_physics_contract_sha256") != execution.get("case_physics_contract_sha256"):
+        raise ValueError("live T3 execution identity differs from the published adjudication")
+    live_terminal = _strict_json(package_root / "TERMINAL_RESULT.json")
+    expected_terminal = {
+        "terminal_reason": terminal_result.get("terminal_reason"),
+        "terminal_cycle": terminal_result.get("terminal_cycle"),
+        "first_hit_cycle": terminal_result.get("first_hit_cycle"),
+        "confirmed_cycle": terminal_result.get("confirmed_cycle"),
+    }
+    if any(live_terminal.get(field) != value for field, value in expected_terminal.items()):
+        raise ValueError("live T3 terminal event differs from the published adjudication")
 
 
 def _canonical_json_bytes(value: object) -> bytes:
@@ -350,6 +410,8 @@ def _analyze_t3_rev(
     manifest_path = t3_root / "TERMINAL_MANIFEST.json"
     if _sha256(manifest_path) != required_t3_manifest_sha256:
         raise ValueError("T3 package is not the published qualified source identity")
+    if launch_authority is None:
+        _require_published_t3_chain(repo_root, t3_root, t3_authentication)
     rev_protocol, rev_protocol_identity = _qualified_rev_protocol(
         t3_rev_root, Path(seal_path), launch_authority=launch_authority,
         repository_root=repository_root,
@@ -360,9 +422,25 @@ def _analyze_t3_rev(
         raise ValueError("cannot load T3-rev terminal authenticator")
     terminal_module = importlib.util.module_from_spec(terminal_spec)
     terminal_spec.loader.exec_module(terminal_module)
-    rev_authentication = terminal_module.authenticate_completed_package(rev_protocol, t3_rev_root)
     lock_path = t3_rev_root.parent / "receipts" / "T3_REV_EXECUTION_INPUT_LOCK.json"
     launch_receipt = _strict_json(t3_rev_root.parent / "receipts" / "T3_REV_LAUNCH_RECEIPT.json")
+    chain_repo_root = Path(repository_root).resolve() if repository_root is not None else repo_root
+    try:
+        rev_adjudication = terminal_module._validate_terminal(
+            t3_rev_root,
+            sealed_base_root=chain_repo_root / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=Path(str(launch_receipt["extension_root"])),
+            seal_path=Path(seal_path),
+            run_root=t3_rev_root.parent,
+            launch=launch_authority,
+            _emit_adjudication=False,
+        )
+    except Exception as error:
+        raise ValueError(f"T3-rev authoritative terminal chain failed: {error}") from error
+    rev_authentication = rev_adjudication.get("terminal_authentication")
+    if not isinstance(rev_authentication, dict):
+        raise ValueError("T3-rev authoritative terminal chain has no completed authentication")
     lock = _strict_json(lock_path)
     measurement_path = t3_rev_root.parent / "receipts" / "T3_REV_RUNTIME_MEASUREMENT.json"
     measurement = _strict_json(measurement_path)
@@ -395,17 +473,34 @@ def _analyze_t3_rev(
         )))
         t3_event = _strict_json(snapshot_t3 / "EVENT_METADATA.json")
         rev_event = _strict_json(snapshot_rev / "EVENT_METADATA.json")
-        event_cycles = {
-            value for event in (t3_event, rev_event)
-            for value in (event.get("first_hit_cycle"), event.get("confirmed_cycle"))
+        t3_event_cycles = {
+            value for value in (t3_event.get("first_hit_cycle"), t3_event.get("confirmed_cycle"))
             if type(value) is int
         }
-        required_cycles = sorted(set(declared) | event_cycles)
-        shard_paths = tuple(f"substeps/cycle_{cycle:04d}.mat" for cycle in required_cycles)
+        rev_event_cycles = {
+            value for value in (rev_event.get("first_hit_cycle"), rev_event.get("confirmed_cycle"))
+            if type(value) is int
+        }
+        t3_authenticated_paths = {
+            item.get("path") for item in t3_authentication.get("files", [])
+            if isinstance(item, dict)
+        }
+        rev_authenticated_paths = {
+            item.get("path") for item in rev_authentication.get("files", [])
+            if isinstance(item, dict)
+        }
+        t3_shard_paths = tuple(
+            path for cycle in sorted(set(declared) | t3_event_cycles)
+            if (path := f"substeps/cycle_{cycle:04d}.mat") in t3_authenticated_paths
+        )
+        rev_shard_paths = tuple(
+            path for cycle in sorted(set(declared) | rev_event_cycles)
+            if (path := f"substeps/cycle_{cycle:04d}.mat") in rev_authenticated_paths
+        )
         _snapshot_authenticated_inputs(
-            t3_protocol, t3_authentication, t3_root, snapshot_t3, shard_paths)
+            t3_protocol, t3_authentication, t3_root, snapshot_t3, t3_shard_paths)
         _snapshot_authenticated_inputs(
-            rev_protocol, rev_authentication, t3_rev_root, snapshot_rev, shard_paths)
+            rev_protocol, rev_authentication, t3_rev_root, snapshot_rev, rev_shard_paths)
         mesh_paths = (snapshot_t3 / "mesh_geometry.mat", snapshot_rev / "mesh_geometry.mat")
         t3_mesh, rev_mesh = load_mesh(mesh_paths[0]), load_mesh(mesh_paths[1])
         if t3_mesh.identities != rev_mesh.identities or not np.array_equal(t3_mesh.node_coords, rev_mesh.node_coords) \

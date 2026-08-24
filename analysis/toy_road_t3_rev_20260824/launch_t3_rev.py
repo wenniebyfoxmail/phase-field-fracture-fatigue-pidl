@@ -1074,6 +1074,11 @@ def launch_t3_rev(
     seal_bytes = canonical_seal_bytes
     seal_sha256 = hashlib.sha256(seal_bytes).hexdigest()
     sealed_base_root, manifest, case = _require_extension(repo_root, extension_root, seal)
+    seal_builder = _load_module("build_t3_rev_seal.py", "t3_rev_launch_seal_evidence")
+    try:
+        seal_builder.require_seal_evidence(repo_root, extension_root, seal)
+    except Exception as error:
+        raise LaunchError(f"seal predecessor/physics closure failed: {error}") from error
     runtime = seal["runtime_identity"]
     if not isinstance(runtime, dict):
         raise LaunchError("seal runtime identity is malformed")
