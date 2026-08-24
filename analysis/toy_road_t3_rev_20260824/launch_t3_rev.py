@@ -46,6 +46,32 @@ def executable_sha256(path: Path) -> str:
     return sha256(path)
 
 
+def resolve_runtime_binaries(repo_root: Path, griphfith_root: Path) -> dict[str, Path]:
+    """Resolve the only four binary locations admitted by the qualified runtime."""
+    paths = {
+        "initial": repo_root / "producer_handoffs" / "rebuilt_initial_mex_qualification_20260801" / "runtime" / "initial.mexw64",
+        "AMOR": griphfith_root / "Sources" / "+phase_field" / "+mex" / "+fem" / "+assembly" / "+equilibrium" / "AMOR.mexw64",
+        "AT1_HISTORY_FATIGUE": griphfith_root / "Sources" / "+phase_field" / "+mex" / "+fem" / "+assembly" / "+pf" / "AT1_HISTORY_FATIGUE.mexw64",
+        "cholmod2": SUITESPARSE_ROOT / "CHOLMOD" / "MATLAB" / "cholmod2.mexw64",
+    }
+    resolved = {name: path.resolve() for name, path in paths.items()}
+    if len(set(resolved.values())) != len(resolved) or any(not path.is_file() for path in resolved.values()):
+        raise LaunchError("runtime binary path is missing, duplicate, or not the qualified exact location")
+    return resolved
+
+
+def runtime_binary_sha256(paths: Mapping[str, Path]) -> dict[str, str]:
+    return {name: sha256(path) for name, path in paths.items()}
+
+
+def require_runtime_binaries(repo_root: Path, griphfith_root: Path, expected: object) -> dict[str, Path]:
+    paths = resolve_runtime_binaries(repo_root, griphfith_root)
+    if not isinstance(expected, dict) or set(expected) != set(paths) \
+            or not _exact_json_equal(runtime_binary_sha256(paths), expected):
+        raise LaunchError("runtime binary bytes differ from the sealed qualified mapping")
+    return paths
+
+
 def _reject_duplicates(pairs: list[tuple[str, object]]) -> dict[str, object]:
     result: dict[str, object] = {}
     for key, value in pairs:
@@ -321,6 +347,21 @@ def _require_template_inputs(template_run: Path, runtime: Mapping[str, object], 
         raise LaunchError("template MATLAB identity differs from the sealed release/update/platform mapping")
     if executable_sha256(matlab) != sealed_matlab["executable_sha256"]:
         raise LaunchError("MATLAB executable SHA-256 differs from the sealed runtime identity")
+    required_lock_fields = {
+        "authorization_scope", "case_id", "case_physics_contract_sha256", "family_contract_sha256",
+        "launch_timestamp_utc", "no_clobber_receipt_id", "protocol_version", "resume_allowed",
+        "runtime_expectations", "runtime_lock_sha256", "schema_version", "source_commit",
+        "source_manifest_sha256", "writable_roots",
+    }
+    if set(lock) != required_lock_fields or lock.get("authorization_scope") != "production_authorized" \
+            or lock.get("protocol_version") != "toy-road-p0-repeatability-v2.1" \
+            or lock.get("schema_version") != "toy_road_execution_input_lock_v1" \
+            or lock.get("resume_allowed") is not False \
+            or type(lock.get("launch_timestamp_utc")) is not str \
+            or type(lock.get("no_clobber_receipt_id")) is not str \
+            or type(lock.get("writable_roots")) is not dict \
+            or not all(type(name) is str and type(value) is str for name, value in lock["writable_roots"].items()):
+        raise LaunchError("template execution lock schema or authorization identity is invalid")
     return lock
 
 
@@ -356,12 +397,11 @@ def launch_t3_rev(
     if not isinstance(runtime, dict):
         raise LaunchError("seal runtime identity is malformed")
     template = _require_template_inputs(template_run, runtime, input_assets_root, matlab)
-    initial_source = repo_root / "producer_handoffs" / "rebuilt_initial_mex_qualification_20260801" / "runtime" / "initial.mexw64"
-    if not initial_source.is_file() or not (sealed_base_root / "run_toy_road_runtime_bridge.m").is_file():
+    if not (sealed_base_root / "run_toy_road_runtime_bridge.m").is_file():
         raise LaunchError("sealed source inputs are incomplete")
     expected_binaries = runtime.get("four_binary_sha256")
-    if not isinstance(expected_binaries, dict) or sha256(initial_source) != expected_binaries.get("initial"):
-        raise LaunchError("initial MEX input differs from the sealed runtime identity")
+    binary_paths = require_runtime_binaries(repo_root, griphfith_root, expected_binaries)
+    initial_source = binary_paths["initial"]
     _require_unconsumed_seal(seal_path)
 
     roots = {name: run_root / name for name in ("output", "work", "temp", "tmp", "pref", "cache", "receipts")}
@@ -390,8 +430,10 @@ def launch_t3_rev(
     case_hash = case.get("case_physics_contract_sha256")
     if not isinstance(family_hash, str) or not isinstance(case_hash, str):
         raise LaunchError("extension family or case hash is malformed")
-    lock = copy.deepcopy(template)
-    lock.update({
+    lock = {
+        "schema_version": "toy_road_execution_input_lock_v1",
+        "authorization_scope": "production_authorized",
+        "protocol_version": "toy-road-p0-repeatability-v2.1",
         "case_id": CASE_ID,
         "case_physics_contract_sha256": case_hash,
         "family_contract_sha256": family_hash,
@@ -401,7 +443,8 @@ def launch_t3_rev(
         "resume_allowed": False,
         "writable_roots": {name: str(path) for name, path in roots.items()},
         "extension_source_manifest_sha256": sha256(extension_root / "EXTENSION_SOURCE_MANIFEST.json"),
-    })
+        "thread_environment": copy.deepcopy(runtime["thread_settings"]),
+    }
     sealed_matlab = runtime.get("matlab")
     if not isinstance(sealed_matlab, dict):
         raise LaunchError("seal MATLAB identity is malformed")

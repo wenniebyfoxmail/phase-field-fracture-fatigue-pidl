@@ -483,6 +483,16 @@ def _launcher_inputs(module, tmp_path: Path) -> dict[str, Path]:
     matlab.write_bytes(b"test executable")
     griphfith = tmp_path / "griphfith"
     (griphfith / "Sources").mkdir(parents=True)
+    for binary in (
+            griphfith / "Sources/+phase_field/+mex/+fem/+assembly/+equilibrium/AMOR.mexw64",
+            griphfith / "Sources/+phase_field/+mex/+fem/+assembly/+pf/AT1_HISTORY_FATIGUE.mexw64"):
+        binary.parent.mkdir(parents=True, exist_ok=True)
+        binary.write_bytes(binary.name.encode("ascii"))
+    suite_root = tmp_path / "suite"
+    cholmod = suite_root / "CHOLMOD/MATLAB/cholmod2.mexw64"
+    cholmod.parent.mkdir(parents=True)
+    cholmod.write_bytes(b"cholmod2")
+    module.SUITESPARSE_ROOT = suite_root
     assets = tmp_path / "assets"
     assets.mkdir()
     return {
@@ -508,6 +518,11 @@ def _allow_test_matlab_identity(module, monkeypatch: pytest.MonkeyPatch) -> None
     monkeypatch.setattr(
         module, "executable_sha256",
         lambda _path: seal_builder.EXPECTED_EXECUTION["matlab"]["executable_sha256"],
+        raising=False,
+    )
+    monkeypatch.setattr(
+        module, "runtime_binary_sha256",
+        lambda _paths: dict(seal_builder.EXPECTED_EXECUTION["four_binary_sha256"]),
         raising=False,
     )
 
@@ -589,11 +604,11 @@ def test_launcher_popen_uses_locked_paths_and_environment(
         str(inputs["extension_root"]),
         str(inputs["repo_root"] / "producer_handoffs" / "toy_road_p0_repeatability_20260803"),
         str(tmp_path / "griphfith" / "Sources"),
-        r"C:\SuiteSparse\SuiteSparse-dev\CHOLMOD\MATLAB",
-        r"C:\SuiteSparse\SuiteSparse-dev\AMD\MATLAB",
-        r"C:\SuiteSparse\SuiteSparse-dev\COLAMD\MATLAB",
-        r"C:\SuiteSparse\SuiteSparse-dev\CCOLAMD\MATLAB",
-        r"C:\SuiteSparse\SuiteSparse-dev\CAMD\MATLAB",
+        str(module.SUITESPARSE_ROOT / "CHOLMOD" / "MATLAB"),
+        str(module.SUITESPARSE_ROOT / "AMD" / "MATLAB"),
+        str(module.SUITESPARSE_ROOT / "COLAMD" / "MATLAB"),
+        str(module.SUITESPARSE_ROOT / "CCOLAMD" / "MATLAB"),
+        str(module.SUITESPARSE_ROOT / "CAMD" / "MATLAB"),
     ]
     matlab = lock["runtime_expectations"]["matlab"]
     assert matlab["absolute_path_order"] == expected_paths
@@ -688,6 +703,7 @@ def test_launcher_rejects_template_matlab_release_or_update_type_tampering(
     monkeypatch.setattr(module, "matlab_processes", lambda: [])
     monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
     inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
     path = inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
     payload = strict_json(path)
     runtime = payload["runtime_expectations"]
@@ -708,6 +724,7 @@ def test_launcher_rejects_extra_template_runtime_mapping_before_root_creation(
     monkeypatch.setattr(module, "matlab_processes", lambda: [])
     monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
     inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
     path = inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
     payload = strict_json(path)
     runtime = payload["runtime_expectations"]
@@ -717,6 +734,50 @@ def test_launcher_rejects_extra_template_runtime_mapping_before_root_creation(
     with pytest.raises(module.LaunchError, match="template runtime identity"):
         module.launch_t3_rev(**inputs)
     assert not inputs["run_root"].exists()
+
+
+@pytest.mark.parametrize("target", ["AMOR", "AT1_HISTORY_FATIGUE", "cholmod2"])
+def test_launcher_rejects_each_tampered_runtime_binary_before_consumption(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, target: str) -> None:
+    """Every non-initial binary is byte-bound before root or seal consumption."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+    seal_builder = load_module("build_t3_rev_seal")
+    bad = dict(seal_builder.EXPECTED_EXECUTION["four_binary_sha256"])
+    bad[target] = "0" * 64
+    monkeypatch.setattr(module, "runtime_binary_sha256", lambda _paths: bad)
+    with pytest.raises(module.LaunchError, match="runtime binary"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda lock: lock.update({"authorization_scope": "test_only"}),
+    lambda lock: lock.update({"protocol_version": "wrong"}),
+    lambda lock: lock.update({"unexpected": "extra"}),
+    lambda lock: lock.pop("writable_roots"),
+    lambda lock: lock.update({"resume_allowed": 0}),
+])
+def test_launcher_rejects_tampered_template_schema_before_consumption(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, mutate) -> None:
+    """The predecessor lock is a complete typed input, never a pass-through object."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+    path = inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
+    lock = strict_json(path)
+    mutate(lock)
+    path.write_text(json.dumps(lock, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    with pytest.raises(module.LaunchError, match="template execution lock|template runtime"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
 
 
 def test_launcher_requires_clean_committed_repository(
