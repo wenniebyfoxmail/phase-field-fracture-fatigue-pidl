@@ -483,6 +483,7 @@ def launch_t3_rev(
         "family_contract_sha256": family_hash,
         "runtime_lock_sha256": runtime["runtime_lock_sha256"],
         "source_commit": repo_commit,
+        "source_manifest_sha256": runtime["source_manifest_sha256"],
         "launch_timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "no_clobber_receipt_id": uuid.uuid4().hex,
         "resume_allowed": False,
