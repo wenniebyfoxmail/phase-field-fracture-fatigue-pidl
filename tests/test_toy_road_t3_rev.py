@@ -876,13 +876,77 @@ def test_post_publish_temp_cleanup_failure_does_not_reverse_success(
     real_unlink = Path.unlink
     def fail_temp_cleanup(path, *args, **kwargs):
         if path.name.startswith(".T3_REV_LAUNCH_RECEIPT.json") and path.name.endswith(".tmp"):
-            raise OSError("cleanup failed after publish")
+            raise RuntimeError("cleanup failed after publish")
         return real_unlink(path, *args, **kwargs)
 
     monkeypatch.setattr(Path, "unlink", fail_temp_cleanup)
     assert module.launch_t3_rev(**inputs)["status"] == "LAUNCHED"
     receipt = inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.json"
     assert receipt.is_file()
+
+
+def test_pid_write_failure_after_popen_never_publishes_pass(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+
+    class Process:
+        pid = 3694
+
+    popen_calls = 0
+
+    def fake_popen(*args, **kwargs):
+        nonlocal popen_calls
+        popen_calls += 1
+        return Process()
+
+    def fail_pid_write(*args, **kwargs):
+        raise OSError("injected launcher.pid failure")
+
+    monkeypatch.setattr(module, "Popen", fake_popen)
+    monkeypatch.setattr(module, "write_launcher_pid", fail_pid_write, raising=False)
+    with pytest.raises(module.LaunchCredentialError, match="credential"):
+        module.launch_t3_rev(**inputs)
+    receipts = inputs["run_root"] / "receipts"
+    assert popen_calls == 1
+    assert not (receipts / "T3_REV_LAUNCH_RECEIPT.json").exists()
+    assert strict_json(receipts / "LAUNCH_CREDENTIAL_FAILED.json")["status"] == "LAUNCH_CREDENTIAL_FAILED"
+
+
+@pytest.mark.parametrize("failing_handle", ["stdout", "stderr"])
+def test_log_close_failure_after_popen_never_publishes_pass(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, failing_handle: str) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+
+    class Process:
+        pid = 4705
+
+    class LogHandle:
+        def __init__(self, name: str) -> None:
+            self.name = name
+            self.close_attempted = False
+
+        def close(self) -> None:
+            self.close_attempted = True
+            if self.name == failing_handle:
+                raise OSError(f"injected {self.name} close failure")
+
+    stdout = LogHandle("stdout")
+    stderr = LogHandle("stderr")
+    monkeypatch.setattr(module, "open_launch_logs", lambda _run_root: (stdout, stderr))
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: Process())
+    with pytest.raises(module.LaunchCredentialError, match="credential"):
+        module.launch_t3_rev(**inputs)
+    receipts = inputs["run_root"] / "receipts"
+    assert stdout.close_attempted
+    assert stderr.close_attempted
+    assert not (receipts / "T3_REV_LAUNCH_RECEIPT.json").exists()
+    assert strict_json(receipts / "LAUNCH_CREDENTIAL_FAILED.json")["status"] == "LAUNCH_CREDENTIAL_FAILED"
 
 
 @pytest.mark.parametrize("variant", ["extra_lf", "key_order", "whitespace"])

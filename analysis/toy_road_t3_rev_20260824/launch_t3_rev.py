@@ -912,10 +912,17 @@ def open_launch_logs(run_root: Path) -> tuple[Any, Any]:
     return stdout, stderr
 
 
-def publish_launch_receipt(
+def _best_effort_unlink(path: Path) -> None:
+    try:
+        path.unlink()
+    except Exception:
+        pass
+
+
+def prepare_launch_receipt(
         launch_receipt_path: Path, launch_receipt_bytes: bytes,
-        expected_receipt_sha256: str) -> None:
-    """Atomically publish the bootstrap credential only after process creation succeeds."""
+        expected_receipt_sha256: str) -> Path:
+    """Durably prepare complete credential bytes without making them authoritative."""
     temporary = launch_receipt_path.with_name(
         f".{launch_receipt_path.name}.{uuid.uuid4().hex}.tmp"
     )
@@ -927,17 +934,43 @@ def publish_launch_receipt(
         write_bytes_create_new(temporary, launch_receipt_bytes)
         if sha256(temporary) != expected_receipt_sha256:
             raise LaunchCredentialError("temporary launch credential SHA-256 differs")
+    except Exception:
+        _best_effort_unlink(temporary)
+        raise
+    return temporary
+
+
+def publish_launch_receipt(temporary: Path, launch_receipt_path: Path) -> None:
+    """Make prepared exact bytes visible at the sole atomic launch commit point."""
+    try:
         os.link(temporary, launch_receipt_path)
     except Exception:
-        try:
-            if temporary.exists():
-                temporary.unlink()
-        except OSError:
-            pass
+        _best_effort_unlink(temporary)
         raise
+    _best_effort_unlink(temporary)
+
+
+def write_launcher_pid(run_root: Path, pid: object) -> None:
+    """Durably record the child identity before its credential can become visible."""
+    write_bytes_create_new(run_root / "launcher.pid", f"{pid}\n".encode("ascii"))
+
+
+def close_launch_logs(stdout: Any, stderr: Any) -> None:
+    """Attempt both parent-side closes and surface the first failure."""
+    failures: list[Exception] = []
+    for stream in (stdout, stderr):
+        try:
+            stream.close()
+        except Exception as error:
+            failures.append(error)
+    if failures:
+        raise failures[0]
+
+
+def _best_effort_close_launch_logs(stdout: Any, stderr: Any) -> None:
     try:
-        temporary.unlink()
-    except OSError:
+        close_launch_logs(stdout, stderr)
+    except Exception:
         pass
 
 
@@ -1192,26 +1225,34 @@ def launch_t3_rev(
     except OSError as error:
         _raise_prepared_failure(seal_path, seal_sha256, seal_bytes, run_root, receipts, error)
     try:
-        try:
-            process = Popen(
-                [str(matlab), "-batch", batch], cwd=run_root, env=env, stdout=stdout, stderr=stderr,
-                creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
-            )
-        except Exception as error:
-            _raise_prepared_failure(seal_path, seal_sha256, seal_bytes, run_root, receipts, error)
-        try:
-            publish_launch_receipt(
-                launch_receipt_path, launch_receipt_bytes, launch_receipt_sha256
-            )
-        except Exception as error:
-            raise_launch_credential_failure(
-                receipts, launch_receipt_path, process, error
-            )
-    finally:
-        stdout.close()
-        stderr.close()
-    (run_root / "launcher.pid").write_text(str(process.pid) + "\n", encoding="ascii")
-    return {"status": "LAUNCHED", "pid": process.pid, "run_root": str(run_root), "resume_allowed": False}
+        process = Popen(
+            [str(matlab), "-batch", batch], cwd=run_root, env=env, stdout=stdout, stderr=stderr,
+            creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
+        )
+    except Exception as error:
+        _best_effort_close_launch_logs(stdout, stderr)
+        _raise_prepared_failure(seal_path, seal_sha256, seal_bytes, run_root, receipts, error)
+    temporary_receipt: Path | None = None
+    try:
+        temporary_receipt = prepare_launch_receipt(
+            launch_receipt_path, launch_receipt_bytes, launch_receipt_sha256
+        )
+        write_launcher_pid(run_root, process.pid)
+        close_launch_logs(stdout, stderr)
+        launched_result = {
+            "status": "LAUNCHED", "pid": process.pid,
+            "run_root": str(run_root), "resume_allowed": False,
+        }
+    except Exception as error:
+        if temporary_receipt is not None:
+            _best_effort_unlink(temporary_receipt)
+        _best_effort_close_launch_logs(stdout, stderr)
+        raise_launch_credential_failure(receipts, launch_receipt_path, process, error)
+    try:
+        publish_launch_receipt(temporary_receipt, launch_receipt_path)
+    except Exception as error:
+        raise_launch_credential_failure(receipts, launch_receipt_path, process, error)
+    return launched_result
 
 
 def main() -> int:
