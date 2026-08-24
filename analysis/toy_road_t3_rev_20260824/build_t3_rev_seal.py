@@ -16,6 +16,7 @@ from typing import Any, Mapping
 BASE_SOURCE_COMMIT = "7c56ff383187cdee2f45e1b15d707f148f386302"
 BASE_SOURCE_MANIFEST_SHA256 = "61e12721da19ce37c2f065804d2a151b6bd80981196687f6f3fe292dca48b89e"
 T3_TERMINAL_MANIFEST_SHA256 = "455b149b14276598ad87e4bcea6b6a2916de6e59d3812f791d66e61b1344bb01"
+T3_ADJUDICATION_SHA256 = "9c0a0783bd6c59d825300538336258350df63c294f38f7febf29dae905c00300"
 CASE_ID = "T3_rev_loading_order"
 T3_CASE_ID = "T3_loading_history"
 EXPECTED_MEX = {
@@ -31,6 +32,16 @@ EXPECTED_THREADS = {
     "MKL_DYNAMIC": "FALSE",
 }
 EXPECTED_MATLAB = {
+    "absolute_path_order": [
+        "C:\\q4diag\\toy-road-t3-production-7c56ff3-run1\\.toy-road-runtime-overlay",
+        "C:\\q4diag\\phase-field-fracture-fatigue-pidl-toy-road-impl\\producer_handoffs\\toy_road_p0_repeatability_20260803",
+        "C:\\q4diag\\griphfith-pf-rebuild-355d4c83\\Sources",
+        "C:\\SuiteSparse\\SuiteSparse-dev\\CHOLMOD\\MATLAB",
+        "C:\\SuiteSparse\\SuiteSparse-dev\\AMD\\MATLAB",
+        "C:\\SuiteSparse\\SuiteSparse-dev\\COLAMD\\MATLAB",
+        "C:\\SuiteSparse\\SuiteSparse-dev\\CCOLAMD\\MATLAB",
+        "C:\\SuiteSparse\\SuiteSparse-dev\\CAMD\\MATLAB",
+    ],
     "release": "R2025b",
     "update": "Update 5",
     "version": "25.2.0.3177638",
@@ -38,6 +49,23 @@ EXPECTED_MATLAB = {
     "executable_sha256": "322158960d70ea723d7bf6e5bb06f6b058b1489a85624d6c6a2be83be4944c2d",
     "blas": "Intel(R) oneAPI Math Kernel Library Version 2024.1-Product Build 20240215 for Intel(R) 64 architecture applications (CNR branch auto)",
     "lapack": "Intel(R) oneAPI Math Kernel Library Version 2024.1-Product Build 20240215 for Intel(R) 64 architecture applications (CNR branch auto) supporting Linear Algebra PACKage (LAPACK 3.11.0)",
+}
+EXPECTED_EXECUTION = {
+    "case_physics_contract_sha256": "fbbe2c46ec394f20589e7c150783a08b5fbd79d13e51ce74eef90930def0146c",
+    "family_contract_sha256": "a53cd26a457801fe87cce9afea19ca1ea21e1009567b06fb3bb813fe7c3279d2",
+    "four_binary_sha256": EXPECTED_MEX,
+    "matlab": EXPECTED_MATLAB,
+    "resume_allowed": False,
+    "retry_performed": False,
+    "runtime_lock_sha256": "a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7",
+    "single_execution": True,
+    "source_commit": BASE_SOURCE_COMMIT,
+    "source_manifest_sha256": BASE_SOURCE_MANIFEST_SHA256,
+    "thread_settings": EXPECTED_THREADS,
+    "thread_settings_evidence": {
+        "basis": "static_launch_environment_bound_by_committed_launcher",
+        "launcher_sha256": "65a317bbaa4242b272e9fd74a54e5a19c0d33c493ac423b79244386dcd443417",
+    },
 }
 
 
@@ -89,6 +117,22 @@ def sha256(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _exact_json_equal(actual: object, expected: object) -> bool:
+    """Compare finite JSON values without bool/int or int/float coercion."""
+    if type(actual) is not type(expected):
+        return False
+    if isinstance(expected, dict):
+        return set(actual) == set(expected) and all(
+            _exact_json_equal(actual[key], expected[key]) for key in expected
+        )
+    if isinstance(expected, list):
+        return len(actual) == len(expected) and all(
+            _exact_json_equal(item, expected_item)
+            for item, expected_item in zip(actual, expected)
+        )
+    return actual == expected
 
 
 def _load_verifier() -> Any:
@@ -186,13 +230,8 @@ def _require_t3_adjudication(adjudication: Mapping[str, object], terminal: Mappi
     if terminal.get("case_id") != T3_CASE_ID or terminal.get("source_commit") != BASE_SOURCE_COMMIT \
             or terminal.get("runtime_lock_sha256") != execution.get("runtime_lock_sha256"):
         raise SealError("T3 terminal manifest does not validate the adjudication claims")
-    mex = execution.get("four_binary_sha256")
-    threads = execution.get("thread_settings")
-    matlab = execution.get("matlab")
-    if mex != EXPECTED_MEX or threads != EXPECTED_THREADS or not isinstance(matlab, dict):
-        raise SealError("T3 MEX or thread identity differs from the qualified runtime")
-    if any(matlab.get(key) != value for key, value in EXPECTED_MATLAB.items()):
-        raise SealError("T3 MATLAB identity differs from the qualified runtime")
+    if not _exact_json_equal(execution, EXPECTED_EXECUTION):
+        raise SealError("T3 runtime identity is not the exact qualified mapping")
     return execution
 
 
@@ -318,7 +357,10 @@ def build_seal(
     terminal = read_json(terminal_path)
     if sha256(terminal_path) != T3_TERMINAL_MANIFEST_SHA256:
         raise SealError("T3 terminal manifest content hash differs from the accepted predecessor")
-    adjudication = read_json(Path(t3_adjudication))
+    t3_adjudication = Path(t3_adjudication)
+    if sha256(t3_adjudication) != T3_ADJUDICATION_SHA256:
+        raise SealError("published T3 adjudication hash differs from the evidence inventory")
+    adjudication = read_json(t3_adjudication)
     execution = _require_t3_adjudication(adjudication, terminal)
     physics = _require_physics(extension_root)
     extension_identity = {
@@ -333,19 +375,12 @@ def build_seal(
         "verification": verification,
     }
     predecessor_evidence = {
-        "t3_terminal_adjudication_sha256": sha256(Path(t3_adjudication)),
+        "t3_terminal_adjudication_sha256": T3_ADJUDICATION_SHA256,
         "t3_terminal_manifest_sha256": sha256(terminal_path),
         "independent_review_receipt_sha256": sha256(Path(review_receipt)),
         "qualified_trajectory_registry_sha256": sha256(Path(registry)),
     }
-    runtime_identity = {
-        "source_commit": execution["source_commit"],
-        "source_manifest_sha256": execution["source_manifest_sha256"],
-        "runtime_lock_sha256": execution["runtime_lock_sha256"],
-        "matlab": execution["matlab"],
-        "four_mex_sha256": execution["four_binary_sha256"],
-        "thread_settings": execution["thread_settings"],
-    }
+    runtime_identity = copy.deepcopy(EXPECTED_EXECUTION)
     seal: dict[str, object] = {
         "schema_version": "toy_road_t3_rev_seal_v1",
         "status": "PASS",

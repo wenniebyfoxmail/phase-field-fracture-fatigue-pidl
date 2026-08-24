@@ -221,7 +221,7 @@ def _git(args: list[str], cwd: Path) -> str:
 
 def build_test_seal(
         tmp_path: Path, *, injected_review_authorization: bool = False,
-        destination: Path | None = None) -> dict[str, object]:
+        destination: Path | None = None, t3_adjudication: Path | None = None) -> dict[str, object]:
     """Build a real seal from a clean miniature repository and generated overlay."""
     builder = load_module("build_t3_rev_extension")
     seal_builder = load_module("build_t3_rev_seal")
@@ -253,7 +253,7 @@ def build_test_seal(
     review.write_text(receipt, encoding="utf-8")
     return seal_builder.build_seal(
         repo, extension,
-        ROOT / "analysis/toy_road_t3_mechanism_20260819/evidence/"
+        t3_adjudication or ROOT / "analysis/toy_road_t3_mechanism_20260819/evidence/"
         "T3_SIBLING_TERMINAL_ADJUDICATION.json",
         review, REGISTRY, destination or tmp_path / "seal",
     )
@@ -324,3 +324,77 @@ def test_seal_is_create_once_and_does_not_clobber(tmp_path: Path) -> None:
     with pytest.raises(RuntimeError, match="destination already exists"):
         build_test_seal(tmp_path, destination=destination)
     assert sentinel.read_text(encoding="utf-8") == "preserve me"
+
+
+def _tampered_t3_adjudication(tmp_path: Path, mutate) -> Path:
+    path = tmp_path / "T3_SIBLING_TERMINAL_ADJUDICATION.json"
+    payload = strict_json(
+        ROOT / "analysis/toy_road_t3_mechanism_20260819/evidence/"
+        "T3_SIBLING_TERMINAL_ADJUDICATION.json"
+    )
+    mutate(payload)
+    path.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    return path
+
+
+def _assert_runtime_mapping_rejected(adjudication: Path) -> None:
+    seal_builder = load_module("build_t3_rev_seal")
+    terminal = seal_builder.read_json(
+        ROOT / "analysis/toy_road_t3_mechanism_20260819/evidence/TERMINAL_MANIFEST.json"
+    )
+    with pytest.raises(seal_builder.SealError, match="execution identity|runtime identity"):
+        seal_builder._require_t3_adjudication(seal_builder.read_json(adjudication), terminal)
+
+
+def test_seal_rejects_modified_published_adjudication_bytes(tmp_path: Path) -> None:
+    """A semantic lookalike cannot replace the inventory-bound T3 adjudication bytes."""
+    adjudication = _tampered_t3_adjudication(tmp_path, lambda payload: payload.update({
+        "review_note": "headline fields intentionally retained",
+    }))
+    with pytest.raises(RuntimeError, match="published T3 adjudication hash"):
+        build_test_seal(tmp_path, t3_adjudication=adjudication)
+
+
+def test_seal_rejects_mutated_absolute_runtime_path_order(tmp_path: Path) -> None:
+    """The T3 MATLAB path order is a qualified runtime identity, not pass-through data."""
+    def mutate(payload: dict[str, object]) -> None:
+        execution = payload["execution"]
+        assert isinstance(execution, dict)
+        matlab = execution["matlab"]
+        assert isinstance(matlab, dict)
+        paths = matlab["absolute_path_order"]
+        assert isinstance(paths, list)
+        paths[0] = "C:\\tampered\\runtime-overlay"
+
+    adjudication = _tampered_t3_adjudication(tmp_path, mutate)
+    _assert_runtime_mapping_rejected(adjudication)
+    with pytest.raises(RuntimeError, match="published T3 adjudication hash|runtime identity"):
+        build_test_seal(tmp_path, t3_adjudication=adjudication)
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda runtime: runtime.pop("thread_settings_evidence"),
+    lambda runtime: runtime.update({"unqualified_runtime_field": "unexpected"}),
+])
+def test_seal_rejects_missing_or_extra_runtime_identity_fields(tmp_path: Path, mutate) -> None:
+    """The seal admits only the complete, exact qualified runtime mapping."""
+    def mutate_adjudication(payload: dict[str, object]) -> None:
+        execution = payload["execution"]
+        assert isinstance(execution, dict)
+        mutate(execution)
+
+    adjudication = _tampered_t3_adjudication(tmp_path, mutate_adjudication)
+    _assert_runtime_mapping_rejected(adjudication)
+    with pytest.raises(RuntimeError, match="published T3 adjudication hash|runtime identity"):
+        build_test_seal(tmp_path, t3_adjudication=adjudication)
+
+
+def test_seal_rejects_runtime_boolean_integer_confusion(tmp_path: Path) -> None:
+    """A JSON integer cannot stand in for the qualified single-execution boolean."""
+    def mutate(payload: dict[str, object]) -> None:
+        execution = payload["execution"]
+        assert isinstance(execution, dict)
+        execution["single_execution"] = 1
+
+    adjudication = _tampered_t3_adjudication(tmp_path, mutate)
+    _assert_runtime_mapping_rejected(adjudication)
