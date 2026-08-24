@@ -224,6 +224,9 @@ def build_seal(
     rows = _read_csv(metrics_csv, BLIND_METRICS_COLUMNS)
     arms = _blind_arms(rows)
     _validate_metric_rows(rows, arms)
+    input_closure = _analysis_input_closure(arm_manifests)
+    if set(input_closure) != set(arms):
+        raise ContractError("metrics and analysis-input opaque-arm sets do not match")
     artifacts = {
         "prelaunch_lock": prelaunch_lock,
         "fem_artifact": fem_artifact,
@@ -236,7 +239,7 @@ def build_seal(
         "blind_metrics_columns": list(BLIND_METRICS_COLUMNS),
         "blind_metrics_row_count": len(rows),
         "opaque_arms": list(arms),
-        "analysis_input_closure": _analysis_input_closure(arm_manifests),
+        "analysis_input_closure": input_closure,
         "sha256": {
             "blind_metrics_csv": sha256_file(metrics_csv),
             **{label: sha256_file(path) for label, path in artifacts.items()},

@@ -219,6 +219,18 @@ def test_seal_binds_every_manifest_referenced_input(tmp_path):
         )
 
 
+def test_seal_rejects_metrics_manifest_arm_mismatch(tmp_path):
+    metrics, artifacts, _, _, _ = _fixture(tmp_path)
+    manifest = artifacts["arm_manifests"][0]
+    payload = json.loads(manifest.read_text())
+    payload["opaque_arm"] = "arm_aaaaaaaa"
+    manifest.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ContractError, match="opaque-arm sets do not match"):
+        seal_metrics(
+            metrics_csv=metrics, output_seal=tmp_path / "mismatch.json", **artifacts,
+        )
+
+
 def test_unblind_rejects_wrong_external_seal_hash(tmp_path):
     metrics, artifacts, seal, _, arm_map = _fixture(tmp_path)
     wrong = hashlib.sha256(b"different seal").hexdigest()
