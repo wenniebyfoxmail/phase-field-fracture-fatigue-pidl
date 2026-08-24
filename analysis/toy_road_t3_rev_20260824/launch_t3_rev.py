@@ -41,6 +41,11 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def executable_sha256(path: Path) -> str:
+    """Hash the supplied MATLAB executable before it can become a process."""
+    return sha256(path)
+
+
 def _reject_duplicates(pairs: list[tuple[str, object]]) -> dict[str, object]:
     result: dict[str, object] = {}
     for key, value in pairs:
@@ -179,6 +184,66 @@ def _require_seal(seal_path: Path, repo_commit: str) -> dict[str, object]:
     return seal
 
 
+def seal_consumption_marker(seal_path: Path) -> Path:
+    """Return the seal-scoped immutable marker shared by every possible run root."""
+    seal_path = Path(seal_path).resolve()
+    return seal_path.with_name(f"{seal_path.name}.T3_REV_CONSUMED.json")
+
+
+def _require_unconsumed_seal(seal_path: Path) -> None:
+    marker = seal_consumption_marker(seal_path)
+    if marker.exists():
+        raise LaunchError(f"seal already consumed and cannot authorize another run root: {marker}")
+
+
+def consume_seal(seal_path: Path, run_root: Path) -> dict[str, object]:
+    """Atomically bind this exact seal to one root before the final idle check."""
+    seal_path, run_root = Path(seal_path).resolve(), Path(run_root).resolve()
+    marker = seal_consumption_marker(seal_path)
+    value = {
+        "schema_version": "toy_road_t3_rev_seal_consumption_v1",
+        "case_id": CASE_ID,
+        "seal_sha256": sha256(seal_path),
+        "run_root": str(run_root),
+        "resume_allowed": False,
+        "new_authorization_required": True,
+    }
+    try:
+        write_json_create_new(marker, value)
+    except FileExistsError as error:
+        raise LaunchError(f"seal already consumed and cannot authorize another run root: {marker}") from error
+    return value
+
+
+def require_bridge_authorization_receipt(receipt: Mapping[str, object]) -> None:
+    """Require the upstream receipt shape consumed by run_toy_road_runtime_bridge."""
+    required = {
+        "schema_version", "status", "authorization_scope", "authorized_entrypoint", "case_id",
+        "authorization_capability", "resume_allowed", "follow_on_authorized", "source_commit",
+        "runtime_lock_sha256", "family_contract_sha256", "case_physics_contract_sha256",
+        "execution_input_lock_sha256", "seal_sha256", "extension_source_manifest_sha256",
+    }
+    if set(receipt) != required or receipt.get("schema_version") != "toy_road_t3_rev_launch_receipt_v1" \
+            or receipt.get("status") != "PASS" \
+            or receipt.get("authorization_scope") != "production_authorized" \
+            or receipt.get("authorized_entrypoint") != "run_toy_road_runtime_bridge" \
+            or receipt.get("case_id") != CASE_ID \
+            or receipt.get("authorization_capability") != AUTHORIZATION_CAPABILITY \
+            or receipt.get("resume_allowed") is not False \
+            or receipt.get("follow_on_authorized") is not False:
+        raise LaunchError("launch receipt does not authorize the runtime bridge for exactly one T3-rev case")
+    digest_fields = (
+        "runtime_lock_sha256", "family_contract_sha256", "case_physics_contract_sha256",
+        "execution_input_lock_sha256", "seal_sha256", "extension_source_manifest_sha256",
+    )
+    if type(receipt.get("source_commit")) is not str or len(receipt["source_commit"]) != 40 \
+            or any(character not in "0123456789abcdef" for character in receipt["source_commit"]) \
+            or any(type(receipt.get(field)) is not str or len(receipt[field]) != 64
+                   or any(character not in "0123456789abcdef" for character in receipt[field])
+                   for field in digest_fields):
+        raise LaunchError("launch receipt bridge identity fields are malformed")
+
+
 def _require_extension(
         repo_root: Path, extension_root: Path, seal: Mapping[str, object]) -> tuple[Path, dict[str, object], dict[str, object]]:
     sealed_base_root = repo_root / "producer_handoffs" / "toy_road_p0_repeatability_20260803"
@@ -227,17 +292,35 @@ def _require_template_inputs(template_run: Path, runtime: Mapping[str, object], 
     if not isinstance(expectation, dict) or not input_assets_root.is_dir() or not matlab.is_file():
         raise LaunchError("runtime or input assets are incomplete")
     expected_binaries = runtime.get("four_binary_sha256")
-    if lock.get("runtime_lock_sha256") != runtime.get("runtime_lock_sha256") \
+    if set(expectation) != {"binary_sha256", "matlab"} \
+            or lock.get("runtime_lock_sha256") != runtime.get("runtime_lock_sha256") \
             or lock.get("source_manifest_sha256") != runtime.get("source_manifest_sha256") \
-            or expectation.get("binary_sha256") != expected_binaries:
+            or not _exact_json_equal(expectation.get("binary_sha256"), expected_binaries):
         raise LaunchError("template runtime identity differs from the seal")
     matlab_identity = expectation.get("matlab")
     sealed_matlab = runtime.get("matlab")
     if not isinstance(matlab_identity, dict) or not isinstance(sealed_matlab, dict):
         raise LaunchError("template MATLAB identity is malformed")
-    for field in ("version", "computer", "executable_sha256", "blas", "lapack"):
-        if matlab_identity.get(field) != sealed_matlab.get(field):
-            raise LaunchError("template MATLAB identity differs from the seal")
+    expected_template_fields = {
+        "absolute_path_order", "release", "update", "version", "computer", "executable_sha256", "blas", "lapack",
+    }
+    expected_template_matlab = {
+        "release": sealed_matlab["release"],
+        "update": sealed_matlab["update"],
+        "version": sealed_matlab["version"],
+        "computer": sealed_matlab["computer"],
+        "executable_sha256": sealed_matlab["executable_sha256"],
+        "blas": sealed_matlab["blas"],
+        "lapack": sealed_matlab["lapack"],
+    }
+    if set(matlab_identity) != expected_template_fields \
+            or any(type(matlab_identity.get(field)) is not str or matlab_identity[field] != expected
+                   for field, expected in expected_template_matlab.items()) \
+            or type(matlab_identity.get("absolute_path_order")) is not list \
+            or not all(type(path) is str for path in matlab_identity["absolute_path_order"]):
+        raise LaunchError("template MATLAB identity differs from the sealed release/update/platform mapping")
+    if executable_sha256(matlab) != sealed_matlab["executable_sha256"]:
+        raise LaunchError("MATLAB executable SHA-256 differs from the sealed runtime identity")
     return lock
 
 
@@ -276,6 +359,10 @@ def launch_t3_rev(
     initial_source = repo_root / "producer_handoffs" / "rebuilt_initial_mex_qualification_20260801" / "runtime" / "initial.mexw64"
     if not initial_source.is_file() or not (sealed_base_root / "run_toy_road_runtime_bridge.m").is_file():
         raise LaunchError("sealed source inputs are incomplete")
+    expected_binaries = runtime.get("four_binary_sha256")
+    if not isinstance(expected_binaries, dict) or sha256(initial_source) != expected_binaries.get("initial"):
+        raise LaunchError("initial MEX input differs from the sealed runtime identity")
+    _require_unconsumed_seal(seal_path)
 
     roots = {name: run_root / name for name in ("output", "work", "temp", "tmp", "pref", "cache", "receipts")}
     roots["matlab_startup_pref"] = run_root / "pref.matlab-startup"
@@ -315,19 +402,29 @@ def launch_t3_rev(
         "writable_roots": {name: str(path) for name, path in roots.items()},
         "extension_source_manifest_sha256": sha256(extension_root / "EXTENSION_SOURCE_MANIFEST.json"),
     })
-    runtime_expectations = lock.get("runtime_expectations")
-    if not isinstance(runtime_expectations, dict) or not isinstance(runtime_expectations.get("matlab"), dict):
-        raise LaunchError("template lock lacks MATLAB expectations")
-    runtime_expectations["matlab"]["absolute_path_order"] = [str(path) for path in matlab_paths]
+    sealed_matlab = runtime.get("matlab")
+    if not isinstance(sealed_matlab, dict):
+        raise LaunchError("seal MATLAB identity is malformed")
+    runtime_expectations = {
+        "binary_sha256": copy.deepcopy(expected_binaries),
+        "matlab": {
+            **copy.deepcopy(sealed_matlab),
+            "absolute_path_order": [str(path) for path in matlab_paths],
+        },
+    }
+    lock["runtime_expectations"] = runtime_expectations
     lock_path = roots["receipts"] / "T3_REV_EXECUTION_INPUT_LOCK.json"
     write_json_create_new(lock_path, lock)
     launch_receipt_path = roots["receipts"] / "T3_REV_LAUNCH_RECEIPT.json"
     write_json_create_new(launch_receipt_path, {
         "schema_version": "toy_road_t3_rev_launch_receipt_v1",
-        "status": "PREPARED",
+        "status": "PASS",
+        "authorization_scope": "production_authorized",
+        "authorized_entrypoint": "run_toy_road_runtime_bridge",
         "case_id": CASE_ID,
         "authorization_capability": AUTHORIZATION_CAPABILITY,
         "resume_allowed": False,
+        "follow_on_authorized": False,
         "source_commit": repo_commit,
         "runtime_lock_sha256": runtime["runtime_lock_sha256"],
         "family_contract_sha256": family_hash,
@@ -336,6 +433,7 @@ def launch_t3_rev(
         "seal_sha256": sha256(seal_path),
         "extension_source_manifest_sha256": sha256(extension_root / "EXTENSION_SOURCE_MANIFEST.json"),
     })
+    require_bridge_authorization_receipt(read_json(launch_receipt_path))
     measurement_path = roots["receipts"] / "T3_REV_RUNTIME_MEASUREMENT.json"
     prefix = os.pathsep.join(str(path) for path in matlab_paths)
     batch = (
@@ -358,6 +456,7 @@ def launch_t3_rev(
         "TOY_ROAD_INPUT_ASSETS_ROOT": str(input_assets_root),
         "TOY_ROAD_AUTHORIZATION_RECEIPT": str(launch_receipt_path),
     })
+    consume_seal(seal_path, run_root)
     final_processes = matlab_processes()
     if final_processes:
         _write_busy_receipt(roots["receipts"], final_processes)

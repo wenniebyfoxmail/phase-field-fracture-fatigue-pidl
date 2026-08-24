@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import importlib.util
 import hashlib
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import shutil
 import subprocess
@@ -502,6 +503,15 @@ def call_launcher(module, run_root: Path, tmp_path: Path) -> dict[str, object]:
     return module.launch_t3_rev(**inputs)
 
 
+def _allow_test_matlab_identity(module, monkeypatch: pytest.MonkeyPatch) -> None:
+    seal_builder = load_module("build_t3_rev_seal")
+    monkeypatch.setattr(
+        module, "executable_sha256",
+        lambda _path: seal_builder.EXPECTED_EXECUTION["matlab"]["executable_sha256"],
+        raising=False,
+    )
+
+
 def test_busy_refusal_precedes_root_creation(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """An occupied experiment machine cannot consume a fresh run root."""
     module = load_module("launch_t3_rev")
@@ -517,6 +527,7 @@ def test_second_busy_check_prevents_popen_and_records_consumed_root(
     """A process that appears during setup consumes the root without a launch."""
     module = load_module("launch_t3_rev")
     inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
     run = tmp_path / "run"
     inputs["run_root"] = run
     checks = iter([[], [{"ProcessId": 2, "Name": "MATLAB.exe"}]])
@@ -530,6 +541,10 @@ def test_second_busy_check_prevents_popen_and_records_consumed_root(
     monkeypatch.setattr(module, "matlab_processes", lambda: [])
     with pytest.raises(FileExistsError):
         module.launch_t3_rev(**inputs)
+    different_root = dict(inputs)
+    different_root["run_root"] = tmp_path / "different-run"
+    with pytest.raises(module.LaunchError, match="seal.*consumed"):
+        module.launch_t3_rev(**different_root)
 
 
 def test_launcher_popen_uses_locked_paths_and_environment(
@@ -549,6 +564,7 @@ def test_launcher_popen_uses_locked_paths_and_environment(
 
     inputs = _launcher_inputs(module, tmp_path)
     inputs["run_root"] = tmp_path / "run"
+    _allow_test_matlab_identity(module, monkeypatch)
     monkeypatch.setattr(module, "Popen", fake_popen)
     result = module.launch_t3_rev(**inputs)
     assert result["status"] == "LAUNCHED"
@@ -581,6 +597,11 @@ def test_launcher_popen_uses_locked_paths_and_environment(
     ]
     matlab = lock["runtime_expectations"]["matlab"]
     assert matlab["absolute_path_order"] == expected_paths
+    receipt = strict_json(tmp_path / "run" / "receipts" / "T3_REV_LAUNCH_RECEIPT.json")
+    module.require_bridge_authorization_receipt(receipt)
+    assert receipt["authorization_scope"] == "production_authorized"
+    assert receipt["authorized_entrypoint"] == "run_toy_road_runtime_bridge"
+    assert receipt["follow_on_authorized"] is False
 
 
 def test_launcher_rejects_tampered_extension_identity_before_root_creation(
@@ -595,6 +616,105 @@ def test_launcher_rejects_tampered_extension_identity_before_root_creation(
         json.dumps(manifest, sort_keys=True, separators=(",", ":")), encoding="utf-8"
     )
     with pytest.raises(module.LaunchError, match="extension|composite"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+
+
+def test_seal_consumption_marker_is_atomic_across_run_roots(tmp_path: Path) -> None:
+    """Concurrent claims for one seal leave exactly one immutable owner marker."""
+    module = load_module("launch_t3_rev")
+    seal = tmp_path / "T3_REV_SEAL.json"
+    seal.write_text("{}", encoding="utf-8")
+    roots = [tmp_path / "first", tmp_path / "second"]
+
+    def claim(root: Path) -> tuple[str, object]:
+        try:
+            return ("claimed", module.consume_seal(seal, root))
+        except module.LaunchError as error:
+            return ("blocked", str(error))
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        outcomes = list(executor.map(claim, roots))
+    assert [state for state, _ in outcomes].count("claimed") == 1
+    assert [state for state, _ in outcomes].count("blocked") == 1
+    marker = module.seal_consumption_marker(seal)
+    marker_value = strict_json(marker)
+    assert marker_value["seal_sha256"] == hashlib.sha256(seal.read_bytes()).hexdigest()
+    assert marker_value["case_id"] == "T3_rev_loading_order"
+    assert marker_value["run_root"] in {str(path.resolve()) for path in roots}
+
+
+def test_launcher_consumes_one_seal_across_different_fresh_roots(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A successful process claim cannot be replayed into a second fresh root."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    _allow_test_matlab_identity(module, monkeypatch)
+
+    class Process:
+        pid = 2468
+
+    monkeypatch.setattr(module, "Popen", lambda *args, **kwargs: Process())
+    inputs = _launcher_inputs(module, tmp_path)
+    module.launch_t3_rev(**inputs)
+    second = dict(inputs)
+    second["run_root"] = tmp_path / "second-fresh-root"
+    monkeypatch.setattr(module, "Popen", lambda *args, **kwargs: pytest.fail("Popen called"))
+    with pytest.raises(module.LaunchError, match="seal.*consumed"):
+        module.launch_t3_rev(**second)
+    assert not second["run_root"].exists()
+
+
+def test_launcher_rejects_tampered_matlab_executable_before_root_creation(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The executable itself, not merely its claimed template identity, is sealed."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    with pytest.raises(module.LaunchError, match="MATLAB executable"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda matlab: matlab.update({"release": "R2025a Update 5"}),
+    lambda matlab: matlab.update({"update": True}),
+])
+def test_launcher_rejects_template_matlab_release_or_update_type_tampering(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, mutate) -> None:
+    """The template admits only the complete type-sensitive qualified MATLAB mapping."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    path = inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
+    payload = strict_json(path)
+    runtime = payload["runtime_expectations"]
+    assert isinstance(runtime, dict)
+    matlab = runtime["matlab"]
+    assert isinstance(matlab, dict)
+    mutate(matlab)
+    path.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    with pytest.raises(module.LaunchError, match="MATLAB identity"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+
+
+def test_launcher_rejects_extra_template_runtime_mapping_before_root_creation(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """An unsealed runtime field cannot silently accompany the expected mapping."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    path = inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
+    payload = strict_json(path)
+    runtime = payload["runtime_expectations"]
+    assert isinstance(runtime, dict)
+    runtime["unsealed_extra"] = "forbidden"
+    path.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    with pytest.raises(module.LaunchError, match="template runtime identity"):
         module.launch_t3_rev(**inputs)
     assert not inputs["run_root"].exists()
 
