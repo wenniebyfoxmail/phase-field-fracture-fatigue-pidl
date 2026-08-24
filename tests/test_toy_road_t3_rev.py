@@ -42,8 +42,11 @@ def strict_json(path: Path) -> dict[str, object]:
                 raise ValueError(f"duplicate JSON key: {key}")
             value[key] = item
         return value
-
     return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=reject_duplicate_keys)
+
+
+def seal_marker(module, seal_path: Path) -> Path:
+    return module.seal_consumption_marker(hashlib.sha256(seal_path.read_bytes()).hexdigest())
 
 
 def load_registry(path: Path) -> dict[str, object]:
@@ -563,7 +566,7 @@ def test_launcher_rejects_substituted_griphfith_tree_before_root_or_consumption(
     with pytest.raises(module.LaunchError, match="qualified.*path|GRIPHFiTH"):
         module.launch_t3_rev(**inputs)
     assert not inputs["run_root"].exists()
-    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+    assert not seal_marker(module, inputs["seal_path"]).exists()
 
 
 def test_sealed_runtime_identity_pins_exact_matlab_executable_path() -> None:
@@ -634,7 +637,7 @@ def test_launcher_rejects_non_mex_source_mutation_before_root_or_consumption(
     with pytest.raises(module.LaunchError, match="qualified source.*System.m|System.m.*SHA-256"):
         module.launch_t3_rev(**inputs)
     assert not inputs["run_root"].exists()
-    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+    assert not seal_marker(module, inputs["seal_path"]).exists()
 
 
 def test_tampered_extension_shadow_leaves_no_root_or_consumption(
@@ -650,7 +653,7 @@ def test_tampered_extension_shadow_leaves_no_root_or_consumption(
     with pytest.raises(module.LaunchError, match="extension shadow|extension source verification"):
         module.launch_t3_rev(**inputs)
     assert not inputs["run_root"].exists()
-    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+    assert not seal_marker(module, inputs["seal_path"]).exists()
 
 
 def test_protocol_construction_failure_leaves_no_root_or_consumption(
@@ -666,7 +669,7 @@ def test_protocol_construction_failure_leaves_no_root_or_consumption(
     with pytest.raises(module.LaunchError, match="protocol failure"):
         module.launch_t3_rev(**inputs)
     assert not inputs["run_root"].exists()
-    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+    assert not seal_marker(module, inputs["seal_path"]).exists()
 
 
 def test_io_failure_after_root_claim_is_consumed_prepared_no_launch(
@@ -684,7 +687,7 @@ def test_io_failure_after_root_claim_is_consumed_prepared_no_launch(
     with pytest.raises(module.PreparedLaunchError, match="consumed/prepared"):
         module.launch_t3_rev(**inputs)
     assert inputs["run_root"].is_dir()
-    assert module.seal_consumption_marker(inputs["seal_path"]).is_file()
+    assert seal_marker(module, inputs["seal_path"]).is_file()
     receipt = strict_json(inputs["run_root"] / "receipts" / "PREPARED_NO_LAUNCH.json")
     assert receipt["status"] == "PREPARED_NO_LAUNCH"
     assert receipt["resume_allowed"] is False
@@ -764,7 +767,10 @@ def test_identical_seal_copies_share_one_global_content_addressed_claim(
     copied_seal = tmp_path / "copied" / "T3_REV_SEAL.json"
     copied_seal.parent.mkdir()
     shutil.copy2(inputs["seal_path"], copied_seal)
+    original_seal_bytes = inputs["seal_path"].read_bytes()
     module.launch_t3_rev(**inputs)
+    inputs["seal_path"].write_bytes(b"temporarily changed")
+    inputs["seal_path"].write_bytes(original_seal_bytes)
     replay = dict(inputs)
     replay["seal_path"] = copied_seal
     replay["run_root"] = tmp_path / "replay-run"
@@ -795,6 +801,54 @@ def test_credential_publication_failure_after_popen_is_fail_closed(
     failed = strict_json(receipts / "LAUNCH_CREDENTIAL_FAILED.json")
     assert failed["status"] == "LAUNCH_CREDENTIAL_FAILED"
     assert failed["process_started"] is True
+
+
+def test_seal_mutation_immediately_before_consumption_cannot_claim(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+    original_bytes = inputs["seal_path"].read_bytes()
+    original_sha256 = hashlib.sha256(original_bytes).hexdigest()
+    real_materialize = module.materialize_runtime_overlay
+
+    def mutate_after_materialization(*args, **kwargs):
+        real_materialize(*args, **kwargs)
+        inputs["seal_path"].write_bytes(original_bytes + b"\n")
+
+    monkeypatch.setattr(module, "materialize_runtime_overlay", mutate_after_materialization)
+    with pytest.raises(module.PreparedLaunchError, match="seal bytes changed"):
+        module.launch_t3_rev(**inputs)
+    assert not module.seal_consumption_marker(original_sha256).exists()
+
+
+def test_stale_wrong_nonce_receipt_conflict_never_becomes_valid(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+
+    class Process:
+        pid = 1472
+
+    stale_bytes = json.dumps({"launch_nonce": "0" * 64}).encode("utf-8")
+
+    def stale_popen(args, **kwargs):
+        batch = args[2]
+        assert hashlib.sha256(stale_bytes).hexdigest() not in batch
+        receipt = inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.json"
+        receipt.write_bytes(stale_bytes)
+        return Process()
+
+    monkeypatch.setattr(module, "Popen", stale_popen)
+    with pytest.raises(module.LaunchCredentialError, match="credential"):
+        module.launch_t3_rev(**inputs)
+    receipts = inputs["run_root"] / "receipts"
+    assert not (receipts / "T3_REV_LAUNCH_RECEIPT.json").exists()
+    assert strict_json(receipts / "LAUNCH_CREDENTIAL_FAILED.json")["status"] == "LAUNCH_CREDENTIAL_FAILED"
 
 
 def test_busy_refusal_precedes_root_creation(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -860,7 +914,7 @@ def test_final_revalidation_precedes_race_closing_busy_check(
     with pytest.raises(module.BusyExperimentError, match="final process check"):
         module.launch_t3_rev(**inputs)
     assert events == ["busy", "final_inputs", "busy"]
-    assert module.seal_consumption_marker(inputs["seal_path"]).is_file()
+    assert seal_marker(module, inputs["seal_path"]).is_file()
     busy_receipt = strict_json(inputs["run_root"] / "receipts" / "BUSY_NO_LAUNCH.json")
     assert busy_receipt["status"] == "BUSY_NO_LAUNCH"
     assert not (inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").exists()
@@ -881,9 +935,9 @@ def test_two_root_concurrent_claim_has_no_pass_receipt_for_loser(
     claims = threading.Barrier(2)
     real_consume = module.consume_seal
 
-    def simultaneous_consume(seal_path, run_root):
+    def simultaneous_consume(seal_path, run_root, expected_sha256, expected_bytes):
         claims.wait(timeout=10)
-        return real_consume(seal_path, run_root)
+        return real_consume(seal_path, run_root, expected_sha256, expected_bytes)
 
     monkeypatch.setattr(module, "consume_seal", simultaneous_consume)
     candidates = []
@@ -902,7 +956,7 @@ def test_two_root_concurrent_claim_has_no_pass_receipt_for_loser(
         outcomes = list(pool.map(attempt, candidates))
     assert sum(isinstance(item, dict) for item in outcomes) == 1
     assert sum(isinstance(item, module.PreparedLaunchError) for item in outcomes) == 1
-    marker = strict_json(module.seal_consumption_marker(inputs["seal_path"]))
+    marker = strict_json(seal_marker(module, inputs["seal_path"]))
     winning_root = Path(marker["run_root"])
     losing_root = next(Path(item["run_root"]) for item in candidates if Path(item["run_root"]).resolve() != winning_root)
     assert (winning_root / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").is_file()
@@ -974,7 +1028,7 @@ def test_launcher_popen_uses_locked_paths_and_environment(
         )
         assert all(not Path(path).exists() for path in lock["writable_roots"].values())
         assert not (tmp_path / "run" / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").exists()
-        assert "while ~isfile(" in args[0][2]
+        assert "toy_road_wait_for_launch_receipt(" in args[0][2]
         captured["args"] = args
         captured["kwargs"] = kwargs
         return Process()
@@ -1030,6 +1084,13 @@ def test_launcher_popen_uses_locked_paths_and_environment(
     assert matlab["absolute_path_order"] == expected_paths
     receipt = strict_json(tmp_path / "run" / "receipts" / "T3_REV_LAUNCH_RECEIPT.json")
     module.require_bridge_authorization_receipt(receipt)
+    receipt_bytes = (tmp_path / "run" / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").read_bytes()
+    batch = captured["args"][0][2]
+    assert hashlib.sha256(receipt_bytes).hexdigest() in batch
+    assert receipt["launch_nonce"] in batch
+    assert receipt["seal_sha256"] in batch
+    assert receipt["execution_input_lock_sha256"] in batch
+    assert receipt["run_root"] in batch
     assert receipt["authorization_scope"] == "production_authorized"
     assert receipt["authorized_entrypoint"] == "run_toy_road_runtime_bridge"
     assert receipt["follow_on_authorized"] is False
@@ -1071,10 +1132,12 @@ def test_seal_consumption_marker_is_atomic_across_run_roots(tmp_path: Path) -> N
     seal = tmp_path / "T3_REV_SEAL.json"
     seal.write_text("{}", encoding="utf-8")
     roots = [tmp_path / "first", tmp_path / "second"]
+    seal_bytes = seal.read_bytes()
+    seal_sha256 = hashlib.sha256(seal_bytes).hexdigest()
 
     def claim(root: Path) -> tuple[str, object]:
         try:
-            return ("claimed", module.consume_seal(seal, root))
+            return ("claimed", module.consume_seal(seal, root, seal_sha256, seal_bytes))
         except module.LaunchError as error:
             return ("blocked", str(error))
 
@@ -1082,7 +1145,7 @@ def test_seal_consumption_marker_is_atomic_across_run_roots(tmp_path: Path) -> N
         outcomes = list(executor.map(claim, roots))
     assert [state for state, _ in outcomes].count("claimed") == 1
     assert [state for state, _ in outcomes].count("blocked") == 1
-    marker = module.seal_consumption_marker(seal)
+    marker = seal_marker(module, seal)
     marker_value = strict_json(marker)
     assert marker_value["seal_sha256"] == hashlib.sha256(seal.read_bytes()).hexdigest()
     assert marker_value["case_id"] == "T3_rev_loading_order"
@@ -1185,7 +1248,7 @@ def test_launcher_rejects_each_tampered_runtime_binary_before_consumption(
     with pytest.raises(module.LaunchError, match="runtime binary"):
         module.launch_t3_rev(**inputs)
     assert not inputs["run_root"].exists()
-    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+    assert not seal_marker(module, inputs["seal_path"]).exists()
 
 
 @pytest.mark.parametrize("mutate", [
@@ -1210,7 +1273,7 @@ def test_launcher_rejects_tampered_template_schema_before_consumption(
     with pytest.raises(module.LaunchError, match="template execution lock|template runtime"):
         module.launch_t3_rev(**inputs)
     assert not inputs["run_root"].exists()
-    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+    assert not seal_marker(module, inputs["seal_path"]).exists()
 
 
 def test_published_template_lock_is_accepted_by_authoritative_base_protocol(
@@ -1258,7 +1321,7 @@ def test_launcher_rejects_malformed_or_substituted_template_identity_before_cons
     with pytest.raises(module.LaunchError, match="template execution lock|qualified predecessor"):
         module.launch_t3_rev(**inputs)
     assert not inputs["run_root"].exists(), name
-    assert not module.seal_consumption_marker(inputs["seal_path"]).exists(), name
+    assert not seal_marker(module, inputs["seal_path"]).exists(), name
 
 
 @pytest.mark.parametrize("mutation", ["missing", "tampered"])
@@ -1278,7 +1341,7 @@ def test_launcher_rejects_missing_or_tampered_sens_mesh_before_consumption(
     with pytest.raises(module.LaunchError, match="input asset.*sens_mesh"):
         module.launch_t3_rev(**inputs)
     assert not inputs["run_root"].exists()
-    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+    assert not seal_marker(module, inputs["seal_path"]).exists()
 
 
 def test_launcher_rejects_tampered_input_asset_qualification_evidence(
@@ -1311,7 +1374,7 @@ def test_launcher_rejects_tampered_input_asset_qualification_evidence(
     with pytest.raises(module.LaunchError, match="input asset qualification evidence"):
         module.launch_t3_rev(**inputs)
     assert not inputs["run_root"].exists()
-    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+    assert not seal_marker(module, inputs["seal_path"]).exists()
 
 
 def test_launcher_requires_clean_committed_repository(

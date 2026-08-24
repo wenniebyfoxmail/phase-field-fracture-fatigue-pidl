@@ -10,6 +10,7 @@ import json
 import math
 import os
 from pathlib import Path
+import secrets
 import subprocess
 from subprocess import Popen
 import sys
@@ -33,6 +34,9 @@ QUALIFIED_BASE_PROTOCOL_SHA256 = "db51a9cb54810711c2bdfe7ee35a705179e2852c7b0699
 EXPECTED_INPUT_ASSET_SHA256 = {
     "sens_mesh.m": "dbf13237939425b61cde93b841ae2c24e7fccd291861df5508a34800bb9f4706",
 }
+BOOTSTRAP_HELPER_RELATIVE = "toy_road_wait_for_launch_receipt.m"
+BOOTSTRAP_HELPER_BYTES = b"""function toy_road_wait_for_launch_receipt(receiptPath, expectedSha256, expectedNonce, expectedSealSha256, expectedCaseId, expectedLockSha256, expectedRunRoot, timeoutSeconds)\nstartTime = tic;\nwhile toc(startTime) <= timeoutSeconds\n    if isfile(receiptPath)\n        try\n            bytes = uint8(fileread(receiptPath));\n            hasher = java.security.MessageDigest.getInstance('SHA-256');\n            hasher.update(bytes);\n            digest = lower(reshape(dec2hex(typecast(hasher.digest(), 'uint8'), 2).', 1, []));\n            receipt = jsondecode(native2unicode(bytes, 'UTF-8'));\n            valid = strcmp(digest, expectedSha256) && isstruct(receipt) && isscalar(receipt) && ...\n                isfield(receipt, 'launch_nonce') && strcmp(receipt.launch_nonce, expectedNonce) && ...\n                isfield(receipt, 'seal_sha256') && strcmp(receipt.seal_sha256, expectedSealSha256) && ...\n                isfield(receipt, 'case_id') && strcmp(receipt.case_id, expectedCaseId) && ...\n                isfield(receipt, 'execution_input_lock_sha256') && strcmp(receipt.execution_input_lock_sha256, expectedLockSha256) && ...\n                isfield(receipt, 'run_root') && strcmp(receipt.run_root, expectedRunRoot);\n            if valid\n                return\n            end\n        catch\n        end\n    end\n    pause(0.05);\nend\nerror('toyRoad:LaunchCredentialTimeout', 'Exact launch credential was not published');\nend\n"""
+BOOTSTRAP_HELPER_SHA256 = hashlib.sha256(BOOTSTRAP_HELPER_BYTES).hexdigest()
 
 
 class BusyExperimentError(RuntimeError):
@@ -134,6 +138,13 @@ def read_json(path: Path) -> dict[str, object]:
 
 def write_json_create_new(path: Path, value: Mapping[str, object]) -> None:
     payload = json_payload(value)
+    with Path(path).open("xb") as stream:
+        stream.write(payload)
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
+def write_bytes_create_new(path: Path, payload: bytes) -> None:
     with Path(path).open("xb") as stream:
         stream.write(payload)
         stream.flush()
@@ -289,23 +300,32 @@ def _require_seal(seal_path: Path, repo_commit: str) -> dict[str, object]:
     return seal
 
 
-def seal_consumption_marker(seal_path: Path) -> Path:
+def seal_consumption_marker(expected_seal_sha256: str) -> Path:
     """Return the machine-global immutable registry key for these exact seal bytes."""
-    return _absolute_literal_path(AUTHORIZATION_STATE_ROOT) / f"{sha256(Path(seal_path))}.json"
+    if len(expected_seal_sha256) != 64 \
+            or any(character not in "0123456789abcdef" for character in expected_seal_sha256):
+        raise LaunchError("snapshot seal SHA-256 is malformed")
+    return _absolute_literal_path(AUTHORIZATION_STATE_ROOT) / f"{expected_seal_sha256}.json"
 
 
-def _require_unconsumed_seal(seal_path: Path) -> None:
-    marker = seal_consumption_marker(seal_path)
+def _require_unconsumed_seal(expected_seal_sha256: str) -> None:
+    marker = seal_consumption_marker(expected_seal_sha256)
     if marker.parent.exists():
         require_no_reparse_chain(marker.parent, "authorization state registry")
     if marker.exists():
         raise LaunchError(f"seal already consumed and cannot authorize another run root: {marker}")
 
 
-def consume_seal(seal_path: Path, run_root: Path) -> dict[str, object]:
+def consume_seal(
+        seal_path: Path, run_root: Path, expected_seal_sha256: str,
+        expected_seal_bytes: bytes) -> dict[str, object]:
     """Atomically bind this exact seal to one root before the final idle check."""
     seal_path, run_root = Path(seal_path).resolve(), Path(run_root).resolve()
-    marker = seal_consumption_marker(seal_path)
+    live_bytes = seal_path.read_bytes()
+    live_sha256 = hashlib.sha256(live_bytes).hexdigest()
+    if live_bytes != expected_seal_bytes or live_sha256 != expected_seal_sha256:
+        raise LaunchError("live seal bytes changed after validated preflight snapshot")
+    marker = seal_consumption_marker(expected_seal_sha256)
     marker.parent.mkdir(parents=True, exist_ok=True)
     require_no_reparse_chain(marker.parent, "authorization state registry")
     value = {
@@ -313,7 +333,7 @@ def consume_seal(seal_path: Path, run_root: Path) -> dict[str, object]:
         "case_id": CASE_ID,
         "composite_producer": "sealed_T3_base_plus_T3_rev_case_definition_extension",
         "authorization_capability": AUTHORIZATION_CAPABILITY,
-        "seal_sha256": sha256(seal_path),
+        "seal_sha256": expected_seal_sha256,
         "run_root": str(run_root),
         "resume_allowed": False,
         "new_authorization_required": True,
@@ -333,7 +353,8 @@ def require_bridge_authorization_receipt(receipt: Mapping[str, object]) -> None:
         "launcher_repository_commit",
         "runtime_lock_sha256", "family_contract_sha256", "case_physics_contract_sha256",
         "execution_input_lock_sha256", "seal_sha256", "extension_source_manifest_sha256",
-        "extension_root", "runtime_overlay_root", "extension_shadow_sha256", "thread_environment",
+        "extension_root", "runtime_overlay_root", "run_root", "extension_shadow_sha256",
+        "thread_environment", "launch_nonce", "bootstrap_helper_sha256",
     }
     if set(receipt) != required or receipt.get("schema_version") != "toy_road_t3_rev_launch_receipt_v1" \
             or receipt.get("status") != "PASS" \
@@ -347,6 +368,7 @@ def require_bridge_authorization_receipt(receipt: Mapping[str, object]) -> None:
     digest_fields = (
         "runtime_lock_sha256", "family_contract_sha256", "case_physics_contract_sha256",
         "execution_input_lock_sha256", "seal_sha256", "extension_source_manifest_sha256",
+        "bootstrap_helper_sha256",
     )
     if type(receipt.get("source_commit")) is not str or len(receipt["source_commit"]) != 40 \
             or any(character not in "0123456789abcdef" for character in receipt["source_commit"]) \
@@ -358,6 +380,10 @@ def require_bridge_authorization_receipt(receipt: Mapping[str, object]) -> None:
                    or any(character not in "0123456789abcdef" for character in receipt[field])
                    for field in digest_fields):
         raise LaunchError("launch receipt bridge identity fields are malformed")
+    nonce = receipt.get("launch_nonce")
+    if type(nonce) is not str or len(nonce) != 64 \
+            or any(character not in "0123456789abcdef" for character in nonce):
+        raise LaunchError("launch receipt nonce is malformed")
     shadow = receipt.get("extension_shadow_sha256")
     if not isinstance(shadow, dict) or not shadow \
             or not all(type(path) is str and path and type(digest) is str and len(digest) == 64
@@ -370,7 +396,7 @@ def require_bridge_authorization_receipt(receipt: Mapping[str, object]) -> None:
     }
     if not _exact_json_equal(receipt.get("thread_environment"), expected_threads) \
             or any(type(receipt.get(field)) is not str or not Path(receipt[field]).is_absolute()
-                   for field in ("extension_root", "runtime_overlay_root")):
+                   for field in ("extension_root", "runtime_overlay_root", "run_root")):
         raise LaunchError("launch receipt extension or thread binding is malformed")
 
 
@@ -729,6 +755,11 @@ def materialize_runtime_overlay(
             stream.write(payload)
             stream.flush()
             os.fsync(stream.fileno())
+    helper_target = runtime_overlay / BOOTSTRAP_HELPER_RELATIVE
+    with helper_target.open("xb") as stream:
+        stream.write(BOOTSTRAP_HELPER_BYTES)
+        stream.flush()
+        os.fsync(stream.fileno())
     initial_target = (
         runtime_overlay / "+phase_field" / "+mex" / "+fem" / "+assembly" /
         "+equilibrium" / "initial.mexw64"
@@ -746,6 +777,7 @@ def require_materialized_runtime_overlay(
     initial_relative = "+phase_field/+mex/+fem/+assembly/+equilibrium/initial.mexw64"
     expected_files = dict(shadow_hashes)
     expected_files[initial_relative] = expected_binaries["initial"]
+    expected_files[BOOTSTRAP_HELPER_RELATIVE] = BOOTSTRAP_HELPER_SHA256
     expected_directories: set[str] = set()
     for relative in expected_files:
         parent = Path(relative).parent
@@ -827,7 +859,8 @@ def _invalidate_pass_receipt(receipts: Path) -> None:
 
 
 def _raise_prepared_failure(
-        seal_path: Path, run_root: Path, receipts: Path, error: Exception) -> None:
+        seal_path: Path, expected_seal_sha256: str, expected_seal_bytes: bytes,
+        run_root: Path, receipts: Path, error: Exception) -> None:
     """Consume a root claimed after PASS preflight and record that no launch occurred."""
     marker_error: Exception | None = None
     invalidation_error: Exception | None = None
@@ -835,9 +868,11 @@ def _raise_prepared_failure(
         _invalidate_pass_receipt(receipts)
     except OSError as receipt_error:
         invalidation_error = receipt_error
-    if not seal_consumption_marker(seal_path).exists():
+    if not seal_consumption_marker(expected_seal_sha256).exists():
         try:
-            consume_seal(seal_path, run_root)
+            consume_seal(
+                seal_path, run_root, expected_seal_sha256, expected_seal_bytes
+            )
         except Exception as consumed_error:  # preserve both fail-closed diagnostics
             marker_error = consumed_error
     try:
@@ -878,7 +913,8 @@ def open_launch_logs(run_root: Path) -> tuple[Any, Any]:
 
 
 def publish_launch_receipt(
-        launch_receipt_path: Path, launch_receipt: Mapping[str, object]) -> None:
+        launch_receipt_path: Path, launch_receipt_bytes: bytes,
+        expected_receipt_sha256: str) -> None:
     """Atomically publish the bootstrap credential only after process creation succeeds."""
     temporary = launch_receipt_path.with_name(
         f".{launch_receipt_path.name}.{uuid.uuid4().hex}.tmp"
@@ -886,8 +922,13 @@ def publish_launch_receipt(
     if launch_receipt_path.exists():
         raise LaunchCredentialError("launch credential path already exists")
     try:
-        write_json_create_new(temporary, launch_receipt)
+        if hashlib.sha256(launch_receipt_bytes).hexdigest() != expected_receipt_sha256:
+            raise LaunchCredentialError("precomputed launch credential bytes changed")
+        write_bytes_create_new(temporary, launch_receipt_bytes)
         os.replace(temporary, launch_receipt_path)
+        if sha256(launch_receipt_path) != expected_receipt_sha256:
+            launch_receipt_path.unlink()
+            raise LaunchCredentialError("published launch credential SHA-256 differs")
     except Exception:
         if temporary.exists():
             temporary.unlink()
@@ -922,13 +963,18 @@ def raise_launch_credential_failure(
 
 
 def require_final_launch_inputs(
-        repo_root: Path, seal_path: Path, extension_root: Path, sealed_base_root: Path,
+        repo_root: Path, seal_path: Path, expected_seal_bytes: bytes,
+        expected_seal_sha256: str, extension_root: Path, sealed_base_root: Path,
         manifest: Mapping[str, object], runtime: Mapping[str, object], matlab: Path,
         griphfith_root: Path, input_assets_root: Path, runtime_overlay: Path,
         roots: Mapping[str, Path],
         initial_shadow_hashes: Mapping[str, str], initial_shadow_payloads: Mapping[str, bytes],
         expected_binaries: object) -> None:
     """Repeat every mutable identity check at the last no-process boundary."""
+    live_seal_bytes = seal_path.read_bytes()
+    if live_seal_bytes != expected_seal_bytes \
+            or hashlib.sha256(live_seal_bytes).hexdigest() != expected_seal_sha256:
+        raise LaunchError("final live seal bytes differ from the validated preflight snapshot")
     require_no_reparse_chain(repo_root, "launcher repository")
     require_no_reparse_chain(seal_path, "T3-rev seal")
     require_no_reparse_chain(extension_root, "T3-rev extension")
@@ -981,8 +1027,12 @@ def launch_t3_rev(
     require_no_reparse_chain(extension_root, "T3-rev extension")
     require_no_reparse_chain(template_run, "qualified template run")
     require_no_reparse_chain(input_assets_root, "input assets")
+    seal_bytes = seal_path.read_bytes()
+    seal_sha256 = hashlib.sha256(seal_bytes).hexdigest()
     repo_commit = clean_repository_commit(repo_root)
     seal = _require_seal(seal_path, repo_commit)
+    if seal_path.read_bytes() != seal_bytes:
+        raise LaunchError("seal bytes changed during validated preflight snapshot")
     sealed_base_root, manifest, case = _require_extension(repo_root, extension_root, seal)
     runtime = seal["runtime_identity"]
     if not isinstance(runtime, dict):
@@ -1013,7 +1063,7 @@ def launch_t3_rev(
     receipts = run_root / "receipts"
     runtime_overlay = run_root / ".toy-road-runtime-overlay"
     require_input_assets(repo_root, input_assets_root, roots)
-    _require_unconsumed_seal(seal_path)
+    _require_unconsumed_seal(seal_sha256)
     matlab_paths = [
         runtime_overlay,
         sealed_base_root,
@@ -1035,6 +1085,7 @@ def launch_t3_rev(
     lock_path = receipts / "T3_REV_EXECUTION_INPUT_LOCK.json"
     lock_sha256 = hashlib.sha256(json_payload(lock)).hexdigest()
     launch_receipt_path = receipts / "T3_REV_LAUNCH_RECEIPT.json"
+    launch_nonce = secrets.token_hex(32)
     launch_receipt = {
         "schema_version": "toy_road_t3_rev_launch_receipt_v1",
         "status": "PASS",
@@ -1050,24 +1101,31 @@ def launch_t3_rev(
         "family_contract_sha256": family_hash,
         "case_physics_contract_sha256": case_hash,
         "execution_input_lock_sha256": lock_sha256,
-        "seal_sha256": sha256(seal_path),
+        "seal_sha256": seal_sha256,
         "extension_source_manifest_sha256": sha256(extension_root / "EXTENSION_SOURCE_MANIFEST.json"),
         "extension_root": str(extension_root),
         "runtime_overlay_root": str(runtime_overlay),
+        "run_root": str(run_root),
         "extension_shadow_sha256": shadow_hashes,
         "thread_environment": copy.deepcopy(runtime["thread_settings"]),
+        "launch_nonce": launch_nonce,
+        "bootstrap_helper_sha256": BOOTSTRAP_HELPER_SHA256,
     }
     require_bridge_authorization_receipt(launch_receipt)
+    launch_receipt_bytes = json_payload(launch_receipt)
+    launch_receipt_sha256 = hashlib.sha256(launch_receipt_bytes).hexdigest()
     measurement_path = receipts / "T3_REV_RUNTIME_MEASUREMENT.json"
     prefix = os.pathsep.join(str(path) for path in matlab_paths)
     batch = (
         f"path([{matlab_literal(prefix)} pathsep path]);"
-        f"launch_receipt={matlab_literal(str(launch_receipt_path))};"
-        "launch_wait=tic;"
-        "while ~isfile(launch_receipt);"
-        "if toc(launch_wait)>30;"
-        "error('toyRoad:LaunchCredentialTimeout','Launch credential was not published');"
-        "end;pause(0.05);end;"
+        "toy_road_wait_for_launch_receipt("
+        f"{matlab_literal(str(launch_receipt_path))},"
+        f"{matlab_literal(launch_receipt_sha256)},"
+        f"{matlab_literal(launch_nonce)},"
+        f"{matlab_literal(seal_sha256)},"
+        f"{matlab_literal(CASE_ID)},"
+        f"{matlab_literal(lock_sha256)},"
+        f"{matlab_literal(str(run_root))},30);"
         f"run_toy_road_runtime_bridge({matlab_literal(str(lock_path))},{matlab_literal(str(measurement_path))});"
     )
     env = os.environ.copy()
@@ -1096,34 +1154,35 @@ def launch_t3_rev(
         write_json_create_new(lock_path, lock)
     except OSError as error:
         if root_created:
-            _raise_prepared_failure(seal_path, run_root, receipts, error)
+            _raise_prepared_failure(seal_path, seal_sha256, seal_bytes, run_root, receipts, error)
         raise
     try:
-        consume_seal(seal_path, run_root)
+        consume_seal(seal_path, run_root, seal_sha256, seal_bytes)
     except (OSError, LaunchError) as error:
-        _raise_prepared_failure(seal_path, run_root, receipts, error)
+        _raise_prepared_failure(seal_path, seal_sha256, seal_bytes, run_root, receipts, error)
     try:
         require_final_launch_inputs(
-            repo_root, seal_path, extension_root, sealed_base_root, manifest, runtime,
+            repo_root, seal_path, seal_bytes, seal_sha256, extension_root,
+            sealed_base_root, manifest, runtime,
             matlab, griphfith_root, input_assets_root, runtime_overlay, roots, shadow_hashes,
             shadow_payloads, expected_binaries,
         )
     except Exception as error:
-        _raise_prepared_failure(seal_path, run_root, receipts, error)
+        _raise_prepared_failure(seal_path, seal_sha256, seal_bytes, run_root, receipts, error)
     try:
         final_processes = matlab_processes()
     except Exception as error:
-        _raise_prepared_failure(seal_path, run_root, receipts, error)
+        _raise_prepared_failure(seal_path, seal_sha256, seal_bytes, run_root, receipts, error)
     if final_processes:
         try:
             _write_busy_receipt(receipts, final_processes)
         except OSError as error:
-            _raise_prepared_failure(seal_path, run_root, receipts, error)
+            _raise_prepared_failure(seal_path, seal_sha256, seal_bytes, run_root, receipts, error)
         raise BusyExperimentError("BUSY_NO_LAUNCH: final process check blocks T3-rev launch")
     try:
         stdout, stderr = open_launch_logs(run_root)
     except OSError as error:
-        _raise_prepared_failure(seal_path, run_root, receipts, error)
+        _raise_prepared_failure(seal_path, seal_sha256, seal_bytes, run_root, receipts, error)
     try:
         try:
             process = Popen(
@@ -1131,9 +1190,11 @@ def launch_t3_rev(
                 creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
             )
         except Exception as error:
-            _raise_prepared_failure(seal_path, run_root, receipts, error)
+            _raise_prepared_failure(seal_path, seal_sha256, seal_bytes, run_root, receipts, error)
         try:
-            publish_launch_receipt(launch_receipt_path, launch_receipt)
+            publish_launch_receipt(
+                launch_receipt_path, launch_receipt_bytes, launch_receipt_sha256
+            )
         except Exception as error:
             raise_launch_credential_failure(
                 receipts, launch_receipt_path, process, error
