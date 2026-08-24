@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 
-EXPECTED_CANONICAL_SHA256 = "c8a86bcb24ee9458a1dd89fd3d7099daf248b03a564a4736cbbc27e23b17dcbe"
+EXPECTED_CANONICAL_SHA256 = "a6de35f131bf046261a2496c0acffd23b3860bb58288e604a1284a780f9e2d91"
 EXPECTED_BLOCKERS = {
     "qualified_c60_restart_materializer",
     "true_mechanical_residual_field_export",
@@ -122,6 +122,7 @@ def validate(payload: dict) -> dict:
             "mirror_weighting": "minimum_paired_cell_area",
             "mirror_min_paired_area_coverage": 0.5,
             "actual_exact_domain_paired_area_coverage": 0.5193230827427459,
+            "pidl_triangle_row_coordinate_atol": 3e-8,
         },
         "blind_before_unblind": payload.get("blind_analysis", {}).get("opaque_arm_ids") is True
         and payload.get("blind_analysis", {}).get("metrics_sealed_before_unblinding") is True,
@@ -137,7 +138,7 @@ def validate(payload: dict) -> dict:
             "status": "qualified_request_27_v2_1",
             "manifest_sha256": "3a3d4cdd83a7dbb0303c9d77ad84e042cd661e3cfc9dee0b0fb7cca24fe5126e",
             "sha256s_sha256": "319ed492d93766f0ff442e04e9f1684e645b0a538ea01f45b7078da1b8fe85e1",
-            "validation_receipt_sha256": "c3635dee895df0655fe38fe9ecbd9fe5a7014db4743fb45272270f36432583d8",
+            "validation_receipt_sha256": "736839ecd475516c6e7e140e8e6ca06a4cb797630184696a437aafc6315285f8",
         },
         "exact_projector_v2_qualified": prerequisite_status.get(
             "contained_domain_projector"
@@ -150,7 +151,13 @@ def validate(payload: dict) -> dict:
         ) == "2782085ab78cbfd82a04b485422d642fb0b81275d56b695673fc5f43aa6612e7"
         and allowlist.get("u012_contained_domain_projector_manifest", {}).get(
             "npz_sha256"
-        ) == "4dfc62e0dc14990254dff01d650e6c3962d725dd934e360b95ae6a593695c253",
+        ) == "4dfc62e0dc14990254dff01d650e6c3962d725dd934e360b95ae6a593695c253"
+        and allowlist.get("u012_contained_domain_projector_manifest", {}).get(
+            "analysis_content_sha256"
+        ) == "fbbe2b75a9733d4e9f242f5e3722a7abecee44323eb45988b34396203fabc4da"
+        and allowlist.get("u012_contained_domain_projector_manifest", {}).get(
+            "pidl_triangle_geometry_sha256"
+        ) == "e1f215bdd8e13514d38db1a8f020f60e29e5884d875a15d82e6ff0271ca8ddbd",
         "post_run_evidence_not_misclassified": snapshot.get(
             "post_run_evidence_not_prelaunch_blockers"
         )

@@ -23,7 +23,7 @@ from rrapinn_g4_blind_contract import BLIND_METRICS_COLUMNS, REQUIRED_METRIC_KEY
 
 
 ANALYSIS_INPUT_SCHEMA = "rrapinn-g4-blind-analysis-input-v1"
-PROJECTOR_SCHEMA = "rrapinn-g4-contained-projector-v2"
+PROJECTOR_SCHEMA = "rrapinn-g4-contained-projector-v3"
 PROJECTOR_METHOD = "centroid_containment_assignment"
 LOG_FLOOR = 1.0e-12
 MIRROR_GRID_SIZE = 64
@@ -39,7 +39,7 @@ _ARTIFACT_KEYS = {"path", "sha256"}
 _PROJECTOR_KEYS = {
     "schema_version", "method", "headline_policy", "artifact",
     "deterministic_sha256", "fem_sha256", "n_fem_rows",
-    "n_headline_rows", "pidl_triangle_count",
+    "n_headline_rows", "pidl_triangle_count", "pidl_geometry",
 }
 _PROJECTOR_ARRAY_KEYS = {
     "source_fem_row_index", "pidl_triangle_assignment", "fem_centroids",
@@ -404,6 +404,9 @@ def _load_projector(
         if not isinstance(expected, str) or sha256_file(path) != expected:
             raise AnalysisError(f"FEM c{cycle} SHA256 does not match projector v2")
     artifact = _artifact(manifest["artifact"], manifest_path.parent, "projector artifact")
+    geometry_artifact = _artifact(
+        manifest["pidl_geometry"], manifest_path.parent, "PIDL triangle geometry",
+    )
     arrays = _npz_snapshot(artifact, "projector")
     if set(arrays) != _PROJECTOR_ARRAY_KEYS:
         raise AnalysisError("projector NPZ array schema mismatch")
@@ -431,11 +434,23 @@ def _load_projector(
         raise AnalysisError("projector FEM row index exceeds declared geometry")
     if _projector_content_hash(arrays) != manifest["deterministic_sha256"]:
         raise AnalysisError("projector deterministic content hash mismatch")
+    geometry = _npz_snapshot(geometry_artifact, "PIDL triangle geometry")
+    if set(geometry) != {"pidl_triangle_centroids"}:
+        raise AnalysisError("PIDL triangle geometry NPZ schema mismatch")
+    triangle_centroids = np.asarray(
+        geometry["pidl_triangle_centroids"], dtype=np.float64,
+    )
+    if (
+        triangle_centroids.shape != (int(manifest["pidl_triangle_count"]), 2)
+        or not np.all(np.isfinite(triangle_centroids))
+    ):
+        raise AnalysisError("PIDL triangle geometry row count/range mismatch")
     return {
         "source_fem_row_index": rows.astype(np.int64, copy=False),
         "pidl_triangle_assignment": assignment.astype(np.int64, copy=False),
         "fem_centroids": centroids,
         "fem_element_area": areas,
+        "pidl_triangle_centroids": triangle_centroids,
     }
 
 
@@ -572,11 +587,15 @@ def _event_result(kind: str, receipt_path: Path) -> tuple[float, int, str]:
         ):
             raise AnalysisError("receipt is not the frozen boundary first-detect event")
         return float(expected_cycle), raw_step, "measured"
-    if set(receipt) != {"schema", "physical_cycle", "last_raw_step", "boundary_triggered"}:
+    if set(receipt) != {
+        "schema", "physical_cycle", "last_raw_step", "boundary_triggered",
+        "trigger_source",
+    }:
         raise AnalysisError("right-censor receipt schema mismatch")
     if receipt != {
         "schema": "rrapinn-g4-right-censor-v1", "physical_cycle": 92,
         "last_raw_step": 460, "boundary_triggered": False,
+        "trigger_source": "boundary_only",
     }:
         raise AnalysisError("right-censor receipt does not prove no first-detect through c92")
     return 92.0, 460, "right_censored"
@@ -588,6 +607,11 @@ def _field_metrics(
 ) -> dict[str, float]:
     rows = projector["source_fem_row_index"]
     assignment = projector["pidl_triangle_assignment"]
+    pidl_centroids = np.column_stack([pidl["elem_x"], pidl["elem_y"]])
+    if not np.allclose(
+        pidl_centroids, projector["pidl_triangle_centroids"], rtol=0.0, atol=3.0e-8,
+    ):
+        raise AnalysisError(f"c{cycle} PIDL element rows do not match frozen mesh order")
     if max(value.size for value in pidl.values()) <= int(np.max(assignment)):
         raise AnalysisError(f"c{cycle} PIDL fields are shorter than projector assignment")
     if fem["damage"].size != int(np.max(rows)) + 1 and fem["damage"].size <= int(np.max(rows)):

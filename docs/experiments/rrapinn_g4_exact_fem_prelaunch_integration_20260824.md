@@ -44,3 +44,25 @@ The launcher must verify, before creating output or calling training:
 Next: commit and push integration, generate the immutable lock from that clean
 commit, then run a fresh independent launch gate. No producer run is launched
 by this integration.
+
+## First fresh-gate rejection and v3 repair
+
+The first post-lock reviewer correctly returned `NO-LAUNCH` for lock v2. It
+found four integration defects: Mac-only artifact paths, a caller-selectable
+restart-manifest hash, a right-censor schema mismatch, and an incomplete blind
+input/row-order evidence chain.
+
+The v3 repair is deliberately limited to those findings:
+
+- lock artifacts use portable `repo`, `bundle` and `analysis_evidence` scopes;
+- the c60 restart manifest is hard-bound to `df581bb...03e9`;
+- producer and analyzer share the exact boundary-only right-censor schema;
+- producer-order centroids for all 90,000 PIDL triangles are hash-bound and
+  checked with frozen absolute tolerance `3e-8` (actual U0.12 maximum
+  `2.9802322387695312e-8`);
+- the blind seal binds the prelaunch lock, both opaque-arm manifests, and every
+  referenced residual, element-field and event receipt artifact.
+
+Lock v2 (`4195599c...3735`) is retained as superseded audit evidence and must
+not be authorized. A new clean commit, v3 lock and second fresh independent
+gate are required.

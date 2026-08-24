@@ -100,7 +100,8 @@ def build_lock(
     *, packet: Path, fem_manifest: Path, fem_validation_receipt: Path,
     projector: Path, projector_builder_manifest: Path,
     projector_analysis_manifest: Path, mapping_source: Path,
-    mapping_source_manifest: Path, code_root: Path, analysis_code: list[Path],
+    mapping_source_manifest: Path, pidl_geometry: Path,
+    pidl_geometry_manifest: Path, code_root: Path, analysis_code: list[Path],
     integration_commit: str,
 ) -> dict:
     required = {
@@ -112,6 +113,8 @@ def build_lock(
         "projector_analysis_manifest": projector_analysis_manifest,
         "mapping_source": mapping_source,
         "mapping_source_manifest": mapping_source_manifest,
+        "pidl_geometry": pidl_geometry,
+        "pidl_geometry_manifest": pidl_geometry_manifest,
     }
     for label, path in required.items():
         if not path.is_file():
@@ -162,10 +165,11 @@ def build_lock(
         or builder.get("projector", {}).get("fallback_rows_in_headline") != 0
         or builder.get("projector", {}).get("deterministic_sha256")
         != "2782085ab78cbfd82a04b485422d642fb0b81275d56b695673fc5f43aa6612e7"
-        or analysis.get("schema_version") != "rrapinn-g4-contained-projector-v2"
+        or analysis.get("schema_version") != "rrapinn-g4-contained-projector-v3"
         or analysis.get("deterministic_sha256")
-        != "be764b01573109a9585eaf1f1e596ca1ca1ed15878acdcb4c1e5afc1e105d422"
+        != "fbbe2b75a9733d4e9f242f5e3722a7abecee44323eb45988b34396203fabc4da"
         or analysis.get("artifact", {}).get("sha256") != sha256_file(projector)
+        or analysis.get("pidl_geometry", {}).get("sha256") != sha256_file(pidl_geometry)
     ):
         raise FreezeError("projector manifests violate the exact v2 headline contract")
     code_root = code_root.resolve()
@@ -176,11 +180,16 @@ def build_lock(
             "sha256": sha256_file(path),
         })
     return {
-        "schema": "rrapinn-g4-prelaunch-lock-v2",
+        "schema": "rrapinn-g4-prelaunch-lock-v3",
         "status": "READY_FOR_INDEPENDENT_GATE_TRAINING_UNAUTHORIZED",
         "development_case": "U0.12",
         "training_authorized": False,
         "integration_commit": integration_commit,
+        "producer_contract": {
+            "restart_manifest_sha256": "df581bb790e91660a5a4be735fc0f3e11c699f329b0f4ce05af36b31fa2c03e9",
+            "authorized_arms": ["A_absent", "B_on"],
+            "heldout_access_authorized": False,
+        },
         "first_detect_truth_cycle": 83,
         "first_detect_provenance_class": "historical_reference_receipt",
         "selected_cycle_first_detect_counts": [0, 0, 22],
@@ -188,12 +197,25 @@ def build_lock(
         "confirmation_used_as_truth": False,
         "fem_sha256sum_entries": fem_entries,
         "artifacts": {
+            "packet": {
+                "scope": "repo",
+                "path": packet.resolve().relative_to(code_root).as_posix(),
+                "sha256": sha256_file(packet),
+            },
             **{
-                label: {"path": str(path.resolve()), "sha256": sha256_file(path)}
+                label: {
+                    "scope": "bundle", "path": path.name, "sha256": sha256_file(path),
+                }
                 for label, path in required.items()
+                if label not in {"packet", "fem_manifest"}
+            },
+            "fem_manifest": {
+                "scope": "analysis_evidence", "path": "manifest.json",
+                "sha256": sha256_file(fem_manifest),
             },
             "fem_sha256s": {
-                "path": str(fem_sha256s.resolve()), "sha256": sha256_file(fem_sha256s),
+                "scope": "analysis_evidence", "path": "SHA256SUMS",
+                "sha256": sha256_file(fem_sha256s),
             },
         },
         "locked_code": {
@@ -208,6 +230,7 @@ def build_lock(
             "residual_mask": "interior_free_nodes",
             "mirror_grid": "64x64_fixed_square_-0.5_to_0.5",
             "mirror_min_paired_area_coverage": 0.5,
+            "pidl_triangle_row_coordinate_atol": 3e-8,
         },
         "runtime": _runtime_lock(),
         "claim_boundary": (
@@ -245,6 +268,8 @@ def main() -> None:
     parser.add_argument("--projector-analysis-manifest", type=Path, required=True)
     parser.add_argument("--mapping-source", type=Path, required=True)
     parser.add_argument("--mapping-source-manifest", type=Path, required=True)
+    parser.add_argument("--pidl-geometry", type=Path, required=True)
+    parser.add_argument("--pidl-geometry-manifest", type=Path, required=True)
     parser.add_argument("--code-root", type=Path, required=True)
     parser.add_argument("--analysis-code", type=Path, action="append", required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -265,6 +290,8 @@ def main() -> None:
         projector_analysis_manifest=args.projector_analysis_manifest,
         mapping_source=args.mapping_source,
         mapping_source_manifest=args.mapping_source_manifest,
+        pidl_geometry=args.pidl_geometry,
+        pidl_geometry_manifest=args.pidl_geometry_manifest,
         code_root=repo, analysis_code=args.analysis_code,
         integration_commit=head,
     )

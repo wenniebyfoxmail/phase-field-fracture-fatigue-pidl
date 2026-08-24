@@ -75,8 +75,8 @@ def _state_npzs(root: Path, cycle: int, residual_scale: float, field_scale: floa
         f_fatigue_elem=np.asarray([0.9, 0.8, 0.7, 0.6]),
         psi_raw_elem=field_scale * np.asarray([1.0, 10.0, 100.0, 1000.0]),
         psi_active_elem=field_scale * np.asarray([1.0, 2.0, 8.0, 16.0]),
-        elem_x=np.asarray([-0.4, -0.4, 0.4, 0.4]),
-        elem_y=np.asarray([-0.4, 0.4, -0.4, 0.4]),
+        elem_x=np.asarray([-0.4, -0.4, 0.4, 0.4], dtype=np.float32),
+        elem_y=np.asarray([-0.4, 0.4, -0.4, 0.4], dtype=np.float32),
         raw_step=np.asarray(step), physical_cycle=np.asarray(cycle),
         substep_index=np.asarray(3), displacement=np.asarray(0.12),
     )
@@ -113,11 +113,19 @@ def _fixture(tmp_path: Path):
         "fem_element_area": np.asarray([1., 2., 1., 2.]),
     }
     np.savez_compressed(projector_npz, **arrays)
+    pidl_geometry = tmp_path / "pidl_geometry.npz"
+    np.savez_compressed(
+        pidl_geometry,
+        pidl_triangle_centroids=np.asarray([
+            [-0.4, -0.4], [-0.4, 0.4], [0.4, -0.4], [0.4, 0.4],
+        ], dtype=np.float32),
+    )
     projector_manifest = tmp_path / "projector.json"
     projector_manifest.write_text(json.dumps({
         "schema_version": PROJECTOR_SCHEMA, "method": PROJECTOR_METHOD,
         "headline_policy": "mapping_contained_true_only",
         "artifact": _artifact(projector_npz, tmp_path),
+        "pidl_geometry": _artifact(pidl_geometry, tmp_path),
         "deterministic_sha256": _projector_content_hash(arrays),
         "fem_sha256": {"76": _sha(fem76), "82": _sha(fem82)},
         "n_fem_rows": 4, "n_headline_rows": 4, "pidl_triangle_count": 4,
@@ -244,4 +252,43 @@ def test_confirmation_or_wrong_peak_semantics_cannot_replace_first_detect(tmp_pa
         analyze_blind_pair(
             arm_manifests=manifests, fem_c76=fem76, fem_c82=fem82,
             projector_manifest=projector, output_csv=tmp_path / "bad.csv",
+        )
+
+
+def test_producer_right_censor_schema_is_accepted(tmp_path: Path):
+    manifests, fem76, fem82, projector = _fixture(tmp_path)
+    receipt = manifests[0].parent / "first_detect.json"
+    receipt.write_text(json.dumps({
+        "schema": "rrapinn-g4-right-censor-v1", "physical_cycle": 92,
+        "last_raw_step": 460, "boundary_triggered": False,
+        "trigger_source": "boundary_only",
+    }), encoding="utf-8")
+    manifest = json.loads(manifests[0].read_text())
+    manifest["event"] = {
+        "kind": "right_censored", "receipt": _artifact(receipt, manifests[0].parent),
+    }
+    manifests[0].write_text(json.dumps(manifest), encoding="utf-8")
+    rows = analyze_blind_pair(
+        arm_manifests=manifests, fem_c76=fem76, fem_c82=fem82,
+        projector_manifest=projector, output_csv=tmp_path / "right_censored.csv",
+    )
+    event = next(row for row in rows if row["opaque_arm"] == "arm_0123abcd" and row["endpoint"] == "event")
+    assert event["value"] == "92"
+    assert event["status"] == "right_censored"
+
+
+def test_pidl_triangle_row_order_is_hash_bound(tmp_path: Path):
+    manifests, fem76, fem82, projector = _fixture(tmp_path)
+    fields_path = manifests[0].parent / "fields_82.npz"
+    with np.load(fields_path, allow_pickle=False) as archive:
+        payload = {name: archive[name] for name in archive.files}
+    payload["elem_x"] = payload["elem_x"][::-1]
+    np.savez_compressed(fields_path, **payload)
+    manifest = json.loads(manifests[0].read_text())
+    manifest["states"]["82"]["element_fields"]["sha256"] = _sha(fields_path)
+    manifests[0].write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(AnalysisError, match="frozen mesh order"):
+        analyze_blind_pair(
+            arm_manifests=manifests, fem_c76=fem76, fem_c82=fem82,
+            projector_manifest=projector, output_csv=tmp_path / "bad_order.csv",
         )

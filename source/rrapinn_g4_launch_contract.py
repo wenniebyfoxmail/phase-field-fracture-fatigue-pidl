@@ -8,9 +8,10 @@ import re
 from pathlib import Path
 
 
-LOCK_SCHEMA = "rrapinn-g4-prelaunch-lock-v2"
+LOCK_SCHEMA = "rrapinn-g4-prelaunch-lock-v3"
 LOCK_STATUS = "READY_FOR_INDEPENDENT_GATE_TRAINING_UNAUTHORIZED"
 AUTH_SCHEMA = "rrapinn-g4-user-authorization-v1"
+CANONICAL_RESTART_MANIFEST_SHA256 = "df581bb790e91660a5a4be735fc0f3e11c699f329b0f4ce05af36b31fa2c03e9"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
@@ -43,6 +44,8 @@ def load_and_verify_prelaunch_lock(
         or payload.get("first_detect_truth_cycle") != 83
         or payload.get("confirmation_used_as_truth") is not False
         or payload.get("integration_commit") != producer_head
+        or payload.get("producer_contract", {}).get("restart_manifest_sha256")
+        != CANONICAL_RESTART_MANIFEST_SHA256
         or not _COMMIT_RE.fullmatch(producer_head)
     ):
         raise LaunchContractError("prelaunch lock identity/state mismatch")
@@ -59,7 +62,18 @@ def load_and_verify_prelaunch_lock(
     if not code.get("files"):
         raise LaunchContractError("prelaunch lock has no locked code closure")
     for label, record in payload.get("artifacts", {}).items():
-        path = Path(record.get("path", "")).expanduser()
+        relative = Path(record.get("path", ""))
+        scope = record.get("scope")
+        if relative.is_absolute() or ".." in relative.parts:
+            raise LaunchContractError(f"locked artifact is not portable: {label}")
+        if scope == "analysis_evidence":
+            continue
+        if scope == "repo":
+            path = (root / relative).resolve()
+        elif scope == "bundle":
+            path = (lock_path.parent / relative).resolve()
+        else:
+            raise LaunchContractError(f"locked artifact scope is invalid: {label}")
         if not path.is_file() or sha256_file(path) != record.get("sha256"):
             raise LaunchContractError(f"locked artifact changed: {label}")
     return payload

@@ -18,9 +18,10 @@ def main() -> int:
     parser.add_argument("--seal", type=Path, required=True)
     parser.add_argument("--expected-seal-sha256", required=True)
     parser.add_argument("--metrics-csv", type=Path, required=True)
-    parser.add_argument("--analysis-code", type=Path, required=True)
+    parser.add_argument("--prelaunch-lock", type=Path, required=True)
     parser.add_argument("--fem-artifact", type=Path, required=True)
     parser.add_argument("--projector-artifact", type=Path, required=True)
+    parser.add_argument("--arm-manifest", type=Path, action="append", required=True)
     parser.add_argument("--arm-map-csv", type=Path, required=True)
     parser.add_argument("--output-csv", type=Path, required=True)
     args = parser.parse_args()
@@ -29,9 +30,10 @@ def main() -> int:
             seal_path=args.seal,
             expected_seal_sha256=args.expected_seal_sha256,
             metrics_csv=args.metrics_csv,
-            analysis_code=args.analysis_code,
+            prelaunch_lock=args.prelaunch_lock,
             fem_artifact=args.fem_artifact,
             projector_artifact=args.projector_artifact,
+            arm_manifests=args.arm_manifest,
             arm_map_csv=args.arm_map_csv,
             output_csv=args.output_csv,
         )
@@ -43,4 +45,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

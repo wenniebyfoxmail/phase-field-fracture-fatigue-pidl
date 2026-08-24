@@ -166,18 +166,66 @@ def _exclusive_install(path: Path, payload: bytes) -> None:
         temporary.unlink(missing_ok=True)
 
 
+def _analysis_input_closure(arm_manifests: Sequence[Path]) -> dict[str, dict[str, str]]:
+    """Verify and hash both opaque manifests and every artifact they reference."""
+    if len(arm_manifests) != 2:
+        raise ContractError("seal requires exactly two opaque-arm manifests")
+    closure: dict[str, dict[str, str]] = {}
+    for manifest_path in arm_manifests:
+        _require_regular_file(manifest_path, "opaque-arm manifest")
+        try:
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ContractError("opaque-arm manifest is not valid JSON") from exc
+        arm = payload.get("opaque_arm")
+        if (
+            payload.get("schema") != "rrapinn-g4-blind-analysis-input-v1"
+            or not isinstance(arm, str) or not _OPAQUE_ARM_RE.fullmatch(arm)
+            or payload.get("development_case") != "U0.12"
+            or set(payload.get("states", {})) != {"76", "82"}
+            or arm in closure
+        ):
+            raise ContractError("opaque-arm manifest identity/schema mismatch")
+        records = {"manifest": sha256_file(manifest_path)}
+        for cycle in ("76", "82"):
+            state = payload["states"][cycle]
+            for field in ("residual_fields", "element_fields"):
+                record = state.get(field)
+                if not isinstance(record, dict) or set(record) != {"path", "sha256"}:
+                    raise ContractError("analysis input artifact record schema mismatch")
+                artifact = Path(record["path"]).expanduser()
+                if not artifact.is_absolute():
+                    artifact = (manifest_path.parent / artifact).resolve()
+                if not artifact.is_file() or sha256_file(artifact) != record["sha256"]:
+                    raise ContractError("analysis input artifact hash mismatch")
+                records[f"c{cycle}_{field}"] = record["sha256"]
+        event = payload.get("event", {})
+        record = event.get("receipt")
+        if not isinstance(record, dict) or set(record) != {"path", "sha256"}:
+            raise ContractError("analysis event artifact record schema mismatch")
+        artifact = Path(record["path"]).expanduser()
+        if not artifact.is_absolute():
+            artifact = (manifest_path.parent / artifact).resolve()
+        if not artifact.is_file() or sha256_file(artifact) != record["sha256"]:
+            raise ContractError("analysis event artifact hash mismatch")
+        records["event_receipt"] = record["sha256"]
+        closure[arm] = records
+    return dict(sorted(closure.items()))
+
+
 def build_seal(
     *,
     metrics_csv: Path,
-    analysis_code: Path,
+    prelaunch_lock: Path,
     fem_artifact: Path,
     projector_artifact: Path,
+    arm_manifests: Sequence[Path],
 ) -> dict[str, object]:
     rows = _read_csv(metrics_csv, BLIND_METRICS_COLUMNS)
     arms = _blind_arms(rows)
     _validate_metric_rows(rows, arms)
     artifacts = {
-        "analysis_code": analysis_code,
+        "prelaunch_lock": prelaunch_lock,
         "fem_artifact": fem_artifact,
         "projector_artifact": projector_artifact,
     }
@@ -188,6 +236,7 @@ def build_seal(
         "blind_metrics_columns": list(BLIND_METRICS_COLUMNS),
         "blind_metrics_row_count": len(rows),
         "opaque_arms": list(arms),
+        "analysis_input_closure": _analysis_input_closure(arm_manifests),
         "sha256": {
             "blind_metrics_csv": sha256_file(metrics_csv),
             **{label: sha256_file(path) for label, path in artifacts.items()},
@@ -198,16 +247,18 @@ def build_seal(
 def seal_metrics(
     *,
     metrics_csv: Path,
-    analysis_code: Path,
+    prelaunch_lock: Path,
     fem_artifact: Path,
     projector_artifact: Path,
+    arm_manifests: Sequence[Path],
     output_seal: Path,
 ) -> str:
     payload = build_seal(
         metrics_csv=metrics_csv,
-        analysis_code=analysis_code,
+        prelaunch_lock=prelaunch_lock,
         fem_artifact=fem_artifact,
         projector_artifact=projector_artifact,
+        arm_manifests=arm_manifests,
     )
     encoded = _canonical_json_bytes(payload)
     _exclusive_install(output_seal, encoded)
@@ -219,9 +270,10 @@ def verify_seal(
     seal_path: Path,
     expected_seal_sha256: str,
     metrics_csv: Path,
-    analysis_code: Path,
+    prelaunch_lock: Path,
     fem_artifact: Path,
     projector_artifact: Path,
+    arm_manifests: Sequence[Path],
 ) -> dict[str, object]:
     if not _SHA256_RE.fullmatch(expected_seal_sha256):
         raise ContractError("expected seal SHA256 must be 64 lowercase hex characters")
@@ -236,9 +288,10 @@ def verify_seal(
         raise ContractError(f"seal schema must equal {SCHEMA!r}")
     current = build_seal(
         metrics_csv=metrics_csv,
-        analysis_code=analysis_code,
+        prelaunch_lock=prelaunch_lock,
         fem_artifact=fem_artifact,
         projector_artifact=projector_artifact,
+        arm_manifests=arm_manifests,
     )
     if sealed != current:
         raise ContractError("seal content does not match current metrics/code/FEM/projector inputs")
@@ -267,9 +320,10 @@ def unblind_metrics(
     seal_path: Path,
     expected_seal_sha256: str,
     metrics_csv: Path,
-    analysis_code: Path,
+    prelaunch_lock: Path,
     fem_artifact: Path,
     projector_artifact: Path,
+    arm_manifests: Sequence[Path],
     arm_map_csv: Path,
     output_csv: Path,
 ) -> None:
@@ -277,9 +331,10 @@ def unblind_metrics(
         seal_path=seal_path,
         expected_seal_sha256=expected_seal_sha256,
         metrics_csv=metrics_csv,
-        analysis_code=analysis_code,
+        prelaunch_lock=prelaunch_lock,
         fem_artifact=fem_artifact,
         projector_artifact=projector_artifact,
+        arm_manifests=arm_manifests,
     )
     mapping = read_arm_map(arm_map_csv)
     sealed_arms = set(sealed["opaque_arms"])

@@ -12,13 +12,14 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "source"))
 
 from rrapinn_g4_launch_contract import (  # noqa: E402
+    CANONICAL_RESTART_MANIFEST_SHA256,
     load_and_verify_prelaunch_lock,
     verify_user_authorization,
 )
 
 
 def frozen_command(
-    *, repo: Path, arm: str, restart_bundle: Path, restart_manifest_sha256: str,
+    *, repo: Path, arm: str, restart_bundle: Path,
     producer_head: str,
 ) -> list[str]:
     common = [
@@ -36,7 +37,7 @@ def frozen_command(
         "--diag-full-physical-cycles", "76,82",
         "--plot-every", "999", "--tag", f"g4_u012_{arm.lower()}",
         "--resume-bundle", str(restart_bundle.resolve()),
-        "--resume-bundle-manifest-sha256", restart_manifest_sha256,
+        "--resume-bundle-manifest-sha256", CANONICAL_RESTART_MANIFEST_SHA256,
         "--mechanical-residual-export-steps", "379,409",
         "--boundary-first-detect-receipt", "--hard-stop-physical-cycle", "92",
         "--require-clean-git", "--fresh-output-required",
@@ -59,7 +60,6 @@ def main() -> None:
     parser.add_argument("--authorization-receipt", type=Path, required=True)
     parser.add_argument("--arm", choices=("A_absent", "B_on"), required=True)
     parser.add_argument("--restart-bundle", type=Path, required=True)
-    parser.add_argument("--restart-manifest-sha256", required=True)
     parser.add_argument("--stdout-log", type=Path, required=True)
     parser.add_argument("--preflight-only", action="store_true")
     args = parser.parse_args()
@@ -77,7 +77,7 @@ def main() -> None:
     verify_user_authorization(args.authorization_receipt.resolve(), args.prelaunch_lock_sha256, head)
     command = frozen_command(
         repo=repo, arm=args.arm, restart_bundle=args.restart_bundle,
-        restart_manifest_sha256=args.restart_manifest_sha256, producer_head=head,
+        producer_head=head,
     )
     if args.preflight_only:
         print(" ".join(command))

@@ -234,3 +234,9 @@ receipt before any stdout directory or training subprocess is created.
 
 State: `integration in progress; training unauthorized`. U0.13/U0.11 remain
 outside the allowed input set.
+
+The first fresh launch gate rejected lock v2 for four concrete portability and
+evidence-chain defects. The bounded v3 repair makes artifact paths portable,
+hard-binds the canonical c60 restart SHA, aligns right-censor schemas, freezes
+PIDL triangle row geometry and seals every arm input. Lock v2 is superseded;
+training remains unauthorized until a second fresh gate passes.

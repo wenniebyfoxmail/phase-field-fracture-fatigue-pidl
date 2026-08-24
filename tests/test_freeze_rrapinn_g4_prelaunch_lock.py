@@ -51,7 +51,8 @@ def test_build_lock_preserves_first_detect_and_all_twenty_fem_records(
     monkeypatch.setattr(packet_validator, "validate", lambda payload: {
         "status": "pass_ready_for_prelaunch_lock_training_unauthorized"
     })
-    packet = _write(tmp_path / "packet.json", {
+    code_root = tmp_path / "repo"
+    packet = _write(code_root / "docs" / "packet.json", {
         "schema": "rrapinn-g4-u012-preregistration-v1",
         "development_case": "U0.12", "training_authorized": False,
         "qualification_snapshot": {"current_external_input_blockers": []},
@@ -87,25 +88,35 @@ def test_build_lock_preserves_first_detect_and_all_twenty_fem_records(
         },
     })
     analysis = _write(tmp_path / "analysis.json", {
-        "schema_version": "rrapinn-g4-contained-projector-v2",
-        "deterministic_sha256": "be764b01573109a9585eaf1f1e596ca1ca1ed15878acdcb4c1e5afc1e105d422",
+        "schema_version": "rrapinn-g4-contained-projector-v3",
+        "deterministic_sha256": "fbbe2b75a9733d4e9f242f5e3722a7abecee44323eb45988b34396203fabc4da",
         "artifact": {"sha256": _sha(projector)},
     })
+    pidl_geometry = tmp_path / "pidl_geometry.npz"
+    pidl_geometry.write_bytes(b"pidl geometry")
+    pidl_geometry_manifest = _write(tmp_path / "pidl_geometry.json", {
+        "schema": "rrapinn-g4-pidl-triangle-geometry-v1",
+    })
+    analysis_payload = json.loads(analysis.read_text())
+    analysis_payload["pidl_geometry"] = {"sha256": _sha(pidl_geometry)}
+    analysis.write_text(json.dumps(analysis_payload), encoding="utf-8")
     mapping = tmp_path / "mapping.npz"
     mapping.write_bytes(b"mapping")
     mapping_manifest = _write(tmp_path / "mapping.json", {"mapping": "v2"})
-    code_root = tmp_path / "repo"
     code = _code_closure(code_root)
     kwargs = dict(
         packet=packet, fem_manifest=fem, fem_validation_receipt=receipt,
         projector=projector, projector_builder_manifest=builder,
         projector_analysis_manifest=analysis, mapping_source=mapping,
-        mapping_source_manifest=mapping_manifest, code_root=code_root,
+        mapping_source_manifest=mapping_manifest, pidl_geometry=pidl_geometry,
+        pidl_geometry_manifest=pidl_geometry_manifest, code_root=code_root,
         analysis_code=code, integration_commit="a" * 40,
     )
     lock = build_lock(**kwargs)
     assert lock["training_authorized"] is False
     assert lock["first_detect_truth_cycle"] == 83
+    assert lock["schema"] == "rrapinn-g4-prelaunch-lock-v3"
+    assert all(not Path(row["path"]).is_absolute() for row in lock["artifacts"].values())
     assert len(lock["fem_sha256sum_entries"]) == 20
     assert {row["path"] for row in lock["locked_code"]["files"]} == EXPECTED_LOCKED_CODE
 

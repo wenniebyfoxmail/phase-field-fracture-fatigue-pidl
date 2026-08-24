@@ -378,6 +378,47 @@ def recompute_assignment(centroids: np.ndarray, pidl_mesh: Path) -> tuple[np.nda
     return assignment, contained
 
 
+def bind_pidl_triangle_geometry(*, pidl_mesh: Path, output: Path) -> dict[str, Any]:
+    """Freeze producer-order float32 PIDL triangle centroids for row checks."""
+    try:
+        import meshio  # type: ignore
+    except ImportError as exc:  # pragma: no cover - environment-specific
+        raise RuntimeError("meshio is required for PIDL geometry binding") from exc
+    mesh = meshio.read(pidl_mesh)
+    blocks = [block.data for block in mesh.cells if block.type == "triangle"]
+    if len(blocks) != 1:
+        raise ValidationError("PIDL mesh must contain exactly one triangle block")
+    points = np.asarray(mesh.points[:, :2], dtype=np.float32)
+    connectivity = np.asarray(blocks[0], dtype=np.int64)
+    centroids = np.asarray(points[connectivity].mean(axis=1), dtype=np.float32)
+    if centroids.shape != (90000, 2) or not np.all(np.isfinite(centroids)):
+        raise ValidationError("PIDL producer-order triangle geometry mismatch")
+    manifest_path = output.with_suffix(".manifest.json")
+    if output.exists() or manifest_path.exists():
+        raise FileExistsError(f"refusing to overwrite PIDL geometry: {output}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary_name = tempfile.mkstemp(prefix=f".{output.name}.", dir=output.parent)
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            np.savez_compressed(handle, pidl_triangle_centroids=centroids)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.link(temporary, output)
+    finally:
+        temporary.unlink(missing_ok=True)
+    manifest = {
+        "schema": "rrapinn-g4-pidl-triangle-geometry-v1",
+        "coordinate_dtype": "float32_producer_geometry",
+        "row_semantics": "mesh_triangle_block_order",
+        "triangle_count": int(len(centroids)),
+        "pidl_mesh_sha256": sha256_file(pidl_mesh),
+        "artifact_sha256": sha256_file(output),
+    }
+    _exclusive_bytes(manifest_path, _canonical_json(manifest))
+    return manifest
+
+
 def bind_projector_source(
     *,
     centroids: np.ndarray,
@@ -446,11 +487,12 @@ def main() -> None:
     parser.add_argument("--pidl-mesh", type=Path)
     parser.add_argument("--legacy-projector", type=Path)
     parser.add_argument("--mapping-source-output", type=Path)
+    parser.add_argument("--pidl-geometry-output", type=Path)
     args = parser.parse_args()
     receipt, centroids, areas = validate_package(args.package)
-    mapping_args = (args.pidl_mesh, args.legacy_projector, args.mapping_source_output)
+    mapping_args = (args.legacy_projector, args.mapping_source_output)
     if any(value is not None for value in mapping_args):
-        if not all(value is not None for value in mapping_args):
+        if args.pidl_mesh is None or not all(value is not None for value in mapping_args):
             parser.error("projector validation requires all three projector arguments")
         receipt["projector_source"] = bind_projector_source(
             centroids=centroids,
@@ -458,6 +500,12 @@ def main() -> None:
             pidl_mesh=args.pidl_mesh,
             legacy_projector=args.legacy_projector,
             output=args.mapping_source_output,
+        )
+    if args.pidl_geometry_output is not None:
+        if args.pidl_mesh is None:
+            parser.error("--pidl-geometry-output requires --pidl-mesh")
+        receipt["pidl_geometry"] = bind_pidl_triangle_geometry(
+            pidl_mesh=args.pidl_mesh, output=args.pidl_geometry_output,
         )
     encoded = _canonical_json(receipt)
     _exclusive_bytes(args.receipt, encoded)

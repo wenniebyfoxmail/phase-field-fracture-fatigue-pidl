@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "source"))
 
 from rrapinn_g4_launch_contract import (  # noqa: E402
+    CANONICAL_RESTART_MANIFEST_SHA256,
     LaunchContractError,
     load_and_verify_prelaunch_lock,
     verify_user_authorization,
@@ -31,13 +32,18 @@ def test_lock_and_authorization_are_both_required(tmp_path: Path):
     head = "a" * 40
     lock = tmp_path / "lock.json"
     lock.write_text(json.dumps({
-        "schema": "rrapinn-g4-prelaunch-lock-v2",
+        "schema": "rrapinn-g4-prelaunch-lock-v3",
         "status": "READY_FOR_INDEPENDENT_GATE_TRAINING_UNAUTHORIZED",
         "training_authorized": False, "development_case": "U0.12",
         "first_detect_truth_cycle": 83, "confirmation_used_as_truth": False,
         "integration_commit": head,
+        "producer_contract": {
+            "restart_manifest_sha256": CANONICAL_RESTART_MANIFEST_SHA256,
+        },
         "locked_code": {"files": [{"path": "source/x.py", "sha256": _sha(code)}]},
-        "artifacts": {"packet": {"path": str(artifact), "sha256": _sha(artifact)}},
+        "artifacts": {"packet": {
+            "scope": "bundle", "path": artifact.name, "sha256": _sha(artifact),
+        }},
     }, sort_keys=True), encoding="utf-8")
     lock_sha = _sha(lock)
     assert load_and_verify_prelaunch_lock(lock, lock_sha, repo, head)["training_authorized"] is False
@@ -68,3 +74,13 @@ def test_authorization_cannot_expand_to_heldout(tmp_path: Path):
     }), encoding="utf-8")
     with pytest.raises(LaunchContractError, match="does not exactly match"):
         verify_user_authorization(auth, "b" * 64, "a" * 40)
+
+
+def test_frozen_command_cannot_accept_a_caller_selected_restart_hash(tmp_path: Path):
+    from scripts.run_rrapinn_g4_arm import frozen_command
+    command = frozen_command(
+        repo=tmp_path, arm="A_absent", restart_bundle=tmp_path / "restart",
+        producer_head="a" * 40,
+    )
+    index = command.index("--resume-bundle-manifest-sha256")
+    assert command[index + 1] == CANONICAL_RESTART_MANIFEST_SHA256

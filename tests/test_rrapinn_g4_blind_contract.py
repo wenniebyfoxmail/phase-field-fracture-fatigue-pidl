@@ -1,5 +1,6 @@
 import csv
 import hashlib
+import json
 import sys
 from pathlib import Path
 
@@ -53,10 +54,41 @@ def _fixture(tmp_path: Path):
             })
     _write_csv(metrics, BLIND_METRICS_COLUMNS, rows)
     artifacts = {}
-    for name in ("analysis_code", "fem_artifact", "projector_artifact"):
+    for name in ("prelaunch_lock", "fem_artifact", "projector_artifact"):
         path = tmp_path / f"{name}.bin"
         path.write_bytes(name.encode("ascii"))
         artifacts[name] = path
+    arm_manifests = []
+    for arm in ARMS:
+        root = tmp_path / arm
+        root.mkdir()
+        states = {}
+        for cycle, step in ((76, 379), (82, 409)):
+            records = {}
+            for field in ("residual_fields", "element_fields"):
+                path = root / f"{field}_{cycle}.npz"
+                path.write_bytes(f"{arm}:{field}:{cycle}".encode())
+                records[field] = {
+                    "path": path.name,
+                    "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                }
+            states[str(cycle)] = {"cycle": cycle, "raw_step": step, **records}
+        receipt = root / "event.json"
+        receipt.write_text("{}\n", encoding="utf-8")
+        manifest = root / "analysis.json"
+        manifest.write_text(json.dumps({
+            "schema": "rrapinn-g4-blind-analysis-input-v1",
+            "opaque_arm": arm, "development_case": "U0.12", "states": states,
+            "event": {
+                "kind": "first_detect",
+                "receipt": {
+                    "path": receipt.name,
+                    "sha256": hashlib.sha256(receipt.read_bytes()).hexdigest(),
+                },
+            },
+        }), encoding="utf-8")
+        arm_manifests.append(manifest)
+    artifacts["arm_manifests"] = arm_manifests
     seal = tmp_path / "seal.json"
     seal_hash = seal_metrics(metrics_csv=metrics, output_seal=seal, **artifacts)
     arm_map = tmp_path / "arm_map.csv"
@@ -170,6 +202,20 @@ def test_unblind_rejects_tampered_metrics_before_reading_map(tmp_path):
             arm_map_csv=arm_map,
             output_csv=tmp_path / "out.csv",
             **artifacts,
+        )
+
+
+def test_seal_binds_every_manifest_referenced_input(tmp_path):
+    metrics, artifacts, seal, seal_hash, arm_map = _fixture(tmp_path)
+    manifest = artifacts["arm_manifests"][0]
+    payload = json.loads(manifest.read_text())
+    residual = manifest.parent / payload["states"]["76"]["residual_fields"]["path"]
+    residual.write_bytes(b"tampered")
+    with pytest.raises(ContractError, match="analysis input artifact hash"):
+        unblind_metrics(
+            seal_path=seal, expected_seal_sha256=seal_hash,
+            metrics_csv=metrics, arm_map_csv=arm_map,
+            output_csv=tmp_path / "out.csv", **artifacts,
         )
 
 
