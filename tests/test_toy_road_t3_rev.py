@@ -533,12 +533,130 @@ def _allow_test_matlab_identity(
         lambda _paths: dict(seal_builder.EXPECTED_EXECUTION["four_binary_sha256"]),
         raising=False,
     )
+    monkeypatch.setattr(module, "require_qualified_runtime_paths", lambda *args: None, raising=False)
+    monkeypatch.setattr(module, "require_qualified_griphfith_sources", lambda *args: None, raising=False)
     if allow_input_assets:
         monkeypatch.setattr(
             module, "input_asset_sha256",
             lambda _path: module.EXPECTED_INPUT_ASSET_SHA256["sens_mesh.m"],
             raising=False,
         )
+
+
+def test_launcher_rejects_substituted_griphfith_tree_before_root_or_consumption(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Identical-looking bytes from a substitute checkout do not satisfy the sealed path."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    inputs["matlab"] = Path(r"C:\Program Files\MATLAB\R2025b\bin\matlab.exe")
+    seal_builder = load_module("build_t3_rev_seal")
+    monkeypatch.setattr(
+        module, "executable_sha256",
+        lambda _path: seal_builder.EXPECTED_EXECUTION["matlab"]["executable_sha256"],
+    )
+    with pytest.raises(module.LaunchError, match="qualified.*path|GRIPHFiTH"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+
+
+def test_sealed_runtime_identity_pins_exact_matlab_executable_path() -> None:
+    seal_builder = load_module("build_t3_rev_seal")
+    assert seal_builder.EXPECTED_EXECUTION["matlab_executable_path"] == (
+        r"C:\Program Files\MATLAB\R2025b\bin\matlab.exe"
+    )
+
+
+def test_launcher_rejects_non_mex_source_mutation_before_root_or_consumption(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Every qualified MATLAB/C/C++/header source, not just binaries, is byte-bound."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    real_source_validator = module.require_qualified_griphfith_sources
+    _allow_test_matlab_identity(module, monkeypatch)
+    monkeypatch.setattr(module, "require_qualified_griphfith_sources", real_source_validator)
+    evidence = strict_json(
+        inputs["repo_root"] / "producer_handoffs" /
+        "rebuilt_initial_mex_qualification_20260801" / "build" / "SOURCE_HASHES.json"
+    )
+    records = evidence["locked_git_tree_inventory"]
+    assert isinstance(records, list) and len(records) == 221
+    source_repo = Path(r"C:\q4diag\griphfith-pf-rebuild-355d4c83")
+    if not source_repo.is_dir():
+        pytest.skip("qualified GRIPHFiTH Git object database is unavailable")
+    for record in records:
+        relative = record["path"]
+        payload = subprocess.check_output([
+            "git", "-C", str(source_repo), "show",
+            f"355d4c83fefc2db88c32031a2dd2623b3de85c89:{relative}",
+        ])
+        target = inputs["griphfith_root"] / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
+    mutated = inputs["griphfith_root"] / "Sources" / "+phase_field" / "System.m"
+    assert mutated.is_file()
+    mutated.write_bytes(mutated.read_bytes() + b"\n% mutation\n")
+    with pytest.raises(module.LaunchError, match="qualified source.*System.m|System.m.*SHA-256"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+
+
+def test_tampered_extension_shadow_leaves_no_root_or_consumption(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+    manifest = strict_json(inputs["extension_root"] / "EXTENSION_SOURCE_MANIFEST.json")
+    shadow = inputs["extension_root"] / manifest["shadow_files"][0]["path"]
+    shadow.write_bytes(shadow.read_bytes() + b"\n% tampered after sealing\n")
+    with pytest.raises(module.LaunchError, match="extension shadow|extension source verification"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+
+
+def test_protocol_construction_failure_leaves_no_root_or_consumption(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+    def reject(*args, **kwargs):
+        raise module.LaunchError("injected authoritative protocol failure")
+    monkeypatch.setattr(module, "build_future_execution_lock", reject, raising=False)
+    with pytest.raises(module.LaunchError, match="protocol failure"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+    assert not module.seal_consumption_marker(inputs["seal_path"]).exists()
+
+
+def test_io_failure_after_root_claim_is_consumed_prepared_no_launch(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Preparation I/O failure is terminal for the root and cannot masquerade as preflight."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+    monkeypatch.setattr(
+        module, "materialize_runtime_overlay",
+        lambda *args, **kwargs: (_ for _ in ()).throw(OSError("injected storage failure")),
+    )
+    with pytest.raises(module.PreparedLaunchError, match="consumed/prepared"):
+        module.launch_t3_rev(**inputs)
+    assert inputs["run_root"].is_dir()
+    assert module.seal_consumption_marker(inputs["seal_path"]).is_file()
+    receipt = strict_json(inputs["run_root"] / "receipts" / "PREPARED_NO_LAUNCH.json")
+    assert receipt["status"] == "PREPARED_NO_LAUNCH"
+    assert receipt["resume_allowed"] is False
 
 
 def test_busy_refusal_precedes_root_creation(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

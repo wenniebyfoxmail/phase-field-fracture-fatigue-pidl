@@ -50,7 +50,7 @@ EXPECTED_MATLAB = {
     "blas": "Intel(R) oneAPI Math Kernel Library Version 2024.1-Product Build 20240215 for Intel(R) 64 architecture applications (CNR branch auto)",
     "lapack": "Intel(R) oneAPI Math Kernel Library Version 2024.1-Product Build 20240215 for Intel(R) 64 architecture applications (CNR branch auto) supporting Linear Algebra PACKage (LAPACK 3.11.0)",
 }
-EXPECTED_EXECUTION = {
+QUALIFIED_T3_EXECUTION = {
     "case_physics_contract_sha256": "fbbe2c46ec394f20589e7c150783a08b5fbd79d13e51ce74eef90930def0146c",
     "family_contract_sha256": "a53cd26a457801fe87cce9afea19ca1ea21e1009567b06fb3bb813fe7c3279d2",
     "four_binary_sha256": EXPECTED_MEX,
@@ -66,6 +66,10 @@ EXPECTED_EXECUTION = {
         "basis": "static_launch_environment_bound_by_committed_launcher",
         "launcher_sha256": "65a317bbaa4242b272e9fd74a54e5a19c0d33c493ac423b79244386dcd443417",
     },
+}
+EXPECTED_EXECUTION = {
+    **QUALIFIED_T3_EXECUTION,
+    "matlab_executable_path": "C:\\Program Files\\MATLAB\\R2025b\\bin\\matlab.exe",
 }
 
 
@@ -230,7 +234,7 @@ def _require_t3_adjudication(adjudication: Mapping[str, object], terminal: Mappi
     if terminal.get("case_id") != T3_CASE_ID or terminal.get("source_commit") != BASE_SOURCE_COMMIT \
             or terminal.get("runtime_lock_sha256") != execution.get("runtime_lock_sha256"):
         raise SealError("T3 terminal manifest does not validate the adjudication claims")
-    if not _exact_json_equal(execution, EXPECTED_EXECUTION):
+    if not _exact_json_equal(execution, QUALIFIED_T3_EXECUTION):
         raise SealError("T3 runtime identity is not the exact qualified mapping")
     return execution
 

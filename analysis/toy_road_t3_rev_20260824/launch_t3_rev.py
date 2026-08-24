@@ -21,6 +21,8 @@ from typing import Any, Mapping
 CASE_ID = "T3_rev_loading_order"
 AUTHORIZATION_CAPABILITY = "exactly_one_T3_rev_loading_order_execution"
 SUITESPARSE_ROOT = Path(r"C:\SuiteSparse\SuiteSparse-dev")
+QUALIFIED_SOURCE_COMMIT = "355d4c83fefc2db88c32031a2dd2623b3de85c89"
+QUALIFIED_SOURCE_COUNT = 221
 CREATE_NO_WINDOW = 0x08000000
 CREATE_NEW_PROCESS_GROUP = 0x00000200
 QUALIFIED_TEMPLATE_LOCK_SHA256 = "a7ccff1083bd0c86a7111a8e5a6256a5836688602e3dd269ed77a53c4cbe5869"
@@ -36,6 +38,10 @@ class BusyExperimentError(RuntimeError):
 
 class LaunchError(RuntimeError):
     """Raised when the sealed launch inputs cannot be proven consistent."""
+
+
+class PreparedLaunchError(LaunchError):
+    """Raised after a validated launch has claimed a root but failed during preparation."""
 
 
 def sha256(path: Path) -> str:
@@ -116,11 +122,15 @@ def read_json(path: Path) -> dict[str, object]:
 
 
 def write_json_create_new(path: Path, value: Mapping[str, object]) -> None:
-    payload = json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8") + b"\n"
+    payload = json_payload(value)
     with Path(path).open("xb") as stream:
         stream.write(payload)
         stream.flush()
         os.fsync(stream.fileno())
+
+
+def json_payload(value: Mapping[str, object]) -> bytes:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8") + b"\n"
 
 
 def matlab_processes() -> list[dict[str, object]]:
@@ -409,6 +419,91 @@ def input_asset_sha256(path: Path) -> str:
     return sha256(path)
 
 
+def _normalized_qualified_path(path: Path | str) -> str:
+    """Match the qualified MATLAB validator's canonical, slash, and case rules."""
+    return str(Path(path).resolve()).replace("\\", "/").lower()
+
+
+def require_qualified_runtime_paths(
+        runtime: Mapping[str, object], matlab: Path, griphfith_root: Path) -> None:
+    """Pin executable, GRIPHFiTH, and SuiteSparse to their sealed absolute locations."""
+    executable_path = runtime.get("matlab_executable_path")
+    matlab_identity = runtime.get("matlab")
+    if type(executable_path) is not str or not isinstance(matlab_identity, dict):
+        raise LaunchError("sealed MATLAB executable path identity is missing")
+    path_order = matlab_identity.get("absolute_path_order")
+    if not isinstance(path_order, list) or len(path_order) != 8 \
+            or not all(type(path) is str for path in path_order):
+        raise LaunchError("sealed MATLAB absolute path order is malformed")
+    actual_tail = [
+        griphfith_root / "Sources",
+        SUITESPARSE_ROOT / "CHOLMOD" / "MATLAB",
+        SUITESPARSE_ROOT / "AMD" / "MATLAB",
+        SUITESPARSE_ROOT / "COLAMD" / "MATLAB",
+        SUITESPARSE_ROOT / "CCOLAMD" / "MATLAB",
+        SUITESPARSE_ROOT / "CAMD" / "MATLAB",
+    ]
+    if _normalized_qualified_path(matlab) != _normalized_qualified_path(executable_path):
+        raise LaunchError("MATLAB executable is not the sealed qualified absolute path")
+    if [_normalized_qualified_path(path) for path in actual_tail] \
+            != [_normalized_qualified_path(path) for path in path_order[2:]]:
+        raise LaunchError("GRIPHFiTH or SuiteSparse is not the sealed qualified absolute path order")
+
+
+def qualified_source_inventory(repo_root: Path) -> dict[str, str]:
+    """Load the exact 221-record source inventory sealed by qualification evidence."""
+    evidence_path = (
+        repo_root / "producer_handoffs" / "rebuilt_initial_mex_qualification_20260801" /
+        "build" / "SOURCE_HASHES.json"
+    )
+    if not evidence_path.is_file() or sha256(evidence_path) != QUALIFIED_SOURCE_HASHES_SHA256:
+        raise LaunchError("qualified source inventory evidence bytes are not exact")
+    evidence = read_json(evidence_path)
+    records = evidence.get("locked_git_tree_inventory")
+    if set(evidence) != {
+            "schema_version", "locked_commit", "consumed_fortran", "locked_git_tree_inventory",
+    } or evidence.get("schema_version") != "rebuilt_initial_mex_source_hashes_v1" \
+            or evidence.get("locked_commit") != QUALIFIED_SOURCE_COMMIT \
+            or not isinstance(records, list) or len(records) != QUALIFIED_SOURCE_COUNT:
+        raise LaunchError("qualified source inventory identity or closure is malformed")
+    inventory: dict[str, str] = {}
+    folded: set[str] = set()
+    for record in records:
+        if not isinstance(record, dict) or set(record) != {"path", "sha256"}:
+            raise LaunchError("qualified source inventory entry is malformed")
+        relative, digest = record["path"], record["sha256"]
+        path = Path(relative) if type(relative) is str else Path(".")
+        if type(relative) is not str or type(digest) is not str or len(digest) != 64 \
+                or any(character not in "0123456789abcdef" for character in digest) \
+                or path.is_absolute() or ".." in path.parts \
+                or path.suffix.lower() not in {".m", ".c", ".cpp", ".h"} \
+                or relative in inventory or relative.casefold() in folded:
+            raise LaunchError("qualified source inventory entry or path closure is malformed")
+        inventory[relative] = digest
+        folded.add(relative.casefold())
+    if len(inventory) != QUALIFIED_SOURCE_COUNT:
+        raise LaunchError("qualified source inventory closure is not exact")
+    return inventory
+
+
+def require_qualified_griphfith_sources(repo_root: Path, griphfith_root: Path) -> None:
+    """Validate the complete qualified source checkout before any root is claimed."""
+    inventory = qualified_source_inventory(repo_root)
+    actual_paths: set[str] = set()
+    for path in griphfith_root.rglob("*"):
+        if path.is_file() and path.suffix.lower() in {".m", ".c", ".cpp", ".h"} \
+                and ".git" not in path.relative_to(griphfith_root).parts:
+            actual_paths.add(path.relative_to(griphfith_root).as_posix())
+    if actual_paths != set(inventory):
+        raise LaunchError("qualified source checkout does not have the exact 221-entry closure")
+    for relative, expected_digest in inventory.items():
+        source = griphfith_root / Path(relative)
+        if not source.is_file():
+            raise LaunchError(f"qualified source is missing or not a file: {relative}")
+        if sha256(source) != expected_digest:
+            raise LaunchError(f"qualified source SHA-256 differs: {relative}")
+
+
 def _paths_related(left: Path, right: Path) -> bool:
     left_text = os.path.normcase(os.path.abspath(str(left)))
     right_text = os.path.normcase(os.path.abspath(str(right)))
@@ -485,102 +580,47 @@ def _extension_shadow_hashes(manifest: Mapping[str, object]) -> dict[str, str]:
     return output
 
 
-def materialize_runtime_overlay(
-        extension_root: Path, manifest: Mapping[str, object], runtime_overlay: Path,
-        initial_source: Path) -> dict[str, str]:
-    """Hard-link the sealed extension and rebuilt initial MEX into one path slot."""
+def validate_runtime_overlay_inputs(
+        extension_root: Path, manifest: Mapping[str, object]) -> tuple[dict[str, str], dict[str, bytes]]:
+    """Validate and snapshot every extension shadow before a run root exists."""
     shadow_hashes = _extension_shadow_hashes(manifest)
-    runtime_overlay.mkdir(parents=True, exist_ok=False)
+    payloads: dict[str, bytes] = {}
     for relative, expected_digest in shadow_hashes.items():
         source = extension_root / relative
-        target = runtime_overlay / relative
-        if not source.is_file() or sha256(source) != expected_digest:
+        if not source.is_file():
+            raise LaunchError(f"extension shadow is missing before launch: {relative}")
+        payload = source.read_bytes()
+        if hashlib.sha256(payload).hexdigest() != expected_digest:
             raise LaunchError(f"extension shadow bytes changed before launch: {relative}")
+        payloads[relative] = payload
+    return shadow_hashes, payloads
+
+
+def materialize_runtime_overlay(
+        shadow_payloads: Mapping[str, bytes], runtime_overlay: Path,
+        initial_source: Path) -> None:
+    """Materialize only the already-validated overlay snapshot into a claimed root."""
+    runtime_overlay.mkdir(parents=True, exist_ok=False)
+    for relative, payload in shadow_payloads.items():
+        target = runtime_overlay / relative
         target.parent.mkdir(parents=True, exist_ok=True)
-        os.link(source, target)
-        if sha256(target) != expected_digest:
-            raise LaunchError(f"runtime overlay shadow bytes differ: {relative}")
+        with target.open("xb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
     initial_target = (
         runtime_overlay / "+phase_field" / "+mex" / "+fem" / "+assembly" /
         "+equilibrium" / "initial.mexw64"
     )
     initial_target.parent.mkdir(parents=True, exist_ok=True)
     os.link(initial_source, initial_target)
-    return shadow_hashes
 
 
-def _write_busy_receipt(receipts: Path, processes: list[dict[str, object]]) -> None:
-    write_json_create_new(receipts / "BUSY_NO_LAUNCH.json", {
-        "schema_version": "toy_road_t3_rev_busy_no_launch_v1",
-        "status": "BUSY_NO_LAUNCH",
-        "case_id": CASE_ID,
-        "resume_allowed": False,
-        "new_authorization_required": True,
-        "observed_processes": processes,
-    })
-
-
-def launch_t3_rev(
-        repo_root: Path, run_root: Path, seal_path: Path, extension_root: Path,
-        template_run: Path, griphfith_root: Path, input_assets_root: Path,
-        matlab: Path) -> dict[str, object]:
-    """Create the sole T3-rev process after both idle checks and all input locks."""
-    first_processes = matlab_processes()
-    if first_processes:
-        raise BusyExperimentError("BUSY_NO_LAUNCH: existing MATLAB experiment blocks T3-rev")
-    repo_root, run_root = Path(repo_root).resolve(), Path(run_root).resolve()
-    seal_path, extension_root = Path(seal_path).resolve(), Path(extension_root).resolve()
-    template_run, griphfith_root = Path(template_run).resolve(), Path(griphfith_root).resolve()
-    input_assets_root, matlab = Path(input_assets_root).resolve(), Path(matlab).resolve()
-    if run_root.exists():
-        raise FileExistsError(f"T3-rev run root already exists: {run_root}")
-    repo_commit = clean_repository_commit(repo_root)
-    seal = _require_seal(seal_path, repo_commit)
-    sealed_base_root, manifest, case = _require_extension(repo_root, extension_root, seal)
-    runtime = seal["runtime_identity"]
-    if not isinstance(runtime, dict):
-        raise LaunchError("seal runtime identity is malformed")
-    base_protocol = load_protocol(
-        sealed_base_root / "toy_road_protocol.py", "t3_rev_launch_base_protocol"
-    )
-    generated_protocol = load_protocol(
-        extension_root / "toy_road_protocol.py", "t3_rev_launch_generated_protocol"
-    )
-    _require_template_inputs(template_run, runtime, matlab, base_protocol)
-    if not (sealed_base_root / "run_toy_road_runtime_bridge.m").is_file():
-        raise LaunchError("sealed source inputs are incomplete")
-    expected_binaries = runtime.get("four_binary_sha256")
-    binary_paths = require_runtime_binaries(repo_root, griphfith_root, expected_binaries)
-    initial_source = binary_paths["initial"]
-    roots = {name: run_root / name for name in ("output", "work", "temp", "tmp", "pref", "cache")}
-    roots["matlab_startup_pref"] = run_root / "pref.matlab-startup"
-    receipts = run_root / "receipts"
-    runtime_overlay = run_root / ".toy-road-runtime-overlay"
-    require_input_assets(repo_root, input_assets_root, roots)
-    _require_unconsumed_seal(seal_path)
-
-    run_root.mkdir(parents=True, exist_ok=False)
-    receipts.mkdir(parents=True, exist_ok=False)
-    shadow_hashes = materialize_runtime_overlay(
-        extension_root, manifest, runtime_overlay, initial_source
-    )
-    matlab_paths = [
-        runtime_overlay,
-        sealed_base_root,
-        griphfith_root / "Sources",
-        SUITESPARSE_ROOT / "CHOLMOD" / "MATLAB",
-        SUITESPARSE_ROOT / "AMD" / "MATLAB",
-        SUITESPARSE_ROOT / "COLAMD" / "MATLAB",
-        SUITESPARSE_ROOT / "CCOLAMD" / "MATLAB",
-        SUITESPARSE_ROOT / "CAMD" / "MATLAB",
-    ]
-    if not (griphfith_root / "Sources").is_dir():
-        raise LaunchError("GRIPHFiTH source identity is incomplete")
-    family = read_json(extension_root / "CASE_PHYSICS_CONTRACTS.json")
-    family_hash = family.get("family_contract_sha256")
-    case_hash = case.get("case_physics_contract_sha256")
-    if not isinstance(family_hash, str) or not isinstance(case_hash, str):
-        raise LaunchError("extension family or case hash is malformed")
+def build_future_execution_lock(
+        generated_protocol: Any, runtime: Mapping[str, object], expected_binaries: object,
+        family_hash: str, case_hash: str, matlab_paths: list[Path],
+        roots: Mapping[str, Path]) -> dict[str, object]:
+    """Construct and authoritatively validate the future lock before creating its root."""
     sealed_matlab = runtime.get("matlab")
     if not isinstance(sealed_matlab, dict):
         raise LaunchError("seal MATLAB identity is malformed")
@@ -607,15 +647,115 @@ def launch_t3_rev(
         )
         generated_protocol.validate_execution_input_lock(lock, CASE_ID)
     except Exception as error:
-        raise LaunchError(f"generated execution lock failed authoritative protocol validation: {error}") from error
-    lock_path = receipts / "T3_REV_EXECUTION_INPUT_LOCK.json"
-    write_json_create_new(lock_path, lock)
+        raise LaunchError(
+            f"generated execution lock failed authoritative protocol validation: {error}"
+        ) from error
+    return lock
+
+
+def _write_busy_receipt(receipts: Path, processes: list[dict[str, object]]) -> None:
+    write_json_create_new(receipts / "BUSY_NO_LAUNCH.json", {
+        "schema_version": "toy_road_t3_rev_busy_no_launch_v1",
+        "status": "BUSY_NO_LAUNCH",
+        "case_id": CASE_ID,
+        "resume_allowed": False,
+        "new_authorization_required": True,
+        "observed_processes": processes,
+    })
+
+
+def _raise_prepared_failure(
+        seal_path: Path, run_root: Path, receipts: Path, error: OSError) -> None:
+    """Consume a root claimed after PASS preflight and record that no launch occurred."""
+    marker_error: Exception | None = None
+    if not seal_consumption_marker(seal_path).exists():
+        try:
+            consume_seal(seal_path, run_root)
+        except Exception as consumed_error:  # preserve both fail-closed diagnostics
+            marker_error = consumed_error
     try:
-        generated_protocol.validate_execution_input_lock(read_json(lock_path), CASE_ID)
-    except Exception as error:
-        raise LaunchError(f"written execution lock failed authoritative protocol validation: {error}") from error
+        receipts.mkdir(parents=True, exist_ok=True)
+        failure_path = receipts / "PREPARED_NO_LAUNCH.json"
+        if not failure_path.exists():
+            write_json_create_new(failure_path, {
+                "schema_version": "toy_road_t3_rev_prepared_no_launch_v1",
+                "status": "PREPARED_NO_LAUNCH",
+                "case_id": CASE_ID,
+                "resume_allowed": False,
+                "new_authorization_required": True,
+                "error_type": type(error).__name__,
+            })
+    except OSError:
+        pass
+    detail = f"; seal consumption also failed: {marker_error}" if marker_error else ""
+    raise PreparedLaunchError(
+        f"validated launch root was consumed/prepared but no process was launched: {error}{detail}"
+    ) from error
+
+
+def launch_t3_rev(
+        repo_root: Path, run_root: Path, seal_path: Path, extension_root: Path,
+        template_run: Path, griphfith_root: Path, input_assets_root: Path,
+        matlab: Path) -> dict[str, object]:
+    """Create the sole T3-rev process after both idle checks and all input locks."""
+    first_processes = matlab_processes()
+    if first_processes:
+        raise BusyExperimentError("BUSY_NO_LAUNCH: existing MATLAB experiment blocks T3-rev")
+    repo_root, run_root = Path(repo_root).resolve(), Path(run_root).resolve()
+    seal_path, extension_root = Path(seal_path).resolve(), Path(extension_root).resolve()
+    template_run, griphfith_root = Path(template_run).resolve(), Path(griphfith_root).resolve()
+    input_assets_root, matlab = Path(input_assets_root).resolve(), Path(matlab).resolve()
+    if run_root.exists():
+        raise FileExistsError(f"T3-rev run root already exists: {run_root}")
+    repo_commit = clean_repository_commit(repo_root)
+    seal = _require_seal(seal_path, repo_commit)
+    sealed_base_root, manifest, case = _require_extension(repo_root, extension_root, seal)
+    runtime = seal["runtime_identity"]
+    if not isinstance(runtime, dict):
+        raise LaunchError("seal runtime identity is malformed")
+    require_qualified_runtime_paths(runtime, matlab, griphfith_root)
+    base_protocol = load_protocol(
+        sealed_base_root / "toy_road_protocol.py", "t3_rev_launch_base_protocol"
+    )
+    generated_protocol = load_protocol(
+        extension_root / "toy_road_protocol.py", "t3_rev_launch_generated_protocol"
+    )
+    _require_template_inputs(template_run, runtime, matlab, base_protocol)
+    if not (sealed_base_root / "run_toy_road_runtime_bridge.m").is_file():
+        raise LaunchError("sealed source inputs are incomplete")
+    expected_binaries = runtime.get("four_binary_sha256")
+    binary_paths = require_runtime_binaries(repo_root, griphfith_root, expected_binaries)
+    require_qualified_griphfith_sources(repo_root, griphfith_root)
+    initial_source = binary_paths["initial"]
+    roots = {name: run_root / name for name in ("output", "work", "temp", "tmp", "pref", "cache")}
+    roots["matlab_startup_pref"] = run_root / "pref.matlab-startup"
+    receipts = run_root / "receipts"
+    runtime_overlay = run_root / ".toy-road-runtime-overlay"
+    require_input_assets(repo_root, input_assets_root, roots)
+    _require_unconsumed_seal(seal_path)
+    shadow_hashes, shadow_payloads = validate_runtime_overlay_inputs(extension_root, manifest)
+    matlab_paths = [
+        runtime_overlay,
+        sealed_base_root,
+        griphfith_root / "Sources",
+        SUITESPARSE_ROOT / "CHOLMOD" / "MATLAB",
+        SUITESPARSE_ROOT / "AMD" / "MATLAB",
+        SUITESPARSE_ROOT / "COLAMD" / "MATLAB",
+        SUITESPARSE_ROOT / "CCOLAMD" / "MATLAB",
+        SUITESPARSE_ROOT / "CAMD" / "MATLAB",
+    ]
+    family = read_json(extension_root / "CASE_PHYSICS_CONTRACTS.json")
+    family_hash = family.get("family_contract_sha256")
+    case_hash = case.get("case_physics_contract_sha256")
+    if not isinstance(family_hash, str) or not isinstance(case_hash, str):
+        raise LaunchError("extension family or case hash is malformed")
+    lock = build_future_execution_lock(
+        generated_protocol, runtime, expected_binaries, family_hash, case_hash, matlab_paths, roots
+    )
+    lock_path = receipts / "T3_REV_EXECUTION_INPUT_LOCK.json"
+    lock_sha256 = hashlib.sha256(json_payload(lock)).hexdigest()
     launch_receipt_path = receipts / "T3_REV_LAUNCH_RECEIPT.json"
-    write_json_create_new(launch_receipt_path, {
+    launch_receipt = {
         "schema_version": "toy_road_t3_rev_launch_receipt_v1",
         "status": "PASS",
         "authorization_scope": "production_authorized",
@@ -629,15 +769,15 @@ def launch_t3_rev(
         "runtime_lock_sha256": runtime["runtime_lock_sha256"],
         "family_contract_sha256": family_hash,
         "case_physics_contract_sha256": case_hash,
-        "execution_input_lock_sha256": sha256(lock_path),
+        "execution_input_lock_sha256": lock_sha256,
         "seal_sha256": sha256(seal_path),
         "extension_source_manifest_sha256": sha256(extension_root / "EXTENSION_SOURCE_MANIFEST.json"),
         "extension_root": str(extension_root),
         "runtime_overlay_root": str(runtime_overlay),
         "extension_shadow_sha256": shadow_hashes,
         "thread_environment": copy.deepcopy(runtime["thread_settings"]),
-    })
-    require_bridge_authorization_receipt(read_json(launch_receipt_path))
+    }
+    require_bridge_authorization_receipt(launch_receipt)
     measurement_path = receipts / "T3_REV_RUNTIME_MEASUREMENT.json"
     prefix = os.pathsep.join(str(path) for path in matlab_paths)
     batch = (
@@ -654,25 +794,52 @@ def launch_t3_rev(
         "TOY_ROAD_RUNTIME_LOCK_SHA256": str(runtime["runtime_lock_sha256"]),
         "TOY_ROAD_FAMILY_CONTRACT_SHA256": family_hash,
         "TOY_ROAD_CASE_PHYSICS_CONTRACT_SHA256": case_hash,
-        "TOY_ROAD_EXECUTION_INPUT_LOCK_SHA256": sha256(lock_path),
+        "TOY_ROAD_EXECUTION_INPUT_LOCK_SHA256": lock_sha256,
         "TOY_ROAD_OUTPUT_ROOT": str(roots["output"]), "TOY_ROAD_WORK_ROOT": str(roots["work"]),
         "TOY_ROAD_TEMP_ROOT": str(roots["temp"]), "TOY_ROAD_TMP_ROOT": str(roots["tmp"]),
         "TOY_ROAD_PREF_ROOT": str(roots["pref"]), "TOY_ROAD_CACHE_ROOT": str(roots["cache"]),
         "TOY_ROAD_INPUT_ASSETS_ROOT": str(input_assets_root),
         "TOY_ROAD_AUTHORIZATION_RECEIPT": str(launch_receipt_path),
     })
-    consume_seal(seal_path, run_root)
+    root_created = False
+    try:
+        run_root.mkdir(parents=True, exist_ok=False)
+        root_created = True
+        receipts.mkdir(parents=True, exist_ok=False)
+        materialize_runtime_overlay(shadow_payloads, runtime_overlay, initial_source)
+        write_json_create_new(lock_path, lock)
+        write_json_create_new(launch_receipt_path, launch_receipt)
+    except OSError as error:
+        if root_created:
+            _raise_prepared_failure(seal_path, run_root, receipts, error)
+        raise
+    try:
+        consume_seal(seal_path, run_root)
+    except OSError as error:
+        _raise_prepared_failure(seal_path, run_root, receipts, error)
     final_processes = matlab_processes()
     if final_processes:
-        _write_busy_receipt(receipts, final_processes)
+        try:
+            _write_busy_receipt(receipts, final_processes)
+        except OSError as error:
+            _raise_prepared_failure(seal_path, run_root, receipts, error)
         raise BusyExperimentError("BUSY_NO_LAUNCH: final process check blocks T3-rev launch")
-    stdout = (run_root / "T3_REV.stdout.log").open("xb")
-    stderr = (run_root / "T3_REV.stderr.log").open("xb")
+    stdout = None
     try:
-        process = Popen(
-            [str(matlab), "-batch", batch], cwd=run_root, env=env, stdout=stdout, stderr=stderr,
-            creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
-        )
+        stdout = (run_root / "T3_REV.stdout.log").open("xb")
+        stderr = (run_root / "T3_REV.stderr.log").open("xb")
+    except OSError as error:
+        if stdout is not None:
+            stdout.close()
+        _raise_prepared_failure(seal_path, run_root, receipts, error)
+    try:
+        try:
+            process = Popen(
+                [str(matlab), "-batch", batch], cwd=run_root, env=env, stdout=stdout, stderr=stderr,
+                creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
+            )
+        except OSError as error:
+            _raise_prepared_failure(seal_path, run_root, receipts, error)
     finally:
         stdout.close()
         stderr.close()
