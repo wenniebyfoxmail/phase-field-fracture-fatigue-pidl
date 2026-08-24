@@ -746,6 +746,13 @@ def _validate_failure_package(
             or connectivity_values.shape[1] != 4 \
             or not np.array_equal(connectivity_values, rounded_connectivity):
         raise TerminalValidationError("failure package mesh arrays are not exact Q4 geometry")
+    if coordinates.shape[0] == 0 or connectivity_values.shape[0] == 0:
+        raise TerminalValidationError("failure package mesh arrays must be nonempty")
+    if np.any(rounded_connectivity < 1) or np.any(
+            rounded_connectivity > coordinates.shape[0]):
+        raise TerminalValidationError(
+            "failure package mesh connectivity indices are outside authenticated node rows"
+        )
     mesh_digest = hashlib.sha256(
         np.asarray(coordinates, dtype="<f8").tobytes(order="F")
         + np.asarray(rounded_connectivity, dtype="<i8").tobytes(order="F")
@@ -823,9 +830,11 @@ def _validate_failure_package(
         raise TerminalValidationError("failure package state0 is incomplete")
     state0_damage = protocol._require_double_array(state0["d_node"], f"{CASE_ID} failure state0.d_node")
     state0_alpha = protocol._require_double_array(state0["alpha_bar_gp"], f"{CASE_ID} failure state0.alpha_bar_gp")
-    if state0_damage.ndim != 2 or state0_damage.shape[1] != 1 \
-            or state0_alpha.ndim != 2 or state0_alpha.shape[1] != 4:
-        raise TerminalValidationError("failure package state0 shape is invalid")
+    if state0_damage.shape != (coordinates.shape[0], 1) \
+            or state0_alpha.shape != (connectivity_values.shape[0], 4):
+        raise TerminalValidationError(
+            "failure package mesh/state dimensions are not the authenticated geometry dimensions"
+        )
     if not isinstance(mesh_identity, dict):
         raise TerminalValidationError("failure package mesh contract is missing")
     shard_manifest = {
@@ -1031,6 +1040,119 @@ def _validate_startup_or_runtime_failure(
     }
 
 
+def _validate_no_pass_bootstrap_evidence(
+        run_root: Path, receipts: Path, terminal_root: Path,
+        credential_failure_path: Path, timeout_observed: bool,
+        launch: Any) -> dict[str, object]:
+    """Authenticate a started bootstrap that never received the PASS credential."""
+    launch_path = receipts / "T3_REV_LAUNCH_RECEIPT.json"
+    measurement_path = receipts / "T3_REV_RUNTIME_MEASUREMENT.json"
+    terminal_failure_path = receipts / "T3_REV_TERMINAL_FAILURE.json"
+    forbidden = (
+        launch_path, measurement_path, terminal_failure_path,
+        receipts / "T3_REV_LAUNCH_RECEIPT.INVALIDATED.json",
+        receipts / "PREPARED_NO_LAUNCH.json", receipts / "BUSY_NO_LAUNCH.json",
+        run_root / "T3_REV_FAILURE_PACKAGE", terminal_root,
+    )
+    stale = [str(path) for path in forbidden if path.exists()]
+    if stale:
+        raise TerminalValidationError(
+            "bootstrap credential failure carries stale PASS/producer evidence: "
+            + ", ".join(stale)
+        )
+    temporary_credentials = sorted(
+        path.name for path in receipts.glob(".T3_REV_LAUNCH_RECEIPT.json.*.tmp")
+    )
+    if temporary_credentials:
+        raise TerminalValidationError(
+            "bootstrap credential failure retains unpublished credential bytes"
+        )
+    stdout_path = run_root / "T3_REV.stdout.log"
+    stderr_path = run_root / "T3_REV.stderr.log"
+    if not stdout_path.is_file() or not stderr_path.is_file():
+        raise TerminalValidationError("bootstrap credential failure lacks exact launcher logs")
+    try:
+        stderr_lines = stderr_path.read_bytes().splitlines()
+    except OSError as error:
+        raise TerminalValidationError(f"cannot read bootstrap stderr evidence: {error}") from error
+    timeout_line = b"Exact launch credential was not published"
+    if timeout_observed != (timeout_line in stderr_lines):
+        raise TerminalValidationError("bootstrap credential timeout evidence is not exact")
+
+    pid_path = run_root / "launcher.pid"
+    recorded_pid: int | None = None
+    if pid_path.is_file():
+        pid_bytes = pid_path.read_bytes()
+        match = re.fullmatch(rb"([1-9][0-9]*)\n", pid_bytes)
+        if match is None:
+            raise TerminalValidationError("bootstrap launcher.pid bytes are not canonical")
+        recorded_pid = int(match.group(1))
+
+    credential_sha256: str | None = None
+    if credential_failure_path.is_file():
+        credential = _strict_json(credential_failure_path)
+        publication_error_types = {
+            "OSError", "FileExistsError", "FileNotFoundError", "PermissionError",
+            "NotADirectoryError", "IsADirectoryError", "BlockingIOError", "InterruptedError",
+        }
+        fields = {
+            "schema_version", "status", "case_id", "process_started", "pid",
+            "resume_allowed", "retry_allowed", "new_authorization_required", "error_type",
+        }
+        error_type = credential.get("error_type")
+        if set(credential) != fields \
+                or credential.get("schema_version") != "toy_road_t3_rev_launch_credential_failed_v1" \
+                or credential.get("status") != "LAUNCH_CREDENTIAL_FAILED" \
+                or credential.get("case_id") != CASE_ID \
+                or credential.get("process_started") is not True \
+                or type(credential.get("pid")) is not int or credential["pid"] <= 0 \
+                or credential.get("resume_allowed") is not False \
+                or credential.get("retry_allowed") is not False \
+                or credential.get("new_authorization_required") is not True \
+                or error_type not in publication_error_types:
+            raise TerminalValidationError("LAUNCH_CREDENTIAL_FAILED receipt schema is not exact")
+        if credential_failure_path.read_bytes() != launch.json_payload(credential):
+            raise TerminalValidationError("LAUNCH_CREDENTIAL_FAILED receipt bytes are not canonical")
+        if recorded_pid is not None and credential.get("pid") != recorded_pid:
+            raise TerminalValidationError("credential failure pid differs from launcher.pid")
+        credential_sha256 = _sha256(credential_failure_path)
+    elif not timeout_observed:
+        raise TerminalValidationError("no exact bootstrap credential failure evidence exists")
+    elif recorded_pid is None:
+        raise TerminalValidationError("credential timeout does not prove a started bootstrap pid")
+
+    allowed_receipts = {
+        "T3_REV_EXECUTION_INPUT_LOCK.json",
+        *({"LAUNCH_CREDENTIAL_FAILED.json"} if credential_failure_path.is_file() else set()),
+    }
+    actual_receipts = {
+        path.name for path in receipts.iterdir() if path.is_file()
+    }
+    if actual_receipts != allowed_receipts:
+        raise TerminalValidationError("bootstrap credential receipt closure is not exact")
+    allowed_top_level = {
+        ".toy-road-runtime-overlay", "receipts", "T3_REV.stdout.log", "T3_REV.stderr.log",
+        *({"launcher.pid"} if pid_path.is_file() else set()),
+    }
+    actual_top_level = {path.name for path in run_root.iterdir()}
+    if actual_top_level != allowed_top_level:
+        raise TerminalValidationError("bootstrap credential run-root closure is not exact")
+    return {
+        "failure_phase": (
+            "launch_credential_publication_failure"
+            if credential_failure_path.is_file() else "bootstrap_credential_timeout"
+        ),
+        "error_identifier": (
+            "LAUNCH_CREDENTIAL_FAILED" if credential_failure_path.is_file()
+            else "toyRoad:LaunchCredentialTimeout"
+        ),
+        "credential_failure_sha256": credential_sha256,
+        "launcher_pid_sha256": _sha256(pid_path) if pid_path.is_file() else None,
+        "stdout_sha256": _sha256(stdout_path),
+        "stderr_sha256": _sha256(stderr_path),
+    }
+
+
 def _validate_terminal(
         terminal_root: Path, *, sealed_base_root: Path, extension_root: Path,
         seal_path: Path, run_root: Path | None = None, destination: Path | None = None,
@@ -1069,24 +1191,87 @@ def _validate_terminal(
     base_before = builder.inventory_tree(sealed_base_root)
     extension_before = builder.inventory_tree(extension_root)
     seal = _strict_json(seal_path)
-    launch_receipt = _strict_json(receipts / "T3_REV_LAUNCH_RECEIPT.json")
     lock_path = receipts / "T3_REV_EXECUTION_INPUT_LOCK.json"
     lock = _strict_json(lock_path)
+    launch_path = receipts / "T3_REV_LAUNCH_RECEIPT.json"
+    credential_failure_path = receipts / "LAUNCH_CREDENTIAL_FAILED.json"
+    busy_path = receipts / "BUSY_NO_LAUNCH.json"
+    prepared_path = receipts / "PREPARED_NO_LAUNCH.json"
+    stderr_path = run_root / "T3_REV.stderr.log"
+    timeout_observed = stderr_path.is_file() and (
+        b"Exact launch credential was not published" in stderr_path.read_bytes().splitlines()
+    )
+    credential_evidence_exists = credential_failure_path.is_file() or timeout_observed
+    if busy_path.is_file():
+        raise TerminalValidationError(
+            "BUSY_NO_LAUNCH proves the final process check blocked before Popen; "
+            "it is not a bootstrap credential terminal"
+        )
+    if prepared_path.is_file() and not launch_path.is_file():
+        raise TerminalValidationError(
+            "PREPARED_NO_LAUNCH proves a pre-Popen launch failure, not a credential terminal"
+        )
+    if credential_evidence_exists and launch_path.exists():
+        raise TerminalValidationError(
+            "credential failure evidence cannot coexist with a live PASS launch receipt"
+        )
+    no_pass_bootstrap = credential_evidence_exists and not launch_path.exists()
+    launch_receipt: dict[str, object]
+    if no_pass_bootstrap:
+        launch_receipt = {}
+    else:
+        launch_receipt = _strict_json(launch_path)
     completed_terminal_path = terminal_root / "TERMINAL_RESULT.json"
     failure_terminal_path = receipts / "T3_REV_TERMINAL_FAILURE.json"
     present_terminal_paths = [
         path for path in (completed_terminal_path, failure_terminal_path) if path.is_file()
     ]
-    if len(present_terminal_paths) != 1:
+    if no_pass_bootstrap and present_terminal_paths:
+        raise TerminalValidationError(
+            "bootstrap credential failure cannot carry a producer terminal receipt"
+        )
+    if not no_pass_bootstrap and len(present_terminal_paths) != 1:
         raise TerminalValidationError("run must contain exactly one fixed completed or failure terminal receipt")
-    terminal_path = present_terminal_paths[0]
-    terminal = _strict_json(terminal_path)
+    terminal = (
+        {
+            "terminal_reason": "startup_failure",
+            "failure_phase": "bootstrap_before_runtime_measurement",
+        }
+        if no_pass_bootstrap else _strict_json(present_terminal_paths[0])
+    )
     classification = classify_terminal(terminal)
-    try:
-        launch.require_bridge_authorization_receipt(launch_receipt)
-    except Exception as error:
-        raise TerminalValidationError(f"launch credential is invalid: {error}") from error
+    if classification == "FAIL_STARTUP" and not no_pass_bootstrap:
+        raise TerminalValidationError(
+            "startup credential failure requires the PASS launch receipt to be absent"
+        )
     seal_sha256 = require_canonical_seal_bytes(seal_path, seal)
+    runtime_identity = seal.get("runtime_identity")
+    seal_identity = seal.get("extension_identity")
+    if no_pass_bootstrap:
+        if not isinstance(runtime_identity, dict) or not isinstance(seal_identity, dict):
+            raise TerminalValidationError("canonical seal identities are malformed")
+        launch_receipt.update({
+            "seal_sha256": seal_sha256,
+            "run_root": str(run_root),
+            "source_commit": runtime_identity.get("source_commit"),
+            "launcher_repository_commit": seal_identity.get("repository_commit"),
+            "runtime_lock_sha256": runtime_identity.get("runtime_lock_sha256"),
+            "extension_source_manifest_sha256": _sha256(
+                extension_root / "EXTENSION_SOURCE_MANIFEST.json"),
+            "family_contract_sha256": lock.get("family_contract_sha256"),
+            "case_physics_contract_sha256": lock.get("case_physics_contract_sha256"),
+            "execution_input_lock_sha256": _sha256(lock_path),
+            "launch_nonce": "unpublished-bootstrap-credential",
+            "thread_environment": runtime_identity.get("thread_settings"),
+            "extension_root": str(extension_root),
+            "runtime_overlay_root": str(run_root / ".toy-road-runtime-overlay"),
+            "bootstrap_helper_sha256": launch.BOOTSTRAP_HELPER_SHA256,
+        })
+    else:
+        try:
+            launch.require_bridge_authorization_receipt(launch_receipt)
+        except Exception as error:
+            raise TerminalValidationError(f"launch credential is invalid: {error}") from error
     try:
         launch._require_seal(seal_path, str(launch_receipt["launcher_repository_commit"]))
     except Exception as error:
@@ -1095,8 +1280,6 @@ def _validate_terminal(
             or seal.get("resume_allowed") is not False or seal.get("follow_on_authorized") is not False \
             or launch_receipt.get("seal_sha256") != seal_sha256 or launch_receipt.get("run_root") != str(run_root):
         raise TerminalValidationError("canonical seal, nonce credential, and run-root binding differ")
-    runtime_identity = seal.get("runtime_identity")
-    seal_identity = seal.get("extension_identity")
     if not isinstance(runtime_identity, dict) or not isinstance(seal_identity, dict) \
             or launch_receipt.get("source_commit") != runtime_identity.get("source_commit") \
             or launch_receipt.get("launcher_repository_commit") != seal_identity.get("repository_commit") \
@@ -1123,6 +1306,8 @@ def _validate_terminal(
     if verified != identity.get("verification"):
         raise TerminalValidationError("extension verification no longer matches the sealed composite")
     protocol_hashes = {item.get("path"): item.get("sha256") for item in manifest.get("shadow_files", []) if isinstance(item, dict)}
+    if no_pass_bootstrap:
+        launch_receipt["extension_shadow_sha256"] = protocol_hashes
     generated_hash = protocol_hashes.get("toy_road_protocol.py")
     if not isinstance(generated_hash, str) or _sha256(extension_root / "toy_road_protocol.py") != generated_hash:
         raise TerminalValidationError("generated protocol is not the sealed extension byte identity")
@@ -1227,7 +1412,12 @@ def _validate_terminal(
         raise TerminalValidationError(f"materialized runtime overlay identity failed: {error}") from error
     authenticated: dict[str, object] | None = None
     phase_evidence: dict[str, object] | None = None
-    if classification in {"PASS_CONFIRMED_FRACTURE_TRAJECTORY", "PASS_NO_CONFIRMED_FRACTURE_BY_C150"}:
+    if no_pass_bootstrap:
+        phase_evidence = _validate_no_pass_bootstrap_evidence(
+            run_root, receipts, terminal_root, credential_failure_path,
+            timeout_observed, launch,
+        )
+    elif classification in {"PASS_CONFIRMED_FRACTURE_TRAJECTORY", "PASS_NO_CONFIRMED_FRACTURE_BY_C150"}:
         try:
             measurement = _strict_json(receipts / "T3_REV_RUNTIME_MEASUREMENT.json")
             protocol.validate_runtime_measurement(lock, measurement)
@@ -1293,7 +1483,7 @@ def _validate_terminal(
         "classification": classification,
         "terminal_reason": terminal["terminal_reason"],
         "seal_sha256": seal_sha256,
-        "launch_receipt_sha256": _sha256(receipts / "T3_REV_LAUNCH_RECEIPT.json"),
+        "launch_receipt_sha256": None if no_pass_bootstrap else _sha256(launch_path),
         "execution_input_lock_sha256": _sha256(lock_path),
         "runtime_measurement_sha256": _sha256(receipts / "T3_REV_RUNTIME_MEASUREMENT.json")
         if (receipts / "T3_REV_RUNTIME_MEASUREMENT.json").is_file() else None,

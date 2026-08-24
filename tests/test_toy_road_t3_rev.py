@@ -1939,6 +1939,68 @@ def _write_cycle_shard(
         _matlab_char(group, "execution_input_lock_sha256", execution_digest)
 
 
+def _matlab_filled_dataset(
+        group: h5py.Group, name: str, logical_shape: tuple[int, ...], value: float) -> None:
+    """Create a dimensionally faithful MATLAB array without materializing stored chunks."""
+    stored_shape = tuple(reversed(logical_shape))
+    dataset = group.create_dataset(
+        name, shape=stored_shape, dtype=np.float64, chunks=True, fillvalue=float(value),
+    )
+    dataset.attrs["MATLAB_class"] = np.bytes_("double")
+
+
+def _write_dimensional_state0(path: Path, n_node: int, n_elem: int) -> None:
+    with h5py.File(path, "w") as handle:
+        group = handle.create_group("state0")
+        group.attrs["MATLAB_class"] = np.bytes_("struct")
+        _matlab_filled_dataset(group, "d_node", (n_node, 1), 0.09)
+        _matlab_filled_dataset(group, "alpha_bar_gp", (n_elem, 4), 0.0)
+
+
+def _write_dimensional_cycle_shard(
+        path: Path, cycle: int, identities: dict[str, str], execution_digest: str,
+        n_node: int, n_elem: int) -> None:
+    """Write exact production row counts using HDF5 fill values for compact fixtures."""
+    damage = 0.09 + 1e-3 * cycle
+    alpha = 1e-3 * cycle
+    f_alpha = min(1.0, (1.0 - ((alpha - 0.5) / (alpha + 0.5))) ** 2)
+    g_value = (1.0 - damage) ** 2
+    with h5py.File(path, "w") as handle:
+        group = handle.create_group("shard")
+        group.attrs["MATLAB_class"] = np.bytes_("struct")
+        for name, logical_shape, value in (
+                ("d_node", (n_node, 5), damage),
+                ("d_gp", (n_elem, 4, 5), damage),
+                ("alpha_bar_gp", (n_elem, 4, 5), alpha),
+                ("f_alpha_gp", (n_elem, 4, 5), f_alpha),
+                ("psi_raw_gp", (n_elem, 4, 5), 1.0),
+                ("g_gp", (n_elem, 4, 5), g_value),
+                ("psi_active_gp", (n_elem, 4, 5), g_value),
+                ("psi_raw_cyclemax_gp", (n_elem, 4), 1.0)):
+            _matlab_filled_dataset(group, name, logical_shape, value)
+        for name, value in {
+            "cycle": np.asarray([[float(cycle)]], dtype=np.float64),
+            "substep_ordinal": np.arange(1.0, 6.0).reshape(1, 5),
+            "load_factor": np.asarray([[0.25, 0.5, 0.75, 1.0, 0.0]]),
+            "raw_step_zero_based": (5 * (cycle - 1) + np.arange(5.0)).reshape(1, 5),
+        }.items():
+            _matlab_dataset(group, name, value)
+        refs = handle.create_group("#refs#")
+        loading = _matlab_char(refs, "loading", "loading")
+        unloading = _matlab_char(refs, "unloading", "unloading")
+        branch = np.empty((5, 1), dtype=h5py.ref_dtype)
+        branch[:4, 0] = loading.ref
+        branch[4, 0] = unloading.ref
+        cell = group.create_dataset("branch", data=branch)
+        cell.attrs["MATLAB_class"] = np.bytes_("cell")
+        for name in (
+                "mesh_sha256", "element_ordering_id", "gp_ordering_id",
+                "state_semantics_id", "runtime_lock_sha256",
+                "family_contract_sha256", "case_physics_contract_sha256"):
+            _matlab_char(group, name, identities[name])
+        _matlab_char(group, "execution_input_lock_sha256", execution_digest)
+
+
 def _terminal_manifest_entries(root: Path) -> list[dict[str, str]]:
     return [
         {
@@ -2418,7 +2480,6 @@ def _prepare_numerical_failure(
         "TERMINAL_RESULT.json", "EVENT_METADATA.json", "TERMINAL_MANIFEST.json",
         "SHA256SUMS.txt", "EXECUTION_INPUT_LOCK.json",
     )
-    shutil.copy2(output / "STATE0.mat", output / "state0_analysis.mat")
     (output / "STATE0.mat").unlink()
     for name in terminal_files:
         (output / name).unlink(missing_ok=True)
@@ -2434,13 +2495,30 @@ def _prepare_numerical_failure(
         "family_contract_sha256": lock["family_contract_sha256"],
         "case_physics_contract_sha256": lock["case_physics_contract_sha256"],
     }
+    shutil.copy2(
+        ROOT / "docs" / "toy_road_p0_repeatability_20260802" /
+        "t2_material_state_failure_20260817" / "artifacts" / "output" /
+        "mesh_geometry.mat",
+        output / "mesh_geometry.mat",
+    )
+    with h5py.File(output / "mesh_geometry.mat", "r+") as handle:
+        n_node = handle["mesh_geometry/node_coords"].shape[1]
+        n_elem = handle["mesh_geometry/connectivity"].shape[1]
+        connectivity_codes = np.asarray(
+            [ord(character) for character in mesh_identity["connectivity_sha256"]],
+            dtype=np.uint16,
+        ).reshape(-1, 1)
+        handle["mesh_geometry/connectivity_sha256"][...] = connectivity_codes
+    _write_dimensional_state0(output / "state0_analysis.mat", n_node, n_elem)
     completed = cycle - 1
     for shard_path in (output / "substeps").glob("cycle_*.mat"):
         shard_path.unlink()
     for completed_cycle in range(1, completed + 1):
         shard_path = output / "substeps" / f"cycle_{completed_cycle:04d}.mat"
-        _write_cycle_shard(
-            shard_path, completed_cycle, shard_identities, execution_digest)
+        _write_dimensional_cycle_shard(
+            shard_path, completed_cycle, shard_identities, execution_digest,
+            n_node, n_elem,
+        )
     snapshot = {
         "schema_version": "toy_road_p0_input_snapshot_v1",
         "authorization_scope": "production_authorized",
@@ -2460,18 +2538,6 @@ def _prepare_numerical_failure(
         "cycle_jump": False,
     }
     _write_canonical_json(output / "INPUT_SNAPSHOT.json", snapshot)
-    shutil.copy2(
-        ROOT / "docs" / "toy_road_p0_repeatability_20260802" /
-        "t2_material_state_failure_20260817" / "artifacts" / "output" /
-        "mesh_geometry.mat",
-        output / "mesh_geometry.mat",
-    )
-    with h5py.File(output / "mesh_geometry.mat", "r+") as handle:
-        connectivity_codes = np.asarray(
-            [ord(character) for character in mesh_identity["connectivity_sha256"]],
-            dtype=np.uint16,
-        ).reshape(-1, 1)
-        handle["mesh_geometry/connectivity_sha256"][...] = connectivity_codes
     expectations = lock["runtime_expectations"]["matlab"]
     full_matlab_version = (
         f'{expectations["version"]} ({expectations["release"]}) '
@@ -2808,6 +2874,83 @@ def test_terminal_validator_rejects_mesh_connectivity_metadata_mismatch(
         )
 
 
+def test_numerical_failure_rejects_state0_rows_detached_from_authenticated_mesh(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A package-local tiny state cannot authenticate against the production mesh."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
+    live = inputs["run_root"] / "output" / "state0_analysis.mat"
+    copied = inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / \
+        "output" / "state0_analysis.mat"
+    for path in (live, copied):
+        path.unlink()
+        _write_state0(path)
+    _reclose_failure_package(inputs)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="mesh/state dimensions"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+@pytest.mark.parametrize(("field", "logical_shape"), [
+    ("d_node", (4, 5)),
+    ("alpha_bar_gp", (1, 4, 5)),
+])
+def test_numerical_failure_rejects_shard_rows_detached_from_authenticated_mesh(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, field: str,
+        logical_shape: tuple[int, ...]) -> None:
+    """Every sequential shard keeps the authenticated node and element row counts."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
+    relative = Path("output/substeps/cycle_0003.mat")
+    live = inputs["run_root"] / relative
+    copied = inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / relative
+    for path in (live, copied):
+        with h5py.File(path, "r+") as handle:
+            group = handle["shard"]
+            del group[field]
+            _matlab_filled_dataset(group, field, logical_shape, 0.1)
+    _reclose_failure_package(inputs)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="shape|physical state"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+def test_numerical_failure_rejects_out_of_range_mesh_connectivity_before_hash_claim(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Integer Q4 connectivity must index an authenticated node row."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
+    live = inputs["run_root"] / "output" / "mesh_geometry.mat"
+    copied = inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / \
+        "output" / "mesh_geometry.mat"
+    for path in (live, copied):
+        with h5py.File(path, "r+") as handle:
+            node_count = handle["mesh_geometry/node_coords"].shape[1]
+            handle["mesh_geometry/connectivity"][0, 0] = float(node_count + 1)
+    _reclose_failure_package(inputs)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="connectivity indices"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
 def test_terminal_validator_rejects_reclosed_c5_failure_trace_that_passed(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """An iteration-cap receipt cannot claim failure after its final c5 delta converged."""
@@ -2848,10 +2991,7 @@ def _prepare_phase_failure(inputs: dict[str, Path], phase: str) -> None:
             path.unlink()
     lock = strict_json(receipts / "T3_REV_EXECUTION_INPUT_LOCK.json")
     writable_roots = [Path(value) for value in lock["writable_roots"].values()]
-    if phase in {
-            "bootstrap_before_runtime_measurement",
-            "runtime_qualification_before_producer",
-    }:
+    if phase == "runtime_qualification_before_producer":
         for path in writable_roots:
             if path.is_dir():
                 shutil.rmtree(path)
@@ -2861,18 +3001,13 @@ def _prepare_phase_failure(inputs: dict[str, Path], phase: str) -> None:
         for path in writable_roots:
             path.mkdir(parents=True, exist_ok=True)
     measurement_path = receipts / "T3_REV_RUNTIME_MEASUREMENT.json"
-    if phase == "bootstrap_before_runtime_measurement":
-        measurement_path.unlink()
-    classification = "FAIL_STARTUP" if phase == "bootstrap_before_runtime_measurement" else "FAIL_RUNTIME"
-    terminal_reason = "startup_failure" if classification == "FAIL_STARTUP" else "runtime_failure"
+    classification = "FAIL_RUNTIME"
+    terminal_reason = "runtime_failure"
     identifiers = {
-        "bootstrap_before_runtime_measurement": "toyRoad:LaunchCredentialTimeout",
         "runtime_qualification_before_producer": "toyRoadP0:RuntimeQualificationFailed",
         "producer_after_pass_runtime_measurement": "toyRoadP0:MissingInputAsset",
     }
-    if phase == "bootstrap_before_runtime_measurement":
-        message = "Exact launch credential was not published"
-    elif phase == "runtime_qualification_before_producer":
+    if phase == "runtime_qualification_before_producer":
         message = "Measured absolute MATLAB path precedence differs from the lock. First mismatch index: 1."
         lock_path = receipts / "T3_REV_EXECUTION_INPUT_LOCK.json"
         lock = strict_json(lock_path)
@@ -2911,15 +3046,149 @@ def _prepare_phase_failure(inputs: dict[str, Path], phase: str) -> None:
     })
 
 
+def _credential_failure_terminal_fixture(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, timeout_only: bool = False):
+    """Run the real launcher through its started-but-no-PASS credential failure path."""
+    launch = load_module("launch_t3_rev")
+    inputs = _launcher_inputs(launch, tmp_path)
+    launch.SUITESPARSE_ROOT = Path(r"C:\SuiteSparse\SuiteSparse-dev")
+    inputs["griphfith_root"] = Path(r"C:\q4diag\griphfith-pf-rebuild-355d4c83")
+    monkeypatch.setattr(launch, "matlab_processes", lambda: [])
+    overlay_validator = launch.require_materialized_runtime_overlay
+    _allow_test_matlab_identity(launch, monkeypatch)
+
+    class Process:
+        pid = 8642
+
+    monkeypatch.setattr(launch, "Popen", lambda *args, **kwargs: Process())
+    real_link = launch.os.link
+
+    def fail_publication(source, target, *args, **kwargs):
+        if Path(target).name == "T3_REV_LAUNCH_RECEIPT.json":
+            raise OSError("injected credential publication failure")
+        return real_link(source, target, *args, **kwargs)
+
+    monkeypatch.setattr(launch.os, "link", fail_publication)
+    with pytest.raises(launch.LaunchCredentialError, match="credential"):
+        launch.launch_t3_rev(**inputs)
+    monkeypatch.setattr(launch, "require_materialized_runtime_overlay", overlay_validator)
+    receipts = inputs["run_root"] / "receipts"
+    if timeout_only:
+        (receipts / "LAUNCH_CREDENTIAL_FAILED.json").unlink()
+        with (inputs["run_root"] / "T3_REV.stderr.log").open("ab") as stream:
+            stream.write(b"Exact launch credential was not published\n")
+    return launch, inputs
+
+
+@pytest.mark.parametrize(("timeout_only", "expected_phase"), [
+    (False, "launch_credential_publication_failure"),
+    (True, "bootstrap_credential_timeout"),
+])
+def test_terminal_validator_authenticates_genuine_no_pass_bootstrap_layout(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, timeout_only: bool,
+        expected_phase: str) -> None:
+    """Started bootstrap evidence authenticates without a contradictory PASS credential."""
+    launch, inputs = _credential_failure_terminal_fixture(
+        monkeypatch, tmp_path, timeout_only=timeout_only)
+    module = load_module("validate_t3_rev_terminal")
+    result = module._validate_terminal(
+        inputs["run_root"] / "output",
+        sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+        "toy_road_p0_repeatability_20260803",
+        extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+        run_root=inputs["run_root"], launch=launch,
+    )
+    assert result["classification"] == "FAIL_STARTUP"
+    assert result["launch_receipt_sha256"] is None
+    assert result["phase_evidence"]["failure_phase"] == expected_phase
+
+
+def test_no_pass_bootstrap_layout_rejects_stale_live_pass_receipt(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Credential-failure evidence cannot coexist with any live PASS-path bytes."""
+    launch, inputs = _credential_failure_terminal_fixture(monkeypatch, tmp_path)
+    (inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").write_bytes(
+        b'{"status":"PASS"}\n')
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="PASS|credential failure"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+def test_no_pass_bootstrap_layout_rejects_even_empty_stale_output_root(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Credential failure occurs before any producer output reservation exists."""
+    launch, inputs = _credential_failure_terminal_fixture(monkeypatch, tmp_path)
+    (inputs["run_root"] / "output").mkdir()
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="writable root|producer evidence"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+def test_no_pass_bootstrap_layout_rejects_unrecognized_publication_error_class(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A reclosed receipt cannot invent an arbitrary credential-publication class."""
+    launch, inputs = _credential_failure_terminal_fixture(monkeypatch, tmp_path)
+    failure_path = inputs["run_root"] / "receipts" / "LAUNCH_CREDENTIAL_FAILED.json"
+    failure = strict_json(failure_path)
+    failure["error_type"] = "ArbitraryError"
+    failure_path.write_bytes(launch.json_payload(failure))
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="LAUNCH_CREDENTIAL_FAILED"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+def test_terminal_validator_distinguishes_final_busy_without_popen(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A final process-race receipt is not recast as bootstrap credential failure."""
+    launch = load_module("launch_t3_rev")
+    inputs = _launcher_inputs(launch, tmp_path)
+    launch.SUITESPARSE_ROOT = Path(r"C:\SuiteSparse\SuiteSparse-dev")
+    inputs["griphfith_root"] = Path(r"C:\q4diag\griphfith-pf-rebuild-355d4c83")
+    observations = iter([[], [{"pid": 77, "name": "MATLAB", "command_line": "matlab -batch"}]])
+    monkeypatch.setattr(launch, "matlab_processes", lambda: next(observations))
+    monkeypatch.setattr(launch, "Popen", lambda *args, **kwargs: pytest.fail("Popen called"))
+    overlay_validator = launch.require_materialized_runtime_overlay
+    _allow_test_matlab_identity(launch, monkeypatch)
+    with pytest.raises(launch.BusyExperimentError, match="BUSY_NO_LAUNCH"):
+        launch.launch_t3_rev(**inputs)
+    monkeypatch.setattr(launch, "require_materialized_runtime_overlay", overlay_validator)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="BUSY_NO_LAUNCH|no-process"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
 @pytest.mark.parametrize(("phase", "classification"), [
-    ("bootstrap_before_runtime_measurement", "FAIL_STARTUP"),
     ("runtime_qualification_before_producer", "FAIL_RUNTIME"),
     ("producer_after_pass_runtime_measurement", "FAIL_RUNTIME"),
 ])
 def test_terminal_validator_authenticates_phase_specific_startup_and_runtime_failures(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, phase: str,
         classification: str) -> None:
-    """Bootstrap, genuine FAIL qualification, and post-PASS failures stay distinct."""
+    """Genuine FAIL qualification and post-PASS producer failures stay distinct."""
     launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
     _prepare_phase_failure(inputs, phase)
     lock = strict_json(inputs["run_root"] / "receipts" / "T3_REV_EXECUTION_INPUT_LOCK.json")
@@ -2938,7 +3207,6 @@ def test_terminal_validator_authenticates_phase_specific_startup_and_runtime_fai
 
 
 @pytest.mark.parametrize("phase", [
-    "bootstrap_before_runtime_measurement",
     "runtime_qualification_before_producer",
 ])
 def test_preproducer_failure_rejects_even_empty_stale_writable_root(
@@ -2984,7 +3252,6 @@ def test_post_authorization_runtime_failure_rejects_synthetic_fail_measurement(
 
 
 @pytest.mark.parametrize("phase", [
-    "bootstrap_before_runtime_measurement",
     "runtime_qualification_before_producer",
     "producer_after_pass_runtime_measurement",
 ])
