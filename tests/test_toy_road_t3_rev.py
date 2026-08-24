@@ -1686,3 +1686,61 @@ def test_terminal_validator_requires_authoritative_canonical_lock_bytes(tmp_path
     path.write_bytes(b'{ "case_id": "T3_rev_loading_order" }\n')
     with pytest.raises(module.TerminalValidationError, match="canonical"):
         module.require_canonical_lock_bytes(Protocol(), path, {"case_id": "T3_rev_loading_order"})
+
+
+def test_order_effect_rejects_reconfigured_tolerance_and_uses_own_event_boundary() -> None:
+    """The published 1e-12 rule is immutable, and a significant own event is persistent."""
+    module = load_module("analyze_t3_rev")
+    rows = [
+        {"cycle": 60.0, "max_abs": 2e-12, "relative_l2": 0.0},
+        {"cycle": 61.0, "max_abs": 0.0, "relative_l2": 0.0},
+        {"cycle": 62.0, "max_abs": 0.0, "relative_l2": 0.0},
+        {"comparison": "own_event_confirmed", "cycle": 62.0,
+         "max_abs": 2e-12, "relative_l2": 0.0},
+    ]
+    exact = {"max_abs": 1e-12, "relative_l2": 1e-12}
+    assert module.classify_order_effect(rows, exact) == \
+        "PERSISTENT_LOADING_ORDER_DEPENDENCE_OBSERVED"
+    with pytest.raises(ValueError, match="exact"):
+        module.classify_order_effect(rows[:3], {"max_abs": 1e-13, "relative_l2": 1e-12})
+
+
+def test_csv_writer_has_deterministic_union_schema_for_mixed_availability(tmp_path: Path) -> None:
+    """Unavailable and fully reduced rows share a deterministic, non-dropping CSV schema."""
+    module = load_module("analyze_t3_rev")
+    path = tmp_path / "mixed.csv"
+    module._write_csv(path, [
+        {"comparison": "same_cycle", "cycle": 60, "availability": "UNAVAILABLE"},
+        {"comparison": "same_cycle", "cycle": 61, "availability": "AVAILABLE", "field": "damage", "max_abs": 0.0},
+    ])
+    assert path.read_text(encoding="utf-8").splitlines() == [
+        "comparison,cycle,availability,field,max_abs",
+        "same_cycle,60,UNAVAILABLE,,",
+        "same_cycle,61,AVAILABLE,damage,0.0",
+    ]
+
+
+@pytest.mark.parametrize(("classification", "expected"), [
+    ("PASS_CONFIRMED_FRACTURE_TRAJECTORY", "PASS_TERMINAL_ADJUDICATION"),
+    ("PASS_NO_CONFIRMED_FRACTURE_BY_C150", "PASS_TERMINAL_ADJUDICATION"),
+    ("FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE", "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE"),
+    ("FAIL_NEWTON_NONCONVERGENCE", "FAIL_NEWTON_NONCONVERGENCE"),
+    ("FAIL_STARTUP", "FAIL_STARTUP"),
+    ("FAIL_RUNTIME", "FAIL_RUNTIME"),
+])
+def test_terminal_adjudication_status_is_outcome_specific(
+        classification: str, expected: str) -> None:
+    """Failure evidence produces a failure adjudication, never a blanket PASS receipt."""
+    assert load_module("validate_t3_rev_terminal").terminal_adjudication_status(classification) == expected
+
+
+def test_terminal_validator_requires_exact_canonical_seal_bytes(tmp_path: Path) -> None:
+    """The seal digest is meaningful only for the builder's canonical bytes."""
+    module = load_module("validate_t3_rev_terminal")
+    payload = {"a": 1}
+    path = tmp_path / "seal.json"
+    path.write_bytes(b'{"a":1}\n')
+    assert module.require_canonical_seal_bytes(path, payload) == hashlib.sha256(b'{"a":1}\n').hexdigest()
+    path.write_bytes(b'{ "a": 1 }\n')
+    with pytest.raises(module.TerminalValidationError, match="canonical"):
+        module.require_canonical_seal_bytes(path, payload)
