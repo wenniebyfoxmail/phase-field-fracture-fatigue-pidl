@@ -37,9 +37,10 @@ T3 alone cannot distinguish:
 
 The primary estimand is the T3-rev minus T3 trajectory difference after both
 cases have received the same first-60-cycle amplitude histogram. A nonzero
-difference at c60 and later is evidence of order/path dependence for this
-sealed producer. It is not, by itself, proof of constitutive correctness or a
-unique physical mechanism.
+difference at c60 and later is evidence of order/path dependence for the
+qualified numerical kernel plus the separately identified T3-rev case-definition
+extension. It is not, by itself, proof of constitutive correctness or a unique
+physical mechanism.
 
 Three outcome patterns are predeclared:
 
@@ -48,7 +49,8 @@ Three outcome patterns are predeclared:
    for these blocks. This favors, but does not prove, an exposure-dominated
    explanation.
 2. If their stored fields or event trajectories remain different after c60,
-   loading-order/path dependence is observed under the sealed producer.
+   loading-order/path dependence is observed under the qualified numerical
+   kernel and declared case-definition extension.
 3. If early differences appear but converge before fracture, order affects the
    intermediate stored state while the terminal fracture trajectory is
    comparatively insensitive at the measured resolution.
@@ -112,13 +114,37 @@ and all physical/numerical allowlisted fields. It must change relative to T3
 because loading order is a physical input. Source/runtime identities remain
 separate from the physical hash and are equality-gated.
 
-## Immutable producer and runtime identity
+## Sealed base preservation and minimal producer extension
 
-T3-rev uses the same sealed producer and runtime as qualified T3:
+The qualified T3 producer does not expose an external loading override and
+hard-codes its five case roles. A truthful `T3_rev_loading_order` role therefore
+requires a new producer identity. The existing sealed producer directory and
+all legacy outputs remain byte-preserved.
 
-- producer source commit `7c56ff383187cdee2f45e1b15d707f148f386302`;
-- reproduced source-manifest SHA-256
+The extension must use the qualified T3 producer as its immutable base:
+
+- base producer source commit `7c56ff383187cdee2f45e1b15d707f148f386302`;
+- base source-manifest SHA-256
   `61e12721da19ce37c2f065804d2a151b6bd80981196687f6f3fe292dca48b89e`;
+- a new versioned extension directory that contains only the files that must
+  change to register and validate `T3_rev_loading_order`;
+- a composite source manifest binding the base manifest, every extension file,
+  and the repository commit containing the extension; and
+- an explicit machine-readable diff inventory classifying every changed line as
+  case registration, loading-block definition, contract data, or role
+  allowlisting.
+
+The runtime path places the extension before the sealed base and rejects any
+unallowlisted shadow file. Existing P0, P0R, T1, T2, and T3 case builders must
+produce value-identical expanded case physics under the extension. The sealed
+base inventory must be hash-verified before and after the T3-rev run.
+
+The new producer identity changes honestly because role allowlists, the family
+driver, C5 trace role validation, contract data, and protocol validation must
+recognize the new case. Tests must prove that no numerical update, Newton,
+stagger, event, exporter, terminal-validation, or gate formula changes. The
+unchanged runtime identities remain:
+
 - the same physics-contract schema apart from the case-specific loading blocks;
 - the same runtime lock;
 - MATLAB R2025b Update 5, PCWIN64;
@@ -128,18 +154,22 @@ T3-rev uses the same sealed producer and runtime as qualified T3:
 - the same mesh, material, initial state, recovery, event definition, loading
   substeps, Newton limits, stagger cap, and convergence thresholds.
 
-No solver edit, relaxation, continuation, threshold change, MEX rebuild, or
-runtime-infrastructure change is permitted.
+No numerical-algorithm edit, relaxation, continuation, threshold change, MEX
+rebuild, or runtime-infrastructure change is permitted. A source file whose
+case-role allowlist must change receives a new hash and is bound by the
+extension manifest; the receipt must not report it as byte-identical to T3.
 
 ## Execution boundary
 
-Implementation provides a small T3-rev overlay around the unchanged sealed
-launcher. It may validate the new case contract and create a single launch
-receipt, but it must not create a general authentication system.
+Implementation provides a small, versioned T3-rev case-definition extension and
+launcher overlay around the byte-preserved sealed base. It may validate the new
+case contract and create a single launch receipt, but it must not create a
+general authentication system.
 
 Before launch it must:
 
-1. verify the repository/source seal and qualified predecessor evidence;
+1. verify the sealed base, extension/composite source manifests, repository
+   commit, and qualified predecessor evidence;
 2. verify the exact T3-rev physical projection and runtime identities;
 3. verify fresh output, work, temp, preference, and cache roots;
 4. reject resume or any existing target run root;
@@ -230,7 +260,13 @@ Tests must prove:
 - T3/T3-rev first-60 amplitude-histogram equality and order inequality;
 - recursive changed-axis closure with `loading.blocks` as the only changed leaf;
 - full physical-input and initial-state closure;
-- unchanged source/runtime/MATLAB/MEX/thread/mesh/material/numerical identities;
+- unchanged base-source/runtime/MATLAB/MEX/thread/mesh/material identities;
+- exact extension file allowlist, composite manifest, and classified source
+  diff inventory;
+- value-identical expanded P0, P0R, T1, T2, and T3 cases under base and
+  extension builders;
+- unchanged numerical update, Newton, stagger, event, exporter,
+  terminal-validation, and gate formulas despite required role-allowlist edits;
 - unchanged event rule, c5 gates, Newton limits, and 1000-stagger cap;
 - fresh roots, no resume, and rejection of an existing target root;
 - final process check and refusal while MATLAB/FEM is active;
@@ -244,7 +280,9 @@ Tests must prove:
 
 - No P0, P0R, T1, T2, or T3 rerun.
 - No T2-CONT execution or relaxation sweep.
-- No producer, runtime, solver, MEX, event, or gate modification.
+- No mutation of the sealed base producer or legacy output packages.
+- No numerical-algorithm, runtime, MEX, event-formula, or gate-formula
+  modification; only the declared case-definition/role extension is allowed.
 - No raw P0 package replication solely to strengthen the already accepted Mac
   review.
 - No automatic T3-rev retry, resume, or downstream experiment.
@@ -253,9 +291,10 @@ Tests must prove:
 ## Implementation sequence after spec approval
 
 1. Archive the Mac receipt and update the artifact/trajectory index.
-2. Add T3-rev contract and strict validation tests.
+2. Add the versioned T3-rev case-definition extension, contract, composite
+   source manifest, classified diff inventory, and strict validation tests.
 3. Add the seal builder and single-case launcher overlay using the established
-   T3 sibling pattern.
+   T3 sibling pattern while resolving extension files before the sealed base.
 4. Run focused T3-rev, T3, T2-CONT, and P0 protocol tests.
 5. Build and independently verify the T3-rev seal.
 6. Recheck that the repository is clean and MATLAB/FEM is idle.
