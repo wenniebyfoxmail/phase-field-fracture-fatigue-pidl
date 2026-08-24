@@ -22,14 +22,30 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from analysis.toy_road_t3_mechanism_20260819.mechanism import (
-    element_geometry, load_mesh, load_peak_fields, reduce_field,
+    element_geometry, load_mesh, load_peak_fields, process_zone, reduce_field,
 )
-from analysis.toy_road_t3_mechanism_20260819.run_analysis import FIELDS, _field_arrays
+from analysis.toy_road_t3_mechanism_20260819.run_analysis import (
+    FIELDS, _crack_metrics, _field_arrays, _node_graph,
+)
 
 
 CASE_ID = "T3_loading_history"
 REV_CASE_ID = "T3_rev_loading_order"
 FIXED_CYCLES = (20, 30, 31, 40, 60, 61)
+BLOCK_TRANSITIONS = ((30, 31), (60, 61))
+ENERGY_COMPONENT_FIELDS = ("raw_driver", "raw_cyclemax_driver", "active_driver")
+REDUCTION_METRICS = (
+    "min", "max", "area_weighted_mean", "area_weighted_integral",
+    "p50", "p95", "p99", "support_area_abs_1e15",
+    "support_area_rel_1pct", "weighted_centroid_x", "weighted_centroid_y",
+    "weighted_rms_width_x", "weighted_rms_width_y",
+)
+PROCESS_METRICS = (
+    "threshold", "support_area", "centroid_x", "centroid_y",
+    "rms_width_x", "rms_width_y", "crack_tip_x",
+    "damaged_component_size", "right_boundary_connected_size",
+    "event_hit_reconstructed",
+)
 EXACT_TOLERANCES = {"max_abs": 1e-12, "relative_l2": 1e-12}
 QUALIFIED_T3_PROTOCOL_SHA256 = "db51a9cb54810711c2bdfe7ee35a705179e2852c7b069995d69693579c1e84a9"
 QUALIFIED_T3_MANIFEST_SHA256 = "455b149b14276598ad87e4bcea6b6a2916de6e59d3812f791d66e61b1344bb01"
@@ -135,6 +151,19 @@ def _load_cycle(root: Path, cycle: int, mesh: Any) -> dict[str, np.ndarray] | No
     return _field_arrays(load_peak_fields(path, cycle), mesh)
 
 
+def _load_observation(root: Path, cycle: int, mesh: Any) -> dict[str, object] | None:
+    """Load one authenticated peak shard without retaining unused GP matrices."""
+    path = root / "substeps" / f"cycle_{cycle:04d}.mat"
+    if not path.is_file():
+        return None
+    peak = load_peak_fields(path, cycle)
+    return {
+        "cycle": cycle,
+        "d_node": peak.d_node.copy(),
+        "arrays": _field_arrays(peak, mesh),
+    }
+
+
 def _comparison_row(
         comparison: str, field: str, left_cycle: int, right_cycle: int,
         left: np.ndarray, right: np.ndarray, geometry: Any) -> dict[str, object]:
@@ -154,6 +183,145 @@ def _comparison_row(
         row[f"right_{metric}"] = right_reduction[metric]
         row[f"right_minus_left_{metric}"] = right_reduction[metric] - value
     return row
+
+
+def _unavailable_field_rows(
+        comparison: str, left_cycle: object, right_cycle: object, *,
+        availability: str = "UNAVAILABLE", **metadata: object,
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for field in FIELDS:
+        row: dict[str, object] = {
+            "comparison": comparison, "field": field,
+            "left_cycle": left_cycle, "right_cycle": right_cycle,
+            "availability": availability, "max_abs": None,
+            "relative_l2": None, **metadata,
+        }
+        for metric in REDUCTION_METRICS:
+            row[f"left_{metric}"] = None
+            row[f"right_{metric}"] = None
+            row[f"right_minus_left_{metric}"] = None
+        rows.append(row)
+    return rows
+
+
+def _unavailable_process_row(
+        comparison: str, left_cycle: object, right_cycle: object, *,
+        availability: str = "UNAVAILABLE", **metadata: object,
+) -> dict[str, object]:
+    """Keep process-zone CSV columns stable when a boundary is unavailable."""
+    row: dict[str, object] = {
+        "comparison": comparison, "left_cycle": left_cycle,
+        "right_cycle": right_cycle, "availability": availability,
+        "history_baseline_cycle": 30,
+        "history_signal_definition": "(right-left)_comparison-(right-left)_c30",
+        **metadata,
+    }
+    for metric in PROCESS_METRICS:
+        row[f"left_{metric}"] = None
+        row[f"right_{metric}"] = None
+        if metric != "event_hit_reconstructed":
+            row[f"right_minus_left_{metric}"] = None
+    for metric in (
+            "process_zone_intersection_area", "process_zone_union_area",
+            "process_zone_jaccard", "history_difference_threshold",
+            "spatial_overlap_area", "spatial_overlap_fraction_of_right_zone",
+            "spatial_overlap_present"):
+        row[metric] = None
+    return row
+
+
+def _process_state(
+        observation: Mapping[str, object], previous: Mapping[str, object],
+        mesh: Any, geometry: Any, graph: list[set[int]], seed_nodes: set[int],
+) -> tuple[dict[str, object], np.ndarray]:
+    arrays = observation["arrays"]
+    previous_arrays = previous["arrays"]
+    if not isinstance(arrays, dict) or not isinstance(previous_arrays, dict):
+        raise ValueError("authenticated process-zone observation is malformed")
+    delta = np.asarray(arrays["damage"]) - np.asarray(previous_arrays["damage"])
+    zone = process_zone(delta, geometry)
+    positive_delta = np.maximum(delta, 0.0)
+    support = positive_delta >= zone["threshold"]
+    crack = _crack_metrics(
+        np.asarray(observation["d_node"]), mesh, graph, seed_nodes)
+    return {**zone, **crack}, support
+
+
+def _process_comparison_row(
+        comparison: str, left_cycle: int, right_cycle: int,
+        left: Mapping[str, object], left_previous: Mapping[str, object],
+        right: Mapping[str, object], right_previous: Mapping[str, object],
+        left_baseline: Mapping[str, object], right_baseline: Mapping[str, object],
+        mesh: Any, geometry: Any, graph: list[set[int]],
+        left_seed_nodes: set[int], right_seed_nodes: set[int],
+        **metadata: object,
+) -> dict[str, object]:
+    """Apply the published crack/process-zone and history-zone overlap definitions."""
+    left_state, left_support = _process_state(
+        left, left_previous, mesh, geometry, graph, left_seed_nodes)
+    right_state, right_support = _process_state(
+        right, right_previous, mesh, geometry, graph, right_seed_nodes)
+    row: dict[str, object] = {
+        "comparison": comparison, "availability": "AVAILABLE",
+        "left_cycle": left_cycle, "right_cycle": right_cycle, **metadata,
+    }
+    for metric in PROCESS_METRICS:
+        left_value, right_value = left_state[metric], right_state[metric]
+        row[f"left_{metric}"] = left_value
+        row[f"right_{metric}"] = right_value
+        if type(left_value) is not bool and type(right_value) is not bool:
+            row[f"right_minus_left_{metric}"] = right_value - left_value
+    intersection = left_support & right_support
+    union = left_support | right_support
+    intersection_area = float(geometry.areas[intersection].sum())
+    union_area = float(geometry.areas[union].sum())
+    row.update({
+        "process_zone_intersection_area": intersection_area,
+        "process_zone_union_area": union_area,
+        "process_zone_jaccard": intersection_area / union_area if union_area else 1.0,
+    })
+    left_arrays, right_arrays = left["arrays"], right["arrays"]
+    left_baseline_arrays = left_baseline["arrays"]
+    right_baseline_arrays = right_baseline["arrays"]
+    if any(not isinstance(arrays, dict) for arrays in (
+            left_arrays, right_arrays, left_baseline_arrays,
+            right_baseline_arrays)):
+        raise ValueError("authenticated history observation is malformed")
+    history_signal = (
+        np.asarray(right_arrays["history"]) - np.asarray(left_arrays["history"])
+        - np.asarray(right_baseline_arrays["history"])
+        + np.asarray(left_baseline_arrays["history"])
+    )
+    history_difference = np.abs(history_signal)
+    difference_floor = max(
+        1e-14, 0.01 * float(np.max(history_difference, initial=0.0)))
+    history_support = history_difference >= difference_floor
+    overlap = history_support & right_support
+    overlap_area = float(geometry.areas[overlap].sum())
+    right_zone_area = float(geometry.areas[right_support].sum())
+    row.update({
+        "history_baseline_cycle": 30,
+        "history_signal_definition": "(right-left)_comparison-(right-left)_c30",
+        "history_difference_threshold": difference_floor,
+        "spatial_overlap_area": overlap_area,
+        "spatial_overlap_fraction_of_right_zone": (
+            overlap_area / right_zone_area if right_zone_area else 0.0),
+        "spatial_overlap_present": bool(np.any(overlap)),
+    })
+    return row
+
+
+def _coverage_status(rows: Sequence[Mapping[str, object]], *,
+                     allow_right_censored: bool = False) -> str:
+    availability = {row.get("availability") for row in rows}
+    if "UNAVAILABLE" in availability or not rows:
+        return "UNAVAILABLE"
+    if availability == {"NOT_APPLICABLE_RIGHT_CENSORED"}:
+        return "NOT_APPLICABLE_RIGHT_CENSORED" if allow_right_censored else "UNAVAILABLE"
+    if not availability.issubset({"AVAILABLE", "NOT_APPLICABLE_RIGHT_CENSORED"}):
+        return "UNAVAILABLE"
+    return "AVAILABLE"
 
 
 def _sha256(path: Path) -> str:
@@ -466,6 +634,8 @@ def _analyze_t3_rev(
         _snapshot_authenticated_inputs(
             rev_protocol, rev_authentication, t3_rev_root, snapshot_parent / "rev", initial)
         snapshot_t3, snapshot_rev = snapshot_parent / "t3", snapshot_parent / "rev"
+        t3_terminal_result = _strict_json(snapshot_t3 / "TERMINAL_RESULT.json")
+        rev_terminal_result = _strict_json(snapshot_rev / "TERMINAL_RESULT.json")
         t3_terminal, rev_terminal = _terminal_cycle(snapshot_t3), _terminal_cycle(snapshot_rev)
         common_terminal = min(t3_terminal, rev_terminal) if t3_terminal and rev_terminal else None
         declared = tuple(sorted(set(FIXED_CYCLES) | (
@@ -481,6 +651,14 @@ def _analyze_t3_rev(
             value for value in (rev_event.get("first_hit_cycle"), rev_event.get("confirmed_cycle"))
             if type(value) is int
         }
+
+        def observation_cycles(event_cycles: set[int]) -> set[int]:
+            requested = set(declared) | event_cycles | {1}
+            requested.update(cycle - 1 for cycle in tuple(requested) if cycle > 1)
+            return requested
+
+        t3_cycles = observation_cycles(t3_event_cycles)
+        rev_cycles = observation_cycles(rev_event_cycles)
         t3_authenticated_paths = {
             item.get("path") for item in t3_authentication.get("files", [])
             if isinstance(item, dict)
@@ -490,11 +668,11 @@ def _analyze_t3_rev(
             if isinstance(item, dict)
         }
         t3_shard_paths = tuple(
-            path for cycle in sorted(set(declared) | t3_event_cycles)
+            path for cycle in sorted(t3_cycles)
             if (path := f"substeps/cycle_{cycle:04d}.mat") in t3_authenticated_paths
         )
         rev_shard_paths = tuple(
-            path for cycle in sorted(set(declared) | rev_event_cycles)
+            path for cycle in sorted(rev_cycles)
             if (path := f"substeps/cycle_{cycle:04d}.mat") in rev_authenticated_paths
         )
         _snapshot_authenticated_inputs(
@@ -507,73 +685,246 @@ def _analyze_t3_rev(
                 or not np.array_equal(t3_mesh.connectivity, rev_mesh.connectivity):
             raise ValueError("T3/T3-rev mesh identity is not exact")
         geometry = element_geometry(t3_mesh)
+        graph = _node_graph(t3_mesh)
+        t3_observations = {
+            cycle: observation for cycle in sorted(t3_cycles)
+            if (observation := _load_observation(snapshot_t3, cycle, t3_mesh)) is not None
+        }
+        rev_observations = {
+            cycle: observation for cycle in sorted(rev_cycles)
+            if (observation := _load_observation(snapshot_rev, cycle, rev_mesh)) is not None
+        }
+        if 1 not in t3_observations or 1 not in rev_observations:
+            raise ValueError("authenticated c1 shard is required for crack-component seeding")
+        t3_seed_nodes = set(int(index) for index in np.flatnonzero(
+            np.asarray(t3_observations[1]["d_node"]) >= 0.95))
+        rev_seed_nodes = set(int(index) for index in np.flatnonzero(
+            np.asarray(rev_observations[1]["d_node"]) >= 0.95))
+        t3_baseline = t3_observations.get(30)
+        rev_baseline = rev_observations.get(30)
         same_rows: list[dict[str, object]] = []
+        process_rows: list[dict[str, object]] = []
         aggregate: list[dict[str, object]] = []
         for cycle in declared:
-            left = _load_cycle(snapshot_t3, cycle, t3_mesh)
-            right = _load_cycle(snapshot_rev, cycle, t3_mesh)
+            left = t3_observations.get(cycle)
+            right = rev_observations.get(cycle)
             if left is None or right is None:
-                same_rows.append({"comparison": "same_cycle", "cycle": cycle, "availability": "UNAVAILABLE"})
+                unavailable = _unavailable_field_rows(
+                    "same_cycle", cycle, cycle, cycle=cycle)
+                same_rows.extend(unavailable)
                 aggregate.append({"comparison": "same_cycle", "cycle": cycle, "availability": "UNAVAILABLE"})
-                continue
-            maxima: list[float] = []
-            relatives: list[float] = []
-            for field in FIELDS:
-                row = _comparison_row("same_cycle", field, cycle, cycle, left[field], right[field], geometry)
-                row["cycle"] = cycle
-                maxima.append(float(row["max_abs"]))
-                relatives.append(float(row["relative_l2"]))
-                same_rows.append(row)
-            aggregate.append({"comparison": "same_cycle", "cycle": cycle,
-                              "availability": "AVAILABLE", "max_abs": max(maxima),
-                              "relative_l2": max(relatives)})
+            else:
+                left_arrays, right_arrays = left["arrays"], right["arrays"]
+                if not isinstance(left_arrays, dict) or not isinstance(right_arrays, dict):
+                    raise ValueError("authenticated same-cycle observation is malformed")
+                maxima: list[float] = []
+                relatives: list[float] = []
+                for field in FIELDS:
+                    row = _comparison_row(
+                        "same_cycle", field, cycle, cycle,
+                        left_arrays[field], right_arrays[field], geometry)
+                    row["cycle"] = cycle
+                    maxima.append(float(row["max_abs"]))
+                    relatives.append(float(row["relative_l2"]))
+                    same_rows.append(row)
+                aggregate.append({
+                    "comparison": "same_cycle", "cycle": cycle,
+                    "availability": "AVAILABLE", "max_abs": max(maxima),
+                    "relative_l2": max(relatives),
+                })
+            left_previous = t3_observations.get(cycle - 1)
+            right_previous = rev_observations.get(cycle - 1)
+            if any(observation is None for observation in (
+                    left, right, left_previous, right_previous,
+                    t3_baseline, rev_baseline)):
+                process_rows.append(_unavailable_process_row(
+                    "same_cycle", cycle, cycle, cycle=cycle))
+            else:
+                process_rows.append(_process_comparison_row(
+                    "same_cycle", cycle, cycle,
+                    left, left_previous, right, right_previous,
+                    t3_baseline, rev_baseline,
+                    t3_mesh, geometry, graph, t3_seed_nodes, rev_seed_nodes,
+                    cycle=cycle,
+                ))
         event_rows: list[dict[str, object]] = []
         for label, event_field in (("first_hit", "first_hit_cycle"), ("confirmed", "confirmed_cycle")):
             left_cycle, right_cycle = t3_event.get(event_field), rev_event.get(event_field)
             comparison = f"own_event_{label}"
             if type(left_cycle) is not int or type(right_cycle) is not int:
-                for field_name in FIELDS:
-                    event_rows.append({
-                        "comparison": comparison, "field": field_name,
+                censored = t3_terminal_result.get("terminal_reason") == "right_censored" \
+                    or rev_terminal_result.get("terminal_reason") == "right_censored"
+                availability = "NOT_APPLICABLE_RIGHT_CENSORED" if censored else "UNAVAILABLE"
+                event_rows.extend(_unavailable_field_rows(
+                    comparison, left_cycle, right_cycle, availability=availability))
+                process_rows.append(_unavailable_process_row(
+                    comparison, left_cycle, right_cycle,
+                    availability=availability))
+                if not censored:
+                    aggregate.append({
+                        "comparison": comparison, "cycle": None,
                         "left_cycle": left_cycle, "right_cycle": right_cycle,
                         "availability": "UNAVAILABLE",
                     })
-                aggregate.append({"comparison": comparison, "cycle": None,
-                                  "left_cycle": left_cycle, "right_cycle": right_cycle,
-                                  "availability": "UNAVAILABLE"})
                 continue
-            left = _load_cycle(snapshot_t3, left_cycle, t3_mesh)
-            right = _load_cycle(snapshot_rev, right_cycle, t3_mesh)
+            left = t3_observations.get(left_cycle)
+            right = rev_observations.get(right_cycle)
             if left is None or right is None:
-                for field_name in FIELDS:
-                    event_rows.append({
-                        "comparison": comparison, "field": field_name,
-                        "left_cycle": left_cycle, "right_cycle": right_cycle,
-                        "availability": "UNAVAILABLE",
-                    })
-                aggregate.append({"comparison": comparison, "cycle": max(left_cycle, right_cycle),
-                                  "left_cycle": left_cycle, "right_cycle": right_cycle,
-                                  "availability": "UNAVAILABLE"})
+                event_rows.extend(_unavailable_field_rows(
+                    comparison, left_cycle, right_cycle))
+                aggregate.append({
+                    "comparison": comparison, "cycle": max(left_cycle, right_cycle),
+                    "left_cycle": left_cycle, "right_cycle": right_cycle,
+                    "availability": "UNAVAILABLE",
+                })
+                process_rows.append(_unavailable_process_row(
+                    comparison, left_cycle, right_cycle))
                 continue
+            left_arrays, right_arrays = left["arrays"], right["arrays"]
+            if not isinstance(left_arrays, dict) or not isinstance(right_arrays, dict):
+                raise ValueError("authenticated own-event observation is malformed")
             maxima: list[float] = []
             relatives: list[float] = []
             for field_name in FIELDS:
-                row = _comparison_row(comparison, field_name, left_cycle, right_cycle,
-                                      left[field_name], right[field_name], geometry)
+                row = _comparison_row(
+                    comparison, field_name, left_cycle, right_cycle,
+                    left_arrays[field_name], right_arrays[field_name], geometry)
                 event_rows.append(row)
                 maxima.append(float(row["max_abs"]))
                 relatives.append(float(row["relative_l2"]))
-            aggregate.append({"comparison": comparison, "cycle": max(left_cycle, right_cycle),
-                              "left_cycle": left_cycle, "right_cycle": right_cycle,
-                              "availability": "AVAILABLE", "max_abs": max(maxima),
-                              "relative_l2": max(relatives)})
-    common_post = [row for row in aggregate if row.get("comparison") == "same_cycle"
-                   and row.get("availability") == "AVAILABLE" and int(row["cycle"]) >= 60]
-    expected_post = list(range(60, common_terminal + 1)) if common_terminal is not None else []
-    classification = "UNAVAILABLE" if not expected_post or [int(row["cycle"]) for row in common_post] != expected_post else classify_order_effect(aggregate, tolerances)
+            aggregate.append({
+                "comparison": comparison, "cycle": max(left_cycle, right_cycle),
+                "left_cycle": left_cycle, "right_cycle": right_cycle,
+                "availability": "AVAILABLE", "max_abs": max(maxima),
+                "relative_l2": max(relatives),
+            })
+            left_previous = t3_observations.get(left_cycle - 1)
+            right_previous = rev_observations.get(right_cycle - 1)
+            if any(observation is None for observation in (
+                    left_previous, right_previous, t3_baseline, rev_baseline)):
+                process_rows.append(_unavailable_process_row(
+                    comparison, left_cycle, right_cycle))
+            else:
+                process_rows.append(_process_comparison_row(
+                    comparison, left_cycle, right_cycle,
+                    left, left_previous, right, right_previous,
+                    t3_baseline, rev_baseline,
+                    t3_mesh, geometry, graph, t3_seed_nodes, rev_seed_nodes,
+                ))
+
+        transition_rows: list[dict[str, object]] = []
+        cases = (
+            (CASE_ID, t3_observations),
+            (REV_CASE_ID, rev_observations),
+        )
+        for start, end in BLOCK_TRANSITIONS:
+            for case_id, observations in cases:
+                start_observation = observations.get(start)
+                end_observation = observations.get(end)
+                if start_observation is None or end_observation is None:
+                    transition_rows.extend(_unavailable_field_rows(
+                        "within_case_transition", start, end,
+                        case_id=case_id, start_cycle=start, end_cycle=end))
+                    continue
+                start_arrays = start_observation["arrays"]
+                end_arrays = end_observation["arrays"]
+                if not isinstance(start_arrays, dict) or not isinstance(end_arrays, dict):
+                    raise ValueError("authenticated transition observation is malformed")
+                for field in FIELDS:
+                    row = _comparison_row(
+                        "within_case_transition", field, start, end,
+                        start_arrays[field], end_arrays[field], geometry)
+                    row.update({
+                        "case_id": case_id, "start_cycle": start, "end_cycle": end,
+                    })
+                    transition_rows.append(row)
+            endpoints = (
+                t3_observations.get(start), t3_observations.get(end),
+                rev_observations.get(start), rev_observations.get(end),
+            )
+            if any(observation is None for observation in endpoints):
+                transition_rows.extend(_unavailable_field_rows(
+                    "cross_case_difference_of_transitions", end, end,
+                    left_case_id=CASE_ID, right_case_id=REV_CASE_ID,
+                    start_cycle=start, end_cycle=end))
+            else:
+                t3_start, t3_end, rev_start, rev_end = endpoints
+                transition_arrays = [
+                    observation["arrays"] for observation in endpoints
+                    if observation is not None
+                ]
+                if any(not isinstance(arrays, dict) for arrays in transition_arrays):
+                    raise ValueError("authenticated cross-transition observation is malformed")
+                t3_start_arrays, t3_end_arrays, rev_start_arrays, rev_end_arrays = transition_arrays
+                for field in FIELDS:
+                    t3_delta = t3_end_arrays[field] - t3_start_arrays[field]
+                    rev_delta = rev_end_arrays[field] - rev_start_arrays[field]
+                    row = _comparison_row(
+                        "cross_case_difference_of_transitions", field, end, end,
+                        t3_delta, rev_delta, geometry)
+                    row.update({
+                        "left_case_id": CASE_ID, "right_case_id": REV_CASE_ID,
+                        "start_cycle": start, "end_cycle": end,
+                    })
+                    transition_rows.append(row)
+
+        energy_rows = [{
+            **row,
+            "energy_component_role": "AUTHENTICATED_SHARD_ENERGY_DENSITY_OBSERVABLE",
+        } for row in (*same_rows, *event_rows, *transition_rows)
+            if row.get("field") in ENERGY_COMPONENT_FIELDS]
+        unavailable_tot_en = "UNAVAILABLE_NOT_CAPTURED_IN_AUTHENTICATED_SHARDS"
+        tot_en_role = "AUXILIARY_ONLY_EXCLUDED_FROM_CLASSIFICATION"
+        tot_en_rows: list[dict[str, object]] = []
+        for case_id, terminal_cycle in ((CASE_ID, t3_terminal), (REV_CASE_ID, rev_terminal)):
+            if terminal_cycle is None:
+                continue
+            for cycle in range(1, terminal_cycle + 1):
+                tot_en_rows.append({
+                    "comparison": "within_case_trajectory", "case_id": case_id,
+                    "cycle": cycle, "field": "tot_en",
+                    "availability": unavailable_tot_en,
+                    "role": tot_en_role,
+                })
+            for start, end in BLOCK_TRANSITIONS:
+                tot_en_rows.append({
+                    "comparison": "within_case_transition", "case_id": case_id,
+                    "field": "tot_en", "start_cycle": start, "end_cycle": end,
+                    "availability": unavailable_tot_en, "role": tot_en_role,
+                })
+        for start, end in BLOCK_TRANSITIONS:
+            tot_en_rows.append({
+                "comparison": "cross_case_difference_of_transitions",
+                "left_case_id": CASE_ID, "right_case_id": REV_CASE_ID,
+                "field": "tot_en", "start_cycle": start, "end_cycle": end,
+                "availability": unavailable_tot_en, "role": tot_en_role,
+            })
+
+        required_coverage = {
+            "same_cycle_fields": _coverage_status(same_rows),
+            "block_transitions": _coverage_status(transition_rows),
+            "process_zone_crack_overlap": _coverage_status(process_rows),
+            "energy_components": _coverage_status(energy_rows),
+            "own_event_boundaries": _coverage_status(
+                event_rows, allow_right_censored=True),
+        }
+        required_complete = all(status in {
+            "AVAILABLE", "NOT_APPLICABLE_RIGHT_CENSORED",
+        } for status in required_coverage.values())
+    if not required_complete:
+        classification = "UNAVAILABLE"
+    elif (t3_terminal_result.get("terminal_reason") == "right_censored") != \
+            (rev_terminal_result.get("terminal_reason") == "right_censored"):
+        classification = "PERSISTENT_LOADING_ORDER_DEPENDENCE_OBSERVED"
+    else:
+        classification = classify_order_effect(aggregate, tolerances)
     destination.mkdir(parents=True, exist_ok=False)
     _write_csv(destination / "same_cycle_differences.csv", same_rows)
     _write_csv(destination / "own_event_differences.csv", event_rows)
+    _write_csv(destination / "block_transition_differences.csv", transition_rows)
+    _write_csv(destination / "process_zone_crack_overlap.csv", process_rows)
+    _write_csv(destination / "energy_component_differences.csv", energy_rows)
+    _write_csv(destination / "auxiliary_tot_en.csv", tot_en_rows)
     figure, axis = plt.subplots(figsize=(8, 4))
     available = [row for row in aggregate if row.get("comparison") == "same_cycle"
                  and row.get("availability") == "AVAILABLE" and int(row["cycle"]) >= 60]
@@ -585,7 +936,8 @@ def _analyze_t3_rev(
     plt.close(figure)
     summary = {
         "schema_version": "toy_road_t3_t3rev_mechanism_summary_v1",
-        "status": "PASS_OFFLINE_ANALYSIS",
+        "status": "PASS_OFFLINE_ANALYSIS" if required_complete
+        else "INCOMPLETE_OFFLINE_ANALYSIS",
         "order_effect_classification": classification,
         "nominal_dose_match": "same prescribed amplitude histogram and cycle count through c60",
         "predeclared_cycle_set": list(declared),
@@ -596,6 +948,17 @@ def _analyze_t3_rev(
         "t3_terminal_manifest_sha256": required_t3_manifest_sha256,
         "t3_rev_protocol_identity": rev_protocol_identity,
         "t3_rev_runtime_measurement_sha256": _sha256(measurement_path),
+        "required_observable_coverage": required_coverage,
+        "required_observables_complete": required_complete,
+        "energy_component_definitions": {
+            "raw_driver": "peak-substep GP-mean psi_raw_gp",
+            "raw_cyclemax_driver": "cycle GP-mean psi_raw_cyclemax_gp",
+            "active_driver": "peak-substep GP-mean psi_active_gp",
+        },
+        "auxiliary_observable_coverage": {
+            "tot_en": "UNAVAILABLE_NOT_CAPTURED_IN_AUTHENTICATED_SHARDS",
+        },
+        "tot_en_role": "auxiliary monitor only; excluded from classification and required PASS coverage",
         "mechanism_claim_boundary": "Order sensitivity under the qualified kernel and declared extension is not unique proof of physical mechanism.",
         "authorization_capability": None,
         "follow_on_authorized": False,

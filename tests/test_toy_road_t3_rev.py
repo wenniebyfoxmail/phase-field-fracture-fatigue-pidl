@@ -4,6 +4,7 @@ import csv
 import json
 import importlib.util
 import hashlib
+import math
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import shutil
@@ -3658,9 +3659,11 @@ def test_authenticated_analysis_snapshot_rejects_post_auth_byte_substitution(tmp
         )
 
 
-def test_analyzer_end_to_end_uses_hash_qualified_protocols_and_event_rows(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """Asymmetric genuine packages snapshot only their own available event cycles."""
+def _run_authenticated_analyzer_fixture(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, t3_terminal: int = 71,
+        rev_terminal: int = 80, rev_right_censored: bool = False,
+) -> tuple[object, dict[str, object], Path]:
+    """Run the real hash-qualified analyzer over compact authenticated packages."""
     launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
     rev_root = inputs["run_root"] / "output"
     shutil.rmtree(rev_root)
@@ -3676,8 +3679,10 @@ def test_analyzer_end_to_end_uses_hash_qualified_protocols_and_event_rows(
         "test_analyzer_rev_protocol", rev_digest,
     )
     _build_authenticated_terminal_package(
-        rev_protocol, rev_root, terminal_cycle=80, right_censored=False,
-        offsets={20: 2e-12}, execution_lock=rev_lock, include_mesh=True,
+        rev_protocol, rev_root, terminal_cycle=rev_terminal,
+        right_censored=rev_right_censored,
+        offsets={} if rev_right_censored else {20: 2e-12},
+        execution_lock=rev_lock, include_mesh=True,
         **_rev_completed_identity_kwargs(inputs),
     )
     base_protocol_path = BASE / "toy_road_protocol.py"
@@ -3687,21 +3692,49 @@ def test_analyzer_end_to_end_uses_hash_qualified_protocols_and_event_rows(
     )
     t3_root = tmp_path / "t3"
     _build_authenticated_terminal_package(
-        base_protocol, t3_root, terminal_cycle=71, right_censored=False,
+        base_protocol, t3_root, terminal_cycle=t3_terminal, right_censored=False,
         case_id="T3_loading_history", include_mesh=True,
         component_identities=_rev_completed_identity_kwargs(inputs)["component_identities"],
     )
     module = load_module("analyze_t3_rev")
+    destination = tmp_path / "analysis"
     summary = module._analyze_t3_rev(
-        t3_root, rev_root, tmp_path / "analysis", seal_path=inputs["seal_path"],
+        t3_root, rev_root, destination, seal_path=inputs["seal_path"],
         required_t3_manifest_sha256=hashlib.sha256(
             (t3_root / "TERMINAL_MANIFEST.json").read_bytes()).hexdigest(),
         launch_authority=launch, repository_root=inputs["repo_root"],
     )
+    return module, summary, destination
+
+
+def test_analyzer_end_to_end_emits_complete_authenticated_mechanism_observables(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Transitions, process geometry, overlap and energy use authenticated shard values."""
+    _, summary, destination = _run_authenticated_analyzer_fixture(
+        monkeypatch, tmp_path)
     assert summary["order_effect_classification"] == \
         "PERSISTENT_LOADING_ORDER_DEPENDENCE_OBSERVED"
+    assert summary["status"] == "PASS_OFFLINE_ANALYSIS"
+    assert summary["required_observables_complete"] is True
+    assert summary["required_observable_coverage"] == {
+        "block_transitions": "AVAILABLE",
+        "energy_components": "AVAILABLE",
+        "own_event_boundaries": "AVAILABLE",
+        "process_zone_crack_overlap": "AVAILABLE",
+        "same_cycle_fields": "AVAILABLE",
+    }
+    assert summary["auxiliary_observable_coverage"] == {
+        "tot_en": "UNAVAILABLE_NOT_CAPTURED_IN_AUTHENTICATED_SHARDS"
+    }
+    expected_outputs = {
+        "block_transition_differences.csv",
+        "process_zone_crack_overlap.csv",
+        "energy_component_differences.csv",
+        "auxiliary_tot_en.csv",
+    }
+    assert expected_outputs.issubset(path.name for path in destination.iterdir())
     own_rows = list(csv.DictReader(
-        (tmp_path / "analysis" / "own_event_differences.csv").open(
+        (destination / "own_event_differences.csv").open(
             encoding="utf-8", newline="")))
     assert {row["comparison"] for row in own_rows} == {
         "own_event_first_hit", "own_event_confirmed",
@@ -3711,3 +3744,114 @@ def test_analyzer_end_to_end_uses_hash_qualified_protocols_and_event_rows(
         "left_area_weighted_integral" in row and "right_area_weighted_integral" in row
         for row in own_rows
     )
+    transition_rows = list(csv.DictReader(
+        (destination / "block_transition_differences.csv").open(
+            encoding="utf-8", newline="")))
+    t3_history = next(row for row in transition_rows
+                      if row["comparison"] == "within_case_transition"
+                      and row["case_id"] == "T3_loading_history"
+                      and row["field"] == "history"
+                      and row["start_cycle"] == "30")
+    assert float(t3_history["right_minus_left_area_weighted_mean"]) == pytest.approx(1e-3)
+    cross_history = next(row for row in transition_rows
+                         if row["comparison"] == "cross_case_difference_of_transitions"
+                         and row["field"] == "history"
+                         and row["start_cycle"] == "30")
+    assert float(cross_history["max_abs"]) == pytest.approx(0.0)
+    process_rows = list(csv.DictReader(
+        (destination / "process_zone_crack_overlap.csv").open(
+            encoding="utf-8", newline="")))
+    c30 = next(row for row in process_rows
+               if row["comparison"] == "same_cycle" and row["cycle"] == "30")
+    assert float(c30["left_support_area"]) == pytest.approx(1.0)
+    assert float(c30["right_support_area"]) == pytest.approx(1.0)
+    assert float(c30["left_centroid_x"]) == pytest.approx(0.5)
+    assert float(c30["right_rms_width_x"]) == pytest.approx(0.0)
+    assert math.isnan(float(c30["left_crack_tip_x"]))
+    assert c30["history_signal_definition"] == \
+        "(right-left)_comparison-(right-left)_c30"
+    assert c30["history_baseline_cycle"] == "30"
+    assert float(c30["spatial_overlap_area"]) == pytest.approx(0.0)
+    own_first = next(row for row in process_rows
+                     if row["comparison"] == "own_event_first_hit")
+    assert float(own_first["spatial_overlap_area"]) == pytest.approx(1.0)
+    energy_rows = list(csv.DictReader(
+        (destination / "energy_component_differences.csv").open(
+            encoding="utf-8", newline="")))
+    raw_c30 = next(row for row in energy_rows
+                   if row["comparison"] == "same_cycle"
+                   and row["cycle"] == "30" and row["field"] == "raw_driver")
+    assert float(raw_c30["left_area_weighted_integral"]) == pytest.approx(4.0)
+    assert float(raw_c30["right_area_weighted_integral"]) == pytest.approx(4.0)
+    assert {row["field"] for row in energy_rows} == {
+        "raw_driver", "raw_cyclemax_driver", "active_driver",
+    }
+    raw_transition = next(row for row in energy_rows
+                          if row["comparison"] == "within_case_transition"
+                          and row["case_id"] == "T3_loading_history"
+                          and row["field"] == "raw_driver"
+                          and row["start_cycle"] == "30")
+    assert float(raw_transition["right_minus_left_area_weighted_integral"]) == \
+        pytest.approx(0.0)
+    tot_en_rows = list(csv.DictReader(
+        (destination / "auxiliary_tot_en.csv").open(encoding="utf-8", newline="")))
+    assert {row["field"] for row in tot_en_rows} == {"tot_en"}
+    assert {row["availability"] for row in tot_en_rows} == {
+        "UNAVAILABLE_NOT_CAPTURED_IN_AUTHENTICATED_SHARDS"
+    }
+    assert {row["role"] for row in tot_en_rows} == {
+        "AUXILIARY_ONLY_EXCLUDED_FROM_CLASSIFICATION"
+    }
+
+
+def test_analyzer_end_to_end_refuses_pass_when_required_transition_is_unavailable(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """An authenticated trajectory ending at c60 cannot silently satisfy the c60->c61 gate."""
+    _, summary, destination = _run_authenticated_analyzer_fixture(
+        monkeypatch, tmp_path, t3_terminal=60)
+    assert summary["status"] == "INCOMPLETE_OFFLINE_ANALYSIS"
+    assert summary["order_effect_classification"] == "UNAVAILABLE"
+    assert summary["required_observables_complete"] is False
+    assert summary["required_observable_coverage"]["block_transitions"] == "UNAVAILABLE"
+    transition_rows = list(csv.DictReader(
+        (destination / "block_transition_differences.csv").open(
+            encoding="utf-8", newline="")))
+    missing = next(row for row in transition_rows
+                   if row["comparison"] == "within_case_transition"
+                   and row["case_id"] == "T3_loading_history"
+                   and row["field"] == "history"
+                   and row["start_cycle"] == "60")
+    assert missing["availability"] == "UNAVAILABLE"
+    process_rows = list(csv.DictReader(
+        (destination / "process_zone_crack_overlap.csv").open(
+            encoding="utf-8", newline="")))
+    assert next(row for row in process_rows
+                if row["comparison"] == "same_cycle" and row["cycle"] == "61")[
+                    "availability"] == "UNAVAILABLE"
+
+
+def test_analyzer_end_to_end_marks_own_events_not_applicable_for_right_censoring(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A genuine c150 censor is distinct from missing authenticated own-event evidence."""
+    _, summary, destination = _run_authenticated_analyzer_fixture(
+        monkeypatch, tmp_path, rev_terminal=150, rev_right_censored=True)
+    assert summary["status"] == "PASS_OFFLINE_ANALYSIS"
+    assert summary["required_observables_complete"] is True
+    assert summary["required_observable_coverage"]["own_event_boundaries"] == \
+        "NOT_APPLICABLE_RIGHT_CENSORED"
+    assert summary["order_effect_classification"] == \
+        "PERSISTENT_LOADING_ORDER_DEPENDENCE_OBSERVED"
+    event_rows = list(csv.DictReader(
+        (destination / "own_event_differences.csv").open(
+            encoding="utf-8", newline="")))
+    assert {row["availability"] for row in event_rows} == {
+        "NOT_APPLICABLE_RIGHT_CENSORED"
+    }
+    assert all("left_area_weighted_integral" in row for row in event_rows)
+    process_rows = list(csv.DictReader(
+        (destination / "process_zone_crack_overlap.csv").open(
+            encoding="utf-8", newline="")))
+    unavailable_event = next(row for row in process_rows
+                             if row["comparison"] == "own_event_first_hit")
+    assert unavailable_event["availability"] == "NOT_APPLICABLE_RIGHT_CENSORED"
+    assert "left_support_area" in unavailable_event
