@@ -2985,6 +2985,148 @@ def test_numerical_failure_rejects_sequential_shard_state_regression(
         )
 
 
+def _set_cumulative_shard_field(path: Path, field: str, value: float) -> None:
+    """Mutate one irreversible field while preserving its qualified constitutive identity."""
+    with h5py.File(path, "r+") as handle:
+        handle[f"shard/{field}"][...] = value
+        if field == "alpha_bar_gp":
+            f_alpha = min(1.0, (1.0 - ((value - 0.5) / (value + 0.5))) ** 2)
+            handle["shard/f_alpha_gp"][...] = f_alpha
+
+
+def _stored_final_shard_sample(path: Path, field: str) -> float:
+    with h5py.File(path, "r") as handle:
+        stored = np.asarray(handle[f"shard/{field}"])
+    return float(stored[-1].reshape(-1)[0])
+
+
+def _set_gp_damage_with_constitutive_fields(path: Path, value: float) -> None:
+    with h5py.File(path, "r+") as handle:
+        handle["shard/d_gp"][...] = value
+        g_value = (1.0 - value) ** 2
+        handle["shard/g_gp"][...] = g_value
+        handle["shard/psi_active_gp"][...] = (
+            g_value * np.asarray(handle["shard/psi_raw_gp"])
+        )
+
+
+@pytest.mark.parametrize(("field", "peak"), [
+    ("d_node", 0.09104),
+    ("alpha_bar_gp", 0.00104),
+])
+@pytest.mark.parametrize("right_censored", [False, True])
+def test_completed_package_rejects_accumulated_sub_tolerance_state_regression(
+        tmp_path: Path, field: str, peak: float, right_censored: bool) -> None:
+    """Pairwise-small regressions cannot accumulate below a completed trajectory maximum."""
+    _, protocol = _generated_terminal_protocol(tmp_path)
+    root = _build_authenticated_terminal_package(
+        protocol, tmp_path / f"completed-drift-{right_censored}",
+        terminal_cycle=150 if right_censored else 5, right_censored=right_censored,
+    )
+    for cycle, multiplier in ((2, 0.75), (3, 1.5)):
+        _set_cumulative_shard_field(
+            root / "substeps" / f"cycle_{cycle:04d}.mat",
+            field, peak - multiplier * protocol.THRESHOLD,
+        )
+    _reclose_completed_package(root)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="running maximum|trajectory envelope"):
+        module.authenticate_completed_package(protocol, root)
+
+
+@pytest.mark.parametrize("right_censored", [False, True])
+def test_completed_package_accepts_running_envelope_tolerance_boundary(
+        tmp_path: Path, right_censored: bool) -> None:
+    """A completed trajectory exactly one threshold below its maximum remains admissible."""
+    _, protocol = _generated_terminal_protocol(tmp_path)
+    root = _build_authenticated_terminal_package(
+        protocol, tmp_path / f"completed-boundary-{right_censored}",
+        terminal_cycle=150 if right_censored else 5, right_censored=right_censored,
+    )
+    for field in ("d_node", "alpha_bar_gp"):
+        peak = _stored_final_shard_sample(
+            root / "substeps" / "cycle_0001.mat", field)
+        for cycle, multiplier in ((2, 0.5), (3, 1.0)):
+            _set_cumulative_shard_field(
+                root / "substeps" / f"cycle_{cycle:04d}.mat",
+                field, peak - multiplier * protocol.THRESHOLD,
+            )
+    _reclose_completed_package(root)
+    receipt = load_module("validate_t3_rev_terminal").authenticate_completed_package(
+        protocol, root)
+    assert receipt["status"] == "PASS"
+
+
+@pytest.mark.parametrize("gp_damage", [-2e-12, 1.0 + 2e-12])
+def test_completed_package_rejects_gp_damage_outside_task6_absolute_bounds(
+        tmp_path: Path, gp_damage: float) -> None:
+    """Task 6 applies the exact protocol threshold to every damage sample."""
+    _, protocol = _generated_terminal_protocol(tmp_path)
+    root = _build_authenticated_terminal_package(
+        protocol, tmp_path / "completed-gp-bounds", terminal_cycle=5, right_censored=False,
+    )
+    _set_gp_damage_with_constitutive_fields(
+        root / "substeps" / "cycle_0002.mat", gp_damage)
+    _reclose_completed_package(root)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="trajectory envelope"):
+        module.authenticate_completed_package(protocol, root)
+
+
+@pytest.mark.parametrize(("field", "peak"), [
+    ("d_node", 0.092),
+    ("alpha_bar_gp", 0.002),
+])
+def test_numerical_failure_rejects_accumulated_sub_tolerance_state_regression(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, field: str, peak: float) -> None:
+    """Failure-package chronology is measured against the running componentwise maximum."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
+    for cycle, multiplier in ((3, 0.75), (4, 1.5)):
+        relative = Path(f"output/substeps/cycle_{cycle:04d}.mat")
+        for path in (
+                inputs["run_root"] / relative,
+                inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / relative):
+            _set_cumulative_shard_field(
+                path, field, peak - multiplier * protocol.THRESHOLD)
+    _reclose_failure_package(inputs)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="running maximum|trajectory envelope"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+def test_numerical_failure_accepts_running_envelope_tolerance_boundary(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Failure evidence exactly at the accumulated tolerance boundary remains admissible."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
+    for field in ("d_node", "alpha_bar_gp"):
+        peak = _stored_final_shard_sample(
+            inputs["run_root"] / "output" / "substeps" / "cycle_0002.mat", field)
+        for cycle, multiplier in ((3, 0.5), (4, 1.0)):
+            relative = Path(f"output/substeps/cycle_{cycle:04d}.mat")
+            for path in (
+                    inputs["run_root"] / relative,
+                    inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / relative):
+                _set_cumulative_shard_field(
+                    path, field, peak - multiplier * protocol.THRESHOLD)
+    _reclose_failure_package(inputs)
+    result = load_module("validate_t3_rev_terminal")._validate_terminal(
+        inputs["run_root"] / "output",
+        sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+        "toy_road_p0_repeatability_20260803",
+        extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+        run_root=inputs["run_root"], launch=launch,
+    )
+    assert result["classification"] == "FAIL_NEWTON_NONCONVERGENCE"
+
+
 def test_numerical_failure_rejects_out_of_range_mesh_connectivity_before_hash_claim(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Integer Q4 connectivity must index an authenticated node row."""

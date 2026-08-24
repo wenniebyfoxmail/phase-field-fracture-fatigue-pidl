@@ -11,7 +11,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
 
 import numpy as np
 
@@ -169,6 +169,72 @@ def _validate_package_checksum(protocol: Any, snapshot: Mapping[str, object]) ->
     for relative, digest in declared.items():
         if hashlib.sha256(files[relative]).hexdigest() != digest:
             raise TerminalValidationError("terminal package checksum digest differs")
+
+
+def _validate_trajectory_running_envelope(
+        protocol: Any, state0_damage: np.ndarray, state0_alpha: np.ndarray,
+        shards: Iterable[Mapping[str, object]], label: str) -> None:
+    """Prevent individually tolerated irreversible-state regressions from accumulating."""
+    threshold = protocol.THRESHOLD
+    running_damage = np.asarray(state0_damage[:, 0], dtype=np.float64).copy()
+    running_alpha = np.asarray(state0_alpha, dtype=np.float64).copy()
+    if np.any(running_damage < -threshold) or np.any(running_damage > 1 + threshold):
+        raise TerminalValidationError(f"{label} state0 damage is outside the trajectory envelope")
+    if np.any(running_alpha < -threshold):
+        raise TerminalValidationError(f"{label} state0 history is outside the trajectory envelope")
+    for cycle, shard in enumerate(shards, start=1):
+        damage = protocol._require_double_array(
+            shard["d_node"], f"{label} trajectory cycle {cycle}.d_node")
+        gp_damage = protocol._require_double_array(
+            shard["d_gp"], f"{label} trajectory cycle {cycle}.d_gp")
+        alpha = protocol._require_double_array(
+            shard["alpha_bar_gp"], f"{label} trajectory cycle {cycle}.alpha_bar_gp")
+        if np.any(damage < -threshold) or np.any(damage > 1 + threshold) \
+                or np.any(gp_damage < -threshold) or np.any(gp_damage > 1 + threshold):
+            raise TerminalValidationError(
+                f"{label} cycle {cycle} damage is outside the trajectory envelope"
+            )
+        if np.any(alpha < -threshold):
+            raise TerminalValidationError(
+                f"{label} cycle {cycle} history is outside the trajectory envelope"
+            )
+        for substep in range(damage.shape[1]):
+            current_damage = damage[:, substep]
+            current_alpha = alpha[:, :, substep]
+            if np.any(current_damage < running_damage - threshold):
+                raise TerminalValidationError(
+                    f"{label} cycle {cycle} damage fell below its running maximum"
+                )
+            if np.any(current_alpha < running_alpha - threshold):
+                raise TerminalValidationError(
+                    f"{label} cycle {cycle} history fell below its running maximum"
+                )
+            np.maximum(running_damage, current_damage, out=running_damage)
+            np.maximum(running_alpha, current_alpha, out=running_alpha)
+
+
+def _validate_snapshot_running_envelope(
+        protocol: Any, snapshot: Mapping[str, object], label: str) -> None:
+    files = snapshot.get("bytes")
+    if not isinstance(files, dict):
+        raise TerminalValidationError(f"{label} authenticated snapshot bytes are missing")
+    state0 = protocol._read_mat_struct_bytes(
+        files.get("STATE0.mat"), "state0", f"{label} trajectory state0")
+    state0_damage = protocol._require_double_array(
+        state0["d_node"], f"{label} trajectory state0.d_node")
+    state0_alpha = protocol._require_double_array(
+        state0["alpha_bar_gp"], f"{label} trajectory state0.alpha_bar_gp")
+    cycle_paths = sorted(
+        path for path in files if re.fullmatch(r"substeps/cycle_[0-9]{4}\.mat", path)
+    )
+
+    def authenticated_shards() -> Iterable[Mapping[str, object]]:
+        for cycle, relative in enumerate(cycle_paths, start=1):
+            yield protocol._read_mat_struct_bytes(
+                files[relative], "shard", f"{label} trajectory cycle {cycle}")
+
+    _validate_trajectory_running_envelope(
+        protocol, state0_damage, state0_alpha, authenticated_shards(), label)
 
 
 def _authenticate_right_censored_package(
@@ -430,6 +496,12 @@ def _authenticate_completed_package(
             receipt = _authenticate_right_censored_package(protocol, root)
         else:
             raise TerminalValidationError("completed-package authentication received a failure outcome")
+        if protocol._package_snapshot_sha256(snapshot) != receipt.get("package_snapshot_sha256"):
+            raise TerminalValidationError(
+                "completed trajectory gate snapshot differs from authoritative authentication"
+            )
+        _validate_snapshot_running_envelope(
+            protocol, snapshot, f"{CASE_ID} completed package")
         artifacts = _validate_completed_production_artifacts(
             protocol, root, receipt,
             allow_test_synthetic_mesh_bytes=allow_test_synthetic_mesh_bytes,
@@ -862,6 +934,19 @@ def _validate_failure_package(
             shard, shard_manifest, cycle, CASE_ID, previous_damage, previous_alpha,
             state0_damage.shape[0], state0_alpha.shape[0],
         )
+
+    def authenticated_failure_shards() -> Iterable[Mapping[str, object]]:
+        for cycle in range(1, completed + 1):
+            yield protocol._read_mat_struct_bytes(
+                (artifact_root / "output" / "substeps" /
+                 f"cycle_{cycle:04d}.mat").read_bytes(),
+                "shard", f"{CASE_ID} failure trajectory cycle {cycle}",
+            )
+
+    _validate_trajectory_running_envelope(
+        protocol, state0_damage, state0_alpha,
+        authenticated_failure_shards(), f"{CASE_ID} failure package",
+    )
     for item in artifacts:
         relative = item["path"]
         copied = root / relative
