@@ -13,6 +13,7 @@ from pathlib import Path
 import subprocess
 from subprocess import Popen
 import sys
+import types
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Mapping
@@ -27,6 +28,7 @@ CREATE_NO_WINDOW = 0x08000000
 CREATE_NEW_PROCESS_GROUP = 0x00000200
 QUALIFIED_TEMPLATE_LOCK_SHA256 = "a7ccff1083bd0c86a7111a8e5a6256a5836688602e3dd269ed77a53c4cbe5869"
 QUALIFIED_SOURCE_HASHES_SHA256 = "4951e9bb43515c036ec2f100b8c94627d48d88ae5b515d49c3d9bcec09bb7481"
+QUALIFIED_BASE_PROTOCOL_SHA256 = "db51a9cb54810711c2bdfe7ee35a705179e2852c7b069995d69693579c1e84a9"
 EXPECTED_INPUT_ASSET_SHA256 = {
     "sens_mesh.m": "dbf13237939425b61cde93b841ae2c24e7fccd291861df5508a34800bb9f4706",
 }
@@ -65,7 +67,11 @@ def resolve_runtime_binaries(repo_root: Path, griphfith_root: Path) -> dict[str,
         "AT1_HISTORY_FATIGUE": griphfith_root / "Sources" / "+phase_field" / "+mex" / "+fem" / "+assembly" / "+pf" / "AT1_HISTORY_FATIGUE.mexw64",
         "cholmod2": SUITESPARSE_ROOT / "CHOLMOD" / "MATLAB" / "cholmod2.mexw64",
     }
-    resolved = {name: path.resolve() for name, path in paths.items()}
+    resolved = {name: _absolute_literal_path(path) for name, path in paths.items()}
+    for name, path in resolved.items():
+        require_no_reparse_chain(path, f"qualified runtime binary {name}")
+        if _literal_path_text(path.resolve()) != _literal_path_text(path):
+            raise LaunchError(f"qualified runtime binary {name} has a substituted canonical identity")
     if len(set(resolved.values())) != len(resolved) or any(not path.is_file() for path in resolved.values()):
         raise LaunchError("runtime binary path is missing, duplicate, or not the qualified exact location")
     return resolved
@@ -176,9 +182,50 @@ def _load_module(filename: str, name: str) -> Any:
     return _load_module_path(Path(__file__).with_name(filename), name)
 
 
-def load_protocol(path: Path, name: str) -> Any:
-    """Load one sealed protocol without creating bytecode beside sealed inputs."""
-    return _load_module_path(path, name)
+def _absolute_literal_path(path: Path | str) -> Path:
+    """Make a path absolute without dereferencing a junction, symlink, or other reparse point."""
+    return Path(os.path.abspath(os.path.normpath(str(path))))
+
+
+def _literal_path_text(path: Path | str) -> str:
+    return os.path.normcase(str(_absolute_literal_path(path))).replace("\\", "/")
+
+
+def require_no_reparse_chain(path: Path | str, label: str) -> None:
+    """Reject every symlink/junction/reparse component in one qualified input path."""
+    absolute = _absolute_literal_path(path)
+    chain = [absolute, *absolute.parents]
+    for component in chain:
+        try:
+            metadata = component.lstat()
+        except FileNotFoundError as error:
+            raise LaunchError(f"{label} path component is missing: {component}") from error
+        attributes = getattr(metadata, "st_file_attributes", 0)
+        if component.is_symlink() or attributes & 0x400:
+            raise LaunchError(f"{label} path contains a symlink, junction, or reparse point: {component}")
+
+
+def load_protocol(path: Path, name: str, expected_sha256: str | None = None) -> Any:
+    """Execute a protocol snapshot only after hash validation, then recheck its disk bytes."""
+    path = _absolute_literal_path(path)
+    require_no_reparse_chain(path, "protocol")
+    try:
+        payload = path.read_bytes()
+    except OSError as error:
+        raise LaunchError(f"cannot read protocol bytes: {path}") from error
+    digest = hashlib.sha256(payload).hexdigest()
+    expected = digest if expected_sha256 is None else expected_sha256
+    if digest != expected:
+        raise LaunchError(f"protocol bytes differ from the validated SHA-256: {path}")
+    module = types.ModuleType(name)
+    module.__file__ = str(path)
+    try:
+        exec(compile(payload, str(path), "exec"), module.__dict__)
+    except Exception as error:
+        raise LaunchError(f"cannot execute validated protocol bytes {path}: {error}") from error
+    if sha256(path) != expected:
+        raise LaunchError(f"protocol bytes changed during validated load: {path}")
+    return module
 
 
 def _exact_json_equal(actual: object, expected: object) -> bool:
@@ -327,6 +374,13 @@ def _require_extension(
     inventory_path = extension_root / "SOURCE_DIFF_INVENTORY.json"
     family_path = extension_root / "FAMILY_CONTRACT.json"
     contract_path = Path(__file__).with_name("T3_REV_CONTRACT.json")
+    for path, label in (
+            (manifest_path, "extension source manifest"),
+            (inventory_path, "extension source inventory"),
+            (family_path, "extension family contract"),
+            (contract_path, "T3-rev contract"),
+            (extension_root / "CASE_PHYSICS_CONTRACTS.json", "extension case contracts")):
+        require_no_reparse_chain(path, label)
     manifest = read_json(manifest_path)
     expected_hashes = {
         "extension_source_manifest_sha256": sha256(manifest_path),
@@ -363,6 +417,7 @@ def _require_template_inputs(
         template_run: Path, runtime: Mapping[str, object], matlab: Path,
         base_protocol: Any) -> dict[str, object]:
     lock_path = template_run / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
+    require_no_reparse_chain(lock_path, "qualified template execution lock")
     lock = read_json(lock_path)
     try:
         base_protocol.validate_execution_input_lock(lock, "T2_material_state")
@@ -419,11 +474,6 @@ def input_asset_sha256(path: Path) -> str:
     return sha256(path)
 
 
-def _normalized_qualified_path(path: Path | str) -> str:
-    """Match the qualified MATLAB validator's canonical, slash, and case rules."""
-    return str(Path(path).resolve()).replace("\\", "/").lower()
-
-
 def require_qualified_runtime_paths(
         runtime: Mapping[str, object], matlab: Path, griphfith_root: Path) -> None:
     """Pin executable, GRIPHFiTH, and SuiteSparse to their sealed absolute locations."""
@@ -443,11 +493,17 @@ def require_qualified_runtime_paths(
         SUITESPARSE_ROOT / "CCOLAMD" / "MATLAB",
         SUITESPARSE_ROOT / "CAMD" / "MATLAB",
     ]
-    if _normalized_qualified_path(matlab) != _normalized_qualified_path(executable_path):
+    if _literal_path_text(matlab) != _literal_path_text(executable_path):
         raise LaunchError("MATLAB executable is not the sealed qualified absolute path")
-    if [_normalized_qualified_path(path) for path in actual_tail] \
-            != [_normalized_qualified_path(path) for path in path_order[2:]]:
+    if [_literal_path_text(path) for path in actual_tail] \
+            != [_literal_path_text(path) for path in path_order[2:]]:
         raise LaunchError("GRIPHFiTH or SuiteSparse is not the sealed qualified absolute path order")
+    qualified_paths = [(matlab, "MATLAB executable"), (griphfith_root, "GRIPHFiTH root")]
+    qualified_paths.extend((path, "qualified MATLAB path order") for path in actual_tail)
+    for path, label in qualified_paths:
+        require_no_reparse_chain(path, label)
+        if _literal_path_text(Path(path).resolve()) != _literal_path_text(path):
+            raise LaunchError(f"{label} canonical identity differs from its literal sealed path")
 
 
 def qualified_source_inventory(repo_root: Path) -> dict[str, str]:
@@ -456,6 +512,7 @@ def qualified_source_inventory(repo_root: Path) -> dict[str, str]:
         repo_root / "producer_handoffs" / "rebuilt_initial_mex_qualification_20260801" /
         "build" / "SOURCE_HASHES.json"
     )
+    require_no_reparse_chain(evidence_path, "qualified source inventory evidence")
     if not evidence_path.is_file() or sha256(evidence_path) != QUALIFIED_SOURCE_HASHES_SHA256:
         raise LaunchError("qualified source inventory evidence bytes are not exact")
     evidence = read_json(evidence_path)
@@ -488,20 +545,35 @@ def qualified_source_inventory(repo_root: Path) -> dict[str, str]:
 
 def require_qualified_griphfith_sources(repo_root: Path, griphfith_root: Path) -> None:
     """Validate the complete qualified source checkout before any root is claimed."""
-    inventory = qualified_source_inventory(repo_root)
+    try:
+        require_no_reparse_chain(griphfith_root, "qualified GRIPHFiTH source checkout")
+        inventory = qualified_source_inventory(repo_root)
+    except LaunchError as error:
+        raise LaunchError(f"QUALIFIED_SOURCE_CHECKOUT_REQUIRED: {error}") from error
     actual_paths: set[str] = set()
     for path in griphfith_root.rglob("*"):
         if path.is_file() and path.suffix.lower() in {".m", ".c", ".cpp", ".h"} \
                 and ".git" not in path.relative_to(griphfith_root).parts:
             actual_paths.add(path.relative_to(griphfith_root).as_posix())
     if actual_paths != set(inventory):
-        raise LaunchError("qualified source checkout does not have the exact 221-entry closure")
+        raise LaunchError(
+            "QUALIFIED_SOURCE_CHECKOUT_REQUIRED: qualified source checkout does not have "
+            "the exact 221-entry closure"
+        )
     for relative, expected_digest in inventory.items():
         source = griphfith_root / Path(relative)
+        try:
+            require_no_reparse_chain(source, f"qualified GRIPHFiTH source {relative}")
+        except LaunchError as error:
+            raise LaunchError(f"QUALIFIED_SOURCE_CHECKOUT_REQUIRED: {error}") from error
         if not source.is_file():
-            raise LaunchError(f"qualified source is missing or not a file: {relative}")
+            raise LaunchError(
+                f"QUALIFIED_SOURCE_CHECKOUT_REQUIRED: qualified source is missing or not a file: {relative}"
+            )
         if sha256(source) != expected_digest:
-            raise LaunchError(f"qualified source SHA-256 differs: {relative}")
+            raise LaunchError(
+                f"QUALIFIED_SOURCE_CHECKOUT_REQUIRED: qualified source SHA-256 differs: {relative}"
+            )
 
 
 def _paths_related(left: Path, right: Path) -> bool:
@@ -519,6 +591,7 @@ def qualified_input_asset_sha256(repo_root: Path) -> dict[str, str]:
         repo_root / "producer_handoffs" / "rebuilt_initial_mex_qualification_20260801" /
         "build" / "SOURCE_HASHES.json"
     )
+    require_no_reparse_chain(evidence_path, "input asset qualification evidence")
     if not evidence_path.is_file() or sha256(evidence_path) != QUALIFIED_SOURCE_HASHES_SHA256:
         raise LaunchError("input asset qualification evidence bytes are not exact")
     evidence = read_json(evidence_path)
@@ -555,12 +628,49 @@ def require_input_assets(
     expected_assets = qualified_input_asset_sha256(repo_root)
     for name, expected_digest in expected_assets.items():
         path = input_assets_root / name
+        require_no_reparse_chain(path, f"input asset {name}")
         if not path.is_file():
             raise LaunchError(f"input asset is missing: {name}")
         if input_asset_sha256(path) != expected_digest:
             raise LaunchError(f"input asset SHA-256 differs from qualified evidence: {name}")
     if any(_paths_related(input_assets_root, root) for root in writable_roots.values()):
         raise LaunchError("input asset root overlaps a producer writable root")
+
+
+def require_sealed_base_sources(
+        sealed_base_root: Path, source_manifest_sha256: object) -> dict[str, str]:
+    """Hash every file in the sealed base manifest without following reparse aliases."""
+    require_no_reparse_chain(sealed_base_root, "sealed base source root")
+    manifest_path = sealed_base_root / "SOURCE_MANIFEST.json"
+    require_no_reparse_chain(manifest_path, "sealed base source manifest")
+    if type(source_manifest_sha256) is not str or sha256(manifest_path) != source_manifest_sha256:
+        raise LaunchError("sealed base SOURCE_MANIFEST.json bytes differ")
+    manifest = read_json(manifest_path)
+    records = manifest.get("files")
+    if set(manifest) != {"schema_version", "protocol_version", "files"} \
+            or manifest.get("schema_version") != "toy_road_source_manifest_v1" \
+            or not isinstance(records, list) or not records:
+        raise LaunchError("sealed base source manifest closure is malformed")
+    inventory: dict[str, str] = {}
+    folded: set[str] = set()
+    for record in records:
+        if not isinstance(record, dict) or set(record) != {"path", "sha256"}:
+            raise LaunchError("sealed base source manifest entry is malformed")
+        relative, digest = record["path"], record["sha256"]
+        candidate = Path(relative) if type(relative) is str else Path(".")
+        if type(relative) is not str or type(digest) is not str or len(digest) != 64 \
+                or candidate.is_absolute() or ".." in candidate.parts \
+                or relative in inventory or relative.casefold() in folded:
+            raise LaunchError("sealed base source manifest path closure is malformed")
+        path = sealed_base_root / candidate
+        require_no_reparse_chain(path, "sealed base source")
+        if not path.is_file() or sha256(path) != digest:
+            raise LaunchError(f"sealed base source bytes differ: {relative}")
+        inventory[relative] = digest
+        folded.add(relative.casefold())
+    if inventory.get("toy_road_protocol.py") != QUALIFIED_BASE_PROTOCOL_SHA256:
+        raise LaunchError("sealed base protocol is not in the exact source closure")
+    return inventory
 
 
 def _extension_shadow_hashes(manifest: Mapping[str, object]) -> dict[str, str]:
@@ -587,6 +697,7 @@ def validate_runtime_overlay_inputs(
     payloads: dict[str, bytes] = {}
     for relative, expected_digest in shadow_hashes.items():
         source = extension_root / relative
+        require_no_reparse_chain(source, f"extension shadow {relative}")
         if not source.is_file():
             raise LaunchError(f"extension shadow is missing before launch: {relative}")
         payload = source.read_bytes()
@@ -664,10 +775,22 @@ def _write_busy_receipt(receipts: Path, processes: list[dict[str, object]]) -> N
     })
 
 
+def _invalidate_pass_receipt(receipts: Path) -> None:
+    live = receipts / "T3_REV_LAUNCH_RECEIPT.json"
+    if live.exists():
+        invalidated = receipts / "T3_REV_LAUNCH_RECEIPT.INVALIDATED.json"
+        os.replace(live, invalidated)
+
+
 def _raise_prepared_failure(
-        seal_path: Path, run_root: Path, receipts: Path, error: OSError) -> None:
+        seal_path: Path, run_root: Path, receipts: Path, error: Exception) -> None:
     """Consume a root claimed after PASS preflight and record that no launch occurred."""
     marker_error: Exception | None = None
+    invalidation_error: Exception | None = None
+    try:
+        _invalidate_pass_receipt(receipts)
+    except OSError as receipt_error:
+        invalidation_error = receipt_error
     if not seal_consumption_marker(seal_path).exists():
         try:
             consume_seal(seal_path, run_root)
@@ -687,10 +810,65 @@ def _raise_prepared_failure(
             })
     except OSError:
         pass
-    detail = f"; seal consumption also failed: {marker_error}" if marker_error else ""
+    details = []
+    if marker_error:
+        details.append(f"seal consumption also failed: {marker_error}")
+    if invalidation_error:
+        details.append(f"PASS receipt invalidation failed: {invalidation_error}")
+    detail = "; " + "; ".join(details) if details else ""
     raise PreparedLaunchError(
         f"validated launch root was consumed/prepared but no process was launched: {error}{detail}"
     ) from error
+
+
+def open_launch_logs(run_root: Path) -> tuple[Any, Any]:
+    stdout = None
+    try:
+        stdout = (run_root / "T3_REV.stdout.log").open("xb")
+        stderr = (run_root / "T3_REV.stderr.log").open("xb")
+    except OSError:
+        if stdout is not None:
+            stdout.close()
+        raise
+    return stdout, stderr
+
+
+def require_final_launch_inputs(
+        repo_root: Path, seal_path: Path, extension_root: Path, sealed_base_root: Path,
+        manifest: Mapping[str, object], runtime: Mapping[str, object], matlab: Path,
+        griphfith_root: Path, input_assets_root: Path, roots: Mapping[str, Path],
+        initial_shadow_hashes: Mapping[str, str], initial_shadow_payloads: Mapping[str, bytes],
+        expected_binaries: object) -> None:
+    """Repeat every mutable identity check at the last no-process boundary."""
+    require_no_reparse_chain(repo_root, "launcher repository")
+    require_no_reparse_chain(seal_path, "T3-rev seal")
+    require_no_reparse_chain(extension_root, "T3-rev extension")
+    require_no_reparse_chain(input_assets_root, "input assets")
+    require_qualified_runtime_paths(runtime, matlab, griphfith_root)
+    if executable_sha256(matlab) != runtime["matlab"]["executable_sha256"]:
+        raise LaunchError("final MATLAB executable SHA-256 differs from sealed identity")
+    final_base, final_manifest, _ = _require_extension(repo_root, extension_root, {
+        **read_json(seal_path),
+    })
+    if _literal_path_text(final_base) != _literal_path_text(sealed_base_root) \
+            or not _exact_json_equal(final_manifest, manifest):
+        raise LaunchError("final extension/base identity differs from preflight")
+    require_sealed_base_sources(sealed_base_root, runtime.get("source_manifest_sha256"))
+    base_protocol_path = sealed_base_root / "toy_road_protocol.py"
+    if sha256(base_protocol_path) != QUALIFIED_BASE_PROTOCOL_SHA256:
+        raise LaunchError("final sealed base protocol bytes differ")
+    final_shadow_hashes, final_shadow_payloads = validate_runtime_overlay_inputs(
+        extension_root, manifest
+    )
+    if not _exact_json_equal(final_shadow_hashes, initial_shadow_hashes) \
+            or final_shadow_payloads != initial_shadow_payloads:
+        raise LaunchError("final extension shadow snapshot differs from preflight")
+    protocol_digest = final_shadow_hashes.get("toy_road_protocol.py")
+    if protocol_digest is None or sha256(extension_root / "toy_road_protocol.py") != protocol_digest:
+        raise LaunchError("final extension protocol bytes differ")
+    require_runtime_binaries(repo_root, griphfith_root, expected_binaries)
+    require_qualified_griphfith_sources(repo_root, griphfith_root)
+    require_input_assets(repo_root, input_assets_root, roots)
 
 
 def launch_t3_rev(
@@ -701,12 +879,18 @@ def launch_t3_rev(
     first_processes = matlab_processes()
     if first_processes:
         raise BusyExperimentError("BUSY_NO_LAUNCH: existing MATLAB experiment blocks T3-rev")
-    repo_root, run_root = Path(repo_root).resolve(), Path(run_root).resolve()
-    seal_path, extension_root = Path(seal_path).resolve(), Path(extension_root).resolve()
-    template_run, griphfith_root = Path(template_run).resolve(), Path(griphfith_root).resolve()
-    input_assets_root, matlab = Path(input_assets_root).resolve(), Path(matlab).resolve()
+    repo_root, run_root = _absolute_literal_path(repo_root), _absolute_literal_path(run_root)
+    seal_path, extension_root = _absolute_literal_path(seal_path), _absolute_literal_path(extension_root)
+    template_run = _absolute_literal_path(template_run)
+    griphfith_root = _absolute_literal_path(griphfith_root)
+    input_assets_root, matlab = _absolute_literal_path(input_assets_root), _absolute_literal_path(matlab)
     if run_root.exists():
         raise FileExistsError(f"T3-rev run root already exists: {run_root}")
+    require_no_reparse_chain(repo_root, "launcher repository")
+    require_no_reparse_chain(seal_path, "T3-rev seal")
+    require_no_reparse_chain(extension_root, "T3-rev extension")
+    require_no_reparse_chain(template_run, "qualified template run")
+    require_no_reparse_chain(input_assets_root, "input assets")
     repo_commit = clean_repository_commit(repo_root)
     seal = _require_seal(seal_path, repo_commit)
     sealed_base_root, manifest, case = _require_extension(repo_root, extension_root, seal)
@@ -714,11 +898,18 @@ def launch_t3_rev(
     if not isinstance(runtime, dict):
         raise LaunchError("seal runtime identity is malformed")
     require_qualified_runtime_paths(runtime, matlab, griphfith_root)
+    require_sealed_base_sources(sealed_base_root, runtime.get("source_manifest_sha256"))
+    shadow_hashes, shadow_payloads = validate_runtime_overlay_inputs(extension_root, manifest)
+    generated_protocol_digest = shadow_hashes.get("toy_road_protocol.py")
+    if generated_protocol_digest is None:
+        raise LaunchError("extension protocol is absent from the validated shadow closure")
     base_protocol = load_protocol(
-        sealed_base_root / "toy_road_protocol.py", "t3_rev_launch_base_protocol"
+        sealed_base_root / "toy_road_protocol.py", "t3_rev_launch_base_protocol",
+        QUALIFIED_BASE_PROTOCOL_SHA256,
     )
     generated_protocol = load_protocol(
-        extension_root / "toy_road_protocol.py", "t3_rev_launch_generated_protocol"
+        extension_root / "toy_road_protocol.py", "t3_rev_launch_generated_protocol",
+        generated_protocol_digest,
     )
     _require_template_inputs(template_run, runtime, matlab, base_protocol)
     if not (sealed_base_root / "run_toy_road_runtime_bridge.m").is_file():
@@ -733,7 +924,6 @@ def launch_t3_rev(
     runtime_overlay = run_root / ".toy-road-runtime-overlay"
     require_input_assets(repo_root, input_assets_root, roots)
     _require_unconsumed_seal(seal_path)
-    shadow_hashes, shadow_payloads = validate_runtime_overlay_inputs(extension_root, manifest)
     matlab_paths = [
         runtime_overlay,
         sealed_base_root,
@@ -808,37 +998,41 @@ def launch_t3_rev(
         receipts.mkdir(parents=True, exist_ok=False)
         materialize_runtime_overlay(shadow_payloads, runtime_overlay, initial_source)
         write_json_create_new(lock_path, lock)
-        write_json_create_new(launch_receipt_path, launch_receipt)
     except OSError as error:
         if root_created:
             _raise_prepared_failure(seal_path, run_root, receipts, error)
         raise
     try:
         consume_seal(seal_path, run_root)
-    except OSError as error:
+    except (OSError, LaunchError) as error:
         _raise_prepared_failure(seal_path, run_root, receipts, error)
-    final_processes = matlab_processes()
+    try:
+        final_processes = matlab_processes()
+    except Exception as error:
+        _raise_prepared_failure(seal_path, run_root, receipts, error)
     if final_processes:
         try:
             _write_busy_receipt(receipts, final_processes)
         except OSError as error:
             _raise_prepared_failure(seal_path, run_root, receipts, error)
         raise BusyExperimentError("BUSY_NO_LAUNCH: final process check blocks T3-rev launch")
-    stdout = None
     try:
-        stdout = (run_root / "T3_REV.stdout.log").open("xb")
-        stderr = (run_root / "T3_REV.stderr.log").open("xb")
+        stdout, stderr = open_launch_logs(run_root)
     except OSError as error:
-        if stdout is not None:
-            stdout.close()
         _raise_prepared_failure(seal_path, run_root, receipts, error)
     try:
         try:
+            require_final_launch_inputs(
+                repo_root, seal_path, extension_root, sealed_base_root, manifest, runtime,
+                matlab, griphfith_root, input_assets_root, roots, shadow_hashes,
+                shadow_payloads, expected_binaries,
+            )
+            write_json_create_new(launch_receipt_path, launch_receipt)
             process = Popen(
                 [str(matlab), "-batch", batch], cwd=run_root, env=env, stdout=stdout, stderr=stderr,
                 creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP,
             )
-        except OSError as error:
+        except Exception as error:
             _raise_prepared_failure(seal_path, run_root, receipts, error)
     finally:
         stdout.close()

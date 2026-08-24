@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import shutil
 import subprocess
+import threading
 
 import pytest
 
@@ -569,6 +570,33 @@ def test_sealed_runtime_identity_pins_exact_matlab_executable_path() -> None:
     )
 
 
+def test_runtime_path_binding_rejects_reparse_alias_even_when_sealed_text_matches(
+        tmp_path: Path) -> None:
+    module = load_module("launch_t3_rev")
+    real = tmp_path / "real-griphfith"
+    (real / "Sources").mkdir(parents=True)
+    alias = tmp_path / "griphfith-alias"
+    try:
+        alias.symlink_to(real, target_is_directory=True)
+    except OSError:
+        pytest.skip("directory symlink creation is unavailable")
+    matlab = tmp_path / "matlab.exe"
+    matlab.write_bytes(b"identity only")
+    seal_builder = load_module("build_t3_rev_seal")
+    runtime = json.loads(json.dumps(seal_builder.EXPECTED_EXECUTION))
+    runtime["matlab_executable_path"] = str(matlab.absolute())
+    runtime["matlab"]["absolute_path_order"][2:] = [
+        str(alias.absolute() / "Sources"),
+        str(module.SUITESPARSE_ROOT / "CHOLMOD" / "MATLAB"),
+        str(module.SUITESPARSE_ROOT / "AMD" / "MATLAB"),
+        str(module.SUITESPARSE_ROOT / "COLAMD" / "MATLAB"),
+        str(module.SUITESPARSE_ROOT / "CCOLAMD" / "MATLAB"),
+        str(module.SUITESPARSE_ROOT / "CAMD" / "MATLAB"),
+    ]
+    with pytest.raises(module.LaunchError, match="reparse|symlink|canonical"):
+        module.require_qualified_runtime_paths(runtime, matlab.absolute(), alias.absolute())
+
+
 def test_launcher_rejects_non_mex_source_mutation_before_root_or_consumption(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Every qualified MATLAB/C/C++/header source, not just binaries, is byte-bound."""
@@ -685,6 +713,7 @@ def test_second_busy_check_prevents_popen_and_records_consumed_root(
     receipt = strict_json(run / "receipts" / "BUSY_NO_LAUNCH.json")
     assert receipt["status"] == "BUSY_NO_LAUNCH"
     assert receipt["resume_allowed"] is False
+    assert not (run / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").exists()
     monkeypatch.setattr(module, "matlab_processes", lambda: [])
     with pytest.raises(FileExistsError):
         module.launch_t3_rev(**inputs)
@@ -692,6 +721,99 @@ def test_second_busy_check_prevents_popen_and_records_consumed_root(
     different_root["run_root"] = tmp_path / "different-run"
     with pytest.raises(module.LaunchError, match="seal.*consumed"):
         module.launch_t3_rev(**different_root)
+
+
+def test_two_root_concurrent_claim_has_no_pass_receipt_for_loser(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    _allow_test_matlab_identity(module, monkeypatch)
+
+    class Process:
+        pid = 5317
+
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: Process())
+    inputs = _launcher_inputs(module, tmp_path)
+    claims = threading.Barrier(2)
+    real_consume = module.consume_seal
+
+    def simultaneous_consume(seal_path, run_root):
+        claims.wait(timeout=10)
+        return real_consume(seal_path, run_root)
+
+    monkeypatch.setattr(module, "consume_seal", simultaneous_consume)
+    candidates = []
+    for name in ("first-run", "second-run"):
+        candidate = dict(inputs)
+        candidate["run_root"] = tmp_path / name
+        candidates.append(candidate)
+
+    def attempt(candidate):
+        try:
+            return module.launch_t3_rev(**candidate)
+        except Exception as error:
+            return error
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        outcomes = list(pool.map(attempt, candidates))
+    assert sum(isinstance(item, dict) for item in outcomes) == 1
+    assert sum(isinstance(item, module.PreparedLaunchError) for item in outcomes) == 1
+    marker = strict_json(module.seal_consumption_marker(inputs["seal_path"]))
+    winning_root = Path(marker["run_root"])
+    losing_root = next(Path(item["run_root"]) for item in candidates if Path(item["run_root"]).resolve() != winning_root)
+    assert (winning_root / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").is_file()
+    assert not (losing_root / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").exists()
+    assert strict_json(losing_root / "receipts" / "PREPARED_NO_LAUNCH.json")["status"] == "PREPARED_NO_LAUNCH"
+
+
+@pytest.mark.parametrize("failure", ["logs", "popen"])
+def test_late_no_launch_failure_invalidates_pass_credential(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, failure: str) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+    if failure == "logs":
+        monkeypatch.setattr(
+            module, "open_launch_logs",
+            lambda _root: (_ for _ in ()).throw(OSError("injected log failure")),
+            raising=False,
+        )
+    else:
+        monkeypatch.setattr(
+            module, "Popen", lambda *a, **k: (_ for _ in ()).throw(OSError("injected Popen failure"))
+        )
+    with pytest.raises(module.PreparedLaunchError, match="consumed/prepared"):
+        module.launch_t3_rev(**inputs)
+    receipt = inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.json"
+    assert not receipt.exists()
+    invalidated = inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.INVALIDATED.json"
+    assert invalidated.exists() is (failure == "popen")
+    assert strict_json(inputs["run_root"] / "receipts" / "PREPARED_NO_LAUNCH.json")["status"] == "PREPARED_NO_LAUNCH"
+
+
+def test_extension_mutation_between_preflight_and_final_check_has_no_pass_receipt(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = load_module("launch_t3_rev")
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+    manifest = strict_json(inputs["extension_root"] / "EXTENSION_SOURCE_MANIFEST.json")
+    shadow = inputs["extension_root"] / manifest["shadow_files"][0]["path"]
+    checks = 0
+
+    def mutate_on_final_busy_check():
+        nonlocal checks
+        checks += 1
+        if checks == 2:
+            shadow.write_bytes(shadow.read_bytes() + b"\n% raced mutation\n")
+        return []
+
+    monkeypatch.setattr(module, "matlab_processes", mutate_on_final_busy_check)
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    with pytest.raises(module.LaunchError, match="extension|shadow|final"):
+        module.launch_t3_rev(**inputs)
+    assert not (inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").exists()
+    assert strict_json(inputs["run_root"] / "receipts" / "PREPARED_NO_LAUNCH.json")["status"] == "PREPARED_NO_LAUNCH"
 
 
 def test_launcher_popen_uses_locked_paths_and_environment(
