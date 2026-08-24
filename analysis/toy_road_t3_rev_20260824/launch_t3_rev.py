@@ -925,23 +925,25 @@ def publish_launch_receipt(
         if hashlib.sha256(launch_receipt_bytes).hexdigest() != expected_receipt_sha256:
             raise LaunchCredentialError("precomputed launch credential bytes changed")
         write_bytes_create_new(temporary, launch_receipt_bytes)
-        os.replace(temporary, launch_receipt_path)
-        if sha256(launch_receipt_path) != expected_receipt_sha256:
-            launch_receipt_path.unlink()
-            raise LaunchCredentialError("published launch credential SHA-256 differs")
+        if sha256(temporary) != expected_receipt_sha256:
+            raise LaunchCredentialError("temporary launch credential SHA-256 differs")
+        os.link(temporary, launch_receipt_path)
     except Exception:
-        if temporary.exists():
-            temporary.unlink()
-        if launch_receipt_path.exists():
-            launch_receipt_path.unlink()
+        try:
+            if temporary.exists():
+                temporary.unlink()
+        except OSError:
+            pass
         raise
+    try:
+        temporary.unlink()
+    except OSError:
+        pass
 
 
 def raise_launch_credential_failure(
         receipts: Path, launch_receipt_path: Path, process: Any, error: Exception) -> None:
     """Record a started-but-unauthorized bootstrap without retrying or exposing PASS."""
-    if launch_receipt_path.exists():
-        launch_receipt_path.unlink()
     failure = receipts / "LAUNCH_CREDENTIAL_FAILED.json"
     try:
         write_json_create_new(failure, {
@@ -1031,8 +1033,13 @@ def launch_t3_rev(
     seal_sha256 = hashlib.sha256(seal_bytes).hexdigest()
     repo_commit = clean_repository_commit(repo_root)
     seal = _require_seal(seal_path, repo_commit)
-    if seal_path.read_bytes() != seal_bytes:
-        raise LaunchError("seal bytes changed during validated preflight snapshot")
+    canonical_seal_bytes = json_payload(seal)
+    if seal_path.read_bytes() != seal_bytes or seal_bytes != canonical_seal_bytes:
+        raise LaunchError(
+            "seal bytes changed or are not the seal builder's exact canonical JSON encoding"
+        )
+    seal_bytes = canonical_seal_bytes
+    seal_sha256 = hashlib.sha256(seal_bytes).hexdigest()
     sealed_base_root, manifest, case = _require_extension(repo_root, extension_root, seal)
     runtime = seal["runtime_identity"]
     if not isinstance(runtime, dict):
@@ -1083,7 +1090,8 @@ def launch_t3_rev(
         generated_protocol, runtime, expected_binaries, family_hash, case_hash, matlab_paths, roots
     )
     lock_path = receipts / "T3_REV_EXECUTION_INPUT_LOCK.json"
-    lock_sha256 = hashlib.sha256(json_payload(lock)).hexdigest()
+    lock_bytes = generated_protocol.canonical_json_bytes(lock)
+    lock_sha256 = hashlib.sha256(lock_bytes).hexdigest()
     launch_receipt_path = receipts / "T3_REV_LAUNCH_RECEIPT.json"
     launch_nonce = secrets.token_hex(32)
     launch_receipt = {
@@ -1151,7 +1159,7 @@ def launch_t3_rev(
         root_created = True
         receipts.mkdir(parents=True, exist_ok=False)
         materialize_runtime_overlay(shadow_payloads, runtime_overlay, initial_source)
-        write_json_create_new(lock_path, lock)
+        write_bytes_create_new(lock_path, lock_bytes)
     except OSError as error:
         if root_created:
             _raise_prepared_failure(seal_path, seal_sha256, seal_bytes, run_root, receipts, error)

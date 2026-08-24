@@ -482,7 +482,9 @@ def _launcher_inputs(module, tmp_path: Path) -> dict[str, Path]:
         "runtime_identity": seal_builder.EXPECTED_EXECUTION,
     }
     seal_path = tmp_path / "T3_REV_SEAL.json"
-    seal_path.write_text(json.dumps(seal, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    seal_path.write_bytes(
+        json.dumps(seal, sort_keys=True, separators=(",", ":")).encode("ascii") + b"\n"
+    )
     template = tmp_path / "template" / "receipts"
     template.mkdir(parents=True)
     shutil.copy2(
@@ -791,9 +793,13 @@ def test_credential_publication_failure_after_popen_is_fail_closed(
         pid = 9753
 
     monkeypatch.setattr(module, "Popen", lambda *a, **k: Process())
-    monkeypatch.setattr(
-        module.os, "replace", lambda *a, **k: (_ for _ in ()).throw(OSError("replace failed"))
-    )
+    real_link = module.os.link
+    def fail_credential_link(source, target, *args, **kwargs):
+        if Path(target).name == "T3_REV_LAUNCH_RECEIPT.json":
+            raise OSError("link failed")
+        return real_link(source, target, *args, **kwargs)
+
+    monkeypatch.setattr(module.os, "link", fail_credential_link)
     with pytest.raises(module.LaunchCredentialError, match="credential"):
         module.launch_t3_rev(**inputs)
     receipts = inputs["run_root"] / "receipts"
@@ -839,16 +845,69 @@ def test_stale_wrong_nonce_receipt_conflict_never_becomes_valid(
     def stale_popen(args, **kwargs):
         batch = args[2]
         assert hashlib.sha256(stale_bytes).hexdigest() not in batch
-        receipt = inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.json"
-        receipt.write_bytes(stale_bytes)
         return Process()
 
     monkeypatch.setattr(module, "Popen", stale_popen)
+    real_link = module.os.link
+    def inject_conflict_at_publish(source, target, *args, **kwargs):
+        if Path(target).name == "T3_REV_LAUNCH_RECEIPT.json":
+            Path(target).write_bytes(stale_bytes)
+        return real_link(source, target, *args, **kwargs)
+
+    monkeypatch.setattr(module.os, "link", inject_conflict_at_publish)
     with pytest.raises(module.LaunchCredentialError, match="credential"):
         module.launch_t3_rev(**inputs)
     receipts = inputs["run_root"] / "receipts"
-    assert not (receipts / "T3_REV_LAUNCH_RECEIPT.json").exists()
+    assert (receipts / "T3_REV_LAUNCH_RECEIPT.json").read_bytes() == stale_bytes
     assert strict_json(receipts / "LAUNCH_CREDENTIAL_FAILED.json")["status"] == "LAUNCH_CREDENTIAL_FAILED"
+
+
+def test_post_publish_temp_cleanup_failure_does_not_reverse_success(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+
+    class Process:
+        pid = 2583
+
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: Process())
+    real_unlink = Path.unlink
+    def fail_temp_cleanup(path, *args, **kwargs):
+        if path.name.startswith(".T3_REV_LAUNCH_RECEIPT.json") and path.name.endswith(".tmp"):
+            raise OSError("cleanup failed after publish")
+        return real_unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "unlink", fail_temp_cleanup)
+    assert module.launch_t3_rev(**inputs)["status"] == "LAUNCHED"
+    receipt = inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.json"
+    assert receipt.is_file()
+
+
+@pytest.mark.parametrize("variant", ["extra_lf", "key_order", "whitespace"])
+def test_semantically_equal_noncanonical_seal_copy_cannot_replay(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, variant: str) -> None:
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+    value = strict_json(inputs["seal_path"])
+    if variant == "extra_lf":
+        payload = inputs["seal_path"].read_bytes() + b"\n"
+    elif variant == "key_order":
+        payload = (json.dumps(dict(reversed(list(value.items()))), separators=(",", ":")) + "\n").encode()
+    else:
+        payload = (json.dumps(value, sort_keys=True, indent=2) + "\n").encode()
+    variant_path = tmp_path / f"seal-{variant}.json"
+    variant_path.write_bytes(payload)
+    attempt = dict(inputs)
+    attempt["seal_path"] = variant_path
+    attempt["run_root"] = tmp_path / f"run-{variant}"
+    with pytest.raises(module.LaunchError, match="canonical JSON encoding"):
+        module.launch_t3_rev(**attempt)
+    assert not attempt["run_root"].exists()
 
 
 def test_busy_refusal_precedes_root_creation(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -1063,6 +1122,17 @@ def test_launcher_popen_uses_locked_paths_and_environment(
         inputs["extension_root"] / "toy_road_protocol.py", "test_generated_protocol"
     )
     generated_protocol.validate_execution_input_lock(lock, "T3_rev_loading_order")
+    lock_path = tmp_path / "run" / "receipts" / "T3_REV_EXECUTION_INPUT_LOCK.json"
+    assert lock_path.read_bytes() == generated_protocol.canonical_json_bytes(lock)
+    simulated_measurement = {
+        "execution_input_lock_sha256": generated_protocol.canonical_json_sha256(lock),
+    }
+    assert simulated_measurement["execution_input_lock_sha256"] == hashlib.sha256(
+        lock_path.read_bytes()
+    ).hexdigest()
+    assert env["TOY_ROAD_EXECUTION_INPUT_LOCK_SHA256"] == simulated_measurement[
+        "execution_input_lock_sha256"
+    ]
     assert lock["runtime_lock_sha256"] == "a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7"
     template_lock = strict_json(inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json")
     assert lock["source_commit"] == template_lock["source_commit"]
