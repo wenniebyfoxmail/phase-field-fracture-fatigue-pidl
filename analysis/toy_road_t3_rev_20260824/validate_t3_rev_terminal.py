@@ -835,6 +835,11 @@ def _validate_failure_package(
         raise TerminalValidationError(
             "failure package mesh/state dimensions are not the authenticated geometry dimensions"
         )
+    if np.any(state0_damage < -protocol.THRESHOLD) \
+            or np.any(state0_damage > 1 + protocol.THRESHOLD):
+        raise TerminalValidationError("failure package state0 damage lies outside [0, 1]")
+    if np.any(state0_alpha < -protocol.THRESHOLD):
+        raise TerminalValidationError("failure package state0 alpha must be nonnegative")
     if not isinstance(mesh_identity, dict):
         raise TerminalValidationError("failure package mesh contract is missing")
     shard_manifest = {

@@ -2927,6 +2927,64 @@ def test_numerical_failure_rejects_shard_rows_detached_from_authenticated_mesh(
         )
 
 
+@pytest.mark.parametrize(("field", "stored_index", "value", "expected_error"), [
+    ("d_node", (0, 0), -0.1, "state0 damage"),
+    ("d_node", (0, 0), 1.1, "state0 damage"),
+    ("d_node", (0, 0), float("nan"), "finite"),
+    ("alpha_bar_gp", (0, 0), -0.1, "state0 alpha"),
+])
+def test_numerical_failure_rejects_state0_outside_authoritative_state_bounds(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, field: str,
+        stored_index: tuple[int, int], value: float, expected_error: str) -> None:
+    """Reclosing cannot admit invalid initial damage or fatigue history."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
+    relative = Path("output/state0_analysis.mat")
+    live = inputs["run_root"] / relative
+    copied = inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / relative
+    for path in (live, copied):
+        with h5py.File(path, "r+") as handle:
+            handle[f"state0/{field}"][stored_index] = value
+    _reclose_failure_package(inputs)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match=expected_error):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+@pytest.mark.parametrize(("field", "regressed_value"), [
+    ("d_node", 0.0915),
+    ("alpha_bar_gp", 0.0015),
+])
+def test_numerical_failure_rejects_sequential_shard_state_regression(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, field: str,
+        regressed_value: float) -> None:
+    """The qualified protocol preserves damage/history irreversibility across shards."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
+    relative = Path("output/substeps/cycle_0003.mat")
+    live = inputs["run_root"] / relative
+    copied = inputs["run_root"] / "T3_REV_FAILURE_PACKAGE" / "artifacts" / relative
+    for path in (live, copied):
+        with h5py.File(path, "r+") as handle:
+            handle[f"shard/{field}"][0, 0] = regressed_value
+    _reclose_failure_package(inputs)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="chronology"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
 def test_numerical_failure_rejects_out_of_range_mesh_connectivity_before_hash_claim(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Integer Q4 connectivity must index an authenticated node row."""
