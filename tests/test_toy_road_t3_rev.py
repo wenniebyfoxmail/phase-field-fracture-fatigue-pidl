@@ -117,3 +117,33 @@ def test_extension_contract_rejects_complete_type_confusion(
     path.write_text(json.dumps(contract, sort_keys=True, separators=(",", ":")))
     with pytest.raises(module.ExtensionError, match=error):
         module.read_strict_contract(path)
+
+
+def test_diff_verifier_rejects_fixed_point_threshold_change(tmp_path: Path) -> None:
+    """A numerical solver change cannot be presented as a T3-rev overlay."""
+    builder = load_module("build_t3_rev_extension")
+    verify = load_module("verify_extension_diff")
+    extension = tmp_path / "extension"
+    builder.build_extension(BASE, extension, "a" * 40)
+    solver = extension / "solve_toy_road_family_case.m"
+    solver.write_text(solver.read_text(encoding="utf-8").replace("1e-3", "2e-3", 1),
+                      encoding="utf-8")
+
+    with pytest.raises(verify.DiffError, match="unclassified|numerical"):
+        verify.verify_extension_diff(BASE, extension)
+
+
+def test_diff_verifier_accepts_exact_generated_extension(tmp_path: Path) -> None:
+    """The generated T3-rev overlay leaves all numerical dependencies unchanged."""
+    builder = load_module("build_t3_rev_extension")
+    verify = load_module("verify_extension_diff")
+    extension = tmp_path / "extension"
+    builder.build_extension(BASE, extension, "a" * 40)
+
+    result = verify.verify_extension_diff(BASE, extension)
+
+    assert result == {
+        "status": "PASS",
+        "numerical_algorithm_changed": False,
+        "allowed_shadow_files": list(builder.ALLOWED_SHADOW_FILES),
+    }
