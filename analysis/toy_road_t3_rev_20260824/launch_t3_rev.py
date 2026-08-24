@@ -23,6 +23,11 @@ AUTHORIZATION_CAPABILITY = "exactly_one_T3_rev_loading_order_execution"
 SUITESPARSE_ROOT = Path(r"C:\SuiteSparse\SuiteSparse-dev")
 CREATE_NO_WINDOW = 0x08000000
 CREATE_NEW_PROCESS_GROUP = 0x00000200
+QUALIFIED_TEMPLATE_LOCK_SHA256 = "a7ccff1083bd0c86a7111a8e5a6256a5836688602e3dd269ed77a53c4cbe5869"
+QUALIFIED_SOURCE_HASHES_SHA256 = "4951e9bb43515c036ec2f100b8c94627d48d88ae5b515d49c3d9bcec09bb7481"
+EXPECTED_INPUT_ASSET_SHA256 = {
+    "sens_mesh.m": "dbf13237939425b61cde93b841ae2c24e7fccd291861df5508a34800bb9f4706",
+}
 
 
 class BusyExperimentError(RuntimeError):
@@ -138,20 +143,32 @@ def matlab_literal(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
 
 
-def _load_module(filename: str, name: str) -> Any:
-    path = Path(__file__).with_name(filename)
+def _load_module_path(path: Path, name: str) -> Any:
+    path = Path(path)
     spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
-        raise LaunchError(f"cannot load launch dependency: {filename}")
+        raise LaunchError(f"cannot load launch dependency: {path}")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
+    original_dont_write_bytecode = sys.dont_write_bytecode
     try:
+        sys.dont_write_bytecode = True
         spec.loader.exec_module(module)
     except Exception as error:
-        raise LaunchError(f"cannot load launch dependency {filename}: {error}") from error
+        raise LaunchError(f"cannot load launch dependency {path}: {error}") from error
     finally:
+        sys.dont_write_bytecode = original_dont_write_bytecode
         sys.modules.pop(spec.name, None)
     return module
+
+
+def _load_module(filename: str, name: str) -> Any:
+    return _load_module_path(Path(__file__).with_name(filename), name)
+
+
+def load_protocol(path: Path, name: str) -> Any:
+    """Load one sealed protocol without creating bytecode beside sealed inputs."""
+    return _load_module_path(path, name)
 
 
 def _exact_json_equal(actual: object, expected: object) -> bool:
@@ -246,8 +263,10 @@ def require_bridge_authorization_receipt(receipt: Mapping[str, object]) -> None:
     required = {
         "schema_version", "status", "authorization_scope", "authorized_entrypoint", "case_id",
         "authorization_capability", "resume_allowed", "follow_on_authorized", "source_commit",
+        "launcher_repository_commit",
         "runtime_lock_sha256", "family_contract_sha256", "case_physics_contract_sha256",
         "execution_input_lock_sha256", "seal_sha256", "extension_source_manifest_sha256",
+        "extension_root", "runtime_overlay_root", "extension_shadow_sha256", "thread_environment",
     }
     if set(receipt) != required or receipt.get("schema_version") != "toy_road_t3_rev_launch_receipt_v1" \
             or receipt.get("status") != "PASS" \
@@ -264,54 +283,28 @@ def require_bridge_authorization_receipt(receipt: Mapping[str, object]) -> None:
     )
     if type(receipt.get("source_commit")) is not str or len(receipt["source_commit"]) != 40 \
             or any(character not in "0123456789abcdef" for character in receipt["source_commit"]) \
+            or type(receipt.get("launcher_repository_commit")) is not str \
+            or len(receipt["launcher_repository_commit"]) != 40 \
+            or any(character not in "0123456789abcdef"
+                   for character in receipt["launcher_repository_commit"]) \
             or any(type(receipt.get(field)) is not str or len(receipt[field]) != 64
                    or any(character not in "0123456789abcdef" for character in receipt[field])
                    for field in digest_fields):
         raise LaunchError("launch receipt bridge identity fields are malformed")
-
-
-def require_bridge_execution_lock(lock: Mapping[str, object]) -> None:
-    """Pure fail-closed validation of every execution-lock field read before main."""
-    required = {
-        "schema_version", "authorization_scope", "protocol_version", "case_id",
-        "case_physics_contract_sha256", "family_contract_sha256", "source_commit",
-        "source_manifest_sha256", "runtime_lock_sha256", "launch_timestamp_utc",
-        "no_clobber_receipt_id", "resume_allowed", "writable_roots",
-        "runtime_expectations", "extension_source_manifest_sha256", "thread_environment",
+    shadow = receipt.get("extension_shadow_sha256")
+    if not isinstance(shadow, dict) or not shadow \
+            or not all(type(path) is str and path and type(digest) is str and len(digest) == 64
+                       and all(character in "0123456789abcdef" for character in digest)
+                       for path, digest in shadow.items()):
+        raise LaunchError("launch receipt extension shadow identity is malformed")
+    expected_threads = {
+        "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1", "MKL_DYNAMIC": "FALSE",
     }
-    if set(lock) != required or lock.get("schema_version") != "toy_road_execution_input_lock_v1" \
-            or lock.get("authorization_scope") != "production_authorized" \
-            or lock.get("protocol_version") != "toy-road-p0-repeatability-v2.1" \
-            or lock.get("case_id") != CASE_ID or lock.get("resume_allowed") is not False:
-        raise LaunchError("execution lock bridge schema or authorization is invalid")
-    digests = ("case_physics_contract_sha256", "family_contract_sha256", "source_manifest_sha256",
-               "runtime_lock_sha256", "extension_source_manifest_sha256")
-    if type(lock.get("source_commit")) is not str or len(lock["source_commit"]) != 40 \
-            or any(char not in "0123456789abcdef" for char in lock["source_commit"]) \
-            or any(type(lock.get(field)) is not str or len(lock[field]) != 64
-                   or any(char not in "0123456789abcdef" for char in lock[field]) for field in digests):
-        raise LaunchError("execution lock bridge hashes are malformed")
-    roots = lock.get("writable_roots")
-    expected_roots = {"output", "work", "temp", "tmp", "pref", "cache", "receipts", "matlab_startup_pref"}
-    if not isinstance(roots, dict) or set(roots) != expected_roots \
-            or not all(type(value) is str and value and Path(value).is_absolute() for value in roots.values()):
-        raise LaunchError("execution lock writable roots are malformed")
-    expected_threads = {"OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_DYNAMIC": "FALSE"}
-    if not _exact_json_equal(lock.get("thread_environment"), expected_threads):
-        raise LaunchError("execution lock thread environment is malformed")
-    runtime = lock.get("runtime_expectations")
-    if not isinstance(runtime, dict) or set(runtime) != {"binary_sha256", "matlab"} \
-            or not isinstance(runtime.get("binary_sha256"), dict) \
-            or set(runtime["binary_sha256"]) != {"initial", "AMOR", "AT1_HISTORY_FATIGUE", "cholmod2"} \
-            or any(type(value) is not str or len(value) != 64 for value in runtime["binary_sha256"].values()):
-        raise LaunchError("execution lock runtime binary mapping is malformed")
-    matlab = runtime.get("matlab")
-    expected_matlab = {"absolute_path_order", "release", "update", "version", "computer", "executable_sha256", "blas", "lapack"}
-    if not isinstance(matlab, dict) or set(matlab) != expected_matlab \
-            or type(matlab.get("absolute_path_order")) is not list or not matlab["absolute_path_order"] \
-            or not all(type(path) is str and path and Path(path).is_absolute() for path in matlab["absolute_path_order"]) \
-            or any(type(matlab.get(field)) is not str and field != "absolute_path_order" for field in expected_matlab):
-        raise LaunchError("execution lock MATLAB mapping is malformed")
+    if not _exact_json_equal(receipt.get("thread_environment"), expected_threads) \
+            or any(type(receipt.get(field)) is not str or not Path(receipt[field]).is_absolute()
+                   for field in ("extension_root", "runtime_overlay_root")):
+        raise LaunchError("launch receipt extension or thread binding is malformed")
 
 
 def _require_extension(
@@ -356,17 +349,34 @@ def _require_extension(
     return sealed_base_root, manifest, case
 
 
-def _require_template_inputs(template_run: Path, runtime: Mapping[str, object], input_assets_root: Path, matlab: Path) -> dict[str, object]:
-    lock = read_json(template_run / "receipts" / "T2_EXECUTION_INPUT_LOCK.json")
+def _require_template_inputs(
+        template_run: Path, runtime: Mapping[str, object], matlab: Path,
+        base_protocol: Any) -> dict[str, object]:
+    lock_path = template_run / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
+    lock = read_json(lock_path)
+    try:
+        base_protocol.validate_execution_input_lock(lock, "T2_material_state")
+    except Exception as error:
+        raise LaunchError(
+            f"template execution lock failed authoritative protocol validation: {error}"
+        ) from error
+    if sha256(lock_path) != QUALIFIED_TEMPLATE_LOCK_SHA256:
+        raise LaunchError("template execution lock is not the exact qualified predecessor")
     expectation = lock.get("runtime_expectations")
-    if not isinstance(expectation, dict) or not input_assets_root.is_dir() or not matlab.is_file():
-        raise LaunchError("runtime or input assets are incomplete")
+    if not isinstance(expectation, dict) or not matlab.is_file():
+        raise LaunchError("template runtime or MATLAB executable is incomplete")
     expected_binaries = runtime.get("four_binary_sha256")
     if set(expectation) != {"binary_sha256", "matlab"} \
+            or lock.get("authorization_scope") != "production_authorized" \
+            or lock.get("case_id") != "T2_material_state" \
+            or lock.get("source_commit") != runtime.get("source_commit") \
             or lock.get("runtime_lock_sha256") != runtime.get("runtime_lock_sha256") \
             or lock.get("source_manifest_sha256") != runtime.get("source_manifest_sha256") \
+            or lock.get("family_contract_sha256") != runtime.get("family_contract_sha256") \
+            or lock.get("case_physics_contract_sha256") \
+            != "a9210c5c52a3063b04cc08a7e8ec16acf98dd8c243c304b5fecdf9040b00d7b6" \
             or not _exact_json_equal(expectation.get("binary_sha256"), expected_binaries):
-        raise LaunchError("template runtime identity differs from the seal")
+        raise LaunchError("template execution lock is not the exact qualified predecessor identity")
     matlab_identity = expectation.get("matlab")
     sealed_matlab = runtime.get("matlab")
     if not isinstance(matlab_identity, dict) or not isinstance(sealed_matlab, dict):
@@ -391,22 +401,112 @@ def _require_template_inputs(template_run: Path, runtime: Mapping[str, object], 
         raise LaunchError("template MATLAB identity differs from the sealed release/update/platform mapping")
     if executable_sha256(matlab) != sealed_matlab["executable_sha256"]:
         raise LaunchError("MATLAB executable SHA-256 differs from the sealed runtime identity")
-    required_lock_fields = {
-        "authorization_scope", "case_id", "case_physics_contract_sha256", "family_contract_sha256",
-        "launch_timestamp_utc", "no_clobber_receipt_id", "protocol_version", "resume_allowed",
-        "runtime_expectations", "runtime_lock_sha256", "schema_version", "source_commit",
-        "source_manifest_sha256", "writable_roots",
-    }
-    if set(lock) != required_lock_fields or lock.get("authorization_scope") != "production_authorized" \
-            or lock.get("protocol_version") != "toy-road-p0-repeatability-v2.1" \
-            or lock.get("schema_version") != "toy_road_execution_input_lock_v1" \
-            or lock.get("resume_allowed") is not False \
-            or type(lock.get("launch_timestamp_utc")) is not str \
-            or type(lock.get("no_clobber_receipt_id")) is not str \
-            or type(lock.get("writable_roots")) is not dict \
-            or not all(type(name) is str and type(value) is str for name, value in lock["writable_roots"].items()):
-        raise LaunchError("template execution lock schema or authorization identity is invalid")
     return lock
+
+
+def input_asset_sha256(path: Path) -> str:
+    """Hash an input asset independently from mutable directory claims."""
+    return sha256(path)
+
+
+def _paths_related(left: Path, right: Path) -> bool:
+    left_text = os.path.normcase(os.path.abspath(str(left)))
+    right_text = os.path.normcase(os.path.abspath(str(right)))
+    try:
+        common = os.path.commonpath([left_text, right_text])
+    except ValueError:
+        return False
+    return common in {left_text, right_text}
+
+
+def qualified_input_asset_sha256(repo_root: Path) -> dict[str, str]:
+    evidence_path = (
+        repo_root / "producer_handoffs" / "rebuilt_initial_mex_qualification_20260801" /
+        "build" / "SOURCE_HASHES.json"
+    )
+    if not evidence_path.is_file() or sha256(evidence_path) != QUALIFIED_SOURCE_HASHES_SHA256:
+        raise LaunchError("input asset qualification evidence bytes are not exact")
+    evidence = read_json(evidence_path)
+    inventory = evidence.get("locked_git_tree_inventory")
+    if evidence.get("schema_version") != "rebuilt_initial_mex_source_hashes_v1" \
+            or evidence.get("locked_commit") \
+            != "355d4c83fefc2db88c32031a2dd2623b3de85c89" \
+            or not isinstance(inventory, list):
+        raise LaunchError("input asset qualification evidence identity is malformed")
+    required_paths = {
+        f"Dependencies/meshes/{name}": name for name in EXPECTED_INPUT_ASSET_SHA256
+    }
+    selected: dict[str, str] = {}
+    for entry in inventory:
+        if not isinstance(entry, dict):
+            raise LaunchError("input asset qualification evidence inventory is malformed")
+        relative = entry.get("path")
+        if relative in required_paths:
+            name = required_paths[relative]
+            if name in selected or type(entry.get("sha256")) is not str:
+                raise LaunchError("input asset qualification evidence closure is malformed")
+            selected[name] = entry["sha256"]
+    if not _exact_json_equal(selected, EXPECTED_INPUT_ASSET_SHA256):
+        raise LaunchError("input asset qualification evidence closure is not exact")
+    return selected
+
+
+def require_input_assets(
+        repo_root: Path, input_assets_root: Path,
+        writable_roots: Mapping[str, Path]) -> None:
+    """Close the complete producer-read input asset set before any consumption."""
+    if not input_assets_root.is_dir():
+        raise LaunchError("input asset root is missing")
+    expected_assets = qualified_input_asset_sha256(repo_root)
+    for name, expected_digest in expected_assets.items():
+        path = input_assets_root / name
+        if not path.is_file():
+            raise LaunchError(f"input asset is missing: {name}")
+        if input_asset_sha256(path) != expected_digest:
+            raise LaunchError(f"input asset SHA-256 differs from qualified evidence: {name}")
+    if any(_paths_related(input_assets_root, root) for root in writable_roots.values()):
+        raise LaunchError("input asset root overlaps a producer writable root")
+
+
+def _extension_shadow_hashes(manifest: Mapping[str, object]) -> dict[str, str]:
+    entries = manifest.get("shadow_files")
+    if not isinstance(entries, list) or not entries:
+        raise LaunchError("extension source manifest shadow closure is missing")
+    output: dict[str, str] = {}
+    for entry in entries:
+        if not isinstance(entry, dict) or set(entry) != {"path", "sha256"}:
+            raise LaunchError("extension source manifest shadow entry is malformed")
+        relative, digest = entry["path"], entry["sha256"]
+        if type(relative) is not str or type(digest) is not str or len(digest) != 64 \
+                or Path(relative).is_absolute() or ".." in Path(relative).parts \
+                or relative in output or relative.casefold() in {path.casefold() for path in output}:
+            raise LaunchError("extension source manifest shadow identity is malformed")
+        output[relative] = digest
+    return output
+
+
+def materialize_runtime_overlay(
+        extension_root: Path, manifest: Mapping[str, object], runtime_overlay: Path,
+        initial_source: Path) -> dict[str, str]:
+    """Hard-link the sealed extension and rebuilt initial MEX into one path slot."""
+    shadow_hashes = _extension_shadow_hashes(manifest)
+    runtime_overlay.mkdir(parents=True, exist_ok=False)
+    for relative, expected_digest in shadow_hashes.items():
+        source = extension_root / relative
+        target = runtime_overlay / relative
+        if not source.is_file() or sha256(source) != expected_digest:
+            raise LaunchError(f"extension shadow bytes changed before launch: {relative}")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        os.link(source, target)
+        if sha256(target) != expected_digest:
+            raise LaunchError(f"runtime overlay shadow bytes differ: {relative}")
+    initial_target = (
+        runtime_overlay / "+phase_field" / "+mex" / "+fem" / "+assembly" /
+        "+equilibrium" / "initial.mexw64"
+    )
+    initial_target.parent.mkdir(parents=True, exist_ok=True)
+    os.link(initial_source, initial_target)
+    return shadow_hashes
 
 
 def _write_busy_receipt(receipts: Path, processes: list[dict[str, object]]) -> None:
@@ -440,25 +540,32 @@ def launch_t3_rev(
     runtime = seal["runtime_identity"]
     if not isinstance(runtime, dict):
         raise LaunchError("seal runtime identity is malformed")
-    template = _require_template_inputs(template_run, runtime, input_assets_root, matlab)
+    base_protocol = load_protocol(
+        sealed_base_root / "toy_road_protocol.py", "t3_rev_launch_base_protocol"
+    )
+    generated_protocol = load_protocol(
+        extension_root / "toy_road_protocol.py", "t3_rev_launch_generated_protocol"
+    )
+    _require_template_inputs(template_run, runtime, matlab, base_protocol)
     if not (sealed_base_root / "run_toy_road_runtime_bridge.m").is_file():
         raise LaunchError("sealed source inputs are incomplete")
     expected_binaries = runtime.get("four_binary_sha256")
     binary_paths = require_runtime_binaries(repo_root, griphfith_root, expected_binaries)
     initial_source = binary_paths["initial"]
+    roots = {name: run_root / name for name in ("output", "work", "temp", "tmp", "pref", "cache")}
+    roots["matlab_startup_pref"] = run_root / "pref.matlab-startup"
+    receipts = run_root / "receipts"
+    runtime_overlay = run_root / ".toy-road-runtime-overlay"
+    require_input_assets(repo_root, input_assets_root, roots)
     _require_unconsumed_seal(seal_path)
 
-    roots = {name: run_root / name for name in ("output", "work", "temp", "tmp", "pref", "cache", "receipts")}
-    roots["matlab_startup_pref"] = run_root / "pref.matlab-startup"
-    runtime_overlay = run_root / ".toy-road-runtime-overlay"
-    initial_target = runtime_overlay / "+phase_field" / "+mex" / "+fem" / "+assembly" / "+equilibrium" / "initial.mexw64"
     run_root.mkdir(parents=True, exist_ok=False)
-    for path in (*roots.values(), initial_target.parent):
-        path.mkdir(parents=True, exist_ok=False)
-    os.link(initial_source, initial_target)
+    receipts.mkdir(parents=True, exist_ok=False)
+    shadow_hashes = materialize_runtime_overlay(
+        extension_root, manifest, runtime_overlay, initial_source
+    )
     matlab_paths = [
         runtime_overlay,
-        extension_root,
         sealed_base_root,
         griphfith_root / "Sources",
         SUITESPARSE_ROOT / "CHOLMOD" / "MATLAB",
@@ -474,23 +581,6 @@ def launch_t3_rev(
     case_hash = case.get("case_physics_contract_sha256")
     if not isinstance(family_hash, str) or not isinstance(case_hash, str):
         raise LaunchError("extension family or case hash is malformed")
-    lock = {
-        "schema_version": "toy_road_execution_input_lock_v1",
-        "authorization_scope": "production_authorized",
-        "protocol_version": "toy-road-p0-repeatability-v2.1",
-        "case_id": CASE_ID,
-        "case_physics_contract_sha256": case_hash,
-        "family_contract_sha256": family_hash,
-        "runtime_lock_sha256": runtime["runtime_lock_sha256"],
-        "source_commit": repo_commit,
-        "source_manifest_sha256": runtime["source_manifest_sha256"],
-        "launch_timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-        "no_clobber_receipt_id": uuid.uuid4().hex,
-        "resume_allowed": False,
-        "writable_roots": {name: str(path) for name, path in roots.items()},
-        "extension_source_manifest_sha256": sha256(extension_root / "EXTENSION_SOURCE_MANIFEST.json"),
-        "thread_environment": copy.deepcopy(runtime["thread_settings"]),
-    }
     sealed_matlab = runtime.get("matlab")
     if not isinstance(sealed_matlab, dict):
         raise LaunchError("seal MATLAB identity is malformed")
@@ -501,11 +591,30 @@ def launch_t3_rev(
             "absolute_path_order": [str(path) for path in matlab_paths],
         },
     }
-    lock["runtime_expectations"] = runtime_expectations
-    require_bridge_execution_lock(lock)
-    lock_path = roots["receipts"] / "T3_REV_EXECUTION_INPUT_LOCK.json"
+    try:
+        lock = generated_protocol.build_execution_input_lock(
+            authorization_scope="production_authorized",
+            role=CASE_ID,
+            family_contract_sha256=family_hash,
+            case_physics_contract_sha256=case_hash,
+            source_commit=runtime["source_commit"],
+            runtime_lock_sha256=runtime["runtime_lock_sha256"],
+            source_manifest_sha256=runtime["source_manifest_sha256"],
+            runtime_expectations=runtime_expectations,
+            roots={name: str(path) for name, path in roots.items()},
+            launch_timestamp_utc=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            no_clobber_receipt_id=uuid.uuid4().hex,
+        )
+        generated_protocol.validate_execution_input_lock(lock, CASE_ID)
+    except Exception as error:
+        raise LaunchError(f"generated execution lock failed authoritative protocol validation: {error}") from error
+    lock_path = receipts / "T3_REV_EXECUTION_INPUT_LOCK.json"
     write_json_create_new(lock_path, lock)
-    launch_receipt_path = roots["receipts"] / "T3_REV_LAUNCH_RECEIPT.json"
+    try:
+        generated_protocol.validate_execution_input_lock(read_json(lock_path), CASE_ID)
+    except Exception as error:
+        raise LaunchError(f"written execution lock failed authoritative protocol validation: {error}") from error
+    launch_receipt_path = receipts / "T3_REV_LAUNCH_RECEIPT.json"
     write_json_create_new(launch_receipt_path, {
         "schema_version": "toy_road_t3_rev_launch_receipt_v1",
         "status": "PASS",
@@ -515,16 +624,21 @@ def launch_t3_rev(
         "authorization_capability": AUTHORIZATION_CAPABILITY,
         "resume_allowed": False,
         "follow_on_authorized": False,
-        "source_commit": repo_commit,
+        "source_commit": runtime["source_commit"],
+        "launcher_repository_commit": repo_commit,
         "runtime_lock_sha256": runtime["runtime_lock_sha256"],
         "family_contract_sha256": family_hash,
         "case_physics_contract_sha256": case_hash,
         "execution_input_lock_sha256": sha256(lock_path),
         "seal_sha256": sha256(seal_path),
         "extension_source_manifest_sha256": sha256(extension_root / "EXTENSION_SOURCE_MANIFEST.json"),
+        "extension_root": str(extension_root),
+        "runtime_overlay_root": str(runtime_overlay),
+        "extension_shadow_sha256": shadow_hashes,
+        "thread_environment": copy.deepcopy(runtime["thread_settings"]),
     })
     require_bridge_authorization_receipt(read_json(launch_receipt_path))
-    measurement_path = roots["receipts"] / "T3_REV_RUNTIME_MEASUREMENT.json"
+    measurement_path = receipts / "T3_REV_RUNTIME_MEASUREMENT.json"
     prefix = os.pathsep.join(str(path) for path in matlab_paths)
     batch = (
         f"path([{matlab_literal(prefix)} pathsep path]);"
@@ -535,7 +649,8 @@ def launch_t3_rev(
         "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_DYNAMIC": "FALSE",
         "TEMP": str(roots["temp"]), "TMP": str(roots["tmp"]),
         "MATLAB_PREFDIR": str(roots["matlab_startup_pref"]), "MCR_CACHE_ROOT": str(roots["cache"]),
-        "TOY_ROAD_CASE_ROLE": "T3_rev_loading_order", "TOY_ROAD_SOURCE_COMMIT": repo_commit,
+        "TOY_ROAD_CASE_ROLE": "T3_rev_loading_order",
+        "TOY_ROAD_SOURCE_COMMIT": str(lock["source_commit"]),
         "TOY_ROAD_RUNTIME_LOCK_SHA256": str(runtime["runtime_lock_sha256"]),
         "TOY_ROAD_FAMILY_CONTRACT_SHA256": family_hash,
         "TOY_ROAD_CASE_PHYSICS_CONTRACT_SHA256": case_hash,
@@ -549,7 +664,7 @@ def launch_t3_rev(
     consume_seal(seal_path, run_root)
     final_processes = matlab_processes()
     if final_processes:
-        _write_busy_receipt(roots["receipts"], final_processes)
+        _write_busy_receipt(receipts, final_processes)
         raise BusyExperimentError("BUSY_NO_LAUNCH: final process check blocks T3-rev launch")
     stdout = (run_root / "T3_REV.stdout.log").open("xb")
     stderr = (run_root / "T3_REV.stderr.log").open("xb")
