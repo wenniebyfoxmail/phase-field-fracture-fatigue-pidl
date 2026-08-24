@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 import importlib.util
 import hashlib
@@ -10,6 +11,8 @@ import subprocess
 import sys
 import threading
 
+import h5py
+import numpy as np
 import pytest
 
 
@@ -1612,7 +1615,7 @@ def test_predeclared_order_effect_classes() -> None:
     ), tolerance) == "ORDER_EFFECT_NOT_RESOLVED_WITHIN_TOLERANCE"
     assert module.classify_order_effect(_order_rows(
         (60, 2e-12, 0.0), (61, 0.0, 2e-12), (62, 0.0, 0.0),
-    ), tolerance) == "PERSISTENT_LOADING_ORDER_DEPENDENCE_OBSERVED"
+    ), tolerance) == "TRANSIENT_ORDER_EFFECT_TERMINAL_TRAJECTORY_INSENSITIVE"
     assert module.classify_order_effect(_order_rows(
         (60, 2e-12, 0.0), (61, 1e-12, 1e-12), (62, 0.0, 0.0),
     ), tolerance) == "TRANSIENT_ORDER_EFFECT_TERMINAL_TRAJECTORY_INSENSITIVE"
@@ -1641,9 +1644,11 @@ def test_order_effect_rejects_duplicate_rows_and_extra_tolerances(
 
 
 @pytest.mark.parametrize("terminal, expected", [
-    ({"terminal_reason": "confirmed", "confirmed_cycle": 80},
+    ({"terminal_reason": "confirmed_penetration", "terminal_cycle": 80,
+      "first_hit_cycle": 77, "confirmed_cycle": 80},
      "PASS_CONFIRMED_FRACTURE_TRAJECTORY"),
-    ({"terminal_reason": "right_censored", "terminal_cycle": 150},
+    ({"terminal_reason": "right_censored", "terminal_cycle": 150,
+      "first_hit_cycle": None, "confirmed_cycle": None},
      "PASS_NO_CONFIRMED_FRACTURE_BY_C150"),
     ({"terminal_reason": "coupled_fixed_point_nonconvergence", "cycle": 64, "substep": 4},
      "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE"),
@@ -1659,6 +1664,12 @@ def test_terminal_classes_remain_distinct(terminal: dict[str, object], expected:
 
 @pytest.mark.parametrize("terminal", [
     {"terminal_reason": "right_censored", "terminal_cycle": 149},
+    {"terminal_reason": "right_censored", "terminal_cycle": 150,
+     "first_hit_cycle": 149, "confirmed_cycle": None},
+    {"terminal_reason": "confirmed", "terminal_cycle": 80,
+     "first_hit_cycle": 77, "confirmed_cycle": 80},
+    {"terminal_reason": "confirmed_penetration", "terminal_cycle": 80,
+     "first_hit_cycle": 76, "confirmed_cycle": 80},
     {"terminal_reason": "coupled_fixed_point_nonconvergence", "cycle": True, "substep": 4},
     {"terminal_reason": "unclassified_failure"},
 ])
@@ -1744,3 +1755,850 @@ def test_terminal_validator_requires_exact_canonical_seal_bytes(tmp_path: Path) 
     path.write_bytes(b'{ "a": 1 }\n')
     with pytest.raises(module.TerminalValidationError, match="canonical"):
         module.require_canonical_seal_bytes(path, payload)
+
+
+def test_order_effect_two_late_differences_then_terminal_convergence_is_transient() -> None:
+    """The terminal converged suffix, not the count of earlier differences, controls transience."""
+    module = load_module("analyze_t3_rev")
+    rows = _order_rows(
+        (60, 2e-12, 0.0),
+        (61, 0.0, 2e-12),
+        (62, 1e-12, 1e-12),
+    )
+    assert module.classify_order_effect(rows, module.EXACT_TOLERANCES) == \
+        "TRANSIENT_ORDER_EFFECT_TERMINAL_TRAJECTORY_INSENSITIVE"
+
+
+def test_order_effect_event_timing_delta_is_persistent_even_when_fields_match() -> None:
+    """A shifted first-hit or confirmation cycle is itself a persistent order effect."""
+    module = load_module("analyze_t3_rev")
+    rows = [
+        *_order_rows((60, 0.0, 0.0), (61, 0.0, 0.0), (62, 0.0, 0.0)),
+        {
+            "comparison": "own_event_first_hit",
+            "cycle": 62.0,
+            "left_cycle": 60.0,
+            "right_cycle": 61.0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0,
+        },
+        {
+            "comparison": "own_event_confirmed",
+            "cycle": 62.0,
+            "left_cycle": 62.0,
+            "right_cycle": 62.0,
+            "max_abs": 0.0,
+            "relative_l2": 0.0,
+        },
+    ]
+    assert module.classify_order_effect(rows, module.EXACT_TOLERANCES) == \
+        "PERSISTENT_LOADING_ORDER_DEPENDENCE_OBSERVED"
+
+
+def test_order_effect_early_difference_with_converged_terminal_suffix_is_transient() -> None:
+    """A real early order effect can converge before the terminal boundary."""
+    module = load_module("analyze_t3_rev")
+    rows = _order_rows(
+        (20, 2e-12, 0.0),
+        (60, 0.0, 0.0),
+        (61, 0.0, 0.0),
+        (62, 0.0, 0.0),
+    )
+    assert module.classify_order_effect(rows, module.EXACT_TOLERANCES) == \
+        "TRANSIENT_ORDER_EFFECT_TERMINAL_TRAJECTORY_INSENSITIVE"
+
+
+def test_order_effect_is_unavailable_when_an_own_event_boundary_is_unavailable() -> None:
+    """Missing own-event evidence cannot be discarded from the scientific classification."""
+    module = load_module("analyze_t3_rev")
+    rows = [
+        *_order_rows((60, 0.0, 0.0), (61, 0.0, 0.0), (62, 0.0, 0.0)),
+        {"comparison": "own_event_first_hit", "cycle": None,
+         "left_cycle": None, "right_cycle": None, "availability": "UNAVAILABLE"},
+    ]
+    assert module.classify_order_effect(rows, module.EXACT_TOLERANCES) == "UNAVAILABLE"
+
+
+def _write_canonical_json(path: Path, value: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(json.dumps(value, sort_keys=True, separators=(",", ":")).encode("ascii"))
+
+
+def _matlab_dataset(group: h5py.Group, name: str, value: np.ndarray) -> None:
+    stored = np.transpose(value, axes=tuple(reversed(range(value.ndim)))) if value.ndim else value
+    dataset = group.create_dataset(name, data=stored)
+    dataset.attrs["MATLAB_class"] = np.bytes_("double")
+
+
+def _matlab_char(group: h5py.Group, name: str, value: str) -> h5py.Dataset:
+    codes = np.asarray([ord(character) for character in value], dtype=np.uint16).reshape(-1, 1)
+    dataset = group.create_dataset(name, data=codes)
+    dataset.attrs["MATLAB_class"] = np.bytes_("char")
+    return dataset
+
+
+def _write_state0(path: Path) -> None:
+    with h5py.File(path, "w") as handle:
+        group = handle.create_group("state0")
+        group.attrs["MATLAB_class"] = np.bytes_("struct")
+        _matlab_dataset(group, "d_node", np.full((4, 1), 0.09, dtype=np.float64))
+        _matlab_dataset(group, "alpha_bar_gp", np.zeros((1, 4), dtype=np.float64))
+
+
+def _write_mesh(path: Path, identities: dict[str, str]) -> None:
+    with h5py.File(path, "w") as handle:
+        group = handle.create_group("mesh_geometry")
+        group.attrs["MATLAB_class"] = np.bytes_("struct")
+        _matlab_dataset(group, "node_coords", np.asarray([
+            [0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0],
+        ], dtype=np.float64))
+        _matlab_dataset(group, "connectivity", np.asarray([[1.0, 2.0, 3.0, 4.0]]))
+        _matlab_char(group, "mesh_sha256", identities["mesh_sha256"])
+        _matlab_char(group, "connectivity_sha256", "a" * 64)
+        _matlab_char(group, "element_ordering_id", identities["element_ordering_id"])
+        _matlab_char(group, "gp_ordering_id", identities["gp_ordering_id"])
+
+
+def _write_cycle_shard(
+        path: Path, cycle: int, identities: dict[str, str], execution_digest: str,
+        *, offset: float = 0.0) -> None:
+    damage_steps = np.linspace(0.0, 4e-5, 5, dtype=np.float64)
+    d_node = np.tile(0.09 + 1e-3 * cycle + damage_steps + offset, (4, 1))
+    d_gp = np.broadcast_to(d_node.mean(axis=0).reshape(1, 1, 5), (1, 4, 5)).copy()
+    alpha = np.broadcast_to(
+        (1e-3 * cycle + np.linspace(0.0, 4e-5, 5)).reshape(1, 1, 5),
+        (1, 4, 5),
+    ).copy()
+    f_alpha = np.minimum(1.0, (1.0 - ((alpha - 0.5) / (alpha + 0.5))) ** 2)
+    raw = np.broadcast_to(np.arange(1.0, 6.0).reshape(1, 1, 5), (1, 4, 5)).copy()
+    g_gp = (1.0 - d_gp) ** 2
+    with h5py.File(path, "w") as handle:
+        group = handle.create_group("shard")
+        group.attrs["MATLAB_class"] = np.bytes_("struct")
+        values = {
+            "cycle": np.asarray([[float(cycle)]], dtype=np.float64),
+            "d_node": d_node,
+            "d_gp": d_gp,
+            "alpha_bar_gp": alpha,
+            "f_alpha_gp": f_alpha,
+            "psi_raw_gp": raw,
+            "g_gp": g_gp,
+            "psi_active_gp": g_gp * raw,
+            "psi_raw_cyclemax_gp": np.max(raw, axis=2),
+            "substep_ordinal": np.arange(1.0, 6.0).reshape(1, 5),
+            "load_factor": np.asarray([[0.25, 0.5, 0.75, 1.0, 0.0]]),
+            "raw_step_zero_based": (5 * (cycle - 1) + np.arange(5.0)).reshape(1, 5),
+        }
+        for name, value in values.items():
+            _matlab_dataset(group, name, value)
+        refs = handle.create_group("#refs#")
+        loading = _matlab_char(refs, "loading", "loading")
+        unloading = _matlab_char(refs, "unloading", "unloading")
+        branch = np.empty((5, 1), dtype=h5py.ref_dtype)
+        branch[:4, 0] = loading.ref
+        branch[4, 0] = unloading.ref
+        cell = group.create_dataset("branch", data=branch)
+        cell.attrs["MATLAB_class"] = np.bytes_("cell")
+        for name in (
+                "mesh_sha256", "element_ordering_id", "gp_ordering_id",
+                "state_semantics_id", "runtime_lock_sha256",
+                "family_contract_sha256", "case_physics_contract_sha256"):
+            _matlab_char(group, name, identities[name])
+        _matlab_char(group, "execution_input_lock_sha256", execution_digest)
+
+
+def _terminal_manifest_entries(root: Path) -> list[dict[str, str]]:
+    return [
+        {
+            "path": path.relative_to(root).as_posix(),
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        }
+        for path in sorted(root.rglob("*"), key=lambda item: item.relative_to(root).as_posix())
+        if path.is_file() and path.name != "TERMINAL_MANIFEST.json"
+    ]
+
+
+def _write_package_checksum(root: Path) -> None:
+    paths = sorted(
+        (path for path in root.rglob("*") if path.is_file()
+         and path.name not in {"SHA256SUMS.txt", "TERMINAL_MANIFEST.json"}),
+        key=lambda item: item.relative_to(root).as_posix(),
+    )
+    (root / "SHA256SUMS.txt").write_text(
+        "".join(
+            f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(root).as_posix()}\n"
+            for path in paths
+        ),
+        encoding="ascii",
+        newline="\n",
+    )
+
+
+def _generated_terminal_protocol(tmp_path: Path):
+    builder = load_module("build_t3_rev_extension")
+    extension = tmp_path / "extension"
+    builder.build_extension(BASE, extension, "a" * 40)
+    manifest = strict_json(extension / "EXTENSION_SOURCE_MANIFEST.json")
+    protocol_digest = next(
+        item["sha256"] for item in manifest["shadow_files"]
+        if item["path"] == "toy_road_protocol.py"
+    )
+    launch = load_module("launch_t3_rev")
+    protocol = launch.load_protocol(
+        extension / "toy_road_protocol.py", "test_terminal_generated_protocol", protocol_digest
+    )
+    return extension, protocol
+
+
+def _build_authenticated_terminal_package(
+        protocol, root: Path, *, terminal_cycle: int, right_censored: bool,
+        forbidden_first_hit: int | None = None, offset: float = 0.0,
+        offsets: dict[int, float] | None = None,
+        execution_lock: dict[str, object] | None = None,
+        case_id: str = "T3_rev_loading_order", include_mesh: bool = False) -> Path:
+    root.mkdir(parents=True)
+    (root / "substeps").mkdir()
+    (root / "qualification").mkdir()
+    family = "1" * 64
+    case = "2" * 64
+    runtime = "3" * 64
+    source = "4" * 40
+    lock = execution_lock or protocol.build_execution_input_lock(
+        authorization_scope="production_authorized",
+        role=case_id,
+        family_contract_sha256=family,
+        case_physics_contract_sha256=case,
+        source_commit=source,
+        runtime_lock_sha256=runtime,
+        source_manifest_sha256="5" * 64,
+        runtime_expectations={
+            "matlab": {
+                "release": "R2025b", "update": "Update 5", "version": "25.2.0.3177638",
+                "computer": "PCWIN64", "executable_sha256": "6" * 64,
+                "blas": "locked BLAS", "lapack": "locked LAPACK",
+                "absolute_path_order": [str(root.parent / f"path-{index}") for index in range(8)],
+            },
+            "binary_sha256": {
+                "initial": "7" * 64, "AMOR": "8" * 64,
+                "AT1_HISTORY_FATIGUE": "9" * 64, "cholmod2": "a" * 64,
+            },
+        },
+        roots={name: str(root.parent / name) for name in (
+            "output", "work", "temp", "tmp", "pref", "cache", "matlab_startup_pref"
+        )},
+        launch_timestamp_utc="2026-08-24T12:00:00Z",
+        no_clobber_receipt_id="terminal-package-fixture",
+    )
+    lock_bytes = protocol.canonical_json_bytes(lock)
+    (root / "EXECUTION_INPUT_LOCK.json").write_bytes(lock_bytes)
+    execution_digest = hashlib.sha256(lock_bytes).hexdigest()
+    identities = {
+        "protocol_version": protocol.PROTOCOL_VERSION,
+        "source_commit": str(lock["source_commit"]),
+        "mesh_sha256": "b" * 64,
+        "element_ordering_id": "q4_connectivity_1_based_v1",
+        "gp_ordering_id": "q4_2x2_native_order_v1",
+        "state_semantics_id": "five_substep_post_commit_history_v1",
+        "runtime_lock_sha256": str(lock["runtime_lock_sha256"]),
+        "family_contract_sha256": str(lock["family_contract_sha256"]),
+        "case_physics_contract_sha256": str(lock["case_physics_contract_sha256"]),
+        "physical_input_sha256": "c" * 64,
+        "solver_sha256": "d" * 64,
+        "recovery_sha256": "e" * 64,
+        "exporter_sha256": "f" * 64,
+        "numerical_gate_contract_sha256": "0" * 64,
+        "event_contract_sha256": "1" * 64,
+    }
+    _write_state0(root / "STATE0.mat")
+    if include_mesh:
+        _write_mesh(root / "mesh_geometry.mat", identities)
+    for cycle in range(1, terminal_cycle + 1):
+        _write_cycle_shard(
+            root / "substeps" / f"cycle_{cycle:04d}.mat",
+            cycle,
+            identities,
+            execution_digest,
+            offset=(offsets or {}).get(cycle, offset),
+        )
+    trace_rows = [
+        ["production_authorized", case_id, 5, 4, 1, 1,
+         2e-4, 8e-4, 3e-4, 8e-4, 1e-13],
+        ["production_authorized", case_id, 5, 4, 2, 2,
+         1e-5, 6e-4, 2e-5, 3e-5, 0.0],
+    ]
+    trace = root / "qualification" / "C5_STAGGER_TRACE.csv"
+    trace.write_text(
+        ",".join(protocol.TRACE_COLUMNS) + "\n"
+        + "".join(",".join(str(value) for value in row) + "\n" for row in trace_rows),
+        encoding="ascii", newline="\n",
+    )
+    final = trace_rows[-1]
+    _write_canonical_json(root / "qualification" / "C5_NUMERICAL_GATE_RECEIPT.json", {
+        "authorization_scope": "production_authorized", "case_id": case_id,
+        "cycle": 5, "substep_ordinal": 4, "status": "PASS", "passed": True,
+        "trace_sha256": hashlib.sha256(trace.read_bytes()).hexdigest(),
+        "trace_row_count": 2, "reassembly_count": 2,
+        "final_stagger_iteration": 2, "final_reassembly_ordinal": 2,
+        "final_displacement_residual": final[6], "final_raw_phase_residual": final[7],
+        "final_projected_phase_kkt": final[8], "final_consecutive_stagger_delta": final[9],
+        "final_primal_feasibility": final[10], "displacement_residual_threshold": 4e-4,
+        "projected_phase_kkt_threshold": 4e-4, "consecutive_stagger_delta_threshold": 1e-3,
+        "primal_feasibility_threshold": 1e-12,
+    })
+    first_hit = forbidden_first_hit if right_censored else terminal_cycle - 3
+    confirmed = None if right_censored else terminal_cycle
+    event = {
+        "authorization_scope": "production_authorized", "case_id": case_id,
+        "first_hit_cycle": first_hit, "confirmed_cycle": confirmed,
+        "terminal_cycle": terminal_cycle, "peak_substep_ordinal": 4,
+        "cycle_shard": f"substeps/cycle_{terminal_cycle:04d}.mat",
+        "cycle_shard_sha256": hashlib.sha256(
+            (root / "substeps" / f"cycle_{terminal_cycle:04d}.mat").read_bytes()
+        ).hexdigest(),
+    }
+    _write_canonical_json(root / "EVENT_METADATA.json", event)
+    _write_canonical_json(root / "TERMINAL_RESULT.json", {
+        "authorization_scope": "production_authorized", "case_id": case_id,
+        "terminal_reason": "right_censored" if right_censored else "confirmed_penetration",
+        "terminal_cycle": terminal_cycle, "first_hit_cycle": first_hit,
+        "confirmed_cycle": confirmed,
+    })
+    _write_package_checksum(root)
+    manifest = {
+        "authorization_scope": "production_authorized", "case_id": case_id,
+        **identities, "execution_input_lock_sha256": execution_digest,
+        "files": _terminal_manifest_entries(root),
+    }
+    _write_canonical_json(root / "TERMINAL_MANIFEST.json", manifest)
+    return root
+
+
+def test_right_censored_terminal_authentication_reuses_authoritative_components(tmp_path: Path) -> None:
+    """A genuine c150 package authenticates without pretending a hit or confirmation occurred."""
+    _, protocol = _generated_terminal_protocol(tmp_path)
+    root = _build_authenticated_terminal_package(
+        protocol, tmp_path / "right-censored", terminal_cycle=150, right_censored=True
+    )
+    receipt = load_module("validate_t3_rev_terminal").authenticate_completed_package(protocol, root)
+    assert receipt["status"] == "PASS"
+    assert receipt["case_id"] == "T3_rev_loading_order"
+    assert receipt["package_root"] == str(root.resolve())
+
+
+def test_right_censored_terminal_authentication_rejects_a_hidden_hit(tmp_path: Path) -> None:
+    """Hash-closed c150 bytes still fail when event metadata claims a first hit."""
+    _, protocol = _generated_terminal_protocol(tmp_path)
+    root = _build_authenticated_terminal_package(
+        protocol, tmp_path / "bad-right-censored", terminal_cycle=150,
+        right_censored=True, forbidden_first_hit=149,
+    )
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="right-censored"):
+        module.authenticate_completed_package(protocol, root)
+
+
+def test_confirmed_terminal_authentication_keeps_authoritative_event_semantics(tmp_path: Path) -> None:
+    """The c150 variant does not weaken the generated protocol's confirmed-package path."""
+    _, protocol = _generated_terminal_protocol(tmp_path)
+    root = _build_authenticated_terminal_package(
+        protocol, tmp_path / "confirmed", terminal_cycle=5, right_censored=False
+    )
+    receipt = load_module("validate_t3_rev_terminal").authenticate_completed_package(protocol, root)
+    assert receipt["status"] == "PASS"
+
+
+def _write_pass_runtime_measurement(protocol, run_root: Path) -> dict[str, object]:
+    receipts = run_root / "receipts"
+    lock_path = receipts / "T3_REV_EXECUTION_INPUT_LOCK.json"
+    launch_path = receipts / "T3_REV_LAUNCH_RECEIPT.json"
+    lock = strict_json(lock_path)
+    expectations = lock["runtime_expectations"]
+    measurement = {
+        "schema_version": "toy_road_runtime_measurement_v1",
+        "protocol_version": protocol.PROTOCOL_VERSION,
+        "authorization_scope": "production_authorized",
+        "status": "PASS",
+        "producer_entrypoint_authorized": True,
+        "execution_input_lock_sha256": hashlib.sha256(lock_path.read_bytes()).hexdigest(),
+        "matlab": expectations["matlab"],
+        "binary_sha256": expectations["binary_sha256"],
+        "authorized_entrypoint": "main_toy_road_family_case",
+        "upstream_authorized_entrypoint": "run_toy_road_runtime_bridge",
+        "upstream_launch_receipt_path": str(launch_path),
+        "upstream_launch_receipt_sha256": hashlib.sha256(launch_path.read_bytes()).hexdigest(),
+        "case_id": lock["case_id"],
+        "source_commit": lock["source_commit"],
+        "runtime_lock_sha256": lock["runtime_lock_sha256"],
+        "family_contract_sha256": lock["family_contract_sha256"],
+        "case_physics_contract_sha256": lock["case_physics_contract_sha256"],
+    }
+    _write_canonical_json(receipts / "T3_REV_RUNTIME_MEASUREMENT.json", measurement)
+    protocol.validate_runtime_measurement(lock, measurement)
+    return measurement
+
+
+def _launched_terminal_fixture(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    launch = load_module("launch_t3_rev")
+    inputs = _launcher_inputs(launch, tmp_path)
+    launch.SUITESPARSE_ROOT = Path(r"C:\SuiteSparse\SuiteSparse-dev")
+    inputs["griphfith_root"] = Path(r"C:\q4diag\griphfith-pf-rebuild-355d4c83")
+    monkeypatch.setattr(launch, "matlab_processes", lambda: [])
+    overlay_validator = launch.require_materialized_runtime_overlay
+    _allow_test_matlab_identity(launch, monkeypatch)
+
+    class Process:
+        pid = 2468
+
+    monkeypatch.setattr(launch, "Popen", lambda *args, **kwargs: Process())
+    launch.launch_t3_rev(**inputs)
+    monkeypatch.setattr(launch, "require_materialized_runtime_overlay", overlay_validator)
+    manifest = strict_json(inputs["extension_root"] / "EXTENSION_SOURCE_MANIFEST.json")
+    protocol_digest = next(
+        item["sha256"] for item in manifest["shadow_files"]
+        if item["path"] == "toy_road_protocol.py"
+    )
+    protocol = launch.load_protocol(
+        inputs["extension_root"] / "toy_road_protocol.py",
+        "launched_terminal_fixture_protocol",
+        protocol_digest,
+    )
+    _write_pass_runtime_measurement(protocol, inputs["run_root"])
+    lock = strict_json(inputs["run_root"] / "receipts" / "T3_REV_EXECUTION_INPUT_LOCK.json")
+    _build_authenticated_terminal_package(
+        protocol,
+        inputs["run_root"] / "output",
+        terminal_cycle=5,
+        right_censored=False,
+        execution_lock=lock,
+    )
+    return launch, protocol, inputs
+
+
+def test_terminal_validator_authenticates_complete_launch_to_package_chain(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A real launch lock, overlay, PASS measurement, and package form one bound chain."""
+    launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    module = load_module("validate_t3_rev_terminal")
+    result = module._validate_terminal(
+        inputs["run_root"] / "output",
+        sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+        "toy_road_p0_repeatability_20260803",
+        extension_root=inputs["extension_root"],
+        seal_path=inputs["seal_path"],
+        run_root=inputs["run_root"],
+        launch=launch,
+    )
+    assert result["status"] == "PASS_TERMINAL_ADJUDICATION"
+    assert result["terminal_authentication"]["package_root"] == str(
+        (inputs["run_root"] / "output").resolve()
+    )
+    assert result["authorization_capability"] is None
+    assert result["follow_on_authorized"] is False
+
+
+def _prepare_numerical_failure(
+        protocol, inputs: dict[str, Path], classification: str) -> None:
+    run_root = inputs["run_root"]
+    output = run_root / "output"
+    lock_path = run_root / "receipts" / "T3_REV_EXECUTION_INPUT_LOCK.json"
+    launch_path = run_root / "receipts" / "T3_REV_LAUNCH_RECEIPT.json"
+    measurement_path = run_root / "receipts" / "T3_REV_RUNTIME_MEASUREMENT.json"
+    lock = strict_json(lock_path)
+    cases = strict_json(inputs["extension_root"] / "CASE_PHYSICS_CONTRACTS.json")
+    case_contract = cases["cases"]["T3_rev_loading_order"]
+    terminal_files = (
+        "TERMINAL_RESULT.json", "EVENT_METADATA.json", "TERMINAL_MANIFEST.json",
+        "SHA256SUMS.txt", "EXECUTION_INPUT_LOCK.json",
+    )
+    shutil.copy2(output / "STATE0.mat", output / "state0_analysis.mat")
+    (output / "STATE0.mat").unlink()
+    for name in terminal_files:
+        (output / name).unlink(missing_ok=True)
+    execution_digest = hashlib.sha256(lock_path.read_bytes()).hexdigest()
+    mesh_identity = case_contract["physics"]["mesh"]
+    mesh_sha = mesh_identity["mesh_sha256"]
+    shard_identities = {
+        "mesh_sha256": mesh_sha,
+        "element_ordering_id": mesh_identity["element_ordering_id"],
+        "gp_ordering_id": mesh_identity["gp_ordering_id"],
+        "state_semantics_id": "five_substep_post_commit_history_v1",
+        "runtime_lock_sha256": lock["runtime_lock_sha256"],
+        "family_contract_sha256": lock["family_contract_sha256"],
+        "case_physics_contract_sha256": lock["case_physics_contract_sha256"],
+    }
+    for cycle in range(1, 6):
+        shard_path = output / "substeps" / f"cycle_{cycle:04d}.mat"
+        shard_path.unlink()
+        _write_cycle_shard(shard_path, cycle, shard_identities, execution_digest)
+    snapshot = {
+        "schema_version": "toy_road_p0_input_snapshot_v1",
+        "authorization_scope": "production_authorized",
+        "case_id": "T3_rev_loading_order",
+        "source_commit": lock["source_commit"],
+        "runtime_lock_sha256": lock["runtime_lock_sha256"],
+        "family_contract_sha256": lock["family_contract_sha256"],
+        "case_physics_contract_sha256": lock["case_physics_contract_sha256"],
+        "execution_input_lock_sha256": execution_digest,
+        "input_assets_root": str(inputs["input_assets_root"]),
+        "mesh_sha256": mesh_sha,
+        "changed_axes": ["loading.blocks"],
+        "case_physics": case_contract["physics"],
+        "fresh_state0": True,
+        "resume_allowed": False,
+        "line_search": False,
+        "cycle_jump": False,
+    }
+    _write_canonical_json(output / "INPUT_SNAPSHOT.json", snapshot)
+    shutil.copy2(
+        ROOT / "docs" / "toy_road_p0_repeatability_20260802" /
+        "t2_material_state_failure_20260817" / "artifacts" / "output" /
+        "mesh_geometry.mat",
+        output / "mesh_geometry.mat",
+    )
+    expectations = lock["runtime_expectations"]["matlab"]
+    _write_canonical_json(output / "RUNTIME_RECEIPT.json", {
+        "status": "PASS", "authorization_scope": "production_authorized",
+        "case_id": "T3_rev_loading_order", "source_commit": lock["source_commit"],
+        "runtime_lock_sha256": lock["runtime_lock_sha256"],
+        "matlab_version": expectations["version"], "computer": expectations["computer"],
+        "blas": expectations["blas"], "lapack": expectations["lapack"],
+    })
+    if classification == "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE":
+        terminal_reason = "coupled_fixed_point_nonconvergence"
+        layer = "coupled_damage_fixed_point"
+        newton_failure = False
+        error_identifier = "toyRoadP0:StaggeredSolveFailed"
+        error_message = "Stagger convergence failed at cycle 6 substep 4."
+    else:
+        terminal_reason = "newton_nonconvergence"
+        layer = "phase_newton"
+        newton_failure = True
+        error_identifier = "toyRoadP0:PhaseSolveFailed"
+        error_message = "The phase Newton solve failed."
+    _write_canonical_json(output / "RUN_RESULT.json", {
+        "authorization_scope": "production_authorized", "case_id": "T3_rev_loading_order",
+        "complete": False, "status": "failed", "error_identifier": error_identifier,
+        "error_message": error_message,
+    })
+    with (run_root / "T3_REV.stderr.log").open("ab") as stream:
+        stream.write((error_message + "\n").encode("utf-8"))
+    required_relatives = [
+        "launcher.pid", "T3_REV.stdout.log", "T3_REV.stderr.log",
+        "output/INPUT_SNAPSHOT.json", "output/mesh_geometry.mat", "output/RUN_RESULT.json",
+        "output/RUNTIME_RECEIPT.json", "output/state0_analysis.mat",
+        "output/qualification/C5_STAGGER_TRACE.csv",
+        "output/qualification/C5_NUMERICAL_GATE_RECEIPT.json",
+        "receipts/T3_REV_EXECUTION_INPUT_LOCK.json", "receipts/T3_REV_LAUNCH_RECEIPT.json",
+        "receipts/T3_REV_RUNTIME_MEASUREMENT.json",
+        *[f"output/substeps/cycle_{cycle:04d}.mat" for cycle in range(1, 6)],
+    ]
+    package = run_root / "T3_REV_FAILURE_PACKAGE"
+    package.mkdir()
+    artifacts: list[dict[str, object]] = []
+    for relative in required_relatives:
+        source = run_root / Path(relative)
+        target = package / "artifacts" / Path(relative)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+        artifacts.append({
+            "path": f"artifacts/{Path(relative).as_posix()}",
+            "bytes": target.stat().st_size,
+            "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+        })
+    artifacts.sort(key=lambda item: str(item["path"]))
+    artifact_aggregate = hashlib.sha256(json.dumps(
+        artifacts, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+    ).encode("utf-8")).hexdigest()
+    manifest = {
+        "schema_version": "toy_road_t3_rev_immutable_failure_package_v1",
+        "case_id": "T3_rev_loading_order", "status": classification,
+        "source_run_root": str(run_root), "artifact_file_count": len(artifacts),
+        "artifact_aggregate_sha256": artifact_aggregate, "artifacts": artifacts,
+    }
+    failure = {
+        "schema_version": "toy_road_t3_rev_failure_classification_v1",
+        "case_id": "T3_rev_loading_order", "status": classification,
+        "failure_cycle": 6, "failure_substep": 4, "failure_layer": layer,
+        "newton_failure": newton_failure, "fixed_point_tolerance": 1e-3,
+        "stagger_iteration_cap": 1000, "completed_cycle_shards": 5,
+        "automatic_retry_performed": False,
+    }
+    identities = {
+        "schema_version": "toy_road_t3_rev_failure_identity_v1",
+        "producer": {
+            "source_commit": lock["source_commit"],
+            "source_manifest_sha256": lock["source_manifest_sha256"],
+            "family_contract_sha256": lock["family_contract_sha256"],
+            "case_physics_contract_sha256": lock["case_physics_contract_sha256"],
+        },
+        "runtime": {
+            "runtime_lock_sha256": lock["runtime_lock_sha256"],
+            "matlab": lock["runtime_expectations"]["matlab"],
+            "binary_sha256": lock["runtime_expectations"]["binary_sha256"],
+            "thread_settings": strict_json(inputs["seal_path"])["runtime_identity"]["thread_settings"],
+        },
+        "input": {
+            "execution_input_lock_sha256": execution_digest,
+            "input_snapshot_sha256": hashlib.sha256((output / "INPUT_SNAPSHOT.json").read_bytes()).hexdigest(),
+            "mesh_sha256": mesh_sha, "output_root": str(output), "run_root": str(run_root),
+        },
+        "launch": {
+            "seal_sha256": hashlib.sha256(inputs["seal_path"].read_bytes()).hexdigest(),
+            "launch_receipt_sha256": hashlib.sha256(launch_path.read_bytes()).hexdigest(),
+            "runtime_measurement_sha256": hashlib.sha256(measurement_path.read_bytes()).hexdigest(),
+            "extension_source_manifest_sha256": hashlib.sha256(
+                (inputs["extension_root"] / "EXTENSION_SOURCE_MANIFEST.json").read_bytes()
+            ).hexdigest(),
+        },
+    }
+    _write_canonical_json(package / "PACKAGE_MANIFEST.json", manifest)
+    _write_canonical_json(package / "FAILURE_CLASSIFICATION.json", failure)
+    _write_canonical_json(package / "SOURCE_RUNTIME_INPUT_IDENTITIES.json", identities)
+    sums_paths = sorted(
+        (path for path in package.rglob("*") if path.is_file() and path.name != "SHA256SUMS.txt"),
+        key=lambda path: path.relative_to(package).as_posix(),
+    )
+    (package / "SHA256SUMS.txt").write_text("".join(
+        f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(package).as_posix()}\n"
+        for path in sums_paths
+    ), encoding="ascii", newline="\n")
+    terminal = {
+        "schema_version": "toy_road_t3_rev_terminal_failure_v1",
+        "status": classification, "case_id": "T3_rev_loading_order",
+        "terminal_reason": terminal_reason,
+        "failure_phase": "producer_after_pass_runtime_measurement",
+        "cycle": 6, "substep": 4,
+        "seal_sha256": identities["launch"]["seal_sha256"],
+        "run_root": str(run_root),
+        "launch_receipt_sha256": identities["launch"]["launch_receipt_sha256"],
+        "runtime_measurement_sha256": identities["launch"]["runtime_measurement_sha256"],
+        "failure_package_manifest_sha256": hashlib.sha256(
+            (package / "PACKAGE_MANIFEST.json").read_bytes()
+        ).hexdigest(),
+    }
+    _write_canonical_json(run_root / "receipts" / "T3_REV_TERMINAL_FAILURE.json", terminal)
+
+
+@pytest.mark.parametrize("classification", [
+    "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE",
+    "FAIL_NEWTON_NONCONVERGENCE",
+])
+def test_terminal_validator_authenticates_exact_numerical_failure_package(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, classification: str) -> None:
+    """Numerical failures remain distinct and require a closed immutable dossier."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(protocol, inputs, classification)
+    module = load_module("validate_t3_rev_terminal")
+    result = module._validate_terminal(
+        inputs["run_root"] / "output",
+        sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+        "toy_road_p0_repeatability_20260803",
+        extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+        run_root=inputs["run_root"], launch=launch,
+    )
+    assert result["classification"] == classification
+    assert result["status"] == classification
+    assert result["phase_evidence"]["failure_package_sha256"]
+
+
+@pytest.mark.parametrize("tamper", ["copied_artifact", "undeclared_shard"])
+def test_terminal_validator_rejects_tampered_numerical_failure_closure(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, tamper: str) -> None:
+    """A closed-looking receipt cannot admit altered bytes or arbitrary extra shards."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_numerical_failure(protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
+    package = inputs["run_root"] / "T3_REV_FAILURE_PACKAGE"
+    if tamper == "copied_artifact":
+        with (package / "artifacts" / "T3_REV.stderr.log").open("ab") as stream:
+            stream.write(b"tampered\n")
+    else:
+        extra = package / "artifacts" / "output" / "substeps" / "cycle_0006.mat"
+        shutil.copy2(inputs["run_root"] / "output" / "substeps" / "cycle_0005.mat", extra)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="failure package"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+def _prepare_phase_failure(inputs: dict[str, Path], phase: str) -> None:
+    run_root = inputs["run_root"]
+    receipts = run_root / "receipts"
+    output = run_root / "output"
+    for path in list(output.iterdir()):
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+    measurement_path = receipts / "T3_REV_RUNTIME_MEASUREMENT.json"
+    if phase != "producer_after_pass_runtime_measurement":
+        measurement_path.unlink()
+    classification = "FAIL_STARTUP" if phase == "matlab_startup_before_runtime_measurement" else "FAIL_RUNTIME"
+    terminal_reason = "startup_failure" if classification == "FAIL_STARTUP" else "runtime_failure"
+    identifiers = {
+        "matlab_startup_before_runtime_measurement": "MATLAB:startup",
+        "bootstrap_or_runtime_bridge_before_measurement": "toyRoadP0:RuntimeBridgeFailed",
+        "producer_after_pass_runtime_measurement": "toyRoadP0:ProducerRuntimeFailed",
+    }
+    message = f"fixture failure in {phase}"
+    with (run_root / "T3_REV.stderr.log").open("ab") as stream:
+        stream.write((message + "\n").encode("utf-8"))
+    if phase == "producer_after_pass_runtime_measurement":
+        _write_canonical_json(output / "RUN_RESULT.json", {
+            "authorization_scope": "production_authorized", "case_id": "T3_rev_loading_order",
+            "complete": False, "status": "failed", "error_identifier": identifiers[phase],
+            "error_message": message,
+        })
+    launch_path = receipts / "T3_REV_LAUNCH_RECEIPT.json"
+    _write_canonical_json(receipts / "T3_REV_TERMINAL_FAILURE.json", {
+        "schema_version": "toy_road_t3_rev_terminal_failure_v1", "status": classification,
+        "case_id": "T3_rev_loading_order", "terminal_reason": terminal_reason,
+        "failure_phase": phase, "cycle": None, "substep": None,
+        "error_identifier": identifiers[phase], "error_message": message,
+        "seal_sha256": hashlib.sha256(inputs["seal_path"].read_bytes()).hexdigest(),
+        "run_root": str(run_root),
+        "launch_receipt_sha256": hashlib.sha256(launch_path.read_bytes()).hexdigest(),
+        "runtime_measurement_sha256": hashlib.sha256(measurement_path.read_bytes()).hexdigest()
+        if measurement_path.is_file() else None,
+        "failure_package_manifest_sha256": None,
+    })
+
+
+@pytest.mark.parametrize(("phase", "classification"), [
+    ("matlab_startup_before_runtime_measurement", "FAIL_STARTUP"),
+    ("bootstrap_or_runtime_bridge_before_measurement", "FAIL_RUNTIME"),
+    ("producer_after_pass_runtime_measurement", "FAIL_RUNTIME"),
+])
+def test_terminal_validator_authenticates_phase_specific_startup_and_runtime_failures(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, phase: str,
+        classification: str) -> None:
+    """Pre-measurement failures and post-PASS producer failures use distinct evidence."""
+    launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_phase_failure(inputs, phase)
+    module = load_module("validate_t3_rev_terminal")
+    result = module._validate_terminal(
+        inputs["run_root"] / "output",
+        sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+        "toy_road_p0_repeatability_20260803",
+        extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+        run_root=inputs["run_root"], launch=launch,
+    )
+    assert result["classification"] == classification
+    assert result["phase_evidence"]["failure_phase"] == phase
+
+
+def test_post_authorization_runtime_failure_rejects_synthetic_fail_measurement(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A producer failure after authorization remains bound to a genuine PASS measurement."""
+    launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    _prepare_phase_failure(inputs, "producer_after_pass_runtime_measurement")
+    measurement_path = inputs["run_root"] / "receipts" / "T3_REV_RUNTIME_MEASUREMENT.json"
+    measurement = strict_json(measurement_path)
+    measurement["status"] = "FAIL"
+    measurement["producer_entrypoint_authorized"] = False
+    _write_canonical_json(measurement_path, measurement)
+    terminal_path = inputs["run_root"] / "receipts" / "T3_REV_TERMINAL_FAILURE.json"
+    terminal = strict_json(terminal_path)
+    terminal["runtime_measurement_sha256"] = hashlib.sha256(measurement_path.read_bytes()).hexdigest()
+    _write_canonical_json(terminal_path, terminal)
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="PASS|measurement|runtime failure"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+        )
+
+
+def test_public_analyzer_rejects_caller_selected_protocols(tmp_path: Path) -> None:
+    """Protocol authority is derived from published/sealed identities, never a caller path."""
+    module = load_module("analyze_t3_rev")
+    with pytest.raises(TypeError, match="unexpected keyword"):
+        module.analyze_t3_rev(
+            tmp_path / "t3", tmp_path / "rev", tmp_path / "analysis",
+            seal_path=tmp_path / "seal.json", t3_protocol_path=tmp_path / "attacker.py",
+        )
+
+
+def test_authenticated_analysis_snapshot_rejects_post_auth_byte_substitution(tmp_path: Path) -> None:
+    """Every byte selected for reduction must still match its authentication receipt."""
+    module = load_module("analyze_t3_rev")
+    package = tmp_path / "package"
+    package.mkdir()
+    terminal = package / "TERMINAL_RESULT.json"
+    terminal.write_bytes(b"original")
+    authentication = {
+        "files": [{"path": "TERMINAL_RESULT.json",
+                   "sha256": hashlib.sha256(b"original").hexdigest()}]
+    }
+
+    class Protocol:
+        @staticmethod
+        def recheck_authenticated_package(receipt: object) -> None:
+            assert receipt is authentication
+
+    terminal.write_bytes(b"substituted")
+    with pytest.raises(ValueError, match="changed"):
+        module._snapshot_authenticated_inputs(
+            Protocol(), authentication, package, tmp_path / "snapshot",
+            ("TERMINAL_RESULT.json",),
+        )
+
+
+def test_analyzer_end_to_end_uses_hash_qualified_protocols_and_event_rows(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Two genuine packages reduce through sealed authority and the published event boundary."""
+    launch, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    rev_root = inputs["run_root"] / "output"
+    shutil.rmtree(rev_root)
+    rev_lock = strict_json(
+        inputs["run_root"] / "receipts" / "T3_REV_EXECUTION_INPUT_LOCK.json")
+    manifest = strict_json(inputs["extension_root"] / "EXTENSION_SOURCE_MANIFEST.json")
+    rev_digest = next(
+        item["sha256"] for item in manifest["shadow_files"]
+        if item["path"] == "toy_road_protocol.py"
+    )
+    rev_protocol = launch.load_protocol(
+        inputs["extension_root"] / "toy_road_protocol.py",
+        "test_analyzer_rev_protocol", rev_digest,
+    )
+    _build_authenticated_terminal_package(
+        rev_protocol, rev_root, terminal_cycle=62, right_censored=False,
+        offsets={20: 2e-12}, execution_lock=rev_lock, include_mesh=True,
+    )
+    base_protocol_path = BASE / "toy_road_protocol.py"
+    base_digest = hashlib.sha256(base_protocol_path.read_bytes()).hexdigest()
+    base_protocol = launch.load_protocol(
+        base_protocol_path, "test_analyzer_base_protocol", base_digest,
+    )
+    t3_root = tmp_path / "t3"
+    _build_authenticated_terminal_package(
+        base_protocol, t3_root, terminal_cycle=62, right_censored=False,
+        case_id="T3_loading_history", include_mesh=True,
+    )
+    module = load_module("analyze_t3_rev")
+    summary = module._analyze_t3_rev(
+        t3_root, rev_root, tmp_path / "analysis", seal_path=inputs["seal_path"],
+        required_t3_manifest_sha256=hashlib.sha256(
+            (t3_root / "TERMINAL_MANIFEST.json").read_bytes()).hexdigest(),
+        launch_authority=launch, repository_root=inputs["repo_root"],
+    )
+    assert summary["order_effect_classification"] == \
+        "TRANSIENT_ORDER_EFFECT_TERMINAL_TRAJECTORY_INSENSITIVE"
+    own_rows = list(csv.DictReader(
+        (tmp_path / "analysis" / "own_event_differences.csv").open(
+            encoding="utf-8", newline="")))
+    assert {row["comparison"] for row in own_rows} == {
+        "own_event_first_hit", "own_event_confirmed",
+    }
+    assert all(row["left_cycle"] and row["right_cycle"] for row in own_rows)
+    assert all(
+        "left_area_weighted_integral" in row and "right_area_weighted_integral" in row
+        for row in own_rows
+    )
