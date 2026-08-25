@@ -96,6 +96,31 @@ def test_extension_adds_only_t3_rev_and_preserves_base(tmp_path: Path) -> None:
     }
 
 
+def test_extension_builder_cli_materializes_requested_destination(tmp_path: Path) -> None:
+    destination = tmp_path / "extension"
+    commit = repository_head()
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ANALYSIS / "build_t3_rev_extension.py"),
+            "--base-root",
+            str(BASE),
+            "--destination",
+            str(destination),
+            "--repo-commit",
+            commit,
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    manifest = strict_json(destination / "EXTENSION_SOURCE_MANIFEST.json")
+    assert manifest["repo_commit"] == commit
+
+
 def test_extension_rejects_duplicate_json_and_unexpected_base_text(tmp_path: Path) -> None:
     module = load_module("build_t3_rev_extension")
     bad = tmp_path / "base"

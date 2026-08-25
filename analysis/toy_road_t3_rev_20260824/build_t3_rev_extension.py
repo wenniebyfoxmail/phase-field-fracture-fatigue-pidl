@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import importlib.util
 import json
@@ -346,3 +347,17 @@ def build_extension(base_root: Path, destination: Path, repo_commit: str) -> dic
         "base_source_manifest_sha256": BASE_SOURCE_MANIFEST_SHA256,
         "changed_source_files": list(ALLOWED_SHADOW_FILES),
     }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--base-root", type=Path, required=True)
+    parser.add_argument("--destination", type=Path, required=True)
+    parser.add_argument("--repo-commit", required=True)
+    args = parser.parse_args()
+    print(json.dumps(build_extension(**vars(args)), sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
