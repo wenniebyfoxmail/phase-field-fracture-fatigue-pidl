@@ -24,6 +24,18 @@ BASE = ROOT / "producer_handoffs/toy_road_p0_repeatability_20260803"
 T3_TEMPLATE_ROOT = Path(r"C:\q4diag\toy-road-t3-production-7c56ff3-run1")
 T3_TEMPLATE_LOCK_FIXTURE = ROOT / "tests/fixtures/T3_EXECUTION_INPUT_LOCK.json"
 QUALIFIED_GRIPHFITH_SOURCE_REPO = Path(r"C:\q4diag\griphfith-pf-rebuild-355d4c83")
+REAL_T3_REV_RUN = Path(
+    r"C:\q4diag\toy-road-t3-rev-production-"
+    r"b66e08be94ff552b7f467ac2e7b693034cef01f5-run1"
+)
+REAL_T3_REV_EXTENSION = Path(
+    r"C:\q4diag\toy-road-t3-rev-extension-"
+    r"b66e08be94ff552b7f467ac2e7b693034cef01f5"
+)
+REAL_T3_REV_SEAL = Path(
+    r"C:\q4diag\toy-road-t3-rev-seal-"
+    r"b66e08be94ff552b7f467ac2e7b693034cef01f5\T3_REV_SEAL.json"
+)
 
 
 def repository_head() -> str:
@@ -4074,3 +4086,165 @@ def test_analyzer_end_to_end_marks_own_events_not_applicable_for_right_censoring
                              if row["comparison"] == "own_event_first_hit")
     assert unavailable_event["availability"] == "NOT_APPLICABLE_RIGHT_CENSORED"
     assert "left_support_area" in unavailable_event
+
+
+def _real_recovery_validation_kwargs(tmp_path: Path) -> dict[str, object]:
+    validator = load_module("validate_t3_rev_terminal")
+    return {
+        "terminal_root": REAL_T3_REV_RUN / "output",
+        "sealed_base_root": BASE,
+        "extension_root": REAL_T3_REV_EXTENSION,
+        "seal_path": REAL_T3_REV_SEAL,
+        "run_root": REAL_T3_REV_RUN,
+        "destination": tmp_path / "T3_REV_TERMINAL_ADJUDICATION.json",
+        "preserve_run": True,
+        "expected_run_inventory": validator.inventory_run_tree(REAL_T3_REV_RUN),
+    }
+
+
+def test_real_sealed_recovery_nonconvergence_is_adjudicated_outside_run(
+        tmp_path: Path) -> None:
+    """The immutable PID-25476 outcome is a pre-c1 recovery class, not generic Newton."""
+    validator = load_module("validate_t3_rev_terminal")
+    in_run = REAL_T3_REV_RUN / "receipts" / "T3_REV_TERMINAL_ADJUDICATION.json"
+    before = validator.inventory_run_tree(REAL_T3_REV_RUN)
+
+    result = validator.validate_terminal(**_real_recovery_validation_kwargs(tmp_path))
+
+    assert result["classification"] == "FAIL_RECOVERY_NEWTON_NONCONVERGENCE_BEFORE_C1"
+    assert result["status"] == "FAIL_RECOVERY_NEWTON_NONCONVERGENCE_BEFORE_C1"
+    assert result["terminal_reason"] == "recovery_newton_nonconvergence_before_c1"
+    assert result["phase_evidence"]["newton_iteration_count"] == 250
+    assert result["phase_evidence"]["last_res_norm_text"] == "2.09741e+22"
+    assert result["run_inventory_pre"] == before
+    assert result["run_inventory_post"] == before
+    assert result["run_inventory_unchanged"] is True
+    assert result["adjudicator_commit"] == repository_head()
+    assert len(result["adjudicator_source_sha256"]) == 64
+    assert result["authorization_capability"] is None
+    assert result["follow_on_authorized"] is False
+    assert not in_run.exists()
+    assert Path(_real_recovery_validation_kwargs(tmp_path)["destination"]).is_file()
+    assert validator.inventory_run_tree(REAL_T3_REV_RUN) == before
+
+
+@pytest.mark.parametrize("tamper", [
+    "stdout",
+    "cycle_shard",
+    "terminal_receipt",
+    "failure_package",
+])
+def test_recovery_nontrajectory_authenticator_rejects_tamper_and_contradiction(
+        tmp_path: Path, tamper: str) -> None:
+    """A mutated log or any trajectory/terminal evidence invalidates the recovery class."""
+    run = tmp_path / "run"
+    shutil.copytree(REAL_T3_REV_RUN, run)
+    if tamper == "stdout":
+        with (run / "T3_REV.stdout.log").open("ab") as stream:
+            stream.write(b"tampered\n")
+    elif tamper == "cycle_shard":
+        shard = run / "output" / "substeps" / "cycle_0001.mat"
+        shard.parent.mkdir(parents=True)
+        shard.write_bytes(b"contradictory shard")
+    elif tamper == "terminal_receipt":
+        (run / "receipts" / "T3_REV_TERMINAL_FAILURE.json").write_bytes(b"{}\n")
+    else:
+        (run / "T3_REV_FAILURE_PACKAGE").mkdir()
+
+    validator = load_module("validate_t3_rev_terminal")
+    with pytest.raises(validator.TerminalValidationError):
+        validator.authenticate_recovery_nontrajectory(run)
+
+
+def test_preserve_run_external_adjudication_is_create_once(tmp_path: Path) -> None:
+    """Preserve-run mode may create one external receipt but never alter the run."""
+    validator = load_module("validate_t3_rev_terminal")
+    kwargs = _real_recovery_validation_kwargs(tmp_path)
+    before = validator.inventory_run_tree(REAL_T3_REV_RUN)
+    validator.validate_terminal(**kwargs)
+    receipt = Path(kwargs["destination"])
+    original = receipt.read_bytes()
+
+    with pytest.raises(validator.TerminalValidationError, match="already exists"):
+        validator.validate_terminal(**kwargs)
+
+    assert receipt.read_bytes() == original
+    assert validator.inventory_run_tree(REAL_T3_REV_RUN) == before
+    assert not (REAL_T3_REV_RUN / "receipts" / "T3_REV_TERMINAL_ADJUDICATION.json").exists()
+
+
+def test_nontrajectory_analysis_is_byte_deterministic_and_never_plots(
+        tmp_path: Path) -> None:
+    validator = load_module("validate_t3_rev_terminal")
+    adjudication = tmp_path / "T3_REV_TERMINAL_ADJUDICATION.json"
+    kwargs = _real_recovery_validation_kwargs(tmp_path)
+    kwargs["destination"] = adjudication
+    validator.validate_terminal(**kwargs)
+    analyzer = load_module("analyze_t3_rev")
+    first = tmp_path / "analysis-1"
+    second = tmp_path / "analysis-2"
+
+    summary_1 = analyzer.analyze_nontrajectory(adjudication, first)
+    summary_2 = analyzer.analyze_nontrajectory(adjudication, second)
+
+    expected = {
+        "same_cycle_differences.csv",
+        "own_event_differences.csv",
+        "block_transition_differences.csv",
+        "process_zone_crack_overlap.csv",
+        "energy_component_differences.csv",
+        "auxiliary_tot_en.csv",
+        "mechanism_summary.json",
+    }
+    assert {path.name for path in first.iterdir()} == expected
+    assert {path.name for path in second.iterdir()} == expected
+    assert all((first / name).read_bytes() == (second / name).read_bytes()
+               for name in expected)
+    assert summary_1 == summary_2
+    assert summary_1["status"] == "INCOMPLETE_OFFLINE_ANALYSIS"
+    assert summary_1["order_effect_classification"] == \
+        "UNAVAILABLE_NO_FATIGUE_TRAJECTORY"
+    assert summary_1["auxiliary_observable_coverage"]["tot_en"] == \
+        "UNAVAILABLE_NO_FATIGUE_TRAJECTORY"
+    assert summary_1["figure_policy"] == "NOT_APPLICABLE_NO_FATIGUE_TRAJECTORY"
+    assert not list(first.glob("*.png"))
+    assert summary_1["authorization_capability"] is None
+    assert summary_1["follow_on_authorized"] is False
+
+
+def test_external_terminal_evidence_sealer_is_create_once_and_checksum_closed(
+        tmp_path: Path) -> None:
+    validator = load_module("validate_t3_rev_terminal")
+    sealer = load_module("seal_t3_rev_terminal_evidence")
+    raw_inventory = tmp_path / "RAW_RUN_TREE_INVENTORY.pre.json"
+    _write_canonical_json(raw_inventory, validator.inventory_run_tree(REAL_T3_REV_RUN))
+    destination = tmp_path / "evidence"
+
+    result = sealer._seal_terminal_evidence(
+        run_root=REAL_T3_REV_RUN,
+        sealed_base_root=BASE,
+        extension_root=REAL_T3_REV_EXTENSION,
+        seal_path=REAL_T3_REV_SEAL,
+        raw_pre_inventory_path=raw_inventory,
+        destination=destination,
+        require_clean_repository=False,
+    )
+
+    assert result["status"] == "INCOMPLETE_OFFLINE_ANALYSIS"
+    assert result["classification"] == "FAIL_RECOVERY_NEWTON_NONCONVERGENCE_BEFORE_C1"
+    assert (destination / "RAW_RUN_TREE_INVENTORY.pre.json").read_bytes() == \
+        raw_inventory.read_bytes()
+    assert strict_json(destination / "ANALYSIS_DETERMINISM_COMPARISON.json")[
+        "all_csv_json_bytes_identical"] is True
+    assert (destination / "PACKAGE_MANIFEST.json").is_file()
+    assert (destination / "SHA256SUMS.txt").is_file()
+    with pytest.raises(FileExistsError):
+        sealer._seal_terminal_evidence(
+            run_root=REAL_T3_REV_RUN,
+            sealed_base_root=BASE,
+            extension_root=REAL_T3_REV_EXTENSION,
+            seal_path=REAL_T3_REV_SEAL,
+            raw_pre_inventory_path=raw_inventory,
+            destination=destination,
+            require_clean_repository=False,
+        )

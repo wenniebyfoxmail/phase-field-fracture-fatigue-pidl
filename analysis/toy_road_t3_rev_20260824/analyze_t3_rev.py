@@ -976,3 +976,154 @@ def analyze_t3_rev(
         seal_path=seal_path,
         required_t3_manifest_sha256=QUALIFIED_T3_MANIFEST_SHA256,
     )
+
+
+def analyze_nontrajectory(adjudication_path: Path, destination: Path) -> dict[str, object]:
+    """Emit deterministic unavailable schemas for an authenticated pre-c1 recovery exit."""
+    adjudication_path = Path(adjudication_path).resolve()
+    destination = Path(destination).resolve()
+    if destination.exists():
+        raise FileExistsError(f"analysis destination already exists: {destination}")
+    adjudication = _strict_json(adjudication_path)
+    canonical = _canonical_json_bytes(adjudication) + b"\n"
+    if adjudication_path.read_bytes() != canonical:
+        raise ValueError("nontrajectory adjudication bytes are not canonical")
+    expected_classification = "FAIL_RECOVERY_NEWTON_NONCONVERGENCE_BEFORE_C1"
+    if adjudication.get("schema_version") != \
+            "toy_road_t3_rev_nontrajectory_terminal_adjudication_v1" \
+            or adjudication.get("classification") != expected_classification \
+            or adjudication.get("status") != expected_classification \
+            or adjudication.get("terminal_reason") != \
+            "recovery_newton_nonconvergence_before_c1" \
+            or adjudication.get("terminal_authentication") is not None \
+            or adjudication.get("authorization_capability") is not None \
+            or adjudication.get("follow_on_authorized") is not False \
+            or adjudication.get("preserve_run") is not True \
+            or adjudication.get("run_inventory_unchanged") is not True \
+            or adjudication.get("run_inventory_pre") != adjudication.get("run_inventory_post"):
+        raise ValueError("nontrajectory adjudication contract is not exact")
+    phase = adjudication.get("phase_evidence")
+    if not isinstance(phase, dict) \
+            or phase.get("newton_iteration_count") != 250 \
+            or phase.get("last_res_norm_text") != "2.09741e+22" \
+            or phase.get("completed_cycle_shards") != 0 \
+            or phase.get("fatigue_trajectory_available") is not False:
+        raise ValueError("nontrajectory phase evidence is incomplete")
+    validator_path = Path(__file__).with_name("validate_t3_rev_terminal.py")
+    if adjudication.get("adjudicator_source_sha256") != _sha256(validator_path):
+        raise ValueError("adjudicator source SHA no longer matches")
+    spec = importlib.util.spec_from_file_location(
+        "t3_rev_nontrajectory_inventory_validator", validator_path
+    )
+    if spec is None or spec.loader is None:
+        raise ValueError("cannot load nontrajectory inventory validator")
+    validator = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(validator)
+    retained_inventory = adjudication.get("run_inventory_post")
+    if not isinstance(retained_inventory, dict):
+        raise ValueError("nontrajectory adjudication omits its run inventory")
+    run_root = retained_inventory.get("run_root")
+    if not isinstance(run_root, str) \
+            or validator.inventory_run_tree(Path(run_root)) != retained_inventory:
+        raise ValueError("sealed run changed after nontrajectory adjudication")
+
+    unavailable = "UNAVAILABLE_NO_FATIGUE_TRAJECTORY"
+    not_applicable = "NOT_APPLICABLE_NO_FATIGUE_TRAJECTORY"
+    same_rows: list[dict[str, object]] = []
+    process_rows: list[dict[str, object]] = []
+    for cycle in FIXED_CYCLES:
+        same_rows.extend(_unavailable_field_rows(
+            "same_cycle", cycle, cycle, cycle=cycle, availability=unavailable,
+        ))
+        process_rows.append(_unavailable_process_row(
+            "same_cycle", cycle, cycle, cycle=cycle, availability=unavailable,
+        ))
+    event_rows: list[dict[str, object]] = []
+    for label in ("first_hit", "confirmed"):
+        comparison = f"own_event_{label}"
+        event_rows.extend(_unavailable_field_rows(
+            comparison, None, None, availability=not_applicable,
+        ))
+        process_rows.append(_unavailable_process_row(
+            comparison, None, None, availability=not_applicable,
+        ))
+    transition_rows: list[dict[str, object]] = []
+    for start, end in BLOCK_TRANSITIONS:
+        for case_id in (CASE_ID, REV_CASE_ID):
+            transition_rows.extend(_unavailable_field_rows(
+                "within_case_transition", start, end,
+                availability=unavailable, case_id=case_id,
+                start_cycle=start, end_cycle=end,
+            ))
+        transition_rows.extend(_unavailable_field_rows(
+            "cross_case_difference_of_transitions", end, end,
+            availability=unavailable, left_case_id=CASE_ID,
+            right_case_id=REV_CASE_ID, start_cycle=start, end_cycle=end,
+        ))
+    energy_rows = [{
+        **row,
+        "energy_component_role": "UNAVAILABLE_WITHOUT_AUTHENTICATED_FATIGUE_SHARDS",
+    } for row in (*same_rows, *event_rows, *transition_rows)
+        if row.get("field") in ENERGY_COMPONENT_FIELDS]
+    tot_en_rows = [{
+        "comparison": "t3_rev_trajectory",
+        "case_id": REV_CASE_ID,
+        "cycle": None,
+        "field": "tot_en",
+        "availability": unavailable,
+        "role": "AUXILIARY_ONLY_EXCLUDED_FROM_CLASSIFICATION",
+    }, {
+        "comparison": "cross_case",
+        "left_case_id": CASE_ID,
+        "right_case_id": REV_CASE_ID,
+        "cycle": None,
+        "field": "tot_en",
+        "availability": unavailable,
+        "role": "AUXILIARY_ONLY_EXCLUDED_FROM_CLASSIFICATION",
+    }]
+    destination.mkdir(parents=True, exist_ok=False)
+    _write_csv(destination / "same_cycle_differences.csv", same_rows)
+    _write_csv(destination / "own_event_differences.csv", event_rows)
+    _write_csv(destination / "block_transition_differences.csv", transition_rows)
+    _write_csv(destination / "process_zone_crack_overlap.csv", process_rows)
+    _write_csv(destination / "energy_component_differences.csv", energy_rows)
+    _write_csv(destination / "auxiliary_tot_en.csv", tot_en_rows)
+    coverage = {
+        "same_cycle_fields": unavailable,
+        "block_transitions": unavailable,
+        "process_zone_crack_overlap": unavailable,
+        "energy_components": unavailable,
+        "own_event_boundaries": not_applicable,
+    }
+    summary = {
+        "schema_version": "toy_road_t3_t3rev_nontrajectory_mechanism_summary_v1",
+        "status": "INCOMPLETE_OFFLINE_ANALYSIS",
+        "order_effect_classification": unavailable,
+        "terminal_classification": expected_classification,
+        "nominal_dose_match": "NOT_APPLICABLE_NO_FATIGUE_TRAJECTORY",
+        "predeclared_cycle_set": list(FIXED_CYCLES),
+        "comparison_tolerances": EXACT_TOLERANCES,
+        "t3_terminal_authentication": "NOT_EVALUATED_NO_COMPARISON_TRAJECTORY",
+        "t3_rev_terminal_authentication": "NOT_APPLICABLE_NONTRAJECTORY_ADJUDICATION",
+        "t3_rev_terminal_adjudication_sha256": _sha256(adjudication_path),
+        "adjudicator_commit": adjudication.get("adjudicator_commit"),
+        "adjudicator_source_sha256": adjudication.get("adjudicator_source_sha256"),
+        "required_observable_coverage": coverage,
+        "required_observables_complete": False,
+        "energy_component_definitions": {
+            "raw_driver": "UNAVAILABLE_NO_AUTHENTICATED_FATIGUE_SHARDS",
+            "raw_cyclemax_driver": "UNAVAILABLE_NO_AUTHENTICATED_FATIGUE_SHARDS",
+            "active_driver": "UNAVAILABLE_NO_AUTHENTICATED_FATIGUE_SHARDS",
+        },
+        "auxiliary_observable_coverage": {"tot_en": unavailable},
+        "tot_en_role": "auxiliary monitor only; not parsed from unauthenticated stdout",
+        "figure_policy": "NOT_APPLICABLE_NO_FATIGUE_TRAJECTORY",
+        "mechanism_claim_boundary": (
+            "No loading-order or fracture-mechanism claim is available because "
+            "T3-rev exited during fresh zero-load recovery before c1."
+        ),
+        "authorization_capability": None,
+        "follow_on_authorized": False,
+    }
+    (destination / "mechanism_summary.json").write_bytes(_canonical_json_bytes(summary) + b"\n")
+    return summary

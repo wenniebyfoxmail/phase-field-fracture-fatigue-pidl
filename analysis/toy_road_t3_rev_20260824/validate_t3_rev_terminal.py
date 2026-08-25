@@ -9,6 +9,7 @@ import json
 import math
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -24,6 +25,39 @@ COMPONENT_IDENTITY_FILES = {
     "exporter_sha256": "export_toy_road_cycle_shard.m",
     "numerical_gate_contract_sha256": "finalize_toy_road_c5_gate.m",
     "event_contract_sha256": "build_toy_road_family_case.m",
+}
+RECOVERY_CLASSIFICATION = "FAIL_RECOVERY_NEWTON_NONCONVERGENCE_BEFORE_C1"
+RECOVERY_STDOUT_SHA256 = "161140449292d580490e240ed1a32a0e52b04ce5ef2e4898f1ac9db875b42802"
+RECOVERY_STDERR_SHA256 = "7873abc4e9e878e008bc250be45a4be6ffd3eb8d497395512751fc95bd7f308a"
+RECOVERY_PID_BYTES = b"25476\n"
+RECOVERY_RECEIPT_SHA256 = {
+    "T3_REV_EXECUTION_INPUT_LOCK.json": "4b12625650ce3930e969f872d9b890e93b2902745d49f6c45af5aa7233f0e238",
+    "T3_REV_LAUNCH_RECEIPT.json": "2ef43696071d371610747e4761e88a3e2eaa3b795bf310f1f9503fce3f297382",
+    "T3_REV_RUNTIME_MEASUREMENT.json": "4c87b33abea9212e43c7d95768e1198665b55f4423b2e1941094d3734001cce7",
+}
+RECOVERY_OVERLAY_SHA256 = {
+    "+phase_field/+mex/+fem/+assembly/+equilibrium/initial.mexw64": "ce20943282a89407eb7a998fc06a40c2cce4e5167555835fa28427346fb630db",
+    "build_toy_road_family_case.m": "69d7abd143d9cae1fd4bd9f82f5071b31f7dc0e04a7d6861dab3be913567c51f",
+    "CASE_PHYSICS_CONTRACTS.json": "78c1f9fa35d9baa33d45b2891fe62b95d4196bc80559cd7a581dc3aa23552763",
+    "FAMILY_CONTRACT.json": "423e0900d6b3dcbc04fe3dda8cfc0f59e74ec3f63d333e42f93a8cc023793e83",
+    "main_toy_road_family_case.m": "dc536f22b9f350d400c8e26be4e56695e5fe30a90b9b190d6759d619ddc9cb31",
+    "private/run_toy_road_driver_core.m": "13af81eb94fae4a5873eafffffe1faa4cd017dfeb47d7607719c650816b877fa",
+    "run_toy_road_controlled_driver_harness.m": "57c0324a4f2d9ad654151c289b083780f8a8527b8a3a7c2434243e9290d86831",
+    "solve_toy_road_family_case.m": "a702ac92bd9e490e86a6eaae4c9da2d5122c3bc4fd4ee3ce5900ae0f390c20b6",
+    "toy_road_protocol.py": "ffea1dc19587a06b13e95c3e7860e889e4fdf0839afa9e99a8c0cb26a1788c70",
+    "toy_road_wait_for_launch_receipt.m": "27a273fb3bd6f3ce924627e10e0382dfad387d5bbc82ab7953f4325a34dd6402",
+    "ToyRoadC5Trace.m": "a81058048158e6932bb9e6879caafe3fa2a96d55712f299a9f6c5798fb13abed",
+}
+RECOVERY_PREF_SHA256 = {
+    "creation.timestamp": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ddux.mlsettings": "e808e9263f6370a4ed8afe24894559e9168d615456431e4d10389eb00f9eed0c",
+    "ddux/dduxR2024b.log": "bae8a86c5acd457054b73e5470a490a711041b5cfe50c0a43ebf359839a7d4d7",
+    "epfwk_cache-25.2.0.3177638-13610418029628563499.json": "6ae7052321adb4db2728596ef6a96567cc11814ff8b8f16305de9eb37cb7867c",
+    "matlab.prf": "53a89d918c411f5d202a1a1fccc531aeddf93e909489f8ea80f8d6c00014d214",
+    "migratePref.txt": "f67ab10ad4e4c53121b6a5fe4da9c10ddee905b978d3788d2723d7bfacbe28a9",
+    "MLintDefaultSettings.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "webwindowscale.mlsettings": "a888abe039f47eae1b72fd7a8c96ccf55f6d9259b41ec47b793d0292eea1f9d8",
+    "webwindowscale/webwindowscaleR2024b.log": "2205cee3af5b4bb3c96b612e6db4dd6e4f0dc512aa4b6f3f6a619e9747e3eb9d",
 }
 
 
@@ -68,6 +102,169 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def inventory_run_tree(root: Path) -> dict[str, object]:
+    """Return a deterministic directory-and-file inventory without touching the tree."""
+    root = Path(root).resolve()
+    if not root.is_dir():
+        raise TerminalValidationError(f"run inventory root is not a directory: {root}")
+    entries: list[dict[str, object]] = [{
+        "relative_path": ".", "entry_type": "directory",
+        "size_bytes": None, "sha256": None,
+    }]
+    paths = sorted(
+        root.rglob("*"), key=lambda path: path.relative_to(root).as_posix()
+    )
+    for path in paths:
+        relative = path.relative_to(root).as_posix()
+        if path.is_dir():
+            entries.append({
+                "relative_path": relative, "entry_type": "directory",
+                "size_bytes": None, "sha256": None,
+            })
+        elif path.is_file():
+            entries.append({
+                "relative_path": relative, "entry_type": "file",
+                "size_bytes": path.stat().st_size, "sha256": _sha256(path),
+            })
+        else:
+            raise TerminalValidationError(f"run inventory contains a non-file entry: {relative}")
+    return {
+        "schema_version": "toy_road_t3_rev_raw_run_tree_inventory_v1",
+        "run_root": str(root),
+        "entry_count": len(entries),
+        "directory_count": sum(item["entry_type"] == "directory" for item in entries),
+        "file_count": sum(item["entry_type"] == "file" for item in entries),
+        "entries": entries,
+    }
+
+
+def _process_is_running(pid: int) -> bool:
+    if os.name == "nt":
+        import ctypes
+        synchronize = 0x00100000
+        handle = ctypes.windll.kernel32.OpenProcess(synchronize, False, pid)
+        if not handle:
+            return False
+        try:
+            return ctypes.windll.kernel32.WaitForSingleObject(handle, 0) == 258
+        finally:
+            ctypes.windll.kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _exact_file_inventory(root: Path) -> dict[str, str]:
+    return {
+        path.relative_to(root).as_posix(): _sha256(path)
+        for path in sorted(root.rglob("*"), key=lambda item: item.relative_to(root).as_posix())
+        if path.is_file()
+    }
+
+
+def authenticate_recovery_nontrajectory(run_root: Path) -> dict[str, object]:
+    """Authenticate the sealed PID-25476 zero-load recovery failure and nothing else."""
+    run_root = Path(run_root).resolve()
+    expected_top = {
+        ".toy-road-runtime-overlay", "cache", "launcher.pid", "output", "pref",
+        "pref.matlab-startup", "receipts", "T3_REV.stderr.log", "T3_REV.stdout.log",
+        "temp", "tmp", "work",
+    }
+    if not run_root.is_dir() or {path.name for path in run_root.iterdir()} != expected_top:
+        raise TerminalValidationError("recovery failure run-root closure is not exact")
+    pid_path = run_root / "launcher.pid"
+    if pid_path.read_bytes() != RECOVERY_PID_BYTES:
+        raise TerminalValidationError("recovery failure launcher PID bytes differ")
+    pid = int(RECOVERY_PID_BYTES.strip())
+    if _process_is_running(pid):
+        raise TerminalValidationError("recovery failure MATLAB process is still running")
+    stdout_path = run_root / "T3_REV.stdout.log"
+    stderr_path = run_root / "T3_REV.stderr.log"
+    if _sha256(stdout_path) != RECOVERY_STDOUT_SHA256 \
+            or _sha256(stderr_path) != RECOVERY_STDERR_SHA256:
+        raise TerminalValidationError("recovery failure stdout/stderr byte identity differs")
+    try:
+        stdout = stdout_path.read_text(encoding="utf-8")
+        stderr = stderr_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        raise TerminalValidationError(f"cannot read recovery failure logs: {error}") from error
+    iterations = re.findall(
+        r"Newton-Raphson iteration:\s+(\d+)\s+res_norm:\s+([0-9.eE+\-]+)", stdout
+    )
+    if len(iterations) != 250 \
+            or [int(number) for number, _ in iterations] != list(range(1, 251)) \
+            or iterations[-1] != ("250", "2.09741e+22") \
+            or stdout.count("Newton-Raphson did not converge!") != 1:
+        raise TerminalValidationError("recovery Newton iteration sequence is not exact")
+    stdout_stack = (
+        "localProductionRecoveryNewton", "recover_toy_road_family_state (line 13)",
+        "run_toy_road_driver_core (line 15)", "main_toy_road_family_case (line 13)",
+        "run_toy_road_runtime_bridge (line 90)",
+    )
+    stderr_stack = (
+        "Error using recover_toy_road_family_state (line 18)",
+        "Fresh zero-load Hard recovery did not converge.",
+        "Error in run_toy_road_driver_core (line 15)",
+        "Error in main_toy_road_family_case (line 13)",
+        "Error in run_toy_road_runtime_bridge (line 90)",
+        "ERROR: MATLAB error Exit Status: 0x00000001",
+    )
+    if any(token not in stdout for token in stdout_stack) \
+            or any(token not in stderr for token in stderr_stack):
+        raise TerminalValidationError("recovery failure stack predicates differ")
+    receipts = run_root / "receipts"
+    if _exact_file_inventory(receipts) != RECOVERY_RECEIPT_SHA256:
+        raise TerminalValidationError("recovery failure receipt closure differs")
+    output = run_root / "output"
+    if not output.is_dir() or any(output.iterdir()):
+        raise TerminalValidationError("recovery failure must have zero output artifacts and cycle shards")
+    for name in ("cache", "pref", "temp", "tmp", "work"):
+        root = run_root / name
+        if not root.is_dir() or any(root.iterdir()):
+            raise TerminalValidationError(f"recovery failure writable root is not empty: {name}")
+    if _exact_file_inventory(run_root / "pref.matlab-startup") != RECOVERY_PREF_SHA256:
+        raise TerminalValidationError("recovery failure MATLAB preference closure differs")
+    if _exact_file_inventory(run_root / ".toy-road-runtime-overlay") != RECOVERY_OVERLAY_SHA256:
+        raise TerminalValidationError("recovery failure runtime overlay closure differs")
+    if (run_root / "T3_REV_FAILURE_PACKAGE").exists():
+        raise TerminalValidationError("recovery failure cannot carry a numerical failure package")
+    return {
+        "schema_version": "toy_road_t3_rev_recovery_nontrajectory_evidence_v1",
+        "failure_phase": "fresh_zero_load_recovery_before_cycle_1",
+        "process_id": pid,
+        "process_exited": True,
+        "newton_iteration_count": 250,
+        "last_iteration": 250,
+        "last_res_norm_text": "2.09741e+22",
+        "stdout_sha256": RECOVERY_STDOUT_SHA256,
+        "stderr_sha256": RECOVERY_STDERR_SHA256,
+        "stderr_error": "Fresh zero-load Hard recovery did not converge.",
+        "completed_cycle_shards": 0,
+        "c5_artifacts": "ABSENT",
+        "event_artifacts": "ABSENT",
+        "producer_terminal_artifacts": "ABSENT",
+        "failure_package": "ABSENT",
+        "fatigue_trajectory_available": False,
+    }
+
+
+def _adjudicator_identity() -> tuple[str, str]:
+    repo_root = Path(__file__).resolve().parents[2]
+    try:
+        commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=repo_root, text=True
+        ).strip()
+    except (OSError, subprocess.CalledProcessError) as error:
+        raise TerminalValidationError(f"cannot resolve adjudicator commit: {error}") from error
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise TerminalValidationError("adjudicator commit is not a full SHA-1")
+    return commit, _sha256(Path(__file__).resolve())
+
+
 def classify_terminal(terminal: Mapping[str, object]) -> str:
     """Keep every terminal category distinct; no failure is recast as censoring."""
     reason = terminal.get("terminal_reason")
@@ -76,6 +273,7 @@ def classify_terminal(terminal: Mapping[str, object]) -> str:
         "right_censored": "PASS_NO_CONFIRMED_FRACTURE_BY_C150",
         "coupled_fixed_point_nonconvergence": "FAIL_COUPLED_FIXED_POINT_NONCONVERGENCE",
         "newton_nonconvergence": "FAIL_NEWTON_NONCONVERGENCE",
+        "recovery_newton_nonconvergence_before_c1": RECOVERY_CLASSIFICATION,
         "startup_failure": "FAIL_STARTUP",
         "runtime_failure": "FAIL_RUNTIME",
     }
@@ -1334,6 +1532,8 @@ def _validate_terminal(
         seal_path: Path, run_root: Path | None = None, destination: Path | None = None,
         failure_package_root: Path | None = None, failure_receipt_path: Path | None = None,
         launch: Any | None = None, _emit_adjudication: bool = True,
+        preserve_run: bool = False,
+        expected_run_inventory: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
     """Authenticate one terminal package and emit one non-authorizing adjudication."""
     test_launch_override = launch is not None
@@ -1346,6 +1546,9 @@ def _validate_terminal(
     extension_root = launch._absolute_literal_path(extension_root)
     seal_path = launch._absolute_literal_path(seal_path)
     run_root = terminal_root.parent if run_root is None else launch._absolute_literal_path(run_root)
+    run_inventory_pre = inventory_run_tree(run_root)
+    if expected_run_inventory is not None and expected_run_inventory != run_inventory_pre:
+        raise TerminalValidationError("run inventory differs from the retained pre-offline inventory")
     identity_paths = [
         (sealed_base_root, "sealed base"), (extension_root, "extension"),
         (seal_path, "seal"), (run_root, "run root"),
@@ -1359,7 +1562,23 @@ def _validate_terminal(
             raise TerminalValidationError(f"{label} path identity failed: {error}") from error
     receipts = run_root / "receipts"
     destination = receipts / "T3_REV_TERMINAL_ADJUDICATION.json" if destination is None else Path(destination)
-    if _emit_adjudication and launch._literal_path_text(destination) != launch._literal_path_text(
+    if preserve_run:
+        if not _emit_adjudication or expected_run_inventory is None:
+            raise TerminalValidationError(
+                "preserve-run mode requires emission and the retained pre-offline inventory"
+            )
+        destination = destination.resolve()
+        try:
+            destination.relative_to(run_root)
+        except ValueError:
+            pass
+        else:
+            raise TerminalValidationError("preserve-run adjudication destination must be external")
+        if destination.exists():
+            raise TerminalValidationError(f"terminal adjudication already exists: {destination}")
+        if not destination.parent.is_dir():
+            raise TerminalValidationError("external adjudication parent must already exist")
+    elif _emit_adjudication and launch._literal_path_text(destination) != launch._literal_path_text(
             receipts / "T3_REV_TERMINAL_ADJUDICATION.json"):
         raise TerminalValidationError("terminal adjudication must remain in the run receipt directory")
     verifier = _load(Path(__file__).with_name("verify_extension_diff.py"), "t3_rev_terminal_diff")
@@ -1405,14 +1624,21 @@ def _validate_terminal(
         raise TerminalValidationError(
             "bootstrap credential failure cannot carry a producer terminal receipt"
         )
-    if not no_pass_bootstrap and len(present_terminal_paths) != 1:
+    recovery_nontrajectory = not no_pass_bootstrap and len(present_terminal_paths) == 0
+    if not no_pass_bootstrap and not recovery_nontrajectory and len(present_terminal_paths) != 1:
         raise TerminalValidationError("run must contain exactly one fixed completed or failure terminal receipt")
     terminal = (
         {
             "terminal_reason": "startup_failure",
             "failure_phase": "bootstrap_before_runtime_measurement",
         }
-        if no_pass_bootstrap else _strict_json(present_terminal_paths[0])
+        if no_pass_bootstrap else (
+            {
+                "terminal_reason": "recovery_newton_nonconvergence_before_c1",
+                "failure_phase": "fresh_zero_load_recovery_before_cycle_1",
+            }
+            if recovery_nontrajectory else _strict_json(present_terminal_paths[0])
+        )
     )
     classification = classify_terminal(terminal)
     if classification == "FAIL_STARTUP" and not no_pass_bootstrap:
@@ -1644,6 +1870,15 @@ def _validate_terminal(
             )
         except Exception as error:
             raise TerminalValidationError(f"numerical failure package validation failed: {error}") from error
+    elif classification == RECOVERY_CLASSIFICATION:
+        try:
+            measurement = _strict_json(receipts / "T3_REV_RUNTIME_MEASUREMENT.json")
+            protocol.validate_runtime_measurement(lock, measurement)
+            phase_evidence = authenticate_recovery_nontrajectory(run_root)
+        except Exception as error:
+            raise TerminalValidationError(
+                f"pre-c1 recovery nonconvergence validation failed: {error}"
+            ) from error
     else:
         phase_evidence = _validate_startup_or_runtime_failure(
             terminal, classification, receipts, launch_receipt, seal_sha256, run_root,
@@ -1651,8 +1886,16 @@ def _validate_terminal(
         )
     if builder.inventory_tree(sealed_base_root) != base_before or builder.inventory_tree(extension_root) != extension_before:
         raise TerminalValidationError("sealed base or extension inventory changed during terminal validation")
+    run_inventory_post = inventory_run_tree(run_root)
+    if preserve_run and run_inventory_post != run_inventory_pre:
+        raise TerminalValidationError("preserve-run inventory changed during terminal validation")
+    adjudicator_commit, adjudicator_source_sha256 = _adjudicator_identity()
     result: dict[str, object] = {
-        "schema_version": "toy_road_t3_rev_terminal_adjudication_v1",
+        "schema_version": (
+            "toy_road_t3_rev_nontrajectory_terminal_adjudication_v1"
+            if classification == RECOVERY_CLASSIFICATION
+            else "toy_road_t3_rev_terminal_adjudication_v1"
+        ),
         "status": terminal_adjudication_status(classification),
         "case_id": CASE_ID,
         "classification": classification,
@@ -1667,6 +1910,12 @@ def _validate_terminal(
         "sealed_extension_inventory": extension_before,
         "terminal_authentication": authenticated,
         "phase_evidence": phase_evidence,
+        "run_inventory_pre": run_inventory_pre if preserve_run else None,
+        "run_inventory_post": run_inventory_post if preserve_run else None,
+        "run_inventory_unchanged": run_inventory_post == run_inventory_pre,
+        "preserve_run": preserve_run,
+        "adjudicator_commit": adjudicator_commit,
+        "adjudicator_source_sha256": adjudicator_source_sha256,
         "authorization_capability": None,
         "follow_on_authorized": False,
     }
@@ -1678,6 +1927,8 @@ def _validate_terminal(
 def validate_terminal(
         terminal_root: Path, *, sealed_base_root: Path, extension_root: Path,
         seal_path: Path, run_root: Path | None = None, destination: Path | None = None,
+        preserve_run: bool = False,
+        expected_run_inventory: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
     """Public terminal validation has no caller-selected protocol or evidence roots."""
     return _validate_terminal(
@@ -1687,4 +1938,6 @@ def validate_terminal(
         seal_path=seal_path,
         run_root=run_root,
         destination=destination,
+        preserve_run=preserve_run,
+        expected_run_inventory=expected_run_inventory,
     )
