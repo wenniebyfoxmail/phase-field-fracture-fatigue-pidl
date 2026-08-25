@@ -6,6 +6,7 @@ import hashlib
 import importlib.util
 import json
 import math
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -132,12 +133,18 @@ def _repository_head(base_root: Path) -> str:
 
 def _expected_manifest(
         base_root: Path, expected_files: Mapping[str, bytes],
-        expected_inventory: Mapping[str, object], builder: Any) -> dict[str, object]:
+        expected_inventory: Mapping[str, object], builder: Any,
+        expected_repo_commit: str | None = None) -> dict[str, object]:
+    repo_commit = _repository_head(base_root) \
+        if expected_repo_commit is None else expected_repo_commit
+    if not isinstance(repo_commit, str) \
+            or re.fullmatch(r"[0-9a-f]{40}", repo_commit) is None:
+        raise DiffError("expected extension repository commit is not a full SHA-1")
     inventory_bytes = builder.canonical_json_bytes(expected_inventory)
     return {
         "schema_version": "toy_road_t3_rev_extension_source_manifest_v1",
         "case_id": builder.CASE_ID,
-        "repo_commit": _repository_head(base_root),
+        "repo_commit": repo_commit,
         "base_source_commit": builder.BASE_SOURCE_COMMIT,
         "base_source_manifest_sha256": builder.BASE_SOURCE_MANIFEST_SHA256,
         "contract_sha256": _sha256(builder.CONTRACT_PATH.read_bytes()),
@@ -220,7 +227,9 @@ def _verify_numerical_identities(base_root: Path, extension_root: Path) -> None:
         # manifest deliberately hashes the sealed base, not that overlay.
 
 
-def verify_extension_diff(base_root: Path, extension_root: Path) -> dict[str, object]:
+def verify_extension_diff(
+        base_root: Path, extension_root: Path, *,
+        expected_repo_commit: str | None = None) -> dict[str, object]:
     """Return PASS only for the exact T3-rev role and loading-block overlay."""
     base_root, extension_root = Path(base_root), Path(extension_root)
     builder = _load_builder()
@@ -232,7 +241,8 @@ def verify_extension_diff(base_root: Path, extension_root: Path) -> dict[str, ob
     inventory = strict_json(extension_root / "SOURCE_DIFF_INVENTORY.json")
     expected_files, expected_inventory, expected_builder = _expected_overlay(base_root)
     expected_manifest = _expected_manifest(
-        base_root, expected_files, expected_inventory, expected_builder
+        base_root, expected_files, expected_inventory, expected_builder,
+        expected_repo_commit,
     )
     require_exact_shadow_set(manifest, builder.ALLOWED_SHADOW_FILES)
     require_classified_hunks(

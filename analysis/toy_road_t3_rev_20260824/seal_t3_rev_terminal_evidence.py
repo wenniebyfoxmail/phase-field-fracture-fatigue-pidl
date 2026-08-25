@@ -94,9 +94,21 @@ def _normalise_raw_inventory(
             "schema_version": "toy_road_t3_rev_raw_run_tree_inventory_v1",
             **{field: raw[field] for field in required},
         }
-    if normalised != current:
+    scalar_fields = {
+        "schema_version", "run_root", "entry_count", "directory_count", "file_count",
+    }
+    entries = normalised.get("entries")
+    current_entries = current.get("entries")
+    if not isinstance(entries, list) or not isinstance(current_entries, list) \
+            or any(not isinstance(item, dict) for item in (*entries, *current_entries)):
+        raise ValueError("raw pre-offline inventory entries are malformed")
+    by_path = {item.get("relative_path"): item for item in entries}
+    current_by_path = {item.get("relative_path"): item for item in current_entries}
+    if len(by_path) != len(entries) or len(current_by_path) != len(current_entries) \
+            or any(normalised.get(field) != current.get(field) for field in scalar_fields) \
+            or by_path != current_by_path:
         raise ValueError("raw pre-offline inventory differs from the current sealed run")
-    return normalised
+    return dict(current)
 
 
 def _file_inventory(root: Path) -> dict[str, object]:

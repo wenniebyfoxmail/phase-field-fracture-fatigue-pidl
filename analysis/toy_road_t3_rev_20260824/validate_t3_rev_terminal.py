@@ -1701,7 +1701,10 @@ def _validate_terminal(
             or launch_receipt.get("extension_source_manifest_sha256") != _sha256(extension_root / "EXTENSION_SOURCE_MANIFEST.json"):
         raise TerminalValidationError("sealed composite extension identity differs")
     try:
-        verified = verifier.verify_extension_diff(sealed_base_root, extension_root)
+        verified = verifier.verify_extension_diff(
+            sealed_base_root, extension_root,
+            expected_repo_commit=str(launch_receipt["launcher_repository_commit"]),
+        )
     except Exception as error:
         raise TerminalValidationError(f"extension verification failed: {error}") from error
     if verified != identity.get("verification"):

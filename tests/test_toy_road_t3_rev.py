@@ -4217,7 +4217,20 @@ def test_external_terminal_evidence_sealer_is_create_once_and_checksum_closed(
     validator = load_module("validate_t3_rev_terminal")
     sealer = load_module("seal_t3_rev_terminal_evidence")
     raw_inventory = tmp_path / "RAW_RUN_TREE_INVENTORY.pre.json"
-    _write_canonical_json(raw_inventory, validator.inventory_run_tree(REAL_T3_REV_RUN))
+    inventory = validator.inventory_run_tree(REAL_T3_REV_RUN)
+    powershell_capture = {
+        "run_root": inventory["run_root"],
+        "captured_utc": "2026-08-25T02:59:58.6969976Z",
+        "root_creation_time_utc": "retained-but-nonsemantic",
+        "root_last_write_time_utc": "retained-but-nonsemantic",
+        "entry_count": inventory["entry_count"],
+        "directory_count": inventory["directory_count"],
+        "file_count": inventory["file_count"],
+        "entries": sorted(
+            inventory["entries"], key=lambda item: item["relative_path"].casefold()
+        ),
+    }
+    _write_canonical_json(raw_inventory, powershell_capture)
     destination = tmp_path / "evidence"
 
     result = sealer._seal_terminal_evidence(
