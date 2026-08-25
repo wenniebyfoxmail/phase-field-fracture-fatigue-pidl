@@ -21,6 +21,9 @@ ROOT = Path(__file__).resolve().parents[1]
 ANALYSIS = ROOT / "analysis" / "toy_road_t3_rev_20260824"
 REGISTRY = ROOT / "docs/toy_road_p0_repeatability_20260802/QUALIFIED_TRAJECTORY_REGISTRY_20260824.json"
 BASE = ROOT / "producer_handoffs/toy_road_p0_repeatability_20260803"
+T3_TEMPLATE_ROOT = Path(r"C:\q4diag\toy-road-t3-production-7c56ff3-run1")
+T3_TEMPLATE_LOCK_FIXTURE = ROOT / "tests/fixtures/T3_EXECUTION_INPUT_LOCK.json"
+QUALIFIED_GRIPHFITH_SOURCE_REPO = Path(r"C:\q4diag\griphfith-pf-rebuild-355d4c83")
 
 
 def repository_head() -> str:
@@ -510,11 +513,8 @@ def _launcher_inputs(module, tmp_path: Path) -> dict[str, Path]:
     seal_path = seal_destination / "T3_REV_SEAL.json"
     template = tmp_path / "template" / "receipts"
     template.mkdir(parents=True)
-    shutil.copy2(
-        ROOT / "docs/toy_road_p0_repeatability_20260802/t2_material_state_failure_20260817/"
-        "artifacts/receipts/T2_EXECUTION_INPUT_LOCK.json",
-        template / "T2_EXECUTION_INPUT_LOCK.json",
-    )
+    shutil.copy2(T3_TEMPLATE_LOCK_FIXTURE, template / "T3_EXECUTION_INPUT_LOCK.json")
+    module.QUALIFIED_TEMPLATE_ROOT = template.parent
     matlab = tmp_path / "matlab.exe"
     matlab.write_bytes(b"test executable")
     griphfith = tmp_path / "griphfith"
@@ -1240,7 +1240,7 @@ def test_launcher_popen_uses_locked_paths_and_environment(
         "execution_input_lock_sha256"
     ]
     assert lock["runtime_lock_sha256"] == "a53a1431b6f7a1b56f44f3faccb410ba11a4b9a6ef4f1a16b30258936bd0f8d7"
-    template_lock = strict_json(inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json")
+    template_lock = strict_json(inputs["template_run"] / "receipts" / "T3_EXECUTION_INPUT_LOCK.json")
     assert lock["source_commit"] == template_lock["source_commit"]
     assert lock["family_contract_sha256"] != template_lock["family_contract_sha256"]
     assert lock["case_physics_contract_sha256"] != template_lock["case_physics_contract_sha256"]
@@ -1373,7 +1373,7 @@ def test_launcher_rejects_template_matlab_release_or_update_type_tampering(
     monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
     inputs = _launcher_inputs(module, tmp_path)
     _allow_test_matlab_identity(module, monkeypatch)
-    path = inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
+    path = inputs["template_run"] / "receipts" / "T3_EXECUTION_INPUT_LOCK.json"
     payload = strict_json(path)
     runtime = payload["runtime_expectations"]
     assert isinstance(runtime, dict)
@@ -1397,7 +1397,7 @@ def test_launcher_rejects_extra_template_runtime_mapping_before_root_creation(
     monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
     inputs = _launcher_inputs(module, tmp_path)
     _allow_test_matlab_identity(module, monkeypatch)
-    path = inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
+    path = inputs["template_run"] / "receipts" / "T3_EXECUTION_INPUT_LOCK.json"
     payload = strict_json(path)
     runtime = payload["runtime_expectations"]
     assert isinstance(runtime, dict)
@@ -1442,7 +1442,7 @@ def test_launcher_rejects_tampered_template_schema_before_consumption(
     monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
     inputs = _launcher_inputs(module, tmp_path)
     _allow_test_matlab_identity(module, monkeypatch)
-    path = inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
+    path = inputs["template_run"] / "receipts" / "T3_EXECUTION_INPUT_LOCK.json"
     lock = strict_json(path)
     mutate(lock)
     path.write_text(json.dumps(lock, sort_keys=True, separators=(",", ":")), encoding="utf-8")
@@ -1454,7 +1454,7 @@ def test_launcher_rejects_tampered_template_schema_before_consumption(
 
 def test_published_template_lock_is_accepted_by_authoritative_base_protocol(
         tmp_path: Path) -> None:
-    """The exact qualified T2 predecessor remains a valid base-protocol lock."""
+    """The exact qualified T3 template remains a valid base-protocol lock."""
     module = load_module("launch_t3_rev")
     inputs = _launcher_inputs(module, tmp_path)
     base_protocol = module.load_protocol(
@@ -1462,8 +1462,87 @@ def test_published_template_lock_is_accepted_by_authoritative_base_protocol(
         "toy_road_p0_repeatability_20260803" / "toy_road_protocol.py",
         "test_base_protocol",
     )
-    lock = strict_json(inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json")
-    base_protocol.validate_execution_input_lock(lock, "T2_material_state")
+    lock = strict_json(inputs["template_run"] / "receipts" / "T3_EXECUTION_INPUT_LOCK.json")
+    base_protocol.validate_execution_input_lock(lock, "T3_loading_history")
+
+
+def test_launcher_rejects_a_copied_t3_template_root_before_consumption(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Exact lock bytes cannot authorize a substitute template directory."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+    module.QUALIFIED_TEMPLATE_ROOT = T3_TEMPLATE_ROOT
+    with pytest.raises(module.LaunchError, match="exact qualified T3 root"):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+    assert not seal_marker(module, inputs["seal_path"]).exists()
+
+
+def test_real_t3_template_preflight_reaches_last_no_consumption_boundary(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Read-only preflight accepts the real T3 lock and exact staged source closure."""
+    actual_lock = T3_TEMPLATE_ROOT / "receipts" / "T3_EXECUTION_INPUT_LOCK.json"
+    if not actual_lock.is_file() or not QUALIFIED_GRIPHFITH_SOURCE_REPO.is_dir():
+        pytest.skip("qualified T3 template or GRIPHFiTH object database is unavailable")
+    assert actual_lock.read_bytes() == T3_TEMPLATE_LOCK_FIXTURE.read_bytes()
+
+    module = load_module("launch_t3_rev")
+    inputs = _launcher_inputs(module, tmp_path)
+    inputs["template_run"] = T3_TEMPLATE_ROOT
+    module.QUALIFIED_TEMPLATE_ROOT = T3_TEMPLATE_ROOT
+    evidence = strict_json(
+        inputs["repo_root"] / "producer_handoffs" /
+        "rebuilt_initial_mex_qualification_20260801" / "build" / "SOURCE_HASHES.json"
+    )
+    records = evidence["locked_git_tree_inventory"]
+    assert isinstance(records, list) and len(records) == 221
+    for record in records:
+        relative = record["path"]
+        payload = subprocess.check_output([
+            "git", "-C", str(QUALIFIED_GRIPHFITH_SOURCE_REPO), "show",
+            f"355d4c83fefc2db88c32031a2dd2623b3de85c89:{relative}",
+        ])
+        target = inputs["griphfith_root"] / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
+    inputs["input_assets_root"] = inputs["griphfith_root"] / "Dependencies" / "meshes"
+    inputs["matlab"] = Path(r"C:\Program Files\MATLAB\R2025b\bin\matlab.exe")
+
+    seal_builder = load_module("build_t3_rev_seal")
+    expected_runtime = seal_builder.EXPECTED_EXECUTION
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    monkeypatch.setattr(
+        module, "executable_sha256",
+        lambda _path: expected_runtime["matlab"]["executable_sha256"],
+    )
+    monkeypatch.setattr(
+        module, "runtime_binary_sha256",
+        lambda _paths: dict(expected_runtime["four_binary_sha256"]),
+    )
+
+    def require_staged_runtime_paths(runtime, matlab, griphfith_root) -> None:
+        assert matlab == inputs["matlab"]
+        assert griphfith_root == inputs["griphfith_root"]
+        assert runtime["matlab"] == strict_json(actual_lock)["runtime_expectations"]["matlab"]
+        module.require_no_reparse_chain(matlab, "qualified MATLAB executable")
+        module.require_no_reparse_chain(griphfith_root, "staged qualified GRIPHFiTH root")
+
+    class PreflightComplete(RuntimeError):
+        pass
+
+    monkeypatch.setattr(module, "require_qualified_runtime_paths", require_staged_runtime_paths)
+    monkeypatch.setattr(
+        module, "_require_unconsumed_seal",
+        lambda _seal_sha256: (_ for _ in ()).throw(PreflightComplete()),
+    )
+    with pytest.raises(PreflightComplete):
+        module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+    assert not seal_marker(module, inputs["seal_path"]).exists()
 
 
 @pytest.mark.parametrize(("name", "mutate"), [
@@ -1476,7 +1555,7 @@ def test_published_template_lock_is_accepted_by_authoritative_base_protocol(
     ("relative_root", lambda lock: lock["writable_roots"].update({"temp": "relative/temp"})),
     ("timestamp", lambda lock: lock.update({"launch_timestamp_utc": "not-a-timestamp"})),
     ("no_clobber", lambda lock: lock.update({"no_clobber_receipt_id": ""})),
-    ("case", lambda lock: lock.update({"case_id": "T3_loading_history"})),
+    ("case", lambda lock: lock.update({"case_id": "T2_material_state"})),
     ("source_commit", lambda lock: lock.update({"source_commit": "0" * 40})),
     ("source_manifest", lambda lock: lock.update({"source_manifest_sha256": "0" * 64})),
     ("family_contract", lambda lock: lock.update({"family_contract_sha256": "0" * 64})),
@@ -1490,7 +1569,7 @@ def test_launcher_rejects_malformed_or_substituted_template_identity_before_cons
     monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
     inputs = _launcher_inputs(module, tmp_path)
     _allow_test_matlab_identity(module, monkeypatch)
-    path = inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
+    path = inputs["template_run"] / "receipts" / "T3_EXECUTION_INPUT_LOCK.json"
     lock = strict_json(path)
     mutate(lock)
     path.write_text(json.dumps(lock, sort_keys=True, separators=(",", ":")), encoding="utf-8")
@@ -1581,7 +1660,7 @@ def test_launcher_rejects_tampered_seal_or_runtime_input_before_root_creation(
             json.dumps(payload, sort_keys=True, separators=(",", ":")), encoding="utf-8"
         )
     else:
-        path = inputs["template_run"] / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
+        path = inputs["template_run"] / "receipts" / "T3_EXECUTION_INPUT_LOCK.json"
         payload = strict_json(path)
         payload["runtime_lock_sha256"] = "0" * 64
         path.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")), encoding="utf-8")

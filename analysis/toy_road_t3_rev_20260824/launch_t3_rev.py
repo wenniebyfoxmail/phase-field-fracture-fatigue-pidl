@@ -28,7 +28,21 @@ QUALIFIED_SOURCE_COMMIT = "355d4c83fefc2db88c32031a2dd2623b3de85c89"
 QUALIFIED_SOURCE_COUNT = 221
 CREATE_NO_WINDOW = 0x08000000
 CREATE_NEW_PROCESS_GROUP = 0x00000200
-QUALIFIED_TEMPLATE_LOCK_SHA256 = "a7ccff1083bd0c86a7111a8e5a6256a5836688602e3dd269ed77a53c4cbe5869"
+QUALIFIED_TEMPLATE_ROOT = Path(r"C:\q4diag\toy-road-t3-production-7c56ff3-run1")
+QUALIFIED_TEMPLATE_LOCK_SHA256 = "da1d30e728a0f689b02bbbf36ea85e18989ad6964d31b3c7824fb0755c362d59"
+QUALIFIED_TEMPLATE_CASE_ID = "T3_loading_history"
+QUALIFIED_TEMPLATE_CASE_CONTRACT_SHA256 = (
+    "fbbe2c46ec394f20589e7c150783a08b5fbd79d13e51ce74eef90930def0146c"
+)
+QUALIFIED_TEMPLATE_WRITABLE_ROOTS = {
+    "cache": r"C:\q4diag\toy-road-t3-production-7c56ff3-run1\cache",
+    "matlab_startup_pref": r"C:\q4diag\toy-road-t3-production-7c56ff3-run1\pref.matlab-startup",
+    "output": r"C:\q4diag\toy-road-t3-production-7c56ff3-run1\output",
+    "pref": r"C:\q4diag\toy-road-t3-production-7c56ff3-run1\pref",
+    "temp": r"C:\q4diag\toy-road-t3-production-7c56ff3-run1\temp",
+    "tmp": r"C:\q4diag\toy-road-t3-production-7c56ff3-run1\tmp",
+    "work": r"C:\q4diag\toy-road-t3-production-7c56ff3-run1\work",
+}
 QUALIFIED_SOURCE_HASHES_SHA256 = "4951e9bb43515c036ec2f100b8c94627d48d88ae5b515d49c3d9bcec09bb7481"
 QUALIFIED_BASE_PROTOCOL_SHA256 = "db51a9cb54810711c2bdfe7ee35a705179e2852c7b069995d69693579c1e84a9"
 EXPECTED_INPUT_ASSET_SHA256 = {
@@ -452,53 +466,49 @@ def _require_extension(
 def _require_template_inputs(
         template_run: Path, runtime: Mapping[str, object], matlab: Path,
         base_protocol: Any) -> dict[str, object]:
-    lock_path = template_run / "receipts" / "T2_EXECUTION_INPUT_LOCK.json"
+    if _literal_path_text(template_run) != _literal_path_text(QUALIFIED_TEMPLATE_ROOT):
+        raise LaunchError("template run is not the exact qualified T3 root")
+    lock_path = template_run / "receipts" / "T3_EXECUTION_INPUT_LOCK.json"
     require_no_reparse_chain(lock_path, "qualified template execution lock")
     lock = read_json(lock_path)
     try:
-        base_protocol.validate_execution_input_lock(lock, "T2_material_state")
+        base_protocol.validate_execution_input_lock(lock, QUALIFIED_TEMPLATE_CASE_ID)
     except Exception as error:
         raise LaunchError(
             f"template execution lock failed authoritative protocol validation: {error}"
         ) from error
-    if sha256(lock_path) != QUALIFIED_TEMPLATE_LOCK_SHA256:
+    if sha256(lock_path) != QUALIFIED_TEMPLATE_LOCK_SHA256 \
+            or lock_path.read_bytes() != json_payload(lock):
         raise LaunchError("template execution lock is not the exact qualified predecessor")
     expectation = lock.get("runtime_expectations")
     if not isinstance(expectation, dict) or not matlab.is_file():
         raise LaunchError("template runtime or MATLAB executable is incomplete")
     expected_binaries = runtime.get("four_binary_sha256")
-    if set(expectation) != {"binary_sha256", "matlab"} \
-            or lock.get("authorization_scope") != "production_authorized" \
-            or lock.get("case_id") != "T2_material_state" \
-            or lock.get("source_commit") != runtime.get("source_commit") \
-            or lock.get("runtime_lock_sha256") != runtime.get("runtime_lock_sha256") \
-            or lock.get("source_manifest_sha256") != runtime.get("source_manifest_sha256") \
-            or lock.get("family_contract_sha256") != runtime.get("family_contract_sha256") \
-            or lock.get("case_physics_contract_sha256") \
-            != "a9210c5c52a3063b04cc08a7e8ec16acf98dd8c243c304b5fecdf9040b00d7b6" \
-            or not _exact_json_equal(expectation.get("binary_sha256"), expected_binaries):
+    sealed_matlab = runtime.get("matlab")
+    expected_identity = {
+        "schema_version": "toy_road_execution_input_lock_v1",
+        "authorization_scope": "production_authorized",
+        "case_id": QUALIFIED_TEMPLATE_CASE_ID,
+        "case_physics_contract_sha256": QUALIFIED_TEMPLATE_CASE_CONTRACT_SHA256,
+        "family_contract_sha256": runtime.get("family_contract_sha256"),
+        "protocol_version": "toy-road-p0-repeatability-v2.1",
+        "resume_allowed": False,
+        "runtime_lock_sha256": runtime.get("runtime_lock_sha256"),
+        "source_commit": runtime.get("source_commit"),
+        "source_manifest_sha256": runtime.get("source_manifest_sha256"),
+        "writable_roots": QUALIFIED_TEMPLATE_WRITABLE_ROOTS,
+    }
+    if any(not _exact_json_equal(lock.get(field), expected)
+           for field, expected in expected_identity.items()) \
+            or not _exact_json_equal(expectation, {
+                "binary_sha256": expected_binaries,
+                "matlab": sealed_matlab,
+            }):
         raise LaunchError("template execution lock is not the exact qualified predecessor identity")
     matlab_identity = expectation.get("matlab")
-    sealed_matlab = runtime.get("matlab")
     if not isinstance(matlab_identity, dict) or not isinstance(sealed_matlab, dict):
         raise LaunchError("template MATLAB identity is malformed")
-    expected_template_fields = {
-        "absolute_path_order", "release", "update", "version", "computer", "executable_sha256", "blas", "lapack",
-    }
-    expected_template_matlab = {
-        "release": sealed_matlab["release"],
-        "update": sealed_matlab["update"],
-        "version": sealed_matlab["version"],
-        "computer": sealed_matlab["computer"],
-        "executable_sha256": sealed_matlab["executable_sha256"],
-        "blas": sealed_matlab["blas"],
-        "lapack": sealed_matlab["lapack"],
-    }
-    if set(matlab_identity) != expected_template_fields \
-            or any(type(matlab_identity.get(field)) is not str or matlab_identity[field] != expected
-                   for field, expected in expected_template_matlab.items()) \
-            or type(matlab_identity.get("absolute_path_order")) is not list \
-            or not all(type(path) is str for path in matlab_identity["absolute_path_order"]):
+    if not _exact_json_equal(matlab_identity, sealed_matlab):
         raise LaunchError("template MATLAB identity differs from the sealed release/update/platform mapping")
     if executable_sha256(matlab) != sealed_matlab["executable_sha256"]:
         raise LaunchError("MATLAB executable SHA-256 differs from the sealed runtime identity")
