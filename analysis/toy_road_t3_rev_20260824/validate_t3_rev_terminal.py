@@ -1292,6 +1292,43 @@ def _validate_no_pass_bootstrap_evidence(
     }
 
 
+def _no_launch_lifecycle_evidence(
+        receipts: Path, stderr_path: Path) -> tuple[str, ...]:
+    """Inventory every launcher-produced or credential-shaped no-launch marker."""
+    evidence: set[str] = set()
+    for path in receipts.iterdir():
+        name = path.name
+        if name == "LAUNCH_CREDENTIAL_FAILED.json" \
+                or name.endswith("_NO_LAUNCH.json") \
+                or (name != "T3_REV_LAUNCH_RECEIPT.json"
+                    and name.startswith("T3_REV_LAUNCH_RECEIPT.")) \
+                or name.startswith(".T3_REV_LAUNCH_RECEIPT.json."):
+            evidence.add(name)
+    if stderr_path.is_file():
+        try:
+            timeout_observed = b"Exact launch credential was not published" \
+                in stderr_path.read_bytes().splitlines()
+        except OSError as error:
+            raise TerminalValidationError(
+                f"cannot read launch lifecycle stderr evidence: {error}") from error
+        if timeout_observed:
+            evidence.add("toyRoad:LaunchCredentialTimeout")
+    return tuple(sorted(evidence))
+
+
+def _require_exclusive_launch_lifecycle(
+        receipts: Path, stderr_path: Path) -> tuple[str, ...]:
+    """A live PASS credential is mutually exclusive with all no-launch evidence."""
+    evidence = _no_launch_lifecycle_evidence(receipts, stderr_path)
+    launch_path = receipts / "T3_REV_LAUNCH_RECEIPT.json"
+    if launch_path.exists() and evidence:
+        raise TerminalValidationError(
+            "live PASS launch receipt conflicts with no-launch lifecycle evidence: "
+            + ", ".join(evidence)
+        )
+    return evidence
+
+
 def _validate_terminal(
         terminal_root: Path, *, sealed_base_root: Path, extension_root: Path,
         seal_path: Path, run_root: Path | None = None, destination: Path | None = None,
@@ -1337,9 +1374,8 @@ def _validate_terminal(
     busy_path = receipts / "BUSY_NO_LAUNCH.json"
     prepared_path = receipts / "PREPARED_NO_LAUNCH.json"
     stderr_path = run_root / "T3_REV.stderr.log"
-    timeout_observed = stderr_path.is_file() and (
-        b"Exact launch credential was not published" in stderr_path.read_bytes().splitlines()
-    )
+    lifecycle_evidence = _require_exclusive_launch_lifecycle(receipts, stderr_path)
+    timeout_observed = "toyRoad:LaunchCredentialTimeout" in lifecycle_evidence
     credential_evidence_exists = credential_failure_path.is_file() or timeout_observed
     if busy_path.is_file():
         raise TerminalValidationError(

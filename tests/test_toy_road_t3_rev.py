@@ -3519,6 +3519,121 @@ def test_terminal_validator_authenticates_phase_specific_startup_and_runtime_fai
     assert result["phase_evidence"]["failure_phase"] == phase
 
 
+PASS_CONTRADICTORY_LIFECYCLE_MARKERS = (
+    "BUSY_NO_LAUNCH.json",
+    "PREPARED_NO_LAUNCH.json",
+    "LAUNCH_CREDENTIAL_FAILED.json",
+    "T3_REV_LAUNCH_RECEIPT.INVALIDATED.json",
+    "T3_REV_LAUNCH_RECEIPT.CONFLICT.json",
+    ".T3_REV_LAUNCH_RECEIPT.json.conflict.tmp",
+    "FUTURE_NO_LAUNCH.json",
+    "bootstrap_credential_timeout",
+)
+
+
+def _prepare_pass_backed_lifecycle_outcome(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, outcome: str):
+    """Build one real PASS-launch-backed completed or failure adjudication input."""
+    launch, protocol, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    if outcome == "right_censored":
+        output = inputs["run_root"] / "output"
+        shutil.rmtree(output)
+        lock = strict_json(
+            inputs["run_root"] / "receipts" / "T3_REV_EXECUTION_INPUT_LOCK.json")
+        _build_authenticated_terminal_package(
+            protocol, output, terminal_cycle=150, right_censored=True,
+            execution_lock=lock, **_rev_completed_identity_kwargs(inputs),
+        )
+    elif outcome == "numerical_failure":
+        _prepare_numerical_failure(
+            protocol, inputs, "FAIL_NEWTON_NONCONVERGENCE")
+    elif outcome == "runtime_qualification_failure":
+        _prepare_phase_failure(inputs, "runtime_qualification_before_producer")
+    elif outcome == "post_authorization_runtime_failure":
+        _prepare_phase_failure(inputs, "producer_after_pass_runtime_measurement")
+    elif outcome != "confirmed":
+        raise AssertionError(f"unknown lifecycle fixture outcome: {outcome}")
+    return launch, inputs
+
+
+def _install_contradictory_lifecycle_marker(
+        run_root: Path, marker: str) -> tuple[Path | None, bytes | None]:
+    receipts = run_root / "receipts"
+    if marker == "bootstrap_credential_timeout":
+        stderr = run_root / "T3_REV.stderr.log"
+        original = stderr.read_bytes()
+        with stderr.open("ab") as stream:
+            stream.write(b"Exact launch credential was not published\n")
+        return stderr, original
+    path = receipts / marker
+    path.write_bytes(b"contradictory launch-lifecycle evidence\n")
+    return path, None
+
+
+@pytest.mark.parametrize("outcome", [
+    "confirmed",
+    "right_censored",
+    "numerical_failure",
+    "runtime_qualification_failure",
+    "post_authorization_runtime_failure",
+])
+def test_pass_backed_terminal_paths_reject_every_no_launch_marker(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, outcome: str) -> None:
+    """A live PASS credential cannot authenticate beside any no-launch lifecycle evidence."""
+    launch, inputs = _prepare_pass_backed_lifecycle_outcome(
+        monkeypatch, tmp_path, outcome)
+    module = load_module("validate_t3_rev_terminal")
+    for marker in PASS_CONTRADICTORY_LIFECYCLE_MARKERS:
+        path, original = _install_contradictory_lifecycle_marker(
+            inputs["run_root"], marker)
+        try:
+            with pytest.raises(module.TerminalValidationError, match="lifecycle|PASS|credential"):
+                module._validate_terminal(
+                    inputs["run_root"] / "output",
+                    sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+                    "toy_road_p0_repeatability_20260803",
+                    extension_root=inputs["extension_root"],
+                    seal_path=inputs["seal_path"], run_root=inputs["run_root"],
+                    launch=launch, _emit_adjudication=False,
+                )
+        finally:
+            if original is None:
+                assert path is not None
+                path.unlink()
+            else:
+                assert path is not None
+                path.write_bytes(original)
+
+
+@pytest.mark.parametrize("stale_artifact", [
+    "T3_REV_LAUNCH_RECEIPT.json",
+    "T3_REV_RUNTIME_MEASUREMENT.json",
+    "T3_REV_TERMINAL_FAILURE.json",
+    "completed_terminal_package",
+])
+def test_no_pass_bootstrap_rejects_every_pass_or_terminal_artifact(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        stale_artifact: str) -> None:
+    """A started no-credential bootstrap remains exclusive of PASS and producer evidence."""
+    launch, inputs = _credential_failure_terminal_fixture(monkeypatch, tmp_path)
+    if stale_artifact == "completed_terminal_package":
+        stale = inputs["run_root"] / "output" / "TERMINAL_RESULT.json"
+    else:
+        stale = inputs["run_root"] / "receipts" / stale_artifact
+    stale.parent.mkdir(parents=True, exist_ok=True)
+    stale.write_bytes(b"contradictory PASS or terminal evidence\n")
+    module = load_module("validate_t3_rev_terminal")
+    with pytest.raises(module.TerminalValidationError, match="lifecycle|PASS|producer|terminal"):
+        module._validate_terminal(
+            inputs["run_root"] / "output",
+            sealed_base_root=inputs["repo_root"] / "producer_handoffs" /
+            "toy_road_p0_repeatability_20260803",
+            extension_root=inputs["extension_root"], seal_path=inputs["seal_path"],
+            run_root=inputs["run_root"], launch=launch,
+            _emit_adjudication=False,
+        )
+
+
 @pytest.mark.parametrize("phase", [
     "runtime_qualification_before_producer",
 ])
