@@ -1079,6 +1079,7 @@ def enforce_taobo_preflight(args: argparse.Namespace) -> None:
         args.runtime_source_mode = "verified_rsync_snapshot"
         args.runtime_source_commit = snapshot_commit
         args.snapshot_manifest_sha256 = sha256_file(snapshot_path)
+    verify_hash_manifest(args.data_root)
 
 
 def _git_output(repo: Path, *arguments: str) -> str:

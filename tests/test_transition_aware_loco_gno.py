@@ -522,7 +522,10 @@ def test_taobo_preflight_rejects_multiple_visible_gpus(monkeypatch, tmp_path):
         enforce_taobo_preflight(args)
 
 
-def test_complete_taobo_preflight_contract(monkeypatch, tmp_path):
+@pytest.mark.parametrize("dataset_failure", [None, "missing", "corrupt"])
+def test_complete_taobo_preflight_contract_and_data_failure_leaves_no_outputs(
+    monkeypatch, tmp_path, dataset_failure
+):
     import train_transition_aware_loco_gno as runner
 
     run_id = "pf_d1_test"
@@ -599,7 +602,24 @@ def test_complete_taobo_preflight_contract(monkeypatch, tmp_path):
         if arguments == ("rev-parse", "HEAD")
         else "",
     )
-    enforce_taobo_preflight(args)
+    verified_roots = []
+
+    def verify_frozen_data(root):
+        verified_roots.append(root)
+        if dataset_failure == "missing":
+            raise FileNotFoundError(root / "HASHES.sha256")
+        if dataset_failure == "corrupt":
+            raise ValueError("dataset hash mismatch: graph.npz")
+
+    monkeypatch.setattr(runner, "verify_hash_manifest", verify_frozen_data)
+    if dataset_failure is None:
+        enforce_taobo_preflight(args)
+    else:
+        with pytest.raises((FileNotFoundError, ValueError), match="HASHES|hash mismatch"):
+            enforce_taobo_preflight(args)
+    assert verified_roots == [args.data_root]
+    assert not args.out.exists()
+    assert not args.archive_root.exists()
 
 
 def test_matrix_lock_code_hashes_match_checkout():
