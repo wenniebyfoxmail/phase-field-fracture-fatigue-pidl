@@ -1,0 +1,85 @@
+{
+  "case_id": "at1_fatigue_mesh_pino_d1_transition_aware_gno_20260826",
+  "claim_class": "synthetic_fem_imitation_only",
+  "qualification_boundary": {
+    "teacher_qualified": false,
+    "damage_fixed_point_gate": "fail",
+    "target_semantics": "processed archived GRIPHFiTH cycle-peak outputs",
+    "physical_validation": false
+  },
+  "dataset": {
+    "dataset_id": "factorial_loco_fem_states_v1",
+    "manifest_sha256": "b9723d613e7b7a5e33b4fb7c9a9cc65ef6d1ae6c4e9b971f64dc74ad0f955648",
+    "trajectory_ids": [
+      "factorial_hard_5step_u012",
+      "factorial_hard_8step_u012",
+      "factorial_soft_5step_u012",
+      "factorial_soft_8step_u012"
+    ]
+  },
+  "matrix": {
+    "heldout_trajectory_ids": [
+      "factorial_hard_5step_u012",
+      "factorial_hard_8step_u012",
+      "factorial_soft_5step_u012",
+      "factorial_soft_8step_u012"
+    ],
+    "seeds": [1, 2, 3],
+    "job_count": 12
+  },
+  "model": {
+    "family": "transition_aware_native_mesh_gno",
+    "context": 3,
+    "rollout": 3,
+    "hidden_dim": 96,
+    "local_layers": 3,
+    "coarse_layers": 2,
+    "parameter_count": 339461
+  },
+  "optimization": {
+    "steps": 3000,
+    "optimizer": "AdamW",
+    "learning_rate": 0.0003,
+    "weight_decay": 0.000001,
+    "gradient_clip": 5.0,
+    "sampling": "alternate_transition_and_ordinary_1_to_1",
+    "transition_bce_weight": 0.25,
+    "physics_loss_weight": 0.0
+  },
+  "evaluation": {
+    "scope": "retrospective_event_centred_holdout",
+    "primary_warning_output": "transition_score_ge_0p5",
+    "transition_score_threshold": 0.5,
+    "transition_score_calibrated": false,
+    "field_topology_hit_role": "diagnostic_only",
+    "warning_rows_per_fold": 9,
+    "negative_rows_per_fold": 3,
+    "positive_rows_per_fold": 6
+  },
+  "locked_control_package": {
+    "run_id": "pf_factorial_loco_b05180d_r3_20260729",
+    "task": "autonomous_transition_warning",
+    "families": ["markov", "tcn", "transformer"],
+    "seed_aggregation": "median_within_fold_then_apply_conjunctive_gate",
+    "package_hash_manifest_sha256": "3c67a5e0503192c76f0b75001472128c8e84de3a2616d3114881663010c99f29",
+    "analysis_hash_manifest_sha256": "b2e998b60d9dce1ef4b47cae38e5416c76aa984699314b9dcd8f4112718ffaa0",
+    "per_run_task_summary_sha256": "b4b4956e5d60ed94a43ae5aa81fc5719403dbaa7ce1e2bf981642f785357a4af",
+    "transition_warning_summary_sha256": "b4ff325625dfe526a8e22ba502a71d27ef567ba34e6a5051076468632ad57361"
+  },
+  "leakage_fences": {
+    "whole_trajectory_holdout": true,
+    "training_fold_normalization_only": true,
+    "heldout_first_hit_used_in_training": false,
+    "prohibited_features": [
+      "cycle_number",
+      "event_distance",
+      "first_hit_cycle",
+      "confirmed_cycle",
+      "future_fields"
+    ]
+  },
+  "producer": "taobo_only",
+  "launch_authorized": "one_full_job_smoke_only_after_revision",
+  "external_review_required": true,
+  "pidl_comparison": "deferred_not_evaluable_until_exact_matched_asset_manifest_is_frozen"
+}
