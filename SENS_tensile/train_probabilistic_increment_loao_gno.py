@@ -226,6 +226,8 @@ def enforce_taobo_preflight(args: argparse.Namespace) -> None:
         or os.environ.get("USER") != "drtao"
     ):
         raise RuntimeError("probabilistic increment run requires explicit Taobo identity")
+    if socket.gethostname() != "GPUServer8":
+        raise RuntimeError("frozen producer expects Taobo host GPUServer8")
     gpu_index = os.environ.get("CUDA_VISIBLE_DEVICES", "")
     if not re.fullmatch(r"[0-7]", gpu_index):
         raise RuntimeError("CUDA_VISIBLE_DEVICES must contain exactly one GPU index 0..7")
@@ -244,6 +246,8 @@ def enforce_taobo_preflight(args: argparse.Namespace) -> None:
         raise RuntimeError("/mnt/data2 has less than 50 GiB free")
     if not re.fullmatch(r"pf_[A-Za-z0-9_.-]+", args.run_id):
         raise RuntimeError("run_id must be an attributable pf_* identifier")
+    if not re.fullmatch(r"systemd:pf_[A-Za-z0-9_.-]+", args.launcher_session):
+        raise RuntimeError("launcher_session must be an attributable systemd:pf_* unit")
     run_root = Path("/mnt/data2/drtao/wennie") / args.run_id
     archive_base = Path("/mnt/data2/drtao/pidl_archives") / args.run_id
     if not _under(args.out, run_root) or args.out == run_root:

@@ -155,9 +155,17 @@ def make_matrix(tmp_path: Path, *, gno_factor: float = 0.5):
             provenance = {
                 "producer": "taobo",
                 "producer_id": "taobo-172.16.100.2",
+                "hostname": "GPUServer8",
                 "user": "drtao",
+                "cuda_visible_devices": "3",
+                "gpu_name": "NVIDIA GeForce RTX 4090",
+                "launcher_session": "systemd:pf_prob_increment_test",
                 "release_commit": commit,
                 "runtime_source_commit": commit,
+                "source_mode": "clean_git_checkout",
+                "git_commit": commit,
+                "git_status_short": "",
+                "snapshot_manifest_sha256": None,
                 "release_matrix_sha256": lock_sha,
                 "release_authorization_sha256": auth_sha,
                 "release_authorization": authorization,
@@ -208,6 +216,7 @@ def make_matrix(tmp_path: Path, *, gno_factor: float = 0.5):
                 "seed": seed,
                 "release_authorization_sha256": auth_sha,
                 "release_authorization": authorization,
+                "provenance": provenance,
                 "run_manifest_sha256": analyzer.sha256_file(job / "RUN_MANIFEST.json"),
                 "payload_sha256": payload,
             }
@@ -221,6 +230,18 @@ def make_matrix(tmp_path: Path, *, gno_factor: float = 0.5):
         out=out,
     )
     return args
+
+
+def refresh_job_receipt(job: Path) -> None:
+    receipt_path = job / "LAUNCH_RECEIPT.json"
+    receipt = json.loads(receipt_path.read_text())
+    receipt["run_manifest_sha256"] = analyzer.sha256_file(job / "RUN_MANIFEST.json")
+    receipt["payload_sha256"] = {
+        str(path.relative_to(job)): analyzer.sha256_file(path)
+        for path in job.rglob("*")
+        if path.is_file() and path.name != "LAUNCH_RECEIPT.json"
+    }
+    receipt_path.write_text(json.dumps(receipt) + "\n")
 
 
 def test_complete_matrix_passes_fixed_u012_point_gate_and_writes_uncertainty(tmp_path):
@@ -271,4 +292,82 @@ def test_training_complement_mismatch_fails_closed(tmp_path):
     receipt["payload_sha256"]["RUN_MANIFEST.json"] = analyzer.sha256_file(manifest_path)
     receipt_path.write_text(json.dumps(receipt) + "\n")
     with pytest.raises(ValueError, match="manifest contract"):
+        analyzer.analyze(args)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("gpu_name", "not-a-gpu", "producer provenance"),
+        ("cuda_visible_devices", "0,1", "producer provenance"),
+        ("launcher_session", "manual", "producer provenance"),
+        ("source_mode", "unknown", "source mode"),
+        ("git_status_short", " M runner.py", "clean-git"),
+    ],
+)
+def test_self_consistent_bad_runtime_provenance_fails_closed(
+    tmp_path, field, value, message
+):
+    args = make_matrix(tmp_path)
+    job = args.archive_root / "hard5_u012_s1"
+    provenance_path = job / "RUN_PROVENANCE.json"
+    provenance = json.loads(provenance_path.read_text())
+    provenance[field] = value
+    provenance_path.write_text(json.dumps(provenance) + "\n")
+    manifest_path = job / "RUN_MANIFEST.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["provenance"] = provenance
+    manifest_path.write_text(json.dumps(manifest) + "\n")
+    receipt_path = job / "LAUNCH_RECEIPT.json"
+    receipt = json.loads(receipt_path.read_text())
+    receipt["provenance"] = provenance
+    receipt_path.write_text(json.dumps(receipt) + "\n")
+    refresh_job_receipt(job)
+    with pytest.raises(ValueError, match=message):
+        analyzer.analyze(args)
+
+
+def test_missing_receipt_provenance_fails_closed(tmp_path):
+    args = make_matrix(tmp_path)
+    job = args.archive_root / "hard5_u012_s1"
+    receipt_path = job / "LAUNCH_RECEIPT.json"
+    receipt = json.loads(receipt_path.read_text())
+    receipt.pop("provenance")
+    receipt_path.write_text(json.dumps(receipt) + "\n")
+    with pytest.raises(ValueError, match="producer provenance"):
+        analyzer.analyze(args)
+
+
+@pytest.mark.parametrize("field", ["centroids", "residual_mean", "residual_std"])
+def test_nonfinite_npz_global_arrays_fail_closed(tmp_path, field):
+    args = make_matrix(tmp_path)
+    job = args.archive_root / "hard5_u012_s1"
+    path = job / "selected_increment_fields.npz"
+    with np.load(path, allow_pickle=False) as archive:
+        arrays = {name: np.asarray(archive[name]) for name in archive.files}
+    arrays[field] = arrays[field].copy()
+    arrays[field].flat[0] = np.nan
+    np.savez_compressed(path, **arrays)
+    refresh_job_receipt(job)
+    with pytest.raises(ValueError, match="global arrays"):
+        analyzer.analyze(args)
+
+
+def test_missing_point_row_fails_closed(tmp_path):
+    args = make_matrix(tmp_path)
+    job = args.archive_root / "hard5_u012_s1"
+    path = job / "heldout_increment_metrics.csv"
+    rows = analyzer.read_csv(path)
+    write_csv(path, rows[:-1])
+    refresh_job_receipt(job)
+    with pytest.raises(ValueError, match="missing, duplicate, or extra"):
+        analyzer.analyze(args)
+
+
+def test_self_consistent_extra_payload_fails_closed(tmp_path):
+    args = make_matrix(tmp_path)
+    job = args.archive_root / "hard5_u012_s1"
+    (job / "extra.bin").write_bytes(b"unexpected")
+    refresh_job_receipt(job)
+    with pytest.raises(ValueError, match="payload file set"):
         analyzer.analyze(args)

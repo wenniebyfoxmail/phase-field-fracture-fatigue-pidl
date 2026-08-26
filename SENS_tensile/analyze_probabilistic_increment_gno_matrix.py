@@ -277,6 +277,22 @@ def validate_selected_npz(path: Path, fold: str) -> dict[int, dict[str, np.ndarr
     areas = arrays.get("areas")
     if areas is None or areas.ndim != 1 or np.any(~np.isfinite(areas)) or np.any(areas <= 0):
         raise ValueError(f"invalid selected-field areas: {path}")
+    centroids = arrays.get("centroids")
+    residual_mean = arrays.get("residual_mean")
+    residual_std = arrays.get("residual_std")
+    if (
+        centroids is None
+        or centroids.shape != (len(areas), 2)
+        or np.any(~np.isfinite(centroids))
+        or residual_mean is None
+        or residual_mean.shape != (1, 4)
+        or np.any(~np.isfinite(residual_mean))
+        or residual_std is None
+        or residual_std.shape != (1, 4)
+        or np.any(~np.isfinite(residual_std))
+        or np.any(residual_std <= 0)
+    ):
+        raise ValueError(f"invalid selected-field global arrays: {path}")
     expected_global = {"centroids", "areas", "residual_mean", "residual_std"}
     expected = set(expected_global)
     result: dict[int, dict[str, np.ndarray]] = {}
@@ -370,10 +386,23 @@ def analyze(args: argparse.Namespace) -> dict:
                 raise ValueError(f"job authorization differs: {job_dir}")
             provenance = read_json(job_dir / "RUN_PROVENANCE.json")
             if (
-                provenance.get("producer") != "taobo"
+                receipt.get("provenance") != provenance
+                or provenance.get("producer") != "taobo"
                 or provenance.get("producer_id") != "taobo-172.16.100.2"
+                or provenance.get("hostname") != "GPUServer8"
                 or provenance.get("user") != "drtao"
-                or provenance.get("release_commit") != authorization["release_commit"]
+                or not re.fullmatch(
+                    r"[0-7]", str(provenance.get("cuda_visible_devices", ""))
+                )
+                or "RTX 4090" not in str(provenance.get("gpu_name", ""))
+                or not re.fullmatch(
+                    r"systemd:pf_[A-Za-z0-9_.-]+",
+                    str(provenance.get("launcher_session", "")),
+                )
+            ):
+                raise ValueError(f"runtime producer provenance mismatch: {job_dir}")
+            if (
+                provenance.get("release_commit") != authorization["release_commit"]
                 or provenance.get("release_matrix_sha256") != args.matrix_lock_sha256
                 or provenance.get("release_authorization_sha256")
                 != args.release_authorization_sha256
@@ -383,6 +412,20 @@ def analyze(args: argparse.Namespace) -> dict:
                 or provenance.get("release_authorization") != authorization
             ):
                 raise ValueError(f"runtime provenance mismatch: {job_dir}")
+            source_mode = provenance.get("source_mode")
+            if source_mode not in ("clean_git_checkout", "verified_rsync_snapshot"):
+                raise ValueError(f"runtime source mode mismatch: {job_dir}")
+            if source_mode == "clean_git_checkout":
+                if (
+                    provenance.get("git_commit") != authorization["release_commit"]
+                    or provenance.get("git_status_short") != ""
+                    or provenance.get("snapshot_manifest_sha256") is not None
+                ):
+                    raise ValueError(f"dirty or wrong clean-git provenance: {job_dir}")
+            elif not re.fullmatch(
+                r"[0-9a-f]{64}", str(provenance.get("snapshot_manifest_sha256", ""))
+            ):
+                raise ValueError(f"invalid snapshot provenance: {job_dir}")
             for name, expected_hash in lock.get("code_sha256", {}).items():
                 if provenance.get("code_sha256", {}).get(name) != expected_hash:
                     raise ValueError(f"runtime code hash mismatch {name}: {job_dir}")

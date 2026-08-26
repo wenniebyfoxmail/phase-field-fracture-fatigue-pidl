@@ -239,7 +239,7 @@ def test_complete_taobo_preflight_and_data_failure_leaves_no_output(
         out=out,
         archive_root=archive,
         log_path=log_path,
-        launcher_session="systemd:pf-prob-increment-test",
+        launcher_session="systemd:pf_prob_increment_test",
         heldout="hard5_u012",
         seed=1,
         release_matrix_sha256=matrix_sha,
@@ -256,6 +256,7 @@ def test_complete_taobo_preflight_and_data_failure_leaves_no_output(
     monkeypatch.setenv("TMPDIR", str(run_root / "tmp"))
     monkeypatch.setenv("XDG_CACHE_HOME", str(run_root / "cache"))
     monkeypatch.setenv("TORCH_EXTENSIONS_DIR", str(run_root / "torch_extensions"))
+    monkeypatch.setattr(runner.socket, "gethostname", lambda: "GPUServer8")
     monkeypatch.setattr(runner.torch.cuda, "is_available", lambda: True)
     monkeypatch.setattr(runner.torch.cuda, "get_device_name", lambda _: "NVIDIA RTX 4090")
     monkeypatch.setattr(runner, "_single_gpu_processes", lambda _: [])

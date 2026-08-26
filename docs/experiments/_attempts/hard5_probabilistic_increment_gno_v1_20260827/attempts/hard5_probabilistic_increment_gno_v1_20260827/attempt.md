@@ -46,6 +46,7 @@ This isolates the representation change requested by the user and prevents onset
 - modify: `SENS_tensile/train_probabilistic_increment_loao_gno.py` - Add fail-before-output Taobo identity, GPU ownership, exact code/data/auth lock, runtime provenance, pending receipt and verified archive finalization
 - add: `SENS_tensile/analyze_probabilistic_increment_gno_matrix.py` - Add fail-closed nine-job analyzer, fixed U0.12 point gate, weighted scale-error association, risk-coverage and ensemble total variance
 - add: `docs/experiments/hard5_probabilistic_increment_gno_matrix_lock_20260827.json` - Lock three-fold three-seed Taobo matrix, dataset, protocol, code hashes and payload allowlist
+- modify: `SENS_tensile/analyze_probabilistic_increment_gno_matrix.py` - Require exact producer GPU launcher source and clean-commit provenance in receipt manifest and asset; validate global NPZ arrays
 
 ## Input Assets
 - `/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/hard5_loao_gno_dataset_v1_20260826` (frozen_three_trajectory_dataset; exists)
@@ -58,6 +59,7 @@ This isolates the representation change requested by the user and prevents onset
 - pass: real_data_forward_backward - shape 86408x4; parameter_count 367400; event windows one per training trajectory; mean and scale gradients finite and phase-isolated.
 - pass: production_and_aggregate_regression - 74 tests passed; production preflight missing/corrupt data leaves no output; analyzer PASS/FAIL/nonfinite/complement contracts pass.
 - pass: real_three_fold_forward_probe - All folds use exact two-trajectory complement; one event window per training trajectory; 367400 parameters; [86408,4] means and scale losses finite.
+- pass: adversarial_provenance_and_npz_contract - 85 tests passed including invalid GPU/CUDA/launcher/source/dirty git, missing receipt provenance, global NPZ NaN, missing row and extra payload fail-closed cases.
 
 ## Result Interpretation
 Not recorded.
