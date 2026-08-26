@@ -1,7 +1,7 @@
 # Hard-5 LOAO GNO prelaunch amendment
 
 **Date:** 2026-08-26
-**Status:** `CHANGES_IMPLEMENTED__SECOND_INDEPENDENT_REVIEW_PENDING`
+**Status:** `V3_IMPLEMENTED__FINAL_POST_COMMIT_REVIEW_PENDING__NO_LAUNCH`
 **Supersedes:** the sampling and evaluation clauses in
 `hard5_loao_gno_preregistration_20260826.md` and frozen release `6926ea7`.
 
@@ -62,6 +62,20 @@ the matrix lock. It requires exactly nine unique fold/seed jobs, complete and
 archive-verified receipts, exact payload/manifest/provenance hashes, finite
 metrics, fixed fold classes and exact primary/secondary method sets. Missing,
 duplicate, non-finite, hash-mismatched or role-mismatched inputs fail closed.
+
+The v3 release is acyclic: a tracked commit contains the code and matrix lock;
+only after that exact commit passes independent review may an external,
+untracked `RELEASE_AUTHORIZATION.json` bind the reviewed commit, matrix SHA,
+dataset hashes, exact nine-job list, producer and claim boundary. The runner
+requires the authorization file plus its externally computed SHA before it
+creates an output directory. Each job copies that authorization and binds it
+through runtime provenance, run manifest and completion receipt. The analyzer
+requires exact equality across all nine jobs, the exact held-out complement,
+the frozen pre-hit/statistics/sampling contract, and an exact 14-file payload
+allowlist. The completion receipt is excluded from its own payload hash map.
+
+The old `6926ea7` launch packet is superseded and must never be reused. Any
+future execution requires a fresh v3 run ID and fresh output/archive roots.
 
 No training may launch until targeted tests, real-data checks, refreshed code
 and matrix hashes, a clean pushed commit, live Taobo CUDA/ownership checks, and a

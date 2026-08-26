@@ -522,7 +522,7 @@ def test_taobo_preflight_rejects_multiple_visible_gpus(monkeypatch, tmp_path):
         enforce_taobo_preflight(args)
 
 
-def test_complete_taobo_preflight_contract(monkeypatch):
+def test_complete_taobo_preflight_contract(monkeypatch, tmp_path):
     import train_transition_aware_loco_gno as runner
 
     run_id = "pf_d1_test"
@@ -530,15 +530,44 @@ def test_complete_taobo_preflight_contract(monkeypatch):
     archive_root = Path("/mnt/data2/drtao/pidl_archives") / run_id / "job"
     log_path = run_root / "logs" / "job.log"
     release_commit = "a" * 40
+    matrix_sha = runner.sha256_file(runner.MATRIX_LOCK_PATH)
+    code_hashes = {
+        name: runner.sha256_file(path) for name, path in runner.locked_code_paths().items()
+    }
+    authorization = {
+        "schema_version": runner.RELEASE_AUTHORIZATION_SCHEMA,
+        "authorization_status": "AUTHORIZED",
+        "authorization_id": "synthetic-preflight-auth",
+        "experiment_id": runner.EXPECTED_EXPERIMENT_ID,
+        "matrix_experiment_id": runner.EXPECTED_EXPERIMENT_ID,
+        "run_id": run_id,
+        "matrix_lock_sha256": matrix_sha,
+        "release_commit": release_commit,
+        "dataset_manifest_sha256": runner.EXPECTED_MANIFEST_SHA256,
+        "dataset_hash_file_sha256": runner.EXPECTED_HASH_FILE_SHA256,
+        "authorization_scope": "hard5_only_three_fold_three_seed_data_only_loao",
+        "producer": "taobo",
+        "max_gpu_count": 2,
+        "code_sha256": code_hashes,
+        "independent_review": {"verdict": "PASS", "reviewed_commit": release_commit, "review_note_sha256": "b" * 64},
+        "jobs": [{"job_id": f"{fold}_s{seed}", "heldout": fold, "seed": seed} for fold in sorted(runner.EXPECTED_TRAJECTORY_IDS) for seed in (1, 2, 3)],
+        "claims": {"claim_class": "processed_griphfith_archive_imitation_only", "teacher_qualified": False, "damage_fixed_point_gate": "fail", "physics_loss_weight": 0.0, "physical_validation": False},
+    }
+    auth_path = tmp_path / "RELEASE_AUTHORIZATION.json"
+    auth_path.write_text(json.dumps(authorization, sort_keys=True) + "\n")
     args = SimpleNamespace(
         producer="taobo",
         device="cuda",
         run_id=run_id,
-        out=run_root / "jobs" / "job",
+        out=run_root / "jobs" / "hard5_u012_s1",
         archive_root=archive_root,
         log_path=log_path,
-        release_commit=release_commit,
-        release_matrix_sha256=runner.sha256_file(runner.MATRIX_LOCK_PATH),
+        launcher_session="systemd:pf-h5loao-test",
+        heldout="hard5_u012",
+        seed=1,
+        release_matrix_sha256=matrix_sha,
+        release_authorization=auth_path,
+        release_authorization_sha256=runner.sha256_file(auth_path),
         data_root=Path("/mnt/data2/drtao/wennie/data"),
     )
     monkeypatch.setattr(runner.sys, "platform", "linux")
@@ -584,6 +613,51 @@ def test_matrix_lock_code_hashes_match_checkout():
     assert actual == lock["code_sha256"]
 
 
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ("status", "authorization_status"),
+        ("review", "independent PASS"),
+        ("commit", "full SHA"),
+        ("jobs", "job matrix"),
+        ("code", "code hashes"),
+    ],
+)
+def test_release_authorization_mutations_fail_closed(tmp_path, mutation, message):
+    import train_transition_aware_loco_gno as runner
+
+    lock = {"experiment_id": runner.EXPECTED_EXPERIMENT_ID}
+    code_hashes = {"runner": "locked"}
+    commit = "a" * 40
+    payload = {
+        "schema_version": runner.RELEASE_AUTHORIZATION_SCHEMA,
+        "authorization_status": "AUTHORIZED",
+        "experiment_id": runner.EXPECTED_EXPERIMENT_ID,
+        "matrix_experiment_id": runner.EXPECTED_EXPERIMENT_ID,
+        "run_id": "pf_auth_test",
+        "matrix_lock_sha256": "c" * 64,
+        "release_commit": commit,
+        "dataset_manifest_sha256": runner.EXPECTED_MANIFEST_SHA256,
+        "dataset_hash_file_sha256": runner.EXPECTED_HASH_FILE_SHA256,
+        "authorization_scope": "hard5_only_three_fold_three_seed_data_only_loao",
+        "producer": "taobo",
+        "max_gpu_count": 2,
+        "code_sha256": code_hashes,
+        "independent_review": {"verdict": "PASS", "reviewed_commit": commit, "review_note_sha256": "d" * 64},
+        "jobs": [{"job_id": f"{fold}_s{seed}", "heldout": fold, "seed": seed} for fold in sorted(runner.EXPECTED_TRAJECTORY_IDS) for seed in (1, 2, 3)],
+        "claims": {"claim_class": "processed_griphfith_archive_imitation_only", "teacher_qualified": False, "damage_fixed_point_gate": "fail", "physics_loss_weight": 0.0, "physical_validation": False},
+    }
+    if mutation == "status": payload["authorization_status"] = "PENDING"
+    elif mutation == "review": payload["independent_review"]["verdict"] = "FAIL"
+    elif mutation == "commit": payload["release_commit"] = "short"
+    elif mutation == "jobs": payload["jobs"] = payload["jobs"][:-1]
+    elif mutation == "code": payload["code_sha256"] = {"runner": "wrong"}
+    path = tmp_path / "auth.json"; path.write_text(json.dumps(payload) + "\n")
+    args = SimpleNamespace(run_id="pf_auth_test", heldout="hard5_u012", seed=1, out=tmp_path / "hard5_u012_s1", release_authorization=path, release_authorization_sha256=runner.sha256_file(path))
+    with pytest.raises(RuntimeError, match=message):
+        runner.load_release_authorization(args, lock, "c" * 64, code_hashes)
+
+
 def test_completed_output_is_mirrored_and_hash_checked(tmp_path):
     import train_transition_aware_loco_gno as runner
 
@@ -615,6 +689,18 @@ def test_archive_extra_file_fails_closed(tmp_path):
 
     with pytest.raises(RuntimeError, match="missing or hash-mismatched"):
         runner.mirror_completed_output_to_archive(out, archive)
+
+
+def test_completion_receipt_rejects_missing_or_extra_locked_payload(tmp_path):
+    import train_transition_aware_loco_gno as runner
+
+    out = tmp_path / "out"; archive = tmp_path / "archive"
+    out.mkdir(); archive.mkdir(); (out / "unexpected.bin").write_bytes(b"x")
+    receipt = {"status": "complete", "training_complete": True, "archive_verified": True}
+    with pytest.raises(RuntimeError, match="exact payload allowlist"):
+        runner.finalize_completed_archive(out, archive, receipt, runner.EXPECTED_JOB_PAYLOADS)
+    stored = json.loads((out / "LAUNCH_RECEIPT.json").read_text())
+    assert stored["status"] == "archive_finalization_failed"
 
 
 def test_archive_finalization_failure_cannot_leave_complete_receipt(

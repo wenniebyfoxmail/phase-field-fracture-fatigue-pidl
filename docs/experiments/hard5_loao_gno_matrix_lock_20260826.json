@@ -1,13 +1,14 @@
 {
-  "experiment_id": "hard5_loao_gno_v2_20260826",
-  "status": "remediated_second_independent_review_pending",
+  "schema_version": "hard5_loao_matrix_lock_v3",
+  "experiment_id": "hard5_loao_gno_v3_20260826",
+  "status": "frozen_pending_external_release_authorization",
   "authorization": "user_go_2026-08-26",
   "claim_class": "processed_griphfith_archive_imitation_only",
   "teacher_qualified": false,
   "damage_fixed_point_gate": "fail",
   "physics_loss_weight": 0.0,
   "physical_validation": false,
-  "preregistration_amendment_sha256": "20c2868c2783e18597ce00b857fc6e39feef3264790b545798a043c5feea87c9",
+  "preregistration_amendment_sha256": "155553e982f7c61f7f2341c3c35cf1e6fa275cac40fa025c2ce53f4ba5728793",
   "dataset": {
     "dataset_id": "hard5_loao_fem_states_v1",
     "manifest_sha256": "9267a102a38375ebc815404a5ae81b2d3b23622448b5b178a2c4c1a5696e202a",
@@ -42,10 +43,27 @@
   },
   "matrix": {
     "folds": ["hard5_u011", "hard5_u012", "hard5_u013"],
+    "seeds": [1, 2, 3],
     "job_count": 9,
     "producer": "taobo_only",
     "gpu_count_authorized": 2
   },
+  "required_job_payloads": [
+    "RELEASE_AUTHORIZATION.json",
+    "RUN_MANIFEST.json",
+    "RUN_PROVENANCE.json",
+    "fem_centred_metrics.csv",
+    "final_model.pt",
+    "locked_transition_predictions.npz",
+    "matched_cycle_baseline_metrics.csv",
+    "matched_pidl_fem_fields.npz",
+    "matched_pidl_fem_metrics.csv",
+    "pre_event_forecast_opportunities_metrics.csv",
+    "pre_event_forecast_opportunities_summary.json",
+    "training_history.csv",
+    "transition_warning_metrics.csv",
+    "transition_warning_summary.json"
+  ],
   "evaluation": {
     "primary": "hard5_u012_interpolation_event_centred_3x3_native_mesh_gno_vs_observation_only_controls",
     "primary_methods": ["gno_data", "persistence", "constrained_linear"],
@@ -66,14 +84,14 @@
     "threshold_tuning_on_heldout": false
   },
   "code_sha256": {
-    "runner": "29e43665e88e15cb0f34bccf1fe8ee88bc6f552c5324d303abda2f0aca7a62ea",
+    "runner": "bb2c0372804287775dc6b30c50661164777b7020c40950c3f59a86226176b012",
     "model": "71654c175914db9476f76f244d4112bad3a89a122345dbd9683b1634f0ea51c7",
     "operator_dependency": "f4a76d4f6941e64fc0846a95d45524875770d3fd0a21c81806a485b91e5d7037",
     "metric_dependency": "46f3ddd4efb3f09fdaa0205e556fec3babe214dbe2b195a2c3bbb66c08c005b0",
-    "tests": "a3be66712bf83da237e106cb5544bf176cd3fb05b723a70c9e36bfbe48305422",
+    "tests": "fa22619234d28f74d9b490afe2d7cf9dd2ee608a1f0c23c77057a77b7f8b0834",
     "dataset_builder": "7c0506bb75b2fee2e5ad669af36c8a23767c0825594976d0ede13bfa3063fad5",
-    "aggregate_analyzer": "ddc2ffdac0b079d1f194ee9354d7bf055023f3813c7d3e58a0c962468d3b0c03",
-    "aggregate_tests": "f260a7748a93b786efb563a8abc30451faa114950f497888abd5c58964a348e2"
+    "aggregate_analyzer": "181776152b4dc755035ac7110f57c2a0bf9fdbae33b76d780dc8912cd2f4353f",
+    "aggregate_tests": "9538b4b4abe0753f619ab6f4c8cbf330c88163b86f3aa617ef696cc12602f2ef"
   },
   "stop_rules": [
     "any heldout state or event metadata enters training normalization calibration threshold selection or optimization",

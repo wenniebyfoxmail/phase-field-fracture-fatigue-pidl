@@ -54,6 +54,8 @@ EXPECTED_HASH_FILE_SHA256 = (
     "7bff035eaa618a7517335a3adb436e14d8bf606c6fa4e202497355518e82a55e"
 )
 EXPECTED_PARAMETER_COUNT = 339_461
+EXPECTED_EXPERIMENT_ID = "hard5_loao_gno_v3_20260826"
+RELEASE_AUTHORIZATION_SCHEMA = "hard5_loao_release_authorization_v1"
 EXPECTED_FILES = {
     "RUN_MANIFEST.json": EXPECTED_MANIFEST_SHA256,
     "graph.npz": "bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419",
@@ -74,6 +76,24 @@ MATRIX_LOCK_PATH = (
     / "docs"
     / "experiments"
     / "hard5_loao_gno_matrix_lock_20260826.json"
+)
+EXPECTED_JOB_PAYLOADS = frozenset(
+    {
+        "RELEASE_AUTHORIZATION.json",
+        "RUN_MANIFEST.json",
+        "RUN_PROVENANCE.json",
+        "fem_centred_metrics.csv",
+        "transition_warning_metrics.csv",
+        "transition_warning_summary.json",
+        "pre_event_forecast_opportunities_metrics.csv",
+        "pre_event_forecast_opportunities_summary.json",
+        "locked_transition_predictions.npz",
+        "matched_cycle_baseline_metrics.csv",
+        "matched_pidl_fem_metrics.csv",
+        "matched_pidl_fem_fields.npz",
+        "final_model.pt",
+        "training_history.csv",
+    }
 )
 
 
@@ -127,6 +147,93 @@ def verify_hash_manifest(root: Path) -> None:
             raise ValueError(f"dataset hash mismatch: {relative}")
     if entries != EXPECTED_FILES:
         raise ValueError("dataset file set or frozen file hashes changed")
+
+
+def validate_matrix_lock(lock: dict) -> None:
+    if lock.get("schema_version") != "hard5_loao_matrix_lock_v3":
+        raise RuntimeError("unexpected Hard5 matrix lock schema")
+    if lock.get("experiment_id") != EXPECTED_EXPERIMENT_ID:
+        raise RuntimeError("unexpected Hard5 experiment id")
+    if lock.get("status") != "frozen_pending_external_release_authorization":
+        raise RuntimeError("matrix lock is not frozen for external authorization")
+    dataset = lock.get("dataset", {})
+    if (
+        dataset.get("dataset_id") != EXPECTED_DATASET_ID
+        or dataset.get("manifest_sha256") != EXPECTED_MANIFEST_SHA256
+        or dataset.get("hash_file_sha256") != EXPECTED_HASH_FILE_SHA256
+        or set(dataset.get("trajectory_ids", [])) != EXPECTED_TRAJECTORY_IDS
+    ):
+        raise RuntimeError("matrix dataset contract mismatch")
+    matrix = lock.get("matrix", {})
+    if (
+        matrix.get("folds") != sorted(EXPECTED_TRAJECTORY_IDS)
+        or matrix.get("seeds") != [1, 2, 3]
+        or matrix.get("job_count") != 9
+        or matrix.get("producer") != "taobo_only"
+    ):
+        raise RuntimeError("matrix fold/seed/producer contract mismatch")
+    if set(lock.get("required_job_payloads", [])) != EXPECTED_JOB_PAYLOADS:
+        raise RuntimeError("matrix required payload contract mismatch")
+
+
+def load_release_authorization(
+    args: argparse.Namespace, lock: dict, lock_sha256: str, code_sha256: dict
+) -> dict:
+    path = args.release_authorization
+    if not path.is_file() or sha256_file(path) != args.release_authorization_sha256:
+        raise RuntimeError("release authorization file hash mismatch")
+    authorization = json.loads(path.read_text(encoding="utf-8"))
+    expected = {
+        "schema_version": RELEASE_AUTHORIZATION_SCHEMA,
+        "authorization_status": "AUTHORIZED",
+        "experiment_id": EXPECTED_EXPERIMENT_ID,
+        "run_id": args.run_id,
+        "matrix_lock_sha256": lock_sha256,
+        "dataset_manifest_sha256": EXPECTED_MANIFEST_SHA256,
+        "dataset_hash_file_sha256": EXPECTED_HASH_FILE_SHA256,
+        "authorization_scope": "hard5_only_three_fold_three_seed_data_only_loao",
+        "producer": "taobo",
+        "max_gpu_count": 2,
+    }
+    for key, value in expected.items():
+        if authorization.get(key) != value:
+            raise RuntimeError(f"release authorization mismatch for {key}")
+    if not re.fullmatch(r"[0-9a-f]{40}", authorization.get("release_commit", "")):
+        raise RuntimeError("release authorization commit must be a full SHA")
+    if authorization.get("code_sha256") != code_sha256:
+        raise RuntimeError("release authorization code hashes mismatch")
+    if authorization.get("matrix_experiment_id") != lock.get("experiment_id"):
+        raise RuntimeError("release authorization experiment mismatch")
+    review = authorization.get("independent_review", {})
+    if (
+        review.get("verdict") != "PASS"
+        or review.get("reviewed_commit") != authorization["release_commit"]
+        or not re.fullmatch(r"[0-9a-f]{64}", review.get("review_note_sha256", ""))
+    ):
+        raise RuntimeError("release authorization lacks a locked independent PASS")
+    expected_jobs = {
+        (f"{fold}_s{seed}", fold, seed)
+        for fold in sorted(EXPECTED_TRAJECTORY_IDS) for seed in (1, 2, 3)
+    }
+    jobs = authorization.get("jobs", [])
+    actual_jobs = {
+        (job.get("job_id"), job.get("heldout"), job.get("seed"))
+        for job in jobs if isinstance(job, dict)
+    }
+    if len(jobs) != 9 or actual_jobs != expected_jobs:
+        raise RuntimeError("release authorization job matrix mismatch")
+    if (args.out.name, args.heldout, args.seed) not in actual_jobs:
+        raise RuntimeError("requested fold/seed is not release-authorized")
+    expected_claims = {
+        "claim_class": "processed_griphfith_archive_imitation_only",
+        "teacher_qualified": False,
+        "damage_fixed_point_gate": "fail",
+        "physics_loss_weight": 0.0,
+        "physical_validation": False,
+    }
+    if authorization.get("claims") != expected_claims:
+        raise RuntimeError("release authorization claim boundary mismatch")
+    return authorization
 
 
 def set_seed(seed: int) -> None:
@@ -936,6 +1043,7 @@ def enforce_taobo_preflight(args: argparse.Namespace) -> None:
     if sha256_file(MATRIX_LOCK_PATH) != args.release_matrix_sha256:
         raise RuntimeError("matrix lock does not match owner-authorized release hash")
     lock = json.loads(MATRIX_LOCK_PATH.read_text(encoding="utf-8"))
+    validate_matrix_lock(lock)
     actual_hashes = {
         name: sha256_file(path) for name, path in locked_code_paths().items()
     }
@@ -943,24 +1051,34 @@ def enforce_taobo_preflight(args: argparse.Namespace) -> None:
         raise RuntimeError(
             "runner and direct dependencies do not match the D1 code lock"
         )
-    if not re.fullmatch(r"[0-9a-f]{40}", args.release_commit):
-        raise RuntimeError("release commit must be a full 40-character SHA")
+    authorization = load_release_authorization(
+        args, lock, args.release_matrix_sha256, actual_hashes
+    )
+    args.release_authorization_payload = authorization
+    release_commit = authorization["release_commit"]
     repo = HERE.parent
     commit = _git_output(repo, "rev-parse", "HEAD")
     dirty = _git_output(repo, "status", "--short")
     if commit != "unavailable":
         if dirty:
             raise RuntimeError("D1 refuses a dirty Taobo git checkout")
-        if commit != args.release_commit:
+        if commit != release_commit:
             raise RuntimeError(
                 "Taobo HEAD does not match owner-authorized release commit"
             )
+        args.runtime_source_mode = "clean_git_checkout"
+        args.runtime_source_commit = commit
+        args.snapshot_manifest_sha256 = None
     else:
-        snapshot_commit = _snapshot_commit(repo / "RUN_PROVENANCE.txt")
-        if snapshot_commit != args.release_commit:
+        snapshot_path = repo / "RUN_PROVENANCE.txt"
+        snapshot_commit = _snapshot_commit(snapshot_path)
+        if snapshot_commit != release_commit:
             raise RuntimeError(
                 "rsync snapshot provenance does not match release commit"
             )
+        args.runtime_source_mode = "verified_rsync_snapshot"
+        args.runtime_source_commit = snapshot_commit
+        args.snapshot_manifest_sha256 = sha256_file(snapshot_path)
 
 
 def _git_output(repo: Path, *arguments: str) -> str:
@@ -985,6 +1103,9 @@ def runtime_provenance(args: argparse.Namespace) -> dict:
         "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
         "gpu_name": torch.cuda.get_device_name(0),
         "run_id": args.run_id,
+        "job_id": args.out.name,
+        "heldout_trajectory_id": args.heldout,
+        "seed": args.seed,
         "output_root": str(args.out),
         "archive_root": str(args.archive_root),
         "log_path": str(args.log_path),
@@ -994,8 +1115,14 @@ def runtime_provenance(args: argparse.Namespace) -> dict:
         "launch_time_utc": datetime.now(timezone.utc).isoformat(),
         "cwd": str(Path.cwd()),
         "argv": sys.argv,
-        "release_commit": args.release_commit,
+        "release_commit": args.release_authorization_payload["release_commit"],
         "release_matrix_sha256": args.release_matrix_sha256,
+        "release_authorization_sha256": args.release_authorization_sha256,
+        "release_authorization": args.release_authorization_payload,
+        "authorization_id": args.release_authorization_payload.get("authorization_id"),
+        "source_mode": args.runtime_source_mode,
+        "runtime_source_commit": args.runtime_source_commit,
+        "snapshot_manifest_sha256": args.snapshot_manifest_sha256,
         "task_environment": {
             name: os.environ.get(name)
             for name in (
@@ -1049,13 +1176,16 @@ def mirror_completed_output_to_archive(
 
 
 def finalize_completed_archive(
-    out: Path, archive_root: Path, complete_receipt: dict
+    out: Path, archive_root: Path, complete_receipt: dict,
+    expected_payloads: frozenset[str] | None = None,
 ) -> None:
     receipt_paths = (
         archive_root / "LAUNCH_RECEIPT.json",
         out / "LAUNCH_RECEIPT.json",
     )
     try:
+        if expected_payloads is not None and set(_payload_hashes(out)) != expected_payloads:
+            raise RuntimeError("completed output does not match the exact payload allowlist")
         payload_hashes = mirror_completed_output_to_archive(out, archive_root)
         final_receipt = {**complete_receipt, "payload_sha256": payload_hashes}
         for receipt_path in receipt_paths:
@@ -1086,6 +1216,7 @@ def train(args: argparse.Namespace) -> None:
     enforce_taobo_preflight(args)
     args.out.mkdir(parents=True, exist_ok=False)
     args.archive_root.mkdir(parents=True, exist_ok=False)
+    shutil.copy2(args.release_authorization, args.out / "RELEASE_AUTHORIZATION.json")
     provenance = runtime_provenance(args)
     write_json(args.out / "RUN_PROVENANCE.json", provenance)
     write_json(
@@ -1109,6 +1240,14 @@ def train(args: argparse.Namespace) -> None:
     statistics = training_statistics(training, device)
     active_residual_scale = training_active_residual_scale(training, device)
     positive, negative = build_training_windows(training)
+    positive_counts = {
+        item["trajectory_id"]: sum(
+            window.trajectory_index == index for window in positive
+        )
+        for index, item in enumerate(training)
+    }
+    if set(positive_counts.values()) != {3}:
+        raise RuntimeError("each training trajectory must have exactly 3 positive windows")
     model = TransitionAwareMeshOperator(context=CONTEXT, hidden_dim=args.hidden).to(
         device
     )
@@ -1220,6 +1359,8 @@ def train(args: argparse.Namespace) -> None:
         "physics_loss_weight": 0.0,
         "physical_validation": False,
         "trajectory_metadata": "[hard=1, soft=0, five_step=1, design_scaled_umax]",
+        "job_id": args.out.name,
+        "run_id": args.run_id,
         "heldout_trajectory_id": heldout["trajectory_id"],
         "fold_role": fold_role(heldout["trajectory_id"]),
         "training_trajectory_ids": [item["trajectory_id"] for item in training],
@@ -1229,6 +1370,13 @@ def train(args: argparse.Namespace) -> None:
         "statistics": "trajectory_equal_pre_hit_first_and_second_moments",
         "balanced_sampling": "alternate bucket then equal-probability trajectory then pre-hit origin",
         "training_origins": "strictly_less_than_training_first_hit",
+        "positive_training_windows_per_trajectory": positive_counts,
+        "sampling_contract": {
+            "bucket": "alternate_transition_and_ordinary",
+            "trajectory": "uniform_within_bucket",
+            "origin": "uniform_pre_hit_origin_within_trajectory_and_bucket",
+            "post_hit_origins": 0,
+        },
         "pidl_values": "secondary_evaluation_only_after_training",
         "pidl_bytes": "preflight_hash_verified",
         "bucket_gradient_scales": {
@@ -1253,21 +1401,11 @@ def train(args: argparse.Namespace) -> None:
         "dataset_manifest_sha256": sha256_file(args.data_root / "RUN_MANIFEST.json"),
         "dataset_id": manifest["dataset_id"],
         "dataset_hash_file_sha256": sha256_file(args.data_root / "HASHES.sha256"),
+        "experiment_id": EXPECTED_EXPERIMENT_ID,
+        "release_authorization_sha256": args.release_authorization_sha256,
+        "release_authorization": args.release_authorization_payload,
         "provenance": provenance,
-        "primary_assets": [
-            "fem_centred_metrics.csv",
-            "transition_warning_metrics.csv",
-            "transition_warning_summary.json",
-            "pre_event_forecast_opportunities_metrics.csv",
-            "pre_event_forecast_opportunities_summary.json",
-            "locked_transition_predictions.npz",
-            "matched_cycle_baseline_metrics.csv",
-            "matched_pidl_fem_metrics.csv",
-            "matched_pidl_fem_fields.npz",
-            "final_model.pt",
-            "RUN_PROVENANCE.json",
-            "LAUNCH_RECEIPT.json",
-        ],
+        "required_job_payloads": sorted(EXPECTED_JOB_PAYLOADS),
     }
     write_json(args.out / "RUN_MANIFEST.json", run_manifest)
     complete_receipt = {
@@ -1279,14 +1417,23 @@ def train(args: argparse.Namespace) -> None:
         "physical_validation": False,
         "training_complete": True,
         "archive_verified": True,
+        "experiment_id": EXPECTED_EXPERIMENT_ID,
+        "run_id": args.run_id,
+        "job_id": args.out.name,
+        "heldout_trajectory_id": args.heldout,
+        "seed": args.seed,
         "provenance": provenance,
+        "release_authorization_sha256": args.release_authorization_sha256,
+        "release_authorization": args.release_authorization_payload,
         "run_manifest_sha256": sha256_file(args.out / "RUN_MANIFEST.json"),
     }
     write_json(
         args.out / "LAUNCH_RECEIPT.json",
         {**complete_receipt, "status": "outputs_complete_archive_pending", "archive_verified": False},
     )
-    finalize_completed_archive(args.out, args.archive_root, complete_receipt)
+    finalize_completed_archive(
+        args.out, args.archive_root, complete_receipt, EXPECTED_JOB_PAYLOADS
+    )
     print(json.dumps(run_manifest, indent=2, allow_nan=False))
 
 
@@ -1304,8 +1451,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--archive-root", type=Path, required=True)
     parser.add_argument("--log-path", type=Path, required=True)
     parser.add_argument("--launcher-session", required=True)
-    parser.add_argument("--release-commit", required=True)
     parser.add_argument("--release-matrix-sha256", required=True)
+    parser.add_argument("--release-authorization", type=Path, required=True)
+    parser.add_argument("--release-authorization-sha256", required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--allow-data-only-d1", action="store_true")
     args = parser.parse_args()
