@@ -3,7 +3,7 @@
 **Date:** 2026-08-26
 **Owner decision:** physics validation deferred; first require the operator to
 learn the chosen FEM producer, even if that producer is physically imperfect
-**Status:** `ADOPT_DATA_FIRST__ONE_REVISED_D1_PRODUCER_SMOKE_AUTHORIZED`
+**Status:** `ONE_D1_PRODUCER_SMOKE_COMPLETE__NO_SCIENTIFIC_PROMOTION__REMAINING_11_NOT_AUTHORIZED`
 
 ## What changes
 
@@ -85,6 +85,20 @@ from four trajectories without leaking the held-out event.
    and matched PIDL outputs where state semantics exist.
 7. Treat in-sample reconstruction as an optimization smoke only. Promotion
    requires held-out-trajectory transition and post-transition field gains.
+
+## First producer-smoke outcome
+
+The one authorized hard-5/seed-1 Taobo job completed at clean commit
+`d45f58aca660909306cad93b376f2ce3dab91d93` with all required assets and
+provenance. At the frozen 0.5 score threshold it detected 3 of 6 retrospective
+transition-positive rows with 0 of 3 false positives. Mean active log-MAE was
+0.3634 and absolute-p99 IoU was 0.3900.
+
+This passes the producer/runtime/asset smoke but fails the preregistered recall
+gate of at least 4/6 and does not beat the best locked control IoU. It is one
+seed in one fold, so there is no scientific promotion and the remaining 11 jobs
+remain unauthorized. The archived local decision is
+`local_archive/after_strict_setting_alignment/pidl_result/pf_gno_data_d1_hard5_seed1_d45f58a_20260826/decision.md`.
 
 ## Deferred assets
 
