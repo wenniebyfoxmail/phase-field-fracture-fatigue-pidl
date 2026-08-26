@@ -1,0 +1,39 @@
+{
+  "schema_version": "at1-fatigue-pino-stage0b-hard5-v2",
+  "request_id": "windows-griphfith-request-31-hard5-stage0b-20260826",
+  "scope": "hard5_u012_only",
+  "state_timing": "post_converged_post_history_commit",
+  "history_channel_order": [
+    "max_tensile_history_H",
+    "fatigue_accumulator_alpha_bar",
+    "degraded_driver_q_prev",
+    "fatigue_degradation_f"
+  ],
+  "expected_mesh": {
+    "nnode": 86756,
+    "nelem": 86408,
+    "ngp": 4,
+    "dimension": 2,
+    "element_type": "Q4"
+  },
+  "cases": [
+    {
+      "case_id": "hard5_u012",
+      "source_case_directory": "02_hard_5step_factorial",
+      "Umax": 0.12,
+      "cycles": [1, 60, 82],
+      "load_factors": [0.25, 0.5, 0.75, 1.0, 0.0],
+      "alpha_T": 0.5,
+      "fatigue_p": 2.0,
+      "res_stiff": 1e-06
+    }
+  ],
+  "expected_state_count": 18,
+  "expected_transition_count": 15,
+  "history_validation_tolerances": {
+    "atol": 1e-12,
+    "rtol": 1e-10,
+    "damage_bound_tolerance": 0.0005
+  },
+  "claim_boundary": "Residual-validation packet only. This is not FEM qualification, teacher-corpus approval, PINO training authorization, or physical validation."
+}
