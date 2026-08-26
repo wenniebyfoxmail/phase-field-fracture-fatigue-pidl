@@ -1,0 +1,119 @@
+{
+  "case_id": "at1_fatigue_mesh_pino_d1_transition_aware_gno_20260826",
+  "claim_class": "synthetic_fem_imitation_only",
+  "dataset": {
+    "dataset_id": "factorial_loco_fem_states_v1",
+    "manifest_sha256": "b9723d613e7b7a5e33b4fb7c9a9cc65ef6d1ae6c4e9b971f64dc74ad0f955648",
+    "trajectory_ids": [
+      "factorial_hard_5step_u012",
+      "factorial_hard_8step_u012",
+      "factorial_soft_5step_u012",
+      "factorial_soft_8step_u012"
+    ]
+  },
+  "matrix": {
+    "heldout_trajectory_ids": [
+      "factorial_hard_5step_u012",
+      "factorial_hard_8step_u012",
+      "factorial_soft_5step_u012",
+      "factorial_soft_8step_u012"
+    ],
+    "seeds": [1, 2, 3],
+    "job_count": 12
+  },
+  "model": {
+    "family": "transition_aware_native_mesh_gno",
+    "context": 3,
+    "rollout": 3,
+    "hidden_dim": 96,
+    "local_layers": 3,
+    "coarse_layers": 2,
+    "parameter_count": 339461
+  },
+  "optimization": {
+    "steps": 3000,
+    "optimizer": "AdamW",
+    "learning_rate": 0.0003,
+    "weight_decay": 0.000001,
+    "gradient_clip": 5.0,
+    "sampling": "alternate_transition_and_ordinary_1_to_1",
+    "field_loss": "training_fold_residual_scaled_smooth_l1_plus_active_and_stable_support_logits",
+    "bucket_calibration": "divide_each_bucket_by_its_training_only_mean_persistence_prediction_gradient_l2",
+    "transition_bce_weight": 0.25,
+    "physics_loss_weight": 0.0
+  },
+  "leakage_fences": {
+    "whole_trajectory_holdout": true,
+    "training_fold_normalization_only": true,
+    "heldout_first_hit_used_in_training": false,
+    "prohibited_features": [
+      "cycle_number",
+      "event_distance",
+      "first_hit_cycle",
+      "confirmed_cycle",
+      "future_fields"
+    ]
+  },
+  "evaluation": {
+    "primary": "nine_row_retrospective_event_aligned_stress_test",
+    "secondary": "all_legal_overlapping_origin_horizon_forecast_opportunities_no_model_selection",
+    "classification_threshold": 0.5,
+    "forecast_opportunity_metrics_overall_and_by_horizon": [
+      "precision",
+      "recall",
+      "false_positive_rate",
+      "brier_score",
+      "ece_10_bin"
+    ],
+    "locked_prediction_asset": "all_nine_predictions_targets_logits_probabilities_and_three_frame_contexts"
+  },
+  "success_and_stop_conditions": {
+    "primary_fold_count_required": 3,
+    "primary_transition_recall_min": 0.6666666667,
+    "primary_false_warnings_max_of_three": 1,
+    "primary_field_pair": "lower_active_log_mae_and_higher_absolute_fem_p99_iou_than_best_locked_temporal_control",
+    "forecast_opportunity_overall_recall_min": 0.6666666667,
+    "forecast_opportunity_overall_fpr_max": 0.1,
+    "forecast_opportunity_horizon_fpr_max": 0.2,
+    "forecast_opportunity_failure_fold_count": 2,
+    "pidl_superiority": "both_matched_hard_folds_lower_active_log_mae_and_higher_absolute_fem_p99_iou",
+    "missing_pidl": "not_evaluable_no_imputation",
+    "gradient_calibration_normalized_range": [0.99, 1.01],
+    "no_post_result_tuning_on_same_four_holdouts": true
+  },
+  "code_sha256": {
+    "model": "88f18087a12ff6fc44579be59ff8cbd146f67f871048bbf56e4a01f5b6796b09",
+    "runner": "8d675d722153df3733b0b733b3aa6cdc59867d516002818dfa853dbcb49c51ba",
+    "operator_dependency": "f4a76d4f6941e64fc0846a95d45524875770d3fd0a21c81806a485b91e5d7037",
+    "metric_dependency": "46f3ddd4efb3f09fdaa0205e556fec3babe214dbe2b195a2c3bbb66c08c005b0",
+    "tests": "b1aae20006cfc60a4c4ebf7bd787c746c000b4570525ca4ff160e206ef33e289"
+  },
+  "producer": "taobo_only",
+  "producer_guard": {
+    "producer_id": "taobo-172.16.100.2",
+    "user": "drtao",
+    "device": "cuda",
+    "gpu": "RTX 4090",
+    "single_visible_gpu": true,
+    "minimum_free_gib_on_mnt_data2": 50,
+    "output_root": "/mnt/data2/drtao/wennie",
+    "archive_root": "/mnt/data2/drtao/pidl_archives",
+    "task_owned_environment": [
+      "PIDL_ARCHIVE_DIR",
+      "PIDL_LOG_PATH",
+      "TMPDIR",
+      "XDG_CACHE_HOME",
+      "TORCH_EXTENSIONS_DIR"
+    ],
+    "owner_authorization_must_pin": [
+      "release_commit",
+      "release_matrix_sha256"
+    ]
+  },
+  "reproducibility_level": "seeded_statistical_not_byte_deterministic_due_to_cuda_index_add",
+  "launch_authorized": true,
+  "owner_authorization_received": "2026-08-26",
+  "owner_authorization_scope": "frozen_12_job_taobo_d1_matrix",
+  "second_independent_review_completed": true,
+  "post_remediation_diff_review_required": false
+}
