@@ -102,7 +102,8 @@ def build_lock(
     projector_analysis_manifest: Path, mapping_source: Path,
     mapping_source_manifest: Path, pidl_geometry: Path,
     pidl_geometry_manifest: Path, code_root: Path, analysis_code: list[Path],
-    integration_commit: str,
+    integration_commit: str, restart_manifest: Path,
+    forbidden_path_prefixes: dict[str, str],
 ) -> dict:
     required = {
         "packet": packet,
@@ -115,12 +116,25 @@ def build_lock(
         "mapping_source_manifest": mapping_source_manifest,
         "pidl_geometry": pidl_geometry,
         "pidl_geometry_manifest": pidl_geometry_manifest,
+        "restart_manifest": restart_manifest,
     }
     for label, path in required.items():
         if not path.is_file():
             raise FreezeError(f"{label} is missing: {path}")
     if not _COMMIT_RE.fullmatch(integration_commit):
         raise FreezeError("integration commit must be a full 40-character Git SHA")
+    if (
+        not isinstance(forbidden_path_prefixes, dict)
+        or set(forbidden_path_prefixes) != {"U0.11", "U0.13"}
+        or not all(isinstance(value, str) for value in forbidden_path_prefixes.values())
+        or not all(Path(value).is_absolute() for value in forbidden_path_prefixes.values())
+    ):
+        raise FreezeError("canonical Taobo U0.11/U0.13 roots must be absolute and exact")
+    restart_sha256 = sha256_file(restart_manifest)
+    from source.rrapinn_producer_observer import path_policy_sha256
+    ordered_forbidden = [
+        Path(forbidden_path_prefixes[label]) for label in ("U0.11", "U0.13")
+    ]
     packet_payload = json.loads(packet.read_text(encoding="utf-8"))
     if (
         packet_payload.get("schema") != "rrapinn-g4-u012-preregistration-v1"
@@ -180,15 +194,20 @@ def build_lock(
             "sha256": sha256_file(path),
         })
     return {
-        "schema": "rrapinn-g4-prelaunch-lock-v3",
+        "schema": "rrapinn-g4-prelaunch-lock-v4",
         "status": "READY_FOR_INDEPENDENT_GATE_TRAINING_UNAUTHORIZED",
         "development_case": "U0.12",
         "training_authorized": False,
         "integration_commit": integration_commit,
         "producer_contract": {
-            "restart_manifest_sha256": "df581bb790e91660a5a4be735fc0f3e11c699f329b0f4ce05af36b31fa2c03e9",
+            "restart_manifest_sha256": restart_sha256,
+            "alpha_enforcement_scope": "export_admissibility_only",
+            "model_decoder_changed": False,
+            "smoke_scientific_outputs_decisional": False,
             "authorized_arms": ["A_absent", "B_on"],
             "heldout_access_authorized": False,
+            "forbidden_path_prefixes": forbidden_path_prefixes,
+            "path_policy_sha256": path_policy_sha256(ordered_forbidden),
         },
         "first_detect_truth_cycle": 83,
         "first_detect_provenance_class": "historical_reference_receipt",
@@ -272,6 +291,9 @@ def main() -> None:
     parser.add_argument("--pidl-geometry-manifest", type=Path, required=True)
     parser.add_argument("--code-root", type=Path, required=True)
     parser.add_argument("--analysis-code", type=Path, action="append", required=True)
+    parser.add_argument("--restart-manifest", type=Path, required=True)
+    parser.add_argument("--forbidden-u011-root", required=True)
+    parser.add_argument("--forbidden-u013-root", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     repo = args.code_root.resolve()
@@ -294,6 +316,11 @@ def main() -> None:
         pidl_geometry_manifest=args.pidl_geometry_manifest,
         code_root=repo, analysis_code=args.analysis_code,
         integration_commit=head,
+        restart_manifest=args.restart_manifest,
+        forbidden_path_prefixes={
+            "U0.11": args.forbidden_u011_root,
+            "U0.13": args.forbidden_u013_root,
+        },
     )
     lock_sha256 = exclusive_write(args.output, payload)
     print(json.dumps({**payload, "lock_sha256": lock_sha256}, indent=2, sort_keys=True))

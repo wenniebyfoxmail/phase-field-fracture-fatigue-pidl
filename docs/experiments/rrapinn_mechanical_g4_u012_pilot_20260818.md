@@ -216,3 +216,42 @@ This amendment closes the external input blocker but does not authorize
 training. The remaining sequence is clean integration commit, immutable
 prelaunch lock, fresh independent launch gate, then a separate exact user
 authorization receipt bound to the lock and commit.
+
+## 2026-08-26 producer-contract repair amendment
+
+The completed c60 pair exposed three producer-evidence defects: legacy element
+exports labelled a raw optimizer step as `cycle`, the nominally bounded alpha
+decoder could emit small values outside `[0,1]`, and runtime/path-access claims
+were not backed by mandatory external receipts. Evidence from that pair remains
+historical diagnostic evidence; it cannot be upgraded by regenerating receipts
+after the fact.
+
+Before any next candidate, the producer contract is upgraded as follows:
+
+- every c76/c82 element export binds `raw_step`, `physical_cycle`,
+  `substep_index`, displacement, state label, and
+  `post_history_refresh_cycle_end` timing;
+- alpha enforcement is export-only: the historical decoder/state evolution is
+  unchanged, while strict admissibility receipts reject non-finite or
+  out-of-range element NPZs without clipping values;
+- the launcher follows all producer forks with Linux `strace -yy`, resolves
+  directory-FD-relative file syscalls, forbids explicit
+  U0.11 and U0.13 roots, and rejects any cwd-changing syscall that would make
+  relative-path reconstruction ambiguous;
+- the declared forbidden-root list is hash-bound into both observer receipts
+  and must be checked against the canonical Taobo roots at the next launch gate;
+- the launcher records external wall time and 0.25-second sampled
+  descendant-process GPU-memory maxima for every common raw step 301--409,
+  with missing or zero samples failing closed;
+- downloaded evidence is revalidated from the raw trace and artifact SHA256,
+  not from the producer's PASS label alone.
+
+The repair does not change model decoding, loss or state evolution. Therefore
+the canonical c60 restart remains the same scientific state and lock v4 binds
+its exact manifest SHA; no bounded-alpha restart branch is introduced. The old
+commit/lock/authorization tuple still cannot authorize a new run because the
+producer code and evidence contract changed. A future smoke requires a new
+clean commit, lock v4 binding the canonical restart and Taobo held-out roots,
+and fresh user authorization. Smoke outputs are non-decisional and a PASS means
+only producer-infrastructure qualification, never candidate promotion.
+This amendment authorizes no training and no held-out-data access.

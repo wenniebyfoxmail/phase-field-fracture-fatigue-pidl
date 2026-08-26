@@ -170,6 +170,11 @@ def _build_parser() -> argparse.ArgumentParser:
                         help=("Physical cycles for which all substeps should be "
                               "saved in element diagnostics. Other listed cycles "
                               "save only peak and final unloaded states."))
+    parser.add_argument(
+        "--strict-alpha-admissibility", action="store_true",
+        help=("Fail at element export if constrained alpha is non-finite or "
+              "outside the physical closed interval [0,1]."),
+    )
     parser.add_argument("--fracture-confirm-cycles", type=int, default=3)
     parser.add_argument("--plot-every", type=int, default=20)
     parser.add_argument("--compile", action="store_true")
@@ -306,6 +311,7 @@ def _validate_restart_args(args: argparse.Namespace) -> dict | None:
         or args.history_driver_reduction_mode != "fem_gp_tri3_g_mean"
         or not args.fem_irr_penalty
         or not args.boundary_first_detect_receipt
+        or not args.strict_alpha_admissibility
         or args.epochs_rprop != 10000
         or args.epochs_lbfgs != 0
         or args.optim_rel_tol != 5e-7
@@ -397,6 +403,9 @@ def _preflight_record(args: argparse.Namespace) -> dict:
             and args.mechanical_risk_mode == "absent"
             and not args.preflight_only
         ),
+        "scientific_outputs_decisional": False,
+        "candidate_promotion_authorized": False,
+        "pass_meaning": "PRODUCER_INFRASTRUCTURE_QUALIFIED",
     }
 
 
@@ -595,6 +604,12 @@ def main(argv: list[str] | None = None) -> None:
         "dense_sampling": True,
         "on_fracture": True,
         "dir": "element_diagnostics_probe_driver",
+        "explicit_cycle_displacements": [float(x) for x in cycle_disp_values],
+        "step_offset": recovery_step_offset,
+        "state_metadata_policy": "strict",
+        "alpha_admissibility": {
+            "policy": "strict" if args.strict_alpha_admissibility else "record_only",
+        },
     }
     config.fatigue_dict["gradient_diagnostics"] = {
         "enable": True,
@@ -815,6 +830,10 @@ def main(argv: list[str] | None = None) -> None:
         handle.write(f"element_diagnostics_steps: {diag_steps}\n")
         handle.write("element_diagnostics_fields: mechanics+energy+driver\n")
         handle.write(
+            "element_diagnostics_alpha_admissibility: "
+            f"{'strict' if args.strict_alpha_admissibility else 'record_only'}\n"
+        )
+        handle.write(
             "diagnostic_raw_export_semantics: "
             "psi_raw_elem=psi_active/g_alpha legacy alias; "
             "psi_raw_from_g_alpha_elem=psi_active/g_alpha; "
@@ -902,6 +921,9 @@ def main(argv: list[str] | None = None) -> None:
         "checkpoint_count": len(checkpoint_rows),
         "checkpoints": checkpoint_rows,
         "claim_boundary": "Producer smoke completion only; no efficacy claim.",
+        "scientific_outputs_decisional": False,
+        "candidate_promotion_authorized": False,
+        "pass_meaning": "PRODUCER_INFRASTRUCTURE_QUALIFIED",
     }
     (config.model_path / "g3_smoke_metrics.json").write_text(
         json.dumps(metrics, indent=2), encoding="utf-8"

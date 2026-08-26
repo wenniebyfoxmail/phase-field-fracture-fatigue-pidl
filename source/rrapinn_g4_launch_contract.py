@@ -8,10 +8,9 @@ import re
 from pathlib import Path
 
 
-LOCK_SCHEMA = "rrapinn-g4-prelaunch-lock-v3"
+LOCK_SCHEMA = "rrapinn-g4-prelaunch-lock-v4"
 LOCK_STATUS = "READY_FOR_INDEPENDENT_GATE_TRAINING_UNAUTHORIZED"
 AUTH_SCHEMA = "rrapinn-g4-user-authorization-v1"
-CANONICAL_RESTART_MANIFEST_SHA256 = "df581bb790e91660a5a4be735fc0f3e11c699f329b0f4ce05af36b31fa2c03e9"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
@@ -26,6 +25,12 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _path_policy_sha256(forbidden: dict[str, str]) -> str:
+    roots = [str(Path(forbidden[label]).expanduser().resolve()) for label in ("U0.11", "U0.13")]
+    payload = (json.dumps(roots, separators=(",", ":")) + "\n").encode()
+    return hashlib.sha256(payload).hexdigest()
 
 
 def load_and_verify_prelaunch_lock(
@@ -44,11 +49,25 @@ def load_and_verify_prelaunch_lock(
         or payload.get("first_detect_truth_cycle") != 83
         or payload.get("confirmation_used_as_truth") is not False
         or payload.get("integration_commit") != producer_head
-        or payload.get("producer_contract", {}).get("restart_manifest_sha256")
-        != CANONICAL_RESTART_MANIFEST_SHA256
         or not _COMMIT_RE.fullmatch(producer_head)
     ):
         raise LaunchContractError("prelaunch lock identity/state mismatch")
+    producer = payload.get("producer_contract", {})
+    forbidden = producer.get("forbidden_path_prefixes")
+    if (
+        not _SHA256_RE.fullmatch(str(producer.get("restart_manifest_sha256", "")))
+        or producer.get("alpha_enforcement_scope")
+        != "export_admissibility_only"
+        or producer.get("model_decoder_changed") is not False
+        or producer.get("smoke_scientific_outputs_decisional") is not False
+        or not isinstance(forbidden, dict)
+        or set(forbidden) != {"U0.11", "U0.13"}
+        or not all(isinstance(value, str) for value in forbidden.values())
+        or not all(Path(value).is_absolute() for value in forbidden.values())
+        or not _SHA256_RE.fullmatch(str(producer.get("path_policy_sha256", "")))
+        or producer.get("path_policy_sha256") != _path_policy_sha256(forbidden)
+    ):
+        raise LaunchContractError("prelaunch producer contract is incomplete")
     root = repo_root.resolve()
     code = payload.get("locked_code", {})
     if code.get("code_root_scope") != "repo" or "code_root" in code:

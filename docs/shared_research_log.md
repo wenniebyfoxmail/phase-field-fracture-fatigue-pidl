@@ -42,6 +42,32 @@
 
 ## Entries
 
+## 2026-08-26 · Mac-PIDL [decision+implementation]
+
+**Next RRaPINN candidate requires a repaired producer evidence contract**
+
+Prepared on branch `codex/rrapinn-g4-prerequisites` after the completed c60
+pair exposed legacy element-state labels, non-admissible alpha exports, and
+missing host/runtime/memory evidence. The repair adds explicit raw-step /
+physical-cycle / substep / displacement metadata, a physical `[0,1]` alpha
+export-admissibility gate with strict receipts, and an external Linux observer using
+fork-following file-syscall tracing plus descendant-process GPU-memory
+sampling. Downloaded traces are SHA-bound and independently rescanned; held-out
+U0.11/U0.13 access, cwd changes, missing step timing, or missing peak-memory
+samples fail closed. The historical decoder/loss/state evolution are unchanged;
+out-of-range alpha is rejected, never clipped. Prelaunch lock v4 binds the
+canonical restart SHA and exact Taobo held-out roots; producer evidence v4 binds
+that lock, authorization, producer HEAD, frozen command and path-policy SHA.
+
+Because the producer/evidence code changed, the prior commit
+`6184113b22655ba48bdc9aeb5ca803140b70b306`, lock SHA
+`9e423424399d28d2bc529be925a49ce6f1bccc4dc3fddfdb3663fbda2ad43bab`, and
+authorization do not carry forward. Do not update or restart an active producer
+from this branch. Before any smoke: clean integration commit, fresh v4 lock and
+authorization. Smoke outputs are non-decisional; PASS qualifies only producer
+infrastructure and cannot promote G5. No training or held-out-data access is
+authorized by this entry.
+
 ## 2026-07-15 · Mac-PIDL [decision]
 
 **Graph architecture matrix approved: independent UV/damage branches plus damage-only latent coupling**

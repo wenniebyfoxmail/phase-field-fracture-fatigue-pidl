@@ -8,8 +8,10 @@ import numpy as np
 import pytest
 import torch
 
-import scripts.validate_rrapinn_g4_producer_evidence as validator
 import scripts.validate_rrapinn_g4_a_replay as replay_validator
+import scripts.validate_rrapinn_g4_producer_evidence as validator
+from scripts.run_rrapinn_g4_arm import frozen_command
+from source.rrapinn_producer_observer import command_sha256, path_policy_sha256
 
 
 def sha(path: Path):
@@ -104,19 +106,35 @@ def artifact_fixture(root: Path, opaque: str, mode: str, monkeypatch, wall=1.0, 
     root.mkdir()
     restart = root / "restart.json"
     restart.write_text("frozen", encoding="utf-8")
+    producer_head = "d" * 40
+    command = frozen_command(
+        repo=root,
+        arm="A_absent" if mode == "absent" else "B_on",
+        restart_bundle=Path("/mnt/data2/drtao/restarts/g4_bounded_alpha"),
+        producer_head=producer_head,
+        restart_manifest_sha256=sha(restart),
+    )
     common = write_json(root / "common.json", {
         "schema": "rrapinn-g4-common-config-v1",
         "development_case": "U0.12",
-        "restart_manifest_sha256": validator.FROZEN_RESTART_MANIFEST_SHA256,
+        "restart_manifest_sha256": sha(restart),
         "raw_step_start": 301,
         "raw_step_end_for_common_metrics": 409,
         "true_residual_export_steps": [379, 409],
+        "element_field_export_steps": [379, 409],
+        "strict_element_state_metadata": True,
+        "strict_alpha_admissibility": True,
         "boundary_first_detect_receipt": True,
+        "host_path_access_ledger_required": True,
+        "external_step_runtime_and_peak_memory_required": True,
+        "scientific_outputs_decisional": False,
+        "candidate_promotion_authorized": False,
         "hard_stop_physical_cycle": 92,
         "minimum_archive_raw_step": 409,
         "held_out_amplitudes_accessed": False,
     })
     exports = {}
+    element_exports = {}
     summary = {key: 1.0 for key in validator.SUMMARY_KEYS}
     for step, cycle in ((379, 76), (409, 82)):
         step_dir = root / f"mechanical_residual_step_{step:04d}"
@@ -143,6 +161,48 @@ def artifact_fixture(root: Path, opaque: str, mode: str, monkeypatch, wall=1.0, 
             "receipt": {"path": str(step_dir.name + "/receipt.json"), "sha256": receipt["sha256"]},
             "fields": {"path": str(step_dir.name + "/fields.npz"), "sha256": sha(fields)},
         }
+        element_dir = root / "element_diagnostics"
+        element_dir.mkdir(exist_ok=True)
+        element_fields = element_dir / f"element_fields_cycle_{step:04d}.npz"
+        np.savez_compressed(
+            element_fields,
+            alpha_elem=np.asarray([0.0, 1.0]),
+            hist_fat_elem=np.ones(2), f_fatigue_elem=np.ones(2),
+            psi_raw_elem=np.ones(2), psi_active_elem=np.ones(2),
+            elem_x=np.zeros(2), elem_y=np.zeros(2),
+            raw_step=np.asarray(step), physical_cycle=np.asarray(cycle),
+            substep_index=np.asarray(3), displacement=np.asarray(0.12),
+            state_label=np.asarray(f"c{cycle}_substep_3"),
+            state_timing=np.asarray("post_history_refresh_cycle_end"),
+        )
+        element_receipt = write_json(
+            element_dir / f"element_fields_cycle_{step:04d}.admissibility.json",
+            {
+                "schema": "pidl-element-alpha-admissibility-v1",
+                "raw_step": step, "physical_cycle": cycle,
+                "substep_index": 3, "displacement": 0.12,
+                "state_label": f"c{cycle}_substep_3",
+                "state_timing": "post_history_refresh_cycle_end",
+                "policy": "strict", "finite": True,
+                "nonfinite_count": 0,
+                "alpha_min": 0.0, "alpha_max": 1.0,
+                "below_zero_count": 0, "above_one_count": 0,
+                "status": "PASS", "npz": element_fields.name,
+                "npz_sha256": sha(element_fields),
+            },
+        )
+        element_exports[str(step)] = {
+            "receipt": {
+                "path": str(
+                    (element_dir / element_receipt["path"]).relative_to(root)
+                ),
+                "sha256": element_receipt["sha256"],
+            },
+            "fields": {
+                "path": str(element_fields.relative_to(root)),
+                "sha256": sha(element_fields),
+            },
+        }
     trace_path = root / "boundary_event_trace.jsonl"
     trace_path.write_text("".join(
         json.dumps(boundary_row(step, step == 444)) + "\n"
@@ -151,8 +211,22 @@ def artifact_fixture(root: Path, opaque: str, mode: str, monkeypatch, wall=1.0, 
     first_payload = boundary_row(444, True)
     first_payload.pop("triggered")
     first = write_json(root / "first_detect.json", first_payload)
+    command_hash = command_sha256(command)
+    forbidden_roots = [
+        Path("/mnt/data2/drtao/heldout/U0.11"),
+        Path("/mnt/data2/drtao/heldout/U0.13"),
+    ]
+    policy_hash = path_policy_sha256(forbidden_roots)
     runtime = write_json(root / "runtime.json", {
-        "schema": "rrapinn-g4-external-runtime-v1", "observer": "external_launcher",
+        "schema": "rrapinn-g4-external-runtime-v2",
+        "observer": "external_launcher_strace_nvidia_smi", "status": "PASS",
+        "command_sha256": command_hash, "producer_returncode": 0,
+        "command": command,
+        "observer_error": None,
+        "path_policy_sha256": policy_hash,
+        "missing_wall_steps": [], "missing_peak_memory_steps": [],
+        "sample_interval_seconds": 0.25,
+        "memory_metric": "sampled_descendant_process_max_bytes",
         "common_raw_step_start": 301, "common_raw_step_end": 409,
         "wall_time_per_step_seconds": wall, "peak_memory_bytes": memory,
         "wall_time_seconds_by_raw_step": {
@@ -162,6 +236,22 @@ def artifact_fixture(root: Path, opaque: str, mode: str, monkeypatch, wall=1.0, 
             str(step): memory for step in range(301, 410)
         },
     })
+    trace = root / "path_access.strace"
+    trace.write_text('123 openat(AT_FDCWD, "/usr/lib/libc.so", O_RDONLY) = 3\n')
+    path_access = write_json(root / "path_access.json", {
+        "schema": "rrapinn-host-path-access-v1",
+        "observer": "strace_file_syscalls_follow_forks", "status": "PASS",
+        "started_utc": "2026-08-26T00:00:00Z", "ended_utc": "2026-08-26T00:01:00Z",
+        "command_sha256": command_hash, "producer_cwd": str(root.resolve()),
+        "command": command,
+        "forbidden_path_prefixes": [str(path) for path in forbidden_roots],
+        "path_policy_sha256": policy_hash,
+        "matched_forbidden_paths": [],
+        "cwd_change_syscalls_observed": False,
+        "raw_trace": {"path": trace.name, "sha256": sha(trace)},
+        "follow_forks": True, "fd_paths_decoded": True, "producer_returncode": 0,
+        "observer_error": None,
+    })
     replay = None
     replay_reference = None
     replay_candidate = None
@@ -170,19 +260,54 @@ def artifact_fixture(root: Path, opaque: str, mode: str, monkeypatch, wall=1.0, 
             root, monkeypatch
         )
         replay = write_json(root / "replay.json", replay_payload)
+    lock_payload = {
+        "schema": "rrapinn-g4-prelaunch-lock-v4",
+        "status": "READY_FOR_INDEPENDENT_GATE_TRAINING_UNAUTHORIZED",
+        "training_authorized": False,
+        "development_case": "U0.12",
+        "integration_commit": producer_head,
+        "producer_contract": {
+            "restart_manifest_sha256": sha(restart),
+            "alpha_enforcement_scope": "export_admissibility_only",
+            "model_decoder_changed": False,
+            "smoke_scientific_outputs_decisional": False,
+            "forbidden_path_prefixes": {
+                "U0.11": str(forbidden_roots[0]),
+                "U0.13": str(forbidden_roots[1]),
+            },
+            "path_policy_sha256": policy_hash,
+            "heldout_access_authorized": False,
+        },
+    }
+    lock = write_json(root / "prelaunch_lock.json", lock_payload)
+    authorization = write_json(root / "authorization.json", {
+        "schema": "rrapinn-g4-user-authorization-v1",
+        "authorized": True,
+        "scope": "g4-u012-c60-two-arm-pilot",
+        "development_case": "U0.12",
+        "producer_head": producer_head,
+        "prelaunch_lock_sha256": lock["sha256"],
+        "authorized_arms": ["A_absent", "B_on"],
+        "heldout_access_authorized": False,
+    })
     manifest = {
-        "schema": "rrapinn-g4-producer-evidence-v2",
+        "schema": "rrapinn-g4-producer-evidence-v4",
         "opaque_arm_id": opaque,
         "development_case": "U0.12",
         "risk_intervention": mode,
         "held_out_amplitudes_accessed": False,
+        "producer_head": producer_head,
+        "prelaunch_lock": lock,
+        "authorization_receipt": authorization,
         "restart_manifest": {"path": restart.name, "sha256": sha(restart)},
         "common_config": common,
         "true_residual_exports": exports,
+        "element_field_exports": element_exports,
         "boundary_trace": {"path": trace_path.name, "sha256": sha(trace_path)},
         "first_detect_receipt": first,
         "right_censor_receipt": None,
         "runtime_receipt": runtime,
+        "path_access_receipt": path_access,
         "a_replay_receipt": replay,
         "a_replay_reference_best_models": (
             replay_reference.name if replay_reference is not None else None
@@ -198,10 +323,6 @@ def artifact_fixture(root: Path, opaque: str, mode: str, monkeypatch, wall=1.0, 
 
 
 def pair(tmp_path: Path, monkeypatch, wall=2.0, memory=200.0):
-    frozen_fixture_sha = hashlib.sha256(b"frozen").hexdigest()
-    monkeypatch.setattr(
-        validator, "FROZEN_RESTART_MANIFEST_SHA256", frozen_fixture_sha
-    )
     one, _ = artifact_fixture(tmp_path / "one", "7f3a", "absent", monkeypatch)
     two, _ = artifact_fixture(
         tmp_path / "two", "9c21", "ME85_frozen", monkeypatch, wall, memory
@@ -258,6 +379,118 @@ def test_unbacked_first_detect_fails(tmp_path: Path, monkeypatch):
 def test_candidate_over_3x_fails(tmp_path: Path, monkeypatch):
     one, two = pair(tmp_path, monkeypatch, wall=3.01)
     with pytest.raises(ValueError, match="3x"):
+        validator.validate_producer_evidence(one, two)
+
+
+def test_out_of_range_element_alpha_fails_even_if_receipt_is_rehashed(
+    tmp_path: Path, monkeypatch,
+):
+    one, two = pair(tmp_path, monkeypatch)
+    root = tmp_path / "two"
+    fields = root / "element_diagnostics" / "element_fields_cycle_0379.npz"
+    with np.load(fields, allow_pickle=False) as archive:
+        arrays = {name: np.asarray(archive[name]) for name in archive.files}
+    arrays["alpha_elem"] = np.asarray([-1.0e-4, 1.0])
+    np.savez_compressed(fields, **arrays)
+    receipt_path = root / "element_diagnostics" / "element_fields_cycle_0379.admissibility.json"
+    receipt = json.loads(receipt_path.read_text())
+    receipt["npz_sha256"] = sha(fields)
+    write_json(receipt_path, receipt)
+    manifest = json.loads(two.read_text())
+    manifest["element_field_exports"]["379"]["fields"]["sha256"] = sha(fields)
+    manifest["element_field_exports"]["379"]["receipt"]["sha256"] = sha(receipt_path)
+    write_json(two, manifest)
+    with pytest.raises(ValueError, match="state/range"):
+        validator.validate_producer_evidence(one, two)
+
+
+def test_nonfinite_aligned_element_field_fails_after_rehash(
+    tmp_path: Path, monkeypatch,
+):
+    one, two = pair(tmp_path, monkeypatch)
+    root = tmp_path / "two"
+    fields = root / "element_diagnostics" / "element_fields_cycle_0379.npz"
+    with np.load(fields, allow_pickle=False) as archive:
+        arrays = {name: np.asarray(archive[name]) for name in archive.files}
+    arrays["hist_fat_elem"] = np.asarray([np.nan, 1.0])
+    np.savez_compressed(fields, **arrays)
+    receipt_path = root / "element_diagnostics" / "element_fields_cycle_0379.admissibility.json"
+    receipt = json.loads(receipt_path.read_text())
+    receipt["npz_sha256"] = sha(fields)
+    write_json(receipt_path, receipt)
+    manifest = json.loads(two.read_text())
+    manifest["element_field_exports"]["379"]["fields"]["sha256"] = sha(fields)
+    manifest["element_field_exports"]["379"]["receipt"]["sha256"] = sha(receipt_path)
+    write_json(two, manifest)
+    with pytest.raises(ValueError, match="state/range"):
+        validator.validate_producer_evidence(one, two)
+
+
+def test_forbidden_path_in_raw_strace_fails_after_all_hashes_are_updated(
+    tmp_path: Path, monkeypatch,
+):
+    one, two = pair(tmp_path, monkeypatch)
+    root = tmp_path / "two"
+    trace = root / "path_access.strace"
+    trace.write_text(
+        '1 openat(AT_FDCWD, "/mnt/data2/drtao/heldout/U0.13/truth.npy", '
+        'O_RDONLY) = 3\n'
+    )
+    receipt_path = root / "path_access.json"
+    receipt = json.loads(receipt_path.read_text())
+    receipt["raw_trace"]["sha256"] = sha(trace)
+    write_json(receipt_path, receipt)
+    manifest = json.loads(two.read_text())
+    manifest["path_access_receipt"]["sha256"] = sha(receipt_path)
+    write_json(two, manifest)
+    with pytest.raises(ValueError, match="forbidden"):
+        validator.validate_producer_evidence(one, two)
+
+
+def test_missing_external_peak_memory_step_fails(tmp_path: Path, monkeypatch):
+    one, two = pair(tmp_path, monkeypatch)
+    root = tmp_path / "two"
+    runtime_path = root / "runtime.json"
+    runtime = json.loads(runtime_path.read_text())
+    runtime["peak_memory_bytes_by_raw_step"].pop("409")
+    write_json(runtime_path, runtime)
+    manifest = json.loads(two.read_text())
+    manifest["runtime_receipt"]["sha256"] = sha(runtime_path)
+    write_json(two, manifest)
+    with pytest.raises(ValueError, match="complete per-step"):
+        validator.validate_producer_evidence(one, two)
+
+
+def test_nonfrozen_gpu_sample_interval_fails(tmp_path: Path, monkeypatch):
+    one, two = pair(tmp_path, monkeypatch)
+    root = tmp_path / "two"
+    runtime_path = root / "runtime.json"
+    runtime = json.loads(runtime_path.read_text())
+    runtime["sample_interval_seconds"] = 0.5
+    write_json(runtime_path, runtime)
+    manifest = json.loads(two.read_text())
+    manifest["runtime_receipt"]["sha256"] = sha(runtime_path)
+    write_json(two, manifest)
+    with pytest.raises(ValueError, match="runtime receipt provenance"):
+        validator.validate_producer_evidence(one, two)
+
+
+def test_self_consistent_but_nonfrozen_command_fails(tmp_path: Path, monkeypatch):
+    one, two = pair(tmp_path, monkeypatch)
+    root = tmp_path / "two"
+    manifest = json.loads(two.read_text())
+    for name, manifest_key in (
+        ("runtime.json", "runtime_receipt"),
+        ("path_access.json", "path_access_receipt"),
+    ):
+        path = root / name
+        payload = json.loads(path.read_text())
+        payload["command"] = [*payload["command"], "--plot-every", "1"]
+        payload["command_sha256"] = command_sha256(payload["command"])
+        write_json(path, payload)
+        manifest[manifest_key]["sha256"] = sha(path)
+    write_json(two, manifest)
+    with pytest.raises(ValueError, match="frozen command"):
         validator.validate_producer_evidence(one, two)
 
 

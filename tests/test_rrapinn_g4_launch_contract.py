@@ -11,11 +11,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "source"))
 
 from rrapinn_g4_launch_contract import (  # noqa: E402
-    CANONICAL_RESTART_MANIFEST_SHA256,
     LaunchContractError,
     load_and_verify_prelaunch_lock,
     verify_user_authorization,
 )
+from rrapinn_producer_observer import path_policy_sha256  # noqa: E402
 
 
 def _sha(path: Path) -> str:
@@ -30,15 +30,26 @@ def test_lock_and_authorization_are_both_required(tmp_path: Path):
     artifact = tmp_path / "packet.json"
     artifact.write_text("{}\n", encoding="utf-8")
     head = "a" * 40
+    forbidden = {
+        "U0.11": "/mnt/data2/drtao/heldout/U0.11",
+        "U0.13": "/mnt/data2/drtao/heldout/U0.13",
+    }
     lock = tmp_path / "lock.json"
     lock.write_text(json.dumps({
-        "schema": "rrapinn-g4-prelaunch-lock-v3",
+        "schema": "rrapinn-g4-prelaunch-lock-v4",
         "status": "READY_FOR_INDEPENDENT_GATE_TRAINING_UNAUTHORIZED",
         "training_authorized": False, "development_case": "U0.12",
         "first_detect_truth_cycle": 83, "confirmation_used_as_truth": False,
         "integration_commit": head,
         "producer_contract": {
-            "restart_manifest_sha256": CANONICAL_RESTART_MANIFEST_SHA256,
+            "restart_manifest_sha256": "c" * 64,
+            "alpha_enforcement_scope": "export_admissibility_only",
+            "model_decoder_changed": False,
+            "smoke_scientific_outputs_decisional": False,
+            "forbidden_path_prefixes": forbidden,
+            "path_policy_sha256": path_policy_sha256(
+                [Path(forbidden["U0.11"]), Path(forbidden["U0.13"])]
+            ),
         },
         "locked_code": {
             "code_root_scope": "repo",
@@ -79,11 +90,11 @@ def test_authorization_cannot_expand_to_heldout(tmp_path: Path):
         verify_user_authorization(auth, "b" * 64, "a" * 40)
 
 
-def test_frozen_command_cannot_accept_a_caller_selected_restart_hash(tmp_path: Path):
+def test_frozen_command_uses_only_the_lock_selected_restart_hash(tmp_path: Path):
     from scripts.run_rrapinn_g4_arm import frozen_command
     command = frozen_command(
         repo=tmp_path, arm="A_absent", restart_bundle=tmp_path / "restart",
-        producer_head="a" * 40,
+        producer_head="a" * 40, restart_manifest_sha256="c" * 64,
     )
     index = command.index("--resume-bundle-manifest-sha256")
-    assert command[index + 1] == CANONICAL_RESTART_MANIFEST_SHA256
+    assert command[index + 1] == "c" * 64

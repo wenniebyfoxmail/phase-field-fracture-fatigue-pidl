@@ -103,6 +103,7 @@ def test_build_lock_preserves_first_detect_and_all_twenty_fem_records(
     mapping = tmp_path / "mapping.npz"
     mapping.write_bytes(b"mapping")
     mapping_manifest = _write(tmp_path / "mapping.json", {"mapping": "v2"})
+    restart_manifest = _write(tmp_path / "restart_manifest.json", {"restart": "bounded"})
     code = _code_closure(code_root)
     kwargs = dict(
         packet=packet, fem_manifest=fem, fem_validation_receipt=receipt,
@@ -111,11 +112,20 @@ def test_build_lock_preserves_first_detect_and_all_twenty_fem_records(
         mapping_source_manifest=mapping_manifest, pidl_geometry=pidl_geometry,
         pidl_geometry_manifest=pidl_geometry_manifest, code_root=code_root,
         analysis_code=code, integration_commit="a" * 40,
+        restart_manifest=restart_manifest,
+        forbidden_path_prefixes={
+            "U0.11": "/mnt/data2/drtao/heldout/U0.11",
+            "U0.13": "/mnt/data2/drtao/heldout/U0.13",
+        },
     )
     lock = build_lock(**kwargs)
     assert lock["training_authorized"] is False
     assert lock["first_detect_truth_cycle"] == 83
-    assert lock["schema"] == "rrapinn-g4-prelaunch-lock-v3"
+    assert lock["schema"] == "rrapinn-g4-prelaunch-lock-v4"
+    assert lock["producer_contract"]["alpha_enforcement_scope"] == (
+        "export_admissibility_only"
+    )
+    assert lock["producer_contract"]["model_decoder_changed"] is False
     assert all(not Path(row["path"]).is_absolute() for row in lock["artifacts"].values())
     assert len(lock["fem_sha256sum_entries"]) == 20
     assert {row["path"] for row in lock["locked_code"]["files"]} == EXPECTED_LOCKED_CODE

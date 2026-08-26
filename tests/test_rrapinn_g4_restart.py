@@ -168,7 +168,7 @@ def test_runner_resume_requires_the_full_frozen_protocol(tmp_path: Path):
         "--mechanical-risk-mode", "absent",
         "--mechanical-residual-export-steps", "379,409",
         "--boundary-first-detect-receipt", "--hard-stop-physical-cycle", "92",
-        "--hard-alpha-recovery-step",
+        "--hard-alpha-recovery-step", "--strict-alpha-admissibility",
         "--displacement-steps", "0.03,0.06,0.09,0.12,0",
         "--history-driver-reduction-mode", "fem_gp_tri3_g_mean",
         "--fem-irr-penalty", "--epochs-rprop", "10000",
@@ -177,6 +177,11 @@ def test_runner_resume_requires_the_full_frozen_protocol(tmp_path: Path):
         "--required-head-commit", "a" * 40,
     ]
     assert runner._validate_restart_args(parser.parse_args(frozen))["start_state"]["raw_step"] == 300
+    without_strict_alpha = [
+        value for value in frozen if value != "--strict-alpha-admissibility"
+    ]
+    with pytest.raises(ValueError, match="frozen U0.12 protocol"):
+        runner._validate_restart_args(parser.parse_args(without_strict_alpha))
     with pytest.raises(ValueError, match="frozen U0.12 protocol"):
         runner._validate_restart_args(parser.parse_args(frozen[:-2]))
 
@@ -198,6 +203,7 @@ def test_runner_prerequisite_smoke_is_exact_and_risk_on_cannot_execute(tmp_path:
         "--mechanical-risk-mode", "absent",
         "--mechanical-residual-export-steps", "304",
         "--boundary-first-detect-receipt", "--hard-alpha-recovery-step",
+        "--strict-alpha-admissibility",
         "--displacement-steps", "0.03,0.06,0.09,0.12,0",
         "--history-driver-reduction-mode", "fem_gp_tri3_g_mean",
         "--fem-irr-penalty", "--epochs-rprop", "10000",

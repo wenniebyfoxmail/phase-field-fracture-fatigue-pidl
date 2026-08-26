@@ -21,6 +21,7 @@ import numpy as np
 import torch
 import time
 import json
+import hashlib
 from pathlib import Path
 from contextlib import contextmanager
 import matplotlib
@@ -48,6 +49,7 @@ from adaptive_sampling import compute_adaptive_weights
 
 from inverse_params import TrainablePositiveScalar, scalar_value
 from rrapinn_g4_smoke_contract import validate_completion, validate_start
+from boundary_first_detect import map_raw_step
 
 
 def _resolve_f_fatigue(f_fatigue):
@@ -380,9 +382,49 @@ def _full_linear_stress(eps_xx, eps_yy, eps_xy, matprop):
     return sig_xx, sig_yy, sig_xy
 
 
+def _element_diagnostic_state(raw_step, displacement, cfg):
+    """Resolve an explicit saved-state label, including the recovery step."""
+    raw_step = int(raw_step)
+    displacement = float(displacement)
+    displacements = cfg.get("explicit_cycle_displacements", [])
+    step_offset = int(cfg.get("step_offset", 0))
+    if raw_step < step_offset:
+        if step_offset == 1 and raw_step == 0 and np.isclose(displacement, 0.0):
+            return {
+                "physical_cycle": 0,
+                "substep_index": -1,
+                "displacement": displacement,
+                "state_label": "hard_alpha_recovery",
+            }
+        raise ValueError("element diagnostic step precedes the explicit schedule")
+    mapped = map_raw_step(
+        raw_step, displacements=displacements, step_offset=step_offset,
+    )
+    expected = float(mapped["substep_displacement"])
+    if not np.isclose(displacement, expected, rtol=0.0, atol=1.0e-12):
+        raise ValueError("element diagnostic displacement disagrees with schedule")
+    cycle = int(mapped["physical_cycle"])
+    substep = int(mapped["substep_index"])
+    return {
+        "physical_cycle": cycle,
+        "substep_index": substep,
+        "displacement": expected,
+        "state_label": f"c{cycle}_substep_{substep}",
+    }
+
+
+def _sha256_file(path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
 def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
                               f_fatigue, psi_plus_elem, psi_plus_prev,
-                              matprop, pffmodel, area_T, cycle, out_dir,
+                              matprop, pffmodel, area_T, raw_step, displacement,
+                              state_metadata, out_dir,
                               psi_history_elem=None,
                               history_increment_elem=None,
                               alpha_feedback_target_elem=None,
@@ -391,7 +433,7 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
                               oracle_mask_elem=None,
                               g_stiffness_override_elem=None,
                               irreversibility_penalty_cfg=None):
-    """Save cycle-end element fields for FEM/PIDL mechanism comparison."""
+    """Save hash-backed cycle-end fields with explicit state semantics."""
     out_dir.mkdir(parents=True, exist_ok=True)
     with torch.no_grad():
         if T_conn is not None:
@@ -511,62 +553,147 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
     psi_raw_from_g_alpha_np = psi_plus_np / np.maximum(g_alpha_np, 1e-30)
     psi_raw_from_g_solver_np = psi_plus_np / np.maximum(g_solver_np, 1e-30)
 
-    np.savez_compressed(
-        out_dir / f"element_fields_cycle_{cycle:04d}.npz",
-        cycle=np.array([cycle], dtype=np.int32),
-        elem_x=_tensor_to_numpy(elem_x).reshape(-1).astype(np.float32),
-        elem_y=_tensor_to_numpy(elem_y).reshape(-1).astype(np.float32),
-        area_elem=_tensor_to_numpy(area_T).reshape(-1).astype(np.float32),
-        alpha_elem=_tensor_to_numpy(alpha_elem).reshape(-1).astype(np.float32),
-        hist_alpha_elem=_tensor_to_numpy(hist_alpha_elem).reshape(-1).astype(np.float32),
-        alpha_minus_hist_alpha_elem=(
-            _tensor_to_numpy(alpha_elem - hist_alpha_elem).reshape(-1).astype(np.float32)
-        ),
-        alpha_feedback_target_elem=alpha_feedback_target_np,
-        alpha_feedback_mask_elem=alpha_feedback_mask_np,
-        oracle_target_elem=oracle_target_np,
-        oracle_mask_elem=oracle_mask_np,
-        hist_fat_elem=hist_fat_np.astype(np.float32),
-        f_fatigue_elem=f_fatigue_np.astype(np.float32),
-        psi_plus_elem=psi_plus_np.astype(np.float32),  # backward-compatible active driver
-        psi_active_elem=psi_plus_np.astype(np.float32),
-        psi_history_driver_elem=psi_history_np.astype(np.float32),
-        delta_alpha_bar_input_elem=history_increment_np.astype(np.float32),
-        psi_raw_elem=psi_raw_from_g_alpha_np.astype(np.float32),
-        psi_raw_from_g_alpha_elem=psi_raw_from_g_alpha_np.astype(np.float32),
-        psi_raw_from_g_solver_elem=psi_raw_from_g_solver_np.astype(np.float32),
-        g_alpha_elem=g_alpha_np.astype(np.float32),
-        g_solver_elem=g_solver_np.astype(np.float32),
-        g_stiffness_override_elem=g_override_np,
-        g_solver_override_active=np.array(
-            [g_stiffness_override_elem is not None],
-            dtype=np.bool_,
-        ),
-        psi_plus_prev_elem=psi_prev_np.astype(np.float32),
-        E_el_elem=E_el_np.astype(np.float32),
-        E_d_elem=E_d_np.astype(np.float32),
-        E_hist_elem=E_hist_np.astype(np.float32),
-        E_hist_legacy_elem=E_hist_legacy_np.astype(np.float32),
-        E_hist_fem_gp_tri3_elem=E_hist_fem_gp_tri3_np.astype(np.float32),
-        eps_xx_elem=_tensor_to_numpy(eps_xx).reshape(-1).astype(np.float32),
-        eps_yy_elem=_tensor_to_numpy(eps_yy).reshape(-1).astype(np.float32),
-        eps_xy_elem=_tensor_to_numpy(eps_xy).reshape(-1).astype(np.float32),
-        eps_trace_elem=_tensor_to_numpy(eps_trace).reshape(-1).astype(np.float32),
-        eps_eq_elem=_tensor_to_numpy(eps_eq).reshape(-1).astype(np.float32),
-        eps_principal_1_elem=_tensor_to_numpy(eps_1).reshape(-1).astype(np.float32),
-        eps_principal_2_elem=_tensor_to_numpy(eps_2).reshape(-1).astype(np.float32),
-        sigma_raw_xx_elem=_tensor_to_numpy(sig_raw_xx).reshape(-1).astype(np.float32),
-        sigma_raw_yy_elem=_tensor_to_numpy(sig_raw_yy).reshape(-1).astype(np.float32),
-        sigma_raw_xy_elem=_tensor_to_numpy(sig_raw_xy).reshape(-1).astype(np.float32),
-        sigma_raw_principal_1_elem=_tensor_to_numpy(sig_raw_1).reshape(-1).astype(np.float32),
-        sigma_raw_principal_2_elem=_tensor_to_numpy(sig_raw_2).reshape(-1).astype(np.float32),
-        sigma_effective_xx_elem=_tensor_to_numpy(sig_eff_xx).reshape(-1).astype(np.float32),
-        sigma_effective_yy_elem=_tensor_to_numpy(sig_eff_yy).reshape(-1).astype(np.float32),
-        sigma_effective_xy_elem=_tensor_to_numpy(sig_eff_xy).reshape(-1).astype(np.float32),
-        sigma_effective_principal_1_elem=_tensor_to_numpy(sig_eff_1).reshape(-1).astype(np.float32),
-        sigma_effective_principal_2_elem=_tensor_to_numpy(sig_eff_2).reshape(-1).astype(np.float32),
-        residual_abs_Eel_Ed=(np.abs(E_el_np) + np.abs(E_d_np)).astype(np.float32),
-    )
+    alpha_np = _tensor_to_numpy(alpha_elem).reshape(-1).astype(np.float32)
+    admissibility = state_metadata.get("alpha_admissibility", {}) or {}
+    policy = str(admissibility.get("policy", "record_only"))
+    if policy not in {"record_only", "strict"}:
+        raise ValueError("alpha admissibility policy must be record_only or strict")
+    finite_mask = np.isfinite(alpha_np)
+    finite = bool(alpha_np.size > 0 and np.all(finite_mask))
+    finite_values = alpha_np[finite_mask]
+    alpha_min = float(np.min(finite_values)) if finite_values.size else None
+    alpha_max = float(np.max(finite_values)) if finite_values.size else None
+    nonfinite = int(alpha_np.size - finite_values.size)
+    below = int(np.count_nonzero(alpha_np < 0.0))
+    above = int(np.count_nonzero(alpha_np > 1.0))
+    admissible = finite and below == 0 and above == 0
+    receipt_path = out_dir / f"element_fields_cycle_{int(raw_step):04d}.admissibility.json"
+    receipt = {
+        "schema": "pidl-element-alpha-admissibility-v1",
+        "raw_step": int(raw_step),
+        "physical_cycle": int(state_metadata["physical_cycle"]),
+        "substep_index": int(state_metadata["substep_index"]),
+        "displacement": float(displacement),
+        "state_label": str(state_metadata["state_label"]),
+        "state_timing": "post_history_refresh_cycle_end",
+        "policy": policy,
+        "finite": finite,
+        "nonfinite_count": nonfinite,
+        "alpha_min": alpha_min,
+        "alpha_max": alpha_max,
+        "below_zero_count": below,
+        "above_one_count": above,
+        "status": "PASS" if admissible else "FAIL",
+    }
+    if not admissible and policy == "strict":
+        with receipt_path.open("x", encoding="utf-8") as handle:
+            json.dump(receipt, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+        raise RuntimeError(
+            "strict alpha admissibility failed: "
+            f"min={alpha_min}, max={alpha_max}, nonfinite={nonfinite}, "
+            f"below={below}, above={above}"
+        )
+
+    output_path = out_dir / f"element_fields_cycle_{int(raw_step):04d}.npz"
+    with output_path.open("xb") as output_handle:
+        np.savez_compressed(
+            output_handle,
+            cycle=np.array([int(raw_step)], dtype=np.int32),
+            raw_step=np.array([int(raw_step)], dtype=np.int64),
+            physical_cycle=np.array(
+                [int(state_metadata["physical_cycle"])], dtype=np.int64
+            ),
+            substep_index=np.array(
+                [int(state_metadata["substep_index"])], dtype=np.int64
+            ),
+            displacement=np.array([float(displacement)], dtype=np.float64),
+            state_label=np.array(str(state_metadata["state_label"])),
+            state_timing=np.array("post_history_refresh_cycle_end"),
+            elem_x=_tensor_to_numpy(elem_x).reshape(-1).astype(np.float32),
+            elem_y=_tensor_to_numpy(elem_y).reshape(-1).astype(np.float32),
+            area_elem=_tensor_to_numpy(area_T).reshape(-1).astype(np.float32),
+            alpha_elem=alpha_np,
+            hist_alpha_elem=_tensor_to_numpy(hist_alpha_elem)
+            .reshape(-1)
+            .astype(np.float32),
+            alpha_minus_hist_alpha_elem=(
+                _tensor_to_numpy(alpha_elem - hist_alpha_elem)
+                .reshape(-1)
+                .astype(np.float32)
+            ),
+            alpha_feedback_target_elem=alpha_feedback_target_np,
+            alpha_feedback_mask_elem=alpha_feedback_mask_np,
+            oracle_target_elem=oracle_target_np,
+            oracle_mask_elem=oracle_mask_np,
+            hist_fat_elem=hist_fat_np.astype(np.float32),
+            f_fatigue_elem=f_fatigue_np.astype(np.float32),
+            psi_plus_elem=psi_plus_np.astype(
+                np.float32
+            ),  # backward-compatible active driver
+            psi_active_elem=psi_plus_np.astype(np.float32),
+            psi_history_driver_elem=psi_history_np.astype(np.float32),
+            delta_alpha_bar_input_elem=history_increment_np.astype(np.float32),
+            psi_raw_elem=psi_raw_from_g_alpha_np.astype(np.float32),
+            psi_raw_from_g_alpha_elem=psi_raw_from_g_alpha_np.astype(np.float32),
+            psi_raw_from_g_solver_elem=psi_raw_from_g_solver_np.astype(np.float32),
+            g_alpha_elem=g_alpha_np.astype(np.float32),
+            g_solver_elem=g_solver_np.astype(np.float32),
+            g_stiffness_override_elem=g_override_np,
+            g_solver_override_active=np.array(
+                [g_stiffness_override_elem is not None],
+                dtype=np.bool_,
+            ),
+            psi_plus_prev_elem=psi_prev_np.astype(np.float32),
+            E_el_elem=E_el_np.astype(np.float32),
+            E_d_elem=E_d_np.astype(np.float32),
+            E_hist_elem=E_hist_np.astype(np.float32),
+            E_hist_legacy_elem=E_hist_legacy_np.astype(np.float32),
+            E_hist_fem_gp_tri3_elem=E_hist_fem_gp_tri3_np.astype(np.float32),
+            eps_xx_elem=_tensor_to_numpy(eps_xx).reshape(-1).astype(np.float32),
+            eps_yy_elem=_tensor_to_numpy(eps_yy).reshape(-1).astype(np.float32),
+            eps_xy_elem=_tensor_to_numpy(eps_xy).reshape(-1).astype(np.float32),
+            eps_trace_elem=_tensor_to_numpy(eps_trace).reshape(-1).astype(np.float32),
+            eps_eq_elem=_tensor_to_numpy(eps_eq).reshape(-1).astype(np.float32),
+            eps_principal_1_elem=_tensor_to_numpy(eps_1).reshape(-1).astype(np.float32),
+            eps_principal_2_elem=_tensor_to_numpy(eps_2).reshape(-1).astype(np.float32),
+            sigma_raw_xx_elem=_tensor_to_numpy(sig_raw_xx)
+            .reshape(-1)
+            .astype(np.float32),
+            sigma_raw_yy_elem=_tensor_to_numpy(sig_raw_yy)
+            .reshape(-1)
+            .astype(np.float32),
+            sigma_raw_xy_elem=_tensor_to_numpy(sig_raw_xy)
+            .reshape(-1)
+            .astype(np.float32),
+            sigma_raw_principal_1_elem=_tensor_to_numpy(sig_raw_1)
+            .reshape(-1)
+            .astype(np.float32),
+            sigma_raw_principal_2_elem=_tensor_to_numpy(sig_raw_2)
+            .reshape(-1)
+            .astype(np.float32),
+            sigma_effective_xx_elem=_tensor_to_numpy(sig_eff_xx)
+            .reshape(-1)
+            .astype(np.float32),
+            sigma_effective_yy_elem=_tensor_to_numpy(sig_eff_yy)
+            .reshape(-1)
+            .astype(np.float32),
+            sigma_effective_xy_elem=_tensor_to_numpy(sig_eff_xy)
+            .reshape(-1)
+            .astype(np.float32),
+            sigma_effective_principal_1_elem=_tensor_to_numpy(sig_eff_1)
+            .reshape(-1)
+            .astype(np.float32),
+            sigma_effective_principal_2_elem=_tensor_to_numpy(sig_eff_2)
+            .reshape(-1)
+            .astype(np.float32),
+            residual_abs_Eel_Ed=(np.abs(E_el_np) + np.abs(E_d_np)).astype(np.float32),
+        )
+    receipt["npz"] = output_path.name
+    receipt["npz_sha256"] = _sha256_file(output_path)
+    with receipt_path.open("x", encoding="utf-8") as handle:
+        json.dump(receipt, handle, indent=2, sort_keys=True)
+        handle.write("\n")
 
 
 def _resolve_output_layer(net):
@@ -1546,6 +1673,22 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _elem_diag_cfg.get('dir', 'element_diagnostics')
     )
     if _elem_diag_enabled:
+        _elem_diag_displacements = _elem_diag_cfg.get(
+            'explicit_cycle_displacements', []
+        )
+        _elem_diag_step_offset = int(_elem_diag_cfg.get('step_offset', 0))
+        _elem_diag_state_policy = str(
+            _elem_diag_cfg.get('state_metadata_policy', 'legacy_unresolved')
+        )
+        if _elem_diag_state_policy not in {'legacy_unresolved', 'strict'}:
+            raise ValueError(
+                "element diagnostic state_metadata_policy must be "
+                "legacy_unresolved or strict"
+            )
+        if _elem_diag_state_policy == 'strict' and not _elem_diag_displacements:
+            raise ValueError(
+                "strict element metadata require explicit_cycle_displacements"
+            )
         _elem_diag_dir.mkdir(parents=True, exist_ok=True)
         _every_msg = _elem_diag_every if _elem_diag_every else "off"
         print(f"[ElementDiagnostics] enabled | cycles={sorted(_elem_diag_cycles)} "
@@ -2591,10 +2734,30 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     or (_elem_diag_on_fracture and _frac_detected)
                 )
             if _elem_diag_due:
+                if _elem_diag_displacements:
+                    _elem_state = _element_diagnostic_state(
+                        j,
+                        disp_i,
+                        {
+                            "explicit_cycle_displacements": _elem_diag_displacements,
+                            "step_offset": _elem_diag_step_offset,
+                        },
+                    )
+                else:
+                    _elem_state = {
+                        "physical_cycle": -1,
+                        "substep_index": -1,
+                        "displacement": float(disp_i),
+                        "state_label": f"legacy_unresolved_raw_step_{int(j)}",
+                    }
+                _elem_state["alpha_admissibility"] = _elem_diag_cfg.get(
+                    "alpha_admissibility", {"policy": "record_only"}
+                )
                 _save_element_diagnostics(
                     inp, T_conn, u_el, v_el, alpha_el, hist_alpha, hist_fat,
                     _f_current, psi_plus_elem, psi_plus_prev,
-                    matprop, pffmodel, area_T, j, _elem_diag_dir,
+                    matprop, pffmodel, area_T, j, disp_i, _elem_state,
+                    _elem_diag_dir,
                     psi_history_elem=psi_history_elem,
                     history_increment_elem=history_increment_elem,
                     alpha_feedback_target_elem=_alpha_feedback_target_elem,
