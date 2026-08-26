@@ -1,8 +1,12 @@
 # Hard-5 leave-one-amplitude-out GNO preregistration
 
-**Date:** 2026-08-26  
-**Status:** `OWNER_AUTHORIZED__PRELAUNCH`  
+**Date:** 2026-08-26
+**Status:** `AMENDED_PRELAUNCH__INDEPENDENT_REVIEW_REQUIRED`
 **Authorization:** user said `go` for the new Hard-5-only retraining route.
+
+The original evaluation/sampling clauses below are superseded by
+`hard5_loao_gno_preregistration_amendment_20260826.md`. No job may launch from
+the original `6926ea7` release.
 
 ## PIDL Experiment Gate
 
@@ -22,15 +26,17 @@
   GPUs, fresh run/archive roots and task-owned systemd services.
 - Registry destination: this experiment document, the local case folder and
   one compact inventory row after completion.
-- Decision: launch after code/hash tests and live CUDA/ownership preflight.
+- Decision: no launch until the amended code/hash tests and a second independent
+  review pass.
 
 ## Frozen data and split
 
 Three complete Hard-5 eta0 five-step trajectories are used: U0.11, U0.12 and
 U0.13. Each fold removes one complete amplitude before normalization, window
 construction, gradient calibration and optimization. Known Umax is a protocol
-input; cycle number, event distance and held-out event labels are prohibited
-training inputs. Mapped PIDL assets are loaded only after training finishes.
+input after fixed design scaling to `[-1, 0, 1]`; cycle number, event distance
+and held-out event labels are prohibited training inputs. PIDL values are parsed
+only after training; PIDL bytes are hash-verified during preflight.
 
 The first-detect labels are c122/c83/c59. Confirmation c125/c86/c62 remains a
 separate label. The matched PIDL comparison states are the already sealed
@@ -40,17 +46,16 @@ c121/c82/c55 states; these choices are frozen before results.
 
 The architecture and optimization are inherited unchanged from canonical D1:
 context 3, recurrent rollout 3, width 96, 339,461 parameters, 3,000 AdamW
-steps, transition-balanced sampling, training-fold gradient calibration and
-transition weight 0.25. All weights start fresh. Three folds times seeds
+steps, hierarchical trajectory/bucket sampling, training-fold gradient
+calibration and transition weight 0.25. All weights start fresh. Three folds times seeds
 1/2/3 gives nine jobs; seeds are optimization repeats.
 
 ## Frozen decision
 
-The primary matched-field gate requires the seed-median GNO to have both lower
-derived-active log-MAE and higher absolute FEM-p99 IoU than mapped PIDL in all
-three folds. Retrospective event-centred transition recall must be at least 4/6
-with at most 1/3 false warnings in at least two folds. The all-opportunity stop
-gate retains the frozen D1 recall/FPR thresholds recorded in the JSON lock.
+The amended primary gate is only the U0.12 interpolation fold against
+persistence and constrained-linear observation-only controls. U0.11/U0.13 are
+endpoint-extrapolation secondary evidence. PIDL is contextual secondary evidence
+and cannot pass or fail the primary gate.
 
 Failure of any primary clause makes the route negative. No threshold, loss,
 mask, architecture or comparison cycle may be changed after results.

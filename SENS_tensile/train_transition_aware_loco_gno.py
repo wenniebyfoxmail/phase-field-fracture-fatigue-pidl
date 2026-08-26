@@ -31,7 +31,11 @@ import torch
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "source"))
 
-from fem_mechanism_operator import StateStatistics, derived_active_log10  # noqa: E402
+from fem_mechanism_operator import (  # noqa: E402
+    StateStatistics,
+    apply_state_constraints,
+    derived_active_log10,
+)
 from train_fem_mechanism_mesh_operator import field_metrics  # noqa: E402
 from transition_aware_mesh_operator import (  # noqa: E402
     TransitionAwareMeshOperator,
@@ -86,6 +90,12 @@ def locked_code_paths() -> dict[str, Path]:
         "dataset_builder": repo
         / "SENS_tensile"
         / "prepare_hard5_loao_gno_dataset.py",
+        "aggregate_analyzer": repo
+        / "SENS_tensile"
+        / "analyze_hard5_loao_gno_matrix.py",
+        "aggregate_tests": repo
+        / "tests"
+        / "test_analyze_hard5_loao_gno_matrix.py",
     }
 
 
@@ -160,9 +170,17 @@ def write_json_atomic(path: Path, payload: dict) -> None:
 
 
 def trajectory_metadata(trajectory_id: str, umax: float, device: torch.device) -> torch.Tensor:
-    if trajectory_id not in EXPECTED_TRAJECTORY_IDS or umax not in (0.11, 0.12, 0.13):
+    expected_umax = {"hard5_u011": 0.11, "hard5_u012": 0.12, "hard5_u013": 0.13}
+    if trajectory_id not in expected_umax or not np.isclose(
+        umax, expected_umax[trajectory_id], rtol=0.0, atol=1.0e-8
+    ):
         raise ValueError(f"cannot decode Hard-5 amplitude metadata from {trajectory_id}")
-    return torch.tensor([1.0, 0.0, 1.0, umax], dtype=torch.float32, device=device)
+    design_scaled_umax = (expected_umax[trajectory_id] - 0.12) / 0.01
+    return torch.tensor(
+        [1.0, 0.0, 1.0, design_scaled_umax],
+        dtype=torch.float32,
+        device=device,
+    )
 
 
 def load_graph(
@@ -254,18 +272,24 @@ def load_dataset(
 
 
 def training_statistics(items: list[dict], device: torch.device) -> StateStatistics:
-    states = np.concatenate(
-        [item["states"].cpu().numpy() for item in items], axis=0
-    ).astype(np.float64)
-    residuals = np.concatenate(
-        [np.diff(item["states"].cpu().numpy(), axis=0) for item in items], axis=0
-    ).astype(np.float64)
-    arrays = (
-        states.mean(axis=(0, 1)),
-        np.maximum(states.std(axis=(0, 1)), 1e-6),
-        residuals.mean(axis=(0, 1)),
-        np.maximum(residuals.std(axis=(0, 1)), 1e-6),
-    )
+    def equal_trajectory_moments(arrays: list[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
+        means = np.stack([array.mean(axis=(0, 1)) for array in arrays])
+        second_moments = np.stack([(array * array).mean(axis=(0, 1)) for array in arrays])
+        mean = means.mean(axis=0)
+        variance = np.maximum(second_moments.mean(axis=0) - mean * mean, 0.0)
+        return mean, np.maximum(np.sqrt(variance), 1.0e-6)
+
+    prehit_states = []
+    prehit_residuals = []
+    for item in items:
+        states = item["states"][: item["first_hit"] - 1].cpu().numpy().astype(np.float64)
+        if len(states) < 2:
+            raise ValueError("training trajectory needs at least two pre-hit states")
+        prehit_states.append(states)
+        prehit_residuals.append(np.diff(states, axis=0))
+    state_mean, state_std = equal_trajectory_moments(prehit_states)
+    residual_mean, residual_std = equal_trajectory_moments(prehit_residuals)
+    arrays = (state_mean, state_std, residual_mean, residual_std)
     return StateStatistics(
         *(
             torch.tensor(array, dtype=torch.float32, device=device).reshape(1, -1)
@@ -277,14 +301,18 @@ def training_statistics(items: list[dict], device: torch.device) -> StateStatist
 def training_active_residual_scale(
     items: list[dict], device: torch.device
 ) -> torch.Tensor:
-    """Training-only scale for one-cycle changes in derived active log field."""
-    changes = []
+    """Trajectory-equal pre-hit scale for one-cycle active-log changes."""
+    means = []
+    second_moments = []
     for item in items:
-        states = item["states"]
+        states = item["states"][: item["first_hit"] - 1]
         active = derived_active_log10(states.reshape(-1, 4)).reshape(states.shape[:2])
-        changes.append((active[1:] - active[:-1]).reshape(-1))
-    joined = torch.cat(changes)
-    scale = joined.std().clamp_min(1.0e-6)
+        changes = (active[1:] - active[:-1]).reshape(-1).double()
+        means.append(changes.mean())
+        second_moments.append((changes * changes).mean())
+    mean = torch.stack(means).mean()
+    variance = (torch.stack(second_moments).mean() - mean * mean).clamp_min(0.0)
+    scale = torch.sqrt(variance).clamp_min(1.0e-6)
     return scale.to(device)
 
 
@@ -309,7 +337,8 @@ def build_training_windows(
     positive: list[Window] = []
     negative: list[Window] = []
     for item_index, item in enumerate(items):
-        for origin in range(context, len(item["states"]) - rollout + 1):
+        stop = min(item["first_hit"], len(item["states"]) - rollout + 1)
+        for origin in range(context, stop):
             targets = range(origin + 1, origin + rollout + 1)
             window = Window(
                 trajectory_index=item_index,
@@ -327,9 +356,14 @@ def build_training_windows(
 def choose_balanced_window(
     positive: list[Window], negative: list[Window], step: int, rng: random.Random
 ) -> Window:
-    """Alternate positive/negative buckets; randomness stays within the bucket."""
+    """Alternate buckets, then sample trajectories equally, then an origin."""
     bucket = positive if step % 2 else negative
-    return rng.choice(bucket)
+    trajectory_indices = sorted({window.trajectory_index for window in bucket})
+    trajectory_index = rng.choice(trajectory_indices)
+    trajectory_windows = [
+        window for window in bucket if window.trajectory_index == trajectory_index
+    ]
+    return rng.choice(trajectory_windows)
 
 
 def calibrate_bucket_gradient_scales(
@@ -345,35 +379,44 @@ def calibrate_bucket_gradient_scales(
     loss_means: dict[str, torch.Tensor] = {}
     gradient_means: dict[str, torch.Tensor] = {}
     for name, windows in (("transition", positive), ("ordinary", negative)):
-        losses = []
-        gradient_norms = []
-        for window in windows:
-            item = items[window.trajectory_index]
-            prediction = (
-                item["states"][window.origin_cycle - 1]
-                .detach()
-                .clone()
-                .requires_grad_(True)
-            )
-            per_target = []
-            for target_cycle in range(
-                window.origin_cycle + 1, window.origin_cycle + ROLLOUT + 1
+        trajectory_losses = []
+        trajectory_gradients = []
+        for trajectory_index in sorted({window.trajectory_index for window in windows}):
+            losses = []
+            gradient_norms = []
+            for window in (
+                candidate
+                for candidate in windows
+                if candidate.trajectory_index == trajectory_index
             ):
-                loss = normalized_field_loss(
-                    prediction,
-                    item["states"][target_cycle - 1],
-                    area,
-                    graph["edge_index"],
-                    statistics,
-                    active_residual_scale,
+                item = items[window.trajectory_index]
+                prediction = (
+                    item["states"][window.origin_cycle - 1]
+                    .detach()
+                    .clone()
+                    .requires_grad_(True)
                 )
-                per_target.append(loss.total)
-            window_loss = torch.stack(per_target).mean()
-            (gradient,) = torch.autograd.grad(window_loss, prediction)
-            losses.append(window_loss.detach())
-            gradient_norms.append(torch.linalg.vector_norm(gradient).detach())
-        loss_means[name] = torch.stack(losses).mean()
-        gradient_means[name] = torch.stack(gradient_norms).mean().clamp_min(1.0e-8)
+                per_target = []
+                for target_cycle in range(
+                    window.origin_cycle + 1, window.origin_cycle + ROLLOUT + 1
+                ):
+                    loss = normalized_field_loss(
+                        prediction,
+                        item["states"][target_cycle - 1],
+                        area,
+                        graph["edge_index"],
+                        statistics,
+                        active_residual_scale,
+                    )
+                    per_target.append(loss.total)
+                window_loss = torch.stack(per_target).mean()
+                (gradient,) = torch.autograd.grad(window_loss, prediction)
+                losses.append(window_loss.detach())
+                gradient_norms.append(torch.linalg.vector_norm(gradient).detach())
+            trajectory_losses.append(torch.stack(losses).mean())
+            trajectory_gradients.append(torch.stack(gradient_norms).mean())
+        loss_means[name] = torch.stack(trajectory_losses).mean()
+        gradient_means[name] = torch.stack(trajectory_gradients).mean().clamp_min(1.0e-8)
     normalized = {
         name: float((gradient_means[name] / gradient_means[name]).cpu())
         for name in gradient_means
@@ -417,6 +460,47 @@ def predict_rollout(
             logits[cycle] = logit
             history.append(prediction)
     return predictions, logits
+
+
+def baseline_rollout(
+    item: dict,
+    origin: int,
+    horizon: int,
+    statistics: StateStatistics,
+    method: str,
+) -> dict[int, torch.Tensor]:
+    """Frozen observation-only persistence or constrained-linear rollout."""
+    if method not in {"persistence", "constrained_linear"}:
+        raise ValueError(f"unknown primary baseline: {method}")
+    previous = item["states"][origin - 2]
+    current = item["states"][origin - 1]
+    predictions: dict[int, torch.Tensor] = {}
+    for cycle in range(origin + 1, origin + horizon + 1):
+        if method == "persistence":
+            prediction = current.clone()
+        else:
+            physical_residual = current - previous
+            normalized_residual = (
+                physical_residual - statistics.residual_mean
+            ) / statistics.residual_std
+            prediction = apply_state_constraints(
+                current, normalized_residual, statistics
+            )
+        predictions[cycle] = prediction
+        previous, current = current, prediction
+    return predictions
+
+
+def fold_role(trajectory_id: str) -> str:
+    roles = {
+        "hard5_u011": "endpoint_extrapolation_secondary",
+        "hard5_u012": "interpolation_primary",
+        "hard5_u013": "endpoint_extrapolation_secondary",
+    }
+    try:
+        return roles[trajectory_id]
+    except KeyError as exc:
+        raise ValueError(f"unknown Hard5 fold: {trajectory_id}") from exc
 
 
 def event_hit(state: np.ndarray, centroids: np.ndarray) -> bool:
@@ -471,16 +555,16 @@ def classification_summary(rows: list[dict]) -> dict[str, float | int | bool | N
     }
 
 
-def all_forecast_opportunities_evaluation(
+def pre_event_forecast_opportunities_evaluation(
     model: TransitionAwareMeshOperator,
     heldout: dict,
     graph: dict[str, torch.Tensor],
     statistics: StateStatistics,
     out: Path,
 ) -> None:
-    """Score all legal (origin, horizon) opportunities without model selection."""
+    """Score all legal pre-hit origins without held-out model selection."""
     rows: list[dict] = []
-    for origin in range(CONTEXT, len(heldout["states"])):
+    for origin in range(CONTEXT, heldout["first_hit"]):
         horizon = min(ROLLOUT, len(heldout["states"]) - origin)
         predictions, logits = predict_rollout(
             model, heldout, origin, horizon, graph, statistics
@@ -500,9 +584,11 @@ def all_forecast_opportunities_evaluation(
                     "predicted_transition": int(probability >= 0.5),
                 }
             )
-    write_csv(out / "all_forecast_opportunities_metrics.csv", rows)
+    if any(row["origin_cycle"] >= heldout["first_hit"] for row in rows):
+        raise AssertionError("post-hit origin entered pre-event evaluation")
+    write_csv(out / "pre_event_forecast_opportunities_metrics.csv", rows)
     report = {
-        "distribution_unit": "overlapping_origin_horizon_forecast_opportunity",
+        "distribution_unit": "overlapping_pre_event_origin_horizon_opportunity",
         "overall": classification_summary(rows),
         "by_horizon": {
             f"h{horizon}": classification_summary(
@@ -516,7 +602,7 @@ def all_forecast_opportunities_evaluation(
         "used_for_model_selection": False,
         "threshold_tuned_on_heldout": False,
     }
-    write_json(out / "all_forecast_opportunities_summary.json", report)
+    write_json(out / "pre_event_forecast_opportunities_summary.json", report)
 
 
 def evaluate(
@@ -537,23 +623,42 @@ def evaluate(
         predictions, logits = predict_rollout(
             model, heldout, origin, horizon, graph, statistics
         )
+        baseline_predictions = {
+            method: baseline_rollout(heldout, origin, horizon, statistics, method)
+            for method in ("persistence", "constrained_linear")
+        }
         for cycle, prediction in predictions.items():
             prediction_array = prediction.cpu().numpy()
             target_array = heldout["states"][cycle - 1].cpu().numpy()
-            rows.append(
-                {
-                    "trajectory_id": heldout["trajectory_id"],
-                    "origin_cycle": origin,
-                    "target_cycle": cycle,
-                    "horizon": cycle - origin,
-                    **field_metrics(prediction_array, target_array, areas),
-                }
-            )
+            method_predictions = {
+                "gno_data": prediction_array,
+                **{
+                    method: values[cycle].cpu().numpy()
+                    for method, values in baseline_predictions.items()
+                },
+            }
+            for method, method_prediction in method_predictions.items():
+                rows.append(
+                    {
+                        "trajectory_id": heldout["trajectory_id"],
+                        "fold_role": fold_role(heldout["trajectory_id"]),
+                        "evaluation_role": "primary_event_centred",
+                        "mapping_domain": "native_full_mesh",
+                        "method": method,
+                        "origin_cycle": origin,
+                        "target_cycle": cycle,
+                        "horizon": cycle - origin,
+                        **field_metrics(method_prediction, target_array, areas),
+                    }
+                )
             probability = float(torch.sigmoid(logits[cycle]).cpu())
             truth = int(cycle >= heldout["first_hit"])
             warning_rows.append(
                 {
                     "trajectory_id": heldout["trajectory_id"],
+                    "fold_role": fold_role(heldout["trajectory_id"]),
+                    "evaluation_role": "primary_transition",
+                    "method": "gno_data",
                     "origin_cycle": origin,
                     "target_cycle": cycle,
                     "horizon": cycle - origin,
@@ -565,6 +670,8 @@ def evaluate(
             )
             key = f"origin_c{origin}__target_c{cycle}"
             assets[f"{key}__prediction"] = prediction_array
+            for method, values in baseline_predictions.items():
+                assets[f"{key}__{method}"] = values[cycle].cpu().numpy()
             assets[f"{key}__fem"] = target_array
             assets[f"{key}__transition_logit"] = np.asarray(float(logits[cycle].cpu()))
             assets[f"{key}__transition_probability"] = np.asarray(probability)
@@ -572,6 +679,18 @@ def evaluate(
             heldout["states"][origin - CONTEXT : origin].cpu().numpy()
         )
     write_csv(out / "fem_centred_metrics.csv", rows)
+    if (
+        len(rows) != 27
+        or {row["method"] for row in rows}
+        != {"gno_data", "persistence", "constrained_linear"}
+    ):
+        raise AssertionError("event-centred primary field population is incomplete")
+    truth_counts = {
+        truth: sum(row["truth_transition"] == truth for row in warning_rows)
+        for truth in (0, 1)
+    }
+    if len(warning_rows) != 9 or truth_counts != {0: 3, 1: 6}:
+        raise AssertionError("event-centred transition population must be 3 negative and 6 positive")
     write_csv(out / "transition_warning_metrics.csv", warning_rows)
     write_json(
         out / "transition_warning_summary.json",
@@ -587,7 +706,9 @@ def evaluate(
         },
     )
     np.savez_compressed(out / "locked_transition_predictions.npz", **assets)
-    all_forecast_opportunities_evaluation(model, heldout, graph, statistics, out)
+    pre_event_forecast_opportunities_evaluation(
+        model, heldout, graph, statistics, out
+    )
 
 
 def matched_pidl_evaluation(
@@ -599,18 +720,68 @@ def matched_pidl_evaluation(
     data_root: Path,
     out: Path,
 ) -> None:
-    """Evaluate one frozen same-cycle FEM/PIDL/GNO state after training."""
+    """Write primary observation-only controls and secondary PIDL context."""
     target_cycles = {"hard5_u011": 121, "hard5_u012": 82, "hard5_u013": 55}
     target_cycle = target_cycles[heldout["trajectory_id"]]
+    origin_cycle = target_cycle - 1
     predictions, _ = predict_rollout(
-        model, heldout, target_cycle - 1, 1, graph, statistics
+        model, heldout, origin_cycle, 1, graph, statistics
     )
     gno = predictions[target_cycle].cpu().numpy()
     fem = heldout["states"][target_cycle - 1].cpu().numpy()
+    primary_predictions = {
+        "gno_data": gno,
+        **{
+            method: baseline_rollout(
+                heldout, origin_cycle, 1, statistics, method
+            )[target_cycle]
+            .cpu()
+            .numpy()
+            for method in ("persistence", "constrained_linear")
+        },
+    }
+    areas = np.asarray(graph_arrays["areas"], dtype=np.float64)
+    primary_rows = [
+        {
+            "trajectory_id": heldout["trajectory_id"],
+            "umax": heldout["umax"],
+            "target_cycle": target_cycle,
+            "origin_cycle": origin_cycle,
+            "fold_role": fold_role(heldout["trajectory_id"]),
+            "evaluation_role": "secondary_diagnostic",
+            "mapping_domain": "native_full_mesh",
+            "method": method,
+            **field_metrics(prediction, fem, areas),
+        }
+        for method, prediction in primary_predictions.items()
+    ]
+    write_csv(out / "matched_cycle_baseline_metrics.csv", primary_rows)
+
     pidl_asset = np.load(
         data_root / "pidl_matches" / f"{heldout['trajectory_id']}.npz",
         allow_pickle=False,
     )
+    required_pidl_keys = {
+        "fem_centroids",
+        "fem_areas",
+        "damage",
+        "alpha_bar",
+        "fatigue_f",
+        "psi_raw_direct",
+        "mapping_contained",
+    }
+    if not required_pidl_keys.issubset(pidl_asset.files):
+        raise ValueError("PIDL secondary asset is missing frozen mapping fields")
+    expected_centroids = np.asarray(graph_arrays["centroids"])
+    pidl_centroids = np.asarray(pidl_asset["fem_centroids"])
+    pidl_areas = np.asarray(pidl_asset["fem_areas"])
+    if (
+        pidl_centroids.shape != expected_centroids.shape
+        or not np.array_equal(pidl_centroids, expected_centroids)
+        or pidl_areas.shape != areas.shape
+        or not np.array_equal(pidl_areas, areas)
+    ):
+        raise ValueError("PIDL secondary mesh metadata does not match frozen FEM mesh")
     pidl = np.column_stack(
         [
             np.clip(np.asarray(pidl_asset["damage"]), 0.0, 1.0),
@@ -620,17 +791,29 @@ def matched_pidl_evaluation(
         ]
     ).astype(np.float32)
     contained = np.asarray(pidl_asset["mapping_contained"], dtype=bool)
-    areas = np.asarray(graph_arrays["areas"], dtype=np.float64)
+    if (
+        pidl.shape != fem.shape
+        or contained.shape != (len(fem),)
+        or not contained.any()
+        or not np.isfinite(pidl).all()
+    ):
+        raise ValueError("PIDL secondary field shape, mask, or finiteness is invalid")
     rows = []
-    for method, prediction in (("gno_data", gno), ("pidl_mapped", pidl)):
+    for method, prediction in (
+        ("gno_data", gno),
+        ("pidl_mapped", pidl),
+    ):
         rows.append(
             {
                 "trajectory_id": heldout["trajectory_id"],
                 "umax": heldout["umax"],
                 "target_cycle": target_cycle,
-                "origin_cycle": target_cycle - 1 if method == "gno_data" else "",
+                "origin_cycle": origin_cycle,
                 "method": method,
-                "comparison_class": "same_cycle_pre_event_archive_state",
+                "fold_role": fold_role(heldout["trajectory_id"]),
+                "evaluation_role": "secondary",
+                "timing_semantics": "timing_unverified_secondary",
+                "comparison_class": "nominal_same_cycle_pre_event_not_primary",
                 "mapping_domain": "pidl_containing_triangle_cells_only",
                 "mapping_contained_cells": int(contained.sum()),
                 **field_metrics(prediction[contained], fem[contained], areas[contained]),
@@ -644,6 +827,8 @@ def matched_pidl_evaluation(
         mapping_contained=contained,
         fem=fem,
         gno=gno,
+        persistence=primary_predictions["persistence"],
+        constrained_linear=primary_predictions["constrained_linear"],
         pidl=pidl,
         target_cycle=np.asarray(target_cycle),
     )
@@ -1034,13 +1219,18 @@ def train(args: argparse.Namespace) -> None:
         "damage_fixed_point_gate": "fail",
         "physics_loss_weight": 0.0,
         "physical_validation": False,
-        "trajectory_metadata": "[hard=1, soft=0, five_step=1, known_umax]",
+        "trajectory_metadata": "[hard=1, soft=0, five_step=1, design_scaled_umax]",
         "heldout_trajectory_id": heldout["trajectory_id"],
+        "fold_role": fold_role(heldout["trajectory_id"]),
         "training_trajectory_ids": [item["trajectory_id"] for item in training],
         "heldout_first_hit_used_in_training": False,
         "context": CONTEXT,
         "rollout": ROLLOUT,
-        "balanced_sampling": "alternate transition-containing and ordinary training windows",
+        "statistics": "trajectory_equal_pre_hit_first_and_second_moments",
+        "balanced_sampling": "alternate bucket then equal-probability trajectory then pre-hit origin",
+        "training_origins": "strictly_less_than_training_first_hit",
+        "pidl_values": "secondary_evaluation_only_after_training",
+        "pidl_bytes": "preflight_hash_verified",
         "bucket_gradient_scales": {
             name: float(value.cpu()) for name, value in bucket_gradient_scales.items()
         },
@@ -1068,9 +1258,10 @@ def train(args: argparse.Namespace) -> None:
             "fem_centred_metrics.csv",
             "transition_warning_metrics.csv",
             "transition_warning_summary.json",
-            "all_forecast_opportunities_metrics.csv",
-            "all_forecast_opportunities_summary.json",
+            "pre_event_forecast_opportunities_metrics.csv",
+            "pre_event_forecast_opportunities_summary.json",
             "locked_transition_predictions.npz",
+            "matched_cycle_baseline_metrics.csv",
             "matched_pidl_fem_metrics.csv",
             "matched_pidl_fem_fields.npz",
             "final_model.pt",

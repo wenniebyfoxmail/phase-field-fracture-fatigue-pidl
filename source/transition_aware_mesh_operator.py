@@ -62,7 +62,7 @@ def transition_node_features(
         raise ValueError("history must have shape [context, elements, 4]")
     if trajectory_metadata.shape != (4,):
         raise ValueError(
-            "trajectory_metadata must be [is_hard,is_soft,is_5step,known_umax]"
+            "trajectory_metadata must be [is_hard,is_soft,is_5step,design_scaled_umax]"
         )
     normalized = (history - statistics.state_mean) / statistics.state_std
     flattened = normalized.permute(1, 0, 2).reshape(len(history[0]), -1)

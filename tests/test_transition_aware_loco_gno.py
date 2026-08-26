@@ -20,6 +20,7 @@ from fem_mechanism_operator import StateStatistics  # noqa: E402
 from train_transition_aware_loco_gno import (  # noqa: E402
     EXPECTED_PARAMETER_COUNT,
     Window,
+    baseline_rollout,
     build_training_windows,
     calibrate_bucket_gradient_scales,
     classification_summary,
@@ -27,7 +28,9 @@ from train_transition_aware_loco_gno import (  # noqa: E402
     choose_balanced_window,
     evaluate,
     enforce_taobo_preflight,
+    fold_role,
     load_dataset,
+    matched_pidl_evaluation,
     predict_rollout,
     training_statistics,
     trajectory_metadata,
@@ -108,10 +111,19 @@ def test_features_exclude_cycle_and_event_information():
 
 
 def test_hard5_metadata_contains_only_known_protocol_and_umax():
-    metadata = trajectory_metadata("hard5_u012", 0.12, torch.device("cpu"))
-    assert metadata.tolist() == pytest.approx([1.0, 0.0, 1.0, 0.12])
+    assert trajectory_metadata(
+        "hard5_u011", 0.11, torch.device("cpu")
+    ).tolist() == pytest.approx([1.0, 0.0, 1.0, -1.0])
+    assert trajectory_metadata(
+        "hard5_u012", 0.12, torch.device("cpu")
+    ).tolist() == pytest.approx([1.0, 0.0, 1.0, 0.0])
+    assert trajectory_metadata(
+        "hard5_u013", 0.13, torch.device("cpu")
+    ).tolist() == pytest.approx([1.0, 0.0, 1.0, 1.0])
     with pytest.raises(ValueError, match="Hard-5 amplitude"):
         trajectory_metadata("hard5_u014", 0.14, torch.device("cpu"))
+    with pytest.raises(ValueError, match="Hard-5 amplitude"):
+        trajectory_metadata("hard5_u012", 0.13, torch.device("cpu"))
 
 
 def test_transition_aware_operator_forward_backward_and_capacity():
@@ -145,6 +157,11 @@ def test_balanced_windows_use_training_first_hits_only():
     ]
     positive, negative = build_training_windows(items)
     assert positive and negative
+    assert all(window.origin_cycle < items[window.trajectory_index]["first_hit"] for window in positive + negative)
+    assert {
+        index: sum(window.trajectory_index == index for window in positive)
+        for index in range(3)
+    } == {0: 3, 1: 3, 2: 3}
     for window in positive:
         item = items[window.trajectory_index]
         targets = range(window.origin_cycle + 1, window.origin_cycle + 4)
@@ -163,6 +180,19 @@ def test_sampler_alternates_transition_and_ordinary_buckets():
     rng = random.Random(1)
     assert choose_balanced_window(positive, negative, 1, rng).contains_transition
     assert not choose_balanced_window(positive, negative, 2, rng).contains_transition
+
+
+def test_hierarchical_sampler_is_trajectory_equal_for_100_to_1_windows():
+    import random
+
+    positive = [Window(0, cycle, True) for cycle in range(100)] + [
+        Window(1, 1, True)
+    ]
+    rng = random.Random(17)
+    counts = {0: 0, 1: 0}
+    for _ in range(4000):
+        counts[choose_balanced_window(positive, [], 1, rng).trajectory_index] += 1
+    assert counts[0] / sum(counts.values()) == pytest.approx(0.5, abs=0.03)
 
 
 def test_transition_label_and_supervised_loss_have_no_physics_term():
@@ -206,6 +236,16 @@ def test_training_statistics_exclude_an_unpassed_heldout_item():
     assert stats.state_mean.flatten().tolist() == [2.0] * 4
 
 
+def test_training_statistics_use_equal_trajectory_moments_not_length_weighting():
+    short = fake_item("short", 3, 3)
+    long = fake_item("long", 102, 102)
+    short["states"][:] = 1.0
+    long["states"][:] = 3.0
+    stats = training_statistics([short, long], torch.device("cpu"))
+    assert stats.state_mean.flatten().tolist() == pytest.approx([2.0] * 4)
+    assert stats.state_std.flatten().tolist() == pytest.approx([1.0] * 4)
+
+
 class SpyRolloutModel(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -233,7 +273,7 @@ def test_predict_rollout_is_truly_autoregressive():
 def test_evaluation_writes_nine_stress_rows_and_all_locked_predictions(tmp_path):
     model = SpyRolloutModel()
     item = {
-        "trajectory_id": "factorial_hard_5step_u012",
+        "trajectory_id": "hard5_u012",
         "states": torch.zeros(8, 4, 4),
         "first_hit": 6,
         "metadata": torch.tensor([1.0, 0.0, 1.0, 0.0]),
@@ -248,6 +288,19 @@ def test_evaluation_writes_nine_stress_rows_and_all_locked_predictions(tmp_path)
         rows = list(csv.DictReader(handle))
     assert len(rows) == 9
     assert sum(int(row["truth_transition"]) for row in rows) == 6
+    assert sum(1 - int(row["truth_transition"]) for row in rows) == 3
+    assert all(row["evaluation_role"] == "primary_transition" for row in rows)
+    with (tmp_path / "fem_centred_metrics.csv").open() as handle:
+        field_rows = list(csv.DictReader(handle))
+    assert len(field_rows) == 27
+    assert {row["method"] for row in field_rows} == {
+        "gno_data",
+        "persistence",
+        "constrained_linear",
+    }
+    assert all(
+        row["evaluation_role"] == "primary_event_centred" for row in field_rows
+    )
     with np.load(tmp_path / "locked_transition_predictions.npz") as assets:
         prediction_keys = [key for key in assets.files if key.endswith("__prediction")]
         fem_keys = [key for key in assets.files if key.endswith("__fem")]
@@ -267,10 +320,14 @@ def test_evaluation_writes_nine_stress_rows_and_all_locked_predictions(tmp_path)
         == 9
     )
     assert len(context_keys) == 3
+    with (tmp_path / "pre_event_forecast_opportunities_metrics.csv").open() as handle:
+        opportunity_rows = list(csv.DictReader(handle))
+    assert opportunity_rows
+    assert all(int(row["origin_cycle"]) < item["first_hit"] for row in opportunity_rows)
     summary = json.loads(
-        (tmp_path / "all_forecast_opportunities_summary.json").read_text()
+        (tmp_path / "pre_event_forecast_opportunities_summary.json").read_text()
     )
-    assert summary["overall"]["evaluated_rows"] == 12
+    assert summary["overall"]["evaluated_rows"] == 9
     assert set(summary["by_horizon"]) == {"h1", "h2", "h3"}
     assert summary["unique_cycle_h1"] == summary["by_horizon"]["h1"]
 
@@ -610,4 +667,120 @@ def test_archive_finalization_failure_cannot_leave_complete_receipt(
 )
 def test_only_declared_hard5_metadata_is_decoded(trajectory_id, umax):
     actual = trajectory_metadata(trajectory_id, umax, torch.device("cpu"))
-    assert actual.tolist() == pytest.approx([1.0, 0.0, 1.0, umax])
+    expected_scaled = (umax - 0.12) / 0.01
+    assert actual.tolist() == pytest.approx([1.0, 0.0, 1.0, expected_scaled])
+
+
+def test_fold_role_is_fixed_and_rejects_unknown_fold():
+    assert fold_role("hard5_u012") == "interpolation_primary"
+    assert fold_role("hard5_u011") == "endpoint_extrapolation_secondary"
+    assert fold_role("hard5_u013") == "endpoint_extrapolation_secondary"
+    with pytest.raises(ValueError, match="unknown Hard5 fold"):
+        fold_role("hard5_u014")
+
+
+def test_constrained_linear_baseline_preserves_state_constraints():
+    item = fake_item("hard5_u012", 6, 6)
+    item["states"][1] = torch.tensor([0.2, 0.4, 0.8, -2.0])
+    item["states"][2] = torch.tensor([0.3, 0.5, 0.7, -1.0])
+    prediction = baseline_rollout(
+        item, 3, 1, statistics(), "constrained_linear"
+    )[4]
+    assert torch.all(prediction[:, 0] >= item["states"][2, :, 0])
+    assert torch.all(prediction[:, 1] >= item["states"][2, :, 1])
+    assert torch.all(prediction[:, 2] <= item["states"][2, :, 2])
+
+
+def test_matched_primary_controls_share_origin_target_and_native_domain(tmp_path):
+    model = SpyRolloutModel()
+    item = {
+        "trajectory_id": "hard5_u012",
+        "umax": 0.12,
+        "states": torch.zeros(89, 4, 4),
+        "first_hit": 83,
+        "metadata": torch.tensor([1.0, 0.0, 1.0, 0.0]),
+    }
+    graph_value = graph()
+    graph_arrays = {
+        "areas": graph_value["areas"].numpy(),
+        "centroids": graph_value["coordinates"].numpy(),
+    }
+    pidl_root = tmp_path / "data" / "pidl_matches"
+    pidl_root.mkdir(parents=True)
+    np.savez_compressed(
+        pidl_root / "hard5_u012.npz",
+        fem_centroids=graph_arrays["centroids"],
+        fem_areas=graph_arrays["areas"],
+        damage=np.zeros(4),
+        alpha_bar=np.zeros(4),
+        fatigue_f=np.ones(4),
+        psi_raw_direct=np.ones(4),
+        mapping_contained=np.ones(4, dtype=bool),
+    )
+    out = tmp_path / "out"
+    out.mkdir()
+    matched_pidl_evaluation(
+        model, item, graph_value, graph_arrays, statistics(), tmp_path / "data", out
+    )
+    with (out / "matched_cycle_baseline_metrics.csv").open() as handle:
+        primary = list(csv.DictReader(handle))
+    assert {row["method"] for row in primary} == {
+        "gno_data",
+        "persistence",
+        "constrained_linear",
+    }
+    assert {row["origin_cycle"] for row in primary} == {"81"}
+    assert {row["target_cycle"] for row in primary} == {"82"}
+    assert {row["mapping_domain"] for row in primary} == {"native_full_mesh"}
+    assert {row["evaluation_role"] for row in primary} == {
+        "secondary_diagnostic"
+    }
+    with (out / "matched_pidl_fem_metrics.csv").open() as handle:
+        secondary = list(csv.DictReader(handle))
+    assert {row["method"] for row in secondary} == {"gno_data", "pidl_mapped"}
+    assert {row["evaluation_role"] for row in secondary} == {"secondary"}
+    assert {row["timing_semantics"] for row in secondary} == {
+        "timing_unverified_secondary"
+    }
+
+
+def test_matched_pidl_mesh_metadata_mismatch_fails_closed(tmp_path):
+    model = SpyRolloutModel()
+    item = {
+        "trajectory_id": "hard5_u012",
+        "umax": 0.12,
+        "states": torch.zeros(89, 4, 4),
+        "first_hit": 83,
+        "metadata": torch.tensor([1.0, 0.0, 1.0, 0.0]),
+    }
+    graph_value = graph()
+    graph_arrays = {
+        "areas": graph_value["areas"].numpy(),
+        "centroids": graph_value["coordinates"].numpy(),
+    }
+    pidl_root = tmp_path / "data" / "pidl_matches"
+    pidl_root.mkdir(parents=True)
+    shifted = graph_arrays["centroids"].copy()
+    shifted[0, 0] += 0.01
+    np.savez_compressed(
+        pidl_root / "hard5_u012.npz",
+        fem_centroids=shifted,
+        fem_areas=graph_arrays["areas"],
+        damage=np.zeros(4),
+        alpha_bar=np.zeros(4),
+        fatigue_f=np.ones(4),
+        psi_raw_direct=np.ones(4),
+        mapping_contained=np.ones(4, dtype=bool),
+    )
+    out = tmp_path / "out"
+    out.mkdir()
+    with pytest.raises(ValueError, match="mesh metadata"):
+        matched_pidl_evaluation(
+            model,
+            item,
+            graph_value,
+            graph_arrays,
+            statistics(),
+            tmp_path / "data",
+            out,
+        )
