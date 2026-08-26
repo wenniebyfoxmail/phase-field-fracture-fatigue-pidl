@@ -32,6 +32,18 @@ EXPECTED_THREADS = {
     "OPENBLAS_NUM_THREADS": "1",
     "MKL_DYNAMIC": "FALSE",
 }
+RUNTIME_SOURCE_CLOSURE = {
+    "family_runtime_source_commit": "fc19b6017add6b075dd24fa9525a5e8daa99090c",
+    "q1_mex_build_source_commit": "355d4c83fefc2db88c32031a2dd2623b3de85c89",
+    "griphfith_runtime_source_inventory_sha256": (
+        "d589547b85e5dcb160cee911c11765c64d93deefffed382c3c5f3cd5040ba485"
+    ),
+    "qualified_t3_input_snapshot_sha256": (
+        "3086fbdc516087117f0313b451c9f6d8423daf06aadd66cc25e397767794460e"
+    ),
+    "mesh_x_extent": 1.0,
+    "at1_recovery_penalty": 13781.25,
+}
 EXPECTED_MATLAB = {
     "absolute_path_order": [
         "C:\\q4diag\\toy-road-t3-production-7c56ff3-run1\\.toy-road-runtime-overlay",
@@ -429,7 +441,7 @@ def build_seal(
     }
     runtime_identity = copy.deepcopy(EXPECTED_EXECUTION)
     seal: dict[str, object] = {
-        "schema_version": "toy_road_t3_rev_seal_v1",
+        "schema_version": "toy_road_t3_rev_seal_v2",
         "status": "PASS",
         "case_id": CASE_ID,
         "authorization_capability": "exactly_one_T3_rev_loading_order_execution",
@@ -439,6 +451,7 @@ def build_seal(
         "predecessor_evidence": predecessor_evidence,
         "physics_closure": physics,
         "runtime_identity": runtime_identity,
+        "runtime_source_closure": copy.deepcopy(RUNTIME_SOURCE_CLOSURE),
     }
     try:
         destination.mkdir(parents=True, exist_ok=False)

@@ -23,7 +23,11 @@ REGISTRY = ROOT / "docs/toy_road_p0_repeatability_20260802/QUALIFIED_TRAJECTORY_
 BASE = ROOT / "producer_handoffs/toy_road_p0_repeatability_20260803"
 T3_TEMPLATE_ROOT = Path(r"C:\q4diag\toy-road-t3-production-7c56ff3-run1")
 T3_TEMPLATE_LOCK_FIXTURE = ROOT / "tests/fixtures/T3_EXECUTION_INPUT_LOCK.json"
-QUALIFIED_GRIPHFITH_SOURCE_REPO = Path(r"C:\q4diag\griphfith-pf-rebuild-355d4c83")
+QUALIFIED_GRIPHFITH_SOURCE_REPO = Path(
+    r"C:\q4diag\griphfith-pf-rebuild-355d4c83-pre-t3rev-backup-"
+    r"b66e08be94ff552b7f467ac2e7b693034cef01f5"
+)
+FAMILY_RUNTIME_OVERRIDE = "Sources/+specimen/+external/gmsh_import.m"
 REAL_T3_REV_RUN = Path(
     r"C:\q4diag\toy-road-t3-rev-production-"
     r"b66e08be94ff552b7f467ac2e7b693034cef01f5-run1"
@@ -334,6 +338,19 @@ def test_seal_binds_extension_and_exactly_one_case(tmp_path: Path) -> None:
     assert seal["authorization_capability"] == "exactly_one_T3_rev_loading_order_execution"
     assert seal["resume_allowed"] is False
     assert seal["follow_on_authorized"] is False
+    assert seal["schema_version"] == "toy_road_t3_rev_seal_v2"
+    assert seal["runtime_source_closure"] == {
+        "family_runtime_source_commit": "fc19b6017add6b075dd24fa9525a5e8daa99090c",
+        "q1_mex_build_source_commit": "355d4c83fefc2db88c32031a2dd2623b3de85c89",
+        "griphfith_runtime_source_inventory_sha256": (
+            "d589547b85e5dcb160cee911c11765c64d93deefffed382c3c5f3cd5040ba485"
+        ),
+        "qualified_t3_input_snapshot_sha256": (
+            "3086fbdc516087117f0313b451c9f6d8423daf06aadd66cc25e397767794460e"
+        ),
+        "mesh_x_extent": 1.0,
+        "at1_recovery_penalty": 13781.25,
+    }
     extension_identity = seal["extension_identity"]
     assert isinstance(extension_identity, dict)
     assert extension_identity["base_source_commit"] == "7c56ff383187cdee2f45e1b15d707f148f386302"
@@ -598,6 +615,17 @@ def _allow_test_matlab_identity(
     monkeypatch.setattr(module, "require_qualified_runtime_paths", lambda *args: None, raising=False)
     monkeypatch.setattr(module, "require_qualified_griphfith_sources", lambda *args: None, raising=False)
     monkeypatch.setattr(module, "require_materialized_runtime_overlay", lambda *args: None, raising=False)
+    monkeypatch.setattr(
+        module,
+        "require_template_recovery_geometry",
+        lambda _root: {
+            "input_snapshot_sha256": module.QUALIFIED_TEMPLATE_SNAPSHOT_SHA256,
+            "status": "PASS",
+            "mesh_x_extent": 1.0,
+            "at1_recovery_penalty": 13781.25,
+        },
+        raising=False,
+    )
     if allow_input_assets:
         monkeypatch.setattr(
             module, "input_asset_sha256",
@@ -659,6 +687,108 @@ def test_runtime_path_binding_rejects_reparse_alias_even_when_sealed_text_matche
         module.require_qualified_runtime_paths(runtime, matlab.absolute(), alias.absolute())
 
 
+def test_runtime_source_inventory_uses_family_commit_not_q1_build_commit() -> None:
+    """Runtime source closure must apply the post-Q1 geometry fix used by P0/T3."""
+    module = load_module("launch_t3_rev")
+
+    inventory = module.qualified_source_inventory(ROOT)
+
+    assert module.FAMILY_RUNTIME_SOURCE_COMMIT == (
+        "fc19b6017add6b075dd24fa9525a5e8daa99090c"
+    )
+    assert module.Q1_MEX_BUILD_SOURCE_COMMIT == (
+        "355d4c83fefc2db88c32031a2dd2623b3de85c89"
+    )
+    assert inventory["Sources/+specimen/+external/gmsh_import.m"] == (
+        "30e9f354ece846c8166f4f553ec9c97ed90e38bf65c90a5388e5b1ac39ea5ae3"
+    )
+
+
+def test_runtime_source_inventory_rejects_family_contract_bound_to_q1_commit(
+        tmp_path: Path) -> None:
+    """A valid Q1 inventory cannot replace the family runtime source identity."""
+    module = load_module("launch_t3_rev")
+    handoff = tmp_path / "producer_handoffs/toy_road_p0_repeatability_20260803"
+    q1_build = tmp_path / "producer_handoffs/rebuilt_initial_mex_qualification_20260801/build"
+    handoff.mkdir(parents=True)
+    q1_build.mkdir(parents=True)
+    shutil.copy2(BASE / "FAMILY_CONTRACT.json", handoff / "FAMILY_CONTRACT.json")
+    shutil.copy2(
+        ROOT / "producer_handoffs/rebuilt_initial_mex_qualification_20260801/build/"
+        "SOURCE_HASHES.json",
+        q1_build / "SOURCE_HASHES.json",
+    )
+    family = strict_json(handoff / "FAMILY_CONTRACT.json")
+    family["runtime_identity"]["griphfith_source_commit"] = (
+        "355d4c83fefc2db88c32031a2dd2623b3de85c89"
+    )
+    (handoff / "FAMILY_CONTRACT.json").write_text(
+        json.dumps(family, separators=(",", ":")), encoding="utf-8"
+    )
+
+    with pytest.raises(module.LaunchError, match="family runtime source identity"):
+        module.qualified_source_inventory(tmp_path)
+
+
+def test_recovery_geometry_preflight_reports_positive_family_penalty() -> None:
+    """The qualified unit-width mesh must imply the positive AT1 recovery penalty."""
+    module = load_module("launch_t3_rev")
+    snapshot = {
+        "case_physics": {
+            "mesh": {"node_coords": [[-0.5, -0.5], [0.5, 0.5]]},
+            "material": {"Gc": 0.01, "ell": 0.01},
+        },
+    }
+
+    result = module.recovery_geometry_preflight(snapshot)
+
+    assert result == {
+        "status": "PASS",
+        "mesh_x_extent": 1.0,
+        "at1_recovery_penalty": 13781.25,
+    }
+
+
+def test_recovery_geometry_preflight_rejects_zero_extent_before_launch() -> None:
+    """A max-minus-max geometry regression must not reach MATLAB."""
+    module = load_module("launch_t3_rev")
+    snapshot = {
+        "case_physics": {
+            "mesh": {"node_coords": [[0.0, -0.5], [0.0, 0.5]]},
+            "material": {"Gc": 0.01, "ell": 0.01},
+        },
+    }
+
+    with pytest.raises(module.LaunchError, match="recovery geometry|penalty"):
+        module.recovery_geometry_preflight(snapshot)
+
+
+def test_template_recovery_preflight_binds_snapshot_hash_and_geometry(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The predecessor snapshot bytes and derived recovery geometry travel together."""
+    module = load_module("launch_t3_rev")
+    snapshot = {
+        "case_physics": {
+            "mesh": {"node_coords": [[-0.5, -0.5], [0.5, 0.5]]},
+            "material": {"Gc": 0.01, "ell": 0.01},
+        },
+    }
+    snapshot_path = tmp_path / "output/INPUT_SNAPSHOT.json"
+    snapshot_path.parent.mkdir()
+    snapshot_path.write_text(
+        json.dumps(snapshot, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    digest = hashlib.sha256(snapshot_path.read_bytes()).hexdigest()
+    monkeypatch.setattr(module, "QUALIFIED_TEMPLATE_SNAPSHOT_SHA256", digest)
+
+    result = module.require_template_recovery_geometry(tmp_path)
+
+    assert result["input_snapshot_sha256"] == digest
+    assert result["mesh_x_extent"] == 1.0
+    assert result["at1_recovery_penalty"] == 13781.25
+
+
 def test_launcher_rejects_non_mex_source_mutation_before_root_or_consumption(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Every qualified MATLAB/C/C++/header source, not just binaries, is byte-bound."""
@@ -675,15 +805,18 @@ def test_launcher_rejects_non_mex_source_mutation_before_root_or_consumption(
     )
     records = evidence["locked_git_tree_inventory"]
     assert isinstance(records, list) and len(records) == 221
-    source_repo = Path(r"C:\q4diag\griphfith-pf-rebuild-355d4c83")
+    source_repo = QUALIFIED_GRIPHFITH_SOURCE_REPO
     if not source_repo.is_dir():
         pytest.skip("qualified GRIPHFiTH Git object database is unavailable")
     for record in records:
         relative = record["path"]
-        payload = subprocess.check_output([
-            "git", "-C", str(source_repo), "show",
-            f"355d4c83fefc2db88c32031a2dd2623b3de85c89:{relative}",
-        ])
+        if relative == FAMILY_RUNTIME_OVERRIDE:
+            payload = (source_repo / relative).read_bytes()
+        else:
+            payload = subprocess.check_output([
+                "git", "-C", str(source_repo), "show",
+                f"fc19b6017add6b075dd24fa9525a5e8daa99090c:{relative}",
+            ])
         target = inputs["griphfith_root"] / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(payload)
@@ -692,6 +825,23 @@ def test_launcher_rejects_non_mex_source_mutation_before_root_or_consumption(
     mutated.write_bytes(mutated.read_bytes() + b"\n% mutation\n")
     with pytest.raises(module.LaunchError, match="qualified source.*System.m|System.m.*SHA-256"):
         module.launch_t3_rev(**inputs)
+    assert not inputs["run_root"].exists()
+    assert not seal_marker(module, inputs["seal_path"]).exists()
+
+
+def test_launcher_rejects_runtime_source_digest_outside_seal_before_root(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The live family-runtime closure must equal the closure declared by the seal."""
+    module = load_module("launch_t3_rev")
+    monkeypatch.setattr(module, "matlab_processes", lambda: [])
+    monkeypatch.setattr(module, "Popen", lambda *a, **k: pytest.fail("Popen called"))
+    inputs = _launcher_inputs(module, tmp_path)
+    _allow_test_matlab_identity(module, monkeypatch)
+    monkeypatch.setattr(module, "qualified_source_inventory_sha256", lambda _root: "0" * 64)
+
+    with pytest.raises(module.LaunchError, match="runtime source closure"):
+        module.launch_t3_rev(**inputs)
+
     assert not inputs["run_root"].exists()
     assert not seal_marker(module, inputs["seal_path"]).exists()
 
@@ -1213,6 +1363,18 @@ def test_launcher_popen_uses_locked_paths_and_environment(
     inputs = _launcher_inputs(module, tmp_path)
     inputs["run_root"] = tmp_path / "run"
     _allow_test_matlab_identity(module, monkeypatch)
+    geometry_calls: list[Path] = []
+
+    def recovery_preflight(template_root: Path) -> dict[str, object]:
+        geometry_calls.append(template_root)
+        return {
+            "input_snapshot_sha256": module.QUALIFIED_TEMPLATE_SNAPSHOT_SHA256,
+            "status": "PASS",
+            "mesh_x_extent": 1.0,
+            "at1_recovery_penalty": 13781.25,
+        }
+
+    monkeypatch.setattr(module, "require_template_recovery_geometry", recovery_preflight)
     monkeypatch.setattr(module, "Popen", fake_popen)
     result = module.launch_t3_rev(**inputs)
     assert result["status"] == "LAUNCHED"
@@ -1272,6 +1434,23 @@ def test_launcher_popen_uses_locked_paths_and_environment(
     assert matlab["absolute_path_order"] == expected_paths
     receipt = strict_json(tmp_path / "run" / "receipts" / "T3_REV_LAUNCH_RECEIPT.json")
     module.require_bridge_authorization_receipt(receipt)
+    assert geometry_calls == [inputs["template_run"], inputs["template_run"]]
+    assert receipt["schema_version"] == "toy_road_t3_rev_launch_receipt_v2"
+    assert receipt["family_runtime_source_commit"] == (
+        "fc19b6017add6b075dd24fa9525a5e8daa99090c"
+    )
+    assert receipt["q1_mex_build_source_commit"] == (
+        "355d4c83fefc2db88c32031a2dd2623b3de85c89"
+    )
+    assert receipt["griphfith_runtime_source_inventory_sha256"] == (
+        "d589547b85e5dcb160cee911c11765c64d93deefffed382c3c5f3cd5040ba485"
+    )
+    assert receipt["recovery_geometry_preflight"] == {
+        "input_snapshot_sha256": module.QUALIFIED_TEMPLATE_SNAPSHOT_SHA256,
+        "status": "PASS",
+        "mesh_x_extent": 1.0,
+        "at1_recovery_penalty": 13781.25,
+    }
     receipt_bytes = (tmp_path / "run" / "receipts" / "T3_REV_LAUNCH_RECEIPT.json").read_bytes()
     batch = captured["args"][0][2]
     assert hashlib.sha256(receipt_bytes).hexdigest() in batch
@@ -1513,10 +1692,13 @@ def test_real_t3_template_preflight_reaches_last_no_consumption_boundary(
     assert isinstance(records, list) and len(records) == 221
     for record in records:
         relative = record["path"]
-        payload = subprocess.check_output([
-            "git", "-C", str(QUALIFIED_GRIPHFITH_SOURCE_REPO), "show",
-            f"355d4c83fefc2db88c32031a2dd2623b3de85c89:{relative}",
-        ])
+        if relative == FAMILY_RUNTIME_OVERRIDE:
+            payload = (QUALIFIED_GRIPHFITH_SOURCE_REPO / relative).read_bytes()
+        else:
+            payload = subprocess.check_output([
+                "git", "-C", str(QUALIFIED_GRIPHFITH_SOURCE_REPO), "show",
+                f"fc19b6017add6b075dd24fa9525a5e8daa99090c:{relative}",
+            ])
         target = inputs["griphfith_root"] / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(payload)
@@ -2490,6 +2672,21 @@ def test_terminal_validator_authenticates_complete_launch_to_package_chain(
     )
     assert result["authorization_capability"] is None
     assert result["follow_on_authorized"] is False
+
+
+def test_terminal_validator_rejects_launch_runtime_source_identity_outside_seal(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A v2 receipt cannot substitute either GRIPHFiTH commit after sealing."""
+    _, _, inputs = _launched_terminal_fixture(monkeypatch, tmp_path)
+    module = load_module("validate_t3_rev_terminal")
+    seal = strict_json(inputs["seal_path"])
+    receipt = strict_json(
+        inputs["run_root"] / "receipts" / "T3_REV_LAUNCH_RECEIPT.json"
+    )
+    receipt["family_runtime_source_commit"] = "0" * 40
+
+    with pytest.raises(module.TerminalValidationError, match="runtime source closure"):
+        module.require_runtime_source_closure(seal, receipt)
 
 
 @pytest.mark.parametrize("missing", [

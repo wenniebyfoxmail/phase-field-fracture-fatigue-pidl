@@ -24,12 +24,21 @@ CASE_ID = "T3_rev_loading_order"
 AUTHORIZATION_CAPABILITY = "exactly_one_T3_rev_loading_order_execution"
 SUITESPARSE_ROOT = Path(r"C:\SuiteSparse\SuiteSparse-dev")
 AUTHORIZATION_STATE_ROOT = Path(r"C:\q4diag\toy-road-authorization-state\t3-rev-seal-v1")
-QUALIFIED_SOURCE_COMMIT = "355d4c83fefc2db88c32031a2dd2623b3de85c89"
+FAMILY_RUNTIME_SOURCE_COMMIT = "fc19b6017add6b075dd24fa9525a5e8daa99090c"
+Q1_MEX_BUILD_SOURCE_COMMIT = "355d4c83fefc2db88c32031a2dd2623b3de85c89"
 QUALIFIED_SOURCE_COUNT = 221
+FAMILY_RUNTIME_SOURCE_OVERRIDES = {
+    "Sources/+specimen/+external/gmsh_import.m": {
+        "q1_sha256": "d08117fa8d5cb02318734466d1f3b7ac21c068451f0cab8260c366db8b340318",
+        "runtime_sha256": "30e9f354ece846c8166f4f553ec9c97ed90e38bf65c90a5388e5b1ac39ea5ae3",
+    },
+}
+AT1_RECOVERY_TOLERANCE = 1e-3
 CREATE_NO_WINDOW = 0x08000000
 CREATE_NEW_PROCESS_GROUP = 0x00000200
 QUALIFIED_TEMPLATE_ROOT = Path(r"C:\q4diag\toy-road-t3-production-7c56ff3-run1")
 QUALIFIED_TEMPLATE_LOCK_SHA256 = "da1d30e728a0f689b02bbbf36ea85e18989ad6964d31b3c7824fb0755c362d59"
+QUALIFIED_TEMPLATE_SNAPSHOT_SHA256 = "3086fbdc516087117f0313b451c9f6d8423daf06aadd66cc25e397767794460e"
 QUALIFIED_TEMPLATE_CASE_ID = "T3_loading_history"
 QUALIFIED_TEMPLATE_CASE_CONTRACT_SHA256 = (
     "fbbe2c46ec394f20589e7c150783a08b5fbd79d13e51ce74eef90930def0146c"
@@ -80,6 +89,77 @@ def sha256(path: Path) -> str:
 def executable_sha256(path: Path) -> str:
     """Hash the supplied MATLAB executable before it can become a process."""
     return sha256(path)
+
+
+def recovery_geometry_preflight(snapshot: Mapping[str, object]) -> dict[str, object]:
+    """Reject a recovery geometry that would make the AT1 bound penalty non-positive."""
+    try:
+        physics = snapshot["case_physics"]
+        mesh = physics["mesh"]  # type: ignore[index]
+        material = physics["material"]  # type: ignore[index]
+        coordinates = mesh["node_coords"]  # type: ignore[index]
+        gc = material["Gc"]  # type: ignore[index]
+        ell = material["ell"]  # type: ignore[index]
+    except (KeyError, TypeError):
+        raise LaunchError("recovery geometry preflight input is malformed") from None
+    if not isinstance(coordinates, list) or not coordinates:
+        raise LaunchError("recovery geometry preflight input is malformed")
+    x_coordinates: list[float] = []
+    for node in coordinates:
+        if not isinstance(node, list) or len(node) < 2 or isinstance(node[0], bool) \
+                or not isinstance(node[0], (int, float)) or not math.isfinite(node[0]):
+            raise LaunchError("recovery geometry preflight input is malformed")
+        x_coordinates.append(float(node[0]))
+    if isinstance(gc, bool) or not isinstance(gc, (int, float)) or not math.isfinite(gc) \
+            or isinstance(ell, bool) or not isinstance(ell, (int, float)) \
+            or not math.isfinite(ell) or gc <= 0 or ell <= 0:
+        raise LaunchError("recovery geometry preflight material is malformed")
+    extent = max(x_coordinates) - min(x_coordinates)
+    penalty = (float(gc) / float(ell)) * (
+        9.0 * ((extent / float(ell)) - 2.0)
+    ) / (64.0 * AT1_RECOVERY_TOLERANCE)
+    if not math.isfinite(extent) or extent <= 0 or not math.isfinite(penalty) or penalty <= 0:
+        raise LaunchError("recovery geometry implies a non-positive AT1 recovery penalty")
+    return {
+        "status": "PASS",
+        "mesh_x_extent": extent,
+        "at1_recovery_penalty": penalty,
+    }
+
+
+def require_template_recovery_geometry(template_run: Path) -> dict[str, object]:
+    """Bind the qualified T3 snapshot bytes to a positive recovery geometry."""
+    snapshot_path = Path(template_run) / "output" / "INPUT_SNAPSHOT.json"
+    require_no_reparse_chain(snapshot_path, "qualified template input snapshot")
+    if not snapshot_path.is_file() or sha256(snapshot_path) != QUALIFIED_TEMPLATE_SNAPSHOT_SHA256:
+        raise LaunchError("qualified template input snapshot bytes are not exact")
+    result = recovery_geometry_preflight(read_json(snapshot_path))
+    return {
+        "input_snapshot_sha256": QUALIFIED_TEMPLATE_SNAPSHOT_SHA256,
+        **result,
+    }
+
+
+def require_runtime_source_closure(
+        seal: Mapping[str, object], runtime_source_inventory_sha256: str,
+        recovery_geometry: Mapping[str, object]) -> dict[str, object]:
+    """Cross-bind the live runtime projection and recovery geometry to the v2 seal."""
+    expected = seal.get("runtime_source_closure")
+    if not isinstance(expected, dict) or set(recovery_geometry) != {
+            "input_snapshot_sha256", "status", "mesh_x_extent", "at1_recovery_penalty"} \
+            or recovery_geometry.get("status") != "PASS":
+        raise LaunchError("runtime source closure is malformed")
+    actual = {
+        "family_runtime_source_commit": FAMILY_RUNTIME_SOURCE_COMMIT,
+        "q1_mex_build_source_commit": Q1_MEX_BUILD_SOURCE_COMMIT,
+        "griphfith_runtime_source_inventory_sha256": runtime_source_inventory_sha256,
+        "qualified_t3_input_snapshot_sha256": recovery_geometry["input_snapshot_sha256"],
+        "mesh_x_extent": recovery_geometry["mesh_x_extent"],
+        "at1_recovery_penalty": recovery_geometry["at1_recovery_penalty"],
+    }
+    if not _exact_json_equal(actual, expected):
+        raise LaunchError("live runtime source closure differs from the sealed closure")
+    return actual
 
 
 def resolve_runtime_binaries(repo_root: Path, griphfith_root: Path) -> dict[str, Path]:
@@ -293,12 +373,15 @@ def clean_repository_commit(repo_root: Path) -> str:
 
 def _require_seal(seal_path: Path, repo_commit: str) -> dict[str, object]:
     seal = read_json(seal_path)
-    required = {
+    common_required = {
         "schema_version", "status", "case_id", "authorization_capability", "resume_allowed",
         "follow_on_authorized", "extension_identity", "predecessor_evidence", "physics_closure",
         "runtime_identity",
     }
-    if set(seal) != required or seal.get("schema_version") != "toy_road_t3_rev_seal_v1" \
+    version = seal.get("schema_version")
+    required = common_required | ({"runtime_source_closure"} if version == "toy_road_t3_rev_seal_v2" else set())
+    if version not in {"toy_road_t3_rev_seal_v1", "toy_road_t3_rev_seal_v2"} \
+            or set(seal) != required \
             or seal.get("status") != "PASS" or seal.get("case_id") != CASE_ID \
             or seal.get("authorization_capability") != AUTHORIZATION_CAPABILITY \
             or seal.get("resume_allowed") is not False or seal.get("follow_on_authorized") is not False:
@@ -311,6 +394,9 @@ def _require_seal(seal_path: Path, repo_commit: str) -> dict[str, object]:
     seal_builder = _load_module("build_t3_rev_seal.py", "t3_rev_launch_seal")
     if not _exact_json_equal(runtime, seal_builder.EXPECTED_EXECUTION):
         raise LaunchError("seal runtime identity is not the accepted exact mapping")
+    if version == "toy_road_t3_rev_seal_v2" and not _exact_json_equal(
+            seal.get("runtime_source_closure"), seal_builder.RUNTIME_SOURCE_CLOSURE):
+        raise LaunchError("seal runtime source closure is not the accepted exact mapping")
     return seal
 
 
@@ -361,7 +447,7 @@ def consume_seal(
 
 def require_bridge_authorization_receipt(receipt: Mapping[str, object]) -> None:
     """Require the upstream receipt shape consumed by run_toy_road_runtime_bridge."""
-    required = {
+    common_required = {
         "schema_version", "status", "authorization_scope", "authorized_entrypoint", "case_id",
         "authorization_capability", "resume_allowed", "follow_on_authorized", "source_commit",
         "launcher_repository_commit",
@@ -370,7 +456,14 @@ def require_bridge_authorization_receipt(receipt: Mapping[str, object]) -> None:
         "extension_root", "runtime_overlay_root", "run_root", "extension_shadow_sha256",
         "thread_environment", "launch_nonce", "bootstrap_helper_sha256",
     }
-    if set(receipt) != required or receipt.get("schema_version") != "toy_road_t3_rev_launch_receipt_v1" \
+    version = receipt.get("schema_version")
+    v2_required = {
+        "family_runtime_source_commit", "q1_mex_build_source_commit",
+        "griphfith_runtime_source_inventory_sha256", "recovery_geometry_preflight",
+    }
+    required = common_required | (v2_required if version == "toy_road_t3_rev_launch_receipt_v2" else set())
+    if version not in {"toy_road_t3_rev_launch_receipt_v1", "toy_road_t3_rev_launch_receipt_v2"} \
+            or set(receipt) != required \
             or receipt.get("status") != "PASS" \
             or receipt.get("authorization_scope") != "production_authorized" \
             or receipt.get("authorized_entrypoint") != "run_toy_road_runtime_bridge" \
@@ -379,11 +472,13 @@ def require_bridge_authorization_receipt(receipt: Mapping[str, object]) -> None:
             or receipt.get("resume_allowed") is not False \
             or receipt.get("follow_on_authorized") is not False:
         raise LaunchError("launch receipt does not authorize the runtime bridge for exactly one T3-rev case")
-    digest_fields = (
+    digest_fields = [
         "runtime_lock_sha256", "family_contract_sha256", "case_physics_contract_sha256",
         "execution_input_lock_sha256", "seal_sha256", "extension_source_manifest_sha256",
         "bootstrap_helper_sha256",
-    )
+    ]
+    if version == "toy_road_t3_rev_launch_receipt_v2":
+        digest_fields.append("griphfith_runtime_source_inventory_sha256")
     if type(receipt.get("source_commit")) is not str or len(receipt["source_commit"]) != 40 \
             or any(character not in "0123456789abcdef" for character in receipt["source_commit"]) \
             or type(receipt.get("launcher_repository_commit")) is not str \
@@ -394,6 +489,25 @@ def require_bridge_authorization_receipt(receipt: Mapping[str, object]) -> None:
                    or any(character not in "0123456789abcdef" for character in receipt[field])
                    for field in digest_fields):
         raise LaunchError("launch receipt bridge identity fields are malformed")
+    recovery = receipt.get("recovery_geometry_preflight")
+    if version == "toy_road_t3_rev_launch_receipt_v2" and (
+            receipt.get("family_runtime_source_commit") != FAMILY_RUNTIME_SOURCE_COMMIT
+            or receipt.get("q1_mex_build_source_commit") != Q1_MEX_BUILD_SOURCE_COMMIT):
+        raise LaunchError("launch receipt GRIPHFiTH source identities are malformed")
+    if version == "toy_road_t3_rev_launch_receipt_v2" and (
+            not isinstance(recovery, dict) or set(recovery) != {
+            "input_snapshot_sha256", "status", "mesh_x_extent", "at1_recovery_penalty",
+    } or recovery.get("input_snapshot_sha256") != QUALIFIED_TEMPLATE_SNAPSHOT_SHA256 \
+            or recovery.get("status") != "PASS" \
+            or isinstance(recovery.get("mesh_x_extent"), bool) \
+            or not isinstance(recovery.get("mesh_x_extent"), (int, float)) \
+            or not math.isfinite(recovery["mesh_x_extent"]) \
+            or recovery["mesh_x_extent"] <= 0 \
+            or isinstance(recovery.get("at1_recovery_penalty"), bool) \
+            or not isinstance(recovery.get("at1_recovery_penalty"), (int, float)) \
+            or not math.isfinite(recovery["at1_recovery_penalty"]) \
+            or recovery["at1_recovery_penalty"] <= 0):
+        raise LaunchError("launch receipt recovery geometry preflight is malformed")
     nonce = receipt.get("launch_nonce")
     if type(nonce) is not str or len(nonce) != 64 \
             or any(character not in "0123456789abcdef" for character in nonce):
@@ -553,7 +667,19 @@ def require_qualified_runtime_paths(
 
 
 def qualified_source_inventory(repo_root: Path) -> dict[str, str]:
-    """Load the exact 221-record source inventory sealed by qualification evidence."""
+    """Project the Q1 build closure onto the family-qualified runtime source."""
+    family_path = (
+        repo_root / "producer_handoffs" / "toy_road_p0_repeatability_20260803" /
+        "FAMILY_CONTRACT.json"
+    )
+    require_no_reparse_chain(family_path, "family runtime source identity")
+    if not family_path.is_file():
+        raise LaunchError("family runtime source identity is missing")
+    family = read_json(family_path)
+    runtime_identity = family.get("runtime_identity")
+    if not isinstance(runtime_identity, dict) or runtime_identity.get(
+            "griphfith_source_commit") != FAMILY_RUNTIME_SOURCE_COMMIT:
+        raise LaunchError("family runtime source identity is malformed")
     evidence_path = (
         repo_root / "producer_handoffs" / "rebuilt_initial_mex_qualification_20260801" /
         "build" / "SOURCE_HASHES.json"
@@ -566,7 +692,7 @@ def qualified_source_inventory(repo_root: Path) -> dict[str, str]:
     if set(evidence) != {
             "schema_version", "locked_commit", "consumed_fortran", "locked_git_tree_inventory",
     } or evidence.get("schema_version") != "rebuilt_initial_mex_source_hashes_v1" \
-            or evidence.get("locked_commit") != QUALIFIED_SOURCE_COMMIT \
+            or evidence.get("locked_commit") != Q1_MEX_BUILD_SOURCE_COMMIT \
             or not isinstance(records, list) or len(records) != QUALIFIED_SOURCE_COUNT:
         raise LaunchError("qualified source inventory identity or closure is malformed")
     inventory: dict[str, str] = {}
@@ -586,7 +712,16 @@ def qualified_source_inventory(repo_root: Path) -> dict[str, str]:
         folded.add(relative.casefold())
     if len(inventory) != QUALIFIED_SOURCE_COUNT:
         raise LaunchError("qualified source inventory closure is not exact")
+    for relative, identities in FAMILY_RUNTIME_SOURCE_OVERRIDES.items():
+        if inventory.get(relative) != identities["q1_sha256"]:
+            raise LaunchError("qualified Q1 source override base identity is malformed")
+        inventory[relative] = identities["runtime_sha256"]
     return inventory
+
+
+def qualified_source_inventory_sha256(repo_root: Path) -> str:
+    """Hash the canonical family-runtime projection of the Q1 source inventory."""
+    return hashlib.sha256(json_payload(qualified_source_inventory(repo_root))).hexdigest()
 
 
 def require_qualified_griphfith_sources(repo_root: Path, griphfith_root: Path) -> None:
@@ -644,7 +779,7 @@ def qualified_input_asset_sha256(repo_root: Path) -> dict[str, str]:
     inventory = evidence.get("locked_git_tree_inventory")
     if evidence.get("schema_version") != "rebuilt_initial_mex_source_hashes_v1" \
             or evidence.get("locked_commit") \
-            != "355d4c83fefc2db88c32031a2dd2623b3de85c89" \
+            != Q1_MEX_BUILD_SOURCE_COMMIT \
             or not isinstance(inventory, list):
         raise LaunchError("input asset qualification evidence identity is malformed")
     required_paths = {
@@ -1011,7 +1146,8 @@ def require_final_launch_inputs(
         repo_root: Path, seal_path: Path, expected_seal_bytes: bytes,
         expected_seal_sha256: str, extension_root: Path, sealed_base_root: Path,
         manifest: Mapping[str, object], runtime: Mapping[str, object], matlab: Path,
-        griphfith_root: Path, input_assets_root: Path, runtime_overlay: Path,
+        griphfith_root: Path, input_assets_root: Path, template_run: Path,
+        expected_recovery_geometry: Mapping[str, object], runtime_overlay: Path,
         roots: Mapping[str, Path],
         initial_shadow_hashes: Mapping[str, str], initial_shadow_payloads: Mapping[str, bytes],
         expected_binaries: object) -> None:
@@ -1027,9 +1163,8 @@ def require_final_launch_inputs(
     require_qualified_runtime_paths(runtime, matlab, griphfith_root)
     if executable_sha256(matlab) != runtime["matlab"]["executable_sha256"]:
         raise LaunchError("final MATLAB executable SHA-256 differs from sealed identity")
-    final_base, final_manifest, _ = _require_extension(repo_root, extension_root, {
-        **read_json(seal_path),
-    })
+    live_seal = read_json(seal_path)
+    final_base, final_manifest, _ = _require_extension(repo_root, extension_root, live_seal)
     if _literal_path_text(final_base) != _literal_path_text(sealed_base_root) \
             or not _exact_json_equal(final_manifest, manifest):
         raise LaunchError("final extension/base identity differs from preflight")
@@ -1048,6 +1183,11 @@ def require_final_launch_inputs(
         raise LaunchError("final extension protocol bytes differ")
     require_runtime_binaries(repo_root, griphfith_root, expected_binaries)
     require_qualified_griphfith_sources(repo_root, griphfith_root)
+    final_recovery_geometry = require_template_recovery_geometry(template_run)
+    if not _exact_json_equal(final_recovery_geometry, expected_recovery_geometry):
+        raise LaunchError("final template recovery geometry differs from preflight")
+    require_runtime_source_closure(
+        live_seal, qualified_source_inventory_sha256(repo_root), final_recovery_geometry)
     require_input_assets(repo_root, input_assets_root, roots)
     require_materialized_runtime_overlay(runtime_overlay, initial_shadow_hashes, expected_binaries)
 
@@ -1076,6 +1216,8 @@ def launch_t3_rev(
     seal_sha256 = hashlib.sha256(seal_bytes).hexdigest()
     repo_commit = clean_repository_commit(repo_root)
     seal = _require_seal(seal_path, repo_commit)
+    if seal.get("schema_version") != "toy_road_t3_rev_seal_v2":
+        raise LaunchError("a v2 seal with the corrected runtime source closure is required")
     canonical_seal_bytes = json_payload(seal)
     if seal_path.read_bytes() != seal_bytes or seal_bytes != canonical_seal_bytes:
         raise LaunchError(
@@ -1107,6 +1249,7 @@ def launch_t3_rev(
         generated_protocol_digest,
     )
     _require_template_inputs(template_run, runtime, matlab, base_protocol)
+    recovery_geometry = require_template_recovery_geometry(template_run)
     if not (sealed_base_root / "run_toy_road_runtime_bridge.m").is_file():
         raise LaunchError("sealed source inputs are incomplete")
     expected_binaries = runtime.get("four_binary_sha256")
@@ -1118,6 +1261,9 @@ def launch_t3_rev(
     receipts = run_root / "receipts"
     runtime_overlay = run_root / ".toy-road-runtime-overlay"
     require_input_assets(repo_root, input_assets_root, roots)
+    runtime_source_inventory_sha256 = qualified_source_inventory_sha256(repo_root)
+    require_runtime_source_closure(
+        seal, runtime_source_inventory_sha256, recovery_geometry)
     _require_unconsumed_seal(seal_sha256)
     matlab_paths = [
         runtime_overlay,
@@ -1143,7 +1289,7 @@ def launch_t3_rev(
     launch_receipt_path = receipts / "T3_REV_LAUNCH_RECEIPT.json"
     launch_nonce = secrets.token_hex(32)
     launch_receipt = {
-        "schema_version": "toy_road_t3_rev_launch_receipt_v1",
+        "schema_version": "toy_road_t3_rev_launch_receipt_v2",
         "status": "PASS",
         "authorization_scope": "production_authorized",
         "authorized_entrypoint": "run_toy_road_runtime_bridge",
@@ -1159,6 +1305,10 @@ def launch_t3_rev(
         "execution_input_lock_sha256": lock_sha256,
         "seal_sha256": seal_sha256,
         "extension_source_manifest_sha256": sha256(extension_root / "EXTENSION_SOURCE_MANIFEST.json"),
+        "family_runtime_source_commit": FAMILY_RUNTIME_SOURCE_COMMIT,
+        "q1_mex_build_source_commit": Q1_MEX_BUILD_SOURCE_COMMIT,
+        "griphfith_runtime_source_inventory_sha256": runtime_source_inventory_sha256,
+        "recovery_geometry_preflight": recovery_geometry,
         "extension_root": str(extension_root),
         "runtime_overlay_root": str(runtime_overlay),
         "run_root": str(run_root),
@@ -1220,7 +1370,8 @@ def launch_t3_rev(
         require_final_launch_inputs(
             repo_root, seal_path, seal_bytes, seal_sha256, extension_root,
             sealed_base_root, manifest, runtime,
-            matlab, griphfith_root, input_assets_root, runtime_overlay, roots, shadow_hashes,
+            matlab, griphfith_root, input_assets_root, template_run, recovery_geometry,
+            runtime_overlay, roots, shadow_hashes,
             shadow_payloads, expected_binaries,
         )
     except Exception as error:

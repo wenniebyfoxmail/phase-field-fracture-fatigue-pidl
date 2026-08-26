@@ -65,6 +65,51 @@ class TerminalValidationError(RuntimeError):
     """The terminal package or its launch chain is not admissible evidence."""
 
 
+def require_runtime_source_closure(
+        seal: Mapping[str, object], launch_receipt: Mapping[str, object], *,
+        allow_unpublished_bootstrap: bool = False) -> dict[str, object]:
+    """Bind v2 launch provenance while retaining read-only support for the archived v1 run."""
+    seal_version = seal.get("schema_version")
+    receipt_version = launch_receipt.get("schema_version")
+    if seal_version == "toy_road_t3_rev_seal_v1" \
+            and receipt_version == "toy_road_t3_rev_launch_receipt_v1":
+        return {
+            "status": "LEGACY_UNBOUND_RUNTIME_SOURCE_CLOSURE",
+            "scientific_adjudication_valid": False,
+        }
+    if allow_unpublished_bootstrap and seal_version == "toy_road_t3_rev_seal_v2" \
+            and receipt_version is None:
+        closure = seal.get("runtime_source_closure")
+        if not isinstance(closure, dict):
+            raise TerminalValidationError("unpublished bootstrap seal omits runtime source closure")
+        return {
+            "status": "SEALED_RUNTIME_SOURCE_CLOSURE_UNPUBLISHED_BOOTSTRAP",
+            "scientific_adjudication_valid": False,
+            **closure,
+        }
+    if seal_version != "toy_road_t3_rev_seal_v2" \
+            or receipt_version != "toy_road_t3_rev_launch_receipt_v2":
+        raise TerminalValidationError("runtime source closure schema versions are inconsistent")
+    closure = seal.get("runtime_source_closure")
+    recovery = launch_receipt.get("recovery_geometry_preflight")
+    if not isinstance(closure, dict) or not isinstance(recovery, dict):
+        raise TerminalValidationError("runtime source closure is missing")
+    expected = {
+        "family_runtime_source_commit": launch_receipt.get("family_runtime_source_commit"),
+        "q1_mex_build_source_commit": launch_receipt.get("q1_mex_build_source_commit"),
+        "griphfith_runtime_source_inventory_sha256": launch_receipt.get(
+            "griphfith_runtime_source_inventory_sha256"),
+        "qualified_t3_input_snapshot_sha256": recovery.get("input_snapshot_sha256"),
+        "mesh_x_extent": recovery.get("mesh_x_extent"),
+        "at1_recovery_penalty": recovery.get("at1_recovery_penalty"),
+    }
+    if type(closure) is not type(expected) or set(closure) != set(expected) \
+            or any(type(closure[key]) is not type(expected[key]) or closure[key] != expected[key]
+                   for key in expected):
+        raise TerminalValidationError("launch runtime source closure differs from the seal")
+    return {"status": "PASS", "scientific_adjudication_valid": True, **closure}
+
+
 def _load(path: Path, name: str) -> Any:
     spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
@@ -1673,6 +1718,8 @@ def _validate_terminal(
             launch.require_bridge_authorization_receipt(launch_receipt)
         except Exception as error:
             raise TerminalValidationError(f"launch credential is invalid: {error}") from error
+    runtime_source_closure = require_runtime_source_closure(
+        seal, launch_receipt, allow_unpublished_bootstrap=no_pass_bootstrap)
     try:
         launch._require_seal(seal_path, str(launch_receipt["launcher_repository_commit"]))
     except Exception as error:
@@ -1912,6 +1959,7 @@ def _validate_terminal(
         "sealed_base_inventory": base_before,
         "sealed_extension_inventory": extension_before,
         "terminal_authentication": authenticated,
+        "runtime_source_closure": runtime_source_closure,
         "phase_evidence": phase_evidence,
         "run_inventory_pre": run_inventory_pre if preserve_run else None,
         "run_inventory_post": run_inventory_post if preserve_run else None,
