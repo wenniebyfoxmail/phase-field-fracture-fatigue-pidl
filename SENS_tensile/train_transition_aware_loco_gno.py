@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Train one frozen data-only transition-aware GNO LOCO fold/seed.
+"""Train one frozen data-only transition-aware GNO Hard-5 LOAO fold/seed.
 
 Training is disabled on Mac.  This runner uses only archived FEM field and
-transition labels from the three training trajectories; it contains no physics
+transition labels from the two training amplitudes; it contains no physics
 residual and never reads the held-out first-hit cycle during optimization.
 """
 from __future__ import annotations
@@ -42,22 +42,23 @@ from transition_aware_mesh_operator import (  # noqa: E402
 
 CONTEXT = 3
 ROLLOUT = 3
-EXPECTED_DATASET_ID = "factorial_loco_fem_states_v1"
+EXPECTED_DATASET_ID = "hard5_loao_fem_states_v1"
 EXPECTED_MANIFEST_SHA256 = (
-    "b9723d613e7b7a5e33b4fb7c9a9cc65ef6d1ae6c4e9b971f64dc74ad0f955648"
+    "9267a102a38375ebc815404a5ae81b2d3b23622448b5b178a2c4c1a5696e202a"
 )
 EXPECTED_HASH_FILE_SHA256 = (
-    "dba92c46d674723e176f4a228ae18a5300fe75b0d29d9eb8b6de5036107be991"
+    "7bff035eaa618a7517335a3adb436e14d8bf606c6fa4e202497355518e82a55e"
 )
 EXPECTED_PARAMETER_COUNT = 339_461
 EXPECTED_FILES = {
     "RUN_MANIFEST.json": EXPECTED_MANIFEST_SHA256,
     "graph.npz": "bd5b731daeb0718368309cd50c44fa7422e49096b495f619eba429d1c6bde419",
-    "within_hard5_factorial_loco_split_lock_v1.json": "f19b8065cc2d7f79f6f3b89087db3b8a918402c44ad8aba7e6e5d3e7cde9fb3a",
-    "trajectories/factorial_hard_5step_u012.npz": "fa424c3dac662ad394d41868bde01a149f8304e944dbd93f233bd31abc090111",
-    "trajectories/factorial_hard_8step_u012.npz": "a12ef5231ba4eae116c3cba1ff1f2bade2645edafb7bcd6d99ba1444ae67526f",
-    "trajectories/factorial_soft_5step_u012.npz": "2d79db5544cfc30c3fb14bce3eab33482d56bcb92a61b8feca6f8131f367de36",
-    "trajectories/factorial_soft_8step_u012.npz": "712b475035de4731b52f2b9dd8a27e5994f73020ff33b6d64f630cf9f20d8cc5",
+    "trajectories/hard5_u011.npz": "367b851a1814734d5e122f91477826850375149a108476ef6fab44245cfbe878",
+    "trajectories/hard5_u012.npz": "e80b32675876444888b7d50d3df1f250009770d6b8b45d5dc1f3992197ebbe95",
+    "trajectories/hard5_u013.npz": "c91287af619de1dd2ed8b07da680f7d1bc0d06d500441e23887fd031077b253b",
+    "pidl_matches/hard5_u011.npz": "2b8c98a0b3854c716e3018c1f3ced8c91f8ef74788fa83477b96a5fa8753f9f0",
+    "pidl_matches/hard5_u012.npz": "1860972b3fca6a44db0158aabf1d8df5719c2d620f0b3b35c61a85d9da7769d5",
+    "pidl_matches/hard5_u013.npz": "727b4152548d40a8d9e37db8cf6940d439887abee39438a83f0453831fb29662",
 }
 EXPECTED_TRAJECTORY_IDS = frozenset(
     path.removeprefix("trajectories/").removesuffix(".npz")
@@ -68,7 +69,7 @@ MATRIX_LOCK_PATH = (
     HERE.parent
     / "docs"
     / "experiments"
-    / "at1_fatigue_mesh_pino_d1_matrix_lock_20260826.json"
+    / "hard5_loao_gno_matrix_lock_20260826.json"
 )
 
 
@@ -82,6 +83,9 @@ def locked_code_paths() -> dict[str, Path]:
         / "SENS_tensile"
         / "train_fem_mechanism_mesh_operator.py",
         "tests": repo / "tests" / "test_transition_aware_loco_gno.py",
+        "dataset_builder": repo
+        / "SENS_tensile"
+        / "prepare_hard5_loao_gno_dataset.py",
     }
 
 
@@ -155,14 +159,10 @@ def write_json_atomic(path: Path, payload: dict) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def trajectory_metadata(trajectory_id: str, device: torch.device) -> torch.Tensor:
-    hard = float("_hard_" in trajectory_id)
-    soft = float("_soft_" in trajectory_id)
-    step5 = float("_5step_" in trajectory_id)
-    step8 = float("_8step_" in trajectory_id)
-    if hard + soft != 1 or step5 + step8 != 1:
-        raise ValueError(f"cannot decode factorial metadata from {trajectory_id}")
-    return torch.tensor([hard, soft, step5, step8], dtype=torch.float32, device=device)
+def trajectory_metadata(trajectory_id: str, umax: float, device: torch.device) -> torch.Tensor:
+    if trajectory_id not in EXPECTED_TRAJECTORY_IDS or umax not in (0.11, 0.12, 0.13):
+        raise ValueError(f"cannot decode Hard-5 amplitude metadata from {trajectory_id}")
+    return torch.tensor([1.0, 0.0, 1.0, umax], dtype=torch.float32, device=device)
 
 
 def load_graph(
@@ -190,6 +190,7 @@ def load_graph(
 def load_trajectory(path: Path, device: torch.device) -> dict:
     data = np.load(path, allow_pickle=False)
     trajectory_id = str(np.asarray(data["trajectory_id"]).item())
+    umax = float(np.asarray(data["umax"]).item())
     cycles = np.asarray(data["cycles"], dtype=int)
     if not np.array_equal(cycles, np.arange(1, len(cycles) + 1)):
         raise ValueError(f"nonconsecutive cycles in {path}")
@@ -200,7 +201,8 @@ def load_trajectory(path: Path, device: torch.device) -> dict:
         ),
         "first_hit": int(np.asarray(data["first_hit_cycle"]).item()),
         "confirmed": int(np.asarray(data["confirmed_cycle"]).item()),
-        "metadata": trajectory_metadata(trajectory_id, device),
+        "umax": umax,
+        "metadata": trajectory_metadata(trajectory_id, umax, device),
     }
 
 
@@ -211,7 +213,7 @@ def load_dataset(
     manifest = json.loads((root / "RUN_MANIFEST.json").read_text(encoding="utf-8"))
     if (
         manifest.get("dataset_id") != EXPECTED_DATASET_ID
-        or manifest.get("trajectory_count") != 4
+        or manifest.get("trajectory_count") != 3
     ):
         raise ValueError("unexpected dataset identity or trajectory count")
     rows = manifest.get("trajectories", [])
@@ -220,7 +222,7 @@ def load_dataset(
         len(manifest_ids) != len(set(manifest_ids))
         or set(manifest_ids) != EXPECTED_TRAJECTORY_IDS
     ):
-        raise ValueError("trajectory IDs do not match the frozen four-trajectory split")
+        raise ValueError("trajectory IDs do not match the frozen three-amplitude split")
     paths: dict[str, Path] = {}
     for row in rows:
         expected_file = f"{row['trajectory_id']}.npz"
@@ -588,6 +590,65 @@ def evaluate(
     all_forecast_opportunities_evaluation(model, heldout, graph, statistics, out)
 
 
+def matched_pidl_evaluation(
+    model: TransitionAwareMeshOperator,
+    heldout: dict,
+    graph: dict[str, torch.Tensor],
+    graph_arrays: dict[str, np.ndarray],
+    statistics: StateStatistics,
+    data_root: Path,
+    out: Path,
+) -> None:
+    """Evaluate one frozen same-cycle FEM/PIDL/GNO state after training."""
+    target_cycles = {"hard5_u011": 121, "hard5_u012": 82, "hard5_u013": 55}
+    target_cycle = target_cycles[heldout["trajectory_id"]]
+    predictions, _ = predict_rollout(
+        model, heldout, target_cycle - 1, 1, graph, statistics
+    )
+    gno = predictions[target_cycle].cpu().numpy()
+    fem = heldout["states"][target_cycle - 1].cpu().numpy()
+    pidl_asset = np.load(
+        data_root / "pidl_matches" / f"{heldout['trajectory_id']}.npz",
+        allow_pickle=False,
+    )
+    pidl = np.column_stack(
+        [
+            np.clip(np.asarray(pidl_asset["damage"]), 0.0, 1.0),
+            np.maximum(np.asarray(pidl_asset["alpha_bar"]), 0.0),
+            np.clip(np.asarray(pidl_asset["fatigue_f"]), 0.0, 1.0),
+            np.log10(np.maximum(np.asarray(pidl_asset["psi_raw_direct"]), 1.0e-12)),
+        ]
+    ).astype(np.float32)
+    contained = np.asarray(pidl_asset["mapping_contained"], dtype=bool)
+    areas = np.asarray(graph_arrays["areas"], dtype=np.float64)
+    rows = []
+    for method, prediction in (("gno_data", gno), ("pidl_mapped", pidl)):
+        rows.append(
+            {
+                "trajectory_id": heldout["trajectory_id"],
+                "umax": heldout["umax"],
+                "target_cycle": target_cycle,
+                "origin_cycle": target_cycle - 1 if method == "gno_data" else "",
+                "method": method,
+                "comparison_class": "same_cycle_pre_event_archive_state",
+                "mapping_domain": "pidl_containing_triangle_cells_only",
+                "mapping_contained_cells": int(contained.sum()),
+                **field_metrics(prediction[contained], fem[contained], areas[contained]),
+            }
+        )
+    write_csv(out / "matched_pidl_fem_metrics.csv", rows)
+    np.savez_compressed(
+        out / "matched_pidl_fem_fields.npz",
+        centroids=np.asarray(graph_arrays["centroids"]),
+        areas=areas,
+        mapping_contained=contained,
+        fem=fem,
+        gno=gno,
+        pidl=pidl,
+        target_cycle=np.asarray(target_cycle),
+    )
+
+
 def _under(path: Path, root: Path) -> bool:
     try:
         path.resolve().relative_to(root)
@@ -846,7 +907,11 @@ def train(args: argparse.Namespace) -> None:
         args.out / "LAUNCH_RECEIPT.json",
         {
             "status": "runner_started_before_dataset_load",
-            "claim_class": "tooling_and_synthetic_fem_imitation_only",
+            "claim_class": "processed_griphfith_archive_imitation_only",
+            "teacher_qualified": False,
+            "damage_fixed_point_gate": "fail",
+            "physics_loss_weight": 0.0,
+            "physical_validation": False,
             "training_complete": False,
             "provenance": provenance,
         },
@@ -959,11 +1024,17 @@ def train(args: argparse.Namespace) -> None:
     )
     write_csv(args.out / "training_history.csv", history_rows)
     evaluate(model, heldout, graph, graph_arrays, statistics, args.out)
+    matched_pidl_evaluation(
+        model, heldout, graph, graph_arrays, statistics, args.data_root, args.out
+    )
     run_manifest = {
         "status": "complete",
-        "claim_class": "synthetic_fem_imitation_only",
+        "claim_class": "processed_griphfith_archive_imitation_only",
+        "teacher_qualified": False,
+        "damage_fixed_point_gate": "fail",
         "physics_loss_weight": 0.0,
         "physical_validation": False,
+        "trajectory_metadata": "[hard=1, soft=0, five_step=1, known_umax]",
         "heldout_trajectory_id": heldout["trajectory_id"],
         "training_trajectory_ids": [item["trajectory_id"] for item in training],
         "heldout_first_hit_used_in_training": False,
@@ -1000,6 +1071,8 @@ def train(args: argparse.Namespace) -> None:
             "all_forecast_opportunities_metrics.csv",
             "all_forecast_opportunities_summary.json",
             "locked_transition_predictions.npz",
+            "matched_pidl_fem_metrics.csv",
+            "matched_pidl_fem_fields.npz",
             "final_model.pt",
             "RUN_PROVENANCE.json",
             "LAUNCH_RECEIPT.json",
@@ -1008,7 +1081,11 @@ def train(args: argparse.Namespace) -> None:
     write_json(args.out / "RUN_MANIFEST.json", run_manifest)
     complete_receipt = {
         "status": "complete",
-        "claim_class": "synthetic_fem_imitation_only",
+        "claim_class": "processed_griphfith_archive_imitation_only",
+        "teacher_qualified": False,
+        "damage_fixed_point_gate": "fail",
+        "physics_loss_weight": 0.0,
+        "physical_validation": False,
         "training_complete": True,
         "archive_verified": True,
         "provenance": provenance,

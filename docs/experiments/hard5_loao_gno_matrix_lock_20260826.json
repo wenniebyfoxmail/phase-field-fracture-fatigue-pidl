@@ -1,0 +1,71 @@
+{
+  "experiment_id": "hard5_loao_gno_v1_20260826",
+  "status": "owner_authorized_prelaunch",
+  "authorization": "user_go_2026-08-26",
+  "claim_class": "processed_griphfith_archive_imitation_only",
+  "teacher_qualified": false,
+  "damage_fixed_point_gate": "fail",
+  "physics_loss_weight": 0.0,
+  "physical_validation": false,
+  "dataset": {
+    "dataset_id": "hard5_loao_fem_states_v1",
+    "manifest_sha256": "9267a102a38375ebc815404a5ae81b2d3b23622448b5b178a2c4c1a5696e202a",
+    "hash_file_sha256": "7bff035eaa618a7517335a3adb436e14d8bf606c6fa4e202497355518e82a55e",
+    "trajectory_ids": ["hard5_u011", "hard5_u012", "hard5_u013"],
+    "first_hit_cycles": {"hard5_u011": 122, "hard5_u012": 83, "hard5_u013": 59},
+    "confirmed_cycles": {"hard5_u011": 125, "hard5_u012": 86, "hard5_u013": 62},
+    "matched_pidl_cycles": {"hard5_u011": 121, "hard5_u012": 82, "hard5_u013": 55},
+    "split": "leave_one_complete_umax_trajectory_out",
+    "normalization": "training_two_trajectories_only",
+    "heldout_first_hit_used_in_training": false,
+    "pidl_assets_loaded": "evaluation_only_after_training_finishes"
+  },
+  "model": {
+    "architecture": "transition_aware_native_mesh_local_coarse_gno",
+    "parameter_count": 339461,
+    "context": 3,
+    "rollout": 3,
+    "hidden_width": 96,
+    "steps": 3000,
+    "optimizer": "AdamW",
+    "learning_rate": 0.0003,
+    "weight_decay": 0.000001,
+    "transition_weight": 0.25,
+    "metadata": ["hard_indicator", "soft_indicator", "five_step_indicator", "known_umax"],
+    "seeds": [1, 2, 3]
+  },
+  "matrix": {
+    "folds": ["hard5_u011", "hard5_u012", "hard5_u013"],
+    "job_count": 9,
+    "producer": "taobo_only",
+    "gpu_count_authorized": 2
+  },
+  "evaluation": {
+    "primary": "same_cycle_pre_event_gno_vs_pidl_on_containing_triangle_domain",
+    "primary_fold_rule": "seed_median_gno_lower_active_log_mae_and_higher_absolute_p99_iou_than_pidl",
+    "primary_required_folds": 3,
+    "retrospective_transition_recall_min": 0.6666666667,
+    "retrospective_false_warnings_max_of_three": 1,
+    "transition_required_folds": 2,
+    "all_opportunity_overall_recall_min": 0.6666666667,
+    "all_opportunity_overall_fpr_max": 0.10,
+    "all_opportunity_horizon_fpr_max": 0.20,
+    "all_opportunity_failure_fold_count": 2,
+    "threshold": 0.5,
+    "threshold_tuning_on_heldout": false
+  },
+  "code_sha256": {
+    "runner": "d11469d8d0709b85585cf9df36bdc803557a2c44fee08fcf4806a7bf97ce9ef3",
+    "model": "171145d748771089bfa930a7680e59321d843d01c051eb870ab5e4e7afcb8247",
+    "operator_dependency": "f4a76d4f6941e64fc0846a95d45524875770d3fd0a21c81806a485b91e5d7037",
+    "metric_dependency": "46f3ddd4efb3f09fdaa0205e556fec3babe214dbe2b195a2c3bbb66c08c005b0",
+    "tests": "24bfeafa33a549b8bf7047772fd6f74e8c1b285d33777f24e809cab3333db2a6",
+    "dataset_builder": "7c0506bb75b2fee2e5ad669af36c8a23767c0825594976d0ede13bfa3063fad5"
+  },
+  "stop_rules": [
+    "any heldout state or event metadata enters training normalization calibration threshold selection or optimization",
+    "any job is incomplete nonfinite hash mismatched or provenance invalid",
+    "post-result architecture loss threshold mask or matched-cycle tuning on these three amplitudes",
+    "any attempt to describe the result as physical truth calibrated road warning or posterior"
+  ]
+}

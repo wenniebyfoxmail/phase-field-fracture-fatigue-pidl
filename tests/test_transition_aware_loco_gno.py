@@ -103,8 +103,15 @@ def test_features_exclude_cycle_and_event_information():
         history(), graph(), statistics(), torch.tensor([1.0, 0.0, 1.0, 0.0])
     )
     assert features.shape == (4, 19)
-    # 12 state + 2 coordinates + 1 area + exactly 4 declared trajectory flags.
+    # 12 state + 2 coordinates + 1 area + four declared trajectory metadata values.
     assert features.shape[1] == 3 * 4 + 2 + 1 + 4
+
+
+def test_hard5_metadata_contains_only_known_protocol_and_umax():
+    metadata = trajectory_metadata("hard5_u012", 0.12, torch.device("cpu"))
+    assert metadata.tolist() == pytest.approx([1.0, 0.0, 1.0, 0.12])
+    with pytest.raises(ValueError, match="Hard-5 amplitude"):
+        trajectory_metadata("hard5_u014", 0.14, torch.device("cpu"))
 
 
 def test_transition_aware_operator_forward_backward_and_capacity():
@@ -132,9 +139,9 @@ def test_default_model_is_the_frozen_96_width_capacity():
 
 def test_balanced_windows_use_training_first_hits_only():
     items = [
-        fake_item("factorial_hard_5step_u012", 86, 83),
-        fake_item("factorial_hard_8step_u012", 89, 86),
-        fake_item("factorial_soft_5step_u012", 87, 84),
+        fake_item("hard5_u011", 125, 122),
+        fake_item("hard5_u012", 89, 83),
+        fake_item("hard5_u013", 62, 59),
     ]
     positive, negative = build_training_windows(items)
     assert positive and negative
@@ -389,7 +396,7 @@ def test_load_dataset_removes_the_complete_heldout_trajectory(tmp_path, monkeypa
         json.dumps(
             {
                 "dataset_id": runner.EXPECTED_DATASET_ID,
-                "trajectory_count": 4,
+                "trajectory_count": 3,
                 "graph_file": "graph.npz",
                 "trajectories": rows,
             }
@@ -411,7 +418,7 @@ def test_load_dataset_removes_the_complete_heldout_trajectory(tmp_path, monkeypa
         }
 
     monkeypatch.setattr(runner, "load_trajectory", fake_load)
-    heldout_id = "factorial_hard_5step_u012"
+    heldout_id = "hard5_u012"
     training, heldout, *_ = load_dataset(tmp_path, heldout_id, torch.device("cpu"))
     assert heldout["trajectory_id"] == heldout_id
     assert {item["trajectory_id"] for item in training} == (
@@ -594,11 +601,13 @@ def test_archive_finalization_failure_cannot_leave_complete_receipt(
 
 
 @pytest.mark.parametrize(
-    ("trajectory_id", "expected"),
+    ("trajectory_id", "umax"),
     [
-        ("factorial_hard_5step_u012", [1, 0, 1, 0]),
-        ("factorial_soft_8step_u012", [0, 1, 0, 1]),
+        ("hard5_u011", 0.11),
+        ("hard5_u012", 0.12),
+        ("hard5_u013", 0.13),
     ],
 )
-def test_only_declared_factorial_metadata_is_decoded(trajectory_id, expected):
-    assert trajectory_metadata(trajectory_id, torch.device("cpu")).tolist() == expected
+def test_only_declared_hard5_metadata_is_decoded(trajectory_id, umax):
+    actual = trajectory_metadata(trajectory_id, umax, torch.device("cpu"))
+    assert actual.tolist() == pytest.approx([1.0, 0.0, 1.0, umax])
