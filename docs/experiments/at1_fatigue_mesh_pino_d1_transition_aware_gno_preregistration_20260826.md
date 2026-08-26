@@ -1,9 +1,11 @@
 # D1 transition-aware GNO preregistration
 
 **Date:** 2026-08-26
-**Status:** `REVISED_AFTER_INDEPENDENT_REVIEW__ONE_FULL_JOB_SMOKE_AUTHORIZED`
-**Training authorization:** one exact hard-5/seed-1 3,000-step Taobo job only;
-the remaining 11 jobs require a successful asset/provenance check
+**Status:** `SMOKE_COMPLETE__REMAINING_11_UNCHANGED_JOBS_AUTHORIZED`
+**Training authorization:** the hard-5/seed-1 producer smoke completed and its
+assets/provenance passed; the owner explicitly authorized the remaining 11
+unchanged jobs on 2026-08-26. See
+[`at1_fatigue_mesh_pino_d1_remaining_matrix_authorization_20260826.md`](at1_fatigue_mesh_pino_d1_remaining_matrix_authorization_20260826.md).
 
 ## Question and claim boundary
 
@@ -109,5 +111,7 @@ The independent review returned `REVISE`: no P0 training/leakage defect, but it
 required immutable code, strict hash enforcement, one frozen warning estimand,
 locked controls and fuller provenance. After those revisions pass from a clean
 commit, the user's 2026-08-26 request authorizes one exact hard-5/seed-1 Taobo
-producer smoke. The remaining 11 jobs stay blocked until the smoke completes
-with all assets and hashes valid.
+producer smoke. That smoke completed with all assets and hashes valid. The
+owner then explicitly authorized the remaining 11 unchanged jobs. This later
+authorization changes execution state only and does not rewrite the frozen
+matrix lock or scientific gate.
