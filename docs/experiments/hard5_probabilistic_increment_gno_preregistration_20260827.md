@@ -133,6 +133,6 @@ The aggregate analyzer must fail closed on nonfinite values, wrong folds/seeds, 
 
 ## 7. Pre-launch status
 
-`BLOCKED_PENDING_PROTOCOL_REMEDIATION_EXACT_COMMIT_REVIEW_AND_RELEASE_AUTHORIZATION`.
+`BLOCKED_PENDING_EXACT_COMMIT_REVIEW_AND_RELEASE_AUTHORIZATION`.
 
 The pre-result protocol change is recorded in `hard5_probabilistic_increment_gno_protocol_amendment_all_cycle_q4_20260827.md`, and GPT Pro advice is recorded in `hard5_probabilistic_increment_gno_gpt_pro_advice_20260827.md`. No Taobo launch is allowed until the all-cycle native-Q4 protocol is implemented and tested, the resulting exact clean commit is independently reviewed, and an owner release authorization binds that commit, matrix hash and all nine jobs.
