@@ -26,6 +26,7 @@ from train_probabilistic_increment_loao_gno import (  # noqa: E402
     choose_balanced_window,
     evaluate_heldout,
     enforce_taobo_preflight,
+    highest_change_area_mask,
     locked_code_paths,
     sha256_file,
     train,
@@ -159,6 +160,11 @@ def test_evaluation_writes_exact_rows_and_selected_native_fields(tmp_path: Path)
         "gno_increment", "persistence", "constrained_linear"
     }
     assert max(int(row["origin_cycle"]) for row in point_rows) == 58
+    for row in point_rows:
+        for channel in ("damage", "alpha_bar", "fatigue_f", "log10_psi_raw"):
+            assert float(row[f"{channel}_true_change_top5_increment_mae"]) >= 0.0
+            fraction = float(row[f"{channel}_true_change_top5_area_fraction"])
+            assert 0.05 <= fraction <= 1.0
     fields = np.load(tmp_path / "selected_increment_fields.npz", allow_pickle=False)
     for origin in (20, 30, 45, 58):
         prefix = f"origin_c{origin}__target_c{origin + 1}"
@@ -167,6 +173,14 @@ def test_evaluation_writes_exact_rows_and_selected_native_fields(tmp_path: Path)
         assert f"{prefix}__normalized_target" in fields.files
     assert "residual_mean" in fields.files
     assert "residual_std" in fields.files
+
+
+def test_highest_change_mask_uses_native_q4_area_and_is_deterministic():
+    magnitude = np.asarray([1.0, 4.0, 4.0, 2.0])
+    areas = np.asarray([0.01, 0.02, 0.04, 0.93])
+    mask = highest_change_area_mask(magnitude, areas, area_fraction=0.05)
+    assert np.array_equal(mask, np.asarray([False, True, True, False]))
+    assert areas[mask].sum() / areas.sum() >= 0.05
 
 
 def test_mac_training_guard_fires_before_output_creation(tmp_path: Path):

@@ -38,7 +38,9 @@ from probabilistic_increment_mesh_operator import (  # noqa: E402
     normalized_increment_target,
     normalized_laplace_interval,
 )
-from train_fem_mechanism_mesh_operator import field_metrics  # noqa: E402
+from train_fem_mechanism_mesh_operator import (  # noqa: E402
+    field_metrics,
+)
 from train_transition_aware_loco_gno import (  # noqa: E402
     _single_gpu_processes,
     _snapshot_commit,
@@ -90,6 +92,7 @@ SELECTED_ORIGINS = {
     "hard5_u013": (20, 30, 45, 58),
 }
 CHANNELS = ("damage", "alpha_bar", "fatigue_f", "log10_psi_raw")
+PRIMARY_POINT_SCOPES = ("whole_q4", "fem_true_change_top5_q4")
 TRAJECTORY_IDS = frozenset(SELECTED_ORIGINS)
 CLAIMS = {
     "claim_class": "processed_griphfith_archive_imitation_only",
@@ -114,6 +117,8 @@ def locked_code_paths() -> dict[str, Path]:
         "aggregate_analyzer": repo / "SENS_tensile" / "analyze_probabilistic_increment_gno_matrix.py",
         "aggregate_tests": repo / "tests" / "test_analyze_probabilistic_increment_gno_matrix.py",
         "preregistration": repo / "docs" / "experiments" / "hard5_probabilistic_increment_gno_preregistration_20260827.md",
+        "protocol_amendment": repo / "docs" / "experiments" / "hard5_probabilistic_increment_gno_protocol_amendment_all_cycle_q4_20260827.md",
+        "external_advice": repo / "docs" / "experiments" / "hard5_probabilistic_increment_gno_gpt_pro_advice_20260827.md",
     }
 
 
@@ -149,6 +154,10 @@ def validate_matrix_lock(lock: dict) -> None:
         "mean_steps": MEAN_STEPS,
         "scale_steps": SCALE_STEPS,
         "hidden_dim": HIDDEN_DIM,
+        "primary_origin_rule": "all_legal_pre_hit",
+        "primary_scopes": list(PRIMARY_POINT_SCOPES),
+        "primary_reduction": "origin_median_within_seed_then_seed_median_within_fold_then_fold_median",
+        "representative_origins_role": "secondary_non_gating_field_map_anchors",
         "selected_origins": {key: list(value) for key, value in SELECTED_ORIGINS.items()},
     }:
         raise RuntimeError("matrix model/evaluation protocol mismatch")
@@ -480,6 +489,32 @@ def area_weighted_mean(values: np.ndarray, areas: np.ndarray) -> float:
     return float(np.sum(values * areas) / np.sum(areas))
 
 
+def highest_change_area_mask(
+    true_increment_magnitude: np.ndarray,
+    areas: np.ndarray,
+    area_fraction: float = 0.05,
+) -> np.ndarray:
+    """Select a deterministic highest-change region covering at least an area fraction."""
+    values = np.asarray(true_increment_magnitude, dtype=np.float64).reshape(-1)
+    weights = np.asarray(areas, dtype=np.float64).reshape(-1)
+    if (
+        values.shape != weights.shape
+        or not 0.0 < area_fraction <= 1.0
+        or np.any(~np.isfinite(values))
+        or np.any(~np.isfinite(weights))
+        or np.any(weights <= 0.0)
+    ):
+        raise ValueError("invalid native-Q4 true-change mask inputs")
+    order = np.argsort(-values, kind="stable")
+    cumulative_before = np.concatenate(([0.0], np.cumsum(weights[order][:-1])))
+    selected = cumulative_before < area_fraction * weights.sum()
+    mask = np.zeros(len(values), dtype=bool)
+    mask[order[selected]] = True
+    if not np.any(mask):
+        raise AssertionError("empty native-Q4 true-change mask")
+    return mask
+
+
 def increment_mae(
     prediction: np.ndarray,
     current: np.ndarray,
@@ -487,10 +522,23 @@ def increment_mae(
     areas: np.ndarray,
 ) -> dict[str, float]:
     error = np.abs((prediction - current) - (target - current))
-    return {
-        f"{channel}_increment_mae": area_weighted_mean(error[:, index], areas)
-        for index, channel in enumerate(CHANNELS)
-    }
+    true_increment = np.abs(target - current)
+    result: dict[str, float] = {}
+    for index, channel in enumerate(CHANNELS):
+        mask = highest_change_area_mask(true_increment[:, index], areas)
+        result[f"{channel}_increment_mae"] = area_weighted_mean(
+            error[:, index], areas
+        )
+        result[f"{channel}_true_change_top5_increment_mae"] = area_weighted_mean(
+            error[mask, index], areas[mask]
+        )
+        result[f"{channel}_true_change_top5_area_fraction"] = float(
+            areas[mask].sum() / areas.sum()
+        )
+        result[f"{channel}_true_change_top5_min_magnitude"] = float(
+            true_increment[mask, index].min()
+        )
+    return result
 
 
 def predict_one(
@@ -799,6 +847,8 @@ def train(args: argparse.Namespace) -> None:
             "dataset_manifest_sha256": sha256_file(args.data_root / "RUN_MANIFEST.json"),
             "dataset_hash_file_sha256": sha256_file(args.data_root / "HASHES.sha256"),
             "uncertainty_semantics": "uncalibrated_conditional_laplace_scale",
+            "primary_evaluation": "all_legal_pre_hit_origins_native_q4_whole_and_fem_true_change_top5",
+            "representative_origins_role": "secondary_non_gating_field_maps_only",
             "bucket_gradient_scales": {
                 name: float(value.cpu()) for name, value in calibration.gradient_scales.items()
             },

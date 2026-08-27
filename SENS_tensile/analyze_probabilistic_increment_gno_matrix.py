@@ -28,6 +28,10 @@ SELECTED_ORIGINS = {
 }
 CHANNELS = ("damage", "alpha_bar", "fatigue_f", "log10_psi_raw")
 METHODS = ("gno_increment", "persistence", "constrained_linear")
+POINT_SCOPES = {
+    "whole_q4": "increment_mae",
+    "fem_true_change_top5_q4": "true_change_top5_increment_mae",
+}
 CLAIMS = {
     "claim_class": "processed_griphfith_archive_imitation_only",
     "teacher_qualified": False,
@@ -126,6 +130,22 @@ def validate_lock(lock: dict) -> None:
         raise ValueError("matrix job contract mismatch")
     if set(lock.get("required_job_payloads", [])) != EXPECTED_JOB_PAYLOADS:
         raise ValueError("matrix payload contract mismatch")
+    protocol = lock.get("protocol", {})
+    if protocol != {
+        "context": 3,
+        "rollout": 1,
+        "mean_steps": 3000,
+        "scale_steps": 500,
+        "hidden_dim": 96,
+        "primary_origin_rule": "all_legal_pre_hit",
+        "primary_scopes": list(POINT_SCOPES),
+        "primary_reduction": "origin_median_within_seed_then_seed_median_within_fold_then_fold_median",
+        "representative_origins_role": "secondary_non_gating_field_map_anchors",
+        "selected_origins": {
+            key: list(value) for key, value in SELECTED_ORIGINS.items()
+        },
+    }:
+        raise ValueError("matrix primary/secondary evaluation protocol mismatch")
 
 
 def validate_authorization(path: Path, expected_sha: str, lock: dict, lock_sha: str) -> dict:
@@ -202,17 +222,41 @@ def validate_point_rows(path: Path, fold: str) -> list[dict]:
         target = exact_int(row.get("target_cycle"), "target_cycle")
         if origin not in expected_origins or target != origin + 1:
             raise ValueError(f"point t+1 opportunity mismatch: {path}")
-        values = {
-            channel: finite_float(
-                row.get(f"{channel}_increment_mae"), f"{fold}/{origin}/{channel}"
+        values = {}
+        for channel in CHANNELS:
+            for scope, suffix in POINT_SCOPES.items():
+                values[f"{scope}::{channel}"] = finite_float(
+                    row.get(f"{channel}_{suffix}"),
+                    f"{fold}/{origin}/{scope}/{channel}",
+                )
+            fraction = finite_float(
+                row.get(f"{channel}_true_change_top5_area_fraction"),
+                f"{fold}/{origin}/{channel}/active_area_fraction",
             )
-            for channel in CHANNELS
-        }
+            magnitude = finite_float(
+                row.get(f"{channel}_true_change_top5_min_magnitude"),
+                f"{fold}/{origin}/{channel}/active_min_magnitude",
+            )
+            if not 0.0 < fraction <= 1.0 or magnitude < 0.0:
+                raise ValueError(f"invalid active-Q4 metadata: {fold}/{origin}/{channel}")
+            values[f"active_fraction::{channel}"] = fraction
+            values[f"active_min_magnitude::{channel}"] = magnitude
         counts[(row["method"], origin)] += 1
         clean.append({"method": row["method"], "origin": origin, **values})
     expected = {(method, origin) for method in METHODS for origin in expected_origins}
     if set(counts) != expected or any(count != 1 for count in counts.values()):
         raise ValueError(f"point rows missing, duplicate, or extra: {path}")
+    for origin in expected_origins:
+        for channel in CHANNELS:
+            selected = [row for row in clean if row["origin"] == origin]
+            if len(
+                {row[f"active_fraction::{channel}"] for row in selected}
+            ) != 1 or len(
+                {row[f"active_min_magnitude::{channel}"] for row in selected}
+            ) != 1:
+                raise ValueError(
+                    f"method-dependent active-Q4 metadata: {fold}/{origin}/{channel}"
+                )
     return clean
 
 
@@ -449,6 +493,10 @@ def analyze(args: argparse.Namespace) -> dict:
                 or manifest.get("dataset_manifest_sha256") != DATASET_MANIFEST_SHA256
                 or manifest.get("dataset_hash_file_sha256") != DATASET_HASH_FILE_SHA256
                 or set(manifest.get("required_job_payloads", [])) != EXPECTED_JOB_PAYLOADS
+                or manifest.get("primary_evaluation")
+                != "all_legal_pre_hit_origins_native_q4_whole_and_fem_true_change_top5"
+                or manifest.get("representative_origins_role")
+                != "secondary_non_gating_field_maps_only"
                 or manifest.get("release_authorization") != authorization
                 or manifest.get("provenance") != provenance
             ):
@@ -470,37 +518,120 @@ def analyze(args: argparse.Namespace) -> dict:
                 job_dir / "selected_increment_fields.npz", fold
             )
 
-    point_rows: list[dict] = []
-    for channel in CHANNELS:
-        method_seed_values: dict[str, list[float]] = {method: [] for method in METHODS}
-        for seed in SEEDS:
-            rows = point_by_job[("hard5_u012", seed)]
-            for method in METHODS:
-                values = [
-                    row[channel]
-                    for row in rows
-                    if row["method"] == method
-                    and row["origin"] in SELECTED_ORIGINS["hard5_u012"]
-                ]
-                if len(values) != 4:
-                    raise ValueError(f"U0.12 fixed origin set missing: {seed}/{method}/{channel}")
-                method_seed_values[method].append(median(values))
-        aggregate = {method: median(values) for method, values in method_seed_values.items()}
-        point_rows.append(
-            {
-                "channel": channel,
-                "gno_increment_mae": aggregate["gno_increment"],
-                "persistence_mae": aggregate["persistence"],
-                "constrained_linear_mae": aggregate["constrained_linear"],
-                "gno_better_than_persistence": aggregate["gno_increment"] < aggregate["persistence"],
-                "gno_better_than_constrained_linear": aggregate["gno_increment"] < aggregate["constrained_linear"],
-                "within_10pct_of_persistence": aggregate["gno_increment"] <= 1.10 * aggregate["persistence"],
+    fold_point_rows: list[dict] = []
+    for fold in FOLDS:
+        for scope in POINT_SCOPES:
+            for channel in CHANNELS:
+                method_seed_values: dict[str, list[float]] = {
+                    method: [] for method in METHODS
+                }
+                for seed in SEEDS:
+                    rows = point_by_job[(fold, seed)]
+                    for method in METHODS:
+                        values = [
+                            row[f"{scope}::{channel}"]
+                            for row in rows
+                            if row["method"] == method
+                        ]
+                        if len(values) != FIRST_HITS[fold] - 3:
+                            raise ValueError(
+                                f"trajectory-wide origins missing: {fold}/{seed}/{scope}/{method}/{channel}"
+                            )
+                        method_seed_values[method].append(median(values))
+                fold_point_rows.append(
+                    {
+                        "trajectory_id": fold,
+                        "scope": scope,
+                        "channel": channel,
+                        **{
+                            f"{method}_origin_then_seed_median": median(values)
+                            for method, values in method_seed_values.items()
+                        },
+                    }
+                )
+
+    primary_point_rows: list[dict] = []
+    scope_gates: dict[str, dict] = {}
+    for scope in POINT_SCOPES:
+        scope_rows = []
+        for channel in CHANNELS:
+            selected = [
+                row
+                for row in fold_point_rows
+                if row["scope"] == scope and row["channel"] == channel
+            ]
+            if len(selected) != len(FOLDS):
+                raise ValueError(f"fold-symmetric primary rows missing: {scope}/{channel}")
+            aggregate = {
+                method: median(
+                    [row[f"{method}_origin_then_seed_median"] for row in selected]
+                )
+                for method in METHODS
             }
+            row = {
+                "scope": scope,
+                "channel": channel,
+                "gno_increment_fold_median_mae": aggregate["gno_increment"],
+                "persistence_fold_median_mae": aggregate["persistence"],
+                "constrained_linear_fold_median_mae": aggregate["constrained_linear"],
+                "gno_better_than_persistence": aggregate["gno_increment"]
+                < aggregate["persistence"],
+                "gno_better_than_constrained_linear": aggregate["gno_increment"]
+                < aggregate["constrained_linear"],
+                "within_10pct_of_persistence": aggregate["gno_increment"]
+                <= 1.10 * aggregate["persistence"],
+            }
+            primary_point_rows.append(row)
+            scope_rows.append(row)
+        better_persistence = sum(
+            row["gno_better_than_persistence"] for row in scope_rows
         )
-    better_persistence = sum(row["gno_better_than_persistence"] for row in point_rows)
-    better_linear = sum(row["gno_better_than_constrained_linear"] for row in point_rows)
-    no_large_regression = all(row["within_10pct_of_persistence"] for row in point_rows)
-    point_gate = better_persistence >= 3 and better_linear >= 2 and no_large_regression
+        better_linear = sum(
+            row["gno_better_than_constrained_linear"] for row in scope_rows
+        )
+        no_large_regression = all(
+            row["within_10pct_of_persistence"] for row in scope_rows
+        )
+        scope_gates[scope] = {
+            "pass": better_persistence >= 3
+            and better_linear >= 2
+            and no_large_regression,
+            "gno_better_than_persistence_channels": better_persistence,
+            "gno_better_than_constrained_linear_channels": better_linear,
+            "no_channel_more_than_10pct_worse_than_persistence": no_large_regression,
+        }
+    point_gate = all(gate["pass"] for gate in scope_gates.values())
+
+    representative_rows: list[dict] = []
+    for fold in FOLDS:
+        for scope in POINT_SCOPES:
+            for channel in CHANNELS:
+                for method in METHODS:
+                    seed_values = []
+                    for seed in SEEDS:
+                        values = [
+                            row[f"{scope}::{channel}"]
+                            for row in point_by_job[(fold, seed)]
+                            if row["method"] == method
+                            and row["origin"] in SELECTED_ORIGINS[fold]
+                        ]
+                        if len(values) != len(SELECTED_ORIGINS[fold]):
+                            raise ValueError(
+                                f"representative origins missing: {fold}/{seed}/{scope}/{channel}/{method}"
+                            )
+                        seed_values.append(median(values))
+                    representative_rows.append(
+                        {
+                            "trajectory_id": fold,
+                            "scope": scope,
+                            "channel": channel,
+                            "method": method,
+                            "representative_origin_then_seed_median_mae": median(
+                                seed_values
+                            ),
+                            "evaluation_role": "secondary_non_gating_field_map_anchor",
+                        }
+                    )
 
     diagnostic_rows: list[dict] = []
     for fold in FOLDS:
@@ -547,23 +678,28 @@ def analyze(args: argparse.Namespace) -> dict:
                         "uncertainty_claim": "uncalibrated_diagnostic_only",
                     }
                 )
-    for row in point_rows + diagnostic_rows:
+    for row in fold_point_rows + primary_point_rows + representative_rows + diagnostic_rows:
         for value in row.values():
             if isinstance(value, float) and not math.isfinite(value):
                 raise ValueError("non-finite aggregate output")
     args.out.mkdir(parents=True, exist_ok=False)
-    write_csv(args.out / "u012_fixed_point_gate.csv", point_rows)
+    write_csv(args.out / "trajectory_wide_fold_point_metrics.csv", fold_point_rows)
+    write_csv(args.out / "trajectory_wide_primary_gate.csv", primary_point_rows)
+    write_csv(
+        args.out / "representative_origin_point_diagnostics.csv",
+        representative_rows,
+    )
     write_csv(args.out / "selected_uncertainty_diagnostics.csv", diagnostic_rows)
     decision = {
         "experiment_id": EXPERIMENT_ID,
         **CLAIMS,
         "status": "PASS" if point_gate else "FAIL",
         "point_gate_pass": point_gate,
-        "u012_development_fold_only": True,
-        "reduction": "median_four_fixed_origins_within_seed_then_median_three_seeds",
-        "gno_better_than_persistence_channels": better_persistence,
-        "gno_better_than_constrained_linear_channels": better_linear,
-        "no_channel_more_than_10pct_worse_than_persistence": no_large_regression,
+        "primary_evaluation": "all_legal_pre_hit_origins_all_three_folds_native_q4",
+        "primary_scopes": list(POINT_SCOPES),
+        "scope_gates": scope_gates,
+        "reduction": "origin_median_within_seed_then_seed_median_within_fold_then_fold_median",
+        "representative_origins_role": "secondary_non_gating_field_map_anchors",
         "uncertainty_can_rescue_point_gate": False,
         "matrix_lock_sha256": args.matrix_lock_sha256,
         "release_authorization_sha256": args.release_authorization_sha256,

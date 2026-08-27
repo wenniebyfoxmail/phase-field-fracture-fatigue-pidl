@@ -45,6 +45,20 @@ def make_matrix(tmp_path: Path, *, gno_factor: float = 0.5):
             "producer": "taobo_only",
         },
         "required_job_payloads": sorted(analyzer.EXPECTED_JOB_PAYLOADS),
+        "protocol": {
+            "context": 3,
+            "rollout": 1,
+            "mean_steps": 3000,
+            "scale_steps": 500,
+            "hidden_dim": 96,
+            "primary_origin_rule": "all_legal_pre_hit",
+            "primary_scopes": list(analyzer.POINT_SCOPES),
+            "primary_reduction": "origin_median_within_seed_then_seed_median_within_fold_then_fold_median",
+            "representative_origins_role": "secondary_non_gating_field_map_anchors",
+            "selected_origins": {
+                key: list(value) for key, value in analyzer.SELECTED_ORIGINS.items()
+            },
+        },
         "code_sha256": code_sha,
     }
     lock_path = tmp_path / "matrix.json"
@@ -104,6 +118,20 @@ def make_matrix(tmp_path: Path, *, gno_factor: float = 0.5):
                             "target_cycle": origin + 1,
                             **{
                                 f"{channel}_increment_mae": factor * (index + 1)
+                                for index, channel in enumerate(analyzer.CHANNELS)
+                            },
+                            **{
+                                f"{channel}_true_change_top5_increment_mae": factor
+                                * (index + 1)
+                                for index, channel in enumerate(analyzer.CHANNELS)
+                            },
+                            **{
+                                f"{channel}_true_change_top5_area_fraction": 0.25
+                                for channel in analyzer.CHANNELS
+                            },
+                            **{
+                                f"{channel}_true_change_top5_min_magnitude": 0.1
+                                * (index + 1)
                                 for index, channel in enumerate(analyzer.CHANNELS)
                             },
                         }
@@ -191,6 +219,8 @@ def make_matrix(tmp_path: Path, *, gno_factor: float = 0.5):
                 "dataset_manifest_sha256": analyzer.DATASET_MANIFEST_SHA256,
                 "dataset_hash_file_sha256": analyzer.DATASET_HASH_FILE_SHA256,
                 "required_job_payloads": sorted(analyzer.EXPECTED_JOB_PAYLOADS),
+                "primary_evaluation": "all_legal_pre_hit_origins_native_q4_whole_and_fem_true_change_top5",
+                "representative_origins_role": "secondary_non_gating_field_maps_only",
                 "event_windows_per_training_trajectory": {
                     training: 1 for training in set(analyzer.FOLDS) - {fold}
                 },
@@ -244,12 +274,18 @@ def refresh_job_receipt(job: Path) -> None:
     receipt_path.write_text(json.dumps(receipt) + "\n")
 
 
-def test_complete_matrix_passes_fixed_u012_point_gate_and_writes_uncertainty(tmp_path):
+def test_complete_matrix_passes_trajectory_wide_q4_gate_and_writes_uncertainty(tmp_path):
     args = make_matrix(tmp_path)
     decision = analyzer.analyze(args)
     assert decision["status"] == "PASS"
-    assert decision["gno_better_than_persistence_channels"] == 4
-    assert decision["gno_better_than_constrained_linear_channels"] == 4
+    assert decision["primary_evaluation"] == (
+        "all_legal_pre_hit_origins_all_three_folds_native_q4"
+    )
+    assert set(decision["scope_gates"]) == set(analyzer.POINT_SCOPES)
+    assert all(gate["pass"] for gate in decision["scope_gates"].values())
+    with (args.out / "trajectory_wide_primary_gate.csv").open(newline="") as handle:
+        primary_rows = list(csv.DictReader(handle))
+    assert len(primary_rows) == len(analyzer.POINT_SCOPES) * len(analyzer.CHANNELS)
     with (args.out / "selected_uncertainty_diagnostics.csv").open(newline="") as handle:
         rows = list(csv.DictReader(handle))
     assert len(rows) == 3 * 4 * 4
@@ -263,6 +299,44 @@ def test_point_gate_failure_is_not_rescued_by_uncertainty(tmp_path):
     decision = analyzer.analyze(args)
     assert decision["status"] == "FAIL"
     assert decision["uncertainty_can_rescue_point_gate"] is False
+
+
+def test_good_representative_origins_cannot_rescue_bad_trajectory_wide_result(tmp_path):
+    args = make_matrix(tmp_path, gno_factor=1.2)
+    for fold in analyzer.FOLDS:
+        for seed in analyzer.SEEDS:
+            job = args.archive_root / f"{fold}_s{seed}"
+            path = job / "heldout_increment_metrics.csv"
+            rows = analyzer.read_csv(path)
+            for row in rows:
+                if (
+                    row["method"] == "gno_increment"
+                    and int(row["origin_cycle"]) in analyzer.SELECTED_ORIGINS[fold]
+                ):
+                    for channel_index, channel in enumerate(analyzer.CHANNELS):
+                        row[f"{channel}_increment_mae"] = 0.5 * (channel_index + 1)
+                        row[f"{channel}_true_change_top5_increment_mae"] = 0.5 * (
+                            channel_index + 1
+                        )
+            write_csv(path, rows)
+            refresh_job_receipt(job)
+    decision = analyzer.analyze(args)
+    assert decision["status"] == "FAIL"
+    assert decision["representative_origins_role"] == (
+        "secondary_non_gating_field_map_anchors"
+    )
+
+
+def test_method_dependent_active_q4_metadata_fails_closed(tmp_path):
+    args = make_matrix(tmp_path)
+    job = args.archive_root / "hard5_u012_s1"
+    path = job / "heldout_increment_metrics.csv"
+    rows = analyzer.read_csv(path)
+    rows[0]["damage_true_change_top5_area_fraction"] = 0.5
+    write_csv(path, rows)
+    refresh_job_receipt(job)
+    with pytest.raises(ValueError, match="method-dependent active-Q4 metadata"):
+        analyzer.analyze(args)
 
 
 def test_nonfinite_point_metric_fails_closed(tmp_path):

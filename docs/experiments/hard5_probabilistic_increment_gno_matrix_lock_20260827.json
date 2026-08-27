@@ -35,6 +35,10 @@
     "mean_steps": 3000,
     "scale_steps": 500,
     "hidden_dim": 96,
+    "primary_origin_rule": "all_legal_pre_hit",
+    "primary_scopes": ["whole_q4", "fem_true_change_top5_q4"],
+    "primary_reduction": "origin_median_within_seed_then_seed_median_within_fold_then_fold_median",
+    "representative_origins_role": "secondary_non_gating_field_map_anchors",
     "selected_origins": {
       "hard5_u011": [20, 40, 60, 120],
       "hard5_u012": [20, 40, 60, 80],
@@ -52,16 +56,18 @@
     "training_history.csv"
   ],
   "code_sha256": {
-    "aggregate_analyzer": "3fbebf2dfd94715d32f0ac8a5b53ac06113c381e078f81398e6119e3e9194d17",
-    "aggregate_tests": "2d4a2d8b1f7b2a1a4192e24982af0b073e26d4a4eb1233bfc5e9c07080638b54",
+    "aggregate_analyzer": "b9e4d61ddffc4da5d85dbb0ee4ae7fe4164b05f3b9698b5ccb82c6f11d0efdb0",
+    "aggregate_tests": "5da3137498496c80f535dd8cde5600f96ca4df87c9038b9ad2d7c9ddc1082443",
     "data_dependency": "1b25abaf6c62dc7644ce83eecb2be25eeb8aba5e6826f42307e82b2c72550db7",
+    "external_advice": "8d239579d973c53d369d3564ca66afe48d7e9ee32c198095f4c953aa2bf865bd",
     "feature_dependency": "71654c175914db9476f76f244d4112bad3a89a122345dbd9683b1634f0ea51c7",
     "metric_dependency": "46f3ddd4efb3f09fdaa0205e556fec3babe214dbe2b195a2c3bbb66c08c005b0",
     "model": "ef2f840cf9a9507843fe1af5d9f75246ac7c8f8617c0bf675e4ea3e5a4554952",
     "operator_dependency": "f4a76d4f6941e64fc0846a95d45524875770d3fd0a21c81806a485b91e5d7037",
-    "preregistration": "6d0078154f0c71f87abaa046ac93734e3395e719da9ff9c7a3dba43af5df09e3",
-    "runner": "8c7951f8b9d1c83a7fdd6150a120639dce9121846f5ccaac54b605affb6dcf4e",
-    "runner_tests": "9febd1ed4a2cc4b332811343ebc66eb3bad728981b8581821ed0ee9a7713dd3c",
+    "preregistration": "45da06a309b7ed84f760cb55250ca0842938d98c73b8df6b56180b5cd74e2a19",
+    "protocol_amendment": "152791268ed5f970fc6825c06db88ca5ccd929f33cb99979fb97bf567fcc1c1b",
+    "runner": "5565d1ffee978d704601df25b18efe576fe96701812df7f18d769c7811dff92e",
+    "runner_tests": "4e2fb0b9c464b70e198a756553c03ee9318681182f7079acac4c20f3b9038c91",
     "tests": "42709ce428de56474933e007c87b472d2b02d89db6f3f08ac80f58d339d91ad7"
   },
   "release_requirements": {
