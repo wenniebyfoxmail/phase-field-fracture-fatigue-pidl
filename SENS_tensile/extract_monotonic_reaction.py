@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import sys
@@ -23,7 +25,27 @@ def main() -> int:
     if args.force_cpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
     run = args.run.expanduser().resolve()
-    manifest = json.loads((run / "forward_manifest.json").read_text(encoding="utf-8"))
+
+    def sha256(path: Path) -> str:
+        digest = hashlib.sha256()
+        with path.open("rb") as handle:
+            for block in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(block)
+        return digest.hexdigest()
+
+    manifest_path = run / "forward_manifest.json"
+    status = json.loads((run / "run_status.json").read_text(encoding="utf-8"))
+    if status.get("status") != "COMPLETE":
+        raise RuntimeError(f"forward run is not COMPLETE: {status.get('status')!r}")
+    if status.get("manifest_sha256") != sha256(manifest_path):
+        raise RuntimeError("forward manifest hash does not match COMPLETE status")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    expected_steps = len(manifest["displacements"])
+    if status.get("checkpoint_count") != expected_steps:
+        raise RuntimeError("COMPLETE status checkpoint count is inconsistent")
+    expected_names = {f"trained_1NN_{index}.pt" for index in range(expected_steps)}
+    if set(status.get("checkpoint_sha256", {})) != expected_names:
+        raise RuntimeError("COMPLETE status checkpoint hash inventory is inconsistent")
     output = (args.out or (run / "reaction_curve.csv")).expanduser().resolve()
 
     here = Path(__file__).resolve().parent
@@ -49,6 +71,17 @@ def main() -> int:
     from input_data_from_mesh import prep_input_data
 
     device = "cpu" if args.force_cpu else config.device
+    if config.PFF_model_dict["PFF_model"] != manifest["PFF_model"]:
+        raise RuntimeError("current PFF model differs from completed run")
+    if config.PFF_model_dict["se_split"] != manifest["se_split"]:
+        raise RuntimeError("current strain-energy split differs from completed run")
+    if config.PFF_model_dict["tol_ir"] != manifest["tol_ir"]:
+        raise RuntimeError(
+            "current irreversibility tolerance differs from completed run"
+        )
+    fine_mesh = (here / config.fine_mesh_file).resolve()
+    if sha256(fine_mesh) != manifest["fine_mesh_sha256"]:
+        raise RuntimeError("local fine mesh differs from completed run")
     config.mat_prop_dict.update(
         {
             "mat_E": float(manifest["mat_E"]),
@@ -85,7 +118,7 @@ def main() -> int:
         pffmodel,
         config.crack_dict,
         config.numr_dict,
-        mesh_file=manifest["fine_mesh"],
+        mesh_file=str(fine_mesh),
         device=device,
     )
 
@@ -94,6 +127,8 @@ def main() -> int:
         checkpoint = run / "best_models" / f"trained_1NN_{index}.pt"
         if not checkpoint.is_file():
             raise FileNotFoundError(f"missing checkpoint: {checkpoint}")
+        if sha256(checkpoint) != status["checkpoint_sha256"][checkpoint.name]:
+            raise RuntimeError(f"checkpoint hash mismatch: {checkpoint}")
         field_comp.net.load_state_dict(torch.load(checkpoint, map_location=device))
         load = torch.tensor(float(displacement), device=device, requires_grad=True)
         field_comp.lmbda = load
@@ -113,23 +148,24 @@ def main() -> int:
         total = e_el + e_d + e_hist
         reaction = torch.autograd.grad(total, load, retain_graph=False)[0]
         elastic_identity = 2.0 * e_el.detach() / load.detach()
-        rows.append(
-            {
-                "step": index,
-                "displacement": float(displacement),
-                "reaction": float(reaction.detach().cpu()),
-                "reaction_elastic_identity": float(elastic_identity.cpu()),
-                "reaction_identity_abs_error": float(
-                    torch.abs(reaction.detach() - elastic_identity).cpu()
-                ),
-                "E_el": float(e_el.detach().cpu()),
-                "E_d": float(e_d.detach().cpu()),
-                "E_hist": float(e_hist.detach().cpu()),
-                "E_total": float(total.detach().cpu()),
-                "alpha_max": float(alpha.detach().max().cpu()),
-                "alpha_mean": float(alpha.detach().mean().cpu()),
-            }
-        )
+        row = {
+            "step": index,
+            "displacement": float(displacement),
+            "reaction": float(reaction.detach().cpu()),
+            "reaction_elastic_identity": float(elastic_identity.cpu()),
+            "reaction_identity_abs_error": float(
+                torch.abs(reaction.detach() - elastic_identity).cpu()
+            ),
+            "E_el": float(e_el.detach().cpu()),
+            "E_d": float(e_d.detach().cpu()),
+            "E_hist": float(e_hist.detach().cpu()),
+            "E_total": float(total.detach().cpu()),
+            "alpha_max": float(alpha.detach().max().cpu()),
+            "alpha_mean": float(alpha.detach().mean().cpu()),
+        }
+        if not all(math.isfinite(float(value)) for value in row.values()):
+            raise RuntimeError(f"non-finite extracted value at step {index}")
+        rows.append(row)
         hist_alpha = alpha.detach()
 
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -137,6 +173,22 @@ def main() -> int:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
+    (run / "reaction_status.json").write_text(
+        json.dumps(
+            {
+                "status": "COMPLETE",
+                "forward_manifest_sha256": sha256(manifest_path),
+                "reaction_curve": str(output),
+                "reaction_curve_sha256": sha256(output),
+                "row_count": len(rows),
+                "reaction_definition": "d(E_el+E_d+E_hist)/dU at fixed checkpoint fields",
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(output)
     return 0
 
