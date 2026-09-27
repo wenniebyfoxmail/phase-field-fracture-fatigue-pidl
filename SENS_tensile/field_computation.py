@@ -130,7 +130,8 @@ class FieldComputation:
         # side^1 (linear gating) — V7 may WARN/FAIL but less aggressive NN damping,
         #   diagnostic for "is side² over-constraining crack propagation?"
         self.exact_bc_side_power = float(_eb.get('side_power', 2.0))
-        if self.exact_bc_enabled and self.exact_bc_mode not in ('sent_plane_strain', 'fem_anchor'):
+        if self.exact_bc_enabled and self.exact_bc_mode not in (
+                'sent_plane_strain', 'fem_anchor', 'felino_sent'):
             raise ValueError(f"Unsupported exact_bc_mode={self.exact_bc_mode!r}")
 
         # ★ 2026-05-30: local patch representation discriminator.
@@ -347,6 +348,14 @@ class FieldComputation:
                 v_bubble = (inp[:, -1] - y0) * (yL - inp[:, -1])
                 u = anchor_gate * disp_u * self.lmbda
                 v = (v_bubble * disp_v + (inp[:, -1] - y0) / H) * self.lmbda
+            elif self.exact_bc_mode == 'felino_sent':
+                # Locked Felino tutorial deck: disp_x=disp_y=0 on the full
+                # bottom edge, disp_y=lambda on the top edge, disp_x free on
+                # the top.  Side tractions remain natural variational BCs.
+                bottom_gate = (inp[:, -1] - y0) / H
+                v_bubble = (inp[:, -1] - y0) * (yL - inp[:, -1])
+                u = bottom_gate * disp_u * self.lmbda
+                v = (v_bubble * disp_v + bottom_gate) * self.lmbda
             else:
                 # Plane-strain uniaxial extension particular solution:
                 # eps_xx = -nu/(1-nu) * eps_yy  →  sigma_xx = 0, sigma_xy = 0.

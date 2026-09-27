@@ -22,6 +22,19 @@ def prep_input_data(matprop, pffmodel, crack_dict, numr_dict, mesh_file, device)
     
     X, Y, T_conn, area_T = parse_mesh(filename = mesh_file, gradient_type=numr_dict["gradient_type"])
 
+    if numr_dict.get("orient_triangles_ccw", False):
+        if numr_dict["gradient_type"] == 'autodiff':
+            raise ValueError('orient_triangles_ccw requires numerical gradients')
+        neg = area_T < 0
+        if np.any(neg):
+            T_conn = T_conn.copy()
+            tmp = T_conn[neg, 1].copy()
+            T_conn[neg, 1] = T_conn[neg, 2]
+            T_conn[neg, 2] = tmp
+            area_T = np.abs(area_T)
+        if np.any(area_T <= 0):
+            raise ValueError('mesh contains zero-area triangles after orientation repair')
+
     inp = torch.from_numpy(np.column_stack((X, Y))).to(torch.float).to(device)
     T_conn = torch.from_numpy(T_conn).to(torch.long).to(device)
     area_T = torch.from_numpy(area_T).to(torch.float).to(device)
@@ -31,5 +44,4 @@ def prep_input_data(matprop, pffmodel, crack_dict, numr_dict, mesh_file, device)
     hist_alpha = hist_alpha_init(inp, matprop, pffmodel, crack_dict)
     
     return inp, T_conn, area_T, hist_alpha
-
 

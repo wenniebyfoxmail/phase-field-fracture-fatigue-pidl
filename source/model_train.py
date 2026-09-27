@@ -33,7 +33,8 @@ from optim import *
 from plotting import plot_field
 
 # ★ 新增：疲劳相关函数（仅在 fatigue_on=True 时实际调用）
-from compute_energy import (get_psi_plus_per_elem, compute_energy,
+from compute_energy import (get_psi_plus_per_elem, get_felino_icla_drive_per_elem,
+                            compute_energy,
                             compute_energy_per_elem, gradients,
                             stress as effective_stress)
 from fatigue_history import (update_fatigue_history, compute_fatigue_degrad,
@@ -381,6 +382,7 @@ def _full_linear_stress(eps_xx, eps_yy, eps_xy, matprop):
 def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
                               f_fatigue, psi_plus_elem, psi_plus_prev,
                               matprop, pffmodel, area_T, cycle, out_dir,
+                              physical_cycle=None,
                               psi_history_elem=None,
                               history_increment_elem=None,
                               alpha_feedback_target_elem=None,
@@ -512,6 +514,18 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
     np.savez_compressed(
         out_dir / f"element_fields_cycle_{cycle:04d}.npz",
         cycle=np.array([cycle], dtype=np.int32),
+        physical_cycle=np.array([
+            cycle if physical_cycle is None else physical_cycle
+        ], dtype=np.float64),
+        node_x=_tensor_to_numpy(inp[:, 0]).reshape(-1).astype(np.float32),
+        node_y=_tensor_to_numpy(inp[:, 1]).reshape(-1).astype(np.float32),
+        connectivity=(
+            _tensor_to_numpy(T_conn).astype(np.int32)
+            if T_conn is not None else np.empty((0, 3), dtype=np.int32)
+        ),
+        disp_x_node=_tensor_to_numpy(u).reshape(-1).astype(np.float32),
+        disp_y_node=_tensor_to_numpy(v).reshape(-1).astype(np.float32),
+        alpha_node=_tensor_to_numpy(alpha).reshape(-1).astype(np.float32),
         elem_x=_tensor_to_numpy(elem_x).reshape(-1).astype(np.float32),
         elem_y=_tensor_to_numpy(elem_y).reshape(-1).astype(np.float32),
         area_elem=_tensor_to_numpy(area_T).reshape(-1).astype(np.float32),
@@ -867,6 +881,32 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # ★ 疲劳变量初始化（仅 fatigue_on=True 时使用；否则下面 if 块永不执行）
     # -------------------------------------------------------------------------
     n_elem = area_T.shape[0]
+    _felino_obs_cfg = fatigue_dict.get('felino_observables', {})
+    _felino_obs_enabled = bool(_felino_obs_cfg.get('enable', False))
+    _felino_obs_rows = []
+    _top_elem_mask = None
+    _top_edge_lengths = None
+    if _felino_obs_enabled:
+        if T_conn is None:
+            raise ValueError('Felino observables require numerical triangle connectivity')
+        _tri_y = inp[T_conn, 1]
+        _tri_x = inp[T_conn, 0]
+        _y_top = inp[:, 1].max()
+        _top_nodes = torch.isclose(
+            _tri_y, _y_top,
+            atol=float(_felino_obs_cfg.get('boundary_atol', 1e-8)),
+            rtol=0.0,
+        )
+        _top_elem_mask = _top_nodes.sum(dim=1) == 2
+        _x_hi = torch.where(
+            _top_nodes, _tri_x, torch.full_like(_tri_x, -torch.inf)
+        ).max(dim=1).values
+        _x_lo = torch.where(
+            _top_nodes, _tri_x, torch.full_like(_tri_x, torch.inf)
+        ).min(dim=1).values
+        _top_edge_lengths = (_x_hi - _x_lo)[_top_elem_mask]
+        if not bool(_top_elem_mask.any()) or float(_top_edge_lengths.sum()) <= 0:
+            raise ValueError('Could not identify top-boundary edges for Felino observables')
     if fatigue_on:
         hist_fat      = torch.zeros(n_elem, device=device)
         psi_plus_prev = torch.zeros(n_elem, device=device)
@@ -1956,29 +1996,48 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 and _lagged_stiffness_history_policy == 'solver_only'
             ):
                 _g_history_override_current = None
+            _felino_icla = fatigue_dict.get('accum_type') == 'felino_icla'
             if T_conn is not None:
                 with torch.no_grad():
                     u_eval, v_eval, alpha_eval = field_comp.fieldCalculation(inp)
-                psi_plus_elem = get_psi_plus_per_elem(
-                    inp, u_eval, v_eval, alpha_eval,
-                    matprop, pffmodel, area_T, T_conn,
-                    psi_hack_dict=_psi_hack,
-                    fem_oracle_dict=_fem_oracle,
-                    history_driver_reduction_dict=_history_driver_reduction,
-                    g_stiffness_override=_g_history_override_current,
-                )
+                if _felino_icla:
+                    psi_plus_elem = get_felino_icla_drive_per_elem(
+                        inp, u_eval, v_eval, matprop, area_T, T_conn,
+                        load_ratio=fatigue_dict.get('R_ratio', 0.5),
+                        material_constant_n=fatigue_dict.get(
+                            'material_constant_n', 0.5
+                        ),
+                    )
+                else:
+                    psi_plus_elem = get_psi_plus_per_elem(
+                        inp, u_eval, v_eval, alpha_eval,
+                        matprop, pffmodel, area_T, T_conn,
+                        psi_hack_dict=_psi_hack,
+                        fem_oracle_dict=_fem_oracle,
+                        history_driver_reduction_dict=_history_driver_reduction,
+                        g_stiffness_override=_g_history_override_current,
+                    )
             else:
                 # 自动微分模式：需要 inp 开启梯度
                 inp_tmp = inp.detach().clone().requires_grad_(True)
                 u_eval, v_eval, alpha_eval = field_comp.fieldCalculation(inp_tmp)
-                psi_plus_elem = get_psi_plus_per_elem(
-                    inp_tmp, u_eval, v_eval, alpha_eval,
-                    matprop, pffmodel, area_T, T_conn=None,
-                    psi_hack_dict=_psi_hack,
-                    fem_oracle_dict=_fem_oracle,
-                    history_driver_reduction_dict=_history_driver_reduction,
-                    g_stiffness_override=_g_history_override_current,
-                )
+                if _felino_icla:
+                    psi_plus_elem = get_felino_icla_drive_per_elem(
+                        inp_tmp, u_eval, v_eval, matprop, area_T, T_conn=None,
+                        load_ratio=fatigue_dict.get('R_ratio', 0.5),
+                        material_constant_n=fatigue_dict.get(
+                            'material_constant_n', 0.5
+                        ),
+                    )
+                else:
+                    psi_plus_elem = get_psi_plus_per_elem(
+                        inp_tmp, u_eval, v_eval, alpha_eval,
+                        matprop, pffmodel, area_T, T_conn=None,
+                        psi_hack_dict=_psi_hack,
+                        fem_oracle_dict=_fem_oracle,
+                        history_driver_reduction_dict=_history_driver_reduction,
+                        g_stiffness_override=_g_history_override_current,
+                    )
 
             if (_void_notch_mask is not None
                     and _void_cfg.get('mask_fatigue', True)):
@@ -2013,7 +2072,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     g_lag, _ = pffmodel.Edegrade(alpha_lag_elem)
                     psi_history_elem = (g_lag * psi_raw_elem).detach()
 
-            history_increment_elem = torch.relu(psi_history_elem - psi_plus_prev).detach()
+            if _felino_icla:
+                history_increment_elem = (
+                    psi_history_elem.clamp(min=0.0)
+                    * float(fatigue_dict.get('cycle_jump', 1.0))
+                ).detach()
+            else:
+                history_increment_elem = torch.relu(
+                    psi_history_elem - psi_plus_prev
+                ).detach()
             _hist_inc_oracle_cfg = fatigue_dict.get('history_increment_oracle', None)
             if (_hist_inc_oracle_cfg is not None
                     and _hist_inc_oracle_cfg.get('enable', False)):
@@ -2345,6 +2412,51 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if not _frac_detected:
                 E_el_max = max(E_el_max, E_el_scalar)
 
+            if _felino_obs_enabled:
+                _alpha_elem_obs = (
+                    alpha_el[T_conn[:, 0]]
+                    + alpha_el[T_conn[:, 1]]
+                    + alpha_el[T_conn[:, 2]]
+                ) / 3.0
+                _eps11, _eps22, _eps12, _, _ = gradients(
+                    inp, u_el, v_el, alpha_el, area_T, T_conn
+                )
+                _, _sigma22, _ = effective_stress(
+                    _eps11, _eps22, _eps12, _alpha_elem_obs,
+                    matprop, pffmodel,
+                    g_stiffness_override=_g_stiffness_override_current,
+                )
+                _top_force = torch.sum(
+                    _sigma22[_top_elem_mask] * _top_edge_lengths
+                )
+                _top_width = _top_edge_lengths.sum()
+                _cycle_jump = float(fatigue_dict.get('cycle_jump', 1.0))
+                _physical_cycle = (int(j) + 1) * _cycle_jump
+                _felino_obs_rows.append([
+                    int(j), _physical_cycle, float(disp[j]),
+                    float(torch.sum(area_T * _alpha_elem_obs).item()),
+                    float(alpha_el.max().item()),
+                    float(hist_fat.max().item()),
+                    float(hist_fat.mean().item()),
+                    float(f_min), E_el_scalar,
+                    float(_top_force.item()),
+                    float((_top_force / _top_width).item()),
+                ])
+                _obs_path = Path(model_path) / str(
+                    _felino_obs_cfg.get('filename', 'felino_observables.csv')
+                )
+                np.savetxt(
+                    _obs_path,
+                    np.asarray(_felino_obs_rows, dtype=float),
+                    delimiter=',',
+                    header=(
+                        'step,physical_cycle,disp_y,crack_area_integral_d,'
+                        'max_d,alpha_bar_max,alpha_bar_mean,f_min,E_el,'
+                        'top_reaction_force,top_stress_yy'
+                    ),
+                    comments='',
+                )
+
             # ── 右边界 α 检测（主判据）──────────────────────────────────────
             alpha_bdy     = alpha_el.flatten()[_right_bdy_mask]
             alpha_bdy_max = float(alpha_bdy.max().item()) if _right_bdy_mask.sum() > 0 else 0.0
@@ -2375,6 +2487,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     inp, T_conn, u_el, v_el, alpha_el, hist_alpha, hist_fat,
                     _f_current, psi_plus_elem, psi_plus_prev,
                     matprop, pffmodel, area_T, j, _elem_diag_dir,
+                    physical_cycle=(
+                        (int(j) + 1) * float(fatigue_dict.get('cycle_jump', 1.0))
+                    ),
                     psi_history_elem=psi_history_elem,
                     history_increment_elem=history_increment_elem,
                     alpha_feedback_target_elem=_alpha_feedback_target_elem,

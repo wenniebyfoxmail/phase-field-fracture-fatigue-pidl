@@ -32,7 +32,10 @@ def construct_model(PFF_model_dict, mat_prop_dict, network_dict, domain_extrema,
     pffmodel = PFFModel(PFF_model = PFF_model_dict["PFF_model"],
                         se_split = PFF_model_dict["se_split"],
                         tol_ir = torch.tensor(PFF_model_dict["tol_ir"], device=device),
-                        residual_stiffness = torch.tensor(residual_stiffness, device=device))
+                        residual_stiffness = torch.tensor(residual_stiffness, device=device),
+                        degradation_mode=PFF_model_dict.get(
+                            "degradation_mode", "additive_residual"
+                        ))
 
     # Material model
     matprop = MaterialProperties(mat_E = torch.tensor(mat_prop_dict["mat_E"], device=device),

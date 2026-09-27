@@ -381,6 +381,38 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
     return psi_plus_elem
 
 
+def get_felino_icla_drive_per_elem(inp, u, v, matprop, area_elem, T_conn=None,
+                                    load_ratio=0.5, material_constant_n=0.5):
+    """Return Felino's mean-load ``FatigueICLA`` driving energy per element.
+
+    The locked Felino SENT implementation uses the maximum principal strain
+    ``e_max`` and advances the accumulated history by ``psi_eff * DeltaN``::
+
+        psi_eff = 2 E e_max^2 ((1 + R) / 2)^2 ((1 - R) / 2)^n
+
+    This function deliberately returns the per-cycle drive.  Cycle jumping is
+    applied by :func:`fatigue_history.update_fatigue_history`, keeping the
+    observable semantics explicit and independently testable.
+
+    The current PIDL mechanics remain small-strain.  The locked Felino deck is
+    finite-strain; the production runner records this as an approximation and
+    does not claim solver equivalence.
+    """
+    strain_11, strain_22, strain_12, _, _ = gradients(
+        inp, u, v, torch.zeros_like(u), area_elem, T_conn
+    )
+    mean = 0.5 * (strain_11 + strain_22)
+    radius = torch.sqrt(
+        (0.5 * (strain_11 - strain_22)).square() + strain_12.square()
+    )
+    eig_max = mean + radius
+    e_max = torch.clamp(eig_max, min=0.0)
+    R = torch.as_tensor(load_ratio, dtype=e_max.dtype, device=e_max.device)
+    n = torch.as_tensor(material_constant_n, dtype=e_max.dtype, device=e_max.device)
+    factor = ((1.0 + R) / 2.0).square() * ((1.0 - R) / 2.0).pow(n)
+    return (2.0 * matprop.mat_E * e_max.square() * factor).detach()
+
+
 # Computes the components of strain and gradients of alpha
 def gradients(inp, u, v, alpha, area_elem, T_conn=None):
     """
@@ -457,6 +489,32 @@ def strain_energy_with_split(strain_11, strain_22, strain_12, alpha, matprop, pf
         )
         E_el_p = E_elV_p + E_el_dev
         E_el   = fun_EDegrade * E_el_p + E_elV_n
+    elif pffmodel.se_split == 'spectral':
+        # Miehe-style spectral split in plane strain.  The out-of-plane
+        # principal strain is zero, so it contributes neither positive nor
+        # negative deviatoric energy.
+        mean = 0.5 * (strain_11 + strain_22)
+        radius = torch.sqrt(
+            (0.5 * (strain_11 - strain_22)).square() + strain_12.square()
+        )
+        eig_1 = mean + radius
+        eig_2 = mean - radius
+        trace = strain_11 + strain_22
+        trace_p = torch.relu(trace)
+        trace_n = -torch.relu(-trace)
+        eig_1_p = torch.relu(eig_1)
+        eig_2_p = torch.relu(eig_2)
+        eig_1_n = -torch.relu(-eig_1)
+        eig_2_n = -torch.relu(-eig_2)
+        E_el_p = (
+            0.5 * matprop.mat_lmbda * trace_p.square()
+            + matprop.mat_mu * (eig_1_p.square() + eig_2_p.square())
+        )
+        E_el_n = (
+            0.5 * matprop.mat_lmbda * trace_n.square()
+            + matprop.mat_mu * (eig_1_n.square() + eig_2_n.square())
+        )
+        E_el = fun_EDegrade * E_el_p + E_el_n
     else:
         E_el   = fun_EDegrade * (
             0.5 * matprop.mat_lmbda * (strain_11 + strain_22)**2 +
@@ -487,6 +545,39 @@ def stress(strain_11, strain_22, strain_12, alpha, matprop, pffmodel,
         stress_22 = fun_EDegrade * (mat_K * nn.ReLU()(3.0 * strain_k) + 2 * matprop.mat_mu * strain_deviatoric_22) \
                     + mat_K * (-nn.ReLU()(-3.0 * strain_k))
         stress_12 = fun_EDegrade * (2 * matprop.mat_mu * strain_12)
+    elif pffmodel.se_split == 'spectral':
+        mean = 0.5 * (strain_11 + strain_22)
+        radius = torch.sqrt(
+            (0.5 * (strain_11 - strain_22)).square() + strain_12.square()
+            + torch.finfo(strain_11.dtype).eps
+        )
+        eig_1 = mean + radius
+        eig_2 = mean - radius
+        cos_2theta = (strain_11 - strain_22) / (2.0 * radius)
+        sin_2theta = strain_12 / radius
+        p1_xx = 0.5 * (1.0 + cos_2theta)
+        p1_yy = 0.5 * (1.0 - cos_2theta)
+        p1_xy = 0.5 * sin_2theta
+
+        eig_1_p, eig_2_p = torch.relu(eig_1), torch.relu(eig_2)
+        eig_1_n, eig_2_n = -torch.relu(-eig_1), -torch.relu(-eig_2)
+        eps_p_xx = eig_1_p * p1_xx + eig_2_p * (1.0 - p1_xx)
+        eps_p_yy = eig_1_p * p1_yy + eig_2_p * (1.0 - p1_yy)
+        eps_p_xy = (eig_1_p - eig_2_p) * p1_xy
+        eps_n_xx = eig_1_n * p1_xx + eig_2_n * (1.0 - p1_xx)
+        eps_n_yy = eig_1_n * p1_yy + eig_2_n * (1.0 - p1_yy)
+        eps_n_xy = (eig_1_n - eig_2_n) * p1_xy
+        trace = strain_11 + strain_22
+        trace_p = torch.relu(trace)
+        trace_n = -torch.relu(-trace)
+        stress_11 = fun_EDegrade * (
+            matprop.mat_lmbda * trace_p + 2.0 * matprop.mat_mu * eps_p_xx
+        ) + matprop.mat_lmbda * trace_n + 2.0 * matprop.mat_mu * eps_n_xx
+        stress_22 = fun_EDegrade * (
+            matprop.mat_lmbda * trace_p + 2.0 * matprop.mat_mu * eps_p_yy
+        ) + matprop.mat_lmbda * trace_n + 2.0 * matprop.mat_mu * eps_n_yy
+        stress_12 = fun_EDegrade * (2.0 * matprop.mat_mu * eps_p_xy) \
+            + 2.0 * matprop.mat_mu * eps_n_xy
     else:
         stress_11 = fun_EDegrade * (matprop.mat_lmbda * (strain_11 + strain_22) + 2 * matprop.mat_mu * strain_11)
         stress_22 = fun_EDegrade * (matprop.mat_lmbda * (strain_11 + strain_22) + 2 * matprop.mat_mu * strain_22)

@@ -1,0 +1,53 @@
+{
+  "contract_version": 1,
+  "identity": {
+    "moose_commit": "e0fc4af671b1d6018d7ae3057097e4af4c7e4150",
+    "felino_commit": "ebef6209b330b10b02a4067c809b457e54a6c8ce",
+    "disp_input_sha256": "1cd69c028404593ef78beb5cf9875eee230ec982f3bf97ec31dd21d0cbf765ca",
+    "damage_input_sha256": "68b75c5a6009574cf71ca73e33fdae528d77ee066c3b225bbe1b75aa3d928096",
+    "mesh_sha256": "5b6fbb1182d6959ed6bf5bf9df1605527a4246ced8098b90900f25753405b9b9",
+    "reference_csv_sha256": "e70206a61d952797fa51331bed6a20ec8fc5d0884ab64749298ed04b70ab5793"
+  },
+  "geometry": {
+    "width_mm": 1.0,
+    "height_mm": 1.0,
+    "notch_tip_x_mm": -0.0025,
+    "notch_half_width_mm": 0.0025,
+    "nodes": 7475,
+    "triangles": 14658
+  },
+  "material": {
+    "E_MPa": 210000.0,
+    "nu": 0.3,
+    "Gc_MPa_mm": 2.7,
+    "ell_mm": 0.016,
+    "phase_field": "AT2",
+    "energy_split": "spectral",
+    "residual_stiffness": 1e-6
+  },
+  "fatigue": {
+    "accumulation": "FatigueICLA",
+    "alpha_critical_MPa": 62.5,
+    "R": 0.5,
+    "material_constant_n": 0.5,
+    "cycle_jump": 100,
+    "total_cycles": 38000,
+    "accepted_steps": 380,
+    "umax_mm": 0.0005
+  },
+  "reference": {
+    "csv_rows_including_state0": 381,
+    "csv_columns": [
+      "time", "av_disp_y", "crack_area", "cycle_current", "dt",
+      "max_accumulate", "max_current", "max_d", "run_time", "top_stress_yy"
+    ],
+    "status": "NUMERICAL_REFERENCE_ONLY",
+    "behavioral_boundary": "FAIL_SOURCE_MATCHED_CRACK_FRONT",
+    "physical_truth": false
+  },
+  "pidl_approximation": {
+    "mechanics": "small_strain_plane_strain",
+    "felino_mechanics": "finite_strain_incremental",
+    "strict_solver_equivalence_authorized": false
+  }
+}

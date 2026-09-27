@@ -12,6 +12,7 @@ fatigue_history.py  ★ 新增文件（Manav 原始代码中不存在）
   累积策略（accum_type）:
     'carrara'  → Carrara Eq.39:  Δᾱ = H(Δψ⁺)·Δψ⁺           （线性，加载时累积）
     'golahmar' → Golahmar Eq.31: Δᾱ = H(Δψ⁺)·(ψ⁺/αₙ)^(n-1)·Δψ⁺ （幂律）
+    'felino_icla' → locked Felino mean-load envelope: Δᾱ = ψ_eff·ΔN
 
   退化函数（degrad_type）:
     'asymptotic'  → Carrara Eq.41: f = [2α_T/(ᾱ+α_T)]²       （渐近，永不到0）
@@ -64,6 +65,15 @@ def update_fatigue_history(hist_fat, psi_plus_elem, psi_plus_prev, fatigue_dict)
 
     accum_type = fatigue_dict.get('accum_type', 'carrara')
 
+    if accum_type == 'felino_icla':
+        cycle_jump = float(fatigue_dict.get('cycle_jump', 1.0))
+        if cycle_jump <= 0:
+            raise ValueError("fatigue_dict['cycle_jump'] must be positive")
+        # ``psi_plus_elem`` is the per-cycle mean-load drive returned by
+        # get_felino_icla_drive_per_elem. It is not a positive energy
+        # increment and must not be differenced against the previous state.
+        return (hist_fat + psi_plus_elem.clamp(min=0.0) * cycle_jump).detach()
+
     # H(Δψ⁺)·Δψ⁺ ≥ 0  ——  relu 实现：只保留正增量（加载阶段）
     delta_psi = torch.relu(psi_plus_elem - psi_plus_prev)
 
@@ -81,7 +91,8 @@ def update_fatigue_history(hist_fat, psi_plus_elem, psi_plus_prev, fatigue_dict)
 
     else:
         raise ValueError(
-            f"Unknown accum_type='{accum_type}'. Choose 'carrara' or 'golahmar'."
+            f"Unknown accum_type='{accum_type}'. Choose 'carrara', "
+            "'golahmar', or 'felino_icla'."
         )
 
     return (hist_fat + delta_alpha).detach()

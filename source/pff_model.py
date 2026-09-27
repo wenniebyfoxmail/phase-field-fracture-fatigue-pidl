@@ -47,21 +47,31 @@ class PFFModel:
     """
 
     def __init__(self, PFF_model = 'AT1', se_split = 'volumetric', tol_ir = 5e-3,
-                 residual_stiffness = 0.0):
+                 residual_stiffness = 0.0,
+                 degradation_mode = 'additive_residual'):
         self.PFF_model = PFF_model # AT1 或 AT2 模型
         self.se_split = se_split    # 应变能分解方式
         self.tol_ir = tol_ir    # 不可逆性容差阈值
         self.residual_stiffness = residual_stiffness
+        self.degradation_mode = degradation_mode
 
         # 输入检查
-        if self.se_split != 'volumetric':
+        if self.se_split not in ('volumetric', 'spectral', None):
             warnings.warn('Prescribed strain energy split is not volumetric. No strain energy split will be applied.')
         
         if self.PFF_model not in ['AT1', 'AT2']:
             raise ValueError('PFF_model must be AT1 or AT2')
+        if self.degradation_mode not in ('additive_residual', 'multiplicative_residual'):
+            raise ValueError(
+                "degradation_mode must be 'additive_residual' or "
+                "'multiplicative_residual'"
+            )
 
     # degradation function for Young's modulus and its derivative w.r.t. \alpha: g(\alpha) and g'(\alpha)
     def Edegrade(self, alpha):
+        if self.degradation_mode == 'multiplicative_residual':
+            k = self.residual_stiffness
+            return (1 - alpha)**2 * (1 - k) + k, 2 * (alpha - 1) * (1 - k)
         return (1 - alpha)**2 + self.residual_stiffness, 2*(alpha - 1)
 
     """
