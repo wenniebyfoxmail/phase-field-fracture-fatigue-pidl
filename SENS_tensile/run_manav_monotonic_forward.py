@@ -48,8 +48,8 @@ def parse_args() -> argparse.Namespace:
         parser.error("network dimensions must be positive")
     if args.activation != "TrainableReLU":
         parser.error("this frozen reproduction requires --activation TrainableReLU")
-    if not math.isfinite(args.init_coeff) or args.init_coeff <= 0:
-        parser.error("--init-coeff must be finite and positive")
+    if not math.isfinite(args.init_coeff) or args.init_coeff < 1:
+        parser.error("--init-coeff must be finite and at least 1")
     if args.max_load_steps is not None and args.max_load_steps < 1:
         parser.error("--max-load-steps must be positive")
     return args
@@ -83,6 +83,8 @@ def main() -> int:
             text=True,
         ).stdout.strip()
     )
+    if dirty:
+        raise RuntimeError("refusing to train from a dirty worktree")
     os.chdir(here)
     sys.path.insert(0, str(here))
     sys.path.insert(0, str(repo / "source"))

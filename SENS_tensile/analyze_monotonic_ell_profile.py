@@ -25,6 +25,7 @@ def read_run(directory: Path) -> tuple[dict, dict[str, np.ndarray]]:
     reaction_status = json.loads(
         (directory / "reaction_status.json").read_text(encoding="utf-8")
     )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     curve_path = directory / "reaction_curve.csv"
     if run_status.get("status") != "COMPLETE":
         raise RuntimeError(f"run is not COMPLETE: {directory}")
@@ -37,11 +38,14 @@ def read_run(directory: Path) -> tuple[dict, dict[str, np.ndarray]]:
         raise RuntimeError(f"reaction/manifest hash mismatch: {directory}")
     if reaction_status.get("reaction_curve_sha256") != sha256(curve_path):
         raise RuntimeError(f"reaction curve hash mismatch: {directory}")
+    if reaction_status.get("extraction_commit") != manifest.get("executed_commit"):
+        raise RuntimeError(f"reaction extraction commit mismatch: {directory}")
+    if reaction_status.get("extraction_worktree_dirty") is not False:
+        raise RuntimeError(f"reaction extraction used a dirty worktree: {directory}")
     if Path(reaction_status.get("reaction_curve", "")).name != curve_path.name:
         raise RuntimeError(
             f"reaction status points to an unexpected curve: {directory}"
         )
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     with curve_path.open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
     if len(rows) != len(manifest["displacements"]):

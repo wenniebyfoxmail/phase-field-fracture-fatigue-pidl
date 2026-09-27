@@ -9,6 +9,7 @@ import json
 import math
 import os
 from pathlib import Path
+import subprocess
 import sys
 
 
@@ -50,6 +51,26 @@ def main() -> int:
 
     here = Path(__file__).resolve().parent
     repo = here.parent
+    extraction_commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    extraction_dirty = bool(
+        subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=repo,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+    )
+    if extraction_dirty:
+        raise RuntimeError("refusing extraction from a dirty worktree")
+    if extraction_commit != manifest["executed_commit"]:
+        raise RuntimeError("extraction commit differs from the completed run")
     os.chdir(here)
     sys.path.insert(0, str(here))
     sys.path.insert(0, str(repo / "source"))
@@ -181,6 +202,8 @@ def main() -> int:
                 "reaction_curve": str(output),
                 "reaction_curve_sha256": sha256(output),
                 "row_count": len(rows),
+                "extraction_commit": extraction_commit,
+                "extraction_worktree_dirty": extraction_dirty,
                 "reaction_definition": "d(E_el+E_d+E_hist)/dU at fixed checkpoint fields",
             },
             indent=2,
