@@ -51,3 +51,8 @@ California 126 条 section 的官方 viewer 全量审计得到 20 条重复地�
 - 不把 generative video 视觉逼真度当物理预测；headline metrics 必须是未来 registered mask/tip/area、event timing、CRPS/coverage 与决策效用。
 - 若公开数据无法对齐图像—荷载—天气—维修时间轴，立即转为最小 prospective pilot；若 world model 不优于 persistence 和 observation-only state-space baseline，则停止扩大架构。
 - 暂停新的 PIDL loss/architecture sweep、Freeze-Then-Select 阈值调节、未合格 FEM corpus 和单轨迹 foundation-model 宣称。
+
+
+## Reporting correction — 2026-09-29
+
+The historical statement above that hard-recovery PIDL matches FEM `N_f=89` must not be used as current first-detection agreement. Canonical five-step FEM is first detect c83/confirmed c86; historical eight-step FEM is first detect c86/confirmed c89; PIDL is first detect c89 (step444)/confirmation step447. Historical field evidence retains its original cadence. The current contract is in the isolated `codex/thesis-state-contract-20260929` branch at `docs/research/thesis/BENCHMARK_STATE_CONTRACT.md`. This dated correction preserves the old record and does not change a run or frozen verdict.

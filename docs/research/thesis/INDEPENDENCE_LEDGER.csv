@@ -1,0 +1,7 @@
+evidence_group,nominal_count,independent_unit,overlap,current_use,required_change
+factorial_FEM,4,numerical trajectory; same geometry/material/Umax,Hard5 U0.12 also in cross-Umax set,development cadence/preparation diagnostic,report four cases not four specimens
+cross_Umax_Hard5,3,numerical trajectory; same geometry/material,one overlap with factorial; union at most six pending provenance,already seen development,new frozen physical-parameter/loading case for confirmatory numerical claim
+oracle_and_sparse_assimilation,1,historical eight-step numerical trajectory,repeated interventions on same trajectory,conditional mechanism/observation diagnostic,separate autonomous forecast from later observation-conditioned forecast
+LTPP,6,road section; 37 annotated states and 31 candidate transitions,reused across analyses; spatial qualification unresolved for 2D claims,bounded geometry/scalar diagnostics per original gates,verify metric registration for claimed target; uncertainty clustered by section
+new_physical_specimen_or_road_validation,0,not established in this audit,UNKNOWN,no new physical validation claim,obtain and qualify only if needed by thesis endpoint
+seeds_nodes_windows,not counted,technical repeats or nested measurements,within parent trajectory/asset,optimisation/measurement variability,never count as independent trajectories/events
