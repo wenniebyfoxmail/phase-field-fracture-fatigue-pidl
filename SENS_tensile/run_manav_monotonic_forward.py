@@ -36,6 +36,13 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Diagnostic-only prefix of the original loading path.",
     )
+    parser.add_argument(
+        "--displacements",
+        type=float,
+        nargs="+",
+        default=None,
+        help="Explicit strictly increasing monotonic loading path.",
+    )
     parser.add_argument("--force-cpu", action="store_true")
     args = parser.parse_args()
     if not math.isfinite(args.l0) or not math.isfinite(args.gc_bar):
@@ -52,7 +59,22 @@ def parse_args() -> argparse.Namespace:
         parser.error("--init-coeff must be finite and at least 1")
     if args.max_load_steps is not None and args.max_load_steps < 1:
         parser.error("--max-load-steps must be positive")
+    if args.max_load_steps is not None and args.displacements is not None:
+        parser.error("--max-load-steps and --displacements are mutually exclusive")
     return args
+
+
+def validate_displacements(values: list[float]) -> list[float]:
+    result = [float(value) for value in values]
+    if (
+        len(result) == 0
+        or not all(math.isfinite(value) and value > 0 for value in result)
+        or not all(b > a for a, b in zip(result[:-1], result[1:]))
+    ):
+        raise ValueError(
+            "active displacements must be finite, positive, and strictly increasing"
+        )
+    return result
 
 
 def main() -> int:
@@ -120,21 +142,15 @@ def main() -> int:
 
     config.optimizer_dict["n_epochs_RPROP"] = int(args.rprop_epochs)
     config.optimizer_dict["n_epochs_LBFGS"] = int(args.lbfgs_epochs)
-    active_disp = config.disp.copy()
-    if args.max_load_steps is not None:
-        active_disp = active_disp[: args.max_load_steps]
-    if (
-        len(active_disp) == 0
-        or not all(
-            math.isfinite(float(value)) and float(value) > 0 for value in active_disp
-        )
-        or not all(
-            float(b) > float(a) for a, b in zip(active_disp[:-1], active_disp[1:])
-        )
-    ):
-        raise RuntimeError(
-            "active displacements must be finite, positive, and strictly increasing"
-        )
+    if args.displacements is not None:
+        active_disp = validate_displacements(args.displacements)
+        loading_schedule_source = "explicit_cli"
+    else:
+        active_disp = validate_displacements(config.disp.copy())
+        loading_schedule_source = "original_config"
+        if args.max_load_steps is not None:
+            active_disp = active_disp[: args.max_load_steps]
+            loading_schedule_source = "original_config_prefix"
 
     trained = out / "best_models"
     intermediate = out / "intermediate_models"
@@ -174,6 +190,7 @@ def main() -> int:
         "fatigue_on": False,
         "loading_type": "monotonic",
         "displacements": [float(value) for value in active_disp],
+        "loading_schedule_source": loading_schedule_source,
         "seed": int(args.seed),
         "hidden_layers": int(args.hidden_layers),
         "neurons": int(args.neurons),

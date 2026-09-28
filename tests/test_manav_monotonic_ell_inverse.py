@@ -18,6 +18,17 @@ sys.path.insert(0, str(SOURCE))
 
 
 class ManavMonotonicEllInverseTests(unittest.TestCase):
+    def test_explicit_loading_path_validation(self) -> None:
+        from run_manav_monotonic_forward import validate_displacements
+
+        self.assertEqual(
+            validate_displacements([0.025, 0.135, 0.136, 0.145]),
+            [0.025, 0.135, 0.136, 0.145],
+        )
+        for invalid in ([], [0.0, 0.1], [0.1, 0.1], [0.2, 0.1], [0.1, np.nan]):
+            with self.assertRaises(ValueError):
+                validate_displacements(invalid)
+
     def test_runner_preserves_fixed_gc_algebra(self) -> None:
         for l0 in (0.008, 0.012, 0.016):
             gc_bar = 0.01
