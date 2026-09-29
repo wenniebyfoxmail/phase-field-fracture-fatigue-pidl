@@ -33,6 +33,72 @@ compute_energy.py - 能量计算 ⭐ 最核心的文件
 import torch
 import torch.nn as nn
 
+from q4_quadrature import q4_gradient, q4_interpolate, q4_shape_data
+
+
+def _is_q4(T_conn):
+    return T_conn is not None and T_conn.ndim == 2 and T_conn.shape[1] == 4
+
+
+def _q4_gp_kinematics(inp, u, v, alpha, T_conn):
+    shape, dshape, det_j = q4_shape_data(inp, T_conn)
+    grad_u = q4_gradient(u, T_conn, dshape)
+    grad_v = q4_gradient(v, T_conn, dshape)
+    grad_alpha = q4_gradient(alpha, T_conn, dshape)
+    alpha_gp = q4_interpolate(alpha, T_conn, shape)
+    strain_11 = grad_u[:, :, 0]
+    strain_22 = grad_v[:, :, 1]
+    strain_12 = 0.5 * (grad_u[:, :, 1] + grad_v[:, :, 0])
+    return shape, det_j, alpha_gp, strain_11, strain_22, strain_12, grad_alpha
+
+
+def _q4_fatigue_at_gp(f_fatigue, like):
+    if torch.is_tensor(f_fatigue):
+        value = f_fatigue.to(device=like.device, dtype=like.dtype)
+        if value.ndim == 1:
+            value = value[:, None]
+        return value.expand_as(like)
+    return torch.full_like(like, float(f_fatigue))
+
+
+def _compute_q4_energy_per_elem(
+    inp, u, v, alpha, hist_alpha, matprop, pffmodel, T_conn,
+    f_fatigue=1.0, g_stiffness_override=None,
+    irreversibility_penalty_cfg=None,
+):
+    shape, det_j, alpha_gp, e11, e22, e12, grad_alpha = _q4_gp_kinematics(
+        inp, u, v, alpha, T_conn
+    )
+    damage_fn, _, c_w = pffmodel.damageFun(alpha_gp)
+    g_override = g_stiffness_override
+    if torch.is_tensor(g_override) and g_override.ndim == 1:
+        g_override = g_override[:, None].expand_as(alpha_gp)
+    elastic_density, _ = strain_energy_with_split(
+        e11, e22, e12, alpha_gp, matprop, pffmodel,
+        g_stiffness_override=g_override,
+    )
+    fatigue_gp = _q4_fatigue_at_gp(f_fatigue, alpha_gp)
+    damage_density = fatigue_gp * (
+        matprop.w1 / c_w
+        * (damage_fn + matprop.l0**2 * (grad_alpha[:, :, 0]**2 + grad_alpha[:, :, 1]**2))
+    )
+    enabled = _irreversibility_penalty_enabled(irreversibility_penalty_cfg)
+    if enabled:
+        mode = irreversibility_penalty_cfg.get('mode', 'fem_gp_q4')
+        if mode not in {'fem_gp_q4', 'native_q4_gp4'}:
+            raise ValueError(f"Q4 irreversibility mode must be fem_gp_q4, got {mode!r}")
+        hist_gp = q4_interpolate(hist_alpha, T_conn, shape)
+        penalty_sq = torch.relu(-(alpha_gp - hist_gp))**2
+    else:
+        hist_mean = hist_alpha[T_conn].mean(dim=1, keepdim=True)
+        penalty_sq = torch.relu(-(alpha_gp - hist_mean))**2
+    penalty_density = 0.5 * matprop.w1 * pffmodel.irrPenalty() * penalty_sq
+    return (
+        (elastic_density * det_j).sum(dim=1),
+        (damage_density * det_j).sum(dim=1),
+        (penalty_density * det_j).sum(dim=1),
+    )
+
 # Computes the total strain energy, damage energy and irreversibility penalty
 def compute_energy(inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_elem, T_conn=None,
                    f_fatigue=1.0, crack_tip_weights=None,
@@ -170,6 +236,14 @@ def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, are
     T_conn ≠ None: 输入点是节点，FEM 形状函数计算梯度（论文推荐）
     '''
 
+    if _is_q4(T_conn):
+        return _compute_q4_energy_per_elem(
+            inp, u, v, alpha, hist_alpha, matprop, pffmodel, T_conn,
+            f_fatigue=f_fatigue,
+            g_stiffness_override=g_stiffness_override,
+            irreversibility_penalty_cfg=irreversibility_penalty_cfg,
+        )
+
     # =========================================================================
     # 步骤1: 计算应变和相场梯度
     # =========================================================================
@@ -266,6 +340,20 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
     psi_plus_elem : torch.Tensor, shape (n_elements,)
         各元素退化拉伸应变能密度（已 detach，不参与反向传播）
     """
+    if _is_q4(T_conn):
+        _, _, alpha_gp, strain_11, strain_22, strain_12, _ = _q4_gp_kinematics(
+            inp, u, v, alpha, T_conn
+        )
+        _, psi_raw_gp = strain_energy_with_split(
+            strain_11, strain_22, strain_12, alpha_gp, matprop, pffmodel
+        )
+        g_gp, _ = pffmodel.Edegrade(alpha_gp)
+        if g_stiffness_override is not None:
+            g_gp = g_stiffness_override.to(device=g_gp.device, dtype=g_gp.dtype)
+            if g_gp.ndim == 1:
+                g_gp = g_gp[:, None]
+        return (g_gp * psi_raw_gp).detach()
+
     strain_11, strain_22, strain_12, _, _ = gradients(inp, u, v, alpha, area_elem, T_conn)
 
     if T_conn is None:
@@ -409,7 +497,12 @@ def field_grads(inp, field, area_elem, T=None):
     1. 自动微分（T=None）
     2. 数值计算（T≠None）: 三角形单元形状函数 ⭐ 论文推荐
     """
-    if T is None:
+    if _is_q4(T):
+        _, dshape, _ = q4_shape_data(inp, T)
+        grad = q4_gradient(field, T, dshape)
+        grad_x = grad[:, :, 0]
+        grad_y = grad[:, :, 1]
+    elif T is None:
         grad_field = torch.autograd.grad(field.sum(), inp, create_graph=True)[0]
         grad_x = grad_field[:, 0]
         grad_y = grad_field[:, 1]

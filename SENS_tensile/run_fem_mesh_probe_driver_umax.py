@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run strict FEM-mesh PIDL with opt-in fatigue-driver reduction.
+"""Run strict FEM-mesh PIDL with opt-in native-Q4 spatial/state alignment.
 
 By default this discriminator keeps the variational energy/objective unchanged:
 only the post-fit fatigue-history driver changes from
@@ -14,6 +14,10 @@ where alpha_q is evaluated at three triangle points.  With
 ``--fem-irr-penalty`` the irreversibility penalty also moves from
 ``ReLU(-mean(delta_alpha_nodes))^2`` to local quadrature
 ``mean_q(ReLU(-delta_alpha_q)^2)``.
+
+With ``--native-q4-gp-state`` the fine mesh remains Q4, all energy and field
+gradients use the native 2x2 Gauss rule, and Carrara ``alpha_bar``, previous
+active driver, and ``f`` remain shaped ``[element,4]`` through every commit.
 """
 from __future__ import annotations
 
@@ -149,7 +153,7 @@ def main() -> None:
                               "these values are used directly and --substeps is "
                               "ignored except for backwards compatibility."))
     parser.add_argument("--history-driver-reduction-mode",
-                        choices=("probe_g_mean", "fem_gp_tri3_g_mean"),
+                        choices=("probe_g_mean", "fem_gp_tri3_g_mean", "native_q4_gp4"),
                         default="probe_g_mean")
     parser.add_argument("--res-stiffness", type=_validate_res_stiffness, default=0.0,
                         help=("Residual stiffness eta in "
@@ -157,6 +161,9 @@ def main() -> None:
                               "Default 0.0 preserves the formal baseline."))
     parser.add_argument("--fem-irr-penalty", action="store_true",
                         help="Use FEM-like tri3 quadrature for the irreversibility penalty.")
+    parser.add_argument("--native-q4-gp-state", action="store_true",
+                        help=("Require a native Q4 .inp mesh, use 2x2 Gauss integration, "
+                              "and store alpha_bar, f and previous driver at all four GP."))
     parser.add_argument("--hard-alpha-recovery-step", action="store_true",
                         help=("Preset the current NN alpha field to a uniform hard "
                               "value, run step 0 at U=0 for recovery, then continue "
@@ -233,6 +240,13 @@ def main() -> None:
 
     fem_mesh = _resolve_mesh_file(here, args.mesh_file)
     coarse_mesh = _resolve_mesh_file(here, args.coarse_mesh_file or config.coarse_mesh_file)
+    if args.native_q4_gp_state and Path(fem_mesh).suffix.lower() != ".inp":
+        raise ValueError("--native-q4-gp-state requires --mesh-file pointing to a Q4 .inp")
+    if args.native_q4_gp_state and not args.fem_irr_penalty:
+        raise ValueError(
+            "--native-q4-gp-state requires --fem-irr-penalty so the "
+            "irreversibility term is integrated at the four Q4 Gauss points"
+        )
 
     # Strict benchmark controls: isolate only the history-driver reduction.
     config.williams_dict["enable"] = False
@@ -343,8 +357,11 @@ def main() -> None:
     config.fatigue_dict["history_driver_mode"] = "current_active"
     config.fatigue_dict["history_driver_reduction"] = {
         "enable": True,
-        "mode": args.history_driver_reduction_mode,
+        "mode": "native_q4_gp4" if args.native_q4_gp_state else args.history_driver_reduction_mode,
     }
+    config.fatigue_dict["history_storage"] = (
+        "q4_gp4" if args.native_q4_gp_state else "element"
+    )
     config.fatigue_dict["initial_alpha_protocol"] = {
         "enable": bool(args.hard_alpha_recovery_step),
         "mode": "uniform_current_alpha",
@@ -354,7 +371,7 @@ def main() -> None:
     }
     config.numr_dict["irreversibility_penalty"] = {
         "enable": bool(args.fem_irr_penalty),
-        "mode": "fem_gp_tri3",
+        "mode": "fem_gp_q4" if args.native_q4_gp_state else "fem_gp_tri3",
     }
     config.fatigue_dict["fracture_confirm_cycles"] = int(args.fracture_confirm_cycles)
     config.fatigue_dict["plot_every_n_cycles"] = int(args.plot_every)
@@ -403,7 +420,7 @@ def main() -> None:
         f"{graph_variant_tag}"
         f"_current_active_{args.history_driver_reduction_mode}"
         f"{'_' + _format_eta_tag(args.res_stiffness) if args.res_stiffness > 0.0 else ''}"
-        f"{'_femIrrGP3' if args.fem_irr_penalty else ''}"
+        f"{'_femIrrGP4' if args.native_q4_gp_state and args.fem_irr_penalty else '_femIrrGP3' if args.fem_irr_penalty else ''}"
         f"{'_hardAlphaRecoverU0' if args.hard_alpha_recovery_step else ''}"
         f"_{step_tag}"
         f"{'_compile' if args.compile else ''}"
@@ -473,6 +490,12 @@ def main() -> None:
         handle.write("Edegrade_formula: (1-alpha)^2 + residual_stiffness\n")
         handle.write("history_driver_mode: current_active\n")
         handle.write(f"history_driver_reduction: {fat['history_driver_reduction']}\n")
+        handle.write(f"history_storage: {fat['history_storage']}\n")
+        handle.write(
+            "spatial_discretization: native_Q4_2x2_GP\n"
+            if args.native_q4_gp_state
+            else "spatial_discretization: triangular_element\n"
+        )
         handle.write(
             f"irreversibility_penalty: {config.numr_dict['irreversibility_penalty']}\n"
         )
@@ -518,8 +541,8 @@ def main() -> None:
                 "state0 baseline until step0 post-commit\n"
             )
         handle.write(
-            "purpose: strict FEM-mesh fatigue-driver reduction with optional "
-            "FEM-like irreversibility penalty quadrature\n"
+            "purpose: strict FEM-mesh fatigue-driver alignment with optional "
+            "native-Q4 spatial integration and GP state storage\n"
         )
 
     print("=" * 72)
@@ -547,7 +570,9 @@ def main() -> None:
     print("  history driver = current_active")
     print(f"  reduction      = {args.history_driver_reduction_mode}")
     print(f"  residual eta   = {args.res_stiffness:.3e}")
-    print(f"  irr penalty    = {'fem_gp_tri3' if args.fem_irr_penalty else 'legacy'}")
+    _irr_label = "fem_gp_q4" if args.native_q4_gp_state else "fem_gp_tri3"
+    print(f"  irr penalty    = {_irr_label if args.fem_irr_penalty else 'legacy'}")
+    print(f"  history state  = {fat['history_storage']}")
     if args.hard_alpha_recovery_step:
         print(f"  recovery step  = step0 U=0 after hard alpha target {args.hard_alpha_target:g}")
         print(

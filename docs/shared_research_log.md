@@ -373,3 +373,10 @@ Three distinct mesh campaigns exist in GRIPHFiTH:
 **Paper action item**: need mesh-convergence check — run PIDL-series at Umax=0.12 with ℓ/h=5 mesh, verify N_f within 5%. If it passes, state "legacy mesh retained for PIDL back-compat; convergence verified at representative Umax". If N_f shifts >5%, must decide whether to retrain PIDL with new mesh or caveat.
 
 **Audit Hit 16 status**: still open, this finding confirms it's a real gap.
+## 2026-09-29 · Mac-PIDL [decision]
+
+**Opt-in native-Q4 spatial and Carrara GP-state alignment prepared for Hard-5 Umax=0.12**
+
+The new path keeps the 86,408 canonical FEM Q4 cells intact, evaluates all field gradients and energy terms at the native 2x2 Gauss points, and stores `alpha_bar`, `psi_plus_prev`, and `f` as `[element,4]`. The frozen exact-peak FEM source selects `AT1_PENALTY_FATIGUE`; no tensile-history `H=max(...)` field is added. Existing triangular runners and archived results remain unchanged because activation requires `--native-q4-gp-state --fem-irr-penalty` with a Q4 Abaqus `.inp` mesh.
+
+The calculation is classified as spatial-operator and Carrara commit-state alignment, not a fully identical discrete solve: FEM trial-`f` timing and staggered/Picard iteration still differ from the current Deep-Ritz joint load-step solve. Before producer launch the exact commit requires operator replay against c76/c82/c83 archived GP fields, GP history/checkpoint tests, independent read-only review, and a Taobo one-cycle smoke.

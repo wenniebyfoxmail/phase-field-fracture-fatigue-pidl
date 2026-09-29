@@ -18,7 +18,8 @@ def prep_input_data(matprop, pffmodel, crack_dict, numr_dict, mesh_file, device)
     hist_alpha = initial alpha field
 
     '''
-    assert Path(mesh_file).suffix == '.msh', "Mesh file should be a .msh file"
+    assert Path(mesh_file).suffix.lower() in {'.msh', '.inp'}, \
+        "Mesh file should be a triangular .msh or native-Q4 Abaqus .inp file"
     
     X, Y, T_conn, area_T = parse_mesh(filename = mesh_file, gradient_type=numr_dict["gradient_type"])
 
@@ -31,5 +32,4 @@ def prep_input_data(matprop, pffmodel, crack_dict, numr_dict, mesh_file, device)
     hist_alpha = hist_alpha_init(inp, matprop, pffmodel, crack_dict)
     
     return inp, T_conn, area_T, hist_alpha
-
 

@@ -210,6 +210,8 @@ def _save_alpha_snapshot(inp, alpha, T_conn, cycle, snapshot_dir):
     fig, ax = plt.subplots(figsize=(4, 3))
     ax.set_aspect('equal')
     if T_np is not None:
+        if T_np.ndim == 2 and T_np.shape[1] == 4:
+            T_np = np.vstack((T_np[:, [0, 1, 2]], T_np[:, [0, 2, 3]]))
         tpc = ax.tripcolor(inp_np[:, 0], inp_np[:, 1], T_np, alpha_np,
                            shading='gouraud', vmin=0, vmax=1, cmap='plasma')
     else:
@@ -268,11 +270,14 @@ def _element_to_node_projection(elem_values, T_conn, n_nodes, reduce="max"):
 def _element_mean_from_nodes(node_values, T_conn):
     if T_conn is None:
         return node_values.reshape(-1)
-    return (
-        node_values[T_conn[:, 0]]
-        + node_values[T_conn[:, 1]]
-        + node_values[T_conn[:, 2]]
-    ) / 3.0
+    return node_values[T_conn].mean(dim=1)
+
+
+def _gp_to_element_mean(values):
+    """Reduce native Q4 Gauss-point state for diagnostics only."""
+    if torch.is_tensor(values) and values.ndim == 2:
+        return values.mean(dim=1)
+    return values
 
 
 def _save_pre_step0_baseline_diagnostics(
@@ -298,12 +303,15 @@ def _save_pre_step0_baseline_diagnostics(
             _, _, alpha_pretrain = field_comp.fieldCalculation(inp)
             alpha_pretrain = alpha_pretrain.reshape(-1).detach()
             hist_alpha = hist_alpha.reshape(-1).detach()
-            hist_fat = hist_fat.reshape(-1).detach()
-            psi_plus_prev = psi_plus_prev.reshape(-1).detach()
+            hist_fat_gp = hist_fat.detach()
+            psi_plus_prev_gp = psi_plus_prev.detach()
+            hist_fat = _gp_to_element_mean(hist_fat_gp).reshape(-1)
+            psi_plus_prev = _gp_to_element_mean(psi_plus_prev_gp).reshape(-1)
             f_current = _resolve_f_fatigue(f_fatigue)
             if not torch.is_tensor(f_current):
                 f_current = torch.full_like(hist_fat, float(f_current))
-            f_current = f_current.reshape(-1).detach()
+            f_current_gp = f_current.detach()
+            f_current = _gp_to_element_mean(f_current_gp).reshape(-1)
             hist_alpha_elem = _element_mean_from_nodes(hist_alpha, T_conn)
             alpha_pretrain_elem = _element_mean_from_nodes(alpha_pretrain, T_conn)
             if T_conn is None:
@@ -311,16 +319,8 @@ def _save_pre_step0_baseline_diagnostics(
                 elem_y = inp[:, 1]
                 conn_np = np.empty((0, 3), dtype=np.int64)
             else:
-                elem_x = (
-                    inp[T_conn[:, 0], 0]
-                    + inp[T_conn[:, 1], 0]
-                    + inp[T_conn[:, 2], 0]
-                ) / 3.0
-                elem_y = (
-                    inp[T_conn[:, 0], 1]
-                    + inp[T_conn[:, 1], 1]
-                    + inp[T_conn[:, 2], 1]
-                ) / 3.0
+                elem_x = inp[T_conn, 0].mean(dim=1)
+                elem_y = inp[T_conn, 1].mean(dim=1)
                 conn_np = _tensor_to_numpy(T_conn).astype(np.int64)
     finally:
         field_comp.lmbda = old_lambda
@@ -350,6 +350,9 @@ def _save_pre_step0_baseline_diagnostics(
         hist_fat_elem=_tensor_to_numpy(hist_fat).reshape(-1).astype(np.float32),
         f_fatigue_elem=_tensor_to_numpy(f_current).reshape(-1).astype(np.float32),
         psi_plus_prev_elem=_tensor_to_numpy(psi_plus_prev).reshape(-1).astype(np.float32),
+        hist_fat_gp=_tensor_to_numpy(hist_fat_gp).astype(np.float32),
+        f_fatigue_gp=_tensor_to_numpy(f_current_gp).astype(np.float32),
+        psi_plus_prev_gp=_tensor_to_numpy(psi_plus_prev_gp).astype(np.float32),
         initial_alpha_protocol=np.array(
             str(protocol_metadata.get("initial_alpha_protocol", "none"))
         ),
@@ -391,22 +394,13 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
                               irreversibility_penalty_cfg=None):
     """Save cycle-end element fields for FEM/PIDL mechanism comparison."""
     out_dir.mkdir(parents=True, exist_ok=True)
+    _is_native_q4 = T_conn is not None and T_conn.ndim == 2 and T_conn.shape[1] == 4
     with torch.no_grad():
         if T_conn is not None:
-            alpha_elem = (
-                alpha[T_conn[:, 0]] + alpha[T_conn[:, 1]] + alpha[T_conn[:, 2]]
-            ) / 3.0
-            hist_alpha_elem = (
-                hist_alpha[T_conn[:, 0]]
-                + hist_alpha[T_conn[:, 1]]
-                + hist_alpha[T_conn[:, 2]]
-            ) / 3.0
-            elem_x = (
-                inp[T_conn[:, 0], 0] + inp[T_conn[:, 1], 0] + inp[T_conn[:, 2], 0]
-            ) / 3.0
-            elem_y = (
-                inp[T_conn[:, 0], 1] + inp[T_conn[:, 1], 1] + inp[T_conn[:, 2], 1]
-            ) / 3.0
+            alpha_elem = alpha[T_conn].mean(dim=1)
+            hist_alpha_elem = hist_alpha[T_conn].mean(dim=1)
+            elem_x = inp[T_conn, 0].mean(dim=1)
+            elem_y = inp[T_conn, 1].mean(dim=1)
         else:
             alpha_elem = alpha.flatten()
             hist_alpha_elem = hist_alpha.flatten()
@@ -425,13 +419,14 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
             g_stiffness_override=g_stiffness_override_elem,
             irreversibility_penalty_cfg=None,
         )
+        _irr_diag_mode = "fem_gp_q4" if T_conn is not None and T_conn.shape[1] == 4 else "fem_gp_tri3"
         _, _, E_hist_fem_gp_tri3_elem = compute_energy_per_elem(
             inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
             f_fatigue=f_fatigue,
             g_stiffness_override=g_stiffness_override_elem,
             irreversibility_penalty_cfg={
                 "enable": True,
-                "mode": "fem_gp_tri3",
+                "mode": _irr_diag_mode,
             },
         )
         eps_xx, eps_yy, eps_xy, _, _ = gradients(
@@ -444,25 +439,67 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
             eps_xx, eps_yy, eps_xy, matprop
         )
         sig_raw_1, sig_raw_2 = _principal_2d(sig_raw_xx, sig_raw_yy, sig_raw_xy)
+        if _is_native_q4:
+            from q4_quadrature import q4_interpolate, q4_shape_data
+            _q4_shape, _, _ = q4_shape_data(inp, T_conn)
+            _alpha_for_stress = q4_interpolate(alpha, T_conn, _q4_shape)
+            _g_override_for_stress = g_stiffness_override_elem
+            if (torch.is_tensor(_g_override_for_stress)
+                    and _g_override_for_stress.ndim == 1):
+                _g_override_for_stress = _g_override_for_stress[:, None].expand_as(
+                    _alpha_for_stress
+                )
+        else:
+            _alpha_for_stress = alpha_elem
+            _g_override_for_stress = g_stiffness_override_elem
         sig_eff_xx, sig_eff_yy, sig_eff_xy = effective_stress(
-            eps_xx, eps_yy, eps_xy, alpha_elem, matprop, pffmodel,
-            g_stiffness_override=g_stiffness_override_elem,
+            eps_xx, eps_yy, eps_xy, _alpha_for_stress, matprop, pffmodel,
+            g_stiffness_override=_g_override_for_stress,
         )
         sig_eff_1, sig_eff_2 = _principal_2d(sig_eff_xx, sig_eff_yy, sig_eff_xy)
+        if _is_native_q4:
+            eps_xx_gp, eps_yy_gp, eps_xy_gp = eps_xx, eps_yy, eps_xy
+            eps_trace_gp, eps_eq_gp = eps_trace, eps_eq
+            eps_1_gp, eps_2_gp = eps_1, eps_2
+            sig_raw_xx_gp, sig_raw_yy_gp, sig_raw_xy_gp = sig_raw_xx, sig_raw_yy, sig_raw_xy
+            sig_eff_xx_gp, sig_eff_yy_gp, sig_eff_xy_gp = sig_eff_xx, sig_eff_yy, sig_eff_xy
+            eps_xx, eps_yy, eps_xy = eps_xx.mean(1), eps_yy.mean(1), eps_xy.mean(1)
+            eps_trace, eps_eq = eps_trace.mean(1), eps_eq.mean(1)
+            eps_1, eps_2 = eps_1.mean(1), eps_2.mean(1)
+            sig_raw_xx, sig_raw_yy, sig_raw_xy = (
+                sig_raw_xx.mean(1), sig_raw_yy.mean(1), sig_raw_xy.mean(1)
+            )
+            sig_raw_1, sig_raw_2 = sig_raw_1.mean(1), sig_raw_2.mean(1)
+            sig_eff_xx, sig_eff_yy, sig_eff_xy = (
+                sig_eff_xx.mean(1), sig_eff_yy.mean(1), sig_eff_xy.mean(1)
+            )
+            sig_eff_1, sig_eff_2 = sig_eff_1.mean(1), sig_eff_2.mean(1)
 
-    hist_fat_np = _tensor_to_numpy(hist_fat, like_tensor=alpha_elem).reshape(-1)
-    f_fatigue_np = _tensor_to_numpy(f_fatigue, like_tensor=alpha_elem).reshape(-1)
-    psi_plus_np = _tensor_to_numpy(psi_plus_elem).reshape(-1)
-    psi_prev_np = _tensor_to_numpy(psi_plus_prev).reshape(-1)
+    hist_fat_gp_np = _tensor_to_numpy(hist_fat, like_tensor=alpha_elem)
+    f_fatigue_gp_np = _tensor_to_numpy(f_fatigue, like_tensor=alpha_elem)
+    psi_plus_gp_np = _tensor_to_numpy(psi_plus_elem)
+    psi_prev_gp_np = _tensor_to_numpy(psi_plus_prev)
+    hist_fat_np = hist_fat_gp_np.mean(axis=1) if hist_fat_gp_np.ndim == 2 else hist_fat_gp_np.reshape(-1)
+    f_fatigue_np = f_fatigue_gp_np.mean(axis=1) if f_fatigue_gp_np.ndim == 2 else f_fatigue_gp_np.reshape(-1)
+    psi_plus_np = psi_plus_gp_np.mean(axis=1) if psi_plus_gp_np.ndim == 2 else psi_plus_gp_np.reshape(-1)
+    psi_prev_np = psi_prev_gp_np.mean(axis=1) if psi_prev_gp_np.ndim == 2 else psi_prev_gp_np.reshape(-1)
     psi_history_np = _tensor_to_numpy(
         psi_history_elem if psi_history_elem is not None else psi_plus_elem
-    ).reshape(-1)
+    )
+    if psi_history_np.ndim == 2:
+        psi_history_np = psi_history_np.mean(axis=1)
+    else:
+        psi_history_np = psi_history_np.reshape(-1)
     history_increment_np = _tensor_to_numpy(
         history_increment_elem
         if history_increment_elem is not None
         else torch.relu((psi_history_elem if psi_history_elem is not None else psi_plus_elem)
                         - psi_plus_prev)
-    ).reshape(-1)
+    )
+    if history_increment_np.ndim == 2:
+        history_increment_np = history_increment_np.mean(axis=1)
+    else:
+        history_increment_np = history_increment_np.reshape(-1)
     E_el_np = _tensor_to_numpy(E_el_elem).reshape(-1)
     E_d_np = _tensor_to_numpy(E_d_elem).reshape(-1)
     E_hist_np = _tensor_to_numpy(E_hist_elem).reshape(-1)
@@ -496,18 +533,31 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
     # the active value and the raw undegraded psi0 approximation to avoid the
     # recurring FEM/PIDL comparison ambiguity.
     with torch.no_grad():
-        g_alpha, _ = pffmodel.Edegrade(alpha_elem)
-    g_alpha_np = _tensor_to_numpy(g_alpha).reshape(-1)
+        g_alpha_state, _ = pffmodel.Edegrade(_alpha_for_stress)
+    g_alpha_state_np = _tensor_to_numpy(g_alpha_state)
     if g_stiffness_override_elem is None:
-        g_solver_np = g_alpha_np
-        g_override_np = np.full_like(E_el_np, np.nan, dtype=np.float32)
+        g_solver_state_np = g_alpha_state_np
+        g_override_state_np = np.full_like(g_alpha_state_np, np.nan, dtype=np.float32)
     else:
-        g_solver_np = _tensor_to_numpy(
-            g_stiffness_override_elem, like_tensor=alpha_elem
-        ).reshape(-1)
-        g_override_np = g_solver_np.astype(np.float32)
-    psi_raw_from_g_alpha_np = psi_plus_np / np.maximum(g_alpha_np, 1e-30)
-    psi_raw_from_g_solver_np = psi_plus_np / np.maximum(g_solver_np, 1e-30)
+        _g_solver_state = _g_override_for_stress
+        g_solver_state_np = _tensor_to_numpy(
+            _g_solver_state, like_tensor=_alpha_for_stress
+        )
+        g_override_state_np = g_solver_state_np.astype(np.float32)
+    psi_raw_gp_np = psi_plus_gp_np / np.maximum(g_alpha_state_np, 1e-30)
+    psi_raw_solver_gp_np = psi_plus_gp_np / np.maximum(g_solver_state_np, 1e-30)
+    if _is_native_q4:
+        g_alpha_np = g_alpha_state_np.mean(axis=1)
+        g_solver_np = g_solver_state_np.mean(axis=1)
+        g_override_np = g_override_state_np.mean(axis=1)
+        psi_raw_from_g_alpha_np = psi_raw_gp_np.mean(axis=1)
+        psi_raw_from_g_solver_np = psi_raw_solver_gp_np.mean(axis=1)
+    else:
+        g_alpha_np = g_alpha_state_np.reshape(-1)
+        g_solver_np = g_solver_state_np.reshape(-1)
+        g_override_np = g_override_state_np.reshape(-1)
+        psi_raw_from_g_alpha_np = psi_raw_gp_np.reshape(-1)
+        psi_raw_from_g_solver_np = psi_raw_solver_gp_np.reshape(-1)
 
     np.savez_compressed(
         out_dir / f"element_fields_cycle_{cycle:04d}.npz",
@@ -525,8 +575,12 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         oracle_target_elem=oracle_target_np,
         oracle_mask_elem=oracle_mask_np,
         hist_fat_elem=hist_fat_np.astype(np.float32),
+        hist_fat_gp=hist_fat_gp_np.astype(np.float32),
         f_fatigue_elem=f_fatigue_np.astype(np.float32),
+        f_fatigue_gp=f_fatigue_gp_np.astype(np.float32),
         psi_plus_elem=psi_plus_np.astype(np.float32),  # backward-compatible active driver
+        psi_active_gp=psi_plus_gp_np.astype(np.float32),
+        psi_raw_gp=psi_raw_gp_np.astype(np.float32),
         psi_active_elem=psi_plus_np.astype(np.float32),
         psi_history_driver_elem=psi_history_np.astype(np.float32),
         delta_alpha_bar_input_elem=history_increment_np.astype(np.float32),
@@ -534,13 +588,28 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         psi_raw_from_g_alpha_elem=psi_raw_from_g_alpha_np.astype(np.float32),
         psi_raw_from_g_solver_elem=psi_raw_from_g_solver_np.astype(np.float32),
         g_alpha_elem=g_alpha_np.astype(np.float32),
+        g_alpha_gp=g_alpha_state_np.astype(np.float32),
         g_solver_elem=g_solver_np.astype(np.float32),
+        g_solver_gp=g_solver_state_np.astype(np.float32),
         g_stiffness_override_elem=g_override_np,
         g_solver_override_active=np.array(
             [g_stiffness_override_elem is not None],
             dtype=np.bool_,
         ),
         psi_plus_prev_elem=psi_prev_np.astype(np.float32),
+        psi_plus_prev_gp=psi_prev_gp_np.astype(np.float32),
+        eps_xx_gp=(
+            _tensor_to_numpy(eps_xx_gp).astype(np.float32)
+            if _is_native_q4 else np.empty((0, 0), dtype=np.float32)
+        ),
+        eps_yy_gp=(
+            _tensor_to_numpy(eps_yy_gp).astype(np.float32)
+            if _is_native_q4 else np.empty((0, 0), dtype=np.float32)
+        ),
+        engineering_shear_gamma_xy_gp=(
+            2.0 * _tensor_to_numpy(eps_xy_gp).astype(np.float32)
+            if _is_native_q4 else np.empty((0, 0), dtype=np.float32)
+        ),
         E_el_elem=E_el_np.astype(np.float32),
         E_d_elem=E_d_np.astype(np.float32),
         E_hist_elem=E_hist_np.astype(np.float32),
@@ -868,9 +937,21 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # -------------------------------------------------------------------------
     n_elem = area_T.shape[0]
     if fatigue_on:
-        hist_fat      = torch.zeros(n_elem, device=device)
-        psi_plus_prev = torch.zeros(n_elem, device=device)
-        f_fatigue     = torch.ones(n_elem, device=device)
+        _native_q4_gp_state = bool(
+            T_conn is not None
+            and T_conn.ndim == 2
+            and T_conn.shape[1] == 4
+            and fatigue_dict.get("history_storage", "element") == "q4_gp4"
+        )
+        if T_conn is not None and T_conn.shape[1] == 4 and not _native_q4_gp_state:
+            raise ValueError(
+                "native Q4 requires fatigue_dict['history_storage']='q4_gp4'; "
+                "element-mean history would not match the FEM reference"
+            )
+        _history_shape = (n_elem, 4) if _native_q4_gp_state else (n_elem,)
+        hist_fat      = torch.zeros(_history_shape, device=device)
+        psi_plus_prev = torch.zeros(_history_shape, device=device)
+        f_fatigue     = torch.ones(_history_shape, device=device)
         print(f"[Fatigue] fatigue_on=True | accum='{fatigue_dict.get('accum_type','carrara')}' | "
               f"degrad='{fatigue_dict.get('degrad_type','asymptotic')}' | "
               f"alpha_T={scalar_value(fatigue_dict.get('alpha_T', 1.0)):.4g}")
@@ -887,8 +968,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         )
         if _need_centroids:
             _Tc = T_conn if isinstance(T_conn, torch.Tensor) else torch.as_tensor(T_conn, device=device)
-            _cx_t = (inp[_Tc[:,0], 0] + inp[_Tc[:,1], 0] + inp[_Tc[:,2], 0]) / 3.0
-            _cy_t = (inp[_Tc[:,0], 1] + inp[_Tc[:,1], 1] + inp[_Tc[:,2], 1]) / 3.0
+            _cx_t = inp[_Tc, 0].mean(dim=1)
+            _cy_t = inp[_Tc, 1].mean(dim=1)
             elem_centroids = torch.stack([_cx_t, _cy_t], dim=1).detach()
             if _sp_cfg.get('enable', False):
                 print(f"[spAlphaT] Spatial α_T enabled: "
@@ -1334,8 +1415,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     if fatigue_on and T_conn is not None:
         _inp_np = inp.detach().cpu().numpy()
         _T_np   = T_conn.cpu().numpy() if isinstance(T_conn, torch.Tensor) else T_conn
-        _cx = (_inp_np[_T_np[:,0],0] + _inp_np[_T_np[:,1],0] + _inp_np[_T_np[:,2],0]) / 3.0
-        _cy = (_inp_np[_T_np[:,0],1] + _inp_np[_T_np[:,1],1] + _inp_np[_T_np[:,2],1]) / 3.0
+        _cx = _inp_np[_T_np, 0].mean(axis=1)
+        _cy = _inp_np[_T_np, 1].mean(axis=1)
         _nominal_mask = (np.abs(_cy) > 0.3) & (_cx > -0.3)
         _n_nominal    = int(_nominal_mask.sum())
         print(f"[Kt logging] Nominal elements: {_n_nominal} (|y|>0.3, x>-0.3)")
@@ -1990,11 +2071,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             psi_history_elem = psi_plus_elem
             if _history_driver_mode != 'current_active':
                 if T_conn is not None:
-                    alpha_current_elem = (
-                        alpha_eval[T_conn[:, 0]]
-                        + alpha_eval[T_conn[:, 1]]
-                        + alpha_eval[T_conn[:, 2]]
-                    ) / 3.0
+                    alpha_current_elem = alpha_eval[T_conn].mean(dim=1)
                 else:
                     alpha_current_elem = alpha_eval.flatten()
                 g_current, _ = pffmodel.Edegrade(alpha_current_elem)
@@ -2125,6 +2202,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             # ★ 每圈 Kt 计算（复用已有 psi_plus_elem，零额外前向传播）
             if _nominal_mask is not None:
                 _psi0      = psi_plus_elem.detach().cpu().numpy()
+                if _psi0.ndim == 2:
+                    _psi0 = _psi0.mean(axis=1)
                 _top10_idx = np.argsort(_psi0)[-10:]
                 _psi_tip   = float(_psi0[_top10_idx].mean())
                 _psi_nom   = (float(_psi0[_nominal_mask].mean())

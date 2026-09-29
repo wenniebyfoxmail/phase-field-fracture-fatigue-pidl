@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
+from pathlib import Path
 import gmshparser
 
 
@@ -128,6 +129,45 @@ def parse_mesh(filename="meshed_geom.msh", gradient_type = 'numerical'):
     quadrature are returned.
 
     '''
+
+    if Path(filename).suffix.lower() == '.inp':
+        nodes = {}
+        elements = {}
+        mode = None
+        with open(filename, encoding='utf-8') as stream:
+            for raw in stream:
+                line = raw.strip()
+                if not line:
+                    continue
+                if line.startswith('*'):
+                    upper = line.upper()
+                    mode = 'node' if upper.startswith('*NODE') else (
+                        'element' if upper.startswith('*ELEMENT') else None
+                    )
+                    continue
+                values = [value.strip() for value in line.split(',')]
+                if mode == 'node':
+                    nodes[int(values[0])] = (float(values[1]), float(values[2]))
+                elif mode == 'element':
+                    elements[int(values[0])] = tuple(int(value) for value in values[1:5])
+        node_ids = sorted(nodes)
+        if node_ids != list(range(1, len(node_ids) + 1)):
+            raise ValueError('Abaqus nodes must be consecutively numbered from 1')
+        X = np.asarray([nodes[index][0] for index in node_ids], dtype=float)
+        Y = np.asarray([nodes[index][1] for index in node_ids], dtype=float)
+        T = np.asarray([elements[index] for index in sorted(elements)], dtype=int) - 1
+        if T.ndim != 2 or T.shape[1] != 4:
+            raise ValueError('Abaqus mesh must contain only four-node Q4 elements')
+        xy = np.column_stack((X, Y))[T]
+        area = 0.5 * np.abs(np.sum(
+            xy[:, :, 0] * np.roll(xy[:, :, 1], -1, axis=1)
+            - xy[:, :, 1] * np.roll(xy[:, :, 0], -1, axis=1), axis=1
+        ))
+        if np.any(area <= 0.0):
+            raise ValueError('Abaqus Q4 mesh contains non-positive element area')
+        if gradient_type == 'autodiff':
+            raise ValueError('native Q4 alignment requires numerical gradients')
+        return X, Y, T, area
 
     mesh = gmshparser.parse(filename)
 
