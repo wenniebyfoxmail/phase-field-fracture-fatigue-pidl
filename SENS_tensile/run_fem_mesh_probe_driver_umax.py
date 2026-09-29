@@ -239,9 +239,18 @@ def main() -> None:
     import config  # noqa: WPS433
 
     fem_mesh = _resolve_mesh_file(here, args.mesh_file)
-    coarse_mesh = _resolve_mesh_file(here, args.coarse_mesh_file or config.coarse_mesh_file)
+    coarse_mesh = _resolve_mesh_file(
+        here,
+        args.coarse_mesh_file
+        or (fem_mesh if args.native_q4_gp_state else config.coarse_mesh_file),
+    )
     if args.native_q4_gp_state and Path(fem_mesh).suffix.lower() != ".inp":
         raise ValueError("--native-q4-gp-state requires --mesh-file pointing to a Q4 .inp")
+    if args.native_q4_gp_state and Path(coarse_mesh).suffix.lower() != ".inp":
+        raise ValueError(
+            "--native-q4-gp-state requires coarse and fine meshes to be Q4 .inp; "
+            "omit --coarse-mesh-file to reuse the canonical fine mesh"
+        )
     if args.native_q4_gp_state and not args.fem_irr_penalty:
         raise ValueError(
             "--native-q4-gp-state requires --fem-irr-penalty so the "

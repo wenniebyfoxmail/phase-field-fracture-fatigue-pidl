@@ -381,6 +381,45 @@ def _full_linear_stress(eps_xx, eps_yy, eps_xy, matprop):
     return sig_xx, sig_yy, sig_xy
 
 
+def validate_irreversibility_mode_for_connectivity(cfg, connectivity, stage):
+    """Require the configured penalty quadrature to match the active mesh."""
+    cfg = cfg or {}
+    enabled = bool(cfg) if isinstance(cfg, bool) else bool(cfg.get("enable", False))
+    if not enabled:
+        return
+    mode = cfg.get("mode", "fem_gp_tri3") if isinstance(cfg, dict) else "fem_gp_tri3"
+    if connectivity is None:
+        raise ValueError(
+            f"{stage}: FEM-like irreversibility quadrature requires mesh connectivity"
+        )
+    arity = int(connectivity.shape[1])
+    expected = "fem_gp_q4" if arity == 4 else "fem_gp_tri3" if arity == 3 else None
+    if expected is None or mode != expected:
+        raise ValueError(
+            f"{stage}: irreversibility mode {mode!r} does not match "
+            f"{arity}-node connectivity; expected {expected!r}"
+        )
+
+
+def validate_history_storage_for_connectivity(fatigue_dict, connectivity, stage):
+    """Reject native-Q4 history settings on T3 and element state on Q4."""
+    if not fatigue_dict.get("fatigue_on", False) or connectivity is None:
+        return
+    arity = int(connectivity.shape[1])
+    storage = fatigue_dict.get("history_storage", "element")
+    reduction = fatigue_dict.get("history_driver_reduction", {}) or {}
+    reduction_mode = reduction.get("mode", "probe_g_mean")
+    if arity == 4 and storage != "q4_gp4":
+        raise ValueError(
+            f"{stage}: Q4 fatigue requires history_storage='q4_gp4', got {storage!r}"
+        )
+    if reduction_mode == "native_q4_gp4" and (arity != 4 or storage != "q4_gp4"):
+        raise ValueError(
+            f"{stage}: native_q4_gp4 requires 4-node connectivity and "
+            f"history_storage='q4_gp4'; got arity={arity}, storage={storage!r}"
+        )
+
+
 def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
                               f_fatigue, psi_plus_elem, psi_plus_prev,
                               matprop, pffmodel, area_T, cycle, out_dir,
@@ -815,12 +854,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if isinstance(_irreversibility_penalty_cfg, dict)
             else "fem_gp_tri3"
         )
-        if _irr_mode != "fem_gp_tri3":
+        if _irr_mode not in {"fem_gp_tri3", "fem_gp_q4"}:
             raise ValueError(
                 "numr_dict['irreversibility_penalty']['mode'] must be "
-                f"'fem_gp_tri3', got {_irr_mode!r}"
+                f"'fem_gp_tri3' or 'fem_gp_q4', got {_irr_mode!r}"
             )
-        print(f"[IrreversibilityPenalty] FEM-like triangle quadrature enabled: mode={_irr_mode}")
+        print(f"[IrreversibilityPenalty] FEM-like quadrature enabled: mode={_irr_mode}")
     inverse_dict = inverse_dict or {}
     _inverse_alpha_T = None
     if inverse_dict.get("enable", False):
@@ -860,6 +899,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         inp, T_conn, area_T, hist_alpha = prep_input_data(
             matprop, pffmodel, crack_dict, numr_dict,
             mesh_file=coarse_mesh_file, device=device
+        )
+        validate_irreversibility_mode_for_connectivity(
+            _irreversibility_penalty_cfg, T_conn, "coarse pretraining mesh"
         )
         from network import bind_mesh_graph
         bind_mesh_graph(field_comp.net, T_conn, inp.shape[0])
@@ -912,6 +954,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     inp, T_conn, area_T, hist_alpha = prep_input_data(
         matprop, pffmodel, crack_dict, numr_dict,
         mesh_file=fine_mesh_file, device=device
+    )
+    validate_irreversibility_mode_for_connectivity(
+        _irreversibility_penalty_cfg, T_conn, "fine training mesh"
+    )
+    validate_history_storage_for_connectivity(
+        fatigue_dict, T_conn, "fine training mesh"
     )
     from network import bind_mesh_graph
     bind_mesh_graph(field_comp.net, T_conn, inp.shape[0])
@@ -1051,7 +1099,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             )
         if (_history_driver_reduction or {}).get('enable', False):
             _hdr_mode = _history_driver_reduction.get('mode', 'probe_g_mean')
-            _valid_hdr_modes = {'probe_g_mean', 'fem_gp_tri3_g_mean'}
+            _valid_hdr_modes = {
+                'probe_g_mean', 'fem_gp_tri3_g_mean', 'native_q4_gp4'
+            }
             if _hdr_mode not in _valid_hdr_modes:
                 raise ValueError(
                     "fatigue_dict['history_driver_reduction']['mode'] must be "

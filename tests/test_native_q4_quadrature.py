@@ -15,6 +15,10 @@ from compute_energy import compute_energy_per_elem, get_psi_plus_per_elem  # noq
 from material_properties import MaterialProperties  # noqa: E402
 from pff_model import PFFModel  # noqa: E402
 from utils import parse_mesh  # noqa: E402
+from model_train import (  # noqa: E402
+    validate_history_storage_for_connectivity,
+    validate_irreversibility_mode_for_connectivity,
+)
 
 
 def test_q4_linear_patch_gradient_and_area():
@@ -97,3 +101,35 @@ def test_native_q4_energy_and_gp_history_shapes_are_differentiable():
     )
     assert active_gp.shape == (1, 4)
     assert torch.isfinite(active_gp).all()
+
+
+def test_irreversibility_mode_must_match_mesh_arity():
+    q4 = torch.tensor([[0, 1, 2, 3]], dtype=torch.long)
+    tri3 = torch.tensor([[0, 1, 2]], dtype=torch.long)
+    q4_cfg = {"enable": True, "mode": "fem_gp_q4"}
+    tri_cfg = {"enable": True, "mode": "fem_gp_tri3"}
+    validate_irreversibility_mode_for_connectivity(q4_cfg, q4, "q4")
+    validate_irreversibility_mode_for_connectivity(tri_cfg, tri3, "tri3")
+    try:
+        validate_irreversibility_mode_for_connectivity(q4_cfg, tri3, "mixed")
+    except ValueError as exc:
+        assert "does not match 3-node connectivity" in str(exc)
+    else:
+        raise AssertionError("Q4 penalty mode must be rejected on a T3 mesh")
+
+
+def test_native_q4_history_contract_accepts_q4_and_rejects_t3():
+    q4 = torch.tensor([[0, 1, 2, 3]], dtype=torch.long)
+    tri3 = torch.tensor([[0, 1, 2]], dtype=torch.long)
+    cfg = {
+        "fatigue_on": True,
+        "history_storage": "q4_gp4",
+        "history_driver_reduction": {"enable": True, "mode": "native_q4_gp4"},
+    }
+    validate_history_storage_for_connectivity(cfg, q4, "q4")
+    try:
+        validate_history_storage_for_connectivity(cfg, tri3, "mixed")
+    except ValueError as exc:
+        assert "requires 4-node connectivity" in str(exc)
+    else:
+        raise AssertionError("native Q4 GP history must be rejected on a T3 mesh")
