@@ -406,6 +406,7 @@ def main() -> None:
     config.disp_cyclic = disp_steps
 
     fat = config.fatigue_dict
+    history_reduction_tag = fat["history_driver_reduction"]["mode"]
     mesh_tag = _mesh_tag(fem_mesh, args.tag)
     if step_source == "absolute_displacement":
         step_tag = "u" + "-".join(f"{x:g}" for x in cycle_disp_values)
@@ -431,7 +432,7 @@ def main() -> None:
         f"_{mesh_tag}"
         f"{'_graphPIDL_' + args.graph_mode if args.graph_pidl else ''}"
         f"{graph_variant_tag}"
-        f"_current_active_{args.history_driver_reduction_mode}"
+        f"_current_active_{history_reduction_tag}"
         f"{'_' + _format_eta_tag(args.res_stiffness) if args.res_stiffness > 0.0 else ''}"
         f"{'_femIrrGP4' if args.native_q4_gp_state and args.fem_irr_penalty else '_femIrrGP3' if args.fem_irr_penalty else ''}"
         f"{'_hardAlphaRecoverU0' if args.hard_alpha_recovery_step else ''}"
@@ -582,7 +583,7 @@ def main() -> None:
     print(f"  FEM mesh       = {fem_mesh}")
     print(f"  coarse mesh    = {coarse_mesh}")
     print("  history driver = current_active")
-    print(f"  reduction      = {args.history_driver_reduction_mode}")
+    print(f"  reduction      = {history_reduction_tag}")
     print(f"  residual eta   = {args.res_stiffness:.3e}")
     _irr_label = "fem_gp_q4" if args.native_q4_gp_state else "fem_gp_tri3"
     print(f"  irr penalty    = {_irr_label if args.fem_irr_penalty else 'legacy'}")
