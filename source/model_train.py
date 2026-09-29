@@ -36,6 +36,7 @@ from plotting import plot_field
 # ★ 新增：疲劳相关函数（仅在 fatigue_on=True 时实际调用）
 from compute_energy import (get_psi_plus_per_elem, compute_energy,
                             compute_energy_per_elem, gradients,
+                            strain_energy_with_split,
                             stress as effective_stress)
 from fatigue_history import (update_fatigue_history, compute_fatigue_degrad,
                               mirror_y_indices, mirror_alpha_y)
@@ -58,6 +59,9 @@ def _mesh_state_signature(inp, connectivity):
     """Hash the exact runtime nodal coordinates and connectivity."""
     digest = hashlib.sha256()
     for tensor in (inp, connectivity):
+        if tensor is None:
+            digest.update(b"NONE")
+            continue
         array = tensor.detach().cpu().contiguous().numpy()
         digest.update(str(array.dtype).encode("ascii"))
         digest.update(np.asarray(array.shape, dtype=np.int64).tobytes())

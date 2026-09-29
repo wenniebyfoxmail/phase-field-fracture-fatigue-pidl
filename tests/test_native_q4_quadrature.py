@@ -17,6 +17,7 @@ from material_properties import MaterialProperties  # noqa: E402
 from pff_model import PFFModel  # noqa: E402
 from utils import parse_mesh  # noqa: E402
 from model_train import (  # noqa: E402
+    _save_element_diagnostics,
     commit_damage_history,
     validate_native_checkpoint_contract,
     validate_history_storage_for_connectivity,
@@ -180,3 +181,31 @@ def test_native_checkpoint_contract_guards_mesh_gauss_order_and_gp_shape():
     bad_shape = {**checkpoint, "hist_fat": torch.zeros(3)}
     with pytest.raises(RuntimeError, match="hist_fat shape mismatch"):
         validate_native_checkpoint_contract(bad_shape, contract, (3, 4))
+
+
+def test_q4_diagnostic_writer_exports_direct_raw_driver_at_full_damage(tmp_path):
+    points = torch.tensor(
+        [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],
+        dtype=torch.float64,
+    )
+    conn = torch.tensor([[0, 1, 2, 3]], dtype=torch.long)
+    u = 0.01 * points[:, 0]
+    v = 0.02 * points[:, 1]
+    alpha = torch.ones(4, dtype=torch.float64)
+    hist_alpha = alpha.clone()
+    area = torch.ones(1, dtype=torch.float64)
+    material = MaterialProperties(1.0, 0.3, 1.0, 0.01)
+    model = PFFModel("AT1", "volumetric", 5.0e-3, residual_stiffness=0.0)
+    active_gp = get_psi_plus_per_elem(
+        points, u, v, alpha, material, model, area, conn
+    )
+    gp_state = torch.zeros((1, 4), dtype=torch.float64)
+    _save_element_diagnostics(
+        points, conn, u, v, alpha, hist_alpha, gp_state,
+        torch.ones_like(gp_state), active_gp, gp_state,
+        material, model, area, 1, tmp_path,
+        irreversibility_penalty_cfg={"enable": True, "mode": "fem_gp_q4"},
+    )
+    saved = np.load(tmp_path / "element_fields_cycle_0001.npz")
+    assert np.max(np.abs(saved["psi_active_gp"])) < 1.0e-30
+    assert np.all(saved["psi_raw_gp"] > 0.0)
