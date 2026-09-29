@@ -371,6 +371,10 @@ def main() -> None:
     config.fatigue_dict["history_storage"] = (
         "q4_gp4" if args.native_q4_gp_state else "element"
     )
+    config.fatigue_dict["damage_history_storage"] = (
+        "previous_accepted_nodal"
+        if args.native_q4_gp_state else "running_nodal_max"
+    )
     config.fatigue_dict["initial_alpha_protocol"] = {
         "enable": bool(args.hard_alpha_recovery_step),
         "mode": "uniform_current_alpha",
@@ -500,6 +504,7 @@ def main() -> None:
         handle.write("history_driver_mode: current_active\n")
         handle.write(f"history_driver_reduction: {fat['history_driver_reduction']}\n")
         handle.write(f"history_storage: {fat['history_storage']}\n")
+        handle.write(f"damage_history_storage: {fat['damage_history_storage']}\n")
         handle.write(
             "spatial_discretization: native_Q4_2x2_GP\n"
             if args.native_q4_gp_state

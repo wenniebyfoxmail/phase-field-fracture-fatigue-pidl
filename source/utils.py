@@ -134,6 +134,7 @@ def parse_mesh(filename="meshed_geom.msh", gradient_type = 'numerical'):
         nodes = {}
         elements = {}
         mode = None
+        element_type = None
         with open(filename, encoding='utf-8') as stream:
             for raw in stream:
                 line = raw.strip()
@@ -141,15 +142,37 @@ def parse_mesh(filename="meshed_geom.msh", gradient_type = 'numerical'):
                     continue
                 if line.startswith('*'):
                     upper = line.upper()
-                    mode = 'node' if upper.startswith('*NODE') else (
-                        'element' if upper.startswith('*ELEMENT') else None
-                    )
+                    if upper.startswith('*NODE'):
+                        mode = 'node'
+                    elif upper.startswith('*ELEMENT'):
+                        fields = [field.strip() for field in upper.split(',')]
+                        type_fields = [field for field in fields if field.startswith('TYPE=')]
+                        if len(type_fields) != 1:
+                            raise ValueError('Abaqus *ELEMENT block must declare exactly one TYPE')
+                        element_type = type_fields[0].split('=', 1)[1]
+                        if element_type not in {'CPE4', 'CPS4', 'CPE4R', 'CPS4R'}:
+                            raise ValueError(
+                                f'Abaqus element type must be planar Q4, got {element_type!r}'
+                            )
+                        mode = 'element'
+                    else:
+                        mode = None
                     continue
                 values = [value.strip() for value in line.split(',')]
                 if mode == 'node':
-                    nodes[int(values[0])] = (float(values[1]), float(values[2]))
+                    node_id = int(values[0])
+                    if node_id in nodes:
+                        raise ValueError(f'duplicate Abaqus node id {node_id}')
+                    nodes[node_id] = (float(values[1]), float(values[2]))
                 elif mode == 'element':
-                    elements[int(values[0])] = tuple(int(value) for value in values[1:5])
+                    elem_id = int(values[0])
+                    if elem_id in elements:
+                        raise ValueError(f'duplicate Abaqus element id {elem_id}')
+                    if len(values) != 5:
+                        raise ValueError(
+                            f'{element_type} element {elem_id} must contain exactly four nodes'
+                        )
+                    elements[elem_id] = tuple(int(value) for value in values[1:])
         node_ids = sorted(nodes)
         if node_ids != list(range(1, len(node_ids) + 1)):
             raise ValueError('Abaqus nodes must be consecutively numbered from 1')

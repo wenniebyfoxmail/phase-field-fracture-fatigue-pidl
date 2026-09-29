@@ -101,7 +101,9 @@ def main() -> None:
     tolerances = {
         "geometry_abs": 1.0e-12,
         "strain_abs": 2.0e-10,
+        "g_abs": 1.0e-12,
         "psi_relative_l2": 1.0e-10,
+        "active_relative_l2": 1.0e-9,
     }
     result["tolerances"] = tolerances
     checks = {
@@ -113,6 +115,11 @@ def main() -> None:
             result["engineering_shear_gamma_xy"]["max_abs"],
         ) <= tolerances["strain_abs"],
         "psi_raw": result["psi_raw_gp"]["relative_l2"] <= tolerances["psi_relative_l2"],
+        "g": result["g_gp"]["max_abs"] <= tolerances["g_abs"],
+        "psi_active": (
+            result["psi_active_gp"]["relative_l2"]
+            <= tolerances["active_relative_l2"]
+        ),
     }
     result["checks"] = checks
     result["status"] = "PASS" if all(checks.values()) else "FAIL"

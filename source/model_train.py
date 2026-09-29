@@ -20,6 +20,7 @@ model_train.py  ★ 相比 Manav 原始版本的修改
 import numpy as np
 import torch
 import time
+import hashlib
 from pathlib import Path
 from contextlib import contextmanager
 import matplotlib
@@ -51,6 +52,17 @@ from inverse_params import TrainablePositiveScalar, scalar_value
 def _resolve_f_fatigue(f_fatigue):
     """Evaluate dynamic fatigue degradation callables inside each fresh graph."""
     return f_fatigue() if callable(f_fatigue) else f_fatigue
+
+
+def _mesh_state_signature(inp, connectivity):
+    """Hash the exact runtime nodal coordinates and connectivity."""
+    digest = hashlib.sha256()
+    for tensor in (inp, connectivity):
+        array = tensor.detach().cpu().contiguous().numpy()
+        digest.update(str(array.dtype).encode("ascii"))
+        digest.update(np.asarray(array.shape, dtype=np.int64).tobytes())
+        digest.update(array.tobytes())
+    return digest.hexdigest()
 
 
 def _oracle_cycle_scale(step_idx, cfg):
@@ -409,6 +421,7 @@ def validate_history_storage_for_connectivity(fatigue_dict, connectivity, stage)
     storage = fatigue_dict.get("history_storage", "element")
     reduction = fatigue_dict.get("history_driver_reduction", {}) or {}
     reduction_mode = reduction.get("mode", "probe_g_mean")
+    damage_history = fatigue_dict.get("damage_history_storage", "running_nodal_max")
     if arity == 4 and storage != "q4_gp4":
         raise ValueError(
             f"{stage}: Q4 fatigue requires history_storage='q4_gp4', got {storage!r}"
@@ -418,6 +431,43 @@ def validate_history_storage_for_connectivity(fatigue_dict, connectivity, stage)
             f"{stage}: native_q4_gp4 requires 4-node connectivity and "
             f"history_storage='q4_gp4'; got arity={arity}, storage={storage!r}"
         )
+    if arity == 4 and damage_history != "previous_accepted_nodal":
+        raise ValueError(
+            f"{stage}: native Q4 penalty alignment requires "
+            f"damage_history_storage='previous_accepted_nodal', got {damage_history!r}"
+        )
+
+
+def commit_damage_history(previous, accepted, storage_mode):
+    """Commit the nodal phase field using the declared penalty-state rule."""
+    if storage_mode == "previous_accepted_nodal":
+        return accepted.detach()
+    if storage_mode == "running_nodal_max":
+        return torch.maximum(previous, accepted).detach()
+    raise ValueError(f"unknown damage history storage mode {storage_mode!r}")
+
+
+def validate_native_checkpoint_contract(checkpoint, expected_contract, expected_shape):
+    """Validate native-Q4 identity/state metadata before restoring tensors."""
+    for key, expected in expected_contract.items():
+        if key not in checkpoint:
+            raise RuntimeError(
+                f"native-Q4 checkpoint missing required contract field {key!r}"
+            )
+        if checkpoint[key] != expected:
+            raise RuntimeError(
+                f"native-Q4 checkpoint {key} mismatch: "
+                f"saved={checkpoint[key]!r}, current={expected!r}"
+            )
+    for key in ("hist_fat", "psi_plus_prev"):
+        if key not in checkpoint:
+            raise RuntimeError(f"checkpoint missing required fatigue state {key!r}")
+        saved_shape = tuple(checkpoint[key].shape)
+        if saved_shape != tuple(expected_shape):
+            raise RuntimeError(
+                f"checkpoint {key} shape mismatch: "
+                f"saved={saved_shape}, expected={tuple(expected_shape)}"
+            )
 
 
 def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
@@ -583,8 +633,17 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
             _g_solver_state, like_tensor=_alpha_for_stress
         )
         g_override_state_np = g_solver_state_np.astype(np.float32)
-    psi_raw_gp_np = psi_plus_gp_np / np.maximum(g_alpha_state_np, 1e-30)
-    psi_raw_solver_gp_np = psi_plus_gp_np / np.maximum(g_solver_state_np, 1e-30)
+    if _is_native_q4:
+        with torch.no_grad():
+            _, psi_raw_state = strain_energy_with_split(
+                eps_xx_gp, eps_yy_gp, eps_xy_gp, _alpha_for_stress,
+                matprop, pffmodel,
+            )
+        psi_raw_gp_np = _tensor_to_numpy(psi_raw_state)
+        psi_raw_solver_gp_np = psi_raw_gp_np
+    else:
+        psi_raw_gp_np = psi_plus_gp_np / np.maximum(g_alpha_state_np, 1e-30)
+        psi_raw_solver_gp_np = psi_plus_gp_np / np.maximum(g_solver_state_np, 1e-30)
     if _is_native_q4:
         g_alpha_np = g_alpha_state_np.mean(axis=1)
         g_solver_np = g_solver_state_np.mean(axis=1)
@@ -961,6 +1020,15 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     validate_history_storage_for_connectivity(
         fatigue_dict, T_conn, "fine training mesh"
     )
+    _runtime_mesh_signature = _mesh_state_signature(inp, T_conn)
+    _runtime_mesh_arity = int(T_conn.shape[1]) if T_conn is not None else 0
+    _runtime_history_storage = fatigue_dict.get("history_storage", "element")
+    _runtime_damage_history_storage = fatigue_dict.get(
+        "damage_history_storage", "running_nodal_max"
+    )
+    _runtime_gauss_order = (
+        "(+,+),(-,+),(+,-),(-,-)" if _runtime_mesh_arity == 4 else "tri3"
+    )
     from network import bind_mesh_graph
     bind_mesh_graph(field_comp.net, T_conn, inp.shape[0])
     outp = torch.zeros(inp.shape[0], 1).to(device)
@@ -1330,12 +1398,36 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 )
             if _representation_signature is not None and _saved_signature is None:
                 print("[Checkpoint] WARNING: legacy checkpoint has no representation signature")
+            if _runtime_mesh_arity == 4:
+                required_native = {
+                    "mesh_state_signature": _runtime_mesh_signature,
+                    "mesh_connectivity_arity": _runtime_mesh_arity,
+                    "history_storage": _runtime_history_storage,
+                    "damage_history_storage": _runtime_damage_history_storage,
+                    "gauss_order": _runtime_gauss_order,
+                }
+                validate_native_checkpoint_contract(
+                    _ckpt, required_native, tuple(hist_fat.shape)
+                )
             field_comp.net.load_state_dict(
                 torch.load(_net_file, map_location=device))
             hist_alpha = _ckpt['hist_alpha'].to(device)
             if fatigue_on:
-                hist_fat      = _ckpt['hist_fat'].to(device)
-                psi_plus_prev = _ckpt['psi_plus_prev'].to(device)
+                expected_shape = tuple(hist_fat.shape)
+                restored_hist = _ckpt['hist_fat'].to(device)
+                restored_prev = _ckpt['psi_plus_prev'].to(device)
+                if tuple(restored_hist.shape) != expected_shape:
+                    raise RuntimeError(
+                        "checkpoint hist_fat shape mismatch: "
+                        f"saved={tuple(restored_hist.shape)}, expected={expected_shape}"
+                    )
+                if tuple(restored_prev.shape) != expected_shape:
+                    raise RuntimeError(
+                        "checkpoint psi_plus_prev shape mismatch: "
+                        f"saved={tuple(restored_prev.shape)}, expected={expected_shape}"
+                    )
+                hist_fat = restored_hist
+                psi_plus_prev = restored_prev
                 f_fatigue     = _fatigue_for_fit(hist_fat)
                 if _lambda_hist_enabled and 'lambda_hist_weight' in _ckpt:
                     _lambda_hist_weight = float(_ckpt['lambda_hist_weight'])
@@ -1976,7 +2068,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 f"grad_E_hist={_lambda_stats['grad_E_hist']:.6e}"
             )
         hist_alpha_new = field_comp.update_hist_alpha(inp)
-        hist_alpha = torch.maximum(hist_alpha, hist_alpha_new).detach()
+        hist_alpha = commit_damage_history(
+            hist_alpha,
+            hist_alpha_new,
+            fatigue_dict.get("damage_history_storage", "running_nodal_max"),
+        )
         _hist_alpha_oracle_cfg = (
             fatigue_dict.get('hist_alpha_oracle', None)
             if fatigue_on else None
@@ -2569,6 +2665,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
 
         # ★ 保存断点续训 checkpoint（含 hist_alpha 及疲劳变量）
         _ckpt_data = {'hist_alpha': hist_alpha}
+        _ckpt_data['mesh_state_signature'] = _runtime_mesh_signature
+        _ckpt_data['mesh_connectivity_arity'] = _runtime_mesh_arity
+        _ckpt_data['history_storage'] = _runtime_history_storage
+        _ckpt_data['damage_history_storage'] = _runtime_damage_history_storage
+        _ckpt_data['gauss_order'] = _runtime_gauss_order
         if _representation_signature is not None:
             _ckpt_data['representation_signature'] = _representation_signature
         if fatigue_on:

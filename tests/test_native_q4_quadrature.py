@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 import torch
 
 
@@ -16,6 +17,8 @@ from material_properties import MaterialProperties  # noqa: E402
 from pff_model import PFFModel  # noqa: E402
 from utils import parse_mesh  # noqa: E402
 from model_train import (  # noqa: E402
+    commit_damage_history,
+    validate_native_checkpoint_contract,
     validate_history_storage_for_connectivity,
     validate_irreversibility_mode_for_connectivity,
 )
@@ -72,6 +75,17 @@ def test_parse_native_q4_abaqus(tmp_path):
     assert np.allclose(area, 1.0)
 
 
+def test_parse_native_q4_rejects_non_q4_element_type(tmp_path):
+    mesh = tmp_path / "not_q4.inp"
+    mesh.write_text(
+        "*NODE\n1,0,0\n2,1,0\n3,1,1\n4,0,1\n5,0.5,0\n"
+        "*ELEMENT, TYPE=CPE8\n1,1,2,3,4,5,5,5,5\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="planar Q4"):
+        parse_mesh(mesh, gradient_type="numerical")
+
+
 def test_native_q4_energy_and_gp_history_shapes_are_differentiable():
     points = torch.tensor(
         [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],
@@ -124,6 +138,7 @@ def test_native_q4_history_contract_accepts_q4_and_rejects_t3():
     cfg = {
         "fatigue_on": True,
         "history_storage": "q4_gp4",
+        "damage_history_storage": "previous_accepted_nodal",
         "history_driver_reduction": {"enable": True, "mode": "native_q4_gp4"},
     }
     validate_history_storage_for_connectivity(cfg, q4, "q4")
@@ -133,3 +148,35 @@ def test_native_q4_history_contract_accepts_q4_and_rejects_t3():
         assert "requires 4-node connectivity" in str(exc)
     else:
         raise AssertionError("native Q4 GP history must be rejected on a T3 mesh")
+
+
+def test_native_damage_history_commits_previous_accepted_field_not_running_max():
+    previous = torch.tensor([0.2, 0.8])
+    accepted = torch.tensor([0.3, 0.7])
+    native = commit_damage_history(previous, accepted, "previous_accepted_nodal")
+    legacy = commit_damage_history(previous, accepted, "running_nodal_max")
+    torch.testing.assert_close(native, accepted)
+    torch.testing.assert_close(legacy, torch.tensor([0.3, 0.8]))
+
+
+def test_native_checkpoint_contract_guards_mesh_gauss_order_and_gp_shape():
+    state = torch.zeros((3, 4))
+    contract = {
+        "mesh_state_signature": "abc",
+        "mesh_connectivity_arity": 4,
+        "history_storage": "q4_gp4",
+        "damage_history_storage": "previous_accepted_nodal",
+        "gauss_order": "(+,+),(-,+),(+,-),(-,-)",
+    }
+    checkpoint = {
+        **contract,
+        "hist_fat": state,
+        "psi_plus_prev": state.clone(),
+    }
+    validate_native_checkpoint_contract(checkpoint, contract, (3, 4))
+    bad = {**checkpoint, "gauss_order": "different"}
+    with pytest.raises(RuntimeError, match="gauss_order mismatch"):
+        validate_native_checkpoint_contract(bad, contract, (3, 4))
+    bad_shape = {**checkpoint, "hist_fat": torch.zeros(3)}
+    with pytest.raises(RuntimeError, match="hist_fat shape mismatch"):
+        validate_native_checkpoint_contract(bad_shape, contract, (3, 4))
