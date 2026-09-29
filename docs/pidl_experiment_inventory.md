@@ -268,3 +268,9 @@ First-pass priorities:
 4. Keep all pre-strict archives clearly separated from strict-alignment claims.
 5. The three formerly metadata-only large Taobo roots are now local under `raw_remote/`; do not spend time organizing their full payloads unless a concrete figure/checkpoint question needs them.
 6. For every future PIDL run, require an asset endpoint: either a tracked `docs/` summary or a local archive README/decision.
+
+## 2026-09-29 Additions
+
+| case_id | Primary asset | Date | Producer | Commit | Configuration | Evidence level | Outcome | Next action |
+|---|---|---|---|---|---|---|---|---|
+| `hard5_native_q4_alignment_smoke_20260929` | `/Users/wenxiaofang/obsidian/mesh对齐.md`; local attempt ledger `native_q4_pidl_alignment_20260929` | 2026-09-29 | Mac implementation + Taobo GPU 3 smoke | `1d33604` smoke; `5858f10` final label fix | Exact 86,756-node/86,408-cell Q4 mesh; native 2x2 GP energy/gradients; GP Carrara state; previous-accepted nodal penalty state; C1 smoke uses 2x32 and 1 epoch/step | diagnostic / tooling | Operator replay passed c76/c82/c83; 54 local checks passed; fresh recovery+C1 Taobo execution produced six finite `[86408,4]` GP diagnostic states and a contract-valid checkpoint. This does not establish trajectory or field-mechanism agreement. | Wait for a safely available GPU, then run the preregistered 8x400 production case and compare c76/c82/c83 plus own-event fields. |
