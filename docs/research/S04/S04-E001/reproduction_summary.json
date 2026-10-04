@@ -1,0 +1,9 @@
+{
+  "replay_pass_count": 3,
+  "compared_numeric_cells": 1516,
+  "tables": 7,
+  "finite": true,
+  "new_scientific_threshold": false,
+  "operator_threshold_source": "unchanged audit_native_q4_operator.py",
+  "claim_boundary": "Reproduction only. Drift in near-zero equilibrium residuals must not be interpreted by relative error alone."
+}

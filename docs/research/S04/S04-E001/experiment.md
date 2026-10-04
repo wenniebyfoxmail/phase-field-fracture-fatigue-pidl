@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E001
 protocol_revision: reproduction-v1
-status: ready
+status: execution_complete
 primary_storyline: S04
 scientific_verdict: pending
 ---
@@ -27,13 +27,13 @@ Existing native-Q4 plan review is inherited for context. This run repeats unchan
 ## Runs
 | Run | Purpose | Execution | Retrieval |
 |---|---|---|---|
-| S04-E001-R001 | CPU deterministic replay/cross-swap/equilibration on gpu-server | prepared | pending |
+| S04-E001-R001 | CPU deterministic replay/cross-swap/equilibration on gpu-server | completed (cluster 54) | verified, 57 files |
 
 ## Assets
 Local: /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E001/runs/S04-E001-R001/
 Remote: C:/Users/xw436/jobs/censor_diag_20261004_r001/
 Wrapper: scripts/censor_diagnostic_reproduction/
-User-authorized host: gpu-server; ad\xw436; Condor 8 CPUs/32GB/0 GPUs. No remote service or shared environment change.
+User-authorized host: gpu-server; ad\xw436; Condor 8 CPUs/32GB/1 allocated GPU; single-thread CPU numerical kernels, GPU unused. No remote service or shared environment change.
 
 ## Claim impact
-Pending numerical reproduction. No new PINN fitting, fatigue rollout, architecture sweep or broad producer authorization.
+Numerical reproduction completed: 12 tests, three operator replays, seven finite metric tables. See result.md. No new PINN fitting, fatigue rollout, architecture sweep or broad producer authorization.

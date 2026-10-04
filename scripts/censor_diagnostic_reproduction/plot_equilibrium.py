@@ -13,7 +13,7 @@ for r,col in zip(rows,colors):
  axes[0].plot([0,1],[float(r['original_normalized_free_residual']),float(r['solved_normalized_free_residual'])],'-o',color=col,label=label,lw=1.5)
  y=[float(r['original_active_rel_l2_vs_fem']),float(r['solved_active_rel_l2_vs_fem'])]
  axes[1].plot([0,1],y,'-o',color=col,label=label,lw=1.5)
- axes[1].annotate(f'{y[1]:.4f}',(1,y[1]),xytext=(6,0),textcoords='offset points',fontsize=9,color=col)
+ axes[1].annotate(f'{y[1]:.4f}',(1,y[1]),xytext=(6,10 if col==colors[0] else -14),textcoords='offset points',fontsize=9,color=col)
 for ax in axes:
  ax.set_xticks([0,1],['Original displacement','Re-equilibrated']);ax.set_xlim(-.15,1.4);ax.grid(axis='y',alpha=.2);ax.spines[['top','right']].set_visible(False)
 axes[0].set_yscale('log');axes[0].set_ylabel('Normalized free-DOF residual');axes[0].set_title('(a) Equilibrium residual');axes[0].legend(frameon=False,fontsize=9)
