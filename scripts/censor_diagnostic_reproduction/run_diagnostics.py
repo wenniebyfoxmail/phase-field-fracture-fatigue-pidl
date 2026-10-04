@@ -13,7 +13,7 @@ def main():
     OUT.mkdir(exist_ok=True)
     sys.path.insert(0,str(ROOT/"code/source"))
     import torch,numpy,scipy,h5py
-    torch.set_num_threads(8)
+    torch.set_num_threads(1)
     receipt={"started_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()),"host":platform.node(),"platform":platform.platform(),"pid":os.getpid(),"python":sys.version,"versions":{"torch":torch.__version__,"numpy":numpy.__version__,"scipy":scipy.__version__,"h5py":h5py.__version__},"training":False,"gpu_used":False,"condor_ad_path":os.environ.get("_CONDOR_JOB_AD")}
     (OUT/"execution.json").write_text(json.dumps(receipt,indent=2))
     for envkey,name in (("_CONDOR_JOB_AD","job.ad"),("_CONDOR_MACHINE_AD","machine.ad")):
