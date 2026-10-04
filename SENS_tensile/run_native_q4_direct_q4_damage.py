@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import sys
@@ -44,6 +45,33 @@ PROXIMITY_KEYS = (
     "proximity_e_I_new", "proximity_e_I_comparator",
     "proximity_e_d_new", "proximity_e_d_comparator",
 )
+FROZEN_SOLVER_CONTRACT = {
+    "peak_displacement": 0.11999988,
+    "max_outer": 12,
+    "uv_chunk_updates": 100,
+    "uv_max_block_updates": 800,
+    "uv_max_total_updates": 4800,
+    "damage_max_block_evaluations": 800,
+    "damage_max_total_evaluations": 4800,
+    "damage_check_iterations": 20,
+    "inner_k_floor": 1e-3,
+    "inner_entry_ratio": 0.1,
+    "inner_required_consecutive": 2,
+    "outer_k_tol": 1e-3,
+    "outer_rho_uv_tol": 1e-3,
+    "outer_f_rel_tol": 1e-3,
+    "outer_f_abs_tol": 1e-3,
+    "outer_field_max_tol": 1e-3,
+    "outer_active_rel_tol": 1e-2,
+    "outer_active_integral_rel_tol": 1e-3,
+    "outer_energy_rel_tol": 1e-4,
+    "outer_history_increment_rel_tol": 1e-3,
+    "irreversibility_gp_max_tol": 1e-6,
+    "required_consecutive": 3,
+    "stagnation_window": 5,
+    "stagnation_min_improvement": 1e-2,
+    "seed": 1,
+}
 
 
 class EvaluationBudgetExceeded(RuntimeError):
@@ -64,7 +92,9 @@ def parse_args():
         p.add_argument("--" + name, type=Path, required=True)
     p.add_argument("--arm", choices=(ARM_A, ARM_B), default=ARM_A)
     p.add_argument("--arm-a-trigger-json", type=Path)
+    p.add_argument("--arm-a-trigger-sha256")
     p.add_argument("--fixed-uv-f-smoke", action="store_true")
+    p.add_argument("--smoke-pass-receipt", type=Path)
     p.add_argument("--comparator-npz", type=Path)
     p.add_argument("--comparator-label")
     p.add_argument("--comparator-sha256")
@@ -139,6 +169,91 @@ def weighted_relative_gap(new, old, weights, symmetric=False, floor=1e-30):
     else:
         denominator = old_norm.clamp(min=floor)
     return float((numerator / denominator).detach().cpu())
+
+
+def _canonical_digest(value):
+    payload = json.dumps(value, sort_keys=True, separators=(",", ":"),
+                         allow_nan=False).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _tensor_digest(value):
+    array = value.detach().cpu().contiguous().numpy()
+    metadata = f"{array.dtype.str}|{array.shape}".encode("ascii")
+    return hashlib.sha256(metadata + b"\0" + array.tobytes()).hexdigest()
+
+
+def validate_frozen_solver_contract(args):
+    mismatches = {
+        key: {"expected": expected, "actual": getattr(args, key)}
+        for key, expected in FROZEN_SOLVER_CONTRACT.items()
+        if getattr(args, key) != expected
+    }
+    if mismatches:
+        raise ValueError(f"direct-Q4 frozen solver contract mismatch: {mismatches}")
+
+
+def build_b0_identity(*, mesh, checkpoint, network, damage, accepted_damage,
+                      accepted_fatigue, accepted_driver, committed_fatigue,
+                      damage_scale, uv_scale):
+    """Build the exact identity shared by smoke and every fresh-B0 production arm."""
+    core = {
+        "runner_sha256": base.digest(Path(__file__).resolve()),
+        "mesh_sha256": base.digest(mesh),
+        "checkpoint_sha256": base.digest(checkpoint),
+        "network_sha256": base.digest(network),
+        "solver_contract_sha256": _canonical_digest(FROZEN_SOLVER_CONTRACT),
+        "d_h0_sha256": _tensor_digest(damage),
+        "d_proj_minus_sha256": _tensor_digest(accepted_damage),
+        "hist_fat_minus_sha256": _tensor_digest(accepted_fatigue),
+        "psi_plus_prev_sha256": _tensor_digest(accepted_driver),
+        "f_committed_minus_sha256": _tensor_digest(committed_fatigue),
+        "hard_b0_damage_scale_hex": float(damage_scale).hex(),
+        "hard_b0_uv_scale_hex": float(uv_scale).hex(),
+        "source_state": "exact step412 accepted state",
+        "target_state": "step413 / FEM c83 peak / U=0.11999988",
+    }
+    return {**core, "b0_identity_sha256": _canonical_digest(core)}
+
+
+def validate_smoke_pass_receipt(path, expected_identity):
+    if path is None:
+        raise ValueError("production requires --smoke-pass-receipt")
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    receipt = json.loads(path.read_text())
+    required = {
+        "schema": "hard5-native-q4-direct-damage-smoke-v1",
+        "label": "FULL_MESH_FIXED_UV_F_SMOKE_PASS",
+        "evaluation_cap": 200,
+        "accepted_iteration_cap": 50,
+        "accepted_state_unchanged": True,
+        "fresh_b0_required_for_production": True,
+        "energy_nonincrease": True,
+        "bounds_ok": True,
+        "gradient_ok": True,
+        "progress_ok": True,
+        "abnormal_line_search": False,
+    }
+    required.update(expected_identity)
+    mismatches = {
+        key: {"expected": expected, "actual": receipt.get(key)}
+        for key, expected in required.items() if receipt.get(key) != expected
+    }
+    if mismatches:
+        raise RuntimeError(f"stale or invalid direct-Q4 smoke receipt: {mismatches}")
+    initial_closed = bool(receipt.get("initial_kkt_closed"))
+    nonzero_steps = int(receipt.get("accepted_nonzero_iterations", -1))
+    if not initial_closed and nonzero_steps < 1:
+        raise RuntimeError("direct-Q4 smoke receipt has no valid nonzero accepted step")
+    if int(receipt.get("evaluations", 201)) > 200:
+        raise RuntimeError("direct-Q4 smoke receipt exceeded its evaluation cap")
+    if int(receipt.get("accepted_iterations", 51)) > 50:
+        raise RuntimeError("direct-Q4 smoke receipt exceeded its accepted-iteration cap")
+    for key in ("initial_objective", "final_objective", "entry_K0", "final_K0"):
+        if not math.isfinite(float(receipt.get(key, math.nan))):
+            raise RuntimeError(f"direct-Q4 smoke receipt has non-finite {key}")
+    return receipt
 
 
 def _load_locked_npz(path, expected_sha256, label, *, expected_label=None):
@@ -233,8 +348,8 @@ def evaluate_fem_proximity(new_fields, assets, *, closed_endpoint):
     }
 
 
-def smoke_progress_ok(final_k, accepted_iterations, physical_tolerance=1e-3):
-    return final_k <= physical_tolerance or accepted_iterations >= 1
+def smoke_progress_ok(initial_k, accepted_nonzero_iterations, physical_tolerance=1e-3):
+    return initial_k <= physical_tolerance or accepted_nonzero_iterations >= 1
 
 
 def stagnation_reached(merit_history, window_size=5, minimum_improvement=1e-2):
@@ -375,25 +490,72 @@ def audit_arm_b_feasibility(inp, cells, initial_damage, lower, history_gp_lower,
     return report
 
 
-def validate_arm_b_trigger(path: Path | None, tol=1e-3, irr_tol=1e-6):
+def validate_arm_b_trigger(path: Path | None, expected_sha256, expected_identity,
+                           expected_smoke_receipt_sha256, tol=1e-3, irr_tol=1e-6):
     if path is None:
         raise ValueError("Arm B requires --arm-a-trigger-json")
+    if expected_sha256 is None:
+        raise ValueError("Arm B requires --arm-a-trigger-sha256")
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    actual_sha256 = base.digest(path)
+    if actual_sha256.lower() != expected_sha256.lower():
+        raise RuntimeError(
+            f"Arm A terminal receipt SHA-256 mismatch: expected={expected_sha256} "
+            f"actual={actual_sha256}"
+        )
     data = json.loads(path.read_text())
-    required = ("arm", "used_K0", "candidate_K0", "irreversibility_gp_max",
-                "implementation_or_state_error")
+    required = (
+        "schema", "arm", "endpoint_role", "final_label", "terminal_outer",
+        "fem_proximity", "provenance", "smoke_pass_receipt_sha256",
+        "fresh_b0_start", "used_K0", "candidate_K0", "irreversibility_gp_max",
+        "implementation_or_state_error",
+    )
     missing = [x for x in required if x not in data]
     if missing:
         raise ValueError(f"Arm A trigger receipt missing {missing}")
+    expected_static = {
+        "schema": "hard5-native-q4-direct-damage-terminal-v1",
+        "arm": ARM_A,
+        "endpoint_role": "ARM_A_PREDECLARED_TERMINAL_ENDPOINT",
+        "fresh_b0_start": True,
+        "smoke_pass_receipt_sha256": expected_smoke_receipt_sha256,
+        "provenance": expected_identity,
+    }
+    mismatches = {
+        key: {"expected": expected, "actual": data.get(key)}
+        for key, expected in expected_static.items() if data.get(key) != expected
+    }
+    if mismatches:
+        raise RuntimeError(f"Arm A terminal receipt identity mismatch: {mismatches}")
+    allowed_labels = {
+        "PHYSICAL_FIXED_POINT_CLOSED", "FIELD_BUDGET_NOT_CLOSED",
+        "MAX_OUTER_NOT_CLOSED", "STALLED_OR_OSCILLATORY_NOT_CLOSED",
+    }
+    if data["final_label"] not in allowed_labels or int(data["terminal_outer"]) < 1:
+        raise RuntimeError("Arm A trigger is not a valid predeclared terminal endpoint")
+    proximity = data["fem_proximity"]
+    if (not isinstance(proximity, dict)
+            or any(key not in proximity for key in PROXIMITY_KEYS)
+            or not isinstance(proximity.get("proximity_label"), str)
+            or not isinstance(proximity.get("proximity_qualification_pass"), bool)):
+        raise RuntimeError("Arm A trigger is missing its bound FEM proximity decision")
+    expected_proximity_label = (
+        None if data["final_label"] == "PHYSICAL_FIXED_POINT_CLOSED"
+        else "UNCLOSED_DESCRIPTIVE_ONLY"
+    )
+    if (expected_proximity_label is not None
+            and proximity["proximity_label"] != expected_proximity_label):
+        raise RuntimeError("Arm A trigger endpoint/proximity labels are inconsistent")
     allowed = (
-        data["arm"] == ARM_A
-        and not bool(data["implementation_or_state_error"])
+        not bool(data["implementation_or_state_error"])
         and float(data["used_K0"]) <= tol
         and float(data["candidate_K0"]) <= tol
         and float(data["irreversibility_gp_max"]) > irr_tol
     )
     if not allowed:
         raise RuntimeError("Arm B trigger is not satisfied")
-    return data
+    return {**data, "receipt_sha256": actual_sha256}
 
 
 def solve_damage_block(problem, initial, *, check_iterations=20, k_floor=1e-3,
@@ -414,6 +576,7 @@ def solve_damage_block(problem, initial, *, check_iterations=20, k_floor=1e-3,
     )["k_inf"]
     target = max(k_floor, entry_ratio * entry)
     accepted_iterations = 0
+    accepted_nonzero_iterations = 0
     consecutive = 0
     accepted_x = initial.copy()
     accepted_value = initial_value
@@ -423,12 +586,19 @@ def solve_damage_block(problem, initial, *, check_iterations=20, k_floor=1e-3,
     library_result = None
 
     def callback(intermediate):
-        nonlocal accepted_iterations, consecutive, accepted_x, accepted_value, accepted_gradient
+        nonlocal accepted_iterations, accepted_nonzero_iterations, consecutive
+        nonlocal accepted_x, accepted_value, accepted_gradient
         x = np.asarray(getattr(intermediate, "x", intermediate), dtype=np.float64)
         value, gradient = problem.cached_or_evaluate(x)
         if value > accepted_value * (1.0 + 1e-10):
             raise RuntimeError("accepted L-BFGS-B objective increased")
+        step_inf = float(np.max(np.abs(x - accepted_x)))
+        step_tolerance = 64.0 * np.finfo(np.float64).eps * max(
+            1.0, float(np.max(np.abs(x))), float(np.max(np.abs(accepted_x)))
+        )
         accepted_iterations += 1
+        if step_inf > step_tolerance:
+            accepted_nonzero_iterations += 1
         accepted_x, accepted_value, accepted_gradient = x.copy(), value, gradient.copy()
         for row in reversed(problem.records):
             if row["evaluation"] <= problem.evaluations:
@@ -440,7 +610,8 @@ def solve_damage_block(problem, initial, *, check_iterations=20, k_floor=1e-3,
             consecutive = consecutive + 1 if k <= target else 0
             accepted_rows.append({"iteration": accepted_iterations, "evaluation": problem.evaluations,
                                   "objective": value, "K_lb": k, "target": target,
-                                  "consecutive": consecutive})
+                                  "consecutive": consecutive, "step_inf": step_inf,
+                                  "nonzero_step": step_inf > step_tolerance})
             if consecutive >= required_consecutive:
                 raise PhysicalConvergenceReached
         if (max_accepted_iterations is not None
@@ -495,6 +666,7 @@ def solve_damage_block(problem, initial, *, check_iterations=20, k_floor=1e-3,
         "target_K_lb": target,
         "final_K_lb": final_k,
         "accepted_iterations": accepted_iterations,
+        "accepted_nonzero_iterations": accepted_nonzero_iterations,
         "evaluations": problem.evaluations,
         "termination": termination,
         "library_success": None if library_result is None else bool(library_result.success),
@@ -518,6 +690,7 @@ def direct_gradient(inp, cells, area, u, v, damage, accepted, fatigue, mat, mode
 
 def main():
     a = parse_args()
+    validate_frozen_solver_contract(a)
     torch.manual_seed(a.seed)
     np.random.seed(a.seed)
     device = torch.device(a.device)
@@ -535,14 +708,19 @@ def main():
             fem_label=a.fem_reference_label,
             fem_sha256=a.fem_reference_sha256,
         )
-    if a.arm == ARM_B:
-        trigger = validate_arm_b_trigger(a.arm_a_trigger_json, a.outer_k_tol,
-                                         a.irreversibility_gp_max_tol)
-    else:
+    if a.fixed_uv_f_smoke:
+        if a.smoke_pass_receipt is not None:
+            raise ValueError("fixed-UV/f smoke must not consume a prior smoke receipt")
+        if a.arm_a_trigger_json is not None or a.arm_a_trigger_sha256 is not None:
+            raise ValueError("fixed-UV/f smoke must not consume an Arm A terminal receipt")
+    elif a.smoke_pass_receipt is None:
+        raise ValueError("production requires --smoke-pass-receipt")
+    if a.arm == ARM_A:
         if a.arm_a_trigger_json is not None:
             raise ValueError("Arm A must not receive an Arm-B trigger receipt")
-        trigger = None
-    a.out.mkdir(parents=True)
+        if a.arm_a_trigger_sha256 is not None:
+            raise ValueError("Arm A must not receive an Arm-B trigger SHA-256")
+    trigger = None
 
     mat = MaterialProperties(1.0, 0.3, 1.0, 0.01)
     model = PFFModel("AT1", "volumetric", 5e-3, residual_stiffness=0.0)
@@ -601,6 +779,21 @@ def main():
     dtype_rel = abs(e64 - e32) / max(abs(e64), abs(e32), 1e-30)
     if dtype_rel > 1e-5:
         raise RuntimeError(f"B0 float32/float64 physical energy mismatch: {dtype_rel}")
+    b0_identity = build_b0_identity(
+        mesh=a.mesh_file, checkpoint=a.checkpoint, network=a.network,
+        damage=d_initial, accepted_damage=d0, accepted_fatigue=h0,
+        accepted_driver=driver, committed_fatigue=f0,
+        damage_scale=scale, uv_scale=uv_scale,
+    )
+    smoke_receipt_sha256 = None
+    if not a.fixed_uv_f_smoke:
+        validate_smoke_pass_receipt(a.smoke_pass_receipt, b0_identity)
+        smoke_receipt_sha256 = base.digest(a.smoke_pass_receipt)
+    if a.arm == ARM_B:
+        trigger = validate_arm_b_trigger(
+            a.arm_a_trigger_json, a.arm_a_trigger_sha256, b0_identity,
+            smoke_receipt_sha256, a.outer_k_tol, a.irreversibility_gp_max_tol,
+        )
     shape64, _, _ = q4_shape_data(inp64, cells)
     hgp_lower = q4_interpolate(d064, cells, shape64)
     if a.arm == ARM_A:
@@ -625,7 +818,11 @@ def main():
         "fixed_damage_dof_count": 0,
         "arm_b_trigger": trigger,
         "arm_b_feasibility": arm_b_audit,
+        "fresh_b0_start": True,
+        "b0_identity": b0_identity,
+        "admitted_smoke_pass_receipt_sha256": smoke_receipt_sha256,
     }
+    a.out.mkdir(parents=True)
     (a.out / "b0_contract.json").write_text(json.dumps(b0, indent=2) + "\n")
 
     if a.fixed_uv_f_smoke:
@@ -633,7 +830,7 @@ def main():
             raise ValueError("fixed-UV/f smoke is the Arm-A preflight only")
         smoke_problem = FixedDamageProblem(
             inp64, cells, area64, u64, v64, d064, f64, mat, model, scale,
-            lower64, min(a.damage_max_block_evaluations, 200),
+            lower64, 200,
         )
         smoke = solve_damage_block(
             smoke_problem, d64.detach().cpu().numpy(),
@@ -656,8 +853,10 @@ def main():
         gradient_ok = final_gradient_relmax <= 1e-8
         abnormal_line_search = "ABNORMAL" in str(smoke["library_message"] or "").upper()
         physical_kkt_reached = smoke["final_K_lb"] <= a.outer_k_tol
+        initial_kkt_closed = smoke["entry_K_lb"] <= a.outer_k_tol
         progress_ok = smoke_progress_ok(
-            smoke["final_K_lb"], smoke["accepted_iterations"], a.outer_k_tol
+            smoke["entry_K_lb"], smoke["accepted_nonzero_iterations"],
+            a.outer_k_tol,
         )
         smoke_pass = (
             progress_ok
@@ -667,10 +866,16 @@ def main():
             and not abnormal_line_search
             and math.isfinite(smoke["objective"])
         )
+        picard.assert_accepted(accepted, accepted_clones)
         smoke_receipt = {
+            "schema": "hard5-native-q4-direct-damage-smoke-v1",
             "label": "FULL_MESH_FIXED_UV_F_SMOKE_PASS" if smoke_pass else
                      "FULL_MESH_FIXED_UV_F_SMOKE_FAIL",
+            **b0_identity,
+            "evaluation_cap": 200,
+            "accepted_iteration_cap": 50,
             "accepted_iterations": smoke["accepted_iterations"],
+            "accepted_nonzero_iterations": smoke["accepted_nonzero_iterations"],
             "evaluations": smoke["evaluations"],
             "initial_objective": e64,
             "final_objective": smoke["objective"],
@@ -679,11 +884,14 @@ def main():
             "analytic_vs_independent_AD_gradient_relmax": final_gradient_relmax,
             "gradient_ok": gradient_ok,
             "physical_kkt_reached": physical_kkt_reached,
+            "initial_kkt_closed": initial_kkt_closed,
             "progress_ok": progress_ok,
             "abnormal_line_search": abnormal_line_search,
             "entry_K0": smoke["entry_K_lb"],
             "final_K0": smoke["final_K_lb"],
             "termination": smoke["termination"],
+            "accepted_state_unchanged": True,
+            "fresh_b0_required_for_production": True,
         }
         (a.out / "smoke_result.json").write_text(
             json.dumps(smoke_receipt, indent=2) + "\n"
@@ -695,9 +903,11 @@ def main():
             inp, cells, u, v, final_d.to(inp.dtype), h_used, f_used, mat, model
         )
         np.savez_compressed(a.out / "fixed_uv_f_smoke_final.npz", **final_export)
-        picard.assert_accepted(accepted, accepted_clones)
         if not smoke_pass:
             raise RuntimeError(f"fixed-UV/f smoke failed: {smoke_receipt}")
+        (a.out / "smoke_pass_receipt.json").write_text(
+            json.dumps(smoke_receipt, indent=2) + "\n"
+        )
         print(json.dumps(smoke_receipt, indent=2), flush=True)
         return
 
@@ -936,8 +1146,20 @@ def main():
         writer.writeheader(); writer.writerows(damage_trace)
     final = rows[-1]
     receipt = {
+        "schema": "hard5-native-q4-direct-damage-terminal-v1",
         "arm": a.arm,
+        "endpoint_role": (
+            "ARM_A_PREDECLARED_TERMINAL_ENDPOINT" if a.arm == ARM_A
+            else "ARM_B_PREDECLARED_TERMINAL_ENDPOINT"
+        ),
         "final_label": final_label,
+        "terminal_outer": int(final["outer"]),
+        "fresh_b0_start": True,
+        "provenance": b0_identity,
+        "smoke_pass_receipt_sha256": smoke_receipt_sha256,
+        "arm_a_trigger_receipt_sha256": (
+            None if trigger is None else trigger["receipt_sha256"]
+        ),
         "used_K0": final["used_K0"],
         "candidate_K0": final["candidate_K0"],
         "irreversibility_gp_max": final["irreversibility_gp_max"],
@@ -956,6 +1178,16 @@ def main():
         "evaluation_accounting": "all objective-gradient evaluations, including rejected line-search trials",
         "final_label": final_label,
         "fem_proximity": proximity_decision,
+        "fresh_b0_start": True,
+        "b0_identity": b0_identity,
+        "smoke_pass_receipt": str(a.smoke_pass_receipt),
+        "smoke_pass_receipt_sha256": smoke_receipt_sha256,
+        "arm_a_trigger_receipt": (
+            None if a.arm_a_trigger_json is None else str(a.arm_a_trigger_json)
+        ),
+        "arm_a_trigger_receipt_sha256": (
+            None if trigger is None else trigger["receipt_sha256"]
+        ),
         "inputs": {
             "mesh": str(a.mesh_file), "mesh_sha256": base.digest(a.mesh_file),
             "checkpoint": str(a.checkpoint), "checkpoint_sha256": base.digest(a.checkpoint),

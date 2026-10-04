@@ -32,6 +32,8 @@ from run_native_q4_direct_q4_damage import (  # noqa: E402
     smoke_progress_ok,
     stagnation_reached,
     validate_arm_b_trigger,
+    validate_frozen_solver_contract,
+    validate_smoke_pass_receipt,
     weighted_relative_gap,
 )
 
@@ -59,6 +61,28 @@ def patch(nx=1, ny=1):
     mat = MaterialProperties(1.0, 0.3, 1.0, 0.01)
     model = PFFModel("AT1", "volumetric", 5e-3, residual_stiffness=0.0)
     return points, cells, area, u, v, accepted, damage, fatigue, mat, model
+
+
+def proximity_receipt(label="UNCLOSED_DESCRIPTIVE_ONLY"):
+    return {
+        "proximity_label": label,
+        "proximity_qualification_pass": False,
+        "proximity_e_q_new": 1.0,
+        "proximity_e_q_comparator": 1.0,
+        "proximity_e_I_new": 1.0,
+        "proximity_e_I_comparator": 1.0,
+        "proximity_e_d_new": 1.0,
+        "proximity_e_d_comparator": 1.0,
+    }
+
+
+def test_frozen_solver_contract_rejects_relaxed_production_gate():
+    from run_native_q4_direct_q4_damage import FROZEN_SOLVER_CONTRACT
+    args = SimpleNamespace(**FROZEN_SOLVER_CONTRACT)
+    validate_frozen_solver_contract(args)
+    args.outer_k_tol = 1.0
+    with pytest.raises(ValueError, match="frozen solver contract mismatch"):
+        validate_frozen_solver_contract(args)
 
 
 @pytest.mark.parametrize("nx,ny", [(1, 1), (2, 2)])
@@ -140,20 +164,60 @@ def test_arm_b_feasibility_audits_nodal_and_gp_lower_bounds():
 
 
 def test_arm_b_trigger_requires_both_K0_passes_and_gp_violation(tmp_path):
+    identity = {"runner_sha256": "runner", "b0_identity_sha256": "b0"}
+    smoke_sha256 = "smoke"
     receipt = tmp_path / "arm_a.json"
     receipt.write_text(json.dumps({
+        "schema": "hard5-native-q4-direct-damage-terminal-v1",
         "arm": ARM_A,
+        "endpoint_role": "ARM_A_PREDECLARED_TERMINAL_ENDPOINT",
+        "final_label": "FIELD_BUDGET_NOT_CLOSED",
+        "terminal_outer": 6,
+        "fem_proximity": proximity_receipt(),
+        "provenance": identity,
+        "smoke_pass_receipt_sha256": smoke_sha256,
+        "fresh_b0_start": True,
         "used_K0": 9e-4,
         "candidate_K0": 8e-4,
         "irreversibility_gp_max": 2e-6,
         "implementation_or_state_error": False,
     }))
-    assert validate_arm_b_trigger(receipt)["arm"] == ARM_A
+    receipt_sha256 = hashlib.sha256(receipt.read_bytes()).hexdigest()
+    assert validate_arm_b_trigger(
+        receipt, receipt_sha256, identity, smoke_sha256
+    )["arm"] == ARM_A
     data = json.loads(receipt.read_text())
     data["candidate_K0"] = 2e-3
     receipt.write_text(json.dumps(data))
     with pytest.raises(RuntimeError, match="trigger is not satisfied"):
-        validate_arm_b_trigger(receipt)
+        validate_arm_b_trigger(
+            receipt, hashlib.sha256(receipt.read_bytes()).hexdigest(), identity, smoke_sha256
+        )
+
+
+def test_arm_b_trigger_rejects_stale_provenance_and_wrong_receipt_hash(tmp_path):
+    identity = {"runner_sha256": "runner", "b0_identity_sha256": "b0"}
+    payload = {
+        "schema": "hard5-native-q4-direct-damage-terminal-v1",
+        "arm": ARM_A,
+        "endpoint_role": "ARM_A_PREDECLARED_TERMINAL_ENDPOINT",
+        "final_label": "FIELD_BUDGET_NOT_CLOSED",
+        "terminal_outer": 6,
+        "fem_proximity": proximity_receipt(),
+        "provenance": {**identity, "b0_identity_sha256": "stale"},
+        "smoke_pass_receipt_sha256": "smoke",
+        "fresh_b0_start": True,
+        "used_K0": 9e-4,
+        "candidate_K0": 8e-4,
+        "irreversibility_gp_max": 2e-6,
+        "implementation_or_state_error": False,
+    }
+    receipt = tmp_path / "arm_a.json"
+    receipt.write_text(json.dumps(payload))
+    with pytest.raises(RuntimeError, match="SHA-256 mismatch"):
+        validate_arm_b_trigger(receipt, "0" * 64, identity, "smoke")
+    with pytest.raises(RuntimeError, match="identity mismatch"):
+        validate_arm_b_trigger(receipt, _sha256(receipt), identity, "smoke")
 
 
 def test_fixed_problem_counts_every_objective_gradient_evaluation():
@@ -190,6 +254,7 @@ def test_lbfgsb_known_zero_damage_solution_has_strict_KKT():
     )
     assert result["final_K_lb"] <= 1e-8
     assert np.max(np.abs(result["damage"])) <= 1e-8
+    assert result["accepted_nonzero_iterations"] >= 1
     assert result["evaluations"] == len(result["evaluation_trace"])
 
 
@@ -240,6 +305,44 @@ def test_smoke_progress_allows_zero_steps_only_when_initial_kkt_is_closed():
     assert smoke_progress_ok(9e-4, 0)
     assert not smoke_progress_ok(2e-3, 0)
     assert smoke_progress_ok(2e-3, 1)
+
+
+def test_smoke_pass_receipt_locks_identity_caps_and_nonzero_progress(tmp_path):
+    identity = {"runner_sha256": "runner", "b0_identity_sha256": "b0"}
+    receipt = tmp_path / "smoke.json"
+    payload = {
+        "schema": "hard5-native-q4-direct-damage-smoke-v1",
+        "label": "FULL_MESH_FIXED_UV_F_SMOKE_PASS",
+        "evaluation_cap": 200,
+        "accepted_iteration_cap": 50,
+        "accepted_state_unchanged": True,
+        "fresh_b0_required_for_production": True,
+        "energy_nonincrease": True,
+        "bounds_ok": True,
+        "gradient_ok": True,
+        "progress_ok": True,
+        "abnormal_line_search": False,
+        "initial_kkt_closed": False,
+        "accepted_nonzero_iterations": 1,
+        "accepted_iterations": 1,
+        "evaluations": 3,
+        "initial_objective": 2.0,
+        "final_objective": 1.0,
+        "entry_K0": 2e-3,
+        "final_K0": 9e-4,
+        **identity,
+    }
+    receipt.write_text(json.dumps(payload))
+    assert validate_smoke_pass_receipt(receipt, identity)["label"].endswith("PASS")
+    payload["accepted_nonzero_iterations"] = 0
+    receipt.write_text(json.dumps(payload))
+    with pytest.raises(RuntimeError, match="no valid nonzero accepted step"):
+        validate_smoke_pass_receipt(receipt, identity)
+    payload["initial_kkt_closed"] = True
+    payload["evaluation_cap"] = 20
+    receipt.write_text(json.dumps(payload))
+    with pytest.raises(RuntimeError, match="stale or invalid"):
+        validate_smoke_pass_receipt(receipt, identity)
 
 
 def test_stagnation_uses_best_value_in_five_round_window():

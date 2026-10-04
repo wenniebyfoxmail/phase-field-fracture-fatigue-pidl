@@ -34,6 +34,45 @@ from q4_quadrature import q4_gradient, q4_interpolate, q4_shape_data
 METHODS = ("alternating_picard",)
 
 
+def strict_json(value, *, indent=2):
+    """Serialize evidence without permitting non-standard NaN/Infinity tokens."""
+    return json.dumps(value, indent=indent, allow_nan=False)
+
+
+def require_finite_tensors(label, *values):
+    if values and not bool(torch.stack([torch.isfinite(value).all() for value in values]).all()):
+        bad = next(index for index, value in enumerate(values)
+                   if not bool(torch.isfinite(value).all()))
+        raise RuntimeError(f"non-finite {label}[{bad}]")
+
+
+def require_finite_numbers(label, values):
+    for key, value in values.items():
+        if isinstance(value, (int, float)) and not math.isfinite(float(value)):
+            raise RuntimeError(f"non-finite {label}.{key}: {value!r}")
+
+
+def fail_closed_step(optimizer, closure, count, trace):
+    """Run optimizer updates and verify gradients and parameters after every step."""
+    parameters = [parameter for group in optimizer.param_groups
+                  for parameter in group["params"]]
+    for local_epoch in range(count):
+        optimizer.zero_grad(set_to_none=True)
+        loss = closure()
+        if not bool(torch.isfinite(loss)):
+            raise RuntimeError(f"non-finite loss at local epoch {local_epoch}")
+        loss.backward()
+        missing = [index for index, parameter in enumerate(parameters)
+                   if parameter.requires_grad and parameter.grad is None]
+        if missing:
+            raise RuntimeError(f"missing optimizer gradient for parameters {missing}")
+        gradients = [parameter.grad for parameter in parameters if parameter.grad is not None]
+        require_finite_tensors("optimizer gradient", *gradients)
+        optimizer.step()
+        require_finite_tensors("optimizer parameter", *parameters)
+        trace.append(float(loss.detach().cpu()))
+
+
 class AnchoredSmoothDamage(nn.Module):
     """Mesh-locked smooth damage map anchored to the hard-bounded B0 field.
 
@@ -163,6 +202,10 @@ def validate_smoke_pass_receipt(path, expected):
         "accepted_state_unchanged": True,
         "anchor_read_only": True,
         "fresh_b0_required_for_production": True,
+        "finite_contract_status": "PASS",
+        "bounds_contract_status": "PASS",
+        "positive_energy_contract_status": "PASS",
+        "frozen_fields_contract_status": "PASS",
     }
     for key, value in required.items():
         if receipt.get(key) != value:
@@ -170,6 +213,7 @@ def validate_smoke_pass_receipt(path, expected):
     for key, value in expected.items():
         if receipt.get(key) != value:
             raise RuntimeError(f"stale smooth-B0 smoke receipt {key}")
+    require_finite_numbers("smoke receipt", receipt)
     return receipt
 
 
@@ -462,7 +506,7 @@ def block_solve(*, label, optimizer, closure, field_reader, residual_reader,
     status = "BLOCK_CAP"
     while updates < maximum:
         n = min(chunk, maximum - updates)
-        base.step(optimizer, closure, n, trace)
+        fail_closed_step(optimizer, closure, n, trace)
         updates += n
         if after_chunk is not None:
             after_chunk(updates)
@@ -511,6 +555,8 @@ def snapshot(*, out, method, outer, uv, damage, inp, cells, area, d0, h_used,
     u, v, d = split_fields(uv, damage, inp)
     shape, _, _ = q4_shape_data(inp, cells)
     dgp = q4_interpolate(d, cells, shape)
+    require_finite_tensors("snapshot field", u, v, d, dgp, h_used, f_used,
+                           h_candidate, f_candidate)
     if bool((d < 0).any()) or bool((d > 1).any()) or bool((dgp < 0).any()) or bool((dgp > 1).any()):
         raise RuntimeError("bounded damage-map contract violated at node or Q4 GP")
     data = base.export(inp, cells, u, v, d, h_candidate, f_candidate, mat, model)
@@ -522,7 +568,7 @@ def snapshot(*, out, method, outer, uv, damage, inp, cells, area, d0, h_used,
         "loss_trace": np.asarray(trace, dtype=np.float64),
     })
     np.savez_compressed(out / f"trial_{method}_outer{outer:02d}.npz", **data)
-    (out / f"trial_{method}_outer{outer:02d}.json").write_text(json.dumps(row, indent=2) + "\n")
+    (out / f"trial_{method}_outer{outer:02d}.json").write_text(strict_json(row) + "\n")
 
 
 def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, model, cfg,
@@ -596,7 +642,7 @@ def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, mode
                           **{f"used_{k}": value for k, value in pres_used.items()},
                           **{f"candidate_{k}": value for k, value in pres_candidate.items()}}
             (out / f"trial_{method}_common_prefix_C{calls}.json").write_text(
-                json.dumps(prefix_row, indent=2) + "\n")
+                strict_json(prefix_row) + "\n")
             common_prefix_saved = True
 
         def used_residual():
@@ -672,6 +718,19 @@ def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, mode
                                dead, small_mask), scales)
         used_parts = base.energies(inp, cells, area, u, v, d, d0, f_solve, mat, model)
         candidate_parts = base.energies(inp, cells, area, u, v, d, d0, f_candidate, mat, model)
+        require_finite_tensors("outer field", u, v, d)
+        require_finite_tensors("outer fatigue state", h_solve, f_solve,
+                               h_candidate, f_candidate)
+        require_finite_tensors("outer energy", *used_parts, *candidate_parts)
+        require_finite_numbers("used residual", used_res)
+        require_finite_numbers("candidate residual", candidate_res)
+        mapping_diag = damage.alpha_constraint.diagnostics(damage.net(inp)[:, 2])
+        require_finite_tensors("smooth map", mapping_diag["logit"],
+                               mapping_diag["derivative"], mapping_diag["raw_increment"])
+        used_total = sum(used_parts)
+        candidate_total = sum(candidate_parts)
+        if float(used_total.detach().cpu()) <= 0.0 or float(candidate_total.detach().cpu()) <= 0.0:
+            raise RuntimeError("non-positive physical energy at completed outer")
         f_gap = weighted_rel_change(f_candidate, f_solve, q4_weights)
         f_abs = float((f_candidate - f_solve).abs().max().cpu())
         uv_change = max(float((u - outer_start[0]).abs().max().cpu()),
@@ -679,6 +738,7 @@ def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, mode
         d_change = float((d - outer_start[2]).abs().max().cpu())
         exported = base.export(inp, cells, u, v, d, h_candidate, f_candidate, mat, model)
         active = torch.as_tensor(exported["psi_active_gp"], device=inp.device)
+        require_finite_tensors("active field", active)
         active_integral = float(np.sum(exported["det_j"] * exported["psi_active_gp"]))
         active_rel = symmetric_rel_change(active, start_active, 1e-30)
         active_integral_rel = abs(active_integral - start_integral) / max(abs(active_integral), abs(start_integral), 1e-30)
@@ -732,7 +792,9 @@ def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, mode
             "uv_outer_max_over_U": uv_change, "damage_outer_max_change": d_change,
             "trial_f_fixed_point_rel_gap": f_gap, "trial_f_fixed_point_abs_max": f_abs,
             "trial_f_fixed_point_weighted_rel_gap": f_gap,
-            "history_increment_outer_rel_change": history_rel,
+            "history_increment_outer_rel_change": (
+                history_rel if math.isfinite(history_rel) else None
+            ),
             "active_outer_rel_change": active_rel,
             "active_integral_outer_rel_change": active_integral_rel,
             "same_f_total_energy_outer_rel_change": energy_rel,
@@ -748,6 +810,10 @@ def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, mode
             "active_integral": active_integral, "gpu_wall_seconds": elapsed,
             "uv_block": uv_block, "damage_block": damage_block,
             "split_gradient_contract": grad_contract,
+            "finite_contract_status": "PASS",
+            "bounds_contract_status": "PASS",
+            "positive_energy_contract_status": "PASS",
+            "frozen_fields_contract_status": "PASS",
             **{f"used_{k}": value for k, value in used_res.items()},
             **{f"candidate_{k}": value for k, value in candidate_res.items()}, **clamp,
             **anchor_summary(damage, inp),
@@ -860,7 +926,7 @@ def main():
         mat=mat, model=model, cfg=cfg, peak=a.peak_displacement,
         epsilon=a.anchor_epsilon, match_atol=a.b0_match_atol,
     )
-    (a.out / "b0_identity_audit.json").write_text(json.dumps(audit, indent=2) + "\n")
+    (a.out / "b0_identity_audit.json").write_text(strict_json(audit) + "\n")
     if audit["status"] != "PASS":
         raise RuntimeError(f"INVALID_B0_COUNTERFACTUAL: {audit['failures']}")
     anchor_path = a.out / "smooth_b0_anchor.npz"
@@ -882,7 +948,7 @@ def main():
         "accepted_previous_driver_unchanged": True,
         "installed_clamp_autograd_contract": clamp_autograd_contract(device),
     })
-    (a.out / "b0_contract.json").write_text(json.dumps(b0, indent=2) + "\n")
+    (a.out / "b0_contract.json").write_text(strict_json(b0) + "\n")
 
     all_rows = []
     labels = {}
@@ -900,7 +966,7 @@ def main():
 
     b0["physical_residual_scales"] = residual_scales
     b0["physical_residuals_raw"] = b0_residuals
-    (a.out / "b0_contract.json").write_text(json.dumps(b0, indent=2) + "\n")
+    (a.out / "b0_contract.json").write_text(strict_json(b0) + "\n")
 
     smoke_result = None
     smoke_pass_path = None
@@ -922,13 +988,17 @@ def main():
             "accepted_state_unchanged": True,
             "anchor_read_only": True,
             "fresh_b0_required_for_production": True,
+            "finite_contract_status": row["finite_contract_status"],
+            "bounds_contract_status": row["bounds_contract_status"],
+            "positive_energy_contract_status": row["positive_energy_contract_status"],
+            "frozen_fields_contract_status": row["frozen_fields_contract_status"],
         }
         (a.out / "smoke_result.json").write_text(
-            json.dumps(smoke_result, indent=2) + "\n"
+            strict_json(smoke_result) + "\n"
         )
         if smoke_result["status"] == "SMOKE_PASS":
             smoke_pass_path = a.out / "smoke_pass_receipt.json"
-            smoke_pass_path.write_text(json.dumps(smoke_result, indent=2) + "\n")
+            smoke_pass_path.write_text(strict_json(smoke_result) + "\n")
 
     flat = [{k: v for k, v in row.items() if not isinstance(v, (dict, list))}
             for row in all_rows]
@@ -1003,8 +1073,8 @@ def main():
             "network": str(a.network), "network_sha256": base.digest(a.network),
         },
     }
-    (a.out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    print(json.dumps(manifest, indent=2), flush=True)
+    (a.out / "manifest.json").write_text(strict_json(manifest) + "\n")
+    print(strict_json(manifest), flush=True)
 
 
 if __name__ == "__main__":

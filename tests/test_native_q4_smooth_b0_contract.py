@@ -12,6 +12,7 @@ sys.path.insert(0, str(SENS))
 
 from run_native_q4_smooth_b0_picard import (  # noqa: E402
     AnchoredSmoothDamage,
+    fail_closed_step,
     project_box_kkt_gradient,
     small_derivative_set,
     squared_residual_share,
@@ -141,6 +142,25 @@ def test_weighted_fatigue_gap_uses_q4_weights():
     assert weighted_rel_change(new, old, weights) == pytest.approx(2.0 / (8.0 ** 0.5))
 
 
+def test_final_optimizer_step_that_poisons_parameter_fails_closed():
+    parameter = torch.nn.Parameter(torch.tensor([1.0]))
+
+    class PoisonFinalStep:
+        param_groups = [{"params": [parameter]}]
+
+        @staticmethod
+        def zero_grad(set_to_none=True):
+            parameter.grad = None
+
+        @staticmethod
+        def step():
+            with torch.no_grad():
+                parameter.fill_(float("nan"))
+
+    with pytest.raises(RuntimeError, match="non-finite optimizer parameter"):
+        fail_closed_step(PoisonFinalStep(), lambda: parameter.square().sum(), 1, [])
+
+
 def test_production_receipt_is_exactly_bound_to_smoke_identity(tmp_path):
     expected = {
         "runner_sha256": "runner",
@@ -160,6 +180,10 @@ def test_production_receipt_is_exactly_bound_to_smoke_identity(tmp_path):
         "accepted_state_unchanged": True,
         "anchor_read_only": True,
         "fresh_b0_required_for_production": True,
+        "finite_contract_status": "PASS",
+        "bounds_contract_status": "PASS",
+        "positive_energy_contract_status": "PASS",
+        "frozen_fields_contract_status": "PASS",
         **expected,
     }))
     assert validate_smoke_pass_receipt(receipt, expected)["status"] == "SMOKE_PASS"
@@ -167,4 +191,25 @@ def test_production_receipt_is_exactly_bound_to_smoke_identity(tmp_path):
     bad["runner_sha256"] = "stale"
     receipt.write_text(json.dumps(bad))
     with pytest.raises(RuntimeError, match="stale smooth-B0 smoke receipt"):
+        validate_smoke_pass_receipt(receipt, expected)
+
+
+def test_production_receipt_rejects_nonfinite_diagnostic(tmp_path):
+    expected = {
+        "runner_sha256": "runner", "mesh_sha256": "mesh",
+        "checkpoint_sha256": "checkpoint", "network_sha256": "network",
+        "anchor_epsilon": 1e-7, "b0_match_atol": 2e-7,
+    }
+    receipt = tmp_path / "smoke.json"
+    receipt.write_text(json.dumps({
+        "schema": "hard5-native-q4-smooth-b0-smoke-v1",
+        "status": "SMOKE_PASS", "uv_updates": 100, "damage_updates": 100,
+        "b0_identity_status": "PASS", "accepted_state_unchanged": True,
+        "anchor_read_only": True, "fresh_b0_required_for_production": True,
+        "finite_contract_status": "PASS", "bounds_contract_status": "PASS",
+        "positive_energy_contract_status": "PASS",
+        "frozen_fields_contract_status": "PASS",
+        "used_rho_damage": float("nan"), **expected,
+    }))
+    with pytest.raises(RuntimeError, match="non-finite smoke receipt.used_rho_damage"):
         validate_smoke_pass_receipt(receipt, expected)
