@@ -130,17 +130,6 @@ def weighted_relative_gap(new, old, weights, symmetric=False, floor=1e-30):
     return float((numerator / denominator).detach().cpu())
 
 
-def hard_b0_scale(damage, gradient, lower=0.0):
-    """RMS of the unscaled box-feasible gradient used by the prior hard B0."""
-    feasible = picard.project_box_kkt_gradient(
-        damage, gradient, 32 * torch.finfo(damage.dtype).eps
-    ) if isinstance(lower, float) and lower == 0.0 else gradient
-    value = float(torch.sqrt(torch.mean(feasible.square())).detach().cpu())
-    if not math.isfinite(value) or value <= 0:
-        raise RuntimeError("hard B0 damage scale is non-positive or non-finite")
-    return value
-
-
 def raw_physical_energy(inp, cells, area, u, v, damage, accepted, fatigue, mat, model):
     parts = compute_energy_per_elem(
         inp, u, v, damage, accepted, mat, model, area, cells,
