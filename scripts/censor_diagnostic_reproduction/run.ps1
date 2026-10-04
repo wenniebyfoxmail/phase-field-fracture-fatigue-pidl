@@ -1,4 +1,7 @@
 $ErrorActionPreference = "Stop"
+$env:PATHEXT = ".COM;.EXE;.BAT;.CMD"
+$env:SystemRoot = "C:\Windows"
+$env:PATH = "C:\Windows\System32;C:\Windows;C:\Windows\System32\WindowsPowerShell\v1.0"
 $env:OMP_NUM_THREADS = "8"
 $env:MKL_NUM_THREADS = "8"
 $env:OPENBLAS_NUM_THREADS = "8"
