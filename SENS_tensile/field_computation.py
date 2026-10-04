@@ -111,8 +111,15 @@ class FieldComputation:
 
         if alpha_constraint == 'smooth':
             self.alpha_constraint = torch.sigmoid
-        else:
+        elif alpha_constraint == 'bounded_nonsmooth':
+            self.alpha_constraint = BoundedNonsmoothSigmoid(2.0)
+        elif alpha_constraint == 'nonsmooth':
             self.alpha_constraint = NonsmoothSigmoid(2.0, 1e-3)
+        else:
+            raise ValueError(
+                "alpha_constraint must be 'smooth', 'nonsmooth', or "
+                f"'bounded_nonsmooth', got {alpha_constraint!r}"
+            )
 
         # ★ 2026-05-06 mirror symmetry prior (only for baseline branch, not Williams)
         self.symmetry_prior = bool(symmetry_prior)
@@ -421,3 +428,22 @@ class NonsmoothSigmoid(nn.Module):
                 b*(self.coeff*(x+self.support))+ \
                 c*(x/2.0/self.support+0.5)
         return out
+
+
+class BoundedNonsmoothSigmoid(nn.Module):
+    """Hard-bounded counterpart of the legacy central affine damage map.
+
+    This map is exactly identical to ``NonsmoothSigmoid`` on
+    ``[-support, support]`` and projects both legacy affine tails to the
+    physically admissible interval ``[0, 1]``.  Its zero tail derivative is
+    intentional and must be treated as part of the bounded-map diagnostic.
+    """
+
+    def __init__(self, support=2.0):
+        super().__init__()
+        if support <= 0:
+            raise ValueError("support must be positive")
+        self.support = float(support)
+
+    def forward(self, x):
+        return torch.clamp(x / (2.0 * self.support) + 0.5, min=0.0, max=1.0)
