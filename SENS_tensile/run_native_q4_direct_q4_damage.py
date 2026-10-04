@@ -37,6 +37,13 @@ from q4_quadrature import q4_gradient, q4_interpolate, q4_shape_data
 
 ARM_A = "direct_q4_box_penalty"
 ARM_B = "direct_q4_nodal_monotone"
+FROZEN_COMPARATOR_LABEL = "adaptive_final_C9600"
+PROXIMITY_KEYS = (
+    "proximity_label", "proximity_qualification_pass",
+    "proximity_e_q_new", "proximity_e_q_comparator",
+    "proximity_e_I_new", "proximity_e_I_comparator",
+    "proximity_e_d_new", "proximity_e_d_comparator",
+)
 
 
 class EvaluationBudgetExceeded(RuntimeError):
@@ -60,6 +67,10 @@ def parse_args():
     p.add_argument("--fixed-uv-f-smoke", action="store_true")
     p.add_argument("--comparator-npz", type=Path)
     p.add_argument("--comparator-label")
+    p.add_argument("--comparator-sha256")
+    p.add_argument("--fem-reference-npz", type=Path)
+    p.add_argument("--fem-reference-label")
+    p.add_argument("--fem-reference-sha256")
     p.add_argument("--peak-displacement", type=float, default=0.11999988)
     p.add_argument("--max-outer", type=int, default=12)
     p.add_argument("--uv-chunk-updates", type=int, default=100)
@@ -128,6 +139,111 @@ def weighted_relative_gap(new, old, weights, symmetric=False, floor=1e-30):
     else:
         denominator = old_norm.clamp(min=floor)
     return float((numerator / denominator).detach().cpu())
+
+
+def _load_locked_npz(path, expected_sha256, label, *, expected_label=None):
+    if path is None or expected_sha256 is None or label is None:
+        raise ValueError("production proximity assets require path, label, and SHA-256")
+    if expected_label is not None and label != expected_label:
+        raise ValueError(f"comparator label must be {expected_label!r}, got {label!r}")
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    actual = base.digest(path)
+    if actual.lower() != expected_sha256.lower():
+        raise RuntimeError(f"asset SHA-256 mismatch for {label}: expected={expected_sha256} actual={actual}")
+    with np.load(path, allow_pickle=False) as source:
+        required = ("psi_active_gp", "damage_gp", "det_j")
+        missing = [key for key in required if key not in source]
+        if missing:
+            raise ValueError(f"proximity asset {label} missing fields {missing}")
+        arrays = {key: np.asarray(source[key], dtype=np.float64).copy() for key in required}
+    return {"path": str(path), "label": label, "sha256": actual, **arrays}
+
+
+def load_proximity_assets(*, comparator_path, comparator_label, comparator_sha256,
+                          fem_path, fem_label, fem_sha256):
+    comparator = _load_locked_npz(
+        comparator_path, comparator_sha256, comparator_label,
+        expected_label=FROZEN_COMPARATOR_LABEL,
+    )
+    fem = _load_locked_npz(fem_path, fem_sha256, fem_label)
+    for key in ("psi_active_gp", "damage_gp", "det_j"):
+        if comparator[key].shape != fem[key].shape:
+            raise ValueError(f"comparator/FEM shape mismatch for {key}")
+    if not np.array_equal(comparator["det_j"], fem["det_j"]):
+        raise ValueError("comparator and FEM native-Q4 integration weights differ")
+    if np.any(~np.isfinite(comparator["det_j"])) or np.any(comparator["det_j"] <= 0):
+        raise ValueError("native-Q4 integration weights must be positive and finite")
+    return {"comparator": comparator, "fem": fem}
+
+
+def _weighted_rel_l2(value, reference, weights):
+    numerator = np.sum(weights * np.square(value - reference), dtype=np.float64)
+    denominator = np.sum(weights * np.square(reference), dtype=np.float64)
+    if not math.isfinite(numerator) or not math.isfinite(denominator) or denominator <= 0:
+        raise ValueError("invalid weighted relative-L2 inputs")
+    return math.sqrt(numerator / denominator)
+
+
+def evaluate_fem_proximity(new_fields, assets, *, closed_endpoint):
+    """Evaluate the frozen three-metric screen; closure controls qualification."""
+    comparator, fem = assets["comparator"], assets["fem"]
+    new_q = np.asarray(new_fields["psi_active_gp"], dtype=np.float64)
+    new_d = np.asarray(new_fields["damage_gp"], dtype=np.float64)
+    weights = np.asarray(new_fields["det_j"], dtype=np.float64)
+    expected_shape = fem["det_j"].shape
+    if new_q.shape != expected_shape or new_d.shape != expected_shape or weights.shape != expected_shape:
+        raise ValueError("new endpoint does not share the frozen native-Q4 GP support")
+    if not np.array_equal(weights, fem["det_j"]):
+        raise ValueError("new endpoint native-Q4 integration weights differ from frozen assets")
+    e_q_new = _weighted_rel_l2(new_q, fem["psi_active_gp"], weights)
+    e_q_comparator = _weighted_rel_l2(
+        comparator["psi_active_gp"], fem["psi_active_gp"], weights
+    )
+    e_d_new = _weighted_rel_l2(new_d, fem["damage_gp"], weights)
+    e_d_comparator = _weighted_rel_l2(comparator["damage_gp"], fem["damage_gp"], weights)
+    integrals = {
+        "new": float(np.sum(weights * new_q, dtype=np.float64)),
+        "comparator": float(np.sum(weights * comparator["psi_active_gp"], dtype=np.float64)),
+        "fem": float(np.sum(weights * fem["psi_active_gp"], dtype=np.float64)),
+    }
+    if any(not math.isfinite(value) or value <= 0 for value in integrals.values()):
+        raise ValueError(f"active integrals must be positive and finite: {integrals}")
+    e_i_new = abs(math.log(integrals["new"] / integrals["fem"]))
+    e_i_comparator = abs(math.log(integrals["comparator"] / integrals["fem"]))
+    metric_pass = (
+        e_q_new <= 0.95 * e_q_comparator
+        and e_i_new <= 0.95 * e_i_comparator
+        and e_d_new <= 1.05 * e_d_comparator
+    )
+    qualification_pass = bool(closed_endpoint and metric_pass)
+    if not closed_endpoint:
+        label = "UNCLOSED_DESCRIPTIVE_ONLY"
+    else:
+        label = "CLOSED_FEM_PROXIMITY_PASS" if metric_pass else "CLOSED_FEM_PROXIMITY_FAIL"
+    return {
+        "proximity_label": label,
+        "proximity_qualification_pass": qualification_pass,
+        "proximity_e_q_new": e_q_new,
+        "proximity_e_q_comparator": e_q_comparator,
+        "proximity_e_I_new": e_i_new,
+        "proximity_e_I_comparator": e_i_comparator,
+        "proximity_e_d_new": e_d_new,
+        "proximity_e_d_comparator": e_d_comparator,
+    }
+
+
+def smoke_progress_ok(final_k, accepted_iterations, physical_tolerance=1e-3):
+    return final_k <= physical_tolerance or accepted_iterations >= 1
+
+
+def stagnation_reached(merit_history, window_size=5, minimum_improvement=1e-2):
+    if len(merit_history) < window_size:
+        return False
+    window = merit_history[-window_size:]
+    best = min(window)
+    improvement = (window[0] - best) / max(abs(window[0]), 1e-30)
+    return best > 1.0 and improvement < minimum_improvement
 
 
 def raw_physical_energy(inp, cells, area, u, v, damage, accepted, fatigue, mat, model):
@@ -348,8 +464,15 @@ def solve_damage_block(problem, initial, *, check_iterations=20, k_floor=1e-3,
                 "maxiter": max(problem.max_evaluations, 1),
             },
         )
-        accepted_x = np.asarray(library_result.x, dtype=np.float64)
-        accepted_value, final_gradient = problem.cached_or_evaluate(accepted_x)
+        candidate_x = np.asarray(library_result.x, dtype=np.float64)
+        # Commit the final library point atomically.  If its required final
+        # evaluation exhausts the budget, the full last-accepted tuple remains
+        # intact and is the only state returned.
+        candidate_value, candidate_gradient = problem.cached_or_evaluate(candidate_x)
+        accepted_x = candidate_x.copy()
+        accepted_value = candidate_value
+        accepted_gradient = candidate_gradient.copy()
+        final_gradient = accepted_gradient
     except PhysicalConvergenceReached:
         termination = "PHYSICAL_KKT_DONE"
         final_gradient = accepted_gradient
@@ -402,11 +525,16 @@ def main():
         raise RuntimeError("CUDA requested but unavailable")
     if a.out.exists():
         raise FileExistsError(a.out)
+    proximity_assets = None
     if not a.fixed_uv_f_smoke:
-        if a.comparator_npz is None or a.comparator_label is None:
-            raise ValueError("production requires a pre-frozen --comparator-npz and --comparator-label")
-        if not a.comparator_npz.is_file():
-            raise FileNotFoundError(a.comparator_npz)
+        proximity_assets = load_proximity_assets(
+            comparator_path=a.comparator_npz,
+            comparator_label=a.comparator_label,
+            comparator_sha256=a.comparator_sha256,
+            fem_path=a.fem_reference_npz,
+            fem_label=a.fem_reference_label,
+            fem_sha256=a.fem_reference_sha256,
+        )
     if a.arm == ARM_B:
         trigger = validate_arm_b_trigger(a.arm_a_trigger_json, a.outer_k_tol,
                                          a.irreversibility_gp_max_tol)
@@ -527,8 +655,12 @@ def main():
         )
         gradient_ok = final_gradient_relmax <= 1e-8
         abnormal_line_search = "ABNORMAL" in str(smoke["library_message"] or "").upper()
+        physical_kkt_reached = smoke["final_K_lb"] <= a.outer_k_tol
+        progress_ok = smoke_progress_ok(
+            smoke["final_K_lb"], smoke["accepted_iterations"], a.outer_k_tol
+        )
         smoke_pass = (
-            smoke["accepted_iterations"] >= 1
+            progress_ok
             and energy_nonincrease
             and bounds_ok
             and gradient_ok
@@ -546,6 +678,8 @@ def main():
             "bounds_ok": bounds_ok,
             "analytic_vs_independent_AD_gradient_relmax": final_gradient_relmax,
             "gradient_ok": gradient_ok,
+            "physical_kkt_reached": physical_kkt_reached,
+            "progress_ok": progress_ok,
             "abnormal_line_search": abnormal_line_search,
             "entry_K0": smoke["entry_K_lb"],
             "final_K0": smoke["final_K_lb"],
@@ -573,6 +707,8 @@ def main():
     total_uv = total_deval = consecutive = 0
     previous_history_increment = None
     merit_history = []
+    proximity_decision = None
+    final_exported = None
     final_label = "MAX_OUTER_NOT_CLOSED"
     started = time.perf_counter()
 
@@ -750,8 +886,16 @@ def main():
             "gp_upper_violation": gp_upper_violation,
             "outer_pass": passed, "consecutive_passes": consecutive,
             "elapsed_seconds": time.perf_counter() - started,
+            **{key: None for key in PROXIMITY_KEYS},
         }
+        closed_endpoint = consecutive >= a.required_consecutive
+        if closed_endpoint:
+            proximity_decision = evaluate_fem_proximity(
+                exported, proximity_assets, closed_endpoint=True
+            )
+            row.update(proximity_decision)
         rows.append(row)
+        final_exported = exported
         snapshot = dict(exported)
         snapshot.update({
             "hist_solve_gp": h_solve.cpu().numpy().astype(np.float32),
@@ -764,15 +908,25 @@ def main():
             json.dumps(row, indent=2) + "\n")
         picard.assert_accepted(accepted, accepted_clones)
         h_used, f_used = h_candidate.detach(), f_candidate.detach()
-        if consecutive >= a.required_consecutive:
+        if closed_endpoint:
             final_label = "PHYSICAL_FIXED_POINT_CLOSED"
             break
-        if len(merit_history) >= a.stagnation_window:
-            window = merit_history[-a.stagnation_window:]
-            improvement = (window[0] - window[-1]) / max(abs(window[0]), 1e-30)
-            if max(window) > 1.0 and improvement < a.stagnation_min_improvement:
-                final_label = "STALLED_OR_OSCILLATORY_NOT_CLOSED"
-                break
+        if stagnation_reached(merit_history, a.stagnation_window,
+                              a.stagnation_min_improvement):
+            final_label = "STALLED_OR_OSCILLATORY_NOT_CLOSED"
+            break
+
+    if not rows or final_exported is None:
+        raise RuntimeError("production ended before a complete outer endpoint")
+    if proximity_decision is None:
+        proximity_decision = evaluate_fem_proximity(
+            final_exported, proximity_assets, closed_endpoint=False
+        )
+        rows[-1].update(proximity_decision)
+        final_outer = int(rows[-1]["outer"])
+        (a.out / f"trial_{a.arm}_outer{final_outer:02d}.json").write_text(
+            json.dumps(rows[-1], indent=2) + "\n"
+        )
 
     with (a.out / "outer_summary.csv").open("w", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
@@ -788,6 +942,7 @@ def main():
         "candidate_K0": final["candidate_K0"],
         "irreversibility_gp_max": final["irreversibility_gp_max"],
         "implementation_or_state_error": False,
+        "fem_proximity": proximity_decision,
     }
     (a.out / "arm_result.json").write_text(json.dumps(receipt, indent=2) + "\n")
     manifest = {
@@ -800,6 +955,7 @@ def main():
         "KKT": "K_lb=||d-Pi_[lb,1](d-grad(E)/s_d)||_inf; physical gates override scipy status",
         "evaluation_accounting": "all objective-gradient evaluations, including rejected line-search trials",
         "final_label": final_label,
+        "fem_proximity": proximity_decision,
         "inputs": {
             "mesh": str(a.mesh_file), "mesh_sha256": base.digest(a.mesh_file),
             "checkpoint": str(a.checkpoint), "checkpoint_sha256": base.digest(a.checkpoint),
@@ -807,6 +963,12 @@ def main():
             "comparator": None if a.comparator_npz is None else str(a.comparator_npz),
             "comparator_sha256": None if a.comparator_npz is None else base.digest(a.comparator_npz),
             "comparator_label": a.comparator_label,
+            "comparator_expected_sha256": a.comparator_sha256,
+            "fem_reference": None if a.fem_reference_npz is None else str(a.fem_reference_npz),
+            "fem_reference_sha256": None if proximity_assets is None else
+                                    proximity_assets["fem"]["sha256"],
+            "fem_reference_expected_sha256": a.fem_reference_sha256,
+            "fem_reference_label": a.fem_reference_label,
         },
     }
     (a.out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

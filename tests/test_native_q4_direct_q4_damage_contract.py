@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -22,9 +24,13 @@ from run_native_q4_direct_q4_damage import (  # noqa: E402
     analytic_damage_gradient,
     audit_arm_b_feasibility,
     direct_gradient,
+    evaluate_fem_proximity,
     kkt_metrics,
+    load_proximity_assets,
     projected_kkt_map,
     solve_damage_block,
+    smoke_progress_ok,
+    stagnation_reached,
     validate_arm_b_trigger,
     weighted_relative_gap,
 )
@@ -185,3 +191,116 @@ def test_lbfgsb_known_zero_damage_solution_has_strict_KKT():
     assert result["final_K_lb"] <= 1e-8
     assert np.max(np.abs(result["damage"])) <= 1e-8
     assert result["evaluations"] == len(result["evaluation_trace"])
+
+
+def test_evaluation_cap_returns_complete_last_accepted_tuple(monkeypatch):
+    pytest.importorskip("scipy")
+
+    class BudgetProblem:
+        def __init__(self):
+            self.lower = torch.zeros(2, dtype=torch.float64)
+            self.scale = 1.0
+            self.max_evaluations = 2
+            self.evaluations = 0
+            self.records = []
+            self._last_x = self._last_value = self._last_gradient = None
+
+        def value_gradient(self, x):
+            from run_native_q4_direct_q4_damage import EvaluationBudgetExceeded
+            if self.evaluations >= self.max_evaluations:
+                raise EvaluationBudgetExceeded
+            x = np.asarray(x, dtype=np.float64)
+            value, gradient = float(x @ x), 2.0 * x
+            self.evaluations += 1
+            self.records.append({"evaluation": self.evaluations, "accepted": False})
+            self._last_x = x.copy()
+            self._last_value = value
+            self._last_gradient = gradient.copy()
+            return value, gradient
+
+        def cached_or_evaluate(self, x):
+            x = np.asarray(x, dtype=np.float64)
+            if self._last_x is not None and np.array_equal(x, self._last_x):
+                return self._last_value, self._last_gradient
+            return self.value_gradient(x)
+
+    def fake_minimize(fun, _initial, **_kwargs):
+        fun(np.array([0.4, 0.4]))  # consumes the final allowed evaluation
+        return SimpleNamespace(x=np.array([0.3, 0.3]), success=False, message="cap")
+
+    monkeypatch.setattr("scipy.optimize.minimize", fake_minimize)
+    result = solve_damage_block(BudgetProblem(), np.array([0.5, 0.5]), check_iterations=1)
+    np.testing.assert_array_equal(result["damage"], np.array([0.5, 0.5]))
+    assert result["objective"] == pytest.approx(0.5)
+    np.testing.assert_array_equal(result["gradient"], np.array([1.0, 1.0]))
+    assert result["termination"] == "EVALUATION_CAP_NOT_PHYSICAL_CLOSE"
+
+
+def test_smoke_progress_allows_zero_steps_only_when_initial_kkt_is_closed():
+    assert smoke_progress_ok(9e-4, 0)
+    assert not smoke_progress_ok(2e-3, 0)
+    assert smoke_progress_ok(2e-3, 1)
+
+
+def test_stagnation_uses_best_value_in_five_round_window():
+    assert not stagnation_reached([100.0, 80.0, 70.0, 95.0, 110.0])
+    assert stagnation_reached([100.0, 99.8, 99.6, 99.4, 99.2])
+    assert not stagnation_reached([0.9, 0.9, 0.9, 0.9, 0.9])
+
+
+def _sha256(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_locked_fem_proximity_gate_and_unclosed_semantics(tmp_path):
+    weights = np.ones((1, 4), dtype=np.float64)
+    fem_path = tmp_path / "fem.npz"
+    comparator_path = tmp_path / "comparator.npz"
+    np.savez_compressed(
+        fem_path,
+        psi_active_gp=np.ones((1, 4)), damage_gp=np.full((1, 4), 0.5), det_j=weights,
+    )
+    np.savez_compressed(
+        comparator_path,
+        psi_active_gp=np.full((1, 4), 2.0), damage_gp=np.full((1, 4), 0.6),
+        det_j=weights,
+    )
+    assets = load_proximity_assets(
+        comparator_path=comparator_path,
+        comparator_label="adaptive_final_C9600",
+        comparator_sha256=_sha256(comparator_path),
+        fem_path=fem_path,
+        fem_label="fem_c83_peak",
+        fem_sha256=_sha256(fem_path),
+    )
+    new = {
+        "psi_active_gp": np.full((1, 4), 1.5),
+        "damage_gp": np.full((1, 4), 0.6),
+        "det_j": weights,
+    }
+    closed = evaluate_fem_proximity(new, assets, closed_endpoint=True)
+    assert closed["proximity_label"] == "CLOSED_FEM_PROXIMITY_PASS"
+    assert closed["proximity_qualification_pass"]
+    unclosed = evaluate_fem_proximity(new, assets, closed_endpoint=False)
+    assert unclosed["proximity_label"] == "UNCLOSED_DESCRIPTIVE_ONLY"
+    assert not unclosed["proximity_qualification_pass"]
+
+
+def test_production_asset_lock_fails_on_wrong_hash_or_comparator_label(tmp_path):
+    path = tmp_path / "asset.npz"
+    np.savez_compressed(
+        path, psi_active_gp=np.ones((1, 4)), damage_gp=np.ones((1, 4)),
+        det_j=np.ones((1, 4)),
+    )
+    with pytest.raises(RuntimeError, match="SHA-256 mismatch"):
+        load_proximity_assets(
+            comparator_path=path, comparator_label="adaptive_final_C9600",
+            comparator_sha256="0" * 64, fem_path=path, fem_label="fem",
+            fem_sha256=_sha256(path),
+        )
+    with pytest.raises(ValueError, match="comparator label"):
+        load_proximity_assets(
+            comparator_path=path, comparator_label="wrong",
+            comparator_sha256=_sha256(path), fem_path=path, fem_label="fem",
+            fem_sha256=_sha256(path),
+        )

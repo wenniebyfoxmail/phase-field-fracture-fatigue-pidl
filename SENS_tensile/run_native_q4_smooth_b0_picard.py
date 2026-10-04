@@ -71,7 +71,9 @@ class AnchoredSmoothDamage(nn.Module):
         return self.anchor_logit + self.anchor_scale * (raw.to(torch.float64) - self.r0)
 
     def forward(self, raw):
-        return torch.sigmoid(self._logit64(raw))
+        # Freeze anchor/logit/sigmoid arithmetic in float64, then explicitly
+        # return to the network/operator dtype before native-Q4 einsums.
+        return torch.sigmoid(self._logit64(raw)).to(dtype=raw.dtype)
 
     def diagnostics(self, raw):
         logit = self._logit64(raw)
@@ -140,8 +142,35 @@ def parse_args():
     p.add_argument("--b0-match-atol", type=float, default=2e-7)
     p.add_argument("--small-residual-fraction", type=float, default=0.5)
     p.add_argument("--small-required-consecutive", type=int, default=3)
+    p.add_argument("--smoke", action="store_true",
+                   help="exact full-mesh preflight: 100 UV plus 100 damage updates")
+    p.add_argument("--smoke-pass-receipt", type=Path,
+                   help="required for production; must match runner and all locked inputs")
     p.add_argument("--device", default="cuda")
     return p.parse_args()
+
+
+def validate_smoke_pass_receipt(path, expected):
+    if path is None:
+        raise ValueError("production requires --smoke-pass-receipt")
+    receipt = json.loads(path.read_text())
+    required = {
+        "schema": "hard5-native-q4-smooth-b0-smoke-v1",
+        "status": "SMOKE_PASS",
+        "uv_updates": 100,
+        "damage_updates": 100,
+        "b0_identity_status": "PASS",
+        "accepted_state_unchanged": True,
+        "anchor_read_only": True,
+        "fresh_b0_required_for_production": True,
+    }
+    for key, value in required.items():
+        if receipt.get(key) != value:
+            raise RuntimeError(f"invalid smooth-B0 smoke receipt {key}: {receipt.get(key)!r}")
+    for key, value in expected.items():
+        if receipt.get(key) != value:
+            raise RuntimeError(f"stale smooth-B0 smoke receipt {key}")
+    return receipt
 
 
 def rel_change(new, old):
@@ -157,6 +186,19 @@ def symmetric_rel_change(new, old, floor):
     denominator = max(float(torch.linalg.vector_norm(new).detach().cpu()),
                       float(torch.linalg.vector_norm(old).detach().cpu()), floor)
     return float(torch.linalg.vector_norm(new - old).detach().cpu()) / denominator
+
+
+def weighted_rel_change(new, old, weights, *, symmetric=False, floor=1e-30):
+    """Q4-integration-weighted relative change for GP fatigue states."""
+    weight = weights.to(device=new.device, dtype=new.dtype)
+    numerator = torch.sqrt(torch.sum(weight * (new - old).square()))
+    old_norm = torch.sqrt(torch.sum(weight * old.square()))
+    if symmetric:
+        new_norm = torch.sqrt(torch.sum(weight * new.square()))
+        denominator = torch.maximum(new_norm, old_norm).clamp(min=floor)
+    else:
+        denominator = old_norm.clamp(min=floor)
+    return float((numerator / denominator).detach().cpu())
 
 
 def rms(value):
@@ -290,12 +332,14 @@ def b0_identity_audit(*, state, inp, cells, area, d0, h0, driver, mat, model, cf
     with torch.no_grad():
         raw = smooth_damage.net(inp)[:, 2]
         diag = smooth_damage.alpha_constraint.diagnostics(raw)
-        derivative = diag["derivative"]
-        expected = smooth_damage.alpha_constraint.legacy_slope
-        derivative_rel = float(((derivative - expected).abs() /
-                                expected.abs().clamp(min=1e-300)).max().cpu())
         exact_boundary = raw.detach().to(torch.float64).abs() == 2.0
         raw_increment_max = float(diag["raw_increment"].abs().max().cpu())
+    raw_probe = raw.detach().clone().requires_grad_(True)
+    mapped_probe = smooth_damage.alpha_constraint(raw_probe)
+    (runtime_derivative,) = torch.autograd.grad(mapped_probe.sum(), (raw_probe,))
+    expected = smooth_damage.alpha_constraint.legacy_slope.to(runtime_derivative.dtype)
+    derivative_rel = float(((runtime_derivative - expected).abs() /
+                            expected.abs().clamp(min=1e-30)).max().cpu())
     boundary_raw = torch.tensor([-2.0, 2.0], device=inp.device, dtype=inp.dtype,
                                 requires_grad=True)
     boundary_hard = torch.clamp(boundary_raw / 4.0 + 0.5, 0.0, 1.0)
@@ -308,6 +352,7 @@ def b0_identity_audit(*, state, inp, cells, area, d0, h0, driver, mat, model, cf
         "gp_gradient_max_abs": float((sdgrad - hdgrad).abs().max().cpu()),
         "gp_gradient_rms": rms(sdgrad - hdgrad),
         "initial_derivative_max_relative_error": derivative_rel,
+        "runtime_derivative_dtype": str(runtime_derivative.dtype),
         "runtime_raw_increment_max_abs": raw_increment_max,
         "exact_abs_r0_eq_2_count": int(exact_boundary.sum().cpu()),
         "hard_map_measured_derivative_at_r0_minus2_plus2": measured_boundary_derivatives,
@@ -496,6 +541,7 @@ def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, mode
         smooth_small_derivative_mask(damage, inp),
     )
     scales = dict(hard_scales)
+    _, _, q4_weights = q4_shape_data(inp, cells)
     grad_contract = base.split_gradient_contract(uv, damage, inp, cells, area, d0, f_used, mat, model)
     accepted = (d0, h0, driver, f0)
     accepted_clones = tuple(x.clone() for x in accepted)
@@ -542,9 +588,11 @@ def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, mode
                           "hist_candidate_gp": ph.cpu().numpy().astype(np.float32),
                           "f_candidate_gp": pf.cpu().numpy().astype(np.float32)})
             np.savez_compressed(out / f"trial_{method}_common_prefix_C{calls}.npz", **pdata)
+            prefix_f_gap = weighted_rel_change(pf, f_solve, q4_weights)
             prefix_row = {"method": method, "outer": outer, "block": block_label,
                           "optimizer_calls": calls,
-                          "trial_f_fixed_point_rel_gap": rel_change(pf, f_solve),
+                          "trial_f_fixed_point_rel_gap": prefix_f_gap,
+                          "trial_f_fixed_point_weighted_rel_gap": prefix_f_gap,
                           **{f"used_{k}": value for k, value in pres_used.items()},
                           **{f"candidate_{k}": value for k, value in pres_candidate.items()}}
             (out / f"trial_{method}_common_prefix_C{calls}.json").write_text(
@@ -624,7 +672,7 @@ def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, mode
                                dead, small_mask), scales)
         used_parts = base.energies(inp, cells, area, u, v, d, d0, f_solve, mat, model)
         candidate_parts = base.energies(inp, cells, area, u, v, d, d0, f_candidate, mat, model)
-        f_gap = rel_change(f_candidate, f_solve)
+        f_gap = weighted_rel_change(f_candidate, f_solve, q4_weights)
         f_abs = float((f_candidate - f_solve).abs().max().cpu())
         uv_change = max(float((u - outer_start[0]).abs().max().cpu()),
                         float((v - outer_start[1]).abs().max().cpu())) / max(abs(a.peak_displacement), 1e-30)
@@ -638,7 +686,8 @@ def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, mode
         energy_rel = abs(end_energy_same_f - start_energy) / max(abs(end_energy_same_f), abs(start_energy), 1e-30)
         history_increment = h_candidate - h0
         history_rel = (math.inf if previous_history_increment is None else
-                       symmetric_rel_change(history_increment, previous_history_increment, 1e-30))
+                       weighted_rel_change(history_increment, previous_history_increment,
+                                           q4_weights, symmetric=True))
         previous_history_increment = history_increment.detach().clone()
         clamp = legacy_projection_diagnostics(damage, inp)
         assert_accepted(accepted, accepted_clones)
@@ -682,6 +731,7 @@ def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, mode
             "uv_block_status": uv_block["status"], "damage_block_status": damage_block["status"],
             "uv_outer_max_over_U": uv_change, "damage_outer_max_change": d_change,
             "trial_f_fixed_point_rel_gap": f_gap, "trial_f_fixed_point_abs_max": f_abs,
+            "trial_f_fixed_point_weighted_rel_gap": f_gap,
             "history_increment_outer_rel_change": history_rel,
             "active_outer_rel_change": active_rel,
             "active_integral_outer_rel_change": active_integral_rel,
@@ -711,15 +761,15 @@ def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, mode
               f"rho_uv={used_res['rho_uv']:.6e} rho_d={used_res['rho_damage']:.6e} "
               f"fgap={f_gap:.6e} dead={used_res['dead_zone_feasible_residual_fraction']:.6f}", flush=True)
         f_used, h_used = f_candidate.detach(), h_candidate.detach()
+        if a.smoke:
+            if uv_updates != 100 or damage_updates != 100:
+                raise RuntimeError("smooth-B0 smoke must execute exactly 100 UV + 100 damage updates")
+            final_label = "SMOKE_REBLOCKED" if saturation_now else "SMOKE_PASS"
+            break
         if fixed_label == "CONVERGED_FIXED_POINT":
             final_label = fixed_label
             break
-        smoke_budget = a.max_updates_per_field <= a.chunk_updates
-        if smoke_budget and saturation_now:
-            final_label = "SMOKE_REBLOCKED"
-            break
-        if (not smoke_budget and
-                small_gate_consecutive >= a.small_required_consecutive):
+        if small_gate_consecutive >= a.small_required_consecutive:
             final_label = "GRADIENT_REBLOCKED_NOT_CLOSED"
             break
         if len(merit_history) >= a.stagnation_window:
@@ -741,6 +791,31 @@ def main():
         raise RuntimeError("CUDA requested but unavailable")
     if a.checkpoint.name != "checkpoint_step_412.pt" or a.network.name != "trained_1NN_412.pt":
         raise ValueError("target step 413 must start from exact accepted step-412 checkpoint and network")
+    runner_path = Path(__file__).resolve()
+    locked_identity = {
+        "runner_sha256": base.digest(runner_path),
+        "mesh_sha256": base.digest(a.mesh_file),
+        "checkpoint_sha256": base.digest(a.checkpoint),
+        "network_sha256": base.digest(a.network),
+        "anchor_epsilon": a.anchor_epsilon,
+        "b0_match_atol": a.b0_match_atol,
+    }
+    if a.smoke:
+        if a.smoke_pass_receipt is not None:
+            raise ValueError("--smoke must not consume a prior smoke receipt")
+        # Exact Pro-frozen full-network smoke budget.  One check per block and
+        # two-check inner stopping guarantee both blocks execute all 100 updates.
+        a.max_outer = 1
+        a.chunk_updates = 100
+        a.max_block_updates = 100
+        a.max_updates_per_field = 100
+        a.common_prefix_calls = 200
+        a.inner_required_consecutive = 2
+        admitted_smoke_receipt = None
+    else:
+        admitted_smoke_receipt = validate_smoke_pass_receipt(
+            a.smoke_pass_receipt, locked_identity
+        )
     if min(a.max_outer, a.chunk_updates, a.max_block_updates, a.max_updates_per_field,
            a.common_prefix_calls,
            a.inner_required_consecutive, a.required_consecutive, a.stagnation_window,
@@ -827,6 +902,34 @@ def main():
     b0["physical_residuals_raw"] = b0_residuals
     (a.out / "b0_contract.json").write_text(json.dumps(b0, indent=2) + "\n")
 
+    smoke_result = None
+    smoke_pass_path = None
+    if a.smoke:
+        if len(methods) != 1 or len(all_rows) != 1:
+            raise RuntimeError("smooth-B0 smoke must produce exactly one complete outer row")
+        row = all_rows[0]
+        smoke_result = {
+            "schema": "hard5-native-q4-smooth-b0-smoke-v1",
+            "status": labels[methods[0]],
+            "uv_updates": row["uv_updates_total"],
+            "damage_updates": row["damage_updates_total"],
+            **locked_identity,
+            "b0_identity_status": audit["status"],
+            "used_rho_damage": row["used_rho_damage"],
+            "candidate_rho_damage": row["candidate_rho_damage"],
+            "used_chi_small": row["used_chi_small_feasible_residual_squared_fraction"],
+            "candidate_chi_small": row["candidate_chi_small_feasible_residual_squared_fraction"],
+            "accepted_state_unchanged": True,
+            "anchor_read_only": True,
+            "fresh_b0_required_for_production": True,
+        }
+        (a.out / "smoke_result.json").write_text(
+            json.dumps(smoke_result, indent=2) + "\n"
+        )
+        if smoke_result["status"] == "SMOKE_PASS":
+            smoke_pass_path = a.out / "smoke_pass_receipt.json"
+            smoke_pass_path.write_text(json.dumps(smoke_result, indent=2) + "\n")
+
     flat = [{k: v for k, v in row.items() if not isinstance(v, (dict, list))}
             for row in all_rows]
     with (a.out / "picard_summary.csv").open("w", newline="") as f:
@@ -838,6 +941,19 @@ def main():
         "source_state": "exact PIDL step-412 accepted checkpoint/network",
         "target_state": "step 413 / c83 peak displacement 0.11999988",
         "methods": methods,
+        "execution_mode": "smoke" if a.smoke else "production",
+        "smoke_gate": {
+            "smoke_result": smoke_result,
+            "produced_pass_receipt": None if smoke_pass_path is None else str(smoke_pass_path),
+            "admitted_pass_receipt": None if a.smoke_pass_receipt is None else str(a.smoke_pass_receipt),
+            "admitted_pass_receipt_sha256": (
+                None if a.smoke_pass_receipt is None else base.digest(a.smoke_pass_receipt)
+            ),
+            "admitted_receipt_status": (
+                None if admitted_smoke_receipt is None else admitted_smoke_receipt["status"]
+            ),
+            "production_restarts_from_original_b0": not a.smoke,
+        },
         "fatigue_mode": "trial; rebuilt from frozen accepted state after each outer round",
         "damage_map": "frozen-node anchored sigmoid with float64 anchor arithmetic; approximately identical hard B0 physical field and restored initial legacy tail sensitivity",
         "anchor": {

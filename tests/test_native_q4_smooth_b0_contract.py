@@ -1,6 +1,8 @@
 import sys
+import json
 from pathlib import Path
 
+import pytest
 import torch
 
 
@@ -13,7 +15,13 @@ from run_native_q4_smooth_b0_picard import (  # noqa: E402
     project_box_kkt_gradient,
     small_derivative_set,
     squared_residual_share,
+    validate_smoke_pass_receipt,
+    weighted_rel_change,
 )
+from compute_energy import compute_energy_per_elem, get_psi_plus_per_elem  # noqa: E402
+from fatigue_history import compute_fatigue_degrad  # noqa: E402
+from material_properties import MaterialProperties  # noqa: E402
+from pff_model import PFFModel  # noqa: E402
 
 
 def test_anchor_matches_hard_b0_with_frozen_float64_buffers():
@@ -23,6 +31,7 @@ def test_anchor_matches_hard_b0_with_frozen_float64_buffers():
     hard = (raw0 / 4.0 + 0.5).clamp(0.0, 1.0)
     assert float((actual - hard).abs().max()) <= 2e-7
     assert torch.all((actual > 0.0) & (actual < 1.0))
+    assert actual.dtype == raw0.dtype
     assert mapping.r0.dtype == torch.float64
     assert mapping.anchor_logit.dtype == torch.float64
     assert all(not buffer.requires_grad for buffer in mapping.buffers())
@@ -37,6 +46,18 @@ def test_initial_derivative_matches_legacy_and_boundary_is_central():
     torch.testing.assert_close(raw.grad, expected, rtol=2e-5, atol=1e-12)
     assert mapping.legacy_slope[1].item() == 0.25
     assert mapping.legacy_slope[3].item() == 0.25
+
+
+def test_runtime_float32_output_derivative_matches_frozen_float64_slope():
+    raw0 = torch.tensor([-3.0, -2.0, -1.0, 2.0, 3.0], dtype=torch.float32)
+    raw = raw0.clone().requires_grad_(True)
+    mapping = AnchoredSmoothDamage(raw0, epsilon=1e-7)
+    output = mapping(raw)
+    output.sum().backward()
+    expected = mapping.legacy_slope.to(torch.float32)
+    relmax = float(((raw.grad - expected).abs() / expected.abs()).max())
+    assert output.dtype == raw.dtype
+    assert relmax <= 2e-5
 
 
 def test_anchor_is_mesh_and_order_locked():
@@ -73,3 +94,77 @@ def test_reblock_gate_uses_strict_relative_derivative_and_squared_residual_share
     assert torch.equal(mask, torch.tensor([True, False, True, False]))
     feasible = torch.tensor([3.0, 4.0, 0.0, 0.0])
     assert squared_residual_share(feasible, mask) == 9.0 / 25.0
+
+
+def test_smooth_map_runs_complete_float32_q4_energy_and_history_path():
+    points = torch.tensor(
+        [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],
+        dtype=torch.float32,
+    )
+    cells = torch.tensor([[0, 1, 2, 3]], dtype=torch.long)
+    raw = torch.tensor([-3.0, -1.0, 1.0, 3.0], dtype=torch.float32,
+                       requires_grad=True)
+    damage = AnchoredSmoothDamage(raw.detach())(raw)
+    u, v = 0.01 * points[:, 0], 0.02 * points[:, 1]
+    accepted = torch.zeros(4, dtype=torch.float32)
+    area = torch.ones(1, dtype=torch.float32)
+    fatigue = torch.ones((1, 4), dtype=torch.float32)
+    mat = MaterialProperties(1.0, 0.3, 1.0, 0.01)
+    model = PFFModel("AT1", "volumetric", 5e-3, residual_stiffness=0.0)
+    parts = compute_energy_per_elem(
+        points, u, v, damage, accepted, mat, model, area, cells,
+        f_fatigue=fatigue,
+        irreversibility_penalty_cfg={"enable": True, "mode": "fem_gp_q4"},
+    )
+    total = sum(x.sum() for x in parts)
+    total.backward()
+    assert torch.isfinite(total) and raw.grad is not None and torch.isfinite(raw.grad).all()
+    active = get_psi_plus_per_elem(
+        points, u, v, damage.detach(), mat, model, area, cells,
+        history_driver_reduction_dict={"enable": True, "mode": "native_q4_gp4"},
+    )
+    history = torch.relu(active)
+    f = compute_fatigue_degrad(history, {
+        "fatigue_on": True, "loading_type": "cyclic", "accum_type": "carrara",
+        "degrad_type": "asymptotic", "alpha_T": 0.5,
+        "spatial_alpha_T": {"enable": False},
+    })
+    assert active.shape == f.shape == (1, 4)
+    assert active.dtype == f.dtype == torch.float32
+    assert torch.isfinite(active).all() and torch.isfinite(f).all()
+
+
+def test_weighted_fatigue_gap_uses_q4_weights():
+    old = torch.tensor([[1.0, 2.0]], dtype=torch.float64)
+    new = torch.tensor([[2.0, 2.0]], dtype=torch.float64)
+    weights = torch.tensor([[4.0, 1.0]], dtype=torch.float64)
+    assert weighted_rel_change(new, old, weights) == pytest.approx(2.0 / (8.0 ** 0.5))
+
+
+def test_production_receipt_is_exactly_bound_to_smoke_identity(tmp_path):
+    expected = {
+        "runner_sha256": "runner",
+        "mesh_sha256": "mesh",
+        "checkpoint_sha256": "checkpoint",
+        "network_sha256": "network",
+        "anchor_epsilon": 1e-7,
+        "b0_match_atol": 2e-7,
+    }
+    receipt = tmp_path / "smoke.json"
+    receipt.write_text(json.dumps({
+        "schema": "hard5-native-q4-smooth-b0-smoke-v1",
+        "status": "SMOKE_PASS",
+        "uv_updates": 100,
+        "damage_updates": 100,
+        "b0_identity_status": "PASS",
+        "accepted_state_unchanged": True,
+        "anchor_read_only": True,
+        "fresh_b0_required_for_production": True,
+        **expected,
+    }))
+    assert validate_smoke_pass_receipt(receipt, expected)["status"] == "SMOKE_PASS"
+    bad = json.loads(receipt.read_text())
+    bad["runner_sha256"] = "stale"
+    receipt.write_text(json.dumps(bad))
+    with pytest.raises(RuntimeError, match="stale smooth-B0 smoke receipt"):
+        validate_smoke_pass_receipt(receipt, expected)
