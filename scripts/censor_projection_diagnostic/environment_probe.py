@@ -8,9 +8,12 @@ import subprocess
 import sys
 import time
 
+from windows_runtime import configure
+configure()
+
 out = Path('output')
 out.mkdir(exist_ok=True)
-receipt = {'run_id': 'S04-E002-R001', 'kind': 'tooling-only', 'training': False,
+receipt = {'run_id': os.environ['CENSOR_RUN_ID'], 'kind': 'tooling-only', 'training': False,
            'pid': os.getpid(), 'host': platform.node(), 'started_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
 (out/'execution.json').write_text(json.dumps(receipt, indent=2))
 for key, name in [('_CONDOR_JOB_AD', 'job.ad'), ('_CONDOR_MACHINE_AD', 'machine.ad')]:
@@ -42,7 +45,7 @@ torch.cuda.synchronize()
 if not torch.equal(x.grad, torch.tensor([2., 4., 6.], device='cuda')):
     raise RuntimeError('CUDA autograd probe failed')
 receipt['cuda_autograd'] = 'PASS'
-result = subprocess.run([sys.executable, '-m', 'pytest', '-q', 'code/tests/test_native_q4_quadrature.py', 'code/tests/test_native_q4_history.py'], capture_output=True, text=True)
+result = subprocess.run([sys.executable, '-c', "from windows_runtime import configure; configure(); import torch; torch.set_num_threads(1); import pytest,sys; sys.exit(pytest.main(['-q','code/tests/test_native_q4_quadrature.py','code/tests/test_native_q4_history.py']))"], capture_output=True, text=True)
 (out/'unit_tests.txt').write_text(result.stdout+result.stderr)
 receipt.update(unit_test_exit=result.returncode, finished_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()))
 receipt['status'] = 'PASS' if result.returncode == 0 else 'FAIL'
