@@ -23,6 +23,7 @@ from run_native_q4_direct_q4_damage import (  # noqa: E402
     FixedDamageProblem,
     analytic_damage_gradient,
     audit_arm_b_feasibility,
+    build_proximity_identity,
     direct_gradient,
     evaluate_fem_proximity,
     kkt_metrics,
@@ -73,6 +74,18 @@ def proximity_receipt(label="UNCLOSED_DESCRIPTIVE_ONLY"):
         "proximity_e_I_comparator": 1.0,
         "proximity_e_d_new": 1.0,
         "proximity_e_d_comparator": 1.0,
+    }
+
+
+def proximity_identity(comparator_sha="comparator", fem_sha="fem"):
+    return {
+        "comparator_label": "adaptive_final_C9600",
+        "comparator_sha256": comparator_sha,
+        "fem_reference_label": "fem_c83_peak",
+        "fem_reference_sha256": fem_sha,
+        "metric_schema": "native_q4_det_weighted_relL2_q_d_abs_log_integral_v1",
+        "operator_schema": "native_q4_gp4_same_support_and_det_j_v1",
+        "proximity_identity_sha256": "identity",
     }
 
 
@@ -165,6 +178,7 @@ def test_arm_b_feasibility_audits_nodal_and_gp_lower_bounds():
 
 def test_arm_b_trigger_requires_both_K0_passes_and_gp_violation(tmp_path):
     identity = {"runner_sha256": "runner", "b0_identity_sha256": "b0"}
+    prox_identity = proximity_identity()
     smoke_sha256 = "smoke"
     receipt = tmp_path / "arm_a.json"
     receipt.write_text(json.dumps({
@@ -174,6 +188,7 @@ def test_arm_b_trigger_requires_both_K0_passes_and_gp_violation(tmp_path):
         "final_label": "FIELD_BUDGET_NOT_CLOSED",
         "terminal_outer": 6,
         "fem_proximity": proximity_receipt(),
+        "proximity_identity": prox_identity,
         "provenance": identity,
         "smoke_pass_receipt_sha256": smoke_sha256,
         "fresh_b0_start": True,
@@ -184,19 +199,21 @@ def test_arm_b_trigger_requires_both_K0_passes_and_gp_violation(tmp_path):
     }))
     receipt_sha256 = hashlib.sha256(receipt.read_bytes()).hexdigest()
     assert validate_arm_b_trigger(
-        receipt, receipt_sha256, identity, smoke_sha256
+        receipt, receipt_sha256, identity, smoke_sha256, prox_identity
     )["arm"] == ARM_A
     data = json.loads(receipt.read_text())
     data["candidate_K0"] = 2e-3
     receipt.write_text(json.dumps(data))
     with pytest.raises(RuntimeError, match="trigger is not satisfied"):
         validate_arm_b_trigger(
-            receipt, hashlib.sha256(receipt.read_bytes()).hexdigest(), identity, smoke_sha256
+            receipt, hashlib.sha256(receipt.read_bytes()).hexdigest(), identity,
+            smoke_sha256, prox_identity
         )
 
 
 def test_arm_b_trigger_rejects_stale_provenance_and_wrong_receipt_hash(tmp_path):
     identity = {"runner_sha256": "runner", "b0_identity_sha256": "b0"}
+    prox_identity = proximity_identity()
     payload = {
         "schema": "hard5-native-q4-direct-damage-terminal-v1",
         "arm": ARM_A,
@@ -204,6 +221,7 @@ def test_arm_b_trigger_rejects_stale_provenance_and_wrong_receipt_hash(tmp_path)
         "final_label": "FIELD_BUDGET_NOT_CLOSED",
         "terminal_outer": 6,
         "fem_proximity": proximity_receipt(),
+        "proximity_identity": prox_identity,
         "provenance": {**identity, "b0_identity_sha256": "stale"},
         "smoke_pass_receipt_sha256": "smoke",
         "fresh_b0_start": True,
@@ -215,9 +233,89 @@ def test_arm_b_trigger_rejects_stale_provenance_and_wrong_receipt_hash(tmp_path)
     receipt = tmp_path / "arm_a.json"
     receipt.write_text(json.dumps(payload))
     with pytest.raises(RuntimeError, match="SHA-256 mismatch"):
-        validate_arm_b_trigger(receipt, "0" * 64, identity, "smoke")
+        validate_arm_b_trigger(receipt, "0" * 64, identity, "smoke", prox_identity)
     with pytest.raises(RuntimeError, match="identity mismatch"):
-        validate_arm_b_trigger(receipt, _sha256(receipt), identity, "smoke")
+        validate_arm_b_trigger(receipt, _sha256(receipt), identity, "smoke", prox_identity)
+
+
+def test_arm_b_trigger_rejects_stale_proximity_identity(tmp_path):
+    identity = {"runner_sha256": "runner", "b0_identity_sha256": "b0"}
+    expected_proximity = proximity_identity()
+    payload = {
+        "schema": "hard5-native-q4-direct-damage-terminal-v1", "arm": ARM_A,
+        "endpoint_role": "ARM_A_PREDECLARED_TERMINAL_ENDPOINT",
+        "final_label": "FIELD_BUDGET_NOT_CLOSED", "terminal_outer": 6,
+        "fem_proximity": proximity_receipt(),
+        "proximity_identity": proximity_identity(fem_sha="stale-fem"),
+        "provenance": identity, "smoke_pass_receipt_sha256": "smoke",
+        "fresh_b0_start": True, "used_K0": 9e-4, "candidate_K0": 8e-4,
+        "irreversibility_gp_max": 2e-6, "implementation_or_state_error": False,
+    }
+    receipt = tmp_path / "arm_a.json"
+    receipt.write_text(json.dumps(payload))
+    with pytest.raises(RuntimeError, match="identity mismatch"):
+        validate_arm_b_trigger(
+            receipt, _sha256(receipt), identity, "smoke", expected_proximity
+        )
+
+
+@pytest.mark.parametrize(
+    "final_label,proximity,match",
+    [
+        ("PHYSICAL_FIXED_POINT_CLOSED", proximity_receipt(), "closed endpoint"),
+        ("PHYSICAL_FIXED_POINT_CLOSED",
+         {**proximity_receipt("CLOSED_FEM_PROXIMITY_PASS"),
+          "proximity_qualification_pass": False}, "closed endpoint"),
+        ("FIELD_BUDGET_NOT_CLOSED",
+         {**proximity_receipt("UNCLOSED_DESCRIPTIVE_ONLY"),
+          "proximity_qualification_pass": True}, "unclosed endpoint"),
+    ],
+)
+def test_arm_b_trigger_rejects_endpoint_proximity_label_mismatch(
+        tmp_path, final_label, proximity, match):
+    identity = {"runner_sha256": "runner", "b0_identity_sha256": "b0"}
+    prox_identity = proximity_identity()
+    payload = {
+        "schema": "hard5-native-q4-direct-damage-terminal-v1", "arm": ARM_A,
+        "endpoint_role": "ARM_A_PREDECLARED_TERMINAL_ENDPOINT",
+        "final_label": final_label, "terminal_outer": 3,
+        "fem_proximity": proximity, "proximity_identity": prox_identity,
+        "provenance": identity, "smoke_pass_receipt_sha256": "smoke",
+        "fresh_b0_start": True, "used_K0": 9e-4, "candidate_K0": 8e-4,
+        "irreversibility_gp_max": 2e-6, "implementation_or_state_error": False,
+    }
+    receipt = tmp_path / "arm_a.json"
+    receipt.write_text(json.dumps(payload))
+    with pytest.raises(RuntimeError, match=match):
+        validate_arm_b_trigger(
+            receipt, _sha256(receipt), identity, "smoke", prox_identity
+        )
+
+
+@pytest.mark.parametrize(
+    "label,qualification",
+    [("CLOSED_FEM_PROXIMITY_PASS", True), ("CLOSED_FEM_PROXIMITY_FAIL", False)],
+)
+def test_arm_b_trigger_accepts_consistent_closed_proximity_decision(
+        tmp_path, label, qualification):
+    identity = {"runner_sha256": "runner", "b0_identity_sha256": "b0"}
+    prox_identity = proximity_identity()
+    proximity = {**proximity_receipt(label),
+                 "proximity_qualification_pass": qualification}
+    payload = {
+        "schema": "hard5-native-q4-direct-damage-terminal-v1", "arm": ARM_A,
+        "endpoint_role": "ARM_A_PREDECLARED_TERMINAL_ENDPOINT",
+        "final_label": "PHYSICAL_FIXED_POINT_CLOSED", "terminal_outer": 3,
+        "fem_proximity": proximity, "proximity_identity": prox_identity,
+        "provenance": identity, "smoke_pass_receipt_sha256": "smoke",
+        "fresh_b0_start": True, "used_K0": 9e-4, "candidate_K0": 8e-4,
+        "irreversibility_gp_max": 2e-6, "implementation_or_state_error": False,
+    }
+    receipt = tmp_path / "arm_a.json"
+    receipt.write_text(json.dumps(payload))
+    assert validate_arm_b_trigger(
+        receipt, _sha256(receipt), identity, "smoke", prox_identity
+    )["fem_proximity"]["proximity_label"] == label
 
 
 def test_fixed_problem_counts_every_objective_gradient_evaluation():
@@ -376,6 +474,11 @@ def test_locked_fem_proximity_gate_and_unclosed_semantics(tmp_path):
         fem_label="fem_c83_peak",
         fem_sha256=_sha256(fem_path),
     )
+    locked_identity = build_proximity_identity(assets)
+    assert locked_identity["comparator_label"] == "adaptive_final_C9600"
+    assert locked_identity["comparator_sha256"] == _sha256(comparator_path)
+    assert locked_identity["fem_reference_sha256"] == _sha256(fem_path)
+    assert len(locked_identity["proximity_identity_sha256"]) == 64
     new = {
         "psi_active_gp": np.full((1, 4), 1.5),
         "damage_gp": np.full((1, 4), 0.6),

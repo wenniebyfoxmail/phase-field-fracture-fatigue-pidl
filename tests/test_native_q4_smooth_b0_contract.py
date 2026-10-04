@@ -12,10 +12,12 @@ sys.path.insert(0, str(SENS))
 
 from run_native_q4_smooth_b0_picard import (  # noqa: E402
     AnchoredSmoothDamage,
+    FROZEN_SOLVER_CONTRACT,
     fail_closed_step,
     project_box_kkt_gradient,
     small_derivative_set,
     squared_residual_share,
+    validate_frozen_solver_contract,
     validate_smoke_pass_receipt,
     weighted_rel_change,
 )
@@ -23,6 +25,37 @@ from compute_energy import compute_energy_per_elem, get_psi_plus_per_elem  # noq
 from fatigue_history import compute_fatigue_degrad  # noqa: E402
 from material_properties import MaterialProperties  # noqa: E402
 from pff_model import PFFModel  # noqa: E402
+
+
+def smoke_identity():
+    return {
+        "runner_sha256": "runner", "mesh_sha256": "mesh",
+        "checkpoint_sha256": "checkpoint", "network_sha256": "network",
+        "anchor_epsilon": 1e-7, "b0_match_atol": 2e-7,
+        "solver_contract_sha256": "contract", "b0_audit_sha256": "audit",
+        "anchor_identity_sha256": "anchor",
+    }
+
+
+def valid_smoke_receipt(expected):
+    return {
+        "schema": "hard5-native-q4-smooth-b0-smoke-v1",
+        "status": "SMOKE_PASS", "uv_updates": 100, "damage_updates": 100,
+        "b0_identity_status": "PASS", "accepted_state_unchanged": True,
+        "anchor_read_only": True, "fresh_b0_required_for_production": True,
+        "finite_contract_status": "PASS", "bounds_contract_status": "PASS",
+        "positive_energy_contract_status": "PASS",
+        "frozen_fields_contract_status": "PASS",
+        "b0_nodal_max_abs": 1e-8, "b0_gp_max_abs": 1e-8,
+        "b0_initial_derivative_max_relative_error": 1e-6,
+        "b0_independent_physical_gradient_normalized_max": 1e-4,
+        "b0_max_energy_component_abs_difference_over_E0": 1e-4,
+        "b0_runtime_raw_increment_max_abs": 0.0,
+        "used_rho_uv": 1.0, "candidate_rho_uv": 1.0,
+        "used_rho_damage": 1.0, "candidate_rho_damage": 1.0,
+        "used_chi_small": 0.1, "candidate_chi_small": 0.1,
+        **expected,
+    }
 
 
 def test_anchor_matches_hard_b0_with_frozen_float64_buffers():
@@ -36,6 +69,20 @@ def test_anchor_matches_hard_b0_with_frozen_float64_buffers():
     assert mapping.r0.dtype == torch.float64
     assert mapping.anchor_logit.dtype == torch.float64
     assert all(not buffer.requires_grad for buffer in mapping.buffers())
+
+
+def test_frozen_solver_contract_rejects_changed_load_budget_threshold_or_small_gate():
+    from types import SimpleNamespace
+    args = SimpleNamespace(**FROZEN_SOLVER_CONTRACT)
+    validate_frozen_solver_contract(args)
+    for key, changed in (
+        ("peak_displacement", 0.05), ("max_outer", 13),
+        ("outer_rho_tol", 1.0), ("small_residual_fraction", 0.9),
+    ):
+        candidate = SimpleNamespace(**FROZEN_SOLVER_CONTRACT)
+        setattr(candidate, key, changed)
+        with pytest.raises(ValueError, match="frozen solver contract mismatch"):
+            validate_frozen_solver_contract(candidate)
 
 
 def test_initial_derivative_matches_legacy_and_boundary_is_central():
@@ -162,30 +209,9 @@ def test_final_optimizer_step_that_poisons_parameter_fails_closed():
 
 
 def test_production_receipt_is_exactly_bound_to_smoke_identity(tmp_path):
-    expected = {
-        "runner_sha256": "runner",
-        "mesh_sha256": "mesh",
-        "checkpoint_sha256": "checkpoint",
-        "network_sha256": "network",
-        "anchor_epsilon": 1e-7,
-        "b0_match_atol": 2e-7,
-    }
+    expected = smoke_identity()
     receipt = tmp_path / "smoke.json"
-    receipt.write_text(json.dumps({
-        "schema": "hard5-native-q4-smooth-b0-smoke-v1",
-        "status": "SMOKE_PASS",
-        "uv_updates": 100,
-        "damage_updates": 100,
-        "b0_identity_status": "PASS",
-        "accepted_state_unchanged": True,
-        "anchor_read_only": True,
-        "fresh_b0_required_for_production": True,
-        "finite_contract_status": "PASS",
-        "bounds_contract_status": "PASS",
-        "positive_energy_contract_status": "PASS",
-        "frozen_fields_contract_status": "PASS",
-        **expected,
-    }))
+    receipt.write_text(json.dumps(valid_smoke_receipt(expected)))
     assert validate_smoke_pass_receipt(receipt, expected)["status"] == "SMOKE_PASS"
     bad = json.loads(receipt.read_text())
     bad["runner_sha256"] = "stale"
@@ -195,21 +221,30 @@ def test_production_receipt_is_exactly_bound_to_smoke_identity(tmp_path):
 
 
 def test_production_receipt_rejects_nonfinite_diagnostic(tmp_path):
-    expected = {
-        "runner_sha256": "runner", "mesh_sha256": "mesh",
-        "checkpoint_sha256": "checkpoint", "network_sha256": "network",
-        "anchor_epsilon": 1e-7, "b0_match_atol": 2e-7,
-    }
+    expected = smoke_identity()
     receipt = tmp_path / "smoke.json"
-    receipt.write_text(json.dumps({
-        "schema": "hard5-native-q4-smooth-b0-smoke-v1",
-        "status": "SMOKE_PASS", "uv_updates": 100, "damage_updates": 100,
-        "b0_identity_status": "PASS", "accepted_state_unchanged": True,
-        "anchor_read_only": True, "fresh_b0_required_for_production": True,
-        "finite_contract_status": "PASS", "bounds_contract_status": "PASS",
-        "positive_energy_contract_status": "PASS",
-        "frozen_fields_contract_status": "PASS",
-        "used_rho_damage": float("nan"), **expected,
-    }))
+    payload = valid_smoke_receipt(expected)
+    payload["used_rho_damage"] = float("nan")
+    receipt.write_text(json.dumps(payload))
     with pytest.raises(RuntimeError, match="non-finite smoke receipt.used_rho_damage"):
+        validate_smoke_pass_receipt(receipt, expected)
+
+
+def test_production_receipt_requires_diagnostics_and_consistent_pass(tmp_path):
+    expected = smoke_identity()
+    receipt = tmp_path / "smoke.json"
+    payload = valid_smoke_receipt(expected)
+    del payload["candidate_chi_small"]
+    receipt.write_text(json.dumps(payload))
+    with pytest.raises(RuntimeError, match="missing diagnostics"):
+        validate_smoke_pass_receipt(receipt, expected)
+    payload = valid_smoke_receipt(expected)
+    payload["used_chi_small"] = 0.5
+    receipt.write_text(json.dumps(payload))
+    with pytest.raises(RuntimeError, match="contradicts the reblock gate"):
+        validate_smoke_pass_receipt(receipt, expected)
+    payload = valid_smoke_receipt(expected)
+    payload["b0_nodal_max_abs"] = 3e-7
+    receipt.write_text(json.dumps(payload))
+    with pytest.raises(RuntimeError, match="contradicts B0 PASS"):
         validate_smoke_pass_receipt(receipt, expected)

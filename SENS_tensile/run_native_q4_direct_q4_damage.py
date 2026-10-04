@@ -39,6 +39,8 @@ from q4_quadrature import q4_gradient, q4_interpolate, q4_shape_data
 ARM_A = "direct_q4_box_penalty"
 ARM_B = "direct_q4_nodal_monotone"
 FROZEN_COMPARATOR_LABEL = "adaptive_final_C9600"
+PROXIMITY_METRIC_SCHEMA = "native_q4_det_weighted_relL2_q_d_abs_log_integral_v1"
+PROXIMITY_OPERATOR_SCHEMA = "native_q4_gp4_same_support_and_det_j_v1"
 PROXIMITY_KEYS = (
     "proximity_label", "proximity_qualification_pass",
     "proximity_e_q_new", "proximity_e_q_comparator",
@@ -292,6 +294,19 @@ def load_proximity_assets(*, comparator_path, comparator_label, comparator_sha25
     return {"comparator": comparator, "fem": fem}
 
 
+def build_proximity_identity(assets):
+    """Bind terminal decisions to the exact pre-frozen assets and metric/operator."""
+    core = {
+        "comparator_label": assets["comparator"]["label"],
+        "comparator_sha256": assets["comparator"]["sha256"],
+        "fem_reference_label": assets["fem"]["label"],
+        "fem_reference_sha256": assets["fem"]["sha256"],
+        "metric_schema": PROXIMITY_METRIC_SCHEMA,
+        "operator_schema": PROXIMITY_OPERATOR_SCHEMA,
+    }
+    return {**core, "proximity_identity_sha256": _canonical_digest(core)}
+
+
 def _weighted_rel_l2(value, reference, weights):
     numerator = np.sum(weights * np.square(value - reference), dtype=np.float64)
     denominator = np.sum(weights * np.square(reference), dtype=np.float64)
@@ -491,7 +506,8 @@ def audit_arm_b_feasibility(inp, cells, initial_damage, lower, history_gp_lower,
 
 
 def validate_arm_b_trigger(path: Path | None, expected_sha256, expected_identity,
-                           expected_smoke_receipt_sha256, tol=1e-3, irr_tol=1e-6):
+                           expected_smoke_receipt_sha256,
+                           expected_proximity_identity, tol=1e-3, irr_tol=1e-6):
     if path is None:
         raise ValueError("Arm B requires --arm-a-trigger-json")
     if expected_sha256 is None:
@@ -507,7 +523,8 @@ def validate_arm_b_trigger(path: Path | None, expected_sha256, expected_identity
     data = json.loads(path.read_text())
     required = (
         "schema", "arm", "endpoint_role", "final_label", "terminal_outer",
-        "fem_proximity", "provenance", "smoke_pass_receipt_sha256",
+        "fem_proximity", "proximity_identity", "provenance",
+        "smoke_pass_receipt_sha256",
         "fresh_b0_start", "used_K0", "candidate_K0", "irreversibility_gp_max",
         "implementation_or_state_error",
     )
@@ -521,6 +538,7 @@ def validate_arm_b_trigger(path: Path | None, expected_sha256, expected_identity
         "fresh_b0_start": True,
         "smoke_pass_receipt_sha256": expected_smoke_receipt_sha256,
         "provenance": expected_identity,
+        "proximity_identity": expected_proximity_identity,
     }
     mismatches = {
         key: {"expected": expected, "actual": data.get(key)}
@@ -540,13 +558,18 @@ def validate_arm_b_trigger(path: Path | None, expected_sha256, expected_identity
             or not isinstance(proximity.get("proximity_label"), str)
             or not isinstance(proximity.get("proximity_qualification_pass"), bool)):
         raise RuntimeError("Arm A trigger is missing its bound FEM proximity decision")
-    expected_proximity_label = (
-        None if data["final_label"] == "PHYSICAL_FIXED_POINT_CLOSED"
-        else "UNCLOSED_DESCRIPTIVE_ONLY"
-    )
-    if (expected_proximity_label is not None
-            and proximity["proximity_label"] != expected_proximity_label):
-        raise RuntimeError("Arm A trigger endpoint/proximity labels are inconsistent")
+    proximity_label = proximity["proximity_label"]
+    qualification = proximity["proximity_qualification_pass"]
+    if data["final_label"] == "PHYSICAL_FIXED_POINT_CLOSED":
+        allowed_closed = {
+            "CLOSED_FEM_PROXIMITY_PASS": True,
+            "CLOSED_FEM_PROXIMITY_FAIL": False,
+        }
+        if (proximity_label not in allowed_closed
+                or qualification is not allowed_closed.get(proximity_label)):
+            raise RuntimeError("Arm A closed endpoint/proximity labels are inconsistent")
+    elif proximity_label != "UNCLOSED_DESCRIPTIVE_ONLY" or qualification is not False:
+        raise RuntimeError("Arm A unclosed endpoint/proximity labels are inconsistent")
     allowed = (
         not bool(data["implementation_or_state_error"])
         and float(data["used_K0"]) <= tol
@@ -699,6 +722,7 @@ def main():
     if a.out.exists():
         raise FileExistsError(a.out)
     proximity_assets = None
+    proximity_identity = None
     if not a.fixed_uv_f_smoke:
         proximity_assets = load_proximity_assets(
             comparator_path=a.comparator_npz,
@@ -708,6 +732,7 @@ def main():
             fem_label=a.fem_reference_label,
             fem_sha256=a.fem_reference_sha256,
         )
+        proximity_identity = build_proximity_identity(proximity_assets)
     if a.fixed_uv_f_smoke:
         if a.smoke_pass_receipt is not None:
             raise ValueError("fixed-UV/f smoke must not consume a prior smoke receipt")
@@ -792,7 +817,8 @@ def main():
     if a.arm == ARM_B:
         trigger = validate_arm_b_trigger(
             a.arm_a_trigger_json, a.arm_a_trigger_sha256, b0_identity,
-            smoke_receipt_sha256, a.outer_k_tol, a.irreversibility_gp_max_tol,
+            smoke_receipt_sha256, proximity_identity,
+            a.outer_k_tol, a.irreversibility_gp_max_tol,
         )
     shape64, _, _ = q4_shape_data(inp64, cells)
     hgp_lower = q4_interpolate(d064, cells, shape64)
@@ -1156,6 +1182,7 @@ def main():
         "terminal_outer": int(final["outer"]),
         "fresh_b0_start": True,
         "provenance": b0_identity,
+        "proximity_identity": proximity_identity,
         "smoke_pass_receipt_sha256": smoke_receipt_sha256,
         "arm_a_trigger_receipt_sha256": (
             None if trigger is None else trigger["receipt_sha256"]
@@ -1178,6 +1205,7 @@ def main():
         "evaluation_accounting": "all objective-gradient evaluations, including rejected line-search trials",
         "final_label": final_label,
         "fem_proximity": proximity_decision,
+        "proximity_identity": proximity_identity,
         "fresh_b0_start": True,
         "b0_identity": b0_identity,
         "smoke_pass_receipt": str(a.smoke_pass_receipt),

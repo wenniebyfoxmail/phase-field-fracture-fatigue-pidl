@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import sys
@@ -32,11 +33,75 @@ from q4_quadrature import q4_gradient, q4_interpolate, q4_shape_data
 
 
 METHODS = ("alternating_picard",)
+FROZEN_SOLVER_CONTRACT = {
+    "peak_displacement": 0.11999988,
+    "methods": "alternating_picard",
+    "max_outer": 12,
+    "chunk_updates": 100,
+    "max_block_updates": 800,
+    "max_updates_per_field": 4800,
+    "common_prefix_calls": 4800,
+    "inner_rho_floor": 1e-3,
+    "inner_entry_ratio": 0.1,
+    "inner_required_consecutive": 2,
+    "outer_rho_tol": 1e-3,
+    "outer_f_rel_tol": 1e-3,
+    "outer_f_abs_tol": 1e-3,
+    "outer_field_max_tol": 1e-3,
+    "outer_active_rel_tol": 1e-2,
+    "outer_active_integral_rel_tol": 1e-3,
+    "outer_energy_rel_tol": 1e-4,
+    "outer_history_increment_rel_tol": 1e-3,
+    "irreversibility_gp_max_tol": 1e-6,
+    "required_consecutive": 3,
+    "stagnation_window": 5,
+    "stagnation_min_improvement": 1e-2,
+    "seed": 1,
+    "anchor_epsilon": 1e-7,
+    "b0_match_atol": 2e-7,
+    "small_residual_fraction": 0.5,
+    "small_required_consecutive": 3,
+}
 
 
 def strict_json(value, *, indent=2):
     """Serialize evidence without permitting non-standard NaN/Infinity tokens."""
     return json.dumps(value, indent=indent, allow_nan=False)
+
+
+def canonical_digest(value):
+    payload = json.dumps(value, sort_keys=True, separators=(",", ":"),
+                         allow_nan=False).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def tensor_digest(value):
+    array = value.detach().cpu().contiguous().numpy()
+    metadata = f"{array.dtype.str}|{array.shape}".encode("ascii")
+    return hashlib.sha256(metadata + b"\0" + array.tobytes()).hexdigest()
+
+
+def validate_frozen_solver_contract(args):
+    mismatches = {
+        key: {"expected": expected, "actual": getattr(args, key)}
+        for key, expected in FROZEN_SOLVER_CONTRACT.items()
+        if getattr(args, key) != expected
+    }
+    if mismatches:
+        raise ValueError(f"smooth-B0 frozen solver contract mismatch: {mismatches}")
+
+
+def build_anchor_identity(inp, mapping):
+    core = {
+        "node_xy_sha256": tensor_digest(inp),
+        "r0_sha256": tensor_digest(mapping.r0),
+        "hard_b0_sha256": tensor_digest(mapping.hard_b0),
+        "p_sha256": tensor_digest(mapping.p),
+        "legacy_slope_sha256": tensor_digest(mapping.legacy_slope),
+        "anchor_logit_sha256": tensor_digest(mapping.anchor_logit),
+        "anchor_scale_sha256": tensor_digest(mapping.anchor_scale),
+    }
+    return {**core, "anchor_identity_sha256": canonical_digest(core)}
 
 
 def require_finite_tensors(label, *values):
@@ -213,7 +278,36 @@ def validate_smoke_pass_receipt(path, expected):
     for key, value in expected.items():
         if receipt.get(key) != value:
             raise RuntimeError(f"stale smooth-B0 smoke receipt {key}")
+    numeric_fields = (
+        "b0_nodal_max_abs", "b0_gp_max_abs",
+        "b0_initial_derivative_max_relative_error",
+        "b0_independent_physical_gradient_normalized_max",
+        "b0_max_energy_component_abs_difference_over_E0",
+        "b0_runtime_raw_increment_max_abs",
+        "used_rho_uv", "candidate_rho_uv", "used_rho_damage",
+        "candidate_rho_damage", "used_chi_small", "candidate_chi_small",
+    )
+    missing = [key for key in numeric_fields if key not in receipt]
+    if missing:
+        raise RuntimeError(f"smooth-B0 smoke receipt missing diagnostics {missing}")
     require_finite_numbers("smoke receipt", receipt)
+    if (receipt["b0_nodal_max_abs"] > FROZEN_SOLVER_CONTRACT["b0_match_atol"]
+            or receipt["b0_gp_max_abs"] > FROZEN_SOLVER_CONTRACT["b0_match_atol"]
+            or receipt["b0_initial_derivative_max_relative_error"] > 2e-5
+            or receipt["b0_independent_physical_gradient_normalized_max"] > 1e-3
+            or receipt["b0_max_energy_component_abs_difference_over_E0"] > 1e-3
+            or receipt["b0_runtime_raw_increment_max_abs"] != 0.0):
+        raise RuntimeError("smooth-B0 smoke receipt contradicts B0 PASS")
+    for key in ("used_chi_small", "candidate_chi_small"):
+        if not 0.0 <= float(receipt[key]) <= 1.0:
+            raise RuntimeError(f"smooth-B0 smoke receipt has invalid {key}")
+    reblocked = any(
+        receipt[f"{state}_rho_damage"] > FROZEN_SOLVER_CONTRACT["outer_rho_tol"]
+        and receipt[f"{state}_chi_small"] >= FROZEN_SOLVER_CONTRACT["small_residual_fraction"]
+        for state in ("used", "candidate")
+    )
+    if reblocked:
+        raise RuntimeError("smooth-B0 SMOKE_PASS receipt contradicts the reblock gate")
     return receipt
 
 
@@ -850,6 +944,7 @@ def run_method(method, a, state, inp, cells, area, d0, h0, driver, f0, mat, mode
 
 def main():
     a = parse_args()
+    validate_frozen_solver_contract(a)
     torch.manual_seed(a.seed)
     np.random.seed(a.seed)
     device = torch.device(a.device)
@@ -858,13 +953,14 @@ def main():
     if a.checkpoint.name != "checkpoint_step_412.pt" or a.network.name != "trained_1NN_412.pt":
         raise ValueError("target step 413 must start from exact accepted step-412 checkpoint and network")
     runner_path = Path(__file__).resolve()
-    locked_identity = {
+    base_identity = {
         "runner_sha256": base.digest(runner_path),
         "mesh_sha256": base.digest(a.mesh_file),
         "checkpoint_sha256": base.digest(a.checkpoint),
         "network_sha256": base.digest(a.network),
         "anchor_epsilon": a.anchor_epsilon,
         "b0_match_atol": a.b0_match_atol,
+        "solver_contract_sha256": canonical_digest(FROZEN_SOLVER_CONTRACT),
     }
     if a.smoke:
         if a.smoke_pass_receipt is not None:
@@ -877,11 +973,9 @@ def main():
         a.max_updates_per_field = 100
         a.common_prefix_calls = 200
         a.inner_required_consecutive = 2
-        admitted_smoke_receipt = None
     else:
-        admitted_smoke_receipt = validate_smoke_pass_receipt(
-            a.smoke_pass_receipt, locked_identity
-        )
+        if a.smoke_pass_receipt is None:
+            raise ValueError("production requires --smoke-pass-receipt")
     if min(a.max_outer, a.chunk_updates, a.max_block_updates, a.max_updates_per_field,
            a.common_prefix_calls,
            a.inner_required_consecutive, a.required_consecutive, a.stagnation_window,
@@ -898,7 +992,8 @@ def main():
     methods = [x.strip() for x in a.methods.split(",") if x.strip()]
     if not methods or len(set(methods)) != len(methods) or any(x not in METHODS for x in methods):
         raise ValueError(f"methods must be unique members of {METHODS}")
-    a.out.mkdir(parents=True, exist_ok=False)
+    if a.out.exists():
+        raise FileExistsError(a.out)
 
     mat = MaterialProperties(1.0, 0.3, 1.0, 0.01)
     model = PFFModel("AT1", "volumetric", 5e-3, residual_stiffness=0.0)
@@ -926,11 +1021,23 @@ def main():
         mat=mat, model=model, cfg=cfg, peak=a.peak_displacement,
         epsilon=a.anchor_epsilon, match_atol=a.b0_match_atol,
     )
-    (a.out / "b0_identity_audit.json").write_text(strict_json(audit) + "\n")
     if audit["status"] != "PASS":
         raise RuntimeError(f"INVALID_B0_COUNTERFACTUAL: {audit['failures']}")
-    anchor_path = a.out / "smooth_b0_anchor.npz"
     anchor = b0_field.alpha_constraint
+    anchor_identity = build_anchor_identity(inp, anchor)
+    locked_identity = {
+        **base_identity,
+        "b0_audit_sha256": canonical_digest(audit),
+        "anchor_identity_sha256": anchor_identity["anchor_identity_sha256"],
+    }
+    admitted_smoke_receipt = None
+    if not a.smoke:
+        admitted_smoke_receipt = validate_smoke_pass_receipt(
+            a.smoke_pass_receipt, locked_identity
+        )
+    a.out.mkdir(parents=True, exist_ok=False)
+    (a.out / "b0_identity_audit.json").write_text(strict_json(audit) + "\n")
+    anchor_path = a.out / "smooth_b0_anchor.npz"
     np.savez_compressed(
         anchor_path,
         node_xy=inp.detach().cpu().numpy().astype(np.float64),
@@ -947,6 +1054,10 @@ def main():
         "accepted_history_unchanged": True,
         "accepted_previous_driver_unchanged": True,
         "installed_clamp_autograd_contract": clamp_autograd_contract(device),
+        "solver_contract": FROZEN_SOLVER_CONTRACT,
+        "solver_contract_sha256": locked_identity["solver_contract_sha256"],
+        "b0_audit_sha256": locked_identity["b0_audit_sha256"],
+        "anchor_identity": anchor_identity,
     })
     (a.out / "b0_contract.json").write_text(strict_json(b0) + "\n")
 
@@ -981,6 +1092,20 @@ def main():
             "damage_updates": row["damage_updates_total"],
             **locked_identity,
             "b0_identity_status": audit["status"],
+            "b0_nodal_max_abs": audit["nodal_max_abs"],
+            "b0_gp_max_abs": audit["gp_max_abs"],
+            "b0_initial_derivative_max_relative_error": (
+                audit["initial_derivative_max_relative_error"]
+            ),
+            "b0_independent_physical_gradient_normalized_max": (
+                audit["independent_physical_gradient_normalized_max"]
+            ),
+            "b0_max_energy_component_abs_difference_over_E0": max(
+                audit["energy_component_abs_difference_over_E0"]
+            ),
+            "b0_runtime_raw_increment_max_abs": audit["runtime_raw_increment_max_abs"],
+            "used_rho_uv": row["used_rho_uv"],
+            "candidate_rho_uv": row["candidate_rho_uv"],
             "used_rho_damage": row["used_rho_damage"],
             "candidate_rho_damage": row["candidate_rho_damage"],
             "used_chi_small": row["used_chi_small_feasible_residual_squared_fraction"],
@@ -1012,6 +1137,8 @@ def main():
         "target_state": "step 413 / c83 peak displacement 0.11999988",
         "methods": methods,
         "execution_mode": "smoke" if a.smoke else "production",
+        "frozen_solver_contract": FROZEN_SOLVER_CONTRACT,
+        "frozen_solver_contract_sha256": locked_identity["solver_contract_sha256"],
         "smoke_gate": {
             "smoke_result": smoke_result,
             "produced_pass_receipt": None if smoke_pass_path is None else str(smoke_pass_path),
@@ -1034,6 +1161,8 @@ def main():
             "small_residual_squared_fraction_gate": a.small_residual_fraction,
             "small_required_consecutive": a.small_required_consecutive,
             "b0_identity_audit": audit,
+            "b0_audit_sha256": locked_identity["b0_audit_sha256"],
+            "identity": anchor_identity,
             "asset": str(anchor_path),
             "asset_sha256": base.digest(anchor_path),
         },
