@@ -34,3 +34,11 @@ Design review: https://chatgpt.com/c/6ac2e1ce-9940-83ed-a562-b17182126205 (pendi
 Tooling-only Condor admission, independent of the pending scientific protocol: request1GPU/8CPU/32GB RAM/20GB scratch. Fail unless the machine ad assigns exactly one GPU UUID, expose only that UUID before importing torch, verify device identity, run an analytic three-value CUDA autograd check and the existing twelve native-Q4/history unit tests. No neural optimization. Success means environment readiness only; it does not admit the subsequent numerical experiment. Output: execution.json, scheduler ads and unit_tests.txt.
 
 R001/Condor56: CUDA UUID/autograd passed on GPU-3d74ea12 (PID51096). All12 assertions printed PASS, but subprocess exited3221227274 after WMI/native exceptions; overall FAIL, not admitted. A fresh R002 will use process-local CPython standard OSError fallback for unavailable WMI and set one torch thread in the pytest subprocess. No mathematical test is removed, and successful exit remains required. CPython upstream documents WMI restricted-account delays/crashes: https://github.com/python/cpython/issues/112278 and https://github.com/python/cpython/issues/125315.
+
+## Current outcome
+
+R002/Condor57, source7ada36f, PID2968, GPU3d74ea12-5d84-a619-90b2-c0b1f104599a, exit0, CUDA autograd PASS,12tests PASS, empty stderr. Numerical probe UTC2026-10-04T23:48:31Z–23:49:48Z; scheduler execution134s. Runtime hashD8EB82AF175562E5F61650E016335DF7438997BA5FD7AD33003C28D8041D2D01. Archive local_archive/experiments/S04-E002/runs/S04-E002-R002, remote C:/Users/xw436/jobs/censor_projection_20261005_r002. Launcher/config are in the run package, scheduler and execution receipts retrieved. This establishes environment readiness only.
+
+Read-only target/history GP gap: max0.30220191498735444, area RMS0.02624947705585787. See target_history_overlap.json and preoptimization_decision.md. No supervised fitting or physical optimization has been launched.
+
+The external review failed to deliver a final response twice (see design_review_delivery.md). Protocol remains draft; exact-commit scientific code review and actual training smoke remain unfulfilled. Do not confuse the completed runtime probe with a training smoke.

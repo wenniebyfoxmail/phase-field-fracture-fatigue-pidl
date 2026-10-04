@@ -1,0 +1,16 @@
+{
+  "mesh_identity": "exact float32-coordinate/int64-connectivity hash match",
+  "mesh_signature": "e16c9b230c07cc747f5544de1b2bc4afa42be0f6ff645f67b81671307c7eea0e",
+  "nodes": 86756,
+  "elements": 86408,
+  "bottom_uv_max": 0.0,
+  "top_u_max": 0.0,
+  "top_v_min": 0.11999988,
+  "top_v_max": 0.11999988,
+  "fem_damage_min": 0.0,
+  "fem_damage_max": 1.0,
+  "accepted_damage_min": -0.010172759182751179,
+  "accepted_damage_max": 1.0008522272109985,
+  "state_transition": "production accepted step413 -> c83 peak step414",
+  "training": false
+}

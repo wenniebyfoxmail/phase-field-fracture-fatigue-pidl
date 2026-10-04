@@ -1,0 +1,36 @@
+{
+  "experiment": "S04-E002",
+  "training_launched": false,
+  "state_transition": "production accepted step413 -> c83 peak step414",
+  "files": [
+    {
+      "source": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/hard5_u012_exact_peak_native_q4_c76_c82_c83_20260824_v2.1/cycles/cycle_0083_s004_normalized.mat",
+      "name": "cycle_0083_s004_normalized.mat",
+      "bytes": 38304238,
+      "sha256": "eb69f4417852838b34ef80c339ce9fe4ed798cc217d813a7d2dbe6e2045a02b3"
+    },
+    {
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/hard5_native_q4_production_20260929/archive/full_selected/best_models/checkpoint_step_413.pt",
+      "name": "checkpoint_step_413.pt",
+      "bytes": 4497621,
+      "sha256": "e3302e0aa7062823b90d59d7415dc3de7c747f65c0c816a7d0fd903fc4c9d8ee"
+    },
+    {
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/hard5_native_q4_production_20260929/archive/full_selected/best_models/trained_1NN_413.pt",
+      "name": "trained_1NN_413.pt",
+      "bytes": 4510229,
+      "sha256": "ae9767d8a2cfcde30598127d293997a55a4e575eacf9bb05f431d4e7a093e01c"
+    }
+  ],
+  "production_log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/hard5_native_q4_production_20260929/logs/production.log",
+  "state_log_lines": [
+    {
+      "line": 2104,
+      "text": "idx: 413; displacement/amplitude: 0.08999988"
+    },
+    {
+      "line": 2109,
+      "text": "idx: 414; displacement/amplitude: 0.11999988"
+    }
+  ]
+}

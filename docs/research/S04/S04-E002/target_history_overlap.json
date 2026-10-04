@@ -1,0 +1,11 @@
+{
+  "kind": "descriptive pre-optimization state compatibility; no new pass threshold",
+  "target": "FEM c83 s004 peak",
+  "accepted": "PIDL step413 damage projected once to [0,1]",
+  "gp_healing_max": 0.30220191498735444,
+  "gp_healing_area_mean": 0.004395031326867521,
+  "gp_healing_area_rms": 0.02624947705585787,
+  "gp_positive_healing_area_fraction": 0.042498980102569486,
+  "node_healing_max": 0.3057798044384788,
+  "interpretation": "Nonzero values describe target conflict with projected PIDL history; penalty magnitude and cross residual still require the frozen objective audit. Positive fraction has no noise tolerance and is descriptive only."
+}
