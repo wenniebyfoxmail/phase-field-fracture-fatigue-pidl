@@ -1,0 +1,130 @@
+{
+  "76": {
+    "raw_l2": 0.00738260575566039,
+    "hard_kkt_raw_l2": 4.101632689638271e-05,
+    "legacy_raw_kkt_l2": 4.102310129387395e-05,
+    "raw_screen": 0.0004,
+    "bound_tolerance": 1e-12,
+    "status": "PASS",
+    "feasible_within_tolerance": true,
+    "exactly_feasible": true,
+    "counts": {
+      "lower": 78757,
+      "upper": 0,
+      "interior": 7702,
+      "collapsed": 46,
+      "ambiguous": 0,
+      "fixed": 251
+    },
+    "feasibility": {
+      "prior_below_zero": {
+        "max": 0.0,
+        "node_zero_based": 0,
+        "nonzero_count": 0,
+        "above_tolerance_count": 0
+      },
+      "prior_above_one": {
+        "max": 0.0,
+        "node_zero_based": 0,
+        "nonzero_count": 0,
+        "above_tolerance_count": 0
+      },
+      "damage_below_prior": {
+        "max": 0.0,
+        "node_zero_based": 0,
+        "nonzero_count": 0,
+        "above_tolerance_count": 0
+      },
+      "damage_above_one": {
+        "max": 0.0,
+        "node_zero_based": 0,
+        "nonzero_count": 0,
+        "above_tolerance_count": 0
+      },
+      "prescribed_damage": {
+        "max": 0.0,
+        "node_zero_based": 0,
+        "nonzero_count": 0,
+        "above_tolerance_count": 0
+      },
+      "prescribed_prior": {
+        "max": 0.0,
+        "node_zero_based": 0,
+        "nonzero_count": 0,
+        "above_tolerance_count": 0
+      }
+    },
+    "max_kkt_node_zero_based": 2,
+    "max_kkt_abs": 3.290814971214003e-05,
+    "full_teacher": "NOT_QUALIFIED",
+    "box_mass_rms_free": 0.05661348536820994,
+    "hard_mass_rms_free": 0.013680442091825798,
+    "hard_normalized_threshold": null,
+    "rho_u": 1.0137327145802437,
+    "oracle": "native MATLAB only; no new AD comparison in this run"
+  },
+  "82": {
+    "raw_l2": 0.007361944359212553,
+    "hard_kkt_raw_l2": 4.073085112529582e-05,
+    "legacy_raw_kkt_l2": 4.07380594566169e-05,
+    "raw_screen": 0.0004,
+    "bound_tolerance": 1e-12,
+    "status": "PASS",
+    "feasible_within_tolerance": true,
+    "exactly_feasible": true,
+    "counts": {
+      "lower": 78486,
+      "upper": 1,
+      "interior": 7969,
+      "collapsed": 49,
+      "ambiguous": 0,
+      "fixed": 251
+    },
+    "feasibility": {
+      "prior_below_zero": {
+        "max": 0.0,
+        "node_zero_based": 0,
+        "nonzero_count": 0,
+        "above_tolerance_count": 0
+      },
+      "prior_above_one": {
+        "max": 0.0,
+        "node_zero_based": 0,
+        "nonzero_count": 0,
+        "above_tolerance_count": 0
+      },
+      "damage_below_prior": {
+        "max": 0.0,
+        "node_zero_based": 0,
+        "nonzero_count": 0,
+        "above_tolerance_count": 0
+      },
+      "damage_above_one": {
+        "max": 0.0,
+        "node_zero_based": 0,
+        "nonzero_count": 0,
+        "above_tolerance_count": 0
+      },
+      "prescribed_damage": {
+        "max": 0.0,
+        "node_zero_based": 0,
+        "nonzero_count": 0,
+        "above_tolerance_count": 0
+      },
+      "prescribed_prior": {
+        "max": 0.0,
+        "node_zero_based": 0,
+        "nonzero_count": 0,
+        "above_tolerance_count": 0
+      }
+    },
+    "max_kkt_node_zero_based": 2,
+    "max_kkt_abs": 3.436983479269206e-05,
+    "full_teacher": "NOT_QUALIFIED",
+    "box_mass_rms_free": 0.057037071601043085,
+    "hard_mass_rms_free": 0.011515589543944276,
+    "hard_normalized_threshold": null,
+    "rho_u": 1.3533453179626243,
+    "oracle": "native MATLAB only; no new AD comparison in this run"
+  }
+}

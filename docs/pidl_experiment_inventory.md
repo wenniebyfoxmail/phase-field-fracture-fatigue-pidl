@@ -291,3 +291,7 @@ Status `diagnostic`: 4c80e91 / Condor59 / exit0 / 9 remote tests PASS; Code Read
 ## 2026-10-05 — S04-E006 conditional FEM teacher UV precision
 
 Status `diagnostic`: c543b1d / Condor63 / exit0 /21 remote testsPASS /6 retrieval hashes verified; design, exact-code and scoped evidence reviewsPASS. Fixed-FEM-damage rho_u4.396e-11 passes1e-3 with UV RMS/Us9.659e-6, active relative correction0.06357%; damage common-free .05807453 fails. Full teacherNOT_QUALIFIED. No damage solve/fatigue refresh/history commit/training. Endpoint: [decision](research/S04/S04-E006/decision.md).
+
+### 2026-10-05 — S04-E007 FEM nodal hard-KKT alignment
+
+`diagnostic`, R001 numerical cde658e, local archived-vector postprocessing only. c76/c82/c83 hard-bound raw KKT migration screen4e-4 PASS with strict feasibility; original box/UV failures preserved. c83 native/AD agreementPASS; other two native-only here. Old c5 eleven-stagger regression reproduced. Early/mid/cycle-internal correct prior/oracle coverage unavailable in searched assets. No full teacher qualification. [Decision](research/S04/S04-E007/decision.md), [coverage](research/S04/S04-E007/coverage.md).

@@ -1,8 +1,8 @@
 ---
 storyline_id: S04
 experiment_id: S04-E008
-protocol_revision: 20261005-r0-draft
-status: design-review-pending
+protocol_revision: 20261005-r0
+status: design-pass; exact-code-review-pending
 ---
 # Fixed-FEM-damage UV precision at c76 and c82
 

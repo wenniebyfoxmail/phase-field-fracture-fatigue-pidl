@@ -1,0 +1,192 @@
+{
+  "state": "U0.12 c83 s4 original FEM",
+  "coefficient": "original target frozen ftrial",
+  "rows": {
+    "matlab": {
+      "raw_l2": 0.007378504659277475,
+      "hard_kkt_raw_l2": 2.3343892605545928e-05,
+      "legacy_raw_kkt_l2": 2.335588361675338e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 80232,
+        "upper": 2,
+        "interior": 6221,
+        "collapsed": 50,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0,
+          "xy": [
+            -0.5,
+            -0.5
+          ]
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0,
+          "xy": [
+            -0.5,
+            -0.5
+          ]
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0,
+          "xy": [
+            -0.5,
+            -0.5
+          ]
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0,
+          "xy": [
+            -0.5,
+            -0.5
+          ]
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0,
+          "xy": [
+            -0.5,
+            -0.5
+          ]
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0,
+          "xy": [
+            -0.5,
+            -0.5
+          ]
+        }
+      },
+      "max_kkt_node_zero_based": 47963,
+      "max_kkt_abs": 6.7144607659463015e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.05807302494275299,
+      "hard_mass_rms_free": 0.010039258753890558,
+      "hard_normalized_threshold": null,
+      "max_kkt_xy": [
+        -0.2612830031223685,
+        0.002107583838457971
+      ]
+    },
+    "pidl_frozen_trial": {
+      "raw_l2": 0.007378504659277473,
+      "hard_kkt_raw_l2": 2.3343892605548414e-05,
+      "legacy_raw_kkt_l2": 2.3355883616755854e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 80232,
+        "upper": 2,
+        "interior": 6221,
+        "collapsed": 50,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0,
+          "xy": [
+            -0.5,
+            -0.5
+          ]
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0,
+          "xy": [
+            -0.5,
+            -0.5
+          ]
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0,
+          "xy": [
+            -0.5,
+            -0.5
+          ]
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0,
+          "xy": [
+            -0.5,
+            -0.5
+          ]
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0,
+          "xy": [
+            -0.5,
+            -0.5
+          ]
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0,
+          "xy": [
+            -0.5,
+            -0.5
+          ]
+        }
+      },
+      "max_kkt_node_zero_based": 47963,
+      "max_kkt_abs": 6.714460765946838e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.058073024942739936,
+      "hard_mass_rms_free": 0.010039258753891825,
+      "hard_normalized_threshold": null,
+      "max_kkt_xy": [
+        -0.2612830031223685,
+        0.002107583838457971
+      ]
+    }
+  },
+  "vector_scaled_difference": 1.2845960892511777e-13,
+  "vector_gate": 1e-09,
+  "vector_pass": true,
+  "energy_scale": 0.0143999712000144,
+  "normalized_hard_threshold": null,
+  "full_teacher": "NOT_QUALIFIED"
+}
