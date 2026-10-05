@@ -2,7 +2,7 @@
 storyline_id: S03
 experiment_id: S03-E001
 protocol_revision: v1
-status: draft
+status: ready
 started_at: 2026-10-05
 closed_at:
 primary_storyline: S03
@@ -182,10 +182,17 @@ None. Protocol v1 has not yet produced a Run.
 
 ## Code review
 
-- **Reviewer task:** pending.
-- **Bound commit / runner / config / data lock / protocol revision:** pending.
-- **Verdict:** pending.
-- **Blocking findings:** pending.
+- **Reviewer task:** independent read-only review `crackmnist_code_review`.
+- **Bound commit / runner / config / data lock / protocol revision:**
+  `f014a1941f96acefe8651b6c2b4161f2f4123a06`;
+  `scripts/crackmnist_mechanics_cv.py`; fixed CLI defaults; HDF5 MD5
+  `26bb0aa814f2e3ed467879844222c46c`; metadata MD5
+  `85b558aa217c2ad659b701946c399f58`; protocol v1.
+- **Verdict:** `PASS_CODE_READY`.
+- **Blocking findings:** initial review of `6fa93a0` found five blockers
+  (figure directory, normalized SIF bootstrap, lineage weighting, protocol
+  enforcement, metadata lock). All were fixed in `f014a19`; re-review found no
+  remaining run-invalidating issue. Run Ready remains a separate Taobo gate.
 
 ## Runs
 
