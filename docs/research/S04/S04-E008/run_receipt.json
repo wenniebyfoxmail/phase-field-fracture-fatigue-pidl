@@ -1,0 +1,90 @@
+{
+  "run_id": "S04-E008-R001",
+  "numerical_commit": "a741da7",
+  "branch": "codex/censor-numerical-diagnostics-20261004",
+  "dirty_at_packaging": false,
+  "condor": "65.0",
+  "host": "D-26-09.ad.eng.cam.ac.uk",
+  "remote_root": "C:/Users/xw436/jobs/censor_teacher_late_20261005_r001",
+  "scratch": "C:/Condor/execute/dir_9976",
+  "allocation": {
+    "cpu": 8,
+    "memory_mb": 32768,
+    "gpu": 1,
+    "note": "GPU0 idle; RequestGpus changed to1 before first execution to satisfy START. Numerics CPU float64 one thread; GPU unused."
+  },
+  "start_local": "2026-10-05 15:21:32",
+  "end_local": "2026-10-05 15:24:42",
+  "exit_code": 0,
+  "tests": "29 passed, 1 known warning",
+  "pids": {
+    "76": 42996,
+    "82": 13512
+  },
+  "retrieval": "complete: output and condor logs copied",
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E008/runs/S04-E008-R001",
+  "files": [
+    {
+      "path": "condor-65.err",
+      "bytes": 0
+    },
+    {
+      "path": "condor-65.log",
+      "bytes": 2193
+    },
+    {
+      "path": "condor-65.out",
+      "bytes": 28
+    },
+    {
+      "path": "output/c76/after.json",
+      "bytes": 2255
+    },
+    {
+      "path": "output/c76/before.json",
+      "bytes": 2855
+    },
+    {
+      "path": "output/c76/fields.npz",
+      "bytes": 27088619
+    },
+    {
+      "path": "output/c76/summary.json",
+      "bytes": 7133
+    },
+    {
+      "path": "output/c76.log",
+      "bytes": 7568
+    },
+    {
+      "path": "output/c82/after.json",
+      "bytes": 2254
+    },
+    {
+      "path": "output/c82/before.json",
+      "bytes": 2847
+    },
+    {
+      "path": "output/c82/fields.npz",
+      "bytes": 27146388
+    },
+    {
+      "path": "output/c82/summary.json",
+      "bytes": 7121
+    },
+    {
+      "path": "output/c82.log",
+      "bytes": 7556
+    },
+    {
+      "path": "output/execution_identity.txt",
+      "bytes": 50
+    },
+    {
+      "path": "output/tests.log",
+      "bytes": 804
+    }
+  ],
+  "command": "powershell run.ps1; runtime Python teacher_precision_late.py --inputs inputs --out output/c<CYCLE> --cycle <76|82>",
+  "full_teacher": "NOT_QUALIFIED"
+}

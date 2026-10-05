@@ -295,3 +295,5 @@ Status `diagnostic`: c543b1d / Condor63 / exit0 /21 remote testsPASS /6 retrieva
 ### 2026-10-05 — S04-E007 FEM nodal hard-KKT alignment
 
 `diagnostic`, R001 numerical cde658e, local archived-vector postprocessing only. c76/c82/c83 hard-bound raw KKT migration screen4e-4 PASS with strict feasibility; original box/UV failures preserved. c83 native/AD agreementPASS; other two native-only here. Old c5 eleven-stagger regression reproduced. Early/mid/cycle-internal correct prior/oracle coverage unavailable in searched assets. No full teacher qualification. [Decision](research/S04/S04-E007/decision.md), [coverage](research/S04/S04-E007/coverage.md).
+
+| S04-E008 | 2026-10-05 | diagnostic | Fixed-FEM-damage c76/c82 UV precision; Condor65/R001, a741da7, exit0,29tests PASS | Conditional UV screen PASS; active-driver corrections7.86%/18.56%; full teacher NOT_QUALIFIED | [decision](research/S04/S04-E008/decision.md), [receipt](research/S04/S04-E008/run_receipt.json), [review](research/S04/S04-E008/evidence_review.md) |

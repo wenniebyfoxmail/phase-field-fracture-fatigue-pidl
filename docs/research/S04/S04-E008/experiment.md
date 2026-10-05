@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E008
 protocol_revision: 20261005-r0
-status: design-pass; exact-code-review-pending
+status: complete; conditional-uv-screen-pass; full-teacher-not-qualified
 ---
 # Fixed-FEM-damage UV precision at c76 and c82
 
