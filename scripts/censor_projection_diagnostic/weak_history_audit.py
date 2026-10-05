@@ -8,8 +8,8 @@ configure()
 import numpy as np
 import h5py
 import torch
-from weak_form import assemble
-from cross_residual import audit,evaluate,compute_fatigue_degrad,CFG
+from weak_form import assemble,assert_native_gp_shape
+from cross_residual import audit,evaluate,compute_fatigue_degrad,CFG,q4_shape_data
 
 def blocked_uv(x):
     x=np.asarray(x).reshape(-1)
@@ -48,6 +48,9 @@ def main():
     pp=ck['hist_alpha'].clamp(0,1).double();pf=compute_fatigue_degrad(ck['hist_fat'],CFG).detach().double()
     # Independent weak form and matched GP ordering. No external traction in locked SENS source.
     weak=assemble(xy,conn,uv,d);mass=weak['mass'];us=.11999988;es=float(weak['det'].sum())*us**2;scale=es/us
+    torch_shape,_,torch_det=q4_shape_data(t(xy),torch.tensor(conn))
+    assert_native_gp_shape(weak['shape']);assert_native_gp_shape(torch_shape.numpy())
+    np.testing.assert_allclose(weak['det'],torch_det.numpy(),rtol=1e-12,atol=1e-15)
     mask=np.flatnonzero((xy[:,1]!=xy[:,1].min())&(xy[:,1]!=xy[:,1].max()))
     expected=np.r_[mask,mask+len(xy)]
     assert np.array_equal(np.sort(freeu),expected)
@@ -87,7 +90,7 @@ def main():
     interaction=arrays['F_d_Fprev_f_gd']-arrays['F_d_P_f_gd']-arrays['P_d_Fprev_f_gd']+arrays['P_d_P_f_gd']
     np.testing.assert_allclose(interaction,0,rtol=0,atol=1e-10)
     assert all(np.isfinite(v).all() for v in arrays.values())
-    summary=dict(identity=identity,comparisons=comparisons,matlab_rho_u=norm_mass(ru.T.ravel()[freeu]*us/es,mf),matlab_free_uv_l2=float(np.linalg.norm(ru.T.ravel()[freeu])),fprev_formula_vs_stored_max=float(np.max(np.abs(ff-hist[:,:,3]))),ftrial_vs_fprev_max=float(np.max(np.abs(ft-ff))),numpy_energy=weak['energy'],history_control='QUALIFIED_SAME_REPLAY_PRECOMMIT',damage_free_dofs=len(freed),pidl_damage_dofs=len(d),fem_penalty_source_default=421875.,fem_penalty_runtime='not independently serialized/verified',pidl_penalty_coefficient=16875.,primary='pidl_vs_matlab_free_uv',stationarity_screen=.001,pid=os.getpid(),training=False,history_commits=0,readonly_trial_coefficient_evaluations=1,gradient_interaction_max=float(abs(interaction).max()),trial_vs_postcommit_f_max=float(abs(ft-post_f).max()),external_load_status='zero reconstructed from locked source BC path; not separately serialized',coefficient_hashes={k:hashlib.sha256(v.detach().numpy().tobytes()).hexdigest() for k,_,v in cases},finished_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()))
+    summary=dict(gp_order="(++,-+,+-,--); archived source loop locked; NumPy/Torch shape and per-GP det asserted",identity=identity,comparisons=comparisons,matlab_rho_u=norm_mass(ru.T.ravel()[freeu]*us/es,mf),matlab_free_uv_l2=float(np.linalg.norm(ru.T.ravel()[freeu])),fprev_formula_vs_stored_max=float(np.max(np.abs(ff-hist[:,:,3]))),ftrial_vs_fprev_max=float(np.max(np.abs(ft-ff))),numpy_energy=weak['energy'],history_control='QUALIFIED_SAME_REPLAY_PRECOMMIT',damage_free_dofs=len(freed),pidl_damage_dofs=len(d),fem_penalty_source_default=421875.,fem_penalty_runtime='not independently serialized/verified',pidl_penalty_coefficient=16875.,primary='pidl_vs_matlab_free_uv',stationarity_screen=.001,pid=os.getpid(),training=False,history_commits=0,readonly_trial_coefficient_evaluations=1,gradient_interaction_max=float(abs(interaction).max()),trial_vs_postcommit_f_max=float(abs(ft-post_f).max()),external_load_status='zero reconstructed from locked source BC path; not separately serialized',coefficient_hashes={k:hashlib.sha256(v.detach().numpy().tobytes()).hexdigest() for k,_,v in cases},finished_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()))
     (a.out/'summary.json').write_text(json.dumps(summary,indent=2))
     with (a.out/'history_controls.csv').open('w',newline='') as f:
         w=csv.DictWriter(f,fieldnames=rows[0].keys());w.writeheader();w.writerows(rows)

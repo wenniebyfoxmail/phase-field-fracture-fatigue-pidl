@@ -2,6 +2,14 @@
 import numpy as np
 
 
+def assert_native_gp_shape(shape):
+    """Lock archived gauss_quad + quad_composition order, including node order."""
+    pts=(0.577350269189626,-0.577350269189626)
+    signs=np.array([[-1,-1],[1,-1],[1,1],[-1,1]])
+    expected=np.array([(1+signs[:,0]*x)*(1+signs[:,1]*y)/4 for y in pts for x in pts])
+    np.testing.assert_allclose(shape,expected,rtol=0,atol=5e-16)
+    return expected
+
 def assemble(xy, conn, uv, damage, young=1., nu=.3, thickness=1., eta=0.):
     xy,uv,damage=np.asarray(xy),np.asarray(uv),np.asarray(damage)
     force=np.zeros_like(uv); mass=np.zeros(len(xy)); energies=[]; psis=[]; shapes=[]; dets=[]

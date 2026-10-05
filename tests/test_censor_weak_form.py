@@ -38,3 +38,14 @@ def test_blocked_dof_order_and_difference_norm():
     # Equal individual norms must not hide opposite residual vectors.
     r=compare(np.array([1.,-1.]),np.array([-1.,1.]),np.array([.2,.8]),1.)
     assert r['status']=='FAIL' and r['scaled_difference']==2.
+
+
+def test_native_gp_order_rejects_permutation():
+    from weak_form import assert_native_gp_shape
+    from cross_residual import q4_shape_data
+    xy=np.array([[0.,0.],[1.2,.1],[1.,1.1],[-.1,.9]])
+    conn=np.array([[0,1,2,3]])
+    r=assemble(xy,conn,xy*.01,np.arange(4)*.1)
+    n,_,_=q4_shape_data(torch.tensor(xy),torch.tensor(conn))
+    assert_native_gp_shape(r['shape']);assert_native_gp_shape(n.numpy())
+    with pytest.raises(AssertionError):assert_native_gp_shape(r['shape'][[1,0,2,3]])
