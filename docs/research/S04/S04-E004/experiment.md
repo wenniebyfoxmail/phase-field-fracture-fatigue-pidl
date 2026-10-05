@@ -2,8 +2,8 @@
 storyline_id: S04
 experiment_id: S04-E004
 protocol_revision: r0-20261005
-status: draft-code; A1-admission-pending
-scientific_verdict: pending
+status: stopped-before-run; A1-trial-f-rejected
+scientific_verdict: negative diagnostic; no producer solve
 ---
 
 # Fully direct native-Q4 equation-closure discriminator
