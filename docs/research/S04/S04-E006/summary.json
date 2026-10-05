@@ -1,0 +1,91 @@
+{
+  "identity": {
+    "mesh_identity": "exact float32-coordinate/int64-connectivity hash match",
+    "mesh_signature": "e16c9b230c07cc747f5544de1b2bc4afa42be0f6ff645f67b81671307c7eea0e",
+    "nodes": 86756,
+    "elements": 86408,
+    "bottom_uv_max": 0.0,
+    "top_u_max": 0.0,
+    "top_v_min": 0.11999988,
+    "top_v_max": 0.11999988,
+    "fem_damage_min": 0.0,
+    "fem_damage_max": 1.0,
+    "accepted_damage_min": -0.010172759182751179,
+    "accepted_damage_max": 1.0008522272109985,
+    "state_transition": "production accepted step413 -> c83 peak step414",
+    "training": false
+  },
+  "before": {
+    "energy": 0.008065053220494353,
+    "elastic_energy": 1.803316329324285e-05,
+    "fracture_energy": 0.00804702005720111,
+    "history_energy": 0.0,
+    "rho_u": 0.041331479715259814,
+    "rho_d_all": 0.06534477951240857,
+    "rho_d_common": 0.058073024942739936,
+    "weak_gradient_agreement": {
+      "max_abs": 5.1892785299265066e-17,
+      "l2_diff": 1.5186285216985485e-15,
+      "mass_dual_diff": 6.943194270035464e-13,
+      "mass_dual_ref": 0.004959772606053613,
+      "scaled_difference": 5.7860010110305645e-12,
+      "threshold": 1e-09,
+      "status": "PASS"
+    }
+  },
+  "after": {
+    "energy": 0.008065051452453332,
+    "elastic_energy": 1.803139525222144e-05,
+    "fracture_energy": 0.00804702005720111,
+    "history_energy": 0.0,
+    "rho_u": 4.396083780561905e-11,
+    "rho_d_all": 0.06534611835055133,
+    "rho_d_common": 0.058074531422638846,
+    "weak_gradient_agreement": {
+      "max_abs": 7.051184002933547e-17,
+      "l2_diff": 1.5089831658869908e-15,
+      "mass_dual_diff": 6.867459346804381e-13,
+      "mass_dual_ref": 5.275295261373749e-12,
+      "scaled_difference": 5.7228885118921624e-12,
+      "threshold": 1e-09,
+      "status": "PASS"
+    }
+  },
+  "uv_block_screen": "PASS",
+  "full_teacher": "NOT_QUALIFIED",
+  "scope": "fixed damage UV only; original-target fatigue coefficient frozen; no coupled evolution or mesh convergence",
+  "delta_uv_mass_rms_over_Us": 9.659086229409674e-06,
+  "strain_tensor": {
+    "error_norm": 0.0007538277884018447,
+    "reference_norm": 2.7038137031067517,
+    "nominal_norm": 0.11999988,
+    "value": 0.00027880167466259864,
+    "kind": "relative_l2"
+  },
+  "active": {
+    "error_norm": 8.640725560978402e-07,
+    "reference_norm": 0.0013593312774781016,
+    "nominal_norm": 0.0143999712000144,
+    "value": 0.0006356600266720194,
+    "kind": "relative_l2"
+  },
+  "original_p99_threshold": 4.48203950361111e-07,
+  "original_p99_area_fraction": 0.010000798904803787,
+  "active_original_p99": {
+    "error_norm": 8.640722410319096e-07,
+    "reference_norm": 0.0013593312757201827,
+    "nominal_norm": 0.0014400546398834707,
+    "value": 0.0006356597957139759,
+    "kind": "relative_l2"
+  },
+  "elastic_energy_nonincrease": true,
+  "iterations": 4,
+  "active_set_stable": true,
+  "solver_normalized_residual": 6.821383584742513e-15,
+  "minimum_pivot_ratio": 0.00011044082335133185,
+  "history_commits": 0,
+  "damage_solves": 0,
+  "training": false,
+  "pid": 24500,
+  "finished_utc": "2026-10-05T13:19:14Z"
+}

@@ -1,0 +1,3 @@
+# S04-E006-R001 receipt
+
+Code c543b1d; branch codex/censor-numerical-diagnostics-20261004; exact code reviewed before launch. D-26-09 Condor63.0, PID24500, exit0; execute14:16:48–14:19:16 local, normal termination14:19:36. CPUfloat64, one thread; allocated RTX PRO6000 not used. 21 remote tests PASS; six retrieved output SHA256 matched. Remote C:/Users/xw436/jobs/censor_teacher_20261005_r001; archive project-root local_archive/experiments/S04-E006/runs/S04-E006-R001. Command runtime/python.exe -u code/scripts/censor_projection_diagnostic/teacher_precision.py --inputs inputs --out output/audit. Input lineage/hash in experiment.md. No damage solve, fatigue refresh, history commit or training.

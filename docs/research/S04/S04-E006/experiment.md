@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E006
 protocol_revision: 20261005-r0
-status: design-pass; code-review-pending
+status: completed-diagnostic; conditional-UV-pass; full-teacher-unqualified
 ---
 # FEM teacher fixed-damage displacement precision
 
@@ -31,3 +31,7 @@ Damage box residual uses unchanged original-target ftrial at both displacements,
 Archived cdf4e337 post_iter_update.m: norm_res_displ=norm(res_displ(active_dof)); lines92–97 store raw displacement/phase residuals and stop on their sum<=SOL_STAG_PAR.tol. This differs from the present mass-normalized screen. Current archived weak residual is not a newly serialized exact solver-stop receipt for every block; do not claim a tolerance-only causal explanation.
 
 Additional source observation: solve_fatigue_fracture.m obtains res_pf from the phase Newton call, then applies max(p,p_old) and optional upper clipping before post_iter_update. That function reassembles UV but carries res_pf into the stop sum. Therefore the stored acceptance scalar is not automatically the post-clipping, target-point-fatigue, box-projected damage residual audited here. This source fact motivates future endpoint certification; its quantitative contribution is not identified by this UV-only test.
+
+## Completed
+
+R001/Condor63, c543b1d, exit0,21 tests PASS,6 retrieval hashes match. Conditional UV screenPASS, damage screenFAIL; full teacherNOT_QUALIFIED. See decision.md/summary.json/metrics.csv/run_receipt.md. Visualization-only scaling update after execution does not alter numerical results.

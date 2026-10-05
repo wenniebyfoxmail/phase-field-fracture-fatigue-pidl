@@ -287,3 +287,7 @@ Status `diagnostic`: afb3b80 / D-26-09 Condor58, exit0,3tests PASS, exact-commit
 ## 2026-10-05 — S04-E003 same-field weak residual and qualified history audit
 
 Status `diagnostic`: 4c80e91 / Condor59 / exit0 / 9 remote tests PASS; Code Ready and scoped evidence interpretation reviews PASS. Original MATLAB versus PIDL free-UV vector scaled difference1.108e-11 passes1e-9; both retain rho_u .04133148. Qualified FEM predecessor removes healing penalty; F/Fprev common-free box damage remains .05807356. E002 predecessor-search omission corrected. No training/new solve/history commit. Endpoint: [S04-E003 decision](research/S04/S04-E003/decision.md).
+
+## 2026-10-05 — S04-E006 conditional FEM teacher UV precision
+
+Status `diagnostic`: c543b1d / Condor63 / exit0 /21 remote testsPASS /6 retrieval hashes verified; design, exact-code and scoped evidence reviewsPASS. Fixed-FEM-damage rho_u4.396e-11 passes1e-3 with UV RMS/Us9.659e-6, active relative correction0.06357%; damage common-free .05807453 fails. Full teacherNOT_QUALIFIED. No damage solve/fatigue refresh/history commit/training. Endpoint: [decision](research/S04/S04-E006/decision.md).
