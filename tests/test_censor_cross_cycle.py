@@ -5,6 +5,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts/censor_projection_diagnostic"))
 from cross_cycle_weak_history_audit import (
+    allow_cross_cycle_spatial_change,
     compare_vectors,
     norm_mass,
     summarize_local,
@@ -71,3 +72,8 @@ def test_manifest_pairing_drift_is_rejected():
     }
     with np.testing.assert_raises_regex(ValueError, "pairing"):
         validate_manifest(manifest)
+
+
+def test_spatial_change_is_omitted_when_vector_gate_blocks_trend():
+    assert allow_cross_cycle_spatial_change("EVALUATED")
+    assert not allow_cross_cycle_spatial_change("BLOCKED_NUMERICAL_EQUIVALENCE")

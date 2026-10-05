@@ -10,6 +10,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
+from cross_cycle_weak_history_audit import allow_cross_cycle_spatial_change
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("audit", type=Path)
@@ -84,37 +86,44 @@ plt.close(fig)
 
 
 pairs = [(76, 82), (82, 83)]
-uv_diff_max = max(
-    float(np.abs(fields[f"c{right}_pidl_uv_density"] - fields[f"c{left}_pidl_uv_density"]).max())
-    for left, right in pairs
-)
-d_diff_max = max(
-    float(
-        np.abs(
-            np.abs(fields[f"c{right}_pidl_projected_damage"])
-            - np.abs(fields[f"c{left}_pidl_projected_damage"])
-        ).max()
+if allow_cross_cycle_spatial_change(trend["trend_status"]):
+    uv_diff_max = max(
+        float(np.abs(fields[f"c{right}_pidl_uv_density"] - fields[f"c{left}_pidl_uv_density"]).max())
+        for left, right in pairs
     )
-    for left, right in pairs
-)
-fig, axes = plt.subplots(2, len(pairs), figsize=(8, 7), layout="constrained")
-for column, (left, right) in enumerate(pairs):
-    xy = fields[f"c{left}_xy"]
-    uv_delta = fields[f"c{right}_pidl_uv_density"] - fields[f"c{left}_pidl_uv_density"]
-    d_delta = np.abs(fields[f"c{right}_pidl_projected_damage"]) - np.abs(fields[f"c{left}_pidl_projected_damage"])
-    panel = axes[0, column].scatter(xy[:, 0], xy[:, 1], c=uv_delta, s=1, cmap="coolwarm", vmin=-uv_diff_max, vmax=uv_diff_max, rasterized=True)
-    axes[0, column].set_title(f"UV magnitude change c{left}->c{right}")
-    fig.colorbar(panel, ax=axes[0, column], shrink=0.75)
-    panel = axes[1, column].scatter(xy[:, 0], xy[:, 1], c=d_delta, s=1, cmap="coolwarm", vmin=-d_diff_max, vmax=d_diff_max, rasterized=True)
-    axes[1, column].set_title(f"Damage correction change c{left}->c{right}")
-    fig.colorbar(panel, ax=axes[1, column], shrink=0.75)
-    for row in range(2):
-        axes[row, column].set_aspect("equal")
-        axes[row, column].set_xlabel("x")
-        axes[row, column].set_ylabel("y")
-fig.savefig(out / "cross_cycle_spatial_change.png", dpi=180)
-fig.savefig(out / "cross_cycle_spatial_change.pdf")
-plt.close(fig)
+    d_diff_max = max(
+        float(
+            np.abs(
+                np.abs(fields[f"c{right}_pidl_projected_damage"])
+                - np.abs(fields[f"c{left}_pidl_projected_damage"])
+            ).max()
+        )
+        for left, right in pairs
+    )
+    fig, axes = plt.subplots(2, len(pairs), figsize=(8, 7), layout="constrained")
+    for column, (left, right) in enumerate(pairs):
+        xy = fields[f"c{left}_xy"]
+        uv_delta = fields[f"c{right}_pidl_uv_density"] - fields[f"c{left}_pidl_uv_density"]
+        d_delta = np.abs(fields[f"c{right}_pidl_projected_damage"]) - np.abs(fields[f"c{left}_pidl_projected_damage"])
+        panel = axes[0, column].scatter(xy[:, 0], xy[:, 1], c=uv_delta, s=1, cmap="coolwarm", vmin=-uv_diff_max, vmax=uv_diff_max, rasterized=True)
+        axes[0, column].set_title(f"UV magnitude change c{left}->c{right}")
+        fig.colorbar(panel, ax=axes[0, column], shrink=0.75)
+        panel = axes[1, column].scatter(xy[:, 0], xy[:, 1], c=d_delta, s=1, cmap="coolwarm", vmin=-d_diff_max, vmax=d_diff_max, rasterized=True)
+        axes[1, column].set_title(f"Damage correction change c{left}->c{right}")
+        fig.colorbar(panel, ax=axes[1, column], shrink=0.75)
+        for row in range(2):
+            axes[row, column].set_aspect("equal")
+            axes[row, column].set_xlabel("x")
+            axes[row, column].set_ylabel("y")
+    fig.savefig(out / "cross_cycle_spatial_change.png", dpi=180)
+    fig.savefig(out / "cross_cycle_spatial_change.pdf")
+    plt.close(fig)
+else:
+    (out / "SPATIAL_CHANGE_BLOCKED.md").write_text(
+        "# Cross-cycle spatial change blocked\n\n"
+        "At least one same-field UV vector comparison failed the frozen 1e-9 gate. "
+        "No c76->c82 or c82->c83 spatial-difference figure was generated.\n"
+    )
 
 
 (out / "README_analysis.md").write_text(
@@ -122,7 +131,7 @@ plt.close(fig)
 
 Question: on the same native FEM peak fields and correctly paired native-Q4 PIDL predecessor histories, is the mismatch already visible at c76 and does it increase by the frozen local threefold rule at both c82 and c83?
 
-Read in order: `cross_cycle_trend` keeps UV and damage channels separate and shows the unchanged 1e-3 screen; `cross_cycle_spatial` locates the assembled nodal UV dual-density and box-projected damage correction under common cross-cycle colour rules; `cross_cycle_spatial_change` shows fixed c76->c82 and c82->c83 changes without crack-tip realignment.
+Read in order: `cross_cycle_trend` keeps UV and damage channels separate and shows the unchanged 1e-3 screen; `cross_cycle_spatial` locates the assembled nodal UV dual-density and box-projected damage correction under common cross-cycle colour rules. Only when `trend_status=EVALUATED`, `cross_cycle_spatial_change` shows fixed c76->c82 and c82->c83 changes without crack-tip realignment; otherwise `SPATIAL_CHANGE_BLOCKED.md` records why it was omitted.
 
 Sources: `cycle_residuals.csv`, `trend_summary.json`, and `spatial_fields.npz` from S04-E005-R001. White contours are native FEM damage 0.25/0.5/0.75. The UV map uses globally assembled nodal residuals, not unassembled element force magnitudes.
 

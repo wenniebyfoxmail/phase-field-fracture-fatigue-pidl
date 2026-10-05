@@ -334,6 +334,10 @@ def summarize_local(cycle_rows):
     return local, "EVALUATED"
 
 
+def allow_cross_cycle_spatial_change(trend_status):
+    return trend_status == "EVALUATED"
+
+
 def write_csv(path, rows):
     with path.open("w", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
@@ -401,6 +405,7 @@ def main():
             "reason": "c20/c40/c60 lack same-contract native pre-phase inputs and MATLAB oracle",
             "required_early_cycles": [20, 40, 60],
             "required_terminal_cycles": [82, 83],
+            "threshold": FULL_GROWTH_GATE,
         },
         "early_presence": {
             "status": "NOT_EVALUABLE",
