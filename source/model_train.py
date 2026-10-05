@@ -314,6 +314,16 @@ def _gp_to_element_mean(values):
     return values
 
 
+def _physical_peak_cycle(step, *, step_offset, n_substeps, peak_substep_index):
+    """Return the one-based physical cycle at a configured peak, else None."""
+    adjusted = int(step) - int(step_offset)
+    if adjusted < 0 or int(n_substeps) <= 0:
+        return None
+    if adjusted % int(n_substeps) != int(peak_substep_index):
+        return None
+    return adjusted // int(n_substeps) + 1
+
+
 def _save_pre_step0_baseline_diagnostics(
     inp,
     T_conn,
@@ -541,16 +551,19 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
             g_stiffness_override=g_stiffness_override_elem,
             irreversibility_penalty_cfg=irreversibility_penalty_cfg,
         )
+        _legacy_fatigue = f_fatigue
+        if torch.is_tensor(_legacy_fatigue) and _legacy_fatigue.ndim == 2:
+            _legacy_fatigue = _legacy_fatigue.mean(dim=1)
         _, _, E_hist_legacy_elem = compute_energy_per_elem(
             inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
-            f_fatigue=f_fatigue,
+            f_fatigue=_legacy_fatigue,
             g_stiffness_override=g_stiffness_override_elem,
             irreversibility_penalty_cfg=None,
         )
         _irr_diag_mode = "fem_gp_q4" if T_conn is not None and T_conn.shape[1] == 4 else "fem_gp_tri3"
         _, _, E_hist_fem_gp_tri3_elem = compute_energy_per_elem(
             inp, u, v, alpha, hist_alpha, matprop, pffmodel, area_T, T_conn,
-            f_fatigue=f_fatigue,
+            f_fatigue=_legacy_fatigue,
             g_stiffness_override=g_stiffness_override_elem,
             irreversibility_penalty_cfg={
                 "enable": True,
@@ -1504,6 +1517,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                     'detected':  _ckpt.get('_frac_detected',          False),
                     'cycle':     _ckpt.get('_frac_cycle',             None),
                     'remaining': _ckpt.get('_frac_confirm_remaining', 0),
+                    'confirmed_cycle': _ckpt.get('_frac_confirmed_cycle', None),
                 }
             start_j = _last_j + 1
             _did_restore = True
@@ -1538,6 +1552,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     _frac_detected          = False   # 是否已触发断裂检测
     _frac_cycle             = None    # 首次检测到断裂的圈号
     _frac_confirm_remaining = 0       # 剩余确认圈数（>0 时持续观察）
+    _frac_confirmed_cycle   = None
+    _frac_confirmation_reported = False
     _dense_sampling         = False   # 是否进入逐圈密集采样模式
     # ★ Restore fracture detection state from checkpoint (expert rec, May-5 2026).
     # Without this, a run interrupted mid-confirmation-window would restart the counter
@@ -1546,6 +1562,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         _frac_detected          = True
         _frac_cycle             = _frac_state_from_ckpt['cycle']
         _frac_confirm_remaining = _frac_state_from_ckpt['remaining']
+        _frac_confirmed_cycle = _frac_state_from_ckpt.get('confirmed_cycle')
+        _frac_confirmation_reported = _frac_confirmed_cycle is not None
         print(f"[Checkpoint] 恢复断裂检测状态: detected at cycle {_frac_cycle}, "
               f"confirm remaining = {_frac_confirm_remaining}")
 
@@ -1562,6 +1580,17 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
     # 已经足够精确（Run #2, #3 都没有误触）。默认保留 fallback 以向后兼容；
     # 对含 Williams features 或其他易产生数值尖峰的实验，应在 config 里设 False。
     _E_fallback_enabled = fatigue_dict.get('enable_E_fallback', True)
+    _event_peak_only = bool(
+        fatigue_dict.get('fracture_evaluate_physical_peak_only', False)
+    )
+    _event_continue_after_confirmation = bool(
+        fatigue_dict.get('fracture_continue_after_confirmation', False)
+    )
+    _event_n_substeps = int(fatigue_dict.get('explicit_cycle_substeps', 1))
+    _event_peak_substep = int(fatigue_dict.get(
+        'fracture_peak_substep_index', _event_n_substeps - 2
+    ))
+    _event_step_offset = int(fatigue_dict.get('fracture_step_offset', 0))
 
     # ★ 右边界 α 判据参数（主判据：替代旧的 L∞ 距离判据）
     # 物理含义：当目标边界面上有足够多节点的 α 超过阈值时认为贯穿
@@ -2773,9 +2802,20 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                               and E_el_max > 0
                               and E_el_scalar < _E_drop_ratio * E_el_max)
 
-            if not _frac_detected and (_bdy_triggered or _E_triggered):
+            _event_physical_cycle = _physical_peak_cycle(
+                j,
+                step_offset=_event_step_offset,
+                n_substeps=_event_n_substeps,
+                peak_substep_index=_event_peak_substep,
+            )
+            _event_due = (not _event_peak_only) or (_event_physical_cycle is not None)
+            _event_label = (
+                _event_physical_cycle if _event_physical_cycle is not None else j
+            )
+
+            if _event_due and not _frac_detected and (_bdy_triggered or _E_triggered):
                 _frac_detected = True
-                _frac_cycle    = j
+                _frac_cycle    = _event_label
                 _frac_confirm_remaining = _confirm_cycles
                 _reasons = []
                 if _bdy_triggered:
@@ -2784,16 +2824,12 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 if _E_triggered:
                     _reasons.append(f"E_el={E_el_scalar:.3e} < "
                                     f"{_E_drop_ratio}×{E_el_max:.3e}")
-                print(f"  [Fracture?] cycle {j}: {' | '.join(_reasons)}. "
+                print(f"  [Fracture?] physical cycle {_event_label}: {' | '.join(_reasons)}. "
                       f"Continuing {_confirm_cycles} confirmation cycles...")
-            elif _frac_detected:
+            elif _event_due and _frac_detected and _frac_confirm_remaining > 0:
                 _frac_confirm_remaining -= 1
-                # 两个判据都失效时才重置（防数值波动误重置）
-                if (not _bdy_triggered) and (E_el_scalar >= _E_drop_ratio * E_el_max):
-                    print(f"  [Fracture reset] cycle {j}: both criteria recovered → reset.")
-                    _frac_detected  = False
-                    _frac_cycle     = None
-                    _dense_sampling = False
+                if _frac_confirm_remaining <= 0 and _frac_confirmed_cycle is None:
+                    _frac_confirmed_cycle = _event_label
 
         # ------------------------------------------------------------------
         # 保存模型和损失（与 Manav 完全相同）
@@ -2824,6 +2860,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             _ckpt_data['_frac_detected']           = _frac_detected
             _ckpt_data['_frac_cycle']              = _frac_cycle
             _ckpt_data['_frac_confirm_remaining']  = _frac_confirm_remaining
+            _ckpt_data['_frac_confirmed_cycle']    = _frac_confirmed_cycle
             if _lambda_hist_enabled:
                 _ckpt_data['lambda_hist_weight'] = float(_lambda_hist_weight)
             if _inverse_alpha_T is not None:
@@ -2867,9 +2904,11 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                         np.array(_inverse_alpha_T_history))
 
         # ── 断裂确认：判据持续满足 confirm_cycles 圈 → 停止 ──────────────
-        if fatigue_on and _frac_detected and _frac_confirm_remaining <= 0:
-            print(f"  [Fracture confirmed] Stopping at cycle {j}. "
-                  f"First detected at cycle {_frac_cycle}.")
+        if (fatigue_on and _frac_confirmed_cycle is not None
+                and not _frac_confirmation_reported):
+            _frac_confirmation_reported = True
+            print(f"  [Fracture confirmed] physical cycle {_frac_confirmed_cycle}. "
+                  f"First detected at physical cycle {_frac_cycle}.")
             np.save(str(trainedModel_path / 'E_el_vs_cycle.npy'),
                     np.array(E_el_history))
             np.save(str(trainedModel_path / 'x_tip_alpha_vs_cycle.npy'),   # ★ α 基准名称更新
@@ -2899,7 +2938,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             if _inverse_alpha_T_history:
                 np.save(str(trainedModel_path / 'inverse_alpha_T_vs_cycle.npy'),
                         np.array(_inverse_alpha_T_history))
-            break
+            if not _event_continue_after_confirmation:
+                break
 
     # 循环正常结束（跑完所有圈）也保存历史
     if fatigue_on and E_el_history:

@@ -13,7 +13,11 @@ sys.path.insert(0, str(ROOT / "source"))
 
 from compute_energy import compute_energy_per_elem, get_psi_plus_per_elem  # noqa: E402
 from material_properties import MaterialProperties  # noqa: E402
-from model_train import validate_history_storage_for_connectivity  # noqa: E402
+from model_train import (  # noqa: E402
+    _physical_peak_cycle,
+    _save_element_diagnostics,
+    validate_history_storage_for_connectivity,
+)
 from pff_model import PFFModel  # noqa: E402
 from tri3_quadrature import tri3_gradient, tri3_interpolate, tri3_shape_data  # noqa: E402
 from utils import parse_mesh  # noqa: E402
@@ -111,3 +115,46 @@ def test_native_tri3_history_contract_is_arity_and_storage_strict():
     validate_history_storage_for_connectivity(cfg, tri3, "tri3")
     with pytest.raises(ValueError, match="Q4 fatigue requires|requires 3-node connectivity"):
         validate_history_storage_for_connectivity(cfg, q4, "mixed")
+
+
+def test_physical_peak_mapping_excludes_recovery_and_nonpeak_steps():
+    kwargs = dict(step_offset=1, n_substeps=5, peak_substep_index=3)
+    assert _physical_peak_cycle(0, **kwargs) is None
+    assert _physical_peak_cycle(1, **kwargs) is None
+    assert _physical_peak_cycle(4, **kwargs) == 1
+    assert _physical_peak_cycle(9, **kwargs) == 2
+    assert _physical_peak_cycle(414, **kwargs) == 83
+
+
+def test_tri3_diagnostic_writer_accepts_multi_element_gp3_state(tmp_path):
+    points = torch.tensor(
+        [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],
+        dtype=torch.float64,
+    )
+    conn = torch.tensor([[0, 1, 2], [0, 2, 3]], dtype=torch.long)
+    u = 0.01 * points[:, 0]
+    v = 0.02 * points[:, 1]
+    alpha = torch.tensor([0.1, 0.2, 0.3, 0.15], dtype=torch.float64)
+    hist_alpha = alpha.clone()
+    area = torch.full((2,), 0.5, dtype=torch.float64)
+    material = MaterialProperties(1.0, 0.3, 1.0, 0.01)
+    model = PFFModel("AT1", "volumetric", 5.0e-3, residual_stiffness=0.0)
+    active_gp = get_psi_plus_per_elem(
+        points, u, v, alpha, material, model, area, conn,
+        history_driver_reduction_dict={"enable": True, "mode": "native_tri3_gp3"},
+    )
+    gp_state = torch.zeros((2, 3), dtype=torch.float64)
+    _save_element_diagnostics(
+        points, conn, u, v, alpha, hist_alpha, gp_state,
+        torch.ones_like(gp_state), active_gp, gp_state,
+        material, model, area, 1, tmp_path,
+        irreversibility_penalty_cfg={
+            "enable": True,
+            "mode": "fem_gp_tri3",
+            "spatial_integration": "native_tri3_gp3",
+        },
+    )
+    saved = np.load(tmp_path / "element_fields_cycle_0001.npz")
+    assert saved["psi_raw_gp"].shape == (2, 3)
+    assert saved["E_el_elem"].shape == (2,)
+    assert np.isfinite(saved["E_el_elem"]).all()

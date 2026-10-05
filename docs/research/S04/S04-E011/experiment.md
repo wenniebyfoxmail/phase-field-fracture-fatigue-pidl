@@ -63,10 +63,13 @@ comparison cannot isolate network capacity or establish physical truth.
 
 ## Event and state labels
 
-The source-verified existing event rule is retained for all arms: at the peak
+The source-verified existing event delay is retained for all arms: at the peak
 of a physical cycle, at least three common nodes satisfying `x>0.48` and
-`d>0.95` produce first detection; three consecutive physical-cycle detections
-produce confirmation.  Recovery is global step 0 and is not a physical cycle;
+`d>0.95` produce first detection; confirmation is labelled three subsequent
+physical cycles later and does not require three renewed detections.  The
+claim-bearing labels are recomputed after each run from the saved peak nodal
+fields with this one common rule; solver-side detectors are operational
+monitors only.  Recovery is global step 0 and is not a physical cycle;
 `global_step(c,s)=5(c-1)+s`, so c83s3=413 and c83s4=414.  Runs continue through
 cycle 120 unless a numerical or evidence failure occurs.
 
@@ -85,6 +88,9 @@ cycle 120 unless a numerical or evidence failure occurs.
    accepted substep.  Any OOM, NaN/Inf, contract mismatch or evidence-write
    failure is NO-GO.
 5. Exact-commit independent review is required before production.
+6. FEM writes an immutable post-commit snapshot for every one of the 600
+   physical substeps; the recovery state is stored separately.  PIDL retains
+   every accepted substep checkpoint and its native GP histories.
 
 ## Comparisons
 
@@ -127,4 +133,3 @@ removes lineage and sparse-output ambiguity and provides a direct Q4
 regression against the canonical c76/c82/c83 hashes/fields.  Windows MATLAB
 on `citpc12-ssh` is the FEM producer.  Taobo is the preferred PIDL producer;
 no PIDL launch is allowed without fresh read-only GPU/ownership inspection.
-

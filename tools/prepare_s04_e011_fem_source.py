@@ -32,14 +32,17 @@ def main() -> None:
 
     abaqus = root / "Sources/+specimen/+external/abaqus_import.m"
     capture = root / "Sources/+phase_field/+audit/capture_peak_state.m"
+    postcommit = root / "Sources/+phase_field/+audit/capture_post_commit_state.m"
+    simplex_quad = root / "Sources/+phase_field/+fem/+quadrature/simplex_quad.m"
     solver = root / "Scripts/fatigue_fracture/solve_fatigue_fracture.m"
     runner = root / "Scripts/fatigue_fracture/run_SENS_hard_recovery_native_q4_capture.m"
-    for path in (abaqus, capture, solver, runner):
+    for path in (abaqus, capture, postcommit, simplex_quad, solver, runner):
         if not path.is_file():
             raise FileNotFoundError(path)
 
     replace_exact(abaqus, "nel = 4;                    %number of nodes per element",
                   "nel = size(elem,2);         % number of nodes per element (Q4 or T3)")
+    replace_exact(abaqus, "elem = round(elem,4);\nnode = round(node,4);\n", "")
     replace_exact(
         capture,
         "if numel(history_size) ~= 3 || history_size(2) ~= 4 || history_size(3) ~= 4\n"
@@ -56,6 +59,27 @@ def main() -> None:
         "char(native_q4_capture.label))"
     )
     replace_exact(solver, old_filename, new_filename, count=2)
+    replace_exact(solver, "sys.MESH.elem(:,1:4)",
+                  "sys.MESH.elem(:,1:sys.MESH.nel)")
+    replace_exact(solver, "phase_field.audit.q4_strain_at_gauss_points(",
+                  "phase_field.audit.strain_at_gauss_points(")
+    replace_exact(solver, "'connectivity_q4', request28_connectivity,",
+                  "'connectivity', request28_connectivity,")
+
+    replace_exact(
+        simplex_quad,
+        "phase_field.fem.quadrature.2D_simplex(quad_order)",
+        "phase_field.fem.quadrature.simplex_2d(quad_order)",
+    )
+
+    tools_dir = Path(__file__).resolve().parent
+    (root / "Sources/+phase_field/+fem/+quadrature/simplex_2d.m").write_bytes(
+        (tools_dir / "simplex_2d.m").read_bytes()
+    )
+    (root / "Sources/+phase_field/+audit/strain_at_gauss_points.m").write_bytes(
+        (tools_dir / "strain_at_gauss_points.m").read_bytes()
+    )
+    postcommit.write_bytes((tools_dir / "capture_post_commit_state.m").read_bytes())
 
     insertion_anchor = "run(fullfile(repo_root, 'Scripts', 'brittle_fracture', 'INPUT_SENS_tensile.m'));\n"
     insertion = insertion_anchor + """
@@ -125,7 +149,12 @@ QUADRATURE = phase_field.init.quadrature(MESH.dim, ...
     launch_dst.write_bytes(launch_src.read_bytes())
 
     print("S04-E011 FEM patch applied")
-    for path in (abaqus, capture, solver, runner, launch_dst):
+    patched_files = (
+        abaqus, capture, postcommit, simplex_quad, solver, runner, launch_dst,
+        root / "Sources/+phase_field/+fem/+quadrature/simplex_2d.m",
+        root / "Sources/+phase_field/+audit/strain_at_gauss_points.m",
+    )
+    for path in patched_files:
         print(f"{sha256(path)}  {path.relative_to(root)}")
 
 

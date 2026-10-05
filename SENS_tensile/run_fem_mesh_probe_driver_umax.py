@@ -442,6 +442,11 @@ def main() -> None:
         },
     }
     config.fatigue_dict["fracture_confirm_cycles"] = int(args.fracture_confirm_cycles)
+    config.fatigue_dict["fracture_evaluate_physical_peak_only"] = True
+    config.fatigue_dict["fracture_continue_after_confirmation"] = True
+    config.fatigue_dict["fracture_peak_substep_index"] = int(peak_substep)
+    config.fatigue_dict["fracture_step_offset"] = int(recovery_step_offset)
+    config.fatigue_dict["enable_E_fallback"] = False
     config.fatigue_dict["plot_every_n_cycles"] = int(args.plot_every)
     config.fatigue_dict["element_diagnostics"] = {
         "enable": True,
