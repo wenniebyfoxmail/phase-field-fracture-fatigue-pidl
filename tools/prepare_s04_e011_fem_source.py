@@ -65,6 +65,16 @@ def main() -> None:
     # five effective states and remains cfg.requested_n_step below.
     replace_exact(config_builder, "expect(m, 'requested_n_step', 8);",
                   "expect(m, 'requested_n_step', 5);")
+    replace_exact(
+        config_builder,
+        "checkpoint.SOL_CYCL_VAR.n_cycle ~= 86 ||",
+        "checkpoint.SOL_CYCL_VAR.n_cycle ~= 89 ||",
+    )
+    replace_exact(
+        config_builder,
+        "Checkpoint does not identify confirmed Hard-5 cycle 86.",
+        "Checkpoint is not the sealed post-confirmation Hard-5 cycle 89 capture.",
+    )
     replace_exact(solver, "sys.MESH.elem(:,1:4)",
                   "sys.MESH.elem(:,1:sys.MESH.nel)")
     replace_exact(solver, "phase_field.audit.q4_strain_at_gauss_points(",
