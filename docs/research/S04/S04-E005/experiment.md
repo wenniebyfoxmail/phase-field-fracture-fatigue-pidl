@@ -61,6 +61,8 @@ The target step's own post-commit checkpoint is forbidden as predecessor input. 
 
 Each cycle records: input/pairing qualification, numerical equivalence, feasibility of the FEM current damage under the PIDL predecessor constraint, stationarity screening, and temporal-interpretation eligibility. A feasibility failure is retained with magnitude and location; the FEM current field is not clipped or repaired before evaluation. A vector-gate failure blocks same-field cross-trend interpretation. A stationarity failure does not invalidate the row.
 
+The executable binds the reviewed manifest by SHA-256, validates the complete six-row role/qualification/pairing tuple and all four frozen scalar gates, and rejects any output path inside the resolved input tree. A vector-gate failure is written to the cycle table and summary before the local trend is marked `NOT_EVALUABLE`; it is not converted into an exception that discards the audit evidence.
+
 ## Frozen spatial and trend outputs
 
 Use real cycle x coordinates and separate log-scale UV/damage panels with the unchanged `1e-3` line. Missing cycles remain missing and are not joined. Spatial maps use globally assembled nodal UV residuals, the box-projected damage correction, common cross-cycle colour scales, native material coordinates and FEM damage contours. Fixed changes are c76->c82 and c82->c83; no crack-tip translation or per-panel normalization is allowed. Raw vectors, coordinates, masses and masks are archived so figures are reconstructable.

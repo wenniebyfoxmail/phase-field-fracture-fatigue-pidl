@@ -28,8 +28,21 @@ from weak_form import assemble, assert_native_gp_shape
 TAU = 1.0e-3
 VECTOR_GATE = 1.0e-9
 LOCAL_GROWTH_GATE = 3.0
+FULL_GROWTH_GATE = 3.0
 EXPECTED_NODES = 86756
 EXPECTED_ELEMENTS = 86408
+EXPECTED_PAIRING = (
+    (20, "early", "INELIGIBLE", "", ""),
+    (40, "early", "INELIGIBLE", "", ""),
+    (60, "early", "INELIGIBLE", "", ""),
+    (76, "bridge", "ELIGIBLE", 379, 378),
+    (82, "terminal", "ELIGIBLE", 409, 408),
+    (83, "terminal-first-detect", "ELIGIBLE", 414, 413),
+)
+# SHA256 of the separately reviewed, tracked manifest.  This prevents a runtime
+# manifest and its inputs from drifting together while retaining valid internal
+# hashes.
+EXPECTED_MANIFEST_SHA256 = "443952d8106bd9102b397d5d7d52515250cfe6bba5ec58fd74d3e0f4d0bab5d1"
 
 
 def sha256(path):
@@ -70,6 +83,40 @@ def verify_file(root, record, key):
     return path
 
 
+def validate_output_path(inputs, out):
+    input_root = inputs.resolve(strict=True)
+    output_root = out.resolve(strict=False)
+    if output_root == input_root or input_root in output_root.parents:
+        raise ValueError("Output path must be outside the read-only input tree")
+    return input_root, output_root
+
+
+def validate_manifest(manifest):
+    if manifest["protocol_revision"] != "20261005-r1-frozen":
+        raise ValueError("Wrong protocol revision")
+    frozen_scalars = (
+        ("stationarity_threshold", TAU),
+        ("vector_gate", VECTOR_GATE),
+        ("local_growth_gate", LOCAL_GROWTH_GATE),
+        ("full_growth_gate", FULL_GROWTH_GATE),
+    )
+    for key, expected in frozen_scalars:
+        if manifest.get(key) != expected:
+            raise ValueError(f"Frozen protocol field mismatch: {key}")
+    observed = tuple(
+        (
+            int(row["cycle"]),
+            row["role"],
+            row["qualification"],
+            row["target_step"],
+            row["predecessor_step"],
+        )
+        for row in manifest["candidates"]
+    )
+    if observed != EXPECTED_PAIRING:
+        raise ValueError("Frozen candidate/pairing contract drift")
+
+
 def qualify_checkpoint(checkpoint, xy, conn):
     expected_signature = mesh_signature(xy.astype(np.float32), conn)
     if checkpoint.get("mesh_state_signature") != expected_signature:
@@ -100,6 +147,10 @@ def evaluate_cycle(root, record):
 
     with h5py.File(target_path) as handle:
         state = handle["cycle_state"]
+        if int(state["cycle"][()].ravel()[0]) != cycle:
+            raise ValueError(f"Target cycle mismatch at c{cycle}")
+        if int(state["substep"][()].ravel()[0]) != 4:
+            raise ValueError(f"Target substep mismatch at c{cycle}")
         xy = state["node_coords"][()].T
         conn = state["connectivity_q4"][()].T.astype(np.int64) - 1
         uv = state["u_node"][()].T
@@ -179,9 +230,6 @@ def evaluate_cycle(root, record):
         uv_mass,
         force_scale,
     )
-    if vector_check["status"] != "PASS":
-        raise ValueError(f"Same-field UV vector gate failed at c{cycle}")
-
     projected_damage = arrays["projected_damage_residual"]
     cross_box_common = float(np.sqrt(np.sum(mass[free_damage] * projected_damage[free_damage] ** 2)))
     normalized_matlab_damage = matlab_damage / energy_scale
@@ -189,6 +237,11 @@ def evaluate_cycle(root, record):
     matlab_box_all = float(np.sqrt(np.sum(mass * matlab_projected**2)))
     matlab_box_common = float(np.sqrt(np.sum(mass[free_damage] * matlab_projected[free_damage] ** 2)))
     matlab_rho_u = norm_mass(matlab_uv.T.ravel()[free_uv] * displacement_scale / energy_scale, uv_mass)
+
+    healing_gp = arrays["healing_gp"]
+    healing_flat = int(np.argmax(healing_gp))
+    healing_element, healing_gp_index = np.unravel_index(healing_flat, healing_gp.shape)
+    healing_xy = weak["shape"][healing_gp_index] @ xy[conn[healing_element]]
 
     pidl_uv_scaled = pidl_uv * displacement_scale / energy_scale
     matlab_uv_scaled = matlab_uv * displacement_scale / energy_scale
@@ -221,6 +274,10 @@ def evaluate_cycle(root, record):
         "feasibility": "PASS" if scalars["healing_gp_max"] <= 1e-12 else "FAIL",
         "healing_gp_max": float(scalars["healing_gp_max"]),
         "healing_gp_rms": float(scalars["healing_gp_rms"]),
+        "healing_argmax_element_zero_based": int(healing_element),
+        "healing_argmax_gp_zero_based": int(healing_gp_index),
+        "healing_argmax_x": float(healing_xy[0]),
+        "healing_argmax_y": float(healing_xy[1]),
         "energy_scale": energy_scale,
         "force_scale": force_scale,
         "total_area": float(weak["det"].sum()),
@@ -250,45 +307,15 @@ def evaluate_cycle(root, record):
     return result, vector_check, fields
 
 
-def write_csv(path, rows):
-    with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
-        writer.writeheader()
-        writer.writerows(rows)
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--inputs", type=Path, required=True)
-    parser.add_argument("--out", type=Path, required=True)
-    args = parser.parse_args()
-    args.out.mkdir(parents=True, exist_ok=False)
-    torch.set_num_threads(1)
-    started = time.time()
-    manifest = json.loads((args.inputs / "manifest.json").read_text())
-    if manifest["protocol_revision"] != "20261005-r1-frozen":
-        raise ValueError("Wrong protocol revision")
-    if manifest["stationarity_threshold"] != TAU or manifest["vector_gate"] != VECTOR_GATE:
-        raise ValueError("Frozen threshold mismatch")
-
-    pairing_rows = manifest["candidates"]
-    write_csv(args.out / "state_pairing.csv", pairing_rows)
-    eligible = [row for row in pairing_rows if row["qualification"] == "ELIGIBLE"]
-    if [int(row["cycle"]) for row in eligible] != [76, 82, 83]:
-        raise ValueError("Eligible cycle set drift")
-
-    cycle_rows = []
-    comparisons = {}
-    field_payload = {}
-    for record in eligible:
-        row, comparison, fields = evaluate_cycle(args.inputs, record)
-        cycle_rows.append(row)
-        comparisons[str(row["cycle"])] = comparison
-        for key, value in fields.items():
-            field_payload[f"c{row['cycle']}_{key}"] = value
-    write_csv(args.out / "cycle_residuals.csv", cycle_rows)
-    np.savez_compressed(args.out / "spatial_fields.npz", **field_payload)
-
+def summarize_local(cycle_rows):
+    failed = [row["cycle"] for row in cycle_rows if row["numerical_equivalence"] != "PASS"]
+    if failed:
+        blocked = {
+            "status": "NOT_EVALUABLE",
+            "reason": f"Same-field vector gate failed at cycles {failed}",
+            "threshold": LOCAL_GROWTH_GATE,
+        }
+        return {"uv": dict(blocked), "damage": dict(blocked)}, "BLOCKED_NUMERICAL_EQUIVALENCE"
     by_cycle = {row["cycle"]: row for row in cycle_rows}
     local = {}
     for channel, key in (("uv", "rho_u"), ("damage", "box_rho_d_common_free")):
@@ -304,13 +331,66 @@ def main():
             "threshold": LOCAL_GROWTH_GATE,
             "status": "PASS" if ratio >= LOCAL_GROWTH_GATE else "FAIL",
         }
+    return local, "EVALUATED"
+
+
+def write_csv(path, rows):
+    with path.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--inputs", type=Path, required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    input_root, output_root = validate_output_path(args.inputs, args.out)
+    torch.set_num_threads(1)
+    started = time.time()
+    manifest_path = input_root / "manifest.json"
+    if sha256(manifest_path) != EXPECTED_MANIFEST_SHA256:
+        raise ValueError("Frozen manifest fingerprint mismatch")
+    manifest = json.loads(manifest_path.read_text())
+    validate_manifest(manifest)
+    output_root.mkdir(parents=True, exist_ok=False)
+    args.inputs, args.out = input_root, output_root
+
+    pairing_rows = manifest["candidates"]
+    write_csv(args.out / "state_pairing.csv", pairing_rows)
+    eligible = [row for row in pairing_rows if row["qualification"] == "ELIGIBLE"]
+
+    cycle_rows = []
+    comparisons = {}
+    field_payload = {}
+    for record in eligible:
+        row, comparison, fields = evaluate_cycle(args.inputs, record)
+        cycle_rows.append(row)
+        comparisons[str(row["cycle"])] = comparison
+        for key, value in fields.items():
+            field_payload[f"c{row['cycle']}_{key}"] = value
+    write_csv(args.out / "cycle_residuals.csv", cycle_rows)
+    np.savez_compressed(args.out / "spatial_fields.npz", **field_payload)
+
+    by_cycle = {row["cycle"]: row for row in cycle_rows}
+    local, local_interpretation = summarize_local(cycle_rows)
     intervals = []
     for left, right in ((76, 82), (82, 83)):
-        item = {"left": left, "right": right, "delta_cycle": right - left}
+        item = {
+            "left": left,
+            "right": right,
+            "delta_cycle": right - left,
+            "interpretation_status": local_interpretation,
+        }
         for key in ("rho_u", "box_rho_d_common_free"):
-            delta = by_cycle[right][key] - by_cycle[left][key]
-            item["delta_" + key] = delta
-            item["per_cycle_" + key] = delta / (right - left)
+            if local_interpretation == "EVALUATED":
+                delta = by_cycle[right][key] - by_cycle[left][key]
+                item["delta_" + key] = delta
+                item["per_cycle_" + key] = delta / (right - left)
+            else:
+                item["delta_" + key] = ""
+                item["per_cycle_" + key] = ""
         intervals.append(item)
     write_csv(args.out / "interval_changes.csv", intervals)
 
@@ -327,7 +407,12 @@ def main():
             "reason": "No c20/c40/c60 point is qualified under the frozen contract",
         },
         "local_c76_to_terminal": local,
-        "local_joint_status": "PASS" if all(v["status"] == "PASS" for v in local.values()) else "FAIL",
+        "local_joint_status": (
+            "NOT_EVALUABLE"
+            if local_interpretation != "EVALUATED"
+            else ("PASS" if all(v["status"] == "PASS" for v in local.values()) else "FAIL")
+        ),
+        "trend_status": local_interpretation,
         "interpretation_boundary": "Local bridge-to-terminal diagnostic only; cannot locate onset before c76.",
         "numerical_comparisons": comparisons,
         "training": False,

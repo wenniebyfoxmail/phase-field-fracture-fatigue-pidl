@@ -3,6 +3,7 @@
   "stationarity_threshold": 0.001,
   "vector_gate": 1e-09,
   "local_growth_gate": 3.0,
+  "full_growth_gate": 3.0,
   "known_result_disclosure": "c83 was already inspected in S04-E003",
   "candidates": [
     {

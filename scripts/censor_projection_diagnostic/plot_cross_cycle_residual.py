@@ -28,14 +28,29 @@ for axis, key, title in (
     (axes[1], "box_rho_d_common_free", "Damage box residual / common-free"),
 ):
     values = [float(row[key]) for row in rows]
-    axis.plot(cycles, values, marker="o", label="PIDL histories on FEM field")
+    line_style = "-" if trend["trend_status"] == "EVALUATED" else "none"
+    axis.plot(cycles, values, marker="o", ls=line_style, label="PIDL histories on FEM field")
     native_key = "matlab_rho_u" if key == "rho_u" else "matlab_box_rho_d_common_free"
-    axis.plot(cycles, [float(row[native_key]) for row in rows], marker="s", ls="--", label="archived FEM oracle")
+    native_label = (
+        "archived FEM UV oracle"
+        if key == "rho_u"
+        else "archived FEM damage diagnostic (different operator semantics)"
+    )
+    native_style = "--" if trend["trend_status"] == "EVALUATED" else "none"
+    axis.plot(
+        cycles,
+        [float(row[native_key]) for row in rows],
+        marker="s",
+        ls=native_style,
+        label=native_label,
+    )
     axis.axhline(1.0e-3, color="black", lw=0.8, ls=":", label="frozen 1e-3 screen")
     axis.set_yscale("log")
     axis.set_xlabel("Physical cycle (native peak s4)")
     axis.set_ylabel(key)
     axis.set_title(title)
+    if trend["trend_status"] != "EVALUATED":
+        axis.text(0.5, 0.95, "TREND BLOCKED: vector gate failure", transform=axis.transAxes, ha="center", va="top")
     axis.set_xticks(cycles)
     axis.legend(fontsize=7)
 fig.savefig(out / "cross_cycle_trend.png", dpi=200)
@@ -112,5 +127,7 @@ Read in order: `cross_cycle_trend` keeps UV and damage channels separate and sho
 Sources: `cycle_residuals.csv`, `trend_summary.json`, and `spatial_fields.npz` from S04-E005-R001. White contours are native FEM damage 0.25/0.5/0.75. The UV map uses globally assembled nodal residuals, not unassembled element force magnitudes.
 
 Allowed: a local c76-to-c82/c83 statement under the frozen branch and explicit stationarity/feasibility qualifications. Blocked: onset before c76, a complete c20-c83 temporal verdict, FEM teacher accuracy, field-error growth, causal attribution to the optimizer/network/fatigue mechanism, or replacement of S04-E006. Numerical vector agreement and stationarity are separate gates.
+
+The archived FEM damage trace is a contextual diagnostic with different penalty/fixed-DOF semantics; it is not a damage-operator equivalence claim. If any same-field UV vector comparison fails, points remain visible but are not connected and the trend is explicitly marked blocked.
 """
 )
