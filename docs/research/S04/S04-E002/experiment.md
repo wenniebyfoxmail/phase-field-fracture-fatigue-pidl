@@ -2,8 +2,8 @@
 storyline_id: S04
 experiment_id: S04-E002
 protocol_revision: draft-20261005
-status: draft
-scientific_verdict: pending
+status: cross-residual-complete; training-not-launched
+scientific_verdict: reference-nonstationary-for-frozen-counterfactual
 ---
 # Supervised native-Q4 projection followed by frozen-state physics polish
 
@@ -42,3 +42,7 @@ R002/Condor57, source7ada36f, PID2968, GPU3d74ea12-5d84-a619-90b2-c0b1f104599a, 
 Read-only target/history GP gap: max0.30220191498735444, area RMS0.02624947705585787. See target_history_overlap.json and preoptimization_decision.md. No supervised fitting or physical optimization has been launched.
 
 The external review failed to deliver a final response twice (see design_review_delivery.md). Protocol remains draft; exact-commit scientific code review and actual training smoke remain unfulfilled. Do not confuse the completed runtime probe with a training smoke.
+
+## 2026-10-05 audit completion (supersedes pending-review status above)
+
+The delayed Pro final DESIGN PASS was subsequently received (pro_design_received.md). Only the frozen cross-residual subset was implemented, code-reviewed at afb3b80 and run as R003/Condor58. Evidence/interpretation review PASS received. Both total residuals fail the frozen1e-3 screen: rho_u=.04133148 and box rho_d=.17479701. See cross_residual_result.md for execution evidence, decomposition, attribution limits and next gate. The supervised/polish parent remains unexecuted; a complete audited run protocol/code admission is still required before training. Earlier runtime-only results and delayed-review observations are retained as history, not current blockers.

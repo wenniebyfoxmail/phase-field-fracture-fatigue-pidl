@@ -279,3 +279,7 @@ First-pass priorities:
 ## 2026-10-05 — S04-E002 projected-state expression diagnostic
 
 Status `diagnostic` for read-only input/history audit; supervised projection/polish remains **not launched / protocol draft**. Why: separate representation, frozen-history compatibility and optimization. Correct production transition is413→414; the historical412→peak experiments skip one load substep. Native mesh identity passes. FEM target has GP no-healing conflict max0.302202 versus projected PIDL413 history; do not attribute later target departure solely to network/optimizer. Two independent Pro design requests returned no final protocol. Windows runtime probes are tooling-only and cannot qualify a scientific claim. Canonical detail: [S04-E002](research/S04/S04-E002/experiment.md) and [pre-optimization decision](research/S04/S04-E002/preoptimization_decision.md).
+
+### S04-E002 update: R003 cross-residual completed
+
+Status `diagnostic`: afb3b80 / D-26-09 Condor58, exit0,3tests PASS, exact-commit Code Ready and scoped evidence review PASS. The delayed design final arrived. Target is REFERENCE_NONSTATIONARY under frozen projected PIDL413: UV .04133148, box-damage .17479701 versus1e-3. Penalty dominates energy but history-only replacement cannot remove fixed-field UV residual. No qualified FEM predecessor control; no fitting/polish launched. Primary endpoint: [cross-residual decision](research/S04/S04-E002/cross_residual_result.md). Next: same-field FEM weak-form/energy-gradient consistency audit and qualified predecessor history.
