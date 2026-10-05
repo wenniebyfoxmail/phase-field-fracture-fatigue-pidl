@@ -307,6 +307,7 @@ def solve_amor_equilibrium(
     poisson_ratio: float = 0.3,
     residual_stiffness: float = 0.0,
     thickness: float = 1.0,
+    initial_displacement: np.ndarray | None = None,
     max_iterations: int = 25,
     tolerance: float = 1.0e-9,
     residual_tolerance: float = 1.0e-8,
@@ -349,6 +350,15 @@ def solve_amor_equilibrium(
     peak = float(np.max(np.abs(prescribed_values)))
     displacement[1::2] = peak * (kinematics.points[:, 1] - ymin) / span
     displacement[prescribed_dofs] = prescribed_values
+
+    if initial_displacement is not None:
+        initial = np.asarray(initial_displacement, dtype=np.float64).reshape(-1)
+        if initial.shape != displacement.shape or not np.all(np.isfinite(initial)):
+            raise ValueError("invalid initial displacement")
+        if not np.allclose(initial[prescribed_dofs], prescribed_values, rtol=0, atol=1e-12):
+            raise ValueError("initial displacement violates boundary conditions")
+        displacement = initial.copy()
+        displacement[prescribed_dofs] = prescribed_values
 
     relative_update = np.inf
     sign_changes = -1

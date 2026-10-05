@@ -380,3 +380,7 @@ Three distinct mesh campaigns exist in GRIPHFiTH:
 The new path keeps the 86,408 canonical FEM Q4 cells intact, evaluates all field gradients and energy terms at the native 2x2 Gauss points, and stores `alpha_bar`, `psi_plus_prev`, and `f` as `[element,4]`. The frozen exact-peak FEM source selects `AT1_PENALTY_FATIGUE`; no tensile-history `H=max(...)` field is added. Existing triangular runners and archived results remain unchanged because activation requires `--native-q4-gp-state --fem-irr-penalty` with a Q4 Abaqus `.inp` mesh.
 
 The calculation is classified as spatial-operator and Carrara commit-state alignment, not a fully identical discrete solve: FEM trial-`f` timing and staggered/Picard iteration still differ from the current Deep-Ritz joint load-step solve. Before producer launch the exact commit requires operator replay against c76/c82/c83 archived GP fields, GP history/checkpoint tests, independent read-only review, and a Taobo one-cycle smoke.
+
+### [decision] 2026-10-05 S04-E006 optional FEM-seeded UV diagnostic
+
+Add optional initial_displacement to damage_conditioned_equilibrium.solve_amor_equilibrium; default affine initialization and existing callers unchanged. Isolated teacher-precision wrapper opts in, fixed FEM damage/history, no training loop or constitutive change. Safe during existing runs; separate fresh Windows diagnostic only after exact-commit review. No core loss/architecture/training-loop changes.
