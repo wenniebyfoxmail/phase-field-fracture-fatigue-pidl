@@ -2,12 +2,12 @@
 storyline_id: S03
 experiment_id: S03-E001
 protocol_revision: v1
-status: ready
+status: closed
 started_at: 2026-10-05
-closed_at:
+closed_at: 2026-10-05
 primary_storyline: S03
 related_storylines: [S02]
-scientific_verdict:
+scientific_verdict: mixed
 ---
 
 # CrackMNIST mechanics-aware computer-vision feasibility pilot
@@ -178,7 +178,7 @@ augmentations within lineage so cropped masks cannot change lineage weight.
 
 ## Amendments
 
-None. Protocol v1 has not yet produced a Run.
+None. Protocol v1 was executed without threshold or configuration changes.
 
 ## Code review
 
@@ -198,25 +198,55 @@ None. Protocol v1 has not yet produced a Run.
 
 | Run ID | Purpose / arm / seed | Execution | Retrieval | Receipt |
 |---|---|---|---|---|
-| S03-E001-R001 | four folds, fixed three-seed ensemble | prepared | pending | pending |
+| S03-E001-R001 | four folds, fixed three-seed ensemble | succeeded on Taobo GPU 1 | verified: 12 checkpoints, 12 finite 40-epoch histories, four finite prediction archives, table and two readable figures | local `run_receipt.json`; remote archive `/mnt/data2/drtao/pidl_archives/pf_crackmnist_s03e001_0a110d0_20261005_084600/S03-E001-R001` |
 
 ## Evidence review
 
-- **Reviewer task:** pending.
+- **Reviewer task:** independent read-only review `crackmnist_code_review`.
 - **Bound Run IDs:** S03-E001-R001.
-- **Bound analysis package:** pending.
-- **Verdict:** pending.
-- **Blocking findings:** pending.
+- **Bound analysis package:** local
+  `local_archive/experiments/S03-E001/runs/S03-E001-R001/archive` with
+  `summary.json`, the four prediction archives, per-experiment table, figures,
+  receipt and interpretation files.
+- **Verdict:** `PASS_EVIDENCE_READY`. The first package inspection was
+  `QUALIFIED`: numerical evidence was admissible and independently reproduced
+  the frozen NO-GO, but the figure-set README, decision and five-sentence
+  summary were outside the `archive/` directory. Those three interpretation
+  artifacts were then added inside the archive, and the reviewer confirmed
+  `PASS_EVIDENCE_READY`; no metric, gate or scientific conclusion changed.
+- **Numerical findings:** independent recomputation matched every table metric
+  and both bootstraps; no implementation defect invalidated the run.
 
 ## Scientific verdict
 
-`inconclusive` until the frozen producer run and evidence review close.
+`mixed`, with frozen decision `NO_GO_CRACKMNIST_MECHANICS_CV`.
+
+- **Localisation PASS:** 4/4 experiment holdouts; CNN median error
+  0.200--0.291 px versus 7.169--8.616 px for the spatial prior and
+  10.858--14.006 px for energy argmax; lineage-blocked signed-improvement 95%
+  interval [6.742, 6.922] px.
+- **Incremental SIF FAIL:** the >=10% improvement threshold was reached in only
+  1/4 holdouts. A positive aggregate interval does not override the frozen 3/4
+  stability rule.
+- **Uncertainty/abstention FAIL:** abstention passed 3/4, but mean nominal-90%
+  coverage was 0.800 for KI, 0.824 for KII and 0.714 for T. Confidence is only
+  a preliminary sparse-event ranking diagnostic, not calibrated uncertainty.
 
 ## Claim impact
 
-No current Storyline claim changes at protocol freeze.
+S03 gains one bounded laboratory observation-operator result: within the four
+locked CrackMNIST-28/S near-tip DIC physical experiments, the fixed CNN
+localises the released one-pixel tip more accurately than both frozen
+localisation controls. The overall mechanics-aware CV route remains NO-GO;
+stable KI/KII/T recovery and calibrated uncertainty are not established.
+
+Raw-image vision, chronology, future crack growth, RUL, phase-field hidden-state
+recovery, specimen/material/external-domain generalisation and road transfer
+remain explicitly blocked.
 
 ## Next action
 
-Complete deterministic audit/tests and independent Code Ready review; then run
-Taobo health/ownership/storage preflight before dispatch.
+Do not run an architecture sweep on CrackMNIST S. If the localisation result is
+needed for the thesis, preregister one external-DIC or larger physical-
+experiment localisation replication under the same lineage and calibration
+rules; otherwise stop this route.
