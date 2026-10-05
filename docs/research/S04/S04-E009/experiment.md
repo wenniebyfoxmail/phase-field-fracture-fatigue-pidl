@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E009
 protocol_revision: 20261005-r0
-status: design-pass; code-review-pending
+status: complete; conditional-uv-pass; fullteacher-not-qualified
 ---
 # Restored c20/c40 native FEM peak audit
 

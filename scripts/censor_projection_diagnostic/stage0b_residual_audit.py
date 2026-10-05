@@ -96,9 +96,10 @@ def run(a):
         hard,filtered,_=hard_assess(fields['total_grad_damage'],d,prev,fd,mass,es)
         row=dict(cycle=c,substep=s,previous_substep=s-1,imposed_displacement=uy,normalization_Us=US,energy_scale=float(es),rho_u=rows[-1]['rho_u'],box=hard['box_mass_rms_free'],hard_kkt=hard,agreements=agreements,oracle_kind='archived_MATLAB_bridge' if bridge else 'reconstructed_not_archived_MATLAB',archived_oracle_gate='PASS' if bridge and all(v['status']=='PASS' for v in agreements.values()) else ('FAIL' if bridge else 'NOT_AVAILABLE'),full_teacher='NOT_QUALIFIED',slot1_used=False,uv_screen='PASS' if rows[-1]['rho_u']<=.001 else 'FAIL',box_screen='PASS' if hard['box_mass_rms_free']<=.001 else 'FAIL',history_energy=rows[2]['energy'])
         key=f'c{c:04d}_s{s:02d}'
+        row.update(box_01_original=row['box'],target_key=key,prior_key=f'c{c:04d}_s{s-1:02d}',fatigue_role='original_target_trial_frozen_partial_derivative',fatigue_array_ref=key+'.npz:fatigue')
         row['original_stopping_scalars']={k:float(index[key][k]) for k in ('equilibrium_residual','phase_residual','staggered_iterations')}
         (a.out/f'{key}.json').write_text(json.dumps(row,indent=2))
-        np.savez_compressed(a.out/f'{key}.npz',grad_uv=fields['total_grad_uv'],grad_damage=fields['total_grad_damage'],hard_filtered=filtered,box_map=fields['projected_damage_residual'],mass=mass)
+        np.savez_compressed(a.out/f'{key}.npz',grad_uv=fields['total_grad_uv'],grad_damage=fields['total_grad_damage'],hard_filtered=filtered,box_map=fields['projected_damage_residual'],mass=mass,fatigue=fatigue)
         allrows.append(row);(a.out/'rows.json').write_text(json.dumps(allrows,indent=2))
         assert all(v['status']=='PASS' for v in agreements.values()),key
         assert hard['exactly_feasible'] and rows[2]['energy']==0.

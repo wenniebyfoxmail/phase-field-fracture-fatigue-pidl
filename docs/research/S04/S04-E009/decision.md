@@ -17,4 +17,4 @@ Interpretation: the mass-normalized original UV screening discrepancy exists by 
 
 Coverage update: a separate Stage0b archive has supplied30 hash-matched selected states, including c60 and within-cycle predecessors. Its source53ce560 records current raw tensile energy in slot1 whereas old cdf native slot1 waszero; mechanics does not read slot1. Five overlapping peaks match currentu/d, prior damage and history slots2:4 exactly. Missing original MATLAB endpointvectors at the13 new targets are not silently replaced; proposed S04-E010 reconstruction has a separate gate and evidence label.
 
-Evidence review pending.
+Evidence review PASS on supplied records; original accepted fields fail the frozen freeUV equilibrium screen. box_01_original is not the hard-irreversibility KKT condition.

@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E010
 protocol_revision: 20261005-r0
-status: design-review-pending; not-executed
+status: design-pass; exact-code-review-pending; not-executed
 ---
 # Reconstructed native-Q4 residuals across six cycles and three substeps
 
@@ -21,3 +21,5 @@ ALL five known peaks must pass nativeMATLAB vs NumPy and Torch freeUV/freeDamage
 Screens unchanged: rho_u and box massRMS1e-3, hardKKT rawL2 migration4e-4, original boundtol1e-12 with exactfeasibility mandatory; hard normalized map has no threshold. Fatigue reconstructed from originaltarget+acceptedalpha/qprev once, frozen. No UVsolve, no damage solve, no historycommit, no training. Record original phase/raw stopping scalars separately from reconstructed values; these are not interchangeable.
 
 Evidence labels: five bridges archived_MATLAB_bridge;13newpoints reconstructed_not_archived_MATLAB and archived_oracle_gate=NOT_AVAILABLE. Passing bridge/numerical reconstruction never promotes originaloracle qualification. All fullteacher NOT_QUALIFIED. Tables use same definitions but preserve this evidence distinction. Trends descriptive over sampled cycle×substeps only; no causal onset/monotonic/fulltrajectory claim. D-26-09 CPUfloat64,one thread,8CPU32GB1GPUallocation (GPUunused),fresh run only after Design/CodeReady.
+
+Design clarification: raw psi is independently computed from original UV, not active energy or slot1. Fatigue is the original target-point trial coefficient, not prior/target committedf; its array is retained and detached from AD. Physical screen FAIL does not stop or discard a valid observation; only identity/feasibility/implementation gate failure blocks trend. box_01_original is an explicit output alias retaining original [0,1] values, not hardbound KKT.
