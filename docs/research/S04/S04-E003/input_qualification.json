@@ -1,0 +1,20 @@
+{
+  "native_source": "/Users/wenxiaofang/Library/CloudStorage/OneDrive-UniversityofCambridge/griphfith/hard5_u012_exact_peak_native_q4_c76_c82_c83_20260821_v1/native_q4/cycle_0083_peak_native_q4.mat",
+  "solver_commit": "cdf4e33710455606421806dfe6ff84ae09378d6b",
+  "field_identity_maxdiff": {
+    "u": 0.0,
+    "v": 0.0,
+    "d": 0.0
+  },
+  "state": "c83 s4 final staggered iteration24; frozen accepted prior history captured before damage/history commit",
+  "prior_damage_field": "pre_phase_input/p_field_old",
+  "not_prior_damage_field": "pre_phase_input/p_field (last staggered iterate)",
+  "oracle": "matlab_residual/R_u_full; internal minus external, blocked [all u,all v] ordering",
+  "prior_search_correction": "S04-E002 search missed v1/native_q4; c83 precursor now located; postcommit source remains invalid as prior",
+  "native_sha256": "e4270ebd45bf35703dffa8375c2d9b474bdceb303448ddfa6d5fc453956309d4",
+  "native_bytes": 34251696,
+  "v1_mesh_vs_v21": "exact array equality for coordinates/connectivity",
+  "history_vs_oracle": "exact equality for p_field_old and history_vars_old",
+  "source_zip_sha256": "1b60b36b3a1740eea68dd96e472165e0bab33cbd7da43bb8e13e9fa04eeb07ed",
+  "old_field_nonmutation": "MATLAB value copies; Fortran old fields intent(in), separate history_vars_new outputs; no assignment of old fields within staggered loop until after oracle"
+}
