@@ -182,7 +182,9 @@ def validate_qp_contract(problem: DamageQP, witness: np.ndarray, tolerance: floa
         raise ValueError("QP witness has the wrong length")
     arrays = (problem.hessian.data, problem.linear, problem.constraint.data,
               problem.lower[np.isfinite(problem.lower)],
-              problem.upper[np.isfinite(problem.upper)], problem.gp_lower, witness)
+              problem.upper[np.isfinite(problem.upper)], problem.gp_lower, witness,
+              np.asarray([problem.minimum_local_eigenvalue,
+                          problem.maximum_local_scale]))
     if any(not np.all(np.isfinite(value)) for value in arrays):
         raise RuntimeError("QP contract contains non-finite matrix/vector entries")
     asymmetry = problem.hessian - problem.hessian.T
@@ -201,6 +203,8 @@ def validate_qp_contract(problem: DamageQP, witness: np.ndarray, tolerance: floa
         "feasible_witness": max(lower_violation, upper_violation) <= tolerance,
         "assembly_psd": (
             np.isfinite(problem.minimum_local_eigenvalue)
+            and np.isfinite(problem.maximum_local_scale)
+            and problem.maximum_local_scale > 0.0
             and problem.minimum_local_eigenvalue
             >= -tolerance * problem.maximum_local_scale
         ),
@@ -220,6 +224,8 @@ def osqp_certificate(problem: DamageQP, damage: np.ndarray, dual: np.ndarray) ->
     y = np.asarray(dual, dtype=np.float64).reshape(-1)
     if x.shape != (problem.hessian.shape[0],) or y.shape != problem.lower.shape:
         raise ValueError("QP primal/dual certificate shapes do not match the problem")
+    if not np.all(np.isfinite(x)) or not np.all(np.isfinite(y)):
+        raise RuntimeError("QP primal/dual certificate contains non-finite values")
     ax = np.asarray(problem.constraint @ x).reshape(-1)
     gradient = np.asarray(problem.hessian @ x + problem.linear).reshape(-1)
     dual_force = np.asarray(problem.constraint.T @ y).reshape(-1)
@@ -325,6 +331,14 @@ def validate_a1_admission_receipt(
         value = float(receipt.get(key, np.nan))
         if not np.isfinite(value):
             raise RuntimeError(f"S04-E003 A1 receipt has invalid {key}")
+    for key in ("rho_u_trial", "rho_d_trial"):
+        if float(receipt[key]) > threshold:
+            raise RuntimeError(f"S04-E003 A1 receipt {key} exceeds the frozen 1e-3 gate")
+    derivative_threshold = float(receipt.get("directional_derivative_threshold", np.nan))
+    if derivative_threshold != 1.0e-5:
+        raise RuntimeError("S04-E003 directional-derivative threshold is not the frozen 1e-5")
+    if float(receipt["directional_derivative_error"]) > derivative_threshold:
+        raise RuntimeError("S04-E003 directional-derivative error exceeds its frozen threshold")
     return {**receipt, "receipt_sha256": actual_sha256}
 
 

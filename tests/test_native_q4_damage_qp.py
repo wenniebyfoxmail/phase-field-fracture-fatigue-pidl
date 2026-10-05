@@ -76,6 +76,17 @@ def test_local_psd_certificate_rejects_a_declared_indefinite_assembly():
         validate_qp_contract(bad, np.zeros(4))
 
 
+def test_nonfinite_or_nonpositive_local_psd_scale_is_rejected():
+    kin = one_element()
+    problem = assemble_at1_damage_qp(
+        kin, np.ones((1, 4)), np.ones((1, 4)), np.zeros((1, 4))
+    )
+    for value in (np.inf, np.nan, 0.0, -1.0):
+        bad = replace(problem, maximum_local_scale=value)
+        with pytest.raises(RuntimeError, match="non-finite|PSD"):
+            validate_qp_contract(bad, np.zeros(4))
+
+
 def test_qp_gradient_and_hessian_match_compute_energy_native_q4():
     points = np.array([[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], dtype=float)
     cells = np.array([[0, 1, 4, 3], [1, 2, 5, 4]], dtype=np.int32)
@@ -172,6 +183,7 @@ def test_a1_receipt_is_hash_bound_and_fail_closed(tmp_path):
         "rho_u_trial": 1.0e-4,
         "rho_d_trial": 2.0e-4,
         "directional_derivative_error": 3.0e-7,
+        "directional_derivative_threshold": 1.0e-5,
     }
     path = tmp_path / "receipt.json"
     path.write_text(json.dumps(payload, sort_keys=True))
@@ -186,4 +198,43 @@ def test_a1_receipt_is_hash_bound_and_fail_closed(tmp_path):
     with pytest.raises(RuntimeError, match="does not admit"):
         validate_a1_admission_receipt(
             path, digest, native_capture_sha256="capture", mesh_signature="mesh"
+        )
+
+
+def test_a1_receipt_rejects_numerically_false_pass(tmp_path):
+    payload = {
+        "schema": "s04-e003-native-cross-stationarity-admission-v1",
+        "label": "A1_TRIAL_F_ADMITTED",
+        "native_capture_sha256": "capture", "mesh_signature": "mesh",
+        "source_state": "lineage-qualified FEM c83 s4 pre-phase accepted state",
+        "target_state": "lineage-qualified FEM c83 s4 converged peak",
+        "native_gp_order": "(+,+),(-,+),(+,-),(-,-)",
+        "trial_f_semantics": "rebuilt from immutable accepted history",
+        "directional_derivative_pass": True,
+        "mechanics_residual_equivalence_pass": True,
+        "damage_residual_equivalence_pass": True,
+        "trial_cross_stationarity_pass": True, "admit_s04_e004": True,
+        "primary_threshold": 1.0e-3,
+        "rho_u_trial": 1.0e-4, "rho_d_trial": 2.0e-4,
+        "directional_derivative_error": 3.0e-7,
+        "directional_derivative_threshold": 1.0e-5,
+    }
+    path = tmp_path / "receipt.json"
+    for key, value in (("rho_u_trial", 100.0), ("rho_d_trial", 100.0),
+                       ("directional_derivative_error", 1.0e-4)):
+        candidate = dict(payload)
+        candidate[key] = value
+        path.write_text(json.dumps(candidate, sort_keys=True))
+        sha = hashlib.sha256(path.read_bytes()).hexdigest()
+        with pytest.raises(RuntimeError, match="exceeds"):
+            validate_a1_admission_receipt(
+                path, sha, native_capture_sha256="capture", mesh_signature="mesh"
+            )
+    candidate = dict(payload)
+    candidate["directional_derivative_threshold"] = 1.0e-3
+    path.write_text(json.dumps(candidate, sort_keys=True))
+    sha = hashlib.sha256(path.read_bytes()).hexdigest()
+    with pytest.raises(RuntimeError, match="threshold"):
+        validate_a1_admission_receipt(
+            path, sha, native_capture_sha256="capture", mesh_signature="mesh"
         )
