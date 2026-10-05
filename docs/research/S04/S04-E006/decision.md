@@ -34,7 +34,7 @@ Archived source cdf4e337: phase Newton returns res_pf; then damage is clamped be
 
 ## Decision / next gate
 
-Do not spend the next experiment on displacement precision alone. Freeze an endpoint damage audit that follows phase output -> clipping -> coefficient reconstruction with the SAME accepted state and declared constraint set; distinguish box constraints from hard irreversibility constraints before interpreting KKT. Compare native and candidate endpoint vectors and record the actual phase stopping scalar if available. Only after that closure can a teacher-qualified coupled solve or supervised-to-physics interpretation be promoted. Do not rewrite E004's stopped admission or relax1e-3 to rescue it.
+Do not spend the next experiment on displacement precision alone. Historical KKT work already exists; see the dated clarification below. Reuse its bound-aware method and first establish whether c83 has a native hard-irreversibility endpoint certificate with the correct accepted prior and final coefficients. The failed box screen is not proof of failure on that different feasible set. Intermediate phase-output -> clipping -> coefficient reconstruction is a localization question, not a reason to repeat the completed box audit. Preserve E004's stopped admission and all original thresholds.
 
 S04-E005 is a separate user-requested cross-cycle task, ID01a10c2a-ee02-74f0-bbbd-9f75d97a9ed3. Its results are not supplied by this c83-only experiment and are not inferred from it.
 
@@ -43,3 +43,20 @@ S04-E005 is a separate user-requested cross-cycle task, ID01a10c2a-ee02-74f0-bbb
 21 small tests pass locally and remotely. Six remote output hashes match retrieved originals. PID24500, CPUfloat64, one thread; scheduler allocated a GPU but numerical code did not use it. Logs/NPZ/figures and receipt: project root local_archive/experiments/S04-E006/runs/S04-E006-R001. Figure set is retrieved/output/audit/figures/teacher_precision.png/pdf with README_analysis.md; colors use declared log/symlog visualization scales. Default existing solver initialization unchanged unless the new explicit seed argument is given.
 
 Design and exact-code reviews PASS; external review covers pasted implementation/results, not independent repository/archive execution. See evidence_review.md for final interpretation status.
+
+## 2026-10-05 clarification: purpose, procedure, result, and earlier KKT
+
+Purpose: quantify the correction required for the **U≈0.12 FEM cycle83 peak substep s4**, corresponding to PIDL target414 (cross-audit prior413), to pass the common UV residual screen. The comparison is archived versus UV-re-equilibrated **same-cycle** fields, not an inter-cycle error. E006 uses the qualified FEM accepted prior, not PIDL413 as FEM history.
+
+Procedure: seed UV with the original FEM field on native Q4; freeze current damage, BC, accepted FEM damage prior and original target-point trial fatigue coefficient; solve UV only; check the existing normalized residual and independent-gradient gates; measure field corrections. No damage solve or history commit.
+
+Result: conditional UV screen passes with the corrections in the table above. Full teacher qualification remains unestablished. Specifically, the failed box screen does **not** establish failure of FEM's hard-irreversibility KKT conditions.
+
+Historical evidence checked against local archived analysis/code (paths relative to project root):
+
+- `local_archive/after_strict_setting_alignment/fem/hard5_phase_subproblem_frozen_state_audit_20260731/analysis/decision.md` and `frozen_phase_summary.json`: U0.13 Request27, c4 unload -> c5 loading steps and 11 peak staggers; nodal hard bounds d_old<=d<=1, 251 precrack nodes excluded. Active-bound sign-filtered raw residual L2 is 7.778073749e-5 at step1 and 2.449224945e-5 at peak, both below 4e-4; all audited anchors/staggers pass. Independent reconstruction matches MEX to max relative L2 3.83e-15. Large ordinary residual here is largely a legitimate bound reaction.
+- `local_archive/after_strict_setting_alignment/pidl_result/hard5_native_q4_direct_q4_step413_20261004/analysis/decision.md`: actual PIDL candidate Arm-A solve; B0-scaled box projected-map infinity norms used/candidate 0.071009/0.380987 fail 1e-3. Hard-lower-bound Arm B was not triggered. This is not an original FEM teacher certificate.
+- E002/E003 already evaluated c83 mass/energy-normalized box projected gradients, including accepted-history controls; E006 repeats that diagnostic after UV correction. These use [0,1] with soft history penalty, not the old nodal hard-lower-bound feasible set. Neither the normalization nor the threshold is interchangeable with the old c5 audit; U0.13 and U≈0.12 are different trajectories.
+- `local_archive/experiments/S04-E004/qp_certificate.json`: NOT_PRODUCED_A1_BLOCKED, producer_run_started=false, qp_solved=false. Full primal/dual/complementarity QP certification was not produced.
+
+Remaining evidence gap in the checked artifacts: c83 under its own correct FEM hard-irreversibility constraints and coefficient timing. Reuse the old method before commissioning a new solver experiment. The historical c5 PASS and present box-screen failures remain valid within their respective contracts. This clarification changes neither the frozen protocol nor the measured E006 verdict.
