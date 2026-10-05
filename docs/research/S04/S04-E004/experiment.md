@@ -27,7 +27,13 @@ residual with the candidate native-Q4 energy derivative.  If the trial-fatigue
 candidate remains nonstationary because of a formulation, boundary,
 normalization or state-semantics mismatch, S04-E004 stops before a producer
 solve.  A direct optimizer result under a mismatched functional cannot diagnose
-FEM/PIDL optimization capacity.
+FEM/PIDL optimization capacity.  Admission is machine-readable: the runner
+must consume a SHA-256-bound
+`s04-e003-native-cross-stationarity-admission-v1` receipt whose state labels,
+native-capture identity, mesh signature, GP order, directional-derivative and
+two residual-equivalence checks match the frozen schema, and whose
+`trial_cross_stationarity_pass` and `admit_s04_e004` fields are both true.
+Missing, stale, malformed or negative receipts stop before assembly.
 
 The older S04-E002 frozen-PIDL413 counterfactual already failed its `1e-3`
 screen (`rho_u=0.04133148`, box `rho_d=0.17479701`).  It motivates this gate but
@@ -125,4 +131,3 @@ restart or branch.
 On completion, add one row to `docs/pidl_experiment_inventory.md` and one dated
 S04 claim-impact entry.  Do not start a 120-cycle calculation from this
 experiment.
-

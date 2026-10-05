@@ -9,11 +9,14 @@ outer fixed-point state and must never be differentiated or refreshed inside
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
+import json
+from pathlib import Path
 
 import numpy as np
 from scipy import sparse
 
-from damage_conditioned_equilibrium import Q4Kinematics
+from damage_conditioned_equilibrium import Q4Kinematics, build_q4_kinematics
 
 
 @dataclass(frozen=True)
@@ -26,6 +29,8 @@ class DamageQP:
     gp_constraint: sparse.csr_matrix
     gp_lower: np.ndarray
     constant: float
+    minimum_local_eigenvalue: float
+    maximum_local_scale: float
 
 
 @dataclass(frozen=True)
@@ -36,6 +41,25 @@ class QPCertificate:
     dual_sign_inf: float
     complementarity_inf: float
     rho_damage: float
+
+
+NATIVE_FROM_LEGACY_GP = np.array([2, 3, 1, 0], dtype=np.int64)
+
+
+def build_native_q4_kinematics(points: np.ndarray, cells: np.ndarray) -> Q4Kinematics:
+    """Build kinematics in GRIPHFiTH's ``(+,+),(-,+),(+,-),(-,-)`` order."""
+    legacy = build_q4_kinematics(points, cells)
+    permutation = NATIVE_FROM_LEGACY_GP
+    return Q4Kinematics(
+        points=legacy.points,
+        cells=legacy.cells,
+        shape_values=legacy.shape_values[permutation],
+        b_matrices=legacy.b_matrices[:, permutation],
+        det_jacobians=legacy.det_jacobians[:, permutation],
+        element_dofs=legacy.element_dofs,
+        assembly_rows=legacy.assembly_rows,
+        assembly_cols=legacy.assembly_cols,
+    )
 
 
 def gauss_interpolation_matrix(kinematics: Q4Kinematics) -> sparse.csr_matrix:
@@ -133,6 +157,9 @@ def assemble_at1_damage_qp(
     constraint = sparse.vstack((identity, gp_constraint), format="csc")
     lower = np.concatenate((np.zeros(n_nodes), previous.reshape(-1)))
     upper = np.concatenate((np.ones(n_nodes), np.full(4 * n_elem, np.inf)))
+    local_eigenvalues = np.linalg.eigvalsh(local_hessian)
+    minimum_local_eigenvalue = float(np.min(local_eigenvalues))
+    maximum_local_scale = max(float(np.max(np.abs(local_hessian))), 1.0)
     return DamageQP(
         hessian=hessian,
         linear=linear,
@@ -142,40 +169,46 @@ def assemble_at1_damage_qp(
         gp_constraint=gp_constraint,
         gp_lower=previous.reshape(-1),
         constant=constant,
+        minimum_local_eigenvalue=minimum_local_eigenvalue,
+        maximum_local_scale=maximum_local_scale,
     )
 
 
 def validate_qp_contract(problem: DamageQP, witness: np.ndarray, tolerance: float = 1.0e-10) -> dict:
-    """Check symmetry, PSD samples and feasibility before a producer solve."""
+    """Check finite structure, assembly PSD certificate and feasibility."""
     witness = np.asarray(witness, dtype=np.float64).reshape(-1)
     n = problem.hessian.shape[0]
     if witness.shape != (n,):
         raise ValueError("QP witness has the wrong length")
+    arrays = (problem.hessian.data, problem.linear, problem.constraint.data,
+              problem.lower[np.isfinite(problem.lower)],
+              problem.upper[np.isfinite(problem.upper)], problem.gp_lower, witness)
+    if any(not np.all(np.isfinite(value)) for value in arrays):
+        raise RuntimeError("QP contract contains non-finite matrix/vector entries")
     asymmetry = problem.hessian - problem.hessian.T
     symmetry_inf = 0.0 if asymmetry.nnz == 0 else float(np.max(np.abs(asymmetry.data)))
     values = problem.constraint @ witness
     lower_violation = float(np.max(np.maximum(problem.lower - values, 0.0)))
     finite_upper = np.isfinite(problem.upper)
     upper_violation = float(np.max(np.maximum(values[finite_upper] - problem.upper[finite_upper], 0.0)))
-    rng = np.random.default_rng(20261005)
-    minimum_rayleigh = np.inf
-    for _ in range(8):
-        direction = rng.standard_normal(n)
-        direction /= max(float(np.linalg.norm(direction)), np.finfo(float).eps)
-        minimum_rayleigh = min(minimum_rayleigh, float(direction @ (problem.hessian @ direction)))
     scale = max(float(np.max(np.abs(problem.hessian.data))), 1.0)
     report = {
         "symmetry_inf": symmetry_inf,
-        "minimum_sampled_rayleigh": minimum_rayleigh,
+        "minimum_local_eigenvalue": problem.minimum_local_eigenvalue,
+        "maximum_local_scale": problem.maximum_local_scale,
         "witness_lower_violation": lower_violation,
         "witness_upper_violation": upper_violation,
         "feasible_witness": max(lower_violation, upper_violation) <= tolerance,
-        "sampled_psd": minimum_rayleigh >= -tolerance * scale,
+        "assembly_psd": (
+            np.isfinite(problem.minimum_local_eigenvalue)
+            and problem.minimum_local_eigenvalue
+            >= -tolerance * problem.maximum_local_scale
+        ),
     }
     if symmetry_inf > tolerance * scale:
         raise RuntimeError(f"QP Hessian symmetry contract failed: {report}")
-    if not report["sampled_psd"]:
-        raise RuntimeError(f"QP sampled PSD contract failed: {report}")
+    if not report["assembly_psd"]:
+        raise RuntimeError(f"QP local-assembly PSD contract failed: {report}")
     if not report["feasible_witness"]:
         raise RuntimeError(f"QP GP-irreversibility feasibility contract failed: {report}")
     return report
@@ -207,10 +240,21 @@ def osqp_certificate(problem: DamageQP, damage: np.ndarray, dual: np.ndarray) ->
         float(np.max(np.abs(upper_multiplier[finite_upper] * upper_slack[finite_upper]))),
     )
     active_tolerance = 1.0e-7
-    inactive = (lower_slack > active_tolerance) & (
-        (~finite_upper) | (upper_slack > active_tolerance)
+    finite_lower = np.isfinite(problem.lower)
+    lower_active = finite_lower & (lower_slack <= active_tolerance)
+    upper_active = finite_upper & (upper_slack <= active_tolerance)
+    equality = lower_active & upper_active & (
+        np.abs(problem.upper - problem.lower) <= active_tolerance
     )
-    dual_sign = float(np.max(np.abs(y[inactive]))) if np.any(inactive) else 0.0
+    lower_only_active = lower_active & ~upper_active
+    upper_only_active = upper_active & ~lower_active
+    inactive = ~lower_active & ~upper_active
+    sign_violation = np.zeros_like(y)
+    sign_violation[lower_only_active] = np.maximum(y[lower_only_active], 0.0)
+    sign_violation[upper_only_active] = np.maximum(-y[upper_only_active], 0.0)
+    sign_violation[inactive] = np.abs(y[inactive])
+    sign_violation[equality] = 0.0
+    dual_sign = float(np.max(sign_violation))
     stationarity_inf = float(np.max(np.abs(stationarity)))
     scale = max(
         1.0,
@@ -228,6 +272,60 @@ def osqp_certificate(problem: DamageQP, damage: np.ndarray, dual: np.ndarray) ->
         complementarity_inf=complementarity,
         rho_damage=rho,
     )
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def validate_a1_admission_receipt(
+    path: Path,
+    expected_sha256: str,
+    *,
+    native_capture_sha256: str,
+    mesh_signature: str,
+) -> dict:
+    """Fail closed unless the lineage-qualified S04-E003 A1 gate passed."""
+    path = Path(path)
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    actual_sha256 = _sha256(path)
+    if actual_sha256.lower() != expected_sha256.lower():
+        raise RuntimeError("S04-E003 A1 receipt SHA-256 mismatch")
+    receipt = json.loads(path.read_text())
+    required = {
+        "schema": "s04-e003-native-cross-stationarity-admission-v1",
+        "label": "A1_TRIAL_F_ADMITTED",
+        "native_capture_sha256": native_capture_sha256,
+        "mesh_signature": mesh_signature,
+        "source_state": "lineage-qualified FEM c83 s4 pre-phase accepted state",
+        "target_state": "lineage-qualified FEM c83 s4 converged peak",
+        "native_gp_order": "(+,+),(-,+),(+,-),(-,-)",
+        "trial_f_semantics": "rebuilt from immutable accepted history",
+        "directional_derivative_pass": True,
+        "mechanics_residual_equivalence_pass": True,
+        "damage_residual_equivalence_pass": True,
+        "trial_cross_stationarity_pass": True,
+        "admit_s04_e004": True,
+    }
+    mismatches = {
+        key: {"expected": value, "actual": receipt.get(key)}
+        for key, value in required.items() if receipt.get(key) != value
+    }
+    if mismatches:
+        raise RuntimeError(f"S04-E003 A1 receipt does not admit S04-E004: {mismatches}")
+    threshold = float(receipt.get("primary_threshold", np.nan))
+    if threshold != 1.0e-3:
+        raise RuntimeError("S04-E003 A1 receipt threshold is not the frozen 1e-3")
+    for key in ("rho_u_trial", "rho_d_trial", "directional_derivative_error"):
+        value = float(receipt.get(key, np.nan))
+        if not np.isfinite(value):
+            raise RuntimeError(f"S04-E003 A1 receipt has invalid {key}")
+    return {**receipt, "receipt_sha256": actual_sha256}
 
 
 def solve_with_osqp(
