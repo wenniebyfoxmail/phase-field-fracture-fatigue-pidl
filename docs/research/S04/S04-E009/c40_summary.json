@@ -1,0 +1,226 @@
+{
+  "identity": {
+    "cycle": 40,
+    "substep": 4,
+    "native_sha": "bb772c07439ddbfa4c8cc75f415431fe0fd549f9ba2ce47ebbad1f62558539be",
+    "qualified_sha": "ecee498054293f66c881a7bcf08a51b1b0315b4e2d11fa20a50c7bbe204f16c5",
+    "state": "original FEM peak",
+    "prior": "own accepted pre_phase_input",
+    "replay": "request29_fixed_calendar_20260819_v2/u012; c0 to c40; solver cdf4e337"
+  },
+  "before": {
+    "energy": 0.009601381575709805,
+    "elastic_energy": 0.0034955804354030733,
+    "fracture_energy": 0.0061058011403067325,
+    "history_energy": 0.0,
+    "rho_u": 1.1879471087926596,
+    "rho_d_all": 0.05928713262332369,
+    "rho_d_common": 0.05116151005561091,
+    "weak_gradient_agreement": {
+      "max_abs": 5.57805077084847e-17,
+      "l2_diff": 2.1141225619107076e-15,
+      "mass_dual_diff": 1.0238861567645877e-12,
+      "mass_dual_ref": 0.14255351050146609,
+      "scaled_difference": 7.182468907028828e-12,
+      "threshold": 1e-09,
+      "status": "PASS"
+    },
+    "hard_kkt": {
+      "raw_l2": 0.007611112780316102,
+      "hard_kkt_raw_l2": 5.4850564247659153e-05,
+      "legacy_raw_kkt_l2": 5.485076446966449e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 81039,
+        "upper": 0,
+        "interior": 5437,
+        "collapsed": 29,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 2,
+      "max_kkt_abs": 5.199844989037018e-05,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.05116151005561091,
+      "hard_mass_rms_free": 0.008316663524887732,
+      "hard_normalized_threshold": null
+    },
+    "native_uv_agreement": {
+      "max_abs": 9.330279672242932e-17,
+      "l2_diff": 3.4564745259707007e-15,
+      "mass_dual_diff": 1.6664040518873757e-12,
+      "mass_dual_ref": 0.142553510501464,
+      "scaled_difference": 1.1689673905787553e-11,
+      "threshold": 1e-09,
+      "status": "PASS"
+    },
+    "native_damage_agreement": {
+      "max_abs": 3.6168306847758624e-18,
+      "l2_diff": 5.68641011421041e-17,
+      "mass_dual_diff": 2.634644063579262e-14,
+      "mass_dual_ref": 0.3631829197339686,
+      "scaled_difference": 7.254317095939254e-14,
+      "threshold": 1e-09,
+      "status": "PASS"
+    }
+  },
+  "after": {
+    "energy": 0.009600499476728641,
+    "elastic_energy": 0.0034946983364219095,
+    "fracture_energy": 0.0061058011403067325,
+    "history_energy": 0.0,
+    "rho_u": 4.8716251451470747e-11,
+    "rho_d_all": 0.0609085528189543,
+    "rho_d_common": 0.053031950963302765,
+    "weak_gradient_agreement": {
+      "max_abs": 4.765915581021046e-17,
+      "l2_diff": 2.093850441603632e-15,
+      "mass_dual_diff": 1.013753479684649e-12,
+      "mass_dual_ref": 5.845944328226314e-12,
+      "scaled_difference": 8.447954111992853e-12,
+      "threshold": 1e-09,
+      "status": "PASS"
+    },
+    "hard_kkt": {
+      "raw_l2": 0.007611367232104114,
+      "hard_kkt_raw_l2": 5.578626790845595e-05,
+      "legacy_raw_kkt_l2": 5.5786302155097964e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 81039,
+        "upper": 0,
+        "interior": 5437,
+        "collapsed": 29,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 2,
+      "max_kkt_abs": 5.20248512844953e-05,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.053031950963302765,
+      "hard_mass_rms_free": 0.016725565354420643,
+      "hard_normalized_threshold": null
+    }
+  },
+  "uv_block_screen": "PASS",
+  "full_teacher": "NOT_QUALIFIED",
+  "scope": "fixed damage UV only; original-target fatigue coefficient frozen; no coupled evolution or mesh convergence",
+  "delta_uv_mass_rms_over_Us": 0.0004896611843625749,
+  "strain_tensor": {
+    "error_norm": 0.008370569800932625,
+    "reference_norm": 1.9879774500657506,
+    "nominal_norm": 0.11999988,
+    "value": 0.004210595950500232,
+    "kind": "relative_l2"
+  },
+  "active": {
+    "error_norm": 0.0005748219887165141,
+    "reference_norm": 0.006375368002745893,
+    "nominal_norm": 0.0143999712000144,
+    "value": 0.09016295035344411,
+    "kind": "relative_l2"
+  },
+  "original_p99_threshold": 0.017943947578882333,
+  "original_p99_area_fraction": 0.010000676694688137,
+  "active_original_p99": {
+    "error_norm": 0.0005726867555233483,
+    "reference_norm": 0.0037788854935571882,
+    "nominal_norm": 0.0014400458410973231,
+    "value": 0.15154911587020847,
+    "kind": "relative_l2"
+  },
+  "elastic_energy_nonincrease": true,
+  "iterations": 4,
+  "active_set_stable": true,
+  "solver_normalized_residual": 7.24063268872777e-15,
+  "minimum_pivot_ratio": 0.00011614618028899072,
+  "history_commits": 0,
+  "damage_solves": 0,
+  "training": false,
+  "pid": 53484,
+  "finished_utc": "2026-10-05T16:36:44Z"
+}

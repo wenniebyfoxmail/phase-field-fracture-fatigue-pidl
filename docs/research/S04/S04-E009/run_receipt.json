@@ -1,0 +1,78 @@
+{
+  "run_id": "S04-E009-R001",
+  "numerical_commit": "4d31562",
+  "dirty_at_packaging": false,
+  "condor": "66.0",
+  "host": "D-26-09.ad.eng.cam.ac.uk",
+  "start_local": "2026-10-05 17:33:56",
+  "end_local": "2026-10-05 17:37:06",
+  "remote": "C:/Users/xw436/jobs/censor_teacher_early_20261005_r001",
+  "scratch": "C:/Condor/execute/dir_49000",
+  "resources": "8CPU32GB1GPU; CPUfloat64 one thread, GPUunused",
+  "exit_code": 0,
+  "tests": "29 passed",
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E009/runs/S04-E009-R001",
+  "retrieval": "complete; output and logs; finite arrays and independently reproduced active norms",
+  "files": [
+    {
+      "path": "condor-66.err",
+      "bytes": 0
+    },
+    {
+      "path": "condor-66.log",
+      "bytes": 2222
+    },
+    {
+      "path": "condor-66.out",
+      "bytes": 28
+    },
+    {
+      "path": "output/c20/after.json",
+      "bytes": 2258
+    },
+    {
+      "path": "output/c20/before.json",
+      "bytes": 2852
+    },
+    {
+      "path": "output/c20/fields.npz",
+      "bytes": 26758771
+    },
+    {
+      "path": "output/c20/summary.json",
+      "bytes": 7220
+    },
+    {
+      "path": "output/c20.log",
+      "bytes": 7656
+    },
+    {
+      "path": "output/c40/after.json",
+      "bytes": 2255
+    },
+    {
+      "path": "output/c40/before.json",
+      "bytes": 2848
+    },
+    {
+      "path": "output/c40/fields.npz",
+      "bytes": 26865377
+    },
+    {
+      "path": "output/c40/summary.json",
+      "bytes": 7212
+    },
+    {
+      "path": "output/c40.log",
+      "bytes": 7648
+    },
+    {
+      "path": "output/execution_identity.txt",
+      "bytes": 50
+    },
+    {
+      "path": "output/tests.log",
+      "bytes": 805
+    }
+  ]
+}
