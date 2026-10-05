@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E010
 protocol_revision: 20261005-r0
-status: design-pass; exact-code-review-pending; not-executed
+status: complete; evidence-pass; teacher-not-qualified
 ---
 # Reconstructed native-Q4 residuals across six cycles and three substeps
 

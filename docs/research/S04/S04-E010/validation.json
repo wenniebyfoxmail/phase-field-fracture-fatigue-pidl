@@ -1,0 +1,19 @@
+{
+  "states": 18,
+  "archived_bridges": 5,
+  "reconstructed_only": 13,
+  "uv_pass": 6,
+  "box_pass": 0,
+  "hard_pass": 18,
+  "all_exactly_feasible": true,
+  "archive_array_norms_reproduced": true,
+  "max_scaled_vector_differences": {
+    "numpy_torch_uv": 8.68175221412256e-12,
+    "numpy_torch_damage": 1.7035604572059956e-14,
+    "numpy_native_uv": 1.488366036573661e-11,
+    "torch_native_uv": 1.4077413910179674e-11,
+    "numpy_native_damage": 1.2761899429186317e-13,
+    "torch_native_damage": 1.2845960892511777e-13
+  },
+  "full_teacher": "NOT_QUALIFIED"
+}

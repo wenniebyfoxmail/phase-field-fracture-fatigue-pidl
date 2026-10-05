@@ -1,0 +1,2144 @@
+[
+  {
+    "cycle": 20,
+    "substep": 2,
+    "previous_substep": 1,
+    "imposed_displacement": 0.05999988,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 0.024906539756740682,
+    "box": 0.05305489627246169,
+    "hard_kkt": {
+      "raw_l2": 0.007707554920827625,
+      "hard_kkt_raw_l2": 9.395783012043995e-06,
+      "legacy_raw_kkt_l2": 5.1836357174483284e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 84003,
+        "upper": 0,
+        "interior": 2481,
+        "collapsed": 21,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 51783,
+      "max_kkt_abs": 4.6690173193186025e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.05305489627246169,
+      "hard_mass_rms_free": 0.004313484250906505,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 2.3674597345537296e-17,
+        "l2_diff": 1.0754000734985294e-15,
+        "mass_dual_diff": 5.233459345624878e-13,
+        "mass_dual_ref": 0.0029887817820241098,
+        "scaled_difference": 4.361220482574548e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 5.963111948670274e-19,
+        "l2_diff": 6.587519210601407e-18,
+        "mass_dual_diff": 2.7559549399771724e-15,
+        "mass_dual_ref": 0.38114652171460695,
+        "scaled_difference": 7.230696813339315e-15,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "FAIL",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.05305489627246169,
+    "target_key": "c0020_s02",
+    "prior_key": "c0020_s01",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0020_s02.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 8.15462433812546e-08,
+      "phase_residual": 0.000107255430026248,
+      "staggered_iterations": 1.0
+    }
+  },
+  {
+    "cycle": 20,
+    "substep": 4,
+    "previous_substep": 3,
+    "imposed_displacement": 0.11999987999999999,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 0.7174958571955541,
+    "box": 0.048460508716551026,
+    "hard_kkt": {
+      "raw_l2": 0.007594598852568605,
+      "hard_kkt_raw_l2": 1.9472553895517664e-05,
+      "legacy_raw_kkt_l2": 1.9472553895517664e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 82008,
+        "upper": 0,
+        "interior": 4476,
+        "collapsed": 21,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 54040,
+      "max_kkt_abs": 7.242735980206939e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.048460508716551026,
+      "hard_mass_rms_free": 0.011552637215427887,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 4.672297264525765e-17,
+        "l2_diff": 2.137134767358691e-15,
+        "mass_dual_diff": 1.0418092238844417e-12,
+        "mass_dual_ref": 0.0860994167639636,
+        "scaled_difference": 8.68175221412256e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 1.3045233830002285e-18,
+        "l2_diff": 9.320243187591847e-18,
+        "mass_dual_diff": 4.2837486206508975e-15,
+        "mass_dual_ref": 0.3631562755783949,
+        "scaled_difference": 1.1795882127682413e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_native_uv": {
+        "max_abs": 8.501283894553718e-17,
+        "l2_diff": 3.685422370778173e-15,
+        "mass_dual_diff": 1.7860374578491494e-12,
+        "mass_dual_ref": 0.08609941676396614,
+        "scaled_difference": 1.488366036573661e-11,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "torch_native_uv": {
+        "max_abs": 9.118648490371445e-17,
+        "l2_diff": 3.4920651653718793e-15,
+        "mass_dual_diff": 1.6892879799318917e-12,
+        "mass_dual_ref": 0.08609941676396614,
+        "scaled_difference": 1.4077413910179674e-11,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_native_damage": {
+        "max_abs": 3.2183546226519175e-18,
+        "l2_diff": 5.4315650094615306e-17,
+        "mass_dual_diff": 2.492061426350723e-14,
+        "mass_dual_ref": 0.363156275578395,
+        "scaled_difference": 6.862228726136273e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "torch_native_damage": {
+        "max_abs": 3.2610768469290563e-18,
+        "l2_diff": 5.4589211190786366e-17,
+        "mass_dual_diff": 2.5169038455331737e-14,
+        "mass_dual_ref": 0.363156275578395,
+        "scaled_difference": 6.9306356926492e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "archived_MATLAB_bridge",
+    "archived_oracle_gate": "PASS",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "FAIL",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.048460508716551026,
+    "target_key": "c0020_s04",
+    "prior_key": "c0020_s03",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0020_s04.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 5.73351934473644e-07,
+      "phase_residual": 0.000147548673539581,
+      "staggered_iterations": 12.0
+    }
+  },
+  {
+    "cycle": 20,
+    "substep": 5,
+    "previous_substep": 4,
+    "imposed_displacement": 0.0,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 4.900049121014126e-14,
+    "box": 0.05431228021128494,
+    "hard_kkt": {
+      "raw_l2": 0.007747374879940879,
+      "hard_kkt_raw_l2": 2.466093399272821e-05,
+      "legacy_raw_kkt_l2": 8.112284326839368e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 86202,
+        "upper": 0,
+        "interior": 282,
+        "collapsed": 21,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 54040,
+      "max_kkt_abs": 6.3544366862560945e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.05431228021128494,
+      "hard_mass_rms_free": 0.008767497537668728,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 6.355568816477878e-32,
+        "l2_diff": 3.243105008264789e-31,
+        "mass_dual_diff": 1.6423650742800845e-28,
+        "mass_dual_ref": 5.880053065158007e-15,
+        "scaled_difference": 1.368638930539001e-27,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 5.421010862427522e-19,
+        "l2_diff": 6.434195390367798e-18,
+        "mass_dual_diff": 2.619493691795844e-15,
+        "mass_dual_ref": 0.39366668534216187,
+        "scaled_difference": 6.654090349349902e-15,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "PASS",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.05431228021128494,
+    "target_key": "c0020_s05",
+    "prior_key": "c0020_s04",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0020_s05.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 4.59872169176574e-18,
+      "phase_residual": 0.000265290151894369,
+      "staggered_iterations": 1.0
+    }
+  },
+  {
+    "cycle": 40,
+    "substep": 2,
+    "previous_substep": 1,
+    "imposed_displacement": 0.05999988,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 0.002716742231856049,
+    "box": 0.059202904003903635,
+    "hard_kkt": {
+      "raw_l2": 0.007705364453830439,
+      "hard_kkt_raw_l2": 6.785695351955924e-05,
+      "legacy_raw_kkt_l2": 8.657103343730121e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 83433,
+        "upper": 0,
+        "interior": 3043,
+        "collapsed": 29,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 2,
+      "max_kkt_abs": 6.604716783274396e-05,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.059202904003903635,
+      "hard_mass_rms_free": 0.00767750101316129,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 2.626736519708271e-17,
+        "l2_diff": 1.0535428691819738e-15,
+        "mass_dual_diff": 5.10080498738464e-13,
+        "mass_dual_ref": 0.000326008741813658,
+        "scaled_difference": 4.250675073495607e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 5.421010862427522e-19,
+        "l2_diff": 6.660935020412831e-18,
+        "mass_dual_diff": 2.779225183158474e-15,
+        "mass_dual_ref": 0.380251226113011,
+        "scaled_difference": 7.308918399996128e-15,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "FAIL",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.059202904003903635,
+    "target_key": "c0040_s02",
+    "prior_key": "c0040_s01",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0040_s02.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 8.25957960567623e-07,
+      "phase_residual": 6.12886118160308e-05,
+      "staggered_iterations": 1.0
+    }
+  },
+  {
+    "cycle": 40,
+    "substep": 4,
+    "previous_substep": 3,
+    "imposed_displacement": 0.11999987999999999,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 1.1879471087926599,
+    "box": 0.051161510055611,
+    "hard_kkt": {
+      "raw_l2": 0.007611112780316102,
+      "hard_kkt_raw_l2": 5.4850564247658943e-05,
+      "legacy_raw_kkt_l2": 5.485076446966428e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 81039,
+        "upper": 0,
+        "interior": 5437,
+        "collapsed": 29,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 2,
+      "max_kkt_abs": 5.199844989037018e-05,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.051161510055611,
+      "hard_mass_rms_free": 0.008316663524887734,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 5.57805077084847e-17,
+        "l2_diff": 2.1141243542004403e-15,
+        "mass_dual_diff": 1.0238870281603973e-12,
+        "mass_dual_ref": 0.14255351050146609,
+        "scaled_difference": 7.182475019791724e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 1.3311652161693364e-18,
+        "l2_diff": 9.549265918884194e-18,
+        "mass_dual_diff": 4.458296670164827e-15,
+        "mass_dual_ref": 0.3631829197339685,
+        "scaled_difference": 1.2275623185777925e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_native_uv": {
+        "max_abs": 9.713879718230723e-17,
+        "l2_diff": 3.6375265548384685e-15,
+        "mass_dual_diff": 1.7581522024010696e-12,
+        "mass_dual_ref": 0.142553510501464,
+        "scaled_difference": 1.2333278894475305e-11,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "torch_native_uv": {
+        "max_abs": 9.330279672242932e-17,
+        "l2_diff": 3.45647627460752e-15,
+        "mass_dual_diff": 1.6664052107281206e-12,
+        "mass_dual_ref": 0.142553510501464,
+        "scaled_difference": 1.1689682034950707e-11,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_native_damage": {
+        "max_abs": 3.755744088125568e-18,
+        "l2_diff": 5.670258383574702e-17,
+        "mass_dual_diff": 2.6239879216591427e-14,
+        "mass_dual_ref": 0.3631829197339686,
+        "scaled_difference": 7.224976118318595e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "torch_native_damage": {
+        "max_abs": 3.891269359686256e-18,
+        "l2_diff": 5.734799566677148e-17,
+        "mass_dual_diff": 2.6609514049608404e-14,
+        "mass_dual_ref": 0.3631829197339686,
+        "scaled_difference": 7.326752609704186e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "archived_MATLAB_bridge",
+    "archived_oracle_gate": "PASS",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "FAIL",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.051161510055611,
+    "target_key": "c0040_s04",
+    "prior_key": "c0040_s03",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0040_s04.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 7.79759281514254e-08,
+      "phase_residual": 9.59405299579149e-05,
+      "staggered_iterations": 7.0
+    }
+  },
+  {
+    "cycle": 40,
+    "substep": 5,
+    "previous_substep": 4,
+    "imposed_displacement": 0.0,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 4.8291845799428774e-14,
+    "box": 0.059865643604791026,
+    "hard_kkt": {
+      "raw_l2": 0.007737366513796826,
+      "hard_kkt_raw_l2": 2.5087222477835046e-05,
+      "legacy_raw_kkt_l2": 8.814419932261649e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 86045,
+        "upper": 0,
+        "interior": 431,
+        "collapsed": 29,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 52671,
+      "max_kkt_abs": 4.508113581885569e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.059865643604791026,
+      "hard_mass_rms_free": 0.007033735335973233,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 6.278531618702389e-32,
+        "l2_diff": 2.867696600741532e-31,
+        "mass_dual_diff": 1.404775165509908e-28,
+        "mass_dual_ref": 5.795015700909953e-15,
+        "scaled_difference": 1.1706471419053985e-27,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 5.421010862427522e-19,
+        "l2_diff": 6.444420891719304e-18,
+        "mass_dual_diff": 2.624576362488101e-15,
+        "mass_dual_ref": 0.39280860568884723,
+        "scaled_difference": 6.68156533354335e-15,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "PASS",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.059865643604791026,
+    "target_key": "c0040_s05",
+    "prior_key": "c0040_s04",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0040_s05.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 4.76225701881274e-17,
+      "phase_residual": 0.000271841999596371,
+      "staggered_iterations": 1.0
+    }
+  },
+  {
+    "cycle": 60,
+    "substep": 2,
+    "previous_substep": 1,
+    "imposed_displacement": 0.05999988,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 0.022071772576149583,
+    "box": 0.065885307742848,
+    "hard_kkt": {
+      "raw_l2": 0.007603752477217268,
+      "hard_kkt_raw_l2": 4.593653032074793e-05,
+      "legacy_raw_kkt_l2": 6.959556893272028e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 82810,
+        "upper": 0,
+        "interior": 3659,
+        "collapsed": 36,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 2,
+      "max_kkt_abs": 4.2136119765846835e-05,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.065885307742848,
+      "hard_mass_rms_free": 0.011113597534202043,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 2.5926407966033252e-17,
+        "l2_diff": 1.0328354776031424e-15,
+        "mass_dual_diff": 4.985384685854729e-13,
+        "mass_dual_ref": 0.002648610060525239,
+        "scaled_difference": 4.1544913927036664e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 5.421010862427522e-19,
+        "l2_diff": 6.697490868717413e-18,
+        "mass_dual_diff": 2.812347310635075e-15,
+        "mass_dual_ref": 0.3740677200799448,
+        "scaled_difference": 7.518283881950645e-15,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "FAIL",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.065885307742848,
+    "target_key": "c0060_s02",
+    "prior_key": "c0060_s01",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0060_s02.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 1.35446004868938e-15,
+      "phase_residual": 0.000211666304605281,
+      "staggered_iterations": 1.0
+    }
+  },
+  {
+    "cycle": 60,
+    "substep": 4,
+    "previous_substep": 3,
+    "imposed_displacement": 0.11999987999999999,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 1.2857766593003992,
+    "box": 0.05340452790960717,
+    "hard_kkt": {
+      "raw_l2": 0.007531227522169853,
+      "hard_kkt_raw_l2": 3.7856752088555894e-05,
+      "legacy_raw_kkt_l2": 3.786373055869269e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 79999,
+        "upper": 0,
+        "interior": 6470,
+        "collapsed": 36,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 2,
+      "max_kkt_abs": 3.2938259754696257e-05,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.05340452790960717,
+      "hard_mass_rms_free": 0.006031009647877728,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 5.0903940507794675e-17,
+        "l2_diff": 2.0577477098790455e-15,
+        "mass_dual_diff": 9.912104924560099e-13,
+        "mass_dual_ref": 0.1542930448228487,
+        "scaled_difference": 6.424207219412039e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 1.3823577699190182e-18,
+        "l2_diff": 1.0179357002316275e-17,
+        "mass_dual_diff": 4.789218921305897e-15,
+        "mass_dual_ref": 0.35742439310485724,
+        "scaled_difference": 1.3399250341318727e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "FAIL",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.05340452790960717,
+    "target_key": "c0060_s04",
+    "prior_key": "c0060_s03",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0060_s04.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 6.4922074479638e-07,
+      "phase_residual": 5.36534406370699e-05,
+      "staggered_iterations": 2.0
+    }
+  },
+  {
+    "cycle": 60,
+    "substep": 5,
+    "previous_substep": 4,
+    "imposed_displacement": 0.0,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 5.757986832191046e-14,
+    "box": 0.06584070243889002,
+    "hard_kkt": {
+      "raw_l2": 0.007615828626565605,
+      "hard_kkt_raw_l2": 2.8397939035573833e-05,
+      "legacy_raw_kkt_l2": 8.989065162342968e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 85840,
+        "upper": 0,
+        "interior": 629,
+        "collapsed": 36,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 45335,
+      "max_kkt_abs": 1.7555555047120599e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.06584070243889002,
+      "hard_mass_rms_free": 0.005271446757874451,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 2.888894916580854e-32,
+        "l2_diff": 2.5905673166341834e-31,
+        "mass_dual_diff": 1.2838509353758966e-28,
+        "mass_dual_ref": 6.909577289045057e-15,
+        "scaled_difference": 1.0698768493567632e-27,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 5.421010862427522e-19,
+        "l2_diff": 6.4889412287874676e-18,
+        "mass_dual_diff": 2.6535471549387114e-15,
+        "mass_dual_ref": 0.3867130917716499,
+        "scaled_difference": 6.86179809114299e-15,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "PASS",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.06584070243889002,
+    "target_key": "c0060_s05",
+    "prior_key": "c0060_s04",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0060_s05.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 2.30981756028568e-17,
+      "phase_residual": 0.000284078260693238,
+      "staggered_iterations": 1.0
+    }
+  },
+  {
+    "cycle": 76,
+    "substep": 2,
+    "previous_substep": 1,
+    "imposed_displacement": 0.05999988,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 0.0027743066957798463,
+    "box": 0.0706962693113649,
+    "hard_kkt": {
+      "raw_l2": 0.007416313407904618,
+      "hard_kkt_raw_l2": 4.144371474505642e-05,
+      "legacy_raw_kkt_l2": 6.699940690522322e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 81946,
+        "upper": 0,
+        "interior": 4513,
+        "collapsed": 46,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 2,
+      "max_kkt_abs": 3.638923534572395e-05,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.0706962693113649,
+      "hard_mass_rms_free": 0.00964351868081472,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 5.182825197659613e-17,
+        "l2_diff": 1.0537173995396925e-15,
+        "mass_dual_diff": 5.064598050707199e-13,
+        "mass_dual_ref": 0.00033291647057677817,
+        "scaled_difference": 4.220502596091928e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 5.421010862427522e-19,
+        "l2_diff": 6.941118227636639e-18,
+        "mass_dual_diff": 2.9753350711814632e-15,
+        "mass_dual_ref": 0.3655188992493398,
+        "scaled_difference": 8.14003072697981e-15,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "FAIL",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.0706962693113649,
+    "target_key": "c0076_s02",
+    "prior_key": "c0076_s01",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0076_s02.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 2.62860144736826e-11,
+      "phase_residual": 8.20754300494796e-05,
+      "staggered_iterations": 1.0
+    }
+  },
+  {
+    "cycle": 76,
+    "substep": 4,
+    "previous_substep": 3,
+    "imposed_displacement": 0.11999987999999999,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 1.0137327145803448,
+    "box": 0.05661348536820029,
+    "hard_kkt": {
+      "raw_l2": 0.0073826057556603845,
+      "hard_kkt_raw_l2": 4.10163268963823e-05,
+      "legacy_raw_kkt_l2": 4.102310129387353e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 78757,
+        "upper": 0,
+        "interior": 7702,
+        "collapsed": 46,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 2,
+      "max_kkt_abs": 3.2908149712140015e-05,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.05661348536820029,
+      "hard_mass_rms_free": 0.013680442091816382,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 6.950582958579338e-17,
+        "l2_diff": 2.094348223012495e-15,
+        "mass_dual_diff": 1.0081878605680655e-12,
+        "mass_dual_ref": 0.12164780410171558,
+        "scaled_difference": 8.287760457435558e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 1.2689082945461453e-18,
+        "l2_diff": 1.0634556236784277e-17,
+        "mass_dual_diff": 5.0401328390184815e-15,
+        "mass_dual_ref": 0.34989780286603517,
+        "scaled_difference": 1.4404585561082215e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_native_uv": {
+        "max_abs": 1.199237717052111e-16,
+        "l2_diff": 3.667392160383846e-15,
+        "mass_dual_diff": 1.7585895334774035e-12,
+        "mass_dual_ref": 0.12164780410170349,
+        "scaled_difference": 1.4456401794208608e-11,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "torch_native_uv": {
+        "max_abs": 1.0259432463733537e-16,
+        "l2_diff": 3.4140068794954534e-15,
+        "mass_dual_diff": 1.631930343986416e-12,
+        "mass_dual_ref": 0.12164780410170349,
+        "scaled_difference": 1.3415205938465135e-11,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_native_damage": {
+        "max_abs": 3.7947076036992655e-18,
+        "l2_diff": 6.27189002598753e-17,
+        "mass_dual_diff": 2.9214134575686e-14,
+        "mass_dual_ref": 0.34989780286603517,
+        "scaled_difference": 8.349333530073971e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "torch_native_damage": {
+        "max_abs": 3.7947076036992655e-18,
+        "l2_diff": 6.297143649449393e-17,
+        "mass_dual_diff": 2.938886904934028e-14,
+        "mass_dual_ref": 0.34989780286603517,
+        "scaled_difference": 8.399272247100206e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "archived_MATLAB_bridge",
+    "archived_oracle_gate": "PASS",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "FAIL",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.05661348536820029,
+    "target_key": "c0076_s04",
+    "prior_key": "c0076_s03",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0076_s04.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 2.63262299027171e-15,
+      "phase_residual": 9.95490648057798e-05,
+      "staggered_iterations": 21.0
+    }
+  },
+  {
+    "cycle": 76,
+    "substep": 5,
+    "previous_substep": 4,
+    "imposed_displacement": 0.0,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 7.997807427273809e-14,
+    "box": 0.07265350704058729,
+    "hard_kkt": {
+      "raw_l2": 0.007423196538487804,
+      "hard_kkt_raw_l2": 3.3111772691874604e-05,
+      "legacy_raw_kkt_l2": 9.298267613324829e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 85634,
+        "upper": 0,
+        "interior": 825,
+        "collapsed": 46,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 40635,
+      "max_kkt_abs": 6.447460269189227e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.07265350704058729,
+      "hard_mass_rms_free": 0.011237971448393063,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 4.6992690643048555e-32,
+        "l2_diff": 2.5326935629671213e-31,
+        "mass_dual_diff": 1.231571232165253e-28,
+        "mass_dual_ref": 9.597359315359655e-15,
+        "scaled_difference": 1.0263103864480972e-27,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 5.421010862427522e-19,
+        "l2_diff": 6.654316050626991e-18,
+        "mass_dual_diff": 2.796729082743289e-15,
+        "mass_dual_ref": 0.379426102368285,
+        "scaled_difference": 7.370945396973981e-15,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "PASS",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.07265350704058729,
+    "target_key": "c0076_s05",
+    "prior_key": "c0076_s04",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0076_s05.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 1.12261978078159e-17,
+      "phase_residual": 0.000296208474016613,
+      "staggered_iterations": 1.0
+    }
+  },
+  {
+    "cycle": 82,
+    "substep": 2,
+    "previous_substep": 1,
+    "imposed_displacement": 0.05999988,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 0.0028250565332339334,
+    "box": 0.07327174010280628,
+    "hard_kkt": {
+      "raw_l2": 0.00738168149680562,
+      "hard_kkt_raw_l2": 2.1138837775716486e-05,
+      "legacy_raw_kkt_l2": 5.6668235018591685e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 81821,
+        "upper": 0,
+        "interior": 4635,
+        "collapsed": 49,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 51783,
+      "max_kkt_abs": 4.7708073000577566e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.07327174010280628,
+      "hard_mass_rms_free": 0.006617261585588925,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 4.118570651081947e-17,
+        "l2_diff": 1.0148241541123382e-15,
+        "mass_dual_diff": 4.86214968322874e-13,
+        "mass_dual_ref": 0.00033900644498128786,
+        "scaled_difference": 4.051795454486072e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 5.421010862427522e-19,
+        "l2_diff": 7.06397400198083e-18,
+        "mass_dual_diff": 3.0556668896936806e-15,
+        "mass_dual_ref": 0.3640553235987072,
+        "scaled_difference": 8.393413560027754e-15,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "FAIL",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.07327174010280628,
+    "target_key": "c0082_s02",
+    "prior_key": "c0082_s01",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0082_s02.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 5.2923902421007e-07,
+      "phase_residual": 0.000127656725522295,
+      "staggered_iterations": 1.0
+    }
+  },
+  {
+    "cycle": 82,
+    "substep": 4,
+    "previous_substep": 3,
+    "imposed_displacement": 0.11999987999999999,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 1.3533453179626345,
+    "box": 0.057037071601035,
+    "hard_kkt": {
+      "raw_l2": 0.007361944359212552,
+      "hard_kkt_raw_l2": 4.073085112529613e-05,
+      "legacy_raw_kkt_l2": 4.073805945661721e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 78486,
+        "upper": 1,
+        "interior": 7969,
+        "collapsed": 49,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 2,
+      "max_kkt_abs": 3.436983479269186e-05,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.057037071601035,
+      "hard_mass_rms_free": 0.011515589543944446,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 8.730537993939524e-17,
+        "l2_diff": 2.024126094616947e-15,
+        "mass_dual_diff": 9.710402670803656e-13,
+        "mass_dual_ref": 0.16240127575407803,
+        "scaled_difference": 5.9792650185260756e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 1.2632437617113822e-18,
+        "l2_diff": 1.1280899410042274e-17,
+        "mass_dual_diff": 5.396800367026383e-15,
+        "mass_dual_ref": 0.34849090783330167,
+        "scaled_difference": 1.5486201349069074e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_native_uv": {
+        "max_abs": 1.119574268362844e-16,
+        "l2_diff": 3.4828663935074483e-15,
+        "mass_dual_diff": 1.6597647740198963e-12,
+        "mass_dual_ref": 0.16240127575407673,
+        "scaled_difference": 1.0220146155337278e-11,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "torch_native_uv": {
+        "max_abs": 1.1437443535127455e-16,
+        "l2_diff": 3.323513877671945e-15,
+        "mass_dual_diff": 1.5772393310106737e-12,
+        "mass_dual_ref": 0.16240127575407673,
+        "scaled_difference": 9.711988552350276e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_native_damage": {
+        "max_abs": 3.529798049445483e-18,
+        "l2_diff": 6.432890529818034e-17,
+        "mass_dual_diff": 3.0117180492180055e-14,
+        "mass_dual_ref": 0.3484909078333016,
+        "scaled_difference": 8.64217109118566e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "torch_native_damage": {
+        "max_abs": 3.3491682734435035e-18,
+        "l2_diff": 6.464911108286365e-17,
+        "mass_dual_diff": 3.03249571506606e-14,
+        "mass_dual_ref": 0.3484909078333016,
+        "scaled_difference": 8.701792921715579e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "archived_MATLAB_bridge",
+    "archived_oracle_gate": "PASS",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "FAIL",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.057037071601035,
+    "target_key": "c0082_s04",
+    "prior_key": "c0082_s03",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0082_s04.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 2.9552839928456e-11,
+      "phase_residual": 4.04239797410959e-05,
+      "staggered_iterations": 4.0
+    }
+  },
+  {
+    "cycle": 82,
+    "substep": 5,
+    "previous_substep": 4,
+    "imposed_displacement": 0.0,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 2.7028697869189302e-14,
+    "box": 0.07478419111484282,
+    "hard_kkt": {
+      "raw_l2": 0.0073863271903691205,
+      "hard_kkt_raw_l2": 3.3175404386884316e-05,
+      "legacy_raw_kkt_l2": 9.371622846335253e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 85564,
+        "upper": 0,
+        "interior": 891,
+        "collapsed": 50,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 54208,
+      "max_kkt_abs": 3.1310694240037435e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.07478419111484282,
+      "hard_mass_rms_free": 0.008370108251986615,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 1.2277803395468629e-32,
+        "l2_diff": 2.4012110637659495e-31,
+        "mass_dual_diff": 1.1658578927285448e-28,
+        "mass_dual_ref": 3.243440500858971e-15,
+        "scaled_difference": 9.715492154896695e-28,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 5.421010862427522e-19,
+        "l2_diff": 6.712267894927309e-18,
+        "mass_dual_diff": 2.841162845897011e-15,
+        "mass_dual_ref": 0.3780796666074951,
+        "scaled_difference": 7.5147200360991e-15,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "PASS",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.07478419111484282,
+    "target_key": "c0082_s05",
+    "prior_key": "c0082_s04",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0082_s05.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 3.69923581079447e-17,
+      "phase_residual": 0.000300516897498263,
+      "staggered_iterations": 1.0
+    }
+  },
+  {
+    "cycle": 83,
+    "substep": 2,
+    "previous_substep": 1,
+    "imposed_displacement": 0.05999988,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 0.02016391959446048,
+    "box": 0.07375123888956447,
+    "hard_kkt": {
+      "raw_l2": 0.00737788547827263,
+      "hard_kkt_raw_l2": 2.1528418947262235e-05,
+      "legacy_raw_kkt_l2": 5.696110173579256e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 81731,
+        "upper": 0,
+        "interior": 4724,
+        "collapsed": 50,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 51783,
+      "max_kkt_abs": 4.772868678337449e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.07375123888956447,
+      "hard_mass_rms_free": 0.009308792494841981,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 4.226355593620057e-17,
+        "l2_diff": 1.0108673796292195e-15,
+        "mass_dual_diff": 4.841161320030329e-13,
+        "mass_dual_ref": 0.002419667931664909,
+        "scaled_difference": 4.034305134330408e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 5.149960319306146e-19,
+        "l2_diff": 7.014192109161934e-18,
+        "mass_dual_diff": 3.0530807999307575e-15,
+        "mass_dual_ref": 0.36379427691542077,
+        "scaled_difference": 8.392327734832878e-15,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "FAIL",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.07375123888956447,
+    "target_key": "c0083_s02",
+    "prior_key": "c0083_s01",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0083_s02.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 6.93078887799253e-07,
+      "phase_residual": 5.27260605039643e-05,
+      "staggered_iterations": 1.0
+    }
+  },
+  {
+    "cycle": 83,
+    "substep": 4,
+    "previous_substep": 3,
+    "imposed_displacement": 0.11999987999999999,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 0.041331479715259814,
+    "box": 0.058073024942739936,
+    "hard_kkt": {
+      "raw_l2": 0.007378504659277467,
+      "hard_kkt_raw_l2": 2.3343892605548418e-05,
+      "legacy_raw_kkt_l2": 2.3355883616755854e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 80232,
+        "upper": 2,
+        "interior": 6221,
+        "collapsed": 50,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 47963,
+      "max_kkt_abs": 6.714460765946838e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.058073024942739936,
+      "hard_mass_rms_free": 0.010039258753891825,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 5.1892785299265066e-17,
+        "l2_diff": 1.5186285216985485e-15,
+        "mass_dual_diff": 6.943194270035464e-13,
+        "mass_dual_ref": 0.004959772606053613,
+        "scaled_difference": 5.7860010110305645e-12,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 1.2123159057577174e-18,
+        "l2_diff": 1.233465001671143e-17,
+        "mass_dual_diff": 5.962616763257137e-15,
+        "mass_dual_ref": 0.3500091081614096,
+        "scaled_difference": 1.7035604572059956e-14,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_native_uv": {
+        "max_abs": 9.686271738106153e-17,
+        "l2_diff": 2.931784816502755e-15,
+        "mass_dual_diff": 1.3610500128675282e-12,
+        "mass_dual_ref": 0.0049597726060533155,
+        "scaled_difference": 1.1342094782657518e-11,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "torch_native_uv": {
+        "max_abs": 9.977968709316853e-17,
+        "l2_diff": 2.8614662562546945e-15,
+        "mass_dual_diff": 1.3291244873941028e-12,
+        "mass_dual_ref": 0.0049597726060533155,
+        "scaled_difference": 1.1076048470999328e-11,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_native_damage": {
+        "max_abs": 3.686287386450715e-18,
+        "l2_diff": 9.725537187703762e-17,
+        "mass_dual_diff": 4.466781037655106e-14,
+        "mass_dual_ref": 0.3500091081614097,
+        "scaled_difference": 1.2761899429186317e-13,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "torch_native_damage": {
+        "max_abs": 3.577867169202165e-18,
+        "l2_diff": 9.77201167413673e-17,
+        "mass_dual_diff": 4.496203315464393e-14,
+        "mass_dual_ref": 0.3500091081614097,
+        "scaled_difference": 1.2845960892511777e-13,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "archived_MATLAB_bridge",
+    "archived_oracle_gate": "PASS",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "FAIL",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.058073024942739936,
+    "target_key": "c0083_s04",
+    "prior_key": "c0083_s03",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0083_s04.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 2.31286082590607e-08,
+      "phase_residual": 5.50059899557795e-05,
+      "staggered_iterations": 24.0
+    }
+  },
+  {
+    "cycle": 83,
+    "substep": 5,
+    "previous_substep": 4,
+    "imposed_displacement": 0.0,
+    "normalization_Us": 0.11999988,
+    "energy_scale": 0.0143999712000144,
+    "rho_u": 5.2181712552982476e-14,
+    "box": 0.0744883299115061,
+    "hard_kkt": {
+      "raw_l2": 0.007384437311293892,
+      "hard_kkt_raw_l2": 3.312138014810383e-05,
+      "legacy_raw_kkt_l2": 9.463865123309794e-05,
+      "raw_screen": 0.0004,
+      "bound_tolerance": 1e-12,
+      "status": "PASS",
+      "feasible_within_tolerance": true,
+      "exactly_feasible": true,
+      "counts": {
+        "lower": 85555,
+        "upper": 0,
+        "interior": 898,
+        "collapsed": 52,
+        "ambiguous": 0,
+        "fixed": 251
+      },
+      "feasibility": {
+        "prior_below_zero": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prior_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_below_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "damage_above_one": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_damage": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        },
+        "prescribed_prior": {
+          "max": 0.0,
+          "node_zero_based": 0,
+          "nonzero_count": 0,
+          "above_tolerance_count": 0
+        }
+      },
+      "max_kkt_node_zero_based": 37706,
+      "max_kkt_abs": 1.7057690633042982e-06,
+      "full_teacher": "NOT_QUALIFIED",
+      "box_mass_rms_free": 0.0744883299115061,
+      "hard_mass_rms_free": 0.011026135891088949,
+      "hard_normalized_threshold": null
+    },
+    "agreements": {
+      "numpy_torch_uv": {
+        "max_abs": 4.9207510079093876e-32,
+        "l2_diff": 2.676121668844734e-31,
+        "mass_dual_diff": 1.3224823368624442e-28,
+        "mass_dual_ref": 6.261799244552389e-15,
+        "scaled_difference": 1.1020697161217529e-27,
+        "threshold": 1e-09,
+        "status": "PASS"
+      },
+      "numpy_torch_damage": {
+        "max_abs": 5.421010862427522e-19,
+        "l2_diff": 6.896024890662078e-18,
+        "mass_dual_diff": 2.949978784654474e-15,
+        "mass_dual_ref": 0.38022486300233826,
+        "scaled_difference": 7.75851100677846e-15,
+        "threshold": 1e-09,
+        "status": "PASS"
+      }
+    },
+    "oracle_kind": "reconstructed_not_archived_MATLAB",
+    "archived_oracle_gate": "NOT_AVAILABLE",
+    "full_teacher": "NOT_QUALIFIED",
+    "slot1_used": false,
+    "uv_screen": "PASS",
+    "box_screen": "FAIL",
+    "history_energy": 0.0,
+    "box_01_original": 0.0744883299115061,
+    "target_key": "c0083_s05",
+    "prior_key": "c0083_s04",
+    "fatigue_role": "original_target_trial_frozen_partial_derivative",
+    "fatigue_array_ref": "c0083_s05.npz:fatigue",
+    "original_stopping_scalars": {
+      "equilibrium_residual": 4.04877825207499e-18,
+      "phase_residual": 0.000312542189697008,
+      "staggered_iterations": 1.0
+    }
+  }
+]

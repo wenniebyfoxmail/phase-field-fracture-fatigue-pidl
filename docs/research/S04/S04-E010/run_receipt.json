@@ -1,9 +1,9 @@
 {
-  "status": "PREPARING_NOT_SUBMITTED",
+  "status": "COMPLETE",
   "execution_commit": "0e675b97acdabc1e016065360dae7ba37607a3d7",
   "design_review": "PASS",
-  "code_review": "PENDING",
-  "condor_id": null,
+  "code_review": "PASS",
+  "condor_id": "67.0",
   "remote_directory_creation": "Completed after connection recovered",
   "blocker": "2026-10-05 ~18:00 BST: SSH jump host129.169.16.2 reports System is going down; pam_nologin",
   "files": {
@@ -28,5 +28,25 @@
       "sha256": "88ec79339e9cd413d1c7c1848de0d942d053b5d887ac3f116fcf0c23a114af8b"
     }
   },
-  "blocker_resolved": true
+  "blocker_resolved": true,
+  "runtime_tests": "33 PASS in8.14s",
+  "remote_root": "C:/Users/xw436/jobs/censor_substep_residual_20261005_r001",
+  "exit_code": 0,
+  "pid": 39736,
+  "start_local": "2026-10-05T18:04:39+01:00",
+  "finish_local": "2026-10-05T18:07:37+01:00",
+  "scratch": "C:/Condor/execute/dir_19220",
+  "assigned_gpu": "GPU-3d74ea12 (unused)",
+  "numerical_receipt": {
+    "status": "RECONSTRUCTED_SCREEN_COMPLETE",
+    "states": 18,
+    "pid": 39736,
+    "finished_utc": "2026-10-05T17:07:15Z",
+    "full_teacher": "NOT_QUALIFIED",
+    "solves": 0,
+    "history_commits": 0,
+    "training": false
+  },
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E010/runs/S04-E010-R001/retrieved",
+  "evidence_review": "PASS on supplied records; not independent archive recomputation"
 }

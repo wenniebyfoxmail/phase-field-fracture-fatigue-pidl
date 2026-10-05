@@ -23,3 +23,7 @@ Condor65 exit0, numerical a741da7,29tests PASS; c76/c82 fixed-damage UV solves4i
 ### 2026-10-05 — S04-E009 restored early peaks
 
 Original c20/c40 accepted fields fail the unchanged free-UV screen (rho_u0.7175/1.1879). Fixed-damage re-equilibration gives4.95e-11/4.87e-11, with active-driver corrections3.14%/9.02%. This excludes an exclusively late origin in sampled states, but does not locate onset or establish monotonicity. Own FEM priors and original MATLAB vectors admitted; separate replay lineage preserved. Hard-KKT passes, box fails; full teacher NOT_QUALIFIED. Evidence PASS on supplied records. [Decision](S04-E009/decision.md).
+
+### 2026-10-05 — S04-E010 phase-resolved teacher residuals
+
+One sealedStage0b trajectory, sixcycles20/40/60/76/82/83 ×s2/s4/s5, eachownacceptedprior. All18identity/operator/strictfeasibility pass;5archivedMATLAB bridges and13reconstructed-only labels retained. Original loading/peakUV fails alreadyatc20, allunloadUV passes, peakUVnonmonotonic. AllhardKKTmigration screensPASS versus allboxFAIL; different constraints/scales, no teacherpromotion. Condor67exit0,33testsPASS,archivednormsreproduced. EvidencePASS. [Decision](S04-E010/decision.md). Nextread-only gate: accepted-endpoint stopping semantics, no longrerun/training.
