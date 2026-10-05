@@ -1,0 +1,14 @@
+diff --git a/Sources/+phase_field/+mex/Modules/fem/assembly/pf/at1_penalty_fatigue.f90 b/Sources/+phase_field/+mex/Modules/fem/assembly/pf/at1_penalty_fatigue.f90
+index 2c062a2..d3d03cd 100644
+--- a/Sources/+phase_field/+mex/Modules/fem/assembly/pf/at1_penalty_fatigue.f90
++++ b/Sources/+phase_field/+mex/Modules/fem/assembly/pf/at1_penalty_fatigue.f90
+@@ -91,6 +91,9 @@ contains
+           alpha_np1 = history_vars_old(element, G_pts, 2) + Dalpha
+           fat_deg = min(1.0d0, (1.0d0-((alpha_np1-alpha_T)/(alpha_np1+alpha_T)))**p)
+ 
++          ! Penalty irreversibility does not read slot 1. Store the current
++          ! undegraded tensile energy explicitly for deterministic state.
++          history_vars_new(element, G_pts, 1) = strain_en_undgr(element, G_pts)
+           history_vars_new(element, G_pts, 2) = alpha_np1
+           history_vars_new(element, G_pts, 3) = strain_en_degr
+           history_vars_new(element, G_pts, 4) = fat_deg

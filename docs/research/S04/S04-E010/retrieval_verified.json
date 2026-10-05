@@ -1,0 +1,242 @@
+[
+  {
+    "cycle": 20,
+    "substep": 1,
+    "sha256": "19ca5e849729e73cccbf4d2ca466a8b04036d77197222592cae9c652338dbad7",
+    "bytes": 14304553,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 20,
+    "substep": 2,
+    "sha256": "cb98e525cd5830248e7a3fa804eb14c87d4c0faa8752c409f7057d0bf018a6b1",
+    "bytes": 14299239,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 20,
+    "substep": 3,
+    "sha256": "a4c5652955508231cbab8e9abac331ca0dafcc75efbc13422655a79dabe20196",
+    "bytes": 14293301,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 20,
+    "substep": 4,
+    "sha256": "ed8a015f4eaf6e6f27e6b6ee3189d418bf6320030f0d46d8af13a4eee201fc7c",
+    "bytes": 14293777,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 20,
+    "substep": 5,
+    "sha256": "95385d92908d8de0360748eab4c1a318bde0a4f57e875a07ca4cd595e2a48028",
+    "bytes": 14229950,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 40,
+    "substep": 1,
+    "sha256": "74d693b3068238ab6ae8831042d339c2ecb8f302fa6a4a703e983826a2c6fb9c",
+    "bytes": 14587575,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 40,
+    "substep": 2,
+    "sha256": "e8165592a48816f52c8a6fc15eb140169a0a137afc4929740d135be06849f497",
+    "bytes": 14585477,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 40,
+    "substep": 3,
+    "sha256": "e6e60d8ba8c98f70f67535a26b5b0507767e80561f2ae462dbda7af794c18c90",
+    "bytes": 14583925,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 40,
+    "substep": 4,
+    "sha256": "ed376e7fe3cf12793d725fdfad288a9ed2553cf63270b5aef652f03c0121b038",
+    "bytes": 14593440,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 40,
+    "substep": 5,
+    "sha256": "61abb6ae3e7f04d7583044b589afe23ba75be131a9b19a1f1c8df31f0e1e1fdb",
+    "bytes": 14474185,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 60,
+    "substep": 1,
+    "sha256": "f26698ef211f32553a96775d3036d31b5366bfe01e1518b4c0a8dd49d16e67a6",
+    "bytes": 15447755,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 60,
+    "substep": 2,
+    "sha256": "53ee59c6475e474c79901b79a9be235c174a60c12b34841f54763f961a82e987",
+    "bytes": 15440517,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 60,
+    "substep": 3,
+    "sha256": "b673ac45979882a5b5ac9f8bbb31d293690cb3e9b419b213e948aaee756d81e2",
+    "bytes": 15442589,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 60,
+    "substep": 4,
+    "sha256": "267ea160d607a374359cd62851fe508a0939bbda4fbba24fc9fd83a15c772b65",
+    "bytes": 15452128,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 60,
+    "substep": 5,
+    "sha256": "68dcffc1509cf9594110c0179a63a94eabcb0573918604b701a21112b09e440f",
+    "bytes": 15314783,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 76,
+    "substep": 1,
+    "sha256": "169e8164a257db189f97227d6c81ce79a66f32d68a6947ccc71c8eb08105743a",
+    "bytes": 15899120,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 76,
+    "substep": 2,
+    "sha256": "4b6eaa7c525e401f282d7bb5fc239d5c3a5cea25227fd1e664ea0280606bc72c",
+    "bytes": 15889094,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 76,
+    "substep": 3,
+    "sha256": "7ffcdcda1935e06b5ea6144d8a8c3175f0d3a8a8e2c8b6a9be70a5527e4a4121",
+    "bytes": 15874867,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 76,
+    "substep": 4,
+    "sha256": "4c48247fc9a41cb354aa4045e963771b65ec7f54da4e75d461b44939d899d559",
+    "bytes": 15879239,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 76,
+    "substep": 5,
+    "sha256": "f42c5155b411a5c41c72dab6fac2502bbb73b561fb8f1be4140a6665b5185b47",
+    "bytes": 15787624,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 82,
+    "substep": 1,
+    "sha256": "e71f83d9ef7465e1b48ad855fd0e79f5f4702fd007ab0c60af23145cd0204062",
+    "bytes": 15995712,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 82,
+    "substep": 2,
+    "sha256": "416845c6740f275cbf8652ce38d9873028cba83cc8042d2d541b1ac516bd8376",
+    "bytes": 15990632,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 82,
+    "substep": 3,
+    "sha256": "5e237c884ebcf4968e06e59636945299a19e1702ae17d244558eb9b6433cb110",
+    "bytes": 15979499,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 82,
+    "substep": 4,
+    "sha256": "3e9916f21c176049026b5e4d75ff0c26a81133a6c3db803b07dc2c91f297688b",
+    "bytes": 15972470,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 82,
+    "substep": 5,
+    "sha256": "d8faf2e3a904ea77b07fc471262aa456367ebf6c0521b348513a7a2399be4b7a",
+    "bytes": 15734005,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 83,
+    "substep": 1,
+    "sha256": "d677e2276522b8eafb1812a088b6cead5fd79adc6bd642379d8cd5c5339e6b0a",
+    "bytes": 16005705,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 83,
+    "substep": 2,
+    "sha256": "c56d7f6ba62bd5cdb4215435b3570e0afe1a7975e0477c1a02e7602c330563df",
+    "bytes": 16000610,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 83,
+    "substep": 3,
+    "sha256": "acb82e94ad9fd1c7a17e5f0d59469c23ec4d646488f724fb4f37d42d11285d58",
+    "bytes": 15990532,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 83,
+    "substep": 4,
+    "sha256": "2a8d76e8dc59d824c5c90272fb5bb96c888aacfdb2d3d127eb8a2a935925d0d4",
+    "bytes": 15647549,
+    "timing": "post_history_commit",
+    "converged": true
+  },
+  {
+    "cycle": 83,
+    "substep": 5,
+    "sha256": "61edb06adc92794ccd3b640e790a8fe9c859f2480d4646847817608b3022bc4e",
+    "bytes": 15790460,
+    "timing": "post_history_commit",
+    "converged": true
+  }
+]

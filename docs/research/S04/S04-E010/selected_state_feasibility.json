@@ -1,0 +1,146 @@
+[
+  {
+    "cycle": 20,
+    "substep": 2,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 20,
+    "substep": 4,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 20,
+    "substep": 5,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 40,
+    "substep": 2,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 40,
+    "substep": 4,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 40,
+    "substep": 5,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 60,
+    "substep": 2,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 60,
+    "substep": 4,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 60,
+    "substep": 5,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 76,
+    "substep": 2,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 76,
+    "substep": 4,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 76,
+    "substep": 5,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 82,
+    "substep": 2,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 82,
+    "substep": 4,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 82,
+    "substep": 5,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 83,
+    "substep": 2,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 83,
+    "substep": 4,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  },
+  {
+    "cycle": 83,
+    "substep": 5,
+    "max_healing": 0.0,
+    "damage_min": 0.0,
+    "damage_max": 1.0,
+    "history_finite": true
+  }
+]
