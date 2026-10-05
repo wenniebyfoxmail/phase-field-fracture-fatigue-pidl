@@ -1,0 +1,32 @@
+{
+  "status": "PREPARING_NOT_SUBMITTED",
+  "execution_commit": "0e675b97acdabc1e016065360dae7ba37607a3d7",
+  "design_review": "PASS",
+  "code_review": "PENDING",
+  "condor_id": null,
+  "remote_directory_creation": "Completed after connection recovered",
+  "blocker": "2026-10-05 ~18:00 BST: SSH jump host129.169.16.2 reports System is going down; pam_nologin",
+  "files": {
+    "job.sub": {
+      "bytes": 658,
+      "sha256": "123635e85bfad5e85b5ebf54dadf73f084d5d0bfc9e0bbe9d8d06be84b320f06"
+    },
+    "run.ps1": {
+      "bytes": 1311,
+      "sha256": "864cafc775e6828838170fd880232a64b402c65e6182c4aa7c7b4939dd2ed676"
+    },
+    "run_tests.py": {
+      "bytes": 369,
+      "sha256": "28b6d8f3d4a305bd1e375dcc635e04db978ac81223bcbea369dc838d8d8a2697"
+    },
+    "inputs.zip": {
+      "bytes": 633509010,
+      "sha256": "b009b3a9c4a340955aeeb2f196d1958452b1db522bc9c4cb665e16bebd29fa03"
+    },
+    "code.zip": {
+      "bytes": 230248,
+      "sha256": "88ec79339e9cd413d1c7c1848de0d942d053b5d887ac3f116fcf0c23a114af8b"
+    }
+  },
+  "blocker_resolved": true
+}

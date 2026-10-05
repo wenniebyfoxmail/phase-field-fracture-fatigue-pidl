@@ -19,3 +19,7 @@ c76/c82/c83 native FEM endpoints pass the pre-frozen4e-4 nodal hard-KKT migratio
 ### 2026-10-05 — S04-E008 conditional UV precision, late peaks
 
 Condor65 exit0, numerical a741da7,29tests PASS; c76/c82 fixed-damage UV solves4iterations each, rho_u≈4.7e-11. Active-driver relativeL2 corrections7.86%/18.56%, original-p99 9.33%/19.64%; c83 existing E006 much smaller. Only these three peaks show increase then decrease; no early-stage trend or causality claim. Hard KKT migration passes before/after, box fails, damage residuals increase slightly. Full teacher NOT_QUALIFIED. Evidence review PASS on supplied results; archived-array norm checks agree. [Decision](S04-E008/decision.md). Missing early/internal assets remain next gate, no new training.
+
+### 2026-10-05 — S04-E009 restored early peaks
+
+Original c20/c40 accepted fields fail the unchanged free-UV screen (rho_u0.7175/1.1879). Fixed-damage re-equilibration gives4.95e-11/4.87e-11, with active-driver corrections3.14%/9.02%. This excludes an exclusively late origin in sampled states, but does not locate onset or establish monotonicity. Own FEM priors and original MATLAB vectors admitted; separate replay lineage preserved. Hard-KKT passes, box fails; full teacher NOT_QUALIFIED. Evidence PASS on supplied records. [Decision](S04-E009/decision.md).
