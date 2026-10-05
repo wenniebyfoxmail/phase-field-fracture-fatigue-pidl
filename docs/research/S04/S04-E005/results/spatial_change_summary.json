@@ -1,0 +1,52 @@
+{
+  "definition": "For each fixed interval, compare assembled nodal UV dual density and absolute box-projected damage correction without registration. Fractions are nodal-mass-weighted squared-change fractions.",
+  "crack_tip_box": {"x_min": 0.4, "abs_y_max": 0.03},
+  "crack_strip": {"abs_y_max": 0.03},
+  "intervals": [
+    {
+      "left": 76,
+      "right": 82,
+      "uv": {
+        "mass_weighted_l2_change": 0.0033647376895578553,
+        "tip_box_fraction": 0.9999616677204985,
+        "crack_strip_fraction": 0.9999999422862554,
+        "max_abs_change": 0.33658662448463933,
+        "argmax_node_zero_based": 21477,
+        "argmax_xy": [0.4580316041151009, -0.002892996730414876],
+        "top_0.1pct_bbox": [0.4086801358954669, 0.4680283882159658, -0.01553397619647358, 0.0144222859618057]
+      },
+      "damage": {
+        "mass_weighted_l2_change": 0.04406670133891902,
+        "tip_box_fraction": 0.49073637098366735,
+        "crack_strip_fraction": 0.9993973791594057,
+        "max_abs_change": 1.0,
+        "argmax_node_zero_based": 10313,
+        "argmax_xy": [0.4780325586556561, -0.001166746064495131],
+        "top_0.1pct_bbox": [-0.4462160759035351, 0.4780325586556561, -0.02737490329163183, 0.02978599492826908]
+      }
+    },
+    {
+      "left": 82,
+      "right": 83,
+      "uv": {
+        "mass_weighted_l2_change": 0.002700024553827156,
+        "tip_box_fraction": 0.999997687580505,
+        "crack_strip_fraction": 0.9999999999999998,
+        "max_abs_change": 0.3365858862660907,
+        "argmax_node_zero_based": 21477,
+        "argmax_xy": [0.4580316041151009, -0.002892996730414876],
+        "top_0.1pct_bbox": [0.4540374171838313, 0.4740249398794545, -0.0147427242181338, 0.01118562290742256]
+      },
+      "damage": {
+        "mass_weighted_l2_change": 0.027055445499186388,
+        "tip_box_fraction": 0.5014549878698733,
+        "crack_strip_fraction": 0.9999442585203776,
+        "max_abs_change": 1.0,
+        "argmax_node_zero_based": 5721,
+        "argmax_xy": [0.4840198685367193, 0.01884000145111074],
+        "top_0.1pct_bbox": [-0.454120756419913, 0.4840198685367193, -0.02711436802979329, 0.02976797925635753]
+      }
+    }
+  ],
+  "bounded_reading": "UV change is effectively confined to the right crack-tip box for both intervals. Damage-correction change is confined to the narrow crack strip but is distributed along the strip; about half of its mass-weighted squared change lies in the fixed right-tip box. These are residual-map changes, not field-error growth or causal localization."
+}

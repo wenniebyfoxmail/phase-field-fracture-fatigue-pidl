@@ -1,0 +1,89 @@
+{
+  "protocol_revision": "20261005-r1-frozen",
+  "full_early_terminal_comparison": {
+    "status": "NOT_EVALUABLE",
+    "reason": "c20/c40/c60 lack same-contract native pre-phase inputs and MATLAB oracle",
+    "required_early_cycles": [
+      20,
+      40,
+      60
+    ],
+    "required_terminal_cycles": [
+      82,
+      83
+    ],
+    "threshold": 3.0
+  },
+  "early_presence": {
+    "status": "NOT_EVALUABLE",
+    "reason": "No c20/c40/c60 point is qualified under the frozen contract"
+  },
+  "local_c76_to_terminal": {
+    "uv": {
+      "bridge_cycle": 76,
+      "terminal_cycles": [
+        82,
+        83
+      ],
+      "bridge_value": 1.0137327145803448,
+      "terminal_minimum": 0.041331479715259814,
+      "ratio": 0.04077157530855638,
+      "threshold": 3.0,
+      "status": "FAIL"
+    },
+    "damage": {
+      "bridge_cycle": 76,
+      "terminal_cycles": [
+        82,
+        83
+      ],
+      "bridge_value": 0.1681973005424308,
+      "terminal_minimum": 0.1733859820036487,
+      "ratio": 1.030848779644409,
+      "threshold": 3.0,
+      "status": "FAIL"
+    }
+  },
+  "local_joint_status": "FAIL",
+  "trend_status": "EVALUATED",
+  "interpretation_boundary": "Local bridge-to-terminal diagnostic only; cannot locate onset before c76.",
+  "numerical_comparisons": {
+    "76": {
+      "max_abs": 1.0259432463733537e-16,
+      "l2_diff": 3.4140068794954534e-15,
+      "mass_dual_diff": 1.631930343986416e-12,
+      "mass_dual_ref": 0.12164780410170349,
+      "denominator": 0.12164780410170349,
+      "scaled_difference": 1.3415205938465135e-11,
+      "threshold": 1e-09,
+      "status": "PASS"
+    },
+    "82": {
+      "max_abs": 1.1437443535127455e-16,
+      "l2_diff": 3.323513877671945e-15,
+      "mass_dual_diff": 1.5772393310106737e-12,
+      "mass_dual_ref": 0.16240127575407673,
+      "denominator": 0.16240127575407673,
+      "scaled_difference": 9.711988552350276e-12,
+      "threshold": 1e-09,
+      "status": "PASS"
+    },
+    "83": {
+      "max_abs": 9.977968709316853e-17,
+      "l2_diff": 2.8614662562546945e-15,
+      "mass_dual_diff": 1.3291244873941028e-12,
+      "mass_dual_ref": 0.0049597726060533155,
+      "denominator": 0.11999988,
+      "scaled_difference": 1.1076048470999328e-11,
+      "threshold": 1e-09,
+      "status": "PASS"
+    }
+  },
+  "training": false,
+  "optimizer_calls": 0,
+  "history_commits": 0,
+  "producer_pid": 23232,
+  "torch_version": "2.8.0+cu128",
+  "elapsed_seconds": 4.445673942565918,
+  "finished_utc": "2026-10-05T14:09:37Z"
+}
