@@ -34,3 +34,8 @@ def test_mass_not_subset_normalized():
 def test_exact_endpoint_in_narrow_interval():
     out,_,_=assess([1,-1],[1.-5e-13,1.],[1.-5e-13,1.-5e-13],np.arange(2))
     assert out['status']=='PASS' and out['counts']['lower']==1 and out['counts']['upper']==1
+
+def test_tiny_violation_never_passes():
+    out,_,_=assess([0],[0],[-5e-13],np.array([0]),np.ones(1),1.)
+    assert out['status']=='FEASIBILITY_TOLERANCE_ONLY'
+    assert out['hard_mass_rms_free'] is None

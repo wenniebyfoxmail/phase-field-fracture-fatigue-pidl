@@ -45,13 +45,15 @@ def assess(residual, damage, previous, free, mass=None, energy_scale=None):
         idx=int(np.argmax(v)); feasibility[name]={'max':float(v[idx]),'node_zero_based':idx,
             'nonzero_count':int((v>0).sum()),'above_tolerance_count':int((v>BOUND_TOL).sum())}
     feasible = all(v['max'] <= BOUND_TOL for v in feasibility.values())
+    exact_feasible = all(v['max'] == 0. for v in feasibility.values())
     raw=float(np.linalg.norm(filtered[free]))
     status='PASS' if feasible and not near_both.any() and raw <= RAW_SCREEN else 'FAIL'
     if near_both.any(): status='AMBIGUOUS_NEAR_BOTH_BOUNDS'
+    if not exact_feasible: status='FEASIBILITY_TOLERANCE_ONLY'
     if not feasible: status='INFEASIBLE'
     result={'raw_l2':float(np.linalg.norm(r[free])), 'hard_kkt_raw_l2':raw,
         'legacy_raw_kkt_l2':float(np.linalg.norm(legacy[free])), 'raw_screen':RAW_SCREEN,
-        'bound_tolerance':BOUND_TOL,'status':status,'feasible_within_tolerance':feasible,
+        'bound_tolerance':BOUND_TOL,'status':status,'feasible_within_tolerance':feasible,'exactly_feasible':exact_feasible,
         'counts':{k:int(v.sum()) for k,v in [('lower',lower),('upper',upper),('interior',interior),('collapsed',collapsed),('ambiguous',near_both),('fixed',fixed)]},
         'feasibility':feasibility,'max_kkt_node_zero_based':int(np.argmax(abs(filtered))),
         'max_kkt_abs':float(abs(filtered).max()),'full_teacher':'NOT_QUALIFIED'}

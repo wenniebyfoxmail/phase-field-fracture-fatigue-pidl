@@ -5,12 +5,14 @@ import h5py
 import numpy as np
 from hard_kkt import assess
 
+LATE_LOCKS={76:'11a1abe4f48e15c5247fc961080e1801247a8113e96763252c4c4ae9cd721f74',82:'488c4dff334d8afa7c9c207202283699b89c19e0602b93f3e8eb10f472593e52'}
 LOCKS={'native':'e4270ebd45bf35703dffa8375c2d9b474bdceb303448ddfa6d5fc453956309d4',
        'qualified':'ecee498054293f66c881a7bcf08a51b1b0315b4e2d11fa20a50c7bbe204f16c5'}
 
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--native',type=Path,required=True);p.add_argument('--qualified',type=Path,required=True);p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--additional-native-dir',type=Path)
     a=p.parse_args()
     for inp in (a.native,a.qualified):
         if a.out.resolve()==inp.resolve() or a.out.resolve() in inp.resolve().parents:
@@ -55,6 +57,35 @@ def main():
         (a.out/'summary.json').write_text(json.dumps(summary,indent=2))
         np.savez_compressed(a.out/'fields.npz',d=d,previous=lo,free=free,xy=xy,**arrays)
         if diff>1e-9:raise ValueError('Vector consistency gate failed; evidence retained')
+        if a.additional_native_dir is not None:
+            late={}
+            for cycle,sha in LATE_LOCKS.items():
+                path=a.additional_native_dir/f'cycle_{cycle:04d}_peak_native_q4.mat'
+                if a.out.resolve() in path.resolve().parents:raise ValueError('Output contains input')
+                actual=hashlib.sha256(path.read_bytes()).hexdigest()
+                receipt[f'native_c{cycle}']={'path':str(path.resolve()),'sha256':actual}
+                if actual!=sha:raise ValueError('Late native identity mismatch')
+                with h5py.File(path) as f:
+                    c=f['converged_peak_solution'];pr=f['pre_phase_input'];o=f['matlab_residual']
+                    for g in (c,pr):assert int(g['cycle'][0,0])==cycle and int(g['step'][0,0])==4
+                    assert int(c['staggered_iteration'][0,0])==int(pr['staggered_iteration'][0,0])
+                    dc=c['d'][()].ravel();lc=pr['p_field_old'][()].ravel();rc=o['R_d_full'][()].ravel()
+                    fc=o['free_dof_d'][()].ravel().astype(int)-1
+                    assert np.array_equal(fc,free) and len(dc)==len(d)
+                    assert np.array_equal(lc,o['p_field_old'][()].ravel())
+                    assert np.array_equal(pr['history_vars_old'][()],o['history_vars_old'][()])
+                    assert np.array_equal(rc[fc],o['R_d_free'][()].ravel())
+                    assert np.array_equal(np.sort(o['prescribed_dof_d'][()].ravel().astype(int)-1),np.sort(fixed))
+                    assert abs(float(c['load_factor'][0,0])-.999999)<1e-12
+                    ru=o['R_u_full'][()].ravel();fu=o['free_dof_u'][()].ravel().astype(int)-1
+                    assert np.array_equal(fu,np.load(a.qualified)['free_uv'])
+                    assert np.array_equal(ru[fu],o['R_u_free'][()].ravel()) and np.isfinite(ru).all()
+                metrics,k,legacy=assess(rc,dc,lc,fc,mass,es)
+                metrics['rho_u']=float(np.sqrt(np.sum((ru[fu]*.11999988/es)**2/np.tile(mass,2)[fu])))
+                metrics['oracle']='native MATLAB only; no new AD comparison in this run'
+                late[str(cycle)]=metrics
+                np.savez_compressed(a.out/f'c{cycle}_fields.npz',d=dc,previous=lc,filtered=k,legacy=legacy)
+                (a.out/'late_native_summary.json').write_text(json.dumps(late,indent=2))
         receipt['status']='COMPLETED_DIAGNOSTIC'
         print(json.dumps(summary,indent=2))
     except Exception as e:

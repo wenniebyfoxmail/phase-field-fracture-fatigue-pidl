@@ -28,3 +28,9 @@ For U0.12 c20/c40/c60 and selected later-cycle loading/peak/unload states, expor
 6. for timing localization only: preclip phase output, postclip damage, and post-update state at the same final stagger.
 
 First inspect retained native checkpoints on the original Windows producer. If these fields were never captured, a file conversion cannot recover them; use a reviewed replay plan with explicit checkpoint/lineage and bounded compute. No request has yet been sent to a human or original producer; this is the executable data specification. No expensive trajectory rerun has been launched.
+
+## Additional checks
+
+The actual replay load-displacement file records a five-step cycle: s1 about0.03, s2 about0.06, s3 about0.09, s4 peak0.11999988, s5 near-zero unload. Therefore the minimal within-cycle request is **s2/s4/s5**, not a guessed s8. Normalized residuals must use the same trajectory peak Us at all three substeps.
+
+Read-only check of the user-authorized gpu-server found neither C:/q4runs nor C:/Users/xw436/GRIPHFiTH. This available compute host does not expose the original producer archive paths listed in the replay receipt. It cannot supply missing accepted states merely through computation access.
