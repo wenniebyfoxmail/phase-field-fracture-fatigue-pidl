@@ -36,7 +36,8 @@ def main() -> None:
     simplex_quad = root / "Sources/+phase_field/+fem/+quadrature/simplex_quad.m"
     solver = root / "Scripts/fatigue_fracture/solve_fatigue_fracture.m"
     runner = root / "Scripts/fatigue_fracture/run_SENS_hard_recovery_native_q4_capture.m"
-    for path in (abaqus, capture, postcommit, simplex_quad, solver, runner):
+    config_builder = root / "Scripts/fatigue_fracture/build_SENS_hard_recovery_loading5_primary_config.m"
+    for path in (abaqus, capture, postcommit, simplex_quad, solver, runner, config_builder):
         if not path.is_file():
             raise FileNotFoundError(path)
 
@@ -59,6 +60,11 @@ def main() -> None:
         "char(native_q4_capture.label))"
     )
     replace_exact(solver, old_filename, new_filename, count=2)
+    # The sealed canonical metadata records the five realised displacement
+    # states.  Eight is the lower-level solver input that generates those
+    # five effective states and remains cfg.requested_n_step below.
+    replace_exact(config_builder, "expect(m, 'requested_n_step', 8);",
+                  "expect(m, 'requested_n_step', 5);")
     replace_exact(solver, "sys.MESH.elem(:,1:4)",
                   "sys.MESH.elem(:,1:sys.MESH.nel)")
     replace_exact(solver, "phase_field.audit.q4_strain_at_gauss_points(",
@@ -156,7 +162,8 @@ QUADRATURE = phase_field.init.quadrature(MESH.dim, ...
 
     print("S04-E011 FEM patch applied")
     patched_files = (
-        abaqus, capture, postcommit, simplex_quad, solver, runner, launch_dst,
+        abaqus, capture, postcommit, simplex_quad, solver, runner,
+        config_builder, launch_dst,
         root / "Sources/+phase_field/+fem/+quadrature/simplex_2d.m",
         root / "Sources/+phase_field/+audit/strain_at_gauss_points.m",
     )
