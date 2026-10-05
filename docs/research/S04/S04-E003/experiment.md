@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E003
 protocol_revision: 20261005-r1-frozen
-status: design-pass; code-review-pending
+status: completed-diagnostic; code-and-evidence-review-pass
 ---
 # Same-field FEM weak-form / PIDL gradient and qualified history controls
 
@@ -33,3 +33,7 @@ Primary PASS supports same-field UV operator consistency, even if both residuals
 ## Adopted design review (2026-10-05)
 
 Pro final DESIGN PASS,9m48s, same review URL as E002. Five arms and direct archived-MEX UV primary accepted. Old fields checked through whole step: passed as intent(in) to Fortran, separate history_vars_new output, MATLAB value copies, committed only after oracle; source zip hash locked in qualification receipt. No Dirichlet row rewriting in oracle; raw assembled R_u minus load is partitioned only. Zero external load follows locked INPUT_SENS boundary construction and pre_iter_update zero-Neumann branch; no separately serialized RHS array is claimed. Primary vector comparison preserves sign from source. FEM penalty421875 is source default, runtime scalar not independently serialized/verified. Damage-oracle difference has no PASS/FAIL classification. Check raw damage-gradient four-arm interaction≈0 and identical UV gradients; retain same total-area masses on subsets. ftrial is one read-only evaluation, no state advance or commit; compare to postcommit stored f only as additional timing/formula corroboration, not a substitute for prior fields. No claim of full derivative through f(d).
+
+## Completed outcome
+
+S04-E003-R001 / Condor59 / numerical4c80e91 / exit0 /9 remote tests PASS. Six remote output hashes verified after retrieval. Same-field primary PASS; history replacement insufficient for frozen stationarity screen. See decision.md and evidence_review.md.

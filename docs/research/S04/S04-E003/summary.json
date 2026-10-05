@@ -1,0 +1,93 @@
+{
+  "gp_order": "(++,-+,+-,--); archived source loop locked; NumPy/Torch shape and per-GP det asserted",
+  "identity": {
+    "mesh_identity": "exact float32-coordinate/int64-connectivity hash match",
+    "mesh_signature": "e16c9b230c07cc747f5544de1b2bc4afa42be0f6ff645f67b81671307c7eea0e",
+    "nodes": 86756,
+    "elements": 86408,
+    "bottom_uv_max": 0.0,
+    "top_u_max": 0.0,
+    "top_v_min": 0.11999988,
+    "top_v_max": 0.11999988,
+    "fem_damage_min": 0.0,
+    "fem_damage_max": 1.0,
+    "accepted_damage_min": -0.010172759182751179,
+    "accepted_damage_max": 1.0008522272109985,
+    "state_transition": "production accepted step413 -> c83 peak step414",
+    "training": false
+  },
+  "comparisons": {
+    "pidl_vs_matlab_free_uv": {
+      "max_abs": 9.977968709316853e-17,
+      "l2_diff": 2.8614662562546945e-15,
+      "mass_dual_diff": 1.3291244873941028e-12,
+      "mass_dual_ref": 0.0049597726060533155,
+      "scaled_difference": 1.1076048470999328e-11,
+      "threshold": 1e-09,
+      "status": "PASS"
+    },
+    "numpy_vs_matlab_free_uv": {
+      "max_abs": 9.686271738106153e-17,
+      "l2_diff": 2.931784816502755e-15,
+      "mass_dual_diff": 1.3610500128675282e-12,
+      "mass_dual_ref": 0.0049597726060533155,
+      "scaled_difference": 1.1342094782657518e-11,
+      "threshold": 1e-09,
+      "status": "PASS"
+    },
+    "numpy_vs_pidl_free_uv": {
+      "max_abs": 5.1892785299265066e-17,
+      "l2_diff": 1.5186285216985643e-15,
+      "mass_dual_diff": 6.943194270035463e-13,
+      "mass_dual_ref": 0.004959772606053614,
+      "scaled_difference": 5.786001011030564e-12,
+      "threshold": 1e-09,
+      "status": "PASS"
+    },
+    "pidl_vs_matlab_full_uv": {
+      "max_abs": 9.977968709316853e-17,
+      "l2_diff": 2.8638322298862204e-15,
+      "mass_dual_diff": 1.3291317696037625e-12,
+      "mass_dual_ref": 0.008054679805742716,
+      "scaled_difference": 1.107610915614051e-11,
+      "threshold": 1e-09,
+      "status": "PASS"
+    },
+    "frozen_trial_damage_vs_matlab_common_free": {
+      "max_abs": 3.577867169202165e-18,
+      "l2_diff": 9.77201167413673e-17,
+      "mass_dual_diff": 4.496203315464393e-14,
+      "mass_dual_ref": 0.3500091081614097,
+      "scaled_difference": 1.2845960892511777e-13,
+      "interpretation": "Diagnostic only: penalty, fixed DOFs and trial coefficient semantics differ."
+    }
+  },
+  "matlab_rho_u": 0.04133147971525735,
+  "matlab_free_uv_l2": 9.302805388123553e-06,
+  "fprev_formula_vs_stored_max": 1.1102230246251565e-16,
+  "ftrial_vs_fprev_max": 0.021218279739119605,
+  "numpy_energy": 1.8033163293242824e-05,
+  "history_control": "QUALIFIED_SAME_REPLAY_PRECOMMIT",
+  "damage_free_dofs": 86505,
+  "pidl_damage_dofs": 86756,
+  "fem_penalty_source_default": 421875.0,
+  "fem_penalty_runtime": "not independently serialized/verified",
+  "pidl_penalty_coefficient": 16875.0,
+  "primary": "pidl_vs_matlab_free_uv",
+  "stationarity_screen": 0.001,
+  "pid": 47056,
+  "training": false,
+  "history_commits": 0,
+  "readonly_trial_coefficient_evaluations": 1,
+  "gradient_interaction_max": 6.938893903907228e-18,
+  "trial_vs_postcommit_f_max": 7.327471962526033e-15,
+  "external_load_status": "zero reconstructed from locked source BC path; not separately serialized",
+  "coefficient_hashes": {
+    "P_d_P_f": "ecb829e82219d072c7e02a90a0bf91da071538b2fceee322871516d48e059ccc",
+    "F_d_P_f": "ecb829e82219d072c7e02a90a0bf91da071538b2fceee322871516d48e059ccc",
+    "P_d_Fprev_f": "bd4d1feb6b2d819cc2831a26f4e536a52208d30d2c978783f0930f5ceadcf2b5",
+    "F_d_Fprev_f": "bd4d1feb6b2d819cc2831a26f4e536a52208d30d2c978783f0930f5ceadcf2b5",
+    "F_d_Ftrial_f": "c1cc51ef00ea666045865e8cd7ecde9d41d2c77d91ab1196adc48591863534d9"
+  },
+  "finished_utc": "2026-10-05T00:51:33Z"
+}

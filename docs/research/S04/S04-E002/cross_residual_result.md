@@ -35,3 +35,8 @@ Supervised expression remains a separate single-state diagnostic. Physics polish
 ## Next gate
 
 Read-only mechanics consistency audit: evaluate/compare FEM's assembled free-UV weak residual and the PIDL energy derivative on the same c83 field, with exact constitutive split, boundary exclusions, quadrature and scaling documented. Separately obtain a lineage-qualified pre-c83-peak FEM state for the damage-history control. Do not tune residual thresholds or launch long training to bypass these unresolved distinctions.
+
+
+## 2026-10-05 correction: qualified predecessor found
+
+The earlier unavailable-predecessor statement was a search omission. S04-E003 located the v1/native_q4 precommit capture, qualified exact target/mesh identity and source timing, and completed five history controls plus original MATLAB weak-residual comparison. E002 numerical counterfactual results remain unchanged. See [S04-E003 decision](../S04-E003/decision.md).

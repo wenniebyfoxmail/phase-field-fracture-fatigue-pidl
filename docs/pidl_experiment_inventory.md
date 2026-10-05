@@ -283,3 +283,7 @@ Status `diagnostic` for read-only input/history audit; supervised projection/pol
 ### S04-E002 update: R003 cross-residual completed
 
 Status `diagnostic`: afb3b80 / D-26-09 Condor58, exit0,3tests PASS, exact-commit Code Ready and scoped evidence review PASS. The delayed design final arrived. Target is REFERENCE_NONSTATIONARY under frozen projected PIDL413: UV .04133148, box-damage .17479701 versus1e-3. Penalty dominates energy but history-only replacement cannot remove fixed-field UV residual. No qualified FEM predecessor control; no fitting/polish launched. Primary endpoint: [cross-residual decision](research/S04/S04-E002/cross_residual_result.md). Next: same-field FEM weak-form/energy-gradient consistency audit and qualified predecessor history.
+
+## 2026-10-05 — S04-E003 same-field weak residual and qualified history audit
+
+Status `diagnostic`: 4c80e91 / Condor59 / exit0 / 9 remote tests PASS; Code Ready and scoped evidence interpretation reviews PASS. Original MATLAB versus PIDL free-UV vector scaled difference1.108e-11 passes1e-9; both retain rho_u .04133148. Qualified FEM predecessor removes healing penalty; F/Fprev common-free box damage remains .05807356. E002 predecessor-search omission corrected. No training/new solve/history commit. Endpoint: [S04-E003 decision](research/S04/S04-E003/decision.md).
