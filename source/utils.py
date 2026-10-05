@@ -150,9 +150,13 @@ def parse_mesh(filename="meshed_geom.msh", gradient_type = 'numerical'):
                         if len(type_fields) != 1:
                             raise ValueError('Abaqus *ELEMENT block must declare exactly one TYPE')
                         element_type = type_fields[0].split('=', 1)[1]
-                        if element_type not in {'CPE4', 'CPS4', 'CPE4R', 'CPS4R'}:
+                        supported = {
+                            'CPE4': 4, 'CPS4': 4, 'CPE4R': 4, 'CPS4R': 4,
+                            'CPE3': 3, 'CPS3': 3,
+                        }
+                        if element_type not in supported:
                             raise ValueError(
-                                f'Abaqus element type must be planar Q4, got {element_type!r}'
+                                f'Abaqus element type must be planar Q4 or T3, got {element_type!r}'
                             )
                         mode = 'element'
                     else:
@@ -168,9 +172,11 @@ def parse_mesh(filename="meshed_geom.msh", gradient_type = 'numerical'):
                     elem_id = int(values[0])
                     if elem_id in elements:
                         raise ValueError(f'duplicate Abaqus element id {elem_id}')
-                    if len(values) != 5:
+                    expected_nodes = supported[element_type]
+                    if len(values) != expected_nodes + 1:
                         raise ValueError(
-                            f'{element_type} element {elem_id} must contain exactly four nodes'
+                            f'{element_type} element {elem_id} must contain exactly '
+                            f'{expected_nodes} nodes'
                         )
                     elements[elem_id] = tuple(int(value) for value in values[1:])
         node_ids = sorted(nodes)
@@ -179,17 +185,18 @@ def parse_mesh(filename="meshed_geom.msh", gradient_type = 'numerical'):
         X = np.asarray([nodes[index][0] for index in node_ids], dtype=float)
         Y = np.asarray([nodes[index][1] for index in node_ids], dtype=float)
         T = np.asarray([elements[index] for index in sorted(elements)], dtype=int) - 1
-        if T.ndim != 2 or T.shape[1] != 4:
-            raise ValueError('Abaqus mesh must contain only four-node Q4 elements')
+        expected_nodes = supported[element_type]
+        if T.ndim != 2 or T.shape[1] != expected_nodes:
+            raise ValueError('Abaqus mesh must contain one consistent planar element type')
         xy = np.column_stack((X, Y))[T]
         area = 0.5 * np.abs(np.sum(
             xy[:, :, 0] * np.roll(xy[:, :, 1], -1, axis=1)
             - xy[:, :, 1] * np.roll(xy[:, :, 0], -1, axis=1), axis=1
         ))
         if np.any(area <= 0.0):
-            raise ValueError('Abaqus Q4 mesh contains non-positive element area')
+            raise ValueError(f'Abaqus {element_type} mesh contains non-positive element area')
         if gradient_type == 'autodiff':
-            raise ValueError('native Q4 alignment requires numerical gradients')
+            raise ValueError('native Abaqus mesh alignment requires numerical gradients')
         return X, Y, T, area
 
     mesh = gmshparser.parse(filename)

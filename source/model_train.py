@@ -69,6 +69,24 @@ def _mesh_state_signature(inp, connectivity):
     return digest.hexdigest()
 
 
+def _nodal_state_signature(inp):
+    """Hash shared nodal coordinates without coupling the hash to topology."""
+    arr = inp.detach().cpu().contiguous().numpy()
+    digest = hashlib.sha256()
+    digest.update(str(arr.shape).encode("ascii"))
+    digest.update(str(arr.dtype).encode("ascii"))
+    digest.update(arr.tobytes(order="C"))
+    return digest.hexdigest()
+
+
+def _sha256_file(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def _oracle_cycle_scale(step_idx, cfg):
     """Map a PIDL training step to a FEM physical cycle and load-scale."""
     mode = cfg.get("cycle_mode", "training_step")
@@ -418,7 +436,7 @@ def validate_irreversibility_mode_for_connectivity(cfg, connectivity, stage):
 
 
 def validate_history_storage_for_connectivity(fatigue_dict, connectivity, stage):
-    """Reject native-Q4 history settings on T3 and element state on Q4."""
+    """Require native GP history/state contracts to match mesh arity."""
     if not fatigue_dict.get("fatigue_on", False) or connectivity is None:
         return
     arity = int(connectivity.shape[1])
@@ -430,14 +448,25 @@ def validate_history_storage_for_connectivity(fatigue_dict, connectivity, stage)
         raise ValueError(
             f"{stage}: Q4 fatigue requires history_storage='q4_gp4', got {storage!r}"
         )
+    if arity == 3 and storage == "tri3_gp3" and reduction_mode != "native_tri3_gp3":
+        raise ValueError(
+            f"{stage}: tri3_gp3 requires history reduction 'native_tri3_gp3', "
+            f"got {reduction_mode!r}"
+        )
+    if reduction_mode == "native_tri3_gp3" and (arity != 3 or storage != "tri3_gp3"):
+        raise ValueError(
+            f"{stage}: native_tri3_gp3 requires 3-node connectivity and "
+            f"history_storage='tri3_gp3'; got arity={arity}, storage={storage!r}"
+        )
     if reduction_mode == "native_q4_gp4" and (arity != 4 or storage != "q4_gp4"):
         raise ValueError(
             f"{stage}: native_q4_gp4 requires 4-node connectivity and "
             f"history_storage='q4_gp4'; got arity={arity}, storage={storage!r}"
         )
-    if arity == 4 and damage_history != "previous_accepted_nodal":
+    if arity in {3, 4} and storage in {"tri3_gp3", "q4_gp4"} \
+            and damage_history != "previous_accepted_nodal":
         raise ValueError(
-            f"{stage}: native Q4 penalty alignment requires "
+            f"{stage}: native GP penalty alignment requires "
             f"damage_history_storage='previous_accepted_nodal', got {damage_history!r}"
         )
 
@@ -488,6 +517,12 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
     """Save cycle-end element fields for FEM/PIDL mechanism comparison."""
     out_dir.mkdir(parents=True, exist_ok=True)
     _is_native_q4 = T_conn is not None and T_conn.ndim == 2 and T_conn.shape[1] == 4
+    _is_native_tri3 = bool(
+        T_conn is not None and T_conn.ndim == 2 and T_conn.shape[1] == 3
+        and isinstance(irreversibility_penalty_cfg, dict)
+        and irreversibility_penalty_cfg.get("spatial_integration") == "native_tri3_gp3"
+    )
+    _is_native_gp = _is_native_q4 or _is_native_tri3
     with torch.no_grad():
         if T_conn is not None:
             alpha_elem = alpha[T_conn].mean(dim=1)
@@ -525,6 +560,14 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         eps_xx, eps_yy, eps_xy, _, _ = gradients(
             inp, u, v, alpha, area_T, T_conn
         )
+        if _is_native_tri3:
+            from tri3_quadrature import tri3_gradient, tri3_interpolate, tri3_shape_data
+            _tri_shape, _tri_dshape, _ = tri3_shape_data(inp, T_conn)
+            _grad_u = tri3_gradient(u, T_conn, _tri_dshape)
+            _grad_v = tri3_gradient(v, T_conn, _tri_dshape)
+            eps_xx = _grad_u[:, :, 0]
+            eps_yy = _grad_v[:, :, 1]
+            eps_xy = 0.5 * (_grad_u[:, :, 1] + _grad_v[:, :, 0])
         eps_trace = eps_xx + eps_yy
         eps_eq = torch.sqrt(eps_xx**2 + eps_yy**2 + 2.0 * eps_xy**2)
         eps_1, eps_2 = _principal_2d(eps_xx, eps_yy, eps_xy)
@@ -542,6 +585,14 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
                 _g_override_for_stress = _g_override_for_stress[:, None].expand_as(
                     _alpha_for_stress
                 )
+        elif _is_native_tri3:
+            _alpha_for_stress = tri3_interpolate(alpha, T_conn, _tri_shape)
+            _g_override_for_stress = g_stiffness_override_elem
+            if (torch.is_tensor(_g_override_for_stress)
+                    and _g_override_for_stress.ndim == 1):
+                _g_override_for_stress = _g_override_for_stress[:, None].expand_as(
+                    _alpha_for_stress
+                )
         else:
             _alpha_for_stress = alpha_elem
             _g_override_for_stress = g_stiffness_override_elem
@@ -550,7 +601,7 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
             g_stiffness_override=_g_override_for_stress,
         )
         sig_eff_1, sig_eff_2 = _principal_2d(sig_eff_xx, sig_eff_yy, sig_eff_xy)
-        if _is_native_q4:
+        if _is_native_gp:
             eps_xx_gp, eps_yy_gp, eps_xy_gp = eps_xx, eps_yy, eps_xy
             eps_trace_gp, eps_eq_gp = eps_trace, eps_eq
             eps_1_gp, eps_2_gp = eps_1, eps_2
@@ -637,7 +688,7 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
             _g_solver_state, like_tensor=_alpha_for_stress
         )
         g_override_state_np = g_solver_state_np.astype(np.float32)
-    if _is_native_q4:
+    if _is_native_gp:
         with torch.no_grad():
             _, psi_raw_state = strain_energy_with_split(
                 eps_xx_gp, eps_yy_gp, eps_xy_gp, _alpha_for_stress,
@@ -648,7 +699,7 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
     else:
         psi_raw_gp_np = psi_plus_gp_np / np.maximum(g_alpha_state_np, 1e-30)
         psi_raw_solver_gp_np = psi_plus_gp_np / np.maximum(g_solver_state_np, 1e-30)
-    if _is_native_q4:
+    if _is_native_gp:
         g_alpha_np = g_alpha_state_np.mean(axis=1)
         g_solver_np = g_solver_state_np.mean(axis=1)
         g_override_np = g_override_state_np.mean(axis=1)
@@ -702,15 +753,15 @@ def _save_element_diagnostics(inp, T_conn, u, v, alpha, hist_alpha, hist_fat,
         psi_plus_prev_gp=psi_prev_gp_np.astype(np.float32),
         eps_xx_gp=(
             _tensor_to_numpy(eps_xx_gp).astype(np.float32)
-            if _is_native_q4 else np.empty((0, 0), dtype=np.float32)
+            if _is_native_gp else np.empty((0, 0), dtype=np.float32)
         ),
         eps_yy_gp=(
             _tensor_to_numpy(eps_yy_gp).astype(np.float32)
-            if _is_native_q4 else np.empty((0, 0), dtype=np.float32)
+            if _is_native_gp else np.empty((0, 0), dtype=np.float32)
         ),
         engineering_shear_gamma_xy_gp=(
             2.0 * _tensor_to_numpy(eps_xy_gp).astype(np.float32)
-            if _is_native_q4 else np.empty((0, 0), dtype=np.float32)
+            if _is_native_gp else np.empty((0, 0), dtype=np.float32)
         ),
         E_el_elem=E_el_np.astype(np.float32),
         E_d_elem=E_d_np.astype(np.float32),
@@ -1031,7 +1082,9 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         "damage_history_storage", "running_nodal_max"
     )
     _runtime_gauss_order = (
-        "(+,+),(-,+),(+,-),(-,-)" if _runtime_mesh_arity == 4 else "tri3"
+        "(+,+),(-,+),(+,-),(-,-)" if _runtime_mesh_arity == 4
+        else "(2/3,1/6,1/6),(1/6,2/3,1/6),(1/6,1/6,2/3)"
+        if _runtime_mesh_arity == 3 else "none"
     )
     from network import bind_mesh_graph
     bind_mesh_graph(field_comp.net, T_conn, inp.shape[0])
@@ -1063,12 +1116,22 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
             and T_conn.shape[1] == 4
             and fatigue_dict.get("history_storage", "element") == "q4_gp4"
         )
+        _native_tri3_gp_state = bool(
+            T_conn is not None
+            and T_conn.ndim == 2
+            and T_conn.shape[1] == 3
+            and fatigue_dict.get("history_storage", "element") == "tri3_gp3"
+        )
         if T_conn is not None and T_conn.shape[1] == 4 and not _native_q4_gp_state:
             raise ValueError(
                 "native Q4 requires fatigue_dict['history_storage']='q4_gp4'; "
                 "element-mean history would not match the FEM reference"
             )
-        _history_shape = (n_elem, 4) if _native_q4_gp_state else (n_elem,)
+        _history_shape = (
+            (n_elem, 4) if _native_q4_gp_state
+            else (n_elem, 3) if _native_tri3_gp_state
+            else (n_elem,)
+        )
         hist_fat      = torch.zeros(_history_shape, device=device)
         psi_plus_prev = torch.zeros(_history_shape, device=device)
         f_fatigue     = torch.ones(_history_shape, device=device)
@@ -1172,7 +1235,8 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         if (_history_driver_reduction or {}).get('enable', False):
             _hdr_mode = _history_driver_reduction.get('mode', 'probe_g_mean')
             _valid_hdr_modes = {
-                'probe_g_mean', 'fem_gp_tri3_g_mean', 'native_q4_gp4'
+                'probe_g_mean', 'fem_gp_tri3_g_mean', 'native_q4_gp4',
+                'native_tri3_gp3'
             }
             if _hdr_mode not in _valid_hdr_modes:
                 raise ValueError(
@@ -1402,7 +1466,7 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 )
             if _representation_signature is not None and _saved_signature is None:
                 print("[Checkpoint] WARNING: legacy checkpoint has no representation signature")
-            if _runtime_mesh_arity == 4:
+            if _runtime_history_storage in {"q4_gp4", "tri3_gp3"}:
                 required_native = {
                     "mesh_state_signature": _runtime_mesh_signature,
                     "mesh_connectivity_arity": _runtime_mesh_arity,
@@ -1580,6 +1644,48 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
         "initial_alpha_protocol": "none",
         "histories_preserved": True,
     }
+    _paired_state_cfg = fatigue_dict.get("paired_initial_state", {}) or {}
+    _paired_state_load = _paired_state_cfg.get("load_path")
+    _paired_state_save = _paired_state_cfg.get("save_path")
+    _paired_state_contract = _paired_state_cfg.get("contract", {}) or {}
+    _paired_state_expected_sha = _paired_state_cfg.get("expected_sha256")
+    if _paired_state_load and _paired_state_save:
+        raise ValueError("paired initial state cannot be loaded and created in one run")
+    if _paired_state_cfg.get("prepare_only", False) and not (
+        _paired_state_save or _paired_state_load
+    ):
+        raise ValueError("paired initial state prepare_only requires save_path or load_path")
+
+    if _paired_state_load:
+        _paired_path = Path(_paired_state_load)
+        if not _paired_path.is_file():
+            raise FileNotFoundError(f"paired initial state not found: {_paired_path}")
+        _actual_sha = _sha256_file(_paired_path)
+        if _paired_state_expected_sha and _actual_sha != _paired_state_expected_sha:
+            raise RuntimeError(
+                "paired initial state SHA-256 mismatch: "
+                f"actual={_actual_sha}, expected={_paired_state_expected_sha}"
+            )
+        _paired = torch.load(_paired_path, map_location=device, weights_only=False)
+        if _paired.get("schema") != "hard5_paired_initial_state_v1":
+            raise RuntimeError(f"unsupported paired initial state schema: {_paired.get('schema')!r}")
+        if _paired.get("nodal_state_signature") != _nodal_state_signature(inp):
+            raise RuntimeError("paired initial state nodal-coordinate signature mismatch")
+        if _paired.get("contract") != _paired_state_contract:
+            raise RuntimeError(
+                "paired initial state contract mismatch: "
+                f"saved={_paired.get('contract')!r}, current={_paired_state_contract!r}"
+            )
+        saved_hist_alpha = _paired.get("hist_alpha_nodal")
+        if saved_hist_alpha is None or not torch.equal(
+            saved_hist_alpha.to(device=device, dtype=hist_alpha.dtype), hist_alpha
+        ):
+            raise RuntimeError("paired initial state nodal damage history mismatch")
+        field_comp.net.load_state_dict(_paired["network_state_dict"])
+        _initial_alpha_protocol_active = False
+        _initial_alpha_protocol_metadata = dict(_paired["initial_alpha_protocol"])
+        print(f"[PairedInitialState] loaded {_paired_path} | sha256={_actual_sha}")
+
     if _initial_alpha_protocol_active:
         if start_j != 0:
             print(
@@ -1629,6 +1735,36 @@ def train(field_comp, disp, pffmodel, matprop, crack_dict, numr_dict,
                 f"{_alpha0_check.max().item():.6e} | "
                 "hist_alpha/hist_fat/f_fatigue/psi_plus_prev preserved"
             )
+
+    if _paired_state_save:
+        _paired_path = Path(_paired_state_save)
+        if _paired_path.exists():
+            raise FileExistsError(f"refusing to overwrite paired initial state: {_paired_path}")
+        _paired_path.parent.mkdir(parents=True, exist_ok=True)
+        _payload = {
+            "schema": "hard5_paired_initial_state_v1",
+            "contract": _paired_state_contract,
+            "nodal_state_signature": _nodal_state_signature(inp),
+            "node_count": int(inp.shape[0]),
+            "network_state_dict": {
+                key: value.detach().cpu().clone()
+                for key, value in field_comp.net.state_dict().items()
+            },
+            "hist_alpha_nodal": hist_alpha.detach().cpu().clone(),
+            "initial_alpha_protocol": _initial_alpha_protocol_metadata,
+            "native_history_initial_value": 0.0,
+            "native_driver_initial_value": 0.0,
+            "native_fatigue_degradation_initial_value": 1.0,
+        }
+        torch.save(_payload, _paired_path)
+        _actual_sha = _sha256_file(_paired_path)
+        print(f"[PairedInitialState] saved {_paired_path} | sha256={_actual_sha}")
+        if _paired_state_cfg.get("prepare_only", False):
+            print("[PairedInitialState] prepare-only complete; no physical step executed")
+            return
+    elif _paired_state_load and _paired_state_cfg.get("prepare_only", False):
+        print("[PairedInitialState] validation-only complete; no physical step executed")
+        return
 
     # α 快照目录（与 best_models/ 同级）
     _snapshot_dir = trainedModel_path.parent / Path('alpha_snapshots')

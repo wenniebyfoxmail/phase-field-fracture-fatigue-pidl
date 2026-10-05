@@ -18,6 +18,10 @@ where alpha_q is evaluated at three triangle points.  With
 With ``--native-q4-gp-state`` the fine mesh remains Q4, all energy and field
 gradients use the native 2x2 Gauss rule, and Carrara ``alpha_bar``, previous
 active driver, and ``f`` remain shaped ``[element,4]`` through every commit.
+
+With ``--native-tri3-gp-state`` the paired T3 mesh uses the fixed native
+order-2 three-point rule for every energy term and stores the same three
+Carrara channels with shape ``[element,3]``.
 """
 from __future__ import annotations
 
@@ -164,6 +168,19 @@ def main() -> None:
     parser.add_argument("--native-q4-gp-state", action="store_true",
                         help=("Require a native Q4 .inp mesh, use 2x2 Gauss integration, "
                               "and store alpha_bar, f and previous driver at all four GP."))
+    parser.add_argument("--native-tri3-gp-state", action="store_true",
+                        help=("Require a native T3 .inp mesh, use order-2 three-point "
+                              "integration, and store alpha_bar, f and previous driver "
+                              "at all three GP."))
+    parser.add_argument("--paired-initial-state", default=None,
+                        help="Load the exact shared pre-step0 network/nodal state.")
+    parser.add_argument("--paired-initial-state-sha256", default=None,
+                        help="Required SHA-256 for --paired-initial-state.")
+    parser.add_argument("--write-paired-initial-state", default=None,
+                        help="Create the shared pre-step0 state; refuses overwrite.")
+    parser.add_argument("--prepare-paired-initial-state-only", "--paired-initial-state-only",
+                        dest="prepare_paired_initial_state_only", action="store_true",
+                        help="Create or validate the paired initial state and exit before step0.")
     parser.add_argument("--hard-alpha-recovery-step", action="store_true",
                         help=("Preset the current NN alpha field to a uniform hard "
                               "value, run step 0 at U=0 for recovery, then continue "
@@ -206,6 +223,17 @@ def main() -> None:
     )
     parser.add_argument("--force-cpu", action="store_true")
     args = parser.parse_args()
+
+    if args.native_q4_gp_state and args.native_tri3_gp_state:
+        parser.error("--native-q4-gp-state and --native-tri3-gp-state are mutually exclusive")
+    if args.paired_initial_state and args.write_paired_initial_state:
+        parser.error("paired initial state load and create modes are mutually exclusive")
+    if args.paired_initial_state and not args.paired_initial_state_sha256:
+        parser.error("--paired-initial-state requires --paired-initial-state-sha256")
+    if args.prepare_paired_initial_state_only and not (
+        args.write_paired_initial_state or args.paired_initial_state
+    ):
+        parser.error("paired-initial-state-only requires a paired state load or create path")
 
     if min(args.graph_scale, args.graph_uv_scale, args.graph_alpha_scale,
            args.graph_latent_scale) < 0.0:
@@ -366,14 +394,21 @@ def main() -> None:
     config.fatigue_dict["history_driver_mode"] = "current_active"
     config.fatigue_dict["history_driver_reduction"] = {
         "enable": True,
-        "mode": "native_q4_gp4" if args.native_q4_gp_state else args.history_driver_reduction_mode,
+        "mode": (
+            "native_q4_gp4" if args.native_q4_gp_state
+            else "native_tri3_gp3" if args.native_tri3_gp_state
+            else args.history_driver_reduction_mode
+        ),
     }
     config.fatigue_dict["history_storage"] = (
-        "q4_gp4" if args.native_q4_gp_state else "element"
+        "q4_gp4" if args.native_q4_gp_state
+        else "tri3_gp3" if args.native_tri3_gp_state
+        else "element"
     )
     config.fatigue_dict["damage_history_storage"] = (
         "previous_accepted_nodal"
-        if args.native_q4_gp_state else "running_nodal_max"
+        if (args.native_q4_gp_state or args.native_tri3_gp_state)
+        else "running_nodal_max"
     )
     config.fatigue_dict["initial_alpha_protocol"] = {
         "enable": bool(args.hard_alpha_recovery_step),
@@ -385,6 +420,26 @@ def main() -> None:
     config.numr_dict["irreversibility_penalty"] = {
         "enable": bool(args.fem_irr_penalty),
         "mode": "fem_gp_q4" if args.native_q4_gp_state else "fem_gp_tri3",
+        "spatial_integration": (
+            "native_tri3_gp3" if args.native_tri3_gp_state
+            else "native_q4_gp4" if args.native_q4_gp_state
+            else "legacy"
+        ),
+    }
+    config.fatigue_dict["paired_initial_state"] = {
+        "load_path": args.paired_initial_state,
+        "save_path": args.write_paired_initial_state,
+        "expected_sha256": args.paired_initial_state_sha256,
+        "prepare_only": bool(args.prepare_paired_initial_state_only),
+        "contract": {
+            "schema": "hard5_q4_t3_pair_v1",
+            "seed": int(args.seed),
+            "hidden_layers": int(args.hidden_layers),
+            "neurons": int(args.neurons),
+            "activation": str(config.network_dict["activation"]),
+            "init_coeff": str(args.init_coeff),
+            "hard_alpha_target": float(args.hard_alpha_target),
+        },
     }
     config.fatigue_dict["fracture_confirm_cycles"] = int(args.fracture_confirm_cycles)
     config.fatigue_dict["plot_every_n_cycles"] = int(args.plot_every)
@@ -509,8 +564,11 @@ def main() -> None:
         handle.write(
             "spatial_discretization: native_Q4_2x2_GP\n"
             if args.native_q4_gp_state
+            else "spatial_discretization: native_T3_order2_GP3\n"
+            if args.native_tri3_gp_state
             else "spatial_discretization: triangular_element\n"
         )
+        handle.write(f"paired_initial_state: {fat['paired_initial_state']}\n")
         handle.write(
             f"irreversibility_penalty: {config.numr_dict['irreversibility_penalty']}\n"
         )

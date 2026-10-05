@@ -34,10 +34,19 @@ import torch
 import torch.nn as nn
 
 from q4_quadrature import q4_gradient, q4_interpolate, q4_shape_data
+from tri3_quadrature import tri3_gradient, tri3_interpolate, tri3_shape_data
 
 
 def _is_q4(T_conn):
     return T_conn is not None and T_conn.ndim == 2 and T_conn.shape[1] == 4
+
+
+def _is_tri3(T_conn):
+    return T_conn is not None and T_conn.ndim == 2 and T_conn.shape[1] == 3
+
+
+def _native_tri3_enabled(cfg):
+    return isinstance(cfg, dict) and cfg.get("spatial_integration") == "native_tri3_gp3"
 
 
 def _q4_gp_kinematics(inp, u, v, alpha, T_conn):
@@ -59,6 +68,49 @@ def _q4_fatigue_at_gp(f_fatigue, like):
             value = value[:, None]
         return value.expand_as(like)
     return torch.full_like(like, float(f_fatigue))
+
+
+def _tri3_gp_kinematics(inp, u, v, alpha, T_conn):
+    shape, dshape, weights = tri3_shape_data(inp, T_conn)
+    grad_u = tri3_gradient(u, T_conn, dshape)
+    grad_v = tri3_gradient(v, T_conn, dshape)
+    grad_alpha = tri3_gradient(alpha, T_conn, dshape)
+    alpha_gp = tri3_interpolate(alpha, T_conn, shape)
+    return (
+        shape, weights, alpha_gp,
+        grad_u[:, :, 0], grad_v[:, :, 1],
+        0.5 * (grad_u[:, :, 1] + grad_v[:, :, 0]), grad_alpha,
+    )
+
+
+def _compute_tri3_gp3_energy_per_elem(
+    inp, u, v, alpha, hist_alpha, matprop, pffmodel, T_conn,
+    f_fatigue=1.0, g_stiffness_override=None,
+):
+    shape, weights, alpha_gp, e11, e22, e12, grad_alpha = _tri3_gp_kinematics(
+        inp, u, v, alpha, T_conn
+    )
+    damage_fn, _, c_w = pffmodel.damageFun(alpha_gp)
+    g_override = g_stiffness_override
+    if torch.is_tensor(g_override) and g_override.ndim == 1:
+        g_override = g_override[:, None].expand_as(alpha_gp)
+    elastic_density, _ = strain_energy_with_split(
+        e11, e22, e12, alpha_gp, matprop, pffmodel,
+        g_stiffness_override=g_override,
+    )
+    fatigue_gp = _q4_fatigue_at_gp(f_fatigue, alpha_gp)
+    damage_density = fatigue_gp * (
+        matprop.w1 / c_w
+        * (damage_fn + matprop.l0**2 * (grad_alpha[:, :, 0]**2 + grad_alpha[:, :, 1]**2))
+    )
+    hist_gp = tri3_interpolate(hist_alpha, T_conn, shape)
+    penalty_sq = torch.relu(-(alpha_gp - hist_gp))**2
+    penalty_density = 0.5 * matprop.w1 * pffmodel.irrPenalty() * penalty_sq
+    return (
+        (elastic_density * weights).sum(dim=1),
+        (damage_density * weights).sum(dim=1),
+        (penalty_density * weights).sum(dim=1),
+    )
 
 
 def _compute_q4_energy_per_elem(
@@ -244,6 +296,13 @@ def compute_energy_per_elem(inp, u, v, alpha, hist_alpha, matprop, pffmodel, are
             irreversibility_penalty_cfg=irreversibility_penalty_cfg,
         )
 
+    if _is_tri3(T_conn) and _native_tri3_enabled(irreversibility_penalty_cfg):
+        return _compute_tri3_gp3_energy_per_elem(
+            inp, u, v, alpha, hist_alpha, matprop, pffmodel, T_conn,
+            f_fatigue=f_fatigue,
+            g_stiffness_override=g_stiffness_override,
+        )
+
     # =========================================================================
     # 步骤1: 计算应变和相场梯度
     # =========================================================================
@@ -342,6 +401,21 @@ def get_psi_plus_per_elem(inp, u, v, alpha, matprop, pffmodel, area_elem, T_conn
     """
     if _is_q4(T_conn):
         _, _, alpha_gp, strain_11, strain_22, strain_12, _ = _q4_gp_kinematics(
+            inp, u, v, alpha, T_conn
+        )
+        _, psi_raw_gp = strain_energy_with_split(
+            strain_11, strain_22, strain_12, alpha_gp, matprop, pffmodel
+        )
+        g_gp, _ = pffmodel.Edegrade(alpha_gp)
+        if g_stiffness_override is not None:
+            g_gp = g_stiffness_override.to(device=g_gp.device, dtype=g_gp.dtype)
+            if g_gp.ndim == 1:
+                g_gp = g_gp[:, None]
+        return (g_gp * psi_raw_gp).detach()
+
+    _hdr = history_driver_reduction_dict or {}
+    if _is_tri3(T_conn) and _hdr.get('enable', False) and _hdr.get('mode') == 'native_tri3_gp3':
+        _, _, alpha_gp, strain_11, strain_22, strain_12, _ = _tri3_gp_kinematics(
             inp, u, v, alpha, T_conn
         )
         _, psi_raw_gp = strain_energy_with_split(
