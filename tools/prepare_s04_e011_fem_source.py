@@ -71,6 +71,12 @@ def main() -> None:
         "phase_field.fem.quadrature.2D_simplex(quad_order)",
         "phase_field.fem.quadrature.simplex_2d(quad_order)",
     )
+    replace_exact(
+        simplex_quad,
+        "[gauss_pts, gauss_weights] = phase_field.fem.quadrature.3D_simplex(quad_order);",
+        "error('phase_field:quadrature:E011UnsupportedDimension', ...\n"
+        "            'S04-E011 supports two-dimensional simplex quadrature only.');",
+    )
 
     tools_dir = Path(__file__).resolve().parent
     (root / "Sources/+phase_field/+fem/+quadrature/simplex_2d.m").write_bytes(
