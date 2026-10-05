@@ -1,0 +1,38 @@
+{
+  "20": {
+    "checks": {
+      "mesh_xy": true,
+      "mesh_conn": true,
+      "current_d": true,
+      "current_uv": true,
+      "prior_oracle": true,
+      "history_oracle": true,
+      "cycle": true,
+      "substep": true,
+      "stagger": true,
+      "free_uv": true,
+      "free_d": true
+    },
+    "load_factor": 0.9999990000000001,
+    "stagger": 12,
+    "sha256": "cccd3eb2c9b9c1fd8ba8d13574e6b5199f1f13dd13ab7bde6936ee2c94fb1af7"
+  },
+  "40": {
+    "checks": {
+      "mesh_xy": true,
+      "mesh_conn": true,
+      "current_d": true,
+      "current_uv": true,
+      "prior_oracle": true,
+      "history_oracle": true,
+      "cycle": true,
+      "substep": true,
+      "stagger": true,
+      "free_uv": true,
+      "free_d": true
+    },
+    "load_factor": 0.9999990000000001,
+    "stagger": 7,
+    "sha256": "bb772c07439ddbfa4c8cc75f415431fe0fd549f9ba2ce47ebbad1f62558539be"
+  }
+}

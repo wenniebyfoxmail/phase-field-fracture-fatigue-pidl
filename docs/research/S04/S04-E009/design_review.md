@@ -1,0 +1,3 @@
+# Design PASS
+
+GPT Pro2026-10-05, thought2m55s, https://chatgpt.com/c/6ac2e1ce-9940-83ed-a562-b17182126205 . Review of supplied assets/plan, not independent file read. Adopted native/currentfield/mesh identity chain, source/config/driver and precise restored-file inputlocks, separate early/late replay identity. Three original-field vector admission checks1e-9 precede any solve. Conditional solve only when rho_u>1e-3; otherwise UV_SCREEN_PASS_NO_SOLVE and null corrections. No additional damage solve. All E008 norms/thresholds unchanged. Missing c60 and internal states not filled by extrapolation; separately found candidate exports require separate admission.

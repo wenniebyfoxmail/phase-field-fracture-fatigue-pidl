@@ -1,0 +1,53 @@
+{
+  "20": {
+    "checks": {
+      "mesh_xy": true,
+      "mesh_conn": true,
+      "current_d": true,
+      "current_uv": true,
+      "prior_oracle": true,
+      "history_oracle": true,
+      "cycle": true,
+      "substep": true,
+      "stagger": true,
+      "free_uv": true,
+      "free_d": true
+    },
+    "load_factor": 0.9999990000000001,
+    "stagger": 12,
+    "sha256": "cccd3eb2c9b9c1fd8ba8d13574e6b5199f1f13dd13ab7bde6936ee2c94fb1af7",
+    "bytes": 29237484,
+    "origin": "citpc12-ssh:C:/q4runs/request29_fixed_calendar_20260819_v2/u012/native_q4_staging/cycle_0020_peak_native_q4.mat",
+    "retrieval": "SCP complete; readable HDF5; admitted checks all true"
+  },
+  "40": {
+    "checks": {
+      "mesh_xy": true,
+      "mesh_conn": true,
+      "current_d": true,
+      "current_uv": true,
+      "prior_oracle": true,
+      "history_oracle": true,
+      "cycle": true,
+      "substep": true,
+      "stagger": true,
+      "free_uv": true,
+      "free_d": true
+    },
+    "load_factor": 0.9999990000000001,
+    "stagger": 7,
+    "sha256": "bb772c07439ddbfa4c8cc75f415431fe0fd549f9ba2ce47ebbad1f62558539be",
+    "bytes": 30107535,
+    "origin": "citpc12-ssh:C:/q4runs/request29_fixed_calendar_20260819_v2/u012/native_q4_staging/cycle_0040_peak_native_q4.mat",
+    "retrieval": "SCP complete; readable HDF5; admitted checks all true"
+  },
+  "provenance": {
+    "source_commit": "cdf4e33710455606421806dfe6ff84ae09378d6b",
+    "source_package": "OneDrive griphfith/hard5_fixed_calendar_exposure_states_20260824_v3",
+    "driver": "provenance/source/run_request29_fixed_calendar_queue.m",
+    "driver_sha256": "5a388c7b41d6c05b7750107b7c280e9d7aa6ced122836bef88f16b21b53ac6bb",
+    "config": "provenance/pre_run_lock.mat",
+    "config_sha256": "6cc63d42e596ef5a96882a02c3b34bb8257ce83b4db97eaf78770c286a701f37",
+    "late_replay_distinct": "c0 to c83 request27_u012_exact_peak_c76_c82_c83_20260821_v1"
+  }
+}
