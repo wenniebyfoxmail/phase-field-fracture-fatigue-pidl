@@ -49,3 +49,14 @@ def test_failure_auroc_direction():
     confidence = np.asarray([0.9, 0.8, 0.2, 0.1])
     failure = np.asarray([False, False, True, True])
     assert MODULE.failure_auroc(confidence, failure) == 1.0
+
+
+def test_prediction_set_stats_weights_lineages_equally():
+    probability = np.zeros((3, 784), dtype=np.float64)
+    probability[:, 0] = [0.9, 0.9, 0.1]
+    probability[:, 1] = 1 - probability[:, 0]
+    target = np.asarray([0, 0, 0])
+    coverage, _ = MODULE.prediction_set_stats(
+        probability, target, 0.5, np.asarray([10, 10, 11])
+    )
+    assert coverage == 0.5

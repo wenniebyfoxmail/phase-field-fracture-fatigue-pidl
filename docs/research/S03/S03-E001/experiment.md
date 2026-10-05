@@ -76,6 +76,8 @@ transfer.
   `/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/crackmnist_20260813/crackmnist_28_S.h5`.
 - Required MD5: `26bb0aa814f2e3ed467879844222c46c`.
 - Metadata: adjacent `experiments_metadata.json`.
+- Required metadata MD5: `85b558aa217c2ad659b701946c399f58`;
+  arbitrary metadata paths are rejected.
 - The physical grouping key is metadata field `experiment`, not the side ID.
   Left and right observations from the same experiment are never independent
   specimens. In this S subset, the four present side IDs map to four distinct
@@ -126,11 +128,13 @@ loss is `tip_CE + 0.5 * residual_MSE`. Report KI, KII and T separately.
 1. **Localisation:** the CNN median Euclidean tip error improves by at least
    10% over the better of fixed spatial prior and energy argmax in at least
    three of four held-out experiments, and the equal-experiment lineage-blocked
-   95% bootstrap interval for gain has lower bound above zero.
+   95% bootstrap interval for signed pixel-error improvement has lower bound
+   above zero. All point and bootstrap summaries first average augmentations
+   within physical-field lineage.
 2. **Incremental SIF:** mean normalized MAE across KI/KII/T improves by at
    least 10% over the force-plus-metadata shortcut in at least three of four
    held-out experiments, and the equal-experiment lineage-blocked 95% bootstrap
-   interval for shortcut-minus-model MAE has lower bound above zero.
+   interval for shortcut-minus-model normalized MAE has lower bound above zero.
 3. **Uncertainty/abstention:** for all three SIF targets, mean held-out coverage
    of calibration-experiment-scaled nominal 90% intervals is in `[0.80, 0.98]`;
    and in at least three of four held-out experiments, the 50%-coverage tip risk
@@ -155,6 +159,11 @@ lineage size/contiguity, augmentation uniqueness, or label convention fails.
 After launch, stop only for non-finite loss, corrupted/missing data, loss of
 producer ownership/provenance, or CUDA/storage failure. A scientifically weak
 result is completed and recorded as NO-GO; it is not tuned away.
+
+Train mode mechanically rejects non-v1 epochs/batch/device, a dirty checkout,
+unavailable Git provenance, a non-adjacent metadata file, or a metadata hash
+mismatch. Risk-coverage and failure detection first aggregate visible
+augmentations within lineage so cropped masks cannot change lineage weight.
 
 ### Required evidence
 

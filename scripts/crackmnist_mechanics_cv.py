@@ -35,6 +35,7 @@ import numpy as np
 
 
 EXPECTED_MD5 = "26bb0aa814f2e3ed467879844222c46c"
+EXPECTED_METADATA_MD5 = "85b558aa217c2ad659b701946c399f58"
 SEEDS = (17, 29, 41)
 EXPECTED_AUGMENTATIONS = 8
 TIP_FAILURE_PX = 3.0
@@ -159,8 +160,10 @@ def audit_dataset(data: Dataset, source: Path) -> dict[str, Any]:
         "train_test": sorted(split_phys["train"] & split_phys["test"]),
         "val_test": sorted(split_phys["val"] & split_phys["test"]),
     }
+    metadata_path = source.parent / "experiments_metadata.json"
     checks = {
         "md5_matches_release": file_hash(source, "md5") == EXPECTED_MD5,
+        "metadata_md5_matches_release": metadata_path.exists() and file_hash(metadata_path, "md5") == EXPECTED_METADATA_MD5,
         "four_experiment_side_ids": len(unique_experiments) == 4,
         "physical_experiments_unique_within_subset": len(set(physical_names)) == 4,
         "no_physical_experiment_overlap_across_released_splits": not any(overlap.values()),
@@ -180,6 +183,9 @@ def audit_dataset(data: Dataset, source: Path) -> dict[str, Any]:
         "source": str(source.resolve()),
         "source_md5": file_hash(source, "md5"),
         "expected_md5": EXPECTED_MD5,
+        "metadata_source": str(metadata_path.resolve()),
+        "metadata_md5": file_hash(metadata_path, "md5") if metadata_path.exists() else "missing",
+        "expected_metadata_md5": EXPECTED_METADATA_MD5,
         "checks": checks,
         "gate_pass": all(checks.values()),
         "n_rows": int(len(data.images)),
@@ -418,14 +424,22 @@ def failure_auroc(confidence: np.ndarray, failure: np.ndarray) -> float | None:
     return float((sum((p > neg).sum() + 0.5 * (p == neg).sum() for p in pos)) / (len(pos) * len(neg)))
 
 
-def prediction_set_stats(probability: np.ndarray, target_flat: np.ndarray, calibration_mass: float) -> tuple[float, float]:
+def prediction_set_stats(
+    probability: np.ndarray,
+    target_flat: np.ndarray,
+    calibration_mass: float,
+    lineages: np.ndarray,
+) -> tuple[float, float]:
     order = np.argsort(-probability, axis=1)
     sorted_prob = np.take_along_axis(probability, order, axis=1)
     cumulative = np.cumsum(sorted_prob, axis=1)
     ranks = np.argmax(order == target_flat[:, None], axis=1)
-    required = cumulative[np.arange(len(probability)), ranks]
     sizes = np.sum(cumulative < calibration_mass, axis=1) + 1
-    return float(np.mean(required <= calibration_mass)), float(np.mean(sizes))
+    covered = ranks < sizes
+    unique = np.unique(lineages)
+    lineage_coverage = np.asarray([covered[lineages == value].mean() for value in unique])
+    lineage_size = np.asarray([sizes[lineages == value].mean() for value in unique])
+    return float(lineage_coverage.mean()), float(lineage_size.mean())
 
 
 def evaluate_fold(
@@ -447,10 +461,16 @@ def evaluate_fold(
     val_prob = val_prob_seeds.mean(axis=0)
     model_xy = weighted_coordinate(test_prob)
     energy_xy = energy_coordinates(data.images[test_idx])
-    model_error = np.linalg.norm(model_xy[test_visible] - test_xy[test_visible], axis=1)
-    spatial_error = np.linalg.norm(spatial[None] - test_xy[test_visible], axis=1)
-    energy_error = np.linalg.norm(energy_xy[test_visible] - test_xy[test_visible], axis=1)
-    confidence = test_prob[test_visible].max(axis=1)
+    model_error_row = np.linalg.norm(model_xy[test_visible] - test_xy[test_visible], axis=1)
+    spatial_error_row = np.linalg.norm(spatial[None] - test_xy[test_visible], axis=1)
+    energy_error_row = np.linalg.norm(energy_xy[test_visible] - test_xy[test_visible], axis=1)
+    confidence_row = test_prob[test_visible].max(axis=1)
+    visible_lineages = data.lineage_ids[test_idx][test_visible]
+    unique_visible_lineages = np.unique(visible_lineages)
+    model_error = np.asarray([model_error_row[visible_lineages == value].mean() for value in unique_visible_lineages])
+    spatial_error = np.asarray([spatial_error_row[visible_lineages == value].mean() for value in unique_visible_lineages])
+    energy_error = np.asarray([energy_error_row[visible_lineages == value].mean() for value in unique_visible_lineages])
+    confidence = np.asarray([confidence_row[visible_lineages == value].mean() for value in unique_visible_lineages])
     full_risk = float(model_error.mean())
     order = np.argsort(-confidence)
     risk = {}
@@ -467,7 +487,9 @@ def evaluate_fold(
     rank_val = np.argmax(order_val == val_flat[:, None], axis=1)
     calibration_mass = quantile_higher(cumulative_val[np.arange(len(rank_val)), rank_val], 0.90)
     test_flat = np.argmax(data.masks[test_idx][test_visible].reshape(test_visible.sum(), -1), axis=1)
-    tip_coverage, tip_set_size = prediction_set_stats(test_prob[test_visible], test_flat, calibration_mass)
+    tip_coverage, tip_set_size = prediction_set_stats(
+        test_prob[test_visible], test_flat, calibration_mass, visible_lineages
+    )
 
     test_lineages = data.lineage_ids[test_idx]
     val_lineages = data.lineage_ids[val_idx]
@@ -544,7 +566,8 @@ def evaluate_fold(
         "test_sif_half_width": half_width, "tip_confidence": confidence,
         "tip_error": model_error, "tip_spatial_error": spatial_error,
         "tip_energy_error": energy_error,
-        "tip_visible_lineages": data.lineage_ids[test_idx][test_visible],
+        "tip_visible_lineages": unique_visible_lineages,
+        "sif_train_scale": train_scale,
     }
     return result, arrays
 
@@ -565,6 +588,7 @@ def render_figures(output: Path, fold_results: list[dict[str, Any]], fold_arrays
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
+    (output / "figures").mkdir(parents=True, exist_ok=True)
     names = [row["test_experiment"] for row in fold_results]
     x = np.arange(len(names))
     width = 0.25
@@ -700,8 +724,9 @@ def run_training(data: Dataset, output: Path, epochs: int, batch_size: int, devi
         lineage = arrays["tip_visible_lineages"]
         per_row_gain = np.minimum(arrays["tip_spatial_error"], arrays["tip_energy_error"]) - arrays["tip_error"]
         loc_differences.append(np.asarray([per_row_gain[lineage == value].mean() for value in np.unique(lineage)]))
-        per_l_model = np.mean(np.abs(arrays["test_sif_true"] - arrays["test_sif_model"]), axis=1)
-        per_l_short = np.mean(np.abs(arrays["test_sif_true"] - arrays["test_sif_shortcut"]), axis=1)
+        scale = arrays["sif_train_scale"][None]
+        per_l_model = np.mean(np.abs(arrays["test_sif_true"] - arrays["test_sif_model"]) / scale, axis=1)
+        per_l_short = np.mean(np.abs(arrays["test_sif_true"] - arrays["test_sif_shortcut"]) / scale, axis=1)
         sif_differences.append(per_l_short - per_l_model)
 
     loc_ci = bootstrap_ci(loc_differences)
@@ -730,6 +755,9 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--device", default="cuda")
     args = parser.parse_args()
+    expected_metadata = args.data.parent / "experiments_metadata.json"
+    if args.metadata.resolve() != expected_metadata.resolve():
+        raise SystemExit(f"metadata must be adjacent locked file: {expected_metadata}")
     args.output.mkdir(parents=True, exist_ok=True)
     data = load_dataset(args.data, args.metadata)
     audit = audit_dataset(data, args.data)
@@ -746,6 +774,7 @@ def main() -> None:
         "git_dirty": git_value(["git", "status", "--porcelain"]),
         "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES", "unset"),
         "data_md5": audit["source_md5"],
+        "metadata_md5": audit["metadata_md5"],
         "seeds": list(SEEDS),
         "epochs": args.epochs,
         "batch_size": args.batch_size,
@@ -760,17 +789,39 @@ def main() -> None:
         receipt["execution_status"] = "blocked_by_data_gate"
         write_json(args.output / "run_receipt.json", receipt)
         raise SystemExit("NO-GO: dataset identity/lineage gate failed")
-    if args.device.startswith("cuda"):
+    violations = []
+    if args.epochs != 40:
+        violations.append("epochs must equal frozen value 40")
+    if args.batch_size != 256:
+        violations.append("batch size must equal frozen value 256")
+    if not args.device.startswith("cuda"):
+        violations.append("formal training requires CUDA on the authorised producer")
+    if receipt["git_commit"] == "unavailable":
+        violations.append("git commit unavailable")
+    if receipt["git_dirty"]:
+        violations.append("git checkout is dirty")
+    if violations:
+        receipt["execution_status"] = "blocked_by_protocol"
+        receipt["blocking_findings"] = violations
+        write_json(args.output / "run_receipt.json", receipt)
+        raise SystemExit("; ".join(violations))
+    try:
         import torch
         if not torch.cuda.is_available():
-            raise SystemExit("CUDA requested but unavailable; formal training is producer-only")
+            raise RuntimeError("CUDA requested but unavailable; formal training is producer-only")
         receipt["torch"] = torch.__version__
         receipt["gpu"] = torch.cuda.get_device_name(0)
-    summary = run_training(data, args.output, args.epochs, args.batch_size, args.device)
-    receipt["execution_status"] = "succeeded"
-    receipt["completed_unix"] = time.time()
-    receipt["scientific_decision"] = summary["decision"]
-    write_json(args.output / "run_receipt.json", receipt)
+        summary = run_training(data, args.output, args.epochs, args.batch_size, args.device)
+        receipt["execution_status"] = "succeeded"
+        receipt["scientific_decision"] = summary["decision"]
+    except Exception as exc:
+        receipt["execution_status"] = "failed"
+        receipt["failure_type"] = type(exc).__name__
+        receipt["failure_message"] = str(exc)
+        raise
+    finally:
+        receipt["completed_unix"] = time.time()
+        write_json(args.output / "run_receipt.json", receipt)
 
 
 if __name__ == "__main__":
