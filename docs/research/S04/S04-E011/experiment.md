@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E011
 protocol_revision: 20261006-r0
-status: read-only-analysis-complete; evidence-review-pending
+status: complete; evidence-pass
 ---
 # Native stopping norm versus teacher-evaluation norm
 
@@ -20,4 +20,3 @@ status: read-only-analysis-complete; evidence-review-pending
 - Decision: diagnose first.
 
 The checkpoint policy for this and later mechanism audits is early–middle–late by default. Discovery starts at `c20`; persistence is checked at `c60`; late behaviour uses `c82`, with `c83` retained as the transition-state contrast. Within each cycle, use `s2` loading, `s4` peak, and `s5` unload whenever the required assets exist. A mechanism found at one late state is not promoted until the earlier and middle checkpoints have been checked or explicitly marked unavailable.
-

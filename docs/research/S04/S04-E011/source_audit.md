@@ -13,6 +13,13 @@ The actual accepted-state path is:
 
 Therefore Stage0b does not simply reuse the pre-damage UV Newton residual as its staggered acceptance test. The `producer_metadata.equilibrium_residual` stored by the Stage0b hook is nevertheless the scalar returned by the preceding UV Newton call, because the recomputed norm is not returned from `post_iter_update`. That metadata scalar must not be treated as the accepted-pair residual.
 
+The four residual fields used in this audit have distinct roles:
+
+- `accepted_pair_raw_uv_l2`: Euclidean L2 norm of the accepted-pair equilibrium residual after traction subtraction, restricted to `sys.DOFS.active_dof`; no mass weighting or `Us/Es` scale.
+- `native_phase_residual`: archived scalar returned by the phase-field Newton solve and passed into `post_iter_update`. The producer then applies `p_field = max(p_field,p_field_old)` and the optional upper bound before the staggered check. The source evidence does not show a phase residual reassembly after those bounds, so this is not a projected accepted-pair phase residual and is not the E010 hard-KKT L2.
+- `native_stagger_sum`: posterior reconstruction of the source expression `accepted_pair_raw_uv_l2 + native_phase_residual`; a final accepted sum was not separately archived.
+- `rho_u/raw_uv_l2`: ratio of the later mass-dual scaled UV metric to `accepted_pair_raw_uv_l2`, not to `native_stagger_sum`. It depends on the vector's spatial distribution over nodal masses and is not a universal conversion.
+
 E010 stores the accepted-pair UV gradient vector. At the five archived-MATLAB bridge peaks, the NumPy and Torch vectors pass the original MATLAB-vector gate. At the other 13 points, the vector remains a dual-implementation reconstruction and retains `archived_oracle_gate=NOT_AVAILABLE`.
 
 For each point, E011 computes:
@@ -25,5 +32,4 @@ teacher rho_u      = (Us/Es) * sqrt(sum_i R_i^2 / m_i)
 teacher pass       = rho_u <= 1e-3
 ```
 
-The two gates use different norms, scales, and tolerances. This is the main explanation for the apparent contradiction between `converged=true` and teacher-screen failure. It does not by itself explain which part of the remaining accepted-pair residual was created by the last damage change; genuine last-iteration fields would still be needed for that attribution.
-
+The two gates use different norms, scales, and tolerances. For the 18 sampled residual directions, the ratio `rho_u/raw_uv_l2` is about `4.17e3–4.44e3`, which maps the teacher threshold to a raw UV L2 of roughly `2.25e-7–2.40e-7`; this range must not be generalized beyond the sampled directions. This is the main explanation for the apparent contradiction between `converged=true` and teacher-screen failure. It does not by itself explain which part of the remaining accepted-pair residual was created by the last damage change; genuine last-iteration fields would still be needed for that attribution.
