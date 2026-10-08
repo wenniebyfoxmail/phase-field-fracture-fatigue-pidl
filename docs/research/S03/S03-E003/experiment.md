@@ -218,8 +218,9 @@ this amendment was frozen.
   `docs/reviews/s03_e003_aa2024_code_review_round3_20261008.md`.
 - Round 4: `REVISE_CODE`, bound to `53eb40e` and v4; recorded in
   `docs/reviews/s03_e003_aa2024_code_review_round4_20261009.md`.
-- Round 5: pending, to be bound to the v5 commit, runner, tests, identity lock,
-  and this protocol.
+- Round 5: `PASS_CODE_READY`, bound to
+  `f702a582d183f459234c1e293866d74b883d197b` and v5; recorded in
+  `docs/reviews/s03_e003_aa2024_code_review_round5_20261009.md`.
 - **Execution rule:** do not run the real archive audit before
   `PASS_CODE_READY`.
 
@@ -227,17 +228,23 @@ this amendment was frozen.
 
 | Run ID | Purpose | Execution | Retrieval | Receipt |
 |---|---|---|---|---|
-| S03-E003-R001 | outcome-blind manifest qualification | prepared | pending | pending |
+| S03-E003-R001 | outcome-blind manifest qualification | executed | local | `data_audit.json`; `execution_receipt.json` |
 
 ## Evidence review
 
-Pending S03-E003-R001 and an independent review of the compact evidence.
+Pending an independent evidence review bound to the S03-E003-R001 compact
+output SHA-256
+`9a006432fb5d55e76748949616d51da6eb604bbdb5b599f60c92f33611476657`
+and its execution receipt. The run returned `BLOCKED_DATASET_CAPABILITY` with
+global connection count, global nodemap count, and mapping-file identity
+mismatches. This is execution evidence, not yet a closed scientific verdict.
 
 ## Scientific verdict
 
-Pending. No claim changes before closure.
+Pending evidence review. No claim changes before closure.
 
 ## Next action
 
-Commit the v5 runner/tests/protocol, obtain independent Code Ready review, then
-execute exactly S03-E003-R001 only if the review passes.
+Obtain an independent evidence review bound to the compact output and execution
+receipt. If it passes, close S03-E003 as a dataset-capability block and do not
+design or execute a header audit for this AA2024 route.
