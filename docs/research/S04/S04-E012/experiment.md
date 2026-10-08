@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E012
 protocol_revision: 20261008-r0
-status: protocol-frozen; analysis-pending
+status: formal-run-pass; evidence-review-pending
 ---
 # Adopt the UV-rebalanced derived reference at c82s4/c83s4
 

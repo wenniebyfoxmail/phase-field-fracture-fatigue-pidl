@@ -1,0 +1,58 @@
+{
+  "operation": "read-only adoption and independent UV reassembly; no solve",
+  "inputs": {
+    "qualified": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E009/inputs/qualified_fields.npz",
+      "sha256": "ecee498054293f66c881a7bcf08a51b1b0315b4e2d11fa20a50c7bbe204f16c5"
+    },
+    "e011_metrics": {
+      "path": "docs/research/S04/S04-E011/metrics.csv",
+      "sha256": "055ebe0f7148a9407fe6487860fb71f7cec93979d3ae20ba26e8e676b2dab60b"
+    },
+    "c82_summary": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E008/runs/S04-E008-R001/retrieved/output/c82/summary.json",
+      "sha256": "d6ae7eaa36884b72cb71b9ce5d20d3564d8eb117956f8cb537d74455cda86df2"
+    },
+    "c82_fields": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E008/runs/S04-E008-R001/retrieved/output/c82/fields.npz",
+      "sha256": "e079dfbb7243a15cf148bef3799ea56d1bcc10aea5890afd0ef65313566b24df"
+    },
+    "c83_summary": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E006/runs/S04-E006-R001/retrieved/output/audit/summary.json",
+      "sha256": "eeb38a3f620e2294426b60ac9a706f28c3352859cd2ba414c36cedee3c317206"
+    },
+    "c83_fields": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E006/runs/S04-E006-R001/retrieved/output/audit/fields.npz",
+      "sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae"
+    },
+    "c82s5": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E010/runs/S04-E010-R001/retrieved/output/audit/c0082_s05.json",
+      "sha256": "730a4f928a39de44b9b976cca558645c42dc5c64863b38fd85c6556a38e69691"
+    },
+    "c83_qualification": {
+      "path": "docs/research/S04/S04-E003/input_qualification.json",
+      "sha256": "a16107dd44be0772cf06989f737ad0761fcaeb964a794ecda990a20a0ea87342"
+    },
+    "c83_e010_arrays": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E010/runs/S04-E010-R001/retrieved/output/audit/c0083_s04.npz",
+      "sha256": "0869216f7e4a2f9e24c570935dacece96c6acde5e7be4ebabefe3a2da15fb6a5"
+    },
+    "c83_e003_summary": {
+      "path": "docs/research/S04/S04-E003/summary.json",
+      "sha256": "6fe044ba02640d486520cdda6c687224f838f309d4da10e16d82b2bfe50ada4b"
+    }
+  },
+  "rows": 3,
+  "new_solves": 0,
+  "training": false,
+  "history_commits": 0,
+  "warning_policy": "suppress only RuntimeWarning messages matching matmul inside the finite Q4 UV assembly; fail closed on nonfinite fields, assembled arrays, scales, and metrics",
+  "metric_contract": {
+    "Us": 0.11999988,
+    "Es": "physical_area * Us^2",
+    "rho_u": "(Us/Es)*sqrt(sum(free_force^2/interleaved_nodal_mass))",
+    "uv_gate": 0.001,
+    "hard_raw_l2_gate": 0.0004
+  },
+  "full_teacher": "NOT_QUALIFIED"
+}
