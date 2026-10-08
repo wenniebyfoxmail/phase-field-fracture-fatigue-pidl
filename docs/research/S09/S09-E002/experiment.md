@@ -2,8 +2,8 @@
 storyline_id: S09
 experiment_id: S09-E002
 protocol_revision: v1-damage-only-ablation
-status: prepared
-scientific_verdict: pending
+status: closed
+scientific_verdict: negative
 ---
 # Damage-only supervised ablation
 
@@ -18,3 +18,7 @@ Primary criterion: identical full-domain area-weighted damage increment MAE/pers
 Validity/stop: same locked source data, training statistics, window selection, bounds/finiteness, exact reviewed commit. Stop first passing assessed checkpoint or1000, invalid data/nonfinite -> execution failure. Missing growth -> not evaluable.
 
 Producer Taobo GPUServer8, GPU0 if healthy capacity; fraction.33, no bytecode; fresh run. Evidence: receipt, config, data capability/windowCSV, history, initial/best/latest metrics,checkpoint, independent review, retrieval verification. No automatic P2/PINO or added budget. Code Ready pending exact commit.
+
+## Execution result 2026-10-08
+
+R001 completed1000 updates, best0.9900616084495109 at850, criterion<=0.8 not met. Execution succeeded; bounded fit negative. See decision_20261008.md. Independent evidence review PASS and retrieval verified; closed as bounded negative. No automatic additional run.

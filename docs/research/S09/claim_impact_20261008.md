@@ -7,3 +7,5 @@ Claim added: the reduced continuous-kernel graph operator executes on86408 eleme
 Decision and evidence: [P1 decision](S09-E001/P1_decision_20261008.md). Next is fixed-checkpoint forward diagnosis, then a separately frozen minimal intervention if warranted.
 
 R003 update: fixed-checkpoint diagnosis verified. Aggregate undergrowth plus broader weak activation, not a metric implementation mismatch; P1 negative unchanged. No causal loss/projection conclusion. Next damage-only loss ablation planned, unexecuted.
+
+S09-E002: frozen damage-only single-factor ablation completed and closed, independent evidence PASS; fit target FAIL(best0.9900616 vs<=0.8). Auxiliary supervision removal alone insufficient in this setup. No inference of zero auxiliary effect or method-class failure. Mapping/name boundary recorded in operator_mapping_20261008.md; current model remains data-only graph operator, not PINO.

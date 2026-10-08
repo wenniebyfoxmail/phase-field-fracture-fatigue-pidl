@@ -1,0 +1,118 @@
+{
+  "statistics": {
+    "psi_scale": 0.003601569930987646,
+    "state_mean": [
+      0.029692145611655216,
+      0.2949312592264974,
+      0.719887457087862
+    ],
+    "state_scale": [
+      0.13632318614406083,
+      0.2639684969920944,
+      0.974744762887238
+    ],
+    "increment_scale": [
+      3.2082200050354004e-05,
+      0.003631502389907837,
+      0.0032312870025634766
+    ],
+    "source_ids": [
+      "hard5_u011",
+      "hard5_u013"
+    ],
+    "statistics_spatial_stride": 64
+  },
+  "tau": 1e-07,
+  "g_ref": 0.00020968584789755282,
+  "p1_windows": [
+    [
+      "hard5_u011",
+      2
+    ],
+    [
+      "hard5_u011",
+      13
+    ],
+    [
+      "hard5_u011",
+      25
+    ],
+    [
+      "hard5_u011",
+      37
+    ],
+    [
+      "hard5_u011",
+      48
+    ],
+    [
+      "hard5_u011",
+      60
+    ],
+    [
+      "hard5_u011",
+      72
+    ],
+    [
+      "hard5_u011",
+      84
+    ],
+    [
+      "hard5_u011",
+      95
+    ],
+    [
+      "hard5_u011",
+      107
+    ],
+    [
+      "hard5_u011",
+      119
+    ],
+    [
+      "hard5_u013",
+      11
+    ],
+    [
+      "hard5_u013",
+      22
+    ],
+    [
+      "hard5_u013",
+      34
+    ],
+    [
+      "hard5_u013",
+      46
+    ],
+    [
+      "hard5_u013",
+      58
+    ]
+  ],
+  "p1_growth_available": 177,
+  "p1_stagnant_available": 0,
+  "nodes": 86408,
+  "local_edges": 1728852,
+  "coarse_nodes": 256,
+  "coarse_edges": 65536,
+  "trajectories": {
+    "hard5_u011": {
+      "states": 125,
+      "umax": 0.11
+    },
+    "hard5_u013": {
+      "states": 62,
+      "umax": 0.13
+    },
+    "hard5_u012": {
+      "states": 89,
+      "umax": 0.12
+    }
+  },
+  "state_support": "legacy element fields; no GP/native node reconstruction",
+  "closure_status": "unverified",
+  "f_prediction": "unavailable",
+  "teacher_qualified": false,
+  "test_status": "no untouched test in this corpus"
+}

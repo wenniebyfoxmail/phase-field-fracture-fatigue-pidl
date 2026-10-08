@@ -1,0 +1,1 @@
+Independent /root/s09_code_review Code Ready PASS on f0ddd339a26d626a4e131a3f76d6c1b6618c0e76; exact v1-damage-only-ablation config/runner. Single-factor [1,0,0] weights, damage divisor3 unchanged; all-ones equivalent; zero aux gradients; original config unchanged; P2 prohibited. Independent7 tests passed. Concept note outside execution scope.

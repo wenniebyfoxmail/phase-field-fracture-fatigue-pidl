@@ -1,0 +1,21 @@
+{
+  "experiment": "S09-E002",
+  "run_id": "S09-E002-R001_damage_only_20261008",
+  "root": "/mnt/data2/drtao/wennie/pf_s09_e002_r001_damage_only_f0ddd33_20261008",
+  "archive": "/mnt/data2/drtao/pidl_archives/pf_s09_e002_r001_damage_only_f0ddd33_20261008",
+  "commit": "f0ddd339a26d626a4e131a3f76d6c1b6618c0e76",
+  "gpu": 0,
+  "memory_fraction": 0.33,
+  "status": "succeeded",
+  "retrieval": "verified:8 remote output files sizes match; tar members checked; remote archive complete",
+  "initialization": "fresh seed1; no checkpoint loaded",
+  "changes": "supervised channel weights [1,0,0], mean divisor3 unchanged",
+  "launcher_pid": 3169071,
+  "start_utc": "2026-10-08T22:35:15Z",
+  "training_pid": 3169073,
+  "updates": 1000,
+  "best_step": 850,
+  "best_ratio": 0.9900616084495109,
+  "scientific_verdict": "negative for bounded damage fitting; original P1 gate not passed",
+  "evidence_review": "PASS numerical and identity evidence; bounded fitting FAIL"
+}
