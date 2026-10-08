@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Outcome-blind manifest gate for Zenodo record 11945905.
 
-This v4 runner deliberately stops before reading any archive member content.  It
+This v5 runner deliberately stops before reading any archive member content.  It
 verifies the immutable archive and compares its central-directory structure to
 the official record description.  Header or field inspection requires a later
 reviewed revision only if this cheaper gate passes.
@@ -16,6 +16,7 @@ import os
 import stat
 import sys
 import tempfile
+import unicodedata
 import zipfile
 from collections import Counter
 from dataclasses import dataclass
@@ -23,7 +24,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 
-PROTOCOL_REVISION = "v4"
+PROTOCOL_REVISION = "v5"
 EXPECTED_RECORD_ID = 11945905
 EXPECTED_CONCEPT_ID = "11945904"
 EXPECTED_DOI = "10.5281/zenodo.11945905"
@@ -95,9 +96,9 @@ def _md5(path: Path) -> str:
 
 
 def _canonical_member(name: str) -> str | None:
-    if not isinstance(name, str) or "\x00" in name or "\\" in name:
+    if not isinstance(name, str) or "\\" in name:
         return None
-    if any(ord(character) < 32 for character in name):
+    if any(unicodedata.category(character) == "Cc" for character in name):
         return None
     path = PurePosixPath(name)
     if path.is_absolute() or ".." in path.parts or (
@@ -295,7 +296,7 @@ def _result(
     else:
         allowed_conclusion = "qualification_not_established"
     output = {
-        "schema_version": 4,
+        "schema_version": 5,
         "experiment_id": "S03-E003",
         "protocol_revision": PROTOCOL_REVISION,
         "value_blinded": True,
@@ -323,7 +324,7 @@ def _validate_output_schema(output: dict[str, Any]) -> None:
     }
     if set(output) != expected_top:
         raise AuditError("output schema mismatch")
-    if output["schema_version"] != 4:
+    if output["schema_version"] != 5:
         raise AuditError("schema version mismatch")
     if output["experiment_id"] != "S03-E003":
         raise AuditError("experiment identity mismatch")
@@ -413,7 +414,12 @@ def audit(
             api_metadata.read_text(encoding="utf-8"),
             object_pairs_hook=_reject_duplicate_keys,
         )
-    except (OSError, UnicodeError, json.JSONDecodeError, DuplicateKeyError):
+    except (
+        OSError,
+        UnicodeError,
+        ValueError,
+        RecursionError,
+    ):
         payload = None
     official = _official_metadata(payload, lock)
     try:
@@ -443,7 +449,7 @@ def _validated_output_path(
     root = allowed_root.resolve()
     raw = raw_root.resolve()
     target = output.resolve(strict=False)
-    if target != root and root not in target.parents:
+    if root not in target.parents:
         raise AuditError("output must be inside the frozen audit root")
     if target == raw or raw in target.parents:
         raise AuditError("output cannot be placed in the immutable raw tree")
@@ -452,6 +458,8 @@ def _validated_output_path(
             raise AuditError("output collides with immutable input")
         if output.exists() and source.exists() and os.path.samefile(output, source):
             raise AuditError("output aliases immutable input")
+    if output.exists() and output.is_dir():
+        raise AuditError("output target cannot be a directory")
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.parent.resolve() != target.parent:
         raise AuditError("output parent contains a symlink alias")

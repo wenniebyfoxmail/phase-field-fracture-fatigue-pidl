@@ -1,7 +1,7 @@
 ---
 storyline_id: S03
 experiment_id: S03-E003
-protocol_revision: v4
+protocol_revision: v5
 status: ready
 started_at: 2026-10-08
 closed_at:
@@ -49,7 +49,7 @@ deployment.
 - **New code:** needed for outcome-blind central-directory validation without
   archive extraction or member reads.
 
-## Frozen protocol v4
+## Frozen protocol v5
 
 ### Immutable identity lock
 
@@ -100,7 +100,7 @@ After identity passes, require all of the following:
 Directory matching is case-insensitive. The three required basenames are exact
 and case-sensitive. Filenames are counted from safe canonical central-directory
 paths only. Local nodemap count is descriptive and is not a pass criterion in
-v4.
+v5.
 
 ### Primary decision and stop rule
 
@@ -134,7 +134,7 @@ ordinary JSON last-key-wins behavior is not accepted for this identity receipt.
 
 ## Required evidence
 
-- frozen protocol v4;
+- frozen protocol v5;
 - independently reviewed exact runner/tests/commit with `PASS_CODE_READY`;
 - official API JSON and archive size/MD5 receipt;
 - redacted `data_audit.json` and exact execution receipt;
@@ -192,13 +192,33 @@ ZIP reason, rejects duplicate JSON keys, and distinguishes
 Required basenames are now explicitly exact and case-sensitive. No real audit
 had run when this amendment was frozen.
 
+### 2026-10-09 — v5 (before any Run)
+
+The fourth Code Ready review of `53eb40e` returned `REVISE_CODE`. It found that
+an output path equal to the allowed audit root was accepted, that the path
+safety check omitted DEL and C1 control characters, and that standard-library
+JSON parser `ValueError`/`RecursionError` failures could escape the fixed
+failure interface before ZIP construction.
+
+v5 requires the output target to be a strict descendant of the frozen audit
+root and rejects a directory target before any write. Central-directory names
+now reject every Unicode `Cc` control character, including NUL, DEL, and C1.
+Official metadata parsing maps `ValueError` and `RecursionError` to
+`OFFICIAL_METADATA_INVALID`, preserving the redacted
+`qualification_not_established` result without opening the ZIP. Synthetic
+regressions cover both root-equality cases, a directory target, DEL/C1 member
+names, a 5,000-digit integer, and deeply nested JSON. No real audit had run when
+this amendment was frozen.
+
 ## Code review
 
 - Round 1: `REVISE_CODE`, bound to `930b6ab` and v1.
 - Round 2: `REVISE_CODE`, bound to `c07aa30` and v2.
 - Round 3: `REVISE_CODE`, bound to `00dee5d` and v3; recorded in
   `docs/reviews/s03_e003_aa2024_code_review_round3_20261008.md`.
-- Round 4: pending, to be bound to the v4 commit, runner, tests, identity lock,
+- Round 4: `REVISE_CODE`, bound to `53eb40e` and v4; recorded in
+  `docs/reviews/s03_e003_aa2024_code_review_round4_20261009.md`.
+- Round 5: pending, to be bound to the v5 commit, runner, tests, identity lock,
   and this protocol.
 - **Execution rule:** do not run the real archive audit before
   `PASS_CODE_READY`.
@@ -219,5 +239,5 @@ Pending. No claim changes before closure.
 
 ## Next action
 
-Commit the v4 runner/tests/protocol, obtain independent Code Ready review, then
+Commit the v5 runner/tests/protocol, obtain independent Code Ready review, then
 execute exactly S03-E003-R001 only if the review passes.

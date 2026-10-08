@@ -104,10 +104,10 @@ def _patch_central_name(
     archive.write_bytes(data)
 
 
-def test_qualified_manifest_is_v4_and_only_allows_header_audit(tmp_path):
+def test_qualified_manifest_is_v5_and_only_allows_header_audit(tmp_path):
     metadata, archive, lock = _fixture(tmp_path)
     result = MODULE.audit(metadata, archive, lock)
-    assert result["protocol_revision"] == "v4"
+    assert result["protocol_revision"] == "v5"
     assert result["decision"] == "QUALIFIED_FOR_HEADER_AUDIT"
     assert result["stop_reason_codes"] == []
     assert result["allowed_conclusion"] == "header_audit_may_be_designed"
@@ -175,6 +175,18 @@ def test_embedded_nul_in_original_central_name_blocks(tmp_path):
     assert "UNSAFE_OR_AMBIGUOUS_MEMBER_PATH" in result["stop_reason_codes"]
 
 
+@pytest.mark.parametrize("control", ["\x7f", "\x85"])
+def test_del_and_c1_control_characters_block(tmp_path, control):
+    metadata, archive, lock = _fixture(
+        tmp_path,
+        unsafe_name=f"root/safe{control}.txt",
+    )
+    result = MODULE.audit(metadata, archive, lock)
+    assert result["decision"] == "BLOCKED_DATASET_CAPABILITY"
+    assert result["manifest_counts"]["safe_unique_paths"] is False
+    assert "UNSAFE_OR_AMBIGUOUS_MEMBER_PATH" in result["stop_reason_codes"]
+
+
 def test_malformed_utf8_central_name_has_controlled_failure(tmp_path, monkeypatch):
     metadata, archive, lock = _fixture(tmp_path)
     original = b"root/local_2d_microscopic_coordinates_by_nodemaps.csv"
@@ -232,7 +244,7 @@ def test_output_path_guards_and_atomic_write(tmp_path):
     target = allowed / "data_audit.json"
     validated = MODULE._validated_output_path(target, (metadata, archive), allowed, raw)
     MODULE._atomic_write(validated, MODULE.audit(metadata, archive, lock))
-    assert json.loads(target.read_text())["protocol_revision"] == "v4"
+    assert json.loads(target.read_text())["protocol_revision"] == "v5"
     assert not list(allowed.glob(".data_audit.json.*"))
 
 
@@ -242,6 +254,45 @@ def test_output_validator_rejects_nested_schema_mutation(tmp_path):
     result["manifest_counts"]["unexpected"] = 1
     with pytest.raises(MODULE.AuditError, match="manifest schema mismatch"):
         MODULE._validate_output_schema(result)
+
+
+def test_output_path_rejects_existing_and_absent_root_equality(tmp_path):
+    metadata, archive, _lock = _fixture(tmp_path)
+    existing_root = tmp_path / "existing-audit-root"
+    existing_root.mkdir()
+    with pytest.raises(MODULE.AuditError, match="inside the frozen audit root"):
+        MODULE._validated_output_path(
+            existing_root,
+            (metadata, archive),
+            existing_root,
+            tmp_path / "raw-existing",
+        )
+    assert list(tmp_path.glob(".existing-audit-root.*")) == []
+
+    absent_root = tmp_path / "absent-audit-root"
+    with pytest.raises(MODULE.AuditError, match="inside the frozen audit root"):
+        MODULE._validated_output_path(
+            absent_root,
+            (metadata, archive),
+            absent_root,
+            tmp_path / "raw-absent",
+        )
+    assert not absent_root.exists()
+    assert list(tmp_path.glob(".absent-audit-root.*")) == []
+
+
+def test_output_path_rejects_directory_target(tmp_path):
+    metadata, archive, _lock = _fixture(tmp_path)
+    allowed = tmp_path / "audit"
+    target = allowed / "directory-target"
+    target.mkdir(parents=True)
+    with pytest.raises(MODULE.AuditError, match="cannot be a directory"):
+        MODULE._validated_output_path(
+            target,
+            (metadata, archive),
+            allowed,
+            tmp_path / "raw",
+        )
 
 
 def test_malformed_metadata_is_redacted_and_schema_complete(tmp_path):
@@ -280,6 +331,28 @@ def test_duplicate_metadata_key_stops_before_zip_open(
     metadata.write_text(raw, encoding="utf-8")
     def forbidden(*_args, **_kwargs):
         raise AssertionError("central directory opened after duplicate metadata key")
+    monkeypatch.setattr(MODULE.zipfile, "ZipFile", forbidden)
+    result = MODULE.audit(metadata, archive, lock)
+    assert result["stop_reason_codes"] == ["OFFICIAL_METADATA_INVALID"]
+    assert result["manifest_counts"] == MODULE._empty_manifest(lock)
+    assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+@pytest.mark.parametrize("parser_failure", ["huge_integer", "deep_nesting"])
+def test_json_parser_limits_have_controlled_metadata_failure(
+    tmp_path, monkeypatch, parser_failure
+):
+    metadata, archive, lock = _fixture(tmp_path)
+    raw = metadata.read_text()
+    if parser_failure == "huge_integer":
+        raw = raw.replace('"id": 7', f'"id": {"9" * 5000}', 1)
+    else:
+        raw = raw[:-1] + ', "nested": ' + '[' * 10000 + '0' + ']' * 10000 + '}'
+    metadata.write_text(raw, encoding="utf-8")
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("central directory opened after JSON parser rejection")
+
     monkeypatch.setattr(MODULE.zipfile, "ZipFile", forbidden)
     result = MODULE.audit(metadata, archive, lock)
     assert result["stop_reason_codes"] == ["OFFICIAL_METADATA_INVALID"]
