@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Validate PIDL/FEM analysis result packages.
+"""Validate two legacy July-2026 hard-recovery analysis packages.
 
 This is a deterministic safety check for generated diagnostic packages. It does
-not decide scientific claims or launch experiments.
+not validate the current Hard-5 event contract, decide scientific claims, or
+launch experiments.
 """
 
 from __future__ import annotations
@@ -10,6 +11,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -136,15 +138,25 @@ def check_bounded_alpha_micro_package(package: Path) -> list[str]:
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
-    sp = sub.add_parser("bounded-degradation")
+    sp = sub.add_parser("legacy-bounded-degradation")
     sp.add_argument("--package", required=True, type=Path)
-    sp = sub.add_parser("bounded-alpha-micro")
+    sp = sub.add_parser("legacy-bounded-alpha-micro")
+    sp.add_argument("--package", required=True, type=Path)
+    sp = sub.add_parser("bounded-degradation", help="deprecated legacy alias")
+    sp.add_argument("--package", required=True, type=Path)
+    sp = sub.add_parser("bounded-alpha-micro", help="deprecated legacy alias")
     sp.add_argument("--package", required=True, type=Path)
     args = p.parse_args()
 
-    if args.cmd == "bounded-degradation":
+    if not args.cmd.startswith("legacy-"):
+        print(
+            "WARNING: deprecated alias; this validator is legacy-package-only and does not validate the current benchmark",
+            file=sys.stderr,
+        )
+
+    if args.cmd in {"legacy-bounded-degradation", "bounded-degradation"}:
         errors = check_bounded_degradation_package(args.package.expanduser())
-    elif args.cmd == "bounded-alpha-micro":
+    elif args.cmd in {"legacy-bounded-alpha-micro", "bounded-alpha-micro"}:
         errors = check_bounded_alpha_micro_package(args.package.expanduser())
     else:
         raise SystemExit(f"unknown command: {args.cmd}")

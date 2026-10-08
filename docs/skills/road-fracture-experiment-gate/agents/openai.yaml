@@ -1,0 +1,4 @@
+interface:
+  display_name: "Road-Fracture Experiment Gate"
+  short_description: "Gate road-fracture evidence, experiments, and claims."
+  default_prompt: "Use $road-fracture-experiment-gate to freeze the smallest valid experiment and its bounded claim before execution."

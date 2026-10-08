@@ -1,4 +1,4 @@
 interface:
-  display_name: "PIDL Experiment Gate"
-  short_description: "Gate PIDL/FEM attempts and record auditable experiment decisions."
-  default_prompt: "Use PIDL Experiment Gate to review this proposed PIDL/FEM attempt, ask GPT Pro first if needed, and record the decision/test ledger."
+  display_name: "PIDL/FEM Experiment Gate"
+  short_description: "Apply the road-fracture gate to physics routes."
+  default_prompt: "Use $pidl-experiment-gate to apply the shared experiment gate to this PIDL, FEM, teacher, residual, or surrogate claim."

@@ -71,3 +71,7 @@ taobo.md
 
 # ── Local-only references (PDFs + private README, not for git) ──
 references/
+!docs/skills/pidl-experiment-gate/references/
+!docs/skills/pidl-experiment-gate/references/*.md
+!docs/skills/road-fracture-experiment-gate/references/
+!docs/skills/road-fracture-experiment-gate/references/*.md

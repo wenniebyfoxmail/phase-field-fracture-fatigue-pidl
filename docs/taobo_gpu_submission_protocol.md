@@ -28,13 +28,17 @@ Run on **Mac** only:
 - analysis and plotting that does not enter the training loop
 - git commit/push
 
-Run on **Taobo GPU / CSD3 / Windows-PIDL**:
+Run on **Taobo GPU** only when Taobo is the producer selected by the frozen
+Experiment and current `AGENTS.md` authorisation:
 
 - any command that enters `main.py` or a PIDL training loop
 - training smoke, even 1 cycle
 - baseline/adaptive sweeps and production cases
 
-If an agent is about to launch training on Mac, stop. That is a routing error.
+Other authorised producers, including `gpu-server`, follow their own machine
+preflight and receipt rules. Do not interpret this Taobo-specific document as
+permission to use CSD3 or as a fallback order. If an agent is about to launch
+training on Mac, stop. That is a routing error.
 
 ## 2. Prepare Code On Mac First
 

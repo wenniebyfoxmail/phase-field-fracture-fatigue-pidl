@@ -5,8 +5,14 @@ This file is the cross-agent entry point for the shared GitHub repo. It applies 
 ## Non-Negotiable Machine Roles
 
 - **Mac-PIDL is Dev only.** Edit code, docs, runners, and analysis here. Run only lightweight import/unit sanity on Mac.
-- **Do not run PIDL training on Mac.** Any command that enters the training loop, even a 1-cycle smoke, must run on Taobo GPU, CSD3, or Windows-PIDL after checking compute availability.
-- **Taobo GPU / CSD3 / Windows-PIDL are Producers.** They run training smoke, baselines, sweeps, and production jobs from code prepared by Mac.
+- **Do not run PIDL training on Mac.** Any command that enters the training loop, even a 1-cycle smoke, must run on the explicitly authorised producer after checking compute availability.
+- **Current authorised producers are task-specific.** Taobo GPU and `gpu-server`
+  (`D-26-09`) may run authorised GPU/PIDL/surrogate work. `citpc12-ssh`
+  (`CITPC12`) is the directly controllable Windows-FEM/GRIPHFiTH producer.
+  Both Windows aliases support public-key SSH from this Mac, so agents may
+  launch, monitor, retrieve, and analyse in-scope work directly without a human
+  relay. Do not use CSD3 or silently fall back to another machine unless the
+  user explicitly authorises it for the named task.
 - **GitHub is the shared source of code truth.** Commit code/rule/runner/doc changes on Mac and push when cross-machine sync is needed. Do not rely on a Taobo-local commit as shared state.
 
 ## Taobo GPU Submission
@@ -102,10 +108,19 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 
 ## Project-Local Skills
 
-- `docs/skills/pidl-experiment-gate/SKILL.md` — use before proposing,
-  launching, reviewing, cleaning, or registering any PIDL/FEM/surrogate
-  experiment. It enforces the five-question experiment gate and prevents orphan
-  runs.
+- **Mandatory experiment routing:** before proposing, launching, reviewing, or
+  interpreting any claim-changing road-fracture Experiment, read
+  `docs/skills/road-fracture-experiment-gate/SKILL.md` and only the adapter(s)
+  relevant to the target claim. For PIDL/FEM, teacher, residual, GNO/PINO, or
+  Hard-5-specific work, also read
+  `docs/skills/pidl-experiment-gate/SKILL.md`. Literature-only review and routine
+  non-claim-changing edits do not invoke the experiment gate.
+- `docs/skills/road-fracture-experiment-gate/SKILL.md` — project-wide gate for
+  claim-changing observation, measurement/inverse, prediction, decision, and
+  physics/surrogate experiments. Route by claim rather than model family.
+- `docs/skills/pidl-experiment-gate/SKILL.md` — compatibility entry for
+  PIDL/FEM, teacher, residual, neural-operator, and Hard-5-specific semantics;
+  it delegates the common decision contract to the road-fracture gate.
 - `docs/skills/project_skill_inventory_2026-07-06.md` — current map from
   project skills/workflows to code entrypoints and producer machines.
 - `docs/skills/paper-ledger-to-paper/SKILL.md` — use for evolving mechanism
