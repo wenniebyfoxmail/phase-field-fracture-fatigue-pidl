@@ -1,7 +1,7 @@
 ---
 storyline_id: S03
 experiment_id: S03-E003
-protocol_revision: v1
+protocol_revision: v2
 status: ready
 started_at: 2026-10-08
 closed_at:
@@ -141,9 +141,20 @@ sealed-suffix outcome tables.
 ### Primary gate and stop rule
 
 `QUALIFIED_FOR_FORECAST_PROTOCOL_DESIGN` requires gates 1--7 to pass and at
-least one nonzero set of distinct eligible acquisition-episode origin/target
-pairs for a fixed physical-cycle horizon window. The audit reports candidate
-horizon support counts without selecting a winning horizon.
+least one candidate horizon to satisfy the following outcome-blind minimum-
+information rule under a physical-cycle-span 60/20/20 structural split:
+
+- at least 12 calibration origins;
+- at least 6 development origins;
+- at least 8 sealed origins and 8 distinct sealed target episodes;
+- one nearest target per origin inside `H +/- max(100 cycles, 0.05 H)`;
+- no target reuse in the sealed segment;
+- every origin and target remain in the same segment.
+
+Exact-cycle pair counts are reported separately. These thresholds qualify only
+later protocol design; they do not make a small dependent suffix population or
+calibration evidence. The audit reports all frozen candidate-horizon support
+counts without selecting a winning horizon.
 
 - Any identity/checksum/path-safety failure stops immediately.
 - Ambiguous cycle/episode identity, absent direct DCPD target support, or
@@ -186,15 +197,31 @@ horizon support counts without selecting a winning horizon.
 
 ## Amendments
 
-None. A later prediction horizon, partition, comparator, CRPS threshold, or
-mechanics package belongs to a new reviewed forecast Experiment.
+### 2026-10-08 — protocol v2 before any Run
+
+The first Code Ready review of commit `930b6ab` returned `REVISE_CODE`. It found
+that v1 did not implement episode/timestep identity, file-level local mapping,
+direct-target validity, evaluation resolution, strict parsing, manifest-first
+stopping, output redaction verification, or input/output collision protection.
+It also found a required-header counter bug. No real archive audit had run.
+
+Protocol v2 freezes the minimum-information rule above and requires exact
+timestep/connection identity, monotone integer cycles, complete local-file
+joins, consistent DCPD targets, bounded member reads, allowlisted output schema,
+atomic writes, and decision-level synthetic tests. These changes strengthen the
+original claim boundary; they do not add a forecast claim.
+
+A later prediction horizon, comparator, CRPS threshold, or mechanics package
+still belongs to a new reviewed forecast Experiment.
 
 ## Code review
 
-- **Reviewer task:** pending independent read-only review.
-- **Bound commit / runner / config / data lock / protocol revision:** pending.
+- **Reviewer task:** first review returned `REVISE_CODE`; corrective re-review pending.
+- **Bound commit / runner / config / data lock / protocol revision:** first
+  review bound to `930b6ab` and v1; corrected commit and v2 pending.
 - **Verdict:** pending; do not execute the audit runner before PASS.
-- **Blocking findings:** pending.
+- **Blocking findings:** v1 findings are recorded in the amendment above; all
+  must be closed by code, decision-level tests, and re-review.
 
 ## Runs
 
