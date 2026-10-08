@@ -398,7 +398,7 @@ def main() -> None:
     if not gate_pass:
         raise ValueError(f"strict audit gate failed: {[key for key, value in audit_checks.items() if not value]}")
     secondary_coverages = [value["lineage_coverage_fraction"] for value in secondary.values() if isinstance(value, dict) and "lineage_coverage_fraction" in value]
-    decision = "MIXED_DIAGNOSTIC" if any(0.5 <= value < 0.9 for value in secondary_coverages) else "PASS_AUGMENTATION_AUDIT_MVP"
+    decision = "MIXED_DIAGNOSTIC" if any(value < 0.9 for value in secondary_coverages) else "PASS_AUGMENTATION_AUDIT_MVP"
 
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)

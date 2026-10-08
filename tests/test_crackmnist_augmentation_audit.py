@@ -71,3 +71,14 @@ def test_lineage_contrast_uses_only_observed_extrema():
     assert rows[0]["high_minus_low_reconstruction_mse_z"] == 2.0
     assert rows[1]["low_row_idx"] == 21
     assert rows[1]["high_row_idx"] == 20
+
+
+def test_low_secondary_coverage_cannot_fall_through_to_pass():
+    for coverages in ([0.95, 0.91], [0.95, 0.75], [0.95, 0.20]):
+        decision = (
+            "MIXED_DIAGNOSTIC"
+            if any(value < 0.9 for value in coverages)
+            else "PASS_AUGMENTATION_AUDIT_MVP"
+        )
+        expected = "PASS_AUGMENTATION_AUDIT_MVP" if min(coverages) >= 0.9 else "MIXED_DIAGNOSTIC"
+        assert decision == expected

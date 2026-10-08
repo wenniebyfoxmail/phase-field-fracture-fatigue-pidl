@@ -109,9 +109,10 @@ determine the audit PASS.
 
 - `PASS_AUGMENTATION_AUDIT_MVP`: all validity gates pass and all required
   outputs are finite and present.
-- `MIXED_DIAGNOSTIC`: reconstruction primary is valid, but a secondary outcome
-  is evaluable in only 50% to 90% of lineages or has incomplete conditional
-  coverage.
+- `MIXED_DIAGNOSTIC`: reconstruction primary is valid, but any secondary
+  outcome is evaluable in fewer than 90% of lineages or has incomplete
+  conditional coverage. Coverage below 50% remains mixed/unavailable secondary
+  evidence and can never fall through to PASS.
 - `FAIL_AUDIT_MVP`: primary variation is below 50%, the join/identity/hash gate
   fails, the primary design is rank deficient, outputs are non-finite, rows are
   treated as independent, or an identity baseline is fabricated.
