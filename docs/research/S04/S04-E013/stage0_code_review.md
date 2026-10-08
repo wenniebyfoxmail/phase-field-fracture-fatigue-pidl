@@ -26,3 +26,15 @@ Two negative tests now require a model/checkpoint damage mismatch and inconsiste
 A Mac CPU reconstruction of c82s4 differed from the archived checkpoint by maximum absolute damage `1.519918441772461e-05` and therefore correctly failed the unchanged `5e-6` guard. A read-only reconstruction on Taobo GPU 0 using the original aaf13fd source, mesh, model and checkpoint produced maximum absolute, RMS and p99 errors all exactly `0.0`. The formal exporter must therefore run in the original CUDA producer environment; the threshold was not relaxed after observing the CPU result.
 
 The corrected commit requires a new exact-commit Code Ready review before either formal producer execution.
+
+## Re-review of commit 19a5c13d5dcc2d1888528621dc6ff459c59dbe3d
+
+Date: 2026-10-08. Reviewer: ChatGPT Pro, read-only supplied-evidence review. The reviewer did not access the repository or independently recompute the archive.
+
+Verdict: `Code Ready PASS` for read-only production of the paired aaf13fd control assets in the original CUDA environment. Blocking corrections: none.
+
+The review found that the archive/settings/mesh/source/log locks, checked producer save order and per-row model/current/prior hashes close the accepted-state and own-prior timing blocker. It retained the unchanged `5e-6` per-row model/checkpoint consistency check and accepted the original-CUDA restriction after the CPU rejection and exact CUDA reconstruction.
+
+For the event blocker, the review accepted the two-part evidence: the complete locked production log establishes the first occurrence at step 424, no reset and confirmation completion at step 427; checkpoint rechecks at steps 423--427 establish local detector and counter consistency. The accepted semantics are strict accepted nodal `d>0.95` on `x>0.48`, at least three nodes, with onset 424 followed by three consecutive accepted steps 425--427. These are accepted steps, not three full cycles.
+
+This PASS does not state that production or retrieval has completed. Candidate training, route promotion, Stage 0 scientific closure and Evidence Ready remain unauthorized until actual assets and evidence review close.
