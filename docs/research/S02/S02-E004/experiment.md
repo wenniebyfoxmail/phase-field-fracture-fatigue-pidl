@@ -2,7 +2,7 @@
 storyline_id: S02
 experiment_id: S02-E004
 protocol_revision: v1.2
-status: ready
+status: running
 started_at: 2026-10-08
 closed_at:
 primary_storyline: S02
@@ -142,7 +142,9 @@ validity passes + primary fails             -> negative
 
 - Authorised producer alias / hostname: local Mac for selective acquisition,
   packet construction, and annotation only; no training.
-- Commit or immutable snapshot / dirty status: pending code review and commit.
+- Commit or immutable snapshot / dirty status: packet construction was bound to
+  reviewed commit `a58971aa4d36d70d33c0e0ced54278b7e6010086`; the shared
+  checkout also contained unrelated pre-existing changes.
 - Runner / config / runtime:
   `scripts/s02_e004_build_tiff_repeatability_packet.py`; bundled Codex Python
   with `openpyxl` and Pillow; protocol v1.2. Frozen tail SHA-256 identities:
@@ -189,7 +191,8 @@ R002-A remain failed.
   recorded in `code_review_20261008.md`.
 - Bound commit / runner / input identities / protocol revision: v1 was bound to
   commit `7e5d89e4f80740ffee1de1af53e7f9bc722c1d76`; v1.1 to commit
-  `0bdb1dab6f3f9ca06e7c9735056e6ff751c69aa2`; v1.2 commit pending.
+  `0bdb1dab6f3f9ca06e7c9735056e6ff751c69aa2`; v1.2 to commit
+  `a58971aa4d36d70d33c0e0ced54278b7e6010086`.
 - Verdict: v1 `PASS`; v1.1 `PASS`; v1.2 `PASS` for R003-A.
 - Blocking findings: v1 execution exposed the boundary mapping defect recorded
   in R001-A; the symmetric boundary-only v1.1 repair passed renewed review.
@@ -200,7 +203,7 @@ R002-A remain failed.
 |---|---|---|---|---|
 | S02-E004-R001-A | construct Round A under v1 | failed | pending | [S02-E004-R001-A.md](S02-E004-R001-A.md) |
 | S02-E004-R002-A | construct Round A under v1.1 | failed | pending | [S02-E004-R002-A.md](S02-E004-R002-A.md) |
-| S02-E004-R003-A | construct and complete Round A under v1.2 | prepared | pending | pending |
+| S02-E004-R003-A | construct and complete Round A under v1.2 | running: packet built, annotation pending | verified locally; independent packet review pending | [S02-E004-R003-A.md](S02-E004-R003-A.md) |
 | S02-E004-R003-B | release and complete Round B after 24 h | prepared | pending | pending |
 
 ## Evidence review
@@ -217,5 +220,6 @@ Pending. This pilot cannot change the S02-E003 forecast verdict.
 
 ## Next action
 
-Complete v1.2 code review, bind the packet builder to a commit, then execute R003-A
-once. Complete Round A before exposing Round B.
+Complete the independent packet and annotation-interface review, then measure
+all 15 anonymous Round A images. Validate and seal Round A before the 24-hour
+Round B embargo begins.
