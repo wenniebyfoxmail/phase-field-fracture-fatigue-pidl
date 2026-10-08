@@ -201,3 +201,24 @@ For the existing `codex/m2s-framework-validation` checkout:
 6. reconcile shared indexes last;
 7. repoint or retire the mixed branch only after every remaining path has a
    recoverable destination.
+
+### Migration checkpoint — 2026-10-09
+
+The following compact task bundles are remote-preserved:
+
+| Owner | Remote branch | Preserved HEAD | State |
+|---|---|---|---|
+| S01-E001 | `codex/s01-e001-pavetrack-20261009` | `635234c` | exact extracted file snapshot; 29 lightweight tests pass; no training or confirmatory-data access |
+| S02-E003 | `codex/s02-e003-negative-20261008` | `f9fab18` | isolated three-commit negative-result bundle |
+| S02-E004 | `codex/s02-e004-tiff-repeatability-20261009` | `163f4b0` | isolated five-commit measurement-interface bundle; review remains pending |
+| S09 | `codex/s09-neural-operator-prototype-20261008` | `95ec8fd` | remote-preserved task branch |
+
+The 14 older commits preceding S02-E003 on the mixed branch are already
+contained, with their original identities, in remote task/history branches.
+The three S02-E003 and five S02-E004 commits were re-based into the isolated
+branches above, so their content is preserved under new commit identities.
+
+Do not clean or repoint the mixed checkout while S04-E016 / Windows-FEM is
+writing. After its writer stops, first extract that owner bundle and recheck all
+remaining dirty paths against a recoverable destination; only then clean the
+mixed checkout.
