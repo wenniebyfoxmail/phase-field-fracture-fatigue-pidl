@@ -45,3 +45,21 @@ Round 4 passed the exact snapshots above. It verified:
   projected-length arithmetic rule.
 
 The reviewer did not execute the formal packet builder or edit the files.
+
+## v1.1 amendment review
+
+R001-A stopped before formal selection or extraction because processed cycle 0
+mapped to the first H01-1 TIFF at cycle 1, while v1 allowed only half of the
+sole forward interval. The v1.1 amendment uses one full adjacent interval at
+the first and last TIFF and retains half the smaller adjacent interval for all
+internal TIFFs.
+
+The reviewer confirmed that this is a symmetric input-boundary repair, not
+outcome tuning. Specimens, state indices, images, measurement endpoint, primary
+metric, and threshold remain unchanged. R001-A remains preserved as failed.
+
+- Reviewed protocol v1.1 SHA-256:
+  `94beac29884e38ee02534bc94286e11a113440e41e683011809aad798083e7c9`
+- Reviewed v1.1 runner SHA-256:
+  `602c870f16a995a664131d94b95fe3b8d911ce03e7c55591d8ab54f725f50f16`
+- Verdict: `PASS` for commit and R002-A.

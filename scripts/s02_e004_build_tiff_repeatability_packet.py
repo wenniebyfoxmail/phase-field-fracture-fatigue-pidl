@@ -171,12 +171,11 @@ def cycle_from_name(name: str) -> int:
 
 
 def local_half_interval(cycles: list[int], index: int) -> float:
-    distances = []
-    if index > 0:
-        distances.append(cycles[index] - cycles[index - 1])
-    if index + 1 < len(cycles):
-        distances.append(cycles[index + 1] - cycles[index])
-    return min(distances) / 2
+    if index == 0:
+        return float(cycles[1] - cycles[0])
+    if index == len(cycles) - 1:
+        return float(cycles[-1] - cycles[-2])
+    return min(cycles[index] - cycles[index - 1], cycles[index + 1] - cycles[index]) / 2
 
 
 def crc32_file(path: Path) -> int:
