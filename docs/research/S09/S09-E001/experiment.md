@@ -1,8 +1,8 @@
 ---
 storyline_id: S09
 experiment_id: S09-E001
-protocol_revision: v0.1-pro-reviewed-design
-status: draft
+protocol_revision: v0.2-data-bound-prototype
+status: analysis
 primary_storyline: S09
 scientific_verdict: inconclusive
 ---
@@ -11,7 +11,7 @@ scientific_verdict: inconclusive
 
 ## Scientific question
 
-同一几何、材料与加载模板下，显式近期历史、原生空间支持、raw增量监督和短自主滚动能否产生位置与幅度可辨的裂缝增长？此处只有设计审核记录，未开始训练。
+同一几何、材料与加载模板下，显式近期历史、原生空间支持、raw增量监督和短自主滚动能否产生位置与幅度可辨的裂缝增长？2026-10-08 已执行 P1；现有结果不满足小窗口拟合目标，P2 未启动。
 
 ## Claim changed by success or failure
 
@@ -106,3 +106,12 @@ not a claimed fully synchronized mechanics state. P1 may proceed in that scope.
   before any later crack-morphology claim.
 
 Code review remains pending until bound to the exact committed implementation.
+
+## 2026-10-08 P1 execution update (supersedes earlier pending sections)
+
+- Code Ready: independent PASS on exact implementation `f58df2d398b9702030f7789f8a8f39f7e8386b2d`; 7 focused tests passed.
+- R001: execution failed before training because import bytecode created an untracked cache in the sparse release. No scientific result.
+- R002: same code/config/data, environment-only `PYTHONDONTWRITEBYTECODE=1` fix independently confirmed; fresh Taobo root. Completed 1000 updates, exit 0.
+- P1: best increment MAE ratio 0.9979861337183021 at step850, against frozen <=0.8. **FAIL** for bounded fitting target; execution succeeded. No P2 or PINO run.
+- Allowed: the graph operator and supervised optimization execute on this mesh within measured memory. Not allowed: learned crack-growth prediction, generalization, physics qualification, or rejection of Neural Operators as a method class.
+- Detailed result, evidence review and next diagnostic: `P1_decision_20261008.md`. Previous candidate/pending prose above is historical.

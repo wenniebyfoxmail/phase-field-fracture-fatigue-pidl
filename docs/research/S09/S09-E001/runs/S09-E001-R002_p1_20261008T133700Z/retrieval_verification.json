@@ -1,0 +1,16 @@
+{
+  "files": {
+    "output/receipt.json": 2542,
+    "output/data_capability.json": 1844,
+    "output/window_inventory.csv": 18557,
+    "output/initial_metrics.json": 53,
+    "output/latest_metrics.json": 68,
+    "output/best.pt": 460774,
+    "output/best_metrics.json": 68,
+    "output/training_history.csv": 60582
+  },
+  "archive_complete": true,
+  "exit_code": "0",
+  "code_status": "",
+  "local_size_match": true
+}
