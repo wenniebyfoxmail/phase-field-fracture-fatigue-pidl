@@ -1,6 +1,6 @@
 # S04-E013 Stage 0 implementation
 
-Status: implementation prepared; producer execution awaits exact-commit Code Ready review.
+Status: c60 producer completed and retrieved; paired exporter awaits renewed exact-commit Code Ready review.
 
 ## c60 strict UV reference
 
@@ -45,4 +45,12 @@ The frozen control event detector is the production detector: accepted post-fit 
 
 ## Execution boundary
 
-These runners do not authorize candidate training. After Code Ready review, c60 runs on the approved Windows/Condor producer and the exporter runs against the existing Taobo archive. Actual outputs must be hashed, retrieved, independently reviewed, and then reflected in `coverage.csv` before readiness states change.
+These runners do not authorize candidate training. The c60 runner was allowed to execute on the approved Windows/Condor producer because the first independent review found no blocker for that byte-identical file. The corrected exporter may run against the existing Taobo archive only after renewed exact-commit Code Ready review. Actual outputs must be hashed, retrieved, independently reviewed, and then reflected in `coverage.csv` before readiness states change.
+
+## c60 producer result
+
+`S04-E013-R001-c60-uv` ended before a scientific output because PowerShell promoted a known PyTorch stderr warning to a terminating `NativeCommandError`. The launcher-only retry `S04-E013-R002-c60-uv` used identical code, inputs, thresholds and resources and completed on D-26-09 as Condor cluster `82.0` with exit code 0.
+
+The retrieved result passed the frozen UV gate: `rho_u` decreased from `1.2857766593003994` to `4.816938699465251e-11`; displacement mass RMS / `Us` was `6.872576107117729e-4`; native-Q4 strain relative L2 was `4.748005459472791e-3`. The solve converged in four iterations with stable active set and normalized residual `7.201357464409995e-15`. Damage, prior and fatigue were fixed, with zero training, damage solves or history commits.
+
+This result does not qualify a full teacher. The damage diagnostic did not improve (`rho_d_common 0.0534045 -> 0.0557919`), and the output explicitly retains `full_teacher=NOT_QUALIFIED`. The c60 row is therefore `READY_PENDING_EVIDENCE_REVIEW`, not final reference admission. The exact receipt is under `local_archive/experiments/S04-E013/runs/S04-E013-R002-c60-uv/`.
