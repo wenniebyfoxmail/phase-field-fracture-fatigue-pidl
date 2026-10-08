@@ -14,3 +14,14 @@
 - Resolution: the two guards and regression tests were added without changing
   the model, split, loss or relaxed v1 performance criteria. A second review is
   required on the resulting commit before launch.
+
+## Review 2
+
+- Bound commit: `265b09e3c4395be1d1aeaefd09ae5617c5bdf3c9`.
+- Evidence supplied: exact patch relative to the previously reviewed parent,
+  relevant source paths and 11 passing no-training tests.
+- Verdict: `PASS_CODE_READY`.
+- Closed blockers: visible-tip-only required figure selection; reviewed-commit
+  and authorised-host producer gates.
+- Non-blocking suggestions: add direct all-invisible and empty-reviewed-commit
+  rejection assertions in a later maintenance change.

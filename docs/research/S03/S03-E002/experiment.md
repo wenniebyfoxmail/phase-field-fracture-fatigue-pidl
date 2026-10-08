@@ -2,12 +2,12 @@
 storyline_id: S03
 experiment_id: S03-E002
 protocol_revision: v1
-status: draft
+status: closed
 started_at: 2026-10-08
-closed_at:
+closed_at: 2026-10-08
 primary_storyline: S03
 related_storylines: [S02]
-scientific_verdict:
+scientific_verdict: inconclusive
 ---
 
 # CrackMNIST current-state tokenizer MVP
@@ -154,36 +154,51 @@ weights or performance gate requires a dated reviewed amendment.
 
 ## Code review
 
-- **Reviewer task:** pending GPT Pro read-only review.
-- **Bound commit / runner / config / data lock / protocol revision:** pending.
-- **Verdict:** pending.
-- **Blocking findings:** pending.
+- **Reviewer task:** GPT Pro read-only review of the runner, tests and protocol,
+  followed by a second review of the exact corrective patch.
+- **Bound commit / runner / config / data lock / protocol revision:**
+  `265b09e3c4395be1d1aeaefd09ae5617c5bdf3c9`;
+  `scripts/crackmnist_tokenizer_mvp.py`; frozen 32-D/20-epoch/seed-17 v1;
+  locked data and metadata hashes above.
+- **Verdict:** `PASS_CODE_READY`.
+- **Closed findings:** required figures now select visible-tip rows only; formal
+  fitting requires exact reviewed `HEAD` and hostname `GPUServer8`; saved
+  prediction arrays receive a pre-write finite scan.
 
 ## Runs
 
 | Run ID | Purpose / arm / seed | Execution | Retrieval | Receipt |
 |---|---|---|---|---|
-| S03-E002-R001 | fixed current-state tokenizer MVP, seed 17 | prepared | pending | pending |
+| S03-E002-R001 | fixed current-state tokenizer MVP, seed 17 | succeeded on Taobo GPU 0 | verified local archive with matching hashes | `execution_status=succeeded`; `PASS_CURRENT_STATE_TOKENIZER_MVP` |
 
 ## Evidence review
 
-- **Reviewer task:** pending.
+- **Reviewer task:** GPT Pro read-only review of receipt, metrics, decision,
+  transfer-integrity checks and visual QA.
 - **Bound Run IDs:** S03-E002-R001.
-- **Bound analysis package:** pending.
-- **Verdict:** pending.
-- **Blocking findings:** pending.
+- **Bound analysis package:**
+  `$PROJECT/local_archive/experiments/S03-E002/runs/S03-E002-R001/archive/`.
+- **Verdict:** `PASS_EVIDENCE_READY`.
+- **Blocking findings:** none. The review explicitly retained diagnostic-only
+  metrics, chronology/future blocking and S03-E001's frozen NO-GO.
 
 ## Scientific verdict
 
-Pending. Allowed labels are `supports | mixed | negative | inconclusive |
-inadmissible`; the experiment-level pipeline decision is reported separately.
+`inconclusive` for scientific performance. The separate experiment-level
+pipeline decision is `PASS_CURRENT_STATE_TOKENIZER_MVP`: the fixed pipeline
+closed with finite complete artifacts, but v1 had no scientific-performance
+threshold and therefore cannot establish representation sufficiency.
 
 ## Claim impact
 
-Pending. This Experiment cannot reopen S03's future-state or road-transfer
-claims.
+Tooling claim advanced: a reproducible locked-data `DIC -> 32-D latent ->
+reconstruction/tip/SIF` path now exists. No scientific claim advanced. This
+Experiment does not reopen S03-E001, future-state, RUL, phase-field or
+road-transfer claims.
 
 ## Next action
 
-Implement runner/tests, pass Mac audit and Code Ready review, then launch one
-fresh attributable Taobo run.
+Freeze this run as the v1 pipeline-closure reference. Do not tune it. Any
+tokenizer comparison, identity-augmentation shortcut audit, phase-field link or
+future-state task requires a separately frozen experiment; future prediction
+remains blocked until source chronology is auditable.
