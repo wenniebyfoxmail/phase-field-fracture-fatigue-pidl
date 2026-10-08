@@ -23,14 +23,25 @@ import numpy as np
 
 
 EXPERIMENT_ID = "S03-E003"
-PROTOCOL_REVISION = "v1"
+PROTOCOL_REVISION = "v2"
 EXPECTED_DATA_MD5 = "26bb0aa814f2e3ed467879844222c46c"
 EXPECTED_PREDICTIONS_SHA256 = "e1371987d06c2e7e215dd8561947d0589fdfbc85d50657f3220d31186c939e58"
 EXPECTED_LINEAGES = 743
 VIEWS_PER_LINEAGE = 8
 BOOTSTRAP_DRAWS = 2000
 BOOTSTRAP_SEED = 20261008
-SEVERITY_SCALES = np.asarray([20.0, 10.0, 10.0], dtype=np.float64)
+SEVERITY_SCALES = np.asarray([10.0, 20.0, 10.0], dtype=np.float64)
+SUPPORT_BOUNDS = np.asarray([[0.0, 10.0], [-20.0, 20.0], [-10.0, 10.0], [0.0, 1.0]])
+SUPPORT_TOLERANCE = 1.0e-3
+LOADER_COLUMN_ORDER = ("shift_x_mm", "shift_y_mm", "rotation_deg", "vertical_flip")
+SOURCE_SEMANTICS_STATUS = "loader_order_confirmed; nominal_support_conflict"
+LOADER_SOURCE = "dlr-wf/crackmnist tags 2.0.0 and 2.0.1, crackmnist/dataset.py:get_augmentations"
+PAPER_NOMINAL_RANGES = {
+    "shift_x_mm": "up to 10",
+    "shift_y_mm": "-10 to 10",
+    "rotation_deg": "-10 to 10",
+    "vertical_flip": "boolean, 50% chance",
+}
 TARGET_NAMES = ("KI", "KII", "T")
 
 
@@ -258,6 +269,8 @@ def validate_and_join(data_path: Path, predictions_path: Path) -> dict[str, Any]
             raise ValueError(f"missing prediction arrays: {missing}")
         predictions = {name: loaded[name].copy() for name in required}
 
+    support_by_split: dict[str, dict[str, list[float]]] = {}
+    all_augmentations: list[np.ndarray] = []
     with h5py.File(data_path, "r") as handle:
         train_n = int(handle["train_images"].shape[0])
         val_n = int(handle["val_images"].shape[0])
@@ -265,6 +278,28 @@ def validate_and_join(data_path: Path, predictions_path: Path) -> dict[str, Any]
         test_offset = train_n + val_n
         test_augs = handle["test_augs"][...].astype(np.float64)
         test_sifs = handle["test_SIFs"][...].astype(np.float64)
+        for split in ("train", "val", "test"):
+            split_augs = handle[f"{split}_augs"][...].astype(np.float64)
+            if split_augs.ndim != 2 or split_augs.shape[1] != 4:
+                raise ValueError(f"{split}_augs does not have four columns")
+            if not np.isfinite(split_augs).all():
+                raise ValueError(f"non-finite {split}_augs metadata")
+            for column in range(4):
+                low, high = SUPPORT_BOUNDS[column]
+                if split_augs[:, column].min() < low - SUPPORT_TOLERANCE or split_augs[:, column].max() > high + SUPPORT_TOLERANCE:
+                    raise ValueError(f"{split}_augs column {column} exceeds frozen v2 support")
+            if not np.isin(split_augs[:, 3], [0.0, 1.0]).all():
+                raise ValueError(f"{split}_augs vertical_flip is not binary")
+            support_by_split[split] = {
+                name: [float(split_augs[:, i].min()), float(split_augs[:, i].max())]
+                for i, name in enumerate(LOADER_COLUMN_ORDER)
+            }
+            all_augmentations.append(split_augs)
+    stacked_augmentations = np.concatenate(all_augmentations, axis=0)
+    global_support = {
+        name: [float(stacked_augmentations[:, i].min()), float(stacked_augmentations[:, i].max())]
+        for i, name in enumerate(LOADER_COLUMN_ORDER)
+    }
 
     n = len(predictions["row_idx"])
     if any(len(value) != n for value in predictions.values()):
@@ -301,6 +336,8 @@ def validate_and_join(data_path: Path, predictions_path: Path) -> dict[str, Any]
         "predictions_sha256": predictions_sha256,
         "test_offset": test_offset,
         "test_rows": test_n,
+        "support_by_split": support_by_split,
+        "global_support": global_support,
     }
 
 
@@ -362,7 +399,7 @@ def main() -> None:
     )
     primary["outcome"] = "standardized_reconstruction_mse"
     primary["estimand"] = "joint within-lineage association across released augmented views"
-    primary["severity_definition"] = "sqrt(mean((shift_x/20)^2,(shift_y/10)^2,(rotation/10)^2))"
+    primary["severity_definition"] = "sqrt(mean((col0/10)^2,(col1/20)^2,(col2/10)^2)); empirical frozen-release support scaling"
     primary["independent_units"] = EXPECTED_LINEAGES
     primary["repeated_rows"] = int(len(row_idx))
     primary["lineages_with_nonzero_severity_variation_fraction"] = variation_fraction
@@ -410,6 +447,8 @@ def main() -> None:
         "lineage_count_is_743": len(lineages) == EXPECTED_LINEAGES,
         "all_lineages_have_eight_views": all(np.sum(lineage_ids == value) == VIEWS_PER_LINEAGE for value in lineages),
         "augmentation_columns_confirmed": True,
+        "full_release_support_within_v2_bounds": True,
+        "nominal_support_conflict_acknowledged": True,
         "vertical_flip_binary": bool(np.isin(flip, [0.0, 1.0]).all()),
         "primary_design_rank_two": primary["design_rank"] == 2,
         "at_least_90pct_lineages_vary": variation_fraction >= 0.9,
@@ -444,15 +483,33 @@ def main() -> None:
         "n_physical_lineages": int(len(lineages)),
         "views_per_lineage": VIEWS_PER_LINEAGE,
         "independent_unit": "physical lineage",
-        "augmentation_column_order": ["shift_x_mm", "shift_y_mm", "rotation_deg", "vertical_flip"],
+        "augmentation_column_order": list(LOADER_COLUMN_ORDER),
         "augmentation_ranges": {
             name: [float(augmentations[:, i].min()), float(augmentations[:, i].max())]
-            for i, name in enumerate(("shift_x_mm", "shift_y_mm", "rotation_deg", "vertical_flip"))
+            for i, name in enumerate(LOADER_COLUMN_ORDER)
         },
+        "source_semantics_status": SOURCE_SEMANTICS_STATUS,
         "identity_baseline_available": False,
         "chronology_available": False,
     }
     write_json(output / "augmentation_audit.json", audit)
+    write_json(output / "augmentation_support_audit.json", {
+        "experiment_id": EXPERIMENT_ID,
+        "protocol_revision": PROTOCOL_REVISION,
+        "loader_declared_column_order": list(LOADER_COLUMN_ORDER),
+        "loader_source": LOADER_SOURCE,
+        "paper_nominal_ranges": PAPER_NOMINAL_RANGES,
+        "nominal_support_conflict": True,
+        "source_semantics_status": SOURCE_SEMANTICS_STATUS,
+        "observed_bounds_by_split": joined["support_by_split"],
+        "observed_global_bounds": joined["global_support"],
+        "v2_empirical_scales": SEVERITY_SCALES.tolist(),
+        "v2_allowed_bounds": {
+            name: SUPPORT_BOUNDS[i].tolist() for i, name in enumerate(LOADER_COLUMN_ORDER)
+        },
+        "bound_tolerance": SUPPORT_TOLERANCE,
+        "interpretation_block": "Empirical scales describe this frozen release and are not asserted to be the nominal augmentation design reported by the paper.",
+    })
     write_json(output / "analysis_receipt.json", {
         "experiment_id": EXPERIMENT_ID,
         "protocol_revision": PROTOCOL_REVISION,
@@ -473,6 +530,11 @@ This figure set audits the frozen S03-E002-R001 test predictions against the
 released augmentation metadata. The independent unit is the physical lineage
 (`n={len(lineages)}`); the {len(row_idx)} rows are repeated views.
 
+The official loader defines the column order, but the frozen HDF5 second-column
+support conflicts with the paper's nominal range. Protocol v2 therefore uses
+empirical frozen-release scales `[10,20,10]`; see
+`augmentation_support_audit.json`.
+
 ## Reading order
 
 1. Panel (a) shows binned lineage-centered reconstruction MSE across observed
@@ -491,7 +553,8 @@ released augmented views. Exact coefficients and intervals are in
 
 There is no identity/unaugmented baseline. The figure does not establish causal
 augmentation effects, invariance, chronology, future/RUL prediction, dynamic or
-phase-field sufficiency, road transfer, or reversal of S03-E001.
+phase-field sufficiency, road transfer, the nominal cause of the support
+conflict, or reversal of S03-E001.
 
 ## Storyline impact
 
@@ -523,7 +586,9 @@ The lowest-versus-highest *observed* severity contrast has median
 This result does not establish causal augmentation effects, identity
 degradation, invariance, scientific representation sufficiency, chronology,
 future/RUL prediction, dynamic or phase-field sufficiency, road transfer, or
-reversal of S03-E001. No new training was performed or selected by this audit.
+reversal of S03-E001. The `[10,20,10]` scales are empirical supports of this
+frozen release, not a claim that the paper's nominal augmentation description
+is wrong. No new training was performed or selected by this audit.
 """
     (output / "decision.md").write_text(decision_note, encoding="utf-8")
     print(json.dumps({"decision": decision, "output": str(output), "primary": primary}, indent=2))

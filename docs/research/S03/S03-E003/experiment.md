@@ -1,7 +1,7 @@
 ---
 storyline_id: S03
 experiment_id: S03-E003
-protocol_revision: v1
+protocol_revision: v2
 status: planned
 started_at: 2026-10-08
 primary_storyline: S03
@@ -55,12 +55,15 @@ scientific_verdict: pending
   SHA256 `e1371987d06c2e7e215dd8561947d0589fdfbc85d50657f3220d31186c939e58`.
 - Upstream model/run is immutable S03-E002-R001, code
   `265b09e3c4395be1d1aeaefd09ae5617c5bdf3c9`, already Evidence Ready.
-- Official loader semantics were checked at `dlr-wf/crackmnist` commit
-  `df3564821cad725e74d26fc19e332afe74b8627c`: augmentation columns are
-  `(shift_x_mm, shift_y_mm, rotation_deg, vertical_flip)`.
-- Frozen nominal supports are 20 mm, 10 mm and 10 degrees. The analysis must
-  stop rather than infer or reorder columns if these semantics cannot be
-  verified.
+- Official loader semantics were checked at tags `2.0.0` and `2.0.1`:
+  augmentation columns are `(shift_x_mm, shift_y_mm, rotation_deg,
+  vertical_flip)`.
+- The paper reports nominal ranges `x up to 10 mm`, `y +/-10 mm`, and rotation
+  `+/-10 degrees`, while the frozen HDF5 actually spans columns
+  `[0,10], [-20,20], [-10,10]`. Therefore v2 records
+  `loader_order_confirmed; nominal_support_conflict` and uses only the frozen
+  release's empirical scales `[10,20,10]`. It does not infer why the second
+  column spans +/-20 or claim that this was the intended nominal design.
 
 ## Primary estimand
 
@@ -68,7 +71,7 @@ For lineage `i` and view `j`, define
 
 ```text
 y_ij = standardized reconstruction MSE
-s_ij = sqrt(((shift_x/20)^2 + (shift_y/10)^2 + (rotation/10)^2) / 3)
+s_ij = sqrt(((col0/10)^2 + (col1/20)^2 + (col2/10)^2) / 3)
 f_ij = vertical_flip in {0,1}
 y_ij = alpha_i + beta_s * s_ij + beta_f * f_ij + error_ij
 ```
@@ -104,6 +107,10 @@ determine the audit PASS.
 7. All uncertainty resamples whole lineages, never individual rows.
 8. E003 results cannot select or modify the E002 checkpoint, model or
    normalizers.
+9. Across train/val/test, continuous columns remain within `[0,10]`,
+   `[-20,20]`, `[-10,10]` with tolerance `1e-3`, and flip remains binary.
+10. `augmentation_support_audit.json` records loader order, observed per-split
+    and global bounds, paper nominal ranges, the conflict flag and v2 scales.
 
 ## Operational decision gate
 
@@ -129,6 +136,7 @@ training is permitted in S03-E003.
 ## Required evidence
 
 - `augmentation_audit.json`;
+- `augmentation_support_audit.json`;
 - `primary_estimand.json`;
 - `lineage_contrasts.csv`;
 - `secondary_metrics.json`;
@@ -150,6 +158,21 @@ training is permitted in S03-E003.
 
 ## Amendments
 
-None. Any change to input identity, augmentation semantics, primary outcome,
-severity definition, bootstrap unit, or operational gate requires a reviewed
-amendment before results are viewed.
+### v2 — 2026-10-08
+
+Protocol v1 is permanently `inadmissible`. Its first package triggered a
+RuntimeWarning and was quarantined; its hardened rerun exposed a more important
+source-semantics error: v1 used scales `[20,10,10]` despite frozen HDF5 bounds
+`[0,10],[-20,20],[-10,10]`, and falsely hard-coded `columns_confirmed=true`.
+Neither v1 coefficient, figure nor decision may be used.
+
+GPT Pro returned `PASS_V2_PLAN_READY` for a provenance-only repair: retain the
+official loader order, normalize by the frozen release empirical supports
+`[10,20,10]`, audit all splits, record the nominal-support conflict, and block
+axis-specific or nominal-range interpretation. Primary outcome, FE model,
+bootstrap, seed, coverage gate and claim boundaries are unchanged. Because v1
+results were viewed, no v2 scale or threshold may be tuned from any result.
+
+Any later change to input identity, augmentation semantics, primary outcome,
+severity definition, bootstrap unit, or operational gate requires a new
+reviewed revision before results are viewed.

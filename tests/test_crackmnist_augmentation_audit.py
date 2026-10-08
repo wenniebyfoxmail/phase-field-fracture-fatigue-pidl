@@ -18,12 +18,21 @@ SPEC.loader.exec_module(MODULE)
 
 def test_augmentation_severity_uses_frozen_supports_and_excludes_flip():
     augmentations = np.asarray([
-        [20.0, 10.0, 10.0, 0.0],
-        [20.0, 10.0, 10.0, 1.0],
+        [10.0, 20.0, 10.0, 0.0],
+        [10.0, 20.0, 10.0, 1.0],
         [0.0, 0.0, 0.0, 1.0],
     ])
     severity = MODULE.augmentation_severity(augmentations)
     assert np.allclose(severity, [1.0, 1.0, 0.0])
+
+
+def test_v2_support_contract_matches_empirical_scaling():
+    assert MODULE.PROTOCOL_REVISION == "v2"
+    assert MODULE.SEVERITY_SCALES.tolist() == [10.0, 20.0, 10.0]
+    assert MODULE.SUPPORT_BOUNDS.tolist() == [
+        [0.0, 10.0], [-20.0, 20.0], [-10.0, 10.0], [0.0, 1.0]
+    ]
+    assert "nominal_support_conflict" in MODULE.SOURCE_SEMANTICS_STATUS
 
 
 def test_fixed_effect_association_recovers_joint_coefficients():
