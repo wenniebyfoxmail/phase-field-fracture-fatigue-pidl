@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import binascii
 import csv
 import hashlib
 import json
 import platform
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -257,27 +259,31 @@ def retrieve(manifest_path: Path, raw_root: Path) -> list[dict[str, object]]:
     missing = sorted(set(all_selected_paths()) - set(by_relative))
     if missing:
         raise RuntimeError(f"selected files absent from remote manifest: {missing}")
-    receipts = []
-    for relative in all_selected_paths():
+    def retrieve_one(relative: str) -> dict[str, object]:
         row = by_relative[relative]
         target = raw_root / relative
         if target.exists():
             if target.stat().st_size != int(row["uncompressed_bytes"]):
                 raise RuntimeError(f"existing file size mismatch: {target}")
-            receipts.append(
-                {
-                    "path": prefix + relative,
-                    "saved_as": relative,
-                    "bytes": target.stat().st_size,
-                    "crc32": row["crc32"],
-                    "sha256": sha256(target),
-                    "reused": True,
-                }
-            )
-        else:
-            receipts.append(extract_entry(manifest["source_url"], row, raw_root))
-            receipts[-1]["reused"] = False
-    return receipts
+            data = target.read_bytes()
+            crc32 = f"{binascii.crc32(data) & 0xFFFFFFFF:08x}"
+            if crc32 != row["crc32"]:
+                raise RuntimeError(f"existing file CRC mismatch: {target}")
+            return {
+                "path": prefix + relative,
+                "saved_as": relative,
+                "bytes": target.stat().st_size,
+                "crc32": crc32,
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "reused": True,
+            }
+        receipt = extract_entry(manifest["source_url"], row, raw_root)
+        receipt["reused"] = False
+        return receipt
+
+    paths = all_selected_paths()
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        return list(executor.map(retrieve_one, paths))
 
 
 def analyse(raw_root: Path, output: Path) -> tuple[list[dict[str, object]], list[dict[str, object]], dict[str, object], dict[str, object]]:
