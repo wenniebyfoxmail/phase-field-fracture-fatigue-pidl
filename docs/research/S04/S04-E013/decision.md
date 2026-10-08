@@ -1,6 +1,6 @@
 # S04-E013 coverage decision
 
-Status: Stage 1 planning passed and the supervised runner is implemented; candidate producer training remains blocked pending exact-commit Code Ready review.
+Status: Stage 1 exact-commit Code Ready passed; the frozen Taobo matrix is authorized but not run.
 
 The FEM side is ready for the native-fidelity matrix: S04-E010 contains c20/c60/c82/c83 at s2/s4/s5 with qualified state identity and the correct accepted prior. The read-only PIDL control side now has the matching c20/c60/c82/c83 x s2/s4/s5 matrix plus the c85s4 own-event row, including nodal displacement and native-Q4 mechanism fields. This closes the paired-control asset gap while preserving the rule that late-state evidence cannot substitute for early or middle states.
 
@@ -38,4 +38,4 @@ The first training-plan review returned `NO-GO` and required a narrower finite-b
 
 The implementation uses four states by three seeds, separate networks, exact reference hashes, a final-checkpoint-only rule, and a 12/12 conjunctive gate. A valid failure is `SUPERVISED_CAPACITY_FAIL_FIXED_PROCEDURE`, not proof of theoretical architectural insufficiency. All four reference files pass the local hash, shape, boundary, Q4-strain and reference-residual validation. Mac training was not run.
 
-The next gate is independent exact-commit `Code Ready` review. Until it passes, `CANDIDATE_TRAINING_AUTHORIZED=false` and no Taobo producer run may start. Full contract and external disposition: [stage1_training_authorization.md](stage1_training_authorization.md).
+The first Code Ready review of `5767e6c` returned `NO-GO` because the aggregator could trust malformed self-reported outcomes and incomplete artifacts. The fail-closed correction at `769396f93ae5258eb984e1585d4274f7990afb11` received `CODE READY PASS`. Therefore `CANDIDATE_TRAINING_AUTHORIZED=true` only for the frozen Stage 1 12-run matrix at that exact commit. No run has started, so `SUPERVISED_CAPACITY_PASS` remains unestablished. Full review boundary: [stage1_code_review.md](stage1_code_review.md).

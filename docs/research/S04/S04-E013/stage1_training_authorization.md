@@ -2,7 +2,7 @@
 
 Review date: 2026-10-08
 Planning verdict: `PLAN PASS`
-Execution status: `IMPLEMENTATION_AUTHORIZED__PRODUCER_RUN_BLOCKED_PENDING_CODE_READY`
+Execution status: `CODE_READY_PASS__FROZEN_TAOBO_MATRIX_AUTHORIZED_NOT_RUN`
 External review conversation: <https://chatgpt.com/c/6ac816d7-8430-8329-98bb-a23484959fad>
 
 ## Purpose
@@ -20,7 +20,7 @@ The first external planning review returned `NO-GO` with four blockers. The revi
 
 The second review returned `PLAN PASS`. It authorized contract freeze, runner implementation, and local non-training checks only. Taobo training remains blocked until an independent exact-commit `Code Ready PASS` reviews the implemented runner, evaluator, tests, data lock, and output contract.
 
-The first exact-commit Code Ready review of `5767e6c` returned `NO-GO`. It found no optimizer-contract blocker, but the initial aggregator trusted the stored `joint_pass` field and did not require the complete checkpoint/prediction/receipt package. The bounded correction makes aggregation fail closed: it recomputes all thresholds from finite numeric metrics, requires strict Boolean consistency, checks final-step checkpoint and prediction hashes/content, verifies reference before/after identity and the Taobo run receipt, and emits `INADMISSIBLE` for malformed evidence. Synthetic non-training regression tests cover all four decision outcomes and the identified corruption paths. A new exact-commit review is required.
+The first exact-commit Code Ready review of `5767e6c` returned `NO-GO`. It found no optimizer-contract blocker, but the initial aggregator trusted the stored `joint_pass` field and did not require the complete checkpoint/prediction/receipt package. The bounded correction makes aggregation fail closed: it recomputes all thresholds from finite numeric metrics, requires strict Boolean consistency, checks final-step checkpoint and prediction hashes/content, verifies reference before/after identity and the Taobo run receipt, and emits `INADMISSIBLE` for malformed evidence. Synthetic non-training regression tests cover all four decision outcomes and the identified corruption paths. Re-review of exact commit `769396f93ae5258eb984e1585d4274f7990afb11` returned `CODE READY PASS`.
 
 ## PIDL Experiment Gate
 
@@ -77,4 +77,4 @@ The fit metrics and residual are reported separately. A run that fits displaceme
 
 ## Authorization boundary
 
-`CANDIDATE_TRAINING_AUTHORIZED` remains false until the corrected exact commit receives Code Ready review. `SUPERVISED_CAPACITY_PASS`, Stage 2, route promotion, `FULL_FEM_REPRODUCTION`, and `QUALIFIED_FEM_TEACHER` remain unestablished or unauthorized.
+`CANDIDATE_TRAINING_AUTHORIZED=true` only for the frozen 12-run Stage 1 matrix at reviewed commit `769396f93ae5258eb984e1585d4274f7990afb11`. The matrix has not run. `SUPERVISED_CAPACITY_PASS`, Stage 2, route promotion, `FULL_FEM_REPRODUCTION`, and `QUALIFIED_FEM_TEACHER` remain unestablished or unauthorized.

@@ -1,6 +1,6 @@
 {
   "schema": "s04-e013-evaluation-contract-v2",
-  "status": "STAGE1_PLAN_PASS_IMPLEMENTED_PENDING_CODE_READY",
+  "status": "STAGE1_CODE_READY_PASS_MATRIX_AUTHORIZED_NOT_RUN",
   "global_rule": "NO_EITHER_ROUTE_PASSES_AGGREGATION",
   "strict_uv": {
     "required_states": [
@@ -154,15 +154,17 @@
     "missing": [],
     "rereview_required": false,
     "asset_evidence_review": "PASS",
-    "candidate_training_authorized": false
+    "candidate_training_authorized": true
   },
   "stage1": {
     "planning_review": "PASS",
     "protocol_revision": "20261008-r1-stage1",
     "contract": "stage1_contract.json",
-    "implementation_status": "REVISED_AFTER_CODE_READY_NO_GO_LOCAL_NON_TRAINING_CHECKS_PASS",
-    "code_ready_review": "REREVIEW_PENDING",
-    "producer_training_authorized": false
+    "implementation_status": "EXACT_COMMIT_CODE_READY_PASS",
+    "reviewed_commit": "769396f93ae5258eb984e1585d4274f7990afb11",
+    "code_ready_review": "PASS",
+    "producer_training_authorized": true,
+    "execution_status": "NOT_RUN"
   },
   "training_information_separation": {
     "same_stage1_stage2_arrangement": true,

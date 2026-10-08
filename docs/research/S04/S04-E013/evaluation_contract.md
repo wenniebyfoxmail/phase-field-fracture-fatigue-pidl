@@ -1,6 +1,6 @@
 # S04-E013 proposed evaluation contract
 
-Status: amended contract frozen. Stage 1 planning passed and implementation is prepared; producer training remains blocked pending exact-commit Code Ready review.
+Status: amended contract frozen. Stage 1 exact-commit Code Ready passed; the frozen producer matrix is authorized but not run.
 
 ## Two axes that must remain separate
 
@@ -141,7 +141,7 @@ The exporter must provide nodal displacement and damage, required history/degrad
 
 Track four distinct states: `REFERENCE_ASSETS_READY`, `EXPORT_SCHEMA_READY`, `PAIRED_CONTROL_ASSETS_READY`, and `CANDIDATE_TRAINING_AUTHORIZED`. Exporter and c60-reference code may be developed now. A frozen schema authorizes only its asset/control producer, not candidate training or asset-complete status. The declared c60 and paired-control asset prerequisites are now admitted. Candidate training still requires its separate explicit authorization gate; asset admission is not that authorization.
 
-The Stage 1 training plan is frozen in [stage1_training_authorization.md](stage1_training_authorization.md) and [stage1_contract.json](stage1_contract.json). External planning review returned `PLAN PASS` after four corrections. This authorizes implementation and local non-training checks only. `CANDIDATE_TRAINING_AUTHORIZED` remains false until exact-commit Code Ready review passes.
+The Stage 1 training plan is frozen in [stage1_training_authorization.md](stage1_training_authorization.md) and [stage1_contract.json](stage1_contract.json). External planning review returned `PLAN PASS` after four corrections. Exact-commit Code Ready re-review then returned `PASS` for `769396f93ae5258eb984e1585d4274f7990afb11`. `CANDIDATE_TRAINING_AUTHORIZED` is true only for this frozen Stage 1 matrix and reviewed commit; no scientific result exists before execution and Evidence review.
 
 ## Claim map
 
