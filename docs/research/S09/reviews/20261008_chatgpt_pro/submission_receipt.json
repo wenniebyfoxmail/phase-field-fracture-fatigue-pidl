@@ -1,0 +1,22 @@
+{
+  "status": "completed",
+  "date": "2026-10-08",
+  "account": "Haofan (explicitly authorized by user)",
+  "requested_model": "ChatGPT Pro",
+  "transport": "OpenCLI",
+  "design_sha256": "ebf098722e9341804196f01a6af2a38bc9e9ef6497ceaeb2d0a341bcf915df96",
+  "prompt_chars": 10191,
+  "visible_model": "Pro",
+  "prompt_verified": "equal ignoring whitespace",
+  "conversation_url": "https://chatgpt.com/c/6ac78d26-b514-8332-b98e-a7638ca59f3b",
+  "account_authorization": "User explicitly authorized Haofan account in this thread",
+  "review_scope": "design only; no code execution or numerical verification",
+  "visible_response_model": "Pro",
+  "review_verdict": "READY_WITH_CHANGES",
+  "generation_complete": true,
+  "retrieval_status": "verified",
+  "scope": "external design review only; no source-code audit or numerical validation",
+  "experiment_id": "S09-E001",
+  "protocol_revision": "v0.1-pro-reviewed-design",
+  "adoption": "section 9 and decision.md; amended design not independently re-reviewed"
+}

@@ -1,17 +1,19 @@
-# Git Workflow — Mac / Windows Dev/Producer Split
+# Git Workflow — Mac / Authorised Producer Split
 
-**Purpose**: explicit rules for the two-machine collaboration on this repo.
-This supersedes any ad-hoc conventions. Both machines' Claude agents MUST
-follow these rules.
+**Purpose**: explicit rules for development and authorised producers on this
+repo. This supersedes ad-hoc machine assumptions. Current authorisation is
+resolved from `AGENTS.md`; this file defines the shared Git and execution split.
 
 ## 1. Roles
 
 | Machine | Role | Responsibility |
 |---|---|---|
 | **Mac-PIDL** | **Dev** | All source code changes. Analysis & writing. Local Claude memory. Only lightweight import/unit sanity; no training smoke. |
-| **Windows-PIDL** | **Producer** | Pull Mac's code. Run training cases. Report results via `docs/shared_research_log.md`. May add NEW runner scripts, but must not modify core. |
-| **Windows-FEM** | **Reference producer** | GRIPHFiTH FEM runs. Produces ground-truth data in `~/Downloads/_pidl_handoff_*/`. Reports via shared_research_log. |
-| **Taobo GPU / CSD3** | **GPU Producer** | Run training smoke, GPU baselines, sweeps, and production cases after checking GPU occupancy. |
+| **Taobo GPU** | **GPU producer** | Authorised PIDL/surrogate training and bounded production runs under the shared-account protocol. |
+| **`gpu-server` / D-26-09** | **GPU producer** | Direct public-key SSH producer for authorised GPU/PIDL/surrogate tasks; record Windows process/job identity and retrieval paths. |
+| **`citpc12-ssh` / CITPC12** | **Windows-FEM producer** | Direct public-key SSH producer for GRIPHFiTH FEM runs and exports. FEM is a declared synthetic reference, not automatic physical truth or teacher qualification. |
+| **Windows-PIDL** | **Legacy/specialised producer role** | Use only when currently authorised for the named task; historical handover rules remain provenance, not standing execution authority. |
+| **CSD3** | **Not a default producer** | Do not submit or use as fallback unless the user explicitly authorises the named task. |
 
 ## 2. Mac-PIDL (dev)
 
@@ -22,7 +24,11 @@ follow these rules.
 
 ### What Mac MUST do
 - **Before push**: run only lightweight import/unit sanity on Mac, e.g. `python -c "from source.compute_energy import get_psi_plus_per_elem"`. Do **not** run training-loop smoke on Mac.
-- **Training smoke placement**: any command that enters `main.py` training, even `--n-cycles 1` or `--n-cycles 30`, must run on Taobo GPU / CSD3 / Windows-PIDL after checking the target GPU is free. Record PID, GPU id, command, cwd, and log path.
+- **Training smoke placement**: any command that enters `main.py` training,
+  even `--n-cycles 1` or `--n-cycles 30`, must run on a currently authorised
+  producer after checking compute and ownership. Record Run ID, producer
+  alias/hostname, commit/snapshot, dirty status, PID/job, GPU, command, cwd,
+  output/archive/log paths, start time, and retrieval route.
 - **Commit message**: state whether the change is **"safe during running trainings"** or **"needs coordination"**. Examples:
 
   ```
@@ -54,11 +60,14 @@ git push origin main
 # end of session: final pull + push
 ```
 
-## 3. Windows-PIDL (producer)
+## 3. Windows-PIDL (only when authorised for a named task)
+
+This section preserves its specialised Git-writing rules; it is not standing
+execution authorisation. Confirm current authority in `AGENTS.md` first.
 
 ### What Windows CAN do
 - `git pull` from origin/main (fast-forward; almost always works since Windows doesn't diverge)
-- Run any training case on pulled code
+- Run only the training case authorised by the frozen Experiment
 - **Add** new runner / driver scripts:
   - `SENS_tensile/run_*.py` (e.g. `run_only_Umax_008_fast.py`)
   - `SENS_tensile/*_sweep.py` (e.g. `run_sequential_coeff3.py`)

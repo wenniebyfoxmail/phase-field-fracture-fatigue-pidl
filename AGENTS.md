@@ -5,8 +5,14 @@ This file is the cross-agent entry point for the shared GitHub repo. It applies 
 ## Non-Negotiable Machine Roles
 
 - **Mac-PIDL is Dev only.** Edit code, docs, runners, and analysis here. Run only lightweight import/unit sanity on Mac.
-- **Do not run PIDL training on Mac.** Any command that enters the training loop, even a 1-cycle smoke, must run on Taobo GPU, CSD3, or Windows-PIDL after checking compute availability.
-- **Taobo GPU / CSD3 / Windows-PIDL are Producers.** They run training smoke, baselines, sweeps, and production jobs from code prepared by Mac.
+- **Do not run PIDL training on Mac.** Any command that enters the training loop, even a 1-cycle smoke, must run on the explicitly authorised producer after checking compute availability.
+- **Current authorised producers are task-specific.** Taobo GPU and `gpu-server`
+  (`D-26-09`) may run authorised GPU/PIDL/surrogate work. `citpc12-ssh`
+  (`CITPC12`) is the directly controllable Windows-FEM/GRIPHFiTH producer.
+  Both Windows aliases support public-key SSH from this Mac, so agents may
+  launch, monitor, retrieve, and analyse in-scope work directly without a human
+  relay. Do not use CSD3 or silently fall back to another machine unless the
+  user explicitly authorises it for the named task.
 - **GitHub is the shared source of code truth.** Commit code/rule/runner/doc changes on Mac and push when cross-machine sync is needed. Do not rely on a Taobo-local commit as shared state.
 
 ## Taobo GPU Submission
@@ -63,41 +69,77 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 
 ## Research Figure Documentation
 
-- Every newly generated research figure (`.png`, `.pdf`, `.svg`, `.jpg`, or
-  `.jpeg`) must have a same-stem `.md` sidecar in the same directory. Multiple
-  render formats of the same figure may share that one sidecar.
-- The sidecar must explain the figure question, exact data provenance, how to
-  read axes/colours/lines, every panel, the main numerical takeaway, limitations,
-  and the claim boundary. Use `docs/templates/research_figure_sidecar.md`.
-- Prefer generating the sidecar from the plotting script so values cannot drift
-  from the rendered figure. Before handoff, run
-  `python source/validate_figure_sidecars.py <figure-directory>`.
+- Every claim-bearing figure set must have one `README_analysis.md` that states
+  the scientific question, evidence source, intended reading order, what each
+  figure shows, the cross-figure interpretation, the allowed conclusion, the
+  blocked conclusion, and the storyline impact. Use
+  `docs/templates/research_analysis_readme.md`.
+- A same-stem `.md` sidecar is required only when a figure will be cited,
+  submitted, handed off, or read independently of its figure set. Multiple
+  render formats of the same figure may share that sidecar. Intermediate
+  diagnostic figures may be covered by the figure-set `README_analysis.md`.
+- Prefer generating tables and provenance fields from the analysis script so
+  values cannot drift. Inspect rendered figures for blank panels, wrong state
+  mapping, flipped coordinates, misleading colour limits, and unreadable labels.
 
 ## Research Track Documentation
 
-- Every research track must have one stable canonical document under
-  `docs/experiments/`, normally `<track>_track.md`. It owns the full mechanism
-  question, claim boundary, experiment states, evidence links, active gate, and
-  next action.
-- Every claim-changing experiment within that track must have its own dated
-  preregistration/decision document and, when applicable, attempt ledger. Do
-  not use `docs/research_frontier.md` as the experiment record.
-- Update order is mandatory: first update the track/experiment document and its
-  receipts; only then update `docs/research_frontier.md` with a concise status
-  and link to the canonical track document.
-- Keep raw/generated payloads in `local_archive/` or an external producer
-  store. Git tracks compact summaries, manifests, hashes, code, and decision
-  notes.
-- A frontier entry should state only current status, claim boundary, and next
-  discriminator. Detailed history, tables, commands, and alternative designs
-  belong in the canonical track document.
+- New and actively touched research uses the four-level structure defined in
+  `docs/research/INDEX.md`: `Storyline -> Experiment -> Run -> Evidence`.
+- Each claim-changing Experiment must have one primary Storyline, an immutable
+  ID, a folder, a frozen protocol revision, and one `experiment.md`. A change to
+  the hypothesis, data semantics, holdout, comparator, primary metric, threshold,
+  or gate requires a dated amendment and renewed review; do not rewrite a used
+  protocol silently.
+- Each actual producer execution has a fresh Run ID and a compact tracked run
+  receipt. Seeds, arms, retries, failed launches, and hardware reruns are Runs;
+  a changed scientific design is a new Experiment.
+- Raw data, checkpoints, logs, and generated payloads live under
+  `local_archive/experiments/<experiment_id>/` or an external producer store.
+  Git tracks code, experiment records, compact receipts, small claim-critical
+  evidence, and pointers to raw assets.
+- `docs/research_frontier.md`, `docs/research_storylines.md`, existing track
+  documents, and registries are legacy evidence. Do not bulk-move, rewrite, or
+  delete them. Migrate an active item only when it is next touched.
+
+## Research Readiness Gates
+
+- **Code Ready:** before claim-changing code is used, search the repository for
+  reusable runners, parsers, plotters, validators, and tests; run relevant local
+  sanity tests; then obtain a read-only independent code review bound to the
+  exact commit, runner, config, data lock, and protocol revision. Any material
+  change invalidates the prior PASS.
+- **Run Ready:** every producer execution uses a fresh Run ID and records the
+  producer alias/hostname, commit or immutable snapshot, dirty status, command,
+  runtime, GPU or scheduler identity, PID/session/job, output/archive/log paths,
+  retrieval route, and start time. Starting successfully is execution evidence,
+  not scientific evidence.
+- **Evidence Ready:** an Experiment closes only after retrieval status is
+  explicit, its predeclared minimum evidence exists, an independent evidence
+  review is complete when required, the scientific verdict is separated from
+  execution status, and the Storyline receives one dated claim-impact entry.
+  Require `README_analysis.md` only when a claim-bearing figure set exists.
+- **Gate design:** include only validity failures that make the result
+  uninterpretable. Use one smallest decisive primary criterion for the target
+  claim; a conjunction is allowed only when each clause is independently
+  necessary. Secondary diagnostics explain but never vote, rescue a failure, or
+  overturn a pass. Thresholds need an ex-ante physical/decision, uncertainty,
+  or meaningful-baseline rationale. A gate may be revised before results with a
+  reviewed amendment. After results are seen, preserve the old verdict and use
+  a new revision or Experiment.
+- **Hashing:** hashes are not routine paperwork. Git-tracked content uses its
+  commit identity. Ordinary runs use paths, receipts, file counts/sizes, and
+  retrieval verification. Freeze one hash only when an external dataset/holdout
+  needs an identity lock or when a genuinely breakthrough result is promoted to
+  a durable canonical evidence package.
 
 ## Where Details Live
 
 - `CLAUDE.md` — project session protocol and red lines.
 - `docs/git_workflow.md` — Mac/Windows/Taobo producer split.
 - `docs/taobo_gpu_submission_protocol.md` — exact Taobo submission, sync, launch, and tracking checklist.
-- `docs/research_frontier.md` — current research frontier.
+- `docs/research/INDEX.md` — current research Storylines and the v2 documentation contract.
+- `docs/research_frontier.md` and `docs/research_storylines.md` — legacy/read-only research maps during migrate-on-touch transition.
 - `docs/handovers/` — cross-machine task inbox/outbox.
 
 ## Project-Local Skills
