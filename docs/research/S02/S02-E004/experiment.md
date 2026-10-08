@@ -1,7 +1,7 @@
 ---
 storyline_id: S02
 experiment_id: S02-E004
-protocol_revision: v1
+protocol_revision: v1.1
 status: ready
 started_at: 2026-10-08
 closed_at:
@@ -60,9 +60,11 @@ or calibrated total uncertainty.
   implemented and checked for uniqueness.
 - TIFF mapping: camera `_0` only. For each selected processed cycle, choose the
   TIFF with minimum absolute cycle difference; ties choose the earlier TIFF.
-  Mapping is valid only when the difference is no greater than half the local
-  TIFF sampling interval around the selected frame. Any failure invalidates
-  packet construction rather than dropping the state.
+  For an internal selected TIFF, mapping is valid only when the difference is
+  no greater than half the smaller adjacent TIFF sampling interval. For the
+  first or last TIFF, where only one adjacent interval exists, the full adjacent
+  interval is used. Any failure invalidates packet construction rather than
+  dropping the state.
 - Packet: 15 unique TIFFs. Round A is created first in a blind packet directory;
   the key, source identities, and canonical images are written to a separate
   sealed directory. Round B does not exist at that time. A separate completion
@@ -141,38 +143,47 @@ validity passes + primary fails             -> negative
 - Commit or immutable snapshot / dirty status: pending code review and commit.
 - Runner / config / runtime:
   `scripts/s02_e004_build_tiff_repeatability_packet.py`; bundled Codex Python
-  with `openpyxl` and Pillow; protocol v1. Frozen tail SHA-256 identities:
+  with `openpyxl` and Pillow; protocol v1.1. Frozen tail SHA-256 identities:
   H01 `bc13303f579536bd8bc08d8b1c805025dfe7fde5649392ec9480a4ddb7bdd959`,
   H05 `6f2236acd67dc7029a58d6767a6217737bb6044aada1931296d78c817cfe5668`,
   V05 `699238b96f07302e4a8656ace07b18007173d5a56fbf9460d52be09145d6dc56`.
 - Output / archive / log / retrieval route:
-  `local_archive/experiments/S02-E004/runs/S02-E004-R001/`.
+  `local_archive/experiments/S02-E004/runs/S02-E004-R002/`.
 - Ownership and process-safety constraints: source archives/workbooks are
   read-only; no full-archive extraction; no PIDL training on Mac.
 
 ## Amendments
 
-None. Protocol v1 is frozen before the 15 formal images are selected or any
-formal measurement is made.
+### 2026-10-08 — v1.1 boundary-cycle mapping amendment
+
+R001-A v1 failed before selecting or extracting any formal image because the
+processed initial state at cycle 0 maps to the first H01-1 TIFF at cycle 1.
+The v1 rule used half of the single forward interval at a sequence boundary,
+giving a tolerance of 0.5 cycle and rejecting the 1-cycle acquisition offset.
+
+Revision v1.1 uses one full adjacent interval only at the first or last TIFF;
+the internal-state rule is unchanged. This is a data-index boundary repair. No
+image measurement, workbook crack-length result, repeatability result, or
+primary metric was observed or changed. R001-A remains failed and R002-A must
+receive a new review and commit binding.
 
 ## Code review
 
-- Reviewer task: four-round independent read-only review recorded in
-  `code_review_20261008.md`.
-- Bound commit / runner / input identities / protocol revision: commit pending;
-  runner SHA-256
-  `82e6eeb9ef4647efc6be86115eca8455cc506b076ba6aaf0a146f572ec2effcd`,
-  protocol v1 scientific contract reviewed at SHA-256
-  `0bdccf0d551232ee263252d3fecbfaa03b1a341fdcab4c1852592bc024b12f50`.
-- Verdict: `PASS` for formal Round A packet execution.
-- Blocking findings: all resolved before execution; see review record.
+- Reviewer task: v1 and the v1.1 boundary amendment passed independent
+  read-only review recorded in `code_review_20261008.md`.
+- Bound commit / runner / input identities / protocol revision: v1 was bound to
+  commit `7e5d89e4f80740ffee1de1af53e7f9bc722c1d76`; v1.1 pending.
+- Verdict: v1 `PASS`; v1.1 `PASS` for R002-A.
+- Blocking findings: v1 execution exposed the boundary mapping defect recorded
+  in R001-A; the symmetric boundary-only v1.1 repair passed renewed review.
 
 ## Runs
 
 | Run ID | Purpose | Execution | Retrieval | Receipt |
 |---|---|---|---|---|
-| S02-E004-R001-A | construct and complete 15-frame Round A | prepared | pending | pending |
-| S02-E004-R001-B | release and complete Round B after 24 h | prepared | pending | pending |
+| S02-E004-R001-A | construct Round A under v1 | failed | pending | [S02-E004-R001-A.md](S02-E004-R001-A.md) |
+| S02-E004-R002-A | construct and complete Round A under v1.1 | prepared | pending | pending |
+| S02-E004-R002-B | release and complete Round B after 24 h | prepared | pending | pending |
 
 ## Evidence review
 
@@ -188,5 +199,5 @@ Pending. This pilot cannot change the S02-E003 forecast verdict.
 
 ## Next action
 
-Complete code review, bind the packet builder to a commit, then execute R001
+Complete v1.1 code review, bind the packet builder to a commit, then execute R002-A
 once. Complete Round A before exposing Round B.
