@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E013
 protocol_revision: 20261008-r0
-status: protocol-draft; independent-design-review-pending; execution-blocked-on-stage0
+status: v2-amended; stage0-implementation-prepared; producer-execution-pending-code-review; candidate-training-blocked
 ---
 # Freeze separate PIDL evaluation contracts after S04-E012
 
@@ -28,3 +28,5 @@ status: protocol-draft; independent-design-review-pending; execution-blocked-on-
 4. **Claim assignment.** Report route-specific statuses. `UV_BLOCK_REPRODUCED` and `NATIVE_FEM_FIDELITY_REPRODUCED` are separate. `FULL_FEM_REPRODUCTION` and `QUALIFIED_FEM_TEACHER` remain unavailable under the current evidence.
 
 The detailed contract is in [evaluation_contract.md](evaluation_contract.md). Current assets and blockers are in [coverage.csv](coverage.csv).
+
+The c60 reference runner and paired-control exporter are specified in [stage0_implementation.md](stage0_implementation.md). Their execution is Stage 0 asset production only and does not authorize candidate training.
