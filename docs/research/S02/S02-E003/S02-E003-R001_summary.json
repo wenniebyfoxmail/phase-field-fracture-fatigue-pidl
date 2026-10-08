@@ -1,0 +1,47 @@
+{
+  "blocked_claims": [
+    "calibrated observation uncertainty",
+    "image-based crack measurement validity",
+    "independent ground truth",
+    "fixed-cycle forecasting",
+    "road or material generalisation"
+  ],
+  "eligible_origin_count": 249,
+  "experiment_id": "S02-E003",
+  "group_diagnostics": {
+    "H01": {
+      "persistence_macro_mae_m": 0.0012608452380952382,
+      "secant_macro_mae_m": 0.0023177856219184366,
+      "specimen_count": 4
+    },
+    "H05": {
+      "persistence_macro_mae_m": 0.0016092903846153847,
+      "secant_macro_mae_m": 0.0027157158391804665,
+      "specimen_count": 3
+    },
+    "V05": {
+      "persistence_macro_mae_m": 0.0013852682957393482,
+      "secant_macro_mae_m": 0.003359579221837584,
+      "specimen_count": 4
+    }
+  },
+  "horizon_cycles_max": 700000.0,
+  "horizon_cycles_median": 5000.0,
+  "horizon_cycles_min": 30.0,
+  "persistence_absolute_error_p50_m": 0.0010899999999999938,
+  "persistence_absolute_error_p90_m": 0.002623999999999998,
+  "persistence_macro_bias_m": -0.0014011204808349546,
+  "persistence_macro_mae_m": 0.0014011204808349546,
+  "primary_pass": false,
+  "protocol_revision": "v1",
+  "relative_macro_mae_change": 1.0020734258846007,
+  "run_id": "S02-E003-R001",
+  "scientific_verdict": "negative",
+  "secant_absolute_error_p50_m": 0.0006050000000000014,
+  "secant_absolute_error_p90_m": 0.0041259981735159955,
+  "secant_macro_bias_m": 0.0024583140794663173,
+  "secant_macro_mae_m": 0.0028051460811423165,
+  "secant_specimen_wins": 2,
+  "specimen_count": 11,
+  "validity": "PASS"
+}
