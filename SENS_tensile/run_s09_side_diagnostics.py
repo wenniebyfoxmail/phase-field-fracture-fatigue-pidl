@@ -130,9 +130,12 @@ def main():
     windows=inv['p1_windows'] if args.mode=='p1' else [[r['trajectory_id'],r['origin_index']] for r in inv['windows'] if r['split']=='train']
     rng=np.random.default_rng(config['seed']);budget=config[args.mode+'_updates']
     area=mesh['areas'];history_rows=[];best=float('inf');p1_pass=False
+    evaluation_rows=[];evaluation_field={}
 
     @torch.no_grad()
     def assess():
+        nonlocal evaluation_rows,evaluation_field
+        evaluation_rows=[];evaluation_field={}
         model.eval();errors=[];denominators=[];preds=[];refs=[];curr=[];linear=[];persistence=[]
         selected=inv['p1_windows'] if args.mode=='p1' else [[r['trajectory_id'],r['origin_index']] for r in inv['windows'] if r['split']=='development' and r['origin_index']%5==2]
         for tid,o in selected:
@@ -140,6 +143,10 @@ def main():
             pred=rollout(model,h,graph,paths[tid],steps)[-1,:,0].cpu().numpy()
             true=states[tid][o+steps,:,0].numpy();current=states[tid][o,:,0].numpy()
             growth=float(weighted_abs(true-current,area))
+            error=float(weighted_abs(pred-true,area))
+            evaluation_rows.append({'trajectory_id':tid,'origin_index':o,'origin_cycle':o+1,'growth':growth,'error':error,'ratio':error/growth if growth>0 else None})
+            if [tid,o]==all_p1_windows[8]:
+                evaluation_field={'xy':mesh['centroids'],'area':area,'current':current,'true_increment':true-current,'pred_increment':pred-current,'trajectory_id':np.array(tid),'origin_index':np.array(o)}
             if growth>config['tau']:
                 errors.append(float(weighted_abs(pred-true,area)));denominators.append(growth)
             preds.append(pred);refs.append(true);curr.append(current);persistence.append(current)
@@ -182,6 +189,9 @@ def main():
                     torch.save({'model':model.state_dict(),'optimizer':optimizer.state_dict(),'config':config,
                                 'stats':stats,'commit':args.expected_commit,'step':step,'p1_pass':p1_pass},args.out/'best.pt')
                     dump(args.out/'best_metrics.json',metrics)
+                    with (args.out/'best_windows.csv').open('w') as f:
+                        w=csv.DictWriter(f,fieldnames=evaluation_rows[0].keys());w.writeheader();w.writerows(evaluation_rows)
+                    np.savez_compressed(args.out/'best_fixed_window.npz',**evaluation_field,checkpoint_step=np.array(step))
                 if args.mode=='p1' and p1_pass:break
         receipt.update(execution_status='succeeded',scientific_status=('p1_memorization_pass' if p1_pass else 'p1_memorization_fail') if args.mode=='p1' else 'development_diagnostic_only',updates=step)
     except Exception as exc:

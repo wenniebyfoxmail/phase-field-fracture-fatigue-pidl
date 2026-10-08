@@ -40,3 +40,9 @@ validity failure -> inadmissible; finite full budget but ratio>.8 -> interventio
 Data insufficiency for generalization cannot be settled from two training trajectories and one already-used development trajectory. No synthetic "independent" samples from shuffling windows. A later data learning-curve study needs a fitting configuration and additional independently held-out trajectories; that evidence axis is not available in this package.
 
 Prepared, NOT LAUNCHED. Independent review is pending because side-conversation subagents are prohibited. An external reviewer must be explicitly authorized here or the package returned to the main thread by the human.
+
+## 2026-10-09 pre-execution evidence amendment
+
+Main thread owns review/execution after explicit user handoff. Branch codex/s09-side-cause-checks-20261008, base5cd4fd568a468b539d08c1a1f031c6fd86374369. In scope: this runner/contract, offline verification, run evidence and figures/Obsidian; original model/runner and shared checkout excluded.
+
+Minimum decision visualization: all assessed aggregate ratios versus update count with persistence1 and target.8; best-checkpoint per-window candidate/persistence comparison (all windows, single window only for that arm), with fixed original list index8/U011 origin95 next-step damage-increment target/prediction/persistence field. Shared scale; no field selection after scores. Best CSV and fixed-window NPZ are exported from the exact assessed prediction arrays, only when best score improves; no extra forward or parameter update. Raw files remain local_archive. Figures explain bounded fitting, not morphology/generalization; no independent uncertainty from16 overlapping seen windows. Original score, training and stop rules unchanged.
