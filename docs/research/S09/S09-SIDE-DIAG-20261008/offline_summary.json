@@ -1,0 +1,13 @@
+{
+  "stage": "exploratory offline audit, no model training",
+  "windows": 16,
+  "damage_increment_scale": 3.2082200050354004e-05,
+  "persistence_ratio": 1.0,
+  "secant_ratio": 1.1339815653207648,
+  "secant_growth_ratio": 0.9755391167768995,
+  "mean_active_area": 0.03060288424603641,
+  "raw_target_max": 24367.943359375,
+  "mean_top_1pct_area_growth_share": 0.9850256256759167,
+  "mean_top_3pct_area_growth_share": 0.9998879320919514,
+  "scope": "16 seen windows only; baseline inputs use origin and previous state; no generalization or causal diagnosis"
+}
