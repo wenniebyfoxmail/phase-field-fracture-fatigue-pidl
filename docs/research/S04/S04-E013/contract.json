@@ -160,8 +160,8 @@
     "planning_review": "PASS",
     "protocol_revision": "20261008-r1-stage1",
     "contract": "stage1_contract.json",
-    "implementation_status": "IMPLEMENTED_LOCAL_NON_TRAINING_CHECKS_PASS",
-    "code_ready_review": "PENDING",
+    "implementation_status": "REVISED_AFTER_CODE_READY_NO_GO_LOCAL_NON_TRAINING_CHECKS_PASS",
+    "code_ready_review": "REREVIEW_PENDING",
     "producer_training_authorized": false
   },
   "training_information_separation": {

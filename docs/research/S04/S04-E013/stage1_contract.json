@@ -45,6 +45,21 @@
     "deterministic_algorithms": true,
     "checkpoint": "final step 10000 only"
   },
+  "producer_evidence": {
+    "producer": "taobo",
+    "cuda_visible_devices": "one explicit numeric device",
+    "run_root": "/mnt/data2/drtao/wennie/<run_id>",
+    "archive_root": "/mnt/data2/drtao/pidl_archives/<run_id>",
+    "required_per_run_assets": [
+      "metrics.json",
+      "final_step_10000.pt",
+      "prediction.npz",
+      "RUN_RECEIPT.json"
+    ],
+    "aggregator_recomputes_gates": true,
+    "aggregator_verifies_asset_hashes": true,
+    "integrity_failure_verdict": "INADMISSIBLE"
+  },
   "gates": {
     "essential_bc_max_abs_error": 1e-12,
     "displacement_mass_rms_over_abs_Us": 1e-3,

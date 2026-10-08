@@ -11,9 +11,14 @@ import hashlib
 import json
 import os
 import platform
+import shlex
+import shutil
+import socket
+import subprocess
 import sys
 import time
 import warnings
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -238,6 +243,21 @@ def final_metrics(data: dict, predicted: np.ndarray) -> dict[str, float | bool]:
 def train(args: argparse.Namespace, data: dict) -> dict:
     if not torch.cuda.is_available() or args.device != "cuda":
         raise RuntimeError("formal Stage 1 training requires --device cuda on a CUDA producer")
+    actual_commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=ROOT, check=True,
+        capture_output=True, text=True,
+    ).stdout.strip()
+    dirty = bool(subprocess.run(
+        ["git", "status", "--porcelain"], cwd=ROOT, check=True,
+        capture_output=True, text=True,
+    ).stdout.strip())
+    if actual_commit != args.expected_commit or dirty:
+        raise RuntimeError(
+            f"code identity invalid: actual={actual_commit} expected={args.expected_commit} dirty={dirty}"
+        )
+    visible = os.environ.get("CUDA_VISIBLE_DEVICES", "")
+    if not visible.isdigit():
+        raise RuntimeError("formal Stage 1 requires one explicit numeric CUDA_VISIBLE_DEVICES value")
     torch.use_deterministic_algorithms(True)
     torch.backends.cudnn.benchmark = False
     torch.cuda.manual_seed_all(args.seed)
@@ -256,6 +276,7 @@ def train(args: argparse.Namespace, data: dict) -> dict:
     probability = data["mass"] / np.sum(data["mass"])
     last_loss = None
     started = time.time()
+    started_utc = datetime.now(timezone.utc).isoformat()
     for step in range(1, STEPS + 1):
         sampled = rng.choice(len(xy), size=BATCH_NODES, replace=True, p=probability)
         index = torch.tensor(sampled, dtype=torch.long, device=device)
@@ -299,6 +320,8 @@ def train(args: argparse.Namespace, data: dict) -> dict:
         "final_sampled_loss": last_loss,
         "final_scheduler_lr": scheduler.get_last_lr()[0],
         "elapsed_seconds": time.time() - started,
+        "started_utc": started_utc,
+        "finished_utc": datetime.now(timezone.utc).isoformat(),
         "training": True,
         "damage_solves": 0,
         "history_commits": 0,
@@ -310,8 +333,50 @@ def train(args: argparse.Namespace, data: dict) -> dict:
         "pid": os.getpid(),
         "metrics": metrics,
     }
-    (args.out / "metrics.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
-    np.savez_compressed(args.out / "prediction.npz", uv=predicted)
+    prediction = args.out / "prediction.npz"
+    np.savez_compressed(prediction, uv=predicted)
+    result["prediction_sha256"] = sha256(prediction)
+    metrics_path = args.out / "metrics.json"
+    metrics_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    archive_root = Path(args.archive_root)
+    archive_root.mkdir(parents=True, exist_ok=False)
+    archive_hashes = {}
+    for asset in (checkpoint, prediction, metrics_path):
+        copied = archive_root / asset.name
+        shutil.copy2(asset, copied)
+        source_hash = sha256(asset)
+        if sha256(copied) != source_hash:
+            raise RuntimeError(f"archive copy verification failed for {asset.name}")
+        archive_hashes[asset.name] = source_hash
+    receipt = {
+        "status": "COMPLETED",
+        "run_id": args.run_id,
+        "protocol_revision": PROTOCOL_REVISION,
+        "state": args.state,
+        "seed": args.seed,
+        "producer_alias": "taobo",
+        "hostname": socket.gethostname(),
+        "code_commit": actual_commit,
+        "dirty": dirty,
+        "command": shlex.join(sys.argv),
+        "pid": os.getpid(),
+        "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES", ""),
+        "gpu": torch.cuda.get_device_name(device),
+        "output_root": str(args.out.resolve()),
+        "archive_root": args.archive_root,
+        "log_path": args.log_path,
+        "started_utc": started_utc,
+        "finished_utc": result["finished_utc"],
+        "checkpoint_sha256": result["checkpoint_sha256"],
+        "prediction_sha256": result["prediction_sha256"],
+        "metrics_sha256": sha256(metrics_path),
+        "reference_sha256": result["reference_sha256"],
+        "archive_status": "VERIFIED_COPY",
+        "archive_file_hashes": archive_hashes,
+    }
+    receipt_text = json.dumps(receipt, indent=2)
+    (args.out / "RUN_RECEIPT.json").write_text(receipt_text, encoding="utf-8")
+    (archive_root / "RUN_RECEIPT.json").write_text(receipt_text, encoding="utf-8")
     return result
 
 
@@ -321,11 +386,32 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", choices=SEEDS, type=int, required=True)
     parser.add_argument("--reference", type=Path, required=True)
     parser.add_argument("--out", type=Path)
+    parser.add_argument("--run-id")
+    parser.add_argument("--expected-commit")
+    parser.add_argument("--archive-root")
+    parser.add_argument("--log-path")
     parser.add_argument("--device", choices=("cuda",), default="cuda")
     parser.add_argument("--validate-only", action="store_true")
     args = parser.parse_args()
     if not args.validate_only and args.out is None:
         parser.error("--out is required for formal training")
+    if not args.validate_only:
+        for name in ("run_id", "expected_commit", "archive_root", "log_path"):
+            if not getattr(args, name):
+                parser.error(f"--{name.replace('_', '-')} is required for formal training")
+        if len(args.expected_commit) != 40 or any(c not in "0123456789abcdef" for c in args.expected_commit):
+            parser.error("--expected-commit must be a lowercase 40-character git SHA")
+        path_contract = {
+            "out": "/mnt/data2/drtao/wennie/",
+            "archive_root": "/mnt/data2/drtao/pidl_archives/",
+            "log_path": "/mnt/data2/drtao/wennie/",
+        }
+        for name, prefix in path_contract.items():
+            value = str(Path(getattr(args, name)).expanduser().resolve())
+            if not value.startswith(prefix) or args.run_id not in value:
+                parser.error(f"--{name.replace('_', '-')} must be under {prefix} and contain --run-id")
+        if Path(args.archive_root).exists():
+            parser.error("--archive-root must not already exist")
     if args.out is not None and args.out.exists():
         parser.error("--out must not already exist")
     return args

@@ -20,6 +20,8 @@ The first external planning review returned `NO-GO` with four blockers. The revi
 
 The second review returned `PLAN PASS`. It authorized contract freeze, runner implementation, and local non-training checks only. Taobo training remains blocked until an independent exact-commit `Code Ready PASS` reviews the implemented runner, evaluator, tests, data lock, and output contract.
 
+The first exact-commit Code Ready review of `5767e6c` returned `NO-GO`. It found no optimizer-contract blocker, but the initial aggregator trusted the stored `joint_pass` field and did not require the complete checkpoint/prediction/receipt package. The bounded correction makes aggregation fail closed: it recomputes all thresholds from finite numeric metrics, requires strict Boolean consistency, checks final-step checkpoint and prediction hashes/content, verifies reference before/after identity and the Taobo run receipt, and emits `INADMISSIBLE` for malformed evidence. Synthetic non-training regression tests cover all four decision outcomes and the identified corruption paths. A new exact-commit review is required.
+
 ## PIDL Experiment Gate
 
 - Mechanism question: can the registered architecture and finite-budget supervised procedure reproduce all four admitted early/middle/late/transition UV targets across three fixed initializations?
@@ -55,6 +57,7 @@ No seed substitution, majority rule, retry, optional-state rescue, early stoppin
 - Scheduler: cosine annealing for exactly 10,000 optimizer steps to `1e-5`; scheduler steps after each optimizer step.
 - Determinism: deterministic PyTorch algorithms are mandatory; an unsupported nondeterministic operation fails validity.
 - Checkpoint: only the final step-10,000 checkpoint may be evaluated or retained for the result.
+- Producer evidence: every formal run records the clean Git commit, command, host, explicit GPU, paths, timestamps, checkpoint/prediction/reference hashes, and the required `/mnt/data2/drtao/.../<run_id>` roots in `RUN_RECEIPT.json`.
 
 The machine-readable constants and exact reference hashes are in [stage1_contract.json](stage1_contract.json).
 
@@ -74,4 +77,4 @@ The fit metrics and residual are reported separately. A run that fits displaceme
 
 ## Authorization boundary
 
-`CANDIDATE_TRAINING_AUTHORIZED` remains false until exact-commit Code Ready review passes. `SUPERVISED_CAPACITY_PASS`, Stage 2, route promotion, `FULL_FEM_REPRODUCTION`, and `QUALIFIED_FEM_TEACHER` remain unestablished or unauthorized.
+`CANDIDATE_TRAINING_AUTHORIZED` remains false until the corrected exact commit receives Code Ready review. `SUPERVISED_CAPACITY_PASS`, Stage 2, route promotion, `FULL_FEM_REPRODUCTION`, and `QUALIFIED_FEM_TEACHER` remain unestablished or unauthorized.
