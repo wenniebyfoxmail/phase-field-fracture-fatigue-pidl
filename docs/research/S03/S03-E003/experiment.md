@@ -1,7 +1,7 @@
 ---
 storyline_id: S03
 experiment_id: S03-E003
-protocol_revision: v2
+protocol_revision: v3
 status: ready
 started_at: 2026-10-08
 closed_at:
@@ -10,243 +10,185 @@ related_storylines: [S02]
 scientific_verdict:
 ---
 
-# AA2024 value-blinded trajectory qualification audit
+# AA2024 outcome-blind archive-manifest qualification
 
 ## PIDL Experiment Gate
 
 - **Primary claim class:** `observation-validity`.
-- **Question:** can Zenodo record `11945905` be mapped, without viewing sealed
-  future crack-growth values, into causal acquisition episodes with usable
-  cycle-indexed DCPD crack-length targets and synchronized mechanics channels?
-- **Claim if pass:** permit design and independent review of a separate
-  within-specimen forecast Experiment. No forecast or phase-field claim passes.
-- **Claim if fail:** the AA2024 record is blocked for the proposed fixed-cycle
-  forecast; do not substitute interpolation, tune a horizon, or start inversion.
-- **Cheaper falsification first:** official Zenodo API metadata and remote
-  archive manifest, followed by header/schema-only inspection. CARPIUC is not
-  required unless a named tooling defect appears.
-- **Smallest output asset:** one redacted `data_audit.json`, one human-readable
-  `decision.md`, and an immutable dataset receipt.
-- **Registry destination:** S03 -> S03-E003. A forecast requires S03-E004 or a
-  later new Experiment.
-- **Decision:** data-only audit; no training, optimization, FEM solve, PIDL run,
-  or material/constitutive parameter fitting.
+- **Question:** does the immutable archive for Zenodo record `11945905` match
+  the manifest capabilities declared by the official record closely enough to
+  justify a later header/semantics audit?
+- **Cheaper falsification first:** archive identity and ZIP central directory
+  only. No archive member content is read in this revision.
+- **Pass claim:** permit design and independent review of a new header audit.
+- **Fail claim:** stop this AA2024 route at dataset capability; do not inspect
+  outcomes, tune a forecast task, train a model, or start inversion.
+- **Smallest output:** one allowlisted `data_audit.json` containing booleans,
+  counts, enum decisions, and fixed stop-reason codes.
+- **Registry:** S03-E003. Any header audit, forecast, or inverse problem requires
+  a later separately frozen and reviewed Experiment or protocol revision.
 
-## Scientific question
+## Scientific question and claim boundary
 
-Does the released AA2024-T3 MT160 archive expose enough causal chronology,
-measurement semantics, and independently measured target support to design one
-honest fixed-cycle, within-specimen mechanics-information test?
+This is a dataset-capability audit, not a model-performance experiment. It asks
+whether the archive identity and manifest support the official description's
+claimed global DIC asset counts and named mapping/dictionary assets.
 
-## Claim contract
-
-- **Primary claim class:** observation-validity.
-- **Secondary claim classes:** state-semantics; tooling-only.
-- **Estimand and comparison class:** dataset capability, not model performance.
-  The unit is a distinct acquisition episode identified by physical cycle and
-  acquisition metadata, never an individual DIC file.
-- **Claim if primary gate passes:** the dataset is qualified for later protocol
-  design under the reported acquisition policy and limitations.
-- **Claim if primary gate fails:** the fixed-cycle prediction proposal is
-  blocked on this dataset.
-- **Blocked regardless of outcome:** forecast accuracy, uncertainty calibration,
-  phase-field recovery, parameter identification, material truth, specimen
-  generalisation, road transfer, and deployment.
-
-## Five-question intake
-
-1. **Question:** does the archive support causal acquisition episodes and a
-   non-interpolated cycle-indexed future crack-length target?
-2. **Claim change:** pass allows only a new forecast protocol; fail blocks this
-   data source for that role.
-3. **Cheaper diagnostic:** API metadata, ZIP manifest, dictionaries, mapping CSV,
-   and redacted nodemap-header audit before any field extraction.
-4. **Minimal asset:** dataset receipt, redacted audit JSON, and decision.
-5. **Placement:** S03-E003 is the observation-validity Experiment feeding a
-   possible S03-E004 forecast Experiment.
+Blocked regardless of outcome: header semantics, chronology, direct target
+support, forecast accuracy, uncertainty calibration, phase-field recovery,
+material-property identification, specimen generalisation, road transfer, and
+deployment.
 
 ## Reuse decision
 
-- **Searched:** prior Gate 3B dataset screen, S03-E001/E002 data-audit patterns,
-  project registries, external plan review, and official Zenodo metadata.
-- **Reused:** Experiment/Run/evidence structure, strict identity locks, causal
-  preprocessing rules, and the prior AA2024 candidate screen.
-- **New code justification:** no existing audit reconstructs AA2024 acquisition
-  episodes while redacting crack-growth outcomes and reporting fixed-cycle
-  target support.
+- **Searched:** Gate 3B screen, S03-E001/E002 audit patterns, project registry,
+  the external plan review, official Zenodo metadata, and remote ZIP central
+  directory.
+- **Reused:** Experiment/Run structure, exact identity locks, fixed decision
+  enums, output allowlisting, and immutable raw-data separation.
+- **New code:** needed for outcome-blind central-directory validation without
+  archive extraction or member reads.
 
-## Frozen protocol
+## Frozen protocol v3
 
-### Dataset identity and storage
+### Immutable identity lock
 
-- Official record: `https://zenodo.org/records/11945905`.
-- DOI: `10.5281/zenodo.11945905`.
-- Record ID / concept record: `11945905` / `11945904`.
-- Publication date: `2024-06-17`.
-- Licence: CC BY 4.0.
-- Archive: `multiscale_digital_image_correlation.zip`.
-- Expected size: `1,248,078,255` bytes.
-- Expected checksum: `md5:e671b804e29401e70043bc1e17f66dd1`.
-- Local raw path:
-  `$PROJECT/local_archive/open_data/aa2024_dic_zenodo_11945905_20261008/raw/`.
-- Compact audit path:
-  `$PROJECT/local_archive/experiments/S03-E003/runs/S03-E003-R001/`.
+- Record: `https://zenodo.org/records/11945905`
+- DOI: `10.5281/zenodo.11945905`
+- Record / concept record: `11945905` / `11945904`
+- Licence: CC BY 4.0
+- Archive: `multiscale_digital_image_correlation.zip`
+- Exact size: `1,248,078,255` bytes
+- Exact MD5: `e671b804e29401e70043bc1e17f66dd1`
+- Raw root:
+  `$PROJECT/local_archive/open_data/aa2024_dic_zenodo_11945905_20261008/raw/`
+- Audit root:
+  `$PROJECT/local_archive/experiments/S03-E003/runs/S03-E003-R001/`
 
-The raw archive is immutable. Compact audit artifacts may record identities,
-schemas, counts, missingness, cycle spacing, and acquisition grouping. They
-must not emit per-episode crack lengths, full displacement/strain values, or
-sealed-suffix outcome tables.
+The raw archive and official API JSON are immutable inputs. Audit output must be
+inside the frozen audit root, must not alias either input, and must not be
+placed in the raw tree.
 
-### Value-blinded inspection order
+### Permitted reads
 
-1. Lock official API metadata, file size, checksum, licence, and attribution.
-2. Inspect archive member names, sizes, and directory structure only.
-3. Inspect metadata dictionaries and mapping-table column names.
-4. Parse global nodemap headers programmatically; emit field names,
-   missingness, episode counts, frames-per-cycle counts, and cycle-gap/target-
-   support summaries only.
-5. Parse local mapping rows programmatically; emit schema, row counts, mapping
-   completeness, and global/local cycle overlap only.
-6. Do not extract full-field arrays or print crack-length values.
+1. Read the official API JSON as an external, untrusted input.
+2. Compute the local archive byte size and MD5.
+3. Read only the ZIP central directory via `ZipFile.infolist()`.
+4. Do not call `ZipFile.open()`, extract members, read headers, inspect mapping
+   rows, or parse dictionary contents.
 
-### Holdout and leakage firewall
+Only boolean checks derived from official metadata may enter output. External
+metadata strings and individual member names are not emitted.
 
-- Individual minimum/mean/maximum load images and dense within-cycle images are
-  grouped into one acquisition episode by audited physical cycle and metadata.
-- No later registration, smoothing, crack-tip tracking, normalization, or
-  acquisition interval may enter an earlier episode.
-- This audit does not assign train/development/test outcomes. It reports only
-  episode/cycle support needed for a later causal split contract.
-- The later forecast protocol must keep each origin and its whole target horizon
-  within one partition and purge boundary-crossing pairs.
+### Exact manifest contract
 
-### Strict validity gates
+After identity passes, require all of the following:
 
-1. Official record identity, archive size, checksum, licence, and attribution
-   are verified.
-2. Archive member paths are safe and the documented global/local/dictionary
-   assets exist.
-3. Every included global nodemap maps unambiguously to one physical cycle and
-   load/acquisition episode; duplicate timestep labels are explained.
-4. Required header fields for cycle, force/load state, actuator displacement,
-   DCPD potential/crack length, and both back-face strain channels are present
-   or their exact absence is reported.
-5. Local microscopic nodemaps map through the released mapping table without
-   ambiguous file identity; synchronization gaps are counted.
-6. Fixed-cycle future targets are directly observed within a predeclared
-   tolerance-window analysis; no crack-length interpolation is used.
-7. The audit output contains no sealed per-episode crack-length or full-field
-   outcome values.
+1. Central directory is readable.
+2. Every member path is relative, POSIX-style, traversal-free, and unique after
+   lexical normalization and case-folding.
+3. No member is encrypted or a symlink; compression type is supported.
+4. Exactly `797` `.txt` files appear below `global_3d_dic/nodemaps/`.
+5. Exactly `797` `.txt` files appear below `global_3d_dic/connections/`.
+6. Exactly one basename equals
+   `local_2d_microscopic_coordinates_by_nodemaps.csv`.
+7. Exactly one basename exists for each dictionary:
+   `higher_level_metadata_dictionary.json` and
+   `timestep_level_metadata_dictionary.json`.
 
-### Primary gate and stop rule
+Directory matching is case-insensitive; filenames are counted from canonical
+central-directory paths only. Local nodemap count is descriptive and is not a
+pass criterion in v3.
 
-`QUALIFIED_FOR_FORECAST_PROTOCOL_DESIGN` requires gates 1--7 to pass and at
-least one candidate horizon to satisfy the following outcome-blind minimum-
-information rule under a physical-cycle-span 60/20/20 structural split:
+### Primary decision and stop rule
 
-- at least 12 calibration origins;
-- at least 6 development origins;
-- at least 8 sealed origins and 8 distinct sealed target episodes;
-- one nearest target per origin inside `H +/- max(100 cycles, 0.05 H)`;
-- no target reuse in the sealed segment;
-- every origin and target remain in the same segment.
+`QUALIFIED_FOR_HEADER_AUDIT` requires every official-metadata, local-identity,
+path-safety, member-safety, and exact-manifest check to pass.
 
-Exact-cycle pair counts are reported separately. These thresholds qualify only
-later protocol design; they do not make a small dependent suffix population or
-calibration evidence. The audit reports all frozen candidate-horizon support
-counts without selecting a winning horizon.
+Any failure yields `BLOCKED_DATASET_CAPABILITY` with one or more fixed codes:
 
-- Any identity/checksum/path-safety failure stops immediately.
-- Ambiguous cycle/episode identity, absent direct DCPD target support, or
-  unresolved synchronization gives `BLOCKED_DATASET_CAPABILITY`.
-- Too few distinct eligible origins for a defensible later primary gate gives
-  `BLOCKED_EVALUATION_RESOLUTION`; do not relax the horizon after outcome view.
-- Weak or inconvenient data complete as a negative/blocked audit; they are not
-  repaired by training or parameter inversion.
+- `OFFICIAL_METADATA_INVALID`
+- `ARCHIVE_IDENTITY_MISMATCH`
+- `ZIP_CENTRAL_DIRECTORY_INVALID`
+- `UNSAFE_OR_AMBIGUOUS_MEMBER_PATH`
+- `UNSUPPORTED_OR_ENCRYPTED_MEMBER`
+- `GLOBAL_NODEMAP_COUNT_MISMATCH`
+- `GLOBAL_CONNECTION_COUNT_MISMATCH`
+- `MAPPING_FILE_IDENTITY_MISMATCH`
+- `METADATA_DICTIONARY_IDENTITY_MISMATCH`
 
-### Secondary diagnostics
+Identity failure stops before central-directory inspection. A central-directory
+failure stops before asset-count qualification. No mismatch may be repaired by
+changing the expected count/name after viewing the archive.
 
-- member counts and uncompressed sizes by directory;
-- global frames per acquisition episode and load-state multiplicity;
-- physical-cycle gap distribution and candidate fixed-horizon support counts;
-- required-field missingness by early/development/sealed structural segment,
-  without outcome values;
-- global/local cycle overlap and unmapped file counts;
-- whether DCPD crack length is independent of DIC field values in acquisition
-  provenance, while noting that it is stored in nodemap headers.
+## Required evidence
 
-### Required evidence
-
-- frozen official API metadata JSON;
-- archive receipt with size and MD5;
-- redacted `data_audit.json`;
-- exact audit command and environment receipt;
-- `decision.md` with allowed and blocked conclusions;
-- independent read-only code review bound to exact commit, runner, dataset
-  lock, and protocol v1;
-- independent evidence review before Experiment closure.
+- frozen protocol v3;
+- independently reviewed exact runner/tests/commit with `PASS_CODE_READY`;
+- official API JSON and archive size/MD5 receipt;
+- redacted `data_audit.json` and exact execution receipt;
+- `decision.md` stating allowed and blocked conclusions;
+- independent evidence review bound to the compact output before closure.
 
 ## Producer and Run readiness
 
-- **Producer:** Mac-PIDL, data/schema analysis only; no optimizer loop.
-- **Commit / dirty status:** to be frozen after audit runner and tests are added.
+- **Producer:** Mac-PIDL, data/schema audit only; no optimization loop.
 - **Runner:** `scripts/aa2024_value_blind_audit.py`.
-- **Output:** local archive path above; compact receipt and evidence only.
-- **Safety:** raw archive is read-only; no extraction of unsafe paths; no
-  training, inversion, or remote compute.
+- **Tests:** `tests/test_aa2024_value_blind_audit.py`.
+- **Run:** S03-E003-R001, pending Code Ready PASS and complete archive MD5.
+- **Safety:** read-only raw inputs; no extraction, training, inversion, FEM, or
+  remote compute.
 
 ## Amendments
 
-### 2026-10-08 — protocol v2 before any Run
+### 2026-10-08 — v2 (never executed)
 
 The first Code Ready review of commit `930b6ab` returned `REVISE_CODE`. It found
-that v1 did not implement episode/timestep identity, file-level local mapping,
-direct-target validity, evaluation resolution, strict parsing, manifest-first
-stopping, output redaction verification, or input/output collision protection.
-It also found a required-header counter bug. No real archive audit had run.
+missing episode/timestep identity, direct-target validity, strict parsing,
+manifest-first stopping, output redaction verification, and collision guards.
+The runner was strengthened at commit `c07aa30`; no real audit was executed.
 
-Protocol v2 freezes the minimum-information rule above and requires exact
-timestep/connection identity, monotone integer cycles, complete local-file
-joins, consistent DCPD targets, bounded member reads, allowlisted output schema,
-atomic writes, and decision-level synthetic tests. These changes strengthen the
-original claim boundary; they do not add a forecast claim.
+### 2026-10-08 — v3 (before any Run)
 
-A later prediction horizon, comparator, CRPS threshold, or mechanics package
-still belongs to a new reviewed forecast Experiment.
+The second Code Ready review of `c07aa30` returned `REVISE_CODE`: bounded header
+reading could false-fail large members; dictionary units/semantics and local
+synchronization were not qualified; “episode” and candidate horizons exceeded
+implemented evidence; output and malformed-input firewalls were incomplete.
+
+Separately, an outcome-blind remote central-directory check found only 342
+global nodemap files and a released mapping basename containing an additional
+`coordinates_` token, while the official description and frozen v2 contract
+expected 797 files and the documented basename. Because manifest structure is
+the cheaper falsification, v3 removes all header, chronology, target, horizon,
+and episode claims. The observation is not yet the Experiment result: the
+official full archive must pass exact MD5 and the reviewed v3 runner must
+reproduce it locally.
 
 ## Code review
 
-- **Reviewer task:** first review returned `REVISE_CODE`; corrective re-review pending.
-- **Bound commit / runner / config / data lock / protocol revision:** first
-  review bound to `930b6ab` and v1; corrected commit and v2 pending.
-- **Verdict:** pending; do not execute the audit runner before PASS.
-- **Blocking findings:** v1 findings are recorded in the amendment above; all
-  must be closed by code, decision-level tests, and re-review.
+- Round 1: `REVISE_CODE`, bound to `930b6ab` and v1.
+- Round 2: `REVISE_CODE`, bound to `c07aa30` and v2.
+- Round 3: pending, to be bound to the v3 commit, runner, tests, identity lock,
+  and this protocol.
+- **Execution rule:** do not run the real archive audit before
+  `PASS_CODE_READY`.
 
 ## Runs
 
 | Run ID | Purpose | Execution | Retrieval | Receipt |
 |---|---|---|---|---|
-| S03-E003-R001 | value-blinded archive qualification | prepared | pending | pending |
+| S03-E003-R001 | outcome-blind manifest qualification | prepared | pending | pending |
 
 ## Evidence review
 
-- **Reviewer task:** pending.
-- **Bound Run IDs:** S03-E003-R001.
-- **Bound analysis package:** pending.
-- **Verdict:** pending.
-- **Blocking findings:** pending.
+Pending S03-E003-R001 and an independent review of the compact evidence.
 
 ## Scientific verdict
 
-Pending.
-
-## Claim impact
-
-No claim changes before the audit closes.
+Pending. No claim changes before closure.
 
 ## Next action
 
-Acquire and verify the immutable archive only after this contract is frozen;
-then finalize, test, and independently review the value-blinded audit runner
-before executing it.
+Complete immutable archive verification, commit the v3 runner/tests/protocol,
+obtain independent Code Ready review, then execute exactly S03-E003-R001 only
+if the review passes.
