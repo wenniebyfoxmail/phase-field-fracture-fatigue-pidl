@@ -1,6 +1,6 @@
 # S04-E013 Stage 0 implementation
 
-Status: c60 producer completed and retrieved; paired exporter Code Ready PASS and remote production complete; local retrieval/evidence review pending.
+Status: c60 and paired-control producers completed, retrieved and locally verified; independent Evidence review pending.
 
 ## c60 strict UV reference
 
@@ -59,4 +59,4 @@ This result does not qualify a full teacher. The damage diagnostic did not impro
 
 The exact-commit re-review returned `Code Ready PASS` for commit `19a5c13d5dcc2d1888528621dc6ff459c59dbe3d`, with no remaining blocker to read-only production in the original CUDA environment. Formal run `S04-E013-R003-paired-export` then completed remotely on Taobo GPU 0. It produced all 13 declared files: c20/c60/c82/c83 at s2/s4/s5 plus c85s4 own-event, along with CSV/JSON manifests.
 
-Remote verification found 13 rows, 31 arrays per row, finite numerical arrays, matching output hashes and maximum model/checkpoint damage difference `0.0`. The locked event evidence retained first occurrence step 424 and confirmation completion step 427. Training and history-commit counts are zero. Local retrieval and independent Evidence review remain pending, so paired-control coverage is not yet promoted to asset ready.
+Remote verification found 13 rows, 31 arrays per row, finite numerical arrays, matching output hashes and maximum model/checkpoint damage difference `0.0`. The locked event evidence retained first occurrence step 424 and confirmation completion step 427. Training and history-commit counts are zero. All 13 payloads and both manifests were retrieved after resumable transfer; local rechecking reproduced every manifest output hash and finite-array result. Paired-control coverage is now recorded as `RETRIEVED_VERIFIED_PENDING_EVIDENCE`, not asset ready.
