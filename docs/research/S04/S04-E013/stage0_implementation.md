@@ -32,13 +32,16 @@ and requires:
 
 Every state includes its own `step-1` checkpoint as the prior. The exporter writes nodal displacement, accepted/model damage, prior damage, committed/prior fatigue history, accepted/prior/current drivers, degradation, native-Q4 GP strain/damage gradients, and element energies. It asserts the native-Q4 mesh signature, `[86408,4]` history shape, model/checkpoint damage agreement, finite values, and exact state mapping. No FEM state is inserted into the PIDL trajectory.
 
-The frozen control event detector is the production detector: accepted post-fit nodal damage strictly greater than `0.95` on the right boundary, at least three nodes, first occurrence, with three confirmation cycles. The own-event export is the first occurrence at step 424; confirmation remains context and does not replace it.
+The old checkpoints do not embed a step number or load. The exporter therefore requires the exact locked producer source snapshot, production log, archive settings, and mesh by SHA. It checks the producer save-order source and configuration, then emits a file-to-step hash manifest. This establishes that `trained_1NN_<step>.pt` and `checkpoint_step_<step>.pt` are the same post-fit accepted state and that `checkpoint_step_<step-1>.pt` is its immediately preceding accepted state.
+
+The frozen control event detector is the production detector: accepted post-fit nodal damage strictly greater than `0.95` in the producer's right-boundary region `x > 0.48`, at least three nodes, first occurrence, followed by three subsequent consecutive confirmation steps. The own-event export is the first occurrence at step 424; confirmation completes at step 427. The exporter requires the locked production log to contain exactly that onset and completion with no reset, and independently rechecks accepted checkpoints 423--427 and their persisted detector metadata.
 
 ## Local checks
 
 - Python compilation: PASS.
-- `tests/test_s04_e013_stage0.py` plus existing `tests/test_teacher_precision.py`: 5 PASS.
-- Real c82s4 Q4 post-processing smoke: pending transfer of the exact step408 own-prior checkpoint; the first attempt stopped on that missing prior rather than substituting another state.
+- `tests/test_s04_e013_stage0.py` plus existing `tests/test_teacher_precision.py`: 7 PASS.
+- Real c82s4 Mac/CPU post-processing stopped at the unchanged `5e-6` model/checkpoint consistency guard (`max_abs=1.519918441772461e-05`). A read-only Taobo GPU reconstruction with the original source returned exact zero max/RMS/p99 difference. This is a cross-runtime reconstruction finding; formal export is restricted to the original CUDA producer environment and the guard was not relaxed.
+- The exact step408 own-prior was transferred read-only for the diagnostic; no substitute state was used.
 
 ## Execution boundary
 

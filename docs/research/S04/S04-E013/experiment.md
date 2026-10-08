@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E013
 protocol_revision: 20261008-r0
-status: v2-amended; stage0-implementation-prepared; producer-execution-pending-code-review; candidate-training-blocked
+status: v2-amended; stage0-implementation-corrected-after-no-go; producer-execution-pending-renewed-code-review; candidate-training-blocked
 ---
 # Freeze separate PIDL evaluation contracts after S04-E012
 
