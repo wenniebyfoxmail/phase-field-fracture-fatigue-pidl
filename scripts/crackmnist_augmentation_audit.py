@@ -43,7 +43,22 @@ def file_hash(path: Path, algorithm: str) -> str:
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+
+
+def payload_is_finite(value: Any) -> bool:
+    if isinstance(value, dict):
+        return all(payload_is_finite(item) for item in value.values())
+    if isinstance(value, (list, tuple)):
+        return all(payload_is_finite(item) for item in value)
+    if isinstance(value, (float, np.floating)):
+        return bool(np.isfinite(value))
+    if isinstance(value, np.ndarray) and np.issubdtype(value.dtype, np.number):
+        return bool(np.isfinite(value).all())
+    return True
 
 
 def git_value(*args: str) -> str:
@@ -125,9 +140,11 @@ def fixed_effect_association(
         boot[draw] = np.linalg.solve(a[sampled].sum(axis=0), b[sampled].sum(axis=0))
     if not np.isfinite(boot).all():
         raise ValueError("non-finite cluster-bootstrap coefficient")
-    fitted = centered_x @ beta
+    # Explicit two-term evaluation avoids a reproducible macOS/NumPy matmul
+    # RuntimeWarning while preserving the exact rank-two linear predictor.
+    fitted = centered_x[:, 0] * beta[0] + centered_x[:, 1] * beta[1]
     residual = centered_y - fitted
-    return {
+    result = {
         "beta_severity": float(beta[0]),
         "beta_severity_ci95": np.quantile(boot[:, 0], [0.025, 0.975]).tolist(),
         "beta_vertical_flip": float(beta[1]),
@@ -141,6 +158,9 @@ def fixed_effect_association(
         if np.sum(centered_y**2) > 0
         else 0.0,
     }
+    if not payload_is_finite(result):
+        raise ValueError("non-finite fixed-effect result")
+    return result
 
 
 def lineage_contrasts(
@@ -380,6 +400,8 @@ def main() -> None:
         draws=BOOTSTRAP_DRAWS, seed=BOOTSTRAP_SEED + 2,
     )
     secondary["four_bin_centered_reconstruction_trend"] = trend
+    if not payload_is_finite(secondary):
+        raise ValueError("non-finite secondary diagnostic")
 
     audit_checks = {
         "data_md5_matches": joined["data_md5"] == EXPECTED_DATA_MD5,
@@ -393,6 +415,7 @@ def main() -> None:
         "at_least_90pct_lineages_vary": variation_fraction >= 0.9,
         "whole_lineage_bootstrap": True,
         "all_primary_outputs_finite": bool(np.isfinite([primary["beta_severity"], primary["beta_vertical_flip"], *primary["beta_severity_ci95"], *primary["beta_vertical_flip_ci95"], contrast_median, *contrast_ci]).all()),
+        "all_secondary_outputs_finite": payload_is_finite(secondary),
     }
     gate_pass = all(audit_checks.values())
     if not gate_pass:

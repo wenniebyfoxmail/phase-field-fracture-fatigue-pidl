@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -32,9 +33,11 @@ def test_fixed_effect_association_recovers_joint_coefficients():
     flip = rng.integers(0, 2, size=len(lineages)).astype(float)
     intercept = np.repeat(rng.normal(size=40), 8)
     outcome = intercept + 2.5 * severity - 1.25 * flip
-    result = MODULE.fixed_effect_association(
-        outcome, severity, flip, lineages, bootstrap_draws=100, seed=7
-    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        result = MODULE.fixed_effect_association(
+            outcome, severity, flip, lineages, bootstrap_draws=100, seed=7
+        )
     assert result["design_rank"] == 2
     assert np.isclose(result["beta_severity"], 2.5)
     assert np.isclose(result["beta_vertical_flip"], -1.25)
@@ -82,3 +85,9 @@ def test_low_secondary_coverage_cannot_fall_through_to_pass():
         )
         expected = "PASS_AUGMENTATION_AUDIT_MVP" if min(coverages) >= 0.9 else "MIXED_DIAGNOSTIC"
         assert decision == expected
+
+
+def test_payload_finiteness_rejects_nan_and_infinity():
+    assert MODULE.payload_is_finite({"a": [1.0, 2.0], "label": "ok"})
+    assert not MODULE.payload_is_finite({"a": np.nan})
+    assert not MODULE.payload_is_finite({"a": [1.0, np.inf]})
