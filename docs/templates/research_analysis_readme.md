@@ -15,7 +15,7 @@ What one question does this figure set answer?
 
 ## Reading order
 
-1. Start with:
+1. Start with the decision figure tied to the primary criterion:
 2. Then inspect:
 3. Finally compare:
 
@@ -39,6 +39,7 @@ field, timing, and uncertainty evidence tell the same story.
 
 - Validity gates:
 - Primary gate:
+- Decision visualization and displayed-case selection rule:
 - Secondary diagnostics:
 - Verdict:
 

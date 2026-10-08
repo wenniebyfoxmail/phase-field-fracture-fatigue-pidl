@@ -82,6 +82,13 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 
 ## Research Figure Documentation
 
+- Every method-validation Experiment with computed or measured outcomes must
+  include at least one decision-facing visualization made from the exact scored
+  outputs. It must show the method against the simplest comparator and make the
+  primary criterion visible. Missing visualization means the evidence package
+  is incomplete; it does not change the frozen scientific gate. Follow the
+  `Minimum Decision Visualization` section of the road-fracture experiment
+  gate.
 - Every claim-bearing figure set must have one `README_analysis.md` that states
   the scientific question, evidence source, intended reading order, what each
   figure shows, the cross-figure interpretation, the allowed conclusion, the
@@ -130,8 +137,9 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 - **Evidence Ready:** an Experiment closes only after retrieval status is
   explicit, its predeclared minimum evidence exists, an independent evidence
   review is complete when required, the scientific verdict is separated from
-  execution status, and the Storyline receives one dated claim-impact entry.
-  Require `README_analysis.md` only when a claim-bearing figure set exists.
+  execution status, the minimum decision visualization exists for computed or
+  measured method validation, and the Storyline receives one dated claim-impact
+  entry. Require `README_analysis.md` for that claim-bearing figure set.
 - **Gate design:** include only validity failures that make the result
   uninterpretable. Use one smallest decisive primary criterion for the target
   claim; a conjunction is allowed only when each clause is independently

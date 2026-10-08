@@ -40,6 +40,8 @@ scientific_verdict:
 - Minimal fatal-regression guards, if any:
 - Explanatory diagnostics that cannot change the verdict:
 - Stop rule:
+- Minimum decision visualization (exact scored outputs, comparator, selection
+  rule, units and holdout role):
 - Minimum required evidence:
 
 ### Conditional fields

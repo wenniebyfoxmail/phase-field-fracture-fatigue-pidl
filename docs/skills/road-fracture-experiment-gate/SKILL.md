@@ -103,6 +103,42 @@ Use `mixed` only for multiple separately preregistered claims. Stop at the first
 decisive failure or the declared resource/time cap; do not add arms or criteria
 after seeing results.
 
+## Minimum Decision Visualization
+
+When an Experiment validates or compares a method using computed or measured
+outcomes, it cannot become `Evidence Ready` from prose or scalar tables alone.
+Include at least one decision-facing visualization generated from the exact
+outputs used to compute the primary criterion.
+
+The smallest sufficient visualization must:
+
+- show the candidate and simplest honest comparator on the same evaluation
+  units and scale;
+- make the primary direction, threshold or baseline comparison visible;
+- expose independent-unit variation or a declared uncertainty/failure view,
+  rather than only a pooled average;
+- label units, evidence domain, development/holdout role, Run ID, and prediction
+  origin/horizon when relevant;
+- use a stated, non-cherry-picked rule for any displayed example, such as all
+  cases, a fixed ID, median-ranked case, or worst primary-error case.
+
+For spatial or temporal claims, the decision figure should normally include a
+held-out field/overlay/profile or trajectory view in addition to the aggregate
+criterion. Typical minimal forms are target/prediction/error for measurement or
+surrogate fields, origin-to-horizon trajectories for forecasting, and a utility
+curve for decisions. Reuse existing scored outputs; do not launch an extra Run
+only to make a picture.
+
+Keep the exact numerical table and verdict as authoritative. A visualization
+explains the decision but does not vote, add a new criterion, rescue a primary
+failure, or replace uncertainty reporting. Missing required visualization means
+the evidence package is incomplete, not that the method is scientifically
+negative.
+
+For a genuinely non-numerical `C0`/`C1` audit with no meaningful result plot,
+use one compact schema/lineage diagram or visual decision table and state why a
+computed-result figure is inapplicable. Do not create decorative charts.
+
 ## Load Only The Relevant Adapter
 
 - For real observations, asset-time identity, labels, registration, reference
@@ -173,6 +209,7 @@ green test, or large archive into a scientific verdict.
 - Cheapest decisive test:
 - One primary criterion and rationale:
 - Stop rule:
+- Minimum decision visualization:
 - Minimum evidence / blocked conclusion:
 - Producer and Run receipt destination, if execution is ready:
 - Decision: diagnose first / ready / reject / quarantine
