@@ -1,0 +1,61 @@
+{
+  "protocol": "S01-E001-v5",
+  "created_at": "2026-10-08",
+  "repository_base_commit": "dd738f177b5dbcced537a29497b4df3c38608a66",
+  "repository_branch": "codex/m2s-framework-validation",
+  "working_tree_status": "dirty_with_unrelated_user_changes; bind this experiment by file hashes",
+  "supersedes_failed_bundles": [
+    "code_review_bundle_v1_failed.json",
+    "code_review_bundle_v2_failed.json",
+    "code_review_bundle_v3_failed.json",
+    "code_review_bundle_v4_failed.json"
+  ],
+  "workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",
+  "initial_artifacts": {
+    "yolo11n.pt": {
+      "bytes": 5613764,
+      "sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1"
+    },
+    "mobilenet_v3_small_imagenet.pth": {
+      "bytes": 10306551,
+      "sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+    }
+  },
+  "files": {
+    "scripts/pavetrack_cv/__init__.py": "bf073aa0c1ecb700a26d8ea2a12e3c4750145de63e9afb2c6e9b663cb19794c6",
+    "scripts/pavetrack_cv/common.py": "4bc7dacac4914fe21f61cfc8efcf3b2681f9aaff677d95935132d8ac99af9e34",
+    "scripts/pavetrack_cv/prepare_dataset.py": "f37064d673cd83a6615f10b61c19fedb500095907b07b5094fc7fa6caf60e373",
+    "scripts/pavetrack_cv/train_proposer.py": "023b4bf7f7b129a6d9a254efe21b4110a8131e0c181520208569705f9d700a0c",
+    "scripts/pavetrack_cv/mine_crops.py": "d3037c2dc10b940a540a4616113dbf566c78c53d576e0a50445beb7690373212",
+    "scripts/pavetrack_cv/train_reranker.py": "3267ed551e683016ed50a12cba0f0cf8bb4482d8ccd6ef30b09a8145b75e85f9",
+    "scripts/pavetrack_cv/evaluate_two_stage.py": "3006d48f5295329b34a7bf79ced4cdeb154ab0227e36407b99d470374d3d66aa",
+    "scripts/pavetrack_cv/freeze_for_test.py": "45739312dfe8ca386a23afb8e9eb7bbafe6545860c645f640c765073035dccdf",
+    "tests/pavetrack_cv/test_common.py": "9044ffd88f55270cce756d62a39fb366c985d47e1c9cedc34c5686230d4df9e5",
+    "tests/pavetrack_cv/test_crop_lineage.py": "8ad33e015a3163fea518e6dddfbbf9ea49ccff3ddce9bf00d4bb1f096e70761c",
+    "tests/pavetrack_cv/test_data_lock.py": "764a1c96327e190f267d296c834c887edaf3763faa9311d6e9fff47e64f42c0a",
+    "tests/pavetrack_cv/test_test_firewall.py": "92413427d2a3dd705fafce960bfc093830d7bb58e0f174608e3094f7dc48e65b",
+    "docs/research/S01/S01-E001/experiment.md": "1c2b1343c55d45d8959576c35f52816378c142e979ad7402f8d662a4494856fe",
+    "docs/research/S01/S01-E001/data_lock.json": "1e0a4e00b5558636d5eeef80a9465795e2401a7633a039266b8bb10b8c776cd9",
+    "docs/research/S01/S01-E001/run_config.json": "da1d44e3d3889917240c4158d205fbe43b95cc79d9b7a5ec812ccc5d723d93fd",
+    "docs/research/S01/S01-E001/execution_runbook.md": "f9138a2f39b0ef6d977e14a847adbebcce1d83b69a900bc9e55adc2607d98605"
+  },
+  "local_static_checks": {
+    "result": "PASS",
+    "tests": 27,
+    "scope": "syntax, partitions, deterministic ties, crop and prepared-data content hashes, forged authorization, semantic architecture fingerprints, physical-GPU/runtime drift, confirmatory membership; no training"
+  },
+  "producer_checks_required_before_training": [
+    "all 27 tests under the frozen D-26-09 runtime",
+    "semantic load and architecture check of the exact official initial artifacts",
+    "v5 development preparation and content-hash audit"
+  ],
+  "source_data_audit": {
+    "images": 1467,
+    "train_locations": 16,
+    "validation_locations": 5,
+    "crack_targets": 1442,
+    "empty_negative_labels": 34,
+    "confirmatory_pixels_accessed": false
+  },
+  "review_status": "pending_independent_v5_review"
+}

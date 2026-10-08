@@ -1,0 +1,24 @@
+{
+  "dataset": "PaveTrack_PD",
+  "version": "V3",
+  "workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",
+  "archive_bytes": 5694108370,
+  "publisher_md5": "7fc53a04a6260a26b3ac39f489511adf",
+  "selection_uses_pixels": false,
+  "independence_unit": "reid",
+  "train_locations": [
+    "24", "95", "151", "353", "514", "728", "1400", "1459",
+    "1577", "1638", "2027", "2028", "3662", "4494", "5508", "5982"
+  ],
+  "validation_locations": ["393", "1103", "1195", "1374", "4073"],
+  "confirmatory_test_locations": ["1059", "2227", "2291", "6227"],
+  "previously_viewed_test_locations_excluded_from_confirmation": ["10", "1889"],
+  "reserve_test_locations": [
+    "75", "220", "577", "956", "1139", "1174", "1729", "2246",
+    "2260", "2485", "2533", "3215", "3347", "3825", "4818",
+    "4855", "4925", "5276", "6022"
+  ],
+  "excluded_archive_only_files_rule": "exclude every image absent from Dataset_PDdescription.xlsx",
+  "created_at": "2026-10-08",
+  "status": "identity_frozen_images_not_yet_complete"
+}

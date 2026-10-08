@@ -1,0 +1,64 @@
+{
+  "protocol": "S01-E001-v7",
+  "seed": 20261008,
+  "producer_runtime": {
+    "hostname": "D-26-09",
+    "python": "3.12.14",
+    "python_executable": "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "ultralytics": "8.3.205",
+    "pandas": "2.3.3",
+    "openpyxl": "3.1.5",
+    "cuda_runtime": "12.8",
+    "device": "cuda:1",
+    "gpu_physical_index": 1,
+    "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition",
+    "gpu_uuid": "GPU-3d74ea12-5d84-a619-90b2-c0b1f104599a",
+    "gpu_pci_bus_id": "00000000:F1:00.0",
+    "nvidia_driver": "616.92"
+  },
+  "proposer": {
+    "implementation": "ultralytics_YOLO11n_COCO_pretrained",
+    "initial_weights_file": "yolo11n.pt",
+    "initial_weights_bytes": 5613764,
+    "initial_weights_sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+    "architecture_sha256": "1328d9af277ef6ffff67b626d3a34e57a198b350e022dedd35a963533981e45e",
+    "instantiated_graph_sha256": "7ef6dcc31d16e8a42e65b71b7848df0e47976052b74a22f4b0dc37b80fdcb8ae",
+    "epochs": 50,
+    "patience": 10,
+    "image_size": 1280,
+    "batch_size": 8,
+    "proposal_confidence_minimum": 0.001,
+    "nms_iou": 0.7,
+    "max_detections_per_image": 300
+  },
+  "crop_mining": {
+    "positive_proposal_min_crack_iou": 0.5,
+    "negative_proposal_max_crack_iou": 0.05,
+    "max_positive_proposals_per_image": 10,
+    "max_hard_negative_proposals_per_image": 20,
+    "random_road_background_crops_per_image": 2,
+    "crop_padding_fraction": 0.1
+  },
+  "reranker": {
+    "implementation": "torchvision_mobilenet_v3_small_ImageNet_pretrained",
+    "initial_weights_file": "mobilenet_v3_small_imagenet.pth",
+    "initial_weights_bytes": 10306551,
+    "initial_weights_sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f",
+    "epochs": 15,
+    "batch_size": 64,
+    "optimizer": "AdamW",
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "sampling": "inverse_frequency_with_replacement",
+    "selection": "minimum_validation_cross_entropy"
+  },
+  "score": "sqrt(proposer_confidence * reranker_crack_probability)",
+  "primary_metric": {
+    "name": "macro_location_R_at_1FP_per_image",
+    "global_threshold": true,
+    "iou_threshold": 0.5,
+    "absolute_delta_to_pass": 0.1
+  }
+}
