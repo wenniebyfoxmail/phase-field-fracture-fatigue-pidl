@@ -22,6 +22,18 @@ from hard_kkt import assess as hard_assess
 from weak_form import assemble
 
 
+US = 0.11999988
+EXPECTED_SHA256 = {
+    "qualified": "ecee498054293f66c881a7bcf08a51b1b0315b4e2d11fa20a50c7bbe204f16c5",
+    "e011_metrics": "055ebe0f7148a9407fe6487860fb71f7cec93979d3ae20ba26e8e676b2dab60b",
+    "c82_summary": "d6ae7eaa36884b72cb71b9ce5d20d3564d8eb117956f8cb537d74455cda86df2",
+    "c82_fields": "e079dfbb7243a15cf148bef3799ea56d1bcc10aea5890afd0ef65313566b24df",
+    "c83_summary": "eeb38a3f620e2294426b60ac9a706f28c3352859cd2ba414c36cedee3c317206",
+    "c83_fields": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+    "c82s5": "730a4f928a39de44b9b976cca558645c42dc5c64863b38fd85c6556a38e69691",
+}
+
+
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -35,6 +47,29 @@ def close(actual: float, expected: float, *, name: str) -> None:
         raise AssertionError(f"{name}: {actual} != {expected}")
 
 
+def validate_mesh_and_free_set(xy: np.ndarray, conn: np.ndarray,
+                               native_free_uv: np.ndarray) -> np.ndarray:
+    if xy.ndim != 2 or xy.shape[1] != 2:
+        raise AssertionError(f"xy must have shape (nnode, 2), got {xy.shape}")
+    if conn.ndim != 2 or conn.shape[1] != 4 or not np.issubdtype(conn.dtype, np.integer):
+        raise AssertionError(f"conn must be integer Q4 connectivity, got {conn.shape}/{conn.dtype}")
+    nnode = len(xy)
+    if conn.size == 0 or int(conn.min()) < 0 or int(conn.max()) >= nnode:
+        raise AssertionError("conn contains an out-of-range node index")
+    free = np.asarray(native_free_uv)
+    if free.ndim != 1 or not np.issubdtype(free.dtype, np.integer):
+        raise AssertionError("free_uv must be a one-dimensional integer array")
+    if free.size == 0 or int(free.min()) < 0 or int(free.max()) >= 2 * nnode:
+        raise AssertionError("free_uv contains an out-of-range blocked index")
+    if np.unique(free).size != free.size:
+        raise AssertionError("free_uv contains duplicate indices")
+    # MATLAB stores [all-u, all-v]; NumPy force.ravel() stores [u0,v0,u1,v1,...].
+    interleaved = (free % nnode) * 2 + free // nnode
+    if np.unique(interleaved).size != free.size:
+        raise AssertionError("blocked-to-interleaved free_uv mapping is not one-to-one")
+    return np.sort(interleaved)
+
+
 def uv_metrics(xy: np.ndarray, conn: np.ndarray, uv: np.ndarray, damage: np.ndarray,
                native_free_uv: np.ndarray, us: float) -> dict[str, float]:
     if not all(np.isfinite(value).all() for value in (xy, uv, damage)):
@@ -46,14 +81,24 @@ def uv_metrics(xy: np.ndarray, conn: np.ndarray, uv: np.ndarray, damage: np.ndar
         weak = assemble(xy, conn, uv, damage)
     if not np.isfinite(weak["force"]).all() or not np.isfinite(weak["mass"]).all():
         raise ValueError("Nonfinite UV assembly result")
-    force = weak["force"].ravel()
+    if uv.shape != xy.shape or damage.shape != (len(xy),):
+        raise AssertionError(f"field shape mismatch: xy={xy.shape}, uv={uv.shape}, damage={damage.shape}")
+    if weak["force"].shape != xy.shape or weak["mass"].shape != (len(xy),):
+        raise AssertionError("UV assembly returned an unexpected force or mass shape")
+    if np.any(weak["mass"] <= 0.0):
+        raise AssertionError("UV assembly returned nonpositive nodal mass")
+    force = weak["force"].ravel(order="C")
     nnode = len(xy)
-    interleaved_free = np.sort((native_free_uv % nnode) * 2 + native_free_uv // nnode)
+    interleaved_free = validate_mesh_and_free_set(xy, conn, native_free_uv)
     mass_uv = np.repeat(weak["mass"], 2)
     tensor_xy = torch.tensor(xy, dtype=torch.float64)
     tensor_conn = torch.tensor(conn, dtype=torch.long)
     _, _, det = q4_shape_data(tensor_xy, tensor_conn)
+    if not bool(torch.isfinite(det).all()) or not bool((det > 0.0).all()):
+        raise AssertionError("Q4 quadrature contains nonfinite or nonpositive determinants")
     energy_scale = float(det.sum()) * us**2
+    if not np.isfinite(energy_scale) or energy_scale <= 0.0:
+        raise AssertionError("nonpositive UV energy scale")
     free_force = force[interleaved_free]
     return {
         "raw_uv_l2": float(np.linalg.norm(free_force)),
@@ -65,10 +110,10 @@ def c83_hard_kkt(xy: np.ndarray, conn: np.ndarray, uv: np.ndarray, damage: np.nd
                  qualified: np.lib.npyio.NpzFile) -> dict:
     tensor = lambda value: torch.tensor(value, dtype=torch.float64)
     _, _, det = q4_shape_data(tensor(xy), torch.tensor(conn, dtype=torch.long))
-    energy_scale = float(det.sum()) * 0.11999988**2
+    energy_scale = float(det.sum()) * US**2
     _, _, fields = evaluate(
         tensor(xy), torch.tensor(conn, dtype=torch.long), tensor(uv), tensor(damage),
-        tensor(qualified["fem_previous_damage"]), tensor(qualified["fem_ftrial"]), 0.11999988,
+        tensor(qualified["fem_previous_damage"]), tensor(qualified["fem_ftrial"]), US,
     )
     return hard_assess(
         fields["total_grad_damage"], damage, qualified["fem_previous_damage"],
@@ -85,8 +130,23 @@ def polished_row(state: str, parent_experiment: str, parent_run: str, summary_pa
     if not required.issubset(fields.files):
         raise AssertionError(f"{fields_path}: missing {sorted(required - set(fields.files))}")
     xy, conn = fields["xy"], fields["conn"]
-    original = uv_metrics(xy, conn, fields["original_uv"], fields["damage"], qualified["free_uv"], 0.11999988)
-    derived = uv_metrics(xy, conn, fields["equilibrated_uv"], fields["damage"], qualified["free_uv"], 0.11999988)
+    if not np.array_equal(xy, qualified["xy"]) or not np.array_equal(conn, qualified["conn"]):
+        raise AssertionError(f"{state}: mesh differs from the locked qualified mesh")
+    if state == "c0082_s04":
+        identity = summary.get("identity", {})
+        if (identity.get("cycle"), identity.get("substep"), identity.get("qualified_sha")) != (
+                82, 4, EXPECTED_SHA256["qualified"]):
+            raise AssertionError("c0082_s04 parent summary identity mismatch")
+    elif state == "c0083_s04":
+        identity = summary.get("identity", {})
+        expected = (len(xy), len(conn), "production accepted step413 -> c83 peak step414")
+        actual = (identity.get("nodes"), identity.get("elements"), identity.get("state_transition"))
+        if actual != expected:
+            raise AssertionError(f"c0083_s04 parent summary identity mismatch: {actual}")
+        close(identity.get("top_v_min"), US, name="c0083_s04 top_v_min")
+        close(identity.get("top_v_max"), US, name="c0083_s04 top_v_max")
+    original = uv_metrics(xy, conn, fields["original_uv"], fields["damage"], qualified["free_uv"], US)
+    derived = uv_metrics(xy, conn, fields["equilibrated_uv"], fields["damage"], qualified["free_uv"], US)
     close(original["rho_u"], summary["before"]["rho_u"], name=f"{state} original rho_u")
     close(derived["rho_u"], summary["after"]["rho_u"], name=f"{state} derived rho_u")
     source = e011[state]
@@ -98,6 +158,9 @@ def polished_row(state: str, parent_experiment: str, parent_run: str, summary_pa
     if state == "c0083_s04":
         before_hard = c83_hard_kkt(xy, conn, fields["original_uv"], fields["damage"], qualified)
         after_hard = c83_hard_kkt(xy, conn, fields["equilibrated_uv"], fields["damage"], qualified)
+        hard_kkt_provenance = "recomputed_from_locked_E003_prior_and_target_ftrial"
+    else:
+        hard_kkt_provenance = "parent_S04-E008_reported_not_recomputed"
     return {
         "state": state,
         "role": "uv_rebalanced_derived_reference",
@@ -120,6 +183,7 @@ def polished_row(state: str, parent_experiment: str, parent_run: str, summary_pa
         "hard_kkt_raw_after": None if after_hard is None else after_hard["hard_kkt_raw_l2"],
         "hard_kkt_status_before": "NOT_REPORTED" if before_hard is None else before_hard["status"],
         "hard_kkt_status_after": "NOT_REPORTED" if after_hard is None else after_hard["status"],
+        "hard_kkt_provenance": hard_kkt_provenance,
         "delta_uv_mass_rms_over_Us": summary["delta_uv_mass_rms_over_Us"],
         "strain_relative_l2": summary["strain_tensor"]["value"],
         "active_relative_l2": summary["active"]["value"],
@@ -155,6 +219,7 @@ def control_row(control_path: Path, e011: dict[str, dict[str, str]]) -> dict:
         "hard_kkt_raw_after": "NOT_APPLICABLE",
         "hard_kkt_status_before": control["hard_kkt"]["status"],
         "hard_kkt_status_after": "NOT_APPLICABLE",
+        "hard_kkt_provenance": "parent_S04-E010_reported_read_only_control",
         "delta_uv_mass_rms_over_Us": 0.0,
         "strain_relative_l2": 0.0,
         "active_relative_l2": 0.0,
@@ -202,6 +267,19 @@ def main() -> None:
     parser.add_argument("--c82s5", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
+    locked_paths = {
+        "qualified": args.qualified,
+        "e011_metrics": args.e011_metrics,
+        "c82_summary": args.c82_summary,
+        "c82_fields": args.c82_fields,
+        "c83_summary": args.c83_summary,
+        "c83_fields": args.c83_fields,
+        "c82s5": args.c82s5,
+    }
+    for name, path in locked_paths.items():
+        actual = sha256(path)
+        if actual != EXPECTED_SHA256[name]:
+            raise AssertionError(f"{name} SHA256 mismatch: {actual}")
     args.out.mkdir(parents=True, exist_ok=False)
     figures = args.out / "figures"
     figures.mkdir()
@@ -209,6 +287,9 @@ def main() -> None:
     qualified = np.load(args.qualified)
     with args.e011_metrics.open(newline="", encoding="utf-8") as handle:
         e011 = {row["state"]: row for row in csv.DictReader(handle)}
+    required_states = {"c0082_s04", "c0083_s04", "c0082_s05"}
+    if not required_states.issubset(e011):
+        raise AssertionError(f"E011 metrics missing states: {sorted(required_states - set(e011))}")
     rows = [
         polished_row("c0082_s04", "S04-E008", "S04-E008-R001", args.c82_summary, args.c82_fields, qualified, e011),
         polished_row("c0083_s04", "S04-E006", "S04-E006-R001", args.c83_summary, args.c83_fields, qualified, e011),
