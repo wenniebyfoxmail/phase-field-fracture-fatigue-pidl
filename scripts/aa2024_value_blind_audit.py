@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Outcome-blind manifest gate for Zenodo record 11945905.
 
-This v3 runner deliberately stops before reading any archive member content.  It
+This v4 runner deliberately stops before reading any archive member content.  It
 verifies the immutable archive and compares its central-directory structure to
 the official record description.  Header or field inspection requires a later
 reviewed revision only if this cheaper gate passes.
@@ -23,7 +23,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 
-PROTOCOL_REVISION = "v3"
+PROTOCOL_REVISION = "v4"
 EXPECTED_RECORD_ID = 11945905
 EXPECTED_CONCEPT_ID = "11945904"
 EXPECTED_DOI = "10.5281/zenodo.11945905"
@@ -82,6 +82,10 @@ class AuditError(ValueError):
     """Controlled local configuration or output error."""
 
 
+class DuplicateKeyError(ValueError):
+    """Raised when untrusted JSON contains an ambiguous duplicate key."""
+
+
 def _md5(path: Path) -> str:
     digest = hashlib.md5()
     with path.open("rb") as handle:
@@ -91,10 +95,14 @@ def _md5(path: Path) -> str:
 
 
 def _canonical_member(name: str) -> str | None:
-    if "\\" in name:
+    if not isinstance(name, str) or "\x00" in name or "\\" in name:
+        return None
+    if any(ord(character) < 32 for character in name):
         return None
     path = PurePosixPath(name)
-    if path.is_absolute() or ".." in path.parts:
+    if path.is_absolute() or ".." in path.parts or (
+        path.parts and path.parts[0].endswith(":")
+    ):
         return None
     parts = [part for part in path.parts if part not in ("", ".")]
     if not parts:
@@ -104,6 +112,24 @@ def _canonical_member(name: str) -> str | None:
 
 def _is_symlink(info: zipfile.ZipInfo) -> bool:
     return stat.S_ISLNK((info.external_attr >> 16) & 0xFFFF)
+
+
+def _is_supported_file_type(info: zipfile.ZipInfo) -> bool:
+    """Accept ordinary files/directories and unspecified legacy ZIP modes."""
+    if info.create_system != 3:
+        return True
+    mode = (info.external_attr >> 16) & 0xFFFF
+    file_type = stat.S_IFMT(mode)
+    return file_type in (0, stat.S_IFREG, stat.S_IFDIR)
+
+
+def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise DuplicateKeyError(key)
+        result[key] = value
+    return result
 
 
 def _official_metadata(payload: Any, lock: IdentityLock) -> dict[str, Any]:
@@ -125,13 +151,17 @@ def _official_metadata(payload: Any, lock: IdentityLock) -> dict[str, Any]:
     license_id = license_field.get("id") if isinstance(license_field, dict) else None
     return {
         "record_identity": (
-            payload.get("id") == lock.record_id
+            type(payload.get("id")) is int
+            and payload.get("id") == lock.record_id
+            and isinstance(payload.get("conceptrecid"), (str, int))
+            and not isinstance(payload.get("conceptrecid"), bool)
             and str(payload.get("conceptrecid")) == lock.concept_id
         ),
         "doi_identity": metadata.get("doi") == lock.doi,
         "license_identity": license_id == "cc-by-4.0",
         "archive_entry_identity": (
             len(archive_entries) == 1
+            and type(archive_entry.get("size")) is int
             and archive_entry.get("size") == lock.archive_size
             and archive_entry.get("checksum") == f"md5:{lock.archive_md5}"
         ),
@@ -160,22 +190,32 @@ def _manifest(archive_path: Path, lock: IdentityLock) -> tuple[dict[str, Any], l
     try:
         with zipfile.ZipFile(archive_path, "r") as archive:
             infos = archive.infolist()
-    except (OSError, zipfile.BadZipFile, NotImplementedError):
+    except (OSError, UnicodeError, zipfile.BadZipFile, NotImplementedError):
         return result, ["ZIP_CENTRAL_DIRECTORY_INVALID"]
 
     result["central_directory_readable"] = True
-    canonical_infos: list[tuple[str, zipfile.ZipInfo]] = []
+    canonical_infos: list[tuple[str, zipfile.ZipInfo, bool]] = []
     path_invalid = False
     member_invalid = False
     for info in infos:
-        normalized = _canonical_member(info.filename)
+        original_name = info.orig_filename
+        normalized = _canonical_member(original_name)
         if normalized is None:
             path_invalid = True
             continue
-        canonical_infos.append((normalized, info))
-        if (info.flag_bits & 0x1) or _is_symlink(info) or info.compress_type not in SUPPORTED_COMPRESSION:
+        is_directory = original_name.endswith("/") or (
+            info.create_system == 3
+            and stat.S_ISDIR((info.external_attr >> 16) & 0xFFFF)
+        )
+        canonical_infos.append((normalized, info, is_directory))
+        if (
+            (info.flag_bits & 0x1)
+            or _is_symlink(info)
+            or not _is_supported_file_type(info)
+            or info.compress_type not in SUPPORTED_COMPRESSION
+        ):
             member_invalid = True
-    canonical = [name for name, _info in canonical_infos]
+    canonical = [name for name, _info, _is_directory in canonical_infos]
     folded = [name.casefold() for name in canonical]
     if len(canonical) != len(set(canonical)) or len(folded) != len(set(folded)):
         path_invalid = True
@@ -187,7 +227,7 @@ def _manifest(archive_path: Path, lock: IdentityLock) -> tuple[dict[str, Any], l
         reasons.append("UNSUPPORTED_OR_ENCRYPTED_MEMBER")
 
     files = [
-        name for name, info in canonical_infos if not info.is_dir()
+        name for name, _info, is_directory in canonical_infos if not is_directory
     ]
     result["total_file_count"] = len(files)
     result["global_nodemap_count"] = sum(
@@ -206,10 +246,10 @@ def _manifest(archive_path: Path, lock: IdentityLock) -> tuple[dict[str, Any], l
         and "/nodemaps/" in f"/{name.casefold()}"
         and name.casefold().endswith(".txt")
     )
-    basenames = Counter(PurePosixPath(name).name.casefold() for name in files)
-    result["expected_mapping_file_count"] = basenames[lock.expected_mapping_basename.casefold()]
+    basenames = Counter(PurePosixPath(name).name for name in files)
+    result["expected_mapping_file_count"] = basenames[lock.expected_mapping_basename]
     result["expected_dictionary_counts"] = {
-        name: basenames[name.casefold()] for name in lock.expected_dictionaries
+        name: basenames[name] for name in lock.expected_dictionaries
     }
     return result, reasons
 
@@ -238,8 +278,24 @@ def _result(
     if not set(reasons).issubset(FIXED_REASON_CODES):
         raise AuditError("noncanonical stop reason")
     decision = "QUALIFIED_FOR_HEADER_AUDIT" if not reasons else "BLOCKED_DATASET_CAPABILITY"
+    manifest_failure_codes = {
+        "UNSAFE_OR_AMBIGUOUS_MEMBER_PATH",
+        "UNSUPPORTED_OR_ENCRYPTED_MEMBER",
+        "GLOBAL_NODEMAP_COUNT_MISMATCH",
+        "GLOBAL_CONNECTION_COUNT_MISMATCH",
+        "MAPPING_FILE_IDENTITY_MISMATCH",
+        "METADATA_DICTIONARY_IDENTITY_MISMATCH",
+    }
+    if not reasons:
+        allowed_conclusion = "header_audit_may_be_designed"
+    elif manifest["central_directory_readable"] and any(
+        reason in manifest_failure_codes for reason in reasons
+    ):
+        allowed_conclusion = "locked_archive_does_not_meet_declared_manifest_contract"
+    else:
+        allowed_conclusion = "qualification_not_established"
     output = {
-        "schema_version": 3,
+        "schema_version": 4,
         "experiment_id": "S03-E003",
         "protocol_revision": PROTOCOL_REVISION,
         "value_blinded": True,
@@ -249,10 +305,7 @@ def _result(
         "manifest_counts": manifest,
         "decision": decision,
         "stop_reason_codes": reasons,
-        "allowed_conclusion": (
-            "header_audit_may_be_designed" if not reasons
-            else "locked_archive_does_not_meet_declared_manifest_contract"
-        ),
+        "allowed_conclusion": allowed_conclusion,
         "blocked_conclusions": [
             "header semantics", "chronology", "target support", "forecast performance",
             "phase-field recovery", "material-property identification", "road transfer",
@@ -270,18 +323,77 @@ def _validate_output_schema(output: dict[str, Any]) -> None:
     }
     if set(output) != expected_top:
         raise AuditError("output schema mismatch")
+    if output["schema_version"] != 4:
+        raise AuditError("schema version mismatch")
+    if output["experiment_id"] != "S03-E003":
+        raise AuditError("experiment identity mismatch")
     if output["protocol_revision"] != PROTOCOL_REVISION:
         raise AuditError("protocol identity mismatch")
     if not isinstance(output["value_blinded"], bool) or output["value_blinded"] is not True:
         raise AuditError("value-blind marker mismatch")
     if output["decision"] not in {"QUALIFIED_FOR_HEADER_AUDIT", "BLOCKED_DATASET_CAPABILITY"}:
         raise AuditError("decision enum mismatch")
+    if output["allowed_conclusion"] not in {
+        "header_audit_may_be_designed",
+        "locked_archive_does_not_meet_declared_manifest_contract",
+        "qualification_not_established",
+    }:
+        raise AuditError("allowed conclusion enum mismatch")
     if not set(output["stop_reason_codes"]).issubset(FIXED_REASON_CODES):
         raise AuditError("stop reason enum mismatch")
+    if output["stop_reason_codes"] != sorted(set(output["stop_reason_codes"])):
+        raise AuditError("stop reasons must be sorted and unique")
+    expected_official = {
+        "record_identity", "doi_identity", "license_identity", "archive_entry_identity",
+    }
+    expected_identity = {
+        "archive_name_matches", "archive_size_matches", "archive_md5_matches",
+    }
+    expected_manifest = {
+        "central_directory_readable", "safe_unique_paths",
+        "supported_unencrypted_regular_files", "total_file_count",
+        "global_nodemap_count", "global_connection_count", "local_nodemap_count",
+        "expected_mapping_file_count", "expected_dictionary_counts",
+    }
+    if set(output["official_metadata_checks"]) != expected_official:
+        raise AuditError("official metadata schema mismatch")
+    if set(output["local_archive_checks"]) != expected_identity:
+        raise AuditError("archive identity schema mismatch")
+    if set(output["manifest_counts"]) != expected_manifest:
+        raise AuditError("manifest schema mismatch")
     if not all(isinstance(value, bool) for value in output["official_metadata_checks"].values()):
         raise AuditError("official metadata output must be boolean-only")
     if not all(isinstance(value, bool) for value in output["local_archive_checks"].values()):
         raise AuditError("archive identity output must be boolean-only")
+    manifest = output["manifest_counts"]
+    for key in (
+        "central_directory_readable", "safe_unique_paths",
+        "supported_unencrypted_regular_files",
+    ):
+        if type(manifest[key]) is not bool:
+            raise AuditError("manifest flags must be boolean")
+    for key in (
+        "total_file_count", "global_nodemap_count", "global_connection_count",
+        "local_nodemap_count", "expected_mapping_file_count",
+    ):
+        if type(manifest[key]) is not int or manifest[key] < 0:
+            raise AuditError("manifest counts must be nonnegative integers")
+    dictionary_counts = manifest["expected_dictionary_counts"]
+    if not isinstance(dictionary_counts, dict) or set(dictionary_counts) != set(EXPECTED_DICTIONARIES):
+        raise AuditError("dictionary count schema mismatch")
+    if any(type(value) is not int or value < 0 for value in dictionary_counts.values()):
+        raise AuditError("dictionary counts must be nonnegative integers")
+    has_reasons = bool(output["stop_reason_codes"])
+    if (output["decision"] == "QUALIFIED_FOR_HEADER_AUDIT") == has_reasons:
+        raise AuditError("decision and stop reasons disagree")
+    if output["decision"] == "QUALIFIED_FOR_HEADER_AUDIT" and (
+        output["allowed_conclusion"] != "header_audit_may_be_designed"
+    ):
+        raise AuditError("qualified decision has inconsistent conclusion")
+    if not isinstance(output["blocked_conclusions"], list) or not all(
+        isinstance(value, str) for value in output["blocked_conclusions"]
+    ):
+        raise AuditError("blocked conclusions schema mismatch")
     rendered = json.dumps(output, sort_keys=True)
     for forbidden in (
         "cracklength_values", "per_episode", "field_array", "source_description",
@@ -297,8 +409,11 @@ def audit(
     lock: IdentityLock = IdentityLock(),
 ) -> dict[str, Any]:
     try:
-        payload = json.loads(api_metadata.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError):
+        payload = json.loads(
+            api_metadata.read_text(encoding="utf-8"),
+            object_pairs_hook=_reject_duplicate_keys,
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError, DuplicateKeyError):
         payload = None
     official = _official_metadata(payload, lock)
     try:

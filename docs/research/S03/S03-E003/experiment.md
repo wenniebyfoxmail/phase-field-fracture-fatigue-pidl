@@ -1,7 +1,7 @@
 ---
 storyline_id: S03
 experiment_id: S03-E003
-protocol_revision: v3
+protocol_revision: v4
 status: ready
 started_at: 2026-10-08
 closed_at:
@@ -49,7 +49,7 @@ deployment.
 - **New code:** needed for outcome-blind central-directory validation without
   archive extraction or member reads.
 
-## Frozen protocol v3
+## Frozen protocol v4
 
 ### Immutable identity lock
 
@@ -85,8 +85,9 @@ metadata strings and individual member names are not emitted.
 After identity passes, require all of the following:
 
 1. Central directory is readable.
-2. Every member path is relative, POSIX-style, traversal-free, and unique after
-   lexical normalization and case-folding.
+2. Every untruncated `ZipInfo.orig_filename` is free of NUL/control characters,
+   relative, POSIX-style, traversal-free, and unique after lexical normalization
+   and case-folding. Counts use only original names that pass this validation.
 3. No member is encrypted or a symlink; compression type is supported.
 4. Exactly `797` `.txt` files appear below `global_3d_dic/nodemaps/`.
 5. Exactly `797` `.txt` files appear below `global_3d_dic/connections/`.
@@ -96,9 +97,10 @@ After identity passes, require all of the following:
    `higher_level_metadata_dictionary.json` and
    `timestep_level_metadata_dictionary.json`.
 
-Directory matching is case-insensitive; filenames are counted from canonical
-central-directory paths only. Local nodemap count is descriptive and is not a
-pass criterion in v3.
+Directory matching is case-insensitive. The three required basenames are exact
+and case-sensitive. Filenames are counted from safe canonical central-directory
+paths only. Local nodemap count is descriptive and is not a pass criterion in
+v4.
 
 ### Primary decision and stop rule
 
@@ -121,9 +123,18 @@ Identity failure stops before central-directory inspection. A central-directory
 failure stops before asset-count qualification. No mismatch may be repaired by
 changing the expected count/name after viewing the archive.
 
+`qualification_not_established` is the only allowed conclusion when official
+metadata, archive identity, or central-directory decoding prevents manifest
+inspection. `locked_archive_does_not_meet_declared_manifest_contract` is
+allowed only after identity passes, the central directory is readable, and a
+manifest safety/count/identity condition fails.
+
+Official API JSON is rejected in full if any object contains a duplicate key;
+ordinary JSON last-key-wins behavior is not accepted for this identity receipt.
+
 ## Required evidence
 
-- frozen protocol v3;
+- frozen protocol v4;
 - independently reviewed exact runner/tests/commit with `PASS_CODE_READY`;
 - official API JSON and archive size/MD5 receipt;
 - redacted `data_audit.json` and exact execution receipt;
@@ -135,7 +146,8 @@ changing the expected count/name after viewing the archive.
 - **Producer:** Mac-PIDL, data/schema audit only; no optimization loop.
 - **Runner:** `scripts/aa2024_value_blind_audit.py`.
 - **Tests:** `tests/test_aa2024_value_blind_audit.py`.
-- **Run:** S03-E003-R001, pending Code Ready PASS and complete archive MD5.
+- **Run:** S03-E003-R001, pending Code Ready PASS. The complete archive size and
+  MD5 match the frozen identity, but that preflight is not the Experiment result.
 - **Safety:** read-only raw inputs; no extraction, training, inversion, FEM, or
   remote compute.
 
@@ -164,11 +176,29 @@ and episode claims. The observation is not yet the Experiment result: the
 official full archive must pass exact MD5 and the reviewed v3 runner must
 reproduce it locally.
 
+### 2026-10-08 — v4 (before any Run)
+
+The third Code Ready review of `00dee5d` returned `REVISE_CODE`. It reproduced
+an embedded-NUL path false pass caused by validating truncated
+`ZipInfo.filename`, an uncaught malformed-UTF-8 central-directory failure, and
+last-key-wins acceptance of contradictory JSON identity declarations. It also
+found that early metadata/archive verification failures emitted a manifest
+defect conclusion even though the manifest had not been inspected.
+
+v4 validates untruncated `ZipInfo.orig_filename`, rejects NUL/control and
+ambiguous paths before counting, maps filename-decoding failure to the fixed
+ZIP reason, rejects duplicate JSON keys, and distinguishes
+`qualification_not_established` from an observed manifest-contract failure.
+Required basenames are now explicitly exact and case-sensitive. No real audit
+had run when this amendment was frozen.
+
 ## Code review
 
 - Round 1: `REVISE_CODE`, bound to `930b6ab` and v1.
 - Round 2: `REVISE_CODE`, bound to `c07aa30` and v2.
-- Round 3: pending, to be bound to the v3 commit, runner, tests, identity lock,
+- Round 3: `REVISE_CODE`, bound to `00dee5d` and v3; recorded in
+  `docs/reviews/s03_e003_aa2024_code_review_round3_20261008.md`.
+- Round 4: pending, to be bound to the v4 commit, runner, tests, identity lock,
   and this protocol.
 - **Execution rule:** do not run the real archive audit before
   `PASS_CODE_READY`.
@@ -189,6 +219,5 @@ Pending. No claim changes before closure.
 
 ## Next action
 
-Complete immutable archive verification, commit the v3 runner/tests/protocol,
-obtain independent Code Ready review, then execute exactly S03-E003-R001 only
-if the review passes.
+Commit the v4 runner/tests/protocol, obtain independent Code Ready review, then
+execute exactly S03-E003-R001 only if the review passes.

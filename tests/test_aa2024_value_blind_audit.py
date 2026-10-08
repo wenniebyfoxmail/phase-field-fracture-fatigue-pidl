@@ -56,10 +56,58 @@ def _fixture(tmp_path: Path, *, count: int = 3,
     return metadata_path, archive, lock
 
 
-def test_qualified_manifest_is_v3_and_only_allows_header_audit(tmp_path):
+def _refresh_identity(metadata: Path, archive: Path, lock):
+    digest = hashlib.md5(archive.read_bytes()).hexdigest()
+    updated_lock = MODULE.IdentityLock(**{
+        **lock.__dict__,
+        "archive_size": archive.stat().st_size,
+        "archive_md5": digest,
+    })
+    payload = json.loads(metadata.read_text())
+    payload["files"][0].update({
+        "size": archive.stat().st_size,
+        "checksum": f"md5:{digest}",
+    })
+    metadata.write_text(json.dumps(payload), encoding="utf-8")
+    return updated_lock
+
+
+def _patch_central_name(
+    archive: Path,
+    original: bytes,
+    replacement: bytes,
+    *,
+    set_utf8: bool = False,
+) -> None:
+    assert len(original) == len(replacement)
+    data = bytearray(archive.read_bytes())
+    cursor = 0
+    patched = False
+    while True:
+        header = data.find(b"PK\x01\x02", cursor)
+        if header < 0:
+            break
+        name_length = int.from_bytes(data[header + 28:header + 30], "little")
+        extra_length = int.from_bytes(data[header + 30:header + 32], "little")
+        comment_length = int.from_bytes(data[header + 32:header + 34], "little")
+        name_start = header + 46
+        name_end = name_start + name_length
+        if bytes(data[name_start:name_end]) == original:
+            data[name_start:name_end] = replacement
+            if set_utf8:
+                flags = int.from_bytes(data[header + 8:header + 10], "little") | 0x800
+                data[header + 8:header + 10] = flags.to_bytes(2, "little")
+            patched = True
+            break
+        cursor = name_end + extra_length + comment_length
+    assert patched, f"central-directory entry not found: {original!r}"
+    archive.write_bytes(data)
+
+
+def test_qualified_manifest_is_v4_and_only_allows_header_audit(tmp_path):
     metadata, archive, lock = _fixture(tmp_path)
     result = MODULE.audit(metadata, archive, lock)
-    assert result["protocol_revision"] == "v3"
+    assert result["protocol_revision"] == "v4"
     assert result["decision"] == "QUALIFIED_FOR_HEADER_AUDIT"
     assert result["stop_reason_codes"] == []
     assert result["allowed_conclusion"] == "header_audit_may_be_designed"
@@ -71,6 +119,9 @@ def test_global_count_mismatch_blocks(tmp_path):
     result = MODULE.audit(metadata, archive, lock)
     assert result["decision"] == "BLOCKED_DATASET_CAPABILITY"
     assert result["stop_reason_codes"] == ["GLOBAL_NODEMAP_COUNT_MISMATCH"]
+    assert result["allowed_conclusion"] == (
+        "locked_archive_does_not_meet_declared_manifest_contract"
+    )
 
 
 def test_mapping_basename_mismatch_blocks(tmp_path):
@@ -106,6 +157,38 @@ def test_malformed_zip_has_fixed_reason_and_complete_schema(tmp_path):
         "value_blinded", "scope", "official_metadata_checks", "local_archive_checks",
         "manifest_counts", "decision", "stop_reason_codes", "allowed_conclusion",
         "blocked_conclusions"}
+    assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+def test_embedded_nul_in_original_central_name_blocks(tmp_path):
+    unsafe = "root/safeXX/../../escape.txt"
+    metadata, archive, lock = _fixture(tmp_path, unsafe_name=unsafe)
+    _patch_central_name(
+        archive,
+        unsafe.encode("ascii"),
+        b"root/safe\x00//../../escape.txt",
+    )
+    lock = _refresh_identity(metadata, archive, lock)
+    result = MODULE.audit(metadata, archive, lock)
+    assert result["decision"] == "BLOCKED_DATASET_CAPABILITY"
+    assert result["manifest_counts"]["safe_unique_paths"] is False
+    assert "UNSAFE_OR_AMBIGUOUS_MEMBER_PATH" in result["stop_reason_codes"]
+
+
+def test_malformed_utf8_central_name_has_controlled_failure(tmp_path, monkeypatch):
+    metadata, archive, lock = _fixture(tmp_path)
+    original = b"root/local_2d_microscopic_coordinates_by_nodemaps.csv"
+    replacement = original[:-1] + b"\xff"
+    _patch_central_name(archive, original, replacement, set_utf8=True)
+    lock = _refresh_identity(metadata, archive, lock)
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("archive member content was read")
+    monkeypatch.setattr(zipfile.ZipFile, "open", forbidden)
+    result = MODULE.audit(metadata, archive, lock)
+    assert result["decision"] == "BLOCKED_DATASET_CAPABILITY"
+    assert result["stop_reason_codes"] == ["ZIP_CENTRAL_DIRECTORY_INVALID"]
+    assert result["manifest_counts"] == MODULE._empty_manifest(lock)
+    assert result["allowed_conclusion"] == "qualification_not_established"
 
 
 def test_identity_failure_stops_before_zip_open(tmp_path, monkeypatch):
@@ -118,6 +201,7 @@ def test_identity_failure_stops_before_zip_open(tmp_path, monkeypatch):
     monkeypatch.setattr(MODULE.zipfile, "ZipFile", forbidden)
     result = MODULE.audit(metadata, archive, lock)
     assert result["stop_reason_codes"] == ["ARCHIVE_IDENTITY_MISMATCH"]
+    assert result["allowed_conclusion"] == "qualification_not_established"
 
 
 def test_member_content_is_never_opened(tmp_path, monkeypatch):
@@ -148,8 +232,16 @@ def test_output_path_guards_and_atomic_write(tmp_path):
     target = allowed / "data_audit.json"
     validated = MODULE._validated_output_path(target, (metadata, archive), allowed, raw)
     MODULE._atomic_write(validated, MODULE.audit(metadata, archive, lock))
-    assert json.loads(target.read_text())["protocol_revision"] == "v3"
+    assert json.loads(target.read_text())["protocol_revision"] == "v4"
     assert not list(allowed.glob(".data_audit.json.*"))
+
+
+def test_output_validator_rejects_nested_schema_mutation(tmp_path):
+    metadata, archive, lock = _fixture(tmp_path)
+    result = MODULE.audit(metadata, archive, lock)
+    result["manifest_counts"]["unexpected"] = 1
+    with pytest.raises(MODULE.AuditError, match="manifest schema mismatch"):
+        MODULE._validate_output_schema(result)
 
 
 def test_malformed_metadata_is_redacted_and_schema_complete(tmp_path):
@@ -158,6 +250,7 @@ def test_malformed_metadata_is_redacted_and_schema_complete(tmp_path):
     result = MODULE.audit(metadata, archive, lock)
     assert result["stop_reason_codes"] == ["OFFICIAL_METADATA_INVALID"]
     assert result["decision"] == "BLOCKED_DATASET_CAPABILITY"
+    assert result["allowed_conclusion"] == "qualification_not_established"
 
 
 def test_official_metadata_failure_stops_before_zip_open(tmp_path, monkeypatch):
@@ -168,9 +261,39 @@ def test_official_metadata_failure_stops_before_zip_open(tmp_path, monkeypatch):
     def forbidden(*_args, **_kwargs):
         raise AssertionError("central directory opened after metadata failure")
     monkeypatch.setattr(MODULE.zipfile, "ZipFile", forbidden)
-    assert MODULE.audit(metadata, archive, lock)["stop_reason_codes"] == [
-        "OFFICIAL_METADATA_INVALID"
-    ]
+    result = MODULE.audit(metadata, archive, lock)
+    assert result["stop_reason_codes"] == ["OFFICIAL_METADATA_INVALID"]
+    assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+@pytest.mark.parametrize("duplicate_target", ["record_id", "archive_size"])
+def test_duplicate_metadata_key_stops_before_zip_open(
+    tmp_path, monkeypatch, duplicate_target
+):
+    metadata, archive, lock = _fixture(tmp_path)
+    raw = metadata.read_text()
+    if duplicate_target == "record_id":
+        raw = raw.replace('"id": 7', '"id": 999, "id": 7', 1)
+    else:
+        needle = f'"size": {archive.stat().st_size}'
+        raw = raw.replace(needle, f'"size": 123, {needle}', 1)
+    metadata.write_text(raw, encoding="utf-8")
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("central directory opened after duplicate metadata key")
+    monkeypatch.setattr(MODULE.zipfile, "ZipFile", forbidden)
+    result = MODULE.audit(metadata, archive, lock)
+    assert result["stop_reason_codes"] == ["OFFICIAL_METADATA_INVALID"]
+    assert result["manifest_counts"] == MODULE._empty_manifest(lock)
+    assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+def test_required_basenames_are_case_sensitive(tmp_path):
+    metadata, archive, lock = _fixture(
+        tmp_path,
+        mapping_name="LOCAL_2D_MICROSCOPIC_COORDINATES_BY_NODEMAPS.CSV",
+    )
+    result = MODULE.audit(metadata, archive, lock)
+    assert result["stop_reason_codes"] == ["MAPPING_FILE_IDENTITY_MISMATCH"]
 
 
 @pytest.mark.parametrize(
