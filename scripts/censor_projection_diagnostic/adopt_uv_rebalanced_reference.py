@@ -18,6 +18,7 @@ import numpy as np
 import torch
 
 from cross_residual import evaluate, q4_shape_data
+from damage_conditioned_equilibrium import sens_displacement_boundary_conditions
 from hard_kkt import assess as hard_assess
 from weak_form import assemble
 
@@ -31,6 +32,9 @@ EXPECTED_SHA256 = {
     "c83_summary": "eeb38a3f620e2294426b60ac9a706f28c3352859cd2ba414c36cedee3c317206",
     "c83_fields": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
     "c82s5": "730a4f928a39de44b9b976cca558645c42dc5c64863b38fd85c6556a38e69691",
+    "c83_qualification": "a16107dd44be0772cf06989f737ad0761fcaeb964a794ecda990a20a0ea87342",
+    "c83_e010_arrays": "0869216f7e4a2f9e24c570935dacece96c6acde5e7be4ebabefe3a2da15fb6a5",
+    "c83_e003_summary": "6fe044ba02640d486520cdda6c687224f838f309d4da10e16d82b2bfe50ada4b",
 }
 
 
@@ -100,9 +104,106 @@ def uv_metrics(xy: np.ndarray, conn: np.ndarray, uv: np.ndarray, damage: np.ndar
     if not np.isfinite(energy_scale) or energy_scale <= 0.0:
         raise AssertionError("nonpositive UV energy scale")
     free_force = force[interleaved_free]
+    raw_uv_l2 = float(np.linalg.norm(free_force))
+    rho_u = float((us / energy_scale) * np.sqrt(np.sum(free_force**2 / mass_uv[interleaved_free])))
+    if not np.isfinite(raw_uv_l2) or not np.isfinite(rho_u):
+        raise ValueError("Nonfinite UV metric")
+    return {"raw_uv_l2": raw_uv_l2, "rho_u": rho_u, "energy_scale": energy_scale}
+
+
+def validate_target_and_bc(state: str, xy: np.ndarray, original_uv: np.ndarray,
+                           derived_uv: np.ndarray, damage: np.ndarray,
+                           native_free_uv: np.ndarray) -> dict:
+    if original_uv.shape != xy.shape or derived_uv.shape != xy.shape:
+        raise AssertionError(f"{state}: original/polished UV shape mismatch")
+    if damage.shape != (len(xy),) or not np.isfinite(damage).all():
+        raise AssertionError(f"{state}: invalid fixed-damage array")
+    if np.any(damage < 0.0) or np.any(damage > 1.0):
+        raise AssertionError(f"{state}: fixed damage is outside [0,1]")
+    bc, prescribed = sens_displacement_boundary_conditions(xy, US)
+    if bc.ndim != 1 or np.unique(bc).size != bc.size:
+        raise AssertionError(f"{state}: invalid essential-BC index set")
+    original_error = float(np.max(np.abs(original_uv.ravel(order="C")[bc] - prescribed)))
+    derived_error = float(np.max(np.abs(derived_uv.ravel(order="C")[bc] - prescribed)))
+    if original_error > 1e-12 or derived_error > 1e-12:
+        raise AssertionError(
+            f"{state}: essential BC mismatch original={original_error} derived={derived_error}"
+        )
+    expected_free = np.setdiff1d(np.arange(2 * len(xy)), bc)
+    native_free = np.asarray(native_free_uv)
+    if native_free.ndim != 1 or not np.issubdtype(native_free.dtype, np.integer):
+        raise AssertionError(f"{state}: locked free_uv is not a one-dimensional integer array")
+    if native_free.size == 0 or int(native_free.min()) < 0 or int(native_free.max()) >= 2 * len(xy):
+        raise AssertionError(f"{state}: locked free_uv contains an out-of-range blocked index")
+    mapped_free = np.sort((native_free % len(xy)) * 2 + native_free // len(xy))
+    if not np.array_equal(expected_free, mapped_free):
+        raise AssertionError(f"{state}: essential BC complement differs from locked free_uv")
     return {
-        "raw_uv_l2": float(np.linalg.norm(free_force)),
-        "rho_u": float((us / energy_scale) * np.sqrt(np.sum(free_force**2 / mass_uv[interleaved_free]))),
+        "essential_bc_gate": "PASS",
+        "essential_bc_tolerance": 1e-12,
+        "essential_bc_count": int(len(bc)),
+        "original_bc_max_abs_error": original_error,
+        "derived_bc_max_abs_error": derived_error,
+        "fixed_damage_gate": "PASS",
+    }
+
+
+def validate_c83_damage_inputs(damage: np.ndarray, qualified: np.lib.npyio.NpzFile,
+                               qualification: dict, e010_arrays: np.lib.npyio.NpzFile,
+                               e003_summary: dict) -> dict:
+    required = {"fem_previous_damage", "fem_ftrial", "free_damage"}
+    if not required.issubset(qualified.files):
+        raise AssertionError(f"qualified fields missing {sorted(required - set(qualified.files))}")
+    previous = qualified["fem_previous_damage"]
+    ftrial = qualified["fem_ftrial"]
+    free_damage = qualified["free_damage"]
+    if previous.shape != damage.shape or ftrial.shape != (86408, 4):
+        raise AssertionError("c0083_s04 prior or target ftrial shape mismatch")
+    if free_damage.ndim != 1 or not np.issubdtype(free_damage.dtype, np.integer):
+        raise AssertionError("c0083_s04 free_damage must be a one-dimensional integer array")
+    if free_damage.size == 0 or int(free_damage.min()) < 0 or int(free_damage.max()) >= len(damage):
+        raise AssertionError("c0083_s04 free_damage contains an out-of-range index")
+    if np.unique(free_damage).size != free_damage.size:
+        raise AssertionError("c0083_s04 free_damage contains duplicate indices")
+    if not all(np.isfinite(value).all() for value in (previous, damage, ftrial)):
+        raise AssertionError("c0083_s04 prior/target/ftrial contains nonfinite values")
+    if np.any(previous < 0.0) or np.any(previous > damage) or np.any(damage > 1.0):
+        raise AssertionError("c0083_s04 violates exact 0 <= previous_damage <= damage <= 1")
+    if "fatigue" not in e010_arrays.files or not np.array_equal(ftrial, e010_arrays["fatigue"]):
+        raise AssertionError("c0083_s04 target ftrial differs from the locked E010 target array")
+    expected_qualification = (
+        "c83 s4 final staggered iteration24; frozen accepted prior history captured before damage/history commit",
+        "pre_phase_input/p_field_old",
+        "e4270ebd45bf35703dffa8375c2d9b474bdceb303448ddfa6d5fc453956309d4",
+    )
+    actual_qualification = (
+        qualification.get("state"), qualification.get("prior_damage_field"),
+        qualification.get("native_sha256"),
+    )
+    if actual_qualification != expected_qualification:
+        raise AssertionError(f"c0083_s04 qualification identity mismatch: {actual_qualification}")
+    e003_identity = e003_summary.get("identity", {})
+    expected_e003 = (
+        86756, 86408, 0.0, 0.0, US, US,
+        "production accepted step413 -> c83 peak step414",
+        "QUALIFIED_SAME_REPLAY_PRECOMMIT", len(free_damage),
+    )
+    actual_e003 = (
+        e003_identity.get("nodes"), e003_identity.get("elements"),
+        e003_identity.get("bottom_uv_max"), e003_identity.get("top_u_max"),
+        e003_identity.get("top_v_min"), e003_identity.get("top_v_max"),
+        e003_identity.get("state_transition"), e003_summary.get("history_control"),
+        e003_summary.get("damage_free_dofs"),
+    )
+    if actual_e003 != expected_e003:
+        raise AssertionError(f"c0083_s04 E003 role/DOF evidence mismatch: {actual_e003}")
+    return {
+        "strict_feasibility_gate": "PASS",
+        "previous_damage_key": "qualified_fields.npz::fem_previous_damage",
+        "target_ftrial_key": "qualified_fields.npz::fem_ftrial",
+        "free_damage_key": "qualified_fields.npz::free_damage",
+        "target_ftrial_crosscheck": "exact_vs_locked_S04-E010_c0083_s04.npz::fatigue",
+        "qualification_record": "S04-E003/input_qualification.json + summary.json",
     }
 
 
@@ -123,7 +224,8 @@ def c83_hard_kkt(xy: np.ndarray, conn: np.ndarray, uv: np.ndarray, damage: np.nd
 
 def polished_row(state: str, parent_experiment: str, parent_run: str, summary_path: Path,
                  fields_path: Path, qualified: np.lib.npyio.NpzFile,
-                 e011: dict[str, dict[str, str]]) -> dict:
+                 e011: dict[str, dict[str, str]], qualification: dict,
+                 c83_e010_arrays: np.lib.npyio.NpzFile, e003_summary: dict) -> dict:
     summary = load_json(summary_path)
     fields = np.load(fields_path)
     required = {"xy", "conn", "original_uv", "equilibrated_uv", "damage"}
@@ -134,9 +236,12 @@ def polished_row(state: str, parent_experiment: str, parent_run: str, summary_pa
         raise AssertionError(f"{state}: mesh differs from the locked qualified mesh")
     if state == "c0082_s04":
         identity = summary.get("identity", {})
-        if (identity.get("cycle"), identity.get("substep"), identity.get("qualified_sha")) != (
-                82, 4, EXPECTED_SHA256["qualified"]):
+        if (identity.get("cycle"), identity.get("substep"), identity.get("native_sha"),
+                identity.get("qualified_sha")) != (
+                82, 4, "488c4dff334d8afa7c9c207202283699b89c19e0602b93f3e8eb10f472593e52",
+                EXPECTED_SHA256["qualified"]):
             raise AssertionError("c0082_s04 parent summary identity mismatch")
+        c83_damage_identity = None
     elif state == "c0083_s04":
         identity = summary.get("identity", {})
         expected = (len(xy), len(conn), "production accepted step413 -> c83 peak step414")
@@ -145,6 +250,13 @@ def polished_row(state: str, parent_experiment: str, parent_run: str, summary_pa
             raise AssertionError(f"c0083_s04 parent summary identity mismatch: {actual}")
         close(identity.get("top_v_min"), US, name="c0083_s04 top_v_min")
         close(identity.get("top_v_max"), US, name="c0083_s04 top_v_max")
+        c83_damage_identity = validate_c83_damage_inputs(
+            fields["damage"], qualified, qualification, c83_e010_arrays, e003_summary,
+        )
+    target_bc = validate_target_and_bc(
+        state, xy, fields["original_uv"], fields["equilibrated_uv"], fields["damage"],
+        qualified["free_uv"],
+    )
     original = uv_metrics(xy, conn, fields["original_uv"], fields["damage"], qualified["free_uv"], US)
     derived = uv_metrics(xy, conn, fields["equilibrated_uv"], fields["damage"], qualified["free_uv"], US)
     close(original["rho_u"], summary["before"]["rho_u"], name=f"{state} original rho_u")
@@ -153,6 +265,12 @@ def polished_row(state: str, parent_experiment: str, parent_run: str, summary_pa
     close(original["raw_uv_l2"], float(source["raw_uv_l2"]), name=f"{state} original raw_uv_l2")
     if derived["rho_u"] > 1e-3:
         raise AssertionError(f"{state}: derived rho_u fails frozen gate")
+    field_changes = (
+        summary["delta_uv_mass_rms_over_Us"], summary["strain_tensor"]["value"],
+        summary["active"]["value"],
+    )
+    if not all(np.isfinite(value) for value in field_changes):
+        raise AssertionError(f"{state}: nonfinite field-change metric")
     before_hard = summary["before"].get("hard_kkt")
     after_hard = summary["after"].get("hard_kkt")
     if state == "c0083_s04":
@@ -161,34 +279,65 @@ def polished_row(state: str, parent_experiment: str, parent_run: str, summary_pa
         hard_kkt_provenance = "recomputed_from_locked_E003_prior_and_target_ftrial"
     else:
         hard_kkt_provenance = "parent_S04-E008_reported_not_recomputed"
-    return {
+    row = {
         "state": state,
         "role": "uv_rebalanced_derived_reference",
         "action": "reuse_existing_no_new_solve",
+        "adoption_gate": "PASS",
         "parent_experiment": parent_experiment,
         "parent_run": parent_run,
         "parent_fields_sha256": sha256(fields_path),
+        "parent_target_key": f"{state}:original_FEM_peak_s4",
+        "original_uv_array_key": "fields.npz::original_uv",
+        "derived_uv_array_key": "fields.npz::equilibrated_uv",
+        "fixed_damage_array_key": "fields.npz::damage",
+        "parent_identity_evidence": (
+            "S04-E008 locked native target and qualified parent summary"
+            if state == "c0082_s04" else
+            "S04-E006 locked E003 qualified target and parent summary"
+        ),
+        "uv_residual_reference": "deterministic_reassembly_from_locked_parent_fields_and_commit",
+        "normalization_Us": US,
+        "physical_area": original["energy_scale"] / US**2,
+        "energy_scale": original["energy_scale"],
         "original_raw_uv_l2": original["raw_uv_l2"],
         "derived_raw_uv_l2": derived["raw_uv_l2"],
         "original_native_phase_residual": float(source["phase_residual"]),
         "original_native_stagger_sum": float(source["native_stagger_sum"]),
-        "derived_native_phase_residual": "NOT_EVALUABLE_NO_PHASE_SOLVE_OR_NATIVE_REASSEMBLY",
+        "derived_native_phase_residual": "NOT_EVALUATED_NO_NATIVE_PHASE_REASSEMBLY",
         "original_rho_u": original["rho_u"],
         "derived_rho_u": derived["rho_u"],
         "uv_screen_before": "PASS" if original["rho_u"] <= 1e-3 else "FAIL",
         "uv_screen_after": "PASS",
+        "original_uv_gate": "PASS" if original["rho_u"] <= 1e-3 else "FAIL",
+        "polished_conditional_uv_gate": "PASS",
         "box_before": summary["before"]["rho_d_all"],
         "box_after": summary["after"]["rho_d_all"],
         "hard_kkt_raw_before": None if before_hard is None else before_hard["hard_kkt_raw_l2"],
         "hard_kkt_raw_after": None if after_hard is None else after_hard["hard_kkt_raw_l2"],
         "hard_kkt_status_before": "NOT_REPORTED" if before_hard is None else before_hard["status"],
         "hard_kkt_status_after": "NOT_REPORTED" if after_hard is None else after_hard["status"],
+        "hard_gate": "NOT_REPORTED" if after_hard is None else after_hard["status"],
         "hard_kkt_provenance": hard_kkt_provenance,
         "delta_uv_mass_rms_over_Us": summary["delta_uv_mass_rms_over_Us"],
         "strain_relative_l2": summary["strain_tensor"]["value"],
         "active_relative_l2": summary["active"]["value"],
+        "native_joint_acceptance": "NOT_EVALUATED_FOR_POLISHED_FIELD",
         "full_teacher": "NOT_QUALIFIED",
     }
+    row.update(target_bc)
+    if c83_damage_identity is not None:
+        row.update(c83_damage_identity)
+    else:
+        row.update({
+            "strict_feasibility_gate": "PARENT_REPORTED_NOT_RECOMPUTED",
+            "previous_damage_key": "NOT_AVAILABLE_IN_E012_C82_INPUT",
+            "target_ftrial_key": "NOT_REQUIRED_FOR_UV_PARTIAL_DERIVATIVE",
+            "free_damage_key": "NOT_AVAILABLE_IN_E012_C82_INPUT",
+            "target_ftrial_crosscheck": "NOT_APPLICABLE",
+            "qualification_record": "S04-E008 parent evidence",
+        })
+    return row
 
 
 def control_row(control_path: Path, e011: dict[str, dict[str, str]]) -> dict:
@@ -201,9 +350,19 @@ def control_row(control_path: Path, e011: dict[str, dict[str, str]]) -> dict:
         "state": "c0082_s05",
         "role": "zero_load_read_only_control",
         "action": "read_only_no_solve",
+        "adoption_gate": "PASS_READ_ONLY_CONTROL",
         "parent_experiment": "S04-E010",
         "parent_run": "S04-E010-R001",
         "parent_fields_sha256": "",
+        "parent_target_key": "c0082_s05:locked_S04-E010_JSON_control",
+        "original_uv_array_key": "NOT_AVAILABLE_PARENT_JSON_ONLY",
+        "derived_uv_array_key": "NOT_APPLICABLE",
+        "fixed_damage_array_key": "NOT_AVAILABLE_PARENT_JSON_ONLY",
+        "parent_identity_evidence": "S04-E010 locked parent JSON; not independently reassembled in E012",
+        "uv_residual_reference": "locked_S04-E010_parent_JSON_only",
+        "normalization_Us": US,
+        "physical_area": "NOT_AVAILABLE_PARENT_JSON_ONLY",
+        "energy_scale": "NOT_AVAILABLE_PARENT_JSON_ONLY",
         "original_raw_uv_l2": float(source["raw_uv_l2"]),
         "derived_raw_uv_l2": "NOT_APPLICABLE",
         "original_native_phase_residual": float(source["phase_residual"]),
@@ -213,17 +372,33 @@ def control_row(control_path: Path, e011: dict[str, dict[str, str]]) -> dict:
         "derived_rho_u": "NOT_APPLICABLE",
         "uv_screen_before": "PASS",
         "uv_screen_after": "NOT_APPLICABLE",
+        "original_uv_gate": "PASS_PARENT_REPORTED",
+        "polished_conditional_uv_gate": "NOT_APPLICABLE",
         "box_before": control["box"],
         "box_after": "NOT_APPLICABLE",
         "hard_kkt_raw_before": control["hard_kkt"]["hard_kkt_raw_l2"],
         "hard_kkt_raw_after": "NOT_APPLICABLE",
         "hard_kkt_status_before": control["hard_kkt"]["status"],
         "hard_kkt_status_after": "NOT_APPLICABLE",
+        "hard_gate": control["hard_kkt"]["status"],
         "hard_kkt_provenance": "parent_S04-E010_reported_read_only_control",
         "delta_uv_mass_rms_over_Us": 0.0,
         "strain_relative_l2": 0.0,
         "active_relative_l2": 0.0,
+        "native_joint_acceptance": "NOT_APPLICABLE_NO_POLISHED_FIELD",
         "full_teacher": "NOT_QUALIFIED",
+        "essential_bc_gate": "NOT_REASSEMBLED_PARENT_JSON_ONLY",
+        "essential_bc_tolerance": "NOT_APPLICABLE",
+        "essential_bc_count": "NOT_APPLICABLE",
+        "original_bc_max_abs_error": "NOT_APPLICABLE",
+        "derived_bc_max_abs_error": "NOT_APPLICABLE",
+        "fixed_damage_gate": "NOT_REASSEMBLED_PARENT_JSON_ONLY",
+        "strict_feasibility_gate": "PARENT_REPORTED_NOT_RECOMPUTED",
+        "previous_damage_key": "NOT_AVAILABLE_PARENT_JSON_ONLY",
+        "target_ftrial_key": "NOT_AVAILABLE_PARENT_JSON_ONLY",
+        "free_damage_key": "NOT_AVAILABLE_PARENT_JSON_ONLY",
+        "target_ftrial_crosscheck": "NOT_APPLICABLE",
+        "qualification_record": "S04-E010 parent evidence",
     }
 
 
@@ -265,6 +440,9 @@ def main() -> None:
     parser.add_argument("--c83-summary", type=Path, required=True)
     parser.add_argument("--c83-fields", type=Path, required=True)
     parser.add_argument("--c82s5", type=Path, required=True)
+    parser.add_argument("--c83-qualification", type=Path, required=True)
+    parser.add_argument("--c83-e010-arrays", type=Path, required=True)
+    parser.add_argument("--c83-e003-summary", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     locked_paths = {
@@ -275,6 +453,9 @@ def main() -> None:
         "c83_summary": args.c83_summary,
         "c83_fields": args.c83_fields,
         "c82s5": args.c82s5,
+        "c83_qualification": args.c83_qualification,
+        "c83_e010_arrays": args.c83_e010_arrays,
+        "c83_e003_summary": args.c83_e003_summary,
     }
     for name, path in locked_paths.items():
         actual = sha256(path)
@@ -285,14 +466,17 @@ def main() -> None:
     figures.mkdir()
 
     qualified = np.load(args.qualified)
+    qualification = load_json(args.c83_qualification)
+    c83_e010_arrays = np.load(args.c83_e010_arrays)
+    c83_e003_summary = load_json(args.c83_e003_summary)
     with args.e011_metrics.open(newline="", encoding="utf-8") as handle:
         e011 = {row["state"]: row for row in csv.DictReader(handle)}
     required_states = {"c0082_s04", "c0083_s04", "c0082_s05"}
     if not required_states.issubset(e011):
         raise AssertionError(f"E011 metrics missing states: {sorted(required_states - set(e011))}")
     rows = [
-        polished_row("c0082_s04", "S04-E008", "S04-E008-R001", args.c82_summary, args.c82_fields, qualified, e011),
-        polished_row("c0083_s04", "S04-E006", "S04-E006-R001", args.c83_summary, args.c83_fields, qualified, e011),
+        polished_row("c0082_s04", "S04-E008", "S04-E008-R001", args.c82_summary, args.c82_fields, qualified, e011, qualification, c83_e010_arrays, c83_e003_summary),
+        polished_row("c0083_s04", "S04-E006", "S04-E006-R001", args.c83_summary, args.c83_fields, qualified, e011, qualification, c83_e010_arrays, c83_e003_summary),
         control_row(args.c82s5, e011),
     ]
     fields = list(rows[0])
@@ -310,10 +494,25 @@ def main() -> None:
             "c83_summary": args.c83_summary,
             "c83_fields": args.c83_fields,
             "c82s5": args.c82s5,
+            "c83_qualification": args.c83_qualification,
+            "c83_e010_arrays": args.c83_e010_arrays,
+            "c83_e003_summary": args.c83_e003_summary,
         }.items()},
         "rows": len(rows),
         "new_solves": 0,
         "training": False,
+        "history_commits": 0,
+        "warning_policy": (
+            "suppress only RuntimeWarning messages matching matmul inside the finite Q4 UV assembly; "
+            "fail closed on nonfinite fields, assembled arrays, scales, and metrics"
+        ),
+        "metric_contract": {
+            "Us": US,
+            "Es": "physical_area * Us^2",
+            "rho_u": "(Us/Es)*sqrt(sum(free_force^2/interleaved_nodal_mass))",
+            "uv_gate": 1e-3,
+            "hard_raw_l2_gate": 4e-4,
+        },
         "full_teacher": "NOT_QUALIFIED",
     }
     (args.out / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
