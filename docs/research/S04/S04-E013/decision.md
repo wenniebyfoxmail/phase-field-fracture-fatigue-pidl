@@ -14,3 +14,8 @@ The proposed algorithmic sequence is therefore:
 4. only then run a free trajectory against the 12-state native-fidelity matrix.
 
 This order identifies the first failed capability and prevents large late-stage differences from obscuring early-state failure. It also preserves the S04-E012 boundary: the UV-derived reference is not a damage/history teacher and cannot support full FEM reproduction by itself.
+
+
+## Independent design review disposition
+
+The review bound to commit `4c9291031a26e2ec04d057c43e4c9f7498aff091` returned `NO-GO`. It accepted the two-axis structure and the c20/c60/c82/c83 x s2/s4/s5 scope, but required executable information-separation, null/support metrics, field-wise paired promotion, event/export semantics, and distinct Stage 0 readiness states. Those rules are now instantiated in the amended contract. Preparatory c60-reference and exporter implementation is allowed; Stage 0 closure and candidate training remain blocked pending independent re-review and actual asset closure.

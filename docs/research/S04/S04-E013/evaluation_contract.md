@@ -1,6 +1,6 @@
 # S04-E013 proposed evaluation contract
 
-Status: internally frozen for independent design review. No result has been viewed under these proposed gates and no training is authorized by this document.
+Status: amended after independent NO-GO review. Preparatory c60-reference and exporter implementation is allowed; Stage 0 closure and candidate training remain unauthorized pending re-review.
 
 ## Two axes that must remain separate
 
@@ -15,6 +15,14 @@ The second axis is the **evaluation reference**:
 2. `ORIGINAL_FEM_NATIVE_FIDELITY`: original Stage0b FEM fields on their own trajectory and native acceptance contract. This measures output fidelity, not strict teacher equilibrium.
 
 Supervised and unsupervised branches use the same evaluation code and thresholds. A supervised pass cannot substitute for an unsupervised pass. A strict-UV pass cannot substitute for native trajectory fidelity, and native fidelity cannot upgrade the strict teacher claim.
+
+### Training-information separation
+
+- Stages 1 and 2 must use the same declared arrangement: either one network per state or one jointly conditioned network. Architecture, allowed inputs, initialization distribution and seeds, compute budget, stopping rule, and checkpoint-selection rule are frozen before either stage.
+- Stage 2 starts from its own registered initialization. It may not inherit Stage 1 weights or optimizer state. Derived displacement, strain, and driver may neither select its checkpoint nor trigger further optimization.
+- Stage 2 remains **conditional fixed-state UV recovery** because accepted FEM damage/history/fatigue are declared conditioning data.
+- Stage 3's training-signal axis must be registered separately. Candidate and control start from the same registered physical initial state and evolve their own accepted states and histories. No FEM-state resets at evaluation cycles and no initialization from networks fitted to future evaluation states are allowed.
+- A prevented later stage is `NOT_RUN`, not a failure on another axis.
 
 ## Route A — strict-physics UV block
 
@@ -48,8 +56,10 @@ The thresholds are conjunctive. Residual pass alone is insufficient, and field f
 
 ### Diagnostic interpretation
 
-- Stage 1 fails: representation/capacity is not established; do not tune the physics loss first.
-- Stage 1 passes and Stage 2 fails: representation is sufficient but physics-objective/optimization recovery is not established.
+- Stage 1 passes: the registered architecture and fitting procedure constructively represent the registered targets within budget; this is not a general representation ceiling.
+- Stage 1 fails: representation, optimization, and finite-budget effects remain unresolved.
+- Stage 1 passes and Stage 2 fails the residual gate: physics-only training did not recover the required solution under the frozen configuration; the optimizer is not uniquely identified as the cause.
+- Stage 2 passes `rho_u` but fails field/strain agreement: reference agreement failed; uniqueness has not been established, so do not label this an optimization failure.
 - Both pass: grant `UV_BLOCK_REPRODUCED` for the admitted states only.
 
 ## Route B — original FEM native fidelity
@@ -67,6 +77,8 @@ Every row must include the physical cycle, substep, raw global step, load value,
 
 Map to the exact native-Q4 FEM element order and use element-area weighting. Record direct evaluation versus interpolation. Required fields are displacement, damage, Carrara history, fatigue degradation, raw driver, active driver, and strain.
 
+All Route A strain/driver values and all Route B comparisons use the native-Q4 interpolation/evaluator from predicted nodal displacement, never network-coordinate derivatives. Inherit the E012 definitions for nodal mass, physical area, `Us`/`Es`, displacement error, and strain error.
+
 Headline metrics:
 
 - displacement mass RMS / `Us`;
@@ -83,23 +95,51 @@ The exact native-Q4 eta0 configuration is the paired control, not ground truth. 
 1. `abs(candidate_event_cycle - FEM_event_cycle) <= 3`;
 2. peak-state displacement mass RMS / `Us <= 1e-2` at c20/c60/c82/c83;
 3. peak-state damage relative L2 `<= 0.20` and correlation `>= 0.95` at c20/c60/c82/c83;
-4. active-driver log-MAE `<= 2.5`, correlation `>= 0.20`, FEM-p99 absolute-support IoU `>= 0.10`, and support-area ratio in `[0.5, 2.0]`;
-5. candidate improves the paired eta0 control on the median damage/history/active-driver metrics across the 12-state matrix;
-6. no required state is more than 10% worse than the paired control on history or degradation, and no persistent symmetry amplification occurs;
-7. improvement is present in early and middle states as well as near the event; event-only improvement fails;
+4. active-driver metrics follow the executable null/support definitions below;
+5. candidate passes the field-wise paired-improvement and early/middle rules below;
+6. every registered state passes the history/degradation non-regression guard below;
+7. symmetry is diagnostic only and is not a promotion veto;
 8. runtime, convergence, hashes, state mapping, and archive completeness pass.
 
 These benchmark-specific gates require independent design review before launch. A candidate that passes timing or damage alone remains diagnostic.
 
+### Executable active-driver definition
+
+Let `a*` be the maximum FEM area-weighted RMS active driver over the eight registered loading/peak states; require `a*>0` and freeze `a0=1e-12*a*`. With physical area weights normalized to sum to one, log-MAE is `sum_i w_i * abs(ln((a_P+a0)/(a_F+a0))) <= 2.5`.
+
+A state is reference-null when FEM area-weighted `RMS(a_F) <= a0`. For such a state, correlation, support IoU, and support-area ratio are `NOT_APPLICABLE_REFERENCE_NULL`; replace them by `RMS(a_P-a_F)/a* <= 1e-3`. The row remains in coverage and history comparisons. A constant candidate against a nonconstant eligible FEM reference fails correlation. Apply the same reference-driven constant-field policy to damage correlation.
+
+For an eligible state, compute one area-weighted FEM threshold `t_j = Q^w_0.99(a_F | a_F>a0)`, including all ties. Both supports use this same threshold: `S_F={a_F>=t_j}` and `S_P={a_P>=t_j}`. Compute IoU and area ratio with physical areas. Do not threshold candidate and FEM separately. Eligible loading/peak states must pass log-MAE `<=2.5`, correlation `>=0.20`, IoU `>=0.10`, and area ratio in `[0.5,2.0]`.
+
+### Executable paired promotion
+
+Freeze candidate and exact-native-Q4 eta0 control on a common physical initial state, native-Q4 configuration, loading/state semantics, seeds, and declared budget. For each registered state `j`, define separate dimensionless lower-is-better errors `E_k` for damage `d`, committed fatigue history `alpha_bar`, previous driver `q_prev`, current active driver `a`, and degradation `f`; all reference scales are FEM-derived and frozen before candidate results. Let `D_kj=E_control-E_candidate` and `tau=1e-12`.
+
+- Require `median_j(D_kj)>tau` separately for `k in {d, alpha_bar, q_prev, a}` across all 12 states; never pool fields.
+- For each of those fields and each cycle `c in {20,60}`, require `max_{s in {s2,s4}} D_k,(c,s)>tau`.
+- Require `E_candidate <= 1.10*E_control + tau` at every state for `k in {alpha_bar,q_prev,f}`.
+- Equal already-negligible errors do not count as improvement.
+- `symmetry_status=DIAGNOSTIC_ONLY` and `symmetry_is_promotion_veto=false`.
+
+### Event and export semantics
+
+Before producer launch, bind one deterministic event detector: physical field, threshold, spatial region, accepted-state timing, and first-occurrence rule. The horizon must extend through FEM event `+3` cycles. No detected event within a completed horizon fails; an interrupted run is incomplete.
+
+- Same-cycle matrix: candidate and FEM at identical cycle/substep keys.
+- Same-cycle pre-event: last prescribed peak strictly before the FEM event, evaluated at that same key in both trajectories.
+- Own-event: each trajectory's first detected event, explicitly time-shifted. Own-event similarity cannot replace failed same-cycle comparison.
+
+The exporter must provide nodal displacement and damage, required history/degradation/driver channels, own-prior references, and exact accepted-state export timing. Candidate and control evolve their own accepted histories.
+
 ## Current Stage 0 verdict
 
-`BLOCKED_FOR_TRAINING__ASSET_AND_EXPORT_CLOSURE_REQUIRED`.
+`PREPARATION_ALLOWED__STAGE0_CLOSURE_AND_CANDIDATE_TRAINING_BLOCKED`.
 
 - FEM native-fidelity references exist for all 12 required states in the S04-E010 archive.
 - The strict UV route lacks the required c60 derived reference.
 - The current native-Q4 PIDL compact control package contains late peak/event element fields only and no nodal displacement field. It cannot satisfy the 12-state native-fidelity contract.
 
-The next producer package must therefore add the c60 strict UV reference and a paired eta0 control export schedule covering c20/c60/c82/c83 × s2/s4/s5 plus own-event state. No candidate training should start before those outputs and the independent review are frozen.
+Track four distinct states: `REFERENCE_ASSETS_READY`, `EXPORT_SCHEMA_READY`, `PAIRED_CONTROL_ASSETS_READY`, and `CANDIDATE_TRAINING_AUTHORIZED`. Exporter and c60-reference code may be developed now. A frozen schema authorizes only its asset/control producer, not candidate training or asset-complete status. Candidate training requires an amended-contract re-review plus the declared reference and paired-control assets.
 
 ## Claim map
 

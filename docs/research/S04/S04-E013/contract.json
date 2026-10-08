@@ -1,6 +1,6 @@
 {
-  "schema": "s04-e013-evaluation-contract-v1",
-  "status": "PROPOSED_FROZEN_PENDING_INDEPENDENT_DESIGN_REVIEW",
+  "schema": "s04-e013-evaluation-contract-v2",
+  "status": "AMENDED_AFTER_NO_GO_PENDING_REREVIEW",
   "global_rule": "NO_EITHER_ROUTE_PASSES_AGGREGATION",
   "strict_uv": {
     "required_states": [
@@ -96,17 +96,82 @@
         "value": 0.1
       }
     },
-    "pass_claim": "NATIVE_FEM_FIDELITY_REPRODUCED"
+    "pass_claim": "NATIVE_FEM_FIDELITY_REPRODUCED",
+    "active_driver_definition": {
+      "scale": "max FEM area-weighted RMS over eight loading/peak states",
+      "floor_fraction": 1e-12,
+      "weights": "physical area normalized",
+      "reference_null": "FEM RMS <= floor",
+      "reference_null_gate": "RMS(candidate-reference)/scale <= 1e-3",
+      "reference_null_other_metrics": "NOT_APPLICABLE_REFERENCE_NULL",
+      "support_threshold": "area-weighted FEM p99 over values > floor; same threshold for FEM and candidate; ties included"
+    },
+    "paired_promotion": {
+      "fields_median_improvement": [
+        "damage",
+        "committed_fatigue_history",
+        "previous_driver",
+        "active_driver"
+      ],
+      "tau": 1e-12,
+      "rule": "field-wise median(control_error-candidate_error)>tau over 12 states",
+      "early_middle_rule": "for each field and c20/c60, max over s2/s4 improvement > tau",
+      "non_regression_fields": [
+        "committed_fatigue_history",
+        "previous_driver",
+        "degradation"
+      ],
+      "non_regression_rule": "candidate_error <= 1.10*control_error + tau",
+      "symmetry_status": "DIAGNOSTIC_ONLY",
+      "symmetry_is_promotion_veto": false
+    },
+    "event_semantics": {
+      "detector": "MUST_BIND_BEFORE_PRODUCER_LAUNCH",
+      "same_cycle": "identical cycle/substep keys",
+      "pre_event": "last prescribed peak strictly before FEM event at same key",
+      "own_event": "each trajectory first detected event; time-shifted",
+      "horizon": "FEM event + 3 cycles",
+      "missing_completed_event": "FAIL",
+      "interrupted_run": "INCOMPLETE"
+    }
   },
   "unavailable_claims": [
     "FULL_FEM_REPRODUCTION",
     "QUALIFIED_FEM_TEACHER"
   ],
   "stage0": {
-    "status": "BLOCKED_FOR_TRAINING__ASSET_AND_EXPORT_CLOSURE_REQUIRED",
+    "status": "PREPARATION_ALLOWED__STAGE0_CLOSURE_AND_CANDIDATE_TRAINING_BLOCKED",
+    "readiness_states": [
+      "REFERENCE_ASSETS_READY",
+      "EXPORT_SCHEMA_READY",
+      "PAIRED_CONTROL_ASSETS_READY",
+      "CANDIDATE_TRAINING_AUTHORIZED"
+    ],
+    "preparation_allowed": [
+      "c60 reference implementation",
+      "exporter implementation"
+    ],
     "missing": [
       "c60s4 strict UV-derived reference",
       "paired eta0 c20/c60/c82/c83 x s2/s4/s5 node displacement and element-field exports"
-    ]
+    ],
+    "rereview_required": true
+  },
+  "training_information_separation": {
+    "same_stage1_stage2_arrangement": true,
+    "freeze": [
+      "architecture",
+      "allowed_inputs",
+      "initialization_policy",
+      "seeds",
+      "budget",
+      "stopping_rule",
+      "checkpoint_selection"
+    ],
+    "stage2_inherits_stage1_weights_or_optimizer": false,
+    "stage2_reference_driven_selection_or_extra_optimization": false,
+    "stage3_common_physical_initial_state": true,
+    "stage3_own_history_evolution": true,
+    "stage3_fem_state_resets": false
   }
 }
