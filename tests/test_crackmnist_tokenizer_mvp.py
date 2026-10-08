@@ -66,3 +66,37 @@ def test_split_indices_use_released_names_only():
     assert result["train"].tolist() == [0, 1]
     assert result["val"].tolist() == [2]
     assert result["test"].tolist() == [3]
+
+
+def test_representative_row_never_uses_empty_tip_mask():
+    lineage_ids = np.asarray([1, 1, 2, 2])
+    reconstruction_error = np.asarray([0.01, 0.02, 0.20, 0.30])
+    tip_visible = np.asarray([False, False, True, True])
+    selected = MODULE.select_representative_visible_row(
+        lineage_ids, reconstruction_error, tip_visible
+    )
+    assert selected in (2, 3)
+    assert bool(tip_visible[selected])
+
+
+def test_producer_guard_binds_reviewed_commit_and_authorised_host():
+    valid = dict(
+        audit_pass=True,
+        epochs=MODULE.EPOCHS,
+        batch_size=MODULE.BATCH_SIZE,
+        latent_dim=MODULE.LATENT_DIM,
+        seed=MODULE.SEED,
+        device="cuda",
+        git_commit="reviewed-sha",
+        git_dirty="",
+        reviewed_commit="reviewed-sha",
+        hostname=MODULE.AUTHORIZED_PRODUCER_HOSTNAME,
+    )
+    assert MODULE.producer_violations(**valid) == []
+    assert "HEAD must equal the independently reviewed commit" in MODULE.producer_violations(
+        **{**valid, "reviewed_commit": "other-sha"}
+    )
+    assert any(
+        "authorised producer" in finding
+        for finding in MODULE.producer_violations(**{**valid, "hostname": "other-host"})
+    )

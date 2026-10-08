@@ -129,6 +129,9 @@ and have no v1 pass threshold.
 - Stop before fitting on any data/identity/lineage gate failure.
 - Stop the producer run on non-finite loss, missing CUDA, wrong machine,
   provenance/storage failure, or output corruption.
+- The formal command must pass the independently reviewed commit through
+  `--reviewed-commit`; the runner requires `HEAD` to match it and requires the
+  authorised Taobo hostname `GPUServer8`.
 - Do not stop or tune because metrics are weak; complete and report them.
 - Failure to recover source stage/cycle affects only a separate future-state
   branch and cannot be rescued inside this Experiment.

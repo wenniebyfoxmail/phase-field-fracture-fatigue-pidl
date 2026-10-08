@@ -38,6 +38,7 @@ LEARNING_RATE = 1.0e-3
 WEIGHT_DECAY = 1.0e-4
 SIF_LOSS_WEIGHT = 0.5
 TARGET_NAMES = ("KI", "KII", "T")
+AUTHORIZED_PRODUCER_HOSTNAME = "GPUServer8"
 
 
 def set_seed(seed: int) -> None:
@@ -200,6 +201,55 @@ def lineage_average(values: np.ndarray, lineage_ids: np.ndarray) -> tuple[np.nda
     return unique, averaged
 
 
+def select_representative_visible_row(
+    lineage_ids: np.ndarray,
+    reconstruction_error: np.ndarray,
+    tip_visible: np.ndarray,
+) -> int:
+    """Select a median-error row without inventing a tip for an empty mask."""
+    visible_rows = np.flatnonzero(tip_visible)
+    if len(visible_rows) == 0:
+        raise RuntimeError("no visible crack-tip row is available for the required figure")
+    visible_lineages = np.unique(lineage_ids[visible_rows])
+    lineage_error = np.asarray([
+        reconstruction_error[(lineage_ids == value) & tip_visible].mean()
+        for value in visible_lineages
+    ])
+    selected_lineage = visible_lineages[int(np.argmin(np.abs(lineage_error - np.median(lineage_error))))]
+    candidates = np.flatnonzero((lineage_ids == selected_lineage) & tip_visible)
+    row_error = reconstruction_error[candidates]
+    return int(candidates[int(np.argmin(np.abs(row_error - np.median(row_error))))])
+
+
+def producer_violations(
+    *, audit_pass: bool, epochs: int, batch_size: int, latent_dim: int,
+    seed: int, device: str, git_commit: str, git_dirty: str,
+    reviewed_commit: str, hostname: str,
+) -> list[str]:
+    violations: list[str] = []
+    if not audit_pass:
+        violations.append("dataset identity/lineage gate failed")
+    if epochs != EPOCHS:
+        violations.append(f"epochs must equal {EPOCHS}")
+    if batch_size != BATCH_SIZE:
+        violations.append(f"batch size must equal {BATCH_SIZE}")
+    if latent_dim != LATENT_DIM:
+        violations.append(f"latent dimension must equal {LATENT_DIM}")
+    if seed != SEED:
+        violations.append(f"seed must equal {SEED}")
+    if not device.startswith("cuda"):
+        violations.append("formal training requires CUDA on the authorised producer")
+    if git_commit == "unavailable":
+        violations.append("git commit unavailable")
+    if not reviewed_commit or git_commit != reviewed_commit:
+        violations.append("HEAD must equal the independently reviewed commit")
+    if hostname != AUTHORIZED_PRODUCER_HOSTNAME:
+        violations.append(f"formal training requires authorised producer {AUTHORIZED_PRODUCER_HOSTNAME}")
+    if git_dirty:
+        violations.append("git checkout is dirty")
+    return violations
+
+
 def evaluate(data, arrays: dict[str, np.ndarray], predictions: dict[str, np.ndarray]) -> tuple[dict[str, Any], dict[str, np.ndarray]]:
     idx = predictions["row_idx"].astype(np.int64)
     reconstruction_z = predictions["reconstruction_z"]
@@ -301,12 +351,12 @@ def render_figures(output: Path, data, history: list[dict[str, Any]], arrays: di
     plt.close(fig)
 
     lineage_ids = arrays["lineage_ids"]
-    unique = np.unique(lineage_ids)
-    lineage_error = np.asarray([arrays["reconstruction_mse_z_row"][lineage_ids == value].mean() for value in unique])
-    selected_lineage = unique[int(np.argmin(np.abs(lineage_error - np.median(lineage_error))))]
-    candidates = np.flatnonzero(lineage_ids == selected_lineage)
-    row_error = arrays["reconstruction_mse_z_row"][candidates]
-    selected = candidates[int(np.argmin(np.abs(row_error - np.median(row_error))))]
+    selected = select_representative_visible_row(
+        lineage_ids,
+        arrays["reconstruction_mse_z_row"],
+        arrays["tip_visible"],
+    )
+    selected_lineage = lineage_ids[selected]
     source_row = int(arrays["row_idx"][selected])
     true_tip = np.argmax(data.masks[source_row].reshape(-1))
     true_y, true_x = np.divmod(true_tip, 28)
@@ -515,6 +565,9 @@ def run_training(data, output: Path, device: str) -> dict[str, Any]:
         "parameters": int(sum(parameter.numel() for parameter in model.parameters())),
     })
     write_json(output / "metrics.json", metrics)
+    nonfinite = [name for name, value in saved_arrays.items() if not np.isfinite(value).all()]
+    if nonfinite:
+        raise RuntimeError(f"non-finite saved prediction arrays: {nonfinite}")
     np.savez_compressed(output / "test_predictions.npz", **saved_arrays)
     render_figures(output, data, history, saved_arrays)
     write_interpretation_assets(output, metrics, best_epoch)
@@ -532,6 +585,7 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=BATCH_SIZE)
     parser.add_argument("--latent-dim", type=int, default=LATENT_DIM)
     parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument("--reviewed-commit", default="")
     args = parser.parse_args()
 
     expected_metadata = args.data.parent / "experiments_metadata.json"
@@ -557,6 +611,7 @@ def main() -> None:
         "git_commit": git_value(["git", "rev-parse", "HEAD"]),
         "git_branch": git_value(["git", "branch", "--show-current"]),
         "git_dirty": git_value(["git", "status", "--porcelain"]),
+        "reviewed_commit": args.reviewed_commit,
         "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES", "unset"),
         "data_md5": audit["source_md5"],
         "metadata_md5": audit["metadata_md5"],
@@ -574,23 +629,18 @@ def main() -> None:
             raise SystemExit(2)
         return
 
-    violations = []
-    if not audit["gate_pass"]:
-        violations.append("dataset identity/lineage gate failed")
-    if args.epochs != EPOCHS:
-        violations.append(f"epochs must equal {EPOCHS}")
-    if args.batch_size != BATCH_SIZE:
-        violations.append(f"batch size must equal {BATCH_SIZE}")
-    if args.latent_dim != LATENT_DIM:
-        violations.append(f"latent dimension must equal {LATENT_DIM}")
-    if args.seed != SEED:
-        violations.append(f"seed must equal {SEED}")
-    if not args.device.startswith("cuda"):
-        violations.append("formal training requires CUDA on the authorised producer")
-    if receipt["git_commit"] == "unavailable":
-        violations.append("git commit unavailable")
-    if receipt["git_dirty"]:
-        violations.append("git checkout is dirty")
+    violations = producer_violations(
+        audit_pass=audit["gate_pass"],
+        epochs=args.epochs,
+        batch_size=args.batch_size,
+        latent_dim=args.latent_dim,
+        seed=args.seed,
+        device=args.device,
+        git_commit=receipt["git_commit"],
+        git_dirty=receipt["git_dirty"],
+        reviewed_commit=args.reviewed_commit,
+        hostname=receipt["hostname"],
+    )
     if violations:
         receipt["execution_status"] = "blocked_by_protocol"
         receipt["blocking_findings"] = violations
