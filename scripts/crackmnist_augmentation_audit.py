@@ -88,6 +88,26 @@ def augmentation_severity(augmentations: np.ndarray) -> np.ndarray:
     return np.sqrt(np.mean(normalized**2, axis=1))
 
 
+def audit_split_support(split_augs: np.ndarray, expected_n: int, split: str) -> dict[str, list[float]]:
+    split_augs = np.asarray(split_augs, dtype=np.float64)
+    if split_augs.shape != (expected_n, 4):
+        raise ValueError(
+            f"{split}_augs shape {split_augs.shape} does not match expected {(expected_n, 4)}"
+        )
+    if not np.isfinite(split_augs).all():
+        raise ValueError(f"non-finite {split}_augs metadata")
+    for column in range(4):
+        low, high = SUPPORT_BOUNDS[column]
+        if split_augs[:, column].min() < low - SUPPORT_TOLERANCE or split_augs[:, column].max() > high + SUPPORT_TOLERANCE:
+            raise ValueError(f"{split}_augs column {column} exceeds frozen v2 support")
+    if not np.isin(split_augs[:, 3], [0.0, 1.0]).all():
+        raise ValueError(f"{split}_augs vertical_flip is not binary")
+    return {
+        name: [float(split_augs[:, i].min()), float(split_augs[:, i].max())]
+        for i, name in enumerate(LOADER_COLUMN_ORDER)
+    }
+
+
 def _cluster_contributions(
     outcome: np.ndarray,
     severity: np.ndarray,
@@ -278,22 +298,12 @@ def validate_and_join(data_path: Path, predictions_path: Path) -> dict[str, Any]
         test_offset = train_n + val_n
         test_augs = handle["test_augs"][...].astype(np.float64)
         test_sifs = handle["test_SIFs"][...].astype(np.float64)
+        expected_rows = {"train": train_n, "val": val_n, "test": test_n}
         for split in ("train", "val", "test"):
             split_augs = handle[f"{split}_augs"][...].astype(np.float64)
-            if split_augs.ndim != 2 or split_augs.shape[1] != 4:
-                raise ValueError(f"{split}_augs does not have four columns")
-            if not np.isfinite(split_augs).all():
-                raise ValueError(f"non-finite {split}_augs metadata")
-            for column in range(4):
-                low, high = SUPPORT_BOUNDS[column]
-                if split_augs[:, column].min() < low - SUPPORT_TOLERANCE or split_augs[:, column].max() > high + SUPPORT_TOLERANCE:
-                    raise ValueError(f"{split}_augs column {column} exceeds frozen v2 support")
-            if not np.isin(split_augs[:, 3], [0.0, 1.0]).all():
-                raise ValueError(f"{split}_augs vertical_flip is not binary")
-            support_by_split[split] = {
-                name: [float(split_augs[:, i].min()), float(split_augs[:, i].max())]
-                for i, name in enumerate(LOADER_COLUMN_ORDER)
-            }
+            support_by_split[split] = audit_split_support(
+                split_augs, expected_rows[split], split
+            )
             all_augmentations.append(split_augs)
     stacked_augmentations = np.concatenate(all_augmentations, axis=0)
     global_support = {

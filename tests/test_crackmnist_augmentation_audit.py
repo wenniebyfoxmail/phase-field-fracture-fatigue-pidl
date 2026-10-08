@@ -6,6 +6,7 @@ import warnings
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 
 SCRIPT = Path(__file__).parents[1] / "scripts" / "crackmnist_augmentation_audit.py"
@@ -33,6 +34,21 @@ def test_v2_support_contract_matches_empirical_scaling():
         [0.0, 10.0], [-20.0, 20.0], [-10.0, 10.0], [0.0, 1.0]
     ]
     assert "nominal_support_conflict" in MODULE.SOURCE_SEMANTICS_STATUS
+
+
+def test_split_support_requires_exact_row_count_and_bounds():
+    valid = np.asarray([
+        [0.0, -20.0, -10.0, 0.0],
+        [10.0, 20.0, 10.0, 1.0],
+    ])
+    support = MODULE.audit_split_support(valid, 2, "test")
+    assert support["shift_y_mm"] == [-20.0, 20.0]
+    with pytest.raises(ValueError, match="does not match expected"):
+        MODULE.audit_split_support(valid[:1], 2, "test")
+    out_of_bounds = valid.copy()
+    out_of_bounds[1, 1] = 20.1
+    with pytest.raises(ValueError, match="exceeds frozen v2 support"):
+        MODULE.audit_split_support(out_of_bounds, 2, "test")
 
 
 def test_fixed_effect_association_recovers_joint_coefficients():
