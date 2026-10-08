@@ -2,11 +2,12 @@
 storyline_id: S03
 experiment_id: S03-E003
 protocol_revision: v2
-status: planned
+status: closed
 started_at: 2026-10-08
+closed_at: 2026-10-08
 primary_storyline: S03
 related_storylines: []
-scientific_verdict: pending
+scientific_verdict: mixed
 ---
 
 # CrackMNIST augmentation-sensitivity audit
@@ -27,7 +28,8 @@ scientific_verdict: pending
   secondary metrics, one two-panel figure set with README, and decision note.
 - **Registry destination:** this Experiment and exactly one diagnostic row in
   `docs/pidl_experiment_inventory.md` after independent evidence review.
-- **Decision:** `PASS_PLAN_READY`; implement one deterministic post-hoc analysis.
+- **Decision:** `PASS_V2_PLAN_READY`; execute one deterministic post-hoc
+  analysis under the repaired v2 support-semantics contract.
 
 ## Five-question intake
 
@@ -143,7 +145,7 @@ training is permitted in S03-E003.
 - `figures/augmentation_sensitivity.{png,pdf}`;
 - `README_analysis.md`;
 - `decision.md`;
-- independent code review bound to exact commit, inputs and v1 protocol;
+- independent code review bound to exact commit, inputs and v2 protocol;
 - independent evidence review of the generated package.
 
 ## Planning review
@@ -155,6 +157,78 @@ training is permitted in S03-E003.
 - Modified: lowest-versus-highest observed contrast and binned plots are
   secondary, not co-primary.
 - Rejected: no identity subset, no row-level independence, no new training.
+
+## Code review
+
+- Initial commit `4af5c4c` was blocked because secondary coverage below 50%
+  could incorrectly fall through to PASS.
+- Commit `7ca04e4` closed that blocker; any secondary coverage below 90% now
+  produces `MIXED_DIAGNOSTIC`.
+- Commit `225e035` replaced a warning-prone fitted-value matrix multiplication
+  with its exact two-term equivalent and added strict primary/secondary/JSON
+  finiteness gates.
+- v2 commit `7ac9d68` was blocked because per-split augmentation row counts
+  were not bound to corresponding image counts.
+- Final commit `2bd2b94b1cf2cb1c3ab59717d86d5ba3c21ecb03` requires exact
+  `(expected_rows, 4)` support tables and passed 14 no-training tests.
+- **Final verdict:** `PASS_CODE_READY` for protocol v2.
+
+## Analysis execution
+
+- Attempt: `S03-E003-A001`; deterministic local post-hoc analysis only.
+- Code: `2bd2b94b1cf2cb1c3ab59717d86d5ba3c21ecb03`, clean tree.
+- Command used `python -W error`; no checkpoint load, inference, optimizer or
+  training loop.
+- Evidence package:
+  `$PROJECT/local_archive/experiments/S03-E003/analysis/`.
+- Two earlier v1 packages remain quarantined and inadmissible:
+  `analysis_quarantine_7ca04e4_runtimewarning/` and
+  `analysis_quarantine_225e035_column_semantics/`.
+
+## Evidence review
+
+- Reviewer: GPT Pro, conversation `6ac749ae-75cc-832f-b8fb-025ef1689cc9`.
+- Inputs: exact receipt/hashes, 14/14 audit checks, support-semantics audit,
+  strict finite parsing, 743-lineage CSV, primary/secondary estimates, figure
+  QA, README and decision note.
+- **Verdict:** `PASS_EVIDENCE_READY`.
+- Required interpretation: positive within-lineage aggregate-severity
+  association with low explanatory power; flip remains bootstrap-compatible
+  with zero; nominal-support conflict remains unresolved.
+
+## Scientific verdict
+
+`mixed` diagnostic evidence. The audit itself passed its operational gate. In
+the frozen v2 estimand, aggregate augmentation severity was positively
+associated with standardized reconstruction MSE:
+
+```text
+beta_severity = 0.045614546
+95% whole-lineage bootstrap CI = [0.034431213, 0.057874394]
+centered R^2 = 0.024024
+```
+
+The association is systematic but explains only a small share of within-
+lineage error variation. The flip coefficient was `-0.002507764` with CI
+`[-0.005094861, 0.000110087]`, compatible with zero. The secondary highest-
+minus-lowest *observed* severity contrast median was `0.005673148`, CI
+`[0.003277482, 0.007827660]`; it is not an identity comparison.
+
+## Claim impact
+
+The fixed S03-E002 tokenizer is measurably sensitive to aggregate augmentation
+severity across released views, but augmentation amplitude alone has low
+explanatory power. This is observation/tooling evidence only. It does not
+establish identity degradation, causality, invariance, scientific
+representation sufficiency, chronology, future/RUL prediction, dynamic or
+phase-field sufficiency, road transfer, or reversal of S03-E001.
+
+## Next action
+
+Freeze v2 as the diagnostic endpoint. Do not start an invariance-loss or
+architecture experiment from this result alone. An author clarification of the
+paper/HDF5 support conflict may be appended as provenance, but is not needed to
+retain this bounded frozen-release result.
 
 ## Amendments
 
