@@ -2,12 +2,12 @@
 storyline_id: S02
 experiment_id: S02-E003
 protocol_revision: v1
-status: ready
+status: closed
 started_at: 2026-10-08
-closed_at:
+closed_at: 2026-10-08
 primary_storyline: S02
 related_storylines: [S01]
-scientific_verdict:
+scientific_verdict: negative
 ---
 
 # Multi-specimen next-observation crack-length capability gate
@@ -158,26 +158,45 @@ None. Protocol v1 was frozen before opening baseline results.
 
 | Run ID | Purpose / arm / seed | Execution | Retrieval | Receipt |
 |---|---|---|---|---|
-| S02-E003-R001 | deterministic persistence-versus-secant gate | prepared | pending | `S02-E003-R001.md` |
+| S02-E003-R001 | deterministic persistence-versus-secant gate | succeeded | verified | [S02-E003-R001.md](S02-E003-R001.md) |
 
 ## Evidence review
 
-- Reviewer task: pending after R001.
+- Reviewer task: independent read-only recomputation recorded in
+  [evidence_review_20261008.md](evidence_review_20261008.md).
 - Bound Run IDs: S02-E003-R001.
-- Bound analysis package: pending.
-- Verdict: pending.
-- Blocking findings: pending.
+- Bound analysis package: archived `predictions.csv`, `specimen_metrics.csv`,
+  `summary.json`, and the byte-identical tracked compact summary.
+- Verdict: `PASS` for evidence integrity; frozen scientific verdict `negative`.
+- Blocking findings: none. The primary criterion failed.
 
 ## Scientific verdict
 
-Pending R001 and evidence review.
+`negative`
+
+All eleven frozen specimens and 249 eligible origins passed the validity
+checks. Persistence achieved an equal-specimen macro MAE of
+`0.0014011204808349546 m`; last-segment secant achieved
+`0.0028051460811423165 m`, an increase of `100.20734258846007%`. Secant won
+on only `2/11` specimens and was worse in every condition-group macro result.
+The predeclared criterion therefore failed.
 
 ## Claim impact
 
-Pending. A pass can open a learned point-forecast experiment only; it cannot
-reopen the independently calibrated uncertainty claim.
+For this release and conditional next-recorded-observation estimand, the
+simplest causal growth extrapolator does not beat persistence. The frozen stop
+rule closes learned-model training and full-TIFF acquisition for this
+forecasting estimand. This does not prove that the trajectories contain no
+learnable signal.
+
+The result does not reopen calibrated uncertainty, independent ground truth,
+image measurement validity, fixed-cycle forecasting, or road/material
+generalisation. A separately frozen small-image measurement experiment remains
+allowed.
 
 ## Next action
 
-Complete code review, execute R001 once, freeze its outputs, and apply the
-predeclared outcome map.
+If image work is pursued, open a separate measurement experiment that first
+freezes TIFF-to-cycle alignment, a repeat blinded annotation protocol, and a
+consensus/reference rule. Acquire a bounded image subset before any full
+34-GB download. Do not train a forecast model under S02-E003.
