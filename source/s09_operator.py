@@ -72,17 +72,19 @@ def decode(current, raw, scale):
                         proposal[:, 2].clamp(min=0)], -1)
 
 
-def area_loss(prediction, target, scale, area):
+def area_loss(prediction, target, scale, area, channel_weights=None):
     error = F.smooth_l1_loss(prediction / scale, target / scale, reduction='none')
+    if channel_weights is not None:
+        error = error * error.new_tensor(channel_weights)
     return (error.mean(-1) * area).sum() / area.sum()
 
 
-def one_step_loss(model, history, target, graph, path):
+def one_step_loss(model, history, target, graph, path, channel_weights=None):
     pred, raw = model.advance(history, graph, path)
     # This branch supplies corrective gradients even when projection kills them.
     raw_target = (target - history[-1]) / model.increment_scale
-    raw_loss = area_loss(raw, raw_target, torch.ones_like(model.increment_scale), graph['area'])
-    state_loss = area_loss(pred, target, model.state_scale, graph['area'])
+    raw_loss = area_loss(raw, raw_target, torch.ones_like(model.increment_scale), graph['area'], channel_weights)
+    state_loss = area_loss(pred, target, model.state_scale, graph['area'], channel_weights)
     return state_loss + raw_loss, pred
 
 

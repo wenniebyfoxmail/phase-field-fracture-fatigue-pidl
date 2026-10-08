@@ -38,6 +38,9 @@ def main():
     p.add_argument('--expected-commit')
     p.add_argument('--p1-checkpoint',type=Path)
     args=p.parse_args();config=json.loads(args.config.read_text())
+    weights=config.get('supervised_channel_weights',[1,1,1])
+    if weights not in ([1,1,1],[1,0,0]):raise ValueError('unsupported loss weights')
+    if weights==[1,0,0] and args.mode=='p2':raise ValueError('Damage-only is P1-only; no closed-state rollout')
     if args.mode!='audit':
         if platform.system()!='Linux' or platform.node()!='GPUServer8':
             raise RuntimeError('Training allowed only on frozen Taobo GPUServer8; never Mac')
@@ -123,7 +126,7 @@ def main():
         for step in range(1,budget+1):
             tid,o=windows[int(rng.integers(len(windows)))];h=states[tid][o-2:o+1].to(device)
             target=states[tid][o+1].to(device);optimizer.zero_grad(set_to_none=True)
-            loss,pred=one_step_loss(model,h,target,graph,paths[tid])
+            loss,pred=one_step_loss(model,h,target,graph,paths[tid],weights)
             if args.mode=='p2':
                 src,dst=graph['edges'];distance=graph['relative'][:,2].clamp(min=1e-3)
                 grad_error=((pred[src,0]-pred[dst,0])-(target[src,0]-target[dst,0]))/distance
