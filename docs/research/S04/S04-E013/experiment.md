@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E013
 protocol_revision: 20261008-r0
-status: v2-amended; c60-and-paired-assets-retrieved-verified-pending-evidence-review; candidate-training-blocked
+status: c60-conditional-reference-and-paired-control-assets-admitted; candidate-training-not-authorized
 ---
 # Freeze separate PIDL evaluation contracts after S04-E012
 
@@ -31,4 +31,4 @@ The detailed contract is in [evaluation_contract.md](evaluation_contract.md). Cu
 
 The c60 reference runner and paired-control exporter are specified in [stage0_implementation.md](stage0_implementation.md). Their execution is Stage 0 asset production only and does not authorize candidate training.
 
-The c60 launcher-only retry `S04-E013-R002-c60-uv` completed with exit code 0 and passed its frozen UV-block gate. It remains a conditional fixed-damage/frozen-fatigue reference pending independent evidence review; `full_teacher=NOT_QUALIFIED`. The corrected paired exporter at commit `19a5c13d5dcc2d1888528621dc6ff459c59dbe3d` received exact-commit `Code Ready PASS`; formal Taobo run `S04-E013-R003-paired-export` produced all 13 declared rows, and remote plus post-retrieval local verification passed. Independent Evidence review remains pending. Paired-control asset admission and candidate training remain blocked.
+The c60 launcher-only retry `S04-E013-R002-c60-uv` completed with exit code 0 and passed its frozen UV-block gate. The independent Stage 0 review returned `Evidence PASS`, so c60s4 is admitted only as a conditional fixed-damage/frozen-fatigue UV reference; `full_teacher=NOT_QUALIFIED` remains fixed. The corrected paired exporter at commit `19a5c13d5dcc2d1888528621dc6ff459c59dbe3d` received exact-commit `Code Ready PASS`; formal Taobo run `S04-E013-R003-paired-export` produced all 13 declared rows, and remote plus post-retrieval local verification passed. The same Evidence review admitted the 12 same-cycle rows and c85s4 own-event row as `PAIRED_CONTROL_ASSETS_READY`. Candidate training, route promotion and Stage 0 scientific closure remain unauthorized; see [stage0_evidence_review.md](stage0_evidence_review.md).

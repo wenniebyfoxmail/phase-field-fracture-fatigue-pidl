@@ -140,7 +140,7 @@
     "QUALIFIED_FEM_TEACHER"
   ],
   "stage0": {
-    "status": "PREPARATION_ALLOWED__STAGE0_CLOSURE_AND_CANDIDATE_TRAINING_BLOCKED",
+    "status": "STAGE0_C60_AND_PAIRED_ASSETS_ADMITTED__CANDIDATE_TRAINING_NOT_AUTHORIZED",
     "readiness_states": [
       "REFERENCE_ASSETS_READY",
       "EXPORT_SCHEMA_READY",
@@ -151,11 +151,10 @@
       "c60 reference implementation",
       "exporter implementation"
     ],
-    "missing": [
-      "c60s4 strict UV-derived reference",
-      "paired eta0 c20/c60/c82/c83 x s2/s4/s5 node displacement and element-field exports"
-    ],
-    "rereview_required": true
+    "missing": [],
+    "rereview_required": false,
+    "asset_evidence_review": "PASS",
+    "candidate_training_authorized": false
   },
   "training_information_separation": {
     "same_stage1_stage2_arrangement": true,

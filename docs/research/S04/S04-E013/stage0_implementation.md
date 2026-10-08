@@ -1,6 +1,6 @@
 # S04-E013 Stage 0 implementation
 
-Status: c60 and paired-control producers completed, retrieved and locally verified; independent Evidence review pending.
+Status: c60 conditional UV reference and paired-control export admitted by independent Evidence review; candidate training not authorized.
 
 ## c60 strict UV reference
 
@@ -53,10 +53,16 @@ These runners do not authorize candidate training. The c60 runner was allowed to
 
 The retrieved result passed the frozen UV gate: `rho_u` decreased from `1.2857766593003994` to `4.816938699465251e-11`; displacement mass RMS / `Us` was `6.872576107117729e-4`; native-Q4 strain relative L2 was `4.748005459472791e-3`. The solve converged in four iterations with stable active set and normalized residual `7.201357464409995e-15`. Damage, prior and fatigue were fixed, with zero training, damage solves or history commits.
 
-This result does not qualify a full teacher. The damage diagnostic did not improve (`rho_d_common 0.0534045 -> 0.0557919`), and the output explicitly retains `full_teacher=NOT_QUALIFIED`. The c60 row is therefore `READY_PENDING_EVIDENCE_REVIEW`, not final reference admission. The exact receipt is under `local_archive/experiments/S04-E013/runs/S04-E013-R002-c60-uv/`.
+This result does not qualify a full teacher. The damage diagnostic did not improve (`rho_d_common 0.0534045 -> 0.0557919`), and the output explicitly retains `full_teacher=NOT_QUALIFIED`. Independent Evidence review admitted the c60 row only as `CONDITIONAL_UV_REFERENCE_ADMITTED`. The exact receipt is under `local_archive/experiments/S04-E013/runs/S04-E013-R002-c60-uv/`.
 
 ## Paired exporter production update
 
 The exact-commit re-review returned `Code Ready PASS` for commit `19a5c13d5dcc2d1888528621dc6ff459c59dbe3d`, with no remaining blocker to read-only production in the original CUDA environment. Formal run `S04-E013-R003-paired-export` then completed remotely on Taobo GPU 0. It produced all 13 declared files: c20/c60/c82/c83 at s2/s4/s5 plus c85s4 own-event, along with CSV/JSON manifests.
 
-Remote verification found 13 rows, 31 arrays per row, finite numerical arrays, matching output hashes and maximum model/checkpoint damage difference `0.0`. The locked event evidence retained first occurrence step 424 and confirmation completion step 427. Training and history-commit counts are zero. All 13 payloads and both manifests were retrieved after resumable transfer; local rechecking reproduced every manifest output hash and finite-array result. Paired-control coverage is now recorded as `RETRIEVED_VERIFIED_PENDING_EVIDENCE`, not asset ready.
+Remote verification found 13 rows, 31 arrays per row, finite numerical arrays, matching output hashes and maximum model/checkpoint damage difference `0.0`. The locked event evidence retained first occurrence step 424 and confirmation completion step 427. Training and history-commit counts are zero. All 13 payloads and both manifests were retrieved after resumable transfer; local rechecking reproduced every manifest output hash and finite-array result.
+
+## Independent Evidence review result
+
+The review bound to documentation commit `165afdf` and producer commit `19a5c13d5dcc2d1888528621dc6ff459c59dbe3d` returned `Evidence PASS`, with no blocking correction for reference/control admission. It registered the 12 same-cycle rows and c85s4 own-event row as `PAIRED_CONTROL_ASSETS_READY`, while keeping the own-event row distinct from a same-cycle FEM event comparison.
+
+This is an asset-integrity and comparison-readiness status only. Candidate training, route promotion, Stage 0 scientific closure, `FULL_FEM_REPRODUCTION` and `QUALIFIED_FEM_TEACHER` remain unavailable. See [stage0_evidence_review.md](stage0_evidence_review.md).

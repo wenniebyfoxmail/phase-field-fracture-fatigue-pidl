@@ -1,6 +1,6 @@
 # S04-E013 proposed evaluation contract
 
-Status: amended after independent NO-GO review. Preparatory c60-reference and exporter implementation is allowed; Stage 0 closure and candidate training remain unauthorized pending re-review.
+Status: amended contract frozen. The c60 conditional reference and paired-control assets passed independent Evidence review; candidate training and Stage 0 scientific closure remain unauthorized.
 
 ## Two axes that must remain separate
 
@@ -30,7 +30,7 @@ Supervised and unsupervised branches use the same evaluation code and thresholds
 
 The required peak set is `c20s4` (early), `c60s4` (middle), `c82s4` (late), and `c83s4` (transition). `c40s4` and `c76s4` are optional sentinels. `c82s5` remains a read-only evaluator control and is never a training target.
 
-Current coverage is incomplete because the c60 UV-derived reference has not been produced. S04-E009 c20, S04-E008 c82, and S04-E006/E012 c83 assets exist; each must be re-admitted by exact hash and parent semantics in the final run package.
+At contract freeze, coverage was incomplete because the c60 UV-derived reference had not been produced. S04-E013-R002 subsequently produced and qualified c60 under the conditional UV-only boundary; independent Evidence review admitted it. S04-E009 c20, S04-E008 c82, and S04-E006/E012 c83 retain their recorded exact-hash and parent semantics.
 
 ### Inputs and outputs
 
@@ -133,13 +133,13 @@ The exporter must provide nodal displacement and damage, required history/degrad
 
 ## Current Stage 0 verdict
 
-`PREPARATION_ALLOWED__STAGE0_CLOSURE_AND_CANDIDATE_TRAINING_BLOCKED`.
+`STAGE0_C60_AND_PAIRED_ASSETS_ADMITTED__CANDIDATE_TRAINING_NOT_AUTHORIZED`.
 
 - FEM native-fidelity references exist for all 12 required states in the S04-E010 archive.
-- The strict UV route lacks the required c60 derived reference.
-- The current native-Q4 PIDL compact control package contains late peak/event element fields only and no nodal displacement field. It cannot satisfy the 12-state native-fidelity contract.
+- The c60 conditional UV-derived reference is admitted; its damage/history/full-teacher status is unchanged.
+- The native-Q4 eta-zero control now has the 12-state matrix, nodal displacement and the separately labelled own-event row, registered as `PAIRED_CONTROL_ASSETS_READY`.
 
-Track four distinct states: `REFERENCE_ASSETS_READY`, `EXPORT_SCHEMA_READY`, `PAIRED_CONTROL_ASSETS_READY`, and `CANDIDATE_TRAINING_AUTHORIZED`. Exporter and c60-reference code may be developed now. A frozen schema authorizes only its asset/control producer, not candidate training or asset-complete status. Candidate training requires an amended-contract re-review plus the declared reference and paired-control assets.
+Track four distinct states: `REFERENCE_ASSETS_READY`, `EXPORT_SCHEMA_READY`, `PAIRED_CONTROL_ASSETS_READY`, and `CANDIDATE_TRAINING_AUTHORIZED`. Exporter and c60-reference code may be developed now. A frozen schema authorizes only its asset/control producer, not candidate training or asset-complete status. The declared c60 and paired-control asset prerequisites are now admitted. Candidate training still requires its separate explicit authorization gate; asset admission is not that authorization.
 
 ## Claim map
 
