@@ -1,6 +1,6 @@
 {
   "schema": "s04-e013-evaluation-contract-v2",
-  "status": "AMENDED_AFTER_NO_GO_PENDING_REREVIEW",
+  "status": "STAGE1_PLAN_PASS_IMPLEMENTED_PENDING_CODE_READY",
   "global_rule": "NO_EITHER_ROUTE_PASSES_AGGREGATION",
   "strict_uv": {
     "required_states": [
@@ -155,6 +155,14 @@
     "rereview_required": false,
     "asset_evidence_review": "PASS",
     "candidate_training_authorized": false
+  },
+  "stage1": {
+    "planning_review": "PASS",
+    "protocol_revision": "20261008-r1-stage1",
+    "contract": "stage1_contract.json",
+    "implementation_status": "IMPLEMENTED_LOCAL_NON_TRAINING_CHECKS_PASS",
+    "code_ready_review": "PENDING",
+    "producer_training_authorized": false
   },
   "training_information_separation": {
     "same_stage1_stage2_arrangement": true,

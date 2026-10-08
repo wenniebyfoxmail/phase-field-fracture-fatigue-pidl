@@ -1,6 +1,6 @@
 # S04-E013 proposed evaluation contract
 
-Status: amended contract frozen. The c60 conditional reference and paired-control assets passed independent Evidence review; candidate training and Stage 0 scientific closure remain unauthorized.
+Status: amended contract frozen. Stage 1 planning passed and implementation is prepared; producer training remains blocked pending exact-commit Code Ready review.
 
 ## Two axes that must remain separate
 
@@ -141,11 +141,13 @@ The exporter must provide nodal displacement and damage, required history/degrad
 
 Track four distinct states: `REFERENCE_ASSETS_READY`, `EXPORT_SCHEMA_READY`, `PAIRED_CONTROL_ASSETS_READY`, and `CANDIDATE_TRAINING_AUTHORIZED`. Exporter and c60-reference code may be developed now. A frozen schema authorizes only its asset/control producer, not candidate training or asset-complete status. The declared c60 and paired-control asset prerequisites are now admitted. Candidate training still requires its separate explicit authorization gate; asset admission is not that authorization.
 
+The Stage 1 training plan is frozen in [stage1_training_authorization.md](stage1_training_authorization.md) and [stage1_contract.json](stage1_contract.json). External planning review returned `PLAN PASS` after four corrections. This authorizes implementation and local non-training checks only. `CANDIDATE_TRAINING_AUTHORIZED` remains false until exact-commit Code Ready review passes.
+
 ## Claim map
 
 | Status | Evidence required | Claim allowed |
 |---|---|---|
-| `SUPERVISED_CAPACITY_PASS` | Stage 1 gates | architecture can express admitted UV targets under supervision |
+| `SUPERVISED_CAPACITY_PASS` | Stage 1 gates | the fixed finite-budget procedure reproducibly fits all admitted UV targets across the registered seeds |
 | `UV_BLOCK_REPRODUCED` | Stage 2 gates on all Route A states | unsupervised physics recovered the admitted conditional UV fields |
 | `NATIVE_FEM_FIDELITY_REPRODUCED` | Route B gates | free trajectory matches original FEM under the frozen native-fidelity metrics |
 | `FULL_FEM_REPRODUCTION` | unavailable | no claim under the present contract |

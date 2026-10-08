@@ -1,6 +1,6 @@
 # S04-E013 coverage decision
 
-Status: c60 conditional UV reference and paired-control assets admitted by independent Evidence review; candidate training is not authorized.
+Status: Stage 1 planning passed and the supervised runner is implemented; candidate producer training remains blocked pending exact-commit Code Ready review.
 
 The FEM side is ready for the native-fidelity matrix: S04-E010 contains c20/c60/c82/c83 at s2/s4/s5 with qualified state identity and the correct accepted prior. The read-only PIDL control side now has the matching c20/c60/c82/c83 x s2/s4/s5 matrix plus the c85s4 own-event row, including nodal displacement and native-Q4 mechanism fields. This closes the paired-control asset gap while preserving the rule that late-state evidence cannot substitute for early or middle states.
 
@@ -31,3 +31,11 @@ The first combined Code Ready review found no c60-producer blocker but returned 
 The external supplied-evidence review bound to documentation commit `165afdf` and producer commit `19a5c13d5dcc2d1888528621dc6ff459c59dbe3d` returned `Evidence PASS`, with no blocking correction for the requested asset admissions. It admitted c60s4 only as `CONDITIONAL_UV_REFERENCE_ADMITTED` and registered all 13 R003 rows as `PAIRED_CONTROL_ASSETS_READY`. The review did not independently access or recompute the archive.
 
 Candidate training, candidate Evidence Ready, route promotion and Stage 0 scientific closure remain separate gates and are not authorized by this verdict. `FULL_FEM_REPRODUCTION`, `QUALIFIED_FEM_TEACHER` and c60 `full_teacher` remain `NOT_QUALIFIED`. Full boundary and review link: [stage0_evidence_review.md](stage0_evidence_review.md).
+
+## Stage 1 authorization update
+
+The first training-plan review returned `NO-GO` and required a narrower finite-budget reproducibility estimand, a non-duplicated mass-sampling loss, separate fit/residual interpretation, and deterministic implementation constants. Those changes were frozen before implementation. The second review returned `PLAN PASS`, authorizing the runner and local non-training checks only.
+
+The implementation uses four states by three seeds, separate networks, exact reference hashes, a final-checkpoint-only rule, and a 12/12 conjunctive gate. A valid failure is `SUPERVISED_CAPACITY_FAIL_FIXED_PROCEDURE`, not proof of theoretical architectural insufficiency. All four reference files pass the local hash, shape, boundary, Q4-strain and reference-residual validation. Mac training was not run.
+
+The next gate is independent exact-commit `Code Ready` review. Until it passes, `CANDIDATE_TRAINING_AUTHORIZED=false` and no Taobo producer run may start. Full contract and external disposition: [stage1_training_authorization.md](stage1_training_authorization.md).

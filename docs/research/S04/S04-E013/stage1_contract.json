@@ -1,0 +1,68 @@
+{
+  "schema": "s04-e013-stage1-supervised-v1",
+  "protocol_revision": "20261008-r1-stage1",
+  "planning_review": "PASS",
+  "producer_run_authorized": false,
+  "claim": "fixed finite-budget supervised procedure reproducibly fits four admitted conditional UV targets across three prescribed seeds",
+  "states": {
+    "c20s4": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+    "c60s4": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2",
+    "c82s4": "e079dfbb7243a15cf148bef3799ea56d1bcc10aea5890afd0ef65313566b24df",
+    "c83s4": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae"
+  },
+  "seeds": [1, 7, 19],
+  "network": {
+    "input_dimension": 2,
+    "output_dimension": 2,
+    "hidden_layers": 8,
+    "neurons": 400,
+    "activation": "TrainableReLU",
+    "initial_activation_coefficient": 1.0,
+    "dtype": "float64",
+    "input_normalization": "affine physical bounds to [-1,1]",
+    "initialization": "existing init_xavier on CPU float64; linear biases zero"
+  },
+  "geometry": {
+    "nodes": 86756,
+    "elements": 86408,
+    "bounds": [[-0.5, 0.5], [-0.5, 0.5]],
+    "Us": 0.11999988,
+    "height": 1.0
+  },
+  "training": {
+    "steps": 10000,
+    "batch_nodes": 16384,
+    "sampling": "with replacement, p_i=normalized native-Q4 lumped nodal mass",
+    "sampling_rng": "NumPy PCG64(seed+1000003)",
+    "loss": "unweighted sampled mean squared two-component UV error / abs(Us)^2",
+    "optimizer": "AdamW",
+    "learning_rate": 0.001,
+    "betas": [0.9, 0.999],
+    "eps": 1e-8,
+    "weight_decay": 1e-8,
+    "amsgrad": false,
+    "scheduler": "CosineAnnealingLR(T_max=10000, eta_min=1e-5), stepped after optimizer",
+    "deterministic_algorithms": true,
+    "checkpoint": "final step 10000 only"
+  },
+  "gates": {
+    "essential_bc_max_abs_error": 1e-12,
+    "displacement_mass_rms_over_abs_Us": 1e-3,
+    "strain_relative_l2": 1e-2,
+    "rho_u": 1e-3,
+    "mutation": "exact identity"
+  },
+  "aggregation": {
+    "pass": "12/12 valid joint passes",
+    "negative": "1-11/12 valid joint passes; architecture representability unresolved",
+    "inconclusive": "any missing or interrupted run",
+    "inadmissible": "systemic identity, mesh, or evaluator validity failure"
+  },
+  "blocked_claims": [
+    "theoretical architecture capacity",
+    "unsupervised physics recovery",
+    "native FEM fidelity",
+    "FULL_FEM_REPRODUCTION",
+    "QUALIFIED_FEM_TEACHER"
+  ]
+}

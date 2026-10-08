@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E013
 protocol_revision: 20261008-r0
-status: c60-conditional-reference-and-paired-control-assets-admitted; candidate-training-not-authorized
+status: stage1-plan-pass-and-runner-implemented; producer-training-blocked-pending-code-ready
 ---
 # Freeze separate PIDL evaluation contracts after S04-E012
 
@@ -32,3 +32,5 @@ The detailed contract is in [evaluation_contract.md](evaluation_contract.md). Cu
 The c60 reference runner and paired-control exporter are specified in [stage0_implementation.md](stage0_implementation.md). Their execution is Stage 0 asset production only and does not authorize candidate training.
 
 The c60 launcher-only retry `S04-E013-R002-c60-uv` completed with exit code 0 and passed its frozen UV-block gate. The independent Stage 0 review returned `Evidence PASS`, so c60s4 is admitted only as a conditional fixed-damage/frozen-fatigue UV reference; `full_teacher=NOT_QUALIFIED` remains fixed. The corrected paired exporter at commit `19a5c13d5dcc2d1888528621dc6ff459c59dbe3d` received exact-commit `Code Ready PASS`; formal Taobo run `S04-E013-R003-paired-export` produced all 13 declared rows, and remote plus post-retrieval local verification passed. The same Evidence review admitted the 12 same-cycle rows and c85s4 own-event row as `PAIRED_CONTROL_ASSETS_READY`. Candidate training, route promotion and Stage 0 scientific closure remain unauthorized; see [stage0_evidence_review.md](stage0_evidence_review.md).
+
+The Stage 1 planning gate first returned `NO-GO` because the proposed capacity interpretation, stochastic loss, residual semantics and implementation constants were underspecified. The corrected finite-budget reproducibility contract then received `PLAN PASS`. The runner and 12-run aggregator are implemented, and all four admitted references pass the local no-training identity/evaluator check. Producer training remains blocked until the implementation receives exact-commit `Code Ready PASS`; see [stage1_training_authorization.md](stage1_training_authorization.md).
