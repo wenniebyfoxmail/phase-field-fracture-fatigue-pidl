@@ -1,0 +1,28 @@
+{
+  "mode": "fixed_checkpoint_forward_only",
+  "commit": "1ca139de6e4e5236257a88e05349c3d786ee4720",
+  "dirty": "",
+  "hostname": "GPUServer8",
+  "pid": 2919540,
+  "command": [
+    "SENS_tensile/diagnose_s09_p1.py",
+    "--dataset",
+    "/mnt/data2/drtao/wennie/pf_s09_e001_r002_f58df2d_20261008T133700Z/data",
+    "--checkpoint",
+    "/mnt/data2/drtao/wennie/pf_s09_e001_r002_f58df2d_20261008T133700Z/output/best.pt",
+    "--reference-output",
+    "/mnt/data2/drtao/wennie/pf_s09_e001_r002_f58df2d_20261008T133700Z/output",
+    "--out",
+    "/mnt/data2/drtao/wennie/pf_s09_e001_r003_diag_1ca139d_20261008T173500Z/output",
+    "--expected-commit",
+    "1ca139de6e4e5236257a88e05349c3d786ee4720"
+  ],
+  "start_unix": 1791480851.4677627,
+  "gpu": "0",
+  "checkpoint": "/mnt/data2/drtao/wennie/pf_s09_e001_r002_f58df2d_20261008T133700Z/output/best.pt",
+  "execution_status": "succeeded",
+  "optimizer_updates": 0,
+  "torch": "2.7.0+cu126",
+  "elapsed_seconds": 4.4031171798706055,
+  "cuda_peak_memory_bytes": 628710400
+}

@@ -115,3 +115,7 @@ Code review remains pending until bound to the exact committed implementation.
 - P1: best increment MAE ratio 0.9979861337183021 at step850, against frozen <=0.8. **FAIL** for bounded fitting target; execution succeeded. No P2 or PINO run.
 - Allowed: the graph operator and supervised optimization execute on this mesh within measured memory. Not allowed: learned crack-growth prediction, generalization, physics qualification, or rejection of Neural Operators as a method class.
 - Detailed result, evidence review and next diagnostic: `P1_decision_20261008.md`. Previous candidate/pending prose above is historical.
+
+## 2026-10-08 R003 fixed-checkpoint diagnostic
+
+Inference-only diagnostic completed, zero optimizer updates. Code1ca139d; same best850 and16 windows. Ratio reproduced within3.08e-10. Aggregate predicted growth2.30% of reference, overlap1.25%; weak growth covers larger descriptive threshold area. Evidence Ready PASS, P1 FAIL unchanged. One window overpredicts; no causal gradient or morphology claim. See `P1_diagnostic_20261008.md`. Next planned damage-only loss ablation requires separate frozen record; not launched.

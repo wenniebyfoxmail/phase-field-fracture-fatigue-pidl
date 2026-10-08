@@ -1,0 +1,10 @@
+{
+  "files": {
+    "output/receipt.json": 1018,
+    "output/windows.csv": 6722,
+    "output/summary.json": 1339
+  },
+  "archive_complete": true,
+  "exit_code": "0",
+  "local_size_match": true
+}

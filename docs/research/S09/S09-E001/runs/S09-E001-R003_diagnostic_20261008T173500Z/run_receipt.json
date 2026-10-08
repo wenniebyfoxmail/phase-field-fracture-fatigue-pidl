@@ -1,0 +1,17 @@
+{
+  "run_id": "S09-E001-R003_diagnostic_20261008T173500Z",
+  "root": "/mnt/data2/drtao/wennie/pf_s09_e001_r003_diag_1ca139d_20261008T173500Z",
+  "archive": "/mnt/data2/drtao/pidl_archives/pf_s09_e001_r003_diag_1ca139d_20261008T173500Z",
+  "commit": "1ca139de6e4e5236257a88e05349c3d786ee4720",
+  "base_checkpoint": "/mnt/data2/drtao/wennie/pf_s09_e001_r002_f58df2d_20261008T133700Z/output/best.pt",
+  "gpu": 0,
+  "memory_fraction": 0.33,
+  "status": "succeeded",
+  "retrieval": "verified: three output file sizes match; remote archive exists",
+  "launcher_pid": 2919538,
+  "python_pid": 2919540,
+  "start_utc": "2026-10-08T17:34:09Z",
+  "start_london": "2026-10-08T18:34:09+01:00",
+  "evidence_review": "PASS",
+  "optimizer_updates": 0
+}

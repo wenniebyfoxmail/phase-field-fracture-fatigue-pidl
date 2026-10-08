@@ -1,0 +1,1 @@
+Independent read-only reviewer /root/s09_code_review PASS on exact 1ca139de6e4e5236257a88e05349c3d786ee4720. Original model/data/config unchanged. Analytic unequal-area diagnostic check independently passed. No optimizer/P2/PINO.
