@@ -211,6 +211,7 @@ The following compact task bundles are remote-preserved:
 | S01-E001 | `codex/s01-e001-pavetrack-20261009` | `635234c` | exact extracted file snapshot; 29 lightweight tests pass; no training or confirmatory-data access |
 | S02-E003 | `codex/s02-e003-negative-20261008` | `f9fab18` | isolated three-commit negative-result bundle |
 | S02-E004 | `codex/s02-e004-tiff-repeatability-20261009` | `163f4b0` | isolated five-commit measurement-interface bundle; review remains pending |
+| S04-E016 | `codex/s04-e016-request31-storage-block-20261009` | `5b1eec2` | exact five-file Request 31 bundle; blocked on storage preflight; no long run started |
 | S09 | `codex/s09-neural-operator-prototype-20261008` | `95ec8fd` | remote-preserved task branch |
 
 The 14 older commits preceding S02-E003 on the mixed branch are already
@@ -218,7 +219,7 @@ contained, with their original identities, in remote task/history branches.
 The three S02-E003 and five S02-E004 commits were re-based into the isolated
 branches above, so their content is preserved under new commit identities.
 
-Do not clean or repoint the mixed checkout while S04-E016 / Windows-FEM is
-writing. After its writer stops, first extract that owner bundle and recheck all
-remaining dirty paths against a recoverable destination; only then clean the
-mixed checkout.
+S04-E016 / Windows-FEM stopped writing and its task-owned bundle was extracted
+after a stable local snapshot and a live read-only CITPC12 check. Do not clean
+or repoint the mixed checkout until every remaining dirty path has been checked
+against a recoverable destination.
