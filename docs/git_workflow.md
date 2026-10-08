@@ -4,6 +4,10 @@
 repo. This supersedes ad-hoc machine assumptions. Current authorisation is
 resolved from `AGENTS.md`; this file defines the shared Git and execution split.
 
+All development and evidence integration follows
+`docs/task_worktree_archive_protocol.md`. The shared checkout is not a working
+branch for new tasks.
+
 ## 1. Roles
 
 | Machine | Role | Responsibility |
@@ -18,8 +22,10 @@ resolved from `AGENTS.md`; this file defines the shared Git and execution split.
 ## 2. Mac-PIDL (dev)
 
 ### What Mac CAN do
-- Modify anything under `source/`, `SENS_tensile/`, `docs/`, `fem/`
-- Commit + push after lightweight import/unit sanity and, when needed, a producer-side smoke
+- Modify anything under `source/`, `SENS_tensile/`, `docs/`, `fem/` from a
+  dedicated task worktree
+- Commit + push the task branch after lightweight import/unit sanity and, when
+  needed, a producer-side smoke
 - Refactor / add features / change signatures — but see §5 "red lines"
 
 ### What Mac MUST do
@@ -51,13 +57,16 @@ resolved from `AGENTS.md`; this file defines the shared Git and execution split.
 
 ```bash
 cd "upload code"
-git pull --ff-only origin main                # start
-# read docs/shared_research_log.md top entries
+git fetch --prune origin
+git worktree list
+# reuse the matching clean worktree, or create one from an explicit origin/<base>
+# record task owner, branch, base SHA, and in-scope paths before editing
 # ... work ...
 # after each atomic unit:
-git add <files> && git commit -m "<message>"
-git push origin main
-# end of session: final pull + push
+git add <explicit files>
+git commit -m "<action> <task-id> <object>"
+git push --set-upstream origin <task-branch>
+# verify local HEAD == remote HEAD; integrate only from a clean worktree
 ```
 
 ## 3. Windows-PIDL (only when authorised for a named task)
@@ -66,18 +75,11 @@ This section preserves its specialised Git-writing rules; it is not standing
 execution authorisation. Confirm current authority in `AGENTS.md` first.
 
 ### What Windows CAN do
-- `git pull` from origin/main (fast-forward; almost always works since Windows doesn't diverge)
+- Materialize the exact reviewed task commit supplied by Mac in a fresh,
+  attributable run directory
 - Run only the training case authorised by the frozen Experiment
-- **Add** new runner / driver scripts:
-  - `SENS_tensile/run_*.py` (e.g. `run_only_Umax_008_fast.py`)
-  - `SENS_tensile/*_sweep.py` (e.g. `run_sequential_coeff3.py`)
-  - `*.sh` launcher scripts
-  - These are **new files**, not modifications of existing ones.
-- **Append** to `docs/shared_research_log.md`:
-  - New dated entry at top of findings section, or
-  - `### [reply] Windows-PIDL · YYYY-MM-DD` sub-section under an open `[question]` entry
-  - Never edit existing entries (except to add a `### [update]` sub-section)
-- Commit + push its own new runner scripts and shared_log entries
+- Return a compact Run receipt and raw-archive pointer. Producer-side source
+  edits are exceptional; normally the Mac task branch owns code and receipts.
 
 ### What Windows MUST NOT do
 - ❌ Modify `source/*.py` (core algorithm files)
@@ -90,15 +92,10 @@ execution authorisation. Confirm current authority in `AGENTS.md` first.
 ### Windows session template
 
 ```bash
-cd "upload code"
-git pull --ff-only origin main                # always ff, never diverges
-# read docs/shared_research_log.md top entries (especially any [decision] from Mac)
-# ... run training cases ...
-# after a run completes:
-# add entry to shared_research_log.md
-git add docs/shared_research_log.md [any new runner scripts]
-git commit -m "log: Windows-PIDL Dir 6.x Umax sweep results"
-git push origin main
+# receive: Experiment ID, Run ID, exact commit, command, producer and paths
+# verify the exact commit and clean/immutable source snapshot
+# run only the authorised command in the fresh Run directory
+# write raw outputs to the declared archive and return the compact receipt
 ```
 
 ## 4. Shared files — conflict-risk matrix
@@ -108,8 +105,8 @@ git push origin main
 | `source/*.py` | **Mac only** | Impossible if rule followed |
 | `SENS_tensile/config.py` | **Mac only** (defaults); Windows via [decision] handshake | Impossible if rule followed |
 | `SENS_tensile/plot_*.py`, `extract_*.py`, `compare_*.py` | **Mac only** | Impossible if rule followed |
-| `SENS_tensile/run_*.py` (runners) | Either — but NEW files only, no same-named collisions | Use prefix convention: `run_{who}_{desc}.py` if ambiguous |
-| `docs/shared_research_log.md` | Both append-only | `git pull --rebase` auto-resolves append-at-end conflicts |
+| `SENS_tensile/run_*.py` (runners) | Task branch owner | One Experiment/runner family per task branch |
+| `docs/shared_research_log.md` | Legacy append-only record | New work uses Experiment and Run receipts; do not rewrite history |
 | `docs/*.md` (rules, handovers) | **Mac only** | Impossible if rule followed |
 | `~/.claude/projects/.../memory/` | Each agent local | Never in git — no conflict |
 | PIDL archives `hl_*/` | Each agent local | `.gitignore` blocks |
