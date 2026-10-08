@@ -1,7 +1,9 @@
 # S02-E003 pre-run code review
 
-Date: 2026-10-08  
-Review type: independent, read-only  
+Date: 2026-10-08
+
+Review type: independent, read-only
+
 Verdict: `PASS`
 
 ## Reviewed identities
