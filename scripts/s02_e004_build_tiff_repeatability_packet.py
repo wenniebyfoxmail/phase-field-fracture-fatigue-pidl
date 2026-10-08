@@ -170,12 +170,17 @@ def cycle_from_name(name: str) -> int:
     return int(match.group(1))
 
 
-def local_half_interval(cycles: list[int], index: int) -> float:
-    if index == 0:
-        return float(cycles[1] - cycles[0])
-    if index == len(cycles) - 1:
-        return float(cycles[-1] - cycles[-2])
-    return min(cycles[index] - cycles[index - 1], cycles[index + 1] - cycles[index]) / 2
+def mapping_tolerance(cycles: list[int], index: int, target_cycle: int) -> float:
+    selected_cycle = cycles[index]
+    if target_cycle > selected_cycle:
+        if index + 1 < len(cycles):
+            return (cycles[index + 1] - selected_cycle) / 2
+        return float(selected_cycle - cycles[index - 1])
+    if target_cycle < selected_cycle:
+        if index > 0:
+            return (selected_cycle - cycles[index - 1]) / 2
+        return float(cycles[1] - selected_cycle)
+    return 0.0
 
 
 def crc32_file(path: Path) -> int:
@@ -471,7 +476,7 @@ def main() -> None:
             )
             image_index, image_cycle = choices[0]
             difference = abs(image_cycle - processed_cycle)
-            tolerance = local_half_interval(image_cycles, image_index)
+            tolerance = mapping_tolerance(image_cycles, image_index, processed_cycle)
             if difference > tolerance:
                 raise ValueError(
                     f"mapping outside half interval: {specimen} {processed_cycle} -> {image_cycle}"
