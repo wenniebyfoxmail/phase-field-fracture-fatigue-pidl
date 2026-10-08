@@ -552,7 +552,7 @@ def main() -> None:
     if len(list(round_dir.glob("*.tif"))) != 15 or len(rows) != 15:
         raise ValueError("Round A packet cardinality failure")
     (packet_dir / "packet_receipt.json").write_text(json.dumps({
-        "experiment_id": "S02-E004", "protocol_revision": "v1",
+        "experiment_id": "S02-E004", "protocol_revision": "v1.2",
         "unique_frames": 15, "released_rounds": ["A"], "tasks_in_round_A": 15,
         "round_B_status": "NOT_CREATED__24H_AFTER_ROUND_A_REQUIRED",
         "selection_sha256": file_sha256(selection_path),
