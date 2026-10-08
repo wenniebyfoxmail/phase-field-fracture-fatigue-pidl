@@ -2,11 +2,13 @@
 storyline_id: S03
 experiment_id: S03-E004
 protocol_revision: v1
-status: prepared
+status: closed
 started_at: 2026-10-09
+closed_at: 2026-10-09
 primary_storyline: S03
 claim_class: C1_evidence_validity
 evidence_domain: controlled_experiment
+scientific_verdict: negative
 ---
 
 # D01 trajectory-data qualification audit
@@ -80,3 +82,63 @@ multimodal-token sufficiency, or road transfer.
 ## Decision before inspection
 
 `READY_FOR_READ_ONLY_AUDIT`. No producer run or training is authorized.
+
+## Analysis execution
+
+- Attempt: `S03-E004-A001`; read-only remote-archive and extracted-table audit.
+- Code: `bb75162cc943b12ba670fc9c0a5edd70f1d56170`, clean tree at
+  execution.
+- The 3.0 GB archive was not downloaded. HTTP range requests read the ZIP
+  directory and extracted all 33 `.txt`, `.xlsx` and `.pdf` members required
+  for the audit; ZIP CRC checks passed and SHA-256 hashes were recorded.
+- Evidence package:
+  `$PROJECT/local_archive/experiments/S03-E004/analysis/`.
+- Complete archive inventory: 415 entries, including 221 PNG, 157 JPEG, 26 TXT,
+  four XLSX and three PDF files.
+
+## Evidence result
+
+- Three physical beams are explicit. Each beam has four fixed-camera regions
+  and four moving-camera regions; moving-camera acquisition supplies three
+  poses per region and load stop.
+- The filtered force/displacement tables are finite, strictly time-ordered and
+  sampled at 25 Hz. For all non-final fixed-camera load stops, the nearest
+  nominal table match differs by at most `0.020 s`.
+- The paper states that cameras and the data logger were not synchronized.
+  Manual clock/start-time alignment is described, but no quantitative matching
+  uncertainty is supplied.
+- Beam 5 IA's final moving filenames contain `867, 870, 873 s`, while its
+  workbook records `867, 890, 893 s`; neither source is presumed correct.
+- Each beam's final fixed-camera time lies after the final filtered machine
+  sample: Beam 4 `684 > 682.615 s`, Beam 5 `840 > 838.955 s`, and Beam 6
+  `578 > 575.590 s`.
+- No released per-state crack-width, crack-geometry or DIC target table was
+  found in the complete archive inventory.
+
+## Scientific verdict
+
+`BLOCKED_D01_IDENTITY_READY`. The frozen primary criterion fails because the
+camera-to-logger mapping uncertainty is unavailable, one filename/workbook
+timestamp conflict is unresolved, the final states are not covered by the
+filtered machine tables, and no per-state crack target is released.
+
+This negative qualification is not a statement that D01 lacks scientific
+value. D01 remains suitable for a separately preregistered current-state
+measurement, registration, or fixed-versus-moving-camera repeatability study.
+It is not currently admissible for transition prediction, future masks, RUL,
+temporal-token validation, or road transfer.
+
+## Review boundary
+
+No external evidence-readiness review was requested for this conservative
+qualification result. The protocol, complete remote inventory, source hashes,
+table joins and decision are retained for independent review; no scientific
+prediction claim is promoted from this audit.
+
+## Next action
+
+Ask the dataset authors for: (1) a quantitative camera/logger matching-error
+bound, (2) resolution of the Beam 5 IA final timestamp discrepancy, and (3)
+any per-state crack-width or DIC reference outputs. Until those answers exist,
+stop the D01 prediction branch and use the release only under a new
+measurement-only protocol.
