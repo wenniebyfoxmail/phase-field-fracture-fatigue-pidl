@@ -15,6 +15,7 @@ from io import BytesIO
 import json
 import math
 import os
+import threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -163,7 +164,8 @@ function update(){const resolved=$('status').value==='resolved';$('measure').sty
 document.querySelectorAll('.point').forEach(b=>b.onclick=()=>{active=b.dataset.key;update()});
 $('stage').onclick=e=>{if(!active||$('status').value!=='resolved')return;const r=$('img').getBoundingClientRect();if(e.clientX<r.left||e.clientX>=r.right||e.clientY<r.top||e.clientY>=r.bottom)return;points[active]=(e.clientX-r.left)*$('img').naturalWidth/r.width;active='';update()};
 $('status').onchange=()=>{if($('status').value!=='resolved'){points={};$('span').value=''}update()};$('span').oninput=update;
-async function save(){const t=tasks[i],status=$('status').value,p={blind_id:t.blind_id,image_file:t.image_file,visibility_status:status,operator_notes:$('notes').value};if(status==='resolved'){keys.forEach(k=>p[k]=points[k]);p.ruler_span_mm=Number($('span').value);p.projected_length_mm=Number($('length').value)}const res=await fetch('/api/annotation/'+encodeURIComponent(t.blind_id),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});const txt=await res.text();if(!res.ok){$('msg').textContent='未保存：'+txt;return}tasks[i]=JSON.parse(txt);$('msg').innerHTML='<span class="done">已保存并通过算术校验。</span>';show()}
+let busy=false;function controls(disabled){$('save').disabled=disabled;$('prev').disabled=disabled;$('next').disabled=disabled}
+async function save(){if(busy)return;busy=true;controls(true);const saveId=tasks[i].blind_id,t={...tasks[i]},status=$('status').value,p={blind_id:t.blind_id,image_file:t.image_file,visibility_status:status,operator_notes:$('notes').value};if(status==='resolved'){keys.forEach(k=>p[k]=points[k]);p.ruler_span_mm=Number($('span').value);p.projected_length_mm=Number($('length').value)}try{const res=await fetch('/api/annotation/'+encodeURIComponent(saveId),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});const txt=await res.text();if(!res.ok){$('msg').textContent='未保存：'+txt;return}tasks=await (await fetch('/api/tasks')).json();i=tasks.findIndex(x=>x.blind_id===saveId);if(i<0)throw new Error('保存后找不到原任务');show();$('msg').innerHTML='<span class="done">已保存并通过算术校验。</span>'}catch(e){$('msg').textContent='未保存：'+e.message}finally{busy=false;controls(false)}}
 $('save').onclick=save;$('prev').onclick=()=>{i=(i+tasks.length-1)%tasks.length;show()};$('next').onclick=()=>{i=(i+1)%tasks.length;show()};window.onresize=layout;boot();
 </script></body></html>'''
 
@@ -174,6 +176,7 @@ class Server(ThreadingHTTPServer):
         self.rows = read_rows(round_dir)
         self.by_id = {row["blind_id"]: row for row in self.rows}
         self.geometry = {row["blind_id"]: image_geometry(round_dir / row["image_file"]) for row in self.rows}
+        self.write_lock = threading.Lock()
         super().__init__(address, Handler)
 
     def refresh(self) -> None:
@@ -228,16 +231,19 @@ class Handler(BaseHTTPRequestHandler):
             if length <= 0 or length > 100_000:
                 raise ValueError("invalid request length")
             payload = json.loads(self.rfile.read(length))
+            if not isinstance(payload, dict):
+                raise ValueError("JSON payload must be an object")
             width, _ = self.server.geometry[blind_id]
             updated = validate_measurement(payload, self.server.by_id[blind_id], width)
-            rows = read_rows(self.server.round_dir)
-            for index, row in enumerate(rows):
-                if row["blind_id"] == blind_id:
-                    rows[index] = updated
-                    break
-            atomic_write_rows(self.server.round_dir / "annotations.csv", rows)
-            self.server.refresh()
-        except (ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
+            with self.server.write_lock:
+                rows = read_rows(self.server.round_dir)
+                for index, row in enumerate(rows):
+                    if row["blind_id"] == blind_id:
+                        rows[index] = updated
+                        break
+                atomic_write_rows(self.server.round_dir / "annotations.csv", rows)
+                self.server.refresh()
+        except (ValueError, KeyError, TypeError, UnicodeDecodeError, json.JSONDecodeError) as error:
             return self.fail(str(error))
         self.send(json.dumps(updated).encode("utf-8"), "application/json")
 
