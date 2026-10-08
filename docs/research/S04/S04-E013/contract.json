@@ -1,0 +1,112 @@
+{
+  "schema": "s04-e013-evaluation-contract-v1",
+  "status": "PROPOSED_FROZEN_PENDING_INDEPENDENT_DESIGN_REVIEW",
+  "global_rule": "NO_EITHER_ROUTE_PASSES_AGGREGATION",
+  "strict_uv": {
+    "required_states": [
+      "c20s4",
+      "c60s4",
+      "c82s4",
+      "c83s4"
+    ],
+    "optional_sentinels": [
+      "c40s4",
+      "c76s4"
+    ],
+    "read_only_control": "c82s5",
+    "training_modes": [
+      "SUPERVISED_CAPACITY",
+      "UNSUPERVISED_PHYSICS"
+    ],
+    "gates": {
+      "essential_bc_max_abs_error": {
+        "op": "<=",
+        "value": 1e-12
+      },
+      "rho_u": {
+        "op": "<=",
+        "value": 0.001
+      },
+      "displacement_mass_rms_over_Us": {
+        "op": "<=",
+        "value": 0.001
+      },
+      "strain_relative_l2": {
+        "op": "<=",
+        "value": 0.01
+      },
+      "damage_history_fatigue_mutation": {
+        "op": "==",
+        "value": 0.0
+      }
+    },
+    "pass_claim": "UV_BLOCK_REPRODUCED"
+  },
+  "native_fidelity": {
+    "required_cycles": [
+      20,
+      60,
+      82,
+      83
+    ],
+    "required_substeps": [
+      2,
+      4,
+      5
+    ],
+    "paired_control": "exact_native_q4_eta0_aaf13fd",
+    "gates": {
+      "event_cycle_abs_error": {
+        "op": "<=",
+        "value": 3
+      },
+      "peak_displacement_mass_rms_over_Us": {
+        "op": "<=",
+        "value": 0.01
+      },
+      "peak_damage_relative_l2": {
+        "op": "<=",
+        "value": 0.2
+      },
+      "peak_damage_correlation": {
+        "op": ">=",
+        "value": 0.95
+      },
+      "active_driver_log_mae": {
+        "op": "<=",
+        "value": 2.5
+      },
+      "active_driver_correlation": {
+        "op": ">=",
+        "value": 0.2
+      },
+      "fem_p99_support_iou": {
+        "op": ">=",
+        "value": 0.1
+      },
+      "absolute_support_area_ratio": {
+        "op": "between",
+        "value": [
+          0.5,
+          2.0
+        ]
+      },
+      "history_or_degradation_max_worsening_vs_control_fraction": {
+        "op": "<=",
+        "value": 0.1
+      }
+    },
+    "pass_claim": "NATIVE_FEM_FIDELITY_REPRODUCED"
+  },
+  "unavailable_claims": [
+    "FULL_FEM_REPRODUCTION",
+    "QUALIFIED_FEM_TEACHER"
+  ],
+  "stage0": {
+    "status": "BLOCKED_FOR_TRAINING__ASSET_AND_EXPORT_CLOSURE_REQUIRED",
+    "missing": [
+      "c60s4 strict UV-derived reference",
+      "paired eta0 c20/c60/c82/c83 x s2/s4/s5 node displacement and element-field exports"
+    ]
+  }
+}
