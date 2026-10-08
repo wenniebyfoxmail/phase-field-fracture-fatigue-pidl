@@ -1,7 +1,7 @@
 ---
 storyline_id: S02
 experiment_id: S02-E004
-protocol_revision: v1.1
+protocol_revision: v1.2
 status: ready
 started_at: 2026-10-08
 closed_at:
@@ -60,11 +60,13 @@ or calibrated total uncertainty.
   implemented and checked for uniqueness.
 - TIFF mapping: camera `_0` only. For each selected processed cycle, choose the
   TIFF with minimum absolute cycle difference; ties choose the earlier TIFF.
-  For an internal selected TIFF, mapping is valid only when the difference is
-  no greater than half the smaller adjacent TIFF sampling interval. For the
-  first or last TIFF, where only one adjacent interval exists, the full adjacent
-  interval is used. Any failure invalidates packet construction rather than
-  dropping the state.
+  Mapping validity follows the selected TIFF's nearest-neighbour cell in cycle
+  space: when the processed cycle lies to the right of the selected TIFF, use
+  half the interval to the next TIFF; when it lies to the left, use half the
+  interval to the previous TIFF. At a sequence boundary, where the processed
+  cycle lies outside the observed TIFF range, use one full adjacent interval.
+  An exact cycle match has zero mapping difference. Any failure invalidates
+  packet construction rather than dropping the state.
 - Packet: 15 unique TIFFs. Round A is created first in a blind packet directory;
   the key, source identities, and canonical images are written to a separate
   sealed directory. Round B does not exist at that time. A separate completion
@@ -143,12 +145,12 @@ validity passes + primary fails             -> negative
 - Commit or immutable snapshot / dirty status: pending code review and commit.
 - Runner / config / runtime:
   `scripts/s02_e004_build_tiff_repeatability_packet.py`; bundled Codex Python
-  with `openpyxl` and Pillow; protocol v1.1. Frozen tail SHA-256 identities:
+  with `openpyxl` and Pillow; protocol v1.2. Frozen tail SHA-256 identities:
   H01 `bc13303f579536bd8bc08d8b1c805025dfe7fde5649392ec9480a4ddb7bdd959`,
   H05 `6f2236acd67dc7029a58d6767a6217737bb6044aada1931296d78c817cfe5668`,
   V05 `699238b96f07302e4a8656ace07b18007173d5a56fbf9460d52be09145d6dc56`.
 - Output / archive / log / retrieval route:
-  `local_archive/experiments/S02-E004/runs/S02-E004-R002/`.
+  `local_archive/experiments/S02-E004/runs/S02-E004-R003/`.
 - Ownership and process-safety constraints: source archives/workbooks are
   read-only; no full-archive extraction; no PIDL training on Mac.
 
@@ -167,13 +169,28 @@ image measurement, workbook crack-length result, repeatability result, or
 primary metric was observed or changed. R001-A remains failed and R002-A must
 receive a new review and commit binding.
 
+### 2026-10-08 — v1.2 cadence-transition mapping amendment
+
+R002-A v1.1 failed before formal image extraction at H05-1 processed cycle
+1050. The selected TIFF was cycle 1000. TIFF cadence changes there from 10 to
+100 cycles; taking half the smaller two-sided interval incorrectly allowed only
+5 cycles even though 1050 is the exact midpoint between 1000 and 1100.
+
+Revision v1.2 defines the validity cell directionally toward the processed
+cycle, which is the geometry used by nearest-neighbour selection. A value-blind
+audit of all 15 frozen state indices confirmed that every mapping is inside its
+directional cell. No image measurement, workbook crack length, repeatability
+result, primary metric, or threshold was examined or changed. R001-A and
+R002-A remain failed.
+
 ## Code review
 
-- Reviewer task: v1 and the v1.1 boundary amendment passed independent
-  read-only review recorded in `code_review_20261008.md`.
+- Reviewer task: v1, v1.1, and v1.2 passed independent read-only review
+  recorded in `code_review_20261008.md`.
 - Bound commit / runner / input identities / protocol revision: v1 was bound to
-  commit `7e5d89e4f80740ffee1de1af53e7f9bc722c1d76`; v1.1 pending.
-- Verdict: v1 `PASS`; v1.1 `PASS` for R002-A.
+  commit `7e5d89e4f80740ffee1de1af53e7f9bc722c1d76`; v1.1 to commit
+  `0bdb1dab6f3f9ca06e7c9735056e6ff751c69aa2`; v1.2 commit pending.
+- Verdict: v1 `PASS`; v1.1 `PASS`; v1.2 `PASS` for R003-A.
 - Blocking findings: v1 execution exposed the boundary mapping defect recorded
   in R001-A; the symmetric boundary-only v1.1 repair passed renewed review.
 
@@ -182,8 +199,9 @@ receive a new review and commit binding.
 | Run ID | Purpose | Execution | Retrieval | Receipt |
 |---|---|---|---|---|
 | S02-E004-R001-A | construct Round A under v1 | failed | pending | [S02-E004-R001-A.md](S02-E004-R001-A.md) |
-| S02-E004-R002-A | construct and complete Round A under v1.1 | prepared | pending | pending |
-| S02-E004-R002-B | release and complete Round B after 24 h | prepared | pending | pending |
+| S02-E004-R002-A | construct Round A under v1.1 | failed | pending | [S02-E004-R002-A.md](S02-E004-R002-A.md) |
+| S02-E004-R003-A | construct and complete Round A under v1.2 | prepared | pending | pending |
+| S02-E004-R003-B | release and complete Round B after 24 h | prepared | pending | pending |
 
 ## Evidence review
 
@@ -199,5 +217,5 @@ Pending. This pilot cannot change the S02-E003 forecast verdict.
 
 ## Next action
 
-Complete v1.1 code review, bind the packet builder to a commit, then execute R002-A
+Complete v1.2 code review, bind the packet builder to a commit, then execute R003-A
 once. Complete Round A before exposing Round B.

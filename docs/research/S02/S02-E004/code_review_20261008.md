@@ -63,3 +63,23 @@ metric, and threshold remain unchanged. R001-A remains preserved as failed.
 - Reviewed v1.1 runner SHA-256:
   `602c870f16a995a664131d94b95fe3b8d911ce03e7c55591d8ab54f725f50f16`
 - Verdict: `PASS` for commit and R002-A.
+
+## v1.2 amendment review
+
+R002-A stopped before extraction at H05-1 processed cycle 1050 because TIFF
+cadence changes from 10 to 100 cycles around the selected cycle-1000 frame.
+Revision v1.2 uses the directional nearest-neighbour cell: half the next
+interval when the processed cycle lies to the right, half the previous interval
+when it lies to the left, one full adjacent interval outside the sequence
+boundary, and zero for an exact match.
+
+The reviewer confirmed that earlier-cycle tie selection is unchanged, midpoint
+equality is accepted, all 15 frozen indices pass a value-blind mapping audit,
+and no measurement outcome, crack length, metric, or threshold informed the
+repair. R001-A and R002-A remain preserved as failed pre-extraction runs.
+
+- Reviewed protocol v1.2 SHA-256:
+  `21ccf342e5846b123c3572ffff59dff4bb56e7dd54eea9d441ee1471fcf13347`
+- Reviewed v1.2 runner SHA-256:
+  `d3e1f56821a36f32da5edfc9469a64669a7a0d059ad5bdcd9fe6711a978100f4`
+- Verdict: `PASS` for commit and R003-A.
