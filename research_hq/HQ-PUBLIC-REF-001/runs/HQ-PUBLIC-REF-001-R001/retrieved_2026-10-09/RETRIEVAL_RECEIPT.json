@@ -1,0 +1,16 @@
+{
+  "run_id": "HQ-PUBLIC-REF-001-R001",
+  "retrieved_date": "2026-10-09",
+  "remote_output": "C:\\Users\\xw436\\jobs\\HQ-PUBLIC-REF-001-R001",
+  "remote_archive": "C:\\Users\\xw436\\jobs\\HQ-PUBLIC-REF-001-R001-results.tar.gz",
+  "remote_original_preserved": true,
+  "archive_sha256_remote_and_local": "5db41e82c59721a6cebc61fe0bd242c3c8f8e07fd287f298c97d3c97acce8c0a",
+  "remote_manifest_sha256_remote_and_local": "b2ad4532fb313c46ca79823f9f2a33e5da3f20ed8954b56e87a974f568a71f18",
+  "manifest_file_count": 896,
+  "manifest_total_bytes": 8304786004,
+  "manifest_mismatches": 0,
+  "probability_array_count": 438,
+  "probability_array_validation": "all two-dimensional, finite and within [0,1]",
+  "large_result_directory": "HQ-PUBLIC-REF-001-R001",
+  "large_result_tracking": "stored locally but git-ignored; integrity is anchored by the tracked remote_sha256_manifest.csv and this receipt"
+}

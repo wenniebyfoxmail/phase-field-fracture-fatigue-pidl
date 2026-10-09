@@ -2,7 +2,7 @@
 
 - Storyline: HQ-TRUST-CRACK, trustworthy crack identification
 - Protocol: r1-gpu-server-amendment
-- State: ready for one authorised producer Run after exact code/data/environment preflight
+- State: completed; execution integrity passed; current entropy selective-inspection candidate and current BuildCrack transfer route are `NO_GO`
 - Claim class: C2 current-state segmentation against published references
 - Evidence domain: controlled-experiment registry bucket; actual inputs are public real-surface images, not verified controlled specimens or real-road observations
 - Unit: one original published image; candidate groups are leakage constraints, not independent sites
@@ -18,5 +18,6 @@
 - Blocked conclusions: physical crack truth, fine width, independent-site generalisation, field safety, human-review/reacquisition utility
 - Producer: gpu-server / D-26-09
 - Run: HQ-PUBLIC-REF-001-R001
+- Result audit: `runs/HQ-PUBLIC-REF-001-R001/04_RESULT_CLAIM_AUDIT_AND_FINAL_DECISION_2026-10-09.md`
 
 The underlying references have known semantic coarseness. This is part of the declared estimand and must not be used after results to discard a negative result.
