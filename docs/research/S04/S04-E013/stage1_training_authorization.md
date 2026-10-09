@@ -2,7 +2,7 @@
 
 Review date: 2026-10-08
 Planning verdict: `PLAN PASS`
-Execution status: `CODE_READY_PASS__FROZEN_TAOBO_MATRIX_AUTHORIZED_NOT_RUN`
+Execution status: `ATTEMPT_A_INCONCLUSIVE__FRESH_ATTEMPT_B_RUNNING`
 External review conversation: <https://chatgpt.com/c/6ac816d7-8430-8329-98bb-a23484959fad>
 
 ## Purpose
@@ -77,4 +77,4 @@ The fit metrics and residual are reported separately. A run that fits displaceme
 
 ## Authorization boundary
 
-`CANDIDATE_TRAINING_AUTHORIZED=true` only for the frozen 12-run Stage 1 matrix at reviewed commit `769396f93ae5258eb984e1585d4274f7990afb11`. The matrix has not run. `SUPERVISED_CAPACITY_PASS`, Stage 2, route promotion, `FULL_FEM_REPRODUCTION`, and `QUALIFIED_FEM_TEACHER` remain unestablished or unauthorized.
+`CANDIDATE_TRAINING_AUTHORIZED=true` only for the frozen 12-run Stage 1 matrix at reviewed commit `769396f93ae5258eb984e1585d4274f7990afb11`. Attempt A stopped before its first optimizer step because the external dispatcher lacked the CuBLAS deterministic workspace setting and is retained as `INCONCLUSIVE`. A supplied-incident review allowed a launcher-only correction and a wholly fresh attempt without a new code review. Attempt B uses fresh R016--R027 identities and `CUBLAS_WORKSPACE_CONFIG=:4096:8`; it is running. `SUPERVISED_CAPACITY_PASS`, Stage 2, route promotion, `FULL_FEM_REPRODUCTION`, and `QUALIFIED_FEM_TEACHER` remain unestablished or unauthorized. See [stage1_launch_record.md](stage1_launch_record.md).

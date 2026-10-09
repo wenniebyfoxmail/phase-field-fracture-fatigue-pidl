@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E013
 protocol_revision: 20261008-r0
-status: stage1-code-ready-pass; frozen-taobo-matrix-authorized-not-run
+status: stage1-attempt-a-inconclusive; fresh-matrix-attempt-b-running
 ---
 # Freeze separate PIDL evaluation contracts after S04-E012
 
@@ -35,4 +35,6 @@ The c60 launcher-only retry `S04-E013-R002-c60-uv` completed with exit code 0 an
 
 The Stage 1 planning gate first returned `NO-GO` because the proposed capacity interpretation, stochastic loss, residual semantics and implementation constants were underspecified. The corrected finite-budget reproducibility contract then received `PLAN PASS`. The runner and 12-run aggregator are implemented, and all four admitted references pass the local no-training identity/evaluator check. Producer training remains blocked until the implementation receives exact-commit `Code Ready PASS`; see [stage1_training_authorization.md](stage1_training_authorization.md).
 
-The first exact-commit Code Ready review of `5767e6c` found fail-open aggregation paths and returned `NO-GO`. Commit `769396f93ae5258eb984e1585d4274f7990afb11` added independent gate recomputation, strict metric types, complete checkpoint/prediction/receipt and archive verification, explicit `INADMISSIBLE` handling, and corruption-path tests. Re-review returned `CODE READY PASS`. The frozen 12-run Taobo matrix is authorized but has not been launched; see [stage1_code_review.md](stage1_code_review.md).
+The first exact-commit Code Ready review of `5767e6c` found fail-open aggregation paths and returned `NO-GO`. Commit `769396f93ae5258eb984e1585d4274f7990afb11` added independent gate recomputation, strict metric types, complete checkpoint/prediction/receipt and archive verification, explicit `INADMISSIBLE` handling, and corruption-path tests. Re-review returned `CODE READY PASS`.
+
+The first Taobo matrix attempt stopped before its first optimizer step because the external launcher omitted the deterministic CuBLAS workspace setting. That attempt is retained as `INCONCLUSIVE`. A supplied-incident review allowed a launcher-only repair without a new code review: set `CUBLAS_WORKSPACE_CONFIG=:4096:8` before Python starts and use wholly fresh run identities and roots. Fresh attempt B, runs R016--R027, started on Taobo GPU 0 and passed the original failure point. It remains running; no Stage 1 scientific verdict is available. See [stage1_launch_record.md](stage1_launch_record.md).
