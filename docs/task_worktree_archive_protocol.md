@@ -208,10 +208,10 @@ The following compact task bundles are remote-preserved:
 
 | Owner | Remote branch | Preserved HEAD | State |
 |---|---|---|---|
-| S01-E001 | `codex/s01-e001-pavetrack-20261009` | `635234c` | exact extracted file snapshot; 29 lightweight tests pass; no training or confirmatory-data access |
+| S01-E001 | `codex/s01-e001-pavetrack-20261009` | `27647a2` | later task-owned work and negative confirmatory outcome are remote-preserved |
 | S02-E003 | `codex/s02-e003-negative-20261008` | `f9fab18` | isolated three-commit negative-result bundle |
-| S02-E004 | `codex/s02-e004-tiff-repeatability-20261009` | `163f4b0` | isolated five-commit measurement-interface bundle; review remains pending |
-| S04-E016 | `codex/s04-e016-request31-storage-block-20261009` | `5b1eec2` | exact five-file Request 31 bundle; blocked on storage preflight; no long run started |
+| S02-E004 | `codex/s02-e004-tiff-repeatability-20261009` | `97570d0` | seven task-owned commits, including image-readiness gate and annotation-interface review, remote-preserved |
+| S04-E016 | `codex/s04-e016-request31-storage-block-20261009` | `5b1eec2` | initial five-file Request 31 snapshot only; later launcher/run records remain in the mixed checkout |
 | S09 | `codex/s09-neural-operator-prototype-20261008` | `95ec8fd` | remote-preserved task branch |
 
 The 14 older commits preceding S02-E003 on the mixed branch are already
@@ -219,7 +219,9 @@ contained, with their original identities, in remote task/history branches.
 The three S02-E003 and five S02-E004 commits were re-based into the isolated
 branches above, so their content is preserved under new commit identities.
 
-S04-E016 / Windows-FEM stopped writing and its task-owned bundle was extracted
-after a stable local snapshot and a live read-only CITPC12 check. Do not clean
-or repoint the mixed checkout until every remaining dirty path has been checked
-against a recoverable destination.
+The two later S02-E004 commits on the mixed branch were also extracted into its
+task branch and verified byte-for-byte. On 2026-10-09 at 17:24 BST, the mixed
+checkout still held 23 modified tracked paths and 821 untracked files, of which
+534 were under `local_archive/`. The later S04-E016 records are not covered by
+its initial branch snapshot. Do not clean or repoint the mixed checkout until
+every remaining dirty path has been checked against a recoverable destination.
