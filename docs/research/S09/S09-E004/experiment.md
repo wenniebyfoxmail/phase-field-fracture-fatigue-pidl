@@ -2,7 +2,7 @@
 storyline_id: S09
 experiment_id: S09-E004
 protocol_revision: v1-equilibrium-operator-prototype
-status: code_ready_review_pending
+status: running
 primary_storyline: S09
 related_storylines: [S04]
 ---
@@ -125,4 +125,7 @@ static checks and plotting only; no training loop runs on Mac.
   displacement boundaries.  The packet audit reports 86,756 nodes, 86,408
   elements, 346,326 directed native edges and 574 coarse cells.
 - Local static verification: 8 focused tests passed.  No Mac training loop was
-  entered.  Independent Code Ready review is the next gate.
+  entered.  Independent Code Ready review passed at exact commit
+  `11fd75d70b18165d6214d50c90adc9c9c9b522a5`.
+- Taobo Run S09-E004-R005 started on GPU 0 at 2026-10-09 17:52:02
+  Europe/London.  Execution success and scientific result remain pending.
