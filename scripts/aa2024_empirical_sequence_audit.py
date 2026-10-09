@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import lzma
 import os
 import re
 import stat
@@ -113,6 +114,11 @@ def _ordinary_supported(info: zipfile.ZipInfo) -> bool:
 def _is_directory(info: zipfile.ZipInfo) -> bool:
     if info.is_dir():
         return True
+    # The MS-DOS directory attribute is independent of the trailing-slash
+    # convention used by ZipInfo.is_dir().  A forged role-looking name must
+    # not qualify merely because it was created on a non-Unix system.
+    if info.external_attr & 0x10:
+        return True
     if info.create_system != 3:
         return False
     mode = (info.external_attr >> 16) & 0xFFFF
@@ -149,7 +155,16 @@ def _read_bounded_line(handle: Any, consumed: int) -> tuple[bytes, int]:
             return bytes(raw), consumed
         consumed += 1
         raw.extend(byte)
-        if not first_nonspace_seen and byte not in b" \t\r\n":
+        if not first_nonspace_seen:
+            if byte == b"\n":
+                return bytes(raw), consumed
+            if byte in b" \t\r\v\f":
+                continue
+            # Header-control syntax is ASCII.  Reject any other leading
+            # control or a non-ASCII prefix immediately, rather than reading
+            # the rest of a potentially numerical body row before failing.
+            if byte[0] < 0x20 or byte[0] == 0x7F or byte[0] >= 0x80:
+                raise AuditError("unsupported leading header byte")
             first_nonspace_seen = True
             # A nodemap body row begins with a numeric node ID. Stop at its
             # first byte so a missing/malformed column header cannot consume it.
@@ -270,13 +285,14 @@ def audit(archive_path: Path, *, expected_size: int = EXPECTED_SIZE,
             "UNSUPPORTED_OR_ENCRYPTED_MEMBER",
             "GLOBAL_STAGE_PAIRING_INVALID",
             "GLOBAL_STAGE_COUNT_INSUFFICIENT",
+            "STAGE_ID_PARSE_INVALID",
         }):
             for stage in stages:
                 try:
                     fields, schema = _read_header(archive, nodemaps[stage][1])
                 except (
                     AuditError, OSError, RuntimeError, UnicodeError,
-                    EOFError, zlib.error, zipfile.BadZipFile,
+                    EOFError, zlib.error, lzma.LZMAError, zipfile.BadZipFile,
                 ):
                     reasons.add("NODEMAP_HEADER_INVALID")
                     break
@@ -316,11 +332,12 @@ def audit(archive_path: Path, *, expected_size: int = EXPECTED_SIZE,
             "all_headers_parsed": len(rows) == len(stages) and bool(stages),
             "required_fields_complete": len(rows) == len(stages) and bool(stages),
             "stage_identity_matches": (
+                bool(stages) and
                 len(rows) == len(stages) and
                 all(row["current_stage_index"] == stage for row, stage in zip(rows, stages))
             ),
             "chronology_nondecreasing": (
-                len(rows) == len(stages) and all(
+                bool(stages) and len(rows) == len(stages) and all(
                     _nondecreasing([row[field] for row in rows])
                     for field in ("current_stage_relative_date", "cycles", "time")
                 )

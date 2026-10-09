@@ -2,7 +2,9 @@ import hashlib
 import importlib.util
 import io
 import json
+import lzma
 import stat
+import struct
 import sys
 import zipfile
 import zlib
@@ -214,6 +216,29 @@ def test_unix_directory_metadata_without_slash_cannot_satisfy_pairing(tmp_path):
     assert "GLOBAL_STAGE_PAIRING_INVALID" in result["stop_reason_codes"]
 
 
+def test_dos_directory_metadata_without_slash_cannot_satisfy_pairing(tmp_path):
+    archive = tmp_path / "dos-directories.zip"
+    with zipfile.ZipFile(archive, "w") as zf:
+        for stage in (1, 2):
+            zf.writestr(
+                f"global_3d_dic/Nodemaps/global_3d_dic_results_1_{stage}.txt",
+                _header(stage),
+            )
+            info = zipfile.ZipInfo(
+                "global_3d_dic/Connections/"
+                f"global_3d_dic_results_1_{stage}_connections.txt"
+            )
+            info.create_system = 0
+            info.external_attr = 0x10
+            zf.writestr(info, b"")
+    result = _audit(
+        archive, archive.stat().st_size,
+        hashlib.md5(archive.read_bytes()).hexdigest(),
+    )
+    assert result["sequence_checks"]["global_connection_count"] == 0
+    assert "GLOBAL_STAGE_PAIRING_INVALID" in result["stop_reason_codes"]
+
+
 def test_actual_noncomment_schema_controls_decision(tmp_path):
     misleading = "# ID; x_undef; y_undef; z_undef; u; v; w; epsx; epsy; epsxy; epseqv\n"
     archive, size, digest = _fixture(
@@ -236,6 +261,56 @@ def test_numeric_row_is_rejected_at_first_byte():
     else:
         raise AssertionError("numerical row was accepted as a header")
     assert handle.tell() == 1
+
+
+def test_numeric_row_after_ascii_whitespace_stops_at_numeric_prefix():
+    prefix = b" \t\v\f\r"
+    handle = io.BytesIO(prefix + b"1; 0; 0; 0; 0; 0\n")
+    try:
+        MODULE._read_bounded_line(handle, 0)
+    except MODULE.AuditError:
+        pass
+    else:
+        raise AssertionError("whitespace-prefixed numerical row was accepted")
+    assert handle.tell() == len(prefix) + 1
+
+
+def test_nonascii_leading_prefix_fails_before_complete_row_is_read():
+    handle = io.BytesIO("\u00a01; 0; 0\n".encode("utf-8"))
+    try:
+        MODULE._read_bounded_line(handle, 0)
+    except MODULE.AuditError:
+        pass
+    else:
+        raise AssertionError("non-ASCII leading prefix was accepted")
+    assert handle.tell() == 1
+
+
+def test_whitespace_prefixed_numeric_rows_are_full_audit_parser_failures(tmp_path):
+    for index, prefix in enumerate((b"\x0b", b"\x0c", "\u00a0".encode("utf-8"))):
+        archive = tmp_path / f"whitespace-prefix-{index}.zip"
+        with zipfile.ZipFile(archive, "w") as zf:
+            for stage in (1, 2):
+                header = _header(stage).encode("utf-8").replace(
+                    SCHEMA.encode("utf-8"),
+                    prefix + b"1; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0\n",
+                )
+                zf.writestr(
+                    f"global_3d_dic/Nodemaps/global_3d_dic_results_1_{stage}.txt",
+                    header,
+                )
+                zf.writestr(
+                    "global_3d_dic/Connections/"
+                    f"global_3d_dic_results_1_{stage}_connections.txt",
+                    "connection header only\n",
+                )
+        result = _audit(
+            archive, archive.stat().st_size,
+            hashlib.md5(archive.read_bytes()).hexdigest(),
+        )
+        assert result["stop_reason_codes"] == ["NODEMAP_HEADER_INVALID"]
+        assert result["allowed_conclusion"] == "qualification_not_established"
+        assert result["sequence_checks"]["nodemap_body_rows_read"] == 0
 
 
 def test_header_cap_is_enforced_without_overread(tmp_path):
@@ -339,6 +414,7 @@ def test_member_decode_and_decompression_failures_are_controlled(
     for failure in (
         UnicodeDecodeError("utf-8", b"x", 0, 1, "bad local name"),
         zlib.error("bad deflate stream"),
+        lzma.LZMAError("bad lzma stream"),
     ):
         monkeypatch.setattr(
             MODULE, "_read_header",
@@ -347,6 +423,90 @@ def test_member_decode_and_decompression_failures_are_controlled(
         result = _audit(archive, size, digest)
         assert result["stop_reason_codes"] == ["NODEMAP_HEADER_INVALID"]
         assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+def test_actual_corrupt_lzma_prefix_is_controlled_and_inconclusive(tmp_path):
+    archive = tmp_path / "corrupt-lzma.zip"
+    with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_LZMA) as zf:
+        for stage in (1, 2):
+            zf.writestr(
+                f"global_3d_dic/Nodemaps/global_3d_dic_results_1_{stage}.txt",
+                _header(stage),
+            )
+            zf.writestr(
+                "global_3d_dic/Connections/"
+                f"global_3d_dic_results_1_{stage}_connections.txt",
+                "connection header only\n",
+            )
+    with zipfile.ZipFile(archive, "r") as zf:
+        first = next(info for info in zf.infolist() if "Nodemaps" in info.filename)
+        header_offset = first.header_offset
+    payload = bytearray(archive.read_bytes())
+    filename_len, extra_len = struct.unpack_from("<HH", payload, header_offset + 26)
+    compressed_offset = header_offset + 30 + filename_len + extra_len
+    payload[compressed_offset + 4] = 0xFF
+    archive.write_bytes(payload)
+
+    result = _audit(
+        archive, archive.stat().st_size,
+        hashlib.md5(archive.read_bytes()).hexdigest(),
+    )
+    assert result["stop_reason_codes"] == ["NODEMAP_HEADER_INVALID"]
+    assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+def test_stage_id_parse_failure_prevents_all_header_access(tmp_path, monkeypatch):
+    huge = "9" * 5000
+    archive = tmp_path / "mixed-huge-stage.zip"
+    with zipfile.ZipFile(archive, "w") as zf:
+        for stage in (1, 2):
+            zf.writestr(
+                f"global_3d_dic/Nodemaps/global_3d_dic_results_1_{stage}.txt",
+                _header(stage),
+            )
+            zf.writestr(
+                "global_3d_dic/Connections/"
+                f"global_3d_dic_results_1_{stage}_connections.txt",
+                "connection header only\n",
+            )
+        zf.writestr(
+            f"global_3d_dic/Nodemaps/global_3d_dic_results_1_{huge}.txt",
+            _header(3),
+        )
+        zf.writestr(
+            "global_3d_dic/Connections/"
+            f"global_3d_dic_results_1_{huge}_connections.txt",
+            "connection header only\n",
+        )
+
+    monkeypatch.setattr(
+        MODULE, "_read_header",
+        lambda *_args: (_ for _ in ()).throw(
+            AssertionError("header read after stage-ID parse failure")
+        ),
+    )
+    result = _audit(
+        archive, archive.stat().st_size,
+        hashlib.md5(archive.read_bytes()).hexdigest(),
+    )
+    assert "STAGE_ID_PARSE_INVALID" in result["stop_reason_codes"]
+    assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+def test_empty_archive_never_reports_positive_whole_sequence_coverage(tmp_path):
+    archive = tmp_path / "empty.zip"
+    with zipfile.ZipFile(archive, "w"):
+        pass
+    result = _audit(
+        archive, archive.stat().st_size,
+        hashlib.md5(archive.read_bytes()).hexdigest(),
+    )
+    checks = result["sequence_checks"]
+    assert checks["all_headers_parsed"] is False
+    assert checks["required_fields_complete"] is False
+    assert checks["stage_identity_matches"] is False
+    assert checks["chronology_nondecreasing"] is False
+    assert checks["stable_required_nodemap_schema"] is False
 
 
 def test_partial_header_coverage_never_reports_stable_schema(tmp_path):

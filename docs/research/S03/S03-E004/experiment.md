@@ -2,7 +2,7 @@
 storyline_id: S03
 experiment_id: S03-E004
 protocol_revision: v1
-status: code_revised_re_review_pending
+status: code_revised_second_re_review_pending
 started_at: 2026-10-09
 primary_storyline: S03
 related_storylines: [S02]
@@ -118,8 +118,16 @@ chosen in this Experiment.
   comparison; escaping parse/decode/decompression failures; and overstrong
   failure conclusions/partial-coverage flags.
 - The subsequent local revision preserves the v1 scientific question while
-  closing those implementation gaps. It must receive a new independent
-  `PASS_CODE_READY` on its exact committed bytes before any real archive run.
+  closing those implementation gaps. Exact commit
+  `cf33c57d105123cff001ac35bb26f8a6f3f4cf9c` was submitted for renewed review.
+  The review reproduced four remaining blocking boundary classes: non-Unix DOS
+  directory metadata bypassing file classification; whitespace-prefixed body
+  rows reaching complete-row consumption; escaping LZMA decompression errors;
+  and header access plus positive subset-coverage claims after stage-ID parsing
+  had already failed. Empty-sequence identity and chronology flags were also
+  found to lack the required nonempty-coverage premise. The real archive
+  remained unexecuted. A further exact commit must receive independent
+  `PASS_CODE_READY` before any real archive run.
 
 ## Required evidence
 
