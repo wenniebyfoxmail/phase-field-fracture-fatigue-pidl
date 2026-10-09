@@ -1,0 +1,15 @@
+{
+  "final": {
+    "step": 500,
+    "force_rms_ratio_to_affine": 0.28085926032304,
+    "force_rms": 9.056439000993743e-06,
+    "u_rel_l2_to_native_diagnostic": 1.0090928467266707,
+    "elapsed_s": 13.405168294906616
+  },
+  "best_evaluated_ratio": 0.28085926032304,
+  "primary_threshold": 0.8,
+  "primary_pass": true,
+  "criterion": "final free-force RMS / initial affine RMS <= 0.8",
+  "scope": "single-state fixed-damage weak-form PINN optimization diagnostic; not PINO or fracture forecast",
+  "native_free_force_rms": 5.804165874560772e-07
+}

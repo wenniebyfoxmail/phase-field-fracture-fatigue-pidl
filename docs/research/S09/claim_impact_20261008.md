@@ -9,3 +9,8 @@ Decision and evidence: [P1 decision](S09-E001/P1_decision_20261008.md). Next is 
 R003 update: fixed-checkpoint diagnosis verified. Aggregate undergrowth plus broader weak activation, not a metric implementation mismatch; P1 negative unchanged. No causal loss/projection conclusion. Next damage-only loss ablation planned, unexecuted.
 
 S09-E002: frozen damage-only single-factor ablation completed and closed, independent evidence PASS; fit target FAIL(best0.9900616 vs<=0.8). Auxiliary supervision removal alone insufficient in this setup. No inference of zero auxiliary effect or method-class failure. Mapping/name boundary recorded in operator_mapping_20261008.md; current model remains data-only graph operator, not PINO.
+
+
+## 2026-10-09 — S09-E003 FEM physics / PINN diagnostic
+
+Implemented and independently checked native AMOR equilibrium, AT1 penalty partial residual and immutable trial fatigue. U012c76s4 native kinematics/energy reproduced at float64 precision. Ran500-step fixed-damage equilibrium-only displacement PINN on Taobo; final residual/affine=.280859 (C0 PASS), but nodal displacement relative difference1.00909 and force15.6times native preclude accuracy claims. All13files retrieved; independent Evidence Ready PASS; exact run commit2bfa5d3. See S09-E003/decision.md. No damage forecast, physics-informed operator training or generalization established.

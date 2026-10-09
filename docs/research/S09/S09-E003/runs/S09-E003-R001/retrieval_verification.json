@@ -1,0 +1,84 @@
+{
+  "status": "verified",
+  "count": 13,
+  "files": [
+    {
+      "path": "output/physics_audit.json",
+      "bytes": 433,
+      "archive_matches": true,
+      "local_matches": true
+    },
+    {
+      "path": "output/receipt.json",
+      "bytes": 897,
+      "archive_matches": true,
+      "local_matches": true
+    },
+    {
+      "path": "output/best.pt",
+      "bytes": 72355,
+      "archive_matches": true,
+      "local_matches": true
+    },
+    {
+      "path": "output/best_fields.npz",
+      "bytes": 5282371,
+      "archive_matches": true,
+      "local_matches": true
+    },
+    {
+      "path": "output/final_fields.npz",
+      "bytes": 5282371,
+      "archive_matches": true,
+      "local_matches": true
+    },
+    {
+      "path": "output/metrics.json",
+      "bytes": 545,
+      "archive_matches": true,
+      "local_matches": true
+    },
+    {
+      "path": "output/history.csv",
+      "bytes": 1830,
+      "archive_matches": true,
+      "local_matches": true
+    },
+    {
+      "path": "logs/dispatch.log",
+      "bytes": 0,
+      "archive_matches": true,
+      "local_matches": true
+    },
+    {
+      "path": "logs/train.log",
+      "bytes": 3869,
+      "archive_matches": true,
+      "local_matches": true
+    },
+    {
+      "path": "exit_code.txt",
+      "bytes": 2,
+      "archive_matches": true,
+      "local_matches": true
+    },
+    {
+      "path": "start_utc.txt",
+      "bytes": 21,
+      "archive_matches": true,
+      "local_matches": true
+    },
+    {
+      "path": "launcher_pid.txt",
+      "bytes": 8,
+      "archive_matches": true,
+      "local_matches": true
+    },
+    {
+      "path": "gpu_preflight.txt",
+      "bytes": 558,
+      "archive_matches": true,
+      "local_matches": true
+    }
+  ]
+}

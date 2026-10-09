@@ -2,7 +2,7 @@
 storyline_id: S09
 experiment_id: S09-E003
 protocol_revision: v1-equilibrium-pinn-c0
-status: prepared
+status: closed
 ---
 # FEM-aligned physics loss: native audit and fixed-damage PINN probe
 
@@ -35,3 +35,8 @@ Taobo GPUServer8 only, one GPU fresh preflight, .33 memory fraction, float64, se
 One primary operational criterion: FINAL free-force RMS / initial affine free-force RMS <=.8 (20% diagnostic reduction, not numerical tolerance). No first-pass stop or best-checkpoint rescue. Best fields saved for labelled diagnostics, final metric authoritative. NaN/invalid identity/resource failure stops. No automatic extra seeds/arms.
 
 Minimum evidence: native audit, receipt/config/code identity, all21 evaluated scores, final metrics, best checkpoint/fields, residual history vs affine and .8 plus full-domain u/native/difference plot, README_analysis; independent evidence review. Training and physics behavior remain distinct; neither this nor a residual decrease licenses generalization, crack growth, exact equilibrium, PINO superiority, or full FEM teacher claims.
+
+
+## Closeout 2026-10-09
+
+R001 succeeded on Taobo GPU7; retrieval verified13 files and producer archive. Independent Evidence Ready PASS. Final operational ratio .28085926032304 supports C0 residual-reduction capability only. Nodal-vector relative displacement error1.00909 and residual15.6033 times native do not support accurate reconstruction. See decision.md and evidence_review.md. No further training launched.
