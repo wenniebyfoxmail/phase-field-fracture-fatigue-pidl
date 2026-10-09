@@ -2,11 +2,13 @@
 storyline_id: S03
 experiment_id: S03-E006
 protocol_revision: v1
-status: prepared
+status: closed
 started_at: 2026-10-09
+closed_at: 2026-10-09
 primary_storyline: S03
 claim_class: C1_evidence_validity
 evidence_domain: controlled_experiment
+scientific_verdict: supports
 ---
 
 # D01 held-out local-footprint registration qualification
@@ -134,3 +136,69 @@ difference, ruler calibration or measurement result to rescue or extend v1.
 
 `READY_FOR_HELDOUT_LOCAL_REGISTRATION_AUDIT`. No training or crack-response
 analysis is authorized.
+
+## Analysis execution
+
+- Attempt: `S03-E006-A001`; deterministic Mac CPU, no training.
+- Code: `0a0c9fc2c3c6c3e44390554f4cff5bcd9b2e55ef`, clean tree.
+- Dataset-first lineage:
+  - `6322dba` committed the D01 characteristics and route decision;
+  - `19dc611` froze this protocol and exact IB holdout;
+  - `0a0c9fc` added the bound implementation;
+  - only then were IB pixels retrieved and analysed.
+- Runtime: `26.9 s`; evidence package:
+  `$PROJECT/local_archive/experiments/S03-E006/analysis/`.
+- 27/27 selected images passed CRC/SHA-256 validation and image decoding.
+
+## Evidence result
+
+- All 24 registrations pass: six fixed-state-to-reference and eighteen
+  moving-state-to-reference transforms.
+- Fixed registrations: `2,394–3,472` inliers, inlier ratio `0.900–0.968`,
+  reprojection error `0.56–1.25 px`, reference overlap `0.982–0.996`.
+- Moving registrations: `635–1,235` inliers, inlier ratio `0.623–0.864`,
+  reprojection error `1.64–2.98 px`.
+- All nine normalized supports pass `0.75`:
+
+| Beam | Low same-stop | High same-stop | Cross-stop |
+|---|---:|---:|---:|
+| Beam 4 | 0.9596 | 1.0000 | 1.0000 |
+| Beam 5 | 0.9856 | 0.9870 | **0.9415** |
+| Beam 6 | 0.9923 | 0.9985 | 1.0000 |
+
+- The frozen minimum is `0.941486`, above the primary threshold `0.75`.
+
+## Decision visualization
+
+`d01_local_registration_holdout.png/.pdf` shows all three independent beams,
+all low/high footprint boundaries, the all-six intersection and every primary
+support value against the threshold. Rendered QA found no blank, transposed or
+mislabelled panels. The same-stem Markdown sidecar records provenance and claim
+limits.
+
+## Scientific verdict
+
+`PASS_D01_LOCAL_REGISTRATION_HOLDOUT`.
+
+The held-out IB region confirms that local planar canonicalization, selected
+from IA dataset characteristics, preserves a large common spatial domain across
+fixed/moving views and the two selected stops. This is C1 registration evidence,
+not C2 crack-measurement evidence.
+
+## Claim impact and review boundary
+
+S03-E006 permits a later, separately frozen local-footprint measurement study.
+It does not establish physical scale, crack width, true crack change,
+DIC/CMfM accuracy, prediction, RUL, field validity or road transfer.
+
+No independent evidence-readiness review was requested. Exact inputs, code,
+metrics and rendered figures are retained, but the result is not labelled
+`Evidence Ready` beyond this internal qualification.
+
+## Next action
+
+Repeat the dataset-first sequence before measurement code: characterize ruler
+visibility and scale-transfer uncertainty, freeze ruler annotation and its
+repeatability, then select a target/reference. If no independent crack target
+can be qualified, limit the next estimand to cross-view self-consistency rather
+than measurement accuracy.
