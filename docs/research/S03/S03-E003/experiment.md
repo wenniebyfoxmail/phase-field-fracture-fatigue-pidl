@@ -2,12 +2,12 @@
 storyline_id: S03
 experiment_id: S03-E003
 protocol_revision: v5
-status: ready
+status: closed
 started_at: 2026-10-08
-closed_at:
+closed_at: 2026-10-09
 primary_storyline: S03
 related_storylines: [S02]
-scientific_verdict:
+scientific_verdict: BLOCKED_DATASET_CAPABILITY
 ---
 
 # AA2024 outcome-blind archive-manifest qualification
@@ -146,8 +146,9 @@ ordinary JSON last-key-wins behavior is not accepted for this identity receipt.
 - **Producer:** Mac-PIDL, data/schema audit only; no optimization loop.
 - **Runner:** `scripts/aa2024_value_blind_audit.py`.
 - **Tests:** `tests/test_aa2024_value_blind_audit.py`.
-- **Run:** S03-E003-R001, pending Code Ready PASS. The complete archive size and
-  MD5 match the frozen identity, but that preflight is not the Experiment result.
+- **Run:** S03-E003-R001 executed only after the exact v5 commit received
+  `PASS_CODE_READY`. The controlled run completed the frozen audit and returned
+  `BLOCKED_DATASET_CAPABILITY`; the result was later independently reviewed.
 - **Safety:** read-only raw inputs; no extraction, training, inversion, FEM, or
   remote compute.
 
@@ -228,23 +229,45 @@ this amendment was frozen.
 
 | Run ID | Purpose | Execution | Retrieval | Receipt |
 |---|---|---|---|---|
-| S03-E003-R001 | outcome-blind manifest qualification | executed | local | `data_audit.json`; `execution_receipt.json` |
+| S03-E003-R001 | outcome-blind manifest qualification | completed; controlled block | verified local | `data_audit.json`; `execution_receipt.json`; `decision.md`; `evidence_review_receipt.json`; `closure.md` |
 
 ## Evidence review
 
-Pending an independent evidence review bound to the S03-E003-R001 compact
-output SHA-256
-`9a006432fb5d55e76748949616d51da6eb604bbdb5b599f60c92f33611476657`
-and its execution receipt. The run returned `BLOCKED_DATASET_CAPABILITY` with
-global connection count, global nodemap count, and mapping-file identity
-mismatches. This is execution evidence, not yet a closed scientific verdict.
+`PASS_EVIDENCE_REVIEW` on 2026-10-09, recorded in
+`docs/reviews/s03_e003_aa2024_evidence_review_20261009.md`. The review was bound
+to the exact compact output, execution receipt, and decision record; it
+independently verified all three SHA-256 hashes and authorized bounded closure.
+
+| Frozen manifest condition | Required | Observed | Result |
+|---|---:|---:|---|
+| Global connection files | 797 | 342 | fail |
+| Global nodemap files | 797 | 342 | fail |
+| Exact required mapping basename | 1 | 0 | fail |
+| Higher-level metadata dictionary basename | 1 | 1 | pass |
+| Timestep-level metadata dictionary basename | 1 | 1 | pass |
+
+This decision table is the minimum visualization for the non-model `C1`
+identity/manifest audit. A method-comparison figure is inapplicable because no
+model or prediction outcome was evaluated.
 
 ## Scientific verdict
 
-Pending evidence review. No claim changes before closure.
+`BLOCKED_DATASET_CAPABILITY` for the bounded `C1` question. The immutable
+archive passed identity and central-directory readability, then failed the
+frozen manifest contract with
+`GLOBAL_CONNECTION_COUNT_MISMATCH`, `GLOBAL_NODEMAP_COUNT_MISMATCH`, and
+`MAPPING_FILE_IDENTITY_MISMATCH`. The allowed conclusion is only
+`locked_archive_does_not_meet_declared_manifest_contract`.
+
+A zero exact-basename count proves failure of the frozen naming requirement;
+it does not prove that no differently named or functionally equivalent mapping
+asset exists. The experiment does not support header semantics, chronology,
+target support, phase-field recovery, material-property identification,
+forecasting, broader dataset validity, or road transfer.
 
 ## Next action
 
-Obtain an independent evidence review bound to the compact output and execution
-receipt. If it passes, close S03-E003 as a dataset-capability block and do not
-design or execute a header audit for this AA2024 route.
+None within S03-E003. The Experiment and AA2024 header-audit route are closed.
+Do not inspect member headers or continue to phase-field/inversion/prediction
+from this archive under this contract. Any renewed AA2024 route requires a new
+qualified evidence axis and a separately frozen and reviewed Experiment.
