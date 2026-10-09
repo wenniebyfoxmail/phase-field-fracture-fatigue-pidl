@@ -433,8 +433,40 @@ def write_csv(path: Path, rows: list[dict[str, object]]) -> None:
         writer.writerows(rows)
 
 
-def make_figure(panels: list[tuple], measurements: list[dict[str, object]], output: Path) -> None:
+def make_figure(
+    panels: list[tuple],
+    measurements: list[dict[str, object]],
+    registrations: list[dict[str, object]],
+    output: Path,
+) -> None:
     if not panels:
+        moving = [row for row in registrations if row["role"] == "moving"]
+        fig, axes = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
+        labels = [f"{row['beam_id'].replace('Beam ', 'B')}-{row['stop']}-{Path(str(row['path'])).stem.split('_t=')[-1]}" for row in moving]
+        x = np.arange(len(moving))
+        overlap = [float(row["overlap_fraction"]) for row in moving]
+        inliers = [int(row["inliers"]) for row in moving]
+        colors = ["#4477AA" if row["beam_id"] == "Beam 4" else "#EE6677" if row["beam_id"] == "Beam 5" else "#228833" for row in moving]
+        axes[0].bar(x, overlap, color=colors)
+        axes[0].axhline(MIN_VIEW_OVERLAP, color="black", linestyle="--", label="frozen minimum = 0.50")
+        axes[0].set_ylabel("warped footprint / fixed frame")
+        axes[0].set_title("All moving views fail the frozen full-fixed-frame overlap gate")
+        axes[0].legend()
+        axes[1].bar(x, inliers, color=colors)
+        axes[1].axhline(MIN_INLIERS, color="black", linestyle="--", label="frozen minimum = 50")
+        axes[1].set_ylabel("RANSAC inliers")
+        axes[1].set_xticks(x)
+        axes[1].set_xticklabels(labels, rotation=55, ha="right", fontsize=8)
+        axes[1].legend()
+        fig.suptitle(
+            "S03-E005 validity result: INADMISSIBLE_D01_MULTIVIEW_REPEATABILITY\n"
+            "Controlled experiment; registration error was not the limiting gate",
+            fontsize=13,
+        )
+        fig.tight_layout(rect=(0, 0, 1, 0.94))
+        fig.savefig(output / "d01_multiview_repeatability.png", dpi=180)
+        fig.savefig(output / "d01_multiview_repeatability.pdf")
+        plt.close(fig)
         return
     fig, axes = plt.subplots(len(panels), 4, figsize=(13, 3.5 * len(panels)), squeeze=False)
     by_beam = {row["beam_id"]: row for row in measurements}
@@ -513,7 +545,7 @@ def main() -> None:
         encoding="utf-8",
     )
     (args.output / "decision.json").write_text(json.dumps(decision, indent=2) + "\n", encoding="utf-8")
-    make_figure(scale["panels"], measurements, args.output)
+    make_figure(scale["panels"], measurements, registration, args.output)
     ended = datetime.now(timezone.utc)
     command = " ".join(sys.argv)
     receipt = {
