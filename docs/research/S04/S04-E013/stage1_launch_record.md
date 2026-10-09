@@ -2,8 +2,8 @@
 
 Record date: 2026-10-09
 Reviewed code: `769396f93ae5258eb984e1585d4274f7990afb11`
-Current status: `RUNNING__FRESH_MATRIX_ATTEMPT_B`
-Scientific result: `NOT_YET_AVAILABLE`
+Current status: `COMPLETED__FRESH_MATRIX_ATTEMPT_B`
+Scientific result: `SUPERVISED_CAPACITY_FAIL_FIXED_PROCEDURE`
 
 ## Purpose and frozen scope
 
@@ -73,10 +73,15 @@ failure point and logged steps 100, 200 and 300; at step 300 the sampled loss
 was `3.4893344263762436e-4`. These are health observations only and cannot
 select a checkpoint or establish a gate result.
 
+Attempt B subsequently completed all twelve runs and aggregation at
+2026-10-09 13:27:55 CST. Twelve runs were valid and complete, no integrity
+error or missing row was reported, and zero runs passed the joint gate. See
+[stage1_result.md](stage1_result.md) for the field-wise result.
+
 ## Next evidence gate
 
-Monitor attempt B without changing its budget or matrix. A scientific
-disposition requires all 12 final-only packages, fail-closed aggregation and a
-separate Evidence review. Until then, `SUPERVISED_CAPACITY_PASS`, Stage 2,
-route promotion, `FULL_FEM_REPRODUCTION` and `QUALIFIED_FEM_TEACHER` remain
-unavailable.
+Submit the completed matrix to a separate supplied-evidence review. The
+aggregated execution result is `SUPERVISED_CAPACITY_FAIL_FIXED_PROCEDURE`;
+architecture representability remains `UNRESOLVED`. `SUPERVISED_CAPACITY_PASS`,
+Stage 2, route promotion, `FULL_FEM_REPRODUCTION` and
+`QUALIFIED_FEM_TEACHER` remain unavailable.

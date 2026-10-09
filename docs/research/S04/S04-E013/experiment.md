@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E013
 protocol_revision: 20261008-r0
-status: stage1-attempt-a-inconclusive; fresh-matrix-attempt-b-running
+status: stage1-attempt-b-complete; fail-fixed-procedure; evidence-review-pending
 ---
 # Freeze separate PIDL evaluation contracts after S04-E012
 
@@ -37,4 +37,12 @@ The Stage 1 planning gate first returned `NO-GO` because the proposed capacity i
 
 The first exact-commit Code Ready review of `5767e6c` found fail-open aggregation paths and returned `NO-GO`. Commit `769396f93ae5258eb984e1585d4274f7990afb11` added independent gate recomputation, strict metric types, complete checkpoint/prediction/receipt and archive verification, explicit `INADMISSIBLE` handling, and corruption-path tests. Re-review returned `CODE READY PASS`.
 
-The first Taobo matrix attempt stopped before its first optimizer step because the external launcher omitted the deterministic CuBLAS workspace setting. That attempt is retained as `INCONCLUSIVE`. A supplied-incident review allowed a launcher-only repair without a new code review: set `CUBLAS_WORKSPACE_CONFIG=:4096:8` before Python starts and use wholly fresh run identities and roots. Fresh attempt B, runs R016--R027, started on Taobo GPU 0 and passed the original failure point. It remains running; no Stage 1 scientific verdict is available. See [stage1_launch_record.md](stage1_launch_record.md).
+The first Taobo matrix attempt stopped before its first optimizer step because the external launcher omitted the deterministic CuBLAS workspace setting. That attempt is retained as `INCONCLUSIVE`. A supplied-incident review allowed a launcher-only repair without a new code review: set `CUBLAS_WORKSPACE_CONFIG=:4096:8` before Python starts and use wholly fresh run identities and roots. Fresh attempt B, runs R016--R027, then completed on Taobo GPU 0. See [stage1_launch_record.md](stage1_launch_record.md).
+
+Attempt B completed all twelve final-only runs. The fail-closed aggregator
+admitted 12 valid rows, reported no missing row or integrity error, and counted
+zero joint passes. All rows passed the exact BC gate and failed displacement,
+strain and `rho_u`. The registered execution result is
+`SUPERVISED_CAPACITY_FAIL_FIXED_PROCEDURE`; architecture representability
+remains `UNRESOLVED`. Evidence review remains pending. See
+[stage1_result.md](stage1_result.md).

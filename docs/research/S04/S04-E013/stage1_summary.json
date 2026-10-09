@@ -1,0 +1,14 @@
+{
+  "protocol_revision": "20261008-r1-stage1",
+  "code_commit": "769396f93ae5258eb984e1585d4274f7990afb11",
+  "expected_runs": 12,
+  "valid_completed_runs": 12,
+  "joint_passes": 0,
+  "missing": [],
+  "integrity_errors": [],
+  "verdict": "SUPERVISED_CAPACITY_FAIL_FIXED_PROCEDURE",
+  "architecture_representability": "UNRESOLVED",
+  "stage2_authorized": false,
+  "full_fem_reproduction": "NOT_QUALIFIED",
+  "qualified_fem_teacher": "NOT_QUALIFIED"
+}
