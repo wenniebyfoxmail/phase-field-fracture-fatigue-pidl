@@ -2,11 +2,13 @@
 storyline_id: S03
 experiment_id: S03-E005
 protocol_revision: v1
-status: prepared
+status: closed
 started_at: 2026-10-09
+closed_at: 2026-10-09
 primary_storyline: S03
 claim_class: C2_state_measurement
 evidence_domain: controlled_experiment
+scientific_verdict: inadmissible
 ---
 
 # D01 fixed-versus-moving-view repeatability diagnostic
@@ -125,3 +127,69 @@ ridge or contrast parameters after viewing the six selected beam-stop groups.
 
 `READY_FOR_NO_TRAINING_DIAGNOSTIC`. Local deterministic image processing is
 authorized; model training and prediction claims are not.
+
+## Analysis execution
+
+- Attempt: `S03-E005-A001`; Mac deterministic CPU, no training.
+- Final execution code:
+  `6a0fb60bf6fa96443a62eb7f92b3eb6cecc48c56`, clean tree.
+- Runtime: `37.2 s` after the 33 frozen images had been range-retrieved; initial
+  remote retrieval took about 16 minutes and was not expanded to the 3 GB ZIP.
+- Evidence package:
+  `$PROJECT/local_archive/experiments/S03-E005/analysis/`.
+- All 33 selected images were revalidated by SHA-256 and decoded successfully.
+
+## Evidence result
+
+- Fixed high-to-low registrations pass for all three beams: overlap
+  `0.9939–0.9990`, median native-pixel reprojection error `1.68–2.21 px`, and
+  `656–735` RANSAC inliers.
+- All 18 moving-to-fixed views fail the frozen `0.50` full-fixed-frame overlap
+  gate. Their warped footprints cover only `0.0276–0.1320` of the fixed frame.
+- Moving-view reprojection error is nevertheless low (`0.35–1.44 px`); 13/18
+  views have at least 50 inliers and fail only on overlap. Five views fail both
+  overlap and the 50-inlier gate.
+- No beam-stop group retains the required two valid moving views. Therefore the
+  within-stop versus between-stop measurement table is intentionally empty and
+  the primary criterion is not computed.
+- Visual inspection confirms a ruler in each selected fixed and moving
+  reference. Because v1 did not freeze ruler-tick endpoints or perspective
+  correction, physical scale remains unqualified and no millimetre result is
+  permitted.
+
+## Decision visualization
+
+- `d01_multiview_repeatability.png/.pdf` shows every moving view against the
+  frozen overlap and inlier thresholds.
+- `scale_reference_contact_sheet.png` shows all nine selected ruler references
+  in a fixed beam-by-camera layout.
+- Both figures have same-stem Markdown sidecars recording provenance and claim
+  boundaries.
+
+## Scientific verdict
+
+`INADMISSIBLE_D01_MULTIVIEW_REPEATABILITY`.
+
+This is not a negative crack-measurement result. The validity failure occurs
+because v1 asks each moving close-up to cover half of the much wider fixed
+camera frame. That estimand is incompatible with the released acquisition
+geometry, even though many local feature matches are stable. S03-E005 is not
+rescued by relaxing its viewed gate.
+
+## Claim impact
+
+The experiment closes the whole-fixed-frame comparison route. It does not
+establish cross-view measurement error, crack width, true crack change,
+prediction, RUL, temporal-token sufficiency, field validity or road transfer.
+
+No independent evidence-readiness review was requested for this conservative
+admissibility stop. The exact inputs, code, metrics and figures are retained for
+review, but S03-E005 is not labelled `Evidence Ready`.
+
+## Next action
+
+If the measurement route remains useful, freeze a separate experiment for the
+intersection of registered *mobile footprints*, normalize overlap to the mobile
+footprint, and preregister ruler-tick annotation before reporting physical
+units. Keep beam as the independent unit and do not reuse S03-E005's verdict as
+evidence of measurement accuracy.
