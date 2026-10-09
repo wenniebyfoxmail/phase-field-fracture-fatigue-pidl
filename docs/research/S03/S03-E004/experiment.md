@@ -2,11 +2,11 @@
 storyline_id: S03
 experiment_id: S03-E004
 protocol_revision: v1
-status: code_revised_second_re_review_pending
+status: real_run_complete_evidence_review_pending
 started_at: 2026-10-09
 primary_storyline: S03
 related_storylines: [S02]
-scientific_verdict: pending
+scientific_verdict: pending_independent_evidence_review
 ---
 
 # AA2024 empirical global-DIC sequence qualification
@@ -128,6 +128,32 @@ chosen in this Experiment.
   found to lack the required nonempty-coverage premise. The real archive
   remained unexecuted. A further exact commit must receive independent
   `PASS_CODE_READY` before any real archive run.
+- Exact commit `2ce901d717719b198fb37420b5310269ea7ab1be` received
+  `PASS_CODE_READY`. The reviewer independently matched all three attachment
+  hashes and reproduced closure of the four remaining blocker classes. That
+  verdict authorized only execution of this frozen qualification gate.
+
+## S03-E004-R001 execution result
+
+- Executed: 2026-10-09 16:15:05 UTC on Mac-PIDL.
+- Input identity: 1,248,078,255 bytes; MD5
+  `e671b804e29401e70043bc1e17f66dd1`; both frozen checks passed.
+- Observed central-directory sequence: 342 global nodemap files, 342 global
+  connection files, equal stage-ID sets, and 342 paired stages. The central
+  directory was readable.
+- Decision: `BLOCKED_EMPIRICAL_SEQUENCE`.
+- Stop reason: `NODEMAP_HEADER_INVALID`.
+- Allowed conclusion: `qualification_not_established`.
+- Read accounting: zero connection-body rows and zero nodemap numerical-body
+  rows.
+- Compact output SHA-256:
+  `91f6bb97dc15b44ce188575eabca89c69eaa6e7ea2ed60ad808d9fb9a115164b`.
+
+The archive therefore passes identity and actual-stage pairing checks, but the
+bounded parser did not establish complete valid headers for the sequence. No
+header-semantic, chronology, observation-target, forecasting, inversion, or
+phase-field claim is authorized. Closure remains pending independent evidence
+review of the exact run artifacts.
 
 ## Required evidence
 
