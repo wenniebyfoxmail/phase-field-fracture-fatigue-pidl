@@ -14,9 +14,12 @@ def environment():
  return {'python':platform.python_version(),'torch':torch.__version__,'numpy':np.__version__,'pillow':PIL.__version__,'matplotlib':matplotlib.__version__,'cuda':torch.version.cuda}
 
 def gate(approval,lock_path):
- if platform.system()!='Linux' or not torch.cuda.is_available():raise RuntimeError('Producer Linux CUDA only; no Mac/CPU training')
+ system=platform.system()
+ if system not in {'Linux','Windows'} or not torch.cuda.is_available():raise RuntimeError('Approved Linux/Windows CUDA producer only; no Mac/CPU training')
  if not os.environ.get('CUDA_VISIBLE_DEVICES') or os.environ.get('CUBLAS_WORKSPACE_CONFIG')!=':4096:8':raise RuntimeError('Explicit CUDA isolation and deterministic workspace required')
- if approval.get('execute') is not True or approval.get('producer_alias')!='taobo' or not approval.get('experiment_id') or not approval.get('user_authorization_reference'):raise RuntimeError('Missing execution authorization record')
+ if approval.get('execute') is not True or approval.get('producer_alias') not in {'taobo','gpu-server'} or not approval.get('experiment_id') or not approval.get('user_authorization_reference'):raise RuntimeError('Missing execution authorization record')
+ expected_system={'taobo':'Linux','gpu-server':'Windows'}[approval['producer_alias']]
+ if system!=expected_system:raise RuntimeError('Producer alias/platform mismatch')
  if approval.get('hostname')!=socket.gethostname():raise RuntimeError('Wrong producer')
  if approval.get('code_snapshot')!=snapshot() or approval.get('data_lock_sha256')!=sha(lock_path):raise RuntimeError('Unreviewed snapshot/lock')
  if approval.get('environment')!=environment():raise RuntimeError('Environment not frozen for approved run')
@@ -24,8 +27,8 @@ def gate(approval,lock_path):
 def main():
  p=argparse.ArgumentParser();p.add_argument('--approval',required=True);p.add_argument('--lock',required=True);p.add_argument('--roots',required=True);p.add_argument('--output',required=True);a=p.parse_args()
  approved=json.loads(Path(a.approval).read_text());gate(approved,a.lock)
- out=Path(a.output).resolve();base=Path('/mnt/data2/drtao/wennie')
- if base not in out.parents:raise RuntimeError('Output outside approved data mount')
+ out=Path(a.output).resolve();base=Path(approved['output_root']).resolve()
+ if out==base or base not in out.parents:raise RuntimeError('Output outside approved fresh run root')
  out.mkdir(parents=True,exist_ok=False)
  receipt={'status':'prepared','code_snapshot':snapshot(),'environment':environment(),'pid':os.getpid(),'hostname':socket.gethostname(),'gpu':os.environ['CUDA_VISIBLE_DEVICES'],'approval':approved,'data_lock_sha256':sha(a.lock),'started_unix':time.time(),'output':str(out),'command':sys.argv}
  try:

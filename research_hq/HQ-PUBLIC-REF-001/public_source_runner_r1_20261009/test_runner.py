@@ -60,6 +60,10 @@ class Checks(unittest.TestCase):
  def test_gates(self):
   with patch('runner.platform.system',return_value='Darwin'):
    with self.assertRaises(RuntimeError):runner.gate({},'/nonexistent')
+  approval={'execute':True,'producer_alias':'gpu-server','experiment_id':'HQ-PUBLIC-REF-001','user_authorization_reference':'chat 2026-10-09','hostname':'D-26-09','code_snapshot':'snapshot','data_lock_sha256':'lock','environment':{'frozen':True},'output_root':'C:/Users/xw436/jobs'}
+  with patch.dict('runner.os.environ',{'CUDA_VISIBLE_DEVICES':'0','CUBLAS_WORKSPACE_CONFIG':':4096:8'},clear=True), patch('runner.platform.system',return_value='Windows'), patch('runner.torch.cuda.is_available',return_value=True), patch('runner.socket.gethostname',return_value='D-26-09'), patch('runner.snapshot',return_value='snapshot'), patch('runner.sha',return_value='lock'), patch('runner.environment',return_value={'frozen':True}):
+   runner.gate(approval,'lock.json')
+   with self.assertRaises(RuntimeError):runner.gate(dict(approval,producer_alias='taobo'),'lock.json')
   with self.assertRaises(BudgetExpired):check_time(-1)
   with self.assertRaises(ValueError):validation(None,[{'source':'BuildCrack','role':'validation'}],{},None,0)
 if __name__=='__main__':unittest.main(verbosity=2)
