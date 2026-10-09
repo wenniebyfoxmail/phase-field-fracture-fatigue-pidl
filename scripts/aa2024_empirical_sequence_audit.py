@@ -6,13 +6,14 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import math
 import os
 import re
 import stat
 import tempfile
 import unicodedata
 import zipfile
+import zlib
+from decimal import Decimal, InvalidOperation
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -64,6 +65,13 @@ REASON_CODES = {
     "CHRONOLOGY_INVALID",
     "STATE_VARIATION_INSUFFICIENT",
     "NODEMAP_SCHEMA_INVALID",
+    "STAGE_ID_PARSE_INVALID",
+}
+
+PARSER_FAILURE_REASONS = {
+    "NODEMAP_HEADER_INVALID",
+    "REQUIRED_HEADER_FIELD_INVALID",
+    "STAGE_ID_PARSE_INVALID",
 }
 
 
@@ -102,9 +110,21 @@ def _ordinary_supported(info: zipfile.ZipInfo) -> bool:
     return stat.S_IFMT(mode) in (0, stat.S_IFREG, stat.S_IFDIR)
 
 
-def _parse_numeric(text: str) -> float:
-    value = float(text.strip())
-    if not math.isfinite(value):
+def _is_directory(info: zipfile.ZipInfo) -> bool:
+    if info.is_dir():
+        return True
+    if info.create_system != 3:
+        return False
+    mode = (info.external_attr >> 16) & 0xFFFF
+    return stat.S_IFMT(mode) == stat.S_IFDIR
+
+
+def _parse_numeric(text: str) -> Decimal:
+    try:
+        value = Decimal(text.strip())
+    except InvalidOperation as exc:
+        raise ValueError("invalid header value") from exc
+    if not value.is_finite():
         raise ValueError("non-finite header value")
     return value
 
@@ -117,20 +137,39 @@ def _normalise_columns(line: str) -> tuple[str, ...]:
     return tuple(columns)
 
 
+def _read_bounded_line(handle: Any, consumed: int) -> tuple[bytes, int]:
+    """Read one logical header line without crossing the cap or a data row."""
+    raw = bytearray()
+    first_nonspace_seen = False
+    while True:
+        if consumed >= HEADER_BYTE_CAP:
+            raise AuditError("header byte cap exceeded")
+        byte = handle.read(1)
+        if not byte:
+            return bytes(raw), consumed
+        consumed += 1
+        raw.extend(byte)
+        if not first_nonspace_seen and byte not in b" \t\r\n":
+            first_nonspace_seen = True
+            # A nodemap body row begins with a numeric node ID. Stop at its
+            # first byte so a missing/malformed column header cannot consume it.
+            if byte in b"+-0123456789.":
+                raise AuditError("numerical body reached before column schema")
+        if byte == b"\n":
+            return bytes(raw), consumed
+
+
 def _read_header(
     archive: zipfile.ZipFile, info: zipfile.ZipInfo
-) -> tuple[dict[str, float], tuple[str, ...]]:
+) -> tuple[dict[str, Decimal], tuple[str, ...]]:
     consumed = 0
-    fields: dict[str, float] = {}
+    fields: dict[str, Decimal] = {}
     column_schema: tuple[str, ...] | None = None
     with archive.open(info, "r") as handle:
-        while consumed <= HEADER_BYTE_CAP:
-            raw = handle.readline(HEADER_BYTE_CAP - consumed + 1)
+        while consumed < HEADER_BYTE_CAP:
+            raw, consumed = _read_bounded_line(handle, consumed)
             if not raw:
                 break
-            consumed += len(raw)
-            if consumed > HEADER_BYTE_CAP:
-                raise AuditError("header byte cap exceeded")
             try:
                 line = raw.decode("utf-8")
             except UnicodeDecodeError as exc:
@@ -140,29 +179,30 @@ def _read_header(
                 continue
             if stripped.startswith("#"):
                 content = stripped.lstrip("#").strip()
-                if ";" in content and "id" in content.casefold():
-                    column_schema = _normalise_columns(content)
-                    break
                 if ":" in content:
-                    key, value = content.split(":", 1)
-                    key = key.strip().casefold()
-                    if key in REQUIRED_HEADER_FIELDS:
+                    try:
+                        key, value = content.split(":", 1)
+                        key = key.strip().casefold()
+                        if key not in REQUIRED_HEADER_FIELDS:
+                            continue
                         if key in fields:
                             raise AuditError(f"duplicate required field: {key}")
                         if "value_element" in value:
-                            value = value.split(":", 1)[1]
-                        try:
+                            _label, value = value.split(":", 1)
                             fields[key] = _parse_numeric(value)
-                        except (ValueError, IndexError) as exc:
-                            raise AuditError(f"invalid required field: {key}") from exc
+                        else:
+                            fields[key] = _parse_numeric(value)
+                    except (ValueError, IndexError) as exc:
+                        raise AuditError(f"invalid required field: {key}") from exc
                 continue
-            raise AuditError("numerical body reached before column schema")
+            column_schema = _normalise_columns(stripped)
+            break
     if column_schema is None:
         raise AuditError("column schema not found within bounded header")
     return fields, column_schema
 
 
-def _nondecreasing(values: list[float]) -> bool:
+def _nondecreasing(values: list[Decimal]) -> bool:
     return all(right >= left for left, right in zip(values, values[1:]))
 
 
@@ -206,7 +246,13 @@ def audit(archive_path: Path, *, expected_size: int = EXPECTED_SIZE,
                                   (CONNECTION_RE, connections)):
                 match = regex.fullmatch(name)
                 if match:
-                    stage = int(match.group(1))
+                    if _is_directory(info):
+                        continue
+                    try:
+                        stage = int(match.group(1))
+                    except (ValueError, OverflowError):
+                        reasons.add("STAGE_ID_PARSE_INVALID")
+                        continue
                     if stage in target:
                         reasons.add("GLOBAL_STAGE_PAIRING_INVALID")
                     target[stage] = (name, info)
@@ -217,7 +263,7 @@ def audit(archive_path: Path, *, expected_size: int = EXPECTED_SIZE,
         if set(nodemaps) != set(connections):
             reasons.add("GLOBAL_STAGE_PAIRING_INVALID")
 
-        rows: list[dict[str, float]] = []
+        rows: list[dict[str, Decimal]] = []
         schemas: list[tuple[str, ...]] = []
         if not reasons.intersection({
             "UNSAFE_OR_AMBIGUOUS_MEMBER_PATH",
@@ -228,31 +274,38 @@ def audit(archive_path: Path, *, expected_size: int = EXPECTED_SIZE,
             for stage in stages:
                 try:
                     fields, schema = _read_header(archive, nodemaps[stage][1])
-                except (AuditError, OSError, RuntimeError, zipfile.BadZipFile):
+                except (
+                    AuditError, OSError, RuntimeError, UnicodeError,
+                    EOFError, zlib.error, zipfile.BadZipFile,
+                ):
                     reasons.add("NODEMAP_HEADER_INVALID")
                     break
                 if set(REQUIRED_HEADER_FIELDS) - set(fields):
                     reasons.add("REQUIRED_HEADER_FIELD_INVALID")
                     break
-                if fields["current_stage_index"] != stage:
+                if fields["current_stage_index"] != Decimal(stage):
                     reasons.add("STAGE_IDENTITY_INVALID")
+                    break
+                if not all(token in schema for token in REQUIRED_COLUMN_TOKENS):
+                    reasons.add("NODEMAP_SCHEMA_INVALID")
+                    break
+                if schemas and schema != schemas[0]:
+                    reasons.add("NODEMAP_SCHEMA_INVALID")
+                    break
+                if rows and any(
+                    fields[field] < rows[-1][field]
+                    for field in ("current_stage_relative_date", "cycles", "time")
+                ):
+                    reasons.add("CHRONOLOGY_INVALID")
                     break
                 rows.append(fields)
                 schemas.append(schema)
 
         if rows and len(rows) == len(stages):
-            for field in ("current_stage_relative_date", "cycles", "time"):
-                if not _nondecreasing([row[field] for row in rows]):
-                    reasons.add("CHRONOLOGY_INVALID")
             if len({row["cycles"] for row in rows}) < 2 or len({
                 row["cracklength"] for row in rows
             }) < 2:
                 reasons.add("STATE_VARIATION_INSUFFICIENT")
-            expected_schema = schemas[0]
-            if any(schema != expected_schema for schema in schemas[1:]) or not all(
-                token in expected_schema for token in REQUIRED_COLUMN_TOKENS
-            ):
-                reasons.add("NODEMAP_SCHEMA_INVALID")
 
         sequence = {
             "central_directory_readable": True,
@@ -275,7 +328,8 @@ def audit(archive_path: Path, *, expected_size: int = EXPECTED_SIZE,
             "distinct_cycle_count": len({row["cycles"] for row in rows}),
             "distinct_cracklength_count": len({row["cracklength"] for row in rows}),
             "stable_required_nodemap_schema": (
-                bool(schemas) and all(schema == schemas[0] for schema in schemas) and
+                len(schemas) == len(stages) and bool(stages) and
+                all(schema == schemas[0] for schema in schemas) and
                 all(token in schemas[0] for token in REQUIRED_COLUMN_TOKENS)
             ),
             "header_byte_cap": HEADER_BYTE_CAP,
@@ -297,8 +351,10 @@ def _result(identity: dict[str, Any], sequence: dict[str, Any],
     )
     if not reasons:
         conclusion = "empirical_global_sequence_may_enter_forecast_design"
-    elif reasons == {"ARCHIVE_IDENTITY_MISMATCH"} or not sequence.get(
-        "central_directory_readable", False
+    elif (
+        reasons == {"ARCHIVE_IDENTITY_MISMATCH"}
+        or reasons.intersection(PARSER_FAILURE_REASONS)
+        or not sequence.get("central_directory_readable", False)
     ):
         conclusion = "qualification_not_established"
     else:

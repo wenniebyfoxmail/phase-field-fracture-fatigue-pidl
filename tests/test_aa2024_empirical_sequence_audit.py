@@ -1,8 +1,12 @@
 import hashlib
 import importlib.util
+import io
 import json
+import stat
 import sys
 import zipfile
+import zlib
+from decimal import Decimal
 from pathlib import Path
 
 
@@ -15,17 +19,21 @@ SPEC.loader.exec_module(MODULE)
 
 
 SCHEMA = (
-    "# ID; x_undef [mm]; y_undef [mm]; z_undef [mm]; u [mm]; v [mm]; w [mm]; "
+    "ID; x_undef [mm]; y_undef [mm]; z_undef [mm]; u [mm]; v [mm]; w [mm]; "
     "epsx [%]; epsy [%]; epsxy [1]; epseqv [%]\n"
 )
 
 
 def _header(stage: int, *, cycles: float | None = None,
             cracklength: float | None = None, drop: str | None = None,
-            schema: str = SCHEMA, header_stage: int | None = None) -> str:
+            schema: str = SCHEMA, header_stage: int | str | None = None,
+            relative_date: float | str | None = None,
+            pre_schema_comment: str = "") -> str:
     values = {
         "current_stage_index": stage if header_stage is None else header_stage,
-        "current_stage_relative_date": float(stage),
+        "current_stage_relative_date": (
+            float(stage) if relative_date is None else relative_date
+        ),
         "reference_stage_index": 1,
         "force": 100.0 + stage,
         "displacement": -1.0,
@@ -41,6 +49,8 @@ def _header(stage: int, *, cycles: float | None = None,
             lines.append(f"# {key} : value_element : {value}\n")
         else:
             lines.append(f"# {key} : {value}\n")
+    if pre_schema_comment:
+        lines.append(pre_schema_comment)
     lines.append(schema)
     lines.append("1; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0\n")
     return "".join(lines)
@@ -117,7 +127,7 @@ def test_state_must_vary(tmp_path):
 
 def test_schema_must_be_stable_and_mechanically_complete(tmp_path):
     archive, size, digest = _fixture(
-        tmp_path, header_kwargs={2: {"schema": "# ID; x_undef [mm]; u [mm]\n"}}
+        tmp_path, header_kwargs={2: {"schema": "ID; x_undef [mm]; u [mm]\n"}}
     )
     result = _audit(archive, size, digest)
     assert "NODEMAP_SCHEMA_INVALID" in result["stop_reason_codes"]
@@ -158,3 +168,199 @@ def test_output_must_be_strictly_inside_run_root(tmp_path):
             pass
         else:
             raise AssertionError(f"unsafe output accepted: {invalid}")
+
+
+def test_connection_directories_cannot_satisfy_pairing(tmp_path):
+    archive = tmp_path / "directories.zip"
+    with zipfile.ZipFile(archive, "w") as zf:
+        for stage in (1, 2):
+            zf.writestr(
+                f"global_3d_dic/Nodemaps/global_3d_dic_results_1_{stage}.txt",
+                _header(stage),
+            )
+            zf.writestr(
+                "global_3d_dic/Connections/"
+                f"global_3d_dic_results_1_{stage}_connections.txt/",
+                b"",
+            )
+    result = _audit(
+        archive, archive.stat().st_size,
+        hashlib.md5(archive.read_bytes()).hexdigest(),
+    )
+    assert result["sequence_checks"]["global_connection_count"] == 0
+    assert "GLOBAL_STAGE_PAIRING_INVALID" in result["stop_reason_codes"]
+
+
+def test_unix_directory_metadata_without_slash_cannot_satisfy_pairing(tmp_path):
+    archive = tmp_path / "mode-directories.zip"
+    with zipfile.ZipFile(archive, "w") as zf:
+        for stage in (1, 2):
+            zf.writestr(
+                f"global_3d_dic/Nodemaps/global_3d_dic_results_1_{stage}.txt",
+                _header(stage),
+            )
+            info = zipfile.ZipInfo(
+                "global_3d_dic/Connections/"
+                f"global_3d_dic_results_1_{stage}_connections.txt"
+            )
+            info.create_system = 3
+            info.external_attr = (stat.S_IFDIR | 0o755) << 16
+            zf.writestr(info, b"")
+    result = _audit(
+        archive, archive.stat().st_size,
+        hashlib.md5(archive.read_bytes()).hexdigest(),
+    )
+    assert result["sequence_checks"]["global_connection_count"] == 0
+    assert "GLOBAL_STAGE_PAIRING_INVALID" in result["stop_reason_codes"]
+
+
+def test_actual_noncomment_schema_controls_decision(tmp_path):
+    misleading = "# ID; x_undef; y_undef; z_undef; u; v; w; epsx; epsy; epsxy; epseqv\n"
+    archive, size, digest = _fixture(
+        tmp_path,
+        header_kwargs={
+            2: {"pre_schema_comment": misleading, "schema": "ID; u\n"},
+        },
+    )
+    result = _audit(archive, size, digest)
+    assert "NODEMAP_SCHEMA_INVALID" in result["stop_reason_codes"]
+    assert result["sequence_checks"]["stable_required_nodemap_schema"] is False
+
+
+def test_numeric_row_is_rejected_at_first_byte():
+    handle = io.BytesIO(b"1; 0; 0; 0; 0; 0\n")
+    try:
+        MODULE._read_bounded_line(handle, 0)
+    except MODULE.AuditError:
+        pass
+    else:
+        raise AssertionError("numerical row was accepted as a header")
+    assert handle.tell() == 1
+
+
+def test_header_cap_is_enforced_without_overread(tmp_path):
+    overlong = "#" + ("x" * MODULE.HEADER_BYTE_CAP) + "\n"
+    archive, size, digest = _fixture(
+        tmp_path, header_kwargs={1: {"pre_schema_comment": overlong}}
+    )
+    result = _audit(archive, size, digest)
+    assert result["stop_reason_codes"] == ["NODEMAP_HEADER_INVALID"]
+    assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+def test_first_stage_failure_prevents_later_header_access(tmp_path, monkeypatch):
+    archive, size, digest = _fixture(tmp_path)
+    original = MODULE._read_header
+    opened = []
+
+    def guarded(zip_file, info):
+        opened.append(info.filename)
+        if "_2.txt" in info.filename:
+            raise MODULE.AuditError("synthetic stage-2 failure")
+        if "_3.txt" in info.filename:
+            raise AssertionError("stage 3 opened after stage-2 failure")
+        return original(zip_file, info)
+
+    monkeypatch.setattr(MODULE, "_read_header", guarded)
+    result = _audit(archive, size, digest)
+    assert result["stop_reason_codes"] == ["NODEMAP_HEADER_INVALID"]
+    assert not any("_3.txt" in name for name in opened)
+
+
+def test_decimal_stage_identity_is_exact(tmp_path):
+    archive, size, digest = _fixture(
+        tmp_path, header_kwargs={1: {"header_stage": "1.0000000000000001"}}
+    )
+    result = _audit(archive, size, digest)
+    assert "STAGE_IDENTITY_INVALID" in result["stop_reason_codes"]
+
+
+def test_decimal_chronology_is_exact(tmp_path):
+    archive, size, digest = _fixture(
+        tmp_path,
+        header_kwargs={
+            1: {"relative_date": "1.0000000000000001"},
+            2: {"relative_date": "1.0000000000000000"},
+        },
+    )
+    result = _audit(archive, size, digest)
+    assert "CHRONOLOGY_INVALID" in result["stop_reason_codes"]
+
+
+def test_malformed_value_element_is_controlled_and_inconclusive(tmp_path):
+    bad_header = _header(1).replace(
+        "# force : value_element : 101.0", "# force : value_element"
+    )
+    archive = tmp_path / "malformed-field.zip"
+    with zipfile.ZipFile(archive, "w") as zf:
+        for stage in (1, 2):
+            zf.writestr(
+                f"global_3d_dic/Nodemaps/global_3d_dic_results_1_{stage}.txt",
+                bad_header if stage == 1 else _header(stage),
+            )
+            zf.writestr(
+                "global_3d_dic/Connections/"
+                f"global_3d_dic_results_1_{stage}_connections.txt",
+                "connection header only\n",
+            )
+    result = _audit(
+        archive, archive.stat().st_size,
+        hashlib.md5(archive.read_bytes()).hexdigest(),
+    )
+    assert result["stop_reason_codes"] == ["NODEMAP_HEADER_INVALID"]
+    assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+def test_huge_stage_identifier_is_controlled_and_inconclusive(tmp_path):
+    huge = "9" * 5000
+    archive = tmp_path / "huge-stage.zip"
+    with zipfile.ZipFile(archive, "w") as zf:
+        zf.writestr(
+            f"global_3d_dic/Nodemaps/global_3d_dic_results_1_{huge}.txt",
+            _header(1),
+        )
+        zf.writestr(
+            "global_3d_dic/Connections/"
+            f"global_3d_dic_results_1_{huge}_connections.txt",
+            "connection header only\n",
+        )
+    result = _audit(
+        archive, archive.stat().st_size,
+        hashlib.md5(archive.read_bytes()).hexdigest(),
+    )
+    assert "STAGE_ID_PARSE_INVALID" in result["stop_reason_codes"]
+    assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+def test_member_decode_and_decompression_failures_are_controlled(
+    tmp_path, monkeypatch
+):
+    archive, size, digest = _fixture(tmp_path)
+    for failure in (
+        UnicodeDecodeError("utf-8", b"x", 0, 1, "bad local name"),
+        zlib.error("bad deflate stream"),
+    ):
+        monkeypatch.setattr(
+            MODULE, "_read_header",
+            lambda *_args, failure=failure: (_ for _ in ()).throw(failure),
+        )
+        result = _audit(archive, size, digest)
+        assert result["stop_reason_codes"] == ["NODEMAP_HEADER_INVALID"]
+        assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+def test_partial_header_coverage_never_reports_stable_schema(tmp_path):
+    archive, size, digest = _fixture(
+        tmp_path, header_kwargs={2: {"drop": "cycles"}}
+    )
+    result = _audit(archive, size, digest)
+    checks = result["sequence_checks"]
+    assert checks["all_headers_parsed"] is False
+    assert checks["stable_required_nodemap_schema"] is False
+    assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+def test_decimal_parser_preserves_exact_values():
+    assert MODULE._parse_numeric("1.0000000000000001") == Decimal(
+        "1.0000000000000001"
+    )

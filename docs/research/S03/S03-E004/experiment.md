@@ -2,7 +2,7 @@
 storyline_id: S03
 experiment_id: S03-E004
 protocol_revision: v1
-status: code_review_pending
+status: code_revised_re_review_pending
 started_at: 2026-10-09
 primary_storyline: S03
 related_storylines: [S02]
@@ -59,8 +59,10 @@ No check compares it with `797`, and no official mapping basename is required.
 
 1. Validate the archive size and MD5 before opening it.
 2. Validate safe, unique POSIX member paths and ordinary supported ZIP members.
-3. Discover global nodemaps and connections only by these released structural
-   forms, case-insensitively for directories and exactly for numeric stage ID:
+3. Discover global nodemap and connection **file entries** only by these
+   released structural forms, case-insensitively for directories and exactly
+   for numeric stage ID. ZIP directory entries, including Unix directory-mode
+   entries without a trailing slash, cannot satisfy either role:
    `global_3d_dic/Nodemaps/global_3d_dic_results_1_<stage>.txt` and
    `global_3d_dic/Connections/global_3d_dic_results_1_<stage>_connections.txt`.
 4. Require at least two discovered stages, unique numeric IDs, and exact equality
@@ -68,9 +70,12 @@ No check compares it with `797`, and no official mapping basename is required.
 
 ### Bounded header audit
 
-For every discovered global nodemap, read only through the first non-comment
-column-header line, with a hard per-member uncompressed-byte cap of 131,072.
-Do not read any numerical nodemap row or any connection body.
+For every discovered global nodemap, comments may supply required scalar
+metadata, but only the first non-comment line is the column-header line.
+Schema-like comments do not satisfy or override it. Read only through that
+line, with a hard per-member parser-consumption cap of 131,072 uncompressed
+bytes. A numerical-row prefix before the column header is a parser failure and
+must stop before the complete row is consumed. Do not read any connection body.
 
 Require exactly one parseable finite value for:
 
@@ -78,12 +83,16 @@ Require exactly one parseable finite value for:
   `reference_stage_index`;
 - `force`, `displacement`, `cycles`, `time`, and `cracklength`.
 
-The `current_stage_index` must equal the numeric ID in the member basename.
-Across ascending stage IDs, `current_stage_relative_date`, `cycles`, and `time`
-must be nondecreasing. There must be at least two distinct cycle values and two
-distinct crack-length values. All stages must expose the same normalized
+Required numbers are parsed as finite decimal values without preliminary
+binary-float rounding. The `current_stage_index` must equal the numeric ID in
+the member basename exactly. Across ascending stage IDs,
+`current_stage_relative_date`, `cycles`, and `time` must be nondecreasing under
+exact decimal comparison. There must be at least two distinct cycle values and
+two distinct crack-length values. All stages must expose the same normalized
 nodemap column schema, which must include node ID, undeformed coordinates,
-displacements, and strain components.
+displacements, and strain components. Per-stage identity, schema, and
+chronology checks occur before the next member is opened; only variation checks
+wait for the complete sequence.
 
 No monotonic-crack-growth assumption is imposed: DCPD crack length may be noisy.
 No fixed forecast horizon, split, model, threshold, or inverse parameter is
@@ -97,6 +106,20 @@ chosen in this Experiment.
 - `BLOCKED_EMPIRICAL_SEQUENCE`: the actual archive cannot support that bounded
   sequence claim under v1.
 - Parser/identity failure permits only `qualification_not_established`.
+  Whole-sequence positive flags remain false whenever header coverage is
+  incomplete.
+
+## Independent Code Ready review history
+
+- Exact commit `10b1bf6607991e78fbec8fa58fdf325c5bc0a79d` received
+  `REVISE_CODE`. Attachment hashes matched, but synthetic counterexamples found
+  six blocking classes: directories satisfying file pairing; commented-schema
+  substitution; byte/body/first-failure read-boundary violations; lossy float
+  comparison; escaping parse/decode/decompression failures; and overstrong
+  failure conclusions/partial-coverage flags.
+- The subsequent local revision preserves the v1 scientific question while
+  closing those implementation gaps. It must receive a new independent
+  `PASS_CODE_READY` on its exact committed bytes before any real archive run.
 
 ## Required evidence
 
@@ -111,4 +134,3 @@ Even a pass does not establish a causal forecast, independent-specimen
 generalisation, phase-field recovery, material-property identification,
 fatigue-law truth, road transfer, or deployment. The released DIC fields and
 DCPD crack length are observations; they are not phase-field labels.
-
