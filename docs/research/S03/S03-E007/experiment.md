@@ -1,7 +1,7 @@
 ---
 storyline_id: S03
 experiment_id: S03-E007
-protocol_revision: v2
+protocol_revision: v3
 status: frozen-before-execution
 started_at: 2026-10-09
 closed_at:
@@ -49,12 +49,22 @@ one-dimensional ruler cannot independently qualify a full planar homography.
 1. Restrict processing to the bottom `50%` of the native image, where all three
    already-inspected reference-1 images place the ruler. Do not tune this crop
    after reference-2 results are viewed.
-2. Detect the ruler's long axis from the longest near-horizontal dark boundary
-   pair. Rectify only rotation and along-axis perspective; do not infer a 2-D
-   isotropic beam-plane scale.
-3. In the upper tick band of the rectified ruler, compute a one-dimensional
-   vertical-line response. Retain a sequence only when at least 50 consecutive
-   millimetre ticks can be indexed with no gap longer than two nominal ticks.
+2. Resize the search crop to `0.25x`, convert it to grayscale, apply a `5 x 5`
+   Gaussian blur and Canny thresholds `40/120`, then run probabilistic Hough
+   detection with `rho=1`, `theta=pi/720`, vote threshold `80`, minimum line
+   length `25%` of the working-image width and maximum gap `40` working pixels.
+   Keep segments within `8 degrees` of horizontal and choose the segment with
+   the smallest midpoint y-coordinate (longest segment breaks an exact tie).
+   This is the ruler's single upper boundary; a lower boundary is not required.
+3. Map that line to native pixels. Across its detected x-span, sample the band
+   from `5` through `90` native pixels below the line. Average the absolute
+   horizontal Sobel response over the band and smooth it with a one-dimensional
+   Gaussian sigma of `1` pixel. Estimate the nominal tick period from the
+   strongest autocorrelation lag in `[8, 30]` native pixels. Detect peaks with
+   minimum separation `floor(0.55 * period)` and prominence `0.25` times the
+   response standard deviation. Assign integer tick indices by rounded peak
+   separation divided by the nominal period. Retain the longest sequence with
+   step sizes of one or two ticks; require at least 50 indexed ticks.
 4. Fit a one-dimensional projective coordinate from image position to tick
    index using RANSAC. Convert tick index to millimetres; absolute ruler origin
    is irrelevant.
@@ -106,6 +116,13 @@ or add a manual arm after viewing results. Stop after the six-image decision.
   reference 1 for Beam 5 places the ruler's upper tick band slightly above the
   40% boundary. No reference-2 pixels or scale outcomes had been viewed. The
   question, evidence, primary criterion and stop rule are unchanged.
+- `v3`, 2026-10-09, after reference-2 retrieval but before any reference-2
+  pixel inspection or scale computation: replaced the lower-boundary
+  requirement with the exact single-upper-boundary and tick-response procedure
+  above. Development on reference 1 showed that Beam 6's ruler lower edge
+  merges into the dark background, while the upper boundary and periodic tick
+  response remain detectable. Reference 2 stayed excluded from development.
+  The question, evidence, primary criterion and stop rule are unchanged.
 
 ## Minimum evidence
 
