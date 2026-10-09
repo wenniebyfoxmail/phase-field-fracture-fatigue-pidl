@@ -2,7 +2,7 @@
 storyline_id: S09
 experiment_id: S09-E004
 protocol_revision: v1-equilibrium-operator-prototype
-status: running
+status: complete_scientific_fail
 primary_storyline: S09
 related_storylines: [S04]
 ---
@@ -128,4 +128,6 @@ static checks and plotting only; no training loop runs on Mac.
   entered.  Independent Code Ready review passed at exact commit
   `11fd75d70b18165d6214d50c90adc9c9c9b522a5`.
 - Taobo Run S09-E004-R005 started on GPU 0 at 2026-10-09 17:52:02
-  Europe/London.  Execution success and scientific result remain pending.
+  Europe/London and completed in 45.78 s.  Execution succeeded; the primary
+  ratio was 1.68741168, so the frozen scientific criterion failed.  Retrieval,
+  remote archive and independent Evidence Ready review all passed.

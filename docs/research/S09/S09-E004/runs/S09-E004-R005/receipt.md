@@ -1,6 +1,6 @@
 # S09-E004-R005 launch receipt
 
-- Status: running
+- Status: execution succeeded; scientific criterion failed; retrieval verified
 - Producer: Taobo `GPUServer8`
 - Start: 2026-10-09 17:52:02 Europe/London
 - PID: `4178894`
@@ -16,6 +16,13 @@
 - Retrieval route: Taobo to Mac
 - Initial health: process running; GPU 0 at 2,152 MiB and 20%; packet audit,
   receipt and frozen training sequence present.
+- Completion: 45.78 s; peak CUDA allocation 535,286,272 B.
+- Final primary ratio: `1.68741168 > 0.95`, FAIL.
+- Retrieval: 11/11 files match remote SHA-256 and byte sizes.
+- Remote archive: `/mnt/data2/drtao/pidl_archives/S09-E004-R005_11fd75d_20261009T174900Z/output`.
+- Raw receipt caveat: it retains `run_id="output"` and `retrieval="pending"`;
+  this tracked receipt and `retrieval_verification.json` record the resolved
+  identity and completed retrieval without rewriting the raw producer record.
 
 Command:
 
