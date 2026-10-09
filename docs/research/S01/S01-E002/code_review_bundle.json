@@ -1,0 +1,42 @@
+{
+  "protocol": "S01-E002-v1",
+  "created_at": "2026-10-09",
+  "repository_base_commit": "27647a2",
+  "repository_branch": "codex/s01-e002-pavetrack-repair-20261009",
+  "working_tree_status": "isolated task worktree; bind review by file hashes and reviewed commit",
+  "workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",
+  "reused_artifacts": {
+    "S01-E001-R008 full-frame proposer": "1dd892263bcbd428b60ea9397e5b4d56b47c833322004e896993e0d971b2cf59",
+    "S01-E001-R008 hard-negative reranker": "9fe42b880af8eb94722d418b603abe0541753ea6a30ccbbbdad1d3fc2b465d3c",
+    "official yolo11n.pt initial weights": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1f"
+  },
+  "files": {
+    "docs/research/S01/S01-E002/data_lock.json": "7bb224811a218aa5c166cd76b478bcc33d3d8a92b1144c96798347a183269d71",
+    "docs/research/S01/S01-E002/execution_runbook.md": "7332d5527460895b9f48d46a1fb510bd1bd98eae6f4524c82d69cec7e122ab78",
+    "docs/research/S01/S01-E002/experiment.md": "e0d8f46ec7c4f79a5526f0e8a2183cc9a31da7e005c5a984cac2060c351bc621",
+    "docs/research/S01/S01-E002/failure_audit.md": "2b0f9f73c351fd9d59be0c54b7f5842428cdac508e14d3a11cfd9cf9f2f38d30",
+    "docs/research/S01/S01-E002/run_config.json": "eecd8eec7b32ecb81e1b3b4a2477fc48db670094ee2317a51b35d65b16e63e38",
+    "docs/reviews/S01-E002_code_review_request.md": "01700259e12310eb689a6b603dc41ccc6abe63c60efdef1df57fd32d0e18959a",
+    "scripts/pavetrack_tiled_cv/__init__.py": "c4d5faefcbe765aa12bac42344642426513c30e0c0d4286c5cc34e4ff56a5e13",
+    "scripts/pavetrack_tiled_cv/audit_s01_e001.py": "edbf7a9d51cac185ffdfdf65a97919d6809a57083715e12b665eeab0d00566d5",
+    "scripts/pavetrack_tiled_cv/evaluate_development.py": "11a9258895cc23fc55df24bf00cda8d86f760aa0089f16313865dceaa8debeae",
+    "scripts/pavetrack_tiled_cv/freeze_for_test.py": "ee42a429506f630e5cba8257e10862f0754907cf537cea99e11a1ee39178506e",
+    "scripts/pavetrack_tiled_cv/geometry.py": "0e286f1828fede9a8bccbd68e5f050e140bf870f231760694d6cde13c6cb32ce",
+    "scripts/pavetrack_tiled_cv/prepare_confirmatory.py": "34980d1a34a4d1109e0e5b738de96238530b841d3f3abbfdef3a7da66023d834",
+    "scripts/pavetrack_tiled_cv/prepare_development.py": "1e1552386835dbe2aee4c93008cd9c58894b855ad0d4af8245e37a70f840fedf",
+    "scripts/pavetrack_tiled_cv/prepare_development_tiles.py": "1e95d90acce5223e05a85f4d4c1b7bf6a2ebca086f41f5df028c7388fc60667d",
+    "scripts/pavetrack_tiled_cv/train_tiled_proposer.py": "b91d507f537ccd284099c547cf5dc834ab4fb42feb09eb6961b5d15617401936",
+    "tests/pavetrack_tiled_cv/test_firewall.py": "e95fa5b1284b598c5739a78eb78be49c6ee35fd8878021ad04ae1788039784c6",
+    "tests/pavetrack_tiled_cv/test_geometry.py": "2f2572da8cc3acbc93857fa456ba86794663e8d95df23f67bfe47c0bba817c9a",
+    "tests/pavetrack_tiled_cv/test_prepare_development_tiles.py": "5fc6f58882209fbdd43f501e4b0a372825ce2cea846eb4f6c841419861fab0a4"
+  },
+  "local_static_checks": {
+    "result": "PASS",
+    "existing_pavetrack_tests": 32,
+    "new_tiled_repair_tests": 7,
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "training_or_confirmatory_access": false
+  },
+  "review_status": "pending_independent_review"
+}
