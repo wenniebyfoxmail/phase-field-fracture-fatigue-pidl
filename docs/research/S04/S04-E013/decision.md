@@ -1,6 +1,6 @@
 # S04-E013 coverage decision
 
-Status: Stage 1 attempt B complete; fixed procedure failed 12/12 joint gates; Evidence review pending.
+Status: Stage 1 complete; fixed procedure failed 12/12 joint gates; Evidence review passed.
 
 The FEM side is ready for the native-fidelity matrix: S04-E010 contains c20/c60/c82/c83 at s2/s4/s5 with qualified state identity and the correct accepted prior. The read-only PIDL control side now has the matching c20/c60/c82/c83 x s2/s4/s5 matrix plus the c85s4 own-event row, including nodal displacement and native-Q4 mechanism fields. This closes the paired-control asset gap while preserving the rule that late-state evidence cannot substitute for early or middle states.
 
@@ -50,4 +50,6 @@ gate. Exact boundary conditions passed in every row; displacement, strain and
 Failure is already present at c20; strain error improves toward c83 while the
 residual peaks at c82 and declines at c83, so the result does not support a
 monotonic near-transition degradation claim. Full numerical record:
-[stage1_result.md](stage1_result.md).
+[stage1_result.md](stage1_result.md). Independent supplied-evidence review
+returned `EVIDENCE PASS`, required no numerical rerun and retained Stage 2 as
+unauthorized. Review record: [stage1_evidence_review.md](stage1_evidence_review.md).

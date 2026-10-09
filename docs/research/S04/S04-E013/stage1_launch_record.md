@@ -78,10 +78,11 @@ Attempt B subsequently completed all twelve runs and aggregation at
 error or missing row was reported, and zero runs passed the joint gate. See
 [stage1_result.md](stage1_result.md) for the field-wise result.
 
-## Next evidence gate
+## Evidence disposition
 
-Submit the completed matrix to a separate supplied-evidence review. The
-aggregated execution result is `SUPERVISED_CAPACITY_FAIL_FIXED_PROCEDURE`;
-architecture representability remains `UNRESOLVED`. `SUPERVISED_CAPACITY_PASS`,
-Stage 2, route promotion, `FULL_FEM_REPRODUCTION` and
-`QUALIFIED_FEM_TEACHER` remain unavailable.
+The separate supplied-evidence review returned `EVIDENCE PASS` and required no
+numerical rerun. The registered result is
+`SUPERVISED_CAPACITY_FAIL_FIXED_PROCEDURE`; architecture representability
+remains `UNRESOLVED`. `SUPERVISED_CAPACITY_PASS`, Stage 2, route promotion,
+`FULL_FEM_REPRODUCTION` and `QUALIFIED_FEM_TEACHER` remain unavailable. See
+[stage1_evidence_review.md](stage1_evidence_review.md).

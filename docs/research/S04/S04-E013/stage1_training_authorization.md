@@ -2,7 +2,7 @@
 
 Review date: 2026-10-08
 Planning verdict: `PLAN PASS`
-Execution status: `ATTEMPT_B_COMPLETE__FAIL_FIXED_PROCEDURE__EVIDENCE_REVIEW_PENDING`
+Execution status: `ATTEMPT_B_COMPLETE__FAIL_FIXED_PROCEDURE__EVIDENCE_PASS`
 External review conversation: <https://chatgpt.com/c/6ac816d7-8430-8329-98bb-a23484959fad>
 
 ## Purpose
@@ -77,4 +77,4 @@ The fit metrics and residual are reported separately. A run that fits displaceme
 
 ## Authorization boundary
 
-`CANDIDATE_TRAINING_AUTHORIZED=true` applied only to the frozen 12-run Stage 1 matrix at reviewed commit `769396f93ae5258eb984e1585d4274f7990afb11`. Attempt A stopped before its first optimizer step because the external dispatcher lacked the CuBLAS deterministic workspace setting and is retained as `INCONCLUSIVE`. A supplied-incident review allowed a launcher-only correction and a wholly fresh attempt without a new code review. Attempt B used fresh R016--R027 identities and `CUBLAS_WORKSPACE_CONFIG=:4096:8` and is complete. The fail-closed aggregate result is `SUPERVISED_CAPACITY_FAIL_FIXED_PROCEDURE` with architecture representability `UNRESOLVED`. Evidence review is pending. `SUPERVISED_CAPACITY_PASS`, Stage 2, route promotion, `FULL_FEM_REPRODUCTION`, and `QUALIFIED_FEM_TEACHER` remain unavailable or unauthorized. See [stage1_launch_record.md](stage1_launch_record.md) and [stage1_result.md](stage1_result.md).
+`CANDIDATE_TRAINING_AUTHORIZED=true` applied only to the frozen 12-run Stage 1 matrix at reviewed commit `769396f93ae5258eb984e1585d4274f7990afb11`. Attempt A stopped before its first optimizer step because the external dispatcher lacked the CuBLAS deterministic workspace setting and is retained as `INCONCLUSIVE`. A supplied-incident review allowed a launcher-only correction and a wholly fresh attempt without a new code review. Attempt B used fresh R016--R027 identities and `CUBLAS_WORKSPACE_CONFIG=:4096:8` and is complete. The fail-closed aggregate result is `SUPERVISED_CAPACITY_FAIL_FIXED_PROCEDURE` with architecture representability `UNRESOLVED`. Independent supplied-evidence review returned `EVIDENCE PASS` and required no numerical rerun. `SUPERVISED_CAPACITY_PASS`, Stage 2, route promotion, `FULL_FEM_REPRODUCTION`, and `QUALIFIED_FEM_TEACHER` remain unavailable or unauthorized. See [stage1_launch_record.md](stage1_launch_record.md), [stage1_result.md](stage1_result.md), and [stage1_evidence_review.md](stage1_evidence_review.md).

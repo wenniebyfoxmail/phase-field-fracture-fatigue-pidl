@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E013
 protocol_revision: 20261008-r0
-status: stage1-attempt-b-complete; fail-fixed-procedure; evidence-review-pending
+status: stage1-complete; fail-fixed-procedure; evidence-pass
 ---
 # Freeze separate PIDL evaluation contracts after S04-E012
 
@@ -44,5 +44,7 @@ admitted 12 valid rows, reported no missing row or integrity error, and counted
 zero joint passes. All rows passed the exact BC gate and failed displacement,
 strain and `rho_u`. The registered execution result is
 `SUPERVISED_CAPACITY_FAIL_FIXED_PROCEDURE`; architecture representability
-remains `UNRESOLVED`. Evidence review remains pending. See
-[stage1_result.md](stage1_result.md).
+remains `UNRESOLVED`. Independent supplied-evidence review returned
+`EVIDENCE PASS` and required no numerical rerun. See
+[stage1_result.md](stage1_result.md) and
+[stage1_evidence_review.md](stage1_evidence_review.md).

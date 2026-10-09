@@ -44,6 +44,7 @@
 | Field-supervision direct forcing | `negative` | Keep as direct-forcing negative; rerun only with normalized/gated field loss and early process-zone criteria. |
 | Surrogate smoke roots | `diagnostic` | Tooling only. Do not use for physics claims. |
 | c86 binary-crack skeleton + fixed AT1 equilibrium assimilation | `negative` | Reject geometry-only damage reconstruction: c86 damage morphology looks close, but c87 raw and c89 active support spread to about 100x FEM area. Hard binary/full-resolution masks are eta0-singular. Near-core degradation amplitude, not crack location alone, is the missing state. Next gate must infer amplitude from c86 observables rather than tune target-cycle thresholds. Local `analysis/fem_visible_crack_equilibrium_20260716/decision.md`. |
+| S04-E013 Stage 1 supervised UV finite-budget matrix | `negative` | Keep as a fixed-procedure negative: 12/12 runs were valid but 0/12 passed the joint gate. Failure is present at c20; displacement stays near five times its gate, strain improves but remains outside its gate, and residual is nonmonotonic through c83. Architecture representability remains unresolved. Do not rerun blindly or authorize Stage 2; first freeze a bounded discriminator for optimization, sampling/objective mismatch and representation. `docs/research/S04/S04-E013/stage1_result.md`; `docs/research/S04/S04-E013/stage1_evidence_review.md`. |
 
 ## Quarantine / Deletion Queue
 
