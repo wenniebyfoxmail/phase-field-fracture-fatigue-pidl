@@ -1,0 +1,22 @@
+{
+  "seed": "20261009",
+  "algorithm": "lexicographic SHA256(seed:group), ties group name; 274/59/59 groups via largest remainder",
+  "source_manifest_sha256": "dde5f50a12ab6bc483f3fd9d4ec6654a7957ddc8fbf2c4e6360b690dbf43a871",
+  "split_manifest_sha256": "82b0b89fb91aaecbd58990293445a4570ea7895af30885c723f4928d79f6e67c",
+  "counts": {
+    "train": {
+      "groups": 274,
+      "images": 316
+    },
+    "validation": {
+      "groups": 59,
+      "images": 62
+    },
+    "internal_test": {
+      "groups": 59,
+      "images": 80
+    }
+  },
+  "site_independence": "UNKNOWN",
+  "status": "DESIGN_ASSIGNMENT_NOT_TRAINING_AUTHORIZATION"
+}

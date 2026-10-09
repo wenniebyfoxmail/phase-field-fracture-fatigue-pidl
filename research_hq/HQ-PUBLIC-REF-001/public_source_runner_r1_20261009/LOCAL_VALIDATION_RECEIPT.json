@@ -1,0 +1,19 @@
+{
+  "status": "LOCAL_SYNTHETIC_AND_IDENTITY_CHECKS_PASS",
+  "tests": 9,
+  "rows_revalidated": 816,
+  "backward_calls": 0,
+  "optimizer_steps": 0,
+  "training_runs": 0,
+  "producer_access": false,
+  "snapshot": "93a3b0b9cf9928022af646fb974c8ba8809a255f47ed402f35c28657bbeaaa7b",
+  "environment": {
+    "python": "3.12.2",
+    "torch": "2.11.0",
+    "numpy": "2.2.6",
+    "pillow": "10.4.0",
+    "matplotlib": "3.9.2",
+    "cuda": null
+  },
+  "scope": "synthetic forward/static checks and file identity only; no execution authorization"
+}
