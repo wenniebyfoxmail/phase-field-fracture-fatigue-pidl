@@ -1,0 +1,22 @@
+{
+  "execute": true,
+  "producer_alias": "gpu-server",
+  "experiment_id": "HQ-PUBLIC-REF-001",
+  "run_id": "HQ-PUBLIC-REF-001-R001",
+  "protocol": "r1-gpu-server-amendment",
+  "user_authorization_reference": "User messages 2026-10-09: 授权 请执行; 你可以直接使用ssh gpu-server",
+  "hostname": "D-26-09",
+  "reviewed_commit": "ea44c1b4a07b7626d7f22a80943ca39d45177395",
+  "packaging_commit": "13789f9b0cf9ea377e9e046d74e1aa7b458e457c",
+  "code_snapshot": "e17179cba87cf2ae134b7e99d82614c6eacd49bd5c54ef17f000468e03a1347e",
+  "data_lock_sha256": "19f0e55ba20c8758a06f72f3b3300bd25b6821d241b01f690a75777ff3c794d8",
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.11.0+cu128",
+    "numpy": "2.5.2",
+    "pillow": "11.3.0",
+    "matplotlib": "3.11.2",
+    "cuda": "12.8"
+  },
+  "output_root": "C:\\Users\\xw436\\jobs"
+}
