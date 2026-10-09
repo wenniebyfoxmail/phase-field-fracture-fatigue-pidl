@@ -2,7 +2,7 @@
 storyline_id: S09
 experiment_id: S09-SIDE-DIAG-20261008
 protocol_revision: v1-cause-isolation-candidate
-status: prepared_pending_independent_review
+status: closed
 ---
 # Side conversation: bounded cause-isolation diagnostics
 
@@ -46,3 +46,7 @@ Prepared, NOT LAUNCHED. Independent review is pending because side-conversation 
 Main thread owns review/execution after explicit user handoff. Branch codex/s09-side-cause-checks-20261008, base5cd4fd568a468b539d08c1a1f031c6fd86374369. In scope: this runner/contract, offline verification, run evidence and figures/Obsidian; original model/runner and shared checkout excluded.
 
 Minimum decision visualization: all assessed aggregate ratios versus update count with persistence1 and target.8; best-checkpoint per-window candidate/persistence comparison (all windows, single window only for that arm), with fixed original list index8/U011 origin95 next-step damage-increment target/prediction/persistence field. Shared scale; no field selection after scores. Best CSV and fixed-window NPZ are exported from the exact assessed prediction arrays, only when best score improves; no extra forward or parameter update. Raw files remain local_archive. Figures explain bounded fitting, not morphology/generalization; no independent uncertainty from16 overlapping seen windows. Original score, training and stop rules unchanged.
+
+## 2026-10-09 closeout
+
+Six valid executions retrieved/verified, independent Evidence Ready PASS; three named fit criteria pass and three fail, no overall success gate. R001 pretraining launch failure retained. See decision_20261009.md and decision_table.csv. Required decision/field visualizations complete. No subsequent development/P2/PINO run authorized by this closeout.

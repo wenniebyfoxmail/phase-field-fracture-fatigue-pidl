@@ -1,0 +1,12 @@
+{
+  "run_id": "R001_single_window",
+  "execution": "failed_before_training",
+  "updates": 0,
+  "scientific_verdict": "not_evaluated",
+  "launcher_pid": 3226131,
+  "root": "/mnt/data2/drtao/wennie/pf_s09_side_a1e8cbf_20261009/runs/R001_single_window",
+  "cause": "release copied before preparation completed; empty code dir, git guard rejected",
+  "record_type": "retrospective failure record; original directory and dispatch log retained remotely",
+  "diagnostic_excerpt": "fatal: not a git repository (or any parent up to mount point /mnt)",
+  "retry": "R002_single_window; full prepared release exact/clean checks added; no source or contract change"
+}

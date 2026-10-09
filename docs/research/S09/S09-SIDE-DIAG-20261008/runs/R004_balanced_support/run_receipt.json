@@ -1,0 +1,43 @@
+{
+  "experiment_id": "S09-SIDE-DIAG-20261008",
+  "run_id": "R004_balanced_support",
+  "arm": "balanced_support",
+  "commit": "a1e8cbfd974d317cdef120725879d0b6b998849f",
+  "dirty": "",
+  "producer": "Taobo/GPUServer8",
+  "gpu": 0,
+  "memory_fraction": 0.33,
+  "pid": 3232893,
+  "launcher_pid": 3232883,
+  "start_utc": "2026-10-08T23:44:47Z",
+  "runtime": {
+    "torch": "2.7.0+cu126",
+    "python": "3.10.12 (main, Aug 31 2026, 10:18:17) [GCC 11.4.0]"
+  },
+  "command": [
+    "SENS_tensile/run_s09_side_diagnostics.py",
+    "--mode",
+    "p1",
+    "--diagnostic-arm",
+    "balanced_support",
+    "--dataset",
+    "/mnt/data2/drtao/wennie/pf_s09_e001_r002_f58df2d_20261008T133700Z/data",
+    "--out",
+    "/mnt/data2/drtao/wennie/pf_s09_side_a1e8cbf_20261009/runs/R004_balanced_support/output",
+    "--expected-commit",
+    "a1e8cbfd974d317cdef120725879d0b6b998849f"
+  ],
+  "root": "/mnt/data2/drtao/wennie/pf_s09_side_a1e8cbf_20261009/runs/R004_balanced_support",
+  "archive": "/mnt/data2/drtao/pidl_archives/pf_s09_side_a1e8cbf_20261009/R004_balanced_support",
+  "log": "/mnt/data2/drtao/wennie/pf_s09_side_a1e8cbf_20261009/runs/R004_balanced_support/logs/train.log",
+  "local": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S09-SIDE-DIAG-20261008/execution_20261009/runs/R004_balanced_support",
+  "execution": "succeeded",
+  "retrieval": "verified",
+  "evidence_review": "PASS",
+  "fit_verdict": "FAIL",
+  "metric": 0.9947782107833785,
+  "best_step": 450,
+  "updates": 1000,
+  "elapsed_seconds": 31.42399001121521,
+  "cuda_peak_memory_bytes": 1711804416
+}

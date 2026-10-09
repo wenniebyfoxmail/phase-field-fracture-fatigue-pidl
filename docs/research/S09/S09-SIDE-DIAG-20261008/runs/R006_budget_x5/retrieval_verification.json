@@ -1,0 +1,20 @@
+{
+  "run": "R006_budget_x5",
+  "files": {
+    "R006_budget_x5/output/receipt.json": 2740,
+    "R006_budget_x5/output/data_capability.json": 1844,
+    "R006_budget_x5/output/window_inventory.csv": 18557,
+    "R006_budget_x5/output/initial_metrics.json": 53,
+    "R006_budget_x5/output/latest_metrics.json": 67,
+    "R006_budget_x5/output/best.pt": 460902,
+    "R006_budget_x5/output/best_metrics.json": 67,
+    "R006_budget_x5/output/best_windows.csv": 1364,
+    "R006_budget_x5/output/best_fixed_window.npz": 942749,
+    "R006_budget_x5/output/training_history.csv": 274245,
+    "R006_budget_x5/logs/train.log": 12907
+  },
+  "archive_complete": true,
+  "exit_code": "0",
+  "status": "succeeded",
+  "local_size_match": true
+}

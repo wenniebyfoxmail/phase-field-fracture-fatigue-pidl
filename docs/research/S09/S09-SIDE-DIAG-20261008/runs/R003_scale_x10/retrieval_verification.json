@@ -1,0 +1,20 @@
+{
+  "run": "R003_scale_x10",
+  "files": {
+    "R003_scale_x10/output/receipt.json": 2740,
+    "R003_scale_x10/output/data_capability.json": 1844,
+    "R003_scale_x10/output/window_inventory.csv": 18557,
+    "R003_scale_x10/output/initial_metrics.json": 53,
+    "R003_scale_x10/output/latest_metrics.json": 68,
+    "R003_scale_x10/output/best.pt": 460902,
+    "R003_scale_x10/output/best_metrics.json": 68,
+    "R003_scale_x10/output/best_windows.csv": 1361,
+    "R003_scale_x10/output/best_fixed_window.npz": 912805,
+    "R003_scale_x10/output/training_history.csv": 64359,
+    "R003_scale_x10/logs/train.log": 5081
+  },
+  "archive_complete": true,
+  "exit_code": "0",
+  "status": "succeeded",
+  "local_size_match": true
+}
