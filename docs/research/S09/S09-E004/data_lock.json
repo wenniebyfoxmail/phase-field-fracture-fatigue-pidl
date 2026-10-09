@@ -1,0 +1,16 @@
+{
+  "experiment_id": "S09-E004",
+  "protocol_revision": "v1-equilibrium-operator-prototype",
+  "packet_sha256": "b37a63ccb0e7129ecc3fbe01fc356c93fccc1877b5f34e68fe93265f335109ed",
+  "static_sha256": "a7edb0e430ae84669e3326f777360e7d73488fa41fad8fa09a038e6bbd26985e",
+  "state_index_sha256": "eb1cbacb52252891cb1039ec8df3bcb5cb4ce7ea2fe451476e0e241def10855a",
+  "train_cycles": [1, 7, 14, 21, 28, 35, 41, 48, 55, 62, 69, 75, 82, 89, 96, 103],
+  "development_cycles": [76, 82, 83],
+  "nodes": 86756,
+  "elements": 86408,
+  "area": 0.9999999999999996,
+  "correction_scale": [0.081793305480156, 0.222272571045058],
+  "packet_local_path": "local_archive/experiments/S09-E004/packet/s09_e004_equilibrium_operator.npz",
+  "manifest_local_path": "local_archive/experiments/S09-E004/packet/s09_e004_equilibrium_operator.manifest.json",
+  "qualification_limit": "Request31 reuse audit records reference_checked=false and capture_neutrality_passed=false; development evidence only."
+}
