@@ -2,12 +2,12 @@
 storyline_id: S03
 experiment_id: S03-E007
 protocol_revision: v3
-status: frozen-before-execution
+status: closed
 started_at: 2026-10-09
-closed_at:
+closed_at: 2026-10-09
 primary_storyline: S03
 related_storylines: []
-scientific_verdict:
+scientific_verdict: FAIL_VALIDITY
 ---
 
 # D01 IB directional ruler-scale repeatability
@@ -139,3 +139,37 @@ Freeze a separate C2 cross-view self-consistency experiment in the S03-E006
 local canonical footprint. Treat any millimetre conversion as directional and
 uncertainty-bounded. Do not claim physical crack-width accuracy without an
 independent crack-edge or gauge reference.
+
+## Formal result and closure
+
+- Run: `S03-E007-R001` on Mac-PIDL as lightweight deterministic CV only.
+- Reviewed execution commit:
+  `6b362570d7e8889b631bc49f8c28ce3864f7d6f7`; clean checkout.
+- Selection-manifest SHA-256:
+  `0e2dd2232f47e79523478972747ca957e79f1a3fa5745af15d77a291e75db383`.
+- Independent code review: `PASS_CODE_READY` after closing dirty-checkout and
+  beam-level CSV blockers.
+- Input identity: 6/6 files passed frozen size, CRC, SHA-256, decoding and
+  `5616 x 3744` dimensions.
+- Detected tick counts for Beam 4 ref1/ref2, Beam 5 ref1/ref2 and Beam 6
+  ref1/ref2 were `137/126`, `179/180` and `165/26`, respectively.
+- Beam 6 reference 2 failed the necessary `>=50` indexed-tick gate. Therefore
+  the frozen scientific verdict is `FAIL_VALIDITY`.
+- The diagnostic maximum beam-worst LOMO p95 was `0.164201 mm`, below the
+  `1.0 mm` primary threshold, but it has no qualifying vote after a necessary
+  validity failure and cannot rescue the experiment.
+- The minimum evidence package contains the exact 6 image + 3 beam CSV,
+  summary, decision, clean run receipt, six-panel detection view, six-panel
+  fitted-coordinate view, reproduction checks and analysis README.
+- Independent evidence review: `PASS_EVIDENCE_READY`; the fitted-coordinate
+  visualization blocker was closed without rerunning or changing the formal
+  decision.
+
+Allowed conclusion: the frozen automatic detector did not establish at least
+50 indexed ruler ticks in all six references, so S03-E007-v3 did not qualify a
+directional millimetre carrier. This does not show that the physical ruler is
+invalid. It does not validate or invalidate physical crack width, isotropic
+2-D scale, crack growth, forecasting, RUL or road transfer.
+
+Evidence root:
+`local_archive/experiments/S03-E007/runs/S03-E007-R001/`.
