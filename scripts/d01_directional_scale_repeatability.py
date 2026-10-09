@@ -316,12 +316,53 @@ def _validate_review_pass(review_path: Path, repo: Path, manifest_path: Path) ->
     return review
 
 
-def _write_csv(path: Path, rows: Iterable[Detection]) -> None:
-    rows = list(rows)
+def checkout_is_clean(repo: Path) -> bool:
+    return not subprocess.check_output(
+        ["git", "status", "--porcelain"], cwd=repo, text=True
+    ).strip()
+
+
+def _write_csv(
+    path: Path,
+    rows: Iterable[Detection],
+    beam_worst: dict[str, float] | None = None,
+) -> None:
+    image_rows = [
+        {"row_type": "image", **asdict(row), "beam_worst_lomo_p95_mm": ""}
+        for row in rows
+    ]
+    beam_rows = [
+        {
+            "row_type": "beam",
+            "beam": beam,
+            "reference": "worse_of_ref1_ref2",
+            "saved_as": "",
+            "sha256": "",
+            "boundary_x1": "",
+            "boundary_y1": "",
+            "boundary_x2": "",
+            "boundary_y2": "",
+            "boundary_angle_deg": "",
+            "nominal_period_px": "",
+            "tick_count": "",
+            "max_tick_step": "",
+            "ransac_inlier_count": "",
+            "lomo_count": "",
+            "lomo_p95_mm": "",
+            "lomo_median_mm": "",
+            "spacing_cv": "",
+            "monotone": "",
+            "finite": "",
+            "validity_pass": "",
+            "beam_worst_lomo_p95_mm": value,
+        }
+        for beam, value in sorted((beam_worst or {}).items())
+    ]
+    exact_rows = image_rows + beam_rows
     with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(asdict(rows[0]).keys()))
+        writer = csv.DictWriter(handle, fieldnames=list(exact_rows[0].keys()))
         writer.writeheader()
-        writer.writerows(asdict(row) for row in rows)
+        writer.writerows(exact_rows)
 
 
 def _render_overlay(
@@ -376,6 +417,8 @@ def run(
         if review_pass is None:
             raise PermissionError("formal mode requires --review-pass")
         review = _validate_review_pass(review_pass, repo, selection_manifest)
+        if not checkout_is_clean(repo):
+            raise PermissionError("formal execution requires a clean reviewed checkout")
         if len(files) != 6:
             raise ValueError("formal mode requires exactly six selected files")
     else:
@@ -419,9 +462,17 @@ def run(
         panels.append((f"{beam} {reference}", image, metrics, arrays))
 
     stem = "development" if mode == "development" else "formal"
-    _write_csv(output / f"{stem}_metrics.csv", detections)
-    _render_overlay(output / f"{stem}_overlay.png", panels)
     validity = bool(all(row.validity_pass for row in detections))
+    beam_worst = (
+        {
+            beam: max(row.lomo_p95_mm for row in detections if row.beam == beam)
+            for beam in sorted({row.beam for row in detections})
+        }
+        if mode == "formal"
+        else None
+    )
+    _write_csv(output / f"{stem}_metrics.csv", detections, beam_worst)
+    _render_overlay(output / f"{stem}_overlay.png", panels)
     summary: dict[str, object] = {
         "protocol": PROTOCOL,
         "mode": mode,
@@ -436,10 +487,7 @@ def run(
         "rows": [asdict(row) for row in detections],
     }
     if mode == "formal":
-        beam_worst = {
-            beam: max(row.lomo_p95_mm for row in detections if row.beam == beam)
-            for beam in sorted({row.beam for row in detections})
-        }
+        assert beam_worst is not None
         primary = max(beam_worst.values()) if beam_worst else math.nan
         summary.update(
             {

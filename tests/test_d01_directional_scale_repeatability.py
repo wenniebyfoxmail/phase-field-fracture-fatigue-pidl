@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import csv
 import json
 import sys
 from pathlib import Path
@@ -90,3 +91,44 @@ def test_formal_mode_requires_review_pass(tmp_path: Path) -> None:
             mode="formal",
             repo=Path(__file__).resolve().parents[1],
         )
+
+
+def test_dirty_checkout_is_rejected(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    def fake_check_output(command: list[str], **_: object) -> str:
+        assert command[:2] == ["git", "status"]
+        return " M scripts/d01_directional_scale_repeatability.py\n"
+
+    monkeypatch.setattr(MODULE.subprocess, "check_output", fake_check_output)
+    assert not MODULE.checkout_is_clean(tmp_path)
+
+
+def test_exact_csv_contains_image_and_beam_rows(tmp_path: Path) -> None:
+    detection = MODULE.Detection(
+        beam="Beam 4",
+        reference="ref1",
+        saved_as="Beam 4/ref1.JPG",
+        sha256="abc",
+        boundary_x1=1.0,
+        boundary_y1=2.0,
+        boundary_x2=3.0,
+        boundary_y2=4.0,
+        boundary_angle_deg=0.0,
+        nominal_period_px=15.0,
+        tick_count=60,
+        max_tick_step=1,
+        ransac_inlier_count=60,
+        lomo_count=6,
+        lomo_p95_mm=0.2,
+        lomo_median_mm=0.1,
+        spacing_cv=0.02,
+        monotone=True,
+        finite=True,
+        validity_pass=True,
+    )
+    target = tmp_path / "metrics.csv"
+    MODULE._write_csv(target, [detection], {"Beam 4": 0.3})
+    with target.open(newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    assert [row["row_type"] for row in rows] == ["image", "beam"]
+    assert rows[1]["reference"] == "worse_of_ref1_ref2"
+    assert float(rows[1]["beam_worst_lomo_p95_mm"]) == pytest.approx(0.3)
