@@ -1,0 +1,7 @@
+{
+  "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E001/runs/S04-E001-R001/package/fem/cycles/cycle_0076_s004_normalized.mat",
+  "source_sha256": "a520d5d6d71b9efa80dd013afe97bb700f537b398f71fe0ce7d10ba65a01452c",
+  "derived_input_sha256": "fe7aff6a1af536eca0182258276d680499d8aafeef0ec17c74502d1ddad04ffc",
+  "load": 0.11999988,
+  "derivation": "Transpose native HDF arrays; zero-based connectivity; no averaging, clipping, or reference correction."
+}

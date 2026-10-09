@@ -1,0 +1,16 @@
+{
+  "errors": {
+    "psi": 4.176375326986738e-15,
+    "g": 1.6648005311286225e-17,
+    "strain": 2.7333627577283975e-15,
+    "d_gp": 2.220446049250313e-16,
+    "dirichlet_max_abs": 0.0
+  },
+  "pass": true,
+  "native_free_force_rms": 5.804165874560796e-07,
+  "nodes": 86756,
+  "elements": 86408,
+  "area": 0.9999999999999998,
+  "state": "U012 cycle76 substep4 accepted peak; frozen damage only",
+  "not_teacher_qualification": true
+}
