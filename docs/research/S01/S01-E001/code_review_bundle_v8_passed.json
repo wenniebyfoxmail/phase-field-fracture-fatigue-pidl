@@ -1,5 +1,5 @@
 {
-  "protocol": "S01-E001-v11",
+  "protocol": "S01-E001-v8",
   "created_at": "2026-10-09",
   "repository_base_commit": "dd738f177b5dbcced537a29497b4df3c38608a66",
   "repository_branch": "codex/m2s-framework-validation",
@@ -11,12 +11,9 @@
     "code_review_bundle_v4_failed.json",
     "code_review_bundle_v5_failed.json",
     "code_review_bundle_v6_failed.json",
-    "code_review_bundle_v7_passed.json",
-    "code_review_bundle_v8_passed.json",
-    "code_review_bundle_v9_passed.json",
-    "code_review_bundle_v10_passed.json"
+    "code_review_bundle_v7_passed.json"
   ],
-  "v11_reason": "R007 showed the offending Ultralytics proposal already had equal boundary coordinates after detector post-processing. V11 drops and counts equal-coordinate or boundary-clipped zero-area proposals, while non-finite and strictly reversed coordinates still fail closed.",
+  "v8_reason": "R004 proved that passing the string '1' to Ultralytics after Torch initialization placed the process on physical GPU 0. V8 passes the validated torch.device('cuda:1') object directly and forbids environment remapping.",
   "workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",
   "initial_artifacts": {
     "yolo11n.pt": {"bytes": 5613764, "sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1"},
@@ -24,31 +21,31 @@
   },
   "files": {
     "scripts/pavetrack_cv/__init__.py": "bf073aa0c1ecb700a26d8ea2a12e3c4750145de63e9afb2c6e9b663cb19794c6",
-    "scripts/pavetrack_cv/common.py": "8371f633672f18cb88ca2589d0d9bb43d5abaab50b198ca9bd807c5cfab25ec1",
+    "scripts/pavetrack_cv/common.py": "cf1a54a9ec4eccbe16a11bf8624494c0888a85949242dd31bdccf0e7b2e8fd6b",
     "scripts/pavetrack_cv/prepare_dataset.py": "f37064d673cd83a6615f10b61c19fedb500095907b07b5094fc7fa6caf60e373",
     "scripts/pavetrack_cv/train_proposer.py": "be3ffee02ba47b1399fef0884416505940c7bfbe6cddf4103c21559dc213d68a",
-    "scripts/pavetrack_cv/mine_crops.py": "bd9119ac55059f50fcbc26a4c05b202d385045e91c76deb565be246ab1ac1a55",
+    "scripts/pavetrack_cv/mine_crops.py": "396a0e88137c8eb52596ac2715e6ba036557526088bb723e5c5e2d4115b40153",
     "scripts/pavetrack_cv/train_reranker.py": "3267ed551e683016ed50a12cba0f0cf8bb4482d8ccd6ef30b09a8145b75e85f9",
-    "scripts/pavetrack_cv/evaluate_two_stage.py": "fd16cddbab2b403c8e151dae76c8d36cced3a4b7020fd230f20692d83c53f1ce",
+    "scripts/pavetrack_cv/evaluate_two_stage.py": "cc8137339dd0abb9e9cc06b168cd9c4382a8733d52197860f79dbac88a119a2e",
     "scripts/pavetrack_cv/freeze_for_test.py": "45739312dfe8ca386a23afb8e9eb7bbafe6545860c645f640c765073035dccdf",
-    "tests/pavetrack_cv/test_common.py": "d4e93af1a3b5e8eec9bc38ba23a7d0c1c902f6bcff3ec1caec3f255275f01240",
-    "tests/pavetrack_cv/test_crop_lineage.py": "eb5fe34cac788823aa52585c17c1b848abbc19101aac1d9eaa17da095b725402",
+    "tests/pavetrack_cv/test_common.py": "90f8d340650e5d56b053eb56dda0bfb44d5cb4caee910c7358b7ec35b24c2885",
+    "tests/pavetrack_cv/test_crop_lineage.py": "874d51ccf2763dc9a5c70d87a47c6f75e42e8705cb42dd1c3da79e6d32b5435e",
     "tests/pavetrack_cv/test_data_lock.py": "764a1c96327e190f267d296c834c887edaf3763faa9311d6e9fff47e64f42c0a",
-    "tests/pavetrack_cv/test_test_firewall.py": "88c4d0271389a9fbb030e80d05f32c26ee32dc1c8b2572bfe56781b3a1027e81",
-    "docs/research/S01/S01-E001/experiment.md": "61cc1396377ebc65c93159875b6d20a5686f6195446365c5009abfff664e508e",
+    "tests/pavetrack_cv/test_test_firewall.py": "a68c0d270dce23c6b6beb97b4500940afb3b2cdc661a78228bfbc37aa8a6d7db",
+    "docs/research/S01/S01-E001/experiment.md": "35b8bed595d82b492a1fcbc9c4f6004a06154b6c213e128f87cf6199dc5cb84d",
     "docs/research/S01/S01-E001/data_lock.json": "1e0a4e00b5558636d5eeef80a9465795e2401a7633a039266b8bb10b8c776cd9",
-    "docs/research/S01/S01-E001/run_config.json": "76e5cc96ecd6efb184916c9feb0aa6cb0115b0a8dada24f04a6eed1449379005",
-    "docs/research/S01/S01-E001/execution_runbook.md": "f9356ef215fc98bba3e164cb7d176bb2479e8bc36156b21bb3b9205aed03cd36"
+    "docs/research/S01/S01-E001/run_config.json": "ccb6ce0d939ac78f1b9a0d15c08cada7cd742b8c7644b14e98d7959cc638bdd7",
+    "docs/research/S01/S01-E001/execution_runbook.md": "afe54321a0d1c8991810cea7c699d15568e6196b6df44188fee68a3410bec3c4"
   },
   "local_static_checks": {
     "result": "PASS",
-    "tests": 32,
-    "scope": "v10 checks plus explicit distinction between equal-coordinate zero-area proposals and malformed non-finite or strictly reversed coordinates; no v11 training"
+    "tests": 30,
+    "scope": "v7 checks plus frozen torch.device passthrough to Ultralytics without CUDA_VISIBLE_DEVICES remapping; no training"
   },
   "producer_checks_required_before_training": [
-    "all 32 tests under the frozen D-26-09 runtime",
+    "all 30 tests under the frozen D-26-09 runtime",
     "semantic load and behavioral instantiated-graph check of the exact official initial artifacts",
-    "v11 development preparation and content-hash audit",
+    "v8 development preparation and content-hash audit",
     "placement probe resolving the actual allocating PID to physical GPU UUID GPU-3d74ea12-5d84-a619-90b2-c0b1f104599a"
   ],
   "source_data_audit": {
@@ -59,5 +56,5 @@
     "empty_negative_labels": 34,
     "confirmatory_pixels_accessed": false
   },
-  "review_status": "pending_independent_v11_review"
+  "review_status": "pending_independent_v8_review"
 }

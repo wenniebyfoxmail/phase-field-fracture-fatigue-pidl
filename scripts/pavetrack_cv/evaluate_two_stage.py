@@ -11,14 +11,14 @@ from pathlib import Path
 from common import (
     Detection,
     PROTOCOL,
-    clip_xyxy,
+    clip_proposal_or_none,
+    frozen_ultralytics_device,
     load_data_lock,
     pad_box,
     recall_at_fp_per_image,
     sha256_file,
     validate_evaluation_membership,
     validate_prepared_record_hashes,
-    validate_producer_runtime,
     validate_proposer_checkpoint,
     validate_reranker_checkpoint,
     verify_test_authorization_chain,
@@ -74,7 +74,7 @@ def main() -> None:
         raise ValueError("evaluation manifest was prepared under a different run config")
     if args.detector_device != args.classifier_device.removeprefix("cuda:"):
         raise ValueError("detector and classifier must use the same frozen GPU")
-    validate_producer_runtime(config, args.classifier_device)
+    device = frozen_ultralytics_device(config, args.classifier_device)
     split_records = validate_evaluation_membership(payload, lock, args.split)
     if args.split == "test" and payload["splits"] != ["test"]:
         raise ValueError("confirmatory evaluation requires a test-only manifest")
@@ -120,7 +120,6 @@ def main() -> None:
 
     validate_proposer_checkpoint(args.proposer, config)
     detector = YOLO(str(args.proposer.resolve()))
-    device = torch.device(args.classifier_device)
     classifier = models.mobilenet_v3_small(weights=None)
     classifier.classifier[-1] = torch.nn.Linear(classifier.classifier[-1].in_features, 2)
     checkpoint = torch.load(args.reranker, map_location="cpu", weights_only=True)
@@ -172,13 +171,14 @@ def main() -> None:
         conf=0.001,
         iou=0.70,
         max_det=300,
-        device=args.detector_device,
+        device=device,
         stream=True,
         verbose=False,
     )
     raw_detections = []
     fused_detections = []
     proposal_rows = []
+    skipped_empty_proposals = 0
     targets = {}
     image_locations = {}
     with torch.inference_mode():
@@ -194,9 +194,14 @@ def main() -> None:
                 confidences = prediction.boxes.conf.detach().cpu().tolist()
                 crops = []
                 clipped_boxes = []
-                for box in boxes:
-                    clipped = clip_xyxy(box, width, height)
+                retained_confidences = []
+                for box, confidence in zip(boxes, confidences, strict=True):
+                    clipped = clip_proposal_or_none(box, width, height)
+                    if clipped is None:
+                        skipped_empty_proposals += 1
+                        continue
                     clipped_boxes.append(clipped)
+                    retained_confidences.append(confidence)
                     crops.append(transform(image.crop(tuple(int(round(v)) for v in pad_box(clipped, width, height, 0.10)))))
                 if crops:
                     batch = torch.stack(crops).to(device)
@@ -204,7 +209,7 @@ def main() -> None:
                 else:
                     crack_probabilities = []
             for box, proposer_score, crack_probability in zip(
-                clipped_boxes, confidences, crack_probabilities, strict=True
+                clipped_boxes, retained_confidences, crack_probabilities, strict=True
             ):
                 fused_score = math.sqrt(float(proposer_score) * float(crack_probability))
                 raw_detections.append(
@@ -240,6 +245,7 @@ def main() -> None:
         "reranker_sha256": reranker_hash,
         "reranker_lineage": lineage,
         "same_proposal_count": len(proposal_rows),
+        "skipped_empty_proposals": skipped_empty_proposals,
         "proposer": raw_metrics,
         "two_stage": two_stage_metrics,
         "primary_delta_macro_location_R_at_1FP_per_image": delta,

@@ -21,7 +21,7 @@ class CropLineageTests(unittest.TestCase):
         background.write_bytes(b"background")
         crack.write_bytes(b"crack")
         payload = {
-            "protocol": "S01-E001-v7",
+            "protocol": "S01-E001-v11",
             "proposer_receipt_sha256": "proposer-receipt",
             "run_config_sha256": "run-config",
             "split": "train",

@@ -12,13 +12,13 @@ from common import (
     PROTOCOL,
     box_iou,
     boxes_overlap,
-    clip_xyxy,
+    clip_proposal_or_none,
+    frozen_ultralytics_device,
     load_data_lock,
     locations_for_splits,
     pad_box,
     sha256_file,
     validate_prepared_record_hashes,
-    validate_producer_runtime,
     validate_proposer_checkpoint,
 )
 
@@ -96,13 +96,14 @@ def main() -> None:
         raise ValueError("development manifest was prepared under a different run config")
     if proposer_receipt.get("run_config_sha256") != config_hash:
         raise ValueError("proposer was fitted under a different run config")
-    validate_producer_runtime(config, args.device)
+    prediction_device = frozen_ultralytics_device(config, args.device)
     validate_proposer_checkpoint(args.proposer, config)
 
     rng = random.Random(20261008)
     model = YOLO(str(args.proposer.resolve()))
     records = []
     skipped_overlapping_distress = 0
+    skipped_empty_proposals = 0
     image_paths = [record["prepared_image"] for record in split_records]
     predictions = model.predict(
         source=image_paths,
@@ -110,7 +111,7 @@ def main() -> None:
         conf=0.001,
         iou=0.70,
         max_det=300,
-        device=args.device,
+        device=prediction_device,
         stream=True,
         verbose=False,
     )
@@ -150,10 +151,16 @@ def main() -> None:
             proposal_positive_index = 0
             hard_negative_index = 0
             for box, confidence in zip(boxes, confidences, strict=True):
-                max_crack_iou = max((box_iou(box, target) for target in crack_boxes), default=0.0)
+                clipped = clip_proposal_or_none(box, width, height)
+                if clipped is None:
+                    skipped_empty_proposals += 1
+                    continue
+                max_crack_iou = max(
+                    (box_iou(clipped, target) for target in crack_boxes), default=0.0
+                )
                 if max_crack_iou >= 0.50:
                     if proposal_positive_index < 10:
-                        crop_box = pad_box(clip_xyxy(box, width, height), width, height, 0.10)
+                        crop_box = pad_box(clipped, width, height, 0.10)
                         name = crop_name(record["image_id"], "proposal-pos", proposal_positive_index)
                         target = args.output / args.split / "crack" / name
                         crop_hash = save_crop(image, crop_box, target)
@@ -175,7 +182,7 @@ def main() -> None:
                 if max_crack_iou > 0.05:
                     continue
                 if hard_negative_index < 20:
-                    crop_box = pad_box(clip_xyxy(box, width, height), width, height, 0.10)
+                    crop_box = pad_box(clipped, width, height, 0.10)
                     name = crop_name(record["image_id"], "proposal-neg", hard_negative_index)
                     target = args.output / args.split / "background" / name
                     crop_hash = save_crop(image, crop_box, target)
@@ -272,6 +279,7 @@ def main() -> None:
         "positive_crops": sum(record["label"] == 1 for record in records),
         "negative_crops": sum(record["label"] == 0 for record in records),
         "skipped_overlapping_distress_annotations": skipped_overlapping_distress,
+        "skipped_empty_proposals": skipped_empty_proposals,
         "records": records,
     }
     args.output.mkdir(parents=True, exist_ok=True)

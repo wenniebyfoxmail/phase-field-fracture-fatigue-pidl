@@ -82,12 +82,12 @@ class ConfirmatoryFirewallTests(unittest.TestCase):
             self.write_checkpoint(proposer)
             self.write_checkpoint(reranker)
             config = root / "config.json"
-            config.write_text(json.dumps({"protocol": "S01-E001-v7"}), encoding="utf-8")
+            config.write_text(json.dumps({"protocol": "S01-E001-v11"}), encoding="utf-8")
             proposer_receipt = root / "proposer_receipt.json"
             proposer_receipt.write_text(
                 json.dumps(
                     {
-                        "protocol": "S01-E001-v7",
+            "protocol": "S01-E001-v11",
                         "best_model_sha256": sha256_file(proposer),
                         "development_manifest_sha256": "development-manifest-hash",
                         "run_config_sha256": sha256_file(config),
@@ -98,7 +98,7 @@ class ConfirmatoryFirewallTests(unittest.TestCase):
             validation.write_text(
                 json.dumps(
                     {
-                        "protocol": "S01-E001-v7",
+                        "protocol": "S01-E001-v11",
                         "split": "validation",
                         "primary_pass": None,
                         "manifest_sha256": "development-manifest-hash",
@@ -161,14 +161,14 @@ class ConfirmatoryFirewallTests(unittest.TestCase):
             receipt = root / "receipt.json"
             authorization = root / "authorization.json"
             config = root / "config.json"
-            config.write_text(json.dumps({"protocol": "S01-E001-v7"}), encoding="utf-8")
+            config.write_text(json.dumps({"protocol": "S01-E001-v11"}), encoding="utf-8")
             lock.write_text("{}", encoding="utf-8")
             proposer.write_bytes(b"arbitrary proposer bytes")
             reranker.write_bytes(b"arbitrary reranker bytes")
             receipt.write_text(
                 json.dumps(
                     {
-                        "protocol": "S01-E001-v7",
+                        "protocol": "S01-E001-v11",
                         "best_model_sha256": sha256_file(proposer),
                     }
                 ),
@@ -187,7 +187,7 @@ class ConfirmatoryFirewallTests(unittest.TestCase):
             authorization.write_text(
                 json.dumps(
                     {
-                        "protocol": "S01-E001-v7",
+                        "protocol": "S01-E001-v11",
                         "status": "authorized_after_model_freeze",
                         **validation_payload,
                         "validation_evaluation_sha256": sha256_file(validation),
@@ -225,7 +225,7 @@ class ConfirmatoryFirewallTests(unittest.TestCase):
                 "proposer.pt": "proposer",
                 "reranker.pt": "reranker",
                 "validation.json": json.dumps(
-                    {"protocol": "S01-E001-v7", "split": "validation", "primary_pass": None}
+                    {"protocol": "S01-E001-v11", "split": "validation", "primary_pass": None}
                 ),
                 "receipt.json": "{}",
             }.items():

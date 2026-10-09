@@ -13,6 +13,8 @@ from common import (  # noqa: E402
     box_iou,
     boxes_overlap,
     clip_xyxy,
+    clip_proposal_or_none,
+    frozen_ultralytics_device,
     greedy_match_count,
     locations_for_splits,
     module_graph_sha256,
@@ -57,6 +59,34 @@ class DataLockTests(unittest.TestCase):
 
 
 class RuntimeFreezeTests(unittest.TestCase):
+    def test_ultralytics_receives_torch_device_without_cuda_remapping(self):
+        import os
+        import torch
+
+        config = {"producer_runtime": {"device": "cuda:1"}}
+        select_device = mock.Mock(side_effect=lambda device, verbose=False: device)
+        fake_ultralytics = types.ModuleType("ultralytics")
+        fake_utils = types.ModuleType("ultralytics.utils")
+        fake_torch_utils = types.ModuleType("ultralytics.utils.torch_utils")
+        fake_torch_utils.select_device = select_device
+        with (
+            mock.patch("common.validate_producer_runtime") as validate,
+            mock.patch.dict(os.environ, {}, clear=True),
+            mock.patch.dict(
+                sys.modules,
+                {
+                    "ultralytics": fake_ultralytics,
+                    "ultralytics.utils": fake_utils,
+                    "ultralytics.utils.torch_utils": fake_torch_utils,
+                },
+            ),
+        ):
+            resolved = frozen_ultralytics_device(config, "1")
+        validate.assert_called_once_with(config, "1")
+        select_device.assert_called_once_with(torch.device("cuda:1"), verbose=False)
+        self.assertEqual(resolved, torch.device("cuda:1"))
+        self.assertNotIn("CUDA_VISIBLE_DEVICES", os.environ)
+
     def test_instantiated_graph_fingerprint_detects_same_shape_stride_change(self):
         class Leaf:
             def __init__(self, stride):
@@ -90,6 +120,31 @@ class RuntimeFreezeTests(unittest.TestCase):
                 return ""
 
         self.assertNotEqual(module_graph_sha256(Graph(2)), module_graph_sha256(Graph(1)))
+
+    def test_instantiated_graph_fingerprint_ignores_runtime_metadata(self):
+        class Graph:
+            def __init__(self, *, fitted):
+                self.training = False
+                if fitted:
+                    self.names = {0: "Crack"}
+                    self.nc = 1
+                    self.args = {"data": "development.yaml"}
+                    self.pt_path = "best.pt"
+                    self.shape = [14, 65, 92, 164]
+
+            def named_modules(self):
+                return [("", self)]
+
+            def named_parameters(self, recurse=False):
+                return []
+
+            def named_buffers(self, recurse=False):
+                return []
+
+            def extra_repr(self):
+                return ""
+
+        self.assertEqual(module_graph_sha256(Graph(fitted=False)), module_graph_sha256(Graph(fitted=True)))
 
     def test_yolo_architecture_fingerprint_is_scale_sensitive(self):
         base = {
@@ -213,6 +268,20 @@ class BoxTests(unittest.TestCase):
         self.assertEqual(xywh_to_xyxy((10, 20, 30, 40)), (10.0, 20.0, 40.0, 60.0))
         self.assertEqual(clip_xyxy((-1, 2, 110, 90), 100, 80), (0.0, 2.0, 100.0, 80.0))
         self.assertEqual(xyxy_to_yolo((0, 0, 100, 50), 200, 100), (0.25, 0.25, 0.5, 0.5))
+
+    def test_empty_out_of_frame_proposal_is_explicitly_dropped(self):
+        self.assertIsNone(clip_proposal_or_none((10, -5, 20, -1), 100, 80))
+        self.assertIsNone(clip_proposal_or_none((10, 0, 20, 0), 100, 80))
+        self.assertEqual(
+            clip_proposal_or_none((-5, 2, 20, 30), 100, 80),
+            (0.0, 2.0, 20.0, 30.0),
+        )
+        with self.assertRaisesRegex(ValueError, "four values"):
+            clip_proposal_or_none((1, 2, 3), 100, 80)
+        with self.assertRaisesRegex(ValueError, "non-finite"):
+            clip_proposal_or_none((1, 2, float("nan"), 4), 100, 80)
+        with self.assertRaisesRegex(ValueError, "invalid coordinate order"):
+            clip_proposal_or_none((20, 2, 10, 4), 100, 80)
 
     def test_iou_and_greedy_matching(self):
         self.assertAlmostEqual(box_iou((0, 0, 10, 10), (5, 0, 15, 10)), 1 / 3)

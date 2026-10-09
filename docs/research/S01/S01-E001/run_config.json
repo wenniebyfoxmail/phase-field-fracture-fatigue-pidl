@@ -1,5 +1,5 @@
 {
-  "protocol": "S01-E001-v7",
+  "protocol": "S01-E001-v11",
   "seed": 20261008,
   "producer_runtime": {
     "hostname": "D-26-09",
@@ -24,7 +24,7 @@
     "initial_weights_bytes": 5613764,
     "initial_weights_sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
     "architecture_sha256": "1328d9af277ef6ffff67b626d3a34e57a198b350e022dedd35a963533981e45e",
-    "instantiated_graph_sha256": "7ef6dcc31d16e8a42e65b71b7848df0e47976052b74a22f4b0dc37b80fdcb8ae",
+    "instantiated_graph_sha256": "3726f974d32337418c3fa3daad7905a2288a38f8b4f4912984e71222e2486985",
     "epochs": 50,
     "patience": 10,
     "image_size": 1280,

@@ -10,11 +10,11 @@ from pathlib import Path
 
 from common import (
     PROTOCOL,
+    frozen_ultralytics_device,
     load_data_lock,
     locations_for_splits,
     sha256_file,
     validate_prepared_record_hashes,
-    validate_producer_runtime,
     validate_proposer_checkpoint,
 )
 
@@ -81,7 +81,7 @@ def main() -> None:
         raise ValueError("run config has the wrong protocol")
     if development.get("run_config_sha256") != sha256_file(args.config):
         raise ValueError("development manifest was prepared under a different run config")
-    validate_producer_runtime(config, args.device)
+    training_device = frozen_ultralytics_device(config, args.device)
     expected_weights_hash = config["proposer"]["initial_weights_sha256"]
     actual_weights_hash = sha256_file(args.weights)
     if actual_weights_hash != expected_weights_hash:
@@ -93,7 +93,7 @@ def main() -> None:
         patience=10,
         imgsz=1280,
         batch=8,
-        device=args.device,
+        device=training_device,
         seed=seed,
         deterministic=True,
         workers=4,
@@ -122,7 +122,7 @@ def main() -> None:
         "patience": 10,
         "imgsz": 1280,
         "batch": 8,
-        "device": args.device,
+        "device": str(training_device),
         "hostname": platform.node(),
         "torch": torch.__version__,
         "cuda": torch.version.cuda,

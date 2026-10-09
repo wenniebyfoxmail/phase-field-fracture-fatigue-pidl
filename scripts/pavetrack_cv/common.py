@@ -45,7 +45,21 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-PROTOCOL = "S01-E001-v7"
+PROTOCOL = "S01-E001-v11"
+
+
+# Ultralytics adds these fields after fitting or loading a checkpoint. They are
+# runtime/provenance metadata, not executable graph structure. Class identity
+# and head cardinality are checked explicitly in validate_proposer_checkpoint.
+_RUNTIME_GRAPH_ATTRIBUTES = {
+    "args",
+    "criterion",
+    "names",
+    "nc",
+    "pt_path",
+    "shape",
+    "task",
+}
 
 
 def validate_torch_checkpoint_container(path: Path) -> None:
@@ -86,7 +100,11 @@ def module_graph_sha256(model: object) -> str:
     for name, module in model.named_modules():
         attributes = {}
         for attribute_name, value in vars(module).items():
-            if attribute_name.startswith("_") or attribute_name == "training":
+            if (
+                attribute_name.startswith("_")
+                or attribute_name == "training"
+                or attribute_name in _RUNTIME_GRAPH_ATTRIBUTES
+            ):
                 continue
             converted = frozen_attribute(value)
             if converted is not _UNSUPPORTED:
@@ -284,6 +302,26 @@ def validate_producer_runtime(config: Mapping[str, object], device: str | None =
                 )
 
 
+def frozen_ultralytics_device(config: Mapping[str, object], device: str):
+    """Return the physical frozen CUDA device without Ultralytics remapping it."""
+
+    validate_producer_runtime(config, device)
+    import torch
+    from ultralytics.utils.torch_utils import select_device
+
+    frozen = torch.device(str(config["producer_runtime"]["device"]))
+    visible_before = os.environ.get("CUDA_VISIBLE_DEVICES")
+    selected = select_device(frozen, verbose=False)
+    visible_after = os.environ.get("CUDA_VISIBLE_DEVICES")
+    if selected != frozen:
+        raise RuntimeError(
+            f"Ultralytics changed the frozen device: expected={frozen}, observed={selected}"
+        )
+    if visible_after != visible_before:
+        raise RuntimeError("Ultralytics changed CUDA_VISIBLE_DEVICES for the frozen run")
+    return frozen
+
+
 def validate_prepared_record_hashes(payload: Mapping[str, object]) -> None:
     """Bind every materialized image and detector label to the manifest bytes."""
 
@@ -461,6 +499,10 @@ def clip_xyxy(
     if len(box) != 4:
         raise ValueError(f"xyxy box must contain four values, received {len(box)}")
     x1, y1, x2, y2 = (float(value) for value in box)
+    if not all(math.isfinite(value) for value in (x1, y1, x2, y2)):
+        raise ValueError(f"xyxy box contains a non-finite coordinate: {(x1, y1, x2, y2)}")
+    if x2 < x1 or y2 < y1:
+        raise ValueError(f"xyxy box has invalid coordinate order: {(x1, y1, x2, y2)}")
     clipped = (
         min(float(width), max(0.0, x1)),
         min(float(height), max(0.0, y1)),
@@ -470,6 +512,19 @@ def clip_xyxy(
     if clipped[2] <= clipped[0] or clipped[3] <= clipped[1]:
         raise ValueError(f"box is empty after clipping: {clipped}")
     return clipped
+
+
+def clip_proposal_or_none(
+    box: Sequence[float], width: int, height: int
+) -> tuple[float, float, float, float] | None:
+    """Clip a detector proposal, dropping boxes with no in-image area."""
+
+    try:
+        return clip_xyxy(box, width, height)
+    except ValueError as error:
+        if "box is empty after clipping" not in str(error):
+            raise
+        return None
 
 
 def xyxy_to_yolo(

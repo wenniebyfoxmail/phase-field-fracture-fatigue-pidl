@@ -1,8 +1,8 @@
 ---
 storyline_id: S01
 experiment_id: S01-E001
-protocol_revision: v7
-status: draft
+protocol_revision: v11
+status: code_review_pending
 started_at: 2026-10-08
 closed_at:
 primary_storyline: S01
@@ -136,7 +136,7 @@ primary cannot be computed/identified  -> inconclusive
 - Runner / config / runtime: pending; official COCO-pretrained YOLO11n proposer,
   ImageNet-pretrained MobileNetV3-small reranker, seed `20261008`.
 - Output / archive / log / retrieval route: fresh
-  `C:\Users\xw436\pavetrack_runs\S01-E001-R001\`; retrieve compact receipts,
+  `C:\Users\xw436\pavetrack_runs\S01-E001-R008\`; retrieve compact receipts,
   metrics, tables and figures to the local experiment evidence folder.
 - Ownership and process-safety constraints: use only GPU 1 after checking it is
   free; record Windows PID, command, cwd, GPU and log; do not interrupt GPU 0.
@@ -174,22 +174,67 @@ primary cannot be computed/identified  -> inconclusive
   override state and hook counts. This covers shape-preserving changes such as
   stride, padding, dilation, groups and operator configuration. The scientific
   contract remains unchanged.
+- `v8`, 2026-10-09, after the first observed training loop but before any
+  admissible result: R004 exposed a physical-device placement bug. The runtime
+  gate correctly identified physical `cuda:1`, but Ultralytics later received
+  the string `"1"`, set `CUDA_VISIBLE_DEVICES` after Torch had already
+  initialised, and returned `torch.device("cuda:0")`. The training PID was
+  observed on physical GPU 0 and was terminated during epoch 5. R004 is
+  inadmissible and has no scientific result. V8 passes the already validated
+  `torch.device("cuda:1")` object directly to every Ultralytics train/predict
+  call and adds a regression test that forbids remapping. The scientific
+  question, data, estimand, primary metric, threshold and stop rule do not
+  change.
+- `v9`, 2026-10-09, after R005 completed fitting but failed before its proposer
+  receipt was written: the instantiated-graph validator included Ultralytics
+  runtime metadata (`names`, `args`, `pt_path` and the last inference `shape`).
+  A fresh one-class graph and the fitted checkpoint had the same 319 modules,
+  connectivity, operator configuration and parameter/buffer shapes, but those
+  metadata fields made the frozen hash impossible to satisfy. V9 excludes only
+  runtime metadata from the graph fingerprint; class names, one-class head,
+  architecture, connectivity, tensor shapes and immutable operator attributes
+  remain independently checked. R005 remains inadmissible. The scientific
+  question, data, estimand, primary metric, threshold and stop rule do not
+  change.
+- `v10`, 2026-10-09, after the R006 proposer passed all gates but train crop
+  mining stopped before writing a manifest: one low-confidence YOLO proposal
+  lay fully outside the image and had zero area after clipping. V10 explicitly
+  drops only detector proposals with no in-image area in both crop mining and
+  evaluation, records the dropped count, and retains partially visible boxes
+  after clipping. This keeps the raw and two-stage arms on the identical valid
+  proposal set. R006 crop outputs are inadmissible. The scientific question,
+  data, estimand, primary metric, threshold and stop rule do not change.
+- `v11`, 2026-10-09, after R007 reproduced the crop failure under v10: the
+  offending Ultralytics proposal already had equal boundary coordinates
+  (`y1 == y2 == 0`). V11 treats equal coordinates as a zero-area proposal to
+  drop and count, while strictly reversed or non-finite coordinates still fail
+  closed. R007 crop outputs are inadmissible. The scientific question, data,
+  estimand, primary metric, threshold and stop rule do not change.
 
 ## Code review
 
-- Reviewer task: pending independent read-only review.
-- Bound commit / runner / config / data lock / protocol revision: v1-v6
-  bundles reviewed; v7 bundle pending.
-- Verdict: v1-v6 `FAIL`; v7 review pending. No producer training is
-  authorised.
-- Blocking findings: v6's shape-preserving instantiated-attribute gap is
-  repaired in v7 and awaits re-review.
+- Reviewer task: v11 independent read-only review pending.
+- Bound commit / runner / config / data lock / protocol revision: the v11
+  immutable file-hash bundle is pending review. V10 passed review, but R007
+  showed that an equal-coordinate detector output must enter the zero-area path.
+- Verdict: v10 `PASS` is superseded for execution; v11 pending. No further
+  producer training is authorised until v11 review passes.
+- Blocking finding: confirm that v11 drops only zero-area-after-clipping
+  detector proposals, applies the same filter in mining and evaluation, and
+  preserves an identical proposal set for both scoring arms.
 
 ## Runs
 
 | Run ID | Purpose / arm / seed | Execution | Retrieval | Receipt |
 |---|---|---|---|---|
-| S01-E001-R001 | proposer + reranker + frozen comparison; seed 20261008 | prepared | pending | pending |
+| S01-E001-R001 | proposer launch; seed 20261008 | failed before Python worker | verified | remote failure receipt |
+| S01-E001-R002 | proposer launch; seed 20261008 | failed before Python worker | verified | remote failure receipt |
+| S01-E001-R003 | proposer pre-training gate; seed 20261008 | failed: frozen weights absent from staging | verified | remote completion receipt |
+| S01-E001-R004 | proposer; seed 20261008 | cancelled/inadmissible: PID observed on physical GPU 0 | partial, logs preserved | remote run root |
+| S01-E001-R005 | v8 proposer; seed 20261008 | training completed at epoch 44; failed post-fit graph gate before receipt | verified | inadmissible failure receipt |
+| S01-E001-R006 | v9 proposer + crop mining; seed 20261008 | proposer succeeded; crop mining failed on zero-area clipped proposal before manifest | verified | proposer valid; crop stage inadmissible |
+| S01-E001-R007 | v10 proposer + crop mining; seed 20261008 | proposer succeeded; crop mining failed on equal-coordinate zero-area proposal before manifest | verified | proposer valid; crop stage inadmissible |
+| S01-E001-R008 | v11 proposer + reranker + frozen comparison; seed 20261008 | blocked pending v11 review | pending | pending |
 
 ## Evidence review
 
@@ -209,6 +254,6 @@ No claim change before the frozen run and independent evidence review.
 
 ## Next action
 
-Complete the selected-location download and independent code review. Training
-remains blocked until the review is bound to the frozen files and returns
-`PASS`.
+Obtain an independent v11 review. If it passes, regenerate and audit the v11
+development manifest, then start the fresh R008 run. Earlier proposer evidence
+is retained for provenance, but failed crop stages are not reused.
