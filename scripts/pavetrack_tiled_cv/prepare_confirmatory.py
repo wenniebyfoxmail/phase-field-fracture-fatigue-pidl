@@ -14,6 +14,7 @@ sys.path.insert(0, str(COMMON_DIR))
 
 from common import CRACK_CLASSES, clip_xyxy, parse_numeric_list, sha256_file, xywh_to_xyxy  # noqa: E402
 from prepare_dataset import find_source, materialize  # noqa: E402
+from contracts import validate_data_lock
 
 
 PROTOCOL = "S01-E002-v1"
@@ -54,6 +55,7 @@ def main() -> None:
     for field, expected in required.items():
         if authorization.get(field) != expected:
             raise ValueError(f"test authorization mismatch at {field}")
+    validate_data_lock(lock)
     if config.get("protocol") != PROTOCOL:
         raise ValueError("run config has the wrong protocol")
     if lock.get("workbook_sha256") != required["workbook_sha256"]:

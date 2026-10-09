@@ -10,6 +10,7 @@ import random
 from pathlib import Path
 
 from geometry import clip_target_to_tile, tile_origins
+from contracts import validate_data_lock
 
 
 PROTOCOL = "S01-E002-v1"
@@ -55,8 +56,15 @@ def main() -> None:
     ratio = float(tile_config["negative_to_positive_training_tile_ratio"])
     source = json.loads(args.manifest.read_text(encoding="utf-8"))
     data_lock = json.loads(args.data_lock.read_text(encoding="utf-8"))
+    validate_data_lock(data_lock)
     if set(source.get("splits", ())) != {"train", "validation"}:
         raise ValueError("development tiling requires exactly train and validation splits")
+    if source.get("protocol") != PROTOCOL:
+        raise ValueError("development manifest has the wrong protocol")
+    if source.get("data_lock_sha256") != sha256_file(args.data_lock):
+        raise ValueError("development manifest is not bound to this data lock")
+    if source.get("run_config_sha256") != sha256_file(args.config):
+        raise ValueError("development manifest is not bound to this run config")
     if source.get("workbook_sha256") != data_lock.get("workbook_sha256"):
         raise ValueError("development manifest is not bound to the locked workbook")
     for split, key in (("train", "train_locations"), ("validation", "validation_locations")):

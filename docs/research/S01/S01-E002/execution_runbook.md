@@ -17,11 +17,14 @@ GPU-identity preflight.
    they must not contain the five E002 confirmatory locations.
 4. Generate the tiled detector dataset with `prepare_development_tiles.py`.
 5. Train exactly one tiled proposer with `train_tiled_proposer.py`.
-6. Run `evaluate_development.py --split validation`. This evaluates the frozen
-   full-frame baseline and the repaired route on the same validation images and
-   selects one of the three predeclared scoring rules.
-7. Run `freeze_for_test.py`. Record all hashes and copy the authorization to an
-   immutable run directory.
+6. Run `evaluate_development.py --split validation` with the exact development
+   and tile manifests. This evaluates the frozen full-frame baseline and the
+   repaired route on the same validation images and selects one of the three
+   predeclared scoring rules.
+7. Run `freeze_for_test.py` with those same manifests. It verifies the complete
+   training lineage and recomputes all stored metrics, score selection and
+   oracle coverage before issuing an authorization. Record all hashes and copy
+   the authorization to an immutable run directory.
 
 ## Confirmatory boundary
 
@@ -46,4 +49,3 @@ locations 75, 220, 577, 956 and 1139 to the run workspace.
   negative for the bounded PaveTrack PD claim.
 - Any hash, split, runtime, GPU, missing-image or authorization mismatch:
   classify the run as inadmissible and do not interpret metrics.
-

@@ -11,6 +11,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from audit_s01_e001 import maximum_match_count
+from contracts import validate_data_lock, validate_tile_manifest_contract
 from geometry import Candidate, deterministic_nms, tile_origins, to_full_image
 
 
@@ -64,6 +65,7 @@ def oracle_coverage(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--tile-manifest", type=Path, required=True)
     parser.add_argument("--data-lock", type=Path, required=True)
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--baseline-proposer", type=Path, required=True)
@@ -80,15 +82,28 @@ def main() -> None:
 
     config = json.loads(args.config.read_text(encoding="utf-8"))
     lock = json.loads(args.data_lock.read_text(encoding="utf-8"))
+    validate_data_lock(lock)
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    tile_manifest = json.loads(args.tile_manifest.read_text(encoding="utf-8"))
     if config.get("protocol") != PROTOCOL:
         raise ValueError("run config has the wrong protocol")
+    if manifest.get("protocol") != PROTOCOL:
+        raise ValueError("evaluation manifest has the wrong protocol")
     if manifest.get("workbook_sha256") != lock.get("workbook_sha256"):
         raise ValueError("manifest workbook differs from data lock")
     if manifest.get("data_lock_sha256") != sha256_file(args.data_lock):
         raise ValueError("manifest differs from data lock")
     if manifest.get("run_config_sha256") != sha256_file(args.config):
         raise ValueError("manifest differs from run config")
+    validate_tile_manifest_contract(
+        tile_manifest,
+        data_lock_sha256=sha256_file(args.data_lock),
+        run_config_sha256=sha256_file(args.config),
+        workbook_sha256=lock["workbook_sha256"],
+        source_manifest_sha256=(
+            sha256_file(args.manifest) if args.split == "validation" else None
+        ),
+    )
     authorization = None
     if args.split == "validation":
         if set(manifest.get("splits", ())) != {"train", "validation"}:
@@ -110,6 +125,7 @@ def main() -> None:
             "tiled_proposer_receipt_sha256": sha256_file(args.tiled_proposer_receipt),
             "reranker_sha256": sha256_file(args.reranker),
             "validation_evaluation_sha256": sha256_file(args.validation_evaluation),
+            "tile_manifest_sha256": sha256_file(args.tile_manifest),
         }
         for field, expected in expected_authorization.items():
             if authorization.get(field) != expected:
@@ -142,6 +158,16 @@ def main() -> None:
         raise ValueError("tiled proposer receipt has the wrong protocol")
     if receipt.get("best_model_sha256") != sha256_file(args.tiled_proposer):
         raise ValueError("tiled proposer differs from its receipt")
+    receipt_contract = {
+        "run_config_sha256": sha256_file(args.config),
+        "data_lock_sha256": sha256_file(args.data_lock),
+        "workbook_sha256": lock["workbook_sha256"],
+        "tile_manifest_sha256": sha256_file(args.tile_manifest),
+        "development_manifest_sha256": tile_manifest["source_manifest_sha256"],
+    }
+    for field, expected in receipt_contract.items():
+        if receipt.get(field) != expected:
+            raise ValueError(f"tiled proposer receipt mismatch at {field}")
     expected_reranker_hash = config["reranker_reuse"]["checkpoint_sha256"]
     if sha256_file(args.reranker) != expected_reranker_hash:
         raise ValueError("reranker differs from frozen S01-E001 checkpoint")
@@ -315,6 +341,7 @@ def main() -> None:
         "protocol": PROTOCOL,
         "split": args.split,
         "manifest_sha256": sha256_file(args.manifest),
+        "tile_manifest_sha256": sha256_file(args.tile_manifest),
         "data_lock_sha256": sha256_file(args.data_lock),
         "run_config_sha256": sha256_file(args.config),
         "baseline_proposer_sha256": sha256_file(args.baseline_proposer),
@@ -335,6 +362,8 @@ def main() -> None:
             >= float(authorization["primary_delta_to_pass"])
             and coverage_delta >= float(authorization["coverage_delta_to_pass"])
         ),
+        "targets": targets,
+        "image_locations": image_locations,
         "test_authorization_sha256": (
             sha256_file(args.test_authorization) if args.test_authorization else None
         ),

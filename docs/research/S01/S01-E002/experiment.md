@@ -88,7 +88,10 @@ montage; analysis README; independent evidence review.
 
 ## Current gate
 
-The repair contract, implementation, tests and fresh-location lock are frozen
-in `code_review_bundle.json`. Local checks pass: 32 inherited PaveTrack tests
-and 7 repair-specific tests. Independent read-only code review remains required
-before any producer execution or fresh confirmatory access.
+Author self-review found four blocking defects in commit `96f2ccb`; all four
+were remediated before execution. The remediated self-review verdict is
+`PASS_WITH_NONBLOCKING_NOTES`, with 32 inherited PaveTrack tests and 12
+repair-specific tests passing. Because the author performed this review, it
+does not satisfy the independent-review gate. Independent read-only review of
+the new hash bundle remains required before producer execution or fresh
+confirmatory access.
