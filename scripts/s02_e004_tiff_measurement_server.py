@@ -69,7 +69,10 @@ def image_geometry(path: Path) -> tuple[int, int]:
 
 
 def parse_finite(payload: dict, field: str) -> float:
-    value = float(payload[field])
+    raw = payload[field]
+    if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+        raise ValueError(f"{field} must be a JSON number")
+    value = float(raw)
     if not math.isfinite(value):
         raise ValueError(f"{field} must be finite")
     return value
@@ -154,19 +157,19 @@ input,select,textarea,button{width:100%;padding:8px;border:1px solid #aeb9c3;bor
 <button id="save">保存当前张</button><div id="msg">先选择可见性；resolved 时依次点四个位置。</div>
 <p class="small">黄色：尺标区间；蓝色：加载线/左参考面；红色：最远可见裂尖。坐标始终换算回原 TIFF 像素，不受窗口缩放影响。</p></aside></main>
 <script>
-let tasks=[],i=0,active='',points={};
+let tasks=[],i=0,active='',points={},imageReady=false,currentImageId='';
 const $=id=>document.getElementById(id), keys=['ruler_start_px','ruler_end_px','reference_plane_x_px','tip_x_px'];
 const lineIds={ruler_start_px:'rs',ruler_end_px:'re',reference_plane_x_px:'ref',tip_x_px:'tip'};
 async function boot(){tasks=await (await fetch('/api/tasks')).json();const q=new URLSearchParams(location.search);i=Math.max(0,tasks.findIndex(x=>x.blind_id===q.get('id')));if(i<0)i=0;show()}
-function show(){const t=tasks[i];$('counter').textContent=`${i+1} / ${tasks.length}`;$('identity').textContent=t.blind_id;$('progress').textContent=`已填写 ${tasks.filter(x=>x.visibility_status).length} / ${tasks.length}`;$('status').value=t.visibility_status||'';$('span').value=t.ruler_span_mm||'';$('notes').value=t.operator_notes||'';points={};keys.forEach(k=>{if(t[k]!==''&&t[k]!=null)points[k]=Number(t[k])});$('img').src='/image/'+encodeURIComponent(t.blind_id);$('img').onload=layout;update();history.replaceState(null,'','?id='+encodeURIComponent(t.blind_id))}
+function show(){const t=tasks[i],requested=t.blind_id;active='';imageReady=false;currentImageId='';controls(true);$('img').style.visibility='hidden';$('counter').textContent=`${i+1} / ${tasks.length}`;$('identity').textContent=t.blind_id;$('progress').textContent=`已填写 ${tasks.filter(x=>x.visibility_status).length} / ${tasks.length}`;$('status').value=t.visibility_status||'';$('span').value=t.ruler_span_mm||'';$('notes').value=t.operator_notes||'';points={};keys.forEach(k=>{if(t[k]!==''&&t[k]!=null)points[k]=Number(t[k])});$('img').onload=()=>{if(tasks[i].blind_id!==requested)return;currentImageId=requested;imageReady=true;$('img').style.visibility='visible';layout();controls(busy)};$('img').onerror=()=>{$('msg').textContent='图像加载失败，禁止保存。'};$('img').src='/image/'+encodeURIComponent(requested);update();history.replaceState(null,'','?id='+encodeURIComponent(requested))}
 function layout(){const max=Math.max(400,$('view').clientWidth-28),w=$('img').naturalWidth;$('stage').style.width=Math.min(max,w)+'px';update()}
 function update(){const resolved=$('status').value==='resolved';$('measure').style.display=resolved?'block':'none';const span=Number($('span').value),rp=points.reference_plane_x_px,tp=points.tip_x_px,rs=points.ruler_start_px,re=points.ruler_end_px;let len='';if(resolved&&span>0&&[rp,tp,rs,re].every(Number.isFinite)&&rs!==re)len=Math.abs(tp-rp)*span/Math.abs(re-rs);$('length').value=Number.isFinite(len)?len.toFixed(6):'';$('coords').textContent=keys.map(k=>`${k.replace('_px','')}: ${Number.isFinite(points[k])?points[k].toFixed(2):'—'}`).join(' | ');keys.forEach(k=>{const el=$(lineIds[k]),x=points[k];el.style.display=resolved&&Number.isFinite(x)?'block':'none';if(Number.isFinite(x))el.style.left=(x/$('img').naturalWidth*100)+'%'});document.querySelectorAll('.point').forEach(b=>b.classList.toggle('active',b.dataset.key===active))}
 document.querySelectorAll('.point').forEach(b=>b.onclick=()=>{active=b.dataset.key;update()});
-$('stage').onclick=e=>{if(!active||$('status').value!=='resolved')return;const r=$('img').getBoundingClientRect();if(e.clientX<r.left||e.clientX>=r.right||e.clientY<r.top||e.clientY>=r.bottom)return;points[active]=(e.clientX-r.left)*$('img').naturalWidth/r.width;active='';update()};
+$('stage').onclick=e=>{if(!imageReady||currentImageId!==tasks[i].blind_id||!active||$('status').value!=='resolved')return;const r=$('img').getBoundingClientRect();if(e.clientX<r.left||e.clientX>=r.right||e.clientY<r.top||e.clientY>=r.bottom)return;points[active]=(e.clientX-r.left)*$('img').naturalWidth/r.width;active='';update()};
 $('status').onchange=()=>{if($('status').value!=='resolved'){points={};$('span').value=''}update()};$('span').oninput=update;
-let busy=false;function controls(disabled){$('save').disabled=disabled;$('prev').disabled=disabled;$('next').disabled=disabled}
-async function save(){if(busy)return;busy=true;controls(true);const saveId=tasks[i].blind_id,t={...tasks[i]},status=$('status').value,p={blind_id:t.blind_id,image_file:t.image_file,visibility_status:status,operator_notes:$('notes').value};if(status==='resolved'){keys.forEach(k=>p[k]=points[k]);p.ruler_span_mm=Number($('span').value);p.projected_length_mm=Number($('length').value)}try{const res=await fetch('/api/annotation/'+encodeURIComponent(saveId),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});const txt=await res.text();if(!res.ok){$('msg').textContent='未保存：'+txt;return}tasks=await (await fetch('/api/tasks')).json();i=tasks.findIndex(x=>x.blind_id===saveId);if(i<0)throw new Error('保存后找不到原任务');show();$('msg').innerHTML='<span class="done">已保存并通过算术校验。</span>'}catch(e){$('msg').textContent='未保存：'+e.message}finally{busy=false;controls(false)}}
-$('save').onclick=save;$('prev').onclick=()=>{i=(i+tasks.length-1)%tasks.length;show()};$('next').onclick=()=>{i=(i+1)%tasks.length;show()};window.onresize=layout;boot();
+let busy=false;function controls(disabled){$('save').disabled=disabled;$('prev').disabled=disabled;$('next').disabled=disabled;document.querySelectorAll('.point').forEach(b=>b.disabled=disabled)}
+async function save(){if(busy||!imageReady||currentImageId!==tasks[i].blind_id)return;busy=true;controls(true);const saveId=tasks[i].blind_id,t={...tasks[i]},status=$('status').value,p={blind_id:t.blind_id,image_file:t.image_file,visibility_status:status,operator_notes:$('notes').value};if(status==='resolved'){keys.forEach(k=>p[k]=points[k]);p.ruler_span_mm=Number($('span').value);p.projected_length_mm=Number($('length').value)}try{const res=await fetch('/api/annotation/'+encodeURIComponent(saveId),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});const txt=await res.text();if(!res.ok){$('msg').textContent='未保存：'+txt;return}tasks=await (await fetch('/api/tasks')).json();i=tasks.findIndex(x=>x.blind_id===saveId);if(i<0)throw new Error('保存后找不到原任务');show();$('msg').innerHTML='<span class="done">已保存并通过算术校验。</span>'}catch(e){$('msg').textContent='未保存：'+e.message}finally{busy=false;controls(!imageReady)}}
+$('save').onclick=save;$('prev').onclick=()=>{i=(i+tasks.length-1)%tasks.length;show()};$('next').onclick=()=>{i=(i+1)%tasks.length;show()};window.onresize=layout;controls(true);boot();
 </script></body></html>'''
 
 
