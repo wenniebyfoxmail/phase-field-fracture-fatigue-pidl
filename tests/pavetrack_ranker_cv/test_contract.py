@@ -28,3 +28,11 @@ class ContractTests(unittest.TestCase):
  def test_finite_rejects_nan(self):
   with self.assertRaises(ValueError):m.finite(float('nan'))
 if __name__=='__main__':unittest.main()
+
+class ValidationPaddingTests(unittest.TestCase):
+ def test_loss_ignores_padded_negative_touching_crack(self):
+  cfg={'crop_padding':.1};records=[{'image_id':'a','width':100,'height':100}]
+  rows=[{'image_id':'a','box_xyxy':[0,0,10,10],'probability':.99},{'image_id':'a','box_xyxy':[10.5,0,20,10],'probability':.8}]
+  loss=m.validation_loss(rows,{'a':[[10.5,0,20,10]]},records,cfg)
+  import math
+  self.assertAlmostEqual(loss,-math.log(.8))

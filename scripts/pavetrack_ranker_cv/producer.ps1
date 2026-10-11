@@ -1,5 +1,12 @@
-param([Parameter(Mandatory=$true)][string]$Stage,[Parameter(Mandatory=$true)][string]$Source,[string]$RunId='S01-E003-R001')
+param([Parameter(Mandatory=$true)][string]$Stage,[Parameter(Mandatory=$true)][string]$Source,[string]$RunId='S01-E003-R001',[Parameter(Mandatory=$true)][string]$ReviewedCommit,[Parameter(Mandatory=$true)][string]$ManifestSha256)
 $ErrorActionPreference='Stop'
+$manifestPath=Join-Path $Source 'docs\research\S01\S01-E003\source_manifest.json'
+if ((Get-FileHash $manifestPath -Algorithm SHA256).Hash.ToLower() -ne $ManifestSha256) {throw 'reviewed source manifest mismatch'}
+$manifest=Get-Content $manifestPath -Raw | ConvertFrom-Json
+foreach ($entry in $manifest.files.PSObject.Properties) {
+ if ((Get-FileHash (Join-Path $Source $entry.Name) -Algorithm SHA256).Hash.ToLower() -ne $entry.Value) {throw "reviewed file mismatch: $($entry.Name)"}
+}
+
 $run="C:\Users\xw436\pavetrack_runs\$RunId"
 $py='C:\Users\xw436\pavetrack_env\Scripts\python.exe'
 $prior='C:\Users\xw436\pavetrack_runs\S01-E002-R002'
@@ -13,7 +20,7 @@ function Invoke-Step([string]$step,[string[]]$extra=@()) {
 if ($Stage -eq 'development') {
  if (Test-Path $run) {throw 'fresh run directory required'}
  New-Item -ItemType Directory $run | Out-Null
- @{run_id=$RunId;wrapper_pid=$PID;source=$Source;started_at=(Get-Date -Format o);execution_status='running';confirmatory_access=$false} | ConvertTo-Json | Set-Content "$run\launch_receipt.json" -Encoding UTF8
+ @{run_id=$RunId;wrapper_pid=$PID;source=$Source;reviewed_commit=$ReviewedCommit;source_manifest_sha256=$ManifestSha256;dirty_status='immutable Git archive with reviewed manifest verified';started_at=(Get-Date -Format o);execution_status='running';confirmatory_access=$false} | ConvertTo-Json | Set-Content "$run\launch_receipt.json" -Encoding UTF8
  try {Invoke-Step 'mine';Invoke-Step 'train';Invoke-Step 'freeze';@{state='development_completed';updated_at=(Get-Date -Format o)} | ConvertTo-Json | Set-Content "$run\status.json" -Encoding UTF8}
  catch {@{state='failed';detail=$_.Exception.Message;updated_at=(Get-Date -Format o)} | ConvertTo-Json | Set-Content "$run\status.json" -Encoding UTF8;throw}
 } elseif ($Stage -eq 'confirmatory') {

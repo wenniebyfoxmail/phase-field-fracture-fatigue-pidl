@@ -43,7 +43,7 @@ def validate_members(records,lock,split):
  for r in records: check_hash(r['prepared_image'],r['prepared_image_sha256'])
 
 def lineage(a):
- return {'protocol':PROTOCOL,'config_sha256':sha256_file(a.config),'lock_sha256':sha256_file(a.lock),'tiled_sha256':sha256_file(a.tiled),'initial_ranker_sha256':sha256_file(a.old_ranker),'source_development_sha256':sha256_file(a.development),'source_validation_sha256':sha256_file(a.source_validation)}
+ return {'protocol':PROTOCOL,'config_sha256':sha256_file(a.config),'lock_sha256':sha256_file(a.lock),'tiled_sha256':sha256_file(a.tiled),'initial_ranker_sha256':sha256_file(a.old_ranker),'source_development_sha256':sha256_file(a.development),'source_validation_sha256':sha256_file(a.source_validation),'source_manifest_sha256':sha256_file(ROOT/'docs/research/S01/S01-E003/source_manifest.json')}
 
 def validate_inputs(a,cfg,lock):
  if cfg['protocol']!=PROTOCOL or lock['protocol']!=PROTOCOL: raise ValueError('wrong protocol')
@@ -130,13 +130,17 @@ def mine(a,cfg,lock,dev,val):
  write(a.run/'crop_manifest.json',dict(lineage(a),records=crops,train_proposals_sha256=sha256_file(a.run/'train_proposals.json')))
 
 
-def validation_loss(rows,targets):
+def validation_loss(rows,targets,records,cfg):
  # Unbalanced proposal loss on clear positives/negatives only, tie-breaker.
  total=0.;count=0
+ dimensions={r['image_id']:(r['width'],r['height']) for r in records}
  for r in rows:
   overlap=max((box_iou(r['box_xyxy'],t) for t in targets[r['image_id']]),default=0.)
   if overlap>=.5:y=1
-  elif overlap<=.05:y=0
+  elif overlap<=.05:
+   padded=pad_box(r['box_xyxy'],*dimensions[r['image_id']],cfg['crop_padding'])
+   if any(boxes_overlap(padded,t) for t in targets[r['image_id']]):continue
+   y=0
   else:continue
   p=min(1-1e-7,max(1e-7,r['probability']));total-=math.log(p if y else 1-p);count+=1
  if not count:raise ValueError('no validation labels')
@@ -175,7 +179,7 @@ def train(a,cfg,lock,dev,val):
   for images,labels in loader:
    optimizer.zero_grad(set_to_none=True);loss=criterion(model(images.to(device)),labels.to(device));finite(loss.item());loss.backward();optimizer.step();total+=loss.item()*len(labels);n+=len(labels)
   scored=score_rows(vrows,vrecords,model,transform,device,cfg)
-  measurement=metrics(scored,val['targets'],val['image_locations'],'score');vl=validation_loss(scored,val['targets']);recall=measurement['macro_location_recall']
+  measurement=metrics(scored,val['targets'],val['image_locations'],'score');vl=validation_loss(scored,val['targets'],vrecords,cfg);recall=measurement['macro_location_recall']
   if recall is None:raise ValueError('validation recall unidentified')
   row={'epoch':epoch,'train_loss':total/n,'validation_loss':vl,'validation_macro_recall':recall,'delta':recall-baseline['macro_location_recall']};history.append(row);write(a.run/'history.json',history);print(json.dumps(row),flush=True)
   key=(recall,-vl)
@@ -255,7 +259,12 @@ def evaluate(a,cfg,lock):
  write(a.run/'evaluation_test.json',dict(lineage(a),split='test',manifest_sha256=sha256_file(a.run/'manifest_test.json'),authorization_sha256=sha256_file(a.run/'test_authorization.json'),ranker_sha256=sha256_file(a.run/'best_ranker.pt'),baseline=baseline,candidate=candidate,delta=delta,primary_pass=None if delta is None else delta>=cfg['primary_delta'],oracle=oracle_coverage(newrows,targets,locations),rows=newrows,targets=targets,image_locations=locations))
  print(json.dumps({'delta':delta,'baseline':baseline,'candidate':candidate}),flush=True)
 
+def verify_source():
+ manifest=read(ROOT/'docs/research/S01/S01-E003/source_manifest.json')
+ for relative,expected in manifest['files'].items():check_hash(ROOT/relative,expected)
+
 def main():
+ verify_source()
  p=argparse.ArgumentParser();p.add_argument('stage',choices=['mine','train','freeze','check-authorization','prepare','evaluate'])
  for name in ['config','lock','tiled','old-ranker','development','source-validation','run']:p.add_argument('--'+name,type=Path,required=True)
  p.add_argument('--workbook',type=Path);p.add_argument('--image-root',type=Path);a=p.parse_args();cfg=read(a.config);lock=read(a.lock);dev,val=validate_inputs(a,cfg,lock);a.run.mkdir(parents=True,exist_ok=True)

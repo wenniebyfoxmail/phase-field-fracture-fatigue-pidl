@@ -35,8 +35,8 @@ Fine-tune all existing ranker parameters for 15 epochs, AdamW lr 1e-5,
 weight decay 1e-4, batch 64, inverse-class-frequency weighted sampling with
 replacement, seed 20261011. No architecture, seed, fusion or proposer sweep.
 At every epoch score all frozen validation proposals. Select highest validation
-macro recall at 1 FP/image, then lowest unbalanced loss on labeled validation
-proposal crops, then earliest epoch. Fixed candidate score is sqrt(proposer
+macro recall at 1 FP/image, then lowest unbalanced loss on clear labeled validation
+proposal crops (negative padded crop must not intersect a crack), then earliest epoch. Fixed candidate score is sqrt(proposer
 confidence * new crack probability); comparator uses the old probability.
 
 ## Information sets and identity
