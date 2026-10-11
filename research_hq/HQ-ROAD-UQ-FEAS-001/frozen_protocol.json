@@ -1,0 +1,22 @@
+{
+  "experiment_id": "HQ-ROAD-UQ-FEAS-001",
+  "protocol": "D1-r1",
+  "seed": 20261011,
+  "max_epochs": 40,
+  "gpu_budget_hours": 6,
+  "train_crop": [320, 320],
+  "batch_size": 8,
+  "threshold": 0.5,
+  "loss": "0.5*BCE + 0.5*soft_dice_loss",
+  "checkpoint_rule": "maximum CRACK500 A validation mean Dice only",
+  "crack500_excluded_train_parents": ["20160328_154452", "20160328_154454", "20160329_103609", "20160329_103800", "20160329_111111"],
+  "crack500_excluded_val_parents": ["20160329_103807"],
+  "expected": {"train_pairs": 1860, "train_groups": 245, "val_pairs": 341, "val_groups": 49, "test_pairs": 200, "cfd_labeled": 118},
+  "inference": {"native_pixels": true, "multiple": 16, "tile": 640, "overlap": 96},
+  "road420_access": "PROHIBITED_IN_D1",
+  "gates": {
+    "F1": "CFD images with Dice>0 >=89 and (all-empty + all-foreground predictions)<59",
+    "F2": "at least one frozen score has first-29 accepted mean error <= full-cohort mean error-0.05",
+    "F3": "complex score enters D2 only if directionally better than U_LC; not required for D1 feasibility"
+  }
+}

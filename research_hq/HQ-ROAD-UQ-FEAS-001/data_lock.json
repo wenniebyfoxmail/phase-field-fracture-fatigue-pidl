@@ -1,0 +1,8 @@
+{
+  "trainzip": {"bytes": 115224706, "sha256": "d5e9eb4bbb27163ef9778e63c7d743080d3b4458d069652f4285f07f5d02cbac"},
+  "valzip": {"bytes": 20836950, "sha256": "78974e47e7499aa2d40829e5171c87c8001055731aaa4a92aed5d8d67073718c"},
+  "testzip": {"bytes": 547759078, "sha256": "8c812484ccbbdbf37b2aa6f0133ba68ba77b4da9431d98160d2ab447628788b7"},
+  "cfd_lock": {"labeled_pairs": 118, "files": 236, "bytes": 4143667, "aggregate_sha256": "ca8f294c2d9a8ca6d696c9c20394b67d4f521176dbbbef00c03ed0dd577b57de"},
+  "cfd_repository_commit": "ed57c2d96754e6c7d105805cd29aeeb3a799f267",
+  "road420_identity_sha256": "f5a53d7cc31bed02019e9f983ce7ead97f45e165487dd09323c8e7d0540d8bbd"
+}
