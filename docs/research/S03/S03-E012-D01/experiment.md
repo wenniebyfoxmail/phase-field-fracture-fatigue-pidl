@@ -1,6 +1,6 @@
 ---
 storyline_id: S03
-experiment_id: S03-E011
+experiment_id: S03-E012-D01
 protocol_revision: development-v1
 status: development
 started_at: 2026-10-11
@@ -102,9 +102,24 @@ reviewed C3 crack-forecast result; independent reference/review remain pending.
 One deterministic CPU development run, <=10 minutes, 8 new JPEG acquisitions,
 no training, no full archive. Stop on identity/registration/support failure;
 record partial outputs and do not silently change the protocol.
-Owner S03-E011; branch codex/crackmnist-tokenizer-mvp, base a51bf97.
-Archive local_archive/experiments/S03-E011/runs/S03-E011-R001/.
+Owner S03-E012-D01; branch codex/crackmnist-tokenizer-mvp, base a51bf97.
+Archive local_archive/experiments/S03-E012-D01/runs/S03-E012-D01-R001/.
 Minimum: selection/sequence receipts, origin ROIs, all-stage image montage,
 response trajectory, per-pair predictions/MAEs, all-beam comparison, NPZs,
 receipt and README. Unseen specimens, road transfer, fatigue and physical crack
 accuracy are outside scope. Preserve all earlier protocols and verdicts.
+
+## Identifier collision and execution repair
+
+The first development launch at commit 2807645 used temporary S03-E011-R001.
+It acquired all 14 sources, then stopped on a missing warp_image import before
+any forecast scores. An unrelated 342-stage empirical-header audit wrote a
+data_audit.json under the same shared S03-E011 archive while that launch ran.
+That foreign file is not D01 evidence and remains untouched.
+
+Use the namespaced canonical ID S03-E012-D01 to separate ownership. Preserve
+the failed-launch receipt and the three task-owned acquisition/selection
+records under failed_initial_launch/. Reuse only the 14 source files whose
+size and CRC match this D01 selection; never copy the whole mixed directory.
+This identity repair changes no estimator, ROI, stage selection or criterion.
+Spatial example selection is fixed as the last included target of every beam.

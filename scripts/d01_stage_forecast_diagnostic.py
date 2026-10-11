@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""S03-E011 development-only next-loading-stage image-observable baselines."""
+"""S03-E012-D01 development-only next-loading-stage image-observable baselines."""
 import argparse
 import csv
 from datetime import datetime, timezone
@@ -20,7 +20,7 @@ import numpy as np
 
 from d01_directional_scale_repeatability import crc32_file
 from d01_local_registration_holdout import evaluate_registration, transformed_corners
-from d01_multiview_repeatability import load_gray, register, ridge_response
+from d01_multiview_repeatability import load_gray, register, ridge_response, warp_image
 from d01_remote_manifest_audit import extract_entry
 
 BOXES={4:((3300,1200,4450,2750),(1800,1400,2400,2300)),
@@ -95,7 +95,7 @@ def main():
     if git("status","--porcelain"): raise RuntimeError("commit source before execution")
     if args.output.exists(): raise FileExistsError("fresh output required")
     args.output.mkdir(parents=True)
-    receipt={"experiment_id":"S03-E011","run_id":"S03-E011-R001","protocol":"development-v1",
+    receipt={"experiment_id":"S03-E012-D01","run_id":"S03-E012-D01-R001","protocol":"development-v1",
              "role":"exploratory_image_observable_forecast","producer":"Mac-PIDL",
              "hostname":socket.gethostname(),"pid":os.getpid(),"commit":git("rev-parse","HEAD"),
              "git_dirty":False,"python":sys.executable,"command":sys.argv,"gpu":None,
@@ -128,11 +128,12 @@ def main():
     acquisitions=[]
     for states in groups.values():
         for item in states:
-            cached=args.archive/"S03-E006/analysis/raw_images"/item["saved_as"]
+            repaired_cache=args.archive/"S03-E012-D01/acquired_sources"/item["saved_as"]
+            cached=repaired_cache if repaired_cache.is_file() else args.archive/"S03-E006/analysis/raw_images"/item["saved_as"]
             target=args.output/"raw_images"/item["saved_as"]
             if cached.is_file():
                 target.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(cached,target)
-                source="reused_S03-E006"
+                source="reused_verified_D01_source"
             else:
                 extract_entry(manifest["source_url"],item["entry"],args.output/"raw_images")
                 source="remote_range_extract"
@@ -213,7 +214,7 @@ def main():
                             gray_ROIs=np.stack(photos),nominal_loads_kN=loads,homographies=np.stack(matrices),
                             **{k+"_predictions":v for k,v in predictions.items()})
         results.append({"beam":beam,"states":states,"fields":fields,"loads":loads,"photos":photos,"predictions":predictions})
-    roi_fig.suptitle("S03-E011-R001 | ROIs fixed from first stage, not selected using future outcomes")
+    roi_fig.suptitle("S03-E012-D01-R001 | ROIs fixed from first stage, not selected using future outcomes")
     roi_fig.savefig(args.output/"origin_only_rois.png",dpi=160); plt.close(roi_fig)
     write_csv(args.output/"stage_observables.csv",image_rows)
     write_csv(args.output/"forecast_metrics.csv",forecast_rows)
@@ -241,7 +242,7 @@ def make_figures(results,per_beam,output):
             ax.imshow(result["photos"][col],cmap="gray",vmin=0,vmax=255)
             ax.set_title(f"Beam {result['beam']} | {result['loads'][col]:.0f} kN\nt={result['states'][col]['filename_time_s']} filename",fontsize=9)
             ax.set_xticks([]); ax.set_yticks([])
-    fig.suptitle("S03-E011-R001 | all 14 ordered fixed-camera ROI observations | control-normalized gray, development")
+    fig.suptitle("S03-E012-D01-R001 | all 14 ordered fixed-camera ROI observations | control-normalized gray, development")
     fig.savefig(output/"ordered_stage_images.png",dpi=180); plt.close(fig)
     colors={"persistence":"#555555","secant":"#0072B2","conservative_secant":"#D55E00"}
     fig,axes=plt.subplots(1,3,figsize=(13,4),constrained_layout=True)
@@ -258,7 +259,7 @@ def make_figures(results,per_beam,output):
     for i,arm in enumerate(ARMS):
         ax.bar(x+(i-1)*.23,[r[arm] for r in per_beam],width=.22,label=arm,color=colors[arm])
     ax.set(xticks=x,xticklabels=["Beam 4 (2 pairs)","Beam 5 (4 pairs)","Beam 6 (2 pairs)"],ylabel="Mean next-stage 16x16 response-field MAE")
-    ax.legend(fontsize=8); ax.set_title("S03-E011-R001 | independent beam variation | exploratory baselines")
+    ax.legend(fontsize=8); ax.set_title("S03-E012-D01-R001 | independent beam variation | exploratory baselines")
     fig.savefig(output/"forecast_comparison.png",dpi=180); plt.close(fig)
     vmax=max(float(r["fields"].max()) for r in results)
     fig,axes=plt.subplots(3,5,figsize=(15,9),constrained_layout=True)
