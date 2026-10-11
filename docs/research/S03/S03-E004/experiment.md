@@ -2,11 +2,12 @@
 storyline_id: S03
 experiment_id: S03-E004
 protocol_revision: v1
-status: real_run_complete_evidence_review_pending
+status: closed_inconclusive
 started_at: 2026-10-09
 primary_storyline: S03
 related_storylines: [S02]
-scientific_verdict: pending_independent_evidence_review
+scientific_verdict: inconclusive
+research_disposition: repair
 ---
 
 # AA2024 empirical global-DIC sequence qualification
@@ -152,8 +153,13 @@ chosen in this Experiment.
 The archive therefore passes identity and actual-stage pairing checks, but the
 bounded parser did not establish complete valid headers for the sequence. No
 header-semantic, chronology, observation-target, forecasting, inversion, or
-phase-field claim is authorized. Closure remains pending independent evidence
-review of the exact run artifacts.
+phase-field claim is authorized. Independent evidence review on 2026-10-11
+returned `PASS_EVIDENCE_REVIEW` and approved closure as `inconclusive`, with
+allowed conclusion `qualification_not_established`. See `evidence_review.md`
+for the decision table, bindings, limitations and smallest repair scope.
+Structural pairing is retained as component progress. The root cause of the
+header-parser failure remains unknown; further diagnosis needs fresh,
+separately frozen work before another qualification attempt.
 
 ## Required evidence
 
