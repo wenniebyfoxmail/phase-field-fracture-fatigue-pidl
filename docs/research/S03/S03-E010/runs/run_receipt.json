@@ -1,0 +1,24 @@
+{
+  "experiment_id": "S03-E010",
+  "run_id": "S03-E010-R001",
+  "protocol": "development-v1",
+  "role": "C0_development_only",
+  "producer": "Mac-PIDL",
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 55508,
+  "commit": "013db971a3bc07e146b355926830778dac82a386",
+  "git_dirty": false,
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/d01_observation_token_mvp.py",
+    "--source",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E010/runs/S03-E010-R001"
+  ],
+  "gpu": null,
+  "started_at_utc": "2026-10-11T21:37:34.875040+00:00",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "ended_at_utc": "2026-10-11T21:37:51.228259+00:00"
+}

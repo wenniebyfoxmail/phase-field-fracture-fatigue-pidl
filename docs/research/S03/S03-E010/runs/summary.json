@@ -1,0 +1,47 @@
+{
+  "serialized_observations": 24,
+  "beams": [
+    {
+      "beam": "Beam 4",
+      "observations": 8,
+      "valid_patches_per_image": 59,
+      "all_patches": 64,
+      "token_shape": [
+        8,
+        64,
+        4
+      ],
+      "roundtrip_ok": true
+    },
+    {
+      "beam": "Beam 5",
+      "observations": 8,
+      "valid_patches_per_image": 57,
+      "all_patches": 64,
+      "token_shape": [
+        8,
+        64,
+        4
+      ],
+      "roundtrip_ok": true
+    },
+    {
+      "beam": "Beam 6",
+      "observations": 8,
+      "valid_patches_per_image": 58,
+      "all_patches": 64,
+      "token_shape": [
+        8,
+        64,
+        4
+      ],
+      "roundtrip_ok": true
+    }
+  ],
+  "feature_count": 4,
+  "all_roundtrip_ok": true,
+  "scientific_verdict": "DEVELOPMENT_ONLY",
+  "physical_scale": "canonical_pixels_only",
+  "crack_accuracy_validated": false,
+  "prediction_tested": false
+}

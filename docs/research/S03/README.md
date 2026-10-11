@@ -23,3 +23,14 @@ Earlier records: [D01 identity audit](S03-E004/experiment.md),
 
 Next action: dataset-first moving-reference and known-mark audit under S03-E009,
 followed by a reviewed selective-measurement contract with positive coverage.
+
+2026-10-11 — [S03-E009](S03-E009/experiment.md) acquired three moving IB
+development references (CRC/size/decode 3/3); known ruler numbers are visible.
+Beam 6 moving ref2 remains reserved. Physical-reference annotation is pending.
+
+2026-10-11 — [S03-E010](S03-E010/experiment.md) completed a canonical-pixel
+observation-token MVP on all 24 state views. Per-beam tensors are 8 x 64 x 4,
+with 59/57/58 valid positions and exact metadata roundtrip. This is C0 capability.
+Cross-camera token variation exceeds fixed-camera cross-stop variation, and the
+common-footprint grid includes ruler/background. Next repair: beam-face-only
+support on the same stored observations; metric scale work remains separate.

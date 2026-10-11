@@ -2,7 +2,7 @@
 storyline_id: S03
 experiment_id: S03-E010
 protocol_revision: development-v1
-status: development
+status: development_complete
 started_at: 2026-10-11
 primary_storyline: S03
 ---
@@ -62,3 +62,32 @@ Repair trigger: serialization/identity/coverage failure -> repair that component
 Large cross-view descriptor differences -> inspect photometric and representation
 dependence before selecting any learned encoder. New validated accuracy or
 transition claims require a separate reviewed protocol and qualified references.
+
+## Development result and component interpretation
+
+R001 completed on clean commit 013db971a3bc07e146b355926830778dac82a386
+in about 16 seconds. All 27 input identities checked and all 24 state-image
+registrations met the reused local checks. Three NPZ files serialized all
+24 observations and reloaded exactly. Shape per beam: 8 x 64 x 4.
+Valid patches per observation: Beam 4 = 59, Beam 5 = 57, Beam 6 = 58.
+Missing patch values use explicit validity masks, not fabricated observations.
+
+Engineering milestone: observation -> registered plane -> token -> metadata
+-> reload -> descriptive comparison is operational on this development set.
+Scientific verdict: DEVELOPMENT_ONLY; no independent measurement/prediction
+accuracy criterion was tested.
+
+Every moving-vs-fixed ridge-token difference exceeded that beam's fixed
+high-vs-low difference. This localizes a representation comparability problem;
+it does not establish that the cause is illumination alone or that changes are
+crack growth. The grid covers common camera support, including specimen-external
+background and the ruler. The overview shows that these are not all beam-face
+tokens.
+
+Research disposition: advance C0, repair spatial support before C2.
+Smallest next intervention: annotate a beam-face polygon on each reference plane
+without choosing crack locations or optimizing scored differences, exclude ruler
+and apparatus, and reaggregate the saved registration/image observations once.
+Compare beam-face-only against the existing full-footprint vectors on identical
+paired observations. This is development; reserve fresh regions/observations
+for any later confirmed cross-view or crack-measurement claim.
