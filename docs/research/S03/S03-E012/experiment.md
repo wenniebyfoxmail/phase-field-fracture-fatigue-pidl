@@ -2,7 +2,7 @@
 storyline_id: S03
 experiment_id: S03-E012
 protocol_revision: v1
-status: code_review_pending
+status: executed_evidence_review_pending
 scientific_verdict: pending
 ---
 
@@ -120,3 +120,19 @@ labels. The revision uses twice-span guard precision per permitted origin input
 set, fixes the prediction before target-based scoring, and adds complete-mode
 regression B=10^100 with prediction 1e-100 plus later-label perturbation invariance.
 The archived preparation tables remain uncreated pending renewed Code Ready.
+
+## Actual pilot execution
+
+Commit `27664c5700db53dc50989a96b37f29b0506dd76c` received `PASS_CODE_READY`.
+Prepare mode succeeded at 2026-10-11T23:17:14Z (2026-10-12 local London date):
+342 stages, 114 exact-cycle groups, exactly three stages/group and equal tied
+labels. A separate read-only CSV/groupby, split and receipt/hash verification
+passed before evaluate mode started at 2026-10-11T23:18:29Z.
+Both mode receipts record the exact code identity and clean status.
+
+Frozen early/dev/holdout target counts are 66/23/23, after two warmup groups.
+Holdout native-unit MAE: persistence 0.5308750371, secant 0.0669012318;
+MAE ratio 0.1260206774. Holdout RMSE: 0.5407647533 and 0.0922485740.
+The complete figure and exact predictions exist and were visually inspected.
+No model was trained or selected from these scores. Evidence review remains
+pending; these are producer results for the bounded conditional-gap diagnostic.
