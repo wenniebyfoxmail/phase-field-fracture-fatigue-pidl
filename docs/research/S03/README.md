@@ -34,3 +34,16 @@ with 59/57/58 valid positions and exact metadata roundtrip. This is C0 capabilit
 Cross-camera token variation exceeds fixed-camera cross-stop variation, and the
 common-footprint grid includes ruler/background. Next repair: beam-face-only
 support on the same stored observations; metric scale work remains separate.
+
+2026-10-11 — [S03-E012-D01](S03-E012-D01/experiment.md) assembled 14
+ordered fixed-camera non-final load-stage observations and evaluated eight
+prefix-only next-stage baseline pairs. Persistence outperformed secant and
+fixed half-increment extrapolation on the dark-ridge response-field target.
+This is exploratory image-observable forecasting, not physical crack geometry.
+
+2026-10-11 — [S03-E013-D01](S03-E013-D01/experiment.md) used unchanged-scene
+half-pixel resampling to isolate an observation artifact. A fixed sigma=1
+prefilter reduced null-field discrepancy by 82.954%; all beams improved.
+History extrapolation still did not beat persistence on the new smoothed target.
+Next: direct crack/reference geometry and profile observables, with the
+dominant Beam 4 crack correctly covered. Do not expand neural architectures yet.

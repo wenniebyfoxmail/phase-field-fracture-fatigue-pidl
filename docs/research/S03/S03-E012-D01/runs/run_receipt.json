@@ -1,0 +1,25 @@
+{
+  "experiment_id": "S03-E012-D01",
+  "run_id": "S03-E012-D01-R001",
+  "protocol": "development-v1",
+  "role": "exploratory_image_observable_forecast",
+  "producer": "Mac-PIDL",
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 75413,
+  "commit": "27246604154c4be561342510a9fc7791b953d9af",
+  "git_dirty": false,
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/d01_stage_forecast_diagnostic.py",
+    "--archive",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E012-D01/runs/S03-E012-D01-R001"
+  ],
+  "gpu": null,
+  "started_at_utc": "2026-10-11T22:44:36.505759+00:00",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "independent_code_review": "not_formally_reviewed_development",
+  "ended_at_utc": "2026-10-11T22:44:46.082271+00:00"
+}

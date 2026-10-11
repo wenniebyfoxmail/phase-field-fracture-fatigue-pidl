@@ -1,0 +1,198 @@
+[
+  {
+    "beam": 4,
+    "load_kN": 10,
+    "filename_time_s": 225,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 4/G4-IB-Fixed/G4-IB_t=225.JPG",
+    "bytes": 3670460,
+    "crc32": "02b09d29",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 4,
+    "load_kN": 30,
+    "filename_time_s": 400,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 4/G4-IB-Fixed/G4-IB_t=400.JPG",
+    "bytes": 3709677,
+    "crc32": "4ddf14af",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 4,
+    "load_kN": 40,
+    "filename_time_s": 500,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 4/G4-IB-Fixed/G4-IB_t=500.JPG",
+    "bytes": 3717643,
+    "crc32": "e64b1691",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 4,
+    "load_kN": 50,
+    "filename_time_s": 588,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 4/G4-IB-Fixed/G4-IB_t=588.JPG",
+    "bytes": 3713492,
+    "crc32": "3b4a6af7",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 5,
+    "load_kN": 10,
+    "filename_time_s": 228,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 5/G5-IB-Fixed/G5-IB_t=228.JPG",
+    "bytes": 3156225,
+    "crc32": "5ea058e2",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 5,
+    "load_kN": 20,
+    "filename_time_s": 358,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 5/G5-IB-Fixed/G5-IB_t=358.JPG",
+    "bytes": 3174271,
+    "crc32": "30a4790d",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 5,
+    "load_kN": 30,
+    "filename_time_s": 464,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 5/G5-IB-Fixed/G5-IB_t=464.JPG",
+    "bytes": 3179319,
+    "crc32": "124abb19",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 5,
+    "load_kN": 40,
+    "filename_time_s": 553,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 5/G5-IB-Fixed/G5-IB_t=553.JPG",
+    "bytes": 3177441,
+    "crc32": "c1e81644",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 5,
+    "load_kN": 50,
+    "filename_time_s": 636,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 5/G5-IB-Fixed/G5-IB_t=636.JPG",
+    "bytes": 3185085,
+    "crc32": "dd2bd2c2",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 5,
+    "load_kN": 60,
+    "filename_time_s": 729,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 5/G5-IB-Fixed/G5-IB_t=729.JPG",
+    "bytes": 3187035,
+    "crc32": "539d44bb",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 6,
+    "load_kN": 10,
+    "filename_time_s": 183,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 6/G6-IB-Fixed/G6-IB_t=183.JPG",
+    "bytes": 3630462,
+    "crc32": "027ebe24",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 6,
+    "load_kN": 20,
+    "filename_time_s": 293,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 6/G6-IB-Fixed/G6-IB_t=293.JPG",
+    "bytes": 3621872,
+    "crc32": "ba4aae13",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 6,
+    "load_kN": 30,
+    "filename_time_s": 376,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 6/G6-IB-Fixed/G6-IB_t=376.JPG",
+    "bytes": 3620746,
+    "crc32": "44c42224",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  },
+  {
+    "beam": 6,
+    "load_kN": 40,
+    "filename_time_s": 460,
+    "source": "reused_verified_D01_source",
+    "saved_as": "Beam 6/G6-IB-Fixed/G6-IB_t=460.JPG",
+    "bytes": 3620580,
+    "crc32": "47dc1fc0",
+    "native_shape": [
+      3744,
+      5616
+    ],
+    "verified": true
+  }
+]

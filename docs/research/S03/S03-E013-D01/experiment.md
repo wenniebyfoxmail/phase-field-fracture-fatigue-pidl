@@ -2,7 +2,7 @@
 storyline_id: S03
 experiment_id: S03-E013-D01
 protocol_revision: development-v1
-status: development
+status: development_complete
 started_at: 2026-10-11
 primary_storyline: S03
 ---
@@ -54,3 +54,24 @@ no retrieval, registration refit, training, sigma sweep or formal claim.
 Archive local_archive/experiments/S03-E013-D01/runs/S03-E013-D01-R001/.
 Evidence: exact null/forecast tables, NPZs, all-three comparison figure, receipt
 and README. Outcome selects observation repair/reference work before models.
+
+## Development outcome
+
+R001 completed at clean commit 82ec20cf44ce08afb712cff97b2592db77709d34.
+The unchanged-scene roundtrip produced equal-beam raw-field MAE 0.02885560.
+Uniform sigma=1 reduced this discrepancy to 0.00491874 (82.954% reduction).
+Every beam improved in this null. This demonstrates resampling sensitivity
+and a tested one-filter engineering mitigation; it does not prove that all
+observed stage changes were caused by interpolation.
+
+On the separately defined smoothed future observable, persistence MAE is
+0.00247901, secant 0.00415189 (+67.482%), conservative secant 0.00317407
+(+28.038%). All three beams still favour persistence. Absolute errors cannot
+be ranked across raw and smoothed targets as physical accuracy, because
+smoothing also compresses response and may attenuate thin crack signal.
+
+Research disposition: a controllable observation artifact was identified and
+mitigated, while forecast value remains unestablished. Next define a direct
+visible-crack centreline/opening-profile reference with a background control.
+Correct the Beam 4 ROI under that new reference design, rather than tune
+temporal weights on these development outcomes.

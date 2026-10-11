@@ -1,0 +1,45 @@
+{
+  "states": 14,
+  "forecast_pairs": 8,
+  "independent_beams": 3,
+  "per_beam": [
+    {
+      "beam": 4,
+      "states": 4,
+      "forecast_pairs": 2,
+      "persistence": 0.006579850982234348,
+      "secant": 0.009461272438784363,
+      "conservative_secant": 0.007423175351505051
+    },
+    {
+      "beam": 5,
+      "states": 6,
+      "forecast_pairs": 4,
+      "persistence": 0.005678152290784055,
+      "secant": 0.009866825817880454,
+      "conservative_secant": 0.0074923312313330825
+    },
+    {
+      "beam": 6,
+      "states": 4,
+      "forecast_pairs": 2,
+      "persistence": 0.005556231953960378,
+      "secant": 0.012945056936587207,
+      "conservative_secant": 0.008683555544848787
+    }
+  ],
+  "equal_beam_mean_MAE": {
+    "persistence": 0.005938078408992927,
+    "secant": 0.010757718397750674,
+    "conservative_secant": 0.007866354042562307
+  },
+  "relative_change_vs_persistence": {
+    "secant": 0.8116497723335281,
+    "conservative_secant": 0.32473057793394955
+  },
+  "scientific_verdict": "EXPLORATORY_OBSERVABLE_FORECAST_ONLY",
+  "physical_crack_geometry_validated": false,
+  "autonomous_rollout": false,
+  "next_actual_force_used_as_input": false,
+  "formal_review": "pending"
+}

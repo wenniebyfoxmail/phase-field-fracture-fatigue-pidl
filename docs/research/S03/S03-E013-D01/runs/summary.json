@@ -1,0 +1,38 @@
+{
+  "equal_beam_mean_null_MAE_raw": 0.028855603651512258,
+  "equal_beam_mean_null_MAE_smooth": 0.004918743942350072,
+  "null_reduction_fraction": 0.8295393850791164,
+  "smoothed_target_per_beam": [
+    {
+      "beam": 4,
+      "persistence": 0.0025227296173397917,
+      "secant": 0.0032805747596285073,
+      "conservative_secant": 0.0028282633275011904
+    },
+    {
+      "beam": 5,
+      "persistence": 0.0027068567997048376,
+      "secant": 0.005513244928806671,
+      "conservative_secant": 0.003932145451472024
+    },
+    {
+      "beam": 6,
+      "persistence": 0.002207452263974119,
+      "secant": 0.003661854334495729,
+      "conservative_secant": 0.00276179034881352
+    }
+  ],
+  "smoothed_target_equal_beam_MAE": {
+    "persistence": 0.002479012893672916,
+    "secant": 0.004151891340976969,
+    "conservative_secant": 0.0031740663759289114
+  },
+  "smoothed_relative_change_vs_persistence": {
+    "secant": 0.6748163559671969,
+    "conservative_secant": 0.28037509769713265
+  },
+  "physical_scene_changed_in_null": false,
+  "registration_refit": false,
+  "scientific_verdict": "DEVELOPMENT_COUNTERFACTUAL_ONLY",
+  "physical_crack_geometry_validated": false
+}

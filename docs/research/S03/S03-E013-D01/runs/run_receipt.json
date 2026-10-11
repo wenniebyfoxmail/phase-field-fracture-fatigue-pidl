@@ -1,0 +1,24 @@
+{
+  "experiment_id": "S03-E013-D01",
+  "run_id": "S03-E013-D01-R001",
+  "role": "C0_development_counterfactual_and_observable_repair",
+  "commit": "82ec20cf44ce08afb712cff97b2592db77709d34",
+  "git_dirty": false,
+  "producer": "Mac-PIDL",
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 77620,
+  "command": [
+    "scripts/d01_resampling_null_repair.py",
+    "--source",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E012-D01/runs/S03-E012-D01-R001",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E013-D01/runs/S03-E013-D01-R001"
+  ],
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "gpu": null,
+  "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E012-D01/runs/S03-E012-D01-R001",
+  "started_at_utc": "2026-10-11T22:50:36.403726+00:00",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "ended_at_utc": "2026-10-11T22:50:38.925697+00:00"
+}

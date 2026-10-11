@@ -2,7 +2,7 @@
 storyline_id: S03
 experiment_id: S03-E012-D01
 protocol_revision: development-v1
-status: development
+status: development_complete
 started_at: 2026-10-11
 primary_storyline: S03
 ---
@@ -123,3 +123,27 @@ records under failed_initial_launch/. Reuse only the 14 source files whose
 size and CRC match this D01 selection; never copy the whole mixed directory.
 This identity repair changes no estimator, ROI, stage selection or criterion.
 Spatial example selection is fixed as the last included target of every beam.
+
+## Development outcome
+
+R001 completed at clean commit 27246604154c4be561342510a9fc7791b953d9af.
+All 14 source images passed CRC/size/decode. All 13 non-origin registrations
+passed the reused fixed-view checks. Eight matched one-step pairs were scored.
+Equal-beam MAE: persistence 0.00593808; secant 0.01075772;
+conservative secant 0.00786635. Secant and conservative secant are worse by
+81.165% and 32.473%; all three beam-average comparisons favour persistence.
+The conservative arm did reduce error relative to full secant, a partial
+noise-amplification repair, without beating persistence.
+
+ROIs and values are image-observable diagnostics, not crack ground truth.
+Visual QA found that Beam 4's selected box misses the dominant visible crack;
+its findings primarily concern texture/small branches. Do not silently move
+that box or call the observed mean a physical crack state.
+All three mean-response trajectories drop after the unwarped first image.
+Resampling sensitivity requires a controlled null; see S03-E013-D01.
+
+Execution/retrieval: succeeded/verified local. Scientific disposition:
+exploratory only, no confirmed crack-prediction claim. Research disposition:
+repair the observable/reference, retain the acquired ordered sequence and
+prefix-only baseline infrastructure. No neural training is justified by these
+feature-field comparisons.
