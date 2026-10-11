@@ -41,7 +41,7 @@ For each state, compute the data and physics gradients separately and report:
    its first-assessment weight, equal gradient normalization and a
    data-anchored projected direction;
 3. predicted-field and FEM-export free-force RMS relative to the same affine
-   normalizer;
+   normalizer, plus the unclamped affine-force mean square;
 4. model-state and checkpoint hashes before and after the audit.
 
 The linearized changes are explanatory derivatives per unit learning rate.
@@ -52,9 +52,11 @@ They are not optimizer updates or empirical training outcomes.
 Evidence completeness passes only if all 16 states are finite, every declared
 block is measured, both no-update identities match, and the exact frozen asset
 hashes pass.  Scale imbalance is indicated by the measured norm ratios;
-directional conflict is present statewise when cosine is negative.  The FEM
-target residual is reported as a continuous diagnostic, without inventing a
-post hoc threshold.
+directional conflict is present statewise when cosine is negative.  A zero-norm
+objective or parameter block makes the audit inadmissible rather than assigning
+an artificial cosine.  The FEM target residual is reported as a continuous
+observed target residual, not as a proven irreducible floor or minimum, and no
+post hoc threshold is assigned.
 
 E005 can justify the design of a fresh, reviewed S09-E006 Pareto-rescue
 Experiment.  It cannot change the E004 failure, demonstrate that a proposed
