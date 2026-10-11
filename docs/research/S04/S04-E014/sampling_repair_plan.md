@@ -1,6 +1,7 @@
 # S04-E014 proposed unbiased stratified-sampling repair screen
 
-Status: planning review required; producer execution not authorized
+Status: PLAN PASS; implementation and local non-training checks authorized;
+producer execution requires exact-commit Code Ready PASS
 
 ## Bounded question
 
