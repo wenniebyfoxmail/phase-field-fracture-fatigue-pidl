@@ -1,0 +1,13 @@
+{
+  "baseline_covered_images": 5,
+  "candidate_covered_images": 6,
+  "total_images": 6,
+  "independent_beams": 3,
+  "engineering_repair_trigger": true,
+  "scientific_verdict": "DIAGNOSTIC_ONLY",
+  "research_disposition": "repair",
+  "physical_coordinate_validated": false,
+  "independent_reference": null,
+  "reserved_moving_IB_references": 4,
+  "reserved_local_matches": 0
+}

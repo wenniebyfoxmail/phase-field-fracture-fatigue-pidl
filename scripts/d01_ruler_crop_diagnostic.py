@@ -124,35 +124,7 @@ def main() -> None:
     fig.savefig(args.output / "coverage_comparison.pdf")
     plt.close(fig)
 
-    fig, axes = plt.subplots(2, 2, figsize=(12, 7), gridspec_kw={"height_ratios": [2, 1]})
-    for col, (arm, (image, metrics, arrays)) in enumerate(failed_views.items()):
-        ax = axes[0, col]
-        ax.imshow(cv2.cvtColor(image[1500:2800, :3400], cv2.COLOR_BGR2RGB), extent=(0, 3400, 2800, 1500))
-        x1, y1, x2, y2, _ = metrics["boundary"]
-        ax.plot([x1, x2], [y1, y2], color="#56B4E9", lw=2, label="chosen line")
-        tx = arrays["tick_x"]
-        ty = y1 + (y2-y1) * (tx-x1) / (x2-x1) + 40
-        ax.scatter(tx, ty, s=8, color="#E69F00", label="indexed peaks")
-        search_start = rows[-2 + col]["search_start_y"]
-        if 1500 <= search_start <= 2800:
-            ax.axhline(search_start, color="#CC79A7", ls="--", label="search starts here")
-        else:
-            ax.text(.02, .04, f"search starts y={search_start} (above displayed crop)", transform=ax.transAxes,
-                    color="white", bbox={"facecolor": "black", "alpha": .65})
-        ax.set_title(f"{arm}: {metrics['tick_count']} peaks; period {metrics['nominal_period_px']:.0f} px")
-        ax.set(xlabel="Native x (px)", ylabel="Native y (px)")
-        ax.legend(loc="upper right", fontsize=8)
-        signal = arrays["response"] - arrays["response"].mean()
-        ac = np.correlate(signal, signal, mode="full")[len(signal)-1:]
-        lags = np.arange(1, 61)
-        axes[1, col].plot(lags, ac[lags] / ac[0], color="#0072B2", lw=1.5)
-        axes[1, col].axvspan(8, 30, color="gray", alpha=.1, label="frozen search interval")
-        axes[1, col].axvline(metrics["nominal_period_px"], color="#D55E00", ls="--")
-        axes[1, col].set(xlabel="Lag (native px)", ylabel="Autocorrelation / lag-0", ylim=(-.3, 1))
-    fig.suptitle("Beam 6 ref2 | identical image, one changed crop | development, controlled experiment")
-    fig.tight_layout()
-    fig.savefig(args.output / "beam6_ref2_crop_audit.png", dpi=180)
-    plt.close(fig)
+    render_failed_case(failed_views, args.output)
 
     manifest = json.loads((args.archive / "S03-E004/analysis/remote_zip_manifest.json").read_text())
     reserved = [r for r in manifest["entries"] if "-IB-Free/" in r["path"] and "_ref" in r["path"]]
@@ -179,6 +151,39 @@ def main() -> None:
     receipt.update(execution="succeeded", retrieval="verified_local", ended_at_utc=datetime.now(timezone.utc).isoformat())
     write_json(args.output / "run_receipt.json", receipt)
     print(json.dumps(summary, indent=2))
+
+
+def render_failed_case(failed_views: dict, output: Path) -> None:
+    """Render existing arrays only; changing presentation does not rerun scores."""
+    fig, axes = plt.subplots(2, 2, figsize=(12, 7), gridspec_kw={"height_ratios": [2, 1]})
+    for col, (arm, (image, metrics, arrays)) in enumerate(failed_views.items()):
+        ax = axes[0, col]
+        ax.imshow(cv2.cvtColor(image[1500:2800, :3400], cv2.COLOR_BGR2RGB), extent=(0, 3400, 2800, 1500))
+        x1, y1, x2, y2, _ = metrics["boundary"]
+        ax.plot([x1, x2], [y1, y2], color="#56B4E9", lw=2, label="chosen line")
+        tx = arrays["tick_x"]
+        ty = y1 + (y2-y1) * (tx-x1) / (x2-x1) + 40
+        ax.scatter(tx, ty, s=8, color="#E69F00", label="indexed peaks")
+        search_start = int(image.shape[0] * (1 - (0.5 if arm == "baseline" else 2 / 3)))
+        if 1500 <= search_start <= 2800:
+            ax.axhline(search_start, color="#CC79A7", ls="--", label="search starts here")
+        else:
+            ax.text(.02, .04, f"search starts y={search_start} (above displayed crop)", transform=ax.transAxes,
+                    color="white", bbox={"facecolor": "black", "alpha": .65})
+        ax.set_title(f"{arm}: {metrics['tick_count']} peaks; period {metrics['nominal_period_px']:.0f} px")
+        ax.set(xlabel="Native x (px)", ylabel="Native y (px)")
+        ax.legend(loc="upper right", fontsize=8)
+        signal = arrays["response"] - arrays["response"].mean()
+        ac = np.correlate(signal, signal, mode="full")[len(signal)-1:]
+        lags = np.arange(1, 61)
+        axes[1, col].plot(lags, ac[lags] / ac[0], color="#0072B2", lw=1.5)
+        axes[1, col].axvspan(8, 30, color="gray", alpha=.1, label="frozen search interval")
+        axes[1, col].axvline(metrics["nominal_period_px"], color="#D55E00", ls="--")
+        axes[1, col].set(xlabel="Lag (native px)", ylabel="Autocorrelation / lag-0", ylim=(-1, 1))
+    fig.suptitle("S03-E008-R001 | Beam 6 ref2 | one changed crop | development, controlled experiment")
+    fig.tight_layout()
+    fig.savefig(output / "beam6_ref2_crop_audit.png", dpi=180)
+    plt.close(fig)
 
 
 if __name__ == "__main__":

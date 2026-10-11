@@ -1,0 +1,28 @@
+{
+  "experiment_id": "S03-E008",
+  "run_id": "S03-E008-R001",
+  "role": "development_diagnostic",
+  "protocol": "diagnostic-v1",
+  "producer": "Mac-PIDL",
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "commit": "ca33e36f7c41f70b42974d37f4922e0e3383a5b3",
+  "git_dirty": false,
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "runtime": "3.12.2",
+  "opencv": "4.13.0",
+  "numpy": "2.2.6",
+  "command": [
+    "scripts/d01_ruler_crop_diagnostic.py",
+    "--archive",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E008/runs/S03-E008-R001"
+  ],
+  "started_at_utc": "2026-10-11T21:29:51.915501+00:00",
+  "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E008/runs/S03-E008-R001",
+  "execution": "succeeded",
+  "gpu": null,
+  "formal_claim_execution": false,
+  "retrieval": "verified_local",
+  "ended_at_utc": "2026-10-11T21:29:53.300539+00:00"
+}

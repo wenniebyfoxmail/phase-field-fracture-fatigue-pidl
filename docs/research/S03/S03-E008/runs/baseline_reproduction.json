@@ -1,0 +1,26 @@
+{
+  "source_csv": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E007/runs/S03-E007-R001/formal_metrics.csv",
+  "checked_images": [
+    "Beam 4/G4-IB-Fixed/G4-IB_ref1.JPG",
+    "Beam 4/G4-IB-Fixed/G4-IB_ref2.JPG",
+    "Beam 5/G5-IB-Fixed/G5-IB_ref1.JPG",
+    "Beam 5/G5-IB-Fixed/G5-IB_ref2.JPG",
+    "Beam 6/G6-IB-Fixed/G6-IB_ref1.JPG",
+    "Beam 6/G6-IB-Fixed/G6-IB_ref2.JPG"
+  ],
+  "checked_fields": [
+    "nominal_period_px",
+    "tick_count",
+    "max_tick_step",
+    "ransac_inlier_count",
+    "lomo_count",
+    "lomo_p95_mm",
+    "lomo_median_mm",
+    "spacing_cv",
+    "boundary",
+    "finite",
+    "monotone",
+    "validity_pass"
+  ],
+  "all_match": true
+}

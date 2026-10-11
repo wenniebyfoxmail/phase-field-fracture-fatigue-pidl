@@ -2,7 +2,7 @@
 storyline_id: S03
 experiment_id: S03-E008
 protocol_revision: diagnostic-v1
-status: development
+status: diagnostic_complete
 started_at: 2026-10-11
 primary_storyline: S03
 ---
@@ -68,3 +68,39 @@ tick counts or internal LOMO alone.
 Scientific verdict: diagnostic only. Research disposition pending the one-factor
 test. A formal selective-measurement protocol remains draft until its reference,
 attainable threshold, non-empty coverage requirement and review are resolved.
+
+## 2026-10-11 development result and claim impact
+
+R001 executed once at clean commit
+`ca33e36f7c41f70b42974d37f4922e0e3383a5b3`. All six baseline numerical and
+boolean fields reproduced the old CSV. The only intervention moved search start
+from native y=1872 to y=1248. Beam 6 ref2's selected line moved from
+(208,2360)--(2320,2424), below the ruler's upper tick band, to
+(0,1824)--(1888,1880), on the visible upper edge.
+
+Its indexed peaks increased 26 -> 99 and nominal period 8 -> 19 px.
+All-six detector-condition coverage increased 5/6 -> 6/6. Counts:
+137/137, 126/126, 179/108, 180/179, 165/165, 26/99 (baseline/candidate).
+Beam 5 ref1 lost span (179 -> 108); the repair is not uniformly better.
+All candidate fits were finite and monotone. Internal LOMO p95 remains
+self-consistency only and does not qualify physical millimetres.
+
+The evidence supports crop exclusion as the controlling bottleneck in the
+observed failed case. The lower-band response had no clear periodic local peak;
+its argmax hit the search lower bound. The repaired upper-band response has
+clear 19 px periodicity. This is evidence for a development repair, not
+confirmation on new data and not a revised S03-E007 verdict.
+
+Four moving IB references exist in the released manifest; no matching PNGs
+were found in the S03-E004--E007 archives. Their pixels were not accessed in
+R001. They can support a same-beam camera-transfer test only.
+
+Figure QA exposed truncation of negative autocorrelation in the first render.
+The displayed limits were corrected to [-1,1] by rerendering saved arrays;
+no detector, scores, input identities or decision was recomputed.
+
+Scientific verdict: `DIAGNOSTIC_ONLY`.
+Research disposition: `repair`; a controllable intervention has been tested.
+Next: S03-E009 dataset-first audit of three moving references, reserving
+Beam 6 moving ref2; establish explicitly identified mm marks before a
+claim-bearing selective measurement test.
