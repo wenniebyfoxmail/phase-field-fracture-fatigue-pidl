@@ -13,11 +13,16 @@ import numpy as np
 
 
 def read_rows(path: Path) -> list[dict]:
+    boolean_columns = {"candidate_affine_denominator_defined", "comparator_affine_denominator_defined"}
     with path.open(newline="", encoding="utf-8") as stream:
         rows = list(csv.DictReader(stream))
     for row in rows:
         for key, value in list(row.items()):
-            if key != "cycle":
+            if key in boolean_columns:
+                if value not in ("True", "False"):
+                    raise ValueError(f"invalid Boolean CSV value for {key}")
+                row[key] = value == "True"
+            elif key != "cycle":
                 row[key] = None if value in ("", "None") else float(value)
         row["cycle"] = int(row["cycle"])
     if [row["cycle"] for row in rows] != list(range(1, 74)):

@@ -25,12 +25,14 @@ from s09_q4_quadrature import q4_shape_data
 try:
     from .build_s09_fixed_damage_holdout_packet import (
         EXPECTED_CYCLES, EXPECTED_SOURCE_COMMIT, EXPECTED_SOURCE_ROOT,
-        EXPECTED_STATIC_SHA256, load_and_validate_lock,
+        EXPECTED_STATIC_SHA256, EXPECTED_METADATA_HASHES, EXPECTED_REFERENCE_PACKET_SHA256,
+        load_and_validate_lock,
     )
 except ImportError:
     from build_s09_fixed_damage_holdout_packet import (
         EXPECTED_CYCLES, EXPECTED_SOURCE_COMMIT, EXPECTED_SOURCE_ROOT,
-        EXPECTED_STATIC_SHA256, load_and_validate_lock,
+        EXPECTED_STATIC_SHA256, EXPECTED_METADATA_HASHES, EXPECTED_REFERENCE_PACKET_SHA256,
+        load_and_validate_lock,
     )
 
 CANDIDATE_SHA256 = "1abb0e73a576349924341a46209d158482123478448e8bee333c713a5ad18b2a"
@@ -142,16 +144,23 @@ def defined_ratio(numerator: float, denominator: float):
 def validate_provenance(args) -> dict:
     if not args.expected_packet_sha256 or len(args.expected_packet_sha256) != 64:
         raise ValueError("production requires exact packet SHA-256")
+    canonical_lock = Path(__file__).resolve().parents[1] / "docs/research/S09/S09-E007/data_lock.json"
+    if args.data_lock.resolve() != canonical_lock.resolve():
+        raise ValueError("runner requires the reviewed canonical data lock")
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     unsealing = json.loads(args.unsealing_receipt.read_text(encoding="utf-8"))
     lock = load_and_validate_lock(args.data_lock)
     if sha256(args.packet) != args.expected_packet_sha256 or manifest.get("packet_sha256") != args.expected_packet_sha256:
         raise ValueError("packet identity mismatch")
     if (manifest.get("experiment_id"), manifest.get("protocol_revision"), manifest.get("source_root"),
-            manifest.get("source_commit"), manifest.get("static_sha256"), manifest.get("authoritative_final_cycle")) != (
+            manifest.get("source_commit"), manifest.get("static_sha256"),
+            manifest.get("reference_packet_sha256"), manifest.get("authoritative_final_cycle")) != (
             "S09-E007", "v2-frozen-beta025-u0125-holdout", EXPECTED_SOURCE_ROOT,
-            EXPECTED_SOURCE_COMMIT, EXPECTED_STATIC_SHA256, 73):
+            EXPECTED_SOURCE_COMMIT, EXPECTED_STATIC_SHA256, EXPECTED_REFERENCE_PACKET_SHA256, 73):
         raise ValueError("manifest identity/provenance mismatch")
+    if (manifest.get("state_index_sha256") != EXPECTED_METADATA_HASHES["state_index.csv"] or
+            manifest.get("metadata_sha256") != EXPECTED_METADATA_HASHES):
+        raise ValueError("manifest index/metadata identity mismatch")
     expected_inventory = [
         {"cycle": item["cycle"], "file": Path(item["payload_file"]).name, "sha256": item["payload_sha256"]}
         for item in lock["states"]
@@ -194,7 +203,14 @@ def evaluate_model(model, arm, packet, graph, physics, free, selected_ordinals, 
         damage = torch.as_tensor(packet["holdout_d"][ordinal], dtype=torch.float32, device=area.device)
         target = torch.as_tensor(packet["holdout_u"][ordinal], dtype=torch.float32, device=area.device)
         load = float(packet["holdout_load"][ordinal])
+        receipt.update(phase="scientific_evaluation", current_arm=arm, current_cycle=int(cycle),
+                       scientific_forward_started=True, scientific_forward_state="started_uncertain",
+                       u0125_prediction_or_metric_produced="uncertain")
+        dump(out / "receipt.json", receipt)
         prediction = model(damage, load, graph)
+        receipt.update(scientific_forward_state="prediction_produced",
+                       u0125_prediction_or_metric_produced=True)
+        dump(out / "receipt.json", receipt)
         affine = affine_displacement(graph["xy"], load)
         eu = weighted_l2(prediction, target, area)
         force, _ = equilibrium(prediction, damage, *physics)
@@ -214,7 +230,7 @@ def evaluate_model(model, arm, packet, graph, physics, free, selected_ordinals, 
                "affine_denominator_defined": ef_affine_value > 0, "boundary_max_abs": boundary_error}
         rows.append(row)
         append_jsonl(progress_path, row)
-        receipt.update(phase="scientific_evaluation", current_arm=arm, last_completed_cycle=int(cycle),
+        receipt.update(current_arm=arm, last_completed_cycle=int(cycle),
                        completed_cycle_records=receipt.get("completed_cycle_records", 0) + 1,
                        u0125_prediction_or_metric_produced=True)
         dump(out / "receipt.json", receipt)
@@ -299,6 +315,8 @@ def main():
     dump(args.out / "receipt.json", receipt, exclusive=True)
     try:
         validate_provenance(args)
+        if sha256(args.candidate) != CANDIDATE_SHA256 or sha256(args.comparator) != COMPARATOR_SHA256:
+            raise ValueError("checkpoint identity mismatch")
         packet = load_packet(args.packet)
         audit_packet(packet, require_full=True)
         receipt["phase"] = "evaluator_setup"
@@ -375,7 +393,10 @@ def main():
         dump(args.out / "receipt.json", receipt)
         marker.update(status=receipt.get("execution_status"), scientific_status=receipt.get("scientific_status"),
                       u0125_prediction_or_metric_produced=receipt.get("u0125_prediction_or_metric_produced", False),
-                      output=str(args.out))
+                      scientific_forward_started=receipt.get("scientific_forward_started", False),
+                      scientific_forward_state=receipt.get("scientific_forward_state", "not_started"),
+                      current_arm=receipt.get("current_arm"), current_cycle=receipt.get("current_cycle"),
+                      last_completed_cycle=receipt.get("last_completed_cycle"), output=str(args.out))
         dump(ATTEMPT_MARKER, marker)
 
 

@@ -22,6 +22,7 @@ EXPECTED_CYCLES = tuple(range(1, 74))
 EXPECTED_SOURCE_ROOT = r"C:\q4runs\hard5_new_runs_u0115_u0125_20260827_v1\hard5_u0125_stage0b"
 EXPECTED_SOURCE_COMMIT = "862992a60edc7f59335365beacb5c71fc8592a7a"
 EXPECTED_STATIC_SHA256 = "b79a36298eabec363fb7a53fb0590db46eb949b05c05dbffb9cb5a8bc0e4b40e"
+EXPECTED_REFERENCE_PACKET_SHA256 = "b37a63ccb0e7129ecc3fbe01fc356c93fccc1877b5f34e68fe93265f335109ed"
 EXPECTED_METADATA_HASHES = {
     "state_index.csv": "3d815b4abc8e4d215b2d6ce747bbc728729d9ed41e7ff7dfe29dbb77695ad1f1",
     "run_summary.json": "e454fb5c46482f9a60e82ee4fb3f2988440b34544c5f03498ac9a55607e37eb2",
@@ -146,6 +147,8 @@ def preflight(args, rows: list[dict], lock: dict) -> dict:
         raise ValueError("--out must end in .npz")
     if sha256(args.static) != EXPECTED_STATIC_SHA256:
         raise ValueError("static identity mismatch")
+    if sha256(args.reference_packet) != EXPECTED_REFERENCE_PACKET_SHA256:
+        raise ValueError("E004 reference packet identity mismatch")
     validate_metadata(args.metadata_dir)
     inventory = []
     for row in rows:
@@ -162,6 +165,7 @@ def preflight(args, rows: list[dict], lock: dict) -> dict:
         "source_root": EXPECTED_SOURCE_ROOT,
         "source_commit": EXPECTED_SOURCE_COMMIT,
         "static_sha256": EXPECTED_STATIC_SHA256,
+        "reference_packet_sha256": EXPECTED_REFERENCE_PACKET_SHA256,
         "state_index_sha256": EXPECTED_METADATA_HASHES["state_index.csv"],
         "metadata_sha256": EXPECTED_METADATA_HASHES,
         "authoritative_final_cycle": 73,
@@ -175,6 +179,18 @@ def exact_scalar(dataset, expected: float, label: str) -> float:
     if not np.isfinite(value) or value != expected:
         raise ValueError(f"exact scalar mismatch: {label}")
     return value
+
+
+def verify_reference_mesh(reference_path: Path, xy: np.ndarray, conn: np.ndarray, area: np.ndarray) -> None:
+    with np.load(reference_path, allow_pickle=False) as reference:
+        if not all(key in reference for key in ("xy", "conn", "lumped_area")):
+            raise ValueError("E004 reference packet lacks mesh identity arrays")
+        if not np.array_equal(xy, reference["xy"]):
+            raise ValueError("U0.125 node coordinates/order differ from frozen E004 reference")
+        if not np.array_equal(conn, reference["conn"]):
+            raise ValueError("U0.125 connectivity/order differs from frozen E004 reference")
+        if not np.array_equal(area, reference["lumped_area"]):
+            raise ValueError("U0.125 lumped areas differ from frozen E004 reference")
 
 
 def read_state(path: Path, row: dict, xy: np.ndarray, expected_nodes: int = 86756):
@@ -206,6 +222,7 @@ def main():
     parser.add_argument("--states", type=Path, required=True)
     parser.add_argument("--metadata-dir", type=Path, required=True)
     parser.add_argument("--data-lock", type=Path, required=True)
+    parser.add_argument("--reference-packet", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--source-root", required=True)
     args = parser.parse_args()
@@ -255,6 +272,7 @@ def main():
     try:
         xy, conn, young, nu, eta = read_static(args.static)
         area = q4_lumped_area(xy, conn)
+        verify_reference_mesh(args.reference_packet, xy, conn, area)
         for row in rows:
             path = args.states / Path(row["payload_file"]).name
             values = read_state(path, row, xy)

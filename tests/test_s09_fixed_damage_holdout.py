@@ -1,5 +1,7 @@
 import csv
 import hashlib
+import json
+import sys
 from pathlib import Path
 
 import h5py
@@ -7,7 +9,8 @@ import numpy as np
 import pytest
 
 import SENS_tensile.build_s09_fixed_damage_holdout_packet as builder
-from SENS_tensile.build_s09_fixed_damage_holdout_packet import EXPECTED_CYCLES, locked_rows, read_state
+from SENS_tensile.build_s09_fixed_damage_holdout_packet import EXPECTED_CYCLES, locked_rows, read_state, verify_reference_mesh
+import SENS_tensile.analyze_s09_fixed_damage_holdout as analysis
 from SENS_tensile.run_s09_fixed_damage_holdout import aggregate_primary, classify, defined_ratio, worst_defined
 
 
@@ -126,3 +129,46 @@ def test_primary_rejects_nonfinite_derived_metric():
     comparator = [{"cycle": 1, "E_u": 2.0, "E_f_over_affine": 1.0}]
     with pytest.raises(FloatingPointError):
         aggregate_primary(candidate, comparator)
+
+
+def test_reference_mesh_requires_exact_order(tmp_path: Path):
+    xy = np.array([[0., 0.], [1., 0.], [1., 1.], [0., 1.]])
+    conn = np.array([[0, 1, 2, 3]])
+    area = np.full(4, .25)
+    reference = tmp_path / "reference.npz"
+    np.savez(reference, xy=xy, conn=conn, lumped_area=area)
+    verify_reference_mesh(reference, xy.copy(), conn.copy(), area.copy())
+    with pytest.raises(ValueError, match="connectivity/order"):
+        verify_reference_mesh(reference, xy, conn[:, ::-1], area)
+
+
+def test_analysis_consumes_runner_csv_and_produces_minimum_evidence(tmp_path: Path, monkeypatch):
+    run_dir, out = tmp_path / "run", tmp_path / "analysis"
+    run_dir.mkdir()
+    fields = ["cycle", "candidate_affine_denominator_defined", "comparator_affine_denominator_defined",
+              "cyclewise_displacement_ratio", "cyclewise_equilibrium_ratio"]
+    with (run_dir / "cycle_metrics.csv").open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fields); writer.writeheader()
+        for cycle in EXPECTED_CYCLES:
+            writer.writerow({"cycle": cycle, "candidate_affine_denominator_defined": True,
+                             "comparator_affine_denominator_defined": cycle != 37,
+                             "cyclewise_displacement_ratio": 1.0,
+                             "cyclewise_equilibrium_ratio": "" if cycle == 37 else .4})
+    (run_dir / "metrics.json").write_text(json.dumps({"primary": {
+        "Q_f": .4, "Q_u": 1.0, "Q_f_limit": .5, "Q_u_limit": 1.1,
+        "decision": "positive", "disposition": "advance to S09-E008 Stage-0 transition design"}}))
+    (run_dir / "receipt.json").write_text(json.dumps({"execution_status": "succeeded"}))
+    xy = np.array([[0., 0.], [1., 0.], [1., 1.], [0., 1.]])
+    arrays = {"xy": xy, "conn": np.array([[0, 1, 2, 3]]), "selected_cycle": np.array([1, 37, 73])}
+    for cycle in (1, 37, 73):
+        stem = f"c{cycle:04d}"
+        arrays[f"{stem}_candidate_damage"] = np.linspace(0, 1, 4)
+        arrays[f"{stem}_candidate_target"] = np.column_stack((np.zeros(4), np.linspace(0, .125, 4)))
+        arrays[f"{stem}_candidate_prediction"] = arrays[f"{stem}_candidate_target"] * .9
+        arrays[f"{stem}_comparator_prediction"] = arrays[f"{stem}_candidate_target"] * .8
+    np.savez(run_dir / "selected_fields.npz", **arrays)
+    monkeypatch.setattr(sys, "argv", ["analysis", "--run-dir", str(run_dir), "--out", str(out)])
+    analysis.main()
+    assert (out / "decision_and_cyclewise_ratios.png").is_file()
+    assert (out / "selected_field_views.png").is_file()
+    assert "Decision: `positive`" in (out / "README_analysis.md").read_text()
