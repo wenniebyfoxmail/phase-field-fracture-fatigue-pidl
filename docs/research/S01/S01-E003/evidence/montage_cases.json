@@ -1,0 +1,125 @@
+{
+  "selection_rule": "Exact admitted-prefix greedy matching; strongest recovered target from images with TP gain, highest covering proposal below budget for unmatched targets, highest metric FP (including duplicates); two distinct locations per role; ties lexicographic image/box",
+  "cases": [
+    {
+      "kind": "recovered_target",
+      "image_id": "reid-1103__2023-01-11_08-41-46-550-n00088.jpg",
+      "row": {
+        "image_id": "reid-1103__2023-01-11_08-41-46-550-n00088.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          1280.8430786132812,
+          656.06982421875,
+          1484.8732604980469,
+          675.6875610351562
+        ],
+        "proposer_confidence": 0.1200103759765625,
+        "reranker_crack_probability": 0.14399436116218567,
+        "geometric_mean": 0.1314565229327888,
+        "old_score": 0.1314565229327888,
+        "probability": 0.3578375279903412,
+        "score": 0.20722986337071342
+      }
+    },
+    {
+      "kind": "recovered_target",
+      "image_id": "reid-393__2023-03-01_10-35-12-107-000126.jpg",
+      "row": {
+        "image_id": "reid-393__2023-03-01_10-35-12-107-000126.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          1051.8817138671875,
+          361.85369873046875,
+          1262.5272216796875,
+          373.08233642578125
+        ],
+        "proposer_confidence": 0.03792029991745949,
+        "reranker_crack_probability": 0.9956894516944885,
+        "geometric_mean": 0.19431120048238545,
+        "old_score": 0.19431120048238545,
+        "probability": 0.9160372018814087,
+        "score": 0.18637705178184732
+      }
+    },
+    {
+      "kind": "covering_candidate_below_budget",
+      "image_id": "reid-1195__2023-07-11_10-17-12-053-n00088.jpg",
+      "row": {
+        "image_id": "reid-1195__2023-07-11_10-17-12-053-n00088.jpg",
+        "reid": "1195",
+        "box_xyxy": [
+          665.8342895507812,
+          690.0896148681641,
+          838.5447387695312,
+          740.581298828125
+        ],
+        "proposer_confidence": 0.08336042612791061,
+        "reranker_crack_probability": 0.35622456669807434,
+        "geometric_mean": 0.17232246422675657,
+        "old_score": 0.17232246422675657,
+        "probability": 0.18253323435783386,
+        "score": 0.12335334692895368
+      }
+    },
+    {
+      "kind": "covering_candidate_below_budget",
+      "image_id": "reid-393__2023-07-14_09-57-27-776-000126.jpg",
+      "row": {
+        "image_id": "reid-393__2023-07-14_09-57-27-776-000126.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          1074.6492309570312,
+          412.5099792480469,
+          1289.19775390625,
+          421.5720520019531
+        ],
+        "proposer_confidence": 0.04398493468761444,
+        "reranker_crack_probability": 0.9248892664909363,
+        "geometric_mean": 0.20169579564254547,
+        "old_score": 0.20169579564254547,
+        "probability": 0.3263428807258606,
+        "score": 0.11980889071556805
+      }
+    },
+    {
+      "kind": "metric_false_positive",
+      "image_id": "reid-393__2023-05-24_10-43-36-325-n00088.jpg",
+      "row": {
+        "image_id": "reid-393__2023-05-24_10-43-36-325-n00088.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          1131.1596069335938,
+          938.6238403320312,
+          1598.2539672851562,
+          982.9887084960938
+        ],
+        "proposer_confidence": 0.394883930683136,
+        "reranker_crack_probability": 0.9914565682411194,
+        "geometric_mean": 0.6257078126159734,
+        "old_score": 0.6257078126159734,
+        "probability": 0.9934056997299194,
+        "score": 0.6263225586488017
+      }
+    },
+    {
+      "kind": "metric_false_positive",
+      "image_id": "reid-1103__2023-02-14_14-18-49-863-n00088.jpg",
+      "row": {
+        "image_id": "reid-1103__2023-02-14_14-18-49-863-n00088.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          1280.0,
+          924.1260375976562,
+          1657.7412719726562,
+          953.5554809570312
+        ],
+        "proposer_confidence": 0.40250080823898315,
+        "reranker_crack_probability": 0.9968124032020569,
+        "geometric_mean": 0.6334175541863921,
+        "old_score": 0.6334175541863921,
+        "probability": 0.9374068975448608,
+        "score": 0.6142532327229578
+      }
+    }
+  ]
+}

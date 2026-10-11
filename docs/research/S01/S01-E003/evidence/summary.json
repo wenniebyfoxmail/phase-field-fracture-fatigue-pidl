@@ -1,0 +1,21 @@
+{
+  "protocol": "S01-E003-v1",
+  "run_id": "S01-E003-R001",
+  "evaluation_sha256": "65634bceb2725024793eadcd15866091d5a6a54180011e6b567d7b1b9361ba9e",
+  "split": "validation",
+  "baseline_macro_recall": 0.26275736410567874,
+  "candidate_macro_recall": 0.28950905962141915,
+  "delta": 0.026751695515740415,
+  "gate": 0.05,
+  "primary_pass": null,
+  "development_gate_pass": false,
+  "descriptive_location_bootstrap_95_interval": [
+    -0.003158214394169484,
+    0.06450450450450448
+  ],
+  "oracle_macro_recall": 0.6835502918648986,
+  "baseline_capture_ratio": 0.38440092445694085,
+  "candidate_capture_ratio": 0.423537321345537,
+  "target_bearing_locations": 5,
+  "uncertainty_scope": "small fixed selected holdout; not population confidence"
+}

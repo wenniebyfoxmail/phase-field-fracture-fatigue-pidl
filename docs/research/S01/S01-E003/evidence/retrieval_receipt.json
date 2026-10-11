@@ -1,0 +1,18 @@
+{
+  "run_id": "S01-E003-R001",
+  "retrieval_status": "verified",
+  "evidence_zip_bytes": 13849445,
+  "evidence_zip_members": 21,
+  "evidence_zip_sha256": "d26196517758a3010d14cc0a9f004e7b8230ad7306dfffe5105580bdcaeb56fa",
+  "zip_integrity": "pass",
+  "evaluation_validation_sha256": "65634bceb2725024793eadcd15866091d5a6a54180011e6b567d7b1b9361ba9e",
+  "ranker_sha256": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
+  "execution_status": "succeeded",
+  "scientific_disposition": "development_margin_not_met_partial_detection_gain_retained",
+  "confirmatory_access": false,
+  "validation_selected_FP_decomposition": {
+    "localisation_overlap_below_0.5": 190,
+    "duplicate_qualified_box": 20,
+    "no_or_small_crack_overlap": 92
+  }
+}
