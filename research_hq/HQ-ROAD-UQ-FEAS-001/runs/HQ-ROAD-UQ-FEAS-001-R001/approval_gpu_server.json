@@ -1,0 +1,16 @@
+{
+  "execute": true,
+  "producer_alias": "gpu-server",
+  "experiment_id": "HQ-ROAD-UQ-FEAS-001",
+  "run_id": "HQ-ROAD-UQ-FEAS-001-R001",
+  "protocol": "D1-r1",
+  "user_authorization_reference": "User message 2026-10-11: 授权执行 HQ-ROAD-UQ-FEAS-001 D1，可使用 gpu-server。",
+  "hostname": "D-26-09",
+  "reviewed_commit": "472b7b0",
+  "code_snapshot": "46c488c9b33f2130a499491d704c8b6276280af18fc328815314446f32b5dc87",
+  "data_lock_sha256": "7223dfabfbff5087a196c9e0105f4cd4c4cb8a0bb082bdbffb21e7ae5d954435",
+  "road420_identity_sha256": "f5a53d7cc31bed02019e9f983ce7ead97f45e165487dd09323c8e7d0540d8bbd",
+  "environment": {"python": "3.12.14", "torch": "2.11.0+cu128", "numpy": "2.5.2", "pillow": "11.3.0", "matplotlib": "3.11.2", "scipy": "1.18.1", "cuda": "12.8"},
+  "gpu": "0",
+  "output_root": "C:\\Users\\xw436\\jobs\\HQ-ROAD-UQ-FEAS-001-R001"
+}
