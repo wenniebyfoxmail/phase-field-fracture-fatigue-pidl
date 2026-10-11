@@ -6,6 +6,10 @@ status: offline-diagnostic-running; producer-repair-not-yet-authorized
 ---
 # Select the first controllable repair after S04-E013
 
+Current status: R001 selected unbiased damage-stratified sampling; R002
+completed the reviewed c20/c83 screen and returned
+`SAMPLING_ONLY_REPAIR_REJECTED`; independent Evidence review pending.
+
 ## Question and decision
 
 S04-E013 established that the fixed 10,000-step supervised procedure failed

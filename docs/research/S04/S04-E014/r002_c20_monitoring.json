@@ -1,0 +1,79 @@
+[
+  {
+    "step": 0,
+    "full_field_loss": 0.06432139702269973,
+    "displacement_mass_rms_over_abs_Us": 0.2536166339629555,
+    "active_contribution": 0.0035320070607370263,
+    "background_contribution": 0.06078938996196271
+  },
+  {
+    "step": 1000,
+    "full_field_loss": 0.0001668292139313625,
+    "displacement_mass_rms_over_abs_Us": 0.012916238381640473,
+    "active_contribution": 0.00015043079584932812,
+    "background_contribution": 1.6398418082034363e-05
+  },
+  {
+    "step": 2000,
+    "full_field_loss": 6.323438531574666e-05,
+    "displacement_mass_rms_over_abs_Us": 0.007952005112909992,
+    "active_contribution": 6.046582011414598e-05,
+    "background_contribution": 2.768565201600685e-06
+  },
+  {
+    "step": 3000,
+    "full_field_loss": 3.51394330032458e-05,
+    "displacement_mass_rms_over_abs_Us": 0.005927852309500111,
+    "active_contribution": 3.45830842852047e-05,
+    "background_contribution": 5.563487180410971e-07
+  },
+  {
+    "step": 4000,
+    "full_field_loss": 2.5471142075238216e-05,
+    "displacement_mass_rms_over_abs_Us": 0.0050468942999866975,
+    "active_contribution": 2.4141151075693864e-05,
+    "background_contribution": 1.3299909995443523e-06
+  },
+  {
+    "step": 5000,
+    "full_field_loss": 2.9155858497179116e-05,
+    "displacement_mass_rms_over_abs_Us": 0.005399616513899771,
+    "active_contribution": 2.7788684873762034e-05,
+    "background_contribution": 1.3671736234170804e-06
+  },
+  {
+    "step": 6000,
+    "full_field_loss": 3.2721439020093175e-05,
+    "displacement_mass_rms_over_abs_Us": 0.005720265642441194,
+    "active_contribution": 3.150512436176879e-05,
+    "background_contribution": 1.216314658324382e-06
+  },
+  {
+    "step": 7000,
+    "full_field_loss": 1.351751655760997e-05,
+    "displacement_mass_rms_over_abs_Us": 0.0036766175430155866,
+    "active_contribution": 1.2842143728279371e-05,
+    "background_contribution": 6.753728293305981e-07
+  },
+  {
+    "step": 8000,
+    "full_field_loss": 1.2874927731931437e-05,
+    "displacement_mass_rms_over_abs_Us": 0.0035881649532778503,
+    "active_contribution": 1.2690834788742102e-05,
+    "background_contribution": 1.8409294318933543e-07
+  },
+  {
+    "step": 9000,
+    "full_field_loss": 1.1111355608158055e-05,
+    "displacement_mass_rms_over_abs_Us": 0.0033333700076886236,
+    "active_contribution": 1.1039538633426519e-05,
+    "background_contribution": 7.181697473153709e-08
+  },
+  {
+    "step": 10000,
+    "full_field_loss": 1.0315389106373358e-05,
+    "displacement_mass_rms_over_abs_Us": 0.0032117579464170953,
+    "active_contribution": 1.0255637246252978e-05,
+    "background_contribution": 5.975186012037961e-08
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "status": "COMPLETED",
+  "run_id": "S04-E014-stratified-screen-0ff6154-20261011T223826Z-c83s4-s7",
+  "protocol_revision": "20261011-r1-e014-stratified-screen",
+  "state": "c83s4",
+  "seed": 7,
+  "producer_alias": "taobo",
+  "hostname": "GPUServer8",
+  "code_commit": "0ff6154072fd90dd6889231343ec12ef7b50c592",
+  "dirty": false,
+  "command": "SENS_tensile/run_s04_e014_stratified_screen.py --state c83s4 --seed 7 --reference /mnt/data2/drtao/wennie/S04-E013-stage1-matrix2-769396f-20261009T013447Z/inputs/c83s4.npz --out /mnt/data2/drtao/wennie/S04-E014-stratified-screen-0ff6154-20261011T223826Z/S04-E014-stratified-screen-0ff6154-20261011T223826Z-c83s4-s7 --run-id S04-E014-stratified-screen-0ff6154-20261011T223826Z-c83s4-s7 --expected-commit 0ff6154072fd90dd6889231343ec12ef7b50c592 --archive-root /mnt/data2/drtao/pidl_archives/S04-E014-stratified-screen-0ff6154-20261011T223826Z-c83s4-s7 --log-path /mnt/data2/drtao/wennie/S04-E014-stratified-screen-0ff6154-20261011T223826Z/logs/S04-E014-stratified-screen-0ff6154-20261011T223826Z-c83s4-s7.log --device cuda",
+  "pid": 3751440,
+  "cuda_visible_devices": "0",
+  "cublas_workspace_config": ":4096:8",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "output_root": "/mnt/data2/drtao/wennie/S04-E014-stratified-screen-0ff6154-20261011T223826Z/S04-E014-stratified-screen-0ff6154-20261011T223826Z-c83s4-s7",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E014-stratified-screen-0ff6154-20261011T223826Z-c83s4-s7",
+  "log_path": "/mnt/data2/drtao/wennie/S04-E014-stratified-screen-0ff6154-20261011T223826Z/logs/S04-E014-stratified-screen-0ff6154-20261011T223826Z-c83s4-s7.log",
+  "started_utc": "2026-10-11T22:58:33.872773+00:00",
+  "finished_utc": "2026-10-11T23:17:41.711933+00:00",
+  "checkpoint_sha256": "4711b337eacc64a54a0329d0aa4ba9d4b2fbcc4dee3c59ba94eda05ef0fe25a5",
+  "prediction_sha256": "51480930e058a209a5d9e064e83ba3718f909e5443a81df03723f7edcd0f842e",
+  "monitoring_sha256": "d92fb525fc7e929ed70042dde67dc64c61cb43d37b6c099dcbe48b1fa9e6c7e0",
+  "metrics_sha256": "e359f255bce5393a0acae072f6657ef86d56276671c2c417d731555cc318220d",
+  "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+  "archive_status": "VERIFIED_COPY",
+  "archive_file_hashes": {
+    "final_step_10000.pt": "4711b337eacc64a54a0329d0aa4ba9d4b2fbcc4dee3c59ba94eda05ef0fe25a5",
+    "prediction.npz": "51480930e058a209a5d9e064e83ba3718f909e5443a81df03723f7edcd0f842e",
+    "monitoring.json": "d92fb525fc7e929ed70042dde67dc64c61cb43d37b6c099dcbe48b1fa9e6c7e0",
+    "metrics.json": "e359f255bce5393a0acae072f6657ef86d56276671c2c417d731555cc318220d"
+  }
+}

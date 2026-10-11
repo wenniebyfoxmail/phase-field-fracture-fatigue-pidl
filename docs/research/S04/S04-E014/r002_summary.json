@@ -1,0 +1,35 @@
+{
+  "protocol_revision": "20261011-r1-e014-stratified-screen",
+  "code_commit": "0ff6154072fd90dd6889231343ec12ef7b50c592",
+  "expected_runs": 2,
+  "valid_completed_runs": 2,
+  "displacement_passes": 0,
+  "joint_passes": 0,
+  "missing": [],
+  "integrity_errors": [],
+  "comparator": {
+    "source_result_commit": "e7b5ee3bb2aa2946278a80b972d8850a68d8203f",
+    "source_training_commit": "769396f93ae5258eb984e1585d4274f7990afb11",
+    "source_metrics_csv_sha256": "4ee95024f1574c0e2a442c697d16f2904afd9ae08c64d81f9b54d7923ed4d85a",
+    "rows": {
+      "c20s4": {
+        "seed": 7,
+        "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+        "checkpoint_sha256": "29e317c2d4f3afca718bf184d8ac85b63e1beaf85986e3597465609991ab24bd",
+        "displacement_mass_rms_over_abs_Us": 0.004888466780100484
+      },
+      "c83s4": {
+        "seed": 7,
+        "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+        "checkpoint_sha256": "68126cd46df2fb6a28f08e677aafcca377ed395ab99bd46c4cabc0f12d8a38e8",
+        "displacement_mass_rms_over_abs_Us": 0.00532068215420865
+      }
+    }
+  },
+  "verdict": "SAMPLING_ONLY_REPAIR_REJECTED",
+  "architecture_representability": "UNRESOLVED",
+  "full_matrix_validation_authorized": false,
+  "stage2_authorized": false,
+  "full_fem_reproduction": "NOT_QUALIFIED",
+  "qualified_fem_teacher": "NOT_QUALIFIED"
+}
