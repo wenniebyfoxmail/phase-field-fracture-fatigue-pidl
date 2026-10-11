@@ -22,6 +22,9 @@ Run the stages in this order:
 3. `run_multicycle_cross_replay.py --analysis-root ... --handoff ...`.
 4. `run_multicycle_fixed_damage_equilibrium.py --analysis-root ... --handoff ...`.
 5. `summarize_multicycle_fixed_damage_equilibrium.py --analysis-root ... --handoff ...`.
+6. `analyze_fem_staggered_endpoints.py --q4-log ... --t3-log ... --output ...`
+   audits the full peak-state convergence trace directly from the UTF-16 FEM
+   production logs.
 
 The analysis root must contain the retrieved nodal exports and the selected
 c83 direct diagnostics in the layout written by S04-E011. Generated tables,
