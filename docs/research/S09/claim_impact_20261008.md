@@ -24,3 +24,15 @@ target residual was small (median 0.0199 times affine).  The nominal E004
 weight therefore remained strongly physics-dominant in gradient space.  This
 supports a fresh gradient-balanced, data-anchored S09-E006 test; it does not
 rescue E004 or establish successful PINO training.
+
+## 2026-10-12 — S09-E006 gradient-balanced Pareto rescue
+
+The exact data-only replay passed.  From the common E004 checkpoint and frozen
+700-state sequence, the `beta=0.25` projected gradient-balanced arm reduced the
+mean development force residual to 39.68% of data-only while every state's
+displacement error remained within 109.70% of data-only, passing the frozen
+50%/110% conjunction.  `beta=1.0` reduced residual farther but failed the
+displacement guard.  Independent Evidence Ready review passed after raw-row
+recomputation.  This is a positive fixed-damage development optimisation
+result; it is not exact equilibrium, damage evolution, independent
+generalisation or road evidence.

@@ -2,7 +2,7 @@
 storyline_id: S09
 experiment_id: S09-E006
 protocol_revision: v2-gradient-balanced-pareto-rescue
-status: proposed_pending_independent_review
+status: complete
 primary_storyline: S09
 related_experiments: [S09-E004, S09-E005]
 ---
@@ -230,3 +230,16 @@ No outcome may establish exact equilibrium, FEM truth, damage or fatigue
 evolution, temporal forecasting, independent generalisation, superiority over
 PINO alternatives, or real-road applicability.  E004's recorded failure and
 E005's diagnostic scope remain unchanged.
+
+## Execution record — 2026-10-12
+
+Independent design and Code Ready reviews passed protocol v2 and exact commit
+`ae01790c10c644657fe9a8aea2f1087505144959`.  R001 stopped at the clean-checkout
+preflight before any optimizer update because audit-created caches were
+untracked.  The independently authorised replacement R002 completed all three
+700-update arms on Taobo.  The seven-value data-only replay gate passed and the
+predeclared `beta=0.25` arm passed both joint-feasibility clauses.  The result
+and claim boundaries are recorded in `decision.md`; final closure remains
+conditional on independent Evidence Ready review.  The review subsequently
+returned `EVIDENCE_READY PASS` after recomputing all primary and update-level
+checks from the raw evidence archive.
