@@ -64,3 +64,14 @@ component results and select the earliest controllable bottleneck.
 
 Blocked claims: forecasting skill, phase-field recovery, material identification,
 fatigue-law truth, independent-specimen generalisation and road transfer.
+
+## Code review history
+
+Commit `1a0bc9e82b962922e8a9275d2ea311553824768e` received `REVISE_CODE`:
+incomplete ID parsing could label derived count/set defects as demonstrated.
+The revision suppresses dependent count/set checks after ID parse failure and
+preserves independently observed duplicate IDs and unsafe-member violations.
+Full-audit regressions cover entirely unparsed pairs, partial parsing and an
+independently observed duplicate alongside an unparseable ID. No real run has
+occurred. Separate per-component coverage accounting remains a future reporting
+improvement; current upstream states on later failures are conservative.

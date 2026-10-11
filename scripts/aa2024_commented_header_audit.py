@@ -279,6 +279,7 @@ def audit(archive_path: Path, *, expected_size: int = EXPECTED_SIZE,
 
         nodemaps: dict[int, tuple[str, zipfile.ZipInfo]] = {}
         connections: dict[int, tuple[str, zipfile.ZipInfo]] = {}
+        duplicate_stage_ids_observed = False
         for name, info in canonical.items():
             for regex, target in ((NODEMAP_RE, nodemaps),
                                   (CONNECTION_RE, connections)):
@@ -292,14 +293,16 @@ def audit(archive_path: Path, *, expected_size: int = EXPECTED_SIZE,
                         reasons.add("STAGE_ID_PARSE_INVALID")
                         continue
                     if stage in target:
+                        duplicate_stage_ids_observed = True
                         reasons.add("GLOBAL_STAGE_PAIRING_INVALID")
                     target[stage] = (name, info)
 
         stages = sorted(nodemaps)
-        if len(stages) < 2:
-            reasons.add("GLOBAL_STAGE_COUNT_INSUFFICIENT")
-        if set(nodemaps) != set(connections):
-            reasons.add("GLOBAL_STAGE_PAIRING_INVALID")
+        if "STAGE_ID_PARSE_INVALID" not in reasons:
+            if len(stages) < 2:
+                reasons.add("GLOBAL_STAGE_COUNT_INSUFFICIENT")
+            if set(nodemaps) != set(connections):
+                reasons.add("GLOBAL_STAGE_PAIRING_INVALID")
 
         rows: list[dict[str, Decimal]] = []
         schemas: list[tuple[str, ...]] = []
@@ -348,10 +351,14 @@ def audit(archive_path: Path, *, expected_size: int = EXPECTED_SIZE,
 
         sequence = {
             "central_directory_readable": True,
+            "duplicate_stage_ids_observed": duplicate_stage_ids_observed,
             "global_nodemap_count": len(nodemaps),
             "global_connection_count": len(connections),
             "paired_stage_count": len(set(nodemaps) & set(connections)),
-            "stage_id_sets_equal": set(nodemaps) == set(connections),
+            "stage_id_sets_equal": (
+                "STAGE_ID_PARSE_INVALID" not in reasons and
+                set(nodemaps) == set(connections)
+            ),
             "all_headers_parsed": len(rows) == len(stages) and bool(stages),
             "required_fields_complete": len(rows) == len(stages) and bool(stages),
             "stage_identity_matches": (
@@ -404,9 +411,12 @@ def _result(identity: dict[str, Any], sequence: dict[str, Any],
         "discovery_and_pairing": (
             "not_assessed" if not sequence else
             "demonstrated_violation" if reasons.intersection({
-                "UNSAFE_OR_AMBIGUOUS_MEMBER_PATH", "UNSUPPORTED_OR_ENCRYPTED_MEMBER",
+                "UNSAFE_OR_AMBIGUOUS_MEMBER_PATH", "UNSUPPORTED_OR_ENCRYPTED_MEMBER"
+            }) or sequence.get("duplicate_stage_ids_observed") else
+            "inconclusive" if "STAGE_ID_PARSE_INVALID" in reasons else
+            "demonstrated_violation" if reasons.intersection({
                 "GLOBAL_STAGE_PAIRING_INVALID", "GLOBAL_STAGE_COUNT_INSUFFICIENT"
-            }) else "inconclusive" if "STAGE_ID_PARSE_INVALID" in reasons else "passed"
+            }) else "passed"
         ),
     }
     for name, flag, violation in (

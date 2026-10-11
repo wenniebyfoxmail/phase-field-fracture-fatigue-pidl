@@ -311,6 +311,49 @@ def test_matching_explicit_header_after_comment_is_checked(tmp_path):
     assert _audit(archive, size, digest)["decision"] == "QUALIFIED_EMPIRICAL_GLOBAL_SEQUENCE"
 
 
+def test_unparsed_stage_ids_do_not_establish_count_or_pairing_violation(tmp_path, monkeypatch):
+    archive = tmp_path / "huge_pairs.zip"
+    with zipfile.ZipFile(archive, "w") as zf:
+        for suffix in ("1", "2"):
+            huge = "9" * 5000 + suffix
+            zf.writestr(f"global_3d_dic/Nodemaps/global_3d_dic_results_1_{huge}.txt",
+                        _header(1, header_stage=huge))
+            zf.writestr(f"global_3d_dic/Connections/global_3d_dic_results_1_{huge}_connections.txt", "")
+    def forbidden(*_, **__):
+        raise AssertionError("member access after stage parse failure")
+    monkeypatch.setattr(zipfile.ZipFile, "open", forbidden)
+    result = _audit(archive, archive.stat().st_size, hashlib.md5(archive.read_bytes()).hexdigest())
+    assert "STAGE_ID_PARSE_INVALID" in result["stop_reason_codes"]
+    assert result["component_states"]["discovery_and_pairing"] == "inconclusive"
+    assert "GLOBAL_STAGE_COUNT_INSUFFICIENT" not in result["stop_reason_codes"]
+    assert "GLOBAL_STAGE_PAIRING_INVALID" not in result["stop_reason_codes"]
+    assert result["sequence_checks"]["stage_id_sets_equal"] is False
+    assert result["allowed_conclusion"] == "qualification_not_established"
+
+
+def test_partial_id_parse_failure_does_not_prove_unequal_sets(tmp_path, monkeypatch):
+    archive, _, _ = _fixture(tmp_path)
+    with zipfile.ZipFile(archive, "a") as zf:
+        zf.writestr("global_3d_dic/Nodemaps/global_3d_dic_results_1_" + "0" * 5000 + "3.txt", _header(3))
+    def forbidden(*_, **__): raise AssertionError("header must not open")
+    monkeypatch.setattr(zipfile.ZipFile, "open", forbidden)
+    result = _audit(archive, archive.stat().st_size, hashlib.md5(archive.read_bytes()).hexdigest())
+    assert result["stop_reason_codes"] == ["STAGE_ID_PARSE_INVALID"]
+    assert result["component_states"]["discovery_and_pairing"] == "inconclusive"
+
+
+def test_observed_duplicate_remains_violation_despite_another_unparsed_id(tmp_path):
+    archive, _, _ = _fixture(tmp_path)
+    with zipfile.ZipFile(archive, "a") as zf:
+        zf.writestr("global_3d_dic/Nodemaps/global_3d_dic_results_1_01.txt", _header(1))
+        zf.writestr("global_3d_dic/Nodemaps/global_3d_dic_results_1_" + "9" * 5000 + ".txt", "")
+    result = _audit(archive, archive.stat().st_size, hashlib.md5(archive.read_bytes()).hexdigest())
+    assert "GLOBAL_STAGE_PAIRING_INVALID" in result["stop_reason_codes"]
+    assert "STAGE_ID_PARSE_INVALID" in result["stop_reason_codes"]
+    assert result["sequence_checks"]["duplicate_stage_ids_observed"] is True
+    assert result["component_states"]["discovery_and_pairing"] == "demonstrated_violation"
+
+
 def test_numeric_row_is_rejected_at_first_byte():
     handle = io.BytesIO(b"1; 0; 0; 0; 0; 0\n")
     try:
