@@ -160,3 +160,60 @@ def data_anchored_projected_direction(data_gradients, physics_gradients):
         "projected_physics_norm": float(projected_norm),
     }
 
+
+def strict_balanced_projected_direction(data_gradients, physics_gradients, beta: float):
+    """Return the E006 global projected direction or fail on degeneration.
+
+    Reductions are flatten-equivalent float64 operations across the complete
+    parameter sequence.  The caller remains responsible for assigning the
+    returned tensors once, applying one global clip and taking one optimizer
+    step.
+    """
+    data_gradients = tuple(data_gradients)
+    physics_gradients = tuple(physics_gradients)
+    if len(data_gradients) != len(physics_gradients) or not data_gradients:
+        raise ValueError("gradient sequence lengths differ or are empty")
+    if not torch.isfinite(torch.tensor(beta, dtype=torch.float64)) or beta <= 0.0:
+        raise ValueError("beta must be finite and positive")
+    for index, (gd, gp) in enumerate(zip(data_gradients, physics_gradients)):
+        if gd is None or gp is None or gd.shape != gp.shape:
+            raise ValueError(f"missing or mismatched gradient at index {index}")
+        if not torch.isfinite(gd).all() or not torch.isfinite(gp).all():
+            raise ValueError(f"non-finite gradient component at index {index}")
+    data_norm = _positive_norm(data_gradients, "data")
+    physics_norm = _positive_norm(physics_gradients, "physics")
+    dot = sum((gd.detach().double() * gp.detach().double()).sum()
+              for gd, gp in zip(data_gradients, physics_gradients))
+    if not torch.isfinite(dot):
+        raise ValueError("gradient dot product is non-finite")
+    coefficient = torch.minimum(dot / data_norm.square(), dot.new_zeros(()))
+    if not torch.isfinite(coefficient):
+        raise ValueError("projection coefficient is non-finite")
+    projected = tuple(gp.detach() - coefficient.to(gp) * gd.detach()
+                      for gd, gp in zip(data_gradients, physics_gradients))
+    projected_norm = torch.sqrt(sum(g.double().square().sum() for g in projected))
+    threshold = torch.finfo(torch.float64).eps * physics_norm
+    if not torch.isfinite(projected_norm) or float(projected_norm) <= float(threshold):
+        raise ValueError("projected physics gradient is degenerate")
+    scale = float(beta) * data_norm / projected_norm
+    if not torch.isfinite(scale):
+        raise ValueError("balanced physics scale is non-finite")
+    direction = tuple(gd.detach() + scale.to(gp) * gp
+                      for gd, gp in zip(data_gradients, projected))
+    if not all(torch.isfinite(item).all() for item in direction):
+        raise ValueError("balanced direction is non-finite")
+    combined_norm = torch.sqrt(sum(item.detach().double().square().sum()
+                                   for item in direction))
+    return list(direction), {
+        "beta": float(beta),
+        "conflict": bool(float(dot) < 0.0),
+        "data_norm": float(data_norm),
+        "physics_norm": float(physics_norm),
+        "dot": float(dot),
+        "projection_coefficient": float(coefficient),
+        "projected_physics_norm": float(projected_norm),
+        "projected_degeneracy_threshold": float(threshold),
+        "balanced_physics_scale": float(scale),
+        "combined_norm_before_clip": float(combined_norm),
+    }
+

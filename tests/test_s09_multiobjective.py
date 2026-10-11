@@ -7,7 +7,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "source"))
 from s09_multiobjective import (
     data_anchored_projected_direction, gradient_statistics,
-    linearized_changes, normalized_sum_direction, weighted_sum_direction,
+    linearized_changes, normalized_sum_direction,
+    strict_balanced_projected_direction, weighted_sum_direction,
 )
 
 
@@ -83,4 +84,41 @@ def test_statistics_reject_unexpected_parameter_group():
     named = [("mystery.weight", torch.nn.Parameter(torch.zeros(1)))]
     with pytest.raises(ValueError, match="unexpected parameter group"):
         gradient_statistics(named, (torch.ones(1),), (torch.ones(1),))
+
+
+def test_strict_balanced_projection_uses_global_norm_and_beta():
+    gd = (torch.tensor([3.0, 4.0]), torch.tensor([0.0]))
+    gp = (torch.tensor([0.0, 2.0]), torch.tensor([0.0]))
+    direction, metadata = strict_balanced_projected_direction(gd, gp, 0.25)
+    expected = torch.tensor([3.0, 5.25])
+    torch.testing.assert_close(direction[0], expected)
+    torch.testing.assert_close(direction[1], torch.tensor([0.0]))
+    assert metadata["beta"] == 0.25
+    assert metadata["conflict"] is False
+    assert metadata["physics_norm"] == 2.0
+    assert metadata["data_norm"] == 5.0
+
+
+def test_strict_balanced_projection_removes_only_global_opposition():
+    gd = (torch.tensor([1.0]), torch.tensor([1.0]))
+    gp = (torch.tensor([-2.0]), torch.tensor([1.0]))
+    direction, metadata = strict_balanced_projected_direction(gd, gp, 1.0)
+    projected = torch.cat([direction[0] - gd[0], direction[1] - gd[1]])
+    data = torch.cat(gd)
+    torch.testing.assert_close(torch.dot(projected, data), torch.tensor(0.0), atol=1e-6, rtol=0)
+    torch.testing.assert_close(torch.linalg.vector_norm(projected), torch.linalg.vector_norm(data))
+    assert metadata["conflict"] is True
+
+
+def test_strict_balanced_projection_fails_closed():
+    with pytest.raises(ValueError, match="data gradient norm"):
+        strict_balanced_projected_direction((torch.zeros(2),), (torch.ones(2),), 1.0)
+    with pytest.raises(ValueError, match="physics gradient norm"):
+        strict_balanced_projected_direction((torch.ones(2),), (torch.zeros(2),), 1.0)
+    with pytest.raises(ValueError, match="projected physics gradient is degenerate"):
+        strict_balanced_projected_direction(
+            (torch.tensor([1.0, 0.0]),), (torch.tensor([-2.0, 0.0]),), 1.0
+        )
+    with pytest.raises(ValueError, match="beta"):
+        strict_balanced_projected_direction((torch.ones(1),), (torch.ones(1),), 0.0)
 
