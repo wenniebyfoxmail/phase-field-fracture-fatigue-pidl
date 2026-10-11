@@ -1,0 +1,4 @@
+trajectory,umax,paired_cycles,strict_pre_fem_event_cycles,c0_present,H_present,native_GP_present,pin_mapping_contained_area_fraction,reference_role,semantics
+hard5_u011,0.11,122,121,False,False,False,0.9860731834750616,processed_griphfith_archive_imitation_only,FEM processed cycle summary vs PINN peak; not same-state teacher
+hard5_u012,0.12,83,82,False,False,False,0.9860731834750616,processed_griphfith_archive_imitation_only,FEM processed cycle summary vs PINN peak; not same-state teacher
+hard5_u013,0.13,59,58,False,False,False,0.9860731834750616,processed_griphfith_archive_imitation_only,FEM processed cycle summary vs PINN peak; not same-state teacher
