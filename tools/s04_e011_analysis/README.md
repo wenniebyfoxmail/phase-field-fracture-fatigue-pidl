@@ -35,3 +35,11 @@ does not make FEM a ground truth and does not remove the committed-fatigue
 versus trial-fatigue or joint Deep-Ritz versus staggered/Picard differences.
 The `eta=1e-6` arm is a sensitivity calculation; the frozen experiment uses
 `eta=0`.
+
+`audit_fem_final_residuals.py` reads saved Q4/T3 native residual captures and
+compares box and nodal-monotone feasible residuals with cached stopping values.
+It requires `--q4-capture`, `--t3-capture`, `--q4-log`, `--t3-log`, `--handoff`,
+`--analysis-root`, and `--output`. It reports mass-dual norms and diagnostic
+co-location with PIDL–FEM active disagreement. Neither projection certifies the
+GP-constrained fatigue fixed point; threshold adjacency does not establish
+premature termination.
