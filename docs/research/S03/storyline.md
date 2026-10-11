@@ -2,6 +2,15 @@
 
 ## Claim-impact log
 
+- **2026-10-11 — S03-E005 first-header diagnostic identified a repair lever.**
+  Stage 7 has a commented column schema with all required token names and
+  required scalar key names; the existing parser expects a non-comment schema
+  and stops at the following numeric prefix. Scope is one header only, with
+  an exploratory key/schema inspection. Next lever: explicitly support the
+  observed commented-header form with conflict/boundary tests and independent
+  code review before renewed qualification. Other stages and physics remain
+  unassessed. S03-E004's inconclusive verdict is preserved.
+
 - **2026-10-11 — S03-E004 closed as `inconclusive`.** Independent review
   returned `PASS_EVIDENCE_REVIEW` for R001. The locked archive passed identity
   and structural pairing (342 nodemaps, 342 connections, 342 pairs), but
