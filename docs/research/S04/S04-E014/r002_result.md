@@ -1,6 +1,6 @@
 # S04-E014 R002 stratified-sampling screen result
 
-Status: completed producer evidence; independent Evidence review pending
+Status: completed; independent `EVIDENCE PASS`; no rerun required
 
 ## Purpose
 
