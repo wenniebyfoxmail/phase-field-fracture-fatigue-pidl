@@ -54,7 +54,7 @@ assert(max(abs(psi_pre-predecessor.psi_raw_gp),[],'all')<=1e-10,'Predecessor raw
 sys.STIFFNESS_MATRIX.KK=sparse(sys.STIFFNESS_MATRIX.i_row,sys.STIFFNESS_MATRIX.j_col,K_pre);
 [displ,res_displ,D_RHS_tract]=phase_field.fem.solver.step.pre_iter_update(i_step,sys,displ,SOL_STEP_PAR);
 res_displ_0=norm(res_displ(sys.DOFS.active_dof,1));
-trace=struct([]); stopped=false;
+trace=struct('iteration',{},'cached_damage_residual',{},'refreshed_u_residual',{},'stop_sum',{},'converged',{}); stopped=false;
 fprintf('[E011_ENDPOINT_BASELINE_STARTED] c83s3 -> c83s4 U=%.12g\n',sum(SOL_STEP_PAR.uy_increment(1:4)));
 for i_stag=1:SOL_STAG_PAR.max_iter
 '''
