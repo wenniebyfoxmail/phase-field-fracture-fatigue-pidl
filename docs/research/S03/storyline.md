@@ -2,6 +2,16 @@
 
 ## Claim-impact log
 
+- **2026-10-11 — S03-E011 supports cycle/date structural admission.** Exact
+  Code Ready review and real R001 admitted all 342 paired stages. All five
+  component coverage counts are 342; 114 distinct cycles and crack lengths
+  satisfy variation. Two time decreases over 341 comparisons remain separate
+  diagnostics. `PASS_EVIDENCE_REVIEW` authorized positive bounded C1 closure
+  and advance to observation-forecast design. This preserves E006's negative
+  verdict. Next requirements: specimen/units/label semantics, scalar-table
+  export, verified cycle-tie grouping and chronological baseline design.
+  No prediction skill or phase-field/material identification is established.
+
 - **2026-10-11 — S03-E006 completed a tested parsing repair.** New commented
   grammar received `PASS_CODE_READY`; real identity and 342-stage pairing
   passed. Qualification stopped on `CHRONOLOGY_INVALID`. Independent evidence
