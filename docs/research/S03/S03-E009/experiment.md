@@ -69,3 +69,18 @@ Run: S03-E009-R001, acquisition only on Mac-PIDL.
 Archive: local_archive/experiments/S03-E009/runs/S03-E009-R001/.
 Minimum evidence: provenance, sizes/CRC/decode, all-three contact sheet,
 data-characteristics report and next-protocol draft. No formal scientific PASS.
+
+## Dataset audit result
+
+R001 completed at clean commit bf545d54b6f2ddae71f62cacb0887aaa675b6b55.
+All three acquired images passed CRC/size/decode and are 3024 x 4032.
+All contain visible numbered ruler marks; geometry and numbering differ
+between cameras/images. Read dataset_characteristics.md before choosing a
+detector. The reserved Beam 6 moving ref2 was not accessed.
+
+Acquisition milestone: complete. Scientific scale verdict: pending reference
+annotation, repeatability and an independently reviewed measurement contract.
+Research disposition: advance the C0 canonical-pixel observation MVP under
+S03-E010; prepare mm-reference measurement separately. This removes mm scale
+as a global prerequisite for image-token serialization without changing any
+prior accuracy verdict.

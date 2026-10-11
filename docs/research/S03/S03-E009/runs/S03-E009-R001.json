@@ -1,0 +1,63 @@
+{
+  "experiment_id": "S03-E009",
+  "run_id": "S03-E009-R001",
+  "role": "dataset_acquisition_only",
+  "protocol": "acquisition-v1",
+  "producer": "Mac-PIDL",
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 53257,
+  "commit": "bf545d54b6f2ddae71f62cacb0887aaa675b6b55",
+  "git_dirty": false,
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "runtime": "3.12.2",
+  "command": [
+    "scripts/d01_moving_ruler_reference_audit.py",
+    "--manifest",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E004/analysis/remote_zip_manifest.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E009/runs/S03-E009-R001"
+  ],
+  "started_at_utc": "2026-10-11T21:32:59.748408+00:00",
+  "gpu": null,
+  "source_manifest": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E004/analysis/remote_zip_manifest.json",
+  "source_url": "https://data.mendeley.com/public-api/zip/z3yc9z84tk/download/4",
+  "execution": "succeeded",
+  "retrieval": "verified",
+  "files": [
+    {
+      "path": "Monitoring of structural performance of cracked reinforced concrete using DIC and CMfM/Beam 4/G4-IB-Free/1-G4-IB_ref.png",
+      "saved_as": "Beam 4/G4-IB-Free/1-G4-IB_ref.png",
+      "bytes": 9284335,
+      "crc32": "2bee75b1",
+      "sha256": "75b169f0e047a79a064478b2e335bb04cf0f7484889043cc68e8065c1f27bfe9",
+      "width_px": 3024,
+      "height_px": 4032,
+      "crc_size_decode_ok": true,
+      "role": "development"
+    },
+    {
+      "path": "Monitoring of structural performance of cracked reinforced concrete using DIC and CMfM/Beam 5/G5-IB-Free/1-G5-IB_ref.png",
+      "saved_as": "Beam 5/G5-IB-Free/1-G5-IB_ref.png",
+      "bytes": 11143641,
+      "crc32": "b5229637",
+      "sha256": "3e5f6faf4ab59a930f2973cde746f1533562bef7bf4565d5cee48136220f09dd",
+      "width_px": 3024,
+      "height_px": 4032,
+      "crc_size_decode_ok": true,
+      "role": "development"
+    },
+    {
+      "path": "Monitoring of structural performance of cracked reinforced concrete using DIC and CMfM/Beam 6/G6-IB-Free/1-G6-IB_ref.png",
+      "saved_as": "Beam 6/G6-IB-Free/1-G6-IB_ref.png",
+      "bytes": 8040719,
+      "crc32": "e6ba49ee",
+      "sha256": "7b36ff877d5737931957e3b0043a3b48f15b6d1fd9fac994c8c5635676bb1582",
+      "width_px": 3024,
+      "height_px": 4032,
+      "crc_size_decode_ok": true,
+      "role": "development"
+    }
+  ],
+  "reserved_ref2_accessed": false,
+  "ended_at_utc": "2026-10-11T21:33:19.248453+00:00"
+}
