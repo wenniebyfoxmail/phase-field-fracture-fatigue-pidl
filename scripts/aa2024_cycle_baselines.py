@@ -227,7 +227,9 @@ def main():
             "artifacts": {p.name: {"size": p.stat().st_size, "sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
                           for p in root.iterdir() if p.is_file()},
             "input_binding": {"archive_size": 1248078255, "archive_md5": "e671b804e29401e70043bc1e17f66dd1"}
-                 if args.mode == "prepare" else {"preparation_lock_sha256": hashlib.sha256((ROOT/"prepare/preparation_lock.json").read_bytes()).hexdigest()}})
+                 if args.mode == "prepare" else {"preparation_lock_sha256":
+                    hashlib.sha256((ROOT/"prepare/preparation_lock.json").read_bytes()).hexdigest()
+                    if (ROOT/"prepare/preparation_lock.json").is_file() else None}})
     print(json.dumps(result, sort_keys=True))
 
 
