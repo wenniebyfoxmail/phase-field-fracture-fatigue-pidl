@@ -2,7 +2,7 @@
 storyline_id: S02
 experiment_id: S02-E004
 protocol_revision: v1.2
-status: running
+status: paused
 started_at: 2026-10-08
 closed_at:
 primary_storyline: S02
@@ -223,3 +223,22 @@ Pending. This pilot cannot change the S02-E003 forecast verdict.
 Complete the independent packet and annotation-interface review, then measure
 all 15 anonymous Round A images. Validate and seal Round A before the 24-hour
 Round B embargo begins.
+
+## 2026-10-11 — administrative pause after road-relevance review
+
+The user approved deprioritising the DCB route and acquiring asphalt-DIC
+candidates. Formal Round A annotation is paused. A local check found 15 rows
+and zero populated visibility statuses in the canonical annotations.csv;
+no repeatability measurement result has been observed. Round B remains
+unreleased. No active annotation server or DCB archive download process was
+found at this check. The full archive attempt has only incomplete .part
+files and terminal connection/DNS errors; stale STARTED markers are not
+completion evidence. Existing assets are retained and no download is restarted.
+
+This is a priority/status change, not a scientific protocol revision. v1.2,
+its selection, criterion, failed construction receipts and pending verdict
+are preserved. The pilot remains a same-image measurement sandbox; it cannot
+support road forecasting or material transfer. Resume only if this bounded
+measurement question becomes necessary. The current next action supersedes
+the earlier annotation instruction: audit asphalt SCB/IDEAL-CT public samples
+and complete-data access first.
