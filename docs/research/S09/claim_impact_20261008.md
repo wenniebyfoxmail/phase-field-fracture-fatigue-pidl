@@ -14,3 +14,13 @@ S09-E002: frozen damage-only single-factor ablation completed and closed, indepe
 ## 2026-10-09 — S09-E003 FEM physics / PINN diagnostic
 
 Implemented and independently checked native AMOR equilibrium, AT1 penalty partial residual and immutable trial fatigue. U012c76s4 native kinematics/energy reproduced at float64 precision. Ran500-step fixed-damage equilibrium-only displacement PINN on Taobo; final residual/affine=.280859 (C0 PASS), but nodal displacement relative difference1.00909 and force15.6times native preclude accuracy claims. All13files retrieved; independent Evidence Ready PASS; exact run commit2bfa5d3. See S09-E003/decision.md. No damage forecast, physics-informed operator training or generalization established.
+
+## 2026-10-11/12 — S09-E005 multi-objective gradient audit
+
+At E004's exact common checkpoint, zero-update audit found a global
+physics/data gradient norm ratio of 10,165–57,338 with positive cosine on all
+16 states.  Decoder conflict occurred on 6/16 states, but the observed FEM
+target residual was small (median 0.0199 times affine).  The nominal E004
+weight therefore remained strongly physics-dominant in gradient space.  This
+supports a fresh gradient-balanced, data-anchored S09-E006 test; it does not
+rescue E004 or establish successful PINO training.

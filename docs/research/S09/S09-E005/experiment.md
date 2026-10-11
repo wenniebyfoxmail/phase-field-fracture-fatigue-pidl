@@ -2,7 +2,7 @@
 storyline_id: S09
 experiment_id: S09-E005
 protocol_revision: v1-no-update-gradient-audit
-status: code_preparation
+status: complete_diagnostic
 primary_storyline: S09
 related_experiments: [S09-E004]
 ---
@@ -70,4 +70,15 @@ evolution/generalization claims.
 - producer receipt proving zero updates and hash identity;
 - analysis table/figure, decision note and independent Evidence Ready review;
 - one dated S09 claim-impact entry and Obsidian research-log update.
+
+## Completion record — 2026-10-11/12
+
+Independent ChatGPT Pro Code Ready review passed exact execution commit
+`79f238e0cd2ddd7a31d994f79c6d05410fd8151a`.  Taobo Run S09-E005-R001
+completed all 16 statewise audits in 2.13 s with zero optimizer updates;
+pre/post model hashes and checkpoint hashes matched, and finite/completeness
+guards passed.  After correcting a web-reencoded figure attachment and adding
+the raw per-state JSON/receipt, independent Evidence Ready review passed.  The
+evidence and interpretation are recorded in `decision.md` and
+`evidence_review.md`.
 
