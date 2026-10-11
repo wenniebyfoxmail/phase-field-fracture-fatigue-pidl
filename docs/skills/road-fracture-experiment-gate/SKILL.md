@@ -1,6 +1,6 @@
 ---
 name: road-fracture-experiment-gate
-description: Gate claim-changing road-fracture research experiments across observation/data qualification, crack measurement or inverse-state inference, future prediction, and physics/surrogate routes. Use before execution and after retrieval to freeze the estimand, admissibility checks, one primary criterion, stop rule, evidence, and bounded claim impact; do not use for literature-only review or routine non-claim-changing edits.
+description: Gate and advance claim-changing road-fracture experiments across observation, measurement, prediction, and physics/surrogate routes. Use before execution and after retrieval to calibrate an attainable criterion, preserve component-level progress without overstating the claim, identify the controlling bottleneck, and select the smallest executable repair; do not use for literature-only review or routine non-claim-changing edits.
 ---
 
 # Road-Fracture Experiment Gate
@@ -23,6 +23,8 @@ Before creating a Run, answer:
 3. What qualified evidence and simplest honest comparator make the result
    interpretable?
 4. What is the cheapest decisive test, stop rule, and smallest evidence asset?
+5. If the primary claim misses, which measured component or bottleneck will
+   select the next repair rather than merely explain the failure?
 
 If an answer is missing, do not launch training, a new FEM solve, or a broad
 model sweep. Produce a data/identity audit, export request, offline diagnostic,
@@ -63,6 +65,10 @@ An Experiment is `ready` only when `experiment.md` freezes:
   time or generalisation is part of the claim;
 - evidence identity and only the validity gates needed for interpretation;
 - one smallest decisive primary criterion and its ex-ante rationale;
+- a criterion-feasibility check against baseline variation, reference noise,
+  sample size and an empirical or analytic ceiling;
+- predeclared component milestones and repair triggers that guide the next
+  action without changing the primary verdict;
 - outcome-to-claim map, stop rule, minimum evidence, and blocked conclusion.
 
 Add uncertainty, inverse parameters, teacher status, intervention, or producer
@@ -84,11 +90,17 @@ old verdict.
 3. **Use the simplest honest comparator.** Complex methods first have to beat
    an admissible persistence, linear/secant, measurement, or producer baseline
    matched to the same information.
-4. **Justify the threshold before results.** Use reference uncertainty,
+4. **Justify and calibrate the threshold before results.** Use reference uncertainty,
    repeatability, physical tolerance, decision cost, or a meaningful baseline
-   margin. Without a defensible threshold, label the work diagnostic.
-5. **Diagnostics do not vote.** Secondary metrics explain the result but cannot
-   rescue a primary failure or overturn a pass.
+   margin. Estimate the attainable range from a pilot, oracle ceiling, power or
+   uncertainty calculation, or prior qualified evidence. A threshold at or
+   above the credible ceiling, or one the planned sample cannot distinguish,
+   makes the design unready. Without a defensible threshold, label the work
+   diagnostic.
+5. **Diagnostics do not vote on the claim; they do select repairs.** Secondary
+   metrics cannot rescue a primary failure or overturn a pass. They should
+   localise the bottleneck, preserve component-level advances, and choose the
+   next intervention under a predeclared rule.
 
 Freeze this outcome map:
 
@@ -99,9 +111,43 @@ validity passes + primary fails        -> negative for the bounded claim
 primary cannot be computed/identified  -> inconclusive
 ```
 
-Use `mixed` only for multiple separately preregistered claims. Stop at the first
-decisive failure or the declared resource/time cap; do not add arms or criteria
-after seeing results.
+Record a separate research disposition:
+
+```text
+advance   -> claim passed and the next capability is justified
+repair    -> claim missed, but a measured bottleneck has a plausible controllable lever
+redirect  -> the present route is structurally mismatched; test a different estimand or evidence axis
+stop      -> validity cannot be repaired, the ceiling is inadequate, or the declared resource cap is reached
+```
+
+Use `mixed` only for multiple separately preregistered claims. Stop the current
+claim-bearing Run at the first decisive failure or resource cap; do not add arms
+or criteria after seeing results. Do not automatically stop the research
+storyline. Preserve the old verdict, then open a reviewed amendment or new
+Experiment for a justified repair.
+
+## Solution-Oriented Result Interpretation
+
+A primary miss answers the bounded claim; it does not erase valid progress in
+the observation chain, candidate coverage, representation, optimisation,
+mechanics, calibration, runtime, or evidence infrastructure. Report these as
+component findings with their exact scope, never as a rescued primary success.
+
+Before closing a valid negative or mixed Experiment:
+
+1. decompose the end metric into the smallest measurable stages;
+2. estimate the oracle or best-case ceiling of each stage where possible;
+3. distinguish missing capability from ranking, optimisation, data support,
+   reference noise, distribution shift, or an over-demanding criterion;
+4. identify the first bottleneck that materially caps the primary result;
+5. choose one controllable lever and implement or specify the cheapest test
+   whose result would accept, reject, or redirect that repair;
+6. freeze fresh evidence, budget and stop rules before evaluating the repair.
+
+The default endpoint is a solved problem or a tested repair path. A diagnosis
+alone is sufficient only when no meaningful intervention is supported, the
+required evidence is unavailable, or the declared budget is exhausted. See
+[references/solution_oriented_outcomes.md](references/solution_oriented_outcomes.md).
 
 ## Minimum Decision Visualization
 
@@ -167,8 +213,9 @@ Use the first level capable of answering the question:
 4. Small controlled diagnostic whose result selects or stops the route.
 5. Fresh producer Run only when the preceding levels cannot decide.
 
-Do not repeat a terminal negative without a new estimand or new qualified
-evidence axis.
+Do not repeat a terminal negative unchanged. Continue only with a new estimand,
+new qualified evidence axis, or a repair that directly targets the measured
+bottleneck.
 
 ## Readiness And Records
 
@@ -178,6 +225,7 @@ Keep these independent:
 Run execution: prepared | running | succeeded | failed | cancelled | unknown
 Run retrieval: pending | partial | verified
 Experiment verdict: supports | mixed | negative | inconclusive | inadmissible
+Research disposition: advance | repair | redirect | stop
 ```
 
 Before claim-changing code is used, reuse existing code where possible, run
@@ -208,9 +256,13 @@ green test, or large archive into a scientific verdict.
 - Simplest honest comparator:
 - Cheapest decisive test:
 - One primary criterion and rationale:
+- Criterion-feasibility / attainable range:
+- Component milestones and repair triggers:
 - Stop rule:
 - Minimum decision visualization:
 - Minimum evidence / blocked conclusion:
+- Claim verdict / research disposition:
+- Bottleneck / chosen lever / smallest repair test:
 - Producer and Run receipt destination, if execution is ready:
-- Decision: diagnose first / ready / reject / quarantine
+- Decision: diagnose first / ready / advance / repair / redirect / stop / quarantine
 ```
