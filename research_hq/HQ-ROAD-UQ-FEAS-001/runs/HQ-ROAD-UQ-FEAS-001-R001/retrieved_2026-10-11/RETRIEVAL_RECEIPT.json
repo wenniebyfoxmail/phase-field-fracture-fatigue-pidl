@@ -1,0 +1,14 @@
+{
+  "run_id": "HQ-ROAD-UQ-FEAS-001-R001",
+  "retrieved_date": "2026-10-11",
+  "remote_output": "C:\\Users\\xw436\\jobs\\HQ-ROAD-UQ-FEAS-001-R001",
+  "remote_archive": "C:\\Users\\xw436\\jobs\\HQ-ROAD-UQ-FEAS-001-R001-results.tar.gz",
+  "remote_original_preserved": true,
+  "files": 12,
+  "uncompressed_bytes": 8427733,
+  "archive_bytes": 7529059,
+  "archive_sha256": "e9d69bdc52751868052eca2f370276b98db27c39ca6ba1e69bf30bea94b3a9a7",
+  "manifest_sha256": "e9f83a3aae265e83e50b22c9115455bc27ecfb3751b9dec06ae5208bc6516df2",
+  "local_large_result_directory": "HQ-ROAD-UQ-FEAS-001-R001",
+  "integrity": "PASS_12_OF_12_REMOTE_MANIFEST"
+}
