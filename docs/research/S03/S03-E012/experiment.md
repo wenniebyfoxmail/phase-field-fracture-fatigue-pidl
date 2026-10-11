@@ -87,3 +87,26 @@ exact predictions CSV, with all chronological holdout targets, no chosen example
 
 Root: local_archive/experiments/S03-E012/runs/S03-E012-R001/prepare and evaluate.
 No real E012 export or score has yet occurred.
+
+## Numerical and lineage implementation clarification
+
+Authoritative metrics are Decimal strings, not float JSON values. Working
+precision covers the input decimal span plus guard digits (minimum 50), with
+an 8,192-digit arithmetic budget and adjusted exponent magnitude <=10,000.
+Inputs outside this numerical capability fail; no success score is returned.
+Plots use floating representation only; nonfinite or nonzero-to-zero conversion
+blocks figure completion while exact CSV/metric artifacts remain diagnostic.
+Evaluation binds the preparation lock and every prepared artifact to the
+successful preparation receipt and the unchanged runner/dependency identity.
+
+## Code review history
+
+Snapshot `3dc801869d3d7739f0877349c953df332a71bc36` received `REVISE_CODE`:
+fixed 50-digit predictions lost increments for large precise labels, and float
+loss arithmetic could turn nonzero errors or their squares into zero. The
+revision implements the checked precision/domain policy above, exact-string
+Decimal metrics and explicit plot representability failure. Full-mode synthetic
+regressions cover labels 10^60+i, i^2*10^-400 and ordinary linear data; the
+subfloat case preserves correct CSV/metrics and records figure completion
+failure, not a successful pilot. A separate test checks RMSE of 10^-200 errors.
+The real archive has not been prepared or scored.

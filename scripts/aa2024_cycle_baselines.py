@@ -25,6 +25,19 @@ ROOT = Path("/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/exp
 FIELDS = ("stage", "cycles", "cracklength", "current_stage_relative_date", "time", "force", "displacement")
 
 
+def work_precision(values):
+    nonzero = [Decimal(v) for v in values if Decimal(v) != 0]
+    if any(not v.is_finite() for v in nonzero):
+        raise ValueError("nonfinite arithmetic input")
+    if any(abs(v.adjusted()) > 10000 for v in nonzero):
+        raise ValueError("decimal exponent budget exceeded")
+    precision = max(50, max((v.adjusted() for v in nonzero), default=0)
+                    - min((v.as_tuple().exponent for v in nonzero), default=0) + 64)
+    if precision > 8192:
+        raise ValueError("decimal arithmetic budget exceeded")
+    return precision
+
+
 def dependency():
     if hashlib.sha256(DEP.read_bytes()).hexdigest() != DEP_HASH:
         raise ValueError("reviewed parser dependency changed")
@@ -86,7 +99,7 @@ def predictions(groups, manifest):
         raise ValueError("split manifest does not match frozen rule")
     rows = []
     with localcontext() as ctx:
-        ctx.prec = 50
+        ctx.prec = work_precision([g[k] for g in groups for k in ("cycles", "cracklength")])
         for split in ("train", "dev", "holdout"):
             for j in manifest["target_indices"][split]:
                 n0, n1, nt = (Decimal(groups[k]["cycles"]) for k in (j - 2, j - 1, j))
@@ -108,14 +121,15 @@ def metrics(rows):
         if not subset:
             raise ValueError("empty evaluation split")
         out[split] = {"transitions": len(subset)}
-        for method in ("persistence", "secant"):
-            errors = [float(Decimal(r[method + "_error"])) for r in subset]
-            if not all(math.isfinite(e) for e in errors):
-                raise ValueError("nonfinite numeric metric")
-            out[split][method] = {"mae": sum(map(abs, errors))/len(errors),
-                "rmse": math.sqrt(sum(e*e for e in errors)/len(errors))}
-        p = out[split]["persistence"]["mae"]
-        out[split]["secant_to_persistence_mae_ratio"] = None if p == 0 else out[split]["secant"]["mae"]/p
+        with localcontext() as ctx:
+            ctx.prec = work_precision([r[k] for r in subset for k in ("persistence_error", "secant_error")])
+            for method in ("persistence", "secant"):
+                errors = [Decimal(r[method + "_error"]) for r in subset]
+                mae = sum(map(abs, errors), Decimal(0))/len(errors)
+                rmse = (sum((e*e for e in errors), Decimal(0))/len(errors)).sqrt()
+                out[split][method] = {"mae": str(mae), "rmse": str(rmse)}
+            p = Decimal(out[split]["persistence"]["mae"])
+            out[split]["secant_to_persistence_mae_ratio"] = None if p == 0 else str(Decimal(out[split]["secant"]["mae"])/p)
     return out
 
 
@@ -150,6 +164,15 @@ def prepare(archive, root):
 
 
 def evaluate(prepared, root):
+    receipt = json.loads((prepared/"execution_receipt.json").read_text())
+    if receipt.get("status") != "succeeded" or receipt.get("mode") != "prepare":
+        raise ValueError("successful preparation receipt required")
+    if receipt.get("dependency_sha256") != DEP_HASH or receipt.get("runner_sha256") != hashlib.sha256(Path(__file__).read_bytes()).hexdigest():
+        raise ValueError("preparation code identity changed")
+    for name in ("preparation_lock.json", "stages.csv", "groups.json", "split_manifest.json", "grouping_summary.json"):
+        recorded = receipt["artifacts"][name]
+        if hashlib.sha256((prepared/name).read_bytes()).hexdigest() != recorded["sha256"]:
+            raise ValueError("preparation receipt artifact mismatch")
     lock = json.loads((prepared/"preparation_lock.json").read_text())
     expected = {"stages.csv", "groups.json", "split_manifest.json", "grouping_summary.json"}
     if set(lock) != expected:
@@ -174,14 +197,20 @@ def evaluate(prepared, root):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     subset = [r for r in rows if r["split"] == "holdout"]
-    x = [float(r["target_cycles"]) for r in subset]
+    def plot_float(value):
+        exact = Decimal(value)
+        approximate = float(exact)
+        if not math.isfinite(approximate) or (exact != 0 and approximate == 0):
+            raise ValueError("plot float representation unavailable; exact CSV/metrics retained")
+        return approximate
+    x = [plot_float(r["target_cycles"]) for r in subset]
     fig, axs = plt.subplots(2, 1, figsize=(9, 7), sharex=True, constrained_layout=True)
     for key, color, style in (("target", "black", "-"), ("persistence", "#0072B2", "--"), ("secant", "#D55E00", "-.")):
-        axs[0].plot(x, [float(r[key]) for r in subset], style, color=color, lw=1.5, label=key)
+        axs[0].plot(x, [plot_float(r[key]) for r in subset], style, color=color, lw=1.5, label=key)
     axs[0].set_ylabel("DCPD-derived cracklength\n(native controller units)")
     axs[0].legend()
     for method, color in (("persistence", "#0072B2"), ("secant", "#D55E00")):
-        axs[1].plot(x, [float(r[method+"_error"]) for r in subset], "o-", ms=3, lw=1.2, color=color, label=method)
+        axs[1].plot(x, [plot_float(r[method+"_error"]) for r in subset], "o-", ms=3, lw=1.2, color=color, label=method)
     axs[1].axhline(0, color="gray", lw=.7)
     axs[1].set_ylabel("Prediction minus recorded label\n(native controller units)")
     axs[1].set_xlabel("Target loading cycles; all chronological holdout transitions")
@@ -189,7 +218,7 @@ def evaluate(prepared, root):
     for ax in axs: ax.grid(alpha=.2)
     s = scores["holdout"]
     fig.suptitle("S03-E012-R001 | one experimental sequence | rolling one-step holdout\n"
-                 f"Conditional on recorded cycle gaps; MAE persistence={s['persistence']['mae']:.5g}, secant={s['secant']['mae']:.5g}")
+                 f"Conditional on recorded cycle gaps; MAE persistence={Decimal(s['persistence']['mae']):.5g}, secant={Decimal(s['secant']['mae']):.5g}")
     for suffix in ("png", "pdf"): fig.savefig(root/f"holdout_baselines.{suffix}", dpi=180)
     plt.close(fig)
     return scores
@@ -224,6 +253,7 @@ def main():
             "dirty_status": subprocess.check_output(["git","status","--porcelain"],text=True).strip(),
             "wall_seconds": time.monotonic()-tic, "status": locals().get("status", "failed"),
             "dependency_sha256": DEP_HASH, "read_scope": "bounded_scalar_headers_no_numerical_or_connection_bodies",
+            "runner_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             "artifacts": {p.name: {"size": p.stat().st_size, "sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
                           for p in root.iterdir() if p.is_file()},
             "input_binding": {"archive_size": 1248078255, "archive_md5": "e671b804e29401e70043bc1e17f66dd1"}
