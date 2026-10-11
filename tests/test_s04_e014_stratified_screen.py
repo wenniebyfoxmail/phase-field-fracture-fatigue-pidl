@@ -142,20 +142,22 @@ def test_aggregate_two_state_primary_pass(tmp_path):
 
 
 def test_aggregate_selects_full_field_polish_only_when_both_improve_by_half(tmp_path):
-    _write_run(tmp_path, "c20s4", AGG.BASELINE_DISPLACEMENT["c20s4"] * 0.49)
-    _write_run(tmp_path, "c83s4", AGG.BASELINE_DISPLACEMENT["c83s4"] * 0.49)
+    rows = AGG.EXPECTED_COMPARATOR["rows"]
+    _write_run(tmp_path, "c20s4", rows["c20s4"]["displacement_mass_rms_over_abs_Us"] * 0.49)
+    _write_run(tmp_path, "c83s4", rows["c83s4"]["displacement_mass_rms_over_abs_Us"] * 0.49)
     _, summary = AGG.aggregate(tmp_path, "a" * 40)
     assert summary["verdict"] == "SAMPLING_USEFUL_BUT_INSUFFICIENT_FULL_FIELD_POLISH_NEXT"
 
 
 def test_aggregate_rejects_weak_sampling_repair(tmp_path):
-    _write_run(tmp_path, "c20s4", AGG.BASELINE_DISPLACEMENT["c20s4"] * 0.8)
-    _write_run(tmp_path, "c83s4", AGG.BASELINE_DISPLACEMENT["c83s4"] * 0.8)
+    rows = AGG.EXPECTED_COMPARATOR["rows"]
+    _write_run(tmp_path, "c20s4", rows["c20s4"]["displacement_mass_rms_over_abs_Us"] * 0.8)
+    _write_run(tmp_path, "c83s4", rows["c83s4"]["displacement_mass_rms_over_abs_Us"] * 0.8)
     _, summary = AGG.aggregate(tmp_path, "a" * 40)
     assert summary["verdict"] == "SAMPLING_ONLY_REPAIR_REJECTED"
 
 
-@pytest.mark.parametrize("kind", ["missing", "monitor", "sampler", "nonfinite"])
+@pytest.mark.parametrize("kind", ["missing", "monitor", "sampler", "nonfinite", "monitor_metric"])
 def test_aggregate_fails_closed_for_incomplete_or_malformed_evidence(tmp_path, kind):
     def mutate(record, receipt, monitoring):
         if kind == "monitor":
@@ -164,6 +166,8 @@ def test_aggregate_fails_closed_for_incomplete_or_malformed_evidence(tmp_path, k
             record["n_damage"] -= 1
         elif kind == "nonfinite":
             record["metrics"]["predicted_rho_u"] = float("nan")
+        elif kind == "monitor_metric":
+            record["metrics"]["displacement_mass_rms_over_abs_Us"] = 7e-4
     if kind != "missing":
         _write_run(tmp_path, "c20s4", 8e-4, mutation=mutate)
         _, summary = AGG.aggregate(tmp_path, "a" * 40)
@@ -172,3 +176,14 @@ def test_aggregate_fails_closed_for_incomplete_or_malformed_evidence(tmp_path, k
         _write_run(tmp_path, "c20s4", 8e-4)
         _, summary = AGG.aggregate(tmp_path, "a" * 40)
         assert summary["verdict"] == "INCONCLUSIVE"
+
+
+def test_aggregate_rejects_comparator_identity_or_metric_mismatch(tmp_path):
+    _write_run(tmp_path, "c20s4", 8e-4)
+    _write_run(tmp_path, "c83s4", 9e-4)
+    comparator = json.loads(AGG.COMPARATOR_PATH.read_text())
+    comparator["rows"]["c20s4"]["displacement_mass_rms_over_abs_Us"] *= 2
+    bad = tmp_path / "bad-comparator.json"
+    bad.write_text(json.dumps(comparator))
+    _, summary = AGG.aggregate(tmp_path, "a" * 40, bad)
+    assert summary["verdict"] == "INADMISSIBLE"

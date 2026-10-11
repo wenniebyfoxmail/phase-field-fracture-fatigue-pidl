@@ -32,9 +32,28 @@ GATE_KEYS = {
     "predicted_rho_u": "gate_rho_u",
 }
 
-BASELINE_DISPLACEMENT = {
-    "c20s4": 0.004888466780100484,
-    "c83s4": 0.00532068215420865,
+COMPARATOR_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "docs/research/S04/S04-E014/s04_e013_seed7_comparator.json"
+)
+EXPECTED_COMPARATOR = {
+    "source_result_commit": "e7b5ee3bb2aa2946278a80b972d8850a68d8203f",
+    "source_training_commit": "769396f93ae5258eb984e1585d4274f7990afb11",
+    "source_metrics_csv_sha256": "4ee95024f1574c0e2a442c697d16f2904afd9ae08c64d81f9b54d7923ed4d85a",
+    "rows": {
+        "c20s4": {
+            "seed": 7,
+            "reference_sha256": EXPECTED["c20s4"],
+            "checkpoint_sha256": "29e317c2d4f3afca718bf184d8ac85b63e1beaf85986e3597465609991ab24bd",
+            "displacement_mass_rms_over_abs_Us": 0.004888466780100484,
+        },
+        "c83s4": {
+            "seed": 7,
+            "reference_sha256": EXPECTED["c83s4"],
+            "checkpoint_sha256": "68126cd46df2fb6a28f08e677aafcca377ed395ab99bd46c4cabc0f12d8a38e8",
+            "displacement_mass_rms_over_abs_Us": 0.00532068215420865,
+        },
+    },
 }
 
 
@@ -59,6 +78,13 @@ def finite_number(value, label: str) -> float:
     if not math.isfinite(value):
         raise ValueError(f"{label} must be finite")
     return value
+
+
+def load_comparator(path: Path) -> dict:
+    comparator = json.loads(path.read_text(encoding="utf-8"))
+    if comparator != EXPECTED_COMPARATOR:
+        raise ValueError("frozen S04-E013 seed-7 comparator identity or metric mismatch")
+    return comparator
 
 
 def validate_record(path: Path, expected_commit: str) -> dict:
@@ -205,6 +231,12 @@ def validate_record(path: Path, expected_commit: str) -> dict:
     joint = all(recomputed.values())
     if strict_bool(metrics.get("joint_pass"), "joint_pass") != joint:
         raise ValueError("stored joint_pass is inconsistent with recomputed gates")
+    final_displacement = float(metrics["displacement_mass_rms_over_abs_Us"])
+    if not math.isclose(
+        trace[-1]["displacement_mass_rms_over_abs_Us"], final_displacement,
+        rel_tol=0.0, abs_tol=1e-14,
+    ):
+        raise ValueError("final monitoring displacement does not match decision metric")
     return {
         "state": state,
         "seed": seed,
@@ -213,16 +245,20 @@ def validate_record(path: Path, expected_commit: str) -> dict:
         **{metric: float(metrics[metric]) for metric in THRESHOLDS},
         "reference_rho_u": float(metrics["reference_rho_u"]),
         "joint_pass": joint,
-        "baseline_displacement": BASELINE_DISPLACEMENT[state],
-        "relative_improvement": 1.0 - float(metrics["displacement_mass_rms_over_abs_Us"]) / BASELINE_DISPLACEMENT[state],
         "monitor_initial_displacement": float(trace[0]["displacement_mass_rms_over_abs_Us"]),
         "monitor_final_displacement": float(trace[-1]["displacement_mass_rms_over_abs_Us"]),
     }
 
 
-def aggregate(input_root: Path, expected_commit: str) -> tuple[list[dict], dict]:
+def aggregate(input_root: Path, expected_commit: str,
+              comparator_path: Path = COMPARATOR_PATH) -> tuple[list[dict], dict]:
     expected_pairs = {(state, seed) for state in EXPECTED for seed in SEEDS}
     rows, errors, seen = [], [], set()
+    try:
+        comparator = load_comparator(comparator_path)
+    except Exception as exc:
+        comparator = None
+        errors.append({"path": str(comparator_path), "error": str(exc)})
     for path in sorted(input_root.glob("**/metrics.json")):
         try:
             row = validate_record(path, expected_commit)
@@ -236,7 +272,14 @@ def aggregate(input_root: Path, expected_commit: str) -> tuple[list[dict], dict]
     missing = sorted(expected_pairs - seen)
     rows.sort(key=lambda row: (tuple(EXPECTED).index(row["state"]), SEEDS.index(row["seed"])))
     displacement_passes = sum(row["displacement_mass_rms_over_abs_Us"] <= 1e-3 for row in rows)
-    improvements = [row["relative_improvement"] for row in rows]
+    for row in rows:
+        if comparator is not None:
+            baseline = comparator["rows"][row["state"]]["displacement_mass_rms_over_abs_Us"]
+            row["baseline_displacement"] = baseline
+            row["relative_improvement"] = (
+                1.0 - row["displacement_mass_rms_over_abs_Us"] / baseline
+            )
+    improvements = [row["relative_improvement"] for row in rows if "relative_improvement" in row]
     if errors:
         verdict = "INADMISSIBLE"
     elif missing:
@@ -256,6 +299,7 @@ def aggregate(input_root: Path, expected_commit: str) -> tuple[list[dict], dict]
         "joint_passes": sum(row["joint_pass"] for row in rows),
         "missing": [{"state": state, "seed": seed} for state, seed in missing],
         "integrity_errors": errors,
+        "comparator": comparator,
         "verdict": verdict,
         "architecture_representability": "UNRESOLVED",
         "full_matrix_validation_authorized": False,
@@ -271,12 +315,13 @@ def main() -> None:
     parser.add_argument("--input-root", type=Path, required=True)
     parser.add_argument("--code-commit", required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--comparator", type=Path, default=COMPARATOR_PATH)
     args = parser.parse_args()
     if len(args.code_commit) != 40 or any(c not in "0123456789abcdef" for c in args.code_commit):
         parser.error("--code-commit must be a lowercase 40-character git SHA")
     if args.out.exists():
         parser.error("--out must not already exist")
-    rows, summary = aggregate(args.input_root, args.code_commit)
+    rows, summary = aggregate(args.input_root, args.code_commit, args.comparator)
     args.out.mkdir(parents=True)
     fields = list(rows[0]) if rows else [
         "state", "seed", "reference_sha256", "checkpoint_sha256",
