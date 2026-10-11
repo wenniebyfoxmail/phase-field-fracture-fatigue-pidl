@@ -54,3 +54,18 @@ This does not reject PINO generally and does not test damage evolution,
 autonomous rollout, unseen trajectory generalization, FEM physical truth or
 real-road validity.  A next experiment must be a new, reviewed protocol; this
 result does not authorize an unplanned weight retry.
+
+## Outcome decomposition and next direction — 2026-10-11
+
+The primary FAIL is a configuration-selection result, not an omnibus judgment
+on the research route.  E004 passed validity and execution, implemented a real
+field-to-field operator, achieved `R=0.36286` with data only, and demonstrated
+that the physics gradient can reduce the selected residual by about 89.8%.
+It failed at joint utility because this residual gain came with 68.7% higher
+development displacement error and did not reach equilibrium.
+
+Future experiments will keep strict validity gates but report a result vector:
+data accuracy, physics residual, joint trade-off, per-state consistency,
+generalization level and evolution level.  The proposed S09-E005 sequence is a
+no-update data/physics gradient audit followed, only after review, by a bounded
+Pareto-rescue comparison.  See `reflection_and_next_design.md`.
