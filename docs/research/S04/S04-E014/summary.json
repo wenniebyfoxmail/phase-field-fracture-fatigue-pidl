@@ -1,0 +1,38 @@
+{
+  "alpha_0p9_loss_variance_over_simple_range": [
+    0.01776071361471521,
+    0.031558958261085714
+  ],
+  "damage_zone_displacement_error_fraction_range": [
+    0.9947391481398568,
+    0.9984288667330445
+  ],
+  "damage_zone_mass_fraction_range": [
+    0.01604587317968949,
+    0.02847166831435201
+  ],
+  "experiment_id": "S04-E014",
+  "limitations": [
+    "loss-estimator variance is a final-field proxy, not gradient-variance measurement",
+    "no intermediate full-field checkpoints exist",
+    "damage stratum is available only in the fixed-damage conditional problem"
+  ],
+  "producer_training_authorized": false,
+  "repair_selection": "UNBIASED_DAMAGE_STRATIFIED_SAMPLING_SCREEN",
+  "run_id": "S04-E014-R001-stage1-posthoc",
+  "runs_analysed": 12,
+  "same_seed_trace_correlation_mean": 0.7080910997040513,
+  "same_seed_trace_correlation_range": [
+    0.480696561648241,
+    0.8224280949228928
+  ],
+  "shared_bias_fraction_range": [
+    0.9606640798315715,
+    0.9646311534904702
+  ],
+  "source_experiment": "S04-E013 Attempt B R016-R027",
+  "tail_p90_over_p10_range": [
+    9.935318819667025,
+    37.09440076371551
+  ]
+}
