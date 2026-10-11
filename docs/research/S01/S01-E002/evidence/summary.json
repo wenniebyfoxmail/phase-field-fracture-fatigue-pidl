@@ -1,0 +1,49 @@
+{
+  "protocol": "S01-E002-v1",
+  "split": "test",
+  "selected_score": "sqrt(proposer_confidence * reranker_crack_probability)",
+  "baseline_operating_macro_recall": 0.11370967741935484,
+  "repaired_operating_macro_recall": 0.1836021505376344,
+  "primary_delta": 0.06989247311827956,
+  "primary_gate": 0.1,
+  "primary_pass": false,
+  "baseline_oracle_macro_recall": 0.2737231182795699,
+  "repaired_oracle_macro_recall": 0.6131720430107527,
+  "oracle_delta": 0.33944892473118277,
+  "oracle_gate": 0.2,
+  "oracle_pass": true,
+  "baseline_budget_capture_ratio": 0.4154186103609133,
+  "repaired_budget_capture_ratio": 0.29943007452871545,
+  "montage_cases": [
+    {
+      "image_id": "reid-75__2023-06-09_12-06-55-340-n00103.jpg",
+      "selection_role": "High-score false positive (location 75)",
+      "displayed_score": 0.5224455762649852
+    },
+    {
+      "image_id": "reid-1139__2023-04-24_12-47-52-884-000126.jpg",
+      "selection_role": "High-score false positive (location 1139)",
+      "displayed_score": 0.47119974760724165
+    },
+    {
+      "image_id": "reid-220__2023-04-21_08-38-01-099-000126.jpg",
+      "selection_role": "Recovered true positive (location 220)",
+      "displayed_score": 0.7714153166521786
+    },
+    {
+      "image_id": "reid-956__2023-04-24_12-34-27-782-n00088.jpg",
+      "selection_role": "Recovered true positive (location 956)",
+      "displayed_score": 0.5998039024373336
+    },
+    {
+      "image_id": "reid-577__2023-04-21_12-01-47-474-n00088.jpg",
+      "selection_role": "Covered target ranked below budget (location 577)",
+      "displayed_score": 0.2381691589879836
+    },
+    {
+      "image_id": "reid-220__2023-05-06_09-02-50-559-n00103.jpg",
+      "selection_role": "Covered target ranked below budget (location 220)",
+      "displayed_score": 0.22725272839683078
+    }
+  ]
+}

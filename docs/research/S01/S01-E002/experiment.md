@@ -2,12 +2,12 @@
 storyline_id: S01
 experiment_id: S01-E002
 protocol_revision: v1
-status: code_review_pending
+status: closed
 started_at: 2026-10-09
-closed_at:
+closed_at: 2026-10-11
 primary_storyline: S01
 related_storylines: []
-scientific_verdict:
+scientific_verdict: negative
 ---
 
 # Native-scale tiled repair for PaveTrack crack localisation
@@ -86,12 +86,27 @@ manifest with size, CRC and SHA-256; per-image candidate rows and targets;
 full-frame baseline and repaired metrics; candidate-ceiling table; error
 montage; analysis README; independent evidence review.
 
-## Current gate
+## Pre-execution gate at protocol freeze
 
 Author self-review found four blocking defects in commit `96f2ccb`; all four
 were remediated before execution. The remediated self-review verdict is
 `PASS_WITH_NONBLOCKING_NOTES`, with 32 inherited PaveTrack tests and 12
 repair-specific tests passing. Because the author performed this review, it
-does not satisfy the independent-review gate. Independent read-only review of
-the new hash bundle remains required before producer execution or fresh
-confirmatory access.
+does not satisfy the independent-review gate. At protocol freeze, independent
+read-only review of the new hash bundle remained required before producer
+execution or fresh confirmatory access. That review was subsequently completed
+and recorded at commit `8d490b1` before R002 began.
+
+## Dated outcome — 2026-10-11
+
+The frozen protocol above was executed from reviewed commit `b347bc3` in
+S01-E002-R002 after independent code review. The confirmatory primary delta was
+`+0.069892` macro-location recall at one false positive per image, below the
+frozen `+0.10` gate. The coverage delta was `+0.339449`, above its `+0.20`
+gate. The bounded primary claim is therefore negative under v1, while the
+native-scale coverage repair is retained as successful component evidence.
+
+The evidence localises the next repair to ranking within the false-positive
+budget. This experiment does not authorise SAM2 or tuning on its consumed
+confirmatory locations. See `result_20261011.md`, the run receipts, and the
+evidence figure set for the complete disposition.

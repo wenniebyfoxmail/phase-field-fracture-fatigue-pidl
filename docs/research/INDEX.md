@@ -39,7 +39,7 @@ integrated from their owning task branches; this index does not duplicate them.
 
 | ID | Storyline | Status | Current source |
 |---|---|---|---|
-| S01 | Real longitudinal road evidence | active | legacy `research_storylines.md` |
+| S01 | Real longitudinal road evidence | active | [`S01/storyline.md`](S01/storyline.md) |
 | S02 | Observation-conditioned road-fracture world model | active | legacy `research_storylines.md`; S02 Experiment branches |
 | S03 | Physics-to-reality observation bridge | paused | legacy `research_storylines.md` |
 | S04 | PIDL/FEM mechanism closure | paused | legacy `research_storylines.md` |

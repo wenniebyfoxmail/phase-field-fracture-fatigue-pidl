@@ -1,0 +1,15 @@
+{
+  "experiment_id": "S01-E002",
+  "run_id": "S01-E002-R002",
+  "retrieval_status": "verified",
+  "verified_at": "2026-10-11T23:16:00+01:00",
+  "remote_evidence_zip": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\S01-E002-R002-evidence.zip",
+  "local_evidence_zip": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E002/runs/S01-E002-R002/S01-E002-R002-evidence.zip",
+  "zip_bytes": 8272928,
+  "zip_members": 18,
+  "zip_integrity": "pass",
+  "remote_sha256": "1d17b5c717147c16430ee34a6dac03a67ed8fc34b2d8a451ffea665d954e5983",
+  "local_sha256": "1d17b5c717147c16430ee34a6dac03a67ed8fc34b2d8a451ffea665d954e5983",
+  "hash_match": true,
+  "montage_image_package_sha256": "abeb8b60131706418ff9626892cf725006f26c245b72c93ca75a457712188bc6"
+}
