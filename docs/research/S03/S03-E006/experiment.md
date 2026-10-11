@@ -2,7 +2,7 @@
 storyline_id: S03
 experiment_id: S03-E006
 protocol_revision: v1
-status: code_review_pending
+status: run_complete_evidence_review_pending
 scientific_verdict: pending
 research_disposition: repair
 ---
@@ -75,3 +75,15 @@ Full-audit regressions cover entirely unparsed pairs, partial parsing and an
 independently observed duplicate alongside an unparseable ID. No real run has
 occurred. Separate per-component coverage accounting remains a future reporting
 improvement; current upstream states on later failures are conservative.
+
+Commit `524919b877b85b243b3a18e81af6f50114d193c9` received
+`PASS_CODE_READY` after the reviewer reproduced closure of that blocker.
+R001 executed at 2026-10-11T22:20:17Z; identity and 342-stage pairing passed.
+The commented-schema parsing repair crossed the old failure, but the new
+gate stopped with `CHRONOLOGY_INVALID`. Output hash:
+`3da9749f97fa889b533b650bb7e9352f2a081eadcf50f1ecb92a8560ba16908a`.
+Separate bounded diagnostics locate the first decrease in the `time` signal
+at stage 21 -> 22, while cycles and acquisition-relative date increase.
+See `chronology_diagnostic.md`; timer-reset semantics remain a hypothesis.
+Closure is pending independent evidence review. Proposed disposition: repair
+by testing an explicitly justified prediction index in a new experiment.
