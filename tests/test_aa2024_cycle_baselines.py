@@ -63,7 +63,7 @@ def test_high_precision_history_is_not_rounded_before_prediction():
     assert all(Decimal(r["secant_error"]) == 0 for r in pred)
     assert all(Decimal(r["persistence_error"]) == Decimal("-1e-80") for r in pred)
 
-@pytest.mark.parametrize("label_case", ("ordinary_linear", "large_linear", "subfloat_quadratic"))
+@pytest.mark.parametrize("label_case", ("ordinary_linear", "large_linear", "subfloat_quadratic", "cancellation"))
 def test_complete_modes_and_receipt_bound_mutation(tmp_path, monkeypatch, label_case):
     import hashlib, json, zipfile
     from decimal import Decimal, localcontext
@@ -77,8 +77,14 @@ def test_complete_modes_and_receipt_bound_mutation(tmp_path, monkeypatch, label_
                 label = (Decimal(stage) if label_case == "ordinary_linear" else
                          Decimal(10)**60+stage-1 if label_case == "large_linear" else
                          Decimal(stage-1)**2 * Decimal("1e-400"))
+                cycle=Decimal(stage*10)
+                if label_case == "cancellation":
+                    big=Decimal(10)**100
+                    i=stage-1
+                    cycle=Decimal(0) if i==0 else big if i==1 else i*big+1
+                    label=2*big-1 if i==0 else big if i==1 else Decimal(0)
             fields={"current_stage_index":stage,"current_stage_relative_date":stage,
-                    "reference_stage_index":1,"cycles":stage*10,"cracklength":label,
+                    "reference_stage_index":1,"cycles":cycle,"cracklength":label,
                     "time":stage,"force":100,"displacement":1}
             header="".join(f"# {k} : {v}\n" for k,v in fields.items())+schema+"1; numerical body sentinel\n"
             z.writestr(f"global_3d_dic/Nodemaps/global_3d_dic_results_1_{stage}.txt",header)
@@ -107,6 +113,17 @@ def test_complete_modes_and_receipt_bound_mutation(tmp_path, monkeypatch, label_
     else:
         assert Decimal(scores["scores"]["holdout"]["secant"]["mae"]) == 0
         assert (M.ROOT/"evaluate/holdout_baselines.png").stat().st_size > 1000
+    if label_case == "cancellation":
+        import csv
+        with (M.ROOT/"evaluate/predictions.csv").open() as f:
+            first=next(csv.DictReader(f))
+        assert Decimal(first["secant"]) == Decimal("1e-100")
+        assert Decimal(first["secant_error"]) == Decimal("1e-100")
+        gs=json.loads((M.ROOT/"prepare/groups.json").read_text())
+        before=M.predictions(gs,M.manifest_for(gs))
+        gs[-1]["cracklength"]="1e-100"
+        after=M.predictions(gs,M.manifest_for(gs))
+        assert before[0]["secant"] == after[0]["secant"]
     # Rewriting a lock without its already-recorded receipt cannot admit altered data.
     prepared=M.ROOT/"prepare"
     lock=json.loads((prepared/"preparation_lock.json").read_text())
@@ -120,3 +137,25 @@ def test_squared_subfloat_error_rmse_remains_nonzero():
     pred=[{"split":s,"persistence_error":"1e-200","secant_error":"0"} for s in ("train","dev","holdout")]
     hold=M.metrics(pred)["holdout"]
     assert Decimal(hold["persistence"]["rmse"]) == Decimal("1e-200")
+
+def test_secant_preserves_tiny_increment_on_large_baseline():
+    from decimal import Decimal, localcontext
+    gs=M.groups_from_rows(rows())
+    with localcontext() as ctx:
+        ctx.prec=1200
+        big=Decimal(10)**400
+        for i,g in enumerate(gs):
+            g["cycles"]=str(Decimal(i*10) if i<7 else big+60+i-7)
+            g["cracklength"]=str(big)
+        gs[6]["cracklength"]=str(big-1)
+    pred=M.predictions(gs,M.manifest_for(gs))
+    r=next(r for r in pred if r["target_group"]==8)
+    assert Decimal(r["secant_error"]) == Decimal("1e-400")
+
+def test_later_label_precision_cannot_change_earlier_prediction_string():
+    gs=M.groups_from_rows(rows())
+    gs[0]["cycles"]="0"; gs[1]["cycles"]="3"; gs[2]["cycles"]="4"
+    before=M.predictions(gs,M.manifest_for(gs))
+    gs[-1]["cracklength"]="1e300"
+    after=M.predictions(gs,M.manifest_for(gs))
+    assert before[0]["secant"] == after[0]["secant"]

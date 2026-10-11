@@ -31,8 +31,10 @@ def work_precision(values):
         raise ValueError("nonfinite arithmetic input")
     if any(abs(v.adjusted()) > 10000 for v in nonzero):
         raise ValueError("decimal exponent budget exceeded")
-    precision = max(50, max((v.adjusted() for v in nonzero), default=0)
-                    - min((v.as_tuple().exponent for v in nonzero), default=0) + 64)
+    span = max((v.adjusted() for v in nonzero), default=0) - min((v.as_tuple().exponent for v in nonzero), default=0)
+    # A secant's product/quotient may create increments spanning twice the
+    # input range, including tiny additions to a large cracklength baseline.
+    precision = max(50, 2 * span + 64)
     if precision > 8192:
         raise ValueError("decimal arithmetic budget exceeded")
     return precision
@@ -98,17 +100,21 @@ def predictions(groups, manifest):
     if manifest != manifest_for(groups):
         raise ValueError("split manifest does not match frozen rule")
     rows = []
-    with localcontext() as ctx:
-        ctx.prec = work_precision([g[k] for g in groups for k in ("cycles", "cracklength")])
-        for split in ("train", "dev", "holdout"):
-            for j in manifest["target_indices"][split]:
+    for split in ("train", "dev", "holdout"):
+        for j in manifest["target_indices"][split]:
+            with localcontext() as ctx:
                 n0, n1, nt = (Decimal(groups[k]["cycles"]) for k in (j - 2, j - 1, j))
-                a0, a1, at = (Decimal(groups[k]["cracklength"]) for k in (j - 2, j - 1, j))
+                a0, a1 = (Decimal(groups[k]["cracklength"]) for k in (j - 2, j - 1))
+                ctx.prec = work_precision((n0, n1, nt, a0, a1))
                 if not (n0 < n1 < nt):
                     raise ValueError("positive cycle horizons required")
                 secant = a1 + (a1 - a0) * (nt - n1) / (n1 - n0)
+                gap = nt-n1
+            with localcontext() as ctx:
+                at = Decimal(groups[j]["cracklength"])
+                ctx.prec = work_precision((a1, secant, at))
                 rows.append({"split": split, "target_group": j, "origin_group": j - 1,
-                    "target_cycles": str(nt), "origin_cycles": str(n1), "gap_cycles": str(nt-n1),
+                    "target_cycles": str(nt), "origin_cycles": str(n1), "gap_cycles": str(gap),
                     "target": str(at), "persistence": str(a1), "secant": str(secant),
                     "persistence_error": str(a1-at), "secant_error": str(secant-at)})
     return rows

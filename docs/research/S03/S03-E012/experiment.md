@@ -91,9 +91,12 @@ No real E012 export or score has yet occurred.
 ## Numerical and lineage implementation clarification
 
 Authoritative metrics are Decimal strings, not float JSON values. Working
-precision covers the input decimal span plus guard digits (minimum 50), with
+precision covers twice the input decimal span plus 64 guard digits (minimum 50), with
 an 8,192-digit arithmetic budget and adjusted exponent magnitude <=10,000.
 Inputs outside this numerical capability fail; no success score is returned.
+Prediction precision is chosen per origin from n0, n1, permitted target cycle
+and the two past labels only. Current/future target labels cannot choose its
+precision or representation. Target labels enter only subsequent error scoring.
 Plots use floating representation only; nonfinite or nonzero-to-zero conversion
 blocks figure completion while exact CSV/metric artifacts remain diagnostic.
 Evaluation binds the preparation lock and every prepared artifact to the
@@ -110,3 +113,10 @@ regressions cover labels 10^60+i, i^2*10^-400 and ordinary linear data; the
 subfloat case preserves correct CSV/metrics and records figure completion
 failure, not a successful pilot. A separate test checks RMSE of 10^-200 errors.
 The real archive has not been prepared or scored.
+
+Snapshot `9444f3b33ce650e7f38f54345381742eb24a0d9e` received `REVISE_CODE`
+for intermediate cancellation and whole-sequence precision depending on future
+labels. The revision uses twice-span guard precision per permitted origin input
+set, fixes the prediction before target-based scoring, and adds complete-mode
+regression B=10^100 with prediction 1e-100 plus later-label perturbation invariance.
+The archived preparation tables remain uncreated pending renewed Code Ready.
