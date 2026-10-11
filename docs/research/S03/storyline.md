@@ -2,6 +2,18 @@
 
 ## Claim-impact log
 
+- **2026-10-12 — S03-E012 minimal scalar prediction pipeline completed.**
+  Prepared 342 stages into 114 exact-cycle triplets with equal labels, froze
+  66/23/23 scored early/dev/holdout targets, and ran fixed persistence/secant
+  without fitting. Holdout native-unit MAE is 0.5308750 / 0.0669012 (ratio
+  0.1260207). `PASS_EVIDENCE_REVIEW` independently reconstructed grouping,
+  split, all predictions/metrics and the all-holdout figure. Result supports
+  completed pipeline and descriptive retrospective conditional-gap comparison,
+  not prospective fixed-horizon skill or material/phase-field identification.
+  Next lever: sampling-aware past-increment comparator; fixed-cycle validation
+  requires appropriate labels. Same-cycle load states remain available for a
+  later independently qualified observation-to-mechanics bridge.
+
 - **2026-10-11 — S03-E011 supports cycle/date structural admission.** Exact
   Code Ready review and real R001 admitted all 342 paired stages. All five
   component coverage counts are 342; 114 distinct cycles and crack lengths

@@ -2,8 +2,9 @@
 storyline_id: S03
 experiment_id: S03-E012
 protocol_revision: v1
-status: executed_evidence_review_pending
-scientific_verdict: pending
+status: closed_completed_diagnostic_pilot
+scientific_verdict: completed_pipeline_descriptive_conditional_gap_comparison
+research_disposition: advance_to_sampling_aware_comparator_design
 ---
 
 # Minimal cycle-to-recorded-cracklength baseline pilot
@@ -136,3 +137,9 @@ MAE ratio 0.1260206774. Holdout RMSE: 0.5407647533 and 0.0922485740.
 The complete figure and exact predictions exist and were visually inspected.
 No model was trained or selected from these scores. Evidence review remains
 pending; these are producer results for the bounded conditional-gap diagnostic.
+
+2026-10-12 independent evidence review returned `PASS_EVIDENCE_REVIEW`.
+It reconstructed grouping and splitting, recalculated all 112 predictions and
+metrics, and inspected the PNG against all 23 holdout rows. Closure supports
+completed pipeline and lower archived secant error under the frozen protocol,
+not broader predictive validity. See `result.md` and `evidence_review.md`.
