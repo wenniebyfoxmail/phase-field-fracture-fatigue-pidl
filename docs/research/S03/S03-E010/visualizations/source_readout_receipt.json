@@ -1,0 +1,90 @@
+{
+  "rendered_at_utc": "2026-10-11T22:14:42.348880+00:00",
+  "source_run": "S03-E010-R001",
+  "existing_scores_changed": false,
+  "registration_refitted": false,
+  "selection_rule": "all three beams; first low fixed/moving view in archived metadata",
+  "stored_output_reproduction": [
+    {
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis/raw_images/Beam 4/G4-IB-Fixed/G4-IB_t=225.JPG",
+      "stored_transform_index": 0,
+      "token_matches_archive": true
+    },
+    {
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis/raw_images/Beam 4/G4-IB-Free/1-G4-IB_t=244.png",
+      "stored_transform_index": 1,
+      "token_matches_archive": true
+    },
+    {
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis/raw_images/Beam 5/G5-IB-Fixed/G5-IB_t=228.JPG",
+      "stored_transform_index": 0,
+      "token_matches_archive": true
+    },
+    {
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis/raw_images/Beam 5/G5-IB-Free/1-G5-IB_t=247.png",
+      "stored_transform_index": 1,
+      "token_matches_archive": true
+    },
+    {
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis/raw_images/Beam 6/G6-IB-Fixed/G6-IB_t=183.JPG",
+      "stored_transform_index": 0,
+      "token_matches_archive": true
+    },
+    {
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis/raw_images/Beam 6/G6-IB-Free/1-G6-IB_t=03_18.png",
+      "stored_transform_index": 1,
+      "token_matches_archive": true
+    }
+  ],
+  "displayed_originals": [
+    {
+      "beam": "Beam 4",
+      "view": "fixed",
+      "source_file": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis/raw_images/Beam 4/G4-IB-Fixed/G4-IB_t=225.JPG",
+      "nominal_stop_label_kN": 10,
+      "exact_synchronization": false
+    },
+    {
+      "beam": "Beam 4",
+      "view": "moving1",
+      "source_file": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis/raw_images/Beam 4/G4-IB-Free/1-G4-IB_t=244.png",
+      "nominal_stop_label_kN": 10,
+      "exact_synchronization": false
+    },
+    {
+      "beam": "Beam 5",
+      "view": "fixed",
+      "source_file": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis/raw_images/Beam 5/G5-IB-Fixed/G5-IB_t=228.JPG",
+      "nominal_stop_label_kN": 10,
+      "exact_synchronization": false
+    },
+    {
+      "beam": "Beam 5",
+      "view": "moving1",
+      "source_file": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis/raw_images/Beam 5/G5-IB-Free/1-G5-IB_t=247.png",
+      "nominal_stop_label_kN": 10,
+      "exact_synchronization": false
+    },
+    {
+      "beam": "Beam 6",
+      "view": "fixed",
+      "source_file": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis/raw_images/Beam 6/G6-IB-Fixed/G6-IB_t=183.JPG",
+      "nominal_stop_label_kN": 10,
+      "exact_synchronization": false
+    },
+    {
+      "beam": "Beam 6",
+      "view": "moving1",
+      "source_file": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E006/analysis/raw_images/Beam 6/G6-IB-Free/1-G6-IB_t=03_18.png",
+      "nominal_stop_label_kN": 10,
+      "exact_synchronization": false
+    }
+  ],
+  "physical_file_records": 36,
+  "unique_source_images": 33,
+  "token_colour_limits": [
+    0,
+    0.23246602714061737
+  ],
+  "crack_annotations_present": false
+}
