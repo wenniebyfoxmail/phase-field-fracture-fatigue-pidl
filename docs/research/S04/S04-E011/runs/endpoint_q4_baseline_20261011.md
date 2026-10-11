@@ -31,3 +31,22 @@ Evidence root:
 
 Final output retrieval is pending. Launch and prefix agreement do not establish
 full baseline reproduction, stationarity, or field-mechanism agreement.
+
+## 22:44 UTC update: instrumentation failure fixed; fresh solve running
+
+The 22:40 WMI run stopped after its first outer iteration with MATLAB
+`Subscripted assignment between dissimilar structures` while initializing the
+trace. No history commit or accepted endpoint occurred. The numerical prefix
+matched the original; this is an instrumentation failure, not a physics verdict.
+
+Fresh run: `pf_s04e011_endpoint_q4_d1daba3_20261011T2243Z_wmi`.
+Code `d1daba34249e602bcfb0ffa9fbecbd307e6432c2`, independent review PASS;
+only empty trace field-schema initialization changed. Startup at22:43:29UTC.
+Wrapper32328; MATLAB launcher21868; actual worker34936.
+Remote `C:\Users\xw436\jobs\E011_EP_d1daba3_20261011T2243Z_WMI`.
+Runner SHA256 `549f8b496195e33d75b288be635103b2a5965e32cdce3c67ca381be56c6fd894`.
+Trace schema sanity passed; full outer1 completed and progress.mat was written;
+outer2 started. Status `SOLVER_RUNNING__BASELINE_REPRODUCTION_PENDING`.
+
+The original solver parameters, immutable predecessor and final reproduction
+gate remain unchanged. Final retrieval and gate evaluation are pending.
