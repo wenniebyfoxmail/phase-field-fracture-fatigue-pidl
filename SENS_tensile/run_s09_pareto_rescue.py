@@ -200,14 +200,30 @@ def balanced_update(model, optimizer, index, packet, graph, physics, free,
         )
     except ValueError as error:
         raise ArmInvalid(str(error)) from error
+    assigned = []
     for parameter, gradient in zip(parameters, direction):
-        parameter.grad = gradient.to(device=parameter.device, dtype=parameter.dtype).clone()
-    clipped_from = torch.nn.utils.clip_grad_norm_(
-        parameters, 10.0, error_if_nonfinite=True
-    )
+        converted = gradient.to(device=parameter.device, dtype=parameter.dtype).clone()
+        if not torch.isfinite(converted).all():
+            raise ArmInvalid("direction became non-finite after dtype conversion")
+        parameter.grad = converted
+        assigned.append(converted)
+    assigned_norm = torch.sqrt(sum(item.detach().double().square().sum()
+                                   for item in assigned))
+    if not torch.isfinite(assigned_norm):
+        raise ArmInvalid("assigned direction norm is non-finite")
+    try:
+        clipped_from = torch.nn.utils.clip_grad_norm_(
+            parameters, 10.0, error_if_nonfinite=True
+        )
+    except RuntimeError as error:
+        message = str(error).lower()
+        if "total norm" in message and "non-finite" in message:
+            raise ArmInvalid("combined clipped norm is non-finite") from error
+        raise
     if not torch.isfinite(clipped_from):
         raise ArmInvalid("combined clipped norm is non-finite")
     metadata["clip_max_norm"] = 10.0
+    metadata["assigned_direction_norm_before_clip"] = float(assigned_norm)
     metadata["clip_reported_preclip_norm"] = float(clipped_from)
     metadata["clip_applied"] = bool(float(clipped_from) > 10.0)
     optimizer.step()
@@ -379,9 +395,13 @@ def main() -> None:
                 dump(args.out / "replay_checks.json", replay_checks)
 
         replay = final_metrics["data_only_replay"]
+        if any(state["relative_to_affine"] <= 0.0 for state in replay["states"]):
+            raise RuntimeError("data-only displacement comparator is non-positive")
         replay_force_mean = float(np.mean([
             state["free_force_rms_ratio_to_affine"] for state in replay["states"]
         ]))
+        if not np.isfinite(replay_force_mean) or replay_force_mean <= 0.0:
+            raise RuntimeError("data-only residual comparator is non-positive or non-finite")
         feasibility = {}
         for arm in ARMS:
             if not arm_status[arm]["valid"]:

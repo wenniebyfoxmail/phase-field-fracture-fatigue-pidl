@@ -91,8 +91,8 @@ def test_strict_balanced_projection_uses_global_norm_and_beta():
     gp = (torch.tensor([0.0, 2.0]), torch.tensor([0.0]))
     direction, metadata = strict_balanced_projected_direction(gd, gp, 0.25)
     expected = torch.tensor([3.0, 5.25])
-    torch.testing.assert_close(direction[0], expected)
-    torch.testing.assert_close(direction[1], torch.tensor([0.0]))
+    torch.testing.assert_close(direction[0], expected.double())
+    torch.testing.assert_close(direction[1], torch.tensor([0.0], dtype=torch.float64))
     assert metadata["beta"] == 0.25
     assert metadata["conflict"] is False
     assert metadata["physics_norm"] == 2.0
@@ -104,8 +104,10 @@ def test_strict_balanced_projection_removes_only_global_opposition():
     gp = (torch.tensor([-2.0]), torch.tensor([1.0]))
     direction, metadata = strict_balanced_projected_direction(gd, gp, 1.0)
     projected = torch.cat([direction[0] - gd[0], direction[1] - gd[1]])
-    data = torch.cat(gd)
-    torch.testing.assert_close(torch.dot(projected, data), torch.tensor(0.0), atol=1e-6, rtol=0)
+    data = torch.cat(gd).double()
+    torch.testing.assert_close(
+        torch.dot(projected, data), torch.tensor(0.0, dtype=torch.float64), atol=1e-6, rtol=0
+    )
     torch.testing.assert_close(torch.linalg.vector_norm(projected), torch.linalg.vector_norm(data))
     assert metadata["conflict"] is True
 
@@ -121,4 +123,13 @@ def test_strict_balanced_projection_fails_closed():
         )
     with pytest.raises(ValueError, match="beta"):
         strict_balanced_projected_direction((torch.ones(1),), (torch.ones(1),), 0.0)
+
+
+def test_strict_projection_preserves_tiny_float64_component():
+    gd = (torch.tensor([1.0, 1.0], dtype=torch.float32),)
+    gp = (torch.tensor([-1.0, -1.0 + 2.0 ** -23], dtype=torch.float32),)
+    direction, metadata = strict_balanced_projected_direction(gd, gp, 0.25)
+    assert direction[0].dtype == torch.float64
+    assert metadata["projected_physics_norm"] > metadata["projected_degeneracy_threshold"]
+    assert torch.isfinite(direction[0]).all()
 

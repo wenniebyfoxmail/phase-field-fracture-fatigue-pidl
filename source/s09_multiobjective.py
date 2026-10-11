@@ -180,17 +180,17 @@ def strict_balanced_projected_direction(data_gradients, physics_gradients, beta:
             raise ValueError(f"missing or mismatched gradient at index {index}")
         if not torch.isfinite(gd).all() or not torch.isfinite(gp).all():
             raise ValueError(f"non-finite gradient component at index {index}")
-    data_norm = _positive_norm(data_gradients, "data")
-    physics_norm = _positive_norm(physics_gradients, "physics")
-    dot = sum((gd.detach().double() * gp.detach().double()).sum()
-              for gd, gp in zip(data_gradients, physics_gradients))
+    data64 = tuple(gd.detach().double() for gd in data_gradients)
+    physics64 = tuple(gp.detach().double() for gp in physics_gradients)
+    data_norm = _positive_norm(data64, "data")
+    physics_norm = _positive_norm(physics64, "physics")
+    dot = sum((gd * gp).sum() for gd, gp in zip(data64, physics64))
     if not torch.isfinite(dot):
         raise ValueError("gradient dot product is non-finite")
     coefficient = torch.minimum(dot / data_norm.square(), dot.new_zeros(()))
     if not torch.isfinite(coefficient):
         raise ValueError("projection coefficient is non-finite")
-    projected = tuple(gp.detach() - coefficient.to(gp) * gd.detach()
-                      for gd, gp in zip(data_gradients, physics_gradients))
+    projected = tuple(gp - coefficient * gd for gd, gp in zip(data64, physics64))
     projected_norm = torch.sqrt(sum(g.double().square().sum() for g in projected))
     threshold = torch.finfo(torch.float64).eps * physics_norm
     if not torch.isfinite(projected_norm) or float(projected_norm) <= float(threshold):
@@ -198,8 +198,7 @@ def strict_balanced_projected_direction(data_gradients, physics_gradients, beta:
     scale = float(beta) * data_norm / projected_norm
     if not torch.isfinite(scale):
         raise ValueError("balanced physics scale is non-finite")
-    direction = tuple(gd.detach() + scale.to(gp) * gp
-                      for gd, gp in zip(data_gradients, projected))
+    direction = tuple(gd + scale * gp for gd, gp in zip(data64, projected))
     if not all(torch.isfinite(item).all() for item in direction):
         raise ValueError("balanced direction is non-finite")
     combined_norm = torch.sqrt(sum(item.detach().double().square().sum()
