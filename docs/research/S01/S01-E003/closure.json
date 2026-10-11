@@ -1,0 +1,19 @@
+{
+  "experiment_id": "S01-E003",
+  "protocol_revision": "v1",
+  "status": "closed",
+  "closed_at": "2026-10-12",
+  "execution_status": "succeeded",
+  "retrieval_status": "verified",
+  "scientific_verdict": "inconclusive",
+  "scientific_verdict_scope": "new-location confirmatory claim was not evaluated",
+  "development_margin_verdict": "negative",
+  "development_delta": 0.026751695515740415,
+  "development_gate": 0.05,
+  "component_progress": "selected-development TPs 110 to 115 at identical 302 FP budget",
+  "confirmatory_access": false,
+  "checkpoint_reuse": "retain epoch 2 for separately reviewed next experiment",
+  "independent_evidence_review": "PASS",
+  "evidence_commit": "e5eb66a020efe2aa1414fe6e22f4d5b9327e6c15",
+  "next_design": "valid-detection localisation-quality ranking or box refinement; not executed"
+}
