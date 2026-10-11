@@ -2,6 +2,17 @@
 
 ## Claim-impact log
 
+- **2026-10-11 — S03-E006 completed a tested parsing repair.** New commented
+  grammar received `PASS_CODE_READY`; real identity and 342-stage pairing
+  passed. Qualification stopped on `CHRONOLOGY_INVALID`. Independent evidence
+  review returned `PASS_EVIDENCE_REVIEW`, closing the frozen conjunction as
+  negative, with disposition repair. Separate bounded diagnostics localize
+  a `time` decrease at stage 21 -> 22 while cycles and acquisition-relative
+  date increase. Prefix compatibility/variation are retained, whole-sequence
+  consistency is unassessed. Next repair: justify and test a task-relevant
+  cycle/date progression index, auditing `time` discontinuity separately.
+  No prediction or phase-field/material inference is yet qualified.
+
 - **2026-10-11 — S03-E005 first-header diagnostic identified a repair lever.**
   Stage 7 has a commented column schema with all required token names and
   required scalar key names; the existing parser expects a non-comment schema

@@ -2,8 +2,8 @@
 storyline_id: S03
 experiment_id: S03-E006
 protocol_revision: v1
-status: run_complete_evidence_review_pending
-scientific_verdict: pending
+status: closed_negative
+scientific_verdict: negative_for_frozen_chronology_conjunction
 research_disposition: repair
 ---
 
@@ -87,3 +87,9 @@ at stage 21 -> 22, while cycles and acquisition-relative date increase.
 See `chronology_diagnostic.md`; timer-reset semantics remain a hypothesis.
 Closure is pending independent evidence review. Proposed disposition: repair
 by testing an explicitly justified prediction index in a new experiment.
+
+2026-10-11 independent review returned `PASS_EVIDENCE_REVIEW` and authorized
+bounded negative C1 closure for the frozen conjunction, with disposition
+`repair`. The original submitted artifacts remain unchanged. See
+`evidence_review.md` and `next_repair.md`; no revised admission or forecasting
+experiment is authorized by the evidence review alone.
