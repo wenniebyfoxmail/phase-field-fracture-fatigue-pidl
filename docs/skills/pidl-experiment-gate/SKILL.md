@@ -17,6 +17,21 @@ Use the shared claim classes, Occam acceptance rule, readiness states, outcome
 map, and output template. Add only the physics-specific fields needed for the
 current claim.
 
+Also use the shared solution-oriented outcome rule. A failed Hard-5, teacher,
+surrogate, or mechanism gate remains negative for that bounded claim, but it
+must be decomposed into reference qualification, representational ceiling,
+optimisation, state alignment, active-driver support, damage/history coupling,
+and transfer. Preserve any component that passed, identify the first component
+that caps the end result, and select one physics-grounded repair. Do not stop at
+“mechanics misaligned” or “capacity insufficient” when an executable diagnostic
+or repair can distinguish the alternatives.
+
+Before setting a performance margin, compare it with FEM/reference uncertainty,
+discretisation variation, repeatability and an oracle or replay ceiling. If the
+required improvement consumes nearly the whole attainable gap, revise the
+claim or design before viewing the holdout rather than manufacturing a sequence
+of predictable FAILs.
+
 ## Physics-Specific Boundaries
 
 - Tooling success is not numerical, behavioural, teacher, or mechanism validity.
