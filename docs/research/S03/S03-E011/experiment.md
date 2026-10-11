@@ -2,7 +2,7 @@
 storyline_id: S03
 experiment_id: S03-E011
 protocol_revision: v1
-status: code_review_pending
+status: run_complete_evidence_review_pending
 scientific_verdict: pending
 research_disposition: repair
 ---
@@ -79,3 +79,17 @@ Run root: `local_archive/experiments/S03-E011/runs/S03-E011-R001/`.
 Minimum evidence: output, execution receipt, compact decision/coverage table,
 independent evidence review and dated Storyline impact. This non-numerical C1
 admission has no applicable model/comparator performance plot.
+
+## Execution and review
+
+Exact commit `31b2cc5d1dfb7e37f2fce3a5379fb04476b9ee2a` received
+`PASS_CODE_READY`; the reviewer adjudicated the new task-specific conjunction
+as coherent within the stated structural-development scope and verified
+coverage/time-diagnostic behavior with synthetic fixtures.
+R001 executed on Mac-PIDL at 2026-10-11T22:40:17Z. All 342 discovered stages
+passed all admission components. There are 114 distinct cycle values and 114
+distinct crack-length values; these are not independent-unit counts.
+Two time decreases were observed in all 341 adjacent comparisons. No body rows
+were read. Output SHA-256:
+`b036ce968938703e3aa53e10f7c663e054e34fff37b9660fea04dc83f970742e`.
+Closure remains pending independent evidence review.
