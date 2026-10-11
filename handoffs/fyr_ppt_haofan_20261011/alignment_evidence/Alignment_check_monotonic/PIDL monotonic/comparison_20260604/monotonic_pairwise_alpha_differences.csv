@@ -1,0 +1,94 @@
+comparison,case_a,case_b,step,max_abs_alpha_diff,mean_abs_alpha_diff
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,0,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,1,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,2,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,3,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,4,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,5,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,6,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,7,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,8,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,9,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,10,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,11,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,12,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,13,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,14,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,15,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,16,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,17,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,18,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,19,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,20,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,21,0.0,0.0
+"fatigue on/off, standard pretrain",softHist0_standard_pretrain_fatigue_off,softHist0_standard_pretrain_fatigue_on,22,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,0,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,1,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,2,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,3,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,4,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,5,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,6,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,7,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,8,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,9,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,10,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,11,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,12,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,13,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,14,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,15,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,16,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,17,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,18,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,19,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,20,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,21,0.0,0.0
+"fatigue on/off, all-fine pretrain",softHist0_allFinePretrain_fatigue_off,softHist0_allFinePretrain_fatigue_on,22,0.0,0.0
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,0,0.015200018882751465,0.0002641522150952369
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,1,0.014296531677246094,0.0002635774144437164
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,2,0.1363925337791443,0.0035170051269233227
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,3,0.14090532064437866,0.0038140593096613884
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,4,0.1413794755935669,0.0038901108782738447
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,5,0.14171922206878662,0.003931061364710331
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,6,0.14186275005340576,0.0039846100844442844
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,7,0.14299046993255615,0.004023687448352575
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,8,0.1428806185722351,0.004074028693139553
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,9,0.14267539978027344,0.004159762058407068
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,10,0.14369302988052368,0.004284085240215063
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,11,0.988624095916748,0.012037212029099464
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,12,0.19628477096557617,0.015157346613705158
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,13,0.1946181058883667,0.015170938335359097
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,14,0.19391357898712158,0.015184031799435616
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,15,0.19369029998779297,0.015203519724309444
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,16,0.19305908679962158,0.015214481391012669
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,17,0.19312894344329834,0.015230405144393444
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,18,0.19269073009490967,0.015253973193466663
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,19,0.19143444299697876,0.015272085554897785
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,20,0.19095903635025024,0.015286058187484741
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,21,0.19074296951293945,0.015302537009119987
+"pretrain mesh effect, fatigue on",softHist0_standard_pretrain_fatigue_on,softHist0_allFinePretrain_fatigue_on,22,0.19044345617294312,0.015312200412154198
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,0,0.015200018882751465,0.00026415218914626194
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,1,0.014296531677246094,0.0002635774086887261
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,2,0.1363925337791443,0.0035170046399783336
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,3,0.14090532064437866,0.003814059243974728
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,4,0.1413794755935669,0.0038901110414917292
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,5,0.14171922206878662,0.0039310617206758545
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,6,0.14186275005340576,0.003984609775094499
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,7,0.14299046993255615,0.004023687633071476
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,8,0.1428806185722351,0.0040740285180576145
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,9,0.14267539978027344,0.004159762170167433
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,10,0.14369302988052368,0.004284085462091103
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,11,0.9886240932955843,0.012037211564561749
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,12,0.19628477096557617,0.015157345992075369
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,13,0.1946181058883667,0.015170937336059748
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,14,0.19391357898712158,0.015184031895338018
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,15,0.19369029998779297,0.015203519492941762
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,16,0.19305908679962158,0.015214482951795536
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,17,0.19312894344329834,0.015230404186661604
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,18,0.19269073009490967,0.015253972034583594
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,19,0.19143444299697876,0.015272085394597222
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,20,0.19095903635025024,0.01528605682528257
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,21,0.19074296951293945,0.01530253620458887
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,22,0.19044345617294312,0.015312199264643223
+"pretrain mesh effect, fatigue off",softHist0_standard_pretrain_fatigue_off,softHist0_allFinePretrain_fatigue_off,23,0.19043707847595215,0.015319236219882303

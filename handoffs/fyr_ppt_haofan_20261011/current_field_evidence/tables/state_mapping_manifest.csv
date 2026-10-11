@@ -1,0 +1,8 @@
+state_label,fem_cycle,pidl_peak_step,pidl_unload_step,purpose,mapping_note
+state0_recovery,,0,0,zero-load recovered initial state,PIDL step0 is recovery; after that cN_peak=1+5*(N-1)+3 and cN_unloaded=1+5*(N-1)+4.
+c1,1,4,5,early first-cycle comparison,PIDL step0 is recovery; after that cN_peak=1+5*(N-1)+3 and cN_unloaded=1+5*(N-1)+4.
+c20,20,99,100,early/mid fatigue comparison,PIDL step0 is recovery; after that cN_peak=1+5*(N-1)+3 and cN_unloaded=1+5*(N-1)+4.
+c40,40,199,200,middle-state comparison,PIDL step0 is recovery; after that cN_peak=1+5*(N-1)+3 and cN_unloaded=1+5*(N-1)+4.
+c60,60,299,300,late-middle comparison,PIDL step0 is recovery; after that cN_peak=1+5*(N-1)+3 and cN_unloaded=1+5*(N-1)+4.
+c69,69,344,345,legacy event-cycle reference point,PIDL step0 is recovery; after that cN_peak=1+5*(N-1)+3 and cN_unloaded=1+5*(N-1)+4.
+c89,89,444,445,FEM/PIDL hard-recovery event-scale comparison,PIDL step0 is recovery; after that cN_peak=1+5*(N-1)+3 and cN_unloaded=1+5*(N-1)+4.

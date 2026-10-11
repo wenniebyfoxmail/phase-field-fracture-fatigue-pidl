@@ -1,0 +1,16 @@
+{
+  "output_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701",
+  "tables": [
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/tables/state_mapping_manifest.csv",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/tables/state_metric_summary.csv",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/tables/tail_dense_state_summary.csv"
+  ],
+  "figures": [
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/figures/damage_fatigue_state_montage.png",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/figures/damage_fatigue_state_montage.pdf",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/figures/history_driver_state_montage.png",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/figures/history_driver_state_montage.pdf",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/figures/state_metric_trajectories.png",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/figures/state_metric_trajectories.pdf"
+  ]
+}

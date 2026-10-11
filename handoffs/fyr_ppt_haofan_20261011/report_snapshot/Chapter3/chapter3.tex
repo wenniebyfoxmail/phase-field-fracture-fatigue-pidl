@@ -1,0 +1,1034 @@
+%!TEX root = ../thesis.tex
+%*******************************************************************************
+%****************************** Third Chapter **********************************
+%*******************************************************************************
+
+\ifpdf
+    \graphicspath{{Chapter3/Figs/Raster/}{Chapter3/Figs/PDF/}{Chapter3/Figs/}}
+\else
+    \graphicspath{{Chapter3/Figs/Vector/}{Chapter3/Figs/}}
+\fi
+
+% \chapter{Controlled Phase-field FEM Reference and PIDL Formulation}
+\chapter{Completed Work}
+\label{ch:c3_pidl_formulation}
+
+
+
+The chapter first defines the SENT benchmark geometry, loading and normalised parameters. It then states the phase-field fatigue formulation used by both solvers, including the elastic degradation, damage energy, fatigue-history update and fatigue degradation law. The finite-element reference and PIDL implementation are then described separately, followed by the alignment checks used before the Chapter~4 diagnostic comparison.
+
+\section{Purpose and Scope of the Controlled Benchmark}
+\label{sec:c3_scope}
+
+The completed work uses a controlled two-dimensional phase-field fatigue benchmark. The benchmark is a single-edge notched tension (SENT) specimen with prescribed geometry, a horizontal pre-crack, displacement-controlled cyclic loading and normalised material parameters.  Its purpose is to test whether a PIDL solver can reproduce the response of a FEM reference under aligned numerical conditions.
+
+The benchmark removes features of real pavement cracking. The material is treated as homogeneous, isotropic and linear elastic. The loading considered here is idealised cyclic tension rather than traffic loading, environmental cycling or mixed-mode pavement loading. The material parameters are normalised benchmark quantities rather than calibrated pavement properties. This normalisation is used to create a numerically controlled problem in which the displacement, damage, energy and history terms remain on manageable scales for PIDL optimisation. These assumptions make the problem suitable for diagnosing the phase-field fatigue formulation. Consequently, this chapter evaluates numerical consistency between the FEM reference and the PIDL approximation under a shared benchmark, rather than pavement predictive accuracy.
+
+% Computational acceleration is a long-term motivation for learning-based solvers, but it is not treated as an established outcome in this chapter. Unless runtime and hardware comparisons are reported, the present benchmark should be described as a verification and diagnostic comparison rather than as evidence that PIDL reduces computational cost.
+
+
+% The controlled setup includes several assumptions. The material is treated as linear elastic, homogeneous and isotropic, with normalised material parameters. The loading considered here is displacement-controlled tension, rather than traffic loading, environmental cycles or mixed-mode pavement boundary conditions. These assumptions constrain the complexity of the problem so that the behaviour of the PIDL formulation can be examined more clearly.
+
+% The phase-field formulation is useful in this report because it gives access to hidden fracture-state variables. These include spatial damage, accumulated fatigue history, strain-energy components and local damage dissipation. These fields are not normally available from routine pavement inspection, but they are needed to understand whether a crack-growth model is reproducing the local fracture mechanism.
+
+% The PIDL model is tested as a learning-based solver for the phase-field problem. The PIDL predicts displacement and damage variables by minimising a regularised energy-based loss. FEM is used as a reference model benchmark rather than as a source of direct synthetic training labels. This research explores whether PIDL can reproduce the FEM results under aligned benchmark conditions .
+
+% Therefore, the scope of the completed work is limited to this controlled comparison between PIDL and FEM. The study does not provide validation against real road data, fatigue calibration for pavement materials, a replacement for standard FE solvers or a working digital-twin system. These steps are treated as future work after the forward phase-field formulation has been tested more thoroughly.
+
+
+
+\section{Benchmark Problem Definition}
+\label{sec:c3_benchmark_definition}
+
+The controlled benchmark is a two-dimensional single-edge notched tension (SENT) problem. Figure~\ref{fig:c3_benchmark_geometry_loading} defines the geometry, pre-crack, boundary conditions and loading used throughout the chapter. The computational domain is a unit square region $\Omega=[-0.5,0.5]^2$. A horizontal pre-crack is introduced along $y=0$ from $x=-0.5$ to $x=0$, giving a normalised initial crack length \(a_0/L=0.5\). Following \cite{Manav2024cmame}, the benchmark adopts $l_0=0.01$ to reproduce the published benchmark configuration and its modelling role is discussed in Section~\ref{subsec:c3_phase_field_damage}.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.52\textwidth]{c3_benchmark_geometry_loading.pdf}
+    \caption{Schematic of the controlled SENT benchmark. The figure defines the domain, coordinate system, horizontal pre-crack, boundary conditions, cyclic displacement loading, phase-field length scale and normalised geometric quantities used in the FEM--PIDL comparison.}
+    \label{fig:c3_benchmark_geometry_loading}
+\end{figure}
+
+
+The displacement boundary conditions are prescribed on the horizontal edges. The bottom edge ($y=-0.5$) is fixed in both displacement components, so $u=0$ and $v=0$. On the top edge ($y=0.5$), the horizontal displacement is fixed and the vertical displacement is prescribed, so $u=0$ and $v=U(t)$. The left and right side edges are traction-free. The loading is displacement-controlled cyclic tension with maximum displacement ($U_{\max}$), minimum displacement ($U_{\min}=R U_{\max}$), and loading ratio
+\[
+R=\frac{U_{\min}}{U_{\max}}.
+\]
+The fatigue benchmark uses \(R=0\), so the prescribed displacement cycles between zero and \(U_{\max}\).
+
+
+The benchmark is written in dimensionless numerical units by taking the specimen width \(L\) and Young's modulus \(E\) as reference scales, with \(L=1\) and \(E=1\). Consequently, only ratios that influence the solution remain. These include crack length \(a_0/L\), the phase-field length ratio \(l_0/L\), the Poisson's ratio \(\nu\), the cyclic loading ratio \(R=U_{\min}/U_{\max}\), the normalised damage-energy coefficient \(w_1\), and the fatigue-history threshold \(\alpha_T\). These values should therefore be interpreted as benchmark parameters, not as calibrated pavement material properties. Table~\ref{tab:c3_benchmark_parameters} summarises the adopted values.
+
+The coefficients \(w_1\) and \(\alpha_T\) require particular care because they control damage and fatigue degradation in the normalised model. In a dimensional phase-field formulation, the damage-energy density is governed by the fracture toughness \(G_c\) and the phase-field length \(l_0\). In the normalised implementation used here, this role is represented by the benchmark coefficient \(w_1\), so \(w_1\) is not treated as a measured pavement fracture toughness. Similarly, \(\alpha_T\) is the threshold on the normalised fatigue-history scale at which fatigue degradation begins. The modelling roles of \(w_1\), \(l_0\) and \(\alpha_T\) are discussed below in Section~\ref{subsec:c3_phase_field_damage}.
+
+\begingroup
+\begin{longtable}{p{0.20\textwidth} p{0.18\textwidth} p{0.50\textwidth}}
+\caption{Normalised benchmark parameters used in the controlled SENT fatigue problem.}
+\label{tab:c3_benchmark_parameters}\\
+\hline
+\textbf{Quantity} & \textbf{Value} & \textbf{Interpretation} \\
+\hline
+\(L\) & \(1.0\) & Reference specimen width; the domain is \([-0.5,0.5]^2\). \\
+\(E\) & \(1.0\) & Normalised Young's modulus; not a calibrated pavement modulus. \\
+\(\nu\) & \(0.3\) & Poisson's ratio used in the linear elastic model. \\
+\(a_0/L\) & \(0.5\) & Normalised initial pre-crack length. \\
+\(l_0/L\) & \(0.01\) & Normalised phase-field length scale controlling the diffuse crack width. \\
+% \(U_{\max}/L\) & \(0.08\)--\(0.12\) & Peak displacement amplitudes used in the fatigue benchmark. \\
+\(R=U_{\min}/U_{\max}\) & \(0\) & Displacement loading ratio; the cycle unloads to zero displacement. \\
+\(w_1\) & \(1.0\) & Normalised damage-energy coefficient corresponding to the \(G_c/l_0\)-type scale in the adopted formulation. \\
+\(\alpha_T\) & \(0.5\) & Normalised fatigue-history threshold for the onset of fatigue degradation. \\
+\hline
+\end{longtable}
+\endgroup
+
+
+
+% The material model is linear elastic and normalised. The Young's modulus is $E=1$ and the Poisson's ratio is $\nu=0.3$. The fracture-energy scaling is represented through the normalised parameter $w_1=1.0$, where the code comment relates $w_1$ to $G_c/l_0$. In this report, $w_1$ is treated as a normalised model parameter rather than as a calibrated physical fracture toughness for pavement material.
+
+% The phase-field length scale \(l_0\) is a modelling and regularisation parameter. It controls the width of the diffuse damage transition and also affects the apparent strength of the phase-field model for a given elastic modulus and fracture-energy scale. In a material-calibrated pavement application, \(l_0\) would need to be selected with reference to material fracture tests, mesh resolution and the length scale of the fracture process zone. In this controlled benchmark, \(l_0/L=0.01\) is fixed as a numerical benchmark choice so that the FEM and PIDL formulations are compared under the same regularisation length.
+
+
+\section{Phase-field Fatigue Model}
+\label{sec:c3_reference_phase_field}
+
+\subsection{Energy Function and Model Variables}
+This section introduces the phase-field model. The purpose is to define the core variables, energy terms and history quantities shared by both the FEM reference and the PIDL implementation.
+
+The main idea of the phase-field model is to represent a crack using a continuous damage variable instead of a sharp crack surface. This damage variable is denoted by $\alpha$, where $\alpha=0$ represents intact material and $\alpha=1$ represents fully damaged material. Crack growth is therefore described as the evolution of a continuous damage field across the domain.
+
+The energy functional is useful for showing the overall structure of the model. The phase-field energy used in this benchmark follows the standard variational phase-field fracture structure \citep{Francfort1998jmps,Bourdin2000jmps,Miehe2010cmame,Carrara2020cmame}:
+
+\begin{equation}
+    \begin{aligned}
+    \mathcal{E}^{n}
+    \left(
+    \mathbf{u},\alpha;
+    \bar{\alpha}^{n}
+    \right)
+    =
+    &\underbrace{
+    \int_{\Omega}
+    \left[
+    g(\alpha)\psi^{+}(\varepsilon(\mathbf{u}))
+    +
+    \psi^{-}(\varepsilon(\mathbf{u}))
+    \right]\,d\Omega
+    }_{E_{\mathrm{el}}}
+    \\
+    &+
+    \underbrace{
+    \int_{\Omega}
+    f_{\mathrm{fatigue}}(\bar{\alpha}^{n})
+    \frac{w_1}{c_w}
+    \left[
+    w(\alpha)
+    +
+    l_0^2|\nabla\alpha|^2
+    \right]\,d\Omega
+    }_{E_{\mathrm{d}}}.
+    \end{aligned}
+    \label{eq:c3_fatigue_phase_field_energy}
+\end{equation}
+
+Equation~\ref{eq:c3_fatigue_phase_field_energy} structures the rest of this section. The first underbraced term, $E_{\mathrm{el}}$, couples displacement, strain energy and damage. The second underbraced term, $E_{\mathrm{d}}$, penalises the creation and spatial variation of phase-field damage, with fatigue degradation applied through $f_{\mathrm{fatigue}}(\bar{\alpha})$. In this damage-energy term, $w(\alpha)$ penalises local damage creation, while $l_0^2|\nabla\alpha|^2$ penalises abrupt spatial changes in the damage field. Together, these terms produce the diffuse damage band in the phase-field model, with its width controlled by the phase-field length scale $l_0$. The phase-field length scale \(l_0\) controls the width of the diffuse damage zone and affects the apparent strength of the model. In a material-calibrated pavement application, it would need to be chosen using fracture tests, mesh-resolution checks and information about the physical fracture process zone. Here, \(l_0/L=0.01\) is fixed as a benchmark choice so that FEM and PIDL use the same regularisation length. ALl the symbolin the energy functional are summarised in Table \ref{tab:c3_energy_symbols}.
+
+The main symbols in the energy functional are summarised in Table~\ref{tab:c3_energy_symbols}.
+
+Crack growth can be understood as an energy trade-off. If the material stays intact, the tensile part of $E_{\mathrm{el}}$ remains stored. If $\alpha$ increases, the model pays a damage cost through $E_{\mathrm{d}}$ and the irreversibility treatment, but it can release part of the tensile elastic energy through $g(\alpha)\psi^+$. Fatigue makes damage cheaper by reducing the effective damage-energy cost through $f_{\mathrm{fatigue}}(\bar{\alpha})$. The minimisation therefore favours damage when this route gives a lower total energy. This is a qualitative interpretation of the energy minimisation problem, not a separate crack-growth criterion. The main quantities in this competition are summarised in Table~\ref{tab:c3_phase_field_energy_quantities}.
+\FloatBarrier
+
+
+\begingroup
+\begin{longtable}{p{0.18\textwidth} p{0.72\textwidth}}
+\caption{Symbols used in the phase-field fatigue energy functional.}
+\label{tab:c3_energy_symbols}\\
+\hline
+\textbf{Symbol} & \textbf{Definition} \\
+\hline
+\(\Omega\) & Two-dimensional SENT computational domain. \\
+\(\mathbf{u}=(u,v)\) & Displacement field. \\
+\(\alpha\) & Phase-field damage variable, with \(\alpha=0\) intact and \(\alpha=1\) fully damaged. \\
+\(\bar{\alpha}\) & Accumulated fatigue-history variable controlling fatigue degradation. \\
+\(\varepsilon(\mathbf{u})\) & Infinitesimal strain tensor computed from the displacement field. \\
+\(\psi^+\) & Positive crack-driving elastic-energy density. \\
+\(\psi^-\) & Compressive or non-driving elastic-energy density. \\
+\(g(\alpha)\) & Elastic degradation function. \\
+\(w(\alpha)\) & Local damage-density function; \(w(\alpha)=\alpha\) for AT1. \\
+\(c_w\) & AT1 damage-density normalisation constant. \\
+\(l_0\) & Phase-field length scale. \\
+\(w_1\) & Normalised damage-energy coefficient. \\
+\(f_{\mathrm{fatigue}}(\bar{\alpha})\) & Fatigue degradation function multiplying the damage-energy term. \\
+\hline
+\end{longtable}
+\endgroup
+
+
+The energy functional also explains how the displacement field and the damage field are coupled. The displacement field changes the strain energy, while the damage field degrades part of that strain energy and contributes to the damage-energy term. For a given loading state $n$ and accumulated fatigue history $\bar{\alpha}$, the reference phase-field problem is therefore written as an energy minimisation problem, subject to the prescribed boundary conditions and the history treatment:
+
+\begin{equation}
+    (\mathbf{u}^{n},\alpha^{n})
+    =
+    \arg\min_{\mathbf{u},\alpha}
+    \mathcal{E}^{n}
+    \left(
+    \mathbf{u},\alpha;
+    \bar{\alpha}^{n}
+    \right).
+    \label{eq:c3_fatigue_phase_field_problem}
+\end{equation}
+
+
+
+\clearpage
+\begingroup
+    \footnotesize
+    \renewcommand{\arraystretch}{1.12}
+    \begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.10\textwidth}
+    >{\raggedright\arraybackslash}p{0.20\textwidth}
+    >{\raggedright\arraybackslash}p{0.31\textwidth}
+    >{\raggedright\arraybackslash}p{0.31\textwidth}@{}}
+        \caption{Main quantities and qualitative crack-growth roles in the phase-field fatigue energy used in Chapter~3.}
+        \label{tab:c3_phase_field_energy_quantities}\\
+        \toprule
+        Symbol & Name & Effect on damage growth & Feedback when $\alpha$ increases \\
+        \midrule
+        $\mathbf{u}$ & Displacement field & Sets the strain and therefore the elastic-energy densities. Larger tensile strain raises the crack-driving part of the energy. & Damage changes the degraded stiffness locally, so the displacement and strain fields can redistribute around the damaged zone. \\
+        $\alpha$ & Phase-field damage variable & Represents the diffuse crack state, from intact material at $\alpha=0$ to fully damaged material at $\alpha=1$. & A larger $\alpha$ lowers $g(\alpha)$, raises the local damage-density contribution and is prevented from healing by the history treatment. \\
+        $E_{\mathrm{el}}$ & Elastic-energy term & Stores the mechanical energy that can be reduced by damage in tensile regions. & Increasing $\alpha$ reduces the degraded tensile part of this term through $g(\alpha)\psi^+$. \\
+        $E_{\mathrm{d}}$ & Damage-energy term & Sets the energetic cost of local damage and spatial damage gradients. & Increasing $\alpha$ usually raises the local and gradient contributions, unless fatigue degradation has reduced the effective cost. \\
+        $g(\alpha)$ & Elastic degradation function & Controls how strongly tensile elastic energy is degraded in damaged material. & Since $g(\alpha)=(1-\alpha)^2$, larger damage lowers the tensile stiffness contribution. \\
+        $\psi^+$, $\psi_{\mathrm{raw}}$ & Positive crack-driving elastic-energy density & Contains the tensile and deviatoric elastic energy that can drive crack growth. & It is not directly degraded by $\alpha$, but the strain field can change as damage redistributes the response. \\
+        $\psi^-$ & Negative volumetric elastic-energy density & Keeps compression in the elastic energy without letting it directly promote crack growth. & It is controlled without multiplication by $g(\alpha)$. \\
+        $\bar{\alpha}$ & Accumulated fatigue-history variable & Stores positive fatigue-driving activity and controls fatigue degradation. & It is carried forward with loading history; it is not reduced when the current damage or load decreases. \\
+        $f_{\mathrm{fatigue}}(\bar{\alpha})$ & Fatigue degradation function & Reduces the effective damage-energy cost after the fatigue-history threshold is exceeded. & It depends on $\bar{\alpha}$ rather than directly on $\alpha$, but damage can affect future history increments through the active driver. \\
+        $w_1$, $c_w$ & Damage-energy scale and normalisation & Scale and normalise the cost of creating phase-field damage. & They are fixed benchmark parameters in this chapter. \\
+        $l_0$ & Phase-field length scale & Controls the width of the diffuse damage zone and weights the gradient contribution. & It stays fixed, but it controls how sharply an increase in $\alpha$ can localise. \\
+        \bottomrule
+    \end{longtable}
+\endgroup
+
+
+
+\subsection{Elastic-energy Term \texorpdfstring{$E_{\mathrm{el}}$}{Eel}: Degradation and Split}
+\label{subsec:c3_energy_terms}
+
+The elastic degradation function of this benchmark is
+\begin{equation}
+    g(\alpha)=(1-\alpha)^2.
+    \label{eq:c3_degradation_function}
+\end{equation}
+This function reduces the active elastic-energy contribution as damage grows. This is a modelling choice widely used in phase-field fracture formulations, rather than a material law calibrated for pavement cracking. Both FEM and PIDL solvers use the same degradation assumption to ensure the test consistency. In numerical practice, a residual-stiffness parameter \(k\) is sometimes added to \(g(\alpha)\) to prevent complete loss of stiffness as \(\alpha\) approaches one.
+
+The infinitesimal strain components are
+\begin{equation}
+    \varepsilon_{11}=u_{,x},
+    \qquad
+    \varepsilon_{22}=v_{,y},
+    \qquad
+    \varepsilon_{12}=\frac{1}{2}(u_{,y}+v_{,x}).
+    \label{eq:c3_strain_components}
+\end{equation}
+Here a comma denotes partial differentiation, for example \(u_{,x}=\partial u/\partial x\).
+
+The elastic energy density is separated into three contributions: a positive volumetric part, a negative volumetric part and a deviatoric part. The positive volumetric and deviatoric contributions form the crack-driving energy density and are multiplied by the degradation function \(g(\alpha)\). The negative volumetric contribution represents compression and is controlled without degradation, so compression is not allowed to directly promote crack growth. The positive and negative volumetric energy densities are written as
+
+\begin{equation}
+    \psi_V^+
+    =
+    \frac{1}{2}K\langle 3\varepsilon_m\rangle_+^2,
+    \qquad
+    \psi_V^-
+    =
+    \frac{1}{2}K\langle -3\varepsilon_m\rangle_+^2,
+    \label{eq:c3_volumetric_split}
+\end{equation}
+where
+\begin{equation}
+    K=\lambda+\frac{2}{3}\mu,
+    \qquad
+    \varepsilon_m=\frac{\varepsilon_{11}+\varepsilon_{22}}{3}.
+    \label{eq:c3_bulk_mean_strain}
+\end{equation}
+Here \(\lambda\) and \(\mu\) are the Lamé parameters corresponding to the chosen Young's modulus and Poisson's ratio.
+
+The deviatoric contribution is included in the degraded positive part of the energy:
+\begin{equation}
+    \psi_{\mathrm{dev}}
+    =
+    \mu
+    \left[
+    (\varepsilon_{11}-\varepsilon_m)^2
+    +
+    (\varepsilon_{22}-\varepsilon_m)^2
+    +
+    (-\varepsilon_m)^2
+    +
+    2\varepsilon_{12}^2
+    \right].
+    \label{eq:c3_deviatoric_energy}
+\end{equation}
+
+The raw crack-driving energy density is therefore defined as the sum of the positive volumetric contribution and the deviatoric contribution:
+\begin{equation}
+    \psi^+
+    =
+    \psi_{\mathrm{raw}}
+    =
+    \psi_V^+ + \psi_{\mathrm{dev}}.
+    \label{eq:c3_raw_driver}
+\end{equation}
+The degraded active driver is
+\begin{equation}
+    \psi_{\mathrm{active}}
+    =
+    g(\alpha)\psi_{\mathrm{raw}},
+    \label{eq:c3_active_driver}
+\end{equation}
+
+The active driver will be used for the fatigue-history update explained in~\ref{subsec:c3_fatigue_history}.
+
+With these definitions, the code evaluates the energy terms elementwise using element areas $A_e$. In this implementation, the elastic energy is
+\begin{equation}
+    E_{\mathrm{el}}
+    =
+    \sum_e
+    A_e
+    \left[
+    g(\alpha_e)\psi_{\mathrm{raw},e}
+    +
+    \psi_{V,e}^-
+    \right].
+    \label{eq:c3_elastic_energy}
+\end{equation}
+Here $e$ indexes the finite elements, $A_e$ is the area of element $e$, and $\alpha_e$ denotes the element-mean phase-field value. The quantities $\psi_{\mathrm{raw},e}$ and $\psi_{V,e}^-$ are the corresponding elementwise raw tensile and negative volumetric energy densities.
+
+
+\subsection{Damage-energy Term \texorpdfstring{$E_{\mathrm{d}}$}{Ed}: Damage Density and Fatigue Degradation}
+\label{subsec:c3_phase_field_damage}
+
+The damage-energy term contains the local damage density $w(\alpha)$, the phase-field gradient contribution $l_0^2|\nabla\alpha|^2$ and the fatigue degradation $f_{\mathrm{fatigue}}(\bar{\alpha})$. The length scale $l_0$ sets the width of the diffuse damage band that represents a crack in the phase-field description. It is therefore a modelling and numerical regularisation parameter: a smaller $l_0$ gives a sharper damage transition, while a larger $l_0$ spreads the transition over a wider zone. The benchmark uses an AT1 regularisation for the crack-surface energy. In phase-field formulation, the crack is represented by a continuous damage variable \(\alpha\). The value \(\alpha=0\) corresponds to intact material and \(\alpha=1\) to fully damaged material. In the AT1 model, the local damage-density function is linear in \(\alpha\), with \(w(\alpha)=\alpha\) for \(0 \le \alpha \le 1\). In the AT1 model, the local damage-density function is linear within \( 0 \le \alpha \le 1\).
+\begin{equation}
+    w(\alpha)=\alpha,
+    \qquad
+    c_w=\frac{8}{3}.
+    \label{eq:c3_at1_damage_density}
+\end{equation}
+
+
+Here, \(c_w\) is the normalisation constant associated with the chosen crack-density function. It ensures that the regularised crack-surface energy is scaled consistently with the fracture energy. Together with a gradient penalty on \(\nabla\alpha\), these terms allow the model to approximate a crack as a diffuse damage band whose width is controlled by the phase-field length scale \(l_0\). The AT1 form is a modelling choice within the controlled benchmark, not a pavement-calibrated material law \citep{Pham2011ijdm}. Other crack-density functions are possible. For example, the AT2 model uses a quadratic form, \(w(\alpha)=\alpha^2\) with different value of \(c_w\). The present benchmark uses AT1 because it is simpler and gives a clearer damage response.
+
+
+In the elementwise implementation, the phase-field damage energy is
+\begin{equation}
+    E_{\mathrm{d}}
+    =
+    \sum_e
+    A_e
+    f_{\mathrm{fatigue}}(\bar{\alpha}_e)
+    \frac{w_1}{c_w}
+    \left[
+    w(\alpha_e)
+    +
+    l_0^2
+    \left(
+    (\partial_x\alpha)_e^2
+    +
+    (\partial_y\alpha)_e^2
+    \right)
+    \right].
+    \label{eq:c3_damage_energy}
+\end{equation}
+
+Following the variational phase-field fatigue framework of \citet{Carrara2020cmame}, fatigue is introduced by multiplying the damage-energy term by a degradation function of an accumulated fatigue-history variable. The benchmark uses
+
+\begin{equation}
+f_{\mathrm{fatigue}}(\bar{\alpha})
+=
+\begin{cases}
+1, & \bar{\alpha}\le \alpha_T,\\[4pt]
+\left( \dfrac{2\alpha_T}{\bar{\alpha}+\alpha_T} \right)^2, & \bar{\alpha}>\alpha_T,
+\end{cases}
+\label{eq:c3_fatigue_degradation}
+\end{equation}
+
+where \(\bar{\alpha}\) is the accumulated fatigue-history variable and and $\alpha_T$ is the threshold below which no fatigue degradation is applied. For $\bar{\alpha}>\alpha_T$, the function decreases monotonically and reduces the effective damage dissipation as fatigue history accumulates as shown in Figure \ref{fig:c3_fatigue_degradation_law}. The value \(\alpha_T=0.5\) is adopted as a normalised benchmark parameter in the controlled implementation. It is not calibrated from pavement fatigue tests. Its role is to define the onset of fatigue degradation within the controlled numerical comparison. Sensitivity of the results to \(\alpha_T\) is therefore a necessary part of future material calibration.
+
+The degradation factor enters the phase-field formulation through the damage-energy term, rather than by directly scaling the stress. It therefore reduces the local fracture resistance as fatigue history accumulates. In dimensional notation, this can be interpreted as an effective fracture-energy scale,
+\begin{equation}
+    G_c^{\mathrm{eff}}
+    =
+    f_{\mathrm{fatigue}}(\bar{\alpha})G_c .
+    \label{eq:c3_effective_fracture_energy}
+\end{equation}
+In the normalised benchmark used here, the same effect appears through the factor $f_{\mathrm{fatigue}}(\bar{\alpha})$ multiplying the damage-energy coefficient in $E_{\mathrm{d}}$.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.6\textwidth]{c3_fatigue_degradation_law.pdf}
+    \caption{Fatigue degradation law used in the controlled benchmark. The horizontal axis is the normalised fatigue-history variable \(\bar{\alpha}/\alpha_T\), and the vertical axis is the degradation factor \(f_{\mathrm{fatigue}}\) multiplying the damage-energy term. The threshold \(\alpha_T=0.5\) is an adopted normalised benchmark parameter, not a calibrated pavement fatigue threshold.}
+    \label{fig:c3_fatigue_degradation_law}
+\end{figure}
+
+\subsection{Fatigue History Update and Fatigue Degradation}
+\label{subsec:c3_fatigue_history}
+
+The fatigue history variable $\bar{\alpha}$ is different from the damage variable $\alpha$. The damage variable $\alpha$ describes the current phase-field damage. The history variable $\bar{\alpha}$ records the accumulated fatigue-driving activity at each element. It is then used in $f_{\mathrm{fatigue}}(\bar{\alpha})$ to reduce the effective damage-energy term.
+
+In a phase-field fracture model, fatigue history is driven by the change of active tensile-energy quantity $\psi_{\mathrm{active}}$ defined in Equation~\ref{eq:c3_active_driver}, not by the raw tensile energy $\psi_{\mathrm{raw}}$ alone. The update therefore accumulates only positive increases in this active driver:
+
+\begin{equation}
+    \Delta \bar{\alpha}
+    =
+    \left\langle
+    \psi_{\mathrm{active}}^{n}
+    -
+    \psi_{\mathrm{prev}}^{n}
+    \right\rangle_+,
+    \qquad
+    \bar{\alpha}^{n+1}
+    =
+    \bar{\alpha}^{n}
+    +
+    \Delta \bar{\alpha} .
+    \label{eq:c3_fatigue_history_update}
+\end{equation}
+Here $\psi_{\mathrm{prev}}^{n}$ is the stored driver value from the last loading cycle used as the reference for the current increment. In this notation, $\psi_{\mathrm{prev}}^{n}$ is only the reference driver used to compute the increment; the accumulated fatigue history $\bar{\alpha}$ is carried forward through Equation~\ref{eq:c3_fatigue_history_update}. The Macaulay bracket keeps only positive changes, so unloading does not remove fatigue history that has already been accumulated.
+
+\subsection{Damage Irreversibility Penalty}
+\label{subsec:c3_irreversibility_treatment}
+
+In a phase-field fracture model, damage should not decrease once it has formed. Otherwise, the numerical solution would allow crack healing. This would be non-physical for the crack-growth problem considered in this report.
+
+This issue is important because the fields are obtained by minimising an energy-based objective. Without an irreversibility treatment, the optimiser may reduce the objective by lowering damage that has already appeared. The implementation therefore adds an irreversibility penalty as part of the optimisation objective to discourage the current damage field $\alpha$ from falling below the stored maximum $\alpha_{\mathrm{hist}}$.
+
+The irreversibility penalty is written as
+
+\begin{equation}
+    E_{\mathrm{hist}}
+    =
+    \frac{1}{2}w_1\gamma_{\mathrm{ir}}
+    \sum_e
+    A_e
+    \left\langle
+    -(\alpha_e-\alpha_{\mathrm{hist},e})
+    \right\rangle_+^2 ,
+    \label{eq:c3_history_penalty}
+\end{equation}
+where $\alpha_{\mathrm{hist},e}$ stores the previous maximum damage value in element $e$.
+
+The factor $\gamma_{\mathrm{ir}}$ controls the strength of the irreversibility penalty. For the AT1 setting used in the implementation, it is defined as
+\begin{equation}
+    \gamma_{\mathrm{ir}}^{\mathrm{AT1}}
+    =
+    \frac{27}{64\,\text{\texttt{tol\_ir}}^2}.
+    \label{eq:c3_irreversibility_factor}
+\end{equation}
+This factor is not fitted from the FEM data. It is a numerical penalty coefficient used by the AT1 formulation. The inverse-square dependence on \texttt{tol\_ir} reflects the quadratic form of the healing penalty: reducing the tolerated healing scale increases the penalty strength.
+
+
+\section{FEM Reference Implementation}
+\label{sec:c3_fem_reference_impl}
+
+% The benchmark geometry, loading history and normalised parameters have been defined in Section~\ref{sec:c3_benchmark_definition}, and the phase-field fatigue formulation has been defined in Section~\ref{sec:c3_reference_phase_field}.
+
+This section describes the generation of the FEM reference solution used to assess the PIDL slver. The reference is generated using the GRIPHFiTH implementation \cite{Manav2024cmame}, which olves the adopted variational phase-field fracture problem using standard FEM degrees of freedom. The primary unknowns are the displacement field \(\mathbf{u}=(u,v)\) and the phase-field damage variable \(\alpha\). For the fatigue extension, additional path-dependent quantities are are stored and updated, including the damage-history field \(\alpha\), the accumulated fatigue-history variable \(\bar{\alpha}\), the fatigue degradation \(f(\bar{\alpha})\), the raw tensile driver \(\psi_{\mathrm{raw}}\) and the degraded active driver \(\psi_{\mathrm{active}}\).
+
+Because fatigue analysis is path-dependent, we only use 'committed' states for our comparison. This ensures we are comparing against finalized, stable results rather than the temporary trial data generated during the solution process. At the start of a step, the FEM solver reads the previously committed damage field and history variables from the previous step. After the displacement increment is applied, the solver uses a staggered procedure: the displacement problem is solved using the current damage field, and the phase-field problem is then solved using the current tensile energy and the previously committed history variables. During phase-field assembly, fatigue-related quantities are evaluated at Gauss points. These quantities become part of the accepted FEM state only after the Newton and staggered iterations satisfy their convergence criteria. After convergence, the damage history is committed by updating the stored maximum damage field, and the fatigue-history variables are refreshed for the next step. Algorithm below summarises the workflow for one FEM loading step. 
+
+
+\paragraph{FEM workflow for one loading step.}
+The FEM update for one loading step can be summarised as follows:
+\begin{enumerate}
+    \item \textbf{Read the committed old state.} Retrieve
+    \[
+    S_{k-1}
+    =
+    \left\{
+    p_{\mathrm{old}},
+    \bar{\alpha}_{\mathrm{old}},
+    f_{\mathrm{old}},
+    \psi_{\mathrm{prev,old}}
+    \right\},
+    \]
+    where \(p_{\mathrm{old}}\) is the committed damage history, \(\bar{\alpha}_{\mathrm{old}}\) is the accumulated fatigue history, \(f_{\mathrm{old}}\) is the fatigue degradation factor and \(\psi_{\mathrm{prev,old}}\) is the previous active driver.
+
+    \item \textbf{Apply the displacement increment.} Prescribe the displacement level for loading step \(k\).
+
+    \item \textbf{Solve the coupled problem by staggered iteration.} Repeat the following operations until the displacement, phase-field and stagger residuals satisfy the convergence criteria:
+    \begin{enumerate}
+        \item solve the displacement problem using the current damage field;
+        \item compute the strain field and the undegraded tensile driver \(Y\) at Gauss points;
+        \item solve the phase-field damage problem using \(p_{\mathrm{old}}\), the old history variables and the current tensile driver;
+        \item at each Gauss point, compute the active driver
+        \[
+        \psi_{\mathrm{active},q}=g(d_q)Y_q;
+        \]
+        \item compute the positive fatigue-history increment
+        \[
+        \Delta\bar{\alpha}_q
+        =
+        \left\langle
+        \psi_{\mathrm{active},q}
+        -
+        \psi_{\mathrm{prev,old},q}
+        \right\rangle_{+};
+        \]
+        \item update the candidate accumulated fatigue history
+        \[
+        \bar{\alpha}_{\mathrm{new},q}
+        =
+        \bar{\alpha}_{\mathrm{old},q}
+        +
+        \Delta\bar{\alpha}_q;
+        \]
+        \item evaluate the candidate fatigue degradation
+        \[
+        f_{\mathrm{new},q}
+        =
+        f_{\mathrm{fatigue}}
+        \left(
+        \bar{\alpha}_{\mathrm{new},q}
+        \right).
+        \]
+    \end{enumerate}
+
+    \item \textbf{Commit the converged state.} After the staggered solution has converged, update the committed damage history and fatigue-history variables:
+    \[
+    p_{\mathrm{old}}
+    \leftarrow
+    \max(p_{\mathrm{old}},p),
+    \qquad
+    \bar{\alpha}_{\mathrm{old}}
+    \leftarrow
+    \bar{\alpha}_{\mathrm{new}},
+    \]
+    \[
+    f_{\mathrm{old}}
+    \leftarrow
+    f_{\mathrm{new}},
+    \qquad
+    \psi_{\mathrm{prev,old}}
+    \leftarrow
+    \psi_{\mathrm{active}}.
+    \]
+
+    \item \textbf{Save the reference state.} Save the converged post-commit state \(S_k\) for diagnostic comparison in Chapter~4.
+\end{enumerate}
+
+% \paragraph{FEM workflow for one loading step.}
+% \label{alg:c3_fem_workflow}
+% \begin{enumerate}
+%     \item \textbf{Input:} Retrieve state \(S_{k-1} = \{p_{\mathrm{old}}, \bar{\alpha}_{\mathrm{old}}, f_{\mathrm{old}}, \psi_{\mathrm{prev,old}}\}\) and apply displacement increment.
+%     \item \textbf{Staggered solve:} Repeat until convergence:
+%     \begin{itemize}
+%         \item Solve displacement: get \(\varepsilon\) and \(Y\).
+%         \item Solve phase-field: update \(\psi_{\mathrm{active}} = g(d)Y\), \(\bar{\alpha}_{\mathrm{new}} = \bar{\alpha}_{\mathrm{old}} + \langle \psi_{\mathrm{active}} - \psi_{\mathrm{prev,old}} \rangle_{+}\), and \(f_{\mathrm{new}} = f_{\mathrm{fatigue}}(\bar{\alpha}_{\mathrm{new}})\).
+%     \end{itemize}
+%     \item \textbf{Commit state:} \(p_{\mathrm{old}} \leftarrow \max(p_{\mathrm{old}}, p)\); \(\bar{\alpha}_{\mathrm{old}} \leftarrow \bar{\alpha}_{\mathrm{new}}\); \(f_{\mathrm{old}} \leftarrow f_{\mathrm{new}}\); \(\psi_{\mathrm{prev,old}} \leftarrow \psi_{\mathrm{active}}\).
+%     \item \textbf{Output:} Save converged state \(S_k\) for downstream FEM--PIDL analysis.
+% \end{enumerate}
+
+
+
+% % The purpose of this report is not to develop a new FE solver. Instead, the FE solution is used as a numerical reference for evaluating the PIDL approximation under a controlled benchmark setting.
+
+% % The FE reference is generated using the GRIPHFiTH implementation associated with the phase-field fracture PIDL benchmark of \citet{Manav2024cmame}. GRIPHFiTH provides an established numerical reference within the same model family as the PIDL formulation. The FE solution is therefore treated as a controlled phase-field reference, not as experimental pavement data.
+
+% % The FE fatigue reference uses the benchmark geometry, material parameters, phase-field length scale, diffuse pre-crack, zero initial fatigue history and loading history defined above.
+
+
+\section{PIDL Formulation}
+\label{sec:c3_pidl_formulation}
+
+
+This section describes how the physics-informed deep learning (PIDL) model approximates the controlled phase-field fatigue problem defined above. The method follows the mesh-supported Deep Ritz Method used by \citet{Manav2024cmame}: a neural network represents the unknown solution fields, and its parameters are trained by minimising an energy-based objective. The main extension in this report is the fatigue treatment, entering through the fatigue-history update and the fatigue-degraded damage-energy term.
+
+% The aim is not to replace the FE solver, but to test whether PIDL can reproduce the phase-field fatigue behaviour of the FE reference under aligned benchmark conditions.
+
+\subsection{Mesh-supported Deep Ritz Representation}
+
+\label{subsec:c3_deep_ritz_view}
+In the Deep Ritz approach, the unknown solution fields are represented by a feed-forward neural network. In this report, these fields are the displacement field $\mathbf{u}=(u,v)$ and the phase-field damage variable $\alpha$. The neural network therefore acts as a continuous approximation of the solution fields over the spatial domain.
+
+For a given loading step, the transformed neural fields enter the phase-field energy:
+
+
+\begin{equation}
+    \mathcal{E}_{\theta}^{n}
+    =
+    \mathcal{E}^{n}
+    \left(
+    \mathbf{u}_{\theta},
+    \alpha_{\theta};
+    \bar{\alpha}^{n}
+    \right).
+    \label{eq:c3_neural_energy}
+\end{equation}
+
+Here $\theta$ denotes the trainable network parameters. This equation links the phase-field problem to the PIDL solver.
+
+This is different from a supervised field regressor. In the controlled baseline, the PIDL model does not learn from FE displacement or damage labels during training.
+
+% FE fields are used later for post-hoc comparison with the trained PIDL fields.
+
+Although the solution fields are represented by a neural network, the controlled PIDL implementation is not fully mesh-free. Following \citet{Manav2024cmame}, the domain is discretised with triangular elements for numerical integration and gradient evaluation. The neural network provides displacement and phase-field values at spatial coordinates, while elementwise shape functions are used to compute field gradients and elementwise quadrature is used to approximate the energy integrals.
+
+The mesh is therefore used to evaluate the PIDL loss, not to introduce finite-element degrees of freedom as the primary unknowns. The trainable unknowns remain the neural-network parameters. This mesh-supported Deep Ritz implementation keeps the neural-field representation, but uses a finite-element-style discretisation to evaluate the variational loss.
+
+\subsection{Energy-based Loss Function}
+\label{subsec:c3_physics_loss}
+
+The PIDL objective follows a regularised Deep Ritz form. The variational part is built from the elastic energy, the fatigue-scaled damage energy and the irreversibility penalty:
+
+\begin{equation}
+    \mathcal{L}_{\mathrm{variational}}
+    =
+    \log_{10}
+    \left(
+    E_{\mathrm{el}}
+    +
+    E_{\mathrm{d}}
+    +
+    \lambda_{\mathrm{hist}}E_{\mathrm{hist}}
+    \right)
+    +
+    \lambda_w
+    \sum_i W_i^2 .
+    \label{eq:c3_pidl_loss}
+\end{equation}
+
+
+The first part of the loss is the regularised Deep Ritz objective. It contains the elastic energy, the fatigue-scaled damage energy and the irreversibility penalty. The second part is a neural-network regularisation term. Here \(\mathcal{W}\) denotes the set of trainable network weights. The weight-regularisation term penalises large network weights during optimisation, but it is not part of the physical phase-field energy.
+
+
+The base-10 logarithm is a numerical scaling step, following the Deep Ritz scaling used by \citet{Manav2024cmame}. It keeps the loss magnitude manageable when the energy changes by orders of magnitude during crack growth. Since the logarithm is monotonic, it preserves the ordering of the positive energy objective inside the brackets.
+
+\subsection{PIDL Architecture and Boundary Treatment}
+\label{subsec:c3_neural_field}
+
+PIDL takes the spatial coordinates $(x,y)$ as inputs and returns three raw outputs:
+
+\begin{equation}
+    (x,y) \mapsto \left(\hat{u}_{\mathrm{raw}},\hat{v}_{\mathrm{raw}},\hat{\alpha}_{\mathrm{raw}}\right).
+    \label{eq:c3_network_mapping}
+\end{equation}
+
+The three raw outputs are transformed in two different ways. The displacement outputs are not used as free displacement fields. Instead, they are inserted into a boundary-condition ansatz so that the main Dirichlet conditions are satisfied by construction.
+
+For the vertical loading branch, this trial space can be written as
+\begin{equation}
+    \begin{aligned}
+    u(x,y)
+    &=
+    \lambda
+    \left[
+    B_y(y)\hat{u}_{\mathrm{raw}}(x,y)
+    +
+    L_y(y)\cos\theta
+    \right],
+    \\
+    v(x,y)
+    &=
+    \lambda
+    \left[
+    B_y(y)\hat{v}_{\mathrm{raw}}(x,y)
+    +
+    L_y(y)\sin\theta
+    \right],
+    \end{aligned}
+    \label{eq:c3_displacement_ansatz}
+\end{equation}
+where $B_y(y)=(y-y_0)(y_L-y)$ is zero on the lower and upper boundaries, $L_y(y)=(y-y_0)/(y_L-y_0)$ is the imposed linear lift, $\lambda$ is the loading amplitude and $\theta=\pi/2$ for the vertical SENT loading. In this case, Equation~\ref{eq:c3_displacement_ansatz} enforces $v=0$ on $y=y_0$, $v=\lambda$ on $y=y_L$ and removes the displacement correction on both horizontal boundaries. The displacement boundary treatment is therefore a hard trial-space constraint rather than a penalty term added to the loss.
+
+By contrast, the phase-field damage output is transformed by a range function rather than by a boundary-condition ansatz:
+\begin{equation}
+    \alpha = S_{\mathrm{ns}}(\hat{\alpha}_{\mathrm{raw}}).
+    \label{eq:c3_alpha_transform}
+\end{equation}
+The controlled implementation uses the nonsmooth sigmoid
+\begin{equation}
+    S_{\mathrm{ns}}(z)
+    =
+    \begin{cases}
+    \epsilon_{\mathrm{tail}}(z+s), & z<-s,\\[3pt]
+    \dfrac{z}{2s}+\dfrac{1}{2}, & -s\le z\le s,\\[6pt]
+    1+\epsilon_{\mathrm{tail}}(z-s), & z>s,
+    \end{cases}
+    \qquad
+    s=2,\quad
+    \epsilon_{\mathrm{tail}}=10^{-3}.
+    \label{eq:c3_nonsmooth_sigmoid}
+\end{equation}
+The phase-field output is not passed through a standard sigmoid. A standard sigmoid would keep $\alpha$ strictly between zero and one, but its slope becomes very small near the bounds. This can make crack nucleation difficult during training because the optimiser receives little gradient information when $\alpha$ is close to zero or one.
+
+Following \citet{Manav2024cmame}, the raw network output is instead mapped using the piecewise transformation in Equation~\ref{eq:c3_nonsmooth_sigmoid}. The central branch maps the main range of the raw output into $0\le\alpha\le1$. The two outer branches keep small non-zero slopes, so the optimiser can still update the damage field near the bounds. This design keeps the damage field trainable near $\alpha=0$ and $\alpha=1$, but it does not impose an exact bound. Small values slightly below zero or above one are therefore treated as numerical artefacts of the output transformation, not as physically meaningful damage states.
+
+
+
+\subsection{Training and History Update}
+\label{subsec:c3_history_irreversibility}
+
+The PIDL fatigue calculation is advanced through loading steps. At the start of a loading step, the stored damage history \(\alpha_{\mathrm{hist}}\), accumulated fatigue history \(\bar{\alpha}\), fatigue degradation factor \(f_{\mathrm{fatigue}}\) and previous active-driver baseline \(\psi_{\mathrm{prev}}\) are read from the previous committed PIDL state. These history quantities are then held fixed during the neural-network optimisation for the current step. The trainable quantities during this optimisation are the neural-network parameters that define the current displacement and damage fields. Figure~\ref{fig:c3_history_update_across_loading_steps} summarises the loading-step update sequence before the individual operations are listed below. The important point is that, at the start of a loading step, the histories are read from the previous committed PIDL state and held fixed during optimisation. They are refreshed after optimisation and final field evaluation. This convention is revisited in Section~\ref{sec:c3_alignment_protocol}, where the PIDL update sequence is compared with the FEM committed-state update.
+
+\begin{center}
+    \centering
+    \includegraphics[width=0.92\textwidth]{c3_history_update_across_loading_steps.pdf}
+    \captionof{figure}{History update sequence across PIDL loading steps. At the start of loading step \(n\), \(\alpha_{\mathrm{hist}}\), \(\bar{\alpha}\), \(f_{\mathrm{fatigue}}\) and \(\psi_{\mathrm{prev}}\) are read from the previous committed PIDL state and held fixed during optimisation. After optimisation and final field evaluation, the current damage field and active driver refresh \(\alpha_{\mathrm{hist}}\), \(\bar{\alpha}\), \(f_{\mathrm{fatigue}}\) and the next-step baseline before these fields are passed to loading step \(n+1\).}
+    \label{fig:c3_history_update_across_loading_steps}
+\end{center}
+
+The PIDL loss for the current loading step is evaluated using the stored fatigue degradation factor from the previous committed state. After optimisation, the final neural fields are evaluated. The current damage field is used to refresh the damage history, and the current active driver is used to update the accumulated fatigue history. The fatigue degradation factor and the previous-driver baseline are then refreshed for the next loading step. This means that, in the current implementation, the newly computed fatigue degradation mainly affects the following PIDL step rather than being coupled inside the current optimisation in the same way as the FEM phase-field assembly.
+
+
+\paragraph{PIDL workflow for one loading step.}
+The PIDL update for one loading step can be summarised as follows:
+\begin{enumerate}
+    \item \textbf{Read the committed old state.} Retrieve
+    \[
+    S_{k-1}^{\mathrm{PIDL}}
+    =
+    \left\{
+    \alpha_{\mathrm{hist}},
+    \bar{\alpha}_{\mathrm{old}},
+    f_{\mathrm{old}},
+    \psi_{\mathrm{prev,old}}
+    \right\}.
+    \]
+
+    \item \textbf{Set the loading level.} Apply the prescribed displacement amplitude for the current loading step through the displacement ansatz.
+
+    \item \textbf{Optimise the neural fields.} Train the neural-network parameters using the energy-based loss. During this optimisation, \(\alpha_{\mathrm{hist}}\), \(\bar{\alpha}_{\mathrm{old}}\), \(f_{\mathrm{old}}\) and \(\psi_{\mathrm{prev,old}}\) are fixed stored fields.
+
+    \item \textbf{Evaluate the final fields.} After optimisation, evaluate the final displacement and damage fields, \(\mathbf{u}_{\theta}\) and \(\alpha_{\theta}\), at the required nodes or element-evaluation points.
+
+    \item \textbf{Refresh the damage history.} Update the stored maximum damage field:
+    \[
+    \alpha_{\mathrm{hist}}
+    \leftarrow
+    \max
+    \left(
+    \alpha_{\mathrm{hist}},
+    \alpha_{\theta}
+    \right).
+    \]
+
+    \item \textbf{Compute the active driver.} Compute the current active driver from the final PIDL fields:
+    \[
+    \psi_{\mathrm{active}}
+    =
+    g(\alpha_{\theta})\psi_{\mathrm{raw}} .
+    \]
+
+    \item \textbf{Update the fatigue history.} Compute the positive fatigue-history increment:
+    \[
+    \Delta\bar{\alpha}
+    =
+    \left\langle
+    \psi_{\mathrm{active}}
+    -
+    \psi_{\mathrm{prev,old}}
+    \right\rangle_{+},
+    \]
+    and update the accumulated fatigue history:
+    \[
+    \bar{\alpha}_{\mathrm{new}}
+    =
+    \bar{\alpha}_{\mathrm{old}}
+    +
+    \Delta\bar{\alpha}.
+    \]
+
+    \item \textbf{Refresh the fatigue degradation.} Evaluate
+    \[
+    f_{\mathrm{new}}
+    =
+    f_{\mathrm{fatigue}}
+    \left(
+    \bar{\alpha}_{\mathrm{new}}
+    \right).
+    \]
+
+    \item \textbf{Store the next-step baseline.} Store the current active driver as the baseline for the next loading step:
+    \[
+    \psi_{\mathrm{prev}}^{n+1}
+    \leftarrow
+    \psi_{\mathrm{active}}^{n}.
+    \]
+
+    \item \textbf{Save diagnostics.} Save the post-training and post-history-refresh state for later FEM--PIDL comparison.
+\end{enumerate}
+
+\FloatBarrier
+
+
+
+\section{FEM--PIDL Alignment and Reproducibility Protocol}
+\label{sec:c3_alignment_protocol}
+
+This section defines the alignment protocol used before the Chapter~4 diagnostic comparison. It specifies the model-level alignment, the initial state, the role of the monotonic sanity check, the cyclic fatigue setup, and the state-variable storage conventions used to compare FEM and PIDL fields.
+
+\subsection{Model-level Alignment}
+
+The FEM reference and PIDL formulation are aligned at the level of the benchmark definition and the adopted energy terms, but they differ in the numerical representation of the unknown fields in the way the energy minimisation is carried out. The FEM reference represents \(\mathbf{u}\) and \(\alpha\) through finite-element degrees of freedom and evaluates the discretised energy on the finite-element mesh. The PIDL formulation represents the same fields through a neural network and minimises an energy-like objective. 
+
+\begin{table}[htbp]
+\centering
+\caption{Model-level alignment between the FEM reference and PIDL formulation.}
+\label{tab:c3_model_level_alignment}
+\begin{tabular}{p{0.24\textwidth} p{0.31\textwidth} p{0.31\textwidth}}
+\hline
+\textbf{Item} & \textbf{FEM reference} & \textbf{PIDL formulation} \\
+\hline
+Benchmark definition
+& Controlled SENT geometry, horizontal pre-crack, displacement boundary conditions and cyclic loading history.
+& Same benchmark definition. \\
+\hline
+Material and model parameters
+& Uses the normalised parameters, phase-field length scale, elastic degradation, AT1 damage-energy term and fatigue degradation law defined above.
+& Same nominal parameter set and energy terms. \\
+\hline
+Primary fields
+& Displacement \(\mathbf{u}=(u,v)\) and damage \(\alpha\) represented by finite-element degrees of freedom.
+& Displacement \(\mathbf{u}_{\theta}\) and damage \(\alpha_{\theta}\) represented by neural-network outputs. \\
+\hline
+Numerical evaluation
+& Finite-element mesh defines both approximation space and integration.
+& Mesh is used for integration and gradient evaluation, while trainable unknowns are neural-network parameters. \\
+\hline
+Role in comparison
+& Controlled numerical reference.
+& Learning-based approximation tested against the FEM reference. \\
+\hline
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:c3_mesh_reference_hierarchy} documents the numerical meshes used in the controlled setup. The figure is included here because the FEM and PIDL formulations use different numerical representations: FEM uses finite-element degrees of freedom as the solution space, whereas PIDL uses the mesh for integration and gradient evaluation while the trainable unknowns remain neural-network parameters.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{c3_mesh_reference_hierarchy.png}
+    \caption{Near-notch mesh comparison used to document the controlled numerical setup. The panels show \texttt{mesh1} with 19,925 nodes and 39,512 triangular elements for pretraining, \texttt{mesh2} with 34,030 nodes and 67,276 triangular elements for PIDL full training, and the original Abaqus FEM mesh with 77,900 nodes and 77,730 four-node quadrilateral elements. The red line marks the initial notch and the red point marks the notch tip.}
+    \label{fig:c3_mesh_reference_hierarchy}
+\end{figure}
+
+Field-level comparisons require a common spatial support because the FEM and PIDL implementations store diagnostic quantities at different locations. The FEM reference stores several fatigue quantities at Gauss points, whereas the PIDL diagnostics are mainly nodal or elementwise on the triangular PIDL mesh. In this report, the default field-comparison support is the PIDL triangular element-centroid support. FEM Gauss-point quantities are first reduced to FEM element values using the stated element reduction, and the reduced FEM field is then projected to the PIDL element centroids. PIDL elementwise quantities are compared on their native element support. Field ratios are therefore always interpreted after this spatial reduction and projection step.
+
+
+\subsection{Monotonic Sanity Check}
+\label{subsec:c3_monotonic_alignment}
+Before the fatigue comparison, a monotonic sanity check is used to test the basic FEM--PIDL setup under a simpler non-cyclic loading condition. This check uses the same SENT geometry and a comparable phase-field formulation, but it does not include fatigue-history accumulation or fatigue degradation. Its role is therefore limited: it checks whether the benchmark produce a reasonable monotonic behaviour before the fatigue extension is considered. This figure is used only to check monotonic baseline consistency before the fatigue extension; it does not validate cyclic fatigue-history accumulation or fatigue degradation.
+
+
+The monotonic check follows the Deep Ritz benchmark setting of \citet{Manav2024cmame} and uses displacement-controlled loading up to \(U_{\max}=0.2\). The comparison focuses on the energy paths. Figure~\ref{fig:c3_manav_fig10_overlay_aligned} provides a monotonic baseline consistency check against the Deep Ritz benchmark of \citet{Manav2024cmame} 
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{c3_manav_fig10_overlay_aligned_two_panel.pdf}
+    \caption{Coordinate-aligned monotonic benchmark check against the Deep Ritz phase-field result of \citet{Manav2024cmame}. The present PIDL and GRIPHFiTH monotonic energy curves are plotted on the same coordinate system as the reported benchmark curve, with the original reference plot shown faintly in the background for visual alignment. }
+    \label{fig:c3_manav_fig10_overlay_aligned}
+\end{figure}
+
+
+\subsection{Cyclic Fatigue Alignment Check}
+\label{subsec:c3_aligned_settings}
+
+
+The final fatigue comparison uses cyclic displacement-controlled loading with load ratio $R=0$. Here \(R=U_{\min}/U_{\max}\), so \(R=0\) means that the imposed displacement unloads to zero in each cycle. The fatigue displacement amplitudes \(U_{\max}=0.08\)--\(0.12\) are below the monotonic fracture transition window identified in the monotonic sanity check. The fatigue case therefore tests repeated sub-critical loading rather than immediate monotonic fracture. Table~\ref{tab:c3_cyclic_alignment_settings} summarises the cyclic alignment settings used before the Chapter~4 fatigue comparison.
+
+Figure~\ref{fig:c3_initial_fatigue_alignment} shows the initial-state alignment for the retained fatigue benchmark. The FEM and PIDL calculations start from the same SENT geometry and diffuse pre-crack before cyclic history accumulation begins. This initial-state check is necessary because a mismatch in the pre-crack, initial fatigue history or initial degradation field would change the subsequent fatigue-life response.
+
+
+\begin{table}[!htbp]
+\centering
+\caption{Cyclic fatigue alignment settings used before the FEM--PIDL comparison.}
+\label{tab:c3_cyclic_alignment_settings}
+\begin{tabular}{p{0.30\textwidth} p{0.56\textwidth}}
+\hline
+\textbf{Item} & \textbf{Aligned definition} \\
+\hline
+Geometry and pre-crack
+& Both solvers use the controlled SENT geometry and the same horizontal diffuse pre-crack. \\
+
+Loading type
+& Displacement-controlled cyclic tension. \\
+
+Loading ratio
+& \(R=U_{\min}/U_{\max}=0\), so the imposed displacement unloads to zero. \\
+
+Peak amplitude
+& Fatigue amplitudes are selected in the range \(U_{\max}=0.08\)--\(0.12\), below the monotonic fracture transition window identified in the sanity check. \\
+
+Initial fatigue history
+& The accumulated fatigue-history field, \(\bar{\alpha}\), is initialised to zero before cyclic loading. \\
+
+Initial fatigue degradation
+& The fatigue degradation factor, \(f_{\mathrm{fatigue}}\), starts from the undegraded value of one before cyclic degradation accumulates. \\
+
+Initial active-driver baseline
+& The previous active-driver field, \(\psi_{\mathrm{prev}}\), is defined from the same pre-fatigue state used to start the first cyclic update. \\
+
+Comparison state
+& Comparisons are made at committed diagnostic states, not intermediate trial states. \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\subsubsection{Initial State and History Variables}
+\label{subsec:c3_initial_history_variables}
+
+The initial state used for the cyclic benchmark is the pre-fatigue state before cyclic history accumulation begins. Both the FEM reference and the PIDL formulation use the same diffuse pre-crack geometry, zero accumulated fatigue history and neutral fatigue degradation, so the initial fields satisfy \(\bar{\alpha}=0\) and \(f_{\mathrm{fatigue}}=1\). The previous active-driver field, \(\psi_{\mathrm{prev}}\), is also defined from the same pre-fatigue baseline used to start the first cyclic update. This alignment is necessary because mismatches in the pre-crack, fatigue-history field, fatigue-degradation field or previous-driver baseline would change the subsequent fatigue-life response. The panels in Figure~\ref{fig:c3_initial_fatigue_alignment} use a common PIDL-mesh projection so that the FEM reference and PIDL formulation can be compared on the same visual basis.
+
+
+The retained initial crack is generated as a smooth diffuse damage profile rather than as a fully damaged geometric slit. Let \(\Gamma_0\) denote the horizontal crack segment from \((-0.5,0)\) to \((0,0)\). For a point \(\mathbf{x}\), the distance \(r(\mathbf{x})\) is measured as the perpendicular distance to the crack segment when the orthogonal projection falls within the segment, and as the radial distance to the nearest endpoint when the point lies beyond the segment ends. The initial pre-crack is represented by a diffuse damage profile rather than by a sharp geometric slit. This profile should not be confused with the AT1 damage-density function itself. In the AT1 model, the crack-density function is \(w(\alpha)=\alpha\). For a one-dimensional stationary diffuse crack profile, the corresponding optimal profile satisfies
+\[
+\frac{d\alpha}{dr}=-\frac{\sqrt{w(\alpha)}}{l_0}.
+\]
+For AT1, this gives
+\[
+\frac{d\alpha}{dr}=-\frac{\sqrt{\alpha}}{l_0},
+\qquad
+\alpha(r)=\left(1-\frac{r}{2l_0}\right)^2
+\quad \text{for } r\le 2l_0,
+\]
+and \(\alpha(r)=0\) for \(r>2l_0\). The AT1 pre-crack profile therefore has compact support over a distance \(2l_0\). In the retained benchmark, \(r\) is measured as the distance to the horizontal crack segment from \((-0.5,0)\) to \((0,0)\), with endpoint distances used outside the segment ends. With \(l_0=0.01\), the diffuse pre-crack support radius is \(2l_0=0.02\) in the normalised domain. The same initial damage profile is used for the FEM reference and the PIDL formulation. The faint horizontal line marks the initial pre-crack. The aligned damage field, zero accumulated fatigue history and neutral fatigue degradation, \(\bar{\alpha}=0\) and \(f_{\mathrm{fatigue}}=1\), show that later differences in Chapter~4 are not introduced by different initial crack or fatigue-history states; the previous active-driver baseline \(\psi_{\mathrm{prev}}\) is defined consistently from the same pre-fatigue state.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.96\textwidth]{c3_initial_state_alignment.pdf}
+    \caption{Initial pre-fatigue state alignment for the cyclic fatigue benchmark. The panels compare the initial damage field representing the diffuse pre-crack, the accumulated fatigue-history field and the fatigue degradation field used by the FEM reference and PIDL formulation before cyclic loading.}
+    \label{fig:c3_initial_fatigue_alignment}
+\end{figure}
+
+
+\subsubsection{State-variable Storage and Update Audit}
+\label{subsec:c3_state_variable_audit}
+
+The fatigue benchmark is path-dependent, so the FEM--PIDL comparison depends not only on the final damage field but also on how the hidden state variables are stored, reduced and updated. The implementation audit in Table~\ref{tab:c3_state_variable_storage_update_audit} is based on the current code semantics rather than only on the continuum notation. This distinction is important because the FEM reference stores several fatigue variables at Gauss points, whereas the PIDL implementation stores the corresponding diagnostic quantities mainly at nodal or element level.
+
+One distinction is needed before reading the audit table. Damage history and fatigue history are different quantities in this implementation. Damage history records the previously committed maximum damage field and is used for irreversibility. Fatigue history records accumulated cyclic driving and controls the fatigue degradation factor. Therefore, damage-history comparisons use the FEM committed damage field and the PIDL stored damage history, while fatigue-history comparisons use the FEM accumulated fatigue-history variable and the corresponding PIDL fatigue-history field after spatial reduction.
+
+\subsubsection{Cyclic Update Timing}
+\label{subsec:c3_cyclic_update_timing}
+
+The storage audit in Table~\ref{tab:c3_state_variable_storage_update_audit} defines where the main state variables are stored. The update timing must also be stated because the fatigue response depends on when the active driver, accumulated fatigue history and fatigue degradation are refreshed.
+
+In the FEM reference, candidate fatigue-history and fatigue-degradation values are evaluated during the current phase-field assembly. The active driver is computed at Gauss points from the current damage and current tensile driver. Positive increments relative to the previous baseline are accumulated into the fatigue-history variable, and the candidate fatigue degradation can enter the current phase-field residual. These values are committed only after the staggered solution has converged.
+
+In the PIDL implementation, the stored histories are fixed during neural-network optimisation for a loading step. The loss uses the fatigue degradation factor from the previous committed state. After optimisation and final field evaluation, the current active driver is used to update the damage history, accumulated fatigue history, fatigue degradation and next-step baseline. The refreshed fatigue degradation therefore mainly affects the following PIDL step.
+
+
+
+
+\section{Chapter Summary}
+\label{sec:c3_summary}
+
+This chapter defined the controlled numerical benchmark used for the first-year FEM--PIDL fatigue comparison. The benchmark is a two-dimensional SENT phase-field fatigue problem with a horizontal diffuse pre-crack, displacement-controlled cyclic loading and normalised material parameters. The adopted parameters, including \(E=1\), \(l_0=0.01\), \(R=0\), \(w_1=1.0\) and \(\alpha_T=0.5\), are benchmark choices rather than pavement-calibrated material properties.
+
+The chapter also specified the phase-field fatigue formulation used in the comparison. The model combines a degraded tensile elastic-energy term, an AT1 crack-surface regularisation, a damage-irreversibility treatment and a fatigue degradation function controlled by the accumulated fatigue-history variable. These ingredients are adopted from phase-field fracture and fatigue modelling literature; the report does not introduce them as new material laws for pavement cracking.
+
+The FEM reference and PIDL formulation were then defined separately. The FEM reference uses finite-element degrees of freedom and a staggered committed-state update, while the PIDL formulation represents displacement and damage through neural-network fields and refreshes the stored history variables after optimisation and final field evaluation. The comparison is therefore FEM-first: the FEM solution is treated as the controlled numerical reference, and the PIDL solution is tested as a learning-based approximation.
+
+Finally, the chapter defined the reproducibility conventions needed for the Chapter~4 diagnostic comparison. The initial diffuse pre-crack, fatigue-history state and fatigue degradation state are aligned before cyclic loading begins. Field-level comparisons are made only after stating the spatial support, reduction and projection rule, because several FEM quantities are stored at Gauss points whereas PIDL diagnostics are mainly nodal or elementwise. The implementation audit shows that the two solvers are aligned at the benchmark and nominal energy-law level, but not fully identical in state-variable storage, spatial reduction or current-step fatigue coupling. Chapter~4 therefore interprets the FEM--PIDL comparison as a diagnostic benchmark, not as pavement-level fatigue validation.
+
+\begin{landscape}
+\begin{table}[p]
+\centering
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{1.6pt}
+\renewcommand{\arraystretch}{0.76}
+\caption{State-variable storage, reduction and update audit for the FEM--PIDL fatigue benchmark. Node denotes nodal quantities, Elem denotes elementwise quantities, and GP denotes Gauss-point or quadrature-point quantities.}
+\label{tab:c3_state_variable_storage_update_audit}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}m{0.115\linewidth}
+>{\raggedright\arraybackslash}m{0.120\linewidth}
+>{\raggedright\arraybackslash}m{0.180\linewidth}
+>{\raggedright\arraybackslash}m{0.170\linewidth}
+>{\raggedright\arraybackslash}m{0.160\linewidth}
+>{\raggedright\arraybackslash}m{0.200\linewidth}@{}}
+\hline
+{\centering\textbf{Physical quantity}\par}
+& {\centering\textbf{Role}\par}
+& {\centering\textbf{FEM variable and location}\par}
+& {\centering\textbf{PIDL variable and location}\par}
+& {\centering\textbf{Recommended comparison level}\par}
+& {\centering\textbf{Alignment status / audit note}\par} \\
+\hline
+
+Displacement field, \(\mathbf{u}=(u,v)\)
+& Primary mechanical unknown.
+& \texttt{displ} or \texttt{u}; Node DOFs.
+& NN outputs \texttt{u}, \texttt{v}; Node evaluation.
+& Node, with the same boundary-condition convention.
+& Partly aligned; FEM and PIDL use different trial spaces. \\
+
+Current damage field, \(d\) or \(\alpha\)
+& Diffuse crack field.
+& \texttt{p\_field}; Node, interpolated to GP.
+& \texttt{alpha}; Node; \texttt{alpha\_elem} for diagnostics.
+& Node for damage maps; Elem for field-ratio diagnostics.
+& Partly aligned after the reduction rule is stated. \\
+
+Damage history
+& Committed maximum damage for irreversibility.
+& \texttt{p\_field\_old}; Node, interpolated to GP.
+& \texttt{hist\_alpha}; Node.
+& Node for max-history; GP/probe for penalty diagnostics.
+& Max-history semantics aligned; penalty locations differ. \\
+
+Irreversibility penalty
+& Penalises healing.
+& Checks \(d_{\mathrm{GP}}-d_{\mathrm{old,GP}}\) at GP level.
+& Averages nodal \(\alpha-\texttt{hist\_alpha}\) to Elem, then applies ReLU.
+& GP/probe level if strict alignment is required.
+& Not fully aligned: mean/ReLU order differs. \\
+
+Undegraded tensile driver, \(Y\) or \(\psi_{\mathrm{raw}}\)
+& Raw tensile crack-driving energy.
+& \texttt{strain\_en\_undgr}\newline\texttt{(element,GP)}; GP.
+& \texttt{psi\_raw\_elem}; Elem.
+& FEM GP-to-Elem reduction versus PIDL Elem.
+& Approximately aligned only after a stated reduction rule. \\
+
+Active crack-driving field, \(\psi_{\mathrm{active}}\)
+& Driver used in the fatigue-history update.
+& \(g(d_{\mathrm{GP}})Y_{\mathrm{GP}}\); GP.
+& \texttt{psi\_active\_elem} or \texttt{psi\_plus\_elem}; Elem/probe.
+& FEM GP-to-Elem reduction versus PIDL Elem/probe reduction.
+& Critical mismatch: FEM is GP-level; PIDL uses reduced element diagnostics. \\
+
+Accumulated fatigue history, \(\bar{\alpha}\)
+& Stores positive active-driver increments.
+& \texttt{history\_vars(:,:,2)}; GP.
+& \texttt{hist\_fat} or \texttt{alpha\_bar}; Elem.
+& FEM GP-to-Elem reduction versus PIDL Elem.
+& Correct fatigue-history pair after FEM reduction is stated. \\
+
+Previous fatigue baseline
+& Previous active driver for positive increments.
+& \texttt{history\_vars(:,:,3)}; GP.
+& \texttt{psi\_plus\_prev}; Elem.
+& FEM GP-to-Elem reduction versus PIDL Elem, with state label.
+& Timing-sensitive; saved PIDL value may be the next-step baseline. \\
+
+Fatigue degradation factor, \(f_{\mathrm{fatigue}}\)
+& Reduces effective damage resistance.
+& \texttt{history\_vars(:,:,4)}; GP.
+& \texttt{f\_fatigue}; Elem.
+& FEM GP-to-Elem reduction versus PIDL Elem.
+& FEM candidate \(f\) can enter the current residual; PIDL normally updates after training. \\
+
+\texttt{history\_vars}\newline\texttt{(:,:,1)}
+& Energy-history channel; not PIDL damage history.
+& Unused, stale or zero in the current PENALTY path.
+& No direct counterpart to PIDL \texttt{hist\_alpha}.
+& Do not compare.
+& Audit correction: compare \texttt{p\_field\_old} with \texttt{hist\_alpha}. \\
+\hline
+\end{tabular}
+\endgroup
+\end{table}
+\end{landscape}
+
+% \ref{ch:diagnostic_results_discussion}.

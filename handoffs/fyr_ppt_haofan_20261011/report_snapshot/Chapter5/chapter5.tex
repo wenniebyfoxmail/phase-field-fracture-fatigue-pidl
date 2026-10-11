@@ -1,0 +1,313 @@
+\ifpdf
+    \graphicspath{{Chapter5/Figs/PDF/}{Chapter5/Figs/Raster/}{Chapter5/Figs/}}
+\else
+    \graphicspath{{Chapter5/Figs/Vector/}{Chapter5/Figs/}}
+\fi
+
+\chapter{Research Proposal and Future Work}
+\label{ch:research_plan_future_work}
+\label{ch:future_work}
+
+\section{Research Direction}
+
+Chapters~1 and~2 established the practical motivation for this research.
+Pavement inspection can provide visible crack and condition information, including crack masks, crack geometry, crack width, surface distress indicators and repeated survey records.
+However, these inspection outputs do not directly provide the hidden fracture-state variables that control future local crack growth.
+In particular, they do not directly reveal the internal damage field, fatigue-history field, active crack-driving field, local material degradation or the loading history experienced by the pavement.
+Chapters~3 and~4 then tested a stricter and more controlled version of this problem.
+A phase-field finite-element model was used as the reference solution, and a physics-informed deep learning (PIDL) solver was tested under aligned geometry, material, boundary-condition and cyclic-loading settings.
+The purpose of this first-year modelling stage was not to validate a field-scale pavement predictor.
+It was to ask a diagnostic question: if the geometry, material parameters and loading family are already known, can a physics-only neural solver reproduce the hidden fracture-state evolution without FEM or data labels?
+
+The main lesson from Chapter~4 is that physics-only supervision is not sufficient in the current formulation.
+The PIDL model can reproduce the initial state and some scalar trends, but scalar agreement does not guarantee reliable hidden-field prediction.
+A model may show a partly plausible crack-tip position or crack-growth timing while still producing the wrong fatigue-history accumulation, fatigue-degradation field, active crack-driving field or stiffness redistribution.
+This matters because future crack growth depends on these local fields rather than on a scalar crack indicator alone.
+
+This result changes the role of the future work. The future programme will not treat pure PIDL as the main prediction route.
+Instead, the first-year PIDL study is used as diagnostic evidence for the importance of data supervision and field-level validation.
+Once trusted simulation data, partial inspection observations or structural proxy data are available, the research can move from physics-only diagnosis to data-supported identification and data-supervised prediction.
+In this chapter, \emph{identification} means estimating the hidden fracture state, initial condition, material parameters or loading proxies from partial observations.
+\emph{Prediction} means propagating the identified state forward to estimate future damage or crack evolution.
+
+The future work is organised around the three research questions in Table~\ref{tab:c5_future_work_summary}.
+The work packages are sequential and cumulative rather than competing alternatives.
+WP1 asks what state can be identified, WP2 asks how the identified state can be propagated, and WP3 asks whether the identification--prediction chain remains reliable when observations are partial, noisy and non-unique.
+Physics-informed terms from the PIDL study are retained as diagnostic constraints, ablation variables, validation gates and optional regularisers inside a data-supervised workflow.
+
+\begin{table}[!htbp]
+\centering
+\caption{Research questions, work packages, deliverables and risks for the future programme.}
+\label{tab:c5_future_work_summary}
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{p{0.25\textwidth}p{0.21\textwidth}p{0.29\textwidth}p{0.17\textwidth}}
+\hline
+Research question & Work package & Main deliverable & Main risk \\
+\hline
+Which hidden fracture-state variables and uncertain inputs can be inferred from partial observations? &
+WP1: Data-supported identification &
+An uncertainty-aware identification pipeline tested on synthetic and semi-synthetic observations. &
+Visible crack geometry may not uniquely determine damage, fatigue history, material state or loading history. \\
+\hline
+Can supervised models propagate known or identified fracture states with reliable local uncertainty? &
+WP2: Supervised crack-growth prediction &
+A calibrated phase-field surrogate with crack-region reliability checks, building on the current CA-FNO/FNO uncertainty study. &
+Low global error may still give unreliable crack-region predictions or unstable rollouts. \\
+\hline
+Does explicit identification improve prediction under partial, noisy and non-unique observations? &
+WP3: Hybrid partial-data validation &
+A validation framework that compares direct prediction, identification-informed prediction and hybrid physics/data ablations. &
+Partial observations may not support a field-scale pavement claim without stronger validation data. \\
+\hline
+\end{tabular}
+\endgroup
+\end{table}
+
+The route from the controlled benchmark to pavement-relevant prediction will be staged rather than claimed directly.
+The first transition is material realism: the normalised phase-field benchmark must be replaced or extended using pavement-relevant concrete or asphalt fracture parameters.
+The second transition is boundary-condition realism: the single-edge notched tension setup must be compared with loading and support conditions that are closer to pavement service conditions.
+The third transition is loading history: the prescribed cyclic loading used in the benchmark must be related to traffic-induced load histories and their uncertainty.
+The fourth transition is observation: full hidden FEM fields must be replaced by partial inspection data, such as crack masks, crack width, repeated surveys and structural proxies.
+The supporting transition details are given in Appendix~\ref{app:c5_future_work_supporting_tables}.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{c5_future_research_roadmap.pdf}
+\caption[Future research roadmap]{Future research roadmap. Chapter~5 proposes a data-centred route from inspection outputs and partial observations, to hidden-state and uncertain-input identification, to supervised crack-growth prediction, and finally to hybrid validation under partial data.}
+\label{fig:c5_future_research_roadmap}
+\end{figure}
+
+\section{Proposed Research Work Packages}
+
+\subsection[Work Package 1: Data-supported Identification]{Work Package 1: Data-supported Identification of Crack-growth Initial States and Uncertain Inputs}
+
+Work Package~1 (WP1) asks what can be identified once observations and data are introduced.
+WP1 treats inspection and simulation-derived observations as partial evidence about an unobserved fracture state.
+The observable data may include crack masks, crack skeletons, crack width, crack-tip locations, repeated images, survey timestamps, surface-condition descriptors, structural response proxies and traffic or loading descriptors.
+These observations are denoted abstractly as
+\[
+    \mathbf{y}_t = \left[M_t(\mathbf{x}),\; w_t(\mathbf{x}),\; \mathbf{x}_{\mathrm{tip},t},\; s_t(\mathbf{x}),\; p_{\mathrm{load},t}\right],
+\]
+where $M_t$ is the registered crack mask, $w_t$ is the crack-width observation where available, $\mathbf{x}_{\mathrm{tip},t}$ denotes extracted crack-tip information, $s_t$ represents structural or surface-condition proxies, and $p_{\mathrm{load},t}$ denotes traffic or loading descriptors.
+The hidden variables of interest are not directly observed images.
+They are fracture-state and model-input quantities such as
+\[
+    \mathbf{z}_t = \left[\alpha_t(\mathbf{x}),\; \bar{\alpha}_t(\mathbf{x}),\; \psi_{\mathrm{active},t}(\mathbf{x}),\; f_{\mathrm{fatigue},t}(\mathbf{x}),\; \boldsymbol{\theta}_{\mathrm{mat}},\; \boldsymbol{\theta}_{\mathrm{load}}\right],
+\]
+where $\alpha_t$ is the phase-field damage, $\bar{\alpha}_t$ is the accumulated fatigue-history field, $\psi_{\mathrm{active},t}$ is the active crack-driving field, $f_{\mathrm{fatigue},t}$ is the fatigue-degradation field, and $\boldsymbol{\theta}_{\mathrm{mat}}$ and $\boldsymbol{\theta}_{\mathrm{load}}$ represent material and loading parameters.
+The purpose of WP1 is not to claim that this full state can be uniquely recovered from a crack image.
+The purpose is to measure which components are identifiable, which components remain uncertain, and which additional data reduce uncertainty.
+
+\paragraph{WP1.1: Registration and observation alignment.}
+The first task is to align crack observations from different images, survey times or camera positions into a common pavement coordinate system.
+Without alignment, apparent crack growth may be caused by camera motion, perspective change, scale variation or inconsistent survey positioning rather than physical crack extension.
+If the road surface can be approximated as a local plane, homography-based registration will be used.
+For video or repeated survey sequences, a dynamic homography can be estimated over time.
+If camera calibration, depth information, control points or reconstructed three-dimensional points are available, a Perspective-$n$-Point (PnP), RGB-D or SfM-assisted route can be tested.
+The output will be registered crack masks $M_t(\mathbf{x})$, crack-width observations $w_t(\mathbf{x})$ where available, and registration uncertainty.
+Registration will be treated as an uncertainty source rather than perfect preprocessing.
+Registration uncertainty can be quantified through reprojection error, feature-matching residuals, repeated-mask overlap or crack-tip localisation error.
+This uncertainty will be propagated into later identification and prediction stages.
+
+\paragraph{WP1.2: Crack geometry extraction and proxy-state construction.}
+The second task is to convert registered crack observations into model-relevant quantities.
+A raw crack mask is not a fracture-state field. From each registered crack mask, geometric descriptors will be extracted, including crack skeleton, endpoints, branch points, connected components, local orientation, crack length, tortuosity and local width.
+These descriptors define the observable part of the crack state.
+An initial damage proxy can be constructed from the distance to the observed crack set.
+If $D(\mathbf{x},M_t)$ is the distance from point $\mathbf{x}$ to the registered crack mask $M_t$, a simple initial damage proxy may be written as
+\[
+    \alpha_0(\mathbf{x}) = \exp\left[-\frac{D(\mathbf{x},M_t)}{\ell}\right],
+\]
+or as a bounded sigmoid profile controlled by crack width and phase-field length scale.
+This construction does not claim to recover the true internal damage field.
+It provides a reproducible initial condition that can be varied during identification.
+Additional auxiliary channels can be added to represent physically meaningful but uncertain information.
+A crack-tip indicator $T(\mathbf{x})$ can be generated from endpoints and branch tips.
+A low-cost crack-driving proxy $S(\mathbf{x})$ can be computed using distance-and-angle fields around crack tips or simplified fracture-mechanics priors.
+Material heterogeneity can be represented through a latent random field $m(\mathbf{x})$ or a small set of material descriptors.
+Loading uncertainty can be represented through descriptors $p_{\mathrm{load}}$. These quantities form a distribution of plausible initial states rather than a single deterministic reconstruction.
+
+\paragraph{WP1.3: Synthetic and semi-synthetic identification tests.}
+Before applying the identification pipeline to real inspection records, it will be tested using controlled FEM or phase-field fields.
+Full hidden fields will be degraded into inspection-like observations such as binary crack masks, sparse crack-tip observations, noisy crack-width maps, partial damage fields or surface-only measurements.
+Because the true hidden state remains known in these tests, the identification error can be measured directly.
+The synthetic identification tests will compare several observation levels:
+\begin{enumerate}
+    \item crack mask only;
+    \item crack mask plus crack width or surface-profile information;
+    \item repeated crack observations over time;
+    \item crack observations plus structural response proxies;
+    \item crack observations plus approximate traffic or loading descriptors.
+\end{enumerate}
+This comparison is central to the thesis argument. It tests how much data are needed before hidden fracture-state variables and uncertain model inputs become identifiable enough for prediction.
+
+\paragraph{WP1.4: Initial-state and uncertain-input inference.}
+The fourth task is to infer the uncertain current state and model inputs from partial observations.
+Several routes can be compared. A direct encoder can map observation channels to a latent state distribution.
+An optimisation-based inverse method can minimise mismatch between observed crack geometry and predicted or reconstructed state variables.
+An ensemble or Bayesian approximation can be used to represent non-uniqueness. The output should not be a single overconfident state.
+It should be an uncertainty-aware estimate of $\alpha_t$, fatigue-history proxies, material parameters and loading descriptors.
+The inverse problem can be written abstractly as
+\[
+    \hat{p}(\mathbf{z}_t,\boldsymbol{\theta}\mid \mathbf{y}_t)
+    \quad \mathrm{or} \quad
+    (\hat{\mathbf{z}}_t,\hat{\boldsymbol{\theta}})
+    = \arg\min_{\mathbf{z}_t,\boldsymbol{\theta}}
+    \mathcal{L}_{\mathrm{obs}}(\mathbf{y}_t,\mathcal{H}(\mathbf{z}_t,\boldsymbol{\theta})) + \mathcal{R}(\mathbf{z}_t,\boldsymbol{\theta}),
+\]
+where $\mathcal{H}$ is an observation operator from hidden state to observable crack or structural quantities, and $\mathcal{R}$ includes regularisation or weak physical constraints.
+The main output of WP1 is therefore not simply a registered image.
+It is an identified and uncertainty-aware crack-growth initial condition.
+
+The detailed observation levels and identification tests for WP1 are listed in Appendix~\ref{app:c5_future_work_supporting_tables}.
+
+The deliverable of WP1 is a data-supported identification pipeline.
+It will convert partial observations into uncertain initial states and uncertain model inputs for crack-growth prediction.
+It will also define what cannot be identified from inspection alone.
+
+\subsection{Work Package 2: Supervised Crack-growth Prediction}
+
+Work Package~2 (WP2) develops the prediction route.
+A supervised neural operator is used here because it learns the solution operator from trusted phase-field FEM trajectories rather than attempting to discover the solution only through a physics loss.
+The first task is a controlled state-to-state prediction problem. The initial target is
+\[
+    \alpha(\cdot,t) \mapsto \alpha(\cdot,t+1),
+\]
+where the input is the current phase-field damage state and the output is the next damage field with an associated uncertainty estimate.
+This is a damage-field surrogate, not yet a full mechanics surrogate.
+Later versions will include loading descriptors, material descriptors, fatigue-history variables and active crack-driving fields where they are available.
+The prediction route will eventually take identified states from WP1 as inputs.
+The immediate supervised data source for this starting point is the PFM-Fracture benchmark \citep{HamdiLejeune2025PFMBenchmark}, released through Harvard Dataverse (DOI: 10.7910/DVN/KZDRUE).
+This dataset is used as a separate supervised surrogate benchmark rather than as the controlled cyclic-fatigue FEM reference studied in Chapters~3 and~4.
+The current supervised study used the shear-spectral subset, consisting of 1,000 HDF5 simulation files on a $128\times128$ grid over 101 time levels.
+In the baseline processing, the damage channel was extracted from each file and consecutive time levels were converted into one-step pairs $\alpha(\cdot,t)\mapsto\alpha(\cdot,t+1)$, giving 100,000 input--output samples.
+The split was made at file level, not sample level, with 700 trajectories for training, 150 for validation and 150 for testing, so that time steps from one simulation could not leak across train and test sets.
+
+The staged input, output and audit plan for WP2 is listed in Appendix~\ref{app:c5_future_work_supporting_tables}.
+
+This work package already has a concrete starting point in a parallel calibration-aware neural-operator study.
+The study compared FNO, CA-FNO, U-FNO, FNO-wide, CNO and U-Net configurations.
+Its main result was a reliability result rather than only a model-ranking result.
+The standard FNO ensemble was overconfident near cracks, with only 78\% crack-region coverage at a 95\% nominal level.
+The CA-FNO variant adds a local spatial branch to the FNO layer and changed the crack-region coverage gap from $+0.112$ to $-0.038$.
+This supports the need for crack-region calibration before fast surrogates are used for damage-critical prediction.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=\textwidth]{c5_cafno_architecture_schematic.pdf}
+    \caption[CA-FNO architecture used in the supervised surrogate exploration]{CA-FNO architecture used in the supervised surrogate exploration. The standard FNO layer combines pointwise and truncated spectral branches. CA-FNO adds a parallel $3\times3$ local spatial convolution branch, with the aim of increasing member-specific diversity near crack tips where standard FNO ensembles can be overconfident.}
+    \label{fig:c5_cafno_architecture}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.9\textwidth]{c5_supervised_uncertainty_fields.pdf}
+    \caption[Preliminary phase-field uncertainty fields from the supervised surrogate study]{Preliminary phase-field uncertainty fields from the supervised surrogate study. The top row shows ground-truth phase-field damage fields for held-out samples, while the lower rows show predictive uncertainty fields for FNO, CA-FNO and CNO ensembles. The figure illustrates that the supervised route has already been tested on spatial phase-field outputs and that reliability must be assessed locally around cracks rather than only through global scalar error.}
+    \label{fig:c5_supervised_uncertainty_fields}
+\end{figure}
+
+
+WP2 will not treat low global error as sufficient evidence of reliability.
+Future supervised models will be evaluated using local crack-region metrics, multi-step rollout behaviour, field-level consistency and uncertainty calibration.
+The first extension will be to fatigue-relevant trajectories and controlled loading variations.
+Later extensions will add pavement-relevant material ranges, boundary-condition families and identified initial states from WP1.
+The deliverable of WP2 is a calibrated supervised crack-growth surrogate.
+It should predict future damage or crack-state fields from known or identified current states, and it should quantify uncertainty locally near crack tips and active damage zones.
+
+\subsection[Work Package 3: Hybrid Validation under Partial Data]{Work Package 3: Hybrid Validation: Identification and Prediction under Partial Data}
+
+Work Package~3 (WP3) validates the complete chain under partial data.
+This work package is not just a registration pipeline, and it is not a return to pure PIDL.
+Its purpose is to test whether partial observations can be converted into useful state and input estimates, whether those estimates improve future prediction, and whether physics-informed constraints improve the chain once data supervision is available.
+The core validation loop is
+\[
+    \mathbf{y}_t \;\rightarrow\; \hat{\mathbf{z}}_t,\hat{\boldsymbol{\theta}} \;\rightarrow\; \hat{\mathbf{z}}_{t+\Delta t} \;\rightarrow\; \mathrm{field\mbox{-}level\;and\;uncertainty\;audit}.
+\]
+The first arrow is identification, the second arrow is prediction, and the final stage is validation.
+In synthetic or semi-synthetic tests, the hidden FEM fields are known, so both identification error and prediction error can be measured.
+In repeated inspection tests, the later observation provides a weaker but practically relevant validation target.
+
+\paragraph{WP3.1: Partial-observation validation benchmarks.}
+The first task is to construct validation benchmarks in which the hidden state is known but the model is only given degraded observations.
+Full FEM or phase-field trajectories will be converted into partial observations: crack masks, crack-tip points, noisy width maps, missing regions, sparse surface samples or repeated observations at selected times.
+These degraded observations will be designed to mimic what inspection can and cannot provide.
+This benchmark will separate three questions that are often mixed together.
+First, can the current hidden state be identified from the partial observation?
+Second, can future crack growth be predicted from the identified state?
+Third, does uncertainty coverage remain valid in the crack region when the initial state is uncertain?
+This separation is necessary because a poor prediction may come from state non-identifiability, surrogate error, registration error or physics-model mismatch.
+
+\paragraph{WP3.2: Identification-to-prediction comparison.}
+The second task is to compare prediction strategies under the same partial-data conditions.
+A direct baseline will predict future damage from crack masks or geometry channels alone.
+An identification-informed route will first infer a hidden state and uncertain inputs using WP1, then pass them to the WP2 surrogate.
+A hybrid route will add weak physics constraints or physics-informed features.
+The key question is whether explicit identification improves prediction compared with direct image-to-field or mask-to-field prediction.
+The validation metrics will include hidden-field reconstruction error, parameter-recovery error, crack-tip prediction error, local damage-field error, fatigue-history error where available, active-driver error where available, crack-region uncertainty coverage, rollout stability and physical-violation counts.
+These metrics make the validation local and state-based rather than only scalar or image-based.
+
+\paragraph{WP3.3: Hybrid physics/data ablations.}
+The third task is to test whether physics helps once data are available.
+The comparison will include at least three levels. The first level is data-supervised prediction without explicit physics terms.
+The second level adds weak constraints that require only damage-like outputs, such as bounded damage, damage irreversibility, crack-surface energy regularity and process-zone smoothness.
+The third level, if richer fields are available or regenerated from FEM, adds stronger terms such as elastic-equilibrium residuals, phase-field residuals, fatigue-history update consistency and active-driver consistency.
+This staged design avoids the main weakness of the first-year PIDL route.
+The model is not asked to find the entire fracture solution from physics loss alone.
+Instead, data provide the main supervision, and physics is tested as an incremental source of consistency, regularisation and uncertainty control.
+If physics improves identification or rollout reliability, it becomes part of the final framework.
+If it does not, the negative result is still informative because it identifies which physical constraints are not useful under the available data and model class. These stronger terms will not be used simply to increase the raw tensile driver. Their purpose is to test whether the coupled active-driver, fatigue-history and fatigue-degradation feedback can be made more consistent with the reference fields during rollout.
+
+\paragraph{WP3.4: Uncertainty propagation and decision-level outputs.}
+The final task is to propagate uncertainty through the full chain.
+The prediction will not be reported as a single deterministic crack path.
+It will include uncertainty from registration, state identification, material/loading parameters and surrogate model error.
+Maintenance-relevant indicators can then be derived cautiously, such as probability of crack extension beyond a threshold, expected crack-tip movement, widening risk or uncertainty around an active damage zone.
+These indicators will not be presented as a fully validated remaining-useful-life map unless field-scale validation becomes available.
+The expected output is a locally calibrated crack-growth prediction prototype under partial observations.
+
+The planned validation routes are listed in Appendix~\ref{app:c5_future_work_supporting_tables}.
+
+The deliverable of WP3 is a hybrid validation framework for partial-data crack-growth prediction.
+It closes the loop between inspection outputs, hidden-state identification, supervised prediction and field-level reliability checks.
+It also defines the final role of PIDL-derived physics: not as a pure standalone predictor, but as a set of constraints and diagnostics that may improve a data-supervised pipeline.
+
+\section{Research Programme and Risk Assessment}
+
+The revised programme is organised around a minimum viable thesis rather than a field-ready deployment promise.
+The main completion risk is that the full route from inspection data to hidden-state identification, calibrated neural prediction and field-scale pavement validation is too large to complete at full depth within one PhD.
+The work packages are therefore staged so that each one can produce a defensible contribution even if later field-scale validation is limited.
+The minimum deliverables are: a data-supported identification pipeline tested on synthetic or semi-synthetic observations;
+a supervised phase-field neural-operator study with crack-region uncertainty calibration; and a hybrid partial-data validation study that tests the identification--prediction chain.
+These deliverables answer the central research question by showing how data can support hidden fracture-state identification and how identified states can be propagated for future prediction under uncertainty.
+The first technical risk is data availability. Real pavement observations may not include repeated views, reliable registration, crack width, structural proxies, boundary-condition information or loading histories.
+This risk will be managed by starting with synthetic degradation of FEM fields, then moving to semi-synthetic or open inspection data where possible.
+The claim will be limited according to the available data.
+
+The second technical risk is non-identifiability.
+Visible crack geometry alone may not uniquely determine internal damage, fatigue history, material degradation or loading history.
+The programme treats this as a research output rather than as a failure.
+WP1 and WP3 will quantify identifiability limits and propagate uncertainty instead of reconstructing a single deterministic hidden state.
+The third technical risk is surrogate reliability. A neural operator may achieve low global error while remaining overconfident near cracks.
+WP2 therefore uses crack-region calibration, coverage, rollout stability and local field metrics as primary reliability gates.
+These metrics are used as reliability gates before any pavement-level claim is made.
+
+The fourth technical risk is physics-regularisation failure.
+Physics-informed losses may not improve prediction if the available fields are insufficient or if the physics terms are poorly balanced.
+For this reason, physics-informed extensions are placed after supervised baselines and are treated as ablations.
+If they improve identification or rollout reliability, they become part of the final framework.
+If they do not, their contribution remains diagnostic: they define which physical assumptions fail to add value under the available data. 
+
+The fifth technical risk is benchmark transfer. A supervised surrogate that performs well on controlled phase-field datasets may not transfer directly to pavement-relevant materials, boundary conditions or traffic-like loading histories. This risk will be managed by treating material realism, boundary-condition realism and loading-history realism as staged transition tests, rather than as assumptions built into the final claim.
+
+\section{Chapter Summary}
+
+This chapter has revised the future research plan around a data-centred identification--prediction route.
+The first future task is identification: estimating crack-growth initial states and uncertain material or loading inputs from partial observations.
+The second task is prediction: learning calibrated supervised neural operators that propagate identified states into future damage fields.
+The third task is hybrid validation: testing the full identification--prediction chain under partial data and assessing whether physics-informed constraints improve reliability once data supervision is available.
+In this revised structure, the original pure-PIDL work package is not continued as the main future route.
+Its useful components are retained as physics requirements, field-level validation gates and optional regularisation terms.
+This keeps the long-term pavement aim connected to a defensible staged programme rather than to a field-ready prediction claim.

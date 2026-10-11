@@ -1,0 +1,7 @@
+case,source_vtk,state,quantity,figure,min,max
+umax020_fatigue_off,fields_000001_024.vtk,"final step 24, U=0.200",d,umax020_fatigue_off_cycle24_d.png,-0.00024056911934167147,1.0150058269500732
+umax020_fatigue_off,fields_000001_024.vtk,"final step 24, U=0.200",alpha,umax020_fatigue_off_cycle24_alpha.png,-0.1186055839061737,2.5623538494110107
+umax020_fatigue_off,fields_000001_024.vtk,"final step 24, U=0.200",H,umax020_fatigue_off_cycle24_H.png,0.0,0.0
+umax020_fatigue_off,fields_000001_024.vtk,"final step 24, U=0.200",Dalpha,umax020_fatigue_off_cycle24_Dalpha.png,-0.07357453554868698,0.276707261800766
+umax020_fatigue_off,fields_000001_024.vtk,"final step 24, U=0.200",f(alpha),umax020_fatigue_off_cycle24_falpha.png,1.0,1.0
+umax020_fatigue_off,peak_load_c1.vtk,"peak step 17, U=0.165",d,umax020_fatigue_off_peak_cycle17_d.png,-0.00024600079632364213,1.0151984691619873

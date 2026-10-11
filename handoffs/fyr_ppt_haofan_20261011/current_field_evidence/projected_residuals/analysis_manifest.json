@@ -1,0 +1,47 @@
+{
+  "output_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals",
+  "figures": [
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/figures/projected_residual_damage_selected_states.png",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/figures/projected_residual_damage_selected_states.pdf",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/figures/projected_residual_history_selected_states.png",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/figures/projected_residual_history_selected_states.pdf",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/figures/projected_residual_fatigue_selected_states.png",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/figures/projected_residual_fatigue_selected_states.pdf",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/figures/projected_residual_driver_selected_states.png",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/figures/projected_residual_driver_selected_states.pdf",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/figures/tail_dense_projected_fields_vs_fem_c89.png",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/figures/tail_dense_projected_fields_vs_fem_c89.pdf",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/figures/tail_dense_projected_residuals_vs_fem_c89.png",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/figures/tail_dense_projected_residuals_vs_fem_c89.pdf"
+  ],
+  "tables": [
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/tables/projection_quality.csv",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/tables/projected_residual_summary.csv",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/fem/three_case_compare_20260701/analysis/state_mechanism_compare_20260701/projected_residuals/tables/tail_dense_projected_residual_summary.csv"
+  ],
+  "projection": {
+    "method": "polygon_overlap_area_weighted",
+    "n_fem_cells": 86408,
+    "n_projected_cells": 86408,
+    "n_overlap_pairs": 453236,
+    "overlap_count_p50": 3.0,
+    "overlap_count_p90": 7.0,
+    "overlap_count_p99": 29.0,
+    "overlap_area_ratio_mean": 0.9999999999999762,
+    "overlap_area_ratio_p01": 0.9999999999999873,
+    "overlap_area_ratio_p50": 1.0,
+    "overlap_area_ratio_p99": 1.0000000000000118,
+    "overlap_area_ratio_min": 0.999999999970571,
+    "overlap_area_ratio_max": 1.0000000000000238,
+    "fem_area_mean": 1.1573002499768542e-05,
+    "note": "PIDL triangle fields are area-averaged onto each FEM quadrilateral using polygon-overlap weights.",
+    "pidl_mesh_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/upload code/SENS_tensile/meshed_geom_fem_soft_hist0.msh",
+    "pidl_mesh_n_triangles": 90000,
+    "pidl_mesh_area_sum": 1.0000000000000002,
+    "pidl_diag_area_sum": 1.0000000133914,
+    "pidl_centroid_max_abs_error": 6.119410195237762e-08,
+    "pidl_area_max_abs_error": 3.4111602431607935e-13,
+    "pidl_centroid_p99_abs_error": 4.943211867614039e-08,
+    "pidl_area_p99_abs_error": 3.4110214652827153e-13
+  }
+}

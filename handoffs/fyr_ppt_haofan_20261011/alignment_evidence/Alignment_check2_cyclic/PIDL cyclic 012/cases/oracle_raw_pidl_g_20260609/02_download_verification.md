@@ -1,0 +1,30 @@
+# Download Verification: oracle_raw_pidl_g_20260609
+
+Status: downloaded and verified on 2026-06-09.
+
+- remote run id: `oracle_triplet_8970066_20260609_182141`
+- remote archive: `/mnt/data2/drtao/pidl_archives/oracle_triplet_8970066_20260609_182141/oracle_raw_pidl_g_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc80_Nstep400_U0.12_oracle_raw_pidl_g_full_s0.25-0.5-0.75-1-0`
+- local archive: `raw_archive/oracle_raw_pidl_g_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc80_Nstep400_U0.12_oracle_raw_pidl_g_full_s0.25-0.5-0.75-1-0/`
+- local log: `logs/raw_pidl_g.log`
+- local provenance/code snippets: `run_workspace/RUN_PROVENANCE.txt`, `run_workspace/run_fem_mesh_oracle_field_umax.py`, `run_workspace/_launch_oracle_triplet_taobo.sh`
+
+Archive checks:
+
+- file count: 1161 files.
+- total size: 2307799192 bytes, about 2.149 GiB.
+- final checkpoint/model: found `best_models/checkpoint_step_346.pt` and `best_models/trained_1NN_346.pt`.
+- scalar histories: found in `best_models/`, including `Kt_vs_cycle.npy`.
+- gradient diagnostics: found `best_models/energy_gradient_terms_vs_cycle.npy`.
+- alpha snapshots: 22 files.
+- element diagnostics: 17 `.npz` files in `element_diagnostics_oracle_raw_pidl_g/`, steps `0000, 0003, 0004, 0008, 0009, 0013, 0014, 0098, 0099, 0198, 0199, 0298, 0299, 0343, 0344, 0345, 0346`.
+- analysis package: regenerated; 18 figure files and 9 table files present.
+
+Log stop evidence:
+
+- first boundary fracture detection: PIDL step `343`, which maps to `c69_peak`.
+- confirmation stop: PIDL step `346`.
+- final visible trace: `alpha_bar_max=8.0804e+03`, `f_min=0.0000`, `f_mean=0.9118`, `alpha_max@bdy=1.0120`, `N_bdy>0.95=20`.
+
+Missing artifacts:
+
+- true unloaded prehistory PIDL state is not available; PIDL step `0000` is load factor `0.25`, not `state0_initial_unloaded_prehistory`.

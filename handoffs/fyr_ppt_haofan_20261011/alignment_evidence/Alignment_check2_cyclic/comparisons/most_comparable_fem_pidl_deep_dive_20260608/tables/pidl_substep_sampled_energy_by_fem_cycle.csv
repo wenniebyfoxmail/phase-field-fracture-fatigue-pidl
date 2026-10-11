@@ -1,0 +1,10 @@
+cycle,pidl_step_peak,pidl_step_end,pidl_E_el_peak,pidl_E_d_end,pidl_E_hist_end,pidl_E_hist_pre_alpha_refresh,source
+1,3,4,0.0047925636172294,0.005434347782284,0.0,4.053516022395343e-06,"PIDL stateTiming substeps, sampled states only"
+2,8,9,0.0047920886427164,0.0053960396908223,0.0,4.127450210944517e-06,"PIDL stateTiming substeps, sampled states only"
+3,13,14,0.0047929738648235,0.0053545101545751,0.0,4.0428544707538094e-06,"PIDL stateTiming substeps, sampled states only"
+4,18,19,0.0047930157743394,0.0053112222813069,0.0,3.977474534622161e-06,"PIDL stateTiming substeps, sampled states only"
+10,48,49,0.0046373596414923,0.0051792985759675,0.0,3.995670340373181e-06,"PIDL stateTiming substeps, sampled states only"
+20,98,99,0.0042588086798787,0.0050443271175026,0.0,4.069578608323354e-06,"PIDL stateTiming substeps, sampled states only"
+40,198,199,0.00329483859241,0.0049036042764782,0.0,4.1496477933833376e-06,"PIDL stateTiming substeps, sampled states only"
+60,298,299,0.0021811048500239,0.004910594318062,0.0,4.139239990763599e-06,"PIDL stateTiming substeps, sampled states only"
+69,343,344,0.001602633157745,0.0049935416318476,0.0,4.0575209823146e-06,"PIDL stateTiming substeps, sampled states only"

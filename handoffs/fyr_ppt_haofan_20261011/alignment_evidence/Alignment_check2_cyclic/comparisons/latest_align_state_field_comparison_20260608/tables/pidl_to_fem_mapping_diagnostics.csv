@@ -1,0 +1,2 @@
+distance_min,distance_mean,distance_p99,distance_max,count_min,count_max,count_unique
+0.00047134472884010123,0.0019351278736976806,0.0037648223477326818,0.0037648339580515994,2,2,"{""2"": 45000}"

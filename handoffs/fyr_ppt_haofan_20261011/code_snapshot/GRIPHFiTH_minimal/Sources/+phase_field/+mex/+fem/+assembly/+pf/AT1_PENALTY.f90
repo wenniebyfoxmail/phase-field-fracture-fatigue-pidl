@@ -1,0 +1,127 @@
+! Copyright (C) 2021-2023 ETH Zurich, SIS ID and CompMech D-MAVT
+!
+! Licensed under the Apache License, Version 2.0 (the "License");
+! you may not use this file except in compliance with the License.
+! You may obtain a copy of the License at
+!
+!    http://www.apache.org/licenses/LICENSE-2.0
+!
+! Unless required by applicable law or agreed to in writing, software
+! distributed under the License is distributed on an "AS IS" BASIS,
+! WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+! See the License for the specific language governing permissions and
+! limitations under the License.
+#include "fintrf.h"
+!======================================================================
+! [K_d_vect, res_field_vars, history_vars_new] = AT1_PENALTY(...
+!     MESH, DOFS, t, QUADRATURE, MAT_CHAR, CC, ...
+!     field_vars, field_vars_old, field_vars_coupling,...
+!     stress_state,...
+!     history_vars_old...
+! );
+!===============================================================================
+! Purpose: Calculation of the non zero entries of the damage (phase-field) tangent stiffness matrix and the damage (phase-field) residual vector, 
+! using 'AT1' for the energy dissipation function and the 'Penalty method' for the irreversibility
+!
+! Inputs:
+! MESH             --> MATLAB Structure array with mesh parameters: number of nodes, number of elements, number of elements on Neumann boundary ...
+! DOFS             --> MATLAB Structure array with degrees of freedom (dof) parameters: number of dof, number of dof per node, number of dof on Neumann boundary ...
+! t                --> MATLAB Scalar representing the specimen thickness
+! QUADRATURE       --> MATLAB Structure array with quadrature parameters: Gauss points, weights, shape functions, their derivatives ...
+! MAT_CHAR         --> MATLAB Matrix with materials' parameters: Young Modulus, Poisson ratio, Fracture toughness ...
+! CC               --> MATLAB Matrix representing the undamaged stiffness tensor in Voigt notation
+! field_vars       --> MATLAB Vector representing the damage field at the nodes
+! field_vars_old   --> MATLAB Vector representing the damage field at the nodes at the previous time step
+! field_vars_coupling  --> MATLAB Vector coupling field vars
+! stress_state     --> MATLAB Scalar (Integer) representing the PlaneStrain (1) or PlaneStress (2)
+! history_vars_old --> Not used in this routine
+!
+! Outputs:
+! K_d_vect         --> MATLAB Vector representing the nonzero entries of the damage (phase-field) tangent stiffness matrix
+! res_field_vars   --> MATLAB Vector representing the damage (phase-field) residual vector
+! history_vars_new --> Copy of history_vars_old
+!===============================================================================
+!-----
+!     Gateway routine
+subroutine mexFunction(nlhs, plhs, nrhs, prhs)
+
+  use types, only: MAT_CHAR_t, QUADRATURE_t, MESH_t
+  use mod_pf_at1_penalty, only: pf_at1_penalty
+  use mex_utils, only: &
+       real_from_matlab, vector_real_from_matlab, &
+       integer_from_matlab, vector_integer_from_matlab, &
+       matrix_real_from_matlab, &
+       tensor_3_real_from_matlab, &
+       mesh_from_matlab, quadrature_from_matlab, &
+       vector_MAT_CHAR_from_matlab
+  use scalar_utils, only: dp
+
+  implicit none
+
+  integer nlhs, nrhs
+
+  !     mexFunction arguments:
+  mwPointer plhs(*), prhs(*)
+
+  !     Function declarations:
+  mwPointer mxCreateDoubleMatrix, mxGetPr, mxDuplicateArray
+
+  !     Pointers to output mxArrays:
+  mwPointer KK_d_pr, res_p_field_pr
+
+  !Allocate memory for variable
+  !Dynamic allocation INPUT PARAMETERS
+  type(MESH_t) :: MESH
+  type(QUADRATURE_t) :: QUADRATURE
+  type(MAT_CHAR_t), dimension(:), allocatable :: MAT_CHAR
+
+  real(kind=dp), allocatable :: strain_en_undgr(:, :), pfield(:), pfield_old(:)
+  real(kind=dp) t
+
+  !Dynamic allocation ROUTINE & OUTPUT PARAMETERS
+  real(kind=dp), allocatable :: KK_d_vector(:), res_p_field(:)
+
+
+  !=================================================================
+  !**********************************
+  !     Check for proper number of arguments.
+  if (nrhs .ne. 11) then
+     call mexErrMsgIdAndTxt('MATLAB:prhs_assembly:nInput', '11 inputs required.')
+  elseif (nlhs .ne. 4) then
+     call mexErrMsgIdAndTxt('MATLAB:matsq:nOutput', '4 outputs required.')
+  end if
+
+  call mesh_from_matlab(MESH, prhs(1))
+  ! DOFS not used
+  call real_from_matlab(t, mxGetPr(prhs(3)))
+  call quadrature_from_matlab(QUADRATURE, prhs(4))
+  call vector_MAT_CHAR_from_matlab(MAT_CHAR, prhs(5))
+  ! CC not used
+  call vector_real_from_matlab(pfield, mxGetPr(prhs(7)), MESH%num_node)
+  call vector_real_from_matlab(pfield_old, mxGetPr(prhs(8)), MESH%num_node)
+  call matrix_real_from_matlab(strain_en_undgr, mxGetPr(prhs(9)), MESH%num_elem, QUADRATURE%num_gauss_pts)
+  ! stress_state not used
+  ! history_vars_old not used
+
+  !=================================================================
+  allocate (KK_d_vector(MESH%num_elem*MESH%nel*MESH%nel))
+  allocate (res_p_field(MESH%num_node))
+
+  call pf_at1_penalty(MESH, t, QUADRATURE, MAT_CHAR, &
+       strain_en_undgr, pfield, pfield_old, &
+       KK_d_vector, res_p_field)
+
+  ! OUTPUT OF THE RESULTS
+  plhs(1) = mxCreateDoubleMatrix(MESH%num_elem*MESH%nel*MESH%nel, 1, 0)
+  plhs(2) = mxCreateDoubleMatrix(MESH%num_node, 1, 0)
+  plhs(3) = mxDuplicateArray(prhs(7))
+  plhs(4) = mxDuplicateArray(prhs(11))
+
+  KK_d_pr = mxGetPr(plhs(1))
+  res_p_field_pr = mxGetPr(plhs(2))
+
+  call mxCopyReal8ToPtr(KK_d_vector, KK_d_pr, MESH%num_elem*MESH%nel*MESH%nel)
+  call mxCopyReal8ToPtr(res_p_field, res_p_field_pr, MESH%num_node)
+
+  return
+end subroutine mexFunction

@@ -1,0 +1,7 @@
+gate_item,status,evidence,limitation
+archive_completion,supports,"Local raw archive is present with final checkpoint, selected NPZ diagnostics, scalar histories, and gradient NPY.",None for archive presence.
+state_mapping,supports,Skill mapping applied: cN_peak -> PIDL step 5*(N-1)+3; cN_unloaded -> PIDL step 5*(N-1)+4.,"PIDL step0 is a loaded audit point, not verified unloaded prehistory."
+pidl_scalar_histories,supports,"Final history max 8080.35, f_min 1.53139e-08, f_mean 0.911837, Kt 1840.33.",Scalar traces are PIDL-only.
+gradient_balance,negative_for_mechanism,"At step 346 grad_E_hist=7.347308e+04, grad_E_el=8.719799e+02, grad_E_d=9.245477e+01.",Needs loss-weight and FEM mismatch interpretation.
+c1_fatigue_mask,mixed,Fatigue factor is still 1 in both FEM and PIDL at c1 peak; c1 history/fatigue-driver residuals remain non-zero.,Mask audit separates the tip-x0 band from the left precrack line band and uses PIDL-to-FEM area aggregation.
+purpose_gate,mixed,Analysis was regenerated with corrected counter mapping and complete local diagnostics.,"Full alignment still needs overlap metrics, state0, incremental energy, and fuller mechanics residual interpretation."

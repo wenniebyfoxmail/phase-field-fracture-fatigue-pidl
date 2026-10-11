@@ -1,0 +1,537 @@
+"""
+fem_supervision.py — MIT-8 (Apr 25 2026; Apr 27 full-sweep update)
+
+Loads FEM ψ⁺_raw snapshots and provides per-cycle target tensors aligned
+to PIDL element centroids via nearest-neighbor interpolation.
+
+FEM data format. Three layouts are auto-detected inside the FEM dir:
+
+  (a) FLAT (Mac handoff_v2):
+        u<NN>_cycle_<NNNN>.mat                 e.g. u12_cycle_0040.mat
+        mesh_geometry.mat
+
+  (b) NESTED (Windows full export):
+        SENT_PIDL_<NN>_export/psi_fields/cycle_<NNNN>.mat
+        mesh_geometry.mat                       (anywhere at top level)
+
+  (c) COMPACT v7.3/HDF5 cyclewise export:
+        *_element_fields_c1_cXX.mat
+        mesh_geometry.mat
+
+The per-cycle files contain `psi_elem` (N_FEM_elem, 1). Compact files contain
+cycle-by-element fields such as `psi_plus_elem` and `d_elem`.
+
+The dir is resolved in this priority order:
+    1. ctor arg `fem_dir` (explicit override)
+    2. env var `FEM_DATA_DIR` (Windows / cluster override)
+    3. DEFAULT_FEM_DIR (Mac local handoff_v2 path)
+
+Available cycles are auto-discovered from filesystem — no hardcoded
+cycle list. When a requested cycle exists exactly, no interpolation is
+applied (Apr 27 finding: Windows has full per-cycle dump for all 5 Umax,
+making time-interp unnecessary on that machine).
+
+Usage from runner:
+    fem_sup = FEMSupervision(umax=0.12)
+    target = fem_sup.psi_target_at_cycle(j, pidl_centroids)  # tensor
+"""
+from __future__ import annotations
+import os
+import re
+from pathlib import Path
+import numpy as np
+import scipy.io as sio
+import torch
+
+DEFAULT_FEM_DIR = Path("/Users/wenxiaofang/Downloads/_pidl_handoff_v2/"
+                       "psi_snapshots_for_agent")
+
+
+def _resolve_fem_dir(explicit: Path | str | None) -> Path:
+    if explicit is not None:
+        return Path(explicit)
+    env = os.environ.get("FEM_DATA_DIR")
+    if env:
+        return Path(env)
+    return DEFAULT_FEM_DIR
+
+
+def _u_tag(umax: float) -> str:
+    return f"u{int(round(umax * 100)):02d}"
+
+
+def _orient_by_last_dim(arr: np.ndarray, n_cols: int) -> np.ndarray:
+    out = np.asarray(arr)
+    if out.ndim == 2 and out.shape[0] == n_cols and out.shape[1] != n_cols:
+        return out.T
+    return out
+
+
+def _center_if_unit_square(centroids: np.ndarray) -> np.ndarray:
+    out = np.asarray(centroids, dtype=np.float64).copy()
+    if out.ndim != 2 or out.shape[1] < 2:
+        return out
+    xy = out[:, :2]
+    if (
+        xy[:, 0].min() >= -1e-9
+        and xy[:, 1].min() >= -1e-9
+        and xy[:, 0].max() <= 1.0 + 1e-9
+        and xy[:, 1].max() <= 1.0 + 1e-9
+    ):
+        out[:, :2] = xy - 0.5
+    return out
+
+
+class FEMSupervision:
+    """Loads FEM ψ⁺_raw snapshots, provides time + space interpolation."""
+
+    def __init__(self, umax: float, fem_dir: Path | str | None = None):
+        self.umax = umax
+        self.fem_dir = _resolve_fem_dir(fem_dir)
+        if not self.fem_dir.is_dir():
+            raise FileNotFoundError(
+                f"FEM data dir not found: {self.fem_dir}. "
+                f"Set FEM_DATA_DIR env var or pass fem_dir= to override.")
+        self._discover_cycles()
+        if not self.cycles:
+            raise ValueError(
+                f"No FEM snapshots for umax={umax} in {self.fem_dir}. "
+                f"Looked for '{_u_tag(umax)}_cycle_*.mat' (flat), "
+                f"'{_u_tag(umax)}_reverseBC_cycle_*.mat' (reverseBC), "
+                f"'SENT_PIDL_{int(round(umax*100)):02d}_export/psi_fields/"
+                f"cycle_*.mat' (nested), and '*_element_fields_c*_c*.mat' "
+                f"(compact).")
+        self._load_mesh()
+        self._load_snapshots()
+
+    # ------------------------------------------------------------------
+    # Layout discovery
+    # ------------------------------------------------------------------
+    def _discover_cycles(self) -> None:
+        """Scan filesystem for cycle dump files; populate self.cycles + self._path_for[c]."""
+        u_tag = _u_tag(self.umax)
+        u_pct = int(round(self.umax * 100))
+        path_for: dict[int, Path] = {}
+        compact_path: Path | None = None
+
+        # Layout (a) FLAT
+        flat_re = re.compile(rf"^{re.escape(u_tag)}_cycle_(\d+)\.mat$")
+        for p in self.fem_dir.glob(f"{u_tag}_cycle_*.mat"):
+            m = flat_re.match(p.name)
+            if m:
+                path_for[int(m.group(1))] = p
+
+        # Layout (a2) reverseBC handoff:
+        #   u12_reverseBC_cycle_0040.mat
+        reverse_re = re.compile(rf"^{re.escape(u_tag)}_reverseBC_cycle_(\d+)\.mat$")
+        for p in self.fem_dir.glob(f"{u_tag}_reverseBC_cycle_*.mat"):
+            m = reverse_re.match(p.name)
+            if m:
+                path_for[int(m.group(1))] = p
+
+        # Layout (b) NESTED — only used to fill cycles not already found in flat
+        nested_root = self.fem_dir / f"SENT_PIDL_{u_pct:02d}_export" / "psi_fields"
+        if nested_root.is_dir():
+            nested_re = re.compile(r"^cycle_(\d+)\.mat$")
+            for p in nested_root.glob("cycle_*.mat"):
+                m = nested_re.match(p.name)
+                if m:
+                    c = int(m.group(1))
+                    path_for.setdefault(c, p)
+
+        # Layout (c) COMPACT — MATLAB v7.3/HDF5 all-cycle field handoff.
+        # Use only when no per-cycle files were found, so older layouts keep
+        # their exact behavior.
+        if not path_for:
+            for p in sorted(self.fem_dir.glob("*_element_fields_c*_c*.mat")):
+                try:
+                    import h5py
+                    with h5py.File(p, "r") as h5:
+                        if "cycles" not in h5:
+                            continue
+                        if "d_elem" not in h5 and "psi_plus_elem" not in h5:
+                            continue
+                        cycles = np.asarray(h5["cycles"]).ravel().astype(int)
+                except Exception:
+                    continue
+                compact_path = p
+                for c in cycles:
+                    path_for[int(c)] = p
+                break
+
+        self._compact_path = compact_path
+        self._path_for = path_for
+        self.cycles = sorted(path_for.keys())
+
+    def _load_mesh(self) -> None:
+        # mesh_geometry.mat may sit at either FEM_DATA_DIR root or alongside the
+        # nested export dir. Search both.
+        candidates = [
+            self.fem_dir / "mesh_geometry.mat",
+            self.fem_dir.parent / "mesh_geometry.mat",
+        ]
+        for c in candidates:
+            if c.is_file():
+                mesh = sio.loadmat(str(c))
+                self.fem_centroids = _center_if_unit_square(
+                    _orient_by_last_dim(mesh["element_centroids"], 2)
+                )
+                return
+        compact_path = getattr(self, "_compact_path", None)
+        if compact_path is not None:
+            import h5py
+
+            with h5py.File(compact_path, "r") as h5:
+                self.fem_centroids = _center_if_unit_square(
+                    _orient_by_last_dim(np.asarray(h5["element_centroids"], dtype=np.float64), 2)
+                )
+                return
+        raise FileNotFoundError(
+            f"mesh_geometry.mat not found near {self.fem_dir}. "
+            f"Checked: {[str(c) for c in candidates]}")
+
+    def _load_snapshots(self) -> None:
+        """Load all cycle snapshots into self.psi_raw[c] = array(N_FEM,)."""
+        self.psi_raw: dict[int, np.ndarray] = {}
+        self.d_field: dict[int, np.ndarray] = {}
+        self.alpha_bar: dict[int, np.ndarray] = {}
+        self.f_fatigue: dict[int, np.ndarray] = {}
+        self._interp_index_cache: dict[tuple[bytes, tuple[int, ...], str], np.ndarray] = {}
+        compact_path = getattr(self, "_compact_path", None)
+        if compact_path is not None:
+            self._load_compact_hdf5_snapshots(compact_path)
+            return
+        for c in self.cycles:
+            fname = self._path_for[c]
+            data = sio.loadmat(str(fname))
+            self.psi_raw[c] = np.asarray(data["psi_elem"], dtype=np.float64).ravel()
+            # d_elem is optional in nested-layout files; tolerate absence
+            d = data.get("d_elem", data.get("alpha_elem"))
+            if d is not None:
+                self.d_field[c] = np.asarray(d, dtype=np.float64).ravel()
+            ab = data.get("alpha_bar_elem", data.get("hist_fat_elem"))
+            if ab is not None:
+                self.alpha_bar[c] = np.asarray(ab, dtype=np.float64).ravel()
+            ff = data.get("f_fatigue_elem")
+            if ff is not None:
+                self.f_fatigue[c] = np.asarray(ff, dtype=np.float64).ravel()
+
+    def _load_compact_hdf5_snapshots(self, fname: Path) -> None:
+        """Load compact MATLAB v7.3 all-cycle FEM fields."""
+        import h5py
+
+        with h5py.File(fname, "r") as h5:
+            cycles = np.asarray(h5["cycles"]).ravel().astype(int)
+
+            def by_cycle(name: str) -> np.ndarray | None:
+                if name not in h5:
+                    return None
+                arr = np.asarray(h5[name], dtype=np.float64)
+                if arr.ndim != 2:
+                    raise ValueError(f"{fname}:{name} must be 2-D, got {arr.shape}")
+                if arr.shape[0] == len(cycles):
+                    return arr
+                if arr.shape[1] == len(cycles):
+                    return arr.T
+                raise ValueError(
+                    f"{fname}:{name} shape {arr.shape} is incompatible with "
+                    f"{len(cycles)} cycles")
+
+            psi = by_cycle("psi_plus_elem")
+            if psi is None:
+                psi = by_cycle("psi_elem")
+            d = by_cycle("d_elem")
+            if d is None:
+                d = by_cycle("alpha_elem")
+            alpha_bar = by_cycle("alpha_bar_elem")
+            if alpha_bar is None:
+                alpha_bar = by_cycle("hist_fat_elem")
+            f_fatigue = by_cycle("f_fatigue_elem")
+
+        for i, c in enumerate(cycles):
+            if psi is not None:
+                self.psi_raw[int(c)] = psi[i].ravel()
+            if d is not None:
+                self.d_field[int(c)] = d[i].ravel()
+            if alpha_bar is not None:
+                self.alpha_bar[int(c)] = alpha_bar[i].ravel()
+            if f_fatigue is not None:
+                self.f_fatigue[int(c)] = f_fatigue[i].ravel()
+
+    def _interpolate_to_pidl(self, fem_field: np.ndarray,
+                             pidl_centroids: np.ndarray) -> np.ndarray:
+        """Nearest-neighbor: for each PIDL element, find closest FEM element."""
+        from scipy.spatial import cKDTree
+        pidl_arr = np.ascontiguousarray(np.asarray(pidl_centroids, dtype=np.float64))
+        key = (pidl_arr.tobytes(), pidl_arr.shape, str(pidl_arr.dtype))
+        idx = self._interp_index_cache.get(key)
+        if idx is None:
+            if not hasattr(self, "_fem_tree"):
+                self._fem_tree = cKDTree(self.fem_centroids)
+            _, idx = self._fem_tree.query(pidl_arr, k=1)
+            self._interp_index_cache[key] = idx
+        return fem_field[idx]   # shape (N_PIDL,)
+
+    def _field_at_cycle(self, series: dict[int, np.ndarray],
+                        cycle_idx: int) -> np.ndarray:
+        """Return a FEM element field at cycle_idx, interpolating in cycle time."""
+        if not series:
+            raise RuntimeError("Requested FEM field series is unavailable.")
+        if cycle_idx in series:
+            return series[cycle_idx]
+
+        c_lo, c_hi = self._bracket_cycles(cycle_idx)
+        if c_lo not in series or c_hi not in series:
+            avail = sorted(series.keys())
+            c_use = min(avail, key=lambda c: abs(c - cycle_idx))
+            return series[c_use]
+        if c_hi == c_lo:
+            return series[c_lo]
+        t = (cycle_idx - c_lo) / (c_hi - c_lo)
+        return (1.0 - t) * series[c_lo] + t * series[c_hi]
+
+    def psi_target_at_cycle(self, cycle_idx: int,
+                            pidl_centroids: np.ndarray,
+                            *, device: torch.device | None = None,
+                            dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        """Return FEM ψ⁺_raw target at given cycle, on PIDL collocation.
+
+        If the requested cycle_idx exists exactly in the dataset, use it
+        directly (no interpolation). Otherwise linearly interpolate between
+        the bracketing available cycles. Out-of-range requests clamp to
+        nearest end.
+        """
+        psi = self._interpolate_to_pidl(
+            self._field_at_cycle(self.psi_raw, cycle_idx), pidl_centroids
+        )
+        out = torch.from_numpy(psi).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def active_target_at_cycle(self, cycle_idx: int,
+                               pidl_centroids: np.ndarray,
+                               *, residual_stiffness: float = 0.0,
+                               device: torch.device | None = None,
+                               dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        """Return FEM active fatigue driver g(d_FEM)·ψ⁺_raw at PIDL elements."""
+        if not self.d_field:
+            raise RuntimeError(
+                "FEM .mat files do not contain d_elem/alpha_elem; "
+                "active fatigue-driver oracle unavailable."
+            )
+        psi = self._field_at_cycle(self.psi_raw, cycle_idx)
+        d = self._field_at_cycle(self.d_field, cycle_idx)
+        g_fem = (1.0 - d) ** 2 + float(residual_stiffness)
+        active = self._interpolate_to_pidl(g_fem * psi, pidl_centroids)
+        out = torch.from_numpy(active).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def g_stiffness_target_at_cycle(self, cycle_idx: int,
+                                    pidl_centroids: np.ndarray,
+                                    *, residual_stiffness: float = 0.0,
+                                    device: torch.device | None = None,
+                                    dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        """Return FEM stiffness degradation g(d_FEM) at PIDL elements."""
+        if not self.d_field:
+            raise RuntimeError(
+                "FEM .mat files do not contain d_elem/alpha_elem; "
+                "stiffness oracle unavailable."
+            )
+        d = self._field_at_cycle(self.d_field, cycle_idx)
+        g_fem = (1.0 - d) ** 2 + float(residual_stiffness)
+        out_np = self._interpolate_to_pidl(g_fem, pidl_centroids)
+        out = torch.from_numpy(out_np).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def alpha_target_at_cycle(self, cycle_idx: int,
+                              pidl_centroids: np.ndarray,
+                              *, device: torch.device | None = None,
+                              dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        """Return FEM d_elem (= α phase-field) target at given cycle, on PIDL collocation.
+
+        Mirrors psi_target_at_cycle() but loads from self.d_field instead of self.psi_raw.
+        d_elem ∈ [0, 1] is the phase-field damage variable at each FEM element.
+
+        ★ 2026-05-14: enables α-direct supervision per user request. Used when
+        supervised_dict.target_kind == 'alpha'.
+        """
+        if not self.d_field:
+            raise RuntimeError(
+                "FEM .mat files do not contain d_elem field — alpha supervision unavailable. "
+                "Re-export FEM snapshots with d_elem to use this path.")
+        d = self._interpolate_to_pidl(
+            self._field_at_cycle(self.d_field, cycle_idx), pidl_centroids
+        )
+        out = torch.from_numpy(d).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def alpha_bar_target_at_cycle(self, cycle_idx: int,
+                                  pidl_centroids: np.ndarray,
+                                  *, device: torch.device | None = None,
+                                  dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        """Return FEM fatigue history alpha_bar at PIDL elements."""
+        if not self.alpha_bar:
+            raise RuntimeError(
+                "FEM .mat files do not contain alpha_bar_elem/hist_fat_elem; "
+                "delta-history oracle unavailable."
+            )
+        ab = self._interpolate_to_pidl(
+            self._field_at_cycle(self.alpha_bar, cycle_idx), pidl_centroids
+        )
+        out = torch.from_numpy(ab).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def alpha_bar_delta_target_at_cycle(
+        self,
+        cycle_idx: int,
+        pidl_centroids: np.ndarray,
+        *,
+        initial_zero: bool = True,
+        device: torch.device | None = None,
+        dtype: torch.dtype = torch.float32,
+    ) -> torch.Tensor:
+        """Return positive FEM alpha_bar increment for one physical cycle."""
+        if not self.alpha_bar:
+            raise RuntimeError(
+                "FEM .mat files do not contain alpha_bar_elem/hist_fat_elem; "
+                "delta-history oracle unavailable."
+            )
+        current = self._field_at_cycle(self.alpha_bar, cycle_idx)
+        if initial_zero and cycle_idx <= self.cycles[0]:
+            previous = np.zeros_like(current)
+        else:
+            previous = self._field_at_cycle(self.alpha_bar, cycle_idx - 1)
+        delta = np.maximum(current - previous, 0.0)
+        out_np = self._interpolate_to_pidl(delta, pidl_centroids)
+        out = torch.from_numpy(out_np).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def f_fatigue_target_at_cycle(self, cycle_idx: int,
+                                  pidl_centroids: np.ndarray,
+                                  *, device: torch.device | None = None,
+                                  dtype: torch.dtype = torch.float32) -> torch.Tensor:
+        """Return FEM fatigue degradation factor f(alpha_bar) at PIDL elements."""
+        if not self.f_fatigue:
+            raise RuntimeError(
+                "FEM .mat files do not contain f_fatigue_elem; "
+                "fatigue-factor oracle unavailable."
+            )
+        f_val = self._interpolate_to_pidl(
+            self._field_at_cycle(self.f_fatigue, cycle_idx), pidl_centroids
+        )
+        out = torch.from_numpy(f_val).to(dtype=dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+
+    def alpha_supervised_loss(self, alpha_pidl_per_elem: torch.Tensor,
+                              cycle_idx: int,
+                              pidl_centroids: np.ndarray,
+                              lambda_sup: float = 1.0,
+                              loss_kind: str = "mse_lin",
+                              mask: torch.Tensor | None = None) -> torch.Tensor:
+        """Compute λ·MSE(α_PIDL_per_elem, d_elem_FEM_interp).
+
+        ★ 2026-05-14: α-direct supervision (parallel to supervised_loss for ψ⁺).
+        α ∈ [0,1] is well-conditioned for linear MSE (no log transform needed).
+
+        Args:
+          alpha_pidl_per_elem: (n_elem,) — NN α projected to elements (node-mean over T_conn).
+          loss_kind: 'mse_lin' (default for α; no log since well-conditioned)
+                     'mse_log' (parallel to ψ⁺ for direct comparison; uses log(α+eps))
+          mask: bool tensor (n_elem,) — sparse anchor support.
+        """
+        target = self.alpha_target_at_cycle(
+            cycle_idx, pidl_centroids,
+            device=alpha_pidl_per_elem.device,
+            dtype=alpha_pidl_per_elem.dtype)
+        eps = 1e-12
+        if loss_kind == "mse_lin":
+            perel = (alpha_pidl_per_elem - target) ** 2
+        elif loss_kind == "mse_log":
+            perel = (torch.log10(alpha_pidl_per_elem.clamp(min=eps))
+                   - torch.log10(target.clamp(min=eps))) ** 2
+        elif loss_kind == "mse_rel":
+            perel = ((alpha_pidl_per_elem - target) / (target.abs() + eps)) ** 2
+        else:
+            raise ValueError(f"unknown loss_kind={loss_kind}")
+
+        if mask is None:
+            loss = perel.mean()
+        else:
+            mask_b = mask.to(perel.device).bool()
+            n = int(mask_b.sum().item())
+            if n == 0:
+                loss = perel.new_zeros(())
+            else:
+                loss = perel[mask_b].mean()
+        return lambda_sup * loss
+
+    def _bracket_cycles(self, cycle_idx: int) -> tuple[int, int]:
+        """Return (c_lo, c_hi) bracketing cycle_idx; equal if exact or out of range."""
+        if cycle_idx <= self.cycles[0]:
+            return (self.cycles[0], self.cycles[0])
+        if cycle_idx >= self.cycles[-1]:
+            return (self.cycles[-1], self.cycles[-1])
+        for i in range(len(self.cycles) - 1):
+            if self.cycles[i] <= cycle_idx <= self.cycles[i + 1]:
+                return (self.cycles[i], self.cycles[i + 1])
+        return (self.cycles[0], self.cycles[0])
+
+    def supervised_loss(self, psi_pidl_raw_per_elem: torch.Tensor,
+                        cycle_idx: int,
+                        pidl_centroids: np.ndarray,
+                        lambda_sup: float = 1.0,
+                        loss_kind: str = "mse_log",
+                        mask: torch.Tensor | None = None) -> torch.Tensor:
+        """Compute λ·loss(ψ⁺_PIDL_raw, ψ⁺_FEM_raw_interp) at cycle_idx.
+
+        loss_kind:
+          'mse_log' — MSE on log10(ψ⁺ + eps), recommended (handles 8 orders of
+              magnitude variation in ψ⁺_raw without dominating gradient at tip)
+          'mse_lin' — plain MSE (will be dominated by tip element)
+          'mse_rel' — MSE on relative error (ψ_p - ψ_f)/(ψ_f + eps), elementwise
+
+        ★ 2026-05-14: mask parameter for sparse boundary-anchor supervision.
+        mask: bool tensor (n_elem,) — True for elements included in MSE.
+            None = all elements (historical full-domain MIT-8 behavior).
+            Sparse boundary anchor: True only at boundary/crack-path indices.
+        """
+        target = self.psi_target_at_cycle(
+            cycle_idx, pidl_centroids,
+            device=psi_pidl_raw_per_elem.device,
+            dtype=psi_pidl_raw_per_elem.dtype)
+        eps = 1e-12
+        if loss_kind == "mse_log":
+            perel = (torch.log10(psi_pidl_raw_per_elem.clamp(min=eps))
+                   - torch.log10(target.clamp(min=eps))) ** 2
+        elif loss_kind == "mse_lin":
+            perel = (psi_pidl_raw_per_elem - target) ** 2
+        elif loss_kind == "mse_rel":
+            perel = ((psi_pidl_raw_per_elem - target) / (target.abs() + eps)) ** 2
+        else:
+            raise ValueError(f"unknown loss_kind={loss_kind}")
+
+        if mask is None:
+            loss = perel.mean()
+        else:
+            # Mask-weighted mean: divide by count of True entries
+            mask_b = mask.to(perel.device).bool()
+            n = int(mask_b.sum().item())
+            if n == 0:
+                # Defensive: empty mask gives no signal (skip supervised loss)
+                loss = perel.new_zeros(())
+            else:
+                loss = perel[mask_b].mean()
+        return lambda_sup * loss
