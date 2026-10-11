@@ -17,6 +17,12 @@ Check that:
    check, receipt, and failure handling are exhaustive and deterministic;
 5. producer guards require clean exact-commit Taobo execution and fresh `/mnt/data2` output;
 6. fixture tests and audit-only execution do not decode U0.125 scientific arrays.
+7. the experiment-wide packet-build and inference attempt markers survive both
+   success and failure, and per-cycle progress is durable without computing a
+   subset primary result;
+8. the frozen post-run analysis script produces the predeclared decision,
+   cyclewise, c1/c37/c73 field-view, and README evidence without changing the
+   verdict.
 
 A pass authorises one permanent unsealing/build followed by one Taobo inference.
 It does not establish scientific success or Evidence Ready.
