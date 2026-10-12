@@ -75,3 +75,33 @@ and README_analysis with allowed/blocked conclusions.
 Raw destination: `local_archive/experiments/S03-E015-D01/runs/` under the parent
 project; native raw files stay in E012-D01-R001. Mac CPU lightweight image
 analysis only. Preparation uses R000; full diagnostic uses R001.
+
+## 2026-10-12 development result (not formal closure)
+
+Execution succeeded, local retrieval verified. Code sanity passed Gaussian
+width recovery, affine intensity invariance, weak/censored cases, pixel-center
+geometry, prefix-only unequal-load forecasts and direct image sampler. Source
+commit `9e23d23c633f0534cb6d33eed22087b121195b43`; R000 4.75 s, R001 6.78 s.
+
+168/168 guided crack profiles and 96/96 eligible pair-transects computable.
+Equal-beam MAE: persistence **0.923453 px**, secant **0.439486 px**, fixed
+half-secant **0.556366 px**. Secant lower by **52.408%**; all three beam means
+and seven/eight origins favor it. Beam 4 40->50 kN secant slightly worse
+(0.755200 vs persistence 0.752652); unchanged support and old verdicts preserved.
+
+First/last medians are 29.10/32.17, 6.83/10.82 and 12.07/14.80 pixels. This
+positive development signal selects continuation of the crack-local route,
+NOT a validated physical width/prediction claim. No held-out beam, independent
+reference or independent review. Background detections **56/168** disqualify
+calling this an automatic crack identifier. Beam 4 median tangential-location
+sensitivity **1.44 px** exceeds median stage width change **0.78 px**;
+local correspondence/reference is the next bottleneck.
+
+Disposition **repair then advance**: independent first/last edge checks and
+local correspondence/repeatability before claim promotion; keep secant as the
+benchmark, defer neural architectures. Minimum figures/reading guide and exact
+tables stored in R001; all panels inspected, no blank/mislabelled stages,
+first/last spans overlay stored measurements without refitting.
+
+Archive: `/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E015-D01/runs/`.
+Compact evidence: `evidence/`; receipts: `runs/`. Measurement protocol unchanged.

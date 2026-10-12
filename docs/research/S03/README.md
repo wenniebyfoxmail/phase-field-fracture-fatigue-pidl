@@ -47,3 +47,13 @@ prefilter reduced null-field discrepancy by 82.954%; all beams improved.
 History extrapolation still did not beat persistence on the new smoothed target.
 Next: direct crack/reference geometry and profile observables, with the
 dominant Beam 4 crack correctly covered. Do not expand neural architectures yet.
+
+2026-10-12 — [S03-E015-D01](S03-E015-D01/experiment.md) replaced texture-grid
+means with origin-only assisted native transverse profiles (36 transects,
+14 stages, 168 measured profiles). On this NEW image-width observable, secant
+beat persistence in all three beam means and seven/eight origins; equal-beam
+MAE 0.923453 -> 0.439486 native px (-52.408%), full 96/96 pair-transect support.
+This preserves a useful history signal, not physical metrology or held-out
+forecast validity. Background detections 56/168 and Beam 4 spatial sensitivity
+select independent edge/local-correspondence checks next. Earlier E012/E013
+negative baseline comparisons remain valid for their DIFFERENT targets.

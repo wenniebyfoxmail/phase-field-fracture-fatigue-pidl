@@ -1,0 +1,27 @@
+{
+  "experiment_id": "S03-E015-D01",
+  "run_id": "S03-E015-D01-R000",
+  "protocol": "development-v1",
+  "producer": "Mac-PIDL CPU offline diagnostic",
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 99005,
+  "source_commit": "9e23d23c633f0534cb6d33eed22087b121195b43",
+  "git_dirty": false,
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/d01_crack_profile_diagnostic.py",
+    "--prepare",
+    "--source",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E012-D01/runs/S03-E012-D01-R001",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E015-D01/runs/S03-E015-D01-R000"
+  ],
+  "started_at_utc": "2026-10-12T16:58:46.800223+00:00",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "independent_review": "pending_development_only",
+  "gpu": null,
+  "origin_only": true,
+  "ended_at_utc": "2026-10-12T16:58:51.513380+00:00",
+  "runtime_seconds": 4.7497458750149235
+}

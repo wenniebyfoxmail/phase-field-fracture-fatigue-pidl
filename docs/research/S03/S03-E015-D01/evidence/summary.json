@@ -1,0 +1,74 @@
+{
+  "run_id": "S03-E015-D01-R001",
+  "protocol": "development-v1",
+  "states": 14,
+  "independent_beams": 3,
+  "forecast_pairs": 8,
+  "transects_per_beam": 12,
+  "per_beam": [
+    {
+      "beam": 4,
+      "states": 4,
+      "origin_eligible": 12,
+      "valid_crack_profiles": 48,
+      "profile_opportunities": 48,
+      "background_detections": 20,
+      "median_width_first_px": 29.10450067543595,
+      "median_width_last_px": 32.168656451074774,
+      "median_absolute_stage_change_px": 0.7770051704656247,
+      "median_tangent_shift_sensitivity_px": 1.441718594132542,
+      "scored_pair_transects": 24,
+      "eligible_pair_transects": 24,
+      "persistence": 0.8433803347657496,
+      "secant": 0.6005804415825005,
+      "conservative_secant": 0.6576039002406109
+    },
+    {
+      "beam": 5,
+      "states": 6,
+      "origin_eligible": 12,
+      "valid_crack_profiles": 72,
+      "profile_opportunities": 72,
+      "background_detections": 32,
+      "median_width_first_px": 6.826220695741994,
+      "median_width_last_px": 10.819363567951365,
+      "median_absolute_stage_change_px": 0.8683180170966809,
+      "median_tangent_shift_sensitivity_px": 0.7477826611354503,
+      "scored_pair_transects": 48,
+      "eligible_pair_transects": 48,
+      "persistence": 0.8461324295401756,
+      "secant": 0.43021884794235876,
+      "conservative_secant": 0.43896174585057673
+    },
+    {
+      "beam": 6,
+      "states": 4,
+      "origin_eligible": 12,
+      "valid_crack_profiles": 48,
+      "profile_opportunities": 48,
+      "background_detections": 4,
+      "median_width_first_px": 12.074978929722796,
+      "median_width_last_px": 14.80314679429404,
+      "median_absolute_stage_change_px": 0.954470199743211,
+      "median_tangent_shift_sensitivity_px": 0.6964874826791698,
+      "scored_pair_transects": 24,
+      "eligible_pair_transects": 24,
+      "persistence": 1.0808476812565706,
+      "secant": 0.287659508015561,
+      "conservative_secant": 0.5725320266078937
+    }
+  ],
+  "equal_beam_MAE_native_px": {
+    "persistence": 0.9234534818541653,
+    "secant": 0.4394862658468068,
+    "conservative_secant": 0.5563658908996938
+  },
+  "relative_change_vs_persistence": {
+    "secant": -0.5240840231991113,
+    "conservative_secant": -0.3975160613585116
+  },
+  "scientific_verdict": "DEVELOPMENT_DIAGNOSTIC_ONLY",
+  "physical_width_validated": false,
+  "held_out_generalisation": false,
+  "formal_review": "pending"
+}

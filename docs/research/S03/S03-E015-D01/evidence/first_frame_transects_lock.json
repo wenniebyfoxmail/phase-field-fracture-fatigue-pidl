@@ -1,0 +1,1197 @@
+{
+  "protocol": "development-v1",
+  "source_run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E012-D01/runs/S03-E012-D01-R001",
+  "beams": {
+    "4": {
+      "origin_source": "Beam 4/G4-IB-Fixed/G4-IB_t=225.JPG",
+      "native_shape": [
+        3744,
+        5616
+      ],
+      "working_shape": [
+        1333,
+        2000
+      ],
+      "transects": [
+        {
+          "id": 1,
+          "rough_center": [
+            4963.724999999999,
+            1272.375
+          ],
+          "center": [
+            4956.566055418603,
+            1271.2295688669767
+          ],
+          "normal": [
+            -0.9874406319167057,
+            -0.15799050110667046
+          ],
+          "control_center": [
+            2100.0,
+            1480.0
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": -0.75,
+            "depth_gray": 84.13969029017858,
+            "shoulder_noise_gray": 4.343778759765627,
+            "qc_threshold_gray": 13.03133627929688,
+            "relative_contrast": 0.8814851711038842,
+            "fwhm_native_px": 16.11679716197495,
+            "left_crossing_px": -4.417563183522542,
+            "right_crossing_px": 11.699233978452408,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 2,
+          "rough_center": [
+            4940.325,
+            1418.625
+          ],
+          "center": [
+            4927.1794579964735,
+            1416.964510483765
+          ],
+          "normal": [
+            -0.9921163776246258,
+            -0.12531996348942448
+          ],
+          "control_center": [
+            2100.0,
+            1547.2727272727273
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 72.537109375,
+            "shoulder_noise_gray": 3.235265683593749,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.801515020718232,
+            "fwhm_native_px": 26.351330837573556,
+            "left_crossing_px": -17.524474110435314,
+            "right_crossing_px": 8.82685672713824,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 3,
+          "rough_center": [
+            4928.625,
+            1550.25
+          ],
+          "center": [
+            4938.898559984137,
+            1552.418862663318
+          ],
+          "normal": [
+            -0.978434284203546,
+            -0.2065583488874146
+          ],
+          "control_center": [
+            2100.0,
+            1614.5454545454545
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 79.296875,
+            "shoulder_noise_gray": 1.620421679687496,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8499413833528722,
+            "fwhm_native_px": 13.277629960455847,
+            "left_crossing_px": -5.542039509621178,
+            "right_crossing_px": 7.7355904508346685,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 4,
+          "rough_center": [
+            4884.75,
+            1681.875
+          ],
+          "center": [
+            4882.885990656918,
+            1681.1501074776902
+          ],
+          "normal": [
+            -0.9320046715412961,
+            -0.36244626115494843
+          ],
+          "control_center": [
+            2100.0,
+            1681.8181818181818
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 79.0703125,
+            "shoulder_noise_gray": 4.416974550781245,
+            "qc_threshold_gray": 13.250923652343737,
+            "relative_contrast": 0.8833129691045558,
+            "fwhm_native_px": 17.60018549522077,
+            "left_crossing_px": -8.487924348723956,
+            "right_crossing_px": 9.112261146496815,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 5,
+          "rough_center": [
+            4826.25,
+            1813.5
+          ],
+          "center": [
+            4808.541911240715,
+            1806.613521038056
+          ],
+          "normal": [
+            -0.9320046715412957,
+            -0.36244626115494866
+          ],
+          "control_center": [
+            2100.0,
+            1749.090909090909
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 83.443359375,
+            "shoulder_noise_gray": 1.8269473632812534,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.9068775206962428,
+            "fwhm_native_px": 33.509090584689986,
+            "left_crossing_px": -21.431400627854504,
+            "right_crossing_px": 12.07768995683548,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 6,
+          "rough_center": [
+            4782.375,
+            1945.1249999999998
+          ],
+          "center": [
+            4781.889300496751,
+            1945.0062734547612
+          ],
+          "normal": [
+            -0.9713990064967771,
+            -0.2374530904769913
+          ],
+          "control_center": [
+            2100.0,
+            1816.3636363636363
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 81.3798828125,
+            "shoulder_noise_gray": 1.820311376953125,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.9004203178856606,
+            "fwhm_native_px": 29.40047411710206,
+            "left_crossing_px": -23.308904895654013,
+            "right_crossing_px": 6.091569221448046,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 7,
+          "rough_center": [
+            4761.9,
+            2076.75
+          ],
+          "center": [
+            4762.148470933668,
+            2076.7776078815186
+          ],
+          "normal": [
+            -0.993883734673619,
+            -0.11043152607484646
+          ],
+          "control_center": [
+            2100.0,
+            1883.6363636363635
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 81.375,
+            "shoulder_noise_gray": 2.6575798046875097,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.9004149377593361,
+            "fwhm_native_px": 30.532456096769153,
+            "left_crossing_px": -22.36768818875051,
+            "right_crossing_px": 8.164767908018645,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 8,
+          "rough_center": [
+            4753.125,
+            2208.375
+          ],
+          "center": [
+            4748.957532128314,
+            2207.5415064256626
+          ],
+          "normal": [
+            -0.9805806756909203,
+            -0.1961161351381827
+          ],
+          "control_center": [
+            2100.0,
+            1950.909090909091
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 81.548828125,
+            "shoulder_noise_gray": 2.3609632812499965,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.910365428222571,
+            "fwhm_native_px": 29.822812887631592,
+            "left_crossing_px": -20.025148441792695,
+            "right_crossing_px": 9.797664445838896,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 9,
+          "rough_center": [
+            4709.25,
+            2340.0
+          ],
+          "center": [
+            4710.19868329805,
+            2340.3162277660167
+          ],
+          "normal": [
+            -0.9486832980505138,
+            -0.31622776601683794
+          ],
+          "control_center": [
+            2100.0,
+            2018.181818181818
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 79.1953125,
+            "shoulder_noise_gray": 2.879487187500004,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8992282444779561,
+            "fwhm_native_px": 28.808527233769837,
+            "left_crossing_px": -23.6524034454015,
+            "right_crossing_px": 5.156123788368336,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 10,
+          "rough_center": [
+            4665.375,
+            2471.625
+          ],
+          "center": [
+            4656.059483580936,
+            2469.761896716187
+          ],
+          "normal": [
+            -0.9805806756909197,
+            -0.196116135138186
+          ],
+          "control_center": [
+            2100.0,
+            2085.4545454545455
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 83.828125,
+            "shoulder_noise_gray": 1.7206819531250013,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.9254786958771779,
+            "fwhm_native_px": 31.760345743590182,
+            "left_crossing_px": -26.17251515310743,
+            "right_crossing_px": 5.587830590482752,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 11,
+          "rough_center": [
+            4656.599999999999,
+            2603.25
+          ],
+          "center": [
+            4663.080428259255,
+            2602.7459666909467
+          ],
+          "normal": [
+            -0.9969889629624745,
+            0.0775435860081904
+          ],
+          "control_center": [
+            2100.0,
+            2152.7272727272725
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 85.42236328125,
+            "shoulder_noise_gray": 3.8033250732421875,
+            "qc_threshold_gray": 11.409975219726562,
+            "relative_contrast": 0.941450289250639,
+            "fwhm_native_px": 31.50406987778318,
+            "left_crossing_px": -17.984934712983492,
+            "right_crossing_px": 13.51913516479969,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 12,
+          "rough_center": [
+            4685.849999999999,
+            2734.875
+          ],
+          "center": [
+            4681.945251759264,
+            2735.7427218312746
+          ],
+          "normal": [
+            -0.9761870601839527,
+            0.21693045781865616
+          ],
+          "control_center": [
+            2100.0,
+            2220.0
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 69.9814453125,
+            "shoulder_noise_gray": 3.4383682324218734,
+            "qc_threshold_gray": 10.315104697265621,
+            "relative_contrast": 0.8827311809413533,
+            "fwhm_native_px": 24.875940658967387,
+            "left_crossing_px": -18.413508769257717,
+            "right_crossing_px": 6.462431889709668,
+            "valid": true,
+            "reason": "ok"
+          }
+        }
+      ]
+    },
+    "5": {
+      "origin_source": "Beam 5/G5-IB-Fixed/G5-IB_t=228.JPG",
+      "native_shape": [
+        3744,
+        5616
+      ],
+      "working_shape": [
+        1333,
+        2000
+      ],
+      "transects": [
+        {
+          "id": 1,
+          "rough_center": [
+            4094.9999999999995,
+            1433.25
+          ],
+          "center": [
+            4107.786265148584,
+            1441.56107234658
+          ],
+          "normal": [
+            -0.8384436163006379,
+            -0.5449883505954127
+          ],
+          "control_center": [
+            1900.0,
+            1480.0
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 75.19140625,
+            "shoulder_noise_gray": 1.636865136718749,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.7574469759571872,
+            "fwhm_native_px": 5.602663456091854,
+            "left_crossing_px": -3.301907588509605,
+            "right_crossing_px": 2.300755867582249,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 2,
+          "rough_center": [
+            4018.95,
+            1550.25
+          ],
+          "center": [
+            4021.4939949120153,
+            1551.8399968200094
+          ],
+          "normal": [
+            -0.8479983040050879,
+            -0.5299989400031799
+          ],
+          "control_center": [
+            1900.0,
+            1556.3636363636363
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 82.203125,
+            "shoulder_noise_gray": 1.1851974999999981,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8174966980032632,
+            "fwhm_native_px": 4.034323491031732,
+            "left_crossing_px": -2.2925722391586563,
+            "right_crossing_px": 1.741751251873076,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 3,
+          "rough_center": [
+            3948.7499999999995,
+            1667.25
+          ],
+          "center": [
+            3955.5339864320404,
+            1671.4899915200253
+          ],
+          "normal": [
+            -0.8479983040050879,
+            -0.5299989400031799
+          ],
+          "control_center": [
+            1900.0,
+            1632.7272727272727
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 83.087890625,
+            "shoulder_noise_gray": 1.8126756835937503,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8411800763253119,
+            "fwhm_native_px": 5.809554414789778,
+            "left_crossing_px": -1.4969510464262545,
+            "right_crossing_px": 4.312603368363524,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 4,
+          "rough_center": [
+            3872.7,
+            1784.25
+          ],
+          "center": [
+            3879.63525042446,
+            1788.2377689940647
+          ],
+          "normal": [
+            -0.8669063030575356,
+            -0.49847112425808243
+          ],
+          "control_center": [
+            1900.0,
+            1709.090909090909
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 88.9541015625,
+            "shoulder_noise_gray": 2.0719341894531293,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8450049630323664,
+            "fwhm_native_px": 6.815790325595279,
+            "left_crossing_px": -3.0382655288153564,
+            "right_crossing_px": 3.777524796779923,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 5,
+          "rough_center": [
+            3814.2,
+            1901.2499999999998
+          ],
+          "center": [
+            3811.1332443196316,
+            1899.5632843757971
+          ],
+          "normal": [
+            -0.8762159086766471,
+            -0.4819187497721557
+          ],
+          "control_center": [
+            1900.0,
+            1785.4545454545455
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 92.109375,
+            "shoulder_noise_gray": 2.1704466992187483,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8868662554535881,
+            "fwhm_native_px": 6.8366510658887085,
+            "left_crossing_px": -1.5427002283819522,
+            "right_crossing_px": 5.293950837506756,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 6,
+          "rough_center": [
+            3744.0,
+            2018.2499999999998
+          ],
+          "center": [
+            3730.067415730337,
+            2011.457865168539
+          ],
+          "normal": [
+            -0.8988764044943823,
+            -0.43820224719101025
+          ],
+          "control_center": [
+            1900.0,
+            1861.8181818181818
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": -0.25,
+            "depth_gray": 90.03289155505952,
+            "shoulder_noise_gray": 1.4792699414062458,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8575782945974046,
+            "fwhm_native_px": 7.384308148461623,
+            "left_crossing_px": -2.2780994855878856,
+            "right_crossing_px": 5.106208662873738,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 7,
+          "rough_center": [
+            3700.125,
+            2135.25
+          ],
+          "center": [
+            3695.443354112155,
+            2133.494382792058
+          ],
+          "normal": [
+            -0.9363291775690447,
+            -0.3511234415883914
+          ],
+          "control_center": [
+            1900.0,
+            1938.181818181818
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 81.8857421875,
+            "shoulder_noise_gray": 1.013289257812503,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.7865726105269083,
+            "fwhm_native_px": 6.96714181496979,
+            "left_crossing_px": -4.600047618501222,
+            "right_crossing_px": 2.3670941964685683,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 8,
+          "rough_center": [
+            3656.25,
+            2252.25
+          ],
+          "center": [
+            3665.898054800818,
+            2258.508197708639
+          ],
+          "normal": [
+            -0.8389612870276582,
+            -0.5441911050990224
+          ],
+          "control_center": [
+            1900.0,
+            2014.5454545454545
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 92.216796875,
+            "shoulder_noise_gray": 1.022390039062497,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.871913722738269,
+            "fwhm_native_px": 6.446447095471175,
+            "left_crossing_px": -2.2266833278758176,
+            "right_crossing_px": 4.219763767595357,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 9,
+          "rough_center": [
+            3559.725,
+            2351.7
+          ],
+          "center": [
+            3571.673531679037,
+            2366.792882120889
+          ],
+          "normal": [
+            -0.6207029443655603,
+            -0.7840458244617622
+          ],
+          "control_center": [
+            1900.0,
+            2090.909090909091
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 88.43408203125,
+            "shoulder_noise_gray": 2.5120827880859338,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8700955547121588,
+            "fwhm_native_px": 8.352181863862382,
+            "left_crossing_px": -4.439202398696662,
+            "right_crossing_px": 3.9129794651657206,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 10,
+          "rough_center": [
+            3445.6499999999996,
+            2418.975
+          ],
+          "center": [
+            3446.3099176514065,
+            2420.036606656611
+          ],
+          "normal": [
+            -0.527934121125622,
+            -0.8492853252890439
+          ],
+          "control_center": [
+            1900.0,
+            2167.272727272727
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 95.072265625,
+            "shoulder_noise_gray": 1.9198718554687495,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8679147722207364,
+            "fwhm_native_px": 7.889904632601892,
+            "left_crossing_px": -3.5751124961955205,
+            "right_crossing_px": 4.314792136406371,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 11,
+          "rough_center": [
+            3343.2749999999996,
+            2486.25
+          ],
+          "center": [
+            3342.174976137912,
+            2484.8889535265694
+          ],
+          "normal": [
+            -0.6285850640501084,
+            -0.777740841960303
+          ],
+          "control_center": [
+            1900.0,
+            2243.6363636363635
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 95.4453125,
+            "shoulder_noise_gray": 1.628557226562504,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8834333646684503,
+            "fwhm_native_px": 19.88097380047507,
+            "left_crossing_px": -13.065159766735746,
+            "right_crossing_px": 6.815814033739324,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 12,
+          "rough_center": [
+            3232.125,
+            2591.5499999999997
+          ],
+          "center": [
+            3244.504403662394,
+            2604.6171483103044
+          ],
+          "normal": [
+            -0.6877446479107834,
+            -0.7259526839058265
+          ],
+          "control_center": [
+            1900.0,
+            2320.0
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 93.375,
+            "shoulder_noise_gray": 1.4529397265624997,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8365061590145577,
+            "fwhm_native_px": 4.751785923004393,
+            "left_crossing_px": -2.8766605957987696,
+            "right_crossing_px": 1.8751253272056232,
+            "valid": true,
+            "reason": "ok"
+          }
+        }
+      ]
+    },
+    "6": {
+      "origin_source": "Beam 6/G6-IB-Fixed/G6-IB_t=183.JPG",
+      "native_shape": [
+        3744,
+        5616
+      ],
+      "working_shape": [
+        1333,
+        2000
+      ],
+      "transects": [
+        {
+          "id": 1,
+          "rough_center": [
+            4010.1749999999997,
+            1749.1499999999999
+          ],
+          "center": [
+            4020.372518811967,
+            1763.9827546355884
+          ],
+          "normal": [
+            -0.5665288228870664,
+            -0.8240419241993668
+          ],
+          "control_center": [
+            1350.0,
+            1480.0
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 94.43115234375,
+            "shoulder_noise_gray": 2.738845644531236,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.883715723143989,
+            "fwhm_native_px": 15.096267705415585,
+            "left_crossing_px": -5.099219907039479,
+            "right_crossing_px": 9.997047798376105,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 2,
+          "rough_center": [
+            3916.575,
+            1813.5
+          ],
+          "center": [
+            3925.4991406582385,
+            1827.0802140451458
+          ],
+          "normal": [
+            -0.5491778866608371,
+            -0.8357054797012742
+          ],
+          "control_center": [
+            1350.0,
+            1547.2727272727273
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": -0.5,
+            "depth_gray": 92.06941964285714,
+            "shoulder_noise_gray": 2.63149089843751,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8846923520744009,
+            "fwhm_native_px": 18.57975290615066,
+            "left_crossing_px": -6.043462778140842,
+            "right_crossing_px": 12.536290128009815,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 3,
+          "rough_center": [
+            3805.4249999999997,
+            1883.6999999999998
+          ],
+          "center": [
+            3809.8957390694572,
+            1890.929280197421
+          ],
+          "normal": [
+            -0.5259693022891466,
+            -0.8505035526377702
+          ],
+          "control_center": [
+            1350.0,
+            1614.5454545454545
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.25,
+            "depth_gray": 99.8065662202381,
+            "shoulder_noise_gray": 4.286495546875009,
+            "qc_threshold_gray": 12.859486640625025,
+            "relative_contrast": 0.8605613695972142,
+            "fwhm_native_px": 20.402775533174754,
+            "left_crossing_px": -4.713000285758386,
+            "right_crossing_px": 15.68977524741637,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 4,
+          "rough_center": [
+            3694.2749999999996,
+            1950.975
+          ],
+          "center": [
+            3702.579272362487,
+            1962.861507499246
+          ],
+          "normal": [
+            -0.5727084387922078,
+            -0.8197591378790431
+          ],
+          "control_center": [
+            1350.0,
+            1681.8181818181818
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 104.3994140625,
+            "shoulder_noise_gray": 2.055101191406252,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.896906697540963,
+            "fwhm_native_px": 18.21522811818562,
+            "left_crossing_px": -6.661174924235139,
+            "right_crossing_px": 11.554053193950484,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 5,
+          "rough_center": [
+            3591.8999999999996,
+            2032.8749999999998
+          ],
+          "center": [
+            3607.0211273490995,
+            2050.863927363584
+          ],
+          "normal": [
+            -0.6434522276212663,
+            -0.7654862707908157
+          ],
+          "control_center": [
+            1350.0,
+            1749.090909090909
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 102.8984375,
+            "shoulder_noise_gray": 3.306479296874995,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8796500367327856,
+            "fwhm_native_px": 19.05320614696845,
+            "left_crossing_px": -2.1256700115304312,
+            "right_crossing_px": 16.927536135438018,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 6,
+          "rough_center": [
+            3492.45,
+            2120.625
+          ],
+          "center": [
+            3501.032047913625,
+            2131.04605818083
+          ],
+          "normal": [
+            -0.6357072528611004,
+            -0.7719302356170493
+          ],
+          "control_center": [
+            1350.0,
+            1816.3636363636363
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 102.265625,
+            "shoulder_noise_gray": 2.6667357421875026,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8647113224996698,
+            "fwhm_native_px": 9.116249619971207,
+            "left_crossing_px": -1.3524683413389718,
+            "right_crossing_px": 7.763781278632235,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 7,
+          "rough_center": [
+            3393.0,
+            2196.6749999999997
+          ],
+          "center": [
+            3408.3100377219566,
+            2212.8201306886085
+          ],
+          "normal": [
+            -0.6880915830092914,
+            -0.725623851173435
+          ],
+          "control_center": [
+            1350.0,
+            1883.6363636363635
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 106.5751953125,
+            "shoulder_noise_gray": 2.832652636718751,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8902348497826069,
+            "fwhm_native_px": 11.790348095343553,
+            "left_crossing_px": -7.232818450516708,
+            "right_crossing_px": 4.557529644826845,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 8,
+          "rough_center": [
+            3322.7999999999997,
+            2281.5
+          ],
+          "center": [
+            3322.7999999999997,
+            2281.5
+          ],
+          "normal": [
+            -0.8773711395523855,
+            -0.47981234194271016
+          ],
+          "control_center": [
+            1350.0,
+            1950.909090909091
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 111.9814453125,
+            "shoulder_noise_gray": 2.255635527343741,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.887551568534873,
+            "fwhm_native_px": 11.66731566469004,
+            "left_crossing_px": -5.202524570854863,
+            "right_crossing_px": 6.464791093835176,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 9,
+          "rough_center": [
+            3290.625,
+            2383.875
+          ],
+          "center": [
+            3277.216293862309,
+            2377.7293430202253
+          ],
+          "normal": [
+            -0.909064822894284,
+            -0.41665471049321406
+          ],
+          "control_center": [
+            1350.0,
+            2018.181818181818
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 100.1806640625,
+            "shoulder_noise_gray": 2.9574643359374964,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.8801575249028339,
+            "fwhm_native_px": 12.35960976410204,
+            "left_crossing_px": -4.30290158444921,
+            "right_crossing_px": 8.056708179652828,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 10,
+          "rough_center": [
+            3226.2749999999996,
+            2492.1
+          ],
+          "center": [
+            3206.223882360028,
+            2476.3455504257363
+          ],
+          "normal": [
+            -0.7863183388224226,
+            -0.6178215519319036
+          ],
+          "control_center": [
+            1350.0,
+            2085.4545454545455
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 100.625,
+            "shoulder_noise_gray": 2.258786328124998,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.843290666841261,
+            "fwhm_native_px": 9.396708775822233,
+            "left_crossing_px": -3.05424152831476,
+            "right_crossing_px": 6.342467247507474,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 11,
+          "rough_center": [
+            3129.75,
+            2588.625
+          ],
+          "center": [
+            3123.3088780248027,
+            2581.305543210003
+          ],
+          "normal": [
+            -0.6606278948920241,
+            -0.7507135169227558
+          ],
+          "control_center": [
+            1350.0,
+            2152.7272727272725
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 94.486328125,
+            "shoulder_noise_gray": 2.6053606250000008,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.7765542481981476,
+            "fwhm_native_px": 6.7870045685935105,
+            "left_crossing_px": -4.2552992841962665,
+            "right_crossing_px": 2.531705284397244,
+            "valid": true,
+            "reason": "ok"
+          }
+        },
+        {
+          "id": 12,
+          "rough_center": [
+            3006.8999999999996,
+            2685.1499999999996
+          ],
+          "center": [
+            3009.8346523716764,
+            2688.885012109406
+          ],
+          "normal": [
+            -0.617821551931901,
+            -0.7863183388224247
+          ],
+          "control_center": [
+            1350.0,
+            2220.0
+          ],
+          "origin_valid": true,
+          "origin_qc": {
+            "peak_offset_native_px": 0.0,
+            "depth_gray": 85.0302734375,
+            "shoulder_noise_gray": 2.109812744140626,
+            "qc_threshold_gray": 10.0,
+            "relative_contrast": 0.739512998870402,
+            "fwhm_native_px": 3.376046018700574,
+            "left_crossing_px": -1.6534463809304683,
+            "right_crossing_px": 1.722599637770106,
+            "valid": true,
+            "reason": "ok"
+          }
+        }
+      ]
+    }
+  }
+}
