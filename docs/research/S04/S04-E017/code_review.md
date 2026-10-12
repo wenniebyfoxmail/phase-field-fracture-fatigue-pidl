@@ -8,3 +8,8 @@ aggregation, recomputes full/damage/background errors and contributions from
 saved arrays, and rejects disagreement with metrics/step10000 monitor at atol1e-14.
 Synthetic regression proves a hash-consistent contradictory prediction cannot pass.
 48 related local tests passed; corrected exact-commit re-review pending.
+
+Corrected commit ed3adcef880e711aed175578a7da7861cfb746aa received
+CODE READY PASS. Independent recomputation blocker closed; authorization is
+only the frozen12-run Taobo sampling-ratio matrix. Reported local test execution
+was not independently reproduced by the reviewer.
