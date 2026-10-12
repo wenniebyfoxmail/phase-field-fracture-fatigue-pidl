@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""S04-E017 two-state unbiased damage-stratified supervised repair screen."""
+"""S04-E017 four-state unbiased sampling ratio screen."""
 from __future__ import annotations
 
 import argparse

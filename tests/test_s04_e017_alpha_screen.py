@@ -23,6 +23,16 @@ assert AGG_SPEC.loader is not None
 AGG_SPEC.loader.exec_module(AGG)
 
 
+@pytest.fixture(autouse=True)
+def synthetic_reference(monkeypatch):
+    def load(state,path):
+        mass=np.empty(86_756)
+        mass[:100]=.02/100; mass[100:]=.98/(86_756-100)
+        damage=np.zeros(86_756); damage[:100]=.5
+        return {"mass":mass,"damage":damage,"equilibrated_uv":np.zeros((86_756,2))}
+    monkeypatch.setattr(AGG,"validate_reference",load)
+
+
 def _sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -75,16 +85,17 @@ def _write_run(root, state, displacement, *, alpha="0.7", mutation=None):
         "model_state_dict": {},
     }, checkpoint)
     prediction = run / "prediction.npz"
-    np.savez_compressed(prediction, uv=np.zeros((86_756, 2)))
+    uv = np.zeros((86_756,2)); uv[:,0] = displacement * RUNNER.US
+    np.savez_compressed(prediction, uv=uv)
     monitoring = run / "monitoring.json"
     trace = [{
         "step": step, "full_field_loss": displacement ** 2,
         "displacement_mass_rms_over_abs_Us": displacement,
-        "active_contribution": displacement ** 2 * 0.9,
-        "background_contribution": displacement ** 2 * 0.1,
+        "active_contribution": displacement ** 2 * 0.02,
+        "background_contribution": displacement ** 2 * 0.98,
         "p_damage": .02, "p_background": .98,
-        "damage_conditional_rms_over_abs_Us": displacement * (0.9/.02)**.5,
-        "background_conditional_rms_over_abs_Us": displacement * (0.1/.98)**.5,
+        "damage_conditional_rms_over_abs_Us": displacement,
+        "background_conditional_rms_over_abs_Us": displacement,
     } for step in RUNNER.MONITOR_STEPS]
     monitoring.write_text(json.dumps(trace))
     metrics = {
@@ -210,3 +221,16 @@ def test_passive_monitor_does_not_mutate_parameters_or_torch_rng():
     assert entry['full_field_loss']==entry['active_contribution']+entry['background_contribution']
     for key,value in model.state_dict().items(): torch.testing.assert_close(value,before[key],rtol=0,atol=0)
     torch.testing.assert_close(torch.get_rng_state(),rng,rtol=0,atol=0)
+
+
+def test_false_saved_prediction_cannot_pass(tmp_path):
+    def corrupt(record,receipt,monitoring):
+        prediction=monitoring.parent/"prediction.npz"
+        np.savez_compressed(prediction,uv=np.ones((86_756,2)))
+        record["prediction_sha256"]=_sha(prediction)
+        receipt["prediction_sha256"]=_sha(prediction)
+        receipt["archive_file_hashes"][prediction.name]=_sha(prediction)
+    _write_run(tmp_path,"c20s4",.0008,mutation=corrupt)
+    _,summary=AGG.aggregate(tmp_path,"a"*40)
+    assert summary["verdict"]=="INADMISSIBLE"
+    assert any("saved prediction" in e["error"] for e in summary["integrity_errors"])

@@ -32,7 +32,7 @@ v=(y+0.5)(0.5-y) r_2+(y+0.5)Us.
 
 This preserves the exact top/bottom essential BC. No trainable damage output, learned gate, target-residual-based patch, hard output clipping, warm start, alternating optimizer, branch penalty, derivative penalty, or added training steps. Both branches jointly receive the unchanged full-field UV objective.
 
-Parameter count of NeuralNet(2,2,8,w) with eight scalar trainable activation coefficients is 7w²+13w+10. Old 400-wide MLP: 1,125,210. Two 283-wide branches: 1,128,624 (+0.3034%). New arms are exactly matched; old MLP is matched within 1%, not exactly. Assert actual parameter counts from the constructed model; discrepancies block launch. Runtime/FLOPs are recorded, not assumed equal: same step/batch budget does not imply identical compute cost.
+Parameter count of NeuralNet(2,2,8,w) with eight scalar trainable activation coefficients is 7w²+12w+10. Old 400-wide MLP: 1,124,810. Two 283-wide branches: 1,128,058 (+0.28876%). New arms are exactly matched; old MLP is matched within 1%, not exactly. Assert actual parameter counts from the constructed model; discrepancies block launch. Runtime/FLOPs are recorded, not assumed equal: same step/batch budget does not imply identical compute cost.
 
 ## Deterministic localization from allowed information
 
@@ -91,3 +91,11 @@ Reusable paths under existing E014 worktree or shared child repo:
 Implement a small dedicated UV module in a new E018 worktree, not edits in the shared integration tree. Prefer importing pure E013 helpers rather than modifying legacy coupled FieldComputation.
 
 Nontraining checks: model parameter counts, candidate/control initialization equality, exact BC with arbitrary raw outputs, C2 window boundary values/derivatives and damage-node coverage, positive localization scales including zero-width A, target-independent localization via synthetic target perturbation, unbiased loss expectation by exact weighted sums on a toy mesh, identical sampler IDs, trace decomposition identity, and checkpoint/provenance serialization. Then exact-commit independent Code Ready review; formal training only on authorized producer with fresh attributable paths/GPU/PID receipts.
+
+## Arithmetic erratum 2026-10-12
+
+Nontraining construction exposed a one-width-term error in the stated parameter
+count. Correct counts/formula above replace the arithmetic only. Both declared
+architectures remain8x283, with identical counts between candidate/control; no
+model, activation, budget or scientific criterion changes. Actual constructed
+counts must pass unit checks before Code Ready review.

@@ -16,7 +16,7 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_s04_e017_alpha_screen import (  # noqa: E402
     ALLOCATIONS, BATCH_NODES, DAMAGE_THRESHOLD, EXPECTED, MONITOR_STEPS,
-    PROTOCOL_REVISION, SAMPLE_SEED_OFFSET, SEEDS, STEPS,
+    PROTOCOL_REVISION, SAMPLE_SEED_OFFSET, SEEDS, STEPS, US, validate_reference,
 )
 
 THRESHOLDS = {
@@ -56,7 +56,7 @@ def finite_number(value, label: str) -> float:
     return value
 
 
-def validate_record(path: Path, expected_commit: str) -> dict:
+def validate_record(path: Path, expected_commit: str, reference_data: dict) -> dict:
     record = json.loads(path.read_text(encoding="utf-8"))
     state, seed = record.get("state"), record.get("seed")
     alpha = record.get("alpha")
@@ -118,6 +118,7 @@ def validate_record(path: Path, expected_commit: str) -> dict:
             raise ValueError("prediction schema mismatch")
         if not np.isfinite(pred["uv"]).all():
             raise ValueError("prediction contains nonfinite values")
+        saved_uv = pred["uv"].copy()
 
     trace = json.loads(monitoring.read_text(encoding="utf-8"))
     if not isinstance(trace, list) or [entry.get("step") for entry in trace] != list(MONITOR_STEPS):
@@ -225,6 +226,29 @@ def validate_record(path: Path, expected_commit: str) -> dict:
                 raise ValueError("regional probability mismatch")
             if not math.isclose(p_value * rms**2, entry[contribution_key], rel_tol=1e-12, abs_tol=1e-15):
                 raise ValueError("regional RMS/contribution mismatch")
+    data = reference_data[state]
+    probability = data["mass"] / np.sum(data["mass"])
+    active = data["damage"] > DAMAGE_THRESHOLD
+    squared = np.sum((saved_uv - data["equilibrated_uv"])**2, axis=1) / abs(US)**2
+    c_active = float(np.sum(probability[active] * squared[active]))
+    c_background = float(np.sum(probability[~active] * squared[~active]))
+    independently_computed = {
+        "full_field_loss": c_active + c_background,
+        "displacement_mass_rms_over_abs_Us": float(np.sqrt(c_active+c_background)),
+        "active_contribution": c_active, "background_contribution": c_background,
+        "damage_conditional_rms_over_abs_Us": float(np.sqrt(c_active/probability[active].sum())),
+        "background_conditional_rms_over_abs_Us": float(np.sqrt(c_background/probability[~active].sum())),
+        "p_damage": float(probability[active].sum()),
+        "p_background": float(probability[~active].sum()),
+    }
+    if not math.isclose(independently_computed["displacement_mass_rms_over_abs_Us"],
+                        final_displacement, rel_tol=0, abs_tol=1e-14):
+        raise ValueError("saved prediction displacement disagrees with reported metric")
+    for key, value in independently_computed.items():
+        if not math.isclose(value, trace[-1][key], rel_tol=0, abs_tol=1e-14):
+            raise ValueError(f"saved prediction regional metric mismatch: {key}")
+    if record["damage_node_count"] != int(active.sum()) or record["background_node_count"] != int((~active).sum()):
+        raise ValueError("saved reference stratum count mismatch")
     return {
         "state": state,
         "seed": seed,
@@ -243,12 +267,19 @@ def validate_record(path: Path, expected_commit: str) -> dict:
     }
 
 
-def aggregate(input_root: Path, expected_commit: str) -> tuple[list[dict], dict]:
+def aggregate(input_root: Path, expected_commit: str, reference_root: Path | None = None) -> tuple[list[dict], dict]:
     expected = {(state, alpha) for state in EXPECTED for alpha in ALLOCATIONS}
     rows, errors, seen = [], [], set()
+    reference_root = reference_root if reference_root is not None else input_root / "inputs"
+    reference_data = {}
+    for state in EXPECTED:
+        try:
+            reference_data[state] = validate_reference(state, reference_root / f"{state}.npz")
+        except Exception as exc:
+            errors.append({"path": str(reference_root / f"{state}.npz"), "error": str(exc)})
     for path in sorted(input_root.glob("**/metrics.json")):
         try:
-            row = validate_record(path, expected_commit)
+            row = validate_record(path, expected_commit, reference_data)
             pair = (row["state"], row["alpha"])
             if pair in seen:
                 raise ValueError(f"duplicate state-alpha pair {pair}")
@@ -295,12 +326,13 @@ def main() -> None:
     parser.add_argument("--input-root", type=Path, required=True)
     parser.add_argument("--code-commit", required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--reference-root", type=Path, required=True)
     args = parser.parse_args()
     if len(args.code_commit) != 40 or any(c not in "0123456789abcdef" for c in args.code_commit):
         parser.error("--code-commit must be a lowercase 40-character git SHA")
     if args.out.exists():
         parser.error("--out must not already exist")
-    rows, summary = aggregate(args.input_root, args.code_commit)
+    rows, summary = aggregate(args.input_root, args.code_commit, args.reference_root)
     args.out.mkdir(parents=True)
     fields = list(rows[0]) if rows else [
         "state", "seed", "reference_sha256", "checkpoint_sha256",
