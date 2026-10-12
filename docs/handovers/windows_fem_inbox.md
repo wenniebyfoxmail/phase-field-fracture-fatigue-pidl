@@ -27,6 +27,51 @@
 
 ## Active Requests
 
+## 2026-10-12 · Request 32: S09-E008 read-only producer provenance and state-sufficiency audit
+
+**Goal**: supply the lightweight provenance needed to decide whether the
+Stage-0A causal state `(d, H, alpha_bar, q_prev, f)` plus prescribed load path
+and frozen context is sufficient for the exact U0.125 producer transition from
+s00 to s04. This is source/semantics review only. Do not rerun FEM, export new
+scientific arrays or open a new physics variant.
+
+**INPUT file**: the already completed sealed run
+`hard5_u0125_stage0b_f24eff2a79b64cc3a6538dd4f18f71ae`, producer source
+commit `862992a60edc7f59335365beacb5c71fc8592a7a`. Reuse its existing
+`provenance/source_after_receipt.json`, `runtime_binaries.json`,
+`config_receipt.mat`, `commands.txt`, source hashes and export/validation source.
+If the exact commit was not pushed, provide a read-only git bundle or patch plus
+parent commit sufficient to inspect it; do not rewrite or recreate the commit.
+
+**Mesh**: no mesh operation. Identify the exact existing native-Q4 geometry,
+quadrature, material constants, boundary masks and load-control fields used by
+the sealed run.
+
+**Expected outputs**: a lightweight provenance-only folder under
+`C:/Users/xw436/Downloads/_pidl_handoff_v2/` and the normal OneDrive handoff,
+containing:
+
+- the existing provenance receipts/files named above and `SHA256SUMS.txt`;
+- exact source for the s00 state construction, staggered s01--s05 solve,
+  post-convergence history update and state exporter;
+- a table classifying every solver variable needed to advance s00 to s04 as
+  `physical_carried_state`, `prescribed_or_frozen`, `causally_reconstructible`,
+  or `solver_initial_guess_only`;
+- explicit semantics for `H`, `alpha_bar`, `q_prev`, `f`, displacement,
+  undegraded energy, old damage and any old/Newton/staggered field;
+- confirmation whether the 438-state sealed payload already contains every
+  required physical carried state, or the smallest exact missing item.
+
+**Acceptance criteria**: all supplied files hash cleanly; source identity is
+the exact receipt commit; the classification traces to source lines/update
+order; no same-cycle target field is proposed as input; solver initial guesses
+are distinguished from physical Markov state; unresolved or absent variables
+produce `STATE_SUFFICIENCY_BLOCKED` rather than an inferred PASS.
+
+**Priority**: high, read-only and lightweight. This unblocks S09-E008 code
+design. It does not authorise scientific-array transfer/decode, training,
+Stage 0B rollout or a new FEM run.
+
 ## 2026-08-17 · Request 28: first-detect causal damage and peak-displacement export
 
 **Goal**: complete the minimum FEM state package needed for the frozen
