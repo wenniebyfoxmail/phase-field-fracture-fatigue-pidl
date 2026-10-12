@@ -2,6 +2,20 @@
 
 ## Claim-impact log
 
+- **2026-10-12 — S03-E014 first-cycle physical bridge design opened.**
+  Direct exploratory inspection of stages7/8/9 found shared reference1 and
+  common IDs with approximately1e-8mm finite reference-coordinate agreement,
+  plus NaN facets and sentinel/variable connection records. This is not reviewed
+  mesh qualification or inversion. Froze one local degradation amplitude with
+  fixed geometry/material assumptions, low/intermediate fit and strict high-
+  load interior response holdout. Observation/gauge, training-only crack/patch
+  basis and proportional boundary remain admission work; no solve/training or
+  held-out response score occurred. Primary next lever: qualify the local
+  observation operator/BC, then sensitivity and independent Code Ready review.
+  Uniform E, fracture/fatigue parameters and future-state sufficiency are not
+  identified by this conditional static-state design. See
+  [E014 protocol](S03-E014/experiment.md) and [inspection](S03-E014/inspection.md).
+
 - **2026-10-12 — S03-E012 minimal scalar prediction pipeline completed.**
   Prepared 342 stages into 114 exact-cycle triplets with equal labels, froze
   66/23/23 scored early/dev/holdout targets, and ran fixed persistence/secant
