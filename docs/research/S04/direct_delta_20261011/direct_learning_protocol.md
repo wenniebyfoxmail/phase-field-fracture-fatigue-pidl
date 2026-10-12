@@ -1,8 +1,8 @@
 ---
 storyline_id: S04
 scope: direct_multivariable_delta_preparation
-protocol_revision: proposal-v2-reduced-s4-20261012
-status: g5_hold__u0115_pinn_pair_missing__method_only
+protocol_revision: proposal-v2-reduced-s4-terminal-20261012
+status: g5_hold__matched_projection_and_field_export__method_only
 claim_class: C2
 evidence_domain: synthetic
 ---
@@ -11,9 +11,12 @@ evidence_domain: synthetic
 
 > 2026-10-12 dated revision：proposal-v1见Git历史 `f00c743`；本版改为同状态s4的
 > reduced-field直接Delta。fresh v10已正常结束且封存完整性通过，G5仍HOLD；U0.115
-> 完整matched PINN未建立。G5/data-lock/D0唯一执行owner为主对话
+> 原生PINN acquisition已完成：503个连续checkpoint，raw steps0--502，c1--100的s4/s5齐全；
+> model/history加载与有限性通过不等于paired qualification。U0.115的同状态投影、字段导出和
+> deployable-input implementation仍待审查。G5/data-lock/D0唯一执行owner为主对话
 > `01a1131d-017c-7b03-a95a-ad73ba8fcc9c`；方法对话只修订文档。
 > [复核与最小D0卡](g5_method_review_and_d0_card_20261012.md)为当前方法记录。
+> [U0.115终态语义继承](u0115_terminal_semantics_method_review_20261012.md)记录最新覆盖与支持边界。
 
 ## 问题与对象
 
@@ -44,7 +47,7 @@ evidence_domain: synthetic
 |---|---|---|
 | 查旧三条 FEM cycle MAT 的 source timing | 各通道 s4/s5、GP reduction、clipping、source commit 的逐字段表 | 明确 cycle-summary imitation 与 native same-state 分开 |
 | 同状态配对 | 从各自已锁定native support得到s4 reduced `d, alpha_bar, raw psi`，逐channel声明Q4 cell reduction和mapping | same-state reduced-field target admission；不自动获得native GP资格 |
-| PINN U0.115 counterpart | 从已有匹配 checkpoint 做只读 export；不存在则记 missing，不启动训练补轨迹 | 新 development Umax 轴 |
+| PINN U0.115 counterpart | 从已封存raw steps0--502导出c1--100 s4及因果history；核投影/字段/precision，不能宣称与103-cycle FEM完整配对 | 通过paired qualification后才新增development轴 |
 | C0 身份/初始化 | 初始字段和首个 history window 的 missing mask | C0 用于初始化，不当作普通 cycle target |
 | teacher/comparator role | 按 channel/regime 资格或 processed-imitation-only 声明 | 限定可支持的 scientific claim |
 
@@ -53,7 +56,13 @@ fresh U0.1175 v10已正常结束，terminal integrity通过；这只关闭执行
 不执行资产准备、export、D0、训练或共享Obsidian更新。
 
 development候选为U0.11/0.115/0.12/0.13。已锁定旧PINN exports只覆盖.11/.12/.13；
-U0.115缺少完整matched PINN资格，不登记为已齐的第四物理轴，不因此自动回退重算旧三条。
+U0.115已取得原生PINN轨迹，但matched reduced export和projection资格尚未建立，不登记为
+已齐的第四配对轴，不因此自动回退重算旧三条。该run的first raw step499=c100/s4；
+stop raw step502=c101/s2，三次confirmation按raw steps计，不是三个physical cycles。
+own-pre-event s4候选为c1--99；common-pre-event必须另与FEM event/state mask取交集。
+PINN histories来自45591节点/90000三角单元，FEM来自86756节点/86408 Q4 cells及每cell4GP；
+禁止逐索引相减。centroid sampling不自动等于cell integration，逐channel的projection与reduction
+需要锁定。checkpoint history为post-commit，pre-refresh gradient diagnostics不能替代。
 U0.125 exposure unknown继续关闭。U0.1175 confirmation scientific payload保持封存；
 G5 owner提供data角色与paired lock前，不用于模型或特征选择。terminal integrity通过不能
 替代confirmation PINN counterpart或paired semantics资格。
@@ -178,7 +187,8 @@ FEM support上的evaluation-only误差、event/censor、local support IoU、boun
 holdout predictions/metrics、immutable model-selection table、全部 seeds、两张图（per-channel
 ratio与固定 heldout field panels）、README_analysis、独立 Evidence review。
 
-当前：D003 descriptive evidence保留复用；fresh v10正常结束并封存；G5仍HOLD，U0.115
-完整matched PINN、同状态support与data lock待关闭。主对话
+当前：D003 descriptive evidence保留复用；fresh v10正常结束并封存；U0.115原生PINN已完成
+且checkpoint有限性通过，G5仍为HOLD_MATCHED_PROJECTION_AND_FIELD_EXPORT。
+同状态support、reduced export、deployable-input implementation与paired data lock待关闭。主对话
 `01a1131d-017c-7b03-a95a-ad73ba8fcc9c`已接管G5/data-lock/D0唯一执行owner。
 本方法工作树只维护设计记录，等待主对话批准data lock；不执行D0/NN或更新共享Obsidian。

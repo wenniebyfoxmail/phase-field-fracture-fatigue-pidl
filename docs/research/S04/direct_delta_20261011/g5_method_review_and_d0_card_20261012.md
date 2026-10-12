@@ -12,15 +12,22 @@ execution_owner: source_dialogue_01a1131d-017c-7b03-a95a-ad73ba8fcc9c
 通过不释放paired model run。本次复核未执行D0/重算D003、未加载checkpoint tensor、未读取
 Windows scientific payload或修改G5文件。方法owner仅写本记录；G5/data-lock由主对话负责。
 
-2026-10-12 coordination update：fresh v10已正常结束且terminal integrity通过；主对话已
+2026-10-12 acquisition前的coordination记录：fresh v10已正常结束且terminal integrity通过；主对话已
 明确接管G5/data-lock/D0唯一执行owner。U0.115完整matched PINN尚缺，G5继续HOLD。
 本方法对话不启动任何任务，也不修改共享Obsidian。
+
+2026-10-12 terminal update：新获批的U0.115 acquisition已正常完成。主对话报告503个连续
+raw-step checkpoint（0--502）及model/history有限性通过，c1--100 s4/s5齐全。当前HOLD原因
+更新为 `HOLD_MATCHED_PROJECTION_AND_FIELD_EXPORT`：不再是未找到原生run，而是同状态
+字段导出、projection/reduction、precision与部署输入实现尚未获资格。下方477份settings查询
+保留为acquisition前历史证据，不代表新run缺失。独立复核只核主对话的终态文档和候选manifest，
+没有重载tensor、执行export或重算D003。详见[终态语义继承](u0115_terminal_semantics_method_review_20261012.md)。
 
 审核对象：
 `/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-e016-request31-storage-block-20261009/docs/research/S04/S04-E016/g5_contract_role_input_audit_20261012.md`
 （2026-10-12 HOLD版本）。这是独立方法/metadata review，不是native数值重算或Code Ready PASS。
 
-## U0.115是否有qualified matched PINN trajectory？
+## Acquisition前的U0.115资产查询（历史记录）
 
 **目前没有可登记为qualified matched的PINN U0.115证据。** FEM read-only reuse/reseal
 已记录；它仅证明FEM资产可复用。existing PINN export与E013 input lock均只列.11/.12/.13。
@@ -142,4 +149,5 @@ bottleneck决定，不再采用“任何ridge fail就关闭NN”的旧先验。
 
 唯一执行owner已明确为**主对话 `01a1131d-017c-7b03-a95a-ad73ba8fcc9c`**，其掌握
 G5/data lock与资产角色，并已确认接管。本方法对话只提供设计/run card与review。
-D0仍须等待G5通过、data lock与runner/protocol审查；U0.115缺配对不被假定为完整。
+D0仍须等待G5通过、data lock与runner/protocol审查；新U0.115原生run可用不代表matched
+配对已获批，也不授权增加采集cycle、续跑或重复D0。
