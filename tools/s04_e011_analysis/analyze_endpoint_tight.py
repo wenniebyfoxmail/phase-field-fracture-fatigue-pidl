@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Compare accepted c83 tight-control endpoints with verified baseline and PIDL."""
 import argparse
+import csv
 import hashlib
 import json
 from pathlib import Path
@@ -77,10 +78,14 @@ def main():
              'uv_max_abs_change':float(np.max(np.abs(e['uv']-b['uv']))),
              'damage_max_abs_change':float(np.max(np.abs(e['d']-b['d']))),
              'active_relative_change':active_delta['relative_l2'],
+             'active_gap_weighted_l2':float(np.sqrt(np.sum(w*(pidl_active-e['active'])**2))),
+             'active_gap_relative_to_baseline_fem':float(np.sqrt(np.sum(w*(pidl_active-e['active'])**2)/np.sum(w*b['active']**2))),
              'active_integral':gap['fem_integral'],'pidl_integral':gap['pidl_integral'],
              'pidl_over_fem_integral':gap['pidl_over_fem'],'active_gap_relative_l2':gap['relative_l2'],
              'active_gap_correlation':gap['correlation']}
         rows.append(row)
+    with (out/'metrics.csv').open('w',newline='') as handle:
+        writer=csv.DictWriter(handle,fieldnames=list(rows[0]));writer.writeheader();writer.writerows(rows)
     final=rows[-1];initial=rows[0]
     summary={'schema':'c83-tight-control-sensitivity-v1','status':result['status'],
         'history_commits':result['history_commits'],'completed_extra_iterations':len(rows)-1,
@@ -88,6 +93,7 @@ def main():
                         'PIDL':'original paired Q4 cycle83 peak model step414; unchanged'},
         'residual_ratio':final['projected_sum']/initial['projected_sum'],
         'active_gap_ratio':final['active_gap_relative_l2']/initial['active_gap_relative_l2'],
+        'active_gap_absolute_norm_ratio':final['active_gap_weighted_l2']/initial['active_gap_weighted_l2'],
         'baseline':initial,'last_completed':final,'rows':rows,
         'provenance':{str(p):digest(p) for p in paths+[args.mesh,args.pidl,data/'tight_result.json',data/'result.json']},
         'scope':'combined inner accuracy and fresh nodal-monotone outer monitoring; descriptive numerical sensitivity, not teacher or physical validity'}
@@ -99,7 +105,7 @@ def main():
     axes[1].plot(x,[r['active_gap_relative_l2'] for r in rows],'-o',color='#0072B2');axes[1].set_ylabel('Q4 PIDL vs FEM weighted active relative L2')
     for ax in axes:ax.set_xlabel('outer iteration (20 = original baseline)');ax.grid(alpha=.25)
     fig.suptitle('c83s4 bounded solver-control sensitivity: '+result['status']);fig.tight_layout();fig.savefig(out/'endpoint_tight_comparison.png',dpi=200);plt.close(fig)
-    note=f'''# c83 endpoint solver-control comparison\n\nQuestion: does bounded refinement change residuals and the original paired PIDL field gap?\n\nData: run {args.run}; source endpoint SHA256s and exact PIDL/mesh hashes are in summary.json. FEM baseline is original20-iteration c83s4 endpoint reproduced from accepted s3. Every plotted point is a fully completed extra outer endpoint; failed inner trial is excluded. PIDL is unchanged original Q4 c83 step414.\n\nLeft: native free displacement, nodal-monotone feasible damage and sum (log residual L2); dashed4e-6 is a numerical sensitivity screen, not physical qualification. Right: native Q4 GP4 weighted active-field relative L2, FEM denominator, vs unchanged PIDL. x=20 denotes verified baseline.\n\nOutcome: {result['status']}; completed extra iterations {len(rows)-1}. Projected residual ratio {summary['residual_ratio']:.8g}, active-gap ratio {summary['active_gap_ratio']:.8g}; baseline active-gap {initial['active_gap_relative_l2']:.8g}, final {final['active_gap_relative_l2']:.8g}. Exact integral/correlation and nodal changes are in summary.json.\n\nClaim boundary: combined inner accuracy and monitor sensitivity at this one peak state; frozen accepted predecessor, no history commits. Nodal projection is not a GP-constrained KKT or fatigue fixed-point certificate. A failure/cap cannot establish a tighter converged endpoint. No claim that this removes fixed committed-f/trial-f or joint Deep-Ritz/staggered algorithm differences.\n'''
+    note=f'''# c83 endpoint solver-control comparison\n\nQuestion: does bounded refinement change residuals and the original paired PIDL field gap?\n\nData provenance: run {args.run}; source endpoint SHA256s and exact PIDL/mesh hashes are in summary.json. FEM baseline is original20-iteration c83s4 endpoint reproduced from accepted s3. Every plotted point is a fully completed extra outer endpoint; failed inner trial is excluded. PIDL is unchanged original Q4 c83 step414.\n\nHow to read: left panel shows native free displacement, nodal-monotone feasible damage and sum (log residual L2); dashed4e-6 is a numerical sensitivity screen, not physical qualification. Right: native Q4 GP4 weighted active-field relative L2, FEM denominator, vs unchanged PIDL. x=20 denotes verified baseline.\n\nOutcome: {result['status']}; completed extra iterations {len(rows)-1}. Projected residual ratio {summary['residual_ratio']:.8g}, active-gap ratio {summary['active_gap_ratio']:.8g}; baseline active-gap {initial['active_gap_relative_l2']:.8g}, final {final['active_gap_relative_l2']:.8g}. Fixed baseline-denominator absolute gap norm ratio {summary['active_gap_absolute_norm_ratio']:.8g}. Exact integral/correlation and nodal changes are in summary.json and metrics.csv.\n\nLimitations and claim boundary: combined inner accuracy and monitor sensitivity at this one peak state; frozen accepted predecessor, no history commits. Nodal projection is not a GP-constrained KKT or fatigue fixed-point certificate. A failure/cap cannot establish a tighter converged endpoint. No claim that this removes fixed committed-f/trial-f or joint Deep-Ritz/staggered algorithm differences.\n'''
     (out/'endpoint_tight_comparison.md').write_text(note);(out/'README_analysis.md').write_text(note)
     print(json.dumps({k:v for k,v in summary.items() if k not in ('provenance','rows')},indent=2))
 

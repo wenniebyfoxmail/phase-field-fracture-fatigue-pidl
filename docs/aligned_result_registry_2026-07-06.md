@@ -67,3 +67,9 @@ Second-layer cleanup details are in `docs/cleanup_manifest_2026-07-06.md`.
 Every future run must add one row here or in `docs/pidl_experiment_inventory.md`
 with: mechanism question, changed claim, cheaper diagnostic, minimal asset,
 producer machine, commit, runner, output root, verdict, and next action.
+
+## Supplemental diagnostic — 2026-10-12
+
+| Case | Status | What it answers | Use for claims | Asset endpoint |
+|---|---|---|---|---|
+| Q4 c83s4 bounded solver-control refinement | diagnostic; EXTRA_BUDGET_EXHAUSTED | Original20-round baseline reproduced; tighterinner and freshoutermonitor,10extra rounds, residualsum1.30639× and absolute PIDLactivegap1.99032×. | Budget-specific control sensitivity only; not convergedteacher or physicaltruth, original E003/E011 unchanged. | [Terminal evidence](research/S04/S04-E011/runs/endpoint_q4_tight_20261012.md); [track](experiments/hard5_q4_t3_solver_alignment_track.md) |

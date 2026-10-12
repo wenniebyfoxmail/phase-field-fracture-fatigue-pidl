@@ -133,3 +133,7 @@ removes lineage and sparse-output ambiguity and provides a direct Q4
 regression against the canonical c76/c82/c83 hashes/fields.  Windows MATLAB
 on `citpc12-ssh` is the FEM producer.  Taobo is the preferred PIDL producer;
 no PIDL launch is allowed without fresh read-only GPU/ownership inspection.
+
+## Supplementary endpoint sensitivity — 2026-10-12
+
+Original production remains frozen. The independent [c83 bounded-control protocol](endpoint_tight_protocol_20261012.md) completed as EXTRA_BUDGET_EXHAUSTED: baseline20PASS,10extraiterates, zerohistorycommits. Residualsum increased1.30639× and absolute PIDL activegap1.99032× withinbudget. This diagnostic does not supply a tightly converged teacher or alter E011 estimands. [Evidence/decision](runs/endpoint_q4_tight_20261012.md).

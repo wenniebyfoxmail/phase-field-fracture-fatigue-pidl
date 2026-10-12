@@ -62,3 +62,7 @@ duplicate was launched. Local run receipt/status and retrieval scripts own
 provenance. Reviewed comparison code commit24e5ce2; baseline common-operator
 raw GP relative L2=4.57977243e-15. Heartbeat `c83` monitors recovery and will
 retrieve terminal results, verify hashes, compare fields, update the report.
+
+## Terminal result — 2026-10-12
+
+Gateway recovery confirmed completion at17:11:19UTC: EXTRA_BUDGET_EXHAUSTED,10complete extra iterates, zerohistory commits, no automaticretry. Fresh projected sum3.005961e-4→3.926957e-4; unchanged PIDL c83step414 activegap relL2.476394→.899773,corr.887457→.578380,absolute weighted gap1.99032×. All20file hashes/sizes and11endpoint statechecks pass. Independently reviewed numerical diagnostic; not a tightened converged endpoint or teacher. See [terminal evidence and decision](runs/endpoint_q4_tight_20261012.md) and metricsCSV.
