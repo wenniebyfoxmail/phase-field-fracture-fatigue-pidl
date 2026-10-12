@@ -1,7 +1,7 @@
 # E014 v2 minimal physical bridge — actual result, 2026-10-12
 
 Status: code and actual spatial assets independently admitted; producer fit and
-separate held validation completed. Independent RESULT review pending. Historical
+separate held validation completed. Independent PASS_EVIDENCE_REVIEW. Historical
 v1NOT_READY unchanged. No fatigue/phase-field evolution was solved.
 
 ## Execution and chronology
@@ -70,7 +70,7 @@ target/candidate scale, shared0-to-max residual scale; no clipping/smoothing.
 Plot-only label wrapping fixed overlap, no arrays/scoring changes. Near-core
 large increments dominate color scale; retained as predeclared, no outlier removal.
 q_profile shows all21points, training only, explicitly NOT posterior. Figure
-README/sidecars describe support/weights/limits. Independent figure review pending.
+README/sidecars describe support/weights/limits. Independent figure review passed.
 
 ## Meaning and constructive next direction
 
@@ -93,3 +93,29 @@ Evidence review ZIP E014_R003_R005_evidence.zip SHA256
 3c174aae5e561db55827501774645780d018573565cbcf63e8ed43f119f8f002,
 includes complete original held member, admitted preparation, frozen fit/profile,
 actual validation fields/metrics/receipts, figures and arithmetic crosscheck.
+
+## Independent result closure
+
+ChatGPT https://chatgpt.com/c/6ac7974d-c838-8325-9322-fbc639d581cb returned
+PASS_EVIDENCE_REVIEW. Independently matched packet/output/high-source hashes;
+rebuilt target and all four score inputs exactly; exclusions IDs21183/21607/22030
+are required-coordinate/displacement missingness, with no additional filtering.
+Eligible coordinate mismatch max~1.4e-9mm. Independently reproduced all four
+projected metrics and training selected/q0 loss from frozen predictions, including
+tiny0.008176% training gain. PNGs and rendered PDFs checked;643markers per field
+panel, all21profile points, shared scales. Independent non-BLAS closed-form
+calculation reproduces residuals within6.94e-18mm and metrics8.67e-19mm.
+
+Reviewer distinguishes completed workflow, negative candidate-vs-secant primary,
+fixed-prior improvement over intact, tiny incremental q value, physical recovery
+NOT established. This is not an all-physical-routes failure. Conditional v2 closed;
+historical v1NOT_READY preserved. No new experiment launched or held-data tuning.
+
+Independent scope limits: other19candidate fields were not supplied, so response
+span/full-grid solver residuals not independently regenerated; receipts/runtime
+chronology are attestations. R004failedreceipt/rawwarning/BLASprobe not in original
+evidenceZIP; exact warning cause/runtime thread state not independently verified.
+This did not block the bounded review: R005 score independently reproducible,
+unchanged source/predictions, protocol does not require a single validation attempt.
+Fetched R004failedreceipt SHA2563edaebcfc893b5245c4c9ea2a08cb4b92d8a10cc04e62e070391d71b9a35ffb6
+is separately retained; supplementary verification pending, not part of ZIPhash.

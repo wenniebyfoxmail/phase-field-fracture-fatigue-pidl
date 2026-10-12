@@ -10,7 +10,7 @@
   intact0.00318557,d0-only0.00260345. Candidate improves over intact but not
   secant; learned amplitude adds little beyond fixed prior. R004 transfer-race
   validation was hash-blocked before parsing/scoring and retained, not erased.
-  Result evidence review pending; no full phase-field/material/fatigue/future/
+  Independent PASS_EVIDENCE_REVIEW closes this bounded result; no full phase-field/material/fatigue/future/
   road claim. [Actual result and chronology](S03-E014/results.md),
   [independent actual asset admission](S03-E014/asset_admission.md).
 
