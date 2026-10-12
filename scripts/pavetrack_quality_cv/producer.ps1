@@ -12,7 +12,7 @@ $py='C:\Users\xw436\pavetrack_env\Scripts\python.exe'
 $prior='C:\Users\xw436\pavetrack_runs\S01-E003-R001'
 $e2='C:\Users\xw436\pavetrack_runs\S01-E002-R002'
 $workbook='C:\Users\xw436\pavetrack_stage\S01-E001-v11-review-20261009\data\Dataset_PDdescription.xlsx'
-$downloader='C:\Users\xw436\pavetrack_stage\S01-E001-v7-preflight-20261009\data\remote_zip_extract_batched.py'
+$downloader=Join-Path $Source 'scripts\pavetrack_quality_cv\download_frozen.py'
 $base=@('--config',"$Source\docs\research\S01\S01-E004\run_config.json",'--lock',"$Source\docs\research\S01\S01-E004\data_lock.json",'--tiled',"$e2\training\tiled_proposer\weights\best.pt",'--old-ranker',"$prior\best_ranker.pt",'--development',"$e2\prepared\development\manifest_train_validation.json",'--source-validation',"$prior\evaluation_validation.json",'--source-train',"$prior\train_proposals.json",'--run',$run)
 function Invoke-Step([string]$step,[string[]]$extra=@()) {
  & $py "$Source\scripts\pavetrack_quality_cv\run.py" $step @base @extra 1>> "$run\${step}_stdout.log" 2>> "$run\${step}_stderr.log"
@@ -33,7 +33,7 @@ if ($Stage -eq 'development') {
  $locations=@($auth.confirmatory_test_locations)
  & $py $downloader '--url' 'https://china.scidb.cn/download?fileId=6a6125c7db77487782cafee9506e58f3' '--size' '5694108370' '--locations' @locations '--output' "$run\confirmatory_download\images" '--manifest' "$run\confirmatory_download\download_manifest.json" '--max-range-mib' '32' '--max-gap-mib' '2' '--delay-s' '1' 1>> "$run\download_stdout.log" 2>> "$run\download_stderr.log"
  if ($LASTEXITCODE -ne 0) {throw 'download failed'}
- Invoke-Step 'prepare' @('--workbook',$workbook,'--image-root',"$run\confirmatory_download\images")
- Invoke-Step 'evaluate'
+ Invoke-Step 'prepare' @('--workbook',$workbook,'--image-root',"$run\confirmatory_download\images",'--download-manifest',"$run\confirmatory_download\download_manifest.json")
+ Invoke-Step 'evaluate' @('--download-manifest',"$run\confirmatory_download\download_manifest.json")
  @{state='confirmatory_completed';updated_at=(Get-Date -Format o)} | ConvertTo-Json | Set-Content "$run\status.json" -Encoding UTF8
 } else {throw 'stage must be development or confirmatory'}

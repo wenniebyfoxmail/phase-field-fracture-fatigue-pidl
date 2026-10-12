@@ -3,7 +3,7 @@
   "files": {
     "docs/research/S01/S01-E004/data_lock.json": "ae4a70075d781b539cb6bfa14d750280099e6fcd516e6e7347d6e0569fdbd508",
     "docs/research/S01/S01-E004/experiment.md": "6921afef503a00b0131765ed55a17de5a513b43d7b07c6b250cbff9b3c3e6c6a",
-    "docs/research/S01/S01-E004/run_config.json": "7a500dba273b4adb402ec30879986086848dc835d2ff3c04c538c59d1cc571a3",
+    "docs/research/S01/S01-E004/run_config.json": "5b6ddda222763e19c52da93050bf310041aa38f3742932e891c086d1f5321c2e",
     "scripts/pavetrack_cv/__init__.py": "bf073aa0c1ecb700a26d8ea2a12e3c4750145de63e9afb2c6e9b663cb19794c6",
     "scripts/pavetrack_cv/common.py": "8371f633672f18cb88ca2589d0d9bb43d5abaab50b198ca9bd807c5cfab25ec1",
     "scripts/pavetrack_cv/evaluate_two_stage.py": "fd16cddbab2b403c8e151dae76c8d36cced3a4b7020fd230f20692d83c53f1ce",
@@ -12,9 +12,9 @@
     "scripts/pavetrack_cv/prepare_dataset.py": "f37064d673cd83a6615f10b61c19fedb500095907b07b5094fc7fa6caf60e373",
     "scripts/pavetrack_cv/train_proposer.py": "be3ffee02ba47b1399fef0884416505940c7bfbe6cddf4103c21559dc213d68a",
     "scripts/pavetrack_cv/train_reranker.py": "3267ed551e683016ed50a12cba0f0cf8bb4482d8ccd6ef30b09a8145b75e85f9",
-    "scripts/pavetrack_quality_cv/analyze.py": "f6dc75425281873d38c74a71d52d1ced1ed79413561c15c88735ba903dc82455",
-    "scripts/pavetrack_quality_cv/producer.ps1": "fc57ac7052a8ac7642b133e47048aac01239241199a1255dad06452fd826b290",
-    "scripts/pavetrack_quality_cv/run.py": "5fd9b2c0439e1fa078ef2f88e2ab3c970271f9a86eb89e01ec0f5da65c02bcec",
+    "scripts/pavetrack_quality_cv/analyze.py": "be40d84eea9ba3ef8591017b464e46fe5dfb1648f58766930053f54805816564",
+    "scripts/pavetrack_quality_cv/producer.ps1": "5897fa647fe0c9aa6cdb72b81d54af50cfaaa81ade398fc0dc3c81b26c0ad680",
+    "scripts/pavetrack_quality_cv/run.py": "08275ec748db0d439707761766dbdca2ff6b3172520e6eac6154587868290359",
     "scripts/pavetrack_ranker_cv/analyze.py": "b2155dca1f1e665232debef515f861d97e997823260f33b87da2b18af58eafc0",
     "scripts/pavetrack_ranker_cv/run.py": "d4afb1b845b3592df2e732327e3753d433b89a893ab916c8356a6d44fecfae28",
     "scripts/pavetrack_tiled_cv/__init__.py": "c4d5faefcbe765aa12bac42344642426513c30e0c0d4286c5cc34e4ff56a5e13",
@@ -28,6 +28,8 @@
     "scripts/pavetrack_tiled_cv/prepare_development_tiles.py": "138b53e8f6ebbd4f190463766f05ca7425bdec8221dd292c0d8b754bd9bf80b5",
     "scripts/pavetrack_tiled_cv/render_e002_evidence.py": "39ce2b482bd07557bb7936763769a7941f45e22730c8c3f0b13ce5b13858dd8e",
     "scripts/pavetrack_tiled_cv/train_tiled_proposer.py": "e81fd9dfa6440764a6a158f5e1e108cbf0d0b147819b24bbf20e85928750837a",
-    "tests/pavetrack_quality_cv/test_quality.py": "94dff506f368d5f92a92d1372478f24af3b8bcd6b6dac5339d110c134e772643"
+    "tests/pavetrack_quality_cv/test_quality.py": "ef3f6681968de1ab5f763c8311026ec494658c72d81d6de51f63395d46862a65",
+    "scripts/pavetrack_quality_cv/download_frozen.py": "e1b19c00ce44a86e83b7635fcdc6ed12e577dc3afd68a05ebbf2f42f612c76dd",
+    "tests/pavetrack_quality_cv/test_analysis.py": "b3c9eb34e71aa3fc53dde5dda28d278e00fb439e62c676eabfbd4395b3bb0c12"
   }
 }

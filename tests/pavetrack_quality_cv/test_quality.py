@@ -21,3 +21,11 @@ class QualityTests(unittest.TestCase):
  def test_feature_schema_fixed(self):
   cfg=json.loads((ROOT/'docs/research/S01/S01-E004/run_config.json').read_text());self.assertEqual(cfg['features'],q.FEATURES)
 if __name__=='__main__':unittest.main()
+
+class DownloadTests(unittest.TestCase):
+ def test_incomplete_or_wrong_download_rejected(self):
+  lock={'archive_bytes':100,'confirmatory_test_locations':['7']};payload={'url':'u','remote_size':100,'requested_locations':['7'],'selected_files':1,'extracted_files':1,'failed_files':0,'failures':[],'files':[{'location':'7','target':'a','status':'downloaded_crc_verified'}]}
+  q.validate_download_payload(payload,lock,'u')
+  with self.assertRaises(ValueError):q.validate_download_payload(dict(payload,failed_files=1),lock,'u')
+  with self.assertRaises(ValueError):q.validate_download_payload(dict(payload,requested_locations=['8']),lock,'u')
+  with self.assertRaises(ValueError):q.validate_download_payload(dict(payload,selected_files=0),lock,'u')

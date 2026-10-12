@@ -131,6 +131,8 @@ def verify_model(a,cfg):
  weights=torch.where(y==1,torch.full_like(y,.5/pos),torch.full_like(y,.5/neg))
  theta=torch.tensor(model['coefficients']+[model['intercept']],dtype=torch.float64,requires_grad=True)
  loss=(torch.nn.functional.binary_cross_entropy_with_logits(X@theta[:-1]+theta[-1],y,reduction='none')*weights).sum()+.5*cfg['l2_strength']*theta[:-1].square().sum();loss.backward();grad=float(theta.grad.abs().max())
+ initial=float((torch.nn.functional.binary_cross_entropy_with_logits(torch.zeros_like(y),y,reduction='none')*weights).sum())
+ if abs(initial-model['initial_loss'])>1e-12:raise ValueError('zero-initialization loss recompute mismatch')
  if abs(float(loss.detach())-model['final_loss'])>1e-12 or abs(grad-model['gradient_inf'])>1e-12:raise ValueError('fit loss/gradient recompute mismatch')
  return model
 
@@ -155,8 +157,32 @@ def verify_authorization(a,cfg,lock,dev,val):
  if e['delta'] is None or e['delta']<cfg['development_delta_to_access_test'] or auth!=authorization_fields(a,cfg,lock):raise ValueError('invalid complete test authorization')
  return auth
 
+def validate_download_payload(payload,lock,url):
+ if payload.get('url')!=url or payload.get('remote_size')!=lock['archive_bytes']:raise ValueError('download URL/size mismatch')
+ locations=payload.get('requested_locations',[])
+ if len(locations)!=len(set(locations)) or set(locations)!=set(lock['confirmatory_test_locations']):raise ValueError('download locations mismatch')
+ selected=payload.get('selected_files',0)
+ if selected<=0 or payload.get('extracted_files')!=selected or payload.get('failed_files')!=0 or payload.get('failures')!=[] or len(payload.get('files',[]))!=selected:raise ValueError('incomplete download manifest')
+ if {f['location'] for f in payload['files']}!=set(locations):raise ValueError('download missing locations')
+ if len({f['target'] for f in payload['files']})!=selected:raise ValueError('duplicate acquired images')
+ if any(f['status'] not in ('downloaded_crc_verified','already_complete_crc_verified') for f in payload['files']):raise ValueError('unverified download CRC')
+
+def validate_download(a,cfg,lock):
+ import binascii
+ if a.download_manifest is None:raise ValueError('download manifest required')
+ payload=read(a.download_manifest);validate_download_payload(payload,lock,cfg['archive_url'])
+ by_source={};total=0
+ for item in payload['files']:
+  path=Path(item['target']);root=(a.run/'confirmatory_download/images').resolve()
+  if path.resolve()!=root/item['location']/Path(item['member']).name:raise ValueError('download path outside exact location root')
+  data=path.read_bytes()
+  if len(data)!=item['bytes'] or (binascii.crc32(data)&0xffffffff)!=item['crc']:raise ValueError('acquired image CRC/size changed')
+  by_source[str(path.resolve())]=item;total+=len(data)
+ if total!=payload['extracted_bytes']:raise ValueError('extracted total bytes mismatch')
+ return by_source
+
 def prepare(a,cfg,lock,dev,val):
- verify_authorization(a,cfg,lock,dev,val);check_hash(a.workbook,lock['workbook_sha256'])
+ verify_authorization(a,cfg,lock,dev,val);acquired=validate_download(a,cfg,lock);check_hash(a.workbook,lock['workbook_sha256'])
  import pandas as pd
  from PIL import Image
  from prepare_dataset import find_source,materialize
@@ -166,26 +192,27 @@ def prepare(a,cfg,lock,dev,val):
  for (reid,name),group in frame.groupby(['reid','img_name'],sort=True):
   source=find_source([a.image_root],reid,name)
   if source is None:raise FileNotFoundError(f'{reid}/{name}')
+  if str(source.resolve()) not in acquired:raise ValueError('prepared source absent from acquisition receipt')
   with Image.open(source) as im:w,h=im.size
   annotations=[{'category':str(r.category),'box_xyxy':clip_xyxy(xywh_to_xyxy(parse_numeric_list(r.bbox)),w,h)} for r in group.itertuples(index=False)]
   identity=f'reid-{reid}__{name}';p=a.run/'prepared/images/test'/identity;materialize(source,p,'copy')
   records.append({'image_id':identity,'reid':reid,'split':'test','prepared_image':str(p.resolve()),'prepared_image_sha256':base.sha256_file(p),'width':w,'height':h,'crack_boxes_xyxy':[r['box_xyxy'] for r in annotations if r['category'] in CRACK_CLASSES],'all_annotations':annotations})
- base.validate_members(records,lock,'test');write(a.run/'manifest_test.json',dict(lineage(a),test_authorization_sha256=base.sha256_file(a.run/'test_authorization.json'),records=records))
+ base.validate_members(records,lock,'test');write(a.run/'manifest_test.json',dict(lineage(a),test_authorization_sha256=base.sha256_file(a.run/'test_authorization.json'),download_manifest_sha256=base.sha256_file(a.download_manifest),records=records))
 
 def evaluate(a,cfg,lock,dev,val):
- verify_authorization(a,cfg,lock,dev,val)
+ verify_authorization(a,cfg,lock,dev,val);validate_download(a,cfg,lock)
  if (a.run/'evaluation_test.json').exists():raise ValueError('refuse duplicate test evaluation')
  manifest=read(a.run/'manifest_test.json')
- for k,v in dict(lineage(a),test_authorization_sha256=base.sha256_file(a.run/'test_authorization.json')).items():
+ for k,v in dict(lineage(a),test_authorization_sha256=base.sha256_file(a.run/'test_authorization.json'),download_manifest_sha256=base.sha256_file(a.download_manifest)).items():
   if manifest.get(k)!=v:raise ValueError('test manifest lineage')
  records=manifest['records'];base.validate_members(records,lock,'test');model,transform,device=base.load_models(a,cfg)
  rows=base.infer_candidates(records,a,cfg);rows=base.score_rows(rows,records,model,transform,device,cfg);quality=verify_model(a,cfg);e=evaluate_rows(rows,records,quality)
- write(a.run/'evaluation_test.json',dict(lineage(a),split='test',quality_model_sha256=base.sha256_file(a.run/'quality_model.json'),manifest_sha256=base.sha256_file(a.run/'manifest_test.json'),authorization_sha256=base.sha256_file(a.run/'test_authorization.json'),primary_pass=None if e['delta'] is None else e['delta']>=cfg['primary_delta'],**e));print(json.dumps({k:v for k,v in e.items() if k not in ('rows','targets','image_locations')},indent=2),flush=True)
+ write(a.run/'evaluation_test.json',dict(lineage(a),split='test',quality_model_sha256=base.sha256_file(a.run/'quality_model.json'),manifest_sha256=base.sha256_file(a.run/'manifest_test.json'),authorization_sha256=base.sha256_file(a.run/'test_authorization.json'),download_manifest_sha256=base.sha256_file(a.download_manifest),primary_pass=None if e['delta'] is None else e['delta']>=cfg['primary_delta'],**e));print(json.dumps({k:v for k,v in e.items() if k not in ('rows','targets','image_locations')},indent=2),flush=True)
 
 def main():
  verify_source();p=argparse.ArgumentParser();p.add_argument('stage',choices=['extract','fit','freeze','check-authorization','prepare','evaluate'])
  for name in ['config','lock','tiled','old-ranker','development','source-validation','source-train','run']:p.add_argument('--'+name,type=Path,required=True)
- p.add_argument('--workbook',type=Path);p.add_argument('--image-root',type=Path);a=p.parse_args();cfg=read(a.config);lock=read(a.lock);dev,val,train=validate_inputs(a,cfg,lock);base.frozen_ultralytics_device(cfg,'cuda:1');a.run.mkdir(parents=True,exist_ok=True)
+ p.add_argument('--download-manifest',type=Path);p.add_argument('--workbook',type=Path);p.add_argument('--image-root',type=Path);a=p.parse_args();cfg=read(a.config);lock=read(a.lock);dev,val,train=validate_inputs(a,cfg,lock);base.frozen_ultralytics_device(cfg,'cuda:1');a.run.mkdir(parents=True,exist_ok=True)
  if a.stage=='extract':extract(a,cfg,lock,dev,val,train)
  elif a.stage=='fit':fit(a,cfg,lock,dev,val,train)
  elif a.stage=='freeze':freeze(a,cfg,lock,dev,val)

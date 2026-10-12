@@ -64,5 +64,6 @@
   "l2_strength": 0.001,
   "max_iterations": 200,
   "gradient_tolerance": 1e-07,
-  "threads": 1
+  "threads": 1,
+  "archive_url": "https://china.scidb.cn/download?fileId=6a6125c7db77487782cafee9506e58f3"
 }
