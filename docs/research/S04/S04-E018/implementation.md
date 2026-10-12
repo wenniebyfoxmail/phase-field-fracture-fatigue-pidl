@@ -9,7 +9,9 @@ parameter count, paired CPU initialization, target-independent geometry,
 checkpoint roundtrip and malformed geometry checks passed.
 
 The initial design count had an arithmetic error; the recorded erratum fixes
-it without changing8x283 architecture. No training was performed. A formal
-six-run E018 training runner/aggregator is still to be prepared and independently
-reviewed before producer use. E017 evidence closure is the numerical precedence
+it without changing8x283 architecture. No training was performed. The formal six-run runner/aggregator is now implemented, including reference-based
+final displacement/region recomputation, frozen geometry admission, matched-arm
+identity, six-row complete-matrix outcome and component diagnostics. Eight extra
+nontraining screen tests passed. Exact-commit independent Code Ready review
+remains required before producer use. E017 evidence closure is the numerical precedence
 condition; parallel preparation continues now.
