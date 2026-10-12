@@ -1,0 +1,19 @@
+{
+  "experiment_id": "S09-E008",
+  "protocol_revision": "v0-stage0a-synthetic-p0",
+  "scope": "synthetic_p0_only",
+  "scientific_array_decode_authorized": false,
+  "training_authorized": false,
+  "stage0b_authorized": false,
+  "width": 32,
+  "rank": 8,
+  "path_order": ["s00", "s01", "s02", "s03", "s04", "s05"],
+  "nodal_inputs": ["d_pre", "x", "y", "boundary", "prescribed_path"],
+  "gp_inputs": ["H_pre", "alpha_bar_pre", "q_prev_pre", "f_pre", "x_gp", "y_gp", "prescribed_path"],
+  "nodal_outputs": ["d_peak", "u_peak_x", "u_peak_y"],
+  "gp_outputs": ["H_peak", "alpha_bar_peak", "q_peak", "f_peak_derived"],
+  "hard_constraints": ["peak_displacement_boundary", "damage_bounds", "damage_irreversibility", "alpha_bar_monotonicity", "Carrara_f_consistency"],
+  "deferred_constraints": ["H_update_semantics", "q_prev_update_semantics", "AT1_stationarity_KKT", "stage0b_peak_to_post_order"],
+  "producer_source_commit": "862992a60edc7f59335365beacb5c71fc8592a7a",
+  "state_sufficiency_status": "blocked_pending_request_32"
+}
