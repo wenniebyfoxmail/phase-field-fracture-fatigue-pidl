@@ -39,7 +39,7 @@ not directly comparable as calibrated probabilities.
 The head improved background exclusion but shifted budget toward partial-overlap
 and duplicate boxes. Of 302 selected FPs, no/small-overlap counts fell 92 -> 41,
 partial-overlap 190 -> 227, duplicates 20 -> 34; operating TPs fell 115 -> 106.
-Oracle coverage remained0.683550 because coordinates were unchanged. Loss
+Oracle coverage remained 0.683550 because coordinates were unchanged. Loss
 convergence and improved background separation do not vote on the recall gate.
 
 Validity/numerical execution passed; retrieval verified. The development gate

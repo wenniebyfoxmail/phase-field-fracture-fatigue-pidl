@@ -1,0 +1,20 @@
+{
+  "experiment_id": "S01-E004",
+  "protocol_revision": "v1",
+  "status": "closed",
+  "closed_at": "2026-10-12",
+  "execution_status": "succeeded",
+  "retrieval_status": "verified",
+  "scientific_verdict": "inconclusive",
+  "scientific_verdict_scope": "new-location confirmatory claim was not evaluated",
+  "development_margin_verdict": "negative",
+  "development_delta": -0.03978945237372203,
+  "development_gate": 0.05,
+  "component_progress": "no/small-overlap FP 92 to 41; partial-overlap FP 190 to 227 and duplicate FP 20 to 34; overall TP 115 to 106 at 302 FP",
+  "confirmatory_access": false,
+  "adoption_decision": "retain E003 checkpoint; do not adopt E004 quality head",
+  "independent_evidence_review": "PASS",
+  "evidence_commit": "087d5fba1ed03b1b34fffc89682326d1db41834c",
+  "reviewed_runtime_commit": "928c519f613e6d89137430632765b303dc19c78a",
+  "next_design": "train-only box refinement with context containment audit and frozen E003 scores; proposal only, untested"
+}
