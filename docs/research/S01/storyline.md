@@ -32,3 +32,13 @@ new-location effectiveness is untested. Exact selected-FP replay shows 190/302
 partial-overlap boxes below IoU 0.50, motivating valid-detection quality ranking
 or localisation refinement as the next smallest solution. This is a new design
 proposal, not an additional run under E003.
+
+### 2026-10-12 — S01-E004
+
+The independently reviewed eight-feature valid-detection quality head worsened
+selected-development macro recall from 0.289509 to 0.249720 (-0.039789), TPs
+115 to 106 at unchanged 302 FPs. Background/no-small-overlap FPs fell 92 to 41,
+but partial-overlap and duplicate FPs increased. Keep E003 as the working
+checkpoint; no fresh confirmation was authorized. Next solution proposal is
+observable-context bbox correction with frozen E003 scores and train-only
+reference associations, as a separate reviewed experiment.
