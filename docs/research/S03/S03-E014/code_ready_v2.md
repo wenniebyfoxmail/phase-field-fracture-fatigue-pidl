@@ -38,3 +38,9 @@ Asset review bundle: R002/E014_R002_spatial_assets.zip contains actual NPZ,
 preparation/receipt JSON, QAJSON, PNG and README. Source lineage/execution remain
 producer attestations; reviewer must inspect actual arrays/topology/basis/BC/
 masks/weights, not only hashes. No q fit starts before explicit admission.
+
+Subsequent actual admission and execution are recorded separately in
+[asset_admission.md](asset_admission.md) and [results.md](results.md).
+The later WITH_TRAINING bundle81aa50f0... included original training members,
+and received explicit ADMIT_SPATIAL_ASSETS before R003. Prior delivery/review
+history above is preserved; no historical v1 verdict is overwritten.
