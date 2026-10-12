@@ -9,6 +9,10 @@ evidence_domain: synthetic
 
 # 直接学习逐 cycle 多变量 Delta：具体实验方案
 
+> 2026-10-12 方法修订：以下proposal-v1保留为历史设计；当前native/reduced-head选择、
+> D0 activation与唯一owner以[g5_method_review_and_d0_card_20261012.md](g5_method_review_and_d0_card_20261012.md)
+> 为准。G5当前HOLD，本方法对话不重复D003/D0、不导出Windows scientific payload、不启动NN。
+
 ## 问题与对象
 
 冻结原 PINN/PIDL。在同一状态 `(Umax, physical cycle, s4, post-history-commit)`，
