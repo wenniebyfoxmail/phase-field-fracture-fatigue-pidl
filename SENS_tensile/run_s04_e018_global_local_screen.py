@@ -29,10 +29,10 @@ from run_s04_e013_stage1_supervised import (
     REQUIRED, boundary_masks, q4_strain, residual_metrics,
 )
 
-from s04_e018_global_local import build_model, damage_geometry, PARAMETER_COUNT
+from s04_e018_global_local import build_model, anchor_component_geometry, PARAMETER_COUNT
 
 ROOT = Path(__file__).resolve().parents[1]
-PROTOCOL_REVISION = "20261012-r1-global-local-screen"
+PROTOCOL_REVISION = "20261012-r2-anchor-global-local-screen"
 EXPECTED = {state: ALL_EXPECTED[state] for state in ("c20s4", "c60s4", "c83s4")}
 ALLOCATIONS = {"0.7": (11469, 4915)}
 SEEDS = (7,)
@@ -197,7 +197,7 @@ def train(args: argparse.Namespace, data: dict) -> dict:
     torch.backends.cudnn.benchmark = False
     torch.cuda.manual_seed_all(args.seed)
     device = torch.device("cuda")
-    geometry = damage_geometry(data["xy"], data["damage"], data["mass"])
+    geometry = anchor_component_geometry(data["xy"], data["damage"], data["conn"], data["mass"])
     model = build_model(args.seed, args.arm, geometry).to(device=device, dtype=torch.float64)
     xy = torch.tensor(data["xy"], dtype=torch.float64, device=device)
     target = torch.tensor(data["equilibrated_uv"], dtype=torch.float64, device=device)

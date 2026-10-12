@@ -1,8 +1,8 @@
 ---
 storyline_id: S04
 experiment_id: S04-E018
-protocol_revision: 20261012-r1-global-local-screen
-status: planning-review-pending
+protocol_revision: 20261012-r2-anchor-global-local-screen
+status: r2-plan-pass-code-rereview-pending
 ---
 # S04-E018 draft: smooth global + damage-local UV representation
 
@@ -35,6 +35,13 @@ This preserves the exact top/bottom essential BC. No trainable damage output, le
 Parameter count of NeuralNet(2,2,8,w) with eight scalar trainable activation coefficients is 7w²+12w+10. Old 400-wide MLP: 1,124,810. Two 283-wide branches: 1,128,058 (+0.28876%). New arms are exactly matched; old MLP is matched within 1%, not exactly. Assert actual parameter counts from the constructed model; discrepancies block launch. Runtime/FLOPs are recorded, not assumed equal: same step/batch budget does not imply identical compute cost.
 
 ## Deterministic localization from allowed information
+
+The r2 amendment in localization_amendment_r2.md supersedes all-damage rectangle
+selection below: select the unique Q4-edge damage component touching the initial
+notch anchor; retain ALL damage nodes in sampler/loss/metrics. The original r1
+formula description remains the source of the unchanged window/coordinate
+transform, evaluated on the anchor-component bounds. R2 PLAN PASS received before
+implementation; changed geometry requires new exact-commit review.
 
 Let A={node i: d_FEM,i>0.1}; B is its complement. Localization reads only xy, d_FEM, mesh identity and a frozen physical padding δ=0.02 (normalized domain units). δ is a frozen coordinate-design constant; no claim relating it to a verified FEM process-zone length is made. Freeze δ before UV error inspection, not from residual extent.
 

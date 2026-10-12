@@ -29,7 +29,7 @@ def synthetic_reference(monkeypatch):
         mass=np.empty(86_756)
         mass[:100]=.02/100; mass[100:]=.98/(86_756-100)
         damage=np.zeros(86_756); damage[:100]=.5
-        return {"xy":np.column_stack((np.linspace(-.5,.5,86_756),np.zeros(86_756))),"mass":mass,"damage":damage,"equilibrated_uv":np.zeros((86_756,2))}
+        return {"conn":np.array([[i,i+1,101+i,100+i] for i in range(99)]),"xy":np.column_stack((np.linspace(-.5,.5,86_756),np.zeros(86_756))),"mass":mass,"damage":damage,"equilibrated_uv":np.zeros((86_756,2))}
     monkeypatch.setattr(AGG,"validate_reference",load)
 
 
@@ -74,7 +74,7 @@ def _write_run(root, state, displacement, *, alpha="0.7", arm="localized", mutat
     run.mkdir()
     checkpoint = run / "final_step_10000.pt"
     data=AGG.validate_reference(state,root)
-    geometry=RUNNER.damage_geometry(data["xy"],data["damage"],data["mass"])
+    geometry=RUNNER.anchor_component_geometry(data["xy"],data["damage"],data["conn"],data["mass"])
     torch.save({
         "protocol_revision": RUNNER.PROTOCOL_REVISION, "state": state, "seed": seed, "alpha": alpha, "arm": arm,
         "step": RUNNER.STEPS,

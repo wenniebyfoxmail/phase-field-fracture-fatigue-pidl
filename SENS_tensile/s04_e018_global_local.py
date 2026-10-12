@@ -140,3 +140,94 @@ def build_model(seed: int, arm: str, geometry: dict) -> GlobalLocalUV:
     if count != PARAMETER_COUNT or any(p.dtype != torch.float64 for p in model.parameters()):
         raise RuntimeError(f"invalid E018 parameter count/dtype: {count}")
     return model
+
+
+def anchor_component_geometry(xy: np.ndarray, damage: np.ndarray,
+                              conn: np.ndarray, mass: np.ndarray | None = None) -> dict:
+    """R2 patch from the unique initial-notch-anchored active Q4-edge component.
+
+    This selects local *support*, never changes the caller's damage, sampler
+    strata, targets or loss domain. Consecutive Q4 edges define adjacency;
+    diagonal cell corners are not connected. Component IDs follow smallest
+    original node ID, independent of element ordering or union-find roots.
+    """
+    # Reuse r1 input validation without using its rectangle for selection.
+    damage_geometry(xy, damage, mass)
+    xy = np.asarray(xy, dtype=np.float64)
+    damage = np.asarray(damage, dtype=np.float64)
+    conn = np.asarray(conn)
+    if conn.ndim != 2 or conn.shape[1] != 4 or not np.issubdtype(conn.dtype, np.integer):
+        raise ValueError("connectivity must be integer (E,4)")
+    if len(conn) == 0 or conn.min() < 0 or conn.max() >= len(xy):
+        raise ValueError("empty or out-of-range connectivity")
+    if np.any(np.diff(np.sort(conn, axis=1), axis=1) == 0):
+        raise ValueError("Q4 connectivity contains repeated nodes")
+    active = damage > DAMAGE_THRESHOLD
+    active_ids = np.flatnonzero(active)
+    edges = np.stack((conn, np.roll(conn, -1, axis=1)), axis=2).reshape(-1, 2)
+    edges = edges[active[edges].all(axis=1)]
+    parent = np.arange(len(xy), dtype=np.int64)
+    size = np.ones(len(xy), dtype=np.int64)
+
+    def root(node):
+        while parent[node] != node:
+            parent[node] = parent[parent[node]]
+            node = parent[node]
+        return node
+
+    for left, right in edges:
+        a, b = root(int(left)), root(int(right))
+        if a != b:
+            if size[a] < size[b]:
+                a, b = b, a
+            parent[b] = a
+            size[a] += size[b]
+    groups = {}
+    for node in active_ids:
+        groups.setdefault(root(int(node)), []).append(int(node))
+    members = sorted((np.asarray(nodes, dtype=np.int64) for nodes in groups.values()),
+                     key=lambda nodes: int(nodes[0]))
+    anchor = (xy[:, 0] == -0.5) & (np.abs(xy[:, 1]) <= PADDING)
+    anchored = [index for index, nodes in enumerate(members) if anchor[nodes].any()]
+    if len(anchored) != 1:
+        raise ValueError(f"expected unique notch-anchor component, found {len(anchored)}")
+    selected_index = anchored[0]
+    selected = members[selected_index]
+    # A new private selector array is used only to reuse rectangle construction.
+    # Original damage values/mask remain untouched and are restored in metadata.
+    selector_damage = np.zeros(len(xy), dtype=np.float64)
+    selector_damage[selected] = 1.0
+    geometry = damage_geometry(xy, selector_damage)
+    lower, upper = np.asarray(geometry["lower"]), np.asarray(geometry["upper"])
+    support = np.all((xy > lower - PADDING) & (xy < upper + PADDING), axis=1)
+    masses = None if mass is None else np.asarray(mass, dtype=np.float64)
+    records = []
+    for index, nodes in enumerate(members):
+        records.append({"component_id": index, "minimum_node_id": int(nodes[0]),
+                        "nodes": int(len(nodes)),
+                        "mass": None if masses is None else float(masses[nodes].sum()),
+                        "lower": xy[nodes].min(0).tolist(), "upper": xy[nodes].max(0).tolist(),
+                        "touches_notch_anchor": bool(anchor[nodes].any()),
+                        "anchor_nodes": int(anchor[nodes].sum()),
+                        "selected_for_local_support": index == selected_index})
+    excluded_mask = active.copy()
+    excluded_mask[selected] = False
+    geometry.update(
+        localization_rule="q4_edge_unique_initial_notch_anchor_component",
+        anchor_x=-0.5, anchor_abs_y_max=PADDING,
+        component_count=len(records), components=records,
+        anchor_component_id=selected_index,
+        anchor_component_nodes=int(len(selected)),
+        damage_nodes=int(active.sum()), background_nodes=int((~active).sum()),
+        excluded_damage_nodes=int(excluded_mask.sum()), support_nodes=int(support.sum()),
+    )
+    if masses is not None:
+        geometry.update(total_mass=float(masses.sum()), damage_mass=float(masses[active].sum()),
+                        background_mass=float(masses[~active].sum()), support_mass=float(masses[support].sum()),
+                        anchor_component_mass=float(masses[selected].sum()),
+                        excluded_damage_mass=float(masses[excluded_mask].sum()),
+                        excluded_damage_support_mass=float(masses[excluded_mask & support].sum()),
+                        background_support_mass=float(masses[~active & support].sum()),
+                        background_support_fraction=(float(masses[~active & support].sum() / masses[~active].sum())
+                                                     if (~active).any() else None))
+    return geometry

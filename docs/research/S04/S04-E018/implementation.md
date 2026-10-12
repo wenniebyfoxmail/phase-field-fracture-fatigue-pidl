@@ -15,3 +15,12 @@ identity, six-row complete-matrix outcome and component diagnostics. Eight extra
 nontraining screen tests passed. Exact-commit independent Code Ready review
 remains required before producer use. E017 evidence closure is the numerical precedence
 condition; parallel preparation continues now.
+
+## R2 actual-state repair
+
+New anchor_component_geometry preserves r1 helper but selects unique initial-notch
+Q4-edge connected component. Positive support/explicit identity are recomputed
+by aggregator; all original damage nodes remain sampler/loss/evaluation units.
+Actual supports after repair are c20 .0412373, c60 .0585647, c83 .0719996 domain
+mass; no training or UV-error-based patch tuning. Comprehensive related checks
+now78 passed. Exact r2 Code Ready review is pending.

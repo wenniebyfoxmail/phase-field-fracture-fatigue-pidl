@@ -1,0 +1,210 @@
+{
+  "c20s4": {
+    "lower": [
+      -0.5,
+      -0.01562507791143096
+    ],
+    "upper": [
+      0.06267632642999904,
+      0.01541996686936962
+    ],
+    "center": [
+      -0.21866183678500048,
+      -0.00010255552103066983
+    ],
+    "scale": [
+      0.3013381632149995,
+      0.03552252239040029
+    ],
+    "padding": 0.02,
+    "damage_threshold": 0.1,
+    "damage_nodes": 4082,
+    "background_nodes": 82674,
+    "support_nodes": 10476,
+    "localization_rule": "q4_edge_unique_initial_notch_anchor_component",
+    "anchor_x": -0.5,
+    "anchor_abs_y_max": 0.02,
+    "component_count": 1,
+    "components": [
+      {
+        "component_id": 0,
+        "minimum_node_id": 4,
+        "nodes": 4082,
+        "mass": 0.016045873179689495,
+        "lower": [
+          -0.5,
+          -0.01562507791143096
+        ],
+        "upper": [
+          0.06267632642999904,
+          0.01541996686936962
+        ],
+        "touches_notch_anchor": true,
+        "anchor_nodes": 14,
+        "selected_for_local_support": true
+      }
+    ],
+    "anchor_component_id": 0,
+    "anchor_component_nodes": 4082,
+    "excluded_damage_nodes": 0,
+    "total_mass": 1.0000000000000002,
+    "damage_mass": 0.016045873179689495,
+    "background_mass": 0.9839541268203108,
+    "support_mass": 0.04123726309660408,
+    "anchor_component_mass": 0.016045873179689495,
+    "excluded_damage_mass": 0.0,
+    "excluded_damage_support_mass": 0.0,
+    "background_support_mass": 0.025191389916914587,
+    "background_support_fraction": 0.025602199564243533
+  },
+  "c60s4": {
+    "lower": [
+      -0.5,
+      -0.01665020825549299
+    ],
+    "upper": [
+      0.2925092313709788,
+      0.01550588306125041
+    ],
+    "center": [
+      -0.10374538431451061,
+      -0.0005721625971212901
+    ],
+    "scale": [
+      0.4162546156854894,
+      0.0360780456583717
+    ],
+    "padding": 0.02,
+    "damage_threshold": 0.1,
+    "damage_nodes": 5716,
+    "background_nodes": 81040,
+    "support_nodes": 14837,
+    "localization_rule": "q4_edge_unique_initial_notch_anchor_component",
+    "anchor_x": -0.5,
+    "anchor_abs_y_max": 0.02,
+    "component_count": 2,
+    "components": [
+      {
+        "component_id": 0,
+        "minimum_node_id": 1,
+        "nodes": 6,
+        "mass": 1.2850162487297145e-05,
+        "lower": [
+          0.4960223821438646,
+          -0.5
+        ],
+        "upper": [
+          0.5,
+          -0.4960239513091754
+        ],
+        "touches_notch_anchor": false,
+        "anchor_nodes": 0,
+        "selected_for_local_support": false
+      },
+      {
+        "component_id": 1,
+        "minimum_node_id": 4,
+        "nodes": 5710,
+        "mass": 0.022547618339694233,
+        "lower": [
+          -0.5,
+          -0.01665020825549299
+        ],
+        "upper": [
+          0.2925092313709788,
+          0.01550588306125041
+        ],
+        "touches_notch_anchor": true,
+        "anchor_nodes": 14,
+        "selected_for_local_support": true
+      }
+    ],
+    "anchor_component_id": 1,
+    "anchor_component_nodes": 5710,
+    "excluded_damage_nodes": 6,
+    "total_mass": 1.0000000000000002,
+    "damage_mass": 0.022560468502181533,
+    "background_mass": 0.9774395314978188,
+    "support_mass": 0.058564679405698025,
+    "anchor_component_mass": 0.022547618339694233,
+    "excluded_damage_mass": 1.2850162487297145e-05,
+    "excluded_damage_support_mass": 0.0,
+    "background_support_mass": 0.0360170610660038,
+    "background_support_fraction": 0.03684837773116421
+  },
+  "c83s4": {
+    "lower": [
+      -0.5,
+      -0.01665020825549299
+    ],
+    "upper": [
+      0.5,
+      0.01550588306125041
+    ],
+    "center": [
+      0.0,
+      -0.0005721625971212901
+    ],
+    "scale": [
+      0.52,
+      0.0360780456583717
+    ],
+    "padding": 0.02,
+    "damage_threshold": 0.1,
+    "damage_nodes": 7225,
+    "background_nodes": 79531,
+    "support_nodes": 18275,
+    "localization_rule": "q4_edge_unique_initial_notch_anchor_component",
+    "anchor_x": -0.5,
+    "anchor_abs_y_max": 0.02,
+    "component_count": 2,
+    "components": [
+      {
+        "component_id": 0,
+        "minimum_node_id": 1,
+        "nodes": 8,
+        "mass": 2.0758014476648125e-05,
+        "lower": [
+          0.4960223821438646,
+          -0.5
+        ],
+        "upper": [
+          0.5,
+          -0.496023709899264
+        ],
+        "touches_notch_anchor": false,
+        "anchor_nodes": 0,
+        "selected_for_local_support": false
+      },
+      {
+        "component_id": 1,
+        "minimum_node_id": 4,
+        "nodes": 7217,
+        "mass": 0.028450910299875367,
+        "lower": [
+          -0.5,
+          -0.01665020825549299
+        ],
+        "upper": [
+          0.5,
+          0.01550588306125041
+        ],
+        "touches_notch_anchor": true,
+        "anchor_nodes": 14,
+        "selected_for_local_support": true
+      }
+    ],
+    "anchor_component_id": 1,
+    "anchor_component_nodes": 7217,
+    "excluded_damage_nodes": 8,
+    "total_mass": 1.0000000000000002,
+    "damage_mass": 0.028471668314352015,
+    "background_mass": 0.9715283316856483,
+    "support_mass": 0.07199961874368503,
+    "anchor_component_mass": 0.028450910299875367,
+    "excluded_damage_mass": 2.0758014476648125e-05,
+    "excluded_damage_support_mass": 0.0,
+    "background_support_mass": 0.04354870844380967,
+    "background_support_fraction": 0.04482494953930017
+  }
+}

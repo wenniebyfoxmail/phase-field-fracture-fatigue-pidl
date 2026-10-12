@@ -19,7 +19,7 @@ from run_s04_e018_global_local_screen import (  # noqa: E402
     PROTOCOL_REVISION, SAMPLE_SEED_OFFSET, SEEDS, STEPS, US, validate_reference,
 )
 
-from s04_e018_global_local import ARMS, PARAMETER_COUNT, damage_geometry
+from s04_e018_global_local import ARMS, PARAMETER_COUNT, anchor_component_geometry
 
 THRESHOLDS = {
     "essential_bc_max_abs_error": 1e-12,
@@ -56,6 +56,16 @@ def finite_number(value, label: str) -> float:
     if not math.isfinite(value):
         raise ValueError(f"{label} must be finite")
     return value
+
+
+def geometry_matches(actual, expected) -> bool:
+    if isinstance(expected,dict):
+        return isinstance(actual,dict) and set(actual)==set(expected) and all(geometry_matches(actual[k],v) for k,v in expected.items())
+    if isinstance(expected,list):
+        return isinstance(actual,list) and len(actual)==len(expected) and all(geometry_matches(a,b) for a,b in zip(actual,expected))
+    if type(expected) in (int,float):
+        return type(actual) in (int,float) and math.isfinite(float(actual)) and math.isclose(actual,expected,rel_tol=0,abs_tol=1e-14)
+    return type(actual) is type(expected) and actual==expected
 
 
 def validate_record(path: Path, expected_commit: str, reference_data: dict) -> dict:
@@ -233,15 +243,12 @@ def validate_record(path: Path, expected_commit: str, reference_data: dict) -> d
             if not math.isclose(p_value * rms**2, entry[contribution_key], rel_tol=1e-12, abs_tol=1e-15):
                 raise ValueError("regional RMS/contribution mismatch")
     data = reference_data[state]
-    expected_geometry = damage_geometry(data["xy"],data["damage"],data["mass"])
+    expected_geometry = anchor_component_geometry(data["xy"],data["damage"],data["conn"],data["mass"])
     for stored_geometry in (record.get("geometry"),checkpoint_data.get("geometry")):
         if not isinstance(stored_geometry,dict) or set(stored_geometry)!=set(expected_geometry):
             raise ValueError("geometry manifest schema mismatch")
-        for key,value in expected_geometry.items():
-            if isinstance(value,list):
-                if stored_geometry[key] != value: raise ValueError(f"geometry identity mismatch: {key}")
-            elif not math.isclose(stored_geometry[key],value,rel_tol=0,abs_tol=1e-14):
-                raise ValueError(f"geometry identity mismatch: {key}")
+        if not geometry_matches(stored_geometry, expected_geometry):
+            raise ValueError("anchor geometry identity mismatch")
     if record.get("parameter_count") != PARAMETER_COUNT or checkpoint_data.get("parameter_count") != PARAMETER_COUNT:
         raise ValueError("parameter count mismatch")
     probability = data["mass"] / np.sum(data["mass"])
