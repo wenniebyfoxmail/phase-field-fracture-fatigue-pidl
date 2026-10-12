@@ -118,4 +118,9 @@ evidenceZIP; exact warning cause/runtime thread state not independently verified
 This did not block the bounded review: R005 score independently reproducible,
 unchanged source/predictions, protocol does not require a single validation attempt.
 Fetched R004failedreceipt SHA2563edaebcfc893b5245c4c9ea2a08cb4b92d8a10cc04e62e070391d71b9a35ffb6
-is separately retained; supplementary verification pending, not part of ZIPhash.
+is separately retained, not part of ZIPhash. Supplementary independent review
+matched this hash and source bindings, failed status/empty artifact manifest,
+timestamps and exact error; approved code raises that error before parsing and
+scoring. Documentary omission closed, PASS_EVIDENCE_REVIEW unchanged. This
+corroborates the record, not actual runtime history or the transfer-race cause.
+Proof screenshot: R005/independent_review_closed.png; review tab retained.
