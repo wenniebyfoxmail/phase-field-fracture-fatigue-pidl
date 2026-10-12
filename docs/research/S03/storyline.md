@@ -2,6 +2,17 @@
 
 ## Claim-impact log
 
+- **2026-10-12 — E014 primary-source indexing repair and local operator development.**
+  Published CrackPy1.1.1 maps zero-based connection indices to facet IDs via+1;
+  raw index0 is legitimate, correcting the initial inspection. Training-only
+  mapped non-padding elements have finite coordinates and nonzero areas. A
+  localized opening proxy and candidate36x18mm patch have training boundary
+  support. Exact exporter compensation, admitted spatial assets and practical q
+  sensitivity remain unresolved; no inverse result or high-load score exists.
+  Independent review requested for exact9629f31 snapshot; changed code requires
+  renewed review. Taobo SSH timed out and route lacks its VPN: no remote job or
+  fallback producer was started. Details: [operator development](S03-E014/operator_development.md).
+
 - **2026-10-12 — S03-E014 first-cycle physical bridge design opened.**
   Direct exploratory inspection of stages7/8/9 found shared reference1 and
   common IDs with approximately1e-8mm finite reference-coordinate agreement,

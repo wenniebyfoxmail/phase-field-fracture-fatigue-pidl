@@ -1,5 +1,11 @@
 # First-triplet exploratory inspection — 2026-10-12
 
+**Correction after primary-source inspection:** connection records use zero-based
+indices, so0 is valid and maps to facet ID1. The historical raw-index counts
+below must NOT be used to remove node0 or qualify a mesh. See
+[`operator_development.md`](operator_development.md) for the corrected finite-
+support/area checks and the exact published CrackPy source.
+
 Status: direct read-only data inspection, NOT independently reviewed structural
 admission, a producer Run, FEM qualification or inversion result. No optimizer,
 FEM solve, training or held-out response scoring occurred. Numeric observations
