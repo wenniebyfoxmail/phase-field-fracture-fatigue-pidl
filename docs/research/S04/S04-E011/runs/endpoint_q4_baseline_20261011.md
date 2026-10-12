@@ -50,3 +50,17 @@ outer2 started. Status `SOLVER_RUNNING__BASELINE_REPRODUCTION_PENDING`.
 
 The original solver parameters, immutable predecessor and final reproduction
 gate remain unchanged. Final retrieval and gate evaluation are pending.
+
+## Completion verified — 2026-10-12
+
+Status: `BASELINE_REPRODUCTION_PASS`. Completed2026-10-11T22:48:15Z,
+approximately286seconds after launch. Exactly20outer iterations; history commits0.
+Endpoint u/v/d maxabs differences9.68e-15/1.49e-14/3.63e-13;
+relative displacement/damage3.33e-14/2.88e-14;
+native free ru/rd maxerr1.56e-16/5.00e-17. All frozen reproduction gates pass.
+Endpoint20,201,079bytes, trace and result were retrieved with matching
+remote/local SHA256 and sizes; numerical endpoint arrays are finite.
+Local verification: `completion_verification.json` and `retrieved/` in the
+same evidence root. The worker has ended. No modified solver-control arm has
+been launched. This validates same-code replay, not stationary teacher validity
+or resolution of the FEM/PIDL field disagreement.
