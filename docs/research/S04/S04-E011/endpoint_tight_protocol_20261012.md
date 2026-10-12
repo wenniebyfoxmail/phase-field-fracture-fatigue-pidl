@@ -43,3 +43,22 @@ screen pass→numerical control screen passed only. Residual reduction with litt
 active-gap change narrows stopping-error attribution. Joint reduction supports a
 contribution of this combined control intervention at this state, not all mesh,
 state, algorithm or physical-truth differences.
+
+## Launch and interim evidence
+
+Run `pf_s04e011_endpoint_q4_tight_0c21f70_20261012T170257Z` started
+2026-10-12T17:03:31Z on CITPC12, one CPU thread. Launch commit
+`0c21f7013a9741673cf0382ea17d551c7a147384`, independently reviewed PASS;
+runner SHA256 `fa810e268238320747ed21a805e969108947c3c43f44af35165c2832e2229d72`.
+Windows root `C:\Users\xw436\jobs\E011_TIGHT_0c21f70_20261012T170257Z`;
+wrapper/launcher/worker34708/31532/11032 verified. Fresh repeated baseline
+passed all iter20/field/residual gates at the same roundoff errors. Extra1–4
+fresh projected sums observed2.66075992307e-4,2.84094097392e-4,
+2.96886146761e-4,3.05691751517e-4 (baseline3.00596118523e-4).
+No observed point passes4e-6; this is interim, not terminal failure.
+
+Gateway SSH then timed out/reset; worker terminal status is unknown, and no
+duplicate was launched. Local run receipt/status and retrieval scripts own
+provenance. Reviewed comparison code commit24e5ce2; baseline common-operator
+raw GP relative L2=4.57977243e-15. Heartbeat `c83` monitors recovery and will
+retrieve terminal results, verify hashes, compare fields, update the report.
