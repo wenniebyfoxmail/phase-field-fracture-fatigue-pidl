@@ -9,3 +9,11 @@ recomputation. No producer-blocking defect identified.
 Reported70 related checks were not independently executed by the reviewer.
 E018 numerical launch still requires E017 Evidence closure, fresh Run IDs and
 live producer readiness. Code readiness alone is not scientific success.
+
+## Subsequent actual-state geometry preflight
+
+The reviewed r1 code remains technically admitted but will not be launched.
+Read-only actual-state component audit found a small isolated corner damage
+component broadens c60/c83 windows to53.5% of domain mass. The r2 anchor-component
+geometry proposal must receive new review before numerical use. r1 PASS does
+not extend to changed geometry.

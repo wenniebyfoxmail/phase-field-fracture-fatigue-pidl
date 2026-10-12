@@ -1,0 +1,89 @@
+{
+  "c20s4": {
+    "lower": [
+      -0.5,
+      -0.01562507791143096
+    ],
+    "upper": [
+      0.06267632642999904,
+      0.01541996686936962
+    ],
+    "center": [
+      -0.21866183678500048,
+      -0.00010255552103066983
+    ],
+    "scale": [
+      0.3013381632149995,
+      0.03552252239040029
+    ],
+    "padding": 0.02,
+    "damage_threshold": 0.1,
+    "damage_nodes": 4082,
+    "background_nodes": 82674,
+    "support_nodes": 10476,
+    "total_mass": 1.0000000000000002,
+    "damage_mass": 0.016045873179689495,
+    "background_mass": 0.9839541268203108,
+    "support_mass": 0.04123726309660408,
+    "background_support_mass": 0.025191389916914587,
+    "background_support_fraction": 0.025602199564243533
+  },
+  "c60s4": {
+    "lower": [
+      -0.5,
+      -0.5
+    ],
+    "upper": [
+      0.5,
+      0.01550588306125041
+    ],
+    "center": [
+      0.0,
+      -0.2422470584693748
+    ],
+    "scale": [
+      0.52,
+      0.27775294153062524
+    ],
+    "padding": 0.02,
+    "damage_threshold": 0.1,
+    "damage_nodes": 5716,
+    "background_nodes": 81040,
+    "support_nodes": 80892,
+    "total_mass": 1.0000000000000002,
+    "damage_mass": 0.022560468502181533,
+    "background_mass": 0.9774395314978188,
+    "support_mass": 0.5354257472901163,
+    "background_support_mass": 0.5128652787879349,
+    "background_support_fraction": 0.524702820236895
+  },
+  "c83s4": {
+    "lower": [
+      -0.5,
+      -0.5
+    ],
+    "upper": [
+      0.5,
+      0.01550588306125041
+    ],
+    "center": [
+      0.0,
+      -0.2422470584693748
+    ],
+    "scale": [
+      0.52,
+      0.27775294153062524
+    ],
+    "padding": 0.02,
+    "damage_threshold": 0.1,
+    "damage_nodes": 7225,
+    "background_nodes": 79531,
+    "support_nodes": 80892,
+    "total_mass": 1.0000000000000002,
+    "damage_mass": 0.028471668314352015,
+    "background_mass": 0.9715283316856483,
+    "support_mass": 0.5354257472901163,
+    "background_support_mass": 0.5069540789757643,
+    "background_support_fraction": 0.521810906014624
+  }
+}
