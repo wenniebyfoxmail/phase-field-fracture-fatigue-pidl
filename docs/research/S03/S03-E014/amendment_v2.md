@@ -88,9 +88,19 @@ the only local mechanics tests; no real-data solve is permitted on Mac.
 3. `validate`: separate invocation ONLY after fit completion/output freeze,
    using the exact held member matched to the external byte hash. Confirm
    stage9/reference1/cycle126873.5/force and reference-coordinate agreement
-   <=1e-6mm; finite in-plane target support only. If fewer than10 eligible points
+   <=1e-6mm in x,y; eligibility requires finite x,y,u,v ONLY (z or w alone
+   missing does not change this in-plane score). If fewer than10 eligible points
    or projector rank fails, no score. Report count AND area coverage; all
    comparators use the same subset. No fit call/geometry update in this mode.
+
+Implementation clarification after independent round3, before any workflow
+execution: fit requires a successful prepare-mode completion receipt bound to
+preparation.json/prepared.npz; validate requires a successful fit-mode receipt
+bound to fit.json/frozen_predictions.npz/q_profile.json BEFORE held-member access.
+Missing/failed/wrong-mode/wrong-runner/tampered receipts stop the transition.
+Receipts record exact completed artifacts and hashes; failed ones never admit
+their forensic outputs. Area construction explicitly requires connectionType3.
+Launch explicitly sets and verifies OMP/OPENBLAS/MKL thread limits to1.
 
 Outputs: profile, q, conditional d prior, predicted increments, matched
 candidate/secant/intact/d0-only held error/coverage. Model state has no qualified

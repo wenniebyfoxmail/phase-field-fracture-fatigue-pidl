@@ -10,6 +10,7 @@ import json
 import socket
 import sys
 import time
+import os
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -33,6 +34,23 @@ def dump(path, obj):
     Path(path).write_text(json.dumps(obj,indent=2,allow_nan=False))
 
 
+def require_completion(root, mode, artifacts):
+    """Reject failed/partial stages before consuming their output or held data."""
+    receipt_path=root/"execution_receipt.json"
+    if not receipt_path.is_file():
+        raise ValueError("missing completion receipt")
+    receipt=json.loads(receipt_path.read_text())
+    if receipt.get("mode")!=mode or receipt.get("execution_status")!="succeeded":
+        raise ValueError("unsuccessful or wrong-mode completion receipt")
+    if receipt.get("runner_sha256")!=digest(__file__):
+        raise ValueError("completion receipt runner mismatch")
+    hashes=receipt.get("artifacts_sha256",{})
+    for name in artifacts:
+        if not (root/name).is_file() or hashes.get(name)!=digest(root/name):
+            raise ValueError("completion receipt artifact mismatch")
+    return receipt
+
+
 def vector_error(residual, weights):
     return float(np.sum(weights*np.linalg.norm(residual,axis=1))/weights.sum())
 
@@ -50,8 +68,11 @@ def prepare(archive, output):
     fit = a["finite_xyz"]&b["finite_xyz"]&a["finite_u"]&b["finite_u"]
     xy = a["xyz"][:,:2]
     v = b["u"][:,:2]-a["u"][:,:2]
-    rows = [[int(x.strip()) for x in l.split(";")[2:]] for l in connections.splitlines()[1:] if l.strip()]
-    tri = np.asarray(rows,dtype=int)
+    rows = [[int(x.strip()) for x in l.split(";")] for l in connections.splitlines()[1:] if l.strip()]
+    rows = np.asarray(rows,dtype=int)
+    if np.any(rows[:,0]!=3):
+        raise ValueError("area-weight construction requires connection Type3")
+    tri = rows[:,2:]
     tri = tri[np.all(tri>=0,axis=1)]
     if np.any(tri>=len(ids)):
         raise ValueError("connection index out of range")
@@ -98,6 +119,7 @@ def prepare(archive, output):
 
 
 def fit(prepared_root, output):
+    require_completion(prepared_root,"prepare",("preparation.json","prepared.npz"))
     meta = json.loads((prepared_root/"preparation.json").read_text())
     if digest(prepared_root/"prepared.npz") != meta["prepared_sha256"]:
         raise ValueError("prepared lock mismatch")
@@ -135,6 +157,7 @@ def fit(prepared_root, output):
 
 
 def validate(fit_root, high_member, output):
+    require_completion(fit_root,"fit",("fit.json","frozen_predictions.npz","q_profile.json"))
     meta = json.loads((fit_root/"fit.json").read_text())
     if meta["status"]!="frozen_before_high_response_access" or digest(fit_root/"frozen_predictions.npz")!=meta["prediction_sha256"]:
         raise ValueError("prediction freeze mismatch")
@@ -153,7 +176,7 @@ def validate(fit_root, high_member, output):
     if any(int(v) not in lookup for v in a["ids"]):
         raise ValueError("held facet identity missing")
     index=np.array([lookup[int(v)] for v in a["ids"]])
-    valid=high["finite_xyz"][index]&np.isfinite(high["u"][index,:2]).all(1)
+    valid=np.isfinite(high["xyz"][index,:2]).all(1)&np.isfinite(high["u"][index,:2]).all(1)
     if valid.sum()<10 or not np.allclose(high["xyz"][index[valid],:2],a["xy"][valid],atol=1e-6,rtol=0):
         raise ValueError("held reference/support mismatch")
     target=high["u"][index[valid],:2]-a["u7"][valid]
@@ -193,6 +216,9 @@ def main():
     receipt["dependencies_sha256"]={p:digest(Path(__file__).with_name(p)) for p in
         ("aa2024_triplet_structure.py","aa2024_patch_mechanics.py","aa2024_rigid_observable.py")}
     receipt["numpy_version"]=np.__version__
+    receipt["pid"]=os.getpid()
+    receipt["thread_environment"]={k:os.environ.get(k) for k in
+        ("OMP_NUM_THREADS","OPENBLAS_NUM_THREADS","MKL_NUM_THREADS")}
     try:
         if args.mode=="prepare":prepare(args.input,args.output)
         elif args.mode=="fit":fit(args.input,args.output)
@@ -205,6 +231,10 @@ def main():
         receipt["error"]=str(exc)
         raise
     finally:
+        expected={"prepare":("prepared.npz","preparation.json"),
+                  "fit":("frozen_predictions.npz","fit.json","q_profile.json"),
+                  "validate":("metrics.json","validation_fields.npz")}[args.mode]
+        receipt["artifacts_sha256"]={name:digest(args.output/name) for name in expected if (args.output/name).is_file()}
         receipt["elapsed_seconds"]=time.time()-started
         receipt["end_utc"]=datetime.now(timezone.utc).isoformat()
         dump(args.output/"execution_receipt.json",receipt)
