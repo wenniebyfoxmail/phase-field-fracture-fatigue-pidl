@@ -67,8 +67,10 @@ artifacts、拒绝所有已有result directories/.pt/外部symlink，并核resul
 
 ## 边界说明与下一步
 
-已有3/3测试是必要的局部修复证据，不覆盖R1--R3。v1对pretrain tolerance、最少1次
-LBFGS pretraining，以及fracture confirmation按training-step j递减的说明仍应写入run receipt；
+已有3/3测试是必要的局部修复证据，不覆盖R1--R3。v1所述pretrain tolerance和fracture
+confirmation按training-step j递减应写入run receipt。源码另确认 `model_train.py:793`
+以 `max(n_epochs_LBFGS,1)`让pretraining至少执行1个LBFGS epoch，即config的LBFGS0
+不等于全程零LBFGS；这是frozenfamily行为，也须如实记录。
 无需为了改这些历史family行为重新设计physics，只需如实记录实际执行语义。
 
 补齐上述supervisor边界并提供新hash/no-training tests后re-review。本轮结束交回唯一owner；
