@@ -1,0 +1,31 @@
+{
+  "cycles": 73,
+  "field_names": [
+    "d_node",
+    "history_gp",
+    "state_metadata",
+    "strain_en_degr_gp",
+    "strain_en_undgr_gp",
+    "u_node"
+  ],
+  "load_path": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0,
+    0.0
+  ],
+  "logical_states": 438,
+  "pre_to_previous_post_aliases": 72,
+  "producer_source_commit": "862992a60edc7f59335365beacb5c71fc8592a7a",
+  "remaining_gates": [
+    "verify every full-path payload hash before decode",
+    "verify decoded shapes, finiteness, native order and s00/s05 equality",
+    "qualify producer update semantics and causal state sufficiency",
+    "apply frozen P1 selection and scaling only after those gates pass"
+  ],
+  "scope": "metadata_only_no_scientific_array_decode",
+  "unique_payloads": 366,
+  "verdict": "METADATA_CAPABILITY_PASS"
+}
