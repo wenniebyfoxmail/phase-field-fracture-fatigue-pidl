@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "review_scope": "U0115_PINN_ACQUISITION_CODE_READY_ONLY",
+  "run_id": "pf_u0115_acquire_39f8108fe96d406385e4011700cb47f9",
+  "source_commit": "b6d56102daa7d45a6c196b72055010170e5f39fb",
+  "code_manifest_sha256": "2ad7b6a3a6001e4f9d4d6d4bddd3650352a04d43d8a1f7a4044cbfd302301f6c",
+  "supervisor_sha256": "fccba7a4ccf204c28a55c3482932b15fe154b0d73b71a372279864972a682e7b",
+  "blocking_corrections": [],
+  "execution_owner": "01a1131d-017c-7b03-a95a-ad73ba8fcc9c",
+  "authorisation_scope": "one fresh U0.115 PINN acquisition, seed1, single GPU, 48h cap; no retry/resume",
+  "reviewer_started_training": false,
+  "g5_passed_by_this_review": false,
+  "delta_model_training_authorised_by_this_review": false,
+  "run_ready_preflight": "execution owner verifies live resources, remote immutable identities, clean fresh paths and unconsumed nonce; standard unoptimized Python",
+  "review_record": "u0115_acquisition_code_review_v3_20261012.md"
+}
