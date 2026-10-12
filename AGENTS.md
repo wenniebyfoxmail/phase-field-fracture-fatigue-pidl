@@ -122,6 +122,31 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
   documents, and registries are legacy evidence. Do not bulk-move, rewrite, or
   delete them. Migrate an active item only when it is next touched.
 
+## Obsidian Research Milestones
+
+- For each research task, keep one concise, living Obsidian note under the
+  appropriate `01 Research Tracks/` topic; reuse an existing note for the same
+  task or Experiment. Different chats working on that task contribute dated
+  milestones to that note, not one note per turn or a copied chat transcript.
+- Sync at two decision points: (1) a concrete route is chosen, with its next
+  decisive test; (2) an attempt has a clear outcome, with the claim boundary
+  and next adjustment. Routine monitoring, commands, intermediate speculation,
+  and unchanged status do not trigger a note.
+- Each milestone is normally 2–4 short lines: decision/result, why or evidence
+  pointer (Experiment/Run ID, repo path or commit, and chat ID/title when
+  available), and next action. Keep detailed methods, metrics, logs, and raw
+  outputs in the repository or producer archive. Mark unverified plans as plans;
+  never promote execution health or discussion to scientific evidence.
+- In the same task, add or update exactly one basename wikilink and one brief
+  current-status phrase in Obsidian's
+  `01 Research Tracks/000 research note/Road crack prediction/0 Roadmap.md`.
+  Preserve existing notes and user text, avoid duplicate links, and check that
+  the linked note resolves. If the vault cannot be updated, report the sync as
+  pending rather than claiming the research record is complete. Follow the
+  vault's `AGENTS.md` for placement and editing safety. Obsidian is the decision
+  index; `Storyline -> Experiment -> Run -> Evidence` remains the scientific
+  source of truth.
+
 ## Research Readiness Gates
 
 - **Code Ready:** before claim-changing code is used, search the repository for

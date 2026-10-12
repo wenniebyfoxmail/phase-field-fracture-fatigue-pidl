@@ -242,6 +242,12 @@ and the primary Storyline receives a dated claim-impact entry. Follow
 `Storyline -> Experiment -> Run -> Evidence`; do not turn a successful launch,
 green test, or large archive into a scientific verdict.
 
+At a concrete route decision and again after an interpretable attempt result,
+sync a short task-level decision note to Obsidian and link its current status
+from `0 Roadmap.md`, following the project's `AGENTS.md`. Reuse the same note
+across chats for the same task; omit routine progress. This is a navigable
+decision record, not a substitute for Experiment/Run evidence or a new gate.
+
 ## Output Template
 
 ```markdown
