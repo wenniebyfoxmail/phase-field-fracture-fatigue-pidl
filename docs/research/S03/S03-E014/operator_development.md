@@ -121,6 +121,12 @@ https://chatgpt.com/c/6ac7974d-c838-8325-9322-fbc639d581cb . Review asks separat
 for structural-inspector Code Ready and physical design readiness. Corrected
 index semantics require a fresh code review after the v1 response.
 
+Round1 final verdict is now available: structural `REVISE_CODE`, physics
+`NOT_READY`. See `review_round1.md`. Identity/member ambiguity and timestamp
+truncation were independently reproduced. Fixed rigid-quotient scoring was
+accepted only as a prospective narrowed observable. Corrected inspector now
+has13 synthetic cases; no actual inspector rerun or FEM/q solve before review.
+
 Read-only producer preflight: `ssh -o BatchMode=yes -o ConnectTimeout=12
 gpu-taobo 'hostname; df -h / /mnt/data2 /mnt/data3; nvidia-smi ...'` exited255,
 connection to172.16.100.2:22 timed out. `route -n get172.16.100.2` used en0/default
