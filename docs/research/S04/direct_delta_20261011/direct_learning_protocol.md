@@ -1,17 +1,19 @@
 ---
 storyline_id: S04
 scope: direct_multivariable_delta_preparation
-protocol_revision: proposal-v1-20261011
-status: design_concrete__data_admission_pending__training_not_launched
+protocol_revision: proposal-v2-reduced-s4-20261012
+status: g5_hold__u0115_pinn_pair_missing__method_only
 claim_class: C2
 evidence_domain: synthetic
 ---
 
 # 直接学习逐 cycle 多变量 Delta：具体实验方案
 
-> 2026-10-12 方法修订：以下proposal-v1保留为历史设计；当前native/reduced-head选择、
-> D0 activation与唯一owner以[g5_method_review_and_d0_card_20261012.md](g5_method_review_and_d0_card_20261012.md)
-> 为准。G5当前HOLD，本方法对话不重复D003/D0、不导出Windows scientific payload、不启动NN。
+> 2026-10-12 dated revision：proposal-v1见Git历史 `f00c743`；本版改为同状态s4的
+> reduced-field直接Delta。fresh v10已正常结束且封存完整性通过，G5仍HOLD；U0.115
+> 完整matched PINN未建立。G5/data-lock/D0唯一执行owner为主对话
+> `01a1131d-017c-7b03-a95a-ad73ba8fcc9c`；方法对话只修订文档。
+> [复核与最小D0卡](g5_method_review_and_d0_card_20261012.md)为当前方法记录。
 
 ## 问题与对象
 
@@ -22,7 +24,9 @@ evidence_domain: synthetic
 网络直接输出空间 correction，不经 POD 系数瓶颈。最终 formal Experiment ID 在数据合同和
 独立设计审核后注册；不占用已有实验 ID，也不改变 E013--E016 的 verdict。
 
-初始独立目标为 `d, alpha_bar, psi_raw`。记录 physical `Delta` 同时使用 raw driver 的稳定
+首轮主评价通道为同状态s4的reduced `mean d, mean alpha_bar, mean psi_raw`；这里不把三者
+称为独立物理状态。若matched `mean f`也获批，则直接预测其Delta的辅助head，单独报告，
+不从 `f(mean alpha_bar)`生成它，也不重复计入主评价。记录 physical `Delta` 同时使用 raw driver 的稳定
 变换损失；loss-space Delta 与 physical Delta 各自明确命名。`H` 与 fatigue `alpha_bar` 不同，
 只有双方导出同定义、同位置、同 timing 的 H 时才加入；首轮不增加未可用 target。
 
@@ -39,18 +43,20 @@ evidence_domain: synthetic
 | 任务 | 最小输出 | 通过后用途 |
 |---|---|---|
 | 查旧三条 FEM cycle MAT 的 source timing | 各通道 s4/s5、GP reduction、clipping、source commit 的逐字段表 | 明确 cycle-summary imitation 与 native same-state 分开 |
-| 同状态配对 | s4 nodal/GP `d, alpha_bar, raw psi` 与 PINN 同 peak checkpoint，统一 Q4 evaluator | strict same-state target admission |
+| 同状态配对 | 从各自已锁定native support得到s4 reduced `d, alpha_bar, raw psi`，逐channel声明Q4 cell reduction和mapping | same-state reduced-field target admission；不自动获得native GP资格 |
 | PINN U0.115 counterpart | 从已有匹配 checkpoint 做只读 export；不存在则记 missing，不启动训练补轨迹 | 新 development Umax 轴 |
 | C0 身份/初始化 | 初始字段和首个 history window 的 missing mask | C0 用于初始化，不当作普通 cycle target |
 | teacher/comparator role | 按 channel/regime 资格或 processed-imitation-only 声明 | 限定可支持的 scientific claim |
 
-这些是新的配对准备任务，不需要等待 U0.1175 完成才能进行 development 诊断；但本轮范围
-仅现有本地 archive，未发远程 export 请求或执行 GPU/FEM。
+fresh U0.1175 v10已正常结束，terminal integrity通过；这只关闭执行/封存可用性。
+主对话继续补同状态与空间表示清单。G5/data lock通过前，D0与NN保持HOLD；本方法对话
+不执行资产准备、export、D0、训练或共享Obsidian更新。
 
-完整 trajectories 分组：U0.11/0.115/0.12/0.13 作 development，U0.115 paired audit 未过则
-不进入训练。U0.125 exposure unknown 继续关闭。U0.1175 confirmation scientific payload
-保持封存；外部 owner 完成 acquisition/integrity qualification 后，再按冻结规则配对其 PINN
-输出。此处缺少 confirmation PINN counterpart receipt，因此 confirmation 目前也未 ready。
+development候选为U0.11/0.115/0.12/0.13。已锁定旧PINN exports只覆盖.11/.12/.13；
+U0.115缺少完整matched PINN资格，不登记为已齐的第四物理轴，不因此自动回退重算旧三条。
+U0.125 exposure unknown继续关闭。U0.1175 confirmation scientific payload保持封存；
+G5 owner提供data角色与paired lock前，不用于模型或特征选择。terminal integrity通过不能
+替代confirmation PINN counterpart或paired semantics资格。
 
 训练与主评价用双方 first-event **之前的共同 matched s4 states**；own-event/censor 单列。
 旧诊断的 pre-FEM-event 261 cycles 还不是已审计的 common-pre-event 集，因为本包缺少逐轨迹
@@ -68,8 +74,9 @@ PINN fields at c-1,c-2, lag masks, PINN global summaries]`。
 - Mapping：本包 1.3927% 面积用了 triangle fallback。formal main comparison domain 固定为
   geometry-only contained cells；fallback 单独报告，先核对其是域不重合还是映射外推。
   图上的 native全域数值与正式 clean comparison-domain score 不混用。
-- 标准化和 raw `log1p(psi/s_raw)` scale 仅由 outer-training complete trajectories 决定，
-  `s_raw` 为它们正 raw-driver 的 area-weighted median，带固定 1e-12 floor。
+- input标准化和 raw `log1p(psi/s_raw)` scale只fit当前inner/outer-training PINN complete
+  trajectories；`s_raw`来自这些PINN正raw-driver的area-weighted median，floor1e-12。
+  Delta label scaling可以用training labels，但必须冻结并inverse，不能取confirmation统计量。
 - Labels：matched FEM-PINN physical Delta；history 可用 `log1p(alpha_bar/0.5)` 的变换误差，
   raw 可用上述 `log1p` 误差，输出评估必须逆变换到 physical fields 并报告实际 Delta。
   该表示变换直接逐点学习，不是预测 POD coefficients。
@@ -79,18 +86,22 @@ cells 恰好计分一次。不得把 tiles 当独立 trajectory 或混入 valida
 
 ## 物理依赖与输出层
 
-原生 GP 上：`alpha_bar_GP -> f_GP`；`d_GP, psi_raw_GP -> g(d_GP)*psi_raw_GP`。
-是否乘 f 由具体 driver 定义决定，不统一称 active。`H=max(previous H, declared psi)`
-是独立 history update，不能从当前 cycle summary 反推。
+当前输出为**同状态s4的reduced-field correction heads**。`mean f`通过matched reduced
+label直接辅助学习。exact active需native joint support：双方同一时刻/同一GP或已锁定
+quadrature mapping上的 `d, psi_raw`以及该driver实际需要的其它parents共同可用，才能先
+按声明driver定义算product再reduction；是否乘f由该定义决定。单独存在native d或raw、
+只有nodal damage、或只有reduced parents都不满足这项前提。
 
 cell reduction 上：`mean_GP(f(alpha_bar)) != f(mean_GP(alpha_bar))`，
 `mean_GP(g(d)*psi) != g(mean_GP(d))*mean_GP(psi)`。本轮测得 FEM 的 f 重建差
 约 0.0037--0.0058 area-RMSE median，PINN 对应差约 1e-8，说明双方 reduction 不同。
 
-因此首轮在同状态、同空间 support 上学习 primitive targets。若 native GP targets 可用，
-从 corrected primitives 在 GP 上重算派生 f/active，再按合同 reduction；若只有 cell means，
-f/active 仅作为单列 archive output fidelity，不强制错误的精确派生等式、不加入独立 primary。
-如需 f 额外 cell head，需明确是 unresolved subcell variation 的辅助输出，并作为协议修订。
+因此首轮不强制reduced f/active的exact-derived等式。mean f的直接辅助head体现reduced
+output fidelity，与history同源相关，不能宣称独立物理闭合。active若只有reduced parents，
+乘积近似仅作标明的diagnostic；matched exported mean-active若另获资格，可在后续protocol
+中作为直接辅助target，首轮不自动增加。native-GP exact-derived路线需要独立锁定全部
+parents的joint support、evaluator和reduction；不是本版默认路线。`H`是另一个history量，
+missing时保留missing，不能由alpha_bar或一个current raw值补造。
 
 所有方法同样报告 corrected field bounds、history/damage decreases、edge roughness、support。
 保存未投影 predictions；任何后处理必须提前固定并同时报告前后结果，不能靠事后 clipping
@@ -101,12 +112,14 @@ f/active 仅作为单列 archive output fidelity，不强制错误的精确派�
 | Arm | 输入/输出 | 作用 |
 |---|---|---|
 | B0 | 原 PINN，Delta=0 | 最基本纠正参照 |
-| B1 | 同输入点特征 + 固定邻域均值 + globals + 两个 lags，闭式 ridge，直接预测逐点 Delta | 简单线性 comparator，无 POD coefficients |
-| N1 | 同输入、3 hidden layers × 64 units，shared pointwise MLP，3 heads | 测直接非线性场映射 |
+| B1 | 同输入点特征 + 固定邻域均值 + globals + 两个 lags，闭式 ridge，直接预测reduced Delta；mean f如admitted作为额外辅助output | G5后的唯一最小D0对照，无 POD coefficients |
+| N1 | 同输入、3 hidden layers × 64 units，shared pointwise MLP，3主通道head + matched mean f直接辅助head | 后续NN候选；当前未授权 |
 | N2 | 相同输入/heads，2 message-passing layers ×64，2-hop graph，参数量与 N1 差 <=5% | 测局部空间信息的价值 |
 
-B1 ridge alpha=`[1e-2,1,1e2]`，只在 whole-trajectory inner folds 选。三项 loss 标准化后
-固定等权；trajectory 等权，C1--20/C21--40/C41+ 的非空 strata 等权，每 cycle 再 area weighting。
+B1 ridge alpha=`[1e-2,1,1e2]`，只在 whole-trajectory inner folds选；辅助mean f单列、不与
+主通道重复投票。后续NN三主通道loss标准化后固定等权；mean f辅助loss权重必须在它的
+独立training run card中提前锁定，不由本版暗含或在结果后调节。trajectory等权，
+C1--20/C21--40/C41+的非空strata等权，每cycle再area weighting。
 背景/局部 imbalance 由同一 PINN-only raw q99 mask 的 foreground/background 等权处理，
 mask threshold 在该 cycle 的 PINN 上计算，所有 arms 一致，评估不复用该 mask 作 FEM oracle 输入。
 
@@ -116,23 +129,25 @@ gradient interference，再立新优化策略对照；不在本矩阵结果之�
 
 ## 训练预算与模型选择
 
-这是可审核的 future run card；本轮没有 training authority/launch。
+以下仅保留NN future设计上限，不能视为G5后的自动执行方案。G5通过后的唯一最小动作
+是主对话负责的B0/B1闭式D0，详见独立D0卡；NN需要另一次reviewed run card。
 
 - Producer：Taobo；launch 前核对 live GPU/VRAM、storage、shared-account 协议和 code review。
-- Development：最多4个 complete-Umax outer folds，N1/N2 各 seeds `[1,7,19]`，最多24 fits。
+- Development：获批complete-Umax outer folds；只有U0.115 matched PINN通过后才可能4folds。
+  N1/N2各seeds `[1,7,19]`，最多24fits是候选上限，不能据此宣布四轴齐全。
 - Training：AdamW，lr=1e-3，weight decay=1e-4，max50 epochs；inner validation
   patience8。每个 arm/fold 的 epoch 先由 inner trajectories 选择，outer-heldout 不做 early stop。
 - 每 fit 上限10 GPU-min；24 fits <=4 GPU-hours，最终 refit3 seeds <=30 GPU-min；
   总 wall/GPU 上限分别6h/4.5h，超限记 incomplete，不追加 GPU、epoch 或 seeds。
 - 输出预算 <=2 GiB；保存 selected checkpoints、逐cycle scored metrics、固定field examples，
   不复制 producer 原始全量 fields。PIDL 原 producer 完全冻结。
-- Development 选择：按 paired native data 上的 worst independent-channel ratio 排序；
+- Development 选择：按已获批same-state reduced data上的worst主评价channel ratio排序；
   ties先N1再N2，三 seeds 全报告不挑最好 seed。最终选 arm 后冻结输入、loss、weights、
   epoch、checkpoint ensemble(mean)、scalers和reference-role，再一次性开confirmation。
 
 ## 判据、可达性与停止规则
 
-拟议 bounded claim：selected direct Delta 是否在完整未见 Umax 上，使全部独立目标都比
+拟议 bounded claim：selected direct Delta 是否在完整未见 Umax 上，使全部主评价通道都比
 最佳简单部署基线有实际增益？最简单基线按 development inner validation 从 B0/B1 选定，
 confirmation 不能事后切换 comparator。
 
@@ -152,8 +167,9 @@ moving-block-bootstrap 97.5% upper `<0.90`（block5，2000 repeats，seed2026101
 尚未测试不能终止直接非线性路线。confirmation primary miss 后不调weights、不增加arm、
 不打开 U0.125。通过至多支持该 reference role 的 synthetic post-hoc field correction。
 
-Secondary：每通道物理单位误差、worst-channel deterioration、FEM support上的evaluation-only
-误差、event/censor、local support IoU、bounds/irreversibility/GP派生一致性、成本、gradient trace。
+Secondary：每通道物理单位误差、mean f直接辅助head误差、worst-channel deterioration、
+FEM support上的evaluation-only误差、event/censor、local support IoU、bounds/irreversibility、
+成本和gradient trace。GP派生一致性仅在native joint support获批后评估，不套用到reduced heads。
 本轮不画 hypervolume：没有固定参考点和未见模型结果，不能用它替代 primary。
 
 ## 最小 evidence / 当前状态
@@ -162,7 +178,7 @@ Secondary：每通道物理单位误差、worst-channel deterioration、FEM supp
 holdout predictions/metrics、immutable model-selection table、全部 seeds、两张图（per-channel
 ratio与固定 heldout field panels）、README_analysis、独立 Evidence review。
 
-当前：descriptive diagnostic completed；direct-learning design written；same-state paired data、
-C0/role/新增development counterpart admission pending；训练未启动。下一可执行动作是本地旧
-三轨迹的逐字段 timing audit 和 existing PINN checkpoint availability audit；不涉及 fresh v10
-Windows 输出/控制目录。
+当前：D003 descriptive evidence保留复用；fresh v10正常结束并封存；G5仍HOLD，U0.115
+完整matched PINN、同状态support与data lock待关闭。主对话
+`01a1131d-017c-7b03-a95a-ad73ba8fcc9c`已接管G5/data-lock/D0唯一执行owner。
+本方法工作树只维护设计记录，等待主对话批准data lock；不执行D0/NN或更新共享Obsidian。

@@ -3,7 +3,7 @@ storyline_id: S04
 scope: independent_method_and_input_review
 date: 2026-10-12
 status: hold_waiting_for_g5_owner_data_lock
-execution_owner_recommendation: source_dialogue_01a1131d-017c-7b03-a95a-ad73ba8fcc9c
+execution_owner: source_dialogue_01a1131d-017c-7b03-a95a-ad73ba8fcc9c
 ---
 
 # G5只读复核、配对资产与唯一D0 run card
@@ -11,6 +11,10 @@ execution_owner_recommendation: source_dialogue_01a1131d-017c-7b03-a95a-ad73ba8f
 结论：同意 `HOLD_PAIRED_MODEL_RUN__G5_NOT_FULLY_PASSED`。v10 integrity/availability
 通过不释放paired model run。本次复核未执行D0/重算D003、未加载checkpoint tensor、未读取
 Windows scientific payload或修改G5文件。方法owner仅写本记录；G5/data-lock由主对话负责。
+
+2026-10-12 coordination update：fresh v10已正常结束且terminal integrity通过；主对话已
+明确接管G5/data-lock/D0唯一执行owner。U0.115完整matched PINN尚缺，G5继续HOLD。
+本方法对话不启动任何任务，也不修改共享Obsidian。
 
 审核对象：
 `/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-e016-request31-storage-block-20261009/docs/research/S04/S04-E016/g5_contract_role_input_audit_20261012.md`
@@ -90,7 +94,8 @@ HOLD判断正确。进入paired data lock前还需明确以下条款，本文不
   的监督字段，目标为FEM−PINN；不声称三者是独立物理状态。
 - 如果希望纠正 `mean f`，可在D0用**额外直接reduced f head**做监督诊断；它是同源相关的
   auxiliary output，单列report，不重复算作独立primary或强制 `f(mean alpha)`。
-- active只在same-state原生parents可用时先按GP定义计算再mean；只有reduced parents时，
+- exact active需same-state native joint support：d、raw psi和声明driver实际需要的其它
+  parents在同一GP/已锁定quadrature mapping上共同可用，先按定义计算再mean；只有reduced parents时，
   approximation单列，或用qualified exported mean-active作为另一个direct auxiliary target。
   不用mean-parent乘积伪称native active，也不默认加入multiplicative f。
 - `H`若无matched历史support，保持missing；不由alpha_bar或单个current raw推断。
@@ -135,6 +140,6 @@ FEM event/tau、FEM support/top-error location、FEM residual/coefficient、futu
 closed-form B1仅作为同信息最简comparator。NN是否值得测试结合新增信息/独立轴与measured
 bottleneck决定，不再采用“任何ridge fail就关闭NN”的旧先验。
 
-唯一执行owner建议：**主对话 `01a1131d-017c-7b03-a95a-ad73ba8fcc9c`**，其掌握G5/data lock
-与资产角色；本方法对话提供run card和review，不再并行D0或导出。此为建议，owner只有在主
-对话明确接管并冻结runner/protocol时生效。当前任何一方都不启动D0/NN。
+唯一执行owner已明确为**主对话 `01a1131d-017c-7b03-a95a-ad73ba8fcc9c`**，其掌握
+G5/data lock与资产角色，并已确认接管。本方法对话只提供设计/run card与review。
+D0仍须等待G5通过、data lock与runner/protocol审查；U0.115缺配对不被假定为完整。
