@@ -1,0 +1,9 @@
+{
+  "experiment_id": "S09-E007",
+  "event": "single_packet_build_attempt",
+  "status": "succeeded",
+  "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s09-e007-fixed-damage-holdout-20261012/local_archive/experiments/S09-E007/packet/holdout_u0125.npz",
+  "scientific_read_started": true,
+  "scientific_read_started_at_utc": "2026-10-11T23:39:03.202962+00:00",
+  "packet_sha256": "447c372bb675521ba8c17f2e33c9d71f4efba096995722e6279fcc9cfc7810ed"
+}
