@@ -93,7 +93,7 @@ def fit(a,cfg,lock,dev,val,train):
  positive=int(y.sum());negative=len(y)-positive
  if min(positive,negative)<=0:raise ValueError('empty validity class')
  means=X.mean(0);stds=X.std(0,correction=0).clamp_min(1e-8);X=(X-means)/stds
- weights=torch.where(y==1,.5/positive,.5/negative)
+ weights=torch.where(y==1,torch.full_like(y,.5/positive),torch.full_like(y,.5/negative))
  theta=torch.zeros(len(FEATURES)+1,dtype=torch.float64,requires_grad=True)
  def objective():return (torch.nn.functional.binary_cross_entropy_with_logits(X@theta[:-1]+theta[-1],y,reduction='none')*weights).sum()+.5*cfg['l2_strength']*theta[:-1].square().sum()
  initial=float(objective().detach());calls=[]
@@ -128,7 +128,7 @@ def verify_model(a,cfg):
  if not torch.allclose(means,torch.tensor(model['means'],dtype=torch.float64),atol=1e-12,rtol=0) or not torch.allclose(stds,torch.tensor(model['stds'],dtype=torch.float64),atol=1e-12,rtol=0):raise ValueError('statistics not from train only')
  X=(X-means)/stds;pos=int(y.sum());neg=len(y)-pos
  if min(pos,neg)<=0 or any(r['valid_label'] not in (0,1) for r in data['rows']):raise ValueError('invalid labels')
- weights=torch.where(y==1,.5/pos,.5/neg)
+ weights=torch.where(y==1,torch.full_like(y,.5/pos),torch.full_like(y,.5/neg))
  theta=torch.tensor(model['coefficients']+[model['intercept']],dtype=torch.float64,requires_grad=True)
  loss=(torch.nn.functional.binary_cross_entropy_with_logits(X@theta[:-1]+theta[-1],y,reduction='none')*weights).sum()+.5*cfg['l2_strength']*theta[:-1].square().sum();loss.backward();grad=float(theta.grad.abs().max())
  if abs(float(loss.detach())-model['final_loss'])>1e-12 or abs(grad-model['gradient_inf'])>1e-12:raise ValueError('fit loss/gradient recompute mismatch')
