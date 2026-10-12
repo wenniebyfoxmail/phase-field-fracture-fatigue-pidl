@@ -27,8 +27,10 @@ not authorise scientific-array decode, training, Stage 0B or rollout.
   support.
 - For a finite float64 value `x`, half-ULP is
   `0.5 * min(nextafter(x,+inf)-x, x-nextafter(x,-inf))` using the positive
-  finite spacings. Zero uses half the least positive float64 subnormal. The
-  export-resolution aggregate follows the formula in `experiment.md`.
+  finite spacings, clamped below by the least positive float64 subnormal.
+  This clamp covers zero and avoids the unrepresentable half-subnormal value
+  underflowing back to zero. The export-resolution aggregate follows the
+  formula in `experiment.md`.
 - Damage and history targets are `s04-s00` increments. Displacement targets are
   absolute `s04` nodal components after the same hard boundary lifting used by
   the model.
