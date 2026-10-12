@@ -2,6 +2,18 @@
 
 ## Claim-impact log
 
+- **2026-10-12 — E014 v2 actual DIC-to-static-patch bridge completed.**
+  Exact55cf555 code and R002 actual spatial assets independently admitted before
+  TaoboR00321q+intact solve. Frozen q0.0475, very shallow improvement overq0;
+  numerical visibility is not practical identification. Separate R005 held
+  validation on643/646 observations: candidateMAE0.00260239mm, secant0.00252766,
+  intact0.00318557,d0-only0.00260345. Candidate improves over intact but not
+  secant; learned amplitude adds little beyond fixed prior. R004 transfer-race
+  validation was hash-blocked before parsing/scoring and retained, not erased.
+  Result evidence review pending; no full phase-field/material/fatigue/future/
+  road claim. [Actual result and chronology](S03-E014/results.md),
+  [independent actual asset admission](S03-E014/asset_admission.md).
+
 - **2026-10-12 — E014 primary-source indexing repair and local operator development.**
   Published CrackPy1.1.1 maps zero-based connection indices to facet IDs via+1;
   raw index0 is legitimate, correcting the initial inspection. Training-only

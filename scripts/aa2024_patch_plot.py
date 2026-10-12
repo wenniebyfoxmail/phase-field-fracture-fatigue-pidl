@@ -33,7 +33,7 @@ def main():
     for ax,key in zip((axes[0,2],axes[1,0],axes[1,1],axes[1,2]),("candidate","secant","intact","d0_only")):
         value=np.linalg.norm(fields[key+"_residual"],axis=1)
         artist=ax.scatter(*xy.T,c=value,s=9,cmap="magma",vmin=0,vmax=max(error_limit,1e-15))
-        ax.set_title(f"{key} residual norm | MAE={metric['vector_MAE_mm'][key]:.6g}mm")
+        ax.set_title(f"{key} residual norm\nMAE={metric['vector_MAE_mm'][key]:.6g} mm",fontsize=10)
         fig.colorbar(artist,ax=ax,label="mm; shared error scale")
     for ax in axes.ravel():
         ax.set_aspect("equal");ax.set_xlim(-18,18);ax.set_ylim(-9,9)
