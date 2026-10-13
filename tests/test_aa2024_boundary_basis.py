@@ -64,11 +64,22 @@ class BoundaryBasis(unittest.TestCase):
         with self.assertRaises(ValueError):m.identity(h,11)
 
     def test_contrast_definition(self):
-        x=m.contrasts(dict(B0K0=4,B1K0=3,B0K1=2,B1K1=1))
+        x=m.contrasts(dict(B0K0=4,B1K0=3,B0K1=2,B1K1=1,secant=2))
         self.assertEqual(x['primary_boundary_only_minus_basis_only_mm'],1)
         self.assertEqual(x['boundary_mean_gain_mm'],1)
         self.assertEqual(x['basis_mean_gain_mm'],2)
         self.assertEqual(x['interaction_mm'],0)
+        self.assertEqual(x['descriptive_single_lever'],'basis_capacity_larger_single_gain')
+        additive=m.contrasts(dict(B0K0=3,B1K0=2.8,B0K1=2.8,B1K1=2.6,secant=2.5))
+        self.assertAlmostEqual(additive['interaction_mm'],0)
+        self.assertEqual(additive['descriptive_single_lever'],'equal_improving_single_changes')
+        self.assertTrue(additive['no_selected_factorial_arm_beats_secant'])
+
+    def test_soft_budget_at_boundary_and_overrun(self):
+        with patch.object(m.time,'monotonic',return_value=599.999):m.check_budget(0)
+        for elapsed in (600,601):
+            with patch.object(m.time,'monotonic',return_value=elapsed):
+                with self.assertRaises(TimeoutError):m.check_budget(0)
 
     def synthetic_fit(self,base):
         root=base/'prep';root.mkdir();out=base/'fit';out.mkdir()

@@ -69,6 +69,10 @@ def error(xy,r,w):
     z=quotient_residual(xy,r,w)
     return float(np.sum(w*np.linalg.norm(z,axis=1))/w.sum())
 
+def check_budget(start):
+    if time.monotonic()-start>=600:
+        raise TimeoutError('soft600s completion budget; no completed fit/held access')
+
 def prepare(archive,out):
     if archive.stat().st_size!=EXPECTED_SIZE:raise ValueError('archive size mismatch')
     h=hashlib.md5()
@@ -150,16 +154,18 @@ def fit(root,out):
         get=lambda k:a[name+'_'+k]
         fields=[];rows=[]
         for r,l in PAIRS:
-            if time.monotonic()-start>600:raise TimeoutError('fit wall budget600s')
+            check_budget(start)
             d=damage(get('d0'),get('br'),get('bl'),r,l)
             u,res=solve_patch(get('mesh'),get('tri'),get('boundary'),get('bc'),d)
+            check_budget(start)
             sampled=sample_regular_mesh(u,a['xy'],**params)
             fields.append(sampled);rows.append(dict(qR=float(r),qL=float(l),
                 train_MAE_mm=error(a['xy'],sampled-a['train_v'],a['weights']),relative_residual=res))
         fields=np.array(fields);loss=np.array([row['train_MAE_mm'] for row in rows])
         chosen={'K0':int(np.argmin(loss[:21])),'K1':int(np.argmin(loss))}
-        if time.monotonic()-start>600:raise TimeoutError('fit wall budget600s')
+        check_budget(start)
         intact,res=solve_patch(get('mesh'),get('tri'),get('boundary'),get('bc'),np.zeros(len(get('mesh'))))
+        check_budget(start)
         predictions[name+'intact']=a['alpha']*sample_regular_mesh(intact,a['xy'],**params)
         predictions[name+'d0']=a['alpha']*fields[0]
         for k,i in chosen.items():
@@ -171,21 +177,28 @@ def fit(root,out):
         all_fields[name]=fields
         print(name,'completed126pairs',chosen,flush=True)
     predictions['secant']=a['alpha']*a['train_v']
-    if time.monotonic()-start>600:raise TimeoutError('fit wall budget600s')
+    check_budget(start)
     np.savez_compressed(out/'frozen_predictions.npz',**predictions)
     np.savez_compressed(out/'candidate_fields.npz',pairs=PAIRS,**all_fields)
     np.savez_compressed(out/'conditional_states.npz',**states)
     write_json(out/'profiles.json',records)
+    check_budget(start)
     write_json(out/'fit.json',dict(status='all_predictions_frozen_before_held_response',
         held_member_sha256=meta['held_member_sha256'],held_force=meta['forces'][2],cycle=meta['cycle'],
         prepare_npz_sha256=sha(root/'prepared.npz'),scope='conditional_2x2_diagnostic_NOT_physical_identification'))
 
 def contrasts(m):
     a,b,c,d=[m[k] for k in ('B0K0','B1K0','B0K1','B1K1')]
+    gb,gk=a-b,a-c
+    if max(gb,gk)<=0:lever='neither_single_change_improves'
+    elif gb==gk:lever='equal_improving_single_changes'
+    elif gb>max(gk,0):lever='boundary_placement_larger_single_gain'
+    else:lever='basis_capacity_larger_single_gain'
     return dict(primary_boundary_only_minus_basis_only_mm=b-c,
         boundary_mean_gain_mm=((a-b)+(c-d))/2,basis_mean_gain_mm=((a-c)+(b-d))/2,
         interaction_mm=d-b-c+a,boundary_only_gain_mm=a-b,basis_only_gain_mm=a-c,
-        combined_gain_mm=a-d)
+        combined_gain_mm=a-d,descriptive_single_lever=lever,
+        no_selected_factorial_arm_beats_secant=all(m[k]>=m['secant'] for k in ('B0K0','B1K0','B0K1','B1K1')))
 
 def validate(root,high,out):
     completed(root,'fit',('fit.json','profiles.json','frozen_predictions.npz','candidate_fields.npz','conditional_states.npz'))

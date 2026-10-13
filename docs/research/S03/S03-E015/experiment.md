@@ -4,7 +4,7 @@
 
 Mode: prospective experiment plan. Domain: controlled experimental DIC.
 Credibility: frozen design candidate, not run permission or validated inversion.
-Owner: S03-E015; date2026-10-13; protocolv1. No human-subject study.
+Owner: S03-E015; date2026-10-13; protocolv2 prospective repair. No human-subject study.
 
 ## Status and scope
 
@@ -48,8 +48,11 @@ fourthneighbor<=2mm. No fitted nuisance BCs, traction guessing or highload BC.
 Common scoring observations: jointly finite trainingxyz/uvw, strict
 abs(x)<16.2,abs(y)<7.2mm, positive source triangle-lumped areaweights. Same IDs,
 xy and weights in all arms, regardless of B1 coverage. Source connections are
-zero-based Type3, -1padding, absolute xy areas/3; degenerate/unsupported identity
-stops preparation, not silently repaired. Artificial mesh has no NaN-derivedholes.
+zero-based Type3, -1padding, absolute xy areas/3. Unknown indices, mixed-negative
+padding or repeated/duplicate triangles fail admission. Known triangles incident
+to facets excluded by the fixed finite-training mask are excluded from weighting;
+they are not unknown identities. Retained degenerate triangles fail preparation.
+Artificial mesh has no NaN-derivedholes.
 
 Same fixed prior d0=exp(-distance_to_segment[(-9,0),(6,0)]/1.5).
 bR=exp(-((x-6)^2+y^2)/18), bL=exp(-((x+9)^2+y^2)/18).
@@ -69,6 +72,11 @@ first computed minimum, enumeration qLascending thenqRascending; no refinement.
 Save EVERY sampled training field/profile and solver residual, both meshes/BCs,
 selected amplitudes/currentd, numerical response spans and two-column weighted
 secant sensitivity SVD atq0 (firstpositive qR/qL values, NOT tangent/noise rank).
+Exact columns: P[(u(hR,0)-u(0,0))/hR] and P[(u(0,hL)-u(0,0))/hL],
+hR=.0475,hL=.19, P the same training global weighted rigid quotient. Flatten
+interleaved x/y and multiply each component by sqrt(w_i/sum(w)); take singular
+values of this two-column matrix, unitsmm/q. These unequal finite secant steps
+are not an infinitesimal Jacobian; no noise-qualified rank is inferred.
 All fields/parameters/predictions frozen before target access. No winner chosen
 using high response. Numerical sensitivity<=1e-10mm does not cancel this forward
 diagnostic: flag amplitude numerically unresolved and still evaluate fixed frozen
@@ -93,9 +101,17 @@ E014 candidateMAE0.00260239 vssecant0.00252766mm, only0.04055% benefit fromq;
 near-flat objective motivates the nested-capacity and boundary intervention.
 One cycle cannot conclusively separate boundary/model misspecification, unknown
 crack prior, noise, plasticity, compensation or nonlinearity. Even both losses
-improving does not identify the true cause. Exact tie or bothsinglechanges>=L00
-means no preferred SINGLE repair; combined benefit means interaction; allpoor
-means residual/model adequacy unresolved. Finite nonzero D alone is not proof.
+improving does not identify the true cause. On unrounded losses define
+GB=L00-L10,GK=L00-L01,GBK=L00-L11. If max(GB,GK)<=0, neither single change
+improves baseline. If GB=GK>0, equal improving single levers/no preference.
+If GB>max(GK,0), boundary-placement procedure has larger single-change gain;
+if GK>max(GB,0), basis procedure has larger gain. These labels are descriptive.
+Report GBK independently of I=L11-L10-L01+L00: I<0 is more favorable than the
+additive prediction, I=0 additive, I>0 less favorable; not causal/significance
+labels. Combined gain alone is NOT interaction. Basis mean minus boundary mean
+gain equals D algebraically, not independent corroboration. Explicitly report
+whether NONE of the FOUR selected factorial arms beats secant (not all8mechanics
+arms and not absolute physical inadequacy). Finite nonzero D alone is not proof.
 
 Primary direction only chooses a plausible lever for a separately frozen future
 experiment; no heldwinner adoption/retraining/re-scoring on this consumed cycle.
@@ -105,8 +121,15 @@ If all mechanics worse thansecant, preserve that result and component progress.
 
 Prepare receipt binds exact input/package/source. Independent actual grid/BC/
 basis/mask/weights admission BEFORE real solve. TaoboGPUServer8only,1CPUthread,
-<=1421nodes/arm,252candidate+2intact=254solves, bounded600s wall time checked
-between solves (no global kill). Stop any nonfinite/area/damage/residual>1e-8
+<=1421nodes/arm,252candidate+2intact=254solves. SOFT600s scheduling/completion
+budget, not hard process timeout: check before and immediately after every solve,
+including finalintact, and after saving output arrays/before final fit completion.
+Do not start another solve at elapsed>=600s; an already-running solve may finish.
+Any observed elapsed>=600s produces failed/non-completed fit, never successful
+over-budget completion. Actual elapsed recorded; no global/process kill implied.
+Incomplete grid/overbudget means inconclusive execution, retained partial written
+outputs are forensic only, no prefix-based selection/target access/automaticretry.
+Stop any nonfinite/area/damage/residual>1e-8
 failure, support/reference/receipt mismatch. No fallback producer or automatic
 failed-fit retry. Real mechanics never onMac. FreshRunIDs and detached fit.
 Validate onMac light scoring orTaobo, only successful source-bound frozen receipt,
