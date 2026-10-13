@@ -68,7 +68,22 @@ def regression_head(X,audit,group,cfg,fit=True,stored=None):
 
 def train_bank(originals,corrections,records,cfg):
  original,bank,counts=m.protected_bank(originals,corrections,cfg);by={r['image_id']:r for r in records};ys=[labels(bank[i]['box_xyxy'],bank[i+1]['box_xyxy'],by[bank[i]['image_id']]['crack_boxes_xyxy']) for i in range(0,len(bank),2)]
- return dict(original_rows=original,bank=bank,counts=counts,labels=ys)
+ return dict(original_rows=original,bank=bank,counts=counts,labels=ys,targets={r['image_id']:r['crack_boxes_xyxy'] for r in records},image_locations={r['image_id']:r['reid'] for r in records})
+def label_audit(data,lock,cfg):
+ fit,qual,_=split_spec(lock,cfg);groups=[];cases=[]
+ for scope,locs in [('decision_fit',fit),('train_qualification',qual)]:
+  pairs=[(data['bank'][2*i],data['bank'][2*i+1],y) for i,y in enumerate(data['labels']) if data['bank'][2*i]['reid'] in locs]
+  counts=dict(scope=scope,locations=locs,pairs=len(pairs),protected=sum(y['protected'] for _,_,y in pairs))
+  for key in ['harm','gain']:
+   for value in [0,1]:counts[key+'_'+str(value)]=sum(y[key]==value for _,_,y in pairs)
+  for name,h,g in [('neither',0,0),('gain_only',0,1),('harm_only',1,0),('harm_and_gain',1,1)]:
+   eligible=[(old,new,y) for old,new,y in pairs if y['harm']==h and y['gain']==g];counts[name]=len(eligible);seen=set()
+   for old,new,y in sorted(eligible,key=lambda z:(-z[0]['score'],z[0]['image_id'],tuple(z[0]['box_xyxy']),z[0]['parent_id'])):
+    if old['reid'] in seen:continue
+    cases.append(dict(scope=scope,kind='label_'+name,image_id=old['image_id'],original=old,emitted=new,labels=y));seen.add(old['reid'])
+    if len(seen)==2:break
+  groups.append(counts)
+ return dict(counts=groups,case_rule='each split and paired label state,highest E003 score then lexical image/box/parent;up to2 distinct locations',cases=cases)
 def extract(a,cfg,lock,dev,train,audit):
  import numpy as np,torch
  if (a.run/'extract_started.json').exists():raise ValueError('duplicate extraction/fits')
@@ -86,14 +101,14 @@ def extract(a,cfg,lock,dev,train,audit):
  corrected=m.spatial_embeddings(data['bank'][1::2],records,model,transform,device,dict(cfg,features=m.FEATURES));X=np.empty((len(data['bank']),872),dtype=np.float32)
  if [r['parent_id'] for r in data['bank'][::2]]!=[r['parent_id'] for r in parentdata['bank'][::2]]:raise ValueError('parent cap drift')
  X[::2]=parentX[::2];X[1::2]=corrected;np.savez_compressed(a.run/'paired_train_features.npz',X=pair_features(data['bank'],X));write(a.run/'train_bank.json',dict(lineage(a),**data));write(a.run/'correction_heads.json',dict(lineage(a),models=heads))
- files=['paired_train_features.npz','train_bank.json','correction_heads.json'];write(a.run/'feature_receipt.json',dict(lineage(a),files={n:sha256_file(a.run/n) for n in files}))
+ write(a.run/'label_audit.json',dict(lineage(a),**label_audit(data,lock,cfg)));files=['paired_train_features.npz','train_bank.json','correction_heads.json','label_audit.json'];write(a.run/'feature_receipt.json',dict(lineage(a),files={n:sha256_file(a.run/n) for n in files}))
 
 def verified_cache(a,cfg,lock,dev,train,audit):
  import numpy as np,torch
  torch.set_num_threads(1);binding=lineage(a);receipt=read(a.run/'feature_receipt.json')
  for k,v in binding.items():
   if receipt.get(k)!=v:raise ValueError('cache lineage '+k)
- if set(receipt['files'])!={'paired_train_features.npz','train_bank.json','correction_heads.json'}:raise ValueError('cache inventory')
+ if set(receipt['files'])!={'paired_train_features.npz','train_bank.json','correction_heads.json','label_audit.json'}:raise ValueError('cache inventory')
  for n,h in receipt['files'].items():m.check_hash(a.run/n,h)
  parentdata,_,parentX=m.verified_cache(parent_args(a),read(parent_args(a).config),dev,train,audit)
  heads=read(a.run/'correction_heads.json');data=read(a.run/'train_bank.json')
@@ -111,6 +126,7 @@ def verified_cache(a,cfg,lock,dev,train,audit):
    if r['reid'] in group['held_locations']:corr[i]=pred[i]
  expected=train_bank(parentdata['original_rows'],corr,records,cfg)
  if data!=dict(binding,**expected):raise ValueError('train banks/identity labels replay')
+ if read(a.run/'label_audit.json')!=dict(binding,**label_audit(data,lock,cfg)):raise ValueError('label audit replay')
  with np.load(a.run/'paired_train_features.npz',allow_pickle=False) as f:X=f['X']
  if X.shape!=(len(data['labels']),1745) or not np.isfinite(X).all():raise ValueError('paired array shape')
  variants=np.empty((len(data['bank']),872),dtype=np.float32);variants[::2]=parentX[::2]
@@ -180,6 +196,14 @@ def subset(data,X,locs):
   for r,k in [(old,'o'),(new,'c')]:r['parent_id']=j;r['candidate_id']=k+':'+str(j)
   bank.extend([old,new])
  return dict(original_rows=original,bank=bank,labels=[data['labels'][i] for i in inds]),X[inds]
+def decision_fields(binding,policies,cfg,evaluation_sha):
+ passed=[row for row in policies if row['qualified']]
+ chosen=sorted(passed,key=lambda row:(-row['delta'],-row['retention'],row['choice']['accepted_choices'],row['harm_limit']))[0] if passed else None
+ if chosen:status='qualified'
+ elif any(row['retention'] is None or row['delta'] is None for row in policies):status='inconclusive_qualification_metric'
+ elif all(row['protected_exposures']<cfg['qualification_minimum_protected_exposures'] for row in policies):status='inconclusive_qualification_exposure'
+ else:status='stop_qualification_negative'
+ return dict(binding,status=status,selected_harm_limit=None if chosen is None else chosen['harm_limit'],qualification_evaluation_sha256=evaluation_sha,fresh_access=False)
 def qualification(a,cfg,lock,dev,train,audit):
  data,X=verified_cache(a,cfg,lock,dev,train,audit);fit,qual,_=split_spec(lock,cfg)
  try:head=fit_head(a,cfg,data,X,fit,'qualification_head')
@@ -192,8 +216,7 @@ def qualification(a,cfg,lock,dev,train,audit):
   ok=e['retention'] is not None and e['retention']>=cfg['minimum_retention'] and e['delta'] is not None and e['delta']>cfg['qualification_minimum_delta'] and exposures>=cfg['qualification_minimum_protected_exposures'] and rate<=cfg['qualification_harm_rate_maximum'];e.update(harm_limit=limit,protected_exposures=exposures,harm_count=harms,harm_rate=rate,qualified=ok);policies.append(e)
  passed=[e for e in policies if e['qualified']];selected=sorted(passed,key=lambda e:(-e['delta'],-e['retention'],e['choice']['accepted_choices'],e['harm_limit']))[0] if passed else None
  write(a.run/'qualification_evaluation.json',dict(lineage(a),qualification_head_sha256=sha256_file(a.run/'qualification_head.json'),policies=policies))
- reason='qualified' if selected else ('inconclusive_qualification_exposure' if all(e['protected_exposures']<cfg['qualification_minimum_protected_exposures'] for e in policies) else 'stop_qualification_negative')
- write(a.run/'qualification_decision.json',dict(lineage(a),status=reason,selected_harm_limit=None if selected is None else selected['harm_limit'],qualification_evaluation_sha256=sha256_file(a.run/'qualification_evaluation.json'),fresh_access=False))
+ write(a.run/'qualification_decision.json',decision_fields(lineage(a),policies,cfg,sha256_file(a.run/'qualification_evaluation.json')))
 
 def verify_qualification(a,cfg,lock,dev,train,audit):
  data,X=verified_cache(a,cfg,lock,dev,train,audit);fit,qual,_=split_spec(lock,cfg);head=verify_head(a,cfg,data,X,fit,'qualification_head');payload=read(a.run/'qualification_evaluation.json');decision=read(a.run/'qualification_decision.json');binding=lineage(a)
@@ -204,10 +227,9 @@ def verify_qualification(a,cfg,lock,dev,train,audit):
  qd,qX=subset(data,X,qual);records=[r for r in dev['records'] if r['split']=='train' and r['reid'] in qual]
  if len(payload['policies'])!=4:raise ValueError('qualification grid')
  for limit,stored in zip(cfg['harm_score_limits'],payload['policies'],strict=True):
-  e=evaluate(qd,records,head,qX,cfg,limit);accepted={r['parent_id'] for r in e['rows'] if r.get('chosen_correction')};ls=[y for r,y in zip(qd['bank'][::2],qd['labels'],strict=True) if r['parent_id'] in accepted and y['protected']];n=len(ls);harms=sum(y['harm'] for y in ls);rate=None if not n else harms/n;ok=e['retention'] is not None and e['retention']>=cfg['minimum_retention'] and e['delta'] is not None and e['delta']>0 and n>=cfg['qualification_minimum_protected_exposures'] and rate<=cfg['qualification_harm_rate_maximum'];e.update(harm_limit=limit,protected_exposures=n,harm_count=harms,harm_rate=rate,qualified=ok)
+  e=evaluate(qd,records,head,qX,cfg,limit);accepted={r['parent_id'] for r in e['rows'] if r.get('chosen_correction')};ls=[y for r,y in zip(qd['bank'][::2],qd['labels'],strict=True) if r['parent_id'] in accepted and y['protected']];n=len(ls);harms=sum(y['harm'] for y in ls);rate=None if not n else harms/n;ok=e['retention'] is not None and e['retention']>=cfg['minimum_retention'] and e['delta'] is not None and e['delta']>cfg['qualification_minimum_delta'] and n>=cfg['qualification_minimum_protected_exposures'] and rate<=cfg['qualification_harm_rate_maximum'];e.update(harm_limit=limit,protected_exposures=n,harm_count=harms,harm_rate=rate,qualified=ok)
   if e!=stored:raise ValueError('qualification exact replay')
- passed=[e for e in payload['policies'] if e['qualified']];chosen=sorted(passed,key=lambda e:(-e['delta'],-e['retention'],e['choice']['accepted_choices'],e['harm_limit']))[0] if passed else None
- if decision['selected_harm_limit']!=(None if chosen is None else chosen['harm_limit']) or (decision['status']=='qualified')!=(chosen is not None):raise ValueError('selection replay')
+ if decision!=decision_fields(lineage(a),payload['policies'],cfg,sha256_file(a.run/'qualification_evaluation.json')):raise ValueError('selection decision exact replay')
  return decision,data,X
 
 def development(a,cfg,lock,dev,val,train,audit):

@@ -90,7 +90,9 @@ not20 independent units, a confidence bound or guaranteed test retention.
 Select qualified policy by largest macro delta,then retention,then fewer accepted
 corrections,then smaller harm limit. No other thresholds,searches or policies.
 
-If none qualifies,stop before all16 refit/development comparison. Report whether
+If none qualifies,stop before all16 refit/development comparison. Undefined
+qualification delta or retention is inconclusive_qualification_metric, even when
+accepted protected exposures are sufficient. Report whether
 failure is insufficient exposures/classes(inconclusive qualification) or observed
 harm/no gain(negative qualification);development claim uncomputed. Preserve
 partial protections/coverage/model signals and a concrete next route.
@@ -125,7 +127,14 @@ Minimum evidence:source/input/run/cache receipts,4heads and split/scaler/objecti
 replay,paired labels/features/probabilities,two fit histories when applicable,
 all4 qualification metrics/exposures/harm and fixed selection,final outputs and
 exact target-retention replay if qualified,per-location tables/FP types/oracle;
-F01 qualification and development paired recall/retention with thresholds;
+F00 qualification has all four policies:delta,retention,accepted protected
+exposures and empirical harm rate with all four acceptance thresholds;NA is explicit.
+Store exact label counts for12 decision-fit and4 qualification locations before
+paired fitting,including harm/gain0/1,protected and joint states. Class-support
+stop uses this count table and fixed geometry cases for each split/joint label
+state,highest E003score then lexical image/box/parent,up to2 locations/state.
+All four policies and exact decision includingfresh_access:false must replay
+before qualification CSV/JSON/figures. F01 development paired recall/retention;
 F02 strongest frozen-score new/lost GT and admitted FP,up to2 locations/role;
 qualification examples use the selected policy if qualified,otherwise the fixed
 most permissive .1 policy (not whichever looks best);

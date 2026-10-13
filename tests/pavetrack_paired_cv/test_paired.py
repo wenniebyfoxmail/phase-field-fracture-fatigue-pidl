@@ -64,3 +64,15 @@ def test_class_weights_equal_location_prior_then_classes():
   assert float(W[Y[:,k]==1,k].sum())==pytest.approx(.5);assert float(W[Y[:,k]==0,k].sum())==pytest.approx(.5)
  d['labels']=[{'harm':0,'gain':1}]*4
  with pytest.raises(ValueError,match='unidentifiable'):p.tensors(d,np.ones((4,1745)),['24','95'])
+
+def test_decision_exact_status_and_fresh_are_binding():
+ row=dict(qualified=False,retention=.9,delta=.01,protected_exposures=20,harm_limit=.05,choice={'accepted_choices':20})
+ d=p.decision_fields({'protocol':'S01-E007-v1'},[row],CFG,'abc')
+ assert d['status']=='stop_qualification_negative';assert d['fresh_access'] is False
+ mutated=dict(d,status='arbitrary');assert mutated!=p.decision_fields({'protocol':'S01-E007-v1'},[row],CFG,'abc')
+ mutated=dict(d,fresh_access=True);assert mutated!=p.decision_fields({'protocol':'S01-E007-v1'},[row],CFG,'abc')
+def test_zero_baseline_hits_is_inconclusive_despite_exposures():
+ row=dict(qualified=False,retention=None,delta=0.,protected_exposures=20,harm_limit=.05,choice={'accepted_choices':20})
+ assert p.decision_fields({},[row],CFG,'abc')['status']=='inconclusive_qualification_metric'
+ row['retention']=1.;row['delta']=None
+ assert p.decision_fields({},[row],CFG,'abc')['status']=='inconclusive_qualification_metric'
