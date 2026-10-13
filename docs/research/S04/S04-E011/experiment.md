@@ -144,3 +144,6 @@ User authorized the [separate bounded protocol](endpoint_backtrack_protocol_2026
 
 
 Terminal supplement: all six backtracking states completed and independently reviewed PASS; five improve field disagreement, c83 worsens despite residual decrease and stalls. All miss4e-6. See [terminal decision and compact metrics](runs/endpoint_backtrack_grid_20261013.md). No changes to the frozen production estimands or histories.
+
+
+Saved-state follow-up: [c1/c83 phase/tangent audit](runs/phase_tangent_saved_state_20261013.md) establishes local residual equivalence and source-equivalent chain/cross-block diagnostics. Native pre-clamp capture remains prepared, not executed, pending explicit final-file transfer approval.

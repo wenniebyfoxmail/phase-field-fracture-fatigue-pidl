@@ -1,0 +1,13 @@
+# c1/c83 saved-state phase/tangent diagnostic — 2026-10-13
+
+Protocol: [revision1](../phase_projection_tangent_protocol_20261013.md). Fixed peak states c1 outer3/13 and c83 outer20/28 from verified backtracking grid; no solve or history commit. Local assets: local_archive/experiments/S04-E011/phase_tangent_preparation/offline_analysis/, summary.json, endpoint_components.csv, directional_checks.csv and phase_tangent_audit.png with sidecar. [Compact metrics](phase_tangent_saved_state_metrics_20261013.csv).
+
+Source and data validity: native phase residual maxabs mismatch<=3.97e-18, u<=1.72e-16; four source-equivalent JVP/branch analyses independently reviewed. Single-element full trial-f derivative finite-difference test passed. Native MEX tangent equivalence not inferred from residual agreement; exact K*direction capture prepared separately.
+
+c1: trial f remains1, df chain term0. Last accepted Ru4.10409e-6, nodal feasible phase1.05165e-5. 99.937% squared phase violation at x<=0, centroid(-.289409,.000800); 76.76% of squared violation is at interior nodal bounds,23.24% at lower bounds. Thus phase discrepancy remains in the initial crack wake as mechanics decreases. These are budget-end observations, not an irreducible residual floor.
+
+c83: trial f vs committed f max change .377946 baseline/.372363 last. Along the saved damage delta at fixed raw, source-equivalent Picard derivative discrepancy15.12%/17.77% at epsilon1e-5, full-chain error1.73e-7/2.00e-6, with stable recorded branches. u↔d cross products are nonzero and can strongly cancel, so block-diagonal comparisons must not be interpreted as a coupled Jacobian. This is a measured omission in the source-equivalent derivative, not proof of the sole stall cause.
+
+Same-state artificial staged history copies slots2:4 and preserves R exactly; this only shows idempotence at an unchanged state. It does not validate general commit order. c1 final finite differences trigger GP penalty switches near roundoff despite no material nodal infeasibility; their derivative plateau cannot be blamed on fatigue. Full branch counts are in the CSV.
+
+Disposition: diagnose/repair. Missing native pre-clamp field and exact next block direction prevent quantitative assignment to cache/projection/raw refresh. Four independent original-control captures prepared; no accepted outer update or load/history propagation. The later user external-send rule requires final human approval for the four-file upload before Windows execution. No new files sent, no supplement pushed. Next repair is selected by the protocol's separate timing/projection/tangent/cross-block observables after capture, not by PIDL agreement.

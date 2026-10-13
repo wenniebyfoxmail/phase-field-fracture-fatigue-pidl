@@ -55,3 +55,6 @@ California 126 条 section 的官方 viewer 全量审计得到 20 条重复地�
 ## 2026-10-12 Hard-5 solver alignment supplement
 
 [Q4 coupled-control and early-state sensitivity](experiments/hard5_q4_t3_solver_alignment_track.md) completed: c1/20/60/76/82 improve field disagreement; c83 backtracking reduces merit but worsens active disagreement and stalls. All six miss residual target; no qualified teacher or propagated repair. Next unexecuted discriminator: saved c1/c83 phase projection/refresh residual floor and coupled trial-f tangent consistency.
+
+
+Solver-alignment update 2026-10-13: [track](experiments/hard5_q4_t3_solver_alignment_track.md) now includes c1/c83 saved-state phase/tangent diagnostics. Initial-crack-wake phase imbalance exists with f=1; later trial-f chain omission is measurable. Native timing/projection capture prepared, awaiting final file-transfer approval; no teacher or trajectory-repair claim.
