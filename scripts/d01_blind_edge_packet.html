@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>D01 blind image-edge annotation</title>
+<style>body{font:16px system-ui;max-width:900px;margin:30px auto;color:#222}canvas{image-rendering:pixelated;border:1px solid #bbb;max-width:100%;cursor:crosshair}input,select,button{font:inherit;margin:5px;padding:4px}input[type=number]{width:85px}fieldset{margin:15px 0}#status{color:#555}</style>
+<h1>匿名图像裂边核查</h1>
+<p>仅在中央测量行（第 24 行）标出可见暗裂缝的左、右边界。图像横向一格为一个参照像素；不是毫米。鼠标两次点击可填左／右位置。可选填写边界的最小／最大合理位置；看不清、分叉、剥落或阴影无法区分时请标“不确定”，不要猜。</p>
+<p>每个任务独立判读；不展示时间、载荷、宽度预测或算法边界。若已看过相关算法图，请如实勾选，结果仍可保存，但不能称为完全盲标。</p>
+<label>标注者 ID <input id="annotator"></label><label><input type="checkbox" id="seen">看过相关算法边界或预测图</label>
+<h2 id="task"></h2><p>↓ 中央测量行；横向 0–120，中心为 60</p><canvas id="canvas" width="605" height="245"></canvas>
+<fieldset><legend>本任务</legend><label>状态 <select id="quality"><option value="unanswered">未标注</option><option value="visible">边界可见</option><option value="uncertain">不确定／分叉／阴影</option><option value="occluded">遮挡／不可见</option></select></label>
+<p><label>左边 <input id="left" type="number" min="0" max="120" step="0.1"></label><label>左最小 <input id="left_min" type="number" step="0.1"></label><label>左最大 <input id="left_max" type="number" step="0.1"></label></p>
+<p><label>右边 <input id="right" type="number" min="0" max="120" step="0.1"></label><label>右最小 <input id="right_min" type="number" step="0.1"></label><label>右最大 <input id="right_max" type="number" step="0.1"></label></p>
+<label>备注 <input id="notes" style="width:65%"></label></fieldset>
+<button id="prev">上一张</button><button id="next">下一张</button><button id="save">导出标注 JSON</button><span id="status"></span>
+<p>浏览器本地存储仅保存草稿；请用“导出”保留文件并交回。未完成任务保持缺失，不自动填值。</p>
+<script>
+const tasks=__TASKS_JSON__; const fields=['quality','left','right','left_min','left_max','right_min','right_max','notes'];
+const storage='d01-e016-blind-v1'; let state={index:0,annotations:{},annotator:'',seen:false};
+try{const cached=localStorage.getItem(storage);if(cached)state=JSON.parse(cached)}catch(e){}
+const byid=id=>document.getElementById(id); let clickSide='left';
+byid('annotator').value=state.annotator;byid('seen').checked=state.seen;
+function stash(){const a={};for(const id of fields){const el=byid(id);a[id]=el.type==='number'?(el.value===''?null:Number(el.value)):el.value}state.annotations[tasks[state.index].id]=a;state.annotator=byid('annotator').value;state.seen=byid('seen').checked;try{localStorage.setItem(storage,JSON.stringify(state))}catch(e){byid('status').textContent='请导出保存；本地草稿存储不可用'}}
+function show(){const t=tasks[state.index],a=state.annotations[t.id]||{};byid('task').textContent=`${state.index+1} / ${tasks.length} — ${t.id}`;for(const id of fields)byid(id).value=a[id]??(id==='quality'?'unanswered':'');clickSide='left';const im=new Image();im.onload=()=>{const c=byid('canvas').getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,605,245);c.drawImage(im,0,0,605,245)};im.src=t.image;byid('status').textContent='中央行 y=24；尚未导出的修改只在本地'}
+byid('canvas').onclick=e=>{const rect=e.target.getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width*121-.5;byid(clickSide).value=Math.max(0,Math.min(120,x)).toFixed(1);clickSide=clickSide==='left'?'right':'left';byid('quality').value='visible';stash()};
+for(const id of fields)byid(id).onchange=stash;byid('annotator').onchange=stash;byid('seen').onchange=stash;
+byid('prev').onclick=()=>{stash();state.index=Math.max(0,state.index-1);show()};byid('next').onclick=()=>{stash();state.index=Math.min(tasks.length-1,state.index+1);show()};
+byid('save').onclick=()=>{stash();if(!state.annotator.trim()){alert('请填写标注者 ID');return}for(const [id,a] of Object.entries(state.annotations)){if(a.quality==='visible'&&(a.left===null||a.right===null||a.left>=a.right)){alert(id+' 的左右边界缺失或顺序错误');return}}const out={schema:'d01-edge-blind-v1',protocol:'development-v1',annotator_id:state.annotator,prior_algorithm_exposure:state.seen,exported_at:new Date().toISOString(),annotation_coordinate:'strip pixel centers 0..120; canonical offset=x-60',annotations:state.annotations};const url=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='d01_blind_edge_annotations.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);byid('status').textContent='已导出；未标注任务仍为缺失'};
+show();
+</script>
