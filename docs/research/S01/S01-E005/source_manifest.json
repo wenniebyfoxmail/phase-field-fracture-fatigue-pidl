@@ -1,13 +1,13 @@
 {
-  "protocol": "S01-E005-v1",
+  "protocol": "S01-E005-v2",
   "files": {
-    "docs/research/S01/S01-E005/data_lock.json": "c2e5261d6dd6e3066efe7346209a7f1bd44e877f0931ab451190df52fa36d7f8",
-    "docs/research/S01/S01-E005/experiment.md": "b46a077356be9e0606f6015bdd95ab9734910895f1e6ad5274cb47cf1e479fa9",
-    "docs/research/S01/S01-E005/run_config.json": "5e7f0187f3042eafe0c8bffa43e4d90c8310423901e4d0ccb7e9b556f9d8f265",
+    "docs/research/S01/S01-E005/data_lock.json": "aaf5d45a0d0c6faad86ddfdf9d68132d21feeace9b45a3bd48153fae657ba637",
+    "docs/research/S01/S01-E005/experiment.md": "3870b9dab50d7ffc5a5976c654b745d62f1af92d4b1cb0d6f38e1bf1d268e290",
+    "docs/research/S01/S01-E005/run_config.json": "b1cacd96168d57b0372689d9015cd9bb903d094704a9ceec1f9b28a44afe6f5a",
     "scripts/pavetrack_box_cv/analyze.py": "aea21fb9d0392da612eefd1c0e0c9013a015147eba9173589c55b698f3d3b371",
     "scripts/pavetrack_box_cv/download_frozen.py": "e1b19c00ce44a86e83b7635fcdc6ed12e577dc3afd68a05ebbf2f42f612c76dd",
     "scripts/pavetrack_box_cv/producer.ps1": "468714296fb10e7a54b4d6811b8e4bcf15e9f9b515f95ff3b8ec366892717406",
-    "scripts/pavetrack_box_cv/run.py": "173f8a0c08766936ce7f1ecdff6bbb8d3b9d50f2a2897d2900a10f3264bf2fd3",
+    "scripts/pavetrack_box_cv/run.py": "95cd55f6ecd390216fbb76ed5483742419f2c05b53965637404fac05734ac16a",
     "scripts/pavetrack_cv/__init__.py": "bf073aa0c1ecb700a26d8ea2a12e3c4750145de63e9afb2c6e9b663cb19794c6",
     "scripts/pavetrack_cv/common.py": "8371f633672f18cb88ca2589d0d9bb43d5abaab50b198ca9bd807c5cfab25ec1",
     "scripts/pavetrack_cv/evaluate_two_stage.py": "fd16cddbab2b403c8e151dae76c8d36cced3a4b7020fd230f20692d83c53f1ce",
@@ -29,6 +29,7 @@
     "scripts/pavetrack_tiled_cv/render_e002_evidence.py": "39ce2b482bd07557bb7936763769a7941f45e22730c8c3f0b13ce5b13858dd8e",
     "scripts/pavetrack_tiled_cv/train_tiled_proposer.py": "e81fd9dfa6440764a6a158f5e1e108cbf0d0b147819b24bbf20e85928750837a",
     "tests/pavetrack_box_cv/test_box.py": "80a5be69d957e01c53a2ec9ff18d37a1721a38c38549a1735fd0c0d3b4a596e0",
-    "tests/pavetrack_box_cv/test_box_analysis.py": "7629a00ae793e799580e7f273929cf6159ce8f3e49be2e76beb5538df3bed1b8"
+    "tests/pavetrack_box_cv/test_box_analysis.py": "7629a00ae793e799580e7f273929cf6159ce8f3e49be2e76beb5538df3bed1b8",
+    "docs/research/S01/S01-E005/amendment_v2_20261013.md": "dae7d641c677c46e663c6e7cc68270152c4ed5da432506cee12a264ca063e474"
   }
 }

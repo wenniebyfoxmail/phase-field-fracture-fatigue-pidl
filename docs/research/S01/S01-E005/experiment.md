@@ -1,7 +1,7 @@
 ---
 storyline_id: S01
 experiment_id: S01-E005
-protocol_revision: v1
+protocol_revision: v2
 created_at: 2026-10-13
 status: frozen_pending_independent_review
 branch: codex/s01-e005-box-refinement-20261013
@@ -9,6 +9,10 @@ base_commit: ab4aa7817977d73a54bca39a6ab77191926d988f
 ---
 
 # Frozen-feature box refinement to convert coverage into detections
+
+The original v1 is preserved at commit `ddb8fa8`. The train-only context audit
+and preregistered input amendment are in amendment_v2_20261013.md. No CNN
+extraction, fitting, validation comparison or fresh access occurred under v1.
 
 ## Question and result standard
 
@@ -41,7 +45,7 @@ A fresh primary pass supports only this fixed selected new-location set.
   GT index breaks ties. Reference boxes come only from the 16 train locations.
 - Train-only context audit: padding p means extra p*proposal width/height **on
   each side**, image-clipped and Python round to integer crop edges. Audit the
-  fixed choices 0.5,1.0,2.0. Full containment uses exact coordinate inequalities
+  fixed choices 0.5,1.0,2.0,4.0,8.0,16.0. Full containment uses exact coordinate inequalities
   on this rounded crop; no tolerance. Choose smallest p with target-balanced
   containment >=0.90. Each represented GT has equal mass, shared across its
   associated proposals. Also report raw proposal containment, represented and

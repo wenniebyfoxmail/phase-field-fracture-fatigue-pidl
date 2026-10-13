@@ -1,5 +1,5 @@
 {
-  "protocol": "S01-E005-v1",
+  "protocol": "S01-E005-v2",
   "seed": 20261013,
   "producer_runtime": {
     "hostname": "D-26-09",
@@ -640,7 +640,10 @@
   "context_padding_choices": [
     0.5,
     1.0,
-    2.0
+    2.0,
+    4.0,
+    8.0,
+    16.0
   ],
   "minimum_context_containment": 0.9,
   "offset_bound": 2.0,

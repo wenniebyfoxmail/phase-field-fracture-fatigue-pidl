@@ -8,7 +8,7 @@ sys.path.insert(0,str(ROOT/'scripts/pavetrack_ranker_cv'))
 import importlib.util
 _spec=importlib.util.spec_from_file_location('e003_helpers',ROOT/'scripts/pavetrack_ranker_cv/run.py')
 base=importlib.util.module_from_spec(_spec);_spec.loader.exec_module(base)
-PROTOCOL='S01-E005-v1'
+PROTOCOL='S01-E005-v2'
 FEATURES=['cnn_avgpool_'+str(i) for i in range(576)]+['log_aspect','log_area_fraction','width_fraction','height_fraction','center_x_fraction','center_y_fraction']
 read,write,check_hash,metrics=base.read,base.write,base.check_hash,base.metrics
 box_iou,oracle_coverage,sha256_file=base.box_iou,base.oracle_coverage,base.sha256_file
