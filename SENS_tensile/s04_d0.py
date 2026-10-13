@@ -41,8 +41,10 @@ def cycle_weights(n):
 
 def transform(v, scales):
     assert np.isfinite(v).all() and np.all(v[:, 1:] >= 0)
-    return np.column_stack((v[:, 0], np.log1p(v[:, 1]/scales[0]),
-                            np.log1p(v[:, 2]/scales[1])))
+    z = np.column_stack((v[:, 0], np.log1p(v[:, 1]/scales[0]),
+                         np.log1p(v[:, 2]/scales[1])))
+    assert np.isfinite(z).all(), 'Nonfinite transformed target'
+    return z
 
 
 def inverse(z, scales):
@@ -115,13 +117,17 @@ def evaluate(cases, key, model, pipeline, candidates, rows=None, snapshot=None):
         x -= model['xm']; x /= model['xstd']
         x = np.column_stack((np.ones(len(x)), x))
         bz = area@((zp-zf)**2); bp = area@((pin-fem)**2)
+        assert np.isfinite(bz).all() and np.isfinite(bp).all(), 'Nonfinite B0 score'
         base += weight*bz
         for i, aidx in enumerate(candidates):
             z = zp+(x@model['coefficients'][aidx])*model['ystd']+model['ym']
+            assert np.isfinite(z).all(), 'Nonfinite corrected transformed prediction'
             mse = area@((z-zf)**2); scores[i] += weight*mse
+            assert np.isfinite(mse).all() and np.isfinite(scores).all(), 'Nonfinite B1 score'
             if rows is not None:
                 pred = inverse(z, model['scales'])
                 physical = area@((pred-fem)**2)
+                assert np.isfinite(physical).all(), 'Nonfinite B1 physical score'
                 bounds = [((pred[:, 0] < 0)|(pred[:, 0] > 1)),
                           pred[:, 1] < 0, pred[:, 2] < 0]
                 for j, field in enumerate(TARGETS):
@@ -133,12 +139,16 @@ def evaluate(cases, key, model, pipeline, candidates, rows=None, snapshot=None):
                                      B1_min=float(pred[:, j].min()), B1_max=float(pred[:, j].max())))
                 if snapshot is not None and cycle == 20:
                     np.savez(snapshot, ids=pipeline.ids, pin=pin, fem=fem, B1=pred)
+    assert np.isfinite(scores).all() and np.isfinite(base).all()
     return scores, base
 
 
 def ratio(candidate, baseline):
+    assert np.isfinite(candidate).all() and np.isfinite(baseline).all()
     assert np.all(baseline > 1e-24), 'Unidentified B0 error; stop, no denominator rescue'
-    return candidate/baseline
+    value = candidate/baseline
+    assert np.isfinite(value).all(), 'Nonfinite error ratio'
+    return value
 
 
 def load_inputs(root, lock_path):
@@ -196,6 +206,7 @@ def run(root, out):
         train = tuple(k for k in keys if k != held)
         means = np.mean([inner[(tuple(k for k in train if k != val), val)] for val in train], axis=0)
         objective = means.max(axis=1)
+        assert np.isfinite(means).all() and np.isfinite(objective).all()
         best = min(range(3), key=lambda j: (objective[j], -ALPHAS[j]))
         selection.append(dict(holdout=held, train=list(train), inner_channel_MSE_ratios=means.tolist(),
                               minimax_objectives=objective.tolist(), selected_alpha=ALPHAS[best]))
