@@ -1,0 +1,29 @@
+[
+  {
+    "state": "c20s4",
+    "run_id": "S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R002-c20s4-a07-s7",
+    "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+    "checkpoint_sha256": "1f9af019fb7f382a765fd1f7c655c5b8bcda86d1974832fffae364785630de6a",
+    "prediction_sha256": "2a43c94cc168c05922513c9c8b54243513223ee3231d307efae1ddf7c000ece3",
+    "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+    "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R002-c20s4-a07-s7"
+  },
+  {
+    "state": "c60s4",
+    "run_id": "S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R005-c60s4-a07-s7",
+    "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2",
+    "checkpoint_sha256": "c371f82484d6b2db4a60f9f407b9d1b4c5b48b6043038384f439c2f5be45351c",
+    "prediction_sha256": "0bb51cc51b3480a6622b8127d5a9a4a16de08216e9865e6670644838ef51fbfb",
+    "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+    "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R005-c60s4-a07-s7"
+  },
+  {
+    "state": "c83s4",
+    "run_id": "S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R008-c83s4-a07-s7",
+    "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+    "checkpoint_sha256": "d26f51f9a7ec4b6fb83af9551e881d243ae4e026099c9b2446d9f21ee0ba2672",
+    "prediction_sha256": "1ca19aff0eaf280f03ab2ab7f17c1cefc45c161a3651e0313683300346af1f77",
+    "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+    "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R008-c83s4-a07-s7"
+  }
+]

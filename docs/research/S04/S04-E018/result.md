@@ -1,6 +1,6 @@
 # E018 r2 completed matched representation screen — 2026-10-13
 
-Execution complete:6/6 fresh seed7 runs, final step10000, fixed alpha.7. Primary registration `GLOBAL_LOCAL_THREE_STATE_UV_FIT_SCREEN_FAIL`; matched-control diagnostic `localization_helps_all_three=true`. Evidence review pending. Fixed FEM damage/history/fatigue, supervised UV only.
+Execution complete:6/6 fresh seed7 runs, final step10000, fixed alpha.7. Primary registration `GLOBAL_LOCAL_THREE_STATE_UV_FIT_SCREEN_FAIL`; matched-control diagnostic `localization_helps_all_three=true`. Evidence review PASS; see evidence_review.md. Fixed FEM damage/history/fatigue, supervised UV only.
 
 | State | Arm | Full RMS/Us | Damage conditional RMS/Us | Background conditional RMS/Us |
 |---|---|---:|---:|---:|
