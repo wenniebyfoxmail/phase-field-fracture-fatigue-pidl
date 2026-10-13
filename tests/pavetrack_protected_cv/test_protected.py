@@ -41,3 +41,20 @@ def test_no_review_cannot_access_fresh(monkeypatch,tmp_path):
 
 def test_validity_labels_are_not_duplicate_negatives():
  rows=[dict(row([0,0,5,5]),kind='original'),dict(row([0,0,5,5]),kind='correction')];records=[{'image_id':'im','crack_boxes_xyxy':[[0,0,5,5]]}];assert m.labels(rows,records)==[1,1]
+
+def test_pending_missing_and_tampered_blocks_authorize(monkeypatch,tmp_path):
+ from types import SimpleNamespace
+ a=SimpleNamespace(run=tmp_path,independent_review=tmp_path/'review.json',review_sha256='fake')
+ e={'protected_primary_pass':True,'delta':.1,'retention':1.}
+ monkeypatch.setattr(m,'verify_validation',lambda *args:e);monkeypatch.setattr(m,'pending_fields',lambda *args:{'expected':True})
+ for payload in [None,{'expected':False}]:
+  if payload is not None:m.write(tmp_path/'pending_confirmatory_review.json',payload)
+  with pytest.raises(ValueError,match='exact pending'):m.reviewed_pass(a,{},None,None)
+ assert not (tmp_path/'test_authorization.json').exists()
+
+def test_frozen_score_probability_and_score_tamper_rejected(monkeypatch):
+ monkeypatch.setattr(m,'frozen_score_probabilities',lambda *args:[.25]);r=dict(row([0,0,5,5]),probability=.25,score=.4,E003_score=.4);X=np.zeros((1,576),np.float32)
+ m.verify_train_scores([r],X,None)
+ for key in ['probability','score','E003_score']:
+  bad=dict(r);bad[key]+=.01
+  with pytest.raises(ValueError,match='train score replay'):m.verify_train_scores([bad],X,None)

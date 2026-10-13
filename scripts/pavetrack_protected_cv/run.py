@@ -123,12 +123,30 @@ def labels(bank,records):
  by={r['image_id']:r for r in records}
  return [int(max((box_iou(row['box_xyxy'],t) for t in by[row['image_id']]['crack_boxes_xyxy']),default=0.)>=.5) for row in bank]
 
+def frozen_score_probabilities(X,checkpoint):
+ import torch,numpy as np
+ from torchvision import models
+ if X.ndim!=2 or X.shape[1]!=576 or not np.isfinite(X).all():raise ValueError('scorer features finite/shape')
+ model=models.mobilenet_v3_small(weights=None);model.classifier[-1]=torch.nn.Linear(model.classifier[-1].in_features,2);model.load_state_dict(base.validate_reranker_checkpoint(checkpoint)['state_dict']);model.eval();result=[]
+ with torch.inference_mode():
+  for start in range(0,len(X),512):result.extend(model.classifier(torch.tensor(X[start:start+512],dtype=torch.float32)).softmax(1)[:,1].tolist())
+ return result
+
+def verify_train_scores(rows,X,checkpoint):
+ probabilities=frozen_score_probabilities(X,checkpoint)
+ if len(rows)!=len(probabilities):raise ValueError('train score length')
+ for row,p in zip(rows,probabilities,strict=True):
+  score=math.sqrt(row['proposer_confidence']*p)
+  if row['probability']!=p or row['score']!=score or row['E003_score']!=score:raise ValueError('frozen E003 train score replay')
+ return probabilities
+
 def extract(a,cfg,lock,dev,val,train,corr,audit):
  import numpy as np,torch
  torch.set_num_threads(cfg['threads'])
  if (a.run/'extract_started.json').exists():raise ValueError('refuse duplicate extraction')
  write(a.run/'extract_started.json',lineage(a));records=[r for r in dev['records'] if r['split']=='train'];model,transform,device=base.load_models(a,cfg)
- rows=base.score_rows(train['rows'],records,model,transform,device,cfg)
+ scorer=box.embeddings(train['rows'],records,model,transform,device,cfg['crop_padding'])[:,:576];np.savez_compressed(a.run/'scorer_features.npz',X=scorer);probabilities=frozen_score_probabilities(scorer,a.old_ranker)
+ rows=[dict(row,probability=p,score=math.sqrt(row['proposer_confidence']*p),E003_score=math.sqrt(row['proposer_confidence']*p)) for row,p in zip(train['rows'],probabilities,strict=True)]
  X=box.embeddings(rows,records,model,transform,device,4.);np.savez_compressed(a.run/'context_features.npz',X=X)
  with np.load(a.old_train_features,allow_pickle=False) as f:Xm=f['X']
  if Xm.shape!=(len(audit['matches']),582):raise ValueError('old train features shape')
@@ -148,7 +166,7 @@ def extract(a,cfg,lock,dev,val,train,corr,audit):
  write(a.run/'train_bank.json',dict(lineage(a),original_rows=rows,all_corrections=corrected,bank=training_bank,labels=labels(training_bank,records),counts=counts))
  vr=[r for r in dev['records'] if r['split']=='validation'];voriginal,vbank,vcounts=protected_bank(val['rows'],[dict(r,parent_id=r['candidate_id']) for r in read(a.old_validation)['all_corrected_rows']],cfg);Xv=spatial_embeddings(vbank,vr,model,transform,device,cfg);np.savez_compressed(a.run/'selector_validation_features.npz',X=Xv)
  write(a.run/'validation_bank.json',dict(lineage(a),original_rows=voriginal,bank=vbank,counts=vcounts))
- files=['context_features.npz','selector_train_features.npz','selector_validation_features.npz','crossfit_models.json','train_bank.json','validation_bank.json'];write(a.run/'feature_receipt.json',dict(lineage(a),files={f:sha256_file(a.run/f) for f in files},feature_names=FEATURES))
+ files=['scorer_features.npz','context_features.npz','selector_train_features.npz','selector_validation_features.npz','crossfit_models.json','train_bank.json','validation_bank.json'];write(a.run/'feature_receipt.json',dict(lineage(a),files={f:sha256_file(a.run/f) for f in files},feature_names=FEATURES))
 
 def validate_download_payload(payload,lock,url):
  if payload.get('url')!=url or payload.get('remote_size')!=lock['archive_bytes']:raise ValueError('download URL/size mismatch')
@@ -197,7 +215,7 @@ def verified_cache(a,cfg,dev,train,audit):
  torch.set_num_threads(cfg['threads']);receipt=read(a.run/'feature_receipt.json')
  for k,v in dict(lineage(a),feature_names=FEATURES).items():
   if receipt.get(k)!=v:raise ValueError('feature lineage '+k)
- if set(receipt['files'])!={'context_features.npz','selector_train_features.npz','selector_validation_features.npz','crossfit_models.json','train_bank.json','validation_bank.json'}:raise ValueError('cache file set')
+ if set(receipt['files'])!={'scorer_features.npz','context_features.npz','selector_train_features.npz','selector_validation_features.npz','crossfit_models.json','train_bank.json','validation_bank.json'}:raise ValueError('cache file set')
  for f,h in receipt['files'].items():check_hash(a.run/f,h)
  data=read(a.run/'train_bank.json');cross=read(a.run/'crossfit_models.json');vdata=read(a.run/'validation_bank.json');tr=[r for r in dev['records'] if r['split']=='train'];by={r['image_id']:r for r in tr};fs=folds(read(a.lock))
  if len(cross['models'])!=4 or {fm['fold'] for fm in cross['models']}!=set(range(4)) or cross['fold_assignment']!=fs or box.audit_payload(train,tr,cfg)['matches']!=audit['matches']:raise ValueError('fold/audit drift')
@@ -208,6 +226,8 @@ def verified_cache(a,cfg,dev,train,audit):
  for old,new in zip(train['rows'],data['original_rows'],strict=True):
   for key in ['image_id','reid','box_xyxy','proposer_confidence']:
    if old[key]!=new[key]:raise ValueError('original train identity')
+ with np.load(a.run/'scorer_features.npz',allow_pickle=False) as f:scorer=f['X']
+ verify_train_scores(data['original_rows'],scorer,a.old_ranker)
  with np.load(a.old_train_features,allow_pickle=False) as f:Xm=f['X']
  with np.load(a.run/'context_features.npz',allow_pickle=False) as f:Xc=f['X']
  if Xc.shape!=(len(train['rows']),582) or not np.isfinite(Xc).all():raise ValueError('crossfit context features')
@@ -306,17 +326,23 @@ def verify_validation(a,cfg,dev,val):
  if e!=dict(lineage(a),split='validation',selector_model_sha256=sha256_file(a.run/'selector_model.json'),**expected) or e['baseline']!=val['candidate']:raise ValueError('validation replay')
  return e
 
-def review_fields(a):return dict(status='PASS_INDEPENDENT_DEVELOPMENT_REVIEW',protocol=PROTOCOL,source_manifest_sha256=sha256_file(ROOT/'docs/research/S01/S01-E006/source_manifest.json'),selector_model_sha256=sha256_file(a.run/'selector_model.json'),validation_sha256=sha256_file(a.run/'evaluation_validation.json'))
+def pending_fields(a,e):return dict(lineage(a),run_id=a.run.name,status='pending_independent_development_review',selector_model_sha256=sha256_file(a.run/'selector_model.json'),validation_sha256=sha256_file(a.run/'evaluation_validation.json'),delta=e['delta'],retention=e['retention'],fresh_test_access=False)
 
-def authorization_fields(a,cfg,lock):return dict(lineage(a),status='authorized_after_independent_development_review',selector_model_sha256=sha256_file(a.run/'selector_model.json'),validation_sha256=sha256_file(a.run/'evaluation_validation.json'),independent_review_sha256=a.review_sha256,confirmatory_test_locations=lock['confirmatory_test_locations'],primary_delta=cfg['primary_delta'],minimum_retention=cfg['minimum_retention'])
+def review_fields(a):return dict(run_id=a.run.name,pending_sha256=sha256_file(a.run/'pending_confirmatory_review.json'),status='PASS_INDEPENDENT_DEVELOPMENT_REVIEW',protocol=PROTOCOL,source_manifest_sha256=sha256_file(ROOT/'docs/research/S01/S01-E006/source_manifest.json'),selector_model_sha256=sha256_file(a.run/'selector_model.json'),validation_sha256=sha256_file(a.run/'evaluation_validation.json'))
+
+def authorization_fields(a,cfg,lock):return dict(lineage(a),status='authorized_after_independent_development_review',run_id=a.run.name,pending_sha256=sha256_file(a.run/'pending_confirmatory_review.json'),selector_model_sha256=sha256_file(a.run/'selector_model.json'),validation_sha256=sha256_file(a.run/'evaluation_validation.json'),independent_review_sha256=a.review_sha256,confirmatory_test_locations=lock['confirmatory_test_locations'],primary_delta=cfg['primary_delta'],minimum_retention=cfg['minimum_retention'])
 
 def freeze(a,cfg,lock,dev,val):
  if (a.run/'pending_confirmatory_review.json').exists() or (a.run/'development_decision.json').exists():raise ValueError('freeze already exists')
- e=verify_validation(a,cfg,dev,val);write(a.run/'pending_confirmatory_review.json' if e['protected_primary_pass'] else a.run/'development_decision.json',dict(lineage(a),status='pending_independent_development_review' if e['protected_primary_pass'] else 'stop_development_negative' if e['protected_primary_pass'] is not None else 'inconclusive',delta=e['delta'],retention=e['retention'],fresh_test_access=False))
+ e=verify_validation(a,cfg,dev,val)
+ if e['protected_primary_pass'] is True:write(a.run/'pending_confirmatory_review.json',pending_fields(a,e))
+ else:write(a.run/'development_decision.json',dict(lineage(a),status='stop_development_negative' if e['protected_primary_pass'] is not None else 'inconclusive',delta=e['delta'],retention=e['retention'],fresh_test_access=False))
 
 def reviewed_pass(a,cfg,dev,val):
  e=verify_validation(a,cfg,dev,val)
  if e['protected_primary_pass'] is not True or a.independent_review is None or a.review_sha256 is None:raise ValueError('independent development review required')
+ pending=a.run/'pending_confirmatory_review.json'
+ if not pending.exists() or read(pending)!=pending_fields(a,e):raise ValueError('exact pending independent-review state required')
  check_hash(a.independent_review,a.review_sha256)
  if read(a.independent_review)!=review_fields(a):raise ValueError('independent review bound fields')
  return e

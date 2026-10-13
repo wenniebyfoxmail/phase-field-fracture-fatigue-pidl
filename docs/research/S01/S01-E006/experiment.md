@@ -86,6 +86,13 @@ intercept, float64 closed form, one CPU thread. Finite and normal-equation
 residual<=1e-8; final objective<=zero-head+1e-12. The held4 locations are never
 used for that head's coefficients/scaler or regression targets during fitting.
 
+For train parent scoring, save separate576 pooled E003 features from padding.1
+crops (not the padding4 corrector context). Apply the frozen E003 classifier
+in CPU eval mode, batches512, and save probability/geometric score; verifier
+replays the same checkpoint classifier exactly from hashed features. This freezes
+only the train score backend. Validation uses exact inherited GPU E003 scores;
+test uses the existing frozen E003 scoring route. No scoring model is changed.
+
 Generate selector corrections only from their parent location's held-out head,
 using padding4 context and the original E005 clamp/decode/image-clip/degenerate
 fallback rule. Store four heads, fold membership, coefficient/scaler/numerical
@@ -141,7 +148,8 @@ under the owning Experiment. Inherited source remains unchanged.
 
 Development pass writes **pending independent review only**, never usable fresh
 authorization. A separate independent development-evidence PASS must bind source
-manifest/model/evaluation to an external review receipt hash. Only explicit
+manifest/model/evaluation/run ID and exact pending-state SHA to an external
+review receipt hash. Only explicit
 review-bound authorize stage can create final authorization. Full model/cache/
 validation/review verification precedes any downloader, prepared test or pixel
 access; duplicate access/fit/extraction rejected. Review fail or missing receipt

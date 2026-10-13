@@ -19,3 +19,9 @@ def test_retention_tamper_rejected():
 def test_score_mutation_rejected():
  e=evidence({'im':[[0,0,5,5]]});e['rows'][0]['score']=.6
  with pytest.raises(ValueError,match='protected score'):a.replay(e,CFG)
+
+def test_fp_decomposition_duplicate_and_partial():
+ rows=[{'image_id':'im','reid':'1','box_xyxy':b,'score':s} for b,s in [([0,0,5,5],.9),([0,0,5,5],.8),([2,0,7,5],.7),([10,0,15,5],.6)]];targets={'im':[[0,0,5,5]]};metric=a.m.metrics(rows,targets,{'im':'1'},'score');counts=a.fp_types(rows,targets,metric);assert counts=={'duplicate':1,'partial':0,'no_small_overlap':0}
+
+def test_fp_decomposition_atomic_tie_rejected():
+ rows=[{'image_id':'im','reid':'1','box_xyxy':b,'score':.5} for b in [[0,0,5,5],[10,0,15,5]]];targets={'im':[]};metric=a.m.metrics(rows,targets,{'im':'1'},'score');assert a.fp_types(rows,targets,metric)=={'duplicate':0,'partial':0,'no_small_overlap':0}

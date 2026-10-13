@@ -8,6 +8,18 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from PIL import Image
 spec=importlib.util.spec_from_file_location('protected_analysis_runner',Path(__file__).with_name('run.py'));m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+def fp_types(rows,targets,metric):
+ threshold=metric['global_score_threshold'];available={im:set(range(len(ts))) for im,ts in targets.items()};counts={'partial':0,'duplicate':0,'no_small_overlap':0};tp=0;used=0
+ if threshold is not None:
+  for row in sorted(rows,key=lambda r:(-r['score'],str(r['reid']),r['image_id'],tuple(r['box_xyxy']))):
+   if row['score']<threshold:break
+   im=row['image_id'];iou,index=max(((m.box_iou(row['box_xyxy'],targets[im][i]),i) for i in available[im]),default=(0.,-1));used+=1
+   if iou>=.5:available[im].remove(index);tp+=1
+   else:
+    value=max((m.box_iou(row['box_xyxy'],t) for t in targets[im]),default=0.);counts['duplicate' if value>=.5 else 'partial' if value>=.05 else 'no_small_overlap']+=1
+ if used!=metric['detections_used'] or sum(counts.values())!=metric['false_positives'] or tp!=sum(r['true_positives'] for r in metric['locations']) or used!=tp+sum(counts.values()):raise ValueError('FP type replay count')
+ return counts
+
 def replay(e,cfg):
  original=e['baseline_rows'];rows=e['rows'];by={r['parent_id']:r for r in original}
  if len(rows)!=len(original) or len(by)!=len(original):raise ValueError('protected count/ID')
@@ -27,7 +39,7 @@ def replay(e,cfg):
  for k in sorted(bm,key=int):
   oh={h for h in oldhits if e['image_locations'][h[0]]==k};nh={h for h in newhits if e['image_locations'][h[0]]==k}
   table.append({'location':k,'images':bm[k]['images'],'targets':bm[k]['targets'],'baseline_recall':bm[k]['recall'],'candidate_recall':cm[k]['recall'],'baseline_TP':bm[k]['true_positives'],'candidate_TP':cm[k]['true_positives'],'baseline_FP':bm[k]['false_positives'],'candidate_FP':cm[k]['false_positives'],'retained_old':len(oh&nh),'lost_old':len(oh-nh),'new_detected':len(nh-oh),'retention':None if not oh else len(oh&nh)/len(oh)})
- summary={k:e[k] for k in ['delta','retention','retained_old_targets','lost_old_targets','new_detected_targets','protected_primary_pass','choice']};summary.update(baseline_macro_recall=e['baseline']['macro_location_recall'],candidate_macro_recall=e['candidate']['macro_location_recall'],gain_gate=cfg['primary_delta'],retention_gate=cfg['minimum_retention'],descriptive_location_bootstrap_95_interval=interval,baseline_oracle=e['baseline_oracle']['macro_location_recall'],candidate_oracle=e['oracle']['macro_location_recall'],uncertainty_scope='reused development descriptive; fixed selected locations only if fresh test')
+ summary={k:e[k] for k in ['delta','retention','retained_old_targets','lost_old_targets','new_detected_targets','protected_primary_pass','choice']};summary.update(baseline_fp_types=fp_types(original,e['targets'],e['baseline']),candidate_fp_types=fp_types(rows,e['targets'],e['candidate']),baseline_macro_recall=e['baseline']['macro_location_recall'],candidate_macro_recall=e['candidate']['macro_location_recall'],gain_gate=cfg['primary_delta'],retention_gate=cfg['minimum_retention'],descriptive_location_bootstrap_95_interval=interval,baseline_oracle=e['baseline_oracle']['macro_location_recall'],candidate_oracle=e['oracle']['macro_location_recall'],uncertainty_scope='reused development descriptive; fixed selected locations only if fresh test')
  return summary,table,oldhits,newhits
 
 def cases(e,oldhits,newhits):
