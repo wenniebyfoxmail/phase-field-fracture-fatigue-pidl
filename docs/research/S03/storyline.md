@@ -2,6 +2,20 @@
 
 ## Claim-impact log
 
+- **2026-10-13 — E015 prescribed boundary/basis repairs tested and closed.**
+  Plan/code/actualasset gates passed before TaoboR002 all254 static solves;
+  separateR003 stage12 validation after freezing uses643common observations.
+  B0K0=K1 MAE0.00250503mm; B1K0=K1 0.00289772; secant0.00159215.
+  OuterBC/domain procedure worsens15.68%, addedlefttip amplitude selectszero;
+  neither prescribedsinglechange helps. Yet B0learnedq improves3.27% overd0
+  and24.21% overintact, preserving componentprogress. Independent closed-form
+  PASS_EVIDENCE resolvesNumPywarning and accepts exactpackages/correctedfigures.
+  Numericaltipdirections are nonzero/distinct; no noise-qualifiedidentifiability.
+  Boundarydependentq remains conditional, not material/truephasefield. Next
+  proposedlever is training-sidepriorgeometry/modelqualification, newholdout
+  required before adjustment; stage12consumed. [Results](S03-E015/results.md),
+  [review history](S03-E015/review_status.md).
+
 - **2026-10-12 — E014 v2 actual DIC-to-static-patch bridge completed.**
   Exact55cf555 code and R002 actual spatial assets independently admitted before
   TaoboR00321q+intact solve. Frozen q0.0475, very shallow improvement overq0;
