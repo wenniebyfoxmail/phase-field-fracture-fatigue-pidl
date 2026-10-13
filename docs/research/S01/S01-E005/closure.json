@@ -1,0 +1,21 @@
+{
+  "experiment_id": "S01-E005",
+  "protocol_revision": "v2",
+  "status": "closed",
+  "closed_at": "2026-10-13",
+  "execution_status": "succeeded",
+  "retrieval_status": "verified",
+  "scientific_verdict": "inconclusive",
+  "scientific_verdict_scope": "fresh-location generalisation was not computed",
+  "development_margin_verdict": "negative",
+  "development_delta": -0.21339811721834193,
+  "development_gate": 0.05,
+  "component_progress": "reviewed input amendment selected padding4 with target-balanced full containment .932699;19 targets covered only by corrections, but121 prior targets lost;not detection success",
+  "confirmatory_access": false,
+  "adoption_decision": "retain E003 checkpoint and original candidates;reject mandatory replacement head",
+  "independent_evidence_review": "PASS",
+  "evidence_commit": "4db22d4622262f36941e1f42e5396333c832d8b2",
+  "reviewed_runtime_commit": "8c45162b1d0ced61ce9c97887948c91d7383010a",
+  "next_design": "protect original candidates;train-location-out-of-sample qualified local spatial original-versus-correction selector;proposal only",
+  "visual_qa": "both exact-output decision and montage figures inspected"
+}

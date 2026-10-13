@@ -5,8 +5,8 @@ Proposal only, not a frozen Experiment or an executed extra E005 arm.
 ## Target behavior
 
 Increase actual valid detections at the same false-positive budget while
-retaining the useful E003 candidate coverage. E005 adds19 independently coverable
-GT targets but loses121 by replacing originals; those gains cannot justify
+retaining the useful E003 candidate coverage. E005 provides 19 GT targets coverable only by corrected candidates relative to
+originals, but loses 121 by replacing originals; those gains cannot justify
 mandatory replacement. Preserve the original candidate list as an immutable
 protected branch. A correction is an additional alternative, not a deletion.
 
@@ -26,7 +26,7 @@ protected branch. A correction is an additional alternative, not a deletion.
    targets without disclosing/repairing that leakage in qualification: freeze
    a train-location split or cross-fit correction generation before any selector
    fit. Decide the cheapest option and exact feature representation before code.
-4. Compare one selected candidate policy against unchanged E003 at1FP/image,
+4. Compare one selected candidate policy against unchanged E003 at 1 FP/image,
    IoU>=.5 macro-location recall. Freeze meaningful improvement, budget and stop
    rule before results; secondary IoU/duplicate/oracle changes cannot rescue
    a failed detection criterion. Keep unused confirmation locations sealed until

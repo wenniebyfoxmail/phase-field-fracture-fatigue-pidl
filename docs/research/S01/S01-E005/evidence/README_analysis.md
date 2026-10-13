@@ -42,7 +42,7 @@ validate any selector or override this negative replacement-head result.
 
 ## Provenance, credibility and limitations
 
-Runtime/analysis exact reviewed commit 8c45162b1d0ced61ce9c97887948c91d7383010a,
+Runtime and preregistered-analysis exact reviewed commit 8c45162b1d0ced61ce9c97887948c91d7383010a,
 S01-E005-v2; source manifest bcf83836976a1144045f70ccee71535dd76edf4ba7b7d6c4c5cf444b8145cea0.
 Raw archive:
 /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E005/runs/S01-E005-R001/evidence/.
@@ -57,4 +57,4 @@ hashes. Figures were rendered from the scored outputs; visual QA recorded in
 result closure. New locations 1174/1729/2246/2260/2485 remain unaccessed.
 
 Current action: reject replacement head and retain E003. Independent evidence
-review pending. Next candidate-preserving local-selector proposal is untested.
+review PASS at exact evidence commit 4db22d4622262f36941e1f42e5396333c832d8b2. Next candidate-preserving local-selector proposal is untested.
