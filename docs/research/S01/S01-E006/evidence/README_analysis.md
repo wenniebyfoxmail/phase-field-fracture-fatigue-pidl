@@ -38,6 +38,6 @@ Budget4 actual ridge fits inR001 and1 selector fit inR002;0 repeat extraction/
 ridge training. OOF regression is conditional on a shared encoder trained on all
 train locations, not end-to-end OOF. Train-only numerical admission and loss
 reduction are execution progress, not detection success. Independent evidence
-review is pending at this evidence snapshot. Fresh locations1174/1729/2246/2260/
+review PASS at b960d3c490fd3817926b265b56f4ad666ddfb562, gpt-5.6-sol / Medium. Fresh locations1174/1729/2246/2260/
 2485 remain sealed. See result_20261013.md and next_safe_refinement_proposal.md
 for the explicit paired-harm/abstention next solution, unexecuted proposal only.

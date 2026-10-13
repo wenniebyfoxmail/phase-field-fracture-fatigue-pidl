@@ -65,4 +65,4 @@ R001 metadata-order execution defect was repaired and independently reviewed;
 R002 adopted exact features/four heads without refitting and completed the one
 selector fit. Next proposed solution makes paired replacement harm explicit and
 qualifies an abstain-to-original policy on held train locations; no new arm or
-experiment is executed by that proposal. Evidence review pending at this snapshot.
+experiment is executed by that proposal. Independent evidence review PASS at b960d3c; current attempt closed.
