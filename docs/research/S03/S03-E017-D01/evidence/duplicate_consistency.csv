@@ -1,0 +1,7 @@
+unique_index,first_task,second_task,beam,first_quality,second_quality,quality_agreement,both_visible,first_width_px,second_width_px,endpoint_disagreement_px,width_disagreement_px,signed_width_difference_px
+0,task_017,task_023,4,visible,visible,True,True,13.0,13.0,0.0,0.0,0.0
+4,task_004,task_028,4,visible,visible,True,True,13.0,13.0,0.0,0.0,0.0
+8,task_011,task_013,5,visible,visible,True,True,5.5,5.5,0.0,0.0,0.0
+12,task_021,task_022,5,visible,visible,True,True,9.0,9.0,0.0,0.0,0.0
+16,task_005,task_012,6,uncertain,uncertain,True,False,20.5,20.5,,,
+20,task_010,task_030,6,uncertain,uncertain,True,False,25.5,25.5,,,

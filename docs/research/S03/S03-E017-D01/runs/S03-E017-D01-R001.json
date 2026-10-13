@@ -1,0 +1,31 @@
+{
+  "experiment_id": "S03-E017-D01",
+  "run_id": "S03-E017-D01-R001",
+  "protocol": "ai-visual-development-v1",
+  "producer": "Mac-PIDL CPU analysis",
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 41167,
+  "source_commit": "fd4ac2e43259d513486c19e2e7afbdc1d8625eba",
+  "git_dirty": false,
+  "command": [
+    "scripts/analyze_d01_ai_blind_annotations.py",
+    "--source",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/runs/S03-E016-D01-R002",
+    "--annotations",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E017-D01/annotations/S03-E017-D01-B001/annotations.csv",
+    "--exposure-note",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E017-D01/annotations/S03-E017-D01-B001/exposure_note.md",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E017-D01/runs/S03-E017-D01-R001"
+  ],
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "started_at_utc": "2026-10-13T18:23:49.976668+00:00",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "formal_review": "pending_development_only",
+  "gpu": null,
+  "annotation_freeze_commit": "fd4ac2e43259d513486c19e2e7afbdc1d8625eba",
+  "reveal_started_at_utc": "2026-10-13T18:23:49.993240+00:00",
+  "ended_at_utc": "2026-10-13T18:23:50.648761+00:00",
+  "runtime_seconds": 0.6800932079786435
+}

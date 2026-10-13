@@ -1,0 +1,193 @@
+{
+  "run_id": "S03-E017-D01-R001",
+  "protocol": "ai-visual-development-v1",
+  "task_views": 30,
+  "unique_tasks": 24,
+  "primary_eligible_unique_tasks": 16,
+  "annotation_view_quality_counts": {
+    "visible": 20,
+    "uncertain": 10,
+    "occluded": 0
+  },
+  "per_beam": [
+    {
+      "beam": 4,
+      "unique_tasks": 8,
+      "primary_eligible": 6,
+      "uncertain": 2,
+      "occluded": 0,
+      "half_depth_endpoint_disagreement_px": {
+        "n": 6,
+        "mean": 0.44748595503744976,
+        "median": 0.4558869279336193,
+        "max": 0.8686763056830742
+      },
+      "half_depth_width_disagreement_px": {
+        "n": 6,
+        "mean": 0.37975199239595153,
+        "median": 0.23455136334300164,
+        "max": 1.0757369779689867
+      },
+      "half_depth_signed_width_difference_px": {
+        "n": 6,
+        "mean": 0.07137032041232416,
+        "median": -0.06707318341138446,
+        "max": 1.0757369779689867
+      },
+      "half_depth_both_edges_in_subjective_ranges": {
+        "n": 6,
+        "inside": 6
+      },
+      "gradient_endpoint_disagreement_px": {
+        "n": 6,
+        "mean": 0.4791666666666667,
+        "median": 0.375,
+        "max": 0.875
+      },
+      "gradient_width_disagreement_px": {
+        "n": 6,
+        "mean": 0.875,
+        "median": 0.75,
+        "max": 1.75
+      },
+      "gradient_signed_width_difference_px": {
+        "n": 6,
+        "mean": 0.875,
+        "median": 0.75,
+        "max": 1.75
+      },
+      "gradient_both_edges_in_subjective_ranges": {
+        "n": 6,
+        "inside": 5
+      }
+    },
+    {
+      "beam": 5,
+      "unique_tasks": 8,
+      "primary_eligible": 6,
+      "uncertain": 2,
+      "occluded": 0,
+      "half_depth_endpoint_disagreement_px": {
+        "n": 6,
+        "mean": 0.3968285203706851,
+        "median": 0.3960334677854256,
+        "max": 0.6578261609686358
+      },
+      "half_depth_width_disagreement_px": {
+        "n": 6,
+        "mean": 0.5742433441390821,
+        "median": 0.5150750746272266,
+        "max": 1.0537479142478006
+      },
+      "half_depth_signed_width_difference_px": {
+        "n": 6,
+        "mean": 0.0076347699123905,
+        "median": 0.09693128162570375,
+        "max": 1.0537479142478006
+      },
+      "half_depth_both_edges_in_subjective_ranges": {
+        "n": 6,
+        "inside": 6
+      },
+      "gradient_endpoint_disagreement_px": {
+        "n": 6,
+        "mean": 0.4166666666666667,
+        "median": 0.375,
+        "max": 0.75
+      },
+      "gradient_width_disagreement_px": {
+        "n": 6,
+        "mean": 0.5833333333333334,
+        "median": 0.5,
+        "max": 1.5
+      },
+      "gradient_signed_width_difference_px": {
+        "n": 6,
+        "mean": 0.3333333333333333,
+        "median": 0.25,
+        "max": 1.5
+      },
+      "gradient_both_edges_in_subjective_ranges": {
+        "n": 6,
+        "inside": 6
+      }
+    },
+    {
+      "beam": 6,
+      "unique_tasks": 8,
+      "primary_eligible": 4,
+      "uncertain": 4,
+      "occluded": 0,
+      "half_depth_endpoint_disagreement_px": {
+        "n": 4,
+        "mean": 0.5688142682827424,
+        "median": 0.5655422757533035,
+        "max": 0.859595893204542
+      },
+      "half_depth_width_disagreement_px": {
+        "n": 4,
+        "mean": 0.24229866959270474,
+        "median": 0.16984131160318938,
+        "max": 0.5055580738650178
+      },
+      "half_depth_signed_width_difference_px": {
+        "n": 4,
+        "mean": -0.14265247593849573,
+        "median": -0.13217210859869155,
+        "max": 0.19929238730841803
+      },
+      "half_depth_both_edges_in_subjective_ranges": {
+        "n": 4,
+        "inside": 4
+      },
+      "gradient_endpoint_disagreement_px": {
+        "n": 4,
+        "mean": 0.625,
+        "median": 0.625,
+        "max": 1.0
+      },
+      "gradient_width_disagreement_px": {
+        "n": 4,
+        "mean": 0.375,
+        "median": 0.5,
+        "max": 0.5
+      },
+      "gradient_signed_width_difference_px": {
+        "n": 4,
+        "mean": 0.375,
+        "median": 0.5,
+        "max": 0.5
+      },
+      "gradient_both_edges_in_subjective_ranges": {
+        "n": 4,
+        "inside": 4
+      }
+    }
+  ],
+  "equal_beam_mean_endpoint_disagreement_px": {
+    "half_depth": 0.47104291456362574,
+    "gradient": 0.5069444444444445
+  },
+  "duplicates": {
+    "pairs": 6,
+    "both_visible": 4,
+    "quality_agreement_pairs": 6,
+    "endpoint_disagreement_px": {
+      "n": 4,
+      "mean": 0.0,
+      "median": 0.0,
+      "max": 0.0
+    },
+    "width_disagreement_px": {
+      "n": 4,
+      "mean": 0.0,
+      "median": 0.0,
+      "max": 0.0
+    }
+  },
+  "reference_status": "AI_VISUAL_ASSISTANCE_ONLY_HUMAN_REFERENCE_PENDING",
+  "human_annotations_included": false,
+  "physical_width_validated": false,
+  "forecast_rescored": false,
+  "formal_review": "pending"
+}

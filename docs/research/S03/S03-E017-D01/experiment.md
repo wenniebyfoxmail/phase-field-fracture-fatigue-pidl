@@ -60,6 +60,34 @@ agreement is good, allow only AI-assisted annotation capability. Preserve old
 E015 forecast result; first/last labels do NOT cover eight next-stage targets.
 Human reference remains pending and must be separately validated.
 
+## 2026-10-13 outcome (AI assistance only)
+
+`/root/blind_visual_annotator`, fork_turns=none, completed all 30 rows with
+self-attested no algorithm/prior-result exposure. Input guide/list/30 anonymous
+readout PNGs only; general platform research context cannot be excluded. The
+agent noted visually similar tasks and possible memory effects. Raw answers
+and exposure note frozen at `fd4ac2e43259d513486c19e2e7afbdc1d8625eba` BEFORE
+reveal; R001 verified exact committed bytes and completed in 0.68 s.
+
+20 visible / 10 uncertain views; primary unique-task support 16/24 (6/8,6/8,
+4/8 by beam). No replacement of an uncertain first representative by duplicate.
+Equal-beam mean endpoint discrepancy half-depth 0.471043, gradient 0.506944 px.
+These are different-definition algorithm/AI disagreements, NOT reference error
+or statistically meaningful ranking. All six repeat pairs agree in quality;
+four visible pairs report identical endpoints/widths, other two uncertain.
+Same-context recognition plus coarse 0.5/1px coordinates block a zero-noise or
+independent-repeatability interpretation. Human reference still pending.
+
+Disposition: AI assisted annotation capability established, reference validity
+not established. Clarify ambiguous branches/spall with fresh-context/expert
+checks next; separately freeze every target-stage reference before forecasting
+validation. E015 unchanged and NOT rescored. No training/physical truth claim.
+
+All raw responses, joined comparisons, duplicate table, summary, exposure and
+receipts archived under E017. Three decision figures inspected; V2 plot-only
+revision fixes unscored-case padding and misleading tiny repeat axis, no new
+numerical scores or labels. Detailed source/units/limitations in README_analysis.
+
 Minimum evidence: input list/readouts, instructions, exposure note, frozen 30
 rows, reveal joins after freeze, exact score tables, actual-output figures,
 README_analysis, receipts and concise Obsidian note. Private key outside Git.

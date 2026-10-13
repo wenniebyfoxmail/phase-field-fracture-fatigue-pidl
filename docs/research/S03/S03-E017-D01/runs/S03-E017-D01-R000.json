@@ -1,0 +1,29 @@
+{
+  "experiment_id": "S03-E017-D01",
+  "run_id": "S03-E017-D01-R000",
+  "protocol": "ai-visual-development-v1",
+  "role": "algorithm_free_input_preparation",
+  "producer": "Mac-PIDL CPU",
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 40138,
+  "commit": "fa3fa3f0435de14c0a94a420932c150a9b9f5afe",
+  "git_dirty": false,
+  "command": [
+    "scripts/prepare_d01_ai_blind_readouts.py",
+    "--public-packet",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/runs/S03-E016-D01-R002/blind_packet",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E017-D01/runs/S03-E017-D01-R000"
+  ],
+  "source": "E016 public anonymous PNG crops only",
+  "tasks": 30,
+  "source_geometry": [
+    49,
+    121
+  ],
+  "private_key_read": false,
+  "candidate_boundaries_included": false,
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "completed_at_utc": "2026-10-13T18:18:57.997229+00:00"
+}

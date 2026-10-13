@@ -67,3 +67,13 @@ Keep moving-view widths out of fixed-camera trajectories until local observation
 transfer is qualified. Human reference is still absent: 24 unique/30 blinded
 task views prepared, zero completed labels. No independent boundary accuracy
 or physical forecasting validation claimed.
+
+2026-10-13 — [S03-E017-D01](S03-E017-D01/experiment.md) used one fresh-context,
+algorithm-unexposed AI visual annotator on all 30 anonymous task views. Frozen
+responses precede reveal: 20 visible/10 uncertain views, 16/24 unique tasks on
+common comparison support. Equal-beam endpoint discrepancy 0.471/0.507 px
+for half-depth/gradient versus AI, not metrology accuracy or model ranking.
+All six duplicate pairs agree in status; four visible pairs exactly repeat
+coarse coordinates, two uncertain. Same-context recall, selection bias and
+different boundary definitions remain. AI annotation is complete; HUMAN
+reference and independent target-stage forecasting validation remain pending.

@@ -154,7 +154,7 @@ def analyze(args,receipt,repo):
     print(json.dumps(summary,indent=2))
 
 
-def figures(unique,duplicate,source,output):
+def figures(unique,duplicate,source,output,suffix=""):
     colors={"half_depth":"#0072B2","gradient":"#D55E00"}
     fig,axes=plt.subplots(2,3,figsize=(14,7),constrained_layout=True)
     for col,beam in enumerate((4,5,6)):
@@ -168,23 +168,24 @@ def figures(unique,duplicate,source,output):
             for i,r in enumerate(items):
                 if not r["primary_eligible"]: ax.text(i,0,"?",color=".5",ha="center",va="bottom")
             ax.set(xticks=x,xticklabels=labels,xlabel="All frozen unique image tasks",ylabel="Mean endpoint difference (px)" if row==0 else "Absolute width difference (px)",ylim=(0,None))
+            ax.set_xlim(-.4,7.4)
             ax.tick_params(axis="x",labelsize=7); ax.legend(fontsize=8)
             if row==0: ax.set_title(f"Beam {beam} | visible joint support {sum(r['primary_eligible'] for r in items)}/8")
     for row in range(2):
         ymax=max(ax.get_ylim()[1] for ax in axes[row])
         for ax in axes[row]: ax.set_ylim(0,ymax)
-    fig.suptitle(f"{output.name} | algorithms versus BLINDED AI visual estimates; disagreement, NOT accuracy\nCentral-row apparent edges versus stored five-line-profile definitions; shared scales, all unique tasks")
-    fig.savefig(output/"algorithm_ai_disagreement.png",dpi=165); plt.close(fig)
+    fig.suptitle(f"{output.name} | algorithms versus BLINDED AI visual estimates; disagreement, NOT accuracy\nCentral-row apparent edges versus five-line-profile definitions. '?' = uncertain / NOT scored, not zero",fontsize=11)
+    fig.savefig(output/("algorithm_ai_disagreement"+suffix+".png"),dpi=165); plt.close(fig)
     fig,ax=plt.subplots(figsize=(10,4),constrained_layout=True)
     for metric,color,label in (("endpoint_disagreement_px","#0072B2","mean left/right difference"),("width_disagreement_px","#D55E00","width difference")):
         ax.plot(np.arange(6),[r[metric] if r[metric] is not None else np.nan for r in duplicate],"o-",color=color,label=label,lw=1.3)
     labels=[f"{r['first_task']}\n{r['second_task']}" for r in duplicate]
     for i,r in enumerate(duplicate):
-        if not r["both_visible"]: ax.text(i,0,"not two visible labels",ha="center",fontsize=7)
-    ax.set(xticks=np.arange(6),xticklabels=labels,ylabel="Absolute AI repeat-reading difference (px)",ylim=(0,None))
+        if not r["both_visible"]: ax.text(i,.15,"both uncertain\nNOT scored",ha="center",fontsize=8,color=".5")
+    ax.set(xticks=np.arange(6),xticklabels=labels,ylabel="Absolute AI repeat-reading difference (px)",ylim=(-.04,1),yticks=[0,.5,1.],xlim=(-.4,5.4))
     ax.tick_params(axis="x",labelsize=8); ax.legend(fontsize=8)
     ax.set_title(f"{output.name} | ALL six hidden-repeat pairs, one AI annotator/context\nPossible recognition/recall and 0.5px quantization; NOT independent metrology repeatability")
-    fig.savefig(output/"ai_duplicate_consistency.png",dpi=165); plt.close(fig)
+    fig.savefig(output/("ai_duplicate_consistency"+suffix+".png"),dpi=165); plt.close(fig)
     fig,axes=plt.subplots(2,3,figsize=(14,8),constrained_layout=True)
     fig.set_constrained_layout_pads(hspace=.1,wspace=.04)
     for col,beam in enumerate((4,5,6)):
@@ -203,14 +204,32 @@ def figures(unique,duplicate,source,output):
                 if point is not None: ax.plot(point,24,"o",color="#CC79A7",ms=5)
             ax.set(title=f"Beam {beam} | {r['nominal_stage_kN']:.0f} kN | T6\nAI: {r['quality']} / {r['confidence']}",xlabel="Strip pixel-center x",ylabel="Row y",xlim=(15,105))
     fig.suptitle(f"{output.name} | fixed ID 6 first/last of every beam, NO selected best examples\nPurple=AI point/plausible range; blue=half-depth; orange=gradient. AI-assisted, NOT human/physical truth")
-    fig.savefig(output/"ai_algorithm_edge_overlay.png",dpi=165); plt.close(fig)
+    fig.savefig(output/("ai_algorithm_edge_overlay"+suffix+".png"),dpi=165); plt.close(fig)
 
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ("source","annotations","exposure-note","output"): p.add_argument("--"+name,type=Path)
-    p.add_argument("--self-test",action="store_true"); args=p.parse_args()
+    p.add_argument("--self-test",action="store_true")
+    p.add_argument("--render-existing",action="store_true"); args=p.parse_args()
     if args.self_test: self_test(); return
+    if args.render_existing:
+        if args.source is None or args.output is None: p.error("source/existing output required for rendering")
+        for name in ("algorithm_ai_disagreement","ai_duplicate_consistency","ai_algorithm_edge_overlay"):
+            if (args.output/(name+"_v2.png")).exists(): raise FileExistsError("preserve existing v2 readout")
+        def typed(path):
+            with path.open() as f: rows=list(csv.DictReader(f))
+            for r in rows:
+                for k,v in r.items():
+                    if v=="": r[k]=None
+                    elif v in ("True","False"): r[k]=v=="True"
+                    else:
+                        try: r[k]=float(v)
+                        except ValueError: pass
+            return rows
+        figures(typed(args.output/"unique_task_comparison.csv"),typed(args.output/"duplicate_consistency.csv"),args.source,args.output,"_v2")
+        print("Rendered frozen numerical tables only; annotations/scores/private key not changed")
+        return
     if any(getattr(args,k.replace("-","_")) is None for k in ("source","annotations","exposure-note","output")): p.error("all paths required")
     repo=Path(__file__).resolve().parents[1]
     git=lambda *a:subprocess.check_output(["git",*a],cwd=repo,text=True).strip()
