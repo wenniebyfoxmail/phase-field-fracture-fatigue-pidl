@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E018
 protocol_revision: 20261012-r2-anchor-global-local-screen
-status: running-r2-six-run-screen
+status: completed-evidence-review-pending
 ---
 # S04-E018 draft: smooth global + damage-local UV representation
 

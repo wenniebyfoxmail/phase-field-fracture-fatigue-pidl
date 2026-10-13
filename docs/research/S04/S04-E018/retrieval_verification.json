@@ -1,0 +1,79 @@
+{
+  "status": "SAVED_ARRAY_RECOMPUTATION_PASS",
+  "compact_sha256": "be8594807d7720771ebbdaeac0547333c28d1df10be5812cd7e8065d2edf94bb",
+  "checkpoint_retrieval": "NOT_LOCAL; REMOTE_AUDIT_SEPARATE",
+  "rows": [
+    {
+      "state": "c20s4",
+      "arm": "control",
+      "independent_final_rms": [
+        0.006862147776739456,
+        0.05279404770266988,
+        0.00155061638339623
+      ],
+      "atol": 1e-14,
+      "hashes_match": true,
+      "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b"
+    },
+    {
+      "state": "c20s4",
+      "arm": "localized",
+      "independent_final_rms": [
+        0.0038150973582342733,
+        0.00544463764723267,
+        0.0037827108716247597
+      ],
+      "atol": 1e-14,
+      "hashes_match": true,
+      "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b"
+    },
+    {
+      "state": "c60s4",
+      "arm": "control",
+      "independent_final_rms": [
+        0.0072046865098332104,
+        0.046392347772171626,
+        0.0018517837566841488
+      ],
+      "atol": 1e-14,
+      "hashes_match": true,
+      "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2"
+    },
+    {
+      "state": "c60s4",
+      "arm": "localized",
+      "independent_final_rms": [
+        0.005566786447652603,
+        0.02116647817967319,
+        0.004622071658541711
+      ],
+      "atol": 1e-14,
+      "hashes_match": true,
+      "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2"
+    },
+    {
+      "state": "c83s4",
+      "arm": "control",
+      "independent_final_rms": [
+        0.007822974333089264,
+        0.04548250538024319,
+        0.0015388960996522447
+      ],
+      "atol": 1e-14,
+      "hashes_match": true,
+      "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae"
+    },
+    {
+      "state": "c83s4",
+      "arm": "localized",
+      "independent_final_rms": [
+        0.0042310133723047995,
+        0.021191253129308477,
+        0.002294699613845896
+      ],
+      "atol": 1e-14,
+      "hashes_match": true,
+      "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae"
+    }
+  ]
+}

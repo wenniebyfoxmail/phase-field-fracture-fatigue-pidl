@@ -1,0 +1,18 @@
+{
+  "protocol_revision": "20261012-r2-anchor-global-local-screen",
+  "code_commit": "e67d9701419fbb891ce570edd3530bf68aae5f4e",
+  "expected_runs": 6,
+  "valid_completed_runs": 6,
+  "missing": [],
+  "integrity_errors": [],
+  "verdict": "GLOBAL_LOCAL_THREE_STATE_UV_FIT_SCREEN_FAIL",
+  "localized_over_matched_control": {
+    "c20s4": 0.5559625764933631,
+    "c60s4": 0.7726618555928637,
+    "c83s4": 0.5408445933931608
+  },
+  "localization_helps_all_three": true,
+  "stage2_authorized": false,
+  "full_fem_reproduction": "NOT_QUALIFIED",
+  "qualified_fem_teacher": "NOT_QUALIFIED"
+}

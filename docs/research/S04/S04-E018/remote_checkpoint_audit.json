@@ -1,0 +1,71 @@
+{
+  "status": "REMOTE_CHECKPOINT_ARCHIVE_AUDIT_PASS",
+  "rows": [
+    {
+      "run_id": "S04-E018-global-local-e67d970-20261013T111326Z-R001-c20s4-control-s7",
+      "state": "c20s4",
+      "arm": "control",
+      "checkpoint_sha256": "9258519b6e4b9454cef88e476bfa8c6b88065aace993b3d5f1c9d99df5fdcabe",
+      "actual_archive_payloads_verified": true,
+      "checkpoint_step": 10000,
+      "parameter_count": 1128058,
+      "all_model_tensors_float64": true,
+      "geometry_matches_metrics": true
+    },
+    {
+      "run_id": "S04-E018-global-local-e67d970-20261013T111326Z-R002-c20s4-localized-s7",
+      "state": "c20s4",
+      "arm": "localized",
+      "checkpoint_sha256": "09fc10b2cbd9cfa53de2620b6a0dbf4d37f52569f3e0084394c909e32d6cb284",
+      "actual_archive_payloads_verified": true,
+      "checkpoint_step": 10000,
+      "parameter_count": 1128058,
+      "all_model_tensors_float64": true,
+      "geometry_matches_metrics": true
+    },
+    {
+      "run_id": "S04-E018-global-local-e67d970-20261013T111326Z-R003-c60s4-control-s7",
+      "state": "c60s4",
+      "arm": "control",
+      "checkpoint_sha256": "9ef9d991e5c0ea1b95ade85b132143404061280eb67f6d4e93c6dd20a1faf6b4",
+      "actual_archive_payloads_verified": true,
+      "checkpoint_step": 10000,
+      "parameter_count": 1128058,
+      "all_model_tensors_float64": true,
+      "geometry_matches_metrics": true
+    },
+    {
+      "run_id": "S04-E018-global-local-e67d970-20261013T111326Z-R004-c60s4-localized-s7",
+      "state": "c60s4",
+      "arm": "localized",
+      "checkpoint_sha256": "375af5ec1343cfca5368cb6696b209285feaeff0765dcbd0364fc592a625ee07",
+      "actual_archive_payloads_verified": true,
+      "checkpoint_step": 10000,
+      "parameter_count": 1128058,
+      "all_model_tensors_float64": true,
+      "geometry_matches_metrics": true
+    },
+    {
+      "run_id": "S04-E018-global-local-e67d970-20261013T111326Z-R005-c83s4-control-s7",
+      "state": "c83s4",
+      "arm": "control",
+      "checkpoint_sha256": "3a52823edf72be7019ae2c98f0edf2ea6659c647c6d32a0a6df677aacf91378e",
+      "actual_archive_payloads_verified": true,
+      "checkpoint_step": 10000,
+      "parameter_count": 1128058,
+      "all_model_tensors_float64": true,
+      "geometry_matches_metrics": true
+    },
+    {
+      "run_id": "S04-E018-global-local-e67d970-20261013T111326Z-R006-c83s4-localized-s7",
+      "state": "c83s4",
+      "arm": "localized",
+      "checkpoint_sha256": "2538f6c77da089694c824008d8a14db09f9a39b056540859d03e7b2992b88be7",
+      "actual_archive_payloads_verified": true,
+      "checkpoint_step": 10000,
+      "parameter_count": 1128058,
+      "all_model_tensors_float64": true,
+      "geometry_matches_metrics": true
+    }
+  ]
+}
