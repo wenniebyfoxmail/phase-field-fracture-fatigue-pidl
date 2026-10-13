@@ -1,0 +1,117 @@
+{
+  "local_prediction_recomputations": [
+    {
+      "state": "c20s4",
+      "alpha": "0.5",
+      "all": 0.0032687901418076634,
+      "damage": 0.025710258946694743,
+      "background": 0.0002822511014809521,
+      "damage_error_share": 0.9926637847839546,
+      "valid": true
+    },
+    {
+      "state": "c20s4",
+      "alpha": "0.7",
+      "all": 0.003079121624043563,
+      "damage": 0.0242348624521076,
+      "background": 0.0002402426484476214,
+      "damage_error_share": 0.9940100750917279,
+      "valid": true
+    },
+    {
+      "state": "c20s4",
+      "alpha": "0.9",
+      "all": 0.003211757946417095,
+      "damage": 0.02528131429483519,
+      "background": 0.00024642699950421415,
+      "damage_error_share": 0.9942075030321967,
+      "valid": true
+    },
+    {
+      "state": "c60s4",
+      "alpha": "0.5",
+      "all": 0.0035563048591506054,
+      "damage": 0.023624611465117344,
+      "background": 0.00023894028885687517,
+      "damage_error_share": 0.9955876424060003,
+      "valid": true
+    },
+    {
+      "state": "c60s4",
+      "alpha": "0.7",
+      "all": 0.003487814391244284,
+      "damage": 0.023153913227339028,
+      "background": 0.00026779955404167293,
+      "damage_error_share": 0.9942376070832281,
+      "valid": true
+    },
+    {
+      "state": "c60s4",
+      "alpha": "0.9",
+      "all": 0.0033834369737890807,
+      "damage": 0.02246415065861624,
+      "background": 0.0002534235617970651,
+      "damage_error_share": 0.9945163756175307,
+      "valid": true
+    },
+    {
+      "state": "c83s4",
+      "alpha": "0.5",
+      "all": 0.003267200387640642,
+      "damage": 0.019340499908709317,
+      "background": 0.000159223427854129,
+      "damage_error_share": 0.9976926266885802,
+      "valid": true
+    },
+    {
+      "state": "c83s4",
+      "alpha": "0.7",
+      "all": 0.0033046863884932504,
+      "damage": 0.019560763900719605,
+      "background": 0.0001667786946612992,
+      "damage_error_share": 0.9975255646724086,
+      "valid": true
+    },
+    {
+      "state": "c83s4",
+      "alpha": "0.9",
+      "all": 0.0034351161644251334,
+      "damage": 0.020329657389959288,
+      "background": 0.00018381449056758823,
+      "damage_error_share": 0.997218160280397,
+      "valid": true
+    },
+    {
+      "state": "c40s4",
+      "alpha": "0.5",
+      "all": 0.004170452206042868,
+      "damage": 0.030378726621475064,
+      "background": 0.0003449951654176355,
+      "damage_error_share": 0.9932848957225525,
+      "valid": true
+    },
+    {
+      "state": "c40s4",
+      "alpha": "0.7",
+      "all": 0.0032819578756030088,
+      "damage": 0.023911775067243447,
+      "background": 0.0002628109929099813,
+      "damage_error_share": 0.9937076323615927,
+      "valid": true
+    },
+    {
+      "state": "c40s4",
+      "alpha": "0.9",
+      "all": 0.0031848942606450895,
+      "damage": 0.02318942040435813,
+      "background": 0.000280120200523763,
+      "damage_error_share": 0.9924091246396248,
+      "valid": true
+    }
+  ],
+  "all12_match": true,
+  "tolerance": 1e-14,
+  "checkpoint_location": "remote verified output and archive copies",
+  "local_checkpoints_retrieved": false,
+  "compact_bundle_sha256": "2ed61b0fab27d667ee23715bb5477b515d581f4caa768e01ff39df0349b91d71"
+}

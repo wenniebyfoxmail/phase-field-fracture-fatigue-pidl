@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E017
 protocol_revision: 20261012-r1-alpha-screen
-status: planning-review-pending
+status: completed-evidence-review-pending
 ---
 # Unbiased damage-stratified sampling ratio comparison
 

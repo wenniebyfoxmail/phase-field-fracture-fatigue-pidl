@@ -1,0 +1,35 @@
+{
+  "protocol_revision": "20261012-r1-alpha-screen",
+  "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+  "expected_runs": 12,
+  "valid_completed_runs": 12,
+  "missing": [],
+  "integrity_errors": [],
+  "verdict": "NO_ALPHA_RECOVERS_THREE_STATE_DISPLACEMENT_GATE",
+  "arms": {
+    "0.5": {
+      "primary_max_displacement": 0.0035563048591506063,
+      "primary_pass": false,
+      "sentinel_displacement": 0.004170452206042872,
+      "all_four_max_displacement": 0.004170452206042872
+    },
+    "0.7": {
+      "primary_max_displacement": 0.003487814391244284,
+      "primary_pass": false,
+      "sentinel_displacement": 0.0032819578756030096,
+      "all_four_max_displacement": 0.003487814391244284
+    },
+    "0.9": {
+      "primary_max_displacement": 0.0034351161644251343,
+      "primary_pass": false,
+      "sentinel_displacement": 0.0031848942606450908,
+      "all_four_max_displacement": 0.0034351161644251343
+    }
+  },
+  "selected_development_alpha": "0.9",
+  "descriptive_common_floor": true,
+  "selection_is_independent_validation": false,
+  "stage2_authorized": false,
+  "full_fem_reproduction": "NOT_QUALIFIED",
+  "qualified_fem_teacher": "NOT_QUALIFIED"
+}
