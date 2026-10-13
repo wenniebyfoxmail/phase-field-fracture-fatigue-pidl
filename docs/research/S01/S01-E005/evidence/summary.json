@@ -1,0 +1,37 @@
+{
+  "baseline_macro_recall": 0.28950905962141915,
+  "candidate_macro_recall": 0.07611094240307723,
+  "delta": -0.21339811721834193,
+  "gate": 0.05,
+  "development_gate_pass": false,
+  "primary_pass": null,
+  "descriptive_location_bootstrap_95_interval": [
+    -0.36799271181293647,
+    -0.06247191011235955
+  ],
+  "baseline_oracle": 0.6835502918648986,
+  "candidate_oracle": 0.28358740763235146,
+  "baseline_fp_types": {
+    "partial": 190,
+    "duplicate": 20,
+    "no_small_overlap": 92
+  },
+  "candidate_fp_types": {
+    "partial": 210,
+    "duplicate": 1,
+    "no_small_overlap": 91
+  },
+  "suppressed_count": 3124,
+  "correction_flags": {
+    "bounded": 1787,
+    "image_clipped": 1478,
+    "fallback": 2
+  },
+  "paired_max_iou_delta_mean": 0.0009157569000646914,
+  "paired_max_iou_delta_median": 0.0,
+  "uncertainty_scope": "reused validation is descriptive; fixed selected fresh locations only if test",
+  "protocol": "S01-E005-v2",
+  "split": "validation",
+  "run_id": "S01-E005-R001",
+  "evaluation_sha256": "31dd3a45ca7ddb037b339db581580a59cd0fd2dea166e6f118909e09551b855f"
+}

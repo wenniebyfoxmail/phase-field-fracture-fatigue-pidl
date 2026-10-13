@@ -1,0 +1,61 @@
+{
+  "protocol": "S01-E005-v2",
+  "config_sha256": "b1cacd96168d57b0372689d9015cd9bb903d094704a9ceec1f9b28a44afe6f5a",
+  "lock_sha256": "aaf5d45a0d0c6faad86ddfdf9d68132d21feeace9b45a3bd48153fae657ba637",
+  "tiled_sha256": "f5bdb88c0398c60c35c528a14b9f6dfc91e2129959dd738d453bd516b880ed97",
+  "ranker_sha256": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
+  "source_development_sha256": "6fc622943a78063926d96a13e727013ae22d12919a3af3814cfc221bd1a7e5bb",
+  "source_validation_sha256": "65634bceb2725024793eadcd15866091d5a6a54180011e6b567d7b1b9361ba9e",
+  "source_train_sha256": "3a3e4e5f4f543438be56146f300c532f2d1ecaedf12f2465dc367ff13eb70ff4",
+  "source_manifest_sha256": "bcf83836976a1144045f70ccee71535dd76edf4ba7b7d6c4c5cf444b8145cea0",
+  "context_rates": [
+    {
+      "padding": 0.5,
+      "contained": 3607,
+      "matched": 11852,
+      "fraction": 0.3043368207897401,
+      "target_balanced_fraction": 0.37257283859665113
+    },
+    {
+      "padding": 1.0,
+      "contained": 6212,
+      "matched": 11852,
+      "fraction": 0.5241309483631454,
+      "target_balanced_fraction": 0.5889477290050753
+    },
+    {
+      "padding": 2.0,
+      "contained": 9045,
+      "matched": 11852,
+      "fraction": 0.7631623354708066,
+      "target_balanced_fraction": 0.8004249896991629
+    },
+    {
+      "padding": 4.0,
+      "contained": 10898,
+      "matched": 11852,
+      "fraction": 0.919507256159298,
+      "target_balanced_fraction": 0.9326986043908037
+    },
+    {
+      "padding": 8.0,
+      "contained": 11745,
+      "matched": 11852,
+      "fraction": 0.9909719878501518,
+      "target_balanced_fraction": 0.9929594696944579
+    },
+    {
+      "padding": 16.0,
+      "contained": 11852,
+      "matched": 11852,
+      "fraction": 1.0,
+      "target_balanced_fraction": 1.0
+    }
+  ],
+  "selected_padding": 4.0,
+  "status": "ready",
+  "represented_gt": 1143,
+  "all_train_gt": 1149,
+  "unrepresented_gt": 6,
+  "target_clipped_count": 2147
+}

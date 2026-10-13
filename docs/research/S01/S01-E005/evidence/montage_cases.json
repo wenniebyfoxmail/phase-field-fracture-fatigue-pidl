@@ -1,0 +1,305 @@
+{
+  "selection_rule": "highest frozen-score recovered TP, lost TP and candidate FP; two distinct locations per role; lexical image/box/candidate-ID ties",
+  "cases": [
+    {
+      "kind": "recovered_target",
+      "image_id": "reid-393__2023-05-04_11-03-16-701-n00103.jpg",
+      "candidate_id": 12138,
+      "original": {
+        "image_id": "reid-393__2023-05-04_11-03-16-701-n00103.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          1280.57861328125,
+          965.95947265625,
+          1638.0807189941406,
+          988.651611328125
+        ],
+        "proposer_confidence": 0.34876295924186707,
+        "reranker_crack_probability": 0.992985188961029,
+        "geometric_mean": 0.5884865784241753,
+        "old_score": 0.5884865784241753,
+        "probability": 0.9932396411895752,
+        "score": 0.588561973370355,
+        "candidate_id": 12138
+      },
+      "corrected": {
+        "image_id": "reid-393__2023-05-04_11-03-16-701-n00103.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          1149.1988339536874,
+          958.3792875530695,
+          1572.853013082793,
+          989.8965884014107
+        ],
+        "proposer_confidence": 0.34876295924186707,
+        "reranker_crack_probability": 0.992985188961029,
+        "geometric_mean": 0.5884865784241753,
+        "old_score": 0.5884865784241753,
+        "probability": 0.9932396411895752,
+        "score": 0.588561973370355,
+        "candidate_id": 12138,
+        "original_box_xyxy": [
+          1280.57861328125,
+          965.95947265625,
+          1638.0807189941406,
+          988.651611328125
+        ],
+        "correction_flags": {
+          "bounded": false,
+          "image_clipped": false,
+          "fallback": false
+        }
+      }
+    },
+    {
+      "kind": "recovered_target",
+      "image_id": "reid-1103__2023-07-23_11-31-35-424-n00088.jpg",
+      "candidate_id": 4103,
+      "original": {
+        "image_id": "reid-1103__2023-07-23_11-31-35-424-n00088.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          960.3158874511719,
+          754.17333984375,
+          1277.531982421875,
+          775.3922729492188
+        ],
+        "proposer_confidence": 0.35698139667510986,
+        "reranker_crack_probability": 0.9380907416343689,
+        "geometric_mean": 0.5786889865520396,
+        "old_score": 0.5786889865520396,
+        "probability": 0.9244584441184998,
+        "score": 0.5744688560309611,
+        "candidate_id": 4103
+      },
+      "corrected": {
+        "image_id": "reid-1103__2023-07-23_11-31-35-424-n00088.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          840.1629479079182,
+          747.2179497529637,
+          1164.485225113127,
+          774.3006772249666
+        ],
+        "proposer_confidence": 0.35698139667510986,
+        "reranker_crack_probability": 0.9380907416343689,
+        "geometric_mean": 0.5786889865520396,
+        "old_score": 0.5786889865520396,
+        "probability": 0.9244584441184998,
+        "score": 0.5744688560309611,
+        "candidate_id": 4103,
+        "original_box_xyxy": [
+          960.3158874511719,
+          754.17333984375,
+          1277.531982421875,
+          775.3922729492188
+        ],
+        "correction_flags": {
+          "bounded": false,
+          "image_clipped": false,
+          "fallback": false
+        }
+      }
+    },
+    {
+      "kind": "lost_target",
+      "image_id": "reid-1103__2023-02-22_13-55-46-510-n00088.jpg",
+      "candidate_id": 2214,
+      "original": {
+        "image_id": "reid-1103__2023-02-22_13-55-46-510-n00088.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          1280.0,
+          737.485107421875,
+          1653.8392944335938,
+          763.2978515625
+        ],
+        "proposer_confidence": 0.4369230568408966,
+        "reranker_crack_probability": 0.9989078044891357,
+        "geometric_mean": 0.6606404857709085,
+        "old_score": 0.6606404857709085,
+        "probability": 0.9852510690689087,
+        "score": 0.6561089153893193,
+        "candidate_id": 2214
+      },
+      "corrected": {
+        "image_id": "reid-1103__2023-02-22_13-55-46-510-n00088.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          1124.4680861835845,
+          735.0296213655412,
+          1479.7561512111329,
+          761.3775007366088
+        ],
+        "proposer_confidence": 0.4369230568408966,
+        "reranker_crack_probability": 0.9989078044891357,
+        "geometric_mean": 0.6606404857709085,
+        "old_score": 0.6606404857709085,
+        "probability": 0.9852510690689087,
+        "score": 0.6561089153893193,
+        "candidate_id": 2214,
+        "original_box_xyxy": [
+          1280.0,
+          737.485107421875,
+          1653.8392944335938,
+          763.2978515625
+        ],
+        "correction_flags": {
+          "bounded": false,
+          "image_clipped": false,
+          "fallback": false
+        }
+      }
+    },
+    {
+      "kind": "lost_target",
+      "image_id": "reid-393__2023-03-30_13-56-33-544-000126.jpg",
+      "candidate_id": 11716,
+      "original": {
+        "image_id": "reid-393__2023-03-30_13-56-33-544-000126.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          1280.0,
+          774.6804504394531,
+          1619.4095458984375,
+          796.8554382324219
+        ],
+        "proposer_confidence": 0.4117142856121063,
+        "reranker_crack_probability": 0.9996477365493774,
+        "geometric_mean": 0.6415366347428539,
+        "old_score": 0.6415366347428539,
+        "probability": 0.999745786190033,
+        "score": 0.641568096272674,
+        "candidate_id": 11716
+      },
+      "corrected": {
+        "image_id": "reid-393__2023-03-30_13-56-33-544-000126.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          1335.4259695416613,
+          775.4383559330872,
+          1750.8114075341982,
+          796.0419338160539
+        ],
+        "proposer_confidence": 0.4117142856121063,
+        "reranker_crack_probability": 0.9996477365493774,
+        "geometric_mean": 0.6415366347428539,
+        "old_score": 0.6415366347428539,
+        "probability": 0.999745786190033,
+        "score": 0.641568096272674,
+        "candidate_id": 11716,
+        "original_box_xyxy": [
+          1280.0,
+          774.6804504394531,
+          1619.4095458984375,
+          796.8554382324219
+        ],
+        "correction_flags": {
+          "bounded": false,
+          "image_clipped": false,
+          "fallback": false
+        }
+      }
+    },
+    {
+      "kind": "metric_false_positive",
+      "image_id": "reid-1103__2023-02-22_13-55-46-510-n00088.jpg",
+      "candidate_id": 2214,
+      "original": {
+        "image_id": "reid-1103__2023-02-22_13-55-46-510-n00088.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          1280.0,
+          737.485107421875,
+          1653.8392944335938,
+          763.2978515625
+        ],
+        "proposer_confidence": 0.4369230568408966,
+        "reranker_crack_probability": 0.9989078044891357,
+        "geometric_mean": 0.6606404857709085,
+        "old_score": 0.6606404857709085,
+        "probability": 0.9852510690689087,
+        "score": 0.6561089153893193,
+        "candidate_id": 2214
+      },
+      "corrected": {
+        "image_id": "reid-1103__2023-02-22_13-55-46-510-n00088.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          1124.4680861835845,
+          735.0296213655412,
+          1479.7561512111329,
+          761.3775007366088
+        ],
+        "proposer_confidence": 0.4369230568408966,
+        "reranker_crack_probability": 0.9989078044891357,
+        "geometric_mean": 0.6606404857709085,
+        "old_score": 0.6606404857709085,
+        "probability": 0.9852510690689087,
+        "score": 0.6561089153893193,
+        "candidate_id": 2214,
+        "original_box_xyxy": [
+          1280.0,
+          737.485107421875,
+          1653.8392944335938,
+          763.2978515625
+        ],
+        "correction_flags": {
+          "bounded": false,
+          "image_clipped": false,
+          "fallback": false
+        }
+      }
+    },
+    {
+      "kind": "metric_false_positive",
+      "image_id": "reid-393__2023-03-30_13-56-33-544-000126.jpg",
+      "candidate_id": 11716,
+      "original": {
+        "image_id": "reid-393__2023-03-30_13-56-33-544-000126.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          1280.0,
+          774.6804504394531,
+          1619.4095458984375,
+          796.8554382324219
+        ],
+        "proposer_confidence": 0.4117142856121063,
+        "reranker_crack_probability": 0.9996477365493774,
+        "geometric_mean": 0.6415366347428539,
+        "old_score": 0.6415366347428539,
+        "probability": 0.999745786190033,
+        "score": 0.641568096272674,
+        "candidate_id": 11716
+      },
+      "corrected": {
+        "image_id": "reid-393__2023-03-30_13-56-33-544-000126.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          1335.4259695416613,
+          775.4383559330872,
+          1750.8114075341982,
+          796.0419338160539
+        ],
+        "proposer_confidence": 0.4117142856121063,
+        "reranker_crack_probability": 0.9996477365493774,
+        "geometric_mean": 0.6415366347428539,
+        "old_score": 0.6415366347428539,
+        "probability": 0.999745786190033,
+        "score": 0.641568096272674,
+        "candidate_id": 11716,
+        "original_box_xyxy": [
+          1280.0,
+          774.6804504394531,
+          1619.4095458984375,
+          796.8554382324219
+        ],
+        "correction_flags": {
+          "bounded": false,
+          "image_clipped": false,
+          "fallback": false
+        }
+      }
+    }
+  ]
+}

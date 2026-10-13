@@ -1,0 +1,14 @@
+{
+  "label": "posthoc descriptive coverage-transition diagnostic; no new fit or operating-threshold selection; cannot rescue used primary",
+  "original_covered_targets": 218,
+  "corrected_pre_nms_covered_targets": 137,
+  "corrected_post_nms_covered_targets": 116,
+  "retained_targets": 97,
+  "lost_targets": 121,
+  "newly_covered_targets": 19,
+  "union_covered_targets": 237,
+  "union_macro_oracle": 0.7231494415764079,
+  "original_macro_oracle": 0.6835502918648986,
+  "corrected_macro_oracle": 0.28358740763235146,
+  "scientific_effect": "head replacement loses existing coverage; retaining originals would protect candidate coverage only, not prove fixed-budget detection gain"
+}

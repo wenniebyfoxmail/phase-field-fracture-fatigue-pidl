@@ -1,0 +1,11 @@
+{
+  "run_id": "S01-E005-R001",
+  "archive_sha256": "c27bd720dc5ec8bb7bc0bc4fdb9e2630f967810678d3fb94fd2b6c88d27f0781",
+  "bytes": 63107698,
+  "members": 18,
+  "integrity": "PASS",
+  "extracted_bytes_verified": true,
+  "producer": "gpu-server / D-26-09",
+  "retrieval_status": "verified",
+  "fresh_access": false
+}

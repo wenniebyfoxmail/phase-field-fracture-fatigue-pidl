@@ -42,3 +42,14 @@ but partial-overlap and duplicate FPs increased. Keep E003 as the working
 checkpoint; no fresh confirmation was authorized. Next solution proposal is
 observable-context bbox correction with frozen E003 scores and train-only
 reference associations, as a separate reviewed experiment.
+
+### 2026-10-13 — S01-E005
+
+The reviewed context amendment qualified train input visibility (target-balanced
+full containment .800425 at padding2 to .932699 at selected padding4). One
+frozen-feature linear box head then worsened reused-development macro recall
+.289509 to .076111 (-.213398), TPs115 to36 at the same302FPs. Keep E003; no fresh
+access. Replacement destroyed prior candidate coverage despite some new covered
+targets. The next proposal protects original candidates and separately qualifies
+a local spatial original-versus-correction selector, with train-only out-of-sample
+qualification and the same fixed-budget detection purpose. This is untested.
