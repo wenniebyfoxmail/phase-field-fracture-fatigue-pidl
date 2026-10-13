@@ -7,12 +7,13 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from aa2024_boundary_basis import load,DOMAINS,ARMS
+from aa2024_boundary_basis import load,DOMAINS,ARMS,completed,bindings,FIT_ARTIFACTS
 
 def save(fig,out,name):
     fig.savefig(out/(name+'.png'),dpi=180);fig.savefig(out/(name+'.pdf'));plt.close(fig)
 
 def assets(root,out):
+    completed(root,'prepare',('preparation.json','prepared.npz'))
     a=load(root/'prepared.npz');meta=json.loads((root/'preparation.json').read_text())
     fig,axes=plt.subplots(2,4,figsize=(14,6),constrained_layout=True)
     for row,b in enumerate(DOMAINS):
@@ -32,8 +33,14 @@ def assets(root,out):
     return 'Preparation metadata: '+json.dumps(meta)+'\nNo high response or real mechanics solve in asset plotting.'
 
 def results(fit,validation,out):
+    completed(fit,'fit',FIT_ARTIFACTS)
+    completed(validation,'validate',('metrics.json','validation_fields.npz'))
     p=json.loads((fit/'profiles.json').read_text());m=json.loads((validation/'metrics.json').read_text())
+    if m.get('source_fit')!=bindings(fit,FIT_ARTIFACTS):raise ValueError('mixed fit/validation provenance')
     a=load(validation/'validation_fields.npz')
+    for k in ARMS:
+        check=float(np.sum(a['weights']*np.linalg.norm(a[k+'_residual'],axis=1))/a['weights'].sum())
+        if not np.isclose(check,m['MAE_mm'][k],rtol=1e-12,atol=1e-15):raise ValueError('metric/residual inconsistency')
     train=np.array([[p[b]['profile'][p[b]['selected'][k]]['train_MAE_mm'] for k in ('K0','K1')] for b in DOMAINS])
     held=np.array([[m['MAE_mm'][b+k] for k in ('K0','K1')] for b in DOMAINS])
     fig,axes=plt.subplots(1,2,figsize=(9,3.5),constrained_layout=True)

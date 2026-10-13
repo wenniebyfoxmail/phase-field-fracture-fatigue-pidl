@@ -77,6 +77,9 @@ hR=.0475,hL=.19, P the same training global weighted rigid quotient. Flatten
 interleaved x/y and multiply each component by sqrt(w_i/sum(w)); take singular
 values of this two-column matrix, unitsmm/q. These unequal finite secant steps
 are not an infinitesimal Jacobian; no noise-qualified rank is inferred.
+Also report isolated qR/qL response spans over their respective zero-other-axis
+rows/columns, inmm, with per-axis <=1e-10 numerical-unresolved flags. Those flags
+do not use SVD unitsmm/q and never qualify physical identifiability.
 All fields/parameters/predictions frozen before target access. No winner chosen
 using high response. Numerical sensitivity<=1e-10mm does not cancel this forward
 diagnostic: flag amplitude numerically unresolved and still evaluate fixed frozen
@@ -142,6 +145,11 @@ Minimum evidence: source/prepare/fit/validate receipts, both actual asset sets,
 all252sampled candidate fields/profiles, frozen9predictions, held target/residuals,
 primary contrast/diagnostic table, sensitivity SVD, README and legible same-scale
 field/profile/2x2figures from EXACT scored outputs, independent evidence review.
+Figure rendering verifies source-bound completion/artifact receipts and the
+validation-to-consumed-fit hash link, rejects mixed/tampered packages and checks
+metric/residual arithmetic. Validation records exact consumed fit bindings;
+fit records exact consumed prepared bindings. These are documentary lineage,
+not independently authenticated runtime history.
 Validityfailure inadmissible; unavailable contrast inconclusive; completed valid
 diagnostic records descriptive lever/no preferred lever, not physical recovery.
 Disposition repair/redirect chosen only from stated findings. Sync task-level

@@ -22,6 +22,7 @@ DOMAINS={'B0':dict(nx=41,ny=21,width=36.,height=18.),
 PAIRS=np.array([(r,l) for l in np.linspace(0,.95,6) for r in np.linspace(0,.95,21)])
 DEPENDENCIES=('aa2024_triplet_structure.py','aa2024_patch_mechanics.py','aa2024_rigid_observable.py')
 ARMS=tuple(b+k for b in DOMAINS for k in ('K0','K1','d0','intact'))+('secant',)
+FIT_ARTIFACTS=('fit.json','profiles.json','frozen_predictions.npz','candidate_fields.npz','conditional_states.npz')
 
 def sha(p):
     h=hashlib.sha256()
@@ -41,6 +42,10 @@ def completed(root,mode,names):
     if any(r.get('artifacts_sha256',{}).get(n)!=sha(root/n) for n in names):
         raise ValueError('completion artifact mismatch')
     return r
+
+def bindings(root,names):
+    return dict(receipt_sha256=sha(root/'execution_receipt.json'),
+        artifacts_sha256={n:sha(root/n) for n in names})
 
 def headers(text):
     # Only header lines converted; the held response body is never parsed here.
@@ -145,11 +150,12 @@ def sensitivity(fields,xy,w):
     return dict(secant_singular_values_mm_per_q=sv.tolist(),column_norms_mm_per_q=norms.tolist(),
         cosine=cosine,meaning='finite_secants_not_tangent_noise_rank_or_physical_identifiability')
 
-def fit(root,out):
+def fit(root,out,*,clock_start=None):
+    start=time.monotonic() if clock_start is None else clock_start
     completed(root,'prepare',('preparation.json','prepared.npz'))
     a=load(root/'prepared.npz');meta=json.loads((root/'preparation.json').read_text())
     predictions={k:a[k] for k in ('ids','xy','weights','u10','alpha')}
-    all_fields={};states={};records={};start=time.monotonic()
+    all_fields={};states={};records={}
     for name,params in DOMAINS.items():
         get=lambda k:a[name+'_'+k]
         fields=[];rows=[]
@@ -172,8 +178,11 @@ def fit(root,out):
             predictions[name+k]=a['alpha']*fields[i]
             states[name+k]=damage(get('d0'),get('br'),get('bl'),*PAIRS[i])
         span=max(error(a['xy'],f-fields[0],a['weights']) for f in fields)
+        axis_spans={k:max(error(a['xy'],fields[i]-fields[0],a['weights']) for i in indices)
+                    for k,indices in (('qR',range(21)),('qL',range(0,126,21)))}
         records[name]=dict(profile=rows,selected=chosen,sensitivity=sensitivity(fields,a['xy'],a['weights']),
-            response_span_mm=span,numerically_unresolved=span<=1e-10,intact_relative_residual=res)
+            response_span_mm=span,numerically_unresolved=span<=1e-10,intact_relative_residual=res,
+            isolated_axis_span_mm=axis_spans,axis_numerically_unresolved={k:v<=1e-10 for k,v in axis_spans.items()})
         all_fields[name]=fields
         print(name,'completed126pairs',chosen,flush=True)
     predictions['secant']=a['alpha']*a['train_v']
@@ -185,7 +194,9 @@ def fit(root,out):
     check_budget(start)
     write_json(out/'fit.json',dict(status='all_predictions_frozen_before_held_response',
         held_member_sha256=meta['held_member_sha256'],held_force=meta['forces'][2],cycle=meta['cycle'],
-        prepare_npz_sha256=sha(root/'prepared.npz'),scope='conditional_2x2_diagnostic_NOT_physical_identification'))
+        prepare_npz_sha256=sha(root/'prepared.npz'),source_prepare=bindings(root,('preparation.json','prepared.npz')),
+        scope='conditional_2x2_diagnostic_NOT_physical_identification'))
+    check_budget(start)
 
 def contrasts(m):
     a,b,c,d=[m[k] for k in ('B0K0','B1K0','B0K1','B1K1')]
@@ -201,7 +212,8 @@ def contrasts(m):
         no_selected_factorial_arm_beats_secant=all(m[k]>=m['secant'] for k in ('B0K0','B1K0','B0K1','B1K1')))
 
 def validate(root,high,out):
-    completed(root,'fit',('fit.json','profiles.json','frozen_predictions.npz','candidate_fields.npz','conditional_states.npz'))
+    completed(root,'fit',FIT_ARTIFACTS)
+    source_fit=bindings(root,FIT_ARTIFACTS)
     meta=json.loads((root/'fit.json').read_text())
     if meta['status']!='all_predictions_frozen_before_held_response':raise ValueError('not frozen')
     if high.stat().st_size>16000000 or sha(high)!=meta['held_member_sha256']:raise ValueError('held identity mismatch')
@@ -222,6 +234,7 @@ def validate(root,high,out):
     np.savez_compressed(out/'validation_fields.npz',**data)
     write_json(out/'metrics.json',dict(MAE_mm=metrics,contrasts=contrasts(metrics),eligible=int(valid.sum()),
         frozen_support=len(valid),missing_ids=a['ids'][~valid].tolist(),area_coverage=float(w.sum()/a['weights'].sum()),
+        source_fit=source_fit,target_member_sha256=meta['held_member_sha256'],
         scope='descriptive_intervention_comparison_NOT_causal_boundary_or_true_damage_identification'))
 
 def main():
@@ -239,9 +252,15 @@ def main():
         execution_status='running')
     try:
         if args.mode=='prepare':prepare(args.input,args.output)
-        elif args.mode=='fit':fit(args.input,args.output)
+        elif args.mode=='fit':
+            completed(args.input,'prepare',('preparation.json','prepared.npz'))
+            r['input_bindings']=bindings(args.input,('preparation.json','prepared.npz'))
+            fit(args.input,args.output,clock_start=start)
+            check_budget(start)
         else:
             if args.high_member is None:raise ValueError('high member required')
+            completed(args.input,'fit',FIT_ARTIFACTS)
+            r['input_bindings']=bindings(args.input,FIT_ARTIFACTS)
             validate(args.input,args.high_member,args.output)
         r['execution_status']='succeeded'
     except Exception as e:

@@ -11,6 +11,7 @@ import numpy as np
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
 import aa2024_boundary_basis as m
+import aa2024_boundary_basis_view as view
 
 def receipt(root,mode):
     m.write_json(root/'execution_receipt.json',dict(mode=mode,execution_status='succeeded',
@@ -81,6 +82,31 @@ class BoundaryBasis(unittest.TestCase):
             with patch.object(m.time,'monotonic',return_value=elapsed):
                 with self.assertRaises(TimeoutError):m.check_budget(0)
 
+    def test_fit_overrun_before_and_after_solver(self):
+        with tempfile.TemporaryDirectory() as td:
+            base=Path(td);root,_,a=self.synthetic_fit(base)
+            for values,expected in (([0,600],0),([0,599,600],1)):
+                out=base/str(expected);out.mkdir()
+                def fake(xy,t,bd,bc,d):return .001*xy,1e-15
+                with patch.object(m.time,'monotonic',side_effect=values),patch.object(m,'solve_patch',side_effect=fake) as s:
+                    with self.assertRaises(TimeoutError):m.fit(root,out)
+                    self.assertEqual(s.call_count,expected)
+                self.assertFalse((out/'fit.json').exists())
+
+    def test_main_serialization_overrun_has_failed_receipt(self):
+        with tempfile.TemporaryDirectory() as td:
+            base=Path(td);root,_,a=self.synthetic_fit(base);out=base/'overrun'
+            late=[False];original=m.write_json
+            def writing(path,x):
+                original(path,x)
+                if path.name=='profiles.json':late[0]=True
+            def fake(xy,t,bd,bc,d):return .001*xy,1e-15
+            args=['driver','fit','--input',str(root),'--output',str(out),'--source-commit','synthetic','--run-id','synthetic']
+            with patch.object(sys,'argv',args),patch.object(m.socket,'gethostname',return_value='GPUServer8'),patch.object(m.time,'monotonic',side_effect=lambda:600 if late[0] else 0),patch.object(m,'solve_patch',side_effect=fake),patch.object(m,'write_json',side_effect=writing):
+                with self.assertRaises(TimeoutError):m.main()
+            r=json.loads((out/'execution_receipt.json').read_text())
+            self.assertEqual(r['execution_status'],'failed');self.assertFalse((out/'fit.json').exists())
+
     def synthetic_fit(self,base):
         root=base/'prep';root.mkdir();out=base/'fit';out.mkdir()
         xy=np.array([[-3.,-2.],[-1.,-2.],[1.,-2.],[3.,-2.],[-3.,2.],[-1.,2.],[1.,2.],[3.,2.],[-2.,1.],[2.,1.],[-2.,-1.],[2.,-1.]])
@@ -144,5 +170,26 @@ class BoundaryBasis(unittest.TestCase):
             f=m.load(v3/'validation_fields.npz')
             for arm in m.ARMS:self.assertEqual(f[arm].shape,(11,2))
             self.assertEqual(json.loads((v3/'metrics.json').read_text())['missing_ids'],[1])
+
+    def test_view_rejects_unreceipted_tampered_and_mixed(self):
+        with tempfile.TemporaryDirectory() as td:
+            base=Path(td);root,out,a=self.synthetic_fit(base)
+            h=dict(ids=a['ids'],xyz=np.column_stack((a['xy'],np.zeros(12))),u=np.column_stack((2*a['train_v'],np.zeros(12))),
+                headers=dict(current_stage_index='12',reference_stage_index='1',cycles='225211.5',force='3'))
+            high=base/'high.txt';high.write_text('synthetic')
+            meta=json.loads((out/'fit.json').read_text());meta['held_member_sha256']=m.sha(high)
+            m.write_json(out/'fit.json',meta);receipt(out,'fit');v=base/'validation';v.mkdir();fig=base/'fig';fig.mkdir()
+            with patch.object(m,'parse_nodemap',return_value=h):m.validate(out,high,v)
+            with self.assertRaises(FileNotFoundError):view.results(out,v,fig)
+            receipt(v,'validate');original=json.loads((v/'metrics.json').read_text())
+            changed=json.loads(json.dumps(original));changed['MAE_mm']['B0K0']=123
+            m.write_json(v/'metrics.json',changed)
+            with self.assertRaises(ValueError):view.results(out,v,fig)
+            receipt(v,'validate')
+            with self.assertRaisesRegex(ValueError,'metric/residual'):view.results(out,v,fig)
+            changed=json.loads(json.dumps(original));changed['source_fit']['receipt_sha256']='wrong'
+            m.write_json(v/'metrics.json',changed);receipt(v,'validate')
+            with self.assertRaisesRegex(ValueError,'mixed fit'):view.results(out,v,fig)
+            self.assertEqual(list(fig.iterdir()),[])
 
 if __name__=='__main__':unittest.main()
