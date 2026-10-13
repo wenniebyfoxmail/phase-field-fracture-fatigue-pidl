@@ -56,7 +56,7 @@ def inverse(z, scales):
 
 
 def targets(case, cycle, ids, source):
-    return np.column_stack([case[source][k][cycle-1, ids] for k in TARGETS])
+    return np.column_stack([case[source][k][cycle-1, ids] for k in TARGETS]).astype(np.float64)
 
 
 def scales_from_training(cases, train, pipeline):

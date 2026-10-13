@@ -2,6 +2,7 @@
 import argparse
 import csv
 import json
+import os
 from pathlib import Path
 
 import matplotlib
@@ -13,8 +14,17 @@ from scipy.io import loadmat
 
 
 def report(root, out):
-    assert json.loads((out/'receipt.json').read_text())['status'] == 'COMPLETED'
+    run = json.loads((out/'receipt.json').read_text())
+    guard = json.loads((out.parent/(out.name+'_fit_guard_receipt.json')).read_text())
+    assert run['status'] == guard['status'] == 'COMPLETED'
+    assert run['run_id'] == guard['run_id'] == 'S04-E016-D0-R001'
+    assert run['code_commit'] == guard['code_commit'] == os.environ['D0_COMMIT']
+    assert guard['output'] == str(out.resolve()) and guard['children'][0]['exit_code'] == 0
+    assert guard['children'][0]['pid'] == run['pid']
+    # Stage-fit admission only; final pipeline guard is written after plotting.
     rows = list(csv.DictReader((out/'percycle.csv').open()))
+    assert len(rows) == 357*3 and all(np.isfinite(float(r[k])) for r in rows for k in
+        ('B0_transformed_mse', 'B1_transformed_mse', 'B0_physical_mse', 'B1_physical_mse'))
     summary = []
     keys = sorted({r['holdout'] for r in rows})
     fields = ('damage', 'alpha_bar', 'psi_raw_direct')

@@ -41,8 +41,13 @@ Must visibly inspect; pair with CSV, README_analysis and decision. No seed bars.
 
 Execution: Mac closed-form analysis ONLY, /Users/wenxiaofang/miniconda3/bin/python3
 SENS_tensile/s04_d0_guard.py --out <fresh local archive>/S04-E016-D0-R001.
-External monitor polls child RSS/output and elapsed time, kill only own process
-group at300s/2GiB/100MiB; inner checks295s. No retry/budget expansion on cap.
+External monitor covers fit AND renderer jointly within300s/2GiB/100MiB,
+including payload, figures, log and receipts. It polls child RSS/output and elapsed
+time and kills only its own process group; inner fit checks295s. A completed
+authoritative fit-stage guard receipt admits rendering (matched run/code/PID/path);
+the final pipeline guard receipt is authoritative for full completion. All target
+and physical error arithmetic is float64. Startup failures/cleanup races retain
+failed receipts; no retry/budget expansion on cap.
 Minimum evidence includes exact reviewed commit, guard receipt, selection/models,
 percycle metrics, fixed C20 predictions, figures and scoped verdict. Confirmation
 and .1175/.125 remain sealed. Code Ready still required before invocation.
