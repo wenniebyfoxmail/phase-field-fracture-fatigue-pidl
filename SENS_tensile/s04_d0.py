@@ -89,13 +89,16 @@ def fit(cases, train, pipeline, sample):
     assert np.isclose(w.sum(), 1.)
     xm, ym = w@x, w@y
     xstd = np.sqrt(w@((x-xm)**2)); ystd = np.sqrt(w@((y-ym)**2))
+    assert all(np.isfinite(v).all() for v in (xm, ym, xstd, ystd)), 'Nonfinite normalizer'
     xstd[xstd < 1e-12] = 1.; ystd[ystd < 1e-12] = 1.
     x -= xm; x /= xstd; y -= ym; y /= ystd
     design = np.column_stack((np.ones(len(x)), x)); del x
     gram = design.T@(w[:, None]*design)
     cross = design.T@(w[:, None]*y)
+    assert np.isfinite(gram).all() and np.isfinite(cross).all(), 'Nonfinite Gram matrix'
     penalty = np.eye(33); penalty[0, 0] = 0.
     coefficients = [np.linalg.solve(gram+a*penalty, cross) for a in ALPHAS]
+    assert all(np.isfinite(v).all() for v in coefficients), 'Nonfinite ridge coefficients'
     return dict(train=list(train), scales=scales, xm=xm, xstd=xstd, ym=ym,
                 ystd=ystd, coefficients=coefficients)
 
