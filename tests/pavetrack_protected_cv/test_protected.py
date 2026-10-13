@@ -58,3 +58,16 @@ def test_frozen_score_probability_and_score_tamper_rejected(monkeypatch):
  for key in ['probability','score','E003_score']:
   bad=dict(r);bad[key]+=.01
   with pytest.raises(ValueError,match='train score replay'):m.verify_train_scores([bad],X,None)
+
+def test_adoption_rejects_source_with_selector_marker(tmp_path):
+ m.write(tmp_path/'feature_receipt.json',{})
+ m.check_adoption_source(tmp_path)
+ for name in ['fit_started.json','selector_model.json','evaluation_validation.json']:
+  p=tmp_path/name;p.write_text('{}')
+  with pytest.raises(ValueError,match='after selector'):m.check_adoption_source(tmp_path)
+  p.unlink()
+
+def test_held_location_lexical_order_is_not_leakage():
+ fs={'24':0,'514':0,'1577':0,'3662':0,'95':1};fm={'fit_locations':['95'],'fit_ids':[0],'held_locations':['1577','24','3662','514']};m.check_fold_membership(fm,0,fs,[0],[{'reid':'95'}])
+ fm['held_locations']=['24','514','1577','95']
+ with pytest.raises(ValueError,match='training leak'):m.check_fold_membership(fm,0,fs,[0],[{'reid':'95'}])

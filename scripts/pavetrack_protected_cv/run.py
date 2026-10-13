@@ -210,17 +210,20 @@ def prepare(a,cfg,lock,dev,val):
   records.append({'image_id':identity,'reid':reid,'split':'test','prepared_image':str(p.resolve()),'prepared_image_sha256':base.sha256_file(p),'width':w,'height':h,'crack_boxes_xyxy':[r['box_xyxy'] for r in annotations if r['category'] in CRACK_CLASSES],'all_annotations':annotations})
  base.validate_members(records,lock,'test');write(a.run/'manifest_test.json',dict(lineage(a),test_authorization_sha256=base.sha256_file(a.run/'test_authorization.json'),download_manifest_sha256=base.sha256_file(a.download_manifest),records=records))
 
-def verified_cache(a,cfg,dev,train,audit):
+def check_fold_membership(fm,fold,fs,inds,matches):
+ if fm['fit_locations']!=sorted({m['reid'] for m in matches},key=int) or fm['fit_ids']!=inds or set(fm['fit_locations'])&set(fm['held_locations']) or len(fm['held_locations'])!=4 or len(set(fm['held_locations']))!=4 or sorted(fm['held_locations'],key=int)!=sorted((k for k,v in fs.items() if v==fold),key=int):raise ValueError('crossfit training leak')
+
+def verified_cache(a,cfg,dev,train,audit,binding=None):
  import numpy as np,torch
- torch.set_num_threads(cfg['threads']);receipt=read(a.run/'feature_receipt.json')
- for k,v in dict(lineage(a),feature_names=FEATURES).items():
+ torch.set_num_threads(cfg['threads']);binding=lineage(a) if binding is None else binding;receipt=read(a.run/'feature_receipt.json')
+ for k,v in dict(binding,feature_names=FEATURES).items():
   if receipt.get(k)!=v:raise ValueError('feature lineage '+k)
  if set(receipt['files'])!={'scorer_features.npz','context_features.npz','selector_train_features.npz','selector_validation_features.npz','crossfit_models.json','train_bank.json','validation_bank.json'}:raise ValueError('cache file set')
  for f,h in receipt['files'].items():check_hash(a.run/f,h)
  data=read(a.run/'train_bank.json');cross=read(a.run/'crossfit_models.json');vdata=read(a.run/'validation_bank.json');tr=[r for r in dev['records'] if r['split']=='train'];by={r['image_id']:r for r in tr};fs=folds(read(a.lock))
  if len(cross['models'])!=4 or {fm['fold'] for fm in cross['models']}!=set(range(4)) or cross['fold_assignment']!=fs or box.audit_payload(train,tr,cfg)['matches']!=audit['matches']:raise ValueError('fold/audit drift')
  for payload in [data,cross,vdata]:
-  for k,v in lineage(a).items():
+  for k,v in binding.items():
    if payload.get(k)!=v:raise ValueError('cache lineage '+k)
  if len(data['original_rows'])!=len(train['rows']):raise ValueError('train identity length')
  for old,new in zip(train['rows'],data['original_rows'],strict=True):
@@ -236,7 +239,7 @@ def verified_cache(a,cfg,dev,train,audit):
  expected=[None]*len(train['rows'])
  for fm in cross['models']:
   fold=fm['fold'];inds=[i for i,m in enumerate(audit['matches']) if fs[m['reid']]!=fold];matches=[audit['matches'][i] for i in inds]
-  if fm['fit_locations']!=sorted({m['reid'] for m in matches},key=int) or fm['fit_ids']!=inds or set(fm['fit_locations'])&set(fm['held_locations']) or fm['held_locations']!=sorted((k for k,v in fs.items() if v==fold),key=int):raise ValueError('crossfit training leak')
+  check_fold_membership(fm,fold,fs,inds,matches)
   # Replay normal equations without fitting another head.
   X=torch.tensor(Xm[inds],dtype=torch.float64);Y=torch.tensor([m['target_delta'] for m in matches],dtype=torch.float64)
   from collections import Counter
@@ -256,6 +259,31 @@ def verified_cache(a,cfg,dev,train,audit):
  for i,row in enumerate(bank):
   if not np.array_equal(X[i,-8:],np.asarray(geom(row,by[row['image_id']]),dtype=np.float32)):raise ValueError('train geometry/order')
  return data,receipt,X
+
+ADOPT_ORIGIN_MANIFEST='8221ff3b5dc9ed53dcaa5036910644e3fbc27607c9e34d6cd6d93beaa7d59583'
+
+def check_adoption_source(path):
+ if path is None or not (path/'feature_receipt.json').exists():raise ValueError('completed extraction source required')
+ if any((path/f).exists() for f in ['fit_started.json','selector_model.json','evaluation_validation.json','pending_confirmatory_review.json','test_authorization.json']):raise ValueError('cannot adopt after selector fit or evaluation')
+
+def adopt(a,cfg,dev,train,audit):
+ import shutil
+ from types import SimpleNamespace
+ check_adoption_source(a.source_run)
+ if (a.run/'extract_started.json').exists() or (a.run/'feature_receipt.json').exists():raise ValueError('refuse duplicate cache adoption')
+ prior=SimpleNamespace(**vars(a));prior.run=a.source_run;legacy=dict(lineage(a),source_manifest_sha256=ADOPT_ORIGIN_MANIFEST)
+ data,receipt,X=verified_cache(prior,cfg,dev,train,audit,binding=legacy)
+ parent_hashes=dict(receipt['files']);newbinding=lineage(a)
+ # Arrays and all scientific values are unchanged. Only source lineage is rebound.
+ for f in receipt['files']:
+  if f.endswith('.npz'):shutil.copyfile(a.source_run/f,a.run/f)
+  else:
+   payload=read(a.source_run/f)
+   for k,v in newbinding.items():payload[k]=v
+   write(a.run/f,payload)
+ newreceipt=dict(newbinding,files={f:sha256_file(a.run/f) for f in receipt['files']},feature_names=FEATURES);write(a.run/'feature_receipt.json',newreceipt);write(a.run/'extract_started.json',dict(newbinding,adopted_without_extraction=True))
+ write(a.run/'cache_adoption_receipt.json',dict(newbinding,parent_run=str(a.source_run),parent_manifest_sha256=ADOPT_ORIGIN_MANIFEST,parent_feature_receipt_sha256=sha256_file(a.source_run/'feature_receipt.json'),parent_files=parent_hashes,new_files=newreceipt['files'],new_extraction=False,new_crossfit_fits=0,selector_fit_before_adoption=False))
+ verified_cache(a,cfg,dev,train,audit)
 
 def selector_weights(rows,y):
  import torch
@@ -368,11 +396,12 @@ def evaluate(a,cfg,lock,dev,val):
  np.savez_compressed(npz,X=Xs);np.savez_compressed(a.run/'test_context_features.npz',X=X);write(a.run/'test_corrections.json',dict(lineage(a),rows=corrections));vdata=dict(original_rows=original,bank=bank,counts=counts);write(a.run/'test_bank.json',dict(lineage(a),**vdata));model=verify_model(a,cfg,dev,read(a.source_train),read(a.old_audit));e=evaluate_bank(vdata,records,model,Xs,cfg);write(a.run/'evaluation_test.json',dict(lineage(a),split='test',selector_model_sha256=sha256_file(a.run/'selector_model.json'),authorization_sha256=sha256_file(a.run/'test_authorization.json'),download_manifest_sha256=sha256_file(a.download_manifest),manifest_sha256=sha256_file(a.run/'manifest_test.json'),**e))
 
 def main():
- verify_source();p=argparse.ArgumentParser();p.add_argument('stage',choices=['extract','fit','freeze','authorize','check-authorization','prepare','evaluate'])
+ verify_source();p=argparse.ArgumentParser();p.add_argument('stage',choices=['extract','adopt','fit','freeze','authorize','check-authorization','prepare','evaluate'])
  for name in ['config','lock','tiled','old-ranker','development','source-validation','source-train','corrector','old-audit','old-train-features','old-validation','run']:p.add_argument('--'+name,type=Path,required=True)
- for name in ['download-manifest','workbook','image-root','independent-review']:p.add_argument('--'+name,type=Path)
+ for name in ['download-manifest','workbook','image-root','independent-review','source-run']:p.add_argument('--'+name,type=Path)
  p.add_argument('--review-sha256');a=p.parse_args();cfg=read(a.config);lock=read(a.lock);dev,val,train,corr,audit=validate_inputs(a,cfg,lock);base.frozen_ultralytics_device(cfg,'cuda:1');a.run.mkdir(parents=True,exist_ok=True)
  if a.stage=='extract':extract(a,cfg,lock,dev,val,train,corr,audit)
+ elif a.stage=='adopt':adopt(a,cfg,dev,train,audit)
  elif a.stage=='fit':fit(a,cfg,dev,train,audit)
  elif a.stage=='freeze':freeze(a,cfg,lock,dev,val)
  elif a.stage=='authorize':authorize(a,cfg,lock,dev,val)

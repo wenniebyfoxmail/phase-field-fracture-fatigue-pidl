@@ -143,7 +143,10 @@ this frozen bounded claim, stop fresh; preserve useful partial findings.
 
 Budget:4 fixed crossfit ridge fits,1 selector fit,1 development comparison,
 at most1 reviewed fresh comparison. GPU-server/D-26-09 GPU1 after availability
-and runtime check; no Mac training. Run S01-E006-R001. Raw external/local archive
+and runtime check; no Mac training. R001 completed extraction/four heads but stopped before selector fitting on
+a metadata-order verifier defect. Reviewed execution amendment permits fresh
+R002 to adopt the verified R001 cache and fit the one still-unused selector;
+no repeat extraction/crossfit training. See execution_amendment_20261013.md. Raw external/local archive
 under the owning Experiment. Inherited source remains unchanged.
 
 Development pass writes **pending independent review only**, never usable fresh
