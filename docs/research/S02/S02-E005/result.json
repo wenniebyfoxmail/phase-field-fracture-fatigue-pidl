@@ -1,0 +1,28 @@
+{
+  "F": {
+    "fit_count": 265,
+    "evaluation_count": 114,
+    "mae_dx_mm": {
+      "B0": 0.20628070175438595,
+      "B1": 0.06822807017543846,
+      "M0": 0.09028497138512241,
+      "M1": 0.1417915983586483
+    },
+    "M1_minus_M0_mm": 0.051506626973525885,
+    "M1_beats_both_simple_controls": false
+  },
+  "FF": {
+    "fit_count": 74,
+    "evaluation_count": 33,
+    "mae_dx_mm": {
+      "B0": 0.43169696969696975,
+      "B1": 0.06184848484848459,
+      "M0": 0.07308676328032279,
+      "M1": 0.07657250782072254
+    },
+    "M1_minus_M0_mm": 0.0034857445403997517,
+    "M1_beats_both_simple_controls": false
+  },
+  "equal_record_mean_M1_minus_M0_mm": 0.027496185756962818,
+  "claim": "development-exposed published DIC label diagnostic only"
+}

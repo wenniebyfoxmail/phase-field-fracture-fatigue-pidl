@@ -2,10 +2,10 @@
 storyline_id: S02
 experiment_id: S02-E005
 protocol_revision: v1
-status: prepared_pending_independent_code_review
+status: closed_descriptive_diagnostic
 claim_class: C3_transition_prediction_diagnostic
 evidence_domain: controlled_experiment
-scientific_verdict: not_evaluated
+scientific_verdict: negative_for_fixed_published_label_history_increment
 ---
 
 # Published-DIC-label history increment exploration
@@ -44,4 +44,8 @@ Validity fails→inadmissible; primary computed→report descriptive sign and si
 
 ## Reviews and Runs
 
-Code review: pending channel selection and exact-snapshot dispatch. Run S02-E005-R001: not_started. Evidence review: not_started. No claim-bearing fitted result yet.
+Code review: independent local Codex REVIEW_PASS at exact c71ea39; see code_review.md. Run S02-E005-R001 succeeded on Taobo CPU, exit0, retrieval verified. Evidence review: independent Codex REVIEW_PASS; see evidence_review.md.
+
+## Dated S02 claim impact — 2026-10-13
+
+Frozen v1 produced a bounded negative: equal-record MAE M0=0.081686 mm versus M1=0.109182 mm, difference+0.027496 mm; M1 worse in both records and secant best in both. Source publication labels only. This closes the four-fit exploration without additional arms or tuning. It does not close the observation-history storyline, qualify physical error, or alter earlier FATACRACK/Mendeley data gaps. Required numerical evidence, independent review and full-tail decision figure are present. Next meaningful change requires a separately frozen representation or new qualified observation axis; current evaluated tails must not be retuned to rescue this result.
