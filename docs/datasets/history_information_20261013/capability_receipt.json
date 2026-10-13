@@ -1,0 +1,142 @@
+{
+  "date": "2026-10-13",
+  "scope": "schema/identity/availability only; no fit or forecast scoring",
+  "checks": {
+    "F": {
+      "target_states": 386,
+      "target_header": [
+        "n [cycle]",
+        "x [mm]",
+        "y [mm]",
+        "CGR [micron/cycle]",
+        "K1 [MPa.sqrt(m)]",
+        "K2 [MPa.sqrt(m)]"
+      ],
+      "response_shape": [
+        291,
+        388
+      ],
+      "numeric_response_cycles": 385,
+      "joined_cycles": 385,
+      "origins_with_previous_2000_1000_and_next_1000_cycles": 379,
+      "cycle_range": [
+        1.0,
+        385000.0
+      ],
+      "initial_ux_column_time_unresolved": true
+    },
+    "FF": {
+      "target_states": 114,
+      "target_header": [
+        "n [cycle]",
+        "x [mm]",
+        "y [mm]",
+        "CGR [micron/cycle]",
+        "K1 [MPa.sqrt(m)]",
+        "K2 [MPa.sqrt(m)]"
+      ],
+      "response_shape": [
+        292,
+        116
+      ],
+      "numeric_response_cycles": 113,
+      "joined_cycles": 113,
+      "origins_with_previous_2000_1000_and_next_1000_cycles": 107,
+      "cycle_range": [
+        1.0,
+        113000.0
+      ],
+      "initial_ux_column_time_unresolved": true
+    },
+    "multi_lab_zip": {
+      "bytes": 119754,
+      "csv_count": 74,
+      "headers": [
+        "CGR (micron/cycle);SIF (MPa.sqrt(m))",
+        "SIF range MPa.sqrt(m);CGR micron/cycle",
+        "x (mm);CGR (micron/cycle)",
+        "x (mm);SIF (MPa.sqrt(m))",
+        "x (mm);y (mm)"
+      ],
+      "md5_matches_official": true,
+      "cycle_chronology_not_established": true
+    },
+    "MnROAD": {
+      "path": "/Users/wenxiaofang/Downloads/MnROAD/HMA Distress All export.xlsx",
+      "shape_including_header": [
+        3593,
+        84
+      ],
+      "identity_headers": [
+        "SECTION_ID",
+        "SECTION_START_DATE",
+        "SECTION_END_DATE",
+        "CELL",
+        "LANE",
+        "DAY",
+        "SURVEYOR1"
+      ],
+      "section_ids": 297,
+      "ids_with_at_least_4_days": 282,
+      "22-D-2016_dates": 10,
+      "qualified_independent_episode_count": "not_established"
+    },
+    "CrackMNIST": {
+      "keys": [
+        "experiments",
+        "test_SIFs",
+        "test_augs",
+        "test_exp_ids",
+        "test_forces",
+        "test_images",
+        "test_masks",
+        "train_SIFs",
+        "train_augs",
+        "train_exp_ids",
+        "train_forces",
+        "train_images",
+        "train_masks",
+        "val_SIFs",
+        "val_augs",
+        "val_exp_ids",
+        "val_forces",
+        "val_images",
+        "val_masks"
+      ],
+      "chronology_key_present": false
+    },
+    "AA2024_existing_summary": {
+      "cycle_groups": 114,
+      "group_size_histogram": {
+        "3": 114
+      },
+      "sample_domain": "one_locked_released_sequence_no_independent_specimen_claim",
+      "stages": 342,
+      "units": "native_controller_cracklength_units",
+      "within_cycle_labels_exactly_equal": true
+    },
+    "Mendeley": {
+      "README_file": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/history_information_audit_20261013/raw/history_mendeley_readme.txt",
+      "cycle_formula": "30*(figure_id-1)",
+      "CSV_PT_XLSX_locally_audited": false
+    },
+    "NASA_PHM2019": {
+      "level": "official tables only",
+      "source": "https://data.phmsociety.org/2019datachallenge/",
+      "observation_counts": [
+        7,
+        3,
+        10,
+        8,
+        4,
+        11
+      ],
+      "origins_3past_plus_next_derived": 25,
+      "eligible_specimens_derived": 5,
+      "ZIP_locally_audited": false
+    }
+  },
+  "independent_evidence_review": "not_performed",
+  "old_verdicts": "unchanged",
+  "FATACRACK_exposure": "development-exposed"
+}
