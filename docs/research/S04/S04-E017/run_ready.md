@@ -25,3 +25,7 @@ preparation failure. No E018 training is chained to this dispatcher.
 
 First training unit R001 c20s4 alpha.5 seed7, PID826874, GPU0~2776MiB/~95%
 utilization. This is live execution evidence only; all12 final outcomes pending.
+
+## Completion 2026-10-13 (supersedes live snapshot above)
+
+All12 fresh runs and aggregate completed; expected12/valid12, missing=[], integrity_errors=[]. Detached dispatcher finished with MATRIX_EXECUTION_COMPLETED. Compact evidence retrieved and independently recomputed; checkpoint/archived checkpoint hashes audited remotely. Evidence review PASS; primary scientific gate fails for all ratios. See result.md and evidence_review.md. No rerun or budget extension.
