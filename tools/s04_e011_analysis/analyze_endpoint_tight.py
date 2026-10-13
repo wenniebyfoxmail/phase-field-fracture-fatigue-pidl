@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 import h5py
+from scipy.io import loadmat
 import matplotlib.pyplot as plt
 import numpy as np
 from run_multicycle_cross_replay import q4_geometry, interp, amor_raw, comp
@@ -44,18 +45,21 @@ def endpoint(path, state_key, oracle_key, n, cells, shape, deriv, weights):
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--run',type=Path,required=True)
     ap.add_argument('--mesh',type=Path,required=True);ap.add_argument('--pidl',type=Path,required=True)
+    ap.add_argument('--cycle',type=int,default=83)
     args=ap.parse_args(); out=args.run/'analysis';out.mkdir(exist_ok=True); data=args.run/'retrieved'
     result=json.loads((data/'tight_result.json').read_text(encoding='utf-8-sig'))
     baseline_result=json.loads((data/'result.json').read_text(encoding='utf-8-sig'))
+    if 'physical_cycle' in result and result['physical_cycle']!=args.cycle: raise ValueError('Control-result cycle mismatch')
     if not baseline_result['baseline_pass']: raise ValueError('Baseline not admitted')
+    if baseline_result['physical_cycle']!=args.cycle or baseline_result['substep']!=4: raise ValueError('FEM state mismatch')
     with h5py.File(args.mesh) as h:
         points=np.asarray(h['node_coords']).T;cells=np.asarray(h['connectivity_q4']).T.astype(int)-1
     shape,deriv,w,xy=q4_geometry(points,cells);n=len(points)
     with np.load(args.pidl) as z:
         top=z['topology'].reshape(-1)[0];top=top.decode() if isinstance(top,bytes) else str(top)
         if top!='q4': raise ValueError('PIDL topology mismatch')
-        i=np.flatnonzero(z['cycles']==83)
-        if len(i)!=1 or int(z['steps'][i[0]])!=414: raise ValueError('PIDL state mismatch')
+        i=np.flatnonzero(z['cycles']==args.cycle)
+        if len(i)!=1 or int(z['steps'][i[0]])!=5*args.cycle-1: raise ValueError('PIDL state mismatch')
         if not np.allclose(z['node_coords'],points,atol=2e-8,rtol=0): raise ValueError('Coordinates mismatch')
         i=int(i[0]); pd=z['d_node'][i];pu=z['u_node'][i];pv=z['v_node'][i]
     if not all(np.all(np.isfinite(a)) for a in (pd,pu,pv)): raise ValueError('Nonfinite PIDL fields')
@@ -63,14 +67,15 @@ def main():
     b=endpoint(data/'baseline_endpoint.mat','converged','oracle',n,cells,shape,deriv,w)
     paths=[data/'baseline_endpoint.mat']+sorted(data.glob('tight_outer_*.mat'))
     if len(paths)-1!=result['completed_extra_iterations']: raise ValueError('Endpoint count mismatch')
+    base_iteration=baseline_result['iterations']
     rows=[]
     for i,path in enumerate(paths):
         if i and path.name!=f'tight_outer_{i:02d}.mat': raise ValueError('Noncontiguous extra endpoint files')
         e=b if i==0 else endpoint(path,'candidate','candidate_oracle',n,cells,shape,deriv,w)
-        if i and e['iteration']!=20+i: raise ValueError('Iteration label mismatch')
+        if i and e['iteration']!=base_iteration+i: raise ValueError('Iteration label mismatch')
         if not all(np.array_equal(e[k],b[k]) for k in ('lower','history','load')): raise ValueError('Predecessor changed')
         active_delta=comp(b['active'],e['active'],w);gap=comp(e['active'],pidl_active,w)
-        row={'extra_iteration':i,'outer_iteration':20+i,'ru_l2':e['ru_l2'],
+        row={'extra_iteration':i,'outer_iteration':base_iteration+i,'ru_l2':e['ru_l2'],
              'feasible_d_l2':e['feasible_d_l2'],'projected_sum':e['ru_l2']+e['feasible_d_l2'],
              'raw_d_l2':e['raw_d_l2'],'raw_replay_relative_l2':e['raw_replay_relative_l2'],
              'uv_relative_change':float(np.linalg.norm(e['uv']-b['uv'])/np.linalg.norm(b['uv'])),
@@ -87,15 +92,44 @@ def main():
     with (out/'metrics.csv').open('w',newline='') as handle:
         writer=csv.DictWriter(handle,fieldnames=list(rows[0]));writer.writeheader();writer.writerows(rows)
     final=rows[-1];initial=rows[0]
-    summary={'schema':'c83-tight-control-sensitivity-v1','status':result['status'],
+    trials=[]
+    if 'trial_count' in result:
+        rawtrace=loadmat(data/'trial_trace.mat',squeeze_me=True,struct_as_record=False)['trial_trace']
+        current=initial['projected_sum'];accepted_extras=[];previous_extra=0;trial_index=0;previous_accepted=True
+        for t in np.atleast_1d(rawtrace):
+            if not all(np.isfinite(float(getattr(t,k))) for k in ('extra','lambda','merit','accepted')): raise ValueError('Nonfinite trial trace')
+            tr={'extra':int(t.extra),'lambda':float(getattr(t,'lambda')),'merit':float(t.merit),'accepted':bool(t.accepted)}
+            if tr['extra']!=previous_extra:
+                if tr['extra']!=previous_extra+1 or not previous_accepted: raise ValueError('Extra trial order mismatch')
+                trial_index=0;previous_extra=tr['extra']
+            else:
+                if previous_accepted: raise ValueError('Trial after first acceptance')
+                trial_index+=1
+            if trial_index>6 or tr['lambda']!=2.0**(-trial_index): raise ValueError('Lambda schedule mismatch')
+            expected_accept=tr['merit']<=4e-6 or tr['merit']<=(1-1e-4*tr['lambda'])*current
+            if tr['accepted']!=expected_accept: raise ValueError('Rejected/accepted trial rule mismatch')
+            previous_accepted=tr['accepted']
+            if tr['accepted']:
+                if tr['merit']>4e-6 and tr['merit']>(1-1e-4*tr['lambda'])*current: raise ValueError('Trial acceptance mismatch')
+                if tr['extra']>=len(rows) or abs(tr['merit']-rows[tr['extra']]['projected_sum'])>1e-12: raise ValueError('Native accepted merit mismatch')
+                current=tr['merit'];accepted_extras.append(tr['extra'])
+            trials.append(tr)
+        if len(trials)!=result['trial_count'] or accepted_extras!=list(range(1,len(rows))): raise ValueError('Trial trace count mismatch')
+        if result['status']=='NO_ADMISSIBLE_DESCENT_WITHIN_TRIAL_BUDGET' and (previous_extra!=len(rows) or trial_index!=6 or previous_accepted): raise ValueError('Incomplete stall direction')
+        with (out/'trial_metrics.csv').open('w',newline='') as handle:
+            writer=csv.DictWriter(handle,fieldnames=['extra','lambda','merit','accepted']);writer.writeheader();writer.writerows(trials)
+    summary={'schema':'endpoint-control-sensitivity-v2','physical_cycle':args.cycle,'status':result['status'],
         'history_commits':result['history_commits'],'completed_extra_iterations':len(rows)-1,
-        'state_labels':{'FEM':'c83s4 peak, fully completed outer iterate; screen convergence recorded separately; frozen accepted c83s3 history; zero history commits',
-                        'PIDL':'original paired Q4 cycle83 peak model step414; unchanged'},
+        'trial_count':result.get('trial_count'),'trial_trace':trials,
+        'intervention':'joint fixed-point sufficient-decrease backtracking' if 'trial_count' in result else 'inner accuracy and fresh monitor',
+        'state_labels':{'FEM':f'c{args.cycle}s4 peak, fully completed outer iterate; screen convergence recorded separately; frozen accepted c{args.cycle}s3 history; zero history commits',
+                        'PIDL':f'original paired Q4 cycle{args.cycle} peak model step{5*args.cycle-1}; unchanged'},
         'residual_ratio':final['projected_sum']/initial['projected_sum'],
         'active_gap_ratio':final['active_gap_relative_l2']/initial['active_gap_relative_l2'],
         'active_gap_absolute_norm_ratio':final['active_gap_weighted_l2']/initial['active_gap_weighted_l2'],
         'baseline':initial,'last_completed':final,'rows':rows,
-        'provenance':{str(p):digest(p) for p in paths+[args.mesh,args.pidl,data/'tight_result.json',data/'result.json']},
+        'analysis_code_hashes':{str(p):digest(p) for p in [Path(__file__),Path(__file__).with_name('run_multicycle_cross_replay.py')]},
+        'provenance':{str(p):digest(p) for p in paths+[args.mesh,args.pidl,data/'tight_result.json',data/'result.json']+([data/'trial_trace.mat'] if 'trial_count' in result else [])},
         'scope':'combined inner accuracy and fresh nodal-monotone outer monitoring; descriptive numerical sensitivity, not teacher or physical validity'}
     (out/'summary.json').write_text(json.dumps(summary,indent=2,allow_nan=False)+'\n')
     fig,axes=plt.subplots(1,2,figsize=(10,4));x=[r['outer_iteration'] for r in rows]
@@ -103,9 +137,9 @@ def main():
         axes[0].semilogy(x,[r[key] for r in rows],'-o',label=label)
     axes[0].axhline(4e-6,color='gray',linestyle='--',label='new absolute screen');axes[0].set_ylabel('native residual L2');axes[0].legend(fontsize=8)
     axes[1].plot(x,[r['active_gap_relative_l2'] for r in rows],'-o',color='#0072B2');axes[1].set_ylabel('Q4 PIDL vs FEM weighted active relative L2')
-    for ax in axes:ax.set_xlabel('outer iteration (20 = original baseline)');ax.grid(alpha=.25)
-    fig.suptitle('c83s4 bounded solver-control sensitivity: '+result['status']);fig.tight_layout();fig.savefig(out/'endpoint_tight_comparison.png',dpi=200);plt.close(fig)
-    note=f'''# c83 endpoint solver-control comparison\n\nQuestion: does bounded refinement change residuals and the original paired PIDL field gap?\n\nData provenance: run {args.run}; source endpoint SHA256s and exact PIDL/mesh hashes are in summary.json. FEM baseline is original20-iteration c83s4 endpoint reproduced from accepted s3. Every plotted point is a fully completed extra outer endpoint; failed inner trial is excluded. PIDL is unchanged original Q4 c83 step414.\n\nHow to read: left panel shows native free displacement, nodal-monotone feasible damage and sum (log residual L2); dashed4e-6 is a numerical sensitivity screen, not physical qualification. Right: native Q4 GP4 weighted active-field relative L2, FEM denominator, vs unchanged PIDL. x=20 denotes verified baseline.\n\nOutcome: {result['status']}; completed extra iterations {len(rows)-1}. Projected residual ratio {summary['residual_ratio']:.8g}, active-gap ratio {summary['active_gap_ratio']:.8g}; baseline active-gap {initial['active_gap_relative_l2']:.8g}, final {final['active_gap_relative_l2']:.8g}. Fixed baseline-denominator absolute gap norm ratio {summary['active_gap_absolute_norm_ratio']:.8g}. Exact integral/correlation and nodal changes are in summary.json and metrics.csv.\n\nLimitations and claim boundary: combined inner accuracy and monitor sensitivity at this one peak state; frozen accepted predecessor, no history commits. Nodal projection is not a GP-constrained KKT or fatigue fixed-point certificate. A failure/cap cannot establish a tighter converged endpoint. No claim that this removes fixed committed-f/trial-f or joint Deep-Ritz/staggered algorithm differences.\n'''
+    for ax in axes:ax.set_xlabel('outer iteration (baseline = archived original stop)');ax.grid(alpha=.25)
+    fig.suptitle(f'c{args.cycle}s4 bounded solver-control sensitivity: '+result['status']);fig.tight_layout();fig.savefig(out/'endpoint_tight_comparison.png',dpi=200);plt.close(fig)
+    note=f'''# c{args.cycle} endpoint solver-control comparison\n\nQuestion: does bounded refinement change residuals and the original paired PIDL field gap?\n\nData provenance: run {args.run}; source endpoint SHA256s and exact PIDL/mesh hashes are in summary.json. FEM baseline is original{base_iteration}-iteration c{args.cycle}s4 endpoint reproduced from accepted s3. Every plotted point is a fully completed extra outer endpoint; failed inner trial is excluded. PIDL is unchanged original Q4 c{args.cycle} step{5*args.cycle-1}.\n\nHow to read: left panel shows native free displacement, nodal-monotone feasible damage and sum (log residual L2); dashed4e-6 is a numerical sensitivity screen, not physical qualification. Right: native Q4 GP4 weighted active-field relative L2, FEM denominator, vs unchanged PIDL. x={base_iteration} denotes verified baseline.\n\nOutcome: {result['status']}; completed extra iterations {len(rows)-1}. Projected residual ratio {summary['residual_ratio']:.8g}, active-gap ratio {summary['active_gap_ratio']:.8g}; baseline active-gap {initial['active_gap_relative_l2']:.8g}, final {final['active_gap_relative_l2']:.8g}. Fixed baseline-denominator absolute gap norm ratio {summary['active_gap_absolute_norm_ratio']:.8g}. Exact integral/correlation and nodal changes are in summary.json and metrics.csv. Backtracking trial/accepted lambda evidence, when applicable, is in trial_metrics.csv and summary.json; no PIDL field criterion selects lambda.\n\nLimitations and claim boundary: combined inner accuracy and monitor sensitivity at this one peak state; frozen accepted predecessor, no history commits. Nodal projection is not a GP-constrained KKT or fatigue fixed-point certificate. A failure/cap cannot establish a tighter converged endpoint. No claim that this removes fixed committed-f/trial-f or joint Deep-Ritz/staggered algorithm differences.\n'''
     (out/'endpoint_tight_comparison.md').write_text(note);(out/'README_analysis.md').write_text(note)
     print(json.dumps({k:v for k,v in summary.items() if k not in ('provenance','rows')},indent=2))
 

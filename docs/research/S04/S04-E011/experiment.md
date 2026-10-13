@@ -137,3 +137,10 @@ no PIDL launch is allowed without fresh read-only GPU/ownership inspection.
 ## Supplementary endpoint sensitivity — 2026-10-12
 
 Original production remains frozen. The independent [c83 bounded-control protocol](endpoint_tight_protocol_20261012.md) completed as EXTRA_BUDGET_EXHAUSTED: baseline20PASS,10extraiterates, zerohistorycommits. Residualsum increased1.30639× and absolute PIDL activegap1.99032× withinbudget. This diagnostic does not supply a tightly converged teacher or alter E011 estimands. [Evidence/decision](runs/endpoint_q4_tight_20261012.md).
+
+## Joint backtracking and early-state discriminator — 2026-10-13
+
+User authorized the [separate bounded protocol](endpoint_backtrack_protocol_20261013.md), now launched. It preserves all original outputs, uses native residual merit without PIDL agreement, and tests83/1/20/60/76/82 from their own archived s3 predecessors. [Launch/spatial evidence](runs/endpoint_backtrack_grid_20261013.md); numerical outcomes pending.
+
+
+Terminal supplement: all six backtracking states completed and independently reviewed PASS; five improve field disagreement, c83 worsens despite residual decrease and stalls. All miss4e-6. See [terminal decision and compact metrics](runs/endpoint_backtrack_grid_20261013.md). No changes to the frozen production estimands or histories.

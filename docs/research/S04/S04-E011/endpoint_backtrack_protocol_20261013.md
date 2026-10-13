@@ -17,3 +17,6 @@ Sequence: c83 implementation/direction admission first. Then identical controls 
 Outcome: residual improves but active gap persists→coupled stationarity control alone does not close field discrepancy at this budget/state. Both improve→descriptive contribution at this state, not all-cycle attribution or truth. Stall→direction/merit route unclosed at declared trials. Registry and mesh对齐.md own result handoff. Independent design/source/result review required.
 
 Review: independent local reviewer adopted joint direction once, per-trial raw refresh, accepted tangent restoration, no energy gate, stall preservation and sparse early-cycle grid. External ChatGPT request made to the previous review conversation, but response failed cloudflare_challenge and browser then became unavailable; no verified GPT Pro advice is claimed. No external model advice is included in the decision. Execution follows the user’s direct authorization with independent exact-source review and numerical admission gates.
+
+
+Closed 2026-10-13: all six states completed, no added budget/history commits. [Terminal result](runs/endpoint_backtrack_grid_20261013.md), [compact metrics](runs/endpoint_backtrack_grid_metrics_20261013.csv). Baselines/direction/hash/state/trial gates and independent review PASS; no state reached4e-6.

@@ -73,3 +73,10 @@ producer machine, commit, runner, output root, verdict, and next action.
 | Case | Status | What it answers | Use for claims | Asset endpoint |
 |---|---|---|---|---|
 | Q4 c83s4 bounded solver-control refinement | diagnostic; EXTRA_BUDGET_EXHAUSTED | Original20-round baseline reproduced; tighterinner and freshoutermonitor,10extra rounds, residualsum1.30639× and absolute PIDLactivegap1.99032×. | Budget-specific control sensitivity only; not convergedteacher or physicaltruth, original E003/E011 unchanged. | [Terminal evidence](research/S04/S04-E011/runs/endpoint_q4_tight_20261012.md); [track](experiments/hard5_q4_t3_solver_alignment_track.md) |
+
+
+## Supplemental diagnostic — 2026-10-13
+
+| Case | Status | Question and changed claim | Minimal asset / producer / source | Verdict and next action |
+|---|---|---|---|---|
+| Q4 six-state joint backtracking | terminal diagnostic, five budget exhaustions and c83 trial stall | Offline outer20–30 localization preceded bounded coupled-control test; earlier states improve but c83 active gap worsens despite merit decrease. | [Decision/metrics](research/S04/S04-E011/runs/endpoint_backtrack_grid_20261013.md); CITPC12, e8c57e3, run_s04_e011_endpoint_backtrack.m, external run pf_s04e011_backtrack_grid_e8c57e3_20261013T111601Z. | All gates/review PASS, all six miss4e-6; no teacher/truth claim. Next saved-state phase-floor and coupled tangent diagnostic, unexecuted. |
