@@ -15,8 +15,10 @@ The next bounded solution should make that parent-specific loss explicit:
 1. Reuse the fixed train-location crossfit corrections and both spatial crops;
    derive **paired** labels for original-valid/correction-invalid (harm),
    original-invalid/correction-valid (gain), both valid and neither valid.
-   Keep GT out of inference. Original-valid status must be a separate protection
-   target, rather than disappearing into two independent binary crop scores.
+   Define harm against the original-associated GT identity: a correction that
+   matches another GT but loses this old target is still harmful. Keep GT out of
+   inference. Original-target protection must be a separate training target,
+   rather than disappearing into two independent binary crop scores.
 2. Fit one paired decision head that uses both variants and their geometry
    change. Its policy must have an original/abstain outcome. Qualify harm risk and
    gain on held train locations with the same conditional-encoder limitation;
@@ -25,7 +27,10 @@ The next bounded solution should make that parent-specific loss explicit:
 3. Emit a correction only when its held-train-qualified harm-risk bound passes
    and predicted gain is positive; otherwise emit the original unchanged.
    Displacement/scale features expose large changes to the policy. Original
-   parent count and E003 ordering remain fixed for a clean bounded comparison.
+   parent count and E003 scores remain fixed for a clean bounded comparison.
+   Coordinate changes can alter greedy matches and the admitted operating prefix;
+   training risk qualification never guarantees .95 actual retention. Recompute
+   target identities at each method's own exact-budget prefix.
 4. Freeze exactly one resulting policy, numerical checks, 4-fold fitting budget,
    the same +.05 recall and .95 retention co-primary standard, and test firewall;
    obtain independent 5.6-sol / Medium review before fitting. A train qualification
