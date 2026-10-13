@@ -1,0 +1,306 @@
+{
+  "date": "2026-10-13",
+  "scope": "no_training_no_forecast_scoring",
+  "archive_header_count": 17925,
+  "archive_full_sha256_verified": false,
+  "member_checks": "cached+real header CRC and selected member data CRC; workbook SHA256 matches official",
+  "specimen_groups": {
+    "C_0Deg_15%_#1": {
+      "frames": 1157,
+      "min_id": 1152,
+      "max_id": 2308,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "C_0Deg_15%_#2": {
+      "frames": 1041,
+      "min_id": 1252,
+      "max_id": 2292,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "C_0Deg_15%_#3": {
+      "frames": 921,
+      "min_id": 1418,
+      "max_id": 2338,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "C_0Deg_20%_#1": {
+      "frames": 589,
+      "min_id": 339,
+      "max_id": 927,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "C_0Deg_20%_#2": {
+      "frames": 492,
+      "min_id": 452,
+      "max_id": 943,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "C_0Deg_20%_#3": {
+      "frames": 352,
+      "min_id": 455,
+      "max_id": 806,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "C_15Deg_20%_#1": {
+      "frames": 829,
+      "min_id": 602,
+      "max_id": 1430,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "C_15Deg_20%_#2": {
+      "frames": 535,
+      "min_id": 502,
+      "max_id": 1036,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "C_30Deg_20%_#1": {
+      "frames": 542,
+      "min_id": 502,
+      "max_id": 1043,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "C_30Deg_20%_#2": {
+      "frames": 493,
+      "min_id": 302,
+      "max_id": 794,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "C_30Deg_20%_#3": {
+      "frames": 479,
+      "min_id": 402,
+      "max_id": 880,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "E_0Deg_15%_#1": {
+      "frames": 2099,
+      "min_id": 1502,
+      "max_id": 3600,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "E_0Deg_15%_#2": {
+      "frames": 1795,
+      "min_id": 1902,
+      "max_id": 3696,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "E_0Deg_15%_#3": {
+      "frames": 1617,
+      "min_id": 1302,
+      "max_id": 2918,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "E_0Deg_17.5%_#1": {
+      "frames": 1184,
+      "min_id": 1102,
+      "max_id": 2285,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "E_0Deg_17.5%_#2": {
+      "frames": 1396,
+      "min_id": 902,
+      "max_id": 2297,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "E_0Deg_20%_#1": {
+      "frames": 1019,
+      "min_id": 702,
+      "max_id": 1720,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "E_0Deg_20%_#2": {
+      "frames": 828,
+      "min_id": 502,
+      "max_id": 1329,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    },
+    "E_0Deg_20%_#3": {
+      "frames": 557,
+      "min_id": 402,
+      "max_id": 958,
+      "duplicate_ids": 0,
+      "missing_within_range": 0
+    }
+  },
+  "sheets": {
+    "E_0_175_1(Section 5.1)": {
+      "label_rows": 42,
+      "all_cycle_formula_match": true,
+      "all_stage_ids_found_exactly_once": true,
+      "gaps_cycles": [
+        300.0,
+        1200.0
+      ],
+      "specimen_candidate": "E_0Deg_17.5%_#1",
+      "label_headers": [
+        "Figure ID",
+        "Cycles",
+        "Crack Length (Ground Truth)",
+        "Crack Length (Predicted)"
+      ],
+      "finite_ground_truth": true,
+      "adjacent_30cycle_label_pairs": 0,
+      "physical_specimen_serial_confirmed": false
+    },
+    "E_0_175_1(Section 6.1)": {
+      "label_rows": 38,
+      "all_cycle_formula_match": true,
+      "all_stage_ids_found_exactly_once": true,
+      "gaps_cycles": [
+        600.0,
+        1200.0
+      ],
+      "specimen_candidate": "E_0Deg_17.5%_#1",
+      "label_headers": [
+        "Figure ID",
+        "Cycles",
+        "Crack Length (Ground Truth)",
+        "Crack Length (Predicted)"
+      ],
+      "finite_ground_truth": true,
+      "adjacent_30cycle_label_pairs": 0,
+      "physical_specimen_serial_confirmed": false
+    },
+    "C_15_20_1(Section 5.2)": {
+      "label_rows": 41,
+      "all_cycle_formula_match": true,
+      "all_stage_ids_found_exactly_once": true,
+      "gaps_cycles": [
+        300.0,
+        600.0,
+        1200.0
+      ],
+      "specimen_candidate": "C_15Deg_20%_#1",
+      "label_headers": [
+        "Figure ID",
+        "Cycles",
+        "Crack Length (Ground Truth)",
+        "Crack Length (Predicted)"
+      ],
+      "finite_ground_truth": true,
+      "adjacent_30cycle_label_pairs": 0,
+      "physical_specimen_serial_confirmed": false
+    },
+    "C_15_20_1(Section 6.2)": {
+      "label_rows": 35,
+      "all_cycle_formula_match": true,
+      "all_stage_ids_found_exactly_once": true,
+      "gaps_cycles": [
+        600.0
+      ],
+      "specimen_candidate": "C_15Deg_20%_#1",
+      "label_headers": [
+        "Figure ID",
+        "Cycles",
+        "Crack Length (Ground Truth)",
+        "Crack Length (Predicted)"
+      ],
+      "finite_ground_truth": true,
+      "adjacent_30cycle_label_pairs": 0,
+      "physical_specimen_serial_confirmed": false
+    }
+  },
+  "csv_samples": {
+    "E_0Deg_17.5%_#1_1305.csv": {
+      "stage_header": "# Stage: 阶段 1305",
+      "units_header": "# Units: length:mm angle:deg time:s ",
+      "columns_header": "id x y z displacement_x displacement_y displacement_z",
+      "rows": 18687,
+      "cols": 7,
+      "unique_node_ids": 18687,
+      "nonfinite_xyz_rows": 0,
+      "nonfinite_u_rows": 0,
+      "force_or_phase_column": false,
+      "reference_stage_in_header": false
+    },
+    "E_0Deg_17.5%_#1_1121.csv": {
+      "stage_header": "# Stage: 阶段 1121",
+      "units_header": "# Units: length:mm angle:deg time:s ",
+      "columns_header": "id x y z displacement_x displacement_y displacement_z",
+      "rows": 18686,
+      "cols": 7,
+      "unique_node_ids": 18686,
+      "nonfinite_xyz_rows": 0,
+      "nonfinite_u_rows": 0,
+      "force_or_phase_column": false,
+      "reference_stage_in_header": false
+    },
+    "C_15Deg_20%_#1_622.csv": {
+      "stage_header": "# Stage: 阶段 622",
+      "units_header": "# Units: length:mm angle:deg time:s ",
+      "columns_header": "id x y z displacement_x displacement_y displacement_z",
+      "rows": 18569,
+      "cols": 7,
+      "unique_node_ids": 18569,
+      "nonfinite_xyz_rows": 0,
+      "nonfinite_u_rows": 0,
+      "force_or_phase_column": false,
+      "reference_stage_in_header": false
+    },
+    "E_0Deg_17.5%_#1_1122.csv": {
+      "stage_header": "# Stage: 阶段 1122",
+      "units_header": "# Units: length:mm angle:deg time:s ",
+      "columns_header": "id x y z displacement_x displacement_y displacement_z",
+      "rows": 18687,
+      "cols": 7,
+      "unique_node_ids": 18687,
+      "nonfinite_xyz_rows": 0,
+      "nonfinite_u_rows": 0,
+      "force_or_phase_column": false,
+      "reference_stage_in_header": false
+    },
+    "C_15Deg_20%_#1_621.csv": {
+      "stage_header": "# Stage: 阶段 621",
+      "units_header": "# Units: length:mm angle:deg time:s ",
+      "columns_header": "id x y z displacement_x displacement_y displacement_z",
+      "rows": 18568,
+      "cols": 7,
+      "unique_node_ids": 18568,
+      "nonfinite_xyz_rows": 0,
+      "nonfinite_u_rows": 0,
+      "force_or_phase_column": false,
+      "reference_stage_in_header": false
+    },
+    "C_15Deg_20%_#1_750.csv": {
+      "stage_header": "# Stage: 阶段 750",
+      "units_header": "# Units: length:mm angle:deg time:s ",
+      "columns_header": "id x y z displacement_x displacement_y displacement_z",
+      "rows": 18571,
+      "cols": 7,
+      "unique_node_ids": 18571,
+      "nonfinite_xyz_rows": 0,
+      "nonfinite_u_rows": 0,
+      "force_or_phase_column": false,
+      "reference_stage_in_header": false
+    }
+  },
+  "distinct_specimen_keys_from_sheets": [
+    "C_15_20_1",
+    "E_0_175_1"
+  ],
+  "unique_label_rows_after_stage_union": {
+    "E_0_175_1": 80,
+    "C_15_20_1": 76
+  },
+  "union_adjacent_30cycle_pairs": {
+    "E_0_175_1": 0,
+    "C_15_20_1": 10
+  }
+}
