@@ -53,3 +53,10 @@ Require toy equivalence against the dense implementation and working-set audit,
 then exact renewed Code Ready and explicit authority for fresh R002. Raw archives
 and the failed R001 remain unchanged. Dense allocation/allocator retention is a
 plausible bottleneck, not proved by a sampled RSS trace alone.
+
+Independent terminal review: method chat final
+msg_015d0a19570ed14a016ace7c8007008191ab3d17c37fc7e73e confirmed no C20
+or scored outputs, only guard log/final receipt/post-run README, INCONCLUSIVE.
+It remains read-only and will review stable weighted Welford/merge moments,
+second-pass normalized Gram and unchanged constant-column/std-floor behavior;
+no actual repair execution approved or started.
