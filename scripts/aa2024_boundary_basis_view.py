@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from aa2024_boundary_basis import load,DOMAINS,ARMS,completed,bindings,FIT_ARTIFACTS
+from aa2024_boundary_basis import load,DOMAINS,ARMS,completed,bindings,FIT_ARTIFACTS,sha
 
 def save(fig,out,name):
     fig.savefig(out/(name+'.png'),dpi=180);fig.savefig(out/(name+'.pdf'));plt.close(fig)
@@ -62,7 +62,8 @@ def results(fit,validation,out):
         c=ax.imshow(x.reshape(6,21),origin='lower',aspect='auto',cmap='viridis',vmin=profiles.min(),vmax=profiles.max(),extent=(-.02375,.97375,-.095,1.045))
         for k,marker in (('K0','o'),('K1','x')):
             r=p[b]['profile'][p[b]['selected'][k]];ax.scatter(r['qR'],r['qL'],marker=marker,c='red',s=40,label=k+' frozen')
-        ax.set_xlabel('qR');ax.set_ylabel('qL');ax.set_title(b+' training profile, NOT posterior');ax.legend(fontsize=8)
+        ax.set_xlabel('qR');ax.set_ylabel('qL');ax.set_title(b+' training profile, NOT posterior')
+        ax.legend(fontsize=8,loc='upper center',bbox_to_anchor=(.5,-.20),ncol=2)
         fig.colorbar(c,ax=ax,label='training vector MAE [mm]; shared scale')
     save(fig,out,'parameter_profiles')
     limit=max(float(np.linalg.norm(a[k+'_residual'],axis=1).max()) for k in ARMS)
@@ -83,16 +84,29 @@ def main():
     p.add_argument('--output',type=Path,required=True);a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
     if a.mode=='results' and a.validation is None:raise ValueError('validation required')
     text=assets(a.input,a.output) if a.mode=='assets' else results(a.input,a.validation,a.output)
-    guide='# E015 exact-output diagnostic figures\n\nSource: '+str(a.input.resolve())+'\n\n'
+    guide='# E015 exact-output diagnostic figures\n\n## Data provenance\n\nSource: '+str(a.input.resolve())+'\n\n'
+    guide+='Plotter SHA256: '+sha(__file__)+'\n'
+    if a.mode=='results':
+        guide+='Validation source: '+str(a.validation.resolve())+'\n'
+        guide+='Fit bindings: '+json.dumps(bindings(a.input,FIT_ARTIFACTS))+'\n'
+        guide+='Validation bindings: '+json.dumps(bindings(a.validation,('metrics.json','validation_fields.npz')))+'\n'
+    else:guide+='Prepare bindings: '+json.dumps(bindings(a.input,('preparation.json','prepared.npz')))+'\n'
+    guide+='\n## How to read\n\n'
     guide+='Purpose: conditional boundary-placement/domain-extent versus nested basis-capacity sensitivity.\n'
     guide+='Read spatial assets before solve; after validation read factorial_errors, parameter_profiles, held_residuals.\n'
     guide+='Same0.9mm FEM spacing, same training ROI/areaweights and same held eligibility for every arm.\n'
     guide+='No clipping, smoothing, target-selected examples or outlier deletion. All eligible points/all252profile values displayed.\n'
     guide+='All MAEs use one global weighted planar-rigid quotient. Fields use same frame/common residual scale.\n'
-    guide+='One cycle of one released experimental trajectory; nodes are not independent experimental units.\n'
+    guide+='\n## Limitation\n\nOne cycle of one released experimental trajectory; nodes are not independent experimental units.\n'
     guide+='Priors and artificial BCs are assumptions, not measured true damage/grips. No DIC noise model or posterior.\n'
     guide+='No causal diagnosis, material/fatigue/phase-field recovery, future-cycle/road skill follows.\n\n'+text
     (a.output/'README_analysis.md').write_text(guide)
-    for f in a.output.glob('*.png'):f.with_suffix('.md').write_text(guide)
+    figure_guides={
+        'spatial_assets': 'Rows B0/B1 are inner/outer domains. Columns show fixed d0, right-tip br, left-tip bl priors (0..1), then common training observations and artificial Dirichlet boundary. Axes are reference x/y in mm; arrows magnify stage11-minus-stage10 BC by333, not actual deformed coordinates. All panels share x+/-24,y+/-16mm. Priors are assumptions; gaps in observed support are not damage labels.',
+        'factorial_errors': 'Left panel is training stage10/11; right is held12. Rows B0/B1 and columns K0/K1 give four frozen procedures. Text is weighted vector MAE in mm after one global rigid quotient. Both panels use one color scale starting at zero. Read the held secant and descriptive D from the title; smaller error is better, not evidence of physical truth.',
+        'parameter_profiles': 'Left/right panels are B0/B1. Horizontal axis qR has21 sampled values and vertical qL has6. All252 training losses use one shared color scale in mm, with lower better. Red circle/cross mark training-selected K0/K1 (overlap means identical selection); legends are outside axes. This is a finite grid profile, not a posterior or noise confidence region.',
+        'held_residuals': 'Nine panels are eight mechanics predictions and secant, using all common eligible held points. Axes are reference x/y in mm. Color is norm of the global weighted-rigid-quotient residual in mm, with one common0..max scale and no smoothing. Panel titles give area-weighted vector MAE. Missing spatial support remains blank, not a crack or a deleted outlier.'}
+    for f in a.output.glob('*.png'):
+        f.with_suffix('.md').write_text('# '+f.stem+'\n\n## How to read this figure\n\n'+figure_guides[f.stem]+'\n\n'+guide)
 
 if __name__=='__main__':main()
