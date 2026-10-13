@@ -166,6 +166,11 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 
 ## Project-Local Skills
 
+- **Independent review routing:** when a research HQ arranges or interprets a
+  design, Code Ready, or evidence review, read
+  `docs/skills/research-review-channels/SKILL.md`. Present the channel choices
+  to the user before dispatch unless the user has already chosen and authorized
+  the material. A transport failure is not permission to switch channels.
 - **Mandatory experiment routing:** before proposing, launching, reviewing, or
   interpreting any claim-changing road-fracture Experiment, read
   `docs/skills/road-fracture-experiment-gate/SKILL.md` and only the adapter(s)
@@ -176,6 +181,8 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 - `docs/skills/road-fracture-experiment-gate/SKILL.md` — project-wide gate for
   claim-changing observation, measurement/inverse, prediction, decision, and
   physics/surrogate experiments. Route by claim rather than model family.
+- `docs/skills/research-review-channels/SKILL.md` — select a capable independent
+  design, code, or evidence reviewer without changing the scientific gate.
 - `docs/skills/pidl-experiment-gate/SKILL.md` — compatibility entry for
   PIDL/FEM, teacher, residual, neural-operator, and Hard-5-specific semantics;
   it delegates the common decision contract to the road-fracture gate.
