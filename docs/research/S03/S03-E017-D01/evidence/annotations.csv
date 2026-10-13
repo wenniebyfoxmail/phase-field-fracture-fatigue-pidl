@@ -1,0 +1,31 @@
+task_id,left_px,right_px,left_min_px,left_max_px,right_min_px,right_max_px,quality,confidence,notes
+task_001,53,69,52,54.5,67.5,70.5,visible,medium,Dark band with soft grayscale rims at the selected row.
+task_002,54.5,64.5,53,56,63,66,uncertain,medium,Endpoints describe central dark band; separate right branch also crosses the row.
+task_003,40.5,66.5,39.5,42,65,68,uncertain,medium,Endpoints describe broad central dark opening; irregular detached dark feature and pale spall-like texture on left.
+task_004,54.5,67.5,53,56,66,69,visible,medium,Curved band with pale irregular left rim.
+task_005,55,75.5,53.5,56.5,70,78,uncertain,medium,Right shoulder changes abruptly near selected row; broad range covers its unclear edge.
+task_006,55.5,64.5,54,57,63,66,visible,high,Central narrow dark band; isolated dark spot well to left is excluded.
+task_007,35,67,33.5,36.5,65.5,68.5,visible,medium,Broad dark opening with textured pale left rim.
+task_008,55,67.5,53.5,56.5,66,69,visible,medium,Curved dark band; boundary transitions are several displayed blocks wide.
+task_009,58.5,62.5,57,60,61,64,visible,medium,Thin kinked opening at selected row; right surface has mottled texture.
+task_010,52,77.5,51,54,72,80,uncertain,medium,Right shoulder lies near selected row and makes its endpoint ambiguous.
+task_011,58,63.5,57,59.5,62,65,visible,medium,Narrow dark band with slight kink and pale left rim.
+task_012,55,75.5,53.5,56.5,71,78,uncertain,medium,Rightward shoulder begins close to selected row; endpoint is visually ambiguous.
+task_013,58,63.5,57,59.5,62,65,visible,medium,Dark narrow opening; soft rims limit endpoint precision.
+task_014,36,65,34,38,64,66,visible,medium,Broad opening with sloping irregular left shoulder near row.
+task_015,58,61.5,56.5,59.5,60,63,visible,medium,Thin bent dark opening; nearby mottled surface is excluded.
+task_016,57.5,65,56,59,63.5,66.5,visible,medium,Curving dark opening with diffuse rims.
+task_017,54,67,52.5,55.5,65.5,68.5,visible,medium,Curved band with irregular pale left rim.
+task_018,51,65.5,49.5,52.5,64,67,visible,medium,Dark central band; detached left dark spot excluded.
+task_019,36,66,34.5,37.5,64.5,67.5,visible,medium,Broad opening with pale irregular left boundary.
+task_020,56,70.5,54.5,57.5,68.5,72.5,uncertain,low,Endpoints describe central connected band; separate dark right segment approaches row and creates multiple possible intervals.
+task_021,58,67,56.5,59.5,65.5,68.5,visible,medium,Near-vertical dark band with softer right rim.
+task_022,58,67,56.5,59.5,65.5,68.5,visible,medium,Dark band bends slightly at row; pale rim on left.
+task_023,54,67,52.5,55.5,65.5,68.5,visible,medium,Dark curved opening with bright textured left edge.
+task_024,55,66,53.5,56.5,64.5,67.5,visible,medium,Curving band; left transition is diffuse.
+task_025,58,61,56.5,59.5,60,62.5,uncertain,medium,Endpoints describe thin central descending branch; another separated right branch crosses selected row.
+task_026,34,67,32,36,65.5,68.5,visible,medium,Broad dark opening with irregular left shoulder and pale rim.
+task_027,39.5,69,38,41,67.5,70.5,uncertain,medium,Endpoints describe central broad opening; separate dark feature and spall-like pale texture complicate left region.
+task_028,54.5,67.5,53,56,66,69,visible,medium,Curving band with irregular pale left rim.
+task_029,58.5,69,57,60,67,71,uncertain,low,Endpoints describe central connected band; separated right segment lies near selected row and makes interval selection ambiguous.
+task_030,52,77.5,50.5,53.5,71.5,79.5,uncertain,medium,Rightward dark shoulder starts close to row; wide range reflects its unclear edge.
