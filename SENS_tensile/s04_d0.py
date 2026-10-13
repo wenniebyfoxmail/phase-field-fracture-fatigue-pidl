@@ -136,6 +136,10 @@ def evaluate(cases, key, model, pipeline, candidates, rows=None, snapshot=None):
                                      B0_transformed_mse=bz[j], B1_transformed_mse=mse[j],
                                      B0_physical_mse=bp[j], B1_physical_mse=physical[j],
                                      bound_violation_area=float(area@bounds[j]),
+                                     B0_min=float(pin[:, j].min()), B0_max=float(pin[:, j].max()),
+                                     B0_below_zero_count=int(np.sum(pin[:, j] < 0)),
+                                     B0_above_one_count=int(np.sum(pin[:, j] > 1)) if j == 0 else 0,
+                                     B0_bound_area=float(area@(((pin[:, j] < 0)|(pin[:, j] > 1)) if j == 0 else (pin[:, j] < 0))),
                                      B1_min=float(pred[:, j].min()), B1_max=float(pred[:, j].max())))
                 if snapshot is not None and cycle == 20:
                     np.savez(snapshot, ids=pipeline.ids, pin=pin, fem=fem, B1=pred)

@@ -64,7 +64,10 @@ def report(root, out):
         for i, v in enumerate([*visible, residual]):
             ax = axes[j, i]; lim = rlimit if i == 3 else limit
             poly = PolyCollection(polygons, array=v, cmap='RdBu_r', clim=(-lim, lim), linewidth=0, rasterized=True)
-            ax.add_collection(poly); ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.set_aspect('equal')
+            ax.add_collection(poly)
+            ax.set_xlim(float(mesh['coordinates'][:, 0].min()), float(mesh['coordinates'][:, 0].max()))
+            ax.set_ylim(float(mesh['coordinates'][:, 1].min()), float(mesh['coordinates'][:, 1].max()))
+            ax.set_aspect('equal'); ax.set_xlabel('x (native frame)'); ax.set_ylabel('y (native frame)')
             ax.set_title((['FEM', 'PIN / B0', 'B1', 'B1 - FEM'][i])+' | '+field, fontsize=9)
             fig.colorbar(poly, ax=ax, shrink=.75, label='asinh(value / training PIN scale)' if j else 'asinh(d)')
     fig.suptitle('Fixed heldout U0.115 C20 / s4 | native Q4 P0 | display asinh only; no clipping')
