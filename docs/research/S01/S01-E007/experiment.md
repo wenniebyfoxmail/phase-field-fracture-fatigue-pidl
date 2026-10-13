@@ -127,6 +127,8 @@ all4 qualification metrics/exposures/harm and fixed selection,final outputs and
 exact target-retention replay if qualified,per-location tables/FP types/oracle;
 F01 qualification and development paired recall/retention with thresholds;
 F02 strongest frozen-score new/lost GT and admitted FP,up to2 locations/role;
+qualification examples use the selected policy if qualified,otherwise the fixed
+most permissive .1 policy (not whichever looks best);
 10k paired-location bootstrap seed20261013 descriptive only;README_analysis,
 retrieval receipt,independent evidence review and Obsidian milestone. Qualification
 stop requires its decision figure even without development. Successful launch,
