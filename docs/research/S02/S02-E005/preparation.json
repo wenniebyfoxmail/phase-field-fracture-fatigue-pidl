@@ -1,0 +1,18 @@
+{
+  "F": {
+    "fit_count": 265,
+    "evaluation_count": 114,
+    "first_fit_origin": 3001,
+    "last_fit_target": 271000,
+    "first_eval_origin": 271000,
+    "last_eval_target": 385000
+  },
+  "FF": {
+    "fit_count": 74,
+    "evaluation_count": 33,
+    "first_fit_origin": 3001,
+    "last_fit_target": 77001,
+    "first_eval_origin": 77001,
+    "last_eval_target": 113000
+  }
+}
