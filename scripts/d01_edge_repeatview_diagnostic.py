@@ -109,6 +109,9 @@ def self_test():
     assert np.allclose(h@p,expected)
     assert np.allclose(repeatview_h(np.eye(3),np.eye(3),tgt,tgt),np.eye(3))
     assert [v[0] for v in VARIANTS]==["centered","tangent_minus2","tangent_plus2","normal_minus2","normal_plus2"]
+    cube=np.zeros((5,4,12)); support=np.ones(12,bool)
+    assert cube[0,0:2][:,support].shape==(2,12)
+    np.testing.assert_allclose(forecast(cube[0,0:2][:,support],[10,30],40,"secant"),np.zeros(12))
     print("Alternate blurred-step edges, affine intensities, missing edges, two-camera resize mapping and frozen variants: passed")
 
 
@@ -165,7 +168,7 @@ def run(args,receipt):
             for origin in range(1,len(states)-1):
                 supported=eligible & np.isfinite(width[v,origin-1:origin+2]).all(axis=0)
                 for arm in ARMS:
-                    pred=forecast(width[v,origin-1:origin+1,supported],loads[origin-1:origin+1],loads[origin+1],arm) if supported.any() else None
+                    pred=forecast(width[v,origin-1:origin+1][:,supported],loads[origin-1:origin+1],loads[origin+1],arm) if supported.any() else None
                     scores.append({"beam":beam,"variant":name,"origin_kN":float(loads[origin]),"target_kN":float(loads[origin+1]),
                                    "arm":arm,"scored_transects":int(supported.sum()),"eligible_transects":int(eligible.sum()),
                                    "MAE_px":float(np.abs(pred-width[v,origin+1,supported]).mean()) if supported.any() else None})
@@ -200,7 +203,7 @@ def run(args,receipt):
     table(args.output/"edge_method_agreement.csv",edges); table(args.output/"location_variants.csv",locations)
     table(args.output/"repeatview_measurements.csv",repeats_rows); table(args.output/"variant_forecast_metrics.csv",scores)
     prepare_blind(blind,args.output)
-    summary=summarize(results,edges,scores,repeats_rows)
+    summary=summarize(results,edges,scores,repeats_rows,args.output.name)
     dump(args.output/"summary.json",summary); plots(results,edges,scores,args.output)
     receipt.update(execution="succeeded",retrieval="verified_local",ended_at_utc=datetime.now(timezone.utc).isoformat())
     print(json.dumps(summary,indent=2))
@@ -212,7 +215,7 @@ def finite_summary(values):
             "p90":float(np.quantile(good,.9)) if good.size else None}
 
 
-def summarize(results,edges,scores,repeat_rows):
+def summarize(results,edges,scores,repeat_rows,run_id):
     beams=[]
     for r in results:
         b=r["beam"]; er=[e for e in edges if e["beam"]==b and e["valid"]]
@@ -246,7 +249,7 @@ def summarize(results,edges,scores,repeat_rows):
             losses[a]=float(np.mean(perbeam)) if np.isfinite(perbeam).all() else None
         aggregate.append({"variant":name,"equal_beam_MAE_px":losses,"scored_pair_transects":sum(support),
                           "secant_relative_change":losses["secant"]/losses["persistence"]-1 if losses["secant"] is not None else None})
-    return {"run_id":"S03-E016-D01-R001","protocol":"development-v1","per_beam":beams,
+    return {"run_id":run_id,"protocol":"development-v1","per_beam":beams,
             "variant_forecasts":aggregate,"reference_status":"PENDING_NO_INDEPENDENT_ANNOTATIONS",
             "blind_packet":{"unique_tasks":24,"views_including_duplicates":30,"completed_annotations":0},
             "formal_review":"pending","scientific_status":"DEVELOPMENT_DIAGNOSTIC_NOT_METROLOGY_VALIDATION"}
@@ -263,7 +266,7 @@ def plots(results,edges,scores,output):
                 if np.isfinite(x): axes[row,col].axvline(x,color="#D55E00",ls="--",lw=1.3,label="gradient edge" if i==0 else None)
             axes[row,col].set(title=f"Beam {r['beam']} | {r['loads'][j]:.0f} kN | transect 6",xlabel="Normal offset (native px)",ylabel="Raw grayscale",xlim=(-40,40),ylim=(0,255))
             axes[row,col].legend(fontsize=7)
-    fig.suptitle("E016-D01-R001 | distinct algorithm boundary definitions, NOT independent reference truth")
+    fig.suptitle(f"{output.name} | distinct algorithm boundary definitions, NOT independent reference truth")
     fig.savefig(output/"edge_operator_comparison.png",dpi=165); plt.close(fig)
     fig,axes=plt.subplots(1,3,figsize=(13,4),constrained_layout=True)
     colors=["black","#0072B2","#56B4E9","#D55E00","#E69F00"]
@@ -292,7 +295,7 @@ def plots(results,edges,scores,output):
             vals.append(np.mean([np.mean([s["MAE_px"] for s in scores if s["beam"]==b and s["variant"]==name and s["arm"]==a and s["MAE_px"] is not None]) for b in (4,5,6)]))
         ax.plot(range(5),vals,"o-",color=c,label=a.replace("_"," "),lw=1.3)
     ax.set(xticks=range(5),xticklabels=[v[0].replace("_","\n") for v in VARIANTS],ylabel="Equal-beam one-step MAE (px)",ylim=(0,None))
-    ax.legend(fontsize=8); ax.set_title("All frozen location variants / same forecast rules | E016-D01-R001, development")
+    ax.legend(fontsize=8); ax.set_title(f"All frozen location variants / same forecast rules | {output.name}, development")
     fig.savefig(output/"variant_forecast_comparison.png",dpi=165); plt.close(fig)
 
 
@@ -307,13 +310,20 @@ def main():
     if git("status","--porcelain"): raise RuntimeError("commit source before diagnostic")
     if args.output.exists(): raise FileExistsError("fresh run output required")
     args.output.mkdir(parents=True); started=time.monotonic()
-    receipt={"experiment_id":"S03-E016-D01","run_id":"S03-E016-D01-R001","protocol":"development-v1",
+    receipt={"experiment_id":"S03-E016-D01","run_id":args.output.name,"protocol":"development-v1",
              "producer":"Mac-PIDL CPU offline diagnostic","hostname":socket.gethostname(),"pid":os.getpid(),
              "source_commit":git("rev-parse","HEAD"),"git_dirty":False,"command":sys.argv,"python":sys.executable,
              "started_at_utc":datetime.now(timezone.utc).isoformat(),"execution":"running","retrieval":"pending",
              "independent_reference":"pending_no_annotations","independent_code_review":"pending_development_only","gpu":None}
     dump(args.output/"run_receipt.json",receipt)
-    run(args,receipt); receipt["runtime_seconds"]=time.monotonic()-started; dump(args.output/"run_receipt.json",receipt)
+    try:
+        run(args,receipt)
+    except Exception as error:
+        receipt.update(execution="failed",retrieval="partial_local",error=f"{type(error).__name__}: {error}",
+                       ended_at_utc=datetime.now(timezone.utc).isoformat(),runtime_seconds=time.monotonic()-started)
+        dump(args.output/"run_receipt.json",receipt)
+        raise
+    receipt["runtime_seconds"]=time.monotonic()-started; dump(args.output/"run_receipt.json",receipt)
 
 
 if __name__=="__main__": main()
