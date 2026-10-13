@@ -78,3 +78,36 @@ Fresh archive `local_archive/experiments/S03-E016-D01/runs/S03-E016-D01-R001/`.
 Receipt, scored tables/arrays, all-beam figures, README_analysis, blind packet
 and a separate pending independent-reference status required. No claim closure
 until independent reference and reviews exist.
+
+## 2026-10-13 diagnostic outcome; independent reference still pending
+
+R001 stopped on historical array-axis selection before complete results. Source
+fix and regression check at `9aaa0de690eb662fafb946e61212e1aeea0ef52b`; fresh
+R002 succeeded in 7.02 s. No protocol change; both receipts retained.
+Center replay exactly reproduces E015 (1e-7 px tolerance). 168 alternate edge
+pairs, 840 location measurements, 288 repeat-view opportunities, 120 forecast
+summary rows; all aggregates verified from exact tables.
+
+Gradient-vs-half-depth median absolute width disagreement: 0.767/0.240/0.493 px
+for beams 4/5/6. ALL five coherent location variants preserve positive endpoint
+growth and secant advantage (50.35..69.83% equal-beam observable error reduction;
+each full 96/96 support). No best-variant selection; old E015 unchanged.
+
+Repeat-view widths valid 264/288; Beam 4 loses 24 through source support.
+Moving-fixed median absolute disagreements 4.904/2.151/3.304 px, larger than
+typical fixed-camera stage increments. Different fixed-registration routes
+have median differences <=0.011 px. Main bottleneck: camera/local observation
+transfer and independent reference, NOT absence of fixed-camera growth signal.
+No causal mechanism or pure metrology error inferred from same nominal stops.
+
+Blind packet created: 24 unique image tasks, six hidden duplicate views, zero
+completed labels. User confirmed none exist. Independent edge validation is
+NOT complete. Disposition: continue fixed-camera diagnostic route; moving
+widths remain separate; obtain an independent annotator before reference-error
+scoring. No claim-changing formal closure or independent review PASS.
+
+Evidence: R002 archive README_analysis/figures/tables; compact summary, receipt
+and forecast table in `evidence/` and `runs/`. Private blind key excluded from
+Git. Five figures inspected; image readout V2 replaces overlapping V1 layout
+without numerical refit. Public packet JS syntax/task/leak checks passed; no
+live browser interaction QA claimed.

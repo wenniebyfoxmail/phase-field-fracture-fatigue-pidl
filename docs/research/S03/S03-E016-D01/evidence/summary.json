@@ -1,0 +1,189 @@
+{
+  "run_id": "S03-E016-D01-R002",
+  "protocol": "development-v1",
+  "per_beam": [
+    {
+      "beam": 4,
+      "edge_valid": 48,
+      "edge_opportunities": 48,
+      "width_method_disagreement_px": {
+        "n": 48,
+        "median": 0.7665090627926876,
+        "p90": 2.248079426031668
+      },
+      "boundary_method_disagreement_px": {
+        "n": 48,
+        "median": 0.3832545313963438,
+        "p90": 1.1240397130158342
+      },
+      "location_abs_difference_px": {
+        "n": 192,
+        "median": 0.05734062294507236,
+        "p90": 1.993121537184054
+      },
+      "coherent_first_last_median_growth_px": {
+        "centered": 3.064155775638824,
+        "tangent_minus2": 3.1265975006387556,
+        "tangent_plus2": 2.8746461410914748,
+        "normal_minus2": 3.041194390711695,
+        "normal_plus2": 3.0930761872716666
+      },
+      "stage_independent_first_last_envelope_growth_px": 1.8135716015037318,
+      "repeatview_valid": 72,
+      "repeatview_opportunities": 96,
+      "moving_fixed_disagreement_px": {
+        "n": 48,
+        "median": 4.904480238420486,
+        "p90": 8.990199133768288
+      },
+      "common_four_view_stop_transects": 12,
+      "fixed_registration_route_disagreement_px": {
+        "n": 24,
+        "median": 0.010493377679502203,
+        "p90": 0.2639397326339327
+      }
+    },
+    {
+      "beam": 5,
+      "edge_valid": 72,
+      "edge_opportunities": 72,
+      "width_method_disagreement_px": {
+        "n": 72,
+        "median": 0.24028415495255384,
+        "p90": 0.46539548097226036
+      },
+      "boundary_method_disagreement_px": {
+        "n": 72,
+        "median": 0.15775329358182588,
+        "p90": 0.2668908658325017
+      },
+      "location_abs_difference_px": {
+        "n": 288,
+        "median": 0.03466774215409174,
+        "p90": 1.212870098843682
+      },
+      "coherent_first_last_median_growth_px": {
+        "centered": 3.993142872209371,
+        "tangent_minus2": 4.38115128741441,
+        "tangent_plus2": 3.7521177257701277,
+        "normal_minus2": 3.9978773380455657,
+        "normal_plus2": 3.9734838770500014
+      },
+      "stage_independent_first_last_envelope_growth_px": 3.7521177257701277,
+      "repeatview_valid": 96,
+      "repeatview_opportunities": 96,
+      "moving_fixed_disagreement_px": {
+        "n": 72,
+        "median": 2.1512945259560983,
+        "p90": 4.1708926308948495
+      },
+      "common_four_view_stop_transects": 24,
+      "fixed_registration_route_disagreement_px": {
+        "n": 24,
+        "median": 0.0011751888468696237,
+        "p90": 0.17525245999278447
+      }
+    },
+    {
+      "beam": 6,
+      "edge_valid": 48,
+      "edge_opportunities": 48,
+      "width_method_disagreement_px": {
+        "n": 48,
+        "median": 0.4930003752439458,
+        "p90": 0.7165899395215775
+      },
+      "boundary_method_disagreement_px": {
+        "n": 48,
+        "median": 0.27911368815999715,
+        "p90": 0.4051743152294026
+      },
+      "location_abs_difference_px": {
+        "n": 192,
+        "median": 0.034957009308259845,
+        "p90": 1.1143323106355512
+      },
+      "coherent_first_last_median_growth_px": {
+        "centered": 2.728167864571244,
+        "tangent_minus2": 2.773501362985945,
+        "tangent_plus2": 2.517262112894718,
+        "normal_minus2": 2.726045030148418,
+        "normal_plus2": 2.733717712286575
+      },
+      "stage_independent_first_last_envelope_growth_px": 1.3612059440710222,
+      "repeatview_valid": 96,
+      "repeatview_opportunities": 96,
+      "moving_fixed_disagreement_px": {
+        "n": 72,
+        "median": 3.304133520498964,
+        "p90": 7.055765213486384
+      },
+      "common_four_view_stop_transects": 24,
+      "fixed_registration_route_disagreement_px": {
+        "n": 24,
+        "median": 0.000782239879172586,
+        "p90": 0.249369600988853
+      }
+    }
+  ],
+  "variant_forecasts": [
+    {
+      "variant": "centered",
+      "equal_beam_MAE_px": {
+        "persistence": 0.9234534818541653,
+        "secant": 0.4394862658468068,
+        "conservative_secant": 0.5563658908996938
+      },
+      "scored_pair_transects": 96,
+      "secant_relative_change": -0.5240840231991113
+    },
+    {
+      "variant": "tangent_minus2",
+      "equal_beam_MAE_px": {
+        "persistence": 0.823196768853955,
+        "secant": 0.2483184692889214,
+        "conservative_secant": 0.4328975988546547
+      },
+      "scored_pair_transects": 96,
+      "secant_relative_change": -0.6983485860438599
+    },
+    {
+      "variant": "tangent_plus2",
+      "equal_beam_MAE_px": {
+        "persistence": 0.8984749453995584,
+        "secant": 0.44609562003766534,
+        "conservative_secant": 0.5601046675320469
+      },
+      "scored_pair_transects": 96,
+      "secant_relative_change": -0.5034968728713038
+    },
+    {
+      "variant": "normal_minus2",
+      "equal_beam_MAE_px": {
+        "persistence": 0.9224799750832041,
+        "secant": 0.4503916761267928,
+        "conservative_secant": 0.5628919233571357
+      },
+      "scored_pair_transects": 96,
+      "secant_relative_change": -0.5117599424462638
+    },
+    {
+      "variant": "normal_plus2",
+      "equal_beam_MAE_px": {
+        "persistence": 0.9267976366599662,
+        "secant": 0.4403947462965007,
+        "conservative_secant": 0.5600063780470811
+      },
+      "scored_pair_transects": 96,
+      "secant_relative_change": -0.5248210300971261
+    }
+  ],
+  "reference_status": "PENDING_NO_INDEPENDENT_ANNOTATIONS",
+  "blind_packet": {
+    "unique_tasks": 24,
+    "views_including_duplicates": 30,
+    "completed_annotations": 0
+  },
+  "formal_review": "pending",
+  "scientific_status": "DEVELOPMENT_DIAGNOSTIC_NOT_METROLOGY_VALIDATION"
+}

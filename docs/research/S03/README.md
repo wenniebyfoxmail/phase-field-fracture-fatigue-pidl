@@ -57,3 +57,13 @@ This preserves a useful history signal, not physical metrology or held-out
 forecast validity. Background detections 56/168 and Beam 4 spatial sensitivity
 select independent edge/local-correspondence checks next. Earlier E012/E013
 negative baseline comparisons remain valid for their DIFFERENT targets.
+
+2026-10-13 — [S03-E016-D01](S03-E016-D01/experiment.md) completed distinct
+boundary-operator checks, frozen +/-2px location variants and real nominal-stop
+repeat-view analysis. Fixed-camera growth and secant advantage survive ALL
+variants (full coverage), preserving E015's useful component signal. Moving
+views differ by median 4.904/2.151/3.304 px, with 24 Beam 4 profiles unsupported.
+Keep moving-view widths out of fixed-camera trajectories until local observation
+transfer is qualified. Human reference is still absent: 24 unique/30 blinded
+task views prepared, zero completed labels. No independent boundary accuracy
+or physical forecasting validation claimed.
