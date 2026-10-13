@@ -1,0 +1,47 @@
+{
+  "revision": "native64_signed_pin_v5",
+  "status": "CANDIDATE_PENDING_INDEPENDENT_G5_REVIEW",
+  "claim_scope": "retrospective common-pre-event native-archive imitation diagnostic only",
+  "qualified_physical_teacher": false,
+  "origin": "cN_s4_post_history_commit",
+  "horizon": 0,
+  "raw_step_formula": "1+5*(cycle-1)+3",
+  "geometry": {
+    "path": "local_archive/experiments/S04-E016/g5_export_20261013/geometry_native64_v4/mapping.npz",
+    "sha256": "eb8791f7958c9999b2c2c83058e3542ec3cb25b272d2f9e4a018a313be5ba10f",
+    "query": "native64 arithmetic mean of four Q4 nodes",
+    "areas": "native64 shoelace",
+    "admitted_cells": 85112,
+    "excluded_cells": 1296,
+    "area_fraction": 0.9860692257890524,
+    "exact_conservative_area_projection": false
+  },
+  "channels": {
+    "damage": {"pin": "signed current triangle mean post-nonsmooth coordinate", "fem": "mean four native nodal d", "clip": false},
+    "alpha_bar": {"pin": "post-commit triangle history", "fem": "mean native GP history channel2"},
+    "psi_raw_direct": {"pin": "triangle direct volumetric plane-strain raw driver", "fem": "mean native GP raw driver"},
+    "fatigue_f": {"role": "PIN input/optional direct auxiliary target only", "fem": "mean native GP f; never f(mean history)"},
+    "active_proxy": {"role": "PIN-only derived auxiliary input", "formula": "(1-current_signed_alpha)^2 * current_raw", "native_joint_active_target": false},
+    "H": {"role": "not admitted"}
+  },
+  "contract_A": {"role": "audit-only, not these targets", "independent_numerical_reduction_review": "pending; confirmation fields remain sealed"},
+  "contract_B": {"role": "native simultaneous s4, with retained GP reduction extension"},
+  "load_identity": {"nominal_peak_factor": 1.0, "PIN_effective_peak_factor": 1.0, "FEM_effective_peak_factor": 0.999999, "interpretation": "nominal-phase match, not exact imposed-displacement equality"},
+  "trajectories": [
+    {"id":"u011","umax":0.11,"role":"development","pin_path":"/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/pidl_peak_trajectories_three_umax_20261007/outputs/hard5_u011_peak_trajectory.npz","pin_sha256":"1de8017c9dcb19360bfc2581b4f20b325625cfe3d3136b3af68331786960f3e2","fem_path":"local_archive/experiments/S04-E016/g5_export_20261013/fem_v3_retrieved/u011_s4.mat","fem_sha256":"dffa30092a28317b1c15b6679df8fed8ebc8edfa8d73434d425fa035e129b332","pin_first_raw":614,"pin_first_cycle":123,"fem_first_cycle":122,"common_pre_cycle_end_candidate":121,"lineage":"c1..120 native; c121 qualified continuation/spot-check; c122 not admitted"},
+    {"id":"u012","umax":0.12,"role":"development","pin_path":"/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/pidl_peak_trajectories_three_umax_20261007/outputs/hard5_u012_peak_trajectory.npz","pin_sha256":"b6a5adeee09e24a0ec1562db4c8525e0c7c9a6efa86e8369551ba5d296af8c6e","fem_path":"local_archive/experiments/S04-E016/g5_export_20261013/fem_v3_retrieved/u012_s4.mat","fem_sha256":"357d3169507e0ca062928939893a0da318f1548e89ce1be06edd9f9fe054638e","pin_first_raw":444,"pin_first_cycle":89,"fem_first_cycle":83,"common_pre_cycle_end_candidate":82,"lineage":"native prefix only"},
+    {"id":"u013","umax":0.13,"role":"development","pin_path":"/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/pidl_peak_trajectories_three_umax_20261007/outputs/hard5_u013_peak_trajectory.npz","pin_sha256":"2afc4d3e6b285afed7089bdc27875df9822fd2cf495093e9bf28e64dba670937","fem_path":"local_archive/experiments/S04-E016/g5_export_20261013/fem_v3_retrieved/u013_s4.mat","fem_sha256":"8a49409e6ec3bb95b48eb2ca47c0ee7f4c33a91732bcac6e1a2e85b56672d4e8","pin_first_raw":279,"pin_first_cycle":56,"fem_first_cycle":59,"common_pre_cycle_end_candidate":55,"lineage":"admitted prefix native only; c56..59 replay post-event excluded"},
+    {"id":"u0115","umax":0.115,"role":"development","pin_path":"local_archive/experiments/S04-E016/g5_export_20261013/pin_v5_retrieved/hard5_u0115_s4.npz","pin_sha256":"37e1a94529e1fb3e10222ab319552bb33373b9b53169fe471e7a8796f369e75a","fem_path":"local_archive/experiments/S04-E016/g5_export_20261013/fem_v3_retrieved/u0115_s4.mat","fem_sha256":"d4a0dc6d6c99652016bc01d164129b95272f1b87c7b09afe735fbc1ce8ab4d3b","pin_first_raw":499,"pin_first_cycle":100,"fem_first_cycle":100,"common_pre_cycle_end_candidate":99,"lineage":"fresh approved acquisition; no retry/resume"}
+  ],
+  "excluded_amplitudes": [0.1175,0.125],
+  "C0": "unavailable; never fabricated",
+  "fixed_cycle_strata": [[1,20],[21,40],[41,null]],
+  "event_policy": "strict c < min(both first-event cycles); development-only retrospective admission/scoring; full retained checkpoint traces show no earlier episodes/reset; source native confirmation is raw-step-based, not physical validation",
+  "event_evidence": ["local_archive/experiments/S04-E016/g5_export_20261013/pin_v5_retrieved/legacy_event_audit.json","local_archive/experiments/S04-E016/g5_export_20261013/pin_v5_retrieved/u0115_detector_trace_audit.json","local_archive/experiments/S04-E016/g5_export_20261013/pin_v5_retrieved/u011_continuation_boundary_audit.json"],
+  "feature_module": "SENS_tensile/s04_g5_features.py",
+  "feature_sha256": "9473648eb91cef21463f46d9be24b872018e244c9af7548e96f945abe9660492",
+  "feature_inputs": "PIN-only current/c-1/c-2, missing masks, causal current globals/neighbors, public geometry/load/physical cycle",
+  "feature_recipe": "32 columns; d linear, history/raw/proxy log1p with training-PIN scales, f linear; current transformed area-weighted means; geometry9NN including self, not Q4 edge graph; past two cycles and explicit missing masks",
+  "normalizers": "each inner/outer fit from its training trajectories only; PIN-only history/raw input scales; label delta scaling training-only; implemented model runner still pending",
+  "D0": "not executed; B0 zero correction vs B1 closed-form direct-field ridge; <=300s/2GiB/100MiB; no NN, no POD repeat"
+}
