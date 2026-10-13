@@ -1,0 +1,40 @@
+{
+  "delta": -0.044314201842291734,
+  "retention": 0.8869565217391304,
+  "retained_old_targets": 102,
+  "lost_old_targets": 13,
+  "new_detected_targets": 1,
+  "protected_primary_pass": false,
+  "choice": {
+    "proposed_choices": 5645,
+    "accepted_choices": 4072,
+    "conflict_fallbacks": 1573,
+    "probability_ties_original": 0,
+    "lower_probability_original": 5232
+  },
+  "baseline_fp_types": {
+    "partial": 190,
+    "duplicate": 20,
+    "no_small_overlap": 92
+  },
+  "candidate_fp_types": {
+    "partial": 197,
+    "duplicate": 17,
+    "no_small_overlap": 88
+  },
+  "baseline_macro_recall": 0.28950905962141915,
+  "candidate_macro_recall": 0.24519485777912742,
+  "gain_gate": 0.05,
+  "retention_gate": 0.95,
+  "descriptive_location_bootstrap_95_interval": [
+    -0.07530519283328271,
+    -0.01797752808988764
+  ],
+  "baseline_oracle": 0.6835502918648986,
+  "candidate_oracle": 0.6161332118635489,
+  "uncertainty_scope": "reused development descriptive; fixed selected locations only if fresh test",
+  "protocol": "S01-E006-v1",
+  "run_id": "S01-E006-R002",
+  "split": "validation",
+  "evaluation_sha256": "0d031996b48b74134c19663f031731ff20757ae89c087d1d88c6babb98948d2f"
+}

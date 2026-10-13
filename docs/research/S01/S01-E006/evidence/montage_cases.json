@@ -1,0 +1,266 @@
+{
+  "selection_rule": "exact-budget new/lost GT and candidate FP, highest frozen E3score and lexical image/box/parent;two distinct locations per role",
+  "cases": [
+    {
+      "kind": "new_detected_target",
+      "image_id": "reid-1103__2023-01-19_11-36-21-254-000126.jpg",
+      "parent_id": 1832,
+      "original": {
+        "image_id": "reid-1103__2023-01-19_11-36-21-254-000126.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          1386.151351928711,
+          934.2548522949219,
+          1845.26953125,
+          977.045654296875
+        ],
+        "proposer_confidence": 0.03469599410891533,
+        "reranker_crack_probability": 0.7034932374954224,
+        "geometric_mean": 0.15623187006434683,
+        "old_score": 0.15623187006434683,
+        "probability": 0.6107895374298096,
+        "score": 0.14557455200841868,
+        "parent_id": 1832,
+        "candidate_id": "o:1832",
+        "kind": "original",
+        "E003_score": 0.14557455200841868
+      },
+      "emitted": {
+        "image_id": "reid-1103__2023-01-19_11-36-21-254-000126.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          1170.9523072972358,
+          920.8993870166165,
+          1749.3835686292152,
+          978.4175795930754
+        ],
+        "proposer_confidence": 0.03469599410891533,
+        "reranker_crack_probability": 0.7034932374954224,
+        "geometric_mean": 0.15623187006434683,
+        "old_score": 0.15623187006434683,
+        "probability": 0.6107895374298096,
+        "score": 0.14557455200841868,
+        "parent_id": 1832,
+        "candidate_id": "o:1832",
+        "kind": "original",
+        "E003_score": 0.14557455200841868,
+        "chosen_correction": true,
+        "correction_flags": {
+          "bounded": false,
+          "image_clipped": false,
+          "fallback": false
+        },
+        "original_box_xyxy": [
+          1386.151351928711,
+          934.2548522949219,
+          1845.26953125,
+          977.045654296875
+        ]
+      }
+    },
+    {
+      "kind": "lost_old_target",
+      "image_id": "reid-393__2023-10-26_10-35-50-047-n00103.jpg",
+      "parent_id": 13647,
+      "original": {
+        "image_id": "reid-393__2023-10-26_10-35-50-047-n00103.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          461.7613525390625,
+          593.61572265625,
+          639.4044189453125,
+          613.0043334960938
+        ],
+        "proposer_confidence": 0.3733920454978943,
+        "reranker_crack_probability": 0.9901390075683594,
+        "geometric_mean": 0.608037851916478,
+        "old_score": 0.608037851916478,
+        "probability": 0.9627166986465454,
+        "score": 0.5995588022392911,
+        "parent_id": 13647,
+        "candidate_id": "o:13647",
+        "kind": "original",
+        "E003_score": 0.5995588022392911
+      },
+      "emitted": {
+        "image_id": "reid-393__2023-10-26_10-35-50-047-n00103.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          440.6482712885374,
+          592.2271672947891,
+          734.7067252728989,
+          611.5776248202562
+        ],
+        "proposer_confidence": 0.3733920454978943,
+        "reranker_crack_probability": 0.9901390075683594,
+        "geometric_mean": 0.608037851916478,
+        "old_score": 0.608037851916478,
+        "probability": 0.9627166986465454,
+        "score": 0.5995588022392911,
+        "parent_id": 13647,
+        "candidate_id": "o:13647",
+        "kind": "original",
+        "E003_score": 0.5995588022392911,
+        "chosen_correction": true,
+        "correction_flags": {
+          "bounded": false,
+          "image_clipped": false,
+          "fallback": false
+        },
+        "original_box_xyxy": [
+          461.7613525390625,
+          593.61572265625,
+          639.4044189453125,
+          613.0043334960938
+        ]
+      }
+    },
+    {
+      "kind": "lost_old_target",
+      "image_id": "reid-1103__2023-12-23_12-12-08-880-n00158.jpg",
+      "parent_id": 5996,
+      "original": {
+        "image_id": "reid-1103__2023-12-23_12-12-08-880-n00158.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          1103.7921142578125,
+          659.299072265625,
+          1431.9747314453125,
+          680.6630249023438
+        ],
+        "proposer_confidence": 0.3454112112522125,
+        "reranker_crack_probability": 0.8888952732086182,
+        "geometric_mean": 0.5541068425812437,
+        "old_score": 0.5541068425812437,
+        "probability": 0.7772153615951538,
+        "score": 0.518130195464816,
+        "parent_id": 5996,
+        "candidate_id": "o:5996",
+        "kind": "original",
+        "E003_score": 0.518130195464816
+      },
+      "emitted": {
+        "image_id": "reid-1103__2023-12-23_12-12-08-880-n00158.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          1024.805436421584,
+          657.0255418822627,
+          1291.256109791389,
+          674.2191147479354
+        ],
+        "proposer_confidence": 0.3454112112522125,
+        "reranker_crack_probability": 0.8888952732086182,
+        "geometric_mean": 0.5541068425812437,
+        "old_score": 0.5541068425812437,
+        "probability": 0.7772153615951538,
+        "score": 0.518130195464816,
+        "parent_id": 5996,
+        "candidate_id": "o:5996",
+        "kind": "original",
+        "E003_score": 0.518130195464816,
+        "chosen_correction": true,
+        "correction_flags": {
+          "bounded": false,
+          "image_clipped": false,
+          "fallback": false
+        },
+        "original_box_xyxy": [
+          1103.7921142578125,
+          659.299072265625,
+          1431.9747314453125,
+          680.6630249023438
+        ]
+      }
+    },
+    {
+      "kind": "metric_false_positive",
+      "image_id": "reid-393__2023-05-24_10-43-36-325-n00088.jpg",
+      "parent_id": 12438,
+      "original": {
+        "image_id": "reid-393__2023-05-24_10-43-36-325-n00088.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          1131.1596069335938,
+          938.6238403320312,
+          1598.2539672851562,
+          982.9887084960938
+        ],
+        "proposer_confidence": 0.394883930683136,
+        "reranker_crack_probability": 0.9914565682411194,
+        "geometric_mean": 0.6257078126159734,
+        "old_score": 0.6257078126159734,
+        "probability": 0.9934056997299194,
+        "score": 0.6263225586488017,
+        "parent_id": 12438,
+        "candidate_id": "o:12438",
+        "kind": "original",
+        "E003_score": 0.6263225586488017
+      },
+      "emitted": {
+        "image_id": "reid-393__2023-05-24_10-43-36-325-n00088.jpg",
+        "reid": "393",
+        "box_xyxy": [
+          1131.1596069335938,
+          938.6238403320312,
+          1598.2539672851562,
+          982.9887084960938
+        ],
+        "proposer_confidence": 0.394883930683136,
+        "reranker_crack_probability": 0.9914565682411194,
+        "geometric_mean": 0.6257078126159734,
+        "old_score": 0.6257078126159734,
+        "probability": 0.9934056997299194,
+        "score": 0.6263225586488017,
+        "parent_id": 12438,
+        "candidate_id": "o:12438",
+        "kind": "original",
+        "E003_score": 0.6263225586488017
+      }
+    },
+    {
+      "kind": "metric_false_positive",
+      "image_id": "reid-1103__2023-02-14_14-18-49-863-n00088.jpg",
+      "parent_id": 2113,
+      "original": {
+        "image_id": "reid-1103__2023-02-14_14-18-49-863-n00088.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          1280.0,
+          924.1260375976562,
+          1657.7412719726562,
+          953.5554809570312
+        ],
+        "proposer_confidence": 0.40250080823898315,
+        "reranker_crack_probability": 0.9968124032020569,
+        "geometric_mean": 0.6334175541863921,
+        "old_score": 0.6334175541863921,
+        "probability": 0.9374068975448608,
+        "score": 0.6142532327229578,
+        "parent_id": 2113,
+        "candidate_id": "o:2113",
+        "kind": "original",
+        "E003_score": 0.6142532327229578
+      },
+      "emitted": {
+        "image_id": "reid-1103__2023-02-14_14-18-49-863-n00088.jpg",
+        "reid": "1103",
+        "box_xyxy": [
+          1280.0,
+          924.1260375976562,
+          1657.7412719726562,
+          953.5554809570312
+        ],
+        "proposer_confidence": 0.40250080823898315,
+        "reranker_crack_probability": 0.9968124032020569,
+        "geometric_mean": 0.6334175541863921,
+        "old_score": 0.6334175541863921,
+        "probability": 0.9374068975448608,
+        "score": 0.6142532327229578,
+        "parent_id": 2113,
+        "candidate_id": "o:2113",
+        "kind": "original",
+        "E003_score": 0.6142532327229578
+      }
+    }
+  ]
+}

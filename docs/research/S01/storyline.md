@@ -53,3 +53,16 @@ access. Replacement destroyed prior candidate coverage despite some new covered
 targets. The next proposal protects original candidates and separately qualifies
 a local spatial original-versus-correction selector, with train-only out-of-sample
 qualification and the same fixed-budget detection purpose. This is untested.
+
+### 2026-10-13 — S01-E006
+
+Paired original/correction selection preserved more actual detections than E005
+mandatory replacement(TP103 versus36), but did not deliver protected net benefit
+on reused development. Against unchanged E003:recall.289509 ->.245195;
+102/115 old targets retained,13 lost,1 new actual detection at unchanged302FPs.
+Both frozen +.05 gain and .95 retention clauses fail. Keep E003, no fresh access.
+R001 metadata-order execution defect was repaired and independently reviewed;
+R002 adopted exact features/four heads without refitting and completed the one
+selector fit. Next proposed solution makes paired replacement harm explicit and
+qualifies an abstain-to-original policy on held train locations; no new arm or
+experiment is executed by that proposal. Evidence review pending at this snapshot.
