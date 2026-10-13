@@ -24,9 +24,12 @@ def assets(root,out):
         ax=axes[row,3];ax.scatter(*a['xy'].T,s=5,color='#0072B2',label='common fit observations')
         ax.scatter(*mesh[bd].T,s=7,color='#D55E00',label='Dirichlet boundary')
         ax.quiver(*mesh[bd].T,*a[b+'_bc'].T,angles='xy',scale_units='xy',scale=1/333,color='#D55E00')
-        ax.set_title(b+' training BC; arrows x333');ax.legend(fontsize=7)
+        ax.set_title(b+' training BC; arrows x333')
+        ax.legend(fontsize=7,loc='upper center',bbox_to_anchor=(.5,-.28))
         for ax in axes[row]:
-            ax.set_aspect('equal');ax.set_xlim(-22.5,22.5);ax.set_ylim(-13.5,13.5)
+            # Common bounds include the enlarged training-BC arrowheads;
+            # the legend stays outside the spatial panel.
+            ax.set_aspect('equal');ax.set_xlim(-24,24);ax.set_ylim(-16,16)
             ax.set_xlabel('reference x [mm]');ax.set_ylabel('reference y [mm]')
     fig.suptitle('E015 | cycle225211.5 | stages10/11 only | fixed priors and artificial boundaries')
     save(fig,out,'spatial_assets')
