@@ -1,0 +1,168 @@
+{
+  "boundary": {
+    "F-ux-bottom.csv": {
+      "rows": 291,
+      "cols": 388,
+      "finite_coordinate_rows": 291,
+      "nonfinite_response_entries": 0,
+      "x_range_mm": [
+        0.21828,
+        49.866
+      ],
+      "y_range_mm": [
+        -10.842,
+        -10.842
+      ],
+      "numeric_cycle_columns": 385,
+      "unique_cycle_columns": 385
+    },
+    "F-ux-top.csv": {
+      "rows": 291,
+      "cols": 388,
+      "finite_coordinate_rows": 291,
+      "nonfinite_response_entries": 0,
+      "x_range_mm": [
+        0.21828,
+        49.866
+      ],
+      "y_range_mm": [
+        12.441,
+        12.441
+      ],
+      "numeric_cycle_columns": 385,
+      "unique_cycle_columns": 385
+    },
+    "F-uy-bottom.csv": {
+      "rows": 291,
+      "cols": 388,
+      "finite_coordinate_rows": 291,
+      "nonfinite_response_entries": 0,
+      "x_range_mm": [
+        0.21828,
+        49.866
+      ],
+      "y_range_mm": [
+        -10.842,
+        -10.842
+      ],
+      "numeric_cycle_columns": 385,
+      "unique_cycle_columns": 385
+    },
+    "F-uy-top.csv": {
+      "rows": 291,
+      "cols": 388,
+      "finite_coordinate_rows": 291,
+      "nonfinite_response_entries": 0,
+      "x_range_mm": [
+        0.21828,
+        49.866
+      ],
+      "y_range_mm": [
+        12.441,
+        12.441
+      ],
+      "numeric_cycle_columns": 385,
+      "unique_cycle_columns": 385
+    },
+    "FF_ux_bottom.csv": {
+      "rows": 292,
+      "cols": 116,
+      "finite_coordinate_rows": 292,
+      "nonfinite_response_entries": 0,
+      "x_range_mm": [
+        0.20116,
+        50.0
+      ],
+      "y_range_mm": [
+        -10.602,
+        -10.602
+      ],
+      "numeric_cycle_columns": 113,
+      "unique_cycle_columns": 113
+    },
+    "FF_ux_top.csv": {
+      "rows": 292,
+      "cols": 116,
+      "finite_coordinate_rows": 292,
+      "nonfinite_response_entries": 0,
+      "x_range_mm": [
+        0.20116,
+        50.0
+      ],
+      "y_range_mm": [
+        12.852,
+        12.852
+      ],
+      "numeric_cycle_columns": 113,
+      "unique_cycle_columns": 113
+    },
+    "FF_uy_bottom.csv": {
+      "rows": 292,
+      "cols": 116,
+      "finite_coordinate_rows": 292,
+      "nonfinite_response_entries": 0,
+      "x_range_mm": [
+        0.20116,
+        50.0
+      ],
+      "y_range_mm": [
+        -10.602,
+        -10.602
+      ],
+      "numeric_cycle_columns": 113,
+      "unique_cycle_columns": 113
+    },
+    "FF_uy_top.csv": {
+      "rows": 292,
+      "cols": 116,
+      "finite_coordinate_rows": 292,
+      "nonfinite_response_entries": 0,
+      "x_range_mm": [
+        0.20116,
+        50.0
+      ],
+      "y_range_mm": [
+        12.852,
+        12.852
+      ],
+      "numeric_cycle_columns": 113,
+      "unique_cycle_columns": 113
+    }
+  },
+  "target": {
+    "F": {
+      "rows": 386,
+      "finite_nxy": true,
+      "strict_cycles": true,
+      "all4channel_joined_cycles": 385,
+      "threepast_plus_target_fixed1000_origins": 379,
+      "phase_pair_coordinate_equal_top": true,
+      "phase_pair_coordinate_equal_bottom": true,
+      "cycle_gaps_other_than1000": [
+        {
+          "from": 99001.0,
+          "to": 100000.0,
+          "gap": 999.0
+        }
+      ]
+    },
+    "FF": {
+      "rows": 114,
+      "finite_nxy": true,
+      "strict_cycles": true,
+      "all4channel_joined_cycles": 113,
+      "threepast_plus_target_fixed1000_origins": 107,
+      "phase_pair_coordinate_equal_top": true,
+      "phase_pair_coordinate_equal_bottom": true,
+      "cycle_gaps_other_than1000": [
+        {
+          "from": 99001.0,
+          "to": 100000.0,
+          "gap": 999.0
+        }
+      ]
+    }
+  },
+  "phase": "Fmax-Fmin displacement amplitude; not instantaneous response",
+  "source": "2329057-only"
+}
