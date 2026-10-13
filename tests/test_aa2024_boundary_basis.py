@@ -107,6 +107,17 @@ class BoundaryBasis(unittest.TestCase):
             r=json.loads((out/'execution_receipt.json').read_text())
             self.assertEqual(r['execution_status'],'failed');self.assertFalse((out/'fit.json').exists())
 
+    def test_final_receipt_clock_overrun_downgrades_status(self):
+        with tempfile.TemporaryDirectory() as td:
+            base=Path(td);root,_,a=self.synthetic_fit(base);out=base/'final_overrun'
+            args=['driver','fit','--input',str(root),'--output',str(out),'--source-commit','synthetic','--run-id','synthetic']
+            def pretend_fit(inp,output,**kwargs):(output/'forensic.txt').write_text('synthetic partial artifact')
+            with patch.object(sys,'argv',args),patch.object(m.socket,'gethostname',return_value='GPUServer8'),patch.object(m.time,'monotonic',side_effect=[0,599.999,600]),patch.object(m,'fit',side_effect=pretend_fit):
+                with self.assertRaises(TimeoutError):m.main()
+            r=json.loads((out/'execution_receipt.json').read_text())
+            self.assertEqual(r['execution_status'],'failed');self.assertEqual(r['elapsed_seconds'],600)
+            self.assertEqual(r['artifacts_sha256']['forensic.txt'],m.sha(out/'forensic.txt'))
+
     def synthetic_fit(self,base):
         root=base/'prep';root.mkdir();out=base/'fit';out.mkdir()
         xy=np.array([[-3.,-2.],[-1.,-2.],[1.,-2.],[3.,-2.],[-3.,2.],[-1.,2.],[1.,2.],[3.,2.],[-2.,1.],[2.,1.],[-2.,-1.],[2.,-1.]])

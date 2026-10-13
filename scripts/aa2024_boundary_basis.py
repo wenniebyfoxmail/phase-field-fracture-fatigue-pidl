@@ -266,8 +266,15 @@ def main():
     except Exception as e:
         r['execution_status']='failed';r['error']=str(e);raise
     finally:
-        r.update(elapsed_seconds=time.monotonic()-start,end_utc=datetime.now(timezone.utc).isoformat(),
-            artifacts_sha256={p.name:sha(p) for p in args.output.iterdir() if p.is_file() and p.name!='execution_receipt.json'})
+        artifact_hashes={p.name:sha(p) for p in args.output.iterdir() if p.is_file() and p.name!='execution_receipt.json'}
+        elapsed=time.monotonic()-start
+        late_fit=args.mode=='fit' and r['execution_status']=='succeeded' and elapsed>=600
+        if late_fit:
+            r['execution_status']='failed'
+            r['error']='soft600s completion budget exceeded during finalization; no held access'
+        r.update(elapsed_seconds=elapsed,end_utc=datetime.now(timezone.utc).isoformat(),
+            artifacts_sha256=artifact_hashes)
         write_json(args.output/'execution_receipt.json',r)
+        if late_fit:raise TimeoutError(r['error'])
 
 if __name__=='__main__':main()
