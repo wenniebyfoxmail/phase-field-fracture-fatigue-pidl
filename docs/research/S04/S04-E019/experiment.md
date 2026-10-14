@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E019
 protocol_revision: 20261013-r1-frozen-base-residual
-status: code-ready-transfer-approval-pending
+status: producer-running
 ---
 # Preserve the E017 global fit while correcting damage residual
 
@@ -37,3 +37,7 @@ Nonfinite outputs, identity/BC/frozen-weight/geometry failure or execution resou
 Tests: paired initialization/parameter count; zero initial correction; nonzero output-projection gradients despite zero projection; frozen weights absent from optimizer; exact outside-window preservation with arbitrary residual parameters; homogeneous BC; geometry/state locks; cache-to-checkpoint output agreement; same sampler indices/unbiased estimator; final-step/checkpoint/receipt/archive admission; complete6matrix and independent saved-array regional recomputation, fail-closed verdicts.
 
 Minimum package: locks, six fresh receipts, inherited checkpoint identities, final predictions/residual checkpoints, passive full/regional/support traces, native strain/rho secondary, compact table/decision figure, result and external Evidence review. Nontraining code success isn't scientific success. No Stage2 or coupled FEM/teacher promotion.
+
+## Execution update 2026-10-15
+
+Exact-version Code Ready and human transfer/launch approval obtained. Real-asset preflight passed on Taobo; the approved six-run dispatcher started at 2026-10-14T23:42:16Z. See [producer execution](producer_execution.md). Original protocol and thresholds unchanged; numerical verdict pending.
