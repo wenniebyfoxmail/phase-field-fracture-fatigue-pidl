@@ -77,3 +77,13 @@ All six duplicate pairs agree in status; four visible pairs exactly repeat
 coarse coordinates, two uncertain. Same-context recall, selection bias and
 different boundary definitions remain. AI annotation is complete; HUMAN
 reference and independent target-stage forecasting validation remain pending.
+
+2026-10-14 — [Reference-interface working proposal](reference_interface_draft_20261014.md)
+and local existing-output audit `S03-REFCOV-20261014-R001` map all 14 stages:
+168 measured transects, 24 AI crop checks (16 visible / eight uncertain), but
+five intermediate forecast targets have no AI labels. Visible-edge labels do
+not qualify the DIFFERENT half-depth observable. Recommended next repair:
+retain E015's observable and independently check its implementation/localisation;
+changing to visible width instead requires matched history/origin/target labels
+under a new protocol. Estimand choice remains a proposal; old experiments,
+human preparation and scores are unchanged. No annotation dispatch or training.
