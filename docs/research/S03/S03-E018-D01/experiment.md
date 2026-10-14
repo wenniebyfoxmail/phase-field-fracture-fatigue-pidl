@@ -125,3 +125,36 @@ these files. Raw code/outputs remain prohibited before implementation freeze.
 R001 is input preparation; R002 is the one data execution after code review.
 Mathematical definition, primary criterion, variants and 120s execution budget
 are unchanged. No E018 numerical results existed at this amendment.
+
+## Outcome — 2026-10-15, closed bounded C1 diagnostic
+
+Code review complete before R002 at `08222d861c53c9d9e1c812b73fae20e09f46197b`;
+12 synthetic tests independently passed. R002 CPU1.343s / wall1.389s, clean,
+14 source CRC/size identities verified. 168/168 same-profile widths/validities
+match exactly (max difference0, primary software tolerance1e-8 px met).
+Independent raw-image manual-quantised sampling reproduces all profiles exactly.
+Coordinate count2020200; alternate-coordinate/roundtrip residuals about1e-12 px
+are software consistency ONLY. All840 position variants valid.
+
+Position max-difference medians B4/B5/B6=1.442/0.748/0.696 px, compared with
+adjacent-stage absolute-change medians0.777/0.868/0.954 px. Continuous bilinear
+instead of quantised interpolation max width difference0.117 px (diagnostic).
+R003 moved an occluding legend, final figure code`ad125bf8`; numerical summaries
+and tables unchanged. All four PNG/PDF figure pairs visibly inspected; sidecars
+validated. Separate read-only evidence review complete, bounded Evidence Ready.
+
+Verdict: supports C1 deterministic computation reproduction. Disposition:
+repair local correspondence/reference before broader transition claims.
+Independent physical accuracy and true material-coordinate correspondence
+remain unqualified; old E015 forecast scores and human preparation unchanged.
+
+Next proposed discriminator: Beam4 local background-anchor correspondence
+check using fixed first-frame support and original H comparator. Distinguish
+misregistration from real spatial width heterogeneity; never choose alignment
+by crack width or old forecasting score. New repair needs its own frozen
+protocol/review. No new alignment, annotation or training was run here.
+
+Final evidence and reading order:
+[/local analysis](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E018-D01/runs/S03-E018-D01-R003/analysis/README_analysis.md),
+[compact summary](evidence/summary.json), [code review](evidence/code_review.md),
+[independent evidence review](evidence/evidence_review.md), and R002/R003 receipts.

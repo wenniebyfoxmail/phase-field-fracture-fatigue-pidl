@@ -1,0 +1,21 @@
+{
+  "experiment_id": "S03-E018-D01",
+  "run_id": "S03-E018-D01-R003",
+  "local_date_Europe_London": "2026-10-15",
+  "scope": "plot-only legend readability repair; comparisons regenerated from identical R002 outputs",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "code_commit": "ad125bf8563e0339ff1e1738ee9ee0b7b24cb27f",
+  "dirty_status": "clean_at_render",
+  "runner": "scripts/render_d01_independent_review.py",
+  "input_run": "S03-E018-D01-R002",
+  "analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E018-D01/runs/S03-E018-D01-R003/analysis",
+  "figure_stems": ["computation_agreement", "location_sensitivity", "half_depth_source_examples", "earlier_forecast_explanation"],
+  "render_formats": ["png", "pdf"],
+  "figure_files": 8,
+  "validated_sidecars": 4,
+  "visible_QA": "All figures opened; forecast legend moved outside axes so no point is hidden; other three figures unchanged.",
+  "numeric_summary_equals_R002": true,
+  "source_sampling_rerun": false,
+  "new_forecast_scores": false
+}

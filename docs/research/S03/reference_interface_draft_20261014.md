@@ -52,3 +52,10 @@ Completed 2026-10-14: the inventory assertions passed for 14 stages / 168 measur
 - [Coverage figure](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/diagnostics/S03-REFCOV-20261014-R001/stage_reference_coverage.png)
 - [Exact stage ledger](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/diagnostics/S03-REFCOV-20261014-R001/stage_reference_coverage.csv)
 - [Source hashes and audit receipt](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/diagnostics/S03-REFCOV-20261014-R001/audit_receipt.json)
+
+2026-10-15 decision: user chooses the recommended existing half-depth observable.
+The choice above is no longer pending. [E018 independent computation/location
+audit](S03-E018-D01/experiment.md) completed: reproducible computation, with
+Beam4 local-correspondence risk selecting the next repair. This resolves the
+observable choice, not the human/physical-reference or future-load-availability
+gaps; visible-edge width remains a different, unselected target.

@@ -87,3 +87,12 @@ retain E015's observable and independently check its implementation/localisation
 changing to visible width instead requires matched history/origin/target labels
 under a new protocol. Estimand choice remains a proposal; old experiments,
 human preparation and scores are unchanged. No annotation dispatch or training.
+
+2026-10-15 — User selects retaining half-depth width. [S03-E018-D01](S03-E018-D01/experiment.md)
+closes the independently implemented computation/coordinate diagnostic:
+168/168 stored-profile widths and raw-image quantised profiles reproduced
+exactly; all840 location variants valid, independently reviewed. This supports
+C1 computation reproducibility only. Beam4 location-sensitivity median1.442 px
+exceeds typical adjacent-stage change0.777 px; prioritise a background-anchor
+local-correspondence check before broader prediction claims. Old forecast
+scores/human preparation preserved; no training or physical accuracy claim.
