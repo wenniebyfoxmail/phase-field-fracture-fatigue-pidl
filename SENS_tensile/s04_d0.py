@@ -103,7 +103,7 @@ def merge_moments(state, values, weights):
             old_m2+m2+delta**2*(old_mass*mass/total))
 
 
-def fit_streamed(blocks):
+def fit_streamed(blocks, audit=False):
     """Factory is traversed twice; memory depends on one block, not cycle count."""
     sx = sy = None
     for x, y, w in blocks():
@@ -128,7 +128,9 @@ def fit_streamed(blocks):
     penalty = np.eye(33); penalty[0, 0] = 0.
     coefficients = [np.linalg.solve(gram+a*penalty, cross) for a in ALPHAS]
     assert all(np.isfinite(v).all() for v in coefficients), 'Nonfinite ridge coefficients'
-    return dict(xm=xm, xstd=xstd, ym=ym, ystd=ystd, coefficients=coefficients)
+    result = dict(xm=xm, xstd=xstd, ym=ym, ystd=ystd, coefficients=coefficients)
+    if audit: result.update(gram=gram, cross=cross)  # Test-only matrices; no output/schema change in production.
+    return result
 
 
 def fit(cases, train, pipeline, sample):

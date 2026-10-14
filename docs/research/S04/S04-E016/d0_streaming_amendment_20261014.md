@@ -42,3 +42,23 @@ for imitation; terminal receipt supersedes historical NOT STARTED. The frozen
 lock's candidate/pending strings are historical and must not be edited to change
 its identity. Teacher/physics/Contract A remain HOLD. S03 optical and S04 simulation
 states remain separate. No finite-rotation, mesh-independence or feedback closure.
+
+## Interface corrections (not new options)
+
+| Item | Actual admitted D0 | Old-method candidate, NOT activated |
+|---|---|---|
+| locality | current geometry9NN including self, equal neighbor mean | Q4 edge graph/two-hop halo |
+| global PIN summary | area mean of each transformed current channel | std/q90/q99 |
+| h/r | training PIN weighted mean | median raw scale / fixed history0.5 |
+| conditions | x,y,log area,Umax,physical integer cycle | separate load-factor,c/100 |
+| local weighting | admitted-domain area weights | q99 foreground/background balancing |
+| outputs | d/alpha_bar/direct raw only | f/active auxiliary output,H |
+
+All input fields are current/c-1/c-2 s4 post-history; alpha_bar is accumulated
+fatigue history, not H. damage is current signed coordinate, not hist_alpha.
+Missing C0 remains absent with lag masks. active_proxy is PIN-only mean-parent
+auxiliary, not native joint active or physical degradation closure. FEM reductions
+are mean four nodal d /native GP history and raw; source values are float32,
+target/error arithmetic float64. No SI unit mapping is asserted. Original source
+geometry/native-support, nominal-amplitude difference and signed-input caveats
+remain. Frozen lock pending-status strings are not current execution status.

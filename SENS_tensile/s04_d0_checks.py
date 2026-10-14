@@ -57,12 +57,14 @@ def equivalence():
     w = rng.uniform(.01, 1., len(x)); w /= w.sum()
     def blocks():
         for sl in np.array_split(np.arange(len(x)), 7): yield x[sl].copy(), y[sl].copy(), w[sl].copy()
-    stream = new.fit_streamed(blocks)
+    stream = new.fit_streamed(blocks, audit=True)
     xm, ym = w@x, w@y; xs = np.sqrt(w@((x-xm)**2)); ys = np.sqrt(w@((y-ym)**2))
     xs[xs < 1e-12] = 1.; ys[ys < 1e-12] = 1.
     d = np.column_stack((np.ones(len(x)), (x-xm)/xs)); penalty = np.eye(33); penalty[0, 0] = 0
     coefficients = [np.linalg.solve(d.T@(w[:, None]*d)+a*penalty,
                                     d.T@(w[:, None]*((y-ym)/ys))) for a in new.ALPHAS]
+    close(d.T@(w[:, None]*d), stream['gram'], 'gram', errors)
+    close(d.T@(w[:, None]*((y-ym)/ys)), stream['cross'], 'cross', errors)
     for name, value in [('xm', xm), ('ym', ym), ('xstd', xs), ('ystd', ys)]:
         close(value, stream[name], name, errors)
     assert np.array_equal(xs == 1., stream['xstd'] == 1.)
