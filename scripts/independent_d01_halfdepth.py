@@ -164,13 +164,18 @@ def execute(inputs, output, budget_seconds):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
     started = time.monotonic()
+    cpu_started = time.process_time()
     def check_budget():
         if time.monotonic() - started >= budget_seconds:
             raise BudgetExceeded("wall-clock budget exhausted")
+        if time.process_time() - cpu_started >= budget_seconds:
+            raise BudgetExceeded("CPU-time budget exhausted")
     receipt = dict(status="started", inputs=str(Path(inputs).resolve()), output=str(output.resolve()),
                    started_utc=datetime.now(timezone.utc).isoformat(), hostname=socket.gethostname(), pid=os.getpid(),
                    cli_argv=list(sys.argv),
-                   budget_seconds=budget_seconds, stage_index_convention="zero_based", completed_rows=0,
+                   budget_seconds=budget_seconds, budget_semantics="both wall-clock and process CPU time",
+                   thread_environment={name: os.environ.get(name) for name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")},
+                   stage_index_convention="zero_based", completed_rows=0,
                    source_decode="Pillow ImageOps.exif_transpose(image).convert('L') then np.asarray(dtype=float32)", script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                    numpy_version=np.__version__, exposure="Only v1.1 protocol, AGENTS.md and sanitised inputs read before freeze; no original answers or implementation.",
                    source_identity=[], claim_boundary="Software computation and position sensitivity only; no physical-reference accuracy claim.")
@@ -181,6 +186,8 @@ def execute(inputs, output, budget_seconds):
     try:
         receipt["code_commit"] = subprocess.run(["git", "rev-parse", "HEAD"], cwd=Path(__file__).resolve().parents[1],
                                                  capture_output=True, text=True, check=True, timeout=3).stdout.strip()
+        receipt["git_status"] = subprocess.run(["git", "status", "--short"], cwd=Path(__file__).resolve().parents[1],
+                                                capture_output=True, text=True, check=True, timeout=3).stdout
         import PIL
         from PIL import Image, ImageOps
         receipt["pillow_version"] = PIL.__version__
@@ -309,13 +316,19 @@ def execute(inputs, output, budget_seconds):
     finally:
         for handle in handles:
             handle.close()
-        receipt["elapsed_seconds"] = time.monotonic() - started
-        receipt["ended_utc"] = datetime.now(timezone.utc).isoformat()
-        (output / "runtime_receipt.json").write_text(json.dumps(receipt, indent=2, allow_nan=False) + "\n")
         (output / "coordinate_summary.json").write_text(json.dumps(coordinate, indent=2, allow_nan=False) + "\n")
         (output / "examples.json").write_text(json.dumps(example_metadata, indent=2, allow_nan=False) + "\n")
         if examples:
             np.savez_compressed(output / "examples.npz", **examples)
+        receipt["elapsed_seconds"] = time.monotonic() - started
+        receipt["cpu_seconds"] = time.process_time() - cpu_started
+        receipt["ended_utc"] = datetime.now(timezone.utc).isoformat()
+        final_budget_exceeded = (receipt["elapsed_seconds"] >= budget_seconds or receipt["cpu_seconds"] >= budget_seconds) and receipt["status"] == "complete"
+        if final_budget_exceeded:
+            receipt.update(status="budget_stopped", error_type="BudgetExceeded", error="budget exhausted during output finalization")
+        (output / "runtime_receipt.json").write_text(json.dumps(receipt, indent=2, allow_nan=False) + "\n")
+        if final_budget_exceeded:
+            raise BudgetExceeded(receipt["error"])
 
 
 def main():

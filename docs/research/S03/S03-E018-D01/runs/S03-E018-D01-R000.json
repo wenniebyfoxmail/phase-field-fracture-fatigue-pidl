@@ -1,0 +1,14 @@
+{
+  "experiment_id": "S03-E018-D01",
+  "run_id": "S03-E018-D01-R000",
+  "date": "2026-10-15",
+  "scope": "independent implementation preparation, no real-data execution",
+  "execution": "cancelled",
+  "reason": "First implementer inadvertently printed raw lock origin_qc historical answers before writing code; context disqualified and replaced.",
+  "agent": "/root/independent_halfdepth",
+  "reported_exposure": "Beam4 12 and Beam5 first five origin_qc widths/crossings/validities; previous computability counts; no original implementation, NPZ widths, measurement CSV, forecasts or private key.",
+  "code_written": false,
+  "real_measurements_executed": false,
+  "old_records_changed": false,
+  "repair": "Pre-execution protocol v1.1, sanitized answer-free containers, replacement fresh-context implementer. No numerical E018 result existed."
+}

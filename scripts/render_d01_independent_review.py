@@ -116,7 +116,7 @@ def main():
     ax.legend(loc="upper left", fontsize=9)
     maxtext = f"{maxdiff:.3g}" if maxdiff is not None else "undefined"
     fig.text(.12, .01, f"Max difference {maxtext} px; validity agreement {validity_matches}/168.\n"
-             "Deterministic software reproduction only, NOT physical accuracy.", fontsize=9)
+             "Software tolerance 1e-8 px; reproduction only, NOT physical accuracy.", fontsize=9)
     fig.subplots_adjust(bottom=.2)
     save(fig, a.output, "computation_agreement", "Does the independent implementation recover the old same-profile widths?",
          "One panel. All 168 cases, coloured by beam, with a 1:1 dashed line and identical axes. No examples selected by outcome.",
