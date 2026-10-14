@@ -1,0 +1,3 @@
+scope,locations,pairs,protected,harm_0,harm_1,gain_0,gain_1,neither,gain_only,harm_only,harm_and_gain
+decision_fit,"['24', '95', '151', '514', '728', '1400', '1577', '1638', '2027', '3662', '4494', '5508']",31156,1240,30020,1136,30661,495,29525,495,1136,0
+train_qualification,"['353', '1459', '2028', '5982']",12602,495,12172,430,12425,177,11995,177,430,0

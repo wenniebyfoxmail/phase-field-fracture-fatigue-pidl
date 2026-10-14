@@ -1,0 +1,5 @@
+harm_limit,baseline_macro_recall,candidate_macro_recall,baseline_TP,candidate_TP,baseline_FP,candidate_FP,delta,retention,protected_exposures,harm_count,harm_rate,new_detected_targets,lost_old_targets,qualified,proposed_choices,accepted_choices,conflict_fallbacks,probability_ties_original,lower_probability_original
+0.01,0.7763888888888889,0.7763888888888889,282,282,330,330,0.0,1.0,1,1,1.0,0,0,False,317,120,197,0,12285
+0.025,0.7763888888888889,0.7763888888888889,282,282,330,330,0.0,1.0,2,1,0.5,0,0,False,372,146,226,0,12230
+0.05,0.7763888888888889,0.7763888888888889,282,282,330,330,0.0,1.0,4,2,0.5,0,0,False,414,160,254,0,12188
+0.1,0.7763888888888889,0.7763888888888889,282,282,330,330,0.0,1.0,7,5,0.7142857142857143,0,0,False,455,175,280,0,12147

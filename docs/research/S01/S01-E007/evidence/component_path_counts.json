@@ -1,0 +1,42 @@
+{
+  "scope": "posthoc descriptive count audit of frozen four training policies;not an extra comparator or rescued claim",
+  "run_id": "S01-E007-R001",
+  "policies": [
+    {
+      "harm_limit": 0.01,
+      "baseline_threshold": 0.23778385714397746,
+      "geometry_gain_pairs": 177,
+      "gain_pairs_above_baseline_threshold": 12,
+      "accepted_geometry_gain_pairs": 3,
+      "accepted_gain_above_baseline_threshold": 0,
+      "accepted_corrections_in_candidate_prefix": 1
+    },
+    {
+      "harm_limit": 0.025,
+      "baseline_threshold": 0.23778385714397746,
+      "geometry_gain_pairs": 177,
+      "gain_pairs_above_baseline_threshold": 12,
+      "accepted_geometry_gain_pairs": 3,
+      "accepted_gain_above_baseline_threshold": 0,
+      "accepted_corrections_in_candidate_prefix": 2
+    },
+    {
+      "harm_limit": 0.05,
+      "baseline_threshold": 0.23778385714397746,
+      "geometry_gain_pairs": 177,
+      "gain_pairs_above_baseline_threshold": 12,
+      "accepted_geometry_gain_pairs": 4,
+      "accepted_gain_above_baseline_threshold": 0,
+      "accepted_corrections_in_candidate_prefix": 2
+    },
+    {
+      "harm_limit": 0.1,
+      "baseline_threshold": 0.23778385714397746,
+      "geometry_gain_pairs": 177,
+      "gain_pairs_above_baseline_threshold": 12,
+      "accepted_geometry_gain_pairs": 4,
+      "accepted_gain_above_baseline_threshold": 0,
+      "accepted_corrections_in_candidate_prefix": 3
+    }
+  ]
+}

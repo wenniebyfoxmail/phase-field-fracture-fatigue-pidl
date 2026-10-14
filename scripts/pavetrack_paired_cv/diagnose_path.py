@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+"""Posthoc descriptive path counts;no fitting,rescoring or new policy evaluation."""
+import argparse,json,importlib.util
+from pathlib import Path
+spec=importlib.util.spec_from_file_location('qpath',Path(__file__).with_name('qualification_analysis.py'));q=importlib.util.module_from_spec(spec);spec.loader.exec_module(q);m=q.m
+p=argparse.ArgumentParser();p.add_argument('--run',type=Path,required=True);p.add_argument('--config',type=Path,required=True);p.add_argument('--lock',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args();cfg=m.read(a.config);summary,_,_,policies=q.validated(a.run,cfg,a.config,a.lock);data=m.read(a.run/'train_bank.json');ys=[y for row,y in zip(data['bank'][::2],data['labels'],strict=True) if row['reid'] in cfg['qualification_locations']];out=[]
+for row in policies:
+ threshold=row['baseline']['global_score_threshold'];candidate_threshold=row['candidate']['global_score_threshold'];accepted={r['parent_id'] for r in row['rows'] if r.get('chosen_correction')};pairs=row['pair_rows'][::2]
+ out.append(dict(harm_limit=row['harm_limit'],baseline_threshold=threshold,geometry_gain_pairs=sum(y['gain'] for y in ys),gain_pairs_above_baseline_threshold=None if threshold is None else sum(y['gain'] and r['score']>=threshold for r,y in zip(pairs,ys,strict=True)),accepted_geometry_gain_pairs=sum(y['gain'] and r['parent_id'] in accepted for r,y in zip(pairs,ys,strict=True)),accepted_gain_above_baseline_threshold=None if threshold is None else sum(y['gain'] and r['parent_id'] in accepted and r['score']>=threshold for r,y in zip(pairs,ys,strict=True)),accepted_corrections_in_candidate_prefix=None if candidate_threshold is None else sum(bool(r.get('chosen_correction')) and r['score']>=candidate_threshold for r in row['rows'])))
+result=dict(scope='posthoc descriptive count audit of frozen four training policies;not an extra comparator or rescued claim',run_id=a.run.name,policies=out);a.output.write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result,indent=2))

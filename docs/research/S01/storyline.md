@@ -66,3 +66,15 @@ R002 adopted exact features/four heads without refitting and completed the one
 selector fit. Next proposed solution makes paired replacement harm explicit and
 qualifies an abstain-to-original policy on held train locations; no new arm or
 experiment is executed by that proposal. Independent evidence review PASS at b960d3c; current attempt closed.
+
+### 2026-10-14 — S01-E007
+
+The original-target harm/gain abstention model completed its frozen four-location
+training qualification. All4 policies retained282 baseline hits but added0
+detections;accepted original-valid exposures1–7 were below20. The attempt stopped
+with inconclusive qualification before any all16 refit/development comparison.
+Keep E003 and fresh sealed. Posthoc row counts identify177 geometric gains but
+only12 score-eligible;none of3–4 accepted gain pairs reached the operating prefix.
+The next unexecuted test scores corrected crops with the unchanged classifier
+while preserving original outputs;it requires a new frozen plan/review.
+Independent evidence review pending;only approved source05f37c7 published.

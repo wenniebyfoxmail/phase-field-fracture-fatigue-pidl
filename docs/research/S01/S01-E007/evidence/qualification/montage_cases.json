@@ -1,0 +1,92 @@
+{
+  "scope": "train qualification",
+  "rule": "class stop:fixed split/label cases;else selected qualified policy or fixed .1",
+  "cases": [
+    {
+      "kind": "metric_false_positive",
+      "image_id": "reid-1459__2023-06-14_12-36-15-562-n00088.jpg",
+      "parent_id": 3292,
+      "original": {
+        "image_id": "reid-1459__2023-06-14_12-36-15-562-n00088.jpg",
+        "reid": "1459",
+        "box_xyxy": [
+          1059.393409729004,
+          609.141845703125,
+          1302.6744079589844,
+          670.443115234375
+        ],
+        "proposer_confidence": 0.8107229471206665,
+        "old_score": 0.9002848925076343,
+        "old_probability": 0.9997408986091614,
+        "probability": 0.9361472725868225,
+        "score": 0.8711808513566874,
+        "E003_score": 0.8711808513566874,
+        "parent_id": 3292,
+        "candidate_id": "o:3292",
+        "kind": "original"
+      },
+      "emitted": {
+        "image_id": "reid-1459__2023-06-14_12-36-15-562-n00088.jpg",
+        "reid": "1459",
+        "box_xyxy": [
+          1059.393409729004,
+          609.141845703125,
+          1302.6744079589844,
+          670.443115234375
+        ],
+        "proposer_confidence": 0.8107229471206665,
+        "old_score": 0.9002848925076343,
+        "old_probability": 0.9997408986091614,
+        "probability": 0.9361472725868225,
+        "score": 0.8711808513566874,
+        "E003_score": 0.8711808513566874,
+        "parent_id": 3292,
+        "candidate_id": "o:3292",
+        "kind": "original"
+      }
+    },
+    {
+      "kind": "metric_false_positive",
+      "image_id": "reid-5982__2023-11-26_12-09-51-790-n00103.jpg",
+      "parent_id": 18714,
+      "original": {
+        "image_id": "reid-5982__2023-11-26_12-09-51-790-n00103.jpg",
+        "reid": "5982",
+        "box_xyxy": [
+          912.9508056640625,
+          461.6094970703125,
+          1119.9298095703125,
+          472.113525390625
+        ],
+        "proposer_confidence": 0.5629874467849731,
+        "old_score": 0.7489355671938833,
+        "old_probability": 0.9963001608848572,
+        "probability": 0.96043860912323,
+        "score": 0.7353331764200485,
+        "E003_score": 0.7353331764200485,
+        "parent_id": 18714,
+        "candidate_id": "o:18714",
+        "kind": "original"
+      },
+      "emitted": {
+        "image_id": "reid-5982__2023-11-26_12-09-51-790-n00103.jpg",
+        "reid": "5982",
+        "box_xyxy": [
+          912.9508056640625,
+          461.6094970703125,
+          1119.9298095703125,
+          472.113525390625
+        ],
+        "proposer_confidence": 0.5629874467849731,
+        "old_score": 0.7489355671938833,
+        "old_probability": 0.9963001608848572,
+        "probability": 0.96043860912323,
+        "score": 0.7353331764200485,
+        "E003_score": 0.7353331764200485,
+        "parent_id": 18714,
+        "candidate_id": "o:18714",
+        "kind": "original"
+      }
+    }
+  ]
+}
