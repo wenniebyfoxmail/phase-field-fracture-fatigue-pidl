@@ -63,10 +63,19 @@ def report(root, out):
     lock = json.loads((root/'docs/research/S04/S04-E016/paired_s4_lock_candidate_20261013.json').read_text())
     fempath = next(t['fem_path'] for t in lock['trajectories'] if t['id'] == 'u0115')
     mesh = loadmat(root/fempath, variable_names=['coordinates', 'cells'])
+    render_fields(mesh, ids, data, model['scales'], out/'u0115_C20_fields.png',
+                  'Fixed heldout U0.115 C20 / s4 | native Q4 P0 | display asinh only; no clipping')
+    assert sum(f.stat().st_size for f in out.rglob('*') if f.is_file()) < 100*1024**2
+    print(json.dumps([r for r in summary if r['stratum'] == 'all'], indent=2))
+
+
+def render_fields(mesh, ids, data, scales, destination, title):
+    """Same twelve native-Q4 panels for production and synthetic-only memory QA."""
+    fields = ('damage', 'alpha_bar', 'psi_raw_direct')
     polygons = mesh['coordinates'][mesh['cells'].astype(int)[ids]-1]
     fig, axes = plt.subplots(3, 4, figsize=(13, 9), constrained_layout=True)
     for j, field in enumerate(fields):
-        scale = 1. if j == 0 else model['scales'][j-1]
+        scale = 1. if j == 0 else scales[j-1]
         visible = [np.arcsinh(v[:, j]/scale) for v in data]
         limit = max(float(np.abs(v).max()) for v in visible)
         residual = np.arcsinh((data[2][:, j]-data[0][:, j])/scale)
@@ -80,11 +89,8 @@ def report(root, out):
             ax.set_aspect('equal'); ax.set_xlabel('x (native frame)'); ax.set_ylabel('y (native frame)')
             ax.set_title((['FEM', 'PIN / B0', 'B1', 'B1 - FEM'][i])+' | '+field, fontsize=9)
             fig.colorbar(poly, ax=ax, shrink=.75, label='asinh(value / training PIN scale)' if j else 'asinh(d)')
-    fig.suptitle('Fixed heldout U0.115 C20 / s4 | native Q4 P0 | display asinh only; no clipping')
-    fig.savefig(out/'u0115_C20_fields.png', dpi=160); plt.close(fig)
-    assert sum(f.stat().st_size for f in out.rglob('*') if f.is_file()) < 100*1024**2
-    print(json.dumps([r for r in summary if r['stratum'] == 'all'], indent=2))
-
+    fig.suptitle(title)
+    fig.savefig(destination, dpi=160); plt.close(fig)
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(); p.add_argument('--out', required=True); a = p.parse_args()

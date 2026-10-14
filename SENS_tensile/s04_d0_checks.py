@@ -1,5 +1,6 @@
 """Preflight engineering tests only; actual archive mode never fits/scores."""
 import argparse
+import gc
 import itertools
 import json
 from pathlib import Path
@@ -129,10 +130,56 @@ def memory(root):
                 limitation='source+full-feature+synthetic accumulation preflight, not full real-pipeline guarantee')
 
 
+def score_memory(root):
+    # Retain every actual input allocation, but NEVER fit or score these sources.
+    resident, pipeline = new.load_inputs(root, root/'docs/research/S04/S04-E016/paired_s4_lock_candidate_20261013.json')
+    n, cells = 121, 86408
+    pin = {k: np.full((n, cells), .2, dtype=np.float32) for k in FIELDS}
+    fem = {k: np.full((n, cells), .21, dtype=np.float32) for k in new.TARGETS}
+    case = dict(pin=pin, fem=fem, n=n, umax=.115)
+    model = dict(scales=np.ones(2), xm=np.zeros(32), xstd=np.ones(32),
+                 ym=np.zeros(3), ystd=np.ones(3), coefficients=[np.zeros((33, 3))]*3)
+    rows = []
+    scores, base = new.evaluate({'SYNTHETIC': case}, 'SYNTHETIC', model, pipeline, range(3), rows)
+    assert len(resident) == 4 and len(rows) == 121*3*3
+    assert np.isfinite(scores).all() and np.isfinite(base).all()
+    return dict(status='PASS', mode='score_memory', synthetic_cells=cells,
+                admitted_score_cells=len(pipeline.ids), synthetic_cycles=n,
+                resident_actual_sources=True, actual_fit=False, actual_score=False,
+                limitation='real source residency plus extra synthetic arrays is conservative for scoring; no real score or selection')
+
+
+def render_memory(root, destination):
+    from scipy.io import loadmat
+    from s04_d0_report import render_fields
+    lock = json.loads((root/'docs/research/S04/S04-E016/paired_s4_lock_candidate_20261013.json').read_text())
+    with np.load(root/lock['geometry']['path']) as g: ids = np.flatnonzero(g['contained'])
+    meshpath = next(t['fem_path'] for t in lock['trajectories'] if t['id'] == 'u0115')
+    mesh = loadmat(root/meshpath, variable_names=['coordinates', 'cells'])
+    x = mesh['coordinates'][mesh['cells'].astype(int)[ids]].mean(axis=1)[:, 0]
+    values = np.column_stack((x*.2, np.exp(x), np.exp(-x)))
+    data = [values, values*.9, values*1.1]
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    render_fields(mesh, ids, data, np.ones(2), destination,
+                  'SYNTHETIC ENGINEERING MEMORY CHECK | not a B0/B1 result')
+    gc.collect()
+    return dict(status='PASS', mode='render_memory', admitted_cells=len(ids), panels=12,
+                synthetic_only=True, figure=str(destination), actual_fit=False, actual_score=False,
+                limitation='same production field-plot function and geometry, synthetic fields only')
+
+
 if __name__ == '__main__':
-    p = argparse.ArgumentParser(); p.add_argument('--mode', choices=['equivalence', 'memory'], required=True)
+    p = argparse.ArgumentParser(); p.add_argument('--mode', choices=['equivalence', 'memory', 'score_memory', 'render_memory'], required=True)
     p.add_argument('--out', required=True); a = p.parse_args(); start = time.monotonic()
-    result = equivalence() if a.mode == 'equivalence' else memory(Path(__file__).resolve().parents[1])
+    root = Path(__file__).resolve().parents[1]
+    if a.mode == 'equivalence': result = equivalence()
+    elif a.mode == 'memory': result = memory(root)
+    elif a.mode == 'score_memory': result = score_memory(root)
+    else: result = render_memory(root, Path(a.out).with_suffix('.png'))
+    rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    if sys.platform != 'darwin': rss *= 1024
+    result['peak_rss_bytes'] = rss
+    assert rss < 2*1024**3, 'Engineering check exceeds original memory cap'
     result['elapsed_seconds'] = time.monotonic()-start
     result['code_commit'] = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
     destination = Path(a.out); assert not destination.exists(); destination.parent.mkdir(parents=True, exist_ok=True)
