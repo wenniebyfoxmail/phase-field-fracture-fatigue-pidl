@@ -156,7 +156,7 @@ def render_memory(root, destination):
     with np.load(root/lock['geometry']['path']) as g: ids = np.flatnonzero(g['contained'])
     meshpath = next(t['fem_path'] for t in lock['trajectories'] if t['id'] == 'u0115')
     mesh = loadmat(root/meshpath, variable_names=['coordinates', 'cells'])
-    x = mesh['coordinates'][mesh['cells'].astype(int)[ids]].mean(axis=1)[:, 0]
+    x = mesh['coordinates'][mesh['cells'].astype(int)[ids]-1].mean(axis=1)[:, 0]
     values = np.column_stack((x*.2, np.exp(x), np.exp(-x)))
     data = [values, values*.9, values*1.1]
     destination.parent.mkdir(parents=True, exist_ok=True)
