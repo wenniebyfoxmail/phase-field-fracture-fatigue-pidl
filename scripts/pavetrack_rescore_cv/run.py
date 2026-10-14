@@ -10,11 +10,16 @@ read,write,sha256_file,box_iou,metrics,oracle_coverage,admitted_targets=p.read,p
 PROTOCOL='S01-E008-v1'
 def verify_source():
  for name,h in read(ROOT/'docs/research/S01/S01-E008/source_manifest.json')['files'].items():m.check_hash(ROOT/name,h)
+def check_contract_paths(config,lock=None):
+ files=read(ROOT/'docs/research/S01/S01-E008/source_manifest.json')['files']
+ m.check_hash(config,files['docs/research/S01/S01-E008/run_config.json'])
+ if lock is not None:m.check_hash(lock,files['docs/research/S01/S01-E008/data_lock.json'])
 def prior_args(a):
  d=vars(a).copy();d.update(config=ROOT/'docs/research/S01/S01-E007/run_config.json',lock=ROOT/'docs/research/S01/S01-E007/data_lock.json',run=a.paired_run);return SimpleNamespace(**d)
 def lineage(a):
  return dict(protocol=PROTOCOL,source_manifest_sha256=sha256_file(ROOT/'docs/research/S01/S01-E008/source_manifest.json'),config_sha256=sha256_file(a.config),lock_sha256=sha256_file(a.lock),paired_feature_receipt_sha256=sha256_file(a.paired_run/'feature_receipt.json'),paired_run_id=a.paired_run.name,inherited_lineage=p.lineage(prior_args(a)))
 def load(a):
+ check_contract_paths(a.config,a.lock)
  cfg=read(a.config);lock=read(a.lock);qa=prior_args(a);oldcfg,oldlock,dev,val,train,corr,audit=p.load(qa)
  if cfg['protocol']!=PROTOCOL or lock['protocol']!=PROTOCOL or cfg['score_features']!=576:raise ValueError('rescore protocol')
  if {k:v for k,v in lock.items() if k!='protocol'}!={k:v for k,v in oldlock.items() if k!='protocol'} or cfg['qualification_locations']!=oldcfg['qualification_locations']:raise ValueError('partition mutation')

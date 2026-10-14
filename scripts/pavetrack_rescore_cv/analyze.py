@@ -46,8 +46,20 @@ def cases(e,before,after):
    if len(seen)==2:break
  return selected
 
+def verified_case_images(images,development,selected):
+ canonical=m.ROOT/'docs/research/S01/S01-E006/run_config.json';files=m.read(m.ROOT/'docs/research/S01/S01-E008/source_manifest.json')['files'];m.m.check_hash(canonical,files['docs/research/S01/S01-E006/run_config.json']);m.m.check_hash(development,m.read(canonical)['source_development_sha256'])
+ records={r['image_id']:r for r in m.read(development)['records']};result={}
+ for case in selected:
+  imid=case['image_id'];record=records[imid]
+  if record['split'] not in ['train','validation']:raise ValueError('sealed image in montage')
+  path=images/imid;m.m.check_hash(path,record['prepared_image_sha256'])
+  with Image.open(path) as im:
+   if im.size!=(record['width'],record['height']):raise ValueError('montage image dimensions')
+   result[imid]=im.convert('RGB')
+ return result
+
 def main():
- parser=argparse.ArgumentParser();parser.add_argument('--evaluation',type=Path,required=True);parser.add_argument('--decision',type=Path,required=True);parser.add_argument('--config',type=Path,required=True);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--run-id',required=True);parser.add_argument('--images',type=Path);a=parser.parse_args();cfg=m.read(a.config);e=m.read(a.evaluation);d=m.read(a.decision)
+ parser=argparse.ArgumentParser();parser.add_argument('--evaluation',type=Path,required=True);parser.add_argument('--decision',type=Path,required=True);parser.add_argument('--config',type=Path,required=True);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--run-id',required=True);parser.add_argument('--images',type=Path);parser.add_argument('--development',type=Path);a=parser.parse_args();m.check_contract_paths(a.config);cfg=m.read(a.config);e=m.read(a.evaluation);d=m.read(a.decision)
  if e['protocol']!=cfg['protocol'] or d['protocol']!=cfg['protocol'] or e['config_sha256']!=m.sha256_file(a.config) or d['config_sha256']!=e['config_sha256']:raise ValueError('analysis lineage')
  qual='policies' in e;policies=e['policies'] if qual else [e];summaries=[];tables=[];hits=[]
  if qual and [r['score_ratio'] for r in policies]!=cfg['score_ratio_limits']:raise ValueError('fixed policy grid')
@@ -75,10 +87,12 @@ def main():
  for panel in axes:panel.set_xticks(x,[r['location'] for r in ts]);panel.grid(axis='y',alpha=.2)
  fig.suptitle(a.run_id+' — '+('train qualification' if qual else 'reused development')+';ratio'+str(policies[index]['score_ratio']));fig.tight_layout();fig.savefig(a.output/'F01_locations.png',dpi=180);plt.close(fig)
  if a.images and selected:
+  if a.development is None:raise ValueError('montage requires verified development manifest')
+  case_images=verified_case_images(a.images,a.development,selected)
   fig,axes=plt.subplots(math.ceil(len(selected)/3),3,figsize=(16,4.4*math.ceil(len(selected)/3)),squeeze=False)
   for panel in axes.flat:panel.axis('off')
   for panel,case in zip(axes.flat,selected):
-   panel.imshow(Image.open(a.images/case['image_id']).convert('RGB'))
+   panel.imshow(case_images[case['image_id']])
    for box in policies[index]['targets'][case['image_id']]:panel.add_patch(Rectangle((box[0],box[1]),box[2]-box[0],box[3]-box[1],fill=False,ec='#E41A1C',lw=2))
    for key,color in [('original','#F5A623'),('emitted','#00A6D6')]:
     box=case[key]['box_xyxy'];panel.add_patch(Rectangle((box[0],box[1]),box[2]-box[0],box[3]-box[1],fill=False,ec=color,lw=2))

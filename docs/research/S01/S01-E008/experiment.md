@@ -137,3 +137,5 @@ enter the prefix but do not yield protected net benefit,identify FP/duplicate
 cost and stop this frozen-classifier route rather than loosening ratios. If even
 useful geometry cannot enter the prefix,redirect to more informative localisation
 capacity/data instead of another unchanged selector. No new arm within E008.
+
+Execution and analysis reject any supplied config/lock differing from the frozen source manifest. F02 requires the existing development manifest with its pinned SHA and verifies each selected image SHA and dimensions before rendering. Cache-only numerical replay does not repeat image extraction or spend a second inference budget.

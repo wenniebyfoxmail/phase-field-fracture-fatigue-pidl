@@ -16,3 +16,21 @@ def test_exact_metric_replay_and_admitted_case_selection():
 def test_removed_original_or_changed_score_invalidates_replay():
  e=evaluation();e['rows'][0]['score']=.5
  with pytest.raises(ValueError):a.replay(e,CFG,True)
+
+def test_montage_rejects_wrong_manifest_pixels_and_dimensions(tmp_path,monkeypatch):
+ from PIL import Image
+ import json,hashlib
+ im=tmp_path/'a.png';Image.new('RGB',(3,4)).save(im);dev=tmp_path/'dev.json'
+ record=dict(image_id='a.png',split='train',prepared_image_sha256=m.sha256_file(im),width=3,height=4);dev.write_text(json.dumps({'records':[record]}))
+ original=m.read
+ def reader(path):
+  if str(path).endswith('S01-E006/run_config.json'):return {'source_development_sha256':m.sha256_file(dev)}
+  return original(path)
+ monkeypatch.setattr(m,'read',reader)
+ assert a.verified_case_images(tmp_path,dev,[{'image_id':'a.png'}])['a.png'].size==(3,4)
+ Image.new('RGB',(4,4)).save(im)
+ with pytest.raises(ValueError):a.verified_case_images(tmp_path,dev,[{'image_id':'a.png'}])
+ record['prepared_image_sha256']=m.sha256_file(im);dev.write_text(json.dumps({'records':[record]}))
+ with pytest.raises(ValueError):a.verified_case_images(tmp_path,dev,[{'image_id':'a.png'}])
+ monkeypatch.setattr(m,'read',original)
+ with pytest.raises(ValueError):a.verified_case_images(tmp_path,dev,[{'image_id':'a.png'}])

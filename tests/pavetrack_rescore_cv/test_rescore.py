@@ -45,3 +45,12 @@ def test_selection_ties_choose_larger_ratio_and_entire_receipt_binds_fresh():
 def test_parent_mutation_rejected():
  original,pairs=fixture();pairs[0]=dict(pairs[0],score=.25)
  with pytest.raises(ValueError):m.added_bank(original,pairs,[.9],CFG,1.)
+
+def test_actual_config_and_lock_bound_to_frozen_manifest(tmp_path):
+ config=ROOT/'docs/research/S01/S01-E008/run_config.json';lock=ROOT/'docs/research/S01/S01-E008/data_lock.json'
+ c=tmp_path/'config.json';l=tmp_path/'lock.json';c.write_bytes(config.read_bytes());l.write_bytes(lock.read_bytes());m.check_contract_paths(c,l)
+ for key,value in [('primary_delta',0),('minimum_retention',0),('crop_padding',.2),('score_ratio_limits',[1.]),('maximum_qualification_corrections',99999)]:
+  changed=m.read(config);changed[key]=value;c.write_text(json.dumps(changed))
+  with pytest.raises(ValueError):m.check_contract_paths(c,l)
+ c.write_bytes(config.read_bytes());l.write_text(json.dumps(dict(m.read(lock),protocol='changed')))
+ with pytest.raises(ValueError):m.check_contract_paths(c,l)

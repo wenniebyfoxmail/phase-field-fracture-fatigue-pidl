@@ -11,7 +11,7 @@
     "docs/research/S01/S01-E007/run_config.json": "3f63840ad1969d8af80d354ced9399d931f5d9603e47f203c76c7f09a5173826",
     "docs/research/S01/S01-E007/source_manifest.json": "5bd5ffe118fbe35a8674a66cf8ccc766bb37f98dbeafb5d2082f9672a7bfcaf4",
     "docs/research/S01/S01-E008/data_lock.json": "5972e914ab0416a27eab5fb7777cb3ca7d00b5ae3bc760acdb1766db03b178cc",
-    "docs/research/S01/S01-E008/experiment.md": "edda7a170747cfdf54f74a449a0df104795a3ddacbdc46c8148622e482839a51",
+    "docs/research/S01/S01-E008/experiment.md": "40c09944d190c86bf78f1afe0f092f28fcd12fadd61c07d903b96269f2569f3d",
     "docs/research/S01/S01-E008/run_config.json": "a085d93c03790b23d8e1c96b50fe22182dcf59733d1003d173b751b9ad986143",
     "scripts/pavetrack_box_cv/run.py": "95cd55f6ecd390216fbb76ed5483742419f2c05b53965637404fac05734ac16a",
     "scripts/pavetrack_cv/__init__.py": "bf073aa0c1ecb700a26d8ea2a12e3c4750145de63e9afb2c6e9b663cb19794c6",
@@ -31,9 +31,9 @@
     "scripts/pavetrack_protected_cv/producer.ps1": "c721f12d1a612920b0bd243420f43ef74565bda50aa74fee4b244bab441e378e",
     "scripts/pavetrack_protected_cv/run.py": "5d0be45e7a6599334f704191d0b1c9ee17c9fdbb3d707bab67f4e0a60aa1e40f",
     "scripts/pavetrack_ranker_cv/run.py": "d4afb1b845b3592df2e732327e3753d433b89a893ab916c8356a6d44fecfae28",
-    "scripts/pavetrack_rescore_cv/analyze.py": "b1843672d7c2008188ff8c0ebb69986b7a7562b457a79f0a093ea4161be15fcc",
+    "scripts/pavetrack_rescore_cv/analyze.py": "11f43f94aa98224650e649e0f895fe131cfb3953b7fd5477752440d4d353bdca",
     "scripts/pavetrack_rescore_cv/producer.ps1": "1001092605d85c15fd41cc3cfb054aec2f321383e4c05ebf9d12f772a3643083",
-    "scripts/pavetrack_rescore_cv/run.py": "0851ce761896fd33d4498fe0faec2eb28fef658e6e865fec5c18007f514758c5",
+    "scripts/pavetrack_rescore_cv/run.py": "f9b0fbcc3aa5462dc8810c4b47ee573c2d6fd15e70a5adee5e7863adc6348a64",
     "scripts/pavetrack_tiled_cv/__init__.py": "c4d5faefcbe765aa12bac42344642426513c30e0c0d4286c5cc34e4ff56a5e13",
     "scripts/pavetrack_tiled_cv/audit_s01_e001.py": "edbf7a9d51cac185ffdfdf65a97919d6809a57083715e12b665eeab0d00566d5",
     "scripts/pavetrack_tiled_cv/contracts.py": "00145d080a56909f8be6ed98b1384c44fa86ab12925a1eb7db582ecd987fad2c",
@@ -49,7 +49,7 @@
     "tests/pavetrack_paired_cv/test_qualification_analysis.py": "1559dfa5e74d784900d0cab58fe0b7e47da5624a82ed30a5f60af8bf2ab8d34b",
     "tests/pavetrack_protected_cv/test_protected.py": "f0196d97597021cdf58a69db9d926f89f5a22cef4b959d811f018e8e2d178c56",
     "tests/pavetrack_protected_cv/test_protected_analysis.py": "e0b80743d7b18be97933f0f84c2cdb7f608ef2f5a983b088c3e557d9e128e107",
-    "tests/pavetrack_rescore_cv/test_rescore.py": "00da06382cf9e1693b049de56e0095bea6cbe63df51161c5a0c8316c79aa5a69",
-    "tests/pavetrack_rescore_cv/test_rescore_analysis.py": "7a16acc679c0f0a959472272f4d5c7a900c604bb85d1101c8138ec76af097620"
+    "tests/pavetrack_rescore_cv/test_rescore.py": "cfd485896de834847550fc4277e648847ac7f968ab5eac3cd9675eb18bf02976",
+    "tests/pavetrack_rescore_cv/test_rescore_analysis.py": "892385373fb19b815c6c9d57e742781364d39c4c8431c8a13614a9c583a26e5b"
   }
 }
