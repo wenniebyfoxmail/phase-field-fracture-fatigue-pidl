@@ -267,3 +267,15 @@ Delta-model development protocol before U0.125 is opened.
   cycle-streamed moments/Gram, dense-equivalence and working-set checks; a
   fresh actual R002 needs renewed exact review and authorization. Archive data
   admission unchanged;teacher/physics/Contract A HOLD, .1175/.125 still closed.
+- 2026-10-15 R002 terminal: exact3f78309 final review request sent with the
+  user's per-send approval; independent code review passed. Sole authorized
+  B0/B1 execution COMPLETED without retry:97.73s, peakRSS1.468GiB, output
+  about27.1MiB, below the unchanged300s/2GiB/100MiB joint limits. All12
+  transformed all-cycle ratios improve, but C1-20 damage regresses in all
+  four holdouts, physical raw driver regresses in three, and mean damage
+  bound-violation area is40.2%-67.1%. Verdict MIXED diagnostic, not physical
+  correction qualification or shared-network gradient-conflict evidence.
+  See d0_streaming_checks_and_run_20261014.md and external R002 analysis/figures.
+  Obsidian topic and single Roadmap entry updated. Next is read-only review of
+  existing early-cycle/raw/bound regressions; no automatic D1/NN, refit,
+  clipping, retry or confirmation access. No new outbound result send approved.
