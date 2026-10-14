@@ -12,7 +12,6 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 import numpy as np
-from scipy.spatial import cKDTree
 from aa2024_triplet_structure import read_member, parse_nodemap, EXPECTED_SIZE, EXPECTED_MD5
 from aa2024_patch_mechanics import rectangular_mesh, solve_patch, sample_regular_mesh
 from aa2024_boundary_basis import sha, load, bindings, write_json, headers, error, check_budget
@@ -42,23 +41,47 @@ def identity(h,s):
     if not np.isfinite(f):raise ValueError('nonfinite force')
     return f
 
-def affine_at(xy,du,points):
-    dist,idx=cKDTree(xy).query(points,k=4)
-    values=np.full((len(points),2),np.nan);ranks=[]
-    for i,(p,neighbors) in enumerate(zip(points,idx)):
-        A=np.column_stack((np.ones(4),xy[neighbors]-p))
-        c,_,rank,_=np.linalg.lstsq(A,du[neighbors],rcond=1e-12);ranks.append(int(rank))
-        if rank==3 and dist[i,3]<=2:values[i]=c[0]
-    return values,dist[:,3],ranks
+def affine_at(xy,du,points,*,ids=None,same_side=False,diagnostics=None):
+    ids=np.arange(1,len(xy)+1) if ids is None else np.asarray(ids)
+    if (xy.shape!=(len(ids),2) or du.shape!=(len(ids),2) or len(set(ids))!=len(ids)
+        or not np.isfinite(xy).all() or not np.isfinite(du).all()):
+        raise ValueError('interpolation input identity/finite/shape')
+    values=np.full((len(points),2),np.nan);dist=np.full(len(points),np.inf);ranks=[]
+    for i,p in enumerate(points):
+        pool=np.flatnonzero(xy[:,1]>0 if p[1]>0 else xy[:,1]<0) if same_side else np.arange(len(xy))
+        d2=np.sum((xy[pool]-p)**2,axis=1)
+        # Exact computed XY-distance ties are resolved by original facet ID.
+        neighbors=pool[np.lexsort((ids[pool],d2))[:4]]
+        note=dict(query_xy_mm=p.tolist(),neighbor_ids=ids[neighbors].tolist(),rank=0,
+            condition_number=None,coefficients=None,coefficient_L1=None,coefficient_L2=None)
+        rank=0
+        if len(neighbors)==4:
+            dist[i]=float(np.sqrt(np.sum((xy[neighbors[-1]]-p)**2)))
+            A=np.column_stack((np.ones(4),xy[neighbors]-p))
+            c,_,rank,svals=np.linalg.lstsq(A,du[neighbors],rcond=1e-12)
+            note['rank']=int(rank)
+            if rank==3:
+                weights=np.linalg.lstsq(A.T,np.array([1.,0.,0.]),rcond=1e-12)[0]
+                if not np.isfinite(c).all() or not np.isfinite(weights).all():
+                    raise ValueError('nonfinite affine coefficients')
+                note.update(condition_number=float(svals[0]/svals[-1]),coefficients=weights.tolist(),
+                    coefficient_L1=float(np.abs(weights).sum()),coefficient_L2=float(np.linalg.norm(weights)))
+                if dist[i]<=2:values[i]=c[0]
+        ranks.append(int(rank));note['fourth_distance_mm']=float(dist[i]) if np.isfinite(dist[i]) else None
+        note['supported']=bool(np.isfinite(values[i]).all())
+        if diagnostics is not None:diagnostics.append(note)
+    return values,dist,ranks
 
-def halfheight(x,y):
-    if not np.isfinite(y).all():raise ValueError('primary profile unsupported')
-    i=int(np.argmax(y));peak=float(y[i]);level=peak/2
+def halfheight(x,y,*,allow_missing=False):
+    finite=np.isfinite(y)
+    if not finite.any() or (not allow_missing and not finite.all()):raise ValueError('primary profile unsupported')
+    i=int(np.argmax(np.where(finite,y,-np.inf)));peak=float(y[i]);level=peak/2
     if peak<=0:raise ValueError('nonpositive corrected opening peak')
     l=r=i
-    while l>0 and y[l-1]>=level:l-=1
-    while r<len(y)-1 and y[r+1]>=level:r+=1
+    while l>0 and finite[l-1] and y[l-1]>=level:l-=1
+    while r<len(y)-1 and finite[r+1] and y[r+1]>=level:r+=1
     if l==0 or r==len(y)-1:raise ValueError('halfheight crossings absent')
+    if not finite[l-1] or not finite[r+1]:raise ValueError('halfheight interrupted by missing support')
     left=float(x[l-1]+(level-y[l-1])*(x[l]-x[l-1])/(y[l]-y[l-1]))
     right=float(x[r]+(level-y[r])*(x[r+1]-x[r])/(y[r+1]-y[r]))
     if not -16.2<=left<right<=16.2:raise ValueError('proxy outside fixed interior margin')
@@ -66,28 +89,58 @@ def halfheight(x,y):
     lobes=int(above[0])+int(np.sum(above[1:]&~above[:-1]))
     return dict(left_mm=left,right_mm=right,peak_x_mm=float(x[i]),peak_mm=peak,
         halfheight_mm=level,lobes_above_halfheight=lobes,
+        left_bracket_mm=[float(x[l-1]),float(x[l])],right_bracket_mm=[float(x[r]),float(x[r+1])],
+        center_mm=(left+right)/2,length_mm=right-left,
+        center_change_from_old_mm=(left+right)/2+1.5,length_change_from_old_mm=right-left-15,
+        left_change_from_old_mm=left+9,right_change_from_old_mm=right-6,
         meaning='opening_localisation_prior_NOT_measured_crack_tips')
 
-def profile(xy,du,b):
+def profile(xy,du,b,*,ids=None):
     p=np.column_stack((np.tile(X,2),np.repeat([b,-b],len(X))))
-    v,dist,ranks=affine_at(xy,du,p);upper,lower=np.split(v,2)
+    interpolation=[]
+    v,dist,ranks=affine_at(xy,du,p,ids=ids,same_side=True,diagnostics=interpolation);upper,lower=np.split(v,2)
     opening=upper[:,1]-lower[:,1];support=np.isfinite(opening)
     tail=(np.abs(X)>=18)&support
-    coeff=None;corrected=np.full(len(X),np.nan);cross=None;issue=None
-    if tail.sum()>=4:
+    coeff=None;corrected=np.full(len(X),np.nan);cross=None;issue=None;trend=None;tail_residual=None
+    primary=b==3.6
+    eligible=(support.all() if primary else (np.any(tail&(X<0)) and np.any(tail&(X>0))))
+    if eligible and tail.sum()>=2:
         A=np.column_stack((np.ones(tail.sum()),X[tail]))
         c,_,rank,_=np.linalg.lstsq(A,opening[tail],rcond=1e-12)
         if rank==2:
-            coeff=c.tolist();corrected=opening-c[0]-c[1]*X
-            try:cross=halfheight(X,corrected)
+            coeff=c.tolist();trend=c[0]+c[1]*X;corrected=opening-trend
+            tail_residual=(opening[tail]-trend[tail]).tolist()
+            try:cross=halfheight(X,corrected,allow_missing=not primary)
             except ValueError as e:issue=str(e)
         else:issue='tail affine rank'
-    else:issue='insufficient outer background locations'
+    else:issue='primary support incomplete' if primary else 'outer trend requires supported locations on both sides'
     finite_list=lambda a:[float(v) if np.isfinite(v) else None for v in a]
     return dict(gauge_mm=b,x_mm=X.tolist(),opening_mm=finite_list(opening),
         corrected_mm=finite_list(corrected),background_coefficients=coeff,
-        supported=support.tolist(),fourth_distances_mm=dist.tolist(),ranks=ranks,
+        outer_trend_mm=None if trend is None else finite_list(trend),outer_indices=np.flatnonzero(tail).tolist(),
+        outer_residual_mm=tail_residual,interpolation=interpolation,
+        supported=support.tolist(),fourth_distances_mm=finite_list(dist),ranks=ranks,
         crossings=cross,issue=issue)
+
+def plane_diagnostic(xyz,du3):
+    A=np.column_stack((np.ones(len(xyz)),xyz[:,:2]))
+    c,_,rank,_=np.linalg.lstsq(A,xyz[:,2],rcond=1e-12)
+    if rank!=3 or not np.isfinite(c).all():raise ValueError('reference plane rank/finite')
+    normal=np.array([-c[1],-c[2],1.]);normal/=np.linalg.norm(normal)
+    residual=(xyz[:,2]-np.einsum('ij,j->i',A,c))*normal[2]
+    return dict(region='common_training_scoring_ROI_absx<16.2_absy<7.2_positive_area',
+        points=len(xyz),plane_coefficients=c.tolist(),unit_normal_xyz=normal.tolist(),
+        tilt_degrees=float(np.degrees(np.arctan(np.hypot(c[1],c[2])))),
+        orthogonal_RMS_mm=float(np.sqrt(np.mean(residual**2))),
+        orthogonal_max_abs_mm=float(np.abs(residual).max()),
+        raw_increment_RMS_xyz_mm=np.sqrt(np.mean(du3**2,axis=0)).tolist())
+
+def prior_coverage(mesh,tri,d):
+    p=mesh[tri];area=((p[:,1,0]-p[:,0,0])*(p[:,2,1]-p[:,0,1])-(p[:,1,1]-p[:,0,1])*(p[:,2,0]-p[:,0,0]))/2
+    avg=d[tri].mean(1);g=(1-avg)**2+1e-6
+    return dict(lumped_damage_area_mm2=float(np.sum(area*avg)),
+        degradation_area_integral_mm2=float(np.sum(area*g)),
+        mean_element_degradation=float(np.sum(area*g)/area.sum()))
 
 def segment_prior(xy,left,right):
     distance=np.hypot(np.maximum(np.maximum(left-xy[:,0],xy[:,0]-right),0),xy[:,1])
@@ -130,31 +183,28 @@ def prepare(archive,out):
     w=area_weights(connection,xy,finite)
     obs=finite&(np.abs(xy[:,0])<16.2)&(np.abs(xy[:,1])<7.2)&(w>0)
     if obs.sum()<10:raise ValueError('insufficient common observations')
-    profiles={str(band):profile(xy[finite],du[finite],band) for band in (3.6,1.8,2.7)}
-    A=np.column_stack((np.ones(len(xyz)),xyz[:,:2]))
-    c,_,rank,_=np.linalg.lstsq(A,xyz[:,2],rcond=1e-12)
-    if rank!=3:raise ValueError('reference plane rank')
-    zres=xyz[:,2]-np.einsum('ij,j->i',A,c)
+    profiles={str(band):profile(xy[finite],du[finite],band,ids=ids[finite]) for band in (3.6,1.8,2.7)}
     audit=dict(cycle='292018.5',stages=[13,14],profiles=profiles,
         coordinate_max_abs_difference_mm=coordinate_difference.tolist(),joint_finite=int(finite.sum()),
-        plane_coefficients=c.tolist(),reference_z_plane_RMS_mm=float(np.sqrt(np.mean(zres**2))),
-        increment_RMS_xyz_mm=np.sqrt(np.mean(du3[finite]**2,axis=0)).tolist(),
+        plane=plane_diagnostic(a['xyz'][obs],du3[obs]),
         training_headers=[a['headers'],b['headers']],frame='serialized_reference_xy_no_header_reapplication',
         assumptions='y0/xaxis retained; plane stress/small strain/static damage not validated')
-    np.savez_compressed(out/'training_geometry.npz',xy=xy[finite],du=du3[finite],ids=ids[finite])
+    np.savez_compressed(out/'training_geometry.npz',xy=xy[finite],xyz=xyz,du=du3[finite],ids=ids[finite])
     write_json(out/'geometry_audit.json',audit)
     primary=profiles['3.6']
     if primary['crossings'] is None:raise ValueError('primary geometry admission: '+str(primary['issue']))
-    mesh,tri,bd=rectangular_mesh();bc,dist,ranks=affine_at(xy[finite],du[finite],mesh[bd])
+    mesh,tri,bd=rectangular_mesh();bc_notes=[]
+    bc,dist,ranks=affine_at(xy[finite],du[finite],mesh[bd],ids=ids[finite],diagnostics=bc_notes)
     if not np.isfinite(bc).all():raise ValueError('BC support/rank')
     cross=primary['crossings']
+    old=segment_prior(mesh,-9.,6.);proxy=segment_prior(mesh,cross['left_mm'],cross['right_mm'])
     np.savez_compressed(out/'prepared.npz',ids=ids[obs],xy=xy[obs],weights=w[obs],
         train_v=du[obs],u13=a['u'][obs,:2],alpha=(forces[2]-forces[0])/(forces[1]-forces[0]),
-        mesh=mesh,tri=tri,boundary=bd,bc=bc,old=segment_prior(mesh,-9.,6.),
-        proxy=segment_prior(mesh,cross['left_mm'],cross['right_mm']))
+        mesh=mesh,tri=tri,boundary=bd,bc=bc,old=old,proxy=proxy)
     write_json(out/'preparation.json',dict(cycle='292018.5',reference=1,forces=forces,
         observations=int(obs.sum()),weight_area_mm2=float(w[obs].sum()),proxy_geometry=cross,
-        boundary_fourth_max_mm=float(dist.max()),boundary_ranks=ranks,
+        boundary_fourth_max_mm=float(dist.max()),boundary_ranks=ranks,boundary_interpolation=bc_notes,
+        prior_coverage={k:prior_coverage(mesh,tri,d) for k,d in (('old',old),('proxy',proxy))},
         held_member_sha256=hashlib.sha256(texts[2].encode('utf-8')).hexdigest(),
         training_member_sha256=[hashlib.sha256(t.encode('utf-8')).hexdigest() for t in texts[:2]],
         archive=str(archive),archive_size=EXPECTED_SIZE,archive_md5=EXPECTED_MD5))

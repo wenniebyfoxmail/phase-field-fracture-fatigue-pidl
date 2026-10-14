@@ -1,6 +1,8 @@
 # S03-E016 — training-opening geometry prior diagnostic
 
-Protocol v1, prospective 2026-10-13. Owner S03-E016 / storyline S03.
+Protocol v2, prospective revision 2026-10-15 after the 2026-10-14 Pro review.
+Owner S03-E016 / storyline S03. Original v1 retained at commit7383d43;
+its REVISE_PLAN remains historical. No new-cycle fields or results viewed.
 NOT_READY before independent plan/code review, then actual training-asset review.
 Controlled-experiment C2 conditional static-response diagnostic, with C1
 coordinate admission. No independently measured crack-tip truth is available.
@@ -33,8 +35,13 @@ Do not reapply alignment headers: metadata describes degrees/translations, but
 exact exporter transformation algebra is unresolved. Preserve header values.
 Published consumer convention and previous fixed global quotient are retained,
 not promoted to an authenticated exporter inverse. No side-specific alignment.
-Record max coordinate mismatch, best-fit reference-plane deviation and RMS
-in-plane/out-of-plane increments as descriptive model-assumption checks only.
+Record max coordinate mismatch on the whole jointlyfinite training set.
+Plane diagnostic uses ONLY the fixed common scoring ROI defined below, equally
+weighted: OLS z=c0+c1*x+c2*y, normal(-c1,-c2,1) normalized towardpositivez,
+tilt atan(hypot(c1,c2)), orthogonal residual=(z-fit)*normal_z. Report normal,
+tiltdegrees, RMS/max orthogonalresidual and RAW XYZincrementRMS on thisROI.
+These are descriptive model-assumption checks, not a new threshold or permission
+to automatically rotate coordinates or fit3D mechanics. Preserve3Dcoordinates.
 Plane stress, small strain and 2D omission are assumptions, not validated facts.
 E remains normalized1 and cannot be identified from all-Dirichlet displacements.
 nu=.30, fixed damage/static kernel, no Gc/length-scale/history/evolution recovery.
@@ -44,29 +51,55 @@ nu=.30, fixed damage/static kernel, no Gc/length-scale/history/evolution recover
 Line y=0 and orientation x-axis RETAINED, not fitted or independently verified.
 x_i=.9*i mm for integer i=-26..26. At (x_i,+b) and (x_i,-b) independently
 interpolate the stage14-minus13 vector by affine LS over FOUR nearest jointly
-finite source facets: rank3 and fourth-neighbour distance<=2mm. This interpolates
+finite source facets, using reference XYdistance. All profile bands use SAME-SIDE
+support: upper from y>0, lower from y<0, excluding y=0. BC interpolation retains
+all jointlyfinite facets, no side restriction. Resolve exact computed squared-
+distance ties by ascending original facetID. Use centered[1,x-xq,y-yq] equal-
+weight OLS, rcond1e-12, same neighbours/coefficients for the paired increment;
+rank3 and fourth-neighbour distance<=2mm. Save neighbourIDs, distance, rank,
+conditionnumber, four interpolation coefficients, L1 and L2 amplification for
+ALL queries includingunsupported. No conditionnumber/noisecutoff added; rank or
+radius failure yields missingprofile/support failure forBC; nonfinite numerics
+stop, no alternative neighbourhood. Negativecoefficients reported, not called
+convex averaging. This interpolates
 same-x pairs; translation and infinitesimal in-plane rigid rotation contribute
 zero normal difference. Local affine interpolators can still smear near cracks;
 missing facets are NOT geometry labels. No strain columns used.
 
 Primary prescribed gauge b=3.6mm. Normal-opening proxy is upper delta_v minus
-lower delta_v. Fit an affine-in-x background using all profile locations with
-abs(x)>=18mm, subtract it from the entire proxy. Background fit is a TRAINING
+lower delta_v. Fit an affine-in-x OUTER LINEAR TREND using exactly the14 locations
+with abs(x)>=18mm, equal-weight ordinaryLS[1,x], rcond1e-12. Save their indices,
+values/residuals and trend at all53locations; subtract it from the entire proxy.
+No smoothing, robustreweighting, absolutevalues, negativeclipping or outlier
+deletion. This trend fit is a TRAINING
 observable definition, not a FEM BC correction or independently known remote
-elastic strain. Require all53 primary positions supported, >=4 outer positions,
+elastic strain. Require all53 primary pairs (106 queries) supported, all14outer positions,
 rank2 tail fit, finite outputs. No favorable band/tail selection.
 
 Let peak be the FIRST maximum of corrected primary opening. Require positive
-peak. Define connected contiguous bins at >=halfpeak containing that peak;
+peak (first in ascendingx, exactties). Define the piecewise-linear function
+through all53 samples and the connected component of >=halfpeak containing it;
 linear-interpolate its left/right halfheight crossings with adjacent below-half
 bins. Require crossings exist, L<R and -16.2<=L<R<=16.2 (1.8mm margin inside
 fixed B0). Multiple distinct lobes and the connected-bin rule are reported; no
 claim these halfheight locations are true crack tips or optical crack length.
 These two positions define the alternative segment (L,0)..(R,0). This is an
-effective opening-localisation PRIOR. No endpoint search by mechanical loss.
+effective opening-localisation PRIOR. Save both bracketing intervals, primary
+peak and number of halfheight lobes; plateaus at halfheight belong to the
+connected component until the outermost edge with an adjacentbelowhalf sample.
+No endpoint search by mechanical loss. Report old/new centers, lengths and both
+endpoint differences separately; changing both endpoints changes position AND
+length/damagecoverage. It is not a pure position intervention or proof of prior
+error. A positivepeak is mathematical definability, not a noise/physical test.
 
 Two prescribed secondary gauges b=1.8 and2.7mm use the same rule and report
-support/curves/crossings when available; unavailable bins stay missing. They do
+support/curves/crossings when available; unavailable bins stay missing. Each
+secondary trend uses only supportedouter positions, at least one on EACH side
+and rank2. Selectfirstfinite maximum; require its contiguoushalfheight region
+and both adjacentbelowhalf samples finite. Never bridge a missingbin; missing
+outside that component need not invalidate it. Existinginteriorcrossingbounds
+also apply to reportedsecondarycrossings. Conditions unmet -> bandundefined,
+no substitution for primary. They do
 NOT choose the primary band, veto/rescue held result, or qualify noise confidence.
 Report endpoint spread and whether original endpoints lie in that descriptive
 range. No bootstrap, node independence, pvalue or empirical noise threshold.
@@ -88,6 +121,10 @@ kernel E1/nu.30/plane stress/g(mean d)=(1-mean d)^2+1e-6. qR=qL=0 FIXED;
 no amplitude inversion or grid search. One intact solve as component comparator.
 Exactly3 solves, identical mesh/BC/scoring support. Save all three full nodal
 fields and current prior damage, sampled fields and numerical residuals.
+Report old/new source-independent artificialmesh area integrals of mean-nodal
+damage and g(mean-nodald), and area-mean degradation. These quantify coverage
+change, not extra parameter selection. No amplitude inversion despite data-
+adapted endpoints; geometry andBC are not independent measurements.
 Predictions highincrement alpha=(F15-F13)/(F14-F13) times each static increment;
 fourth prediction secant=alpha*(u14-u13). Save allfour predictions and successful
 source-bound completion receipt BEFORE stage15body conversion. No high winner
@@ -102,6 +139,12 @@ Delta>0 proxy procedure improves, Delta=0 equal, Delta<0 worsens. Report both
 against secant/intact separately; no arbitrary physical-success threshold.
 Held referencexy1e-6, finiteXYuv, >=10/rank3, SAME support allfour, IDs/missing/
 area coverage reported. Missingz/walone does not change held eligibility.
+Training interpolation (profiles AND BC) uses wholejointfiniteXYZ/UVW13/14;
+plane and trainingscore use exactlystrictROI/positiveweights subset; held
+projection is constructed once conceptually from that subset restricted to
+stage15finiteXYuv, using frozen13referencecoordinates and weights. Equivalent
+repeated deterministic projection calls do not imply per-arm alignment.
+No held-weight recomputation, sidealignment or x/yMAE substitution.
 
 Feasibility: E015 learningq added3.27% overd0 but geometry was transferred from
 firstcycle and no tips were measured; boundary/basis repairs did not help. No
@@ -128,6 +171,10 @@ FreshRunIDs; no fallbackproducer. Soft600s completion rule before/after each
 solve and after hashing/serialization; incomplete/overbudget artifacts forensic
 only, no held access, no automatic retry. Numerical residual<=1e-8, allfinite,
 damage0..1; same reviewed dependencies. Preserve all failure receipts.
+Budget applies to WHOLE three-solvefit includingserialization/artifacthashing;
+no prefix comparison or droppinglastarm. An inflight solve may finish, but any
+observedelapsed>=600 marks wholefitnoncompleted, retainsforensics only and
+blocksall stage15conversion. Finalelapsedcheckedafterhashingbeforesuccessreceipt.
 
 Minimum evidence: training source identity+headers, coords/support diagnostics,
 all53 primary and secondary gauge values/support/distances/background/crossings,
