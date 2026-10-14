@@ -4,6 +4,10 @@
   "policies": [
     {
       "harm_limit": 0.01,
+      "descriptive_location_bootstrap_95_interval": [
+        0.0,
+        0.0
+      ],
       "baseline_threshold": 0.23778385714397746,
       "geometry_gain_pairs": 177,
       "gain_pairs_above_baseline_threshold": 12,
@@ -13,6 +17,10 @@
     },
     {
       "harm_limit": 0.025,
+      "descriptive_location_bootstrap_95_interval": [
+        0.0,
+        0.0
+      ],
       "baseline_threshold": 0.23778385714397746,
       "geometry_gain_pairs": 177,
       "gain_pairs_above_baseline_threshold": 12,
@@ -22,6 +30,10 @@
     },
     {
       "harm_limit": 0.05,
+      "descriptive_location_bootstrap_95_interval": [
+        0.0,
+        0.0
+      ],
       "baseline_threshold": 0.23778385714397746,
       "geometry_gain_pairs": 177,
       "gain_pairs_above_baseline_threshold": 12,
@@ -31,6 +43,10 @@
     },
     {
       "harm_limit": 0.1,
+      "descriptive_location_bootstrap_95_interval": [
+        0.0,
+        0.0
+      ],
       "baseline_threshold": 0.23778385714397746,
       "geometry_gain_pairs": 177,
       "gain_pairs_above_baseline_threshold": 12,

@@ -52,3 +52,11 @@ scoring repaired crops with unchanged E003 before any further selection-head
 training;see result_20261014.md and next_solution_proposal.md. Independent evidence
 review pending at this snapshot. Results are local;only the prior approved source
 commit05f37c7 has been published to GitHub.
+
+qualification/location_metrics.csv records each of four locations for each fixed
+policy. F01_qualification_locations.png shows the already predeclared fixed.1
+rule's exact per-location E003/paired recall and retention,not an added comparison
+or an optimally chosen policy. The table and component-path record retain the
+frozen10000 paired-location bootstrap(seed20261013) for all4 rules:interval[0,0],
+because every location's recall change is0. This is descriptive conditional train
+variation,not a zero-uncertainty population or generalisation claim.
