@@ -261,11 +261,12 @@ def main():
     axis.set_xticks(range(len(pairs)), [f"B{b}\n{o:g}->{t:g}" for b, o, t in pairs])
     axis.set(ylabel="Stored next-stage MAE (native px), lower is better", xlabel="Beam | origin -> target nominal load (kN)",
              ylim=(0, None), title="Earlier E015 diagnostic: every forecast pair")
-    axis.legend(fontsize=9)
+    handles, labels = axis.get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(.5,.12), ncol=2, fontsize=9)
     axis.grid(axis="y", alpha=.2)
     fig.text(.1, .01, "Original E015-D01-R001 metrics only; 12 transects per pair, eight pairs / three beams.\n"
              "Observation-updated, retrospective conditional-load DEVELOPMENT task; not new forecast validation.", fontsize=9)
-    fig.subplots_adjust(bottom=.24)
+    fig.subplots_adjust(bottom=.32)
     old_summary = json.loads((a.original / "summary.json").read_text())
     secant_better = sum(next(float(r["MAE_native_px"]) for r in stored_metrics if (int(r["beam"]),float(r["origin_kN"]),float(r["target_kN"])) == p and r["arm"] == "secant") < next(float(r["MAE_native_px"]) for r in stored_metrics if (int(r["beam"]),float(r["origin_kN"]),float(r["target_kN"])) == p and r["arm"] == "persistence") for p in pairs)
     save(fig, a.output, "earlier_forecast_explanation", "What does the previously reported secant advantage mean?",
