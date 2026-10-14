@@ -7,8 +7,8 @@ all16 refit,development comparison or fresh access occurred. Keep E003.
 
 Current development-claim verdict is uncomputed/inconclusive. The official
 training status is inconclusive_qualification_exposure. See result_20261014.md,
-evidence/README_analysis.md and qualification tables/figures. An independent
-5.6-sol / Medium evidence review is pending. experiment.md retains its immutable
+evidence/README_analysis.md and qualification tables/figures. Independent5.6-sol / Medium evidence review PASS at
+115fe5fbcdde063773f33e123099ae2cf5bcc827;the attempt is now closed. experiment.md retains its immutable
 freeze-time frontmatter;this README and the later closure record carry current
 state. The112 local/producer checks verify implementation,not scientific gain.
 

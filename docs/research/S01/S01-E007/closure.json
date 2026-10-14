@@ -1,0 +1,51 @@
+{
+  "experiment_id": "S01-E007",
+  "protocol_revision": "v1",
+  "status": "closed",
+  "closed_at": "2026-10-14",
+  "execution_status": "succeeded_qualification_stopped",
+  "retrieval_status": "verified",
+  "scientific_verdict": "inconclusive",
+  "scientific_verdict_scope": "development protected-gain and fresh-location claims uncomputed",
+  "qualification_status": "inconclusive_qualification_exposure",
+  "qualification_observed_gain": "no detection gain for any frozen policy",
+  "qualification_locations": [
+    "353",
+    "1459",
+    "2028",
+    "5982"
+  ],
+  "qualification_retained_targets": 282,
+  "qualification_baseline_hits": 282,
+  "qualification_retention": 1.0,
+  "qualification_new_targets": 0,
+  "qualification_lost_targets": 0,
+  "qualification_macro_delta": 0.0,
+  "protected_exposures": [
+    1,
+    2,
+    4,
+    7
+  ],
+  "harms": [
+    1,
+    1,
+    2,
+    5
+  ],
+  "selected_policy": null,
+  "development_executed": false,
+  "confirmatory_access": false,
+  "actual_new_ridge_fits": 4,
+  "actual_qualification_head_fits": 1,
+  "actual_all16_head_fits": 0,
+  "research_disposition": "repair via separate corrected-crop score capability test;stop current attempt",
+  "adoption_decision": "retain E003 checkpoint and original outputs",
+  "independent_evidence_review": "PASS",
+  "evidence_commit": "115fe5fbcdde063773f33e123099ae2cf5bcc827",
+  "reviewed_runtime_commit": "2acaba7cec7b97f7a98ecedc2175784ab6383a4b",
+  "published_approved_source_commit": "05f37c7e06c96bd06008ccc7b574ca4d9075a5b2",
+  "result_publication": "local only;not included in prior human publication approval",
+  "next_design": "unchanged E003 corrected-crop scoring with immutable originals;unexecuted proposal",
+  "visual_qa": "F00/F01/F02 inspected;independent byte reproduction"
+}
