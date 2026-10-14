@@ -1,20 +1,21 @@
-# S01-E007 — prepared for one bounded attempt
+# S01-E007 — completed training qualification,stopped before development
 
-The paired original-target harm/gain model can abstain to the original box.
-Plan and results standard are frozen in experiment.md. Independent5.6-sol /
-Medium review passed at2acaba7cec7b97f7a98ecedc2175784ab6383a4b;112 tests pass.
+R001 executed the approved2acaba7 source on14 October2026. All four fixed
+training policies kept282/282 E003-hit targets but added0 detections. Only1–7
+accepted originally valid pairs were exposed,below20;none qualified. No final
+all16 refit,development comparison or fresh access occurred. Keep E003.
 
-The current state is locally prepared,not executed. Source transfer and GitHub
-publication await human approval of their exact accounts,targets and final files.
-experiment.md retains freeze-time frontmatter;this README records current state.
+Current development-claim verdict is uncomputed/inconclusive. The official
+training status is inconclusive_qualification_exposure. See result_20261014.md,
+evidence/README_analysis.md and qualification tables/figures. An independent
+5.6-sol / Medium evidence review is pending. experiment.md retains its immutable
+freeze-time frontmatter;this README and the later closure record carry current
+state. The112 local/producer checks verify implementation,not scientific gain.
 
-Protected benefit requires at least+.05 macro recall at the same1FP/image AND
-at least.95 micro retention of E003-hit target identities. Four train locations
-qualify one of four fixed abstention rules before any all16 refit/development
-comparison. No qualifying rule means original outputs retained and no development
-comparison. Budget4 new ridge fits,one qualification paired-head fit,at mostone
-all16 paired refit andone development comparison. Fresh locations stay sealed.
+Only the specifically approved source/review commit05f37c7 is on GitHub.
+Result commits are local and are not authorized by that earlier publication
+approval. Raw ZIP and arrays remain under the owning local archive/producer.
 
-No actualE007 model fit,execution outcome or detection gain exists at this state.
-Scientific records/results will remain under this Experiment after the approved
-attempt;the priorE006 negative and E003 comparator remain unchanged.
+Next_solution_proposal.md specifies an unexecuted corrected-crop scoring test
+with the unchanged E003 classifier and preserved original outputs. It requires
+separate freeze/review before execution. No thresholds or E007 budget were changed.
