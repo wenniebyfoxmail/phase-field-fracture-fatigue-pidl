@@ -17,7 +17,7 @@ def report(root, out):
     run = json.loads((out/'receipt.json').read_text())
     guard = json.loads((out.parent/(out.name+'_fit_guard_receipt.json')).read_text())
     assert run['status'] == guard['status'] == 'COMPLETED'
-    assert run['run_id'] == guard['run_id'] == 'S04-E016-D0-R001'
+    assert run['run_id'] == guard['run_id'] == 'S04-E016-D0-R002'
     assert run['code_commit'] == guard['code_commit'] == os.environ['D0_COMMIT']
     assert guard['output'] == str(out.resolve()) and guard['children'][0]['exit_code'] == 0
     assert guard['children'][0]['pid'] == run['pid']
@@ -55,7 +55,7 @@ def report(root, out):
         ax.axhline(1, color='gray', linestyle='--', label='B0 = 1')
         ax.set_xticks(range(4), keys); ax.set_ylabel('B1 / B0 balanced RMSE (lower better)')
         ax.set_title(scale+' scale'); ax.set_yscale('log'); ax.legend(fontsize=8)
-    fig.suptitle('S04-E016-D0-R001 | whole-Umax development holdouts | synthetic s4 horizon 0')
+    fig.suptitle('S04-E016-D0-R002 | whole-Umax development holdouts | synthetic s4 horizon 0')
     fig.savefig(out/'B0_B1_holdouts.png', dpi=180); plt.close(fig)
     model = json.loads((out/'models.json').read_text())['outer_u0115']
     with np.load(out/'u0115_C20.npz') as p:

@@ -18,6 +18,7 @@ from s04_g5_features import FeaturePipeline, FIELDS, sanity
 
 TARGETS = ('damage', 'alpha_bar', 'psi_raw_direct')
 ALPHAS = (.01, 1., 100.)
+RUN_ID = 'S04-E016-D0-R002'
 LOCK_SHA = 'cb9f63f8bd4b73afe0bd0f74bc7836018ce2e6bfcbd46edae80e7fef7b07868c'
 START = time.monotonic()
 
@@ -73,36 +74,67 @@ def scales_from_training(cases, train, pipeline):
     return sums
 
 
-def fit(cases, train, pipeline, sample):
-    scales = scales_from_training(cases, train, pipeline)
-    xs, ys, ws = [], [], []
+def training_blocks(cases, train, pipeline, sample, scales):
+    """One cycle only; no lists retained across yields or trajectories."""
     area = pipeline.areas[sample]; area = area/area.sum()
     ids = pipeline.ids[sample]
     for key in train:
         c = cases[key]
         for cycle, weight in enumerate(cycle_weights(c['n']), 1):
             check()
-            xs.append(pipeline.trajectory_cycle(c['pin'], cycle, c['umax'], scales, sample))
-            ys.append(transform(targets(c, cycle, ids, 'fem'), scales)
-                      - transform(targets(c, cycle, ids, 'pin'), scales))
-            ws.append(area*weight/len(train))
-    x, y, w = np.concatenate(xs), np.concatenate(ys), np.concatenate(ws)
-    del xs, ys, ws
-    assert np.isclose(w.sum(), 1.)
-    xm, ym = w@x, w@y
-    xstd = np.sqrt(w@((x-xm)**2)); ystd = np.sqrt(w@((y-ym)**2))
+            x = pipeline.trajectory_cycle(c['pin'], cycle, c['umax'], scales, sample)
+            y = (transform(targets(c, cycle, ids, 'fem'), scales)
+                 - transform(targets(c, cycle, ids, 'pin'), scales))
+            yield x, y, area*weight/len(train)
+
+
+def merge_moments(state, values, weights):
+    """Stable centered block moments, then weighted parallel-Welford merge."""
+    mass = float(weights.sum())
+    assert mass > 0 and np.all(weights > 0) and np.isfinite(weights).all()
+    assert np.isfinite(values).all()
+    anchor = values[0]
+    mean = anchor + np.sum(weights[:, None]*(values-anchor), axis=0)/mass
+    m2 = np.sum(weights[:, None]*(values-mean)**2, axis=0)
+    if state is None: return mass, mean, m2
+    old_mass, old_mean, old_m2 = state
+    total = old_mass+mass; delta = mean-old_mean
+    return (total, old_mean+delta*(mass/total),
+            old_m2+m2+delta**2*(old_mass*mass/total))
+
+
+def fit_streamed(blocks):
+    """Factory is traversed twice; memory depends on one block, not cycle count."""
+    sx = sy = None
+    for x, y, w in blocks():
+        check()
+        sx = merge_moments(sx, x, w); sy = merge_moments(sy, y, w)
+    assert sx is not None and np.isclose(sx[0], 1.) and np.isclose(sy[0], 1.)
+    xm, ym = sx[1], sy[1]
+    # Raw normalized training weights are unchanged; use weighted sums, as dense.
+    xstd = np.sqrt(sx[2]); ystd = np.sqrt(sy[2])
     assert all(np.isfinite(v).all() for v in (xm, ym, xstd, ystd)), 'Nonfinite normalizer'
     xstd[xstd < 1e-12] = 1.; ystd[ystd < 1e-12] = 1.
-    x -= xm; x /= xstd; y -= ym; y /= ystd
-    design = np.column_stack((np.ones(len(x)), x)); del x
-    gram = design.T@(w[:, None]*design)
-    cross = design.T@(w[:, None]*y)
+    gram = np.zeros((33, 33)); cross = np.zeros((33, 3)); mass = 0.
+    for x, y, w in blocks():
+        check()
+        assert x.shape[1] == 32 and y.shape == (len(x), 3)
+        design = np.column_stack((np.ones(len(x)), (x-xm)/xstd))
+        gram += design.T@(w[:, None]*design)
+        cross += design.T@(w[:, None]*((y-ym)/ystd))
+        mass += w.sum()
+    assert np.isclose(mass, sx[0])
     assert np.isfinite(gram).all() and np.isfinite(cross).all(), 'Nonfinite Gram matrix'
     penalty = np.eye(33); penalty[0, 0] = 0.
     coefficients = [np.linalg.solve(gram+a*penalty, cross) for a in ALPHAS]
     assert all(np.isfinite(v).all() for v in coefficients), 'Nonfinite ridge coefficients'
-    return dict(train=list(train), scales=scales, xm=xm, xstd=xstd, ym=ym,
-                ystd=ystd, coefficients=coefficients)
+    return dict(xm=xm, xstd=xstd, ym=ym, ystd=ystd, coefficients=coefficients)
+
+
+def fit(cases, train, pipeline, sample):
+    scales = scales_from_training(cases, train, pipeline)
+    model = fit_streamed(lambda: training_blocks(cases, train, pipeline, sample, scales))
+    return dict(train=list(train), scales=scales, **model)
 
 
 def evaluate(cases, key, model, pipeline, candidates, rows=None, snapshot=None):
@@ -223,7 +255,7 @@ def run(root, out):
         w = csv.DictWriter(f, fieldnames=list(metrics[0])); w.writeheader(); w.writerows(metrics)
     (out/'selection.json').write_text(json.dumps(selection, indent=2))
     (out/'models.json').write_text(json.dumps(models, indent=2))
-    (out/'receipt.json').write_text(json.dumps(dict(status='COMPLETED', run_id='S04-E016-D0-R001',
+    (out/'receipt.json').write_text(json.dumps(dict(status='COMPLETED', run_id=RUN_ID,
         lock_sha256=LOCK_SHA, elapsed_seconds=time.monotonic()-START, pid=os.getpid(),
         scope='retrospective horizon0 archive imitation only', code_commit=os.environ['D0_COMMIT'],
         sample_ids=sample.tolist(), feature_names=pipeline.names), indent=2))
