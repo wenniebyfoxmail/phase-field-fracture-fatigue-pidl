@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E019
 protocol_revision: 20261013-r1-frozen-base-residual
-status: implemented-external-review-awaiting-send-approval
+status: code-ready-transfer-approval-pending
 ---
 # Preserve the E017 global fit while correcting damage residual
 
