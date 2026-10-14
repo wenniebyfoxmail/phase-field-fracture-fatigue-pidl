@@ -58,3 +58,6 @@ California 126 条 section 的官方 viewer 全量审计得到 20 条重复地�
 
 
 Solver-alignment update 2026-10-13: [track](experiments/hard5_q4_t3_solver_alignment_track.md) now includes c1/c83 saved-state phase/tangent diagnostics. Initial-crack-wake phase imbalance exists with f=1; later trial-f chain omission is measurable. Native timing/projection capture prepared, awaiting final file-transfer approval; no teacher or trajectory-repair claim.
+
+
+Solver capture2026-10-14: approved v1 stopped before solving on a DOF vector-orientation check. Revision2 retains exact index/order and awaits file-transfer approval; [track](experiments/hard5_q4_t3_solver_alignment_track.md). Native cache/projection attribution remains pending.

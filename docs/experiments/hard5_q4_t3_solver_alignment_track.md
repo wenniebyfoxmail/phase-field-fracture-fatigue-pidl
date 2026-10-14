@@ -12,3 +12,6 @@ User-facing report: `/Users/wenxiaofang/obsidian/mesh对齐.md`; payloads remain
 
 
 2026-10-13 follow-up: [saved-state phase/tangent audit](../research/S04/S04-E011/runs/phase_tangent_saved_state_20261013.md) completed. c1 remaining phase violation is concentrated in initial crack wake with f=1; c83 source-equivalent Picard derivative omits measurable trial-f chain term. Native pre-clamp/refresh attribution and exact next direction capture are prepared in the [new protocol](../research/S04/S04-E011/phase_projection_tangent_protocol_20261013.md), awaiting human approval for the final four-file Windows transfer under the newer user AGENTS rule. No new solve or history propagation yet.
+
+
+2026-10-14: approved native v1 attempt stopped at pre-solve DOF row/column identity assertion. [Attempt](../research/S04/S04-E011/runs/phase_capture_v1_attempt_20261014.md). Four-state exact index/order proof confirms orientation-only bug. Revision2 fixes the comparison; native projection/tangent result remains pending final version transfer approval.

@@ -147,3 +147,6 @@ Terminal supplement: all six backtracking states completed and independently rev
 
 
 Saved-state follow-up: [c1/c83 phase/tangent audit](runs/phase_tangent_saved_state_20261013.md) establishes local residual equivalence and source-equivalent chain/cross-block diagnostics. Native pre-clamp capture remains prepared, not executed, pending explicit final-file transfer approval.
+
+
+Native capture v1 was explicitly approved/uploaded2026-10-14 but failed pre-admission before any block direction: shape-sensitive DOF comparison. [Attempt and revision2](runs/phase_capture_v1_attempt_20261014.md). No new numerical conclusion or production/history change.

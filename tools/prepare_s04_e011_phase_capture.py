@@ -19,7 +19,8 @@ if isfield(z,'result'),assert(z.result.physical_cycle==options.cycle && z.result
 else,assert(z.metrics.iteration==options.expected_iteration);end
 assert(numel(initial.p_field)==sys.MESH.num_node);
 assert(abs(frozen.load_factor-.11999988/.12)<=1e-12);
-assert(isequal(saved_oracle.free_dof_u,sys.DOFS.active_dof) && isequal(saved_oracle.free_dof_d,sys.DOFS.active_dof_pf));
+assert(isvector(saved_oracle.free_dof_u) && isvector(saved_oracle.free_dof_d) && isvector(sys.DOFS.active_dof) && isvector(sys.DOFS.active_dof_pf));
+assert(isequal(saved_oracle.free_dof_u(:),sys.DOFS.active_dof(:)) && isequal(saved_oracle.free_dof_d(:),sys.DOFS.active_dof_pf(:)));
 assert(all(isfinite(initial.displ)) && all(isfinite(initial.p_field)) && all(isfinite(initial.strain_en_undgr),'all'));
 assert(all(isfinite(frozen.history_vars_old(:,:,2:4)),'all'));
 assert(all(initial.p_field>=frozen.p_field_old-1e-12) && all(initial.p_field<=1+1e-12));

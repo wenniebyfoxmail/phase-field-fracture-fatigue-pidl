@@ -25,3 +25,8 @@ Minimum asset: four per-state captures/JSON, exact source/input/binary identitie
 ## Current authorization boundary
 
 The user authorized the diagnostic and local preparation. The later 2026-10-13 user AGENTS requires final-version approval for every external file send. Therefore no new runner/entry/manifest/launcher has been uploaded and no Git push performed for this supplement. The complete four-file Windows bundle is prepared under local_archive/experiments/S04-E011/phase_tangent_preparation/send_bundle_v1; send_approval_manifest.json binds account, destination, hashes and contents. Producer checkcode and native execution follow only after approval of this transfer version. No additional consent is required for the already authorized bounded numerical work once its required files are approved for transfer.
+
+
+## Revision2 — orientation-safe identity check, 2026-10-14
+
+v1 transfer approved and performed; native attempt stopped before solving because saved column and solver row DOFs were compared with shape-sensitive isequal. [Attempt/identity evidence](runs/phase_capture_v1_attempt_20261014.md). Revision2 validates vector shapes then compares both colon-normalized vectors, preserving all index/order checks. Physics inputs/controls, four-state ordering, cap and estimand unchanged. Fresh E011_PT_20261014_v2 bundle pending new final-version transfer approval; no native rerun yet.
