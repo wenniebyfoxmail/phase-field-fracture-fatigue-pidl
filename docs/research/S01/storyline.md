@@ -71,3 +71,8 @@ experiment is executed by that proposal. Independent evidence review PASS at b96
 ### 2026-10-15 — S01-E010 implementation preparation
 
 The frozen incremental-utility method is implemented and independently code-reviewed at cdd9d951 (gpt-6.1-sol Medium). Cached fit-only counterfactual support has only4/1/4/3 positive rows by held fold, with negative support in every fit bank. A separate GT-informed fixed selection retains282/282 old E003 hits and adds4, loses0,macro delta0.0093254; this is a candidate opportunity, not a learned result. Prepare exact R001 approval to test whether the model can realise that opportunity. No fits, learned comparisons or fresh-location access; E003 remains the working detector.
+
+
+### 2026-10-15 — S01-E010-R001 outcome
+
+Four approved utility heads and one comparison completed; independent numerical review passed. E003 old hits282/282 retained, new0/lost0/net0,macro change0. The2901appended corrections never enter the operation prefix, and allfour positive-singleton-utility candidates have negative stored OOF utility despite sufficient E003 scores. Keep E003; the frozen incremental-utility linear selector did not deliver actual net benefit. Next unexecuted proposal tests one capacity change to existing12scalars with all labels/scores/thresholds fixed; capacity remains a hypothesis. Fresh sites sealed. Fixed35-member resultZIP exists onproducer; exact retrieval approval and visual acceptance remain pending.
