@@ -11,3 +11,14 @@ Independent diagnostic confirmed3126full-bank singleton-neutral candidates selec
 Four analysis PNGs, cases, README and receipt exist with matching producer hashes. Visual acceptance, exact fixed-result reception and archive remain pending separate human approval for the fixed ZIP. Limited PASS does not cover pixels/layout/local integrity. Reviewer did no new solve/fit/predict, policy change, file download or fresh access.
 
 A separately frozen lower-capacity12-existing-scalar head is a permissible next proposal with labels/scores/thresholds unchanged. It is not an established fix or authority for another fit. No result publication authorised.
+
+
+## 2026-10-15 approved Mac reception and final evidence closure
+
+Exact fixed ZIP8370269bytes/35members/SHA39c0f2d9a1c28423651718c30806687baa9cb72ab82684188fb9b4f7bb778c66 received on Mac under the user approval for this version. Size/SHA/CRC/safe-member paths, all four-head/analysis/evaluation identities and empty stage stderr verified. Archive local_archive/experiments/S01-E010/runs/S01-E010-R001 contains immutable original ZIP and evidence/ plus reception records outside evidence/.
+
+Reception verified four scalers, sign weights, objectives/gradients/Gram residuals and stored OOF parameter equations (maxabsdiff1.7763568394002505e-15,QA tolerance1e-10); archived-score metric/summary/cases replay exact. Mac BLAS matmul warnings were recorded; all actual values finite and validation passed, producer stderr empty, no frozen-source/tolerance changes. No new model fits or new scoring arm.
+
+Root and independent e008_independent_review,gpt-6.1-sol Medium viewed original F00/F01/F02/F_preparation: visual PASS. Zero primary gains,100% retention,four unchanged site recalls and separate GT-informed opportunity are accurate. F02 has two metric-FP coordinate cases, original/emitted overlap, absent new/lost roles explicit; unused third layout slot carries no missing case claim. No layout derivative needed; no source-road pixels viewed.
+
+Reception,numerical and graphic acceptance,README and archive are complete. Scientific verdict remains stop_negative (282/282old,0new/0lost/net0,macrodelta0), research disposition repair. E003 remains working detector. E011 design-only proposal changes to existing12scalars and requires separate implementation/code review/execution approval. No result commit pushed and fresh sites remain sealed.

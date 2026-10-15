@@ -76,3 +76,8 @@ The frozen incremental-utility method is implemented and independently code-revi
 ### 2026-10-15 — S01-E010-R001 outcome
 
 Four approved utility heads and one comparison completed; independent numerical review passed. E003 old hits282/282 retained, new0/lost0/net0,macro change0. The2901appended corrections never enter the operation prefix, and allfour positive-singleton-utility candidates have negative stored OOF utility despite sufficient E003 scores. Keep E003; the frozen incremental-utility linear selector did not deliver actual net benefit. Next unexecuted proposal tests one capacity change to existing12scalars with all labels/scores/thresholds fixed; capacity remains a hypothesis. Fresh sites sealed. Fixed35-member resultZIP exists onproducer; exact retrieval approval and visual acceptance remain pending.
+
+
+### 2026-10-15 — S01-E010 evidence closure and controlled repair
+
+Approved fixed result package received and archived on Mac; independent numerical and four-figure acceptance complete. Scientific result unchanged:282/282old hits retained,net0. Research disposition repair. The separate E011 frozen12-existing-scalar design passed gpt-6.1-sol Medium independent review; no new fit or fresh access. E010 results remain local-only.
