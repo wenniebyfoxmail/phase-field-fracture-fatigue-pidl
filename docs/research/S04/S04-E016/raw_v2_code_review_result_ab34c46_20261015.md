@@ -98,3 +98,34 @@ exact request is approved. No actual-run authorization or new experiment/run
 created; no producer access, confirmation read or real fitting. Obsidian and
 Roadmap updated. Style check used the user's direct approval-request wording
 in this chat; no claim of exact author imitation or external style retrieval.
+
+## Independent difference re-review received — 2026-10-15
+
+User-approved exact c883bfd message sent once unchanged; recipient and delivery
+verified. Reviewer final:APPROVED (difference review), explicitly bound to
+`c883bfd8e4ecd37d2ae32dc3717a63db018f1ae2`, no new mandatory changes.
+Turn:`01a14038-3b5b-7fe3-9b4d-7b777bf1e65c`;
+message:`msg_015d0a19570ed14a016ad0f3cdff148191a1cad42a99e8cb50`.
+
+| Returned point | Main-chat source/record check | Disposition |
+|---|---|---|
+| Authorization-path problem resolved | s04_raw_guard.py:17–18 resolves once;28 validates that Path;38 and81 propagate it unchanged across cwd=root at86 | Agree; prior P2 resolved |
+| Mock covers non-repository cwd and all path consumers | s04_raw_guard_checks.py:19–41,45–57 asserts caller cwd, parent path, argv and both phase environments; existing auth_handoff_01 wrapper receipt records the same absolute path | Agree within mocked plumbing scope, not a real validator/source/child test |
+| No new mandatory change | git diff c883bfd on the two source paths empty; comparison with ab34c46 changes only guard and mock helper | Retain base review for unchanged algorithm and this review for the isolated repair |
+| Original resource limitations remain | Actual NPZ/MAT decode/I/O, real-parent imports and conditioning remain unmeasured; virtual receipt is not a resource measurement | Agree; no claim of guaranteed real-run budget compliance |
+| No repeat execution / S04-E017 held | Reviewer explicitly reports no repeated tests/resource/fitting or shared-note edits/confirmation access; this turn main chat only reads code and existing receipt | No duplicate implementation/computation assigned or launched |
+
+Code-review disposition:accepted for the exact scalar physical-raw implementation
+under45b8d32, by base review plus accepted difference review. This does not
+establish method effectiveness, teacher/physical validity, real-data execution
+approval or Run Ready. Reviewed source remains unchanged; no fit, test, resource
+run, source-archive read, SSH or further message in this turn.
+
+Recommended unique next action (not implemented here):prepare a fresh Experiment
+protocol and one Run card for the V0/V1 development diagnostic, preserving data,
+input/selection rules and300s/2GiB/100MiB; then obtain explicit human approval
+before creating a real-run authorization artifact or starting actual fitting.
+Do not reuse E016/E017 as the new scientific experiment. Account for docs-only
+runtime HEAD advancement explicitly rather than claiming a different SHA was
+independently reviewed. Main chat sole executor; S04-E017/MOO/NN held and
+U0.1175/U0.125 closed. Obsidian and Roadmap updated locally.

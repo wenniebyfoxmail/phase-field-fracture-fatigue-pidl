@@ -370,3 +370,15 @@ Delta-model development protocol before U0.125 is opened.
   Difference-only review request prepared for per-send approval, NOT SENT;
   no new assignment to method chat, which remains read-only. Obsidian/Roadmap
   updated; no code approval, actual-run protocol or real fitting authorized.
+- 2026-10-15 exact c883bfd difference-review request user-approved and sent once;
+  final APPROVED explicitly bound to c883bfd8e4ecd37d2ae32dc3717a63db018f1ae2.
+  Main chat checked path normalization/parent/argv/env and existing mock receipt;
+  prior P2 resolved, no new mandatory changes. See appended
+  raw_v2_code_review_result_ab34c46_20261015.md for item-by-item checks and IDs.
+  Base algorithm review plus accepted repair supplies narrow code approval,
+  not actual Run Ready or scientific validity. No additional tests/resource
+  runs, real archive reads/fits, producer access or unapproved message this turn.
+  Recommended next step only:prepare fresh Experiment protocol and single Run
+  card for later user approval, maintaining300s/2GiB/100MiB and current semantics.
+  Main chat sole executor; method chat read-only, S04-E017/MOO/NN held and
+  confirmation closed. Obsidian/Roadmap updated; no execution authority implied.
