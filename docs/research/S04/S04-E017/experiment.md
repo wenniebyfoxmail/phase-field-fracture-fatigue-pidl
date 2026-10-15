@@ -72,9 +72,10 @@ protocol after evidence of both shared value and actual gradient conflict.
 
 The S04-E016 physical-raw v2 proposal asks the cheaper upstream question:
 whether a simple single-output, physical-scale raw correction can improve the
-worst complete-Umax holdout without early-regime harm. S04-E017 asks a different
-question about three-output shared versus independent representation. Neither
-is the unique next step and they must not run concurrently.
+worst complete-Umax holdout without early-regime harm. It is the priority route
+for the next design decision. S04-E017 asks a different question about three-
+output shared versus independent representation and remains held; it does not
+activate automatically.
 
 The route order is:
 
@@ -259,7 +260,7 @@ The audit also preserves the D0 warning: B0 damage has widespread tiny signed
 tails down to `-2.80e-4` (and one maximum 1.0174), while B1 reached `-0.0956`
 and 1.2681. Violation area without magnitude is not a sufficient diagnostic.
 
-**Present next action:** independent re-review of this document only, after a
-new exact outbound message receives user approval. Even design endorsement
-would authorize only discussion of implementation. Single-channel physical-raw
-v2 remains the upstream route under review; no training is authorized.
+**Present next action:** finish the single-channel physical-raw design decision.
+S04-E017 remains held and does not activate automatically. After that design is
+confirmed, the user may separately decide whether to discuss S04-E017
+implementation. No training is authorized.
