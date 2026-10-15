@@ -150,3 +150,12 @@
   evidence_review.md. Bounded descriptive gain only, no truephasefield/material
   or futurecycle claim. Preserve progress; next separatelyreview model/observation
   error diagnosis using existingfields, without tuningonnow-consumedstage15.
+
+- **2026-10-15 — S03-E017 frozen-field decomposition plan awaits human confirmation.**
+  Exact5b9ab6e plan passed independent read-only Codex algebra/contract review;
+  no code implemented or real decomposition computed. Proposed existing646point
+  global-P residual identity separates secant-target from mechanics-secant,
+  exact MAE gaps and auxiliary squared interaction, fixed trainingband3.6mm
+  inner/outer contributions. No causal/noise attribution, blending, newresponse,
+  fitting/solve or send. SeeS03-E017/experiment.md and review.md. E016bounded
+  result remains unchanged; confirmation precedes code/test/review/command prep.
