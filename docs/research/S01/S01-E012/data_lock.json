@@ -1,0 +1,57 @@
+{
+  "protocol": "S01-E012-v1",
+  "target_locations": [
+    "24",
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "1638",
+    "2027",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "groups": [
+    [
+      "24",
+      "514",
+      "1577",
+      "3662"
+    ],
+    [
+      "95",
+      "728",
+      "1638",
+      "4494"
+    ],
+    [
+      "151",
+      "1400",
+      "2027",
+      "5508"
+    ]
+  ],
+  "source_run": "S01-E007-R001",
+  "source_receipt_sha256": "06b3fd63691190288e0eff4ba6b012ebee9870b593efaec352044247e4ddf985",
+  "source_files": [
+    "feature_receipt.json",
+    "train_bank.json",
+    "correction_heads.json",
+    "label_audit.json"
+  ],
+  "metadata_sha256": "6fc622943a78063926d96a13e727013ae22d12919a3af3814cfc221bd1a7e5bb",
+  "source_train_sha256": "3a3e4e5f4f543438be56146f300c532f2d1ecaedf12f2465dc367ff13eb70ff4",
+  "frozen_E003_ranker_sha256": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
+  "binding_rule": "Verify receipt hash first; bind each file using hashes recorded inside receipt. Missing or mismatched identity stops qualification. No guessed hashes.",
+  "forbidden": [
+    "validation records",
+    "new confirmation locations",
+    "reserve locations",
+    "source pixels in stage A",
+    "inherited full-data loader"
+  ],
+  "fresh_access": false
+}

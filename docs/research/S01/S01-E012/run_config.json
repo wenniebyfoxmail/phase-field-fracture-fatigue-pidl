@@ -1,0 +1,85 @@
+{
+  "protocol": "S01-E012-v1",
+  "scope": "training_evidence_qualification_only",
+  "locations": [
+    "24",
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "1638",
+    "2027",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "held_groups": [
+    [
+      "24",
+      "514",
+      "1577",
+      "3662"
+    ],
+    [
+      "95",
+      "728",
+      "1638",
+      "4494"
+    ],
+    [
+      "151",
+      "1400",
+      "2027",
+      "5508"
+    ]
+  ],
+  "excluded_consumed_qualification_locations": [
+    "353",
+    "1459",
+    "2028",
+    "5982"
+  ],
+  "stage_A": {
+    "mode": "cached_inventory_and_qualification",
+    "max_images": 2000,
+    "max_corrections": 80000,
+    "parent_cap_per_image": 40,
+    "max_singleton_evaluations": 240000,
+    "cpu_threads": 1,
+    "wall_seconds": 3600,
+    "peak_RSS_bytes": 4294967296,
+    "model_fits": 0,
+    "linear_solves": 0,
+    "new_inference": 0,
+    "pixel_reads": 0,
+    "feature_extraction": 0
+  },
+  "criterion": {
+    "iou": 0.5,
+    "false_positives_per_image": 1,
+    "utility": "new_GT_identities-lost_GT_identities-added_correction_FP",
+    "minimum_distinct_positive_GT_per_group": 1,
+    "minimum_positive_sites_per_group": 1,
+    "all_three_groups_required": true,
+    "held_support_scope": "U_full12 grouped by source corrector held group; no held-baseline calculation",
+    "fit_support_scope": "U_fit8 for each fixed eight-location FIT baseline",
+    "GT_deduplication_scope": "separate full12 and fit8_fold_i; never sum across scopes"
+  },
+  "downstream_detection_criterion": {
+    "old_E003_retention_minimum": 0.95,
+    "net_new_GT_minimum": 1,
+    "macro_location_recall_delta_strictly_positive": true
+  },
+  "fresh_access": false,
+  "joint_diagnostic": {
+    "max_comparisons": 1,
+    "selection": "U_full12 > 0 only",
+    "nms_order": "s0 descending; inherited lexical tie rule",
+    "append_order": "stable source key",
+    "utility_sorting": false,
+    "learned_detection_claim": false,
+    "requires_complete_verified_scores": true
+  }
+}
