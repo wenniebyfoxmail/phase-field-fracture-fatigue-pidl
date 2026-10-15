@@ -1,7 +1,7 @@
 # S04-E021-R001 — proposed single V0/V1 execution
 
 Protocol:v1, [experiment.md](experiment.md). Date:2026-10-15 Europe/London.
-Status:PREPARED FOR HUMAN APPROVAL / NOT STARTED / NO AUTHORIZATION FILE.
+Status:COMPLETED ONCE / FROZEN / PENDING INDEPENDENT EVIDENCE REVIEW.
 
 | Item | Exact proposed scope |
 |---|---|
@@ -112,3 +112,11 @@ Synthesize solely by experiment.md outcome table; partials cannot rescue it.
 Update experiment record and the existing Obsidian note/Roadmap. Further
 evidence review messages require their own preview/approval. No automatic
 confirmation opening, S04-E017, NN, MOO or coupled rollout.
+
+## Execution record — 2026-10-15
+
+The exact single attempt was approved and completed. It consumed the sole
+attempt; this card cannot be reused. The terminal guard status is `COMPLETED`,
+elapsed time 106.373 s, peak sampled RSS 1,648,459,776 bytes, and final output
+7,408,410 bytes. Full compact provenance and the bounded computed result are in
+`run_result.md`. No retry or additional execution is authorised.

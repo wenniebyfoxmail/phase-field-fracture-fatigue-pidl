@@ -2,10 +2,10 @@
 storyline_id: S04
 experiment_id: S04-E021
 protocol_revision: v1
-status: draft
+status: completed_pending_independent_evidence_review
 primary_storyline: S04
 related_storylines: []
-scientific_verdict:
+scientific_verdict: pending_independent_evidence_review
 ---
 
 # Physical-raw V0/V1 development feasibility diagnostic
@@ -160,3 +160,36 @@ determined. See [run_card.md](run_card.md) for exact proposed command and scope.
 Next:human reviews this v1 protocol/card and separately approves or declines
 that single execution. After a permitted attempt, freeze and review evidence;
 append outcome here and update the shared Obsidian task note, never rescue R002.
+
+## Run update — 2026-10-15
+
+The user approved exactly one `S04-E021-R001` execution at runtime commit
+`6aa21e3c469d53c92240c9689d07a3ffb316d67c`, Mac CPU4, with the frozen
+300 s / 2 GiB sampled RSS / 100 MiB generated-output limits and no retry. The
+guard completed fit and report once in 106.373 s, with peak sampled RSS
+1,648,459,776 bytes and final generated output 7,408,410 bytes. Both children
+exited zero; no attributed process remained after completion.
+
+The frozen decision file reports `DIRECTIONAL_DEVELOPMENT_GAIN`: all four
+outer trajectories selected a learned correction, the worst all-cycle ratio is
+`Q=0.967385295278036`, and all four early ratios are below one. Outer `(R,G)`:
+
+| Holdout | R | G |
+|---|---:|---:|
+| U0.11 | 0.967385295278036 | 0.9097163623531194 |
+| U0.115 | 0.9478121482522815 | 0.9319751006077125 |
+| U0.12 | 0.847612534200584 | 0.8411589707385613 |
+| U0.13 | 0.9083381014799462 | 0.9185162821123296 |
+
+Local saved-output verification found the required 357 cycle rows and four
+fold rows, continuous declared cycle coverage, no fallback, no negative final
+raw output, zero reported negative area, and damage/history identity on every
+row. Both required figures were opened and were nonblank, legible and
+consistent with the tables. This is an execution-complete computed development
+result, not yet an independently accepted scientific verdict. It supports
+neither teacher status, physical truth, fresh-amplitude confirmation, neural
+training nor deployment.
+
+See `run_result.md`. Next action is one read-only independent evidence
+review of the frozen package. No fit, rerender, new arm or confirmation access
+is authorised by this result.
