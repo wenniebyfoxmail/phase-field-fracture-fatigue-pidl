@@ -304,3 +304,14 @@ Delta-model development protocol before U0.125 is opened.
   Existing300s/2GiB/100MiB cap is proposed only, not renewed execution authority.
   Method-chat design-review request drafted for per-send user approval;
   Obsidian/Roadmap updated to design-pending status, confirmation remains closed.
+- 2026-10-15 independent design review received: exact approved410fffc message
+  sent once and receipt/final verified. Reviewer directionally endorses the
+  single-raw scope and common admissible baseline but requires three document
+  fixes: explicit h/r input scales, terminal numerical errors rather than
+  normal fallback, consistent tolerance/tie/partial-fallback routing. Main chat
+  checked all three against unchanged410fffc and agrees. See
+  design_review_result_410fffc_20261015.md for source message and exact findings.
+  Status revision-required, not design/code/run approval. Unique next action
+  is document-only v2 then a newly approved review request; no design rewrite,
+  implementation, fitting or new computation in this turn. Obsidian/Roadmap
+  updated; no additional outgoing message or confirmation access.

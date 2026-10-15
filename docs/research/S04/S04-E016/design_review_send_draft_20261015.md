@@ -8,6 +8,13 @@ Attachments: none. References: local shared worktree documents below only.
 Commit binding: design at `410fffc`; prior diagnostic/cause audit at `4167b64`.
 Status: DRAFT ONLY; not sent. Approval of sending is not computation authority.
 
+2026-10-15 delivery update (original proposal header/body retained): the user
+approved this exact version and it was sent unchanged once to the named chat.
+Receipt and completed reviewer response verified; no attachments or resend.
+See `design_review_result_410fffc_20261015.md`: direction reasonable, revision
+required, not approved for implementation or fitting. No new outbound approval
+is implied by this completed send.
+
 ## Exact message body
 
 请只读审核这次设计修订，暂不实现、拟合或重复计算。
