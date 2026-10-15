@@ -66,3 +66,7 @@ R002 adopted exact features/four heads without refitting and completed the one
 selector fit. Next proposed solution makes paired replacement harm explicit and
 qualifies an abstain-to-original policy on held train locations; no new arm or
 experiment is executed by that proposal. Independent evidence review PASS at b960d3c; current attempt closed.
+
+### 2026-10-15 — S01-E009-R001 (producer result; retrieval pending)
+
+Four fixed CPU localisation-quality heads completed the reused-four-location crossfit. Original19855rows and282/282old GT hits retained; new0/lost0,netTP0,macrodelta0,so frozen primarynegative.112corrections appended,10entered1FP/image prefix and all10wereFP(3partial/2duplicate/5background). Overall partialFP112vsE003110,duplicate20vs20,background198vs200. Preserve E003; stop the current linear-validity/multiplicative route. Read-only fixed-oracle target audit finds all4known oracle-new target q-scores fail parent and operation cutoffs; simply removing the parent condition is not a supported repair. Next proposed scope is a fit-fold-only incremental-utility label/support audit before any new ranking objective; no successor fit or fresh access. Independent6.1-sol/Medium producer numerical reviewPASS; result transfer and visualQA remain pending. SeeS01-E009/result_20261015.md.
