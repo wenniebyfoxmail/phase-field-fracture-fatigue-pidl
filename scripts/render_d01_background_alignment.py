@@ -131,7 +131,7 @@ def main():
                             original_all_available_median_px=median([r["original_H_sensitivity_px"] for r in all_rows]))
         lim=max(x+y+[1])*1.05
         ax.plot([0,lim],[0,lim],"--",color="#777777",lw=1)
-        ax.set(xlim=(0,lim),ylim=(0,lim),xlabel="Original-H max shift effect (native px)",ylabel="After background alignment (native px)",
+        ax.set(xlim=(0,lim),ylim=(0,lim),xlabel="Original-H max shift effect\n(native px)",ylabel="After background alignment\n(native px)",
                title=f"{name} | paired {len(group)}/{len(all_rows)}")
         if not group: ax.text(.5,.5,"No paired complete measurements",transform=ax.transAxes,ha="center")
     # A shared comparison scale, not per-panel autoscaling.
