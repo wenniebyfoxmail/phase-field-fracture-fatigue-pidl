@@ -198,3 +198,15 @@
   and execution_approval.md. No realarrays/newprofiles/raw/heldresponse/solve/
   fitting/send; R001 not created. Next human approval of once-only CPU60s
   analysis, then separate evidence acceptance; code readiness is not a result.
+
+- **2026-10-15 — S03-E018 executed once; independent numerical checks passed, visual acceptance paused.**
+  Approved R001 succeeded0.894s/60s with emptylog,18sources/11outputs unchanged.
+  On37fixed training pairs, matchedsampling retains model-DIC mismatch;
+  proxyL_match0.0011817102mm versusL_op0.0000210627mm. No attribution of
+  originalMAE, physicalcause or inverse success. Independent scalar/ID/coeff/
+  648theta/CST/CSV checks passed, but reviewer temporaryscript left2CSV handles
+  unclosed and emitted ResourceWarnings. Stopped without retry before independent
+  PNG/sidecar review; not fullPASS_EVIDENCE and not an E018 runtime failure.
+  SeeS03-E018/results.md/evidence_review.md. Await human approval only to fix
+  audit handle closure and finish visual checks; no analysis rerun, heldresponse,
+  solve/tuning/send. Later separatelyreview fixed-BC kinematic-capacity diagnostic.
