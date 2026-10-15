@@ -45,10 +45,12 @@ class Guard:
     def receipt(self):
         self.check();return dict(elapsed_seconds=self.clock()-self.start,peak_rss_bytes=self.peak,singleton_evaluations=self.labels,model_fits=0,linear_solves=0,new_inference=0,pixel_reads=0,feature_extraction=0,fresh_access=False)
 
-def contract(config,lock):
+def contract(config,lock,guard=None):
+    check=(lambda:None) if guard is None else guard.check
+    check()
     manifest=read(ROOT/CONTRACT/'source_manifest.json')['files']
-    for name,digest in manifest.items(): checked(ROOT/name,digest)
-    checked(config,manifest[CONTRACT+'run_config.json']);checked(lock,manifest[CONTRACT+'data_lock.json'])
+    for name,digest in manifest.items(): checked(ROOT/name,digest,check)
+    checked(config,manifest[CONTRACT+'run_config.json'],check);checked(lock,manifest[CONTRACT+'data_lock.json'],check)
     cfg,lk=read(config),read(lock)
     if cfg['protocol']!=PROTOCOL or lk['protocol']!=PROTOCOL or cfg['locations']!=lk['target_locations'] or cfg['held_groups']!=lk['groups']: raise ValueError('protocol/range mismatch')
     return cfg,lk
@@ -163,19 +165,23 @@ def decision(full,fit,cfg,complete):
 
 def execute(args,cfg,lock,guard):
     records=metadata(args.metadata,cfg,lock,guard);data=load_bank(args.cache,records,cfg,lock,guard)
-    write(args.run/'inventory.json',dict(protocol=PROTOCOL,locations=cfg['locations'],images=len(records),originals=len(data['originals']),corrections=len(data['pairs'])//2,parsed_GT_locations=cfg['locations'],source_files=data['source_files'],ancestry=data['ancestry'],score_cache_allowlist=[],inherited_probability_not_rescore=True,fresh_access=False))
-    write(args.run/'identity_mapping.json',data['mapping']);geo=geometry(data,cfg,guard);write(args.run/'geometry.json',geo)
-    missing=missing_scores(data,lock);write(args.run/'missing_scores_manifest.json',dict(protocol=PROTOCOL,rows=missing,expected_forwards=len(missing),unique_images=len({r['image_id'] for r in missing}),source_receipt_sha256=lock['source_receipt_sha256'],source_bank_sha256=data['source_files']['train_bank.json'],fresh_access=False))
+    expected={}
+    def emit(name,value):
+        expected[name]=copy.deepcopy(value);write(args.run/name,value)
+    emit('inventory.json',dict(protocol=PROTOCOL,locations=cfg['locations'],images=len(records),originals=len(data['originals']),corrections=len(data['pairs'])//2,parsed_GT_locations=cfg['locations'],source_files=data['source_files'],ancestry=data['ancestry'],score_cache_allowlist=[],inherited_probability_not_rescore=True,fresh_access=False))
+    emit('identity_mapping.json',data['mapping']);geo=geometry(data,cfg,guard);emit('geometry.json',geo)
+    missing=missing_scores(data,lock);emit('missing_scores_manifest.json',dict(protocol=PROTOCOL,rows=missing,expected_forwards=len(missing),unique_images=len({r['image_id'] for r in missing}),source_receipt_sha256=lock['source_receipt_sha256'],source_bank_sha256=data['source_files']['train_bank.json'],fresh_access=False))
     fit=[support_table([],'fit8_fold_'+str(i),[v for v in cfg['locations'] if v not in g]) for i,g in enumerate(cfg['held_groups'])];result=decision([],fit,cfg,False)
     for table in result['held_support']+result['fit_support']:
         table['missing_score_pairs']=sum(r['location'] in table['locations'] for r in missing);table['computed_utility_pairs']=0;table['positive_pairs']=table['zero_pairs']=table['negative_pairs']=None;table['positive_GT_count']=None;table['positive_GT']=None;table['positive_sites']=None
     result.update(L0=True,L1_geometry_progress=bool(geo['new_geometry_GT']),utility_unavailable=True,joint_diagnostic=None,actual_detector_retention=None,actual_detector_net_gain=None,next_action='prepare exact Stage B frozen E003 rescore approval; no execution authorised')
-    write(args.run/'qualification.json',result)
-    write(args.run/'cases.json',case_rows(data,missing,guard))
+    emit('qualification.json',result)
+    emit('cases.json',case_rows(data,missing,guard))
     (args.run/'stage_B_request.md').write_text(f'''# Stage B preparation only — NOT execution approval\n\nScope: same twelve existing training sites, {len(missing)} corrected crops in {len(records)} images. Exact identities, source heads, coordinates, padded crop bounds and image hashes are in missing_scores_manifest.json. Reuse frozen E003 scoring recipe from reviewed E008; preserve all original E003 rows. No new corrector/model fits, altered boxes or fresh sites.\n\nRequired next work: implement only the frozen score export, bind exact source/encoder/ranker/preprocessing identities, freeze CPU/GPU forward count (maximum {len(missing)}), machine, memory, elapsed-time limits and output receipt. Obtain independent code review and user approval of the final source transfer/public branch/execution version before any pixel reads or forward pass. Current Stage A has no crop score input and reports U unavailable, never zero.\n\nThis manifest bounds a concrete enrichment job; it is not a claim that missing scores caused E011 failure. After rescore, compute distributed positive-U support under the unchanged detection budget before designing a head.\n''',encoding='utf-8')
     # Analysis runs in-process so its elapsed time and RSS are included.
     analysis=module('e012_analysis',Path(__file__).with_name('analyze.py'));analysis.render(args.run,guard)
-    write(args.run/'resource.json',guard.receipt())
+    emit('resource.json',guard.receipt())
+    return expected
 
 def case_rows(data,missing,guard):
     selected=[];seen=set();original_by={r['parent_id']:r for r in data['originals']}
@@ -187,11 +193,20 @@ def case_rows(data,missing,guard):
         if len(selected)==2: break
     return dict(rule='highest original E003 score then image/box/source key; at most two distinct locations per role',missing_roles=['positive_U','negative_U'],cases=selected)
 
-def verify(run,cfg,guard):
+REQUIRED_FILES={'launch.json','inventory.json','identity_mapping.json','geometry.json','missing_scores_manifest.json','qualification.json','cases.json','resource.json','stage_B_request.md','analysis/F00_support.png','analysis/F01_geometry.png','analysis/F02_cases.png','analysis/README_analysis.md'}
+
+def verify(run,cfg,guard,expected):
+    """Compare saved semantics with trusted in-memory results from scoped inputs.
+
+    expected must come from execute(), never from re-reading output JSON.
+    No labels, forward passes or fits are repeated by this verifier.
+    """
     receipt=read(run/'output_receipt.json')
-    for name,digest in receipt['files'].items():
-        if Path(name).is_absolute() or '..' in Path(name).parts: raise ValueError('unsafe receipt path')
-        checked(run/name,digest,guard.check)
+    if set(receipt)!= {'protocol','files','fresh_access'} or receipt['protocol']!=PROTOCOL or receipt['fresh_access'] is not False or set(receipt['files'])!=REQUIRED_FILES: raise ValueError('exact output inventory/protocol required')
+    if set(expected)!= {v for v in REQUIRED_FILES if v.endswith('.json')}: raise ValueError('trusted expected semantic inventory required')
+    for name,digest in receipt['files'].items(): checked(run/name,digest,guard.check)
+    for name,value in expected.items():
+        if read(run/name)!=value: raise ValueError('output semantic mismatch: '+name)
     q=read(run/'qualification.json');inv=read(run/'inventory.json');missing=read(run/'missing_scores_manifest.json')
     if q['status']!='incomplete_scores' or q['L2'] or q['joint_diagnostic'] is not None or inv['score_cache_allowlist'] or len(missing['rows'])!=inv['corrections']: raise ValueError('missing-score semantics')
     if q['actual_detector_retention'] is not None or q['actual_detector_net_gain'] is not None: raise ValueError('unmeasured detection result')
@@ -199,16 +214,17 @@ def verify(run,cfg,guard):
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--config',type=Path,required=True);p.add_argument('--lock',type=Path,required=True);p.add_argument('--cache',type=Path,required=True);p.add_argument('--metadata',type=Path,required=True);p.add_argument('--run',type=Path,required=True);p.add_argument('--reviewed-commit',required=True);a=p.parse_args()
-    e11.require_producer();guard=Guard(read(a.config));cfg,lock=contract(a.config,a.lock)
+    e11.require_producer();guard=Guard(read(a.config));cfg,lock=contract(a.config,a.lock,guard)
     if a.run.name!='S01-E012-R001': raise ValueError('fixed run identity')
     a.run.mkdir(parents=True,exist_ok=False);sys.addaudithook(e11.pixel_guard)
     with guard.monitor(a.run):
         try:
-            write(a.run/'launch.json',dict(protocol=PROTOCOL,reviewed_commit=a.reviewed_commit,source_manifest_sha256=sha(ROOT/CONTRACT/'source_manifest.json'),config_sha256=sha(a.config),lock_sha256=sha(a.lock),pid=os.getpid(),hostname=__import__('socket').gethostname(),started_at=__import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),fresh_access=False))
-            execute(a,cfg,lock,guard)
+            launch=dict(protocol=PROTOCOL,reviewed_commit=a.reviewed_commit,source_manifest_sha256=sha(ROOT/CONTRACT/'source_manifest.json'),config_sha256=sha(a.config),lock_sha256=sha(a.lock),pid=os.getpid(),hostname=__import__('socket').gethostname(),started_at=__import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),python_executable=sys.executable,python_version=sys.version,command=sys.argv,cache=str(a.cache),metadata=str(a.metadata),output=str(a.run),environment={v:os.environ.get(v) for v in ['CUDA_VISIBLE_DEVICES','OMP_NUM_THREADS','MKL_NUM_THREADS']},fresh_access=False)
+            write(a.run/'launch.json',launch)
+            expected=execute(a,cfg,lock,guard);expected['launch.json']=launch
             e11.OUTPUT_IMAGE_DIGEST_PATHS.update(os.path.normcase(os.path.abspath(f)) for f in (a.run/'analysis').glob('*.png'))
-            files={str(f.relative_to(a.run)):sha(f,guard.check) for f in sorted(a.run.rglob('*')) if f.is_file()}
-            write(a.run/'output_receipt.json',dict(protocol=PROTOCOL,files=files,fresh_access=False));verify(a.run,cfg,guard)
+            files={f.relative_to(a.run).as_posix():sha(f,guard.check) for f in sorted(a.run.rglob('*')) if f.is_file()}
+            write(a.run/'output_receipt.json',dict(protocol=PROTOCOL,files=files,fresh_access=False));verify(a.run,cfg,guard,expected)
             write(a.run/'status.json',dict(state='completed',scientific_claim='training_evidence_incomplete_scores',resource=guard.receipt(),fresh_access=False))
         except Exception as ex:
             write(a.run/'status.json',dict(state='stopped',reason=str(ex),fresh_access=False));raise

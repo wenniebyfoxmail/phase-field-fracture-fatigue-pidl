@@ -99,15 +99,15 @@ def test_end_to_end_synthetic_inventory_not_a_detector_result(tmp_path,monkeypat
     # Fail immediately if any forbidden fallback attempts a fit/model/image read.
     monkeypatch.setattr(r.e11,'fit_head',lambda *a,**k:pytest.fail('fit forbidden'))
     monkeypatch.setattr(r.e11.e8.m.base,'load_models',lambda *a,**k:pytest.fail('models forbidden'))
-    r.execute(a,cfg,lock,guard());q=r.read(run/'qualification.json')
+    expected=r.execute(a,cfg,lock,guard());launch={'synthetic_only':True};dump(run/'launch.json',launch);expected['launch.json']=launch;q=r.read(run/'qualification.json')
     assert q['status']=='incomplete_scores' and q['actual_detector_retention'] is None and not q['L2']
     assert all(t['positive_pairs'] is None and t['missing_score_pairs']==4 for t in q['held_support'])
     assert len(list((run/'analysis').glob('*.png')))==3
     assert '12 corrected crops' in (run/'stage_B_request.md').read_text()
-    dump(run/'output_receipt.json',dict(files={str(p.relative_to(run)):r.sha(p) for p in run.rglob('*') if p.is_file()}))
-    assert r.verify(run,cfg,guard())
+    dump(run/'output_receipt.json',dict(protocol=r.PROTOCOL,fresh_access=False,files={str(p.relative_to(run)):r.sha(p) for p in run.rglob('*') if p.is_file()}))
+    assert r.verify(run,cfg,guard(),expected)
     (run/'qualification.json').write_text('{}')
-    with pytest.raises(ValueError,match='identity mismatch'):r.verify(run,cfg,guard())
+    with pytest.raises(ValueError,match='identity mismatch'):r.verify(run,cfg,guard(),expected)
 
 def test_cursor_chunk_boundary_escaping_and_no_gt_deserialization(tmp_path):
     p=tmp_path/'long.json';record=dict(reid='24',image_id='a',value='x'*65540+'\\\"');dump(p,dict(records=[dict(reid='999',GT='excluded'),record]))
@@ -136,3 +136,27 @@ f.r.main()
     assert v.returncode==0,v.stdout+v.stderr
     result=r.read(tmp_path/'S01-E012-R001/status.json');assert result['state']=='completed'
     assert result['resource']['model_fits']==result['resource']['new_inference']==result['resource']['singleton_evaluations']==0
+
+
+def test_semantic_verification_rejects_self_rehashed_manifest_and_empty_receipt(tmp_path):
+    cfg,cache,meta,lock=fixture(tmp_path);run=tmp_path/'output';run.mkdir()
+    expected=r.execute(SimpleNamespace(cache=cache,metadata=meta,run=run),cfg,lock,guard());launch={'synthetic_only':True};dump(run/'launch.json',launch);expected['launch.json']=launch
+    def receipt():
+        dump(run/'output_receipt.json',dict(protocol=r.PROTOCOL,fresh_access=False,files={n:r.sha(run/n) for n in r.REQUIRED_FILES}))
+    receipt();assert r.verify(run,cfg,guard(),expected)
+    for mutation in ['crop','head','parent','score','U']:
+        value=copy.deepcopy(expected['missing_scores_manifest.json']);row=value['rows'][0]
+        key={'crop':'crop_box_xyxy','head':'corrector_fold','parent':'source_parent_key','score':'score','U':'U'}[mutation]
+        row[key]=[0,0,1,1] if mutation=='crop' else 123
+        dump(run/'missing_scores_manifest.json',value);receipt()
+        with pytest.raises(ValueError,match='semantic mismatch'):r.verify(run,cfg,guard(),expected)
+    dump(run/'missing_scores_manifest.json',expected['missing_scores_manifest.json']);receipt()
+    dump(run/'output_receipt.json',dict(protocol=r.PROTOCOL,fresh_access=False,files={}))
+    with pytest.raises(ValueError,match='exact output inventory'):r.verify(run,cfg,guard(),expected)
+
+
+def test_windows_receipt_path_is_portable_and_backslash_rejected(tmp_path):
+    from pathlib import PureWindowsPath
+    assert PureWindowsPath('analysis/F00_support.png').as_posix()=='analysis/F00_support.png'
+    dump(tmp_path/'output_receipt.json',dict(protocol=r.PROTOCOL,fresh_access=False,files={'analysis\\F00_support.png':'fake'}))
+    with pytest.raises(ValueError,match='exact output inventory'):r.verify(tmp_path,CFG,guard(),{})
