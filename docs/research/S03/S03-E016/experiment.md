@@ -224,3 +224,24 @@ The exact prospective once-only local validation/figure commands are now shown
 in validation_approval.md for separate human approval. No held result exists;
 no scientific closure, repeat fit, external send or launch is authorized by
 this preparation/review. Evidence review remains required after actual scoring.
+
+## 2026-10-15 completed R003 and bounded closure
+
+Separate user approval authorized the exact once-only local R003 command block
+and independent read-only acceptance. Completed15:19:23.540414Z–15:19:27.143535Z,
+3.603s/exit0; unchanged four R002 predictions, no solves/tuning/retry/external
+send. All source chain/member identity/finite support checks and figure outputs
+complete. PASS_EVIDENCE by independent /root/e016_code_review; see results.md
+and evidence_review.md for exact artifacts and warning treatment.
+
+Primary Delta=3.0948868258190865e-05mm>0, descriptive proxy improvement1.3042%
+overold; proxy remains9.6783% worsethansecant. Verdict supports this bounded
+conditional procedure improvement, not real state/material/future recovery.
+Common646/648points, inheritedweightcoverage99.896347%; missing2facets excluded
+by fixedfiniteXYUVrule. Anticipated matmulwarnings retained; independent pure
+scalar reconstruction differs<=3.69e-18mm, no detected score impact. Cause unknown.
+
+E016 completed without changing criterion. Research disposition is repair of
+model/observation adequacy through a separately reviewed read-only diagnostic,
+not tuning on stage15, which is now consumed. No new model/solve/holdout access
+is authorized. Preserve positive component results and secant limitation.

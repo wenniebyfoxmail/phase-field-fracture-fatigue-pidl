@@ -224,3 +224,17 @@ support, shared scales, source-bound sidecars and separate raw/residual fields.
 Full code/command scope and evidence in code_review.md; human approval text and
 exact once-only local R003 commands in validation_approval.md. Stage15 remains
 unconsumed; no R003 executed, file sent, remote action, solve or parameter change.
+
+## R003 actual held evidence accepted — 2026-10-15
+
+User separately approvedexactcommandsonce; localR003 completedexit0/3.603s,
+validate0.106s. FourR002 sourcehashes unchanged, nofit/solve/tune/retry/send.
+Stage15nowconsumed,646/648commonpoints,99.896347%areaweightcoverage.
+Independent read-onlyCodex PASS_EVIDENCE checked rawtarget/header/mask/weights,
+fourscores/Delta/globalquotient, actual3PNGs, sidecars and outputhashes without
+rerunningvalidate/render. Matmulwarnings retained; pure scalar math reconstruction
+max residualdifference<=3.69e-18mm, no detected effect; rootcause stillunknown.
+See results.md/evidence_review.md and local R003 endpoint for fullscope/bindings.
+Primarydescriptiveimprovement1.3042%overold; still9.6783%behindsecant. This closes
+E016boundedcomparison, not physicalstate/material/futureprediction. Next proposal
+is separatelyreviewedmodel/observationdiagnosis; do not retuneonconsumedstage15.
