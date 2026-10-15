@@ -54,7 +54,7 @@ f(\bar\alpha)=
 \qquad \alpha_T=0.5.
 $$
 
-A smaller $f$ means a greater fatigue-induced reduction in fracture resistance. The stiffness degradation $g(d)$ and the fatigue factor $f(\bar\alpha)$ act on different parts of the model. Accumulated fatigue history $\bar\alpha$ is also distinct from the maximum tensile-energy history used in the phase-field formulation.
+A smaller $f$ means a greater fatigue-induced reduction in fracture resistance. The stiffness degradation $g(d)$ and the fatigue factor $f(\bar\alpha)$ act on different parts of the model. The accumulated history $\bar\alpha$ is carried between loading steps and is separate from damage $d$.
 
 ### 4.1.2 Loading and saved states
 
