@@ -1,0 +1,18 @@
+{
+  "experiment_id": "S03-E019-D01",
+  "run_id": "S03-E019-D01-R002",
+  "date": "2026-10-15",
+  "scope": "plot-only label wrapping; no sampler/refit/prediction rerun",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "code_commit": "0351bac944edacc1fe66b68a92c6c57d9c255b2b",
+  "runner": "scripts/render_d01_background_alignment.py",
+  "source_run": "S03-E019-D01-R001",
+  "analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E019-D01/runs/S03-E019-D01-R002/analysis",
+  "numeric_summary_and_paired_table_identical_to_R001": true,
+  "figure_stems": ["background_correspondence", "alignment_width_sensitivity", "aligned_source_examples"],
+  "formats": ["png", "pdf"],
+  "validated_figure_sidecars": 3,
+  "figure_files": 6,
+  "visible_QA": "Main agent and independent reviewer opened allthree final figures; shared scale and full labels verified"
+}

@@ -96,3 +96,11 @@ C1 computation reproducibility only. Beam4 location-sensitivity median1.442 px
 exceeds typical adjacent-stage change0.777 px; prioritise a background-anchor
 local-correspondence check before broader prediction claims. Old forecast
 scores/human preparation preserved; no training or physical accuracy claim.
+
+2026-10-15 — [S03-E019-D01](S03-E019-D01/experiment.md) tested frozen Beam4
+background-only local translation. CHECK support141/144; median paired
+residual change-0.09045px, modest internal proxy improvement. Width location
+sensitivity essentially unchanged: all48 medians1.44172→1.43529px, paired
+median0; later36 paired median+0.00976px. Independent code/evidence review
+complete. Retain correspondence component, next inspect spatial width response
+before any new aggregation; no physical reference, new forecast score or model.

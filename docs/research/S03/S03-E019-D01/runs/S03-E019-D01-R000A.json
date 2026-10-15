@@ -1,0 +1,18 @@
+{
+  "experiment_id": "S03-E019-D01",
+  "run_id": "S03-E019-D01-R000A",
+  "scope": "first-frame-only input capability and fixed background template preparation",
+  "date": "2026-10-15",
+  "code_commit": "ac56fdb6348f4cb3636271cee6b10e9cc5bb3212",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "original_R000": "Initial96-candidate layout at3892af8 found T1CHECKa5 contaminated by curved crack, before later-stage access; original output preserved.",
+  "amendment": "v1.1 disables that candidate at every later stage, no location change or denominator reduction",
+  "candidates": 96,
+  "eligible_first_frame": 95,
+  "minimum_template_std_gray": 2.0908733282337906,
+  "prepared_directory": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E019-D01/runs/S03-E019-D01-R000A",
+  "snapshot_digest": "5172d400e7ea941b7a520c97e0283d503ee0bdd94e0ff6501f87e872b1bf1aa6",
+  "synthetic_tests": 7,
+  "code_review": "complete before R001"
+}

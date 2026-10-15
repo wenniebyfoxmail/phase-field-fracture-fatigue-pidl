@@ -130,3 +130,34 @@ candidates unchanged; no displacement/NCC/width/forecast criterion selected
 this exclusion. Re-render first-frame layout/manifest in fresh R000A with red
 exclusion before R001. This is a scoped input-capability repair, not a reduced
 test denominator or a retrospective improvement of any result.
+
+## Outcome — 2026-10-15, bounded descriptive diagnostic complete
+
+Independent code review passed at cleanac56fdb6 before R001;7 synthetic tests.
+R001 completed CPU0.543s/wall0.578s. Four original-image size/CRCs verified;
+36/36 later corrections,285/288 anchors and141/144 CHECK support, allthree
+missing rows from the frozen T1a5 exclusion.480/480 width variants available.
+
+Primary paired CHECK after-before median=-0.09045px, descriptive small proxy
+improvement. Separate before/after medians1.10708/0.91657px are not the primary
+paired change. All48 width-sensitivity medians1.44172→1.43529px with paired
+change median0; later36 medians1.53720→1.51101px but paired median+0.00976px,
+15improved/21worsened. No systematic position-sensitivity reduction. Original
+240 variants replayE018 exactly; no change to old forecasting scores.
+
+R002 plot-only wrapping fix at0351bac9; numerical summaries/table unchanged.
+Final3 PNG/PDF figures+same-stem notes inspected and independently reviewed.
+Evidence Ready for C1 descriptive test, NOT physical registration accuracy.
+Disposition: retain modest background-correspondence component; current shared
+translation insufficient for width sensitivity, redirect the next observation
+test toward spatial width response/material-position reference. No more warp
+freedom, target change or architecture added on these results.
+
+Next proposed discriminator (not executed): fixed tangential position-response
+curve of unchanged half-depth width with raw source strips, to distinguish
+smooth spatial heterogeneity from boundary switching before considering a new
+short-segment robust observable. Any changed estimand needs a new protocol;
+existing half-depth target remains selected.
+
+[Full analysis and figures](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E019-D01/runs/S03-E019-D01-R002/analysis/README_analysis.md),
+[summary](evidence/summary.json), [independent review](evidence/independent_review.md).
