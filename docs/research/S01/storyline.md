@@ -66,3 +66,8 @@ R002 adopted exact features/four heads without refitting and completed the one
 selector fit. Next proposed solution makes paired replacement harm explicit and
 qualifies an abstain-to-original policy on held train locations; no new arm or
 experiment is executed by that proposal. Independent evidence review PASS at b960d3c; current attempt closed.
+
+
+### 2026-10-15 — S01-E011 implementation readiness
+
+The fixed12-scalar/13parameter repair is implemented and independently code-reviewed at25c81801(gpt-6.1-sol Medium). Actual cached scalar columns exactly match the inherited12block and are pooled/GT/prior-utility invariant; all fit-label and baseline records equal E010. Positive fit support4/1/4/3remains sparse. The separate GT-informed selection retains282old hits and adds4; actual learned gain remains uncomputed. Prepare exact source/public branch/R001 approval to test this one repair. No actual fit or fresh access; E003 remains the working detector.
