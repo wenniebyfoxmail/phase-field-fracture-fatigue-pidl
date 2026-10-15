@@ -1,0 +1,35 @@
+[
+  {
+    "state": "c20s4",
+    "mismatches": [
+      {
+        "key": "reference_rho_u",
+        "producer": 4.939060520462635e-11,
+        "mac": 4.9569258799654214e-11,
+        "absolute_difference": 1.7865359502786693e-13
+      }
+    ]
+  },
+  {
+    "state": "c60s4",
+    "mismatches": [
+      {
+        "key": "reference_rho_u",
+        "producer": 4.802003466120745e-11,
+        "mac": 4.8195794124266575e-11,
+        "absolute_difference": 1.7575946305912617e-13
+      }
+    ]
+  },
+  {
+    "state": "c83s4",
+    "mismatches": [
+      {
+        "key": "reference_rho_u",
+        "producer": 4.4058080838988206e-11,
+        "mac": 4.396407551066601e-11,
+        "absolute_difference": 9.40053283221973e-14
+      }
+    ]
+  }
+]

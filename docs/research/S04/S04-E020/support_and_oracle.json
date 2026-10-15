@@ -1,0 +1,74 @@
+[
+  {
+    "state": "c20s4",
+    "arm": "backbone",
+    "outside_support_max_abs_delta": 0.0,
+    "background_inside_rms": 0.000542510846282931,
+    "background_outside_rms": 0.00022693578597044912
+  },
+  {
+    "state": "c20s4",
+    "arm": "E019",
+    "outside_support_max_abs_delta": 0.0,
+    "background_inside_rms": 0.0004875124504458981,
+    "background_outside_rms": 0.00022693578597044912
+  },
+  {
+    "state": "c20s4",
+    "arm": "E020",
+    "outside_support_max_abs_delta": 0.0,
+    "background_inside_rms": 0.00045947459719379634,
+    "background_outside_rms": 0.00022693578597044912,
+    "oracle_scale": 1.0002514724930562,
+    "oracle_full": 0.0006997368782642557,
+    "damage_core_fraction": 1.0
+  },
+  {
+    "state": "c60s4",
+    "arm": "backbone",
+    "outside_support_max_abs_delta": 0.0,
+    "background_inside_rms": 0.0005081143732233678,
+    "background_outside_rms": 0.0002541315650431008
+  },
+  {
+    "state": "c60s4",
+    "arm": "E019",
+    "outside_support_max_abs_delta": 0.0,
+    "background_inside_rms": 0.0004483541633621348,
+    "background_outside_rms": 0.0002541315650431008
+  },
+  {
+    "state": "c60s4",
+    "arm": "E020",
+    "outside_support_max_abs_delta": 0.0,
+    "background_inside_rms": 0.0005081465223317864,
+    "background_outside_rms": 0.0002541315650431008,
+    "oracle_scale": 1.0039078301454676,
+    "oracle_full": 0.0034874802485029255,
+    "damage_core_fraction": 0.999972996366614
+  },
+  {
+    "state": "c83s4",
+    "arm": "backbone",
+    "outside_support_max_abs_delta": 0.0,
+    "background_inside_rms": 0.00037260494438205217,
+    "background_outside_rms": 0.00015035012880590905
+  },
+  {
+    "state": "c83s4",
+    "arm": "E019",
+    "outside_support_max_abs_delta": 0.0,
+    "background_inside_rms": 0.00033814252882924964,
+    "background_outside_rms": 0.00015035012880590905
+  },
+  {
+    "state": "c83s4",
+    "arm": "E020",
+    "outside_support_max_abs_delta": 0.0,
+    "background_inside_rms": 0.00031360507798622013,
+    "background_outside_rms": 0.00015035012880590905,
+    "oracle_scale": 2.517747564531652,
+    "oracle_full": 0.0032858651292022294,
+    "damage_core_fraction": 0.9999999981081696
+  }
+]

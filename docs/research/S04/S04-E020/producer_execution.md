@@ -1,6 +1,6 @@
 # E020 producer execution — 2026-10-15
 
-Execution: c20 completed and retrieved; c60 active; c83 queued. Three-state scientific outcome pending.
+Execution succeeded; retrieval verified31files/45027883bytes. Producer primary FAIL; strict Mac full replay INADMISSIBLE due reference-rho portability. Independent Evidence review pending.
 
 User explicitly approved the exact two-file package and launch after preflight. Remote SHA256 matched: bundle `43ca4c5c2e5d9eaa7799c6f233b23a169c6ff11862b179b462d3b3313bc43daa`; launcher `087305d69457aa542dfd8e2ca51d7fc6b6bdcbbe3623f036642025ebbd31dd68`. No approved bytes changed.
 
@@ -27,3 +27,11 @@ At14:58:50Z the first passive record confirms update1000: actual LRused=.001, ne
 ## Partial retrieval 2026-10-15T15:10:50Z
 
 c20 finished15:08:49.647570Z; c60 started15:08:50Z and latest passive update1000 observed; c83 queued. Dispatcher1738351 active. c20 sixfiles14975058bytes retrieved, every remoteSHA256 matches. Frozen validate_schedule_and_pair passes; receipt source/clean status matches and10000actualLRs .001→.00001 verified. Local c20_retrieval_verification.json preserves details. These are partial asset/protocol checks, not full numerical admission or three-state scoring. No E019/candidate final comparison until all3rows complete. Heartbeat e020 remains active; no retry/new run.
+
+## Completion and follow-through
+
+All3candidates reached10000updates; last finished2026-10-15T15:32:15.828265Z. Frozen aggregator completed15:34:07Z,3/3valid,no missing/integrity errors, primaryDELAYED_DECAY_THREE_STATE_UV_SCREEN_FAIL, inherited componentFalse. Remote clean scientific671fba2 verified. Local31files45027883bytes all match remote final SHA256;3actual10000LRvectors and source/runtime/pairedinitial/backbone/geometry/sampler identities verified. Three checkpoints/predictions/receipts,11pointtraces, logs/preflight and originalaggregate present. Existing E019refs/backbones/controls reused by exactlockedidentities.
+
+Independent saved-array full/damage/background candidate metrics agree with producer within1.48e-17(max), historicalcontrol metrics within1e-14. c20full improves.5934%vsE019, c60worsens406.4682%, c83worsens1.6824%; background c20/c83improves but c60worsens1.5024%. Strict Macfullreplay0/3INADMISSIBLE retained; onlybaseline reference_rho mismatch (~9.4e-14–1.79e-13). No tolerance/codepatch used. Decision and exacttables in decision.md; final decisionfigures analysis_render_v2/README_analysis.md in localcase, all3renderedfigures visually checked.
+
+Monitor e020PAUSED after retrieval/analysis. Next low-cost activation/gradient/feature-spectrum diagnostic proposed in next_diagnostic.md. No new experiment, externalreviewsend, GitHubpush or producer intervention. Independent Evidence review remains pending; execution/retrieval completion is not fullscientific qualification.

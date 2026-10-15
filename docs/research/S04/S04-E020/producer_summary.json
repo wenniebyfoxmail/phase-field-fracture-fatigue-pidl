@@ -1,0 +1,12 @@
+{
+  "protocol_revision": "20261015-r1-delayed-decay",
+  "expected_runs": 3,
+  "valid_completed_runs": 3,
+  "missing": [],
+  "integrity_errors": [],
+  "verdict": "DELAYED_DECAY_THREE_STATE_UV_SCREEN_FAIL",
+  "clean_damage_progress_background_preserved": false,
+  "stage2_authorized": false,
+  "qualified_fem_teacher": "NOT_QUALIFIED",
+  "code_commit": "671fba2e48f1202bc2dd89f9800bacf1849477a0"
+}

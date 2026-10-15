@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E020
 protocol_revision: 20261015-r1-delayed-decay
-status: code-ready-producer-approval-pending
+status: execution-complete-evidence-review-pending
 ---
 # Delayed learning-rate decay on the frozen E019 local residual
 
@@ -56,3 +56,7 @@ Three fresh receipts, actualLRvectors, checkpoints/predictions, final and fixed0
 ## Code Ready review completed 2026-10-15
 
 Human-requested independent Codex subagent review gives CODE READY PASS bound to671fba2e48f1202bc2dd89f9800bacf1849477a0. Independently128nontraining tests,3real control reloads/regional recomputations,3complete sampled streams and33manifest entries verified; no blocker. Scientific protocol above unchanged. No candidate/CUDAtraining or final production archive tested; no transfer/launch approval. [Review](code_ready_review.md). Earlier preparation/pending statements are historical snapshots.
+
+## Execution outcome 2026-10-15
+
+Exact approved producer671fba2 completed3/3; originalaggregate primaryFAIL and inheritedcomponentFalse. All31retrievedfiles verified; strictMacfullreplayINADMISSIBLEreference-rho portability remains distinct from independently matchingUVregionalmetrics. Earlier pendingapproval statements are historical preparation snapshots, not current producer status. Frozen protocol/budget/criteria unchanged. See decision.md, producer_execution.md and next_diagnostic.md. Evidence review pending; no new producer run authorised.
