@@ -3,7 +3,8 @@
 Protocol v2, prospective revision 2026-10-15 after the 2026-10-14 Pro review.
 Owner S03-E016 / storyline S03. Original v1 retained at commit7383d43;
 its REVISE_PLAN remains historical. No new-cycle fields or results viewed.
-NOT_READY before independent plan/code review, then actual training-asset review.
+Plan review passed 2026-10-15 (review_round2.md); independent code and actual
+training-asset reviews remain outstanding. No execution authority implied.
 Controlled-experiment C2 conditional static-response diagnostic, with C1
 coordinate admission. No independently measured crack-tip truth is available.
 Question: does a training-opening-defined segment prior change held response
@@ -30,7 +31,10 @@ No later-cycle fallback, stage15-selected geometry, thresholds, or model change.
 
 Require IDs exactly1..N with identical ordering, stage/reference/cycle identity,
 increasing positive loads, jointly finite XYZ/UVW, reference XYZ agreement1e-6mm.
-Use serialized reference x/y and incremental displacement u14-u13 directly.
+Use stage13 serialized reference XYZ (XY for planar operators) consistently for
+all neighbours, ROI, areas, plane diagnostics and scoring. Stage14 coordinates
+only check identity; never alternate or average coordinates between operators.
+Use incremental displacement u14-u13 directly.
 Do not reapply alignment headers: metadata describes degrees/translations, but
 exact exporter transformation algebra is unresolved. Preserve header values.
 Published consumer convention and previous fixed global quotient are retained,
@@ -39,7 +43,10 @@ Record max coordinate mismatch on the whole jointlyfinite training set.
 Plane diagnostic uses ONLY the fixed common scoring ROI defined below, equally
 weighted: OLS z=c0+c1*x+c2*y, normal(-c1,-c2,1) normalized towardpositivez,
 tilt atan(hypot(c1,c2)), orthogonal residual=(z-fit)*normal_z. Report normal,
-tiltdegrees, RMS/max orthogonalresidual and RAW XYZincrementRMS on thisROI.
+tiltdegrees, RMS/max OLS-plane orthogonal residual and raw displacement-increment
+RMS on thisROI, in fixed order DeltaU=U14-U13, DeltaV=V14-V13, DeltaW=W14-W13.
+These are NOT differences of reference coordinates. This is not an orthogonal
+best-fit plane: the residual is normal distance to the declared vertical OLS fit.
 These are descriptive model-assumption checks, not a new threshold or permission
 to automatically rotate coordinates or fit3D mechanics. Preserve3Dcoordinates.
 Plane stress, small strain and 2D omission are assumptions, not validated facts.
@@ -121,9 +128,14 @@ kernel E1/nu.30/plane stress/g(mean d)=(1-mean d)^2+1e-6. qR=qL=0 FIXED;
 no amplitude inversion or grid search. One intact solve as component comparator.
 Exactly3 solves, identical mesh/BC/scoring support. Save all three full nodal
 fields and current prior damage, sampled fields and numerical residuals.
-Report old/new source-independent artificialmesh area integrals of mean-nodal
-damage and g(mean-nodald), and area-mean degradation. These quantify coverage
-change, not extra parameter selection. No amplitude inversion despite data-
+Report old/new artificialmesh discrete prior integral D_h=sum_e A_e*dbar_e
+(mm2), multiplier integral sum_e A_e*g_e (mm2), area-mean local multiplier
+sum_e A_e*g_e/sum_e A_e and area-mean local degradation fraction
+R_g=1-sum_e A_e*g_e/((1+1e-6)*sum_e A_e), with positive CST area A_e,
+dbar_e=mean of three nodal priors and g_e=(1-dbar_e)^2+1e-6. These quantify
+coverage/local-multiplier change, NOT actual crack area, patch effective stiffness
+or load-displacement compliance, and not extra parameter selection.
+No amplitude inversion despite data-
 adapted endpoints; geometry andBC are not independent measurements.
 Predictions highincrement alpha=(F15-F13)/(F14-F13) times each static increment;
 fourth prediction secant=alpha*(u14-u13). Save allfour predictions and successful
@@ -185,3 +197,12 @@ training geometry-overlay/profile decision figure and allfour heldresidual maps,
 same units/scale/no cherry-picked case, README_analysis plus same-stem sidecars.
 Independent Evidence review and dated storyline/Obsidian milestone beforeclose.
 Review approvals concern scope/access/checks only, not scientific truth.
+
+## 2026-10-15 post-review implementation clarification
+
+Adopted round2 suggestions for discrete reports, stage13-only coordinates,
+DeltaUVW names and OLS-plane residual terminology. No change to three solves,
+stage15 holdout, information set, geometry rule, primary metric or stop rule.
+Auxiliary peaks are only maxima on existing support, not over unobserved bins.
+Current activity is local synthetic checks and independent read-only code review;
+no actual13/14/15 fields, file transmission, remote sync or solver execution.

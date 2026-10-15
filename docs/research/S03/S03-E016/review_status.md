@@ -95,3 +95,52 @@ or externalstylelookup transmitted. Proposed samehaofan/Pro account and existing
 reviewconversation; live identity to be rechecked only after humanapproval.
 No sending or code-review authority inferred from localv2 completion. Plot
 rendering and independentcode/actualasset review still remain downstream work.
+
+## Round 2 submitted — 2026-10-15, response pending
+
+User explicitly approved the displayed complete revised body, haofan / Pro,
+the existing conversation, no attachments, and monitoring only. Live profile
+menu confirmed haofan Pro; model menu confirmed Pro. Initial input interaction
+failed without entering or sending text; a reload restored the same conversation.
+Sent external_review_round2_draft.md unchanged, text only, exactly once.
+The last submitted user message matches the full approved body after whitespace
+normalization; the page shows ChatGPT is responding and Pro. No file or code
+was sent, no subagent contacted, no actual fields processed or solve started.
+
+Conversation: https://chatgpt.com/c/6ac7974d-c838-8325-9322-fbc639d581cb
+Screenshot: local_archive/experiments/S03-E016/review/approved_round2_sent_20261015.png
+(project-root-relative archive path). Existing heartbeat e016 reactivated at
+five-minute intervals for this Oct15 round2 response only, read-only and quiet
+while unchanged, saving/reporting the completed reply and then disabling itself.
+No future external message or file transmission is authorized by this send.
+
+## Round 2 completed — retrieved 2026-10-15
+
+Latest completed reply to the Oct15 revised E016 message is PASS_PLAN, not the
+older E015 approval or Oct14 E016 REVISE_PLAN. All four previous design issues
+are resolved; no new decision-changing design blocker found. Full substantive
+reply is saved in review_round2.md, with browser math/table formatting normalized.
+Remaining implementation/asset checks: discrete prior/degradation reporting
+definitions, one stage13 coordinate source, displacement RMS terminology and
+OLS-plane residual naming; independent tests of profile/missingness/budget and
+held-parser exclusion; actual curve/support/coefficient/coverage/BC/weight review.
+These are downstream requirements, not independent code/asset approval.
+
+No source edits, actual data preparation, subagent contact, outgoing message,
+file transfer or solve performed during retrieval. Heartbeat e016 is PAUSED
+after completion retrieval. Next proposed step is local clarification and an
+independent read-only code review, with its scope separately authorized. Any
+external code/files/message send still requires exact human approval.
+
+## Local implementation clarification — 2026-10-15
+
+User authorized local clarification and independent read-only Codex review,
+repair/re-review only; no real field processing, files sent or solves launched.
+Stage13-only spatial coordinates now explicit in protocol/code metadata;
+DeltaUVW RMS and OLS-plane orthogonal residual output names are unambiguous.
+CST discrete prior integral, local multiplier mean and intact-normalized local
+degradation fraction are explicit, not effective patch stiffness or crack area.
+52 local synthetic/unit checks pass (15 E016 +37 reused), expected duplicateZIP
+adversarial warning only; no E016 actual prepare/fit/validate invocation.
+Next: independent reviewer inspects this exact committed local snapshot, with
+source-only access and optional synthetic/mocked checks, no external sending.

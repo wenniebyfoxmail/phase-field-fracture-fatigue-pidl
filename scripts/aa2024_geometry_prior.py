@@ -129,18 +129,24 @@ def plane_diagnostic(xyz,du3):
     normal=np.array([-c[1],-c[2],1.]);normal/=np.linalg.norm(normal)
     residual=(xyz[:,2]-np.einsum('ij,j->i',A,c))*normal[2]
     return dict(region='common_training_scoring_ROI_absx<16.2_absy<7.2_positive_area',
+        reference_coordinates='stage13_serialized_reference_XYZ',
+        plane_fit='equal_weight_OLS_z_on_1_x_y_not_orthogonal_best_fit',
+        displacement_increment='stage14_UVW_minus_stage13_UVW',
+        displacement_component_order=['delta_U','delta_V','delta_W'],
         points=len(xyz),plane_coefficients=c.tolist(),unit_normal_xyz=normal.tolist(),
         tilt_degrees=float(np.degrees(np.arctan(np.hypot(c[1],c[2])))),
-        orthogonal_RMS_mm=float(np.sqrt(np.mean(residual**2))),
-        orthogonal_max_abs_mm=float(np.abs(residual).max()),
-        raw_increment_RMS_xyz_mm=np.sqrt(np.mean(du3**2,axis=0)).tolist())
+        OLS_plane_orthogonal_RMS_mm=float(np.sqrt(np.mean(residual**2))),
+        OLS_plane_orthogonal_max_abs_mm=float(np.abs(residual).max()),
+        raw_displacement_increment_RMS_UVW_mm=np.sqrt(np.mean(du3**2,axis=0)).tolist())
 
 def prior_coverage(mesh,tri,d):
     p=mesh[tri];area=((p[:,1,0]-p[:,0,0])*(p[:,2,1]-p[:,0,1])-(p[:,1,1]-p[:,0,1])*(p[:,2,0]-p[:,0,0]))/2
     avg=d[tri].mean(1);g=(1-avg)**2+1e-6
-    return dict(lumped_damage_area_mm2=float(np.sum(area*avg)),
+    return dict(discrete_prior_integral_mm2=float(np.sum(area*avg)),
         degradation_area_integral_mm2=float(np.sum(area*g)),
-        mean_element_degradation=float(np.sum(area*g)/area.sum()))
+        area_mean_local_stiffness_multiplier=float(np.sum(area*g)/area.sum()),
+        area_mean_local_degradation_fraction=float(1-np.sum(area*g)/((1+1e-6)*area.sum())),
+        meaning='artificial_mesh_prior_and_local_multiplier_NOT_crack_area_or_effective_patch_stiffness')
 
 def segment_prior(xy,left,right):
     distance=np.hypot(np.maximum(np.maximum(left-xy[:,0],xy[:,0]-right),0),xy[:,1])
@@ -179,6 +185,7 @@ def prepare(archive,out):
     if finite.sum()<10:raise ValueError('insufficient finite training')
     xyz=a['xyz'][finite];coordinate_difference=np.abs(xyz-b['xyz'][finite]).max(0)
     if np.any(coordinate_difference>1e-6):raise ValueError('reference coordinates mismatch')
+    # Stage13 alone defines every spatial operator; stage14 XYZ only checks identity.
     xy=a['xyz'][:,:2];du3=b['u']-a['u'];du=du3[:,:2]
     w=area_weights(connection,xy,finite)
     obs=finite&(np.abs(xy[:,0])<16.2)&(np.abs(xy[:,1])<7.2)&(w>0)
@@ -187,7 +194,7 @@ def prepare(archive,out):
     audit=dict(cycle='292018.5',stages=[13,14],profiles=profiles,
         coordinate_max_abs_difference_mm=coordinate_difference.tolist(),joint_finite=int(finite.sum()),
         plane=plane_diagnostic(a['xyz'][obs],du3[obs]),
-        training_headers=[a['headers'],b['headers']],frame='serialized_reference_xy_no_header_reapplication',
+        training_headers=[a['headers'],b['headers']],frame='stage13_serialized_reference_xy_no_header_reapplication',
         assumptions='y0/xaxis retained; plane stress/small strain/static damage not validated')
     np.savez_compressed(out/'training_geometry.npz',xy=xy[finite],xyz=xyz,du=du3[finite],ids=ids[finite])
     write_json(out/'geometry_audit.json',audit)

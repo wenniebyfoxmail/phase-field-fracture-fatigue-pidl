@@ -103,12 +103,25 @@ def test_primary_outer14_and_secondary_needs_both_tails():
 def test_tilted_flat_plane_and_coverage_decomposition():
     xy=np.array([[-1.,-1],[1,-1],[-1,1],[1,1]])
     p=m.plane_diagnostic(np.c_[xy,2*xy[:,0]+3*xy[:,1]+4],np.zeros((4,3)))
-    assert p['orthogonal_RMS_mm']<1e-14
+    assert p['OLS_plane_orthogonal_RMS_mm']<1e-14
     assert p['tilt_degrees']==pytest.approx(np.degrees(np.arctan(np.sqrt(13))))
     np.testing.assert_allclose(p['unit_normal_xyz'],np.array([-2,-3,1])/np.sqrt(14))
     mesh,t,_=m.rectangular_mesh(nx=3,ny=3,width=2,height=2)
-    c=m.prior_coverage(mesh,t,np.zeros(9));assert c['lumped_damage_area_mm2']==0
+    c=m.prior_coverage(mesh,t,np.zeros(9));assert c['discrete_prior_integral_mm2']==0
     assert c['degradation_area_integral_mm2']==pytest.approx(4*(1+1e-6))
+    assert c['area_mean_local_degradation_fraction']==pytest.approx(0)
+    c=m.prior_coverage(mesh,t,np.ones(9)*.5)
+    assert c['discrete_prior_integral_mm2']==pytest.approx(2)
+    assert c['area_mean_local_stiffness_multiplier']==pytest.approx(.25+1e-6)
+    assert c['area_mean_local_degradation_fraction']==pytest.approx(1-(.25+1e-6)/(1+1e-6))
+
+def test_displacement_rms_is_not_reference_coordinate_difference():
+    xyz=np.array([[-1.,-1,0],[1,-1,0],[-1,1,0],[1,1,0]])
+    p=m.plane_diagnostic(xyz,np.tile([3.,4.,12.],(4,1)))
+    assert p['reference_coordinates']=='stage13_serialized_reference_XYZ'
+    assert p['displacement_component_order']==['delta_U','delta_V','delta_W']
+    np.testing.assert_allclose(p['raw_displacement_increment_RMS_UVW_mm'],[3,4,12])
+    assert p['OLS_plane_orthogonal_RMS_mm']==0
 
 def test_three_mocked_solves_and_budget_blocks_prefix():
     with tempfile.TemporaryDirectory() as td:
