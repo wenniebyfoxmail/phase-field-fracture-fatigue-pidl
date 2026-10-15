@@ -1,0 +1,176 @@
+{
+  "protocol": "S01-E011-v1",
+  "feature_names": [
+    "parent_proposer_logit",
+    "parent_crack_logit",
+    "corrected_crack_logit",
+    "log_aspect",
+    "log_area_fraction",
+    "width_fraction",
+    "height_fraction",
+    "center_x_fraction",
+    "center_y_fraction",
+    "parent_iou",
+    "nonparent_max_iou",
+    "nonparent_overlap_max_score"
+  ],
+  "feature_shape": [
+    12602,
+    12
+  ],
+  "parameters_per_head": 13,
+  "eligible_rows": 7332,
+  "total_pairs": 12602,
+  "e010_label_equivalence": true,
+  "oracle_policy": {
+    "delta": 0.009325396825396792,
+    "retention": 1.0,
+    "net_targets": 4,
+    "retained_old_targets": 282,
+    "new_detected_targets": 4,
+    "lost_old_targets": 0,
+    "protected_primary_pass": true,
+    "choice": {
+      "original_count": 19855,
+      "scored_pairs": 12602,
+      "ratio_rejected": 12598,
+      "original_duplicate_rejected": 0,
+      "correction_duplicate_rejected": 0,
+      "accepted_corrections": 4
+    }
+  },
+  "support_pass": true,
+  "ready_for_code_review": true,
+  "fits_consumed": 0,
+  "learned_predictions": 0,
+  "learned_comparisons": 0,
+  "source_pixel_reads": 0,
+  "fresh_access": false,
+  "preparation_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E011/preparation/cache-audit-v1",
+  "preparation_sha256": "2b4f9bc676102a37c421316a67cdb26e931baca44593534e9a52475ec6582046",
+  "source_manifest_at_preparation": "4c3b4932f669f8b126dd28c67d32db073b02b7957de7b0a78a684f49a90a6484",
+  "folds": [
+    {
+      "fit_locations": [
+        "1459",
+        "2028",
+        "5982"
+      ],
+      "signs": {
+        "zero": 6783,
+        "negative": 235,
+        "positive": 4
+      },
+      "by_location": {
+        "1459": {
+          "zero": 2504,
+          "negative": 60,
+          "positive": 3
+        },
+        "2028": {
+          "zero": 2409,
+          "negative": 56
+        },
+        "5982": {
+          "zero": 1870,
+          "negative": 119,
+          "positive": 1
+        }
+      },
+      "support_pass": true,
+      "full_evaluations": 246,
+      "safe_shortcuts": 6776
+    },
+    {
+      "fit_locations": [
+        "353",
+        "2028",
+        "5982"
+      ],
+      "signs": {
+        "zero": 4613,
+        "negative": 151,
+        "positive": 1
+      },
+      "by_location": {
+        "353": {
+          "zero": 305,
+          "negative": 5
+        },
+        "2028": {
+          "zero": 2416,
+          "negative": 49
+        },
+        "5982": {
+          "zero": 1892,
+          "negative": 97,
+          "positive": 1
+        }
+      },
+      "support_pass": true,
+      "full_evaluations": 159,
+      "safe_shortcuts": 4606
+    },
+    {
+      "fit_locations": [
+        "353",
+        "1459",
+        "5982"
+      ],
+      "signs": {
+        "zero": 4705,
+        "negative": 158,
+        "positive": 4
+      },
+      "by_location": {
+        "353": {
+          "zero": 305,
+          "negative": 5
+        },
+        "1459": {
+          "zero": 2507,
+          "negative": 57,
+          "positive": 3
+        },
+        "5982": {
+          "zero": 1893,
+          "negative": 96,
+          "positive": 1
+        }
+      },
+      "support_pass": true,
+      "full_evaluations": 166,
+      "safe_shortcuts": 4701
+    },
+    {
+      "fit_locations": [
+        "353",
+        "1459",
+        "2028"
+      ],
+      "signs": {
+        "zero": 5155,
+        "negative": 184,
+        "positive": 3
+      },
+      "by_location": {
+        "353": {
+          "zero": 304,
+          "negative": 6
+        },
+        "1459": {
+          "zero": 2470,
+          "negative": 94,
+          "positive": 3
+        },
+        "2028": {
+          "zero": 2381,
+          "negative": 84
+        }
+      },
+      "support_pass": true,
+      "full_evaluations": 193,
+      "safe_shortcuts": 5149
+    }
+  ]
+}
