@@ -1,0 +1,140 @@
+{
+  "protocol": "S01-E011-v1",
+  "scope": "conditional reused four-training-location crossfit; low-capacity repair; no independent-site claim",
+  "base_commit": "6ab576bc1c688e1903b0d2532c5f1698db5b1588",
+  "locations": [
+    "353",
+    "1459",
+    "2028",
+    "5982"
+  ],
+  "folds": [
+    {
+      "held": [
+        "353"
+      ],
+      "fit": [
+        "1459",
+        "2028",
+        "5982"
+      ]
+    },
+    {
+      "held": [
+        "1459"
+      ],
+      "fit": [
+        "353",
+        "2028",
+        "5982"
+      ]
+    },
+    {
+      "held": [
+        "2028"
+      ],
+      "fit": [
+        "353",
+        "1459",
+        "5982"
+      ]
+    },
+    {
+      "held": [
+        "5982"
+      ],
+      "fit": [
+        "353",
+        "1459",
+        "2028"
+      ]
+    }
+  ],
+  "feature_map": "exact existing E009 scalar block columns576:588 only, fixed order; no pooled input",
+  "features": 12,
+  "target": {
+    "name": "single-correction operating-budget incremental utility",
+    "new_target_weight": 1.0,
+    "lost_old_target_weight": 1.0,
+    "admitted_correction_FP_weight": 1.0,
+    "baseline": "E003 original bank within FIT locations only; own 1FP/image global prefix",
+    "counterfactual": "baseline + ONE statically eligible correction at unattenuated frozen E008 corrected score"
+  },
+  "fit": {
+    "type": "signed-utility linear ridge",
+    "dtype": "float64",
+    "l2": 0.001,
+    "intercept_penalized": false,
+    "scaler": "fit-eligible rows only; population std floor1e-8",
+    "weighting": "equal total mass per present sign stratum (U>0,U=0,U<0); no sampling",
+    "gradient_inf_max": 1e-07,
+    "solve_count_per_fold": 1
+  },
+  "policy": {
+    "utility_gate_strict": 0.0,
+    "correction_score": "sqrt(parent proposer confidence * cached E003 corrected probability); never multiply utility",
+    "parent_score_ratio": 1.0,
+    "strict_parent_comparison": true,
+    "original_duplicate_iou": 0.7,
+    "correction_duplicate_iou": 0.5,
+    "original_prefix_immutable": true
+  },
+  "criterion": {
+    "minimum_retention": 0.95,
+    "minimum_net_targets": 1,
+    "minimum_macro_delta_strict": 0.0,
+    "fp_per_image": 1.0,
+    "iou": 0.5
+  },
+  "budget": {
+    "new_head_fits": 4,
+    "all_four_fit": 0,
+    "learned_pooled_comparisons": 1,
+    "max_fit_counterfactual_labels": 37806,
+    "max_full_bank_oracle_labels": 12602,
+    "pixels": 0,
+    "new_feature_extractions": 0,
+    "encoder_classifier_forwards": 0,
+    "development_comparisons": 0,
+    "fresh_access": false,
+    "fit_wall_seconds_per_fold": 900,
+    "total_wall_seconds": 3600,
+    "rss_cap_gib": 4,
+    "threads": 1,
+    "producer": "gpu-server / D-26-09 CPU only after independent code review and exact execution approval"
+  },
+  "seed": 20261015,
+  "phase_order": [
+    "verify pinned cache/metadata",
+    "GT-free eligibility",
+    "fit-partition-only counterfactual label/support audit",
+    "fixed full-bank oracle feasibility",
+    "fit and verify all four heads",
+    "predict eligible held rows",
+    "one pooled learned comparison"
+  ],
+  "status": "design_review_pass_implementation_pending",
+  "parameters": 13,
+  "feature_names": [
+    "parent_proposer_logit",
+    "parent_crack_logit",
+    "corrected_crack_logit",
+    "log_aspect",
+    "log_area_fraction",
+    "width_fraction",
+    "height_fraction",
+    "center_x_fraction",
+    "center_y_fraction",
+    "parent_iou",
+    "nonparent_max_iou",
+    "nonparent_overlap_max_score"
+  ],
+  "repair_control": "relative to E010 change only the feature block 588->12; no label, weighting, objective, l2, threshold, ranking or policy change",
+  "reference_only_e010": {
+    "run_id": "S01-E010-R001",
+    "runtime_commit": "cdd9d9518e02a145bc63fcdcc865e7725a159d37",
+    "input_audit_sha256": "0d82cb5a0ad3321352bf30b328413515116d8d8b728f0bf84ed33cda294856d2",
+    "evaluation_sha256": "4a9ced60affa7075c571adb53efc8e82aa92b12a66b361a213c03462e7580e25",
+    "role": "identity and component comparison only; no coefficients or OOF utilities as model inputs"
+  }
+}
