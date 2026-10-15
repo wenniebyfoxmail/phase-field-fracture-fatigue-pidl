@@ -1,0 +1,23 @@
+[
+  {
+    "state": "c20s4",
+    "draws": 10000,
+    "sampler_index_sha256": "356cbaed98b25bd3294f9a582854d98f7f7f2fd7283c55ba17fc155e8114fc9d",
+    "seconds": 31.042911052703857,
+    "training": false
+  },
+  {
+    "state": "c60s4",
+    "draws": 10000,
+    "sampler_index_sha256": "69a0a6633860c0bbbdacd58ef6ee83c5aeef3824d6515166ea51d18fd25ec2d1",
+    "seconds": 27.533308029174805,
+    "training": false
+  },
+  {
+    "state": "c83s4",
+    "draws": 10000,
+    "sampler_index_sha256": "898564794d89d6096150ff4cde42b1bb0cb8bc430bb62052e90b5c222f7319ed",
+    "seconds": 28.72269082069397,
+    "training": false
+  }
+]

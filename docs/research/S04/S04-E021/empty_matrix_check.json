@@ -1,0 +1,21 @@
+{
+  "training": false,
+  "source_argument_is_test_sentinel": true,
+  "summary": {
+    "protocol_revision": "20261015-r1-coordinate-preconditioning",
+    "expected_runs": 3,
+    "valid_completed_runs": 0,
+    "missing": [
+      "c20s4",
+      "c60s4",
+      "c83s4"
+    ],
+    "integrity_errors": [],
+    "verdict": "INCONCLUSIVE",
+    "clean_damage_progress_background_preserved": null,
+    "clean_damage_progress_background_preserved_vs_control": null,
+    "stage2_authorized": false,
+    "qualified_fem_teacher": "NOT_QUALIFIED",
+    "code_commit": "0000000000000000000000000000000000000000"
+  }
+}
