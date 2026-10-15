@@ -47,3 +47,13 @@ L0：全部允许输入身份/范围可验证，预算合规，逐项说明可�
 交付输入/ancestry/缺分数 manifest、GT 去重表、各组支持表和预算记录；F00 支持/缺失分布，F01 去重 GT/地点覆盖，F02 现有坐标案例（有益、负例、不可计算各最多 2 个，空类别明确缺失），README 写明无图像和无学得检测结果。若无实际评分，图中明确 unavailable。结果包按文件 SHA-256 固定，并经数值与可读性验收。
 
 先由 6.1 sol-Medium 独立审查本冻结方案。设计通过仅允许继续本地实现和测试；后续独立代码审查通过后，准备准确源码传送、指定公开分支及 Stage A 执行审批版本。当前没有任何 E012 执行授权。
+
+## 2026-10-15 实现范围与输入可用性
+
+复用现有专用工作树，branch `codex/s01-e012-positive-evidence-20261015`，base `725015709ab8cdcdf465b013379076bad0d6f5af`。仅新增 `scripts/pavetrack_positive_evidence/`、对应测试及本实验记录；不修改 E003/E007–E011 的检测或拟合代码。
+
+在不读取新数据的源码检查中确认：当前冻结 allowlist 只有 E007 feature_receipt、train_bank、correction_heads、label_audit 和已锁定 metadata，没有 12 地点真实 corrected-crop score receipt。E007 的 probability 明确继承自旧框。因此本版 R001 的合法可计算终点预先明确为缓存身份/几何支持盘点与精确 missing_scores_manifest；U、L2 正例支持和联合诊断为 unavailable，不执行 singleton，不拟合模型。不是根据结果关闭评分分支，也不伪造“零正例”。若以后找到额外评分缓存，必须先冻结其准确身份并补充审查，不在本次 R001 中自动搜索或加载。
+
+实现按结构扫描混合 JSON 的 key/地点身份，只反序列化白名单记录，GT keyed map 只解析白名单 image_id；排除地点 payload 不进入分析对象。label_audit 仅校验固定原始哈希，不解析其中案例。修正器谱系依赖原 E007 已验证、由固定 receipt 绑定的银行分配，核对三个 head 的 fit/held，未重新运行修正器推理。逐候选保留源 parent key、原/修正坐标、图像 hash、源 head、E008 相同裁剪规则（pad_box 后 round）。生成缺评分的确定清单和后续审批准备说明，不执行 Stage B。
+
+本轮 Mac 检验仅用合成记录，未读取 12 地点实际 GT/图像。当前代码仍须独立审查后才可称 Code Ready；拟议 Stage A 需用户批准准确源码包、公开分支及执行版本。
