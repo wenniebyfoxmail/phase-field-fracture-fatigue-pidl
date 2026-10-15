@@ -1,0 +1,94 @@
+{
+  "protocol": "S01-E009-v1",
+  "scope": "reused four-training-location crossfit diagnostic",
+  "source_commit": "663ace26341156c534d9e25f0a43198cf9f51c5d",
+  "e008_run": "S01-E008-R001",
+  "e008_archive_sha256": "ecd4e98a5bfa8cc240dcff22355eacab89889d4e5d22b32240d2c65dd51d4115",
+  "e008_evaluation_sha256": "902796c2e71fcc9e56295bb04ea422bd5d71c07dea46e5822368568ea744dcb9",
+  "locations": [
+    "353",
+    "1459",
+    "2028",
+    "5982"
+  ],
+  "folds": [
+    {
+      "held": [
+        "353"
+      ],
+      "fit": [
+        "1459",
+        "2028",
+        "5982"
+      ]
+    },
+    {
+      "held": [
+        "1459"
+      ],
+      "fit": [
+        "353",
+        "2028",
+        "5982"
+      ]
+    },
+    {
+      "held": [
+        "2028"
+      ],
+      "fit": [
+        "353",
+        "1459",
+        "5982"
+      ]
+    },
+    {
+      "held": [
+        "5982"
+      ],
+      "fit": [
+        "353",
+        "1459",
+        "2028"
+      ]
+    }
+  ],
+  "features": 588,
+  "label": "max corrected box IoU with any GT >=0.5",
+  "objective": "unweighted mean binary cross entropy with logits + 0.5*l2*sum(weight**2); intercept unpenalized",
+  "l2": 0.001,
+  "fit_dtype": "float64",
+  "threads": 1,
+  "seed": 20261015,
+  "optimizer": {
+    "name": "torch.optim.LBFGS",
+    "max_iter": 200,
+    "max_eval": 250,
+    "line_search_fn": "strong_wolfe",
+    "history_size": 20,
+    "tolerance_grad": 1e-06,
+    "tolerance_change": 1e-09
+  },
+  "score": "sqrt(parent_proposer_confidence * frozen_E003_corrected_probability) * predicted_localization_valid_probability",
+  "score_ratio": 1.0,
+  "original_duplicate_iou": 0.7,
+  "correction_duplicate_iou": 0.5,
+  "minimum_retention": 0.95,
+  "minimum_net_targets": 1,
+  "minimum_macro_delta_strict": 0.0,
+  "budget": {
+    "new_head_fits": 4,
+    "final_all_four_fit": 0,
+    "new_pixel_access": 0,
+    "feature_extractions": 0,
+    "encoder_or_E003_fits": 0,
+    "policy_comparisons": 1,
+    "development_comparisons": 0,
+    "fresh_access": 0,
+    "fit_wall_seconds_per_fold": 900,
+    "total_wall_seconds": 3600,
+    "rss_cap_gib": 4,
+    "producer": "gpu-server / D-26-09; CPU only, no GPU allocation"
+  },
+  "status": "frozen_pending_independent_design_review"
+}
