@@ -124,3 +124,11 @@
   non-negligibleW prevents claiming2D adequacy. SeeS03-E016/training_assets.md.
   Keep prescribed mainband/three-solve design; no stage15response or solve yet.
   Advance only to a separately authorized execution decision, not physical recovery.
+
+- **2026-10-15 — S03-E016-R002 three static responses frozen and retrieved.**
+  Approved exactpacket/oneq0fit ranonGPUServer8,0.350s, residualsabout1e-15;
+  threecompletefields andfourpredictions verifiedagainstR001/sourcebindings.
+  Local scalarcrosscheck addressedprojectionwarnings without solve/retry.
+  SeeS03-E016/fit_freeze.md. Stage15response remainsunaccessed; noheldcontrast
+  or physicalrecovery claim. Next is separatelyreviewed/authorized heldvalidation,
+  not furtherfitting or geometrical retuning on the highresponse.

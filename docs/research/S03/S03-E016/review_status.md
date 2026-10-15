@@ -196,3 +196,17 @@ resources unverified until separate approval. CPUthread1/GPUhidden, qR=qL0,
 exactly3staticarms, softwholefit600/noautoretry, no validate command. No authority
 to send/run inferred from preparing this package. Source version pinned to the
 stated snapshot; this commit adds approval/record docs only, not code or assets.
+
+## Approved R002 fit completed and retrieved — 2026-10-15
+
+User approvedexactpacket/target/onefit/monitor/retrieve only; prestatednoheld/noauto
+retry preserved. GPUServer8/drtao freshroot/runtime/threadpools verified; one
+slowbutcompletedtransfer, exactarchive/11file checks andPREPsourcebinding pass.
+DetachedPID1744429 ranexactq0old/proxy/intactfit,0.349763272s, allresidualsabout
+1.4..1.6e-15, sourceboundcomplete receipt. Threefields/fourpredictions frozen.
+Eightfileresultbundle retrieved/verified; inputlinkexactR001, finitearrays, BC/
+priors/sampling/alphaarithmetic andtrainingmetrics crosschecked. LocalNumPy
+matmulwarnings retained with independentclosedform agreementwithin2.2e-19mm;
+remote logempty, no rerun/sourcechange. Detailsfit_freeze.md andlocalR002receipts.
+No stage15response/validate or extraoutgoingfile/message; monitoring finished.
+Execution/retrieval success only, scientificcomparison/Evidence remainpending.
