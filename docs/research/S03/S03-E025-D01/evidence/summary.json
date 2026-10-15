@@ -1,0 +1,34 @@
+{
+  "by_beam": [
+    {
+      "beam": 4,
+      "cases": 2,
+      "scored_cases": 2,
+      "persistence_MAE_px": 0.8433803347657496,
+      "secant_MAE_px": 0.6005804415825005
+    },
+    {
+      "beam": 5,
+      "cases": 4,
+      "scored_cases": 4,
+      "persistence_MAE_px": 0.8461324295401758,
+      "secant_MAE_px": 0.43021884794235876
+    },
+    {
+      "beam": 6,
+      "cases": 2,
+      "scored_cases": 2,
+      "persistence_MAE_px": 1.0808476812565706,
+      "secant_MAE_px": 0.287659508015561
+    }
+  ],
+  "equal_beam": {
+    "persistence_MAE_px": 0.9234534818541653,
+    "secant_MAE_px": 0.4394862658468068,
+    "delta_MAE_px": -0.48396721600735854
+  },
+  "nominal_opportunities": 96,
+  "common_scored": 96,
+  "role": "already_viewed_development",
+  "independent_specimens": 3
+}

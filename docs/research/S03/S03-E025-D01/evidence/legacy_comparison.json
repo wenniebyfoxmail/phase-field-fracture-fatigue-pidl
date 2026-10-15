@@ -1,0 +1,8 @@
+{
+  "checked_arm_rows": 192,
+  "legacy_arm_rows": 192,
+  "max_abs_difference_px": 0.0,
+  "tolerance_px": 1e-12,
+  "numerically_equal": true,
+  "full_old_support_reproduced": true
+}

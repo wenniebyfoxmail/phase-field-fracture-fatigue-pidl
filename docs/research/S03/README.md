@@ -162,3 +162,17 @@ numerics and final4figures independently reviewed. NumericR001clean6deebc0;
 finalrenderR003b3a064b repairs text occlusion, no numeric rerun (R002wrapper
 import failure separately retained). Next propose direct fractional-position
 half-depth response for fixedT7/30→40 andT9/40→50, not a broad model/refit.
+
+2026-10-15 — [S03-E025-D01](S03-E025-D01/experiment.md) implements the
+history-only supplied-L* query interface, distinct E/Q/output/reference/common
+support states, prediction serialization before evaluation decoding. Independent
+15-test code review atb3126c4 and direct source-formula evidence review complete.
+Eight viewed developer cases×12transects:96/96common coverage, no arm failures;
+192old method rows reproduce exactly (maxdifference0). Equal-beam persistence/
+secant MAE.923453/.439486px,7/8case advantage; unchanged development evidence,
+not new prediction validation. All4finalfigures R003 at516cf9b independently
+opened and source/limits checked; R002title overlap retained/superseded. Full
+CSV bytes are scanned, so semantic/API separation is not filesystem blindness.
+Next propose explain B4last T1 local error using existing profiles/coordinates,
+not deleting that case, tuning criteria or expanding architecture. E024fractional
+position diagnostic remains separately proposed. No physical/road/holdout claim.

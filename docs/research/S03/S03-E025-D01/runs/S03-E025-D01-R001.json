@@ -1,0 +1,32 @@
+{
+  "experiment_id": "S03-E025-D01",
+  "run_id": "S03-E025-D01-R001",
+  "protocol": "conditional-interface-v1",
+  "code_commit": "b3126c42ccbce7809e259afc55eb1ecf6cf4bd25",
+  "git_dirty": false,
+  "producer": "Mac-PIDL",
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 47722,
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/d01_conditional_interface.py",
+    "--ledger",
+    "docs/research/S03/d01_conditional_query_cases_v1.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E025-D01/runs/S03-E025-D01-R001/outputs"
+  ],
+  "gpu": null,
+  "started_at_utc": "2026-10-15T22:16:23.422359+00:00",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "ledger": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/d01_conditional_query_cases_v1.json",
+  "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E025-D01/runs/S03-E025-D01-R001/outputs",
+  "role": "already_viewed_development",
+  "opportunities": 96,
+  "prediction_file_saved_before_evaluation": true,
+  "input_measurements": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E015-D01/runs/S03-E015-D01-R001/profile_measurements.csv",
+  "input_geometry": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E015-D01/runs/S03-E015-D01-R000/first_frame_transects_lock.json",
+  "ended_at_utc": "2026-10-15T22:16:23.465886+00:00",
+  "wall_seconds": 0.051591333001852036,
+  "cpu_seconds": 0.039184
+}

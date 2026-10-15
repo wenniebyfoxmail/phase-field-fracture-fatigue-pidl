@@ -91,4 +91,45 @@ change or new model in this Experiment. Physical metrology, new-beam/road
 generalisation, confidence intervals, causal load response and autonomous
 next-observation prediction remain blocked conclusions.
 
-Status: prepared, pending implementation tests and independent code review.
+Registration status: prepared, pending implementation tests and independent code review.
+
+## 2026-10-15 outcome and disposition
+
+Execution succeeded; retrieval verified local. Primary C1 software-interface
+criterion supported within fixed cached-data replay.15 synthetic tests passed
+independently; code reviewed before execution at b3126c42ccbce7809e259afc55eb1ecf6cf4bd25.
+Independent reviewer hand-reimplemented both formulas from E015 source rows,
+without calling new forecast/replay/summarize: all192 method predictions,
+references and errors agree exactly with both source calculation and old CSV.
+Maximum deviation0. No new physical or C3 generalisation verdict.
+
+R001:96 nominal opportunities,96 E,96 E&Q,96 R and96 C; each method96 attempts,
+96 successes,0 failures. Every case retains12/12, no abstentions/reference loss.
+This is availability of this selected archive, not guaranteed field coverage.
+Case->beam->equal-beam MAE P0.9234534818541653, S0.4394862658468068px;
+delta-0.48396721600735854px (relative52.4084023% lower).7/8 case MAEs favor
+secant; B4/40->50 has P0.7526518832 vs S0.7551995544px. Old results unchanged.
+
+Numerical run wall0.051591s CPU0.039184s. R002 rendering succeeded but F03
+title/summary overlapped; retained, superseded for display. Renderer-only
+reviewed repair516cf9b2fe103f119196c9cd844be7a9efa0afe1 produced R003, wall3.137984s,
+CPU3.124891s. No second prediction run. Final4 PNG/PDF/grayscale figure sets
+and guide at:
+`/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E025-D01/runs/S03-E025-D01-R003/analysis/README_analysis.md`.
+
+Figure choice followed cached-output profiling (8 cases×22 columns, no missing
+summary fields; beam groups2/4/2 are not independent case samples). Show all
+points and paired case means, no significance bars/CI or smoothed spatial curve.
+Programmatic layout reports empty; all colour PNGs strict300dpi checks pass.
+Independent reviewer opened all4 plus grayscale; F03 repair verified. PDF
+checker font WARN separately checked using pdffonts (embedded CID TrueType yes).
+
+Minimum evidence and independent review complete; compact tables/receipts in
+evidence/ and runs/. Disposition: advance interface reuse for bounded developer
+queries; retain old half-depth measurement and simple baseline. No training.
+Diagnostic next proposal: inspect B4 T1's30/40/50kN widths15.2524483 ->
+11.5099414 ->13.8340226px (secant50kN7.7674345, error6.0665881px) against
+existing same-coordinate profiles/images to separate local measurement/
+correspondence effects from two-point trend reversal. This is posthoc problem
+localisation, not case exclusion, altered scoring or new holdout; not executed.
+E024 T7/T9 fractional-position proposal remains separate and unexecuted.
