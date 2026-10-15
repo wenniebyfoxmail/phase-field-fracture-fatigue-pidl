@@ -82,3 +82,6 @@ Solver alignment2026-10-15: [track](experiments/hard5_q4_t3_solver_alignment_tra
 
 
 2026-10-15 [solver coupling](experiments/hard5_q4_t3_solver_alignment_track.md) v3 ordinaryinput snapshots verified; static-only comment blocker identified before launch. Minimal two-file replacement pending approval; numerical controls/data remain frozen, no new coupled field result.
+
+
+2026-10-15 terminal update: [coupled repair](experiments/hard5_q4_t3_solver_alignment_track.md) now achieves4/4freshsame-field joint closure at c1/c83, under frozenbudget/history. c83right-ligament damage and active-support collapse make PIDLfieldgap muchworse despite numericalpass. This resolves the local residual-floor question but leaves sequentialhistory/trajectory and reference qualification open. Next smallest test: one fullc1substep/commit sequence of repairedsolver, not120cycles; notexecuted.

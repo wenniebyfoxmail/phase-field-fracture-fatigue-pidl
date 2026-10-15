@@ -175,3 +175,8 @@ No extra numerical native callback is used for I/O admission or a Mac solve.
 The6solver/selftest sources, primary,20outer/250u+250d per case, c1-double-pass
 conditionalc83 and frozenhistory0 are unchanged. Final comparison remains
 pending native data; this is an operational repair, not a relaxed criterion.
+
+
+## Execution outcome — 2026-10-15 (no protocol change)
+
+Exactv3 and minimal two-file comment/hash patch were explicitly approved. Clean installed source5cf59f8 completed all4states under unchanged r1numerical/r3IO contract. Same-worker15input qualification and12selftests passed. Joint criterion passes4/4; c83fieldagreement worsens. [Terminal evidence](runs/coupled_repair_v3_result_20261015.md). No additional run, trajectory commit or transfer authorized by this result.

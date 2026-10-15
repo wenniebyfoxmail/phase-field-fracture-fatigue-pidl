@@ -132,3 +132,6 @@ producer machine, commit, runner, output root, verdict, and next action.
 
 
 CR-v3 2026-10-15: uploaded9file set verified;15inputcopies540736827bytes/fullSHA/attrs32 verified. Strictstatic blocks two scriptSAGROW suppression-comment mistakes; no worker launched. [Two-file static repair](research/S04/S04-E011/runs/coupled_repair_v3_static_annotation_20261015.md) prepared, pending replacement approval, no numerical change/result.
+
+
+| E011 CR-v3 clean5cf59f8 | completed4/4jointpass;51files1058569769bytesverified | c1blocks4/1,c83blocks17/15; C=.647694/.192506/.093877/.007198, immutablehistory0. Independent16snapshot replay/counter/state checks pass. c83activeintegral~3%ofprior, fixedPIDLgap104.16%,rho~.00664. | [Terminal/metrics](research/S04/S04-E011/runs/coupled_repair_v3_result_20261015.md); bounded numerical closure only, not field-alignment/teacher/trajectory success. Next sequential accepted-history diagnostic unexecuted. |

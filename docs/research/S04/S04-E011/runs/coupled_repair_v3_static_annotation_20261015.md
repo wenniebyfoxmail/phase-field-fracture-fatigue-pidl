@@ -47,3 +47,8 @@ Raw evidence:
 `staging_verification.json`, `approved_staging_command.txt`,
 `staging_transport.json`. Statusprepared/staticblocked, numericalinconclusive;
 previousDR results unchanged, no new field comparison yet.
+
+
+## Approved replacement and subsequent outcome
+
+User explicitly approved r1. Only entry/launcher replaced, complete combined9SHA/size verified; actual Windows entrycheckcode empty. Same-worker15input IO passed and producer5cf59f8 completed4/4jointpass. [Terminal result](coupled_repair_v3_result_20261015.md) supersedes the pending/staticblocked status above; no numerical protocol changed.

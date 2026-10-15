@@ -29,7 +29,7 @@ def empty(obj):return bool(obj.attrs.get('MATLAB_empty',0)) if isinstance(obj,h5
 def csv_write(path,rows):
     if rows:
         with path.open('w',newline='') as f:
-            writer=csv.DictWriter(f,fieldnames=list(rows[0]));writer.writeheader();writer.writerows(rows)
+            writer=csv.DictWriter(f,fieldnames=list(rows[0]),lineterminator='\n');writer.writeheader();writer.writerows(rows)
 
 
 def compare(ref,cand,w):
@@ -104,7 +104,7 @@ def main():
                     di=int(np.argmax(np.abs(d-old_d)));ui=int(np.argmax(np.hypot(u[:n]-old_u[:n],u[n:]-old_u[n:])))
                     # A constrained x component must not discard a node's free y component.
                     ru_free=ru.copy();ru_free[fixed_u]=0;fi=int(np.argmax(np.hypot(ru_free[:n],ru_free[n:])))
-                    row.update(d_maxdelta_x=float(points[di,0]),d_maxdelta_y=float(points[di,1]),u_maxdelta_x=float(points[ui,0]),u_maxdelta_y=float(points[ui,1]),ru_peak_x=float(points[fi,0]),ru_peak_y=float(points[fi,1]))
+                    row.update(d_maxdelta_x=float(points[di,0]) if np.any(d!=old_d) else None,d_maxdelta_y=float(points[di,1]) if np.any(d!=old_d) else None,u_maxdelta_x=float(points[ui,0]) if np.any(u!=old_u) else None,u_maxdelta_y=float(points[ui,1]) if np.any(u!=old_u) else None,ru_peak_x=float(points[fi,0]),ru_peak_y=float(points[fi,1]))
                     if cycle in pidl:
                         row.update({'active_vs_pidl_'+k:v for k,v in compare(pidl[cycle],active,w).items()})
                         row['active_relL2_fem_denominator_vs_pidl']=float(np.sqrt(np.sum(w*(active-pidl[cycle])**2)/max(np.sum(w*active**2),1e-30)))
@@ -154,10 +154,14 @@ def main():
             if initial:
                 x=[0]+[r['outer'] for r in rr]
                 ax.semilogy(x,[initial[0]['criterion']]+[r['criterion'] for r in rr],'-o',label='joint criterion C')
-                ax.axhline(1,color='black',ls='--',label='C = 1')
+                ax.scatter([0],[initial[0]['criterion']],marker='s',s=50,zorder=4,label='Prior DR endpoint, fresh audit')
+                ax.axhline(1,color='black',ls='--',label='C = 1 threshold')
+                ax.legend(fontsize=7)
             else:ax.text(.1,.5,'Not executed / unavailable',transform=ax.transAxes)
             ax.set_title(f'c{cycle} {stage}');ax.set_xlabel('Completed u→d blocks');ax.set_ylabel('C (dimensionless)');ax.grid(alpha=.2)
-        fig.tight_layout();fig.savefig(out/'coupled_closure.png',dpi=180);plt.close(fig)
+        fig.suptitle('Frozen-history Q4 numerical diagnostic | all four starts',fontsize=12)
+        fig.text(.5,.01,a.run.name,ha='center',fontsize=8)
+        fig.tight_layout(rect=(0,.03,1,.96));fig.savefig(out/'coupled_closure.png',dpi=180);plt.close(fig)
         (out/'coupled_closure.md').write_text('# Coupled closure diagnostic\n\nData provenance: coupled_snapshots.csv and coupled_outer_trace.csv; exact input SHA256 in coupled_analysis.json.\n\nHow to read: C=max((Ru+Rd_feasible)/4e-6,Ru/1e-8). Only full same-field blocks are connected; u-only/failed trials are excluded. Missing c83 is shown explicitly.\n\nLimitations: frozen s3 history; no trajectory propagation, teacher qualification or physical truth. Strict coupled criterion differs from prior phase-only test.\n')
     print(json.dumps(result,indent=2))
 
