@@ -62,12 +62,24 @@
     "utility": "new_GT_identities-lost_GT_identities-added_correction_FP",
     "minimum_distinct_positive_GT_per_group": 1,
     "minimum_positive_sites_per_group": 1,
-    "all_three_groups_required": true
+    "all_three_groups_required": true,
+    "held_support_scope": "U_full12 grouped by source corrector held group; no held-baseline calculation",
+    "fit_support_scope": "U_fit8 for each fixed eight-location FIT baseline",
+    "GT_deduplication_scope": "separate full12 and fit8_fold_i; never sum across scopes"
   },
   "downstream_detection_criterion": {
     "old_E003_retention_minimum": 0.95,
     "net_new_GT_minimum": 1,
     "macro_location_recall_delta_strictly_positive": true
   },
-  "fresh_access": false
+  "fresh_access": false,
+  "joint_diagnostic": {
+    "max_comparisons": 1,
+    "selection": "U_full12 > 0 only",
+    "nms_order": "s0 descending; inherited lexical tie rule",
+    "append_order": "stable source key",
+    "utility_sorting": false,
+    "learned_detection_claim": false,
+    "requires_complete_verified_scores": true
+  }
 }
