@@ -293,3 +293,14 @@ Delta-model development protocol before U0.125 is opened.
   design amendment choosing physical estimand/admissible representation/minimal
   test; no training or refit authorized. Obsidian/Roadmap updated; no outbound
   result message sent. Existing R002 verdict and original outputs unchanged.
+- 2026-10-15 design-only follow-up prepared at user request: proposed
+  design_revision_raw_physical_v1_20261015.md narrows the next question to
+  single-output physical raw residual ridge, a fixed nonnegative output map,
+  identical pointwise-admissible d/history controls, worst-whole-Umax physical
+  error and inner early-regime veto with preselected whole-trajectory fallback.
+  No new fit, counterfactual, runner implementation or outgoing request.
+  Historical R002 untouched; new estimand/selector would need a new Experiment
+  ID, separate exact implementation review and explicit run authorization.
+  Existing300s/2GiB/100MiB cap is proposed only, not renewed execution authority.
+  Method-chat design-review request drafted for per-send user approval;
+  Obsidian/Roadmap updated to design-pending status, confirmation remains closed.
