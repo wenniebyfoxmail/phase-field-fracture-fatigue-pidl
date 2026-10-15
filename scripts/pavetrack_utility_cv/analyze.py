@@ -49,11 +49,41 @@ def summarise(e, cfg):
     return summary,table,cases
 
 
+def render_preparation(out, report, run_name):
+    """Read-only diagnostic: support and GT-informed opportunity, never learned effect."""
+    fig,axes=plt.subplots(1,2,figsize=(12,4))
+    rows=report['folds']
+    x=np.arange(len(rows))
+    for offset,key,color in [(-.22,'positive','#1976D2'),(0.,'zero','#999999'),(.22,'negative','#E69F00')]:
+        values=[f['signs'].get(key,0) for f in rows]
+        axes[0].bar(x+offset,values,.22,label=key,color=color)
+        for a,v in zip(x+offset,values):axes[0].annotate(str(v),(a,max(v,1)),xytext=(0,4),textcoords='offset points',ha='center',fontsize=8)
+    axes[0].set_yscale('symlog',linthresh=1)
+    axes[0].set_xticks(x,['held '+loc for loc in ['353','1459','2028','5982']])
+    axes[0].set_ylabel('Fit-only singleton utility labels (symlog)')
+    axes[0].legend(frameon=False,fontsize=8)
+    oracle=report['oracle_policy']
+    base=len(report['full_bank_diagnostic']['baseline_hits'])
+    axes[1].bar(['E003','GT-informed selection'],[base,base+oracle['net_targets']],color=['#777777','#1976D2'])
+    axes[1].set_ylabel('Targets detected at 1 FP/image')
+    for j,v in enumerate([base,base+oracle['net_targets']]):axes[1].annotate(str(v),(j,v),xytext=(0,5),textcoords='offset points',ha='center')
+    axes[1].set_ylim(0,max(1,(base+oracle['net_targets'])*1.12))
+    axes[1].text(.03,.08,'Old retention '+str(oracle['retention'])+'; netTP '+str(oracle['net_targets'])+'\nMacro delta '+format(oracle['delta'] or 0.,'.6f'),transform=axes[1].transAxes)
+    fig.suptitle(run_name+' | fixed cached feasibility ONLY; no learned result or fresh sites')
+    fig.tight_layout()
+    fig.savefig(out/'F_preparation.png',dpi=170)
+    plt.close(fig)
+    r.OUTPUT_IMAGE_DIGEST_PATHS.add(os.path.normcase(os.path.abspath(out/'F_preparation.png')))
+
+
 def render(run, e, data, cfg):
     out=run/'analysis'
     out.mkdir(exist_ok=True)
+    report=r.read(run/'input_audit.json')
+    render_preparation(out,report,run.name)
     if e is None:
-        (out/'README_analysis.md').write_text('# E010 stopped before fitting\n\nThe fixed fit-support or annotation-informed feasibility check failed. No learned prediction, learned comparison or detection figure exists. See input_audit.json and status.json. No fresh access.\n',encoding='utf-8')
+        (out/'README_analysis.md').write_text('# E010 stopped before fitting\n\nThe fixed fit-support or annotation-informed feasibility check failed. F_preparation shows the fit-only sign support and the separate GT-informed selection; neither is a learned result. No model fit, learned prediction or learned comparison exists. The original E003 detector is retained. See input_audit.json and status.json; no fresh access.\n',encoding='utf-8')
+        r.write(out/'analysis_receipt.json',dict(files={n:r.sha(out/n) for n in ['F_preparation.png','README_analysis.md']},pixel_reads=0,learned_comparisons=0))
         return
     summary,table,cases=summarise(e,cfg)
     r.write(out/'summary.json',summary)
