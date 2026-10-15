@@ -1,0 +1,38 @@
+{
+  "scientific_source": "98c620637b2b2ef06ec86983220a4e7f9f1053b7",
+  "archive_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E021",
+  "files": {
+    "codex_subagent_review_v1/review.md": {
+      "bytes": 4038,
+      "sha256": "3dec9475ba0b80dd28235a8b3daeb1ad423b9bffac390a00d9019a960e6c064c"
+    },
+    "codex_subagent_review_v1/independent_tamper.json": {
+      "bytes": 721,
+      "sha256": "e918bbc03a6360c4a85f1065c41a8379e69d7ed1d90fe3683db82dcd935afe74"
+    },
+    "codex_subagent_review_v1/tests.txt": {
+      "bytes": 271,
+      "sha256": "4c2822ebe4b1fd901d2d89d677039e2ba346f3f0cac862a719311a4e3fb8c0ef"
+    },
+    "codex_subagent_review_v2/review.md": {
+      "bytes": 3083,
+      "sha256": "584ad94e75eb3facd9a21f7963659d243e0216b75f19f2b145d5b03b3ae7d789"
+    },
+    "codex_subagent_review_v2/independent_tamper.json": {
+      "bytes": 194,
+      "sha256": "9d532d7c8c590c9f45641500b50838ac89f03d742758c4b9d2bceeb46a60be4e"
+    },
+    "codex_subagent_review_v2/tests.txt": {
+      "bytes": 272,
+      "sha256": "50ec91d68e7e642a34a46a2561efd2c06434bb506b29b0a831e0068f5ffe8d13"
+    },
+    "codex_subagent_review_v2/result.json": {
+      "bytes": 336,
+      "sha256": "afc0d2fd47b7b3b9b0cee9488f8f8976548cc8a38215c217d1ffd1dbe6378ef7"
+    },
+    "preparation_v1/repair_tests.json": {
+      "bytes": 407,
+      "sha256": "5ad70c69f425044019629c0d38a270736ba313a2ee09258a8589b9f9c94a3cc8"
+    }
+  }
+}

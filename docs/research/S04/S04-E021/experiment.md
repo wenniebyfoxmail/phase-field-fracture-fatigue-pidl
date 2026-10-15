@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E021
 protocol_revision: 20261015-r1-coordinate-preconditioning
-status: code-ready-review-pending
+status: code-ready-not-launched
 ---
 # Bounded residual-coordinate preconditioning — frozen pre-training protocol
 
@@ -52,3 +52,7 @@ If valid butmissed, retain any damage/background gain and inspect which state/co
 ## Verification and next gate
 
 See implementation.md and the tracked CLI/schedule/sampler/empty-matrix checks. Real nontraining controls/initialUV/maps and all3complete10000drawstreams checked; local full numericaldecoder positive/tamper cases use TEMPORARY SYNTHETIC completion envelopes and are not evidence of training. No actual E021candidate/trainedcheckpoint/GPUpreflight/producerarchive or scientificoutcome exists. Native replay localTorch2.11does not prove formalTorch2.7execution. Codexsubagent independently reviews exactcommittedsource/protocol/data locks/tests; only a bound CodeReady result can close this preparation step. Transfer, live producerpreflight and launch require the concrete final package and exact humanapproval.
+
+## Code Ready outcome — 2026-10-15
+
+Independent Codex subagent review PASS binds scientific source `98c620637b2b2ef06ec86983220a4e7f9f1053b7`: 162 nontraining tests passed, no skips. First source9b627979 was NO-GO because final candidate diagnostics were not independently recomputed; repaired E021 decoder rejects the same valid-hash tamper. All original tolerances and E019/E020 sources remain unchanged. See [review and remaining limits](code_ready_review.md). No producer access, transfer or training occurred. Future production must use the reviewed scientific source, not a later documentation commit, and an explicitly approved concrete run plan.
