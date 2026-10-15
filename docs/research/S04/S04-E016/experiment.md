@@ -315,3 +315,13 @@ Delta-model development protocol before U0.125 is opened.
   is document-only v2 then a newly approved review request; no design rewrite,
   implementation, fitting or new computation in this turn. Obsidian/Roadmap
   updated; no additional outgoing message or confirmation access.
+- 2026-10-15 user-authorized document-only v2 prepared: see
+  design_revision_raw_physical_v2_20261015.md. Both full-domain training-PIN
+  h/r means now explicit for each independent inner/outer fit; terminal
+  identity/numerical/map failures cannot become ordinary fallback; unidentified
+  denominators stop inconclusively; eps/tie/partial-fallback branches consistent.
+  Original signed PIN input and V0/V1 scope unchanged. Future toy cases specified
+  only, not implemented/executed. v1/410fffc and R002 remain unchanged.
+  Exact re-review request is being prepared for per-send approval; no sending,
+  implementation, fitting, producer access or new Experiment/Run in this turn.
+  Obsidian/Roadmap updated to v2-pending status, not review or run approval.
