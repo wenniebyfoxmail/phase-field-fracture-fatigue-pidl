@@ -165,3 +165,6 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 
 
 2026-10-15 [coupled v1 attempt](runs/coupled_repair_v1_attempt_20261015.md):12selftests pass, native input admission fails because original production s3 path was migrated.0completedstates/no coupled primary result; inconclusive. Backup c1/c83 full hashes match. Locator-only protocolr2/v2 prepared for new exact transfer approval; solver/criteria unchanged.
+
+
+2026-10-15 [coupled v2](runs/coupled_repair_v2_attempt_20261015.md) stopped before native fields at mesh fileread;12selftests and14state hashes passed. Same mesh full hash readable via SSH/Mac, IO context unresolved; no numerical verdict. Protocolr3 prepares15-data-input local snapshots + same-worker native mesh import/MAT pre-read before all cases, awaiting new9filev3 approval.

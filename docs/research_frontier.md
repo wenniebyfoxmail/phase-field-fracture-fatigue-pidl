@@ -76,3 +76,6 @@ Solver alignment2026-10-15: [track](experiments/hard5_q4_t3_solver_alignment_tra
 
 
 2026-10-15 [coupled solver diagnostic](experiments/hard5_q4_t3_solver_alignment_track.md) v1 stopped at missing original s3 locator after12selftests; no native coupled result. Identical-hash backup found, locator-onlyv2 prepared pending new transfer approval; numerical claim remains inconclusive.
+
+
+2026-10-15 [coupled solver alignment](experiments/hard5_q4_t3_solver_alignment_track.md) v2 remains inconclusive: mesh file I/O failed before nativefields despite statehash/selftest pass. Identical data readable via SSH/Mac; v3 all-input local snapshots and same-worker IO qualification prepared pending new exact approval. No change to numerical primary or previous DR result.

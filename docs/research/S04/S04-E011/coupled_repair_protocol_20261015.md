@@ -147,3 +147,31 @@ Same12producer selftests and c1-double-pass conditional c83,20blocks and250u+
 250d per state. No numerical retuning, state reconstruction, backup writing,
 restore, v1 restart or history commit. Exact-v2 transfer and local-independent-
 review substitution require new user approval; until then prepare locally only.
+
+## I/O-only amendment r3 — 2026-10-15, still before native coupled results
+
+[Approved v2 attempt](runs/coupled_repair_v2_attempt_20261015.md) passed static /
+12selftests /14state hashes, but actual MATLAB fileread failed on the OneDrive
+mesh before geometry/native fields. SSH and Mac full mesh hash match; no global
+missing-file conclusion. New run `pf_s04e011_coupled_repair_20261015_v3`, root
+`C:\Users\xw436\jobs\E011_CR_20261015_v3`, requires new exact nine-file approval.
+
+Freeze the full15unique data-input inventory (14MAT + inp,540736827bytes).
+Manifest records role, source, fresh-root target, bytes, fullSHA. Launcher
+reads/validates source, streams raw bytes (1MiB buffer, no cloud metadata)
+to own inputs via .partial, rejects reparse/offline/recall attributes, verifies copy and
+source again; existing target accepted only if exact, never writes/deletes
+source. No solver retry. Same14MAT state admission now uses local snapshots;
+mesh input also explicitly SHA/byte locked. Recheck RAM/disk/competingMATLAB
+immediately before WMI, after staging.
+
+The same actual MATLAB worker must before case1: hash/size-check all15copies,
+fileread and native-import staged mesh, verify86756nodes/86408Q4 and exact
+accepted-s3 coordinates/connectivity for c1/c83; full-load required state/prior/
+predecessor MATs, inspect capture-only headers; read/hash source checks, verify
+actual binary/function which/hash, exercise config/reference entrypoint, and
+pass12algebra tests. Only completed io_preflight.json permits case loop.
+No extra numerical native callback is used for I/O admission or a Mac solve.
+The6solver/selftest sources, primary,20outer/250u+250d per case, c1-double-pass
+conditionalc83 and frozenhistory0 are unchanged. Final comparison remains
+pending native data; this is an operational repair, not a relaxed criterion.

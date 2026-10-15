@@ -122,3 +122,10 @@ producer machine, commit, runner, output root, verdict, and next action.
 | Candidate | Execution / retrieval | Interpretation / next action |
 |---|---|---|
 | E011 coupled v1, source8ce3a58 | uploaded/Windows static +12selftests pass; MissingFile before native oracle;16files73957bytesverified | Inconclusive,0completedstates; not couplednegative. [Attempt](research/S04/S04-E011/runs/coupled_repair_v1_attempt_20261015.md). Two backup predecessor hashes match; locator-onlyv2 requires new exact upload approval. |
+
+
+## Coupled v2 I/O attempt / v3 snapshot preparation — 2026-10-15
+
+| Case | Execution / retrieval | Verdict / next action |
+|---|---|---|
+| E011 CR-v2 source89056f5 |12selftests pass, mesh fileread I/O failure before nativefields;16files75941bytesverified | Inconclusive. [Attempt](research/S04/S04-E011/runs/coupled_repair_v2_attempt_20261015.md). IdenticalSHA mesh readable elsewhere; v3 snapshots all15data inputs and gates actual worker IO before c1, exact upload approval pending. No coupled numerical result. |

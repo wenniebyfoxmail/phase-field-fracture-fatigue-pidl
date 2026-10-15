@@ -50,3 +50,23 @@ changes identity and adds14unique external-input existence/fullSHA checks
 before WMI. Protocol r2 and failure classification independently reviewed.
 Final source-preparation review passed; exact final commit/package must still
 be verified. No v2 upload/launch allowed before new user approval.
+
+## All-data I/O v3 preparation review
+
+Approved v2 retrieval verified16files75941bytes; actual mesh fileread failed
+before native fields despite12selftests/statehashes. The same known inp was
+read/hash verified via SSH and Mac; context/timing cause remains unresolved.
+Independent review agreed this is operational admission failure, not numerical
+negative. Local tests reproduce originalv1/v2 byte-identical packages, verify
+v3 deterministic9files/15unique snapshots540736827bytes and unchanged6MATLAB.
+
+Reviewer accepted full15data role/source/target/hash/bytes mapping, ordinary
+FileStream byte copies via task-owned partials with flush/dispose, rejection of
+reparse/offline/recall attributes and source/target identity rechecks; final
+resource/process check after staging; same-worker pre-read/native mesh import,
+exact both predecessor geometry, required MAT full loads/captureheaders,
+source read/hash, original binary which/hash and config/reference call before
+case loop. Existing numerical gate/budget/history remain unchanged. Final
+approval must include15local-data-copy writes, not describe only9uploaded files.
+This does not qualify unexercised dynamic MEX/DLL runtime dependencies.
+No v3 upload/copy/native run before exact version approval.

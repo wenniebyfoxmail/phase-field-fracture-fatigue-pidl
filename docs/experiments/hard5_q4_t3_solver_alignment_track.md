@@ -30,3 +30,6 @@ User-facing report: `/Users/wenxiaofang/obsidian/mesh对齐.md`; payloads remain
 
 
 2026-10-15 [coupled repair v1 admission failure](../research/S04/S04-E011/runs/coupled_repair_v1_attempt_20261015.md): approved9file upload/static/12selftests pass; stale predecessor path stops firstc1 before native residual,0states,history0.16files73957bytesverified. Original outputs separately migrated to verified backup; two accepted-s3 SHA match fresh remote checks. No coupled numerical verdict. Prepare locator-onlyv2 in freshroot with all-input preflight; new transfer approval pending.
+
+
+2026-10-15 [coupled v2 I/O attempt](../research/S04/S04-E011/runs/coupled_repair_v2_attempt_20261015.md): approved9file/static/12selftests/14state hashes passed; mesh fileread fails in worker,0native states,16files75941bytesverified. SSH/Mac identicalinpSHA means no established mesh loss. Preparev3 all15data snapshots and same-worker import/MAT load prerequisite, no numeric changes, new approval pending. Owned stale readonly monitor memory issue separately repaired and freshRAM verified.
