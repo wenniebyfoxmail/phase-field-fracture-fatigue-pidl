@@ -349,3 +349,15 @@ Delta-model development protocol before U0.125 is opened.
   launched. Exact code-review request is next and still needs per-send approval.
   Independent Code Ready and a named actual-run protocol/approval remain absent.
   Obsidian/Roadmap updated; original R001/R002/design/data identities preserved.
+- 2026-10-15 exact user-approved ab34c46 code-review request sent once; final
+  review received and checked against unchanged code. NEEDS REVISION: one P2,
+  caller-relative authorization path is passed unchanged to a child whose cwd
+  becomes repository root. h/r, physical residual/final map, error/fallback and
+  four-fold/tolerance logic otherwise align with45b8d32. See
+  raw_v2_code_review_result_ab34c46_20261015.md for per-item source checks and
+  delivery/response IDs. Unique proposed next action is localized path repair
+  plus one mocked non-root-cwd handoff check, then difference-only re-review;
+  no full-size resource rerun needed for this change. No implementation, tests,
+  actual archive reads, real fit/score or producer access this turn. Main chat
+  sole execution owner; method chat read-only, S04-E017 held. Obsidian/Roadmap
+  updated; new actual-run protocol and separate approval remain required.

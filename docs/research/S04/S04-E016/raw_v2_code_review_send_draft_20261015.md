@@ -20,3 +20,13 @@ Sending this request requires fresh human approval; no computation authority.
 请重点检查h/r训练内尺度、物理残差和最终非负映射、错误终止与性能回退的分流、容差/四折判定、资源监控及授权入口是否符合设计，并检查核验覆盖的不足。
 
 本主对话仍是唯一实现和核验方，请保持只读，不重复实现、拟合或资源计算；如需额外核验请先提出，不自行执行，也不修改共享笔记。请返回绑定该版本的代码审核结论、必须修改项及理由。代码审核不授权真实拟合；后续仍须新实验/运行记录与用户单独批准。U0.1175/U0.125、NN和多目标训练不启动。
+
+## Delivery update — 2026-10-15
+
+The NOT SENT header above preserves the approved draft's original state.
+User explicitly approved this exact ab34c46 request in the main chat; sent once,
+unchanged, to the named recipient via send_message_to_thread. Tool returned the
+intended thread ID with isError=false. Recipient review turn
+`01a1401b-ce08-71d1-ba00-297d5b8b30f3` is active and acknowledges this code review.
+No additional message, implementation, test, resource run or real fitting is
+authorized by this delivery. Main chat remains sole execution owner.
