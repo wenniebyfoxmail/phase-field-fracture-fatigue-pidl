@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E020
 protocol_revision: 20261015-r1-delayed-decay
-status: implementation-nontraining-checks-code-review-preparation
+status: code-ready-producer-approval-pending
 ---
 # Delayed learning-rate decay on the frozen E019 local residual
 
@@ -52,3 +52,7 @@ If schedule helps but misses, record useful-but-insufficient and investigate res
 ## Minimum evidence and review
 
 Three fresh receipts, actualLRvectors, checkpoints/predictions, final and fixed0/1000/...10000regional/support traces, archived control locks/admission, runtime/source checks, table/decision figure for all3states versus archivedcontrols at.001 and field/profile views from exact scored arrays; README_analysis.md. Secondary strain/rho retained. Externally review exactsource before use and completed evidence before unconditional closure. Mac work in this task is nontraining only. Review package preparation is authorised; outgoing review and producer actions require their own exact human approval.
+
+## Code Ready review completed 2026-10-15
+
+Human-requested independent Codex subagent review gives CODE READY PASS bound to671fba2e48f1202bc2dd89f9800bacf1849477a0. Independently128nontraining tests,3real control reloads/regional recomputations,3complete sampled streams and33manifest entries verified; no blocker. Scientific protocol above unchanged. No candidate/CUDAtraining or final production archive tested; no transfer/launch approval. [Review](code_ready_review.md). Earlier preparation/pending statements are historical snapshots.

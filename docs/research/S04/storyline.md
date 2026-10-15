@@ -47,3 +47,7 @@ Haofan Pro existing review accepts E019UV/component findings with explicit refer
 ### 2026-10-15 — S04-E020 delayed-decay preparation
 
 New single-factor Experiment binds3archived E019localized controls and3fresh proposed candidates; actual update1–8000lr1e-3,8001–10000cosine to1e-5. Inherited initial states, full sampling streams, geometry, reference and producer runtime identities explicit; old E019source/failure verdicts unchanged. Nontraining real3statecontrol/reload/RNG/regions plus full3sampler replay and128checks pass. CodeReady material being prepared; no reviewed code permission or producer launch yet. [Protocol](S04-E020/experiment.md).
+
+### 2026-10-15 — E020 independent Code Ready PASS
+
+Human-selected Codexsubagent independently accepts exact671fba2 implementation,128nontraining checks,3real control reloads/regional recomputations,3complete sampled streams and33source-manifest entries. Actual LR, paired historical identity and fail-closed three-state scoring have no blocking issue. No candidate/CUDAtraining or scientific outcome; original E019verdict/portability exception unchanged. Concrete producer approval and live preflight still required. [Review](S04-E020/code_ready_review.md).

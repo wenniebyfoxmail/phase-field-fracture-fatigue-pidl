@@ -5,3 +5,7 @@ Exact source: `671fba2e48f1202bc2dd89f9800bacf1849477a0`. Local nontraining128ch
 Prepared local source-only attachment `/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E020/code_ready_submission_v1/E020_source_671fba2.zip`, 134679bytes, SHA256 `c96baf2d64fde1d46f92cd867fb2b4660b0a425a65fcecbdf2078dd8d4e05b0a`. Contains reviewed E019dependencies,3E020modules,50newtests,78legacy tests, source manifest, explicit source differences, frozen protocol/control/LRcontracts and compact nontraining audit records. Does not duplicate real arrays/weights; their checks remain supplied evidence. All source/dependency bytes bound to the exact commit above.
 
 Full proposed message/account/existing-recipient/attachment/commit/commitments at `local_archive/experiments/S04-E020/code_ready_submission_v1/approval_preview.md`. Proposed channel:haofanPro existing Evidence review pass. **Not sent**: current request authorises preparation only; project AGENTS requires human approval of this concrete version before outgoing communication. No external-review substitution by local tests, no GitHub push, producer transfer or training. Subsequent exact-code and producer permissions remain separate.
+
+## Review channel update 2026-10-15
+
+User selected Codex subagent instead of the proposed HaofanPro send. Independent read-only source review completed CODE READY PASS; see code_ready_review.md. No external ChatGPTsend, producer transfer or candidate training. Source671fba2 and source ZIP unchanged.
