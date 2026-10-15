@@ -26,3 +26,24 @@ def test_feasibility_stop_has_no_fake_learned_figure(tmp_path):
     a.render(tmp_path,None,{},t.CFG)
     assert not list((tmp_path/'analysis').glob('*.png'))
     assert 'No learned prediction' in (tmp_path/'analysis/README_analysis.md').read_text()
+
+
+def test_real_audit_hook_allows_output_hashes_but_rejects_pixel_inputs(tmp_path):
+    import subprocess,sys
+    code = """import importlib.util,sys
+from pathlib import Path
+root=Path(sys.argv[1]);out=Path(sys.argv[2]);out.mkdir()
+s=importlib.util.spec_from_file_location('guarded_analyzer',root/'scripts/pavetrack_localization_cv/analyze.py');a=importlib.util.module_from_spec(s);s.loader.exec_module(a)
+s=importlib.util.spec_from_file_location('guarded_fixture',root/'tests/pavetrack_localization_cv/test_localization.py');t=importlib.util.module_from_spec(s);s.loader.exec_module(t)
+data=t.fixture();e=t.r.evaluate(data,t.r.labels(data),t.CFG);a.r.write(out/'evaluation.json',e)
+sys.addaudithook(a.r.pixel_guard);a.render(out,e,data,t.CFG)
+assert (out/'analysis/analysis_receipt.json').exists()
+try:
+    open(out/'forbidden-source.jpg','rb')
+except PermissionError:
+    pass
+else:
+    raise AssertionError('pixel input was not blocked')
+"""
+    completed=subprocess.run([sys.executable,'-c',code,str(ROOT),str(tmp_path/'synthetic')],capture_output=True,text=True)
+    assert completed.returncode==0,completed.stderr

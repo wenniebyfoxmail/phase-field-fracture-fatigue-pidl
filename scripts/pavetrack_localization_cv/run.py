@@ -22,6 +22,7 @@ PROTOCOL = 'S01-E009-v1'
 CONTRACT = 'docs/research/S01/S01-E009/'
 INPUTS = ['qualification_evaluation.json', 'qualification_pooled_features.npz',
           'qualification_scores.json', 'qualification_scoring_receipt.json']
+OUTPUT_IMAGE_DIGEST_PATHS = set()  # Only our newly rendered figures, never dataset pixels.
 SCALARS = ['parent_proposer_logit', 'parent_crack_logit', 'corrected_crack_logit',
            'log_aspect', 'log_area_fraction', 'width_fraction', 'height_fraction',
            'center_x_fraction', 'center_y_fraction', 'parent_iou',
@@ -41,7 +42,8 @@ def pixel_guard(event, args):
     if event == 'open' and isinstance(args[0], (str, bytes, os.PathLike)):
         name = os.fsdecode(args[0]).replace('\\', '/').lower()
         writing = isinstance(args[1], str) and ('w' in args[1] or 'a' in args[1] or 'x' in args[1])
-        if not writing and (Path(name).suffix in {'.jpg', '.jpeg', '.png', '.tif', '.tiff', '.webp', '.bmp', '.gif'} or '/images/' in name):
+        own_output = os.path.normcase(os.path.abspath(os.fsdecode(args[0]))) in OUTPUT_IMAGE_DIGEST_PATHS
+        if not writing and not own_output and (Path(name).suffix in {'.jpg', '.jpeg', '.png', '.tif', '.tiff', '.webp', '.bmp', '.gif'} or '/images/' in name):
             raise PermissionError('E009 pixel access forbidden')
 
 

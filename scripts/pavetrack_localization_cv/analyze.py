@@ -5,6 +5,7 @@ import csv
 import hashlib
 import importlib.util
 import math
+import os
 from pathlib import Path
 import sys
 import numpy as np
@@ -124,6 +125,8 @@ This is conditional reused-training crossfit. The shared E003 encoder saw all tr
     text+='\nExact primary outcome: '+str(summary['protected_primary_pass'])+'; macro change '+str(summary['delta'])+'; old retention '+str(summary['retention'])+'; netTP '+str(summary['net_targets'])+'.\n'
     text+='If positive, only prepare the next independent study. If negative, retain E003 and follow the frozen partial/duplicate FP repair map; no within-run changes or fresh access.\n'
     (out/'README_analysis.md').write_text(text,encoding='utf-8')
+    for name in ['F00_decision.png','F01_locations.png','F02_schematics.png']:
+        r.OUTPUT_IMAGE_DIGEST_PATHS.add(os.path.normcase(os.path.abspath(out/name)))
     names=sorted(p.name for p in out.iterdir() if p.is_file() and p.name!='analysis_receipt.json')
     r.write(out/'analysis_receipt.json',dict(evaluation_sha256=r.sha(run/'evaluation.json'),
             files={n:r.sha(out/n) for n in names},pixel_reads=0))
