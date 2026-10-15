@@ -7,6 +7,7 @@ ROOT=Path(__file__).resolve().parents[2]
 def module(name,path):
     s=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
 scoped=module('e012_scoped',Path(__file__).with_name('scoped_json.py'))
+mem=module('e012_memory',Path(__file__).with_name('memory.py'))
 e11=module('e012_frozen_utility',ROOT/'scripts/pavetrack_scalar_utility_cv/run.py')
 PROTOCOL='S01-E012-v1'; CONTRACT='docs/research/S01/S01-E012/'
 read=e11.read;write=e11.write
@@ -21,7 +22,7 @@ def checked(path,digest,check=lambda:None):
     if sha(path,check)!=digest: raise ValueError('identity mismatch: '+str(path))
 
 class Guard:
-    def __init__(self,cfg,clock=time.monotonic,memory=e11.e9.peak_rss):
+    def __init__(self,cfg,clock=time.monotonic,memory=mem.peak_rss):
         self.cfg=cfg['stage_A'];self.clock=clock;self.memory=memory;self.start=clock();self.peak=0;self.labels=0
     def check(self):
         self.peak=max(self.peak,self.memory())
@@ -38,7 +39,7 @@ class Guard:
             while not done.wait(.5):
                 try: self.check()
                 except BaseException as ex:
-                    write(run/'status.json',dict(state='stopped_resource',reason=str(ex),fresh_access=False));os._exit(71)
+                    write(run/'status.json',dict(state='stopped_resource',reason=str(ex),elapsed_seconds=self.clock()-self.start,peak_rss_bytes=self.peak,singleton_evaluations=self.labels,fresh_access=False));os._exit(71)
         thread=threading.Thread(target=watch,daemon=True);thread.start()
         try: yield
         finally: done.set();thread.join()
@@ -215,7 +216,7 @@ def verify(run,cfg,guard,expected):
 def main():
     p=argparse.ArgumentParser();p.add_argument('--config',type=Path,required=True);p.add_argument('--lock',type=Path,required=True);p.add_argument('--cache',type=Path,required=True);p.add_argument('--metadata',type=Path,required=True);p.add_argument('--run',type=Path,required=True);p.add_argument('--reviewed-commit',required=True);a=p.parse_args()
     e11.require_producer();guard=Guard(read(a.config));cfg,lock=contract(a.config,a.lock,guard)
-    if a.run.name!='S01-E012-R001': raise ValueError('fixed run identity')
+    if a.run.name!=cfg['authorized_run_id']: raise ValueError('fixed run identity')
     a.run.mkdir(parents=True,exist_ok=False);sys.addaudithook(e11.pixel_guard)
     with guard.monitor(a.run):
         try:
@@ -227,5 +228,5 @@ def main():
             write(a.run/'output_receipt.json',dict(protocol=PROTOCOL,files=files,fresh_access=False));verify(a.run,cfg,guard,expected)
             write(a.run/'status.json',dict(state='completed',scientific_claim='training_evidence_incomplete_scores',resource=guard.receipt(),fresh_access=False))
         except Exception as ex:
-            write(a.run/'status.json',dict(state='stopped',reason=str(ex),fresh_access=False));raise
+            write(a.run/'status.json',dict(state='stopped',reason=str(ex),elapsed_seconds=guard.clock()-guard.start,peak_rss_bytes=guard.peak,singleton_evaluations=guard.labels,fresh_access=False));raise
 if __name__=='__main__': main()

@@ -129,12 +129,12 @@ s=importlib.util.spec_from_file_location('f',Path('tests/pavetrack_positive_evid
 t=Path(sys.argv[1]);cfg,cache,meta,lock=f.fixture(t);config=t/'config.json';lk=t/'lock.json';f.dump(config,cfg);f.dump(lk,lock)
 f.r.e11.require_producer=lambda:None
 f.r.contract=lambda *a:(cfg,lock)
-sys.argv=['run.py','--config',str(config),'--lock',str(lk),'--cache',str(cache),'--metadata',str(meta),'--run',str(t/'S01-E012-R001'),'--reviewed-commit','synthetic-only']
+sys.argv=['run.py','--config',str(config),'--lock',str(lk),'--cache',str(cache),'--metadata',str(meta),'--run',str(t/'S01-E012-R002'),'--reviewed-commit','synthetic-only']
 f.r.main()
 '''
     v=subprocess.run([sys.executable,'-c',code,str(tmp_path)],cwd=ROOT,capture_output=True,text=True)
     assert v.returncode==0,v.stdout+v.stderr
-    result=r.read(tmp_path/'S01-E012-R001/status.json');assert result['state']=='completed'
+    result=r.read(tmp_path/'S01-E012-R002/status.json');assert result['state']=='completed'
     assert result['resource']['model_fits']==result['resource']['new_inference']==result['resource']['singleton_evaluations']==0
 
 
@@ -160,3 +160,44 @@ def test_windows_receipt_path_is_portable_and_backslash_rejected(tmp_path):
     assert PureWindowsPath('analysis/F00_support.png').as_posix()=='analysis/F00_support.png'
     dump(tmp_path/'output_receipt.json',dict(protocol=r.PROTOCOL,fresh_access=False,files={'analysis\\F00_support.png':'fake'}))
     with pytest.raises(ValueError,match='exact output inventory'):r.verify(tmp_path,CFG,guard(),{})
+
+def fake_windows_api():
+    def handle():return 1
+    def memory(handle,counters,size):
+        counters._obj.PeakWorkingSetSize=123456
+        assert counters._obj.cb==size
+        return 1
+    return SimpleNamespace(GetCurrentProcess=handle),SimpleNamespace(GetProcessMemoryInfo=memory)
+
+def test_windows_probe_10000_samples_constant_type_cache_and_exact_peak():
+    import ctypes
+    kernel,psapi=fake_windows_api();probe=r.mem.make_windows_probe(kernel,psapi)
+    before=len(ctypes._pointer_type_cache);counter=probe.counter_type
+    assert counter.PeakWorkingSetSize.offset==8
+    assert ctypes.sizeof(counter)==8+8*ctypes.sizeof(ctypes.c_size_t)
+    for _ in range(10000): assert probe()==123456
+    assert len(ctypes._pointer_type_cache)==before
+
+def test_windows_api_binding_singleton_and_failure_is_not_zero(monkeypatch):
+    import ctypes
+    kernel,psapi=fake_windows_api();calls=[]
+    def dll(name,**kwargs):calls.append(name);return kernel if name=='kernel32' else psapi
+    monkeypatch.setattr(ctypes,'WinDLL',dll,raising=False);r.mem.windows_probe.cache_clear()
+    first=r.mem.windows_probe();second=r.mem.windows_probe()
+    assert first is second and calls==['kernel32','psapi'] and first()==123456
+    def fail(*a):return 0
+    psapi.GetProcessMemoryInfo=fail
+    with pytest.raises(OSError,match='measure peak RSS'):first()
+    r.mem.windows_probe.cache_clear()
+
+def test_resource_monitor_records_cap_without_relaxing_budget(tmp_path,monkeypatch):
+    import time
+    cfg=copy.deepcopy(CFG);cfg['stage_A']['peak_RSS_bytes']=100
+    g=r.Guard(cfg,memory=lambda:101);exits=[]
+    def stop(code):exits.append(code)
+    monkeypatch.setattr(r.os,'_exit',stop)
+    with g.monitor(tmp_path):
+        deadline=time.monotonic()+2
+        while not (tmp_path/'status.json').exists() and time.monotonic()<deadline:time.sleep(.01)
+    status=r.read(tmp_path/'status.json')
+    assert status['state']=='stopped_resource' and status['peak_rss_bytes']==101 and exits==[71]

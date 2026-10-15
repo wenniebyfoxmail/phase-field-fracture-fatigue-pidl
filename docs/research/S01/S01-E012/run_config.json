@@ -81,5 +81,7 @@
     "utility_sorting": false,
     "learned_detection_claim": false,
     "requires_complete_verified_scores": true
-  }
+  },
+  "authorized_run_id": "S01-E012-R002",
+  "implementation_repair": "persistent Windows memory API/type binding; R001 RSS stop preserved; R002 requires separate exact human approval"
 }

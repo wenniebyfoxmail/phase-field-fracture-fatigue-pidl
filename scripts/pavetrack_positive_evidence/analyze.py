@@ -11,7 +11,7 @@ def render(run,guard):
     inv=load(run/'inventory.json');geo=load(run/'geometry.json');q=load(run/'qualification.json');cases=load(run/'cases.json')
     out=run/'analysis';out.mkdir(exist_ok=False);guard.check()
     fig,ax=plt.subplots(figsize=(10,4));ax.axis('off')
-    ax.text(.02,.94,'S01-E012-R001 | training evidence only',fontsize=15,va='top')
+    ax.text(.02,.94,'S01-E012-R002 | training evidence only',fontsize=15,va='top')
     ax.text(.02,.76,f"{inv['images']} images / {inv['corrections']} existing OOF corrections / 12 training sites",fontsize=12)
     ax.text(.02,.56,'Corrected E003 scores: unavailable\nIncremental U / positive GT support: unavailable',fontsize=13,color='#ad5700')
     ax.text(.02,.26,'L2 distributed-support requirement: >=1 unique positive GT/site in each of 3 groups\nActual learned detection gain and old-hit retention: not measured',fontsize=11)
@@ -19,7 +19,7 @@ def render(run,guard):
     fig.tight_layout();fig.savefig(out/'F00_support.png',dpi=160);plt.close(fig);guard.check()
     groups=geo['by_source_group'];before=[g['original_GT'] for g in groups];after=[g['union_GT'] for g in groups]
     fig,ax=plt.subplots(figsize=(9,4));xs=list(range(len(groups)));ax.bar([i-.18 for i in xs],before,width=.36,label='original boxes',color='#88939c');ax.bar([i+.18 for i in xs],after,width=.36,label='original + OOF correction union',color='#477da8')
-    ax.set_xticks(xs,[f"group {g['group']}\n+{g['new_GT']} GT / {g['new_sites']} sites" for g in groups]);ax.set_ylabel('Distinct covered GT (geometry only)');ax.set_title('S01-E012-R001 | existing training geometry coverage');ax.legend(fontsize=8)
+    ax.set_xticks(xs,[f"group {g['group']}\n+{g['new_GT']} GT / {g['new_sites']} sites" for g in groups]);ax.set_ylabel('Distinct covered GT (geometry only)');ax.set_title('S01-E012-R002 | existing training geometry coverage');ax.legend(fontsize=8)
     ax.set_ylim(0,max(after+[1])*1.3);fig.text(.5,.01,'Geometry union vs original boxes; not FP-budget detection or positive U',ha='center',fontsize=9);fig.tight_layout(rect=(0,.05,1,1));fig.savefig(out/'F01_geometry.png',dpi=160);plt.close(fig);guard.check()
     selected=cases['cases'];fig,axes=plt.subplots(1,3,figsize=(13,4))
     for ax,item in zip(axes,selected):
@@ -31,7 +31,7 @@ def render(run,guard):
         handles,labels=ax.get_legend_handles_labels();unique=dict(zip(labels,handles));ax.legend(unique.values(),unique.keys(),fontsize=7)
     for ax in axes[len(selected):]: ax.axis('off')
     axes[-1].text(.03,.6,'No qualified positive/negative U cases:\ncorrected scores unavailable',transform=axes[-1].transAxes,fontsize=10)
-    fig.suptitle('S01-E012-R001 | fixed-rule coordinate cases (no pixels)');fig.tight_layout();fig.savefig(out/'F02_cases.png',dpi=160);plt.close(fig);guard.check()
+    fig.suptitle('S01-E012-R002 | fixed-rule coordinate cases (no pixels)');fig.tight_layout();fig.savefig(out/'F02_cases.png',dpi=160);plt.close(fig);guard.check()
     (out/'README_analysis.md').write_text('''# S01-E012 Stage A analysis
 
 Question: do other twelve existing training sites provide qualified, distributed incremental-positive evidence? Sources are locked E007 OOF correction banks and allowlisted train metadata. No source images or classifier inference were used.

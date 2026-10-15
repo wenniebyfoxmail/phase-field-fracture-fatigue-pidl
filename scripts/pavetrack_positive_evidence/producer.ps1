@@ -4,8 +4,8 @@ $mp=Join-Path $Source 'docs\research\S01\S01-E012\source_manifest.json'
 if((Get-FileHash $mp -Algorithm SHA256).Hash.ToLower() -ne $ManifestSha256){throw 'reviewed manifest mismatch'}
 $m=Get-Content $mp -Raw|ConvertFrom-Json
 foreach($p in $m.files.PSObject.Properties){if((Get-FileHash (Join-Path $Source $p.Name) -Algorithm SHA256).Hash.ToLower() -ne $p.Value){throw "source mismatch:$($p.Name)"}}
-$r='C:\Users\xw436\pavetrack_runs\S01-E012-R001'
-$logs='C:\Users\xw436\pavetrack_runs\S01-E012-R001-wrapper-logs'
+$r='C:\Users\xw436\pavetrack_runs\S01-E012-R002'
+$logs='C:\Users\xw436\pavetrack_runs\S01-E012-R002-wrapper-logs'
 if((Test-Path $r) -or (Test-Path $logs)){throw 'fresh run/log dirs required'}
 New-Item -ItemType Directory $logs|Out-Null
 $py='C:\Users\xw436\pavetrack_env\Scripts\python.exe'
