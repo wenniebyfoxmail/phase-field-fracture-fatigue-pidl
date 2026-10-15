@@ -1,0 +1,129 @@
+{
+  "status": "LOCAL_PREPARATION_ONLY_AWAITING_APPROVAL",
+  "scientific_source": "98c620637b2b2ef06ec86983220a4e7f9f1053b7",
+  "protocol_revision": "20261015-r1-coordinate-preconditioning",
+  "sender": "wenxiaofang on local Mac",
+  "recipient": "drtao@172.16.100.2",
+  "expected_hostname": "GPUServer8",
+  "remote_root": "/mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2",
+  "existing_asset_root": "/mnt/data2/drtao/wennie/S04-E019-frozen-ae23871-20261014-v1",
+  "source_mode": "Mac incremental Git bundle based on ae238713; clean detached98c6206",
+  "gpu": 0,
+  "order": "sequential",
+  "rows": [
+    {
+      "run_id": "S04-E021-coordinate-98c6206-20261015-v2-R001-c20s4-localized-s7",
+      "state": "c20s4",
+      "arm": "localized",
+      "alpha": "0.7",
+      "seed": 7,
+      "new_optimizer_steps": 10000,
+      "control_run_id": "S04-E019-frozen-ae23871-20261014-v1-R002-c20s4-localized-s7",
+      "control_scientific_source": "ae23871366158c5e9a98fcca9fe2353675d997ec",
+      "backbone_lock": {
+        "state": "c20s4",
+        "run_id": "S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R002-c20s4-a07-s7",
+        "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+        "checkpoint_sha256": "1f9af019fb7f382a765fd1f7c655c5b8bcda86d1974832fffae364785630de6a",
+        "prediction_sha256": "2a43c94cc168c05922513c9c8b54243513223ee3231d307efae1ddf7c000ece3",
+        "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+        "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R002-c20s4-a07-s7"
+      },
+      "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+      "runtime": {
+        "torch_version": "2.7.0+cu126",
+        "numpy_version": "1.24.4",
+        "cuda_version": "12.6",
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "hostname": "GPUServer8",
+        "cuda_visible_devices": "0",
+        "cublas_workspace_config": ":4096:8"
+      },
+      "output": "/mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/runs/S04-E021-coordinate-98c6206-20261015-v2-R001-c20s4-localized-s7",
+      "archive": "/mnt/data2/drtao/pidl_archives/S04-E021-coordinate-98c6206-20261015-v2-R001-c20s4-localized-s7",
+      "log": "/mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/logs/S04-E021-coordinate-98c6206-20261015-v2-R001-c20s4-localized-s7.log",
+      "command": "python3 -u SENS_tensile/run_s04_e021_coordinate_screen.py --state c20s4 --arm localized --alpha 0.7 --seed 7 --reference /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/inputs/c20s4.npz --backbone-dir /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/backbones/c20s4 --control-dir /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/controls/S04-E019-frozen-ae23871-20261014-v1-R002-c20s4-localized-s7 --out /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/runs/S04-E021-coordinate-98c6206-20261015-v2-R001-c20s4-localized-s7 --run-id S04-E021-coordinate-98c6206-20261015-v2-R001-c20s4-localized-s7 --expected-commit 98c620637b2b2ef06ec86983220a4e7f9f1053b7 --archive-root /mnt/data2/drtao/pidl_archives/S04-E021-coordinate-98c6206-20261015-v2-R001-c20s4-localized-s7 --log-path /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/logs/S04-E021-coordinate-98c6206-20261015-v2-R001-c20s4-localized-s7.log --device cuda"
+    },
+    {
+      "run_id": "S04-E021-coordinate-98c6206-20261015-v2-R002-c60s4-localized-s7",
+      "state": "c60s4",
+      "arm": "localized",
+      "alpha": "0.7",
+      "seed": 7,
+      "new_optimizer_steps": 10000,
+      "control_run_id": "S04-E019-frozen-ae23871-20261014-v1-R004-c60s4-localized-s7",
+      "control_scientific_source": "ae23871366158c5e9a98fcca9fe2353675d997ec",
+      "backbone_lock": {
+        "state": "c60s4",
+        "run_id": "S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R005-c60s4-a07-s7",
+        "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2",
+        "checkpoint_sha256": "c371f82484d6b2db4a60f9f407b9d1b4c5b48b6043038384f439c2f5be45351c",
+        "prediction_sha256": "0bb51cc51b3480a6622b8127d5a9a4a16de08216e9865e6670644838ef51fbfb",
+        "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+        "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R005-c60s4-a07-s7"
+      },
+      "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2",
+      "runtime": {
+        "torch_version": "2.7.0+cu126",
+        "numpy_version": "1.24.4",
+        "cuda_version": "12.6",
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "hostname": "GPUServer8",
+        "cuda_visible_devices": "0",
+        "cublas_workspace_config": ":4096:8"
+      },
+      "output": "/mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/runs/S04-E021-coordinate-98c6206-20261015-v2-R002-c60s4-localized-s7",
+      "archive": "/mnt/data2/drtao/pidl_archives/S04-E021-coordinate-98c6206-20261015-v2-R002-c60s4-localized-s7",
+      "log": "/mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/logs/S04-E021-coordinate-98c6206-20261015-v2-R002-c60s4-localized-s7.log",
+      "command": "python3 -u SENS_tensile/run_s04_e021_coordinate_screen.py --state c60s4 --arm localized --alpha 0.7 --seed 7 --reference /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/inputs/c60s4.npz --backbone-dir /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/backbones/c60s4 --control-dir /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/controls/S04-E019-frozen-ae23871-20261014-v1-R004-c60s4-localized-s7 --out /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/runs/S04-E021-coordinate-98c6206-20261015-v2-R002-c60s4-localized-s7 --run-id S04-E021-coordinate-98c6206-20261015-v2-R002-c60s4-localized-s7 --expected-commit 98c620637b2b2ef06ec86983220a4e7f9f1053b7 --archive-root /mnt/data2/drtao/pidl_archives/S04-E021-coordinate-98c6206-20261015-v2-R002-c60s4-localized-s7 --log-path /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/logs/S04-E021-coordinate-98c6206-20261015-v2-R002-c60s4-localized-s7.log --device cuda"
+    },
+    {
+      "run_id": "S04-E021-coordinate-98c6206-20261015-v2-R003-c83s4-localized-s7",
+      "state": "c83s4",
+      "arm": "localized",
+      "alpha": "0.7",
+      "seed": 7,
+      "new_optimizer_steps": 10000,
+      "control_run_id": "S04-E019-frozen-ae23871-20261014-v1-R006-c83s4-localized-s7",
+      "control_scientific_source": "ae23871366158c5e9a98fcca9fe2353675d997ec",
+      "backbone_lock": {
+        "state": "c83s4",
+        "run_id": "S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R008-c83s4-a07-s7",
+        "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+        "checkpoint_sha256": "d26f51f9a7ec4b6fb83af9551e881d243ae4e026099c9b2446d9f21ee0ba2672",
+        "prediction_sha256": "1ca19aff0eaf280f03ab2ab7f17c1cefc45c161a3651e0313683300346af1f77",
+        "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+        "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R008-c83s4-a07-s7"
+      },
+      "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+      "runtime": {
+        "torch_version": "2.7.0+cu126",
+        "numpy_version": "1.24.4",
+        "cuda_version": "12.6",
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "hostname": "GPUServer8",
+        "cuda_visible_devices": "0",
+        "cublas_workspace_config": ":4096:8"
+      },
+      "output": "/mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/runs/S04-E021-coordinate-98c6206-20261015-v2-R003-c83s4-localized-s7",
+      "archive": "/mnt/data2/drtao/pidl_archives/S04-E021-coordinate-98c6206-20261015-v2-R003-c83s4-localized-s7",
+      "log": "/mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/logs/S04-E021-coordinate-98c6206-20261015-v2-R003-c83s4-localized-s7.log",
+      "command": "python3 -u SENS_tensile/run_s04_e021_coordinate_screen.py --state c83s4 --arm localized --alpha 0.7 --seed 7 --reference /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/inputs/c83s4.npz --backbone-dir /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/backbones/c83s4 --control-dir /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/controls/S04-E019-frozen-ae23871-20261014-v1-R006-c83s4-localized-s7 --out /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/runs/S04-E021-coordinate-98c6206-20261015-v2-R003-c83s4-localized-s7 --run-id S04-E021-coordinate-98c6206-20261015-v2-R003-c83s4-localized-s7 --expected-commit 98c620637b2b2ef06ec86983220a4e7f9f1053b7 --archive-root /mnt/data2/drtao/pidl_archives/S04-E021-coordinate-98c6206-20261015-v2-R003-c83s4-localized-s7 --log-path /mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2/logs/S04-E021-coordinate-98c6206-20261015-v2-R003-c83s4-localized-s7.log --device cuda"
+    }
+  ],
+  "primary": "All three final full-field normalized mass UV RMS <=0.001; no best-checkpoint selection",
+  "lr": "Original E019 native CosineAnnealingLR(T_max=10000,eta_min=1e-5); read used LR before optimizer.step then scheduler.step. 10000 used values, no10001; native runtime replay frozen before first update.",
+  "frozen": [
+    "E017 backbone",
+    "physical window and BC",
+    "damage",
+    "history",
+    "fatigue"
+  ],
+  "stop": "Any preflight, resource, runtime, identity, finite, LR, BC, copy/archive or same-run numerical-integrity failure stops dispatcher. No automatic retry, resume, extra steps, GPU fallback or intervention in unrelated processes.",
+  "result_policy": "Report full/damage/background vs inherited and E019, inside/outside-window background and exterior invariance separately. Strict cross-platform rho exception retained.",
+  "remote_execution_performed": false,
+  "deployment_source": "4692b6a5b277131a99f35bcea3535bd87207b4ff",
+  "resource_policy": "GPU0 may be shared with existing CUDA contexts; log them without veto. Keep free memory >8GiB, stable UUID, exact original runtime, no other process interference. Explicit resource-query errors stop. New per-row resource checks unchanged.",
+  "approval_status": "NEW_APPROVAL_REQUIRED; v1permissiondoesnotcoverv2"
+}

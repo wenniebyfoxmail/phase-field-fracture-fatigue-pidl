@@ -67,3 +67,7 @@ Runner and aggregator complete for c20s4/c60s4/c83s4 against archived E019 local
 ### 2026-10-15 — S04-E021 production package prepared for approval
 
 Two-file Mac package (160346-byte incremental bundle +11845-byte dispatcher) binds reviewed science98c6206; deployment5406327 separately reviewed with6operationaltests. Base19-only reconstruction and all3realassetCLIchecks passed locally. Proposed sequential c20/c60/c83alpha.7seed7x10000 on GPU0 uses original nativeE019LR, all-stateCUDApreflight, immutablepairedcontrols, per-row exactdecoder/archive/LRverification and one-shotfailurestops. Finalaccount/destination/filehashes/fullcommands/script shown in local approval_request.md. No SSH/transfer/producerpreflight/training occurred. Await specific humanapproval; no scientificresult added. [Production preparation](S04-E021/producer_execution.md).
+
+### 2026-10-15 — S04-E021 v1 stopped before training; shared-GPU proposal prepared
+
+Userapproved exactv1 files and singlelaunch. Both remoteSHAchecks passed; dispatcher2290530 stopped22:11:07Z at initialresourceguard: GPU0had3existingCUDAcontexts despite21772MiBfree. No sciencecheckout, candidateupdates or comparativeE019errors; this is an executionblock, not a scientificnegative. Retrieved10files175450bytes withallSHAverified; no retries/interference. Prepare newv2sharingGPU0with >8GiBfree, same science98c6206/LR/statepairs/budget, freshroot and strictremainingchecks; changedpackage/action needs newapproval. [Execution record](S04-E021/producer_execution.md).

@@ -1,19 +1,19 @@
 ---
 storyline_id: S04
 experiment_id: S04-E021
-status: awaiting-user-approval
+status: stopped-initial-resource-preflight
 ---
 # E021 Taobo production preparation — 2026-10-15
 
-**Local preparation only. No SSH, transfer, remote preflight or training has occurred.** No producer PID/start time exists. The exact source and deployment package are ready for final human approval; this record is not a run receipt.
+**v1 transferred as approved; dispatcher stopped at the initial resource check before source checkout or training.** Dispatcher PID2290530; stop2026-10-15T22:11:07Z. Both remote deliverySHA256 values matched. No E021candidate update or comparative result exists. The pending v2 proposal is a separate local package and requires new approval.
 
 Scientific source: `98c620637b2b2ef06ec86983220a4e7f9f1053b7`, independently Code Ready PASS (162 nontraining checks). Deployment source: `540632738c080773b22aec65a46dbd2ea1bdd420`, separate from science; subsequent documentation commits must not replace the science checkout. The dispatcher remains outside the clean detached science checkout.
 
-## Proposed exact action
+## Approved v1 action (executed once)
 
 Sender: local Mac userwenxiaofang. Recipient: `drtao@172.16.100.2`, expected hostnameGPUServer8, existing Tunnelblickclient and public-keySSH. Use `ssh -F /dev/null -o BatchMode=yes -o ConnectTimeout=15`; no alternative producer or GitHubpush. Fresh task root `/mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v1` must not already exist.
 
-Only two files proposed for upload:
+The two approved files were uploaded unchanged:
 
 | File | Bytes | SHA256 |
 |---|---:|---|
@@ -22,7 +22,7 @@ Only two files proposed for upload:
 
 Local package and complete approval preview: `/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E021/producer_submission_v1/approval_request.md`. That document contains full transfer/start commands, commitments and exact script. `producer/production_plan.json` enumerates full commands/reference/backbone/control/runtime identities. `producer/package_manifest.json` identifies package/review records. Raw FEM/model data is not uploaded:33existingproducerfiles are copied read-only from original E019root and verified independently. Incremental bundle requires exact originalE019sourceae238713.
 
-## Execution after explicit approval only
+## Approved v1 execution policy
 
 One detached dispatcher; atomic DISPATCH_ONCE rejects repeat invocation. Mount/account/host/source/freshpaths first; data2free>8GiB and GPU0free>8GiB with no reported GPU0computeapps. Record GPUUUID and recheck resources before every row; no exclusive reservation is claimed. TMPDIR, XDG/Torch/extensions caches, code/logs/results all under the freshdata2taskroot.
 
@@ -42,4 +42,16 @@ Bundle verified and a clean98c6206 was reconstructed locally from a repository c
 
 Independent Codexsubagentdeployment review of exact5406327: readyforfinalhumanapproval, no blockers;6independenttests passed0.56s, script/bundle/plan exactbytesandidentitiesverified. Raw report/log/result in localpackage/deployment_review; hashes inmanifest. SourcecodeReadyPASS remains bound98c6206. LiveGPU/runtime/mountavailability, actualtraining/archives/scientificefficacy untested.
 
-Next: user approves exactaccount/files/root/action version in approval_request.md. Any changed bytes, recipient, destination, budget or commitments require a new approval version.
+## v1 stopped execution and retrieval
+
+User explicitly approved the exacttwofiles, account/root and preflight-conditioned singlelaunch. RemoteSHAchecks bothpassed; launcherPID2290530. At2026-10-15T22:11:07Z, initial_preflight exitedrc1 because GPU0reported3existingCUDAcomputeprocesses (PIDs1344818/3920809/1868449). GPU0used2792/24564MiB, available21772MiB and0%utilization at that snapshot; data2free632GiB. Thus free-memory/diskthresholds passed but the v1 zero-app condition failed. Sourcecheckout/code, runs and baseline_preflight do not exist; dispatcher is no longer alive. FormalTorch/CUDA/actualassets preflight did not run. No E021training, LRtrace, candidatecheckpoint or frozenaggregate exists; no E019comparativeerror result can be reported.
+
+Retrieved10files175450bytes to local_archive/experiments/S04-E021/producer_execution_v1/raw; all remoteSHA256/sizechecks match. Exactfiles/status/logs/PIDs and manifests preserved; no retry/restart/fallbackGPU/kill or otherremotechanges. See case launch_receipt.json,retrieval_verification.json,decision.md.
+
+## Concrete next proposal — v2 not yet approved
+
+The v1 zero-compute-app condition was an operational restriction beyond the scienceprotocol's free>8GiBcondition. Localv2proposal allows GPU0sharing when free>8GiB; existingcontexts are logged only. It retains exactscience98c6206, originalnativeE019LR, all3states/identities/runtime,10000freshupdates/row and every numerical/archive/stoprule. Resourcequeries/comparisons return expliciterrors. New root `/mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2` prevents reuse of failedv1. No v2remoteaction performed.
+
+Changedlauncher/root/resourcepolicy requires a new exactapproval; oldv1permission cannot launchv2. Completeproposal: local_archive/experiments/S04-E021/producer_submission_v2/approval_request.md. Keep oldsourceCodeReady and v1failure separate; this is infrastructure repair, not a scientific outcome.
+
+V2 deployment review binds `4692b6a5b277131a99f35bcea3535bd87207b4ff`: no blockers,12independentnontrainingchecks passed2.30s. Bundle unchanged160346bytes/SHA14507c08858bb9bd624bfaaf2ce9ccd834f78fbc9313c1703bfc85da066e9268; newlauncher11992bytes/SHA7193b52a8f9a80d03f39c737cde4887db1274d14c16c0937396399ff76e45499. Fullsourceafterinitialresourcecheck is byte-identicalv1; sciencefilesunchanged. [V2 exactmanifest](producer/shared_gpu_v2_package_manifest.json), [V2 plan](producer/production_plan_shared_gpu_v2.json). Readyfornewapprovalonly; nottransferred orlaunched.

@@ -1,0 +1,35 @@
+{
+  "scientific_source": "98c620637b2b2ef06ec86983220a4e7f9f1053b7",
+  "deployment_source": "4692b6a5b277131a99f35bcea3535bd87207b4ff",
+  "status": "LOCAL_READY_FOR_NEW_HUMAN_APPROVAL_NOT_TRANSFERRED",
+  "files": {
+    "E021_98c6206.bundle": {
+      "bytes": 160346,
+      "sha256": "14507c08858bb9bd624bfaaf2ce9ccd834f78fbc9313c1703bfc85da066e9268"
+    },
+    "prepare_and_dispatch.sh": {
+      "bytes": 11992,
+      "sha256": "7193b52a8f9a80d03f39c737cde4887db1274d14c16c0937396399ff76e45499"
+    }
+  },
+  "independent_review": {
+    "verdict": "READY_FOR_NEW_FINAL_HUMAN_APPROVAL",
+    "tests": 12,
+    "seconds": 2.3,
+    "blockers": 0
+  },
+  "review_files": {
+    "deployment_review/review.md": {
+      "bytes": 3612,
+      "sha256": "0018cb5c1583717ecf992bd9331104f62c1adae2e410a1a0a1b78970482534ba"
+    },
+    "deployment_review/tests.txt": {
+      "bytes": 99,
+      "sha256": "750c6c92617c323c961354ca40acec22569aa7657b7b939d4b05d509677a12f4"
+    },
+    "deployment_review/result.json": {
+      "bytes": 488,
+      "sha256": "35d165aa2c6ba60c7e769b32c83249760ad5526398fac552f93ecff5c3f66907"
+    }
+  }
+}
