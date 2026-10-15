@@ -144,3 +144,19 @@ degradation fraction are explicit, not effective patch stiffness or crack area.
 adversarial warning only; no E016 actual prepare/fit/validate invocation.
 Next: independent reviewer inspects this exact committed local snapshot, with
 source-only access and optional synthetic/mocked checks, no external sending.
+
+## Independent local code review and repair closure — 2026-10-15
+
+Round1 exact013a62c: MODIFY_AND_REREVIEW; reviewer reproduced nonfinite alpha/
+prediction successful-freeze path before held parsing, and identified missing
+E016 training asset renderer. Repaired and committed35fd968b8393cbea50125025d1b2daf044b6456c.
+Round2 exact35fd968: REVIEW_PASS for numerical prepare/three-fixed-solve/validate
+entry plus training renderer; reviewer clean/HEAD checks,22synthetic/mocked tests,
+one renderer retest and actual twoPNG synthetic visual QA completed. Local
+combined59checks pass. Detailed scope/evidence/limits in code_review.md.
+
+Protocol retains exactly3solves and untouchedstage15; no actual new-cycle fields
+processed, no producer execution, no outbound files/messages or push. Final
+stage15 evidence renderer is explicitly pending. Actual assets unreviewed.
+Current user scope ends after local repair/re-review; do not infer permission
+for preparation, remote sync, high-response conversion or solving.

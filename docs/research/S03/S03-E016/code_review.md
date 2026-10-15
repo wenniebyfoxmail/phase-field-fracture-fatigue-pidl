@@ -43,3 +43,28 @@ maxima, third-solve/save overruns and successful common planar held missingness.
 - Core reused numerical dependencies remain unchanged from E015 base4d73af4.
   Final held renderer is pending; actual assets and scientific validity remain
   unreviewed. No execution approval is implied by a code review.
+
+## Round2 — REVIEW_PASS, exact35fd968b8393cbea50125025d1b2daf044b6456c
+
+Reviewer /root/e016_code_review confirmed exact HEAD and clean worktree both
+before and after review. No remaining required correction found. Scope:
+E016 numerical preparation / three fixed solves / held-validation entry and
+training-only asset renderer. BothP2 fixes verified, including pre-parser
+frozen numeric rejection and full PREP runner/dependency/artifact binding.
+
+Independent22 E016 synthetic/mocked checks passed; renderer check independently
+repeated1pass, including altered-artifact rejection. Reviewer opened both
+syntheticPNG files: all three raw/detrended profiles/crossings, old/new priors,
+support/weights and commonBC readable, SYNTHETIC_ONLY visible, no occlusion/crop.
+PDF files generated but not separately rendered/visually inspected.
+Main agent also ran59 combined checks (22E016+37reused), one expected adversarial
+duplicateZIPwarning, and inspected the synthetic PNGs. Reused core dependencies
+unchanged from4d73af4. No actual dataset processing, field/geometry fitting,
+production solve, source transfer, outgoing message or remote action occurred.
+
+Actual stage13/14 asset admission remains pending, as does a final stage15
+four-arm evidence renderer. This review neither grants execution authority nor
+establishes physical state, material, fatigue or future-prediction validity.
+User currently prohibits real-field preparation/held conversion/solves; stop here.
+Subsequent changes in this recording commit are documentation-only, not changes
+to the reviewed numerical/renderer/test snapshot.
