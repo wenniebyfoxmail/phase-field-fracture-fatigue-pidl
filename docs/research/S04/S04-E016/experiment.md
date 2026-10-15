@@ -325,3 +325,14 @@ Delta-model development protocol before U0.125 is opened.
   Exact re-review request is being prepared for per-send approval; no sending,
   implementation, fitting, producer access or new Experiment/Run in this turn.
   Obsidian/Roadmap updated to v2-pending status, not review or run approval.
+- 2026-10-15 v2 independent re-review completed: exact user-approved45b8d32
+  request sent once; returned final explicitly confirms all three issues
+  resolved and no new mandatory corrections. Main chat checked scale,
+  terminal-error and tolerance/fallback clauses against unchanged45b8d32.
+  See design_review_result_45b8d32_20261015.md for delivery/response identity.
+  Design is accepted as a basis for implementation discussion only; no code,
+  tests, producer access, fit or further message this turn. Other S04-E017
+  material in the reviewer response is not inherited as approval here.
+  Recommended next step requires separate user authorization for runner/toy
+  preparation and subsequent exact code/resource review; fitting needs its
+  own later approval. Obsidian/Roadmap updated; confirmation remains closed.
