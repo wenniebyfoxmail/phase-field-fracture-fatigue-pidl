@@ -27,6 +27,7 @@ ANCHORS = [(role, n, t) for role, ts in (("fit", (-24, 24)), ("check", (-72, 72)
            for n in (-100, 100) for t in ts]
 HALF = 15
 SEARCH = 8
+UNSAFE_FIRST_FRAME = {(1,5)}  # Origin-only visual screen: CHECK patch touches curved crack.
 
 
 def write_csv(path, rows):
@@ -153,10 +154,13 @@ def origin_prepare(inputs, output):
             mapped_envelope=native_to_source(envelope,np.linalg.inv(h[0]),g["native_shape"],g["working_shape"])
             outer=mapped_envelope[[0,0,-1,-1],[0,-1,-1,0]]
             corners.extend(outer.tolist())
-            ax.add_patch(Polygon(poly,fill=False,edgecolor="#0072B2" if role=="fit" else "#D55E00",lw=.7))
-            ax.add_patch(Polygon(outer,fill=False,edgecolor="#0072B2" if role=="fit" else "#D55E00",lw=.5,linestyle="--",alpha=.7))
+            eligible=(tr["id"],j) not in UNSAFE_FIRST_FRAME
+            color=("#0072B2" if role=="fit" else "#D55E00") if eligible else "#CC0000"
+            ax.add_patch(Polygon(poly,fill=False,edgecolor=color,lw=.7))
+            ax.add_patch(Polygon(outer,fill=False,edgecolor=color,lw=.5,linestyle="--",alpha=.7))
             anchors.append(dict(transect_id=tr["id"],anchor_id=j,role=role,offset_n=n,offset_t=t,
-                                template_std=float(np.std(patch,dtype=np.float64))))
+                                template_std=float(np.std(patch,dtype=np.float64)),eligible_first_frame=eligible,
+                                exclusion_reason="" if eligible else "origin_patch_intersects_crack"))
             axes[row,j].imshow(patch,cmap="gray",vmin=0,vmax=255)
             axes[row,j].set(xticks=[],yticks=[],title=f"{role[0].upper()} {n},{t}" if row==0 else "")
             if j==0: axes[row,j].set_ylabel(f"T{tr['id']}",rotation=0,labelpad=13)
@@ -165,7 +169,7 @@ def origin_prepare(inputs, output):
     corners=np.array(corners)
     ax.set(xlim=(corners[:,0].min()-30,corners[:,0].max()+30),
            ylim=(corners[:,1].max()+30,corners[:,1].min()-30),xlabel="Origin native x (px)",ylabel="Origin native y (px)",
-           title="Beam4 first-frame anchors | 10 kN\nBlue FIT / orange CHECK; all12 transects")
+           title="Beam4 first-frame anchors | 10 kN\nBlue FIT / orange CHECK / red unavailable; all12 transects")
     fig.tight_layout()
     fig2.suptitle("First frame only | all96 fixed background templates\n31x31 px, shared gray scale0..255; columns FIT4 then CHECK4")
     fig2.tight_layout(rect=[0,0,1,.96])
@@ -180,7 +184,7 @@ Only Beam4 first fixed image, 10 kN: `{g['stages'][0]['source_image']}`. Frozen 
 ## Visual grammar and panel guide
 Layout: native source pixels; solid31x31 templates and dashed47x47 search envelopes; blue FIT, orange CHECK, green transect IDs. All polygons mapped through actual H0. Templates: 12 rows of transects, eight fixed anchor columns (FIT4 then CHECK4), each31x31, shared gray0..255. No smoothing, intensity normalisation or outcome-based selection.
 ## Key numerical takeaway
-96 predetermined patches; geometry and texture standard deviations in `anchor_manifest.csv`. Fixed offsets normal+/-100, tangent+/-24(FIT)/+/-72(CHECK). Source scale is native pixels, not mm.
+96 predetermined patches; fixed origin-screen exclusions are red, retained in `anchor_manifest.csv` rather than moved. Fixed offsets normal+/-100, tangent+/-24(FIT)/+/-72(CHECK). Source scale is native pixels, not mm.
 ## Limitations and claim boundary
 This first-frame capability view is not true material correspondence or registration accuracy; later-stage fits still require separate review. Cracks/voids visible elsewhere do not become labels or physical landmarks. Different transects are spatially dependent. Do not silently move a conflicting patch after target access.
 """)
@@ -226,8 +230,12 @@ def diagnostic(inputs, prepared, output, budget=120):
                 if stage_index:
                     for j,(role,n,t) in enumerate(ANCHORS):
                         check()
-                        search=source_sample(image,local_grid(tr,n,t,HALF+SEARCH),h[stage_index],g)
-                        result=match_patch(templates[f"t{tr['id']}_a{j}"],search)
+                        if (tr["id"],j) in UNSAFE_FIRST_FRAME:
+                            result=dict(available=False,reason="unsafe_first_frame",template_std=float(np.std(templates[f"t{tr['id']}_a{j}"],dtype=np.float64)),
+                                        shift_n=np.nan,shift_t=np.nan,ncc_peak=np.nan,peak_separation=np.nan)
+                        else:
+                            search=source_sample(image,local_grid(tr,n,t,HALF+SEARCH),h[stage_index],g)
+                            result=match_patch(templates[f"t{tr['id']}_a{j}"],search)
                         matched.append(dict(identity,anchor_id=j,role=role,offset_n=n,offset_t=t,**result))
                     correction=fit_translation(matched)
                     for r in matched:

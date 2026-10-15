@@ -118,3 +118,15 @@ outcome. Same-stem explanations and README_analysis required, visible QA and
 independent evidence review. Runtime/source/row-count receipts; compact tracked
 summary and one dated S03/Obsidian milestone. No global result-level FAIL label
 for an unqualified physical reference: retain descriptive component findings.
+
+## First-frame-only amendment v1.1 (before later-stage access)
+
+R000 layout/template inspection at code3892af8 showed T1 CHECK a5
+(n=-100,t=+72) contains the curved main crack in its corner. This violates the
+background-only input assumption. No later-stage matching/results existed.
+Keep its location unchanged but mark it unavailable at every later stage;
+retain those three CHECK rows in the original denominator144. Other95
+candidates unchanged; no displacement/NCC/width/forecast criterion selected
+this exclusion. Re-render first-frame layout/manifest in fresh R000A with red
+exclusion before R001. This is a scoped input-capability repair, not a reduced
+test denominator or a retrospective improvement of any result.
