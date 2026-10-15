@@ -70,8 +70,9 @@ def main():
         axes[1,ai].scatter(x,[value(r,"matched_max_relative_t_px") for r in rows],color="#222222",s=23,label="M: matched-CHECK relative residual",zorder=3)
         axes[1,ai].scatter(x,[value(r,"last_stable_tested_px") for r in rows],facecolors="none",edgecolors=COLORS[0],s=32,label="Last stable tested rho (4=right-censored)")
         axes[1,ai].scatter(x,[value(r,"first_loss_tested_px") for r in rows],color=COLORS[1],marker="x",s=27,label="First loss tested rho (0=no admissible)")
-        axes[0,ai].set(title=arm,ylabel="Absolute tangent residual A (native px)")
-        axes[1,ai].set(ylabel="Relative mismatch / tested rho (native px)",xlabel="Transect in each transition; all12 positions")
+        axes[0,ai].set_ylabel("A (native tangent px)")
+        axes[0,ai].set_title(arm,pad=30)
+        axes[1,ai].set(ylabel="M / tested rho (native px)",xlabel="Transect in each transition; all12 positions")
         for ax in axes[:,ai]:
             for line in (11.5,23.5):ax.axvline(line,color="#aaaaaa",lw=.7)
             ax.set(xticks=x,xticklabels=[str(t) for j in range(3) for t in range(1,13)],xlim=(-.8,35.8));ax.tick_params(axis="x",labelsize=7);ax.grid(axis="y",alpha=.15)
@@ -109,7 +110,7 @@ def main():
                 ys=[value(r,"residual_t_px") if boolean(r["valid"]) else np.nan for r in rr]
                 ax.plot(LOADS,ys,"o-",color=COLORS[k-4],lw=1.2,ms=2.5,label=f"CHECK a{k}")
             ax.axhline(0,color="#aaaaaa",lw=.7);ax.set(title=f"{arm} | T{t:02d}",ylim=(-lim,lim),xticks=LOADS);ax.grid(alpha=.12)
-            if (t-1)%4==0:ax.set_ylabel("Signed residual (native px)")
+            if (t-1)%4==0:ax.set_ylabel("Signed e_t (native px)")
             if t>=9:ax.set_xlabel("Nominal load (kN)")
     h,l=axes[0,0].get_legend_handles_labels();fig.legend(h,l,loc="lower center",ncol=4,bbox_to_anchor=(.5,.025),fontsize=9)
     fig.suptitle("E024-R001 | every fixed CHECK trace, same tangent coordinates and shared signed scale",fontsize=12)
@@ -125,11 +126,11 @@ def main():
             ax.scatter([value(r,"matched_max_relative_t_px") for r in rr],[value(r,"cross_max_relative_t_px") for r in rr],color=COLORS[j],s=30,alpha=.8,label=f"{LOADS[j]}-{LOADS[j+1]} kN")
         ax.plot([0,lim],[0,lim],color="#aaaaaa",ls="--",lw=1)
         stat=summary["by_arm"][ai]
-        ax.text(.04,.96,f"Compatible /36:\nmatched {stat['states']['proxy_compatible']} -> cross {stat['cross_states']['proxy_compatible']}\nSECONDARY sensitivity",transform=ax.transAxes,va="top",fontsize=9)
-        ax.set(title=arm,xlim=(0,lim),ylim=(0,lim),xlabel="Matched-ID M (native px)",ylabel="Cartesian CHECK M_cross (native px)");ax.set_aspect("equal");ax.grid(alpha=.15)
+        ax.set(title=f"{arm}\nCompatible /36: matched {stat['states']['proxy_compatible']} -> cross {stat['cross_states']['proxy_compatible']} (secondary)",xlim=(0,lim),ylim=(0,lim),xlabel="Matched-ID M (native px)",ylabel="Cartesian CHECK M_cross (native px)");ax.set_aspect("equal");ax.grid(alpha=.15)
+        ax.title.set_fontsize(10)
     h,l=axes[0].get_legend_handles_labels();fig.legend(h,l,loc="lower center",ncol=3,bbox_to_anchor=(.5,.065),fontsize=9)
     fig.suptitle("E024-R001 | background spatial-transfer stress, NOT a physical worst-case bound",fontsize=12)
-    fig.tight_layout(rect=[0,.17,1,.94]);fig.text(.02,.01,"Cross-ID pairs combine DIFFERENT background patches; M_cross>=M by construction. They do not replace same-anchor primary drift.\nNo extrema bound for the actual crack centre is established. All36pairs/arm; shared axes, no confidence/generalisation claim.",fontsize=9)
+    fig.tight_layout(rect=[0,.17,1,.90]);fig.text(.02,.01,"Cross-ID pairs combine DIFFERENT background patches; M_cross>=M by construction. They do not replace same-anchor primary drift.\nNo extrema bound for the actual crack centre is established. All36pairs/arm; shared axes, no confidence/generalisation claim.",fontsize=9)
     export(fig,args.output,"matched_vs_cross_check","How sensitive is the conditional screen to transferring across different CHECK patches?","All36perarm; horizontal same-IDM, vertical CartesianM_cross, shared pixelaxes. Identity-line inequality is nested by construction, NOT new evidence. Annotation compares predeclared primary versus labelled secondary working categories, not physical coverage or worst-case risk.",source)
 
 if __name__=="__main__":main()
