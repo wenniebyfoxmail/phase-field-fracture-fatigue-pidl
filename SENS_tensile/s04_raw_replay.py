@@ -185,7 +185,7 @@ def report(result, out):
     fig, ax = plt.subplots(figsize=(7, 3.5), constrained_layout=True)
     ax.plot([v['holdout'] for v in result['folds']], [v['max_tolerance_fraction'] for v in result['folds']], 'o')
     ax.axhline(1., color='gray', linestyle='--'); ax.set_ylim(bottom=0.)
-    ax.set_ylabel('max MSE arithmetic difference / allowed tolerance')
+    ax.set_ylabel('max MSE arithmetic difference\n/ allowed tolerance')
     scope = 'GENERATED FIXTURE — ENGINEERING ONLY' if result.get('generated_fixture') else 'frozen archive / s4 horizon0 replay'
     ax.set_title(scope+'\n'+out.name+' | NOT new method evidence')
     fig.savefig(out/'replay_comparison.png', dpi=150); plt.close(fig)

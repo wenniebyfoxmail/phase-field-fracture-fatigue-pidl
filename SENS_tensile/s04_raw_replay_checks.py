@@ -171,6 +171,22 @@ def run(out):
         rejected(lambda: guard.execute(out/'MUST_NOT_EXIST', None))
         assert not (out/'MUST_NOT_EXIST').exists()
         checks.append('real entry without new replay approval rejected before output/source access')
+        destination = guard.BASE/'replay_runs/S04-E021-REPLAY-R001'
+        virtual = dict(action='frozen_inference_replay_only', user_approved_replay=True,
+                       independent_code_review='APPROVED', code_commit='MOCK',
+                       reference_commit=guard.REFERENCE_COMMIT, lock_sha256=guard.LOCK_SHA,
+                       plan_commit='bcb58a6', run_id='S04-E021-REPLAY-R001', output=str(destination))
+        def check_output(command, **kwargs): return 'MOCK\n' if 'rev-parse' in command else ''
+        with mock.patch.object(Path, 'read_text', side_effect=lambda *a, **k: json.dumps(virtual)), \
+             mock.patch.object(guard.subprocess, 'check_output', side_effect=check_output), \
+             mock.patch.object(guard.subprocess, 'check_call', return_value=0):
+            assert guard.authorize(Path('VIRTUAL_NOT_A_FILE'), destination) == virtual
+            for field, bad in (('user_approved_replay', False), ('code_commit', 'WRONG'),
+                               ('action', 'fit'), ('independent_code_review', 'PENDING')):
+                old = virtual[field]; virtual[field] = bad
+                rejected(lambda: guard.authorize(Path('VIRTUAL_NOT_A_FILE'), destination))
+                virtual[field] = old
+        checks.append('approval policy positive/mismatch paths use in-memory JSON/git mocks only; no consent file')
         guards = out/'virtual_guard'; guards.mkdir(); caps = guard_checks(guards)
         checks.append('mock success/child failure/three caps; only own virtual PID; non-root relative approval path')
     summary = dict(status='PASS_GENERATED_AND_MOCK_ONLY', checks=checks, observed=errors,
