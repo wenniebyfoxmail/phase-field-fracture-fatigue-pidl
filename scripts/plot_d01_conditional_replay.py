@@ -30,13 +30,14 @@ def main():
     parser.add_argument("--output",type=Path,required=True)
     parser.add_argument("--ledger",type=Path,required=True)
     parser.add_argument("--qa-directory",type=Path,required=True)
+    parser.add_argument("--run-id",default="S03-E025-D01-R002")
     args=parser.parse_args()
     repo=Path(__file__).resolve().parents[1]
     git=lambda *a:subprocess.check_output(["git",*a],cwd=repo,text=True).strip()
     if git("status","--porcelain"):raise RuntimeError("clean committed renderer required")
     args.output.mkdir(parents=True,exist_ok=False)
     start=time.perf_counter();cpu=time.process_time()
-    receipt=dict(experiment_id="S03-E025-D01",run_id="S03-E025-D01-R002",role="render_only",
+    receipt=dict(experiment_id="S03-E025-D01",run_id=args.run_id,role="render_only",
                  code_commit=git("rev-parse","HEAD"),git_dirty=False,hostname=socket.gethostname(),
                  pid=os.getpid(),python=sys.executable,command=sys.argv,gpu=None,
                  source=str(args.source.resolve()),output=str(args.output.resolve()),
@@ -60,7 +61,7 @@ def main():
             report=qa.audit_layout(fig)
             issues[stem]=report
             if any(level=="FAIL" for level,_ in report):raise RuntimeError("figure glyph audit failed")
-            fig.savefig(args.output/f"{stem}.png",dpi=180)
+            fig.savefig(args.output/f"{stem}.png",dpi=300)
             fig.savefig(args.output/f"{stem}.pdf")
             with Image.open(args.output/f"{stem}.png") as im:
                 im.convert("L").save(args.output/f"{stem}_grayscale.png")
@@ -108,7 +109,7 @@ def main():
         fig.legend(handles=handles[1:],loc="upper center",bbox_to_anchor=(.5,.955),ncol=2,frameon=False)
         save(fig,"F02_all_case_signed_errors")
         fig,ax=plt.subplots(figsize=(11,6.5))
-        fig.subplots_adjust(left=.18,right=.98,bottom=.16,top=.82)
+        fig.subplots_adjust(left=.18,right=.98,bottom=.16,top=.78)
         for i,m in enumerate(metrics):
             p,s=m["persistence_MAE_px"],m["secant_MAE_px"]
             if p is not None:
@@ -122,9 +123,9 @@ def main():
         ax.grid(axis="x",color=".92")
         eq=summary["equal_beam"]
         fig.suptitle("Per-case comparison: original secant versus persistence",y=.97,fontsize=14)
-        fig.text(.5,.91,f"Equal-beam MAE: persistence {eq['persistence_MAE_px']:.6f}, secant {eq['secant_MAE_px']:.6f} px\n"
+        fig.text(.5,.90,f"Equal-beam MAE: persistence {eq['persistence_MAE_px']:.6f}, secant {eq['secant_MAE_px']:.6f} px\n"
                  f"Paired delta (secant - persistence): {eq['delta_MAE_px']:+.6f} px; descriptive, no holdout",
-                 ha="center",fontsize=11)
+                 ha="center",va="top",fontsize=11)
         ax.legend(handles=handles[1:],loc="lower right",frameon=False)
         footer(fig);save(fig,"F03_case_MAE_comparison")
         fig,ax=plt.subplots(figsize=(11,6))
@@ -151,7 +152,7 @@ with predictions saved before evaluation target decoding and explicit coverage?
 
 ## Evidence identity
 - Numerical Run: {args.source.resolve()} (S03-E025-D01-R001).
-- Renderer: S03-E025-D01-R002; {Path(__file__).resolve()}.
+- Renderer: {args.run_id}; {Path(__file__).resolve()}.
 - Exact scored rows: evaluated_rows.json; predictions_before_evaluation.json precedes reference decoding.
 - References: E015 cached same-operator half-depth image widths, NOT independent physical truth.
 - Cases: all eight ledger cases in fixed order, T1-12 each; three beams, not96 independent specimens.
