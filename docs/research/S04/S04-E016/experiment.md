@@ -279,3 +279,17 @@ Delta-model development protocol before U0.125 is opened.
   Obsidian topic and single Roadmap entry updated. Next is read-only review of
   existing early-cycle/raw/bound regressions; no automatic D1/NN, refit,
   clipping, retry or confirmation access. No new outbound result send approved.
+- 2026-10-15 authorized read-only R002 cause audit: no new fit/prediction,
+  producer access or confirmation opening. Existing scores show equal stratum
+  weights do not prevent late damage MSE dominance (68%-96% of B0 total);
+  early regression persists after excluding C1-C2. Saved C20 decompositions
+  identify oversized damage corrections in3/4 cases, raw high-value suppression
+  (reference top~1% area contains>99.5% of B1 physical raw error), and deeper
+  damage-bound violations despite less violating area. These fixed-snapshot
+  explanations are not full-trajectory causal ablations or new acceptance gates.
+  See d0_R002_readonly_cause_audit_20261015.md and its derived JSON pointer.
+  Disposition: repair estimator/acceptance design before MOO, preserving external
+  horizon0 architecture, data lock and splits. Unique next step is a no-compute
+  design amendment choosing physical estimand/admissible representation/minimal
+  test; no training or refit authorized. Obsidian/Roadmap updated; no outbound
+  result message sent. Existing R002 verdict and original outputs unchanged.
