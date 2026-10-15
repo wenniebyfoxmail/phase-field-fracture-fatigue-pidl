@@ -87,3 +87,32 @@ keep already-common-sensitive cases visible. Do not promise a universal physical
 tolerance. If exact next nominal input is unverified, keep old eight queries
 labelled retrospective load-conditioned and prepare a separately specified
 origin-only next-observation baseline instead of silently using future force.
+
+## Outcome — 2026-10-15
+
+Clean9f41bb7 R001 succeeded, wall.0592185s/CPU.047176s, threads1;72pair bounds/
+648band rows.20synthetics independently checked;22additional reused-helper
+regressions passed. Reviewer independently recomputed every band/bound from
+E022 raw5832cells, no E023evaluate call, maximum difference0. Four final
+PNG/PDF sets and sidecars visually checked. Exact source/channel limits in
+evidence/load_knowledge_review.md and paper_reading_record.json.
+
+Original36 direction coverage at rho0/.5/1/1.5/2/2.5/3/3.5/4:
+32/23/17/13/13/11/10/10/10; amplitude28/19/15/13/13/11/10/10/10.
+Aligned direction30/23/14/13/11/10/10/10/10; amplitude28/21/14/13/11/10/10/10/10.
+Original4no-admissible/22bracketed/10right-censored; aligned6/20/10.
+Nine original pairs stable at0 fail at.5; six last-stable.5 first-fail1.
+No universal safe tolerance; .5gridstep is not physical measurement precision.
+
+Fresh main-text reading confirms predefined load stops; three acquisition
+workbooks confirm all8retrospective labels. Exact next INCLUDED nominal target
+at each historical origin remains not demonstrated in accessed sources.
+Canonical PMC table/header and datasetv4 web-reader successful; originalJina
+main extraction supplemented explicitly; Jina-v4 502 is not source evidence.
+Main/supplementary PDFs browser-challenged/uninspected, no exhaustive absence
+claim. Retain old results as retrospective nominal-load-conditioned development,
+not evidence of origin-only next-observation prediction or future force knowledge.
+
+Next proposed: compare internal CHECK tangent-position residual capability with
+these pair-specific grid envelopes. Preserve difficult components; no case
+exclusion, grid densification, model or new forecast execution here.

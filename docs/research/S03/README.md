@@ -138,3 +138,15 @@ median smoothing. Common nominal shifts are not verified material tracking;
 actual correspondence remains to qualify. Next tolerance/reference comparison
 is proposed only. No new forecast scores, physical truth or independent-beam
 generalisation. Final rendererR002 fixes legend occlusion; numericalR001 intact.
+
+2026-10-15 — [S03-E023-D01](S03-E023-D01/experiment.md) relative tangent
+mismatch envelopes: original36 directions retained at rho0/.5/1/2/4px:
+32/23/17/13/10; aligned30/23/14/11/10. Original4already unstable under common
+shifts,9first lose at.5,10right-censored through4. Not a universal physical
+tolerance: each absolute offset<=2px, grid.5px, in-between untested. Independent
+full-table/4figure review complete, target/scores unchanged. Fresh main-text/
+workbook/code audit confirms predefined load-stop protocol, not exact eight
+historical next-INCLUDED nominal targets known at origin; supplement unread.
+Old queries remain retrospective nominal-load-conditioned development. Next
+compare internal CHECK tangent-position capability with pair-specific bounds;
+origin-only next-observation prediction needs a separately frozen rule.

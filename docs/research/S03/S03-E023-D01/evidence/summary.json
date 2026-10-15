@@ -1,0 +1,22 @@
+{
+  "experiment_id":"S03-E023-D01",
+  "code_commit":"9f41bb7b76a0b95370e0c5f687a1e2c18fdbf3e9",
+  "run":"S03-E023-D01-R001",
+  "eligible_per_arm":36,
+  "rho_px":[0,0.5,1,1.5,2,2.5,3,3.5,4],
+  "original_direction_stable":[32,23,17,13,13,11,10,10,10],
+  "aligned_direction_stable":[30,23,14,13,11,10,10,10,10],
+  "original_amplitude_stable":[28,19,15,13,13,11,10,10,10],
+  "aligned_amplitude_stable":[28,21,14,13,11,10,10,10,10],
+  "original_status":{"no_admissible":4,"bracketed":22,"right_censored":10,"unassessable":0},
+  "aligned_status":{"no_admissible":6,"bracketed":20,"right_censored":10,"unassessable":0},
+  "absolute_each_stage_bound_px":2,
+  "grid_step_px":0.5,
+  "independent_specimens":1,
+  "load_protocol_predefined":"supported by main article",
+  "exact_eight_historical_next_included_origin_knowledge":"not demonstrated in accessed main text/workbooks/code; supplement uninspected",
+  "next":"Compare internal CHECK tangent-position capability with pair-specific envelope; retain unstable cases separately",
+  "physical_tolerance_or_actual_correspondence":false,
+  "new_forecast_or_training":false,
+  "old_scores":"unchanged"
+}
