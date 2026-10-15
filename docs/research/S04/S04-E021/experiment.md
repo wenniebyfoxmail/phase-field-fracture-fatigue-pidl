@@ -2,10 +2,11 @@
 storyline_id: S04
 experiment_id: S04-E021
 protocol_revision: v1
-status: analysis
+status: closed
 primary_storyline: S04
 related_storylines: []
-scientific_verdict:
+scientific_verdict: supports
+closed_at: 2026-10-15
 ---
 
 # Physical-raw V0/V1 development feasibility diagnostic
@@ -214,3 +215,25 @@ Runtime protocol/code at6aa21e3 and all frozen outputs unchanged. No new fit,
 score/selection recomputation, test, renderer, source export or confirmation
 access during this consolidation. Existing audit/receipts and recorded values
 were reconciled; raw-evidence write permissions remain removed.
+
+## Independent evidence review and closure — 2026-10-15
+
+User-approved exactbb875ac request sent once; independent review passed with no
+blocking findings and no rerun required. See evidence_review.md for delivery/
+response identity and main-chat item-by-item reconciliation. Only the frozen
+v1 directional-development claim is supported; metadata supports/closed refers
+to that narrow diagnostic, not general teacher/physical qualification.
+
+Newly explicit caveat:U0.11 C41+ RMSE rises1.6083% (81cycles, ratio1.01608312895644),
+despite improved equal-stratum total and early errors. It does not alter the
+original fatal early guard or primary Q; no post-result criterion added.
+Independent review did not replay all point predictions:other-cycle MSE and
+inner R/G remain saved-output evidence, not a full numerical reproduction.
+Both caveats added to run_result.md and shared Obsidian. S04 receives its dated
+claim-impact entry at../claim_impact.md; existing v1 contract/outputs unchanged.
+
+Run:succeeded; local retrieval:verified; evidence review:accepted within scope;
+research disposition:advance to proposal preparation only. No further fitting
+or execution authorized. At separately approved human handoff request a minimum
+no-refit replay plan is prepared in next_validation_plan_v1.md, not implemented
+or run. S04-E017/MOO/NN held; U0.1175/U0.125 remain closed. Main chat sole writer.

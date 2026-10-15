@@ -9,6 +9,14 @@ runtime protocol/code remains6aa21e3. This is the only active proposed send;
 the unsent English draft below is preserved history and carries no approval.
 No coordination message to the other chat is part of this proposed send.
 
+Delivery update2026-10-15:the user approved this exactbb875ac Chinese body;
+sent once unchanged to the named method chat, intended ID/isError=false.
+Final review received, matched to S04-E021-R001/runtime v1, accepted with no
+blocking finding. Turn01a1404b-15f6-76a1-bfeb-2091a7d24825;
+message msg_015d0a19570ed14a016ad0f9e4325c8191b9ae24d526219bd0.
+Original NOT SENT headings are historical draft labels, not current status.
+English v1 was never sent. No additional message authority follows.
+
 ## Exact message for per-send human approval
 
 请只读审核S04-E021-R001的V0/V1结果。结果记录版本79bb927，运行时协议/代码6aa21e3，已审实现c883bfd，设计45b8d32。

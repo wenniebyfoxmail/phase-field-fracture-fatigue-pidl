@@ -5,6 +5,10 @@ locally, no transfer). Frozen-rule outcome:DIRECTIONAL_DEVELOPMENT_GAIN.
 Main-chat evidence check complete; independent evidence review still pending.
 Disposition:advance only to read-only evidence review, not another computation.
 
+Current update2026-10-15:independent review now accepted. The original pending
+statements elsewhere below preserve the pre-review record; see evidence_review.md
+and final update at the end. No raw output or frozen result changed.
+
 ## Authority, identity and execution
 
 Direct user approval names6aa21e3, S04-E021-R001 and300s/2GiB/100MiB with no
@@ -150,3 +154,23 @@ The review draft is prepared for per-send approval, NOT SENT. It uses direct
 professional Chinese following the user's supplied instructions, without a
 claim of exact style imitation. The earlier unsent English draft is retained
 as history, not another active send or an inherited approval.
+
+## Independent review accepted — 2026-10-15
+
+Review passed with no blocking findings; main chat reconciled every point in
+evidence_review.md. E021 closes only as a positive directional-development
+diagnostic, not physical/teacher/confirmation qualification. No retry/refit.
+
+Important boundary:U0.11 C41+ has81cycles and its mean physical MSE changes from
+4271.04641540382 to4409.53477488090; RMSE ratio1.01608312895644, an increase of
+1.6083%. Thus four balanced-total and four early ratios improve, NOT all stages.
+This explanatory finding does not change the preregistered Q/early-guard rule.
+Independent audit did not replay all point predictions:other cycles use saved
+MSE; inner selection uses saved R/G/code. Do not call it complete numerical
+reproduction. Existing aggregate figures and sidecars keep their bounded meaning.
+
+Following the user's separately approved handoff, next_validation_plan_v1.md
+proposes only a no-refit inference replay on already-admitted development data.
+It is unimplemented/unexecuted and not a new claim/holdout or run authorization.
+No extra experiment, source export, renderer, NN or MOO started; confirmation
+and S04-E017 remain closed/held. Obsidian updated solely by this main chat.

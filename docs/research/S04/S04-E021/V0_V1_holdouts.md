@@ -37,5 +37,9 @@ margin or uncertainty interval has been qualified. The figure does not prove
 fresh-amplitude generalisation, teacher correctness, physical mechanism,
 forecast skill or permission to train a PIDL/NN model.
 
+Independent review caveat2026-10-15:U0.11 C41+ stratum RMSE rises about1.61%.
+This two-panel figure shows balanced-total and early ratios, not a guarantee
+that every stratum/cycle improves. The frozen primary verdict is unchanged.
+
 Visual QA: both panels are nonblank; axes, case labels, legends and the V0=1
 reference are readable; plotted values and direction match `folds.csv`.
