@@ -188,3 +188,13 @@
   profile mismatch without attributing E017's originalMAE gap or changing ranking.
   No trueNPZ/newprofile/solve/tuning/raw/newholdout/send used. SeeS03-E018/
   experiment.md and review.md; human confirmation before code/commands, no Run yet.
+
+- **2026-10-15 — S03-E018 code and exact local command independently reviewed.**
+  User confirmed the frozen plan; new63cf057 script/tests and5dd86b8 command
+  snapshot passed independent local Codex review. Independent110synthetic tests,
+  twoPNG/common-scale/sidecar QA and command syntax/source bindings passed;
+  no mandatory fixes. Saved37pair weights/IDs, full648training rotation and
+  direct/matched sharedtheta preserved. SeeS03-E018/code_review.md/review.md
+  and execution_approval.md. No realarrays/newprofiles/raw/heldresponse/solve/
+  fitting/send; R001 not created. Next human approval of once-only CPU60s
+  analysis, then separate evidence acceptance; code readiness is not a result.
