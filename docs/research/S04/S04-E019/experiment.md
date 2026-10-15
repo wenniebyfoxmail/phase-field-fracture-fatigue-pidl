@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E019
 protocol_revision: 20261013-r1-frozen-base-residual
-status: producer-running
+status: completed-primary-negative-evidence-review-pending
 ---
 # Preserve the E017 global fit while correcting damage residual
 
@@ -41,3 +41,7 @@ Minimum package: locks, six fresh receipts, inherited checkpoint identities, fin
 ## Execution update 2026-10-15
 
 Exact-version Code Ready and human transfer/launch approval obtained. Real-asset preflight passed on Taobo; the approved six-run dispatcher started at 2026-10-14T23:42:16Z. See [producer execution](producer_execution.md). Original protocol and thresholds unchanged; numerical verdict pending.
+
+## Result update 2026-10-15
+
+All six completed; primary producer verdict FAIL because c83 remains above.001. Component finding: damage improves and background is retained versus exact inherited backbone in all3states; background remains worse than unrestricted control. Original producer6/6 admission and successful independent UV-array checks are distinct from the failed strict Mac replay (reference-rho portability). External review pending; see [decision](decision.md). No protocol change, retry, extra steps or Stage2.

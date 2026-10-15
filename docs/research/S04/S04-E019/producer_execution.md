@@ -1,6 +1,6 @@
 # E019 producer execution — 2026-10-15 BST
 
-Execution: running; retrieval: initial preflight verified; scientific verdict: pending.
+Execution: succeeded; retrieval: verified; primary producer verdict: FAIL; independent external Evidence review pending. Mac strict replay has a secondary reference-rho portability mismatch (see decision.md).
 
 The user approved the exact Git bundle, launch script, destination and six-run execution after preflight. Only those two files were transmitted. Their remote SHA256 values match the approved local values: bundle `596046e5997eb7e83e7808c489aacd750046c14fb4f07b1873505cd8e114f013`; script `27f89ee6363e12438f5774db3461352f19e1059170c1ba188ad2b000e53fb4df`. No GitHub push or new external-review message.
 
@@ -34,3 +34,7 @@ The script also passed mount/free-space/GPU checks and exact clean-source admiss
 Heartbeat e019 checks every 30 minutes, quiet on ordinary progress. Read-only monitoring only; no retry, code/budget/GPU change, or unrelated-process intervention. Retrieve the six complete outputs, logs, preflight and frozen aggregate before numerical conclusions. All arms retain alpha=.7, seed7, 10000 new residual steps, immutable E017 backbone and fixed history/fatigue. Final-step evaluation only.
 
 Compare each state against its exact inherited backbone and matched unrestricted control: full, damage and total-background conditional RMS, plus trajectories and support-inside/outside contributions. Window-exterior preservation is an implementation check; total-background preservation includes the taper and inside-window background and must be measured independently. Primary criterion remains all three localized full RMS<=.001; the separate component finding requires damage improvement and no background regression in all three states. No new scientific result yet.
+
+## Completion 2026-10-15
+
+Six runs complete, last finished00:49:38Z; original frozen producer aggregator admits6/6 and reports primary FAIL (c83 localized full.00323824; c20/c60 pass.001). Local61file hashes verified; independent saved-array regional metrics agree within1e-14. Mac full-checker replay rejects reference-rho baseline equality at ~1e-13 platform drift; keep this exception explicit, no tolerance change. See [decision](decision.md), exact tables and analysis figures. Monitor e019 stopped after retrieval/analysis; no rerun/new producer action. External Evidence review pending.
