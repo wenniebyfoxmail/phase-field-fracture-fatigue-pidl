@@ -14,6 +14,8 @@ import psutil
 
 
 def execute(out, synthetic=False, auth_path=None):
+    # Resolve against the caller cwd once, before validation or child cwd changes.
+    auth_path = Path(auth_path).resolve() if auth_path is not None else None
     root = Path(__file__).resolve().parents[1]
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
     # Authorization is checked BEFORE creating output or opening any source archive.
@@ -33,7 +35,7 @@ def execute(out, synthetic=False, auth_path=None):
                VECLIB_MAXIMUM_THREADS='4', CUDA_VISIBLE_DEVICES='',
                RAW_CODE_COMMIT=commit, RAW_RUN_ID=run_id, PYTHONUNBUFFERED='1')
     if auth_path is not None:
-        env['RAW_AUTHORIZATION'] = str(auth_path.resolve())
+        env['RAW_AUTHORIZATION'] = str(auth_path)
     start = time.monotonic(); env['RAW_START_MONOTONIC'] = str(start)
     children = []; peak = 0; child = None; reason = None
     utc = datetime.datetime.now(datetime.timezone.utc).isoformat()

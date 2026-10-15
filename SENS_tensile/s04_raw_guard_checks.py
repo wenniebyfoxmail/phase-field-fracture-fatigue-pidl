@@ -5,10 +5,66 @@ import io
 import json
 import os
 from pathlib import Path
+import sys
 from types import SimpleNamespace
 from unittest import mock
 
 import s04_raw_guard as guard
+
+
+def check_authorization_handoff(base):
+    """Exercise real-mode path plumbing with a mocked validator and children only."""
+    base = base.resolve()
+    base.mkdir(parents=True, exist_ok=False)
+    caller = base/'caller_outside_repo'; caller.mkdir()
+    relative = Path('approval_NOT_CREATED.json')
+    expected = caller/relative
+    out = base/'MOCK_AUTH_HANDOFF'
+    root = Path(guard.__file__).resolve().parents[1]
+    assert caller != root and not expected.exists()
+    validated = []; launched = []
+
+    def authorize(path, output):
+        assert Path.cwd() == caller and path == expected and path.is_absolute()
+        assert output == out and not expected.exists()
+        validated.append(str(path))
+        return dict(run_id=out.name)
+
+    def spawn(command, **kwargs):
+        assert validated == [str(expected)]
+        assert kwargs['cwd'] == root
+        assert kwargs['env']['RAW_AUTHORIZATION'] == str(expected)
+        if not launched:
+            i = command.index('--authorization')
+            assert command[i+1] == str(expected)
+            # Model the child resolving argv after its cwd has changed.
+            assert (kwargs['cwd']/command[i+1]).resolve() == expected
+            out.mkdir()
+        else:
+            assert Path(command[1]).name == 's04_raw_report.py'
+        launched.append(dict(command=command, cwd=str(kwargs['cwd']),
+                             authorization_env=kwargs['env']['RAW_AUTHORIZATION']))
+        return SimpleNamespace(pid=99999992+len(launched), poll=lambda: 0, returncode=0)
+
+    fake_source = SimpleNamespace(authorization=authorize)
+    proc = SimpleNamespace(memory_info=lambda: SimpleNamespace(rss=1024))
+    with contextlib.chdir(caller), \
+         mock.patch.dict(sys.modules, {'s04_raw': fake_source}), \
+         mock.patch.object(guard.subprocess, 'check_output', return_value='MOCK\n'), \
+         mock.patch.object(guard.subprocess, 'Popen', side_effect=spawn), \
+         mock.patch.object(guard.psutil, 'Process', return_value=proc), \
+         contextlib.redirect_stdout(io.StringIO()):
+        code = guard.execute(out, auth_path=relative)
+    record = json.loads((base/(out.name+'_guard_receipt.json')).read_text())
+    assert code == 0 and record['status'] == 'COMPLETED'
+    assert len(launched) == 2 and not expected.exists()
+    result = dict(status='PASS', mock_only=True, caller_cwd=str(caller),
+                  parent_authorization=validated, child_handoffs=launched,
+                  authorization_artifact_created=False, real_child_processes=0,
+                  actual_inputs_opened=False, actual_fit=False, actual_score=False,
+                  virtual_guard_receipts_only=True)
+    (base/'authorization_handoff_receipt.json').write_text(json.dumps(result, indent=2))
+    return result
 
 
 def check(base):
@@ -57,4 +113,7 @@ def check(base):
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(); p.add_argument('--out', type=Path, required=True)
-    print(json.dumps(check(p.parse_args().out), indent=2))
+    p.add_argument('--authorization-handoff-only', action='store_true')
+    args = p.parse_args()
+    run = check_authorization_handoff if args.authorization_handoff_only else check
+    print(json.dumps(run(args.out), indent=2))
