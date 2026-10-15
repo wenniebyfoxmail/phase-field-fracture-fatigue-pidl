@@ -2,6 +2,8 @@
 
 Status: local proposal and existing-output coverage audit; not a frozen new prediction experiment. E015/E016/E017 definitions, scores, annotations and human-preparation UI remain unchanged. No new annotator dispatch or external transmission.
 
+当前工作定义见文末“2026-10-15 条件查询方案补充”：采用给定目标名义荷载L*的条件查询。较早的选择待定、计划可知性与执行顺序文字保留为历史，不作为当前条件查询的前置要求。仍未冻结新评估或授权执行。
+
 ## Decision to make
 
 Recommended route: retain E015's **five-line-median transverse half-depth image width**, in first-frame native pixels within each beam. Treat central-row visible-edge AI/human annotation as a separate ambiguity/localisation check, not the truth for that width. This preserves the informative development signal without changing its meaning.
@@ -269,3 +271,108 @@ code or old result.
 6. Obtain reviewed final protocol/code and exact single-run approval before
    any new implementation execution. This document dispatches no annotator,
    creates no packet, accesses no sealed data and launches no calculation.
+
+## 2026-10-15 条件查询方案补充——未冻结，仅文档
+
+### Material Passport
+
+- Origin Skill / Mode: academic-research-suite / experiment-agent plan；道路裂缝证据边界。
+- Origin Date: 2026-10-15；Version Label: conditional_query_working_v1。
+- Verification Status: UNVERIFIED（新方案未执行／未验证，不否认所引历史记录）。
+- 文档基线：a9444bef1c3049b42d85c8a5b1dfe08d853c314d，原匹配工作树。
+- 本次只读来源／代码并补充此草案；未运行训练、拟合、预测、评分、配准、诊断或测试，未改代码或历史协议，未下载或读取答案键／封存数据。共享Obsidian/Roadmap及跨聊天消息均不在本次修改范围。[CQ1]
+
+本节更新的是**未冻结方案**，不追溯改写E015–E024。此前G.2“先解决下一计划荷载可知性”的要求，仅适用于升级为计划已知的前瞻预测；不再阻塞本节已选定的条件查询。下一步仍须另行冻结新评估与实施范围。[CQ1,CQ5,CQ8]
+
+### 1. 可直接使用的研究问题定义
+
+本研究考察受控钢筋混凝土梁试验中的半深度图像宽度条件查询：对同一梁、同一固定测线，给定截至观测起点的历史半深度图像宽度、历史名义荷载，以及外部明确指定的目标名义荷载L*，估计该荷载条件下同一定义的图像宽度，并与保持当前宽度的基线比较。观测量保留原单点测线、五行中位灰度剖面及半深度交点定义，单位为各梁首帧原生坐标像素。L*是查询条件，允许由分析者事后指定；这不证明该值在真实试验的预测起点已经可知。现有结果属于受控梁试验上的回顾性开发研究，不构成自主下一观测预测、物理开口预测、荷载干预因果效应或真实道路验证；八次已查看结果的身份与原评分保持不变。[CQ1–CQ5,CQ7,CQ8]
+
+条件估计保留已观察历史及本数据的单调加载分支。不同加载路径或未观测内部状态可能在同一L*下产生不同图像；不假设L*唯一决定状态，也不声称最近两点已经是充分状态。[CQ1,CQ2,CQ5]
+
+### 2. 信息表：两个时点与三种角色
+
+区分“历史观测截止到阶段k”与“分析者构造查询的时点”。本任务允许事后构造查询，故L*在**调用时**明确给定，不要求其在当年试验起点已有记录。历史字段可用性按j≤k约束；原始标签的实际可获取时刻没有证据时标为未证实，不补写真实时间戳。[CQ1,CQ4,CQ8]
+
+字段名是拟议接口，不声称旧文件已全部具备；质量和几何元数据用于测量／资格／追溯，不新增为secant数值特征。[CQ2,CQ3]
+
+| 角色／拟议字段 | 内容与可用时点 | 可进入哪里 | 来源 |
+|---|---|---|---|
+|历史 `specimen_id, view_id, transect_id`|同梁、固定IB视角、预先固定测线；截止k的身份|分组和来源核对，不把测线当独立梁|CQ2:prepare；CQ4；CQ5|
+|历史 `width_history`|j≤k同定义算法宽度；本两基线只用最近两次，px|数值预测器；不得以可见边界或物理开口替换|CQ2:50–104；CQ5；CQ7|
+|历史 `measurement_definition_id, unit`|原单点、五行中位剖面、半深度交点；首帧原生像素|约束输入／输出同定义；定义版本在新目标前冻结|CQ2:50–95；CQ5|
+|历史 `valid_history, missing_reason_history, origin_valid`|仅由首帧及j≤k历史剖面产生的有效性、对比度／截断等原因|起点资格；不把目标质量填入历史标志|CQ2:67–95、132–155；CQ3|
+|历史 `nominal_load_history`|j≤k已经纳入历史的名义荷载；真实当时获取时间未证实时另标状态|数值预测器；不以未来实测力替换|CQ2:98–104；CQ4；CQ8|
+|历史 `center, normal, coordinate_frame, ROI_source`|首帧确定的路径、中心、法线和既有ROI，之后不按目标重选|历史测量／追溯，不新增预测参数|CQ2:132–155；CQ5|
+|历史 `historical_transform, registration_source`|只允许计算截至k历史观测所需的变换；其输入也不得含j>k|历史测量端；预测函数本身不接收H|CQ2:50–64；CQ3:182–216；CQ6,CQ7|
+|查询 `query_nominal_load_kN=L*`|外部在调用时指定，可以事后／假设性指定；保留给定来源|条件输入；绝不自动命名为起点已知下一计划荷载|CQ1；CQ2:98–104；CQ8|
+|查询 `query_role, supplied_by, selection_exposure`|记录是回顾性条件查询、如何选L*、目标是否已被看过|追溯／分层；不把事后选择包装为盲评|CQ1；CQ4；CQ5,CQ8|
+|仅评价 `target_stage_id, target_nominal_label`|依据已声明规则核对目标记录是否对应L*|评价端匹配；不能按预测误差挑图|CQ4；CQ8|
+|仅评价 `target_image, target_transform`|目标图像及其测量变换，可以在评价端用于同定义取值|不能进入预测器或起点资格，也不能参与历史变换拟合|CQ2:50–95；CQ3:196–216|
+|仅评价 `target_valid, target_missing_reason, reference_available`|目标身份、取样支持和算法有效性；预测保存后判定|未来参考可测性与评分支撑，不是起点掩码|CQ3:223–240；CQ5,CQ7|
+|仅评价 `target_halfdepth_width_px`|目标图像上同一固定测线／定义的算法值|计算误差；不是独立物理真值|CQ3；CQ5,CQ7|
+|仅评价 `target_actual_force, future_logger_time`|未来机测力／记录器数据，如确有来源才用于评价匹配审计|不替代L*、不补历史荷载、不作为预测输入|CQ6；CQ8|
+|仅评价／修复线索 `posthoc_position_diagnostic`|E023/E024若使用目标阶段残差或宽度响应，只是事后开发诊断|不得转作该起点的资格；T4/T6/T10优先级不是盲选验证集|CQ9；CQ10|
+|禁止填入 `internal_damage, future_event, unobserved_state`|模拟内部损伤、未来事件或其他未观测状态|不补输入、标签或缺失值；无来源保持未知|CQ1；本节问题定义|
+
+`planned_next_load`不是本问题的L*别名。将来使用该字段时，必须另带计划来源、版本、适用梁、起点可获取性和跳过规则；本节不伪造这些字段已经存在。[CQ1,CQ8]
+
+### 3. 原基线、输出与两个掩码
+
+**不改方法。**在原允许分支L*>L_k、L_k>L_(k−1)下，persistence保持w_k；原secant使用最近两点荷载斜率估计L*处宽度。两者继续沿用原函数的[0,120]px输出映射，不加单调增长、再平滑、参数拟合、ROI重选或新边界条件。原half-secant仍是固定辅助，不择优替换主对照。函数的`next_load`参数在本草案中解释为L*，本次不重命名代码或改变公式。[CQ2:98–104,CQ5]
+
+**掩码一：历史起点资格E。**仅依据已固定测线／首帧资格、两次历史同定义宽度有效性、历史荷载顺序及允许的历史信息截止点判定。L*的域检查是显式查询校验，不读取目标可见性。E成立后，未来实现应先产生并保存各臂输出、输入快照、L*、截止点和预测失败／弃权原因，再允许评价端检查目标。[CQ2,CQ3,CQ5]
+
+**掩码二：未来参考可测性R。**预测保存后，按冻结规则核对目标名义条件／身份、同定义取样与算法有效性。目标缺失、不确定或不可测保留原因，不置零，不以人工其他定义、其他阶段、未来实测力或模拟状态补填。[CQ3,CQ5–CQ8]
+
+共同评分支撑由E、R及两臂均成功输出的交集导出，不能让各臂挑不同目标。分别报告：名义查询数、E成立数、每臂预测／失败数、R可用数、共同可评分数及分原因缺失。条件MAE不掩盖覆盖率／弃权；若需失败惩罚或决策效用，应另行预定，而不是本轮虚构。[CQ3,CQ5；前文F]
+
+旧评价循环在调用预测器前就把目标可测性加入support；现有记录中168/168有效、96/96可评分，因此不能仅据结构问题断言旧数值已被改变。但旧循环不能被描述成已经实现上述两掩码接口。本次只指出未来实现的分离要求，不改代码或旧分。[CQ3:223–240,CQ5,CQ7]
+
+任意给定L*都不自动拥有可评分图像。若未观测该名义条件，应记录“该条件无目标参考”，不能插值一个真值、换成最接近且有利的图像或把生成值当参考。[CQ4,CQ8；本节评价设计]
+
+### 4. 已有依据、当前待补项与升级证据
+
+| 状态 | 已有依据／待补内容 | 对当前条件查询的意义 | 来源 |
+|---|---|---|---|
+|已有|原论文§2描述预定义荷载停点；§4描述固定相机各停点图像|提供实验加载／观测设计背景；不单独证明八个精确下一事件在起点已知|CQ6；CQ8|
+|已有|同梁IB历史名义标签和已查看目标；旧八查询身份固定|支持回顾性条件查询，不是新的独立验证|CQ4,CQ5,CQ8；前文C|
+|已有|原同定义算法目标及E018独立计算／取样重放记录|支持软件定义量可复算；不证明物理开口或材料位置|CQ2,CQ5,CQ7|
+|当前待补|新接口的逐字段来源、历史截止点、查询给定记录和两掩码实施|未来评估必需；旧代码未因此被宣称已经修好|CQ2,CQ3；本节2–3|
+|当前待补|目标的固定名义身份／相机／测线／变换来源及缺失规则|足以定义注册图像坐标中的同一函数；真实材料位置仍需独立资格|CQ3,CQ4,CQ7–CQ10|
+|当前待补|未冻结评估的案例身份、暴露记录、共同支撑、独立参考安排、主比较与合理阈值依据|不能由已看结果选有利阈值；无依据时仅描述，不强设物理门槛|CQ5；前文C/F；本节5|
+|升级前瞻所需，不阻塞当前A问题|每梁事前计划的版本／来源、起点可获取记录、跳过停点或遗漏照片后的目标选择规则|只有升级到“计划已知的未来预测”时才作为额外要求|CQ1,CQ4,CQ6,CQ8|
+|升级物理／其他观测所需，非算法量的替代真值|同材料位置的独立物理／几何参考；若评价可见边界需自己的标注定义和重复性|人眼可见宽度、物理开口和半深度函数分别评价，不混用|CQ7；前文B/D|
+
+**位置与状态对应。**同一个测线ID表示同一冻结坐标定义，并不证明跨阶段同一材料位置。源图像映射、局部位移、背景到裂边的空间转移、法向误差、模板匹配及相机／记录器时序仍有限制。E023有限网格和E024背景代理帮助定位修复重点，但不能替代物理对应，也不要求所有位置先通过物理计量才允许陈述算法定义量的回顾性条件查询。[CQ6–CQ10]
+
+### 5. 未来评价安排——仍未冻结
+
+- **现有八查询：**B4为30→40、40→50；B5为20→30、30→40、40→50、50→60；B6为20→30、30→40kN；每查询T1–12。它们都已查看，保留原身份／评分，可用于方案梳理或另行批准的开发复查，不能成为新holdout。当前没有新增预测或评分。[CQ5,CQ8；前文C]
+- **新评估身份：**在目标访问前，冻结梁／视角／测线／历史截止点／L*／目标来源／曝光角色，以及重复图像和缺失时如何选目标；不能按误差、未来可测性或E024事后分类选有利案例。新同梁状态只支持同梁续推；新梁才可研究跨梁迁移，仍不等于真实道路。[CQ4,CQ5,CQ9,CQ10；前文F]
+- **主比较候选：**在共同支撑上比较secant相对persistence的配对MAE差，方向为负较好；沿用“测线→查询→梁等权”解释，报告各梁／各查询及覆盖率，不把96个条目当96个独立梁。等梁平均像素误差只是既有软件观测量的比较，不代表统一毫米精度。它是待冻结的新评价设计，不改旧聚合公式或分数。[CQ5；前文F]
+- **阈值和独立性：**有合理误差／重复性／决策依据再定最小有意义差异，否则描述差值、不造通过线。预测和输入快照先固定，再由独立评价过程读取目标并计算同定义参考；真正独立验证需未查看／前瞻目标，不能靠换一个评价agent清洗已查看身份。[CQ7；前文C/F]
+- **可用数据待定：**本次不访问封存目标、不联系或采集新数据。若只有旧八查询，下一次任何重算也只能叫开发复查；若计划独立验证，先明确可合法使用、此前未查看的具体数据来源和权限。[CQ1,CQ5,CQ8]
+
+### 6. 最小下一步，按依赖顺序
+
+1. **以本节已选A问题及不变项继续完善草案，不等待事前计划证明。**历史截止k、外部L*、原半深度函数／像素、persistence/secant、回顾性开发身份已在本节写清；事前计划证据仅列作B问题升级事项。[CQ1,CQ2,CQ8]
+2. **下一项文档工作：冻结案例与信息来源清单。**逐行注明历史源、L*给定方式、目标名义对应、曝光角色及缺失规则；旧八对沿用前文C，不解封或新增数据。没有对应图像的L*保留为无评分参考。[CQ3–CQ5,CQ8]
+3. **再冻结两掩码与评价分工。**写清E的历史字段、预测保存点、R的评价字段和共同评分／失败分母；不得用E023/E024目标信息倒筛起点。代码实现需后续另行授权。[CQ3,CQ9,CQ10]
+4. **选择下一次工作的证据角色。**若重用已查看资料，明确开发复查；若要独立验证，先确定未查看或前瞻数据及独立同定义评价流程。当前不能凭“换agent”制造新独立性。[CQ5,CQ7；前文F]
+5. **最后才是审核、授权和一次有界执行。**新实验ID／版本、命令、预算、停止条件及有依据的主比较阈值由后续方案决定；本次不生成或运行命令。局部对应／分数位置复算若有必要，单独列为候选诊断、等待批准，不暗中纳入本任务。[CQ9,CQ10；本节权限]
+
+本轮不存在必须靠计算才能完成的文档项。需要新计算才能回答的是“新两掩码实现后的结果如何”及“代理指向的分数位置是否真的敏感”；候选路径分别是新冻结开发复查与固定小范围位置响应复算，均**未执行**。[CQ3,CQ9,CQ10]
+
+### 7. 本节来源索引（全部为现有本地材料）
+
+- **CQ1** 用户指定的[问题定义与荷载核读备忘录](/Users/wenxiaofang/Documents/Codex/2026-10-13/corotational-fem-dem-for-multiscale-and/outputs/S03_load_availability_and_question_20261015.md)，§1–4；本轮只读，不改外部聊天文件。
+- **CQ2** [原半深度取样／测量函数](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/d01_crack_profile_diagnostic.py:50)：L50–95定义；L98–104数值预测及clip；L132–155首帧几何准备。只读代码，没有运行其中self-test或任何函数。
+- **CQ3** [原评价循环](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/d01_crack_profile_diagnostic.py:182)：L182–216目标测量；L223–240原support与预测／评分顺序。
+- **CQ4** [原回顾性阶段选择](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/d01_stage_forecast_diagnostic.py:109)，L109–127：按数值／匹配状态选择、按文件时间排序，非起点计划证明。
+- **CQ5** [E015已使用协议与原结果](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E015-D01/experiment.md)，Frozen method / development result；本次不改其“scheduled”历史用语或数值。
+- **CQ6** [原论文既有文本](/Users/wenxiaofang/phase-field-fracture-with-pidl/research_proposals/topology_crack_metrology_HQ_20261006/sources/metrology/sjolander_2023_dib_dataset.txt:210)，§2（L210附近）、§3（L267附近）与§4（L358附近）；本轮仅重读这些相关段落，不新增全文／附录验证声明。
+- **CQ7** [E018独立计算复核记录](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E018-D01/evidence/summary.json)，168同定义剖面复算、原图重放及physical_accuracy_validated=false；只读现有记录，不重跑。
+- **CQ8** [E023荷载来源核查](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E023-D01/evidence/load_knowledge_review.md)及[八查询来源字段](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E023-D01/load_knowledge.json)：三采集表的具体单元格、主文依据与未读附录范围；本次不重开工作簿或新下载。
+- **CQ9** [E023有限相对错位协议](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E023-D01/experiment.md)，finite grid / Outcome：无连续位置或物理精度保证。
+- **CQ10** [E024切向背景代理记录](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E024-D01/evidence/summary.json)及[协议](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E024-D01/experiment.md)，代理类别、开发优先级及未执行的分数位置下一步；不转成新预测验证。
