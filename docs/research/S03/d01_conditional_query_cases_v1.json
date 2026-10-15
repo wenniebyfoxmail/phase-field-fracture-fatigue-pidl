@@ -1,0 +1,81 @@
+{
+  "schema_version": "d01-conditional-case-ledger-v1",
+  "date": "2026-10-15",
+  "owner": "S03 conditional-query interface preparation",
+  "base_commit": "885f85ac0004be7013a454a9a3806021d0b1f0b7",
+  "status": "metadata_prepared_not_executed_not_independently_reviewed",
+  "research_role": "already_viewed_development_replay_only",
+  "dataset_doi": "10.17632/z3yc9z84tk.4",
+  "archive_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments",
+  "sources": {
+    "sequence": "S03-E012-D01/runs/S03-E012-D01-R001/selected_sequences_before_pixel_access.json",
+    "raw_image_root": "S03-E012-D01/runs/S03-E012-D01-R001/raw_images",
+    "geometry": "S03-E015-D01/runs/S03-E015-D01-R000/first_frame_transects_lock.json",
+    "measurement_table": "S03-E015-D01/runs/S03-E015-D01-R001/profile_measurements.csv",
+    "load_provenance_repo": "docs/research/S03/S03-E023-D01/load_knowledge.json",
+    "workbook_root": "S03-E004/analysis/extracted_small_files",
+    "measurement_code_repo": "scripts/d01_crack_profile_diagnostic.py"
+  },
+  "shared_case_fields": {
+    "view_id": "IB-Fixed",
+    "transect_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "measurement_definition": "E015 development-v1 fixed-single-transect five-line-median gray-profile half-depth width",
+    "measurement_unit": "native_first_frame_px_per_beam",
+    "measurement_row_key": ["beam", "stage_index", "transect_id", "role=crack"],
+    "query_role": "retrospective_supplied_nominal_condition",
+    "supplied_by": "analyst_reusing_E015_E023_existing_cases",
+    "query_selection_exposure": "target_images_and_previous_results_already_viewed",
+    "query_load_provenance": "E023 retrospective nominal label; explicitly supplied to future query call, not a recovered advance plan",
+    "historical_physical_origin_availability": "not_demonstrated",
+    "target_rule": "exact listed stage and image, no nearest-load or lowest-error substitution",
+    "target_label_is_actual_force": false,
+    "exact_camera_logger_synchronization_claimed": false,
+    "eligibility_E_status": "not_recomputed",
+    "reference_R_status": "not_recomputed",
+    "predictions_status": "not_generated_by_this_ledger"
+  },
+  "stages": [
+    {"id":"B4-S0","beam":4,"stage_index":0,"nominal_load_kN":10,"image":"Beam 4/G4-IB-Fixed/G4-IB_t=225.JPG"},
+    {"id":"B4-S1","beam":4,"stage_index":1,"nominal_load_kN":30,"image":"Beam 4/G4-IB-Fixed/G4-IB_t=400.JPG"},
+    {"id":"B4-S2","beam":4,"stage_index":2,"nominal_load_kN":40,"image":"Beam 4/G4-IB-Fixed/G4-IB_t=500.JPG"},
+    {"id":"B4-S3","beam":4,"stage_index":3,"nominal_load_kN":50,"image":"Beam 4/G4-IB-Fixed/G4-IB_t=588.JPG"},
+    {"id":"B5-S0","beam":5,"stage_index":0,"nominal_load_kN":10,"image":"Beam 5/G5-IB-Fixed/G5-IB_t=228.JPG"},
+    {"id":"B5-S1","beam":5,"stage_index":1,"nominal_load_kN":20,"image":"Beam 5/G5-IB-Fixed/G5-IB_t=358.JPG"},
+    {"id":"B5-S2","beam":5,"stage_index":2,"nominal_load_kN":30,"image":"Beam 5/G5-IB-Fixed/G5-IB_t=464.JPG"},
+    {"id":"B5-S3","beam":5,"stage_index":3,"nominal_load_kN":40,"image":"Beam 5/G5-IB-Fixed/G5-IB_t=553.JPG"},
+    {"id":"B5-S4","beam":5,"stage_index":4,"nominal_load_kN":50,"image":"Beam 5/G5-IB-Fixed/G5-IB_t=636.JPG"},
+    {"id":"B5-S5","beam":5,"stage_index":5,"nominal_load_kN":60,"image":"Beam 5/G5-IB-Fixed/G5-IB_t=729.JPG"},
+    {"id":"B6-S0","beam":6,"stage_index":0,"nominal_load_kN":10,"image":"Beam 6/G6-IB-Fixed/G6-IB_t=183.JPG"},
+    {"id":"B6-S1","beam":6,"stage_index":1,"nominal_load_kN":20,"image":"Beam 6/G6-IB-Fixed/G6-IB_t=293.JPG"},
+    {"id":"B6-S2","beam":6,"stage_index":2,"nominal_load_kN":30,"image":"Beam 6/G6-IB-Fixed/G6-IB_t=376.JPG"},
+    {"id":"B6-S3","beam":6,"stage_index":3,"nominal_load_kN":40,"image":"Beam 6/G6-IB-Fixed/G6-IB_t=460.JPG"}
+  ],
+  "cases": [
+    {"case_id":"B4-K1-Q40","beam":4,"origin_stage_index":1,"predictor_history_stage_ids":["B4-S0","B4-S1"],"query_nominal_load_kN":40,"evaluation_target_stage_id":"B4-S2","target_label_source":"Beam 4/Test Data/Labbdata_G4.xlsx / Beam-seconds!A21"},
+    {"case_id":"B4-K2-Q50","beam":4,"origin_stage_index":2,"predictor_history_stage_ids":["B4-S1","B4-S2"],"query_nominal_load_kN":50,"evaluation_target_stage_id":"B4-S3","target_label_source":"Beam 4/Test Data/Labbdata_G4.xlsx / Beam-seconds!A22"},
+    {"case_id":"B5-K1-Q30","beam":5,"origin_stage_index":1,"predictor_history_stage_ids":["B5-S0","B5-S1"],"query_nominal_load_kN":30,"evaluation_target_stage_id":"B5-S2","target_label_source":"Beam 5/Test Data/Labbdata_G5.xlsx / Beam-seconds!A21"},
+    {"case_id":"B5-K2-Q40","beam":5,"origin_stage_index":2,"predictor_history_stage_ids":["B5-S1","B5-S2"],"query_nominal_load_kN":40,"evaluation_target_stage_id":"B5-S3","target_label_source":"Beam 5/Test Data/Labbdata_G5.xlsx / Beam-seconds!A22"},
+    {"case_id":"B5-K3-Q50","beam":5,"origin_stage_index":3,"predictor_history_stage_ids":["B5-S2","B5-S3"],"query_nominal_load_kN":50,"evaluation_target_stage_id":"B5-S4","target_label_source":"Beam 5/Test Data/Labbdata_G5.xlsx / Beam-seconds!A23"},
+    {"case_id":"B5-K4-Q60","beam":5,"origin_stage_index":4,"predictor_history_stage_ids":["B5-S3","B5-S4"],"query_nominal_load_kN":60,"evaluation_target_stage_id":"B5-S5","target_label_source":"Beam 5/Test Data/Labbdata_G5.xlsx / Beam-seconds!A24"},
+    {"case_id":"B6-K1-Q30","beam":6,"origin_stage_index":1,"predictor_history_stage_ids":["B6-S0","B6-S1"],"query_nominal_load_kN":30,"evaluation_target_stage_id":"B6-S2","target_label_source":"Beam 6/Test Data/Labbdata_G6.xlsx / Beam-seconds!A21"},
+    {"case_id":"B6-K2-Q40","beam":6,"origin_stage_index":2,"predictor_history_stage_ids":["B6-S1","B6-S2"],"query_nominal_load_kN":40,"evaluation_target_stage_id":"B6-S3","target_label_source":"Beam 6/Test Data/Labbdata_G6.xlsx / Beam-seconds!A22"}
+  ],
+  "missing_and_ambiguity_rules": {
+    "missing_history": "E=false; retain explicit reason; do not impute zero or future width",
+    "query_domain": "require finite L_star > L_k > L_k_minus_1; validate separately from target availability",
+    "missing_target": "R=false after output save; keep prediction; no interpolated or generated truth",
+    "ambiguous_identity_or_duplicate_row": "stop join and report, do not choose by visibility or error",
+    "new_or_unlisted_image": "out_of_scope_stop_before_pixel_or_target_read",
+    "posthoc_position_category": "not an E filter; retain all 12 transects",
+    "B4_20kN": "not present in selected sequence; do not synthesize an intervening stage"
+  },
+  "execution_boundary": {
+    "predictor_input": ["case_id", "beam", "transect_id", "measurement_definition", "unit", "origin_stage_index", "last_two_history_widths", "last_two_history_nominal_loads", "query_nominal_load_kN"],
+    "predictor_forbidden": ["full_ledger", "target_stage_id", "target_image", "target_transform", "target_width", "target_valid", "future_actual_force", "E023_E024_posthoc_category"],
+    "order": ["project history-only payload and validate E/query domain", "persist inputs and each arm output or explicit failure", "only then join evaluation target and determine R", "score on E_and_R_and_both_arm_outputs; report all denominators"],
+    "whole_ledger_is_predictor_payload": false,
+    "unseen_validation_claim": false,
+    "run_created": false,
+    "old_scores_modified": false
+  }
+}

@@ -376,3 +376,50 @@ code or old result.
 - **CQ8** [E023荷载来源核查](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E023-D01/evidence/load_knowledge_review.md)及[八查询来源字段](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E023-D01/load_knowledge.json)：三采集表的具体单元格、主文依据与未读附录范围；本次不重开工作簿或新下载。
 - **CQ9** [E023有限相对错位协议](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E023-D01/experiment.md)，finite grid / Outcome：无连续位置或物理精度保证。
 - **CQ10** [E024切向背景代理记录](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E024-D01/evidence/summary.json)及[协议](/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E024-D01/experiment.md)，代理类别、开发优先级及未执行的分数位置下一步；不转成新预测验证。
+
+## 2026-10-15 八案例来源清单与两掩码实施约定 v1（待审核，未运行）
+
+本次承接上述§6第2–3步。任务为S03条件查询接口准备；复用匹配工作树与分支，基线885f85ac0004be7013a454a9a3806021d0b1f0b7。仅新增机器可读[案例清单](d01_conditional_query_cases_v1.json)、本节和既有Obsidian里程碑；不改旧代码、协议、宽度、评分，不读取新图像／封存目标，不启动预测或位置复算。该清单是**拟实施的开发重放输入约定**，不是新数据验证结果，也不宣称已获独立审核或Code Ready。
+
+### 案例清单：不是重新选样
+
+| 案例 | 最近两次历史名义荷载（kN） | 给定L*（kN） | 原固定目标文件（Gx-IB_t=秒.JPG） |
+|---|---|---|---|
+|B4-K1-Q40|10,30|40|G4-IB_t=500.JPG|
+|B4-K2-Q50|30,40|50|G4-IB_t=588.JPG|
+|B5-K1-Q30|10,20|30|G5-IB_t=464.JPG|
+|B5-K2-Q40|20,30|40|G5-IB_t=553.JPG|
+|B5-K3-Q50|30,40|50|G5-IB_t=636.JPG|
+|B5-K4-Q60|40,50|60|G5-IB_t=729.JPG|
+|B6-K1-Q30|10,20|30|G6-IB_t=376.JPG|
+|B6-K2-Q40|20,30|40|G6-IB_t=460.JPG|
+
+八案例均展开为T1–12，共96个**名义查询×测线机会**；不是96个独立梁，亦不是本次新确认96个有效预测。JSON中列出14个阶段的原文件、零基阶段索引、历史两行键、首帧几何文件、E015同定义宽度表和E023逐个目标标签单元格。表和JSON沿用E012预先保存的选择，不新增B4的20kN，不择优替换目标或测线。所有E/R状态仍记`not_recomputed`。
+
+路径解析：JSON的`sources`中档案路径相对`archive_root`，`*_repo`相对本工作树；`stages[].image`相对`raw_image_root`，`target_label_source`工作簿相对`workbook_root`，斜线后为表／单元格定位。`filename_time`只用于文件身份，不当作精确相机—力传感器同步。历史每行的名义标签／图像身份沿用E012清单；不补造物理试验起点时间戳。首帧几何沿用E015-R000，宽度行键固定`beam,stage_index,transect_id,role=crack`，唯一性异常即停止连接。
+
+### 实施边界：先输出，再读取评价目标
+
+整个JSON包含未来评价定位，**不得直接传给预测器**。未来实现必须先投影成仅含历史与查询字段的白名单payload；历史读取截至k，原两基线只取k−1、k。身份元数据不作为新增拟合特征。
+
+| 时点／支撑 | 可读取字段与判断 | 必须落盘／报告 | 禁止行为 |
+|---|---|---|---|
+|历史资格E|首帧固定测线资格；两次历史同定义宽度有限且有效；同梁／单位／几何定义相符；历史荷载递增|每个名义机会的E与所有失败原因|读目标宽度／可见性／H或E024类别筛起点|
+|查询域Q|显式给定有限L*且L*>L_k；不是目标可测性|L*值、给定来源、Q与原因|用未来实测力替换，或看目标后改L*|
+|预测输出P|仅E∧Q的历史payload；原函数persistence、secant与[0,120]px映射不变|每臂输出或异常／非有限值原因；输入与输出先固定|等R后才预测、删失败条目；把整份清单交预测器|
+|参考可测性R|只在输出固定后接入已列目标；同名义条件／同梁视角、固定图像与算子，目标值有限且有效|可测／缺失／歧义及原因；保留无参考的预测|就近荷载替换、插值真值、人工别定义宽度补填|
+|共同支撑C|E∧Q∧R∧P_persistence∧P_secant|相同条目的配对误差；另报各臂成功覆盖|不同臂用不同参考／分母，或只报条件MAE|
+
+Q显式单列，避免把查询参数不合法和未来无参考混为一谈。E/R是两个数据资格掩码，P是各臂执行状态，不新增科学成败标准。原conservative_secant如展示仅为既有固定辅助臂；它的失败不改变主两臂的C，单独报告其支撑，不能挑它替代主方法。
+
+分母按梁／案例完整报告：N=12；N_E；N_(E∧Q)；每臂在E∧Q上尝试／成功／失败数；在E∧Q上N_R与分原因缺失；N_C。失败原因可多项并存，须另报互斥终态计数使其与N相加一致，不把多项原因之和伪称总缺失。没有E∧Q案例也保留空记录，MAE记不可计算而非0。
+
+主比较保持描述性：在C上先测线平均绝对误差，再案例平均、梁等权；报告secant−persistence的配对MAE差（负值更好）和每梁／案例明细。若任一梁没有可评分案例，三梁等权总比较记不可计算，不静默删梁改权重；各梁可计算部分仍展示。无新显著性或物理精度门槛，不以旧52.408%结果反推成功阈值。该结构不追溯修改E015的旧结果。
+
+### 最小代码验收与下一计算（计划，非已执行）
+
+下一项实现只修正信息流／报告，**不改测量和基线**。首先用合成记录验收：改变或删除目标字段不改变E／预测；预测输出先于评价读取；缺目标保留预测且R=false；任一臂失败在共同支撑中同时退出并保留失败数；不重复键／不跨梁／不把缺失记0；不接受目标派生的历史资格。需检查历史H来源不含后续阶段，缓存全序列只允许连接层使用，不能充当预测payload。
+
+之后独立代码审核应绑定精确代码与本清单版本，再为**旧八案例的一次开发重放**登记新Experiment/Run、固定命令与预算。届时才计算新两掩码报告与旧数值一致性，并配全部八案例的同尺度对比图；不训练、不扩数据、不筛T4/6/10。若确有差异，先定位行键／映射／数值原因，不通过调公式追平旧分。当前完成的是来源和信息边界，尚无新计算结果；T7/T9分数位置诊断仍是独立候选，未混入此任务。
+
+这次为非数值准备：上方案例表与时点决策表是最小可视结构，结果曲线不适用。来源是CQ2–CQ5/CQ8所指代码／协议，加E012-R001既存选择JSON与E015-R000几何文件身份；未将旧实验的结果数值作为本次新输出。
