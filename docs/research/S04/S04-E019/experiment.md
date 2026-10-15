@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E019
 protocol_revision: 20261013-r1-frozen-base-residual
-status: completed-primary-negative-evidence-review-pending
+status: reviewed-primary-negative-portability-exception
 ---
 # Preserve the E017 global fit while correcting damage residual
 
@@ -45,3 +45,7 @@ Exact-version Code Ready and human transfer/launch approval obtained. Real-asset
 ## Result update 2026-10-15
 
 All six completed; primary producer verdict FAIL because c83 remains above.001. Component finding: damage improves and background is retained versus exact inherited backbone in all3states; background remains worse than unrestricted control. Original producer6/6 admission and successful independent UV-array checks are distinct from the failed strict Mac replay (reference-rho portability). External review pending; see [decision](decision.md). No protocol change, retry, extra steps or Stage2.
+
+## Evidence-review update 2026-10-15
+
+External bounded EVIDENCE PASS with explicit reference-rho portability exception. Original producer primary FAIL and Mac strict INADMISSIBLE are both preserved; no unconditional cross-platform Evidence Ready. PLAN PASS covers3fresh schedule-only candidates against archived E019localized controls, with exact-update LR/pairing/stop definitions required before Code Ready. No launch authorised. See [review](evidence_review.md).

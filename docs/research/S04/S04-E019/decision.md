@@ -45,3 +45,7 @@ Local Evidence-review packet including the CPU discrepancy and this bounded repa
 Authoritative producer table `metrics.csv` and summary `summary.json`; independent9row baseline/control/candidate table `regional_metrics.csv`. Raw receipt, checkpoints, final predictions, fixed0/1000/...10000traces, real references and backbones: local_archive/experiments/S04-E019/producer_execution_v1/raw. Native strain/rho are secondary diagnostics and do not rescue or veto the frozen UV primary. History/damage did not evolve; no autonomous trajectory assets generated.
 
 Decision figures and exact diagnostic tables: `local_archive/experiments/S04-E019/producer_execution_v1/analysis_render_v2/` (all states, native Q4 near-crack fields, final regional comparison, fixed trajectories). Local failed full replay and successful independent array check are both retained. Independent external Evidence review remains pending.
+
+## External review completed 2026-10-15
+
+[EVIDENCE PASS with explicit portability exception; PLAN PASS for preparation](evidence_review.md). Above pending-review text is a historical pre-review snapshot. No claim, original scoring or strict Mac failure changed. Reviewer reports artifact/pairing-hash checks, not full CUDA or18metric independent numerical reproduction. Next formal design must bind actual update-index LR values, archived-control identities and all-three/region/stop rules before exact-code review; producer approval remains absent.
