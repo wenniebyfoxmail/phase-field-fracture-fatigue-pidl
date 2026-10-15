@@ -168,3 +168,6 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 
 
 2026-10-15 [coupled v2](runs/coupled_repair_v2_attempt_20261015.md) stopped before native fields at mesh fileread;12selftests and14state hashes passed. Same mesh full hash readable via SSH/Mac, IO context unresolved; no numerical verdict. Protocolr3 prepares15-data-input local snapshots + same-worker native mesh import/MAT pre-read before all cases, awaiting new9filev3 approval.
+
+
+2026-10-15 CR-v3 upload and15ordinary snapshots verified; actual Windowscheckcode finds scriptSAGROW at two incorrectly labelled comments. No native launch. [Two-comment/two-file static repair](runs/coupled_repair_v3_static_annotation_20261015.md) prepared; numerical code and gate unchanged; replacement approval pending.

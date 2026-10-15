@@ -129,3 +129,6 @@ producer machine, commit, runner, output root, verdict, and next action.
 | Case | Execution / retrieval | Verdict / next action |
 |---|---|---|
 | E011 CR-v2 source89056f5 |12selftests pass, mesh fileread I/O failure before nativefields;16files75941bytesverified | Inconclusive. [Attempt](research/S04/S04-E011/runs/coupled_repair_v2_attempt_20261015.md). IdenticalSHA mesh readable elsewhere; v3 snapshots all15data inputs and gates actual worker IO before c1, exact upload approval pending. No coupled numerical result. |
+
+
+CR-v3 2026-10-15: uploaded9file set verified;15inputcopies540736827bytes/fullSHA/attrs32 verified. Strictstatic blocks two scriptSAGROW suppression-comment mistakes; no worker launched. [Two-file static repair](research/S04/S04-E011/runs/coupled_repair_v3_static_annotation_20261015.md) prepared, pending replacement approval, no numerical change/result.

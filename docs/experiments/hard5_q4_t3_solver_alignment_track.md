@@ -33,3 +33,6 @@ User-facing report: `/Users/wenxiaofang/obsidian/mesh对齐.md`; payloads remain
 
 
 2026-10-15 [coupled v2 I/O attempt](../research/S04/S04-E011/runs/coupled_repair_v2_attempt_20261015.md): approved9file/static/12selftests/14state hashes passed; mesh fileread fails in worker,0native states,16files75941bytesverified. SSH/Mac identicalinpSHA means no established mesh loss. Preparev3 all15data snapshots and same-worker import/MAT load prerequisite, no numeric changes, new approval pending. Owned stale readonly monitor memory issue separately repaired and freshRAM verified.
+
+
+2026-10-15 CR-v3: exact9upload and15ordinarylocalinputs540736827bytes verified, attrs32. Static entrySAGROW comments block before launch; [two-file comment/hash repair](../research/S04/S04-E011/runs/coupled_repair_v3_static_annotation_20261015.md) prepared for exact replacement approval. All numerical code/data/budgets unchanged, no native result.

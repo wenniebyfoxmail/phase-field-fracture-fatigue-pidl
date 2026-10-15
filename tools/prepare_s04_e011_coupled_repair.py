@@ -117,8 +117,8 @@ for iq=1:numel(manifest)
    end
    clear probe
   end
-  io_seen{end+1}=item.target; %#ok<AGROW>
-  io_rows(end+1)=struct('role',item.role,'path',item.target,'sha256',item.sha256,'bytes',item.bytes,'read',read_mode); %#ok<AGROW>
+  io_seen{end+1}=item.target; %#ok<SAGROW>
+  io_rows(end+1)=struct('role',item.role,'path',item.target,'sha256',item.sha256,'bytes',item.bytes,'read',read_mode); %#ok<SAGROW>
  end
 end
 assert(numel(io_seen)==15);

@@ -79,3 +79,6 @@ Solver alignment2026-10-15: [track](experiments/hard5_q4_t3_solver_alignment_tra
 
 
 2026-10-15 [coupled solver alignment](experiments/hard5_q4_t3_solver_alignment_track.md) v2 remains inconclusive: mesh file I/O failed before nativefields despite statehash/selftest pass. Identical data readable via SSH/Mac; v3 all-input local snapshots and same-worker IO qualification prepared pending new exact approval. No change to numerical primary or previous DR result.
+
+
+2026-10-15 [solver coupling](experiments/hard5_q4_t3_solver_alignment_track.md) v3 ordinaryinput snapshots verified; static-only comment blocker identified before launch. Minimal two-file replacement pending approval; numerical controls/data remain frozen, no new coupled field result.
