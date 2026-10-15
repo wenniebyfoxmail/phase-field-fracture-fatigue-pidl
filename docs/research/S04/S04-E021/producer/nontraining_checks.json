@@ -1,0 +1,41 @@
+{
+  "training": false,
+  "remote_access": false,
+  "bash_syntax": "passed",
+  "embedded_python_blocks_compiled": [
+    "COPY",
+    "PREFLIGHT",
+    "VERIFY"
+  ],
+  "deployment_unit_tests": {
+    "passed": 6,
+    "seconds": 0.69,
+    "scope": "temporary33asset copy manifest, existing destination, symlink, corrupted copy and platform/mount early stops"
+  },
+  "incremental_base19_only_reconstruction": "passed",
+  "reconstructed_source_real_asset_validation": {
+    "c20s4": {
+      "training": false,
+      "formal_runtime_checked": false,
+      "path": "reconstructed_cli_c20s4.json"
+    },
+    "c60s4": {
+      "training": false,
+      "formal_runtime_checked": false,
+      "path": "reconstructed_cli_c60s4.json"
+    },
+    "c83s4": {
+      "training": false,
+      "formal_runtime_checked": false,
+      "path": "reconstructed_cli_c83s4.json"
+    }
+  },
+  "production_runtime_preflight": "not executed",
+  "independent_deployment_review": {
+    "decision": "READY_FOR_FINAL_HUMAN_APPROVAL",
+    "deployment_source": "540632738c080773b22aec65a46dbd2ea1bdd420",
+    "independent_tests": 6,
+    "seconds": 0.56,
+    "blockers": 0
+  }
+}
