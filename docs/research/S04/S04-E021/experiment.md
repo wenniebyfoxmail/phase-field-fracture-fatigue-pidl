@@ -2,10 +2,10 @@
 storyline_id: S04
 experiment_id: S04-E021
 protocol_revision: v1
-status: completed_pending_independent_evidence_review
+status: analysis
 primary_storyline: S04
 related_storylines: []
-scientific_verdict: pending_independent_evidence_review
+scientific_verdict:
 ---
 
 # Physical-raw V0/V1 development feasibility diagnostic
@@ -167,7 +167,9 @@ The user approved exactly one `S04-E021-R001` execution at runtime commit
 `6aa21e3c469d53c92240c9689d07a3ffb316d67c`, Mac CPU4, with the frozen
 300 s / 2 GiB sampled RSS / 100 MiB generated-output limits and no retry. The
 guard completed fit and report once in 106.373 s, with peak sampled RSS
-1,648,459,776 bytes and final generated output 7,408,410 bytes. Both children
+1,648,459,776 bytes and guard-reported output 7,408,410 bytes before writing its
+own terminal receipt. Final frozen inventory is 7,410,199 bytes including that
+1,789-byte receipt; both totals are below100MiB. Both children
 exited zero; no attributed process remained after completion.
 
 The frozen decision file reports `DIRECTIONAL_DEVELOPMENT_GAIN`: all four
@@ -193,3 +195,22 @@ training nor deployment.
 See `run_result.md`. Next action is one read-only independent evidence
 review of the frozen package. No fit, rerender, new arm or confirmation access
 is authorised by this result.
+
+## Unified finalization owner — 2026-10-15
+
+User now designates this main chat (`01a1131d-017c-7b03-a95a-ad73ba8fcc9c`) as
+sole result-record, Obsidian and review-send owner. The coordination chat
+`讨论 Azinpour 与 FEM/PIDL 对齐` (`019fa60d-9b72-72f3-a711-ab2126197932`) is idle;
+its completed9c1bbcf result record, figure explanations and earlier draft remain
+preserved. It monitored the already-running attempt, did not launch another.
+No further writing/computation is assigned there. Method chat
+`01a12d15-9b60-7280-8248-18386d6ef741` is read-only reviewer only; S04-E017 held.
+No cross-chat notification sent without separate exact-message approval.
+
+This is record reconciliation, not a v1 scientific amendment. Metadata status
+analysis and blank final scientific_verdict reflect pending independent evidence
+review; the local frozen-rule outcome remains DIRECTIONAL_DEVELOPMENT_GAIN.
+Runtime protocol/code at6aa21e3 and all frozen outputs unchanged. No new fit,
+score/selection recomputation, test, renderer, source export or confirmation
+access during this consolidation. Existing audit/receipts and recorded values
+were reconciled; raw-evidence write permissions remain removed.

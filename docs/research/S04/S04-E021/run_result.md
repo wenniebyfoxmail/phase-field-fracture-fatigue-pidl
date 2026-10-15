@@ -50,8 +50,9 @@ exit0, models/selection and full saved scores.
 Q=maxR=0.967385295278036<1-eps; allG<=1+eps. All four outer choices are learned,
 made by inner rules before outer scores. No outer-dependent fallback. Inner
 alpha.01 fails early eligibility in three folds; eligible alternatives remain.
-The four selected alphas and eligibility/ranking are independently recomputed
-from saved selection.json by the read-only verifier, not retuned.
+The four selected alphas and eligibility/ranking were locally recomputed from
+saved selection.json by the read-only verifier, not retuned. That local check
+is not the pending independent evidence review.
 
 Damage/history are identical between arms by construction and saved checks,
 not newly improved learned outputs. Raw final output nonnegative in all357
@@ -75,7 +76,7 @@ One verifier execution returned VERIFIED_SAVED_OUTPUTS, recording:
 
 - exact expected10-file set plus3 sidecars; bound code/run/design/lock and child
   identities; all successful receipts/exits; final total within cap;
--357 unique ordered rows across121/99/82/55cycles, three fixed strata and native
+- 357 unique ordered rows across121/99/82/55cycles, three fixed strata and native
   cycle weights; all finite MSE/ranges, zero negative raw area, d/history identity;
 - four outer train/holdout groups, six inner models,32 features/2048sample IDs;
   finite model scales/coefficients, training identities and independent inner
@@ -133,3 +134,19 @@ message sent in this result turn. No new fit or extra arm proposed for execution
 After review, decide the smallest further validation separately; do not
 automatically activate S04-E017/MOO/NN or U0.1175/U0.125. Main chat remains sole
 execution owner; shared Obsidian/Roadmap updated with these boundaries.
+
+## Consolidation and ownership — 2026-10-15
+
+At the user's explicit direction this main chat
+`01a1131d-017c-7b03-a95a-ad73ba8fcc9c` now owns all record/Obsidian finalization
+and any later approved review send. Coordination chat019fa60d-9b72-72f3-a711-ab2126197932
+has completed its turn; no duplicate producer was launched. Its9c1bbcf commit
+already includes this result/verifier and two per-figure explanations; all are
+preserved as the common result record, not replaced by a competing receipt.
+Method chat remains read-only; no messaging, extra fitting/tests/rendering or
+new metric computation in this consolidation. Recorded guard size versus final
+inventory and figure-scale wording reconciled, no scientific rule/result change.
+The review draft is prepared for per-send approval, NOT SENT. It uses direct
+professional Chinese following the user's supplied instructions, without a
+claim of exact style imitation. The earlier unsent English draft is retained
+as history, not another active send or an inherited approval.

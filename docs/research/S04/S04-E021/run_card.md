@@ -117,6 +117,7 @@ confirmation opening, S04-E017, NN, MOO or coupled rollout.
 
 The exact single attempt was approved and completed. It consumed the sole
 attempt; this card cannot be reused. The terminal guard status is `COMPLETED`,
-elapsed time 106.373 s, peak sampled RSS 1,648,459,776 bytes, and final output
-7,408,410 bytes. Full compact provenance and the bounded computed result are in
+elapsed time 106.373 s, peak sampled RSS 1,648,459,776 bytes, and guard-reported
+output 7,408,410 bytes before its terminal receipt write. The final frozen
+inventory is7,410,199 bytes, including that1,789-byte receipt. Full compact provenance and the bounded computed result are in
 `run_result.md`. No retry or additional execution is authorised.
