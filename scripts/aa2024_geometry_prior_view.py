@@ -53,19 +53,23 @@ def assets(root, out):
     fig.colorbar(c,ax=ax,label='frozen source lumped area [mm²]')
     for b in (1.8,2.7,3.6):
         for sign in (-1,1):ax.axhline(sign*b,color='#0072B2',lw=.6,ls=':')
-    ax.set_title('Support, prescribed gauges and scoring weights')
+    ax.set_title('FULL FIELD: support, gauges and scoring weights')
     ax.legend(loc='upper center',bbox_to_anchor=(.5,-.22),fontsize=7)
     ax=axes[1,1];mesh=a['mesh'];bd=a['boundary'];bc=a['bc']
     ax.scatter(*mesh[bd].T,s=6,color='#D55E00')
     ax.quiver(*mesh[bd].T,*bc.T,angles='xy',scale_units='xy',scale=1/333,color='#0072B2')
     ax.set_title('Common training Dirichlet increment; arrows ×333')
-    # Include arrowheads and all training support in shared spatial bounds.
+    # Full-field overview keeps every training point; local panels show the
+    # artificial patch at a readable scale without hiding the overview support.
     all_xy=np.vstack((mesh,training['xy'],mesh[bd]+333*bc))
     lo=all_xy.min(0)-1;hi=all_xy.max(0)+1
+    patch_xy=np.vstack((mesh,mesh[bd]+333*bc))
+    patch_lo=patch_xy.min(0)-1;patch_hi=patch_xy.max(0)+1
     for ax in axes.ravel():
-        ax.set_aspect('equal');ax.set_xlim(lo[0],hi[0]);ax.set_ylim(lo[1],hi[1])
+        bounds=(lo,hi) if ax is axes[1,0] else (patch_lo,patch_hi)
+        ax.set_aspect('equal');ax.set_xlim(bounds[0][0],bounds[1][0]);ax.set_ylim(bounds[0][1],bounds[1][1])
         ax.set_xlabel('stage13 reference x [mm]');ax.set_ylabel('stage13 reference y [mm]')
-    fig.suptitle(provenance+'\nSame artificial mesh/BC; line position AND length may change',fontsize=10)
+    fig.suptitle(provenance+'\nPrior/BC panels: LOCAL patch | lower-left: FULL training field',fontsize=10)
     save(fig,out,'training_spatial_assets')
     guide=('# E016 training-only spatial asset review\n\n'
         'Purpose: inspect a training-opening-defined prior procedure before any real solve.\n'
@@ -73,6 +77,7 @@ def assets(root, out):
         'All three fixed gauges, all53 x locations and full joint training support are shown; no selection, smoothing or clipping.\n'
         'Halfheight endpoints describe localisation under fixed direction/mark spacing; auxiliary maxima are on existing support only.\n'
         'Spatial priors share0..1; BC arrows magnify saved mm increments333x for display, not a deformed-mesh claim.\n'
+        'Prior and BC panels share local patch/arrowhead bounds; lower-left alone shows full-field support at its own explicitly labelled scale.\n'
         'Source geometry, finite support and positive lumped weights are authoritative, not inferred from blank image space.\n'
         'Review geometry_audit.json for all106 primary queries, neighbour IDs/distances/conditions/coefficients and amplification,\n'
         'and preparation.json for coverage integrals and boundary interpolation diagnostics.\n'
