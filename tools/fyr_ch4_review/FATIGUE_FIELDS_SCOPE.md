@@ -1,0 +1,11 @@
+# Existing-output history/fatigue field review
+
+Continuation of the Chapter 4 writing scope on the same clean worktree. This is a reporting reduction of the existing S04-E011 production, not a new experiment or a change to its verdict. No training, forward network evaluation, FEM solve, history propagation, producer-output mutation or Overleaf modification.
+
+Fixed checkpoints: c20, c60, c83; peak s4, j=5c-1. All are before the earliest paired-study event at c84. Extract previous accepted s3 and accepted s4 from each topology/solver. Main figures use only post-s4 history and degradation, not objective input coefficients. PIDL checkpoint hist_fat is post-refresh; f is reconstructed from the stored GP history and the production p=2, alpha_T=0.5 law, then checked against retained c20/c60/c83 f GP exports. FEM main fields come directly from request28_snapshot alpha_bar_gp and f_alpha_gp after both commits.
+
+Q4 GP4 and T3 GP3 have different points. Within each topology the FEM and PIDL mesh, element order and GP order must match. All numerical errors use native physical GP weights. Plot native-cell weighted means on the native polygons; do not index-wise compare Q4 GP4 with T3 GP3. Average f independently; never apply f to averaged history. Use full-domain metrics plus an explicitly descriptive crack corridor |y|<=0.03. This corridor is not an acceptance threshold or a newly declared scientific success criterion.
+
+Figures: c83 history and f comparisons for both topologies; c20/c60/c83 history evolution and f evolution for each topology. History uses one common log display floor 1e-4 and upper limit from the complete displayed set; statistics retain unmodified data. History differences use a common linear zero-centred range. Factor f uses [0,1], differences [-1,1]. All field views show x in [-0.5,0.5], y in [-0.12,0.12]; statistics retain the full domain and the declared corridor. Save PNG only for this Markdown review; no PDF delivery is required.
+
+Output: local_archive/report_ch4_fatigue_fields_20261015/, including independent REVIEW.md, raw extracted arrays, numeric tables, source identities, validation and figure reading notes. Existing English chapter and previous figures remain unchanged.
