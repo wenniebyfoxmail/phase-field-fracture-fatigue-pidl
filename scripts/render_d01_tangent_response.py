@@ -23,6 +23,13 @@ def num(r,k): return float(r[k])
 def ordered(r):
     return int(r["stage_index"]),int(r["transect_id"]),ARMS.index(r["arm"]),int(r.get("t_index_a",r.get("t_index",0)))
 
+def event_summary(pairs):
+    valid=[r for r in pairs if yes(r["paired_valid"])]
+    events=sum(yes(r["any_band_event"]) for r in valid)
+    return dict(adjacent_opportunities=len(pairs),paired_adjacent=len(valid),
+                band_event_pairs=events,band_event_fraction=events/len(valid) if valid else None,
+                **{name:sum(yes(r[name+"_candidate"]) for r in valid) for name in ("switch","split","merge")})
+
 def export(fig,out,stem,question,reading,takeaway,source):
     for fmt in ("png","pdf"): fig.savefig(out/f"{stem}.{fmt}",dpi=170,bbox_inches="tight")
     plt.close(fig)
@@ -127,9 +134,10 @@ def main():
                 ax.plot(num(r,"tangent_b_px"),y,"k|",ms=4,mew=.8)
         for boundary in (11.5,23.5,35.5): ax.axhline(boundary,color="#555555",lw=.6)
         ax.set(title=ARMS[ai],xlabel="Tangent displacement (native px)",yticks=[5.5,17.5,29.5,41.5],yticklabels=["10 kN | T1..12","30 kN | T1..12","40 kN | T1..12","50 kN | T1..12"])
-    fig.colorbar(im,ax=axes.ravel().tolist(),label="Width(t) - width(0), native px",fraction=.035,pad=.04)
     fig.suptitle("Spatial width response relative to each curve's t0 | black ticks: band events",fontsize=12)
-    fig.subplots_adjust(bottom=.12,top=.91,left=.15,right=.85,wspace=.15)
+    fig.subplots_adjust(bottom=.12,top=.91,left=.15,right=.80,wspace=.15)
+    colorbar_ax=fig.add_axes([.84,.16,.023,.70])
+    fig.colorbar(im,cax=colorbar_ax,label="Width(t) - width(0), native px")
     fig.text(.02,.02,"All96 curves; row order stage then transect. Shared symmetric colour scale; gray=unavailable.\nHalf-level component events are candidates, NOT physical truth or proof of an algorithm mistake.",fontsize=9)
     export(fig,a.output,"tangent_response_map","Where are width responses and operational band events concentrated?",
            "Two48-row panels, identical symmetric signed scale around each curve's own t0. Stage separators; transect1..12 within each block. Black ticks denote event union at the later adjacent position. Gray invalid values are not zero. Colour changes are spatial response, not stage growth.",json.dumps(summary),str(a.run/"measurements.csv")+" and adjacent_pairs.csv")
@@ -188,6 +196,8 @@ def main():
                    "Left raw strip + crossings/peak, white lines mark paired tangent positions. Middle full width response with pair highlighted. Right both original deficit profiles, half-depth intervals and peak crosses; shared deficit y limits across selected cases. Rule is first event or maximal adjacent width jump, fixed before execution. Not a representative frequency estimate.",json.dumps(r),str(a.run/"source_arrays.npz")+"; selection in diagnostic_selections.json")
     replay=read(a.run/"t0_replay.csv")
     result=dict(experiment_id="S03-E020-D01",profiles=3936,curves=96,adjacent_opportunities=3840,by_arm=summary,
+                overall=event_summary(pairs),
+                by_stage_arm=[dict(stage_index=j,load_kN=LOADS[j],arm=arm,**event_summary([r for r in pairs if int(r["stage_index"])==j and r["arm"]==arm])) for j in range(4) for arm in ARMS],
                 t0_replay_rows=len(replay),t0_max_width_difference_px=max([num(r,"abs_replay_difference_px") for r in replay if yes(r["t0_valid"])],default=None),
                 diagnostic_cases=len(selected),physical_reference=False,new_forecast_scores=False)
     (a.output/"summary.json").write_text(json.dumps(result,indent=2)+"\n")
