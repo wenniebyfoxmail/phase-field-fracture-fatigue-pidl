@@ -24,3 +24,6 @@ User-facing report: `/Users/wenxiaofang/obsidian/mesh对齐.md`; payloads remain
 
 
 2026-10-15 result: [fixed-u constrained damage/fresh-stop](../research/S04/S04-E011/runs/damage_repair_v1_result_20261015.md) completed4states8arms,40files468584478bytesverified. Constrained4/4phasepass using1–2updates; fresh-only0/4afterclip. c83-lastRu+14.75%, descriptive monitor+5.91%; pairedPIDL activefield gaps improve only modestly and integralgap worsens. Supports a bounded phase repair, not coupled/trajectory/teacher closure. Next: keep constrainedphase, re-equilibrateu and checkfreshsame-state residuals; unexecuted.
+
+
+2026-10-15 next bounded discriminator prepared: [coupled repair](../research/S04/S04-E011/coupled_repair_protocol_20261015.md) starts from previous constrained endpoints, alternates fresh-return u and unchanged constrained d, tests both fresh residuals at identical u/d. Both c1 starts must pass before c83;20 blocks and250+250 native calls/case, no history commits. Local independent review/Python preparation only; nine-file upload and producer MATLAB checks remain pending approval.

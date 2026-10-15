@@ -108,3 +108,10 @@ producer machine, commit, runner, output root, verdict, and next action.
 | Case | Execution / retrieval | Numerical finding | Evidence / disposition |
 |---|---|---|---|
 | E011 c1/c83 fixed captured-u fresh-only / constrained damage v1 | completed4states8arms;40files468584478bytesverified; source8070c02 | Constrained4/4phasepass; fresh-onlyafterclip0/4. c83-lastRu+14.75%, sum+5.91%, activegap modestly lower but integralgap higher. | [Result](research/S04/S04-E011/runs/damage_repair_v1_result_20261015.md); advance boundedphase/repair coupling. No acceptedhistory, trajectory or teacher qualification. |
+
+
+## Coupled repair preparation — 2026-10-15
+
+| Candidate | Status | Comparator / fixed decision | Evidence |
+|---|---|---|---|
+| E011 displacement re-equilibration + constrained damage v1 | prepared locally, not uploaded/launched | DR-v1 constrained endpoints; joint C<=1, c1 both pass before c83,20 blocks/250u+250d calls per state | [Protocol](research/S04/S04-E011/coupled_repair_protocol_20261015.md); independent local review, exact-version transfer approval and Windows12-selftest validation pending. No new solver/teacher claim. |

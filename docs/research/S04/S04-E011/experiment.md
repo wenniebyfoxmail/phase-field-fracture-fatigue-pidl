@@ -159,3 +159,6 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 
 
 2026-10-15 completed: [fixed-u constrained damage repair](runs/damage_repair_v1_result_20261015.md). All4constrained phase screens pass; fresh-only remains infeasible then above screen afterclipping. c83-last mechanical imbalance worsens, so original production/teacher status unchanged. No accepted history/trajectory propagation.
+
+
+2026-10-15 coupled preparation: [protocol](coupled_repair_protocol_20261015.md) freezes displacement re-equilibration plus unchanged constrained phase from the four DR-v1 endpoints. Coherent same-field fresh joint primary, c1 double-pass prerequisite for c83,20 blocks/250u+250d calls per case,history_commits0. Nine-file new transfer awaiting exact-version user approval; no new numerical result.

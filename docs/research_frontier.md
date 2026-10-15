@@ -70,3 +70,6 @@ Solver alignment2026-10-15: [track](experiments/hard5_q4_t3_solver_alignment_tra
 
 
 2026-10-15 completed [solver-alignment phase repair](experiments/hard5_q4_t3_solver_alignment_track.md): constrained4/4fixed-u phase screens pass, fresh-onlyafterclipnonepass. c83-lastmechanicalimbalance worsens; no coupled/trajectory/teacher closure. Next unexecuted discriminator: constrainedphase plus displacement re-equilibration and fresh joint checks.
+
+
+2026-10-15 next [solver-alignment coupling test](experiments/hard5_q4_t3_solver_alignment_track.md) prepared: retain constrained damage and re-equilibrate displacement from prior repaired endpoints, then check fresh same-field joint residuals. c1 double-pass prerequisite for c83; no new execution/result. Nine-file upload awaits exact-version approval.
