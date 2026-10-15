@@ -1,0 +1,44 @@
+{
+  "source_evaluation_sha256": "902796c2e71fcc9e56295bb04ea422bd5d71c07dea46e5822368568ea744dcb9",
+  "scope": "existing cache/GT feasibility; no fit, pixels or model inference",
+  "rows": 12602,
+  "locations": {
+    "1459": {
+      "rows": 3904,
+      "valid": 36,
+      "invalid": 3868
+    },
+    "2028": {
+      "rows": 4039,
+      "valid": 129,
+      "invalid": 3910
+    },
+    "353": {
+      "rows": 471,
+      "valid": 1,
+      "invalid": 470
+    },
+    "5982": {
+      "rows": 4188,
+      "valid": 76,
+      "invalid": 4112
+    }
+  },
+  "oracle_policy": {
+    "delta": 0.007010582010582023,
+    "retention": 0.9964539007092199,
+    "net_targets": 3,
+    "retained_old_targets": 281,
+    "lost_old_targets": 1,
+    "new_detected_targets": 4,
+    "choice": {
+      "original_count": 19855,
+      "scored_pairs": 12602,
+      "ratio_rejected": 12425,
+      "original_duplicate_rejected": 28,
+      "correction_duplicate_rejected": 22,
+      "accepted_corrections": 127
+    }
+  },
+  "is_mathematical_upper_bound": false
+}

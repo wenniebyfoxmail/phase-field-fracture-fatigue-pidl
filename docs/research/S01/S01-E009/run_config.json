@@ -90,5 +90,12 @@
     "rss_cap_gib": 4,
     "producer": "gpu-server / D-26-09; CPU only, no GPU allocation"
   },
-  "status": "frozen_pending_independent_design_review"
+  "status": "frozen_pending_independent_design_review",
+  "phase_order": [
+    "verify_frozen_cache_and_metadata",
+    "fixed_label_oracle_feasibility",
+    "fit_and_verify_all_four_heads",
+    "predict_four_held_folds",
+    "one_pooled_comparison"
+  ]
 }
