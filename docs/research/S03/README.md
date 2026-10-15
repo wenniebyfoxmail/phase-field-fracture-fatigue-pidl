@@ -104,3 +104,14 @@ sensitivity essentially unchanged: all48 medians1.44172→1.43529px, paired
 median0; later36 paired median+0.00976px. Independent code/evidence review
 complete. Retain correspondence component, next inspect spatial width response
 before any new aggregation; no physical reference, new forecast score or model.
+
+2026-10-15 — [S03-E020-D01](S03-E020-D01/experiment.md) completes fixed Beam4
+tangent±10 response:3936 valid profiles,3840 paired centres,96 exact t0 replays.
+Operational band events16/3840 (.4167%; both arms),0 disjoint switches,
+5split/11merge; each arm8/1920. Most adjacent positions have no predeclared
+event, yet width has substantial spatial response; sparse connectivity
+candidates accompany large jumps (maximum9.370px, peak motion-.25px).
+Independent code/evidence reviews and5 visualised source/response figures
+complete. Next propose fixed spatial-support aggregation versus point baseline,
+checking location sensitivity and retained stage signal; aggregation performance
+is untested. No physical accuracy, new forecast score or broader generalisation.

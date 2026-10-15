@@ -105,3 +105,29 @@ Minimum evidence: all3936 measurement rows,3840 adjacent-pair rows,96 curve
 summaries, source profiles/deficits/strips, t0 replay check, runtime receipt,
 all figures/sidecars/README_analysis, independent evidence review and one S03 /
 Obsidian milestone. This is a mechanism diagnostic, not a new prediction score.
+
+## Outcome — 2026-10-15, R001
+
+Execution complete at reviewed clean84c34422, wall2.718s/CPU2.658s, threads1;
+3936/3936 profiles valid,3840/3840 paired opportunities,96 t0 replays exact.
+Renderer099b738 exports5 inspected figures with same-stem explanations, full
+overall/stage×arm and per-curve evidence. Independent code and actual evidence
+reviews complete; see `evidence/independent_review.md`, compact
+`evidence/summary.json`, `runs/S03-E020-D01-R001.json` and linked analysis.
+
+Primary descriptive result:16/3840=.4167% operational event pairs across both
+arms,0 disjoint switches,5split/11merge. Each arm8/1920; original4/48 curves
+with events, aligned6/48. Width-range medians across the full±10 scan7.14662/
+7.13538px. FixedT6 no events across all4stages in either arm despite substantial
+spatial response. Largest adjacent jump9.36983px is a half-level merge, peak
+moving only-.25px. No-event does not mean smooth: maximum no-event jump4.51824px.
+No physical threshold or new forecast verdict is implied. Most adjacent pairs
+do not trigger the predeclared events, yet width varies spatially; sparse
+connectivity candidates can accompany large jumps. Material identity unverified.
+
+Next proposed, not executed: independently freeze a fixed short support and
+compare point measurement with robust spatial summaries for localisation
+sensitivity AND retained stage change. This changes observation support and
+needs its own design; do not rewrite old half-depth targets/scores or select
+support by forecast performance. No further registration freedom or new model
+is justified merely by this diagnostic. Human reference remains pending.
