@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E018
 protocol_revision: v1-physical-raw-feasibility
-status: run_candidate_prepared__execution_not_authorized
+status: superseded__do_not_execute
 started_at: 2026-10-15
 primary_storyline: S04
 related_storylines: [S09]
@@ -10,6 +10,11 @@ scientific_verdict:
 ---
 
 # Physical-scale raw-driver correction feasibility
+
+> **SUPERSEDED — DO NOT EXECUTE.** This local candidate used an experiment ID
+> already allocated elsewhere. The globally checked, sole physical-raw run
+> candidate is `S04-E021-R001` at commit `6aa21e3c469d53c92240c9689d07a3ffb316d67c`.
+> No `S04-E018` authorization or output was created.
 
 ## Road-Fracture Experiment Gate
 

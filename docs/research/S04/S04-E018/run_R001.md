@@ -1,5 +1,9 @@
 # S04-E018-R001 — exact run candidate, not authorized
 
+> **SUPERSEDED — DO NOT EXECUTE.** `S04-E018` was already allocated elsewhere.
+> Use only the globally checked `S04-E021-R001` candidate at commit
+> `6aa21e3c469d53c92240c9689d07a3ffb316d67c` after separate human approval.
+
 Date: 2026-10-15 Europe/London. Execution status: `prepared`; retrieval and
 scientific verdict: `pending / none`.
 

@@ -1,5 +1,8 @@
 # S04-E018-R001 approval draft — not authorized
 
+> **SUPERSEDED — NOT APPROVABLE.** This duplicate-ID draft must never be used
+> to create an authorization. The sole current candidate is `S04-E021-R001`.
+
 Approval would cover exactly one local CPU execution of the command in
 `run_R001.md`, using runtime code `c883bfd`, design `45b8d32`, lock
 `cb9f63f8...868c`, Run `S04-E018-R001`, and the fresh output path declared
