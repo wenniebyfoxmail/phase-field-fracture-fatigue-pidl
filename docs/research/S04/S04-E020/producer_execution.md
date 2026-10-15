@@ -1,6 +1,6 @@
 # E020 producer execution — 2026-10-15
 
-Execution: real-asset/CUDA preflight passed; first candidate active. Scientific outcome pending.
+Execution: c20 completed and retrieved; c60 active; c83 queued. Three-state scientific outcome pending.
 
 User explicitly approved the exact two-file package and launch after preflight. Remote SHA256 matched: bundle `43ca4c5c2e5d9eaa7799c6f233b23a169c6ff11862b179b462d3b3313bc43daa`; launcher `087305d69457aa542dfd8e2ca51d7fc6b6bdcbbe3623f036642025ebbd31dd68`. No approved bytes changed.
 
@@ -23,3 +23,7 @@ All three references, inherited backbones and pinned historical E019 localized c
 R001 began14:57:07Z; at14:58:11Z PID1740102 elapsed63s, expected command and cwd `<root>/code`, GPU0 4174MiB used/93% utilization. Passive first-step metric still pending at this snapshot; no final inference yet. Launch/preflight receipt in local case.
 
 At14:58:50Z the first passive record confirms update1000: actual LRused=.001, next=.001, fullRMS=.003078667469517176, damageRMS=.024231297816820135, backgroundRMS=.0002401909574988718, outside-support delta=0.0. This is execution/protocol evidence, not final performance.
+
+## Partial retrieval 2026-10-15T15:10:50Z
+
+c20 finished15:08:49.647570Z; c60 started15:08:50Z and latest passive update1000 observed; c83 queued. Dispatcher1738351 active. c20 sixfiles14975058bytes retrieved, every remoteSHA256 matches. Frozen validate_schedule_and_pair passes; receipt source/clean status matches and10000actualLRs .001→.00001 verified. Local c20_retrieval_verification.json preserves details. These are partial asset/protocol checks, not full numerical admission or three-state scoring. No E019/candidate final comparison until all3rows complete. Heartbeat e020 remains active; no retry/new run.
