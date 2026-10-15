@@ -179,3 +179,20 @@ See training_assets.md for independent recomputation and aux1.8 interpolation
 pathology, aux2.7 source inconsistency and2D limitations. No newthresholds,
 gauge replacement, parameter search or re-preparation. No scientific inversion
 success claimed; no primary contrast yet. Stop before producer launch/highparse.
+
+## Fit-only execution approval package prepared — 2026-10-15
+
+User authorized local final-package preparation/display only. No SSH, upload,
+push, solve or stage15 response conversion. Local source d0c2bbee1ccf0072e7e776bde6fdf8faa788a0fc
+was clean; runner+fourdependencies unchanged from independently reviewed35fd968.
+R001 prepare completion/source/allfourartifact identities reverified.
+Minimal local tar2445698bytes,11regularfiles (5code+5prepare+manifest), exact
+member whitelist/size/hash checks passed, no symlinks or held response/ZIP.
+SHA2567d1bb9248788260eefcf3c77e55ce497d02b03ce2c4abd5db535e60a4ddda9e6.
+Location local_archive/experiments/S03-E016/execution_approval_v1/ underprojectroot.
+Full humanapproval text/target/contents/command/stops in execution_approval.md.
+Proposed freshR002 on drtao@gpu-taobo/GPUServer8; remote existence, runtime and
+resources unverified until separate approval. CPUthread1/GPUhidden, qR=qL0,
+exactly3staticarms, softwholefit600/noautoretry, no validate command. No authority
+to send/run inferred from preparing this package. Source version pinned to the
+stated snapshot; this commit adds approval/record docs only, not code or assets.
