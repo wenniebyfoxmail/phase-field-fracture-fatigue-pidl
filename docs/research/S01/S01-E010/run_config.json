@@ -1,0 +1,117 @@
+{
+  "protocol": "S01-E010-v1",
+  "scope": "conditional reused four-training-location crossfit; no independent-site claim",
+  "base_commit": "9067eaa03382e007472191b82ea79c2fd9991d26",
+  "locations": [
+    "353",
+    "1459",
+    "2028",
+    "5982"
+  ],
+  "folds": [
+    {
+      "held": [
+        "353"
+      ],
+      "fit": [
+        "1459",
+        "2028",
+        "5982"
+      ]
+    },
+    {
+      "held": [
+        "1459"
+      ],
+      "fit": [
+        "353",
+        "2028",
+        "5982"
+      ]
+    },
+    {
+      "held": [
+        "2028"
+      ],
+      "fit": [
+        "353",
+        "1459",
+        "5982"
+      ]
+    },
+    {
+      "held": [
+        "5982"
+      ],
+      "fit": [
+        "353",
+        "1459",
+        "2028"
+      ]
+    }
+  ],
+  "feature_map": "exact E009 576 cached corrected-pool +12 GT-free scalars, order unchanged",
+  "features": 588,
+  "target": {
+    "name": "single-correction operating-budget incremental utility",
+    "new_target_weight": 1.0,
+    "lost_old_target_weight": 1.0,
+    "admitted_correction_FP_weight": 1.0,
+    "baseline": "E003 original bank within FIT locations only; own 1FP/image global prefix",
+    "counterfactual": "baseline + ONE statically eligible correction at unattenuated frozen E008 corrected score"
+  },
+  "fit": {
+    "type": "signed-utility linear ridge",
+    "dtype": "float64",
+    "l2": 0.001,
+    "intercept_penalized": false,
+    "scaler": "fit-eligible rows only; population std floor1e-8",
+    "weighting": "equal total mass per present sign stratum (U>0,U=0,U<0); no sampling",
+    "gradient_inf_max": 1e-07,
+    "solve_count_per_fold": 1
+  },
+  "policy": {
+    "utility_gate_strict": 0.0,
+    "correction_score": "sqrt(parent proposer confidence * cached E003 corrected probability); never multiply utility",
+    "parent_score_ratio": 1.0,
+    "strict_parent_comparison": true,
+    "original_duplicate_iou": 0.7,
+    "correction_duplicate_iou": 0.5,
+    "original_prefix_immutable": true
+  },
+  "criterion": {
+    "minimum_retention": 0.95,
+    "minimum_net_targets": 1,
+    "minimum_macro_delta_strict": 0.0,
+    "fp_per_image": 1.0,
+    "iou": 0.5
+  },
+  "budget": {
+    "new_head_fits": 4,
+    "all_four_fit": 0,
+    "learned_pooled_comparisons": 1,
+    "max_fit_counterfactual_labels": 37806,
+    "max_full_bank_oracle_labels": 12602,
+    "pixels": 0,
+    "new_feature_extractions": 0,
+    "encoder_classifier_forwards": 0,
+    "development_comparisons": 0,
+    "fresh_access": false,
+    "fit_wall_seconds_per_fold": 900,
+    "total_wall_seconds": 3600,
+    "rss_cap_gib": 4,
+    "threads": 1,
+    "producer": "gpu-server / D-26-09 CPU only after separate execution approval"
+  },
+  "seed": 20261015,
+  "phase_order": [
+    "verify pinned cache/metadata",
+    "GT-free eligibility",
+    "fit-partition-only counterfactual label/support audit",
+    "fixed full-bank oracle feasibility",
+    "fit and verify all four heads",
+    "predict eligible held rows",
+    "one pooled learned comparison"
+  ],
+  "status": "frozen_pending_independent_design_review"
+}
