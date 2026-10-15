@@ -137,5 +137,10 @@ class ConditionalInterfaceTests(unittest.TestCase):
             with self.assertRaises(FileExistsError):replay([packet()],path,lambda *args:None)
             self.assertEqual(path.read_text(),"old")
 
+    def test_evaluation_seam_rejects_wrong_stage_or_condition(self):
+        for ref in (Measurement(3,40.,14.,True,"ok"),Measurement(2,50.,14.,True,"ok")):
+            with self.assertRaisesRegex(ValueError,"reference stage/nominal-condition"):
+                self.replay(reference=ref)
+
 
 if __name__=="__main__": unittest.main()

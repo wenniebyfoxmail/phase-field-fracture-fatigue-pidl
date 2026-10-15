@@ -144,6 +144,9 @@ def replay(packets, prediction_path, target_loader, predictor=forecast):
         r = dict(row)
         eq = row["E"] and row["Q"]
         reference = target_loader(row["case_id"], row["transect_id"]) if eq else None
+        if reference is not None and (reference.stage_index != row["origin_stage_index"]+1
+                                      or reference.load_kN != row["query_nominal_load_kN"]):
+            raise ValueError("evaluation reference stage/nominal-condition mismatch")
         r["R"] = bool(reference and reference.valid and finite(reference.width_px))
         r["R_reason"] = ("not_evaluated_ineligible" if not eq else "target_missing" if reference is None
                          else reference.reason if not reference.valid else "target_nonfinite" if not r["R"] else "ok")
