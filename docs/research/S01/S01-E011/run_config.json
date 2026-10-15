@@ -113,7 +113,7 @@
     "predict eligible held rows",
     "one pooled learned comparison"
   ],
-  "status": "frozen_pending_independent_design_review",
+  "status": "design_review_pass_implementation_pending",
   "parameters": 13,
   "feature_names": [
     "parent_proposer_logit",

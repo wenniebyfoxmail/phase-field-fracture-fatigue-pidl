@@ -94,3 +94,8 @@ If useful signs recover but joint budget creates old-target losses, the next pro
 ## Worktree and scope
 
 Dedicated branch codex/s01-e011-scalar-utility-20261015 from approved public6ab576bc1c688e1903b0d2532c5f1698db5b1588, excluding unpublished E010 result commits. Current scope only docs/research/S01/S01-E011 and its design review. Inherited runners/tests/protocols remain unchanged; implementation is a later authorised stage. No Pages or external messages.
+
+
+## Independent design disposition — 2026-10-15
+
+gpt-6.1-sol Medium design PASS, bound to65d2ec7383e31829605d7240586c52397afdd5d6. No method/budget/criterion amendment; review record in docs/reviews/S01-E011_design_review_20261015.md. Status: design reviewed, implementation/test/code review pending, no new fit or scoring result. E010 final fixed result retrieval/numerical/visual acceptance and archive completed separately; its negative scientific outcome is preserved.
