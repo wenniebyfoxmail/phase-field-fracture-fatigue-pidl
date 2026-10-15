@@ -644,6 +644,19 @@ def validate_record(path, expected_commit, reference_data):
         .numpy()
     )
     np.testing.assert_allclose(reloaded, uv, rtol=0, atol=1e-12)
+    # Check every candidate diagnostic against verified predictions, not its flags.
+    candidate_metrics = final_metrics(data, uv)
+    if set(record["metrics"]) != set(candidate_metrics):
+        raise ValueError("candidate metric schema mismatch")
+    for key, value in candidate_metrics.items():
+        stored = record["metrics"][key]
+        if isinstance(value, bool):
+            if strict_bool(stored, key) != value:
+                raise ValueError(f"candidate flag mismatch: {key}")
+        elif not math.isclose(
+            finite_number(stored, key), value, rel_tol=1e-12, abs_tol=1e-14
+        ):
+            raise ValueError(f"candidate metric mismatch: {key}")
     diagnostics = support_diagnostics(uv, data["base_uv"], data, geometry)
     if not geometry_matches(record.get("support_diagnostics"), diagnostics):
         raise ValueError("support diagnostics mismatch")

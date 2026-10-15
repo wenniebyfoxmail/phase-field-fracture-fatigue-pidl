@@ -177,6 +177,11 @@ def rebind(path, rec, receipt):
         "pre_time",
         "reference_rho",
         "prediction",
+        "candidate_rho",
+        "candidate_strain",
+        "candidate_reference_rho",
+        "candidate_strain_norm",
+        "candidate_bc",
     ],
 )
 def test_full_numerical_decoder_with_temporary_synthetic_envelope(tmp_path, data, mode):
@@ -203,6 +208,21 @@ def test_full_numerical_decoder_with_temporary_synthetic_envelope(tmp_path, data
         rec["pre_update_sha256"] = receipt["pre_update_sha256"] = h
     if mode == "reference_rho":
         rec["baseline_metrics"] = dict(rec["baseline_metrics"], reference_rho_u=1e-7)
+    candidate_tampers = {
+        "candidate_rho": ("predicted_rho_u", 123.0, "gate_rho_u"),
+        "candidate_strain": ("strain_relative_l2", 456.0, "gate_strain_fit"),
+        "candidate_reference_rho": ("reference_rho_u", 789.0, None),
+        "candidate_strain_norm": ("strain_error_norm", 999.0, None),
+        "candidate_bc": ("essential_bc_max_abs_error", 1.0, "gate_essential_bc"),
+    }
+    if mode in candidate_tampers:
+        key, value, gate = candidate_tampers[mode]
+        rec["metrics"][key] = value
+        if gate is not None:
+            rec["metrics"][gate] = False
+        rec["metrics"]["joint_pass"] = all(
+            v for k, v in rec["metrics"].items() if k.startswith("gate_")
+        )
     if mode == "prediction":
         uv = np.load(tmp_path / "prediction.npz")["uv"]
         uv[200, 0] += 0.001
@@ -212,5 +232,10 @@ def test_full_numerical_decoder_with_temporary_synthetic_envelope(tmp_path, data
         row = validate_record(tmp_path / "metrics.json", "0" * 40, data)
         assert row["displacement_mass_rms_over_abs_Us"] > 0.001
     else:
-        with pytest.raises((ValueError, AssertionError)):
+        error = (
+            pytest.raises(ValueError, match="candidate metric mismatch")
+            if mode in candidate_tampers
+            else pytest.raises((ValueError, AssertionError))
+        )
+        with error:
             validate_record(tmp_path / "metrics.json", "0" * 40, data)
