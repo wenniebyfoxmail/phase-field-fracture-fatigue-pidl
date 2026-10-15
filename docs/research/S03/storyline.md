@@ -132,3 +132,10 @@
   SeeS03-E016/fit_freeze.md. Stage15response remainsunaccessed; noheldcontrast
   or physicalrecovery claim. Next is separatelyreviewed/authorized heldvalidation,
   not furtherfitting or geometrical retuning on the highresponse.
+
+- **2026-10-15 — S03-E016 held-result code reviewed; approval decision next.**
+  Independent local Codex passed b702430 renderer and exact R003 command draft;
+  synthetic40checks,100projector crosschecks and threePNG/sidecar QA only.
+  FourR002 predictions/numerical source unchanged, actualstage15 unconsumed.
+  SeeS03-E016/validation_approval.md for one local once-only heldvalidation and
+  common-scale figure plan. Await explicit human approval; no newfit/solve/send.

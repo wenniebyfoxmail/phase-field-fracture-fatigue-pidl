@@ -211,3 +211,16 @@ response conversion. Training-only renderer scripts/aa2024_geometry_prior_view.p
 requires completed PREP/source bindings and creates profiles/spatial plots plus
 README, sidecars and render receipt. Final stage15 four-arm result renderer is
 still pending; no Evidence Ready claim is made or waived by this local code work.
+
+## 2026-10-15 frozen fit and held-render readiness update
+
+Subsequent approvals admitted actual R001 training assets and exactly one R002
+q0 three-static-arm Taobo fit; see training_assets.md and fit_freeze.md. Four
+predictions are frozen/retrieved, no stage15 response converted. New held-result
+renderer at b702430 passed independent read-only Codex code review, synthetic
+tests and visual QA; no change to this experiment's variables, three-solve
+budget, information set, held mask, scoring or criterion. See code_review.md.
+The exact prospective once-only local validation/figure commands are now shown
+in validation_approval.md for separate human approval. No held result exists;
+no scientific closure, repeat fit, external send or launch is authorized by
+this preparation/review. Evidence review remains required after actual scoring.
