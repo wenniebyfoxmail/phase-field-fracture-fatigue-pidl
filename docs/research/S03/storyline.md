@@ -179,3 +179,12 @@
   SeeS03-E017/results.md/review.md. Next separatelyreview B-band training
   observation/spatial-representation consistency; no additionalinverse parameters
   or stage15 tuning authorized by this diagnostic.
+
+- **2026-10-15 — S03-E018 training-profile operator plan awaits confirmation.**
+  Exact4446111 passed independent read-only Codex plan/algebra/field-support review.
+  Proposed37fixed pairs atb3.6: directCST versus reuse of saved DIC four-neighbour
+  weights on existing FE fields, normal/tangential paired response, global648point
+  rotation correction (not consumed15's646mask). Distinguish operator-specific
+  profile mismatch without attributing E017's originalMAE gap or changing ranking.
+  No trueNPZ/newprofile/solve/tuning/raw/newholdout/send used. SeeS03-E018/
+  experiment.md and review.md; human confirmation before code/commands, no Run yet.
