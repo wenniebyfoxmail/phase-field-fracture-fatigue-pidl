@@ -1,0 +1,8 @@
+{
+  "experiment_id": "S03-E020-D01",
+  "snapshot_digest": "22b8b2da344432d35513e47d56cd78d20ddc0d7526a467d7eeec45e7bf088431",
+  "algorithm": "SHA256 of name + NUL + byte-count + NUL + bytes for each ordered input",
+  "ordered_files": ["geometry.json", "Beam4_inputs.npz", "translations.csv", "width_variants.csv"],
+  "expected_E019_computation_commit": "ac56fdb6348f4cb3636271cee6b10e9cc5bb3212",
+  "frozen_before_E020_pixel_access": true
+}
