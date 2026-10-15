@@ -126,3 +126,15 @@ retention claim. Independent code/evidence review and4figure sets complete.
 Keep old point target/scores; next propose matched-position stage differences
 under common versus independent location shifts, not length tuning. One viewed
 specimen, no physical reference or new forecast evidence.
+
+2026-10-15 — [S03-E022-D01](S03-E022-D01/experiment.md) fixed-grid stage
+differences show conditional spatial-response cancellation: original36
+common/independent RMS medians.229766/1.001379px; median paired(C-I)-.843258px,
+35/36common lower (aligned35/36also). All72pair/5832perturbation tables and
+4finalfigure sets independently checked. Original common-shift residuals
+still reach|D0| in7/36 and flip direction in4/36; no universal stability.
+Prioritise relative position correspondence/tolerance rather than further
+median smoothing. Common nominal shifts are not verified material tracking;
+actual correspondence remains to qualify. Next tolerance/reference comparison
+is proposed only. No new forecast scores, physical truth or independent-beam
+generalisation. Final rendererR002 fixes legend occlusion; numericalR001 intact.

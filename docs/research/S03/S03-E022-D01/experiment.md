@@ -114,3 +114,27 @@ not a more complex predictor. If I and C both small, retain the point difference
 and prepare separate reference/forecast assessment. No physical acceptance
 threshold is invented; report magnitudes and residual failures to select the
 next smallest controlled test. Old observable/scores remain unchanged.
+
+## Outcome — 2026-10-15
+
+R001 clean247b8f6 numerical execution complete, wall.067074s/CPU.04584s;
+72matched pairs/5832valid perturbations,648common diagonal subset. R002 final
+render365908d repairs plot1 legend only; other3PNGs unchanged. Independent
+code/actual numerical/final visual reviews complete, minimum4figure sets and
+README_analysis present. See `runs/` and `evidence/` for compact records.
+
+Original primary36: common/independent RMS medians.229766/1.001379px,
+median paired(C-I)=-.843258px;35lower/1higher, median pairwise C/I=.3360.
+Aligned secondary likewise35/1, pairedmedian-.834042px, ratio.1726.
+There is useful shared-spatial-response cancellation under this fixed-grid
+coupling; this is NOT verification/achievement of actual material correspondence.
+Residual original commonRMS>=|D0| in7/36, common flips4/36; aligned2/36
+and6/36. Max/ANY-loss nested inequalities are not independent evidence, and
+all grid fractions remain nonprobabilistic diagnostics.
+
+Disposition: prioritise correspondence repair/qualification, not more short
+median smoothing or complex training. Next proposed/not executed: fixed
+relative-tangent-mismatch tolerance from observed difference response and
+comparison against independent position-reference/check capability. Retain
+cases already sensitive under common shifts; tighter relative correspondence
+alone may not resolve them. No new physical/forecast claim or old-score change.

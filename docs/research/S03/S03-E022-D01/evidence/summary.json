@@ -1,0 +1,19 @@
+{
+  "experiment_id": "S03-E022-D01",
+  "protocol": "stage-shift-v1",
+  "computation_run": "S03-E022-D01-R001",
+  "scope": "one viewed controlled-experiment Beam4, C1 deterministic finite-grid sensitivity; no physical correspondence or forecast validation",
+  "paired_stage_units": 72,
+  "valid_perturbations": 5832,
+  "common_diagonal_subset": 648,
+  "primary_original_H": {"paired": 36, "opportunities": 36, "median_common_rms_px": 0.2297663847587736, "median_independent_rms_px": 1.0013791645656362, "median_paired_rms_change_px": -0.8432578372562083, "common_lower": 35, "equal": 0, "common_higher": 1, "median_common_to_independent_ratio": 0.33599930774499986, "ratio_support": 36},
+  "secondary_background_aligned": {"paired": 36, "opportunities": 36, "median_common_rms_px": 0.19281746332119917, "median_independent_rms_px": 1.0019078634200957, "median_paired_rms_change_px": -0.8340419407796392, "common_lower": 35, "equal": 0, "common_higher": 1, "median_common_to_independent_ratio": 0.1726319585533197, "ratio_support": 36},
+  "original_residual_context": {"nonzero_baselines": 36, "common_pairs_rms_at_least_signal": 7, "independent_pairs_rms_at_least_signal": 23, "common_pairs_with_sign_loss": 4, "independent_pairs_with_sign_loss": 26, "mean_common_grid_loss_fraction": 0.024691358024691357, "mean_independent_grid_loss_fraction": 0.1995884773662551},
+  "aligned_residual_context": {"nonzero_baselines": 36, "common_pairs_rms_at_least_signal": 2, "independent_pairs_rms_at_least_signal": 23, "common_pairs_with_sign_loss": 6, "independent_pairs_with_sign_loss": 26, "mean_common_grid_loss_fraction": 0.037037037037037035, "mean_independent_grid_loss_fraction": 0.21296296296296294},
+  "interpretation": "Common nominal shifts cancel much shared spatial response in this fixed-grid counterfactual. Prioritise maintaining/independently checking relative location correspondence, not more median smoothing. Common-shift residuals remain in some pairs; correspondence is neither achieved nor physically validated by this calculation.",
+  "nested_grid_warning": "Max independent >= max common and any-loss independent >= common by construction. Grid loss fractions are descriptive, not probabilities. Main paired RMS comparison is not automatically ordered.",
+  "physical_reference": false,
+  "new_forecast_scores": false,
+  "full_summary": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E022-D01/runs/S03-E022-D01-R001/outputs/summary.json",
+  "final_analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E022-D01/runs/S03-E022-D01-R002/analysis/README_analysis.md"
+}

@@ -1,0 +1,19 @@
+{
+  "experiment_id": "S03-E022-D01",
+  "run_id": "S03-E022-D01-R002",
+  "kind": "render_only_layout_repair",
+  "local_date_Europe_London": "2026-10-15",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "computation_run": "S03-E022-D01-R001",
+  "render_commit": "365908d49e13777d459cd9cad4e81fbebeb76689",
+  "render_code_files": "clean at reviewed commit; no numerical code change",
+  "git_status_at_render": "untracked E022 evidence/ and runs/ draft documents only; no tracked/code edits",
+  "command": "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 /Users/wenxiaofang/miniconda3/bin/python3 scripts/render_d01_stage_shift.py --run /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E022-D01/runs/S03-E022-D01-R001/outputs --output /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E022-D01/runs/S03-E022-D01-R002/analysis",
+  "change": "figure1 legend moved outside both panels; statistics and coordinates unchanged",
+  "numerical_recomputation": false,
+  "other_three_pngs_byte_identical_to_R001": true,
+  "visual_QA": "main and independent reviewer inspected; aligned high-I low-C points unobscured",
+  "sidecar_validation": {"figure_formats": 8, "notes": 4, "errors": 0},
+  "analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E022-D01/runs/S03-E022-D01-R002/analysis/README_analysis.md"
+}
