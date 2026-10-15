@@ -162,3 +162,6 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 
 
 2026-10-15 coupled preparation: [protocol](coupled_repair_protocol_20261015.md) freezes displacement re-equilibration plus unchanged constrained phase from the four DR-v1 endpoints. Coherent same-field fresh joint primary, c1 double-pass prerequisite for c83,20 blocks/250u+250d calls per case,history_commits0. Nine-file new transfer awaiting exact-version user approval; no new numerical result.
+
+
+2026-10-15 [coupled v1 attempt](runs/coupled_repair_v1_attempt_20261015.md):12selftests pass, native input admission fails because original production s3 path was migrated.0completedstates/no coupled primary result; inconclusive. Backup c1/c83 full hashes match. Locator-only protocolr2/v2 prepared for new exact transfer approval; solver/criteria unchanged.

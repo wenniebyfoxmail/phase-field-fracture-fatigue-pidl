@@ -115,3 +115,10 @@ producer machine, commit, runner, output root, verdict, and next action.
 | Candidate | Status | Comparator / fixed decision | Evidence |
 |---|---|---|---|
 | E011 displacement re-equilibration + constrained damage v1 | prepared locally, not uploaded/launched | DR-v1 constrained endpoints; joint C<=1, c1 both pass before c83,20 blocks/250u+250d calls per state | [Protocol](research/S04/S04-E011/coupled_repair_protocol_20261015.md); independent local review, exact-version transfer approval and Windows12-selftest validation pending. No new solver/teacher claim. |
+
+
+## Coupled repair v1 attempt / locator v2 — 2026-10-15
+
+| Candidate | Execution / retrieval | Interpretation / next action |
+|---|---|---|
+| E011 coupled v1, source8ce3a58 | uploaded/Windows static +12selftests pass; MissingFile before native oracle;16files73957bytesverified | Inconclusive,0completedstates; not couplednegative. [Attempt](research/S04/S04-E011/runs/coupled_repair_v1_attempt_20261015.md). Two backup predecessor hashes match; locator-onlyv2 requires new exact upload approval. |

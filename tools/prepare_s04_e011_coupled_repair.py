@@ -8,7 +8,8 @@ def sha(p):
     return hashlib.sha256(p.read_bytes()).hexdigest()
 
 
-def build(prior, repair_run, out, root, commit):
+def build(prior, repair_run, out, root, commit, version=1, predecessor_root=None):
+    assert version in [1,2] and root.endswith(f'_v{version}'), 'Version/root mismatch'
     assert not out.exists(), 'Refuse to replace an approval version'
     out.mkdir(parents=True)
     here=Path(__file__).parent/'s04_e011_analysis'
@@ -22,6 +23,10 @@ def build(prior, repair_run, out, root, commit):
         path=repair_run/'retrieved/output'/f"c{x['cycle']}_{x['stage']}"/'constrained/damage_repair.mat'
         x['prior_repair_path']=rf"C:\Users\xw436\jobs\E011_DR_20261015_v1\output\c{x['cycle']}_{x['stage']}\constrained\damage_repair.mat"
         x['prior_repair_sha256']=sha(path)
+        if predecessor_root:
+            x['predecessor_original_path']=x['predecessor']
+            leaf=x['predecessor'].replace('\\\\','\\').split('\\')[-1]
+            x['predecessor']=predecessor_root.rstrip('\\')+'\\'+leaf
     (out/'input_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     entry=r'''root='@ROOT@';
 source='C:\Users\xw436\jobs\S04_E011_ad749c8_20261005\source';
@@ -88,14 +93,28 @@ $r=Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{Com
 if($r.ReturnValue -ne 0){throw ('WMI creation failed '+$r.ReturnValue)}
 @{run_id='pf_s04e011_coupled_repair_20261015_v1';commit='@COMMIT@';branch='codex/hard5-q4-t3-2x2-20261005';dirty=$false;producer='CITPC12/citpc12-ssh';account='AD\xw436';pid=$r.ProcessId;command=$cmd;root=$root;started_utc=(Get-Date).ToUniversalTime().ToString('o');method='WMI service isolated process';threads=1;gpu='CPU';history_commits=0}|ConvertTo-Json|Set-Content -Encoding UTF8 ($root+'\launch_receipt.json')
 Get-Content ($root+'\launch_receipt.json')
-'''.replace('@ROOT@',root).replace('@CHECKS@',checks).replace('@COMMIT@',commit)
+'''.replace('@ROOT@',root).replace('@CHECKS@',checks).replace('@COMMIT@',commit).replace('pf_s04e011_coupled_repair_20261015_v1',f'pf_s04e011_coupled_repair_20261015_v{version}')
+    if version==2:
+        admissions=r'''$states=Get-Content ($root+'\input_manifest.json') -Raw|ConvertFrom-Json
+$seen=@{}
+foreach($state in $states){
+ foreach($pair in @(@('input_state','input_sha256'),@('capture_path','capture_sha256'),@('prior_repair_path','prior_repair_sha256'),@('predecessor','predecessor_sha256'))){
+  $p=[string]$state.($pair[0]);$expected=[string]$state.($pair[1])
+  if($seen.ContainsKey($p)){if($seen[$p] -ne $expected){throw 'Conflicting input hashes'};continue}
+  if(!(Test-Path -LiteralPath $p)){throw ('Missing locked input '+$p)}
+  if((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLower() -ne $expected){throw ('Input hash changed '+$p)}
+  $seen[$p]=$expected
+ }
+}
+'''
+        launch=launch.replace('$cmd=',admissions+'$cmd=',1)
     (out/'launch_wmi.ps1').write_text(launch)
     receipt={'status':'prepared_not_sent','account':r'AD\xw436','host':'CITPC12','ssh_alias':'citpc12-ssh','remote_root':root,'source_commit':commit,'files':[{'name':p.name,'bytes':p.stat().st_size,'sha256':sha(p)} for p in sorted(out.iterdir())]}
-    (out.parent/'approval_manifest_v1.json').write_text(json.dumps(receipt,indent=2)+'\n')
+    (out.parent/f'approval_manifest_v{version}.json').write_text(json.dumps(receipt,indent=2)+'\n')
     return receipt
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--prior-bundle',type=Path,required=True);p.add_argument('--repair-run',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--remote-root',default=r'C:\Users\xw436\jobs\E011_CR_20261015_v1');p.add_argument('--commit',required=True);a=p.parse_args()
-    print(json.dumps(build(a.prior_bundle,a.repair_run,a.out,a.remote_root,a.commit),indent=2))
+    p=argparse.ArgumentParser();p.add_argument('--prior-bundle',type=Path,required=True);p.add_argument('--repair-run',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--remote-root',default=r'C:\Users\xw436\jobs\E011_CR_20261015_v1');p.add_argument('--commit',required=True);p.add_argument('--version',type=int,default=1,choices=[1,2]);p.add_argument('--predecessor-root');a=p.parse_args()
+    print(json.dumps(build(a.prior_bundle,a.repair_run,a.out,a.remote_root,a.commit,a.version,a.predecessor_root),indent=2))
 if __name__=='__main__':main()

@@ -36,3 +36,17 @@ Approval payload is generated locally from the final clean commit into
 its manifest records exact nine filenames, bytes, SHA256, account/root and
 source commit. Final full-content approval text also asks explicit local
 independent-review substitution for the legacy Pro rule for this version.
+
+## Locator-only v2 preparation review
+
+After approved v1's missing-path admission failure, independent reviewer
+confirmed16retrievedfiles73,957bytes and12selftestpasses, no native result.
+Read-only fresh backup hashes match original predecessor locks;12other state
+inputs match. Builder now accepts version2 and an explicit predecessor root;
+local test reproduces original v1 nine-file manifest exactly, then verifies
+v2 deterministic bytes, six unchanged MATLAB sources, and only relocated
+predecessor fields/old-path metadata. Entry changes root only; launcher
+changes identity and adds14unique external-input existence/fullSHA checks
+before WMI. Protocol r2 and failure classification independently reviewed.
+Final source-preparation review passed; exact final commit/package must still
+be verified. No v2 upload/launch allowed before new user approval.

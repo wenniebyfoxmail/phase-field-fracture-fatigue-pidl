@@ -27,3 +27,6 @@ User-facing report: `/Users/wenxiaofang/obsidian/mesh对齐.md`; payloads remain
 
 
 2026-10-15 next bounded discriminator prepared: [coupled repair](../research/S04/S04-E011/coupled_repair_protocol_20261015.md) starts from previous constrained endpoints, alternates fresh-return u and unchanged constrained d, tests both fresh residuals at identical u/d. Both c1 starts must pass before c83;20 blocks and250+250 native calls/case, no history commits. Local independent review/Python preparation only; nine-file upload and producer MATLAB checks remain pending approval.
+
+
+2026-10-15 [coupled repair v1 admission failure](../research/S04/S04-E011/runs/coupled_repair_v1_attempt_20261015.md): approved9file upload/static/12selftests pass; stale predecessor path stops firstc1 before native residual,0states,history0.16files73957bytesverified. Original outputs separately migrated to verified backup; two accepted-s3 SHA match fresh remote checks. No coupled numerical verdict. Prepare locator-onlyv2 in freshroot with all-input preflight; new transfer approval pending.

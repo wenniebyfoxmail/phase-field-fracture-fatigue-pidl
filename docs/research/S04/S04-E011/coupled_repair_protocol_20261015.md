@@ -125,3 +125,25 @@ locally. Update track/registry before research frontier, then mesh对齐.md.
 Claim boundary: numerical coupled-control sensitivity only. No physical
 certificate, qualified teacher, repaired120-cycle trajectory or removal of
 fixed-committed-f versus trial-f / joint Deep-Ritz versus staggered differences.
+
+## Locator-only amendment r2 — 2026-10-15, before any coupled result
+
+[Approved v1 attempt](runs/coupled_repair_v1_attempt_20261015.md) failed during
+original s3 file identity, before native residual evaluation;12selftests pass,
+0completednative states. Old production directory was separately removed after
+backup verification. Fresh remote full hashes confirm c1/c83 accepted s3 files
+under the identical-content OneDrive backup. No criterion or input content changed.
+
+Prepare new9-file **v2** / run `pf_s04e011_coupled_repair_20261015_v2`, root
+`C:\Users\xw436\jobs\E011_CR_20261015_v2`. Manifest only relocates predecessor
+paths to `C:\Users\xw436\OneDrive - University of Cambridge\griphfith\S04_E011_raw_outputs_ad749c8_20261005_backup_20261015\S04_E011_FEM_Q4_C120\request28_post_commit`,
+retaining original paths and unchanged SHA256. All6solver/selftest MATLAB
+files unchanged; entry root and launcher root/runID/commit change. Launcher
+additionally checks existence/fullSHA of all14unique locked state/capture/
+prior-DR/predecessor files before creating a MATLAB process, to catch path drift
+during approval. Source/MEX and native same-state admission checks remain.
+
+Same12producer selftests and c1-double-pass conditional c83,20blocks and250u+
+250d per state. No numerical retuning, state reconstruction, backup writing,
+restore, v1 restart or history commit. Exact-v2 transfer and local-independent-
+review substitution require new user approval; until then prepare locally only.
