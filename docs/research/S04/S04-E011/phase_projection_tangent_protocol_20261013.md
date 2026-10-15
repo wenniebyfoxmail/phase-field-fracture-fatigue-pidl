@@ -30,3 +30,8 @@ The user authorized the diagnostic and local preparation. The later 2026-10-13 u
 ## Revision2 — orientation-safe identity check, 2026-10-14
 
 v1 transfer approved and performed; native attempt stopped before solving because saved column and solver row DOFs were compared with shape-sensitive isequal. [Attempt/identity evidence](runs/phase_capture_v1_attempt_20261014.md). Revision2 validates vector shapes then compares both colon-normalized vectors, preserving all index/order checks. Physics inputs/controls, four-state ordering, cap and estimand unchanged. Fresh E011_PT_20261014_v2 bundle pending new final-version transfer approval; no native rerun yet.
+
+
+## Terminal revision2 result — 2026-10-15 BST
+
+User approved v2 explicitly; all four captures completed and were retrieved/verified. [Terminal result](runs/phase_capture_v2_result_20261015.md). Cache/state mismatch and post-clipping feasible residual remain; native tangent products/60differences verified. Step1e-4 provides tiny c83-last descent beyond the original seven-trial grid, so the earlier stall is not global non-descent. No accepted update/history commit or teacher qualification. Next constrained nodal/fresh-stop test remains unexecuted.

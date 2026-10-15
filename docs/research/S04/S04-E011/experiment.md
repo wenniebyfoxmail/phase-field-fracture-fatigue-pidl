@@ -150,3 +150,6 @@ Saved-state follow-up: [c1/c83 phase/tangent audit](runs/phase_tangent_saved_sta
 
 
 Native capture v1 was explicitly approved/uploaded2026-10-14 but failed pre-admission before any block direction: shape-sensitive DOF comparison. [Attempt and revision2](runs/phase_capture_v1_attempt_20261014.md). No new numerical conclusion or production/history change.
+
+
+Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/phase_capture_v2_result_20261015.md). Original production estimands/history unchanged. Residual attribution now measured, finite-grid stall clarified; all four next directions remain unaccepted.

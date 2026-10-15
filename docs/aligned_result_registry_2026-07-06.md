@@ -87,3 +87,10 @@ producer machine, commit, runner, output root, verdict, and next action.
 | Case | Status | Question | Asset / producer | Interpretation |
 |---|---|---|---|---|
 | c1/c83 saved-state phase/tangent diagnostic | offline diagnostic complete; native capture prepared | Separate cache/projection/raw refresh and coupled derivative mechanisms; c1 f=1 rules out fatigue derivative as universal explanation. | [Result and compact metrics](research/S04/S04-E011/runs/phase_tangent_saved_state_20261013.md); native four-state CITPC12 bundle pending final transfer approval. | Source-equivalent/native residual agreement; no native tangent or projection attribution yet. |
+
+
+## Native phase capture — 2026-10-15
+
+| Case | Status | Measured discriminator | Evidence endpoint | Next action / boundary |
+|---|---|---|---|---|
+| c1/c83 baseline and last native phase/update capture v2 | completed,13files246934739bytesverified | Cache→return→clip→raw-refresh; native K direction and60merit differences. Residual/state mismatch and incomplete constrained stationarity; smaller c83 step gives tiny descent beyond old grid. | [Result](research/S04/S04-E011/runs/phase_capture_v2_result_20261015.md),CITPC12,ce7085e,run_s04_e011_phase_capture.m,external local archive pf_s04e011_phase_capture_20261014_v2. | Genuine nodal constrained damage/fresh-stop comparison, unexecuted; no full-trajectory or teacher claim. |

@@ -15,3 +15,6 @@ User-facing report: `/Users/wenxiaofang/obsidian/mesh对齐.md`; payloads remain
 
 
 2026-10-14: approved native v1 attempt stopped at pre-solve DOF row/column identity assertion. [Attempt](../research/S04/S04-E011/runs/phase_capture_v1_attempt_20261014.md). Four-state exact index/order proof confirms orientation-only bug. Revision2 fixes the comparison; native projection/tangent result remains pending final version transfer approval.
+
+
+2026-10-15 terminal: [four-state native capture](../research/S04/S04-E011/runs/phase_capture_v2_result_20261015.md) completed, hashes/numerical review verified. c1-last cached residual misrepresents returned field; clipped endpoints retain1.06e-5/c1 and2.56e-5/c83 phase violations, raw-refresh incremental effect small here. Native Kdd trial-f chain omission measured; c83-last very small steps can descend beyond old1/64 minimum, with tiny progress. No history commit, repaired trajectory or teacher. Next unexecuted lever: genuinely constrained nodal damage solve plus fresh same-field stopping, c1 first then c83.

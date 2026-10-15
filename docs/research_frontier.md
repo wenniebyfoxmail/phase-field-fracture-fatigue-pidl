@@ -61,3 +61,6 @@ Solver-alignment update 2026-10-13: [track](experiments/hard5_q4_t3_solver_align
 
 
 Solver capture2026-10-14: approved v1 stopped before solving on a DOF vector-orientation check. Revision2 retains exact index/order and awaits file-transfer approval; [track](experiments/hard5_q4_t3_solver_alignment_track.md). Native cache/projection attribution remains pending.
+
+
+Solver alignment2026-10-15: [track](experiments/hard5_q4_t3_solver_alignment_track.md) now includes completed c1/c83 native capture. Cached residual differs from returned field; clipping leaves constrained imbalance; specific trial-f tangent omission verified. Very small c83 steps descend beyond old grid, with tiny progress. Next: constrained nodal damage/fresh-stop diagnostic; no teacher or trajectory repair.
