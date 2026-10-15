@@ -76,3 +76,8 @@ The fixed12-scalar/13parameter repair is implemented and independently code-revi
 ### 2026-10-15 — S01-E011-R001 tested repair and redirect
 
 The approved12-scalar repair completed4heads/one comparison and passed independent numerical review. Old hits282/282 retained,new0/lost0/net0,macro change0. Eleven appended corrections enter the budget,allFP;four known useful corrections still rejected. L0integrity is sound;L1/L2/L3not reached. Keep E003;stop same-cache linear feature/L2/threshold iterations. Next unexecuted proposal qualifies distinct incremental-positive GT/site support from other existing training locations,without opening fresh sites. Fixed36-member producerZIP ready;Mac retrieval and visual/archive acceptance require separate approval. No result commits pushed.
+
+
+### 2026-10-15 — S01-E011 delivery closed
+
+User-approved fixed ZIP received on Mac; size/SHA/CRC/36 members verified. Four stored heads, exact detector replay and analysis checks pass; independent6.1 sol-Medium visual/reception review passes all four PNGs. Archive complete, science remains stop_negative (282 old retained,net0). Next design S01-E012 qualifies distributed incremental-positive evidence in the other12 existing training locations; no fresh locations or new producer execution.
