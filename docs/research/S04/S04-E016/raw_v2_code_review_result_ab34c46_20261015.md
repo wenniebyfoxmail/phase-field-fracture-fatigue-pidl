@@ -54,3 +54,47 @@ protocol and separate human execution approval; none is created or implied.
 Main chat remains sole implementation/execution owner; method chat read-only,
 S04-E017/MOO held, U0.1175/U0.125 closed, no Delta NN. Shared records and Obsidian
 are updated locally; no unapproved follow-up message was sent.
+
+## User-authorized localized repair — 2026-10-15
+
+Code snapshot:`c883bfd8e4ecd37d2ae32dc3717a63db018f1ae2`.
+Only `SENS_tensile/s04_raw_guard.py` and `s04_raw_guard_checks.py` changed.
+Guard entry now resolves non-None authorization against caller cwd once,
+before parent validation; parent validator, environment and child argv use
+that same absolute Path. None remains None, preserving missing-approval refusal.
+No model/data/feature/design/selection/report/budget changes.
+
+One new lightweight mock-only test executed once and exited0:
+
+```text
+/Users/wenxiaofang/miniconda3/bin/python3 SENS_tensile/s04_raw_guard_checks.py --authorization-handoff-only --out /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E016/engineering/raw_v2_20261015/auth_handoff_01
+```
+
+Receipt:`auth_handoff_01/authorization_handoff_receipt.json` under the same
+engineering archive root as earlier checks. Test ran on base2a9366a with the
+exact source patch subsequently committed as c883bfd; no source edit between
+test and commit. Git commands, validator, Popen and RSS reader are mocked.
+
+| Check | Observed |
+|---|---|
+| Caller cwd differs from repository root | asserted with contextlib.chdir |
+| Relative approval path before child cwd change | parent validator receives expected absolute Path |
+| Child argv after cwd=root | same absolute path; root/path resolves to caller's expected path |
+| Fit/report environment | RAW_AUTHORIZATION identical to parent path in both virtual phases |
+| Real authorization artifact/source/child/fitting | artifact never exists; real source module replaced by stub; Popen intercepted; all false/0 in wrapper receipt |
+| Scope | one handoff scenario only; no cap tests, toy model fit or full resource rerun |
+
+The virtual guard's own receipts exercise real-mode plumbing and therefore
+carry mode=real, but are **mock artifacts, not real execution or consent**;
+the wrapper explicitly labels virtual_guard_receipts_only=true and records
+zero real child processes/inputs/fits/scores. They provide no resource evidence.
+This test checks path handoff, not real validator policy or scientific I/O.
+Existing synthetic resource and cap evidence retains all previous limitations.
+
+Current status:local repair/test complete, independent difference review pending.
+Exact request prepared in `raw_v2_path_rereview_send_draft_20261015.md`, NOT SENT.
+Main chat remains sole executor; method chat receives no new work until this
+exact request is approved. No actual-run authorization or new experiment/run
+created; no producer access, confirmation read or real fitting. Obsidian and
+Roadmap updated. Style check used the user's direct approval-request wording
+in this chat; no claim of exact author imitation or external style retrieval.

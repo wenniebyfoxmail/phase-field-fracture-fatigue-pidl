@@ -361,3 +361,12 @@ Delta-model development protocol before U0.125 is opened.
   actual archive reads, real fit/score or producer access this turn. Main chat
   sole execution owner; method chat read-only, S04-E017 held. Obsidian/Roadmap
   updated; new actual-run protocol and separate approval remain required.
+- 2026-10-15 user-approved path-only repair completed at c883bfd. Guard resolves
+  authorization once against caller cwd; parent validator/env/child argv agree.
+  One isolated non-repository-cwd mock handoff test passed, no actual approval
+  artifact/source/child/fit. See appended raw_v2_code_review_result_ab34c46_20261015.md
+  for command, exact evidence pointer and mocked real-mode receipt caveat.
+  No full resource/cap/model tests rerun; model/data/design/budgets unchanged.
+  Difference-only review request prepared for per-send approval, NOT SENT;
+  no new assignment to method chat, which remains read-only. Obsidian/Roadmap
+  updated; no code approval, actual-run protocol or real fitting authorized.
