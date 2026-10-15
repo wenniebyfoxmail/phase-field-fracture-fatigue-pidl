@@ -75,3 +75,7 @@ E011 Mac reception/numerical/visual archive completed in its dedicated worktree 
 ### 2026-10-15 — S01-E012 Stage A code ready
 
 Frozen12-site cache inventory/mapping/geometry and corrected-score enrichment manifest implementation passed57synthetic/reused tests and independentgpt-6.1-sol Medium code review39d9c81. Strict output semantic checks and Windows/Mac receipt paths repaired before approval. Because the frozen inputs contain no12-site corrected E003 score receipt,R001 explicitly stops at incomplete_scores with exact candidate/crop/image/head manifest,not zero positive labels. No GT/pixels/inference/fits on new12sites occurred. Next exact source transfer/public branch/StageA human approval; StageB rescore remains separate. E003 unchanged and fresh sites sealed.
+
+### 2026-10-15 — S01-E012 R001 resource stop and reviewed repair
+
+Exact approved source39d9c810/publication544c9bf0 verified;R001stopped at4GiB RSS during original-row parsing,before candidate/geometry/missing-score output. No retry;E003unchanged,freshsealed. The inherited Windows memory sampler's per-call ctypes type definitions reproduce unbounded pointer-type-cache growth with fakeAPIs. E012only persistent bindings,unchanged4GiB/3600second budget,newR002identity and failure peak/time receipts pass60tests and independent6.1sol-Medium review48595728. This is a tested implementation repair,not real Windows success or completed positive evidence. Next exact R001stopped-bundle retrieval and revised-source/publication/R002human approval;no new execution yet.
