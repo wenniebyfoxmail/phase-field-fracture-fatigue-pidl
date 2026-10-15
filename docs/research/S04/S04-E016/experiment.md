@@ -336,3 +336,16 @@ Delta-model development protocol before U0.125 is opened.
   Recommended next step requires separate user authorization for runner/toy
   preparation and subsequent exact code/resource review; fitting needs its
   own later approval. Obsidian/Roadmap updated; confirmation remains closed.
+- 2026-10-15 user-approved implementation/engineering preparation under45b8d32:
+  raw scalar V0/V1 runner, joint guard/report and synthetic/mocked checks prepared
+  at82e588e/8ef6c2d. No real inputs opened, real fit/score, SSH, confirmation access
+  or code-review send. Toy dense/stream Gram maxdiff1.55e-15; nested selections
+  and physical scores agree. Full generated357-cycle/86408-cell pipeline exits0:
+  94.34s, aggregate sampledRSS1.60008GiB, output10.78MiB. Original caps unchanged;
+  source-sized arrays plus loading-transient proxy, not actual decode/I/O.
+  See raw_v2_runner_engineering_20261015.md for exact code/evidence/limitations.
+  Figures visibly marked engineering-only; mocked cap cleanup tests pass.
+  Main chat sole executor, method chat read-only; no duplicate/other-chat work
+  launched. Exact code-review request is next and still needs per-send approval.
+  Independent Code Ready and a named actual-run protocol/approval remain absent.
+  Obsidian/Roadmap updated; original R001/R002/design/data identities preserved.
