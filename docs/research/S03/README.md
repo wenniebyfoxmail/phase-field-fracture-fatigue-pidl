@@ -115,3 +115,14 @@ Independent code/evidence reviews and5 visualised source/response figures
 complete. Next propose fixed spatial-support aggregation versus point baseline,
 checking location sensitivity and retained stage signal; aggregation performance
 is untested. No physical accuracy, new forecast score or broader generalisation.
+
+2026-10-15 — [S03-E021-D01](S03-E021-D01/experiment.md) tests the fixed4px
+support median versus point width using E020 cache, no new pixels/fits/models.
+864centre estimates valid,96sensitivities/72stage comparisons. Original48
+primary paired sensitivity change median0 (14improve/30equal/4worse);
+aligned likewise0 (15/27/6). Each arm36/36 stage signs retained, but maximum
+increment distortion.351420/.268047px; no broad stability or complete amplitude
+retention claim. Independent code/evidence review and4figure sets complete.
+Keep old point target/scores; next propose matched-position stage differences
+under common versus independent location shifts, not length tuning. One viewed
+specimen, no physical reference or new forecast evidence.

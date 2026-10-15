@@ -118,3 +118,24 @@ receipt, exactly FOUR figures PNG/PDF with explanations, README_analysis,
 compact tracked Run/evidence/independent review, S03 impact and Obsidian update.
 Blocked: physical accuracy, independent-road/beam transfer, future prediction,
 optimal segment length, old-score rescue or stable material correspondence.
+
+## Outcome — 2026-10-15, R001
+
+Successful clean7dab072, wall.071103s/CPU.046416s, threads1. All864 centres
+valid both methods,96 sensitivity and72stage comparisons complete. Independent
+code and actual evidence reviews complete,4PNG/PDF figure sets inspected;
+see compact evidence/review/Run records and linked `README_analysis.md`.
+
+Primary original48 paired median(SM-SP)=0; separate S medians both1.441719px,
+14improve/30equal/4worse (arithmetic equality1e-8). Secondary aligned medianD0,
+15/27/6. Thus no reduced typical paired sensitivity for this one support;
+preserve local improvements without a broad stabilisation claim. Both arms
+36/36 observed stage signs retained, but max absolute increment distortion
+.351420/.268047px. AtT4/40→50kN original increment.582299→.230878px;
+sign agreement does not establish complete amplitude retention or physical truth.
+
+Disposition repair: keep old point observable/forecast scores, retain short
+median as a local diagnostic component rather than replace the target.
+Next proposed/not executed: matched-position stage differences, comparing common
+versus independent shifts to separate shared spatial-gradient cancellation from
+correspondence error. No length sweep/new model or independent-reference claim.

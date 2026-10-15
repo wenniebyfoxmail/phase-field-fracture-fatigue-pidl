@@ -1,0 +1,20 @@
+{
+  "experiment_id": "S03-E021-D01",
+  "protocol": "short-support-v1",
+  "run_id": "S03-E021-D01-R001",
+  "scope": "one viewed controlled-experiment Beam4; C1 descriptive support diagnostic, no physical accuracy or forecast qualification",
+  "valid_centres_point_and_segment": 864,
+  "sensitivity_rows": 96,
+  "stage_rows": 72,
+  "primary_original_H": {"paired_curves": 48, "opportunities": 48, "median_point_sensitivity_px": 1.441718594132542, "median_segment_sensitivity_px": 1.441718594132542, "median_paired_change_px": 0.0, "improved": 14, "equal": 30, "worsened": 4},
+  "secondary_background_aligned": {"paired_curves": 48, "opportunities": 48, "median_point_sensitivity_px": 1.4352911243289226, "median_segment_sensitivity_px": 1.4308660263665, "median_paired_change_px": 0.0, "improved": 15, "equal": 27, "worsened": 6},
+  "original_stage_retention": {"paired": 36, "opportunities": 36, "nonzero_point_increments": 36, "sign_agreement": 36, "median_absolute_distortion_px": 0.0, "maximum_absolute_distortion_px": 0.35142048626055455},
+  "aligned_stage_retention": {"paired": 36, "opportunities": 36, "nonzero_point_increments": 36, "sign_agreement": 36, "median_absolute_distortion_px": 0.0, "maximum_absolute_distortion_px": 0.2680470948796838},
+  "supplementary_table_checks": {"unchanged_stage_increments_each_arm_at_arithmetic_1e_minus8": 22, "negative_point_increments_original": 3, "negative_point_increments_aligned": 1, "maximum_original_sensitivity_improvement_px": 3.1855082814246174, "maximum_original_sensitivity_worsening_px": 0.17766449941159834, "original_max_distortion_point_increment_px": 0.5822985520312116, "original_max_distortion_segment_increment_px": 0.23087806577065706},
+  "bounded_result": "No reduction in typical paired tangent sensitivity for this fixed support. All observed increment directions retained, but individual amplitudes can be attenuated. Local benefits do not rescue a broad stability claim.",
+  "research_disposition": "repair: retain point observable and investigate matched-position stage differences/common versus independent location shifts; proposal only",
+  "physical_reference": false,
+  "new_forecast_scores": false,
+  "full_summary": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E021-D01/runs/S03-E021-D01-R001/outputs/summary.json",
+  "analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E021-D01/runs/S03-E021-D01-R001/analysis/README_analysis.md"
+}
