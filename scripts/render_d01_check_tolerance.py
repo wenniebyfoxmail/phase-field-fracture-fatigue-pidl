@@ -30,7 +30,7 @@ new model or forecast. Renderer scripts/render_d01_check_tolerance.py.
 ## Reading order and visual grammar
 {guide}
 ## Numerical takeaway
-Exact counts in ../outputs/summary.json; all72position rows and all288nominal
+Exact counts in {source}/summary.json; all72position rows and all288nominal
 CHECK pairs retained. Per-arm opportunity denominator36; eligible CHECK support
 141/144, original/after are not independent282 measurements. T1 uses the3
 prespecified eligible CHECKs, not a new data-dependent subset.
@@ -49,8 +49,8 @@ sensitive retained; outsideA2px is beyond tested support, not automatically fail
 Cartesian cross-CHECK comparison is spatial-transfer stress only, not ground
 truth or a physical worst-case bound. Repair categories are pending, not repairs.
 ## Related assets
-Same-stem PNG/PDF; README_analysis.md; ../outputs/position_comparison.csv;
-../outputs/check_pair_residuals.csv; ../outputs/stage_residuals.csv.
+Same-stem PNG/PDF; README_analysis.md; {source}/position_comparison.csv;
+{source}/check_pair_residuals.csv; {source}/stage_residuals.csv.
 """)
 
 def main():

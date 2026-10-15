@@ -150,3 +150,15 @@ historical next-INCLUDED nominal targets known at origin; supplement unread.
 Old queries remain retrospective nominal-load-conditioned development. Next
 compare internal CHECK tangent-position capability with pair-specific bounds;
 origin-only next-observation prediction needs a separately frozen rule.
+
+2026-10-15 — [S03-E024-D01](S03-E024-D01/experiment.md) compares existing
+signed CHECK tangent drift with E023 tested envelopes, no new matching/pixels.
+Original36:21proxy-compatible/10beyond-band/4common-sensitive/1outside-grid;
+aligned22/8/6/0. Amplitude-qualified compatible17/20, CHECKsupport141/144perarm.
+Both-arm all3 direction+amplitudeT4/6/9/10; cross-CHECK secondary suggests
+prioritisingT4/6/10 and checkingT9 spatial transfer. These are development
+priorities, not physical usability or revised prediction scores. All inputs,
+numerics and final4figures independently reviewed. NumericR001clean6deebc0;
+finalrenderR003b3a064b repairs text occlusion, no numeric rerun (R002wrapper
+import failure separately retained). Next propose direct fractional-position
+half-depth response for fixedT7/30→40 andT9/40→50, not a broad model/refit.

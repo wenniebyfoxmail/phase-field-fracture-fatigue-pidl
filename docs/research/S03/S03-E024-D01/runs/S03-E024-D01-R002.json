@@ -1,0 +1,21 @@
+{
+  "experiment_id":"S03-E024-D01",
+  "run_id":"S03-E024-D01-R002",
+  "role":"renderer-only timed-wrapper attempt",
+  "execution":"failed_before_output_creation",
+  "retrieval":"verified_tool_error",
+  "producer":"Mac",
+  "hostname":"Wennies-MacBook-Pro-14.local",
+  "pid":31768,
+  "code_commit":"b3a064bac700afa3051b118591c420d4b5f03bff",
+  "git_status":"clean",
+  "started_utc":"2026-10-15T16:18:41.691258+00:00",
+  "ended_utc":null,
+  "cpu_seconds":null,
+  "error":"ModuleNotFoundError: No module named d01_short_support; runpy wrapper omitted scripts import path",
+  "command":"Threads1 python3 -c timed runpy.run_path of scripts/render_d01_check_tolerance.py --run E024-R001/outputs --output E024-R002/analysis, without PYTHONPATH=scripts",
+  "outputs_created":false,
+  "numeric_rerun":false,
+  "repair":"Fresh R003 with PYTHONPATH=scripts; unchanged renderer/data",
+  "scientific_result":"No effect on completed numerical R001"
+}

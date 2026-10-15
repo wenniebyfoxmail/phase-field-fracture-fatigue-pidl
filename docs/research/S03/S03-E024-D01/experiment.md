@@ -115,3 +115,37 @@ all384slots including reference0/missing. Figures from exact scored tables:
 PNG/PDF plus guides and README_analysis, visually inspect actual renders.
 Independent numerical/evidence review; compact tracked Run/evidence/S03 impact
 and two concise Obsidian milestones. No new forecast scores/physical truth.
+
+## Outcome — 2026-10-15
+
+Code/synthetics23/independent review frozen clean6deebc0 before numericalR001;
+success wall.020975166s/CPU.012875s, threads1. Independent direct E019/E023
+recomputation confirms384stage rows/288nominal CHECK pairs/72positions and
+all flags/classifications/summary fields (arithmetic agreement1e-12), no new
+matching or pixel access. Each arm141/144CHECK pairs,36/36complete prescribed
+support; T1fixed3/4, no extra missing.
+
+Original primary36:21proxy-compatible/10beyond-stable-band/4common-sensitive/
+1outside-grid/0unassessable; aligned22/8/6/0/0. Compatible+amplitude17/20.
+Originalall3compatibleT4/6/9/10; alignedall3T4/5/6/9/10/12. Both-arm all3
+direction+amplitudeT4/6/9/10. Cross-CHECK secondary compatible19/21; original
+T9/T11/40→50 and alignedT8/30→40 change status. These are descriptive repair
+priorities, not a changed primary vote or a post-selection new score.
+
+Only originaloutsideT12/40→50 hasA2.0216699257px despiteM.3987147730px;
+retain as beyond tested absolute support, not physical localisation failure.
+T7/30→40 hasM.1325898881px yet onlyrho0stable; motivates a later direct
+fractional-position response check rather than assume .5bin proves reversal.
+T4/6/10 are sensible development priorities; no actual material/normal-error/
+continuous-location qualification. No blanket researchFAIL.
+
+Final4PNG/PDF sets inR003 with rendererb3a064b; R0013text overlaps corrected,
+fig2byteidentical. R002 timed wrapper missed import path and stopped before
+output; separate failure record; freshR003 succeeds2.378699s. NumericR001 not
+rerun. All4finalPNGs inspected independently; sidecar cross-run pointers fixed.
+
+Next proposed only: fixedT7/30→40 andT9/40→50 direct unchanged half-depth
+response at CHECK-implied fractional offsets, to distinguish coarse-band
+conservatism from actual conditional optical sensitivity. Keep T4/6/10 as
+development candidates; retain all other positions/old scores. No repairs,
+new position sampling, broader registration, training or forecasting executed.
