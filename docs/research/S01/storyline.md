@@ -71,3 +71,8 @@ experiment is executed by that proposal. Independent evidence review PASS at b96
 ### 2026-10-15 — S01-E011 implementation readiness
 
 The fixed12-scalar/13parameter repair is implemented and independently code-reviewed at25c81801(gpt-6.1-sol Medium). Actual cached scalar columns exactly match the inherited12block and are pooled/GT/prior-utility invariant; all fit-label and baseline records equal E010. Positive fit support4/1/4/3remains sparse. The separate GT-informed selection retains282old hits and adds4; actual learned gain remains uncomputed. Prepare exact source/public branch/R001 approval to test this one repair. No actual fit or fresh access; E003 remains the working detector.
+
+
+### 2026-10-15 — S01-E011-R001 tested repair and redirect
+
+The approved12-scalar repair completed4heads/one comparison and passed independent numerical review. Old hits282/282 retained,new0/lost0/net0,macro change0. Eleven appended corrections enter the budget,allFP;four known useful corrections still rejected. L0integrity is sound;L1/L2/L3not reached. Keep E003;stop same-cache linear feature/L2/threshold iterations. Next unexecuted proposal qualifies distinct incremental-positive GT/site support from other existing training locations,without opening fresh sites. Fixed36-member producerZIP ready;Mac retrieval and visual/archive acceptance require separate approval. No result commits pushed.
