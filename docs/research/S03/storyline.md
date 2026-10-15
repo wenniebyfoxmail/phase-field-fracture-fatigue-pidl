@@ -114,3 +114,13 @@
   not establish that a differently named or functionally equivalent mapping
   asset is absent. Any renewed route requires a new qualified evidence axis and
   a separately frozen Experiment.
+
+- **2026-10-15 — S03-E016 training-only assets independently admitted.**
+  R001 stage13/14 preparation defines primary opening interval[-8.2867,6.9214]mm
+  with all106queries supported;648positive-weight interior observations and120BCs
+  independently recomputed. Main prior center shifts+0.8174mm, length+0.2081mm;
+  this is a procedure-defined prior update, not measured true tips. Aux1.8 is
+  strongly interpolation-amplified;aux2.7 contains source-level local inconsistency;
+  non-negligibleW prevents claiming2D adequacy. SeeS03-E016/training_assets.md.
+  Keep prescribed mainband/three-solve design; no stage15response or solve yet.
+  Advance only to a separately authorized execution decision, not physical recovery.

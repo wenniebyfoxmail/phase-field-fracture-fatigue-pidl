@@ -160,3 +160,22 @@ processed, no producer execution, no outbound files/messages or push. Final
 stage15 evidence renderer is explicitly pending. Actual assets unreviewed.
 Current user scope ends after local repair/re-review; do not infer permission
 for preparation, remote sync, high-response conversion or solving.
+
+## Actual stage13/14 spatial preparation and admission — 2026-10-15
+
+Fresh user approval authorized local training fields, figures and independent
+read-only admission only. R001 prepare succeeded2.466s at cleanbc7c216, numeric
+code unchanged from reviewed35fd968. Main53pairs/106queries and120BC admissible;
+648positive-weight observations. Whole stage15bytes/header identity bound under
+protocol, response neverconverted/scored. No solve or external transfer.
+
+Source-bound training figures generated; initial spatial panels too small at
+full-field scale. Renderer-onlyfbb4a77 preserves fullsupport overview and readable
+localpriors/BC,22synthetic checks pass; originalfigures retained, figures_v2 adopted.
+Reviewer /root/e016_code_review independently verified raw13/14/connections13,
+allnumericassets/sourcebindings and actualPNG visuals, returnedPASS_ASSETS for
+boundedstaticprocedure comparison. Did not open stage15member or run solves.
+See training_assets.md for independent recomputation and aux1.8 interpolation
+pathology, aux2.7 source inconsistency and2D limitations. No newthresholds,
+gauge replacement, parameter search or re-preparation. No scientific inversion
+success claimed; no primary contrast yet. Stop before producer launch/highparse.
