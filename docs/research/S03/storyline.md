@@ -168,3 +168,14 @@
   No real fields loaded/newdecomposition computed, no newRun/solve/tuning/send.
   Immutable protocol and E016source/predictions unchanged. SeeS03-E017/review.md
   and execution_approval.md; next is human approval, not automatic execution.
+
+- **2026-10-15 — S03-E017 completed and independently accepted.**
+  Approved once-only localR0010.882s/60s,emptylog,33sources/10outputs verified,
+  original4predictions unchanged; no newraw/holdout/solve/tuning/send. PASS_EVIDENCE
+  with independent scalar P/alpha/MAE/C+I/region checks and2actualPNG QA.
+  Proxy's MAE gap+0.0002066707mm comprisesB+0.0002086517/O-0.0000019810mm;
+  old/proxy MSE improves11.53%/13.89% while originalMAE remains worse thansecant.
+  Preserve this metric tradeoff, not a newcriterion/winner or physical/noise cause.
+  SeeS03-E017/results.md/review.md. Next separatelyreview B-band training
+  observation/spatial-representation consistency; no additionalinverse parameters
+  or stage15 tuning authorized by this diagnostic.
