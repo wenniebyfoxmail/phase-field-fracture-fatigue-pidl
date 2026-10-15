@@ -159,3 +159,12 @@
   inner/outer contributions. No causal/noise attribution, blending, newresponse,
   fitting/solve or send. SeeS03-E017/experiment.md and review.md. E016bounded
   result remains unchanged; confirmation precedes code/test/review/command prep.
+
+- **2026-10-15 — S03-E017 code ready; exact local command awaits approval.**
+  User confirmed plan. Independent local Codex passed0bfbaf5 source/tests and
+  execution_approval.md SHA45247bd7523542edd87ad57b1bc4e02fd4a2f538dfe053037ba2174557e1469f.
+  Independent66synthetic tests plus endpoint retest,2PNG visual/sidecar/hash QA
+  passed. Full60s accounting and warning/identity failures stop without retry.
+  No real fields loaded/newdecomposition computed, no newRun/solve/tuning/send.
+  Immutable protocol and E016source/predictions unchanged. SeeS03-E017/review.md
+  and execution_approval.md; next is human approval, not automatic execution.
