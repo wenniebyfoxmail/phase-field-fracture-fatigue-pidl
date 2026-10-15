@@ -1,0 +1,15 @@
+# E020 post-run endpoint diagnostic — 2026-10-15
+
+Authorised next step is local nontraining diagnosis, not a new producer run. This is exploratory analysis of the existing E020 repair choice; it cannot revise frozen E019/E020 verdicts or establish causal training dynamics. Independent evidence review still pending.
+
+Cover c20s4/c60s4/c83s4 × deterministic reconstructed initial, E019localized final, E020localized final, all86756nodes. Reference/backbone/original control locks unchanged, checkpoint hashes and buffers checked, full predictions reproduced at1e-12 and regional reductions at1e-14 before measurement. No holdout/new states, optimiser/model fitting, parameter step or producer access. Whole-model parameter/buffer digests checked before/after, .grad remains unset. Existing initial models are reconstructions, not saved intermediate snapshots.
+
+Compute physical residual with original BC factor and compact window, local coordinates unchanged. Stream1024nodes, CPU2Torchthreads, float64; check peakRSS<2GiB after chunks and independently record process high-water memory. No dense full parameter Jacobian. Stop if identity/numerical/additivity/nonmutation or memory checks fail; no automatic retry with changed semantics.
+
+Report each layer's TrainableReLU coeff, weighted raw preactivation sign fractions, postactivation positive fractions, dead units (never positive over all nodes in region), and near-constant units (std<=1e-12*max(1,maxabsmean), descriptive only). Regions: damage>.1, background complement, background inside support. Outside-support activations cannot affect the correction; include inside background separately.
+
+Last-layer features augmented by output bias and multiplied by BC/window. Stream conditional mass-weighted Gram for each region, raw eigenvalues, entropy/participation ranks, relative eigenvalue counts1e-12/1e-8. This is a spatial output-feature Gram, not a full Jacobian/NTK or attainable-fit oracle; negative roundoff eigenvalues reported before clipping for spectral summaries. No feature regression or learned correction fitted.
+
+Autodiff accumulates damage/background contributions to the same full normalised mass objective, not region-rebalanced conditional losses. Report layer norms, all-parameter norms, damage/background gradient cosines; near-zero squared norms<=1e-60 give null cosine. First chunk independently checks g_full=g_damage+g_background. With a zero-output initial layer hidden gradients are structurally zero, not evidence of dead features. Endpoint gradient conflicts do not reconstruct earlier paths.
+
+Three deterministic tests: streamed gradients vs direct full-region gradients; chunk invariance of loss/activation/spectrum; zero-output initial hidden gradients vs still-active features. No optimizer exists. Source is committed before real-data exploratory execution; exact identity recorded in local output receipt. Primary/failure gates unchanged. Results select one bounded repair hypothesis; no causal or capacity-ceiling conclusion without independent review/discriminator.
