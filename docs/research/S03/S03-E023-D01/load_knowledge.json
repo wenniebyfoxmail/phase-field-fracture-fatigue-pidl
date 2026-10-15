@@ -1,0 +1,25 @@
+{
+  "audit_date": "2026-10-15",
+  "scope": "Full Data in Brief main-text HTML retained locally; public dataset-v4 description; all four cached XLSX workbooks; retrospective selection and half-depth prediction code. Supplementary PDF access blocked by PMC browser challenge, not inspected. No author contact.",
+  "paper_doi": "10.1016/j.dib.2023.109703",
+  "paper_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10641121/",
+  "local_fulltext": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E023-D01/literature/PMC10641121_fulltext.md",
+  "claims": [
+    {"claim": "Predefined load-stop acquisition protocol", "status": "supported", "locator": "Abstract; Specifications Table; section2 Objective", "meaning": "Nominal-load conditioning can be an explicit planned-query experiment, if the target is supplied at origin."},
+    {"claim": "Exact eight next INCLUDED IB targets known at their origins", "status": "not_demonstrated_in_accessed_scope", "locator": "Acquisition workbooks plus retrospective filtering; main text has no exact per-beam advance schedule", "meaning": "Not proof that targets were unknown to operators; no origin-time copy or preserved online decision rule was found."},
+    {"claim": "Future actual measured force known at origin", "status": "not_supported", "locator": "section4 displacement-controlled MTS;25Hz logging; section3 manual post-processing synchronization", "meaning": "Future measured force cannot be substituted for a nominal user-supplied planned target."}
+  ],
+  "queries": [
+    {"beam":4,"history_kN":"10,30","origin_kN":30,"next_nominal_kN":40,"source_cell":"Labbdata_G4.xlsx / Beam-seconds!A21","retrospective_label":true,"exact_origin_availability":"not demonstrated"},
+    {"beam":4,"history_kN":"30,40","origin_kN":40,"next_nominal_kN":50,"source_cell":"Labbdata_G4.xlsx / Beam-seconds!A22","retrospective_label":true,"exact_origin_availability":"not demonstrated"},
+    {"beam":5,"history_kN":"10,20","origin_kN":20,"next_nominal_kN":30,"source_cell":"Labbdata_G5.xlsx / Beam-seconds!A21","retrospective_label":true,"exact_origin_availability":"not demonstrated"},
+    {"beam":5,"history_kN":"20,30","origin_kN":30,"next_nominal_kN":40,"source_cell":"Labbdata_G5.xlsx / Beam-seconds!A22","retrospective_label":true,"exact_origin_availability":"not demonstrated"},
+    {"beam":5,"history_kN":"30,40","origin_kN":40,"next_nominal_kN":50,"source_cell":"Labbdata_G5.xlsx / Beam-seconds!A23","retrospective_label":true,"exact_origin_availability":"not demonstrated"},
+    {"beam":5,"history_kN":"40,50","origin_kN":50,"next_nominal_kN":60,"source_cell":"Labbdata_G5.xlsx / Beam-seconds!A24","retrospective_label":true,"exact_origin_availability":"not demonstrated"},
+    {"beam":6,"history_kN":"10,20","origin_kN":20,"next_nominal_kN":30,"source_cell":"Labbdata_G6.xlsx / Beam-seconds!A21","retrospective_label":true,"exact_origin_availability":"not demonstrated"},
+    {"beam":6,"history_kN":"20,30","origin_kN":30,"next_nominal_kN":40,"source_cell":"Labbdata_G6.xlsx / Beam-seconds!A22","retrospective_label":true,"exact_origin_availability":"not demonstrated"}
+  ],
+  "important_counterexample": "Beam4 Beam-time!A18 contains20kN with no recorded stop times, while Beam-seconds!A19:A22 lists10,30,40,50; Beam-time sheets also retain blank later nominal rows. Generic predefined loads do not certify the next retained observation.",
+  "code_locators": ["scripts/d01_stage_forecast_diagnostic.py:105-127 builds complete retrospective sequence from numeric matched labels, sorted by filename time", "scripts/d01_crack_profile_diagnostic.py:225-240 passes loads[current+1] and uses future measurability in scoring support; all existing profiles valid but future origin eligibility must be separate"],
+  "disposition": "Preserve old results as viewed-development retrospective nominal-load-conditioned queries. A supplied planned L* is a valid declared scenario input, not verification of historical origin knowledge. Next-observation origin-only evaluation must omit the next-load input and separately freeze the stage-index rule, support and score; no new prediction executed here."
+}
