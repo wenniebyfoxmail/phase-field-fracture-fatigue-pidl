@@ -149,7 +149,7 @@ def test_synthetic_prepare_never_converts_stage15_body():
                 header=f'# current_stage_index:{stage}\n# reference_stage_index:1\n# cycles:292018.5\n# force:{f}\n'+schema
                 body='1;FORBIDDEN;FORBIDDEN;FORBIDDEN;FORBIDDEN;FORBIDDEN;FORBIDDEN;0;0;0;0'
                 if stage!=15:
-                    body='\n'.join(f'{i+1};{x};{y};{.01*x};{f*.001*x};{f*(.002*np.sign(y)*np.exp(-((x-1)/6)**2)+.001*y)};0;0;0;0;0' for i,(x,y) in enumerate(xy))
+                    body='\n'.join(f'{i+1};{x+(5e-7 if stage==14 else 0)};{y};{.01*x};{f*.001*x};{f*(.002*np.sign(y)*np.exp(-((x-1)/6)**2)+.001*y)};0;0;0;0;0' for i,(x,y) in enumerate(xy))
                 z.writestr(f'global_3d_dic/Nodemaps/global_3d_dic_results_1_{stage}.txt',header+body)
             z.writestr('global_3d_dic/Connections/global_3d_dic_results_1_13_connections.txt','Type;Element #;Node 1;Node 2;Node 3\n'+'\n'.join(f'3;{i};{a};{b};{c}' for i,(a,b,c) in enumerate(t)))
         with patch.object(m,'EXPECTED_SIZE',archive.stat().st_size),patch.object(m,'EXPECTED_MD5',hashlib.md5(archive.read_bytes()).hexdigest()),patch.object(m,'parse_nodemap',wraps=m.parse_nodemap) as parser:
@@ -158,6 +158,103 @@ def test_synthetic_prepare_never_converts_stage15_body():
         assert len(audit['profiles']['3.6']['outer_indices'])==14
         assert audit['plane']['tilt_degrees']==pytest.approx(np.degrees(np.arctan(.01)))
         a=m.load(out/'prepared.npz');assert len(a['mesh'])==861 and a['boundary'].sum()==120
+        obs=(np.abs(xy[:,0])<16.2)&(np.abs(xy[:,1])<7.2)
+        np.testing.assert_array_equal(a['xy'],xy[obs])
         meta=json.loads((out/'preparation.json').read_text())
         assert len(meta['boundary_interpolation'])==120 and set(meta['prior_coverage'])=={'old','proxy'}
         assert meta['proxy_geometry']['length_mm']>0
+
+def mock_prepared(root,alpha=2.):
+    root.mkdir()
+    mesh,t,bd=m.rectangular_mesh(nx=3,ny=3,width=36,height=18)
+    np.savez_compressed(root/'prepared.npz',ids=np.arange(1,10),xy=mesh,weights=np.ones(9),
+        u13=np.zeros((9,2)),alpha=alpha,train_v=.001*mesh,mesh=mesh,tri=t,boundary=bd,
+        bc=.001*mesh[bd],old=np.zeros(9),proxy=np.zeros(9))
+    m.write_json(root/'preparation.json',dict(cycle='292018.5',forces=[1,2,3],held_member_sha256='toy',proxy_geometry={}))
+    return mesh
+
+def test_nonfinite_alpha_has_failed_receipt_before_any_solve(tmp_path):
+    root=tmp_path/'prep';mock_prepared(root,np.inf);out=tmp_path/'fit'
+    args=['driver','fit','--input',str(root),'--output',str(out),'--source-commit','toy','--run-id','toy']
+    with patch.object(sys,'argv',args),patch.object(m.socket,'gethostname',return_value='GPUServer8'),patch.object(m,'completed'),patch.object(m,'bindings',return_value={}),patch.object(m,'solve_patch') as solve:
+        with pytest.raises(ValueError,match='alpha'):m.main()
+        solve.assert_not_called()
+    assert json.loads((out/'execution_receipt.json').read_text())['execution_status']=='failed'
+    assert not (out/'frozen_predictions.npz').exists()
+
+def test_prediction_overflow_stops_before_freeze_and_held_parse(tmp_path):
+    root=tmp_path/'prep';mesh=mock_prepared(root,1e308);out=tmp_path/'fit';out.mkdir()
+    with patch.object(m,'completed'),patch.object(m,'solve_patch',return_value=(mesh,0)),patch.object(m,'sample_regular_mesh',return_value=mesh),np.errstate(over='ignore',invalid='ignore'):
+        with pytest.raises(ValueError,match='frozen prediction'):m.fit(root,out,m.time.monotonic())
+    assert not (out/'frozen_predictions.npz').exists()
+    m.write_json(out/'fit.json',dict(status='four_predictions_frozen_before_held_response'))
+    bad={k:np.zeros((12,2)) for k in ('xy','u13')+m.ARMS}
+    bad.update(ids=np.arange(1,13),weights=np.ones(12),alpha=np.array(2.))
+    bad['proxy'][0,0]=np.inf;np.savez_compressed(out/'frozen_predictions.npz',**bad)
+    with patch.object(m,'completed'),patch.object(m,'parse_nodemap') as parser:
+        with pytest.raises(ValueError,match='frozen prediction'):m.validate(out,tmp_path/'NONEXISTENT_HELD',tmp_path)
+        parser.assert_not_called()
+
+def test_tied_separated_maxima_select_first_only():
+    x=np.arange(-6.,7);y=np.zeros(13);y[3]=y[9]=1
+    c=m.halfheight(x,y)
+    assert c['peak_x_mm']==-3 and c['left_mm']==-3.5 and c['right_mm']==-2.5
+    assert c['lobes_above_halfheight']==2
+
+@pytest.mark.parametrize('checks_before_failure',[5,7])
+def test_third_solve_or_serialization_overrun_fails_whole_fit(tmp_path,checks_before_failure):
+    root=tmp_path/'prep';mesh=mock_prepared(root);out=tmp_path/'fit'
+    args=['driver','fit','--input',str(root),'--output',str(out),'--source-commit','toy','--run-id','toy']
+    checks=[None]*checks_before_failure+[TimeoutError('soft600s synthetic')]
+    with patch.object(sys,'argv',args),patch.object(m.socket,'gethostname',return_value='GPUServer8'),patch.object(m,'completed'),patch.object(m,'bindings',return_value={}),patch.object(m,'solve_patch',return_value=(mesh*.001,0)) as solve,patch.object(m,'sample_regular_mesh',return_value=mesh*.001),patch.object(m,'check_budget',side_effect=checks):
+        with pytest.raises(TimeoutError):m.main()
+        assert solve.call_count==3
+    assert json.loads((out/'execution_receipt.json').read_text())['execution_status']=='failed'
+    assert (out/'frozen_predictions.npz').exists()==(checks_before_failure==7)
+
+def test_successful_validation_restricts_one_common_planar_support(tmp_path):
+    root=tmp_path/'fit';root.mkdir();out=tmp_path/'validate';out.mkdir()
+    xy=np.c_[np.tile(np.arange(4.),3),np.repeat(np.arange(3.),4)]
+    a={k:np.zeros((12,2)) for k in ('u13',)+m.ARMS}
+    a.update(ids=np.arange(1,13),xy=xy,weights=np.arange(1.,13),alpha=np.array(2.))
+    np.savez_compressed(root/'frozen_predictions.npz',**a)
+    high=tmp_path/'toy_high';high.write_text('synthetic parser stub; not real field')
+    m.write_json(root/'fit.json',dict(status='four_predictions_frozen_before_held_response',held_member_sha256=m.sha(high),held_force=3))
+    h=dict(headers=dict(current_stage_index='15',reference_stage_index='1',cycles='292018.5',force='3'),
+        ids=a['ids'],xyz=np.c_[xy,np.full(12,np.nan)],u=np.zeros((12,3)))
+    h['u'][:,2]=np.nan;h['u'][0,0]=np.nan
+    with patch.object(m,'completed'),patch.object(m,'bindings',return_value={}),patch.object(m,'parse_nodemap',return_value=h) as parser:
+        m.validate(root,high,out);parser.assert_called_once()
+    result=m.load(out/'validation_fields.npz');metrics=json.loads((out/'metrics.json').read_text())
+    np.testing.assert_array_equal(result['ids'],a['ids'][1:])
+    np.testing.assert_array_equal(result['weights'],a['weights'][1:])
+    assert metrics['eligible']==11 and all(v==0 for v in metrics['MAE_mm'].values())
+
+def test_training_renderer_source_binding_and_no_held_access(tmp_path):
+    import aa2024_geometry_prior_view as view
+    root=tmp_path/'prep';mesh=mock_prepared(root);out=tmp_path/'figures';out.mkdir()
+    xy=np.array([[x,y] for y in np.arange(-7.2,7.21,.9) for x in m.X])
+    du=np.c_[xy[:,0]*.001,.004*np.sign(xy[:,1])*np.exp(-(xy[:,0]/6)**2)]
+    profiles={str(b):m.profile(xy,du,b) for b in (3.6,1.8,2.7)}
+    mesh,tri,bd=m.rectangular_mesh();cross=profiles['3.6']['crossings']
+    old=m.segment_prior(mesh,-9,6);proxy=m.segment_prior(mesh,cross['left_mm'],cross['right_mm'])
+    obs=(np.abs(xy[:,0])<16.2)&(np.abs(xy[:,1])<7.2)
+    np.savez_compressed(root/'prepared.npz',mesh=mesh,tri=tri,boundary=bd,bc=.0001*mesh[bd],
+        xy=xy[obs],weights=np.ones(obs.sum())*.81,old=old,proxy=proxy)
+    m.write_json(root/'geometry_audit.json',dict(profiles=profiles))
+    np.savez_compressed(root/'training_geometry.npz',xy=xy)
+    meta=json.loads((root/'preparation.json').read_text());meta.update(proxy_geometry=cross,
+        prior_coverage={k:m.prior_coverage(mesh,tri,d) for k,d in (('old',old),('proxy',proxy))})
+    m.write_json(root/'preparation.json',meta)
+    m.write_json(root/'execution_receipt.json',dict(mode='prepare',run_id='SYNTHETIC_ONLY',execution_status='succeeded',runner_sha256=m.sha(m.__file__),dependencies_sha256=m.sources(),artifacts_sha256={n:m.sha(root/n) for n in m.PREP}))
+    with patch.object(m,'parse_nodemap',side_effect=AssertionError('no parser')),patch.object(m,'solve_patch',side_effect=AssertionError('no solve')):
+        view.assets(root,out)
+    assert len(list(out.glob('*.png')))==len(list(out.glob('*.pdf')))==2
+    receipt=json.loads((out/'render_receipt.json').read_text())
+    assert receipt['source_prepare']==m.bindings(root,m.PREP)
+    assert len(receipt['artifacts_sha256'])==7
+    for name in ('README_analysis.md','training_profiles.md','training_spatial_assets.md'):
+        assert 'SYNTHETIC_ONLY' in (out/name).read_text()
+    (root/'geometry_audit.json').write_text('{}')
+    with pytest.raises(ValueError,match='artifact'):view.assets(root,out)
+    print('SYNTHETIC_FIGURES='+str(out))

@@ -152,6 +152,17 @@ def segment_prior(xy,left,right):
     distance=np.hypot(np.maximum(np.maximum(left-xy[:,0],xy[:,0]-right),0),xy[:,1])
     return np.exp(-distance/1.5)
 
+def finite_predictions(a):
+    """Reject invalid frozen numerics before the held response parser is reachable."""
+    n=len(a['ids'])
+    if np.shape(a['alpha'])!=() or not np.isfinite(a['alpha']) or a['alpha']<=1:
+        raise ValueError('nonfinite/invalid load extrapolation alpha')
+    if a['xy'].shape!=(n,2) or a['weights'].shape!=(n,) or np.any(a['weights']<=0):
+        raise ValueError('prediction support shape/weight mismatch')
+    for k in ('xy','weights','u13')+ARMS:
+        if (k not in ('weights',) and a[k].shape!=(n,2)) or not np.isfinite(a[k]).all():
+            raise ValueError('nonfinite/invalid frozen prediction '+k)
+
 def area_weights(text,xy,finite):
     lines=[s for s in text.splitlines() if s.strip()]
     if [s.strip() for s in lines[0].split(';')]!=['Type','Element #','Node 1','Node 2','Node 3']:
@@ -178,6 +189,8 @@ def prepare(archive,out):
         connection=read_member(z,'global_3d_dic/Connections/global_3d_dic_results_1_13_connections.txt')
     forces=[identity(headers(t),s) for t,s in zip(texts,(13,14,15))]
     if not 0<forces[0]<forces[1]<forces[2]:raise ValueError('load order')
+    alpha=(forces[2]-forces[0])/(forces[1]-forces[0])
+    if not np.isfinite(alpha) or alpha<=1:raise ValueError('nonfinite/invalid load extrapolation alpha')
     a,b=[parse_nodemap(t,allow_displacements=True) for t in texts[:2]]
     ids=a['ids'];finite=a['finite_xyz']&b['finite_xyz']&a['finite_u']&b['finite_u']
     if not np.array_equal(ids,b['ids']) or not np.array_equal(ids,np.arange(1,len(ids)+1)):
@@ -206,7 +219,7 @@ def prepare(archive,out):
     cross=primary['crossings']
     old=segment_prior(mesh,-9.,6.);proxy=segment_prior(mesh,cross['left_mm'],cross['right_mm'])
     np.savez_compressed(out/'prepared.npz',ids=ids[obs],xy=xy[obs],weights=w[obs],
-        train_v=du[obs],u13=a['u'][obs,:2],alpha=(forces[2]-forces[0])/(forces[1]-forces[0]),
+        train_v=du[obs],u13=a['u'][obs,:2],alpha=alpha,
         mesh=mesh,tri=tri,boundary=bd,bc=bc,old=old,proxy=proxy)
     write_json(out/'preparation.json',dict(cycle='292018.5',reference=1,forces=forces,
         observations=int(obs.sum()),weight_area_mm2=float(w[obs].sum()),proxy_geometry=cross,
@@ -218,14 +231,19 @@ def prepare(archive,out):
 
 def fit(root,out,start):
     completed(root,'prepare',PREP);a=load(root/'prepared.npz');meta=json.loads((root/'preparation.json').read_text())
+    if np.shape(a['alpha'])!=() or not np.isfinite(a['alpha']) or a['alpha']<=1:
+        raise ValueError('nonfinite/invalid load extrapolation alpha')
     pred={k:a[k] for k in ('ids','xy','weights','u13','alpha')};fields={};records={}
     for k in ('old','proxy','intact'):
         check_budget(start);d=np.zeros(len(a['mesh'])) if k=='intact' else a[k]
         u,res=solve_patch(a['mesh'],a['tri'],a['boundary'],a['bc'],d);check_budget(start)
         sample=sample_regular_mesh(u,a['xy']);fields[k]=u;fields[k+'_sampled']=sample;fields[k+'_damage']=d
+        if not np.isfinite(u).all() or not np.isfinite(res) or res>1e-8 or not np.isfinite(sample).all():
+            raise ValueError('nonfinite solve/sample or residual failure')
         pred[k]=a['alpha']*sample
         records[k]=dict(relative_residual=res,train_MAE_mm=error(a['xy'],sample-a['train_v'],a['weights']))
     pred['secant']=a['alpha']*a['train_v'];check_budget(start)
+    finite_predictions(pred)
     np.savez_compressed(out/'frozen_predictions.npz',**pred);np.savez_compressed(out/'solved_fields.npz',**fields)
     write_json(out/'fit.json',dict(status='four_predictions_frozen_before_held_response',
         records=records,source_prepare=bindings(root,PREP),cycle=meta['cycle'],
@@ -235,10 +253,11 @@ def fit(root,out,start):
 def validate(root,high,out):
     completed(root,'fit',FIT);meta=json.loads((root/'fit.json').read_text())
     if meta['status']!='four_predictions_frozen_before_held_response':raise ValueError('not frozen')
+    a=load(root/'frozen_predictions.npz');finite_predictions(a)
     if high.stat().st_size>16000000 or sha(high)!=meta['held_member_sha256']:raise ValueError('held identity mismatch')
     h=parse_nodemap(high.read_text(),allow_displacements=True)
     if identity(h['headers'],15)!=meta['held_force']:raise ValueError('held force mismatch')
-    a=load(root/'frozen_predictions.npz');lookup={int(v):i for i,v in enumerate(h['ids'])}
+    lookup={int(v):i for i,v in enumerate(h['ids'])}
     if any(int(v) not in lookup for v in a['ids']):raise ValueError('held ID absent')
     idx=np.array([lookup[int(v)] for v in a['ids']])
     valid=np.isfinite(h['xyz'][idx,:2]).all(1)&np.isfinite(h['u'][idx,:2]).all(1)

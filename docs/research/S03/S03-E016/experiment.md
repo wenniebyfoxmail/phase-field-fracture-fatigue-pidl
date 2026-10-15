@@ -206,3 +206,8 @@ stage15 holdout, information set, geometry rule, primary metric or stop rule.
 Auxiliary peaks are only maxima on existing support, not over unobserved bins.
 Current activity is local synthetic checks and independent read-only code review;
 no actual13/14/15 fields, file transmission, remote sync or solver execution.
+Implementation also rejects nonfinite alpha and frozen predictions BEFORE held
+response conversion. Training-only renderer scripts/aa2024_geometry_prior_view.py
+requires completed PREP/source bindings and creates profiles/spatial plots plus
+README, sidecars and render receipt. Final stage15 four-arm result renderer is
+still pending; no Evidence Ready claim is made or waived by this local code work.
