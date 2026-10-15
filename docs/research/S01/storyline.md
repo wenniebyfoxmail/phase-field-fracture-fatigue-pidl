@@ -66,3 +66,8 @@ R002 adopted exact features/four heads without refitting and completed the one
 selector fit. Next proposed solution makes paired replacement harm explicit and
 qualifies an abstain-to-original policy on held train locations; no new arm or
 experiment is executed by that proposal. Independent evidence review PASS at b960d3c; current attempt closed.
+
+
+### 2026-10-15 — S01-E010 implementation preparation
+
+The frozen incremental-utility method is implemented and independently code-reviewed at cdd9d951 (gpt-6.1-sol Medium). Cached fit-only counterfactual support has only4/1/4/3 positive rows by held fold, with negative support in every fit bank. A separate GT-informed fixed selection retains282/282 old E003 hits and adds4, loses0,macro delta0.0093254; this is a candidate opportunity, not a learned result. Prepare exact R001 approval to test whether the model can realise that opportunity. No fits, learned comparisons or fresh-location access; E003 remains the working detector.
