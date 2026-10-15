@@ -66,3 +66,7 @@ R002 adopted exact features/four heads without refitting and completed the one
 selector fit. Next proposed solution makes paired replacement harm explicit and
 qualifies an abstain-to-original policy on held train locations; no new arm or
 experiment is executed by that proposal. Independent evidence review PASS at b960d3c; current attempt closed.
+
+### 2026-10-15 — S01-E008-R001 (producer numerical result; retrieval pending)
+
+Unchanged E003 scoring of corrected crops moved77–151 added corrections into the1FP/image prefix on four reused training locations and found1–4 new targets. It lost3–14 E003 hits, yielding netTP -10/-5/-6/-2 for the four frozen policies. All original rows were preserved but operating-point hits were not; no rule qualified, so no development or fresh access occurred. Retain E003 and stop this frozen-classifier additive route. A subsequent localisation-quality head on corrected-crop features is a proposed repair, requiring a separate frozen and reviewed contract before fitting. Independent6.1-sol/Medium producer numerical review passed with limits; raw retrieval and PNG visual QA remain pending. See S01-E008/result_20261015.md.
