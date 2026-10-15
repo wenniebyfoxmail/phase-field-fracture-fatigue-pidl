@@ -98,15 +98,21 @@ def stream_measure(model, data, base, chunk=1024):
             for r, mask in enumerate(masks):
                 selected = mask[start:stop]
                 weights = w[start:stop]*selected
-                gram[r] += features.T @ (weights[:,None]*features)
+                ft = torch.from_numpy(features)
+                chunk_gram = (ft.T @ (torch.from_numpy(weights)[:,None]*ft)).numpy()
+                if start == 0:
+                    indices = [0, 1, 2, width]
+                    direct = np.array([[np.sum(weights*features[:,i]*features[:,j]) for j in indices] for i in indices])
+                    np.testing.assert_allclose(chunk_gram[np.ix_(indices,indices)],direct,rtol=1e-10,atol=1e-16)
+                gram[r] += chunk_gram
                 for li, act in enumerate(acts):
                     a = act.detach().numpy()
                     raw = preacts[li].detach().numpy()
-                    stats[li][r]["pos"] += weights @ (a>0)
-                    stats[li][r]["raw_pos"] += weights @ (raw>0)
-                    stats[li][r]["raw_neg"] += weights @ (raw<0)
-                    stats[li][r]["mean"] += weights @ a
-                    stats[li][r]["second"] += weights @ (a*a)
+                    stats[li][r]["pos"] += np.sum(weights[:,None]*(a>0),axis=0)
+                    stats[li][r]["raw_pos"] += np.sum(weights[:,None]*(raw>0),axis=0)
+                    stats[li][r]["raw_neg"] += np.sum(weights[:,None]*(raw<0),axis=0)
+                    stats[li][r]["mean"] += np.sum(weights[:,None]*a,axis=0)
+                    stats[li][r]["second"] += np.sum(weights[:,None]*(a*a),axis=0)
                     if selected.any(): stats[li][r]["ever"] |= (a[selected]>0).any(axis=0)
         rss()
         del acts, preacts, predicted, expected, sq, pieces, gd, gb, z
@@ -117,6 +123,8 @@ def stream_measure(model, data, base, chunk=1024):
         coeff = float(model.residual.activations[li].coeff.detach())
         for r, name in enumerate(REGIONS):
             s = stats[li][r]
+            assert all(np.isfinite(s[k]).all() for k in ("pos","raw_pos","raw_neg","mean","second"))
+            assert np.all(s["pos"] >= 0) and np.all(s["pos"] <= pmass[r]+1e-14)
             mean = s["mean"] / pmass[r]
             std = np.sqrt(np.maximum(0, s["second"]/pmass[r]-mean**2))
             activation_rows.append(dict(layer=li, region=name, coeff=coeff,
@@ -128,6 +136,7 @@ def stream_measure(model, data, base, chunk=1024):
                 rms_activation=float(np.sqrt(np.sum(s["second"])/pmass[r]/width))))
     for r, name in enumerate(REGIONS):
         matrix = gram[r]/pmass[r]
+        assert np.isfinite(matrix).all()
         eigen = np.linalg.eigvalsh((matrix+matrix.T)/2)[::-1]
         positive = np.maximum(eigen, 0)
         total = positive.sum(); probs = positive/total if total>0 else positive
