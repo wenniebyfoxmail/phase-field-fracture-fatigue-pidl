@@ -66,3 +66,8 @@ R002 adopted exact features/four heads without refitting and completed the one
 selector fit. Next proposed solution makes paired replacement harm explicit and
 qualifies an abstain-to-original policy on held train locations; no new arm or
 experiment is executed by that proposal. Independent evidence review PASS at b960d3c; current attempt closed.
+
+
+### 2026-10-15 — S01-E012 existing-training positive evidence design
+
+E011 Mac reception/numerical/visual archive completed in its dedicated worktree (closure49c0cde); science remains old282/282 retained,net0. S01-E012 frozen design a634c4b passed independentgpt-6.1-sol Medium review after pinning support contexts and original NMS ordering. First stage qualifies cached evidence in12other existing training sites,with no new fits/inference/pixels. Missing corrected E003 scores produce an exact later rescore approval request. Minimum distributed support:one unique positiveGT/site in each of3source groups; partial useful evidence is preserved,never called detection gain. Next local implementation/tests and independent code review,then exact transfer/public branch/StageA approval version. No E012 execution or fresh access.
