@@ -21,3 +21,6 @@ User-facing report: `/Users/wenxiaofang/obsidian/mesh对齐.md`; payloads remain
 
 
 2026-10-15 preparation: [fixed-u constrained damage / fresh-stop protocol](../research/S04/S04-E011/constrained_damage_protocol_20261015.md). Prepare fresh-only and constrained arms at the four completed v2 capture states, c1 prerequisite then c83,250 phase calls/arm plus two shared admissions/state. No propagated history or coupled qualification. New six-file upload awaits exact-version approval; local independent review and Python/bundle checks do not mean native MATLAB execution.
+
+
+2026-10-15 result: [fixed-u constrained damage/fresh-stop](../research/S04/S04-E011/runs/damage_repair_v1_result_20261015.md) completed4states8arms,40files468584478bytesverified. Constrained4/4phasepass using1–2updates; fresh-only0/4afterclip. c83-lastRu+14.75%, descriptive monitor+5.91%; pairedPIDL activefield gaps improve only modestly and integralgap worsens. Supports a bounded phase repair, not coupled/trajectory/teacher closure. Next: keep constrainedphase, re-equilibrateu and checkfreshsame-state residuals; unexecuted.

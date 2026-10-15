@@ -146,3 +146,32 @@ included. Producer checkcode must be inspected before launch. Single CPU
 thread; refuse an existing run receipt/output or competing MATLAB process;
 never kill a process. Finish by retrieving/hash-checking results, updating this
 protocol/track/registry and then `mesh对齐.md` and frontier.
+
+## Execution and descriptive-analysis note — 2026-10-15
+
+User explicitly approved six-file v1 transfer/execution and local independent
+review substitution. Exact approved source commit8070c028dde7c1a5ef56fb4ab21e64f9883a4c4c,
+all remote file sizes/hashes matched. Producer checkcode found NASGU/MSNU only;
+six selftests passed. Native run started UTC12:20:25, finished12:22:39,
+wrapper46180/worker46172. Both c1 constrained prerequisites passed, so both c83
+states ran. Four states/eight arms completed, no history commits. Full retrieval
+and field-admission status are recorded separately from this execution result.
+
+After viewing remote primary residual outcomes, the local analysis additionally
+plans a **post-hoc descriptive** comparison with the already-used paired Q4
+PIDL nodal NPZ `pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/analysis/multicycle_cross_replay/pidl_nodal/pidl_q4_nodal_trajectory.npz`.
+Use only existing c1s4/c83s4 peaks, checkpoints4/414. This paired run retains
+recovery at global step0 and uses global_step(c,s)=5(c-1)+s; do not subtract1
+using a different600-step archive convention.
+No new holdout, run or network evaluation. Compare active fields with original
+GP weights, using both the legacy FEM-variant denominator and a fixed PIDL norm,
+plus integral differences/correlations. This cannot change the phase primary
+verdict or qualify coupled mechanics. Visualization also localizes changes at
+the two predeclared last saved states, with common signed scales and explicit
+crack-band crop. All original thresholds, inputs, solve budgets and stopping
+rules remain as approved. No new code was uploaded after launch.
+
+
+## Terminal result
+
+[Completed comparison](runs/damage_repair_v1_result_20261015.md): all4constrained fixed-u phase endpoints pass, fresh-only postclip nonepass.187phasecalls,40files verified, independent numerical review passed. c83-last mechanicalRu increases14.75% and descriptive sum5.91%; active gap modestly improves but integral gap worsens. No coupled/trajectory/teacher repair. Next unexecuted lever: displacement re-equilibration with constrained damage and fresh joint checks.

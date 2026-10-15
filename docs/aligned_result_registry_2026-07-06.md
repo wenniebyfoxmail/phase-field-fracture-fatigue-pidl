@@ -101,3 +101,10 @@ producer machine, commit, runner, output root, verdict, and next action.
 | Candidate | Status | Comparator | Evidence / next action |
 |---|---|---|---|
 | E011 fixed captured-u fresh-only / constrained damage | prepared locally; native execution pending | completed four-state native v2 capture | [Protocol](research/S04/S04-E011/constrained_damage_protocol_20261015.md); six-file upload approval, producer syntax/selftests, c1 prerequisite then c83. No new numerical result or teacher. |
+
+
+## Fixed-u constrained damage result — 2026-10-15
+
+| Case | Execution / retrieval | Numerical finding | Evidence / disposition |
+|---|---|---|---|
+| E011 c1/c83 fixed captured-u fresh-only / constrained damage v1 | completed4states8arms;40files468584478bytesverified; source8070c02 | Constrained4/4phasepass; fresh-onlyafterclip0/4. c83-lastRu+14.75%, sum+5.91%, activegap modestly lower but integralgap higher. | [Result](research/S04/S04-E011/runs/damage_repair_v1_result_20261015.md); advance boundedphase/repair coupling. No acceptedhistory, trajectory or teacher qualification. |

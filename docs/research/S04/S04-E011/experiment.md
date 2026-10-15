@@ -156,3 +156,6 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 
 
 2026-10-15 repair preparation: [protocol r1](constrained_damage_protocol_20261015.md) freezes independent fixed-captured-u/raw fresh-only and nodal-constrained damage diagnostics, c1 then c83. It adds no result to production and does not change the previous primary verdict. Execution/retrieval pending approval; no new solve has run.
+
+
+2026-10-15 completed: [fixed-u constrained damage repair](runs/damage_repair_v1_result_20261015.md). All4constrained phase screens pass; fresh-only remains infeasible then above screen afterclipping. c83-last mechanical imbalance worsens, so original production/teacher status unchanged. No accepted history/trajectory propagation.

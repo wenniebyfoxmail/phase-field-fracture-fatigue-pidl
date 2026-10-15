@@ -67,3 +67,6 @@ Solver alignment2026-10-15: [track](experiments/hard5_q4_t3_solver_alignment_tra
 
 
 2026-10-15 prepared repair: [solver alignment track](experiments/hard5_q4_t3_solver_alignment_track.md) now freezes fixed-u fresh-stop versus constrained damage diagnostics at c1 then c83. New six-file package awaits upload approval; no native run or propagated repair result.
+
+
+2026-10-15 completed [solver-alignment phase repair](experiments/hard5_q4_t3_solver_alignment_track.md): constrained4/4fixed-u phase screens pass, fresh-onlyafterclipnonepass. c83-lastmechanicalimbalance worsens; no coupled/trajectory/teacher closure. Next unexecuted discriminator: constrainedphase plus displacement re-equilibration and fresh joint checks.
