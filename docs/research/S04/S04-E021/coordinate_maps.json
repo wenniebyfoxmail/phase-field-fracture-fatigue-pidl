@@ -1,0 +1,333 @@
+[
+  {
+    "state": "c20s4",
+    "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+    "backbone_lock": {
+      "state": "c20s4",
+      "run_id": "S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R002-c20s4-a07-s7",
+      "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+      "checkpoint_sha256": "1f9af019fb7f382a765fd1f7c655c5b8bcda86d1974832fffae364785630de6a",
+      "prediction_sha256": "2a43c94cc168c05922513c9c8b54243513223ee3231d307efae1ddf7c000ece3",
+      "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+      "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R002-c20s4-a07-s7"
+    },
+    "mapping": {
+      "rule": "core-damage-residual-moments-3std-cap4-v1",
+      "local_center": [
+        -0.27136719568117984,
+        7.373416534261071e-07
+      ],
+      "local_scale": [
+        0.07533454080374988,
+        0.008880630597600072
+      ],
+      "residual_std": [
+        0.017978575034481498,
+        0.000252019720593122
+      ],
+      "original_scale": [
+        0.3013381632149995,
+        0.03552252239040029
+      ],
+      "core_damage_error_energy_fraction": 1.0,
+      "coordinate_zoom": [
+        4.0,
+        4.0
+      ],
+      "teacher_target_used": true
+    },
+    "initial_prediction_max_abs_difference": 9.71445146547012e-16,
+    "residual_parameter_digest": "7f20e43347f6558a881294f70c0354d44331657ce307330401f4d3ea0874c04d",
+    "physical_geometry": {
+      "lower": [
+        -0.5,
+        -0.01562507791143096
+      ],
+      "upper": [
+        0.06267632642999904,
+        0.01541996686936962
+      ],
+      "center": [
+        -0.21866183678500048,
+        -0.00010255552103066983
+      ],
+      "scale": [
+        0.3013381632149995,
+        0.03552252239040029
+      ],
+      "padding": 0.02,
+      "damage_threshold": 0.1,
+      "damage_nodes": 4082,
+      "background_nodes": 82674,
+      "support_nodes": 10476,
+      "localization_rule": "q4_edge_unique_initial_notch_anchor_component",
+      "anchor_x": -0.5,
+      "anchor_abs_y_max": 0.02,
+      "component_count": 1,
+      "components": [
+        {
+          "component_id": 0,
+          "minimum_node_id": 4,
+          "nodes": 4082,
+          "mass": 0.016045873179689495,
+          "lower": [
+            -0.5,
+            -0.01562507791143096
+          ],
+          "upper": [
+            0.06267632642999904,
+            0.01541996686936962
+          ],
+          "touches_notch_anchor": true,
+          "anchor_nodes": 14,
+          "selected_for_local_support": true
+        }
+      ],
+      "anchor_component_id": 0,
+      "anchor_component_nodes": 4082,
+      "excluded_damage_nodes": 0,
+      "total_mass": 1.0000000000000002,
+      "damage_mass": 0.016045873179689495,
+      "background_mass": 0.9839541268203108,
+      "support_mass": 0.04123726309660408,
+      "anchor_component_mass": 0.016045873179689495,
+      "excluded_damage_mass": 0.0,
+      "excluded_damage_support_mass": 0.0,
+      "background_support_mass": 0.025191389916914587,
+      "background_support_fraction": 0.025602199564243533
+    },
+    "training": false
+  },
+  {
+    "state": "c60s4",
+    "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2",
+    "backbone_lock": {
+      "state": "c60s4",
+      "run_id": "S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R005-c60s4-a07-s7",
+      "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2",
+      "checkpoint_sha256": "c371f82484d6b2db4a60f9f407b9d1b4c5b48b6043038384f439c2f5be45351c",
+      "prediction_sha256": "0bb51cc51b3480a6622b8127d5a9a4a16de08216e9865e6670644838ef51fbfb",
+      "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+      "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R005-c60s4-a07-s7"
+    },
+    "mapping": {
+      "rule": "core-damage-residual-moments-3std-cap4-v1",
+      "local_center": [
+        -0.27567388345977195,
+        -2.864087291267624e-06
+      ],
+      "local_scale": [
+        0.10406365392137235,
+        0.009019511414592925
+      ],
+      "residual_std": [
+        0.03171309181309453,
+        0.00027538364832431034
+      ],
+      "original_scale": [
+        0.4162546156854894,
+        0.0360780456583717
+      ],
+      "core_damage_error_energy_fraction": 0.9999730015729535,
+      "coordinate_zoom": [
+        4.0,
+        4.0
+      ],
+      "teacher_target_used": true
+    },
+    "initial_prediction_max_abs_difference": 1.2628786905111156e-15,
+    "residual_parameter_digest": "7f20e43347f6558a881294f70c0354d44331657ce307330401f4d3ea0874c04d",
+    "physical_geometry": {
+      "lower": [
+        -0.5,
+        -0.01665020825549299
+      ],
+      "upper": [
+        0.2925092313709788,
+        0.01550588306125041
+      ],
+      "center": [
+        -0.10374538431451061,
+        -0.0005721625971212901
+      ],
+      "scale": [
+        0.4162546156854894,
+        0.0360780456583717
+      ],
+      "padding": 0.02,
+      "damage_threshold": 0.1,
+      "damage_nodes": 5716,
+      "background_nodes": 81040,
+      "support_nodes": 14837,
+      "localization_rule": "q4_edge_unique_initial_notch_anchor_component",
+      "anchor_x": -0.5,
+      "anchor_abs_y_max": 0.02,
+      "component_count": 2,
+      "components": [
+        {
+          "component_id": 0,
+          "minimum_node_id": 1,
+          "nodes": 6,
+          "mass": 1.2850162487297145e-05,
+          "lower": [
+            0.4960223821438646,
+            -0.5
+          ],
+          "upper": [
+            0.5,
+            -0.4960239513091754
+          ],
+          "touches_notch_anchor": false,
+          "anchor_nodes": 0,
+          "selected_for_local_support": false
+        },
+        {
+          "component_id": 1,
+          "minimum_node_id": 4,
+          "nodes": 5710,
+          "mass": 0.022547618339694233,
+          "lower": [
+            -0.5,
+            -0.01665020825549299
+          ],
+          "upper": [
+            0.2925092313709788,
+            0.01550588306125041
+          ],
+          "touches_notch_anchor": true,
+          "anchor_nodes": 14,
+          "selected_for_local_support": true
+        }
+      ],
+      "anchor_component_id": 1,
+      "anchor_component_nodes": 5710,
+      "excluded_damage_nodes": 6,
+      "total_mass": 1.0000000000000002,
+      "damage_mass": 0.022560468502181533,
+      "background_mass": 0.9774395314978188,
+      "support_mass": 0.058564679405698025,
+      "anchor_component_mass": 0.022547618339694233,
+      "excluded_damage_mass": 1.2850162487297145e-05,
+      "excluded_damage_support_mass": 0.0,
+      "background_support_mass": 0.0360170610660038,
+      "background_support_fraction": 0.03684837773116421
+    },
+    "training": false
+  },
+  {
+    "state": "c83s4",
+    "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+    "backbone_lock": {
+      "state": "c83s4",
+      "run_id": "S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R008-c83s4-a07-s7",
+      "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+      "checkpoint_sha256": "d26f51f9a7ec4b6fb83af9551e881d243ae4e026099c9b2446d9f21ee0ba2672",
+      "prediction_sha256": "1ca19aff0eaf280f03ab2ab7f17c1cefc45c161a3651e0313683300346af1f77",
+      "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+      "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R008-c83s4-a07-s7"
+    },
+    "mapping": {
+      "rule": "core-damage-residual-moments-3std-cap4-v1",
+      "local_center": [
+        -0.26875652503833797,
+        -2.226469685763796e-05
+      ],
+      "local_scale": [
+        0.203810862835555,
+        0.009019511414592925
+      ],
+      "residual_std": [
+        0.06793695427851833,
+        0.00033207301198686783
+      ],
+      "original_scale": [
+        0.52,
+        0.0360780456583717
+      ],
+      "core_damage_error_energy_fraction": 0.9999999981215774,
+      "coordinate_zoom": [
+        2.551385106590528,
+        4.0
+      ],
+      "teacher_target_used": true
+    },
+    "initial_prediction_max_abs_difference": 6.38378239159465e-16,
+    "residual_parameter_digest": "7f20e43347f6558a881294f70c0354d44331657ce307330401f4d3ea0874c04d",
+    "physical_geometry": {
+      "lower": [
+        -0.5,
+        -0.01665020825549299
+      ],
+      "upper": [
+        0.5,
+        0.01550588306125041
+      ],
+      "center": [
+        0.0,
+        -0.0005721625971212901
+      ],
+      "scale": [
+        0.52,
+        0.0360780456583717
+      ],
+      "padding": 0.02,
+      "damage_threshold": 0.1,
+      "damage_nodes": 7225,
+      "background_nodes": 79531,
+      "support_nodes": 18275,
+      "localization_rule": "q4_edge_unique_initial_notch_anchor_component",
+      "anchor_x": -0.5,
+      "anchor_abs_y_max": 0.02,
+      "component_count": 2,
+      "components": [
+        {
+          "component_id": 0,
+          "minimum_node_id": 1,
+          "nodes": 8,
+          "mass": 2.0758014476648125e-05,
+          "lower": [
+            0.4960223821438646,
+            -0.5
+          ],
+          "upper": [
+            0.5,
+            -0.496023709899264
+          ],
+          "touches_notch_anchor": false,
+          "anchor_nodes": 0,
+          "selected_for_local_support": false
+        },
+        {
+          "component_id": 1,
+          "minimum_node_id": 4,
+          "nodes": 7217,
+          "mass": 0.028450910299875367,
+          "lower": [
+            -0.5,
+            -0.01665020825549299
+          ],
+          "upper": [
+            0.5,
+            0.01550588306125041
+          ],
+          "touches_notch_anchor": true,
+          "anchor_nodes": 14,
+          "selected_for_local_support": true
+        }
+      ],
+      "anchor_component_id": 1,
+      "anchor_component_nodes": 7217,
+      "excluded_damage_nodes": 8,
+      "total_mass": 1.0000000000000002,
+      "damage_mass": 0.028471668314352015,
+      "background_mass": 0.9715283316856483,
+      "support_mass": 0.07199961874368503,
+      "anchor_component_mass": 0.028450910299875367,
+      "excluded_damage_mass": 2.0758014476648125e-05,
+      "excluded_damage_support_mass": 0.0,
+      "background_support_mass": 0.04354870844380967,
+      "background_support_fraction": 0.04482494953930017
+    },
+    "training": false
+  }
+]

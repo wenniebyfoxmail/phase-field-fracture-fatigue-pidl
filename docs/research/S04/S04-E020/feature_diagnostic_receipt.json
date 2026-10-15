@@ -1,0 +1,19 @@
+{
+  "diagnostic_source": "6a3b154baf2e20cd462de9b48a9bfc51cb7f745f",
+  "training": false,
+  "parameter_updates": 0,
+  "models": 9,
+  "nodes_per_model": 86756,
+  "torch": "2.11.0",
+  "numpy": "2.2.6",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "peak_rss_internal": 828276736,
+  "peak_rss_process": 839958528,
+  "wall_seconds": 64.38,
+  "parameter_buffer_digest_unchanged_models": 9,
+  "all_results_finite": true,
+  "independent_review": "PENDING",
+  "formal_E019_E020_verdicts_unchanged": true,
+  "activation_coeff_min": 0.9833623603827911,
+  "activation_coeff_max": 1.2664491891046303
+}
