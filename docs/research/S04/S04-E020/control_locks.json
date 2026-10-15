@@ -1,0 +1,309 @@
+{
+  "c20s4": {
+    "run_id": "S04-E019-frozen-ae23871-20261014-v1-R002-c20s4-localized-s7",
+    "code_commit": "ae23871366158c5e9a98fcca9fe2353675d997ec",
+    "files": {
+      "metrics.json": "e730c91da6ba73ea0f9d0d27301b2cbc386d1850473192f66a1e65514f38cf47",
+      "RUN_RECEIPT.json": "58be78e790ec8fa74821a973f93e7a3726e33a540abe70618d2747a90cb8173c",
+      "monitoring.json": "dc19e3a1bb18508019f231dffbed0a4ea31d7c8390b482602835923739f28688",
+      "prediction.npz": "5f2e6c7b1fddc43df3be855d99412ecc2ca8786bcab00460f8a7c6502eba53e7",
+      "final_step_10000.pt": "f4b647e6481674a2ee4cfc8e5cc37a3da7994af1d8122f74bdbc76f3b88c6c6b"
+    },
+    "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+    "geometry": {
+      "lower": [
+        -0.5,
+        -0.01562507791143096
+      ],
+      "upper": [
+        0.06267632642999904,
+        0.01541996686936962
+      ],
+      "center": [
+        -0.21866183678500048,
+        -0.00010255552103066983
+      ],
+      "scale": [
+        0.3013381632149995,
+        0.03552252239040029
+      ],
+      "padding": 0.02,
+      "damage_threshold": 0.1,
+      "damage_nodes": 4082,
+      "background_nodes": 82674,
+      "support_nodes": 10476,
+      "localization_rule": "q4_edge_unique_initial_notch_anchor_component",
+      "anchor_x": -0.5,
+      "anchor_abs_y_max": 0.02,
+      "component_count": 1,
+      "components": [
+        {
+          "component_id": 0,
+          "minimum_node_id": 4,
+          "nodes": 4082,
+          "mass": 0.016045873179689495,
+          "lower": [
+            -0.5,
+            -0.01562507791143096
+          ],
+          "upper": [
+            0.06267632642999904,
+            0.01541996686936962
+          ],
+          "touches_notch_anchor": true,
+          "anchor_nodes": 14,
+          "selected_for_local_support": true
+        }
+      ],
+      "anchor_component_id": 0,
+      "anchor_component_nodes": 4082,
+      "excluded_damage_nodes": 0,
+      "total_mass": 1.0000000000000002,
+      "damage_mass": 0.016045873179689495,
+      "background_mass": 0.9839541268203106,
+      "support_mass": 0.04123726309660408,
+      "anchor_component_mass": 0.016045873179689495,
+      "excluded_damage_mass": 0.0,
+      "excluded_damage_support_mass": 0.0,
+      "background_support_mass": 0.02519138991691458,
+      "background_support_fraction": 0.025602199564243533
+    },
+    "backbone_lock": {
+      "state": "c20s4",
+      "run_id": "S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R002-c20s4-a07-s7",
+      "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+      "checkpoint_sha256": "1f9af019fb7f382a765fd1f7c655c5b8bcda86d1974832fffae364785630de6a",
+      "prediction_sha256": "2a43c94cc168c05922513c9c8b54243513223ee3231d307efae1ddf7c000ece3",
+      "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+      "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R002-c20s4-a07-s7"
+    },
+    "backbone_digest": "2c858058962e9a3c4f43460f3bb085ec985b68b6564c8d4e8aa837dec4960aea",
+    "initial_residual_digest": "7f20e43347f6558a881294f70c0354d44331657ce307330401f4d3ea0874c04d",
+    "sampler_index_sha256": "356cbaed98b25bd3294f9a582854d98f7f7f2fd7283c55ba17fc155e8114fc9d",
+    "runtime": {
+      "torch_version": "2.7.0+cu126",
+      "numpy_version": "1.24.4",
+      "cuda_version": "12.6",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "hostname": "GPUServer8",
+      "cuda_visible_devices": "0",
+      "cublas_workspace_config": ":4096:8"
+    }
+  },
+  "c60s4": {
+    "run_id": "S04-E019-frozen-ae23871-20261014-v1-R004-c60s4-localized-s7",
+    "code_commit": "ae23871366158c5e9a98fcca9fe2353675d997ec",
+    "files": {
+      "metrics.json": "2730d15eb8226b46d3c6686066ad7ee15c18651e39a3b6e0376c68bad63df81a",
+      "RUN_RECEIPT.json": "fc1d9a5ff07dcdc4d952b89a0b7641354b08932fb3ad22d7539191f6273f642c",
+      "monitoring.json": "eadf339243a43dd16d26d43a213499c87512d79bde79631ab902506388952399",
+      "prediction.npz": "c5527986af95eea7ee5ec4200bb09af1aa15335217daeacfc006f2d238e55cd1",
+      "final_step_10000.pt": "6a40ae6c79ffa3e2a171d283cc5d7b4224a806b389a0feffa9142ece502f8210"
+    },
+    "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2",
+    "geometry": {
+      "lower": [
+        -0.5,
+        -0.01665020825549299
+      ],
+      "upper": [
+        0.2925092313709788,
+        0.01550588306125041
+      ],
+      "center": [
+        -0.10374538431451061,
+        -0.0005721625971212901
+      ],
+      "scale": [
+        0.4162546156854894,
+        0.0360780456583717
+      ],
+      "padding": 0.02,
+      "damage_threshold": 0.1,
+      "damage_nodes": 5716,
+      "background_nodes": 81040,
+      "support_nodes": 14837,
+      "localization_rule": "q4_edge_unique_initial_notch_anchor_component",
+      "anchor_x": -0.5,
+      "anchor_abs_y_max": 0.02,
+      "component_count": 2,
+      "components": [
+        {
+          "component_id": 0,
+          "minimum_node_id": 1,
+          "nodes": 6,
+          "mass": 1.2850162487296964e-05,
+          "lower": [
+            0.4960223821438646,
+            -0.5
+          ],
+          "upper": [
+            0.5,
+            -0.4960239513091754
+          ],
+          "touches_notch_anchor": false,
+          "anchor_nodes": 0,
+          "selected_for_local_support": false
+        },
+        {
+          "component_id": 1,
+          "minimum_node_id": 4,
+          "nodes": 5710,
+          "mass": 0.02254761833969423,
+          "lower": [
+            -0.5,
+            -0.01665020825549299
+          ],
+          "upper": [
+            0.2925092313709788,
+            0.01550588306125041
+          ],
+          "touches_notch_anchor": true,
+          "anchor_nodes": 14,
+          "selected_for_local_support": true
+        }
+      ],
+      "anchor_component_id": 1,
+      "anchor_component_nodes": 5710,
+      "excluded_damage_nodes": 6,
+      "total_mass": 1.0000000000000002,
+      "damage_mass": 0.022560468502181526,
+      "background_mass": 0.9774395314978186,
+      "support_mass": 0.05856467940569802,
+      "anchor_component_mass": 0.02254761833969423,
+      "excluded_damage_mass": 1.2850162487296964e-05,
+      "excluded_damage_support_mass": 0.0,
+      "background_support_mass": 0.03601706106600379,
+      "background_support_fraction": 0.0368483777311642
+    },
+    "backbone_lock": {
+      "state": "c60s4",
+      "run_id": "S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R005-c60s4-a07-s7",
+      "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2",
+      "checkpoint_sha256": "c371f82484d6b2db4a60f9f407b9d1b4c5b48b6043038384f439c2f5be45351c",
+      "prediction_sha256": "0bb51cc51b3480a6622b8127d5a9a4a16de08216e9865e6670644838ef51fbfb",
+      "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+      "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R005-c60s4-a07-s7"
+    },
+    "backbone_digest": "ea305c6a0b58ab31ccf807bf3f9c8ac9216453e6d3799a20becc4b37b4e19b78",
+    "initial_residual_digest": "7f20e43347f6558a881294f70c0354d44331657ce307330401f4d3ea0874c04d",
+    "sampler_index_sha256": "69a0a6633860c0bbbdacd58ef6ee83c5aeef3824d6515166ea51d18fd25ec2d1",
+    "runtime": {
+      "torch_version": "2.7.0+cu126",
+      "numpy_version": "1.24.4",
+      "cuda_version": "12.6",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "hostname": "GPUServer8",
+      "cuda_visible_devices": "0",
+      "cublas_workspace_config": ":4096:8"
+    }
+  },
+  "c83s4": {
+    "run_id": "S04-E019-frozen-ae23871-20261014-v1-R006-c83s4-localized-s7",
+    "code_commit": "ae23871366158c5e9a98fcca9fe2353675d997ec",
+    "files": {
+      "metrics.json": "f30daf7b7dd71dd165f6b7ee54e6774fa3d20f56cb47660260f2afba67a09eb1",
+      "RUN_RECEIPT.json": "68b4ea8b3c25502467ca94b104dbe4dcc11093e771bef47479102429b2df2000",
+      "monitoring.json": "a2a540729299b6e08fb7403a71de96fd98d56373da6881b4333872b77012f017",
+      "prediction.npz": "06199ae801272f2c1d8f3419f5f6762db88a0473ef6f5f210c465ea36b44057f",
+      "final_step_10000.pt": "1b27584f4cef492ea8c143aa5fcdd156daf53e0d0ddbb429be19752eebe4b5e4"
+    },
+    "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+    "geometry": {
+      "lower": [
+        -0.5,
+        -0.01665020825549299
+      ],
+      "upper": [
+        0.5,
+        0.01550588306125041
+      ],
+      "center": [
+        0.0,
+        -0.0005721625971212901
+      ],
+      "scale": [
+        0.52,
+        0.0360780456583717
+      ],
+      "padding": 0.02,
+      "damage_threshold": 0.1,
+      "damage_nodes": 7225,
+      "background_nodes": 79531,
+      "support_nodes": 18275,
+      "localization_rule": "q4_edge_unique_initial_notch_anchor_component",
+      "anchor_x": -0.5,
+      "anchor_abs_y_max": 0.02,
+      "component_count": 2,
+      "components": [
+        {
+          "component_id": 0,
+          "minimum_node_id": 1,
+          "nodes": 8,
+          "mass": 2.075801447664797e-05,
+          "lower": [
+            0.4960223821438646,
+            -0.5
+          ],
+          "upper": [
+            0.5,
+            -0.496023709899264
+          ],
+          "touches_notch_anchor": false,
+          "anchor_nodes": 0,
+          "selected_for_local_support": false
+        },
+        {
+          "component_id": 1,
+          "minimum_node_id": 4,
+          "nodes": 7217,
+          "mass": 0.028450910299875364,
+          "lower": [
+            -0.5,
+            -0.01665020825549299
+          ],
+          "upper": [
+            0.5,
+            0.01550588306125041
+          ],
+          "touches_notch_anchor": true,
+          "anchor_nodes": 14,
+          "selected_for_local_support": true
+        }
+      ],
+      "anchor_component_id": 1,
+      "anchor_component_nodes": 7217,
+      "excluded_damage_nodes": 8,
+      "total_mass": 1.0000000000000002,
+      "damage_mass": 0.028471668314352012,
+      "background_mass": 0.9715283316856479,
+      "support_mass": 0.07199961874368502,
+      "anchor_component_mass": 0.028450910299875364,
+      "excluded_damage_mass": 2.075801447664797e-05,
+      "excluded_damage_support_mass": 0.0,
+      "background_support_mass": 0.04354870844380966,
+      "background_support_fraction": 0.044824949539300184
+    },
+    "backbone_lock": {
+      "state": "c83s4",
+      "run_id": "S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R008-c83s4-a07-s7",
+      "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+      "checkpoint_sha256": "d26f51f9a7ec4b6fb83af9551e881d243ae4e026099c9b2446d9f21ee0ba2672",
+      "prediction_sha256": "1ca19aff0eaf280f03ab2ab7f17c1cefc45c161a3651e0313683300346af1f77",
+      "code_commit": "ed3adcef880e711aed175578a7da7861cfb746aa",
+      "archive_root": "/mnt/data2/drtao/pidl_archives/S04-E017-alpha-ed3adce-20261012T170600Z-bundle-R008-c83s4-a07-s7"
+    },
+    "backbone_digest": "956045be711cf18e1d1cdb9519f742422dfcf97e5b7e453e3a88fa0472ced46e",
+    "initial_residual_digest": "7f20e43347f6558a881294f70c0354d44331657ce307330401f4d3ea0874c04d",
+    "sampler_index_sha256": "898564794d89d6096150ff4cde42b1bb0cb8bc430bb62052e90b5c222f7319ed",
+    "runtime": {
+      "torch_version": "2.7.0+cu126",
+      "numpy_version": "1.24.4",
+      "cuda_version": "12.6",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "hostname": "GPUServer8",
+      "cuda_visible_devices": "0",
+      "cublas_workspace_config": ":4096:8"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "protocol_revision": "20261015-r1-delayed-decay",
+  "expected_runs": 3,
+  "valid_completed_runs": 0,
+  "missing": [
+    "c20s4",
+    "c60s4",
+    "c83s4"
+  ],
+  "integrity_errors": [],
+  "verdict": "INCONCLUSIVE",
+  "clean_damage_progress_background_preserved": null,
+  "stage2_authorized": false,
+  "qualified_fem_teacher": "NOT_QUALIFIED",
+  "code_commit": "ae23871366158c5e9a98fcca9fe2353675d997ec"
+}

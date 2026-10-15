@@ -1,0 +1,20 @@
+{
+  "actual_update_boundary": {
+    "1": 0.001,
+    "8000": 0.001,
+    "8001": 0.0009999993893183533,
+    "9000": 0.000505,
+    "9999": 1.0000610681646757e-05,
+    "10000": 1e-05
+  },
+  "schedule": {
+    "id": "actual-update-k-hold8000-cosine2000-v1",
+    "actual_updates": 10000,
+    "used_lr_sha256": "85e7949592d6cd212f6db6fe3b2ebd4469a24dc6511af3ef3357669d01896bcd",
+    "first_update_lr": 0.001,
+    "last_update_lr": 1e-05,
+    "optimizer_then_scheduler": true,
+    "next_lr_after_final": null
+  },
+  "training": false
+}

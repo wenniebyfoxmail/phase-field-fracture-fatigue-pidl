@@ -1,0 +1,33 @@
+{
+  "status": "VALIDATION_ONLY_PASS",
+  "paired_control_run_id": "S04-E019-frozen-ae23871-20261014-v1-R006-c83s4-localized-s7",
+  "control_regions": {
+    "full": 0.0032382383079330103,
+    "damage": 0.01916744282518348,
+    "background": 0.0001634539302896372
+  },
+  "historical_reference_rho": {
+    "recorded": 4.4058080838988206e-11,
+    "current": 4.396407551066601e-11,
+    "policy": "report_only_for_historical_identity; preserve_E019_failure"
+  },
+  "actual_update_lr": {
+    "1": 0.001,
+    "8000": 0.001,
+    "8001": 0.0009999993893183533,
+    "9000": 0.000505,
+    "9999": 1.0000610681646757e-05,
+    "10000": 1e-05
+  },
+  "training": false,
+  "state": "c83s4",
+  "seed": 7,
+  "alpha": "0.7",
+  "arm": "localized",
+  "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+  "reference_rho_u": 4.396407551066601e-11,
+  "p_damage": 0.02847166831435201,
+  "damage_node_count": 7225,
+  "n_damage": 11469,
+  "n_background": 4915
+}
