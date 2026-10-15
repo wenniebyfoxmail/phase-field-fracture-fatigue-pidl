@@ -94,3 +94,10 @@ producer machine, commit, runner, output root, verdict, and next action.
 | Case | Status | Measured discriminator | Evidence endpoint | Next action / boundary |
 |---|---|---|---|---|
 | c1/c83 baseline and last native phase/update capture v2 | completed,13files246934739bytesverified | Cache→return→clip→raw-refresh; native K direction and60merit differences. Residual/state mismatch and incomplete constrained stationarity; smaller c83 step gives tiny descent beyond old grid. | [Result](research/S04/S04-E011/runs/phase_capture_v2_result_20261015.md),CITPC12,ce7085e,run_s04_e011_phase_capture.m,external local archive pf_s04e011_phase_capture_20261014_v2. | Genuine nodal constrained damage/fresh-stop comparison, unexecuted; no full-trajectory or teacher claim. |
+
+
+## Constrained phase repair preparation — 2026-10-15
+
+| Candidate | Status | Comparator | Evidence / next action |
+|---|---|---|---|
+| E011 fixed captured-u fresh-only / constrained damage | prepared locally; native execution pending | completed four-state native v2 capture | [Protocol](research/S04/S04-E011/constrained_damage_protocol_20261015.md); six-file upload approval, producer syntax/selftests, c1 prerequisite then c83. No new numerical result or teacher. |

@@ -153,3 +153,6 @@ Native capture v1 was explicitly approved/uploaded2026-10-14 but failed pre-admi
 
 
 Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/phase_capture_v2_result_20261015.md). Original production estimands/history unchanged. Residual attribution now measured, finite-grid stall clarified; all four next directions remain unaccepted.
+
+
+2026-10-15 repair preparation: [protocol r1](constrained_damage_protocol_20261015.md) freezes independent fixed-captured-u/raw fresh-only and nodal-constrained damage diagnostics, c1 then c83. It adds no result to production and does not change the previous primary verdict. Execution/retrieval pending approval; no new solve has run.

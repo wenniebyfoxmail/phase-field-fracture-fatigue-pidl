@@ -18,3 +18,6 @@ User-facing report: `/Users/wenxiaofang/obsidian/mesh对齐.md`; payloads remain
 
 
 2026-10-15 terminal: [four-state native capture](../research/S04/S04-E011/runs/phase_capture_v2_result_20261015.md) completed, hashes/numerical review verified. c1-last cached residual misrepresents returned field; clipped endpoints retain1.06e-5/c1 and2.56e-5/c83 phase violations, raw-refresh incremental effect small here. Native Kdd trial-f chain omission measured; c83-last very small steps can descend beyond old1/64 minimum, with tiny progress. No history commit, repaired trajectory or teacher. Next unexecuted lever: genuinely constrained nodal damage solve plus fresh same-field stopping, c1 first then c83.
+
+
+2026-10-15 preparation: [fixed-u constrained damage / fresh-stop protocol](../research/S04/S04-E011/constrained_damage_protocol_20261015.md). Prepare fresh-only and constrained arms at the four completed v2 capture states, c1 prerequisite then c83,250 phase calls/arm plus two shared admissions/state. No propagated history or coupled qualification. New six-file upload awaits exact-version approval; local independent review and Python/bundle checks do not mean native MATLAB execution.
