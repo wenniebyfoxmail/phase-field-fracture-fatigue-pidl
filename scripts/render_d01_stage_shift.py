@@ -49,9 +49,10 @@ def main():
         label=f"Matched {stat['matched']}/36\nmedian paired(C-I): {change:.4f}px" if change is not None else "No matched pairs"
         ax.text(.04,.96,label,transform=ax.transAxes,va="top",fontsize=9)
         ax.set(xlim=(0,limit),ylim=(0,limit),xlabel="Independent-shift RMS I (native px)",ylabel="Common-shift RMS C (native px)",title=ARMS[ai]);ax.set_aspect("equal");ax.grid(alpha=.15)
-    axes[1].legend(fontsize=8,loc="lower right")
+    handles,labels=axes[1].get_legend_handles_labels()
+    fig.legend(handles,labels,fontsize=9,loc="lower center",ncol=3,bbox_to_anchor=(.5,.06))
     fig.suptitle("S03-E022-D01-R001 | Beam4 DEVELOPMENT | below identity: less response to common shifts",fontsize=11)
-    fig.tight_layout(rect=[0,.08,1,.94]);fig.text(.02,.01,"Same ±2px / 0.5px marginal grid: 9 common pairs vs81 Cartesian pairs. RMS is finite-grid sensitivity, NOT physical error.",fontsize=9)
+    fig.tight_layout(rect=[0,.16,1,.94]);fig.text(.02,.01,"Same ±2px / 0.5px marginal grid: 9 common pairs vs81 Cartesian pairs. RMS is finite-grid sensitivity, NOT physical error.",fontsize=9)
     export(fig,a.output,"common_vs_independent_rms","Does coupling offsets reduce stage-difference response under the same fixed marginal grid?",
            "Every matched stage/transect point, two arms on shared axes. Transition colours; diagonal=equalRMS, below=common lower. Primary originalH annotation uses paired differences, not separate-median subtraction; aligned arm secondary.",str(a.run/"pair_metrics.csv"))
 
