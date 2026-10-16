@@ -64,3 +64,19 @@ prepared. They fix the development data, model, seed, 1,000-update budget,
 multi-objective update algebra, acceptance buckets, stop rules and outputs.
 Training remains closed until the packet exporter and trainer exist, their exact
 commit and input packet are locked, and an independent Code Ready review passes.
+
+## 2026-10-16 package-level review closure
+
+The first package review returned three contract findings: float64 scale
+consumption and the three/four-history-channel split; complete aligned gradient
+vectors and dimensionally consistent epsilon semantics; and explicit hard-
+constraint predicates/tolerances. All three were closed in commit `af25e1c` and
+42 focused tests passed. A second review confirmed D1-D3 closed and found one
+remaining textual conflict between Code Ready inputs and the later production
+of the actual data lock/resolved config. Commit `0587796` separated those
+objects cleanly between Code Ready and the final execution gate.
+
+The third package review returned `PACKAGE_READY_PASS`. The next authorised work
+is local implementation of the exporter/trainer and synthetic/no-training tests,
+followed by exact-commit Code Ready review. Real packet export, remote execution
+and training remain closed.
