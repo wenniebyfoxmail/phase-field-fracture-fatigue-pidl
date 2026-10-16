@@ -28,8 +28,11 @@ packet=struct('proposed',n,'event',e);path=fullfile(work_dir,'commit.mat');
 e011_persist_once(path,packet);loaded=load(path);assert(isequal(loaded,packet));
 reject(@()e011_persist_once(path,packet),'E011:DuplicateReceipt');
 accepted=s;failed=false;
-try,e011_persist_once(fullfile(work_dir,'missing_parent','commit.mat'),packet);accepted=n;
-catch,failed=true;end
+try
+ e011_persist_once(fullfile(work_dir,'missing_parent','commit.mat'),packet);accepted=n;
+catch
+ failed=true;
+end
 assert(failed && isequal(accepted,s));
 result=struct('status','passed','cases',10,'file_io_cases',2,'native_field_solves',0);
  function value=phase(d,lower,raw,old)
@@ -40,6 +43,10 @@ result=struct('status','passed','cases',10,'file_io_cases',2,'native_field_solve
  end
 end
 function reject(f,expected)
-try,f();catch ex,assert(strcmp(ex.identifier,expected));return;end
+try
+ f();
+catch ex
+ assert(strcmp(ex.identifier,expected));return;
+end
 error('E011:GuardMissing','Expected guard did not fire');
 end

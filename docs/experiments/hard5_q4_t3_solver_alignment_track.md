@@ -41,3 +41,6 @@ User-facing report: `/Users/wenxiaofang/obsidian/mesh对齐.md`; payloads remain
 
 
 2026-10-15 [sequential c1/history preparation](../research/S04/S04-E011/c1_commit_protocol_20261015.md): original five-state regression prerequisite, shared exact recovery/predictorKK, repaired precommit old-state joint screen and single version advance.15file/8copy local package reviewed, no upload/native run;22Windows tests pending exact-version approval. Previous four-start numerical closure and c83 field divergence remain the latest computed results.
+
+
+2026-10-16 [c1 sequence v1 attempt](../research/S04/S04-E011/runs/c1_commit_v1_attempt_20261016.md): approved15file transfer/8input staging passed; strict staticcheck stopped before all native fields and history commits.31file archive verified. Minimal v2 static repair prepared locally, new exact-version approval needed. Earlier numerical conclusions unchanged.

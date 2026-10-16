@@ -88,3 +88,6 @@ Solver alignment2026-10-15: [track](experiments/hard5_q4_t3_solver_alignment_tra
 
 
 2026-10-15 prepared [one c1 accepted-history sequence](experiments/hard5_q4_t3_solver_alignment_track.md): compare exact-original versus repaired five-substep propagation from shared recovered state and initialKK; detect any commit before fresh joint closure or repeated version update. New15file version awaits approval; no upload or new numerical result. Prior c83 numericalpass/fielddivergence stays unchanged.
+
+
+2026-10-16 E011: full-c1 v1 stopped at staticcheck before native solves/commits; verified archive, no new numerical result. Minimal static v2 local preparation awaits exact-version transfer approval. [Canonical alignment track](experiments/hard5_q4_t3_solver_alignment_track.md).

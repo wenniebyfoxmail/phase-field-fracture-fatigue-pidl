@@ -138,3 +138,6 @@ CR-v3 2026-10-15: uploaded9file set verified;15inputcopies540736827bytes/fullSHA
 
 
 E011 c1 commit v1: [local preparation only](research/S04/S04-E011/runs/c1_commit_v1_preparation_20261015.md), [protocol](research/S04/S04-E011/c1_commit_protocol_20261015.md).15files,8inputcopies156839354bytes; original archive regression then repaired sequential5substeps. Local independent source review passed; Windows22tests and native calculations notrun, no transfer. Fresh joint gate uses PREcommit oldlower/history, exactlyone accepted version/step. No new numerical/trajectory claim.
+
+
+2026-10-16 S04-E011 c1 sequence v1: [attempt](research/S04/S04-E011/runs/c1_commit_v1_attempt_20261016.md), producer db5cb94, WMI30232, staticcheck stop,0native fields/commits,31files156923216bytes hashverified; operational failure/scientifically inconclusive. v2 preparation does not alter frozen E003/E011.

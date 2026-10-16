@@ -177,3 +177,6 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 
 
 2026-10-15 next preparation: [full c1 substep/accepted-history protocol](c1_commit_protocol_20261015.md), [preparation review](runs/c1_commit_v1_preparation_20261015.md). Original flow must regress five archived states from shared recovered state/KK; repaired flow must joint-pass under old history/lower before one saved accepted commit/substep.15files/8inputcopies prepared; Windows22tests/native execution unperformed and new exact transfer awaiting user approval. This changes no frozen production verdict.
+
+
+2026-10-16 [c1 sequence v1 attempt](runs/c1_commit_v1_attempt_20261016.md): authorized upload/staging verified; E011:StaticCheck stopped before selftests/recovery/fields/commits.31files156923216bytes retrieved/hash-verified. No numerical conclusion. Minimal static v2 local preparation in newroot; no v1retry or remote update without exact-version approval.

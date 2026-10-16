@@ -178,3 +178,8 @@ fatigue trajectory, c83 fracture onset or linear/exponential accumulation claim.
 PIDL committed-f vs FEMtrial-f / joint Deep-Ritz vs staggered distinctions remain.
 New transfer and execution require approval of this final package and its local
 independent review replacing legacy Pro review for this version. No push.
+
+
+## Operational amendment v2 — 2026-10-16
+
+v1 stopped at strict checkcode before native work; preserve the attempt. v2 fixes two comma forms, explicitly consumes native returned diagnostics without feedback, uses isscalar, and predeclares three script variables before hash-frozen native initialization with shape assertions afterwards. Frozen source overwrites placeholders before use. No solver/formula/tolerance/budget/acceptance/history change. Newroot E011_C1_20261016_v2; same15file count/8input contents. Native22tests and five original regressions remain prerequisites, not already passed. New version requires fresh user approval before upload/copies/execution; NASGU/MSNU whitelist unchanged. See runs/c1_commit_v1_attempt_20261016.md.

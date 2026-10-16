@@ -36,7 +36,8 @@ for i_stag=1:SOL_STAG_PAR.max_iter
 end
 assert(native_accepted,'E011:OriginalOuterCap','Original staggered cap exhausted');
 out=struct('u',displ,'d',p_field,'raw',strain_en_undgr,'trace',trace, ...
- 'completed_outer',i_stag,'native_accepted',native_accepted);
+ 'completed_outer',i_stag,'native_accepted',native_accepted, ...
+ 'native_returned_trial_history234',history_vars_new(:,:,2:4));
 catch ex
  save(fullfile(work_dir,'original_failure.mat'),'displ','p_field','p_field_old','history_vars_old','trace','i_stag','-v7.3');
  rethrow(ex);
@@ -49,12 +50,21 @@ def driver(base_driver,recovery_driver):
     marker='\n\nassert(string(options.topology)=="q4");'
     assert base_driver.count(marker)==1
     prefix=base_driver.split(marker)[0].replace('run_s04_e011_coupled_repair(cfg, options)','run_s04_e011_c1_commit(cfg, options)',1)
+    init='init_fatigue_fracture\n'
+    assert prefix.count(init)==1
+    prefix=prefix.replace(init,'''% Explicit placeholders; frozen native init overwrites all before use.
+p_field=[];p_field_old=[];history_vars_old=[];
+init_fatigue_fracture
+assert(isequal(size(p_field),[sys.MESH.num_node,1]));
+assert(isequal(size(p_field_old),size(p_field)));
+assert(isequal(size(history_vars_old),[sys.MESH.num_elem,sys.QUADRATURE.num_gauss_pts,4]));
+''')
     return prefix+'''
 assert(options.max_cycle==1 && isequal(cfg.requested_cycles,1) && string(options.topology)=="q4");
 assert(cfg.displacement_tol==1e-6 && cfg.pf_tol==4e-4 && cfg.staggered_tol==4e-4);
 assert(cfg.max_iter_staggered==1000 && cfg.max_iter_phase==250 && cfg.max_iter_displacement==250);
 strain_en_undgr=zeros(sys.MESH.num_elem,sys.QUADRATURE.num_gauss_pts);
-[p_field,p_field_old,history_vars_old,recovery_calls]=e011_shared_recovery(sys,assembly_pf_fh,p_field,p_field_old,history_vars_old,SOL_PAR,damage_upper_bound);
+[p_field,p_field_old,history_vars_old,recovery_calls,res_pf_recovery]=e011_shared_recovery(sys,assembly_pf_fh,p_field,p_field_old,history_vars_old,SOL_PAR,damage_upper_bound);
 '''+'''
 assert(all(displ==0) && all(strain_en_undgr==0,'all'));
 assert(all(history_vars_old(:,:,2:3)==0,'all') && all(history_vars_old(:,:,4)==1,'all'));
@@ -64,7 +74,8 @@ common=struct('u',displ,'d',p_field,'lower',p_field_old,'raw',strain_en_undgr,'h
 % Keep the EXACT initial predictor tangent from the original System setup:
 % original recovery is phase-only and does not refresh KK. Do not rebuild it.
 initial_KK=sys.STIFFNESS_MATRIX.KK;
-common_meta=struct('recovery_phase_calls',recovery_calls,'state0_maxerr',state0_maxerr, ...
+common_meta=struct('recovery_phase_calls',recovery_calls,'recovery_cached_residual',res_pf_recovery, ...
+'state0_maxerr',state0_maxerr, ...
  'initialization_resets',1,'shared_setup_initial_assemblies',1,'cycle',1,'version',0,'source_commit',options.source_commit, ...
  'initial_KK_timing','Original System stiffness cache at first access, based on constructor hard precrack');
 node_coords=sys.MESH.node(:,1:2);connectivity=sys.MESH.elem(:,1:4);
@@ -96,7 +107,7 @@ def shared_recovery(recovery_driver):
     recovery='\nstrain_en_undgr = zeros(sys.MESH.num_elem, sys.QUADRATURE.num_gauss_pts);'+recovery
     assert recovery.count('    assembly_pf_fh, sys,')==1
     recovery=recovery.replace('    assembly_pf_fh, sys,','    @counted, sys,')
-    return """function [p_field,p_field_old,history_vars_old,calls]=e011_shared_recovery(sys,native_pf,p_field,p_field_old,history_vars_old,SOL_PAR,damage_upper_bound)
+    return """function [p_field,p_field_old,history_vars_old,calls,res_pf_recovery]=e011_shared_recovery(sys,native_pf,p_field,p_field_old,history_vars_old,SOL_PAR,damage_upper_bound)
 %E011_SHARED_RECOVERY Exact original recovery; isolated from script workspace.
 calls=0;
 """+recovery+"""
@@ -109,7 +120,7 @@ end
 
 
 def build(source_root,prior,reference_root,mesh,out,remote_root,commit,inventory):
-    assert not out.exists() and remote_root.endswith('E011_C1_20261015_v1')
+    assert not out.exists() and remote_root.endswith('E011_C1_20261016_v2')
     out.mkdir(parents=True)
     here=Path(__file__).parent/'s04_e011_analysis';native=json.loads((prior/'input_manifest.json').read_text())[0]
     source_ids={x['path']:x['sha256'] for x in native['source_checks']}
@@ -162,7 +173,7 @@ self=struct('damage',e011_damage_selftest(),'coupled',e011_coupled_selftest(),'c
 fid=fopen(fullfile(root,'selftest.json'),'w');assert(fid>=0);fprintf(fid,'%s',jsonencode(self));fclose(fid);
 assert(numel(manifest.staging)==8);
 for k=1:8
- item=manifest.staging(k);info=dir(item.target);assert(numel(info)==1 && info.bytes==item.bytes);
+ item=manifest.staging(k);info=dir(item.target);assert(isscalar(info) && info.bytes==item.bytes);
  assert(strcmpi(phase_field.audit.sha256_file(item.target),item.sha256));
  if strcmp(item.role,'mesh')
   assert(startsWith(strtrim(fileread(item.target)),'*HEADING'));
@@ -235,18 +246,18 @@ if((Get-PSDrive C).Free -lt 10GB -or (Get-CimInstance Win32_OperatingSystem).Fre
 $cmd='"C:\Windows\System32\cmd.exe" /d /s /c ""C:\Program Files\MATLAB\R2025b\bin\matlab.exe" -singleCompThread -batch "run(''@ROOT@\entry.m'')" -logfile "@ROOT@\matlab.log" > "@ROOT@\stdout.log" 2> "@ROOT@\stderr.log""'
 $r=Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine=$cmd;CurrentDirectory=$root}
 if($r.ReturnValue -ne 0){throw ('WMI launch failed: '+$r.ReturnValue)}
-@{run_id='pf_s04e011_c1_commit_20261015_v1';commit='@COMMIT@';branch='codex/hard5-q4-t3-2x2-20261005';dirty=$false;producer='CITPC12/citpc12-ssh';account='AD\xw436';pid=$r.ProcessId;command=$cmd;root=$root;started_utc=(Get-Date).ToUniversalTime().ToString('o');threads=1;gpu='CPU';method='WMI isolated process'}|ConvertTo-Json|Set-Content -Encoding UTF8 ($root+'\launch_receipt.json')
+@{run_id='pf_s04e011_c1_commit_20261016_v2';commit='@COMMIT@';branch='codex/hard5-q4-t3-2x2-20261005';dirty=$false;producer='CITPC12/citpc12-ssh';account='AD\xw436';pid=$r.ProcessId;command=$cmd;root=$root;started_utc=(Get-Date).ToUniversalTime().ToString('o');threads=1;gpu='CPU';method='WMI isolated process'}|ConvertTo-Json|Set-Content -Encoding UTF8 ($root+'\launch_receipt.json')
 Get-Content ($root+'\launch_receipt.json')
 '''.replace('@ROOT@',remote_root).replace('@CHECKS@',checks).replace('@COMMIT@',commit)
     (out/'launch_wmi.ps1').write_text(launch)
     files=[dict(name=p.name,bytes=p.stat().st_size,sha256=sha(p)) for p in sorted(out.iterdir())]
     assert len(files)==15
     receipt=dict(status='prepared_not_sent',account=r'AD\xw436',host='CITPC12',ssh_alias='citpc12-ssh',remote_root=remote_root,source_commit=commit,files=files,files_total_bytes=sum(x['bytes'] for x in files),input_copies=staging,input_copy_bytes=sum(x['bytes'] for x in staging))
-    (out.parent/'approval_manifest_v1.json').write_text(json.dumps(receipt,indent=2)+'\n')
+    (out.parent/'approval_manifest_v2.json').write_text(json.dumps(receipt,indent=2)+'\n')
     return receipt
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--source-root',type=Path,required=True);p.add_argument('--prior-bundle',type=Path,required=True);p.add_argument('--reference-root',type=Path,required=True);p.add_argument('--mesh',type=Path,required=True);p.add_argument('--inventory',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--remote-root',default=r'C:\Users\xw436\jobs\E011_C1_20261015_v1');p.add_argument('--commit',required=True);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--source-root',type=Path,required=True);p.add_argument('--prior-bundle',type=Path,required=True);p.add_argument('--reference-root',type=Path,required=True);p.add_argument('--mesh',type=Path,required=True);p.add_argument('--inventory',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--remote-root',default=r'C:\Users\xw436\jobs\E011_C1_20261016_v2');p.add_argument('--commit',required=True);a=p.parse_args()
     print(json.dumps(build(a.source_root,a.prior_bundle,a.reference_root,a.mesh,a.out,a.remote_root,a.commit,json.loads(a.inventory.read_text())),indent=2))
 if __name__=='__main__':main()
