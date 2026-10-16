@@ -194,10 +194,10 @@ def _mat_numeric(handle: h5py.File, value, name: str) -> np.ndarray:
     return stored.transpose(axes) if axes else stored
 
 
-def _derive_native_weights(
+def decode_native_static(
     static_path: Path, context: Stage0ACapabilityContext
-) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
-    """Derive weights only from the exact verified native static payload."""
+) -> tuple[dict[str, np.ndarray | float], dict[str, object]]:
+    """Decode the exact native Q4 geometry used by exporter and capability audit."""
     payload = _read_identity_file(static_path, context.static_filename, context.static_sha256)
     with h5py.File(io.BytesIO(payload), "r") as handle:
         _reject_external_hdf5_storage(handle)
@@ -262,7 +262,25 @@ def _derive_native_weights(
         "nodal_weight_shape": list(nodal_weight.shape),
         "gp_weight_shape": list(gp_weight.shape),
     }
-    return nodal_weight, gp_weight, receipt
+    arrays: dict[str, np.ndarray | float] = {
+        "xy": xy,
+        "conn": conn,
+        "gauss_weight": gauss_weight,
+        "shape": nxi.T,
+        "reference_derivative": dndxi.transpose(2, 0, 1),
+        "nodal_weight": nodal_weight,
+        "gp_weight": gp_weight,
+        "thickness": thickness,
+    }
+    return arrays, receipt
+
+
+def _derive_native_weights(
+    static_path: Path, context: Stage0ACapabilityContext
+) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
+    """Derive weights only from the exact verified native static payload."""
+    arrays, receipt = decode_native_static(static_path, context)
+    return arrays["nodal_weight"], arrays["gp_weight"], receipt
 
 
 def _state_fingerprint(state) -> dict[str, object]:
