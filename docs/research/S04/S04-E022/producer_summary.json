@@ -1,0 +1,14 @@
+{
+  "protocol_revision": "20261016-r1-last-hidden-leak001",
+  "expected_runs": 3,
+  "valid_completed_runs": 3,
+  "missing": [],
+  "integrity_errors": [],
+  "verdict": "LAST_HIDDEN_LEAK_THREE_STATE_UV_SCREEN_FAIL",
+  "clean_damage_progress_background_preserved": true,
+  "clean_damage_progress_background_preserved_vs_control": false,
+  "clean_damage_progress_background_preserved_vs_E021": false,
+  "stage2_authorized": false,
+  "qualified_fem_teacher": "NOT_QUALIFIED",
+  "code_commit": "a540888497d1838a6aa202f59a884e6930e50fb4"
+}

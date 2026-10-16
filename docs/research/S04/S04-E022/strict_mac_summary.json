@@ -1,0 +1,31 @@
+{
+  "protocol_revision": "20261016-r1-last-hidden-leak001",
+  "expected_runs": 3,
+  "valid_completed_runs": 0,
+  "missing": [
+    "c20s4",
+    "c60s4",
+    "c83s4"
+  ],
+  "integrity_errors": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E022/producer_execution_v1/raw/runs/S04-E022-last-leak-a540888-20261016-v1-R001-c20s4-localized-s7/metrics.json",
+      "error": "native actual-used LR vector mismatch"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E022/producer_execution_v1/raw/runs/S04-E022-last-leak-a540888-20261016-v1-R002-c60s4-localized-s7/metrics.json",
+      "error": "native actual-used LR vector mismatch"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E022/producer_execution_v1/raw/runs/S04-E022-last-leak-a540888-20261016-v1-R003-c83s4-localized-s7/metrics.json",
+      "error": "native actual-used LR vector mismatch"
+    }
+  ],
+  "verdict": "INADMISSIBLE",
+  "clean_damage_progress_background_preserved": null,
+  "clean_damage_progress_background_preserved_vs_control": null,
+  "clean_damage_progress_background_preserved_vs_E021": null,
+  "stage2_authorized": false,
+  "qualified_fem_teacher": "NOT_QUALIFIED",
+  "code_commit": "a540888497d1838a6aa202f59a884e6930e50fb4"
+}

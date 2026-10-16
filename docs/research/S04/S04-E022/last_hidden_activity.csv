@@ -1,0 +1,13 @@
+state,arm,region,mass_weighted_nonzero_fraction,ever_nonzero_units,last_coeff,interpretation
+c20s4,E021,damage,0.05123062944400751,182,1.0156250991947238,nonzero pathway is not UV fit success
+c20s4,E021,background_inside,0.050951480297131466,52,1.0156250991947238,nonzero pathway is not UV fit success
+c20s4,E022,damage,1.0,283,0.9570986143177506,nonzero pathway is not UV fit success
+c20s4,E022,background_inside,1.0,283,0.9570986143177506,nonzero pathway is not UV fit success
+c60s4,E021,damage,0.00031003968227012865,72,0.9843113393580567,nonzero pathway is not UV fit success
+c60s4,E021,background_inside,0.0,0,0.9843113393580567,nonzero pathway is not UV fit success
+c60s4,E022,damage,0.9994304124275587,283,0.9591666859754461,nonzero pathway is not UV fit success
+c60s4,E022,background_inside,0.9999999999999998,283,0.9591666859754461,nonzero pathway is not UV fit success
+c83s4,E021,damage,0.010551215339211505,141,0.9989209648578565,nonzero pathway is not UV fit success
+c83s4,E021,background_inside,0.009550350751093041,10,0.9989209648578565,nonzero pathway is not UV fit success
+c83s4,E022,damage,0.9992709238444525,283,1.0050888353207845,nonzero pathway is not UV fit success
+c83s4,E022,background_inside,0.9999999999999998,283,1.0050888353207845,nonzero pathway is not UV fit success

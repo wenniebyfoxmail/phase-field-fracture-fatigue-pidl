@@ -19,6 +19,8 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
 
 ## Current Evidence / Claim Boundary
 
+- **S04 fixed-damage UV reproduction (2026-10-16)** — E022 last-hidden leak completed 3/3 producer rows, original three-state target failed: c60 not restored, c83 only 1.86% better than E021 and still above .001. Background must name E019/E021 comparator; exterior unchanged. Preserve strict Mac portability rejection and full-teacher NOT_QUALIFIED. Next is a frozen-feature/head/region-gradient discriminator before any new repair. [S04 evidence storyline](research/S04/storyline.md), [E022 decision](research/S04/S04-E022/decision.md).
+
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。
 - c86 true diffuse damage 条件化可近闭合后续场，二值裂缝几何失败约 `100x` support area：缺失的是近核状态幅值，不只是裂缝位置。
 - LTPP `06-1253` observation-state experiment tested whether a noisy irreversible latent history can outperform persistence and a nonmonotone trend on full-field rolling forecasts. v1 completed as `FAIL_L_NOT_QUALIFIED`: it improved median bMAE by 7.57% versus persistence but missed the frozen 10% gate and one interval-coverage gate; do not tune this section further, and test reproducibility only in the separate multisection route. Experiment: `docs/experiments/ltpp_06_1253_observation_state_gate_v1_20260805.md`; workstream: `docs/workstreams/ltpp_06_1253_single_annotator_fts_progress_20260805.md`.

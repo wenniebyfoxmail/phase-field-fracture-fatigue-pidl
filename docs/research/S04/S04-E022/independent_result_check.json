@@ -1,0 +1,72 @@
+{
+  "files": 65,
+  "bytes": 45604015,
+  "all_hashes_match": true,
+  "headline_values": 36,
+  "inside_outside_values": 24,
+  "states": [
+    {
+      "state": "c20s4",
+      "manual_leaky_decode_max_abs_error": 6.938893903907228e-17,
+      "outside_pair_drift": {
+        "backbone": 0.0,
+        "E019": 0.0,
+        "E021": 0.0
+      },
+      "change_vs_E019": {
+        "full": 0.6794469267895176,
+        "damage": 0.7521352565356576,
+        "background": 0.09970520278395067,
+        "inside_background": 0.9182134572195411
+      },
+      "change_vs_E021": {
+        "full": 7.267928113737199,
+        "damage": 8.242012642561857,
+        "background": 0.2765373347548783,
+        "inside_background": 2.603688155126327
+      }
+    },
+    {
+      "state": "c60s4",
+      "manual_leaky_decode_max_abs_error": 1.3877787807814457e-16,
+      "outside_pair_drift": {
+        "backbone": 0.0,
+        "E019": 0.0,
+        "E021": 0.0
+      },
+      "change_vs_E019": {
+        "full": 67.62107411696745,
+        "damage": 76.34853086365743,
+        "background": 0.8897516915308046,
+        "inside_background": 8.072807199750475
+      },
+      "change_vs_E021": {
+        "full": 46.76323318247213,
+        "damage": 51.76431113548161,
+        "background": -0.6464848782064769,
+        "inside_background": -4.952572543293843
+      }
+    },
+    {
+      "state": "c83s4",
+      "manual_leaky_decode_max_abs_error": 7.209944447028604e-17,
+      "outside_pair_drift": {
+        "backbone": 0.0,
+        "E019": 0.0,
+        "E021": 0.0
+      },
+      "change_vs_E019": {
+        "full": -64.6062262200399,
+        "damage": -64.91670368625397,
+        "background": 0.35326604569154707,
+        "inside_background": 1.828050261955405
+      },
+      "change_vs_E021": {
+        "full": -1.8568145455593155,
+        "damage": -1.8744105498259112,
+        "background": -0.9782676794260925,
+        "inside_background": -4.67671243586315
+      }
+    }
+  ]
+}

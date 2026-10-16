@@ -1,0 +1,15 @@
+{
+  "verdict": "BOUNDED_EVIDENCE_AUDIT_PASS",
+  "blockers": [],
+  "scientific_verdict": "LAST_HIDDEN_LEAK_THREE_STATE_UV_SCREEN_FAIL",
+  "source": "a540888497d1838a6aa202f59a884e6930e50fb4",
+  "analyzer_sha256": "3ea8f13a5941fce6b032cee8ec49f6d13a16c100231cad94043cd709efaadad1",
+  "independent_headline_values": 36,
+  "independent_inside_outside_values": 24,
+  "independent_manual_leaky_decodes": 3,
+  "files_verified": 65,
+  "bytes_verified": 45604015,
+  "training": false,
+  "optimizer_steps": 0,
+  "complete_mac_replay_pass": false
+}

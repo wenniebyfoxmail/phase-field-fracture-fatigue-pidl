@@ -91,3 +91,9 @@ Only local hidden8 fixedleak.01 candidate/runner/strictaggregator implemented; E
 ## 2026-10-16 — E022 exact production approval package prepared
 
 Sciencea540888, deployment84a6cda; twofile bundle/dispatcher locallyverified andindependentlyreviewed. Three own-stateE021/E019pairedrows, proposedsharedGPU0>8GiB, all3formalnativeLR/runtime/zeroUVpreflights beforetraining, one-shotstoprules. No remoteactionsperformed; [exact approval plan](S04-E022/producer/approval_action.md) awaitsuserdecision.
+
+## 2026-10-16 — E022 completed: restored pathways do not restore three-state UV fit
+
+Approved exact two-file single launch completed all three formal rows; original aggregate 3/3 valid, primary FAIL. All65files/45604015bytes hash verified. Full UV c20/c60/c83=.000708697/.001154219/.001146135; c60 regresses46.763% vsE021 and67.621% vsE019, c83 improves1.8568% vsE021 but remains>.001. Background improves vsbackbone in allthree and vsE021 in c60/c83, but allthree worsen vsE019; exterior savedUV unchanged exactly. Leaky final features become nonzero without successful fitting; preserve negative result and useful earlier coordinate gains. Strict Mac LR/reference-rho portability failures unchanged. Next proposal is the same frozen-feature/output-head/region-gradient discriminator on E021/E022 six endpoints, before selecting one repair; no new training. [Decision](S04-E022/decision.md).
+
+E022 independent bounded evidence review completed with no blockers: own Q4 mass and manual leaky tensor decoding reproduce saved-field conclusions. This does not override strict Mac INADMISSIBLE or the producer primary FAIL. [Review](S04-E022/evidence_review.md).

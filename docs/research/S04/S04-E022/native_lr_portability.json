@@ -1,0 +1,8 @@
+{
+  "exact_equal": false,
+  "different_entries": 7425,
+  "first_different_update": 1129,
+  "max_abs_difference": 7.589415207398531e-19,
+  "local_torch": "2.11.0",
+  "policy": "strict checker unchanged; actual=expected=preflight=historical E021"
+}

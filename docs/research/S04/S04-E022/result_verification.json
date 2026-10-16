@@ -1,0 +1,22 @@
+{
+  "execution": "COMPLETED",
+  "producer_verdict": "LAST_HIDDEN_LEAK_THREE_STATE_UV_SCREEN_FAIL",
+  "producer_valid_runs": 3,
+  "all_sha256_verified": true,
+  "retrieved_files": 65,
+  "retrieved_bytes": 45604015,
+  "scientific_source": "a540888497d1838a6aa202f59a884e6930e50fb4",
+  "retrieval_verification_sha256": "e7e7306add1b4cc77a35c0339afc5b1e57ff8cbb006f333048213e078b44d53e",
+  "analyzer_sha256": "3ea8f13a5941fce6b032cee8ec49f6d13a16c100231cad94043cd709efaadad1",
+  "local_audit_commands_sha256": "3393f18dbaffb671107ec7d727185f3e9e0eca6c8f61e8896609af991509905a",
+  "pre_use_review": "PASS",
+  "independent_result_review": "BOUNDED_EVIDENCE_AUDIT_PASS",
+  "strict_mac_verdict": "INADMISSIBLE",
+  "strict_mac_reason": "native actual-used LR vector mismatch; no tolerance change",
+  "figure_sidecars": "4 figure formats / 2 sidecars PASS; visually checked",
+  "outside_saved_uv_pair_max_abs_delta": 0.0,
+  "new_training_in_analysis": false,
+  "archive_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E022/producer_execution_v1",
+  "independent_review_sha256": "a0d647fe1e15d7d00da56c562b5a20fdcb6d4b81072a76d8a41424ab58b60ff1",
+  "complete_mac_replay_pass": false
+}

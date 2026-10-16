@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E022
 protocol_revision: 20261016-r1-last-hidden-leak001
-status: production-package-awaiting-approval
+status: execution-completed-primary-fail
 ---
 # Last-hidden fixed-leak discriminator
 
@@ -45,3 +45,9 @@ Independent Codex subagent CODE_READY_PASS binds scientific source a540888497d18
 ## Production preparation — 2026-10-16
 
 Exactscientificsourcea540888 bundle andone-shotdispatcher prepared, deployment84a6cda independentlyreviewed. Fullplan/commands/bytehashes in[producer execution](producer_execution.md). Freshroot/proposedsharedGPU0>8GiB,60remoteexistingfilecopies, all3formalpreflights,10000nativeLRperrow,correctE021/E019pairingandstrictrow/archivechecks areexplicit. Userapprovalpending; noSSH/transfer/producerpreflight/training.
+
+## Approved production outcome — 2026-10-16
+
+The user approved and executed the exact two-file production proposal. All formal preflights passed; the original dispatcher completed all three rows with 3/3 valid and original primary FAIL. c20/c60/c83 full errors are .000708697178/.001154218988/.001146134741; only c20 meets .001. c60 is worse than both E021 and E019; c83 gains 1.8568% versus E021 but remains above the target. All saved exterior UV is exactly unchanged. Background relative to E019 worsens in all three states, even where it improves versus E021. Last-hidden nonzero pathways return but do not imply successful fitting. Full retrieval: 65 files, 45604015 bytes, all SHA256 verified; actual 10000 LR entries match their formal preflight and own E021 control exactly. Strict Mac INADMISSIBLE from native LR portability and reference-rho exceptions are retained without changes. See [decision and exact comparisons](decision.md), [result verification](result_verification.json), [producer receipt](producer_execution.md). This dated result supersedes preparation-only status above; the frozen protocol and original thresholds remain unchanged.
+
+Independent bounded saved-field [evidence review](evidence_review.md) is complete with no blockers; original scientific FAIL and strict Mac INADMISSIBLE are unchanged.
