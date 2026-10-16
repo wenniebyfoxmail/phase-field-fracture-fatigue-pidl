@@ -23,13 +23,13 @@ def build(prior,priorx,out,root,commit):
  original=s.replace('e011_original_step(','e011_original_observed(',1).replace('observe,remaining_d)','observe,~)',1)
  (out/'e011_original_observed.m').write_text(original)
  start=s.index('            [i_res_pf_0, res_pf, p_field, ~, history_vars_new, non_conv] =')
- end=s.index("            if isnan(res_pf),error('E011:Nonfinite'",start)
+ end=s.index('            p_field = max(p_field, p_field_old);',start)
  replacement='''            phase_budget=remaining_d();assert(phase_budget>=2,'E011:DBudget','Phase reserve');
             phase_result=bounded_phase(sys,assembly_pf_fh,p_field,p_field_old,strain_en_undgr,history_vars_old,phase_budget,SOL_PAR.tol_p_field);
             nested_failure=e011_s2i_fatal(phase_result);assert(strlength(nested_failure)==0,'E011:ControllerFailure','%s',nested_failure);
             assert(phase_result.returned_residual_available && strlength(phase_result.failure)==0 && phase_result.filtered_l2<=SOL_PAR.tol_p_field,'E011:PhaseInnerMiss','Constrained phase miss');
             i_res_pf_0=phase_result.trace(1).filtered_l2;res_pf=phase_result.filtered_l2;
-            p_field=phase_result.d;history_vars_new=phase_result.history;non_conv=false;
+            p_field=phase_result.d;history_vars_new=phase_result.history;
 '''
  s=s[:start]+replacement+s[end:]
  s=s.replace('e011_original_step(','e011_original_bounded(',1)
@@ -89,7 +89,7 @@ rows=cell(10,1);rows{1}=r000;rows{2}=r110;
 for k=1:numel(names)
  [rows{k+2},~,~]=e011_s2i_case(bits(k,:),pre,start,sys,assembly_equilibrium_fh,assembly_pf_fh,par,fullfile(work_dir,names{k}),[],cache,predictor);
 end
-result=struct('status','completed','history_commits',0,'recovery_calls',0,'shared_setup_initial_assemblies',1,'admission_phase_calls',6,'cases',{rows},'case_names',{{'000','110',names{:}}},'cycle',1,'substep',2,'source_commit',m.source_commit);
+result=struct('status','completed','history_commits',0,'recovery_calls',0,'shared_setup_initial_assemblies',1,'admission_phase_calls',6,'cases',{rows},'case_names',{[{'000','110'},names]},'cycle',1,'substep',2,'source_commit',m.source_commit);
 fid=fopen(fullfile(work_dir,'result.json'),'w');assert(fid>=0);fprintf(fid,'%s',jsonencode(result));fclose(fid);
 fprintf('[E011_S2I_DONE] cases=10 history_commits=0\\n');
 end
@@ -112,7 +112,9 @@ end
  (out/'entry.m').write_text(entry)
  launch=(out/'launch_wmi.ps1').read_text();begin=launch.index("if((Get-FileHash ($root+");end=launch.index('$manifest=')
  checks='\n'.join(f"if((Get-FileHash ($root+'\\{p.name}') -Algorithm SHA256).Hash.ToLower() -ne '{sha(p)}'){{throw 'Snapshot changed: {p.name}'}}" for p in sorted(out.iterdir()) if p.name!='launch_wmi.ps1')+'\n'
- launch=launch[:begin]+checks+launch[end:];launch=launch.replace('pf_s04e011_s2x_20261016_v1','pf_s04e011_s2i_20261016_v1')
+ launch=launch[:begin]+checks+launch[end:]
+ run_id='pf_s04e011_'+root.rsplit('\\',1)[-1].removeprefix('E011_').lower()
+ launch=launch.replace('pf_s04e011_s2x_20261016_v1',run_id)
  (out/'launch_wmi.ps1').write_text(launch)
  files=[dict(name=p.name,bytes=p.stat().st_size,sha256=sha(p)) for p in sorted(out.iterdir())]
  return dict(source_commit=commit,remote_root=root,protocol_revision='S04-E011-S2I-r1',files=files,staging=manifest['staging'],bytes=sum(r['bytes'] for r in files),source_prior=str(prior),source_s2x=str(priorx))
