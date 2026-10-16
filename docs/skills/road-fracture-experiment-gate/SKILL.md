@@ -149,6 +149,16 @@ alone is sufficient only when no meaningful intervention is supported, the
 required evidence is unavailable, or the declared budget is exhausted. See
 [references/solution_oriented_outcomes.md](references/solution_oriented_outcomes.md).
 
+If the measured bottleneck has no clear repair, or several plausible repairs
+compete, the research HQ may delegate a bounded solution search using
+`research-evidence-workflow`. Give the sub-agent the bottleneck evidence,
+target outcome, feasible levers, baseline, and resource limit. Search this
+field and structurally similar problems elsewhere. Return a short set of
+candidate levers with source, mechanism, transfer condition, cost, and smallest
+falsifying test. The HQ chooses one feasible lever and records its test in a
+reviewed amendment or new Experiment; the literature does not change the old
+verdict. If no lever is supported, redirect or stop.
+
 ## Minimum Decision Visualization
 
 When an Experiment validates or compares a method using computed or measured
