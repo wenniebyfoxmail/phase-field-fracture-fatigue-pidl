@@ -24,6 +24,7 @@ from s09_stage0a_capability import (
     load_state_index,
 )
 from s09_stage0a_packet import decode_stage0a_transitions
+from s09_code_identity import current_commit, require_approved_code
 
 SCHEMA = "s09-e008-p1-packet-v1"
 REVIEWED_BASE_CONFIG_SHA256 = "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b"
@@ -49,6 +50,20 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def frozen_packet_normalisers(config: dict[str, Any]) -> dict[str, Any]:
+    """Return only normalisers that are frozen when the packet is exported.
+
+    The equilibrium normaliser is producer-resolved later, before model
+    construction, so it must not be copied into packet metadata as a string
+    placeholder.
+    """
+    return {
+        "damage_increment": config["normalisers"]["damage_increment"],
+        "history_increment": config["normalisers"]["history_increment"],
+        "displacement": config["normalisers"]["displacement"],
+    }
 
 
 def _require(condition: bool, message: str) -> None:
@@ -161,8 +176,10 @@ def write_packet(*, output_dir: Path, arrays: dict[str, np.ndarray],
 
 def export_s09_e008_p1_packet(*, run_root: Path, capability_receipt_path: Path,
                               config_path: Path, output_dir: Path,
+                              repo_root: Path, approved_code_commit: str,
                               context: Stage0ACapabilityContext = S09_E008_CONTEXT) -> dict[str, Any]:
     """Repeat qualification and export the exact reviewed 16-cycle packet."""
+    require_approved_code(repo_root, approved_code_commit)
     config = _load_json(config_path)
     _require(sha256_file(config_path) == REVIEWED_BASE_CONFIG_SHA256,
              "base config differs from reviewed identity")
@@ -183,11 +200,9 @@ def export_s09_e008_p1_packet(*, run_root: Path, capability_receipt_path: Path,
              "recomputed growth group drift")
     _require(frozen["near_stagnant_cycles"] == config["data"]["near_stagnant_cycles"],
              "recomputed near-stagnant group drift")
-    _require(frozen["normalisers"] == {
-        "damage_increment": config["normalisers"]["damage_increment"],
-        "history_increment": config["normalisers"]["history_increment"],
-        "displacement": config["normalisers"]["displacement"],
-    }, "recomputed normaliser drift")
+    packet_normalisers = frozen_packet_normalisers(config)
+    _require(frozen["normalisers"] == packet_normalisers,
+             "recomputed normaliser drift")
     _require(frozen["D"] == config["data"]["detectable_growth_scale_D"],
              "recomputed detectable-growth scale drift")
     _require(frozen["near_stagnant_limit"] == config["data"]["near_stagnant_selection_limit"],
@@ -226,6 +241,7 @@ def export_s09_e008_p1_packet(*, run_root: Path, capability_receipt_path: Path,
         "source_context_sha256": context.digest,
         "source_static_sha256": context.static_sha256,
         "source_capability_receipt_sha256": expected_receipt,
+        "exporter_code_commit": current_commit(repo_root),
         "source_hash_verdict": hash_receipt["verdict"],
         "source_decode_verdict": decode_receipt["verdict"],
         "source_p1_verdict": frozen["verdict"],
@@ -235,7 +251,7 @@ def export_s09_e008_p1_packet(*, run_root: Path, capability_receipt_path: Path,
         "detectable_growth_scale_D": frozen["D"],
         "near_stagnant_selection_limit": frozen["near_stagnant_limit"],
         "history_order": config["data"]["history_order"],
-        "normalisers": config["normalisers"],
+        "normalisers": packet_normalisers,
         "material": {"young": 1.0, "poisson": 0.3, "residual_stiffness": 0.0},
         "thickness": static["thickness"],
         "static_receipt": static_receipt,

@@ -25,6 +25,7 @@ from s09_multiobjective_update import merge_objective_gradients
 from s09_q4_quadrature import q4_shape_data
 from s09_stage0a_p1_packet import canonical_json, load_verified_packet, sha256_file
 from s09_stage0a_capability import S09_E008_CONTEXT
+from s09_code_identity import current_commit, require_approved_code, tracked_execution_files_clean
 from s09_stage0a_transition import (
     Stage0ATransitionOperator,
     carrara_f,
@@ -37,6 +38,7 @@ OBJECTIVE_ORDER = ("nodal_state_plus_raw_nodal_increment",
                    "gp_history_plus_raw_gp_increment", "peak_equilibrium")
 DIAGNOSTIC_STEPS = (0, 1, 10, 50, 100, 250, 500, 750, 1000)
 REVIEWED_BASE_CONFIG_SHA256 = "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b"
+REVIEWED_BASE_CONFIG_CANONICAL_SHA256 = "dc9a85f1c5949c8081f7efe91d56c0d5ecfbb2b5df10b23acd1f88587c446db2"
 
 
 def _require(condition: bool, message: str, error=ValueError) -> None:
@@ -52,24 +54,44 @@ def _finite_scalar(value: torch.Tensor, name: str) -> None:
     _require(value.ndim == 0 and torch.isfinite(value), f"nonfinite/non-scalar {name}", FloatingPointError)
 
 
-def current_commit(root: Path) -> str:
-    result = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True,
-                            capture_output=True, text=True)
-    return result.stdout.strip()
-
-
 def _tracked_execution_files_clean(root: Path) -> bool:
-    files = (
-        "source/s09_stage0a_capability.py", "source/s09_stage0a_p1_packet.py",
-        "source/s09_stage0a_p1_trainer.py", "source/s09_stage0a_transition.py",
-        "source/s09_multiobjective_update.py", "source/s09_fem_physics.py",
-        "source/s09_q4_quadrature.py", "source/s09_equilibrium_operator.py",
-        "source/s09_operator.py", "source/s09_stage0a_packet.py",
-        "source/s09_stage0a_p1_freeze.py", "scripts/export_s09_stage0a_p1_packet.py",
-        "scripts/resolve_s09_stage0a_p1_config.py", "scripts/run_s09_stage0a_p1.py",
+    return tracked_execution_files_clean(root)
+
+
+def gpu_identity(visible: str) -> dict[str, str]:
+    """Return a stable physical identity, not just a model name or ordinal."""
+    result = subprocess.run(
+        ["nvidia-smi", f"--id={visible}", "--query-gpu=uuid,pci.bus_id,name",
+         "--format=csv,noheader,nounits"], check=True, capture_output=True, text=True)
+    rows = [row.strip() for row in result.stdout.splitlines() if row.strip()]
+    _require(len(rows) == 1, "visible GPU does not resolve to exactly one physical identity")
+    parts = [part.strip() for part in rows[0].split(",", 2)]
+    _require(len(parts) == 3 and all(parts), "incomplete physical GPU identity")
+    return {"uuid": parts[0], "pci_bus_id": parts[1], "name": parts[2]}
+
+
+def _resolved_config_base_projection(config: dict[str, Any]) -> dict[str, Any]:
+    """Reverse only the declared resolution fields to recover the reviewed base config."""
+    projected = copy.deepcopy(config)
+    projected["status"] = "PACKAGE_SPEC_REVISED_AFTER_CODE_REVIEW_ROUND1"
+    projected["execution_authorized"] = False
+    projected["source"]["training_commit"] = "TO_BE_LOCKED_AS_CANDIDATE_BEFORE_EXACT_COMMIT_CODE_REVIEW"
+    projected["source"]["input_packet_sha256"] = "TO_BE_LOCKED_AFTER_REVIEWED_PACKET_EXPORT"
+    projected["source"]["code_ready_approved_commit"] = "TO_BE_SET_FROM_CODE_READY_VERDICT"
+    projected["producer"]["gpu_id"] = "TO_BE_LOCKED_AFTER_READ_ONLY_AVAILABILITY_CHECK"
+    projected["producer"]["resolved_environment"] = "TO_BE_LOCKED_BY_READ_ONLY_TAOBO_PREFLIGHT"
+    projected["normalisers"]["equilibrium"] = (
+        "freeze_before_model_initialisation_as_mean_selected_teacher-damage_affine-BC_free-DOF_force_MSE"
     )
-    result = subprocess.run(["git", "diff", "--quiet", "HEAD", "--", *files], cwd=root)
-    return result.returncode == 0
+    projected["optimisation"]["gradient_vector_contract"].pop("resolved_parameter_order", None)
+    projected.pop("resolution_receipt", None)
+    return projected
+
+
+def _validate_complete_base_invariants(config: dict[str, Any]) -> None:
+    observed = hashlib.sha256(canonical_json(_resolved_config_base_projection(config))).hexdigest()
+    _require(observed == REVIEWED_BASE_CONFIG_CANONICAL_SHA256,
+             "resolved config contains non-resolution drift from reviewed base")
 
 
 @dataclass
@@ -93,24 +115,30 @@ def resolve_execution_config(*, packet_dir: Path, base_config_path: Path,
                              output_path: Path, repo_root: Path,
                              approved_code_commit: str,
                              approved_hostname: str, approved_gpu_name: str,
+                             approved_gpu_uuid: str, approved_gpu_pci_bus_id: str,
+                             approved_staging_root: Path,
                              authorize_execution: bool) -> dict[str, Any]:
     """Resolve producer identities before training; never starts an optimiser."""
     _require(sys.platform.startswith("linux"), "config resolution is producer-only", PermissionError)
     _require(torch.cuda.is_available(), "CUDA is required for producer resolution", RuntimeError)
     visible = os.environ.get("CUDA_VISIBLE_DEVICES", "")
     _require(visible and "," not in visible, "exactly one CUDA_VISIBLE_DEVICES entry is required")
+    output_path = validated_staging_path(output_path, approved_staging_root)
     _require(not output_path.exists(), "resolved config output already exists")
     _require(socket.gethostname() == approved_hostname, "producer hostname differs from approved preflight")
-    _require(torch.cuda.get_device_name(0) == approved_gpu_name,
+    observed_gpu = gpu_identity(visible)
+    _require(observed_gpu == {"uuid": approved_gpu_uuid,
+                              "pci_bus_id": approved_gpu_pci_bus_id,
+                              "name": approved_gpu_name},
              "physical GPU differs from approved preflight")
     _require(sha256_file(base_config_path) == REVIEWED_BASE_CONFIG_SHA256,
              "base config differs from Code Ready candidate")
-    _require(current_commit(repo_root) == approved_code_commit,
-             "current commit differs from externally approved Code Ready commit")
-    _require(_tracked_execution_files_clean(repo_root), "tracked execution files are dirty")
+    require_approved_code(repo_root, approved_code_commit)
     arrays, metadata, packet_identity = load_verified_packet(packet_dir)
     config = _json(base_config_path)
     _validate_reviewed_config(config, metadata, packet_identity, executable=False)
+    _require(metadata.get("exporter_code_commit") == approved_code_commit,
+             "packet exporter code differs from approved Code Ready commit")
     _require(metadata.get("config_sha256") == REVIEWED_BASE_CONFIG_SHA256,
              "packet is not bound to reviewed base config")
     _require(metadata.get("source_p1_verdict") == "P1_CONTRACT_FROZEN" and
@@ -142,7 +170,7 @@ def resolve_execution_config(*, packet_dir: Path, base_config_path: Path,
     resolved["producer"]["resolved_environment"] = {
         "hostname": socket.gethostname(), "platform": platform.platform(),
         "python": sys.version, "torch": torch.__version__, "cuda": torch.version.cuda,
-        "gpu": torch.cuda.get_device_name(0), "CUDA_VISIBLE_DEVICES": visible,
+        "gpu": observed_gpu, "CUDA_VISIBLE_DEVICES": visible,
     }
     resolved["normalisers"]["equilibrium"] = equilibrium_scale
 
@@ -162,6 +190,9 @@ def resolve_execution_config(*, packet_dir: Path, base_config_path: Path,
         "training_commit": resolved["source"]["training_commit"],
         "code_ready_approved_commit": approved_code_commit,
         "CUDA_VISIBLE_DEVICES": visible,
+        "physical_gpu": observed_gpu,
+        "staging_root": str(approved_staging_root.resolve(strict=True)),
+        "resolved_config_path": str(output_path),
         "equilibrium_frozen_before_model_construction": True,
         "optimizer_or_training_step_performed": False,
     }
@@ -229,6 +260,7 @@ def _validate_reviewed_config(config: dict[str, Any], metadata: dict[str, Any],
         _require(metadata[key] == config["data"][key], f"packet/config {key} drift")
     packet_sha = config["source"]["input_packet_sha256"]
     if executable:
+        _validate_complete_base_invariants(config)
         _require((config["data"]["native_nodes"], config["data"]["native_q4_elements"],
                   config["data"]["gauss_points_per_element"]) == (86756, 86408, 4),
                  "native support drift")
@@ -241,6 +273,8 @@ def _validate_reviewed_config(config: dict[str, Any], metadata: dict[str, Any],
         _require("TO_BE_" not in str(config["producer"]["gpu_id"]), "GPU ID is unresolved")
         _require(config["source"]["code_ready_approved_commit"] == config["source"]["training_commit"],
                  "Code Ready approval is not bound to training commit")
+        _require(metadata.get("exporter_code_commit") == config["source"]["training_commit"],
+                 "packet exporter code is not bound to approved training commit")
         _require(config["resolution_receipt"]["base_config_sha256"] == REVIEWED_BASE_CONFIG_SHA256,
                  "reviewed base config identity mismatch")
         _require(isinstance(config["producer"]["resolved_environment"], dict),
@@ -634,18 +668,40 @@ def decision_from_metrics(initial: dict[str, Any], final: dict[str, Any],
     }
 
 
+def _reject_noncanonical_or_symlink(path: Path, label: str) -> Path:
+    _require(path.is_absolute(), f"{label} must be absolute")
+    _require(".." not in path.parts, f"{label} contains parent traversal")
+    current = Path(path.anchor)
+    for part in path.parts[1:]:
+        current = current / part
+        if os.path.lexists(current):
+            _require(not current.is_symlink(), f"{label} contains a symlink component")
+    return path.resolve(strict=False)
+
+
+def validated_staging_path(output_path: Path, approved_staging_root: Path) -> Path:
+    root = _reject_noncanonical_or_symlink(approved_staging_root, "approved staging root")
+    _require(root.is_dir(), "approved staging root does not exist")
+    output = _reject_noncanonical_or_symlink(output_path, "resolved config path")
+    _require(output.parent == root, "resolved config must be a direct child of approved staging root")
+    return output
+
+
 def validated_producer_paths(output_dir: Path, config: dict[str, Any]) -> tuple[Path, Path]:
-    output = output_dir.resolve()
-    configured = Path(config["producer"]["remote_root"]).resolve()
-    approved_root = Path("/mnt/data2/drtao/wennie").resolve()
-    archive = Path(config["producer"]["archive_root"]).resolve()
-    approved_archive = Path("/mnt/data2/drtao/pidl_archives").resolve()
+    output = _reject_noncanonical_or_symlink(output_dir, "output root")
+    configured = _reject_noncanonical_or_symlink(
+        Path(config["producer"]["remote_root"]), "configured output root")
+    approved_root = _reject_noncanonical_or_symlink(
+        Path("/mnt/data2/drtao/wennie"), "approved output parent")
+    archive = _reject_noncanonical_or_symlink(
+        Path(config["producer"]["archive_root"]), "archive root")
+    approved_archive = _reject_noncanonical_or_symlink(
+        Path("/mnt/data2/drtao/pidl_archives"), "approved archive parent")
     _require(output == configured, "output root differs from resolved config")
     _require(output.parent == approved_root,
              "output root is not a direct child of approved Taobo root")
     _require(archive.parent == approved_archive,
              "archive root is not a direct child of approved archive root")
-    _require(not output.is_symlink() and not archive.is_symlink(), "producer root may not be a symlink")
     return output, archive
 
 
@@ -668,7 +724,7 @@ def _execution_preflight(runtime: Runtime, *, config_path: Path, packet_dir: Pat
     observed_environment = {
         "hostname": socket.gethostname(), "platform": platform.platform(),
         "python": sys.version, "torch": torch.__version__, "cuda": torch.version.cuda,
-        "gpu": torch.cuda.get_device_name(0), "CUDA_VISIBLE_DEVICES": visible,
+        "gpu": gpu_identity(visible), "CUDA_VISIBLE_DEVICES": visible,
     }
     _require(observed_environment == runtime.config["producer"]["resolved_environment"],
              "producer environment differs from resolved preflight")
@@ -677,8 +733,6 @@ def _execution_preflight(runtime: Runtime, *, config_path: Path, packet_dir: Pat
 def run_training(*, packet_dir: Path, config_path: Path, output_dir: Path,
                  repo_root: Path) -> dict[str, Any]:
     """Execute the reviewed 1,000-update run after all final gates resolve."""
-    _require(sys.platform.startswith("linux"), "P1 training is forbidden off Linux", PermissionError)
-    _require(torch.cuda.is_available(), "CUDA is required", RuntimeError)
     config = _json(config_path)
     _require(config.get("execution_authorized") is True,
              "unresolved config cannot create producer receipt roots", PermissionError)
@@ -688,11 +742,16 @@ def run_training(*, packet_dir: Path, config_path: Path, output_dir: Path,
     _require(not archive_dir.exists(), "fresh audit/archive root already exists")
     archive_dir.mkdir(parents=False)
     start = time.time()
-    successful_updates = 0
+    expected_packet_sha256 = config.get("source", {}).get("input_packet_sha256")
+    optimizer_steps_completed = 0
+    fully_logged_updates = 0
+    last_diagnostic_update = None
     output_created_by_this_run = False
     stage = "producer_initialisation"
     runtime = None
     try:
+        _require(sys.platform.startswith("linux"), "P1 training is forbidden off Linux", PermissionError)
+        _require(torch.cuda.is_available(), "CUDA is required", RuntimeError)
         device = torch.device("cuda:0")
         torch.manual_seed(config["model"]["seed"])
         torch.cuda.manual_seed_all(config["model"]["seed"])
@@ -725,6 +784,7 @@ def run_training(*, packet_dir: Path, config_path: Path, output_dir: Path,
              (output_dir / "gradient_diagnostics.jsonl").open("x") as gradient_stream, \
              (output_dir / "diagnostic_metrics.jsonl").open("x") as diagnostic_stream:
             diagnostic_stream.write(canonical_json({"update": 0, **initial}).decode()); diagnostic_stream.flush()
+            last_diagnostic_update = 0
             for update in range(1, 1001):
                 index = cycles.index(order[(update - 1) % len(order)])
                 runtime.model.train()
@@ -739,7 +799,7 @@ def run_training(*, packet_dir: Path, config_path: Path, output_dir: Path,
                     eps=config["optimisation"]["gradient_epsilon"])
                 assign_merged_gradient(runtime.model, merged, layout["parameter_order"])
                 optimizer.step()
-                successful_updates = update
+                optimizer_steps_completed = update
                 train_row = {
                     "update": update, "cycle": cycles[index],
                     "scaled_combined_objectives": {
@@ -760,6 +820,8 @@ def run_training(*, packet_dir: Path, config_path: Path, output_dir: Path,
                 if update in DIAGNOSTIC_STEPS:
                     diagnostic_stream.write(canonical_json({"update": update, **evaluate(runtime)}).decode())
                     diagnostic_stream.flush()
+                    last_diagnostic_update = update
+                fully_logged_updates = update
         stage = "final_evaluation"
         final = evaluate(runtime)
         _require(len(train_rows) == 1000 and train_rows[-1]["cycle"] == 46, "update schedule mismatch")
@@ -788,7 +850,10 @@ def run_training(*, packet_dir: Path, config_path: Path, output_dir: Path,
         (output_dir / "README_analysis.md").write_text(readme)
         receipt = {
             "status": "SUCCEEDED", "run_id": config["planned_run_id"],
-            "successful_updates": 1000, "elapsed_seconds": time.time() - start,
+            "successful_updates": 1000, "optimizer_steps_completed": 1000,
+            "fully_logged_updates": 1000, "last_diagnostic_update": last_diagnostic_update,
+            "last_valid_diagnostic_log": "diagnostic_metrics.jsonl",
+            "elapsed_seconds": time.time() - start,
             "commit": current_commit(repo_root), "config_sha256": sha256_file(config_path),
             "packet_manifest_sha256": runtime.packet_identity["manifest_sha256"],
             "producer": environment, "decision": decision,
@@ -802,10 +867,19 @@ def run_training(*, packet_dir: Path, config_path: Path, output_dir: Path,
         failure = {
             "status": "FAILED", "stage": stage, "error_type": type(error).__name__,
             "error": str(error), "elapsed_seconds": time.time() - start,
-            "successful_updates": successful_updates,
+            "successful_updates": fully_logged_updates,
+            "optimizer_steps_completed": optimizer_steps_completed,
+            "fully_logged_updates": fully_logged_updates,
+            "last_diagnostic_update": last_diagnostic_update,
+            "last_valid_diagnostic_log": (
+                "diagnostic_metrics.jsonl" if output_created_by_this_run and last_diagnostic_update is not None
+                else None),
             "run_id": config.get("planned_run_id"), "commit": current_commit(repo_root),
             "config_sha256": sha256_file(config_path),
-            "packet_manifest_sha256": None if runtime is None else runtime.packet_identity["manifest_sha256"],
+            "expected_packet_manifest_sha256": expected_packet_sha256,
+            "observed_packet_manifest_sha256": (
+                None if runtime is None else runtime.packet_identity["manifest_sha256"]),
+            "packet_identity_verified": runtime is not None,
             "audit_root": str(archive_dir),
         }
         (archive_dir / "run_receipt.json").write_bytes(canonical_json(failure))

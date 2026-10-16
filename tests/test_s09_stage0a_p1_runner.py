@@ -3,6 +3,7 @@ import json
 import sys
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -10,12 +11,17 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "source"))
 from s09_multiobjective_update import merge_objective_gradients
+import s09_stage0a_p1_packet as p1packet
+import s09_stage0a_p1_trainer as p1trainer
 from s09_q4_quadrature import q4_shape_data
 from s09_stage0a_capability import S09_E008_CONTEXT
 from s09_stage0a_p1_packet import (
-    canonical_json, load_verified_packet, sha256_bytes, sha256_file, write_packet,
+    canonical_json, frozen_packet_normalisers, load_verified_packet, sha256_bytes,
+    sha256_file, write_packet,
 )
 from s09_stage0a_p1_trainer import (
+    _reject_noncanonical_or_symlink,
+    _validate_complete_base_invariants,
     _objectives,
     assign_merged_gradient,
     build_runtime,
@@ -108,6 +114,71 @@ def packet_fixture(tmp_path: Path):
     config_path = tmp_path / "config.json"
     config_path.write_text(json.dumps(config))
     return packet, config_path, identity
+
+
+def test_packet_metadata_excludes_unresolved_equilibrium_normaliser():
+    config, _ = config_and_metadata()
+    observed = frozen_packet_normalisers(config)
+    assert observed == {
+        "damage_increment": config["normalisers"]["damage_increment"],
+        "history_increment": config["normalisers"]["history_increment"],
+        "displacement": config["normalisers"]["displacement"],
+    }
+    assert "equilibrium" not in observed
+
+
+def test_exporter_actual_metadata_matches_executable_frozen_scale_schema(tmp_path: Path,
+                                                                         monkeypatch):
+    config_path = Path(__file__).resolve().parents[1] / "docs/research/S09/S09-E008/p1_memorisation_run_config_20261016.json"
+    config = json.loads(config_path.read_text())
+    arrays = synthetic_arrays()
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(json.dumps({
+        "audit_id": config["source"]["capability_run_id"],
+        "target_commit": config["source"]["capability_code_commit"],
+    }))
+    original_sha = p1packet.sha256_file
+    monkeypatch.setattr(p1packet, "sha256_file", lambda path: (
+        config["source"]["capability_receipt_sha256"]
+        if Path(path) == receipt_path else original_sha(Path(path))))
+    frozen = {
+        "selected_cycles": list(CYCLES),
+        "growth_cycles": config["data"]["growth_cycles"],
+        "near_stagnant_cycles": config["data"]["near_stagnant_cycles"],
+        "normalisers": frozen_packet_normalisers(config),
+        "D": config["data"]["detectable_growth_scale_D"],
+        "near_stagnant_limit": config["data"]["near_stagnant_selection_limit"],
+        "source_static_sha256": config["source"]["static_sha256"],
+        "verdict": "P1_CONTRACT_FROZEN",
+    }
+    monkeypatch.setattr(p1packet, "_qualify_decode_and_freeze", lambda **kwargs: (
+        frozen, {"verdict": "FULL_TRAJECTORY_HASH_QUALIFIED"},
+        {"verdict": "FULL_TRAJECTORY_DECODE_QUALIFIED"}))
+    monkeypatch.setattr(p1packet, "load_state_index", lambda *args: [])
+    transitions = []
+    for i in range(len(CYCLES)):
+        transitions.append((
+            SimpleNamespace(d_node=arrays["d_pre"][i], history_gp=arrays["history_pre"][i]),
+            SimpleNamespace(d_node=arrays["d_peak"][i], history_gp=arrays["history_peak"][i],
+                            u_node=arrays["u_peak"][i]),
+        ))
+    monkeypatch.setattr(p1packet, "decode_stage0a_transitions", lambda **kwargs: (transitions, {}))
+    static = {name: arrays[name] for name in (
+        "xy", "conn", "shape", "reference_derivative", "gauss_weight",
+        "nodal_weight", "gp_weight")}
+    static["thickness"] = float(arrays["thickness"][0])
+    monkeypatch.setattr(p1packet, "decode_native_static", lambda *args: (static, {}))
+    monkeypatch.setattr(p1packet, "require_approved_code", lambda *args: None)
+    monkeypatch.setattr(p1packet, "current_commit", lambda *args: "approved")
+    captured = {}
+    monkeypatch.setattr(p1packet, "write_packet", lambda **kwargs: captured.update(kwargs) or {"ok": True})
+    context = replace(S09_E008_CONTEXT, expected_nodes=9, expected_elements=4)
+    p1packet.export_s09_e008_p1_packet(
+        run_root=tmp_path, capability_receipt_path=receipt_path,
+        config_path=config_path, output_dir=tmp_path / "packet", repo_root=tmp_path,
+        approved_code_commit="approved", context=context)
+    assert captured["metadata"]["normalisers"] == frozen_packet_normalisers(config)
+    assert captured["metadata"]["exporter_code_commit"] == "approved"
 
 
 def test_packet_roundtrip_binds_every_array_and_rejects_tampering(tmp_path: Path):
@@ -245,6 +316,8 @@ def test_local_host_cannot_resolve_producer_config(tmp_path: Path):
             packet_dir=packet, base_config_path=config_path, output_path=output,
             repo_root=Path(__file__).resolve().parents[1], approved_code_commit="not-approved",
             approved_hostname="taobo", approved_gpu_name="approved-gpu",
+            approved_gpu_uuid="GPU-approved", approved_gpu_pci_bus_id="0000:00:00.0",
+            approved_staging_root=tmp_path,
             authorize_execution=False)
     assert not output.exists()
 
@@ -282,8 +355,62 @@ def test_stagnation_verdict_uses_D_not_damage_rms():
 def test_producer_path_traversal_is_rejected():
     config, _ = config_and_metadata()
     config["producer"]["remote_root"] = "/mnt/data2/drtao/wennie/../escaped/R001"
-    with pytest.raises(ValueError, match="direct child"):
+    with pytest.raises(ValueError, match="parent traversal|direct child"):
         validated_producer_paths(Path(config["producer"]["remote_root"]), config)
+
+
+def test_complete_resolved_config_invariants_reject_unlisted_drift():
+    path = Path(__file__).resolve().parents[1] / "docs/research/S09/S09-E008/p1_memorisation_run_config_20261016.json"
+    config = json.loads(path.read_text())
+    _validate_complete_base_invariants(config)
+    for keys, value in [
+        (("model", "hard_constraint_contract", "peak_boundary_lifting", "atol"), 1.0),
+        (("model", "hard_constraint_contract", "derived_f_identity", "atol"), 1.0),
+        (("minimum_outputs",), []),
+    ]:
+        drifted = copy.deepcopy(config)
+        target = drifted
+        for key in keys[:-1]:
+            target = target[key]
+        target[keys[-1]] = value
+        with pytest.raises(ValueError, match="non-resolution drift"):
+            _validate_complete_base_invariants(drifted)
+
+
+def test_raw_and_dangling_symlinks_are_rejected_before_resolution(tmp_path: Path):
+    real = tmp_path / "real"; real.mkdir()
+    linked = tmp_path / "linked"; linked.symlink_to(real, target_is_directory=True)
+    with pytest.raises(ValueError, match="symlink"):
+        _reject_noncanonical_or_symlink(linked / "future", "test path")
+    dangling = tmp_path / "dangling"; dangling.symlink_to(tmp_path / "missing")
+    with pytest.raises(ValueError, match="symlink"):
+        _reject_noncanonical_or_symlink(dangling, "test path")
+
+
+def test_early_runtime_failure_receipt_separates_expected_and_observed_packet_identity(
+        tmp_path: Path, monkeypatch):
+    config, _ = config_and_metadata()
+    config["execution_authorized"] = True
+    config["source"]["code_ready_approved_commit"] = "approved"
+    config["source"]["training_commit"] = "approved"
+    config["source"]["input_packet_sha256"] = "a" * 64
+    config_path = tmp_path / "resolved.json"; config_path.write_text(json.dumps(config))
+    output, archive = tmp_path / "run", tmp_path / "audit"
+    monkeypatch.setattr(p1trainer, "current_commit", lambda root: "approved")
+    monkeypatch.setattr(p1trainer, "validated_producer_paths", lambda *args: (output, archive))
+    monkeypatch.setattr(p1trainer.sys, "platform", "linux")
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(p1trainer, "build_runtime", lambda **kwargs: (_ for _ in ()).throw(
+        ValueError("qualification stopped")))
+    with pytest.raises(ValueError, match="qualification stopped"):
+        run_training(packet_dir=tmp_path / "packet", config_path=config_path,
+                     output_dir=output, repo_root=tmp_path)
+    failure = json.loads((archive / "run_receipt.json").read_text())
+    assert failure["expected_packet_manifest_sha256"] == "a" * 64
+    assert failure["observed_packet_manifest_sha256"] is None
+    assert failure["packet_identity_verified"] is False
+    assert failure["optimizer_steps_completed"] == 0
+    assert failure["fully_logged_updates"] == 0
 
 
 def test_packet_writer_rejects_cycle_or_irreversibility_drift(tmp_path: Path):

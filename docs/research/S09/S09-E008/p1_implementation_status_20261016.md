@@ -106,3 +106,44 @@ packet/data-lock rules, update algebra, tests and output contract.  A Code Ready
 pass would authorise only the next gate: reviewed real packet export followed by
 read-only Taobo environment resolution and a separately resolved final execution
 gate.  It would not itself be scientific evidence or training authorisation.
+
+## Code Ready round 2 and bounded fixes
+
+ChatGPT Pro reviewed exact commit `b9f2a2ea999c43c637e2deb9ef407002bd487f97`,
+independently reproduced all 59 submitted tests, and returned
+`REVISE_AND_REREVIEW`.  It closed F1, F3, F4, F7 and F8.  Four remaining
+findings B1--B4 were execution-interface and audit-identity issues; they did not
+reopen the Stage-0A map or multi-objective method.
+
+The third candidate closes them as follows:
+
+- packet metadata now uses the same explicit three-field frozen teacher-scale
+  schema as the executable validator; the producer-resolved equilibrium scale
+  remains separate;
+- export, resolve and run share the exact approved-commit and tracked-file
+  identity check, and the packet records the approved exporter commit;
+- a resolved config is reduced only by the declared resolution fields and then
+  checked against the complete canonical base-config identity, so constraint
+  tolerances, minimum outputs and all unlisted fields cannot drift;
+- raw path components and dangling or existing symlinks are rejected before
+  canonical resolution; resolved config output is restricted to an externally
+  approved staging root;
+- producer resolution records and execution rechecks GPU UUID, PCI bus ID and
+  name in addition to the visible-device selector and host environment;
+- failure receipts distinguish expected from observed packet identity and
+  identity-verification status, optimizer mutations from fully logged updates,
+  and the last durable diagnostic update/log.
+
+The expanded synthetic/no-training suite now reports **64 passed**.  It includes
+an actual exporter-metadata interface test, complete-config drift probes,
+existing and dangling symlink rejection, and an early qualification-failure
+receipt test.  `py_compile`, Ruff F checks, all three CLI `--help` paths and
+`git diff --check` pass.  No real packet export, producer access or optimizer
+step was performed.
+
+## Remaining gate after round 2
+
+Freeze the repaired exact commit and submit the dependency-complete bundle for
+another independent Code Ready review.  Until that verdict is
+`CODE_READY_PASS`, real packet export, Taobo resolution and training remain
+blocked.

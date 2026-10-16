@@ -15,11 +15,14 @@ parser.add_argument("--run-root", type=Path, required=True)
 parser.add_argument("--capability-receipt", type=Path, required=True)
 parser.add_argument("--config", type=Path, required=True)
 parser.add_argument("--output-dir", type=Path, required=True)
+parser.add_argument("--repo-root", type=Path, required=True)
+parser.add_argument("--approved-code-commit", required=True)
 parser.add_argument("--export-reviewed-packet", action="store_true")
 args = parser.parse_args()
 if not args.export_reviewed_packet:
     parser.error("--export-reviewed-packet is required")
 identity = export_s09_e008_p1_packet(
     run_root=args.run_root, capability_receipt_path=args.capability_receipt,
-    config_path=args.config, output_dir=args.output_dir)
+    config_path=args.config, output_dir=args.output_dir, repo_root=args.repo_root,
+    approved_code_commit=args.approved_code_commit)
 print(json.dumps(identity, sort_keys=True))
