@@ -200,19 +200,33 @@ def draw(out,nodes,c,w,fields,rows,outers,ledgers,runid,planned):
   if r['case'] not in fields:
    ax.text(.5,.5,r['case']+'\n'+r['status'],ha='center',va='center');ax.set_xticks([]);ax.set_yticks([]);continue
   r=next(q for q in rows if q['case']==r['case'])
-  name=r['case'];f=fields[name];cell=(w*f).sum(1)/w.sum(1);pc=PolyCollection(nodes[c],array=np.log10(np.maximum(cell,1e-12)),cmap='viridis',norm=norm,edgecolors='none',rasterized=True);ax.add_collection(pc);ax.autoscale();ax.set_aspect('equal');ax.set_title(name+(' accepted' if r['accepted'] else ' MISS / last completed'));ax.set_xlabel('native x');ax.set_ylabel('native y')
+  name=r['case'];f=fields[name];cell=(w*f).sum(1)/w.sum(1);pc=PolyCollection(nodes[c],array=np.log10(np.maximum(cell,1e-12)),cmap='viridis',norm=norm,edgecolors='none',antialiased=False,rasterized=True);ax.add_collection(pc);ax.autoscale();ax.set_aspect('equal');ax.set_title(name+' / outer'+str(r['outer'])+('\naccepted' if r['accepted'] else '\nMISS: last completed'),fontsize=10);ax.set_xlabel('native x');ax.set_ylabel('native y')
  if pc is not None:fig.colorbar(pc,ax=axs.ravel().tolist(),label='log10 GP-weighted active cell mean',shrink=.65)
  fig.suptitle('Native Q4 fields; all10 planned cases; shared scale; accepted uses declared effective policy',fontsize=12);fig.savefig(out/'s2i_fields.png',dpi=160,bbox_inches='tight');plt.close(fig)
+ if all(k in fields for k in ['000','001','100','110']):
+  panels=[('Total:110 - 000',fields['110']-fields['000']),('D at S0,F0:100 - 000',fields['100']-fields['000']),('S at D1,F0:110 - 100',fields['110']-fields['100']),('F at D0,S0:001 - 000',fields['001']-fields['000'])]
+  vm=max(float(abs(t).max()) for _,t in panels);normdiff=SymLogNorm(linthresh=max(vm*1e-3,1e-15),vmin=-vm,vmax=vm)
+  fig,axs=plt.subplots(1,4,figsize=(15,4.5))
+  for ax,(title,f) in zip(axs,panels):
+   cell=(w*f).sum(1)/w.sum(1);pc=PolyCollection(nodes[c],array=cell,cmap='RdBu_r',norm=normdiff,edgecolors='none',antialiased=False,rasterized=True);ax.add_collection(pc);ax.autoscale();ax.set_aspect('equal');ax.set_title(title);ax.set_xlabel('native x');ax.set_ylabel('native y')
+  fig.colorbar(pc,ax=list(axs),label='Signed active difference (shared symlog)',shrink=.7);fig.suptitle('Conditional single-factor differences; D + S = total on this path; not causal percentages',fontsize=11);fig.savefig(out/'s2i_control_differences.png',dpi=170,bbox_inches='tight');plt.close(fig)
  fig,axs=plt.subplots(2,5,figsize=(18,7),sharey=True)
- positive=[t[k] for t in ledgers for k in ['effective_f_min','native_p2_f_pred_min'] if t[k]>0];floor=min(positive+[1e-16])
- dump(out/'trial_display.json',dict(log_display_floor=floor,zero_values=sum(t[k]==0 for t in ledgers for k in ['effective_f_min','native_p2_f_pred_min']),rule='Zero coefficients plotted at the display floor only; CSV retains exact zeros.'))
+ positive=[t[k] for t in ledgers for k in ['effective_f_min','native_p2_f_pred_min'] if t[k]>0];zero_values=sum(t[k]==0 for t in ledgers for k in ['effective_f_min','native_p2_f_pred_min']);floor=min(positive)/10 if positive else 1e-16
+ if zero_values:floor=min(floor,1e-16)
+ dump(out/'trial_display.json',dict(log_display_floor=floor,zero_values=zero_values,rule='Floor adapts to all positive values; exact zeros use the floor only for display. CSV retains zeros.'))
  for ax,r in zip(axs.flat,planned):
   q=[t for t in ledgers if t['case']==r['case']];calls=[t['call'] for t in q]
   if not q:ax.text(.5,.5,r['case']+'\n'+r['status'],ha='center',va='center');continue
   zeros=sum(t[k]==0 for t in q for k in ['effective_f_min','native_p2_f_pred_min'])
-  ax.plot(calls,[max(t['effective_f_min'],floor) for t in q],label='effective f');ax.plot(calls,[max(t['native_p2_f_pred_min'],floor) for t in q],ls=':',label='native p2 f');ax.set_yscale('log');ax.set_ylim(floor/2,1.5);ax.set_title(r['case']+(' zeros='+str(zeros) if zeros else ''));ax.set_xlabel('phase assembly call');ax.set_ylabel('minimum fatigue coefficient');ax.legend(fontsize=6)
-  twin=ax.twinx();twin.plot(calls,[t['upper_violations']+t['lower_violations'] for t in q],c='#b74230',alpha=.5,lw=.7);twin.set_ylabel('out-of-bounds nodes',fontsize=7)
+  marker='o' if len(q)==1 else None
+  ax.plot(calls,[max(t['effective_f_min'],floor) for t in q],marker=marker,label='effective f');ax.plot(calls,[max(t['native_p2_f_pred_min'],floor) for t in q],marker=marker,ls=':',label='native p2 f');ax.set_yscale('log');ax.set_ylim(floor/2,1.5);ax.set_title(r['case']+(' zeros='+str(zeros) if zeros else ''));ax.set_xlabel('phase assembly call');ax.set_ylabel('minimum fatigue coefficient');ax.legend(fontsize=6)
+  twin=ax.twinx();twin.plot(calls,[t['upper_violations']+t['lower_violations'] for t in q],c='#b74230',alpha=.5,lw=.7);twin.set_ylabel('out-of-bounds nodes',fontsize=7);twin.set_ylim(0,len(nodes))
  fig.suptitle('All phase calls, including rejected trials | red = bounds violations | native p2 is predicted in F1');fig.tight_layout();fig.savefig(out/'s2i_trials.png',dpi=160);plt.close(fig)
- for stem in ['s2i_decision','s2i_fields','s2i_trials']:
-  (out/(stem+'.md')).write_text('# '+stem+'\n\nQuestion and scope: one identical synthetic c1s2 predecessor/start; local controls only.\n\nSource: '+runid+'; cases.csv/completed_outers.csv/phase_calls.csv; exact code/inputs in s2i_analysis.json and retrieval verification.\n\nReading order, definitions and limitations: see README_analysis.md. All arms and misses retained. No physical, unique-equilibrium, teacher or multicycle claim.\n')
+ captions={
+  's2i_decision':'Left: strict C=max((Ru+Rd_feasible)/4e-6,Ru/1e-8), effective bars and native-p2 crosses; dashed1 is strict closure. Green means accepted under each declared policy, not strict success for S0/T. Middle: active integral at the labelled last completed outer. Right: strict C over completed outers; failed inner trials excluded.',
+  's2i_fields':'All10 planned cases; titles give completed outer and acceptance under each effective policy. Miss panels retain last complete outer, not the failed inner trial; cases can stop at different outers. Shared log10 active scale, display floor1e-12. Native Q4 polygons use GP/Jacobian-weighted cell means for display only. Scalars/contrasts use unaveraged GP.',
+  's2i_trials':'All phase assembly calls including rejected trials. Left log axis: effective minimum fatigue coefficient and analytic native-p2 prediction in F1. Exact zeros appear at the display floor only; floor and zero counts in trial_display.json, exact values in phase_calls.csv. Right red axis: nodes outside old lower or upper1, shared0-to-nodecount limits. These are trial states with zero accepted history commits.',
+  's2i_control_differences':'Four conditional active differences: total110-000, D at S0/F0 (100-000), S at D1/F0 (110-100), F at D0/S0 (001-000). D+S exactly reconstruct total on this specified path; F has a different conditioning context. These are not fullcube Shapley or physical causal percentages. Shared zero-centred symlog scale, linear threshold0.001 of maximum absolute GP difference. Display-only GP-weighted cell means on native Q4; exact scalars in contrasts.csv.'}
+ for stem,caption in captions.items():
+  (out/(stem+'.md')).write_text('# '+stem+'\n\nQuestion and scope: one identical synthetic c1s2 predecessor/start; local controls only. D includes constraint direction/globalization/feasible norm; S includes fresh stopping and stricter tolerances; F1 fixes phase coefficient1 counterfactually.\n\nData provenance: '+runid+'; cases.csv/completed_outers.csv/phase_calls.csv/contrasts.csv; exact code/inputs in s2i_analysis.json and retrieval verification.\n\nHow to read: '+caption+'\n\nCross-figure interpretation and limitations: see README_analysis.md. All arms and misses retained. No physical, unique-equilibrium, teacher or multicycle claim.\n')
 if __name__=='__main__':main()

@@ -106,3 +106,6 @@ Solver alignment2026-10-15: [track](experiments/hard5_q4_t3_solver_alignment_tra
 
 
 2026-10-16 E011 c1s2: [solver-alignment track](experiments/hard5_q4_t3_solver_alignment_track.md) now separates local composite solver control from incoming lower/history under a common trial start. Active field changes ~78.24% when changing solver, versus0.328%/0.027% when changing predecessor. Internal original Newton trials reachf<1 although accepted endpointsf1; repaired trials stayf1. Original is not strictly joint-converged, so no unique-equilibrium/teacher/physical claim. Next unexecuted discriminator: individual damage-bound/fresh-stop/trial-f controls at the same origin.
+
+
+2026-10-16 E011 [same-origin c1s2 control isolation](research/S04/S04-E011/runs/s2_isolation_v1_r1_result_20261016.md): largest conditional active shift comes from fresh+strict joint accuracy after constraining damage (80.67%), versus14.01% for D alone atoldpolicy and8.80% for frozenf atoriginalpolicy; F underD1 zero. 99.26% of S squared difference is leftwake; 000 max-alpha-trial damage/f hotspot instead bottomright. 10 executed/7declared accepted/2strict/3miss, nofullcube attribution. KeepD1S1 andnativef; one-c1s2 numericalmechanism only, no barebound/pureage/physicalteacher/multicyclegrowth claim.135files verified/independent replay passed.
