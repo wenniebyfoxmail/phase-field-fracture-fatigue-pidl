@@ -122,8 +122,8 @@ def run(a):
                 delta=np.array(lock["residual_xy"][str(stage)][label]);x,y=delta@n,delta@t
                 axes[1,j].scatter(x,y,c="#D55E00",marker="x",s=45)
                 axes[1,j].annotate(label,(x,y),xytext=label_offsets[label],textcoords="offset points",fontsize=8)
-        axes[1,j].set(xlim=(-rn-1.5,rn+1.5),ylim=(-rn-1.5,rn+1.5),xlabel="Normal displacement (px)",ylabel="Tangent displacement (px)",
-                     title="Independent set: fixed reference" if stage==27 else "Paired background residuals, not true errors")
+        axes[1,j].set(xlim=(-rn-1.5,rn+1.5),ylim=(-rn-1.5,rn+1.5),xlabel="Normal displacement (px)",ylabel="Tangent displacement (px)")
+        axes[1,j].set_title("Independent set: fixed reference" if stage==27 else "Paired background residuals\n(not known crack errors)",fontsize=9)
         axes[1,j].set_aspect("equal");axes[1,j].grid(alpha=.15)
     axes[1,0].legend(loc="upper left",fontsize=7,frameon=False)
     fig.suptitle("S03-E032-MD01 R001 | fixed raw-image band and ALL prescribed positional support\nGreen: original band; blue outline: common-centre envelope; orange crosses: anchor alternatives",fontsize=11)
