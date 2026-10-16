@@ -3,6 +3,16 @@
 This navigation record covers the currently touched D01 observation route.
 Exact evidence and verdicts remain in the owning Experiments.
 
+2026-10-16 — [S03-E032-MD01](S03-E032-MD01/experiment.md) tests fixed,
+background-only sampling displacements on E031's same3viewed images.83/83
+profiles valid; secant remains lower-error in25/25common offsets and25/25
+independent28/29anchor alternatives (27fixed). Gain ranges3.144–4.331 and
+0.534–4.229native px. Independent source-pixel/profile/50score reproduction
+differs0, all scenario figures checked. E031 scores unchanged. Supports only
+these finite location stress sets, not arbitrary/continuous physical-position
+robustness or50independent predictions. Next: frozen-rule non-overlapping
+three-stage replication proposal, no further tuning of the viewed point.
+
 2026-10-16 — [S03-E031-MD01](S03-E031-MD01/experiment.md) advances MD01 from
 metadata to one preselected relative-stage optical-width continuation. Last
 three complete stages27/28/29, smallest image IDs403/406/409 fixed before access.

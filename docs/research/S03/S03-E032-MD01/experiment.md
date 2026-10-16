@@ -98,3 +98,43 @@ No physical correspondence, independent beam, road transfer or optimum-position
 claim. Obsidian reuses existing multimodal task note and one Roadmap link.
 
 Status: protocol prepared before perturbation widths; no shifted images measured.
+
+## Outcome — 2026-10-16
+
+Completed; execution succeeded, retrieval verified_local.83/83unique profiles
+valid; common25/25 andindependent25/25available, all50Delta<0. Original E031
+width/profile/score fields reproduce unchanged; seven old payloads checked
+byte-identical before/after. One source record, not50independent trials.
+
+| Family | Secant better / valid / fixed | Delta min,max (native px) |
+|---|---|---|
+|common location|25/25/25|−4.330849691167202,−3.1435723473956685|
+|independent28/29mismatch,27fixed|25/25/25|−4.229319990993083,−0.5342014410814144|
+
+The nominal E031 score remains persistence4.671841741223773 vs
+secant0.4425217502306893px, Delta−4.229319990993083. No better position is
+selected to replace it. Common-location changes preserve about3.14–4.33px gain;
+independent mismatch can shrink it to0.534px, but does not reverse this finite
+test. Valid negative/reversed cases were allowed; none observed, not discarded.
+
+Independent read-only review reconstructs all83profiles from the original3JPEGs
+using separate grid/manual bilinear code and separate half-depth implementation;
+profiles,widths,backgrounds,deficits and all50scores/derived changes differ0.
+Lock/ID/source identity and unchanged nominal arrays match. See
+[independent evidence review](evidence/independent_review.md) and[runs](runs.md).
+Final3figures/gray reviewed; layout audits empty; PNG300dpi and embeddedPDFfonts.
+[Final figures and guide](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E032-MD01/runs/S03-E032-MD01-R003/analysis/README_analysis.md).
+
+Conclusion: original directional benefit survives these background-informed
+finite position stress sets. This is useful additional support, not continuous
+robustness, calibrated physical location errors, independent-beam validation or
+new prospective prediction. Independent set anchors27; common set tests shared
+absolute-position changes separately. Actual residual-to-crack error transfer
+remains assumed. Cases have changed diagnostic history/reference measurements,
+not pure predictor improvements on an unchanged reference.
+
+Disposition: advance; retain this position/measurement rule and stop optimizing
+the viewed point. Next proposal is a prespecified non-overlapping stage24/25/26
+replication using the same method, history-first/target-last. This would still
+be same-beam development evidence, with new-image access separately approved;
+no new images acquired or new case executed here. Obsidian task/Roadmap synced.
