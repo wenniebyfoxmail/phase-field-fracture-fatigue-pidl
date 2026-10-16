@@ -97,3 +97,20 @@ Independent saved-output review before closing. Obsidian route and outcome
 milestones reuse the existing multimodal task note and one Roadmap entry.
 
 Outcome/disposition: prepared; images not yet accessed at protocol creation.
+
+## Pre-target amendment — history-centered-background-search-v1.1
+
+AFTER R001 history prediction save, BEFORE target409 acquisition/viewing:
+the observed background median displacement from403 to406 is approximately
+(0.235,22.930)native px. The original first-position-centered +/-30 search
+could censor a continued shift, even though adjacent-stage movement remains
+within the original window. This is a predictable search-support limitation,
+not a viewed target error. Keep the same four first-history templates,81px
+patch size, +/-30 radius, NCC threshold, median estimator, geometry, width
+definition and all saved predictions. For409 ONLY, centre the search window
+at the frozen last-history dx/dy rounded to nearest integer: (0,23)px. Return
+TOTAL first-to-target displacement, not incremental displacement. No target
+feedback or width-based adjustment. Search support is now dx[-30,30],dy[-7,53]
+relative to the first frame. A boundary result remains invalid. Do not rerun
+R001 or rewrite its snapshot. Fresh review required for this matching delta
+before409 acquisition. Original protocol/results retained as history.

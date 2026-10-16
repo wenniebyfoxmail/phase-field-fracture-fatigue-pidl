@@ -48,24 +48,26 @@ def parabola(a, b, c):
     return float(np.clip(.5*(a-c)/denominator, -1, 1)) if denominator < -1e-12 else 0.
 
 
-def match_background(first, later, config):
+def match_background(first, later, config, seed=(0.,0.)):
     """Map first -> later with fixed off-crack patches, never width optimization."""
     half = config["patch_size"]//2
     radius = config["translation_radius"]
     patches = []
+    seed_x, seed_y = (int(round(v)) for v in seed)
     if first.shape != later.shape:
         return dict(valid=False, reason="native_shape_changed", patches=[], dx=None, dy=None)
     for x, y in config["background_centers"]:
         x, y = int(x), int(y)
-        if min(x-half-radius, y-half-radius) < 0 or x+half+radius >= later.shape[1] or y+half+radius >= later.shape[0]:
+        sx, sy = x+seed_x, y+seed_y
+        if min(x-half, y-half, sx-half-radius, sy-half-radius) < 0 or sx+half+radius >= later.shape[1] or sy+half+radius >= later.shape[0]:
             raise ValueError("Background support outside image")
         template = first[y-half:y+half+1, x-half:x+half+1]
-        search = later[y-half-radius:y+half+radius+1, x-half-radius:x+half+radius+1]
+        search = later[sy-half-radius:sy+half+radius+1, sx-half-radius:sx+half+radius+1]
         response = cv2.matchTemplate(search, template, cv2.TM_CCOEFF_NORMED)
         _, score, _, (xx, yy) = cv2.minMaxLoc(response)
         inside = 0 < xx < response.shape[1]-1 and 0 < yy < response.shape[0]-1
-        dx = xx-radius
-        dy = yy-radius
+        dx = seed_x+xx-radius
+        dy = seed_y+yy-radius
         if inside:
             dx += parabola(*map(float, response[yy, xx-1:xx+2]))
             dy += parabola(*map(float, response[yy-1:yy+2, xx]))
@@ -77,7 +79,7 @@ def match_background(first, later, config):
         return dict(valid=False, reason="insufficient_background_correspondence", patches=patches, dx=None, dy=None)
     dx, dy = np.median([[p["dx"],p["dy"]] for p in accepted],axis=0)
     residuals = [float(np.hypot(p["dx"]-dx,p["dy"]-dy)) for p in accepted]
-    return dict(valid=True, reason="ok", patches=patches, dx=float(dx),dy=float(dy),
+    return dict(valid=True, reason="ok", patches=patches, dx=float(dx),dy=float(dy),search_seed_px=[seed_x,seed_y],
                 patch_residuals_px=residuals, max_patch_residual_px=max(residuals))
 
 
@@ -155,7 +157,10 @@ def execute(args):
         first = native_gray(args.source/FILES[0])
         target = native_gray(args.source/FILES[2])
         geometry = snapshot["geometry"]
-        registration = match_background(first,target,geometry)
+        previous = snapshot["history"][-1]["registration"]
+        seed = (previous["dx"],previous["dy"]) if previous["valid"] else (0.,0.)
+        registration = match_background(first,target,geometry,seed=seed)
+        r["pretarget_amendment"] = "history-centered-background-search-v1.1"
         found,data = profile_at(target,geometry,registration)
         records.append(dict(stage=29,filename=FILES[2],measurement=found,registration=registration))
         if data is not None:
@@ -205,6 +210,9 @@ def self_test():
     m=match_background(random,shifted,config)
     assert m["valid"] and abs(m["dx"]-2)<.02 and abs(m["dy"]+3)<.02
     assert not match_background(random,np.ones_like(random),config)["valid"]
+    large_shift=cv2.warpAffine(random,np.float32([[1,0,2],[0,1,15]]),(300,260))
+    m=match_background(random,large_shift,config,seed=(1.,10.))
+    assert m["valid"] and abs(m["dx"]-2)<.02 and abs(m["dy"]-15)<.02
     print("Synthetic checks passed: independent half-depth, missingness, index prediction, clipping, translation direction/QC")
 
 
