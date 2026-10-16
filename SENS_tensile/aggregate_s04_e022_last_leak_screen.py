@@ -569,7 +569,7 @@ def prepare_baseline(state, reference_path, backbone_path, control_path, coordin
         initial_residual_digest=state_digest(initial.residual),
     )
     data["paired_control"] = admit_control(state, control_path, data, model)
-    data["e021_direct_control"] = admit_coordinate_control(state, coordinate_control_path, data, model)
+    data["e021_direct_control"] = admit_coordinate_control(state, coordinate_control_path, data, model, stored)
     data["direct_actual_rates"] = np.load(coordinate_control_path / "learning_rates.npy",allow_pickle=False)
     with np.load(coordinate_control_path / "prediction.npz") as direct_saved:
         data["direct_support"] = support_diagnostics(direct_saved["uv"], uv, data, geometry)

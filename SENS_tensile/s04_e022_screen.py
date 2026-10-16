@@ -59,7 +59,7 @@ def check_direct_files(state,directory):
         if sha256(Path(directory)/name)!=h:raise ValueError('E021 direct-control asset mismatch: '+name)
 
 
-def admit_coordinate_control(state,directory,data,backbone):
+def admit_coordinate_control(state,directory,data,backbone,saved_base_uv):
     directory=Path(directory);lock=DIRECT_LOCKS[state];check_direct_files(state,directory)
     if data['reference_sha256']!=lock['reference_sha256']:raise ValueError('direct reference mismatch')
     if lock['runtime']!=CONTROL_LOCKS[state]['runtime']:raise ValueError('direct/common runtime mismatch')
@@ -68,8 +68,7 @@ def admit_coordinate_control(state,directory,data,backbone):
         raise ValueError('E021 direct source/run mismatch')
     geom=anchor_component_geometry(data['xy'],data['damage'],data['conn'],data['mass'])
     # Map is derived from the same frozen backbone, never the trained residual.
-    base=predict_in_chunks(backbone,torch.tensor(data['xy'],dtype=torch.float64)).cpu().numpy()
-    mapping=admit_coordinate_map(state,data,base,geom)
+    mapping=admit_coordinate_map(state,data,saved_base_uv,geom)
     if mapping!=lock['coordinate_mapping']:raise ValueError('direct map mismatch')
     model=build_relu_candidate(7,'localized',geom,copy.deepcopy(backbone),mapping)
     cp=torch.load(directory/'final_step_10000.pt',map_location='cpu',weights_only=True)

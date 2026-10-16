@@ -116,7 +116,7 @@ def train(args: argparse.Namespace, data: dict) -> dict:
         args.state, args.backbone_dir, data
     )
     paired = admit_control(args.state, args.control_dir, data, backbone)
-    direct = admit_coordinate_control(args.state, args.coordinate_control_dir, data, backbone)
+    direct = admit_coordinate_control(args.state, args.coordinate_control_dir, data, backbone, saved_base_uv)
     require_direct_native_profile(args.state, args.coordinate_control_dir)
     map_started = time.perf_counter()
     mapping = admit_coordinate_map(args.state, data, saved_base_uv, geometry)
@@ -536,7 +536,7 @@ def main() -> None:
     if args.validate_only:
         backbone, base, lock = admit_backbone(args.state, args.backbone_dir, data)
         control = admit_control(args.state, args.control_dir, data, backbone)
-        direct = admit_coordinate_control(args.state, args.coordinate_control_dir, data, backbone)
+        direct = admit_coordinate_control(args.state, args.coordinate_control_dir, data, backbone, base)
         geometry = anchor_component_geometry(
             data["xy"], data["damage"], data["conn"], data["mass"]
         )
