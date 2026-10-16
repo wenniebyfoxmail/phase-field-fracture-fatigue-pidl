@@ -221,3 +221,15 @@
   Same-interface normal mismatch remains; preserve bounded prior benefit and
   original prediction ranking. Next candidate is separatelyreviewed fixed-BC
   kinematic capacity, not immediate q expansion or physical-cause attribution.
+
+- **2026-10-16 — S03-E019 fixed-BC kinematic-capacity v2 plan awaits confirmation.**
+  Independent local Codex passed4917784/b956f21f plan after correcting v1's
+  dimensional/per-arm classification ambiguity. Proposes one648point weighted
+  rigid-quotient SVD projection on originalmesh/fixedBC, minimum observation
+  RMS and three saved-field gaps; no arbitrary oracle nodal/profile prediction.
+  Source-levelROI impliesS_B=0: direct boundary sampling constraints are absent,
+  but equilibrium-mediated BC influence is not separable or ruled out. Report
+  activecolumns/rank, not a zero-fit guarantee from nominal DOFs. SeeS03-E019/
+  experiment.md/review.md. No realarrays/matrices/tests/solves/plots/Run/send;
+  human plan confirmation precedes code/synthetic review/commands and later
+  separate once-only CPU60s analysis approval. No q expansion or oldmetric change.
