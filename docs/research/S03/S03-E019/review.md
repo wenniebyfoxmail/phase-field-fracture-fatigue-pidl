@@ -267,3 +267,14 @@ fa0a408e2b78c54b1160b83b4ece5cad91d698550e671f55fc5f9eea984737bb。
 完整subspace_display_evidence_review.md与subspace_display_results.md。
 不是数值/布局新失败，不改旧产物/新receipt；不重绘/重算/重SVD、真实/
 留出读取或外发。候选仅另批该确切缓存日志分类及剩余只读验收，当前不执行。
+
+## V01获批限定日志分类后，独立只读显示验收完成 — 2026-10-16
+
+仅上述确切字体缓存logging WARNING按用户批准视为预期初始化，历史保留；
+其他异常停止规则不变。独立续验PASS_DISPLAY，无必改项或其他新异常。
+同名说明全文合规，官方sidecar2图/1说明/0错误；PDF头/EOF/pdfinfo正常，
+单页691.2×388.8pt/未加密，未渲染或目视PDF。末次来源/五产物/收据/
+四源码/审批哈希不变；开始结束clean00a76c3。
+完整回复subspace_display_evidence_review.md；最终subspace_display_results.md。
+本轮无重绘/重算/重SVD、产物修改、真实/留出/evidence数组读取或外发。
+仅V01显示完成，不恢复D01算术或真实E019验收，也不自动继续。

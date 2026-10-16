@@ -364,3 +364,14 @@
   subspace_display_evidence_review.md. Numeric/physical validity unchanged.
   Candidate next step is approval of this exact cache-log classification and
   remaining read-only QA only; no rerender/recompute/SVD/realdata/holdout/send.
+
+- **2026-10-16 — V01 independent display acceptance completed after bounded log approval.**
+  User explicitly classified only the exact font-cache logging WARNING as expected
+  initialization, retaining its history and all other stop rules. Independent
+  PASS_DISPLAY: sidecar fulltext and official2figures/1note/0errors; PDF header/
+  EOF/pdfinfo1page691.2x388.8pt/unencrypted, no PDF rendering/visual inspection;
+  final source/5artifact/receipt/4source/approval hashes unchanged. Start/end clean
+  00a76c3. Prior PNG/23object/value checks retained. See S03-E019/
+  subspace_display_evidence_review.md and subspace_display_results.md.
+  No new anomaly/replot/recompute/SVD/output mutation/realarray/holdout/send.
+  V01 display complete only; D01 scalar and actualE019 acceptance remain paused.

@@ -115,3 +115,12 @@ B及预检未启动、V01目录不存在；没有report/真实/留出读取或�
 详见subspace_display_results.md/subspace_display_evidence_review.md。
 已生成图和有效检查保留，不重绘/重算/重SVD或改原产物；候选仅另批这条
 确切缓存日志的预期分类及剩余只读验收，不自动执行。
+
+### 2026-10-16：V01限定获批后独立显示验收完成
+
+仅字体缓存这条确切logging WARNING按用户批准作为预期初始化保留。
+剩余说明/官方sidecar（2图/1说明/0错误）、PDF完整性及末次哈希均通过，
+无其他新异常，独立PASS_DISPLAY仅限V01。PDF未渲染或目视。
+来源/产物/收据/源码保持，未重绘或重算、读取真实/留出/evidence数组。
+详见subspace_display_evidence_review.md/subspace_display_results.md末节。
+原D01独立算术、真实E019失败/暂停仍保持，不能用显示通过替代。
