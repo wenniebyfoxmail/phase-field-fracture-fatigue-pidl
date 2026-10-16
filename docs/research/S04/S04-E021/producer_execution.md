@@ -1,11 +1,11 @@
 ---
 storyline_id: S04
 experiment_id: S04-E021
-status: stopped-initial-resource-preflight
+status: v2-training-running
 ---
 # E021 Taobo production preparation — 2026-10-15
 
-**v1 transferred as approved; dispatcher stopped at the initial resource check before source checkout or training.** Dispatcher PID2290530; stop2026-10-15T22:11:07Z. Both remote deliverySHA256 values matched. No E021candidate update or comparative result exists. The pending v2 proposal is a separate local package and requires new approval.
+**v2 explicitly approved and transferred unchanged; all three formal preflights passed and c20 runner is active, with c60/c83 queued.** Dispatcher3081226 started2026-10-16T09:47:55Z; first runner3084000 at09:49:46Z. Remote filehashes match and science checkout is clean98c6206. No final scientific result exists yet; v1 failure remains separate.
 
 Scientific source: `98c620637b2b2ef06ec86983220a4e7f9f1053b7`, independently Code Ready PASS (162 nontraining checks). Deployment source: `540632738c080773b22aec65a46dbd2ea1bdd420`, separate from science; subsequent documentation commits must not replace the science checkout. The dispatcher remains outside the clean detached science checkout.
 
@@ -55,3 +55,17 @@ The v1 zero-compute-app condition was an operational restriction beyond the scie
 Changedlauncher/root/resourcepolicy requires a new exactapproval; oldv1permission cannot launchv2. Completeproposal: local_archive/experiments/S04-E021/producer_submission_v2/approval_request.md. Keep oldsourceCodeReady and v1failure separate; this is infrastructure repair, not a scientific outcome.
 
 V2 deployment review binds `4692b6a5b277131a99f35bcea3535bd87207b4ff`: no blockers,12independentnontrainingchecks passed2.30s. Bundle unchanged160346bytes/SHA14507c08858bb9bd624bfaaf2ce9ccd834f78fbc9313c1703bfc85da066e9268; newlauncher11992bytes/SHA7193b52a8f9a80d03f39c737cde4887db1274d14c16c0937396399ff76e45499. Fullsourceafterinitialresourcecheck is byte-identicalv1; sciencefilesunchanged. [V2 exactmanifest](producer/shared_gpu_v2_package_manifest.json), [V2 plan](producer/production_plan_shared_gpu_v2.json). Readyfornewapprovalonly; nottransferred orlaunched.
+
+## v2 user approval and actual launch — 2026-10-16
+
+User approved exactv2 files/root/sharedGPU0free>8GiB and singlelaunchonlyafterremainingpreflightpasses, plus readonlyfollowthrough/E019comparison/censorupdate. Twofiles transferredunchanged andremoteSHA256checks passed. Approvedroot remains `S04-E021-coordinate-98c6206-20261015-v2` (packagecreationdate retained; actualstart2026-10-16). Dispatcher3081226, UTC09:47:55 (10:47:55BST), detachednohupbash outsidecleancodecheckout. Initialsourceclean98c6206 verified,33existingassetcopieshashed. All-stateCUDApreflightinprogress at firstsnapshot; no claim that candidateupdates orsciencepassed.
+
+InitialSSHreset occurred before anyremoteauthentication/action because clientVPNwasdisconnected. Afterclientconnected,readonlycheckconfirmedv2rootabsent; then sameapprovedtransfersinglelaunchcontinued. No experimentretry, no modifiedpackage andnootherproducer. Localcase `local_archive/experiments/S04-E021/producer_execution_v2` holds00_intent,approvedaction/manifest/plan,launchreceiptandtransferlog. Plannedreadonlyheartbeatfollowsoriginalbudget/stoprules; ordinaryprogresssilent. Formaltraining/completion/E019regionalresults pending.
+
+### Formal preflight and initial training health
+
+All three formal preflights completed2026-10-16T09:49:45.001978Z. Torch2.7.0+cu126/NumPy1.24.4/CUDA12.6/RTX4090/GPUServer8/visibleGPU0/CUBLAS:4096:8 match the original controls. Saved-backbone CUDA prediction differences and zero-output residual differences are exactly0.0 for c20/c60/c83. baseline_preflight.json, preflight_learning_rates.npy and asset_copy_manifest.json retrieved to localcase/preflight with all fileSHA/sizes verified. Native expected10000LR rawdigest5b0a2b932b531fbe5713bf7f74a91376e8baa670ed9c8163318ed8347384cad4; first.001, last1.0000024427270673e-5, post-final1e-5. This is the original producer's native arithmetic; Macbitwise equivalence is not asserted.
+
+R001 runner3084000 correctcommand/cwd/code verified; PRE_UPDATE created09:50:12.019226Z before update1, actual own GPU0 allocation1376MiB at subsequent live snapshot. No first passive1000 record yet at that snapshot, so no step-count or performance claim. R002/R003 remain queued by approved dispatcher. Local launchreceipt/first_runner_health record details. Paired E019 baseline CSV is historicalcontrol data only.
+
+Heartbeat e021 created ACTIVE on this thread every30minutes. Readonly ordinary progress silent; completion/failure/user-action exceptions report. No restart, extra steps, code/GPU change or other-process interference. On completion verify producer/archives/retrieval/nativeLR/pairs and compare full/damage/background vs E019 and inherited, inside/outside background and exterior invariance; retain strict rho/nativeLR portability exceptions. Generate exact tables/decisionfigure/README and update censor/Roadmap before stopping heartbeat. No final E021 comparison or scientific verdict available now.

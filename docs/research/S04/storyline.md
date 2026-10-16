@@ -71,3 +71,7 @@ Two-file Mac package (160346-byte incremental bundle +11845-byte dispatcher) bin
 ### 2026-10-15 — S04-E021 v1 stopped before training; shared-GPU proposal prepared
 
 Userapproved exactv1 files and singlelaunch. Both remoteSHAchecks passed; dispatcher2290530 stopped22:11:07Z at initialresourceguard: GPU0had3existingCUDAcontexts despite21772MiBfree. No sciencecheckout, candidateupdates or comparativeE019errors; this is an executionblock, not a scientificnegative. Retrieved10files175450bytes withallSHAverified; no retries/interference. Prepare newv2sharingGPU0with >8GiBfree, same science98c6206/LR/statepairs/budget, freshroot and strictremainingchecks; changedpackage/action needs newapproval. [Execution record](S04-E021/producer_execution.md).
+
+### 2026-10-16 — S04-E021 v2 admitted and started
+
+Exact v2 transfer/launch explicitly approved; both remote file hashes match. Clean science98c6206 and33existing asset copies verified. All three formal runtime/CUDA/reference/map/initialization preflights passed, saved and zero-output UV differences all0.0. Dispatcher3081226 started09:47:55Z; c20 runner3084000 started09:49:46Z, with c60/c83 queued. Original E019 native10000LR profile archived before updates, no E020delayed schedule. Readonly heartbeat e021 every30minutes; no retry or budget change. Final E019 full/damage/background comparison remains pending; no scientific verdict. [Execution record](S04-E021/producer_execution.md).

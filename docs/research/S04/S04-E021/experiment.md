@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E021
 protocol_revision: 20261015-r1-coordinate-preconditioning
-status: code-ready-not-launched
+status: running-v2
 ---
 # Bounded residual-coordinate preconditioning — frozen pre-training protocol
 
@@ -56,3 +56,7 @@ See implementation.md and the tracked CLI/schedule/sampler/empty-matrix checks. 
 ## Code Ready outcome — 2026-10-15
 
 Independent Codex subagent review PASS binds scientific source `98c620637b2b2ef06ec86983220a4e7f9f1053b7`: 162 nontraining tests passed, no skips. First source9b627979 was NO-GO because final candidate diagnostics were not independently recomputed; repaired E021 decoder rejects the same valid-hash tamper. All original tolerances and E019/E020 sources remain unchanged. See [review and remaining limits](code_ready_review.md). No producer access, transfer or training occurred. Future production must use the reviewed scientific source, not a later documentation commit, and an explicitly approved concrete run plan.
+
+## Execution milestone — 2026-10-16
+
+User approved exact v2 production package after the separate v1 initial-resource stop (zero training updates). V2 uses the unchanged reviewed science98c6206 and permits shared GPU0 with >8GiB free, with every other scientific/runtime/budget/stop rule unchanged. All-state formal CUDA preflight passed; c20 runner active and c60/c83 queued. No final scientific outcome yet. See [producer execution and provenance](producer_execution.md). Execution metadata does not amend the frozen scientific protocol.
