@@ -252,7 +252,9 @@ def run(out):
     assert not (out/'forbidden_report').exists()
     stat = source.stat()
     assert (stat.st_size, stat.st_mtime_ns, stat.st_mode) == saved
-    assert source.read_text() == text
+    # read_text() normalises CSV CRLF into LF; compare the stored bytes, not
+    # newline-translated text, when checking source immutability.
+    assert source.read_bytes() == text.encode('utf-8')
     assert (out/'generated_report/diagnostic.png').stat().st_size > 1000
     assert len(engine.parse_csv(source.read_text())) == 357
     assert len(list(csv.DictReader((out/'generated_report/diagnostic.csv').open()))) == 81
