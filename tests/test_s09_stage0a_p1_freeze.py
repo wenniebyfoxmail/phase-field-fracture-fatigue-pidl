@@ -7,7 +7,7 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "source"))
 from s09_multiobjective_update import merge_objective_gradients
-from s09_stage0a_p1_freeze import freeze_p1_contract, half_ulp_float64
+from s09_stage0a_p1_freeze import freeze_p1_contract, half_ulp_float64, weighted_rms
 
 
 def synthetic_fields():
@@ -59,6 +59,22 @@ def test_p1_freeze_rejects_dtype_and_empty_stagnant_group():
     no_stagnation["d_peak"] = np.ones_like(fields["d_peak"]) * 0.2
     with pytest.raises(ValueError, match="P1_NOT_READY"):
         freeze_p1_contract(**no_stagnation)
+
+
+def test_weighted_rms_is_stable_for_tiny_nonzero_values():
+    scalar = np.full((3, 4), 1e-200, dtype=np.float64)
+    scalar_weight = np.array([1, 2, 3, 4], dtype=np.float64)
+    assert weighted_rms(scalar, scalar_weight) == pytest.approx(1e-200)
+    channels = np.stack([scalar, scalar * 2], axis=-1)
+    np.testing.assert_allclose(weighted_rms(channels, scalar_weight), [1e-200, 2e-200])
+    assert weighted_rms(np.zeros_like(scalar), scalar_weight) == 0
+
+
+def test_p1_freeze_preserves_tiny_nonzero_displacement_rms():
+    fields = synthetic_fields()
+    fields["u_peak"][:] = 1e-200
+    result = freeze_p1_contract(**fields)
+    np.testing.assert_allclose(result["normalisers"]["displacement"], [1e-200, 1e-200])
 
 
 def test_gradient_merge_projects_conflicts_and_clips_deterministically():

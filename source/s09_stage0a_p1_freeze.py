@@ -39,12 +39,21 @@ def weighted_mean_per_sample(value: np.ndarray, weight: np.ndarray) -> np.ndarra
 def weighted_rms(value: np.ndarray, weight: np.ndarray) -> np.ndarray:
     """RMS over sample and support axes, retaining a final channel axis."""
     if value.ndim == weight.ndim + 1:
-        return np.sqrt((np.square(value) * weight[None]).sum() /
-                       (value.shape[0] * weight.sum()))
+        scale = np.max(np.abs(value))
+        if scale == 0:
+            return np.float64(0)
+        scaled = value / scale
+        return scale * np.sqrt((np.square(scaled) * weight[None]).sum() /
+                               (value.shape[0] * weight.sum()))
     if value.ndim == weight.ndim + 2:
+        reduce_axes = tuple(range(value.ndim - 1))
+        scale = np.max(np.abs(value), axis=reduce_axes)
+        safe_scale = np.where(scale == 0, np.float64(1), scale)
         expanded = weight[None, ..., None]
-        return np.sqrt((np.square(value) * expanded).sum(tuple(range(value.ndim - 1))) /
-                       (value.shape[0] * weight.sum()))
+        scaled = value / safe_scale
+        rms = safe_scale * np.sqrt((np.square(scaled) * expanded).sum(reduce_axes) /
+                                   (value.shape[0] * weight.sum()))
+        return np.where(scale == 0, np.float64(0), rms)
     raise ValueError("unsupported weighted RMS shapes")
 
 

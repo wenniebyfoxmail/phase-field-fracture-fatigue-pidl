@@ -1,5 +1,13 @@
 # Agent Rules for `upload code/`
 
+## Third-Party Email And Form Approval
+
+- Only emails sent to third parties and forms filled in or submitted to third parties require the user's explicit approval of the final account, recipient/object, full body/fields, attachments and commitments.
+- A change to any of those details requires fresh approval. Verify the actual state after sending or submission; investigate an unknown result before retrying.
+- Submitting research designs, code or evidence to ChatGPT Pro for review is not a third-party email or third-party form submission. It needs no prior approval and may proceed directly, followed by verification of the returned review.
+- Local work, SSH operations, code and document handling, ordinary tool calls and other work that is neither email nor form submission do not trigger this approval rule.
+- Before approval, third-party emails and forms must still be checked for the author's style, audience-appropriate wording, attachments and visible metadata, with unnecessary internal notes and templated AI phrasing removed.
+
 This file is the cross-agent entry point for the shared GitHub repo. It applies to Codex, Claude, and any other agent working from this repository.
 
 ## Non-Negotiable Machine Roles

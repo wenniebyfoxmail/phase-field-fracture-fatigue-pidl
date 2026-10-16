@@ -1,4 +1,5 @@
 import hashlib
+import os
 import sys
 from pathlib import Path
 
@@ -112,6 +113,23 @@ def test_preflight_rejects_payload_path_escape(tmp_path: Path):
         preflight_payloads(tmp_path, transition_rows(rows, [1]))
 
 
+def test_preflight_rejects_payload_symlink(tmp_path: Path):
+    rows = two_cycle_fixture(tmp_path)
+    source = tmp_path / "c0001_s00.mat"
+    target = tmp_path / "outside.mat"
+    source.replace(target)
+    os.symlink(target, source)
+    rows[0]["payload_sha256"] = digest(target)
+    with pytest.raises(ValueError, match="symlink"):
+        preflight_payloads(tmp_path, transition_rows(rows, [1]))
+
+
+@pytest.mark.parametrize("bad_cycles", [[1.9], [True], ["1"]])
+def test_transition_rows_rejects_noninteger_cycle_requests_before_io(tmp_path: Path, bad_cycles):
+    with pytest.raises(ValueError, match="exact integer"):
+        transition_rows(two_cycle_fixture(tmp_path), bad_cycles)
+
+
 def test_decoder_preserves_native_support_and_alias_equality(tmp_path: Path):
     rows = two_cycle_fixture(tmp_path)
     decoded, receipt = decode_stage0a_transitions(
@@ -146,3 +164,45 @@ def test_decoder_rejects_logical_metadata_rounding(tmp_path: Path):
                sha=digest(path), alias=False, load=.125, timing="post_history_commit")
     with pytest.raises(ValueError, match="cycle"):
         decode_payload(path, item, expected_nodes=4, expected_elements=2)
+
+
+def test_decoder_rejects_external_hdf5_link(tmp_path: Path):
+    external = tmp_path / "external.h5"
+    with h5py.File(external, "w") as handle:
+        handle.create_dataset("d", data=np.zeros((1, 4), dtype=np.float64))
+    path = tmp_path / "linked.mat"
+    write_payload(path, cycle=1, substep=4, load=.125)
+    with h5py.File(path, "r+") as handle:
+        del handle["d_node"]
+        handle["d_node"] = h5py.ExternalLink(external.name, "/d")
+    item = row(cycle=1, substep=4, source="c0001_s04", file=path.name,
+               sha=digest(path), alias=False, load=.125, timing="post_history_commit")
+    with pytest.raises(ValueError, match="non-hard HDF5 link"):
+        decode_payload(path, item, expected_nodes=4, expected_elements=2)
+
+
+def test_decoder_reads_same_bytes_that_were_hashed(tmp_path: Path, monkeypatch):
+    path = tmp_path / "stable.mat"
+    write_payload(path, cycle=1, substep=4, load=.125)
+    original_hash = digest(path)
+    item = row(cycle=1, substep=4, source="c0001_s04", file=path.name,
+               sha=original_hash, alias=False, load=.125, timing="post_history_commit")
+    original_read = Path.read_bytes
+    changed = False
+
+    def read_then_replace(self):
+        nonlocal changed
+        data = original_read(self)
+        if self == path and not changed:
+            changed = True
+            replacement = tmp_path / "replacement.mat"
+            write_payload(replacement, cycle=1, substep=4, load=.125)
+            with h5py.File(replacement, "r+") as handle:
+                handle["d_node"][:] = .9
+            replacement.replace(path)
+        return data
+
+    monkeypatch.setattr(Path, "read_bytes", read_then_replace)
+    decoded = decode_payload(path, item, expected_nodes=4, expected_elements=2)
+    np.testing.assert_allclose(decoded.d_node, np.linspace(0, .5, 4))
+    assert decoded.payload_sha256 == original_hash

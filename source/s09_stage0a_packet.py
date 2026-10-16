@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
+import io
+from numbers import Integral
 from pathlib import Path
 import re
 
@@ -80,13 +82,23 @@ def _payload_path(states_dir: Path, row: dict[str, str]) -> Path:
         and relative.name not in ("", ".", ".."),
         f"invalid payload path for {row['state_key']}",
     )
-    return states_dir / relative.name
+    root = states_dir.resolve(strict=True)
+    path = states_dir / relative.name
+    _require(not path.is_symlink(), f"payload symlink is forbidden: {relative.name}")
+    resolved = path.resolve(strict=True)
+    _require(resolved.parent == root, f"payload escapes states directory: {relative.name}")
+    return resolved
 
 
 def transition_rows(
     rows: list[dict[str, str]], cycles: tuple[int, ...] | list[int]
 ) -> list[tuple[dict[str, str], dict[str, str], dict[str, str] | None]]:
     """Return `(s00, s04, previous_s05)` rows after causal identity checks."""
+    _require(
+        all(isinstance(cycle, Integral) and not isinstance(cycle, (bool, np.bool_))
+            for cycle in cycles),
+        "cycles must contain exact integer values",
+    )
     selected = tuple(int(cycle) for cycle in cycles)
     _require(selected == tuple(sorted(set(selected))),
              "cycles must be unique and increasing")
@@ -145,13 +157,20 @@ def preflight_payloads(
     transitions: list[tuple[dict[str, str], dict[str, str], dict[str, str] | None]],
 ) -> list[dict[str, object]]:
     """Hash every unique required payload before any scientific decode."""
+    rows = [row for pre, peak, _ in transitions for row in (pre, peak)]
+    return preflight_rows(states_dir, rows)
+
+
+def preflight_rows(
+    states_dir: Path, rows: list[dict[str, str]]
+) -> list[dict[str, object]]:
+    """Hash every unique payload represented by `rows` without opening HDF5."""
     expected: dict[Path, str] = {}
-    for pre, peak, _ in transitions:
-        for row in (pre, peak):
-            path = _payload_path(states_dir, row)
-            prior = expected.setdefault(path, row["payload_sha256"])
-            _require(prior == row["payload_sha256"],
-                     f"conflicting hashes for {path.name}")
+    for row in rows:
+        path = _payload_path(states_dir, row)
+        prior = expected.setdefault(path, row["payload_sha256"])
+        _require(prior == row["payload_sha256"],
+                 f"conflicting hashes for {path.name}")
     inventory = []
     for path in sorted(expected):
         _require(path.is_file(), f"missing payload: {path.name}")
@@ -178,6 +197,34 @@ def _require_matlab_string(handle: h5py.File, name: str) -> None:
     _require(value == "string", f"{name} is not an exact MATLAB string")
 
 
+def _reject_external_hdf5_storage(handle: h5py.File) -> None:
+    """Reject links or dataset storage that can read bytes outside the payload."""
+    seen: set[int] = set()
+
+    def walk(group: h5py.Group) -> None:
+        token = hash(group.id)
+        if token in seen:
+            return
+        seen.add(token)
+        for key in group.keys():
+            link = group.get(key, getlink=True)
+            _require(isinstance(link, h5py.HardLink),
+                     f"non-hard HDF5 link is forbidden: {group.name}/{key}")
+            value = group[key]
+            if isinstance(value, h5py.Group):
+                walk(value)
+            elif isinstance(value, h5py.Dataset):
+                _require(not value.is_virtual,
+                         f"virtual HDF5 dataset is forbidden: {value.name}")
+                plist = value.id.get_create_plist()
+                _require(plist.get_external_count() == 0,
+                         f"external raw HDF5 storage is forbidden: {value.name}")
+            else:
+                raise ValueError(f"unsupported HDF5 object: {group.name}/{key}")
+
+    walk(handle)
+
+
 def decode_payload(
     path: Path,
     row: dict[str, str],
@@ -187,13 +234,17 @@ def decode_payload(
     expected_gp: int = 4,
 ) -> DecodedStage0AState:
     """Decode one hash-verified native payload without implicit dtype casts."""
-    observed = sha256_file(path)
+    _require(not path.is_symlink(), f"payload symlink is forbidden: {path.name}")
+    payload = path.read_bytes()
+    observed = hashlib.sha256(payload).hexdigest()
     _require(observed == row["payload_sha256"],
              f"immediate hash mismatch: {path.name}")
     logical_cycle = _integer(row, "cycle")
     logical_substep = _integer(row, "substep")
     source_cycle, source_substep = _state_identity(row["source_state_key"])
-    with h5py.File(path, "r") as handle:
+    # HDF5 reads the same immutable byte buffer that produced `observed`.
+    with h5py.File(io.BytesIO(payload), "r") as handle:
+        _reject_external_hdf5_storage(handle)
         _require(REQUIRED_DATASETS.issubset(handle.keys()),
                  f"required fields missing: {path.name}")
         expected_shapes = {
