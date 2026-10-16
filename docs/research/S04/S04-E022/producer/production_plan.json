@@ -1,0 +1,139 @@
+{
+  "status": "LOCAL_PREPARED_AWAITING_USER_APPROVAL",
+  "experiment_id": "S04-E022",
+  "protocol_revision": "20261016-r1-last-hidden-leak001",
+  "scientific_source": "a540888497d1838a6aa202f59a884e6930e50fb4",
+  "git_bundle_prerequisite": "98c620637b2b2ef06ec86983220a4e7f9f1053b7",
+  "sender": "Mac user wenxiaofang",
+  "recipient": "drtao@172.16.100.2",
+  "expected_hostname": "GPUServer8",
+  "root": "/mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1",
+  "root_current_absence_verified": false,
+  "ssh": [
+    "ssh",
+    "-F",
+    "/dev/null",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=15"
+  ],
+  "transport": "existing Tunnelblick client channel; do not install/reconfigure",
+  "files": {
+    "E022_a540888.bundle": {
+      "bytes": 100718,
+      "sha256": "ead5a95d9877a9ad521007536504617392245541501f042d1bf949168717cfc4",
+      "local_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E022/producer_submission_v1/E022_a540888.bundle",
+      "remote_path": "/mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/E022_a540888.bundle"
+    },
+    "prepare_and_dispatch.sh": {
+      "bytes": 13255,
+      "sha256": "b3970a5da507751ff3ec454abac1683f6fa83739cba0bc0931f8af1ac5f3e809",
+      "local_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E022/producer_submission_v1/prepare_and_dispatch.sh",
+      "remote_path": "/mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/prepare_and_dispatch.sh"
+    }
+  },
+  "gpu": 0,
+  "resource_policy": "Proposed for this approval: GPU0 shared only if free memory >8192MiB; stable UUID, diskfree>8GiB; log existing processes, never interfere, no fallback/retry/wait-loop.",
+  "matrix": [
+    {
+      "state": "c20s4",
+      "run_id": "S04-E022-last-leak-a540888-20261016-v1-R001-c20s4-localized-s7",
+      "E019_common_control": "S04-E019-frozen-ae23871-20261014-v1-R002-c20s4-localized-s7",
+      "E021_direct_control": "S04-E021-coordinate-98c6206-20261015-v2-R001-c20s4-localized-s7",
+      "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+      "backbone_digest": "2c858058962e9a3c4f43460f3bb085ec985b68b6564c8d4e8aa837dec4960aea",
+      "initial_residual_digest": "7f20e43347f6558a881294f70c0354d44331657ce307330401f4d3ea0874c04d",
+      "sampler_digest": "356cbaed98b25bd3294f9a582854d98f7f7f2fd7283c55ba17fc155e8114fc9d",
+      "runtime": {
+        "torch_version": "2.7.0+cu126",
+        "numpy_version": "1.24.4",
+        "cuda_version": "12.6",
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "hostname": "GPUServer8",
+        "cuda_visible_devices": "0",
+        "cublas_workspace_config": ":4096:8"
+      },
+      "output": "/mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/runs/S04-E022-last-leak-a540888-20261016-v1-R001-c20s4-localized-s7",
+      "archive": "/mnt/data2/drtao/pidl_archives/S04-E022-last-leak-a540888-20261016-v1-R001-c20s4-localized-s7",
+      "log": "/mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/logs/S04-E022-last-leak-a540888-20261016-v1-R001-c20s4-localized-s7.log",
+      "command": "python3 -u SENS_tensile/run_s04_e022_last_leak_screen.py --state c20s4 --arm localized --alpha 0.7 --seed 7 --reference /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/inputs/c20s4.npz --backbone-dir /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/backbones/c20s4 --control-dir /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/controls/S04-E019-frozen-ae23871-20261014-v1-R002-c20s4-localized-s7 --coordinate-control-dir /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/coordinate_controls/S04-E021-coordinate-98c6206-20261015-v2-R001-c20s4-localized-s7 --out /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/runs/S04-E022-last-leak-a540888-20261016-v1-R001-c20s4-localized-s7 --run-id S04-E022-last-leak-a540888-20261016-v1-R001-c20s4-localized-s7 --expected-commit a540888497d1838a6aa202f59a884e6930e50fb4 --archive-root /mnt/data2/drtao/pidl_archives/S04-E022-last-leak-a540888-20261016-v1-R001-c20s4-localized-s7 --log-path /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/logs/S04-E022-last-leak-a540888-20261016-v1-R001-c20s4-localized-s7.log --device cuda"
+    },
+    {
+      "state": "c60s4",
+      "run_id": "S04-E022-last-leak-a540888-20261016-v1-R002-c60s4-localized-s7",
+      "E019_common_control": "S04-E019-frozen-ae23871-20261014-v1-R004-c60s4-localized-s7",
+      "E021_direct_control": "S04-E021-coordinate-98c6206-20261015-v2-R002-c60s4-localized-s7",
+      "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2",
+      "backbone_digest": "ea305c6a0b58ab31ccf807bf3f9c8ac9216453e6d3799a20becc4b37b4e19b78",
+      "initial_residual_digest": "7f20e43347f6558a881294f70c0354d44331657ce307330401f4d3ea0874c04d",
+      "sampler_digest": "69a0a6633860c0bbbdacd58ef6ee83c5aeef3824d6515166ea51d18fd25ec2d1",
+      "runtime": {
+        "torch_version": "2.7.0+cu126",
+        "numpy_version": "1.24.4",
+        "cuda_version": "12.6",
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "hostname": "GPUServer8",
+        "cuda_visible_devices": "0",
+        "cublas_workspace_config": ":4096:8"
+      },
+      "output": "/mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/runs/S04-E022-last-leak-a540888-20261016-v1-R002-c60s4-localized-s7",
+      "archive": "/mnt/data2/drtao/pidl_archives/S04-E022-last-leak-a540888-20261016-v1-R002-c60s4-localized-s7",
+      "log": "/mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/logs/S04-E022-last-leak-a540888-20261016-v1-R002-c60s4-localized-s7.log",
+      "command": "python3 -u SENS_tensile/run_s04_e022_last_leak_screen.py --state c60s4 --arm localized --alpha 0.7 --seed 7 --reference /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/inputs/c60s4.npz --backbone-dir /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/backbones/c60s4 --control-dir /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/controls/S04-E019-frozen-ae23871-20261014-v1-R004-c60s4-localized-s7 --coordinate-control-dir /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/coordinate_controls/S04-E021-coordinate-98c6206-20261015-v2-R002-c60s4-localized-s7 --out /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/runs/S04-E022-last-leak-a540888-20261016-v1-R002-c60s4-localized-s7 --run-id S04-E022-last-leak-a540888-20261016-v1-R002-c60s4-localized-s7 --expected-commit a540888497d1838a6aa202f59a884e6930e50fb4 --archive-root /mnt/data2/drtao/pidl_archives/S04-E022-last-leak-a540888-20261016-v1-R002-c60s4-localized-s7 --log-path /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/logs/S04-E022-last-leak-a540888-20261016-v1-R002-c60s4-localized-s7.log --device cuda"
+    },
+    {
+      "state": "c83s4",
+      "run_id": "S04-E022-last-leak-a540888-20261016-v1-R003-c83s4-localized-s7",
+      "E019_common_control": "S04-E019-frozen-ae23871-20261014-v1-R006-c83s4-localized-s7",
+      "E021_direct_control": "S04-E021-coordinate-98c6206-20261015-v2-R003-c83s4-localized-s7",
+      "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+      "backbone_digest": "956045be711cf18e1d1cdb9519f742422dfcf97e5b7e453e3a88fa0472ced46e",
+      "initial_residual_digest": "7f20e43347f6558a881294f70c0354d44331657ce307330401f4d3ea0874c04d",
+      "sampler_digest": "898564794d89d6096150ff4cde42b1bb0cb8bc430bb62052e90b5c222f7319ed",
+      "runtime": {
+        "torch_version": "2.7.0+cu126",
+        "numpy_version": "1.24.4",
+        "cuda_version": "12.6",
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "hostname": "GPUServer8",
+        "cuda_visible_devices": "0",
+        "cublas_workspace_config": ":4096:8"
+      },
+      "output": "/mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/runs/S04-E022-last-leak-a540888-20261016-v1-R003-c83s4-localized-s7",
+      "archive": "/mnt/data2/drtao/pidl_archives/S04-E022-last-leak-a540888-20261016-v1-R003-c83s4-localized-s7",
+      "log": "/mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/logs/S04-E022-last-leak-a540888-20261016-v1-R003-c83s4-localized-s7.log",
+      "command": "python3 -u SENS_tensile/run_s04_e022_last_leak_screen.py --state c83s4 --arm localized --alpha 0.7 --seed 7 --reference /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/inputs/c83s4.npz --backbone-dir /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/backbones/c83s4 --control-dir /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/controls/S04-E019-frozen-ae23871-20261014-v1-R006-c83s4-localized-s7 --coordinate-control-dir /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/coordinate_controls/S04-E021-coordinate-98c6206-20261015-v2-R003-c83s4-localized-s7 --out /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/runs/S04-E022-last-leak-a540888-20261016-v1-R003-c83s4-localized-s7 --run-id S04-E022-last-leak-a540888-20261016-v1-R003-c83s4-localized-s7 --expected-commit a540888497d1838a6aa202f59a884e6930e50fb4 --archive-root /mnt/data2/drtao/pidl_archives/S04-E022-last-leak-a540888-20261016-v1-R003-c83s4-localized-s7 --log-path /mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/logs/S04-E022-last-leak-a540888-20261016-v1-R003-c83s4-localized-s7.log --device cuda"
+    }
+  ],
+  "remote_existing_sources": {
+    "E019": "/mnt/data2/drtao/wennie/S04-E019-frozen-ae23871-20261014-v1",
+    "E021": "/mnt/data2/drtao/wennie/S04-E021-coordinate-98c6206-20261015-v2"
+  },
+  "asset_copy_count": 60,
+  "copy_policy": "Remote read-only source copies of 3references+15backbonefiles+15E019controls+27E021controls; verify before/after source/destinationSHA then admit pinned data. No rawdata upload.",
+  "preflight": [
+    "Linux,drtao,GPUServer8,/mnt/data2mount/freedisk,exactbothtransferredhashes,freshroot/outputs/archivepaths,one-shotmarker",
+    "clone existing98c6206 without hardlinks, verifybundleprerequisite, fetch exact snapshotref, detach clean a540888",
+    "copy60existingfiles, refuse symlinks/missing/reuseddestinations and changingcopies",
+    "all3formalruntimeidentity + E021native10000actualprofileexact BEFORE any parameterstep",
+    "all3correctstate/reference/backbone/map/control/activation manifest, CUDAinitialbackboneUV<=1e-12, initialfullRMS<=1e-14 and candidatezerooutput exactlyequal; finite/BCchecks",
+    "resource and sourcechecks beforeeachrow; strictrowreload + all9realarchivecopies + actualvector equals preflight before nextrow"
+  ],
+  "actual_lr": "Original native CosineAnnealingLR(T_max10000,eta_min1e-5): read beforeupdate,optimizer.step then scheduler.step;10000usedvalues, last~1.0000024427270673e-5, post-final1e-5,nextactualNone,no10001; expectedvector frozenPRE_UPDATE and matches pinnedE021.",
+  "frozen": [
+    "first7hiddenactivations",
+    "learnedcoefficients/parametercount",
+    "E021coordinates/window/BC",
+    "E017backbone",
+    "reference/damage/history/fatigue",
+    "unbiasedalpha.7seed7sampler/fullobjective",
+    "AdamW/nativeLR/10000newupdates"
+  ],
+  "single_factor": "Only local hidden8 fixed leaky negative_slope .01",
+  "stop": "Any missingresource/runtime/identity/activation/map/sampling/LR/BC/finite/archive or same-run strictnumerical failure stops row anddispatcher. No retry/resume/change/extraupdate/GPUfallback/otherprocessinterference. SSHloss is visibilityloss only.",
+  "primary": "All3valid final10000 full normalized massUVRMS <=.001; completeprimaryFAIL still recorded separately from execution.",
+  "comparison": "Report full/damage/background, inside/outsidebackground vs inherited,E019,E021, plus exteriorinvariance; preserve historicalprimaryFAIL and strictMacnativeLR/reference-rhoexceptions.",
+  "remote_execution_performed": false,
+  "training_authorized": false
+}

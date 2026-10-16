@@ -1,0 +1,19 @@
+{
+  "scientific_source": "a540888497d1838a6aa202f59a884e6930e50fb4",
+  "status": "LOCAL_PREPARED_AWAITING_USER_APPROVAL",
+  "files": {
+    "E022_a540888.bundle": {
+      "bytes": 100718,
+      "sha256": "ead5a95d9877a9ad521007536504617392245541501f042d1bf949168717cfc4",
+      "local_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E022/producer_submission_v1/E022_a540888.bundle",
+      "remote_path": "/mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/E022_a540888.bundle"
+    },
+    "prepare_and_dispatch.sh": {
+      "bytes": 13255,
+      "sha256": "b3970a5da507751ff3ec454abac1683f6fa83739cba0bc0931f8af1ac5f3e809",
+      "local_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E022/producer_submission_v1/prepare_and_dispatch.sh",
+      "remote_path": "/mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/prepare_and_dispatch.sh"
+    }
+  },
+  "remote_execution_performed": false
+}
