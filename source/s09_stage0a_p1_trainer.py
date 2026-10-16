@@ -1,7 +1,7 @@
 """Bounded P1 memorisation runner for the reviewed S09-E008 package."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import copy
 import hashlib
 import json
@@ -24,6 +24,7 @@ from s09_fem_physics import boundary, equilibrium
 from s09_multiobjective_update import merge_objective_gradients
 from s09_q4_quadrature import q4_shape_data
 from s09_stage0a_p1_packet import canonical_json, load_verified_packet, sha256_file
+from s09_stage0a_capability import S09_E008_CONTEXT
 from s09_stage0a_transition import (
     Stage0ATransitionOperator,
     carrara_f,
@@ -35,6 +36,7 @@ from s09_stage0a_transition import (
 OBJECTIVE_ORDER = ("nodal_state_plus_raw_nodal_increment",
                    "gp_history_plus_raw_gp_increment", "peak_equilibrium")
 DIAGNOSTIC_STEPS = (0, 1, 10, 50, 100, 250, 500, 750, 1000)
+REVIEWED_BASE_CONFIG_SHA256 = "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b"
 
 
 def _require(condition: bool, message: str, error=ValueError) -> None:
@@ -56,6 +58,20 @@ def current_commit(root: Path) -> str:
     return result.stdout.strip()
 
 
+def _tracked_execution_files_clean(root: Path) -> bool:
+    files = (
+        "source/s09_stage0a_capability.py", "source/s09_stage0a_p1_packet.py",
+        "source/s09_stage0a_p1_trainer.py", "source/s09_stage0a_transition.py",
+        "source/s09_multiobjective_update.py", "source/s09_fem_physics.py",
+        "source/s09_q4_quadrature.py", "source/s09_equilibrium_operator.py",
+        "source/s09_operator.py", "source/s09_stage0a_packet.py",
+        "source/s09_stage0a_p1_freeze.py", "scripts/export_s09_stage0a_p1_packet.py",
+        "scripts/resolve_s09_stage0a_p1_config.py", "scripts/run_s09_stage0a_p1.py",
+    )
+    result = subprocess.run(["git", "diff", "--quiet", "HEAD", "--", *files], cwd=root)
+    return result.returncode == 0
+
+
 @dataclass
 class Runtime:
     arrays: dict[str, np.ndarray]
@@ -75,6 +91,8 @@ class Runtime:
 
 def resolve_execution_config(*, packet_dir: Path, base_config_path: Path,
                              output_path: Path, repo_root: Path,
+                             approved_code_commit: str,
+                             approved_hostname: str, approved_gpu_name: str,
                              authorize_execution: bool) -> dict[str, Any]:
     """Resolve producer identities before training; never starts an optimiser."""
     _require(sys.platform.startswith("linux"), "config resolution is producer-only", PermissionError)
@@ -82,9 +100,23 @@ def resolve_execution_config(*, packet_dir: Path, base_config_path: Path,
     visible = os.environ.get("CUDA_VISIBLE_DEVICES", "")
     _require(visible and "," not in visible, "exactly one CUDA_VISIBLE_DEVICES entry is required")
     _require(not output_path.exists(), "resolved config output already exists")
+    _require(socket.gethostname() == approved_hostname, "producer hostname differs from approved preflight")
+    _require(torch.cuda.get_device_name(0) == approved_gpu_name,
+             "physical GPU differs from approved preflight")
+    _require(sha256_file(base_config_path) == REVIEWED_BASE_CONFIG_SHA256,
+             "base config differs from Code Ready candidate")
+    _require(current_commit(repo_root) == approved_code_commit,
+             "current commit differs from externally approved Code Ready commit")
+    _require(_tracked_execution_files_clean(repo_root), "tracked execution files are dirty")
     arrays, metadata, packet_identity = load_verified_packet(packet_dir)
     config = _json(base_config_path)
     _validate_reviewed_config(config, metadata, packet_identity, executable=False)
+    _require(metadata.get("config_sha256") == REVIEWED_BASE_CONFIG_SHA256,
+             "packet is not bound to reviewed base config")
+    _require(metadata.get("source_p1_verdict") == "P1_CONTRACT_FROZEN" and
+             metadata.get("source_hash_verdict") == "FULL_TRAJECTORY_HASH_QUALIFIED" and
+             metadata.get("source_decode_verdict") == "FULL_TRAJECTORY_DECODE_QUALIFIED",
+             "packet qualification verdict drift")
     _require(arrays["d_pre"].shape == (16, config["data"]["native_nodes"]),
              "packet nodal support differs from config")
     _require(arrays["history_pre"].shape ==
@@ -104,8 +136,14 @@ def resolve_execution_config(*, packet_dir: Path, base_config_path: Path,
     resolved["status"] = "RESOLVED_FOR_FINAL_EXECUTION_GATE"
     resolved["execution_authorized"] = bool(authorize_execution)
     resolved["source"]["training_commit"] = current_commit(repo_root)
+    resolved["source"]["code_ready_approved_commit"] = approved_code_commit
     resolved["source"]["input_packet_sha256"] = packet_identity["manifest_sha256"]
     resolved["producer"]["gpu_id"] = visible
+    resolved["producer"]["resolved_environment"] = {
+        "hostname": socket.gethostname(), "platform": platform.platform(),
+        "python": sys.version, "torch": torch.__version__, "cuda": torch.version.cuda,
+        "gpu": torch.cuda.get_device_name(0), "CUDA_VISIBLE_DEVICES": visible,
+    }
     resolved["normalisers"]["equilibrium"] = equilibrium_scale
 
     # This construction occurs only after the equilibrium scale is frozen.
@@ -122,6 +160,7 @@ def resolve_execution_config(*, packet_dir: Path, base_config_path: Path,
         "base_config_sha256": sha256_file(base_config_path),
         "packet_manifest_sha256": packet_identity["manifest_sha256"],
         "training_commit": resolved["source"]["training_commit"],
+        "code_ready_approved_commit": approved_code_commit,
         "CUDA_VISIBLE_DEVICES": visible,
         "equilibrium_frozen_before_model_construction": True,
         "optimizer_or_training_step_performed": False,
@@ -136,6 +175,14 @@ def _validate_reviewed_config(config: dict[str, Any], metadata: dict[str, Any],
                               packet_identity: dict[str, Any], *, executable: bool) -> None:
     _require(config["schema_version"] == "s09-e008-p1-run-package-v2", "config schema drift")
     _require(config["planned_run_id"] == "S09-E008-P1-R001-stage0a-memorisation", "run identity drift")
+    _require(config["data"]["selected_cycles"] ==
+             [1, 2, 3, 4, 21, 29, 41, 46, 48, 58, 60, 69, 70, 71, 72, 73],
+             "selected cycle drift")
+    _require(config["data"]["prescribed_path"] ==
+             [0.0, 0.031249875, 0.062499875, 0.093749875, 0.124999875, 0.0],
+             "prescribed path drift")
+    _require(config["data"]["history_order"] == ["H", "alpha_bar", "q_prev", "f"],
+             "history channel drift")
     _require(config["data"]["selected_cycles"] == metadata["selected_cycles"], "packet/config cycle drift")
     _require(config["data"]["history_order"] == metadata["history_order"], "packet/config channel drift")
     _require(config["optimisation"]["objectives_in_fixed_order"] == list(OBJECTIVE_ORDER), "objective order drift")
@@ -143,11 +190,48 @@ def _validate_reviewed_config(config: dict[str, Any], metadata: dict[str, Any],
              "budget drift")
     _require(config["model"]["dtype"] == "float64" and config["model"]["seed"] == 20261016,
              "dtype/seed drift")
+    _require({key: config["model"][key] for key in ("width", "rank", "local_blocks", "coarse_blocks")} ==
+             {"width": 32, "rank": 8, "local_blocks": 2, "coarse_blocks": 1},
+             "model architecture drift")
+    _require(config["data"]["growth_cycles"] == [1, 58, 60, 69, 70] and
+             config["data"]["near_stagnant_cycles"] == [3, 4, 71, 72, 73],
+             "judgement group drift")
+    _require(config["data"]["detectable_growth_scale_D"] == 0.00016864539921617467 and
+             config["data"]["near_stagnant_selection_limit"] == 8.432269960808734e-06,
+             "P1 selection threshold drift")
+    expected_scales = {
+        "damage_increment": 0.006896013386826084,
+        "history_increment": [96.63136736963305, 0.00614771012425793,
+                              0.0059082164580187314, 0.004071375747189726],
+        "displacement": [0.00904670012757536, 0.08381964836377313],
+    }
+    _require(all(config["normalisers"][key] == value for key, value in expected_scales.items()),
+             "frozen scale drift")
+    expected_optimisation = {
+        "optimizer": "AdamW", "learning_rate": 0.0003,
+        "betas": [0.9, 0.999], "epsilon": 1e-08, "weight_decay": 0.0,
+        "updates": 1000, "gradient_epsilon": 1e-12, "global_clip_norm": 1.0,
+    }
+    _require(all(config["optimisation"][key] == value
+                 for key, value in expected_optimisation.items()), "optimisation method drift")
     _require(config["source"]["static_sha256"] == metadata["source_static_sha256"], "static drift")
     _require(config["source"]["capability_receipt_sha256"] == metadata["source_capability_receipt_sha256"],
              "capability receipt drift")
+    _require(config["producer"]["alias"] == "Taobo GPU" and
+             config["producer"]["forbidden_fallback"] == "CSD3" and
+             config["producer"]["remote_root"] ==
+             "/mnt/data2/drtao/wennie/S09-E008-P1-R001-stage0a-memorisation" and
+             config["producer"]["archive_root"] ==
+             "/mnt/data2/drtao/pidl_archives/S09-E008-P1-R001-stage0a-memorisation",
+             "producer/root contract drift")
+    for key in ("growth_cycles", "near_stagnant_cycles", "detectable_growth_scale_D",
+                "near_stagnant_selection_limit"):
+        _require(metadata[key] == config["data"][key], f"packet/config {key} drift")
     packet_sha = config["source"]["input_packet_sha256"]
     if executable:
+        _require((config["data"]["native_nodes"], config["data"]["native_q4_elements"],
+                  config["data"]["gauss_points_per_element"]) == (86756, 86408, 4),
+                 "native support drift")
         _require(config["execution_authorized"] is True, "execution is not authorised", PermissionError)
         _require(packet_sha == packet_identity["manifest_sha256"], "resolved packet identity mismatch")
         for field in ("training_commit", "input_packet_sha256"):
@@ -155,6 +239,20 @@ def _validate_reviewed_config(config: dict[str, Any], metadata: dict[str, Any],
         _require(isinstance(config["normalisers"]["equilibrium"], (int, float)),
                  "equilibrium normaliser is unresolved")
         _require("TO_BE_" not in str(config["producer"]["gpu_id"]), "GPU ID is unresolved")
+        _require(config["source"]["code_ready_approved_commit"] == config["source"]["training_commit"],
+                 "Code Ready approval is not bound to training commit")
+        _require(config["resolution_receipt"]["base_config_sha256"] == REVIEWED_BASE_CONFIG_SHA256,
+                 "reviewed base config identity mismatch")
+        _require(isinstance(config["producer"]["resolved_environment"], dict),
+                 "producer environment is unresolved")
+        _require(metadata.get("config_sha256") == REVIEWED_BASE_CONFIG_SHA256,
+                 "packet was not exported from reviewed base config")
+        _require(metadata.get("source_p1_verdict") == "P1_CONTRACT_FROZEN" and
+                 metadata.get("source_hash_verdict") == "FULL_TRAJECTORY_HASH_QUALIFIED" and
+                 metadata.get("source_decode_verdict") == "FULL_TRAJECTORY_DECODE_QUALIFIED",
+                 "packet qualification verdict drift")
+        _require(metadata.get("normalisers") == expected_scales,
+                 "packet frozen normaliser metadata drift")
     else:
         _require(config["execution_authorized"] is False, "no-training build requires unresolved config")
 
@@ -222,6 +320,8 @@ def _verify_packet_states_before_model(arrays: dict[str, np.ndarray],
              "teacher damage bounds/irreversibility failure")
     _require(torch.all(h_peak[..., 1] >= h_pre[..., 1]),
              "teacher alpha irreversibility failure")
+    _require(torch.all(h_pre[..., 1] >= 0) and torch.all(h_peak[..., 1] >= 0),
+             "teacher alpha must be nonnegative")
     contract = config["model"]["hard_constraint_contract"]
     for label, history in (("pre", h_pre), ("peak", h_peak)):
         expected = carrara_f(history[..., 1])
@@ -233,12 +333,28 @@ def _verify_packet_states_before_model(arrays: dict[str, np.ndarray],
     _require(torch.all((h_peak[..., 3] - h_pre[..., 3]) <=
                        tolerance["atol"] + tolerance["rtol"] * h_pre[..., 3].abs()),
              "teacher f monotonicity failure")
+    cycles = arrays["cycles"].tolist()
+    growth = config["data"]["growth_cycles"]
+    stagnant = config["data"]["near_stagnant_cycles"]
+    _require(growth and stagnant and all(value in cycles for value in growth + stagnant),
+             "empty or invalid judgement group")
+    nodal = torch.as_tensor(arrays["nodal_weight"], dtype=torch.float64, device=device)
+    growth_values = []
+    for cycle in growth:
+        index = cycles.index(cycle)
+        growth_values.append(((d_peak[index] - d_pre[index]).abs() * nodal).sum() / nodal.sum())
+    baseline = torch.stack(growth_values).mean()
+    _require(torch.isfinite(baseline) and baseline > 0,
+             "growth persistence baseline must be finite and positive")
 
 
 def build_runtime(*, packet_dir: Path, config_path: Path, device: torch.device,
                   executable: bool = False) -> Runtime:
-    arrays, metadata, packet_identity = load_verified_packet(packet_dir)
     config = _json(config_path)
+    context = S09_E008_CONTEXT if executable else replace(
+        S09_E008_CONTEXT, expected_nodes=config["data"]["native_nodes"],
+        expected_elements=config["data"]["native_q4_elements"])
+    arrays, metadata, packet_identity = load_verified_packet(packet_dir, context=context)
     _validate_reviewed_config(config, metadata, packet_identity, executable=executable)
     _require(arrays["d_pre"].shape == (16, config["data"]["native_nodes"]),
              "packet nodal support differs from config")
@@ -300,6 +416,11 @@ def _example(runtime: Runtime, index: int):
 
 def hard_constraint_report(runtime: Runtime, d_pre: torch.Tensor,
                            history_pre: torch.Tensor, output: dict[str, torch.Tensor]) -> dict[str, int]:
+    required = ("d_peak", "history_peak", "u_peak", "raw_node", "raw_history",
+                "gp_weight", "nodal_weight")
+    _require(all(name in output for name in required), "projected output record is incomplete")
+    _require(all(torch.isfinite(output[name]).all() for name in required),
+             "nonfinite projected/raw output or support weight", FloatingPointError)
     contract = runtime.config["model"]["hard_constraint_contract"]
     expected_pre = carrara_f(history_pre[..., 1])
     pre_tol = contract["prestate_f_consistency"]
@@ -338,21 +459,23 @@ def _objectives(runtime: Runtime, index: int):
         equilibrium_scale=runtime.equilibrium_scale,
     )
     raw = raw_increment_objectives(output, target, d_pre, history_pre, runtime.model)
-    objectives = (
-        base["nodal_state"] + raw["raw_nodal_increment"],
-        base["gp_history"] + raw["raw_gp_increment"],
-        base["equilibrium"],
-    )
-    for name, value in zip(OBJECTIVE_ORDER, objectives):
+    objectives = {
+        OBJECTIVE_ORDER[0]: base["nodal_state"] + raw["raw_nodal_increment"],
+        OBJECTIVE_ORDER[1]: base["gp_history"] + raw["raw_gp_increment"],
+        OBJECTIVE_ORDER[2]: base["equilibrium"],
+    }
+    for name, value in objectives.items():
         _finite_scalar(value, name)
     return output, target, objectives, base, raw
 
 
 def full_objective_gradients(model: torch.nn.Module, objectives) -> tuple[list[torch.Tensor], dict[str, Any]]:
+    _require(isinstance(objectives, dict) and tuple(objectives) == OBJECTIVE_ORDER,
+             "exactly three named ordered objective records are required")
     named = list(model.named_parameters())
     _require(named and len({name for name, _ in named}) == len(named), "invalid parameter order")
     vectors, records = [], []
-    for objective_index, (objective_name, objective) in enumerate(zip(OBJECTIVE_ORDER, objectives)):
+    for objective_index, (objective_name, objective) in enumerate(objectives.items()):
         grads = torch.autograd.grad(objective, [p for _, p in named], allow_unused=True,
                                     retain_graph=objective_index < len(objectives) - 1)
         blocks, unconnected = [], []
@@ -405,6 +528,16 @@ def gradient_record(vectors: list[torch.Tensor], merged: torch.Tensor,
         "zero_gradient_count": diagnostics["zero_gradient_count"],
         "merged_norm_before_clip": float(diagnostics["merged_norm_before_clip"].detach().cpu()),
         "merged_norm_after_clip": float(diagnostics["merged_norm_after_clip"].detach().cpu()),
+        "balanced_norms": [float(x) for x in diagnostics["balanced_norms"].detach().cpu()],
+        "projected_norms": [float(x) for x in diagnostics["projected_norms"].detach().cpu()],
+        "post_projection_alignment_with_merged": [
+            None if not torch.isfinite(x) else float(x)
+            for x in diagnostics["post_projection_cosines"].detach().cpu()],
+        "effective_norm_ratios_to_reference": [
+            None if diagnostics["reference_norm"] <= eps else float(
+                (x / diagnostics["reference_norm"]).detach().cpu())
+            for x in diagnostics["projected_norms"]
+        ],
         "effective_merged_direction": {
             "dtype": str(merged.detach().cpu().numpy().dtype),
             "vector_length": merged.numel(),
@@ -423,6 +556,22 @@ def proposal_projection_diagnostics(runtime: Runtime, d_pre: torch.Tensor,
         "damage_upper_projection_count": int((raw_damage > 1).sum().item()),
         "alpha_relu_saturation_count": int((raw_alpha_increment < 0).sum().item()),
     }
+
+
+def unscaled_raw_increment_mse(runtime: Runtime, output: dict[str, torch.Tensor],
+                               target: dict[str, torch.Tensor], d_pre: torch.Tensor,
+                               history_pre: torch.Tensor) -> dict[str, float]:
+    d_error = (output["raw_node"][:, 0] * runtime.model.damage_increment_scale -
+               (target["d_peak"] - d_pre))
+    h_error = (output["raw_history"] * runtime.model.history_increment_scale -
+               (target["history_peak"][..., :3] - history_pre[..., :3]))
+    d_value = (d_error.square() * output["nodal_weight"]).sum() / output["nodal_weight"].sum()
+    h_value = (h_error.square() * output["gp_weight"][..., None]).sum((0, 1)) / output["gp_weight"].sum()
+    _require(torch.isfinite(d_value) and torch.isfinite(h_value).all(),
+             "nonfinite unscaled raw-increment diagnostic", FloatingPointError)
+    return {"damage": float(d_value.detach().cpu()),
+            **{f"history_{name}": float(value.detach().cpu())
+               for name, value in zip(("H", "alpha_bar", "q_prev"), h_value)}}
 
 
 def evaluate(runtime: Runtime) -> dict[str, Any]:
@@ -448,14 +597,56 @@ def evaluate(runtime: Runtime) -> dict[str, Any]:
     for index in growth:
         delta = torch.as_tensor(runtime.arrays["d_peak"][index] - runtime.arrays["d_pre"][index], device=runtime.device)
         persistence.append((delta.abs() * nodal).sum() / denominator)
+    _require(growth and stagnant and persistence, "empty judgement group")
+    values = {
+        "L_judge": torch.stack(judge).mean(),
+        "growth_damage_increment_mae": torch.stack([damage_mae[i] for i in growth]).mean(),
+        "growth_persistence_baseline": torch.stack(persistence).mean(),
+        "near_stagnant_false_growth": torch.stack([false_growth[i] for i in stagnant]).mean(),
+    }
+    _require(all(torch.isfinite(value) for value in values.values()), "nonfinite evaluation metric",
+             FloatingPointError)
+    _require(values["growth_persistence_baseline"] > 0, "persistence baseline must be positive")
     return {
-        "L_judge": float(torch.stack(judge).mean().cpu()),
-        "growth_damage_increment_mae": float(torch.stack([damage_mae[i] for i in growth]).mean().cpu()),
-        "growth_persistence_baseline": float(torch.stack(persistence).mean().cpu()),
-        "near_stagnant_false_growth": float(torch.stack([false_growth[i] for i in stagnant]).mean().cpu()),
+        **{name: float(value.cpu()) for name, value in values.items()},
         "hard_constraint_violations": violations,
         "finite": True,
     }
+
+
+def decision_from_metrics(initial: dict[str, Any], final: dict[str, Any],
+                          config: dict[str, Any]) -> dict[str, Any]:
+    capacity = final["L_judge"] <= 0.20 * initial["L_judge"]
+    growth = final["growth_damage_increment_mae"] < final["growth_persistence_baseline"]
+    stagnant_limit = 0.25 * config["data"]["detectable_growth_scale_D"]
+    stagnant = final["near_stagnant_false_growth"] <= stagnant_limit
+    validity = final["finite"] and final["hard_constraint_violations"] == 0
+    return {
+        "formal_p1_pass": bool(capacity and growth and stagnant and validity),
+        "clauses": {"capacity": bool(capacity), "growth": bool(growth),
+                    "near_stagnant": bool(stagnant), "validity": bool(validity)},
+        "initial": initial, "final": final,
+        "thresholds": {"capacity_ratio": 0.20,
+                       "growth_persistence_baseline": final["growth_persistence_baseline"],
+                       "detectable_growth_scale_D": config["data"]["detectable_growth_scale_D"],
+                       "near_stagnant_false_growth_limit": stagnant_limit},
+        "claim_boundary": "development-only bounded memorisation; no rollout/generalisation/FEM-truth/teacher-validity/PINO-benefit claim",
+    }
+
+
+def validated_producer_paths(output_dir: Path, config: dict[str, Any]) -> tuple[Path, Path]:
+    output = output_dir.resolve()
+    configured = Path(config["producer"]["remote_root"]).resolve()
+    approved_root = Path("/mnt/data2/drtao/wennie").resolve()
+    archive = Path(config["producer"]["archive_root"]).resolve()
+    approved_archive = Path("/mnt/data2/drtao/pidl_archives").resolve()
+    _require(output == configured, "output root differs from resolved config")
+    _require(output.parent == approved_root,
+             "output root is not a direct child of approved Taobo root")
+    _require(archive.parent == approved_archive,
+             "archive root is not a direct child of approved archive root")
+    _require(not output.is_symlink() and not archive.is_symlink(), "producer root may not be a symlink")
+    return output, archive
 
 
 def _execution_preflight(runtime: Runtime, *, config_path: Path, packet_dir: Path,
@@ -465,13 +656,22 @@ def _execution_preflight(runtime: Runtime, *, config_path: Path, packet_dir: Pat
     visible = os.environ.get("CUDA_VISIBLE_DEVICES", "")
     _require(visible and "," not in visible, "exactly one CUDA_VISIBLE_DEVICES entry is required")
     _require(str(runtime.config["producer"]["gpu_id"]) == visible, "GPU ID/config mismatch")
-    _require(output_dir == Path(runtime.config["producer"]["remote_root"]), "output root differs from resolved config")
-    _require(str(output_dir).startswith("/mnt/data2/drtao/wennie/"), "invalid Taobo output root")
+    output_dir, _ = validated_producer_paths(output_dir, runtime.config)
     _require(not output_dir.exists(), "fresh output root already exists")
     _require(current_commit(repo_root) == runtime.config["source"]["training_commit"], "trainer commit mismatch")
+    _require(current_commit(repo_root) == runtime.config["source"]["code_ready_approved_commit"],
+             "trainer commit lacks exact Code Ready binding")
+    _require(_tracked_execution_files_clean(repo_root), "tracked execution files are dirty")
     _require(packet_dir.is_dir(), "packet directory missing")
     free = shutil.disk_usage(output_dir.parent).free
     _require(free >= 5 * 1024**3, "less than 5 GiB free at Taobo run root")
+    observed_environment = {
+        "hostname": socket.gethostname(), "platform": platform.platform(),
+        "python": sys.version, "torch": torch.__version__, "cuda": torch.version.cuda,
+        "gpu": torch.cuda.get_device_name(0), "CUDA_VISIBLE_DEVICES": visible,
+    }
+    _require(observed_environment == runtime.config["producer"]["resolved_environment"],
+             "producer environment differs from resolved preflight")
 
 
 def run_training(*, packet_dir: Path, config_path: Path, output_dir: Path,
@@ -479,17 +679,37 @@ def run_training(*, packet_dir: Path, config_path: Path, output_dir: Path,
     """Execute the reviewed 1,000-update run after all final gates resolve."""
     _require(sys.platform.startswith("linux"), "P1 training is forbidden off Linux", PermissionError)
     _require(torch.cuda.is_available(), "CUDA is required", RuntimeError)
-    device = torch.device("cuda:0")
     config = _json(config_path)
-    torch.manual_seed(config["model"]["seed"])
-    torch.cuda.manual_seed_all(config["model"]["seed"])
-    runtime = build_runtime(packet_dir=packet_dir, config_path=config_path,
-                            device=device, executable=True)
-    _execution_preflight(runtime, config_path=config_path, packet_dir=packet_dir,
-                         output_dir=output_dir, repo_root=repo_root)
-    output_dir.mkdir(parents=False)
+    _require(config.get("execution_authorized") is True,
+             "unresolved config cannot create producer receipt roots", PermissionError)
+    _require(config.get("source", {}).get("code_ready_approved_commit") == current_commit(repo_root),
+             "config is not bound to current approved commit")
+    output_dir, archive_dir = validated_producer_paths(output_dir, config)
+    _require(not archive_dir.exists(), "fresh audit/archive root already exists")
+    archive_dir.mkdir(parents=False)
     start = time.time()
+    successful_updates = 0
+    output_created_by_this_run = False
+    stage = "producer_initialisation"
+    runtime = None
     try:
+        device = torch.device("cuda:0")
+        torch.manual_seed(config["model"]["seed"])
+        torch.cuda.manual_seed_all(config["model"]["seed"])
+        runtime = build_runtime(packet_dir=packet_dir, config_path=config_path,
+                                device=device, executable=True)
+        stage = "execution_preflight"
+        _execution_preflight(runtime, config_path=config_path, packet_dir=packet_dir,
+                             output_dir=output_dir, repo_root=repo_root)
+        output_dir = output_dir.resolve()
+        output_dir.mkdir(parents=False)
+        output_created_by_this_run = True
+        (output_dir / "config_resolved.json").write_bytes(config_path.read_bytes())
+        (output_dir / "input_packet_identity.json").write_bytes(canonical_json(runtime.packet_identity))
+        environment = {**config["producer"]["resolved_environment"],
+                       "commit": current_commit(repo_root)}
+        (output_dir / "environment.txt").write_text(json.dumps(environment, indent=2, sort_keys=True) + "\n")
+        stage = "initial_evaluation"
         initial = evaluate(runtime)
         (output_dir / "judgement_initial.json").write_bytes(canonical_json(initial))
         optimizer = torch.optim.AdamW(
@@ -497,73 +717,59 @@ def run_training(*, packet_dir: Path, config_path: Path, output_dir: Path,
             betas=tuple(config["optimisation"]["betas"]), eps=config["optimisation"]["epsilon"],
             weight_decay=config["optimisation"]["weight_decay"],
         )
-        train_rows, gradient_rows, diagnostics = [], [], {"0": initial}
+        train_rows = []
         order = config["data"]["selected_cycles"]
         cycles = runtime.arrays["cycles"].tolist()
-        for update in range(1, 1001):
-            index = cycles.index(order[(update - 1) % len(order)])
-            runtime.model.train()
-            optimizer.zero_grad(set_to_none=True)
-            output, _, objectives, base, raw = _objectives(runtime, index)
-            d_pre = torch.as_tensor(runtime.arrays["d_pre"][index], dtype=torch.float64,
-                                    device=runtime.device)
-            vectors, layout = full_objective_gradients(runtime.model, objectives)
-            merged, grad_diag = merge_objective_gradients(
-                vectors, clip_norm=config["optimisation"]["global_clip_norm"],
-                eps=config["optimisation"]["gradient_epsilon"])
-            assign_merged_gradient(runtime.model, merged, layout["parameter_order"])
-            optimizer.step()
-            train_rows.append({
-                "update": update, "cycle": cycles[index],
-                "scaled_combined_objectives": {
-                    name: float(value.detach().cpu()) for name, value in zip(OBJECTIVE_ORDER, objectives)},
-                "scaled_projected_output_objectives": {
-                    name: float(value.detach().cpu()) for name, value in base.items()},
-                "raw_increment_objectives": {
-                    name: float(value.detach().cpu()) for name, value in raw.items()},
-                "proposal_projection_diagnostics": proposal_projection_diagnostics(
-                    runtime, d_pre, output),
-            })
-            gradient_rows.append({
-                "update": update, "cycle": cycles[index], "layout": layout,
-                **gradient_record(vectors, merged, grad_diag),
-            })
-            if update in DIAGNOSTIC_STEPS:
-                diagnostics[str(update)] = evaluate(runtime)
+        stage = "training_updates"
+        with (output_dir / "train_log.jsonl").open("x") as train_stream, \
+             (output_dir / "gradient_diagnostics.jsonl").open("x") as gradient_stream, \
+             (output_dir / "diagnostic_metrics.jsonl").open("x") as diagnostic_stream:
+            diagnostic_stream.write(canonical_json({"update": 0, **initial}).decode()); diagnostic_stream.flush()
+            for update in range(1, 1001):
+                index = cycles.index(order[(update - 1) % len(order)])
+                runtime.model.train()
+                optimizer.zero_grad(set_to_none=True)
+                output, target, objectives, base, raw = _objectives(runtime, index)
+                d_pre, history_pre, _ = _example(runtime, index)[0]
+                vectors, layout = full_objective_gradients(runtime.model, objectives)
+                _require(layout["parameter_order"] == config["optimisation"]["gradient_vector_contract"]["resolved_parameter_order"],
+                         "per-update parameter order differs from resolved config")
+                merged, grad_diag = merge_objective_gradients(
+                    vectors, clip_norm=config["optimisation"]["global_clip_norm"],
+                    eps=config["optimisation"]["gradient_epsilon"])
+                assign_merged_gradient(runtime.model, merged, layout["parameter_order"])
+                optimizer.step()
+                successful_updates = update
+                train_row = {
+                    "update": update, "cycle": cycles[index],
+                    "scaled_combined_objectives": {
+                        name: float(value.detach().cpu()) for name, value in objectives.items()},
+                    "scaled_projected_output_objectives": {
+                        name: float(value.detach().cpu()) for name, value in base.items()},
+                    "scaled_raw_proposal_objectives": {
+                        name: float(value.detach().cpu()) for name, value in raw.items()},
+                    "unscaled_raw_increment_mse": unscaled_raw_increment_mse(
+                        runtime, output, target, d_pre, history_pre),
+                    "proposal_projection_diagnostics": proposal_projection_diagnostics(runtime, d_pre, output),
+                }
+                gradient_row = {"update": update, "cycle": cycles[index], "layout": layout,
+                                **gradient_record(vectors, merged, grad_diag)}
+                train_rows.append(train_row)
+                train_stream.write(canonical_json(train_row).decode()); train_stream.flush()
+                gradient_stream.write(canonical_json(gradient_row).decode()); gradient_stream.flush()
+                if update in DIAGNOSTIC_STEPS:
+                    diagnostic_stream.write(canonical_json({"update": update, **evaluate(runtime)}).decode())
+                    diagnostic_stream.flush()
+        stage = "final_evaluation"
         final = evaluate(runtime)
         _require(len(train_rows) == 1000 and train_rows[-1]["cycle"] == 46, "update schedule mismatch")
-        capacity = final["L_judge"] <= 0.20 * initial["L_judge"]
-        growth = final["growth_damage_increment_mae"] < final["growth_persistence_baseline"]
-        stagnant = final["near_stagnant_false_growth"] <= 0.25 * runtime.config["normalisers"]["damage_increment"]
-        validity = final["finite"] and final["hard_constraint_violations"] == 0
-        decision = {
-            "formal_p1_pass": bool(capacity and growth and stagnant and validity),
-            "clauses": {"capacity": bool(capacity), "growth": bool(growth),
-                        "near_stagnant": bool(stagnant), "validity": bool(validity)},
-            "initial": initial, "final": final,
-            "claim_boundary": "development-only bounded memorisation; no rollout/generalisation/FEM-truth/teacher-validity/PINO-benefit claim",
-        }
+        decision = decision_from_metrics(initial, final, runtime.config)
         (output_dir / "judgement_final.json").write_bytes(canonical_json(final))
         (output_dir / "decision_metrics.json").write_bytes(canonical_json(decision))
-        with (output_dir / "train_log.jsonl").open("w") as stream:
-            for row in train_rows: stream.write(canonical_json(row).decode())
-        with (output_dir / "gradient_diagnostics.jsonl").open("w") as stream:
-            for row in gradient_rows: stream.write(canonical_json(row).decode())
         torch.save({"model": runtime.model.state_dict(), "optimizer": optimizer.state_dict(),
                     "update": 1000, "config_sha256": sha256_file(config_path),
                     "packet_sha256": runtime.packet_identity["manifest_sha256"]},
                    output_dir / "checkpoint_final.pt")
-        (output_dir / "config_resolved.json").write_bytes(config_path.read_bytes())
-        (output_dir / "input_packet_identity.json").write_bytes(
-            canonical_json(runtime.packet_identity))
-        environment = {
-            "hostname": socket.gethostname(), "platform": platform.platform(),
-            "python": sys.version, "torch": torch.__version__,
-            "cuda": torch.version.cuda, "gpu": torch.cuda.get_device_name(0),
-            "CUDA_VISIBLE_DEVICES": os.environ["CUDA_VISIBLE_DEVICES"],
-            "commit": current_commit(repo_root),
-        }
-        (output_dir / "environment.txt").write_text(json.dumps(environment, indent=2, sort_keys=True) + "\n")
         import matplotlib.pyplot as plt
         fig, ax = plt.subplots(figsize=(6.4, 3.8))
         ax.plot([row["update"] for row in train_rows],
@@ -588,11 +794,21 @@ def run_training(*, packet_dir: Path, config_path: Path, output_dir: Path,
             "producer": environment, "decision": decision,
         }
         (output_dir / "run_receipt.json").write_bytes(canonical_json(receipt))
+        (archive_dir / "run_receipt.json").write_bytes(canonical_json(receipt))
         missing = set(config["minimum_outputs"]) - {p.name for p in output_dir.iterdir()}
         _require(not missing, f"minimum outputs missing: {sorted(missing)}")
         return receipt
     except BaseException as error:
-        failure = {"status": "FAILED", "error_type": type(error).__name__,
-                   "error": str(error), "elapsed_seconds": time.time() - start}
-        (output_dir / "run_receipt.json").write_bytes(canonical_json(failure))
+        failure = {
+            "status": "FAILED", "stage": stage, "error_type": type(error).__name__,
+            "error": str(error), "elapsed_seconds": time.time() - start,
+            "successful_updates": successful_updates,
+            "run_id": config.get("planned_run_id"), "commit": current_commit(repo_root),
+            "config_sha256": sha256_file(config_path),
+            "packet_manifest_sha256": None if runtime is None else runtime.packet_identity["manifest_sha256"],
+            "audit_root": str(archive_dir),
+        }
+        (archive_dir / "run_receipt.json").write_bytes(canonical_json(failure))
+        if output_created_by_this_run and output_dir.exists() and output_dir.is_dir():
+            (output_dir / "run_receipt.json").write_bytes(canonical_json(failure))
         raise

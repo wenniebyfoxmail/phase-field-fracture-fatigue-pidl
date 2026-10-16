@@ -59,5 +59,12 @@ def merge_objective_gradients(gradients, *, clip_norm: float = 1.0, eps: float =
         "positive_norm_median": "lower_median_for_even_count",
         "averaging": "all_objective_directions_including_zero_directions",
         "order": "fixed_cyclic_immutable_balanced_references",
+        "balanced_norms": torch.stack([value.norm() for value in balanced]),
+        "projected_norms": torch.stack([value.norm() for value in projected]),
+        "post_projection_cosines": torch.stack([
+            (value.dot(merged) / (value.norm() * merged.norm()))
+            if value.norm() > eps and merged.norm() > eps else value.new_tensor(float("nan"))
+            for value in projected
+        ]),
     }
     return merged, diagnostics

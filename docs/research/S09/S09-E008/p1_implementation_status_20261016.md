@@ -54,7 +54,8 @@ head and cannot perform an autonomous rollout.
   float64 scale wiring, hard constraints, objective backward passes, full
   gradient layout/merge/assignment, local producer guards, plus all reused
   capability/transition/freeze tests.
-- Result before candidate freeze: 48 passed.
+- Initial candidate result: 49 passed.  After Code Ready round-1 counterexample
+  fixes, the expanded synthetic/no-training suite reports 59 passed.
 - `py_compile`, all three CLI `--help` paths and `git diff --check` passed.
 - No optimiser step, real packet export, SSH, GPU preflight or producer run was
   performed.
@@ -70,6 +71,32 @@ head and cannot perform an autonomous rollout.
   identities, a commit/GPU/path mismatch, local macOS, missing CUDA, insufficient
   disk, an existing run root, nonfinite values or any hard-constraint/gradient
   record failure stops before or during execution.
+
+## Code Ready round 1 and bounded fixes
+
+ChatGPT Pro reviewed exact commit `f4f0d2eabbd3e6caa79105eddfe0b3bebf37cf2f`
+and returned `REVISE_AND_REREVIEW`.  It confirmed the Stage-0A map and the core
+three-objective merge algebra, then identified eight closure issues.  The
+candidate was revised locally without opening a real packet or entering an
+optimizer loop:
+
+- the actual A002 `D` and selection limit are now separate frozen fields, and
+  the verdict uses `0.25 D`;
+- base-config, recomputed qualification, packet, approved commit, tracked
+  execution files, producer hostname/GPU/environment and parameter order are
+  fail-closed bindings;
+- packet loading now enforces canonical identity/manifest bytes and the fixed
+  array schema/semantics rather than trusting self-described dtype/shape;
+- negative alpha, nonfinite output/metrics and missing objectives stop;
+- producer paths use canonical direct-child checks; incremental loss, gradient
+  and scheduled diagnostic logs survive a mid-run failure;
+- failure receipts bind stage, commit, config, packet and completed update
+  count in the fresh approved archive root;
+- logs distinguish scaled training objectives from unscaled raw-increment MSE
+  diagnostics and include post-projection alignment/effective norm ratios.
+
+The rereview bundle must include the full imported source and all five test
+files so the independent reviewer can reproduce the complete no-training suite.
 
 ## Remaining gate
 

@@ -26,6 +26,7 @@ from s09_stage0a_capability import (
 from s09_stage0a_packet import decode_stage0a_transitions
 
 SCHEMA = "s09-e008-p1-packet-v1"
+REVIEWED_BASE_CONFIG_SHA256 = "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b"
 ARRAY_NAMES = (
     "cycles", "path", "d_pre", "d_peak", "history_pre", "history_peak",
     "u_peak", "xy", "conn", "shape", "reference_derivative",
@@ -71,6 +72,10 @@ def _validate_config(config: dict[str, Any]) -> tuple[int, ...]:
              "prescribed path differs from package review")
     _require(config["execution_authorized"] is False,
              "unresolved package config must remain non-executable")
+    _require(config["data"]["detectable_growth_scale_D"] == 0.00016864539921617467,
+             "detectable-growth scale D differs from A002")
+    _require(config["data"]["near_stagnant_selection_limit"] == 8.432269960808734e-06,
+             "near-stagnant selection limit differs from A002")
     return selected
 
 
@@ -159,6 +164,8 @@ def export_s09_e008_p1_packet(*, run_root: Path, capability_receipt_path: Path,
                               context: Stage0ACapabilityContext = S09_E008_CONTEXT) -> dict[str, Any]:
     """Repeat qualification and export the exact reviewed 16-cycle packet."""
     config = _load_json(config_path)
+    _require(sha256_file(config_path) == REVIEWED_BASE_CONFIG_SHA256,
+             "base config differs from reviewed identity")
     cycles = _validate_config(config)
     expected_receipt = config["source"]["capability_receipt_sha256"]
     _require(sha256_file(capability_receipt_path) == expected_receipt,
@@ -172,6 +179,19 @@ def export_s09_e008_p1_packet(*, run_root: Path, capability_receipt_path: Path,
     frozen, hash_receipt, decode_receipt = _qualify_decode_and_freeze(
         run_root=run_root, context=context)
     _require(tuple(frozen["selected_cycles"]) == cycles, "recomputed selection drift")
+    _require(frozen["growth_cycles"] == config["data"]["growth_cycles"],
+             "recomputed growth group drift")
+    _require(frozen["near_stagnant_cycles"] == config["data"]["near_stagnant_cycles"],
+             "recomputed near-stagnant group drift")
+    _require(frozen["normalisers"] == {
+        "damage_increment": config["normalisers"]["damage_increment"],
+        "history_increment": config["normalisers"]["history_increment"],
+        "displacement": config["normalisers"]["displacement"],
+    }, "recomputed normaliser drift")
+    _require(frozen["D"] == config["data"]["detectable_growth_scale_D"],
+             "recomputed detectable-growth scale drift")
+    _require(frozen["near_stagnant_limit"] == config["data"]["near_stagnant_selection_limit"],
+             "recomputed near-stagnant limit drift")
     _require(frozen["source_static_sha256"] == config["source"]["static_sha256"],
              "static identity drift")
     rows = load_state_index(run_root / "state_index.csv", context)
@@ -212,6 +232,8 @@ def export_s09_e008_p1_packet(*, run_root: Path, capability_receipt_path: Path,
         "selected_cycles": list(cycles),
         "growth_cycles": config["data"]["growth_cycles"],
         "near_stagnant_cycles": config["data"]["near_stagnant_cycles"],
+        "detectable_growth_scale_D": frozen["D"],
+        "near_stagnant_selection_limit": frozen["near_stagnant_limit"],
         "history_order": config["data"]["history_order"],
         "normalisers": config["normalisers"],
         "material": {"young": 1.0, "poisson": 0.3, "residual_stiffness": 0.0},
@@ -224,16 +246,22 @@ def export_s09_e008_p1_packet(*, run_root: Path, capability_receipt_path: Path,
                         cycles=cycles, context=context)
 
 
-def load_verified_packet(packet_dir: Path) -> tuple[dict[str, np.ndarray], dict[str, Any], dict[str, Any]]:
+def load_verified_packet(packet_dir: Path, *,
+                         context: Stage0ACapabilityContext = S09_E008_CONTEXT
+                         ) -> tuple[dict[str, np.ndarray], dict[str, Any], dict[str, Any]]:
     """Load a packet only after canonical manifest and every array hash pass."""
     packet_dir = packet_dir.resolve(strict=True)
     manifest_path = packet_dir / "manifest.json"
-    identity = _load_json(packet_dir / "packet_identity.json")
+    identity_path = packet_dir / "packet_identity.json"
+    raw_identity = identity_path.read_bytes()
+    identity = json.loads(raw_identity)
+    _require(raw_identity == canonical_json(identity), "packet identity is not canonical JSON")
     raw_manifest = manifest_path.read_bytes()
     _require(identity.get("schema_version") == SCHEMA, "packet identity schema mismatch")
     _require(sha256_bytes(raw_manifest) == identity.get("manifest_sha256"),
              "packet manifest hash mismatch")
     manifest = json.loads(raw_manifest)
+    _require(raw_manifest == canonical_json(manifest), "packet manifest is not canonical JSON")
     _require(manifest.get("schema_version") == SCHEMA, "packet manifest schema mismatch")
     records = manifest.get("arrays", {})
     _require(set(records) == set(ARRAY_NAMES), "packet array manifest mismatch")
@@ -252,4 +280,8 @@ def load_verified_packet(packet_dir: Path) -> tuple[dict[str, np.ndarray], dict[
                  (value.dtype.kind != "f" or np.isfinite(value).all()),
                  f"invalid packet array values: {name}")
         arrays[name] = value
-    return arrays, manifest["metadata"], identity
+    metadata = manifest["metadata"]
+    _validate_arrays(arrays, cycles=tuple(metadata["selected_cycles"]), context=context)
+    _require(identity.get("manifest_bytes") == len(raw_manifest), "packet manifest byte count mismatch")
+    _require(identity.get("array_count") == len(ARRAY_NAMES), "packet array count mismatch")
+    return arrays, metadata, identity

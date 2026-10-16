@@ -14,6 +14,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--packet-dir", type=Path, required=True)
 parser.add_argument("--base-config", type=Path, required=True)
 parser.add_argument("--output-config", type=Path, required=True)
+parser.add_argument("--approved-code-commit", required=True)
+parser.add_argument("--approved-hostname", required=True)
+parser.add_argument("--approved-gpu-name", required=True)
 parser.add_argument("--authorize-reviewed-run", action="store_true")
 parser.add_argument("--resolve-reviewed-config", action="store_true")
 args = parser.parse_args()
@@ -22,6 +25,8 @@ if not args.resolve_reviewed_config:
 resolved = resolve_execution_config(
     packet_dir=args.packet_dir, base_config_path=args.base_config,
     output_path=args.output_config, repo_root=ROOT,
+    approved_code_commit=args.approved_code_commit,
+    approved_hostname=args.approved_hostname, approved_gpu_name=args.approved_gpu_name,
     authorize_execution=args.authorize_reviewed_run,
 )
 print(json.dumps({

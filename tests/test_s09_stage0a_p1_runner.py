@@ -12,16 +12,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "source"))
 from s09_multiobjective_update import merge_objective_gradients
 from s09_q4_quadrature import q4_shape_data
 from s09_stage0a_capability import S09_E008_CONTEXT
-from s09_stage0a_p1_packet import load_verified_packet, write_packet
+from s09_stage0a_p1_packet import (
+    canonical_json, load_verified_packet, sha256_bytes, sha256_file, write_packet,
+)
 from s09_stage0a_p1_trainer import (
     _objectives,
     assign_merged_gradient,
     build_runtime,
+    decision_from_metrics,
+    evaluate,
     full_objective_gradients,
     gradient_record,
     hard_constraint_report,
     resolve_execution_config,
     run_training,
+    validated_producer_paths,
 )
 
 
@@ -80,14 +85,15 @@ def config_and_metadata():
     config = json.loads(path.read_text())
     config["data"]["native_nodes"] = 9
     config["data"]["native_q4_elements"] = 4
-    config["normalisers"]["damage_increment"] = .01
-    config["normalisers"]["history_increment"] = [.1, .01, .01, .01]
-    config["normalisers"]["displacement"] = [.01, .01]
     metadata = {
         "selected_cycles": list(CYCLES),
         "history_order": config["data"]["history_order"],
         "source_static_sha256": config["source"]["static_sha256"],
         "source_capability_receipt_sha256": config["source"]["capability_receipt_sha256"],
+        "growth_cycles": config["data"]["growth_cycles"],
+        "near_stagnant_cycles": config["data"]["near_stagnant_cycles"],
+        "detectable_growth_scale_D": config["data"]["detectable_growth_scale_D"],
+        "near_stagnant_selection_limit": config["data"]["near_stagnant_selection_limit"],
     }
     return config, metadata
 
@@ -106,7 +112,8 @@ def packet_fixture(tmp_path: Path):
 
 def test_packet_roundtrip_binds_every_array_and_rejects_tampering(tmp_path: Path):
     packet, _, identity = packet_fixture(tmp_path)
-    arrays, metadata, observed = load_verified_packet(packet)
+    context = replace(S09_E008_CONTEXT, expected_nodes=9, expected_elements=4)
+    arrays, metadata, observed = load_verified_packet(packet, context=context)
     assert set(arrays) == set(synthetic_arrays())
     assert observed == identity
     assert metadata["selected_cycles"] == list(CYCLES)
@@ -116,12 +123,42 @@ def test_packet_roundtrip_binds_every_array_and_rejects_tampering(tmp_path: Path
         load_verified_packet(packet)
 
 
+def test_packet_loader_rejects_self_consistent_noncanonical_or_dtype_drift(tmp_path: Path):
+    packet, _, _ = packet_fixture(tmp_path)
+    manifest_path, identity_path = packet / "manifest.json", packet / "packet_identity.json"
+    manifest = json.loads(manifest_path.read_text())
+    noncanonical = json.dumps(manifest, indent=2).encode()
+    manifest_path.write_bytes(noncanonical)
+    identity = json.loads(identity_path.read_text())
+    identity["manifest_sha256"] = sha256_bytes(noncanonical)
+    identity["manifest_bytes"] = len(noncanonical)
+    identity_path.write_bytes(canonical_json(identity))
+    context = replace(S09_E008_CONTEXT, expected_nodes=9, expected_elements=4)
+    with pytest.raises(ValueError, match="not canonical"):
+        load_verified_packet(packet, context=context)
+
+    manifest_path.write_bytes(canonical_json(manifest))
+    value = np.load(packet / "d_peak.npy").astype(np.float32)
+    with (packet / "d_peak.npy").open("wb") as stream:
+        np.save(stream, value, allow_pickle=False)
+    record = manifest["arrays"]["d_peak"]
+    record.update({"sha256": sha256_file(packet / "d_peak.npy"),
+                   "bytes": (packet / "d_peak.npy").stat().st_size,
+                   "dtype": value.dtype.str})
+    raw = canonical_json(manifest); manifest_path.write_bytes(raw)
+    identity.update({"manifest_sha256": sha256_bytes(raw), "manifest_bytes": len(raw)})
+    identity_path.write_bytes(canonical_json(identity))
+    with pytest.raises(ValueError, match="shape/dtype"):
+        load_verified_packet(packet, context=context)
+
+
 def test_no_training_runtime_closes_scales_constraints_and_gradient_layout(tmp_path: Path):
     packet, config_path, _ = packet_fixture(tmp_path)
     runtime = build_runtime(packet_dir=packet, config_path=config_path,
                             device=torch.device("cpu"), executable=False)
     assert runtime.model.damage_increment_scale.dtype == torch.float64
     assert runtime.equilibrium_scale > 0
+    assert evaluate(runtime)["finite"] is True
     output, _, objectives, _, _ = _objectives(runtime, 0)
     inputs = torch.as_tensor(runtime.arrays["d_pre"][0]), torch.as_tensor(runtime.arrays["history_pre"][0])
     assert sum(hard_constraint_report(runtime, *inputs, output).values()) == 0
@@ -161,6 +198,36 @@ def test_teacher_f_is_rechecked_before_model_construction(tmp_path: Path):
                       device=torch.device("cpu"), executable=False)
 
 
+def test_negative_teacher_alpha_is_rejected_before_model_construction(tmp_path: Path):
+    arrays = synthetic_arrays(); config, metadata = config_and_metadata()
+    arrays["history_pre"][0, 0, 0, 1] = -0.1
+    arrays["history_pre"][0, 0, 0, 3] = 1.0
+    context = replace(S09_E008_CONTEXT, expected_nodes=9, expected_elements=4)
+    packet = tmp_path / "packet"
+    write_packet(output_dir=packet, arrays=arrays, metadata=metadata,
+                 cycles=CYCLES, context=context)
+    config_path = tmp_path / "config.json"; config_path.write_text(json.dumps(config))
+    with pytest.raises(ValueError, match="nonnegative"):
+        build_runtime(packet_dir=packet, config_path=config_path,
+                      device=torch.device("cpu"), executable=False)
+
+
+@pytest.mark.parametrize(("path", "value", "message"), [
+    (("model", "width"), 64, "architecture"),
+    (("optimisation", "learning_rate"), 1e-3, "optimisation"),
+    (("normalisers", "damage_increment"), 0.5, "scale"),
+    (("data", "growth_cycles"), [1], "group"),
+    (("optimisation", "gradient_epsilon"), 1e-9, "optimisation"),
+])
+def test_reviewed_method_drift_is_rejected(tmp_path: Path, path, value, message):
+    packet, config_path, _ = packet_fixture(tmp_path)
+    config = json.loads(config_path.read_text()); config[path[0]][path[1]] = value
+    config_path.write_text(json.dumps(config))
+    with pytest.raises(ValueError, match=message):
+        build_runtime(packet_dir=packet, config_path=config_path,
+                      device=torch.device("cpu"), executable=False)
+
+
 def test_unresolved_config_and_local_host_cannot_start_training(tmp_path: Path):
     packet, config_path, _ = packet_fixture(tmp_path)
     output = tmp_path / "run"
@@ -176,8 +243,47 @@ def test_local_host_cannot_resolve_producer_config(tmp_path: Path):
     with pytest.raises((PermissionError, RuntimeError)):
         resolve_execution_config(
             packet_dir=packet, base_config_path=config_path, output_path=output,
-            repo_root=Path(__file__).resolve().parents[1], authorize_execution=False)
+            repo_root=Path(__file__).resolve().parents[1], approved_code_commit="not-approved",
+            approved_hostname="taobo", approved_gpu_name="approved-gpu",
+            authorize_execution=False)
     assert not output.exists()
+
+
+def test_missing_objective_and_nonfinite_output_fail_closed(tmp_path: Path):
+    packet, config_path, _ = packet_fixture(tmp_path)
+    runtime = build_runtime(packet_dir=packet, config_path=config_path,
+                            device=torch.device("cpu"), executable=False)
+    output, _, objectives, _, _ = _objectives(runtime, 0)
+    with pytest.raises(ValueError, match="exactly three"):
+        full_objective_gradients(runtime.model, dict(list(objectives.items())[:2]))
+    with pytest.raises(ValueError, match="named ordered"):
+        full_objective_gradients(runtime.model, dict(reversed(list(objectives.items()))))
+    d_pre = torch.as_tensor(runtime.arrays["d_pre"][0])
+    history_pre = torch.as_tensor(runtime.arrays["history_pre"][0])
+    output["u_peak"][4, 0] = torch.nan
+    with pytest.raises(FloatingPointError, match="nonfinite"):
+        hard_constraint_report(runtime, d_pre, history_pre, output)
+
+
+def test_stagnation_verdict_uses_D_not_damage_rms():
+    config, _ = config_and_metadata()
+    assert config["data"]["detectable_growth_scale_D"] != config["normalisers"]["damage_increment"]
+    initial = {"L_judge": 10.0}
+    final = {"L_judge": 1.0, "growth_damage_increment_mae": 0.1,
+             "growth_persistence_baseline": 0.2,
+             "near_stagnant_false_growth": 5e-5,
+             "hard_constraint_violations": 0, "finite": True}
+    decision = decision_from_metrics(initial, final, config)
+    assert decision["thresholds"]["near_stagnant_false_growth_limit"] == pytest.approx(
+        0.25 * config["data"]["detectable_growth_scale_D"])
+    assert decision["clauses"]["near_stagnant"] is False
+
+
+def test_producer_path_traversal_is_rejected():
+    config, _ = config_and_metadata()
+    config["producer"]["remote_root"] = "/mnt/data2/drtao/wennie/../escaped/R001"
+    with pytest.raises(ValueError, match="direct child"):
+        validated_producer_paths(Path(config["producer"]["remote_root"]), config)
 
 
 def test_packet_writer_rejects_cycle_or_irreversibility_drift(tmp_path: Path):

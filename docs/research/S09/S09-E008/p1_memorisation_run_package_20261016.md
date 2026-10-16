@@ -45,6 +45,13 @@ from the JSON value as `torch.float64`; no value may pass through float32 first.
 The later Code Ready suite must compare every buffer with the configured
 binary64 value exactly.
 
+The Code Ready round-1 audit exposed a missing distinction in the executable
+contract.  The selected-set damage RMS normaliser is not the detectable-growth
+scale `D`.  The A002-qualified value is now frozen separately as
+`D = 0.00016864539921617467`; the deterministic near-stagnant selection limit is
+`8.432269960808734e-06`.  The formal false-growth clause uses exactly `0.25 D`.
+Neither value may be reconstructed from, or replaced by, the RMS normaliser.
+
 ## Multi-objective update
 
 The three update objectives are kept separate:
@@ -125,7 +132,7 @@ early-success stop and no post-result increase in width, seed count or budget.
 
 The minimum output list is frozen in the JSON config and includes exact run and
 input identities, initial/final judgement files, per-update loss/gradient logs,
-the final checkpoint, decision metrics, and a decision-facing figure with a
+scheduled diagnostic metrics, the final checkpoint, decision metrics, and a decision-facing figure with a
 README. Execution health and each scientific bucket must be reported
 separately.
 
