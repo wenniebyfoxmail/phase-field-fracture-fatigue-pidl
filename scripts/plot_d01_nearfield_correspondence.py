@@ -49,11 +49,57 @@ def main():
         plt.rcParams.update({'font.size':10,'pdf.fonttype':42,'axes.spines.top':False,'axes.spines.right':False})
         audits={}
         def footer(fig):fig.text(.5,.014,'E027-R001 | Beam4 T1 | background proxies, not crack-edge truth | native first-frame px',ha='center',fontsize=9)
+        def sidecar(name,grayscale=False):
+            descriptions={
+                'F01_anchor_contexts':('Where are the new independent-of-old-FIT background proxies?',
+                    'Four panels, left to right: 10kN reference, 30/40/50kN target contexts. All20 fixed centres shown; orange crosses are origin exclusions, blue circles accepted anchors, white cross T1 centre. Native first-frame local normal n and tangent t, pixels; arrows show primary displacement multiplied by6, not actual displayed material-point positions. Registered photo-derived pixels use shared gray0..255, nearest display interpolation.'),
+                'F02_displacement_and_residuals':('Does the old shift agree with new near-background displacements?',
+                    'Columns are 30/40/50kN. Top: measured normal/tangent displacement, old FIT orange cross and affine-centre green diamond. Bottom: signed residual after subtracting old FIT. Row-shared axes in native first-frame pixels. Filled blue points have no review flags; open points retain flags. Centre interpolation is a background model, not physical truth.'),
+                'F03_paired_residual_norms':('Does old correction reduce paired background residual norms?',
+                    'Columns are 30/40/50kN. Each row is a fixed anchor N01..N20. Gray square is norm without extra shift, blue triangle after old FIT; line pairs the same point. Open triangles retain review flags. Origin exclusions remain visible. Shared x-axis in native first-frame pixels, smaller is better for this proxy; not every point improves.'),
+                'F04_consistency_and_transfer_limits':('How self-consistent are matches, and what spatial support remains?',
+                    'Columns are 30/40/50kN. Top: reverse-loop residual versus primary/secondary template-size displacement difference, both pixels on shared0..0.85 axes. Filled/open means flags-clear/flagged. Dotted0.5px lines are predeclared review flags, NOT accuracy tolerances. Bottom: all-available and flags-clear support, hull support for centre, centre-old-FIT agreement and LOO hull-interior/exterior RMS and counts. Later flags-clear interior LOO is n=0/n/a, not zero error.')}
+            question,guide=descriptions.get(name,('What do all retained background templates look like before and after correction?',
+                'Rows are every accepted anchor in fixed ID order, pages6/6/5; no best-case ranking. Columns: reference10kN, fixed40kN without extra shift, old FIT shift, NCC candidate shift. All patches primary15x15, nearest display interpolation and gray0..255; fixed40kN is a named diagnostic stage, other stages are in F01-F04. Patch appearance is illustrative, not an independent displacement reference.'))
+            takeaways='\n'.join(f"- {s['load_kN']}kN median norm {s['median_before_norm_px']:.6f} -> {s['median_after_norm_px']:.6f}px; median paired change {s['median_paired_norm_change_px']:.6f}px." for s in summary['by_stage'])
+            stem=name+('_grayscale' if grayscale else '')
+            content=f'''# How to read `{stem}`
+
+## Figure question
+{question}
+
+## Data provenance
+- Run/case IDs: E027-R001 numeric, {a.run_id} render; Beam4 T1, viewed development specimen.
+- Exact input archive: {a.source.resolve()}; correspondences.csv, summary.json, display_arrays.npz; origin decisions: {a.selection.resolve()}.
+- Plotting script: scripts/plot_d01_nearfield_correspondence.py at {receipt['code_commit']}; numeric source at {r['code_commit']}.
+- Stages: first10kN reference and30/40/50kN; E018 frozen H/sampler, E019 frozen FIT comparator. No new correction applied to widths.
+
+## Visual grammar
+{guide}
+{'Grayscale QA copy: use marker shapes/fill and labels, not hue.' if grayscale else 'Colour and marker shape/fill encode separate roles; see paired grayscale QA copy.'}
+
+## Panel guide
+{guide}
+
+## Key numerical takeaway
+{takeaways}
+- Origin screen17/20; available51/60 nominal; flags-clear19/51available (8/6/5 by stage). These are descriptive checks, no physical accuracy pass/fail criterion.
+
+## Limitations and claim boundary
+Independent-of-old-FIT locations are not independent physical truth: shared images/H/sampler and overlapping new templates cause dependence. Context-isolated AI screen excludes visible-band contact, not human annotation. Affine centre crosses a crack-like band and may cross a displacement discontinuity. Agreement is not certified subpixel accuracy or reliable crack-edge transfer. Width definition and old scores unchanged; no new model or unseen validation.
+
+## Related assets
+- Metrics: {a.source.resolve()}/stage_statistics.csv, field_diagnostics.csv and leave_one_out.csv.
+- Decision: {repo}/docs/research/S03/S03-E027-D01/experiment.md.
+- Same-stem PNG/PDF for colour, grayscale PNG for QA; README_analysis.md gives reading order.
+'''
+            (a.output/f'{stem}.md').write_text(content)
         def save(fig,name):
             fig.canvas.draw();audits[name]=qa.audit_layout(fig)
             if any(x=='FAIL' for x,_ in audits[name]):raise RuntimeError('glyph audit')
             fig.savefig(a.output/f'{name}.png',dpi=300);fig.savefig(a.output/f'{name}.pdf')
-            with Image.open(a.output/f'{name}.png') as im:im.convert('L').save(a.output/f'{name}_grayscale.png')
+            with Image.open(a.output/f'{name}.png') as im:im.convert('L').save(a.output/f'{name}_grayscale.png',dpi=(300,300))
+            sidecar(name);sidecar(name,grayscale=True)
             plt.close(fig)
         def subset(j):return [r for r in rows if int(r['stage_index'])==j]
         def available(j):return [r for r in subset(j) if r['available']=='True']
