@@ -245,3 +245,15 @@
   qexpansion/send. SeeS03-E019/review.md/code_review.md/execution_approval.md.
   Await human approval of once-only CPU60s observation-space analysis; synthetic
   budget/code readiness is not a real rank, physical claim or execution permit.
+
+- **2026-10-16 — S03-E019 executed once; independent acceptance paused.**
+  Approved R001 succeeded4.692s/60s with emptylog;16sources/10outputs unchanged,
+  original648points/weights/grid/BC/fourpredictions preserved. Saved training
+  RMSfloor0.0001507284mm, proxy0.0014466885mm, rank1203; not independent-final
+  arithmetic or a physical/prediction claim. Independent provenance/identity/
+  Dscale/Horthogonality passed, then temporary weighted-rigid-span matrix check
+  wrongly used1e-15 instead of frozen1e-12; difference2.22e-15 triggered stop.
+  No retry or source/product changes. SeeS03-E019/results.md/evidence_review.md.
+  Request only correction of that audit check and remaining scalar/figure/PDF
+  acceptance; no analysis/SVD/solve/redraw/holdout/send. Preserve improvement
+  headroom without attributing gap to BC/material or immediately addingq.
