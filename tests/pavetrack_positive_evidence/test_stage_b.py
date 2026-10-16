@@ -183,3 +183,8 @@ def test_WDDM_missing_process_inventory_or_changed_driver_stop(replace):
     xml=desktop_xml().replace(*replace)
     if replace[0]=='<processes>':xml=xml.replace('</processes>','</missing>')
     with pytest.raises(ValueError):r.runtime.desktop_inventory(xml,desktop_lock(),lambda p:'digest')
+
+@pytest.mark.parametrize('content',['N/A','<unavailable/>'])
+def test_WDDM_unavailable_process_table_is_not_empty_idle_table(content):
+    xml=desktop_xml(process=False).replace('<processes></processes>',f'<processes>{content}</processes>')
+    with pytest.raises(ValueError,match='processes unavailable'):r.runtime.desktop_inventory(xml,desktop_lock(),lambda p:'digest')
