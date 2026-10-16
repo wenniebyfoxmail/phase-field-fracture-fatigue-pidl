@@ -88,7 +88,7 @@ def main():
         print(json.dumps(dict(state=state,arm=arm,full=result['full_rms'],head=result['head'][-1]['scaled_normal_residual'],peak_rss_bytes=rss())),flush=True)
         del model,data,base,saved;gc.collect()
     deps=[Path(__file__),Path(__file__).with_name('diagnose_s04_e021_endpoints.py'),Path(__file__).with_name('diagnose_s04_e020_features.py'),Path(__file__).with_name('s04_e022_screen.py')]
-    meta=dict(protocol_revision=PROTOCOL,training=False,parameter_updates=0,optimizer_created=False,least_squares_fit=False,chunk=a.chunk,peak_rss_bytes=rss(),source_hashes={p.name:sha256(p) for p in deps},code_commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),python=platform.python_version(),torch=str(torch.__version__),numpy=np.__version__,results=results)
+    meta=dict(protocol_revision=PROTOCOL,training=False,parameter_updates=0,optimizer_created=False,least_squares_fit=False,chunk=a.chunk,peak_rss_bytes=rss(),source_hashes={p.name:sha256(p) for p in deps},code_commit=subprocess.check_output(['git','-C',str(Path(__file__).resolve().parents[1]),'rev-parse','HEAD'],text=True).strip(),python=platform.python_version(),torch=str(torch.__version__),numpy=np.__version__,results=results)
     (a.out/'summary.json').write_text(json.dumps(meta,indent=2,allow_nan=False)+'\n')
 
 
