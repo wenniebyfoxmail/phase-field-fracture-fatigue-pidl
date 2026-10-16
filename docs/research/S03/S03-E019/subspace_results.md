@@ -77,3 +77,13 @@ Run根：`/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experi
 给标题/标注留足空间；从已有合成report读取绘图，不重算数值、重复诊断
 或运行SVD。旧代码快照、数值、原图和收据不覆盖；新图器/输出另审另批。
 获批后再补剩余独立只读数值与图形验收；当前不自动修图或继续验收。
+
+### 2026-10-16：显示方案已准备，尚未实施
+
+subspace_display_plan.md v1.1仅直读已存report的三个ratio/状态，拟独立
+同级R001-V01目录出图；短换行标签、标题分区、向下数值标注、零点marker
+完整性检查，不重算/重SVD或改原轴语义/阈值。独立方案审查要求补充
+零点标记防裁切，修订后REVIEW_PASS；完整记录见subspace_display_review.md。
+未读report数值/真实数组/留出、未改代码/测试/出图或新建输出目录。
+等待用户确认方案；代码准备/静态审查与最终渲染审批仍未完成。
+本条不改变前述原数值/图形验收未完成状态。

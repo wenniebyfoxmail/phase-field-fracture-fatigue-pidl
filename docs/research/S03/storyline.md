@@ -320,3 +320,14 @@
   subspace_results.md and subspace_evidence_review.md. Request only a new
   display-revision plan preserving original outputs, not more numerical runs
   or actualE019rootcause claims; original and D01 acceptance remain paused.
+
+- **2026-10-16 — D01 display-only plan v1.1 independently reviewed; not executed.**
+  Saved report is the sole future numeric input; new sibling R001-V01 view,
+  no metric recomputation/SVD/original-output overwrite. First review required
+  zero-marker clipping protection; v1.1 adds clip_on=False/zorder=4 and full
+  stroke-aware marker bounds within canvas safety margin. Local read-only
+  REVIEW_PASS at ac8ea0f is plan-only, not actual graphical/numeric acceptance.
+  See S03-E019/subspace_display_plan.md and subspace_display_review.md.
+  No report numeric/realarray/holdout reads, code/tests/render or new view dir.
+  Show plan for user confirmation before code/command preparation; rendering
+  needs separate final-package approval. Original acceptance stays paused.

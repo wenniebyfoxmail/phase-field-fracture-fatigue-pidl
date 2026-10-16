@@ -221,3 +221,14 @@ wrapper收据0.817755875秒/60秒，无warning/error。五线程均1，pytest隔
 完整PASS_EVIDENCE。结果/范围详见subspace_results.md和subspace_evidence_review.md。
 下一步仅建议另批显示修订/新目录出图方案，旧图/数值/收据保留，不重算、
 重SVD、读真实/留出或追认原E019根因。
+
+## 显示布局方案v1.1独立复审完成 — 2026-10-16
+
+仅准备report直读/新同级V01目录/固定布局方案，无代码或渲染执行。
+首轮要求补零点marker裁切防护；v1.1明确clip_on=False/zorder=4及完整
+marker含线宽的画布2px安全检查，不动精确0/轴范围/判据或负控。
+复审REVIEW_PASS仅方案，无必改遗留；快照ac8ea0f，方案SHA
+fa0a408e2b78c54b1160b83b4ece5cad91d698550e671f55fc5f9eea984737bb。
+完整回复见subspace_display_review.md，方案见subspace_display_plan.md。
+不读取report数值/真实数组/留出、不测试/出图/改旧产物；原数值验收仍
+暂停。先展示方案确认，再准备代码/命令；最终渲染另批，不自动执行。
