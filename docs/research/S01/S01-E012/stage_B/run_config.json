@@ -1,6 +1,6 @@
 {
   "protocol": "S01-E012-B-v1",
-  "proposed_run_id": "S01-E012-R003",
+  "proposed_run_id": "S01-E012-R004",
   "claim_class": "C1 training-evidence qualification",
   "domain": "real-road; reused training sites; conditional frozen encoder",
   "locations": [
@@ -89,7 +89,7 @@
   "budget": {
     "runs": 1,
     "cpu_threads": 1,
-    "total_wall_seconds": 3600,
+    "total_wall_seconds": 2600,
     "peak_RSS_bytes": 4294967296,
     "peak_GPU_allocated_bytes": 4294967296,
     "peak_GPU_reserved_bytes": 4294967296,
@@ -135,5 +135,6 @@
     "net_new_GT_minimum": 1,
     "macro_location_recall_delta_strictly_positive": true
   },
-  "fresh_access": false
+  "fresh_access": false,
+  "execution_revision": "S01-E012-B-io1"
 }

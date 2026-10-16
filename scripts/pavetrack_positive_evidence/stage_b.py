@@ -11,6 +11,7 @@ ROOT=Path(__file__).resolve().parents[2]
 def module(name,path):
     s=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
 a=module('e012b_stage_a',Path(__file__).with_name('run.py'));fast=module('e012b_fast',Path(__file__).with_name('fast_labels.py'));runtime=module('e012b_runtime',Path(__file__).with_name('stage_b_runtime.py'))
+window=module('e012b_window',Path(__file__).with_name('window_json.py'));a.scoped.Cursor=window.cursor_type(a.scoped.Cursor)
 CONTRACT='docs/research/S01/S01-E012/stage_B/';PROTOCOL='S01-E012-B-v1';read=a.read;sha=a.sha;checked=a.checked
 
 def write(path,value):
