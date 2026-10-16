@@ -11,3 +11,7 @@ Real readonly three-state checks use pinned references/backbones/E019/E021, deri
 ## First real-asset correction
 
 Initial5c2b30f helper derived E021target-residual moments from recomputedCPUbackboneUV, which could differ from the locked saved E017 array at rounding level. Realassetcheck rejected mapping before anyparameterupdate. Repaired helper requires explicit original saved_base_uv with no recompute fallback; callers pass exact admitted archivearray. Coordinate rule/map/tolerance unchanged. Failure log preserved; new source requires renewed review and checks.
+
+## Final verification and source-bound review
+
+Final sourcea540888:68passed,0skipped; three real initialization differences0, three matchingfullsamplerstreams, CLIall3PASS, emptyaggregatecorrectINCONCLUSIVEexit3. IndependentreviewPASS with11unitchecks and three independently admitted real states. See nontraining_checks.json/code_ready_review.md. Originalmapfailurelog and preliminarytestlogs retained under localarchive; tests_a540888.log is final. No productionpreflight, SSH, training, transfer or parameterupdate.

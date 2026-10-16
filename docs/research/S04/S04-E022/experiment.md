@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E022
 protocol_revision: 20261016-r1-last-hidden-leak001
-status: implementation-nontraining-review-pending
+status: code-ready-not-started
 ---
 # Last-hidden fixed-leak discriminator
 
@@ -37,3 +37,7 @@ Reuse E021 runner/strict decoder without changing old source; new E022 code vali
 Before production: exact CodeReady commit + reviewed runtime/pairing/activation manifest + concrete producerplan. This task authorizes implementation and nontraining checks/internal Codexreview only, no training/transfer/SSH. Temporary synthetic completion envelopes in tests declare fictitious step/runtime metadata; no optimizer parameter step, not producer evidence. For the local positive decoder fixture only, reference_data direct-rate expectation is explicitly synthetic Mac-native metadata; production prepares that value from original formal E021 files and rejects a different vector. Tests must separately show that mismatch rejection and production precheck failure on Mac.
 
 Minimal assets: exact three-state pairing/admission JSON, tests/CLI/LR/samplerchecks, independent source-bound CodeReady report; after any future actualrun, preciseUV/componenttables, decisionplot/README, independent evidence review and censor/Roadmap. Keep generated assets local_archive/experiments/S04-E022, compact docs inthisfolder. No training enabled by a green local test or CodeReady review.
+
+## Code Ready outcome — 2026-10-16
+
+Independent Codex subagent CODE_READY_PASS binds scientific source a540888497d1838a6aa202f59a884e6930e50fb4, no remaining blockers. Exact final suite68passed/0skipped; independent11unitchecks plus all3realasset/zeroUV/tensoridentity checks. Root all3full10000samplerstreams match, peakRSS1063747584bytes; all3validate-only pass, emptyaggregate INCONCLUSIVEexit3. Initial map-admission bug fixed with exactsaved E017UV, oldfailedlog preserved, no tolerance change. [Review](code_ready_review.md), [checks](nontraining_checks.json). Formal nativeprofile/runtime producerpreflight remains unperformed; CodeReady does not authorise training or prove repair success. Subsequent doc-only commits do not replace this science snapshot.

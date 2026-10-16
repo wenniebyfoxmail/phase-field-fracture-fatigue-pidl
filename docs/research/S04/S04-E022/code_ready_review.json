@@ -1,0 +1,21 @@
+{
+  "verdict": "CODE_READY_PASS",
+  "commit": "a540888497d1838a6aa202f59a884e6930e50fb4",
+  "protocol_revision": "20261016-r1-last-hidden-leak001",
+  "blockers": [],
+  "production_authorized": false,
+  "training": false,
+  "optimizer_parameter_steps": 0,
+  "independent_final_unit_tests": 11,
+  "independent_real_states": [
+    "c20s4",
+    "c60s4",
+    "c83s4"
+  ],
+  "resolved_issue": "Use exact saved backbone UV for historical coordinate-map derivation",
+  "limits": [
+    "No producer preflight",
+    "No full cross-platform replay PASS",
+    "No scientific success claim"
+  ]
+}

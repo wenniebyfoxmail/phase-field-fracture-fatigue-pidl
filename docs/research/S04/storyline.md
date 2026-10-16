@@ -83,3 +83,7 @@ E021v2 all3valid final10000-update rows; original primaryFAIL. E019-relative ful
 ## 2026-10-16 — six endpoints select one final-activation discriminator
 
 E019/E021×c20/c60/c83 read-onlydiagnosis and independent boundedreviewcomplete. c60E021inside-bg hiddenfeaturesallzero, bias-onlyshape and currentheadgradientcompetition; c83remainder not explained by necessary currentdamage/bgconflict or feature-rankloss alone. Preservecoordinatepreconditioninggains; nextproposal changes only localfinalhiddenTrainableReLU to fixedleak.01, keeping originalphysics/budget/objective. No newtraining/repairoutcome. [Decision](S04-E021/endpoint_diagnostic_decision.md).
+
+## 2026-10-16 — E022 local final-hidden leak implementation ready
+
+Only local hidden8 fixedleak.01 candidate/runner/strictaggregator implemented; E021direct and E019common three-state controls pinned, originalnativeLR/10000budget/physicsfreeze preserved. Sourcea540888 CodeReadyPASS,68nontrainingtests and3stateinitialUV/fullsamplerchecks complete. Restored mapderivation from exactsavedbackbonearray after firstadmissionrejected recomputedCPUfield. No training/repairresult or promotion. Next is concreteproducerplan/formalpreflight separately. [E022](S04-E022/experiment.md).

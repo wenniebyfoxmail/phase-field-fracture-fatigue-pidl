@@ -1,0 +1,29 @@
+{
+  "scientific_source": "a540888497d1838a6aa202f59a884e6930e50fb4",
+  "protocol_revision": "20261016-r1-last-hidden-leak001",
+  "nontraining_tests": 68,
+  "tests_skipped": 0,
+  "independent_unit_checks": 11,
+  "independent_real_states": [
+    "c20s4",
+    "c60s4",
+    "c83s4"
+  ],
+  "all_three_initial_uv_exactly_zero_difference": true,
+  "all_three_original_initial_tensor_digests_equal": true,
+  "all_three_10000_sampling_streams_match": true,
+  "actual_lr_policy": "original native cosine; enforce same formal runtime and exact E021 actual vector BEFORE parameter updates",
+  "formal_runtime_checked": false,
+  "producer_preflight": false,
+  "training": false,
+  "optimizer_parameter_steps": 0,
+  "peak_local_asset_check_rss_bytes": 1063747584,
+  "code_ready": "CODE_READY_PASS",
+  "local_archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E022",
+  "completed_utc": "2026-10-16T12:46:26.676422+00:00",
+  "notes": [
+    "Initial CPU-recomputed-map admission failure preserved; fixed by requiring exact saved E017 field, no tolerance relaxation.",
+    "Synthetic completion fixtures are tests only; Mac-native direct-rate expectation substitution cannot admit production.",
+    "Original E019/E020/E021 failures and nativeLR/reference-rho strict Mac exceptions preserved."
+  ]
+}
