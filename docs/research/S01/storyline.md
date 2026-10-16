@@ -79,3 +79,8 @@ Frozen12-site cache inventory/mapping/geometry and corrected-score enrichment ma
 ### 2026-10-15 — S01-E012 R001 resource stop and reviewed repair
 
 Exact approved source39d9c810/publication544c9bf0 verified;R001stopped at4GiB RSS during original-row parsing,before candidate/geometry/missing-score output. No retry;E003unchanged,freshsealed. The inherited Windows memory sampler's per-call ctypes type definitions reproduce unbounded pointer-type-cache growth with fakeAPIs. E012only persistent bindings,unchanged4GiB/3600second budget,newR002identity and failure peak/time receipts pass60tests and independent6.1sol-Medium review48595728. This is a tested implementation repair,not real Windows success or completed positive evidence. Next exact R001stopped-bundle retrieval and revised-source/publication/R002human approval;no new execution yet.
+
+
+### 2026-10-16 — E012 R002 inventory completed after bounded memory repair
+
+R001stoppedpackage received/verified/archived. Approvedrepair48595728/publication38cbef52/R002completed66.297seconds,peak539340800bytes withinoriginal4GiB.835images,43347originals,31156existingOOFcorrections:geometryunion749->760(+11distinctGT/5sites). Exact31156-row rescoremanifestgenerated,allscores/Ustillnull;incomplete_scores,notqualifiedutilityordetectionbenefit. PreserveE003/new-sitesseal. Next exactR002package receipt/visualQA/archive,thenseparatelyfreeze/reviewStageBrescorebudget;noforwardorfitpermission.
