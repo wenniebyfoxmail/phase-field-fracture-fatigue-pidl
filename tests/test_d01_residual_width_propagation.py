@@ -1,9 +1,10 @@
 from pathlib import Path
 import sys
 import unittest
+import copy
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
-from d01_residual_width_propagation import perturbation,sample_shifted,scenario,summarize,STAGES,MODES
+from d01_residual_width_propagation import perturbation,sample_shifted,scenario,summarize,validate_residuals,validate_baseline,STAGES,MODES,IDS
 from d01_t1_local_audit import decompose
 
 
@@ -59,6 +60,32 @@ class PropagationTests(unittest.TestCase):
     def test_out_of_source_never_pads(self):
         g=dict(native_shape=[100,100],working_shape=[100,100]);tr=dict(center=[0,50],normal=[1.,0.])
         with self.assertRaisesRegex(ValueError,'sample_out_of_bounds'):sample_shifted(np.zeros((100,100)),np.eye(3),g,tr,[0,0])
+
+    def source_rows(self):
+        rows=[];old={j:np.array([.1,.2]) for j in STAGES}
+        for j,load in zip(STAGES,(30,40,50)):
+            for i in range(1,21):
+                aid=f'N{i:02d}';good=aid in IDS
+                rows.append(dict(stage_index=j,anchor_id=aid,load_kN=load,available=str(good),origin_accepted=str(good),
+                    flags_clear=str(good),flags='' if good else 'origin_exclude',old_dn=.1,old_dt=.2,dn=.3,dt=.5,residual_dn=.2,residual_dt=.3))
+        return rows,old
+
+    def test_source_support_and_sign_guard(self):
+        rows,old=self.source_rows();self.assertEqual(len(validate_residuals(rows,old)),51)
+        for key,value in [('residual_dn',-.2),('load_kN',31),('flags','primary_low_ncc'),('origin_accepted','unknown')]:
+            bad=copy.deepcopy(rows);bad[0][key]=value
+            with self.assertRaises(ValueError):validate_residuals(bad,old)
+
+    def test_duplicate_and_missing_source_guard(self):
+        rows,old=self.source_rows();bad=copy.deepcopy(rows);bad[1]=bad[0]
+        with self.assertRaises(ValueError):validate_residuals(bad,old)
+        with self.assertRaises(ValueError):validate_residuals(rows[:-1],old)
+
+    def test_baseline_finite_guard(self):
+        ref=decompose([16,16,17]);validate_baseline(ref)
+        for key in ('w30','w40','w50','secant_error'):
+            for value in (float('nan'),float('inf'),-float('inf')):
+                with self.assertRaisesRegex(ValueError,'nonfinite'):validate_baseline(dict(ref,**{key:value}))
 
 
 if __name__=='__main__':unittest.main()

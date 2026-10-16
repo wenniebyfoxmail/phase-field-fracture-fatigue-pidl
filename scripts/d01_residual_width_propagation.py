@@ -54,7 +54,7 @@ def validate_residuals(rows, old):
             raise ValueError('duplicate or unexpected residual identity')
         seen.add(key)
         if float(r['load_kN']) != LOADS[j-1]: raise ValueError('residual load mismatch')
-        if r['available'] not in ('True','False') or r['flags_clear'] not in ('True','False'):
+        if any(r[k] not in ('True','False') for k in ('available','flags_clear','origin_accepted')):
             raise ValueError('malformed availability/quality')
         available = r['available'] == 'True'
         if available != (aid in IDS) or (r['origin_accepted']=='True') != (aid in IDS):
@@ -69,6 +69,11 @@ def validate_residuals(rows, old):
             out[key] = dict(r, residual=residual, clear=r['flags_clear']=='True')
     if set(out) != {(j,a) for j in STAGES for a in IDS}: raise ValueError('incomplete accepted support')
     return out
+
+
+def validate_baseline(reference):
+    if not all(np.isfinite(reference[k]) for k in ('w30','w40','w50','secant_error')):
+        raise ValueError('nonfinite E026 baseline reference')
 
 
 def scenario(measurements, mode, ids, temporal, baseline):
@@ -141,23 +146,24 @@ def main():
         files=[inputs/'geometry.json',inputs/'Beam4_inputs.npz']+[path/'runtime_receipt.json' for path in paths.values()]+[paths['old']/'translations.csv',paths['near']/'correspondences.csv',paths['audit']/'summary.json']
         dump_new(a.output/'input_identity.json',{str(f.resolve()):hashlib.sha256(f.read_bytes()).hexdigest() for f in files})
         reference=next(r['nominal'] for r in json.loads((paths['audit']/'summary.json').read_text())['by_arm'] if r['arm']=='background_aligned')
+        validate_baseline(reference)
         baselines=[];measurements={};arrays={'normal_offsets':S};sources=[]
         for j,load in zip(STAGES,LOADS):
             budget();image=load_gray(g['stages'][j]);sources.append(g['stages'][j])
             profile,m=sample_shifted(image,H[j],g,tr,old[j])
             if not m['valid'] or abs(m['width_px']-reference[f'w{load}'])>1e-8:raise ValueError('E026 baseline width mismatch')
-            baselines.append(dict(stage_index=j,load_kN=load,width_px=m['width_px'],left_px=m['left_px'],right_px=m['right_px']))
+            baselines.append(dict(stage_index=j,load_kN=load,width_px=m['width_px'],left_px=m['left_px'],right_px=m['right_px'],depth=m['depth']))
             arrays[f'st{j}_baseline_profile']=profile;arrays[f'st{j}_baseline_deficit']=m['deficit']
             for aid,mode in itertools.product(IDS,MODES):
                 src=residuals[j,aid];delta=perturbation(src['residual'],mode)
                 try:prof,m=sample_shifted(image,H[j],g,tr,old[j]+delta)
                 except ValueError as error:
                     if str(error)!='sample_out_of_bounds':raise
-                    prof=None;m=dict(valid=False,reason='sample_out_of_bounds',width_px=None,left_px=None,right_px=None)
+                    prof=None;m=dict(valid=False,reason='sample_out_of_bounds',width_px=None,left_px=None,right_px=None,depth=None)
                 rec=dict(stage_index=j,load_kN=load,anchor_id=aid,mode=mode,flags_clear=src['clear'],flags=src['flags'],
                     residual_n=float(src['residual'][0]),residual_t=float(src['residual'][1]),
                     perturb_n=float(delta[0]),perturb_t=float(delta[1]),old_n=float(old[j][0]),old_t=float(old[j][1]),
-                    valid=m['valid'],reason=m['reason'],width_px=m['width_px'],left_px=m['left_px'],right_px=m['right_px'])
+                    valid=m['valid'],reason=m['reason'],width_px=m['width_px'],left_px=m['left_px'],right_px=m['right_px'],depth=m['depth'])
                 measurements[j,aid,mode]=rec
                 if prof is not None:arrays[f'st{j}_{aid}_{mode}_profile']=prof;arrays[f'st{j}_{aid}_{mode}_deficit']=m['deficit']
             del image
