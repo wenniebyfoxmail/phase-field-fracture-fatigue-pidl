@@ -84,3 +84,8 @@ Exact approved source39d9c810/publication544c9bf0 verified;R001stopped at4GiB RS
 ### 2026-10-16 — E012 R002 inventory completed after bounded memory repair
 
 R001stoppedpackage received/verified/archived. Approvedrepair48595728/publication38cbef52/R002completed66.297seconds,peak539340800bytes withinoriginal4GiB.835images,43347originals,31156existingOOFcorrections:geometryunion749->760(+11distinctGT/5sites). Exact31156-row rescoremanifestgenerated,allscores/Ustillnull;incomplete_scores,notqualifiedutilityordetectionbenefit. PreserveE003/new-sitesseal. Next exactR002package receipt/visualQA/archive,thenseparatelyfreeze/reviewStageBrescorebudget;noforwardorfitpermission.
+
+
+### 2026-10-16 — E012 archive closed and Stage B design reviewed
+
+R002 fixed package received; identity/numerical consistency/actual three-PNG independent review passes, archive complete. Geometry+11GT/5sites remains component progress, utility unknown. Stage B design430b656 passes independentgpt-6.1-sol Medium review:score all31156 fixed crops with unchanged E003, preserve originals, use frozen FIT8/full12 utility and one GT-informed joint diagnostic. Budget3600s/RSS4GiB/GPU4GiB;31156backbone/62312head rows,93468label slots. Next local implementation/tests and exact code review,then separate R003 transfer/execution approval. E003 preserved;fresh sites sealed.
