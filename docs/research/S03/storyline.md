@@ -233,3 +233,15 @@
   experiment.md/review.md. No realarrays/matrices/tests/solves/plots/Run/send;
   human plan confirmation precedes code/synthetic review/commands and later
   separate once-only CPU60s analysis approval. No q expansion or oldmetric change.
+
+- **2026-10-16 — S03-E019 code ready; exact local execution awaits approval.**
+  User confirmedv2. Independent Codex passed5c3fb4a code/tests and4455bf0 command
+  snapshot (approvalSHA80c9fc25). Independent160synthetic checks,648point
+  1296x1482synthetic fullpipeline4.2172s, twoPNG/sidecar QA and7source/protocol
+  command bindings passed; no mandatory fixes. Initial synthetic NumPy-matmul
+  warnings led to explicit nonBLAS contraction+fsum checks, not warning
+  suppression, environment changes or a diagnosis of old warnings. Original
+  grid/BC/648weights/predictions untouched; no realarrays/analysis/holdout/FEM/
+  qexpansion/send. SeeS03-E019/review.md/code_review.md/execution_approval.md.
+  Await human approval of once-only CPU60s observation-space analysis; synthetic
+  budget/code readiness is not a real rank, physical claim or execution permit.

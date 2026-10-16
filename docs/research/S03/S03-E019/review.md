@@ -77,3 +77,38 @@ REVIEW_PASS。v2 已解决首轮必须修正问题，无新增必须修改项。
 方案 SHA256：`b956f21fa8c417d65d668ca876d91a35b04756c97318938eb95312e758b0cbde`。
 
 本结论仅为方案复审通过。下一步先向用户展示确切 v2 供确认；不构成代码通过或真实执行许可。
+
+## 用户确认后的代码准备与独立审查 — 2026-10-16
+
+用户确认E019 v2并要求代码、合成测试、独立只读代码审查和确切命令；本轮
+未获真实数组/分析/求解许可。experiment.md保留已确认v2字节，其SHA绑定
+到新脚本；文中原方案阶段的状态由本节更新，不修改冻结协议。
+
+新增scripts/aa2024_kinematic_capacity.py及对应测试，代码精确快照
+5c3fb4a083c9ff2967faf046036091b695dad5d2；含命令的受审快照
+4455bf0f249c9dc37e30a4a378752df1a6c53b96。execution_approval.md SHA：
+80c9fc251f5c455708ef937474be7105eb7ef97658d33ecfc5510014ed3f8823。
+原runner/依赖/旧图器/E017/E018脚本相对4c514b3无差异，真实资产未读取。
+
+开发期间首次新合成测试39pass/10fail，失败路径在NumPy dense matmul出现
+RuntimeWarning（包括divide-by-zero）；按warnings=error报错，未运行真实数据。
+修订仅把新脚本的密集矩阵乘写成einsum optimize=False显式收缩并math.fsum
+交叉核对，未屏蔽警告、变更依赖环境、修改旧源码、gesvd算法/cutoff或原指标。
+警告根因仍未解释。修订后50新合成测试+110既有回归=160passed（主代理
+19.74秒），同尺寸648合成整套输入/分析/绘图/保存4.006秒；不是实际数据上界。
+
+独立 /root/e018_code_review在开始/结束clean且同HEAD4455bf0下审查代码、
+测试、协议及命令；160项合成回归20.27秒、同尺寸4.2172秒，无未处理警告。
+两合成PNG目视、官方4图/2说明、命令bash-n/AST/7项源码与协议字节绑定均
+通过。完整回复见code_review.md，REVIEW_PASS，无必须修改项或复审遗留问题。
+
+独立确认完整来源先锚定，再只读prepared/solved两NPZ，另两NPZ仅字节哈希；
+保留648点/原权重，BC可行性/采样/ROI/S_B=0、Q D、一SVD/数值秩保护、
+观测投影唯一但不输出任意节点场、平方账本/逐臂mm分类均符合v2。
+新警告即停，60秒涵盖SVD返回及最终成功收据写入后检查，失败只作取证，
+无自动重试或CLI更换cutoff/预算/网格的入口；新文件均显式关闭。
+
+本轮与独立审查均未读取真实数组/CSV数值、stage15/R003、原文或新留出；
+没有真实矩阵计算、FEM求解/刚度装配/物理拟合、外发/联网/SSH/push。
+真实S03-E019-R001仍不存在。当前Code Ready而非Evidence Ready；展示上述
+execution_approval.md等待单独一次本地执行审批，不自动运行。
