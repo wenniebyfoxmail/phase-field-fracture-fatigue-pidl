@@ -143,6 +143,13 @@ def load_selection(path):
     return selection,{r['anchor_id']:r for r in decisions}
 
 
+def side_subset(rows,side):
+    if side=='both':return list(rows)
+    if side=='negative_n':return [r for r in rows if r['n']<0]
+    if side=='positive_n':return [r for r in rows if r['n']>0]
+    raise ValueError('unknown side')
+
+
 def run_matching(inputs,prepared,selection_path,old_path,output):
     repo=Path(__file__).resolve().parents[1];receipt=receipt_base(repo,'S03-E027-D01-R001',output)
     output.mkdir(parents=True,exist_ok=False);start=time.monotonic();cpu=time.process_time()
@@ -184,13 +191,14 @@ def run_matching(inputs,prepared,selection_path,old_path,output):
                 for radius in RADII:
                     row=dict(stage_index=j,load_kN=g['stages'][j]['nominal_load_kN'],anchor_id=c['anchor_id'],n=c['n'],t=c['t'],radius=radius,
                              origin_accepted=accepted,forward_available=False,reason='origin_'+decisions[c['anchor_id']]['decision'],dn=None,dt=None,
-                             peak=None,separation=None,reverse_available=False,reverse_reason='not_attempted',reverse_dn=None,reverse_dt=None,
+                             peak=None,separation=None,reverse_available=False,reverse_reason='not_attempted',reverse_dn=None,reverse_dt=None,reverse_peak=None,reverse_separation=None,
                              roundtrip_px=None)
                     if accepted:
                         template=templates[f"{c['anchor_id']}_r{radius}"]
                         f,b,fb,matched=pair_match(reference,target,H[0],H[j],g,tr,c,radius,template)
                         row.update(forward_available=f['available'],reason=f['reason'],dn=f['dn'],dt=f['dt'],peak=f['peak'],separation=f['separation'],
-                                   reverse_available=b['available'],reverse_reason=b['reason'],reverse_dn=b['dn'],reverse_dt=b['dt'],roundtrip_px=fb)
+                                   reverse_available=b['available'],reverse_reason=b['reason'],reverse_dn=b['dn'],reverse_dt=b['dt'],
+                                   reverse_peak=b['peak'],reverse_separation=b['separation'],roundtrip_px=fb)
                         if radius==7:
                             arrays[f"{c['anchor_id']}_reference"]=template
                             arrays[f"st{j}_{c['anchor_id']}_uncorrected"]=source_sample(target,local_grid(tr,c['n'],c['t'],7),H[j],g)
@@ -208,10 +216,10 @@ def run_matching(inputs,prepared,selection_path,old_path,output):
                 field['center_difference_from_old_px']=float(np.hypot(field['center_dn']-old[j][0],field['center_dt']-old[j][1])) if field['center_interpolation_available'] else None
                 fields.append(field)
                 for l in loo:loos.append(dict(stage_index=j,support_name=support,anchor_id=subset[l['index']]['anchor_id'],**l))
-                for side,test in (('both',lambda r:True),('negative_n',lambda r:r['n']<0),('positive_n',lambda r:r['n']>0)):
-                    ss=[r for r in subset if test(r)]
-                    stats=dict(stage_index=j,load_kN=g['stages'][j]['nominal_load_kN'],support_name=support,side=side,nominal=20,
-                               origin_accepted=sum(r['origin_accepted'] for r in rr),available=len(ss))
+                for side in ('both','negative_n','positive_n'):
+                    pool=side_subset(rr,side);ss=side_subset(subset,side)
+                    stats=dict(stage_index=j,load_kN=g['stages'][j]['nominal_load_kN'],support_name=support,side=side,nominal=len(pool),
+                               origin_accepted=sum(r['origin_accepted'] for r in pool),available=len(ss))
                     for key in ('before_norm_px','after_norm_px','dn','dt','residual_dn','residual_dt','roundtrip_px','template_difference_px'):
                         v=[r[key] for r in ss if r[key] is not None]
                         stats['median_'+key]=float(np.median(v)) if v else None

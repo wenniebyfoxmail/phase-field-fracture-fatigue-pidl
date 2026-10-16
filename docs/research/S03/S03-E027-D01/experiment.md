@@ -47,9 +47,12 @@ Reverse template is target patch at p+d, reference search centred at ORIGINAL p:
 return displacement b should be0, so roundtrip error=|b|, NOT |d+b|.
 Primary/secondary displacement difference is a repeatability proxy.
 
-Predeclared REVIEW FLAGS (not physical acceptance thresholds): NCC<.8,
+Predeclared REVIEW FLAGS (not physical acceptance thresholds): forward NCC<.8,
 peak separation<.02 (excluding3x3 peak neighbourhood), roundtrip>.5px,
 template-size displacement difference>.5px, or missing reverse/secondary.
+Forward NCC/separation flags apply to each template; reverse checks use
+availability and loop closure, with reverse NCC/separation retained for audit
+but no additional reverse-NCC threshold. This clarification precedes target matching.
 .5 is a reporting resolution for internal consistency, not certified accuracy.
 Report all primary available matches and an explicitly separate flags-clear
 subset; never tune flags after target access or use them to select old scores.

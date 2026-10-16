@@ -3,7 +3,7 @@ import sys
 import unittest
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"scripts"))
-from d01_nearfield_correspondence import candidates,match,refined_peak,affine_diagnostic,inside_hull,pair_match,combine
+from d01_nearfield_correspondence import candidates,match,refined_peak,affine_diagnostic,inside_hull,pair_match,combine,side_subset
 
 
 class NearfieldTests(unittest.TestCase):
@@ -82,6 +82,12 @@ class NearfieldTests(unittest.TestCase):
         secondary=dict(r,reverse_available=False,roundtrip_px=None)
         x=combine(r,secondary,c,np.zeros(2));self.assertTrue(x['available']);self.assertFalse(x['flags_clear'])
         self.assertIn('secondary_roundtrip',x['flags'])
+
+    def test_side_denominators_and_origin_exclusions(self):
+        rows=[dict(r,origin_accepted=r['anchor_id'] not in ('N05','N09','N10')) for r in candidates()]
+        for side,nominal,accepted in (('both',20,17),('negative_n',10,7),('positive_n',10,10)):
+            pool=side_subset(rows,side)
+            self.assertEqual(len(pool),nominal);self.assertEqual(sum(r['origin_accepted'] for r in pool),accepted)
 
 
 if __name__=='__main__':unittest.main()
