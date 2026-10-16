@@ -201,7 +201,39 @@ def test_native_weights_are_derived_from_static_geometry_and_order(tmp_path: Pat
         np.ascontiguousarray(nodal).tobytes()).hexdigest()
 
 
+@pytest.mark.parametrize("stored", [
+    np.array([[2.5, 5.0]], dtype=np.float64),
+    np.array([[2.5, np.nan]], dtype=np.float64),
+    np.empty((0, 0), dtype=np.float64),
+])
+def test_native_weight_derivation_rejects_non_scalar_thickness(tmp_path: Path, stored):
+    context = make_decodable_fixture(tmp_path)
+    static = tmp_path / "static" / context.static_filename
+    with h5py.File(static, "r+") as handle:
+        del handle["stage0b_static/geometry/t"]
+        handle["stage0b_static/geometry"].create_dataset("t", data=stored)
+    context = replace(context, static_sha256=sha(static))
+    with pytest.raises(ValueError, match="one finite scalar"):
+        _derive_native_weights(static, context)
+
+
 def test_controlled_route_rejects_hash_valid_bad_intermediate_support(tmp_path: Path):
     context = make_decodable_fixture(tmp_path, corrupt_key="c0001_s02")
     with pytest.raises(ValueError, match="stored float64"):
+        _qualify_decode_and_freeze(run_root=tmp_path, context=context)
+
+
+@pytest.mark.parametrize("bad_load", [0.75, float("nan")])
+def test_controlled_route_rejects_logical_alias_load_mismatch(tmp_path: Path, bad_load):
+    context = make_decodable_fixture(tmp_path)
+    index = tmp_path / "state_index.csv"
+    with index.open(newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    next(row for row in rows if row["state_key"] == "c0002_s00")[
+        "imposed_displacement"] = repr(bad_load)
+    with index.open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=FIELDNAMES)
+        writer.writeheader(); writer.writerows(rows)
+    context = replace(context, state_index_sha256=sha(index))
+    with pytest.raises(ValueError, match="logical-to-physical load mismatch: c0002_s00"):
         _qualify_decode_and_freeze(run_root=tmp_path, context=context)

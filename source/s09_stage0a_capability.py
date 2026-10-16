@@ -217,6 +217,8 @@ def _derive_native_weights(
                             ("Nxi", nxi), ("dNdxi", dndxi), ("t", thickness_raw)):
             if value.dtype != np.dtype("float64"):
                 raise ValueError(f"static field must be stored float64: {name}")
+        if thickness_raw.shape != (1, 1) or not np.isfinite(thickness_raw).all():
+            raise ValueError("static thickness must be one finite scalar")
         thickness = float(thickness_raw.reshape(-1)[0])
     if conn_raw.dtype.kind not in "iu" or not np.equal(conn_raw, np.floor(conn_raw)).all():
         raise ValueError("static connectivity must contain exact integers")
@@ -332,10 +334,13 @@ def _qualify_decode_and_freeze(
         binding = physical_bindings.get(source)
         if binding is None or binding["payload_sha256"] != row["payload_sha256"]:
             raise ValueError(f"logical-to-physical decoded binding mismatch: {key}")
+        imposed = float(row["imposed_displacement"])
+        if not np.isfinite(imposed) or imposed != binding["imposed_displacement"]:
+            raise ValueError(f"logical-to-physical load mismatch: {key}")
         logical_bindings[key] = {
             "source_state_key": source,
             "payload_sha256": row["payload_sha256"],
-            "imposed_displacement": float(row["imposed_displacement"]),
+            "imposed_displacement": imposed,
             "decoded_array_fingerprints": binding,
         }
     if len(logical_bindings) != 438:
