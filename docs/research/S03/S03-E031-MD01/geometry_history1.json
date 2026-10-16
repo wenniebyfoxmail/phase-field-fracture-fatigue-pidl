@@ -1,0 +1,17 @@
+{
+  "role": "observer-assisted first-history geometry, no target exposure",
+  "source": "IMG_0403.JPG",
+  "native_shape": [4000, 6000],
+  "viewed_preview_shape": [1280, 1920],
+  "rough_center": [4200.0, 2015.625],
+  "normal": [0.9950371902099892, 0.09950371902099892],
+  "tangent_points_preview": [[1351, 620], [1346, 670]],
+  "selection_reason": "Dominant central crack near beam-face midheight in first history only. No width or target error used.",
+  "background_centers": [[3969, 1969], [4422, 1969], [3953, 2125], [4406, 2125]],
+  "background_selection_reason": "Off-crack textured beam face, both sides at nearby heights; avoids yellow cable and black instrumentation in first history. Four predeclared patches, no width-based subset.",
+  "patch_size": 81,
+  "translation_radius": 30,
+  "correlation_min": 0.6,
+  "required_background_patches": 3,
+  "refine_once_on_first_history": true
+}
