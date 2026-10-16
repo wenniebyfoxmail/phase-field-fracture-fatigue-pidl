@@ -66,3 +66,13 @@ No integration of da35d7a and no second candidate launch. Obsidian's existing
 candidate entry is preserved, with a newer sole-owner status clarifying which
 review actually passed. Tables above are the decision-facing audit visual;
 there are no new numerical experiment outputs requiring a new result plot.
+
+## 2026-10-16 run-card preparation only
+
+User approved preparation, not execution. See replay_run_card_v1.md for the
+single proposed S04-E021-REPLAY-R001, six leaf-link staging scope, unchanged
+data/model identity and300s/2GiB/100MiB accounting. Nine source-file names/sizes
+were checked without opening arrays. No staging, actual authorization, real
+replay, fit, test rerun or cross-chat message occurred. Reviewed source bytes
+remain unchanged. Execution still awaits explicit approval of the card's
+final commit; separate da35d7a/S04-E022 remains preserved and excluded.
