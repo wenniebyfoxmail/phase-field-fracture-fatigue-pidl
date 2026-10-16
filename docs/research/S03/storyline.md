@@ -277,3 +277,14 @@
   SeeS03-E019/projection_diagnosis.md. Original threshold/failure retained,
   fullacceptance paused; candidate next is separatelyreviewed code/synthetic
   Qsubspace-localisation plan, not rewritingp, threshold rescue or newrealrun.
+
+- **2026-10-16 — E019-D01 zero-SVD code/synthetic localisation plan awaits confirmation.**
+  User requested plan and independent read-only review first. Exact45ae6f0
+  v1.1 (SHAadbe5d5c) passed local Codex review after two nonblocking notation/
+  floating-factor clarifications; not externalPro or code/execution approval.
+  Four fixed synthetic fixtures split A construction, analytic/injected retained
+  factors and p/r arithmetic, without any numericalSVD. Input and factor error
+  controls can yield samep: tests mechanism, not actualgesvd rootcause.
+  SeeS03-E019/subspace_localisation_plan.md and subspace_localisation_review.md.
+  No code/import/tests/QR/SVD/realarrays/Run/send; originalacceptance paused,
+  thresholds/outputs unchanged. Human confirmation before code/command prep.
