@@ -1,5 +1,6 @@
 import copy
 import json
+import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -175,10 +176,20 @@ def test_exporter_actual_metadata_matches_executable_frozen_scale_schema(tmp_pat
     context = replace(S09_E008_CONTEXT, expected_nodes=9, expected_elements=4)
     p1packet.export_s09_e008_p1_packet(
         run_root=tmp_path, capability_receipt_path=receipt_path,
-        config_path=config_path, output_dir=tmp_path / "packet", repo_root=tmp_path,
+        config_path=config_path, output_dir=tmp_path / "packet",
         approved_code_commit="approved", context=context)
     assert captured["metadata"]["normalisers"] == frozen_packet_normalisers(config)
     assert captured["metadata"]["exporter_code_commit"] == "approved"
+
+
+def test_export_cli_has_no_caller_controlled_repository_root():
+    root = Path(__file__).resolve().parents[1]
+    result = subprocess.run(
+        [sys.executable, str(root / "scripts/export_s09_stage0a_p1_packet.py"), "--help"],
+        check=True, capture_output=True, text=True)
+    assert "--repo-root" not in result.stdout
+    packet_source = (root / "source/s09_stage0a_p1_packet.py").read_text()
+    assert "code_root = Path(__file__).resolve().parents[1]" in packet_source
 
 
 def test_packet_roundtrip_binds_every_array_and_rejects_tampering(tmp_path: Path):

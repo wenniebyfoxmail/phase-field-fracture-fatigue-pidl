@@ -147,3 +147,28 @@ Freeze the repaired exact commit and submit the dependency-complete bundle for
 another independent Code Ready review.  Until that verdict is
 `CODE_READY_PASS`, real packet export, Taobo resolution and training remain
 blocked.
+
+## Code Ready round 3 and single-directory identity fix
+
+ChatGPT Pro independently reproduced the 64 submitted tests and 46 additional
+checks for exact commit `cf3a9036fe72420ff24101038d0276d8f74df236`.
+It closed B1, B3 and B4, confirmed the complete-config portion of B2, and found
+one remaining B2 provenance gap: the export CLI loaded code from its own
+checkout but allowed `--repo-root` to point the commit/cleanliness check at a
+different checkout.
+
+The bounded fix removes caller control of the repository root.  The exporter
+function now derives its code root from `Path(__file__).resolve().parents[1]`
+before any input read, and the CLI exposes no `--repo-root` argument.  Its
+approved commit, tracked-file cleanliness and recorded `exporter_code_commit`
+therefore refer to the same code tree that supplies the imported exporter.
+A regression checks the CLI surface and the module-root binding.  The complete
+synthetic/no-training suite now reports **65 passed**; Ruff F, `py_compile` and
+`git diff --check` pass.  No scientific packet, producer or optimizer was used.
+
+## Remaining gate after round 3
+
+Freeze this single-directory fix as a new exact candidate and request a narrow
+independent Code Ready rereview of B2-R3 plus adjacent identity regression.
+Real packet export, Taobo resolution and training remain blocked until
+`CODE_READY_PASS`.

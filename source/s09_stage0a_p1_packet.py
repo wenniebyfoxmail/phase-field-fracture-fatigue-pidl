@@ -176,10 +176,11 @@ def write_packet(*, output_dir: Path, arrays: dict[str, np.ndarray],
 
 def export_s09_e008_p1_packet(*, run_root: Path, capability_receipt_path: Path,
                               config_path: Path, output_dir: Path,
-                              repo_root: Path, approved_code_commit: str,
+                              approved_code_commit: str,
                               context: Stage0ACapabilityContext = S09_E008_CONTEXT) -> dict[str, Any]:
     """Repeat qualification and export the exact reviewed 16-cycle packet."""
-    require_approved_code(repo_root, approved_code_commit)
+    code_root = Path(__file__).resolve().parents[1]
+    require_approved_code(code_root, approved_code_commit)
     config = _load_json(config_path)
     _require(sha256_file(config_path) == REVIEWED_BASE_CONFIG_SHA256,
              "base config differs from reviewed identity")
@@ -241,7 +242,7 @@ def export_s09_e008_p1_packet(*, run_root: Path, capability_receipt_path: Path,
         "source_context_sha256": context.digest,
         "source_static_sha256": context.static_sha256,
         "source_capability_receipt_sha256": expected_receipt,
-        "exporter_code_commit": current_commit(repo_root),
+        "exporter_code_commit": current_commit(code_root),
         "source_hash_verdict": hash_receipt["verdict"],
         "source_decode_verdict": decode_receipt["verdict"],
         "source_p1_verdict": frozen["verdict"],
