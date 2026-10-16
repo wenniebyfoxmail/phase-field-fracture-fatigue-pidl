@@ -132,10 +132,14 @@ separately.
 ## Remaining gate
 
 Before any training, implement the exact 16-cycle packet exporter and trainer,
-exercise only synthetic/local no-training tests, lock a Git commit and packet
-identity, and obtain an independent Code Ready review of the runner, resolved
-config, data lock, update algebra and output contract. Any material change after
-that review requires a new exact-commit review.
+exercise only synthetic/local no-training tests, freeze the candidate Git
+commit, and obtain an independent Code Ready review of that exact code, the
+configuration-resolution rules, the packet/data-lock generation and validation
+rules, the update algebra, and the output contract. The actual packet identity,
+data lock, GPU/environment, equilibrium normaliser and resolved config are then
+produced in the fixed order below and checked by the final execution gate while
+remaining bound to the same approved commit. Any material code or rule change
+after Code Ready requires a new exact-commit review.
 
 The resolution order is fixed. Package review precedes implementation. The
 candidate trainer commit is frozen before Code Ready submission, and the same
