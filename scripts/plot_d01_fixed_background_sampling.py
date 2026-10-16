@@ -125,7 +125,9 @@ README_analysis.md; source summary and fixed_positions.json; protocol {repo}/doc
         fig.text(.5,.90,'Each arm is evaluated against its OWN same-definition 50 kN reference; not a new forecast score',ha='center',fontsize=10)
         for index,(arm,c,ls,m) in enumerate(zip(ARMS,COLORS,STYLES,MARKERS)):
             r=q[arm]
-            if not r['available']:continue
+            if not r['available']:
+                axes[1].text(index,.05,f"NA {r['valid_profiles']}/3",transform=axes[1].get_xaxis_transform(),ha='center',fontsize=9)
+                continue
             axes[0].plot((30,40,50),[r['w30'],r['w40'],r['w50']],color=c,ls=ls,marker=m,lw=1.5)
             axes[1].scatter(index-.08,r['secant_error'],color=c,marker='^',s=70)
             axes[1].scatter(index+.08,r['persistence_error'],color=c,marker='s',s=45,facecolors='none')
@@ -159,6 +161,7 @@ README_analysis.md; source summary and fixed_positions.json; protocol {repo}/doc
             for i,v in enumerate(values):ax.annotate(f'{v:+.6f}',(i,v),xytext=(0,8 if v>=0 else -16),textcoords='offset points',ha='center',fontsize=9)
         ax.axhline(0,color='.4',lw=.8);ax.set_xticks(range(5),('-delta w30','2 x delta w40','-delta w50','Clip change','Total error change'))
         ax.set_ylabel('Signed contribution (px)');ax.margins(x=.12,y=.3);ax.grid(axis='y',color='.92',lw=.5)
+        fig.legend(handles=handles,loc='lower center',bbox_to_anchor=(.5,.045),ncol=3,frameon=False)
         save(fig,'F03_context_and_contributions')
         dump_new(a.output/'layout_audit.json',audits)
         (a.output/'README_analysis.md').write_text(f'''# E030 fixed-background sampling comparison
