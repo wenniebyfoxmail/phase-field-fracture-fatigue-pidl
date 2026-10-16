@@ -28,7 +28,7 @@ def render(run,result,reports,cases,guard):
         ax.set_xlim(lo-pad,hi+pad);ax.set_ylim(bot+pad,top-pad);ax.set_aspect('equal');ax.set_title(f"{item['role']} site {item['label']['location']}\nsource {item['label']['parent_id']} U={item['label']['U']}",fontsize=9)
     for ax in axes[len(chosen):]:ax.axis('off')
     if len(chosen)<6:axes[-1].text(.05,.5,'Missing roles: '+', '.join(cases['missing_roles']),transform=axes[-1].transAxes)
-    fig.suptitle(f'{run.name} | fixed-rule coordinate cases; green GT / blue original / red correction');fig.tight_layout();fig.savefig(out/'F02_cases.png',dpi=160);plt.close(fig);guard.check()
+    fig.suptitle(f'{run.name} | fixed-rule coordinate cases; green GT / blue original / red correction');fig.tight_layout(h_pad=2.2);fig.savefig(out/'F02_cases.png',dpi=160);plt.close(fig);guard.check()
     (out/'README_analysis.md').write_text('''# Stage B scored evidence
 
 Read F00 for exact full12 positive/zero/negative candidate counts and deduplicated GT/site support; FIT8 contrast is in qualification.json. Primary L2 requires each group at least one positive-U GT/site and each FIT positive/nonpositive support. F01 compares E003 and one GT-informed joint selection on B12 at1FP/image,IoU=.5. It is potential,not learned performance or an upper bound; it does not verify the consumed four-site282 old hits. F02 uses highest original E003 score then lexical image/box/source-key,up to two sites per positive/harm/FP role. Missing roles explicit;green GT,blue original,red correction,no source pixels.
