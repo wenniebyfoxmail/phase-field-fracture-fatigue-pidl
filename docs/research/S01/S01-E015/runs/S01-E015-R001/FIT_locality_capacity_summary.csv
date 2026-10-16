@@ -1,0 +1,4 @@
+fold,base_eligible,retained,removed,positive_GT_before,positive_GT_after,max_policy_positive_GT,chosen_positive_GT,chosen_threshold,actual_chosen_joint_net_GT
+0,11588,10935,653,3,3,0,0,abstain,0
+1,13422,12553,869,5,5,0,0,abstain,0
+2,13758,12734,1024,6,6,0,0,abstain,0
