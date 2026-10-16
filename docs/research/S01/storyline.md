@@ -99,3 +99,8 @@ Stage B source859fed4 passes independentgpt-6.1-sol Medium review;95related test
 ### 2026-10-16 — E012 approved source published; R003 held before launch, bounded environment repair reviewed
 
 Approvedv1 source859fed4 received/99files verified andpublic28e96b8 pushed/readback. Preflight rejects22WDDM desktop C+G contexts despite0%GPU/free96694MiB/noPython;R003 never launched,not a scoring failure. No scientific result or GT/pixel forward. Env1a23521c pins13desktop paths/SHA plusWDDM/sameUUID/0%/C+G,unknowns stop;110relatedtests and6.1sol-Medium independent review pass. Prepareexactv2 approval before changedsource/publication/execution. Scientific plan,resourcecaps,E003 originals andfresh-sitesseal unchanged.
+
+
+### 2026-10-16 — E012 R003 startup infeasible; stopped archive closed and minimal IO repair reviewed
+
+Approvedv2 sourcea23521c/publicb2f1a41/R003 executed then cancelled before scoring at948.418s/209MiB. Independent audit identified field-levelbuffer invalidation multiplying full-process-tree checks;no GT/pixel/model result,scientificinconclusive,notno-positive evidence. Exactstoppedbundle received/verified/archived. StageB-only window repairfdc6c19 passes117tests/6.1sol-Mediumreview;105659syntheticrecords equal with1120checks/8.407s. ProposedR0042600s keeps combinedwall<=3548.418<original3600;noautomaticextraRun. All E003/GT/coverage/scoring/utility criteria unchanged,freshsitessealed.
