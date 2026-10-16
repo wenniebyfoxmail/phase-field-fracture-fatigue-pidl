@@ -2,7 +2,7 @@
 storyline_id: S09
 experiment_id: S09-E008
 protocol_revision: v0-design-draft-transition-stage0
-status: design_rereview
+status: analysis
 primary_storyline: S09
 related_experiments: [S09-E001, S09-E005, S09-E006, S09-E007]
 claim_class: C1
@@ -10,6 +10,19 @@ evidence_domain: synthetic
 ---
 
 # Stage-0 damage/history transition neural operator
+
+## 2026-10-16 P1 outcome
+
+The exact reviewed P1 run completed with `execution_status=succeeded` and
+`retrieval_status=verified`, but the frozen formal P1 verdict is negative.
+Validity passed; capacity, detectable-growth and near-stagnant clauses failed.
+The result and mechanism analysis are recorded in
+[`runs/S09-E008-P1-R001-stage0a-memorisation/run.md`](runs/S09-E008-P1-R001-stage0a-memorisation/run.md)
+and [`p1_run_analysis_20261016.md`](p1_run_analysis_20261016.md).
+
+This outcome does not amend the used P1 protocol or rescue its verdict. Any
+new loss decomposition, multi-objective rule, architecture, budget or criterion
+belongs to a separately identified and reviewed diagnostic Experiment.
 
 ## Purpose and claim boundary
 
