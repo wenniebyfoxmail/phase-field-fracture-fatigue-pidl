@@ -219,3 +219,15 @@ Final4figures R003b446ee7 repair F01spacing, no numeric rerun; numericR001848a09
 Advance conditional position sensitivity explanation while retaining oldscore/
 definition. Next propose one fixed background-only centre estimate and its
 tangent-location LOO stability, never best-error-anchor selection; unexecuted.
+
+2026-10-16 — [S03-E029-D01](S03-E029-D01/experiment.md) fixes the background-only
+all17 OLS affine centre, reading E027tables only, noimage/width/error. Primary
+T1 tangent estimates .493394/1.296797/.535569px at30/40/50kN; maxsingle-deletion
+changes .032368/.034499/.034082px (51/51valid), relative30→40/40→50maxchanges
+.037581/.031009px. Secondary8/6/5 becomes more sensitive, max.054/.107/.295px;
+not substituted for primary. Independent8tests,6full/70LOO/70weights/45pairs/
+10summaries reproduce within1.55e-15;3finalfigure setsR002e006d84 reviewed.
+Retain fixed estimator for next bounded diagnostic sampling, not physical
+accuracy/transfer qualification. Common-bias/correlated-match limits remain;
+no width sampling or oldscore change this round, no eight-case replay. Numeric
+R001ae66b4f. Next freeze these vectors before3stage sampling, no best-error offset.

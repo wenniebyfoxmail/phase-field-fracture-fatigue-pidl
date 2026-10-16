@@ -1,0 +1,30 @@
+{
+  "experiment_id": "S03-E029-D01",
+  "run_id": "S03-E029-D01-R002",
+  "role": "render_only",
+  "code_commit": "e006d84e79bcd83cb62eb9c1c2bb4979090d8834",
+  "git_dirty": false,
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 79171,
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/plot_d01_background_center_loo.py",
+    "--source",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E029-D01/runs/S03-E029-D01-R001/outputs",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E029-D01/runs/S03-E029-D01-R002/analysis",
+    "--qa-directory",
+    "/Users/wenxiaofang/.codex/skills/scipilot-figure-skill/scripts"
+  ],
+  "gpu": null,
+  "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E029-D01/runs/S03-E029-D01-R001/outputs",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "started_utc": "2026-10-16T12:14:05.651629+00:00",
+  "numerical_rerun": false,
+  "figure_sets": 3,
+  "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E029-D01/runs/S03-E029-D01-R002/analysis",
+  "ended_utc": "2026-10-16T12:14:07.925629+00:00",
+  "wall_seconds": 2.284023582993541,
+  "cpu_seconds": 2.262626
+}

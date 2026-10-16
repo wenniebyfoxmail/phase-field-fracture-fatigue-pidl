@@ -81,3 +81,66 @@ PNG/PDF/grayscale+same-stem explanation, programmatic and actual visual QA.
 One existing Obsidian note plus oneRoadmap link, preserve other-chat additions.
 
 Status at registration: prepared; no E029 table fit or LOO run yet.
+
+## Outcome — 2026-10-16
+
+Disposition: retain the ONE fixed all17 affine-centre estimator for a later
+diagnostic sampling comparison. Single-deletion sensitivity is limited within
+this model/sample; no claim of physical accuracy, certified error bound or
+reliable spatial transfer. No position chosen by width/forecast error; no new
+width sampled, old score/operator unchanged, no eight-case replay.
+
+R001 cleanae66b4f682512b41e7017afb623aea1ef36c7fdb succeeded, retrieval verified
+local; wall.020365s/CPU.011345s. Only E027 background correspondence/fullfield/
+receipt tables read; input hashes in evidence/input_identity.json. All6full
+centres reproduce E027 to software tolerance; primary uses17points every stage.
+
+| Nominal load | Fixed primary centre_n (px) | centre_t (px) | Max abs single-deletion centre_t change (px) | Available / nominal |
+|---|---:|---:|---:|---:|
+| 30kN | .045691738 | .493393543 | .032367612 | 17/17 |
+| 40kN | -.820149595 | 1.296797379 | .034498783 | 17/17 |
+| 50kN | .446623310 | .535569189 | .034081693 | 17/17 |
+
+Shifts are native first-frame n/t coordinates relative to the original-H
+mapping, not a new pixel-width definition. Absolute primary tangent LOO centre
+ranges .466994–.525761 /1.262299–1.329103 /.508918–.569651px. All51primary LOO
+sets retain16points, rank3 and origin within hull; no failures hidden.
+
+Same omittedID across stages gives maxchange in relative tangent displacement
+.037581138px (30→40),.031008972px (40→50), both17/17. These are changes from
+the respective FULL estimator's stage differences, not absolute displacement
+errors. The identity delta_b-delta_a is independently checked.
+
+Secondary flags-clear supports8/6/5 yield maxabsolute centre changes
+.054120/.107074/.295216px. Their pair-common6/5 deletion opportunities give
+maxrelative changes.076890/.190625px; all19secondary LOO and11pairs available.
+Fewer admitted points can be MORE deletion-sensitive; do not choose another
+support after seeing centre/width. Full primary remains fixed as declared.
+No thresholds or significance/coverage probabilities inferred from these values.
+
+Independent8synthetic tests and pre-execution code review complete. Reviewer
+hand-implemented normal-equation LS, monotone-chain hull and Sherman-Morrison
+influence, without new fit_center/analyze_pool/summarize/inside_hull calls:
+6full/70LOO/70weights/45pairs and10summary groups verified, maxdifference
+1.55e-15px (roundoff, not a physical precision claim). Sourcecopy/hash checked.
+Synthetic common10px bias leaves LOO unchanged: this result cannot detect
+shared errors, correlated templates, weak matches or a field discontinuity
+between background and crack. [Independent review](evidence/independent_review.md).
+
+Final3figure sets R002 cleane006d84e79bcd83cb62eb9c1c2bb4979090d8834, wall
+2.284024s/CPU2.262626s, saved-output-only. Owner and independent reviewer opened
+all3colour PNGs plusF02gray; no critical clipping/overlap, all17IDs and secondary
+pair supports explicit. Layout3entries empty;6PNG strict300dpi and9formats/
+6same-stem explanations pass. No rendering repair or numerical rerun.
+[Figures and guide](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E029-D01/runs/S03-E029-D01-R002/analysis/README_analysis.md).
+
+### Next action, proposal only
+
+Use the fixed primary all17 centre_n/t vectors above for ONE diagnostic
+30/40/50kN half-depth sampling comparison against oldFIT. Keep original
+centre/normal, five-line median, half-depth operator/QC and original scores;
+serialize the fixed position table before any width access. Do not select a
+leave-out version, quality support or offset by resulting width/error. Show
+all3profiles and same-definition conditional-query effect, not a new forecast
+validation. This small sampling has NOT been executed in E029; actual physical
+position/width accuracy remains a separate reference question.

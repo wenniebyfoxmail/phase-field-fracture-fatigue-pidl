@@ -45,9 +45,20 @@ all156profiles/14790cases reproduce exactly; final4figure sets reviewed. This
 supports the magnitude of conditional position sensitivity, not cause, reliable
 material localization, a selected correction or improved old forecast score.
 
-Next PROPOSED only: one predeclared background-only spatial estimate (reuse
-E027 existing affine centre, not best-error anchor) and fixed LOO tangent-location
-stability before a diagnostic sampling comparison. Keep width/oldscores and
-v1.1; don't repeat E025 eight-case replay. Freeze/review any new protocol first.
-No probability bounds, training, source acquisition, remote job or external
-communication authorised by this record. PaveTrack work remains separate.
+## E029 fixed background position and current next step
+
+[E029](../research/S03/S03-E029-D01/experiment.md) now fixes the all17affine
+centre and independently checks single-deletion centre influence using background
+tables only. T1t=.493394/1.296797/.535569px; primary maxLOOchange .032368/
+.034499/.034082px, relative stage-difference maxchange .037581/.031009px.
+Secondary quality supports are more sensitive (.054/.107/.295px), not chosen
+instead. All70deletions/45pairs available, independent maxdifference1.55e-15,
+8tests and final3figures reviewed. This is model/sample deletion stability,
+not accuracy or background-to-crack transfer; common bias remains untestable.
+
+Next PROPOSED only: serialize the fixed PRIMARY n/t vectors before one3stage
+half-depth diagnostic sampling comparison against oldFIT; keep operator and
+oldscores/v1.1, don't choose a LOOvariant by error or repeat eight-case replay.
+No width sampled in E029. Freeze/review any new protocol first. No probability
+bounds, training, source acquisition, remote job or external communication
+authorised by this record. PaveTrack work remains separate.

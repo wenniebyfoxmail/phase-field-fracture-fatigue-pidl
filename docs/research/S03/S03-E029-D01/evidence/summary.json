@@ -1,0 +1,102 @@
+{
+  "by_stage": [
+    {
+      "stage_index": 1,
+      "support_name": "all_available",
+      "opportunities": 17,
+      "valid": 17,
+      "loo_t_min": 0.4669943200121823,
+      "loo_t_max": 0.5257611547889571,
+      "max_abs_delta_t": 0.03236761162002311,
+      "median_delta_t": 0.0030823548524270272
+    },
+    {
+      "stage_index": 1,
+      "support_name": "flags_clear",
+      "opportunities": 8,
+      "valid": 8,
+      "loo_t_min": 0.5216826608403092,
+      "loo_t_max": 0.6250754395445282,
+      "max_abs_delta_t": 0.05412018487891235,
+      "median_delta_t": 0.0011671906745157612
+    },
+    {
+      "stage_index": 2,
+      "support_name": "all_available",
+      "opportunities": 17,
+      "valid": 17,
+      "loo_t_min": 1.2622985958485704,
+      "loo_t_max": 1.329102978300369,
+      "max_abs_delta_t": 0.034498783282453704,
+      "median_delta_t": 0.002128113208516469
+    },
+    {
+      "stage_index": 2,
+      "support_name": "flags_clear",
+      "opportunities": 6,
+      "valid": 6,
+      "loo_t_min": 1.2254255069639954,
+      "loo_t_max": 1.4060196690001465,
+      "max_abs_delta_t": 0.10707353441714651,
+      "median_delta_t": -0.005636057417803708
+    },
+    {
+      "stage_index": 3,
+      "support_name": "all_available",
+      "opportunities": 17,
+      "valid": 17,
+      "loo_t_min": 0.5089183781654257,
+      "loo_t_max": 0.5696508821827546,
+      "max_abs_delta_t": 0.03408169283799589,
+      "median_delta_t": -0.004978042731419774
+    },
+    {
+      "stage_index": 3,
+      "support_name": "flags_clear",
+      "opportunities": 5,
+      "valid": 5,
+      "loo_t_min": 0.1916781983919595,
+      "loo_t_max": 0.7510393479744256,
+      "max_abs_delta_t": 0.2952159315180786,
+      "median_delta_t": 0.018706719621710666
+    }
+  ],
+  "by_transition": [
+    {
+      "support_name": "all_available",
+      "stage_a": 1,
+      "stage_b": 2,
+      "opportunities": 17,
+      "valid": 17,
+      "max_abs_change": 0.03758113813488073
+    },
+    {
+      "support_name": "all_available",
+      "stage_a": 2,
+      "stage_b": 3,
+      "opportunities": 17,
+      "valid": 17,
+      "max_abs_change": 0.031008972440477622
+    },
+    {
+      "support_name": "flags_clear",
+      "stage_a": 1,
+      "stage_b": 2,
+      "opportunities": 6,
+      "valid": 6,
+      "max_abs_change": 0.07688955706149536
+    },
+    {
+      "support_name": "flags_clear",
+      "stage_a": 2,
+      "stage_b": 3,
+      "opportunities": 5,
+      "valid": 5,
+      "max_abs_change": 0.19062459044538294
+    }
+  ],
+  "role": "background_only_viewed_development",
+  "physical_accuracy_validated": false,
+  "widths_read": false,
+  "old_scores_modified": false
+}
