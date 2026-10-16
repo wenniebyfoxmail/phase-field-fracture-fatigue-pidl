@@ -1,0 +1,19 @@
+# S01-E015：固定正面积交集方案已冻结并实现，尚未执行R001
+
+2026-10-16。设计2315ba9经6.1 sol-Medium独立审查通过后实施742f81a9009bfd131ff608c86cdcfae0a54110e3，独立代码复审及合成实际图表验收通过。27项新测试、全部199项相关测试通过。
+
+唯一决策改动是原框和修正框横纵交集都严格大于零。边/角接触拒绝，任意微小正交集允许；无epsilon、面积或IoU阈值扫描，不用面积乘积或d<1替代原坐标比较。
+
+原base eligible19384及候选身份不改，额外positive_intersection只在进入E014排序/NMS/cap前过滤，拒绝者不占容量。原框/分数、d降序/s0并列、x七档、每图1/每组3、FIT实际联合优化/100%保旧、无益弃权全不变。私有嵌套适配，不改E003–E014冻结源码。
+
+locality_audit报告全12GT无关池删除、各自FIT原正候选/不同正GT留池前后；capacity_audit分别报告任一固定政策最大与学得政策的正GT入选。二者只读保存对象，不新算U、不反馈选择。留池不能代替入cap，入cap不能代替联合收益；单例正支持归零也不能直接推出联合零收益或强制弃权。
+
+最终主标准仍是同一预算的一次12地点OOF：B12旧命中保留>=95%、净GT>=1、macro地点召回提升。原框保留与预算后旧保留分别核验，不要求oracle+7或所有fold活跃。即使FIT全弃权也在这一Run内完成固定评价后如实记净0，停止此门槛家族，不扫描门槛/改向/扩cap救结果。
+
+拟议一次S01-E015-R001，gpu-server/D-26-09/ad\xw436，CPU1/禁GPU、3600秒/主进程及后代聚合RSS4GiB；13有限阈值学习、91政策比较、13FIT基线、1汇总+3held，0原图/模型前向/新U/梯度/线性求解/full12refit。主预测先冻结，10整地点删除诊断不反馈，新确认地点持续封存。
+
+测试验证严格边界、极小面积、唯一改动/私有隔离、原分数/身份/资格不变、过滤先于cap、同一GT多候选保留、支持归零不否决实际joint、审计nonfeedback、held GT隔离、语义篡改检测和完整合成流水线/三图。合成案例中有益修正进cap并带来保旧净增，不能当PaveTrack真实收益；规模43347/31156/835人工固定policy测试未拟合阈值，未证明Windows完整时延。
+
+本轮未实际缓存学习/政策评价、SSH、源码传送、公开分支推送或R001执行。真实效果仍需单独获准Run验证，当前只完成用户要求的设计审查后实现测试。合成QA位于/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E015/implementation_QA/。
+
+分支codex/s01-e015-locality-gate-20261016，base cce4ecf39b6c8be57d1f24696db343dbad82d366；131项source_manifest。safe during running trainings：隔离新适配器及文档不改变既有producer行为。
