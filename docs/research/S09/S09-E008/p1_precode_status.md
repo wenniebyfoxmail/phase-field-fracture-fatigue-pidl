@@ -32,3 +32,11 @@ held in memory and cannot open the sealed trajectory. They are preparatory code,
 not P1 Code Ready. State sufficiency, payload decode, selected real cycle IDs,
 normaliser values, optimisation execution and training remain blocked pending
 Request 32 and a separate review.
+
+## 2026-10-16 recheck
+
+Request 32 still has no direct return. The newly located peak6 and Stage-2A
+packages were checked and rejected as replacements because they do not match
+both the exact run and the required full causal trajectory. No real-field
+normaliser, cycle group or optimiser step was produced from them. Details are
+recorded in `provenance_return_recheck_20261016.md`.

@@ -26,3 +26,21 @@ new scientific-array export and training. On receipt, the audit will decide
 whether displacement, undegraded energy or staggered old-state variables are
 physical carried state, causally reconstructible context or solver initial
 guesses.
+
+## 2026-10-16 return recheck
+
+No direct Request 32 response was present in fetched shared-repository branches,
+the Windows-FEM outbox, the standard handoff folder or the OneDrive tree.
+
+Two nearby packages were explicitly excluded as substitutes. The 2026-09-27
+six-peak synthetic-DIC package uses source commit `53ce560...`, contains only
+event-bracketing peaks and excludes training. The Stage-2A qualification package
+uses the correct `862992...` commit but contains only `c0001_s04` and is frozen
+for format/Q4 qualification rather than transition, continuation or restart
+qualification. Request 31 contributes exact timing and identity evidence, but
+its copied derived snapshot omits the parent solver source required for a
+variable-level state-sufficiency trace.
+
+Therefore the status remains `STATE_SUFFICIENCY_BLOCKED`; see
+`provenance_return_recheck_20261016.md` for the checked locations, exclusion
+reasons and minimum remaining return.
