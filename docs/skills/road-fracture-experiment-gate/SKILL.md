@@ -159,6 +159,11 @@ falsifying test. The HQ chooses one feasible lever and records its test in a
 reviewed amendment or new Experiment; the literature does not change the old
 verdict. If no lever is supported, redirect or stop.
 
+For a Codex solution-design sub-agent, explicitly choose the strongest
+available reasoning model and its highest supported effort (currently
+`gpt-6-astra` with `max` here). Record the actual model in the handoff; do not
+rely on the parent model being inherited.
+
 ## Minimum Decision Visualization
 
 When an Experiment validates or compares a method using computed or measured
