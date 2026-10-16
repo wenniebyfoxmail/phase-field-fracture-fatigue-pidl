@@ -34,12 +34,20 @@ No new affine correction applied. Half-depth definition and all old scores
 unchanged. No physical crack-opening, unseen specimen/road generalisation,
 human annotation or new model-validation claim.
 
-## Next discriminator and permissions
+## E028 position-sensitivity result and next discriminator
 
-Proposed only: propagate observed normal/tangent residual pairs through the
-fixed T1 half-depth operator and compare conditional error response against
-remaining aligned-query miss~.887px. State spatial-transfer assumptions and
-missing support; do not turn empirical residuals into certified probability
-bounds or tune position support to rescue scores. Freeze/review protocol before
-new computation. No training, source acquisition, remote job or external
+[E028](../research/S03/S03-E028-D01/experiment.md) is now complete: observed n/t
+residual pairs propagated through the unchanged half-depth operator, assuming
+background-to-T1 transfer. Baseline-.886626px reproduced; normal-only coherent
+error[-.971,-.779],tangent[-2.451,+.959],joint[-2.344,+1.042]px, joint median-.828.
+Five all-stage flags-clear scenarios also span both signs for t/joint. Independent
+all156profiles/14790cases reproduce exactly; final4figure sets reviewed. This
+supports the magnitude of conditional position sensitivity, not cause, reliable
+material localization, a selected correction or improved old forecast score.
+
+Next PROPOSED only: one predeclared background-only spatial estimate (reuse
+E027 existing affine centre, not best-error anchor) and fixed LOO tangent-location
+stability before a diagnostic sampling comparison. Keep width/oldscores and
+v1.1; don't repeat E025 eight-case replay. Freeze/review any new protocol first.
+No probability bounds, training, source acquisition, remote job or external
 communication authorised by this record. PaveTrack work remains separate.

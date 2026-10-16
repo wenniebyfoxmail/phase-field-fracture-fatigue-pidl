@@ -205,3 +205,17 @@ old correction with background corroboration; no width/operator/oldscore edits.
 Final7figure pages R0033cbf8c5 independently reviewed, numericR00165e424d intact.
 Next propose residual n/t scenarios through fixed width to discriminate whether
 remaining.887pxT1 miss can be position-related; no new calculation/model yet.
+
+2026-10-16 — [S03-E028-D01](S03-E028-D01/experiment.md) propagates frozen E027
+paired n/t background residual scenarios through unchangedT1 half-depth width,
+assuming spatial transfer, no new correspondence fit or old8case replay.
+3oldFIT baseline profiles exactly reproduce-.886626px error;153/153scenario
+profiles valid. Same-anchor17 error ranges normal[-.971,-.779],tangent
+[-2.451,+.959],joint[-2.344,+1.042]px, medjoint-.828. Even5all-stageclear
+same-anchor trajectories straddle0 for t/joint, not normal; actual cause/transfer
+unproven. Cartesian4913/mode widens ranges, not probability or score rescue.
+Independent10tests, all156profiles and14790cases/12summaries reproduced exactly.
+Final4figures R003b446ee7 repair F01spacing, no numeric rerun; numericR001848a09b.
+Advance conditional position sensitivity explanation while retaining oldscore/
+definition. Next propose one fixed background-only centre estimate and its
+tangent-location LOO stability, never best-error-anchor selection; unexecuted.

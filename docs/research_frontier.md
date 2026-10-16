@@ -19,12 +19,13 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
 
 ## Current Evidence / Claim Boundary
 
-- **S03 D01 observation bridge, 2026-10-16**: E027 independent near-background
-  matches corroborate the old T1 correction (median residuals .574→.269,
-  1.471→.317,.777→.304px), but only19/51available are flags-clear and physical
-  crack-edge transfer remains unresolved. Width/oldscores unchanged. Next
-  discriminator: propagate observed n/t residual scenarios into fixed half-depth
-  width, not new training. Canonical state/evidence:
+- **S03 D01 observation bridge, 2026-10-16**: E028 propagates E027 n/t residual
+  scenarios through fixedT1 width. Under unverified spatial transfer, coherent
+  t/joint error extrema cross0, normal-only does not; joint median-.828px remains
+  near baseline-.887px. This is conditional sensitivity, not cause or a repaired
+  forecast; width/oldscores unchanged. Next: one predeclared background-only
+  centre estimate and its tangent-location stability, not best-error selection,
+  old8case replay or training. Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。
 - c86 true diffuse damage 条件化可近闭合后续场，二值裂缝几何失败约 `100x` support area：缺失的是近核状态幅值，不只是裂缝位置。

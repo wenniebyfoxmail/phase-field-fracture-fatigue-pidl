@@ -105,3 +105,81 @@ All plots PNG/PDF/grayscale, same-stem explanations, exact tables and visual QA.
 Obsidian one existing living note, short plan/result entries, oneRoadmap link.
 
 Registration status: prepared, no E028 raw-image sampling or diagnostic run yet.
+
+## Outcome — 2026-10-16
+
+Disposition: advance the **conditional position-sensitivity explanation**;
+actual background-to-crack transfer and causal attribution remain unresolved.
+This local diagnostic is not a repaired forecast, replacement correction or
+new eight-case score. User adopts reference-interface draftv1.1; existing E025
+implementation/results reused, not replayed.
+
+NumericR001 clean848a09b52068b13e14e1574f18709fa7324c70f3 succeeded, verified
+local, wall.586051s/CPU.569498s,3existing CRC-verified JPEGs, noGPU/network.
+All3oldFIT baseline profiles reproduce E026 exactly: widths
+16.382909772/16.141970936/16.787658189px, signed query error-.886626089269px.
+All153residual profiles valid;51coherent scenarios and14739Cartesian scenarios
+valid. No active clipping; stage-contribution identity holds exactly.
+
+| Component propagated | Same-anchor17 signed-error min/max (px) | Median (px) | Min absolute sampled error (px) |
+|---|---:|---:|---:|
+| Normal only | -.971360 / -.779257 | -.906866 | .779257 |
+| Tangent only | -2.450691 / +.959397 | -.790754 | .015106 |
+| Joint | -2.343605 / +1.042131 | -.827702 | .032491 |
+
+Thus measured background residual magnitudes, IF transferable, can generate
+tangent/joint error changes large enough to reverse the original-.887px sign;
+normal-only finite scenarios do not. Joint median remains-.828px, close to the
+baseline: not a generally eliminated bias. No sampled coherent case is exactly0;
+finite extrema bracketing0 is not proof of an intermediate exact solution.
+Minimum-error scenarios are diagnostics only, never selected as a correction.
+
+Flags-clear intersection is5IDs N02/N06/N08/N18/N19, distinct from stagewise
+supports8/6/5. Their same-anchor signederror ranges normal[-.971360,-.839937],
+tangent[-.985670,+.931453], joint[-1.024965,+.925305]px; joint median-.539178px.
+So the sign-crossing possibility is not solely contributed by flagged matches,
+but five image-background scenarios are not five material truths or new beams.
+
+Independent-stage all4913/mode extrema normal[-1.041024,-.731104],
+tangent[-4.376070,+5.043745], joint[-4.447638,+4.936225]px. Clear Cartesian240/mode
+uses8x6x5, not240physical observations. These wider ranges discard temporal
+pairing; near-zero Cartesian extrema must NOT be sold as prediction success.
+All-source exclusions/flags remain in source_residuals.csv; small exact evidence
+and source hashes in evidence/, full cases/profiles remain local archive.
+
+### First-principles interpretation and next discriminator
+
+Interpretation, not established cause: a small normal shift mostly moves the
+coordinate origin along a similar transverse profile; subtracting the two
+crossing locations cancels common translation approximately. A tangent shift
+samples a DIFFERENT transverse section near the bend/junction-like dark band,
+so it can change apparent width directly. Window/peak/QC, quantisation and
+photometric effects prevent exact normal invariance. Secant error-change
+weights width changes -1,+2,-1, so independent stage errors can amplify rather
+than cancel; joint n/t effects are not required to be additive.
+
+Next bounded repair PROPOSED, not executed: use one predeclared, background-only
+spatial correspondence estimate (e.g. reuse E027 already-computed affine centre,
+not choose a best-error anchor) and test its tangent-location stability under
+fixed leave-one-out support before a diagnostic T1 sampling comparison. Do not
+claim uncertainty certification from that model, or require a physical reference
+to discuss the declared optical observable. If such an estimate is unstable,
+keep location sensitivity explicit rather than fitting a growth model to absorb
+it. The current experiment establishes sensitivity, not which location is right.
+
+### Review and figures
+
+Independent code admission:10synthetic tests, fixed nonfinite-baseline bypass
+before real sampling and added residual-sign/duplicate/load/flags regression
+checks. Independent evidence reviewer hand-implemented inverseH/1/32bilinear,
+five-line median, shoulder/half-depth and all case/decomposition/summary formulas,
+without calling new producer functions or original measure:3baseline+153profile
+arrays/deficits/widths/endpoints/depth and14790cases/12summaries reproduce with
+maxdifference0. [Review](evidence/independent_review.md).
+
+FinalR003 rendererb446ee7906681dddcfd7a29ef460072709fa7663 exports4figure sets,
+12PNG/PDF formats,8same-stem explanations, wall2.891197s/CPU2.874061s. R002
+retained/superseded only for F01 legend/xlabel crowding, no numerical rerun.
+Owner opened all4colour R002, finalF01/F02gray; final8PNG strict300dpi and
+sidecar12formats/8notes checks pass. Independent final visual closure recorded
+in review. [Final figures and reading guide](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E028-D01/runs/S03-E028-D01-R003/analysis/README_analysis.md).

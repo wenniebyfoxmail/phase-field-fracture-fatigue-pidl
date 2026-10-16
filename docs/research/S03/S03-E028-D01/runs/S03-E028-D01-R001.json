@@ -1,0 +1,34 @@
+{
+  "experiment_id": "S03-E028-D01",
+  "run_id": "S03-E028-D01-R001",
+  "protocol": "T1-residual-propagation-v1",
+  "code_commit": "848a09b52068b13e14e1574f18709fa7324c70f3",
+  "git_dirty": false,
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 71338,
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/d01_residual_width_propagation.py",
+    "--archive",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E028-D01/runs/S03-E028-D01-R001/outputs"
+  ],
+  "gpu": null,
+  "started_utc": "2026-10-16T10:39:29.487818+00:00",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "budget_seconds": 60,
+  "decoded_images": 3,
+  "profile_rows": 153,
+  "scenario_rows": 14790,
+  "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E028-D01/runs/S03-E028-D01-R001/outputs",
+  "source_paths": {
+    "old": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E019-D01/runs/S03-E019-D01-R001/outputs",
+    "audit": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E026-D01/runs/S03-E026-D01-R001/outputs",
+    "near": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E027-D01/runs/S03-E027-D01-R001/outputs"
+  },
+  "ended_utc": "2026-10-16T10:39:30.065461+00:00",
+  "wall_seconds": 0.5860513750230893,
+  "cpu_seconds": 0.5694980000000001
+}

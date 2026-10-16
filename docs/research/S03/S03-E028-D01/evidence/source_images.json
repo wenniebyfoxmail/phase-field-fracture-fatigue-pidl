@@ -1,0 +1,26 @@
+[
+  {
+    "beam": 4,
+    "nominal_load_kN": 30,
+    "filename_time_s": 400,
+    "source_image": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E012-D01/runs/S03-E012-D01-R001/raw_images/Beam 4/G4-IB-Fixed/G4-IB_t=400.JPG",
+    "bytes": 3709677,
+    "crc32": "4ddf14af"
+  },
+  {
+    "beam": 4,
+    "nominal_load_kN": 40,
+    "filename_time_s": 500,
+    "source_image": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E012-D01/runs/S03-E012-D01-R001/raw_images/Beam 4/G4-IB-Fixed/G4-IB_t=500.JPG",
+    "bytes": 3717643,
+    "crc32": "e64b1691"
+  },
+  {
+    "beam": 4,
+    "nominal_load_kN": 50,
+    "filename_time_s": 588,
+    "source_image": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E012-D01/runs/S03-E012-D01-R001/raw_images/Beam 4/G4-IB-Fixed/G4-IB_t=588.JPG",
+    "bytes": 3713492,
+    "crc32": "3b4a6af7"
+  }
+]
