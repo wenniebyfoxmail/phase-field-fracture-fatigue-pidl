@@ -5,7 +5,7 @@ status: v2-training-running
 ---
 # E021 Taobo production preparation — 2026-10-15
 
-**v2 explicitly approved and transferred unchanged; all three formal preflights passed and c20 runner is active, with c60/c83 queued.** Dispatcher3081226 started2026-10-16T09:47:55Z; first runner3084000 at09:49:46Z. Remote filehashes match and science checkout is clean98c6206. No final scientific result exists yet; v1 failure remains separate.
+**v2 explicitly approved and transferred unchanged; all three formal preflights passed, c20 has completed and passed producer row verification, c60 is running and c83 is queued.** Dispatcher3081226 started2026-10-16T09:47:55Z; first runner3084000 at09:49:46Z. Remote filehashes match and science checkout is clean98c6206. No final scientific result exists yet; v1 failure remains separate.
 
 Scientific source: `98c620637b2b2ef06ec86983220a4e7f9f1053b7`, independently Code Ready PASS (162 nontraining checks). Deployment source: `540632738c080773b22aec65a46dbd2ea1bdd420`, separate from science; subsequent documentation commits must not replace the science checkout. The dispatcher remains outside the clean detached science checkout.
 
@@ -69,3 +69,7 @@ All three formal preflights completed2026-10-16T09:49:45.001978Z. Torch2.7.0+cu1
 R001 runner3084000 correctcommand/cwd/code verified; PRE_UPDATE created09:50:12.019226Z before update1, actual own GPU0 allocation1376MiB at subsequent live snapshot. No first passive1000 record yet at that snapshot, so no step-count or performance claim. R002/R003 remain queued by approved dispatcher. Local launchreceipt/first_runner_health record details. Paired E019 baseline CSV is historicalcontrol data only.
 
 Heartbeat e021 created ACTIVE on this thread every30minutes. Readonly ordinary progress silent; completion/failure/user-action exceptions report. No restart, extra steps, code/GPU change or other-process interference. On completion verify producer/archives/retrieval/nativeLR/pairs and compare full/damage/background vs E019 and inherited, inside/outside background and exterior invariance; retain strict rho/nativeLR portability exceptions. Generate exact tables/decisionfigure/README and update censor/Roadmap before stopping heartbeat. No final E021 comparison or scientific verdict available now.
+
+### Partial completion snapshot — 2026-10-16T10:03:12Z
+
+c20 reached10000updates and finished10:01:27.194875Z. Original producer per-row strictdecoder/archiveverification passed; dispatcher continued to c60at10:02:12Z(11:02:12BST), c83 remainsqueued. c20nineoutputs15062563bytes retrieved under localcase/partial_c20 with everylocal/remote/actualarchiveSHAandsize match. Source/cleanreceipt and complete10000actualLRvector versuspre-update andformalpreflight verified. Fullmatrix numericalreplay, pairedE019errorcomparison androuteverdict remainpending, no metricchecker/tolerancechange. User's added priority (c83gain, preserve c20/c60, backgroundtransfer, concrete nextstep) incorporated in existingACTIVEheartbeat e021. No newexperiment/remoteintervention.
