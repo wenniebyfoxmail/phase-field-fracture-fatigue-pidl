@@ -253,3 +253,17 @@ fa0a408e2b78c54b1160b83b4ece5cad91d698550e671f55fc5f9eea984737bb。
 只读新测试日志/收据并核对哈希，不导入绘图栈/原producer，不读report或
 真实/留出、不改源码/冻结产物。B/预检未执行、V01目录不存在。
 只是人工逻辑通过，实际布局/预算及原数值验收未闭合；B仍另批。
+
+## 获批显示B一次完成，logging WARNING暂停验收 — 2026-10-16
+
+确切8a9fd4ea命令B一次exit0，cleanHEAD6c46d37；新V01生成PNG/PDF/
+说明/复制值/新receipt。收据写前elapsed8.305493秒/60秒，五线程1。
+独立已核report/四来源/五产物哈希、复制值及原状态、23布局对象并亲看PNG；
+纵轴裁切/顶部重叠未复现、零点完整，进展保留。
+
+主代理先误认为缓存提示是普通信息，后只读Matplotlib源码确认其来自
+延迟5秒的logging WARNING；纠正说明并通知独立立即停。原规则不自动
+豁免新警告；sidecar/PDF完整性/结束哈希与HEAD未完成，无PASS_DISPLAY。
+完整subspace_display_evidence_review.md与subspace_display_results.md。
+不是数值/布局新失败，不改旧产物/新receipt；不重绘/重算/重SVD、真实/
+留出读取或外发。候选仅另批该确切缓存日志分类及剩余只读验收，当前不执行。

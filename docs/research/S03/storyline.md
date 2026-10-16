@@ -352,3 +352,15 @@
   report/realarray/holdout reads, source/frozen-output mutation or B/preflight;
   V01 directory absent. No actual layout/PDF/numerical acceptance claim.
   B rendering still needs separate human approval; original acceptance paused.
+
+- **2026-10-16 — V01 B rendered once; partial display QA retained, warning pauses completion.**
+  Separate exactB approval, clean6c46d37, exit0, pre-receipt8.305493s/60s, threads1.
+  Independent source/4code/5artifact hashes and direct saved fields/status match;
+  23layout objects checked and actualPNG viewed: labels/annotations/zero marker
+  intact. Main later confirmed font-cache initialization message is logging
+  WARNING (5secondtimer), correcting its initial informational classification.
+  Immediate stop request; no sidecar/PDF/finalhash/endHEAD completion and no
+  PASS_DISPLAY. See S03-E019/subspace_display_results.md and
+  subspace_display_evidence_review.md. Numeric/physical validity unchanged.
+  Candidate next step is approval of this exact cache-log classification and
+  remaining read-only QA only; no rerender/recompute/SVD/realdata/holdout/send.
