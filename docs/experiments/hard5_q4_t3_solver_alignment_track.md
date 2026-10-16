@@ -47,3 +47,6 @@ User-facing report: `/Users/wenxiaofang/obsidian/mesh对齐.md`; payloads remain
 
 
 2026-10-16 [c1v2](../research/S04/S04-E011/runs/c1_commit_v2_attempt_20261016.md) passed staticchecks then stopped atbinarymanifest type before nativework/commits.31files156920132bytes verified; no numericalverdict. v3schema-only repair locally prepared, exactversion approvalpending; numerical protocol unchanged.
+
+
+2026-10-16 [fullc1 v3 terminal](../research/S04/S04-E011/runs/c1_commit_v3_result_20261016.md): originals1/s2exactregressionspassed/singlecommits but freshC1036/21809>1. s3stopsatrawpointwisegate(5.0122e-10 vs1e-10),u/d~1e-12/history4.1e-12,9==9. Own-uQ4rawreplay explainsdifference, notphysicalfielddivergence;42filesverified. Acceptedversion2/proposed3uncommitted; repairedunexecuted. Preservegate/frozenproduction; nextoffline rawperturbation-bound design before any newapprovedproducer.

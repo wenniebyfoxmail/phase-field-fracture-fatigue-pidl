@@ -144,3 +144,6 @@ E011 c1 commit v1: [local preparation only](research/S04/S04-E011/runs/c1_commit
 
 
 2026-10-16 S04-E011 [c1v2](research/S04/S04-E011/runs/c1_commit_v2_attempt_20261016.md): producer aab3edd/WMI6324, static pass then JSONcell-vs-struct admission failure,0nativefields/commits.31files156920132bytes hashverified. Inconclusive; v3schema repair local-only, old scientific verdicts unchanged.
+
+
+2026-10-16 S04-E011 [c1v3 terminal](research/S04/S04-E011/runs/c1_commit_v3_result_20261016.md): producer3d2d738/WMI8304/worker7468. Admission22tests/I/Opassed, original2durablecommits; s3rawregressionmiss, no repair.42files406754040bytes verified. Diagnosticpartial, pairedrepair inadmissible/efficacyunassessed. s3rawweightedrelL2~1.64e-12 andown-ureplayexplanation do not relaxgate.

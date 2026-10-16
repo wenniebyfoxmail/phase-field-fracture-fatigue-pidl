@@ -183,3 +183,6 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 
 
 2026-10-16 [c1v2 attempt](runs/c1_commit_v2_attempt_20261016.md): static/source checks passed; binary manifest type exception before22tests/native. Actualread-onlyMATLAB confirms heterogeneous-key-order arraydecodescell;31files156920132bytes verified,0commits/scientifically inconclusive. [v3localpreparation](runs/c1_commit_v3_preparation_20261016.md) fixes JSONschema only; exactnewapproval pending.
+
+
+2026-10-16 [fullc1 v3 result](runs/c1_commit_v3_result_20261016.md): Windowschecks/22tests/I/O passed; sharedrecovery and originals1/s2regressed; s3onlyrawpointwise5.0122e-10>frozen1e-10, despiteu/d~1e-12/count9==9. OwnuQ4replay explainsrawmicrodifference;42files406754040bytes verified. Accepted2/proposed3notpersisted; repairednotrun. Pairedclaim inadmissible/efficacy unassessed, gateunchanged; nextofflineperturbation-bound/reference-admission design, no newproducer.

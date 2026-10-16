@@ -94,3 +94,6 @@ Solver alignment2026-10-15: [track](experiments/hard5_q4_t3_solver_alignment_tra
 
 
 2026-10-16 E011 update: c1v2 staticchecks passed, binarymanifest type failure prevented nativework; no new numericalresult. v3schema-only repair locally ready for exactapproval. [Canonicaltrack](experiments/hard5_q4_t3_solver_alignment_track.md).
+
+
+2026-10-16 E011 c1v3: original2substeps regressed/committed but failed strictfreshC; s3tinyrawpointwise reference miss stopped before repairedarm. Verified42filearchive; no pairedrepairresult. Nextofflineinput-perturbation bound/referenceadmission design, no threshold relaxation. [Canonicaltrack](experiments/hard5_q4_t3_solver_alignment_track.md).
