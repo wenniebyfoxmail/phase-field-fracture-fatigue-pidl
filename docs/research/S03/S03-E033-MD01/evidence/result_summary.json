@@ -1,0 +1,35 @@
+{
+  "protocol": "early-relative-halfdepth-v1",
+  "E": false,
+  "E_reasons": [
+    "no_identifiable_historical_crack_trace"
+  ],
+  "opportunities": 1,
+  "target_attempted": false,
+  "R": null,
+  "common_scored": 0,
+  "coverage": 0,
+  "conditional_common_coverage": null,
+  "target_width_px": null,
+  "delta_abs_error_px": null,
+  "unit": "native_step2_reference_px",
+  "status": "stopped_history_ineligible",
+  "methods": {
+    "persistence": {
+      "attempted": false,
+      "success": false,
+      "prediction_px": null,
+      "reason": "history_measurement_missing",
+      "scored": false,
+      "abs_error_px": null
+    },
+    "stage_trend": {
+      "attempted": false,
+      "success": false,
+      "prediction_px": null,
+      "reason": "history_measurement_missing",
+      "scored": false,
+      "abs_error_px": null
+    }
+  }
+}

@@ -99,3 +99,25 @@ prediction figure (or originals plus explicit missingness if not eligible),
 README_analysis and review. No synthetic widths substituted for source results.
 
 Initial state: protocol fixed; computation not started; verdict pending.
+
+## Outcome — 2026-10-16
+
+Only histories326/329 acquired. Whole images and the same native loading-region
+crop xyxy2500/250/4000/3400 inspected; two AI reviewers could not establish an
+identifiable crack trace independent of texture/pores/wire/fixture. This does
+not establish absence, zero width or physical truth. No profile was invented,
+no width sampling or registration attempted, no target332 acquired or opened.
+
+R003 (clean e845cad) saves both historical widths null, both predictors
+unattempted/null, E=false, target_attempted=false, Runknown, common_scored0/1,
+conditional coverageN/A, all errors/delta null. Independent saved-output review
+complete; R004 final original/crop visualization and reading guide retrieved.
+Execution succeeded only in saving states; scientific verdict **inconclusive**,
+research disposition **repair: stage/task suitability**. Not candidate failure.
+Half-depth operator and all old scores preserved.
+
+Next proposal: separately approve fixed non-overlapping24/25/26 as another
+development continuation with history-first qualification, rather than force
+measurement in pre-observable texture. Do not replace sources within E033;
+new images not acquired, capability not guaranteed. No new onset task, training,
+absolute-load or generalisation claim follows from this result.

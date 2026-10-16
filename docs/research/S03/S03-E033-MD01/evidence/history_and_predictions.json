@@ -1,0 +1,77 @@
+{
+  "protocol": "early-relative-halfdepth-v1",
+  "E": false,
+  "geometry": {
+    "protocol": "early-relative-halfdepth-v1",
+    "source_files": [
+      "IMG_0326.JPG",
+      "IMG_0329.JPG"
+    ],
+    "no_identifiable_trace": true,
+    "selected_profile": null,
+    "width_measurement_attempted": false,
+    "inspection": "Two whole-image histories plus one identical native loading-region crop per history, xyxy=[2500,250,4000,3400], source 6000x4000",
+    "reason": "No sufficiently identifiable continuous historical crack trace to define a defensible normal and one half-depth sampling profile. Dominant central line is external yellow wire/metal fixture; rough surface texture and pores cannot be silently substituted.",
+    "limitations": "Visual AI judgement, not human/physical ground truth. No identifiable trace is not proof of no crack, zero aperture or no subsurface/microcracking; occluded regions remain unobserved.",
+    "target_accessed": false,
+    "next_action": "Stop this predetermined early-stage comparison, save null history widths and unattempted predictions; do not acquire Step4 or change images/locations to rescue the case. Any separate follow-up requires approval."
+  },
+  "history": [
+    {
+      "step": 2,
+      "filename": "IMG_0326.JPG",
+      "attempted": false,
+      "measurement": {
+        "valid": false,
+        "reason": "no_identifiable_historical_crack_trace",
+        "fwhm_native_px": null
+      },
+      "registration": {
+        "attempted": false,
+        "valid": null,
+        "reason": "profile_not_defined"
+      }
+    },
+    {
+      "step": 3,
+      "filename": "IMG_0329.JPG",
+      "attempted": false,
+      "measurement": {
+        "valid": false,
+        "reason": "no_identifiable_historical_crack_trace",
+        "fwhm_native_px": null
+      },
+      "registration": {
+        "attempted": false,
+        "valid": null,
+        "reason": "profile_not_defined"
+      }
+    }
+  ],
+  "predictions": {
+    "E": false,
+    "raw": {},
+    "arms": {
+      "persistence": {
+        "attempted": false,
+        "success": false,
+        "prediction_px": null,
+        "reason": "history_measurement_missing"
+      },
+      "stage_trend": {
+        "attempted": false,
+        "success": false,
+        "prediction_px": null,
+        "reason": "history_measurement_missing"
+      }
+    }
+  },
+  "E_reasons": [
+    "no_identifiable_historical_crack_trace"
+  ],
+  "origin_step": 3,
+  "target_step": 4,
+  "unit": "native_step2_reference_px",
+  "target_file_present_at_save": false,
+  "saved_at_utc": "2026-10-16T22:33:14.442004+00:00"
+}

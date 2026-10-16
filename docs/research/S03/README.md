@@ -3,6 +3,15 @@
 This navigation record covers the currently touched D01 observation route.
 Exact evidence and verdicts remain in the owning Experiments.
 
+2026-10-16 — [S03-E033-MD01](S03-E033-MD01/experiment.md) applies the newly
+approved earliest-complete2/3/4 rule. Only326/329 histories acquired; whole
+views and one shared native loading crop do not establish an identifiable
+crack trace for a defensible profile (two AI visual reviews, not physical truth).
+E=false, both measurements/predictors unattempted/null, Step4 unopened, Runknown,
+common scoring0/1; comparison inconclusive, not candidate failure or zero width.
+Original half-depth/scores unchanged. Next proposal: separate fixed24/25/26
+history-first replication, not source substitution inside this case; not executed.
+
 2026-10-16 — [S03-E032-MD01](S03-E032-MD01/experiment.md) tests fixed,
 background-only sampling displacements on E031's same3viewed images.83/83
 profiles valid; secant remains lower-error in25/25common offsets and25/25

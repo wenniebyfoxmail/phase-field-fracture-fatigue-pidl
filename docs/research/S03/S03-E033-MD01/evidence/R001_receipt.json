@@ -1,0 +1,23 @@
+{
+  "protocol": "early-relative-halfdepth-v1",
+  "phase": "acquire-history",
+  "started_at_utc": "2026-10-16T22:29:55.110421+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 18460,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "commit": "670949d73015e02dbefc27222f146e78e4d8e891",
+  "dirty": [],
+  "command": [
+    "scripts/md01_early_relative.py",
+    "acquire-history",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E033-MD01/runs/S03-E033-MD01-R001"
+  ],
+  "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E033-MD01/raw_images",
+  "target_acquired": false,
+  "ended_at_utc": "2026-10-16T22:29:58.492048+00:00",
+  "wall_seconds": 3.3816531660268083,
+  "cpu_seconds": 1.155079,
+  "execution": "succeeded",
+  "retrieval": "verified_local"
+}

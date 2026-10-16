@@ -1,0 +1,9 @@
+{
+  "protocol": "early-relative-halfdepth-v1",
+  "phase": "acquire-history",
+  "execution": "failed",
+  "commit": "f561e656b0969fd6a4dae704e6eda23d2bbf5746",
+  "error": "urllib HTTP Error 403 at first file IMG_0326.JPG; no source image written",
+  "followup": "curl HEAD on the same exact official URL returned 302 to official S3 then 200; transport-only repair proposed, no source substitution",
+  "receipt_note": "Manual failure record after traceback; precise start/end timestamps were not captured by the failed runner"
+}

@@ -1,0 +1,29 @@
+{
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "render_only": true,
+  "no_measurement": true,
+  "source_files": [
+    "IMG_0326.JPG",
+    "IMG_0329.JPG"
+  ],
+  "crop_native_xyxy": [
+    2500,
+    250,
+    4000,
+    3400
+  ],
+  "target_accessed": false,
+  "command": [
+    "scripts/plot_md01_early_history.py",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E033-MD01/runs/S03-E033-MD01-R004/analysis",
+    "--vector"
+  ],
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 19640,
+  "commit": "e845cadd55ee9144dfae299dc2a0fcf6dbfdf321",
+  "dirty": [],
+  "ended_at_utc": "2026-10-16T22:33:21.275037+00:00",
+  "wall_seconds": 6.481430665997323
+}
