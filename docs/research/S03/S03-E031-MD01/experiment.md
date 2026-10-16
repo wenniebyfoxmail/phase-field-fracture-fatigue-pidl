@@ -114,3 +114,46 @@ feedback or width-based adjustment. Search support is now dx[-30,30],dy[-7,53]
 relative to the first frame. A boundary result remains invalid. Do not rerun
 R001 or rewrite its snapshot. Fresh review required for this matching delta
 before409 acquisition. Original protocol/results retained as history.
+
+## Outcome — 2026-10-16
+
+Run execution succeeded; retrieval locally verified; single-case exploratory
+comparison complete. Directional benefit in the declared optical-width target;
+disposition: advance to a bounded localization-sensitivity check, not training.
+No oldD01 scores/definitions changed, no workbook response fields or other
+images accessed. Rule22d5e04 predates images; R001 andR002 were each once-only
+numeric phases, with the pre-target reviewed amendment68fbc24. See[runs](runs.md)
+and[independent review](evidence/independent_review.md).
+
+| Stage/role | Half-depth native px |
+|---|---:|
+|27/history1|38.44866535365738|
+|28/history2|42.677985344650466|
+|29/target|47.34982708587424|
+
+Closed history predictions: persistence42.677985344650466,
+secant46.90730533564355px, no clipping active. Against the SAME target:
+absolute errors4.671841741223773 vs0.4425217502306893px;
+candidate-minus-baseline=-4.229319990993083px. History increment4.22932px,
+next increment4.67184px, so previous increment is useful in this single
+continuation. Valid profiles3/3, generated predictions2/2, scored opportunities1/1.
+This is a measured positive component result, not merely execution success.
+
+Independent reviewer reconstructed the3profiles from source pixels with
+independent grid/bilinear code and half-depth implementation: all arrays,
+widths/predictions/errors differ0. Source identities, clean-code binding and
+local operation order match. Final R0043colour figures/F03gray visually checked;
+layout audits empty,300dpi PNG/PDF with embedded CID font confirmed bypdffonts.
+
+Important limitation: left/right patches have systematic displacement differences;
+max deviations from the shared translation2.64525px at28,4.73415px at29.
+All4NCC patches pass, but high correlation does not qualify a rigid-body
+correspondence model. These POSITION residuals cannot be interpreted as WIDTH
+error bounds or subtracted from the measured gain. No uncertainty interval,
+physical width accuracy or robustness to true position error established.
+
+[Final figures and guide](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R004/analysis/README_analysis.md).
+Obsidian task note/Roadmap synced to this result. Next proposal, not executed:
+use these same3photos and a prespecified two-sided-background-informed position
+perturbation check to see if the gain survives, without choosing low-error
+positions or replacing this score. No new images or learned model needed first.

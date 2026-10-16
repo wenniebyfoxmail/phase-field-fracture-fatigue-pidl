@@ -1,0 +1,27 @@
+{
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "render_only": true,
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 10292,
+  "commit": "158f33a419cc4cb056796e25bf6bf1a10e65435d",
+  "command": [
+    "scripts/plot_md01_relative_stage.py",
+    "--source",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/source",
+    "--history",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R001",
+    "--target",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R002",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R004/analysis"
+  ],
+  "dirty": [],
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "started_at_utc": "2026-10-16T21:42:13.894303+00:00",
+  "ended_at_utc": "2026-10-16T21:42:19.142571+00:00",
+  "wall_seconds": 5.248252916964702,
+  "input_history": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R001",
+  "input_target": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R002",
+  "no_new_measurement": true
+}

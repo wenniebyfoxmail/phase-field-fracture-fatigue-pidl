@@ -1,0 +1,14 @@
+{
+  "protocol": "relative-stage-halfdepth-v1",
+  "unit": "native_first_image_px",
+  "target_width_px": 47.34982708587424,
+  "scored": true,
+  "opportunities": 1,
+  "coverage": 1,
+  "valid_profiles": 3,
+  "persistence_abs_error_px": 4.671841741223773,
+  "secant_abs_error_px": 0.4425217502306893,
+  "delta_abs_error_px": -4.229319990993083,
+  "source_prediction_snapshot": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R001/predictions_saved_before_target.json",
+  "no_target_tuning": true
+}

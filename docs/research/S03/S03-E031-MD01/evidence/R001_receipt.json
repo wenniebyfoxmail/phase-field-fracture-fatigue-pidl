@@ -1,0 +1,45 @@
+{
+  "protocol": "relative-stage-halfdepth-v1",
+  "phase": "history",
+  "started_at_utc": "2026-10-16T21:39:39.954235+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 9507,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "commit": "b4a1c7a81a4f220a62c61b4ef8b0552def3d95cf",
+  "dirty": [],
+  "command": [
+    "scripts/md01_relative_stage_pilot.py",
+    "history",
+    "--source",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/source",
+    "--geometry",
+    "docs/research/S03/S03-E031-MD01/geometry_history1.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R001"
+  ],
+  "inputs": {
+    "phase": "history",
+    "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/source",
+    "geometry": "docs/research/S03/S03-E031-MD01/geometry_history1.json",
+    "history": "None",
+    "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R001"
+  },
+  "history_valid": 2,
+  "predictions_saved": true,
+  "source_identities": [
+    {
+      "filename": "IMG_0403.JPG",
+      "bytes": 18651977,
+      "sha256": "0cb0b64c232198122144ccb35e9a53c41af9e658a0ecef1aff097524c794f032"
+    },
+    {
+      "filename": "IMG_0406.JPG",
+      "bytes": 17498663,
+      "sha256": "7228ffacef032c4c9232d403a544b343260efd5801d2d5fd0e0a9d5625b50a62"
+    }
+  ],
+  "ended_at_utc": "2026-10-16T21:39:40.327808+00:00",
+  "wall_seconds": 0.37368254095781595,
+  "execution": "succeeded",
+  "retrieval": "verified_local"
+}

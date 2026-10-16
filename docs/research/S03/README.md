@@ -3,6 +3,17 @@
 This navigation record covers the currently touched D01 observation route.
 Exact evidence and verdicts remain in the owning Experiments.
 
+2026-10-16 — [S03-E031-MD01](S03-E031-MD01/experiment.md) advances MD01 from
+metadata to one preselected relative-stage optical-width continuation. Last
+three complete stages27/28/29, smallest image IDs403/406/409 fixed before access.
+Unchanged half-depth widths38.449/42.678/47.350px; history predictions closed
+before target acquisition. Same-target absolute error persistence4.672 vs
+secant0.443px;3/3profiles and1/1opportunity. Independently reconstructed source
+profiles/numerics differ0; three final figures checked. A positive directional
+development result, not absolute-load, physical-width or independent-beam
+validation. Two-sided background motion differences make localization
+sensitivity the next bounded check; no training or oldscore rewrite.
+
 ## Dated claim impact
 
 2026-10-11 — [S03-E008](S03-E008/experiment.md) tested one crop intervention
