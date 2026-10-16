@@ -1,0 +1,23 @@
+{
+  "verdict": "CODE_READY_PASS",
+  "scientific_source": "c4ceb5d27fa8d408be1b9f02dcd6b10308f301a2",
+  "protocol_revision": "20261016-r1-fixed-initial-fullmass-head-rms",
+  "blockers": [],
+  "source_hashes": {
+    "SENS_tensile/s04_e023_head_scale.py": "81bec06b370c6f366e4c10a066eef275f0fe0b59f3e22e5e62c06ba2de73878c",
+    "SENS_tensile/run_s04_e023_head_scale_screen.py": "7c7fd8177384bdc105130d69e6373578e695e9a0383832426462d169cc1408f8",
+    "SENS_tensile/aggregate_s04_e023_head_scale_screen.py": "7cbf33b931b41e2b14286740624b2696c09d1615843ad7de23a7bec59ebfbe6f",
+    "docs/research/S04/S04-E023/e022_control_locks.json": "2133f389cc98a48e900a1e679e59883259b99c93a2bc164110824d843531f6ef"
+  },
+  "independent_unit_tests": 10,
+  "independent_real_states": [
+    "c20s4",
+    "c60s4",
+    "c83s4"
+  ],
+  "independent_nonzero_scaled_decoder": true,
+  "training_performed": false,
+  "parameter_optimizer_steps": 0,
+  "producer_preflight_performed": false,
+  "scientific_success": false
+}

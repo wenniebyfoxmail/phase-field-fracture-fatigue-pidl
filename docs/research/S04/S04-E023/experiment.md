@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E023
 protocol_revision: 20261016-r1-fixed-initial-fullmass-head-rms
-status: implementation-nontraining-review-in-progress
+status: code-ready-no-producer-run
 ---
 # Fixed initial full-mass RMS output-head parameterization
 
@@ -62,3 +62,7 @@ Future head diagnostics must show both original unscaled physical Phi basis and 
 Required checks: same initial residual tensors/RNG/parameter counts; exact initial UV; synthetic nonzero-head function/gradient equivalence incl negative coefficient; full-mass/bias formula; tiny/zero/invalid sigma; fixed-buffer/rule/lock/hash tamper rejection; actual10000LR no10001 and full three-state sampler streams; positive temporary synthetic completion decoder plus coherent-hash tamper negatives. Temporary fixtures declare synthetic steps/runtime only, never evidence of training. Three real states admit exact reference/backbone/E022/E021/E019 controls and calibrate at bounded CPU memory. No training-loop entry on Mac.
 
 Independent Codex Code Ready must bind exact committed source and data/rule locks after checks. Code Ready is not formal preflight, scientific success or authority to start a producer. Next after review: prepare exact-source package and concrete producer plan for user decision. All raw/check outputs under local_archive/experiments/S04-E023/nontraining_v1; compact checks and review here.
+
+## Code Ready outcome — 2026-10-16
+
+Independent Codex CODE_READY_PASS binds **c4ceb5d27fa8d408be1b9f02dcd6b10308f301a2**, no blockers. Root41checks/0skips and all3realasset/calibration/sampler/CLI checks passed. Independent10unitchecks, all3RMS re-evaluations with719chunks/einsum (maxsigma difference1.11e-16,Drelative8.88e-16), nonzero-head function equivalence and actualnonzero scaled-checkpoint decoder fixture all pass. Synthetic completion metadata is test-only, not candidate training. [Review](code_ready_review.md), [checks](nontraining_checks.json). Later doc commits do not replace the reviewed science snapshot. Formal canonical CPU/CUDA preflight and exactproducer-native LR remain future conditions; no training or scientific result. Next: concrete exact-source production package and approval plan.
