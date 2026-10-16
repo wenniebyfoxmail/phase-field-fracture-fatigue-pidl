@@ -161,6 +161,12 @@ def execute(a):
         for row,old in zip(nominal,old_records):
             if not row["measurement"]["valid"] or abs(row["measurement"]["fwhm_native_px"]-old["measurement"]["fwhm_native_px"])>1e-8:
                 raise ValueError("E031 nominal width reproduction mismatch")
+        with np.load(paths["history_profiles"]) as hp, np.load(paths["target_profiles"]) as tp:
+            for stage,pid in zip((27,28,29),lock["nominal_profile_ids"]):
+                old_arrays=hp if stage<29 else tp
+                for field in ("profile","deficit","background"):
+                    if not np.allclose(arrays[pid+"_"+field],old_arrays[f"s{stage}_{field}"],rtol=0,atol=1e-8):
+                        raise ValueError("E031 nominal profile reproduction mismatch")
         for field,old_field in (("persistence_abs_error","persistence_abs_error_px"),("secant_abs_error","secant_abs_error_px"),("delta_abs_error","delta_abs_error_px")):
             if abs(baseline[field]-old_summary[old_field])>1e-8: raise ValueError("E031 score reproduction mismatch")
         cases=[]
