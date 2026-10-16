@@ -1,0 +1,12 @@
+{
+  "protocol": "early-relative-halfdepth-v1",
+  "source_files": ["IMG_0326.JPG", "IMG_0329.JPG"],
+  "no_identifiable_trace": true,
+  "selected_profile": null,
+  "width_measurement_attempted": false,
+  "inspection": "Two whole-image histories plus one identical native loading-region crop per history, xyxy=[2500,250,4000,3400], source 6000x4000",
+  "reason": "No sufficiently identifiable continuous historical crack trace to define a defensible normal and one half-depth sampling profile. Dominant central line is external yellow wire/metal fixture; rough surface texture and pores cannot be silently substituted.",
+  "limitations": "Visual AI judgement, not human/physical ground truth. No identifiable trace is not proof of no crack, zero aperture or no subsurface/microcracking; occluded regions remain unobserved.",
+  "target_accessed": false,
+  "next_action": "Stop this predetermined early-stage comparison, save null history widths and unattempted predictions; do not acquire Step4 or change images/locations to rescue the case. Any separate follow-up requires approval."
+}

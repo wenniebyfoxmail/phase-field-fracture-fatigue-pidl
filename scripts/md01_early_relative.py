@@ -149,7 +149,11 @@ def execute(args):
         receipt["source_identities"] = [verified(i) for i in (0, 1)]
         receipt["geometry_input"] = str(args.geometry)
         if cfg.get("no_identifiable_trace"):
-            snapshot = dict(protocol=PROTOCOL, E=False, geometry=cfg, history=[],
+            missing_history = [dict(step=i+2, filename=FILES[i], attempted=False,
+                                    measurement=unavailable("no_identifiable_historical_crack_trace"),
+                                    registration=dict(attempted=False, valid=None, reason="profile_not_defined"))
+                               for i in (0, 1)]
+            snapshot = dict(protocol=PROTOCOL, E=False, geometry=cfg, history=missing_history,
                             predictions=prediction([None, None]),
                             E_reasons=["no_identifiable_historical_crack_trace"],
                             origin_step=3, target_step=4, unit="native_step2_reference_px",
