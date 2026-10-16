@@ -100,3 +100,6 @@ Solver alignment2026-10-15: [track](experiments/hard5_q4_t3_solver_alignment_tra
 
 
 2026-10-16 E011: raw input-response audit supports a newprospective own-u consistency/analyticbudget admission; oldv3remainsfailed.16filev4prepared locally, full5steporiginal+repair stillpendingexactapproval. [Canonicaltrack](experiments/hard5_q4_t3_solver_alignment_track.md).
+
+
+2026-10-16 E011 completed: [solver-alignment track](experiments/hard5_q4_t3_solver_alignment_track.md) now has a complete paired c1 sequence: repaired five steps joint-pass before one accepted history commit each; original reproduces under r4 but misses strict fresh closure throughout. Legacyraw s3 failure retained. f stays1; material field divergence already appears at s2, so no fatigue-feedback/unique-solution/teacher claim. Next unexecuted discriminator: local solver versus propagated-state sensitivity at the same s2 predecessor.

@@ -1,0 +1,124 @@
+{
+  "run_id": "pf_s04e011_c1_commit_20261016_v4_r1",
+  "producer_commit": "67942510c38c420c9ebc343e88b781a018cd1c7b",
+  "branch": "codex/hard5-q4-t3-2x2-20261005",
+  "producer": "CITPC12 / AD\\xw436 / MATLAB R2025b CPU1thread",
+  "remote_root": "C:\\Users\\xw436\\jobs\\E011_C1_20261016_v4_r1",
+  "raw_admission_revision": "q4_amor_response_r4",
+  "terminal_scope": "one synthetic c1 loading-unloading paired numerical/state-transition diagnostic",
+  "integrity": {
+    "files": 69,
+    "bytes": 1353725620,
+    "all_sha256_and_sizes_match": true
+  },
+  "original": {
+    "completed_steps": 5,
+    "r4_admission_passes": 5,
+    "legacy_raw_failed_steps": [
+      3
+    ],
+    "strict_precommit_joint_passes": 0,
+    "durable_history_commits": 5,
+    "u_calls": 93,
+    "phase_calls": 490
+  },
+  "repaired": {
+    "completed_steps": 5,
+    "strict_precommit_joint_passes": 5,
+    "durable_history_commits": 5,
+    "precommit_C_offline": [
+      0.16532175191554954,
+      0.392168297539758,
+      0.8870825401626368,
+      0.813815910788752,
+      2.04269667921353e-06
+    ],
+    "completed_blocks": [
+      3,
+      20,
+      8,
+      7,
+      0
+    ],
+    "u_calls": 183,
+    "phase_calls": 132
+  },
+  "shared_recovery_phase_calls": 34,
+  "initialization_resets": 1,
+  "all_gp_f_equals_1": true,
+  "claim_verdict": "supports bounded c1 numerical and accepted-state consistency, not spatial alignment, unique energy branch, fatigue-degradation feedback, qualified teacher, physical truth or long-life trajectory",
+  "independent_review": "passed archive/numerical and final document consistency",
+  "analysis_source_delta_vs_producer": "ylabel clarification only; exact source hashes in c1_commit_analysis.json",
+  "evidence": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/retrieval_verification.json",
+      "sha256": "2069ed771d6c3626ff22f92e9ef4e2730aaa731543540e1e0eb86ee1111c6500",
+      "bytes": 19754
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/retrieved/launch_receipt.json",
+      "sha256": "53408fef9ac559b25a823964c4e4949bc7950b732678b6e90248f6601628da2c",
+      "bytes": 921
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/retrieved/input_manifest.json",
+      "sha256": "72bc7588e15c167b117970f8219ea188fd09f751d743fa5c3307487e852af04a",
+      "bytes": 8638
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/retrieved/selftest.json",
+      "sha256": "84481fcf758f6893419722f9d706d2b978b4856f8a4732d69d64f5ebcfc13fff",
+      "bytes": 517
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/retrieved/sequence_finished.json",
+      "sha256": "39ca3e4b837c1c4760566336ae6a85eb8f0c4867b41011cfc7b25a7b23853d97",
+      "bytes": 3374
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/analysis/c1_commit_analysis.json",
+      "sha256": "09c16e1f5e378afb89054a90bbbeaec3be8a6a95570ffb9c945e7468125a3fa6",
+      "bytes": 15807
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/analysis/commit_trace.csv",
+      "sha256": "ba3c1b7b1422fdcb1f1c9a14531a436a912b97a4b481fe0ffd0a93a66adbaadc",
+      "bytes": 2520
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/analysis/paired_reductions.json",
+      "sha256": "16958741ca5d2056ccfa7aec3de1fded59ab7e33305d8304305eb8c1ab2b1641",
+      "bytes": 2982
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/analysis/supplementary_reductions.json",
+      "sha256": "e552f2fee5cbfdf0516ed85f867cc56a53bafc91a327cd5bc887363797c2e7ef",
+      "bytes": 9095
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/analysis/independent_review.json",
+      "sha256": "ceb036d457cb5c88f4f84dc1958c831aa4d0e6a91b4b424fa06e03ef05cf3f26",
+      "bytes": 4909
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/analysis/figure_qa.json",
+      "sha256": "80e1837f4f2f1795be1b4c35f6a636a0d0ab0f5102a5166d2edfc7edb3200e9a",
+      "bytes": 490
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/analysis/c1_commit_decision.png",
+      "sha256": "ade54b0480c42f80a0f452e055e74f8d506bd24ae01cc7116521d842dbe9e757",
+      "bytes": 132710
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/analysis/c1_commit_decision.md",
+      "sha256": "3810ecee6577a76c34cfa67184a9fb8dfbcf1193ed817e2428464c81088a3b6d",
+      "bytes": 1775
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4_r1/analysis/decision.md",
+      "sha256": "975628dc1c213d81f9d044ab56acfadf08d171cb8ff3d7e120e16a258ca1e469",
+      "bytes": 1495
+    }
+  ]
+}

@@ -189,3 +189,6 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 
 
 2026-10-16 [raw-admission r4](raw_admission_r4_20261016.md) prepared: own-u rawtau1e-10 + analyticBdelta-u response budget, mandatory oldnonrawgates. Oldv3rawmiss unchanged. Existingofflinereplay/negativecontrols support feasibility, not newnative5step or repairresult. [v4preparation](runs/c1_commit_v4_preparation_20261016.md),16files/8inputcopiesawaitexactapproval.
+
+
+2026-10-16 [c1 v4/r4 completed](runs/c1_commit_v4_r1_result_20261016.md): original five-step admission passes under prospective r4; legacy raw s3 still fails. Repaired five steps pass the PRE-COMMIT joint criterion under old history/lower, each with one durable version advance. Shared recovery: 34 phase calls, one reset. All 69 files / 1,353,725,620 bytes verified; producer 6794251. Repaired C = .165322/.392168/.887083/.813816/2.04e-6; s2 uses all 20 blocks. Original misses strict fresh closure at all five steps. Active weighted relative L2 difference is 79.41% at s2 and 16.50% at peak, although peak integral changes only −.2243%. All GP f=1: supports one-c1 numerical/state-transition consistency, not fatigue-degradation feedback, unique equilibrium, teacher or physical validity. Next unexecuted discriminator: same-predecessor s2 local solver sensitivity versus incoming-state propagation.

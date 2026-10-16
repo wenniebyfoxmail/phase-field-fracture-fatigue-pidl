@@ -150,3 +150,6 @@ E011 c1 commit v1: [local preparation only](research/S04/S04-E011/runs/c1_commit
 
 
 2026-10-16 S04-E011 [rawresponse r4](research/S04/S04-E011/raw_admission_r4_20261016.md): supportingoffline admission-design audit, no newnative result. ExplicitQ4replay + analyticLbound +6rawfieldnegativecontrols/4logicchecks reviewed. v4newdefinition pending exact16fileapproval; frozen v3result unchanged.
+
+
+2026-10-16 [c1 v4/r4 completed](research/S04/S04-E011/runs/c1_commit_v4_r1_result_20261016.md): original five-step admission passes under prospective r4; legacy raw s3 still fails. Repaired five steps pass the PRE-COMMIT joint criterion under old history/lower, each with one durable version advance. Shared recovery: 34 phase calls, one reset. All 69 files / 1,353,725,620 bytes verified; producer 6794251. Repaired C = .165322/.392168/.887083/.813816/2.04e-6; s2 uses all 20 blocks. Original misses strict fresh closure at all five steps. Active weighted relative L2 difference is 79.41% at s2 and 16.50% at peak, although peak integral changes only −.2243%. All GP f=1: supports one-c1 numerical/state-transition consistency, not fatigue-degradation feedback, unique equilibrium, teacher or physical validity. Next unexecuted discriminator: same-predecessor s2 local solver sensitivity versus incoming-state propagation.
