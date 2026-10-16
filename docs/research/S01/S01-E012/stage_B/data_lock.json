@@ -1,0 +1,44 @@
+{
+  "protocol": "S01-E012-B-v1",
+  "stage_A_run_id": "S01-E012-R002",
+  "stage_A_source_commit": "485957289ded96a98df84cf1921a008e5d00df81",
+  "stage_A_zip_sha256": "f314aa49d61f61b40bd3dca9431f27b867c6cebf3d3fe7bbaf331266cc62f740",
+  "stage_A_files": {
+    "missing_scores_manifest.json": "83db98b96e148477592827b0dd3d25555f053b268ce71d9b4f4db0913f0f6f44",
+    "identity_mapping.json": "06c37fa4b6f36ba689a9d2d2757e27fcf848eac9f7ba2711c430b148f66f2809",
+    "geometry.json": "2b31adb617f152e7d0f786bfe573719c993fb51bae97eb32b09bcc87d13927db",
+    "inventory.json": "cac6511f2bcb9f8cae2d0c03c1833dc0c03d4652510886f13fb26cff6222ec5c",
+    "qualification.json": "041e71ede601779ce36a5a164b0facee26f5e89e4af9cef156f6633a0988f26f",
+    "output_receipt.json": "2bc5c562f8409d3d3245b8c64412dd32455e4e9a8886a416a537a5c58dfc9891",
+    "delivery_manifest.json": "1022ea13875b1fa79b326c6970fef477b491982aac77e6c3149fa0820ca2f9d4"
+  },
+  "source_run": "S01-E007-R001",
+  "source_receipt_sha256": "06b3fd63691190288e0eff4ba6b012ebee9870b593efaec352044247e4ddf985",
+  "source_files": {
+    "train_bank.json": "47bd92a8f7f93f4b07a3e6795121f40c37430dab5af1ed1ca9ef985094f078ea",
+    "correction_heads.json": "6372a5e44de34d9613795f53f628515b9932eca36ef7792f3a744e33db4ecbb0",
+    "label_audit.json": "ba5017d927c1d6fcfafdf2981e546cd5ac06e5acad4144002d997aacb88ea8f8"
+  },
+  "metadata_sha256": "6fc622943a78063926d96a13e727013ae22d12919a3af3814cfc221bd1a7e5bb",
+  "E003_checkpoint_sha256": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
+  "manifest_mapping": "all31156 rows in exact saved order; source_run/source_parent_key/image/old_box/new_box/head; no subset or renumbered-key join",
+  "source_image_root": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\images\\train",
+  "image_identities": "exact835 unique prepared_image/path/hash/dimensions embedded in locked missing_scores_manifest; hash bytes before decode",
+  "E008_reference_source_manifest_sha256": "0ec81dcca40290e8c041999aa2ccd9e47a33fa30081d31e6450beacfdcd9dd3e",
+  "reference_helpers": [
+    "scripts/pavetrack_box_cv/run.py:context_box/embeddings",
+    "scripts/pavetrack_protected_cv/run.py:frozen_score_probabilities",
+    "scripts/pavetrack_scalar_utility_cv/run.py:counterfactual_context/single_label",
+    "scripts/pavetrack_cv/common.py:recall_at_fp_per_image"
+  ],
+  "forbidden": [
+    "new confirmation/reserve/validation GT or pixels",
+    "four consumed qualification sites as new support",
+    "paired_train_features.npz",
+    "YOLO proposer inference",
+    "new correction generation",
+    "head fitting",
+    "deployment or original E003 rescoring"
+  ],
+  "fresh_access": false
+}

@@ -1,0 +1,139 @@
+{
+  "protocol": "S01-E012-B-v1",
+  "proposed_run_id": "S01-E012-R003",
+  "claim_class": "C1 training-evidence qualification",
+  "domain": "real-road; reused training sites; conditional frozen encoder",
+  "locations": [
+    "24",
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "1638",
+    "2027",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "held_groups": [
+    [
+      "24",
+      "514",
+      "1577",
+      "3662"
+    ],
+    [
+      "95",
+      "728",
+      "1638",
+      "4494"
+    ],
+    [
+      "151",
+      "1400",
+      "2027",
+      "5508"
+    ]
+  ],
+  "excluded_locations": [
+    "353",
+    "1459",
+    "2028",
+    "5982"
+  ],
+  "input_counts": {
+    "images": 835,
+    "original_rows": 43347,
+    "corrections": 31156
+  },
+  "scoring": {
+    "checkpoint": "C:\\Users\\xw436\\pavetrack_runs\\S01-E003-R001\\best_ranker.pt",
+    "checkpoint_sha256": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
+    "architecture": "torchvision MobileNetV3-small; frozen E003 features/avgpool/classifier",
+    "crop_padding": 0.1,
+    "crop_rule": "E008 context_box: clip pad_box then Python round; exact manifest crop_box_xyxy",
+    "transform": "RGB; Resize((224,224)) exact torchvision 0.26.0 default bilinear/antialias; ToTensor; Normalize([.485,.456,.406],[.229,.224,.225])",
+    "feature_columns": 576,
+    "dtype": "float32",
+    "CNN_mode": "eval + inference_mode; no autocast/backward",
+    "max_crop_batch": 128,
+    "max_actual_crops_per_image": 40,
+    "head_device": "CPU",
+    "head_batch": 512,
+    "pooled_feature_bytes": 71783424,
+    "feature_standardizer": "none; Normalize is image preprocessing only",
+    "backend": {
+      "matmul_precision": "highest",
+      "cuda_matmul_allow_tf32": false,
+      "cudnn_allow_tf32": true,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": false
+    }
+  },
+  "producer": {
+    "hostname": "D-26-09",
+    "ssh_alias": "gpu-server",
+    "account": "ad\\xw436",
+    "python": "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "gpu_physical_index": 1,
+    "gpu_logical_index": 0,
+    "CUDA_VISIBLE_DEVICES": "1",
+    "gpu_uuid": "GPU-3d74ea12-5d84-a619-90b2-c0b1f104599a",
+    "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition",
+    "fallback": false
+  },
+  "budget": {
+    "runs": 1,
+    "cpu_threads": 1,
+    "total_wall_seconds": 3600,
+    "peak_RSS_bytes": 4294967296,
+    "peak_GPU_allocated_bytes": 4294967296,
+    "peak_GPU_reserved_bytes": 4294967296,
+    "source_image_decodes": 835,
+    "new_unique_backbone_crop_rows": 31156,
+    "max_backbone_batches": 835,
+    "head_scoring_rows": 31156,
+    "head_verification_rows": 31156,
+    "total_head_rows": 62312,
+    "singleton_slots": 93468,
+    "joint_comparisons": 1,
+    "model_fits": 0,
+    "linear_solves": 0,
+    "original_E003_rescores": 0,
+    "new_corrector_predictions": 0
+  },
+  "policy": {
+    "iou": 0.5,
+    "false_positives_per_image": 1,
+    "original_duplicate_iou": 0.7,
+    "correction_duplicate_iou": 0.5,
+    "score": "sqrt(original_proposer_confidence * corrected_E003_probability)",
+    "eligibility": "score strictly greater than original; no exact original box or original IoU > .7",
+    "utility": "new_GT-lost_GT-added_correction_FP",
+    "full_scope": "12 sites",
+    "held_support": "U_full12 grouped by source held group",
+    "fit_support": "three independent FIT8 baselines",
+    "joint": "U_full12 > 0 selects; inherited score/lexical NMS order; source-key append; once only; GT-informed not learned"
+  },
+  "criterion": {
+    "iou": 0.5,
+    "false_positives_per_image": 1,
+    "utility": "new_GT_identities-lost_GT_identities-added_correction_FP",
+    "minimum_distinct_positive_GT_per_group": 1,
+    "minimum_positive_sites_per_group": 1,
+    "all_three_groups_required": true,
+    "held_support_scope": "U_full12 grouped by source corrector held group; no held-baseline calculation",
+    "fit_support_scope": "U_fit8 for each fixed eight-location FIT baseline",
+    "GT_deduplication_scope": "separate full12 and fit8_fold_i; never sum across scopes"
+  },
+  "downstream_detection_criterion": {
+    "old_E003_retention_minimum": 0.95,
+    "net_new_GT_minimum": 1,
+    "macro_location_recall_delta_strictly_positive": true
+  },
+  "fresh_access": false
+}
