@@ -1,0 +1,29 @@
+{
+  "experiment_id": "S03-E027-D01",
+  "protocol": "near-background-v1",
+  "run_id": "S03-E027-D01-R000",
+  "code_commit": "9adad3c8453d19325d61f46ab493ceb90bd38b97",
+  "git_dirty": false,
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 56849,
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/d01_nearfield_correspondence.py",
+    "--mode",
+    "prepare",
+    "--inputs",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E018-D01/runs/S03-E018-D01-R001/safe_inputs",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E027-D01/runs/S03-E027-D01-R000"
+  ],
+  "gpu": null,
+  "started_utc": "2026-10-16T09:46:47.451035+00:00",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E027-D01/runs/S03-E027-D01-R000",
+  "source_images": 1,
+  "origin_only": true,
+  "ended_utc": "2026-10-16T09:46:48.221101+00:00",
+  "wall_seconds": 0.7672050839755684,
+  "cpu_seconds": 0.7553159999999999
+}

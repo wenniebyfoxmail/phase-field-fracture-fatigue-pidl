@@ -191,3 +191,17 @@ physical cause unresolved, actual offset range unproven. Final4figures R003
 fixed before rendering, R002legend overlap retained/superseded. Next propose
 independent near-crack background correspondence atT1 (both n/t, spatial transfer),
 no new fitting, model, source, target/operator change or old rescoring this round.
+
+2026-10-16 — [S03-E027-D01](S03-E027-D01/experiment.md) tests new near-background
+T1 correspondences, first-frame context-isolated AI screen17/20before matching.
+51/60nominal primary opportunities available;19/51flags-clear. OldFIT reduces
+median residual norms .574→.269/1.471→.317/.777→.304px at30/40/50kN; paired
+changes negative at all3stages, not all individual anchors. Independently
+reproduced102template-stage matches,60combined rows,18summaries,6fields and70LOO
+with maxdifference0;10tests. New-centre/oldFIT agreement.024-.060px is NOT
+accuracy; sharedgeometry/correlatedtemplates/cross-band interpolation and later
+flags-clear inside-LOO n=0 leave reliable crack-edge transfer unresolved. Retain
+old correction with background corroboration; no width/operator/oldscore edits.
+Final7figure pages R0033cbf8c5 independently reviewed, numericR00165e424d intact.
+Next propose residual n/t scenarios through fixed width to discriminate whether
+remaining.887pxT1 miss can be position-related; no new calculation/model yet.

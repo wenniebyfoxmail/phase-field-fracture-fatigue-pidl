@@ -101,3 +101,65 @@ No claim of independent human truth, unseen specimen, physical opening accuracy,
 reliable crack-edge transfer or improved prediction solely from successful NCC.
 
 Status at registration: prepared; no new matching performed.
+
+## Outcome — 2026-10-16
+
+Disposition: retain old correction with **near-background corroboration**;
+reliable transfer to the physical crack-edge/sampling band remains unresolved.
+This is component progress, not an overall research failure or new validation.
+Origin-only fresh-context agent retained17/20; N05/N09/N10 excluded for visible
+band contact before targets were matched. This is AI screening, not human truth.
+The new locations are disjoint from old FIT/CHECK footprints, but share original
+images, H and sampler; new secondary templates overlap spatially.
+
+R001 clean65e424d1f7b71b4080473853d246b8c14ee74669 completed in.358s wall/.341s
+CPU. All17 retained primary anchors matched at each of3 stages:51/51accepted,
+51/60nominal opportunities (85%). Both template sizes available at all51;
+102 accepted per-template-stage records plus18origin exclusions retained.
+No search/support/flat-template failure among retained anchors. Review flags
+clear only8/6/5 by30/40/50kN:19/51available,19/60nominal. No threshold retuning.
+
+| Target load | Median norm, no extra correction (px) | After old FIT (px) | Median paired change (px) | Flags clear / available |
+|---|---:|---:|---:|---:|
+| 30kN | .574080 | .269186 | -.262834 | 8/17 |
+| 40kN | 1.471060 | .317121 | -1.219519 | 6/17 |
+| 50kN | .777227 | .304064 | -.523448 | 5/17 |
+
+Medians use the SAME17 anchors each stage; not every anchor improves. Negative
+paired changes show the old correction's direction/magnitude is supported at
+new near-background positions. These residuals are relative to image matches,
+not certified physical displacement errors or uncertainty bounds.
+
+All-available affine centres lie inside the support hull, rank3,condition1.727;
+centre-oldFIT differences.055879/.024072/.059929px are estimator AGREEMENT,
+not.02-.06px accuracy. LOO hull-interior RMS.323131/.430650/.371465px on12points
+perstage, exterior.383996/.283276/.416868 on5points. Flags-clear centre-oldFIT
+differences.024500/.021452/.101535px, but interior LOO counts2/0/0: later two
+checks unavailable, not zero error. Exterior LOO5/6point checks can extrapolate;
+50kN flags-clear exterior RMS.802254px. Crossing a crack-like band can violate
+a continuous affine displacement assumption even with centre inside the hull.
+
+Independent reviewer reran10synthetic tests and independently rebuilt inverse-H
+quantised sampling/NCC/subpixel/reverse matches, without calling new match or
+summary functions. All102 per-template forward/reverse outputs,60combined rows,
+18stage/side summaries,6fields and70LOO records reproduce with maxdifference0.
+An earlier side-denominator bug was fixed before R001. Exact review in
+[independent_review.md](evidence/independent_review.md), small tables in evidence/.
+
+Final display R003 clean3cbf8c5c0753519e5675649547fcbb2174f3869c is render-only:
+4main figure sets plus3all-accepted gallery pages,21PNG/PDF formats and14
+same-stem explanations. R002 retained/superseded only for missing sidecars and
+gray-DPI metadata; all14PNG pixel arrays identical to R003. Owner/reviewer
+opened all7colour plots and key grayscale; no data clipping/critical overlap,
+all7layout audits empty, all14PNG strict300dpi checks pass, sidecars21/21 pass.
+[Final figures and guide](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E027-D01/runs/S03-E027-D01-R003/analysis/README_analysis.md).
+
+### Next discriminator, not executed here
+
+Propagate observed near-background normal AND tangent residuals through the
+UNCHANGED half-depth operator at T1: can plausible residual-position scenarios
+account for the remaining E026 aligned optical-query miss about.887px? Keep
+actual observed residual pairs and explicit spatial-transfer assumptions, not
+a Gaussian precision/coverage claim. Freeze this bounded diagnostic before
+calculation; do not tune support to rescue the score. New near-field affine
+correction was NOT applied, old target/score untouched, no training/new data.
