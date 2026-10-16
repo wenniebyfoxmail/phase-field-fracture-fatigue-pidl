@@ -1,27 +1,30 @@
 """Identity-bound, read-only capability adapter for S09-E008 Stage 0A.
 
 The exact public wrapper is frozen to one sealed run.  It qualifies metadata,
-static identity and all 366 unique payload hashes before any HDF5 decode.  P1
-freezing additionally requires all 73 decoded s00/s04 pairs and weight hashes
-bound to the same static file.
+static identity and all 366 unique payload hashes before any HDF5 decode.  It
+then validates all six physical substeps, derives native weights from the same
+verified static bytes, constructs the 73 endpoint transitions internally and
+only then freezes P1.  No caller-supplied scientific array crosses that route.
 """
 from __future__ import annotations
 
 import csv
 from dataclasses import asdict, dataclass
 import hashlib
+import io
 import json
 from pathlib import Path
 
+import h5py
 import numpy as np
 
 from s09_stage0a_packet import (
-    DecodedStage0AState,
-    decode_stage0a_transitions,
+    _reject_external_hdf5_storage,
+    decode_payload,
     index_by_key,
     preflight_rows,
 )
-from s09_stage0a_p1_freeze import freeze_p1_contract, require_float64
+from s09_stage0a_p1_freeze import freeze_p1_contract
 
 
 @dataclass(frozen=True)
@@ -158,104 +161,214 @@ def qualify_s09_e008_full_trajectory(
     return _qualify_full_trajectory(run_root=run_root, context=S09_E008_CONTEXT)
 
 
-def decode_s09_e008_all_endpoints(
-    run_root: Path,
-) -> tuple[
-    dict[int, tuple[DecodedStage0AState, DecodedStage0AState]],
-    dict[str, object],
-    dict[str, object],
-]:
-    """Exact-run entry: qualify all six states, then decode all 73 s00/s04 pairs."""
-    rows, qualification = qualify_s09_e008_full_trajectory(run_root)
-    decoded, decode_receipt = decode_stage0a_transitions(
-        states_dir=run_root / "states",
-        rows=rows,
-        cycles=list(range(1, 74)),
-        expected_nodes=S09_E008_CONTEXT.expected_nodes,
-        expected_elements=S09_E008_CONTEXT.expected_elements,
-        expected_gp=S09_E008_CONTEXT.expected_gp,
-    )
-    pairs = {pre.logical_cycle: (pre, peak) for pre, peak in decoded}
-    if set(pairs) != set(range(1, 74)):
-        raise ValueError("decoded endpoint cycle coverage mismatch")
-    decode_receipt.update({
-        "source_context_sha256": S09_E008_CONTEXT.digest,
-        "source_qualification_verdict": qualification["verdict"],
-        "source_static_sha256": S09_E008_CONTEXT.static_sha256,
-        "history_channel_semantics": "source-bound-not-directly-decoded",
-    })
-    return pairs, qualification, decode_receipt
-
-
 def _array_sha256(value: np.ndarray) -> str:
     contiguous = np.ascontiguousarray(value)
     return hashlib.sha256(contiguous.tobytes(order="C")).hexdigest()
 
 
-def freeze_p1_from_qualified_pairs(
-    *,
-    pairs_by_cycle: dict[int, tuple[DecodedStage0AState, DecodedStage0AState]],
-    qualification_receipt: dict[str, object],
-    nodal_weight,
-    gp_weight,
-    weight_receipt: dict[str, object],
-    context: Stage0ACapabilityContext = S09_E008_CONTEXT,
-) -> dict:
-    """Bind all 73 decoded pairs and native weights to the qualified archive."""
-    if qualification_receipt.get("verdict") != "FULL_TRAJECTORY_HASH_QUALIFIED":
-        raise ValueError("full trajectory is not qualified")
-    if qualification_receipt.get("context_sha256") != context.digest:
-        raise ValueError("qualification context mismatch")
-    if qualification_receipt.get("qualified_cycles") != list(range(1, 74)):
-        raise ValueError("incomplete qualified cycle set")
-    if qualification_receipt.get("qualified_substeps") != list(range(6)):
-        raise ValueError("incomplete six-state qualification")
-    if qualification_receipt.get("unique_payload_count") != 366 or not qualification_receipt.get(
-        "all_payload_hashes_preflighted"
+def _mat_field(handle: h5py.File, value, name: str):
+    """Dereference one scalar MATLAB-v7.3 struct field."""
+    if not isinstance(value, h5py.Group) or name not in value:
+        raise ValueError(f"static MATLAB field missing: {name}")
+    field = value[name]
+    if isinstance(field, h5py.Group):
+        return field
+    if not isinstance(field, h5py.Dataset):
+        raise ValueError(f"unsupported static MATLAB field: {name}")
+    reference_type = h5py.check_dtype(ref=field.dtype)
+    if reference_type is not None:
+        refs = np.asarray(field).reshape(-1)
+        if len(refs) != 1 or not refs[0]:
+            raise ValueError(f"static MATLAB field is not scalar: {name}")
+        return handle[refs[0]]
+    return field
+
+
+def _mat_numeric(handle: h5py.File, value, name: str) -> np.ndarray:
+    dataset = _mat_field(handle, value, name)
+    if not isinstance(dataset, h5py.Dataset) or dataset.dtype.kind not in "fiu":
+        raise ValueError(f"static field is not numeric: {name}")
+    stored = np.asarray(dataset)
+    # MATLAB stores array dimensions in reverse order in v7.3 HDF5.
+    axes = tuple(reversed(range(stored.ndim)))
+    return stored.transpose(axes) if axes else stored
+
+
+def _derive_native_weights(
+    static_path: Path, context: Stage0ACapabilityContext
+) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
+    """Derive weights only from the exact verified native static payload."""
+    payload = _read_identity_file(static_path, context.static_filename, context.static_sha256)
+    with h5py.File(io.BytesIO(payload), "r") as handle:
+        _reject_external_hdf5_storage(handle)
+        if "stage0b_static" not in handle:
+            raise ValueError("stage0b_static root missing")
+        root = handle["stage0b_static"]
+        mesh = _mat_field(handle, root, "mesh")
+        quadrature = _mat_field(handle, root, "quadrature")
+        geometry = _mat_field(handle, root, "geometry")
+        xy = _mat_numeric(handle, mesh, "node_coordinates")
+        conn_raw = _mat_numeric(handle, mesh, "cells_0based")
+        gauss_weight = _mat_numeric(handle, quadrature, "gauss_W").reshape(-1)
+        nxi = _mat_numeric(handle, quadrature, "Nxi")
+        dndxi = _mat_numeric(handle, quadrature, "dNdxi")
+        thickness_raw = _mat_numeric(handle, geometry, "t")
+        for name, value in (("node_coordinates", xy), ("gauss_W", gauss_weight),
+                            ("Nxi", nxi), ("dNdxi", dndxi), ("t", thickness_raw)):
+            if value.dtype != np.dtype("float64"):
+                raise ValueError(f"static field must be stored float64: {name}")
+        thickness = float(thickness_raw.reshape(-1)[0])
+    if conn_raw.dtype.kind not in "iu" or not np.equal(conn_raw, np.floor(conn_raw)).all():
+        raise ValueError("static connectivity must contain exact integers")
+    conn = conn_raw.astype(np.int64, copy=False)
+    expected = (context.expected_nodes, context.expected_elements, context.expected_gp)
+    if (xy.shape, conn.shape, gauss_weight.shape, nxi.shape, dndxi.shape) != (
+        (expected[0], 2), (expected[1], 4), (expected[2],),
+        (4, expected[2]), (2, 4, expected[2]),
     ):
-        raise ValueError("incomplete physical payload qualification")
-    if set(pairs_by_cycle) != set(range(1, 74)):
-        raise ValueError("decoded pairs must cover exact cycles 1..73")
-    nodal_weight = require_float64("nodal_weight", nodal_weight)
-    gp_weight = require_float64("gp_weight", gp_weight)
-    if nodal_weight.shape != (context.expected_nodes,):
-        raise ValueError("nodal weights do not match frozen static dimensions")
-    if gp_weight.shape != (context.expected_elements, context.expected_gp):
-        raise ValueError("GP weights do not match frozen static dimensions")
-    expected_weight_receipt = {
+        raise ValueError("static native-Q4 shape/order contract mismatch")
+    if (not np.isfinite(xy).all() or not np.isfinite(gauss_weight).all()
+            or not np.isfinite(nxi).all() or not np.isfinite(dndxi).all()
+            or not np.isfinite(thickness) or thickness <= 0):
+        raise ValueError("static native-Q4 values are invalid")
+    if np.any(conn < 0) or np.any(conn >= context.expected_nodes):
+        raise ValueError("static connectivity is out of bounds")
+    element_xy = xy[conn]
+    jacobian = np.einsum("ing,enj->egij", dndxi, element_xy)
+    determinant = np.linalg.det(jacobian)
+    gp_weight = determinant * gauss_weight[None, :] * thickness
+    if not np.isfinite(gp_weight).all() or np.any(gp_weight <= 0):
+        raise ValueError("nonpositive or nonfinite native GP weight")
+    local = np.einsum("ng,eg->en", nxi, gp_weight)
+    nodal_weight = np.zeros(context.expected_nodes, dtype=np.float64)
+    np.add.at(nodal_weight, conn.reshape(-1), local.reshape(-1))
+    if not np.isfinite(nodal_weight).all() or np.any(nodal_weight <= 0):
+        raise ValueError("nonpositive or nonfinite native nodal weight")
+    receipt = {
         "source_static_sha256": context.static_sha256,
-        "node_order": "native",
-        "element_order": "native",
+        "derivation": "Q4 detJ * gauss_W * thickness; Nxi-consistent nodal lumping",
+        "node_order": "native", "element_order": "native",
         "gauss_point_order": "native quadrature",
+        "node_coordinates_sha256": _array_sha256(xy),
+        "cells_0based_sha256": _array_sha256(conn),
+        "gauss_weight_sha256": _array_sha256(gauss_weight),
+        "Nxi_sha256": _array_sha256(nxi),
+        "dNdxi_sha256": _array_sha256(dndxi),
+        "thickness": thickness,
         "nodal_weight_sha256": _array_sha256(nodal_weight),
         "gp_weight_sha256": _array_sha256(gp_weight),
         "nodal_weight_shape": list(nodal_weight.shape),
         "gp_weight_shape": list(gp_weight.shape),
     }
-    if weight_receipt != expected_weight_receipt:
-        raise ValueError("native weight receipt mismatch")
-    pres, peaks = [], []
-    for cycle in range(1, 74):
-        pre, peak = pairs_by_cycle[cycle]
-        if (pre.logical_cycle, pre.logical_substep) != (cycle, 0):
-            raise ValueError(f"pre-state cycle mismatch: {cycle}")
-        if (peak.logical_cycle, peak.logical_substep) != (cycle, 4):
-            raise ValueError(f"peak-state cycle mismatch: {cycle}")
-        if pre.history_gp.shape[-1] != len(context.history_channel_order):
-            raise ValueError(f"history channel mismatch: {cycle}")
-        pres.append(pre); peaks.append(peak)
+    return nodal_weight, gp_weight, receipt
+
+
+def _state_fingerprint(state) -> dict[str, object]:
+    return {
+        "source_state_key": state.source_state_key,
+        "payload_sha256": state.payload_sha256,
+        "imposed_displacement": state.imposed_displacement,
+        "u_node_sha256": _array_sha256(state.u_node),
+        "d_node_sha256": _array_sha256(state.d_node),
+        "history_gp_sha256": _array_sha256(state.history_gp),
+        "strain_en_undgr_gp_sha256": _array_sha256(state.strain_en_undgr_gp),
+        "strain_en_degr_gp_sha256": _array_sha256(state.strain_en_degr_gp),
+    }
+
+
+def _qualify_decode_and_freeze(
+    *, run_root: Path, context: Stage0ACapabilityContext
+) -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
+    """Controlled metadata -> full decode -> P1 freeze route with no caller arrays."""
+    rows, hash_receipt = _qualify_full_trajectory(run_root=run_root, context=context)
+    nodal_weight, gp_weight, weight_receipt = _derive_native_weights(
+        run_root / "static" / context.static_filename, context
+    )
+    shape_d = (73, context.expected_nodes)
+    shape_h = (73, context.expected_elements, context.expected_gp, 4)
+    d_pre = np.empty(shape_d, dtype=np.float64)
+    d_peak = np.empty(shape_d, dtype=np.float64)
+    history_pre = np.empty(shape_h, dtype=np.float64)
+    history_peak = np.empty(shape_h, dtype=np.float64)
+    u_peak = np.empty((73, context.expected_nodes, 2), dtype=np.float64)
+    pre_filled = np.zeros(73, dtype=bool)
+    peak_filled = np.zeros(73, dtype=bool)
+    physical_bindings: dict[str, dict[str, object]] = {}
+    native_rows = [row for row in rows if row["is_alias"] == "0"]
+    if len(native_rows) != 366:
+        raise ValueError("native physical row count mismatch")
+    for row in native_rows:
+        state = decode_payload(
+            run_root / row["payload_file"], row,
+            expected_nodes=context.expected_nodes,
+            expected_elements=context.expected_elements,
+            expected_gp=context.expected_gp,
+        )
+        key = row["state_key"]
+        physical_bindings[key] = _state_fingerprint(state)
+        cycle, substep = int(row["cycle"]), int(row["substep"])
+        if substep == 0:
+            target = 0
+        elif substep == 5 and cycle < 73:
+            target = cycle
+        else:
+            target = None
+        if target is not None:
+            d_pre[target] = state.d_node
+            history_pre[target] = state.history_gp
+            pre_filled[target] = True
+        if substep == 4:
+            target = cycle - 1
+            d_peak[target] = state.d_node
+            history_peak[target] = state.history_gp
+            u_peak[target] = state.u_node
+            peak_filled[target] = True
+    if not pre_filled.all() or not peak_filled.all():
+        raise ValueError("endpoint population is incomplete")
+    by_key = index_by_key(rows)
+    logical_bindings = {}
+    for key, row in by_key.items():
+        source = row["source_state_key"]
+        binding = physical_bindings.get(source)
+        if binding is None or binding["payload_sha256"] != row["payload_sha256"]:
+            raise ValueError(f"logical-to-physical decoded binding mismatch: {key}")
+        logical_bindings[key] = {
+            "source_state_key": source,
+            "payload_sha256": row["payload_sha256"],
+            "imposed_displacement": float(row["imposed_displacement"]),
+            "decoded_array_fingerprints": binding,
+        }
+    if len(logical_bindings) != 438:
+        raise ValueError("decoded logical binding count mismatch")
+    decode_receipt = {
+        "verdict": "FULL_TRAJECTORY_DECODE_QUALIFIED",
+        "context_sha256": context.digest,
+        "source_hash_qualification": hash_receipt["verdict"],
+        "decoded_physical_payload_count": len(physical_bindings),
+        "decoded_logical_state_count": len(logical_bindings),
+        "decoded_substeps": list(range(6)),
+        "history_channel_order": list(context.history_channel_order),
+        "history_channel_semantics": "source-bound-not-directly-decoded",
+        "logical_state_bindings": logical_bindings,
+    }
     result = freeze_p1_contract(
         cycles=np.arange(1, 74, dtype=np.int64),
-        d_pre=np.stack([state.d_node for state in pres]),
-        d_peak=np.stack([state.d_node for state in peaks]),
-        history_pre=np.stack([state.history_gp for state in pres]),
-        history_peak=np.stack([state.history_gp for state in peaks]),
-        u_peak=np.stack([state.u_node for state in peaks]),
-        nodal_weight=nodal_weight,
-        gp_weight=gp_weight,
+        d_pre=d_pre, d_peak=d_peak,
+        history_pre=history_pre, history_peak=history_peak, u_peak=u_peak,
+        nodal_weight=nodal_weight, gp_weight=gp_weight,
     )
-    result["source_context_sha256"] = context.digest
-    result["source_static_sha256"] = context.static_sha256
-    result["native_weight_receipt"] = weight_receipt
-    result["qualified_six_state_trajectory"] = True
-    return result
+    result.update({
+        "source_context_sha256": context.digest,
+        "source_static_sha256": context.static_sha256,
+        "native_weight_receipt": weight_receipt,
+        "source_decode_verdict": decode_receipt["verdict"],
+        "qualified_six_state_trajectory": True,
+    })
+    return result, hash_receipt, decode_receipt
+
+
+def qualify_decode_and_freeze_s09_e008(
+    run_root: Path,
+) -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
+    """Exact sealed-run route.  It performs no training or optimiser update."""
+    return _qualify_decode_and_freeze(run_root=run_root, context=S09_E008_CONTEXT)
