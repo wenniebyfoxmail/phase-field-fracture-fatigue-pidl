@@ -1,0 +1,24 @@
+{
+  "verdict": "PRE_USE_PASS",
+  "protocol": "20261016-r1-E021-E022-readonly-head-gradient",
+  "hashes": {
+    "diagnose_s04_e022_endpoints.py": "91af655387e1cdf4869cbc1e6006423a6b7dbe7d846b92ead2099cce1b23fc87",
+    "diagnose_s04_e021_endpoints.py": "1ef8da78b5f0d6afe8e4d8329aa9b79c2946c73a54f089df9d7747e4afcad73c",
+    "test_s04_e022_endpoint_diagnostic.py": "c52438b2bff5f3e3eeaa59532f64083221bdc58bbe819ce960cb5eb84859b47c",
+    "diagnose_s04_e020_features.py": "36708fb18900145b34d0193a60dd52eb94f6a37c0de7f52d7992d5fce70b796e",
+    "s04_e022_screen.py": "23bcb6a64a43279b23fd3b26be9d8ef41611ed94d1a13bbab9480e89d4ac7281"
+  },
+  "blockers": [],
+  "checks": 8,
+  "unique_checks": 5,
+  "training": false,
+  "conditions": [
+    "full-node c20 E022 memory precheck before six-state diagnostic",
+    "RSS <2GiB",
+    "unchanged source and original tolerances"
+  ],
+  "superseded_wrapper_hashes": [
+    "b2c9952af38ffb2e6cc53163fc63b9d5be25b67e43947f5eb6b7163d54eb83cd"
+  ],
+  "metadata_cwd_fix_review": "PASS; explicitgit-C only, no mathematicalchange"
+}

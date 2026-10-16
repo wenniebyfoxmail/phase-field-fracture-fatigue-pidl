@@ -51,3 +51,9 @@ Exactscientificsourcea540888 bundle andone-shotdispatcher prepared, deployment84
 The user approved and executed the exact two-file production proposal. All formal preflights passed; the original dispatcher completed all three rows with 3/3 valid and original primary FAIL. c20/c60/c83 full errors are .000708697178/.001154218988/.001146134741; only c20 meets .001. c60 is worse than both E021 and E019; c83 gains 1.8568% versus E021 but remains above the target. All saved exterior UV is exactly unchanged. Background relative to E019 worsens in all three states, even where it improves versus E021. Last-hidden nonzero pathways return but do not imply successful fitting. Full retrieval: 65 files, 45604015 bytes, all SHA256 verified; actual 10000 LR entries match their formal preflight and own E021 control exactly. Strict Mac INADMISSIBLE from native LR portability and reference-rho exceptions are retained without changes. See [decision and exact comparisons](decision.md), [result verification](result_verification.json), [producer receipt](producer_execution.md). This dated result supersedes preparation-only status above; the frozen protocol and original thresholds remain unchanged.
 
 Independent bounded saved-field [evidence review](evidence_review.md) is complete with no blockers; original scientific FAIL and strict Mac INADMISSIBLE are unchanged.
+
+## E022-D001 — 六终态只读输出头与区域梯度诊断
+
+用户授权的E021/E022×c20/c60/c83终态诊断已完成，数值、头部显式代数与未改模型检查通过，0拟合/0更新。最小下一步为固定初始全质量RMS头部参数化提案；不改变原E022判定。[诊断协议](endpoint_diagnostic_protocol.md)、[结果](endpoint_diagnostic_decision.md)、[提案](head_scale_repair_proposal.md)。
+
+E022-D001独立有限范围[审核通过](endpoint_diagnostic_review.md)，无阻塞项；[执行收据](endpoint_diagnostic_receipt.json)记录元数据失败与修正后完成的两次预检，0拟合/0更新。后续仅为固定头部尺度修复提案。

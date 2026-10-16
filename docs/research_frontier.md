@@ -19,7 +19,7 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
 
 ## Current Evidence / Claim Boundary
 
-- **S04 fixed-damage UV reproduction (2026-10-16)** — E022 last-hidden leak completed 3/3 producer rows, original three-state target failed: c60 not restored, c83 only 1.86% better than E021 and still above .001. Background must name E019/E021 comparator; exterior unchanged. Preserve strict Mac portability rejection and full-teacher NOT_QUALIFIED. Next is a frozen-feature/head/region-gradient discriminator before any new repair. [S04 evidence storyline](research/S04/storyline.md), [E022 decision](research/S04/S04-E022/decision.md).
+- **S04 fixed-damage UV reproduction (2026-10-16)** — E022 remains a three-state primary miss. Independent six-endpoint diagnostic shows c60 paths/current regional alignment restored without fitting recovery; c83 head-only attainable gain is unquantified. One fixed initial RMS head-scale discriminator proposed, not implemented/trained. Strict Mac rejection and full-teacher NOT_QUALIFIED unchanged. [S04 storyline](research/S04/storyline.md), [diagnostic and next lever](research/S04/S04-E022/endpoint_diagnostic_decision.md).
 
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。
 - c86 true diffuse damage 条件化可近闭合后续场，二值裂缝几何失败约 `100x` support area：缺失的是近核状态幅值，不只是裂缝位置。

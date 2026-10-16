@@ -86,3 +86,7 @@ Exact tables/figures and reproduction details: local_archive/experiments/S04-E02
 Reuse the already reviewed frozen-feature/output-head/region-gradient diagnostic on **E021/E022 × c20/c60/c83**, preserving mass weights, effective physicalBC/window features and pair identities. Ask whether c60's now-nonzero features still leave a large output-head normal-equation residual and whether damage/inside-background gradients compete; use c20 as the early-state sentinel and c83 as the remaining-damage sentinel. Accumulate Gram/residuals and autodiff gradients only; no least-squares/ridge solve, optimizer, parameter updates or new teacher solve. Compare with existing E021 six-endpoint evidence and use the same near-zero-denominator rules/RSS guard. Review the diagnostic before execution.
 
 If c60/c83 retained useful directions but head optimality remains poor, prepare one output-head scaling/preconditioning control preserving original objective, coordinates, support, LR and total10000update budget. If that condition is absent, do not launch this repair; revisit the representation hypothesis from the measured diagnostics. No activation/LR/width sweep, extra10000steps or automatic newproducer launch. Current evidence supports this discriminator, not a proven next repair.
+
+## 2026-10-16 后续只读诊断更新
+
+上述六终态输出头／区域梯度提案已完成。c60背景谱秩1→25、隐藏梯度恢复且当前区域方向转为一致；仍不能解释为通路未开或必然区域冲突。c83头部非驻点，但材料性头部收益／.001可达性未确定。见[完整诊断](endpoint_diagnostic_decision.md)与[一项固定头部RMS尺度提案](head_scale_repair_proposal.md)；提案尚未实现／训练，原E022科学FAIL与严格Mac失败均保留。
