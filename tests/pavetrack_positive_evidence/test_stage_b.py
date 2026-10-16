@@ -154,3 +154,32 @@ def test_descendant_RSS_accounting(monkeypatch):
     fake=SimpleNamespace(Process=lambda:SimpleNamespace(children=lambda recursive:[child]),NoSuchProcess=RuntimeError)
     monkeypatch.setitem(sys.modules,'psutil',fake)
     assert r.runtime.aggregate_memory(lambda:100)==400
+
+def desktop_xml(path=r'C:\Windows\System32\dwm.exe',kind='C+G',util='0 %',uuid='fixed',process=True):
+    from xml.sax.saxutils import escape
+    row=f'<process_info><pid>42</pid><type>{escape(kind)}</type><process_name>{escape(path)}</process_name></process_info>' if process else ''
+    return f'<nvidia_smi_log><gpu><uuid>{uuid}</uuid><driver_model><current_dm>WDDM</current_dm></driver_model><utilization><gpu_util>{util}</gpu_util></utilization><processes>{row}</processes></gpu></nvidia_smi_log>'
+
+def desktop_lock():return dict(gpu_uuid='fixed',maximum_sampled_GPU_utilization_percent=0,approved_desktop_executables={r'C:\Windows\System32\dwm.exe':'digest'})
+
+def test_WDDM_exact_desktop_inventory_and_receipt():
+    calls=[]
+    def digest(p):calls.append(p);return 'digest'
+    out=r.runtime.desktop_inventory(desktop_xml(),desktop_lock(),digest)
+    assert out['processes'][0]['pid']==42 and out['processes'][0]['sha256']=='digest' and len(calls)==1
+    assert r.runtime.desktop_inventory(desktop_xml(process=False),desktop_lock(),digest)['processes']==[]
+
+@pytest.mark.parametrize('change',[dict(path=r'C:\Temp\dwm.exe'),dict(path=r'C:\Windows\System32\python.exe'),dict(kind='C'),dict(kind='G'),dict(kind=''),dict(util='1 %'),dict(util='N/A'),dict(util='nan %'),dict(uuid='other')])
+def test_WDDM_unknown_compute_paths_types_utilization_and_device_stop(change):
+    with pytest.raises((ValueError,RuntimeError)):r.runtime.desktop_inventory(desktop_xml(**change),desktop_lock(),lambda p:'digest')
+
+def test_WDDM_changed_executable_and_unreadable_identity_stop():
+    with pytest.raises(ValueError,match='identity'):r.runtime.desktop_inventory(desktop_xml(),desktop_lock(),lambda p:'changed')
+    def denied(p):raise PermissionError('file unreadable')
+    with pytest.raises(PermissionError):r.runtime.desktop_inventory(desktop_xml(),desktop_lock(),denied)
+
+@pytest.mark.parametrize('replace',[('<processes>','<missing>'),('<current_dm>WDDM</current_dm>','<current_dm>TCC</current_dm>')])
+def test_WDDM_missing_process_inventory_or_changed_driver_stop(replace):
+    xml=desktop_xml().replace(*replace)
+    if replace[0]=='<processes>':xml=xml.replace('</processes>','</missing>')
+    with pytest.raises(ValueError):r.runtime.desktop_inventory(xml,desktop_lock(),lambda p:'digest')
