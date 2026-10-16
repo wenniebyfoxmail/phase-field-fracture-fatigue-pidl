@@ -25,6 +25,7 @@ RESERVE = 16384
 WORK_WALL = WALL-2.  # Leave time for bounded cleanup and receipt IO.
 SOURCES = ['SENS_tensile/s04_late_attribution'+s for s in
            ('.py', '_guard.py', '_checks.py')]
+WORKER_NAME = 's04_late_attribution_checks.py'
 
 
 def cap_reason(elapsed, rss, size):
@@ -107,7 +108,7 @@ def execute(out, attempt, expected_commit):
     checkout_commit = dirty = None
     cleanup = dict(state='NOT_STARTED', exit_confirmed=False, worker_exit=None,
                    signals=[], events=[], errors=[])
-    command = [sys.executable, str(Path(__file__).with_name('s04_late_attribution_checks.py')),
+    command = [sys.executable, str(Path(__file__).with_name(WORKER_NAME)),
                '--out', str(out)]
     env = dict(os.environ, CUDA_VISIBLE_DEVICES='', OMP_NUM_THREADS='1',
                OPENBLAS_NUM_THREADS='1', VECLIB_MAXIMUM_THREADS='1',
