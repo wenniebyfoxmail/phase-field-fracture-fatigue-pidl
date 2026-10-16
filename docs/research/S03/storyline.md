@@ -257,3 +257,13 @@
   Request only correction of that audit check and remaining scalar/figure/PDF
   acceptance; no analysis/SVD/solve/redraw/holdout/send. Preserve improvement
   headroom without attributing gap to BC/material or immediately addingq.
+
+- **2026-10-16 — S03-E019 bounded audit correction passed; new discrepancy stops acceptance.**
+  User-approved temporary weighted-rigid-span atol1e-12 correction passed;
+  all648 savedCST samples/BC/activecolumns/QDtarget/p-y identity independently
+  checked. A different Q*r_kin=r_kin vector check differed4.0466e-15mm and
+  failed the current1e-15absolute/1e-12relative tolerance. Stopped immediately,
+  no retry/threshold change, cause unknown; scalarledger/classification and
+  independent figures remain incomplete. Original4.692s run/outputs unchanged.
+  SeeS03-E019/results.md/evidence_review.md; next request only read-only
+  localisation using savedH/p/y/r, not SVD/analysis/solve/redraw/holdout/send.
