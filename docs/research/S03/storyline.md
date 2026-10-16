@@ -331,3 +331,14 @@
   No report numeric/realarray/holdout reads, code/tests/render or new view dir.
   Show plan for user confirmation before code/command preparation; rendering
   needs separate final-package approval. Original acceptance stays paused.
+
+- **2026-10-16 — D01 V01 renderer and exact A/B commands statically reviewed only.**
+  User-confirmed display v1.1; new isolated renderer, artificial unittest/design
+  snapshot fe190c9; command snapshot 7b8cc1e. Independent read-only REVIEW_PASS,
+  no mandatory changes. Source-only copy, fixed layout/marker QA and new sibling
+  directory; no original producer/output changes. See S03-E019/
+  subspace_display_execution_approval.md and subspace_display_code_review.md.
+  No imports/tests/AST/compile/canvas/render or report-content/realarray/holdout
+  access; no new T/view directory, no send/SSH/push. Display/CPU/time feasibility
+  remains untested. Show exact package for A-only approval, B separately later;
+  original numerical acceptance stays paused, no actual-root-cause claim.

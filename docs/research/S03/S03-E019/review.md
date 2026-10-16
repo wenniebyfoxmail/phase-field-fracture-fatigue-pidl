@@ -232,3 +232,14 @@ fa0a408e2b78c54b1160b83b4ece5cad91d698550e671f55fc5f9eea984737bb。
 完整回复见subspace_display_review.md，方案见subspace_display_plan.md。
 不读取report数值/真实数组/留出、不测试/出图/改旧产物；原数值验收仍
 暂停。先展示方案确认，再准备代码/命令；最终渲染另批，不自动执行。
+
+## 显示v1.1代码/测试设计/命令静态审查完成 — 2026-10-16
+
+已确认方案后，新增独立report-only图器和11方法人工unittest（均未运行），
+测试设计及分开的A测试/B渲染确切命令。源码/测试/设计快照fe190c9，命令
+快照7b8cc1e，命令SHA8a9fd4ea099a88726ea6122faeba341bd6bb0e981bc6303f7746a2256d79fcff。
+独立只读REVIEW_PASS仅静态，无必改项；完整回复subspace_display_code_review.md。
+非阻断收据字段增强本轮不实现；elapsed取样不称最终化后的精确总耗时。
+未测试/导入/AST/py_compile/bash-n/出图，未读report内容/真实数组/留出，
+不创建新T/V01目录或改原产物。先展示subspace_display_execution_approval.md
+只请求A；A通过后B仍另批。不称完整Code Ready，不恢复原数值验收。
