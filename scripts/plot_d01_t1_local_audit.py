@@ -67,7 +67,7 @@ def main():
         def zero(arm,j):return next(r for r in subset(arm,j) if float(r["tangent_px"])==0)
         # Native crops are not warped; bottom strips were already sampled in E020.
         fig,axes=plt.subplots(2,3,figsize=(13,8))
-        fig.subplots_adjust(left=.06,right=.98,bottom=.10,top=.86,hspace=.34,wspace=.22)
+        fig.subplots_adjust(left=.06,right=.98,bottom=.17,top=.86,hspace=.34,wspace=.22)
         fig.suptitle("Where T1 samples the same three existing photographs",y=.98,fontsize=15)
         fig.text(.5,.92,"Top: untouched native gray crops + mapped sample lines | Bottom: cached registered strip, original H",ha="center")
         sources=[]
@@ -98,11 +98,11 @@ def main():
             ax.set_xlabel("Frozen normal coordinate s (px)");ax.set_ylabel("Frozen tangent t (px)")
             ax.set_title(f"Median5 band t=-2..2 | width {float(z['width_px']):.3f}px",fontsize=10)
         fig.legend(handles=[Line2D([],[],color=BLUE,label="original sampling"),Line2D([],[],color=ORANGE,ls="--",label="existing FIT shift")],
-                   loc="lower center",bbox_to_anchor=(.5,.045),ncol=2,frameon=False)
+                   loc="lower center",bbox_to_anchor=(.5,.065),ncol=2,frameon=False)
         footer(fig);save(fig,"F01_native_and_registered_context")
         # Original and existing-aligned profiles share gray and deficit scales.
         fig,axes=plt.subplots(2,3,figsize=(13,8),sharex="row",sharey="row")
-        fig.subplots_adjust(left=.07,right=.98,bottom=.11,top=.85,hspace=.25,wspace=.12)
+        fig.subplots_adjust(left=.07,right=.98,bottom=.17,top=.85,hspace=.25,wspace=.12)
         fig.suptitle("Half-depth crossing moves: fixed operator, two existing sample locations",y=.98,fontsize=14)
         fig.text(.5,.92,"Shoulder fit uses |s|=45..60; same gray scale and no new smoothing",ha="center")
         for col,(j,load) in enumerate(zip(STAGES,LOADS)):
@@ -119,7 +119,7 @@ def main():
             for ax in axes[:,col]:ax.grid(color=".92",lw=.5);ax.set_xlabel("Normal coordinate s (px)")
         axes[0,0].set_ylabel("Median intensity / background (gray)")
         axes[1,0].set_ylabel("Intensity deficit (gray)")
-        fig.legend(handles=[Line2D([],[],color=BLUE,label="O: original H"),Line2D([],[],color=ORANGE,ls="--",label="A: existing background shift")],loc="lower center",bbox_to_anchor=(.5,.04),ncol=2,frameon=False)
+        fig.legend(handles=[Line2D([],[],color=BLUE,label="O: original H"),Line2D([],[],color=ORANGE,ls="--",label="A: existing background shift")],loc="lower center",bbox_to_anchor=(.5,.065),ncol=2,frameon=False)
         footer(fig);save(fig,"F02_profiles_and_crossings")
         fig,axes=plt.subplots(2,2,figsize=(12,8),sharex=True,sharey="row")
         fig.subplots_adjust(left=.08,right=.98,bottom=.11,top=.84,hspace=.28,wspace=.14)
@@ -188,6 +188,8 @@ witha5 first-frame excluded. No new registration, training, source acquisition o
    Curves connect the existing ordered position grid, not smoothed data or new estimates between grid points.
 
 ## Cross-figure interpretation
+NUMERIC_FINDINGS
+
 Use summary.json for exact numbers. Raw-image context and half-depth edge motion can suggest geometric/optical
 mechanisms but cannot identify real crack opening. A change after background proxy correction demonstrates
 sample-location sensitivity; it does not prove correction accuracy. A stable common-shift reversal need not
@@ -203,6 +205,18 @@ forecast score, independent validation or using the target to choose a better of
 Keep original measurement/score. Consult experiment.md and independent review for outcome/one bounded next repair.
 layout_audit.json records mechanical QA; actual visual review is recorded separately after opening final PNGs.
 """.replace("SOURCE",str(args.source.resolve())).replace("RENDER_RUN",args.run_id)
+        findings=[]
+        for a in summary["by_arm"]:
+            z=a["nominal"];c=a["common"];i=a["independent"]
+            findings.append(f"- {a['arm']}: t0 widths {z['w30']:.6f} -> {z['w40']:.6f} -> {z['w50']:.6f}px; "
+                f"secant signed error {z['secant_error']:.6f}px, persistence {z['persistence_error']:.6f}px. "
+                f"Down-up reversal: common {c['reversal_down_up']}/{c['valid']} (nominal opportunities {c['total']}), "
+                f"independent {i['reversal_down_up']}/{i['valid']} (opportunities {i['total']}); "
+                f"independent secant error range [{i['secant_error_min']:.6f},{i['secant_error_max']:.6f}]px.")
+        findings.append("- Original t0 right-crossing shifts -4.133643/+3.115718px versus left -0.391136/+0.791637px; "
+                        "half-level changes +0.819608/+0.007261 gray. All54 selected profiles valid with one bounded half-depth component; "
+                        "no recorded stage-pair disjoint/split/merge indicator. This identifies optical functional motion, not its physical cause.")
+        guide=guide.replace("NUMERIC_FINDINGS","\n".join(findings))
         (args.output/"README_analysis.md").write_text(guide)
         receipt.update(execution="succeeded",retrieval="verified_local",figure_sets=4,numerical_rerun=False,
                        source_image_count=3,output=str(args.output.resolve()))
