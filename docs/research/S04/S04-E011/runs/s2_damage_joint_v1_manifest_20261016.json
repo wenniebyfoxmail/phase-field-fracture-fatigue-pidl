@@ -1,0 +1,339 @@
+{
+  "run_id": "pf_s04e011_s2dj_20261016_v1",
+  "protocol": "S04-E011-S2DJ-r1",
+  "source_commit": "f7d4317dd7c2ae29a89368d300d5242643772877",
+  "package_manifest_sha256": "804bc89718ef46185c2978261c7dab801edb9feb1ede1b0d84252b5de5bebb3e",
+  "launch": {
+    "pid": 23448,
+    "run_id": "pf_s04e011_s2dj_20261016_v1",
+    "producer": "CITPC12/citpc12-ssh",
+    "command": "\"C:\\Windows\\System32\\cmd.exe\" /d /s /c \"\"C:\\Program Files\\MATLAB\\R2025b\\bin\\matlab.exe\" -singleCompThread -batch \"run('C:\\Users\\xw436\\jobs\\E011_S2DJ_20261016_v1\\entry.m')\" -logfile \"C:\\Users\\xw436\\jobs\\E011_S2DJ_20261016_v1\\matlab.log\" > \"C:\\Users\\xw436\\jobs\\E011_S2DJ_20261016_v1\\stdout.log\" 2> \"C:\\Users\\xw436\\jobs\\E011_S2DJ_20261016_v1\\stderr.log\"\"",
+    "threads": 1,
+    "method": "WMI isolated process",
+    "branch": "codex/hard5-q4-t3-2x2-20261005",
+    "dirty": false,
+    "gpu": "CPU",
+    "started_utc": "2026-10-16T22:12:33.1582470Z",
+    "root": "C:\\Users\\xw436\\jobs\\E011_S2DJ_20261016_v1",
+    "commit": "f7d4317dd7c2ae29a89368d300d5242643772877",
+    "account": "AD\\xw436"
+  },
+  "retrieval": {
+    "files": 75,
+    "bytes": 1267142707,
+    "all_hashes_and_sizes_match": true,
+    "verified_utc": "2026-10-16T22:16:48.208887+00:00"
+  },
+  "summary": {
+    "status": "four_case_complete",
+    "producer_commit": "f7d4317dd7c2ae29a89368d300d5242643772877",
+    "cases": [
+      {
+        "case": "00",
+        "P": 0,
+        "J": 0,
+        "accepted": true,
+        "reason": "policy_tolerance",
+        "u_calls": 6,
+        "phase_calls": 3,
+        "outer": 1,
+        "fresh_C": 15.650810045879872,
+        "policy_C": 0.1565081004587987,
+        "u_l2": 1.7873532538027426e-15,
+        "d_fresh_l2": 6.260324018173214e-05,
+        "d_cached_l2": 6.260324018173192e-05,
+        "active_integral": 0.0018032993852229577,
+        "f_min": 1.0,
+        "native_residual_scaled_maxerr": 3.3176586478056436e-17,
+        "history_scaled_maxerr": 8.326672684688674e-16,
+        "raw_scaled_maxerr": 3.5841577102069255e-13,
+        "trial_alpha_max": 0.35008062465225387,
+        "trial_f_min": 1.0,
+        "active_relL2_to_00": 0.0
+      },
+      {
+        "case": "11",
+        "P": 1,
+        "J": 1,
+        "accepted": true,
+        "reason": "policy_tolerance",
+        "u_calls": 104,
+        "phase_calls": 57,
+        "outer": 19,
+        "fresh_C": 0.9296122086905597,
+        "policy_C": 0.9296122086905597,
+        "u_l2": 1.8787032503966465e-15,
+        "d_fresh_l2": 3.7184488328835354e-06,
+        "d_cached_l2": 3.718448832883471e-06,
+        "active_integral": 0.0012492714775455965,
+        "f_min": 1.0,
+        "native_residual_scaled_maxerr": 4.1677409136700594e-17,
+        "history_scaled_maxerr": 3.649858193455202e-15,
+        "raw_scaled_maxerr": 5.35682609381638e-13,
+        "trial_alpha_max": 0.48770607735437754,
+        "trial_f_min": 1.0,
+        "active_relL2_to_00": 0.8066797078810913
+      },
+      {
+        "case": "10",
+        "P": 1,
+        "J": 0,
+        "accepted": true,
+        "reason": "policy_tolerance",
+        "u_calls": 6,
+        "phase_calls": 4,
+        "outer": 1,
+        "fresh_C": 29103.04884370506,
+        "policy_C": 0.7326519483138916,
+        "u_l2": 0.0002910304884370506,
+        "d_fresh_l2": 2.0302908885060614e-06,
+        "d_cached_l2": 2.0302908885060673e-06,
+        "active_integral": 0.001751031871665525,
+        "f_min": 1.0,
+        "native_residual_scaled_maxerr": 3.3176586478056436e-17,
+        "history_scaled_maxerr": 5.828670879282072e-16,
+        "raw_scaled_maxerr": 3.5841577102069255e-13,
+        "trial_alpha_max": 0.35008062465225387,
+        "trial_f_min": 1.0,
+        "active_relL2_to_00": 0.2908722374601311
+      },
+      {
+        "case": "01",
+        "P": 0,
+        "J": 1,
+        "accepted": false,
+        "reason": "exact_stagnation",
+        "u_calls": 9,
+        "phase_calls": 5,
+        "outer": 2,
+        "fresh_C": 15.650810045879872,
+        "policy_C": 15.650810045879872,
+        "u_l2": 1.7873532538027426e-15,
+        "d_fresh_l2": 6.260324018173214e-05,
+        "d_cached_l2": 6.260324018173192e-05,
+        "active_integral": 0.0018032993852229577,
+        "f_min": 1.0,
+        "native_residual_scaled_maxerr": 3.3176586478056436e-17,
+        "history_scaled_maxerr": 8.326672684688674e-16,
+        "raw_scaled_maxerr": 3.5841577102069255e-13,
+        "trial_alpha_max": 0.35008062465225387,
+        "trial_f_min": 1.0,
+        "active_relL2_to_00": 0.0
+      }
+    ],
+    "planned": [
+      {
+        "case": "00",
+        "status": "accepted",
+        "reason": "policy_tolerance"
+      },
+      {
+        "case": "11",
+        "status": "accepted",
+        "reason": "policy_tolerance"
+      },
+      {
+        "case": "10",
+        "status": "accepted",
+        "reason": "policy_tolerance"
+      },
+      {
+        "case": "01",
+        "status": "MISS",
+        "reason": "exact_stagnation"
+      }
+    ],
+    "anchors": [
+      {
+        "case": "00",
+        "maxerr": 0.0,
+        "raw_r4_pass": true,
+        "outer": 1
+      },
+      {
+        "case": "11",
+        "maxerr": 0.0,
+        "raw_r4_pass": true,
+        "outer": 19
+      }
+    ],
+    "contrasts": [
+      {
+        "contrast": "P_at_J0",
+        "kind": "accepted_policy_endpoint",
+        "weighted_relL2_to_left": 0.290872237460131,
+        "weighted_relL2_to_common00": 0.290872237460131,
+        "signed_integral": -5.226751355743316e-05,
+        "projection_on_diagonal_endpoint_total": 0.32494273300911714,
+        "wake_squared_share": 0.9999830293740731,
+        "max_absolute_gap": 0.1442902022382343,
+        "x": -0.28081294199336326,
+        "y": -0.0011429600982001682
+      },
+      {
+        "contrast": "P_at_J0",
+        "kind": "first_completed_outer",
+        "weighted_relL2_to_left": 0.290872237460131,
+        "weighted_relL2_to_common00": 0.290872237460131,
+        "signed_integral": -5.226751355743316e-05,
+        "projection_on_diagonal_endpoint_total": 0.32494273300911714,
+        "wake_squared_share": 0.9999830293740731,
+        "max_absolute_gap": 0.1442902022382343,
+        "x": -0.28081294199336326,
+        "y": -0.0011429600982001682
+      },
+      {
+        "contrast": "P_at_J1",
+        "kind": "last_complete_not_both_accepted",
+        "weighted_relL2_to_left": 0.8066797078810913,
+        "weighted_relL2_to_common00": 0.8066797078810913,
+        "signed_integral": -0.0005540279076773619,
+        "projection_on_diagonal_endpoint_total": 0.9999999999999998,
+        "wake_squared_share": 0.9926495606664633,
+        "max_absolute_gap": 0.3275851083954592,
+        "x": -0.28081294199336326,
+        "y": -0.0011429600982001682
+      },
+      {
+        "contrast": "P_at_J1",
+        "kind": "first_completed_outer",
+        "weighted_relL2_to_left": 0.290872237460131,
+        "weighted_relL2_to_common00": 0.290872237460131,
+        "signed_integral": -5.226751355743316e-05,
+        "projection_on_diagonal_endpoint_total": 0.32494273300911714,
+        "wake_squared_share": 0.9999830293740731,
+        "max_absolute_gap": 0.1442902022382343,
+        "x": -0.28081294199336326,
+        "y": -0.0011429600982001682
+      },
+      {
+        "contrast": "J_at_P0",
+        "kind": "last_complete_not_both_accepted",
+        "weighted_relL2_to_left": 0.0,
+        "weighted_relL2_to_common00": 0.0,
+        "signed_integral": 0.0,
+        "projection_on_diagonal_endpoint_total": 0.0,
+        "wake_squared_share": 0.0,
+        "max_absolute_gap": 0.0,
+        "x": null,
+        "y": null
+      },
+      {
+        "contrast": "J_at_P0",
+        "kind": "first_completed_outer",
+        "weighted_relL2_to_left": 0.0,
+        "weighted_relL2_to_common00": 0.0,
+        "signed_integral": 0.0,
+        "projection_on_diagonal_endpoint_total": 0.0,
+        "wake_squared_share": 0.0,
+        "max_absolute_gap": 0.0,
+        "x": null,
+        "y": null
+      },
+      {
+        "contrast": "J_at_P1",
+        "kind": "accepted_policy_endpoint",
+        "weighted_relL2_to_left": 0.7572134377465066,
+        "weighted_relL2_to_common00": 0.5589610383174173,
+        "signed_integral": -0.0005017603941199286,
+        "projection_on_diagonal_endpoint_total": 0.6750572669908828,
+        "wake_squared_share": 0.9843345152108883,
+        "max_absolute_gap": 0.18329490615722488,
+        "x": -0.28081294199336326,
+        "y": -0.0011429600982001682
+      },
+      {
+        "contrast": "J_at_P1",
+        "kind": "first_completed_outer",
+        "weighted_relL2_to_left": 0.0,
+        "weighted_relL2_to_common00": 0.0,
+        "signed_integral": 0.0,
+        "projection_on_diagonal_endpoint_total": 0.0,
+        "wake_squared_share": 0.0,
+        "max_absolute_gap": 0.0,
+        "x": null,
+        "y": null
+      },
+      {
+        "contrast": "total",
+        "kind": "accepted_policy_endpoint",
+        "weighted_relL2_to_left": 0.8066797078810913,
+        "weighted_relL2_to_common00": 0.8066797078810913,
+        "signed_integral": -0.0005540279076773619,
+        "projection_on_diagonal_endpoint_total": 0.9999999999999998,
+        "wake_squared_share": 0.9926495606664633,
+        "max_absolute_gap": 0.3275851083954592,
+        "x": -0.28081294199336326,
+        "y": -0.0011429600982001682
+      },
+      {
+        "contrast": "total",
+        "kind": "first_completed_outer",
+        "weighted_relL2_to_left": 0.290872237460131,
+        "weighted_relL2_to_common00": 0.290872237460131,
+        "signed_integral": -5.226751355743316e-05,
+        "projection_on_diagonal_endpoint_total": 0.32494273300911714,
+        "wake_squared_share": 0.9999830293740731,
+        "max_absolute_gap": 0.1442902022382343,
+        "x": -0.28081294199336326,
+        "y": -0.0011429600982001682
+      }
+    ],
+    "symmetric_algebraic_allocation": [],
+    "interaction": null,
+    "history_commits": 0,
+    "unique_complete_points": 27,
+    "complete_blocks": 23,
+    "timing_max": {
+      "raw_timing_scaled_maxerr": 0.0,
+      "raw_damage_scaled_maxerr": 0.0,
+      "phase_norm_difference": 2.658624663194435e-19,
+      "native_replay_maxerr": 6.426889185770501e-13,
+      "u_return_minus_evaluated_max": 0.0
+    },
+    "phase_threshold_crossings": 0,
+    "definition": "Fixed freshR1/constrainedD1/nativep2. P=inner damage tolerance; J=inneru,jointsum,outeru thresholds. All arms require a complete block. Firstblock common00first norm distinct from endpoint norm. Miss states are last complete, never accepted. No fullallocation if any miss. No physical/teacher/multicycle claim.",
+    "analysis_code": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/tools/s04_e011_analysis/analyze_s2_damage_joint.py",
+      "sha256": "c5b708872e6825dad2eac2ffbe72fe4177d12c504ecad1cc7bd34ddc79943367"
+    }
+  },
+  "analysis_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2dj_20261016_v1/analysis",
+  "review": "analysis/independent_review.json",
+  "verdict": "bounded local numericaldiagnostic; threeownpolicyaccepted/oneexactstagnation/only11strict; nofullcubeallocation",
+  "independent_review": {
+    "status": "passed",
+    "reviewer": "/root/final_residual_audit_review",
+    "reviewed_utc": "2026-10-16T22:20:38.877752+00:00",
+    "producer_commit": "f7d4317dd7c2ae29a89368d300d5242643772877",
+    "analysis_sha256": "c5b708872e6825dad2eac2ffbe72fe4177d12c504ecad1cc7bd34ddc79943367",
+    "result_doc_sha256": "2e9262b74f1ce7c9d3f02c4628575c254f24c2c7add99afe019269613b5a47f6",
+    "summary_sha256": "cb4738f7e1bd4eef7debd71b58a51a1c0ab257c572263709009aa1d712f351fa",
+    "retrieved_files": 75,
+    "retrieved_bytes": 1267142707,
+    "unique_complete_points": 27,
+    "complete_blocks": 23,
+    "scope": [
+      "exact package/staging/retrieval hashes and sizes",
+      "native raw/Amor/u-force/phase/history/controls/limits at every completepoint",
+      "old predecessor/commonstart/predictor/BC/bounds/previousd continuity",
+      "actual phase inputs and returned/fresh points/residuals",
+      "counters/policy/strict screens and anchors",
+      "01exactstagnation outer1/2u/d same and not accepted",
+      "bothP levels firstJ u/d/raw/Ru/Rd/history234 numerically identical",
+      "firstblock versus accepted endpoint factor contrasts and missing corner",
+      "three figures/sharedscales/misslabels/sidecars",
+      "canonical result/manifest/registries/Obsidian narrative"
+    ],
+    "max_residual_scaled_error": 5.2794081294702845e-17,
+    "max_history_scaled_error": 4.163336342344337e-15,
+    "max_raw_scaled_error": 6.426889185770501e-13,
+    "verdict": "Larger subsequent conditional active change arises during J-driven coupled rebalance at strictP; P-only29.08722%, subsequentJ55.89610% common00norm,total80.66797%. Both controls needed in tested4policies for strict closure.",
+    "limitations": [
+      "L2differences cannot be summed as causal percentages",
+      "01has no accepted endpoint, no completecubeallocation",
+      "J groups inneru/jointsum/outeru, Ptol also phase linesearch admission",
+      "one synthetic c1s2/frozenhistory/f1 only, no physicalteacher/globalunique/multicycleclaim"
+    ]
+  }
+}
