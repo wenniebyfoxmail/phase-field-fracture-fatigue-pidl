@@ -3,7 +3,7 @@ import sys
 import unittest
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"scripts"))
-from d01_nearfield_correspondence import candidates,match,refined_peak
+from d01_nearfield_correspondence import candidates,match,refined_peak,affine_diagnostic,inside_hull,pair_match,combine
 
 
 class NearfieldTests(unittest.TestCase):
@@ -33,6 +33,55 @@ class NearfieldTests(unittest.TestCase):
         self.assertFalse(refined_peak(scores)['available'])
         with self.assertRaises(ValueError):match(np.full((15,15),np.nan),np.zeros((27,27)))
         with self.assertRaises(ValueError):match(np.zeros((16,16)),np.zeros((28,28)))
+
+    def test_known_subpixel_translation_and_reverse_original_center(self):
+        # Smooth analytic texture shifted before sampling, independent of NCC implementation.
+        rng=np.random.default_rng(21);centers=rng.uniform(-20,20,(40,2));weights=rng.uniform(-25,25,40)
+        yy,xx=np.mgrid[:161,:161]
+        def image(dn,dt):
+            a=np.zeros_like(xx,dtype=float)+100
+            for (cx,cy),w in zip(centers,weights):a+=w*np.exp(-((xx-80-dn-cx)**2+(yy-80-dt-cy)**2)/5)
+            return a.astype(np.float32)
+        ref=image(0,0);target=image(.7,-.4)
+        tr=dict(center=[80.,80.],normal=[1.,0.]);c=dict(n=0,t=0)
+        g=dict(native_shape=[161,161],working_shape=[161,161])
+        for radius in (7,11):
+            template=ref[80-radius:81+radius,80-radius:81+radius]
+            f,b,fb,_=pair_match(ref,target,np.eye(3),np.eye(3),g,tr,c,radius,template)
+            self.assertTrue(f['available']);self.assertTrue(b['available'])
+            self.assertAlmostEqual(f['dn'],.7,delta=.12);self.assertAlmostEqual(f['dt'],-.4,delta=.12)
+            self.assertLess(fb,.15)
+            # Reverse is about original p: b is near0, not -d_f.
+            self.assertLess(np.hypot(b['dn'],b['dt']),.15)
+
+    def test_affine_center_and_loo_support(self):
+        p=np.array([[-55,-36],[-55,36],[55,-36],[55,36],[0,-10],[0,10]],float)
+        d=np.column_stack((.2+.001*p[:,0],.7-.002*p[:,1]))
+        r,loo=affine_diagnostic(p,d)
+        self.assertTrue(r['center_interpolation_available']);self.assertAlmostEqual(r['center_dn'],.2)
+        self.assertAlmostEqual(r['center_dt'],.7);self.assertLess(r['fit_RMS_px'],1e-12)
+        self.assertEqual(len(loo),6);self.assertTrue(any(not x['inside_remaining_hull'] for x in loo))
+        self.assertTrue(any(x['inside_remaining_hull'] for x in loo))
+
+    def test_one_side_is_not_center_interpolation(self):
+        p=np.array([[35,-36],[35,36],[55,-36],[55,36]],float)
+        r,_=affine_diagnostic(p,np.zeros((4,2)))
+        self.assertTrue(r['field_available']);self.assertFalse(r['center_interpolation_available'])
+        self.assertIsNone(r['center_dn']);self.assertFalse(inside_hull(p,[0,0]))
+
+    def test_degenerate_and_missing_field(self):
+        for p in (np.empty((0,2)),np.array([[1,1],[2,2],[3,3],[4,4]])):
+            r,_=affine_diagnostic(p,np.zeros_like(p));self.assertFalse(r['field_available'])
+        with self.assertRaises(ValueError):affine_diagnostic([[1,np.nan]],[[0,0]])
+
+    def test_combined_flags_keep_primary_data(self):
+        r=dict(forward_available=True,peak=.95,separation=.1,reverse_available=True,roundtrip_px=.1,dn=.1,dt=.2,reason='candidate_match')
+        c=dict(anchor_id='N01',n=-55,t=-36)
+        combined=combine(r,r,c,np.array([.2,.3]))
+        self.assertTrue(combined['flags_clear']);self.assertAlmostEqual(combined['residual_dn'],-.1)
+        secondary=dict(r,reverse_available=False,roundtrip_px=None)
+        x=combine(r,secondary,c,np.zeros(2));self.assertTrue(x['available']);self.assertFalse(x['flags_clear'])
+        self.assertIn('secondary_roundtrip',x['flags'])
 
 
 if __name__=='__main__':unittest.main()

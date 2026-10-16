@@ -19,6 +19,7 @@ import numpy as np
 
 from d01_background_anchor_diagnostic import load_inputs,load_gray,local_grid,source_sample
 from d01_conditional_interface import dump_new,write_csv
+from d01_t1_local_audit import read_csv
 
 RADII=(7,11)
 SEARCH=6
@@ -53,6 +54,188 @@ def match(template,search):
         return dict(available=False,reason="weak_template",peak=None,separation=None,dn=None,dt=None)
     scores=cv2.matchTemplate(np.ascontiguousarray(search),np.ascontiguousarray(template),cv2.TM_CCOEFF_NORMED)
     return refined_peak(scores)
+
+
+def inside_hull(points,point):
+    points=np.asarray(points,np.float32)
+    if len(points)<3:return False
+    hull=cv2.convexHull(points)
+    return bool(cv2.contourArea(hull)>1e-9 and cv2.pointPolygonTest(hull,tuple(map(float,point)),False)>=0)
+
+
+def affine_diagnostic(points,shifts):
+    points=np.asarray(points,float).reshape(-1,2);shifts=np.asarray(shifts,float).reshape(-1,2)
+    if len(points)!=len(shifts) or not np.isfinite(points).all() or not np.isfinite(shifts).all():
+        raise ValueError("finite aligned field points required")
+    result=dict(support=len(points),field_available=False,center_interpolation_available=False,
+                reason="insufficient_support",rank=None,condition=None,origin_inside_hull=False,
+                center_dn=None,center_dt=None,fit_RMS_px=None,loo_inside_count=0,loo_outside_count=0,
+                loo_inside_RMS_px=None,loo_outside_RMS_px=None)
+    loo=[]
+    if len(points)<4:return result,loo
+    design=np.column_stack((np.ones(len(points)),points[:,0]/55,points[:,1]/36))
+    rank=int(np.linalg.matrix_rank(design));condition=float(np.linalg.cond(design))
+    result.update(rank=rank,condition=condition,origin_inside_hull=inside_hull(points,(0,0)))
+    if rank!=3 or not np.isfinite(condition) or condition>100:
+        result['reason']='rank_or_condition';return result,loo
+    coeff=np.linalg.lstsq(design,shifts,rcond=None)[0]
+    result.update(field_available=True,reason="center_interpolation" if result['origin_inside_hull'] else "center_extrapolation_not_qualified",
+                  center_interpolation_available=result['origin_inside_hull'],
+                  center_dn=float(coeff[0,0]) if result['origin_inside_hull'] else None,
+                  center_dt=float(coeff[0,1]) if result['origin_inside_hull'] else None,
+                  fit_RMS_px=float(np.sqrt(np.mean(np.sum((design@coeff-shifts)**2,axis=1)))))
+    for i in range(len(points)):
+        mask=np.arange(len(points))!=i;x=design[mask]
+        valid=np.linalg.matrix_rank(x)==3 and np.linalg.cond(x)<=100
+        interior=inside_hull(points[mask],points[i])
+        error=float(np.linalg.norm(design[i]@np.linalg.lstsq(x,shifts[mask],rcond=None)[0]-shifts[i])) if valid else None
+        loo.append(dict(index=i,inside_remaining_hull=interior,available=bool(valid),error_px=error))
+    for name,interior in (("inside",True),("outside",False)):
+        values=[r['error_px'] for r in loo if r['available'] and r['inside_remaining_hull']==interior]
+        result[f'loo_{name}_count']=len(values)
+        result[f'loo_{name}_RMS_px']=float(np.sqrt(np.mean(np.square(values)))) if values else None
+    return result,loo
+
+
+def pair_match(reference,target,H_ref,H_target,g,tr,c,radius,template):
+    # Local n = columns, t = rows. Reverse search is centred at original p.
+    target_search=source_sample(target,local_grid(tr,c['n'],c['t'],radius+SEARCH),H_target,g)
+    forward=match(template,target_search)
+    empty=dict(available=False,reason="forward_unavailable",peak=None,separation=None,dn=None,dt=None)
+    reverse=empty;matched=None
+    if forward['available']:
+        matched=source_sample(target,local_grid(tr,c['n']+forward['dn'],c['t']+forward['dt'],radius),H_target,g)
+        ref_search=source_sample(reference,local_grid(tr,c['n'],c['t'],radius+SEARCH),H_ref,g)
+        reverse=match(matched,ref_search)
+    fb=float(np.hypot(reverse['dn'],reverse['dt'])) if reverse['available'] else None
+    return forward,reverse,fb,matched
+
+
+def combine(primary,secondary,c,old):
+    available=primary['forward_available']
+    size_difference=float(np.hypot(primary['dn']-secondary['dn'],primary['dt']-secondary['dt'])) if available and secondary['forward_available'] else None
+    flags=[]
+    if available:
+        for label,r in (('primary',primary),('secondary',secondary)):
+            if not r['forward_available']:flags.append(label+'_forward_unavailable');continue
+            if r['peak']<.8:flags.append(label+'_low_ncc')
+            if r['separation']<.02:flags.append(label+'_ambiguous_peak')
+            if not r['reverse_available'] or r['roundtrip_px']>.5:flags.append(label+'_roundtrip')
+        if size_difference is None or size_difference>.5:flags.append('template_size')
+    else:flags.append(primary['reason'])
+    dn,dt=primary['dn'],primary['dt']
+    rn=dn-old[0] if available else None;rt=dt-old[1] if available else None
+    return dict(anchor_id=c['anchor_id'],n=c['n'],t=c['t'],available=available,flags=';'.join(flags),
+                flags_clear=available and not flags,template_difference_px=size_difference,
+                dn=dn,dt=dt,old_dn=float(old[0]),old_dt=float(old[1]),residual_dn=rn,residual_dt=rt,
+                before_norm_px=float(np.hypot(dn,dt)) if available else None,
+                after_norm_px=float(np.hypot(rn,rt)) if available else None,
+                roundtrip_px=primary['roundtrip_px'],peak=primary['peak'],separation=primary['separation'])
+
+
+def load_selection(path):
+    selection=json.loads(Path(path).read_text());decisions=selection['decisions']
+    if selection['protocol']!='near-background-v1' or not selection['locked_before_new_target_matching'] or selection['future_images_or_match_outputs_viewed'] or selection['width_values_viewed']:
+        raise ValueError('selection exposure/protocol mismatch')
+    if len(decisions)!=20 or [r['anchor_id'] for r in decisions]!=[c['anchor_id'] for c in candidates()]:
+        raise ValueError('selection candidate identities/order mismatch')
+    if any(r['decision'] not in ('accept','exclude','uncertain') for r in decisions):raise ValueError('selection decision malformed')
+    return selection,{r['anchor_id']:r for r in decisions}
+
+
+def run_matching(inputs,prepared,selection_path,old_path,output):
+    repo=Path(__file__).resolve().parents[1];receipt=receipt_base(repo,'S03-E027-D01-R001',output)
+    output.mkdir(parents=True,exist_ok=False);start=time.monotonic();cpu=time.process_time()
+    try:
+        selection,decisions=load_selection(selection_path)
+        if Path(selection['origin_directory']).resolve()!=prepared.resolve():raise ValueError('selection/preparation directory mismatch')
+        prep_receipt=json.loads((prepared/'runtime_receipt.json').read_text())
+        if prep_receipt['execution']!='succeeded' or not prep_receipt['origin_only'] or prep_receipt['code_commit']!=selection['origin_code_commit']:
+            raise ValueError('origin preparation identity mismatch')
+        g,H,_,_=load_inputs(inputs);tr=g['transects'][0];reference=load_gray(g['stages'][0])
+        bg_receipt=json.loads((old_path.parent/'runtime_receipt.json').read_text())
+        if bg_receipt['execution']!='succeeded' or bg_receipt['code_commit']!='ac56fdb6348f4cb3636271cee6b10e9cc5bb3212':raise ValueError('old FIT provenance mismatch')
+        shifts=read_csv(old_path)
+        old={}
+        for r in shifts:
+            if int(r['transect_id'])!=1 or int(r['stage_index']) not in (1,2,3):continue
+            j=int(r['stage_index'])
+            if j in old or r['available']!='True' or float(r['load_kN'])!=g['stages'][j]['nominal_load_kN']:raise ValueError('old FIT shift identity')
+            old[j]=np.array([float(r['shift_n']),float(r['shift_t'])])
+            if not np.isfinite(old[j]).all():raise ValueError('nonfinite old FIT')
+        if set(old)!={1,2,3}:raise ValueError('old FIT stages incomplete')
+        templates=np.load(prepared/'templates.npz',allow_pickle=False)
+        # Verify R000 template content against the same reference before target reads.
+        for c in candidates():
+            for radius in RADII:
+                re=source_sample(reference,local_grid(tr,c['n'],c['t'],radius),H[0],g)
+                if not np.array_equal(re,templates[f"{c['anchor_id']}_r{radius}"]):raise ValueError('origin template changed')
+        all_matches=[];combined=[];fields=[];loos=[];stage_stats=[];arrays={'context_st0':templates['context']};source_images=[g['stages'][0]]
+        n=np.array(tr['normal']);tangent=np.array([-n[1],n[0]])
+        nn,tt=np.meshgrid(np.arange(-85,86),np.arange(-60,61))
+        context_grid=np.asarray(tr['center'])+nn[...,None]*n+tt[...,None]*tangent
+        for j in (1,2,3):
+            if time.monotonic()-start>60 or time.process_time()-cpu>60:raise TimeoutError('60s matching budget')
+            target=load_gray(g['stages'][j]);source_images.append(g['stages'][j])
+            arrays[f'context_st{j}']=source_sample(target,context_grid,H[j],g)
+            for c in candidates():
+                local=[]
+                accepted=decisions[c['anchor_id']]['decision']=='accept'
+                for radius in RADII:
+                    row=dict(stage_index=j,load_kN=g['stages'][j]['nominal_load_kN'],anchor_id=c['anchor_id'],n=c['n'],t=c['t'],radius=radius,
+                             origin_accepted=accepted,forward_available=False,reason='origin_'+decisions[c['anchor_id']]['decision'],dn=None,dt=None,
+                             peak=None,separation=None,reverse_available=False,reverse_reason='not_attempted',reverse_dn=None,reverse_dt=None,
+                             roundtrip_px=None)
+                    if accepted:
+                        template=templates[f"{c['anchor_id']}_r{radius}"]
+                        f,b,fb,matched=pair_match(reference,target,H[0],H[j],g,tr,c,radius,template)
+                        row.update(forward_available=f['available'],reason=f['reason'],dn=f['dn'],dt=f['dt'],peak=f['peak'],separation=f['separation'],
+                                   reverse_available=b['available'],reverse_reason=b['reason'],reverse_dn=b['dn'],reverse_dt=b['dt'],roundtrip_px=fb)
+                        if radius==7:
+                            arrays[f"{c['anchor_id']}_reference"]=template
+                            arrays[f"st{j}_{c['anchor_id']}_uncorrected"]=source_sample(target,local_grid(tr,c['n'],c['t'],7),H[j],g)
+                            arrays[f"st{j}_{c['anchor_id']}_old"]=source_sample(target,local_grid(tr,c['n']+old[j][0],c['t']+old[j][1],7),H[j],g)
+                            if matched is not None:arrays[f"st{j}_{c['anchor_id']}_matched"]=matched
+                    local.append(row);all_matches.append(row)
+                result=combine(local[0],local[1],c,old[j]);result.update(stage_index=j,load_kN=g['stages'][j]['nominal_load_kN'],origin_accepted=accepted)
+                combined.append(result)
+            rr=[r for r in combined if r['stage_index']==j]
+            for support in ('all_available','flags_clear'):
+                subset=[r for r in rr if r['available'] and (support=='all_available' or r['flags_clear'])]
+                points=[[r['n'],r['t']] for r in subset];d=[[r['dn'],r['dt']] for r in subset]
+                field,loo=affine_diagnostic(points,d)
+                field.update(stage_index=j,support_name=support,old_dn=float(old[j][0]),old_dt=float(old[j][1]))
+                field['center_difference_from_old_px']=float(np.hypot(field['center_dn']-old[j][0],field['center_dt']-old[j][1])) if field['center_interpolation_available'] else None
+                fields.append(field)
+                for l in loo:loos.append(dict(stage_index=j,support_name=support,anchor_id=subset[l['index']]['anchor_id'],**l))
+                for side,test in (('both',lambda r:True),('negative_n',lambda r:r['n']<0),('positive_n',lambda r:r['n']>0)):
+                    ss=[r for r in subset if test(r)]
+                    stats=dict(stage_index=j,load_kN=g['stages'][j]['nominal_load_kN'],support_name=support,side=side,nominal=20,
+                               origin_accepted=sum(r['origin_accepted'] for r in rr),available=len(ss))
+                    for key in ('before_norm_px','after_norm_px','dn','dt','residual_dn','residual_dt','roundtrip_px','template_difference_px'):
+                        v=[r[key] for r in ss if r[key] is not None]
+                        stats['median_'+key]=float(np.median(v)) if v else None
+                    stats['median_paired_norm_change_px']=float(np.median([r['after_norm_px']-r['before_norm_px'] for r in ss])) if ss else None
+                    stage_stats.append(stats)
+        write_csv(output/'matches.csv',all_matches);write_csv(output/'correspondences.csv',combined)
+        write_csv(output/'field_diagnostics.csv',fields);write_csv(output/'stage_statistics.csv',stage_stats)
+        if loos:write_csv(output/'leave_one_out.csv',loos)
+        np.savez_compressed(output/'display_arrays.npz',**arrays)
+        summary=dict(origin_candidates=20,origin_accepted=sum(r['decision']=='accept' for r in decisions.values()),
+                     template_stage_opportunities=len(all_matches),combined_opportunities=len(combined),
+                     primary_available=sum(r['available'] for r in combined),flags_clear=sum(r['flags_clear'] for r in combined),
+                     by_stage=[r for r in stage_stats if r['support_name']=='all_available' and r['side']=='both'],
+                     center_fields=fields,physical_coordinate_accuracy_certified=False,width_or_old_score_modified=False)
+        dump_new(output/'summary.json',summary);dump_new(output/'source_images.json',source_images)
+        if time.monotonic()-start>60 or time.process_time()-cpu>60:raise TimeoutError('60s matching budget')
+        receipt.update(execution='succeeded',retrieval='verified_local',selection_file=str(selection_path.resolve()),prepared=str(prepared.resolve()),
+                       old_shift_file=str(old_path.resolve()),source_image_count=4,template_stage_rows=len(all_matches),combined_rows=len(combined))
+        print(json.dumps(summary,indent=2))
+    except Exception as error:
+        receipt.update(execution='failed',error=repr(error));raise
+    finally:
+        receipt.update(ended_utc=datetime.now(timezone.utc).isoformat(),wall_seconds=time.monotonic()-start,cpu_seconds=time.process_time()-cpu)
+        dump_new(output/'runtime_receipt.json',receipt)
 
 
 def receipt_base(repo,run_id,output):
@@ -115,9 +298,14 @@ def prepare(inputs,output):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--mode",choices=("prepare",),required=True)
+    p.add_argument("--mode",choices=("prepare","match"),required=True)
     p.add_argument("--inputs",type=Path,required=True);p.add_argument("--output",type=Path,required=True)
-    a=p.parse_args();prepare(a.inputs,a.output)
+    p.add_argument("--prepared",type=Path);p.add_argument("--selection",type=Path);p.add_argument("--old-shifts",type=Path)
+    a=p.parse_args()
+    if a.mode=='prepare':prepare(a.inputs,a.output)
+    else:
+        if any(x is None for x in (a.prepared,a.selection,a.old_shifts)):p.error('match needs prepared/selection/old-shifts')
+        run_matching(a.inputs,a.prepared,a.selection,a.old_shifts,a.output)
 
 
 if __name__=="__main__":main()
