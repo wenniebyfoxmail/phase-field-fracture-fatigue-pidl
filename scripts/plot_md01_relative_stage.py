@@ -23,6 +23,7 @@ from visual_qa import audit_layout
 
 def main(a):
     t=time.monotonic()
+    started_at=datetime.now(timezone.utc).isoformat()
     a.output.mkdir(parents=True,exist_ok=False)
     h=json.loads((a.history/"predictions_saved_before_target.json").read_text())
     target=json.loads((a.target/"measurements.json").read_text())
@@ -72,7 +73,7 @@ def main(a):
             axes[0,j].set_title(f"Step {rec['stage']} | {rec['filename']}\n{role}",fontsize=10)
             axes[1,j].set_title("Raw native crop; fixed band + mapped anchors",fontsize=9)
             for ax in axes[:,j]: ax.set_xticks([]); ax.set_yticks([])
-    fig.suptitle("MD01 | one fixed first-history transect, three preselected stages\nGreen: sampling band / crop; orange: half-depth crossings; blue: background patches",fontsize=12)
+    fig.suptitle("S03-E031-MD01 R001/R002 | controlled experiment, one fixed transect\nGreen: sampling band / crop; orange: half-depth crossings; blue: background patches",fontsize=12)
     finish(fig,"F01_originals_and_sampling")
 
     fig,axes=plt.subplots(1,3,figsize=(12,3.7),sharey=True,constrained_layout=True)
@@ -93,7 +94,7 @@ def main(a):
         ax.set(title=f"Step {rec['stage']} | {width}",xlabel="Normal offset (native px)",xlim=(-60,60),ylim=(ymin-5,ymax+8))
         ax.grid(alpha=.15)
     axes[0].set_ylabel("Background minus grayscale intensity")
-    fig.suptitle("Unchanged half-depth definition | five-line median profiles\nDashed: half local depth; black segment: measured image width; grey: shoulders",fontsize=11)
+    fig.suptitle("S03-E031-MD01 R001/R002 | unchanged half-depth, five-line median profiles\nDashed: half local depth; black segment: measured image width; grey: shoulders",fontsize=11)
     finish(fig,"F02_halfdepth_profiles")
 
     fig,axes=plt.subplots(1,2,figsize=(9,4.3),constrained_layout=True)
@@ -121,8 +122,8 @@ def main(a):
     delta=summary["delta_abs_error_px"]
     message=f"Secant minus persistence error = {delta:+.3f} px" if delta is not None else "Score unavailable; missingness retained"
     axes[1].set_title(message,fontsize=10)
-    fig.suptitle("One preselected MD01 continuation | origin 28, target 29\nImage-observable pilot, not physical crack-width or independent-beam validation",fontsize=11)
-    fig.supxlabel(f"Valid profiles {summary['valid_profiles']}/3; scored opportunities {summary['coverage']}/1. No confidence interval from one case.",fontsize=9)
+    fig.suptitle("S03-E031-MD01 R001/R002 | controlled experiment\nOne preselected continuation: origin 28, target 29; not physical-width validation",fontsize=11)
+    fig.supxlabel(f"Valid profiles {summary['valid_profiles']}/3; scored opportunities {summary['coverage']}/1. Lines guide stage order, not equal time/load; no CI from one case.",fontsize=8)
     finish(fig,"F03_minimal_baseline_comparison")
 
     with (a.output/"stage_widths.csv").open("x",newline="") as stream:
@@ -135,6 +136,8 @@ def main(a):
     for name,value in (("visual_layout_audit.json",qa),("run_receipt.json",dict(
         execution="succeeded",retrieval="verified_local",render_only=True,host=socket.gethostname(),pid=os.getpid(),
         commit=subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip(),command=sys.argv,
+        dirty=subprocess.check_output(["git","status","--porcelain"],text=True).splitlines(),runtime=sys.executable,
+        started_at_utc=started_at,
         ended_at_utc=datetime.now(timezone.utc).isoformat(),wall_seconds=time.monotonic()-t,
         input_history=str(a.history),input_target=str(a.target),no_new_measurement=True))):
         (a.output/name).write_text(json.dumps(value,indent=2)+"\n")
