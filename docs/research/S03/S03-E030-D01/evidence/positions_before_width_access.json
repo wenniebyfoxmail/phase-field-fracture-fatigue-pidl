@@ -1,0 +1,35 @@
+{
+  "experiment_id": "S03-E030-D01",
+  "protocol": "T1-fixed-background-sampling-v1",
+  "beam": 4,
+  "transect_id": 1,
+  "coordinate_system": "native first-frame n/t; additive to original-H centre",
+  "selection": "E029 all17 ordinary-least-squares affine centre; no width/error selection",
+  "source_commit": "d4dd8cc",
+  "source_numeric_commit": "ae66b4f682512b41e7017afb623aea1ef36c7fdb",
+  "source_table": "S03-E029-D01/runs/S03-E029-D01-R001/outputs/full_centres.csv",
+  "positions": [
+    {
+      "stage_index": 1,
+      "load_kN": 30,
+      "shift_n": 0.04569173787228974,
+      "shift_t": 0.493393543168934
+    },
+    {
+      "stage_index": 2,
+      "load_kN": 40,
+      "shift_n": -0.8201495950481548,
+      "shift_t": 1.296797379131024
+    },
+    {
+      "stage_index": 3,
+      "load_kN": 50,
+      "shift_n": 0.4466233097393149,
+      "shift_t": 0.5355691893447587
+    }
+  ],
+  "widths_read_to_create_this_file": false,
+  "alternative_positions_to_test": false,
+  "validated_utc": "2026-10-16T12:41:13.059733+00:00",
+  "position_lock_commit": "8218e32"
+}

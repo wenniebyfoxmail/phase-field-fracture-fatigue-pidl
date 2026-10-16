@@ -69,7 +69,7 @@ def main():
                 stem=name+('_grayscale' if gray else '')
                 (a.output/f'{stem}.md').write_text(f'''# {question}
 
-## Provenance and purpose
+## Data provenance and purpose
 E030-R001 numeric commit {numeric['code_commit']}; {a.run_id} renderer {receipt['code_commit']}.
 Exact source: {a.source.resolve()}; measurements.csv, profiles.npz, summary.json,
 positions_before_width_access.json and source_images.json. Fixed position lock commit8218e32,

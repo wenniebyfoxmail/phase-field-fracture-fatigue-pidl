@@ -71,3 +71,74 @@ modelling; no new model or width-definition change automatically follows.
 Obsidian: reuse one existing task note, route/result milestones and oneRoadmap
 status; canonical S03 track then frontier/navigation. Registration: prepared;
 fixed position file saved, no E030 width sampling yet.
+
+## Outcome — 2026-10-16
+
+Disposition: retain this single background estimator as a documented optical
+measurement candidate, not a replacement oldscore or a certified position.
+The remaining mismatch decreases but is not removed; do not tune another
+position to eliminate it. The local down/up optical trend persists.
+
+Position lock committed8218e32 before this run; numeric codefb04eb8 admitted
+independently and unchanged through render additions/currenta6c8f29. R001
+clean a6c8f2945d1f412616ceae7f2f823574dd84f758 succeeded, retrieved locally,
+wall.241790s/CPU.226654s,3CRC/size-verified existing JPEGs,9/9valid profiles.
+Position snapshot written/closed before width/image access; no LOO/quality
+support selection, fitting, matching, search, target acquisition or training.
+Both original-H and oldFIT query/width fields reproduce E026 at1e-8 software
+tolerance. E025 six oldscore files unchanged before/after/current content check.
+
+| Arm | w30 (px) | w40 (px) | w50 (px) | Signed secant error (px) | Signed persistence error (px) |
+|---|---:|---:|---:|---:|---:|
+| Original H | 15.252448283 | 11.509941373 | 13.834022586 | -6.066588124 | -2.324081214 |
+| Old FIT | 16.382909772 | 16.141970936 | 16.787658189 | -.886626089 | -.645687253 |
+| Fixed background | 16.324193492 | 16.196840965 | 16.762657830 | -.693169393 | -.565816866 |
+
+All three arms are evaluated against THEIR OWN same-definition width at50kN,
+not a shared physical reference. Fixed-background minus oldFIT widths are
+-.058716280,+.054870028,-.025000359px. Exact signed error-change contributions
+-dw30=+.058716280,2dw40=+.109740057,-dw50=+.025000359,clipchange=0, total
++.193456696px toward zero. Of this, prediction changes+.168456337 and reference
+changes-.025000359px. This is NOT all an improvement in prediction accuracy
+against an unchanged target; no percentage generalisation claim follows.
+
+Fixed history increment=-.127352528px and next increment=+.565816866px:
+the down/up optical response survives this one stable background location.
+Error=-.693169393 remains, and its absolute size exceeds persistence .565816866
+at this local query. Do not convert a reduced miss into secant superiority,
+physical crack narrowing/reopening, reliable background-to-edge transfer or
+independent validation. Earlier global eight-case results remain untouched.
+
+Eight E030 synthetic tests plus10reused E028 regression tests pass. Independent
+reviewer hand-implemented inverse-H,1/32bilinear/five-line median and shoulder/
+half-depth measurement without calling the new producer/oldmeasure core:
+all9profile/deficit/background arrays, widths/crossings/peak/depth/noise,
+3arm query values and all stage/clip/prediction/reference contributions reproduce
+with maximum difference0. Input/source and unchanged oldscore identities verified.
+Saved-order code plus output chronology supports the scoped saving requirement,
+not process-level blindness; earlier results were already viewed.
+
+R002 render-only clean a6c8f29 from saved R001 CSV/NPZ; no additional JPEG,
+measurement or numerical rerun. Three figure sets,6PNG at300dpi/3PDF and6notes;
+all3layout audits empty. Owner opened all3colour andF03gray; same axes, full
+support, overlapping old/new lines expected. Sidecar validator initially only
+missed literal heading 'data provenance'; heading-only patch to template and
+six notes fixed it, no pixel/numeric change, no newRun. Final9formats/6notes
+validation passes. [Figures and guide](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E030-D01/runs/S03-E030-D01-R002/analysis/README_analysis.md).
+Independent reviewer also opened all3colour andF03gray and confirmed final
+source/receipt/format/scale/wording checks, no closure blocker; [review](evidence/independent_review.md).
+Execution succeeded, retrieval verified, diagnostic comparison complete;
+physical accuracy and independent predictive validity remain unestablished.
+
+### Next decision, proposal only
+
+Stop using T1's viewed error as a position-tuning objective. Preserve this
+background-only rule and the original half-depth definition as explicit
+candidates, retain persistence, and prepare an independent evaluation rather
+than another offset/support/window search. Smallest next action is metadata/
+exposure/permission screening for a new-beam or genuinely unviewed continuation
+candidate, with identity/allowed history/suppliedL*/geometry timing/missingness
+fixed before target access. No eligible source is established by E030; same-beam
+continuation is not independent-specimen validation. No target opening, new
+run, training or old rescoring authorised by this proposal. Physical transfer
+can remain an uncertainty question without erasing the measured partial gain.

@@ -1,0 +1,33 @@
+{
+  "experiment_id": "S03-E030-D01",
+  "run_id": "S03-E030-D01-R001",
+  "protocol": "T1-fixed-background-sampling-v1",
+  "code_commit": "a6c8f2945d1f412616ceae7f2f823574dd84f758",
+  "git_dirty": false,
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 84670,
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/d01_fixed_background_sampling.py",
+    "--archive",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments",
+    "--positions",
+    "docs/research/S03/S03-E030-D01/fixed_positions.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E030-D01/runs/S03-E030-D01-R001/outputs"
+  ],
+  "gpu": null,
+  "started_utc": "2026-10-16T12:41:13.054509+00:00",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "budget_seconds": 60,
+  "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E030-D01/runs/S03-E030-D01-R001/outputs",
+  "positions_saved_before_width_access": true,
+  "decoded_images": 3,
+  "profile_rows": 9,
+  "valid_profiles": 9,
+  "old_scores_unchanged": true,
+  "ended_utc": "2026-10-16T12:41:13.286747+00:00",
+  "wall_seconds": 0.24178970896173269,
+  "cpu_seconds": 0.22665400000000002
+}

@@ -231,3 +231,15 @@ Retain fixed estimator for next bounded diagnostic sampling, not physical
 accuracy/transfer qualification. Common-bias/correlated-match limits remain;
 no width sampling or oldscore change this round, no eight-case replay. Numeric
 R001ae66b4f. Next freeze these vectors before3stage sampling, no best-error offset.
+
+2026-10-16 — [S03-E030-D01](S03-E030-D01/experiment.md) saves E029 primary3
+positions first (8218e32), then compares originalH/oldFIT/fixed background at
+30/40/50kN,9/9valid profiles. NumericR001a6c8f29 reproduces E026 baselines;
+independent hand-written sampling/halfdepth/allquery contributions agree exactly.
+Fixed widths16.324193/16.196841/16.762658px, secant error-.693169 vsold-.886626,
+delta+.193457=(prediction+.168456)−(reference−.025000), no clipping.
+Down/up optical trend persists; local persistence-.565817 is still better.
+Three saved-output figure sets R002a6c8f29; no error-selected position, changed
+half-depth definition or oldscore. Retain partial diagnostic gain, not physical
+accuracy/held-out forecast. Next propose independent-data metadata/exposure
+screening before target access, not further viewed-T1 position tuning.

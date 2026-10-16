@@ -62,3 +62,22 @@ oldscores/v1.1, don't choose a LOOvariant by error or repeat eight-case replay.
 No width sampled in E029. Freeze/review any new protocol first. No probability
 bounds, training, source acquisition, remote job or external communication
 authorised by this record. PaveTrack work remains separate.
+
+## E030 fixed-position sampling result — 2026-10-16
+
+[E030](../research/S03/S03-E030-D01/experiment.md) saves the3E029 PRIMARY
+vectors before width access, then compares9profiles at originalH/oldFIT/fixed
+background. Allvalid, both baselines reproduce E026, independent hand-written
+sampling/measurement/query/decomposition agrees exactly. Fixed widths
+16.324193/16.196841/16.762658px; signedsecant error-.886626→-.693169px,
+change+.193457 from prediction+.168456 and reference-.025000. Not wholly a
+prediction gain against an unchanged reference. Old six E025 files unchanged.
+
+Retain partial optical-measurement gain without claiming reliable physical
+transfer. Down/up optical trend persists and fixed local persistence error
+-.565817px is smaller in magnitude than secant. Do not optimise another T1
+location or overwrite eight-case results. New active next action PROPOSED:
+metadata/exposure/permission screening for independent-data evaluation with
+geometry/history/query/missingness fixed before target access; no new candidate
+is established here. Earlier fixed-centre sampling proposal above is fulfilled,
+not permission to repeat it. Three figures and exact evidence linked in E030.
