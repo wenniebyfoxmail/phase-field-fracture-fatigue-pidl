@@ -190,12 +190,19 @@ The smallest sufficient visualization must:
 - use a stated, non-cherry-picked rule for any displayed example, such as all
   cases, a fixed ID, median-ranked case, or worst primary-error case.
 
-For spatial or temporal claims, the decision figure should normally include a
-held-out field/overlay/profile or trajectory view in addition to the aggregate
-criterion. Typical minimal forms are target/prediction/error for measurement or
-surrogate fields, origin-to-horizon trajectories for forecasting, and a utility
-curve for decisions. Reuse existing scored outputs; do not launch an extra Run
-only to make a picture.
+Show the computed result itself, not just its metric:
+
+- CV: draw the predicted boxes, masks, or other claimed outputs on the evaluated
+  source images; show the reference and simplest comparator on the same cases
+  when available.
+- Fields: show maps at the cited state/time. For comparisons, align reference,
+  prediction, and error in the same coordinates with shared colour limits and
+  labelled units.
+- Temporal or decision claims: show origin-to-horizon trajectories or the
+  relevant utility curve.
+
+Display the rendered figure with the conclusion, not only a saved path. Reuse
+the exact scored outputs; do not launch an extra Run just to make a picture.
 
 Keep the exact numerical table and verdict as authoritative. A visualization
 explains the decision but does not vote, add a new criterion, rescue a primary
