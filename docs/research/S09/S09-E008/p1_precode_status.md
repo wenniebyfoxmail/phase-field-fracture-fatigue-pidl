@@ -1,4 +1,4 @@
-# P1 pre-code status while producer provenance is pending
+# P1 pre-code and decoder status
 
 ## Return check
 
@@ -40,3 +40,13 @@ packages were checked and rejected as replacements because they do not match
 both the exact run and the required full causal trajectory. No real-field
 normaliser, cycle group or optimiser step was produced from them. Details are
 recorded in `provenance_return_recheck_20261016.md`.
+
+### Direct-SSH update
+
+The exact run and source were subsequently found on `CITPC12` without a GitHub
+handoff. Stage-0A state sufficiency is now source-qualified. A fail-closed
+read-only packet decoder and synthetic fixtures have been implemented; all 64
+S09 tests pass. P1 remains closed because this decoder has not received an
+independent review bound to its exact commit and no sealed scientific payload
+has been decoded. The next gate is exact-commit decoder review, followed by the
+read-only scientific data-capability audit if that review passes.

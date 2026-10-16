@@ -44,3 +44,25 @@ variable-level state-sufficiency trace.
 Therefore the status remains `STATE_SUFFICIENCY_BLOCKED`; see
 `provenance_return_recheck_20261016.md` for the checked locations, exclusion
 reasons and minimum remaining return.
+
+## 2026-10-16 direct-SSH resolution
+
+The preceding blocked status is superseded for Stage 0A source semantics.
+Direct read-only SSH to `CITPC12` located the exact sealed U0.125 run, its
+existing provenance, the clean exact-commit worktree and the immutable
+Request-31 source snapshot. Ten lightweight run files matched their Windows
+SHA256/byte counts, and all 16 retrieved source files matched the corresponding
+Git blobs at `862992...`.
+
+The exact source shows that committed damage, `alpha_bar` and `q_prev` are the
+independent physical carried state. `f` is derived from `alpha_bar`; slot-1 `H`
+stores current undegraded energy and is not read by the penalty kernel;
+displacement is carried as a nonlinear-solver initial guess rather than a
+physical history variable. The designed `(d,H,alpha_bar,q_prev,f)` input plus
+the prescribed path therefore contains every physical carried state for the
+bounded s00-to-s04 mapping.
+
+Current status: `STATE_SUFFICIENCY_QUALIFIED` and
+`SCIENTIFIC_DATA_CAPABILITY_PENDING`. See
+`source_state_sufficiency_audit_20261016.md`. No dynamic MAT payload was decoded
+and no training was started.

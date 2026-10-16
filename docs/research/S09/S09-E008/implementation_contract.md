@@ -50,15 +50,20 @@ not authorise scientific-array decode, training, Stage 0B or rollout.
 
 ## State-sufficiency audit
 
-The provisional carried state is nodal `d` plus GP
-`(H, alpha_bar, q_prev, f)`. The prescribed input is the complete known load
-path. Frozen context must include native geometry/quadrature, material
-constants, boundary masks and producer update law. Before Code Ready, source
-review must decide whether displacement, undegraded energy or any staggered
-old-state variable is a physical carried state, a solver initial guess, or
-causally reconstructible. An unresolved variable gives
-`STATE_SUFFICIENCY_BLOCKED`; it cannot be silently omitted or supplied from the
-target.
+The exact-commit audit on 2026-10-16 qualified the bounded Stage-0A state. The
+independent physical carried state is nodal `d` plus GP `(alpha_bar, q_prev)`.
+The exported GP `H` is the current undegraded energy and is not read by the
+penalty kernel; `f` is deterministically reconstructed from `alpha_bar` and
+the frozen fatigue parameters. Both remain in the first packet as redundant
+consistency channels. Prior displacement is a nonlinear-solver initial guess,
+not an independent physical history variable. The prescribed five-step load
+path and frozen native geometry/quadrature, material constants, boundary masks
+and producer update law complete the bounded input.
+
+Status is `STATE_SUFFICIENCY_QUALIFIED` for s00-to-s04 only. The decoder must
+still prove payload identity, native support, finite float64 storage and
+numerical s05-to-next-s00 continuity before real normalisers or cycle selection
+are frozen. That separate status remains `SCIENTIFIC_DATA_CAPABILITY_PENDING`.
 
 ## Multi-objective code-review gate
 

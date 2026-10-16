@@ -64,3 +64,11 @@ The remaining minimum return is now sharply bounded to:
 Until that return is available, the permitted local route is limited to
 synthetic/in-memory P0/P1 code and deterministic tests. Scientific decode,
 normaliser freezing from real fields, P1 training and Stage 0B remain closed.
+
+## Later resolution on the same date
+
+The user authorised direct SSH instead of a GitHub request. Read-only access to
+`CITPC12` found the exact run, provenance and exact-commit source snapshot.
+State sufficiency is now qualified as recorded in
+`source_state_sufficiency_audit_20261016.md`. Scientific data decode and P1
+training remain pending separate decoder review and capability checks.

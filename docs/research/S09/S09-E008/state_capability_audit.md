@@ -37,3 +37,17 @@ This is not full data capability. Payload-by-payload hash verification before
 decode, decoded native shapes/order/finiteness, numerical alias equality,
 producer update semantics and causal state sufficiency remain blocking. See
 `metadata_capability_report.json` and `implementation_contract.md`.
+
+## Exact-source resolution on 2026-10-16
+
+Direct read-only SSH recovered the exact producer receipts and exact-commit
+source. Source tracing qualifies the Stage-0A physical carried state as nodal
+damage plus GP `alpha_bar` and `q_prev`. GP `f` is a deterministic Carrara
+function of `alpha_bar`; GP `H` is the current undegraded energy and is not read
+by the penalty phase-field kernel; previous displacement is a solver initial
+guess. Thus the frozen Stage-0A input contains the full physical state needed
+for this producer's s00-to-s04 transition.
+
+State sufficiency is now qualified, while full data capability remains pending
+the pre-hash/decode/native-order/numerical-alias audit. See
+`source_state_sufficiency_audit_20261016.md`.
