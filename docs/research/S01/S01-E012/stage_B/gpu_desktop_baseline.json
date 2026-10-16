@@ -1,0 +1,24 @@
+{
+  "revision": "S01-E012-B-env1",
+  "hostname": "D-26-09",
+  "gpu_uuid": "GPU-3d74ea12-5d84-a619-90b2-c0b1f104599a",
+  "driver_model": "WDDM",
+  "maximum_sampled_GPU_utilization_percent": 0,
+  "allowed_process_type": "C+G",
+  "approved_desktop_executables": {
+    "C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe": "11382f7efac4978063f568f06fe90af38f136fbe975cce39d13667bd288b71c9",
+    "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\CrossDeviceResume.exe": "b15e9da33402779e60c43a358c6aae5aa071a8c7723f200cda50e87ba650ff8a",
+    "C:\\Windows\\System32\\ShellHost.exe": "75268bc04679fdddbea23e72274351641e44bd7019d8c625d61fbdc574ec0353",
+    "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\153.0.4234.32\\msedgewebview2.exe": "49b97ce18fd644c0b629de4478e220d8c1a65ae3cb92bdd1c79a789038c741f0",
+    "C:\\Windows\\explorer.exe": "87811a107eed62900b230c49a252170d6a7307e94a08307ce972f9b9b8155d54",
+    "C:\\Windows\\System32\\dwm.exe": "00eb3d5e6092e1246bd0956ff0a341c2afa6f96bb805b93d36a7192a9c29e475",
+    "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.924.2738.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe": "3c440d9004ef5195a93b5b934623bf02032f74d40b9a9fbe33934e57e5f1f117",
+    "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe": "2ab7ed99d701862391461f3efdc8f71df8435851bf647cb4b00cb4d145887183",
+    "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe": "9d6d7b37ba8f6db67c3c33111ab32842abb5b4a940ff61c106899b4be5ecfc00",
+    "C:\\Windows\\System32\\ApplicationFrameHost.exe": "cb5b327020f3da829489bf6ba7749c12d7730267d607678c3dcd4917168016fe",
+    "C:\\Windows\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe": "b012b84674ae63052c368227ce41be39e5586d759b5eff8e3fbf01f53bfd00f1",
+    "C:\\Users\\xw436\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\b63ee7ee40c23b77\\bin\\node_modules\\@oai\\sky\\bin\\windows\\swift\\x64\\codex-computer-use-swift.exe": "204ec0a55dcff48a35eb2548d80382b13f7428a5e62fa94e5bfcbe2226e8580d",
+    "C:\\Windows\\SystemApps\\Microsoft.LockApp_cw5n1h2txyewy\\LockApp.exe": "76643b5929faebb04e67e1f5421363f3ec327fe555c596245abba4586d5cf322"
+  },
+  "rule": "Exact full Windows path and file SHA256; unknown/type C/path/hash/utilization mismatch stops; snapshot is not a guarantee of future idle GPU"
+}
