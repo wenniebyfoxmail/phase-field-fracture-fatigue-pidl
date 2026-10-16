@@ -197,6 +197,26 @@ def _require_matlab_string(handle: h5py.File, name: str) -> None:
     _require(value == "string", f"{name} is not an exact MATLAB string")
 
 
+def _exact_matlab_logical(handle: h5py.File, name: str, expected: bool) -> bool:
+    """Decode the producer's exact MATLAB-v7.3 scalar logical storage."""
+    dataset = handle[name]
+    matlab_class = dataset.attrs.get("MATLAB_class", b"")
+    if isinstance(matlab_class, bytes):
+        matlab_class = matlab_class.decode("ascii")
+    int_decode = dataset.attrs.get("MATLAB_int_decode", None)
+    _require(
+        dataset.dtype == np.dtype("uint8")
+        and dataset.shape == (1, 1)
+        and matlab_class == "logical"
+        and int_decode == 1,
+        f"invalid MATLAB logical storage: {name}",
+    )
+    value = int(np.asarray(dataset)[0, 0])
+    _require(value in (0, 1) and bool(value) is expected,
+             f"logical mismatch: {name}")
+    return bool(value)
+
+
 def _reject_external_hdf5_storage(handle: h5py.File) -> None:
     """Reject links or dataset storage that can read bytes outside the payload."""
     seen: set[int] = set()
@@ -264,7 +284,9 @@ def decode_payload(
         imposed = _exact_scalar(
             handle, "state_metadata/imposed_displacement", float(row["imposed_displacement"])
         )
-        _exact_scalar(handle, "state_metadata/producer_metadata/converged", 1.0)
+        _exact_matlab_logical(
+            handle, "state_metadata/producer_metadata/converged", True
+        )
         _require_matlab_string(handle, "state_metadata/state_key")
         _require_matlab_string(handle, "state_metadata/timing")
         _require_matlab_string(handle, "state_metadata/history_channel_labels")

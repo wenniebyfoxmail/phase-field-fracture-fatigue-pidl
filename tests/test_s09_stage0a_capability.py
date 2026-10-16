@@ -110,7 +110,10 @@ def write_state(path: Path, *, cycle: int, substep: int, magnitude: float,
         imposed = (0.0, .031249875, .062499875, .093749875, .124999875, 0.0)[substep]
         meta.create_dataset("imposed_displacement", data=np.array([[imposed]], dtype=np.float64))
         producer = meta.create_group("producer_metadata")
-        producer.create_dataset("converged", data=np.array([[1.]], dtype=np.float64))
+        converged = producer.create_dataset(
+            "converged", data=np.array([[1]], dtype=np.uint8))
+        converged.attrs["MATLAB_class"] = np.bytes_(b"logical")
+        converged.attrs["MATLAB_int_decode"] = np.uint8(1)
         for name in ("state_key", "timing", "history_channel_labels"):
             dataset = meta.create_dataset(name, data=np.zeros((1, 1), dtype=np.uint32))
             dataset.attrs["MATLAB_class"] = np.bytes_(b"string")

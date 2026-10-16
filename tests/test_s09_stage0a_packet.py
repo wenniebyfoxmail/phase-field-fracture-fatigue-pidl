@@ -29,7 +29,10 @@ def write_payload(path: Path, *, cycle: int, substep: int, load: float,
         metadata.create_dataset("substep", data=np.array([[substep]], dtype=np.float64))
         metadata.create_dataset("imposed_displacement", data=np.array([[load]], dtype=np.float64))
         producer = metadata.create_group("producer_metadata")
-        producer.create_dataset("converged", data=np.array([[1.]], dtype=np.float64))
+        converged = producer.create_dataset(
+            "converged", data=np.array([[1]], dtype=np.uint8))
+        converged.attrs["MATLAB_class"] = np.bytes_(b"logical")
+        converged.attrs["MATLAB_int_decode"] = np.uint8(1)
         for name in ("state_key", "timing", "history_channel_labels"):
             dataset = metadata.create_dataset(name, data=np.zeros((1, 1), dtype=np.uint32))
             dataset.attrs["MATLAB_class"] = np.bytes_(b"string")
@@ -163,6 +166,26 @@ def test_decoder_rejects_logical_metadata_rounding(tmp_path: Path):
     item = row(cycle=1, substep=4, source="c0001_s04", file=path.name,
                sha=digest(path), alias=False, load=.125, timing="post_history_commit")
     with pytest.raises(ValueError, match="cycle"):
+        decode_payload(path, item, expected_nodes=4, expected_elements=2)
+
+
+@pytest.mark.parametrize("mutation", ["float64", "wrong_class", "false"])
+def test_decoder_requires_exact_matlab_logical_convergence(tmp_path: Path, mutation):
+    path = tmp_path / "bad_converged.mat"
+    write_payload(path, cycle=1, substep=4, load=.125)
+    with h5py.File(path, "r+") as handle:
+        parent = handle["state_metadata/producer_metadata"]
+        dataset = parent["converged"]
+        if mutation == "float64":
+            del parent["converged"]
+            parent.create_dataset("converged", data=np.array([[1.]], dtype=np.float64))
+        elif mutation == "wrong_class":
+            dataset.attrs.modify("MATLAB_class", np.bytes_(b"double"))
+        else:
+            dataset[0, 0] = 0
+    item = row(cycle=1, substep=4, source="c0001_s04", file=path.name,
+               sha=digest(path), alias=False, load=.125, timing="post_history_commit")
+    with pytest.raises(ValueError, match="MATLAB logical|logical mismatch"):
         decode_payload(path, item, expected_nodes=4, expected_elements=2)
 
 
