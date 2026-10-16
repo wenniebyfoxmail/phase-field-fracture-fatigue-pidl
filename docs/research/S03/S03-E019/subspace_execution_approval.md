@@ -7,7 +7,7 @@
 
 ## 确切版本与状态
 
-数值/测试/设计快照：54beaae758637eed191481f67375b2b289ceda75。
+数值/测试/设计快照：8471002db09cd1cb072552b00f3fd736a607b11a。
 方案v1.1 SHA256：adbe5d5c9dafbdef0f9db99c231dda5e25840401fd98cac6021b24b320f11be4。
 新增scripts/aa2024_qsubspace_diagnostic.py、tests/test_aa2024_qsubspace_diagnostic.py，
 测试设计见subspace_test_design.md。旧runner、依赖和E019协议不改。
@@ -33,7 +33,8 @@ C2/C3注入机制的预定负控Qr=r未通过原阈值如实记录；其他异�
 
 作用：仅运行新测试文件，不跑包含SVD的旧E019测试；不调用完整diagnostic/run。
 输出全新local_archive/code_checks/S03-E019-D01-T001的日志、测试收据和审批副本。
-pytest插件自动加载关闭，不读conftest、不写pytest缓存或pyc。
+pytest插件自动加载关闭，清除PYTEST_ADDOPTS/PYTEST_PLUGINS，不读conftest、
+不写pytest缓存或pyc；-x遇首个非预期测试失败立即停止。
 Python wrapper使用60秒剩余时限；超时终止它自己启动的pytest子进程，不重试。
 收据与日志均限定代码检查，不混为正式诊断的结果。
 
@@ -46,16 +47,17 @@ cd "$task_repo"
 export PYTHONDONTWRITEBYTECODE=1 PYTHONWARNINGS=error CUDA_VISIBLE_DEVICES=''
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 export PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 E019_D01_TEST_ROOT="$task_check"
+unset PYTEST_ADDOPTS PYTEST_PLUGINS
 mkdir -p '/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/code_checks'
 mkdir "$task_check"
 cp docs/research/S03/S03-E019/subspace_execution_approval.md "$task_check/00_intent_approved.md"
 "$task_py" -u - <<'PY' > "$task_check/tests.log" 2>&1
-import hashlib,json,os,subprocess,sys,time
+import hashlib,json,os,socket,subprocess,sys,time
 from datetime import datetime,timezone
 from pathlib import Path
 start=time.monotonic()
 root=Path(os.environ['E019_D01_TEST_ROOT'])
-snapshot='54beaae758637eed191481f67375b2b289ceda75'
+snapshot='8471002db09cd1cb072552b00f3fd736a607b11a'
 names=['docs/research/S03/S03-E019/subspace_localisation_plan.md',
        'docs/research/S03/S03-E019/experiment.md',
        'scripts/aa2024_kinematic_capacity.py','scripts/aa2024_geometry_prior.py',
@@ -78,7 +80,13 @@ def save(receipt):
 receipt=dict(status='running',source_commit=snapshot,budget_seconds=60.,
              start_utc=datetime.now(timezone.utc).isoformat(),
              role='synthetic unit tests only, not diagnostic/E019 acceptance',
-             pid=os.getpid(),command=[sys.executable,'-m','pytest','--noconftest','-c','/dev/null',
+             pid=os.getpid(),hostname=socket.gethostname(),cwd=str(Path.cwd()),
+             thread_environment={k:os.environ.get(k) for k in
+                                 ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS',
+                                  'VECLIB_MAXIMUM_THREADS','NUMEXPR_NUM_THREADS')},
+             pytest_environment={k:os.environ.get(k) for k in
+                                 ('PYTEST_DISABLE_PLUGIN_AUTOLOAD','PYTEST_ADDOPTS','PYTEST_PLUGINS')},
+             command=[sys.executable,'-m','pytest','-x','--noconftest','-c','/dev/null',
                                     '-p','no:cacheprovider','-W','error','-q',
                                     'tests/test_aa2024_qsubspace_diagnostic.py'])
 try:
@@ -123,15 +131,29 @@ import hashlib,json,subprocess
 from pathlib import Path
 root=Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/code_checks/S03-E019-D01-T001')
 r=json.loads((root/'test_receipt.json').read_text())
-snapshot='54beaae758637eed191481f67375b2b289ceda75'
+snapshot='8471002db09cd1cb072552b00f3fd736a607b11a'
+names=['docs/research/S03/S03-E019/subspace_localisation_plan.md',
+       'docs/research/S03/S03-E019/experiment.md',
+       'scripts/aa2024_kinematic_capacity.py','scripts/aa2024_geometry_prior.py',
+       'scripts/aa2024_boundary_basis.py','scripts/aa2024_triplet_structure.py',
+       'scripts/aa2024_patch_mechanics.py','scripts/aa2024_rigid_observable.py',
+       'scripts/aa2024_qsubspace_diagnostic.py','tests/test_aa2024_qsubspace_diagnostic.py',
+       'docs/research/S03/S03-E019/subspace_test_design.md']
+before=r.get('sources_before_sha256',{})
+after=r.get('sources_after_sha256',{})
+if not isinstance(before,dict) or not isinstance(after,dict) or set(before)!=set(names) or set(after)!=set(names):
+    raise ValueError('test receipt source keys differ from fixed allowlist')
 if (r.get('status')!='passed' or r.get('source_commit')!=snapshot or
     r.get('budget_seconds')!=60. or not 0<=r.get('elapsed_seconds',60.)<60. or
-    r.get('sources_before_sha256')!=r.get('sources_after_sha256') or
-    len(r.get('sources_after_sha256',{}))!=11):
+    before!=after or
+    r.get('thread_environment')!={k:'1' for k in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS',
+                                               'VECLIB_MAXIMUM_THREADS','NUMEXPR_NUM_THREADS')} or
+    r.get('pytest_environment')!={'PYTEST_DISABLE_PLUGIN_AUTOLOAD':'1','PYTEST_ADDOPTS':None,'PYTEST_PLUGINS':None}):
     raise ValueError('reviewed synthetic unit tests not qualified')
 if hashlib.sha256((root/'tests.log').read_bytes()).hexdigest()!=r['tests_log_sha256']:
     raise ValueError('test log changed')
-for name,digest in r['sources_after_sha256'].items():
+for name in names:
+    digest=after[name]
     data=Path(name).read_bytes()
     if hashlib.sha256(data).hexdigest()!=digest or data!=subprocess.check_output(['git','show',snapshot+':'+name]):
         raise ValueError('tested source changed: '+name)
@@ -141,7 +163,7 @@ mkdir "$task_run"
 cp docs/research/S03/S03-E019/subspace_execution_approval.md "$task_run/00_intent_approved.md"
 "$task_py" -u scripts/aa2024_qsubspace_diagnostic.py \
   --output "$task_run/analysis" \
-  --source-commit 54beaae758637eed191481f67375b2b289ceda75 \
+  --source-commit 8471002db09cd1cb072552b00f3fd736a607b11a \
   > "$task_run/run.log" 2>&1
 ```
 
