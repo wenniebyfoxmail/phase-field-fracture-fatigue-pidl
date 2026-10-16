@@ -172,3 +172,19 @@ Freeze this single-directory fix as a new exact candidate and request a narrow
 independent Code Ready rereview of B2-R3 plus adjacent identity regression.
 Real packet export, Taobo resolution and training remain blocked until
 `CODE_READY_PASS`.
+
+## Code Ready round 4 verdict
+
+ChatGPT Pro returned **`CODE_READY_PASS`** for exact candidate
+`f54327490ce8c02f6c042753d36ddcd32ecc5771`.  It reconstructed the five-file
+synthetic/no-training suite (**65 passed**) and ran 14 focused identity checks,
+including a real Git/CLI reproduction of the old clean-A/dirty-B bypass.  The
+removed CLI argument, function signature and module-derived code root jointly
+closed B2-R3; adjacent commit, tracked-file, metadata and full-config bindings
+also held.  B1, B3 and B4 remain closed.
+
+This verdict authorises only the next evidence sequence: real packet export,
+read-only Taobo environment/GPU resolution and final execution-gate
+preparation.  No real packet was exported in this Code Ready round, no producer
+was accessed and optimizer construction/steps remained zero.  Training is not
+authorised by this verdict, and it is not a P1 or scientific-validity result.
