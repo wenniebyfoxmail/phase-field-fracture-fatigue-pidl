@@ -1,0 +1,61 @@
+{
+  "base": "a540888497d1838a6aa202f59a884e6930e50fb4",
+  "target_absent_before_bundle": true,
+  "reconstructed_scientific_source": "c4ceb5d27fa8d408be1b9f02dcd6b10308f301a2",
+  "clean": true,
+  "shell_syntax": true,
+  "python_blocks": [
+    "COPY",
+    "PREFLIGHT",
+    "ROW_PREFLIGHT",
+    "VERIFY"
+  ],
+  "both_cli_help": true,
+  "validate_only": [
+    {
+      "state": "c20s4",
+      "scale_digest": "aa6eac8194e619f249b8b802c22cc7f92f78e4ab272f3e01ebe2a640a3cb65fb",
+      "initial_uv_max_diff": 9.71445146547012e-16,
+      "training": false
+    },
+    {
+      "state": "c60s4",
+      "scale_digest": "7bdbc59d86115c7f404c46424a7f891c6df5f9624626360316b2f0774da4c2a8",
+      "initial_uv_max_diff": 1.2628786905111156e-15,
+      "training": false
+    },
+    {
+      "state": "c83s4",
+      "scale_digest": "ddc0bae1ac2a5746ab2b0b439d03f24b7b5e398afe84ceaafb87abb9eb1737c0",
+      "initial_uv_max_diff": 6.38378239159465e-16,
+      "training": false
+    }
+  ],
+  "ssh": false,
+  "training": false,
+  "formal_preflight_performed": false,
+  "deployment_unit_tests": 15,
+  "skipped": 0,
+  "package_manifest": {
+    "scientific_source": "c4ceb5d27fa8d408be1b9f02dcd6b10308f301a2",
+    "files": {
+      "E023_c4ceb5d.bundle": {
+        "bytes": 117400,
+        "sha256": "82a73c5a6c8aaecb06e2986b47e8f6b3dbf93f51a58f5676e910afe763f28c92",
+        "local_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_submission_v1/E023_c4ceb5d.bundle",
+        "remote_path": "/mnt/data2/drtao/wennie/S04-E023-head-rms-c4ceb5d-20261016-v1/E023_c4ceb5d.bundle"
+      },
+      "prepare_and_dispatch.sh": {
+        "bytes": 17889,
+        "sha256": "dbec3c3ad125f1cd1ffe0283206902b19ac4ef40246a8986929295f02660ff63",
+        "local_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/producer_submission_v1/prepare_and_dispatch.sh",
+        "remote_path": "/mnt/data2/drtao/wennie/S04-E023-head-rms-c4ceb5d-20261016-v1/prepare_and_dispatch.sh"
+      }
+    }
+  },
+  "resource_tests": "actual shell guards; sharedGPU accepts >8192MiB; threshold/query/UUID failures rejected",
+  "copy_tests": "87-file manifest / reuseddest / symlink / corruptedcopy refusal",
+  "fixed_D_guard_tests": "actual row guard valid / modified bytes / coherent wrongD rejected",
+  "source_changed": false,
+  "SSH_performed": false
+}
