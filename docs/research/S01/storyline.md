@@ -104,3 +104,8 @@ Approvedv1 source859fed4 received/99files verified andpublic28e96b8 pushed/readb
 ### 2026-10-16 — E012 R003 startup infeasible; stopped archive closed and minimal IO repair reviewed
 
 Approvedv2 sourcea23521c/publicb2f1a41/R003 executed then cancelled before scoring at948.418s/209MiB. Independent audit identified field-levelbuffer invalidation multiplying full-process-tree checks;no GT/pixel/model result,scientificinconclusive,notno-positive evidence. Exactstoppedbundle received/verified/archived. StageB-only window repairfdc6c19 passes117tests/6.1sol-Mediumreview;105659syntheticrecords equal with1120checks/8.407s. ProposedR0042600s keeps combinedwall<=3548.418<original3600;noautomaticextraRun. All E003/GT/coverage/scoring/utility criteria unchanged,freshsitessealed.
+
+
+### 2026-10-16 — E012 R004 closes trustworthy positive-evidence expansion
+
+ApprovedR004sourcefdc6c19/public3bc1562 completes543.907s,totalR003+R0041492.325<3600,RSS1.681GiB/GPUreserved250MiB.31156fixedE003corrected-crop scores verify withtwoheadpasses,original43347rowsunchanged. MinimalC1distributed support passes7distinctGT/5sites,groups4/2/1,FIT8positive3/5/6. OneGT-informedjoint684->691,oldret684/684,lost0,net7,macro+.8314pp,FPtypesunchanged. Fourof11newgeometryGT becomejointnewhits;threeothernewhits werealready geometricallycovered. Preserveboundedcomponentprogress;notlearnedselectorgain,newsitegeneralisation,sampleadequacy oroldfour-site282validation. Fixedpackage received/verified,numericalandactualthreePNG+presentationderivative independent6.1sol-Mediumacceptancepass,archiveclosed. Nextfreeze/reviewcapacity-limitedoriginal-protectingno-correctionselection design;noautomatictraining/freshaccess.
