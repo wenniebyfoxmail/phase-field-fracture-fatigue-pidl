@@ -31,11 +31,12 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--source",type=Path,required=True);p.add_argument("--output",type=Path,required=True)
     p.add_argument("--inputs",type=Path,required=True);p.add_argument("--qa-directory",type=Path,required=True)
+    p.add_argument("--run-id",default="S03-E026-D01-R002")
     args=p.parse_args();repo=Path(__file__).resolve().parents[1]
     git=lambda *a:subprocess.check_output(["git",*a],cwd=repo,text=True).strip()
     if git("status","--porcelain"):raise RuntimeError("clean committed renderer required")
     args.output.mkdir(parents=True,exist_ok=False);start=time.monotonic();cpu=time.process_time()
-    receipt=dict(experiment_id="S03-E026-D01",run_id="S03-E026-D01-R002",role="render_only",
+    receipt=dict(experiment_id="S03-E026-D01",run_id=args.run_id,role="render_only",
                  code_commit=git("rev-parse","HEAD"),git_dirty=False,hostname=socket.gethostname(),pid=os.getpid(),
                  command=sys.argv,python=sys.executable,gpu=None,source=str(args.source.resolve()),
                  started_utc=datetime.now(timezone.utc).isoformat(),execution="running",retrieval="pending")
@@ -80,7 +81,7 @@ def main():
             c=mapped(np.array([0.]))[0];cx,cy=np.rint(c).astype(int)
             if cx-55<0 or cy-55<0 or cx+55>image.shape[1] or cy+55>image.shape[0]:raise ValueError("crop outside image")
             ax=axes[0,col];crop=image[cy-55:cy+55,cx-55:cx+55]
-            ax.imshow(crop,cmap="gray",vmin=0,vmax=255,extent=(cx-55-c[0],cx+55-c[0],cy+55-c[1],cy-55-c[1]),interpolation="nearest")
+            ax.imshow(crop,cmap="gray",vmin=0,vmax=255,extent=(cx-55.5-c[0],cx+54.5-c[0],cy+54.5-c[1],cy-55.5-c[1]),interpolation="nearest")
             for tt in (-2,0,2):
                 q=mapped(np.array([-35.,35.]),tt)
                 ax.plot(q[:,0]-c[0],q[:,1]-c[1],color=BLUE,lw=1.3 if tt==0 else .65,alpha=.9 if tt==0 else .6)
@@ -170,7 +171,7 @@ Why is B4 last-query T1 secant error large: optical trend reversal or location/m
 Posthoc diagnostic, not independent physical truth. Same frozen half-depth operator throughout.
 
 ## Evidence identity
-Numerics: SOURCE, E026-R001; renderer R002 from saved CSV/NPZ plus three existing CRC-verified E012 JPEGs.
+Numerics: SOURCE, E026-R001; renderer RENDER_RUN from saved CSV/NPZ plus three existing CRC-verified E012 JPEGs.
 Existing E020 profiles/strips and E019 FIT translations; CHECK not fitted. T1 has only3/4 usable CHECK anchors,
 witha5 first-frame excluded. No new registration, training, source acquisition or E025 rescoring.
 
@@ -201,7 +202,7 @@ forecast score, independent validation or using the target to choose a better of
 ## Storyline impact and next action
 Keep original measurement/score. Consult experiment.md and independent review for outcome/one bounded next repair.
 layout_audit.json records mechanical QA; actual visual review is recorded separately after opening final PNGs.
-""".replace("SOURCE",str(args.source.resolve()))
+""".replace("SOURCE",str(args.source.resolve())).replace("RENDER_RUN",args.run_id)
         (args.output/"README_analysis.md").write_text(guide)
         receipt.update(execution="succeeded",retrieval="verified_local",figure_sets=4,numerical_rerun=False,
                        source_image_count=3,output=str(args.output.resolve()))
