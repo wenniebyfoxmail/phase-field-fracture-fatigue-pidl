@@ -1,0 +1,199 @@
+{
+  "protocol": "S01-E015-v1",
+  "proposed_run_id": "S01-E015-R001",
+  "claim_class": "C2 conditional reused-site current-image detection selection",
+  "locations": [
+    "24",
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "1638",
+    "2027",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "held_groups": [
+    [
+      "24",
+      "514",
+      "1577",
+      "3662"
+    ],
+    [
+      "95",
+      "728",
+      "1638",
+      "4494"
+    ],
+    [
+      "151",
+      "1400",
+      "2027",
+      "5508"
+    ]
+  ],
+  "excluded_locations": [
+    "353",
+    "1459",
+    "2028",
+    "5982"
+  ],
+  "input_counts": {
+    "images": 835,
+    "original_rows": 43347,
+    "corrections": 31156
+  },
+  "feature": {
+    "name": "corrected_minus_original_classifier_log_odds",
+    "probability_clip": 1e-06,
+    "thresholds": [
+      0.0,
+      0.5,
+      1.0,
+      2.0,
+      4.0,
+      8.0,
+      "abstain"
+    ],
+    "comparison": "x>=tau; abstain always false",
+    "trainable_parameters_per_main_head": 1,
+    "feature_selection": false,
+    "pooled_features": false,
+    "probability_calibration": false
+  },
+  "policy": {
+    "iou": 0.5,
+    "false_positives_per_image": 1,
+    "original_duplicate_iou": 0.7,
+    "correction_duplicate_iou": 0.5,
+    "score": "sqrt(original_proposer_confidence * corrected_E003_probability)",
+    "eligibility": "unchanged E012 base eligible19384, additionally strict positive original/corrected intersection; base indices/eligibility remain immutable",
+    "correction_order": "descending d=1-IoU(original_box,corrected_box), then descending unchanged s0, lexical image/box, parent_id",
+    "max_per_image": 1,
+    "max_per_source_group": 3,
+    "source_group_unit": "fixed four-site E012 group; apply same cap to each included group during FIT/jackknife/held",
+    "originals": "immutable prefix; no original NMS/deletion/rescore; budget retention must be measured"
+  },
+  "fit": {
+    "main_fits": 3,
+    "expected_positive_GT": [
+      3,
+      5,
+      6
+    ],
+    "expected_positive_sites": [
+      3,
+      3,
+      4
+    ],
+    "objective": "actual FIT-only joint netGT at frozen budget",
+    "active_admissibility": "retention==1 AND netGT>=1 AND macro_delta>0; otherwise no correction",
+    "tie_break": [
+      "maximum netGT",
+      "minimum admitted corrected FP",
+      "minimum appended rows",
+      "largest threshold"
+    ],
+    "finite_policy_family": 7,
+    "refit_full12": false,
+    "held_GT_use": false
+  },
+  "jackknife": {
+    "unit": "whole positive-support location",
+    "counts": [
+      3,
+      3,
+      4
+    ],
+    "fits": 10,
+    "purpose": "diagnostic sensitivity only; cannot choose main threshold or veto/rescue primary",
+    "fit_GT": "own FIT8 minus omitted whole location; recompute same budget on remaining images",
+    "empty_support": "abstain; record missing support, not invalid"
+  },
+  "criterion": {
+    "old_E003_retention_minimum": 0.95,
+    "net_new_GT_minimum": 1,
+    "macro_location_recall_delta_strictly_positive": true,
+    "evaluation": "one pooled12-site OOF learned-selector comparison vs unchanged E003",
+    "old_hit_denominator": "B12; verify684 baseline from R004; not old four-site282",
+    "no_hidden_all_folds_active_gate": true
+  },
+  "budget": {
+    "runs": 1,
+    "cpu_threads": 1,
+    "total_wall_seconds": 3600,
+    "peak_RSS_bytes": 4294967296,
+    "threshold_fits": 13,
+    "calibration_policy_comparisons": 91,
+    "fit_baseline_metrics": 13,
+    "final_OOF_comparisons": 1,
+    "held_group_comparisons": 3,
+    "model_gradient_steps": 0,
+    "linear_solves": 0,
+    "head_forwards": 0,
+    "backbone_forwards": 0,
+    "pixel_reads": 0,
+    "new_singleton_U": 0,
+    "full12_refits": 0
+  },
+  "producer": {
+    "hostname": "D-26-09",
+    "ssh_alias": "gpu-server",
+    "account": "ad\\xw436",
+    "python": "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+    "CUDA_VISIBLE_DEVICES": "-1",
+    "GPU": false,
+    "fallback": false
+  },
+  "fresh_access": false,
+  "execution_authorized": false,
+  "ranking": {
+    "name": "one_minus_original_corrected_box_IoU",
+    "direction": "descending",
+    "fit_parameters": 0,
+    "additional_features": false,
+    "score_replacement": false,
+    "geometric_quality_claim": false
+  },
+  "capacity_audit": {
+    "scope": "each main FIT8 only; join own saved singleton labels with already evaluated policy source_keys",
+    "positive": "U>0",
+    "GT": "distinct new_identities among selected positive-U candidates",
+    "report": [
+      "selected_positive_candidates",
+      "selected_positive_GT",
+      "all_policy_membership",
+      "chosen_policy_membership"
+    ],
+    "feeds_selection": false,
+    "extra_policy_comparisons": 0,
+    "extra_U": 0
+  },
+  "locality": {
+    "predicate": "min(old_x2,new_x2)>max(old_x1,new_x1) AND min(old_y2,new_y2)>max(old_y1,new_y1)",
+    "edge_contact": false,
+    "epsilon": false,
+    "threshold_search": false,
+    "trainable_parameters": 0,
+    "field": "positive_intersection",
+    "base_eligibility_unchanged": true
+  },
+  "locality_audit": {
+    "pool_scope": "12 existing sites GT-free counts and each main FIT8",
+    "positive_scope": "own FIT8 saved singleton labels only; descriptive original support, no new U",
+    "counts": [
+      "base_eligible",
+      "retained",
+      "removed",
+      "positive_candidates_before_after",
+      "distinct_positive_GT_before_after"
+    ],
+    "feeds_selection": false,
+    "new_policy_comparisons": 0,
+    "new_U": 0
+  }
+}
