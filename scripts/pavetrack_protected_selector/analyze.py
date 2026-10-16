@@ -27,6 +27,10 @@ def render(run,result,models,support,evaluation,guard):
     for ax in axes[len(chosen):]:ax.axis('off')
     if not chosen:axes[0].text(.05,.5,'No corrections selected (explicit abstention)',transform=axes[0].transAxes)
     fig.suptitle(f'{run.name} | appended cases: green GT / blue original / red correction');fig.tight_layout(h_pad=2.2);fig.savefig(out/'F02_cases.png',dpi=160);plt.close(fig);guard.check()
+    fp_lines=['## Budget-admitted FP decomposition','', '|Scope|Detector|partial|duplicate|no_small_overlap|','|---|---|---:|---:|---:|']
+    for scope,comparison in [('pooled12',result['comparison'])]+[(f'held{k}',item['comparison']) for k,item in enumerate(result['held_groups'])]:
+        for key in ['baseline','candidate']:
+            counts=comparison[key+'_FP_types'];fp_lines.append('|'+scope+'|'+key+'|'+ '|'.join(str(counts[name]) for name in ['partial','duplicate','no_small_overlap'])+'|')
     (out/'README_analysis.md').write_text('''# E013 conditional learned selector
 
 Question: can a seven-choice single-threshold policy trained on FIT8 improve exact budget-admitted detections while protecting E003? Source is saved models, OOF_predictions and evaluation from this Run; F00 shows FIT3/5/6 support and learned thresholds/abstention, F01 shows unchanged E003 versus pooled learned OOF at1FP/image,IoU=.5 and frozen retention/net/macro criterion. F02 shows at most six appended cases sorted by highest original score then lexical image/box/key; greenGT/blueoriginal/redcorrection, no source pixels. Empty selection is explicit. Exact numerical verdict is authoritative; no plot votes.
@@ -34,4 +38,4 @@ Question: can a seven-choice single-threshold policy trained on FIT8 improve exa
 Primary requires old retention>=.95,netGT>=1,macrodelta>0. Learned selection is GT-free at prediction, but sites/outcomes and upstream models are reused/consumed. Not fresh-site generalisation, probability calibration, independent statistical confidence or oldfour-site282 verification. Positive FIT support3/5/6 constrains capacity; correlated location-deletion sensitivity is diagnostic only and never chooses the main threshold. Original-row preservation is separately verified and does not guarantee budget retention.
 
 No further policy selection, U/joint computation or inference occurs in analysis. Preserve component support, safe abstention and old protection if primary misses. Follow the preregistered failure-to-repair map; no grid/L2 rescue or automatic training/retry. Fresh locations remain sealed.
-''',encoding='utf8')
+'''+ '\n'.join(fp_lines)+'\n',encoding='utf8')

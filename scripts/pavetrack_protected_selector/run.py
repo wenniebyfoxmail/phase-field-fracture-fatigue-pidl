@@ -46,7 +46,7 @@ def fit_and_freeze(data,targets,run,cfg,guard,emit,calibrator=c.calibrate):
     original_digest=c.digest(data['originals']);models=[];support=[];predictions=[];all_added=[]
     # Main fits and predictions finish before diagnostic jackknifes run.
     for k,held in enumerate(cfg['held_groups']):
-        fit=[x for x in cfg['locations'] if x not in held];audit=c.support_labels(data['labels'][k],data['candidates'],fit)
+        fit=[x for x in cfg['locations'] if x not in held];audit=c.support_labels(data['labels'][k],data['candidates'],fit,data['image_locations'])
         if audit['positive_GT_count']!=cfg['fit']['expected_positive_GT'][k] or len(audit['positive_sites'])!=cfg['fit']['expected_positive_sites'][k] or audit['nonpositive']==0:raise ValueError('FIT support lineage')
         own=c.scoped(data['originals'],data['candidates'],targets,data['image_locations'],fit);model=calibrator(own,cfg,guard);models.append(model);support.append(audit)
         added=c.policy(data['candidates'],model['threshold'],held,cfg);all_added.extend(copy.deepcopy(added));predictions.append(dict(fold=k,held_locations=held,threshold=model['threshold'],source_keys=[r['parent_id'] for r in added],rows=added))
@@ -59,7 +59,8 @@ def fit_and_freeze(data,targets,run,cfg,guard,emit,calibrator=c.calibrate):
         held=cfg['held_groups'][k];fit=[x for x in cfg['locations'] if x not in held]
         for omitted in audit['positive_sites']:
             locs=[x for x in fit if x!=omitted];own=c.scoped(data['originals'],data['candidates'],targets,data['image_locations'],locs);model=calibrator(own,cfg,guard)
-            diagnostics.append(dict(main_fold=k,omitted_location=omitted,threshold_flipped=model['threshold']!=models[k]['threshold'],model=model))
+            remaining={tuple(v) for row in data['labels'][k]['rows'] if row['U']>0 and row['location']!=omitted for v in row['new_identities']}
+            diagnostics.append(dict(main_fold=k,omitted_location=omitted,original_FIT8_positive_GT_before=audit['positive_GT_count'],original_FIT8_positive_GT_remaining=len(remaining),support_scope='original FIT8 descriptive singleton support after deleting candidate location; not recomputed FIT7 U',threshold_flipped=model['threshold']!=models[k]['threshold'],model=model))
     if c.digest(models)!=main_digest or c.digest(data['originals'])!=original_digest:raise ValueError('diagnostic feedback/mutation')
     emit('jackknife.json',dict(used_to_choose_main=False,scope='correlated location-deletion sensitivity, not independent validation',fits=diagnostics))
     return models,support,sorted(all_added,key=lambda r:r['parent_id'])

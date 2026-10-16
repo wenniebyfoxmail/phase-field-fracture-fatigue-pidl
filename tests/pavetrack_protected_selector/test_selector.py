@@ -58,6 +58,9 @@ def test_actual_synthetic_joint_objective_and_canonical_added_FP(monkeypatch):
     d,t=fixture();own=c.scoped(d['originals'],d['candidates'],t,d['image_locations'],CFG['locations']);ref=c.baseline(own);good=c.policy(d['candidates'],2.,CFG['locations'],CFG);positive=c.compare(own,good,ref)
     assert positive['retention']==1 and positive['new_GT']==positive['net_GT']==6 and positive['added_FP']==0
     negative=c.compare(own,c.policy(d['candidates'],0.,CFG['locations'],CFG),ref)
+    assert sum(positive['baseline_FP_types'].values())==ref[0]['false_positives']
+    assert sum(positive['candidate_FP_types'].values())==positive['candidate']['false_positives']
+    assert set(positive['candidate_FP_types'])=={'partial','duplicate','no_small_overlap'}
     assert negative['added_FP']==0 and negative['lost_old']>0  # rejected FP tie group still cuts off old TP
     altered=copy.deepcopy(d['candidates'])
     for x in altered:
@@ -81,6 +84,10 @@ def test_main_fits_freeze_then_jackknife_and_fold_GT_isolation(tmp_path,monkeypa
     assert [m['threshold'] for m in models]==[2,2,2] and len(added)==6 and d==saved
     assert g.counts['threshold_fits']==13 and g.counts['calibration_policy_comparisons']==91
     assert [s['positive_GT_count'] for s in support]==[3,5,6]
+    assert len(expected['jackknife.json']['fits'])==10
+    for item in expected['jackknife.json']['fits']:
+        assert 0<item['original_FIT8_positive_GT_remaining']<item['original_FIT8_positive_GT_before']
+        assert 'not recomputed FIT7 U' in item['support_scope']
     poisoned=copy.deepcopy(t)
     for im,loc in d['image_locations'].items():
         if loc in cfg['held_groups'][0]:poisoned[im]=[]
@@ -105,7 +112,7 @@ def test_support_lineage_rejects_cross_scope_and_tampering(kind):
     elif kind=='incomplete':p['rows'].pop()
     elif kind=='identity':p['rows'][0]['parent_id']+=1
     else:p['rows'][0]['U']=999
-    with pytest.raises((ValueError,KeyError)):c.support_labels(p,d['candidates'],[x for x in CFG['locations'] if x not in CFG['held_groups'][0]])
+    with pytest.raises((ValueError,KeyError)):c.support_labels(p,d['candidates'],[x for x in CFG['locations'] if x not in CFG['held_groups'][0]],d['image_locations'])
 
 def test_evaluation_requires_frozen_predictions_before_held_GT(tmp_path,monkeypatch):
     d,t=fixture();monkeypatch.setattr(c,'baseline',lambda *a:pytest.fail('no evaluation before freeze'))
@@ -174,3 +181,13 @@ def test_loader_rejects_source_tampering(tmp_path,kind):
     elif kind=='score':lock['source_correction_count']+=1
     else:lock['source_eligible_count']+=1
     with pytest.raises((ValueError,AssertionError)):r.inputs.load(z,run,cfg,lock,guard(),c)
+
+
+def test_support_global_prefix_identity_uses_whole_FIT_scope():
+    d,t=fixture();payload=copy.deepcopy(d['labels'][0]);locs=payload['locations']
+    row=next(x for x in payload['rows'] if x['U']>0)
+    another=next(im for im,loc in d['image_locations'].items() if loc in locs and im!=row['image_id'])
+    row['new_identities']=[[another,0]]
+    c.support_labels(payload,d['candidates'],locs,d['image_locations'])
+    row['new_identities']=[[next(im for im,loc in d['image_locations'].items() if loc not in locs),0]]
+    with pytest.raises(ValueError):c.support_labels(payload,d['candidates'],locs,d['image_locations'])

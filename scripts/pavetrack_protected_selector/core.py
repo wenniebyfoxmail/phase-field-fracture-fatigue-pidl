@@ -75,7 +75,7 @@ def compare(data,added,reference):
     ret=None if not old else len(old&hits)/len(old);delta=None if before['macro_location_recall'] is None else metric['macro_location_recall']-before['macro_location_recall']
     classified=assignment.classified(rows,data['targets'],metric)
     fp=sum(hit is None and row['kind']=='correction' for row,hit in classified)
-    return dict(retention=ret,retained_old=len(old&hits),lost_old=len(old-hits),new_GT=len(hits-old),net_GT=len(hits)-len(old),macro_delta=delta,added_FP=fp,appended=len(added),new_identities=[list(v) for v in sorted(hits-old)],lost_identities=[list(v) for v in sorted(old-hits)],candidate=metric)
+    return dict(retention=ret,retained_old=len(old&hits),lost_old=len(old-hits),new_GT=len(hits-old),net_GT=len(hits)-len(old),macro_delta=delta,added_FP=fp,appended=len(added),new_identities=[list(v) for v in sorted(hits-old)],lost_identities=[list(v) for v in sorted(old-hits)],candidate=metric,baseline_FP_types=assignment.old.fp_types(data['originals'],data['targets'],before),candidate_FP_types=assignment.old.fp_types(rows,data['targets'],metric))
 
 def choose(table):
     active=[r for r in table if r['threshold']!='abstain' and r['comparison']['retention']==1 and r['comparison']['net_GT']>=1 and r['comparison']['macro_delta'] is not None and r['comparison']['macro_delta']>0]
@@ -89,14 +89,14 @@ def calibrate(data,cfg,guard,metric=compare):
     threshold=choose(table)
     return dict(threshold=threshold,locations=data['locations'],baseline=ref[0],training_original_digest=digest(data['originals']),policies=table,abstained=threshold=='abstain',selection_reason='no protected FIT gain' if threshold=='abstain' else 'FIT netGT, correction FP, exposure, then larger threshold')
 
-def support_labels(payload,candidates,locations):
+def support_labels(payload,candidates,locations,image_locations):
     if set(payload['locations'])!=set(locations):raise ValueError('FIT label scope')
     by={c['index']:c for c in candidates};positive=set();sites=set();negative=0
     expected=[c['index'] for c in candidates if c['eligible'] and c['location'] in locations]
     if [r['index'] for r in payload['rows']]!=expected:raise ValueError('FIT label completeness/order')
     for row in payload['rows']:
         c=by[row['index']]
-        if c['image_id']!=row['image_id'] or any(v[0]!=c['image_id'] for v in row['new_identities']+row['lost_identities']) or c['parent_id']!=row['parent_id'] or c['location']!=row['location'] or c['location'] not in locations or not c['eligible']:raise ValueError('FIT label identity')
+        if c['image_id']!=row['image_id'] or any(image_locations.get(v[0]) not in locations for v in row['new_identities']+row['lost_identities']) or c['parent_id']!=row['parent_id'] or c['location']!=row['location'] or c['location'] not in locations or not c['eligible']:raise ValueError('FIT label identity')
         if row['U']!=row['new']-row['lost']-row['FP']:raise ValueError('FIT U algebra')
         if row['U']>0:positive.update(tuple(v) for v in row['new_identities']);sites.add(c['location'])
         else:negative+=1
