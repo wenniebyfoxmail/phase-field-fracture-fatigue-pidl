@@ -1,0 +1,132 @@
+{
+  "schema_version": "s09-e008-p1-run-package-v1",
+  "status": "PACKAGE_SPEC_FROZEN_CODE_REVIEW_REQUIRED",
+  "experiment_id": "S09-E008",
+  "planned_run_id": "S09-E008-P1-R001-stage0a-memorisation",
+  "claim_scope": "development-only bounded memorisation of the Stage-0A pre-cycle-to-peak operator",
+  "execution_authorized": false,
+  "producer": {
+    "alias": "Taobo GPU",
+    "remote_root": "/mnt/data2/drtao/wennie/S09-E008-P1-R001-stage0a-memorisation",
+    "archive_root": "/mnt/data2/drtao/pidl_archives/S09-E008-P1-R001-stage0a-memorisation",
+    "gpu_id": "TO_BE_LOCKED_AFTER_READ_ONLY_AVAILABILITY_CHECK",
+    "forbidden_fallback": "CSD3"
+  },
+  "source": {
+    "capability_run_id": "S09-E008-A002-stage0a-capability-20261016",
+    "capability_code_commit": "918ec57e1b6eaf3c9489ae37af866328775021ac",
+    "capability_receipt_sha256": "5e41fd019f8bbe0bcc297923f659c215c3bf085a9bd7aa2e3146e3183b9f6de9",
+    "static_sha256": "b79a36298eabec363fb7a53fb0590db46eb949b05c05dbffb9cb5a8bc0e4b40e",
+    "training_commit": "TO_BE_LOCKED_AFTER_TRAINER_CODE_REVIEW",
+    "input_packet_sha256": "TO_BE_LOCKED_AFTER_REVIEWED_PACKET_EXPORT"
+  },
+  "data": {
+    "trajectory": "sealed U0.125 development trajectory",
+    "role": "development_only",
+    "selected_cycles": [1, 2, 3, 4, 21, 29, 41, 46, 48, 58, 60, 69, 70, 71, 72, 73],
+    "growth_cycles": [1, 58, 60, 69, 70],
+    "near_stagnant_cycles": [3, 4, 71, 72, 73],
+    "cycle_order": "listed_order_repeated_without_shuffle",
+    "batch_size": 1,
+    "native_nodes": 86756,
+    "native_q4_elements": 86408,
+    "gauss_points_per_element": 4,
+    "history_order": ["H", "alpha_bar", "q_prev", "f"],
+    "prescribed_path": [0.0, 0.031249875, 0.062499875, 0.093749875, 0.124999875, 0.0]
+  },
+  "map": {
+    "input": "(d_s00 on nodes, [H,alpha_bar,q_prev,f]_s00 on native GP, complete prescribed path, frozen mesh/material/boundary data)",
+    "output": "(d_s04 on nodes, [H,alpha_bar,q_prev,f]_s04 on native GP, u_s04 on nodes)",
+    "rollout_capable": false
+  },
+  "normalisers": {
+    "damage_increment": 0.006896013386826084,
+    "history_increment": [96.63136736963305, 0.00614771012425793, 0.0059082164580187314, 0.004071375747189726],
+    "displacement": [0.00904670012757536, 0.08381964836377313],
+    "equilibrium": "freeze_before_model_initialisation_as_mean_selected_teacher-damage_affine-BC_free-DOF_force_MSE"
+  },
+  "model": {
+    "class": "Stage0ATransitionOperator",
+    "width": 32,
+    "rank": 8,
+    "local_blocks": 2,
+    "coarse_blocks": 1,
+    "dtype": "float64",
+    "seed": 20261016,
+    "hard_constraints": [
+      "peak displacement boundary lifting",
+      "d_s04 >= d_s00 and d_s04 <= 1",
+      "alpha_bar_s04 >= alpha_bar_s00",
+      "f_s04 = Carrara(alpha_bar_s04) and f_s04 <= f_s00"
+    ]
+  },
+  "optimisation": {
+    "optimizer": "AdamW",
+    "learning_rate": 0.0003,
+    "betas": [0.9, 0.999],
+    "epsilon": 1e-08,
+    "weight_decay": 0.0,
+    "updates": 1000,
+    "no_early_success_stop": true,
+    "objectives_in_fixed_order": ["nodal_state_plus_raw_nodal_increment", "gp_history_plus_raw_gp_increment", "peak_equilibrium"],
+    "raw_increment_coefficient": 1.0,
+    "gradient_merge": "positive-norm median equalisation, fixed cyclic projection against immutable balanced references, mean, one global clip",
+    "zero_gradient_handling": "replace that objective direction with zero and log it",
+    "gradient_epsilon": 1e-12,
+    "global_clip_norm": 1.0,
+    "optimizer_step_order": "zero_grad; three separate autograd gradients; merge; assign once; finite check; one clip already in merge; optimizer.step"
+  },
+  "evaluation": {
+    "judgement_examples": "same fixed 16 examples",
+    "initial": "after deterministic construction and before any optimiser state mutation",
+    "final": "evaluation mode after exactly 1000 successful updates",
+    "diagnostic_steps": [0, 1, 10, 50, 100, 250, 500, 750, 1000],
+    "primary_capacity_clause": "L_judge_final <= 0.20 * L_judge_initial",
+    "growth_clause": "selected growth-group mean weighted damage-increment MAE < persistence baseline mean(g_k)",
+    "stagnation_clause": "selected near-stagnant false growth <= 0.25 * D",
+    "validity_clause": "finite outputs and gradients; zero hard-constraint violations"
+  },
+  "interpretation_buckets": [
+    "execution_integrity",
+    "architecture_wiring",
+    "overall_memorisation_capacity",
+    "damage_growth_skill",
+    "near_stagnant_control",
+    "per_objective_learning_and_gradient_conflict",
+    "scientific_claim_boundary"
+  ],
+  "failure_stops": [
+    "identity or hash mismatch",
+    "nonfinite input, output, loss or gradient",
+    "hard-constraint violation",
+    "missing objective gradient record",
+    "optimizer update count differs from receipt",
+    "write path outside the fresh run roots",
+    "GPU or disk preflight failure"
+  ],
+  "prohibited": [
+    "Stage 0B or autoregressive rollout",
+    "AT1/KKT loss",
+    "random cycle split or held-out claim",
+    "architecture enlargement after observing P1",
+    "more than one seed or more than 1000 updates",
+    "threshold repair after results",
+    "CSD3 fallback",
+    "accuracy, generalisation, FEM-truth, teacher-validity or PINO-benefit claim from this run"
+  ],
+  "minimum_outputs": [
+    "run_receipt.json",
+    "config_resolved.json",
+    "input_packet_identity.json",
+    "environment.txt",
+    "train_log.jsonl",
+    "gradient_diagnostics.jsonl",
+    "judgement_initial.json",
+    "judgement_final.json",
+    "checkpoint_final.pt",
+    "decision_metrics.json",
+    "decision_figure.png",
+    "README_analysis.md"
+  ],
+  "next_gate": "implement packet exporter and trainer, test locally without scientific training, then exact-commit independent Code Ready review"
+}

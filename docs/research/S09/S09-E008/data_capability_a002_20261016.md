@@ -43,5 +43,11 @@ This is a successful read-only data-capability execution. It establishes that
 the sealed trajectory can supply the reviewed Stage-0A/P1 contract and freezes
 the development selection/scales. It is not training evidence, damage-
 evolution accuracy, rollout, generalisation, FEM truth, independent teacher
-validation or PINO benefit. Training remains unauthorised pending an independent
-evidence review and the next explicit run gate.
+validation or PINO benefit.
+
+The independent attachment-level evidence review returned
+`EVIDENCE_READY_PASS` on 2026-10-16 after 44 checks, including complete
+enumeration of the 366 inventory records, 438 logical bindings and 72 aliases.
+This closes the A002 evidence-readiness step. Training remains unauthorised;
+the permitted next action is preparation and exact-commit review of a bounded
+P1 memorisation run package.

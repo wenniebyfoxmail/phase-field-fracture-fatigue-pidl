@@ -50,3 +50,17 @@ S09 tests pass. P1 remains closed because this decoder has not received an
 independent review bound to its exact commit and no sealed scientific payload
 has been decoded. The next gate is exact-commit decoder review, followed by the
 read-only scientific data-capability audit if that review passes.
+
+## 2026-10-16 Evidence Ready and run-package update
+
+The decoder received exact-commit Code Ready approval after the MATLAB logical
+schema repair. A002 then qualified 366 physical payloads, 438 logical bindings,
+native weights and the frozen 16-cycle P1 selection. Haofan ChatGPT Pro
+independently reviewed the complete 486,723-byte receipt and returned
+`EVIDENCE_READY_PASS` after 44 checks, including full 366/438/72 enumeration.
+
+The bounded P1 memorisation package and machine-readable config are now
+prepared. They fix the development data, model, seed, 1,000-update budget,
+multi-objective update algebra, acceptance buckets, stop rules and outputs.
+Training remains closed until the packet exporter and trainer exist, their exact
+commit and input packet are locked, and an independent Code Ready review passes.
