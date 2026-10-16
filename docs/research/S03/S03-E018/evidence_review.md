@@ -27,3 +27,36 @@ PASS_EVIDENCE，也不得改写成功的E018分析执行收据为运行失败。
 数值显示 matched 后仍有明显偏离，operator 差额小得多；不支持把当前偏离主要归于这两种采样接口。它不确定材料、边界、三维或噪声原因。后续最低成本方向可考虑另审“固定边界下的运动学表示上限”，而非立即增加 q。
 
 如获准修正验收脚本的文件关闭方式，可仅继续剩余只读图形验收；不需要重跑 E018。
+
+## 2026-10-16 获批补完只读图形验收 — 当前最终结论
+
+用户明确批准仅修正临时脚本文件关闭并完成剩余图形检查，不重算、重绘、
+改冻结产物、读取stage15/新留出或外发；新异常即停、不自动重试。
+复用独立 /root/e018_code_review。以下为本轮完成回复，PDF引用改用文件名。
+上文2026-10-15的暂停记录保留；当前已无待补图形验收步骤。
+
+PASS_EVIDENCE。合并上轮数值核对与本轮独立图形验收，E018-R001 可作为本次 C1 训练接口诊断的完整证据；不代表物理反演或预测验证通过。
+
+本轮实做：
+
+- 独立查看两张真实 PNG：六面板、单位、图例和标题完整，无可见裁切或遮挡；同分量跨臂同尺度，残差六格共用对称尺度。
+- 完整读取两个同名说明，图线、来源、37 对／全训练支持及解释限制与图和绘图源码一致。
+- 官方 sidecar 验证通过：4 个图文件、2 个说明，错误为零。
+- 两份 PDF（training_profiles.pdf、profile_discrepancies.pdf）均通过文件头／EOF 和 `pdfinfo` 解析，均为单页、972×504 pt、无加密；未重新渲染。
+- 前后核对 receipt 和全部 11 项产物哈希，均未改变。receipt SHA256 仍为 `e737568d5babe65f065f394696fe06653163f53a03976e4dfa4a64ed4768a3aa`。
+- 开始／结束 HEAD 均为 `eba93586326a6986da3a07d3b7c5325c870ec1d5`，clean。本轮无新警告或异常。
+
+临时脚本修订片段如下；原脚本未落盘，因此没有仓库源码变更。本轮未执行该 CSV 数值段：
+
+```diff
+-summary=list(csv.DictReader((out/'summary.csv').open()))
+-detail=list(csv.DictReader((out/'profiles.csv').open()))
++with (out/'summary.csv').open() as handle:
++    summary=list(csv.DictReader(handle))
++with (out/'profiles.csv').open() as handle:
++    detail=list(csv.DictReader(handle))
+```
+
+本轮没有读取任何 NPZ／CSV 数值，没有重新计算剖面或指标、重绘、求解、调参、读取 stage15／新留出或外发。
+
+结果解读保持不变：direct 与 matched 曲线接近，同接口后仍存在明显法向偏离。这两种采样接口不足以解释当前剖面差异，但不能据此确定材料、边界、三维或噪声原因。下一项可先准备“固定边界下的运动学表示上限”最小诊断方案，另行审查和审批，暂不增加 q。

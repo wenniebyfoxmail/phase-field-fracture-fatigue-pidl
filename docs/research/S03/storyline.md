@@ -210,3 +210,14 @@
   SeeS03-E018/results.md/evidence_review.md. Await human approval only to fix
   audit handle closure and finish visual checks; no analysis rerun, heldresponse,
   solve/tuning/send. Later separatelyreview fixed-BC kinematic-capacity diagnostic.
+
+- **2026-10-16 — S03-E018 independent acceptance completed without rerunning.**
+  User approved only audit CSV handle-closure correction and remaining visual
+  review. Independent Codex passed two actual PNGs/sidecars/PDF integrity and
+  unchanged receipt/11artifact hashes, with no newwarning. Prior scalar checks
+  plus this visual check yield PASS_EVIDENCE for the C1training-interface
+  diagnostic only. No NPZ/CSV numerical reload, recomputation, redraw, solve,
+  heldresponse/newholdout or send. SeeS03-E018/results.md/evidence_review.md.
+  Same-interface normal mismatch remains; preserve bounded prior benefit and
+  original prediction ranking. Next candidate is separatelyreviewed fixed-BC
+  kinematic capacity, not immediate q expansion or physical-cause attribution.
