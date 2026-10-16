@@ -19,7 +19,7 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
 
 ## Current Evidence / Claim Boundary
 
-- **S04 fixed-damage UV reproduction (2026-10-16)** — E023 fixed-initial RMS head parameterization on E022 reaches independent Code Ready, sourcec4ceb5d; three-state identities/LR/budget unchanged. No producer preflight or training, no repair gain established. E022 primary miss, strict Mac rejection and full-teacher NOT_QUALIFIED retained. Next: exact-source production package. [S04 storyline](research/S04/storyline.md), [E023](research/S04/S04-E023/experiment.md).
+- **S04 fixed-damage UV reproduction (2026-10-16)** — E023 fixed-initial RMS head parameterization on E022 reaches independent Code Ready, sourcec4ceb5d; three-state identities/LR/budget unchanged. No producer preflight or training, no repair gain established. E022 primary miss, strict Mac rejection and full-teacher NOT_QUALIFIED retained. Exact-source two-file production package and single-launch script now prepared;15local deployment checks and independent review pass. Await user approval of fresh Taobo directory/GPU0sharing>8GiB; no SSH or formal producer preflight. [S04 storyline](research/S04/storyline.md), [E023](research/S04/S04-E023/experiment.md).
 
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。
 - c86 true diffuse damage 条件化可近闭合后续场，二值裂缝几何失败约 `100x` support area：缺失的是近核状态幅值，不只是裂缝位置。

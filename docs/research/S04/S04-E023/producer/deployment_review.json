@@ -1,0 +1,15 @@
+{
+  "verdict": "DEPLOYMENT_PREPARATION_PASS",
+  "deployment_commit": "28f6aa8801ad0d24660c08a6711d97383936b752",
+  "scientific_source": "c4ceb5d27fa8d408be1b9f02dcd6b10308f301a2",
+  "blockers": [],
+  "independent_operational_tests": 15,
+  "embedded_python_blocks_compiled": 4,
+  "shell_syntax": true,
+  "payloads_verified": true,
+  "SSH_performed": false,
+  "transfer_performed": false,
+  "training_performed": false,
+  "formal_preflight_performed": false,
+  "user_approval_pending": true
+}
