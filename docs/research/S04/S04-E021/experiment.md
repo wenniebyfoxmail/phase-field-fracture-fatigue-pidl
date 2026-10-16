@@ -237,3 +237,20 @@ research disposition:advance to proposal preparation only. No further fitting
 or execution authorized. At separately approved human handoff request a minimum
 no-refit replay plan is prepared in next_validation_plan_v1.md, not implemented
 or run. S04-E017/MOO/NN held; U0.1175/U0.125 remain closed. Main chat sole writer.
+
+## Frozen-model replay supplement closed — 2026-10-16
+
+Separately approved S04-E021-REPLAY-R001 (runtime08242ea) completed once and
+its result snapshot0a3178c received independent read-only acceptance after the
+user-approved exactf88da75 request. See replay_run_result_20261016.md and
+replay_evidence_review_result_20261016.md for scope and item-by-item reconciliation.
+Saved357cycle arithmetic and R/G/Q reproduce within unchanged tolerances;
+U0.11 C41+1.6083% RMSE increase remains. C20 pointwise fields, actual input
+content and full-domain bounds were not independently decoded/revalidated in
+this review; they remain reviewed-code/worker evidence. Other-cycle pointwise
+equality to unsaved original fields is not established. No new scientific
+method gain, physical/teacher or confirmation claim; original v1 verdict stands.
+This C0/C1 supplement is closed without rerun or same-round re-review.
+Next suggestion is only to prepare a minimal read-only late-regression
+attribution plan for separate approval. No new computation, fit, input/holdout
+access or S04-E017/MOO/NN authority follows; main chat remains sole writer.
