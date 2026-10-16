@@ -386,3 +386,15 @@
   No report numeric/realarray/holdout access, imports/tests/arithmetic/render,
   producer rerun or static-review claim. Await user confirmation before independent
   command review/execution; original arithmetic/realE019 status unchanged.
+
+- **2026-10-16 — D01 arithmetic command v1 static review requires one semantic clarification.**
+  User authorized review-only, report-first, no edits/execution. Independent
+  MODIFY_AND_REREVIEW at clean a7b58e7: producer einsum ratio vs independent fsum
+  ratio is an additional cross-evaluation scalar check, not implied by original
+  mm vector closeness. Need path labels and distinct unresolved-difference stop
+  classification, not automatic producer/report invalidity. No actual failure
+  observed because no arithmetic ran. Other field/dimension/read-only checks
+  fit; StringIO closure is nonblocking advice. See S03-E019/
+  subspace_arithmetic_command_review.md. V1 SHA29d36ef2 unchanged; no numeric
+  artifact/realarray/holdout reads, imports/tests or command execution. Await
+  user authority before any revision/rereview; C0/originalQr limits unchanged.

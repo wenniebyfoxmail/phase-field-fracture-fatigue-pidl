@@ -133,3 +133,12 @@ subspace_arithmetic_acceptance_plan.md v1准备了完整只读命令，未执行
 按保存契约C0原C/A缺失、逐分量Qr未存；不会补构造来追认全D01通过。
 即便可核部分通过，也单列C0限度。方案/标量核验映射和命令待用户确认，
 尚无独立静态审查或算术结果；原真实E019验收状态不变。
+
+### 2026-10-16：算术命令v1静态审查需明确ratio路径语义
+
+独立静态MODIFY_AND_REREVIEW仅一项必改：保存einsum ratio与fsum参考
+ratio的标量比较不能当成由原mm容差直接推出，需声明额外跨路径检查及
+特定失败分流，不直接判report/producer错误。没有实际验算，不能说
+当前用例已失败。详见subspace_arithmetic_command_review.md。
+按用户要求先报告，不改v1/阈值/操作数或C0/原Qr限制；无数值产物读取、
+导入/测试/执行/真实/留出访问。原D01及真实E019数值状态均不变。
