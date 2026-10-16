@@ -15,5 +15,7 @@
       "remote_path": "/mnt/data2/drtao/wennie/S04-E022-last-leak-a540888-20261016-v1/prepare_and_dispatch.sh"
     }
   },
-  "remote_execution_performed": false
+  "remote_execution_performed": false,
+  "deployment_source": "84a6cdaea5a2c7f99d87a133ad7fa38ec858acdb",
+  "independent_deployment_review": "PASS; 12 independent checks; no blockers; no SSH/transfer/training"
 }

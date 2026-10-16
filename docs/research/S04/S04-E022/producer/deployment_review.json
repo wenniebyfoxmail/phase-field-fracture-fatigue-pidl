@@ -1,0 +1,11 @@
+{
+  "verdict": "DEPLOYMENT_PREPARATION_PASS",
+  "deployment_commit": "84a6cdaea5a2c7f99d87a133ad7fa38ec858acdb",
+  "scientific_source": "a540888497d1838a6aa202f59a884e6930e50fb4",
+  "blockers": [],
+  "independent_tests_passed": 12,
+  "remote_performed": false,
+  "transfer_performed": false,
+  "training_performed": false,
+  "approval_required_before_action": true
+}

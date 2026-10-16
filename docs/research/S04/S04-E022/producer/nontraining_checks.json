@@ -1,0 +1,17 @@
+{
+  "scientific_source": "a540888497d1838a6aa202f59a884e6930e50fb4",
+  "deployment_source": "84a6cdaea5a2c7f99d87a133ad7fa38ec858acdb",
+  "shell_syntax": "PASS",
+  "embedded_python_blocks_compiled": 3,
+  "copy_and_resource_tests": 12,
+  "parameter_optimizer_steps": 0,
+  "training": false,
+  "ssh_performed": false,
+  "transfer_performed": false,
+  "fresh_remote_root_absence_verified": false,
+  "bundle_reconstructed_exact_clean_source": true,
+  "runner_and_aggregator_cli_help": "PASS",
+  "all_original_scientific_sources_unchanged": true,
+  "resource_policy": "GPU0 sharing only>8GiBfree, allqueryfailuresstop; proposed for thisapproval",
+  "independent_deployment_review": "PASS; 12 independent checks; no blockers; no SSH/transfer/training"
+}

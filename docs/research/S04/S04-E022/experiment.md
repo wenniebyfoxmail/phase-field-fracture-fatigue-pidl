@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E022
 protocol_revision: 20261016-r1-last-hidden-leak001
-status: code-ready-not-started
+status: production-package-awaiting-approval
 ---
 # Last-hidden fixed-leak discriminator
 
@@ -41,3 +41,7 @@ Minimal assets: exact three-state pairing/admission JSON, tests/CLI/LR/samplerch
 ## Code Ready outcome — 2026-10-16
 
 Independent Codex subagent CODE_READY_PASS binds scientific source a540888497d1838a6aa202f59a884e6930e50fb4, no remaining blockers. Exact final suite68passed/0skipped; independent11unitchecks plus all3realasset/zeroUV/tensoridentity checks. Root all3full10000samplerstreams match, peakRSS1063747584bytes; all3validate-only pass, emptyaggregate INCONCLUSIVEexit3. Initial map-admission bug fixed with exactsaved E017UV, oldfailedlog preserved, no tolerance change. [Review](code_ready_review.md), [checks](nontraining_checks.json). Formal nativeprofile/runtime producerpreflight remains unperformed; CodeReady does not authorise training or prove repair success. Subsequent doc-only commits do not replace this science snapshot.
+
+## Production preparation — 2026-10-16
+
+Exactscientificsourcea540888 bundle andone-shotdispatcher prepared, deployment84a6cda independentlyreviewed. Fullplan/commands/bytehashes in[producer execution](producer_execution.md). Freshroot/proposedsharedGPU0>8GiB,60remoteexistingfilecopies, all3formalpreflights,10000nativeLRperrow,correctE021/E019pairingandstrictrow/archivechecks areexplicit. Userapprovalpending; noSSH/transfer/producerpreflight/training.

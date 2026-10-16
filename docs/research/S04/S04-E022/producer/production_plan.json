@@ -135,5 +135,6 @@
   "primary": "All3valid final10000 full normalized massUVRMS <=.001; completeprimaryFAIL still recorded separately from execution.",
   "comparison": "Report full/damage/background, inside/outsidebackground vs inherited,E019,E021, plus exteriorinvariance; preserve historicalprimaryFAIL and strictMacnativeLR/reference-rhoexceptions.",
   "remote_execution_performed": false,
-  "training_authorized": false
+  "training_authorized": false,
+  "deployment_source": "84a6cdaea5a2c7f99d87a133ad7fa38ec858acdb"
 }
