@@ -124,3 +124,12 @@ B及预检未启动、V01目录不存在；没有report/真实/留出读取或�
 来源/产物/收据/源码保持，未重绘或重算、读取真实/留出/evidence数组。
 详见subspace_display_evidence_review.md/subspace_display_results.md末节。
 原D01独立算术、真实E019失败/暂停仍保持，不能用显示通过替代。
+
+### 2026-10-16：剩余独立算术只读方案待确认
+
+subspace_arithmetic_acceptance_plan.md v1准备了完整只读命令，未执行或
+读取report数值。拟核C1–C3保存账本/原负控、来源与CSV，保留原容差；
+不导入producer、不生成fixture、不分解/重绘或写冻结产物。
+按保存契约C0原C/A缺失、逐分量Qr未存；不会补构造来追认全D01通过。
+即便可核部分通过，也单列C0限度。方案/标量核验映射和命令待用户确认，
+尚无独立静态审查或算术结果；原真实E019验收状态不变。

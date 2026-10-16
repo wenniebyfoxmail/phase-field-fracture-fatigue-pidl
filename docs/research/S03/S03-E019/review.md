@@ -278,3 +278,16 @@ fa0a408e2b78c54b1160b83b4ece5cad91d698550e671f55fc5f9eea984737bb。
 完整回复subspace_display_evidence_review.md；最终subspace_display_results.md。
 本轮无重绘/重算/重SVD、产物修改、真实/留出/evidence数组读取或外发。
 仅V01显示完成，不恢复D01算术或真实E019验收，也不自动继续。
+
+## 剩余算术验收只读方案/确切命令待确认 — 2026-10-16
+
+subspace_arithmetic_acceptance_plan.md v1，快照7ed54a8，SHA256
+29d36ef21b9472f0b81cf38eeb34557cb5e0ddc69860358d3783e19ba38978ad。
+本轮仅读冻结源码/方案/历史验收文档，不读report数值、不导入/测试/验算。
+拟只用标准库Decimal80/fsum核保存C1–C3因子/p/r账本、原负控、CSV和来源。
+单线程CPU/60秒，只stdout、不写产物；命令完整内嵌，无待补入口。
+
+按保存契约C0缺原C/A、原逐分量Qr未保存，单列核验限度，不重构/补QR或
+重跑producer抹去缺项。原数值容差保持，标量单位映射在提案中明确待确认，
+不宣称已经独立静态审查或测试。未来执行者先核命令，发现问题只报告，
+不在同一许可下改后重试。当前等待用户确认，原数值状态不变。

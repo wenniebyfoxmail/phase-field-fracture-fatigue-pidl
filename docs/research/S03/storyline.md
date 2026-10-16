@@ -375,3 +375,14 @@
   subspace_display_evidence_review.md and subspace_display_results.md.
   No new anomaly/replot/recompute/SVD/output mutation/realarray/holdout/send.
   V01 display complete only; D01 scalar and actualE019 acceptance remain paused.
+
+- **2026-10-16 — Saved-only D01 arithmetic acceptance plan prepared, not executed.**
+  Proposal v1 at7ed54a8, SHA29d36ef21b9472f0b81cf38eeb34557cb5e0ddc69860358d3783e19ba38978ad;
+  see S03-E019/subspace_arithmetic_acceptance_plan.md for the full exact stdout-only
+  standard-library command. Decimal80/fsum on saved C1-C3 operands, provenance/CSV,
+  original tolerances/negative controls; CPU1/60s and first unexpected stop.
+  C0 original C/A and original componentwise Qr were not saved by the producer
+  contract: explicitly limited, no reconstruction/QR/replay to manufacture closure.
+  No report numeric/realarray/holdout access, imports/tests/arithmetic/render,
+  producer rerun or static-review claim. Await user confirmation before independent
+  command review/execution; original arithmetic/realE019 status unchanged.
