@@ -148,7 +148,7 @@ README_analysis.md, exact numeric tables above; {repo}/docs/research/S03/S03-E02
         axes[0].set_xlim(min(values)-.3,max(values)+.3)
         fig.text(.5,.085,f"17accepted IDs, flags-clear intersection{len(summary['common_flags_clear_ids'])}; independent stage supports8 x6 x5=240 | not independent specimens",ha='center',fontsize=9)
         save(fig,'F03_temporal_support_ranges')
-        fig,axes=plt.subplots(1,3,figsize=(13,5.5),sharex=True,sharey=True);fig.subplots_adjust(left=.07,right=.98,bottom=.18,top=.76,wspace=.15)
+        fig,axes=plt.subplots(1,3,figsize=(13,5.5),sharex=True,sharey=True);fig.subplots_adjust(left=.07,right=.98,bottom=.32,top=.76,wspace=.15)
         fig.suptitle('Fixed N01 profile illustration: old FIT versus residual-shifted sampling',y=.98,fontsize=14)
         fig.text(.5,.90,'Each trace uses its own unchanged half-depth threshold; N01 is fixed by ID, not selected for lower error',ha='center',fontsize=10)
         yy=[]
@@ -164,7 +164,7 @@ README_analysis.md, exact numeric tables above; {repo}/docs/research/S03/S03-E02
                 ax.plot(xx,cache[key],color=COLORS[k],ls=(':','-.','-')[k],lw=1.1,label=f"{LABELS[k]} w={float(r['width_px']):.3f}" if r['valid']=='True' else f"{LABELS[k]} invalid")
                 yy.extend(cache[key][np.abs(xx)<=20])
                 if r['valid']=='True':ax.plot([float(r['left_px']),float(r['right_px'])],[float(r['depth'])/2]*2,ls='',marker=MARKERS[k],mfc='none',mec=COLORS[k],ms=4)
-            ax.set_title(f'{(30,40,50)[col]} kN');ax.set_xlabel('Normal offset (px)');ax.set_xlim(-20,20);ax.legend(loc='upper left',bbox_to_anchor=(0,-.18),fontsize=8,frameon=False)
+            ax.set_title(f'{(30,40,50)[col]} kN');ax.set_xlabel('Normal offset (px)');ax.set_xlim(-20,20);ax.legend(loc='upper left',bbox_to_anchor=(0,-.30),fontsize=8,frameon=False)
         axes[0].set_ylabel('Local intensity deficit (gray)');axes[0].set_ylim(min(yy)-10,max(yy)+10)
         save(fig,'F04_fixed_N01_profiles')
         dump_new(a.output/'layout_audit.json',audits)
