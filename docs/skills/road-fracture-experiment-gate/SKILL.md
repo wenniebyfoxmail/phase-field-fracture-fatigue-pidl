@@ -203,6 +203,8 @@ Show the computed result itself, not just its metric:
 
 Display the rendered figure with the conclusion, not only a saved path. Reuse
 the exact scored outputs; do not launch an extra Run just to make a picture.
+Embed the same selected figure below the result in its Obsidian task note and
+verify that the image renders there.
 
 Keep the exact numerical table and verdict as authoritative. A visualization
 explains the decision but does not vote, add a new criterion, rescue a primary

@@ -82,6 +82,12 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 
 ## Research Figure Documentation
 
+- When reporting a computed or measured result in Obsidian, copy only the
+  decision-facing rendered PNG(s) to `attachments/<storyline>/<date>/` and
+  embed them below the result in the corresponding task note with
+  `![[figure.png]]`. Add a short source/Run caption and verify the embed
+  resolves; keep raw outputs in the repository or producer archive.
+
 - Every method-validation Experiment with computed or measured outcomes must
   include at least one decision-facing visualization made from the exact scored
   outputs. It must show the method against the simplest comparator and make the
