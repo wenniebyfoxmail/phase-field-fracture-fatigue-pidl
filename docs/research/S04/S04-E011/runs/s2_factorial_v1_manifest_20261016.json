@@ -1,0 +1,238 @@
+{
+  "run_id": "pf_s04e011_s2x_20261016_v1",
+  "protocol": "S04-E011-S2X-r1",
+  "producer_commit": "523f0320398312557afb8df74c38d901a44abc13",
+  "producer_branch": "codex/hard5-q4-t3-2x2-20261005",
+  "producer": "CITPC12 AD\\xw436 R2025b1CPUthread",
+  "source_prior": "pf_s04e011_c1_commit_20261016_v4_r1, producer6794251",
+  "native_cases": [
+    {
+      "case": "anchor_OO",
+      "solver": "original",
+      "predecessor": "O",
+      "passed": true,
+      "C": 21809.465254773735,
+      "u_l2": 0.00021809465254773734,
+      "d_feasible_l2": 1.0573483839058843e-05,
+      "blocks": 3,
+      "u_calls": 11,
+      "phase_calls": 80,
+      "history_commits": 0,
+      "native_residual_maxerr": 3.440309018568066e-17,
+      "trial_f_min": 2.1620086353003168e-05,
+      "trial_alpha_max": 214.56576731021778,
+      "phase_calls_with_f_below_one": 19,
+      "final_f_min": 1.0,
+      "active_integral": 0.0016535984037790291,
+      "active_relative_L2_to_archived_OO": 1.7590232711609017e-12
+    },
+    {
+      "case": "anchor_RR",
+      "solver": "repaired",
+      "predecessor": "R",
+      "passed": true,
+      "C": 0.392168297539758,
+      "u_l2": 1.8793706600462977e-15,
+      "d_feasible_l2": 1.5686731882796613e-06,
+      "blocks": 20,
+      "u_calls": 90,
+      "phase_calls": 61,
+      "history_commits": 0,
+      "native_residual_maxerr": 5.039676629573636e-17,
+      "trial_f_min": 1.0,
+      "trial_alpha_max": 0.48755178043507774,
+      "phase_calls_with_f_below_one": 0,
+      "final_f_min": 1.0,
+      "active_integral": 0.0012489767475547585,
+      "active_relative_L2_to_archived_OO": 0.7940956524140171
+    },
+    {
+      "case": "C_OO",
+      "solver": "original",
+      "predecessor": "O",
+      "passed": true,
+      "C": 22328.964039181305,
+      "u_l2": 0.00022328964039181306,
+      "d_feasible_l2": 8.312834898717514e-06,
+      "blocks": 2,
+      "u_calls": 8,
+      "phase_calls": 53,
+      "history_commits": 0,
+      "native_residual_maxerr": 3.729655473350135e-17,
+      "trial_f_min": 2.1721495826451695e-05,
+      "trial_alpha_max": 214.06314950451025,
+      "phase_calls_with_f_below_one": 11,
+      "final_f_min": 1.0,
+      "active_integral": 0.0016970574985004396,
+      "active_relative_L2_to_archived_OO": 0.09591214460725594
+    },
+    {
+      "case": "C_RO",
+      "solver": "repaired",
+      "predecessor": "O",
+      "passed": true,
+      "C": 0.9296122086905597,
+      "u_l2": 1.8787032503966465e-15,
+      "d_feasible_l2": 3.7184488328835354e-06,
+      "blocks": 19,
+      "u_calls": 86,
+      "phase_calls": 58,
+      "history_commits": 0,
+      "native_residual_maxerr": 4.1677409136700594e-17,
+      "trial_f_min": 1.0,
+      "trial_alpha_max": 0.48770607735437754,
+      "phase_calls_with_f_below_one": 0,
+      "final_f_min": 1.0,
+      "active_integral": 0.0012492714775455965,
+      "active_relative_L2_to_archived_OO": 0.7937645279562633
+    },
+    {
+      "case": "C_OR",
+      "solver": "original",
+      "predecessor": "R",
+      "passed": true,
+      "C": 22442.141732016502,
+      "u_l2": 0.000224421417320165,
+      "d_feasible_l2": 1.1210282089856495e-05,
+      "blocks": 2,
+      "u_calls": 8,
+      "phase_calls": 58,
+      "history_commits": 0,
+      "native_residual_maxerr": 3.276323439979634e-17,
+      "trial_f_min": 2.1720892792266957e-05,
+      "trial_alpha_max": 214.06612792757025,
+      "phase_calls_with_f_below_one": 11,
+      "final_f_min": 1.0,
+      "active_integral": 0.0016969335926065802,
+      "active_relative_L2_to_archived_OO": 0.09524247811895041
+    },
+    {
+      "case": "C_RR",
+      "solver": "repaired",
+      "predecessor": "R",
+      "passed": true,
+      "C": 0.941388617319458,
+      "u_l2": 1.897636801463632e-15,
+      "d_feasible_l2": 3.765554467380195e-06,
+      "blocks": 19,
+      "u_calls": 85,
+      "phase_calls": 58,
+      "history_commits": 0,
+      "native_residual_maxerr": 4.777858745577332e-17,
+      "trial_f_min": 1.0,
+      "trial_alpha_max": 0.4875521336614811,
+      "phase_calls_with_f_below_one": 0,
+      "final_f_min": 1.0,
+      "active_integral": 0.001249274019122069,
+      "active_relative_L2_to_archived_OO": 0.7937517793264726
+    }
+  ],
+  "allocation": [
+    {
+      "component": "local_solver",
+      "projection_onto_observed_delta": 0.9030176809541146,
+      "L2_over_observed_delta": 0.9059972444417412,
+      "signed_integral": -0.00044772279721967776
+    },
+    {
+      "component": "incoming_lower_history",
+      "projection_onto_observed_delta": -0.0003124130864257034,
+      "L2_over_observed_delta": 0.0019007367334282056,
+      "signed_integral": -6.068215869351191e-08
+    },
+    {
+      "component": "warm_start_bridge",
+      "projection_onto_observed_delta": 0.09729473213231161,
+      "L2_over_observed_delta": 0.12207248256498061,
+      "signed_integral": 4.316182315412388e-05
+    }
+  ],
+  "history_commits": 0,
+  "recovery_calls": 0,
+  "shared_setup_initial_assemblies": 1,
+  "integrity": {
+    "files": 48,
+    "bytes": 580688443,
+    "all_hashes_and_sizes_match": true
+  },
+  "review": "independent local archive/numerical/figure/finalnarrative PASS",
+  "claim": "Local composite solver-control sensitivity dominates incoming grouped lower/history changes at this single common-start c1s2. Does not establish physical truth, unique equilibrium or teacher validity; original is not strictly joint-converged. Endpointsf1 does not imply trialf1.",
+  "analysis_changes": "Read-only receipt/package/input binding, exact anchor rechecks, paired metrics, sidecars/visuals; no producer solver/criteria change.",
+  "evidence": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/s2_factorial_preparation_20261016_v1/package_manifest.json",
+      "bytes": 4868,
+      "sha256": "c18a3087947ad37ab4afc9d2fd5edf7d8bcdaa942637db7bda626901c06ec67f"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/s2_factorial_preparation_20261016_v1/local_independent_review.json",
+      "bytes": 961,
+      "sha256": "3ba4afdf04a166705faa2f466f34fd04da79e6d695846bd3d42fffdc706700ce"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/retrieval_verification.json",
+      "bytes": 12552,
+      "sha256": "35b67272dba8cffbba66cfbe066a6ecf9407ca1b0c81a939e90f87018b588673"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/retrieved/launch_receipt.json",
+      "bytes": 902,
+      "sha256": "9ecc9fbf9236d68af89faf39e15f18d9ac5b1e59db2c7095d6b0bd078357167a"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/retrieved/sequence_finished.json",
+      "bytes": 2408,
+      "sha256": "26c5fad79b9f0d5216560876488856c95bc919dd059817885b93747147315a7d"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/analysis/s2x_analysis.json",
+      "bytes": 9407,
+      "sha256": "4461ab46472160bec4c52d5dc0ccf783f58f5ab71c80073d0f4d46535fe01167"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/analysis/offline_replay.json",
+      "bytes": 6621,
+      "sha256": "4564cced1ad3193ed5b25f6274d6a474d2ed7ba7197632935bd67cc4c97cee2f"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/analysis/native_cases.csv",
+      "bytes": 1437,
+      "sha256": "28f88d4ab5d472855b78dc18b52ba5f519b90dac7800db86bf2ad520527053b9"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/analysis/controlled_attribution.json",
+      "bytes": 2393,
+      "sha256": "e90fecc77572132e4cf577d821741a1fff9e1ff1132dcfc69e11e12689292d3e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/analysis/conditional_contrasts.csv",
+      "bytes": 595,
+      "sha256": "b134e66c0a46092b2251a7c350a5d3e4b22b263ab261f4e95ca7f3ebdc0af0ab"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/analysis/independent_review.json",
+      "bytes": 5572,
+      "sha256": "8349e80bfd1117b9f3908964bb7f14e1b19271e568068fa649a0386233cce749"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/analysis/figure_qa.json",
+      "bytes": 1228,
+      "sha256": "358949d45d5c40c2a56cb7bdd8268c617a5c694a1fb611658cb85700813e5b9f"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/analysis/s2x_fields.png",
+      "bytes": 269110,
+      "sha256": "ca39d044a2324eddff81ce54543dd4c15e9f952776199bac4a182c9777905089"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/analysis/s2x_decision.png",
+      "bytes": 99968,
+      "sha256": "ca7c343ffd8290ae964181240c3fb179b7e4000d90f99c331a21b58de5d34085"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2x_20261016_v1/analysis/s2x_cross_replay.png",
+      "bytes": 251667,
+      "sha256": "4f10ea8731630c70522dc37a23fbdad1ef0bbb3949dcb35d69ca6da21bf02f03"
+    }
+  ]
+}
