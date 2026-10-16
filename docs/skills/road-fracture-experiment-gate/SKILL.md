@@ -102,6 +102,13 @@ old verdict.
    localise the bottleneck, preserve component-level advances, and choose the
    next intervention under a predeclared rule.
 
+Scale acceptance to the decision. Exploratory or MVP work may advance on a
+measured component gain or a directional improvement over the simplest
+comparator, even below the final target. Show its size and independent-unit
+variation; if the gain is within noise, call it tentative and choose a cheap
+follow-up. Do not impose downstream performance targets on an earlier stage.
+Keep formal claim thresholds and necessary validity checks separate.
+
 Freeze this outcome map:
 
 ```text
