@@ -186,3 +186,6 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 
 
 2026-10-16 [fullc1 v3 result](runs/c1_commit_v3_result_20261016.md): Windowschecks/22tests/I/O passed; sharedrecovery and originals1/s2regressed; s3onlyrawpointwise5.0122e-10>frozen1e-10, despiteu/d~1e-12/count9==9. OwnuQ4replay explainsrawmicrodifference;42files406754040bytes verified. Accepted2/proposed3notpersisted; repairednotrun. Pairedclaim inadmissible/efficacy unassessed, gateunchanged; nextofflineperturbation-bound/reference-admission design, no newproducer.
+
+
+2026-10-16 [raw-admission r4](raw_admission_r4_20261016.md) prepared: own-u rawtau1e-10 + analyticBdelta-u response budget, mandatory oldnonrawgates. Oldv3rawmiss unchanged. Existingofflinereplay/negativecontrols support feasibility, not newnative5step or repairresult. [v4preparation](runs/c1_commit_v4_preparation_20261016.md),16files/8inputcopiesawaitexactapproval.

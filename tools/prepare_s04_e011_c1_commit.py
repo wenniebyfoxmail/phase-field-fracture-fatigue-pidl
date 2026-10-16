@@ -85,7 +85,7 @@ common=struct('u',displ,'d',p_field,'lower',p_field_old,'raw',strain_en_undgr,'h
 % Keep the EXACT initial predictor tangent from the original System setup:
 % original recovery is phase-only and does not refresh KK. Do not rebuild it.
 initial_KK=sys.STIFFNESS_MATRIX.KK;
-common_meta=struct('recovery_phase_calls',recovery_calls,'recovery_cached_residual',res_pf_recovery, ...
+common_meta=struct('reference_raw_admission','q4_amor_response_r4','recovery_phase_calls',recovery_calls,'recovery_cached_residual',res_pf_recovery, ...
 'state0_maxerr',state0_maxerr, ...
  'initialization_resets',1,'shared_setup_initial_assemblies',1,'cycle',1,'version',0,'source_commit',options.source_commit, ...
  'initial_KK_timing','Original System stiffness cache at first access, based on constructor hard precrack');
@@ -98,7 +98,7 @@ original=e011_c1_arm('original',common,initial_KK,sys,assembly_equilibrium_fh,as
 assert(original.steps==5 && original.history_commits==5 && all([original.rows.reference_pass]));
 repaired=e011_c1_arm('repaired',common,initial_KK,sys,assembly_equilibrium_fh,assembly_pf_fh,par,refs,fullfile(work_dir,'repaired'));
 assert(repaired.steps==5 && repaired.history_commits==5 && repaired.all_precommit_joint_pass);
-result=struct('status','completed','original',original,'repaired',repaired, ...
+result=struct('status','completed','raw_admission','q4_amor_response_r4','original',original,'repaired',repaired, ...
  'recovery_phase_calls',recovery_calls,'initialization_resets',1, ...
  'history_commits',10,'scope','one synthetic c1 loading-unloading paired numerical diagnostic');
 save(fullfile(work_dir,'c1_result.mat'),'result','common_meta','-v7.3');
@@ -131,7 +131,7 @@ end
 
 
 def build(source_root,prior,reference_root,mesh,out,remote_root,commit,inventory):
-    assert not out.exists() and remote_root.endswith('E011_C1_20261016_v3')
+    assert not out.exists() and remote_root.endswith('E011_C1_20261016_v4')
     out.mkdir(parents=True)
     here=Path(__file__).parent/'s04_e011_analysis';native=json.loads((prior/'input_manifest.json').read_text())[0]
     source_ids={x['path']:x['sha256'] for x in native['source_checks']}
@@ -154,14 +154,14 @@ def build(source_root,prior,reference_root,mesh,out,remote_root,commit,inventory
     (out/'e011_original_step.m').write_text(original_step((source_root/paths[1]).read_text()))
     (out/'e011_shared_recovery.m').write_text(shared_recovery((source_root/paths[0]).read_text()))
     (out/'run_s04_e011_c1_commit.m').write_text(driver((here/'coupled_repair/run_s04_e011_coupled_repair.m').read_text(),(source_root/paths[0]).read_text()))
-    for folder,names in [('c1_commit',['e011_c1_arm.m','e011_commit_once.m','e011_commit_selftest.m','e011_persist_once.m']),('coupled_repair',['e011_coupled_solve.m','e011_displacement_solve.m','e011_coupled_selftest.m']),('constrained_damage',['e011_damage_solve.m','e011_damage_selftest.m'])]:
+    for folder,names in [('c1_commit',['e011_c1_arm.m','e011_commit_once.m','e011_commit_selftest.m','e011_persist_once.m','e011_raw_equivalence.m']),('coupled_repair',['e011_coupled_solve.m','e011_displacement_solve.m','e011_coupled_selftest.m']),('constrained_damage',['e011_damage_solve.m','e011_damage_selftest.m'])]:
         for name in names:(out/name).write_bytes((here/folder/name).read_bytes())
     remote_reference=r'C:\Users\xw436\OneDrive - University of Cambridge\griphfith\S04_E011_raw_outputs_ad749c8_20261005_backup_20261015\S04_E011_FEM_Q4_C120'
     staging=[]
     for role,path,remote in [('state0',reference_root/'state0_analysis.mat',remote_reference+r'\state0_analysis.mat'),('metadata',reference_root/'initial_state_metadata.mat',remote_reference+r'\initial_state_metadata.mat'),('mesh',mesh,r'C:\Users\xw436\jobs\E011_CR_20261015_v3\inputs\0e6db55abde58802_native_q4_original.inp')]+[(f'substep{k}',reference_root/f'request28_post_commit/c0001_s{k:03d}_post_commit.mat',remote_reference+fr'\request28_post_commit\c0001_s{k:03d}_post_commit.mat') for k in range(1,6)]:
         h=sha(path);staging.append(dict(role=role,source=remote,target=remote_root+'\\inputs\\'+h[:16]+'_'+path.name,sha256=h,bytes=path.stat().st_size,local_reference=str(path)))
     assert len(staging)==8
-    manifest=dict(source_checks=native['source_checks'],binary_checks=native['binary_checks'],staging=[{k:v for k,v in x.items() if k!='local_reference'} for x in staging],source_commit=commit)
+    manifest=dict(source_checks=native['source_checks'],binary_checks=native['binary_checks'],staging=[{k:v for k,v in x.items() if k!='local_reference'} for x in staging],source_commit=commit,raw_admission='q4_amor_response_r4',protocol_revision='c1_r4_raw_forward_consistency')
     validate_records(manifest['source_checks'],('path','sha256'))
     validate_records(manifest['binary_checks'],('name','path','sha256'))
     validate_records(manifest['staging'],('role','source','target','sha256','bytes'))
@@ -181,6 +181,7 @@ for q=1:numel(reviewed_names)
  for j=1:numel(cc),assert(ismember(string(cc(j).id),{'NASGU','MSNU'}),'E011:StaticCheck','Unexpected static finding');end
 end
 manifest=jsondecode(fileread(fullfile(root,'input_manifest.json')));
+assert(strcmp(manifest.raw_admission,'q4_amor_response_r4') && strcmp(manifest.protocol_revision,'c1_r4_raw_forward_consistency'));
 assert(isstruct(manifest.binary_checks) && numel(manifest.binary_checks)==10,'E011:ManifestSchema','Expected ten uniform binary-check records');
 for k=1:numel(manifest.source_checks)
  sc=manifest.source_checks(k);assert(strcmpi(phase_field.audit.sha256_file(fullfile(source,sc.path)),sc.sha256));
@@ -190,7 +191,7 @@ for k=1:numel(manifest.binary_checks)
  bc=manifest.binary_checks(k);assert(strcmpi(which(bc.name),bc.path));
  assert(strcmpi(phase_field.audit.sha256_file(which(bc.name)),bc.sha256));
 end
-self=struct('damage',e011_damage_selftest(),'coupled',e011_coupled_selftest(),'commit',e011_commit_selftest(fullfile(root,'selftest_tmp')));
+self=struct('damage',e011_damage_selftest(),'coupled',e011_coupled_selftest(),'commit',e011_commit_selftest(fullfile(root,'selftest_tmp')),'raw',e011_raw_equivalence());
 fid=fopen(fullfile(root,'selftest.json'),'w');assert(fid>=0);fprintf(fid,'%s',jsonencode(self));fclose(fid);
 assert(numel(manifest.staging)==8);
 for k=1:8
@@ -204,17 +205,23 @@ for k=1:8
   probe=load(item.target);assert(~isempty(fieldnames(probe)));clear probe
  end
 end
+io_q=phase_field.init.quadrature(2,'elem_type',phase_field.init.ElementType.QUAD4,'order',2);
+raw_reference_checks=cell(5,1);
 for k=4:8
  z=load(manifest.staging(k).target,'request28_snapshot');assert(z.request28_snapshot.cycle==1 && z.request28_snapshot.substep==k-3);
  assert(isequal(io_mesh.node(:,1:2),z.request28_snapshot.node_coords));
  assert(isequal(io_mesh.elem(:,1:4),z.request28_snapshot.connectivity));
+ fixture=z.request28_snapshot;
+ rc=e011_raw_equivalence(io_mesh.node(:,1:2),io_mesh.elem(:,1:4),fixture.u_node(:),fixture.psi_raw_gp,fixture.u_node(:),fixture.psi_raw_gp,io_q);
+ assert(rc.pass,'E011:ReferenceRaw','Frozen reference own-u raw mismatch');
+ raw_reference_checks{k-3}=struct('substep',k-3,'passed',rc.pass,'own_scaled_maxerr',rc.reference_own_scaled_maxerr);
 end
 z=load(manifest.staging(1).target);assert(isequal(z.state0_node(:,1:2),io_mesh.node(:,1:2)));clear z io_mesh
 cfg=build_SENS_hard_recovery_loading5_primary_config('C:\Users\xw436\jobs\S04_E011_ad749c8_20261005\reference_bundle\SENS_hard5_u012_eta0_formal_pidl_native_q4_v1');
 cfg.output_identity='c1_commit';cfg.requested_cycles=1;cfg.defer_stop_until_cycle=1;
 assert(cfg.n_step==5 && cfg.res_stiff==0 && cfg.reset_fatigue_after_recovery);
 fid=fopen(fullfile(root,'io_preflight.json'),'w');assert(fid>=0);
-fprintf(fid,'%s',jsonencode(struct('status','passed','unique_inputs',8,'native_field_solves',0,'staging',manifest.staging)));fclose(fid);
+fprintf(fid,'%s',jsonencode(struct('status','passed','unique_inputs',8,'native_field_solves',0,'raw_reference_checks',{raw_reference_checks},'staging',manifest.staging)));fclose(fid);
 options=struct('work_dir',fullfile(root,'output','c1_commit'),'source_root',source, ...
  'mesh_file',manifest.staging(3).target,'topology','q4','max_cycle',1,'validate_only',false, ...
  'source_checks',manifest.source_checks,'binary_checks',manifest.binary_checks, ...
@@ -267,18 +274,18 @@ if((Get-PSDrive C).Free -lt 10GB -or (Get-CimInstance Win32_OperatingSystem).Fre
 $cmd='"C:\Windows\System32\cmd.exe" /d /s /c ""C:\Program Files\MATLAB\R2025b\bin\matlab.exe" -singleCompThread -batch "run(''@ROOT@\entry.m'')" -logfile "@ROOT@\matlab.log" > "@ROOT@\stdout.log" 2> "@ROOT@\stderr.log""'
 $r=Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine=$cmd;CurrentDirectory=$root}
 if($r.ReturnValue -ne 0){throw ('WMI launch failed: '+$r.ReturnValue)}
-@{run_id='pf_s04e011_c1_commit_20261016_v3';commit='@COMMIT@';branch='codex/hard5-q4-t3-2x2-20261005';dirty=$false;producer='CITPC12/citpc12-ssh';account='AD\xw436';pid=$r.ProcessId;command=$cmd;root=$root;started_utc=(Get-Date).ToUniversalTime().ToString('o');threads=1;gpu='CPU';method='WMI isolated process'}|ConvertTo-Json|Set-Content -Encoding UTF8 ($root+'\launch_receipt.json')
+@{run_id='pf_s04e011_c1_commit_20261016_v4';commit='@COMMIT@';branch='codex/hard5-q4-t3-2x2-20261005';dirty=$false;producer='CITPC12/citpc12-ssh';account='AD\xw436';pid=$r.ProcessId;command=$cmd;root=$root;started_utc=(Get-Date).ToUniversalTime().ToString('o');threads=1;gpu='CPU';method='WMI isolated process'}|ConvertTo-Json|Set-Content -Encoding UTF8 ($root+'\launch_receipt.json')
 Get-Content ($root+'\launch_receipt.json')
 '''.replace('@ROOT@',remote_root).replace('@CHECKS@',checks).replace('@COMMIT@',commit)
     (out/'launch_wmi.ps1').write_text(launch)
     files=[dict(name=p.name,bytes=p.stat().st_size,sha256=sha(p)) for p in sorted(out.iterdir())]
-    assert len(files)==15
+    assert len(files)==16
     receipt=dict(status='prepared_not_sent',account=r'AD\xw436',host='CITPC12',ssh_alias='citpc12-ssh',remote_root=remote_root,source_commit=commit,files=files,files_total_bytes=sum(x['bytes'] for x in files),input_copies=staging,input_copy_bytes=sum(x['bytes'] for x in staging))
-    (out.parent/'approval_manifest_v3.json').write_text(json.dumps(receipt,indent=2)+'\n')
+    (out.parent/'approval_manifest_v4.json').write_text(json.dumps(receipt,indent=2)+'\n')
     return receipt
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--source-root',type=Path,required=True);p.add_argument('--prior-bundle',type=Path,required=True);p.add_argument('--reference-root',type=Path,required=True);p.add_argument('--mesh',type=Path,required=True);p.add_argument('--inventory',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--remote-root',default=r'C:\Users\xw436\jobs\E011_C1_20261016_v3');p.add_argument('--commit',required=True);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--source-root',type=Path,required=True);p.add_argument('--prior-bundle',type=Path,required=True);p.add_argument('--reference-root',type=Path,required=True);p.add_argument('--mesh',type=Path,required=True);p.add_argument('--inventory',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--remote-root',default=r'C:\Users\xw436\jobs\E011_C1_20261016_v4');p.add_argument('--commit',required=True);a=p.parse_args()
     print(json.dumps(build(a.source_root,a.prior_bundle,a.reference_root,a.mesh,a.out,a.remote_root,a.commit,json.loads(a.inventory.read_text())),indent=2))
 if __name__=='__main__':main()

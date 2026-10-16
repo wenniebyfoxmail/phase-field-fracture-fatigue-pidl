@@ -10,6 +10,7 @@ from audit_phase_tangent import assemble
 from run_multicycle_cross_replay import q4_geometry,amor_raw,interp
 from localize_endpoint_tight import mechanics_force
 from audit_fem_final_residuals import projected_gradient
+from audit_raw_response_bound import admission as raw_admission,stencil as raw_stencil
 
 
 def a(g,k):return np.asarray(g[k])
@@ -42,10 +43,17 @@ def main():
 
     manifest=json.loads((root/'input_manifest.json').read_text());sources={x['role']:root/'inputs'/Path(x['target'].replace('\\','/')).name for x in manifest['staging']}
     assert manifest['source_commit']==launch['commit'] and len(launch['commit'])==40
+    raw_r4=manifest.get('raw_admission')=='q4_amor_response_r4'
+    if raw_r4:
+        assert tests['raw']['status']=='passed' and tests['raw']['cases']==12 and tests['raw']['native_field_solves']==0
+        io=json.loads((root/'io_preflight.json').read_text(encoding='utf-8-sig'))
+        assert io['status']=='passed' and io['unique_inputs']==8 and len(io['raw_reference_checks'])==5
+        assert all(x['passed'] and x['own_scaled_maxerr']<=1e-10 for x in io['raw_reference_checks'])
     for row in manifest['staging']:
         assert sources[row['role']].stat().st_size==row['bytes'] and sha(sources[row['role']])==row['sha256']
     with h5py.File(base/'common_initial.mat') as h:
         assert text(h['common_meta'],'source_commit')==launch['commit']
+        if raw_r4:assert text(h['common_meta'],'reference_raw_admission')=='q4_amor_response_r4'
         common=state(h['common']);points=a(h,'node_coords').T;c=a(h,'connectivity').T.astype(int)-1
         fu=v(h,'free_dof_u').astype(int)-1;fd=v(h,'free_dof_d').astype(int)-1
         assert common['version']==0 and np.all(common['u']==0) and np.all(common['raw']==0)
@@ -57,7 +65,7 @@ def main():
         assert np.array_equal(points,a(h,'state0_node').T[:,:2])
         assert np.max(np.abs(common['d']-v(h,'state0_p_field')))<=1e-10
     assert len(points)==86756 and len(c)==86408
-    N,B,w,_=q4_geometry(points,c);n=len(points);rows=[];missing=[];paths=[base/'common_initial.mat',root/'input_manifest.json',root/'launch_receipt.json',root/'selftest.json',arg.run/'retrieval_verification.json',*sources.values()];complete={};terminal={};field_cache={}
+    N,B,w,_=q4_geometry(points,c);n=len(points);raw_B=raw_stencil(points,c) if raw_r4 else None;rows=[];missing=[];paths=[base/'common_initial.mat',root/'input_manifest.json',root/'launch_receipt.json',root/'selftest.json',arg.run/'retrieval_verification.json',*sources.values()];complete={};terminal={};field_cache={}
     for arm in ['original','repaired']:
         if arm=='repaired' and list((base/arm).glob('s*/accepted_commit.mat')):
             assert complete.get('original',False),'Original five-step archive regression must pass before any repaired evidence'
@@ -122,10 +130,25 @@ def main():
                     with h5py.File(sources[f'substep{step}']) as ref:
                         z=ref['request28_snapshot'];ref_u=a(z,'u_node').T.reshape(-1,order='F');ref_h=a(z,'history_vars_old').transpose(2,1,0)
                         assert np.max(np.abs(u-ref_u))<=1e-10 and np.max(np.abs(d-v(z,'d_node')))<=1e-10
-                        assert np.max(np.abs(raw-a(z,'psi_raw_gp').T)/np.maximum(1,np.abs(a(z,'psi_raw_gp').T)))<=1e-10
+                        ref_raw=a(z,'psi_raw_gp').T
+                        if raw_r4:
+                            assert text(h['reference'],'admission_revision')=='q4_amor_response_r4'
+                            rc,rdetail=raw_admission(u,raw,ref_u,ref_raw,c,raw_B,n)
+                            nr=h['reference/raw_admission'];assert text(nr,'schema')=='raw_response_r4'
+                            assert rc['pass_new'] and bool(scalar(nr,'pass'))
+                            assert scalar(nr,'tau')==1e-10 and abs(scalar(nr,'L')-(2/2.6+2/1.2))<1e-14
+                            for k in ['candidate_own_pass','reference_own_pass','response_pass']:assert bool(scalar(nr,k))
+                            for k,expected in [('candidate_replayed',rdetail['pc']),('reference_replayed',rdetail['pr']),('analytic_response_bound',rdetail['bound'])]:
+                                assert np.max(np.abs(a(nr,k).T-expected)/np.maximum(1,np.abs(expected)))<=1e-10
+                            assert bool(scalar(h['reference'],'legacy_raw_pass'))==(rc['legacy_raw_max']<=1e-10)
+                        else:
+                            assert np.max(np.abs(raw-ref_raw)/np.maximum(1,np.abs(ref_raw)))<=1e-10
                         assert np.max(np.abs(post['history'][:,:,1:]-ref_h[:,:,1:])/np.maximum(1,np.abs(ref_h[:,:,1:])))<=1e-10
                         assert blocks==scalar(z,'staggered_iterations')
                 active=trial['active'];r=dict(arm=arm,step=step,uy=uy,commits=1,version=post['version'],precommit_joint_pass=C<=1,u_l2=ur,feasible_phase_l2=dr,C=C,completed_outer=blocks,u_calls=uc,d_calls=dc,active_integral=float(np.sum(w*active)),alpha_mean=float(np.sum(w*ht[:,:,0])/w.sum()),f_mean=float(np.sum(w*ht[:,:,2])/w.sum()),max_damage_increment=float(np.max(d-pre['d'])),residual_replay_maxerr=replay,H_nonfinite_count=int(np.count_nonzero(~np.isfinite(post['history'][:,:,0]))))
+                r['raw_admission_revision']='q4_amor_response_r4' if raw_r4 and arm=='original' else 'legacy_or_not_required'
+                r['legacy_raw_scaled_maxerr']=float(scalar(h['reference'],'raw_scaled_maxerr')) if arm=='original' else None
+                r['legacy_raw_pass']=(r['legacy_raw_scaled_maxerr']<=1e-10) if arm=='original' else None
                 field_cache[arm,step]=dict(u=u,d=d,active=active,alpha=ht[:,:,0],f=ht[:,:,2])
                 rows.append(r);previous=post;paths.append(path)
         assert len(list((base/arm).glob('s*/accepted_commit.mat')))==previous['version']
@@ -143,6 +166,7 @@ def main():
     if success.exists():
         result=json.loads(success.read_text(encoding='utf-8-sig'));assert result['status']=='completed' and result['history_commits']==10
         assert all(complete.values()) and not missing and not failure.exists()
+        if raw_r4:assert result['raw_admission']=='q4_amor_response_r4'
         assert result['initialization_resets']==1 and result['recovery_phase_calls']==recovery_calls
         assert result['original']['history_commits']==5 and result['repaired']['history_commits']==5
         paths.append(success)
@@ -163,8 +187,8 @@ def main():
                 row[channel+'_gp_relative_L2']=float(np.sqrt(num/den)) if den>1e-30 else None
             paired.append(row)
     (out/'paired_reductions.json').write_text(json.dumps(paired,indent=2)+'\n')
-    code_files=[Path(__file__).resolve(),Path(assemble.__code__.co_filename),Path(q4_geometry.__code__.co_filename),Path(mechanics_force.__code__.co_filename),Path(projected_gradient.__code__.co_filename)]
-    analysis=dict(producer_commit=launch['commit'],analysis_git_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=Path(__file__).resolve().parents[2],text=True).strip(),analysis_code=[dict(path=str(x),sha256=sha(x),bytes=x.stat().st_size) for x in dict.fromkeys(code_files)],status='complete_offline_checked' if result else 'partial_no_terminal_success',completed_arms=complete,missing=missing,recovery_phase_calls=recovery_calls,shared_initial_assemblies=1,terminal=result,producer_failure=failure.exists(),scope='one c1 sequence only; accepted commit primary uses precommit predecessor',inputs=[dict(path=str(x),sha256=sha(x),bytes=x.stat().st_size) for x in dict.fromkeys(paths)])
+    code_files=[Path(__file__).resolve(),Path(assemble.__code__.co_filename),Path(q4_geometry.__code__.co_filename),Path(mechanics_force.__code__.co_filename),Path(projected_gradient.__code__.co_filename),Path(raw_admission.__code__.co_filename)]
+    analysis=dict(raw_admission_revision='q4_amor_response_r4' if raw_r4 else 'legacy',producer_commit=launch['commit'],analysis_git_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=Path(__file__).resolve().parents[2],text=True).strip(),analysis_code=[dict(path=str(x),sha256=sha(x),bytes=x.stat().st_size) for x in dict.fromkeys(code_files)],status='complete_offline_checked' if result else 'partial_no_terminal_success',completed_arms=complete,missing=missing,recovery_phase_calls=recovery_calls,shared_initial_assemblies=1,terminal=result,producer_failure=failure.exists(),scope='one c1 sequence only; accepted commit primary uses precommit predecessor',inputs=[dict(path=str(x),sha256=sha(x),bytes=x.stat().st_size) for x in dict.fromkeys(paths)])
     (out/'c1_commit_analysis.json').write_text(json.dumps(analysis,indent=2)+'\n')
     fig,axs=plt.subplots(1,2,figsize=(11,4))
     for arm in ['original','repaired']:
@@ -177,6 +201,10 @@ def main():
     fig.suptitle('Synthetic c1 | original vs repaired | saved accepted commits only\n'+arg.run.name,fontsize=10);fig.tight_layout();fig.savefig(out/'c1_commit_decision.png',dpi=180);plt.close(fig)
     (out/'c1_commit_decision.md').write_text('''# Sequential c1 numerical diagnostic\n\nData provenance: verified native accepted_commit.mat files, exact source identities in c1_commit_analysis.json; all scored rows in commit_trace.csv. Both arms start from the identical recovered u/d/lower/history and original predictor stiffness cache.\n\nHow to read: left compares fresh PRE-COMMIT C under OLD accepted history/lower, with C=1 threshold. The logarithmic plot displays max(C,1e-12); CSV retains the exact computed C, including zero/below-range values. Original arm accepts under its original cached rule and may commit above this threshold. Repaired arm must pass C before one durable commit. Right shows physical-GP-weighted committed fatigue accumulator means through the same five substeps, with unloading distinct. Missing transactions are not plotted as successes.\n\nLimitations: one synthetic c1, composite solver-control and history-feedback change, not a new physical reference or fatigue-life trajectory. Postcommit residuals cannot rescue a precommit miss; trial evaluations do not count as commits. The legacy AT1 penalty kernel does not define/read history channel1; it is preserved/reported but only channels2:4 enter numerical history qualification. Independent ledger, source and guard tests are needed because duplicate writes at identical fields can be numerically idempotent.\n''')
     (out/'README_analysis.md').write_text('''# c1 commit analysis\n\nQuestion: does a repaired five-substep c1 sequence commit accepted history exactly once only after fresh joint acceptance, and how does it differ from the original archived process? Read commit_trace.csv and c1_commit_analysis.json first, then c1_commit_decision.png and its sidecar. Every durable substep is included; no missing/failed point is substituted. Paired active/alpha reductions are secondary. GP/Jacobian weights define all integrals/means; native nodal fields are not resampled.\n\nAcceptance is measured before commit using OLD lower/history. Original acceptance stays native; its archive regression is a prerequisite for paired interpretation. Repaired per-step joint acceptance and exactly-one durable version advance are necessary for the bounded sequential claim. H(channel1) is inactive/unassigned in this native penalty kernel; all channels are retained, finite status reported, active channels2:4 replayed.\n\nAllowed conclusion: one-cycle numerical/state-transition consistency only. Blocked: unique energy branch, qualified teacher, physical truth, or c83 onset/linear-versus-exponential accumulation across a new trajectory. Relative field L2 uses each original GP norm, omitted when squared norm<=1e-30 (near-zero unloading); absolute L2 remains reported. Full-cycle evidence and independent review remain required; a partial archive stays partial.\n''')
+    if raw_r4:
+        note='\n\nRaw admission revision: q4_amor_response_r4. The original cross-state raw equality clause is replaced prospectively by two own-u operator checks (tau1e-10) plus an analytic input-response budget. u/d/history/count clauses stay fixed. commit_trace.csv retains legacy raw error/pass; a new admission pass never means the old raw gate passed or retroactively rescues v3. The response bound is not independent equivalence evidence.\n'
+        for leaf in ['README_analysis.md','c1_commit_decision.md']:
+            with (out/leaf).open('a') as f:f.write(note)
     print(json.dumps(analysis,indent=2))
 
 if __name__=='__main__':main()

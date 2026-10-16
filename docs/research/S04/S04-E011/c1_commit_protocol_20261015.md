@@ -188,3 +188,8 @@ v1 stopped at strict checkcode before native work; preserve the attempt. v2 fixe
 ## Operational amendment v3 — 2026-10-16
 
 v2static checks passed but binary manifest parsed ascell because lastobject keys differed in order. Normalize binarykeys(name,path,sha256), retainvalues/arrayorder; validate homogeneous ordered schema/types/SHA locally for source/binary/staging and assert struct/count10 inentry. Numerical contract and all12nonentryMATLAB files unchanged. Newroot E011_C1_20261016_v3 and exactapproval required before anytransfer/execution. See runs/c1_commit_v2_attempt_20261016.md and runs/c1_commit_v3_preparation_20261016.md.
+
+
+## Prospective amendment r4 — 2026-10-16
+
+See raw_admission_r4_20261016.md for the new own-u operator consistency plus analytic displacement-response admission. This changes the raw comparison estimand, not a tolerance constant; v3 remains failed. u/d/history/count, numerical solvers, history mapping and repair primary/budgets remain fixed.16newfiles,8inputs, newroot/v4 approval required; no native execution.

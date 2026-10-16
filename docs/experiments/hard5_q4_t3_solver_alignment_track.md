@@ -50,3 +50,6 @@ User-facing report: `/Users/wenxiaofang/obsidian/mesh对齐.md`; payloads remain
 
 
 2026-10-16 [fullc1 v3 terminal](../research/S04/S04-E011/runs/c1_commit_v3_result_20261016.md): originals1/s2exactregressionspassed/singlecommits but freshC1036/21809>1. s3stopsatrawpointwisegate(5.0122e-10 vs1e-10),u/d~1e-12/history4.1e-12,9==9. Own-uQ4rawreplay explainsdifference, notphysicalfielddivergence;42filesverified. Acceptedversion2/proposed3uncommitted; repairedunexecuted. Preservegate/frozenproduction; nextoffline rawperturbation-bound design before any newapprovedproducer.
+
+
+2026-10-16 [rawresponse r4 preparation](../research/S04/S04-E011/raw_admission_r4_20261016.md): oldrawpointwisegate did not account for permitted nodalperturbation response. Newprospective own-u consistencytau1e-10/analyticresponse budget retains allnonrawconditions and oldrawdiagnostics. v3missnotrescued;16filev4localprepared, exactapprovalpending before fullc1original→repairsequence.

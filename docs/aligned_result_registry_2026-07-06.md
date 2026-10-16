@@ -147,3 +147,6 @@ E011 c1 commit v1: [local preparation only](research/S04/S04-E011/runs/c1_commit
 
 
 2026-10-16 S04-E011 [c1v3 terminal](research/S04/S04-E011/runs/c1_commit_v3_result_20261016.md): producer3d2d738/WMI8304/worker7468. Admission22tests/I/Opassed, original2durablecommits; s3rawregressionmiss, no repair.42files406754040bytes verified. Diagnosticpartial, pairedrepair inadmissible/efficacyunassessed. s3rawweightedrelL2~1.64e-12 andown-ureplayexplanation do not relaxgate.
+
+
+2026-10-16 S04-E011 [rawresponse r4](research/S04/S04-E011/raw_admission_r4_20261016.md): supportingoffline admission-design audit, no newnative result. ExplicitQ4replay + analyticLbound +6rawfieldnegativecontrols/4logicchecks reviewed. v4newdefinition pending exact16fileapproval; frozen v3result unchanged.
