@@ -1,0 +1,152 @@
+{
+  "c20s4": {
+    "run_id": "S04-E022-last-leak-a540888-20261016-v1-R001-c20s4-localized-s7",
+    "code_commit": "a540888497d1838a6aa202f59a884e6930e50fb4",
+    "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+    "backbone_digest": "2c858058962e9a3c4f43460f3bb085ec985b68b6564c8d4e8aa837dec4960aea",
+    "initial_residual_digest": "7f20e43347f6558a881294f70c0354d44331657ce307330401f4d3ea0874c04d",
+    "sampler_index_sha256": "356cbaed98b25bd3294f9a582854d98f7f7f2fd7283c55ba17fc155e8114fc9d",
+    "coordinate_mapping": {
+      "rule": "core-damage-residual-moments-3std-cap4-v1",
+      "local_center": [
+        -0.27136719568117984,
+        7.373416534261071e-07
+      ],
+      "local_scale": [
+        0.07533454080374988,
+        0.008880630597600072
+      ],
+      "residual_std": [
+        0.017978575034481498,
+        0.000252019720593122
+      ],
+      "original_scale": [
+        0.3013381632149995,
+        0.03552252239040029
+      ],
+      "core_damage_error_energy_fraction": 1.0,
+      "coordinate_zoom": [
+        4.0,
+        4.0
+      ],
+      "teacher_target_used": true
+    },
+    "runtime": {
+      "torch_version": "2.7.0+cu126",
+      "numpy_version": "1.24.4",
+      "cuda_version": "12.6",
+      "gpu": "NVIDIA GeForce RTX 4090"
+    },
+    "files": {
+      "expected_learning_rates.npy": "7696f99e03ff7c2d259d4a6e5e9db3402bbd799cf246e0952bbd71f8bfa9e46e",
+      "coordinate_map.json": "eeacdeb733e3721f555ae868bf12bf107c2f756054421ee9d74b6bddcb10fd9a",
+      "PRE_UPDATE.json": "1d3bba5764d8d1320af4500376554abec7b5e22a73641f6cf24299e2e24727c8",
+      "learning_rates.npy": "7696f99e03ff7c2d259d4a6e5e9db3402bbd799cf246e0952bbd71f8bfa9e46e",
+      "final_step_10000.pt": "279efb7487f01cf5e096300f9c0e9e40cd94a0d4c51825360bc4497166bf2883",
+      "prediction.npz": "217ffa5717ec52dae82963c393901d21f1793a0ebce4174aef51e6176770cbd7",
+      "monitoring.json": "2b039a2287a4d40162b469860f75ec7b0edae24485ea3f2bdc81d4a1e769c3d7",
+      "metrics.json": "b0c32aaf49804b6caa3516288424a2ce4b3af33683f7f3543087116b80df108c",
+      "RUN_RECEIPT.json": "0461028d8a92aa24e8e6574267f594eef9ea74d851d0aa1b5f3dc3e621d699ec"
+    }
+  },
+  "c60s4": {
+    "run_id": "S04-E022-last-leak-a540888-20261016-v1-R002-c60s4-localized-s7",
+    "code_commit": "a540888497d1838a6aa202f59a884e6930e50fb4",
+    "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2",
+    "backbone_digest": "ea305c6a0b58ab31ccf807bf3f9c8ac9216453e6d3799a20becc4b37b4e19b78",
+    "initial_residual_digest": "7f20e43347f6558a881294f70c0354d44331657ce307330401f4d3ea0874c04d",
+    "sampler_index_sha256": "69a0a6633860c0bbbdacd58ef6ee83c5aeef3824d6515166ea51d18fd25ec2d1",
+    "coordinate_mapping": {
+      "rule": "core-damage-residual-moments-3std-cap4-v1",
+      "local_center": [
+        -0.27567388345977195,
+        -2.864087291267624e-06
+      ],
+      "local_scale": [
+        0.10406365392137235,
+        0.009019511414592925
+      ],
+      "residual_std": [
+        0.03171309181309453,
+        0.00027538364832431034
+      ],
+      "original_scale": [
+        0.4162546156854894,
+        0.0360780456583717
+      ],
+      "core_damage_error_energy_fraction": 0.9999730015729535,
+      "coordinate_zoom": [
+        4.0,
+        4.0
+      ],
+      "teacher_target_used": true
+    },
+    "runtime": {
+      "torch_version": "2.7.0+cu126",
+      "numpy_version": "1.24.4",
+      "cuda_version": "12.6",
+      "gpu": "NVIDIA GeForce RTX 4090"
+    },
+    "files": {
+      "expected_learning_rates.npy": "7696f99e03ff7c2d259d4a6e5e9db3402bbd799cf246e0952bbd71f8bfa9e46e",
+      "coordinate_map.json": "47097563c9ad034c67ebf6f050f0d1fee3a84559c0d591709ddc463bb3f367e6",
+      "PRE_UPDATE.json": "efbd92fae8be610697f7a5e8f9726911911f1967cfbcfb234037275f1893902f",
+      "learning_rates.npy": "7696f99e03ff7c2d259d4a6e5e9db3402bbd799cf246e0952bbd71f8bfa9e46e",
+      "final_step_10000.pt": "4381198449cf9714c8ccc99ea36bb983da42fdc53e7d6f64aebed90c7af1280c",
+      "prediction.npz": "8ec6735206838b5e9a99656e8fc716c64ad488ff6685b3ff45db24bf155b8ba4",
+      "monitoring.json": "d39171bf63dd37cdd5f00322cc0729978910abaa9d89aecfa06a3c5de63a7656",
+      "metrics.json": "ae50572d535a7bb0087b41182092b3593044b59b9e910a1539765876bb84e9c0",
+      "RUN_RECEIPT.json": "17b59e021cab1be2dc2c34ce8f3b9af836f9659bd8fdc86cef2caddea33aef18"
+    }
+  },
+  "c83s4": {
+    "run_id": "S04-E022-last-leak-a540888-20261016-v1-R003-c83s4-localized-s7",
+    "code_commit": "a540888497d1838a6aa202f59a884e6930e50fb4",
+    "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+    "backbone_digest": "956045be711cf18e1d1cdb9519f742422dfcf97e5b7e453e3a88fa0472ced46e",
+    "initial_residual_digest": "7f20e43347f6558a881294f70c0354d44331657ce307330401f4d3ea0874c04d",
+    "sampler_index_sha256": "898564794d89d6096150ff4cde42b1bb0cb8bc430bb62052e90b5c222f7319ed",
+    "coordinate_mapping": {
+      "rule": "core-damage-residual-moments-3std-cap4-v1",
+      "local_center": [
+        -0.26875652503833797,
+        -2.226469685763796e-05
+      ],
+      "local_scale": [
+        0.203810862835555,
+        0.009019511414592925
+      ],
+      "residual_std": [
+        0.06793695427851833,
+        0.00033207301198686783
+      ],
+      "original_scale": [
+        0.52,
+        0.0360780456583717
+      ],
+      "core_damage_error_energy_fraction": 0.9999999981215774,
+      "coordinate_zoom": [
+        2.551385106590528,
+        4.0
+      ],
+      "teacher_target_used": true
+    },
+    "runtime": {
+      "torch_version": "2.7.0+cu126",
+      "numpy_version": "1.24.4",
+      "cuda_version": "12.6",
+      "gpu": "NVIDIA GeForce RTX 4090"
+    },
+    "files": {
+      "expected_learning_rates.npy": "7696f99e03ff7c2d259d4a6e5e9db3402bbd799cf246e0952bbd71f8bfa9e46e",
+      "coordinate_map.json": "834d7c3fef08ad04410bff822446f2c0d4da95d4dc7e2fd8a55c47ce8dcf5bc2",
+      "PRE_UPDATE.json": "feebd4154f3ac8cea7753f5f5f3b568a5c71dc58593d7e613bd5348e01f719ca",
+      "learning_rates.npy": "7696f99e03ff7c2d259d4a6e5e9db3402bbd799cf246e0952bbd71f8bfa9e46e",
+      "final_step_10000.pt": "e7afbdc5cd3710ce2632ca7683454217961e0e885838263236ec316ac5b80e7e",
+      "prediction.npz": "f6d2497a04ec4b00840161ffdfee1429189683f001a67c5d97f9cc0afe9d5ad7",
+      "monitoring.json": "e2c41d81154229e095490d27e5d93f91a389d0e060e9757fb68f1af86913a88c",
+      "metrics.json": "f0fb319b30ae78a2692a0c22ad0d8b6c2d67e55700c5187f98a0bd7be7cb5b57",
+      "RUN_RECEIPT.json": "1cb839dd035de932015fc09e25965aab1ba01eb35a855341c9c34090a7246cb8"
+    }
+  }
+}
