@@ -160,6 +160,11 @@ def snapshot(io, *, grant, code_commit, attempt, output, domain, binding, expect
     reader. Mock IO uses the SAME four logical names but no real files.
     """
     check_grant(grant, code_commit=code_commit, attempt=attempt, output=output, domain=domain)
+    if domain == 'MOCK_ONLY':
+        # The supplied native reader (including subclasses) must never be
+        # admitted by a mock grant. This interlock is not an OS sandbox for
+        # arbitrary caller-provided Python objects.
+        require(not isinstance(io, ReadOnlyIO), 'MOCK_ONLY forbids native source reader')
     names = {'run_id', 'runtime_commit', 'rows', 'counts', 'late_ratio'}
     require(isinstance(binding, dict) and set(binding) == names, 'SCHEMA_BINDING_REQUIRED')
     if domain == 'REAL_SAVED_SCALARS':
@@ -190,7 +195,9 @@ def snapshot(io, *, grant, code_commit, attempt, output, domain, binding, expect
     ratio = core.finite(values['late_ratio'], 'saved late ratio')
     require(abs(ratio-expected_ratio) <= 1e-12, 'saved late scalar disagreement')
     summary = strict_json(io.read(SUMMARY, before[SUMMARY]))
-    require(summary['status'] == 'REPLAY_ARITHMETIC_MATCH' and
+    require(summary['run_id'] == 'S04-E021-REPLAY-R001' and
+            summary['code_commit'] == REPLAY_COMMIT and
+            summary['status'] == 'REPLAY_ARITHMETIC_MATCH' and
             summary['original_verdict'] == 'DIRECTIONAL_DEVELOPMENT_GAIN' and
             summary['fitting_invoked'] is False, 'frozen summary identity')
     folds = summary['folds']

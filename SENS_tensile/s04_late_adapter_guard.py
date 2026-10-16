@@ -4,8 +4,8 @@ from pathlib import Path
 
 import s04_late_attribution_guard as guard
 
-ATTEMPT = 'S04-E021-LATE-ADAPTER-MOCK-R001'
-OUTPUT_NAME = 'late-adapter-mock-20261016-R001'
+ATTEMPT = 'S04-E021-LATE-ADAPTER-MOCK-R002'
+OUTPUT_NAME = 'late-adapter-mock-20261016-R002'
 
 
 def execute(out, expected_commit):

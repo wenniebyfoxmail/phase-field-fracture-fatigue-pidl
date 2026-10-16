@@ -82,7 +82,8 @@ def fixture():
             writer.writerow(dict(holdout=key, cycle=cycle, stratum=s,
                                  cycle_weight=1/(3*(20 if s < 2 else n-40)),
                                  V0_physical_mse=10., V1_physical_mse=12.1))
-    summary = dict(status='REPLAY_ARITHMETIC_MATCH', original_verdict='DIRECTIONAL_DEVELOPMENT_GAIN',
+    summary = dict(run_id='S04-E021-REPLAY-R001', code_commit=a.REPLAY_COMMIT,
+                   status='REPLAY_ARITHMETIC_MATCH', original_verdict='DIRECTIONAL_DEVELOPMENT_GAIN',
                    fitting_invoked=False, folds=[dict(holdout=key, stratum_mse=[[10., 12.1]]*3)
                                                 for key in core.COUNTS])
     # Explicit MOCK selectors, NOT an assertion about the real JSON structure.
@@ -142,6 +143,19 @@ def run(out):
         rejected(lambda: a.acquire_real(grant={}, code_commit=code, env={}, auth_path='unused',
                                         output=a.REAL_OUTPUT, actual_parent=123), 'SCHEMA_BINDING_REQUIRED')
     checks.append('grant drift and missing schema reject before IO; real entry remains closed')
+
+    # A valid mock grant must not enable the native reader, even indirectly
+    # through a subclass. Bomb callbacks prove rejection precedes any source IO.
+    class NativeSubclass(a.ReadOnlyIO):
+        pass
+    for reader_type in (a.ReadOnlyIO, NativeSubclass):
+        reader = reader_type()
+        with mock.patch.object(reader, 'metadata', side_effect=AssertionError('unexpected source stat')) as meta, \
+             mock.patch.object(reader, 'read', side_effect=AssertionError('unexpected source read')) as read:
+            rejected(lambda: acquire(reader), 'MOCK_ONLY forbids native source reader')
+            meta.assert_not_called()
+            read.assert_not_called()
+    checks.append('mock grant rejects native reader and subclass before any source metadata/read')
 
     caller = out/'mock_caller'
     caller.mkdir()
@@ -217,6 +231,20 @@ def run(out):
     rejected(lambda: a.strict_json('{"x":Infinity}'), 'nonfinite')
     checks.append('15 mocked metadata/identity/numeric/schema/drift rejections; duplicate/nonfinite JSON reject')
 
+    for key in ('run_id', 'code_commit'):
+        for mode in ('WRONG', 'MISSING'):
+            reader, b = fixture()
+            def change(d):
+                if mode == 'WRONG':
+                    d[key] = 'WRONG'
+                else:
+                    d.pop(key)
+            reader.change_json(a.SUMMARY, change)
+            rejected(lambda: acquire(reader, grant, b))
+            assert ('read', a.CSV) not in reader.calls
+            assert all(path in a.SOURCES for _, path in reader.calls)
+    checks.append('summary own run/commit wrong or missing: four rejections before CSV read')
+
     # POSIX descriptor primitive exercised with a fake fd and no real opens.
     t = mem.tokens[a.CSV]
     s = SimpleNamespace(st_dev=t[0], st_ino=t[1], st_mode=t[2], st_size=t[3], st_mtime_ns=t[4])
@@ -242,10 +270,48 @@ def run(out):
     with mock.patch.object(Path, 'resolve', return_value=Path('/ALIASED')):
         rejected(lambda: a.ReadOnlyIO()._path(a.CSV), 'symlink/alias')
     checks.append('O_RDONLY|O_NOFOLLOW, descriptor/path token and close mocked; unlisted/aliased paths reject')
+
+    # All OS operations below are fake. No native source is opened or statted.
+    changed = SimpleNamespace(**vars(s))
+    changed.st_mtime_ns += 1
+    changed_token = a.token(changed)
+    payload = mem.texts[a.CSV].encode('utf-8')
+    fd_cases = (
+        ('OPEN_ERROR', OSError('MOCK_OPEN_ERROR'), [], [], [t, t], 'MOCK_OPEN_ERROR', 0, 0),
+        ('FD_MISMATCH', None, [changed], [], [t, t], 'descriptor/path mismatch', 1, 0),
+        ('FSTAT_ERROR', None, [OSError('MOCK_FSTAT_ERROR')], [], [t, t], 'MOCK_FSTAT_ERROR', 1, 0),
+        ('READ_ERROR', None, [s], [OSError('MOCK_READ_ERROR')], [t, t], 'MOCK_READ_ERROR', 1, 1),
+        ('FD_DRIFT', None, [s, changed], [payload, b''], [t, t], 'descriptor changed', 1, 2),
+        ('SIZE_MISMATCH', None, [s], [b'x', b''], [t, t], 'size/read mismatch', 1, 2),
+        ('PATH_DRIFT', None, [s, s], [payload, b''], [t, changed_token], 'path changed', 1, 2),
+    )
+    fd_checked = []
+    for name, open_error, fstats, blocks, metadata, reason, nclose, nread in fd_cases:
+        reader = a.ReadOnlyIO()
+        with mock.patch.object(reader, '_path', return_value=FakePath()), \
+             mock.patch.object(reader, 'metadata', side_effect=metadata) as meta, \
+             mock.patch.object(a.os, 'open', return_value=987654, side_effect=open_error) as opened, \
+             mock.patch.object(a.os, 'fstat', side_effect=fstats) as fstat_call, \
+             mock.patch.object(a.os, 'read', side_effect=blocks) as read, \
+             mock.patch.object(a.os, 'close') as close:
+            rejected(lambda: reader.read(a.CSV, t), reason)
+            opened.assert_called_once_with(a.CSV, os.O_RDONLY | os.O_NOFOLLOW)
+            assert close.call_count == nclose and read.call_count == nread, name
+            assert fstat_call.call_count == len(fstats), name
+            assert meta.call_count == (2 if name == 'PATH_DRIFT' else 1), name
+            if nclose:
+                close.assert_called_once_with(987654)
+            for call in fstat_call.call_args_list:
+                assert call.args == (987654,), name
+            for call in read.call_args_list:
+                assert call.args[0] == 987654 and 0 < call.args[1] <= 65536, name
+        fd_checked.append(name)
+    checks.append('seven fake-fd error/drift branches; opened descriptors close once, open failure never closes')
     assert a.REAL_VERIFICATION_BINDING is None
     assert not any(k in sys.modules for k in ('s04_raw', 's04_raw_replay', 's04_d0', 's04_g5_features'))
     record = dict(status='GENERATED_CHECKS_COMPLETED', scope='GENERATED_ENGINEERING_ONLY',
-                  adapter_mock_checks=checks, real_data_read=False, fitting_invoked=False,
+                  adapter_mock_checks=checks, fd_error_cases=fd_checked,
+                  real_data_read=False, fitting_invoked=False,
                   real_verification_binding='UNBOUND', real_ready=False,
                   sources_are_logical_names_only=list(a.SOURCES),
                   limits='mock IO is not actual archive validation, POSIX fault/stress test or real execution approval')
