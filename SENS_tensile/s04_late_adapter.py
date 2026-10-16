@@ -1,8 +1,8 @@
 """Four-source read-only adapter; no fit, replay, field loader or real CLI.
 
-Known schemas are taken from Git producers, not observed archive contents.
-The ad-hoc replay verification field paths remain UNBOUND. Real acquisition
-fails before any IO until that binding is separately established and reviewed.
+Producer schemas come from Git. Verification paths/types were inspected under
+a one-file schema-only approval; its late scalar is an RMSE increase percent.
+Binding is NOT execution permission: real acquisition remains explicitly off.
 """
 import json
 import math
@@ -22,7 +22,16 @@ FIT_COMMIT = '6aa21e3c469d53c92240c9689d07a3ffb316d67c'
 REPLAY_COMMIT = '08242ea1c7a2cf09e4d211c51b946b8ed16cd1ab'
 BUDGET = dict(seconds=60, rss_bytes=512*1024**2, output_bytes=5*1024**2)
 MAX_BYTES = 1024**2
-REAL_VERIFICATION_BINDING = None
+REAL_VERIFICATION_BINDING = {
+    'run_id': ('run_id',),
+    'runtime_commit': ('code_commit',),
+    'rows': ('ordered_unique_rows',),
+    'counts': ('exact_cycle_counts',),
+    'late_ratio': ('u011_C41_plus_RMSE_increase_percent',),
+}
+# Schema-only permission does not authorize any four-source read or analysis.
+# Enabling this requires a separately reviewed launcher and execution approval.
+REAL_ACQUISITION_ENABLED = False
 REAL_RUN = 'S04-E021-LATE-DIAG-R001'  # Proposed only; not an approved run.
 REAL_OUTPUT = str(BASE/'late_attribution_runs'/REAL_RUN)
 require = core.require
@@ -98,6 +107,22 @@ def binding_value(doc, keys):
     return value
 
 
+def bound_verification_values(doc):
+    """Pure schema adapter, NO IO. Percent -> ratio only on supplied values.
+
+    This function was not applied to real values during the schema-only step.
+    Identity/row counts and the frozen ratio tolerance are checked by snapshot.
+    """
+    values = {key: binding_value(doc, path) for key, path in REAL_VERIFICATION_BINDING.items()}
+    require(type(values['run_id']) is str and type(values['runtime_commit']) is str and
+            type(values['rows']) is int and type(values['counts']) is dict and
+            all(type(v) is int for v in values['counts'].values()), 'verification binding types')
+    require(type(values['late_ratio']) in (int, float), 'verification percent must be numeric, not bool/string')
+    percent = core.finite(values['late_ratio'], 'saved RMSE increase percent')
+    values['late_ratio'] = core.finite(1.0+percent/100.0, 'converted saved late ratio')
+    return values
+
+
 def check_grant(grant, *, code_commit, attempt, output, domain):
     """Machine interlock only: cannot prove that a human approved an action."""
     require(domain in ('MOCK_ONLY', 'REAL_SAVED_SCALARS'), 'grant domain')
@@ -168,6 +193,7 @@ def snapshot(io, *, grant, code_commit, attempt, output, domain, binding, expect
     names = {'run_id', 'runtime_commit', 'rows', 'counts', 'late_ratio'}
     require(isinstance(binding, dict) and set(binding) == names, 'SCHEMA_BINDING_REQUIRED')
     if domain == 'REAL_SAVED_SCALARS':
+        require(REAL_ACQUISITION_ENABLED, 'REAL_EXECUTION_DISABLED')
         require(REAL_VERIFICATION_BINDING is not None and binding == REAL_VERIFICATION_BINDING,
                 'SCHEMA_BINDING_REQUIRED')
         require(expected_ratio == core.KNOWN_REAL_RATIO, 'frozen real ratio required')
@@ -188,7 +214,8 @@ def snapshot(io, *, grant, code_commit, attempt, output, domain, binding, expect
             entry['bytes'] == before[CSV][3] and entry['mtime_ns'] == before[CSV][4],
             'original CSV metadata mismatch')
     verification = strict_json(io.read(VERIFICATION, before[VERIFICATION]))
-    values = {key: binding_value(verification, selector) for key, selector in binding.items()}
+    values = (bound_verification_values(verification) if domain == 'REAL_SAVED_SCALARS' else
+              {key: binding_value(verification, selector) for key, selector in binding.items()})
     require(values['run_id'] == 'S04-E021-REPLAY-R001' and
             values['runtime_commit'] == REPLAY_COMMIT and type(values['rows']) is int and
             values['rows'] == 357 and values['counts'] == core.COUNTS, 'replay verification identity')
@@ -223,7 +250,8 @@ def snapshot(io, *, grant, code_commit, attempt, output, domain, binding, expect
 
 
 def acquire_real(*, grant, code_commit, env, auth_path, output, actual_parent):
-    # Explicit unresolved field binding is checked before even source stat().
+    # Schema binding alone must not enable even source stat().
+    require(REAL_ACQUISITION_ENABLED, 'REAL_EXECUTION_DISABLED')
     require(REAL_VERIFICATION_BINDING is not None, 'SCHEMA_BINDING_REQUIRED')
     check_child_handoff(auth_path, output, env, actual_parent=actual_parent,
                         attempt=REAL_RUN, code_commit=code_commit)
@@ -233,4 +261,4 @@ def acquire_real(*, grant, code_commit, env, auth_path, output, actual_parent):
 
 
 if __name__ == '__main__':
-    raise SystemExit('No real CLI. Verification schema binding and separate execution approval required.')
+    raise SystemExit('No real CLI. Real execution disabled; launcher review and separate approval required.')

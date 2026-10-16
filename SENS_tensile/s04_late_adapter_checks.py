@@ -141,8 +141,36 @@ def run(out):
     assert not reader.calls
     with mock.patch.object(a, 'ReadOnlyIO', side_effect=AssertionError('no real IO construction')):
         rejected(lambda: a.acquire_real(grant={}, code_commit=code, env={}, auth_path='unused',
-                                        output=a.REAL_OUTPUT, actual_parent=123), 'SCHEMA_BINDING_REQUIRED')
-    checks.append('grant drift and missing schema reject before IO; real entry remains closed')
+                                        output=a.REAL_OUTPUT, actual_parent=123), 'REAL_EXECUTION_DISABLED')
+    checks.append('grant drift and missing mock schema reject before IO; real entry explicitly disabled')
+
+    # New schema binding tests are written only; no real verification contents.
+    bound_doc = dict(run_id='S04-E021-REPLAY-R001', code_commit=a.REPLAY_COMMIT,
+                     ordered_unique_rows=357, exact_cycle_counts=dict(a.core.COUNTS),
+                     u011_C41_plus_RMSE_increase_percent=25.)
+    assert a.bound_verification_values(bound_doc)['late_ratio'] == 1.25
+    for field, value in (('run_id', 123), ('code_commit', None), ('ordered_unique_rows', True),
+                         ('exact_cycle_counts', {'u011': 121.}),
+                         ('u011_C41_plus_RMSE_increase_percent', True),
+                         ('u011_C41_plus_RMSE_increase_percent', '25'),
+                         ('u011_C41_plus_RMSE_increase_percent', float('inf'))):
+        bad = copy.deepcopy(bound_doc)
+        bad[field] = value
+        rejected(lambda: a.bound_verification_values(bad))
+    bad = dict(bound_doc)
+    bad.pop('ordered_unique_rows')
+    rejected(lambda: a.bound_verification_values(bad))
+    real_grant = dict(grant)
+    real_grant.pop('engineering_only')
+    real_grant.update(domain='REAL_SAVED_SCALARS', attempt=a.REAL_RUN, output=a.REAL_OUTPUT,
+                      user_approved_real_execution=True, independent_code_review='APPROVED')
+    reader, _ = fixture()
+    rejected(lambda: a.snapshot(reader, grant=real_grant, code_commit=code, attempt=a.REAL_RUN,
+                                output=a.REAL_OUTPUT, domain='REAL_SAVED_SCALARS',
+                                binding=a.REAL_VERIFICATION_BINDING,
+                                expected_ratio=a.core.KNOWN_REAL_RATIO), 'REAL_EXECUTION_DISABLED')
+    assert not reader.calls
+    checks.append('schema binding toy percent conversion/types/missing field; bound real snapshot still rejects before IO')
 
     # A valid mock grant must not enable the native reader, even indirectly
     # through a subclass. Bomb callbacks prove rejection precedes any source IO.
@@ -307,12 +335,12 @@ def run(out):
                 assert call.args[0] == 987654 and 0 < call.args[1] <= 65536, name
         fd_checked.append(name)
     checks.append('seven fake-fd error/drift branches; opened descriptors close once, open failure never closes')
-    assert a.REAL_VERIFICATION_BINDING is None
+    assert a.REAL_VERIFICATION_BINDING is not None and a.REAL_ACQUISITION_ENABLED is False
     assert not any(k in sys.modules for k in ('s04_raw', 's04_raw_replay', 's04_d0', 's04_g5_features'))
     record = dict(status='GENERATED_CHECKS_COMPLETED', scope='GENERATED_ENGINEERING_ONLY',
                   adapter_mock_checks=checks, fd_error_cases=fd_checked,
                   real_data_read=False, fitting_invoked=False,
-                  real_verification_binding='UNBOUND', real_ready=False,
+                  real_verification_binding='SCHEMA_BOUND_EXECUTION_DISABLED', real_ready=False,
                   sources_are_logical_names_only=list(a.SOURCES),
                   limits='mock IO is not actual archive validation, POSIX fault/stress test or real execution approval')
     with (out/'checks.json').open('x') as file:
