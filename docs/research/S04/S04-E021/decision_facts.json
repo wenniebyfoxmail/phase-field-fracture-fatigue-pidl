@@ -1,0 +1,125 @@
+{
+  "c20s4": {
+    "regions": {
+      "full": {
+        "backbone": 0.0030791216240435636,
+        "E019": 0.0007039144529734202,
+        "E021": 0.0006606794692071773,
+        "change_percent_vs_E019": -6.14207928017575,
+        "change_percent_vs_backbone": -78.54324869637466
+      },
+      "damage": {
+        "backbone": 0.0242348624521076,
+        "E019": 0.005237329579855483,
+        "E021": 0.00487492910867373,
+        "change_percent_vs_E019": -6.919565890519208,
+        "change_percent_vs_backbone": -79.88464296709974
+      },
+      "background": {
+        "backbone": 0.0002402426484476214,
+        "E019": 0.00023720492201124475,
+        "E021": 0.0002367866242400202,
+        "change_percent_vs_E019": -0.17634447366345896,
+        "change_percent_vs_backbone": -1.4385556560973067
+      }
+    },
+    "inside_background_change_percent_vs_E019": -1.6427038132961758,
+    "outside_saved_uv_delta": 0.0,
+    "outside_background_identical": true,
+    "damage_squared_error_fraction": 0.8736114995317198,
+    "background_squared_error_fraction": 0.12638850046827993,
+    "primary_uv_pass": true,
+    "full_no_regression_vs_E019": true,
+    "background_no_regression_vs_E019": true,
+    "relative_full_reduction_needed_to_point001": 0,
+    "ideal_zero_background_full_at_fixed_damage": 0.0006175185131740577,
+    "required_damage_squared_error_reduction_at_fixed_background_percent": 0,
+    "traces": {
+      "full_at2000": 0.000711463885151354,
+      "full_at8000": 0.0006860498605176428,
+      "full_at10000": 0.0006606794692071788
+    }
+  },
+  "c60s4": {
+    "regions": {
+      "full": {
+        "backbone": 0.003487814391244284,
+        "E019": 0.0006885882301583295,
+        "E021": 0.0007864496867545542,
+        "change_percent_vs_E019": 14.21189795441653,
+        "change_percent_vs_backbone": -77.45150404996217
+      },
+      "damage": {
+        "backbone": 0.023153913227339028,
+        "E019": 0.00424277319803712,
+        "E021": 0.0049300577630113284,
+        "change_percent_vs_E019": 16.19894660624741,
+        "change_percent_vs_backbone": -78.70745340277878
+      },
+      "background": {
+        "backbone": 0.00026779955404167293,
+        "E019": 0.0002638378167518844,
+        "E021": 0.0002679173634299965,
+        "change_percent_vs_E019": 1.5462327305219237,
+        "change_percent_vs_backbone": 0.04399162976396198
+      }
+    },
+    "inside_background_change_percent_vs_E019": 13.704084467701506,
+    "outside_saved_uv_delta": 0.0,
+    "outside_background_identical": true,
+    "damage_squared_error_fraction": 0.8865643057445585,
+    "background_squared_error_fraction": 0.11343569425544088,
+    "primary_uv_pass": true,
+    "full_no_regression_vs_E019": false,
+    "background_no_regression_vs_E019": false,
+    "relative_full_reduction_needed_to_point001": 0,
+    "ideal_zero_background_full_at_fixed_damage": 0.0007405017083960322,
+    "required_damage_squared_error_reduction_at_fixed_background_percent": 0,
+    "traces": {
+      "full_at2000": 0.0011781147297007606,
+      "full_at8000": 0.000791463073889506,
+      "full_at10000": 0.0007864496867545559
+    }
+  },
+  "c83s4": {
+    "regions": {
+      "full": {
+        "backbone": 0.0033046863884932495,
+        "E019": 0.0032382383079330103,
+        "E021": 0.0011678189737359475,
+        "change_percent_vs_E019": -63.936595683059096,
+        "change_percent_vs_backbone": -64.6617307529624
+      },
+      "damage": {
+        "backbone": 0.019560763900719605,
+        "E019": 0.01916744282518348,
+        "E021": 0.006853024577795332,
+        "change_percent_vs_E019": -64.24653700392749,
+        "change_percent_vs_backbone": -64.96545527271958
+      },
+      "background": {
+        "backbone": 0.0001667786946612992,
+        "E019": 0.0001634539302896372,
+        "E021": 0.00016565187629182467,
+        "change_percent_vs_E019": 1.3446883768978513,
+        "change_percent_vs_backbone": -0.6756368802159796
+      }
+    },
+    "inside_background_change_percent_vs_E019": 6.823896724545864,
+    "outside_saved_uv_delta": 0.0,
+    "outside_background_identical": true,
+    "damage_squared_error_fraction": 0.9804522338593299,
+    "background_squared_error_fraction": 0.01954776614066988,
+    "primary_uv_pass": false,
+    "full_no_regression_vs_E019": true,
+    "background_no_regression_vs_E019": false,
+    "relative_full_reduction_needed_to_point001": 14.370290045817713,
+    "ideal_zero_background_full_at_fixed_damage": 0.0011563485155303354,
+    "required_damage_squared_error_reduction_at_fixed_background_percent": 27.207371058378282,
+    "traces": {
+      "full_at2000": 0.0011771231504673454,
+      "full_at8000": 0.0011685480115798397,
+      "full_at10000": 0.0011678189737359516
+    }
+  }
+}

@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E021
 protocol_revision: 20261015-r1-coordinate-preconditioning
-status: running-v2
+status: completed-primary-fail
 ---
 # Bounded residual-coordinate preconditioning — frozen pre-training protocol
 
@@ -60,3 +60,11 @@ Independent Codex subagent review PASS binds scientific source `98c620637b2b2ef0
 ## Execution milestone — 2026-10-16
 
 User approved exact v2 production package after the separate v1 initial-resource stop (zero training updates). V2 uses the unchanged reviewed science98c6206 and permits shared GPU0 with >8GiB free, with every other scientific/runtime/budget/stop rule unchanged. All-state formal CUDA preflight passed; c20 runner active and c60/c83 queued. No final scientific outcome yet. See [producer execution and provenance](producer_execution.md). Execution metadata does not amend the frozen scientific protocol.
+
+## Final result and evidence closure — 2026-10-16
+
+Original dispatcher completed2026-10-16T10:29:02Z. All three rows completed10000new updates and passed the unchanged producer decoder; original matrix3valid/0missing/0integrityerrors, scientific verdict COORDINATE_PRECONDITIONED_THREE_STATE_UV_SCREEN_FAIL. Final fullUVRMS c20=.0006606794692071773,c60=.0007864496867545542,c83=.0011678189737359475. Relative E019 changes -6.142079%,+14.211898%,-63.936596%; c60 retains .001 criterion but not E019 accuracy. Inside-background changes -1.642704%,+13.704084%,+6.823897%; saved outside-window UV unchanged exactly. See [decision](decision.md), exact paired CSV and [evidence review](evidence_review.md).
+
+66files45560202bytes retrieved with all size/SHA checks;27rowfiles additionally match real producer archives. Reviewed scientific source98c6206 unchanged; v2 deployment4692b6a. All10000 actual LR entries match each row expected vector and formal preflight; maps, PRE_UPDATE, sampling and control identities admitted by producer. Strict unmodified Mac full replay remains0/3 INADMISSIBLE due native LR bits, with separate reference-rho portability exceptions retained. Independent saved-field/Q4-mass evidence review passed its bounded scope, not scientific or complete portability qualification. No retries, source/budget changes, external review or new training.
+
+Next: six existing endpoint feature/output-head/regional-gradient diagnostic proposal only; see [next step](next_step_proposal.md). Implementation and diagnosis remain future work. Monitoring closes after evidence recording; no new producer action authorised here.

@@ -1,11 +1,11 @@
 ---
 storyline_id: S04
 experiment_id: S04-E021
-status: v2-training-running
+status: completed-primary-fail
 ---
 # E021 Taobo production preparation — 2026-10-15
 
-**v2 explicitly approved and transferred unchanged; all three formal preflights passed, c20 has completed and passed producer row verification, c60 is running and c83 is queued.** Dispatcher3081226 started2026-10-16T09:47:55Z; first runner3084000 at09:49:46Z. Remote filehashes match and science checkout is clean98c6206. No final scientific result exists yet; v1 failure remains separate.
+**v2 completed all three rows; original producer integrity is valid, scientific three-state .001 criterion failed. Results retrieved and independently checked.** Final aggregate2026-10-16T10:29:02Z. See final result section below; earlier snapshots are historical.
 
 Scientific source: `98c620637b2b2ef06ec86983220a4e7f9f1053b7`, independently Code Ready PASS (162 nontraining checks). Deployment source: `540632738c080773b22aec65a46dbd2ea1bdd420`, separate from science; subsequent documentation commits must not replace the science checkout. The dispatcher remains outside the clean detached science checkout.
 
@@ -73,3 +73,13 @@ Heartbeat e021 created ACTIVE on this thread every30minutes. Readonly ordinary p
 ### Partial completion snapshot — 2026-10-16T10:03:12Z
 
 c20 reached10000updates and finished10:01:27.194875Z. Original producer per-row strictdecoder/archiveverification passed; dispatcher continued to c60at10:02:12Z(11:02:12BST), c83 remainsqueued. c20nineoutputs15062563bytes retrieved under localcase/partial_c20 with everylocal/remote/actualarchiveSHAandsize match. Source/cleanreceipt and complete10000actualLRvector versuspre-update andformalpreflight verified. Fullmatrix numericalreplay, pairedE019errorcomparison androuteverdict remainpending, no metricchecker/tolerancechange. User's added priority (c83gain, preserve c20/c60, backgroundtransfer, concrete nextstep) incorporated in existingACTIVEheartbeat e021. No newexperiment/remoteintervention.
+
+## Final result and evidence closure — 2026-10-16
+
+Original dispatcher completed2026-10-16T10:29:02Z. All three rows completed10000new updates and passed the unchanged producer decoder; original matrix3valid/0missing/0integrityerrors, scientific verdict COORDINATE_PRECONDITIONED_THREE_STATE_UV_SCREEN_FAIL. Final fullUVRMS c20=.0006606794692071773,c60=.0007864496867545542,c83=.0011678189737359475. Relative E019 changes -6.142079%,+14.211898%,-63.936596%; c60 retains .001 criterion but not E019 accuracy. Inside-background changes -1.642704%,+13.704084%,+6.823897%; saved outside-window UV unchanged exactly. See [decision](decision.md), exact paired CSV and [evidence review](evidence_review.md).
+
+66files45560202bytes retrieved with all size/SHA checks;27rowfiles additionally match real producer archives. Reviewed scientific source98c6206 unchanged; v2 deployment4692b6a. All10000 actual LR entries match each row expected vector and formal preflight; maps, PRE_UPDATE, sampling and control identities admitted by producer. Strict unmodified Mac full replay remains0/3 INADMISSIBLE due native LR bits, with separate reference-rho portability exceptions retained. Independent saved-field/Q4-mass evidence review passed its bounded scope, not scientific or complete portability qualification. No retries, source/budget changes, external review or new training.
+
+Next: six existing endpoint feature/output-head/regional-gradient diagnostic proposal only; see [next step](next_step_proposal.md). Implementation and diagnosis remain future work. Monitoring closes after evidence recording; no new producer action authorised here.
+
+Heartbeat e021 PAUSED after final retrieval, independent bounded review, decision figures and Obsidian milestone sync; saved automation status verified.

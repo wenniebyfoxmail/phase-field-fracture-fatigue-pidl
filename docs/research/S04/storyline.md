@@ -75,3 +75,7 @@ Userapproved exactv1 files and singlelaunch. Both remoteSHAchecks passed; dispat
 ### 2026-10-16 — S04-E021 v2 admitted and started
 
 Exact v2 transfer/launch explicitly approved; both remote file hashes match. Clean science98c6206 and33existing asset copies verified. All three formal runtime/CUDA/reference/map/initialization preflights passed, saved and zero-output UV differences all0.0. Dispatcher3081226 started09:47:55Z; c20 runner3084000 started09:49:46Z, with c60/c83 queued. Original E019 native10000LR profile archived before updates, no E020delayed schedule. Readonly heartbeat e021 every30minutes; no retry or budget change. Final E019 full/damage/background comparison remains pending; no scientific verdict. [Execution record](S04-E021/producer_execution.md).
+
+## 2026-10-16 — E021 coordinate preconditioning: useful c83 gain, remaining three-state miss
+
+E021v2 all3valid final10000-update rows; original primaryFAIL. E019-relative full changes c20−6.1421%,c60+14.2119%,c83−63.9366%; c83 final.00116782 still>.001. c20 improves all regions; c60 retains absolute threshold but not E019 fit. c60/c83 inside-background rises13.7041%/6.8239%, outside saved UV unchanged. Preserve useful coordinate route while addressing residual damage and middle-state regression. Independent bounded Q4/saved-field review complete; strict Mac nativeLR/reference-rho exceptions retained. No physical teacher/forecast qualification. [E021 decision](S04-E021/decision.md), [next diagnostic proposal, not run](S04-E021/next_step_proposal.md).

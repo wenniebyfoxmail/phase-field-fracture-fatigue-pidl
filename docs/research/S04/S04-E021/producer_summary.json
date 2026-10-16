@@ -1,0 +1,13 @@
+{
+  "protocol_revision": "20261015-r1-coordinate-preconditioning",
+  "expected_runs": 3,
+  "valid_completed_runs": 3,
+  "missing": [],
+  "integrity_errors": [],
+  "verdict": "COORDINATE_PRECONDITIONED_THREE_STATE_UV_SCREEN_FAIL",
+  "clean_damage_progress_background_preserved": false,
+  "clean_damage_progress_background_preserved_vs_control": false,
+  "stage2_authorized": false,
+  "qualified_fem_teacher": "NOT_QUALIFIED",
+  "code_commit": "98c620637b2b2ef06ec86983220a4e7f9f1053b7"
+}
