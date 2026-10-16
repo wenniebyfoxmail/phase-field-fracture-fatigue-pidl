@@ -183,3 +183,8 @@ independent review replacing legacy Pro review for this version. No push.
 ## Operational amendment v2 — 2026-10-16
 
 v1 stopped at strict checkcode before native work; preserve the attempt. v2 fixes two comma forms, explicitly consumes native returned diagnostics without feedback, uses isscalar, and predeclares three script variables before hash-frozen native initialization with shape assertions afterwards. Frozen source overwrites placeholders before use. No solver/formula/tolerance/budget/acceptance/history change. Newroot E011_C1_20261016_v2; same15file count/8input contents. Native22tests and five original regressions remain prerequisites, not already passed. New version requires fresh user approval before upload/copies/execution; NASGU/MSNU whitelist unchanged. See runs/c1_commit_v1_attempt_20261016.md.
+
+
+## Operational amendment v3 — 2026-10-16
+
+v2static checks passed but binary manifest parsed ascell because lastobject keys differed in order. Normalize binarykeys(name,path,sha256), retainvalues/arrayorder; validate homogeneous ordered schema/types/SHA locally for source/binary/staging and assert struct/count10 inentry. Numerical contract and all12nonentryMATLAB files unchanged. Newroot E011_C1_20261016_v3 and exactapproval required before anytransfer/execution. See runs/c1_commit_v2_attempt_20261016.md and runs/c1_commit_v3_preparation_20261016.md.

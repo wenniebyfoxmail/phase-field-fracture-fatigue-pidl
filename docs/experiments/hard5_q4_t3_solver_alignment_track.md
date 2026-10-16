@@ -44,3 +44,6 @@ User-facing report: `/Users/wenxiaofang/obsidian/mesh对齐.md`; payloads remain
 
 
 2026-10-16 [c1 sequence v1 attempt](../research/S04/S04-E011/runs/c1_commit_v1_attempt_20261016.md): approved15file transfer/8input staging passed; strict staticcheck stopped before all native fields and history commits.31file archive verified. Minimal v2 static repair prepared locally, new exact-version approval needed. Earlier numerical conclusions unchanged.
+
+
+2026-10-16 [c1v2](../research/S04/S04-E011/runs/c1_commit_v2_attempt_20261016.md) passed staticchecks then stopped atbinarymanifest type before nativework/commits.31files156920132bytes verified; no numericalverdict. v3schema-only repair locally prepared, exactversion approvalpending; numerical protocol unchanged.

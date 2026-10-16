@@ -180,3 +180,6 @@ Approved v2 native supplement completed2026-10-15BST: [terminal result](runs/pha
 
 
 2026-10-16 [c1 sequence v1 attempt](runs/c1_commit_v1_attempt_20261016.md): authorized upload/staging verified; E011:StaticCheck stopped before selftests/recovery/fields/commits.31files156923216bytes retrieved/hash-verified. No numerical conclusion. Minimal static v2 local preparation in newroot; no v1retry or remote update without exact-version approval.
+
+
+2026-10-16 [c1v2 attempt](runs/c1_commit_v2_attempt_20261016.md): static/source checks passed; binary manifest type exception before22tests/native. Actualread-onlyMATLAB confirms heterogeneous-key-order arraydecodescell;31files156920132bytes verified,0commits/scientifically inconclusive. [v3localpreparation](runs/c1_commit_v3_preparation_20261016.md) fixes JSONschema only; exactnewapproval pending.

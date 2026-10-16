@@ -141,3 +141,6 @@ E011 c1 commit v1: [local preparation only](research/S04/S04-E011/runs/c1_commit
 
 
 2026-10-16 S04-E011 c1 sequence v1: [attempt](research/S04/S04-E011/runs/c1_commit_v1_attempt_20261016.md), producer db5cb94, WMI30232, staticcheck stop,0native fields/commits,31files156923216bytes hashverified; operational failure/scientifically inconclusive. v2 preparation does not alter frozen E003/E011.
+
+
+2026-10-16 S04-E011 [c1v2](research/S04/S04-E011/runs/c1_commit_v2_attempt_20261016.md): producer aab3edd/WMI6324, static pass then JSONcell-vs-struct admission failure,0nativefields/commits.31files156920132bytes hashverified. Inconclusive; v3schema repair local-only, old scientific verdicts unchanged.

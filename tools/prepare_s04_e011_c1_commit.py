@@ -9,6 +9,17 @@ def sha(p):
     with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
 
 
+def validate_records(rows,keys):
+    """Reject heterogeneous JSON rows before MATLAB can decode them as cells."""
+    assert rows and all(tuple(row)==keys for row in rows)
+    for row in rows:
+        for key,value in row.items():
+            if key=='bytes':assert type(value) is int and value>0
+            else:assert type(value) is str and value
+        if 'sha256' in row:
+            digest=row['sha256'];assert len(digest)==64 and all(c in '0123456789abcdef' for c in digest)
+
+
 def original_step(solver):
     start='        for i_stag = 1:SOL_STAG_PAR.max_iter\n';end='            if stag_converged\n'
     assert solver.count(start)==solver.count(end)==1
@@ -120,7 +131,7 @@ end
 
 
 def build(source_root,prior,reference_root,mesh,out,remote_root,commit,inventory):
-    assert not out.exists() and remote_root.endswith('E011_C1_20261016_v2')
+    assert not out.exists() and remote_root.endswith('E011_C1_20261016_v3')
     out.mkdir(parents=True)
     here=Path(__file__).parent/'s04_e011_analysis';native=json.loads((prior/'input_manifest.json').read_text())[0]
     source_ids={x['path']:x['sha256'] for x in native['source_checks']}
@@ -133,6 +144,11 @@ def build(source_root,prior,reference_root,mesh,out,remote_root,commit,inventory
             'Sources/+phase_field/+fem/+solver/+step/pre_iter_update.m':'phase_field.fem.solver.step.pre_iter_update'}[item['path']],
             path=r'C:\Users\xw436\jobs\S04_E011_ad749c8_20261005\source'+'\\'+item['path'].replace('/','\\'),sha256=item['sha256']))
     native['binary_checks'].append(inventory['initial_binary'])
+    # MATLAB jsondecode requires matching object field order for a struct array.
+    binary_keys=('name','path','sha256')
+    assert all(set(x)==set(binary_keys) for x in native['binary_checks'])
+    native['binary_checks']=[{key:x[key] for key in binary_keys} for x in native['binary_checks']]
+    assert all(tuple(x)==binary_keys for x in native['binary_checks'])
     paths=['Scripts/fatigue_fracture/run_SENS_hard_recovery_native_q4_capture.m','Scripts/fatigue_fracture/solve_fatigue_fracture.m']
     for p in paths:assert sha(source_root/p)==source_ids[p]
     (out/'e011_original_step.m').write_text(original_step((source_root/paths[1]).read_text()))
@@ -146,6 +162,10 @@ def build(source_root,prior,reference_root,mesh,out,remote_root,commit,inventory
         h=sha(path);staging.append(dict(role=role,source=remote,target=remote_root+'\\inputs\\'+h[:16]+'_'+path.name,sha256=h,bytes=path.stat().st_size,local_reference=str(path)))
     assert len(staging)==8
     manifest=dict(source_checks=native['source_checks'],binary_checks=native['binary_checks'],staging=[{k:v for k,v in x.items() if k!='local_reference'} for x in staging],source_commit=commit)
+    validate_records(manifest['source_checks'],('path','sha256'))
+    validate_records(manifest['binary_checks'],('name','path','sha256'))
+    validate_records(manifest['staging'],('role','source','target','sha256','bytes'))
+    assert len(manifest['binary_checks'])==10
     (out/'input_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     helper_checks='\n'.join(f"assert(strcmpi(phase_field.audit.sha256_file(fullfile(root,'{p.name}')),'{sha(p)}'));" for p in sorted(out.glob('*.m')))
     names="{"+','.join("'"+p.name+"'" for p in sorted(out.glob('*.m')))+",'entry.m'}"
@@ -161,6 +181,7 @@ for q=1:numel(reviewed_names)
  for j=1:numel(cc),assert(ismember(string(cc(j).id),{'NASGU','MSNU'}),'E011:StaticCheck','Unexpected static finding');end
 end
 manifest=jsondecode(fileread(fullfile(root,'input_manifest.json')));
+assert(isstruct(manifest.binary_checks) && numel(manifest.binary_checks)==10,'E011:ManifestSchema','Expected ten uniform binary-check records');
 for k=1:numel(manifest.source_checks)
  sc=manifest.source_checks(k);assert(strcmpi(phase_field.audit.sha256_file(fullfile(source,sc.path)),sc.sha256));
  assert(~isempty(fileread(fullfile(source,sc.path))));
@@ -246,18 +267,18 @@ if((Get-PSDrive C).Free -lt 10GB -or (Get-CimInstance Win32_OperatingSystem).Fre
 $cmd='"C:\Windows\System32\cmd.exe" /d /s /c ""C:\Program Files\MATLAB\R2025b\bin\matlab.exe" -singleCompThread -batch "run(''@ROOT@\entry.m'')" -logfile "@ROOT@\matlab.log" > "@ROOT@\stdout.log" 2> "@ROOT@\stderr.log""'
 $r=Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine=$cmd;CurrentDirectory=$root}
 if($r.ReturnValue -ne 0){throw ('WMI launch failed: '+$r.ReturnValue)}
-@{run_id='pf_s04e011_c1_commit_20261016_v2';commit='@COMMIT@';branch='codex/hard5-q4-t3-2x2-20261005';dirty=$false;producer='CITPC12/citpc12-ssh';account='AD\xw436';pid=$r.ProcessId;command=$cmd;root=$root;started_utc=(Get-Date).ToUniversalTime().ToString('o');threads=1;gpu='CPU';method='WMI isolated process'}|ConvertTo-Json|Set-Content -Encoding UTF8 ($root+'\launch_receipt.json')
+@{run_id='pf_s04e011_c1_commit_20261016_v3';commit='@COMMIT@';branch='codex/hard5-q4-t3-2x2-20261005';dirty=$false;producer='CITPC12/citpc12-ssh';account='AD\xw436';pid=$r.ProcessId;command=$cmd;root=$root;started_utc=(Get-Date).ToUniversalTime().ToString('o');threads=1;gpu='CPU';method='WMI isolated process'}|ConvertTo-Json|Set-Content -Encoding UTF8 ($root+'\launch_receipt.json')
 Get-Content ($root+'\launch_receipt.json')
 '''.replace('@ROOT@',remote_root).replace('@CHECKS@',checks).replace('@COMMIT@',commit)
     (out/'launch_wmi.ps1').write_text(launch)
     files=[dict(name=p.name,bytes=p.stat().st_size,sha256=sha(p)) for p in sorted(out.iterdir())]
     assert len(files)==15
     receipt=dict(status='prepared_not_sent',account=r'AD\xw436',host='CITPC12',ssh_alias='citpc12-ssh',remote_root=remote_root,source_commit=commit,files=files,files_total_bytes=sum(x['bytes'] for x in files),input_copies=staging,input_copy_bytes=sum(x['bytes'] for x in staging))
-    (out.parent/'approval_manifest_v2.json').write_text(json.dumps(receipt,indent=2)+'\n')
+    (out.parent/'approval_manifest_v3.json').write_text(json.dumps(receipt,indent=2)+'\n')
     return receipt
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--source-root',type=Path,required=True);p.add_argument('--prior-bundle',type=Path,required=True);p.add_argument('--reference-root',type=Path,required=True);p.add_argument('--mesh',type=Path,required=True);p.add_argument('--inventory',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--remote-root',default=r'C:\Users\xw436\jobs\E011_C1_20261016_v2');p.add_argument('--commit',required=True);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--source-root',type=Path,required=True);p.add_argument('--prior-bundle',type=Path,required=True);p.add_argument('--reference-root',type=Path,required=True);p.add_argument('--mesh',type=Path,required=True);p.add_argument('--inventory',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--remote-root',default=r'C:\Users\xw436\jobs\E011_C1_20261016_v3');p.add_argument('--commit',required=True);a=p.parse_args()
     print(json.dumps(build(a.source_root,a.prior_bundle,a.reference_root,a.mesh,a.out,a.remote_root,a.commit,json.loads(a.inventory.read_text())),indent=2))
 if __name__=='__main__':main()

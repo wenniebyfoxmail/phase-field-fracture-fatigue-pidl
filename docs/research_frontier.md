@@ -91,3 +91,6 @@ Solver alignment2026-10-15: [track](experiments/hard5_q4_t3_solver_alignment_tra
 
 
 2026-10-16 E011: full-c1 v1 stopped at staticcheck before native solves/commits; verified archive, no new numerical result. Minimal static v2 local preparation awaits exact-version transfer approval. [Canonical alignment track](experiments/hard5_q4_t3_solver_alignment_track.md).
+
+
+2026-10-16 E011 update: c1v2 staticchecks passed, binarymanifest type failure prevented nativework; no new numericalresult. v3schema-only repair locally ready for exactapproval. [Canonicaltrack](experiments/hard5_q4_t3_solver_alignment_track.md).
