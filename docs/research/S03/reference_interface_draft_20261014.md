@@ -1,5 +1,7 @@
 # D01 reference interface — working proposal, 2026-10-14
 
+当前导航（2026-10-16）：以文末“案例／来源／评价分工补充 v1.1”为当前审阅入口。原“未实现／未运行”段落保留为历史；E025已经实施并独立审核过一次旧八案例重放。本轮只完善文档，不重做该实现、审核或计算，亦不冻结新实验。
+
 Status: local proposal and existing-output coverage audit; not a frozen new prediction experiment. E015/E016/E017 definitions, scores, annotations and human-preparation UI remain unchanged. No new annotator dispatch or external transmission.
 
 当前工作定义见文末“2026-10-15 条件查询方案补充”：采用给定目标名义荷载L*的条件查询。较早的选择待定、计划可知性与执行顺序文字保留为历史，不作为当前条件查询的前置要求。仍未冻结新评估或授权执行。
@@ -383,16 +385,18 @@ code or old result.
 
 ### 案例清单：不是重新选样
 
-| 案例 | 最近两次历史名义荷载（kN） | 给定L*（kN） | 原固定目标文件（Gx-IB_t=秒.JPG） |
-|---|---|---|---|
-|B4-K1-Q40|10,30|40|G4-IB_t=500.JPG|
-|B4-K2-Q50|30,40|50|G4-IB_t=588.JPG|
-|B5-K1-Q30|10,20|30|G5-IB_t=464.JPG|
-|B5-K2-Q40|20,30|40|G5-IB_t=553.JPG|
-|B5-K3-Q50|30,40|50|G5-IB_t=636.JPG|
-|B5-K4-Q60|40,50|60|G5-IB_t=729.JPG|
-|B6-K1-Q30|10,20|30|G6-IB_t=376.JPG|
-|B6-K2-Q40|20,30|40|G6-IB_t=460.JPG|
+| 案例 | 最近两次历史名义荷载（kN） | 给定L*（kN） | 原固定目标文件（Gx-IB_t=秒.JPG） | 历史stage_id → 目标；截止k | 目标名义标签来源（Beam-seconds） |
+|---|---|---|---|---|---|
+|B4-K1-Q40|10,30|40|G4-IB_t=500.JPG|B4-S0,S1 → S2；k=1|Labbdata_G4.xlsx!A21|
+|B4-K2-Q50|30,40|50|G4-IB_t=588.JPG|B4-S1,S2 → S3；k=2|Labbdata_G4.xlsx!A22|
+|B5-K1-Q30|10,20|30|G5-IB_t=464.JPG|B5-S0,S1 → S2；k=1|Labbdata_G5.xlsx!A21|
+|B5-K2-Q40|20,30|40|G5-IB_t=553.JPG|B5-S1,S2 → S3；k=2|Labbdata_G5.xlsx!A22|
+|B5-K3-Q50|30,40|50|G5-IB_t=636.JPG|B5-S2,S3 → S4；k=3|Labbdata_G5.xlsx!A23|
+|B5-K4-Q60|40,50|60|G5-IB_t=729.JPG|B5-S3,S4 → S5；k=4|Labbdata_G5.xlsx!A24|
+|B6-K1-Q30|10,20|30|G6-IB_t=376.JPG|B6-S0,S1 → S2；k=1|Labbdata_G6.xlsx!A21|
+|B6-K2-Q40|20,30|40|G6-IB_t=460.JPG|B6-S1,S2 → S3；k=2|Labbdata_G6.xlsx!A22|
+
+2026-10-16仅在此既有表补入阶段连接与来源列，未改选样。S1等缩写继承同行梁前缀；所有行均IB-Fixed、T1–12。原始工作簿路径／工作表全名见JSON各行target_label_source；单元格来源沿用E023已存核读，本轮不重开工作簿。当前核对结果和状态以文末v1.1为准。
 
 八案例均展开为T1–12，共96个**名义查询×测线机会**；不是96个独立梁，亦不是本次新确认96个有效预测。JSON中列出14个阶段的原文件、零基阶段索引、历史两行键、首帧几何文件、E015同定义宽度表和E023逐个目标标签单元格。表和JSON沿用E012预先保存的选择，不新增B4的20kN，不择优替换目标或测线。所有E/R状态仍记`not_recomputed`。
 
@@ -423,3 +427,163 @@ Q显式单列，避免把查询参数不合法和未来无参考混为一谈。E
 之后独立代码审核应绑定精确代码与本清单版本，再为**旧八案例的一次开发重放**登记新Experiment/Run、固定命令与预算。届时才计算新两掩码报告与旧数值一致性，并配全部八案例的同尺度对比图；不训练、不扩数据、不筛T4/6/10。若确有差异，先定位行键／映射／数值原因，不通过调公式追平旧分。当前完成的是来源和信息边界，尚无新计算结果；T7/T9分数位置诊断仍是独立候选，未混入此任务。
 
 这次为非数值准备：上方案例表与时点决策表是最小可视结构，结果曲线不适用。来源是CQ2–CQ5/CQ8所指代码／协议，加E012-R001既存选择JSON与E015-R000几何文件身份；未将旧实验的结果数值作为本次新输出。
+
+## 2026-10-16 案例／来源／评价分工补充 v1.1（文档审阅版）
+
+### 0. 版本和本轮状态
+
+文档基线2fd8d48；承接本文件两节既有草案，补充案例表而不另建选样表。
+本次仅阅读已有代码、选择元数据、协议与小型证据记录；不运行预测、评分、
+拟合、配准、诊断、测试，不读新图像／答案键／封存目标，不创建任务、联系
+作者或发送跨聊天消息。共享Obsidian/Roadmap由主聊天处理，本轮不改。
+
+- **已写入方案：**本节来源状态矩阵、E/Q/P/R决策、职责／交接、缺失和汇总规则；新修订尚待审阅，不等于新版本代码已验证。
+- **来源已核对：**现有JSON的14阶段与E012保存选择逐项一致，八目标名义标签与E023记录一致；历史／评价代码路径和E025既存执行、独立审核记录已读。
+- **既存实现状态：**E025 protocol conditional-interface-v1、代码b3126c42ccbce7809e259afc55eb1ecf6cf4bd25已经实现并重放。其记录含独立15测试和逐行复算，本轮没有重跑或重新授予审核结论。当前HEAD的该代码与案例JSON相对b3126c4无差异。
+- **仍待决策／验证：**未来独立资料与前瞻可用性、通用接口加固／输入快照身份增强等；不是把现有八案例接口再从零实现。
+
+不改`d01_conditional_query_cases_v1.json`：它是E025用过的v1元数据快照。
+其中`metadata_prepared...`、E/R=`not_recomputed`、`run_created=false`描述的是
+清单创建时，不是2026-10-16全项目状态；不可把其字段覆盖成新的执行回执。
+本节v1.1仅是文档修订，不改变schema、案例或旧Run版本。以后如必须改JSON，
+须另存有变更说明的新版本，明确是否改变问题／选样，不能覆盖E025原输入。
+
+### 1. 来源核对：共享字段一次列明，八行沿用上表
+
+状态口径：“已有且有来源”只表示所列记录／代码可追溯；“仅为拟议接口”
+不冒称已实现字段；“尚待确认”不补造值或时间戳。对于旧审核，本轮是读取
+其记录，不是新一轮数据完整性／物理真实性认证。
+
+| 对象／字段 | 核对结果与来源位置 | 状态／限制 |
+|---|---|---|
+| 案例ID、梁、IB-Fixed、T1–12、k、历史阶段 | JSON cases/shared_case_fields；八行表新增stage连接。E025 load_manifest固定八个(beam,k,L*)组合与14stage身份 | 已有且有来源；96是名义机会，3个梁，不是96独立试件 |
+| 14阶段的历史图像身份／名义荷载 | E012-R001 selected_sequences_before_pixel_access.json: groups[beam][stage_index]的saved_as、nominal_load_kN及ZIP entry/CRC；与JSON stages逐项一致 | 已有且有来源；未在本轮读取原图、重算CRC或重建选择 |
+| 历史标签的独立追溯 | E004/analysis/load_stop_mapping.csv按(beam_id,photo_time_s)连接，使用load_step_label，不使用实测load_kN替代名义荷载；本轮只读已存CSV。E012只纳入numeric+nominal_time_join_available，按文件时间排序 | 已有且有来源；该映射是事后匹配，不证明历史当时收到标签。各历史原工作簿单元格本轮未重核，不由目标单元格反推补写 |
+| 两行历史宽度／键 | JSON measurement_table指E015-R001/profile_measurements.csv；每例histories对应(beam,stage_index,transect_id,role=crack)，宽度fwhm_native_px，QC valid/reason与origin_eligible；当前接口load_stage核对source路径及load_kN | 已有且有来源；本轮不读全表重算宽度／唯一性，使用E025源连接及独立审核记录；重复或跨身份连接不能择优选一条 |
+| 首帧几何／定义 | E015-R000/first_frame_transects_lock.json；B4/B5/B6首帧分别t225/t228/t183；原prepare只读各组S0，固定12点、法线和origin_valid | 已有且有来源；五行中位剖面半深度、首帧原生px，不是人眼边界或毫米开口；手工路径也属于已查看开发准备 |
+| 历史H的来源 | E012每梁Beam{b}_stage_fields.npz的homographies[j]；stage脚本对j只用当阶段图和首帧register(im,origin,scale)；E015 evaluate转换为native H后取样，无未来联合H拟合调用 | 已有且有来源，代码追溯未见后续帧输入；E025审核也已记录。没有本轮重配准或独立材料坐标验证，阶段列表本身仍是回顾选择 |
+| L*给定方式／曝光 | JSON query_role/supplied_by/query_selection_exposure；分析者沿用旧E015/E023查询，调用时显式给定；八行均已看目标／旧结果 | 已有且有来源；没有逐次当年起点计划、准确L*选择时刻或原始调用日志，不伪造。事前计划不是当前条件查询前置 |
+| 固定目标身份与名义来源 | 上表目标stage/image；JSON target_label_source与E023 load_knowledge.json queries对应八单元格。目标阶段固定k+1，不按误差／可测性更换 | 已有且有来源；目标标签核读沿用E023，不重开工作簿；未来实际力不能代替L* |
+| 元数据来源与目标数值来源分工 | 选样／调度可以读完整清单以固定评价身份；数值预测器只能读历史白名单。目标宽度／valid及目标H只归评价，输出保存后接入 | 当前E025已实现逻辑/API边界；完整CSV字节仍被扫描，且较早案例目标可合法成为较晚案例历史，不是全局文件盲隔离 |
+| 采集时间／计划／跳过规则 | E023已有一般预设停点依据，但八个精确下一纳入停点的起点可获取性未证；文件t仅身份／顺序键 | 尚待确认；不补B4的20kN，不编造同步时刻；只限制升级为计划已知的前瞻预测 |
+| 定义ID／source版本的强校验、逐输入内容摘要 | 当前包有definition字符串、unit、源行键与代码／Run路径；更强规范ID、每输入内容摘要与物理只读隔离属于未来加固设计 | 仅为拟议接口增强，不声称现有实现已经严格校验每个定义ID或哈希 |
+
+路径沿用JSON既有规则：archive相对archive_root，repo项相对匹配工作树，
+image相对raw_image_root，工作簿相对workbook_root。预测端不把输入字符串
+当作任意可读取路径。普通缺历史/目标只记缺失；清单外图像、重复键、跨梁、
+名义标签或源路径冲突属于身份错误，停止连接并保存冲突，不按目标可见性
+“挑正确的一条”。无对应目标的合法L*可保留预测但无参考；当前八案例CLI
+固定身份，不自动接纳任意新L*或新目标。扩大查询域需要另行方案／许可。
+
+### 2. 两个数据资格掩码及Q/P：决策和落盘
+
+| 项／顺序 | 允许读取／判定 | 失败／未判定与记录 | 当前证据与待补 |
+|---|---|---|---|
+| 0 来源连接 | 固定案例元数据、首帧来源、截至k的两行键，校验同梁/视角/测线/名义荷载/单位/定义来源 | 重复、歧义、身份冲突：连接停止，不伪装普通R缺失；保留冲突位置 | E025 load_manifest/load_stage/main；未来冲突明细文件是拟议增强 |
+| E 历史起点资格 | origin_valid；k−1,k历史存在、有限且valid；荷载有限且递增；同定义/单位/身份。几何及历史H只能由首帧与j≤k观测产生 | E_reasons保留全部历史原因，如first_frame_ineligible、history_j_missing/nonfinite、historical_load_not_increasing；结构不一致抛错停止 | E025 eligibility与输入连接；不读目标valid/宽度/位置类别，不加物理参考门槛 |
+| Q 查询合法性 | 显式有限L*>L_k；k−1<k的荷载递增属于E，二者都要满足才能尝试预测 | Q_reason=query_domain_invalid；缺历史k时Q也可能为false，但不是“目标不存在” | E025 eligibility/predict；当前单调加载域，不静默扩为卸载／循环查询 |
+| P 各方法执行 | 仅白名单HistoryPacket；E∧Q才尝试；原forecast两臂及[0,120]px映射不变 | 每臂attempted/success/prediction_px/reason；未尝试与尝试失败分开；异常/非有限不记0 | E025 predict。两臂均保留，不择优换half-secant；其辅助结果如以后展示另报支撑 |
+| 保存屏障 | 保存所有名义机会的输入、E/Q、每臂输出或失败，文件关闭后再交接 | predictions_before_evaluation.json，评价重读该序列化快照；未完整保存不得进入目标评价 | E025 replay已实现；这不是写保护文件系统或盲进程承诺 |
+| R 目标参考可测性 | 仅屏障之后，对E∧Q按固定目标身份/荷载、同定义宽度、valid与有限性判断 | evaluated_rows.json的R/R_reason/reference_px；缺目标target_missing、无效原QC原因、非有限target_nonfinite。E∧Q不成立时not_evaluated_ineligible，不把它当真实目标缺失 | E025 target_loader/load_stage/replay；R在当前结构中仅对E∧Q评估，即使某臂失败也保留参考原因 |
+| C 共同评分支撑 | E∧Q∧R∧P_persistence.success∧P_secant.success | 两臂相同C和参考；无C时误差/MAE为null/不可计算，不为0；无参考预测仍留快照 | E025 replay/summarize已实现；不以E023/E024或后续T1分类倒筛E |
+
+白名单保持case/beam/transect、k、origin_valid、两条历史(stage/load/width/
+valid/reason)、definition/unit、显式L*；不含target_stage/image/H/width/valid、
+未来实际力或事后定位类别。完整JSON只能留在来源／调度／评价层，不能作为
+predict参数。查询来源和曝光随案例审计记录，不新增为secant拟合特征。
+
+注意：当前E025 standalone eligibility对definition只检查非空，unit严格匹配；
+不能写成“任何外部非空错误定义也已被拒绝”。固定E025使用同一已审清单，
+本轮未见定义混用记录。通用入口若要接外部任意定义，需精确ID校验、来源绑定
+和负例验收，属于待授权加固，不在本轮改代码／测试，也不修改旧接口结论。
+
+### 3. 逻辑职责、访问与交接（不启动新agent）
+
+| 职责 | 可以读取 | 产出与交接条件 | 不可越界 |
+|---|---|---|---|
+| 案例与来源整理 | 既存完整身份清单、阶段/名义映射、曝光记录、协议及源版本；可预先列明评价目标身份 | 既有八行表/JSON，角色分明的来源清单、冲突/未确认项；先固定身份再投影历史字段 | 不按目标质量／误差换图或删测线；不把清单整体交数值API |
+| 历史测量／E与Q | 首帧固定几何、j≤k历史及仅依赖这些的变换、显式L* | 同定义两行历史快照、行键/版本、E/Q原因；历史来源不清先列待查 | 不读取目标H、valid、宽度来定E；历史几何不由未来帧回拟合 |
+| 预测／保存 | 仅上游白名单与固定两基线/映射 | 每名义机会两臂输出或失败、输入快照；全文件保存关闭后交评价 | 不收完整ledger或参考；失败记录也必须保存；不等R再预测 |
+| 目标匹配／同定义参考评价 | 已保存且版本对应的预测快照＋固定目标身份、同定义目标记录／评价变换来源 | evaluated_rows含R/原因、参考、C、两臂误差；当前为读旧算子值，不重新测图 | 不回写历史/预测，不补别定义、就近荷载或生成真值；读取目标前先确认屏障 |
+| 配对汇总／只读复核 | 同Run快照/评价表、来源版本/协议、case表；软件独立复核可读既存源记录 | 逐案例/梁覆盖、共同C上的MAE与差、原因和终态账；指出身份／版本冲突 | 不重选C、不把换评价人当新holdout；本轮仅读E025已有复核记录 |
+
+当前版本对应链：既有v1案例JSON＋E015-R000几何／E015-R001宽度＋
+E025 numeric代码b3126c4／protocol conditional-interface-v1／R001 receipt，
+再到同目录predictions_before_evaluation.json→evaluated_rows.json→
+case_coverage_metrics.csv/summary.json。原图身份从E012选择追溯，标签从
+E004映射和E023记录追溯；E025回执记录实际输入路径和代码，但没有每个输入
+文件的内容摘要，不能冒称它拥有该保证。将来需防止原路径内容漂移时，可在
+新方案中规定内容摘要/输入只读副本，并同时绑定评价输出；本轮仅建议。
+
+### 4. 分母、原因与聚合口径
+
+本轮**没有新有效性判定或预测**。下面是读取E025既有case_coverage_metrics.csv
+与outcome记录后的转录，不能称本轮新确认96次有效预测；不是新一轮验收。
+
+| 既有案例 | N | E | E∧Q | persistence 尝试/成功/失败 | secant 尝试/成功/失败 | R（E∧Q上） | C | 互斥终态 |
+|---|---:|---:|---:|---|---|---:|---:|---|
+| B4-K1-Q40 | 12 | 12 | 12 | 12/12/0 | 12/12/0 | 12 | 12 | scored12，其余0 |
+| B4-K2-Q50 | 12 | 12 | 12 | 12/12/0 | 12/12/0 | 12 | 12 | scored12，其余0 |
+| B5-K1-Q30 | 12 | 12 | 12 | 12/12/0 | 12/12/0 | 12 | 12 | scored12，其余0 |
+| B5-K2-Q40 | 12 | 12 | 12 | 12/12/0 | 12/12/0 | 12 | 12 | scored12，其余0 |
+| B5-K3-Q50 | 12 | 12 | 12 | 12/12/0 | 12/12/0 | 12 | 12 | scored12，其余0 |
+| B5-K4-Q60 | 12 | 12 | 12 | 12/12/0 | 12/12/0 | 12 | 12 | scored12，其余0 |
+| B6-K1-Q30 | 12 | 12 | 12 | 12/12/0 | 12/12/0 | 12 | 12 | scored12，其余0 |
+| B6-K2-Q40 | 12 | 12 | 12 | 12/12/0 | 12/12/0 | 12 | 12 | scored12，其余0 |
+| 梁4（2案例） | 24 | 24 | 24 | 24/24/0 | 24/24/0 | 24 | 24 | scored24，其余0 |
+| 梁5（4案例） | 48 | 48 | 48 | 48/48/0 | 48/48/0 | 48 | 48 | scored48，其余0 |
+| 梁6（2案例） | 24 | 24 | 24 | 24/24/0 | 24/24/0 | 24 | 24 | scored24，其余0 |
+| 全部（8案例／3梁） | 96 | 96 | 96 | 96/96/0 | 96/96/0 | 96 | 96 | scored96，其余0 |
+
+逐原因计数允许一机会多项，例如E多个历史原因、两臂异常和R缺失并存；原因
+总和不等于缺失数。互斥终态使用E025现有优先序：history_ineligible →
+invalid_query → arm_failure → reference_unavailable → scored，每机会仅一类，
+各类相加=N。臂失败优先并不删除同时存在的R原因。R未评价者单列，不当作
+目标不可测，也不在E∧Q分母里重复计入。身份冲突中止时报告不完整Run状态，
+不能把未完成账目补成一张全N终态表。
+
+未来报告保留N、N_E、N_EQ、每臂attempt/success/fail、N_R_on_EQ、N_C，
+同时给C/N与R/N_EQ，分母0写不可计算；可另列每臂自身覆盖，主MAE只用共同C。
+沿用“同一案例测线均值→梁内案例等权→三梁等权”，报告
+delta=MAE_secant−MAE_persistence（负更好），不重新调整公式或评分阈值。
+本轮不重算或重新抄录MAE；权威旧值仍在E025 evidence/summary.json。
+
+缺失处理：N_C=0的案例MAE=null，不删除名义案例；梁内仅对有C案例计算条件
+均值，同时列清scored_cases/预定cases及空案例ID，标为部分案例支撑而非完整
+八案例效果。任一整梁无可评分案例，三梁总MAE/delta不可计算，不静默改为
+两梁等权。若要求“缺任一案例即整体不可计算”的更严格新口径，应另行批准，
+不得暗改现有summarize。不存在显著性、物理精度或事后成功门槛。
+
+### 5. 不一致、未决事项与最小下一步（仅方案）
+
+| 项目 | 本轮处理／影响 |
+|---|---|
+| 文档“待选宽度／待实现／待审核／未运行”与最新E025冲突 | 保留历史并在页首和本节校正；已选半深度，E025实现/独立审核/旧八案例重放已有记录。本轮没有新的Code Ready或执行 |
+| 早期C表达省略Q；JSON order最后一句仍只写E_and_R | 当前精确定义为E∧Q∧R∧两臂成功；当前代码已包含Q，不改历史JSON文字，更不据此断言E025漏算Q |
+| “保存后才读未来”措辞太强 | 限于评价解码/数值API；整CSV被扫描、所有案例历史先构造，较早目标可能已作为较晚历史读过；不是全局未访问未来或物理在线证据 |
+| H来源与材料位置混淆 | 代码及E025审核可追溯H只用当帧和首帧，无后续联合拟合；不证明映射精准、材料同点或当时实际获得标签 |
+| 任意新查询、严格definition ID、输入内容绑定 | 固定八案例之外、通用接口强校验与每输入摘要尚需新设计/许可；当前CLI不是已验证的任意查询服务，不自行实施 |
+| 独立评价与新独立证据混淆 | 现有独立软件复算不改变曝光身份；未来验证需合法未查看/前瞻来源，不读封存目标来补设计 |
+| 下一计划荷载／漏拍停点、物理参考 | 继续列为更强声明的补证，不阻塞当前回顾条件查询；不对外询问或补造计划 |
+
+最小下一步是**先审阅本v1.1并采用其状态／访问口径，复用已完成E025接口与
+来源清单，不再开一次相同八案例重放**。只有决定接入新的合法资料或扩展
+外部输入域时，才为精确案例版本、允许信息、定义ID／来源绑定、保存屏障、
+评价职责和缺失规则登记新协议与审核；获得实现／测试／执行许可后再做。
+若继续本聊天T1位置残差传播，须沿E027另立有界诊断；不混入本接口文档任务。
+
+不能从现有记录回答的事项：实际当年起点标签/计划可获取时刻、未查看资料
+是否可取得、可靠材料点对应／物理开口精度、任意新定义输入的运行行为。
+分别需要原始计划证据、新数据授权、独立测量或另行代码验收；本轮只列缺项。
+
+### 6. 本补充的定位索引
+
+- [既有v1清单](d01_conditional_query_cases_v1.json)：sources/shared_case_fields/stages/cases；八行来源表在本文件上一节，不重建清单。
+- E012保存选择与E004映射：以JSON archive_root解析sources.sequence；E004/analysis/load_stop_mapping.csv同根。前者提供14个ZIP entry/CRC身份，后者按梁/照片时间追溯标签。
+- [E015协议](S03-E015-D01/experiment.md)：Frozen method；[原prepare/evaluate/forecast](../../../scripts/d01_crack_profile_diagnostic.py)；[阶段选择与H生成](../../../scripts/d01_stage_forecast_diagnostic.py)：main的选择／register调用。
+- [E023标签核读](S03-E023-D01/load_knowledge.json)、[限制记录](S03-E023-D01/evidence/load_knowledge_review.md)：八queries及未证明事项；本轮未重开论文／工作簿／附录。
+- [E025协议及outcome](S03-E025-D01/experiment.md)、[独立审核](S03-E025-D01/evidence/independent_review.md)、[既有分母表](S03-E025-D01/evidence/case_coverage_metrics.csv)、[R001回执](S03-E025-D01/runs/S03-E025-D01-R001.json)：已有执行身份，不是本轮执行。
+- [当前代码只读](../../../scripts/d01_conditional_interface.py)：eligibility/predict/replay/summarize/load_manifest/load_stage/main；未导入或调用任何函数。
+
+本节表格是非数值方案审阅所需的最小可视结构；没有新结果图、Run或独立
+验证结论。仅此草案被修订，代码、JSON、历史协议、结果、Obsidian均不变。
