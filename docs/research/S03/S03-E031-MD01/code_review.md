@@ -21,3 +21,14 @@ No claim of independent physical position, width truth or unseen specimen.
 The subsequent renderer is a separate saved-output tool and does not change the
 reviewed numeric runner/protocol/geometry. Final artifact interpretation remains
 subject to independent saved-output review.
+
+## Pre-target amendment admission
+
+Same reviewer admits exact clean commit
+`68fbc24312f6b77bfc1bfe3149cebcceffc3995d` before409 acquisition. Read only code
+delta and appended protocol, no photos or outputs. Seeded crop bounds valid
+for the fixed centres; total displacement is seed plus search-window offset;
+sampling sign and history-only information order correct. New synthetic seeded
+case recovers total(2,15), not incremental(1,5). Original zero-seed history
+behaviour, geometry and predictions unchanged; no R001 replay needed. External
+120s timeout retained. No blocker; background proxy limitations unchanged.
