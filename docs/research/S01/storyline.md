@@ -94,3 +94,8 @@ R002 fixed package received; identity/numerical consistency/actual three-PNG ind
 ### 2026-10-16 — E012 Stage B implementation reviewed; R003 awaiting exact approval
 
 Stage B source859fed4 passes independentgpt-6.1-sol Medium review;95related tests including37new StageB tests pass,plus real-audit-hook fake pipeline. Exact singleton/reference agreement and full-scale synthetic feasibility preserve budget and E003 originals. No actual rescoring/GT/pixel access or producer contact. Prepare precise99-file source/publication/R003approval. Next verify fixed31156corrections for trusted positive utility and protected joint potential; partial support remains useful,not learned detection success. ActualGPU feasibility unmeasured;CPU1/3600s/RSS4GiB/GPU4GiB unchanged;fresh sitessealed.
+
+
+### 2026-10-16 — E012 approved source published; R003 held before launch, bounded environment repair reviewed
+
+Approvedv1 source859fed4 received/99files verified andpublic28e96b8 pushed/readback. Preflight rejects22WDDM desktop C+G contexts despite0%GPU/free96694MiB/noPython;R003 never launched,not a scoring failure. No scientific result or GT/pixel forward. Env1a23521c pins13desktop paths/SHA plusWDDM/sameUUID/0%/C+G,unknowns stop;110relatedtests and6.1sol-Medium independent review pass. Prepareexactv2 approval before changedsource/publication/execution. Scientific plan,resourcecaps,E003 originals andfresh-sitesseal unchanged.
