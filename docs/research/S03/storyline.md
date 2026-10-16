@@ -308,3 +308,15 @@
   absent; no B/preflight/full diagnostic/figure/realarrays/holdout/producer/send.
   Unit success is not actualrootcause or physical validity; originalacceptance
   stays paused. B still needs separate human approval, not automatic execution.
+
+- **2026-10-16 — E019-D01 B executed once; layout defect pauses evidence acceptance.**
+  Separate exactB approval, clean15b6e31, R001succeeded1.069555s/60s, emptylog,
+  zeroSVD and unchanged tolerances. Main11source/6artifact hashes match; saved
+  C1clean and C2/C3samep/differentA expected negatives are not runtime failures.
+  ActualPNG mainview found clipped y-label and top annotation/title overlap;
+  stopped immediately and requested independent reviewer stop. Independent
+  had only read metadata, no scalar/hash/figure acceptance yet. No retry,
+  redraw/source/output changes/realarrays/holdout/send. SeeS03-E019/
+  subspace_results.md and subspace_evidence_review.md. Request only a new
+  display-revision plan preserving original outputs, not more numerical runs
+  or actualE019rootcause claims; original and D01 acceptance remain paused.
