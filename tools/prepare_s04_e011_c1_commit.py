@@ -131,7 +131,7 @@ end
 
 
 def build(source_root,prior,reference_root,mesh,out,remote_root,commit,inventory):
-    assert not out.exists() and remote_root.endswith('E011_C1_20261016_v4')
+    assert not out.exists() and remote_root.endswith('E011_C1_20261016_v4_r1')
     out.mkdir(parents=True)
     here=Path(__file__).parent/'s04_e011_analysis';native=json.loads((prior/'input_manifest.json').read_text())[0]
     source_ids={x['path']:x['sha256'] for x in native['source_checks']}
@@ -274,18 +274,18 @@ if((Get-PSDrive C).Free -lt 10GB -or (Get-CimInstance Win32_OperatingSystem).Fre
 $cmd='"C:\Windows\System32\cmd.exe" /d /s /c ""C:\Program Files\MATLAB\R2025b\bin\matlab.exe" -singleCompThread -batch "run(''@ROOT@\entry.m'')" -logfile "@ROOT@\matlab.log" > "@ROOT@\stdout.log" 2> "@ROOT@\stderr.log""'
 $r=Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine=$cmd;CurrentDirectory=$root}
 if($r.ReturnValue -ne 0){throw ('WMI launch failed: '+$r.ReturnValue)}
-@{run_id='pf_s04e011_c1_commit_20261016_v4';commit='@COMMIT@';branch='codex/hard5-q4-t3-2x2-20261005';dirty=$false;producer='CITPC12/citpc12-ssh';account='AD\xw436';pid=$r.ProcessId;command=$cmd;root=$root;started_utc=(Get-Date).ToUniversalTime().ToString('o');threads=1;gpu='CPU';method='WMI isolated process'}|ConvertTo-Json|Set-Content -Encoding UTF8 ($root+'\launch_receipt.json')
+@{run_id='pf_s04e011_c1_commit_20261016_v4_r1';commit='@COMMIT@';branch='codex/hard5-q4-t3-2x2-20261005';dirty=$false;producer='CITPC12/citpc12-ssh';account='AD\xw436';pid=$r.ProcessId;command=$cmd;root=$root;started_utc=(Get-Date).ToUniversalTime().ToString('o');threads=1;gpu='CPU';method='WMI isolated process'}|ConvertTo-Json|Set-Content -Encoding UTF8 ($root+'\launch_receipt.json')
 Get-Content ($root+'\launch_receipt.json')
 '''.replace('@ROOT@',remote_root).replace('@CHECKS@',checks).replace('@COMMIT@',commit)
     (out/'launch_wmi.ps1').write_text(launch)
     files=[dict(name=p.name,bytes=p.stat().st_size,sha256=sha(p)) for p in sorted(out.iterdir())]
     assert len(files)==16
     receipt=dict(status='prepared_not_sent',account=r'AD\xw436',host='CITPC12',ssh_alias='citpc12-ssh',remote_root=remote_root,source_commit=commit,files=files,files_total_bytes=sum(x['bytes'] for x in files),input_copies=staging,input_copy_bytes=sum(x['bytes'] for x in staging))
-    (out.parent/'approval_manifest_v4.json').write_text(json.dumps(receipt,indent=2)+'\n')
+    (out.parent/'approval_manifest_v4_r1.json').write_text(json.dumps(receipt,indent=2)+'\n')
     return receipt
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--source-root',type=Path,required=True);p.add_argument('--prior-bundle',type=Path,required=True);p.add_argument('--reference-root',type=Path,required=True);p.add_argument('--mesh',type=Path,required=True);p.add_argument('--inventory',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--remote-root',default=r'C:\Users\xw436\jobs\E011_C1_20261016_v4');p.add_argument('--commit',required=True);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--source-root',type=Path,required=True);p.add_argument('--prior-bundle',type=Path,required=True);p.add_argument('--reference-root',type=Path,required=True);p.add_argument('--mesh',type=Path,required=True);p.add_argument('--inventory',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--remote-root',default=r'C:\Users\xw436\jobs\E011_C1_20261016_v4_r1');p.add_argument('--commit',required=True);a=p.parse_args()
     print(json.dumps(build(a.source_root,a.prior_bundle,a.reference_root,a.mesh,a.out,a.remote_root,a.commit,json.loads(a.inventory.read_text())),indent=2))
 if __name__=='__main__':main()

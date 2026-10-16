@@ -132,3 +132,8 @@ review and updated mesh对齐.md. Scopeone syntheticc1; no120cycle/Nf/c83/teache
 or physicalclaim. If future rawselfcheck fails, locate operator/state/GP first;
 if nonraw divergence fails, investigate original reproducibility; if repairedC
 fails, identify first coupled block/substep, preserve original verdict.
+
+
+## Execution amendment r1, 2026-10-16
+
+Authorized v4 stopped at staticISCL before nativework. Equivalent isscalar material-size check only; fresh v4_r1 root/run, no retry/overwrite ofv4. Current user direct instruction and parentAGENTS2026-10-16 exempt SSH/code from send approval; independentlocalreview still required. Numerical/acceptance/budget contracts unchanged. See runs/c1_commit_v4_static_r1_20261016.md.
