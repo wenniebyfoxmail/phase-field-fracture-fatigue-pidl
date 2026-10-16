@@ -68,3 +68,7 @@ Original dispatcher completed2026-10-16T10:29:02Z. All three rows completed10000
 66files45560202bytes retrieved with all size/SHA checks;27rowfiles additionally match real producer archives. Reviewed scientific source98c6206 unchanged; v2 deployment4692b6a. All10000 actual LR entries match each row expected vector and formal preflight; maps, PRE_UPDATE, sampling and control identities admitted by producer. Strict unmodified Mac full replay remains0/3 INADMISSIBLE due native LR bits, with separate reference-rho portability exceptions retained. Independent saved-field/Q4-mass evidence review passed its bounded scope, not scientific or complete portability qualification. No retries, source/budget changes, external review or new training.
 
 Next: six existing endpoint feature/output-head/regional-gradient diagnostic proposal only; see [next step](next_step_proposal.md). Implementation and diagnosis remain future work. Monitoring closes after evidence recording; no new producer action authorised here.
+
+## 2026-10-16 — authorised read-only endpoint diagnostic completed
+
+Allsix E019/E021 endpoints measured without optimizer/fitting/updates; independent code and evidence review complete. c60inside-background last-hidden features exactlyzero; c83 current regionalgradientcompatible, no demonstrated historicalconflict. Sourcec22376d, SHA1ef8da78, peakRSS723664896bytes; originalscientificFAIL/strictMacexceptions unchanged. [Diagnosis](endpoint_diagnostic_decision.md), [one proposed last-hiddenleak repair, unexecuted](minimal_repair_proposal.md).

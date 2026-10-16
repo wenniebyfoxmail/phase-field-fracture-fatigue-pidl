@@ -1,0 +1,16 @@
+{
+  "decision": "BOUNDED_ENDPOINT_DIAGNOSTIC_AND_SINGLE_PROPOSAL_SUPPORTED",
+  "scientific_success": false,
+  "causal_identification": false,
+  "full_replay_admission": false,
+  "independent_endpoints": 6,
+  "independently_recomputed_head_regions": 24,
+  "repair_executed": false,
+  "source_sha256": "1ef8da78b5f0d6afe8e4d8329aa9b79c2946c73a54f089df9d7747e4afcad73c",
+  "files": {
+    "results/summary.json": "deabe1e62015f8274a665400bb268e5a97860e5e048bfacc661b4089be74abd2",
+    "analysis/diagnostic_summary.csv": "ff825036b7d7be085c35a29d6f273eb46f08399416c1ce5f4b37ff5ad0426c34",
+    "review/independent_head_audit.py": "c2d9fe7ea9071a43b5f961b07e0309a3f775e1319409b75e75fa3ee97da68733",
+    "review/independent_head_audit.json": "1c170e76d97fb15dee47e36c8dabd3cdfbc693572e81a02f0cedc244cdaa8eb1"
+  }
+}

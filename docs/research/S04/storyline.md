@@ -79,3 +79,7 @@ Exact v2 transfer/launch explicitly approved; both remote file hashes match. Cle
 ## 2026-10-16 — E021 coordinate preconditioning: useful c83 gain, remaining three-state miss
 
 E021v2 all3valid final10000-update rows; original primaryFAIL. E019-relative full changes c20−6.1421%,c60+14.2119%,c83−63.9366%; c83 final.00116782 still>.001. c20 improves all regions; c60 retains absolute threshold but not E019 fit. c60/c83 inside-background rises13.7041%/6.8239%, outside saved UV unchanged. Preserve useful coordinate route while addressing residual damage and middle-state regression. Independent bounded Q4/saved-field review complete; strict Mac nativeLR/reference-rho exceptions retained. No physical teacher/forecast qualification. [E021 decision](S04-E021/decision.md), [next diagnostic proposal, not run](S04-E021/next_step_proposal.md).
+
+## 2026-10-16 — six endpoints select one final-activation discriminator
+
+E019/E021×c20/c60/c83 read-onlydiagnosis and independent boundedreviewcomplete. c60E021inside-bg hiddenfeaturesallzero, bias-onlyshape and currentheadgradientcompetition; c83remainder not explained by necessary currentdamage/bgconflict or feature-rankloss alone. Preservecoordinatepreconditioninggains; nextproposal changes only localfinalhiddenTrainableReLU to fixedleak.01, keeping originalphysics/budget/objective. No newtraining/repairoutcome. [Decision](S04-E021/endpoint_diagnostic_decision.md).

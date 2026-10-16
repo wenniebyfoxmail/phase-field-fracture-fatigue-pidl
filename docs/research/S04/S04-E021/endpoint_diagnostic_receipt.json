@@ -1,0 +1,23 @@
+{
+  "run_id": "S04-E021-D001",
+  "source": "c22376d",
+  "script_sha256": "1ef8da78b5f0d6afe8e4d8329aa9b79c2946c73a54f089df9d7747e4afcad73c",
+  "started_utc": "2026-10-16T12:09:35.201140+00:00",
+  "producer": "Mac-read-only-analysis",
+  "training": false,
+  "parameter_updates": 0,
+  "status": "COMPLETED_INDEPENDENT_BOUNDED_REVIEWED",
+  "chunk": 256,
+  "memory_precheck": "memory_precheck_r2",
+  "memory_precheck_peak_rss_bytes": 604880896,
+  "first_precheck_note": "Earlier finite-consistent NumPy matmul emitted overflow/invalid warnings; preserved log, same-math explicit finite einsum re-reviewed and clean fresh precheck.",
+  "finished_utc": "2026-10-16T12:16:04.225111+00:00",
+  "endpoints": 6,
+  "peak_rss_bytes": 723664896,
+  "real_execution": "no warnings r2 and fullsix",
+  "next_repair": "PROPOSED_ONLY_last_hidden_leak_0.01",
+  "independent_review": "BOUNDED_ENDPOINT_DIAGNOSTIC_AND_SINGLE_PROPOSAL_SUPPORTED",
+  "closed_utc": "2026-10-16T12:17:04.083932+00:00",
+  "plot_sidecar_validation": "4 files 2 sidecars PASS",
+  "repair_executed": false
+}
