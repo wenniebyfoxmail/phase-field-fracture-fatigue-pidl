@@ -1,0 +1,32 @@
+{
+  "experiment_id": "S03-E026-D01",
+  "run_id": "S03-E026-D01-R001",
+  "protocol": "T1-local-audit-v1",
+  "code_commit": "991e5b0da054b311689f81ea4e0eb59a4f6dc979",
+  "git_dirty": false,
+  "hostname": "Wennies-MacBook-Pro-14.local",
+  "pid": 53304,
+  "command": [
+    "scripts/d01_t1_local_audit.py",
+    "--archive",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E026-D01/runs/S03-E026-D01-R001/outputs"
+  ],
+  "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "gpu": null,
+  "started_utc": "2026-10-16T09:16:10.301258+00:00",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E026-D01/runs/S03-E026-D01-R001/outputs",
+  "producer": "Mac lightweight cache audit",
+  "budget_seconds": 60,
+  "measurement_rows": 54,
+  "position_rows": 1476,
+  "stage_pair_rows": 4,
+  "source_E020": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E020-D01/runs/S03-E020-D01-R001/outputs",
+  "source_E019": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E019-D01/runs/S03-E019-D01-R001/outputs",
+  "ended_utc": "2026-10-16T09:16:10.344566+00:00",
+  "wall_seconds": 0.05148066597757861,
+  "cpu_seconds": 0.04214899999999999
+}

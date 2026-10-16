@@ -1,0 +1,5 @@
+arm,stage_a,stage_b,left_shift,right_shift,half_level_change,paired_valid,switch_candidate,split_candidate,merge_candidate,any_band_event,width_change_px,peak_change_px
+original_H,1,2,-0.39113600066477083,-4.133642910758813,0.8196079799107139,True,False,False,False,False,-3.7425069100940433,0.5
+original_H,2,3,0.7916365285978313,3.1157177422168703,0.007261439732140218,True,False,False,False,False,2.3240812136190385,2.25
+background_aligned,1,2,0.18914296035211375,-0.0517958755973833,0.3001778738839249,True,False,False,False,False,-0.24093883594949972,0.75
+background_aligned,2,3,-0.2765618927085658,0.36912536061094237,0.4244326636904816,True,False,False,False,False,0.6456872533195082,1.0

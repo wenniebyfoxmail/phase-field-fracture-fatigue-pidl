@@ -176,3 +176,18 @@ CSV bytes are scanned, so semantic/API separation is not filesystem blindness.
 Next propose explain B4last T1 local error using existing profiles/coordinates,
 not deleting that case, tuning criteria or expanding architecture. E024fractional
 position diagnostic remains separately proposed. No physical/road/holdout claim.
+
+2026-10-16 — [S03-E026-D01](S03-E026-D01/experiment.md) fixes B4last-query
+T1 for posthoc cache/raw-context audit. All54 unchanged half-depth profiles and
+1476 deterministic location cases independently reproduced exactly;11synthetic
+tests. Original30/40/50kN widths15.252/11.510/13.834px give secant error-6.067px;
+existing FIT-shifted sampling16.383/16.142/16.788 gives-.887px, not a repaired
+forecast score. Original down-up holds9/9common±2/.5 positions but only351/729
+independent offsets; aligned5/9 and254/729. Right half-depth crossing dominates
+the nominal change, no disjoint/split/merge indicator; raw context lies near
+bend/junction-like dark band. Optical turn and location dependence supported,
+physical cause unresolved, actual offset range unproven. Final4figures R003
+473cedd and numericR001991e5b0 independently reviewed; native half-pixel extent
+fixed before rendering, R002legend overlap retained/superseded. Next propose
+independent near-crack background correspondence atT1 (both n/t, spatial transfer),
+no new fitting, model, source, target/operator change or old rescoring this round.

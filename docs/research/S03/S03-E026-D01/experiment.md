@@ -78,3 +78,59 @@ corrections/CHECK support, selected cached arrays, summary and independent revie
 No separate physical metrology verdict; case selected posthoc and remains development.
 
 Registration status: prepared; no diagnostic executed at registration.
+
+## 2026-10-16 diagnostic result
+
+Execution succeeded, local retrieval verified, independent11-test code review
+and independent numerical evidence review complete. Original cached54 profiles
+reproduce exactly; all valid and single bounded half-depth component.1476
+counterfactual rows/4stage-pair rows independently rebuilt with maxdifference0.
+R001 code991e5b0, wall.051481s CPU.042149s. Old scores and measurement unchanged.
+
+At original t0, widths15.2524483 ->11.5099414 ->13.8340226px. Preceding
+change-3.7425069 versus next change+2.3240812; secant signed error-6.0665881px
+is exactly their difference, no clipping. Persistence signed error-2.3240812.
+Width change is dominated by right half-depth crossing (-4.1336429 then
++3.1157177px), compared with left (-.3911360 then+.7916365px). Half-level
+changes+.819608 then+.007261gray. No disjoint/split/merge stage indicator;
+that does not identify a physical boundary or prove continuously correct edges.
+
+Using existing FIT proxy sampling locations, widths16.3829098 ->16.1419709
+->16.7876582px, secant error-.8866261; original~6.07px miss is therefore
+strongly sample-location dependent, not safely explained as physical reversal.
+This correction includes n and t shifts and remains unqualified at the crack.
+T1 has3/4CHECK per stage (a5 first-frame excluded); background-to-crack transfer
+has not been independently demonstrated.
+
+Within common t±2 grid, original9/9 down-up, secant errors[-6.455148,-.709768].
+Independent three-stage offsets:351/729 down-up and errors[-18.049038,+15.230186].
+Aligned common5/9 and independent254/729; independent error range
+[-17.660786,+17.771374]. All tested points valid, no clipping. These are
+deterministic sensitivity combinations, not probabilities/independent specimens
+or proof actual registration errors lie inside this grid.
+
+Visual context: all three native crops put T1 near a bend/junction-like dark
+band, and the raw-photo-derived strips show rapid width variation along t.
+This is an image-context observation, not a new crack topology/physical label.
+Existing alignment reduces the stage separation of the local response curves;
+it does not certify a repaired physical-coordinate measurement.
+
+Verdict: descriptive optical turn and position sensitivity supported; physical
+attribution remains inconclusive. Disposition: repair local correspondence
+qualification, not escalate temporal architecture or delete a viewed case.
+Next smallest proposal: independently check stable near-crack background
+correspondences around T1 and whether FIT translation transfers locally to the
+sampling band, including both normal/tangent components; keep scoring and
+operator fixed. Not executed, no new forecast score claimed.
+
+Figures: R002 (7e4fea5) retained/superseded for bottom legend overlap; R003
+(473cedd) only spacing and reading-guide repair, same numeric R001. Four figure
+sets (PNG/PDF/grayscale) and README:
+`/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E026-D01/runs/S03-E026-D01-R003/analysis/README_analysis.md`.
+Profile EDA before rendering:54rows×15fields, six arm/stage groups each9,
+no missing fields; use all fixed-grid points rather than average-only summaries.
+Final independent four-colour-figure/F04-grayscale and reading-guide review
+complete, no blockers. R003 wall3.483624s CPU3.460569s; no numeric rerun.
+All4colour PNGs strict300dpi checks pass, layout issues empty; owner and
+reviewer actually opened final images. Diagnostic evidence complete; physical
+attribution unresolved and proposed correspondence validation not executed.
