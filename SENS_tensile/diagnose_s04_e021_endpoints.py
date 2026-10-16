@@ -111,7 +111,9 @@ def measure(model, data, base, saved, chunk):
         ls=loss[r] if r<3 else loss.sum()
         gs=gradients[r] if r<3 else [sum(g[i] for g in gradients) for i in range(len(params))]
         autograd=np.vstack([gs[output_indices['output_layer.weight']].numpy().T,gs[output_indices['output_layer.bias']].numpy()[None,:]])
-        algebra=h@b-c
+        assert all(np.isfinite(v).all() for v in (h,b,c,d))
+        algebra=np.einsum('ij,jk->ik',h,b,optimize=False)-c
+        assert np.isfinite(algebra).all()
         np.testing.assert_allclose(2*d,autograd,rtol=1e-8,atol=1e-12)
         np.testing.assert_allclose(algebra,d,rtol=1e-7,atol=1e-12)
         denom=float(np.sqrt(max(0,np.trace(h)*ls)))
