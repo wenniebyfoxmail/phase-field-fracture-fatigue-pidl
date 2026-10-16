@@ -288,3 +288,14 @@
   SeeS03-E019/subspace_localisation_plan.md and subspace_localisation_review.md.
   No code/import/tests/QR/SVD/realarrays/Run/send; originalacceptance paused,
   thresholds/outputs unchanged. Human confirmation before code/command prep.
+
+- **2026-10-16 — E019-D01 code/test design and commands statically reviewed, no tests run.**
+  User confirmedv1.1 but prohibited tests/diagnostic/import execution. Newrunner
+  and synthetic-only pytest prepared; local independent static review required
+  clearing pytest environment injection, fixed11file receipt allowlist and-x.
+  All corrected;29d759c staticREVIEW_PASS, code/test/design snapshot8471002,
+  commandSHAee408cce. No Python/AST/bash-n/tests/matrices/QR/SVD/figures/realarrays.
+  SeeS03-E019/subspace_code_review.md/subspace_execution_approval.md. Only A
+  synthetic unit tests are next awaiting human approval; B one-shot diagnostic
+  still requires separate approval, not autochained. No fullCodeReady/runtime/QA or
+  actualrootcause/physical claim, originalE019acceptance stays paused.

@@ -14,6 +14,11 @@
 见subspace_localisation_plan.md及subspace_localisation_review.md。先展示
 供确认；这不是外部Pro审查、真实根因闭合或原E019验收恢复。
 
+用户随后确认D01 v1.1，代码/测试设计/确切命令已准备并通过本地独立
+静态复审，3项命令隔离/停止问题已修正。未导入/运行诊断或测试。
+见subspace_code_review.md及subspace_execution_approval.md。当前仅请求
+单独审批A测试，B合成诊断仍需另批；不宣称完整Code Ready或原验收通过。
+
 ## 当前结论与权限
 
 用户批准准备“固定边界下的运动学表示上限”最小方案及独立只读审查，先展示
@@ -173,3 +178,16 @@ adbe5d5c9dafbdef0f9db99c231dda5e25840401fd98cac6021b24b320f11be4。
 完整两轮回复见subspace_localisation_review.md。没有运行合成/真实矩阵、
 导入、QR/SVD、测试、图形、留出读取、外发或新Run；旧源码/产物/阈值不改。
 当前仅本地方案就绪，展示v1.1等待确认；代码/命令和执行仍须后续审批。
+
+## D01代码/测试设计/命令静态复审完成 — 2026-10-16
+
+确认方案后新增隔离脚本和仅人工常量的pytest文件；测试设计和A/B命令
+准备完成。按用户要求，一项测试/导入/AST/bash-n/合成运算或图形均未运行。
+原runner/依赖/方案/协议未变，不读取真实数组或冻结结果。
+
+首轮静态审查MODIFY_AND_REREVIEW：pytest环境变量注入入口、B按收据
+键名读文件、pytest缺少首败即停。全部修正后REVIEW_PASS，无必改遗留。
+数值脚本与测试源码字节不变；最终源码/测试/设计快照8471002，命令快照
+29d759c，审批正文SHA ee408ccee63a9509e889421134a25bdd215ac764f473d57110dffb821096345e。
+完整两轮回复见subspace_code_review.md。静态通过不替代测试、预算或图QA。
+下一步先展示只批准A测试；成功后B仍另批，不自动串联或启动真实验收。
