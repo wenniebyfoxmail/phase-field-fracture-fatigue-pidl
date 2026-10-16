@@ -19,6 +19,10 @@
 见subspace_code_review.md及subspace_execution_approval.md。当前仅请求
 单独审批A测试，B合成诊断仍需另批；不宣称完整Code Ready或原验收通过。
 
+最新执行状态：用户随后仅批准A，T001一次22项测试通过（pytest0.41秒，
+含来源核对/收据约0.818秒），11项源码字节不变。见subspace_test_results.md。
+B未启动、正式合成报告/图未生成，原E019真实验收仍暂停。
+
 ## 当前结论与权限
 
 用户批准准备“固定边界下的运动学表示上限”最小方案及独立只读审查，先展示
@@ -191,3 +195,12 @@ adbe5d5c9dafbdef0f9db99c231dda5e25840401fd98cac6021b24b320f11be4。
 29d759c，审批正文SHA ee408ccee63a9509e889421134a25bdd215ac764f473d57110dffb821096345e。
 完整两轮回复见subspace_code_review.md。静态通过不替代测试、预算或图QA。
 下一步先展示只批准A测试；成功后B仍另批，不自动串联或启动真实验收。
+
+## 获批仅命令A一次 — 2026-10-16
+
+原样执行ee408cce审批正文的A段一次，exit0，无重试；22passed in0.41s，
+wrapper收据0.817755875秒/60秒，无warning/error。五线程均1，pytest隔离
+环境正确，11来源前后字节一致，审批副本SHA相同。SVD/数组入口零调用
+断言通过，未读真实/留出、未改冻结产物或启动B。
+完整记录见subspace_test_results.md。只是单元测试结果，不是正式诊断/图形
+验收或真实根因闭合；命令B继续等待单独批准，不执行其预检或自动串联。

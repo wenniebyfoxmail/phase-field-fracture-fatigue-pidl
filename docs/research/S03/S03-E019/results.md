@@ -144,3 +144,10 @@ v1.1通过本地方案复核，见subspace_localisation_plan.md及对应review�
 复审；3项执行隔离问题已修正。没有运行测试、导入、诊断、SVD或绘图，
 没有预算/图形实测结果。见subspace_code_review.md和subspace_execution_approval.md。
 先请求单独审批A测试，B仍需另批；旧阈值/失败/产物和真实验收暂停不变。
+
+## 后续获批命令A单元测试（非正式诊断结果）— 2026-10-16
+
+用户只批准A一次，T001测试22项通过，pytest0.41秒、wrapper0.818秒/60秒，
+无warning/error、零SVD、11源码/协议字节不变。未读真实或留出、未改冻结
+产物。见subspace_test_results.md。B未启动，未生成正式合成报告或图；
+原真实根因仍未确定、原验收仍暂停，B继续另请人方批准。

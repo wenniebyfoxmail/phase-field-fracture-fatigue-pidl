@@ -299,3 +299,12 @@
   synthetic unit tests are next awaiting human approval; B one-shot diagnostic
   still requires separate approval, not autochained. No fullCodeReady/runtime/QA or
   actualrootcause/physical claim, originalE019acceptance stays paused.
+
+- **2026-10-16 — E019-D01 command A unit tests executed once and passed.**
+  Explicit A-only approval, exactee408cce command executed once fromclean1115d72.
+  T00122passed/pytest0.41s; wrapper0.81776s/60s, no warning/error, five threads1,
+  pytest environment isolated, zeroSVD/array-read assertions passed and11source
+  before/after hashes unchanged. SeeS03-E019/subspace_test_results.md. B directory
+  absent; no B/preflight/full diagnostic/figure/realarrays/holdout/producer/send.
+  Unit success is not actualrootcause or physical validity; originalacceptance
+  stays paused. B still needs separate human approval, not automatic execution.
