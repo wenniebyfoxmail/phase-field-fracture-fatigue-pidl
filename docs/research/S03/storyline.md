@@ -267,3 +267,13 @@
   independent figures remain incomplete. Original4.692s run/outputs unchanged.
   SeeS03-E019/results.md/evidence_review.md; next request only read-only
   localisation using savedH/p/y/r, not SVD/analysis/solve/redraw/holdout/send.
+
+- **2026-10-16 — S03-E019 saved-object localisation completed, upstream cause unresolved.**
+  Approved read-only H/p/y/r audit with fsum/80digitDecimal found storedp/r
+  already contain Qspace leakage4.0466033e-15mm; audit arithmetic adds only
+  ~1.63e-21mm. y rigid coefficients<=4.27e-19 while p/r reach9.50e-14.
+  No newanomaly;4readfiles and clean454de21 unchanged. This excludes last-audit
+  rounding as the main source, not all upstream A/SVD/definition causes.
+  SeeS03-E019/projection_diagnosis.md. Original threshold/failure retained,
+  fullacceptance paused; candidate next is separatelyreviewed code/synthetic
+  Qsubspace-localisation plan, not rewritingp, threshold rescue or newrealrun.
