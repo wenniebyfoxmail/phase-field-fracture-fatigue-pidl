@@ -342,3 +342,13 @@
   access; no new T/view directory, no send/SSH/push. Display/CPU/time feasibility
   remains untested. Show exact package for A-only approval, B separately later;
   original numerical acceptance stays paused, no actual-root-cause claim.
+
+- **2026-10-16 — D01 V01 command A executed once; artificial tests passed.**
+  Explicit A-only approval; exact8a9fd4ea command from clean5c873ae, exit0,
+  11tests/0.001s, receipt pre-write elapsed0.200264375s/60s with final readback/
+  budget check complete. Five threads1, CUDAoff, isolated/failfast unittest,
+  no warnings and four source hashes unchanged at fe190c9. See S03-E019/
+  subspace_display_test_results.md. No plotting stack/producer imports,
+  report/realarray/holdout reads, source/frozen-output mutation or B/preflight;
+  V01 directory absent. No actual layout/PDF/numerical acceptance claim.
+  B rendering still needs separate human approval; original acceptance paused.

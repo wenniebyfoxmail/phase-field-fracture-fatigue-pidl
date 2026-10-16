@@ -243,3 +243,13 @@ fa0a408e2b78c54b1160b83b4ece5cad91d698550e671f55fc5f9eea984737bb。
 未测试/导入/AST/py_compile/bash-n/出图，未读report内容/真实数组/留出，
 不创建新T/V01目录或改原产物。先展示subspace_display_execution_approval.md
 只请求A；A通过后B仍另批。不称完整Code Ready，不恢复原数值验收。
+
+## 获批仅显示命令A一次，通过 — 2026-10-16
+
+审批正文8a9fd4ea字节不变，cleanHEAD5c873ae原样执行A一次，exit0，无重试。
+11人工tests in0.001s，收据写前取样0.200264375秒/60秒；最终收据读回和
+预算检查完成。五线程均1、CUDA空、-I/-B/-Werror、failfast；日志无警告。
+四来源前后同fe190c9。完整subspace_display_test_results.md。
+只读新测试日志/收据并核对哈希，不导入绘图栈/原producer，不读report或
+真实/留出、不改源码/冻结产物。B/预检未执行、V01目录不存在。
+只是人工逻辑通过，实际布局/预算及原数值验收未闭合；B仍另批。
