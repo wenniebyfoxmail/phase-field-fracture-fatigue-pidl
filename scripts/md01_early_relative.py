@@ -9,7 +9,6 @@ import socket
 import subprocess
 import sys
 import time
-import urllib.request
 
 import numpy as np
 from PIL import Image, ImageOps
@@ -58,6 +57,19 @@ def verified(index):
                 sha256=digest)
 
 
+def acquire(index):
+    row = identities()[index]
+    path = SOURCE/FILES[index]
+    if path.exists():
+        raise ValueError("Refuse to overwrite acquired source")
+    url = f"https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/{IDS[index]}/file_downloaded"
+    if row["content_details"]["download_url"] != url:
+        raise ValueError("Unexpected source URL")
+    subprocess.run(["curl", "--fail", "--location", "--max-time", "60", "--silent",
+                    "--show-error", "--output", str(path), url], check=True, timeout=65)
+    return dict(**verified(index), acquired_at_utc=now())
+
+
 def prediction(widths):
     valid = len(widths) == 2 and all(w is not None and np.isfinite(w) for w in widths)
     out = dict(E=bool(valid), raw={}, arms={})
@@ -71,6 +83,40 @@ def prediction(widths):
             out["arms"][arm].update(success=True, prediction_px=mapped, reason="ok",
                                      clipped=bool(mapped != value))
     return out
+
+
+def unavailable(reason):
+    return dict(valid=False, reason=reason, fwhm_native_px=None)
+
+
+def registration_safe(first, later, cfg, seed=(0., 0.)):
+    try:
+        return match_background(first, later, cfg, seed=seed)
+    except ValueError as error:
+        if str(error) != "Background support outside image":
+            raise
+        return dict(valid=False, reason="background_support_outside_image", dx=None, dy=None, patches=[])
+
+
+def profile_safe(image, geometry, registration):
+    if list(image.shape) != geometry["native_shape"]:
+        return unavailable("native_geometry_mismatch"), None
+    try:
+        return profile_at(image, geometry, registration)
+    except ValueError as error:
+        if str(error) != "profile support leaves source image":
+            raise
+        return unavailable("profile_support_outside_image"), None
+
+
+def historical_summary(snapshot):
+    return dict(protocol=PROTOCOL, E=snapshot["E"], E_reasons=snapshot["E_reasons"],
+                opportunities=1, target_attempted=False, R=None, common_scored=0,
+                coverage=0, conditional_common_coverage=None, target_width_px=None,
+                delta_abs_error_px=None, unit=snapshot["unit"],
+                status="awaiting_target" if snapshot["E"] else "stopped_history_ineligible",
+                methods={arm: dict(value, scored=False, abs_error_px=None)
+                         for arm, value in snapshot["predictions"]["arms"].items()})
 
 
 def execute(args):
@@ -88,19 +134,8 @@ def execute(args):
             raise ValueError("Target already in experiment")
         records = []
         for i in (0, 1):
-            row = identities()[i]
             path = SOURCE/FILES[i]
-            # Exact official file URL; no folder/other-image discovery.
-            if path.exists():
-                raise ValueError("Refuse to overwrite acquired source")
-            url = row["content_details"]["download_url"]
-            expected = f"https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/{IDS[i]}/file_downloaded"
-            if url != expected:
-                raise ValueError("Unexpected source URL")
-            with urllib.request.urlopen(url, timeout=60) as response, path.open("xb") as stream:
-                while chunk := response.read(1024*1024):
-                    stream.write(chunk)
-            records.append(dict(**verified(i), acquired_at_utc=now()))
+            records.append(acquire(i))
             with Image.open(path) as source:
                 preview = ImageOps.exif_transpose(source).convert("RGB")
                 preview.thumbnail((1600, 1200))
@@ -122,20 +157,26 @@ def execute(args):
             save(out/"predictions_saved_before_target.json", snapshot)
         else:
             first, second = (native_gray(SOURCE/FILES[i]) for i in (0, 1))
-            if list(first.shape) != cfg["native_shape"] or first.shape != second.shape:
-                raise ValueError("Native geometry mismatch")
             if not np.isclose(np.linalg.norm(cfg["normal"]), 1, atol=1e-9):
                 raise ValueError("Normal must be unit length")
-            rough, _, _ = measure(sample_profile(first, np.eye(3), cfg["rough_center"], cfg["normal"]))
+            if list(first.shape) == cfg["native_shape"]:
+                try:
+                    rough, _, _ = measure(sample_profile(first, np.eye(3), cfg["rough_center"], cfg["normal"]))
+                except ValueError as error:
+                    if str(error) != "profile support leaves source image":
+                        raise
+                    rough = dict(peak_offset_native_px=0.)
+            else:
+                rough = dict(peak_offset_native_px=0.)
             geometry = dict(cfg, center=(np.asarray(cfg["rough_center"])+
                             np.asarray(cfg["normal"])*rough["peak_offset_native_px"]).tolist(),
                             refinement_native_px=rough["peak_offset_native_px"])
             save(out/"geometry_saved_before_formal_measurement.json", geometry)
             regs = [dict(valid=True, reason="first_image", dx=0., dy=0., patches=[]),
-                    match_background(first, second, cfg)]
+                    registration_safe(first, second, cfg)]
             records, arrays = [], {}
             for i, image in enumerate((first, second)):
-                result, data = profile_at(image, geometry, regs[i])
+                result, data = profile_safe(image, geometry, regs[i])
                 records.append(dict(step=i+2, filename=FILES[i], measurement=result, registration=regs[i]))
                 if data is not None:
                     arrays.update({f"s{i+2}_{key}": value for key, value in data.items()})
@@ -153,6 +194,7 @@ def execute(args):
             save(out/"predictions_saved_before_target.json", snapshot)
         if json.loads((out/"predictions_saved_before_target.json").read_text()) != snapshot:
             raise ValueError("Saved prediction mismatch")
+        save(out/"summary.json", historical_summary(snapshot))
         receipt["E"] = snapshot["E"]
         print(json.dumps(snapshot, indent=2))
     else:
@@ -166,20 +208,14 @@ def execute(args):
         path = SOURCE/FILES[2]
         if path.exists():
             raise ValueError("Target must not be acquired before this evaluation phase")
-        row = identities()[2]
-        url = f"https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/{IDS[2]}/file_downloaded"
-        if row["content_details"]["download_url"] != url:
-            raise ValueError("Target URL mismatch")
         receipt["history_closed_saved_at_utc"] = snapshot["saved_at_utc"]
-        with urllib.request.urlopen(url, timeout=60) as response, path.open("xb") as stream:
-            while chunk := response.read(1024*1024):
-                stream.write(chunk)
+        acquire(2)
         receipt["target_acquired_at_utc"] = now()
         receipt["source_identities"] = [verified(i) for i in (0, 2)]
         first, target = native_gray(SOURCE/FILES[0]), native_gray(path)
         prev = snapshot["history"][-1]["registration"]
-        reg = match_background(first, target, snapshot["geometry"], seed=(prev["dx"], prev["dy"]))
-        found, data = profile_at(target, snapshot["geometry"], reg)
+        reg = registration_safe(first, target, snapshot["geometry"], seed=(prev["dx"], prev["dy"]))
+        found, data = profile_safe(target, snapshot["geometry"], reg)
         reference = dict(step=4, filename=FILES[2], measurement=found, registration=reg)
         save(out/"target_measurement.json", reference)
         if data is not None:
@@ -187,6 +223,7 @@ def execute(args):
         valid = bool(found["valid"])
         summary = dict(protocol=PROTOCOL, E=True, target_attempted=True, R=valid, opportunities=1,
                        common_scored=int(valid), coverage=int(valid), unit=snapshot["unit"],
+                       conditional_common_coverage=int(valid),
                        target_width_px=found["fwhm_native_px"] if valid else None,
                        delta_abs_error_px=None, methods={})
         for arm, value in snapshot["predictions"]["arms"].items():
@@ -219,6 +256,15 @@ def self_test():
     assert not prediction([None, 2.])["E"]
     assert not prediction([np.nan, 2.])["E"]
     assert not measure(np.full(S.shape, 180.))[0]["valid"]
+    fake = dict(E=False, E_reasons=["no_trace"], unit="native_step2_reference_px",
+                predictions=prediction([None, None]))
+    absent = historical_summary(fake)
+    assert absent["R"] is None and not absent["target_attempted"] and absent["common_scored"] == 0
+    assert absent["conditional_common_coverage"] is None
+    image = np.full((100, 100), 180, dtype=np.float32)
+    cfg = dict(native_shape=[100,100], center=[1,1], normal=[1,0])
+    assert profile_safe(image, cfg, dict(valid=True, dx=0., dy=0.))[0]["reason"] == "profile_support_outside_image"
+    assert profile_safe(image[:90], cfg, dict(valid=True, dx=0., dy=0.))[0]["reason"] == "native_geometry_mismatch"
     print("Synthetic unchanged half-depth, missingness, stage formula and common clipping: passed")
 
 
@@ -232,4 +278,11 @@ if __name__ == "__main__":
     if args.phase == "self-test":
         self_test()
     else:
-        execute(args)
+        try:
+            execute(args)
+        except Exception as error:
+            if args.output.is_dir() and not (args.output/"failed_receipt.json").exists():
+                save(args.output/"failed_receipt.json", dict(protocol=PROTOCOL, phase=args.phase,
+                     execution="failed", error=f"{type(error).__name__}: {error}", ended_at_utc=now(),
+                     command=sys.argv, commit=subprocess.check_output(["git","rev-parse","HEAD"], text=True).strip()))
+            raise
