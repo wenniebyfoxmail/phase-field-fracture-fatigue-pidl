@@ -94,7 +94,7 @@ README_analysis.md, exact numeric tables above; {repo}/docs/research/S03/S03-E02
                 (a.output/f'{stem}.md').write_text(text)
             plt.close(fig)
         # Inputs and stage response: raw points, not pooled bars.
-        fig,axes=plt.subplots(2,3,figsize=(13,10));fig.subplots_adjust(left=.08,right=.98,bottom=.12,top=.86,hspace=.40,wspace=.20)
+        fig,axes=plt.subplots(2,3,figsize=(13,10));fig.subplots_adjust(left=.08,right=.98,bottom=.17,top=.86,hspace=.40,wspace=.20)
         fig.suptitle('Observed background residuals propagated through the unchanged width operator',y=.98,fontsize=14)
         fig.text(.5,.93,'Top: observed n/t residual pairs | Bottom: width change at T1 under transfer assumption | open = review flag',ha='center',fontsize=10)
         lim=max(abs(float(r[k])) for r in rr if r['available']=='True' for k in ('residual_dn','residual_dt'))*1.15
