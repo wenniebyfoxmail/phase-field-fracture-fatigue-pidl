@@ -48,6 +48,19 @@ def test_q4_messages_preserve_constant_fields_and_support_mass():
     torch.testing.assert_close(nodal_weight.sum(), gp_weight.sum())
 
 
+def test_frozen_scales_enter_buffers_as_exact_float64_values():
+    damage = 0.006896013386826084
+    history = [96.63136736963305, 0.00614771012425793, 0.0059082164580187314]
+    displacement = [0.00904670012757536, 0.08381964836377313]
+    model = Stage0ATransitionOperator(damage, history, displacement, width=8, rank=3)
+    assert model.damage_increment_scale.dtype == torch.float64
+    assert model.history_increment_scale.dtype == torch.float64
+    assert model.displacement_scale.dtype == torch.float64
+    assert model.damage_increment_scale.item() == damage
+    assert model.history_increment_scale.tolist() == history
+    assert model.displacement_scale.tolist() == displacement
+
+
 def test_zero_heads_preserve_state_and_enforce_peak_boundary():
     model, graph, conn, shape, _, det, d_pre, history, path = fixture()
     out = model(d_pre, history, path, graph, conn, shape, det)

@@ -5,7 +5,12 @@ import torch
 
 
 def merge_objective_gradients(gradients, *, clip_norm: float = 1.0, eps: float = 1e-12):
-    """Equalise positive norms, project conflicts in fixed cyclic order, average and clip."""
+    """Equalise positive norms, project conflicts in fixed cyclic order, average and clip.
+
+    ``eps`` is a norm threshold.  Squared norms are therefore compared with
+    ``eps**2``.  For an even number of positive objectives ``torch.median``
+    deliberately selects the lower median; this is part of the frozen method.
+    """
     if not gradients:
         raise ValueError("at least one objective gradient is required")
     grads = [torch.as_tensor(value) for value in gradients]
@@ -31,7 +36,7 @@ def merge_objective_gradients(gradients, *, clip_norm: float = 1.0, eps: float =
         for offset in range(1, len(balanced)):
             other = immutable[(i + offset) % len(balanced)]
             denominator = other.dot(other)
-            if denominator <= eps:
+            if denominator <= eps * eps:
                 continue
             dot = current.dot(other)
             if dot < 0:
@@ -49,6 +54,10 @@ def merge_objective_gradients(gradients, *, clip_norm: float = 1.0, eps: float =
         "merged_norm_before_clip": preclip,
         "merged_norm_after_clip": merged.norm(),
         "zero_gradient_count": int((~positive).sum()),
+        "norm_epsilon": eps,
+        "projection_squared_norm_epsilon": eps * eps,
+        "positive_norm_median": "lower_median_for_even_count",
+        "averaging": "all_objective_directions_including_zero_directions",
         "order": "fixed_cyclic_immutable_balanced_references",
     }
     return merged, diagnostics

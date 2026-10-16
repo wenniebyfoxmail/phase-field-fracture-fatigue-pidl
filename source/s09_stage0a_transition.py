@@ -83,13 +83,26 @@ class Stage0ATransitionOperator(nn.Module):
         fatigue_power: float = 2.0,
     ):
         super().__init__()
-        history_scale = torch.as_tensor(history_increment_scale, dtype=torch.float32)
-        displacement_scale = torch.as_tensor(displacement_scale, dtype=torch.float32)
+        # P1 freezes the A002 scales as binary64 values.  Construct the buffers
+        # directly in float64 so a later ``model.double()`` cannot preserve an
+        # earlier float32 rounding error.
+        history_scale = torch.as_tensor(history_increment_scale, dtype=torch.float64)
+        displacement_scale = torch.as_tensor(displacement_scale, dtype=torch.float64)
         if history_scale.shape != (3,) or displacement_scale.shape != (2,):
             raise ValueError("history scale must have 3 entries and displacement scale 2")
-        if damage_increment_scale <= 0 or torch.any(history_scale <= 0) or torch.any(displacement_scale <= 0):
+        if (
+            not torch.isfinite(torch.as_tensor(damage_increment_scale, dtype=torch.float64))
+            or not torch.isfinite(history_scale).all()
+            or not torch.isfinite(displacement_scale).all()
+            or damage_increment_scale <= 0
+            or torch.any(history_scale <= 0)
+            or torch.any(displacement_scale <= 0)
+        ):
             raise ValueError("all output scales must be positive")
-        self.register_buffer("damage_increment_scale", torch.tensor(float(damage_increment_scale)))
+        self.register_buffer(
+            "damage_increment_scale",
+            torch.tensor(float(damage_increment_scale), dtype=torch.float64),
+        )
         self.register_buffer("history_increment_scale", history_scale)
         self.register_buffer("displacement_scale", displacement_scale)
         self.alpha_t = float(alpha_t)

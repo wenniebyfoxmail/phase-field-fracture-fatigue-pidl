@@ -93,3 +93,16 @@ def test_gradient_merge_handles_zero_and_rejects_nonfinite():
     assert diagnostics["zero_gradient_count"] == 1
     with pytest.raises(FloatingPointError):
         merge_objective_gradients([torch.tensor([float("nan"), 0.0])])
+
+
+def test_gradient_projection_epsilon_has_consistent_norm_units():
+    directions = [
+        torch.tensor([1.0, 0.0], dtype=torch.float64),
+        torch.tensor([-1.0, 1.0], dtype=torch.float64),
+        torch.tensor([0.0, -1.0], dtype=torch.float64),
+    ]
+    large, large_diag = merge_objective_gradients(directions)
+    small, small_diag = merge_objective_gradients([1e-8 * value for value in directions])
+    assert large_diag["conflict_projection_count"] == small_diag["conflict_projection_count"]
+    assert large_diag["zero_gradient_count"] == small_diag["zero_gradient_count"] == 0
+    torch.testing.assert_close(small / 1e-8, large)

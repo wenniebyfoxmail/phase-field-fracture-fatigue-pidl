@@ -36,6 +36,15 @@ computed from the selected training set before model construction using the
 declared affine-boundary/free-DOF-force formula, then written into the resolved
 config. It cannot change after initial metrics are visible.
 
+The scale interface has one fixed interpretation. The raw output heads consume
+the damage scale and the first three history scales in the order
+`H, alpha_bar, q_prev`; `f` is derived from `alpha_bar` and has no independent
+raw head. The history data loss and `L_judge` consume all four history scales,
+including the frozen `f` scale. Every model scale buffer is constructed directly
+from the JSON value as `torch.float64`; no value may pass through float32 first.
+The later Code Ready suite must compare every buffer with the configured
+binary64 value exactly.
+
 ## Multi-objective update
 
 The three update objectives are kept separate:
@@ -50,6 +59,20 @@ shown in the JSON config, average, and apply one global norm cap of 1.0 before a
 single AdamW step. Raw objectives, scaled objectives, gradient norms, pairwise
 cosines, projection count, zero-gradient count and effective merged direction
 must be logged. Adaptive objective handling never enters `L_judge`.
+
+Each objective gradient is represented in one frozen `model.named_parameters()`
+order. A parameter not connected to a particular objective contributes an exact
+zero block of the correct shape; its name is logged for that objective. Omitting
+a block, changing order, or failing to record a parameter is a stop condition,
+not a zero gradient. The whole objective direction is zero only when its full
+vector norm is at most `1e-12`.
+
+`1e-12` is a norm threshold throughout: an immutable projection reference is
+skipped only when its squared norm is at most `1e-24`. The positive-norm
+reference uses `torch.median`, hence the lower median for an even count. Cyclic
+projection uses immutable balanced references; all three resulting directions,
+including zero directions, are averaged before the single global clip. These
+choices are method definitions and cannot be changed after metrics are seen.
 
 The raw increment terms are paired with their matching data objective so hard
 projection cannot hide a learnable negative proposal. They are not additional
@@ -76,6 +99,23 @@ This decomposition prevents one missed threshold from erasing successful
 wiring or useful learning behaviour. It does not allow secondary diagnostics to
 rescue the frozen P1 verdict.
 
+## Hard-constraint validity contract
+
+Hard constraints are checked on the projected forward output before every
+loss/metric use, at initial and final evaluation, and on every update. Damage
+irreversibility and its upper bound, and alpha irreversibility, use exact
+comparisons because the forward projection constructs them exactly. Pre-state
+and output Carrara identities use
+`abs(error) <= 1e-12 + 1e-10*abs(reference)`. Monotone fatigue uses
+`f_peak - f_pre <= 1e-12 + 1e-10*abs(f_pre)`. Prescribed peak boundary DOFs use
+the same absolute/relative tolerance against the affine lifted value.
+
+The pre-state Carrara check is an input qualification check. Failure stops before
+model construction and teacher `f` is never rewritten. Raw damage/alpha proposal
+clipping or saturation is logged as a separate diagnostic; it is not counted as
+a violation when the projected output satisfies the frozen predicate. The exact
+machine-readable predicates and check times are in the JSON config.
+
 ## Stop rules and outputs
 
 Identity drift, nonfinite values, a hard-constraint violation, missing gradient
@@ -96,3 +136,13 @@ exercise only synthetic/local no-training tests, lock a Git commit and packet
 identity, and obtain an independent Code Ready review of the runner, resolved
 config, data lock, update algebra and output contract. Any material change after
 that review requires a new exact-commit review.
+
+The resolution order is fixed. Package review precedes implementation. The
+candidate trainer commit is frozen before Code Ready submission, and the same
+commit must be the one approved. Only then may the reviewed exporter bind the
+packet bytes/hash/data lock. A read-only Taobo preflight then locks GPU and
+environment. The equilibrium normaliser is calculated with the same reviewed
+physics implementation, checked finite and positive, and frozen before model
+construction. The resolved config and final execution gate still precede every
+optimiser step. None of these placeholders may be selected after initial metrics
+are visible, and failure never falls back to CSD3.
