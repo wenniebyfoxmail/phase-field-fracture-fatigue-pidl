@@ -53,3 +53,11 @@ env CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREA
 - 审查后只允许docs记录提交，实际HEAD/clean及五源码SHA起止一致。
 - 首个非预期异常/警告、模型不支持、参考分歧、预算/身份改变立即停止，
   不重试；保留通过组件和失败定位，不据此宣布反演或真实D03有效。
+
+## A001执行后的当前状态
+
+以上命令已按总部人方授权执行一次并首停：前5项通过，第6项人工分支计数
+预期不一致，剩余59项未运行，exit1。完整输出和源码定位见
+[underflow_test_results.md](underflow_test_results.md)。本命令的这次许可已使用，
+不得再执行；当前包不能称测试通过或运行就绪。未改源码，不自动修补重跑。
+下一步只准备最小fixture修订/只读复审及新尝试审批，不改算法或阈值。

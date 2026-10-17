@@ -582,3 +582,24 @@
   held reads, external messages or B/C/D. B001 and all frozen results remain
   unchanged. Await user plan confirmation; Pro review before implementation,
   then separately approved code/tests and any future fresh resource attempt.
+
+- **2026-10-17 — U01 Pro/design and static code review passed; first tiny stopped on a fixture expectation.**
+  Completed haofan/Pro text-only review, messageb49648be (10m23s), PASS_PLAN;
+  adopted reachable-versus-pack-only upper boundary, original tolerance kinds,
+  first-failure witness, independent Fraction intervals and normal-output model
+  probes. Prepared codeb597d38f, independently read-only reviewed atcleand478b2d5,
+  PASS_STATIC_CODE. See S03-E019/underflow_pro_review.md and underflow_code_review.md.
+  Verified HQ human approval explicitly lifted only tiny testing pause, not
+  B002/C/D. Atclean0649c4c6 ran exactA-U01 once: chunk2014df exit1, toolwall
+  0.140288292s; first5 passed, sixth countsactual2 versusexpected3, remaining59
+  unrun (including original24). No automatic retry or source repair after stop.
+  Source-only reasoning: minnormal*1 hasfrexp sum-1020 and belongs toordinary
+  branch, not the integer branch as fixture expected. Not evidence the candidate
+  rounding is wrong, and not a completed numerical certificate. Source identity
+  externally unchanged/clean after failure; QR0/SVD0/no reports, archives,
+  real/held arrays, full-size generation, solves, figures or frozen mutations.
+  Records: underflow_test_results.md and metadata-only underflow_attempt.md.
+  Next one bounded repair: correct artificial dispatch fixtures and focused
+  static re-review; a fresh tiny execution needs new permission under the retained
+  first-stop/no-auto-retry rule. B001 frozen, B002/C/D closed. Codex quota before/
+  afterstage used7%=remaining93%; do not start new stages ifanynormalremaining<80%.
