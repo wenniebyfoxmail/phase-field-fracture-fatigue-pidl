@@ -1,0 +1,162 @@
+{
+  "W12": {
+    "no_identifiable_trace": true,
+    "reference_image": "IMG_0356.JPG",
+    "inspection_crop_xyxy": [
+      3800,
+      900,
+      4800,
+      3500
+    ],
+    "reason": "Whole first history and fixed same-region crop do not establish a credible continuous crack; do not measure texture or infer zero width.",
+    "target_seen": false
+  },
+  "W15": {
+    "no_identifiable_trace": true,
+    "reference_image": "IMG_0365.JPG",
+    "inspection_crop_xyxy": [
+      3800,
+      900,
+      4800,
+      3500
+    ],
+    "reason": "Whole first history and fixed same-region crop do not establish a credible continuous crack; no target or second-history-driven rescue.",
+    "target_seen": false
+  },
+  "W18": {
+    "protocol": "md01-four-windows-v1",
+    "native_shape": [
+      4000,
+      6000
+    ],
+    "reference_image": "IMG_0375.JPG",
+    "rough_center": [
+      4280,
+      2555
+    ],
+    "normal": [
+      0.9828721869343219,
+      0.18428853505018536
+    ],
+    "trace_endpoints_xy": [
+      [
+        4238,
+        1770
+      ],
+      [
+        4230,
+        3340
+      ]
+    ],
+    "local_tangent_points_xy": [
+      [
+        4310,
+        2475
+      ],
+      [
+        4280,
+        2635
+      ]
+    ],
+    "inspection_crop_xyxy": [
+      3800,
+      900,
+      4800,
+      3500
+    ],
+    "background_centers": [
+      [
+        4070,
+        2440
+      ],
+      [
+        4490,
+        2440
+      ],
+      [
+        4110,
+        2700
+      ],
+      [
+        4510,
+        2700
+      ]
+    ],
+    "patch_size": 61,
+    "translation_radius": 80,
+    "correlation_min": 0.6,
+    "required_background_patches": 3,
+    "target_seen": false,
+    "observer_rule": "First image only, longest identifiable central trace mid-height, not widest or error-selected; one existing peak refinement only.",
+    "anchor_rule": "Four disjoint texture patches on first image, two per side, visually off crack/pores/glue/fixtures; no later template change.",
+    "limitations": "AI observer-assisted geometry, not human/physical ground truth; single background translation transfer remains assumed."
+  },
+  "W21": {
+    "protocol": "md01-four-windows-v1",
+    "native_shape": [
+      4000,
+      6000
+    ],
+    "reference_image": "IMG_0385.JPG",
+    "rough_center": [
+      4303,
+      2385
+    ],
+    "normal": [
+      0.993150604322876,
+      -0.1168412475673972
+    ],
+    "trace_endpoints_xy": [
+      [
+        4000,
+        1360
+      ],
+      [
+        4265,
+        3410
+      ]
+    ],
+    "local_tangent_points_xy": [
+      [
+        4300,
+        2300
+      ],
+      [
+        4320,
+        2470
+      ]
+    ],
+    "inspection_crop_xyxy": [
+      3800,
+      900,
+      4800,
+      3500
+    ],
+    "background_centers": [
+      [
+        4090,
+        1720
+      ],
+      [
+        4490,
+        1720
+      ],
+      [
+        4120,
+        1880
+      ],
+      [
+        4500,
+        1880
+      ]
+    ],
+    "patch_size": 61,
+    "translation_radius": 80,
+    "correlation_min": 0.6,
+    "required_background_patches": 3,
+    "target_seen": false,
+    "observer_rule": "First image only, longest identifiable central trace mid-height, not widest or error-selected; one existing peak refinement only.",
+    "anchor_rule": "Four disjoint texture patches on first image, two per side, visually off crack/pores/glue/fixtures; no later template change.",
+    "limitations": "AI observer-assisted geometry, not human/physical ground truth; single background translation transfer remains assumed."
+  }
+}
