@@ -48,7 +48,7 @@ def main():
                 poly = np.rint(poly).astype(np.int32)
                 sides = np.ptp(poly,axis=0)+1
                 aspect = float(sides.min()/sides.max())
-                exclude = bool(letters) and (
+                exclude = bool(letters) and sides[1]<=600 and aspect>=0.12 and (
                     (len(symbols)>=2 and confidence>=0.15) or
                     (len(symbols)==1 and confidence>=0.65 and aspect>=0.15))
                 ocr.append({'polygon':poly.tolist(),'text':text,'confidence':float(confidence),
@@ -58,7 +58,7 @@ def main():
             candidate = raw & ~text_mask
             grouped = cv2.dilate(candidate.astype(np.uint8),
                                 cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)))
-            n,labels,stats,_ = cv2.connectedComponentsWithStats(grouped,8)
+            n,labels,stats,_ = cv2.connectedComponentsWithStats(grouped,connectivity=8)
             refined = np.zeros(raw.shape,bool)
             components = []
             for label in range(1,n):
