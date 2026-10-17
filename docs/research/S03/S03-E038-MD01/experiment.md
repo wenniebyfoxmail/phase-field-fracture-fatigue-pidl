@@ -126,3 +126,11 @@ predictiongain orreverttofouranchorrepair. No newwindow/target/training access.
 
 [Fullresults, all5processpages andcodeentry](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R003/analysis/README_analysis.md).
 Compactexactmetrics/receipts/independentreview in evidence/.
+
+## Source-only classification material follow-up — 2026-10-17
+
+[Two-frame four-region material protocol](source_review_materials_20261017.md)
+uses only existingStep18/19savedcontrastdifferences for neutral source cards.
+Preparation only; user first-round classification pending, not independent
+validation completed. No extraction/path/thickness/forecast rerun, threshold
+selection, v1change orsharedObsidian/Roadmapedit. No new agent ornetwork action.
