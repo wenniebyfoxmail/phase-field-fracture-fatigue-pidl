@@ -1,0 +1,126 @@
+{
+  "status": "PROPOSAL_ONLY_NOT_AUTHORIZED_NOT_RUN",
+  "task": "S04-E011 physical-symmetry conditional repair pilot",
+  "question": "Does a small correctly mapped physical u/v parity penalty reduce same-state active-field disagreement without hiding a damage-shape tradeoff?",
+  "evidence_domain": "synthetic; previously seen Q4 development state only; original FEM numerical comparator not qualified teacher",
+  "code_commit": "4e0a34b51ae01821e98f9522cbfaa4bbe2887b43",
+  "code_scope": "helper/fit integration reviewed; future pilot runner NOT YET IMPLEMENTED or Code Ready",
+  "origin": {
+    "cycle": 1,
+    "substep": 2,
+    "step": 2,
+    "U": 0.05999988,
+    "source_commit": "ad749c8bbba8120b3961add989b11427fab86254",
+    "network": {
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_2.pt",
+      "bytes": 4510165,
+      "sha256": "2ffbc49978c6295b704772425610f9cd4485c610de4f2e4195a1ec778d6739ad"
+    },
+    "history": {
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/checkpoint_step_1.pt",
+      "bytes": 4497665,
+      "sha256": "c40b4fef6b2d198ac01b2f7068c24ed6c9526a03dab560ac36839997078572e3"
+    },
+    "semantics": "continue from accepted post-solve model2 with original s1 input history; fresh optimizer in BOTH arms, not exact optimizer-state continuation"
+  },
+  "unchanged": {
+    "network": "8x400 TrainableReLU, seed1, float32",
+    "geometry": "86756 canonical nodes / 86408 native Q4 / 2x2 GP; original node/connectivity signatures",
+    "BC": "u=0 top/bottom; v=0 bottom, v=U top; original fieldCalculation",
+    "damage_map": "original nonsmooth alpha constraint, raw bounds violations retained",
+    "objective": "log10(Eel+Ed+Ehist)+1e-5*sum(weight**2)",
+    "irreversibility": "original fem_gp_q4 soft gamma16875, original s1 nodal lower",
+    "fatigue": "fixed original checkpoint1 hist_fat and computed committed f, no commit",
+    "history_updates": 0,
+    "initialization_updates": 0
+  },
+  "arms": [
+    {
+      "name": "control",
+      "penalty": "disabled"
+    },
+    {
+      "name": "physical_uv",
+      "mode": "physical",
+      "lambda_alpha": 0,
+      "lambda_u": "lambda0",
+      "lambda_v": "lambda0",
+      "displacement_scale": 0.12,
+      "grad_annealing": false,
+      "probe_support": [
+        {
+          "region": "global interior half rectangle",
+          "x_bounds": [
+            -0.49,
+            0.49
+          ],
+          "y_bounds": [
+            0,
+            0.49
+          ],
+          "nx": 81,
+          "ny": 40,
+          "locations": "cell centres",
+          "pair_weight": ".5/(81*40)"
+        },
+        {
+          "region": "front half strip",
+          "x_bounds": [
+            0,
+            0.5
+          ],
+          "y_bounds": [
+            0,
+            0.04
+          ],
+          "nx": 151,
+          "ny": 40,
+          "locations": "cell centres",
+          "pair_weight": ".5/(151*40)"
+        }
+      ],
+      "reflected_support": "helper concatenates (x,y) and (x,-y); equal weight per pair; fixed throughout",
+      "lambda_rule": "At frozen theta0/U, lambda0=0.01*L2(grad_theta log10(Eel+Ed+Ehist))/L2(grad_theta(Lu+Lv)); full parameter order identical, no weight decay in numerator; calibrate once; require positive finite norms, otherwise stop without a substitute weight",
+      "caveat": "1 percent initial gradient norm is a small exploratory scale choice, not a bound on RPROP sign changes, later gradient influence, physical deformation or model quality"
+    }
+  ],
+  "optimizer": {
+    "kind": "torch.optim.Rprop",
+    "lr": 1e-05,
+    "etas": [
+      0.5,
+      1.2
+    ],
+    "step_sizes": [
+      1e-10,
+      50
+    ],
+    "fresh_state_each_arm": true
+  },
+  "budget": {
+    "arms": 2,
+    "max_updates_per_arm": 200,
+    "total_update_cap": 400,
+    "initial_and_final_readouts": "separate, no optimizer steps",
+    "no_new_evaluation_deadline_minutes_per_arm": 30,
+    "total_GPU_hour_cap": 1,
+    "producer": "Taobo task-owned fresh Run only after approval and resource preflight",
+    "stop": "nonfinite, nonpositive original energy, failed input identity, invalid probe contract, zero/nonfinite calibration gradient, time cap or 200 accepted RPROP updates; no automatic retry, weight sweep, extra seed or rollout"
+  },
+  "primary": {
+    "measure": "change of original-FEM-relative native GP/Jacobian-weighted active-field L2 from control to physical_uv at same fixed U and input history",
+    "reference": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/c0001_s002_post_commit.mat",
+    "support": "all original native Q4 GP4",
+    "interpretation": "directional exploratory component result; lower is better; no calibrated formal success threshold",
+    "blocked": "perfect parity is not success; unchanged old E011 verdict; no teacher, physical, trajectory or generalization claim"
+  },
+  "required_outputs": [
+    "both exact endpoints and controls, native u/v/d/raw/g/active fields",
+    "primary metric + parity components",
+    "fixed x=.00/.01/.02 damage profiles and widths/front thresholds .25/.5/.75; raw bounds and healing vs same s1 lower",
+    "Eel/Ed/Ehist, native free-u residual and time/update counts",
+    "aligned original FEM/control/candidate/signed-error maps on common axes; no mirrored export used as a model"
+  ],
+  "next_decision": "If a clear component gain appears, choose one separately approved coupled early-cycle test. This fixed-history block cannot establish preserved fatigue accumulation or later crack propagation.",
+  "execution_approval": "not supplied; prepare only; HQ decides any new training scope/budget; do not launch during night work"
+}
