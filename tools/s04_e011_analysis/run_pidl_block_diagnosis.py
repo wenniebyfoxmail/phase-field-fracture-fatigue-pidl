@@ -17,6 +17,7 @@ from plateau_head_fit import fit_uv_head,fit_smooth_damage_head
 
 PROTOCOL='S04-E011-PBD-r1'
 class BudgetStop(Exception):pass
+class ObjectiveDomainError(Exception):pass
 def sha(p):
  h=hashlib.sha256()
  with Path(p).open('rb') as f:
@@ -105,7 +106,7 @@ def fd_check(problem,field,block):
   for label in ['negative_gradient','seeded_random']:
    vec=[-g for g in gr] if label=='negative_gradient' else [torch.randn(p.shape,dtype=p.dtype,device=p.device,generator=gen) for p in params]
    norm=torch.sqrt(sum(x.square().sum() for x in vec));vec=[x/norm for x in vec];ad=float(sum((g*x).sum() for g,x in zip(gr,vec)))
-   for h in [1e-4,1e-5,1e-6]:
+   for h in [1e-4,1e-5,1e-6,1e-7,1e-8]:
     vals=[]
     for sign in [1,-1]:
      with torch.no_grad():
@@ -122,11 +123,14 @@ def optimize(field,objective,folder,*,cap=200,deadline_seconds=1800):
  def evaluate(backward):
   nonlocal evals
   if evals>=cap-1 or time.monotonic()-start>=deadline_seconds:raise BudgetStop()
-  net.zero_grad(set_to_none=True);loss=objective()
+  net.zero_grad(set_to_none=True);evals+=1
+  try:loss=objective()
+  except ObjectiveDomainError:
+   trace.append(dict(evaluation=evals,loss=None,backward=backward,invalid_original_domain=True));raise
   assert torch.isfinite(loss)
   if backward:
    loss.backward();assert all(p.grad is None or torch.isfinite(p.grad).all() for p in params)
-  evals+=1;trace.append(dict(evaluation=evals,loss=float(loss.detach()),backward=backward));return loss
+  trace.append(dict(evaluation=evals,loss=float(loss.detach()),backward=backward));return loss
  initial=float(evaluate(False));last=initial;state=clone_params(net);reason='evaluation_budget'
  opt=torch.optim.LBFGS(params,lr=1.,max_iter=1,max_eval=20,history_size=5,tolerance_grad=0.,tolerance_change=0.,line_search_fn='strong_wolfe')
  try:
@@ -137,6 +141,8 @@ def optimize(field,objective,folder,*,cap=200,deadline_seconds=1800):
    change=max(float((p-p0).abs().max()) for p,p0 in zip(params,before));last=value;state=clone_params(net)
    accepted.append(dict(accepted=len(accepted)+1,evaluations=evals,loss=value,param_delta_inf=change))
    if change==0:reason='exact_parameter_stagnation';break
+ except ObjectiveDomainError:
+  restore(net,state);reason='original_objective_domain_failure'
  except BudgetStop:
   restore(net,state);reason='evaluation_budget' if evals>=cap-3 else 'wall_deadline'
  except Exception:
@@ -188,7 +194,7 @@ def main(z):
  dump(z.out/'receipt.json',receipt);allrows=[]
  try:
   for item in contract['states']:
-   cycle=item['cycle'];a=np.load(item['input']);data={k:a[k] for k in a.files};problem=LocalProblem(data,device)
+   cycle=item['cycle'];a=np.load(item['input']);data={k:a[k] for k in a.files};assert data['nodes'].shape==(86756,2) and data['cells'].shape==(86408,4);problem=LocalProblem(data,device)
    assert cycle in [1,20] and item['step']==5*(cycle-1)+4
    state=torch.load(item['model'],map_location=device,weights_only=True)
    folder=z.out/f'c{cycle}_s4';folder.mkdir();dump(folder/'operator_contract.json',problem.contract())
@@ -212,7 +218,9 @@ def main(z):
     return compute_energy(x32,u,v,d,h32,problem.mat,problem.model,area32,problem.cells,f_fatigue=f32,irreversibility_penalty_cfg={'enable':True,'mode':'fem_gp_q4'})
    def original_loss():
     parts=original_parts();reg=sum(p.square().sum() for name,p in legacy.net.named_parameters() if 'weight' in name)
-    return torch.log10(sum(parts))+1e-5*reg
+    total=sum(parts)
+    if not bool(torch.isfinite(total)) or float(total.detach())<=0:raise ObjectiveDomainError('Original unbounded-damage log-energy domain failed')
+    return torch.log10(total)+1e-5*reg
    original_base=[float(x.detach()) for x in original_parts()];recorded=np.load(contract['energy_table'])[item['step'],1:4]
    errors=[abs(a-float(b))/max(abs(float(b)),1e-10) for a,b in zip(original_base,recorded)]
    original_gate=bool(max(errors)<=1e-4)

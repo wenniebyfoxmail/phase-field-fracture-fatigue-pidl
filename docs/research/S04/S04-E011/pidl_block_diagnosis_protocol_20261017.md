@@ -33,7 +33,11 @@ legacy damage, own prehistory/f, log10(Eel+Ed+Ehist)+1e-5*sum(weight^2), no chan
 in history or objective. Reproduce original poststep energy-gradient-table row
 4/99 with existing each-component relative1e-4 and1e-10floor. If this source
 check fails, skip this optimizer arm and retain mismatch; no threshold rescue.
-If it passes, a fresh LBFGS control begins from originaltheta0. It tests original
+If it passes, a fresh LBFGS control begins from originaltheta0. An original
+unbounded-damage trial with nonpositive total energy exits its log-domain;
+record that attempted evaluation, restore the last accepted parameters and stop
+only this original control. Other independent bounded blocks may continue.
+Do not modify or extend the original objective to accept invalid trials. It tests original
 objective descent availability; even a lower loss is not physical feasibility.
 
 2. U block: freeze FEM d, preserve UV boundary/network. Compare originaltheta0,
@@ -71,7 +75,7 @@ Cached Q4 operator must reproduce unchanged source energy and analytic nodal-d
 AD derivative within1e-10 scaled/absolute and native full FEM force within1e-10;
 FEM free-u<1e-8. No retained nonleaf gradient accumulation. Before local updates,
 check negative-gradient and seeded-random parameter directions at h1e-4/1e-5/
-1e-6; each needs at least one FD error<=1e-8+1e-4*|AD|. Report all h; these
+1e-6/1e-7/1e-8; each needs at least one FD error<=1e-8+1e-4*|AD|. Report all h; these
 float64 checks address implementation validity, not convergence.
 
 Local NN arms use persistent Torch LBFGS(max_iter1, strong_wolfe, history5),
@@ -95,7 +99,8 @@ under ownroot, threads1/nice10/detached. A separate fresh fullbatch8x400float64
 probe performs2backwards, no optimizer updates/history commits. Require finite
 contracts/gradients, successful exit and>=3GiBremaining VRAM, then refresh GPU
 state before production. No Mac training or silent fallback. Runtime OOM or
-contract/nonfinite failure is saved and stops this package; no automatic retry.
+contract/nonfinite failure (except the explicitly separate original-log-domain
+exit above) is saved and stops this package; no automatic retry.
 
 ## Evidence and next-action map
 
