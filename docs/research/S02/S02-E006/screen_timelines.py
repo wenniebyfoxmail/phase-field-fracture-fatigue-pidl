@@ -40,18 +40,19 @@ def screen(sections,windows,reader):
   sid=r['section_id'];j=reader(sid)
   start=datetime.fromisoformat(r['section_start']).date();end=datetime.fromisoformat(r['section_end']).date()
   events=j.get('timelineData',[])
-  check(all(e.get('LDW_SECTION_ID') in [sid,None] for e in events),'wrong timeline section')
+  identity_consistent=all(e.get('LDW_SECTION_ID') in [sid,None] for e in events)
   cutoff,undated=first_cut(events,start)
   possible=[q for q in windows if q['section_id']==sid]
   kept=[]
   for q in possible:
    target=datetime.fromisoformat(q['target_slot_cutoff']).date()
-   if target<=end and (cutoff is None or target<cutoff[0]) and not undated and j.get('hasEventsData') and bool(events) and len(events)<100:kept.append(q)
+   if target<=end and (cutoff is None or target<cutoff[0]) and not undated and j.get('hasEventsData') and bool(events) and len(events)<100 and identity_consistent:kept.append(q)
   retained.extend(kept)
   table.append({'cell_code':int(r['cell_code']),'section_id':sid,'raw_four_spring_windows':len(possible),
    'first_recorded_action_date':cutoff[0].isoformat() if cutoff else None,'first_recorded_action':cutoff[1] if cutoff else None,
    'windows_before_first_recorded_action':len(kept),'undated_unknown_construction_events':len(undated),
    'events_returned':len(events),'timeline_available':bool(j.get('hasEventsData')),
+   'timeline_identity_consistent':identity_consistent,
    'complete_intervention_clearance':False,'physical_nonoverlap_confirmed':False})
  return table,retained
 
@@ -60,7 +61,7 @@ def main():
  head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip();auth=json.loads(args.authorization.read_text())
  check(auth['code_commit']==head and auth['review']=='CODE_REVIEW_PASS' and auth['training'] is False,'review required')
  check(not subprocess.check_output(['git','status','--porcelain'],text=True).strip(),'clean snapshot required')
- out=ROOT/'local_archive/experiments/S02-E006/runs/S02-E006-R006/timeline_screen';check(not out.exists(),'fresh output required')
+ out=ROOT/'local_archive/experiments/S02-E006/runs/S02-E006-R007/timeline_screen';check(not out.exists(),'fresh output required')
  started=datetime.now(timezone.utc).isoformat();t=time.monotonic()
  selected=select(read_csv(BASE/'mnroad_sections.csv'))
  paths=[BASE/'mnroad_sections.csv',BASE/'mnroad_spring_slot_inventory.csv']+[TL/(r['section_id']+'.json') for r in selected]
@@ -72,14 +73,14 @@ def main():
   with (out/name).open('w',newline='') as f:
    w=csv.DictWriter(f,fieldnames=list(rows[0]),lineterminator='\n');w.writeheader();w.writerows(rows)
  shortlist=sorted([r for r in table if r['windows_before_first_recorded_action']>0],key=lambda r:(-r['windows_before_first_recorded_action'],r['section_id']))[:6]
- summary={'run_id':'S02-E006-R006','screen':'coverage before FIRST recorded construction action; no restarts or outcome filtering',
+ summary={'run_id':'S02-E006-R007','screen':'coverage before FIRST recorded construction action; no restarts or outcome filtering',
   'selected_cell_codes':len(table),'raw_windows':sum(r['raw_four_spring_windows'] for r in table),
   'retained_cells_not_certified_independent':sum(r['windows_before_first_recorded_action']>0 for r in table),
   'retained_windows_upper_bound':len(retained),'next_qualification_shortlist':shortlist,
   'complete_maintenance_qualified_cells':0,'training':False,'fitting':False,'model_forward':False}
  (out/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
  check(all(p.read_bytes()==b for p,b in raw.items()),'inputs changed')
- (out/'execution_receipt.json').write_text(json.dumps({'run_id':'S02-E006-R006','code_commit':head,'hostname':socket.gethostname(),'pid':os.getpid(),
+ (out/'execution_receipt.json').write_text(json.dumps({'run_id':'S02-E006-R007','code_commit':head,'hostname':socket.gethostname(),'pid':os.getpid(),
   'start_utc':started,'elapsed_seconds':time.monotonic()-t,'input_files_checked':len(raw),'input_bytes_unchanged':True,'execution_status':'succeeded','retrieval':'local verified','dirty_status':'clean','training':False,'fitting':False,'model_forward':False,'command':__import__('sys').argv},indent=2)+'\n')
  print(json.dumps(summary,indent=2))
 if __name__=='__main__':main()

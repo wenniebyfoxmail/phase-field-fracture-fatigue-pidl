@@ -40,3 +40,5 @@ R004 stopped at waveform headers with additional empty-named columns. Inventory 
 ## Timeline extension and next-proposal scope
 
 R005 completed source/schema inventory; preliminary source-quality checks are not performance results. To avoid ranking road candidates solely on unfiltered date counts, add one conservative metadata-only timeline screen as specified in minimum_next_validation.md. New script screen_timelines.py uses exact R005 CSVs plus official timeline JSONs, preserves all files, and requires a fresh reviewed R006. It never claims maintenance completeness or physical independence. The next validation document is an unexecuted design, not a training authorization or Run Ready protocol.
+
+R006 timeline source validation stopped before outputs because the23-D-1999 response includes historical23-D-1990 events. Preserve that chain, do not reassign ancestor events to current study. Revised screen reports mixed timeline identity and keeps zero coverage for that section pending lineage interpretation; fresh R007 after code rereview. This cannot create an extra independent road.
