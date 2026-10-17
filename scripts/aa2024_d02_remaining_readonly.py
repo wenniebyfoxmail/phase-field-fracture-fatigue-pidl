@@ -190,11 +190,17 @@ def qrecord(H, z, saved, kind, expected, label):
     f_saved = mat(saved['Qz_fsum'], rows, cols)
     # Decimal80 from the actual saved binary64 operands, never fed back to output.
     close(d_saved, reference, kind, label+' Decimal ledger')
-    close(producer, rounded(reference), kind, label+' producer/reference evaluation')
+    try:
+        close(producer, rounded(reference), kind, label+' producer/reference evaluation')
+    except ValueError as exc:
+        raise ValueError('STOP_REFERENCE_PATH_DIFFERENCE_UNRESOLVED: '+label+' producer/Decimal80; '+str(exc)) from exc
     hf = fmul(tr(H), z)
     fq = [[dec(float(x)-float(y)) for x, y in zip(row, rr)] for row, rr in zip(z, fmul(H, hf))]
     close(f_saved, fq, kind, label+' saved fsum ledger')
-    close(fq, rounded(reference), kind, label+' fsum/reference evaluation')
+    try:
+        close(fq, rounded(reference), kind, label+' fsum/reference evaluation')
+    except ValueError as exc:
+        raise ValueError('STOP_REFERENCE_PATH_DIFFERENCE_UNRESOLVED: '+label+' fsum/Decimal80; '+str(exc)) from exc
     p_ratio = float_ratio(producer, z, kind)
     d_ratio = float_ratio(rounded(reference), z, kind)
     # Same operands/path definitions, not a cross-path ratio-equality criterion.

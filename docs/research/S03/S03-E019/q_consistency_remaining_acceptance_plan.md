@@ -1,7 +1,9 @@
-# E019-D02 — 新说明映射下的剩余独立只读验收 v1
+# E019-D02 — 新说明映射下的剩余独立只读验收 v1.1
 
 2026-10-17；仅准备并静态审查，未执行验收、导入、语法检查或测试。
 承接 D02 已冻结的合成数值标准和首轮暂停，不开新诊断或改变阈值。
+v1.1仅按首轮独立静态意见补齐Q向量参考路径差异的专属失败分类；
+保留比较标签及原异常，不改操作数、原容差、ratio定义或通过标准。
 当前不读取合成 report/CSV 数值或图形；仅阅读冻结源码/协议/已有记录，
 并为执行包绑定新说明收据的字节 SHA，未据此宣称其独立验收通过。
 
@@ -143,7 +145,7 @@ pdftoppm。缺少PDF独立目视作为范围限制保留，不隐藏成“全部
 ## 7. 确切命令（待静态审查与用户执行审批）
 
 脚本：scripts/aa2024_d02_remaining_readonly.py；SHA256
-`93b048c9948475ca7c9cfd357c13c4e12b963c9ee258708c0f010af258bcecd3`。
+`5347429e6b095a24c8df14201398b79a0cb828d5fecd7d7ba755a4f134ef0ab3`。
 不导入producer或旧验收器；不自动重新执行说明修订。命令只批准一次，
 后续条件式PNG查看也须包含在该次明确授权范围内。
 
@@ -153,7 +155,7 @@ cd '/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s03-e016-
 export CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 unset PYTHONPATH PYTHONSTARTUP PYTHONHOME PYTEST_ADDOPTS PYTEST_PLUGINS MATPLOTLIBRC
-'/Users/wenxiaofang/miniconda3/bin/python3' -I -B -W error scripts/aa2024_d02_remaining_readonly.py --expected-script-sha256 93b048c9948475ca7c9cfd357c13c4e12b963c9ee258708c0f010af258bcecd3
+'/Users/wenxiaofang/miniconda3/bin/python3' -I -B -W error scripts/aa2024_d02_remaining_readonly.py --expected-script-sha256 5347429e6b095a24c8df14201398b79a0cb828d5fecd7d7ba755a4f134ef0ab3
 ```
 
 无导入/语法/测试执行。静态审查若发现必须修改问题，先记录并修订/复审，
