@@ -124,26 +124,40 @@ def histories(a,lock,budget):
             del first,second
         pred=prediction([r["measurement"]["fwhm_native_px"] if r["measurement"]["valid"] else None for r in records])
         h=dict(protocol=PROTOCOL,case=w["id"],stages=w["stages"],geometry=geom,history=records,predictions=pred,E=pred["E"],
-               source_identities=ids,saved_at_utc=now(),target_file_present_at_save=False)
+               source_identities=ids,lock_sha256=sha(a.lock),saved_at_utc=now(),target_file_present_at_save=False)
         save(out/"history_snapshot.json",h);save(out/"predictions_saved_before_target.json",h)
         np.savez_compressed(out/"profiles.npz",offsets=S,**arrays);rows.append(score(h))
         print(w["id"],"history E",h["E"],flush=True)
-    budget();save(a.output/"histories_closed.json",dict(protocol=PROTOCOL,closed_at_utc=now(),all_four_closed=True,cases=rows,
+    budget();save(a.output/"histories_closed.json",dict(protocol=PROTOCOL,lock_sha256=sha(a.lock),closed_at_utc=now(),all_four_closed=True,cases=rows,
          target_files_absent=all(not (SOURCE/w["files"][2]["filename"]).exists() for w in lock["windows"])))
 
 
 def targets(a,lock,budget):
     closure=json.loads((a.history/"histories_closed.json").read_text())
-    if closure["protocol"]!=PROTOCOL or not closure["all_four_closed"] or not closure["target_files_absent"]:raise ValueError("Closed batch required")
+    if closure["protocol"]!=PROTOCOL or closure["lock_sha256"]!=sha(a.lock) or not closure["all_four_closed"] or not closure["target_files_absent"]:raise ValueError("Closed batch required")
     frozen={p:p.read_bytes() for p in a.history.rglob("*") if p.is_file()};rows=[];ids=[]
+    histories_by_id={}
+    if any((SOURCE/w["files"][2]["filename"]).exists() for w in lock["windows"]):raise ValueError("Targets present before evaluation")
+    for w,closed_row in zip(lock["windows"],closure["cases"],strict=True):
+        h=json.loads((a.history/w["id"]/"predictions_saved_before_target.json").read_text())
+        if (h["protocol"]!=PROTOCOL or h["lock_sha256"]!=sha(a.lock) or h["case"]!=w["id"] or h["stages"]!=w["stages"]
+            or h["target_file_present_at_save"] or h["saved_at_utc"]>closure["closed_at_utc"] or score(h)!=closed_row
+            or json.loads((a.history/w["id"]/"history_snapshot.json").read_text())!=h):raise ValueError("History preflight mismatch")
+        for r,f in zip(h["history"],w["files"][:2],strict=True):
+            if r["step"]!=f["step"] or r["filename"]!=f["filename"]:raise ValueError("Historical role mismatch")
+        widths=[r["measurement"]["fwhm_native_px"] if r["measurement"]["valid"] else None for r in h["history"]]
+        if h["predictions"]!=prediction(widths) or h["E"]!=h["predictions"]["E"]:raise ValueError("Historical prediction mismatch")
+        if h["source_identities"]!=[verify(f) for f in w["files"][:2]]:raise ValueError("History source mismatch")
+        histories_by_id[w["id"]]=h
     for w in lock["windows"]:
         budget();out=a.output/w["id"];out.mkdir()
-        h=json.loads((a.history/w["id"]/"predictions_saved_before_target.json").read_text())
+        h=histories_by_id[w["id"]]
         if h["protocol"]!=PROTOCOL or h["case"]!=w["id"] or h["stages"]!=w["stages"] or h["target_file_present_at_save"]:raise ValueError("History identity mismatch")
         if not h["E"]:
             if (SOURCE/w["files"][2]["filename"]).exists():raise ValueError("Ineligible target present")
             row=score(h)
         else:
+            verify(w["files"][0])
             ids.append(acquire(w["files"][2]));budget()
             first,target=(native_gray(SOURCE/f["filename"]) for f in (w["files"][0],w["files"][2]))
             prev=h["history"][-1]["registration"]
