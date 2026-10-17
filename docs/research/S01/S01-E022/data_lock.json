@@ -82,13 +82,13 @@
     "all pooled content arrays, PCA/sketches/learned compression/directions",
     "all pixels except exact835 train identities pinned in candidate_identity",
     "held GT/labels in current FIT training/gate; no learned photometric statistics",
-    "neural feature extraction, new boxes, detector rescoring"
+    "all neural models except pinned frozen E003 semantic extraction; all backbone backward/parameter gradients/updates; new boxes or detector rescoring"
   ],
   "fresh_access": false,
   "prior_experiment_reference": {
-    "experiment": "S01-E020",
-    "reviewed_commit": "237bbd19d056dacb34bc673a08c48a740c7dd1c4",
-    "result_zip_sha256": "9b751f254a2fe1f09466875d88a3063d942d71cd81e81250104bd0218bee0b7b",
+    "experiment": "S01-E021",
+    "reviewed_commit": "76a9d5f3045b035e6b70a898fe915b77b3c02f13",
+    "result_zip_sha256": "f226eb51000af147649405d01f65c4ea5871529af0f30c13a07855bebe568b4d",
     "used_for_training": false,
     "old_hits": 684,
     "net_GT": 0,
@@ -105,5 +105,12 @@
   "image_identity_member": "input_snapshot/candidate_identity.json",
   "source_images": 835,
   "E003_checkpoint_sha256": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
-  "E003_checkpoint": "C:\\Users\\xw436\\pavetrack_runs\\S01-E003-R001\\best_ranker.pt"
+  "E003_checkpoint": "C:\\Users\\xw436\\pavetrack_runs\\S01-E003-R001\\best_ranker.pt",
+  "permitted_semantic_extraction": {
+    "checkpoint": "C:\\Users\\xw436\\pavetrack_runs\\S01-E003-R001\\best_ranker.pt",
+    "checkpoint_sha256": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
+    "backbone": "frozen final576x7x7 features, no_grad, 31156rows",
+    "head": "eval, frozen parameters, one detached pooled input derivative of crack-background logit margin per row",
+    "held_scope": "upstream E003 reused train sites; no complete pipeline independence"
+  }
 }
