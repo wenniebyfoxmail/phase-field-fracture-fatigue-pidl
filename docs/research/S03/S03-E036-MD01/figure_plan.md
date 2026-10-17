@@ -24,3 +24,10 @@ persistence,black/circle observed,orange savedhalfdepth crossings. PreviewPNG
 then audit/AI readbeforefinal300dpi PNG/PDF/gray; same-stem explanations including
 source previews; strict PNG checks/pdffonts and sidecar validation. Copy atmost2
 key finalfigures to existing Obsidian note, visibly verify render.
+
+Post-result display-only addition F05: W18 original18/19 background templates
+and zero-seeded search footprints on same unregistered coordinates, with saved
+NCC values. This explains the observed missingness/new fixture overlap without
+re-fitting alignment or trying a replacement location. Preview F02 legends
+moved away from the lone scored row; missing text placed on white background
+so zero lines do not cross it. No numerical values or thresholds change.
