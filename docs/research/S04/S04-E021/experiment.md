@@ -322,3 +322,19 @@ access approval is consumed. Next proposal only:prepare the minimal genuine
 late-attribution implementation/run scope under9984226 for separate approval;
 do not rerun access or treat a generated-only report as a real report.
 Original scientific verdict unchanged; main chat sole writer, holdouts closed.
+
+## Minimal real attribution proposal prepared — 2026-10-17
+
+User authorised document preparation only, retaining9984226 definitions and
+decision branches. See late_attribution_real_plan_and_run_card_v1_20261017.md:
+proposed S04-E021-LATE-ATTR-R001, distinct from consumed access-only DIAG-R001;
+same four scalar sources,357-row validity check, only U0.11 C41–121 decomposed.
+Primary descriptive localisation is k50, with positive/improvement/net amounts,
+all81 harm/improve/tie counts and the original closure/identifiability rules.
+One60s/512MiB/5MiB budget includes reading, analysis, the frozen two-panel
+figure, all control outputs and run-owned caches. No extra fit or holdout.
+No implementation, real metadata/content read, Run creation or execution in
+this preparation; the genuine report/authorization purpose still needs a
+separately approved implementation and independent review. Next:human scope
+approval only, then implement/review; final exact-version execution separately
+approved. Original science/outputs and main-chat sole writing ownership remain.
