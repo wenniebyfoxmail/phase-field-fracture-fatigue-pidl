@@ -209,3 +209,18 @@ No numerical rerun, no fabricated successful exit. Newsource overlays/deleted
 maps expose limits. Next proposed parallel existing21/22/23 development forecast
 for v1/named cleanup candidate, neither error-selected, scores separately named;
 do not let perfect pore cleanup block simple prediction or defaulttofouranchors.
+
+### E040 exclusion support repair — 2026-10-17
+
+[E040](../research/S03/S03-E040-MD01/experiment.md) user-approved oneframeStep19
+source-only left/bottom exclusion tightening, thresholds/guide/v1unchanged.
+Released67909supportpixels, added1021candidatepixels allinoldexcludedlowerband,
+oldcandidate21803→22824px2 with0lost; oldreconstruction exact. Fixedleftcrop
+adds0: left omission isnot repaired byexclusion-only change. Sourceoverlay
+shows usefullowercandidate recovery, not fullcrack/accuracy orphysicalwidth.
+Right exclusion/realocclusion retained; guide ends3300 so lowercoverage still
+limited. No other sourceframe, skeleton/path/thickness/forecast oroldscore change.
+OneR001wall0.516s,12hashesverified; noindependentagentclaim. Nextproposedread-only
+grayscale/contrast/guide decision-layer diagnosis ofleftgap, not moreblindpurple
+shrinking orwholethreshold shift. Prior E039parallelforecast proposal retained
+as separate next transition option, not executed inthis support-only diagnostic.

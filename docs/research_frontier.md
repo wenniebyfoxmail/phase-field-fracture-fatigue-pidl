@@ -39,8 +39,11 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   construction, finiteareasensitivityslightlylower inall5. Edge-adjacent
   deletions22/23ambiguous,notporeaccuracy. Numericoutputs independentlyverified;
   finalreceiptcollision separatelyreconciled, no producerretry. Preservev1/
-  oldhalfdepth/scores; nextproposedparallel21/22/23developmentbaseline replay
-  withnamedcandidate,noterror-selectedparameters ormandatoryfouranchors.
+  oldhalfdepth/scores. E040Step19source-onlyexclusionrepair releases67909support
+  pixels, adds1021lowercandidatepixels, oldmask0lost; leftfixedcropadds0,
+  soexclusiondoesnotexplainallmisses. No path/width/forecast recomputation.
+  Nextread-onlyleftgapdecision-layerdiagnosis; parallel21/22/23baseline replay
+  remainsseparateproposal,noterror-selectedparameters ormandatoryfouranchors.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。
