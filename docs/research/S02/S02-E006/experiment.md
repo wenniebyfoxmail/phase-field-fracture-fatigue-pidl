@@ -36,3 +36,7 @@ R003 stopped before outputs on literal NA waveform tokens. Count missing/nonfini
 ## Audit-v1.4 explicit empty CSV padding
 
 R004 stopped at waveform headers with additional empty-named columns. Inventory all such headers; accept the same first3 explicitly named fields only when all remaining header names are empty. A data row with any nonempty additional field remains invalid and is counted, not truncated into a valid sample. All original bytes retained; no channels guessed, data resampled or targets repaired. Preserve R004 failed receipt; exact rereview before fresh R005.
+
+## Timeline extension and next-proposal scope
+
+R005 completed source/schema inventory; preliminary source-quality checks are not performance results. To avoid ranking road candidates solely on unfiltered date counts, add one conservative metadata-only timeline screen as specified in minimum_next_validation.md. New script screen_timelines.py uses exact R005 CSVs plus official timeline JSONs, preserves all files, and requires a fresh reviewed R006. It never claims maintenance completeness or physical independence. The next validation document is an unexecuted design, not a training authorization or Run Ready protocol.
