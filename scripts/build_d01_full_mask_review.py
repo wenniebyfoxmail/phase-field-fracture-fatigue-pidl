@@ -27,8 +27,7 @@ def main():
         mask = Image.open(args.root/'outputs'/f'{name}_mask.png')
         overlay = Image.open(args.root/'outputs'/f'{name}_overlay.png')
         labels = Image.open(args.root/'outputs'/f'{name}_labels.png')
-        prob = Image.open(args.root/'outputs'/f'{name}_probability16.png')
-        assert all(im.size == original.size for im in [mask,overlay,labels,prob])
+        assert all(im.size == original.size for im in [mask,overlay,labels])
         m = np.array(mask) > 0
         assert np.array_equal(m, np.array(labels)==1)
         assert np.array_equal(m, np.array(overlay)[:,:,3]>0)
@@ -43,7 +42,7 @@ def main():
         pair.paste(combined.resize((800,533)), (800,28))
         rendered.append(pair)
         shutil.copy2(src, assets/entry['file'])
-        for suffix in ['mask','overlay','probability16']:
+        for suffix in ['mask','overlay']:
             filename=f'{name}_{suffix}.png'
             shutil.copy2(args.root/'outputs'/filename,assets/filename)
         checks.append({'id':name, 'native_dimensions_match':True,
