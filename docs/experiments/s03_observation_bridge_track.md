@@ -133,3 +133,19 @@ relaxation. Next PROPOSED separate18/19source-only unoccluded-background
 repair preserving transect/half-depth,then independent review and savedtwo
 predictions before any separately approved20access. Do not backfillE0361/4
 or choose positions/windows byerror; no repair performed in this experiment.
+
+## Priority correction — E037,2026-10-17
+
+User separates per-frame crack/image-geometry measurement from same-material
+position tracking. Four-anchor failure constrains the latter method,not all
+recognition/prediction. The E036 proposed mandatory-next repair is superseded,
+not its old outcome. [E037](../research/S03/S03-E037-MD01/experiment.md) first
+uses9existing frames,source-only visible support/exclusion lock and a cheap
+observer-guided mask/path extractor. Newpx arc-length/px²area/EDTlocal-mask
+thickness,not oldhalf-depth or physical aperture. Occlusion isunknown,notzero;
+do not bridge hidden areas or infer shrinkage from changed visible support.
+
+Then replay the existing21/22/23 on a fixed common unoccluded image-space band,
+with camera/dimensions/view diagnostics,not material correspondence. Preserve
+olddefinitions/scores,no downloads/training/fouranchorrepair. Currentprotocol/
+code locked before newmetrics; independent review then execution/visuals.

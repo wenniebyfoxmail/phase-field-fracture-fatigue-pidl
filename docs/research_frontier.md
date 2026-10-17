@@ -25,8 +25,11 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   two no-trace/one background failure retainnulls andunopenedtargets. Independent
   source/numeric maxdiff0;half-depth/oldresults unchanged. Slowing/reversal not
   represented amongscored;notfourcase stability,physical orbeamgeneralisation.
-  Next proposed: source-only18/19unoccluded-background repair,fixedtransect,
-  newversion;no error-based substitution/backfill,newtargetaccess ortraining.
+  User-corrected priority:E037per-frame visible image geometry first; fouranchor
+  failure isnot a universal prerequisite. Existing9frames,newmask/path/length/
+  area/local-thickness definitions and explicitocclusion,then fixedcommon
+  image-space21/22/23scalarreplay. No material-point/physical-aperture claim,
+  oldscore rewrite,newsource access ortraining; independentreview pending.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。
