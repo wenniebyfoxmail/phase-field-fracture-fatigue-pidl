@@ -41,12 +41,12 @@ def main(args):
     for s,offset,color in [(2,-.18,'#386a8f'),(4,.18,'#d67c45')]:
         vals=[100*next(r['parity_violating_squared_fraction'] for r in rows if r['state']==f'c1s{s}' and r['field']==n) for n in fields]
         bars=axs[0].bar(np.arange(len(fields))+offset,vals,.34,label=f'Q4 c1s{s}',color=color)
-        axs[0].bar_label(bars,fmt='%.1f',fontsize=8,padding=2)
+        axs[0].bar_label(bars,labels=[f'{v:.2f}' if v<.1 else f'{v:.1f}' for v in vals],fontsize=8,padding=2)
     axs[0].set_xticks(np.arange(len(fields)),['u','v - lifting','damage','shear','raw energy','active energy'],rotation=20)
     axs[0].legend();axs[0].set_title('Early same-state disagreement | native Q4 reconstruction')
     vals=[100*r['parity_violating_squared_fraction'] for r in rows if r['state']=='c83s4']
     bars=axs[1].bar(['Q4','T3'],vals,color=['#386a8f','#d67c45']);axs[1].bar_label(bars,fmt='%.1f',padding=3)
-    axs[1].set_title('c83 damage | existing display reduction')
+    axs[1].set_title('c83 damage\nExisting display interpolation')
     for ax in axs:
         ax.set_ylim(0,100);ax.set_ylabel('Parity-violating part of squared disagreement (%)')
         ax.spines[['top','right']].set_visible(False)
@@ -56,7 +56,7 @@ def main(args):
         metric='E_viol=(E-s*R(E))/2; compatible and violating parts orthogonal on declared symmetric uniform probes',
         warning='No modified model, mirrored damage output, or counterfactual improvement is claimed',
         rows=len(rows)),indent=2)+'\n')
-    print(json.dumps(rows,indent=2))
+    print(f'Saved {len(rows)} deterministic decomposition rows and figure')
 
 
 if __name__=='__main__':
