@@ -253,3 +253,35 @@ MODIFY_AND_REREVIEW / NOT_REVIEWABLE is static-only, never content identity,
 execution/resource assurance or method success. Final response pending readback.
 The reviewer acknowledged the static-only scope in turn
 `01a14bb4-f0e8-7761-995f-5b60bfe94319` (wait_threads revision97).
+
+## Path-binding v2 review readback — 2026-10-17
+
+Latest conclusion: **REVIEW_PASS, path-binding static difference only**, bound
+to `df5cb23dde5058764381aba1b39f026f5d9207ad`. No new required fixes reported.
+Returned final message `msg_015d0a19570ed14a016ad3e4c9d804819189d5851d5f252bf6`,
+turn `01a14bb4-f0e8-7761-995f-5b60bfe94319`; revision99 confirmed completed/idle,
+error=null. Main chat read back and checked the scoped findings:
+
+| Finding | Main-chat reconciliation |
+|---|---|
+| Fixed documented source root only | input module24 declares RELATIVE_SOURCE_ROOT matching historical E021/run_card.md53–63; original DATA_ROOT/RUN/OUT remain unchanged. Adopted. |
+| v2/root/list constrained | module55–79 requires exact v2/fixed root, then matches original locked path/hash tuples; no new CLI, environment or arbitrary root. Adopted. |
+| Exactly six prefix changes | Manifest18–26 and stdlib JSON/Git comparison show six changed paths, three absolute PIN paths unchanged; all hashes/roles/order/counts unchanged. Adopted. |
+| No downstream expansion | Reader authorization/canonical/no-follow/same-FD core, mathematical worker, grouping/scales/criterion, guard and300s/2GiB/100MiB are unchanged by Git diff. Adopted; old unchanged findings reused rather than a new full review. |
+
+Limits retained: this review did not stat scientific files, read/decode arrays,
+verify source-content hashes, run tests or prove numerical/resource feasibility.
+Prior metadata diagnosis is not a substitute for any future authorised content
+verification. The former R001/old-card evidence remains frozen and historical;
+its consumed permission is not renewed. Code still targets R001 and rejects the
+existing destination: **not a fresh Run package, not Run Ready**.
+
+No further code changes after the accepted snapshot; only this readback record
+and the existing Obsidian note/Roadmap are updated by the main chat. No array
+read, test/mock, copy/restore, scientific fit, R001 retry, new execution, grant,
+automation or extra task dispatch. Confirmation data remain closed.
+
+Only next proposal: prepare a separately identified fresh Run/output and final
+card/version-binding plan for human approval, preserving the same science,
+data hashes and budget. Do not silently change RUN/OUT now or execute under an
+old approval. The current path-repair/review task ends here.
