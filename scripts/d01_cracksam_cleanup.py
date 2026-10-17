@@ -24,6 +24,7 @@ def main():
     ap.add_argument('--cached-ocr',type=Path)
     ap.add_argument('--text-proposals-only',action='store_true')
     ap.add_argument('--output',type=Path)
+    ap.add_argument('--first-frame-text-prior',action='store_true')
     args = ap.parse_args()
     root = args.root
     if args.cached_ocr is None:
@@ -37,6 +38,9 @@ def main():
     out.mkdir(exist_ok=True)
     cases = json.loads((root/'source_manifest.json').read_text())
     records = []
+    first_cases = {}
+    for item in sorted(cases,key=lambda c:int(c['id'].split('_t')[1])):
+        first_cases.setdefault(item['id'].split('_t')[0],item['id'])
     with torch.inference_mode():
         for case in cases:
             began = time.time()
@@ -47,10 +51,14 @@ def main():
             ocr = []
             if args.cached_ocr is not None:
                 cached=json.loads((args.cached_ocr/f'{name}_cleanup.json').read_text())['ocr']
-                detections=[(o['polygon'],o['text'],o['confidence']) for o in cached]
+                detections=[(o['polygon'],o['text'],o['confidence'],name) for o in cached]
+                first=first_cases[name.split('_t')[0]]
+                if args.first_frame_text_prior and first!=name:
+                    prior=json.loads((args.cached_ocr/f'{first}_cleanup.json').read_text())['ocr']
+                    detections += [(o['polygon'],o['text'],o['confidence'],first) for o in prior]
             else:
-                detections=reader.readtext(rgb,canvas_size=2560,mag_ratio=1,paragraph=False,detail=1)
-            for poly,text,confidence in detections:
+                detections=[(*d,name) for d in reader.readtext(rgb,canvas_size=2560,mag_ratio=1,paragraph=False,detail=1)]
+            for poly,text,confidence,source_case in detections:
                 letters = re.sub('[^A-Za-z]','',text)
                 symbols = re.sub('[^A-Za-z0-9]','',text)
                 poly = np.rint(poly).astype(np.int32)
@@ -63,7 +71,7 @@ def main():
                     exclude = sides[1]<=600 and aspect>=0.12
                 exclude = bool(exclude)
                 ocr.append({'polygon':poly.tolist(),'text':text,'confidence':float(confidence),
-                            'excluded':exclude,'bbox_short_long':aspect})
+                            'excluded':exclude,'bbox_short_long':aspect,'source_case':source_case})
                 if exclude: cv2.fillPoly(text_mask,[poly],1)
             text_mask = cv2.dilate(text_mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(13,13)))>0
             candidate = raw & ~text_mask
