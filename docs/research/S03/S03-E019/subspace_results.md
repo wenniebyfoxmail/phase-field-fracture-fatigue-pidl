@@ -1,5 +1,9 @@
 # E019-D01-R001 — 一次合成诊断成功，图形问题使验收暂停
 
+最新状态（2026-10-17）：V01显示验收已通过；v1.1一次独立只读算术验收
+exit0，保存C1–C3账本和C0已存H/Gram核验通过，但保留C0原C/A及原Qr
+未保存限制。下文旧暂停记录保留，当前结论见末节及subspace_arithmetic_evidence_review.md。
+
 2026-10-16。用户单独批准确切命令B一次及独立只读验收；主代理原样执行
 审批正文B段一次，exit0，无重试。当前是“运行成功、产物已生成、验收
 未完成”，不是完整PASS_EVIDENCE，也不是将预定负控误判成运行失败。
@@ -151,3 +155,22 @@ fsum/Decimal公式或C0/原Qr限制。快照f805eab，独立REVIEW_PASS，无必
 subspace_arithmetic_acceptance_plan.md v1.1（SHA95ce2969…）。
 未运行算术/导入/测试或读数值产物，未改冻结产物；当前仅展示执行审批，
 不是保存账本/真实根因已验收通过，不自动启动。
+
+### 2026-10-17：v1.1一次独立只读算术验收完成，有限通过
+
+用户另批确切命令，仅独立Codex执行一次；主代理未重复或复算。exit0、
+无STOP/警告/traceback/重试。结果PASS_SAVED_C1_C3_ARITHMETIC_WITH_C0_LIMITATION。
+输出前取样0.37604833295335993秒/60秒，stdout后预算检查亦通过；不是
+最终stdout结束后的精确总耗时。五线程1，CUDA禁用，标准库/只读stdout。
+
+已核来源/CSV、C0 H/Gram、C1–C3因子及p/r分层账本、独立Q参考及同p/r
+不同A对照。三例ratio保存einsum与参考fsum比较一致，未触发专属停止；
+C2/C3原Q未通过仍属负控，不误判成整次验收异常。两个因子重构最大值
+与Decimal参考不是逐位相等但满足原容差，保留差值/exact_match=false。
+
+末次固定产物/11来源/HEAD和dirty不变由同一脚本完成，没有追加补查。
+实际cleanHEAD e75d3a8，已审命令f805eab / SHA95ce2969…；完整stdout与
+执行范围见subspace_arithmetic_evidence_review.md。
+没有重构C0原C/A、补原Qr、重跑诊断/测试/QR/SVD/求解/绘图或真实/留出
+访问；原Run/V01数值和收据均未变。本次只关闭保存C1–C3可核账本，
+不将D01全部原算术或真实E019根因/反演/预测判为通过，也不自动另开计算。

@@ -315,3 +315,16 @@ v1字节29d36ef2不改，无执行/导入/语法/测试/数值产物读取；只
 subspace_arithmetic_command_review.md。StringIO非阻断项未超范围修订。
 本轮无执行/导入/测试/语法检查或数值产物读取，无冻结产物修改；静态
 通过不等于算术/实际预算通过。保持已审命令字节，先展示待单独执行批准。
+
+## v1.1另批一次独立算术验收完成，保留C0/Qr限制 — 2026-10-17
+
+独立Codex按已审命令原样一次，clean e75d3a8，exit0；输出前取样0.3760483
+秒/60秒，stdout后预算检查通过，无STOP/警告/traceback或重试。来源/CSV、
+C0已存H/Gram、C1–C3保存因子/p/r账本及Q参考、跨例对照有限通过。
+三例ratio跨路径一致；C2/C3仍原负控Q不通过，不属验收异常。两项因子
+重构max非逐位一致但过原容差，保留exact_match=false，不称误差恰为0。
+完整原始stdout及身份见subspace_arithmetic_evidence_review.md。
+同次脚本末次固定产物/11源码/HEAD/dirty未变；C0原C/A、原逐分量Qr
+缺项不补。无producer重跑/测试/QR/SVD/求解/绘图/真实或留出读取，原
+冻结产物未写。只记PASS_SAVED_C1_C3_ARITHMETIC_WITH_C0_LIMITATION，
+不恢复真实E019根因或物理预测结论，不自动启动后续动作。

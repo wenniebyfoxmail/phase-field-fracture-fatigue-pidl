@@ -409,3 +409,17 @@
   subspace_arithmetic_acceptance_plan.md v1.1. No numeric-artifact/realarray/holdout
   reads, imports/tests/arithmetic or frozen-output writes. Show exact reviewed
   command for separate execution approval; actual arithmetic/realE019 unresolved.
+
+- **2026-10-17 — D01 v1.1 one-shot independent saved-arithmetic acceptance completed.**
+  Explicit execution authority, independent e018 reviewer only, clean e75d3a8,
+  exit0/no STOP/warning/retry. Pre-stdout0.376048333s/60s; final stdout deadline
+  also passed, not a post-stdout exact duration. Saved provenance/CSV, C0 H/Gram,
+  C1-C3 factor/projection ledgers/Q references and samep/differentA contrast pass
+  original tolerances. All3 ratio cross-path checks agree; C2/C3 expected Q
+  negatives remain. Two reconstruction-max exact_match=false values retained,
+  not bitwise equality or proof that reported0 is exact-reference0.
+  See S03-E019/subspace_arithmetic_evidence_review.md for complete scalar stdout.
+  Same-command endhash/11source/HEAD/dirty checks unchanged; no extra recompute,
+  producer/test/QR/SVD/solve/render/realarray/holdout access or frozen writes.
+  PASS_SAVED_C1_C3_ARITHMETIC_WITH_C0_LIMITATION only; C0 C/A and original Qr
+  histories remain unavailable, actualE019 rootcause/physics/forecast unproven.
