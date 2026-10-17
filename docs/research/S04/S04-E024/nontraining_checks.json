@@ -1,7 +1,7 @@
 {
   "experiment_id": "S04-E024",
-  "status": "NONTRAINING_CHECKS_COMPLETE_PENDING_CODE_REVIEW",
-  "stage_tests": 16,
+  "status": "NONTRAINING_CHECKS_COMPLETE_CODE_READY_PASS",
+  "stage_tests": 17,
   "temporary_decoder_cases": 15,
   "final_revision_positive_decoder_recheck": "PASS:1 case,14 deselected;38.95s",
   "real_states": [
@@ -18,5 +18,20 @@
   "background_cost_acceptability": null,
   "historical_001_primary": false,
   "validation_scope": "Synthetic optimizer counters/runtime/cost fixtures are not producer execution; Mac native LR/D portability exceptions retained",
-  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/nontraining_v1"
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/nontraining_v1",
+  "final_revision_true_head_counter_negative_recheck": "PASS:1 case,14 deselected;44.77s",
+  "reviewed_source_candidate": "231fe4be83e26ef4054a2a6a567da51229185837",
+  "initial_temporary_decoder_scope": "15 passed before final cost/stage-count and test-name revisions; not presented as a full current-source rerun",
+  "reviewed_commit": "231fe4be83e26ef4054a2a6a567da51229185837",
+  "independent_initial_full_suite": {
+    "passed": 31,
+    "seconds": 231.22,
+    "scope": "ded0416 imported revision;16 stage and15 decoder"
+  },
+  "independent_current_focused_suite": {
+    "passed": 18,
+    "seconds": 46.8,
+    "scope": "231fe4b:17 stage plus corrected true output-head-counter decoder"
+  },
+  "code_ready": "CODE_READY_PASS"
 }

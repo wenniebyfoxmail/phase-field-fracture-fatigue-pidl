@@ -1,0 +1,27 @@
+{
+  "verdict": "CODE_READY_PASS",
+  "blockers": [],
+  "reviewed_commit": "231fe4be83e26ef4054a2a6a567da51229185837",
+  "science_base": "ded04166732885e4dd89e32e312554f531bd9b9a",
+  "science_bytes_unchanged": true,
+  "protocol_revision": "20261017-r1-8000joint-2000headonly-comparative",
+  "hashes": {
+    "SENS_tensile/s04_e024_head_tail.py": "941e759fbf5639036acc5ce8610c369e375112371f1648a54737c6f15ed83a07",
+    "SENS_tensile/run_s04_e024_head_tail_screen.py": "1583a30030dae14336136db035ff549b79c7f5df90c1f54118f36fa54209d468",
+    "SENS_tensile/aggregate_s04_e024_head_tail_screen.py": "f1bdb206181dba9ba317f89ba161436599e25510604416e18cb8ae7d02e7aea7",
+    "tests/test_s04_e024_head_tail.py": "95ba0d260601f8e28dbd7d31ec75e43afd36e21514050d6779eb81935cca7fe5",
+    "tests/test_s04_e024_real_contract.py": "28e68a704200875186d54a10c538c56f6caf539f9b2a582dcf3cafc95927008a",
+    "docs/research/S04/S04-E024/experiment.md": "2cb48bf0a6b2af9314716fc478bfb5d90b7c54dacbefb65a1024f4d060f42ee8",
+    "docs/research/S04/S04-E024/application_accuracy_contract.md": "45c5c5945180b6909f943f0a401b125ea185d8dd4e3cddc2dac4018ef52b5bcc",
+    "docs/research/S04/S04-E024/e023_control_locks.json": "b7cba8988a9d3335622113f06a447731265ab66174421b31fbbf1aa3256b9e7b"
+  },
+  "independent_initial_full_tests": 31,
+  "independent_current_stage_plus_corrected_headcounter_tests": 18,
+  "optimizer_parameter_steps": 0,
+  "training_performed": false,
+  "formal_native_cuda_preflight": false,
+  "route_acceptance": null,
+  "background_cost_acceptability": null,
+  "application_fitness": "UNASSESSED",
+  "legacy001_physical_standard": false
+}
