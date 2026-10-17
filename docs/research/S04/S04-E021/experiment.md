@@ -254,3 +254,14 @@ This C0/C1 supplement is closed without rerun or same-round re-review.
 Next suggestion is only to prepare a minimal read-only late-regression
 attribution plan for separate approval. No new computation, fit, input/holdout
 access or S04-E017/MOO/NN authority follows; main chat remains sole writer.
+
+## Artificial binding engineering supplement — 2026-10-17
+
+Separately approved S04-E021-LATE-BINDING-MOCK-R001 ran once under sourcee7bce63,
+v2 card9f00a6e, launch checkout5d10aad. Five artificial check groups and eight
+sentinel ratio probes completed:0.111917s, 52.375MiB aggregate sampled RSS,
+10,575bytes in three frozen read-only files, below60s/512MiB/5MiB. No retry,
+real-data read, fit or confirmation access. See late_binding_mock_R001_result_20261017.md.
+This is C0 engineering evidence only; the original scientific verdict is unchanged.
+Next proposal only:prepare the minimal real read-only handoff scope/run card for
+approval; no real launcher, source access or late attribution is authorised here.
