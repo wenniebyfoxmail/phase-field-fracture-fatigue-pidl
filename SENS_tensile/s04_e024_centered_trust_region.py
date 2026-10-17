@@ -15,16 +15,20 @@ def centered_head(phi, target, mass, theta0, radius_fraction=.1):
         raise ValueError('design/target/mass/center shape')
     if not all(np.isfinite(x).all() for x in (phi,target,mass,theta0)) or not (mass>0).all() or not np.isfinite(radius_fraction) or radius_fraction<=0:
         raise ValueError('nonfinite input or invalid mass/radius')
-    radius=float(radius_fraction*np.linalg.norm(theta0))
-    if radius<=0:raise ValueError('zero center norm: relative radius undefined')
-    sw=np.sqrt(mass/mass.sum());x=np.asfortranarray(sw[:,None]*phi)
+    original_norm=float(np.linalg.norm(theta0));radius=float(radius_fraction*original_norm);mass_sum=float(mass.sum())
+    if not np.isfinite([original_norm,radius,mass_sum]).all() or radius<=0 or mass_sum<=0:
+        raise ValueError('nonfinite/zero radius or mass normalization')
+    sw=np.sqrt(mass/mass_sum);x=np.asfortranarray(sw[:,None]*phi)
     residual_target=sw[:,None]*(target-product(phi,theta0))
+    if not np.isfinite(residual_target).all() or not np.isfinite(x).all():raise ValueError('nonfinite centered system')
     u,s,vt=svd(x,full_matrices=False,check_finite=True,lapack_driver='gesdd')
     ortho=float(np.linalg.norm(product(u,u,True)-np.eye(len(s)),ord=np.inf))
-    if ortho>1e-10:raise ValueError('SVD orthogonality')
+    if not np.isfinite(ortho) or ortho>1e-10:raise ValueError('SVD orthogonality')
     cross=product(u,residual_target,True)
     scale=float(s[0]) if len(s) and s[0]>0 else 1.
+    if not np.isfinite(scale*scale):raise ValueError('nonfinite squared design scale')
     q=s/scale;cc=cross/scale
+    if not np.isfinite(cc).all():raise ValueError('nonfinite projected residual')
     def spectral_step(mu):
         factors=np.divide(q,q*q+mu,out=np.zeros_like(q),where=(q*q+mu)>0)
         return factors[:,None]*cc
@@ -34,6 +38,7 @@ def centered_head(phi, target, mass, theta0, radius_fraction=.1):
     active=not np.isfinite(free_norm) or free_norm>radius
     if active:
         upper=max(1.,float(np.linalg.norm(q[:,None]*cc))/radius)
+        if not np.isfinite(upper):raise ValueError('nonfinite secular bracket')
         def secular(mu):return float(np.linalg.norm(spectral_step(mu)))-radius
         if secular(upper)>0:raise ValueError('secular bracket failure')
         mu=brentq(secular,0.,upper,xtol=1e-30,rtol=8*np.finfo(float).eps,maxiter=250)
@@ -50,11 +55,14 @@ def centered_head(phi, target, mass, theta0, radius_fraction=.1):
     kkt_scale=float(np.linalg.norm(x)*np.linalg.norm(residual)+lam*norm)
     kkt=float(np.linalg.norm(stationarity)/max(kkt_scale,np.finfo(float).tiny))
     comp=abs(lam*(norm*norm-radius*radius))/max(lam*radius*radius,np.finfo(float).tiny)
+    if not np.isfinite([lam,norm,radius,kkt,kkt_scale,comp,relative_feasibility]).all():raise ValueError('nonfinite KKT diagnostics')
     if kkt>1e-10 or comp>1e-9:raise ValueError('KKT residual')
     before=float(np.linalg.norm(residual_target));after=float(np.linalg.norm(residual))
+    if not np.isfinite([before,after]).all():raise ValueError('nonfinite objective diagnostics')
     if after>before+1e-13:raise ValueError('objective increased')
     projected=product(u,s[:,None]*z)
     projection_gap=float(np.linalg.norm(product(x,realized_delta)-projected))
+    if not np.isfinite(projection_gap):raise ValueError('nonfinite projection diagnostics')
     rank=int(np.count_nonzero(s>np.finfo(float).eps*max(x.shape)*s[0])) if len(s) else 0
     return dict(coef=coef,delta=realized_delta,prediction=product(phi,coef),singular_values=s,
         radius=radius,radius_fraction=radius_fraction,original_norm=float(np.linalg.norm(theta0)),

@@ -41,3 +41,8 @@ def test_anisotropic_boundary_kkt_direct():
 def test_invalid(change):
     args=change(np.ones((3,2)),np.ones((3,2)),np.ones(3),np.ones((2,2)))
     with pytest.raises(ValueError):centered_head(*args)
+
+
+def test_finite_inputs_with_overflowing_design_refused():
+    with pytest.raises(ValueError,match='nonfinite'):
+        centered_head(np.array([[1e200]]),np.array([[2e200,2e200]]),np.ones(1),np.ones((1,2)))
