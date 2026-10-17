@@ -482,3 +482,19 @@
   claimed to pass; subsequent companion mapping and remaining acceptance need
   separate approval. Await one-shot text-write authority only; no scientific
   conclusion changes and original D02 acceptance remains paused.
+
+- **2026-10-17 — D02 companion written once; remaining acceptance v1.1 statically reviewed, not run.**
+  User-authorized exact text-only command exited0 (chunk b988e0), two replacements,
+  new companion and receipt only; elapsed before receipt0.003955584s/60s, source
+  bytes preserved, no recomputation/render/QR/SVD or realarray/holdout content read.
+  Companion SHAb4ad866d79174d72fbecefad051092ea6ebb8e1f964a7bd2c2a1532474fd9246.
+  Remaining acceptance binds original PNG/PDF to this companion, retains original
+  directory-validator limitation, and uses saved operands only. Independent Codex
+  found one Q-reference-stop classification mismatch; minimally corrected and
+  re-reviewed PASS_STATIC_REMAINING_ACCEPTANCE at edd5e4c, code SHA
+  5347429e6b095a24c8df14201398b79a0cb828d5fecd7d7ba755a4f134ef0ab3.
+  See S03-E019/q_consistency_remaining_acceptance_plan.md v1.1 and
+  q_consistency_remaining_static_review.md. No tests/imports/arithmetic/acceptance
+  or figure/PDF inspection executed; await separate one-shot approval. Planned
+  PDF parse/metadata and saved-PNG visual review are distinct; no PDF visual claim,
+  no actual E019 cause, physical inversion or future-prediction conclusion.
