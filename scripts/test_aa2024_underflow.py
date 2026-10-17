@@ -137,14 +137,17 @@ class UnderflowUnits(unittest.TestCase):
         self.assertEqual(code(value), 1 << 52)
         self.assertEqual(rec['certificates'][0]['magnitude_rounding'], 'larger_magnitude')
 
-    def test_min_normal_in_integer_branch(self):
+    def test_min_normal_in_ordinary_branch(self):
+        # frexp exponents -1021 and 1 sum to -1020: ordinary by the frozen rule.
         value, rec = self.product(number(1 << 52), 1.)
         self.assertEqual(code(value), 1 << 52)
-        self.assertEqual(rec['integer_branch_count'], 1)
+        self.assertEqual(rec['ordinary_count'], 1)
+        self.assertEqual(rec['integer_branch_count'], 0)
 
     def test_first_normal_binade_in_integer_branch(self):
-        value, rec = self.product(number((1 << 52)+7), 1.)
-        self.assertEqual(code(value), (1 << 52)+7)
+        # (3/2)*2^-1022 times 3/4: frexp exponents -1021+0, exact N=9*2^49.
+        value, rec = self.product(number(3 << 51), .75)
+        self.assertEqual(code(value), 9 << 49)
         self.assertEqual(rec['integer_branch_count'], 1)
 
     def test_reachable_integer_branch_upper_pair(self):
@@ -255,9 +258,10 @@ class UnderflowUnits(unittest.TestCase):
             independent.product_certificate(cert)
 
     def test_direction_and_counts_are_not_underflow_events(self):
-        x = np.array([[number(1), number(3), number(1 << 52), 0.]])
+        # Third pair has normal output but exponent sum -1021: an exact integer-branch case.
+        x = np.array([[number(1), number(3), number(3 << 51), 0.]])
         recs = []
-        arithmetic.column_reference(x, np.array([.5, .5, 1., -2.]), arithmetic.SITES[0], recs)
+        arithmetic.column_reference(x, np.array([.5, .5, .75, -2.]), arithmetic.SITES[0], recs)
         r = recs[0]
         self.assertEqual((r['integer_branch_count'], r['subnormal_output_count'], r['nonzero_product_rounded_zero_count'], r['zero_operand_count']), (3, 1, 1, 1))
         self.assertEqual([c['magnitude_rounding'] for c in r['certificates']], ['smaller_magnitude', 'larger_magnitude', 'exact'])
