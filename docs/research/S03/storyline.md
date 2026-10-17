@@ -470,3 +470,15 @@
   No repair/rerender/recompute/reQR/SVD or realarray/holdout access; frozen files
   untouched. Await permission for a sidecar-only derivative and resumed read-only
   acceptance, not a new numerical run or true-root-cause conclusion.
+
+- **2026-10-17 — D02 sidecar-only companion package statically approved, not executed.**
+  Two text edits (How to read heading; probe details in report, not CSV) are
+  source-bound, with exclusive new companion/receipt files beside the preserved
+  originals. Independent Codex PASS_STATIC_SIDECAR_PACKAGE at d47d78f; code SHA
+  2247849e9535414ef67762893e4a17194cd448606d062a4ccfcfa91b9805eab2.
+  See S03-E019/q_consistency_sidecar_static_review.md and linked exact command.
+  No tests/imports/derivative write/recompute/render/QR/SVD or numerical archive/
+  realarray/holdout content access. Original directory validator is not run or
+  claimed to pass; subsequent companion mapping and remaining acceptance need
+  separate approval. Await one-shot text-write authority only; no scientific
+  conclusion changes and original D02 acceptance remains paused.
