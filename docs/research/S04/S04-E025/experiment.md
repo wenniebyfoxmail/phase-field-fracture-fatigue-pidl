@@ -5,7 +5,10 @@ retry or revised verdict. Design authority: user approval of
 `82cd09258bb09604a3f89809dd7005ac77631b8c` for protocol, input inventory, minimal
 implementation and independent code review. **No real input access, fitting,
 worker/guard execution, confirmation access or new tests are approved now.**
-Status: IMPLEMENTED_PENDING_INDEPENDENT_STATIC_REVIEW; scientific evidence NONE.
+Status: STATIC_REVIEW_REVISION_REQUIRED; scientific evidence NONE.
+Readback: `code_review_20261017.md`, f9001ed has one blocking launch-exception
+activity/cleanup uncertainty issue. Code unchanged; final execution command/card
+held pending separately authorised repair and independent difference review.
 Exact future execution card/command and human approval are separate.
 
 ## 1. Question and evidence boundary
