@@ -28,6 +28,7 @@ logging.getLogger().addHandler(StopLogging(level=logging.WARNING))
 
 import numpy as np
 from scipy import linalg
+from aa2024_dyadic_reference import check_model, column_reference, comparison, failure_text
 
 ARMS = ('old', 'proxy', 'intact')
 THREADS = ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS',
@@ -41,6 +42,8 @@ ANCHORS = ('8655d49b30e341d488eeb8c15db9a7d347f236634a22adbbf39fcb7b4bbd3ccf',
 BASE = Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments')
 PREP = BASE/'S03-E016/S03-E016-R001/prepare'
 FIT = BASE/'S03-E016/S03-E016-R002/fit'
+CODE_NAMES = ('aa2024_q_recheck.py', 'aa2024_q_verify.py', 'test_aa2024_q_recheck.py',
+              'aa2024_dyadic_reference.py', 'test_aa2024_underflow.py')
 
 
 class Stop(ValueError):
@@ -53,12 +56,9 @@ def require(condition, label):
 
 
 def close(a, ref, label, kind='vector'):
-    a, ref = np.asarray(a), np.asarray(ref)
-    atol = {'matrix': 1e-12, 'vector': 1e-15, 'square': 1e-18}[kind]
-    require(a.shape == ref.shape and np.isfinite(a).all() and np.isfinite(ref).all(), label+' finite/shape')
-    ratio = np.abs(a-ref)/(atol+1e-12*np.abs(ref))
-    require(bool(np.all(ratio <= 1)), label)
-    return float(np.max(ratio, initial=0))
+    summary = comparison(a, ref, kind)
+    require(summary['all_pass'], failure_text(label, summary))
+    return summary  # No caller consumes a floating ratio.
 
 
 def mm(a, b):
@@ -216,12 +216,14 @@ def repair(H, Lr, y, factors):
 
 def analyze(a, factors, budget, expected_rank=None):
     A, y, H = a['A'], a['y'], a['H']
+    reference_records = []
     require(A.shape == (1296, 1482) and np.isfinite(A).all() and np.any(A), 'A finite nonzero shape')
     budget.check(); L, s, Vh = factors.svd(A); budget.check()
     require(np.isfinite(s).all() and s[0] > 0 and np.all(s >= 0) and np.all(np.diff(s) <= 0), 'singular values')
     tau = float(1e-12*s[0]); mask = s > tau
     require(not np.any((s >= tau/10) & (s <= 10*tau)), 'cutoff unresolved')
-    close(mm(L*s, Vh), A, 'full SVD reconstruction producer only', 'matrix')
+    close(mm(column_reference(L, s, 'producer.full_svd', reference_records, budget), Vh),
+          A, 'full SVD reconstruction producer only', 'matrix')
     close(mm(L.T, L), np.eye(len(s)), 'full L Gram producer only', 'matrix')
     close(mm(Vh, Vh.T), np.eye(len(s)), 'full V Gram producer only', 'matrix')
     rank = int(mask.sum())
@@ -229,8 +231,8 @@ def analyze(a, factors, budget, expected_rank=None):
     require(rank > 0 and (expected_rank is None or rank == expected_rank),
             'RANK_IDENTITY_REVIEW_REQUIRED: observed='+str(rank)+' expected='+str(expected_rank))
     Lr, Vr, sr = a['Lr'], a['Vh_r'].T, s[mask]
-    close(mm(A, Vr), Lr*sr, 'AVr=Lr sr', 'matrix')
-    close(mm(A.T, Lr), Vr*sr, 'AT Lr=Vr sr', 'matrix')
+    close(mm(A, Vr), column_reference(Lr, sr, 'producer.retained_left', reference_records, budget), 'AVr=Lr sr', 'matrix')
+    close(mm(A.T, Lr), column_reference(Vr, sr, 'producer.retained_right', reference_records, budget), 'AT Lr=Vr sr', 'matrix')
     legacy_p = mm(Lr, mm(Lr.T, y))
     a.update(legacy_p=legacy_p, legacy_r=legacy_p-y)
     a.update(repair(H, Lr, y, factors)); budget.check()
@@ -241,8 +243,8 @@ def analyze(a, factors, budget, expected_rank=None):
     for key in ('legacy_p', 'legacy_r'):
         v = a[key]; check = q(H, v)
         a['q_'+key] = check
-        ratio = float(np.max(np.abs(check-v)/(1e-15+1e-12*np.abs(v))))
-        legacy[key] = dict(Q_ratio=ratio, Q_pass=ratio <= 1)
+        summary = comparison(check, v)
+        legacy[key] = dict(Q_comparison=summary, Q_pass=summary['all_pass'])
     for k in ARMS:
         b = a[k+'_b']
         close(q(H, b), b, 'Qb '+k)
@@ -259,7 +261,8 @@ def analyze(a, factors, budget, expected_rank=None):
                          RMS_Q_resolved=bool(np.sqrt(JQ) > decision), gap_resolved=bool(np.sqrt(extra) > decision)))
     require((factors.svd_calls, factors.qr_calls) == (1, 2), 'factor count')
     budget.check()
-    return dict(rank=rank, cutoff=tau, eta=float(a['eta']), J_Q_mm2=JQ,
+    return dict(schema='E019-D03-U01-v1', reference_products=reference_records,
+                rank=rank, cutoff=tau, eta=float(a['eta']), J_Q_mm2=JQ,
                 RMS_Q_mm=float(np.sqrt(JQ)), T_mm=float(decision), rows=rows,
                 legacy=legacy, svd_calls=1, qr_calls=2,
                 scope='new Q-consistent retained-space training numerical certificate; no physical inversion')
@@ -339,8 +342,7 @@ def snapshot(repo, reviewed):
 
 
 def code_hashes():
-    return {name: sha(Path(__file__).with_name(name)) for name in
-            ('aa2024_q_recheck.py', 'aa2024_q_verify.py', 'test_aa2024_q_recheck.py')}
+    return {name: sha(Path(__file__).with_name(name)) for name in CODE_NAMES}
 
 
 def final_identity(repo, reviewed, initial_head, initial_hashes):
@@ -431,7 +433,7 @@ def main():
     require(all(os.environ.get(k) == '1' for k in THREADS) and os.environ.get('CUDA_VISIBLE_DEVICES') == '', 'single CPU environment')
     repo = Path(__file__).resolve().parents[1]
     actual = snapshot(repo, args.source_commit)
-    allowed = BASE/'S03-E019-D03'/('S03-E019-D03-B001' if args.mode == 'synthetic' else 'S03-E019-D03-R001')
+    allowed = BASE/'S03-E019-D03'/('S03-E019-D03-B002' if args.mode == 'synthetic' else 'S03-E019-D03-R001')
     safe_path(allowed)
     require(args.output == allowed and not allowed.exists(), 'fresh exact output root')
     allowed.mkdir(parents=True, exist_ok=False)
@@ -445,6 +447,7 @@ def main():
         with warnings.catch_warnings():
             warnings.simplefilter('error')
             with np.errstate(all='raise'):
+                check_model()
                 budget.check()
                 if args.mode == 'real':
                     p, fields, before = load_real(args.allow_two_opaque_hashes)

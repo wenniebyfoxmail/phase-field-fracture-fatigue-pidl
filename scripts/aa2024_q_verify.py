@@ -5,6 +5,7 @@ Execution, including synthetic artifacts, requires separate approval.
 """
 import argparse
 from decimal import Decimal, localcontext
+from fractions import Fraction
 import hashlib
 import json
 import logging
@@ -12,6 +13,7 @@ import math
 import os
 from pathlib import Path
 import subprocess
+import struct
 import sys
 import time
 import warnings
@@ -29,6 +31,7 @@ logging.getLogger().addHandler(StopLogging(level=logging.WARNING))
 
 import numpy as np
 from scipy.linalg.blas import dgemm
+from aa2024_dyadic_reference import check_model, column_reference, comparison, failure_text
 
 ARMS = ('old', 'proxy', 'intact')
 BASE = Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments')
@@ -38,6 +41,8 @@ PREP_KEYS = ('ids', 'xy', 'weights', 'train_v', 'mesh', 'tri', 'boundary', 'bc')
 FIELD_KEYS = ARMS+tuple(k+'_sampled' for k in ARMS)
 ANCHORS = ('8655d49b30e341d488eeb8c15db9a7d347f236634a22adbbf39fcb7b4bbd3ccf',
            '3173f0f659d6e451f7fccc39a4ca0973ae3caad750c9d98ce754a1bcec325674')
+CODE_NAMES = ('aa2024_q_recheck.py', 'aa2024_q_verify.py', 'test_aa2024_q_recheck.py',
+              'aa2024_dyadic_reference.py', 'test_aa2024_underflow.py')
 
 
 class Rejected(ValueError):
@@ -50,10 +55,95 @@ def demand(ok, text):
 
 
 def equal(a, b, text, kind='vector'):
-    a, b = np.asarray(a), np.asarray(b)
-    eps = {'matrix': 1e-12, 'vector': 1e-15, 'square': 1e-18}[kind]
-    demand(a.shape == b.shape and np.isfinite(a).all() and np.isfinite(b).all(), text+' finite/shape')
-    demand(np.all(np.abs(a-b) <= eps+1e-12*np.abs(b)), text)
+    summary = comparison(a, b, kind)
+    demand(summary['all_pass'], failure_text(text, summary))
+
+
+def rounding_interval(x, t, value):
+    """Independent exact-rational nearest-cell oracle; no candidate bit helpers.
+
+    Uses adjacent float encodings and Fraction intervals, not the candidate's
+    significand multiplication, division or packing algorithm. No risky multiply.
+    """
+    demand(all(math.isfinite(v) for v in (x, t, value)), 'oracle finite')
+    def raw(v):
+        return int.from_bytes(struct.pack('>d', float(v)), 'big')
+    def number(code):
+        return struct.unpack('>d', int(code).to_bytes(8, 'big'))[0]
+    expected_sign = (raw(x) >> 63) ^ (raw(t) >> 63)
+    demand(raw(value) >> 63 == expected_sign, 'oracle sign including zero')
+    exact = abs(Fraction.from_float(float(x))*Fraction.from_float(float(t)))
+    code = raw(abs(value))
+    demand(code < 0x7fefffffffffffff, 'oracle finite upper neighbor')
+    current = Fraction.from_float(abs(float(value)))
+    previous = Fraction.from_float(number(code-1)) if code else Fraction(0)
+    following = Fraction.from_float(number(code+1))
+    lower, upper = (previous+current)/2, (current+following)/2
+    even = code % 2 == 0
+    demand((exact > lower or (exact == lower and even) or (code == 0 and exact == 0)) and
+           (exact < upper or (exact == upper and even)), 'oracle nearest-even interval')
+    return exact, current
+
+
+def product_certificate(certificate):
+    """Audit actual stored input/output bits and integer witness independently."""
+    def number(key):
+        code = certificate[key]
+        demand(isinstance(code, str) and len(code) == 16, 'certificate bit encoding')
+        return struct.unpack('>d', bytes.fromhex(code))[0]
+    x, t, value = (number(k) for k in ('x_bits', 't_bits', 'out_bits'))
+    exact, rounded = rounding_interval(x, t, value)
+    numerator, denominator, quotient, remainder, n, p = (
+        int(certificate[k]) for k in ('numerator', 'denominator', 'quotient', 'remainder', 'N', 'P'))
+    h = certificate['h']
+    demand(type(h) is int and -1074 <= h <= 4096 and p > 0 and denominator > 0, 'certificate ranges')
+    rational = Fraction(numerator, denominator)
+    demand(rational == exact*(1 << 1074), 'certificate exact operands')
+    demand(rational == (Fraction(p*(1 << h)) if h >= 0 else Fraction(p, 1 << -h)), 'certificate dyadic identity')
+    demand(numerator == quotient*denominator+remainder and 0 <= remainder < denominator, 'certificate quotient/remainder')
+    demand(rounded*(1 << 1074) == n and 0 <= n <= (1 << 53)-2, 'certificate output quantum')
+    direction = 'exact' if rounded == exact else ('larger_magnitude' if rounded > exact else 'smaller_magnitude')
+    demand(certificate['magnitude_rounding'] == direction and certificate['error_bound'] == '2^-1075', 'certificate direction/bound label')
+    demand(abs(rounded-exact) <= Fraction(1, 1 << 1075), 'certificate half quantum')
+
+
+def audit_reference_records(records, arrays, timer):
+    names = ('producer.full_svd', 'producer.retained_left', 'producer.retained_right')
+    demand([r['site'] for r in records] == list(names), 'exact producer product sites/order')
+    for record in records:
+        shape = record['shape']
+        demand(len(shape) == 2 and all(type(n) is int and n > 0 for n in shape), 'certificate shape')
+        certs = record['certificates']
+        count_keys = ('ordinary_count', 'zero_operand_count', 'integer_branch_count',
+                      'subnormal_output_count', 'nonzero_product_rounded_zero_count')
+        demand(all(type(record[k]) is int and record[k] >= 0 for k in count_keys), 'certificate counts')
+        demand(record['ordinary_count']+record['zero_operand_count']+record['integer_branch_count'] == shape[0]*shape[1] and
+               len(certs) == record['integer_branch_count'], 'certificate branch accounting')
+        indices = set(); subnormal = zeros = 0
+        for i, cert in enumerate(certs):
+            if i % 64 == 0:
+                timer.check()
+            index = tuple(cert['index'])
+            demand(len(index) == 2 and all(type(v) is int and 0 <= v < shape[j] for j, v in enumerate(index)) and
+                   index not in indices, 'certificate index/order uniqueness')
+            indices.add(index)
+            product_certificate(cert)
+            mag = int(cert['out_bits'], 16) & ((1 << 63)-1)
+            subnormal += 0 < mag < 1 << 52
+            zeros += mag == 0
+        demand((subnormal, zeros) == (record['subnormal_output_count'], record['nonzero_product_rounded_zero_count']), 'certificate output counts')
+        if record['site'] != 'producer.full_svd':
+            factor = arrays['Lr'] if record['site'].endswith('left') else arrays['Vh_r'].T
+            singular = arrays['s'][arrays['mask']]
+            demand(shape == list(factor.shape) and record['input_sha256'] ==
+                   [hashlib.sha256(v.tobytes()).hexdigest() for v in (factor, singular)], 'retained reference operand identity')
+            for cert in certs:
+                i, j = cert['index']
+                demand(cert['x_bits'] == struct.pack('>d', float(factor[i, j])).hex() and
+                       cert['t_bits'] == struct.pack('>d', float(singular[j])).hex(), 'retained certificate input bits')
+        # Full L was not saved: only each self-contained rounding witness is audited.
+        # Do not authenticate its input hash or independently claim full SVD replay.
+        timer.check()
 
 
 def file_sha(path):
@@ -86,8 +176,7 @@ def code_identity(repo, reviewed):
     changes = subprocess.check_output(['git', 'diff', '--name-only', reviewed, current], cwd=repo, text=True).splitlines()
     demand(all(name.startswith('docs/') for name in changes), 'only later review records may differ')
     demand(not subprocess.check_output(['git', 'status', '--porcelain'], cwd=repo, text=True).strip(), 'clean source')
-    hashes = {name: file_sha(Path(__file__).with_name(name)) for name in
-              ('aa2024_q_recheck.py', 'aa2024_q_verify.py', 'test_aa2024_q_recheck.py')}
+    hashes = {name: file_sha(Path(__file__).with_name(name)) for name in CODE_NAMES}
     return current, hashes
 
 
@@ -225,6 +314,10 @@ def source_and_operators(a, timer):
 
 
 def matrices(a, report, timer):
+    # Shared scalar product semantics, NOT independent multiplication evidence.
+    # The tiny Fraction interval oracle is separate; BLAS contractions remain independent.
+    reference_records = []
+    audit_reference_records(report['reference_products'], a, timer)
     A, Lr, Vr, U, T, H = (a[k] for k in ('A', 'Lr', 'Vh_r', 'U', 'T', 'H'))
     Vr = Vr.T; s, mask = a['s'], a['mask']; rank = int(mask.sum())
     demand(s.shape == (1296,) and np.isfinite(s).all() and s[0] > 0 and np.all(s >= 0) and np.all(np.diff(s) <= 0), 's')
@@ -234,8 +327,8 @@ def matrices(a, report, timer):
     demand(rank == report['rank'] and rank > 0, 'report rank')
     for name, basis in (('Lr', Lr), ('Vr', Vr), ('U', U)):
         equal(product(basis.T, basis), np.eye(rank), name+' full Gram', 'matrix'); timer.check()
-    equal(product(A, Vr), Lr*s[mask], 'retained left relation', 'matrix'); timer.check()
-    equal(product(A.T, Lr), Vr*s[mask], 'retained right relation', 'matrix'); timer.check()
+    equal(product(A, Vr), column_reference(Lr, s[mask], 'verifier.retained_left', reference_records, timer), 'retained left relation', 'matrix'); timer.check()
+    equal(product(A.T, Lr), column_reference(Vr, s[mask], 'verifier.retained_right', reference_records, timer), 'retained right relation', 'matrix'); timer.check()
     equal(Lr-product(H, product(H.T, Lr)), a['B'], 'B=QLr', 'matrix')
     equal(product(U, T), a['B'], 'UT=B full', 'matrix'); timer.check()
     equal(U-product(H, product(H.T, U)), U, 'QU full', 'matrix')
@@ -269,9 +362,9 @@ def vectors(a, report, timer):
             for key in ('y', 'p', 'r', 'legacy_p', 'legacy_r')+tuple(k+'_b' for k in ARMS):
                 v = a[key]; qv = quotient(H, v, method, timer)
                 equal(qv, a['q_'+key] if not key.endswith('_b') else a[key[:-2]+'_q_b'], 'REFERENCE_PATH_UNRESOLVED '+method+' Q evaluation '+key)
-                ratio = float(np.max(np.abs(qv-v)/(1e-15+1e-12*np.abs(v))))
+                status = comparison(qv, v)['all_pass']
                 expected = report['legacy'][key]['Q_pass'] if key.startswith('legacy') else True
-                demand((ratio <= 1) == expected, 'REFERENCE_PATH_UNRESOLVED '+method+' Q status '+key)
+                demand(status == expected, 'REFERENCE_PATH_UNRESOLVED '+method+' Q status '+key)
             equal(float_vector(vector_product(U.T, r, method, timer)), np.zeros(U.shape[1]), method+' UTr')
             for k in ARMS:
                 b = a[k+'_b']; equal(float_vector(project(U, b, method, timer)), b, method+' retained image '+k)
@@ -353,7 +446,7 @@ def main():
     demand(all(os.environ.get(k) == '1' for k in threads) and os.environ.get('CUDA_VISIBLE_DEVICES') == '', 'single CPU environment')
     repo = Path(__file__).resolve().parents[1]
     current, initial_code = code_identity(repo, args.source_commit)
-    run = 'S03-E019-D03-B001' if args.mode == 'synthetic' else 'S03-E019-D03-R001'
+    run = 'S03-E019-D03-B002' if args.mode == 'synthetic' else 'S03-E019-D03-R001'
     demand(args.input == BASE/'S03-E019-D03'/run and args.output == BASE/'S03-E019-D03'/(run+'-acceptance'), 'exact input/output root')
     safe_path(args.input); demand(args.input.is_dir(), 'producer directory')
     safe_path(args.output)
@@ -363,6 +456,7 @@ def main():
         with warnings.catch_warnings():
             warnings.simplefilter('error')
             with np.errstate(all='raise'):
+                check_model()
                 demand(not (args.input/'failure_receipt.json').exists(), 'producer failure recorded')
                 receipt = read_json(args.input/'execution_receipt.json')
                 completion = read_json(args.input/'completion.json')
@@ -370,9 +464,9 @@ def main():
                 demand(receipt['mode'] == args.mode and receipt['source_commit'] == args.source_commit and
                        receipt['execution_status'] == 'producer_completed_not_independently_accepted', 'producer identity/status')
                 demand((receipt['svd_calls'], receipt['qr_calls']) == (1, 2), 'controlled API count')
-                demand(set(receipt['source_sha256']) == set(initial_code), 'exact three source code keys')
+                demand(set(receipt['source_sha256']) == set(initial_code), 'exact five source code keys')
                 for name, digest in receipt['source_sha256'].items():
-                    demand(name in ('aa2024_q_recheck.py', 'aa2024_q_verify.py', 'test_aa2024_q_recheck.py') and
+                    demand(name in CODE_NAMES and
                            file_sha(Path(__file__).with_name(name)) == digest, 'reviewed producer code identity')
                 required = {'certificate.npz', 'report.json', 'q_residuals.png', 'q_residuals.pdf', 'q_residuals.md',
                             'q_square_ledger.png', 'q_square_ledger.pdf', 'q_square_ledger.md'}
@@ -384,6 +478,7 @@ def main():
                 with np.load(args.input/'certificate.npz', allow_pickle=False) as z:
                     a = {key: z[key] for key in z.files}
                 report = read_json(args.input/'report.json'); timer.check()
+                demand(report['schema'] == 'E019-D03-U01-v1', 'explicit new arithmetic schema')
                 if args.mode == 'real':
                     demand(args.allow_two_opaque_hashes, 'real source opaque-read approval required')
                     real_sources(a, receipt)
