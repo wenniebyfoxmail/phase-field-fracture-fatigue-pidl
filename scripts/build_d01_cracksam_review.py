@@ -22,12 +22,13 @@ def main():
     ap.add_argument('--root',type=Path,required=True)
     ap.add_argument('--baseline',type=Path,required=True)
     ap.add_argument('--public',type=Path,required=True)
+    ap.add_argument('--refined',default='refined')
     args = ap.parse_args()
     p = args.root
     assets = args.public/'strong_mask_assets'
     assets.mkdir(exist_ok=True)
     cases = json.loads((p/'source_manifest.json').read_text())
-    records = json.loads((p/'refined/summary.json').read_text())
+    records = json.loads((p/args.refined/'summary.json').read_text())
     rows = []
     checks = []
     for entry in cases:
@@ -37,23 +38,23 @@ def main():
         assert digest(src) == digest(args.public/'full_mask_assets'/entry['file'])
         image = Image.open(src).convert('RGB')
         raw = np.array(Image.open(p/'outputs'/f'{name}_mask.png'))>0
-        refined = np.array(Image.open(p/'refined'/f'{name}_mask.png'))>0
-        removed_im = Image.open(p/'refined'/f'{name}_removed_overlay.png')
+        refined = np.array(Image.open(p/args.refined/f'{name}_mask.png'))>0
+        removed_im = Image.open(p/args.refined/f'{name}_removed_overlay.png')
         removed = np.array(removed_im)[:,:,3]>0
         assert raw.shape == refined.shape == (image.height,image.width)
         assert not np.any(refined & ~raw)
         assert np.array_equal(removed, raw & ~refined)
-        for kind,folder in [('raw','outputs'),('refined','refined')]:
+        for kind,folder in [('raw','outputs'),('refined',args.refined)]:
             overlay = Image.open(p/folder/f'{name}_overlay.png')
             assert overlay.size == image.size
             expected = raw if kind=='raw' else refined
             assert np.array_equal(np.array(overlay)[:,:,3]>0,expected)
             for suffix in ['mask','overlay']:
                 shutil.copy2(p/folder/f'{name}_{suffix}.png', assets/f'{name}_{kind}_{suffix}.png')
-        shutil.copy2(p/'refined'/f'{name}_removed_overlay.png',assets/f'{name}_removed_overlay.png')
+        shutil.copy2(p/args.refined/f'{name}_removed_overlay.png',assets/f'{name}_removed_overlay.png')
         Image.fromarray(removed.astype(np.uint8)*255).save(assets/f'{name}_removed_mask.png')
         old = composite(image,Image.open(args.baseline/'outputs'/f'{name}_overlay.png'))
-        new = composite(image,Image.open(p/'refined'/f'{name}_overlay.png'))
+        new = composite(image,Image.open(p/args.refined/f'{name}_overlay.png'))
         if name=='beam4_t588':
             new.save(p/'F02_beam4_final_improved.jpg',quality=94)
         row = Image.new('RGB',(1800,430),'white')

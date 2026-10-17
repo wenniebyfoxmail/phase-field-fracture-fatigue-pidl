@@ -21,15 +21,19 @@ def rgba(mask, color):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', type=Path, required=True)
+    ap.add_argument('--cached-ocr',type=Path)
+    ap.add_argument('--text-proposals-only',action='store_true')
+    ap.add_argument('--output',type=Path)
     args = ap.parse_args()
     root = args.root
-    sys.path.insert(0,str(root/'ocr_deps'))
-    import easyocr
-    torch.set_num_threads(4)
-    torch.cuda.set_per_process_memory_fraction(0.15,0)
-    reader = easyocr.Reader(['en'],gpu=True,model_storage_directory=str(root/'ocr_models'),
-                            user_network_directory=str(root/'ocr_user'),verbose=False)
-    out = root/'refined'
+    if args.cached_ocr is None:
+        sys.path.insert(0,str(root/'ocr_deps'))
+        import easyocr
+        torch.set_num_threads(4)
+        torch.cuda.set_per_process_memory_fraction(0.15,0)
+        reader = easyocr.Reader(['en'],gpu=True,model_storage_directory=str(root/'ocr_models'),
+                                user_network_directory=str(root/'ocr_user'),verbose=False)
+    out = args.output or root/'refined'
     out.mkdir(exist_ok=True)
     cases = json.loads((root/'source_manifest.json').read_text())
     records = []
@@ -41,8 +45,12 @@ def main():
             raw = np.array(Image.open(root/'outputs'/f'{name}_mask.png')) > 0
             text_mask = np.zeros(raw.shape,np.uint8)
             ocr = []
-            for poly,text,confidence in reader.readtext(rgb,canvas_size=2560,mag_ratio=1,
-                                                       paragraph=False,detail=1):
+            if args.cached_ocr is not None:
+                cached=json.loads((args.cached_ocr/f'{name}_cleanup.json').read_text())['ocr']
+                detections=[(o['polygon'],o['text'],o['confidence']) for o in cached]
+            else:
+                detections=reader.readtext(rgb,canvas_size=2560,mag_ratio=1,paragraph=False,detail=1)
+            for poly,text,confidence in detections:
                 letters = re.sub('[^A-Za-z]','',text)
                 symbols = re.sub('[^A-Za-z0-9]','',text)
                 poly = np.rint(poly).astype(np.int32)
@@ -51,6 +59,8 @@ def main():
                 exclude = bool(letters) and sides[1]<=600 and aspect>=0.12 and (
                     (len(symbols)>=2 and confidence>=0.15) or
                     (len(symbols)==1 and confidence>=0.65 and aspect>=0.15))
+                if args.text_proposals_only:
+                    exclude = sides[1]<=600 and aspect>=0.12
                 exclude = bool(exclude)
                 ocr.append({'polygon':poly.tolist(),'text':text,'confidence':float(confidence),
                             'excluded':exclude,'bbox_short_long':aspect})
