@@ -38,7 +38,16 @@ input norms now stop before the merger, without adding a second clip.
 
 No optimiser step or training was executed. Exact commit
 `8b6a2e49b241ae73f433645cb30a69291f7aee53` received
-`CORE_CODE_READY_PASS`. A full E009 producer runner, resolved configuration,
-evidence packet, and launch path do not yet exist. The PASS authorises runner
-integration and further no-training verification only; it is not a full
-execution authorisation.
+`CORE_CODE_READY_PASS`.
+
+The next local layer at exact commit
+`77ab15254e8b444a37ae9f11c9a91791f2e1d906` now freezes the four-arm schedule,
+copies and isolates the arm models/optimisers, binds the reviewed E008 runtime,
+preserves the same-forward `g_D` needed by the later AdamW displacement
+diagnostic, and declares the future evidence manifest. Its 59-test selected
+suite passed with `AdamW.step` replaced by a fail-if-called sentinel.
+
+This layer still exposes no producer loop or optimiser-step route. A resolved
+producer configuration, full evaluator/evidence writer and launch path do not
+yet exist. The exact integration commit is awaiting ChatGPT Pro review; neither
+its local pass nor the prior core PASS is an execution authorisation.
