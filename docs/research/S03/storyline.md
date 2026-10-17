@@ -544,3 +544,13 @@
   only source/docs/git/hash and metadata-only ledger registration. Original
   fields/predictions/results untouched. Next separate approval: A only, 24
   artificial units with QR/SVD stubs, single CPU/60s/failfast; B/C/D not automatic.
+
+- **2026-10-17 — D03 A executed once: 24/24 artificial units passed.**
+  Exact user-approved A at clean7fb49598, sourcea3352a69; chunk40a3dd exit0,
+  unittest0.005s and tool command wall0.144729417s, final soft60s checks passed.
+  No unexpected warnings/errors/retry; controlled actualQR0/SVD0, fake NPZ only,
+  no report/realarray/holdout read, B/C/D/solve/render or frozen-output mutation.
+  Source SHA/HEAD/clean unchanged before/after. See
+  S03-E019/real_training_unit_results.md. Supports artificial unit coverage only;
+  actual factors/full-size budget/real numerical evidence remain untested.
+  Next B requires separate approval; no automatic continuation.
