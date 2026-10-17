@@ -1,0 +1,59 @@
+{
+  "S01-E009": {
+    "scope": "reused four-training-location crossfit diagnostic",
+    "source": "archived R001 saved outputs; no replay, fits or old-site access",
+    "decision_sha256": "6edc104e8e079684cfb6aa29928dbe0356787f4360e98548a93969eb8977fd4d",
+    "summary_sha256": "391d1e02b3b70ed5652938a06f9e7010105077be959388b7fa957470a25234c3",
+    "baseline_old_hits": 282,
+    "retained_old_targets": 282,
+    "new_detected_targets": 0,
+    "lost_old_targets": 0,
+    "net_targets": 0,
+    "delta": 0.0,
+    "accepted_corrections": 112,
+    "prefix_corrections": 10,
+    "baseline_FP_types": {
+      "partial": 110,
+      "duplicate": 20,
+      "no_small_overlap": 200
+    },
+    "candidate_FP_types": {
+      "partial": 112,
+      "duplicate": 20,
+      "no_small_overlap": 198
+    },
+    "target": "binary max corrected-GT IoU>=.5, valid duplicates remain positive",
+    "features": "576 pooled +12 scalars,588 inputs/589 parameters",
+    "score_mapping": "attenuate corrected E003 score by quality probability"
+  },
+  "S01-E011": {
+    "scope": "conditional reused four-training-location crossfit; low-capacity repair; no independent-site claim",
+    "source": "archived R001 saved outputs; no replay, fits or old-site access",
+    "decision_sha256": "6baf0c6730b50ff8b5c116ffd9369fa73099dec18fc750884c3e0df5ef3c6b2c",
+    "summary_sha256": "099c9dca8e157049360708f09bce8d8396c9f3c1f647d34615e516ad1f729e80",
+    "baseline_old_hits": 282,
+    "retained_old_targets": 282,
+    "new_detected_targets": 0,
+    "lost_old_targets": 0,
+    "net_targets": 0,
+    "delta": 0.0,
+    "accepted_corrections": 1729,
+    "prefix_corrections": 11,
+    "baseline_FP_types": {
+      "partial": 110,
+      "duplicate": 20,
+      "no_small_overlap": 200
+    },
+    "candidate_FP_types": {
+      "partial": 114,
+      "duplicate": 20,
+      "no_small_overlap": 196
+    },
+    "target": "single scalar singleton U=new-lost-FP",
+    "features": "12 scalars/13 parameter ridge, sign-balanced strata",
+    "score_mapping": "predU>0 sign gate, unchanged s0 ranking",
+    "known_useful_candidates": 4,
+    "known_useful_positive_prediction": 0,
+    "known_useful_accepted": 0
+  }
+}
