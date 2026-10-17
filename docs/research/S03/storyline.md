@@ -515,3 +515,15 @@
   ledger only, not phase field or parameter identifiability. No real asset access,
   implementation/test/SVD/QR/solve/figure operation; Pro new-branch review remains
   before code, after user direction confirmation. Await confirmation, not execution.
+
+- **2026-10-17 — D03 direction confirmed; Pro new-branch plan review submitted, pending.**
+  User authorized Pro review first, then code/test-design/command preparation and
+  independent static code review; no tests, realarray/holdout reads or numerical
+  execution. Verified existing haofan/Pro account and Pro selector in the same
+  review conversation, sent one full text-only D03 request, no attachments/code/
+  data, observed new sent user message and active thinking. Request SHA
+  6cdad01a32b89beffcd79b2a75f3abca4812b155f653cc97d5a1ebc739dcdd1e;
+  see S03-E019/real_training_pro_request.md and real_training_pro_review.md.
+  No complete D03 decision yet; prior D02 PASS_PLAN does not apply. No executable
+  code/test implementation/execution package created, no code-review completion
+  claimed. Await full D03 reply and adoption before moving to implementation.
