@@ -16,6 +16,10 @@ ROI[3800,900,4800,3500]. No other source frames, new downloads or training.
   specimen/backdrop boundary in the inspected source grid. Intersect proposed
   keep-exclusions with oldexcluded: may only release, never add excluded pixels.
   Exact source-derived vertices in support_repair.json, frozen before extraction.
+  Source-only R000 preview exposed a potentially unprotected glue fringe: add
+  fixed10px elliptical outward buffer to left keep-exclusion BEFORE any crack
+  extraction. Keep first preparation, effective R004 prepares this sole final
+  source-only candidate. No masks/prediction errors inspected to choose buffer.
 - Resource cap: one frame, old default reconstruction plus one changed-support
   extraction, CPU/wall60s; renderer separate. Existing v1.extract unchanged.
   No threshold sweep, skeleton/path/thickness calculation, forecast/scoring,

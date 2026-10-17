@@ -43,7 +43,11 @@ def prepare(a):
     with np.load(BASE/"geometry_arrays.npz") as z:
         old_excluded=z["excluded"]
     assert np.array_equal(raster(old_support["exclude_polygons"],spec["roi"]),old_excluded)
-    new_excluded=old_excluded & raster(spec["keep_polygons_native"],spec["roi"])
+    keep=raster(spec["keep_polygons_native"][:1],spec["roi"]).astype(np.uint8)
+    radius=spec["left_keep_safety_buffer_px"]
+    keep=cv2.dilate(keep,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(2*radius+1,2*radius+1))).astype(bool)
+    keep |= raster(spec["keep_polygons_native"][1:],spec["roi"])
+    new_excluded=old_excluded & keep
     contours,hierarchy=cv2.findContours(new_excluded.astype(np.uint8),cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
     assert hierarchy is not None and np.all(hierarchy[0,:,3]==-1), "Hole requires explicit support review"
     new_support=copy.deepcopy(old_support)
