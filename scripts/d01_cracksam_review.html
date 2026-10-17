@@ -4,6 +4,7 @@
 body{font:16px system-ui;margin:24px;background:#f4f6f8;color:#14232a}h1{margin-bottom:8px}button,select,input{font:inherit}button,select{padding:6px}header{position:sticky;top:0;background:#f4f6f8;z-index:2;padding-bottom:12px}.controls{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}.viewport{height:72vh;overflow:auto;background:#161b1d;border:1px solid #bbb}canvas{display:block}p{max-width:1100px;line-height:1.45}.note{background:#fff;padding:12px;border-left:4px solid #00a678}.actions{margin-top:12px;display:flex;gap:20px}#status{font-size:14px}textarea{width:min(900px,95%);height:65px}label{white-space:nowrap}
 </style>
 <header><h1>D01 — CrackSAM full-image mask review</h1>
+<p><a href="pilot_review.html">Open measurement pilot: clear / uncertain regions and eligible geometry</a></p>
 <p>Green shows the crack mask. Compare the improved mask with raw CrackSAM and the previous DeepCrack result on the same six photographs. Orange shows pixels removed by cleanup. No new training.</p>
 <div class="controls"><select id="case"></select><select id="layer"><option value="refined">CrackSAM + cleanup</option><option value="raw">Raw CrackSAM</option><option value="deepcrack">Previous DeepCrack</option><option value="removed">Removed pixels (orange)</option></select><button id="prev">Previous</button><button id="next">Next</button>
 <label>Opacity <input id="opacity" type="range" min="0" max="45" value="45"><span id="alpha">45%</span></label>
