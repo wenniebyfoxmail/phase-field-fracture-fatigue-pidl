@@ -1,0 +1,41 @@
+{
+  "protocol_id": "ltpp_cross_state_geometry_climate_gate_v1_20260812",
+  "minimum_climate_complete_surveys": 5,
+  "candidates": [
+    {
+      "section": "27-6251",
+      "state_code": 27,
+      "ldw_section_id": 138,
+      "construction_number": 3,
+      "survey_dates": [
+        "2001-11-15",
+        "2002-05-23",
+        "2003-05-15",
+        "2003-10-08",
+        "2009-07-21",
+        "2011-05-11"
+      ],
+      "rectification_result": "local_archive/real_road_acquisition/ltpp_cross_state_rectification_20260812/27-6251_c3/grid_gate_results.json",
+      "manual_station_review": "PASS_PRINTED_0_TO_50_FT_ALL_DATES__CONTACT_SHEET_20260812"
+    },
+    {
+      "section": "08-1053",
+      "state_code": 8,
+      "ldw_section_id": 2117,
+      "construction_number": 2,
+      "survey_dates": [
+        "2001-10-30",
+        "2003-10-21",
+        "2007-08-20",
+        "2009-09-29",
+        "2010-10-27",
+        "2013-10-02",
+        "2015-10-27",
+        "2018-10-24"
+      ],
+      "rectification_result": "local_archive/real_road_acquisition/ltpp_cross_state_rectification_20260812/08-1053_c2/grid_gate_results.json",
+      "manual_station_review": "PASS_PRINTED_0_TO_50_FT_ALL_DATES__CONTACT_SHEET_20260812"
+    }
+  ],
+  "excluded_after_visual_station_review": []
+}

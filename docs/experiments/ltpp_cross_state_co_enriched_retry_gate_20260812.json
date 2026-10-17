@@ -1,0 +1,10 @@
+{
+  "status": "BOUNDED_RETRY_FOR_08_1053_ONLY",
+  "candidates": [
+    {
+      "section": "08-1053",
+      "ldw_section_id": 2117,
+      "passes_minimum_geometry_climate_gate": true
+    }
+  ]
+}

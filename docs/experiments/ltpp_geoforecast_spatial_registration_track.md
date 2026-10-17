@@ -40,6 +40,13 @@ separately reviewed scalar-length analysis.
 | no-OCR complete-main-grid tooling MVP | `EXPLORATORY_MAIN_GRID_TOOLING_MVP__NOT_QUALIFIED`; all eight seen development pages fail closed because no single `11 x 6`, 66-intersection component survives scanned dashed/fragmented strokes | `ltpp_geoforecast_img2table_main_grid_mvp_result_20260810.md` |
 | outer-boundary/intersection-topology MVP v2 | `EXPLORATORY_OUTER_FRAME_TOPOLOGY_TOOLING_MVP__NOT_QUALIFIED`; after passing fixed synthetic adversaries and threshold boundaries, all eight seen development pages fail closed because no uniquely eligible fully observed outer frame exists | `ltpp_geoforecast_outer_boundary_intersection_topology_mvp_v2_result_20260810.md` |
 | frame-candidate review MVP v3 | `EXPLORATORY_FRAME_CANDIDATE_REVIEW__NOT_QUALIFIED`; frozen owner review yields engineering-page candidates for 1991/1995/1997/2012 only, while 1998/2001/2003/2007 fail closed | `ltpp_geoforecast_frame_candidate_review_mvp_v3_result_20260810.md` |
+| owner-corner carrier render MVP v2 | engineering carrier `PASS` on all eight owner-confirmed official 0–50 ft maps at `15.24 m x 5.00 m`; status remains `EXPLORATORY_OWNER_CORNER_CARRIER_RENDERED__NOT_QUALIFIED` because corners are construction controls | `ltpp_geoforecast_owner_corner_carrier_render_mvp_v2_result_20260811.md` |
+| owner-carrier Tier B replacement packet | external review returned `APPROVE_OWNER_CARRIER_TIER_B_COLLECTION_ONLY`, blocking issues none; immutable 8+8 blind packet may enter eligible two-person annotation, but consensus/final gate have not run | `ltpp_geoforecast_spatial_registration_v2_owner_carrier_tier_b_packet_result_20260811.md`; `../reviews/ltpp_geoforecast_spatial_registration_v2_owner_carrier_packet_external_review_20260811.md` |
+| geometry-assisted grid-control pilot | `EXPLORATORY_AI_ASSISTED_CONTROL_PILOT_READY__NOT_INDEPENDENT`; 66 projective suggestions per date plus explicit i/j guides and user correction, isolated from formal A/B controls | `ltpp_geoforecast_geometry_assisted_grid_control_pilot_result_20260811.md` |
+| geometry-assisted development8 MVP v2 | `EXPLORATORY_DEVELOPMENT8_REVIEW_READY__NO_FINAL_GATE`; reduced to the eight pre-frozen development identities per date, with a frozen physical-error evaluator and no final controls | `ltpp_geoforecast_geometry_assisted_development8_mvp_v2_readiness_20260811.md` |
+| seven-date development8 MVP | `EXPLORATORY_7_DATE_REGISTRATION_MVP_READY__NOT_QUALIFIED`; clean 1995–2012, 7×8 review packet after isolating the incompatible 1991 transverse carrier | `ltpp_geoforecast_geometry_assisted_7date_development8_mvp_readiness_20260811.md` |
+| cross-state Tier B collection packet | `APPROVED_FOR_TWO_PERSON_BLIND_COLLECTION_ONLY__NO_FIT`; 14 maps per annotator across `27-6251 c3` and `08-1053 c2`, all records empty/unlocked, no consensus or transform | `ltpp_cross_state_spatial_registration_tier_b_packet_result_20260812.md`; `../reviews/ltpp_cross_state_spatial_registration_tier_b_external_review_20260812.md` |
+| cross-state single-owner line annotation | `READY_FOR_SINGLE_OWNER_LINE_ANNOTATION__NOT_INDEPENDENT__NO_FINAL_GATE`; full-source v2 fixes the unused 2001 crop failure; one owner labels 17 two-point lines plus eight local classifications per map, and owner outer lines define the no-fallback frame for 66 mechanically derived points | `ltpp_cross_state_single_owner_line_annotation_result_20260812.md` |
 
 ## Active gate
 
@@ -73,11 +80,29 @@ pages. It must not be loosened or rerun under the same experiment name.
 The later v3 candidate review establishes only four unambiguous engineering
 page frames. It is therefore not an all-eight common canvas and cannot be
 used for scientific cropping, controls, or registration.
+The separately named owner-corner carrier MVP then completed an all-eight
+engineering canvas using explicit owner-confirmed outer-frame corners on the
+already isolated official maps. Its first render used a wrong 4.572 m
+transverse convention and is retained as a failed exploratory result. Corrected
+render v2 uses the frozen `15.24 m x 5.00 m`, `1524 x 500 px` convention and
+passes structural/visual carrier checks. Because the visible corners construct
+the homographies, this does not supply independent internal residuals and does
+not change the active registration or 2-D gate.
+The obsolete Tier B packets were tied to earlier automatic crop bounds and are
+not valid for that accepted carrier. A separately named replacement packet is
+now frozen from the exact official-map source pixels and accepted frame window.
+External review approved release for independent Tier B collection only. All
+annotations were empty at approval, the sealed map was not opened, and neither
+consensus nor any registration gate has run.
 
 ## Next action
 
 Keep scalar-length work separate and explicitly measurement-noise limited. Any
 future spatial route requires a new, independently reviewed registration or
 acquisition track with external validation; no 2-D model training is authorized
-on the current eight-date carrier. The immediate v2 action is independent
-Tier A/B control adjudication, not transform tuning.
+on the current eight-date carrier. The current immediate action is completion
+of the separate 14-map full-source single-owner line review. Its output supports only
+development/availability diagnostics, not independent consensus or transform
+tuning. The approved two-person packet is retained as an optional future
+validation route. Neither route reopens the failed `06-1253` result or currently
+authorizes any 2-D model.

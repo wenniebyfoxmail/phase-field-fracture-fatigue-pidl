@@ -1,0 +1,7 @@
+stage,state,sections_audited,inventory_pass,selected_sections,construction_trajectories,all_date_geometry_pass,decision
+inventory,Minnesota,82,5,4,5,1,PARTIAL
+inventory,Texas,217,47,6,6,0,NEGATIVE_SELECTED_BATCHES
+inventory,Florida,83,13,5,5,0,NEGATIVE_SELECTED_BATCHES
+inventory,New York,26,0,0,0,0,NEGATIVE_INVENTORY
+inventory,Colorado,68,1,1,2,1,PARTIAL
+total,all_five_states,476,66,16,18,2,FAIL_TARGET_OF_FIVE
