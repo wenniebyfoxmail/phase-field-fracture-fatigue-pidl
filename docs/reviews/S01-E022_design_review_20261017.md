@@ -1,0 +1,7 @@
+# S01-E022 independent design review
+
+Channel: independent Codex reviewer / gpt-6.1-sol / Medium, explicitly selected by user. Read-only reviewer e008_independent_review inspected exact design3e776d0eac133eb99871e59966f48936721e1592, experiment/config/lock and E009/E011/E019/E020/E021/E012 runtime precedents. Verdict: PASS. Config60f6a9a0638d5d95c16893686a67fab831c1c18f2e82bcc96f8455cf489efb53;lock7a45566d329d97ea00a1e4d2c55927a43a8777e9a1239138a55d1e06a32d28cb.
+
+Initial inherited checkpoint/neural-extraction prohibitions were corrected before final review. New axis is frozen class-conditioned pre-pooling spatial attribution, not grayscale tuning or cached compression. GAP gradient givesa/49, uniform map scale cancels nonzero mass ratios. Exact area coverage cannot recover7x7detail or qualify a segmentation reference.11coefficients/sparse3/5/6support and unchanged capacity/abstention/protected criterion are consistent;actual throughput/memory await separately authorised run.
+
+Implementation requirements: parameters frozen/class order verified, only ordinary detached pooled leaf gradients (avoid inference tensors), no backbone backward;GPU-aware identity/peak accounting, true input-gradient counters,semantic batch2505isupperbound, no case extra forward. Review accessed no real model/image/fit/SSH. PASS authorises implementation/synthetic tests within user scope;not Code Ready, execution or scientific gain.

@@ -30,7 +30,7 @@ C2 real-road当前图像检测，有限候选银行、目标身份计数、固�
 
 共享context继续原框与修正框union，各方向加宽高25%，floor左上/ceil右下并clip；固定RGB、torchvision0.26.0 Resize((224,224))默认bilinear/antialias、ToTensor、ImageNet mean/std，float32、eval、无增强/自适应统计。每候选恰一次backbone。取冻结MobileNetV3-small最后features张量F(576,7,7)，z=mean_ij F。冻结classifier输出两个logit，m=logit_crack−logit_background，a_k=dm/dz_k。只在detach的z上enable_grad，所有模型参数requires_grad=False；backbone no_grad，禁止backbone backward、参数梯度、优化器或训练。H_ij=ReLU(sum_k a_k F_kij)，存7×7 H和两logit、导数/参数冻结检查及空间尺寸，不存庞大F。该H为margin Grad-CAM的统一49倍（标准权重对F梯度平均为a/49），比例对下述质量比例抵消；非概率/分割。
 
-以7×7等分context单元的**精确面积覆盖比例**w_ij(B)计算z(B)=sum(H*w)/sum(H)−mean(w)。这样短框不会因无cell中心落入而直接空掉，但不能恢复7×7内细节；不插值伪造分辨率。输入两列C_sem=z(B1)，D_sem=(z(B1)−z(B0))/2，范围[-1,1]。M<=1e−12或空context则两值0并记录，不能删除候选/改资格；有限数值、尺寸、标签顺序、head导数检查失败直接停止。预测提取函数只接图像/两框/冻结模型，绝不接GT/地点监督。真实run前不提取这些新特征，不按旧正例选择层/尺度/类别target。
+以7×7等分context单元的**精确面积覆盖比例**w_ij(B)计算z(B)=sum(H*w)/sum(H)−mean(w)。这样短框不会因无cell中心落入而直接空掉，但不能恢复7×7内细节；不插值伪造分辨率。输入两列C_sem=z(B1)，D_sem=(z(B1)−z(B0))/2，范围[-1,1]。M<=1e−12则两值0并记录，不能删除候选/改资格。合格输入的修正框严格位于图内且正面积，因此共享context必非空；如仍为空属于身份/几何失败并停止，不改资格补救；有限数值、尺寸、标签顺序、head导数检查失败直接停止。预测提取函数只接图像/两框/冻结模型，绝不接GT/地点监督。真实run前不提取这些新特征，不按旧正例选择层/尺度/类别target。
 
 依据：[Grad-CAM原论文](https://openaccess.thecvf.com/content_ICCV_2017/html/Selvaraju_Grad-CAM_Visual_Explanations_ICCV_2017_paper.html)支持类别梯度生成粗定位归因这一机制，并不证明裂缝定位质量；[torchvision官方实现](https://github.com/pytorch/vision/blob/v0.26.0/torchvision/models/mobilenetv3.py)规定features/avgpool/classifier，实际运行仍需本地结构和固定checkpoint核验。上述margin/coverage是本实验明确假设，不将文献结论移植成结果。
 
