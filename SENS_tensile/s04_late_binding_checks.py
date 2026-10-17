@@ -4,6 +4,11 @@ No full snapshot, CSV parsing, real reader, field, figure or old suite run.
 Tolerance probes stop at a deliberate sentinel immediately after the actual
 snapshot comparison, before summary contents or CSV can be supplied.
 """
+import sys
+
+if sys.flags.optimize != 0:
+    raise RuntimeError('optimized Python is forbidden for the binding mock worker')
+
 import argparse
 import copy
 import json
@@ -192,6 +197,7 @@ def run(out):
     assert len(groups) == 5 and len(probe_records) == 8
     record = dict(status='GENERATED_CHECKS_COMPLETED', scope='GENERATED_ENGINEERING_ONLY',
                   attempt_id=job.ATTEMPT, code_commit=code, targeted_check_groups=groups,
+                  python_optimize=sys.flags.optimize, python_debug=__debug__,
                   artificial_unit_cases=units, rejected_type_cases=rejected_types,
                   rejected_nonfinite_cases=nonfinite, tolerance_probes=probe_records,
                   real_data_read=False, fitting_invoked=False, real_ready=False,

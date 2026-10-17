@@ -1,4 +1,9 @@
 """Fixed single targeted binding mock; reuse the unchanged bounded guard."""
+import sys
+
+if sys.flags.optimize != 0:
+    raise RuntimeError('optimized Python is forbidden for the binding mock guard')
+
 import argparse
 import os
 from pathlib import Path
@@ -19,6 +24,7 @@ def execute(out, expected_commit):
         's04_late_binding_guard.py', 's04_late_binding_checks.py')]
     os.environ['S04_BINDING_PARENT'] = str(os.getpid())
     os.environ['S04_BINDING_CODE'] = expected_commit
+    os.environ['PYTHONOPTIMIZE'] = '0'
     return guard.execute(out, ATTEMPT, expected_commit)
 
 
