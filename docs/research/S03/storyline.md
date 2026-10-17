@@ -498,3 +498,20 @@
   or figure/PDF inspection executed; await separate one-shot approval. Planned
   PDF parse/metadata and saved-PNG visual review are distinct; no PDF visual claim,
   no actual E019 cause, physical inversion or future-prediction conclusion.
+
+- **2026-10-17 — D02 remaining independent acceptance completed; real training recheck proposed only.**
+  User-authorized v1.1 command ran once (chunk e48737), exit0, no warnings/retry,
+  output-before0.218124334s/60s and final budget checks passed. Independent saved
+  arithmetic/companion mapping and one original-PNG visual review passed; PDF
+  parse/metadata only, no original-directory-validator/PDF-visual claim. See
+  S03-E019/q_consistency_remaining_evidence_review.md; no producer rerun or data
+  mutation, no realarray/holdout access. This is synthetic repair evidence only.
+  New S03-E019-D03 plan real_training_recheck_plan.md v0.1 preserves original
+  stages13/14, mesh/BC/648points/weights/predictions; old A/Lr missing, so a future
+  separately authorized new SVD plus two QR is required, not old-result rescue.
+  Independent local PASS_STATIC_REAL_PLAN at0a4a108, SHA
+  8a50be12e7732467ec64a78b270ca861050788a39ec36fad6e5c89f1e47e7080;
+  see real_training_recheck_review.md. New numeric certificate and model-gap
+  ledger only, not phase field or parameter identifiability. No real asset access,
+  implementation/test/SVD/QR/solve/figure operation; Pro new-branch review remains
+  before code, after user direction confirmation. Await confirmation, not execution.
