@@ -165,7 +165,7 @@ def run(a):
     rec = receipt("E039_existing_mask_postprocess")
     rec.update(protocol=PROTOCOL, manifest_path=str(a.manifest.resolve()),
                manifest_sha256=v1.sha(a.manifest), execution="running")
-    save(a.output / "run_receipt.json", rec)
+    save(a.output / "run_start_receipt.json", rec)
     rows = []
     def budget():
         if max(time.monotonic()-start, time.process_time()-cpu) > 180:
