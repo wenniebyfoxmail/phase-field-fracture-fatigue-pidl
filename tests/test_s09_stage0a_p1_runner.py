@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "source"))
 from s09_multiobjective_update import merge_objective_gradients
 import s09_stage0a_p1_packet as p1packet
 import s09_stage0a_p1_trainer as p1trainer
+from s09_e009_four_arm import atomic_losses, grouped_losses, replay_losses
 from s09_q4_quadrature import q4_shape_data
 from s09_stage0a_capability import S09_E008_CONTEXT
 from s09_stage0a_p1_packet import (
@@ -254,6 +255,12 @@ def test_no_training_runtime_closes_scales_constraints_and_gradient_layout(tmp_p
     assert len(record["pairwise_raw_cosines"]) == 3
     assert len(record["effective_merged_direction"]["sha256"]) == 64
     assert all(parameter.grad is not None for parameter in runtime.model.parameters())
+    atomic, _ = atomic_losses(runtime, 0)
+    assert tuple(atomic) == ("l_d", "l_dr", "l_u", "l_h", "l_hr", "L_P")
+    assert all(value.ndim == 0 and torch.isfinite(value) for value in atomic.values())
+    assert grouped_losses(atomic)["L_D"] == atomic["l_d"] + atomic["l_dr"]
+    assert replay_losses(atomic)["J_N"] == (
+        atomic["l_d"] + atomic["l_u"]) / 2 + atomic["l_dr"]
 
 
 def test_loaded_packet_cycle_path_and_reference_derivative_are_rechecked(tmp_path: Path):
