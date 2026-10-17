@@ -21,7 +21,7 @@ class AnalyticNet(torch.nn.Module):
         x,y=xy.T;zero=x*0
         if self.kind=='zero':return torch.stack((zero,zero,zero),1)
         u=self.p+zero
-        if self.kind=='compensated':u=u/((x+.5)**2+(y+.5)**2)
+        if self.kind=='compensated':u=u*((x+.5)**2+(.5-y)**2)*(.25-y**2)
         if self.kind=='perturbed':u=u+self.p*y
         return torch.stack((u,y*(.2+x),zero),1)
 
@@ -56,7 +56,10 @@ def test_even_raw_anchor_is_not_even_physical_u():
 def test_compensating_raw_anchor_recovers_even_physical_u():
     f=fc('compensated',anchor=True)
     assert terms(f)['u'].item()<1e-28
-    assert _compute_symmetry_penalty(f,P,0.,1.,0.).item()>.01
+    assert _compute_symmetry_penalty(f,P,0.,1.,0.).item()>1e-6
+    anchor=P.new_tensor([[-.5,-.5]])
+    assert torch.isfinite(f.net(anchor)).all()
+    assert f.fieldCalculation(anchor)[0].item()==0
 
 
 def test_gradient_matches_finite_difference_and_does_not_mutate_fields():
