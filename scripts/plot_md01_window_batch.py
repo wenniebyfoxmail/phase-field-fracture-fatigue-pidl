@@ -88,14 +88,14 @@ def run(a):
                 axes[2].scatter(r[k],i,edgecolors=col,facecolors=fill,marker=m,s=46,label=k if i==0 else None)
                 axes[2].annotate(f"{r[k]:+.2f}",(r[k],i),xytext=(3,5 if k=="d1" else -14),textcoords="offset points",fontsize=8)
         else:
-            for ax in axes:ax.text(.02,i,missing_label(r),transform=ax.get_yaxis_transform(),fontsize=8)
+            for ax in axes:ax.text(.02,i,missing_label(r),transform=ax.get_yaxis_transform(),fontsize=8,bbox=dict(facecolor="white",edgecolor="none",pad=1))
     for ax in axes:
         ax.set_yticks(range(4),[r["case"] for r in cases]);ax.set_ylim(3.5,-.5);ax.grid(axis="x",alpha=.15);ax.margins(x=.22)
     axes[0].set(xlabel="Absolute error (px)",title="Same-target errors");axes[0].set_xlim(left=0)
-    axes[0].legend(handles=handles[1:],loc="lower right",fontsize=8,frameon=False)
+    axes[0].legend(handles=handles[1:],loc="upper right",fontsize=8,frameon=False)
     axes[1].axvline(0,color="black",lw=1);axes[1].set(xlabel="Persistence AE - trend AE (px)",title="Positive gain favours trend")
     axes[2].axvline(0,color="black",lw=1);axes[2].set(xlabel="Width increment (px / ordinal step)",title="Previous versus next increment")
-    axes[2].legend(handles=[Line2D([],[],color=".35",marker="o",markerfacecolor="none",ls="none",label="Previous d1"),Line2D([],[],color="#D55E00",marker="D",ls="none",label="Next d2")],loc="lower right",fontsize=8,frameon=False)
+    axes[2].legend(handles=[Line2D([],[],color=".35",marker="o",markerfacecolor="none",ls="none",label="Previous d1"),Line2D([],[],color="#D55E00",marker="D",ls="none",label="Next d2")],loc="upper right",fontsize=8,frameon=False)
     fig.suptitle(prefix+f"\nCoverage {summary['common_scored']}/4; slowing {summary['strata']['growth_deceleration']}, reversal {summary['strata']['direction_reversal']} (retrospective)",fontsize=12)
     finish(fig,"F02_gains_and_increments")
 
