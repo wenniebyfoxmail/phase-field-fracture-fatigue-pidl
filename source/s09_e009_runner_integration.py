@@ -97,6 +97,16 @@ def _load_json(path: Path) -> dict[str, Any]:
     )
 
 
+def _load_verified_json(path: Path, expected_sha256: str, message: str) -> dict[str, Any]:
+    """Hash and parse one immutable byte snapshot from ``path``."""
+    payload = path.read_bytes()
+    _require(hashlib.sha256(payload).hexdigest() == expected_sha256, message)
+    return json.loads(
+        payload.decode("utf-8"),
+        parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)),
+    )
+
+
 def _direction_sha256(direction: torch.Tensor) -> str:
     array = np.ascontiguousarray(direction.detach().cpu().numpy())
     return hashlib.sha256(array.dtype.str.encode("ascii") + b"\0" +
@@ -117,10 +127,11 @@ def _validate_base_runtime_identity(*, source: Mapping[str, Any], base_config_pa
         return
 
     supplied = _load_json(base_config_path)
-    _require(sha256_file(TRUSTED_BASE_RUNTIME_CONFIG) ==
-             EXPECTED_BASE_RUNTIME_CONFIG_SHA256,
-             "synthetic adapter trusted base identity drift")
-    trusted = _load_json(TRUSTED_BASE_RUNTIME_CONFIG)
+    trusted = _load_verified_json(
+        TRUSTED_BASE_RUNTIME_CONFIG,
+        EXPECTED_BASE_RUNTIME_CONFIG_SHA256,
+        "synthetic adapter trusted base identity drift",
+    )
     _require(supplied.get("data", {}).get("native_nodes") == 9 and
              supplied.get("data", {}).get("native_q4_elements") == 4,
              "synthetic adapter permits only the fixed 9-node/4-Q4 support")

@@ -187,6 +187,47 @@ def test_synthetic_adapter_verifies_trusted_reference_bytes(tmp_path: Path, monk
         )
 
 
+def test_synthetic_adapter_hashes_and_parses_one_trusted_snapshot(
+    tmp_path: Path, monkeypatch,
+):
+    original_path = integration.TRUSTED_BASE_RUNTIME_CONFIG
+    original_bytes = original_path.read_bytes()
+    tampered = json.loads(original_bytes)
+    tampered["model"]["hard_constraint_contract"]["peak_boundary_lifting"]["atol"] = 1.0
+
+    trusted_copy = tmp_path / "trusted_base.json"
+    trusted_copy.write_bytes(original_bytes)
+    supplied = json.loads(json.dumps(tampered))
+    supplied["data"]["native_nodes"] = 9
+    supplied["data"]["native_q4_elements"] = 4
+    base_config = tmp_path / "supplied_base.json"
+    base_config.write_text(json.dumps(supplied))
+    config_path = synthetic_integration_config(tmp_path, base_config)
+    config = json.loads(config_path.read_text())
+
+    original_read_bytes = Path.read_bytes
+    trusted_reads = 0
+
+    def replace_after_snapshot(path: Path) -> bytes:
+        nonlocal trusted_reads
+        payload = original_read_bytes(path)
+        if path == trusted_copy:
+            trusted_reads += 1
+            path.write_text(json.dumps(tampered))
+        return payload
+
+    monkeypatch.setattr(integration, "TRUSTED_BASE_RUNTIME_CONFIG", trusted_copy)
+    monkeypatch.setattr(Path, "read_bytes", replace_after_snapshot)
+    with pytest.raises(ValueError, match="non-resolution"):
+        validate_integration_config(
+            config,
+            base_config_path=base_config,
+            synthetic_test_adapter=True,
+        )
+    assert trusted_reads == 1
+    assert sha256_file(trusted_copy) != EXPECTED_BASE_RUNTIME_CONFIG_SHA256
+
+
 @pytest.mark.parametrize(
     ("path", "value", "message"),
     [
