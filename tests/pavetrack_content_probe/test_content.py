@@ -218,3 +218,9 @@ def test_combined_E017_allowlist_plus_content_loader_roundtrip(tmp_path,monkeypa
     run=tmp_path/'combined';run.mkdir();monkeypatch.setattr(c,'require_producer',lambda _:None);watch=guard(cfg);loaded=a.inputs.load(path,run,cfg,lock,watch,c,a.legacy,a.prior_inputs)
     assert loaded['originals']==d['originals'] and loaded['candidates']==d['candidates'] and np.array_equal(loaded['content'],X) and not loaded['content'].flags.writeable
     assert len(list((run/'input_snapshot').rglob('*.json')))==19 and not watch.counts
+
+
+def test_CPU1_entry_requires_OpenBLAS_thread_limit_as_well_as_legacy_checks(monkeypatch):
+    called=[];monkeypatch.setattr(a,'InheritedRequire',lambda cfg:called.append(True));monkeypatch.delenv('OPENBLAS_NUM_THREADS',raising=False)
+    with pytest.raises(PermissionError,match='OPENBLAS'):a.require_producer(CFG)
+    monkeypatch.setenv('OPENBLAS_NUM_THREADS','1');a.require_producer(CFG);assert called==[True,True]

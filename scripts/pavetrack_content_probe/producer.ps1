@@ -11,7 +11,7 @@ if(@(Get-Process python* -ErrorAction SilentlyContinue).Count -ne 0){throw 'comp
 $os=Get-CimInstance Win32_OperatingSystem;$load=(Get-CimInstance Win32_Processor|Measure-Object LoadPercentage -Average).Average
 if($os.FreePhysicalMemory -lt 8388608 -or $load -ge 50){throw 'CPU/RAM conflict'}
 New-Item -ItemType Directory $logs|Out-Null
-$env:CUDA_VISIBLE_DEVICES='-1';$env:OMP_NUM_THREADS='1';$env:MKL_NUM_THREADS='1';$env:PYTHONPATH='';$env:MPLBACKEND='Agg'
+$env:CUDA_VISIBLE_DEVICES='-1';$env:OMP_NUM_THREADS='1';$env:MKL_NUM_THREADS='1';$env:OPENBLAS_NUM_THREADS='1';$env:PYTHONPATH='';$env:MPLBACKEND='Agg'
 $py='C:\Users\xw436\pavetrack_env\Scripts\python.exe'
 $argsBase=@('--config',"$Source\docs\research\S01\S01-E019\run_config.json",'--lock',"$Source\docs\research\S01\S01-E019\data_lock.json",'--source','C:\Users\xw436\pavetrack_runs\S01-E017-R001\delivery\S01-E017-R001-evidence-v1.zip','--metadata','C:\Users\xw436\pavetrack_runs\S01-E002-R002\prepared\development\manifest_train_validation.json','--run',$r,'--reviewed-commit',$ReviewedCommit)
 try{

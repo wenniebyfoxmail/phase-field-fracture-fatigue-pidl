@@ -15,6 +15,11 @@ class Guard(LegacyGuard):
     def receipt(self):
         out=super().receipt();out.update(model_fits=self.counts['model_fits'],linear_solves=self.counts['linear_solves'],prediction_rows=self.counts['prediction_rows'],prediction_is_neural_forward=False,PCA_fits=self.counts['PCA_fits'],eigendecompositions=self.counts['eigendecompositions']);return out
 r.Guard=Guard
+InheritedRequire=c.require_producer
+def require_producer(cfg):
+    InheritedRequire(cfg)
+    if os.environ.get('OPENBLAS_NUM_THREADS')!='1':raise PermissionError('CPU1 requires OPENBLAS_NUM_THREADS=1 before Python startup')
+c.require_producer=require_producer
 
 
 def representation(scope,cfg,guard):
