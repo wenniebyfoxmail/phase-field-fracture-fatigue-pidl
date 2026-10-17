@@ -45,3 +45,25 @@ s04_late_access.py、s04_late_access_guard.py，均在SENS_tensile。guard核对
 
 内部措辞检查（不发送）：以本轮用户短句和精确范围为参考，仅保留技术审核必要信息，
 无科学收益／人方身份认证承诺；不声称精确仿写，不夹带计算或写入任务。送达和最终回传另行核验。
+
+## 首次送达及唯一必改
+
+上述正文一次发送，回传指定threadId且isError=false。turn `01a14aa3-fa95-7361-bf5f-743a5afe8380`
+completed、error=null；最终message `msg_015d0a19570ed14a016ad39f843d948191b8cfc1ab9fadd50f`。
+回传fd4700f需修订后复审：execute计时在参数／路径检查后才开始，漏计预检；其余主要接入逻辑静态可接受。
+主对话读回该turn，仅Git源码／合同查看，无导入、执行、真实路径扫描或共享写入。
+语义限制一并保留：代码已有受限真实读取路径，不能笼统称真实读取完全不可达；默认开关False不是人方许可认证。
+
+主对话按用户已批准的实现／预算范围，仅将monotonic和UTC开始点移至execute函数最前两条语句；
+新源码`33feec6813347177649cffbcc0ba39297937a09e`。差异为2行前移，没有其他行为／范围／预算变更。
+只做该文件AST及diff检查，仍未导入、执行、读取真实数据或重复mock。下述为差异复审最终正文。
+
+<!-- DIFF_REVIEW_BODY_BEGIN -->
+请对33feec6813347177649cffbcc0ba39297937a09e进行只读静态差异复审，延续本次用户已批准的ea9cafb范围实现及独立代码审核。工作树仍为/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-late-regression-plan-20261016。
+
+已逐条核对上轮fd4700f意见：唯一必改是计时起点偏晚。新提交只把s04_late_access_guard.py中的started=time.monotonic()及对应UTC开始时间移至execute入口，作为最前两条语句，参数／路径预检不再被排除。后续58秒工作余量、elapsed、终态及post-receipt仍引用同一个started；没有改源码其他部分、四源、授权、预算或停止规则。请核对这项必改是否闭合，给出新版本静态结论及是否仍有必须修正项。
+
+其他边界沿用上轮：已有受限真实读取路径，默认开关仍False，但不声称真实读取完全不可达；许可引用只是追溯字段，人方批准和精确审核须由主对话在任何未来执行前实际核对。本轮只有AST／diff检查，没有运行、CLI/help、mock、负例、资源核验或任何真实metadata／内容读取。原mock不重跑，确认数据关闭。
+
+请仅阅读Git源码差异、原合同和请求文档，不导入／运行代码、不补测试／修代码、不扫描真实路径、不写共享文件或Obsidian，不回发主对话／派任务。直接在本对话最终答复结论、范围限制和唯一下一步，由主对话读回核对、统一记录；静态认可不等于执行许可。
+<!-- DIFF_REVIEW_BODY_END -->
