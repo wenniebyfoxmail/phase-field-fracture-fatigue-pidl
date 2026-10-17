@@ -1,0 +1,47 @@
+[
+  {
+    "run_id": "S02-E006-R008",
+    "execution_status": "succeeded",
+    "retrieval_status": "verified",
+    "recorded_after_execution": true,
+    "producer": "local Mac CPU",
+    "hostname": "Wennies-MacBook-Pro-14.local",
+    "code_base_commit": "bc6667ecd6ddb452b4ffc836fdc900b864a9d2fd",
+    "code_snapshot": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/mendeley_full_displacement_20261017/code_snapshot",
+    "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/mendeley_full_displacement_20261017/full_csv_header_audit.json",
+    "training": false,
+    "prediction_model_fitting": false,
+    "scientific_verdict": "exploratory measurement capability only; no prediction or physical accuracy verdict",
+    "recorded_utc": "2026-10-17T21:16:13.451190+00:00"
+  },
+  {
+    "run_id": "S02-E006-R009",
+    "execution_status": "succeeded",
+    "retrieval_status": "verified",
+    "recorded_after_execution": true,
+    "producer": "local Mac CPU",
+    "hostname": "Wennies-MacBook-Pro-14.local",
+    "code_base_commit": "bc6667ecd6ddb452b4ffc836fdc900b864a9d2fd",
+    "code_snapshot": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/mendeley_full_displacement_20261017/code_snapshot",
+    "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/mendeley_full_displacement_20261017/probe_v0_absolute/candidate_summary.json",
+    "training": false,
+    "prediction_model_fitting": false,
+    "scientific_verdict": "exploratory measurement capability only; no prediction or physical accuracy verdict",
+    "recorded_utc": "2026-10-17T21:16:13.451446+00:00"
+  },
+  {
+    "run_id": "S02-E006-R010",
+    "execution_status": "succeeded",
+    "retrieval_status": "verified",
+    "recorded_after_execution": true,
+    "producer": "local Mac CPU",
+    "hostname": "Wennies-MacBook-Pro-14.local",
+    "code_base_commit": "bc6667ecd6ddb452b4ffc836fdc900b864a9d2fd",
+    "code_snapshot": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/mendeley_full_displacement_20261017/code_snapshot",
+    "output": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/mendeley_full_displacement_20261017/probe_v1_concentration/candidate_summary.json",
+    "training": false,
+    "prediction_model_fitting": false,
+    "scientific_verdict": "exploratory measurement capability only; no prediction or physical accuracy verdict",
+    "recorded_utc": "2026-10-17T21:16:13.451532+00:00"
+  }
+]

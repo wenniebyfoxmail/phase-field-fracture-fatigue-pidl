@@ -1,0 +1,4 @@
+group,raw_frames,frame_count,first_stage,last_stage,header_name_numeric_suffix_mismatches,candidate_frames,threshold_range_p95_px,reliability
+E_0Deg_20%_#1,1019,1019,702,1720,0,1019,2.125482940673828,unqualified_current_field_proxy
+E_0Deg_20%_#2,828,800,502,1301,0,800,1.9511929512023924,unqualified_current_field_proxy
+E_0Deg_20%_#3,557,557,402,958,0,557,1.9388725280761714,unqualified_current_field_proxy

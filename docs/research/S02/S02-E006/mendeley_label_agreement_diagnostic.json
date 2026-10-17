@@ -1,0 +1,30 @@
+[
+  {
+    "sheet": "C_15_20_1(Section 5.2)",
+    "rows": 41,
+    "nominal_absolute_difference_mean": 2.0115966862516803,
+    "nominal_absolute_difference_max": 3.132354971818099,
+    "units": "only under provisional100/127mm-per-pixel AND label-mm assumptions; not physical error"
+  },
+  {
+    "sheet": "C_15_20_1(Section 6.2)",
+    "rows": 35,
+    "nominal_absolute_difference_mean": 2.508776501515046,
+    "nominal_absolute_difference_max": 3.3528571130582563,
+    "units": "only under provisional100/127mm-per-pixel AND label-mm assumptions; not physical error"
+  },
+  {
+    "sheet": "E_0_175_1(Section 5.1)",
+    "rows": 42,
+    "nominal_absolute_difference_mean": 1.014535373620518,
+    "nominal_absolute_difference_max": 2.482306174931564,
+    "units": "only under provisional100/127mm-per-pixel AND label-mm assumptions; not physical error"
+  },
+  {
+    "sheet": "E_0_175_1(Section 6.1)",
+    "rows": 38,
+    "nominal_absolute_difference_mean": 0.8372055620979721,
+    "nominal_absolute_difference_max": 2.184301040294736,
+    "units": "only under provisional100/127mm-per-pixel AND label-mm assumptions; not physical error"
+  }
+]

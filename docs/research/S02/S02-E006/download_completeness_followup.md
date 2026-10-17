@@ -1,5 +1,7 @@
 # Mendeley / PHM2019 download completeness follow-up
 
+> Subsequent user-authorized full Mendeley acquisition: both original-DIC and interpolated archives are now completely downloaded and identity-verified. See mendeley_full_data_report.md for the new acquisition and exploratory measurements. The previous partial-acquisition account below is retained as the historical state at that audit; the author trained-model archive is still not acquired or needed.
+
 2026-10-17. Owner S02-E006, C1 source inventory only. New user request authorizes searching for additional existing optical labels and checking download scope, with an English email draft only. No training, fitting, model execution, performance scoring or outgoing communication. Reuse clean branch codex/history-information-audit-20261013 at base 7a91636cb18faa2aab87f90ae10601ebc22be82d; edits confined to this Experiment and its existing Obsidian note. Earlier E005 negative results remain unchanged.
 
 ## Correction to the preceding audit
