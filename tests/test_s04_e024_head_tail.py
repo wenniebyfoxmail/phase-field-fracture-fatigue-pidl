@@ -146,3 +146,13 @@ def test_001_is_only_diagnostic_and_background_acceptance_not_invented():
     )
     assert summarize(rows + [rows[0]])["verdict"] == "INADMISSIBLE"
     assert summarize(rows[:2])["verdict"] == "INCONCLUSIVE"
+
+
+def test_wrong_head_counter_after_freeze_is_rejected():
+    m, o, c, _ = staged()
+    e = enter_head_only(m, o, 8000)
+    for p in m.residual.output_layer.parameters():
+        o.state[p]["step"].fill_(10000)
+    o.state[m.residual.output_layer.bias]["step"].fill_(9999)
+    with pytest.raises(ValueError):
+        check_tail(m, o, 10000, e)

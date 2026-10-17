@@ -250,9 +250,9 @@ def test_strict_decoder_and_coherently_rehashed_tampering(tmp_path, data, mode):
     if mode == "hidden_counter":
         cp["optimizer_state_dict"]["state"][0]["step"].fill_(8001)
     if mode == "head_counter":
-        cp["optimizer_state_dict"]["state"][len(cp["optimizer_parameter_names"]) - 1][
-            "step"
-        ].fill_(9999)
+        cp["optimizer_state_dict"]["state"][
+            cp["optimizer_parameter_names"].index("output_layer.bias")
+        ]["step"].fill_(9999)
     if mode == "D":
         cp["model_state_dict"]["head_scale"][0] *= 2
     if mode in ("wrong_next", "stage_time", "stage_prefix"):
