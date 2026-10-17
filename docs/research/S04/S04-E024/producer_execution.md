@@ -27,3 +27,9 @@ Retrieve39rowfiles/alllogs/assetmanifest/baselinepreflight/usedLR/preflightDgrad
 ## Local preparation checks
 
 22deploymentchecks passed:120-copy integrity and early-stop paths, actualshellresources, own-E023Dguard andsummarysemantics. bash-n andfiveembeddedPythonblockscompile; deployedhelpercallaritycheckedagainstactualfunctions. Minimal localc4-onlyobjectstore initially lacked231fe4b, verifiedbundle reconstructed exactclean231fe4b; bothCLIhelps andallthree realassetvalidate-onlycalls passed. No optimizerparameterstep/training or formalnativeCUDAqualification. Details in producer/nontraining_checks.json and local producer_submission_v1. Independent [deployment review](producer/deployment_review.md) returned DEPLOYMENT_PREPARATION_PASS, no blockers, bound to deployment`a091ad744af1f642ec9ae185b7e8fa34d9de359e` and science`231fe4b`; independently22checks pass (2.74s). The exact two payloads are unchanged. Await finalversionuserapproval; no remoteavailability/directoryabsence claim.
+
+## Approved exact action and single dispatch — 2026-10-17
+
+User explicitly approved unchangedtwofiles/v1freshroot/GPU0sharing free>8GiB andoneconditionaldispatch. Localhashes/bytesreverified; read-onlySSHconfirmeddrtao/GPUServer8/TARGET_ABSENT/mounteddata2, thenatomicfreshmkdir, SCP ofexacttwofiles andremoteSHAverificationcompleted. Onedispatch19:50:55UTC **PID1489681**, PPID1, cwdexactroot/code, exactcleansource231fe4b.120oldassetscopiedandverified. All-stateformalnativepreflight child1489849 observedrunningat19:51:44UTC; notyetcomplete andtrainingnotconfirmed. No retry/secondlaunch/sourcechange.
+
+Localexecutionreceipt: local_archive/experiments/S04-E024/producer_execution_v1/launch_receipt.json; trackedexecution_receipt.json. Threadheartbeat **e024** hourlyactive, silentordinaryprogress, read-onlyfollowup/retrieval/analysis; onlyterminalfailure/completion/useractionnotifications. Stops andsource/evaluation remainasapproved.

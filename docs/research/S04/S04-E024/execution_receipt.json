@@ -1,0 +1,51 @@
+{
+  "status": "DISPATCHED_ALL_STATE_PREFLIGHT_IN_PROGRESS",
+  "approval": "User explicitly approved exact two files, fresh v1 root, GPU0sharing free>8GiB and one conditional launch after all preflights",
+  "approved_source": "231fe4be83e26ef4054a2a6a567da51229185837",
+  "deployment": "a091ad744af1f642ec9ae185b7e8fa34d9de359e",
+  "files": {
+    "E024_231fe4b.bundle": {
+      "bytes": 138885,
+      "sha256": "a4e108f4034779801949a69a7e4fe9be6383b5e51773a8d1a5b0a76671fad6ee",
+      "local_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_submission_v1/E024_231fe4b.bundle",
+      "remote_path": "/mnt/data2/drtao/wennie/S04-E024-head-tail-231fe4b-20261017-v1/E024_231fe4b.bundle"
+    },
+    "prepare_and_dispatch.sh": {
+      "bytes": 21011,
+      "sha256": "6a35eb158194b1ebed43ebb2950a1baafa6527dddc5069e5dd8ed653a9bddb13",
+      "local_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_submission_v1/prepare_and_dispatch.sh",
+      "remote_path": "/mnt/data2/drtao/wennie/S04-E024-head-tail-231fe4b-20261017-v1/prepare_and_dispatch.sh"
+    }
+  },
+  "root": "/mnt/data2/drtao/wennie/S04-E024-head-tail-231fe4b-20261017-v1",
+  "host": "drtao@172.16.100.2 / GPUServer8",
+  "GPU": {
+    "index": 0,
+    "shared": true,
+    "free_memory_strictly_greater_than_MiB": 8192,
+    "point_in_time_not_reserved": true,
+    "fallback": false
+  },
+  "dispatcher_pid": 1489681,
+  "launched_utc": "2026-10-17T19:50:55Z",
+  "verified_utc": "2026-10-17T19:51:04Z",
+  "remote_clean": true,
+  "asset_copies_verified": 120,
+  "preflight_complete": false,
+  "training_confirmed": false,
+  "one_dispatch_only": true,
+  "ssh_options": [
+    "-F",
+    "/dev/null",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=15"
+  ],
+  "log": "/mnt/data2/drtao/wennie/S04-E024-head-tail-231fe4b-20261017-v1/logs/dispatcher.log",
+  "command": "nohup bash /mnt/data2/drtao/wennie/S04-E024-head-tail-231fe4b-20261017-v1/prepare_and_dispatch.sh",
+  "source_sync": "Mac prepared git bundle, cloned original E023 committed object store, exact clean detached231fe4b",
+  "local_recorded_utc": "2026-10-17T19:51:34.100388+00:00",
+  "monitor_automation": "e024",
+  "monitor_status": "ACTIVE_HOURLY_SILENT_UNLESS_TERMINAL_OR_ACTION_REQUIRED"
+}
