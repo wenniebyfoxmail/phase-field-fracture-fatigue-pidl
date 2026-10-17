@@ -1,0 +1,15 @@
+{
+  "protocol_revision": "20261016-r1-fixed-initial-fullmass-head-rms",
+  "expected_runs": 3,
+  "valid_completed_runs": 3,
+  "missing": [],
+  "integrity_errors": [],
+  "verdict": "FIXED_INITIAL_HEAD_RMS_THREE_STATE_UV_SCREEN_FAIL",
+  "clean_damage_progress_background_preserved": true,
+  "clean_damage_progress_background_preserved_vs_control": false,
+  "clean_damage_progress_background_preserved_vs_E021": false,
+  "clean_damage_progress_background_preserved_vs_E022": false,
+  "stage2_authorized": false,
+  "qualified_fem_teacher": "NOT_QUALIFIED",
+  "code_commit": "c4ceb5d27fa8d408be1b9f02dcd6b10308f301a2"
+}

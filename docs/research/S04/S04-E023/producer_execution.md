@@ -1,7 +1,7 @@
 ---
 storyline_id: S04
 experiment_id: S04-E023
-status: dispatcher-running-all-state-preflight
+status: completed-primary-fail-retrieval-verified
 ---
 # E023 Taobo three-state production preparation — 2026-10-16
 
@@ -52,3 +52,13 @@ Read-only local network inspection: Tunnelblick GUI running but no openvpn proce
 User confirmed Tunnelblick connected. Read-only SSH verified drtao/GPUServer8 and TARGET_ABSENT before repeating any directory mutation. Atomic freshmkdir succeeded; SCP transferred exactly the approved twofiles, both remoteSHA256s matched. One nohup dispatch at **2026-10-17T14:50:41Z**, **PID1104872**, adopted byPID1, verified livecwd under exactroot/code, clean scientific HEADc4ceb5d27fa8d408be1b9f02dcd6b10308f301a2. Initial resource guard passed, all87assets copied and verified; all-state formalpreflight running (child1105053), not yet complete at14:51:33Z. No candidate training confirmed at this snapshot. Do not relaunch.
 
 Root/log/command/GPU/archive/immutablepackage follow approved action above. Local launch_receipt.json under local_archive/experiments/S04-E023/producer_execution_v1; finalresults pending. Hourly threadheartbeat **e023** enabled: only read-only monitoring/retrieval/analysis, silent ordinaryprogress, notifycompletion/failure/useraction and disable atterminaloutcome. No retry/newexperiment/sourcechange authorized.
+
+## Complete three-state verification and retrieval — 2026-10-17
+
+All3formalpreflights passed14:53:44Z; actual10000LRvector/initializer/fixedD/gradient audits admitted. c20,c60,c83 each completed10000newupdates and originalstrictrowverification with actual11archivecopies, then reviewedc4originalaggregate completed15:39:27Z:3valid/no missing/integrityerrors; primary FIXED_INITIAL_HEAD_RMS_THREE_STATE_UV_SCREEN_FAIL. All80files45808770bytes/33producerarchivecopies verified and all87localhistoricalassetidentities match. Exacttables/figures/claimlimits in [decision](decision.md), localcaseanalysis/README_analysis.md.
+
+Original strictMacaggregate retained INADMISSIBLE (nativeusedLRbits). Separate exactcalibration attempts stopped and preserved logs on D and derivedmassdigest differences; reviewed supplementary analysis reports bothplatforms explicitly and decodes actualCPusing only pinnedproducerD. InitialRMS maxdelta<=1.11e-16,Dmaxrelative<=1.084e-15; not exactreplay. Reference-rho originaltolerancefails remain; actualCPUVdecode maxdelta1.25e-15 and savedfieldUVreductions agree with originaltol. Independent finiteEvidence review recorded separately, no fullteacherpromotion.
+
+Primaryfull c20=.0007026647002909352,c60=.0008905482116276298,c83=.0011587202922636076. c60partlyrestores vsE022 but misses oldE021/E019precision; c83worsens vsE022. Backgroundregressions vsE022 in c60/c83, includinginsidewindow, reported without equivalenceclaim. Direct savedUVexteriordrift exactly0. No additionalproducerupdates, sourcechange, retry, GPUchange or externalreview. e023monitorPAUSED afterterminalexecutionandverifiedretrieval. Next only proposal: correctlyscaled physical/newbasis sixendpointhead/gradient read-onlydiscriminator, no newtraining.
+
+Independent bounded Evidence audit complete: no blockers; independently45regional/30supportscores,3manualCPdecodes and80filehashes agree. [Report](evidence_review.md). All requested analysis and Obsidian sync complete.

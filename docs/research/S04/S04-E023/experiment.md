@@ -80,3 +80,11 @@ User approved the exact v1 transfer/conditional single launch; local hashes unch
 ## Approved dispatcher launched — 2026-10-17
 
 VPN restored and targetabsence verified before creation. Exact approved payloads transferred/hashverified; single dispatcherPID1104872 started14:50:41Z with clean reviewedc4source. Resourceguard and87assetcopyverification passed; three-state formalpreflight inprogress, candidateupdates not yet confirmed. e023 hourly read-onlymonitor active, no automatic retry. [Execution receipt](producer_execution.md). Execution health does not establish scientific gain.
+
+## Completed outcome — 2026-10-17
+
+Original c4 producer:3/3valid, primaryFAIL; fullUVc20/c60/c83=.000702665/.000890548/.001158720. c60vsE022full−22.8441%,damage−24.3072%,background+.1560%; onlypartialrecovery, stillworseE021/E019. c83vsE022full+1.0981%,damage+1.1200%,background+.0120%; no addedc83gain. All3betterdamage/background than inheritedbackbone; no universalpreservation against historicalcontrols. Outside saveddirectUVunchangedexactly.
+
+All80files45808770B and33actualarchivecopiesverified. ActualLR and archivedfixedDmatch ownformalpreflight/controls; strictMacLRrejection and mass/D/rhoportabilityexceptions retained, supplementarysavedUV/producerDdecoder scope separatelyreviewed. [Exactdecision/tables](decision.md), [executionreceipt](execution_receipt.json). No scientificpromotion/newproducer. Proposednext cheapdiscriminator comparesE022/E023sixendpoints with correctphysical/scaledheadbasis and regiongradients.
+
+Independent bounded Evidence audit completed:45headline+30supportRMS reproduced with independentQ4mass and3handwrittenleak+DCPdecodes,80filehashes rechecked, no blockers. [Review](evidence_review.md). OriginalprimaryFAIL/strictMacINADMISSIBLE remain.

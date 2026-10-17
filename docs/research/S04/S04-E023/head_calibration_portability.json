@@ -1,0 +1,95 @@
+[
+  {
+    "state": "c20s4",
+    "mass_digest_bit_exact": false,
+    "local_mass_digest": "9fd634f11e1b9967966ad1ce80e32aeb601cf3d80ad2360ac826d04b2c3b1893",
+    "producer_mass_digest": "8ff032df40a999ca093ba3a5721d8909e8d892bf19b391c889ad7d81b7eaff7a",
+    "initial_calibration_bit_exact": false,
+    "policy": "Strict initial Mac mismatch preserved; supplementary decoded checkpoint uses SHA-pinned producer buffers, not substituted Mac D",
+    "rms_max_abs_difference": 5.551115123125783e-17,
+    "rms_max_relative_difference": 7.662369889684495e-16,
+    "rms_different_entries": 198,
+    "scale_max_abs_difference": 6.821210263296962e-13,
+    "scale_max_relative_difference": 8.04317190473419e-16,
+    "scale_different_entries": 179,
+    "gradient_json_bit_exact_using_producer_D": false,
+    "local_gradient_audit": {
+      "rule": "g_new=diag(D)g_physical",
+      "base": "saved_E017",
+      "parameter_updates": 0,
+      "max_abs_difference": 2.0328790734103208e-20,
+      "physical_gradient_digest": "a21e4f074e76de68de31c5d36a462cf65bb33b55829f3b1da87f63188d912385",
+      "new_gradient_digest": "99b9b55c6ce335944635359c619cd23a4193982c7e4ca0b9f913c291644f9db7"
+    },
+    "producer_gradient_audit": {
+      "rule": "g_new=diag(D)g_physical",
+      "base": "saved_E017",
+      "parameter_updates": 0,
+      "max_abs_difference": 2.371692252312041e-20,
+      "physical_gradient_digest": "9f56a106b76fdc29e570ca4e107696296a670aab4e19848d40cb10c92db560bf",
+      "new_gradient_digest": "badd8dbaf7beddeb8e40c096af71a1e52462320606a2eca05e745108502704ea"
+    }
+  },
+  {
+    "state": "c60s4",
+    "mass_digest_bit_exact": false,
+    "local_mass_digest": "9fd634f11e1b9967966ad1ce80e32aeb601cf3d80ad2360ac826d04b2c3b1893",
+    "producer_mass_digest": "8ff032df40a999ca093ba3a5721d8909e8d892bf19b391c889ad7d81b7eaff7a",
+    "initial_calibration_bit_exact": false,
+    "policy": "Strict initial Mac mismatch preserved; supplementary decoded checkpoint uses SHA-pinned producer buffers, not substituted Mac D",
+    "rms_max_abs_difference": 1.1102230246251565e-16,
+    "rms_max_relative_difference": 6.916944492293096e-16,
+    "rms_different_entries": 155,
+    "scale_max_abs_difference": 4.547473508864641e-13,
+    "scale_max_relative_difference": 7.127974878394334e-16,
+    "scale_different_entries": 138,
+    "gradient_json_bit_exact_using_producer_D": false,
+    "local_gradient_audit": {
+      "rule": "g_new=diag(D)g_physical",
+      "base": "saved_E017",
+      "parameter_updates": 0,
+      "max_abs_difference": 5.421010862427522e-20,
+      "physical_gradient_digest": "79802bf043fbbed788e9fe64bcfb58599aabde3eda960a7ce3899aa62289b298",
+      "new_gradient_digest": "75f7fff1275d1006ffa765668c50b793176d14fc60e35865a7ed47a22b717e3a"
+    },
+    "producer_gradient_audit": {
+      "rule": "g_new=diag(D)g_physical",
+      "base": "saved_E017",
+      "parameter_updates": 0,
+      "max_abs_difference": 6.098637220230962e-20,
+      "physical_gradient_digest": "c87938f46226187d828b37220f86b0bd7a7bfb7d524f704e6fec99bfbd9b70c6",
+      "new_gradient_digest": "a3a1c81325309932a574d377df700daea18ee9c7613012f61bc83b63a03a503f"
+    }
+  },
+  {
+    "state": "c83s4",
+    "mass_digest_bit_exact": false,
+    "local_mass_digest": "9fd634f11e1b9967966ad1ce80e32aeb601cf3d80ad2360ac826d04b2c3b1893",
+    "producer_mass_digest": "8ff032df40a999ca093ba3a5721d8909e8d892bf19b391c889ad7d81b7eaff7a",
+    "initial_calibration_bit_exact": false,
+    "policy": "Strict initial Mac mismatch preserved; supplementary decoded checkpoint uses SHA-pinned producer buffers, not substituted Mac D",
+    "rms_max_abs_difference": 1.1102230246251565e-16,
+    "rms_max_relative_difference": 1.0920979078948723e-15,
+    "rms_different_entries": 171,
+    "scale_max_abs_difference": 9.094947017729282e-13,
+    "scale_max_relative_difference": 1.083502998474221e-15,
+    "scale_different_entries": 148,
+    "gradient_json_bit_exact_using_producer_D": false,
+    "local_gradient_audit": {
+      "rule": "g_new=diag(D)g_physical",
+      "base": "saved_E017",
+      "parameter_updates": 0,
+      "max_abs_difference": 3.3034284942917713e-20,
+      "physical_gradient_digest": "8ae3b41b5968f63ed170b1bdab952eb1cb23bc5887f12e8c64c2838bdeeadc6b",
+      "new_gradient_digest": "15be6190af647c384146b06cd950f9cf62514d2202ac6a24f59c15d8fa409739"
+    },
+    "producer_gradient_audit": {
+      "rule": "g_new=diag(D)g_physical",
+      "base": "saved_E017",
+      "parameter_updates": 0,
+      "max_abs_difference": 3.7269449679189215e-20,
+      "physical_gradient_digest": "0d92ef91b6b2c975d31fa223d6152fa2b948a9c05960eb02de8d119a7499f0a1",
+      "new_gradient_digest": "bca8efeb3f264e70720c89d36afaf543e808c90daab69ef33775487747d22b9f"
+    }
+  }
+]

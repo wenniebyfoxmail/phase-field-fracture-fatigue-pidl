@@ -1,0 +1,62 @@
+[
+  {
+    "state": "c20s4",
+    "comparator": "backbone",
+    "saved_outside_max_abs_delta": 0.0
+  },
+  {
+    "state": "c20s4",
+    "comparator": "E019",
+    "saved_outside_max_abs_delta": 0.0
+  },
+  {
+    "state": "c20s4",
+    "comparator": "E021",
+    "saved_outside_max_abs_delta": 0.0
+  },
+  {
+    "state": "c20s4",
+    "comparator": "E022",
+    "saved_outside_max_abs_delta": 0.0
+  },
+  {
+    "state": "c60s4",
+    "comparator": "backbone",
+    "saved_outside_max_abs_delta": 0.0
+  },
+  {
+    "state": "c60s4",
+    "comparator": "E019",
+    "saved_outside_max_abs_delta": 0.0
+  },
+  {
+    "state": "c60s4",
+    "comparator": "E021",
+    "saved_outside_max_abs_delta": 0.0
+  },
+  {
+    "state": "c60s4",
+    "comparator": "E022",
+    "saved_outside_max_abs_delta": 0.0
+  },
+  {
+    "state": "c83s4",
+    "comparator": "backbone",
+    "saved_outside_max_abs_delta": 0.0
+  },
+  {
+    "state": "c83s4",
+    "comparator": "E019",
+    "saved_outside_max_abs_delta": 0.0
+  },
+  {
+    "state": "c83s4",
+    "comparator": "E021",
+    "saved_outside_max_abs_delta": 0.0
+  },
+  {
+    "state": "c83s4",
+    "comparator": "E022",
+    "saved_outside_max_abs_delta": 0.0
+  }
+]
