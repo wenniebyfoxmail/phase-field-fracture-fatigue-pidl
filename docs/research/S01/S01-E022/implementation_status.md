@@ -1,4 +1,4 @@
-# S01-E022：语义空间归因方案已实现，待精确代码复审
+# S01-E022：语义空间归因已冻结、实现并经6.1 sol-Medium双审，真实R001未执行
 
 2026-10-17。设计3e776d0e经用户指定6.1 sol-Medium独立审查PASS。新增轴为冻结E003最终576×7×7空间特征与裂缝−背景类别margin对pooled输入的导数；原灰度C/D与576缓存压缩均不用。仍11系数Q/N/A、3/5/6有益GT支持；原E003全部检测/分数、每图1/每组3、交集及弃权不变。
 
@@ -8,6 +8,8 @@
 
 实际PixelGate纯合成全流程旧14/14、净+6、14source+6case解码/20reads，额外图片读取被拒；仅工程链路，不是E003真实效果。语义backend在此使用明确synthetic模拟图，真实Torch导数另用人工/随机权重核验，不冒充真实checkpoint。三张实际生成的合成PNG/README已打开；F02相同context的原图框/保存7×7图并排、网格可见、归因非GT、显示拉伸/每案例色阶明确。QA归档local_archive/experiments/S01-E022/implementation_QA/。
 
-待精确源码独立代码与合成图表审查。未来一次R001预算GPU1/CPU1、3600s/RSS4GiB/GPU allocated/reserved各4GiB；835source+<=6case、31156固定语义提取、39角色solve；若无前三/全弃权停止此固定最后层margin-Grad-CAM双描述家族。唯一主标准为一次pooled12条件OOF旧>=95%、净GT>=1且macro>0。非零图/个别排名/拟合改善只作组件，不冒充主收益。类别归因不是像素裂缝参考，7×7粗粒度/背景/共享context分布变化及上游复用限制仍在。
+精确源码f8990c148b14298db16490cd6f4460794271a8dc已通过6.1 sol-Medium独立Code Ready及实际合成三图/README验收；审查方独立复跑26项-W error与真实PixelGate合成链路均通过。205绑定/206文件源码包逐成员核验，manifest SHA c0ab6c70a517c3b56f91fee874e1b177879c1a8d45a67ab29ebf9438f82ebc8b。未来一次R001预算GPU1/CPU1、3600s/RSS4GiB/GPU allocated/reserved各4GiB；835source+<=6case、31156固定语义提取、39角色solve；若无前三/全弃权停止此固定最后层margin-Grad-CAM双描述家族。唯一主标准为一次pooled12条件OOF旧>=95%、净GT>=1且macro>0。非零图/个别排名/拟合改善只作组件，不冒充主收益。类别归因不是像素裂缝参考，7×7粗粒度/背景/共享context分布变化及上游复用限制仍在。
 
 本轮没有真实图片/checkpoint解码或前向/拟合，没有SSH/传送/公开push/R001。新确认/validation/reserve和旧资格排除地点继续封存。E021真实负结果保留，不开展灰度或交集阈值扫描。
+
+设计审查见docs/reviews/S01-E022_design_review_20261017.md，代码/图表审查见S01-E022_code_review_20261017.md；具体下一执行版本见execution_preparation.md。源码公开基线cb9fdc51，指定未来分支codex/s01-e022-semantic-localization-20261017，尚未推送。
