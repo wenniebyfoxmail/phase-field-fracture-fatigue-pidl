@@ -1,0 +1,389 @@
+import copy
+from dataclasses import replace
+import json
+from pathlib import Path
+import sys
+
+import numpy as np
+import pytest
+import torch
+
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "source"))
+
+import s09_e009_producer as producer
+from s09_e009_four_arm import (
+    ARM_ANCHOR_0,
+    ARM_ORDER,
+    ARM_REPLAY,
+    AnchorStationary,
+    LOSS_ORDER,
+)
+from s09_e009_producer import (
+    EXPECTED_PROTOCOL_CONTRACT_SHA256,
+    GROWTH_CYCLES,
+    HARD_CONSTRAINT_KEYS,
+    NEAR_STAGNANT_CYCLES,
+    REPLAY_GRADIENT_PREFIX_SHA256,
+    REPLAY_REFERENCE,
+    _protocol_contract_sha256,
+    _replay_direction_with_legacy,
+    evaluate_arm,
+    resolve_producer_config,
+    run_arm_state_machine,
+    validate_resolved_config,
+    write_shared_evidence,
+)
+from s09_e009_runner_integration import (
+    EVALUATION_UPDATES,
+    EXPECTED_CYCLES,
+    _direction_with_damage_reference,
+)
+from s09_stage0a_p1_trainer import build_runtime
+from test_s09_stage0a_p1_runner import packet_fixture
+
+
+INTEGRATION_CONFIG = (
+    ROOT / "docs/research/S09/S09-E009/runner_integration_config_20261017.json"
+)
+BASE_CONFIG = ROOT / "docs/research/S09/S09-E008/p1_memorisation_run_config_20261016.json"
+PROTOCOL = ROOT / "docs/research/S09/S09-E009/experiment.md"
+
+
+@pytest.fixture(autouse=True)
+def reject_real_optimizer_step(monkeypatch):
+    calls = []
+
+    def reject(_self, *_args, **_kwargs):
+        calls.append(True)
+        raise AssertionError("producer-package test called AdamW.step")
+
+    monkeypatch.setattr(torch.optim.AdamW, "step", reject)
+    yield calls
+    assert calls == []
+
+
+def _hard_counts():
+    return {name: 0 for name in HARD_CONSTRAINT_KEYS}
+
+
+def _evaluation(update: int, arm: str = ARM_REPLAY):
+    reference = REPLAY_REFERENCE.get(update, {}) if arm == ARM_REPLAY else {}
+    g = float(reference.get("G", 0.0003 if arm != ARM_REPLAY else 0.0006))
+    f = float(reference.get("F", 0.0001 if arm != ARM_REPLAY else 0.0002))
+    judge = float(reference.get("L_judge", 0.5 if arm != ARM_REPLAY else 0.8))
+    persistence = float(reference.get("persistence", 0.0005017354462152066))
+    per_cycle = []
+    for index, cycle in enumerate(EXPECTED_CYCLES):
+        group = (
+            "growth" if cycle in GROWTH_CYCLES else
+            "near_stagnant" if cycle in NEAR_STAGNANT_CYCLES else "other"
+        )
+        per_cycle.append({
+            "update": update,
+            "cycle": cycle,
+            "group": group,
+            "predicted_damage_increment_abs_mean": 0.01 + index * 1e-5,
+            "true_damage_increment_abs_mean": persistence,
+            "damage_increment_mae": g,
+            "false_growth": f,
+            "predicted_target_spatial_correlation": 0.5,
+            "L_judge": judge,
+            "atomic_losses": {name: 0.5 for name in LOSS_ORDER},
+            "grouped_losses": {"L_D": 1.0, "L_U": 0.5, "L_H": 1.0, "L_P": 0.5},
+            "projection_counts": {
+                "damage_lower_projection_count": 0,
+                "damage_upper_projection_count": 0,
+                "alpha_relu_saturation_count": 0,
+            },
+            "hard_constraint_counts": _hard_counts(),
+        })
+    aggregate = {
+        "update": update,
+        "finite": True,
+        "G": g,
+        "F": f,
+        "persistence": persistence,
+        "L_judge": judge,
+        "amplitude_ratio": {"value": 2.0, "status": "DEFINED"},
+        "amplitude_auc": {"value": 0.9 if arm != ARM_REPLAY else 0.7,
+                          "wins": 20, "ties": 5, "losses": 0},
+        "amplitude_pearson": 0.5,
+        "amplitude_spearman": 0.5,
+        "spatial": {"primary_median": 0.5, "primary_status": "DEFINED",
+                    "valid_count": 16, "valid_cycles": list(EXPECTED_CYCLES),
+                    "valid_subset_median": 0.5},
+        "predicted_field_pairwise_correlation": {
+            "valid_pair_count": 120, "median": 0.2, "minimum": -0.1, "maximum": 0.9,
+        },
+        "hard_constraint_counts": _hard_counts(),
+        "hard_constraint_violations": 0,
+        **{name: 0.5 for name in LOSS_ORDER},
+        "L_D": 1.0,
+        "L_U": 0.5,
+        "L_H": 1.0,
+        "L_P": 0.5,
+    }
+    return {"aggregate": aggregate, "per_cycle": per_cycle}
+
+
+class MockAdapter:
+    packet_manifest_sha256 = "packet"
+    initial_state_sha256 = "initial"
+    hard_constraint_counts = _hard_counts()
+
+    def __init__(self, arm: str, fail_at: int | None = None,
+                 stationary_at: int | None = None):
+        self.arm = arm
+        self.fail_at = fail_at
+        self.stationary_at = stationary_at
+        self.optimizer_steps_completed = 0
+
+    def evaluate(self, update: int):
+        return _evaluation(update, self.arm)
+
+    def step(self, update: int, cycle: int):
+        if self.stationary_at == update:
+            raise AnchorStationary("ANCHOR_STATIONARY_OR_INAPPLICABLE")
+        self.optimizer_steps_completed += 1
+        if self.fail_at == update:
+            raise RuntimeError("post-step logging failure")
+        diagnostic = (
+            {"arm": ARM_REPLAY, "clip_count_for_complete_direction": 1,
+             "layout": {"parameter_order": ["p"]},
+             "exact_replay_merger": {
+                 "merged_norm_before_clip": 2.0,
+                 "merged_norm_after_clip": 1.0,
+             }}
+            if self.arm == ARM_REPLAY else
+            {"arm": self.arm, "clip_count_for_complete_direction": 1,
+             "clip_applied": False, "layout": {"parameter_order": ["p"]}}
+        )
+        return {
+            "train_row": {"update": update, "cycle": cycle},
+            "gradient_row": {
+                "update": update,
+                "cycle": cycle,
+                "direction_diagnostics": diagnostic,
+                "parameter_displacement_alignment": {
+                    "g_D_dot_negative_delta_theta": 1.0,
+                    "cosine": 0.5,
+                    "displacement_norm": 0.1,
+                },
+            },
+            "legacy_gradient_row": {"update": update, "cycle": cycle, "legacy": True},
+        }
+
+    def save_checkpoint(self, path: Path, update: int):
+        path.write_bytes(f"checkpoint-{update}".encode())
+
+
+def test_state_machine_completes_exact_schedule_without_adamw_step(tmp_path: Path):
+    result = run_arm_state_machine(
+        arm=ARM_REPLAY,
+        adapter=MockAdapter(ARM_REPLAY),
+        arm_dir=tmp_path / "R",
+    )
+    assert result.receipt["terminal_state"] == "COMPLETED"
+    assert result.receipt["optimizer_steps_completed"] == 500
+    assert result.receipt["fully_logged_updates"] == 500
+    assert result.receipt["evaluation_updates_present"] == list(EVALUATION_UPDATES)
+    assert len((result.arm_dir / "gradient_diagnostics.jsonl").read_text().splitlines()) == 500
+
+
+def test_state_machine_preserves_post_step_failure_count_and_anchor_state(tmp_path: Path):
+    failed = run_arm_state_machine(
+        arm=ARM_REPLAY,
+        adapter=MockAdapter(ARM_REPLAY, fail_at=17),
+        arm_dir=tmp_path / "failed",
+    )
+    assert failed.receipt["terminal_state"] == "EXECUTION_FAILED"
+    assert failed.receipt["stop_update"] == 17
+    assert failed.receipt["optimizer_steps_completed"] == 17
+    assert failed.receipt["fully_logged_updates"] == 16
+    assert failed.receipt["last_valid_evaluation_update"] == 16
+
+    stationary = run_arm_state_machine(
+        arm=ARM_ANCHOR_0,
+        adapter=MockAdapter(ARM_ANCHOR_0, stationary_at=17),
+        arm_dir=tmp_path / "stationary",
+    )
+    assert stationary.receipt["terminal_state"] == "METHOD_INAPPLICABLE"
+    assert stationary.receipt["optimizer_steps_completed"] == 16
+    assert stationary.receipt["fully_logged_updates"] == 16
+
+
+def test_evaluator_emits_full_fixed_support_scorecard_without_step(tmp_path: Path):
+    packet, base_config, _ = packet_fixture(tmp_path)
+    runtime = build_runtime(
+        packet_dir=packet,
+        config_path=base_config,
+        device=torch.device("cpu"),
+        executable=False,
+    )
+    observed = evaluate_arm(runtime, update=0)
+    assert [row["cycle"] for row in observed["per_cycle"]] == list(EXPECTED_CYCLES)
+    assert len(observed["per_cycle"]) == 16
+    assert set(LOSS_ORDER).issubset(observed["aggregate"])
+    assert observed["aggregate"]["hard_constraint_violations"] == 0
+    json.dumps(observed, allow_nan=False)
+
+
+def _losses(model: torch.nn.Module):
+    p = model.weight.reshape(-1)
+    return {
+        "l_d": p.square().sum(),
+        "l_dr": (p[0] - 0.3).square(),
+        "l_u": (p[1] + 0.2).square(),
+        "l_h": (p.sum() - 0.1).square(),
+        "l_hr": (p[0] - p[1]).square(),
+        "L_P": (2 * p[0] + p[1]).square(),
+    }
+
+
+def test_replay_direction_and_legacy_record_match_reviewed_runner():
+    left = torch.nn.Linear(2, 1, bias=False, dtype=torch.float64)
+    with torch.no_grad():
+        left.weight.copy_(torch.tensor([[0.4, -0.1]], dtype=torch.float64))
+    right = copy.deepcopy(left)
+    observed, observed_gd, _, legacy = _replay_direction_with_legacy(left, _losses(left))
+    expected, expected_gd, _ = _direction_with_damage_reference(
+        right, _losses(right), ARM_REPLAY)
+    torch.testing.assert_close(observed, expected, rtol=0, atol=0)
+    torch.testing.assert_close(observed_gd, expected_gd, rtol=0, atol=0)
+    json.dumps(legacy, allow_nan=False)
+
+
+def test_protocol_projection_ignores_only_frontmatter_status(tmp_path: Path):
+    assert _protocol_contract_sha256(PROTOCOL) == EXPECTED_PROTOCOL_CONTRACT_SHA256
+    raw = PROTOCOL.read_text()
+    changed_status = raw.replace("status: READY_FOR_BOUNDED_LOCAL_IMPLEMENTATION",
+                                 "status: DIFFERENT_WORKFLOW_STATE", 1)
+    status_path = tmp_path / "status.md"
+    status_path.write_text(changed_status)
+    assert _protocol_contract_sha256(status_path) == EXPECTED_PROTOCOL_CONTRACT_SHA256
+    body_path = tmp_path / "body.md"
+    body_path.write_text(changed_status + "\nstatus: method text must remain frozen\n")
+    assert _protocol_contract_sha256(body_path) != EXPECTED_PROTOCOL_CONTRACT_SHA256
+
+
+def test_resolver_binds_exact_snapshots_environment_packet_and_commit(tmp_path: Path,
+                                                                      monkeypatch):
+    commit = "a" * 40
+    environment = {
+        "hostname": "approved-host",
+        "platform": "linux",
+        "python": "python",
+        "torch": "torch",
+        "cuda": "cuda",
+        "gpu": {"uuid": "gpu-uuid", "pci_bus_id": "0000:01:00.0", "name": "GPU"},
+        "CUDA_VISIBLE_DEVICES": "0",
+    }
+    base = json.loads(BASE_CONFIG.read_text())
+    arrays = {
+        "cycles": np.asarray(EXPECTED_CYCLES),
+        "d_pre": np.empty((16, base["data"]["native_nodes"])),
+        "history_pre": np.empty((16, base["data"]["native_q4_elements"], 1, 4)),
+    }
+    metadata = {
+        "config_sha256": producer.EXPECTED_BASE_RUNTIME_CONFIG_SHA256,
+        "source_p1_verdict": "P1_CONTRACT_FROZEN",
+        "source_hash_verdict": "FULL_TRAJECTORY_HASH_QUALIFIED",
+        "source_decode_verdict": "FULL_TRAJECTORY_DECODE_QUALIFIED",
+    }
+    identity = {"manifest_sha256": "packet-sha"}
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(producer, "current_commit", lambda _root: commit)
+    monkeypatch.setattr(producer, "_producer_execution_files_clean", lambda _root: True)
+    monkeypatch.setattr(producer, "_environment_snapshot", lambda _visible: environment)
+    monkeypatch.setattr(producer, "load_verified_packet",
+                        lambda _packet: (arrays, metadata, identity))
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "0")
+    staging = tmp_path / "staging"
+    staging.mkdir()
+    output = staging / "resolved.json"
+    resolved = resolve_producer_config(
+        packet_dir=tmp_path / "packet",
+        integration_config_path=INTEGRATION_CONFIG,
+        base_runtime_config_path=BASE_CONFIG,
+        protocol_path=PROTOCOL,
+        output_path=output,
+        repo_root=ROOT,
+        approved_producer_commit=commit,
+        approved_hostname="approved-host",
+        approved_gpu_name="GPU",
+        approved_gpu_uuid="gpu-uuid",
+        approved_gpu_pci_bus_id="0000:01:00.0",
+        approved_staging_root=staging,
+        authorize_execution=False,
+    )
+    assert output.is_file()
+    assert resolved["execution_authorized"] is False
+    assert resolved["source"]["training_commit"] == commit
+    validate_resolved_config(
+        resolved,
+        base_runtime_config_path=BASE_CONFIG,
+        packet_manifest_sha256="packet-sha",
+        executable=False,
+    )
+    tampered = copy.deepcopy(resolved)
+    tampered["source"]["training_commit"] = "b" * 40
+    with pytest.raises(ValueError, match="not bound"):
+        validate_resolved_config(
+            tampered,
+            base_runtime_config_path=BASE_CONFIG,
+            packet_manifest_sha256="packet-sha",
+            executable=False,
+        )
+
+
+def test_writer_emits_complete_decision_package_from_exact_mock_receipts(tmp_path: Path):
+    results = {}
+    for arm in ARM_ORDER:
+        results[arm] = run_arm_state_machine(
+            arm=arm,
+            adapter=MockAdapter(arm),
+            arm_dir=tmp_path / arm,
+        )
+    results[ARM_REPLAY] = replace(
+        results[ARM_REPLAY],
+        legacy_gradient_prefix_sha256=REPLAY_GRADIENT_PREFIX_SHA256,
+    )
+    (tmp_path / "config_resolved.json").write_text("{}\n")
+    (tmp_path / "input_packet_identity.json").write_text("{}\n")
+    (tmp_path / "environment.txt").write_text("fixture\n")
+    config = json.loads(INTEGRATION_CONFIG.read_text())
+    completion = write_shared_evidence(
+        output_dir=tmp_path,
+        config=config,
+        arm_results=results,
+        environment={"fixture": True},
+        run_metadata={"optimizer_or_training_step_performed_by_test": False},
+    )
+    assert completion["total_optimizer_steps_completed"] == 2000
+    assert completion["decision"]["replay_gate"]["pass"] is True
+    assert completion["decision"]["cross_arm_performance_eligible"] is True
+    assert set(completion["decision"]["update500_metrics"]) == set(ARM_ORDER)
+    assert (tmp_path / "decision_figure.png").stat().st_size > 0
+    required = set(config["evidence"]["required_shared"])
+    assert required.issubset({path.name for path in tmp_path.iterdir()})
+
+
+def test_execution_entrypoint_rejects_unauthorised_config_before_artifact_roots(tmp_path: Path):
+    config = json.loads(INTEGRATION_CONFIG.read_text())
+    config_path = tmp_path / "unresolved.json"
+    config_path.write_text(json.dumps(config))
+    packet = tmp_path / "packet"
+    packet.mkdir()
+    (packet / "packet_identity.json").write_text(json.dumps({"manifest_sha256": "x"}))
+    with pytest.raises(ValueError, match="resolved config path differs"):
+        producer.run_producer(
+            packet_dir=packet,
+            resolved_config_path=config_path,
+            base_runtime_config_path=BASE_CONFIG,
+            output_dir=tmp_path / "output",
+            repo_root=ROOT,
+        )
+    assert not (tmp_path / "output").exists()
