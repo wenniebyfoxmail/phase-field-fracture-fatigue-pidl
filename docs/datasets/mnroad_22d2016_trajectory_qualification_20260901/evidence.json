@@ -1,0 +1,87 @@
+{
+  "audit_date": "2026-09-01",
+  "section_id": "22-D-2016",
+  "cell": 22,
+  "lane": "Driving",
+  "target": "non-wheel-path longitudinal cracking",
+  "verdict": "CONDITIONAL_GO_MANUAL_VECTORISATION_PILOT__NO_GO_MODEL_READY_TRAJECTORY",
+  "sources": {
+    "workbook": "/Users/wenxiaofang/Downloads/HMA Distress All export.xlsx",
+    "workbook_sheet": "Export Worksheet",
+    "workbook_rows": "1482:1491",
+    "manual": "/Users/wenxiaofang/Downloads/LTPP_DIM_052014.pdf",
+    "portal": "https://infopave.fhwa.dot.gov/Mnroad/index",
+    "repository_base": "https://infopave.fhwa.dot.gov/InfoPave_Repository/"
+  },
+  "cutoff": {
+    "last_pre_intervention_observation": "2019-10-23",
+    "first_relevant_intervention": "2019-10-24",
+    "event": "crack seal",
+    "description": "500 feet of longitudinal crack seal, shoulder construction joint",
+    "rule": "No natural-deterioration transition may cross this event."
+  },
+  "excel_aligned_states": [
+    {"date": "2017-03-20", "nwp_low": 0, "nwp_moderate": 0, "nwp_high": 0, "nwp_total": 0},
+    {"date": "2018-03-14", "nwp_low": 0, "nwp_moderate": 0, "nwp_high": 0, "nwp_total": 0},
+    {"date": "2018-04-27", "nwp_low": 0, "nwp_moderate": 45, "nwp_high": 0, "nwp_total": 45},
+    {"date": "2018-08-23", "nwp_low": 5, "nwp_moderate": 45, "nwp_high": 0, "nwp_total": 50},
+    {"date": "2019-03-22", "nwp_low": 267, "nwp_moderate": 45, "nwp_high": 0, "nwp_total": 312},
+    {"date": "2019-04-16", "nwp_low": 378, "nwp_moderate": 45, "nwp_high": 0, "nwp_total": 423},
+    {"date": "2019-10-23", "nwp_low": 379, "nwp_moderate": 45, "nwp_high": 0, "nwp_total": 424}
+  ],
+  "map_only_state": {
+    "date": "2017-11-01",
+    "reason_excluded": "No exact summary-workbook row."
+  },
+  "maps": [
+    {"date": "2017-03-20", "file_name": "Cell 22 3-20-17.pdf", "year_path": "mn_files/mnroad_media/DISTRESS-MAPS/2017/", "bytes": 6147781, "pages": 10, "sha256": "6b711ab4342776fddb2d6ed0cb5c7b7433bfa2720bc0a900ce667785f43a14b2"},
+    {"date": "2017-11-01", "file_name": "Cell 22 November, 2017.pdf", "year_path": "mn_files/mnroad_media/DISTRESS-MAPS/2017/", "bytes": 9196937, "pages": 10, "sha256": "ee626c1519813f4183323b5c3fa2672b6f1e75d3537ece5bad75db88250a7aaa"},
+    {"date": "2018-03-14", "file_name": "Cell 22 March, 2018.pdf", "year_path": "mn_files/mnroad_media/DISTRESS-MAPS/2018/", "bytes": 9877014, "pages": 10, "sha256": "4398ad6e3a89a7cc1c8bacb9947510289f98be006ddfa681038aaeb0b98f1204"},
+    {"date": "2018-04-27", "file_name": "Cell 22 April, 2018.pdf", "year_path": "mn_files/mnroad_media/DISTRESS-MAPS/2018/", "bytes": 10165422, "pages": 10, "sha256": "6cba5cba55b4ac6781a5dfd1fd196122ee4a30a0e9ea4c017da1473abe4ffc1e"},
+    {"date": "2018-08-23", "file_name": "Cell 22 August, 2018.pdf", "year_path": "mn_files/mnroad_media/DISTRESS-MAPS/2018/", "bytes": 10380948, "pages": 10, "sha256": "84087a16ba08ff8ad71fdc7af5fd95667c317a3e0f4349727df634689977e96a"},
+    {"date": "2019-03-22", "file_name": "Cell 22 March, 2019.pdf", "year_path": "mn_files/mnroad_media/DISTRESS-MAPS/2019/", "bytes": 6983526, "pages": 10, "sha256": "785dfee8e08f75088a72fe6759b08b3fd37e65648256c3808692ff78fcda610d"},
+    {"date": "2019-04-16", "file_name": "Cell 22 April, 2019.pdf", "year_path": "mn_files/mnroad_media/DISTRESS-MAPS/2019/", "bytes": 7200995, "pages": 10, "sha256": "fea435e60d5e1d5555d0035c5964cd0fb9901019c8557f0d13192289b131a6d4"},
+    {"date": "2019-10-23", "file_name": "Cell 22 Fall, 2019.pdf", "year_path": "mn_files/mnroad_media/DISTRESS-MAPS/2019/", "bytes": 7339854, "pages": 10, "sha256": "1cfffe52251bec1952616da94275a2ffb06584e6c39ecbc5109e4c55cc5a0b80"}
+  ],
+  "registration": {
+    "render_dpi": 120,
+    "render_shape_px": [1020, 1320],
+    "method": "ORB feature matching plus projective transform, 3 px RANSAC threshold",
+    "exact_date_page_pairs": 60,
+    "solved_pairs": 60,
+    "minimum_inliers": 285,
+    "median_inliers": 775.0,
+    "median_inlier_ratio": 0.4150546435650297,
+    "median_reprojection_px": 0.6663029193878174,
+    "maximum_pair_median_reprojection_px": 0.9701827764511108,
+    "maximum_pair_p95_reprojection_px": 2.362527370452881,
+    "warped_page_area_ratio_range": [0.8777413751248054, 0.9961089340716227],
+    "claim_boundary": "Printed coordinate carrier only; not crack recognition or crack identity."
+  },
+  "semantic_pilot": {
+    "date": "2018-04-27",
+    "target_lane_side": "10-foot shoulder side of dashed lane divider",
+    "map_derived_length_ft": 43.0,
+    "excel_length_ft": 45.0,
+    "absolute_difference_ft": 2.0,
+    "relative_difference": 0.044444444444444446,
+    "status": "DIAGNOSTIC_PASS_ONE_DATE_ONLY",
+    "claim_boundary": "Not a blind or full-chain semantic validation."
+  },
+  "next_annotation_design": {
+    "annotator_count": 1,
+    "first_pass_blinding": "Hide Excel totals and later survey states.",
+    "repeatability_sample": "Preselect and conceal duplicate IDs for 20% of pages.",
+    "minimum_repeat_crack_id_length_agreement": 0.8,
+    "maximum_median_symmetric_distance_ft": 1.0
+  },
+  "gates": {
+    "identity_and_censoring": "PASS",
+    "pdf_completeness": "PASS",
+    "printed_grid_registration": "PASS_COORDINATE_CARRIER_ONLY",
+    "one_date_semantic_pilot": "DIAGNOSTIC_PASS",
+    "full_chain_scalar_reconciliation": "FAIL_BLOCKED",
+    "crack_identity_persistence": "FAIL_BLOCKED",
+    "model_ready_trajectory": "NO_GO"
+  }
+}
