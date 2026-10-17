@@ -95,11 +95,13 @@ def metrics(mask,safe,roi,subroi=None):
     for i,p in enumerate(paths):
         xy=p["xy"].astype(int);valid=safe[xy[:,1],xy[:,0]];widths=thickness[xy[:,1],xy[:,0]]
         pointcount+=len(widths);allwidths.extend(widths[valid].tolist())
-        traces.append(dict(segment=i,xy_native=(p["xy"]+np.array(roi[:2])).tolist(),arc_length_px=p["s"].tolist(),
+        endpoints=[dict(xy_native=(p["xy"][j]+np.array(roi[:2])).tolist(),near_roi_or_exclusion_boundary=bool(not valid[j]),
+                        interpretation="possible visible-support cut, not a confirmed crack tip") for j in (0,-1)]
+        traces.append(dict(segment=i,xy_native=(p["xy"]+np.array(roi[:2])).tolist(),arc_length_px=p["s"].tolist(),endpoints=endpoints,
                            local_mask_thickness_px=[float(w) if v else None for w,v in zip(widths,valid)],length_px=p["length"]))
-    good=bool(paths and np.any(measured));values=dict(valid=good,reason="candidate_extracted" if good else "no_candidate_identified",
+    good=bool(paths and np.any(measured));values=dict(valid=good,reason="candidate_extracted" if good else "no_candidate_identified",support_scope="visible_only",
         area_px2=int(measured.sum()) if good else None,length_px=float(sum(p["length"] for p in paths)) if good else None,
-        fragments=len(paths),thickness_points=len(allwidths),path_points=pointcount,
+        fragments=len(paths),boundary_near_endpoints=sum(e["near_roi_or_exclusion_boundary"] for p in traces for e in p["endpoints"]),thickness_points=len(allwidths),path_points=pointcount,
         thickness_withheld_fraction=1-len(allwidths)/pointcount if pointcount else None)
     for k,v in (("thickness_mean_px",np.mean(allwidths) if allwidths else None),
                 ("thickness_p10_px",np.percentile(allwidths,10) if allwidths else None),
