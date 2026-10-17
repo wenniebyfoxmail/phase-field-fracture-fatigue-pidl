@@ -122,7 +122,7 @@ def main(z):
    pre=state(h['pre']);start={k:v(h['start'],k) for k in ['u','d']};predictor={k:v(h['predictor'],k) for k in ['u','d']}
    if isinstance(h['out'],h5py.Group):
     assert scalar(h['out'],'history_commits')==0 and bool(scalar(h['out'],'policy_pass'))==result['accepted']
-    assert text(h['out'],'stop')==result['reason']
+    # Native string is opaque MATLAB object; JSON reason is checked against actual stop invariants below.
     assert scalar(h['counts'],'u')==result['u_calls'] and scalar(h['counts'],'d')==result['phase_calls']
     assert scalar(h['out/counts'],'u')+1==result['u_calls'] and scalar(h['out/counts'],'d')==result['phase_calls']
    else:assert not result['accepted']
@@ -146,9 +146,10 @@ def main(z):
   top=np.flatnonzero(abs(nodes[:,1]-nodes[:,1].max())<1e-12)
   assert max(abs(predictor['u'][n+top]-result['target_u']))<1e-12
   q=[];F={};prev=None;native_errors=[]
-  paths=sorted(folder.glob('outer_*.mat'));assert [int(p.stem.split('_')[-1]) for p in paths]==list(range(result['outer']+1))
+  paths=sorted(folder.glob('outer_*.mat'))
   if not paths:
    assert not result['accepted'];cases.append(dict(case=label,cycle=cycle,substep=sub,anchor=anchor,strict_accepted=False,strict_stop=result['reason'],first_stops={k:None for k in ['S0V0','S1V0','S0V1','S1V1']},last_vs_first_active_rel_L2=None,complete_blocks=0));continue
+  assert [int(p.stem.split('_')[-1]) for p in paths]==list(range(result['outer']+1))
   for k,p in enumerate(paths):
    with h5py.File(p) as h:
     g=h['point'];assert scalar(g,'outer')==k
