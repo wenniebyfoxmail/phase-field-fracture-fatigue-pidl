@@ -136,7 +136,7 @@ def plots_scalar(dest,states):
             p=folder/arm/'accepted.json'
             if p.exists():
                 vals=js(p);opt=state['arms'].get(arm,{})
-                x=[0]+[r['evaluations'] for r in vals];y=[opt.get('initial_loss',np.nan)]+[r[key] for r in vals]
+                x=[1]+[r['evaluations'] for r in vals];y=[opt.get('initial_loss',np.nan)]+[r[key] for r in vals]
                 ax.plot(x,y,'o-',ms=3,color=color,label=f'c{cy}')
             elif arm=='original_joint_LBFGS':
                 axs[0].annotate(f'c{cy}: original arm missing/skipped',(.03,.1+.1*(cy==20)),xycoords='axes fraction',fontsize=8)
