@@ -69,3 +69,14 @@ retrieval. Fullsource outputs preserved; no NNcapacity/uniqueoptimum/physical
 teacher or correctedtrajectory claim. Choose subsequent PIDL repair from the
 qualified FEM subset plus measured bounds/representation/optimization limit,
 not from lossflatness alone.
+
+## Pre-result engineering amendment2026-10-17
+
+Run pf_s04e011_ncp_06742d7_20261017T2024Z stopped on the first completed
+state's rows.json serialization (NumPy bool not JSON type); no complete marker,
+parameter update or history commit. Preserve failed run, log and partial fields.
+One fresh reviewed engineering execution converts two result booleans and
+component errors to built-in JSON scalars, with unchanged data, objective,
+state set, direction grid and per-run30min start deadline. No numerical limit
+relaxation or successful-result selection; no further automatic retry. Failed
+readout is not source-objective or optimization evidence.

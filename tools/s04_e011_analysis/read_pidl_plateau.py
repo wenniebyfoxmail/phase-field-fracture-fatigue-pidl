@@ -127,9 +127,9 @@ def main(z):
                  parameter_l2=pn,repeat_loss_difference=abs(base['loss']-repeat['loss']),f_pre_min=float(ff.min()),
                  d_min=float(field['d'].min()),d_max=float(field['d'].max()),negative_nodes=int((field['d']<0).sum()),above_one_nodes=int((field['d']>1).sum()),
                  nodal_lower_violation_max=float(np.maximum(hist.numpy()-field['d'],0).max()),optimizer_state_saved=False)
-              errors=[abs(base[key]-recorded[k,j])/max(abs(recorded[k,j]),1e-10) for j,key in enumerate(['E_el','E_d','E_hist'],1)]
+              errors=[float(abs(base[key]-recorded[k,j])/max(abs(recorded[k,j]),1e-10)) for j,key in enumerate(['E_el','E_d','E_hist'],1)]
               row['original_poststep_component_relative_errors']=errors
-              row['source_objective_readout_pass']=max(errors)<=1e-4
+              row['source_objective_readout_pass']=bool(max(errors)<=1e-4)
               # Readout arrays retain actual pre-optimization history, not current commit.
               field.update(hist_alpha_pre=hist.numpy(),hist_fat_pre=prev['hist_fat'].numpy(),f_pre=ff.numpy(),hist_fat_post=cur['hist_fat'].numpy())
               np.savez_compressed(fieldsdir/f'c{cycle}_s{substep}.npz',**field)
@@ -150,7 +150,7 @@ def main(z):
                           for p,p0 in zip(params,original):p.copy_(p0)
               assert all(torch.equal(p,p0) for p,p0 in zip(params,original))
               row['best_tested_loss_drop']=max([q['loss_drop'] for q in local if q['valid']]+[0.])
-              row['lower_fixed_objective_found']=row['best_tested_loss_drop']>floor
+              row['lower_fixed_objective_found']=bool(row['best_tested_loss_drop']>floor)
               rows.append(row);dump(z.out/'rows.json',rows);dump(z.out/'trials.json',trials)
               print('READOUT',cycle,substep,'source',row['source_objective_readout_pass'],'g',gn,'drop',row['best_tested_loss_drop'],flush=True)
               del field,prev,cur,original,gt,gp,gr,hist,ff
