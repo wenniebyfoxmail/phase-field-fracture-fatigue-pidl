@@ -292,3 +292,17 @@ neither its permit nor approval references authenticate human consent.
 Runtime/resource/OS behavior remains untested. Next proposal only:prepare the
 exact final command/card for separate approval, not launch or repeat mock.
 Main chat remains sole writer; original science and confirmation seals unchanged.
+
+## Final access command/card prepared — 2026-10-17
+
+At user-approved preparation only, the final single access command and v2 card
+are drafted in late_real_access_R001_run_card_v2_20261017.md, bound to full
+source33feec6813347177649cffbcc0ba39297937a09e and the actual independent
+acceptance messagemsg_015d0a19570ed14a016ad39fd210048191a8f8c550d8c5caab.
+The fixed card-specific approval index is prospective only:it is not valid
+until a subsequent explicit human execution approval for this exact card.
+Four sources, access-only scope and60s/512MiB/5MiB/no-retry contract unchanged.
+Only document-token/Git checks were performed; no source path probe, import,
+mock, real access, fitting, authorization/output creation or execution.
+Next:human approves or declines this one real-file access. No automatic launch;
+main chat sole writer, original scientific verdict and confirmation seals unchanged.
