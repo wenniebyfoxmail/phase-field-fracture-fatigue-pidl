@@ -1,6 +1,7 @@
 # 2026-10-17：两帧四区域源图核对材料
 
-状态：核对材料已准备，用户首轮独立分类待完成。不是实验重跑，不修改v1。
+状态：核对材料已准备，用户首轮回答已原样保存并完成对应关系公开；
+局部诊断，不是像素真值或性能验收。不是实验重跑，不修改v1。
 本次限定来源为已曝光Step18／IMG_0375.JPG和Step19／IMG_0379.JPG。
 不读其他阶段原图，不读取预测误差，不联网、不联系人员、不启动agent；
 不修改仓库代码或共享Obsidian／Roadmap。
@@ -81,3 +82,20 @@ reviewer/仅含中性卡片、原生裁图、分类说明和空白表；sealed/�
 
 下一步只接收用户分类，先保存原始回答和时间再解盲。源图依据—算法
 增删—修复方向对照表尚未生成，最小修复建议待分类证据，不预先实施。
+
+## 2026-10-17首轮回答与解盲（上述待分类文字为历史记录）
+
+用户回答A／B／C／D均能看见裂缝；原始文字及记录时间已先保存，之后
+才读取对应表，未回改四个C标签。用户逐卡依据／不确定性没有展开，
+保留为“卡片中有可见裂缝”，不外推到每个算法差集像素均是真裂缝。
+
+- [解盲前原始回答](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/source_review_materials_20261017_v1/responses/20261017T210258Z_first_round_user.md)
+- [四卡来源坐标—增删身份—局部解释及唯一修复提案](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/source_review_materials_20261017_v1/responses/20261017_first_round_debrief.md)
+
+A／B是15相对20新增（19／18），C／D是20提高到25后消失（19／18）。
+不计算四卡准确率，不据此选择15或25。用户另指出噪声误检与紫色过覆盖；
+代码确认紫色是人工粗排除，含~excluded硬屏蔽，不能当作裂缝预测。
+只提议先收紧Step19装置／胶的粗排除边界，释放被误盖的可见混凝土，
+真实遮挡仍未知；未实施，未改代码／mask／骨架／主路径／旧评分。
+原始reviewer空白表及首轮材料保留，不用解盲意见回填改写。
+本轮未修改共享Obsidian／Roadmap，未发跨聊天消息或启动agent。
