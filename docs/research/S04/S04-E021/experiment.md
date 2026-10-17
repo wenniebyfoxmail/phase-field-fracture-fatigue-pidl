@@ -306,3 +306,19 @@ Only document-token/Git checks were performed; no source path probe, import,
 mock, real access, fitting, authorization/output creation or execution.
 Next:human approves or declines this one real-file access. No automatic launch;
 main chat sole writer, original scientific verdict and confirmation seals unchanged.
+
+## Approved real-file access R001 completed — 2026-10-17
+
+Actual user message01a14ab6-a34f-7062-9411-009fb113707c approved card33351e2,
+code33feec6 and its exact approval index for one S04-E021-LATE-DIAG-R001.
+It completed once:0.101251s, 36.0625MiB aggregate sampled RSS, 12,638bytes in
+four read-only frozen outputs, no cap/retry. Four actual scalar sources were
+read (79,377bytes); identity/schema/357-row coverage and saved scalar checks
+passed. See late_real_access_R001_result_20261017.md for approval mapping,
+command, provenance, own-output verification and claim boundary.
+This is access-only C0/C1 evidence, not attribution; no describe/report,
+fit/replay or confirmation access. No source rows persisted and the one
+access approval is consumed. Next proposal only:prepare the minimal genuine
+late-attribution implementation/run scope under9984226 for separate approval;
+do not rerun access or treat a generated-only report as a real report.
+Original scientific verdict unchanged; main chat sole writer, holdouts closed.
