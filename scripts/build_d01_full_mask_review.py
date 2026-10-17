@@ -51,6 +51,7 @@ def main():
     montage = Image.new('RGB',(1600,564*len(rendered)),'white')
     for i,pair in enumerate(rendered): montage.paste(pair,(0,i*564))
     montage.save(args.root/'F01_all_six_full_frame_masks.jpg',quality=92)
+    montage.save(args.root/'F01_all_six_full_frame_masks.png')
     # Fixed representative: first beam's final endpoint, chosen before inference.
     shutil.copy2(args.root/'outputs'/'beam4_t588_composite.jpg',args.root/'F02_beam4_final_full_mask.jpg')
     html = Path(__file__).with_name('d01_full_mask_review.html')
