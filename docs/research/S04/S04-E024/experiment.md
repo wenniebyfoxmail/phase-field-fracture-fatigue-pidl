@@ -61,3 +61,8 @@ E024主要估计量是每状态候选相对自身E023的全场和损伤区质量
 ## 只读诊断E024-D002结果追加（2026-10-17）
 
 按用户授权，三态实际8000快照保持D／BC／窗口／全质量目标，完成独立预用及结果复核。主数值秩279／284／254；c60完整跨度的数值最优仍高于E023全场2.18%，同时E024头尾还未达到该最优，表示与优化两类限制共存。c20／c83有可实现头部收益，背景代价分别约+.40%／+5.73%，窗口内背景+3.78%／+26.33%。数值截断敏感性／实现误差／原后端警告和跨平台例外完整保留；不是统一可用修复或应用验证。[详细结论](fixed_feature_decision.md)、[独立审核](fixed_feature_evidence_review.md)。0神经更新／0CP写回／0远端动作，后续E023联合终态头诊断仅建议未执行。
+
+
+## 2026-10-17 E024-D003 supplement: E023 joint terminal head
+
+User-authorised three exposed states c20/c60/c83, own E023 final joint10000 checkpoints, unchanged producerD/BC/window/full-mass objective. Diagnostic source e8507f92a7ea869b519d19d129e86a1179826a0f; protocol terminal_head_protocol.md, original-source code preuse review and independent alternate-driver result review passed within numerical-warning limitations. No neural/optimizer update, checkpoint write or remote action. 9 linear solutions plus9 prescribed partial coefficient probes,25.6648s CPU /1,659,256,832-byte peak RSS. Full oracle improves own E023 full/damage but increases backgrounds; partial probes improve all scored regions with disproportionately large parameter increments. See terminal_head_decision.md and terminal_head_{metrics,pairs,numerics,partial,line_geometry}.csv; original verdicts unchanged. A centered parameter trust-region incremental diagnostic is proposed, not executed. .001 historical only; downstream application/background tolerance undefined. Full local archive: local_archive/experiments/S04-E024/terminal_head_oracle_v1.

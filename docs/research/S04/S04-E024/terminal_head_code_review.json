@@ -1,0 +1,22 @@
+{
+  "verdict": "PASS",
+  "commit": "e8507f92a7ea869b519d19d129e86a1179826a0f",
+  "scope": "focused pre-use E023 terminal head diagnostic",
+  "clean_at_review": true,
+  "blocking_findings": [],
+  "independent_tests": {
+    "inherited_svd_tests_passed": 6,
+    "seconds": 0.12,
+    "synthetic_interpolation_with_physical_bias_and_D": "PASS"
+  },
+  "neural_optimizer_steps": 0,
+  "checkpoint_writes": 0,
+  "SSH": false,
+  "real_three_state_result_reviewed": false,
+  "files_sha256": {
+    "SENS_tensile/diagnose_s04_e023_terminal_head.py": "eb4572998f14c8efb040aada26a8876681d317bb2a3e553409eb614f6f8bc51d",
+    "docs/research/S04/S04-E024/terminal_head_protocol.md": "527d43b55f7997f817542bbf92d422e375fbb7005dd9bc2e06c74a8237437e23",
+    "SENS_tensile/s04_e024_fixed_feature_oracle.py": "e884d6d5138848f1c21b649c34580495717a264ff19120543ba63ed55f019805",
+    "SENS_tensile/diagnose_s04_e023_endpoints.py": "bc7598ad8cc74a7faeae40cf160a87826110a39916a9e5b57d5924cb70b02993"
+  }
+}
