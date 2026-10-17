@@ -11,7 +11,8 @@ from matplotlib.colors import Normalize
 def main(z):
  out=z.analysis;cases=json.loads((out/'cases.json').read_text());cases=sorted([r for r in cases if not r['anchor']],key=lambda r:(r['cycle'],r['substep']))
  rows=list(csv.DictReader((out/'crossings.csv').open()));ncp=json.loads((out/'pidl_plateau.json').read_text());trials=json.loads(z.trials.read_text())
- inputs=[out/'cases.json',out/'crossings.csv',out/'pidl_plateau.json',z.trials]
+ analysis_commit=json.loads((out/'summary.json').read_text())['analysis_commit']
+ inputs=[out/'summary.json',out/'cases.json',out/'crossings.csv',out/'pidl_plateau.json',z.trials]
  hashes={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs};labels=[r['case'] for r in cases]
  fig,axs=plt.subplots(2,2,figsize=(13,8.7))
  for sub,ax in [(2,axs[0,0]),(4,axs[0,1])]:
@@ -47,7 +48,7 @@ def main(z):
  receipt=dict(kind='render_only_existing_audited_tables',inputs=hashes,new_solve=False,new_scientific_gate=False)
  (out/'render_receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
  for name,caption in [('mcs_control_reviewed','Four first-stop policies on actual complete blocks; gray explicitly means no strict crossing observed within20; not future redundancy. Active self-change uses each state first-block norm; orange strict MISS.'),('pidl_plateau_reviewed','Original stop iterations, common free-u force, three source-qualified gradient readouts and actual smallest tested loss RISE among eight independent trials. Seven source-component mismatches omitted from original-objective attribution. No lower loss at this grid is not a stationarity proof.')]:
-  (out/(name+'.md')).write_text('# '+name+'\n\n'+caption+'\n\nSource MCSA analysis903b2ae, MCS0a0691e and NCP348be4b; exact input table hashes in render_receipt.json. See README_analysis.md, cases.json, policies.csv, crossings.csv, pidl_plateau.json and original NCP trials.json. No training/solve/history update.\n')
+  (out/(name+'.md')).write_text('# '+name+'\n\n'+caption+'\n\nSource MCSA analysis'+analysis_commit+', MCS0a0691e and NCP348be4b; exact input table hashes in render_receipt.json. See README_analysis.md, cases.json, policies.csv, crossings.csv, pidl_plateau.json and original NCP trials.json. No training/solve/history update.\n')
  print('RENDER_COMPLETE')
 if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--analysis',type=Path,required=True);p.add_argument('--trials',type=Path,required=True);main(p.parse_args())
