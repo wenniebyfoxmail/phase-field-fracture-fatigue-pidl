@@ -79,7 +79,7 @@ the main chat alone. No Run directory/authorization grant was created.
 
 ## Minimal repair and static difference review submission — 2026-10-17
 
-Latest status: **DIFFERENCE_REVIEW_PENDING**; the original f9001ed blocker is
+Status at dispatch: **DIFFERENCE_REVIEW_PENDING**; the original f9001ed blocker is
 not relabelled closed before readback. Current user explicitly authorised only
 launch-exception handoff repair, sample_ids explanation and direct independent
 static difference review. No scientific access, fit or additional tests.
@@ -121,3 +121,42 @@ static difference review. No scientific access, fit or additional tests.
 Requested verdict is static-scope REVIEW_PASS / MODIFY_AND_REREVIEW /
 NOT_REVIEWABLE with residual limitations, not execution permission or dynamic/
 scientific success. Final command/card remains deferred until findings close.
+
+## Difference review readback and adoption — 2026-10-17
+
+Latest status: **REVIEW_PASS — STATIC DIFFERENCE ONLY**, bound to
+`256315332816b41f61c743309a20058572754bea`. The original f9001ed launch blocker
+is closed for this revised source snapshot; no new required fixes were reported.
+The current permission is still repair/review only, not real execution.
+
+Receipt: independent Codex chat/turn as above, final message
+`msg_015d0a19570ed14a016ad3e11b8c6481919e825cd80f86be99`;
+`wait_threads` revision95 returned completed/idle with no turn error. Reviewer
+reported exactly three changed files and reused unchanged first-review findings.
+
+Main chat checked each observation against the submitted source:
+
+| Finding | Checked source and adoption |
+|---|---|
+| Unknown/attempt flags precede Popen | guard156–160: unknown activity/certainty, then attempted=True, then Popen. Adopted; interrupted launch cannot retain false activity as the default startup fact. |
+| Missing handle preserves uncertainty | guard174–182: LAUNCH_OWNERSHIP_UNCONFIRMED/exit_confirmed=false; no cleanup_child(None) inference after an attempt. Known handles use the old helper; fail preserves first reason. Adopted. |
+| Receipt distinguishes handle/ownership/coverage | guard244–249: attempted/handle/ownership/manual-inspection and GUARD_ONLY_POSSIBLE_CHILD_UNOBSERVED fields present. Adopted as honest uncertainty reporting, not proof of process exit or resource control. |
+| Index meaning is accurate | worker264–266: adds explanation of zero-based admitted-array positions and native-ID mapping; values/sampling/fit unchanged. Adopted. |
+| No scientific design or data expansion | Git differences checked: reader, nine-input manifest and dependencies unchanged; only these two code sections and protocol explanations changed. Original criterion/budget/findings reused; no new scientific performance requirement. |
+
+Residual limits retained: without a returned handle the possible child's
+creation/exit/resource use is unconfirmed and manual inspection remains required;
+the code records this, it does not prevent every orphan or impose OS hard limits.
+Neither reviewer nor main chat ran/imported code, tests, real inputs or fits.
+No dynamic equivalence, actual memory/time feasibility or scientific success is
+established. No new Experiment result or Run was produced.
+
+The reviewed protocol/source are left unchanged at2563153; the protocol's
+pending-review status is its historical snapshot state. This current review
+record supplies the readback instead of editing that reviewed contract after
+approval. Subsequent commits change this review record only.
+
+Next: prepare final command and one-shot card bound to2563153 plus both review
+receipts for separate human approval, original300s/2GiB/100MiB and no retry.
+This repair/review turn stops before card preparation or execution; confirmation
+remains closed. Main chat alone updates Obsidian; no duplicate task/fit/test.
