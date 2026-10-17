@@ -309,6 +309,12 @@ and the primary Storyline receives a dated claim-impact entry. Follow
 `Storyline -> Experiment -> Run -> Evidence`; do not turn a successful launch,
 green test, or large archive into a scientific verdict.
 
+At a concrete route decision and after an interpretable attempt result, append
+one concise milestone to the task's existing Obsidian note and refresh its
+single Roadmap link/status. Include the chosen route or result, an evidence
+pointer, and next action; omit routine progress and duplicate chat narrative.
+For computed outcomes, embed the selected decision-facing figure there.
+
 ## Output Template
 
 For exploration, output only five short fields: question; baseline/observable;

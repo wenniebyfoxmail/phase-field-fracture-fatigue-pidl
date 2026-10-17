@@ -1,5 +1,23 @@
 # Agent Rules for `upload code/`
 
+## Third-Party Email And Form Approval
+
+- Only emails sent to third parties and forms filled in or submitted to third
+  parties require the user's explicit approval of the final account,
+  recipient/object, full body/fields, attachments and commitments.
+- A change to any of those details requires fresh approval. Verify the actual
+  state after sending or submission; investigate an unknown result before
+  retrying.
+- Submitting research designs, code or evidence to ChatGPT Pro for review is
+  not a third-party email or form submission. It may proceed directly, followed
+  by verification of the returned review.
+- Local work, SSH operations, code and document handling, ordinary tool calls
+  and other work that is neither email nor form submission do not trigger this
+  approval rule.
+- Before approval, third-party emails and forms must still be checked for the
+  author's style, audience-appropriate wording, attachments and visible
+  metadata, with unnecessary internal notes and templated AI phrasing removed.
+
 This file is the cross-agent entry point for the shared GitHub repo. It applies to Codex, Claude, and any other agent working from this repository.
 
 ## Non-Negotiable Machine Roles
@@ -129,6 +147,21 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 - `docs/research_frontier.md`, `docs/research_storylines.md`, existing track
   documents, and registries are legacy evidence. Do not bulk-move, rewrite, or
   delete them. Migrate an active item only when it is next touched.
+
+## Obsidian Research Milestones
+
+- For each research task, keep one concise living Obsidian note under the
+  appropriate `01 Research Tracks/` topic; reuse it across chats rather than
+  copying transcripts or making a note per turn.
+- Sync only when a concrete route is chosen or an attempt has a clear outcome.
+  Each update is normally 2–4 short lines: decision/result, an evidence pointer,
+  and next action. Keep detailed methods, metrics, logs and raw outputs in the
+  repository or producer archive.
+- Update exactly one basename wikilink and brief status phrase in
+  `01 Research Tracks/000 research note/Road crack prediction/0 Roadmap.md`.
+  Verify that the link and any selected figure embed resolve. Obsidian is the
+  decision index; `Storyline -> Experiment -> Run -> Evidence` remains the
+  scientific source of truth.
 
 ## Exploration And Formal Evidence
 
