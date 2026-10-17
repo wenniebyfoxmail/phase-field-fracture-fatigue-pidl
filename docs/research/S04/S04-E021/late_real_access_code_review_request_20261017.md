@@ -67,3 +67,11 @@ completed、error=null；最终message `msg_015d0a19570ed14a016ad39f843d948191b8
 
 请仅阅读Git源码差异、原合同和请求文档，不导入／运行代码、不补测试／修代码、不扫描真实路径、不写共享文件或Obsidian，不回发主对话／派任务。直接在本对话最终答复结论、范围限制和唯一下一步，由主对话读回核对、统一记录；静态认可不等于执行许可。
 <!-- DIFF_REVIEW_BODY_END -->
+
+## 差异复审送达与回传
+
+差异正文一次发送，回传指定threadId、isError=false；这是已知首审意见后的新版本复审，不是未知结果重发。
+turn `01a14aa8-180a-7d93-b7ea-f252e25e86e0` completed、error=null，最终message
+`msg_015d0a19570ed14a016ad39fd210048191a8f8c550d8c5caab`明确认可33feec6，计时必改闭合、无新增必改。
+主对话读回该turn，仅Git差异／源码核对，没有运行或真实读取／共享写入。
+最终逐条核对及限制见`late_real_access_code_review_result_33feec6_20261017.md`。

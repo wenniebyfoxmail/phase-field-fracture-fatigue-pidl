@@ -278,3 +278,17 @@ metadata/content, mock or real Run was accessed/executed in this preparation.
 Next:scope approval only, then implementation and independent code review;
 final-version real execution requires a separate explicit approval. Main chat
 remains sole writer; original scientific verdict and confirmation seal unchanged.
+
+## Restricted access implementation and static review — 2026-10-17
+
+User approved implementation within ea9cafb, not execution or any real input
+access. Sourcefd4700f adds the bounded authorization worker and fixed launcher;
+independent static review found one timer-origin issue, corrected at33feec6
+and independently accepted on static diff review. See
+late_real_access_code_review_result_33feec6_20261017.md for reconciliation.
+No import/CLI/test/mock, real source metadata/content, fit or Run creation.
+Default real switch remainsFalse, but a restricted real entry now exists;
+neither its permit nor approval references authenticate human consent.
+Runtime/resource/OS behavior remains untested. Next proposal only:prepare the
+exact final command/card for separate approval, not launch or repeat mock.
+Main chat remains sole writer; original science and confirmation seals unchanged.
