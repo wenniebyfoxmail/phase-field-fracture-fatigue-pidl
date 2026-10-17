@@ -184,7 +184,10 @@ def draw(out,nodes,c,w,fields,rows,outers,timing,contrasts,runid):
  axs[0].bar(x-.18,[max(by[k]['policy_C'],1e-18) for k in present],.35,label='own policy C');axs[0].bar(x+.18,[max(by[k]['fresh_C'],1e-18) for k in present],.35,label='strict fresh C');axs[0].set_yscale('log');axs[0].axhline(1,c='black',ls='--');axs[0].set_xticks(x,['U'+k[0]+' J'+k[1]+('' if by[k]['accepted'] else '\nMISS') for k in present]);axs[0].legend(fontsize=8);axs[0].set_ylabel('C, dashed1 (log displayfloor1e-18)')
  for ax,kind,title in [(axs[1],'first_completed_outer','First complete block (not convergence)'),(axs[2],'accepted_policy_endpoint','Accepted-policy endpoints only')]:
   q=[t for t in contrasts if t['kind']==kind];ax.bar(np.arange(len(q)),[100*t['weighted_relL2_to_common00'] for t in q]);ax.set_xticks(np.arange(len(q)),[t['contrast'].replace('_at_','\nat ') for t in q],fontsize=8);ax.set_ylabel('Weighted active gap / NEW00 norm (%)');ax.set_title(title,fontsize=11)
- axs[2].text(.03,.97,'Pairs involving MISS excluded\nDifferent endpoints can have different outers',transform=axs[2].transAxes,va='top',fontsize=8)
+ first_contrasts=[t for t in contrasts if t['kind']=='first_completed_outer']
+ if len(first_contrasts)==5 and all(t['weighted_relL2_to_common00']==0 for t in first_contrasts):
+  axs[1].set_ylim(0,1);axs[1].text(.5,.55,'All first-block active fields identical\n(all five contrasts = 0)',ha='center',transform=axs[1].transAxes,fontsize=10)
+ axs[2].set_title('Accepted endpoints (MISS pairs omitted)',fontsize=11)
  fig.suptitle('Fixed fresh / constrained / native p2 | U inneru, J joint/outer-u | '+runid,fontsize=10);fig.tight_layout();fig.savefig(out/'s2uj_decision.png',dpi=170);plt.close(fig)
  # Retrieve first-block fields from the already audited native outer files, not interpolation.
  first={}
@@ -235,7 +238,7 @@ def draw(out,nodes,c,w,fields,rows,outers,timing,contrasts,runid):
  for ax in axs:ax.set_yscale('log');ax.set_xlabel('Actually completed outer');ax.legend(fontsize=7,ncol=2)
  fig.suptitle('Fixedstrictphase | values<=1e-18 flooredonlyfordisplay | '+runid,fontsize=9);fig.tight_layout();fig.savefig(out/'s2uj_inner_outer.png',dpi=170);plt.close(fig)
  captions={
- 's2uj_decision':'Own policy C and common strict C (dashed1), initialpointineligible. Firstcompleteblock contrast uses common00 FIRST norm; accepted endpoints use common00 ENDPOINT norm. Miss-involving endpoint pairs omitted from accepted bars. Log C display floor1e-18; exactCSV retained.',
+ 's2uj_decision':'Own policy C and common strict C (dashed1), initialpointineligible. Firstcompleteblock contrast uses common00 FIRST norm; accepted endpoints use common00 ENDPOINT norm. Miss-involving endpoint pairs omitted from accepted bars; endpoints can have different completed outers. If all first-block contrasts are zero, an explicit zero message replaces an apparently empty result and the display axis is0-to-1%. Log C display floor1e-18; exactCSV retained.',
  's2uj_fields':'Top: all firstcompleteouter1 fields, observational/notconvergence. Middle: accepted endpoint or explicitly MISS lastcomplete. Bottom: conditional endpoint differences; misspairs explicitly notbothaccepted. Shared log active scale, floor1e-12; shared signed symlog difference scale, linearthreshold0.001maxGPgap. Exact scalar metrics use all GP/Jacobian weights; weightedcellmean is displayonly.',
  's2uj_trajectory':'Allcompleteouter strictC, postdamage Ru, fresh feasibleRd and activeintegral.0observationonly. Thresholds shown; a single phase/u threshold alone is not jointclosure. Failedinnerstates excluded; missesretain lastcomplete. Values<=1e-18 flooredonlyfordisplay, CSV exact.'}
  captions['s2uj_inner_outer']='Everycompleteblock returnedinneru norm versus displacement inner thresholds; own-policy normalizedjointsum andouteru components separately, dashed1. Exactzero/smallvalues<=1e-18 displayflooronly. J is still a pair of stoppingthresholds, notseparatelyintervened gates.'
