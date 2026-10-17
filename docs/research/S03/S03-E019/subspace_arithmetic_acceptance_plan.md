@@ -1,6 +1,7 @@
-# E019-D01 — 剩余独立算术只读验收方案与确切命令 v1
+# E019-D01 — 剩余独立算术只读验收方案与确切命令 v1.1
 
-2026-10-16；proposal only，未执行、未导入、未测试，未读取report数值。
+2026-10-17；v1.1仅修订跨路径ratio语义、来源标注和失败分流。
+proposal only，未执行、未导入、未测试，未读取report数值。
 承接已冻结D01 v1.1的验收，不新开诊断、不更改数值定义或原门槛。
 V01独立显示验收已经完成，不重做图形检查或重绘旧图。
 
@@ -53,7 +54,15 @@ Decimal.from_float转换已存binary64操作数，精度固定80；独立math.fs
 不是声称这些尚未执行的验收已有通过结果。原形式
 abs(value-ref)<=atol+1e-12*abs(ref)保持：无量纲矩阵/标量atol1e-12，
 位移向量/标量atol1e-15mm，平方量atol1e-18mm²（本次无平方指标）。
-报告的ratio为无量纲标量，按矩阵量原容差核对；Q最大差按向量量核对。
+报告的ratio为无量纲标量，仍用atol=1e-12、rtol=1e-12核对；Q最大差
+按向量量核对。ratio比较明确为额外、预先声明的跨求值路径标量一致性
+检查：保存值来自producer原einsum版Qr，参考值来自独立fsum版Qr。
+原mm向量容差一致不自动推出该归一化标量门槛通过，本检查不称为完全
+重现原ratio的求值历史。输出分别记录两条来源、保存值、参考值和差。
+若仅此项不符，立即停止并标记STOP_RATIO_REFERENCE_PATH_DIFFERENCE_UNRESOLVED
+（ratio参考路径差异未解决）；不直接认定原report损坏或producer原判据
+错误，不改阈值/操作数，不自动重试。即便通过，原逐分量Qr未保存、未
+认证其逐bit历史的限制仍保留；不由跨路径一致性推导历史逐bit相同。
 标量核对不宣称字符串所有末位相同；同时记录Decimal差及exact_match，
 后者仅诊断，不新增更苛刻的逐字/逐bit通过门槛。不得从“低于atol”推断
 极小舍入项精确为零或断言某一因果份额已证实。
@@ -73,6 +82,8 @@ Hᵀp=(HᵀL)(Lᵀy)+Hᵀdelta_p；Hᵀr=Hᵀp−Hᵀy+Hᵀdelta_r。
 ## 4. 输出与结论映射
 
 - 完整性/某必要检查异常：STOP_AT_FIRST_UNEXPECTED，不补查/不重试。
+- 额外ratio跨路径标量比较不符：STOP_RATIO_REFERENCE_PATH_DIFFERENCE_UNRESOLVED，
+  同样立即停止；只表示参考路径差异未解决，不直接判report/producer有错。
 - 可核项目均一致：PASS_SAVED_C1_C3_ARITHMETIC_WITH_C0_LIMITATION，明确
   C0原A账本与原逐分量Qr未保存，不能写完整D01所有算术均独立通过。
 - 实际算术未执行前，只有方案/命令已准备，不声称代码审查/测试通过。
@@ -137,6 +148,8 @@ done=[]; metrics=[]; blobs={}
 threads=('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','VECLIB_MAXIMUM_THREADS','NUMEXPR_NUM_THREADS')
 def require(ok,label):
     if not ok:raise ValueError(label)
+class RatioReferencePathDifference(ValueError):
+    pass
 def read(path):
     require(path.resolve()==path and path.is_file(),'fixed nonsymlink file '+str(path))
     with path.open('rb') as h:return h.read()
@@ -169,6 +182,19 @@ def metric(row,key,ref,kind='matrix'):
     saved=scalar(row[key]);close([[saved]],[[ref]],key,kind)
     metrics.append(dict(case=row['case'],metric=key,saved=str(saved),reference=str(ref),
                         delta=str(saved-ref),exact_match=saved==ref,kind=kind))
+def ratio_metric(row,ref):
+    saved=scalar(row['Q_identity_ratio'])
+    require(ref.is_finite(),'finite ratio reference')
+    metrics.append(dict(case=row['case'],metric='Q_identity_ratio',saved=str(saved),reference=str(ref),
+        delta=str(saved-ref),exact_match=saved==ref,kind='matrix',
+        saved_source='producer_einsum_Qr_from_frozen_report',
+        reference_source='independent_fsum_Qr_from_saved_H_r',
+        comparison_semantics='additional_cross_path_scalar_check_not_implied_by_mm_vector_tolerance',
+        atol=1e-12,rtol=1e-12))
+    try:
+        close([[saved]],[[ref]],'additional ratio cross-path scalar consistency')
+    except ValueError as exc:
+        raise RatioReferencePathDifference(row['case']+' ratio reference path difference unresolved') from exc
 def fsum_cross(a,b,ref,label,kind='matrix'):
     out=[[D.from_float(math.fsum(float(x)*float(y) for x,y in zip(row,col)))
           for col in zip(*b)] for row in a]
@@ -256,7 +282,7 @@ try:
             delta=[(float(res[i][0])-float(correction[i][0]))-float(res[i][0]) for i in range(16)]
             bound=[1e-15+1e-12*abs(float(r0[0])) for r0 in res]
             ratio=max(abs(x)/b for x,b in zip(delta,bound));passed=all(abs(x)<=b for x,b in zip(delta,bound))
-            metric(row,'Q_identity_max_mm',number(max(map(abs,delta))),'vector');metric(row,'Q_identity_ratio',number(ratio))
+            metric(row,'Q_identity_max_mm',number(max(map(abs,delta))),'vector');ratio_metric(row,number(ratio))
             clean=name=='C1'
             require(passed==clean and row['Q_identity_pass'] is clean,name+' original Q outcome')
             require(row['Q_identity_role']==('clean_baseline' if clean else 'predeclared_negative_control') and
@@ -281,7 +307,11 @@ try:
         elapsed_before_stdout_seconds=time.monotonic()-started),indent=2,allow_nan=False),flush=True)
     require(time.monotonic()-started<60,'stdout completion60s')
 except BaseException as exc:
-    print(json.dumps(dict(status='STOP_AT_FIRST_UNEXPECTED',error=repr(exc),completed=done,
+    stop_status=('STOP_RATIO_REFERENCE_PATH_DIFFERENCE_UNRESOLVED'
+                 if isinstance(exc,RatioReferencePathDifference) else 'STOP_AT_FIRST_UNEXPECTED')
+    ratio_details=([m for m in metrics if m.get('metric')=='Q_identity_ratio']
+                   if isinstance(exc,RatioReferencePathDifference) else [])
+    print(json.dumps(dict(status=stop_status,error=repr(exc),completed=done,ratio_cross_path_checks=ratio_details,
                           elapsed_seconds=time.monotonic()-started),allow_nan=False),flush=True)
     raise
 finally:
@@ -291,7 +321,10 @@ PY
 
 ## 6. 当前请求
 
-请确认上述只读范围、C0/原Qr保存缺口的处理方式，以及确切命令。
+请在独立静态复审通过后，批准上述v1.1跨路径ratio语义与确切命令的执行。
+本次修订不改变任何阈值、保存操作数、参考求值公式、C0/原Qr核验限制；
+也不修改producer、原诊断/显示产物或收据。v1审查的StringIO显式关闭
+建议属非阻断且不在本次仅ratio修订范围，保持原样，不顺带实现。
 当前没有运行该命令、导入、参考算术、测试、读取report数值或创建任何目录；
-也没有独立静态审查或新的数值通过结论。确认后再安排独立执行者核对，
-发现命令问题先报告；不在同一许可下改命令后重试。
+独立静态复审结果单列subspace_arithmetic_command_review.md；静态通过
+不等于数值通过。发现其他命令问题先报告；不在同一许可下改后执行或重试。
