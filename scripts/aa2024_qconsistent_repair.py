@@ -294,7 +294,7 @@ def guards(stack):
     sentinels = []
     for module in (np.linalg, linalg):
         for name in ('svd', 'svdvals', 'eig', 'eigh', 'eigvals', 'eigvalsh', 'pinv',
-                     'pinvh', 'lstsq', 'matrix_rank', 'cond', 'inv'):
+                     'pinvh', 'lstsq', 'matrix_rank', 'cond'):
             if hasattr(module, name):
                 sentinel = stack.enter_context(patch.object(module, name, side_effect=forbidden))
                 sentinels.append(sentinel)

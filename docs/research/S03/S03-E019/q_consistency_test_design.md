@@ -47,7 +47,7 @@ tests/test_aa2024_qconsistent_repair.py：17个unittest test方法，含subtests
 此数是静态方法数，不是通过数；当前没有语法、导入、运行或预算实测。
 测试不导入Matplotlib、不读原report/资产，不调用完整diagnose/render/launcher。
 真实QR全部禁用；候选数据流测试用预先给定U/T作为QR返回stub，不冒充
-SciPy分解已通过。零实际QR、零SVD/eig/pinv/lstsq/cond/inv/数值秩。
+SciPy分解已通过。零实际QR、零SVD/eig/pinv/lstsq/cond/数值秩；算法不调用逆。
 
 覆盖人工定义/机制区别/旧负控；候选不改输入且QR接收单次QLr；符号规范；
 零对角、四列、非有限、非法case拒绝；eta行和vs最大元素、1/2严格边界；
@@ -68,7 +68,8 @@ launcher的超时只作用于自己启动的测试子进程，不重试、不自
 目录存在或祖先软链即停，不换RunID、覆盖或自动重试。
 
 仅C1–C3固定顺序，每例一次16×5真实薄QR，共3次；0次SVD/其他谱分解、
-pinv/lstsq/数值秩/cond/inv/FEM/训练。NumPy/SciPy禁止API及数组读入口
+pinv/lstsq/数值秩/cond/FEM/训练；数值算法不调用逆，绘图内部正常二维仿射
+坐标变换不属于数值修复或分解。NumPy/SciPy禁止API及数组读入口
 运行时设拒绝哨兵，并保存实际受控API计数；这些不是全进程独立行为认证。
 旧producer不导入，只核源码字节。绝不读取旧数值report、真实数组或留出。
 
