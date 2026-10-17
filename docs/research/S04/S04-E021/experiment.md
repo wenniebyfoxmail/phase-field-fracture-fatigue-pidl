@@ -393,3 +393,21 @@ diff; see `late_real_attribution_code_review_result_ab48965_20261017.md`.
 Static-only acceptance, not tested runtime/resource/visual readiness or run
 permission. Next only prepare exact-SHA/final-command ATTR-R001 card for human
 approval; no execution, mock, real access, fitting or confirmation opening.
+
+## ATTR-R001 final command/card prepared — 2026-10-17
+
+User authorised card preparation only. See
+`late_real_attribution_R001_run_card_v1_20261017.md`: accepted source
+ab489652d4b4bb55c166782c8b9de9645a5f569b and actual independent review message
+msg_015d0a19570ed14a016ad3d35251548191b22c1d021d6e269a are bound to one fixed
+guard command, new ATTR-R001 output, version-2 attribution purpose and the
+card-specific approval index S04-E021-LATE-ATTR-R001-CARD-v1-ab48965. The index
+has no authority until a human explicitly approves this final card/version;
+old DIAG or implementation approval cannot be inherited. Scope, original
+metrics/branches,60s/512MiB/5MiB including caches/report/control, and no retry
+are unchanged. This turn changes docs only: no project execution/import,
+real metadata/content/archive-path probe, Run/output/grant creation, mock,
+analysis or fitting. Source/contract Git-equivalence and static command-text
+checks only. Runtime/resources/visuals remain unverified. Main chat alone
+updates Obsidian; no new task/compute dispatch to method chat. Await human
+single-run execution approval, not an additional implementation or trial run.
