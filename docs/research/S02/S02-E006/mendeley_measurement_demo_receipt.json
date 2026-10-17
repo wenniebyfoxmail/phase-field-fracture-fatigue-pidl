@@ -1,0 +1,30 @@
+{
+  "status": "AI_DEMO_ONLY_EXCLUDED_FROM_FORMAL_REVIEW",
+  "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/mendeley_full_displacement_20261017/csv_extracted/1.DataFromDIC_CSV/E_0Deg_20%_#1/E_0Deg_20%_#1_1502-1601/E_0Deg_20%_#1_1600.csv",
+  "group": "E_0Deg_20%_#1",
+  "stage": 1600,
+  "outside_formal_unique_frames": true,
+  "left_example_mm": [
+    -0.2,
+    48.9
+  ],
+  "right_endpoint_mm": null,
+  "projected_length_mm": null,
+  "median_nearest_node_spacing_mm": 0.7906087591217028,
+  "left_bracketing_node_ids": [
+    9512,
+    9635
+  ],
+  "formal_template_and_source_key_unchanged": true,
+  "training": false,
+  "fit": false,
+  "future_frames_used": false,
+  "author_lengths_used": false,
+  "automatic_tip_used": false,
+  "artifacts": {
+    "manual_measurement_demo.png": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/mendeley_full_displacement_20261017/measurement_demo/manual_measurement_demo.png",
+    "manual_measurement_demo.md": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/mendeley_full_displacement_20261017/measurement_demo/manual_measurement_demo.md",
+    "demo_measurements.csv": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/mendeley_full_displacement_20261017/measurement_demo/demo_measurements.csv"
+  },
+  "scope": "Single AI teaching example; not formal measurement or prediction evidence."
+}
