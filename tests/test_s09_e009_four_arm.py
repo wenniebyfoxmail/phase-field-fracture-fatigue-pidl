@@ -160,6 +160,18 @@ def test_large_finite_arm_gradients_never_return_nonfinite_direction():
         assert torch.isfinite(direction).all()
 
 
+def test_replay_fails_closed_before_frozen_merger_norm_overflow():
+    model = torch.nn.Linear(1, 1, bias=True).double()
+    with torch.no_grad():
+        for parameter in model.parameters():
+            parameter.zero_()
+    output = model(torch.ones((1, 1), dtype=torch.float64)).sum()
+    losses = {name: (1 + 5e199 * output).square() for name in
+              ("l_d", "l_dr", "l_u", "l_h", "l_hr", "L_P")}
+    with pytest.raises(FloatingPointError, match="replay-merger boundary"):
+        arm_direction(model, losses, "R_current_pino_replay")
+
+
 def test_nonfinite_derived_diagnostics_fail_closed():
     with pytest.raises(FloatingPointError, match="displacement dot"):
         parameter_displacement_alignment(

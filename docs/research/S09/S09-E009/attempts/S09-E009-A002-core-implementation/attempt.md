@@ -44,6 +44,7 @@ The findings reproduce deterministic interface and numerical-safety defects with
 - add: `53b9bf9ab12c6fa3bc333b9287483735414ec3ba` - Freeze the exact core implementation candidate submitted for independent review
 - modify: `source/s09_e009_four_arm.py` - Fail closed on nonfinite derived quantities, emit strict JSON scalars, and separate exact-zero from near-zero projection labels
 - modify: `tests/test_s09_e009_four_arm.py` - Add Round-1 overflow, NumPy JSON, and projection-label counterexamples
+- modify: `source/s09_e009_four_arm.py` - Fail closed before the inherited replay merger when its ordinary norm would overflow, and validate finite replay diagnostics
 
 ## Input Assets
 - `docs/research/S09/S09-E009/experiment.md` (frozen protocol; exists)
@@ -56,6 +57,7 @@ The findings reproduce deterministic interface and numerical-safety defects with
 - pass: selected synthetic/no-training suite - 43 passed in 1.28s; no optimiser step or training.
 - pass: syntax and whitespace checks - Both checks completed with exit code 0.
 - pass: Round-1 repaired synthetic/no-training suite - 48 passed in 1.18s; reviewer counterexamples are covered; no optimiser step or training.
+- pass: Round-2 replay-boundary repair suite - 49 passed in 1.28s; the exact two-parameter replay norm-overflow counterexample now fails closed before the frozen merger.
 
 ## Result Interpretation
 Not recorded.

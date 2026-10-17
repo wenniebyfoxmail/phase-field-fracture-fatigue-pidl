@@ -260,9 +260,18 @@ def arm_direction(model: torch.nn.Module, losses: Mapping[str, torch.Tensor],
         raise ValueError(f"unknown arm: {arm}")
     if arm == ARM_REPLAY:
         vectors, layout = flattened_objective_gradients(model, replay_losses(losses))
+        replay_norms = torch.stack([value.norm() for value in vectors.values()])
+        if not torch.isfinite(replay_norms).all():
+            raise FloatingPointError("nonfinite norm at frozen replay-merger boundary")
         merged, old = merge_objective_gradients(
             list(vectors.values()), clip_norm=GLOBAL_CLIP_NORM, eps=NORM_EPSILON)
         _require_finite_same_shape([merged])
+        diagnostic_names = (
+            "raw_norms", "reference_norm", "merged_norm_before_clip",
+            "merged_norm_after_clip", "balanced_norms", "projected_norms")
+        if any(not torch.isfinite(torch.as_tensor(old[name])).all()
+               for name in diagnostic_names):
+            raise FloatingPointError("nonfinite frozen replay-merger diagnostic")
         return merged, {"arm": arm, "layout": layout,
                         "clip_count_for_complete_direction": 1,
                         "exact_replay_merger": old}

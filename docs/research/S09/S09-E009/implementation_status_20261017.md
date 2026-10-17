@@ -20,7 +20,7 @@ producer launch path:
 Using `/Users/wenxiaofang/miniconda3/bin/python3`:
 
 ```text
-48 passed in 1.18s
+49 passed in 1.28s
 ```
 
 The selected suite covers the new core, the frozen E008 update contract, and
@@ -30,6 +30,9 @@ After the first exact-commit review, the core also fails closed on nonfinite
 derived norms/dots/ratios, emits native JSON scalar types for valid NumPy
 inputs, and distinguishes an exactly zero projected vector from a retained
 near-zero residue. These fixes do not change the frozen four-arm formulas.
+The frozen replay merger boundary is checked separately because that inherited
+implementation uses an overflow-prone ordinary norm internally; nonfinite
+input norms now stop before the merger, without adding a second clip.
 
 ## Boundary
 
