@@ -287,7 +287,9 @@ def draw(out,cases,rows,policies,metrics,ncp,maps,nodes,c,w):
    errs=[P['active']-ref['active'],T['active']-O['active']];ec=[np.sum(w*x,axis=1)/w.sum(1) for x in errs];ev=max(max(float(abs(x).max()) for x in ec),1e-15);vm=max(vm,1e-15)
    for j,(val,title) in enumerate(zip(vals+ec,[('strict accepted FEM' if accepted else 'original FEM (strict MISS)'), 'unchanged PIDL','PIDL - reference','strict last - original'+(' (MISS)' if not accepted else '')])):
     norm=SymLogNorm(max((vm if j<2 else ev)*1e-5,1e-15),vmin=0 if j<2 else -ev,vmax=vm if j<2 else ev)
-    pc=PolyCollection(nodes[c],array=val,norm=norm,cmap='viridis' if j<2 else 'RdBu_r',edgecolors='none');ax=axs[i,j];ax.add_collection(pc);ax.autoscale();ax.set_aspect('equal');ax.set_title(f'c{k}s4 {title}',fontsize=9);ax.set_xlabel('native x');ax.set_ylabel('native y');fig.colorbar(pc,ax=ax,shrink=.65)
+    pc=PolyCollection(nodes[c],array=val,norm=norm,cmap='viridis' if j<2 else 'RdBu_r',edgecolors='none');ax=axs[i,j];ax.add_collection(pc);ax.autoscale();ax.set_aspect('equal');ax.set_title(f'c{k}s4 {title}',fontsize=9);ax.set_xlabel('native x');ax.set_ylabel('native y');cb=fig.colorbar(pc,ax=ax,shrink=.65)
+    if j>=2:
+     ticks=[-ev,-ev*.01,0,ev*.01,ev];cb.set_ticks(ticks);cb.set_ticklabels(['0' if x==0 else f'{x:.1e}' for x in ticks])
   fig.suptitle('Active cell means / signed gaps; colour limits common within each row, differ across cycles',fontsize=9);fig.tight_layout();fig.savefig(out/'fem_pidl_maps.png',dpi=150);plt.close(fig)
  if ncp:
   ncp.sort(key=lambda r:(r['cycle'],r['substep']));labs=[f"c{r['cycle']}s{r['substep']}" for r in ncp];x=np.arange(len(ncp));fig,axs=plt.subplots(2,2,figsize=(13,8))
