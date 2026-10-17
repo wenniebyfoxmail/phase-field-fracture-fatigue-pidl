@@ -1,0 +1,24 @@
+{
+  "protocol": "protected-terminal-spur-v1",
+  "phase": "E039_render_final",
+  "started_at_utc": "2026-10-17T20:46:50.847843+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 89075,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/plot_md01_pore_spur_audit.py",
+    "--run",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E039-MD01/runs/S03-E039-MD01-R001",
+    "--manifest",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E039-MD01/runs/S03-E039-MD01-R005/input_manifest.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E039-MD01/runs/S03-E039-MD01-R009/analysis"
+  ],
+  "commit": "2f8a2222210b28750317c23622733ebf1dd467cd",
+  "dirty": [],
+  "execution": "succeeded",
+  "ended_at_utc": "2026-10-17T20:47:11.197993+00:00",
+  "elapsed_wall_s": 20.529029124998488,
+  "source_run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E039-MD01/runs/S03-E039-MD01-R001",
+  "groups": 6
+}

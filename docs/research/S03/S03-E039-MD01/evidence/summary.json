@@ -1,0 +1,57 @@
+[
+  {
+    "stage": 18,
+    "removed_px": 3625,
+    "removed_fraction": 0.12183235867446393,
+    "eligible_branches": 173,
+    "protected_points": 2595,
+    "full_before_max_abs_relative_area_change": 0.29764065335753176,
+    "full_after_max_abs_relative_area_change": 0.28198553331547327,
+    "common_before_max_abs_relative_area_change": 0.7020348837209303,
+    "common_after_max_abs_relative_area_change": 0.5738349241998877
+  },
+  {
+    "stage": 19,
+    "removed_px": 2336,
+    "removed_fraction": 0.10714121909828922,
+    "eligible_branches": 97,
+    "protected_points": 1549,
+    "full_before_max_abs_relative_area_change": 0.4685135073155071,
+    "full_after_max_abs_relative_area_change": 0.44865670108388556,
+    "common_before_max_abs_relative_area_change": 1.5645438898450945,
+    "common_after_max_abs_relative_area_change": 1.533722438391699
+  },
+  {
+    "stage": 21,
+    "removed_px": 2670,
+    "removed_fraction": 0.07732854494902687,
+    "eligible_branches": 123,
+    "protected_points": 2111,
+    "full_before_max_abs_relative_area_change": 0.1634325764596849,
+    "full_after_max_abs_relative_area_change": 0.14504990897105907,
+    "common_before_max_abs_relative_area_change": 0.19634928465712886,
+    "common_after_max_abs_relative_area_change": 0.18140649973361755
+  },
+  {
+    "stage": 22,
+    "removed_px": 2887,
+    "removed_fraction": 0.07348860888379789,
+    "eligible_branches": 125,
+    "protected_points": 2148,
+    "full_before_max_abs_relative_area_change": 0.20868015782105132,
+    "full_after_max_abs_relative_area_change": 0.18794988735644824,
+    "common_before_max_abs_relative_area_change": 0.1117196056955092,
+    "common_after_max_abs_relative_area_change": 0.09746452663410099
+  },
+  {
+    "stage": 23,
+    "removed_px": 2440,
+    "removed_fraction": 0.060251376645183596,
+    "eligible_branches": 103,
+    "protected_points": 2074,
+    "full_before_max_abs_relative_area_change": 0.12447835642146332,
+    "full_after_max_abs_relative_area_change": 0.11879549097406517,
+    "common_before_max_abs_relative_area_change": 0.0860193790785051,
+    "common_after_max_abs_relative_area_change": 0.06858316221765914
+  }
+]
