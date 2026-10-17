@@ -1,0 +1,23 @@
+{
+  "verdict": "PRE_USE_PASS",
+  "blockers": [],
+  "diagnostic_commit": "73f2fe459b9a62a0e8e4cbd0246f76f41c22d017",
+  "plot_descendant": "6724ea3",
+  "hashes": {
+    "SENS_tensile/diagnose_s04_e023_endpoints.py": "bc7598ad8cc74a7faeae40cf160a87826110a39916a9e5b57d5924cb70b02993",
+    "SENS_tensile/plot_s04_e023_endpoint_diagnostic.py": "703eaba546f3fdece1297241092e176664acc9a9cf002dee38237103e2d07783",
+    "tests/test_s04_e023_endpoint_diagnostic.py": "519297429ab6f7239e59a2e46b7e52a9ce6c5d68b0063dae8eb87bbf4ebc8cbc",
+    "docs/research/S04/S04-E023/endpoint_diagnostic_protocol.md": "c8531237aff6285763e61a46bf34b3da1a62f9226abe8b9180c83bdf0b43b30d",
+    "docs/research/S04/S04-E023/result_verification.json": "ee968ace423f877843b373411a07f604960453b61935a72cc76400d5c1e4183e"
+  },
+  "independent_unit_tests": 2,
+  "extra_gradient_coordinate_group_check": true,
+  "conditions": [
+    "successful fresh c20E023 fullnode memoryprecheck before six",
+    "chunk256/RSS2GiB",
+    "summary coordinate semantics explicit",
+    "unchanged original tolerances"
+  ],
+  "training": false,
+  "parameter_updates": 0
+}

@@ -1,0 +1,21 @@
+{
+  "verdict": "BOUNDED_DIAGNOSTIC_REVIEW_PASS",
+  "blockers": [],
+  "diagnostic_commit": "73f2fe459b9a62a0e8e4cbd0246f76f41c22d017",
+  "executed_plot_descendant": "6724ea3383b46647d283cdaddf6d93ad02a892cd",
+  "independent_chunk": 511,
+  "independent_head_rows": 48,
+  "independent_all_hidden_head_group_rows": 36,
+  "independent_peak_rss_bytes": 766394368,
+  "model_unchanged": true,
+  "parameter_updates": 0,
+  "training": false,
+  "optimizer": false,
+  "fit": false,
+  "document_hashes": {
+    "docs/research/S04/S04-E023/endpoint_diagnostic_decision.md": "0f034d9e9ea7cd5f068d8eeefeca34840119949378895008c5edc7ee314caaf0",
+    "docs/research/S04/S04-E023/head_tail_repair_proposal.md": "d7ef209369d3eeee40fe9fa58644df7e08cd74ff22acc081d085dc2b2cb299a5"
+  },
+  "scientific_primary_pass": false,
+  "proposal_status": "8000joint2000headonly proposal only"
+}

@@ -1,0 +1,35 @@
+# Independent bounded E023-D001 dual-coordinate endpoint evidence review
+
+Verdict: BOUNDED_DIAGNOSTIC_REVIEW_PASS. No blockers remain after two wording/receiptclarifications and figureREADME completion. Bound to numericalsource73f2fe459b9a62a0e8e4cbd0246f76f41c22d017, unchanged in plotdescendant6724ea3383b46647d283cdaddf6d93ad02a892cd; exactsourcehashes in originalpre-use andresultsummary. This is not primaryscientificPASS, a head-only attainable-error certificate, completeMacreplay, historicalAdamcause identification or trainingauthorisation.
+
+## Independent numerical reproduction
+
+Loaded allsix correctsame-stateE022/E023 checkpoints through reviewed asset-locked loader, then used actualmodel.correction_physical and actualresidual.encode, a different511nodechunk and directfull-massautograd over allresidualparameters. Independently reduced originalphysicalfeatures Phi includingphysicalBC/window/bias/absUs, mappedactualPhiD, regionlosses, directPhi-transpose-M-error and Gramtrace. Modelactualforward route is independent of mainmeasure's manualactivation/linear expression.
+
+All48headregion/fullrows (sixendpoints×twocoordinates×fourregions) matchlosses, headnorms andscalednormalresiduals: lossabsolute1e-14, norm/residualrelative1e-9/absolute1e-12. Independentactualheadgradient versus2Ror2DR passes1e-12absolute. All36actual/physicalall/hidden/headregionalgradientgroup rows matchnorms, cosines andregion-dot-full values at1e-8relative/1e-12absolute; these include fullhiddenautograd, notonlyoutputhead. Everymodel/bufferdigest unchanged and everymodel.gradNone. IndependentmaxsavedUVdifference8.60423e-16, peakRSS766394368bytes<2GiB. Sourcefullsixpeak700956672bytes; successfulfullnodeprecheck575471616bytes. No fit/solve/optimizer/update/SSH/externalmessage.
+
+Independent_head.csv,independent_groups.csv,independent_checks.json andindependent_dual.py record actualchecks. Spectrum/eigenvalues and everyperlayergradient were source-reviewed but not independently secondrecomputed; selectedall/hidden/headgroups were independentlycomputed as above. E022historicalphysicalheadregression matchesoriginalrevieweddiagnostic. Allassets/producerD/formalpreflight/elevenfileidentity andsaved-fieldadmission retain priorboundedresultreview scope, notMacDbitreproduction.
+
+## Diagnosis and causal boundaries
+
+c60E023 fullUV partiallyrecovers relativeE022; physicalfullheadnormalresidual.0120232→.00841835 anddamageresidualdrops while physicaldamage/insidebg relativeGramrank48/25→118/102. Hiddenfullgradient rises andhiddenregionalcosnear+.02568 contrasts withactualallcos+.70725; allcosisnotintrinsicparameterization-freecoordination. These facts are consistent with incompletejointoptimization but do not reveal whichAdamupdates causedtheregression or prove head-onlygain is sufficient.
+
+c83E023 fullUV isworse thanE022; physicalfullheadresidual.00215017→.00907313 andinsidebg.0329517→.119299, while physical/actualheadcos+.94017/+.90877 andbothheadregion-dot-fullpositive. Hiddenregionaldirectionalsocompatible. A sufficientlysmall currentEuclidean head-onlyfulldescentcanimprovebothregions; this is not anAdamWfinite-stepguarantee. Morefeatures/rankdoesnotprovebettercapacityorconditionnumber. Damagecolumncorrelationimproveswhilefullcorrelationworsens, so notallheadindicatorsdegraded. Currentheadisnotexactstationary, but nooptimalhead or attainableUVbound computed.
+
+c20isessentialcounterexample: slightlybetterUVrelativeE022/E019 despitehigherphysicalheadresidual. Thus a largerendpointnormalresidual alone cannot explainlargerUV acrosslearnedmodels. Allthreeearly/middle/transitionstatesmustremain inanynexttest, no statewinnerstitching orbestcheckpointselection.
+
+c60backgroundcost accompaniesdamagegainvsE022, whereas c83bothregionsregress. Windowoutsideparametersgradientsarezero; windowinsidebackground sharesresidualfeatures/outputhead and has noexplicitnonregressionconstraint. Relativeobjectiveerrorfractions are not gradientmagnitudes orAdamweights. Currentcompatibleheaddirections ruleoutinevitablecurrentlocalheadconflict, notallhistoricaltradeoffs. No terminaldiagnostic reconstructs the observedbackgroundspikes' causes.
+
+## Figures, coordinate semantics and fixes
+
+Visuallyinspected bothhead_and_regional_gradients.png andactivation_and_feature_spectrum.png. Actual/physicalheadresidualandcos labels consistent; E022D=Ioverlap expected, physicalspectrumfloor1e-16labelled, positiveactivationnotnonzerocoverage, allthreepredeclaredstatesdisplayed. No blankpanels or unreadablelegends. AnalysisREADME now identifiesmixedsummarycoordinatecolumns (physicalhead/spectra versusactualgradientnorm/cos); authoritative longtables carryexplicitcoordinate. This avoids apparentgradientgainfromarbitrarybasischange.
+
+Decisionwordingcorrected: per-columnnormalizedfeaturecorrelation ispositive-scaleinvariant, but implementation's diag-relativevalidcolumnfilter canchange acrossbases, so filteredmaxneednotinvariant. No originalnumericdefinition/tolerancechanged. ProposalnowrequiresnewHEAD_ONLY_STAGE_ENTRY.json aftercompleted8000/before8001 andpermanentlyretains originalbefore-update1PRE_UPDATE.json; no overwrite orpretendsecondoriginalpreupdate.
+
+## One minimal prospective repair assessment
+
+Fixed8000joint+2000head-only is a reasonable singlefactor falsifiable phase-maskdiscriminator, not a provenrepair orhistoricalfeature-driftcause. KeepsE023fixedD/leak/maps/backbone/BC/window/fullobjective/alpha.7seed7/all10000samplestream/nativeLR andtotal10000updatebudget. Freshcommoninitializer, notadditionalsteps fromviewedterminalCP. Only thelast2000trainablemaskchanges: hidden/activationcoeff8000updates, head10000; nostartboundarysweep orstate-specificcut. It can testwhether endingfeaturedrift letsheadsettle withoutasserting thatfeaturesarealreadyadequate.
+
+ProposalcorrectlypreservesheadAdamWmoments/step/scheduler, doesnotrebuildoptimizer, clearsstalegradsandensureshidden.gradNone sohiddenweightdecayalsostops, andintroducesstrictphase-awareactivation/coefftrainability checks ratherthanremovingoriginalguard. Stageentry/terminaldigests,counters,momentcontinuity/newartifactreceipts stillneedactualimplementation/nontrainingchecks/independentCodeReady beforeanyproducerplan. CurrentEuclideandirections andunquantifiedheadroom do not promise.001, backgroundretention orbetterfuturejointoptimization. LowerheadresidualwithoutUVgaincannotrescueprimaryfailure. No newimplementation/trainingdonehere.
+
+OriginalE023primaryFAIL, strictMacLR/mass/D/gradient/reference-rhoportability failures andfullFEMteacherNOT_QUALIFIED remain unchanged. BoundedreviewPASS accepts thediagnostic record and testableproposalonly.

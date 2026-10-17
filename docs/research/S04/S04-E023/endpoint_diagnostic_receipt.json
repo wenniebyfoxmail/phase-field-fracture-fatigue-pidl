@@ -1,0 +1,32 @@
+{
+  "protocol_revision": "20261017-r1-E022-E023-physical-scaled-readonly",
+  "training": false,
+  "parameter_updates": 0,
+  "optimizer_created": false,
+  "least_squares_fit": false,
+  "chunk": 256,
+  "peak_rss_bytes": 700956672,
+  "source_hashes": {
+    "diagnose_s04_e023_endpoints.py": "bc7598ad8cc74a7faeae40cf160a87826110a39916a9e5b57d5924cb70b02993",
+    "diagnose_s04_e021_endpoints.py": "1ef8da78b5f0d6afe8e4d8329aa9b79c2946c73a54f089df9d7747e4afcad73c",
+    "diagnose_s04_e022_endpoints.py": "91af655387e1cdf4869cbc1e6006423a6b7dbe7d846b92ead2099cce1b23fc87",
+    "diagnose_s04_e020_features.py": "36708fb18900145b34d0193a60dd52eb94f6a37c0de7f52d7992d5fce70b796e",
+    "s04_e023_head_scale.py": "81bec06b370c6f366e4c10a066eef275f0fe0b59f3e22e5e62c06ba2de73878c"
+  },
+  "code_commit": "6724ea3383b46647d283cdaddf6d93ad02a892cd",
+  "python": "3.12.2",
+  "torch": "2.11.0",
+  "numpy": "2.2.6",
+  "experiment_id": "S04-E023",
+  "diagnostic_id": "S04-E023-D001",
+  "endpoints": 6,
+  "full_node_precheck_peak_rss_bytes": 575471616,
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E023/endpoint_diagnostic_v1",
+  "complete_mac_replay_pass": false,
+  "scientific_verdict_unchanged": true,
+  "independent_review": "BOUNDED_DIAGNOSTIC_REVIEW_PASS",
+  "independent_head_rows": 48,
+  "independent_gradient_group_rows": 36,
+  "independent_peak_rss_bytes": 766394368,
+  "proposal_status": "8000joint2000headonly unimplemented/unrun"
+}
