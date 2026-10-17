@@ -6,6 +6,14 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
 import s02_e005_ff_locality as m
 
 class LocalityTests(unittest.TestCase):
+    def test_exact_source_cycles(self):
+        self.assertEqual(m.exact_cycle('1e+05'),100000)
+        self.assertEqual(m.exact_cycle('99001'),99001)
+        self.assertEqual(m.exact_cycle('1.00001e5'),100001)
+        for text in ['1.5','NaN','Infinity','99999.99999999999999999999']:
+            with self.assertRaises(ValueError):
+                m.exact_cycle(text)
+
     def test_zero_and_signed_decomposition(self):
         r={'origin_cycle':1,'target_cycle':1001,'target_dx_mm':.1,'M0_dx_mm':.12,'M1_dx_mm':.15}
         self.assertEqual(m.edge_values(r,{1:0,1001:0})[2:5],(0.,0.,0.))

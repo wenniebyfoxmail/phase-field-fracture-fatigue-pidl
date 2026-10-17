@@ -2,6 +2,7 @@
 import argparse
 import csv
 from datetime import datetime, timezone
+from decimal import Decimal
 import json
 import math
 import os
@@ -71,10 +72,16 @@ def validate_config(c):
         check(c[k] == v, 'config contract: '+k)
 
 
+def exact_cycle(text):
+    value=Decimal(text)
+    check(value.is_finite() and value==value.to_integral_value(), 'noninteger source cycle')
+    return int(value)
+
+
 def tip_map(path):
     tips={}
     for r in csv_rows(path):
-        n=int(r['n [cycle]'])
+        n=exact_cycle(r['n [cycle]'])
         check(n not in tips, 'duplicate source cycle')
         xy=(float(r['x [mm]']), float(r['y [mm]']))
         check(all(math.isfinite(v) for v in xy), 'nonfinite source coordinate')
