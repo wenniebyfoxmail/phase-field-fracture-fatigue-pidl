@@ -116,3 +116,15 @@ def test_native_interpolation_affine_patch_and_parity():
         z=p.fields(.1*xy[:,0],.12*(xy[:,1]+.5),np.zeros(4),.12)
         assert np.max(abs(z['v_correction']))<1e-14
         assert np.max(abs(z['active'][:2]-z['active'][2:]))<1e-14
+
+
+def test_saved_error_decomposition_is_orthogonal_not_a_model_update():
+    spec=importlib.util.spec_from_file_location('decompose',ROOT/'tools/summarize_saved_error_parity.py')
+    m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+    e=np.array([[1.,2.],[-1.,-2.]])
+    assert m.components(e,1)['parity_violating_squared_fraction']==1
+    assert m.components(e,-1)['parity_violating_squared_fraction']==0
+    e=np.array([[1.,3.],[2.,-4.]])
+    before=e.copy();r=m.components(e,1)
+    assert abs(r['parity_compatible_squared_fraction']+r['parity_violating_squared_fraction']-1)<1e-15
+    assert np.array_equal(e,before)
