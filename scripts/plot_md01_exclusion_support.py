@@ -77,7 +77,7 @@ def run(a):
             (a.output/(name+"_gray.md")).write_text(guide)
         figures.append(stem);plt.close(fig)
 
-    fig,axes=plt.subplots(1,4,figsize=(11,9),layout="constrained")
+    fig,axes=plt.subplots(1,4,figsize=(11,8),layout="constrained")
     for ax,(name,key) in zip(axes,cols):panel(ax,m["spec"]["roi"],name,key)
     fig.suptitle(f"E040 | Step19 | exclusion support only; fixed threshold and guide\n"
                   f"Old {summary['old_candidate_area_px2']}px2 -> new {summary['new_candidate_area_px2']}px2; "
@@ -86,10 +86,12 @@ def run(a):
     finish(fig,"F01_step19_full_support_comparison","Four fullROI columns: original / old / new / added.")
 
     crops=m["spec"]["fixed_display_crops_native"]
-    fig,axes=plt.subplots(2,4,figsize=(11,9),layout="constrained",gridspec_kw={"height_ratios":[560,190]})
+    fig,axes=plt.subplots(2,4,figsize=(11,7.3),layout="constrained",gridspec_kw={"height_ratios":[560,190]})
     for i,box in enumerate(crops):
         for ax,(name,key) in zip(axes[i],cols):panel(ax,box,name,key)
         axes[i,0].set_ylabel(f"native x[{box[0]},{box[2]}), y[{box[1]},{box[3]})",fontsize=8)
+        x0,y0,x1,y1=np.array(box)-np.array([3800,900,3800,900])
+        axes[i,3].set_title(f"Added candidates: {d['added_candidates'][y0:y1,x0:x1].sum()}px2",fontsize=10)
     fig.suptitle("E040 | fixed source-only close-ups (selected before changed-support extraction)\n"
                   "Top: left glue-adjacent visible surface; bottom: lower visible crack / specimen edge\n"
                   "Purple=excluded, not predicted crack; orange=new candidate, not independent truth",fontsize=11)
