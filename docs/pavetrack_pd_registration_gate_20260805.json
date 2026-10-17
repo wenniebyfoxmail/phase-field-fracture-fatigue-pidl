@@ -1,0 +1,64 @@
+{
+  "audit_date": "2026-08-05",
+  "dataset_version": "PaveTrack_PD V3",
+  "location_id": "10",
+  "sample_dates": [
+    "2023-06-01",
+    "2023-07-01",
+    "2023-08-17",
+    "2023-09-11",
+    "2023-10-19"
+  ],
+  "reference_date": "2023-07-01",
+  "registration_method": "SIFT on road ROI y>=250; Lowe ratio 0.72; RANSAC homography threshold 3 px",
+  "direct_to_reference": {
+    "2023-06-01": {
+      "good_matches": 138,
+      "ransac_inliers": 80,
+      "median_reprojection_error_px": 1.1150,
+      "crack_bbox_center_error_px": 9.4213,
+      "crack_bbox_iou": 0.6775,
+      "usable": true
+    },
+    "2023-08-17": {
+      "good_matches": 13,
+      "ransac_inliers": 4,
+      "crack_bbox_center_error_px": 1074.8938,
+      "crack_bbox_iou": 0.0,
+      "usable": false
+    },
+    "2023-09-11": {
+      "good_matches": 11,
+      "ransac_inliers": 6,
+      "crack_bbox_center_error_px": 1080.3359,
+      "crack_bbox_iou": 0.0,
+      "usable": false
+    },
+    "2023-10-19": {
+      "good_matches": 30,
+      "ransac_inliers": 12,
+      "median_reprojection_error_px": 1.0701,
+      "crack_bbox_center_error_px": 4.6668,
+      "crack_bbox_iou": 0.9121,
+      "usable_with_low_support_warning": true
+    }
+  },
+  "pairwise_graph_gate": {
+    "criteria": "matches>=30; inliers>=20; inlier_ratio>=0.3; median_reprojection_error<=3 px; frame_overlap>=0.2; crack_center_error<=40 px",
+    "valid_edges": [
+      ["2023-06-01", "2023-07-01"]
+    ],
+    "connected_all_five_dates": false
+  },
+  "decision": {
+    "location_10_registered_field_route": "fail",
+    "physical_crack_tip_or_length_claim_authorized": false,
+    "scene_level_annotation_use_authorized": true,
+    "dataset_wide_impossibility_claimed": false,
+    "next_route": "MnROAD Cell 22 synchronized data request and LTPP section extraction"
+  },
+  "authoritative_raw_metrics": [
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/real_road_acquisition/pavetrack_pd_v3_registration_sample_20260805/location_10/registration_metrics.json",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/real_road_acquisition/pavetrack_pd_v3_registration_sample_20260805/location_10/pairwise_registration_metrics.json"
+  ]
+}

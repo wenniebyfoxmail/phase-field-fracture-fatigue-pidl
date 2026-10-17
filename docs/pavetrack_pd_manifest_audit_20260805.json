@@ -1,0 +1,70 @@
+{
+  "audit_date": "2026-08-05",
+  "dataset": {
+    "title": "PaveTrack: A Large-Scale Image Repository for Automated Pavement Distress Analysis and Degradation Trend Prediction",
+    "doi": "10.57760/sciencedb.20383",
+    "sciencedb_dataset_id": "e9ffbca43e6e4a5ebdd25663d0de9ad1",
+    "version": "V3",
+    "license": "CC0"
+  },
+  "archive": {
+    "file_id": "6a6125c7db77487782cafee9506e58f3",
+    "file_name": "PaveTrack_PD.zip",
+    "bytes": 5694108370,
+    "publisher_md5": "7fc53a04a6260a26b3ac39f489511adf",
+    "publisher_md5_independently_verified": false,
+    "download_url": "https://china.scidb.cn/download?fileId=6a6125c7db77487782cafee9506e58f3",
+    "http_range_supported": true,
+    "full_archive_downloaded": false
+  },
+  "remote_zip_audit": {
+    "central_directory_entries": 9107,
+    "central_directory_bytes": 1129248,
+    "central_directory_offset": 5692979024,
+    "location_directories": 165,
+    "jpg_files": 8936,
+    "timestamped_jpg_files": 8918,
+    "xml_files": 4,
+    "xlsx_files": 1,
+    "timestamp_min": "2022-04-18T06:55:03.885",
+    "timestamp_max": "2023-12-31T13:03:09.030",
+    "observations_per_location": {
+      "min": 4,
+      "median": 50,
+      "max": 124
+    }
+  },
+  "description_workbook": {
+    "file_name": "Dataset_PDdescription.xlsx",
+    "sheet": "Sheet1",
+    "declared_dimension": "A1:F9448",
+    "columns": [
+      "reid",
+      "date",
+      "category",
+      "img_name",
+      "segmentation",
+      "bbox"
+    ],
+    "segmentation_representation": "polygon coordinates in image pixel space",
+    "bbox_representation": "x, y, width, height in image pixel space"
+  },
+  "xml_audit": {
+    "count": 4,
+    "purpose": "plate bounding-box annotations used for desensitization",
+    "crack_mask_source": false
+  },
+  "gate_decision": {
+    "stable_location_key": true,
+    "exact_filename_timestamp": true,
+    "future_geometry_annotations": true,
+    "cross_time_geometric_registration_proved": false,
+    "maintenance_or_reset_semantics": false,
+    "traffic_load_join": false,
+    "temperature_weather_join": false,
+    "moisture_join": false,
+    "structure_or_mechanics_join": false,
+    "geometry_only_route": "conditional_pass_after_registration_and_censoring_audit",
+    "complete_freeze_then_select_route": "fail"
+  }
+}
