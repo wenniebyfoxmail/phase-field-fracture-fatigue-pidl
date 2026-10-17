@@ -142,3 +142,12 @@ ratio的标量比较不能当成由原mm容差直接推出，需声明额外跨�
 当前用例已失败。详见subspace_arithmetic_command_review.md。
 按用户要求先报告，不改v1/阈值/操作数或C0/原Qr限制；无数值产物读取、
 导入/测试/执行/真实/留出访问。原D01及真实E019数值状态均不变。
+
+### 2026-10-17：算术命令v1.1静态复审通过，尚未执行
+
+获批仅修订ratio跨路径语义/来源标注/专属停止分类，未改阈值、操作数、
+fsum/Decimal公式或C0/原Qr限制。快照f805eab，独立REVIEW_PASS，无必改。
+完整subspace_arithmetic_command_review.md；确切命令在
+subspace_arithmetic_acceptance_plan.md v1.1（SHA95ce2969…）。
+未运行算术/导入/测试或读数值产物，未改冻结产物；当前仅展示执行审批，
+不是保存账本/真实根因已验收通过，不自动启动。

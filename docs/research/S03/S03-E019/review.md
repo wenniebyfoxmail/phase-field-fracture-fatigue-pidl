@@ -303,3 +303,15 @@ cleanHEADa7b58e7，独立MODIFY_AND_REREVIEW：保存ratio为einsum路径，
 完整subspace_arithmetic_command_review.md。
 v1字节29d36ef2不改，无执行/导入/语法/测试/数值产物读取；只报告，等待
 用户决定是否仅修订并复审，不请求或自动实施算术验收。
+
+## 算术命令v1.1限定修订与静态复审通过 — 2026-10-17
+
+获批仅ratio语义/来源/失败分流修订；快照f805eab，方案SHA
+95ce2969c707c0b3b29282c966999eb2e38b5f9adb4961e7d057af17a2746719。
+明确额外跨路径标量检查，输出einsum/fsum来源；仅该有限值比较不符走
+专属STOP_RATIO_REFERENCE_PATH_DIFFERENCE_UNRESOLVED并抛出停止。
+其他异常仍STOP_AT_FIRST_UNEXPECTED，不改阈值/操作数/参考公式、预算
+或C0/原Qr限制。独立REVIEW_PASS，无必改遗留；完整回复追加在
+subspace_arithmetic_command_review.md。StringIO非阻断项未超范围修订。
+本轮无执行/导入/测试/语法检查或数值产物读取，无冻结产物修改；静态
+通过不等于算术/实际预算通过。保持已审命令字节，先展示待单独执行批准。

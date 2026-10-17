@@ -398,3 +398,14 @@
   subspace_arithmetic_command_review.md. V1 SHA29d36ef2 unchanged; no numeric
   artifact/realarray/holdout reads, imports/tests or command execution. Await
   user authority before any revision/rereview; C0/originalQr limits unchanged.
+
+- **2026-10-17 — D01 arithmetic command v1.1 statically re-reviewed, not executed.**
+  Explicit ratio-only revision authority; f805eab / SHA95ce2969c707c0b3b29282c966999eb2e38b5f9adb4961e7d057af17a2746719.
+  Additional cross-path scalar semantics, producer-einsum vs independent-fsum
+  provenance, dedicated unresolved-path stop/rethrow; other errors keep original
+  stop. Thresholds/operands/reference formulas/CPU1/60s and C0/Qr limits unchanged.
+  Independent REVIEW_PASS, no mandatory issues; StringIO advice not expanded into
+  this scoped edit. See S03-E019/subspace_arithmetic_command_review.md and exact
+  subspace_arithmetic_acceptance_plan.md v1.1. No numeric-artifact/realarray/holdout
+  reads, imports/tests/arithmetic or frozen-output writes. Show exact reviewed
+  command for separate execution approval; actual arithmetic/realE019 unresolved.
