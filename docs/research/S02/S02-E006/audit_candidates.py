@@ -79,16 +79,19 @@ def mnroad():
     tab=[];annual=[]
     for sid,rr in groups.items():
         rr.sort(key=lambda r:(r['DAY'],r['ID']))
-        check(len({(r['CELL'],r['LANE'],r['SECTION_START_DATE'],r['SECTION_END_DATE']) for r in rr})==1,'section metadata conflict')
+        variant_count=len({(r['CELL'],r['LANE'],r['SECTION_START_DATE'],r['SECTION_END_DATE']) for r in rr})
         dates=[r['DAY'] for r in rr];slots={}
         for r in rr:
             if 3<=r['DAY'].month<=5:slots[r['DAY'].year]=r
         # Last observation within the declared spring slot; fail any incomplete selected label.
         complete={yr:r for yr,r in slots.items() if all(numeric(r[f]) for f in fields)}
-        origins=[yr for yr in sorted(complete) if all(yr+j in complete for j in [-2,-1,1])]
+        identity_clear=variant_count==1 and len(dates)==len(set(dates))
+        origins=[yr for yr in sorted(complete) if all(yr+j in complete for j in [-2,-1,1])] if identity_clear else []
         flags=[r for r in rr if pattern.search(str(r['COMMENTS'] or ''))]
         tab.append({'section_id':sid,'cell_code':rr[0]['CELL'],'lane':rr[0]['LANE'],'state_rows':len(rr),
             'distinct_dates':len(set(dates)),'duplicate_date_rows':len(rr)-len(set(dates)),
+            'metadata_variant_count':variant_count,'all_cell_codes':json.dumps(sorted({r['CELL'] for r in rr})),
+            'identity_clear_for_inventory':identity_clear,
             'section_start':rr[0]['SECTION_START_DATE'].date().isoformat(),'section_end':rr[0]['SECTION_END_DATE'].date().isoformat(),
             'dates_outside_section':sum(not(r['SECTION_START_DATE']<=r['DAY']<=r['SECTION_END_DATE']) for r in rr),
             'incomplete_nwp_rows':sum(not all(numeric(r[f]) for f in fields) for r in rr),
@@ -104,12 +107,14 @@ def mnroad():
                 'actual_future_gap_days_not_input':(dates4[3]-dates4[2]).days,
                 'origin_slot_cutoff':f'{yr}-05-31','target_slot_cutoff':f'{yr+1}-05-31',
                 'maintenance_cleared':False,'fresh_cell_candidate':str(rr[0]['CELL'])!='22'})
-    cell=set(r['cell_code'] for r in tab)
+    cell={r['CELL'] for r in rs}
     candidates=[r for r in tab if r['four_spring_slot_origins_upper_bound'] and not r['old_cell22_excluded_from_new_shortlist']]
     summary={'raw_rows':len(rs),'columns':len(headers),'section_ids':len(groups),'distinct_cell_codes_not_certified_independence':len(cell),
         'lanes':dict(__import__('collections').Counter(r['LANE'] for r in rs)),
         'sections_at_least_4_dates':sum(r['distinct_dates']>=4 for r in tab),
         'sections_with_duplicate_dates':sum(r['duplicate_date_rows']>0 for r in tab),
+        'metadata_conflict_sections':[r for r in tab if r['metadata_variant_count']>1],
+        'identity_clear_section_count':sum(r['identity_clear_for_inventory'] for r in tab),
         'incomplete_nwp_rows':sum(r['incomplete_nwp_rows'] for r in tab),
         'warning_rows':sum(r['maintenance_comment_warning_rows'] for r in tab),
         'spring_coverage_sections_excluding_cell22':len(candidates),
@@ -168,7 +173,7 @@ def phm():
 
 
 def main():
-    out=ROOT/'local_archive/experiments/S02-E006/runs/S02-E006-R001/audit'
+    out=ROOT/'local_archive/experiments/S02-E006/runs/S02-E006-R002/audit'
     check(not out.exists(),'fresh output required')
     check(not subprocess.check_output(['git','status','--porcelain'],text=True).strip(),'clean code snapshot required')
     head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
@@ -181,10 +186,10 @@ def main():
     mt,ms=mendeley();nt,na,ns=mnroad();pt,pj,ps=phm()
     out.mkdir(parents=True)
     for name,rs in [('mendeley_sheets.csv',mt),('mnroad_sections.csv',nt),('mnroad_spring_slot_inventory.csv',na),('phm_specimens.csv',pt),('phm_cycle_join.csv',pj)]:write_csv(out/name,rs)
-    summary={'run_id':'S02-E006-R001','scope':'schema identity availability only, no forecasts','Mendeley':ms,'MnROAD':ns,'PHM2019':ps,'training':False,'fitting':False,'scientific_prediction_result':False}
+    summary={'run_id':'S02-E006-R002','scope':'schema identity availability only, no forecasts','Mendeley':ms,'MnROAD':ns,'PHM2019':ps,'training':False,'fitting':False,'scientific_prediction_result':False}
     (out/'summary.json').write_text(json.dumps(summary,indent=2,default=str)+'\n')
     check(all(p.read_bytes()==b for p,b in original.items()),'source changed')
-    receipt={'run_id':'S02-E006-R001','code_commit':head,'dirty_status':'clean at launch','hostname':socket.gethostname(),'pid':os.getpid(),'start_utc':started,'elapsed_seconds':time.monotonic()-start,'out':str(out),'input_paths':[str(p) for p in original],'input_bytes_unchanged':True,'execution_status':'succeeded','retrieval':'local verified','training':False,'fitting':False,'model_forward':False,'command':__import__('sys').argv}
+    receipt={'run_id':'S02-E006-R002','code_commit':head,'dirty_status':'clean at launch','hostname':socket.gethostname(),'pid':os.getpid(),'start_utc':started,'elapsed_seconds':time.monotonic()-start,'out':str(out),'input_paths':[str(p) for p in original],'input_bytes_unchanged':True,'execution_status':'succeeded','retrieval':'local verified','training':False,'fitting':False,'model_forward':False,'command':__import__('sys').argv}
     (out/'execution_receipt.json').write_text(json.dumps(receipt,indent=2)+'\n');signal.alarm(0)
     print(json.dumps(summary,indent=2,default=str))
 

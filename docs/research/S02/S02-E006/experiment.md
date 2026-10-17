@@ -1,7 +1,7 @@
 ---
 storyline_id: S02
 experiment_id: S02-E006
-protocol_revision: audit-v1
+protocol_revision: audit-v1.1
 claim_class: C1_evidence_validity
 evidence_domain: real_road_and_controlled_experiment_reported_separately
 status: audit_preparation_no_training
@@ -20,3 +20,7 @@ Minimum deterministic outputs: Mendeley sheet/group inventory and exact true-lab
 MnROAD annual-slot inventory is a proposed sampling definition, not a new exact365day truth: March1–May31, last observed survey in each slot; target next year's slot, three consecutive spring histories + next spring target; no interpolation or filling years. The particular spring definition is an operational proposal not asserted to be official. Slot selection uses dates only. Co-lanes and reconstructions in the same CELL remain one holdout group; cell codes still require non-overlap/roadway/lineage verification. Old cell22 is excluded from the fresh-candidate shortlist. Comments keyword flags are incomplete warning signals, never maintenance clearance. Do not discard decreases or zeros based on outcomes. Slot coverage counts are upper bounds before intervention/metadata checks.
 
 Review/stop: independent read-only code review before the formal inventory, independently verify resulting evidence and proposed design; no statistical hypothesis test or training is conducted. Fresh local analysis-only R001 receipt with exact code, clean launch, UTC/command/PID/runtime, raw archive and unchanged-source byte checks. 60s arithmetic cap, no GPU. Data readiness decision remains conditional wherever lineage, timing, target semantics, interventions or applicable uncertainty are missing. Stop after one fixed audit; no automatic download of bulk DIC, annotation work or training follows. Minimum evidence is exact CSV/JSON inventory, source pointers, one decision-facing table and README, gap list, and explicitly unexecuted protocol for the chosen route.
+
+## Audit-v1.1 identity correction before successful inventory
+
+R001 stopped at section metadata conflict, before formal output creation. Direct inspection found169015-D-2009 contains CELL169015/160015 and3302-I-2021 contains13 CELL codes under one SECTION_ID. Do not repair codes, merge across these groups, or silently promote them to separate independent specimens. Revised inventory reports the variant sets and quarantines any metadata-inconsistent or duplicate-date SECTION_ID from window counts/shortlist. Raw records are retained. This is validity handling, not outcome filtering or a relaxed forecast criterion. Re-review exact revised code before fresh R002. R001 failure receipt remains in its archive.
