@@ -28,7 +28,7 @@
   "original_rows_digest": "8770a36c06010cb0200c327c593e47aa29b914757f16eab1ac20edc16c4a2888",
   "metadata_path": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\manifest_train_validation.json",
   "metadata_sha256": "6fc622943a78063926d96a13e727013ae22d12919a3af3814cfc221bd1a7e5bb",
-  "classifier_identity_only": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
+  "classifier_identity_only": "superseded by E003_checkpoint_sha256: frozen semantic extraction, no parameter fitting or detector rescoring",
   "locations": [
     "24",
     "95",
@@ -68,7 +68,7 @@
   "source_eligible_count": 19384,
   "source_B12_hits": 684,
   "forbidden_inputs": [
-    "checkpoint weights",
+    "checkpoint weights except the exact hash-pinned frozen E003 checkpoint for semantic extraction only",
     "full12 U labels as training targets",
     "R004 joint chosen corrections as learner data",
     "four consumed qualification sites",
