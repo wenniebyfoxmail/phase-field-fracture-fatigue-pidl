@@ -1,6 +1,6 @@
-# Minimum next validation proposal — unexecuted
+# NWP minimum validation proposal — blocked after target-capacity audit
 
-2026-10-17, design-v1. Primary candidate: MnROAD scalar survey labels. This changes the available-history question from old boundary-response history (FATACRACK) to older crack-survey history. Neither material/mechanism transfer nor structural-response information is tested. S02-E005's original negative remains unchanged. No model fitting, feature extraction, split scoring or training is authorized/executed by this proposal.
+2026-10-17. **BLOCKED: fixed top6 contain five allzero NWP groups and only one varying group; do not fit this design.** Retain the unexecuted design-v1 record below. Former primary candidate: MnROAD scalar survey labels. This changes the available-history question from old boundary-response history (FATACRACK) to older crack-survey history. Neither material/mechanism transfer nor structural-response information is tested. S02-E005's original negative remains unchanged. No model fitting, feature extraction, split scoring or training is authorized/executed by this proposal.
 
 ## First make a small dataset that can answer the question
 
