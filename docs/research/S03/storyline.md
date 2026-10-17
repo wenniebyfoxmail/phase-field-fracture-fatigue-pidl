@@ -567,3 +567,18 @@
   validity remain unestablished; not a rejection of DIC inversion. Next possible
   action needs approval: source/synthetic-only underflow handling proposal,
   preserving original thresholds and B001 failure, before any new execution.
+
+- **2026-10-17 — D03 U01 underflow handling plan v0.2 locally reviewed; no implementation.**
+  Source-only proposal: five diagnostic factor-times-s reference sites receive
+  preclassified exact dyadic RN64 evaluation; tolerance evaluation avoids
+  unnecessary tiny relative products and ratio division without changing the
+  original componentwise criterion. No ignore/warn exception policy, spectral
+  clipping, candidate-field changes or extra factorization. Independent Codex
+  first corrected an unreachable ratio-boundary branch; removed, proof and
+  representable artificial operands clarified. Re-review
+  PASS_STATIC_UNDERFLOW_PLAN atclean1c883fec; planSHA790808118e08b077ec9f530d529f6696265de71ea88d8776e843f9d2550ad70f.
+  See S03-E019/underflow_handling_plan.md and underflow_handling_review.md.
+  No code/test modifications, imports/computation/tests/QR/SVD, archive/real/
+  held reads, external messages or B/C/D. B001 and all frozen results remain
+  unchanged. Await user plan confirmation; Pro review before implementation,
+  then separately approved code/tests and any future fresh resource attempt.
