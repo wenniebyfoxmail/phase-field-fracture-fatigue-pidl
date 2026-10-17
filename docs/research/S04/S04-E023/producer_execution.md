@@ -1,7 +1,7 @@
 ---
 storyline_id: S04
 experiment_id: S04-E023
-status: approved-awaiting-taobo-connectivity
+status: dispatcher-running-all-state-preflight
 ---
 # E023 Taobo three-state production preparation — 2026-10-16
 
@@ -46,3 +46,9 @@ Retrieve33rowoutputs plus all logs/resource records, formalbaselinepreflight/nat
 User explicitly approved the exact two unchanged files, v1 new directory, GPU0sharing only free>8GiB and one conditional launch after all preflights. Local payload sizes/SHA256s reverified against approved manifest. First SSH transport stage failed during banner exchange before authentication (exit255 brokenpipe); one read-only target-state verification also failed during key exchange (exit255 connectionreset). No SCP/dispatcher/formalpreflight/training performed; remote directory remains unverified, not assumed absent or created. This is connectivity loss, not a producer/scientific failure.
 
 Read-only local network inspection: Tunnelblick GUI running but no openvpn process observed; target route uses en0/gateway10.255.255.254. Asked user to reconnect existing Taobo client. After restoration inspect target read-only, then continue this already approved exact action if safe; do not blindly repeat mutation, replace package, changeGPU or launch twice. User approval remains valid for this exact account/files/directory/policy. Local attempt record: local_archive/experiments/S04-E023/producer_execution_v1/connection_attempt.json. No dispatcherPID exists in this record; no training monitor claims a running job.
+
+## Connectivity restored; approved single dispatch — 2026-10-17
+
+User confirmed Tunnelblick connected. Read-only SSH verified drtao/GPUServer8 and TARGET_ABSENT before repeating any directory mutation. Atomic freshmkdir succeeded; SCP transferred exactly the approved twofiles, both remoteSHA256s matched. One nohup dispatch at **2026-10-17T14:50:41Z**, **PID1104872**, adopted byPID1, verified livecwd under exactroot/code, clean scientific HEADc4ceb5d27fa8d408be1b9f02dcd6b10308f301a2. Initial resource guard passed, all87assets copied and verified; all-state formalpreflight running (child1105053), not yet complete at14:51:33Z. No candidate training confirmed at this snapshot. Do not relaunch.
+
+Root/log/command/GPU/archive/immutablepackage follow approved action above. Local launch_receipt.json under local_archive/experiments/S04-E023/producer_execution_v1; finalresults pending. Hourly threadheartbeat **e023** enabled: only read-only monitoring/retrieval/analysis, silent ordinaryprogress, notifycompletion/failure/useraction and disable atterminaloutcome. No retry/newexperiment/sourcechange authorized.

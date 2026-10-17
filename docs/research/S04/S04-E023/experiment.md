@@ -76,3 +76,7 @@ Two-file v1 package and single-launch script prepared locally for reviewed scien
 ## Production approval / access pending — 2026-10-17
 
 User approved the exact v1 transfer/conditional single launch; local hashes unchanged. SSH failed before authentication and read-only target verification also failed. No transfer, formalpreflight or training; target directory state unknown. Await existing Tunnelblick connectivity, then inspect before continuing approved action. No change to scientific source/design or old verdicts. See [execution record](producer_execution.md).
+
+## Approved dispatcher launched — 2026-10-17
+
+VPN restored and targetabsence verified before creation. Exact approved payloads transferred/hashverified; single dispatcherPID1104872 started14:50:41Z with clean reviewedc4source. Resourceguard and87assetcopyverification passed; three-state formalpreflight inprogress, candidateupdates not yet confirmed. e023 hourly read-onlymonitor active, no automatic retry. [Execution receipt](producer_execution.md). Execution health does not establish scientific gain.
