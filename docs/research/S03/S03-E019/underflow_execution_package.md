@@ -1,8 +1,11 @@
-# E019-D03-U01 — 执行包 v1（代码静态审查前草案）
+# E019-D03-U01 — 执行包 v1（静态审查通过）
 
 代码基线`b597d38f8d94dc2a69f89935a350859905d1e636`。
 Pro PASS_PLAN及实现明确化见underflow_pro_review.md/underflow_implementation_contract.md。
 测试方案见underflow_test_design.md。尚未运行测试或语法/导入检查。
+独立只读代码审查PASS_STATIC_CODE，绑定clean d478b2d5；详情与五源码SHA
+见underflow_code_review.md。以下tiny仅依已核实总部人方授权执行，不是
+Pro或审查者授权；B002/C/D仍不执行。
 
 ## 人方授权与当前阶段
 
