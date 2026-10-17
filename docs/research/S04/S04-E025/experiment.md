@@ -5,10 +5,10 @@ retry or revised verdict. Design authority: user approval of
 `82cd09258bb09604a3f89809dd7005ac77631b8c` for protocol, input inventory, minimal
 implementation and independent code review. **No real input access, fitting,
 worker/guard execution, confirmation access or new tests are approved now.**
-Status: STATIC_REVIEW_REVISION_REQUIRED; scientific evidence NONE.
-Readback: `code_review_20261017.md`, f9001ed has one blocking launch-exception
-activity/cleanup uncertainty issue. Code unchanged; final execution command/card
-held pending separately authorised repair and independent difference review.
+Status: MINIMAL_LAUNCH_FIX_PENDING_STATIC_DIFFERENCE_REVIEW; scientific evidence NONE.
+Readback: `code_review_20261017.md`, f9001ed had one blocking launch-exception
+activity/cleanup uncertainty issue. User-authorised minimal repair now prepared;
+final execution command/card held pending independent static difference review.
 Exact future execution card/command and human approval are separate.
 
 ## 1. Question and evidence boundary
@@ -150,6 +150,12 @@ No command/root/input override; source diffs or used output stop. Owned output
 directory consumes the attempt; no overwrite, resume, retry, extension, extra
 fit or confirmation opening on failure/cap. Cleanup touches only this child
 process group. Preserve primary failure and receipt/cleanup errors separately.
+Before Popen is attempted, activity becomes unknown. If no child handle returns,
+creation/exit/ownership remain unconfirmed, no guessed PID/process group is
+signalled, and manual process inspection is required; parent-only RSS samples
+cannot verify the possible unobserved child's budget. Such a run remains failed
+and cannot be retried or treated as complete/clean. A known handle follows the
+existing bounded cleanup path. These exception semantics are not a relaxed cap.
 Execution remains forbidden under current user authority.
 
 ## 6. Minimal evidence / future figure contract
@@ -158,7 +164,10 @@ Nine core output files: authorization.json, models.json, percycle.csv,
 summary.json, diagnostic.png, README_analysis.md, receipt.json, run.log,
 guard_receipt.json; bounded own cache directory. No full predicted trajectories.
 Small models retain scales, coefficient/normalizer vectors, sample positions,
-feature names and proxy status. CSV has all 121 V0/B32/C33 physical raw MSEs plus
+feature names and proxy status. `sample_ids` are zero-based positions in the
+admitted `pipeline.ids` array, **not native cell IDs**; native IDs would be
+`pipeline.ids[sample_ids]`. This meaning is saved in models.json without changing
+sample selection, ordering or values. CSV has all 121 V0/B32/C33 physical raw MSEs plus
 nonnegative/raw-min and damage/history identity checks. Summary records the one
 primary, three strata/overall costs, context and claim boundaries. Receipts log
 source read attempts/verified identities, invocation flags, fits, code/approval/

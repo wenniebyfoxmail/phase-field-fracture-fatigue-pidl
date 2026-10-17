@@ -262,6 +262,8 @@ def run(out):
         models, proxy, sample = fit(training, pipeline, activity)
         with (out/'models.json').open('x') as file:
             json.dump(dict(models=models, proxy=proxy, sample_ids=sample,
+                           sample_ids_semantics='zero-based positions in admitted pipeline.ids; '
+                                                'native cell IDs are pipeline.ids[sample_ids]',
                            feature_names=pipeline.names+['fatigue_state_x_raw']), file, indent=2, allow_nan=False)
         del training  # Evaluation inputs cannot enter train-only normalisers.
         phase = 'LOAD_EVALUATION'

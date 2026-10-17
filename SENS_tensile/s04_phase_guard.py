@@ -76,6 +76,7 @@ def execute(out, code, refs, allow_fit):
     out = Path(out).absolute()
     io.require(out == io.OUT and out.resolve() == out and not out.exists(), 'fixed unused canonical output')
     child = log = None
+    launch_attempted = False
     owned, peak, primary = False, 0, None
     errors, terminal_caps = [], []
     checkout = dirty = verification = None
@@ -150,10 +151,13 @@ def execute(out, code, refs, allow_fit):
             fail(reason or 'WALL_RESERVE')
         else:
             phase = 'SPAWN'
-            child = subprocess.Popen(command, cwd=io.ROOT, env=env, stdout=log, stderr=log, start_new_session=True)
+            # Popen may be interrupted after creating a process but before
+            # returning its handle. Unknown must precede even that attempt.
             flags.update({k: None for k in ('source_metadata_accessed', 'real_data_read', 'fitting_invoked',
                                            'evaluation_invoked', 'plotting_invoked')})
             flags['certainty'] = 'UNKNOWN_UNTIL_WORKER_RECORD'
+            launch_attempted = True
+            child = subprocess.Popen(command, cwd=io.ROOT, env=env, stdout=log, stderr=log, start_new_session=True)
             phase = 'MONITOR'
             while child.poll() is None:
                 reason = measure()
@@ -167,7 +171,15 @@ def execute(out, code, refs, allow_fit):
     finally:
         phase = 'CLEANUP'
         try:
-            cleanup = cleanup_child(child)
+            if launch_attempted and child is None:
+                # A missing handle after an attempted launch is not proof of
+                # failed creation. Do not scan/kill unrelated processes or
+                # claim the possible child exited or stayed within the caps.
+                cleanup.update(state='LAUNCH_OWNERSHIP_UNCONFIRMED', exit_confirmed=False,
+                               events=['LAUNCH_ATTEMPTED_WITHOUT_RETURNED_HANDLE'])
+                fail('LAUNCH_OWNERSHIP_UNCONFIRMED')
+            else:
+                cleanup = cleanup_child(child)
         except BaseException as exc:
             fail('CLEANUP_EXCEPTION', exc)
         if child is not None and (not cleanup['exit_confirmed'] or cleanup['errors']):
@@ -229,6 +241,12 @@ def execute(out, code, refs, allow_fit):
                   work_reserve_seconds=5, aggregate_sampled_peak_rss_bytes=peak,
                   inventory_before_receipt=files, host=socket.gethostname(), guard_pid=os.getpid(),
                   worker_pid=None if child is None else child.pid, cleanup=cleanup, command=command,
+                  launch_attempted=launch_attempted, child_handle_acquired=child is not None,
+                  process_ownership_unconfirmed=launch_attempted and child is None,
+                  manual_process_inspection_required=launch_attempted and not cleanup['exit_confirmed'],
+                  resource_process_coverage=('GUARD_ONLY_POSSIBLE_CHILD_UNOBSERVED'
+                                             if launch_attempted and child is None else
+                                             'KNOWN_PROCESS_TREE_SAMPLED'),
                   receipt_persisted=False, **flags, confirmation_accessed=False, retry=False,
                   operator_must_verify_actual_approval=True)
 
