@@ -29,7 +29,7 @@ def intervals(x,p):
     for a,b in zip(starts,ends):
         left=x[a] if a==0 else x[a-1]+(0.5-p[a-1])/(p[a]-p[a-1])*(x[a]-x[a-1])
         right=x[b] if b==len(x)-1 else x[b]+(0.5-p[b])/(p[b+1]-p[b])*(x[b+1]-x[b])
-        result.append((float(left),float(right),a==0 or b==len(x)-1))
+        result.append((float(left),float(right),bool(a==0 or b==len(x)-1)))
     return result
 
 
