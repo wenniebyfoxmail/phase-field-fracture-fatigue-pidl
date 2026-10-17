@@ -1,0 +1,22 @@
+{
+  "experiment_id": "S04-E024",
+  "status": "NONTRAINING_CHECKS_COMPLETE_PENDING_CODE_REVIEW",
+  "stage_tests": 16,
+  "temporary_decoder_cases": 15,
+  "final_revision_positive_decoder_recheck": "PASS:1 case,14 deselected;38.95s",
+  "real_states": [
+    "c20s4",
+    "c60s4",
+    "c83s4"
+  ],
+  "real_validate_only": true,
+  "full10000_sampler_and_8000_prefix_verified": true,
+  "training_loop_entered": false,
+  "optimizer_parameter_steps": 0,
+  "formal_cuda_native_preflight": false,
+  "application_tolerance": null,
+  "background_cost_acceptability": null,
+  "historical_001_primary": false,
+  "validation_scope": "Synthetic optimizer counters/runtime/cost fixtures are not producer execution; Mac native LR/D portability exceptions retained",
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/nontraining_v1"
+}
