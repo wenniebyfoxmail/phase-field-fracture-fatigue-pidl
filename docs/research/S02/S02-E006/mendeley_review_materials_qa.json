@@ -1,0 +1,24 @@
+{
+  "checked_at_utc": "2026-10-17T21:22:01.831611+00:00",
+  "scope": "existing review-material completeness only; no new measurement computation",
+  "packet_items": 30,
+  "unique_source_frames": 25,
+  "hidden_repeat_presentations": 5,
+  "checks": {
+    "unique_item_ids": true,
+    "unique_frames": true,
+    "five_hidden_repeats": true,
+    "template_ids_match": true,
+    "measurement_cells_blank": true,
+    "all_images_exist": true,
+    "all_raw_sources_exist": true,
+    "all_html_images_resolve": true,
+    "no_visible_group_ids": true
+  },
+  "human_measurements_received": false,
+  "human_annotation_status": "pending_real_annotator",
+  "training": false,
+  "outgoing_communication": false,
+  "new_images_generated": false,
+  "existing_automation_configuration": "ACTIVE; unchanged; mailbox not accessed"
+}
