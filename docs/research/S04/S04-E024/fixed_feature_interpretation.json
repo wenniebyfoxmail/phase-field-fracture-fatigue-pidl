@@ -1,0 +1,62 @@
+{
+  "state_summary": [
+    {
+      "state": "c20s4",
+      "ranks": [
+        "279",
+        "279",
+        "278"
+      ],
+      "sensitivity_full_min": 0.000613962618862412,
+      "sensitivity_full_max": 0.000613972824036174,
+      "retained_condition": 10480339071.319864,
+      "coefficient_norm": 3762.806926582473,
+      "snapshot_head_norm": 0.08714410710829493,
+      "coefficient_norm_ratio": 43179.132260846876,
+      "network_vs_basis_mass_rms": 1.5331855032967217e-14,
+      "projection_realization_weighted_gap": 6.054144946269045e-12
+    },
+    {
+      "state": "c60s4",
+      "ranks": [
+        "284",
+        "284",
+        "284"
+      ],
+      "sensitivity_full_min": 0.0009099791015488762,
+      "sensitivity_full_max": 0.0009099791015488762,
+      "retained_condition": 34340927.58919436,
+      "coefficient_norm": 45.17033974652065,
+      "snapshot_head_norm": 0.08797332871725368,
+      "coefficient_norm_ratio": 513.4549346393172,
+      "network_vs_basis_mass_rms": 1.6176353980191234e-16,
+      "projection_realization_weighted_gap": 1.3328209694311695e-14
+    },
+    {
+      "state": "c83s4",
+      "ranks": [
+        "254",
+        "254",
+        "254"
+      ],
+      "sensitivity_full_min": 0.0011503316901342955,
+      "sensitivity_full_max": 0.0011503316901342955,
+      "retained_condition": 2317091331.0083194,
+      "coefficient_norm": 439.61940065261797,
+      "snapshot_head_norm": 0.07081291362761927,
+      "coefficient_norm_ratio": 6208.181221922671,
+      "network_vs_basis_mass_rms": 7.897500303767529e-15,
+      "projection_realization_weighted_gap": 3.034841878489175e-13
+    }
+  ],
+  "c60_discrete_full_objective_decomposition": {
+    "E024": 8.533229482543111e-07,
+    "oracle": 8.280619652556999e-07,
+    "E023": 7.930761172331668e-07,
+    "head_optimization_gap": 2.5260982998611205e-08,
+    "fixed8000_span_gap_to_E023": 3.4985848022533086e-08,
+    "total_E024_gap_to_E023": 6.024683102114429e-08,
+    "head_gap_fraction": 0.41929148090371066,
+    "span_gap_fraction": 0.5807085190962893
+  }
+}

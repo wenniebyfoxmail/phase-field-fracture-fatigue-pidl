@@ -1,0 +1,32 @@
+{
+  "verdict": "PASS",
+  "scope": "independent pre-use fixed-feature oracle code/mathematics review",
+  "commit": "1f460aa41929ebb6f41a8311718b699225a8877f",
+  "clean_at_review": true,
+  "files_sha256": {
+    "SENS_tensile/s04_e024_fixed_feature_oracle.py": "e884d6d5138848f1c21b649c34580495717a264ff19120543ba63ed55f019805",
+    "SENS_tensile/diagnose_s04_e024_fixed_head.py": "303f1beeb1bf00812b689e478a67789cca752fd5e1cd62459c884d989455432f",
+    "tests/test_s04_e024_fixed_feature_oracle.py": "00e29bd28041fc83ad7ccfb4c283d5878182c0a325eb707d11eb97f5a27d57c6",
+    "docs/research/S04/S04-E024/fixed_feature_protocol.md": "586d4b19924869b5b181fd978b56dcc0b5a44934602ca4c66a41db65388b99ad"
+  },
+  "blocking_findings": [],
+  "independent_tests": {
+    "initial": {
+      "passed": 6,
+      "seconds": 0.15
+    },
+    "final": {
+      "passed": 6,
+      "seconds": 0.13
+    }
+  },
+  "real_three_state_execution_by_reviewer": false,
+  "optimizer_steps": 0,
+  "checkpoint_writes": 0,
+  "SSH": false,
+  "limitations": [
+    "retained-span numerical oracle only",
+    "observational internal wall/RSS checks; external timeout planned",
+    "producer D supplementary decoding does not pass strict Mac native admission"
+  ]
+}

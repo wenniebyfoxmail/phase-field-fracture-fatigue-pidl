@@ -1,0 +1,20 @@
+{
+  "python": "3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:54:21) [Clang 16.0.6 ]",
+  "executable": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "numpy": "2.2.6",
+  "scipy": "1.14.1",
+  "torch": "2.11.0",
+  "torch_threads": 2,
+  "registered_threadpools": [
+    {
+      "user_api": "openmp",
+      "internal_api": "openmp",
+      "num_threads": 2,
+      "prefix": "libomp",
+      "filepath": "/Users/wenxiaofang/miniconda3/lib/python3.12/site-packages/torch/lib/libomp.dylib",
+      "version": null
+    }
+  ],
+  "scope": "Same local runtime inspected after diagnostic; limits use torch.set_num_threads(2) and threadpoolctl(2), no GPU training"
+}

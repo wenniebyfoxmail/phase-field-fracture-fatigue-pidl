@@ -1,0 +1,36 @@
+{
+  "verdict": "PASS_WITH_RETAINED_NUMERICAL_WARNINGS",
+  "scope": "bounded fixed-feature oracle numerical results",
+  "source": "1f460aa41929ebb6f41a8311718b699225a8877f",
+  "blocking_findings": [],
+  "independent_driver": "gesvd",
+  "independent_products": "dgemm",
+  "feature_chunk": 511,
+  "actual_forward_chunk": 509,
+  "independent_warnings": 0,
+  "rank_matches_all9": true,
+  "max_full_score_difference": 9.75781955236954e-17,
+  "actual_order_max_abs": 1.3877787807814457e-17,
+  "original_warning_status": "RETAINED_ROOT_CAUSE_UNIDENTIFIED",
+  "strict_Mac_admission": false,
+  "physical_application_acceptance": null,
+  "checkpoint_writes": 0,
+  "neural_optimizer_steps": 0,
+  "remote_actions": 0,
+  "main_decision_reviewed": true,
+  "source_sha256": {
+    "review/independent_oracle.py": "2899f879d0700db0e5030fd646f173bda7da5bfd553936df4bebfe52286c71d3",
+    "review/check_actual_order.py": "d9943e7f53867a0562a06d8a0d03db3aadc202a682700172632f462df0374162",
+    "matmul_warning_replay.json": "cc284327cb1f685d63049a82b01c1c43ae76e0d435917ece44526f55d7d9dd92",
+    "analysis_source/check_matmul_warning.py": "93cb3258d993d981689e19cc1081dd4a7128729f79f8e95a30806cc3a5d4b8ea"
+  },
+  "final_prose_blocking_findings": [],
+  "final_prose_sha256": {
+    ".codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/fixed_feature_decision.md": "9076787a87beb40a0729fceb80469becbf57fab5a38a4f62df550add5f93fd3d",
+    "local_archive/experiments/S04-E024/fixed_feature_oracle_v1/README_analysis.md": "5c00c3d05c526557ef06c9e6990a8dcc8fc8ac9f13eee902af0ca34872bbabec",
+    "local_archive/experiments/S04-E024/fixed_feature_oracle_v1/results/interpretation.json": "23e365f85b3604df3e85af36eea046b5b9fc860be8d83bf862c4844c0301b762",
+    "local_archive/experiments/S04-E024/fixed_feature_oracle_v1/figures/oracle_local_fields.md": "1be30a7988484a1b31f112524595a9afb4e3b8506cf334da68648739d657c00b",
+    "local_archive/experiments/S04-E024/fixed_feature_oracle_v1/figures/oracle_local_fields.png": "06e7859a708cf4b3d5259d9322f86aebfe9bc5e6ba636b1cf71b410c81f27e3f",
+    "local_archive/experiments/S04-E024/fixed_feature_oracle_v1/figures/oracle_fields.md": "e2c5d2008cf5f5d881c38d1051800fddc8567bebf37f536884219707a78337e0"
+  }
+}

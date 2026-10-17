@@ -1,0 +1,83 @@
+{
+  "diagnostic_run_id": "S04-E024-D002-R001-local-tsvd",
+  "diagnostic_code_commit": "1f460aa41929ebb6f41a8311718b699225a8877f",
+  "diagnostic_source_sha256": {
+    "SENS_tensile/diagnose_s04_e024_fixed_head.py": "303f1beeb1bf00812b689e478a67789cca752fd5e1cd62459c884d989455432f",
+    "SENS_tensile/s04_e024_fixed_feature_oracle.py": "e884d6d5138848f1c21b649c34580495717a264ff19120543ba63ed55f019805"
+  },
+  "protocol": "20261017-r1-E024-D002-fixed8000-tsvd",
+  "states": [
+    "c20s4",
+    "c60s4",
+    "c83s4"
+  ],
+  "stage": 8000,
+  "assets": [
+    {
+      "state": "c20s4",
+      "run_id": "S04-E024-head-tail-231fe4b-20261017-v1-R001-c20s4-localized-s7",
+      "reference_sha256": "23d00fbe07a77b406008886c07b698cebe463b88ece4cbd9fa08ac3238ea953b",
+      "snapshots": {
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R001-c20s4-localized-s7/step_8000.pt": "1358e89c7a96d409791366db211d5472c7603a058bc1cdf71fd074c619eda2d4",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R001-c20s4-localized-s7/HEAD_ONLY_STAGE_ENTRY.json": "c6944560b2aa1179850ffa38a01fcf1e21b1a8331021f7934c7558c4532a6e07",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R001-c20s4-localized-s7/head_scale.json": "b60a964d51bdf60b10fbf79e5f4deedd133039bdb3b53fb499c388302a1ca297",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R001-c20s4-localized-s7/metrics.json": "8f1ddec38011a1edc16f8f3649cb72c11508a75157d56ce04ae86d30fcc4cb00",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R001-c20s4-localized-s7/prediction.npz": "fe318ad3efcc92352219d26874e145a8a9c419e37f74a164673c3aed71badb29",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R001-c20s4-localized-s7/RUN_RECEIPT.json": "9eda7b2f1021fb567d106c9f8bdf63329aa9c95762dff1aa9a58e96322f7802d",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R001-c20s4-localized-s7/monitoring.json": "188da2e1a938cf48f9960630d24fc71588d41391ebc437cb8778fdaeda355735"
+      },
+      "head_scale_sha256": "b60a964d51bdf60b10fbf79e5f4deedd133039bdb3b53fb499c388302a1ca297",
+      "model_digest_before": "d0c8466c5b546ce03a819d98fd182393f3917f9f055c95c82fce7906d2f95668",
+      "model_digest_after": "d0c8466c5b546ce03a819d98fd182393f3917f9f055c95c82fce7906d2f95668",
+      "initial_Mac_calibration_bit_exact": false,
+      "scope": "Actual producer snapshot/D, supplemental diagnostic; strict native Mac/LR/mass/D/rho qualification remains refused"
+    },
+    {
+      "state": "c60s4",
+      "run_id": "S04-E024-head-tail-231fe4b-20261017-v1-R002-c60s4-localized-s7",
+      "reference_sha256": "46b53c0f546b62606c232aea8188bcc43bc6dc39f7078d2265b917e45ddb7ec2",
+      "snapshots": {
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R002-c60s4-localized-s7/step_8000.pt": "ff83ab7be6f0930973abc1c0ea10a84748aa6752420adbb4719b10835a3c9625",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R002-c60s4-localized-s7/HEAD_ONLY_STAGE_ENTRY.json": "5847b0cb52edd63a16a7bab67ddf93dda7233babbb6adcb5e119dff8dcf51ef9",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R002-c60s4-localized-s7/head_scale.json": "75b8e0610f24288830b0c39824f4afe750f0fb70ac9c10731624b9936a812476",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R002-c60s4-localized-s7/metrics.json": "50da655993160be544122bf9e353a0bb9f063af9d756c64fe77a0787499af9f1",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R002-c60s4-localized-s7/prediction.npz": "02558f0e6621143b0f5d55dd897d6991d1ada43433e9f357fcf43a2d7d0dd86a",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R002-c60s4-localized-s7/RUN_RECEIPT.json": "738f7eb63d372d38cdd8a26784451a1adc9a1e9dcacdab3920f79453e5893357",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R002-c60s4-localized-s7/monitoring.json": "b2e90e7e11902f5317e361cac743d601a1cb0c4de7eb6e1392e9cd00ddbb6fe7"
+      },
+      "head_scale_sha256": "75b8e0610f24288830b0c39824f4afe750f0fb70ac9c10731624b9936a812476",
+      "model_digest_before": "c30952c884e008f8264e7af86e43a6ef8947beea4773151cb2d7de8a28a85806",
+      "model_digest_after": "c30952c884e008f8264e7af86e43a6ef8947beea4773151cb2d7de8a28a85806",
+      "initial_Mac_calibration_bit_exact": false,
+      "scope": "Actual producer snapshot/D, supplemental diagnostic; strict native Mac/LR/mass/D/rho qualification remains refused"
+    },
+    {
+      "state": "c83s4",
+      "run_id": "S04-E024-head-tail-231fe4b-20261017-v1-R003-c83s4-localized-s7",
+      "reference_sha256": "24557eaad9ea09f925fdceb8079116427e2bf7602e9626841db46742d6371eae",
+      "snapshots": {
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R003-c83s4-localized-s7/step_8000.pt": "7e9090e1f6e8999957b46ea254a181d95994cb41a77b886771379f3019375f20",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R003-c83s4-localized-s7/HEAD_ONLY_STAGE_ENTRY.json": "4f3befbb7dd11b30e7f6c38b4d39f2d52717858f5e8400ba7f4bd2aa9b90a0c4",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R003-c83s4-localized-s7/head_scale.json": "0aa1201a449514a47871390ff2d8f4ce935c43a2990f03e9633bb10fd09457ea",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R003-c83s4-localized-s7/metrics.json": "b20d4eaae47b129d767db7a3d39f24b7961e02f624357bf6991e0ca4bf400ee5",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R003-c83s4-localized-s7/prediction.npz": "bc614b9b630edb02e83f8781d1a5f10a34c2d7a1c8ab88459f2dbf08e7ee882e",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R003-c83s4-localized-s7/RUN_RECEIPT.json": "9b51e8967caa5517117f9a2e91423d4d1337563b1cf400f932a95eeff44a7bc6",
+        "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R003-c83s4-localized-s7/monitoring.json": "a1c9448413b77011e63a9f9c0541780b52cddf95cc6a970edf62425ddb21e154"
+      },
+      "head_scale_sha256": "0aa1201a449514a47871390ff2d8f4ce935c43a2990f03e9633bb10fd09457ea",
+      "model_digest_before": "94bc0c7cfb784a24350dfbdec42720cedd117dfeb2365e3ccdb21034a6d16024",
+      "model_digest_after": "94bc0c7cfb784a24350dfbdec42720cedd117dfeb2365e3ccdb21034a6d16024",
+      "initial_Mac_calibration_bit_exact": false,
+      "scope": "Actual producer snapshot/D, supplemental diagnostic; strict native Mac/LR/mass/D/rho qualification remains refused"
+    }
+  ],
+  "wall_seconds": 17.727417291956954,
+  "peak_rss_bytes": 1691942912,
+  "linear_diagnostic_solutions": 9,
+  "neural_optimizer_steps": 0,
+  "checkpoint_writes": 0,
+  "remote_actions": 0,
+  "rank_rule": "eps64*max(N,p)*smax, multipliers .1/1/10 all reported; primary1",
+  "physical_tolerance_defined": false,
+  "legacy001_route_gate": false
+}

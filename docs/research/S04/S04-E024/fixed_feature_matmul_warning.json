@@ -1,0 +1,53 @@
+{
+  "state": "c20s4",
+  "fixed_original_arrays": true,
+  "finite_inputs": true,
+  "phi_max_abs": 247.24490846186964,
+  "coef_max_abs": 1124.5454146934376,
+  "conservative_product_sum_bound": 78962828.38525476,
+  "float64_max": 1.7976931348623157e+308,
+  "checks": [
+    {
+      "method": "numpy_matmul_first",
+      "all_finite": true,
+      "warning_count": 3,
+      "warnings": [
+        "divide by zero encountered in matmul",
+        "overflow encountered in matmul",
+        "invalid value encountered in matmul"
+      ],
+      "max_abs": 0.5117813939284854,
+      "max_abs_difference_vs_dgemm": 0.0
+    },
+    {
+      "method": "numpy_matmul_repeat",
+      "all_finite": true,
+      "warning_count": 3,
+      "warnings": [
+        "divide by zero encountered in matmul",
+        "overflow encountered in matmul",
+        "invalid value encountered in matmul"
+      ],
+      "max_abs": 0.5117813939284854,
+      "max_abs_difference_vs_dgemm": 0.0
+    },
+    {
+      "method": "scipy_dgemm",
+      "all_finite": true,
+      "warning_count": 0,
+      "warnings": [],
+      "max_abs": 0.5117813939284854,
+      "max_abs_difference_vs_dgemm": 0.0
+    },
+    {
+      "method": "numpy_einsum_no_blas",
+      "all_finite": true,
+      "warning_count": 0,
+      "warnings": [],
+      "max_abs": 0.5117813939284854,
+      "max_abs_difference_vs_dgemm": 0.0
+    }
+  ],
+  "root_cause": "NOT_IDENTIFIED; warnings retained. Cross-path finite agreement is not proof of backend cause.",
+  "parameters_updated": false
+}

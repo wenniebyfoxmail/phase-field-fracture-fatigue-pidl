@@ -1,0 +1,35 @@
+{
+  "status": "EXPLORATORY_FIXED_FEATURE_DIAGNOSTIC_COMPLETE",
+  "diagnostic_run_id": "S04-E024-D002-R001-local-tsvd",
+  "source": "1f460aa41929ebb6f41a8311718b699225a8877f",
+  "pre_use_review": "PASS",
+  "independent_result_review": "PASS_WITH_RETAINED_NUMERICAL_WARNINGS",
+  "input_checkpoints_unchanged": true,
+  "main_ranks": [
+    279,
+    284,
+    254
+  ],
+  "primary_rcond": 1.9263701744876016e-11,
+  "multipliers": [
+    0.1,
+    1.0,
+    10.0
+  ],
+  "independent_method": "Q4 mass/511chunk manual encoder/gesvd+dgemm/509chunk actual external head order",
+  "neural_optimizer_steps": 0,
+  "checkpoint_writes": 0,
+  "remote_actions": 0,
+  "numerical_warning_root_cause": "UNIDENTIFIED_RETAINED",
+  "physical_acceptance": null,
+  "background_acceptability": null,
+  "application_fitness": "UNASSESSED",
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/fixed_feature_oracle_v1",
+  "figures": {
+    "numerical_rank.png": "ec785dd7686831baba6b5831fc2df6616656c0abf30ea356ddf62f279fe07760",
+    "oracle_comparison.png": "3020cf726004655d6e3c3389ae50ff1cdeddccc0bdb7d9938490c370d8203341",
+    "oracle_local_fields.png": "06e7859a708cf4b3d5259d9322f86aebfe9bc5e6ba636b1cf71b410c81f27e3f",
+    "oracle_fields.png": "767a7b09cfd4a400b6fdafe56ec01ea4ab6fe24ee41dff0b150dc4a1b944835d"
+  },
+  "next_step": "Proposed own E023 joint10000 stable head diagnostic, not executed"
+}
