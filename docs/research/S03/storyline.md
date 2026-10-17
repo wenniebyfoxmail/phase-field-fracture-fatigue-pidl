@@ -603,3 +603,18 @@
   static re-review; a fresh tiny execution needs new permission under the retained
   first-stop/no-auto-retry rule. B001 frozen, B002/C/D closed. Codex quota before/
   afterstage used7%=remaining93%; do not start new stages ifanynormalremaining<80%.
+
+- **2026-10-17 — U01-F01 fixture-only static repair complete; no second tiny.**
+  HQ requested completion of the already-authorized local fix/review only.
+  Changed exactly three artificial test functions: minnormal*1 classified
+  ordinary; (3/2)2^-1022 times3/4 supplies a reachable integer-branch normal
+  outputwithbits0012000000000000 (9<<49); countertest keepsoriginal(3,1,1,1)
+  and all3directions. Candidate/helper, sites, tolerances, dispatch and stoprules
+  unchanged. Codebaseab6f123a, testSHAfaec84e6; independent focused review
+  PASS_STATIC_FIXTURE_DIFF atclean2b425376; exact next command/resource card in
+  S03-E019/underflow_fixture_execution_package.md, proof/receipt in
+  underflow_fixture_revision.md. A001 resultSHA24931848 unchanged. No imports,
+  syntax/numerical checks, tests, QR/SVD, archive/real/held reads or B002/C/D;
+  no code review repeated for unchanged algorithm and no new Pro request.
+  HQ alone will resolve fresh tiny authority/budget; no automatic retry or
+  claimed A002 result. Quota start/end normalwindowused9%=remaining91%.

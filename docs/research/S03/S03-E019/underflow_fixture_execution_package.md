@@ -5,6 +5,9 @@
 源码仅三个人工fixture函数差异，理由见underflow_fixture_revision.md。
 原Pro/代码审查未变部分复用；当前待原只读渠道焦点静态复核。
 
+更新：焦点复核`PASS_STATIC_FIXTURE_DIFF`，绑定clean `2b4253761c756e893d46bebbeb36ae753be51955`。
+回执见underflow_fixture_revision.md。本包准备完成，仍未执行，未取得新运行许可。
+
 ## 固定版本
 
 源码基线`ab6f123a0174c7009b5427c0db0b98901ca1e2d3`，后续只允许docs记录提交。
