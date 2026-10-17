@@ -1,0 +1,334 @@
+{
+  "protocol": "S04-E011-S2SO-r1",
+  "run_receipt": {
+    "run_id": "pf_s04e011_s2so_replay_20261017_v1",
+    "kind": "offline_exact_stop_policy_replay",
+    "protocol": "S04-E011-S2SO-r1",
+    "commit": "b5b3f7e5021c4a7f569e92d9e257e9e7469653f9",
+    "dirty": false,
+    "pid": 52359,
+    "host": "Wennies-MacBook-Pro-14.local",
+    "python": "/Users/wenxiaofang/miniconda3/bin/python3",
+    "command": [
+      "tools/s04_e011_analysis/analyze_s2_sum_outer.py",
+      "--source",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2uj_20261017_v1",
+      "--out",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2so_replay_20261017_v1",
+      "--review",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/s2_sum_outer_preparation_20261017_v1/local_independent_review.json"
+    ],
+    "started_utc": "2026-10-17T16:44:14.188743+00:00",
+    "source_run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2uj_20261017_v1",
+    "source_producer_commit": "383a77827d3f60be6bcc0326c6923451df94a96d",
+    "new_native_solve": false,
+    "remote_mutation": false
+  },
+  "completion": {
+    "status": "completed",
+    "finished_utc": "2026-10-17T16:44:19.264140+00:00",
+    "new_native_solve": false
+  },
+  "summary": {
+    "protocol": "S04-E011-S2SO-r1",
+    "run_id": "pf_s04e011_s2so_replay_20261017_v1",
+    "analysis_commit": "b5b3f7e5021c4a7f569e92d9e257e9e7469653f9",
+    "analysis_sha256": "ac3d4b01751460eab437b7755fdb4df1f7f3c29666558970888ab623f06bf811",
+    "source_run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2uj_20261017_v1",
+    "source_producer_commit": "383a77827d3f60be6bcc0326c6923451df94a96d",
+    "retrieval_files": 97,
+    "retrieval_bytes": 1716819024,
+    "new_native_solve": false,
+    "policy_class": "offline exact stop-only prefix endpoints, not four fresh producer arms",
+    "endpoints": {
+      "S0V0": 1,
+      "S1V0": 19,
+      "S0V1": 19,
+      "S1V1": 19
+    },
+    "policies": [
+      {
+        "policy": "S0V0",
+        "joint_tol": 0.0004,
+        "outer_u_tol": 0.0004,
+        "first_outer": 1,
+        "status": "derived_policy_endpoint",
+        "u_l2": 0.0002910304884370506,
+        "d_l2": 2.0302908885060614e-06,
+        "sum_component": 0.7326519483138916,
+        "u_component": 0.7275762210926264,
+        "u_calls_including_cache": 6,
+        "phase_calls": 4,
+        "active_integral": 0.001751031871665525,
+        "source_point": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2uj_20261017_v1/retrieved/output/s2uj/U1J1/outer_01.mat"
+      },
+      {
+        "policy": "S1V0",
+        "joint_tol": 4e-06,
+        "outer_u_tol": 0.0004,
+        "first_outer": 19,
+        "status": "derived_policy_endpoint",
+        "u_l2": 1.8787032503966465e-15,
+        "d_l2": 3.7184488328835354e-06,
+        "sum_component": 0.9296122086905597,
+        "u_component": 4.696758125991616e-12,
+        "u_calls_including_cache": 104,
+        "phase_calls": 57,
+        "active_integral": 0.0012492714775455965,
+        "source_point": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2uj_20261017_v1/retrieved/output/s2uj/U1J1/outer_19.mat"
+      },
+      {
+        "policy": "S0V1",
+        "joint_tol": 0.0004,
+        "outer_u_tol": 1e-08,
+        "first_outer": 19,
+        "status": "derived_policy_endpoint",
+        "u_l2": 1.8787032503966465e-15,
+        "d_l2": 3.7184488328835354e-06,
+        "sum_component": 0.009296122086905596,
+        "u_component": 1.8787032503966464e-07,
+        "u_calls_including_cache": 104,
+        "phase_calls": 57,
+        "active_integral": 0.0012492714775455965,
+        "source_point": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2uj_20261017_v1/retrieved/output/s2uj/U1J1/outer_19.mat"
+      },
+      {
+        "policy": "S1V1",
+        "joint_tol": 4e-06,
+        "outer_u_tol": 1e-08,
+        "first_outer": 19,
+        "status": "derived_policy_endpoint",
+        "u_l2": 1.8787032503966465e-15,
+        "d_l2": 3.7184488328835354e-06,
+        "sum_component": 0.9296122086905597,
+        "u_component": 1.8787032503966464e-07,
+        "u_calls_including_cache": 104,
+        "phase_calls": 57,
+        "active_integral": 0.0012492714775455965,
+        "source_point": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2uj_20261017_v1/retrieved/output/s2uj/U1J1/outer_19.mat"
+      }
+    ],
+    "contrasts": [
+      {
+        "contrast": "S_at_V0",
+        "left": "S0V0",
+        "right": "S1V0",
+        "parent_relative_L2": 0.5589610383174172,
+        "baseline_relative_L2": 0.7572134377465065,
+        "weighted_squared_gap": 7.783375399170315e-06,
+        "signed_integral": -0.0005017603941199286,
+        "wake_squared_share": 0.9843345152108885,
+        "max_abs_gap": 0.18329490615722488,
+        "x": -0.28081294199336326,
+        "y": -0.0011429600982001682
+      },
+      {
+        "contrast": "S_at_V1",
+        "left": "S0V1",
+        "right": "S1V1",
+        "parent_relative_L2": 0.0,
+        "baseline_relative_L2": 0.0,
+        "weighted_squared_gap": 0.0,
+        "signed_integral": 0.0,
+        "wake_squared_share": null,
+        "max_abs_gap": 0.0,
+        "x": null,
+        "y": null
+      },
+      {
+        "contrast": "V_at_S0",
+        "left": "S0V0",
+        "right": "S0V1",
+        "parent_relative_L2": 0.5589610383174172,
+        "baseline_relative_L2": 0.7572134377465065,
+        "weighted_squared_gap": 7.783375399170315e-06,
+        "signed_integral": -0.0005017603941199286,
+        "wake_squared_share": 0.9843345152108885,
+        "max_abs_gap": 0.18329490615722488,
+        "x": -0.28081294199336326,
+        "y": -0.0011429600982001682
+      },
+      {
+        "contrast": "V_at_S1",
+        "left": "S1V0",
+        "right": "S1V1",
+        "parent_relative_L2": 0.0,
+        "baseline_relative_L2": 0.0,
+        "weighted_squared_gap": 0.0,
+        "signed_integral": 0.0,
+        "wake_squared_share": null,
+        "max_abs_gap": 0.0,
+        "x": null,
+        "y": null
+      },
+      {
+        "contrast": "diagonal",
+        "left": "S0V0",
+        "right": "S1V1",
+        "parent_relative_L2": 0.5589610383174172,
+        "baseline_relative_L2": 0.7572134377465065,
+        "weighted_squared_gap": 7.783375399170315e-06,
+        "signed_integral": -0.0005017603941199286,
+        "wake_squared_share": 0.9843345152108885,
+        "max_abs_gap": 0.18329490615722488,
+        "x": -0.28081294199336326,
+        "y": -0.0011429600982001682
+      }
+    ],
+    "history_commits": 0,
+    "f_min": 1,
+    "parent_squared_norm": 2.491178823016887e-05,
+    "new_baseline_squared_norm": 1.3574734754828604e-05,
+    "parent_replay_errors": {
+      "raw": 3.5841577102069255e-13,
+      "residual": 3.3176586478056436e-17,
+      "history": 8.326672684688674e-16
+    },
+    "max_replay_errors": {
+      "raw_scaled_error": 6.426889185770501e-13,
+      "residual_scaled_error": 5.2794081294702845e-17,
+      "history_scaled_error": 4.163336342344337e-15
+    },
+    "independently_replayed_source_points": 20,
+    "anchor_first_block_bitwise_equal": true,
+    "interpretation": "Two individual stopping gates are redundantly sufficient on this observed strict-inner path; no unique main gate or physical contribution split.",
+    "limitations": [
+      "One fixed synthetic c1s2, frozen history/f1; no physical/teacher/multicycle qualification",
+      "Policies select actual observed prefixes; no new native producer arms or extrapolation",
+      "Redundancy here is not proof either gate can be removed elsewhere",
+      "L2 field differences are not additive causal percentages; no 50/50 physical attribution"
+    ]
+  },
+  "mechanical_bottleneck": {
+    "observed_outer_range": [
+      1,
+      18
+    ],
+    "minimum_Ru": 3.603406404914596e-05,
+    "minimum_sum": 3.632043381443819e-05,
+    "maximum_Rd": 2.0302908885060614e-06,
+    "minimum_mechanical_share_of_sum": 0.9921154640730533,
+    "all_Ru_alone_above_strict_sum": true,
+    "all_Rd_below_strict_inner_phase": true,
+    "claim": "Post-damage mechanical disequilibrium detected by either stopping gate on this prefix; no unique gate dominance."
+  },
+  "render_adjunct": {
+    "numerical_commit": "b5b3f7e5021c4a7f569e92d9e257e9e7469653f9",
+    "numerical_sha256": "ac3d4b01751460eab437b7755fdb4df1f7f3c29666558970888ab623f06bf811",
+    "render_only_sha256": "8f32f37336dfec18ffc742c8f91a9d746d9c18ad302493038e3a0dfd334effbd",
+    "changes": "Only field spacing and signed colorbar tick selection; sidecar literal headings. No numerical change.",
+    "changed_scored_assets": [
+      "s2so_fields.png"
+    ],
+    "before": {
+      "dataflow_certificate.json": "f785a934c1bdc38cbbf0f05f2848e0656b5593539dc4c0db64dfd77e8d9462be",
+      "selftest.json": "13ee028fcfbfed2b9c1e39daadc576016d7b20fc1e336b6db779ce1e63da4651",
+      "crossings.csv": "fb1cad1f65ce868938fb83aba853f0ac1faa473e23b006f5c7a267b0d4df0d26",
+      "s2so_analysis.json": "b80b53d3b7433623891a98de02f42a185597c9c300bfecfc78884a47f88f69ad",
+      "s2so_fields.png": "973be689e1acf60bd790d306e8a87a6faacf51b328d018af30f72e92cd5abe71",
+      "contrasts.csv": "a7b5aece70b51749e92db1f509a447d7abe664a944e3072bb9a8584446375abb",
+      "s2so_decision.png": "16760f3bba5e9d4ad835ab2bb156891223f030fe870bad79974321d7f1e96311",
+      "policies.csv": "18cfa8575c9d32fb5fdfd532da8644ec90f162562ab1d6c217d107a344470001"
+    },
+    "after": {
+      "dataflow_certificate.json": "f785a934c1bdc38cbbf0f05f2848e0656b5593539dc4c0db64dfd77e8d9462be",
+      "selftest.json": "13ee028fcfbfed2b9c1e39daadc576016d7b20fc1e336b6db779ce1e63da4651",
+      "crossings.csv": "fb1cad1f65ce868938fb83aba853f0ac1faa473e23b006f5c7a267b0d4df0d26",
+      "s2so_analysis.json": "b80b53d3b7433623891a98de02f42a185597c9c300bfecfc78884a47f88f69ad",
+      "s2so_fields.png": "12597a0200e6faaaa8d1f4408ff096fa2035ff054efe151567baa436adf375e5",
+      "contrasts.csv": "a7b5aece70b51749e92db1f509a447d7abe664a944e3072bb9a8584446375abb",
+      "s2so_decision.png": "16760f3bba5e9d4ad835ab2bb156891223f030fe870bad79974321d7f1e96311",
+      "policies.csv": "18cfa8575c9d32fb5fdfd532da8644ec90f162562ab1d6c217d107a344470001"
+    },
+    "fields": "Same independently recomputed active arrays as exact numeric analysis, from observed native d/raw/frozen history",
+    "source_history_active_scaled_error": {
+      "1": 5.828670879282072e-16,
+      "19": 3.649858193455202e-15
+    }
+  },
+  "numerical_review": {
+    "status": "passed",
+    "reviewer": "/root/final_residual_audit_review",
+    "reviewed_utc": "2026-10-17T19:44:13.241974+00:00",
+    "analysis_commit": "b5b3f7e5021c4a7f569e92d9e257e9e7469653f9",
+    "analysis_sha256": "ac3d4b01751460eab437b7755fdb4df1f7f3c29666558970888ab623f06bf811",
+    "scope": "Independently rehashed all97source files/1716819024bytes, replayed20Q4states, verified firststop1/19/19/19, bothnormalizations/conditionalzero/nonzero contrasts and mechanicsbottleneck. Figure/narrative review separate.",
+    "max_replay_errors": {
+      "raw_scaled_error": 6.426889185770501e-13,
+      "residual_scaled_error": 5.2794081294702845e-17,
+      "history_scaled_error": 4.163336342344337e-15
+    }
+  },
+  "final_independent_review": {
+    "status": "passed",
+    "reviewer": "/root/final_residual_audit_review",
+    "reviewed_utc": "2026-10-17T19:50:23.971451+00:00",
+    "protocol": "S04-E011-S2SO-r1",
+    "analysis_commit": "b5b3f7e5021c4a7f569e92d9e257e9e7469653f9",
+    "numerical_analysis_sha256": "ac3d4b01751460eab437b7755fdb4df1f7f3c29666558970888ab623f06bf811",
+    "render_adjunct_sha256": "8f32f37336dfec18ffc742c8f91a9d746d9c18ad302493038e3a0dfd334effbd",
+    "result_doc_sha256": "2b0407d2357b282236773ded39be2ca27a6745baa1a44afc420bc251d81ceed0",
+    "obsidian_note_sha256": "4da8190ae4f4cffa4ce396412cc67342417c64d9f506db230337e9b5d66c2d94",
+    "source_producer_commit": "383a77827d3f60be6bcc0326c6923451df94a96d",
+    "verified_source_files": 97,
+    "verified_source_bytes": 1716819024,
+    "native_replayed_points": 20,
+    "parent_reference_replayed": true,
+    "source_anchor_bitwise_equal": true,
+    "scope": [
+      "exact stop-only source dataflow and strict-inner prefix invariance",
+      "full source retrieval and shared-state checks",
+      "20 independent Q4 raw/Ru/Rd/history replays plus parent reference",
+      "first crossings 1/19/19/19 and all conditional effects/normalizations",
+      "mechanics bottleneck and nodal u/d maxima",
+      "render-only delta: numeric outputs and decision unchanged",
+      "both actual Obsidian copied PNGs opened and hashes/bytes/unique basename/embed verified",
+      "canonical Chinese result, compactmanifest, experiment/track/registry/frontier and Roadmap"
+    ],
+    "max_replay_errors": {
+      "raw_scaled_error": 6.426889185770501e-13,
+      "residual_scaled_error": 5.2794081294702845e-17,
+      "history_scaled_error": 4.163336342344337e-15
+    },
+    "obsidian_copies": {
+      "status": "verified",
+      "note": "/Users/wenxiaofang/obsidian/mesh对齐.md",
+      "copies": [
+        {
+          "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2so_replay_20261017_v1/analysis/s2so_decision.png",
+          "target": "/Users/wenxiaofang/obsidian/attachments/S04/2026-10-17/e011_s2so_replay_20261017_v1_decision.png",
+          "bytes": 216905,
+          "sha256": "16760f3bba5e9d4ad835ab2bb156891223f030fe870bad79974321d7f1e96311",
+          "embed": "![[e011_s2so_replay_20261017_v1_decision.png]]",
+          "unique_basename": true
+        },
+        {
+          "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_s2so_replay_20261017_v1/analysis/s2so_fields.png",
+          "target": "/Users/wenxiaofang/obsidian/attachments/S04/2026-10-17/e011_s2so_replay_20261017_v1_fields.png",
+          "bytes": 614665,
+          "sha256": "12597a0200e6faaaa8d1f4408ff096fa2035ff054efe151567baa436adf375e5",
+          "embed": "![[e011_s2so_replay_20261017_v1_fields.png]]",
+          "unique_basename": true
+        }
+      ],
+      "all_copy_hashes_match": true,
+      "unique_basenames_resolve": true,
+      "validation": "Image files opened via view_image and unique basename embeds resolve; no app-UI claim."
+    },
+    "verdict": "Supports redundant sufficient stopping restrictions on this observed strict-inner c1s2 path; no unique main gate or additive/50-50 physical allocation.",
+    "remaining_corrections": [],
+    "limitations": [
+      "One fixed synthetic c1s2, frozen history/f1; no physical/teacher/multicycle qualification",
+      "Policies select actual observed prefixes; no new native producer arms or extrapolation",
+      "Redundancy here is not proof either gate can be removed elsewhere",
+      "L2 field differences are not additive causal percentages; no 50/50 physical attribution"
+    ]
+  },
+  "endpoint_state_changes": {
+    "first_outer": 1,
+    "strict_endpoint_outer": 19,
+    "max_abs_nodal_u_change": 0.031346915602159575,
+    "max_abs_nodal_damage_change": 0.1819299453766383,
+    "interpretation": "Both singleton-tight policies select the identical native outer19 arrays; conditional changes with other gate already strict are exactly zero. Max norms shown are nodal maxima, distinct from GP-weighted active metric."
+  }
+}
