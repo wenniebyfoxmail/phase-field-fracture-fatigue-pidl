@@ -1,5 +1,5 @@
 """E024-D002: existing step8000 features, offline weighted linear oracle only."""
-import argparse,copy,csv,json,platform,resource,time,hashlib
+import argparse,copy,csv,json,platform,resource,time,hashlib,subprocess,inspect
 from pathlib import Path
 import numpy as np
 import torch
@@ -36,6 +36,10 @@ def write_csv(p,rows):
         w=csv.DictWriter(f,fieldnames=list(rows[0]),lineterminator='\n');w.writeheader();w.writerows(rows)
 
 def run(a):
+    source=Path(__file__).resolve().parents[1]
+    commit=subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD'],text=True).strip()
+    assert commit==a.expected_commit
+    source_hashes={str(p.relative_to(source)):sha(p) for p in (Path(__file__).resolve(),Path(inspect.getsourcefile(project_head)).resolve())}
     start=time.perf_counter();torch.set_default_dtype(torch.float64);torch.set_num_threads(2)
     a.out.mkdir(parents=True,exist_ok=False)
     old=a.project/'local_archive/experiments/S04-E019/producer_execution_v1/raw';head=a.project/'local_archive/experiments/S04-E023/producer_execution_v1/raw';raw=a.case/'raw'
@@ -44,8 +48,9 @@ def run(a):
     numerical=[];metric=[];pairs=[];assets=[];spectrum=[]
     for state in STATES:
         if time.perf_counter()-start>600:raise RuntimeError('diagnostic wall budget exceeded')
-        path=next((raw/'runs').glob('*-'+state+'-localized-s7'));oldpath=head/'runs'/HEAD_LOCKS[state]['run_id'];check_head_files(state,oldpath)
-        locked=[path/x for x in ('step_8000.pt','HEAD_ONLY_STAGE_ENTRY.json','head_scale.json','metrics.json','prediction.npz','RUN_RECEIPT.json')]
+        matches=list((raw/'runs').glob('*-'+state+'-localized-s7'));assert len(matches)==1
+        path=matches[0];oldpath=head/'runs'/HEAD_LOCKS[state]['run_id'];check_head_files(state,oldpath)
+        locked=[path/x for x in ('step_8000.pt','HEAD_ONLY_STAGE_ENTRY.json','head_scale.json','metrics.json','prediction.npz','RUN_RECEIPT.json','monitoring.json')]
         for p in locked:
             want=manifest['files'][str(p.relative_to(raw))];assert sha(p)==want['sha256'] and p.stat().st_size==want['bytes']
         before={str(p):sha(p) for p in locked}
@@ -72,6 +77,7 @@ def run(a):
         for name,score in baseline.items():metric.append(dict(state=state,arm=name,**score))
         target=(data['equilibrated_uv']-base)/abs(US)
         sol,info=project_head(phi,target,data['mass'])
+        if time.perf_counter()-start>600:raise RuntimeError('diagnostic wall budget exceeded after SVD')
         for j,s in enumerate(info.pop('singular_values')):spectrum.append(dict(state=state,index=j+1,singular_value=float(s)))
         for row in sol:
             coef=row.pop('coef');basis_uv=base+abs(US)*row.pop('prediction');projected_uv=base+abs(US)*row.pop('projection_prediction')
@@ -93,9 +99,10 @@ def run(a):
         print(state,'DONE',[(r['rank'],r['realized_full_rms']) for r in numerical if r['state']==state],flush=True)
         del model,phi,sol
     for name,rows in [('regional_metrics.csv',metric),('paired_comparison.csv',pairs),('numerical_diagnostics.csv',numerical),('singular_values.csv',spectrum)]:write_csv(a.out/name,rows)
-    record=dict(protocol=PROTOCOL,states=list(STATES),stage=8000,assets=assets,wall_seconds=time.perf_counter()-start,peak_rss_bytes=int(peak),linear_diagnostic_solutions=9,neural_optimizer_steps=0,checkpoint_writes=0,remote_actions=0,rank_rule='eps64*max(N,p)*smax, multipliers .1/1/10 all reported; primary1',physical_tolerance_defined=False,legacy001_route_gate=False)
+    if time.perf_counter()-start>600:raise RuntimeError('diagnostic wall budget exceeded before receipt')
+    record=dict(diagnostic_run_id='S04-E024-D002-R001-local-tsvd',diagnostic_code_commit=commit,diagnostic_source_sha256=source_hashes,protocol=PROTOCOL,states=list(STATES),stage=8000,assets=assets,wall_seconds=time.perf_counter()-start,peak_rss_bytes=int(peak),linear_diagnostic_solutions=9,neural_optimizer_steps=0,checkpoint_writes=0,remote_actions=0,rank_rule='eps64*max(N,p)*smax, multipliers .1/1/10 all reported; primary1',physical_tolerance_defined=False,legacy001_route_gate=False)
     (a.out/'receipt.json').write_text(json.dumps(record,indent=2)+'\n')
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--project',type=Path,required=True);p.add_argument('--case',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--chunk',type=int,default=1024);a=p.parse_args();assert 1<=a.chunk<=1024
+    p=argparse.ArgumentParser();p.add_argument('--project',type=Path,required=True);p.add_argument('--case',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--expected-commit',required=True);p.add_argument('--chunk',type=int,default=1024);a=p.parse_args();assert 1<=a.chunk<=1024
     with threadpool_limits(limits=2):run(a)
