@@ -1,0 +1,307 @@
+{
+  "protocol": "md01-four-windows-v1",
+  "selection": "last12 consecutive complete unviewed recorded stages before viewed24..29; partition in stage order; smallest explicit linked filename",
+  "metadata_sha256": {
+    "step_image_metadata_receipt.json": "ee3661ea35b2a2f3a4b0487adaf6354814fbeba2fe2758abdee833d47dcde447",
+    "fixed_camera_file_metadata.json": "910b9dfb31e3c6e441b4b9b6f2aa097b6f917a757f34b4a42493e6eaeab33005"
+  },
+  "windows": [
+    {
+      "id": "W12",
+      "stages": [
+        12,
+        13,
+        14
+      ],
+      "files": [
+        {
+          "filename": "IMG_0356.JPG",
+          "id": "0054c731-704f-4995-9856-0ea61182a419",
+          "folder_id": "81a356f0-50c5-4918-94ee-f9da09867449",
+          "content_details": {
+            "id": "456ed94a-fe75-42ea-9bc9-b1aa509cad4f",
+            "sha256_hash": "d899a5357d6601f9b144f2f80e01b235a86a1c2fa0e02e720b0def1778d5f234",
+            "content_type": "image/jpeg",
+            "size": 18642538,
+            "created_date": "2022-11-08T08:52:16.187Z",
+            "download_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/0054c731-704f-4995-9856-0ea61182a419/file_downloaded",
+            "view_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/0054c731-704f-4995-9856-0ea61182a419/file_viewed",
+            "download_expiry_time": "2126-10-16T18:56:58.030611648Z"
+          },
+          "size": 18642538,
+          "last_modified_date": "2022-11-08T08:52:16.187Z",
+          "status": "COMPLETED",
+          "step": 12,
+          "excel_row": 38
+        },
+        {
+          "filename": "IMG_0359.JPG",
+          "id": "6e50ba2b-0383-44ff-a062-153d7d2564d7",
+          "folder_id": "81a356f0-50c5-4918-94ee-f9da09867449",
+          "content_details": {
+            "id": "ea935d7f-5a4c-4a34-8b56-7e9288b87bdc",
+            "sha256_hash": "456f614ea21b35519d7c85efafb2798200ae6e0c223f57f4330e23206f065753",
+            "content_type": "image/jpeg",
+            "size": 18585296,
+            "created_date": "2022-11-08T08:52:17.826Z",
+            "download_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/6e50ba2b-0383-44ff-a062-153d7d2564d7/file_downloaded",
+            "view_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/6e50ba2b-0383-44ff-a062-153d7d2564d7/file_viewed",
+            "download_expiry_time": "2126-10-16T18:56:58.030619848Z"
+          },
+          "size": 18585296,
+          "last_modified_date": "2022-11-08T08:52:17.826Z",
+          "status": "COMPLETED",
+          "step": 13,
+          "excel_row": 41
+        },
+        {
+          "filename": "IMG_0362.JPG",
+          "id": "2d392c32-b4ce-42df-b0e3-61c84ec75b0b",
+          "folder_id": "81a356f0-50c5-4918-94ee-f9da09867449",
+          "content_details": {
+            "id": "86ca7858-f7db-44de-971f-ee7a46682a14",
+            "sha256_hash": "0c4113c9ad23b309676f678e19153e9c4f732459b3161517b92775391f2a3a6d",
+            "content_type": "image/jpeg",
+            "size": 18559121,
+            "created_date": "2022-11-08T08:52:19.03Z",
+            "download_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/2d392c32-b4ce-42df-b0e3-61c84ec75b0b/file_downloaded",
+            "view_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/2d392c32-b4ce-42df-b0e3-61c84ec75b0b/file_viewed",
+            "download_expiry_time": "2126-10-16T18:56:58.030627878Z"
+          },
+          "size": 18559121,
+          "last_modified_date": "2022-11-08T08:52:19.03Z",
+          "status": "COMPLETED",
+          "step": 14,
+          "excel_row": 44
+        }
+      ]
+    },
+    {
+      "id": "W15",
+      "stages": [
+        15,
+        16,
+        17
+      ],
+      "files": [
+        {
+          "filename": "IMG_0365.JPG",
+          "id": "4716d7c3-645d-4d1b-ac8e-55069b94a1fa",
+          "folder_id": "81a356f0-50c5-4918-94ee-f9da09867449",
+          "content_details": {
+            "id": "89fbb94d-dbbe-477f-b500-2fa5c770488d",
+            "sha256_hash": "c6e3315d936be3936c6f533eb6758f72da229c9de87a95369f222d36ab250f25",
+            "content_type": "image/jpeg",
+            "size": 18555885,
+            "created_date": "2022-11-08T08:52:19.58Z",
+            "download_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/4716d7c3-645d-4d1b-ac8e-55069b94a1fa/file_downloaded",
+            "view_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/4716d7c3-645d-4d1b-ac8e-55069b94a1fa/file_viewed",
+            "download_expiry_time": "2126-10-16T18:56:58.030635648Z"
+          },
+          "size": 18555885,
+          "last_modified_date": "2022-11-08T08:52:19.58Z",
+          "status": "COMPLETED",
+          "step": 15,
+          "excel_row": 47
+        },
+        {
+          "filename": "IMG_0368.JPG",
+          "id": "9ed61cfb-4800-472b-93ec-a18fd341fbb5",
+          "folder_id": "81a356f0-50c5-4918-94ee-f9da09867449",
+          "content_details": {
+            "id": "dc6ae567-aaee-4d4a-b6d7-01cfc29af979",
+            "sha256_hash": "8219e88b430280ea5166ffa4c4d54d2bf3d7beddcbac8108951dd41294767830",
+            "content_type": "image/jpeg",
+            "size": 18555249,
+            "created_date": "2022-11-08T08:52:20.906Z",
+            "download_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/9ed61cfb-4800-472b-93ec-a18fd341fbb5/file_downloaded",
+            "view_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/9ed61cfb-4800-472b-93ec-a18fd341fbb5/file_viewed",
+            "download_expiry_time": "2126-10-16T18:56:58.030643438Z"
+          },
+          "size": 18555249,
+          "last_modified_date": "2022-11-08T08:52:20.906Z",
+          "status": "COMPLETED",
+          "step": 16,
+          "excel_row": 50
+        },
+        {
+          "filename": "IMG_0371.JPG",
+          "id": "8e62fa26-dfce-4190-b790-68c2850f744a",
+          "folder_id": "81a356f0-50c5-4918-94ee-f9da09867449",
+          "content_details": {
+            "id": "522bcf88-2658-483e-841f-70742968eaf0",
+            "sha256_hash": "b3ebbd10ef8dbe379b1ddb05af20e23ed4bc495d778deccbdac49f27f13eb1d9",
+            "content_type": "image/jpeg",
+            "size": 18555923,
+            "created_date": "2022-11-08T08:52:21.901Z",
+            "download_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/8e62fa26-dfce-4190-b790-68c2850f744a/file_downloaded",
+            "view_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/8e62fa26-dfce-4190-b790-68c2850f744a/file_viewed",
+            "download_expiry_time": "2126-10-16T18:56:58.030652309Z"
+          },
+          "size": 18555923,
+          "last_modified_date": "2022-11-08T08:52:21.901Z",
+          "status": "COMPLETED",
+          "step": 17,
+          "excel_row": 53
+        }
+      ]
+    },
+    {
+      "id": "W18",
+      "stages": [
+        18,
+        19,
+        20
+      ],
+      "files": [
+        {
+          "filename": "IMG_0375.JPG",
+          "id": "ba33ea09-fddd-425a-8847-0100dc05c756",
+          "folder_id": "81a356f0-50c5-4918-94ee-f9da09867449",
+          "content_details": {
+            "id": "1fb20f89-45c5-4258-bf5c-1be293e9287f",
+            "sha256_hash": "1d22ff57f1925d79694bf9fd1ee6349d01a64450fad62c03e2587ad6415c61b1",
+            "content_type": "image/jpeg",
+            "size": 18545742,
+            "created_date": "2022-11-08T08:52:23.472Z",
+            "download_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/ba33ea09-fddd-425a-8847-0100dc05c756/file_downloaded",
+            "view_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/ba33ea09-fddd-425a-8847-0100dc05c756/file_viewed",
+            "download_expiry_time": "2126-10-16T18:56:58.030669179Z"
+          },
+          "size": 18545742,
+          "last_modified_date": "2022-11-08T08:52:23.472Z",
+          "status": "COMPLETED",
+          "step": 18,
+          "excel_row": 57
+        },
+        {
+          "filename": "IMG_0379.JPG",
+          "id": "316f11f6-d229-4c8e-9448-714339cae5c3",
+          "folder_id": "81a356f0-50c5-4918-94ee-f9da09867449",
+          "content_details": {
+            "id": "aabea896-7f30-40fc-951d-e6d12783916e",
+            "sha256_hash": "05a9329ace48d34e5bb287380d7131075614dadca3a346ebf939a67af3f7dda4",
+            "content_type": "image/jpeg",
+            "size": 17562085,
+            "created_date": "2022-11-08T08:52:25.443Z",
+            "download_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/316f11f6-d229-4c8e-9448-714339cae5c3/file_downloaded",
+            "view_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/316f11f6-d229-4c8e-9448-714339cae5c3/file_viewed",
+            "download_expiry_time": "2126-10-16T18:56:58.030679869Z"
+          },
+          "size": 17562085,
+          "last_modified_date": "2022-11-08T08:52:25.443Z",
+          "status": "COMPLETED",
+          "step": 19,
+          "excel_row": 61
+        },
+        {
+          "filename": "IMG_0382.JPG",
+          "id": "a02a098e-b55d-42ee-8de0-f53dbaac4be7",
+          "folder_id": "81a356f0-50c5-4918-94ee-f9da09867449",
+          "content_details": {
+            "id": "6eb14250-2e54-4f3f-9e46-d2a38d5d0493",
+            "sha256_hash": "719a2f7a0b215ac6a96b5cd076f07c25af90eb92f3746c7072edaf3a30f4c8c8",
+            "content_type": "image/jpeg",
+            "size": 18542898,
+            "created_date": "2022-11-08T08:51:51.7Z",
+            "download_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/a02a098e-b55d-42ee-8de0-f53dbaac4be7/file_downloaded",
+            "view_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/a02a098e-b55d-42ee-8de0-f53dbaac4be7/file_viewed",
+            "download_expiry_time": "2126-10-16T18:56:58.030687739Z"
+          },
+          "size": 18542898,
+          "last_modified_date": "2022-11-08T08:51:51.7Z",
+          "status": "COMPLETED",
+          "step": 20,
+          "excel_row": 64
+        }
+      ]
+    },
+    {
+      "id": "W21",
+      "stages": [
+        21,
+        22,
+        23
+      ],
+      "files": [
+        {
+          "filename": "IMG_0385.JPG",
+          "id": "1496ef47-ec86-4094-a9b5-809d8047add5",
+          "folder_id": "81a356f0-50c5-4918-94ee-f9da09867449",
+          "content_details": {
+            "id": "283f325e-e56c-4352-8eb3-57aa843bdd79",
+            "sha256_hash": "1f19d9c2e55568148802ac053013f7191b4a642ee583b3c37b3ff08d8361203e",
+            "content_type": "image/jpeg",
+            "size": 17494324,
+            "created_date": "2022-11-08T08:51:51.259Z",
+            "download_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/1496ef47-ec86-4094-a9b5-809d8047add5/file_downloaded",
+            "view_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/1496ef47-ec86-4094-a9b5-809d8047add5/file_viewed",
+            "download_expiry_time": "2126-10-16T18:56:58.03069565Z"
+          },
+          "size": 17494324,
+          "last_modified_date": "2022-11-08T08:51:51.259Z",
+          "status": "COMPLETED",
+          "step": 21,
+          "excel_row": 67
+        },
+        {
+          "filename": "IMG_0388.JPG",
+          "id": "8e7c4bde-4dee-44cb-ad47-500b8aa0fba8",
+          "folder_id": "81a356f0-50c5-4918-94ee-f9da09867449",
+          "content_details": {
+            "id": "86a57c78-d8f8-4026-b76d-c560fb60b836",
+            "sha256_hash": "d4c10d5f6d9a15c60cc5b5df4bb26604332335ca307e61c66841aef63d1174b4",
+            "content_type": "image/jpeg",
+            "size": 18331342,
+            "created_date": "2022-11-08T08:52:07.586Z",
+            "download_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/8e7c4bde-4dee-44cb-ad47-500b8aa0fba8/file_downloaded",
+            "view_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/8e7c4bde-4dee-44cb-ad47-500b8aa0fba8/file_viewed",
+            "download_expiry_time": "2126-10-16T18:56:58.030703519Z"
+          },
+          "size": 18331342,
+          "last_modified_date": "2022-11-08T08:52:07.586Z",
+          "status": "COMPLETED",
+          "step": 22,
+          "excel_row": 70
+        },
+        {
+          "filename": "IMG_0391.JPG",
+          "id": "43a5a3d5-8292-47bc-9d3f-16d2e0db262e",
+          "folder_id": "81a356f0-50c5-4918-94ee-f9da09867449",
+          "content_details": {
+            "id": "811ae740-c405-412c-9915-0bdd4ae7914d",
+            "sha256_hash": "8100a7c6d2f5a2e22951c071b74fb3c0963e184eced691e5b4d136a88aac779b",
+            "content_type": "image/jpeg",
+            "size": 17550369,
+            "created_date": "2022-11-08T08:51:54.361Z",
+            "download_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/43a5a3d5-8292-47bc-9d3f-16d2e0db262e/file_downloaded",
+            "view_url": "https://data.mendeley.com/public-files/datasets/dns97tfdjn/files/43a5a3d5-8292-47bc-9d3f-16d2e0db262e/file_viewed",
+            "download_expiry_time": "2126-10-16T18:56:58.03071141Z"
+          },
+          "size": 17550369,
+          "last_modified_date": "2022-11-08T08:51:54.361Z",
+          "status": "COMPLETED",
+          "step": 23,
+          "excel_row": 73
+        }
+      ]
+    }
+  ],
+  "protected_old_hashes": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R002/summary.json": "c944476a97231fff1f9646d3909dde1dff229aae8b26a68a4bfd2fa0a45e6db7",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R001/predictions_saved_before_target.json": "e16f88e538069e24a5b87bf78a8aebe2b73540263f746070e3c064146344caae",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E032-MD01/runs/S03-E032-MD01-R001/summary.json": "ab93108248bc5f8a1706c199300cf71a37b3a028f2cbc763ca0b937b666800ba",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E033-MD01/runs/S03-E033-MD01-R003/summary.json": "0cbcfeb570461e212f1ba37f3924211800fd965ac9ea992bde3c065649b5af66",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E033-MD01/runs/S03-E033-MD01-R003/predictions_saved_before_target.json": "d8999655b6c15f32075b3a37dce8d5614914fd443469391261963591290498e2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E033-MD01/runs/S03-E033-MD01-R003/history_snapshot.json": "d8999655b6c15f32075b3a37dce8d5614914fd443469391261963591290498e2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R006/summary.json": "527e344427956879d008279d41601a2999665c5620895c4f6b3404324f1ba4c4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R006/target_measurement.json": "e3830a4edff0c127cad7291169051cbf5364935bd84ec0d45bb9a30cac625ce0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R002/summary.json": "f85012d93b7e89cd0d071f4e5b2d38ec68259c5da4cbac893ba87bd039d9b044",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R002/predictions_saved_before_target.json": "f5b70e1c4cab57f8e7f7c7f881d98b4c5101d7bb30559a69157e26eab7f83ff6",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R002/history_snapshot.json": "f5b70e1c4cab57f8e7f7c7f881d98b4c5101d7bb30559a69157e26eab7f83ff6",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R005/summary.json": "63ad152934e276b105acc6212223d100e695ac66a86c6c86c838fb1d50d07b58",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R005/predictions_saved_before_target.json": "1f7a28d8dc98fad7a6156b2045626cb2c988a29e00245eae8c8098c38511d33b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R005/history_snapshot.json": "1f7a28d8dc98fad7a6156b2045626cb2c988a29e00245eae8c8098c38511d33b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E035-MD01/runs/S03-E035-MD01-R001/summary.json": "7138cbad9f16414a9ee692cc92334deb20e9a2effed34081f336dc7e95890af3"
+  }
+}
