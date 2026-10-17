@@ -19,6 +19,9 @@ EXPERIMENT = 'S04-E025'
 RUN = EXPERIMENT+'-R001'
 ROOT = Path(__file__).resolve().parents[1]
 DATA_ROOT = Path('/Users/wenxiaofang/phase-field-fracture-with-pidl')
+# Only legacy relative scientific paths use the documented E016 source root.
+# Keep the parent project/output root and three absolute PIN paths unchanged.
+RELATIVE_SOURCE_ROOT = DATA_ROOT/'.codex/worktrees/s04-e016-request31-storage-block-20261009'
 OUT = DATA_ROOT/'local_archive/experiments'/EXPERIMENT/'runs'/RUN
 MANIFEST = 'docs/research/S04/S04-E025/input_manifest.json'
 PROPOSAL = '82cd09258bb09604a3f89809dd7005ac77631b8c'
@@ -49,8 +52,9 @@ def strict_json(text):
 def manifest():
     """Git controls only, no scientific metadata or array reads."""
     m = strict_json((ROOT/MANIFEST).read_text())
-    require(m['experiment_id'] == EXPERIMENT and m['revision'] == 'v1' and
+    require(m['experiment_id'] == EXPERIMENT and m['revision'] == 'v2' and
             m['proposal_commit'] == PROPOSAL and m['data_root'] == str(DATA_ROOT) and
+            m['relative_source_root'] == str(RELATIVE_SOURCE_ROOT) and
             m['legacy_lock_sha256'] == LOCK_SHA and m['counts'] == COUNTS and
             m['train'] == list(TRAIN) and m['evaluation'] == 'u011' and
             m['horizon'] == 0 and m['origin'] == 'cN_s4_post_history_commit', 'manifest identity')
@@ -62,7 +66,7 @@ def manifest():
     require(lock['feature_module'] == 'SENS_tensile/s04_g5_features.py' and
             hashlib.sha256((ROOT/lock['feature_module']).read_bytes()).hexdigest() == lock['feature_sha256'],
             'unchanged legacy feature recipe required')
-    absolute = lambda path: str(Path(path) if Path(path).is_absolute() else DATA_ROOT/path)
+    absolute = lambda path: str(Path(path) if Path(path).is_absolute() else RELATIVE_SOURCE_ROOT/path)
     expected = {(None, 'geometry'): (absolute(lock['geometry']['path']), lock['geometry']['sha256'])}
     for item in lock['trajectories']:
         require(item['id'] in COUNTS and item['common_pre_cycle_end_candidate'] == COUNTS[item['id']], 'fixed prefix')
