@@ -93,10 +93,10 @@ def run(a):
     axes[1].axhline(0,color="black",lw=1)
     axes[1].axhline(base["delta_abs_error"],color=".45",lw=1,ls=":",label="E034 original difference")
     axes[1].set(xticks=[0,1],xticklabels=["Common offsets","Independent mismatch"],
-                ylabel="Secant minus persistence absolute error (px)",xlim=(-.4,1.4),
+                ylabel="Trend minus persistence absolute error (px)",xlim=(-.4,1.4),
                 ylim=(min(c["delta_abs_error"] for c in cases if c["valid"])-.5,max(0,max(c["delta_abs_error"] for c in cases if c["valid"]))+.5))
     axes[1].set_title("All prespecified cases; lower is better")
-    axes[1].legend(loc="upper right",frameon=False,fontsize=8)
+    axes[1].legend(loc="upper right",bbox_to_anchor=(1,.94),frameon=False,fontsize=8)
     axes[1].grid(axis="y",alpha=.15)
     fig.suptitle("S03-E035-MD01 R001 | one viewed continuation, not 50 independent tests\nUnchanged half-depth width; E034 original scores retained",fontsize=12)
     fig.supxlabel("Points show deterministic position assumptions; no CI or sampling probability. Horizontal spreading follows fixed case order, not error rank.",fontsize=8)
