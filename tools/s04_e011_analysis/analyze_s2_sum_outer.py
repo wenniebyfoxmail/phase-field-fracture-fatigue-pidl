@@ -91,6 +91,8 @@ def main(args):
     retrieval = jsonfile(args.source/'retrieval_verification.json')
     assert retrieval['all_hashes_and_sizes_match'] and retrieval['files'] == 97
     assert retrieval['bytes'] == 1716819024
+    assert len(retrieval['manifest']) == retrieval['files']
+    assert sum(t['bytes'] for t in retrieval['manifest']) == retrieval['bytes']
     for t in retrieval['manifest']:
         p = root/t['relative'].replace('\\', '/')
         assert p.stat().st_size == t['bytes'] and sha(p) == t['sha256']
@@ -248,7 +250,9 @@ def draw(out,nodes,c,w,fields,rows,policies,contrasts,runid):
     fig,axs=plt.subplots(2,2,figsize=(13,8))
     axs[0,0].semilogy(x,[(r['u_l2']+r['d_l2'])/4e-6 for r in q],'.-',label='strict joint sum / 4e-6')
     axs[0,0].semilogy(x,[r['u_l2']/1e-8 for r in q],'.-',label='strict outer u / 1e-8')
-    axs[0,0].axhline(1,color='black',ls='--');axs[0,0].set_title('Both first pass at actual outer19');axs[0,0].set_ylabel('Normalized stopping component (log)');axs[0,0].legend(fontsize=8)
+    firstsum=next((r['outer'] for r in q if r['u_l2']+r['d_l2']<=4e-6),None)
+    firstu=next((r['outer'] for r in q if r['u_l2']<=1e-8),None)
+    axs[0,0].axhline(1,color='black',ls='--');axs[0,0].set_title(f'First strict pass: sum outer{firstsum}, u outer{firstu}');axs[0,0].set_ylabel('Normalized stopping component (log)');axs[0,0].legend(fontsize=8)
     axs[0,1].bar([r['policy'] for r in policies],[r['first_outer'] or 0 for r in policies])
     for i,r in enumerate(policies):axs[0,1].text(i,(r['first_outer'] or 0)+.4,str(r['first_outer']),ha='center')
     axs[0,1].set_ylim(0,22);axs[0,1].set_ylabel('First eligible complete outer');axs[0,1].set_title('Four offline policies; no new FEM runs')
@@ -263,10 +267,11 @@ def draw(out,nodes,c,w,fields,rows,policies,contrasts,runid):
     logs=[np.log10(np.maximum(np.sum(w*fields[k],axis=1)/w.sum(1),1e-12)) for k in [1,19]]
     absolute=Normalize(-12,max(float(z.max()) for z in logs))
     pc=None
-    for ax,z,title in zip(axs[:2],logs,['S0V0 selects native outer1','S1V0 / S0V1 / S1V1 select outer19']):
+    selected={k:' / '.join(r['policy'] for r in policies if r['first_outer']==k) or 'No policy selects' for k in [1,19]}
+    for ax,z,title in zip(axs[:2],logs,[selected[k]+f' | native outer{k}' for k in [1,19]]):
         pc=PolyCollection(nodes[c],array=z,norm=absolute,cmap='viridis',edgecolors='none');ax.add_collection(pc);ax.autoscale();ax.set_aspect('equal');ax.set_title(title,fontsize=10)
     cell=np.sum(w*gap,axis=1)/w.sum(1);vm=float(abs(cell).max())
-    dc=PolyCollection(nodes[c],array=cell,norm=SymLogNorm(max(vm*.001,1e-15),vmin=-vm,vmax=vm),cmap='RdBu_r',edgecolors='none');axs[2].add_collection(dc);axs[2].autoscale();axs[2].set_aspect('equal');axs[2].set_title('Signed outer19 - outer1 (same for either gate)',fontsize=10)
+    dc=PolyCollection(nodes[c],array=cell,norm=SymLogNorm(max(vm*.001,1e-15),vmin=-vm,vmax=vm),cmap='RdBu_r',edgecolors='none');axs[2].add_collection(dc);axs[2].autoscale();axs[2].set_aspect('equal');axs[2].set_title('Signed native outer19 - outer1',fontsize=10)
     for ax in axs:ax.set_xlabel('native x');ax.set_ylabel('native y')
     fig.colorbar(pc,ax=list(axs[:2]),label='log10 active cell mean (floor1e-12)',shrink=.75)
     fig.colorbar(dc,ax=axs[2],label='Signed active cell gap (symlog)',shrink=.75)
