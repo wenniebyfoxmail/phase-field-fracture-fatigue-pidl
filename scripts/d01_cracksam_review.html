@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>D01 · Improved crack masks</title>
+<style>
+body{font:16px system-ui;margin:24px;background:#f4f6f8;color:#14232a}h1{margin-bottom:8px}button,select,input{font:inherit}button,select{padding:6px}header{position:sticky;top:0;background:#f4f6f8;z-index:2;padding-bottom:12px}.controls{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}.viewport{height:72vh;overflow:auto;background:#161b1d;border:1px solid #bbb}canvas{display:block}p{max-width:1100px;line-height:1.45}.note{background:#fff;padding:12px;border-left:4px solid #00a678}.actions{margin-top:12px;display:flex;gap:20px}#status{font-size:14px}textarea{width:min(900px,95%);height:65px}label{white-space:nowrap}
+</style>
+<header><h1>D01 — CrackSAM full-area mask review</h1>
+<p>Green shows the crack mask. Compare the improved mask with raw CrackSAM and the previous DeepCrack result on the same six photographs. Orange shows pixels removed by cleanup. No new training.</p>
+<div class="controls"><select id="case"></select><select id="layer"><option value="refined">CrackSAM + cleanup</option><option value="raw">Raw CrackSAM</option><option value="deepcrack">Previous DeepCrack</option><option value="removed">Removed pixels (orange)</option></select><button id="prev">Previous</button><button id="next">Next</button>
+<label>Opacity <input id="opacity" type="range" min="0" max="45" value="45"><span id="alpha">45%</span></label>
+<label>Zoom <select id="zoom"><option value="fit">Fit</option><option value="0.5">50%</option><option value="1">100% (native pixels)</option><option value="2">200%</option></select></label>
+<button id="toggle">Hide mask</button></div><div id="status">Loading…</div></header>
+<div class="pair"><section><b>Original</b><div class="viewport" id="left"><canvas id="raw"></canvas></div></section>
+<section><b>Original + selected transparent layer</b><div class="viewport" id="right"><canvas id="over"></canvas></div></section></div>
+<div class="actions"><a id="download" download>Download full-resolution binary mask</a></div>
+<p class="note">CrackSAM uses the authors’ released crack-trained SAM ViT-H adapter. Cleanup uses pretrained OCR to exclude writing and fixed shape rules to screen small compact components. Switch to raw or removed pixels to check whether a real branch was excluded. These are candidate masks for visual review; geometry accuracy has not been established.</p>
+<label>Optional review note for this photograph:</label><br><textarea id="note" placeholder="For example: main crack mostly covered; fine branch near upper right missed."></textarea>
+<div class="controls"><button id="save">Export review notes JSON</button><span>Notes stay in this page until exported. No point picking required.</span></div>
+<script>
+const ids=['beam4_t225','beam4_t588','beam5_t228','beam5_t729','beam6_t183','beam6_t460'];
+const $=id=>document.getElementById(id), notes={}; let source,mask,hidden=false,token=0,current=ids[0];
+const reviews=__REVIEW_SUMMARY__;
+function paths(){const mode=$('layer').value;const folder=mode==='deepcrack'?'full_mask_assets':'strong_mask_assets';const stem=current+(mode==='deepcrack'?'':'_'+mode);return {overlay:folder+'/'+stem+'_overlay.png',mask:folder+'/'+stem+'_mask.png'}}
+for(const id of ids){const o=document.createElement('option');o.value=id;o.textContent=id.replace('beam','Beam ').replace('_t',' · t=');$('case').append(o)}
+function loadImage(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=url})}
+function paint(){if(!source||!mask)return;const size=$('zoom').value; const width=size==='fit'?$('left').clientWidth:source.width*Number(size);
+for(const id of ['raw','over']){const c=$(id);c.width=source.width;c.height=source.height;c.style.width=width+'px';c.style.height='auto';const ctx=c.getContext('2d');ctx.drawImage(source,0,0);if(id==='over'&&!hidden){ctx.globalAlpha=Number($('opacity').value)/115*255/100;ctx.drawImage(mask,0,0);ctx.globalAlpha=1}}
+$('alpha').textContent=$('opacity').value+'%';$('toggle').textContent=hidden?'Show mask':'Hide mask';}
+async function choose(){notes[current]=$('note').value;current=$('case').value;$('note').value=notes[current]||'';const mine=++token;source=null;mask=null;$('status').textContent='Loading '+current+'…';try{const images=await Promise.all([loadImage('full_mask_assets/'+current+'.jpg'),loadImage(paths().overlay)]);if(mine!==token)return;[source,mask]=images;paint();$('status').textContent=current+' · '+source.width+' × '+source.height+' pixels · scroll either panel to pan (linked) · OCR exclusions: '+((reviews.find(x=>x.id===current)||{}).ocr_excluded||[]).join(', ');$('download').href=paths().mask;}catch(e){$('status').textContent='Could not load assets. Check that the local server is running.'}}
+$('case').onchange=choose;$('layer').onchange=choose; for(const id of ['opacity','zoom'])$(id).oninput=paint;$('toggle').onclick=()=>{hidden=!hidden;paint()};
+function step(d){const n=($('case').selectedIndex+d+ids.length)%ids.length;$('case').selectedIndex=n;choose()}
+$('prev').onclick=()=>step(-1);$('next').onclick=()=>step(1);
+let syncing=false;for(const [a,b] of [['left','right'],['right','left']])$(a).onscroll=()=>{if(syncing)return;syncing=true;$(b).scrollLeft=$(a).scrollLeft;$(b).scrollTop=$(a).scrollTop;requestAnimationFrame(()=>syncing=false)};
+$('save').onclick=()=>{notes[current]=$('note').value;const blob=new Blob([JSON.stringify({model:'CrackSAM + explicit OCR/component cleanup',revision:'155026b08c64bde1c68d1c37f3b588ddb33454a7',selected_layer:$('layer').value,exported_at:new Date().toISOString(),notes},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='d01_full_mask_review_notes.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+window.onresize=paint;choose();
+</script></html>
