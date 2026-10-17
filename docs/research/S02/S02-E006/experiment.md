@@ -1,7 +1,7 @@
 ---
 storyline_id: S02
 experiment_id: S02-E006
-protocol_revision: audit-v1.2
+protocol_revision: audit-v1.3
 claim_class: C1_evidence_validity
 evidence_domain: real_road_and_controlled_experiment_reported_separately
 status: audit_preparation_no_training
@@ -28,3 +28,7 @@ R001 stopped at section metadata conflict, before formal output creation. Direct
 ## Audit-v1.2 waveform source-quality inventory
 
 R002 stopped before outputs at PHM non-strict waveform timestamps. Direct source inspection shows duplicated exported time values, not proof of duplicate physical samples or repairable exact acquisition timing. Report equal/backward-step counts as quality gaps while retaining raw waves and all metadata; do not deduplicate, reconstruct timestamps or certify usable waveform features. Use universal newline handling for literal CSV payload line endings. No forecast criterion changed, no labels repaired, no model execution. R002 failed receipt retained; fresh R003 after exact code rereview.
+
+## Audit-v1.3 waveform missing-value inventory
+
+R003 stopped before outputs on literal NA waveform tokens. Count missing/nonfinite/malformed waveform rows explicitly rather than coercing them to zeros, removing samples or accepting model-ready signals. Time-step quality counts use only adjacent valid rows and never bridge invalid rows. Exact cycle joins remain metadata coverage, not a certification of usable features. No other scientific definition changed. Preserve R003 failed receipt; fresh R004 after rereview.

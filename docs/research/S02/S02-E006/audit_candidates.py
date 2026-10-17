@@ -136,7 +136,7 @@ def phm():
         w=openpyxl.load_workbook(io.BytesIO(z.read(name)),read_only=True,data_only=True)
         vals=[(int(r[0]),float(r[1])) for r in w['Sheet1'].values if numeric(r[0]) and numeric(r[1])]
         labelkeys=[r[0] for r in vals];check(len(labelkeys)==len(set(labelkeys)),'duplicate PHM labels')
-        signals={};aliases=[];time_warnings=[]
+        signals={};aliases=[];time_warnings=[];invalid_waves=[]
         for n in z.namelist():
             match=re.search('/'+s+r'/(\d+)/(signal|singal)_([12])\.csv$',n)
             if not match:continue
@@ -145,10 +145,20 @@ def phm():
             check(rep not in signals.setdefault(cycle,{}),'duplicate PHM repeat')
             rows=list(csv.reader(io.StringIO(z.read(n).decode(),newline='')))
             check(rows[0]==['time','ch1','ch2'],'PHM signal header')
-            vv=[[float(x) for x in r] for r in rows[1:] if r]
-            check(all(len(r)==3 and all(math.isfinite(v) for v in r) for r in vv),'PHM waveform numeric')
-            equal=sum(b[0]==a[0] for a,b in zip(vv,vv[1:]))
-            backward=sum(b[0]<a[0] for a,b in zip(vv,vv[1:]))
+            vv=[];invalid=0
+            for raw in rows[1:]:
+                if not raw:continue
+                try:
+                    values=[float(x) for x in raw]
+                    valid=len(values)==3 and all(math.isfinite(v) for v in values)
+                except ValueError:
+                    valid=False
+                vv.append(values if valid else None)
+                invalid+=not valid
+            if invalid:invalid_waves.append({'member':n,'invalid_rows':invalid})
+            adjacent=[(a,b) for a,b in zip(vv,vv[1:]) if a is not None and b is not None]
+            equal=sum(b[0]==a[0] for a,b in adjacent)
+            backward=sum(b[0]<a[0] for a,b in adjacent)
             if equal or backward:time_warnings.append({'member':n,'duplicate_time_steps':equal,'backward_time_steps':backward})
             signals[cycle][rep]=len(vv)
         check(all(set(v)=={1,2} for v in signals.values()),'PHM repeats missing')
@@ -158,6 +168,8 @@ def phm():
             'signal_only_cycles':json.dumps(sorted(set(signals)-set(labelkeys))),
             'label_only_cycles':json.dumps(sorted(set(labelkeys)-set(signals))),
             'source_label_order_monotonic':not any(bad),'typo_spelling_signal_members':len(aliases),
+            'waveform_files_with_invalid_rows':len(invalid_waves),
+            'waveform_invalid_rows':sum(r['invalid_rows'] for r in invalid_waves),
             'waveform_files_with_time_warnings':len(time_warnings),
             'waveform_duplicate_time_steps':sum(r['duplicate_time_steps'] for r in time_warnings),
             'waveform_backward_time_steps':sum(r['backward_time_steps'] for r in time_warnings),
@@ -178,7 +190,7 @@ def phm():
 
 
 def main():
-    out=ROOT/'local_archive/experiments/S02-E006/runs/S02-E006-R003/audit'
+    out=ROOT/'local_archive/experiments/S02-E006/runs/S02-E006-R004/audit'
     check(not out.exists(),'fresh output required')
     check(not subprocess.check_output(['git','status','--porcelain'],text=True).strip(),'clean code snapshot required')
     head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
@@ -191,10 +203,10 @@ def main():
     mt,ms=mendeley();nt,na,ns=mnroad();pt,pj,ps=phm()
     out.mkdir(parents=True)
     for name,rs in [('mendeley_sheets.csv',mt),('mnroad_sections.csv',nt),('mnroad_spring_slot_inventory.csv',na),('phm_specimens.csv',pt),('phm_cycle_join.csv',pj)]:write_csv(out/name,rs)
-    summary={'run_id':'S02-E006-R003','scope':'schema identity availability only, no forecasts','Mendeley':ms,'MnROAD':ns,'PHM2019':ps,'training':False,'fitting':False,'scientific_prediction_result':False}
+    summary={'run_id':'S02-E006-R004','scope':'schema identity availability only, no forecasts','Mendeley':ms,'MnROAD':ns,'PHM2019':ps,'training':False,'fitting':False,'scientific_prediction_result':False}
     (out/'summary.json').write_text(json.dumps(summary,indent=2,default=str)+'\n')
     check(all(p.read_bytes()==b for p,b in original.items()),'source changed')
-    receipt={'run_id':'S02-E006-R003','code_commit':head,'dirty_status':'clean at launch','hostname':socket.gethostname(),'pid':os.getpid(),'start_utc':started,'elapsed_seconds':time.monotonic()-start,'out':str(out),'input_paths':[str(p) for p in original],'input_bytes_unchanged':True,'execution_status':'succeeded','retrieval':'local verified','training':False,'fitting':False,'model_forward':False,'command':__import__('sys').argv}
+    receipt={'run_id':'S02-E006-R004','code_commit':head,'dirty_status':'clean at launch','hostname':socket.gethostname(),'pid':os.getpid(),'start_utc':started,'elapsed_seconds':time.monotonic()-start,'out':str(out),'input_paths':[str(p) for p in original],'input_bytes_unchanged':True,'execution_status':'succeeded','retrieval':'local verified','training':False,'fitting':False,'model_forward':False,'command':__import__('sys').argv}
     (out/'execution_receipt.json').write_text(json.dumps(receipt,indent=2)+'\n');signal.alarm(0)
     print(json.dumps(summary,indent=2,default=str))
 
