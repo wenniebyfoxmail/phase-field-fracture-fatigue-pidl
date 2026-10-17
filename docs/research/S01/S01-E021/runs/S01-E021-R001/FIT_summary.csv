@@ -1,0 +1,4 @@
+fold,known_positive_GT,positive_GT_after_intersection,max_policy_positive_GT,chosen_positive_GT,gate,abstained,chosen_net_GT
+0,3,3,0,0,abstain,True,0
+1,5,5,0,0,abstain,True,0
+2,6,6,0,0,abstain,True,0
