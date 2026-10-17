@@ -108,7 +108,7 @@
     "fits": 10,
     "purpose": "diagnostic only; mixture/abstention flips cannot choose main policy or veto/rescue primary",
     "fit_GT": "own FIT8 minus omitted whole location; recompute same budget on remaining images",
-    "empty_support": "abstain; record missing support, not invalid"
+    "empty_support": "record descriptive missing original FIT8 support only; evaluate all six fixed policies and decide via actual scoped joint protection/utility; no support-only forced abstention"
   },
   "criterion": {
     "old_E003_retention_minimum": 0.95,
