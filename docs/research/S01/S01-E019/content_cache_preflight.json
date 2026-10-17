@@ -1,0 +1,44 @@
+{
+  "source_run": "S01-E012-R004",
+  "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E012/runs/S01-E012-R004/evidence/pooled_features.npy",
+  "sha256": "f583bbe62820eb67d87d0190ffd86d2dd6df0532931ca0d30bdec6649c38d375",
+  "bytes": 71783552,
+  "shape": [
+    31156,
+    576
+  ],
+  "dtype": "float32",
+  "fortran_order": false,
+  "npy_version": [
+    1,
+    0
+  ],
+  "header_bytes": 128,
+  "source_keys": 31156,
+  "images": 835,
+  "locations": [
+    "24",
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "1638",
+    "2027",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "candidate_identity_sha256": "807d48894475b8619e58b057efaa44a80939c2d1868190171605880654c187da",
+  "scoring_receipt_sha256": "83240c94d48c91fab187cb1940c1da9f78173792301249a35b9bc6302e6e4b59",
+  "classifier_sha256": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
+  "feature_recipe": "frozen E008/E003 corrected crop 576 pooled encoder features; E012-R004 exact source_parent_key row order",
+  "verified": "existing file hash/header + saved row-identity/score order only",
+  "array_values_loaded": false,
+  "PCA_fits": 0,
+  "label_associations": 0,
+  "forwards": 0,
+  "new_pixels": 0,
+  "fresh_access": false
+}
