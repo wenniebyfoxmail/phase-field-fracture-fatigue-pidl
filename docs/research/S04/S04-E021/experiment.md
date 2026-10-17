@@ -385,3 +385,11 @@ Known unchanged-core constant messages and numeric overflow get whitelist codes;
 unknown failures still expose stage/type only, never raw exception text/values.
 AST/diff checks only, no execution/mock/real access; exact revision is submitted
 for static difference review before any run-card preparation.
+
+Difference review accepted `ab489652d4b4bb55c166782c8b9de9645a5f569b` with
+both findings closed and no new mandatory issue (turn
+01a14b70-fb6b-7643-b408-66045fe4a09a). Main chat read back and checked the
+diff; see `late_real_attribution_code_review_result_ab48965_20261017.md`.
+Static-only acceptance, not tested runtime/resource/visual readiness or run
+permission. Next only prepare exact-SHA/final-command ATTR-R001 card for human
+approval; no execution, mock, real access, fitting or confirmation opening.

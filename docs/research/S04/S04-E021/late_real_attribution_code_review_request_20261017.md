@@ -49,3 +49,17 @@ Remaining scope/grant/math/report/budget/activity logic statically acceptable;
 runtime, resources, cleanup and visual behaviour unverified. Main chat read the
 reply and made only these two fixes without execution or real access. This
 request itself does not authorise scientific reading or execution.
+
+## Difference re-review
+
+Revision `ab489652d4b4bb55c166782c8b9de9645a5f569b`, compared with 5ddecdb.
+Sent once to the same named reviewer; response matched threadId, isError=false.
+Requested closure of only two fixes: active-child cache-only FileNotFoundError
+tolerance (final/core/link checks stay strict), and whitelist describe reason
+codes/overflow with opaque unknown failures. No math/grant/scope/budget change.
+The same static-only/no-import/no-execution/no-real-path/no-writing conditions
+were explicit. Turn `01a14b70-fb6b-7643-b408-66045fe4a09a` completed, error=null;
+final message `msg_015d0a19570ed14a016ad3d35251548191b22c1d021d6e269a`.
+Verdict: ab48965 statically accepted, both mandatory fixes closed, no new
+mandatory issue. Main chat read back and checked the source diff; detailed
+closure/boundaries are in `late_real_attribution_code_review_result_ab48965_20261017.md`.
