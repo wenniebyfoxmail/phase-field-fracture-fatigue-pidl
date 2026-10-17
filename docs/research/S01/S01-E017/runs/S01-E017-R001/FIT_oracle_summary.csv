@@ -1,0 +1,7 @@
+fold,oracle,known_positive_GT,positive_GT_in_capacity,old_hits,retained_old,lost_old,new_GT,net_GT,retention,macro_delta,appended,prefix,added_FP,protected_increment
+0,validity_only,3,0,407,406,1,0,-1,0.9975429975429976,-0.0011467889908256534,6,6,2,False
+0,decomposed_novel_budget,3,3,407,407,0,3,3,1.0,0.007482752322664266,3,3,0,True
+1,validity_only,5,0,484,484,0,0,0,1.0,0.0,6,6,0,False
+1,decomposed_novel_budget,5,4,484,484,0,4,4,1.0,0.004856952419099669,4,4,0,True
+2,validity_only,6,0,476,473,3,0,-3,0.9936974789915967,-0.003659922957283457,6,6,2,False
+2,decomposed_novel_budget,6,5,476,476,0,5,5,1.0,0.010127315361232903,5,5,0,True

@@ -1,0 +1,4 @@
+fold,records,known_positive_GT,valid_candidates,positive_gain_candidates,novel_valid_reference_GT,valid_but_FP,valid_below_budget,tie_mass_unique,tie_mass_max,higher_score_unique,overlap_count_unique
+0,11588,3,236,1961,11,37,182,1,0.0,6674,4
+1,13422,5,324,2351,17,41,254,1,0.0,7728,4
+2,13758,6,250,2618,22,33,189,1,0.0,8120,4
