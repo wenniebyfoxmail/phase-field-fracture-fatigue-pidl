@@ -98,6 +98,29 @@ def make_smooth(state,problem):
  f.alpha_constraint=AnchoredSmoothDamage(r,1e-7).to(problem.device)
  return f
 
+def b0_contract(problem,field):
+ with torch.no_grad():
+  raw=field.net(problem.x)[:,2];d=field.alpha_constraint(raw);a=field.alpha_constraint
+  diag=a.diagnostics(raw);hard=a.hard_b0
+  assert all(torch.isfinite(v).all() for v in list(a.state_dict().values())+list(diag.values())+[d])
+  nodal=float((d-hard).abs().max());gp=float(q4_interpolate(d-hard,problem.cells,problem.N).abs().max())
+  slope=float(((diag['derivative']-a.legacy_slope).abs()/a.legacy_slope).max())
+  legacy=torch.where(raw.abs()<=2,raw/4+.5,torch.where(raw>2,1+.001*(raw-2),.001*(raw+2)))
+  assert nodal<=2e-7 and gp<=2e-7 and slope<=2e-5 and float(d.min())>=0 and float(d.max())<=1
+  return dict(smooth_bounded_nodal_maxabs=nodal,smooth_bounded_gp_maxabs=gp,initial_derivative_maxrelative=slope,legacy_to_box_maxabs=float((legacy-hard).abs().max()),all_finite=True,damage_min=float(d.min()),damage_max=float(d.max()))
+
+def replay_head(problem,state,head,block,expected,folder,target=None):
+ field=make_smooth(state,problem)
+ with torch.no_grad():
+  h=torch.as_tensor(head,device=problem.device,dtype=torch.float64)
+  rows=slice(0,2) if block=='U' else slice(2,3)
+  if h.ndim==1:h=h[None,:]
+  field.net.output_layer.weight[rows].copy_(h[:,:-1]);field.net.output_layer.bias[rows].copy_(h[:,-1])
+  u,v,d=problem.fields(field)
+  actual=[u,v] if block=='U' else [d]
+  errors=[float((a-torch.as_tensor(e,device=problem.device)).abs().max()) for a,e in zip(actual,expected)]
+ return save_arm(problem,field,block,folder,dict(role='actual_Torch_frozen_head_witness',numpy_replay_maxabs=errors,head_maxabs=float(h.abs().max())),target)
+
 def fd_check(problem,field,block):
  params=list(field.net.parameters());original=clone_params(field.net);field.net.zero_grad(set_to_none=True)
  loss=problem.loss(field,block,'energy');loss.backward();gr=[p.grad.detach().clone() if p.grad is not None else torch.zeros_like(p) for p in params]
@@ -201,11 +224,11 @@ def main(z):
    field=make_smooth(state,problem);anchor={k:v.detach().clone() for k,v in field.alpha_constraint.state_dict().items()};anchor_id={k:tensor_hash(v) for k,v in anchor.items()}
    with torch.no_grad():u0,v0,d0=problem.fields(field)
    np.savez_compressed(folder/'b0_fields.npz',u=u0.cpu().numpy(),v=v0.cpu().numpy(),d=d0.cpu().numpy())
-   dump(folder/'anchor.json',anchor_id)
+   dump(folder/'anchor.json',anchor_id);dump(folder/'b0_contract.json',b0_contract(problem,field))
    if z.phase=='probe':
     torch.cuda.reset_peak_memory_stats()
     for block in ['U','D']:
-     field.net.zero_grad(set_to_none=True);problem.loss(field,block,'energy').backward()
+     field.net.zero_grad(set_to_none=True);probe_loss=problem.loss(field,block,'energy');assert torch.isfinite(probe_loss);probe_loss.backward()
      assert all(p.grad is None or torch.isfinite(p.grad).all() for p in field.net.parameters())
     free,total=torch.cuda.mem_get_info();peak=torch.cuda.max_memory_allocated()
     assert free>=3*1024**3
@@ -237,11 +260,11 @@ def main(z):
    with torch.no_grad():features=field.net.encode(problem.x).detach().cpu().numpy()
    uv=fit_uv_head(features,data['nodes'],.11999988,math.pi/2,data['u_fem'],data['v_fem'],problem.mass.cpu().numpy())
    np.savez_compressed(folder/'head_U.npz',head=uv['head'],u=uv['u'],v=uv['v'])
-   report={k:v for k,v in uv.items() if k not in ['head','u','v']};report['physical']=problem.measures(torch.as_tensor(uv['u'],device=device),torch.as_tensor(uv['v'],device=device),problem.df);dump(folder/'head_U.json',report)
+   report={k:v for k,v in uv.items() if k not in ['head','u','v']};witness=folder/'head_U_actual';witness.mkdir();report['actual_Torch']=replay_head(problem,state,uv['head'],'U',[uv['u'],uv['v']],witness);dump(folder/'head_U.json',report)
    qc,qreport=direct_q4(problem,d0,folder/'direct_Q4')
    dh=fit_smooth_damage_head(features,qc.detach().cpu().numpy(),problem.mass.cpu().numpy(),anchor)
    np.savez_compressed(folder/'head_D.npz',head=dh['head'],raw=dh['raw'],d=dh['d'])
-   dump(folder/'head_D.json',{k:v for k,v in dh.items() if k not in ['head','raw','d']})
+   witness=folder/'head_D_actual';witness.mkdir();dr={k:v for k,v in dh.items() if k not in ['head','raw','d']};dr['actual_Torch']=replay_head(problem,state,dh['head'],'D',[dh['d']],witness,qc);dump(folder/'head_D.json',dr)
    del features,uv,dh,field
    for block,kind in [('U','energy'),('U','supervised'),('D','energy'),('D','supervised')]:
     field=make_smooth(state,problem)

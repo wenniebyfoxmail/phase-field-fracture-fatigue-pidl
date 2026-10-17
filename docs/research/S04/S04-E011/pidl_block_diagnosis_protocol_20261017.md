@@ -121,3 +121,11 @@ miss leaves damage ceiling unresolved. Low boxKKT may still violate hard FEM
 irreversibility: report this objective/feasible-set difference rather than
 claim FEM reproduction. Choose the next PIDL adjustment from the measured block;
 no complete fatigue evolution/teacher qualification from two peak states.
+
+Actual-state B0 gates before probe/production: Smooth vs bounded B0 maximum
+nodal and GP error<=2e-7, initial derivative relative error<=2e-5, finite anchor,
+map, derivative and probe losses. Record legacy-to-box change separately.
+Frozen-feature head candidates must be installed into independent theta0 Torch
+networks, preserving anchor and untouched output rows. Score actual Torch fields
+and record NumPy/Torch replay error; algebraic fits alone are not actual network
+witnesses. U head mass-L2 and supervised Q4-H1 use distinct fit objectives.
