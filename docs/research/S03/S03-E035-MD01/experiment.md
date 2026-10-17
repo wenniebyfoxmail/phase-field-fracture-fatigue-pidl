@@ -80,3 +80,37 @@ correspondence assumptions; if reversal/missingness occurs, identify fixed case
 and whether history/reference/window support controls it before proposing a
 separate minimal repair. Do not change E034 score or automatically read new data.
 Initial state: protocol fixed, no shifted computation yet.
+
+## Completed result — 2026-10-17
+
+Initial state above is superseded by R001,clean19ed022; reviewed numerical code
+unchanged from9a60e9a.83/83unique profiles valid,50/50common-reference scenarios:
+common25/25trendbetter,Δ[-12.118959811438124,-7.033799185098445]px;
+independent25/25trendbetter,Δ[-10.971547768488215,-10.584100666521614]px.
+Both families0missing/0ties/0reversals. No clipping. E034 original arrays,
+widths/predictions/errors reproduce;9protected old files byte-unchanged.
+Independent source-pixel/half-depth/50score/secondary reconstruction maximum
+difference0; exact reviewer script/results underR004, separate from main run.
+
+Interpretation: E034 advantage persists in these finite prescribed alternatives.
+Not50independent queries, calibrated localization error or arbitrary/continuous
+robustness. Independent rows repeat because alltarget>trend>persistence,
+soΔ=−(w25−w24); target cancels in the contrast but trendAE still varies
+.8528418371833482–3.2267923944564174px. Common has4overshoots; trendAE
+.12089364034994787–4.322657356587968px. Relative win does not imply fixed
+absolute error or target correspondence accuracy. No error-minimizing position
+selected; oldscore/half-depth retained. Record outcome as positive bounded
+development sensitivity, research disposition continue broader-window baseline
+evaluation rather than optimize this viewed location.
+
+Final3figures R003 with all50values, allerrors and original position supports;
+layout/PNG/gray/sidecars checked; PDF CID TrueType embedding verified separately.
+[Full figures and interpretation](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E035-MD01/runs/S03-E035-MD01-R003/analysis/README_analysis.md).
+Independent reviewer confirms final plots/guide with no blocker; existing
+Obsidian task note and single Roadmap entry updated, two embedded figures
+visibly verified in-app. Review byte scope is documented in evidence report,
+not an independent attestation of all9historical pre-run filesystem states.
+Next PROPOSED: metadata-fixed small batch of stage windows, same two baselines,
+history-first targets, individual gains and common scoring coverage; emphasize
+deceleration/turning increments. No new window/source/method execution authorized
+or performed by this result.

@@ -1,6 +1,6 @@
 # S03 observation bridge — canonical decision record
 
-Updated2026-10-16. Mechanism question: can image-observable state and known
+Updated2026-10-17. Mechanism question: can image-observable state and known
 query conditions retain useful stage-change information once measurement and
 position correspondence are separated from model error? D01 is the controlled
 fixed-camera laboratory bridge, not longitudinal road validation. Detailed
@@ -81,3 +81,32 @@ metadata/exposure/permission screening for independent-data evaluation with
 geometry/history/query/missingness fixed before target access; no new candidate
 is established here. Earlier fixed-centre sampling proposal above is fulfilled,
 not permission to repeat it. Three figures and exact evidence linked in E030.
+
+## E031–E035 relative-stage bridge — 2026-10-17
+
+MD01 metadata supports ordered relative-stage images; exact future absolute
+load remains unestablished, so this branch no longer waits for load labels.
+[E031](../research/S03/S03-E031-MD01/experiment.md) fixed27/28/29 and saved two
+history-only predictions before target: trendAE.443vs persistence4.672px.
+[E032](../research/S03/S03-E032-MD01/experiment.md) retains advantage in both
+25case background-driven finite position sets. [E033](../research/S03/S03-E033-MD01/experiment.md)
+earliest2/3histories do not support an identifiable trace; no forced measurement,
+target4unopened,common0/1,not predictor failure/zero width.
+
+[E034](../research/S03/S03-E034-MD01/experiment.md) fixed24/25/26 has3/3valid
+widths33.802→44.460→56.830px,trendAE1.712vs persistence12.370px,common1/1.
+Original background attempt retained unscorable; source-only pre-target61/80
+repair explicitly versionedv1.1, no error-based selection. [E035](../research/S03/S03-E035-MD01/experiment.md)
+now fulfills its proposed location check:83/83profiles,25/25common and25/25
+independent later-stage alternatives retain advantage, gain7.034–12.119 and
+10.584–10.972px,0missing/reversals; independent source/numeric maxdiff0.
+
+Keep these as useful bounded development gains, not50independent tests,
+independent beams, calibrated physical position/width or road validation.
+Independent-target contrast cancellation is numerical ordering, not target
+invariance. Half-depth and allold scores retained. E030 metadata-screening
+proposal above advanced through MD01; next PROPOSED only: metadata-fixed small
+batch stage windows with history-first measurements, the same two baselines,
+per-case gain and common-coverage reporting, including slowing/turning regimes.
+No new images/window/model execution in this record; do not further optimize
+the viewed point. Exact source identities/runs/plots/review stay in experiments.

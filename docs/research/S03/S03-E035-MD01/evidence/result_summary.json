@@ -1,0 +1,44 @@
+{
+  "protocol": "md01-24-26-position-v1",
+  "baseline": {
+    "w24": 33.80184736984325,
+    "w25": 44.45986567333118,
+    "w26": 56.82964858837154,
+    "persistence": 44.45986567333118,
+    "secant": 55.11788397681911,
+    "raw_secant": 55.11788397681911,
+    "persistence_abs_error": 12.36978291504036,
+    "secant_abs_error": 1.7117646115524323,
+    "delta_abs_error": -10.658018303487928,
+    "valid": true,
+    "reason": "ok"
+  },
+  "by_family": {
+    "common": {
+      "nominal": 25,
+      "valid": 25,
+      "missing": 0,
+      "secant_better": 25,
+      "tie": 0,
+      "persistence_better": 0,
+      "min_delta": -12.118959811438124,
+      "max_delta": -7.033799185098445
+    },
+    "independent": {
+      "nominal": 25,
+      "valid": 25,
+      "missing": 0,
+      "secant_better": 25,
+      "tie": 0,
+      "persistence_better": 0,
+      "min_delta": -10.971547768488215,
+      "max_delta": -10.584100666521614
+    }
+  },
+  "unique_profiles": 83,
+  "valid_profiles": 83,
+  "independent_cases": 1,
+  "scenario_count": 50,
+  "position_transfer_assumed": true,
+  "old_scores_byte_unchanged": true
+}

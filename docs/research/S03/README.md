@@ -3,6 +3,16 @@
 This navigation record covers the currently touched D01 observation route.
 Exact evidence and verdicts remain in the owning Experiments.
 
+2026-10-17 — [S03-E035-MD01](S03-E035-MD01/experiment.md) completes the E034
+existing-three-image background-only position stress,83/83valid profiles.
+Common25/25 and independent25/25retain trend advantage, gains7.034–12.119
+and10.584–10.972px,0missing/reversals; independent source-pixel/numeric maxdiff0.
+Original E034 bytes/definition/scores unchanged. Independent target rows cancel
+in error contrast by numerical ordering, not target-location invariance; trend
+absolute errors still change. One viewed query/finite alternatives, no physical
+or50sample claim. This fulfills E034's proposed sensitivity below. Next proposal:
+fixed small-batch stage-window comparison, no further tuning of this location.
+
 2026-10-17 — [S03-E034-MD01](S03-E034-MD01/experiment.md) completes fixed
 24/25/26 continuation394/397/400 with history-first predictions. Original
 background121/40 attempt retainedE=false; explicit source-only pre-target61/80

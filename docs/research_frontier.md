@@ -19,13 +19,15 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
 
 ## Current Evidence / Claim Boundary
 
-- **S03 D01 observation bridge, 2026-10-16**: E030 samples the3background
-  positions saved first from E029. All9profiles valid; T1 signedquery residual
-  -.886626→-.693169px, a partial change including both prediction and reference.
-  Down/up optical trend persists; local persistence still better than secant.
-  No physical transfer/held-out claim, width definition or oldscore change.
-  Next proposed: independent-data metadata/exposure screening, not T1 error-
-  minimising position search, old8case replay or training. Canonical state/evidence:
+- **S03 optical observation bridge, 2026-10-17**: MD01 E034 relative24/25/26
+  continuation gives trendAE1.712vs persistence12.370px,common1/1; E035 retains
+  its advantage in both25case background-driven position sets,83/83valid
+  profiles,independent source/numeric maxdiff0. Viewed single-query finite
+  stress, not50independent tests or physical/beam-generalisation validation.
+  Half-depth and allold scores retained; earlyE033unscorable record preserved.
+  Next proposed: fixed small-batch stage windows with the same baselines,
+  per-case gains and coverage; no further viewed-point optimization or training.
+  Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。
 - c86 true diffuse damage 条件化可近闭合后续场，二值裂缝几何失败约 `100x` support area：缺失的是近核状态幅值，不只是裂缝位置。
