@@ -2,7 +2,7 @@
 
 Status: `RECOGNITION_GATE_FAILED`  
 Owner: Mac-PIDL  
-Updated: 2026-08-06
+Updated: 2026-08-10
 
 ## Mechanism question
 
@@ -69,6 +69,8 @@ invented from the current manifest.
 | B0 deterministic document/image baseline | `B0_BASELINE_NEGATIVE` | `ltpp_geoforecast_crack_recognition_b0_result_20260806.md` |
 | B1 lightweight segmentation | `RECOGNITION_GATE_FAILED` | `ltpp_geoforecast_crack_recognition_b1_result_20260807.md` |
 | B2 foundation-model assistance | `NOT_AUTHORIZED_YET` | same preregistration; generic masks cannot be gold |
+| Non-destructive two-channel freeze | `PASS_NONDESTRUCTIVE_IMPLEMENTATION_NO_FIT` | `ltpp_geoforecast_crack_recognition_nondestructive_no_fit_result_20260810.md` |
+| Exact Taobo runner preflight | `PASS_RUNNER_PREFLIGHT_NO_FIT__TRAINING_AUTHORIZATION_REQUIRED` | `ltpp_geoforecast_crack_recognition_training_runner_preflight_20260810.md` |
 
 ## Active gate and next action
 
@@ -81,3 +83,74 @@ completed one trained challenger, which also failed the recognition gate. The
 current execution therefore ends as `RECOGNITION_GATE_FAILED`. B2 remains
 unselected; any further attempt requires a new amendment and must not overwrite
 the B0 or B1 results.
+
+The first post-B1 read-only audit reused the existing primary independent
+annotations rather than requesting duplicate crack labeling. It found proxy
+overlap between B1 centerline predictions and lane/reference-boundary
+candidates of 25.13% overall, with the highest section values in `06-8150`
+and `06-8149`; handwriting candidates accounted for 5.56% overall. These are
+diagnostic proxy overlaps, not adjudicated false-positive labels. The audit
+asset is `local_archive/real_road_acquisition/ltpp_geoforecast_crack_recognition_b1_failure_audit_20260807/existing_noncrack_overlap_proxy.json`.
+
+Next admissible action: external review of the document-aware amendment
+candidate, with no-fit preflight. No additional crack annotation is currently
+required, and no challenger training is authorized yet.
+
+The 2026-08-10 no-fit target preview then tested direct reuse of existing
+primary non-crack candidates. It failed the label-safety check: 26/37 maps had
+weak-negative/crack conflicts and four maps had WIM/crack conflicts after the
+preview buffers were applied. Direct weak-negative reuse is therefore not
+qualified. The next amendment revision must either use ordinary background
+with deterministic document preprocessing, or freeze a small independently
+reviewed non-overlapping hard-negative supplement. WIM remains a carrier
+exclusion, not a recognition output class.
+
+The owner selected the ordinary-background route with no semantic negative
+head. Its first no-fit preprocessing gate tested the existing B0 static-line
+mask as hard removal. That transformation failed crack preservation: pooled
+retention was `69.06%`, 28 positive maps were below the `95%` map floor, and
+`P020` retained only `5.91%`. Hard-removal preprocessing is therefore
+prohibited and no training is authorized from it. The next admissible design
+is non-destructive: retain the raw scan and optionally add the fixed document
+mask as an auxiliary input cue, subject to architecture freeze and review.
+
+ChatGPT subsequently returned `APPROVE_NONDESTRUCTIVE_INPUT_FREEZE_ONLY` for
+the exact freeze candidate SHA-256
+`0c7d176eb1b707ec39e811fcdeec490ef03fdab006f3f73b420cb17327badaf3`.
+The authorized implementation/no-fit validation passed on all 37 maps with
+zero optimizer steps, zero real-image model forward passes, and no saved
+weights. The next admissible action is a separate training-authorization
+review. Training remains unauthorized.
+
+The first training-authorization review returned `REVISE_BEFORE_TRAINING`
+with only two execution blockers: exact runner identity and fail-closed
+one-use authorization enforcement. Both are now implemented in
+`scripts/ltpp_run_nondestructive_crack_recognition_taobo.py`, SHA-256
+`4022096e8ab47d17770e2c58498e3c13a3f6007711f8101ab7620a25aecc5c33`.
+Its Mac-safe preflight passed with 37 maps, six folds, seven zero-crack IDs,
+27,473 parameters, zero optimizer steps, zero real-image model forward passes,
+and no saved weights. Missing or pending approval fails before output creation;
+the Taobo training path atomically consumes a one-use authorization before the
+first optimizer step. The next and only admissible action is external review
+of this exact runner hash. Training remains unauthorized until that review
+returns `APPROVE_ONE_TAOBO_TRAINING`.
+
+That review has now returned `APPROVE_ONE_TAOBO_TRAINING` with no remaining
+blocker. The authorization is limited to runner SHA-256
+`4022096e8ab47d17770e2c58498e3c13a3f6007711f8101ab7620a25aecc5c33`,
+authorization ID `ltpp-recognition-nondestructive-v1-taobo-once`, and exactly
+one complete Taobo six-fold execution. Any optimizer step consumes the
+authorization; failure or crash does not permit restart, fold rerun, rescue, or
+a second execution. The next admissible action is a read-only Taobo readiness
+check followed by that single launch only if all producer predicates pass.
+
+The single authorized Taobo execution completed all six folds with 7,520
+optimizer steps and is terminally `RECOGNITION_GATE_FAILED`. Pooled centreline
+F1 was `0.3060`; distance gates passed, but only 3/6 sections improved over B0,
+the minimum section recall was `0.1720`, and all seven zero-crack maps failed
+the AND sentinel. P002 produced 35,002 occupancy pixels and 23 qualifying false
+components. The fixed document cue therefore did not solve printed-form and
+handwriting confusion. The immutable authorization is consumed; restart,
+fold rerun, threshold change, component removal, rescue fit, and authorization
+reuse are prohibited. The branch is closed as a valid negative result; see
+`ltpp_geoforecast_crack_recognition_nondestructive_taobo_result_20260810.md`.

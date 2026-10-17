@@ -56,6 +56,14 @@ candidates for 5.56% of predicted pixels. These are proxy overlaps, not final
 false-positive counts, because the primary layer is independent rather than
 adjudicated.
 
+The section decomposition shows the boundary proxy overlap is highest in
+`06-8150` (`31.33%`) and `06-8149` (`28.16%`), followed by `06-8201`
+(`23.34%`). The corresponding handwriting proxy overlaps are lower: `7.14%`
+in `06-2647`, `6.13%` in `06-2041`, and `6.03%` in `06-1253`. This supports
+the existing diagnosis that boundary/form structure and section style shift
+are important precision risks, but it does not establish that every overlapped
+pixel is a false positive.
+
 Only if a later audit shows that the uncovered categories materially explain
 the remaining error should we create supplemental, dated labels. The currently
 uncovered categories are:
@@ -79,6 +87,9 @@ the training design.
 ## Decision
 
 Do not run another B1 variant, threshold sweep, model zoo, or generic SAM
-zero-shot evaluation under the existing amendment. A new challenger is
-scientifically admissible only after the hard-negative package and a new dated
-amendment are frozen and externally reviewed.
+zero-shot evaluation under the existing amendment. The existing labels are
+enough for the first failure diagnosis; no duplicate crack annotation is
+needed. A new challenger is scientifically admissible only after a new dated
+amendment fixes how the existing primary candidates are used and whether any
+supplemental categories are required, followed by external review and a
+no-fit preflight.
