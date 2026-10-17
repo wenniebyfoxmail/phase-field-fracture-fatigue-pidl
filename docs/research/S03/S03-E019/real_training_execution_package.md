@@ -3,7 +3,8 @@
 2026-10-17。Pro PASS_PLAN，见[完整回复](real_training_pro_reply.md)与
 [采纳附录](real_training_recheck_v02.md)。代码基线
 `a3352a6954543f965d559a1f1a6452cf9e58b2fb`，静态代码审查状态另见[review](real_training_code_review.md)；
-不得把本文件存在视为已审通过、已测试或真实资产就绪。
+独立复审已给PASS_STATIC_CODE（snapshot53c38443）；24项仍未运行，预算与真实资产
+仍未核验，不因静态通过自动取得执行许可。
 
 ## 范围与分步审批
 

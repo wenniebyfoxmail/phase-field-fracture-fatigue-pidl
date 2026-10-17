@@ -29,3 +29,21 @@ e57a74f4a15b23ec58daaa229222460a159dd4d29e959f1b0a0b2236a8045fbb。
 初审已核数值核心无必须换算法/阈值问题：完整构造链与b=Az、保留双侧、
 一次gesvd/两QR、一次候选Q、eta、全量BLAS/完整参考及像内先行平方账本。
 这些是源码静态对应，不是运行或真实数值通过。
+
+## 第二轮：PASS_STATIC_CODE（限定静态Code Ready）
+
+clean snapshot `53c38443edaaac09adf24a7a53dce63d32102928`；代码基线
+`a3352a6954543f965d559a1f1a6452cf9e58b2fb`，两者仅执行包文档不同。
+审查者确认首轮5项均修正，无新增阻断；数值流/原阈值/截止/eta/双侧和
+完整独立核验未变。确切命令与白名单见[执行包](real_training_execution_package.md)。
+
+| 源码 | SHA256 |
+|---|---|
+| aa2024_q_recheck.py | 06fd574663eb7d7b740b26f77f9dd50d479f992bc707808cb30ccb52fa4765b0 |
+| aa2024_q_verify.py | d378b5cbc8d446c624d14917fd3b3bfa75ca6f29be67726590d794b4c01d26a0 |
+| test_aa2024_q_recheck.py | a5b7fc3c1e97132c45df5118d06015baff3a3caf101e66a22137d941f014cedf |
+
+复审仍仅静态阅读/git/差异/hash；未执行导入、语法检查、测试、算术、
+QR/SVD、求解或绘图，未读真实/数值资产及留出，未修改文件。
+结论不证明实际可运行、24项已通过、60秒预算可行或真实资产就绪。
+A/B/真实执行与独立验收分别待批，当前停在展示执行包。

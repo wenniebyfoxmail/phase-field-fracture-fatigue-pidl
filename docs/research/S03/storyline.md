@@ -527,3 +527,20 @@
   No complete D03 decision yet; prior D02 PASS_PLAN does not apply. No executable
   code/test implementation/execution package created, no code-review completion
   claimed. Await full D03 reply and adoption before moving to implementation.
+
+- **2026-10-17 — D03 Pro plan and independent static code review completed; execution not started.**
+  Read the completed new D03 response (message9297d28a,9m49s), PASS_PLAN;
+  saved full text/adoption in real_training_pro_reply.md and v0.2 appendix.
+  Pro clarifications adopted: rigid C_H/second moment, full source-to-operator
+  chain and b=Az, double-sided retained singular pairs, saved-square identity,
+  deweighted display only, byte/key whitelist and separate reference budget.
+  New producer/independent evaluator/24 artificial unit designs prepared.
+  Independent first review REVISE_STATIC_CODE raised five execution/provenance
+  guards; repaired and re-reviewed PASS_STATIC_CODE at clean53c38443, code base
+  a3352a69. See S03-E019/real_training_code_review.md and exact execution package.
+  Only static Code Ready, not test success, resource feasibility, real asset
+  readiness, new numerical evidence or physical inversion. No numeric imports,
+  syntax checks/tests/QR/SVD/solve/render, real arrays/receipts or holdout reads;
+  only source/docs/git/hash and metadata-only ledger registration. Original
+  fields/predictions/results untouched. Next separate approval: A only, 24
+  artificial units with QR/SVD stubs, single CPU/60s/failfast; B/C/D not automatic.
