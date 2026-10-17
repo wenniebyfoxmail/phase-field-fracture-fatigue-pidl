@@ -230,7 +230,9 @@ def main(z):
    for name,ff in comparisons:compare(name,ff,P,cycle,sub)
    nr=next(r for r in ncp if r['cycle']==cycle and r['substep']==sub)
    nr['own_free_u_energy_gradient_l2']=float(np.linalg.norm(np.r_[pp['own_energy_gradient_u'].reshape(-1),pp['own_energy_gradient_v'].reshape(-1)][fu]))
-   nr['own_free_d_energy_gradient_l2']=float(np.linalg.norm(pp['own_energy_gradient_d'].reshape(-1)[fd]))
+   nr['own_free_d_energy_gradient_l2']=None
+   nr['own_nodal_damage_gradient_valid']=False
+   nr['own_nodal_damage_gradient_issue']='Producer348be4b retain_grad accumulated component autograd.grad contributions before backward; raw array preserved, excluded from scoring.'
    nr['common_operator_PIDL_free_u_l2']=float(np.linalg.norm(mechanics_force(P['u'],P['d'],c,N,B,w,n)[fu]))
    if sub==4:maps[cycle]=(O,F[result['outer']],P,result['accepted'])
  table(z.out/'crossings.csv',cross);table(z.out/'policies.csv',policies);table(z.out/'fem_pidl_fields.csv',metrics)
@@ -244,7 +246,7 @@ Question: do damage updates reintroduce mechanics imbalance, and do two outer st
 
 Read mcs_control.png first: stage-specific observed residuals and four first-policy crossings. Then fem_pidl_comparison.png: original/strict FEM vs unchanged same-state PIDL under common operators; hollow markers mean strict last MISS, not improved teacher. fem_pidl_maps.png shows aligned reference/prediction/signed error maps on common axes. pidl_plateau.png shows original-loss stopping traces and original-objective directional readout. Tables and cases.json authoritative.
 
-Allowed: conditional solver-control sensitivities, common-operator field gaps and own-objective descent availability. Blocked: selecting FEM by agreement with PIDL; stitched repaired evolution, unique physical teacher, causal percentage allocation, or certifying convergence from loss plateau. Original baseline evolution and local repaired endpoints are distinct. Spatial/commit-state alignment does not remove fixed committed-f vs trial-f or joint NN Deep-Ritz vs staggered/Picard differences. No accepted PIDL update or optimizer continuation occurred.
+Allowed: conditional solver-control sensitivities, common-operator field gaps and own-objective descent availability. Blocked: selecting FEM by agreement with PIDL; stitched repaired evolution, unique physical teacher, causal percentage allocation, or certifying convergence from loss plateau. Original baseline evolution and local repaired endpoints are distinct. Spatial/commit-state alignment does not remove fixed committed-f vs trial-f or joint NN Deep-Ritz vs staggered/Picard differences. No accepted PIDL update or optimizer continuation occurred. Producer348be4b nodal damage gradient export is INVALID because retain_grad accumulates three component autograd.grad contributions before backward; preserve raw arrays but exclude this metric. Network parameter gradients/directions and independent common-operator force are unaffected; u/v agreement independently checked.
 ''')
  for png in z.out.glob('*.png'):
   png.with_suffix('.md').write_text((z.out/'README_analysis.md').read_text()+'\nFigure: '+png.name+'; exact tables/summary in this directory. Map colour ranges differ across cycle rows; within each row reference and PIDL share a scale, signed gaps share a separate symmetric scale. Source-readout mismatches have no directional-loss bar, not zero gain.\n')
@@ -295,7 +297,7 @@ def draw(out,cases,rows,policies,metrics,ncp,maps,nodes,c,w):
   for i,r in enumerate(ncp):
    if not r['source_objective_readout_pass']:axs[0,1].annotate('source mismatch',(i,.5),xycoords=('data','axes fraction'),rotation=90,fontsize=7,ha='center')
   axs[1,0].bar(x,[r['best_tested_loss_drop'] if r['source_objective_readout_pass'] and r['best_tested_loss_drop'] is not None else np.nan for r in ncp]);axs[1,0].plot(x,[r['direction_loss_roundoff_floor'] for r in ncp],'k--',label='declared roundoff screen');axs[1,0].legend(fontsize=7);axs[1,0].set_ylabel('Independent normalized -gradient loss drop')
-  axs[1,1].semilogy(x,[max(r['common_operator_PIDL_free_u_l2'],1e-18) for r in ncp],'o-',label='common Q4 free-u force (all fields)');axs[1,1].plot(x,[max(r['own_free_d_energy_gradient_l2'],1e-18) if r['source_objective_readout_pass'] else np.nan for r in ncp],'s-',label='source-qualified own free-d energygradient');axs[1,1].axhline(1e-8,color='k',ls='--',lw=.7);axs[1,1].legend(fontsize=7);axs[1,1].set_ylabel('Nodal L2; force is independent of objective replay')
+  axs[1,1].semilogy(x,[max(r['common_operator_PIDL_free_u_l2'],1e-18) for r in ncp],'o-',label='common Q4 free-u force (all fields)');axs[1,1].plot(x,[np.nan for r in ncp],'s-',label='nodal d gradient INVALID (excluded)');axs[1,1].axhline(1e-8,color='k',ls='--',lw=.7);axs[1,1].legend(fontsize=7);axs[1,1].set_ylabel('Nodal L2; force is independent of objective replay')
   for ax in axs.ravel():ax.set_xticks(x,labs,rotation=45,ha='right');ax.grid(alpha=.2)
   fig.suptitle('Unchanged PIDL checkpoint readout | no optimizer steps/history commits');fig.tight_layout();fig.savefig(out/'pidl_plateau.png',dpi=170);plt.close(fig)
 

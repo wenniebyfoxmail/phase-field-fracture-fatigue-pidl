@@ -80,3 +80,13 @@ component errors to built-in JSON scalars, with unchanged data, objective,
 state set, direction grid and per-run30min start deadline. No numerical limit
 relaxation or successful-result selection; no further automatic retry. Failed
 readout is not source-objective or optimization evidence.
+
+## Output validity note2026-10-17
+
+Independent evidence review found retained nodal d.grad contains component-gradient
+accumulation before loss.backward in executed348be4b. Preserve raw arrays, mark
+own_energy_gradient_d INVALID and exclude from scoring/plots. Network parameter
+gradients and independent theta trials are not accumulated by autograd.grad(term,d);
+u/v force is independently compared with common native assembly. Future source
+clears retained field buffers before backward; no new producer is launched to
+replace the frozen output. No convergence claim uses the invalid d array.

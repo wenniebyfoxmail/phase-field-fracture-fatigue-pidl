@@ -90,6 +90,9 @@ def main(z):
                     gd=torch.autograd.grad(term,d,retain_graph=True,allow_unused=True)[0]
                     components.append(torch.zeros_like(d) if gd is None else gd.detach())
                 data['nodal_damage_component_gradient_norms']=[float(torch.linalg.vector_norm(q)) for q in components]
+                # autograd.grad(term,d) also fills retained nonleaf d.grad.
+                # Clear retained field buffers before the actual objective backward.
+                for q in [u,v,d]:q.grad=None
                 loss.backward()
                 factor=float(energy.detach())*np.log(10.)
                 for key,q in [('u',u),('v',v),('d',d)]:
