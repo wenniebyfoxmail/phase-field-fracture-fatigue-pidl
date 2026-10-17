@@ -4,7 +4,7 @@
 body{font:16px system-ui;margin:24px;background:#f4f6f8;color:#14232a}h1{margin-bottom:8px}button,select,input{font:inherit}button,select{padding:6px}header{position:sticky;top:0;background:#f4f6f8;z-index:2;padding-bottom:12px}.controls{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}.viewport{height:72vh;overflow:auto;background:#161b1d;border:1px solid #bbb}canvas{display:block}p{max-width:1100px;line-height:1.45}.note{background:#fff;padding:12px;border-left:4px solid #00a678}.actions{margin-top:12px;display:flex;gap:20px}#status{font-size:14px}textarea{width:min(900px,95%);height:65px}label{white-space:nowrap}
 </style>
 <header><h1>D01 — full-image pretrained crack masks</h1>
-<p>Green = pixels classified as crack by the pretrained model. All six source photographs are included. No measurement bands, manual edits or training.</p>
+<p>Green = pixels classified as crack by pretrained DeepCrack (Liu et al., 2019). All six source photographs are included. No measurement bands, manual edits or training.</p>
 <div class="controls"><select id="case"></select><button id="prev">Previous</button><button id="next">Next</button>
 <label>Opacity <input id="opacity" type="range" min="0" max="45" value="45"><span id="alpha">45%</span></label>
 <label>Zoom <select id="zoom"><option value="fit">Fit</option><option value="0.5">50%</option><option value="1">100% (native pixels)</option><option value="2">200%</option></select></label>
@@ -12,7 +12,7 @@ body{font:16px system-ui;margin:24px;background:#f4f6f8;color:#14232a}h1{margin-
 <div class="pair"><section><b>Original</b><div class="viewport" id="left"><canvas id="raw"></canvas></div></section>
 <section><b>Original + transparent model mask</b><div class="viewport" id="right"><canvas id="over"></canvas></div></section></div>
 <div class="actions"><a id="download" download>Download full-resolution binary mask</a></div>
-<p class="note">Review the main crack, thin branches and tips. Check for missed crack segments, inflated edges and false detections on writing, pores, specimen edges or equipment. The road-trained model has not been validated on these beam images. Its probabilities are model scores, not calibrated uncertainty.</p>
+<p class="note">Review the main crack, thin branches and tips. Check for missed crack segments, inflated edges and false detections on writing, pores, specimen edges or equipment. This pretrained model has not been validated on these beam images. Its probabilities are model scores, not calibrated uncertainty.</p>
 <label>Optional review note for this photograph:</label><br><textarea id="note" placeholder="For example: main crack mostly covered; fine branch near upper right missed."></textarea>
 <div class="controls"><button id="save">Export review notes JSON</button><span>Notes stay in this page until exported. No point picking required.</span></div>
 <script>
@@ -28,6 +28,6 @@ $('case').onchange=choose; for(const id of ['opacity','zoom'])$(id).oninput=pain
 function step(d){const n=($('case').selectedIndex+d+ids.length)%ids.length;$('case').selectedIndex=n;choose()}
 $('prev').onclick=()=>step(-1);$('next').onclick=()=>step(1);
 let syncing=false;for(const [a,b] of [['left','right'],['right','left']])$(a).onscroll=()=>{if(syncing)return;syncing=true;$(b).scrollLeft=$(a).scrollLeft;$(b).scrollTop=$(a).scrollTop;requestAnimationFrame(()=>syncing=false)};
-$('save').onclick=()=>{notes[current]=$('note').value;const blob=new Blob([JSON.stringify({model:'onebeans/segformer_crack_detection',revision:'796c5caa4c68ed5333e375459f83258fa087f392',exported_at:new Date().toISOString(),notes},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='d01_full_mask_review_notes.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+$('save').onclick=()=>{notes[current]=$('note').value;const blob=new Blob([JSON.stringify({model:'DeepCrack / yhlleo/DeepSegmentor',revision:'57164e6808019d1ec27100cc69e1b71ea2de8368',exported_at:new Date().toISOString(),notes},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='d01_full_mask_review_notes.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 window.onresize=paint;choose();
 </script></html>
