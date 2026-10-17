@@ -146,6 +146,27 @@ def plots_scalar(dest,states):
     path=dest/'accepted_objectives.png';fig.savefig(path,dpi=170);plt.close(fig)
     path.with_suffix('.md').write_text('Accepted objective values only; rejected/unfinished line-search trials are excluded. Original joint control is source-gated float32 and uses legacy unbounded damage. U/D local controls are float64 with different objectives, no regularizer, frozen fields and independent theta0 restarts. Vertical scales and objective values are not comparable across panels. Lower original loss does not imply physical feasibility or FEM proximity.\n')
 
+def joint_field_maps(dest,state,inp,geo,fields,op):
+    if 'original_joint_LBFGS' not in fields:return
+    N,B,w,_=geo;cells=inp['cells'];polygons=inp['nodes'][cells]
+    fem=state['_fem'];pred=fields['original_joint_LBFGS']
+    refgp=q4_fields(fem,inp,op,geo);predgp=q4_fields(pred,inp,op,geo)
+    quantities=[('horizontal u',op.interp(fem['u'],cells,N),op.interp(pred['u'],cells,N)),
+                ('vertical v',op.interp(fem['v'],cells,N),op.interp(pred['v'],cells,N)),
+                ('damage d',refgp['dgp'],predgp['dgp']),('active energy',refgp['active'],predgp['active'])]
+    fig,axs=plt.subplots(4,3,figsize=(12,14.4),layout='constrained')
+    for row,(label,r,c) in enumerate(quantities):
+        r=np.sum(w*r,axis=1)/w.sum(1);c=np.sum(w*c,axis=1)/w.sum(1);err=c-r
+        lo=min(float(r.min()),float(c.min()));hi=max(float(r.max()),float(c.max()),1e-15);lim=max(float(abs(err).max()),1e-15)
+        for col,(values,title) in enumerate([(r,'converged FEM'),(c,'unchanged paired PIDL'),(err,'PIDL minus FEM')]):
+            vmin,vmax=(lo,hi) if col<2 else (-lim,lim)
+            norm=SymLogNorm(max(abs(vmin),abs(vmax))*1e-5,vmin=vmin,vmax=vmax)
+            pc=PolyCollection(polygons,array=values,cmap='viridis' if col<2 else 'RdBu_r',norm=norm,edgecolors='none')
+            ax=axs[row,col];ax.add_collection(pc);ax.autoscale();ax.set_aspect('equal');ax.set_xlabel('native x');ax.set_ylabel('native y');ax.set_title(label+' | '+title,fontsize=9);fig.colorbar(pc,ax=ax,shrink=.75)
+    fig.suptitle(f"c{state['cycle']}s4 | accepted FEM vs original paired joint PIDL; no combined-arm model",fontsize=11)
+    path=dest/f"c{state['cycle']}_joint_fields.png";fig.savefig(path,dpi=160);plt.close(fig)
+    path.with_suffix('.md').write_text('Full paired PIDL joint fields, unchanged by the original-control LBFGS (zero nonzero parameter updates), compared with the same-state accepted conditional FEM peak. Rows: horizontal u, vertical v, damage, active energy. Columns: FEM, PIDL, PIDL minus FEM. Each quantity has common FEM/PIDL limits and its own symmetric signed-error scale; different rows have different units/ranges. No damage clipping. GP/Jacobian-weighted Q4 cell means rendered, full GP metrics in summary. This is the original coupled PIDL baseline, unlike independent frozen-field U/D diagnostics. The FEM states are independent local restarts, not a continuous repaired trajectory; no physical teacher or evolution claim.\n')
+
 def field_maps(dest,state,inp,geo,fields,op):
     cy=state['cycle'];N,B,w,_=geo;nodes=inp['nodes'];cells=inp['cells'];polygons=nodes[cells]
     reference=state['_fem']
@@ -311,6 +332,7 @@ def main(args):
             # Same-objective witnesses are scored by producer metrics plus independent readout.
             state['arms'][arm]=report
         state['claims']=inference(state)
+        joint_field_maps(dest,state,inp,geo,fields,op)
         field_maps(dest,state,inp,geo,fields,op)
         state.pop('_fem');states.append(state)
     plots_scalar(dest,states)
@@ -329,7 +351,7 @@ def main(args):
                  visual_QA='REQUIRED: generated images must be opened and independently inspected before report adoption')
     dump(dest/'summary.json',summary)
     for sidecar in dest.glob('*.md'):
-        sidecar.write_text(sidecar.read_text()+ '\nQuestion: distinguish PIDL local optimization opportunity from unresolved representation limits at converged FEM c1/c20 peaks.\nExact producer: '+SOURCE_COMMIT+'; run '+str(receipt)+'\nProvenance: '+str(dest/'summary.json')+' SHA256 '+sha(dest/'summary.json')+'; every input/field hash and exact state label is listed there.\nNumerical takeaways and limitations: '+json.dumps([dict(cycle=x['cycle'],claims=x['claims']) for x in states])+'\n')
+        sidecar.write_text('# How to read `'+sidecar.with_suffix('.png').name+'`\n\n'+sidecar.read_text()+ '\nQuestion: distinguish PIDL local optimization opportunity from unresolved representation limits at converged FEM c1/c20 peaks.\nExact producer: '+SOURCE_COMMIT+'; run '+str(receipt)+'\nData provenance: '+str(dest/'summary.json')+' SHA256 '+sha(dest/'summary.json')+'; every input/field hash and exact state label is listed there.\nNumerical takeaways and limitations: '+json.dumps([dict(cycle=x['cycle'],claims=x['claims']) for x in states])+'\n')
 
     (dest/'README_analysis.md').write_text('Offline analysis: original joint control, U local blocks and D local blocks answer separate questions. See summary.json for source identities, source-gate skips, missing arms, accepted fields, costs and constructive witnesses. Original loss reduction proves only an available optimizer/stop opportunity under its original unbounded objective. Local block improvement is not a full joint or fatigue-evolution result. Direct-Q4 D uses PIDL own history and penalty, so never describe its target as reproducing FEM. Do not use failed finite-budget fits as architecture lower bounds.\n\nAll analysis reads immutable retrieved/output plus the exact SHA-bound local input NPZs listed in inputs_manifest.json. No training, history commit, solver call or model import. Figures have sidecars and require rendered visual QA.\n')
     print(json.dumps({'dest':str(dest),'states':len(states),'complete':summary['complete'] is not None,'failure':summary['failure']},ensure_ascii=False))
