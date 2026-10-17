@@ -1,0 +1,41 @@
+{
+  "verdict": "PASS",
+  "scope": "focused single fixed-factor shrink code and result review",
+  "source": "3306c1ddb1eace5e601c6672633bf337161c61ab",
+  "blocking_findings": [],
+  "factor": 0.2,
+  "delta_relative": 0.02,
+  "encoder_chunk": 509,
+  "max_actual_order_uv_difference": 1.3877787807814457e-17,
+  "max_affine_uv_difference": 6.938893903907228e-16,
+  "original_input_hashes_verified": 33,
+  "D004_increment_hashes_verified": 3,
+  "regional_values_verified": 36,
+  "paired_changes_verified": 24,
+  "all12_vs_E023_metrics_improve": true,
+  "background_preserved_in_reported_same_state_metrics": true,
+  "application_acceptance": null,
+  "main_decision_reviewed": true,
+  "normal_usage_remaining_percent": 92,
+  "linear_solves": 0,
+  "extra_factor_evaluations": 0,
+  "neural_updates": 0,
+  "original_checkpoint_writes": 0,
+  "remote_actions": 0,
+  "source_sha256": {
+    ".codex/worktrees/s04-sampling-multiscale-20261012/SENS_tensile/diagnose_s04_e023_shrink02.py": "15555361c53f55a191cd65b1c5bdb42f3666547f7a2e027250738b2288ccd43c",
+    ".codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/shrink02_protocol.md": "1b784fb4081e17d2712be731a148dbea46041f94d6dee8bea5ade0b45da82e8a",
+    "local_archive/experiments/S04-E024/centered_head_shrink02_v1/review/independent_shrink.py": "9ffbc3a3cc9bbe192acc03a2b97acc1b6a3cd3715f15afdd6cf9413a27bc0b2a",
+    "local_archive/experiments/S04-E024/centered_head_shrink02_v1/results/receipt.json": "675cb648a37274196f4fffd4908dc796d6c5d301f90769577f3095d551c9bf92"
+  },
+  "final_prose_blocking_findings": [],
+  "resolved_caption_issue": "D005 did not repeat SVD/bisection; corrected provenance",
+  "final_prose_sha256": {
+    ".codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/shrink02_decision.md": "4fa5d8de32012d8d301523882acf558b3a2dc61ed44ee4335ee125b5d0f216fd",
+    "local_archive/experiments/S04-E024/centered_head_shrink02_v1/figures/regional_cost.png": "5699fbb19e8925170d52e6e5948eff49f11cd50e2e373c7b4c959ca5866194b6",
+    "local_archive/experiments/S04-E024/centered_head_shrink02_v1/figures/regional_cost.md": "2ec4f3e811388bb522e25727d23d40557571793f293986396d53d821e6e40a20",
+    "local_archive/experiments/S04-E024/centered_head_shrink02_v1/figures/shrink02_local_fields.png": "fe8003a45ae2e180134f2e8ce1f0790b069c1506e1da792fb2df270a921982a1",
+    "local_archive/experiments/S04-E024/centered_head_shrink02_v1/figures/shrink02_local_fields.md": "db88422df19ff8e6a9f231fc5ddfb8acd211a7cf9c2a818c4430293452b663ab",
+    "local_archive/experiments/S04-E024/centered_head_shrink02_v1/analysis_source/plot_cost.py": "e9d280ba9191e029586df42be5d1bebfba027d2b08b6af6fe8dabee23af40258"
+  }
+}

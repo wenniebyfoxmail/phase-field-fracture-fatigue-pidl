@@ -1,0 +1,4 @@
+state,factor,delta_relative,affine_max_physical_uv_difference,outside_max_physical_uv_difference,model_digest_unchanged
+c20s4,0.2,0.020000000000000007,1.7911019889460533e-16,0.0,True
+c60s4,0.2,0.02,6.938893903907228e-16,0.0,True
+c83s4,0.2,0.020000000000000007,8.185726402265558e-17,0.0,True
