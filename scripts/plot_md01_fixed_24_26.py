@@ -61,6 +61,7 @@ def main(a):
         h=json.loads((a.history/"predictions_saved_before_target.json").read_text())
         target=json.loads((a.target/"target_measurement.json").read_text())
         result=json.loads((a.target/"summary.json").read_text())
+        tag=f"S03-E034-MD01 {a.history.name.rsplit('-',1)[-1]}/{a.target.name.rsplit('-',1)[-1]} | v1.1"
         records=h["history"]+[target]; data={}
         for folder in (a.history,a.target):
             with np.load(folder/"profiles.npz") as f: data.update({k:f[k] for k in f.files})
@@ -92,7 +93,7 @@ def main(a):
             axes[0,i].set_title(f"Step {r['step']} | {r['filename']}\n{role}",fontsize=10)
             axes[1,i].set_title("Fixed band and mapped background patches",fontsize=9)
             for ax in axes[:,i]: ax.set_xticks([]);ax.set_yticks([])
-        fig.suptitle("S03-E034-MD01 | controlled-experiment development, one transect\n"
+        fig.suptitle(tag+" | controlled-experiment development, one transect\n"
                      "Green: sampling / crop; orange: half-depth crossings; blue: background patches",fontsize=12)
         finish(fig,"F01_originals_and_sampling",f"# E034 originals and sampling\nSources {FILES}; "
                f"history={a.history}; target={a.target}. Top full views, bottom native720x600px crops; "
@@ -111,7 +112,7 @@ def main(a):
             ax.set(title=f"Step {r['step']} | {label}",xlabel="Normal offset (Step24 native px)",xlim=(-60,60),ylim=(min(limits)-5,max(limits)+8))
             ax.grid(alpha=.15)
         axes[0].set_ylabel("Background minus grayscale intensity")
-        fig.suptitle("S03-E034-MD01 | unchanged five-row median half-depth\nDashed: half local peak depth; black: width; grey: shoulder support",fontsize=11)
+        fig.suptitle(tag+" | unchanged five-row median half-depth\nDashed: half local peak depth; black: width; grey: shoulder support",fontsize=11)
         finish(fig,"F02_halfdepth_profiles",f"# E034 saved half-depth profiles\nExact profiles.npz and measurements from {a.history}, {a.target}. "
                "No new sampling. Shared grayscale-deficit axis and native-offset units; shoulder background beyond±45px, fixed peak search±15px, "
                "five rows are not independent samples. Width is half local optical depth, not physical opening. See README_analysis.md.")
@@ -135,7 +136,7 @@ def main(a):
         delta=result["delta_abs_error_px"]
         axes[1].set_title(f"Trend minus persistence error: {delta:+.3f} px" if delta is not None else "Unscorable; reference missing",fontsize=10)
         axes[1].grid(axis="y",alpha=.15)
-        fig.suptitle("S03-E034-MD01 | one controlled-experiment development query\nOrigin Step25, target Step26; forecasts saved before target acquisition",fontsize=11)
+        fig.suptitle(tag+" | one controlled-experiment development query\nOrigin Step25, target Step26; forecasts saved before target acquisition",fontsize=11)
         fig.supxlabel(f"Common scored {result['common_scored']}/1. Lines guide order only, not equal time/load. No CI from one case; not physical-width validation.",fontsize=8)
         finish(fig,"F03_prediction_comparison",f"# E034 paired forecast comparison\nExact saved predictions and summary from {a.history}, {a.target}. "
                "Left measured half-depth widths plus persistence and stage-trend forecast; right absolute errors vs same fixed reference. "
