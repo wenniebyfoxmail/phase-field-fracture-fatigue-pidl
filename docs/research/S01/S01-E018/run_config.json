@@ -108,7 +108,6 @@
       3,
       4
     ],
-    "learned_models": 0,
     "model": "three fixed ridge role heads, seven coefficients total",
     "ridge": 0.01,
     "numerical_tolerance": 1e-09,
@@ -133,7 +132,9 @@
         "target": "cached admitted AND lost==0 AND FP==0"
       }
     },
-    "diagnostic_scope": "delete whole positive-support location from training rows only; original FIT8 labels/context/bank and main gate remain fixed"
+    "diagnostic_scope": "delete whole positive-support location from training rows only; original FIT8 labels/context/bank and main gate remain fixed",
+    "model_sets": 13,
+    "head_fits": 39
   },
   "criterion": {
     "name": "pooled12_OOF_protected_net_gain",
