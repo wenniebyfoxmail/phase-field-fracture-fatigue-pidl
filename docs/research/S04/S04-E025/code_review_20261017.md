@@ -76,3 +76,48 @@ This readback used only Git/source/documents; no project import/test/worker/
 guard execution, archive metadata/content read, fit, recomputation, plot,
 confirmation opening, new task message or second writer. Obsidian is updated by
 the main chat alone. No Run directory/authorization grant was created.
+
+## Minimal repair and static difference review submission — 2026-10-17
+
+Latest status: **DIFFERENCE_REVIEW_PENDING**; the original f9001ed blocker is
+not relabelled closed before readback. Current user explicitly authorised only
+launch-exception handoff repair, sample_ids explanation and direct independent
+static difference review. No scientific access, fit or additional tests.
+
+- New exact snapshot: `256315332816b41f61c743309a20058572754bea`.
+- Compare original code `f9001ed04e0e72cfbc3629cec903eed69e7f7ccf`; immediate
+  parent `0b6e2a91` contains only the prior readback/status documents.
+- Changed only guard handoff/receipt semantics, model sample-index description
+  and corresponding protocol explanation. Mathematical fit/evaluation logic,
+  reader, manifest, inherited dependencies, exploratory criterion, grouping,
+  normalisation and **300s / 2GiB / 100MiB** remain unchanged.
+- Before Popen: activity is unknown, launch_attempted becomes true. An attempted
+  launch without a returned handle records LAUNCH_OWNERSHIP_UNCONFIRMED and
+  exit_confirmed=false; requires manual process inspection, never guesses a PID
+  or kills unrelated processes. Parent-only RSS explicitly cannot account for
+  a possible unobserved child. This reports uncertainty, not prevention of all
+  orphan processes or a verified exit/budget. Known handles retain existing
+  cleanup; original first failure and no-retry rule remain.
+- `models.json` adds sample_ids_semantics: sample_ids are zero-based positions
+  in admitted pipeline.ids, not native cell IDs; selection/values are unchanged.
+- Preparation performed only source reading and Git diff/whitespace checks;
+  unchanged reader/manifest/dependencies verified with Git diff. **No AST rerun,
+  project import, mock/resource/numerical test, archive metadata/content read,
+  fit, recomputation, plot, guard/worker execution or confirmation access.**
+- Review channel: same independent Codex chat **多目标优化学习 FEM–PINN Delta**,
+  `01a12d15-9b60-7280-8248-18386d6ef741`; model/settings retained, backend model
+  not independently verified or represented as Pro.
+- `send_message_to_thread` succeeded (`isError=false`, returned exact target).
+  Review turn `01a14ba6-a407-7f71-92fd-b5ee2ca545ce` acknowledged the static-only
+  difference scope (`wait_threads` revision94); final response is pending.
+  Shared exact snapshot/worktree, the three changed paths, previous blocker and
+  bounded questions: exception activity/ownership/cleanup/resource reporting,
+  sample-index meaning and downstream regressions. Reuse unchanged first-review
+  findings, no full repeat review or new scientific acceptance requirement.
+- Reviewer restricted to static Git/source/documents, no code execution/tests,
+  scientific file probing, fit, writes/Obsidian or extra task dispatch. This main
+  chat is the sole record writer. No duplicate computation requested.
+
+Requested verdict is static-scope REVIEW_PASS / MODIFY_AND_REREVIEW /
+NOT_REVIEWABLE with residual limitations, not execution permission or dynamic/
+scientific success. Final command/card remains deferred until findings close.
