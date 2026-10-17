@@ -1,0 +1,14 @@
+{
+  "protocol": "step19-source-only-exclusion-repair-v1",
+  "stage": 19,
+  "roi": [3800, 900, 4800, 3500],
+  "operation": "new_excluded = old_excluded AND rasterized_keep_polygons",
+  "parameters_unchanged": "gray<=100; local101 contrast>=20; guide corridor60/contact12; component height>=30; original guide",
+  "keep_polygons_native": [
+    [[3800,1970],[4095,1970],[4100,2420],[4120,2490],[4190,2590],[4245,2700],[4245,2750],[4232,2800],[4190,2910],[4140,3000],[4120,3050],[4110,3190],[4110,3300],[3800,3500]],
+    [[4550,2100],[4800,1980],[4800,3500],[4500,3500],[4500,2750],[4460,2500],[4500,2250]],
+    [[3800,3370],[4800,3370],[4800,3500],[3800,3500]]
+  ],
+  "source_rationale": "Left visible glue/fixture outline with conservative native-pixel margin, right unchanged. Bottom3370 stays above visible bright edge around3390+; not fit to masks or prediction errors.",
+  "fixed_display_crops_native": [[4100,2600,4450,3160],[4050,3230,4390,3420]]
+}
