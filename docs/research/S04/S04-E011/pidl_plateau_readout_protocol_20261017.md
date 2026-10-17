@@ -30,8 +30,10 @@ require at least32GiBavailableRAM and10GiBownmountspace. No sharedGPU use, no
 Mac training, no original archive/code write, no optimizer.step/train loop or
 acceptedhistory updates. Actual full-network forward/backward uses CPU; full
 batch avoids changing quadrature, field sampling or microbatch activation paths.
-Maximum30minutes, 10state readouts, onebackward plus8independent evaluations
-perstate. Baseline nonfinite/identity failure stops global; unavailable later
+Soft30minute evaluation-start deadline, 10state readouts, onebackward plus8independent directional evaluations
+perstate (plus deterministic baseline repeat). Check before every objective evaluation; an evaluation
+already running may finish beyond30min, but no new evaluation starts thereafter.
+Save completed rows/trials and a partial marker on deadline; restore perturbed parameters in finally. Baseline nonfinite/identity failure stops global; unavailable later
 states remain missing. No retries/capgrowth. Save completed state artifacts as
 they finish and an attributable detached PID/command/log/commit receipt.
 

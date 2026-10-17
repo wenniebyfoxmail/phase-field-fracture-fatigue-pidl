@@ -14,7 +14,10 @@ import torch
 
 
 def sha(p):
-    with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+    h=hashlib.sha256()
+    with p.open('rb') as f:
+        for chunk in iter(lambda:f.read(1024*1024),b''):h.update(chunk)
+    return h.hexdigest()
 
 
 def dump(p,x):p.write_text(json.dumps(x,indent=2,allow_nan=False)+'\n')
@@ -62,7 +65,10 @@ def main(z):
     dump(z.out/'receipt.json',dict(protocol='S04-E011-NCP-r1',analysis_commit=contract['analysis_commit'],source_commit=settings['runner_git_commit'],
          pid=os.getpid(),host=os.uname().nodename,device='cpu',threads=1,command=sys.argv,started_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
          original_archive=str(archive),optimizer_steps=0,history_commits=0))
+    def budget_check():
+        if time.monotonic()-start>=1800:raise TimeoutError('no_new_evaluation_after_30min')
     def objective(hist,ff,backward=False):
+        budget_check()
         fc.net.zero_grad(set_to_none=True)
         with torch.set_grad_enabled(backward):
             u,v,d=fc.fieldCalculation(inp)
@@ -90,64 +96,69 @@ def main(z):
                     assert q.grad is not None and torch.isfinite(q.grad).all()
                     extra['own_energy_gradient_'+key]=(q.grad.detach()*factor).numpy().copy()
         return data,extra
-    for cycle in [1,20,60,80,83]:
-        for substep,load in [(2,.05999988),(4,.11999988)]:
-            if time.monotonic()-start>1800:
-                dump(z.out/'partial.json',dict(reason='wall_budget_30min',completed=len(rows)));return
-            k=5*(cycle-1)+substep;best=archive/'best_models'
-            model=best/f'trained_1NN_{k}.pt';prev=safe_torch_load(best/f'checkpoint_step_{k-1}.pt',torch.device('cpu'))
-            cur=safe_torch_load(best/f'checkpoint_step_{k}.pt',torch.device('cpu'))
-            for h in [prev,cur]:
-                assert h['mesh_connectivity_arity']==4 and h['history_storage']=='q4_gp4'
-                assert h['damage_history_storage']=='previous_accepted_nodal' and h['history_driver_mode']=='current_active'
-                assert not h['lagged_stiffness_enabled'] and h['hist_alpha'].shape==(86756,) and h['hist_fat'].shape==(86408,4)
-                assert float(h.get('lambda_hist_weight',1))==1
-            assert prev['mesh_state_signature']==cur['mesh_state_signature']==contract['mesh_state_signature']
-            fc.net.load_state_dict(safe_torch_load(model,torch.device('cpu')));fc.lmbda=torch.tensor([load])
-            hist=prev['hist_alpha'];ff=compute_fatigue_degrad(prev['hist_fat'],{'degrad_type':'asymptotic','alpha_T':.5})
-            assert torch.isfinite(hist).all() and torch.isfinite(ff).all()
-            original=[p.detach().clone() for p in params]
-            repeat,_=objective(hist,ff);base,field=objective(hist,ff,True)
-            assert base is not None and repeat is not None
-            gt=[p.grad.detach().clone() if p.grad is not None else torch.zeros_like(p) for p in params]
-            assert all(torch.isfinite(g).all() for g in gt)
-            gr=[2e-5*p.detach() if 'weight' in name else torch.zeros_like(p) for name,p in named]
-            gp=[g-r for g,r in zip(gt,gr)]
-            l2=lambda gg:float(torch.sqrt(sum(g.double().square().sum() for g in gg)))
-            gn=l2(gt);pn=l2(original);pg=l2(gp);rg=l2(gr)
-            row=dict(cycle=cycle,substep=substep,step=k,load=load,**base,**plateau(np.load(best/f'trainLoss_1NN_{k}.npy')),
-               parameter_gradient_l2=gn,physical_log_parameter_gradient_l2=pg,reg_parameter_gradient_l2=rg,
-               physical_reg_gradient_cosine=float(sum((x.double()*y.double()).sum() for x,y in zip(gp,gr))/(pg*rg)) if pg*rg else None,
-               parameter_l2=pn,repeat_loss_difference=abs(base['loss']-repeat['loss']),f_pre_min=float(ff.min()),
-               d_min=float(field['d'].min()),d_max=float(field['d'].max()),negative_nodes=int((field['d']<0).sum()),above_one_nodes=int((field['d']>1).sum()),
-               nodal_lower_violation_max=float(np.maximum(hist.numpy()-field['d'],0).max()),optimizer_state_saved=False)
-            errors=[abs(base[key]-recorded[k,j])/max(abs(recorded[k,j]),1e-10) for j,key in enumerate(['E_el','E_d','E_hist'],1)]
-            row['original_poststep_component_relative_errors']=errors
-            row['source_objective_readout_pass']=max(errors)<=1e-4
-            # Readout arrays retain actual pre-optimization history, not current commit.
-            field.update(hist_alpha_pre=hist.numpy(),hist_fat_pre=prev['hist_fat'].numpy(),f_pre=ff.numpy(),hist_fat_post=cur['hist_fat'].numpy())
-            np.savez_compressed(fieldsdir/f'c{cycle}_s{substep}.npz',**field)
-            floor=abs(base['loss']-repeat['loss'])+32*np.finfo(np.float32).eps*max(1,abs(base['loss']))
-            row['direction_loss_roundoff_floor']=float(floor)
-            local=[]
-            if row['source_objective_readout_pass'] and gn>0:
-                try:
-                    for t in [1e-7,3e-7,1e-6,3e-6,1e-5,3e-5,1e-4,3e-4]:
-                        with torch.no_grad():
-                            for p,p0,g in zip(params,original,gt):p.copy_(p0-t*max(1,pn)*g/gn)
-                        q,_=objective(hist,ff)
-                        entry=dict(cycle=cycle,substep=substep,step=k,fraction=t,valid=q is not None,
-                                   loss=q['loss'] if q else None,loss_drop=base['loss']-q['loss'] if q else None)
-                        local.append(entry);trials.append(entry)
-                finally:
-                    with torch.no_grad():
-                        for p,p0 in zip(params,original):p.copy_(p0)
-            assert all(torch.equal(p,p0) for p,p0 in zip(params,original))
-            row['best_tested_loss_drop']=max([q['loss_drop'] for q in local if q['valid']]+[0.])
-            row['lower_fixed_objective_found']=row['best_tested_loss_drop']>floor
-            rows.append(row);dump(z.out/'rows.json',rows);dump(z.out/'trials.json',trials)
-            print('READOUT',cycle,substep,'source',row['source_objective_readout_pass'],'g',gn,'drop',row['best_tested_loss_drop'],flush=True)
-            del field,prev,cur,original,gt,gp,gr,hist,ff
+    try:
+      for cycle in [1,20,60,80,83]:
+          for substep,load in [(2,.05999988),(4,.11999988)]:
+              budget_check()
+              k=5*(cycle-1)+substep;best=archive/'best_models'
+              model=best/f'trained_1NN_{k}.pt';prev=safe_torch_load(best/f'checkpoint_step_{k-1}.pt',torch.device('cpu'))
+              cur=safe_torch_load(best/f'checkpoint_step_{k}.pt',torch.device('cpu'))
+              for h in [prev,cur]:
+                  assert h['mesh_connectivity_arity']==4 and h['history_storage']=='q4_gp4'
+                  assert h['damage_history_storage']=='previous_accepted_nodal' and h['history_driver_mode']=='current_active'
+                  assert not h['lagged_stiffness_enabled'] and h['hist_alpha'].shape==(86756,) and h['hist_fat'].shape==(86408,4)
+                  assert float(h.get('lambda_hist_weight',1))==1
+              assert prev['mesh_state_signature']==cur['mesh_state_signature']==contract['mesh_state_signature']
+              fc.net.load_state_dict(safe_torch_load(model,torch.device('cpu')));fc.lmbda=torch.tensor([load])
+              hist=prev['hist_alpha'];ff=compute_fatigue_degrad(prev['hist_fat'],{'degrad_type':'asymptotic','alpha_T':.5})
+              assert torch.isfinite(hist).all() and torch.isfinite(ff).all()
+              original=[p.detach().clone() for p in params]
+              repeat,_=objective(hist,ff);base,field=objective(hist,ff,True)
+              assert base is not None and repeat is not None
+              gt=[p.grad.detach().clone() if p.grad is not None else torch.zeros_like(p) for p in params]
+              assert all(torch.isfinite(g).all() for g in gt)
+              gr=[2e-5*p.detach() if 'weight' in name else torch.zeros_like(p) for name,p in named]
+              gp=[g-r for g,r in zip(gt,gr)]
+              l2=lambda gg:float(torch.sqrt(sum(g.double().square().sum() for g in gg)))
+              gn=l2(gt);pn=l2(original);pg=l2(gp);rg=l2(gr)
+              row=dict(cycle=cycle,substep=substep,step=k,load=load,**base,**plateau(np.load(best/f'trainLoss_1NN_{k}.npy')),
+                 parameter_gradient_l2=gn,physical_log_parameter_gradient_l2=pg,reg_parameter_gradient_l2=rg,
+                 physical_reg_gradient_cosine=float(sum((x.double()*y.double()).sum() for x,y in zip(gp,gr))/(pg*rg)) if pg*rg else None,
+                 parameter_l2=pn,repeat_loss_difference=abs(base['loss']-repeat['loss']),f_pre_min=float(ff.min()),
+                 d_min=float(field['d'].min()),d_max=float(field['d'].max()),negative_nodes=int((field['d']<0).sum()),above_one_nodes=int((field['d']>1).sum()),
+                 nodal_lower_violation_max=float(np.maximum(hist.numpy()-field['d'],0).max()),optimizer_state_saved=False)
+              errors=[abs(base[key]-recorded[k,j])/max(abs(recorded[k,j]),1e-10) for j,key in enumerate(['E_el','E_d','E_hist'],1)]
+              row['original_poststep_component_relative_errors']=errors
+              row['source_objective_readout_pass']=max(errors)<=1e-4
+              # Readout arrays retain actual pre-optimization history, not current commit.
+              field.update(hist_alpha_pre=hist.numpy(),hist_fat_pre=prev['hist_fat'].numpy(),f_pre=ff.numpy(),hist_fat_post=cur['hist_fat'].numpy())
+              np.savez_compressed(fieldsdir/f'c{cycle}_s{substep}.npz',**field)
+              floor=abs(base['loss']-repeat['loss'])+32*np.finfo(np.float32).eps*max(1,abs(base['loss']))
+              row['direction_loss_roundoff_floor']=float(floor)
+              local=[]
+              if row['source_objective_readout_pass'] and gn>0:
+                  try:
+                      for t in [1e-7,3e-7,1e-6,3e-6,1e-5,3e-5,1e-4,3e-4]:
+                          with torch.no_grad():
+                              for p,p0,g in zip(params,original,gt):p.copy_(p0-t*max(1,pn)*g/gn)
+                          q,_=objective(hist,ff)
+                          entry=dict(cycle=cycle,substep=substep,step=k,fraction=t,valid=q is not None,
+                                     loss=q['loss'] if q else None,loss_drop=base['loss']-q['loss'] if q else None)
+                          local.append(entry);trials.append(entry)
+                  finally:
+                      with torch.no_grad():
+                          for p,p0 in zip(params,original):p.copy_(p0)
+              assert all(torch.equal(p,p0) for p,p0 in zip(params,original))
+              row['best_tested_loss_drop']=max([q['loss_drop'] for q in local if q['valid']]+[0.])
+              row['lower_fixed_objective_found']=row['best_tested_loss_drop']>floor
+              rows.append(row);dump(z.out/'rows.json',rows);dump(z.out/'trials.json',trials)
+              print('READOUT',cycle,substep,'source',row['source_objective_readout_pass'],'g',gn,'drop',row['best_tested_loss_drop'],flush=True)
+              del field,prev,cur,original,gt,gp,gr,hist,ff
+    except TimeoutError as err:
+        dump(z.out/'rows.json',rows);dump(z.out/'trials.json',trials)
+        dump(z.out/'partial.json',dict(reason=str(err),completed=len(rows),elapsed_seconds=time.monotonic()-start,
+             budget='No new evaluation after 30min; evaluation already running may finish',optimizer_steps=0,history_commits=0))
+        return
     # Scalar evolution and all stored loss stopping traces are original trajectory evidence.
     evolution={}
     for leaf in ['E_el_vs_cycle.npy','x_tip_alpha_vs_cycle.npy','x_tip_vs_cycle.npy','alpha_bar_vs_cycle.npy','time_vs_cycle.npy','energy_gradient_terms_vs_cycle.npy']:
