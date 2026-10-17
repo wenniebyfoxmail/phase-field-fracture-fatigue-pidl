@@ -6,22 +6,28 @@
 
 **Migration:** migrate on touch; do not bulk-move or delete legacy evidence
 
-This file is navigation, not a second scientific ledger. Current claims,
+This file is navigation, not a second scientific ledger. Current formal claims,
 numbers, gates, and decisions belong to each Storyline and Experiment.
 
 ## Structure
 
 ```text
-INDEX -> Storyline -> Experiment -> Run -> Evidence
+INDEX -> Storyline -> formal Experiment -> Run -> Evidence
 ```
 
 - **Storyline:** one long-lived scientific question that spans experiments or
   preserves a claim-changing negative result.
-- **Experiment:** one frozen scientific design. It has one primary Storyline.
+- **Experiment:** one frozen, claim-bearing scientific design. It has one primary
+  Storyline.
 - **Run:** one actual producer execution. Seeds, arms, retries, failed starts,
   and hardware reruns receive distinct Run IDs.
 - **Evidence:** raw assets, analysis tables/figures, and the figure-set reading
   guide supporting the Experiment verdict.
+
+Exploratory diagnostics may live in a task note or draft Experiment rather than
+claiming formal readiness. If they execute on a producer, give each execution a
+fresh Run ID and compact receipt. Label their outputs exploratory; they may
+select a repair or candidate but cannot become a formal verdict retroactively.
 
 Stable IDs do not include dates, machine names, model names, or verdicts:
 
@@ -62,9 +68,10 @@ relationship document.
 
 ## Experiment Contract
 
-Use [`../templates/research_experiment.md`](../templates/research_experiment.md).
-An Experiment enters `ready` only after its protocol revision, validity checks,
-smallest decisive primary gate, reuse decision, and code review are frozen.
+Use [`../templates/research_experiment.md`](../templates/research_experiment.md)
+for formal work. A formal Experiment enters `ready` only after its protocol
+revision, validity checks, smallest decisive primary gate, reuse decision, and
+code review are frozen.
 Secondary diagnostics do not vote or rescue a failed primary gate. Post-result
 gate relaxation cannot rescue the old verdict.
 

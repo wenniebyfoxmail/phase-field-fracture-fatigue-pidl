@@ -15,8 +15,9 @@ recovered without unrelated files.
 
 | Task class | Primary owner | Canonical record |
 |---|---|---|
+| Exploratory diagnostic | one named research task or draft Experiment | short question/result/next-step note; Run receipt if a producer executes |
 | Claim-changing research | one Experiment ID | `docs/research/Sxx/Sxx-Exxx/experiment.md` |
-| Producer execution | one Run ID under an Experiment | compact Run receipt plus raw archive pointer |
+| Producer execution | one Run ID under its owning task or Experiment | compact Run receipt plus raw archive pointer |
 | Dataset/measurement qualification | one Experiment ID | Experiment record, manifest and decision |
 | Claim-bound analysis or figure set | the Experiment it evaluates | analysis table/figure README and decision |
 | Infrastructure, cleanup, or governance | one named scope | commit history; add one durable doc only when future agents need it |
@@ -80,7 +81,8 @@ Raw and generated evidence lives under:
 local_archive/experiments/<experiment-id>/runs/<run-id>/
 ```
 
-or a declared external producer path. Its nearby README records source commit,
+or a declared task-specific exploratory archive or external producer path. Its
+nearby README records source commit,
 Run ID, purpose, raw location, credibility, limitations and next action.
 
 ## 4. Commit units
@@ -113,7 +115,7 @@ after the owning Experiment commits are stable.
 
 ## 5. Producer handoff
 
-A producer receives exactly:
+A formal claim-bearing producer receives exactly:
 
 - Experiment ID and Run ID;
 - reviewed commit SHA and protocol revision;
@@ -122,8 +124,12 @@ A producer receives exactly:
 - stop rule, minimum evidence and retrieval route.
 
 The producer does not choose a new scientific design or silently edit source.
-Any material change returns to a new Mac task commit and invalidates the prior
-code-review PASS. A successful process start is execution evidence only.
+Any material change affecting a formal reviewed package returns to a new Mac
+task commit and focused review of the changed risk. An exploratory producer
+still needs a task owner, fresh Run ID, code identity, command, authorised
+machine, resource cap, output/log paths, and stop/retrieval route, but not a
+formal protocol or independent code-review PASS for each small iteration.
+A successful process start is execution evidence only.
 
 ## 6. Integration
 

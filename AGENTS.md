@@ -111,8 +111,10 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 ## Research Track Documentation
 
 - New and actively touched research uses the four-level structure defined in
-  `docs/research/INDEX.md`: `Storyline -> Experiment -> Run -> Evidence`.
-- Each claim-changing Experiment must have one primary Storyline, an immutable
+  `docs/research/INDEX.md`: `Storyline -> Experiment -> Run -> Evidence` for
+  formal, claim-bearing work. A diagnostic exploration may use a task note or
+  draft Experiment without pretending its results are confirmatory.
+- Each formal claim-changing Experiment must have one primary Storyline, an immutable
   ID, a folder, a frozen protocol revision, and one `experiment.md`. A change to
   the hypothesis, data semantics, holdout, comparator, primary metric, threshold,
   or gate requires a dated amendment and renewed review; do not rewrite a used
@@ -128,13 +130,40 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
   documents, and registries are legacy evidence. Do not bulk-move, rewrite, or
   delete them. Migrate an active item only when it is next touched.
 
+## Exploration And Formal Evidence
+
+- Classify by intended use, not model or run size. Exploration uses development
+  or synthetic data to find a signal, bottleneck, or repair; it cannot access a
+  sealed holdout or establish a formal scientific claim. Before an exploratory
+  attempt, state its question, simplest useful comparator, expected observable,
+  resource cap, and next decision. Run relevant local sanity checks; independent
+  scientific/code review is not required for each small exploratory iteration.
+- Exploratory acceptance is deliberately permissive: a measured directional or
+  component gain, a working capability, or a diagnostic that selects a concrete
+  repair can justify another bounded attempt. Show the actual result and its
+  uncertainty or limitations. Do not apply a downstream final-performance
+  threshold to an early prototype or kill a route merely because its first
+  attempt misses that threshold.
+- Before using a candidate for a formal claim, freeze a prospective protocol,
+  candidate, evaluation units, comparator, and one primary criterion, then
+  obtain the independent review required below. Exploration cannot be promoted
+  retroactively into confirmation after its results have been seen.
+- Estimate GPU cost as GPU count times wall-clock hours. A planned single run
+  of at least 8 GPU-hours triggers a brief capacity/storage/budget check. At
+  least 24 GPU-hours cumulative for one exploratory question triggers a
+  direction review before further runs. Neither is an extra scientific review.
+  Shared-GPU conflict, insufficient storage, or protected data needs its own
+  check regardless of GPU-hours.
+
 ## Research Readiness Gates
 
-- **Code Ready:** before claim-changing code is used, search the repository for
+- **Code Ready:** before a formal claim-bearing run, search the repository for
   reusable runners, parsers, plotters, validators, and tests; run relevant local
   sanity tests; then obtain a read-only independent code review bound to the
   exact commit, runner, config, data lock, and protocol revision. Any material
-  change invalidates the prior PASS.
+  change affecting the reviewed claim or output requires focused renewed review;
+  unchanged material carries forward. Exploratory iterations use local tests and
+  the record above, not a fresh independent review by default.
 - **Run Ready:** every producer execution uses a fresh Run ID and records the
   producer alias/hostname, commit or immutable snapshot, dirty status, command,
   runtime, GPU or scheduler identity, PID/session/job, output/archive/log paths,
@@ -177,8 +206,9 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
   `docs/skills/research-review-channels/SKILL.md`. Present the channel choices
   to the user before dispatch unless the user has already chosen and authorized
   the material. A transport failure is not permission to switch channels.
-- **Mandatory experiment routing:** before proposing, launching, reviewing, or
-  interpreting any claim-changing road-fracture Experiment, read
+- **Mandatory experiment routing:** before choosing exploratory versus formal
+  work, or proposing, launching, reviewing, or interpreting a road-fracture
+  research Run or Experiment, read
   `docs/skills/road-fracture-experiment-gate/SKILL.md` and only the adapter(s)
   relevant to the target claim. For PIDL/FEM, teacher, residual, GNO/PINO, or
   Hard-5-specific work, also read

@@ -1,6 +1,6 @@
 ---
 name: road-fracture-experiment-gate
-description: Gate and advance claim-changing road-fracture experiments across observation, measurement, prediction, and physics/surrogate routes. Use before execution and after retrieval to calibrate an attainable criterion, preserve component-level progress without overstating the claim, identify the controlling bottleneck, and select the smallest executable repair; do not use for literature-only review or routine non-claim-changing edits.
+description: Route road-fracture work between lightweight exploration and formal claim-bearing experiments across observation, measurement, prediction, and physics/surrogate methods. Use before runs and when interpreting results to set stage-appropriate criteria, preserve real progress, and choose a bounded repair; not for literature-only review or routine non-research edits.
 ---
 
 # Road-Fracture Experiment Gate
@@ -13,9 +13,36 @@ are candidate methods; none defines the scientific claim by itself.
 This skill does not authorize machine access or external mutation. Resolve
 execution authority from the current project `AGENTS.md` and the user's task.
 
-## Four-Question Intake
+## Choose The Evidence Stage
 
-Before creating a Run, answer:
+Classify by intended conclusion before choosing a run:
+
+- **Exploration:** use development or synthetic data to find a signal, test
+  feasibility, localise a bottleneck, or select a repair. Record the question,
+  simplest useful comparator, observable that changes the next action, resource
+  cap, and a compact run/result pointer. Run relevant local sanity checks.
+  Independent review is optional for a specific risk, not a prerequisite for
+  each small iteration. Show computed outcomes, including CV overlays or field
+  maps when relevant, and label the result exploratory.
+- **Formal Experiment:** prospectively test a bounded claim on qualified
+  evaluation units. Freeze the protocol, data boundary, candidate, comparator,
+  one primary criterion, stop rule, and minimum evidence before the claim-bearing
+  run. Obtain independent review of the final claim-relevant implementation.
+  Protected or sealed holdouts are never an exploratory shortcut.
+
+Exploration may select a candidate but cannot be relabelled as confirmation
+after its results are known. Promote by freezing a new prospective formal test;
+keep development and confirmation evidence separate. Run cost controls are
+independent of scientific review: estimate `GPU-hours = GPUs × wall-clock hours`.
+A planned run of ≥8 GPU-hours needs a brief capacity, storage and budget check;
+≥24 cumulative GPU-hours for one exploratory question triggers a direction
+review before more runs. Neither is another scientific acceptance gate.
+Shared-resource conflict, storage risk, and protected data are checked
+regardless of hours.
+
+## Formal Experiment Intake
+
+Before a formal claim-bearing Run, answer:
 
 1. What one bounded claim or decision can this Experiment change?
 2. What is the evaluation unit, prediction origin, horizon, allowed information,
@@ -26,9 +53,10 @@ Before creating a Run, answer:
 5. If the primary claim misses, which measured component or bottleneck will
    select the next repair rather than merely explain the failure?
 
-If an answer is missing, do not launch training, a new FEM solve, or a broad
-model sweep. Produce a data/identity audit, export request, offline diagnostic,
-or decision note instead.
+If an answer is missing, do not launch a formal training, new FEM solve, or
+broad model sweep. A bounded exploratory diagnostic may proceed under the
+lighter stage contract above; otherwise produce a data/identity audit, export
+request, offline diagnostic, or decision note first.
 
 ## Classify The Claim
 
@@ -57,7 +85,7 @@ intervals are not decision utility.
 
 ## Minimum Decision Contract
 
-An Experiment is `ready` only when `experiment.md` freezes:
+A formal Experiment is `ready` only when `experiment.md` freezes:
 
 - `storyline_id`, immutable `experiment_id`, and `protocol_revision`;
 - one question, claim class, evidence domain, evaluation unit, and estimand;
@@ -102,12 +130,17 @@ old verdict.
    localise the bottleneck, preserve component-level advances, and choose the
    next intervention under a predeclared rule.
 
-Scale acceptance to the decision. Exploratory or MVP work may advance on a
-measured component gain or a directional improvement over the simplest
-comparator, even below the final target. Show its size and independent-unit
-variation; if the gain is within noise, call it tentative and choose a cheap
-follow-up. Do not impose downstream performance targets on an earlier stage.
-Keep formal claim thresholds and necessary validity checks separate.
+Scale acceptance to the stage. In exploration, `continue` means that a measured
+directional/component gain, a working capability, or an identified repair
+provides a concrete next test; it does **not** mean the formal claim passed.
+Show the size and available independent-unit variation. A noisy gain is
+tentative, but may justify one cheap discriminating follow-up. A first prototype
+missing the final target is a reason to diagnose and iterate, not an automatic
+reason to kill the method. Continue or redirect when a concrete next test
+exists; park when none is currently actionable. Stop when the route is invalid,
+its measured ceiling is inadequate, or the declared budget is exhausted.
+Formal thresholds and necessary validity checks remain unchanged and cannot
+be relaxed after seeing results.
 
 Freeze this outcome map:
 
@@ -259,9 +292,12 @@ Experiment verdict: supports | mixed | negative | inconclusive | inadmissible
 Research disposition: advance | repair | redirect | stop
 ```
 
-Before claim-changing code is used, reuse existing code where possible, run
-relevant deterministic checks, and obtain independent read-only review. Bind
-review to the exact code/snapshot, data lock, and protocol revision.
+Before formal claim-bearing code is used, reuse existing code where possible,
+run relevant deterministic checks, and obtain independent read-only review.
+Bind review to the exact code/snapshot, data lock, and protocol revision. After
+a material change, review the changed risk and its effects; do not re-review
+unchanged material merely because a version number changed. Exploratory code
+uses relevant local tests and an attributable result record by default.
 
 Each actual execution receives a fresh Run ID and compact receipt containing
 the producer, hostname, code identity and dirty status, command/runtime,
@@ -275,9 +311,16 @@ green test, or large archive into a scientific verdict.
 
 ## Output Template
 
+For exploration, output only five short fields: question; baseline/observable;
+resource cap; measured result and figure; next discriminating test. Do not fill
+a formal Experiment contract just to justify a diagnostic attempt.
+
+For a formal Experiment, use:
+
 ```markdown
 ## Road-Fracture Experiment Gate
 
+- Evidence stage / permitted conclusion:
 - Storyline / Experiment / protocol:
 - Claim class / evidence domain:
 - Unit / origin / horizon / allowed inputs:
