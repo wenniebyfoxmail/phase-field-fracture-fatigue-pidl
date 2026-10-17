@@ -1,0 +1,667 @@
+{
+  "protocol": "S04-E011-PBD-r1",
+  "status": "completed_conditional_Q4_closure_and_neural_component_progress__full_network_capacity_unresolved",
+  "producer_commit": "2c7c5dc62415389da089ad522ec6c03ff33b1404",
+  "analysis_commit": "bc79a204",
+  "run_id": "pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production",
+  "local_run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production",
+  "local_preparation": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_block_preparation_20261017_v1",
+  "GPU": 0,
+  "worker_pid": 1592991,
+  "probe_pid": 1591524,
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "python3",
+    "-u",
+    "/mnt/data2/drtao/wennie/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/code/tools/s04_e011_analysis/run_pidl_block_diagnosis.py",
+    "--contract",
+    "/mnt/data2/drtao/wennie/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/contract.json",
+    "--out",
+    "/mnt/data2/drtao/pidl_archives/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/output",
+    "--phase",
+    "production"
+  ],
+  "root": "/mnt/data2/drtao/wennie/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production",
+  "archive": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production",
+  "complete": {
+    "status": "completed",
+    "states": 2,
+    "neural_arms": 10,
+    "history_commits": 0,
+    "finished_utc": "2026-10-17T21:21:46.080882+00:00"
+  },
+  "retrieval": {
+    "files": 400,
+    "bytes": 148175737,
+    "sha256": "f2935a99aebb4bfcbe064c3a60dd3bc5a1d1a06ecc5a6842eb84e493c087961f"
+  },
+  "probe_retrieval": {
+    "files": 300,
+    "bytes": 36529619
+  },
+  "package_manifest_sha256": "1f8c9b05f9e5c2b6afc229d869f3342584496d91e6271b35e4406a1abea2425c",
+  "input_manifest_sha256": "3f5bdaa5959e2efc3ea996001b196478b6786f479c7b0f3dab0112a53041da41",
+  "input_sources": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/common_common_initial.mat",
+      "role": "canonical mesh/free DOFs staged into MCS; not a newly created mesh",
+      "source_commit": "0a0691ec9b480aa4069258dbf8bb4c15b277f8fd",
+      "bytes": 32927359,
+      "sha256": "59a0f81368d0c46a698f94fdfcb32158e96361714d7547f00deed996d4a7c181"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_ncp_348be4b_20261017T2029Z/retrieved/archive/readout/mesh.npz",
+      "role": "original PIDL node/connectivity alignment check",
+      "source_commit": "348be4b2ceb7785c1969c30f920450b79f3e1d27",
+      "bytes": 1412731,
+      "sha256": "4c2816cce37338a3be23f73793bb6c7b47e1ddc2d3c1b358a3486dc72ff16333"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_ncp_348be4b_20261017T2029Z/retrieved/root/code/contract.json",
+      "role": "original PIDL model/checkpoint/source bindings",
+      "source_commit": "348be4b2ceb7785c1969c30f920450b79f3e1d27",
+      "bytes": 292413,
+      "sha256": "a926dc82848512eb6f37eab5ba93b9a3d4995c66efe56d997a85c736351451ce"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/output/mcs/c1_s4/case.mat",
+      "role": "native accepted current and frozen prestate",
+      "source_commit": "0a0691ec9b480aa4069258dbf8bb4c15b277f8fd",
+      "bytes": 90286832,
+      "sha256": "59c8b661b1394523a768a1940ea2d057cc6e2b8078bd35ab51b6619e3338d814"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/output/mcs/c1_s4/result.json",
+      "role": "native status and no-commit assertion",
+      "source_commit": "0a0691ec9b480aa4069258dbf8bb4c15b277f8fd",
+      "bytes": 328,
+      "sha256": "1d4124ed8a0adad52570cca0528854f06c9a5ebc96bffcee40bb37ba2022e05f"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_ncp_348be4b_20261017T2029Z/retrieved/archive/readout/fields/c1_s4.npz",
+      "role": "unchanged PIDL field and its own objective prehistory",
+      "source_commit": "348be4b2ceb7785c1969c30f920450b79f3e1d27",
+      "bytes": 4608524,
+      "sha256": "8fa4c11e01df05831912951d2493daf00331bb8ab87f1e70960cef6f6dd3991e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/output/mcs/c20_s4/case.mat",
+      "role": "native accepted current and frozen prestate",
+      "source_commit": "0a0691ec9b480aa4069258dbf8bb4c15b277f8fd",
+      "bytes": 107596994,
+      "sha256": "315e2dc00cd57668bc287af6619b33846dc5273f21c124b6d6f84aa10ed62c48"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/output/mcs/c20_s4/result.json",
+      "role": "native status and no-commit assertion",
+      "source_commit": "0a0691ec9b480aa4069258dbf8bb4c15b277f8fd",
+      "bytes": 333,
+      "sha256": "c648605cf82678d7f1fcf8301fae36bbdffa313dbb17c5482e21b24eb7d2a354"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_ncp_348be4b_20261017T2029Z/retrieved/archive/readout/fields/c20_s4.npz",
+      "role": "unchanged PIDL field and its own objective prehistory",
+      "source_commit": "348be4b2ceb7785c1969c30f920450b79f3e1d27",
+      "bytes": 4620998,
+      "sha256": "50bd4501f12a395e099ee48f76111a7cf90a8b8d8b405200ecd281d3fc722894"
+    }
+  ],
+  "analysis_summary": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/summary.json",
+  "analysis_summary_sha256": "41283db269dd45d277312fcc603349488af439141558600b55b04e2374501a8f",
+  "obsidian_report": "/Users/wenxiaofang/obsidian/mesh对齐.md",
+  "obsidian_report_sha256": "36103541cc9810b23060d995e712297e9550697dd65888f1435a88108139f449",
+  "figure_copy_manifest_sha256": "d7a44092265cc12eb6c7bada44e0d29d1a796dba092af53a565601c46c709874",
+  "history_commits": 0,
+  "new_rollout_steps": 0,
+  "next_action": "Prospective same-elastic-energy UV head card only; no new budget/run authorised by this completion",
+  "quota_latest_observation": {
+    "normal_codex_used_percent": 8,
+    "remaining_percent": 92,
+    "stop_below_remaining_percent": 80,
+    "checked_utc": "2026-10-17T21:40:23.927261+00:00"
+  },
+  "states": [
+    {
+      "cycle": 1,
+      "substep": 4,
+      "fem_reference": {
+        "source_commit": "0a0691ec9b480aa4069258dbf8bb4c15b277f8fd",
+        "outer": 9,
+        "accepted": true,
+        "pre_version": 3,
+        "history_commits": 0,
+        "free_u_l2": 2.8248478078978085e-15,
+        "projected_free_d_l2": 2.023911117292842e-06,
+        "label": "MCS natural c1s4 accepted outer9; evaluated against original s3 frozen prehistory; no commit",
+        "rd_fem_semantics": "full native raw damage residual; projected free residual norm reported separately"
+      },
+      "fem_fixed_state_readout": {
+        "E_el": 0.004798035971254553,
+        "E_d": 0.0054997458347115094,
+        "E_hist": 0.23885684608597887,
+        "physical_energy": 0.24915462789194492,
+        "independent_free_u_l2": 3.801559380568131e-15,
+        "independent_box_projected_damage_l2": 0.17560241020712197,
+        "native_FEM_feasible_damage_l2": 2.0239111172928424e-06,
+        "own_PIDL_box_damage_l2_is_different_problem": true
+      },
+      "incoming_objective_differences": {
+        "PIDL_gamma": 16875,
+        "FEM_gamma": 421875,
+        "PIDL_lower_min": -0.00044368006638251245,
+        "PIDL_lower_max": 1.0002020597457886,
+        "PIDL_lower_negative_nodes": 81392,
+        "PIDL_lower_above_one_nodes": 299,
+        "PIDL_lower_GP_min": -0.0004393642994909085,
+        "PIDL_lower_GP_max": 1.0001776205100201,
+        "PIDL_lower_GP_above_one_count": 165,
+        "hard_GP_no_healing_infeasible_with_box": true,
+        "own_soft_penalty_unavoidable_lower_bound": 1.0818923551874407e-08,
+        "lower_vs_FEM_pre_maxabs": 0.24170172045352945,
+        "PIDL_committed_f_min": 1.0,
+        "PIDL_committed_f_max": 1.0,
+        "FEM_accepted_trial_f_min": 1.0,
+        "FEM_accepted_trial_f_max": 1.0,
+        "f_maxabs_difference": 0.0
+      },
+      "arms": {
+        "U_B0": {
+          "E_el": 0.010889692759145935,
+          "physical_energy": 0.25524628467983634,
+          "free_u_l2": 0.014000259968184646,
+          "box_projected_damage_l2": 0.17945212805538913,
+          "uv_mass_rel_L2": 0.03589386176001035,
+          "uv_H1_rel": 1.1481936938232618,
+          "fixed_damage_elastic_energy_excess_relative": 1.269614655743938,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.33988245702792974,
+            "reference_norm": 0.007395390331114025,
+            "relative_L2": 45.95869072629877,
+            "correlation": 0.005831890832692444,
+            "reference_integral": 0.004795666701635095,
+            "candidate_integral": 0.0108863547212065
+          }
+        },
+        "head_U_actual": {
+          "E_el": 0.012425985169238844,
+          "physical_energy": 0.25678257708992924,
+          "free_u_l2": 0.13557966965881815,
+          "box_projected_damage_l2": 0.1760925779770984,
+          "uv_mass_rel_L2": 0.019151570335892334,
+          "uv_H1_rel": 0.6185488327155483,
+          "fixed_damage_elastic_energy_excess_relative": 1.5898065882965424,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.11610729487257336,
+            "reference_norm": 0.007395390331114025,
+            "relative_L2": 15.699954927880487,
+            "correlation": 0.1331155277174828,
+            "reference_integral": 0.004795666701635095,
+            "candidate_integral": 0.010667282436092329
+          }
+        },
+        "U_energy": {
+          "initial_loss": 1.0,
+          "final_loss": 0.5209026287390438,
+          "evaluations": 199,
+          "stop": "evaluation_budget",
+          "post_restore_readout_evaluations": 1,
+          "E_el": 0.005672469584399648,
+          "physical_energy": 0.2500290615050901,
+          "free_u_l2": 0.017118658371087763,
+          "box_projected_damage_l2": 0.17575390249583242,
+          "uv_mass_rel_L2": 0.04775787907922514,
+          "uv_H1_rel": 0.5559479511290112,
+          "nonzero_parameter_updates": 58,
+          "fixed_damage_elastic_energy_excess_relative": 0.18224824040167664,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.04652954923563578,
+            "reference_norm": 0.007395390331114025,
+            "relative_L2": 6.2916961988978155,
+            "correlation": 0.1060794272279942,
+            "reference_integral": 0.004795666701635095,
+            "candidate_integral": 0.005665353615034751
+          }
+        },
+        "U_supervised": {
+          "initial_loss": 1.3183487585355063,
+          "final_loss": 0.8277159718144711,
+          "evaluations": 199,
+          "stop": "evaluation_budget",
+          "post_restore_readout_evaluations": 1,
+          "E_el": 0.02329130609703374,
+          "physical_energy": 0.26764789801772415,
+          "free_u_l2": 0.04199271148728733,
+          "box_projected_damage_l2": 0.1760564878961377,
+          "uv_mass_rel_L2": 0.221280935786819,
+          "uv_H1_rel": 0.9097889710336519,
+          "nonzero_parameter_updates": 58,
+          "fixed_damage_elastic_energy_excess_relative": 3.8543417007654726,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.11595291791282307,
+            "reference_norm": 0.007395390331114025,
+            "relative_L2": 15.679080173088874,
+            "correlation": -0.06367308305781971,
+            "reference_integral": 0.004795666701635095,
+            "candidate_integral": 0.022724096847060744
+          }
+        },
+        "D_B0": {
+          "E_el": 0.01043130068122038,
+          "physical_energy": 0.015936203916021383,
+          "free_u_l2": 0.011728787838313172,
+          "box_projected_damage_l2": 0.008137392146899918,
+          "uv_mass_rel_L2": 0.0,
+          "uv_H1_rel": 0.0,
+          "damage_target_mass_rel_L2": 0.06069231252384983,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.31440221953527886,
+            "reference_norm": 0.007395390331114025,
+            "relative_L2": 42.51326913909059,
+            "correlation": 0.045009624032749204,
+            "reference_integral": 0.004795666701635095,
+            "candidate_integral": 0.010428931411600919
+          }
+        },
+        "direct_Q4": {
+          "E_el": 0.004785276793233331,
+          "physical_energy": 0.010475326735376867,
+          "free_u_l2": 0.0002059980241945886,
+          "box_projected_damage_l2": 1.4377560734388275e-06,
+          "uv_mass_rel_L2": 0.0,
+          "uv_H1_rel": 0.0,
+          "evaluations": 799,
+          "stop": "evaluation_budget",
+          "closed_box_KKT": true,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.0009949107714733022,
+            "reference_norm": 0.007395390331114025,
+            "relative_L2": 0.13453120483546283,
+            "correlation": 0.9846288182313114,
+            "reference_integral": 0.004795666701635095,
+            "candidate_integral": 0.004782907523613871
+          }
+        },
+        "head_D_actual": {
+          "E_el": 0.08454932318412353,
+          "physical_energy": 1.3124423817968176,
+          "free_u_l2": 0.36698305082361005,
+          "box_projected_damage_l2": 0.29701206266789165,
+          "uv_mass_rel_L2": 0.0,
+          "uv_H1_rel": 0.0,
+          "damage_target_mass_rel_L2": 8.565115286354263,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 10.46268297854584,
+            "reference_norm": 0.007395390331114025,
+            "relative_L2": 1414.7573704834813,
+            "correlation": 0.0038063440025108337,
+            "reference_integral": 0.004795666701635095,
+            "candidate_integral": 0.08454695391450405
+          }
+        },
+        "D_energy": {
+          "initial_loss": 1.0,
+          "final_loss": 0.8277986221865196,
+          "evaluations": 199,
+          "stop": "evaluation_budget",
+          "post_restore_readout_evaluations": 1,
+          "E_el": 0.006518776094957402,
+          "physical_energy": 0.013191967644565919,
+          "free_u_l2": 0.003754480113122138,
+          "box_projected_damage_l2": 0.011712939171576738,
+          "uv_mass_rel_L2": 0.0,
+          "uv_H1_rel": 0.0,
+          "damage_target_mass_rel_L2": 0.03842909655347267,
+          "nonzero_parameter_updates": 44,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.09872164799039845,
+            "reference_norm": 0.007395390331114025,
+            "relative_L2": 13.349078759920877,
+            "correlation": 0.08247832240474863,
+            "reference_integral": 0.004795666701635095,
+            "candidate_integral": 0.006516406825337943
+          }
+        },
+        "D_supervised": {
+          "initial_loss": 0.022506485749454287,
+          "final_loss": 0.014161192855988873,
+          "evaluations": 199,
+          "stop": "evaluation_budget",
+          "post_restore_readout_evaluations": 1,
+          "E_el": 0.007392885205083686,
+          "physical_energy": 0.017266593041382314,
+          "free_u_l2": 0.0055770402456781715,
+          "box_projected_damage_l2": 0.023940310844252105,
+          "uv_mass_rel_L2": 0.0,
+          "uv_H1_rel": 0.0,
+          "damage_target_mass_rel_L2": 0.04383981822817374,
+          "nonzero_parameter_updates": 37,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.15375891929182406,
+            "reference_norm": 0.007395390331114025,
+            "relative_L2": 20.791183751982185,
+            "correlation": 0.05999756656555299,
+            "reference_integral": 0.004795666701635095,
+            "candidate_integral": 0.007390515935464225
+          }
+        },
+        "original_joint_LBFGS": {
+          "initial_loss": -1.966183066368103,
+          "final_loss": -1.966183066368103,
+          "evaluations": 9,
+          "stop": "exact_parameter_stagnation",
+          "post_restore_readout_evaluations": 1,
+          "E_el": 0.004791789104346882,
+          "physical_energy": 0.010258298875124718,
+          "free_u_l2": 0.005100375648980233,
+          "box_projected_damage_l2": 0.033320290954214495,
+          "uv_mass_rel_L2": 0.035893860332067075,
+          "uv_H1_rel": 1.1481937193234755,
+          "nonzero_parameter_updates": 0,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.001670802215526635,
+            "reference_norm": 0.007395390331114025,
+            "relative_L2": 0.22592481812585397,
+            "correlation": 0.9558164398425838,
+            "reference_integral": 0.004795666701635095,
+            "candidate_integral": 0.00478845106422446
+          }
+        }
+      },
+      "claims": [
+        {
+          "question": "original_PIDL_stop",
+          "loss_drop": 0.0,
+          "readout_roundoff_floor": 1.5000786333985161e-05,
+          "conclusion": "no robust original-objective descent demonstrated; stagnation versus representation remains unresolved"
+        },
+        {
+          "question": "U_block",
+          "same_parameterization_lower_energy_witnesses": [],
+          "conclusion": "no lower same-parameterization energy witness demonstrated; finite-budget fits do not establish a representation lower bound"
+        },
+        {
+          "question": "D_block",
+          "same_parameterization_lower_energy_witnesses": [],
+          "conclusion": "no lower same-parameterization energy witness demonstrated; finite-budget fits do not establish a representation lower bound"
+        },
+        {
+          "question": "D_reference",
+          "closed_box_KKT": true,
+          "conclusion": "direct-Q4 is a qualified conditional PIDL-objective box block reference, not FEM reproduction"
+        }
+      ]
+    },
+    {
+      "cycle": 20,
+      "substep": 4,
+      "fem_reference": {
+        "source_commit": "0a0691ec9b480aa4069258dbf8bb4c15b277f8fd",
+        "outer": 18,
+        "accepted": true,
+        "pre_version": 98,
+        "history_commits": 0,
+        "free_u_l2": 2.8221899255188885e-15,
+        "projected_free_d_l2": 3.1479478827647947e-06,
+        "label": "MCS natural c20s4 accepted outer18; evaluated against original s3 frozen prehistory; no commit",
+        "rd_fem_semantics": "full native raw damage residual; projected free residual norm reported separately"
+      },
+      "fem_fixed_state_readout": {
+        "E_el": 0.004320576024533599,
+        "E_d": 0.005732441168946032,
+        "E_hist": 0.945528908105479,
+        "physical_energy": 0.9555819252989586,
+        "independent_free_u_l2": 3.775916400752357e-15,
+        "independent_box_projected_damage_l2": 0.3531843961424558,
+        "native_FEM_feasible_damage_l2": 3.147947882764797e-06,
+        "own_PIDL_box_damage_l2_is_different_problem": true
+      },
+      "incoming_objective_differences": {
+        "PIDL_gamma": 16875,
+        "FEM_gamma": 421875,
+        "PIDL_lower_min": -0.002488198457285762,
+        "PIDL_lower_max": 1.000334620475769,
+        "PIDL_lower_negative_nodes": 80419,
+        "PIDL_lower_above_one_nodes": 330,
+        "PIDL_lower_GP_min": -0.0024760027012180022,
+        "PIDL_lower_GP_max": 1.0001387493880936,
+        "PIDL_lower_GP_above_one_count": 238,
+        "hard_GP_no_healing_infeasible_with_box": true,
+        "own_soft_penalty_unavoidable_lower_bound": 5.167064954534914e-09,
+        "lower_vs_FEM_pre_maxabs": 0.8119889579466326,
+        "PIDL_committed_f_min": 0.021512005478143692,
+        "PIDL_committed_f_max": 1.0,
+        "FEM_accepted_trial_f_min": 0.03217094087330535,
+        "FEM_accepted_trial_f_max": 1.0,
+        "f_maxabs_difference": 0.9784879945218563
+      },
+      "arms": {
+        "U_B0": {
+          "E_el": 0.01121651497862343,
+          "physical_energy": 0.9624778642530485,
+          "free_u_l2": 0.019601199803933128,
+          "box_projected_damage_l2": 0.35551655672429683,
+          "uv_mass_rel_L2": 0.03739388021947007,
+          "uv_H1_rel": 1.1198184913885147,
+          "fixed_damage_elastic_energy_excess_relative": 1.5960693469881115,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.3696555300745067,
+            "reference_norm": 0.007138865866370473,
+            "relative_L2": 51.78070816764711,
+            "correlation": 0.033893699316174884,
+            "reference_integral": 0.004317519850105422,
+            "candidate_integral": 0.011212104565698383
+          }
+        },
+        "head_U_actual": {
+          "E_el": 0.01409706910626602,
+          "physical_energy": 0.9653584183806911,
+          "free_u_l2": 0.1552248187289984,
+          "box_projected_damage_l2": 0.35355815918090816,
+          "uv_mass_rel_L2": 0.021050322646849414,
+          "uv_H1_rel": 0.6524504560153849,
+          "fixed_damage_elastic_energy_excess_relative": 2.262775386017604,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.09652767833556729,
+            "reference_norm": 0.007138865866370473,
+            "relative_L2": 13.521430454420862,
+            "correlation": 0.1180165973075589,
+            "reference_integral": 0.004317519850105422,
+            "candidate_integral": 0.010362519357833305
+          }
+        },
+        "U_energy": {
+          "initial_loss": 1.0,
+          "final_loss": 0.48157254631526264,
+          "evaluations": 198,
+          "stop": "evaluation_budget",
+          "post_restore_readout_evaluations": 1,
+          "E_el": 0.005401565679038968,
+          "physical_energy": 0.9566629149534641,
+          "free_u_l2": 0.015995833518180787,
+          "box_projected_damage_l2": 0.35329887080267275,
+          "uv_mass_rel_L2": 0.06262684393394058,
+          "uv_H1_rel": 0.5913469685524375,
+          "nonzero_parameter_updates": 60,
+          "fixed_damage_elastic_energy_excess_relative": 0.2501957258400659,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.045223853228498,
+            "reference_norm": 0.007138865866370473,
+            "relative_L2": 6.334879247631895,
+            "correlation": 0.100177274687356,
+            "reference_integral": 0.004317519850105422,
+            "candidate_integral": 0.005398066472996435
+          }
+        },
+        "U_supervised": {
+          "initial_loss": 1.253993453655649,
+          "final_loss": 0.8802493479084658,
+          "evaluations": 199,
+          "stop": "evaluation_budget",
+          "post_restore_readout_evaluations": 1,
+          "E_el": 0.07453912131024747,
+          "physical_energy": 1.0258004705846726,
+          "free_u_l2": 0.07941596769595978,
+          "box_projected_damage_l2": 0.35463298846312497,
+          "uv_mass_rel_L2": 0.41571628745751843,
+          "uv_H1_rel": 0.9382160454332817,
+          "nonzero_parameter_updates": 60,
+          "fixed_damage_elastic_energy_excess_relative": 16.252125847801484,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.3536582536001652,
+            "reference_norm": 0.007138865866370473,
+            "relative_L2": 49.539837310316535,
+            "correlation": -0.08497624005476155,
+            "reference_integral": 0.004317519850105422,
+            "candidate_integral": 0.07044511870346179
+          }
+        },
+        "D_B0": {
+          "E_el": 0.010844974159793987,
+          "physical_energy": 0.016684333764396257,
+          "free_u_l2": 0.013125621637241404,
+          "box_projected_damage_l2": 0.008952481620180877,
+          "uv_mass_rel_L2": 0.0,
+          "uv_H1_rel": 0.0,
+          "damage_target_mass_rel_L2": 0.05887046092754624,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.3603286882911161,
+            "reference_norm": 0.007138865866370473,
+            "relative_L2": 50.47422028035858,
+            "correlation": 0.03996808430359141,
+            "reference_integral": 0.004317519850105422,
+            "candidate_integral": 0.010841917985365815
+          }
+        },
+        "direct_Q4": {
+          "E_el": 0.004297572592082182,
+          "physical_energy": 0.01028918428743447,
+          "free_u_l2": 0.000568447451446241,
+          "box_projected_damage_l2": 1.4338792467772395e-08,
+          "uv_mass_rel_L2": 0.0,
+          "uv_H1_rel": 0.0,
+          "evaluations": 478,
+          "stop": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+          "closed_box_KKT": true,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.0015691391786576301,
+            "reference_norm": 0.007138865866370473,
+            "relative_L2": 0.21980230586058183,
+            "correlation": 0.9620606788654986,
+            "reference_integral": 0.004317519850105422,
+            "candidate_integral": 0.004294516417654007
+          }
+        },
+        "head_D_actual": {
+          "E_el": 0.1372435037743701,
+          "physical_energy": 3.268089350219926,
+          "free_u_l2": 0.5240989477378369,
+          "box_projected_damage_l2": 0.5366286734117914,
+          "uv_mass_rel_L2": 0.0,
+          "uv_H1_rel": 0.0,
+          "damage_target_mass_rel_L2": 7.997055708499306,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 11.686265513805088,
+            "reference_norm": 0.007138865866370473,
+            "relative_L2": 1636.9918881451956,
+            "correlation": 0.017745760751441023,
+            "reference_integral": 0.004317519850105422,
+            "candidate_integral": 0.13724044759994194
+          }
+        },
+        "D_energy": {
+          "initial_loss": 1.0,
+          "final_loss": 0.7511986338837484,
+          "evaluations": 198,
+          "stop": "evaluation_budget",
+          "post_restore_readout_evaluations": 1,
+          "E_el": 0.005656503637188734,
+          "physical_energy": 0.012533248731074965,
+          "free_u_l2": 0.003107730896133023,
+          "box_projected_damage_l2": 0.009974721036523184,
+          "uv_mass_rel_L2": 0.0,
+          "uv_H1_rel": 0.0,
+          "damage_target_mass_rel_L2": 0.07777602199389552,
+          "nonzero_parameter_updates": 45,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.07520389477139587,
+            "reference_norm": 0.007138865866370473,
+            "relative_L2": 10.534431684122799,
+            "correlation": 0.08994621832565475,
+            "reference_integral": 0.004317519850105422,
+            "candidate_integral": 0.005653447462760558
+          }
+        },
+        "D_supervised": {
+          "initial_loss": 0.028358747473276658,
+          "final_loss": 0.017612829144461148,
+          "evaluations": 199,
+          "stop": "evaluation_budget",
+          "post_restore_readout_evaluations": 1,
+          "E_el": 0.006932898719835814,
+          "physical_energy": 0.030714892551610314,
+          "free_u_l2": 0.00554403341555068,
+          "box_projected_damage_l2": 0.04777755767223563,
+          "uv_mass_rel_L2": 0.0,
+          "uv_H1_rel": 0.0,
+          "damage_target_mass_rel_L2": 0.04191990136970616,
+          "nonzero_parameter_updates": 47,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.1432186062807478,
+            "reference_norm": 0.007138865866370473,
+            "relative_L2": 20.061814994370067,
+            "correlation": 0.06358826344576361,
+            "reference_integral": 0.004317519850105422,
+            "candidate_integral": 0.0069298425454076395
+          }
+        },
+        "original_joint_LBFGS": {
+          "initial_loss": -2.0094141960144043,
+          "final_loss": -2.0094141960144043,
+          "evaluations": 9,
+          "stop": "exact_parameter_stagnation",
+          "post_restore_readout_evaluations": 1,
+          "E_el": 0.004275498122010498,
+          "physical_energy": 0.009323541353843076,
+          "free_u_l2": 0.0047177881282813436,
+          "box_projected_damage_l2": 0.6014563774169224,
+          "uv_mass_rel_L2": 0.03739388275877655,
+          "uv_H1_rel": 1.1198184924635206,
+          "nonzero_parameter_updates": 0,
+          "active_vs_conditional_FEM": {
+            "absolute_L2": 0.0027899165729686555,
+            "reference_norm": 0.007138865866370473,
+            "relative_L2": 0.39080669467559265,
+            "correlation": 0.8778260034069166,
+            "reference_integral": 0.004317519850105422,
+            "candidate_integral": 0.004271087638554859
+          }
+        }
+      },
+      "claims": [
+        {
+          "question": "original_PIDL_stop",
+          "loss_drop": 0.0,
+          "readout_roundoff_floor": 1.533061367808841e-05,
+          "conclusion": "no robust original-objective descent demonstrated; stagnation versus representation remains unresolved"
+        },
+        {
+          "question": "U_block",
+          "same_parameterization_lower_energy_witnesses": [],
+          "conclusion": "no lower same-parameterization energy witness demonstrated; finite-budget fits do not establish a representation lower bound"
+        },
+        {
+          "question": "D_block",
+          "same_parameterization_lower_energy_witnesses": [],
+          "conclusion": "no lower same-parameterization energy witness demonstrated; finite-budget fits do not establish a representation lower bound"
+        },
+        {
+          "question": "D_reference",
+          "closed_box_KKT": true,
+          "conclusion": "direct-Q4 is a qualified conditional PIDL-objective box block reference, not FEM reproduction"
+        }
+      ]
+    }
+  ]
+}

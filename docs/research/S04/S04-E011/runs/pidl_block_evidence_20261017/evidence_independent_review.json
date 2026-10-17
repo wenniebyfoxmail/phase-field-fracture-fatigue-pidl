@@ -1,0 +1,163 @@
+{
+  "status": "passed",
+  "reviewer": "/root/b0_route_inventory",
+  "reviewed_utc": "2026-10-17T21:38:25.765552+00:00",
+  "producer_commit": "2c7c5dc62415389da089ad522ec6c03ff33b1404",
+  "analysis_commit": "bc79a204a7193379e3a43d8daa7ee862377c7a0a",
+  "analysis_summary": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/summary.json",
+  "analysis_summary_sha256": "41283db269dd45d277312fcc603349488af439141558600b55b04e2374501a8f",
+  "retrieval": {
+    "files": 400,
+    "bytes": 148175737,
+    "all_hashes_and_sizes_independently_recomputed": true,
+    "verification_receipt_sha256": "f2935a99aebb4bfcbe064c3a60dd3bc5a1d1a06ecc5a6842eb84e493c087961f"
+  },
+  "rendered_figures_actually_viewed": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/block_scalars.png",
+      "sha256": "1d502bf0d486be0950adc3807b0380f749907f8bd0913524490078ac609b74e4",
+      "view_basis": "actual v2 image viewed; byte-identical final v4 checked"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/accepted_objectives.png",
+      "sha256": "d57f5814c5566647173f658e6dfb8a421529879e4049d3317c2c88dc13561d97",
+      "view_basis": "actual v2 image viewed; byte-identical final v4 checked"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c1_U_active_maps.png",
+      "sha256": "9119e1e33037be1b5f148103d4452ece554415459f9da0495a48c86299cd03eb",
+      "view_basis": "actual v2 image viewed; byte-identical final v4 checked"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c20_D_damage_maps.png",
+      "sha256": "a77459a57de94693eee1509496feae6a0f126128d27b85487782fe44a6cf1c40",
+      "view_basis": "actual v2 image viewed; byte-identical final v4 checked"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c1_joint_fields.png",
+      "sha256": "44a28451973f63feb5a922e51221cb631f97dd92138f9f3482b48ee2af9dcd54",
+      "view_basis": "actual final joint image viewed"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c20_joint_fields.png",
+      "sha256": "a0211a01bb482ec49498054c1495cb68acb34d49d934685241c6c1b1b5390f53",
+      "view_basis": "actual final joint image viewed"
+    }
+  ],
+  "review_details": [
+    "All 400 local retrieved production files independently rehashed against transfer manifest; complete marker present and no failure marker.",
+    "Both source-qualified original float32 joint controls reproduce original source component gate and return exactly zero nonzero parameter updates/loss drop; this is not a stationarity certificate.",
+    "Eight local neural arms stopped at evaluation budget; recorded evaluations plus one restored endpoint readout do not exceed 200. No neural endpoint is reported as converged.",
+    "Both DirectQC accepted fields pass independent box projected-gradient tolerance, but freeze FEM displacement and retain PIDL own history/soft penalty; neither is joint FEM/PIDL convergence.",
+    "No tested same-parameterization neural witness has lower same-block energy than corresponding neural energy arm; absence of such witness does not prove capacity impossibility.",
+    "Actual viewed scalar/objective/field maps have shared candidate/reference colour limits and separate common symmetric error limits; exact method/reference roles and frozen fields are labelled.",
+    "Original joint active relativeL2 .225924818/.390806695, conditional U_B0 hybrid45.9586907/51.7807082 and Uenergy6.2916962/6.3348792 are distinct field comparisons. Hybrid ratios cannot be labelled a new coupled PIDL benchmark deterioration.",
+    "Smooth Denergy exact-bound projected-residual-squared shares .005036396/.014432530 do not support a primary numeric-saturation explanation; other small-derivative evidence remains separately scoped.",
+    "FEM/own-history penalty and feasible-domain differences plus inherited own hist_alpha outside[0,1] are retained; no silent hard-nodal-lower replacement or physical-teacher/evolution claim.",
+    "Final v2/v4 arms, claims and incoming-objective numerical dictionaries compared equal; only rendering/sidecar/joint comparison presentation changed. Final graph/code/report bindings attached."
+  ],
+  "report_review": {
+    "status": "passed",
+    "reviewed_files": [
+      {
+        "path": "/Users/wenxiaofang/obsidian/mesh对齐.md",
+        "sha256": "36103541cc9810b23060d995e712297e9550697dd65888f1435a88108139f449"
+      },
+      {
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_block_result_20261017.md",
+        "sha256": "2abe59e1276c15fe5d1fac6b1f6bb3abd12a3424ffba22633932eb991874b751"
+      },
+      {
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/pidl_same_energy_head_card_20261017.md",
+        "sha256": "de6f7f2788b5e616468f370680bc49a45597f0cf0bf6956f9df699350cde3b89"
+      }
+    ],
+    "obsidian_PBD_section_sha256": "4bbaaf497009970c9bfce95ddc6df3da8b8204983533e8259893f9d267e69f42",
+    "details": [
+      "Final PBD report explicitly names FEM/PIDL methods, independent frozen U/D blocks, and unchanged original joint PIDL baseline.",
+      "Original-source GPU gate passing and bitwise unchanged original LBFGS parameters do not override earlier CPU mismatches or imply stationarity.",
+      "No same-energy better witness, finite-budget eight NN endpoints, conditional-only DirectQC closure, inherited history/penalty/f differences and no capacity-impossibility claim are stated correctly.",
+      "Actual c1/c20 joint maps viewed: correct converged FEM / unchanged original paired PIDL / signed difference columns; u/v/d/active separately scaled; not combined-arm models.",
+      "Low small-slope residual-squared shares1.34/2.28% and exact-bound .50/1.44% do not support a main saturation explanation; cross-device D-head numerical differences reported, no new gate imposed.",
+      "Next same-energy UV-head card is prospective with no authorised new producer run/budget; fixed-FEM-d U elastic objective clarified as an original joint-energy component, not unchanged full original logE+reg objective.",
+      "No physical teacher, coherent repaired trajectory, full fatigue rollout or improvement-of-joint-baseline claim made."
+    ]
+  },
+  "blockers": [],
+  "analysis_code_sha256": "9e5d14ef6b7b50e3032eb1c44f7ab8183fc5a3b2a5577308152ce4d206fe3f3d",
+  "final_figure_and_sidecar_bindings": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/accepted_objectives.png",
+      "sha256": "d57f5814c5566647173f658e6dfb8a421529879e4049d3317c2c88dc13561d97"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/block_scalars.png",
+      "sha256": "1d502bf0d486be0950adc3807b0380f749907f8bd0913524490078ac609b74e4"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c1_D_damage_maps.png",
+      "sha256": "6c000da3830c24a371f9e49384d21169da853e7bf14a28b64962b8a8504d9420"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c1_U_active_maps.png",
+      "sha256": "9119e1e33037be1b5f148103d4452ece554415459f9da0495a48c86299cd03eb"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c1_joint_fields.png",
+      "sha256": "44a28451973f63feb5a922e51221cb631f97dd92138f9f3482b48ee2af9dcd54"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c20_D_damage_maps.png",
+      "sha256": "a77459a57de94693eee1509496feae6a0f126128d27b85487782fe44a6cf1c40"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c20_U_active_maps.png",
+      "sha256": "245896b44a9da23535383755a9ab825cec038a15432f7da89600bd42a4742018"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c20_joint_fields.png",
+      "sha256": "a0211a01bb482ec49498054c1495cb68acb34d49d934685241c6c1b1b5390f53"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/README_analysis.md",
+      "sha256": "9dc328b80fa8d205db29ec4d76d27b0b93fd68b4884d1556ae7655f858c2e0d3"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/accepted_objectives.md",
+      "sha256": "d9538400626e381bb9a4e175c791b7ca883330f51410b6f43f6bebdb8c61a244"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/block_scalars.md",
+      "sha256": "e3b245db489b97c7f3368729daea9d51201d4a10566db2e1da2681e3f616963d"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c1_D_damage_maps.md",
+      "sha256": "4fb38d58ff5a56e8bf6df5ab8ed57c5aee82faf867e34b96c3b8f7592504e8a8"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c1_U_active_maps.md",
+      "sha256": "02bea444a6546197a88cfe9eaf9543887272b058e620eb148f4bb0fea68a2305"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c1_joint_fields.md",
+      "sha256": "12b2d79beacf829ca1509aa4420ace0436e3504fbad3c05caa3e006ab2d64ca6"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c20_D_damage_maps.md",
+      "sha256": "1c8203b7712aa6338e4a198137662162970f3329bb250a1278a7b6611d2e10d7"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c20_U_active_maps.md",
+      "sha256": "36db389fb67146b4f899c23aad29adb8f1d0c5c48b0551faaa9a4e3f1800930f"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/analysis_v4/c20_joint_fields.md",
+      "sha256": "6e74c57a4bf44c5eea571eaad224764160ab89159e62f0ace35890480b70fbf9"
+    }
+  ],
+  "numerical_review_binding": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_block_preparation_20261017_v1/numerical_independent_review.json",
+    "sha256": "bcee6e19d384a4748c125af73910f3d60bbf0a7f3c7f018f6d383229b3c39446",
+    "scope": "Reviewed final author-excluded numerical audit, native residual/budget/FD/readout results and installed-head cross-device limitations; prior independent CodeReady covers helper/input author exclusions."
+  }
+}

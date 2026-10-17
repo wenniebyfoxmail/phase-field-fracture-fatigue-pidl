@@ -1,0 +1,820 @@
+{
+  "status": "passed_with_author_scope_exclusions_and_head_roundoff_note",
+  "reviewer": "/root/pidl_design_review",
+  "role_limit": "Author of plateau_head_fit.py and input adapter; NOT an independent audit of their LS implementation, input construction or target selection. Independently rederive new worker energy/residual/budget/FD diagnostics; actual installed-head Torch witness evaluation completed with cross-device numerical rounding reported; author exclusions remain in force.",
+  "producer_commit": "2c7c5dc62415389da089ad522ec6c03ff33b1404",
+  "retrieval_files": 400,
+  "retrieval_bytes": 148175737,
+  "complete": {
+    "status": "completed",
+    "states": 2,
+    "neural_arms": 10,
+    "history_commits": 0,
+    "finished_utc": "2026-10-17T21:21:46.080882+00:00"
+  },
+  "cases": [
+    {
+      "cycle": 1,
+      "native_FEM_force_maxabs_error": 8.012635219494142e-17,
+      "native_FEM_phase_maxabs_error": 2.8189256484623115e-18,
+      "arms": {
+        "U_B0": {
+          "independent_metrics": {
+            "E_el": 0.010889692759145937,
+            "E_d": 0.0054997458347115094,
+            "E_hist": 0.23885684608597887,
+            "physical_energy": 0.25524628467983634,
+            "free_u_l2": 0.014000259968184648,
+            "box_projected_damage_l2": 0.1794521280553891,
+            "gp_healing_max": 0.15090778308391117
+          },
+          "worker_metric_maxabs_difference": 2.7755575615628914e-17,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "D_B0": {
+          "independent_metrics": {
+            "E_el": 0.010431300681220378,
+            "E_d": 0.005504652940856119,
+            "E_hist": 2.5029394488287934e-07,
+            "physical_energy": 0.01593620391602138,
+            "free_u_l2": 0.011728787838313172,
+            "box_projected_damage_l2": 0.00813739214689994,
+            "gp_healing_max": 0.00206807072222126
+          },
+          "worker_metric_maxabs_difference": 2.2551405187698492e-17,
+          "damage_min": 9.99999999999999e-08,
+          "damage_max": 0.9999998999999999
+        },
+        "head_U_actual": {
+          "independent_metrics": {
+            "E_el": 0.012425985169238846,
+            "E_d": 0.0054997458347115094,
+            "E_hist": 0.23885684608597887,
+            "physical_energy": 0.25678257708992924,
+            "free_u_l2": 0.13557966965881815,
+            "box_projected_damage_l2": 0.17609257797709843,
+            "gp_healing_max": 0.15090778308391117
+          },
+          "worker_metric_maxabs_difference": 2.7755575615628914e-17,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "head_D_actual": {
+          "independent_metrics": {
+            "E_el": 0.08454932318412352,
+            "E_d": 0.4029261298302447,
+            "E_hist": 0.8249669287824495,
+            "physical_energy": 1.3124423817968176,
+            "free_u_l2": 0.3669830508236101,
+            "box_projected_damage_l2": 0.2970120626678917,
+            "gp_healing_max": 0.7887959126265707
+          },
+          "worker_metric_maxabs_difference": 2.220446049250313e-16,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "U_energy": {
+          "independent_metrics": {
+            "E_el": 0.005672469584399645,
+            "E_d": 0.0054997458347115094,
+            "E_hist": 0.23885684608597887,
+            "physical_energy": 0.25002906150509,
+            "free_u_l2": 0.017118658371087756,
+            "box_projected_damage_l2": 0.1757539024958324,
+            "gp_healing_max": 0.15090778308391117
+          },
+          "worker_metric_maxabs_difference": 5.551115123125783e-17,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "U_supervised": {
+          "independent_metrics": {
+            "E_el": 0.023291306097033747,
+            "E_d": 0.0054997458347115094,
+            "E_hist": 0.23885684608597887,
+            "physical_energy": 0.26764789801772415,
+            "free_u_l2": 0.04199271148728734,
+            "box_projected_damage_l2": 0.1760564878961377,
+            "gp_healing_max": 0.15090778308391117
+          },
+          "worker_metric_maxabs_difference": 2.7755575615628914e-17,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "D_energy": {
+          "independent_metrics": {
+            "E_el": 0.006518776094957401,
+            "E_d": 0.005618658498100543,
+            "E_hist": 0.001054533051507975,
+            "physical_energy": 0.013191967644565919,
+            "free_u_l2": 0.0037544801131221385,
+            "box_projected_damage_l2": 0.011712939171576741,
+            "gp_healing_max": 0.06384973240055658
+          },
+          "worker_metric_maxabs_difference": 3.469446951953614e-18,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "D_supervised": {
+          "independent_metrics": {
+            "E_el": 0.007392885205083687,
+            "E_d": 0.005577388353964567,
+            "E_hist": 0.004296319482334062,
+            "physical_energy": 0.017266593041382314,
+            "free_u_l2": 0.0055770402456781715,
+            "box_projected_damage_l2": 0.0239403108442521,
+            "gp_healing_max": 0.08401394711712062
+          },
+          "worker_metric_maxabs_difference": 3.469446951953614e-18,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "direct_Q4": {
+          "independent_metrics": {
+            "E_el": 0.004785276793233333,
+            "E_d": 0.005689263283407408,
+            "E_hist": 7.866587361277957e-07,
+            "physical_energy": 0.010475326735376867,
+            "free_u_l2": 0.00020599802419458813,
+            "box_projected_damage_l2": 1.4377560734388893e-06,
+            "gp_healing_max": 0.0009023954505454901
+          },
+          "worker_metric_maxabs_difference": 1.734723475976807e-18,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "original_joint_LBFGS": {
+          "independent_metrics": {
+            "E_el": 0.004791789104346882,
+            "E_d": 0.005462227496835266,
+            "E_hist": 4.282273942570396e-06,
+            "physical_energy": 0.010258298875124717,
+            "free_u_l2": 0.005100375648980235,
+            "box_projected_damage_l2": 0.033320290954214474,
+            "gp_healing_max": 0.0020546306360349487
+          },
+          "worker_metric_maxabs_difference": 2.0816681711721685e-17,
+          "damage_min": -0.0004689996421802789,
+          "damage_max": 1.0002301931381226
+        }
+      },
+      "budgets": {
+        "U_energy": {
+          "ordinary_evaluations": 199,
+          "restored_endpoint_readout": 1,
+          "total": 200,
+          "accepted_records": 58,
+          "nonzero_updates": 58,
+          "stop": "evaluation_budget"
+        },
+        "U_supervised": {
+          "ordinary_evaluations": 199,
+          "restored_endpoint_readout": 1,
+          "total": 200,
+          "accepted_records": 58,
+          "nonzero_updates": 58,
+          "stop": "evaluation_budget"
+        },
+        "D_energy": {
+          "ordinary_evaluations": 199,
+          "restored_endpoint_readout": 1,
+          "total": 200,
+          "accepted_records": 44,
+          "nonzero_updates": 44,
+          "stop": "evaluation_budget"
+        },
+        "D_supervised": {
+          "ordinary_evaluations": 199,
+          "restored_endpoint_readout": 1,
+          "total": 200,
+          "accepted_records": 37,
+          "nonzero_updates": 37,
+          "stop": "evaluation_budget"
+        },
+        "direct_Q4": {
+          "energy_gradient_evaluations": 799,
+          "final_observation": 1,
+          "total": 800,
+          "closed_box_KKT": true,
+          "free_u_l2": 0.00020599802419458813,
+          "not_joint_closed": true,
+          "stop": "evaluation_budget"
+        },
+        "original_joint_LBFGS": {
+          "ordinary_evaluations": 9,
+          "restored_endpoint_readout": 1,
+          "total": 10,
+          "accepted_records": 1,
+          "nonzero_updates": 0,
+          "stop": "exact_parameter_stagnation"
+        }
+      },
+      "fd": {
+        "U": {
+          "negative_gradient": {
+            "best_abs_error": 2.5955071291328125e-05,
+            "tolerance": 0.0001247965208438841,
+            "passed": true
+          },
+          "seeded_random": {
+            "best_abs_error": 2.7581068505477813e-11,
+            "tolerance": 7.000598353286058e-08,
+            "passed": true
+          }
+        },
+        "D": {
+          "negative_gradient": {
+            "best_abs_error": 0.00033985842605233074,
+            "tolerance": 0.0036745760453210635,
+            "passed": true
+          },
+          "seeded_random": {
+            "best_abs_error": 3.4377033338028884e-11,
+            "tolerance": 5.532373839276884e-07,
+            "passed": true
+          }
+        }
+      },
+      "source": {
+        "passed": true,
+        "independently_rechecked_errors": [
+          9.717900051203615e-08,
+          0.0,
+          0.0
+        ],
+        "scope": "Gate arithmetic and archived table binding; actual original objective recomputation added in Torch audit",
+        "independent_CPU_on_saved_original_fields_parts": [
+          0.004791788756847382,
+          0.005462227389216423,
+          4.28227758675348e-06
+        ],
+        "independent_CPU_crossdevice_relative_errors": [
+          9.717900051203615e-08,
+          0.0,
+          8.495436888461285e-07
+        ],
+        "independent_CPU_source_gate_passed": true
+      },
+      "b0_contract": {
+        "smooth_bounded_nodal_maxabs": 1.0000000005838672e-07,
+        "smooth_bounded_gp_maxabs": 1.0000000005838672e-07,
+        "initial_derivative_maxrelative": 1.1102230246251565e-09,
+        "legacy_to_box_maxabs": 0.00046899054079522796,
+        "all_finite": true,
+        "damage_min": 9.99999999999999e-08,
+        "damage_max": 0.9999998999999999
+      },
+      "U_same_energy_better_witnesses": [],
+      "D_same_energy_better_witnesses": [],
+      "actual_Torch_witness_audit": {
+        "U": {
+          "installed_head": true,
+          "raw_head_shape": [
+            2,
+            401
+          ],
+          "head_maxabs": 36440.25509058327,
+          "CPU_GPU_physical_field_maxabs_errors": {
+            "u": 1.7551238240542943e-13,
+            "v": 3.769038900425237e-12
+          },
+          "CPU_GPU_physical_field_relative_L2": {
+            "u": 1.969544742389686e-12,
+            "v": 1.322974563900649e-11
+          },
+          "untouched_output_rows_verified": true,
+          "frozen_hidden_features_verified": true,
+          "interpretation": "CPU float64 installed Torch output head, independent hidden-feature forward and original BC/anchor formulas. Cross-device numeric replay, not bitwise identity; no new replay acceptance threshold imposed. Saved actual-GPU fields remain scored witness."
+        },
+        "D": {
+          "installed_head": true,
+          "raw_head_shape": [
+            401
+          ],
+          "head_maxabs": 16939.649165433522,
+          "CPU_GPU_physical_field_maxabs_errors": {
+            "d": 1.306497975916976e-07
+          },
+          "CPU_GPU_physical_field_relative_L2": {
+            "d": 6.065822841272904e-09
+          },
+          "untouched_output_rows_verified": true,
+          "frozen_hidden_features_verified": true,
+          "interpretation": "CPU float64 installed Torch output head, independent hidden-feature forward and original BC/anchor formulas. Cross-device numeric replay, not bitwise identity; no new replay acceptance threshold imposed. Saved actual-GPU fields remain scored witness.",
+          "anchor_slope_dtype": "float64 full_like original-map slope, not default-dtype scalar torch.where"
+        }
+      },
+      "original_joint_accepted_network_bitwise_equal_theta0": true,
+      "B0_independent_CPU_damage_maxabs_error": 1.6542323066914832e-14,
+      "anchor_readonly_basis": "Worker exact runtime anchor hashes before/after all local NN arms, completed without assertion failure; independent CPU replay uses original frozen buffers. GPU anchor tensors were hash-recorded, not exported, so CPU reconstruction is numerically verified against B0 fields, not bitwise GPU-hash validated.",
+      "posthoc_smooth_derivative_diagnostic": {
+        "D_energy": {
+          "old_S_small_definition": "abs(ds/dr)<1e-3*m; equivalent d(1-d)/[p(1-p)]<1e-3, using fixed theta0 p",
+          "node_count": 86756,
+          "small_derivative_node_fraction": 0.9424132048503849,
+          "small_derivative_boxPG_squared_share": 0.0133636801758754,
+          "exact_bound_node_fraction": 0.9183457051961824,
+          "exact_bound_boxPG_squared_share": 0.005036396134313437,
+          "boxPG_l2": 0.011712939171576741,
+          "quantile_probabilities": [
+            0,
+            0.01,
+            0.05,
+            0.25,
+            0.5,
+            0.75,
+            0.95,
+            0.99,
+            1.0
+          ],
+          "derivative_quantiles": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.17518236451726946,
+            0.2664249727008963,
+            288.0570735105816
+          ],
+          "relative_initial_slope_quantiles": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.7007294580690778,
+            1.0656998908035855,
+            288057.0735105815
+          ],
+          "threshold_nearest_margin": 5.11020947374023e-05,
+          "CPU_B0_damage_maxabs_error": 1.6542323066914832e-14,
+          "initial_raw_nearest_slope_branch_boundary": 0.00019004202599859354,
+          "p_reconstruction": "Original-model CPU float64 theta0 anchor formula; agrees with saved GPU B0 damage as reported. GPU p itself was not separately exported.",
+          "frozen_history": true,
+          "new_training_updates": 0,
+          "old_smoke_gate_rejudged": false,
+          "anchor_slope_dtype": "float64, original .25/.001 literals"
+        },
+        "D_supervised": {
+          "old_S_small_definition": "abs(ds/dr)<1e-3*m; equivalent d(1-d)/[p(1-p)]<1e-3, using fixed theta0 p",
+          "node_count": 86756,
+          "small_derivative_node_fraction": 0.9424247314306792,
+          "small_derivative_boxPG_squared_share": 0.0032325659778582815,
+          "exact_bound_node_fraction": 0.6121305731015723,
+          "exact_bound_boxPG_squared_share": 0.001347750985340043,
+          "boxPG_l2": 0.023940310844252105,
+          "quantile_probabilities": [
+            0,
+            0.01,
+            0.05,
+            0.25,
+            0.5,
+            0.75,
+            0.95,
+            0.99,
+            1.0
+          ],
+          "derivative_quantiles": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.7244584373230346e-245,
+            0.16937691091865698,
+            0.25785325638201356,
+            98.83994433368755
+          ],
+          "relative_initial_slope_quantiles": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.7244584373230346e-242,
+            0.6775076436746279,
+            1.0314130255280543,
+            98839.94433368756
+          ],
+          "threshold_nearest_margin": 3.363336806373111e-05,
+          "CPU_B0_damage_maxabs_error": 1.6542323066914832e-14,
+          "initial_raw_nearest_slope_branch_boundary": 0.00019004202599859354,
+          "p_reconstruction": "Original-model CPU float64 theta0 anchor formula; agrees with saved GPU B0 damage as reported. GPU p itself was not separately exported.",
+          "frozen_history": true,
+          "new_training_updates": 0,
+          "old_smoke_gate_rejudged": false,
+          "anchor_slope_dtype": "float64, original .25/.001 literals"
+        }
+      }
+    },
+    {
+      "cycle": 20,
+      "native_FEM_force_maxabs_error": 8.606024150693142e-17,
+      "native_FEM_phase_maxabs_error": 3.403272502949372e-18,
+      "arms": {
+        "U_B0": {
+          "independent_metrics": {
+            "E_el": 0.011216514978623433,
+            "E_d": 0.005732441168946032,
+            "E_hist": 0.945528908105479,
+            "physical_energy": 0.9624778642530484,
+            "free_u_l2": 0.019601199803933128,
+            "box_projected_damage_l2": 0.35551655672429705,
+            "gp_healing_max": 0.18417121810979276
+          },
+          "worker_metric_maxabs_difference": 2.220446049250313e-16,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "D_B0": {
+          "independent_metrics": {
+            "E_el": 0.010844974159793993,
+            "E_d": 0.005839091118428548,
+            "E_hist": 2.684861737200153e-07,
+            "physical_energy": 0.01668433376439626,
+            "free_u_l2": 0.013125621637241406,
+            "box_projected_damage_l2": 0.00895248162018095,
+            "gp_healing_max": 0.0004133095606880799
+          },
+          "worker_metric_maxabs_difference": 7.28583859910259e-17,
+          "damage_min": 9.99999999999999e-08,
+          "damage_max": 0.9999998999999999
+        },
+        "head_U_actual": {
+          "independent_metrics": {
+            "E_el": 0.014097069106266017,
+            "E_d": 0.005732441168946032,
+            "E_hist": 0.945528908105479,
+            "physical_energy": 0.965358418380691,
+            "free_u_l2": 0.15522481872899843,
+            "box_projected_damage_l2": 0.3535581591809084,
+            "gp_healing_max": 0.18417121810979276
+          },
+          "worker_metric_maxabs_difference": 2.220446049250313e-16,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "head_D_actual": {
+          "independent_metrics": {
+            "E_el": 0.13724350377437008,
+            "E_d": 0.4296138424262681,
+            "E_hist": 2.701232004019288,
+            "physical_energy": 3.268089350219926,
+            "free_u_l2": 0.5240989477378369,
+            "box_projected_damage_l2": 0.5366286734117999,
+            "gp_healing_max": 1.0001026398804211
+          },
+          "worker_metric_maxabs_difference": 8.43769498715119e-15,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "U_energy": {
+          "independent_metrics": {
+            "E_el": 0.00540156567903897,
+            "E_d": 0.005732441168946032,
+            "E_hist": 0.945528908105479,
+            "physical_energy": 0.956662914953464,
+            "free_u_l2": 0.015995833518180787,
+            "box_projected_damage_l2": 0.35329887080267286,
+            "gp_healing_max": 0.18417121810979276
+          },
+          "worker_metric_maxabs_difference": 1.1102230246251565e-16,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "U_supervised": {
+          "independent_metrics": {
+            "E_el": 0.07453912131024748,
+            "E_d": 0.005732441168946032,
+            "E_hist": 0.945528908105479,
+            "physical_energy": 1.0258004705846724,
+            "free_u_l2": 0.0794159676959598,
+            "box_projected_damage_l2": 0.35463298846312513,
+            "gp_healing_max": 0.18417121810979276
+          },
+          "worker_metric_maxabs_difference": 2.220446049250313e-16,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "D_energy": {
+          "independent_metrics": {
+            "E_el": 0.005656503637188736,
+            "E_d": 0.006107959987155524,
+            "E_hist": 0.0007687851067307061,
+            "physical_energy": 0.012533248731074966,
+            "free_u_l2": 0.003107730896133023,
+            "box_projected_damage_l2": 0.009974721036512832,
+            "gp_healing_max": 0.019749530702068842
+          },
+          "worker_metric_maxabs_difference": 1.0352829704629585e-14,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "D_supervised": {
+          "independent_metrics": {
+            "E_el": 0.006932898719835816,
+            "E_d": 0.005889594384218498,
+            "E_hist": 0.017892399447556002,
+            "physical_energy": 0.030714892551610317,
+            "free_u_l2": 0.00554403341555068,
+            "box_projected_damage_l2": 0.04777755767222214,
+            "gp_healing_max": 0.0636138344838747
+          },
+          "worker_metric_maxabs_difference": 1.3489209749195652e-14,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "direct_Q4": {
+          "independent_metrics": {
+            "E_el": 0.004297572592082183,
+            "E_d": 0.0059912118574217445,
+            "E_hist": 3.998379305450908e-07,
+            "physical_energy": 0.010289184287434472,
+            "free_u_l2": 0.000568447451446241,
+            "box_projected_damage_l2": 1.433879911345668e-08,
+            "gp_healing_max": 0.00047187769525591783
+          },
+          "worker_metric_maxabs_difference": 6.6456842857083265e-15,
+          "damage_min": 0.0,
+          "damage_max": 1.0
+        },
+        "original_joint_LBFGS": {
+          "independent_metrics": {
+            "E_el": 0.004275498122010498,
+            "E_d": 0.0050438260476510744,
+            "E_hist": 4.21718418150556e-06,
+            "physical_energy": 0.00932354135384308,
+            "free_u_l2": 0.0047177881282813505,
+            "box_projected_damage_l2": 0.6014563774169215,
+            "gp_healing_max": 0.0004132256543113444
+          },
+          "worker_metric_maxabs_difference": 8.881784197001252e-16,
+          "damage_min": -0.0025010190438479185,
+          "damage_max": 1.0003496408462524
+        }
+      },
+      "budgets": {
+        "U_energy": {
+          "ordinary_evaluations": 198,
+          "restored_endpoint_readout": 1,
+          "total": 199,
+          "accepted_records": 60,
+          "nonzero_updates": 60,
+          "stop": "evaluation_budget"
+        },
+        "U_supervised": {
+          "ordinary_evaluations": 199,
+          "restored_endpoint_readout": 1,
+          "total": 200,
+          "accepted_records": 60,
+          "nonzero_updates": 60,
+          "stop": "evaluation_budget"
+        },
+        "D_energy": {
+          "ordinary_evaluations": 198,
+          "restored_endpoint_readout": 1,
+          "total": 199,
+          "accepted_records": 45,
+          "nonzero_updates": 45,
+          "stop": "evaluation_budget"
+        },
+        "D_supervised": {
+          "ordinary_evaluations": 199,
+          "restored_endpoint_readout": 1,
+          "total": 200,
+          "accepted_records": 47,
+          "nonzero_updates": 47,
+          "stop": "evaluation_budget"
+        },
+        "direct_Q4": {
+          "energy_gradient_evaluations": 478,
+          "final_observation": 1,
+          "total": 479,
+          "closed_box_KKT": true,
+          "free_u_l2": 0.000568447451446241,
+          "not_joint_closed": true,
+          "stop": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+        },
+        "original_joint_LBFGS": {
+          "ordinary_evaluations": 9,
+          "restored_endpoint_readout": 1,
+          "total": 10,
+          "accepted_records": 1,
+          "nonzero_updates": 0,
+          "stop": "exact_parameter_stagnation"
+        }
+      },
+      "fd": {
+        "U": {
+          "negative_gradient": {
+            "best_abs_error": 8.43642703540759e-06,
+            "tolerance": 0.00012125641209765925,
+            "passed": true
+          },
+          "seeded_random": {
+            "best_abs_error": 6.455392817517058e-11,
+            "tolerance": 1.713428744404167e-07,
+            "passed": true
+          }
+        },
+        "D": {
+          "negative_gradient": {
+            "best_abs_error": 0.0017825037000775978,
+            "tolerance": 0.0032927744980820674,
+            "passed": true
+          },
+          "seeded_random": {
+            "best_abs_error": 1.2893907037989788e-09,
+            "tolerance": 1.312573307879271e-07,
+            "passed": true
+          }
+        }
+      },
+      "source": {
+        "passed": true,
+        "independently_rechecked_errors": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scope": "Gate arithmetic and archived table binding; actual original objective recomputation added in Torch audit",
+        "independent_CPU_on_saved_original_fields_parts": [
+          0.004275498446077108,
+          0.005043826065957546,
+          4.21718414145289e-06
+        ],
+        "independent_CPU_crossdevice_relative_errors": [
+          1.0891392989558857e-07,
+          9.23230349757509e-08,
+          2.1566393003517048e-07
+        ],
+        "independent_CPU_source_gate_passed": true
+      },
+      "b0_contract": {
+        "smooth_bounded_nodal_maxabs": 1.0000000005838672e-07,
+        "smooth_bounded_gp_maxabs": 1.0000000005838672e-07,
+        "initial_derivative_maxrelative": 1.1102230246251565e-09,
+        "legacy_to_box_maxabs": 0.002501027634692915,
+        "all_finite": true,
+        "damage_min": 9.99999999999999e-08,
+        "damage_max": 0.9999998999999999
+      },
+      "U_same_energy_better_witnesses": [],
+      "D_same_energy_better_witnesses": [],
+      "actual_Torch_witness_audit": {
+        "U": {
+          "installed_head": true,
+          "raw_head_shape": [
+            2,
+            401
+          ],
+          "head_maxabs": 4936.40296837735,
+          "CPU_GPU_physical_field_maxabs_errors": {
+            "u": 4.696265078207862e-14,
+            "v": 1.1512735209606717e-12
+          },
+          "CPU_GPU_physical_field_relative_L2": {
+            "u": 5.373159560980467e-13,
+            "v": 4.245726754609331e-12
+          },
+          "untouched_output_rows_verified": true,
+          "frozen_hidden_features_verified": true,
+          "interpretation": "CPU float64 installed Torch output head, independent hidden-feature forward and original BC/anchor formulas. Cross-device numeric replay, not bitwise identity; no new replay acceptance threshold imposed. Saved actual-GPU fields remain scored witness."
+        },
+        "D": {
+          "installed_head": true,
+          "raw_head_shape": [
+            401
+          ],
+          "head_maxabs": 4005.7850028400817,
+          "CPU_GPU_physical_field_maxabs_errors": {
+            "d": 5.6658284508515067e-08
+          },
+          "CPU_GPU_physical_field_relative_L2": {
+            "d": 1.876657516959081e-09
+          },
+          "untouched_output_rows_verified": true,
+          "frozen_hidden_features_verified": true,
+          "interpretation": "CPU float64 installed Torch output head, independent hidden-feature forward and original BC/anchor formulas. Cross-device numeric replay, not bitwise identity; no new replay acceptance threshold imposed. Saved actual-GPU fields remain scored witness.",
+          "anchor_slope_dtype": "float64 full_like original-map slope, not default-dtype scalar torch.where"
+        }
+      },
+      "original_joint_accepted_network_bitwise_equal_theta0": true,
+      "B0_independent_CPU_damage_maxabs_error": 1.27675647831893e-14,
+      "anchor_readonly_basis": "Worker exact runtime anchor hashes before/after all local NN arms, completed without assertion failure; independent CPU replay uses original frozen buffers. GPU anchor tensors were hash-recorded, not exported, so CPU reconstruction is numerically verified against B0 fields, not bitwise GPU-hash validated.",
+      "posthoc_smooth_derivative_diagnostic": {
+        "D_energy": {
+          "old_S_small_definition": "abs(ds/dr)<1e-3*m; equivalent d(1-d)/[p(1-p)]<1e-3, using fixed theta0 p",
+          "node_count": 86756,
+          "small_derivative_node_fraction": 0.9327193508229978,
+          "small_derivative_boxPG_squared_share": 0.022837409477154322,
+          "exact_bound_node_fraction": 0.4653165198948776,
+          "exact_bound_boxPG_squared_share": 0.014432529555223072,
+          "boxPG_l2": 0.009974721036512832,
+          "quantile_probabilities": [
+            0,
+            0.01,
+            0.05,
+            0.25,
+            0.5,
+            0.75,
+            0.95,
+            0.99,
+            1.0
+          ],
+          "derivative_quantiles": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.4477564368314713e-292,
+            2.1317155761328856e-234,
+            0.22328443479489893,
+            0.2862607973659239,
+            2419.686176228318
+          ],
+          "relative_initial_slope_quantiles": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.4477564368314712e-289,
+            2.1317155761328857e-231,
+            0.8933187303093258,
+            1.145317509854123,
+            2419686.176228318
+          ],
+          "threshold_nearest_margin": 0.00022438287458682827,
+          "CPU_B0_damage_maxabs_error": 1.27675647831893e-14,
+          "initial_raw_nearest_slope_branch_boundary": 0.00018366088293819693,
+          "p_reconstruction": "Original-model CPU float64 theta0 anchor formula; agrees with saved GPU B0 damage as reported. GPU p itself was not separately exported.",
+          "frozen_history": true,
+          "new_training_updates": 0,
+          "old_smoke_gate_rejudged": false,
+          "anchor_slope_dtype": "float64, original .25/.001 literals"
+        },
+        "D_supervised": {
+          "old_S_small_definition": "abs(ds/dr)<1e-3*m; equivalent d(1-d)/[p(1-p)]<1e-3, using fixed theta0 p",
+          "node_count": 86756,
+          "small_derivative_node_fraction": 0.9316127991147586,
+          "small_derivative_boxPG_squared_share": 0.0053188873945217395,
+          "exact_bound_node_fraction": 0.2557863433076675,
+          "exact_bound_boxPG_squared_share": 0.0035947477173697367,
+          "boxPG_l2": 0.04777755767222214,
+          "quantile_probabilities": [
+            0,
+            0.01,
+            0.05,
+            0.25,
+            0.5,
+            0.75,
+            0.95,
+            0.99,
+            1.0
+          ],
+          "derivative_quantiles": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.7608663164065926e-240,
+            1.4266732824547057e-200,
+            0.21952825361588765,
+            0.2545311300846005,
+            70.28989193816349
+          ],
+          "relative_initial_slope_quantiles": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.7608663164065926e-237,
+            1.4266732824547054e-197,
+            0.8781130144635506,
+            1.0181245203384017,
+            70289.89193816349
+          ],
+          "threshold_nearest_margin": 1.683657706642947e-05,
+          "CPU_B0_damage_maxabs_error": 1.27675647831893e-14,
+          "initial_raw_nearest_slope_branch_boundary": 0.00018366088293819693,
+          "p_reconstruction": "Original-model CPU float64 theta0 anchor formula; agrees with saved GPU B0 damage as reported. GPU p itself was not separately exported.",
+          "frozen_history": true,
+          "new_training_updates": 0,
+          "old_smoke_gate_rejudged": false,
+          "anchor_slope_dtype": "float64, original .25/.001 literals"
+        }
+      }
+    }
+  ],
+  "scope_exclusions": [
+    "LS helper/input adapter authored by reviewer; not independently revalidated by this reviewer",
+    "CPU actual-head replay is cross-device and D head has amplified numeric differences, not bitwise identity. No new acceptance gate imposed; actual GPU fields scored",
+    "Finite-budget fitting does not prove architecture capacity limit; Direct box-KKT closure is not joint mechanical equilibrium",
+    "Derivative diagnostic is posthoc readout only, no new training/budget/history and no old SMOKE verdict change"
+  ],
+  "audit_engineering_note": "Independent CPU audit slope construction explicitly uses float64 full_like, matching production. Initial scalar torch.where produced float32 slope constants in the audit only; corrected before final handoff. Small-derivative ratios, masks and residual shares are unchanged because m cancels. No producer result changed."
+}
