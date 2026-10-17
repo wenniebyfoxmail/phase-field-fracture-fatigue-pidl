@@ -46,7 +46,7 @@ def screen(sections,windows,reader):
   kept=[]
   for q in possible:
    target=datetime.fromisoformat(q['target_slot_cutoff']).date()
-   if target<=end and (cutoff is None or target<cutoff[0]) and not undated and j.get('hasEventsData') and len(events)<100:kept.append(q)
+   if target<=end and (cutoff is None or target<cutoff[0]) and not undated and j.get('hasEventsData') and bool(events) and len(events)<100:kept.append(q)
   retained.extend(kept)
   table.append({'cell_code':int(r['cell_code']),'section_id':sid,'raw_four_spring_windows':len(possible),
    'first_recorded_action_date':cutoff[0].isoformat() if cutoff else None,'first_recorded_action':cutoff[1] if cutoff else None,
