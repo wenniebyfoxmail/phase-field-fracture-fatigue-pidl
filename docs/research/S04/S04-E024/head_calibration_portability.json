@@ -1,0 +1,32 @@
+[
+  {
+    "state": "c20s4",
+    "initial_calibration_bit_exact": false,
+    "mass_digest_bit_exact": false,
+    "policy": "Strict Mac initializer mismatch is preserved, not waived; actual checkpoint buffers used only for supplementary saved-field/stage audit",
+    "rms_max_abs_difference": 5.551115123125783e-17,
+    "rms_max_relative_difference": 7.662369889684495e-16,
+    "scale_max_abs_difference": 6.821210263296962e-13,
+    "scale_max_relative_difference": 8.04317190473419e-16
+  },
+  {
+    "state": "c60s4",
+    "initial_calibration_bit_exact": false,
+    "mass_digest_bit_exact": false,
+    "policy": "Strict Mac initializer mismatch is preserved, not waived; actual checkpoint buffers used only for supplementary saved-field/stage audit",
+    "rms_max_abs_difference": 1.1102230246251565e-16,
+    "rms_max_relative_difference": 6.916944492293096e-16,
+    "scale_max_abs_difference": 4.547473508864641e-13,
+    "scale_max_relative_difference": 7.127974878394334e-16
+  },
+  {
+    "state": "c83s4",
+    "initial_calibration_bit_exact": false,
+    "mass_digest_bit_exact": false,
+    "policy": "Strict Mac initializer mismatch is preserved, not waived; actual checkpoint buffers used only for supplementary saved-field/stage audit",
+    "rms_max_abs_difference": 1.1102230246251565e-16,
+    "rms_max_relative_difference": 1.0920979078948723e-15,
+    "scale_max_abs_difference": 9.094947017729282e-13,
+    "scale_max_relative_difference": 1.083502998474221e-15
+  }
+]

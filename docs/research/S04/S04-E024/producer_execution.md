@@ -1,6 +1,6 @@
 # S04-E024 v1 producer preparation — 2026-10-17
 
-Status: PREPARED_AWAITING_EXACT_VERSION_APPROVAL. Local preparation only; no SSH, transfer, producer preflight or training. Scientific commit `231fe4be83e26ef4054a2a6a567da51229185837` is independently Code Ready. Deployment code stays separate from the exact clean scientific checkout and cannot patch it.
+Current status: COMPLETED, verified retrieval and bounded independent Evidence review complete; e024 monitor PAUSED. Results and costs: [decision](decision.md). Preparation snapshot below was PREPARED_AWAITING_EXACT_VERSION_APPROVAL, before the approved remote execution. Scientific commit `231fe4be83e26ef4054a2a6a567da51229185837` is independently Code Ready. Deployment code stays separate from the exact clean scientific checkout and cannot patch it.
 
 ## Exact production action
 
@@ -33,3 +33,11 @@ Retrieve39rowfiles/alllogs/assetmanifest/baselinepreflight/usedLR/preflightDgrad
 User explicitly approved unchangedtwofiles/v1freshroot/GPU0sharing free>8GiB andoneconditionaldispatch. Localhashes/bytesreverified; read-onlySSHconfirmeddrtao/GPUServer8/TARGET_ABSENT/mounteddata2, thenatomicfreshmkdir, SCP ofexacttwofiles andremoteSHAverificationcompleted. Onedispatch19:50:55UTC **PID1489681**, PPID1, cwdexactroot/code, exactcleansource231fe4b.120oldassetscopiedandverified. All-stateformalnativepreflight child1489849 observedrunningat19:51:44UTC; notyetcomplete andtrainingnotconfirmed. No retry/secondlaunch/sourcechange.
 
 Localexecutionreceipt: local_archive/experiments/S04-E024/producer_execution_v1/launch_receipt.json; trackedexecution_receipt.json. Threadheartbeat **e024** hourlyactive, silentordinaryprogress, read-onlyfollowup/retrieval/analysis; onlyterminalfailure/completion/useractionnotifications. Stops andsource/evaluation remainasapproved.
+
+## Complete retrieval, stage audit and independent Evidence review — 2026-10-17
+
+Allthreeformalpreflights passed19:55:41.764622UTC; candidate10000updates andoriginalproducerstrictdecoder/archiveverification completedineachstate, matrixfinished20:46:13UTC. Original231fe4baggregate:3valid,nomissing/nointegrityerrors,PAIRED_COMPARATIVE_EVALUATION_COMPLETE.86retrievedfiles140852341bytes/39trueproducerarchivecopiesverified; all120historicalassetidentitiesmatchlocalarchives; exactcleanreviewedsource/approvedpayloadsunchanged.
+
+FullUVc20/c60/c83=.000704078184936749/.0009237548095973923/.001160270308545327. OwnE023effects full+ .20116/+3.72878/+.13377%,damage+.20717/+4.06342/+.13423%,background+.15326/+.17685/+.11082%; allinsidebackgroundalsoincreased, exterior savedUVdelta0. This8000freeze/2000headtail didnotimproveownE023accuracy; no.001routegate reinstated. E024rowobservedelapsed~11%shorter, butwholedispatcher3318vs2926sec(+13.397%) androwpayload~3.09times; scopes/shareloads differ, no isolatedspeedup orenergyclaim.
+
+Preserve strictMacINADMISSIBLE(nativeactualvectorbits), originalstagehelperrefusal(stageactualLR), derivedmass/D/reference-rhoexceptions. SeparateactualsavedfieldCPdecodeusingpinnedproducerD andsupplementarysavedstagechecksusingpinnedproducerLR validate frozenweights/moments/counters/earlytrace/UVwithoutcallingMacnativeadmissionPASS. Independent boundedreview verified72regionalvalues/60pairedchanges,39archives,3manualCPdecodes,511chunkstage8000regions, costs andbothfigures; no blockers. Reports [decision](decision.md), [Evidence review](evidence_review.md), final_execution_receipt.json; raw/analysis/READMEunderlocalarchive. Applicationdamage/crack/fatiguefitnessunassessed; nextonlyunexecutedfixed8000featureoracleproposal. No newtraining/retry/sourcechange/externalreview. Threadmonitor **e024 PAUSED** afterverifiedanalysis/review/recordscomplete.

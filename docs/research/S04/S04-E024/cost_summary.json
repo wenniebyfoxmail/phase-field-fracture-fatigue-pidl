@@ -1,0 +1,16 @@
+{
+  "E024_dispatcher_start_utc": "2026-10-17T19:50:55Z",
+  "E024_dispatcher_finish_utc": "2026-10-17T20:46:13Z",
+  "E024_dispatcher_wall_seconds": 3318.0,
+  "E023_dispatcher_start_utc": "2026-10-17T14:50:41Z",
+  "E023_dispatcher_finish_utc": "2026-10-17T15:39:27Z",
+  "E023_dispatcher_wall_seconds": 2926.0,
+  "dispatcher_wall_change_percent": 13.397129186602875,
+  "E024_recorded_elapsed_sum_seconds": 1821.1547379493713,
+  "E023_recorded_elapsed_sum_seconds": 2044.0894677639008,
+  "E024_row_payload_bytes": 140265762,
+  "E023_row_payload_bytes": 45322366,
+  "E023_phase_peak_measurements_available": false,
+  "controlled_runtime_speedup_claim": false,
+  "scope": "Observed separate shared-GPU executions; dispatcher includes admission/validation, row elapsed loop+finalization, phase fields exist only for E024; no GPU energy/kernel time measured"
+}

@@ -1,0 +1,43 @@
+{
+  "protocol_revision": "20261017-r1-8000joint-2000headonly-comparative",
+  "evaluation_rule": {
+    "kind": "paired-relative-UV-and-background-cost",
+    "direct_comparator": "own_E023",
+    "historical_001": "diagnostic_only_not_physical_standard_or_route_gate",
+    "background_acceptability": "UNDEFINED",
+    "application": "damage_crack_fatigue",
+    "application_tolerance": "UNDEFINED_REQUIRES_COUPLED_HISTORY_VALIDATION",
+    "compute_budget": "10000_new_updates_8000joint_2000headonly"
+  },
+  "expected_runs": 3,
+  "valid_completed_runs": 0,
+  "missing": [
+    "c20s4",
+    "c60s4",
+    "c83s4"
+  ],
+  "integrity_errors": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R001-c20s4-localized-s7/metrics.json",
+      "error": "native actual-used LR vector mismatch"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R002-c60s4-localized-s7/metrics.json",
+      "error": "native actual-used LR vector mismatch"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_execution_v1/raw/runs/S04-E024-head-tail-231fe4b-20261017-v1-R003-c83s4-localized-s7/metrics.json",
+      "error": "native actual-used LR vector mismatch"
+    }
+  ],
+  "verdict": "INADMISSIBLE",
+  "paired_comparisons": [],
+  "legacy_full_001_diagnostic": {},
+  "legacy_001_is_physical_standard": false,
+  "route_acceptance": null,
+  "background_cost_acceptability": null,
+  "application_fitness": "UNASSESSED_REQUIRES_DAMAGE_CRACK_FATIGUE_HISTORY_VALIDATION",
+  "qualified_fem_teacher": "NOT_QUALIFIED",
+  "stage2_authorized": false,
+  "code_commit": "231fe4be83e26ef4054a2a6a567da51229185837"
+}

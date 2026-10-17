@@ -1,0 +1,45 @@
+{
+  "verdict": "PASS_WITH_PRESERVED_PORTABILITY_LIMITATIONS",
+  "scope": "bounded saved artifact comparative Evidence review",
+  "scientific_source": "231fe4be83e26ef4054a2a6a567da51229185837",
+  "deployment": "a091ad744af1f642ec9ae185b7e8fa34d9de359e",
+  "blocking_findings": [],
+  "original_verdict": "PAIRED_COMPARATIVE_EVALUATION_COMPLETE",
+  "strict_Mac_admission": "INADMISSIBLE",
+  "strict_stage_replay": "REFUSED_stage_actual_LR",
+  "route_acceptance": null,
+  "background_acceptability": null,
+  "application_fitness": "UNASSESSED",
+  "independent_files_verified": 86,
+  "independent_bytes_verified": 140852341,
+  "table_checks": {
+    "main_regional_values_verified": 72,
+    "max_abs_region_difference": 3.469446951953614e-18,
+    "paired_effects_verified": 60,
+    "producer_archive_entries_verified": 39,
+    "cost_rows_verified": 3,
+    "original_verdict_unchanged": true,
+    "route_acceptance": null,
+    "background_acceptability": null
+  },
+  "training": false,
+  "optimizer_updates": 0,
+  "SSH": false,
+  "source_hashes": {
+    "analysis_source/analyze_results.py": "c57bae88c60e74d3375588b02e712d40722d1a6250efd08ab47f38affffb9453",
+    "analysis_source/stage_saved_check.py": "605ccc3d164c69cd34982ddf4a78a7fc3b3d096857673f4b8a98cb3e97f0f976",
+    "analysis_review/independent_saved_audit.py": "e8c4923b66f86ae5c8b1a554f3f748b5aece17190f82154e250028111e114f89",
+    "analysis_review/compare_tables.py": "f5301468f2d1e60a24e2fe30aa95254c1f92bcb4d25237f51b0edaec5bcdbb30",
+    "analysis_review/check_stage_decode.py": "76ea2f0f94910461edbd5ed66d18ef58378c62828ba80393fab8b17f10f72c4a"
+  },
+  "main_decision_reviewed": true,
+  "final_prose_blocking_findings": [],
+  "next_proposal_review": "Supported as unexecuted bounded fixed-feature oracle diagnostic; no result or execution approval implied",
+  "final_prose_sha256": {
+    ".codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/decision.md": "ad6ab55262f190d164b059947ab684e4526c0ac18de32380a174d889267b5bba",
+    "local_archive/experiments/S04-E024/producer_execution_v1/analysis/README_analysis.md": "8c18a3a299aaa1c0662dec91162044beff83f1c2caecb4396e0abb4f09aa7387",
+    ".codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/result_verification.json": "effe8f495aa07c1c12c77d067c5e9633fd16b17d09a657b967b98deed60be42d",
+    "local_archive/experiments/S04-E024/producer_execution_v1/analysis/cost_summary.json": "a5d1a8de7b1ab67386b0513ef47ddc42b253a4a088890ab60076aa74d18e6b83"
+  },
+  "administrative_final_status_reviewed": "COMPLETED_AND_BOUNDED_INDEPENDENT_EVIDENCE_REVIEW_PASS"
+}

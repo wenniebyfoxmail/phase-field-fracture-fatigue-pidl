@@ -1,0 +1,108 @@
+{
+  "status": "COMPLETED_AND_BOUNDED_INDEPENDENT_EVIDENCE_REVIEW_PASS",
+  "scientific_source": "231fe4be83e26ef4054a2a6a567da51229185837",
+  "producer_valid_runs": 3,
+  "producer_verdict": "PAIRED_COMPARATIVE_EVALUATION_COMPLETE",
+  "strict_Mac_verdict": "INADMISSIBLE",
+  "retrieval": {
+    "status": "RETRIEVAL_COMPLETE",
+    "files": 86,
+    "bytes": 140852341,
+    "producer_archive_copies_verified": 39,
+    "scientific_source": "231fe4be83e26ef4054a2a6a567da51229185837",
+    "remote_dirty": false,
+    "verified_utc": "2026-10-17T20:52:51.323296+00:00",
+    "training": false,
+    "remote_mutation": false
+  },
+  "stage_verification": [
+    {
+      "state": "c20s4",
+      "strict_source_stage_artifact_validation": {
+        "status": "REFUSED",
+        "reason": "stage actual LR",
+        "policy": "Original native Mac stage check preserved; supplementary saved artifact check uses pinned producer LR only"
+      },
+      "producer_recorded_profile_supplementary_stage_validation": true,
+      "hidden_weights_and_moments_exactly_unchanged": true,
+      "head_updates": 10000,
+      "hidden_updates": 8000,
+      "initial_pre_hash": "bcea999caed702f60ae61b6f6f31b30ec278dacff32fbe17564e96eabef30fe7",
+      "prefix8000": "328f60286507d4e1c92e216c1bea0e929b58ad0b1faed98c7d73171c14e8924b",
+      "full10000": "356cbaed98b25bd3294f9a582854d98f7f7f2fd7283c55ba17fc155e8114fc9d",
+      "early_0to8000_trace_max_abs_difference": 0.0,
+      "stage8000_full_rms": 0.0007044785797505993,
+      "stage8000_full_rms_trace_difference": 8.456776945386935e-18,
+      "supplementary_no_complete_training_replay": true
+    },
+    {
+      "state": "c60s4",
+      "strict_source_stage_artifact_validation": {
+        "status": "REFUSED",
+        "reason": "stage actual LR",
+        "policy": "Original native Mac stage check preserved; supplementary saved artifact check uses pinned producer LR only"
+      },
+      "producer_recorded_profile_supplementary_stage_validation": true,
+      "hidden_weights_and_moments_exactly_unchanged": true,
+      "head_updates": 10000,
+      "hidden_updates": 8000,
+      "initial_pre_hash": "a5384a17a3fa00cd5b5b66e5077a38aa9927d10e5eb5ed79058735e060258266",
+      "prefix8000": "90e83ba0277fe0e4862499934d1bb3bcf54edb56f42aa688386e5fc83f19a2dd",
+      "full10000": "69a0a6633860c0bbbdacd58ef6ee83c5aeef3824d6515166ea51d18fd25ec2d1",
+      "early_0to8000_trace_max_abs_difference": 0.0,
+      "stage8000_full_rms": 0.0009343083666874721,
+      "stage8000_full_rms_trace_difference": 1.1384122811097797e-17,
+      "supplementary_no_complete_training_replay": true
+    },
+    {
+      "state": "c83s4",
+      "strict_source_stage_artifact_validation": {
+        "status": "REFUSED",
+        "reason": "stage actual LR",
+        "policy": "Original native Mac stage check preserved; supplementary saved artifact check uses pinned producer LR only"
+      },
+      "producer_recorded_profile_supplementary_stage_validation": true,
+      "hidden_weights_and_moments_exactly_unchanged": true,
+      "head_updates": 10000,
+      "hidden_updates": 8000,
+      "initial_pre_hash": "dbfd562e56a70d2201b2443b6129e657efd94b7a6d5b53c8b789492d28e95aa1",
+      "prefix8000": "bc943481576b1d4dbcb33cdc05a654ca5dfd417ca7247e192b0ead866448c314",
+      "full10000": "898564794d89d6096150ff4cde42b1bb0cb8bc430bb62052e90b5c222f7319ed",
+      "early_0to8000_trace_max_abs_difference": 0.0,
+      "stage8000_full_rms": 0.0011607056356510964,
+      "stage8000_full_rms_trace_difference": 5.204170427930421e-18,
+      "supplementary_no_complete_training_replay": true
+    }
+  ],
+  "all12ownE023regional_changes_positive": true,
+  "cost_summary": {
+    "E024_dispatcher_start_utc": "2026-10-17T19:50:55Z",
+    "E024_dispatcher_finish_utc": "2026-10-17T20:46:13Z",
+    "E024_dispatcher_wall_seconds": 3318.0,
+    "E023_dispatcher_start_utc": "2026-10-17T14:50:41Z",
+    "E023_dispatcher_finish_utc": "2026-10-17T15:39:27Z",
+    "E023_dispatcher_wall_seconds": 2926.0,
+    "dispatcher_wall_change_percent": 13.397129186602875,
+    "E024_recorded_elapsed_sum_seconds": 1821.1547379493713,
+    "E023_recorded_elapsed_sum_seconds": 2044.0894677639008,
+    "E024_row_payload_bytes": 140265762,
+    "E023_row_payload_bytes": 45322366,
+    "E023_phase_peak_measurements_available": false,
+    "controlled_runtime_speedup_claim": false,
+    "scope": "Observed separate shared-GPU executions; dispatcher includes admission/validation, row elapsed loop+finalization, phase fields exist only for E024; no GPU energy/kernel time measured"
+  },
+  "visual_QA": "readable region-change and tail figures; annotation range expanded",
+  "analysis_sources": {
+    "analyze_results.py": "c57bae88c60e74d3375588b02e712d40722d1a6250efd08ab47f38affffb9453",
+    "write_records.py": "d450caf637915a9a6c95a2a7569e625e5696ed61a9f3405bbf658c8320f006e0",
+    "stage_saved_check.py": "605ccc3d164c69cd34982ddf4a78a7fc3b3d096857673f4b8a98cb3e97f0f976",
+    "plot_results.py": "f3a61af0bf0317b35221773377997be9f21be855bc2b0ba6bc46e4410ee21e75"
+  },
+  "original_frozen_code_changed": false,
+  "parameters_updated_locally": false,
+  "application_fitness": "UNASSESSED",
+  "legacy001_physical_standard": false,
+  "next_diagnostic_executed": false,
+  "status_at_independent_review": "COMPLETED_AND_SAVED_FIELD_STAGE_AUDIT_COMPLETE_PENDING_INDEPENDENT_REVIEW",
+  "independent_review": "PASS_WITH_PRESERVED_PORTABILITY_LIMITATIONS"
+}

@@ -1,0 +1,7 @@
+{
+  "exact_equal": false,
+  "different_entries": 7425,
+  "max_abs_difference": 7.589415207398531e-19,
+  "first_different_update": 1129,
+  "policy": "Strict original Mac result preserved separately, no vector substitution"
+}

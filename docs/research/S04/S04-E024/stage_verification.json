@@ -1,0 +1,59 @@
+[
+  {
+    "state": "c20s4",
+    "strict_source_stage_artifact_validation": {
+      "status": "REFUSED",
+      "reason": "stage actual LR",
+      "policy": "Original native Mac stage check preserved; supplementary saved artifact check uses pinned producer LR only"
+    },
+    "producer_recorded_profile_supplementary_stage_validation": true,
+    "hidden_weights_and_moments_exactly_unchanged": true,
+    "head_updates": 10000,
+    "hidden_updates": 8000,
+    "initial_pre_hash": "bcea999caed702f60ae61b6f6f31b30ec278dacff32fbe17564e96eabef30fe7",
+    "prefix8000": "328f60286507d4e1c92e216c1bea0e929b58ad0b1faed98c7d73171c14e8924b",
+    "full10000": "356cbaed98b25bd3294f9a582854d98f7f7f2fd7283c55ba17fc155e8114fc9d",
+    "early_0to8000_trace_max_abs_difference": 0.0,
+    "stage8000_full_rms": 0.0007044785797505993,
+    "stage8000_full_rms_trace_difference": 8.456776945386935e-18,
+    "supplementary_no_complete_training_replay": true
+  },
+  {
+    "state": "c60s4",
+    "strict_source_stage_artifact_validation": {
+      "status": "REFUSED",
+      "reason": "stage actual LR",
+      "policy": "Original native Mac stage check preserved; supplementary saved artifact check uses pinned producer LR only"
+    },
+    "producer_recorded_profile_supplementary_stage_validation": true,
+    "hidden_weights_and_moments_exactly_unchanged": true,
+    "head_updates": 10000,
+    "hidden_updates": 8000,
+    "initial_pre_hash": "a5384a17a3fa00cd5b5b66e5077a38aa9927d10e5eb5ed79058735e060258266",
+    "prefix8000": "90e83ba0277fe0e4862499934d1bb3bcf54edb56f42aa688386e5fc83f19a2dd",
+    "full10000": "69a0a6633860c0bbbdacd58ef6ee83c5aeef3824d6515166ea51d18fd25ec2d1",
+    "early_0to8000_trace_max_abs_difference": 0.0,
+    "stage8000_full_rms": 0.0009343083666874721,
+    "stage8000_full_rms_trace_difference": 1.1384122811097797e-17,
+    "supplementary_no_complete_training_replay": true
+  },
+  {
+    "state": "c83s4",
+    "strict_source_stage_artifact_validation": {
+      "status": "REFUSED",
+      "reason": "stage actual LR",
+      "policy": "Original native Mac stage check preserved; supplementary saved artifact check uses pinned producer LR only"
+    },
+    "producer_recorded_profile_supplementary_stage_validation": true,
+    "hidden_weights_and_moments_exactly_unchanged": true,
+    "head_updates": 10000,
+    "hidden_updates": 8000,
+    "initial_pre_hash": "dbfd562e56a70d2201b2443b6129e657efd94b7a6d5b53c8b789492d28e95aa1",
+    "prefix8000": "bc943481576b1d4dbcb33cdc05a654ca5dfd417ca7247e192b0ead866448c314",
+    "full10000": "898564794d89d6096150ff4cde42b1bb0cb8bc430bb62052e90b5c222f7319ed",
+    "early_0to8000_trace_max_abs_difference": 0.0,
+    "stage8000_full_rms": 0.0011607056356510964,
+    "stage8000_full_rms_trace_difference": 5.204170427930421e-18,
+    "supplementary_no_complete_training_replay": true
+  }
+]
