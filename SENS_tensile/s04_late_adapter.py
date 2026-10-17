@@ -2,7 +2,8 @@
 
 Producer schemas come from Git. Verification paths/types were inspected under
 a one-file schema-only approval; its late scalar is an RMSE increase percent.
-Binding is NOT execution permission: real acquisition remains explicitly off.
+Binding is NOT execution permission: real acquisition is off by default. The
+scoped launcher additionally validates a real grant, handoff and references.
 """
 import json
 import math
@@ -66,6 +67,14 @@ class ReadOnlyIO:
     before/after path and descriptor checks detect replacement/metadata drift.
     These metadata checks are NOT content authentication or an OS sandbox.
     """
+    def __init__(self, event=None):
+        self.event = event
+
+    def _event(self, kind, path, count=0):
+        event = getattr(self, 'event', None)
+        if event is not None:
+            event(kind, path, count)
+
     def _path(self, path):
         require(path in SOURCES, 'source outside four-file allowlist')
         p = Path(path)
@@ -73,11 +82,13 @@ class ReadOnlyIO:
         return p
 
     def metadata(self, path):
+        self._event('METADATA_ATTEMPT', path)
         t = token(self._path(path).lstat())
         regular(t, path)
         return t
 
     def read(self, path, before):
+        self._event('READ_ATTEMPT', path)
         self._path(path)
         require(self.metadata(path) == before, 'source changed before open')
         fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
@@ -88,6 +99,7 @@ class ReadOnlyIO:
                 block = os.read(fd, min(65536, MAX_BYTES+1-len(data)))
                 if not block:
                     break
+                self._event('CONTENT_BYTES', path, len(block))
                 data.extend(block)
             require(len(data) == before[3] and len(data) <= MAX_BYTES, 'size/read mismatch')
             require(token(os.fstat(fd)) == before, 'descriptor changed while reading')
@@ -177,7 +189,25 @@ def decode_child_grant(auth_path, output, env, *, actual_parent, attempt, code_c
     return strict_json(text)
 
 
-def snapshot(io, *, grant, code_commit, attempt, output, domain, binding, expected_ratio):
+class _RealPermit:
+    """Process-local call binding, NOT authentication of a human or a sandbox."""
+    def __init__(self, grant, code_commit, output, parent):
+        self.identity = (id(grant), code_commit, output, parent)
+
+
+def check_execution_refs(refs, code_commit):
+    # These references are provenance only. The operator must inspect the
+    # actual approval and review before invoking the explicit real launcher.
+    require(isinstance(refs, dict) and set(refs) == {
+        'approval_ref', 'review_ref', 'reviewed_commit'}, 'execution references required')
+    require(refs['reviewed_commit'] == code_commit, 'reviewed code mismatch')
+    require(all(type(refs[k]) is str and 0 < len(refs[k]) <= 512 and
+                not any(c in refs[k] for c in ('\n', '\r', '\x00'))
+                for k in ('approval_ref', 'review_ref')), 'bounded execution references required')
+
+
+def snapshot(io, *, grant, code_commit, attempt, output, domain, binding, expected_ratio,
+             _real_permit=None):
     """Authorization and explicit schema binding MUST precede any source IO.
 
     This function never opens an auth path, writes a file, or calls describe().
@@ -193,7 +223,9 @@ def snapshot(io, *, grant, code_commit, attempt, output, domain, binding, expect
     names = {'run_id', 'runtime_commit', 'rows', 'counts', 'late_ratio'}
     require(isinstance(binding, dict) and set(binding) == names, 'SCHEMA_BINDING_REQUIRED')
     if domain == 'REAL_SAVED_SCALARS':
-        require(REAL_ACQUISITION_ENABLED, 'REAL_EXECUTION_DISABLED')
+        scoped = (type(_real_permit) is _RealPermit and attempt == REAL_RUN and
+                  _real_permit.identity == (id(grant), code_commit, output, os.getppid()))
+        require(REAL_ACQUISITION_ENABLED or scoped, 'REAL_EXECUTION_DISABLED')
         require(REAL_VERIFICATION_BINDING is not None and binding == REAL_VERIFICATION_BINDING,
                 'SCHEMA_BINDING_REQUIRED')
         require(expected_ratio == core.KNOWN_REAL_RATIO, 'frozen real ratio required')
@@ -249,15 +281,25 @@ def snapshot(io, *, grant, code_commit, attempt, output, domain, binding, expect
                 real_data_read=domain == 'REAL_SAVED_SCALARS')
 
 
-def acquire_real(*, grant, code_commit, env, auth_path, output, actual_parent):
+def acquire_real(*, grant, code_commit, env, auth_path, output, actual_parent,
+                 execution_refs=None, access_event=None):
     # Schema binding alone must not enable even source stat().
-    require(REAL_ACQUISITION_ENABLED, 'REAL_EXECUTION_DISABLED')
+    require(REAL_ACQUISITION_ENABLED or execution_refs is not None, 'REAL_EXECUTION_DISABLED')
+    check_execution_refs(execution_refs, code_commit)
     require(REAL_VERIFICATION_BINDING is not None, 'SCHEMA_BINDING_REQUIRED')
     check_child_handoff(auth_path, output, env, actual_parent=actual_parent,
                         attempt=REAL_RUN, code_commit=code_commit)
-    return snapshot(ReadOnlyIO(), grant=grant, code_commit=code_commit, attempt=REAL_RUN,
+    require(actual_parent == os.getppid() and output == REAL_OUTPUT and
+            auth_path == str(Path(REAL_OUTPUT)/'authorization.json'), 'fixed real handoff required')
+    require(env.get('S04_LATE_APPROVAL_REF') == execution_refs['approval_ref'] and
+            env.get('S04_LATE_REVIEW_REF') == execution_refs['review_ref'], 'execution reference handoff')
+    check_grant(grant, code_commit=code_commit, attempt=REAL_RUN,
+                output=output, domain='REAL_SAVED_SCALARS')
+    permit = _RealPermit(grant, code_commit, output, actual_parent)
+    return snapshot(ReadOnlyIO(access_event), grant=grant, code_commit=code_commit, attempt=REAL_RUN,
                     output=output, domain='REAL_SAVED_SCALARS',
-                    binding=REAL_VERIFICATION_BINDING, expected_ratio=core.KNOWN_REAL_RATIO)
+                    binding=REAL_VERIFICATION_BINDING, expected_ratio=core.KNOWN_REAL_RATIO,
+                    _real_permit=permit)
 
 
 if __name__ == '__main__':
