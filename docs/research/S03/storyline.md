@@ -446,3 +446,14 @@
   five modes/original tolerances/old controls retained. No tests/import checks/
   arithmetic/QR/SVD/render or numeric-archive/realarray/holdout access. Existing
   frozen producers/outputs untouched; next human gate is A only, B separately.
+
+- **2026-10-17 — E019-D02 A artificial unit test executed once and passed.**
+  Explicit A-only authority, exact approved command at clean0c8ec88; source0fb6bfe,
+  17/17 tests in0.053s, receipt pre-write0.763642666s/60s and final budget checks
+  passed, exit0/no warning/failure/retry. Five modes/original tolerances retained,
+  QR stubs only; guarded actualQR0/SVD0, not independent whole-process audit.
+  Ten source bindings unchanged, new log/receipt hashes verified by readback.
+  See S03-E019/q_consistency_test_results.md. No B/full diagnostic/render/realarray/
+  holdout access or frozen-output mutation. Supports artificial unit coverage only;
+  actualQR repair, true E019 cause and physical inversion remain unestablished.
+  Next is separately authorized B, never automatic continuation from this pass.

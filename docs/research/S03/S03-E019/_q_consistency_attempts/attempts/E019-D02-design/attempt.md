@@ -1,6 +1,6 @@
 # Attempt E019-D02-design
 
-- Status: `implemented`
+- Status: `tested`
 - Created: 2026-10-17T17:04:32+01:00
 - Closed: None
 - Type: `numerical-repair-design`
@@ -49,6 +49,7 @@ Targets verified synthetic leakage without presupposing actual root cause or cha
 
 ## Tests
 - skipped: Numerical execution explicitly deferred - User authorizes preparation/static review only; no imports, tests, diagnostics, QR/SVD or real/held arrays accessed
+- pass: Approved A once-only artificial unit tests - 17/17 passed; unit section0.053s, receipt pre-write0.7636426659883s/60s; no warning/retry, actual QR0/SVD0 with stubs, original modes/tolerances/source bindings unchanged; B not started
 
 ## Result Interpretation
 Not recorded.
