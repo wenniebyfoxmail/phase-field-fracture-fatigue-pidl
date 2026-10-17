@@ -6,6 +6,7 @@ No legacy producer import, stiffness assembly, solve, held-response parser or fi
 import argparse
 import hashlib
 import json
+import logging
 import os
 from pathlib import Path
 import socket
@@ -13,6 +14,17 @@ import subprocess
 import sys
 import time
 import warnings
+
+warnings.simplefilter('error')
+
+
+class StopLogging(logging.Handler):
+    def emit(self, record):
+        if record.levelno >= logging.WARNING:
+            raise RuntimeError('unexpected logging warning: '+record.getMessage())
+
+
+logging.getLogger().addHandler(StopLogging(level=logging.WARNING))
 
 import numpy as np
 from scipy import linalg
@@ -254,6 +266,7 @@ def analyze(a, factors, budget, expected_rank=None):
 
 
 def sha(path):
+    safe_path(path, file=True)
     h = hashlib.sha256()
     with Path(path).open('rb') as f:
         for chunk in iter(lambda: f.read(1048576), b''):
@@ -262,12 +275,23 @@ def sha(path):
 
 
 def selective(path, keys):
+    safe_path(path, file=True)
     with np.load(path, allow_pickle=False) as z:
         return {k: z[k] for k in keys}  # Deliberately do not iterate/decode other members.
 
 
 def json_read(path):
+    safe_path(path, file=True)
     return json.loads(path.read_text())
+
+
+def safe_path(path, *, file=False):
+    path = Path(path)
+    require(path.is_absolute(), 'absolute path required')
+    for part in (path, *path.parents):
+        require(not part.is_symlink(), 'symlink forbidden: '+str(part))
+    if file:
+        require(path.is_file(), 'regular input file required: '+str(path))
 
 
 def load_real(opaque_authorized):
@@ -314,6 +338,16 @@ def snapshot(repo, reviewed):
     return current
 
 
+def code_hashes():
+    return {name: sha(Path(__file__).with_name(name)) for name in
+            ('aa2024_q_recheck.py', 'aa2024_q_verify.py', 'test_aa2024_q_recheck.py')}
+
+
+def final_identity(repo, reviewed, initial_head, initial_hashes):
+    require(snapshot(repo, reviewed) == initial_head, 'runtime HEAD changed')
+    require(code_hashes() == initial_hashes, 'runtime code changed')
+
+
 def artificial():
     """648 artificial points, same mesh/operator dimensions; resource test, not real accuracy."""
     x, y = np.meshgrid(np.linspace(-15.7, 15.7, 27), np.linspace(-6.7, 6.7, 24))
@@ -333,11 +367,18 @@ def artificial():
 
 
 def write_json(path, obj):
+    safe_path(path)
     with path.open('x') as f:
         json.dump(obj, f, indent=2, allow_nan=False)
 
 
 def draw(a, report, out, mode):
+    # Force all writable plotting caches into this new run before first import.
+    for key, name in (('MPLCONFIGDIR', '.mplconfig'), ('XDG_CACHE_HOME', '.cache')):
+        cache = out/name
+        safe_path(cache)
+        cache.mkdir(exist_ok=False)
+        os.environ[key] = str(cache)
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -391,13 +432,13 @@ def main():
     repo = Path(__file__).resolve().parents[1]
     actual = snapshot(repo, args.source_commit)
     allowed = BASE/'S03-E019-D03'/('S03-E019-D03-B001' if args.mode == 'synthetic' else 'S03-E019-D03-R001')
+    safe_path(allowed)
     require(args.output == allowed and not allowed.exists(), 'fresh exact output root')
     allowed.mkdir(parents=True, exist_ok=False)
     receipt = dict(mode=args.mode, source_commit=args.source_commit, runtime_head=actual,
                    python_version=sys.version, numpy_version=np.__version__,
                    hostname=socket.gethostname(), pid=os.getpid(), command=sys.argv,
-                   source_sha256={p.name: sha(p) for p in (Path(__file__), Path(__file__).with_name('aa2024_q_verify.py'),
-                                                       Path(__file__).with_name('test_aa2024_q_recheck.py'))},
+                   source_sha256=code_hashes(),
                    execution_status='incomplete', inputs={}, artifacts_sha256={})
     budget = Budget(); factors = Factors()
     try:
@@ -413,16 +454,19 @@ def main():
                     p, fields = artificial(); before = {}
                 budget.check(); arrays = construct(p, fields, factors, budget)
                 report = analyze(arrays, factors, budget, expected_rank=1203 if args.mode == 'real' else None)
+                safe_path(allowed/'certificate.npz')
                 np.savez(allowed/'certificate.npz', **arrays)
                 write_json(allowed/'report.json', report)
                 budget.check(); draw(arrays, report, allowed, args.mode); budget.check()
                 for path, digest in before.items():
                     require(sha(path) == digest, 'source changed '+path)
                 receipt['artifacts_sha256'] = {p.name: sha(p) for p in allowed.iterdir() if p.is_file()}
+                final_identity(repo, args.source_commit, actual, receipt['source_sha256'])
                 receipt.update(elapsed_before_receipt=budget.check(), svd_calls=factors.svd_calls, qr_calls=factors.qr_calls,
                                execution_status='producer_completed_not_independently_accepted')
                 write_json(allowed/'execution_receipt.json', receipt)
                 budget.check()
+                final_identity(repo, args.source_commit, actual, receipt['source_sha256'])
                 write_json(allowed/'completion.json', dict(receipt_sha256=sha(allowed/'execution_receipt.json')))
                 elapsed = budget.check()
         print(json.dumps(dict(status='producer_completed_not_independently_accepted', elapsed_seconds=elapsed)))
@@ -432,6 +476,7 @@ def main():
             completion.unlink()  # Only this fresh run's invalid success marker, never frozen inputs.
         receipt.update(execution_status='failed', error=type(exc).__name__+': '+str(exc),
                        svd_calls=factors.svd_calls, qr_calls=factors.qr_calls)
+        safe_path(allowed/'failure_receipt.json')
         with (allowed/'failure_receipt.json').open('x') as f:
             json.dump(receipt, f, indent=2, allow_nan=False)
         raise

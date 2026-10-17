@@ -1,11 +1,25 @@
 #!/usr/bin/env python3
 """Command A: artificial unit tests only. Not run during package preparation."""
+import argparse
+import logging
 import os
+from pathlib import Path
 import sys
 import time
 import unittest
 from unittest.mock import patch
 import warnings
+
+warnings.simplefilter('error')
+
+
+class StopLogging(logging.Handler):
+    def emit(self, record):
+        if record.levelno >= logging.WARNING:
+            raise RuntimeError('unexpected logging warning: '+record.getMessage())
+
+
+logging.getLogger().addHandler(StopLogging(level=logging.WARNING))
 
 START = time.monotonic()
 import numpy as np
@@ -145,9 +159,10 @@ class Units(unittest.TestCase):
             def __getitem__(self, key):
                 if key not in ('ids', 'xy'): raise AssertionError('unexpected decoded key')
                 return key
-        with patch.object(np, 'load', return_value=Fake()) as load:
+        with patch.object(candidate, 'safe_path') as safe, patch.object(np, 'load', return_value=Fake()) as load:
             self.assertEqual(candidate.selective('artificial-placeholder-not-opened', ('ids', 'xy')), {'ids': 'ids', 'xy': 'xy'})
             load.assert_called_once_with('artificial-placeholder-not-opened', allow_pickle=False)
+            safe.assert_called_once_with('artificial-placeholder-not-opened', file=True)
 
     def test_opaque_permission_before_any_read(self):
         with patch.object(candidate, 'sha', side_effect=forbidden):
@@ -166,8 +181,33 @@ class Units(unittest.TestCase):
         with self.assertRaisesRegex(independent.Rejected, 'REFERENCE_PATH_UNRESOLVED'):
             independent.equal(np.array([3e-15]), np.zeros(1), 'REFERENCE_PATH_UNRESOLVED')
 
+    def test_logging_warning_stops(self):
+        record = logging.LogRecord('artificial-unit', logging.WARNING, '', 0, 'artificial expected warning guard', (), None)
+        with self.assertRaisesRegex(RuntimeError, 'unexpected logging warning'):
+            StopLogging().emit(record)
+
+    def test_python_warning_stops(self):
+        with self.assertRaises(UserWarning):
+            warnings.warn('artificial expected warning guard', UserWarning)
+
+    def test_symlink_ancestor_rejected_without_IO(self):
+        with patch.object(Path, 'is_symlink', return_value=True):
+            with self.assertRaisesRegex(candidate.Stop, 'symlink'):
+                candidate.safe_path(Path('/artificial-not-created/leaf'))
+
+    def test_runtime_code_change_rejected_stub(self):
+        with patch.object(candidate, 'snapshot', return_value='changed'), patch.object(candidate, 'code_hashes', return_value={}):
+            with self.assertRaisesRegex(candidate.Stop, 'HEAD changed'):
+                candidate.final_identity(Path('/artificial'), 'baseline', 'initial', {})
+
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--source-commit', required=True)
+    args = parser.parse_args()
+    repo = Path(__file__).resolve().parents[1]
+    initial_head = candidate.snapshot(repo, args.source_commit)
+    initial_hashes = candidate.code_hashes()
     candidate.require(all(os.environ.get(k) == '1' for k in candidate.THREADS) and os.environ.get('CUDA_VISIBLE_DEVICES') == '', 'single CPU environment')
     warnings.simplefilter('error')
     with patch.object(candidate.linalg, 'qr', side_effect=forbidden), patch.object(candidate.linalg, 'svd', side_effect=forbidden), \
@@ -180,4 +220,7 @@ if __name__ == '__main__':
         raise TimeoutError('unit command final soft60s incomplete')
     if not result.wasSuccessful():
         sys.exit(1)
-    print('Command A: 20 artificial units; zero actual QR/SVD, no report/real-array reads; not production acceptance')
+    candidate.final_identity(repo, args.source_commit, initial_head, initial_hashes)
+    if time.monotonic()-START >= 60:
+        raise TimeoutError('unit command final identity soft60s incomplete')
+    print('Command A: 24 artificial units; zero actual QR/SVD, no report/real-array reads; not production acceptance; source='+args.source_commit)

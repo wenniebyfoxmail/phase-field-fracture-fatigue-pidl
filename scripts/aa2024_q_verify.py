@@ -7,6 +7,7 @@ import argparse
 from decimal import Decimal, localcontext
 import hashlib
 import json
+import logging
 import math
 import os
 from pathlib import Path
@@ -14,6 +15,17 @@ import subprocess
 import sys
 import time
 import warnings
+
+warnings.simplefilter('error')
+
+
+class StopLogging(logging.Handler):
+    def emit(self, record):
+        if record.levelno >= logging.WARNING:
+            raise RuntimeError('unexpected logging warning: '+record.getMessage())
+
+
+logging.getLogger().addHandler(StopLogging(level=logging.WARNING))
 
 import numpy as np
 from scipy.linalg.blas import dgemm
@@ -45,6 +57,7 @@ def equal(a, b, text, kind='vector'):
 
 
 def file_sha(path):
+    safe_path(path, file=True)
     h = hashlib.sha256()
     with Path(path).open('rb') as f:
         for block in iter(lambda: f.read(1048576), b''):
@@ -53,8 +66,29 @@ def file_sha(path):
 
 
 def read_json(path):
+    safe_path(path, file=True)
     with path.open() as f:
         return json.load(f)
+
+
+def safe_path(path, *, file=False):
+    path = Path(path)
+    demand(path.is_absolute(), 'absolute path required')
+    for part in (path, *path.parents):
+        demand(not part.is_symlink(), 'symlink forbidden: '+str(part))
+    if file:
+        demand(path.is_file(), 'regular input required: '+str(path))
+
+
+def code_identity(repo, reviewed):
+    current = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=repo, text=True).strip()
+    subprocess.run(['git', 'merge-base', '--is-ancestor', reviewed, current], cwd=repo, check=True)
+    changes = subprocess.check_output(['git', 'diff', '--name-only', reviewed, current], cwd=repo, text=True).splitlines()
+    demand(all(name.startswith('docs/') for name in changes), 'only later review records may differ')
+    demand(not subprocess.check_output(['git', 'status', '--porcelain'], cwd=repo, text=True).strip(), 'clean source')
+    hashes = {name: file_sha(Path(__file__).with_name(name)) for name in
+              ('aa2024_q_recheck.py', 'aa2024_q_verify.py', 'test_aa2024_q_recheck.py')}
+    return current, hashes
 
 
 class Timer:
@@ -278,8 +312,26 @@ def real_sources(a, receipt):
     demand(set(receipt['inputs']) == expected_paths, 'exact byte whitelist')
     for path, digest in receipt['inputs'].items():
         demand(file_sha(path) == digest, 'unchanged source '+path)
-    for root, anchor in zip((PREP, FIT), ANCHORS):
+    upstream = []
+    for root, ns, anchor, mode, run in zip((PREP, FIT), names, ANCHORS, ('prepare', 'fit'), ('S03-E016-R001', 'S03-E016-R002')):
         demand(file_sha(root/'execution_receipt.json') == anchor, 'source receipt anchor')
+        source_receipt = read_json(root/'execution_receipt.json')
+        demand(source_receipt['execution_status'] == 'succeeded' and source_receipt['mode'] == mode and source_receipt['run_id'] == run, 'upstream successful identity')
+        for name in ns:
+            demand(receipt['inputs'][str(root/name)] == source_receipt['artifacts_sha256'][name], 'anchored artifact '+name)
+        upstream.append(source_receipt)
+    prep_binding = dict(receipt_sha256=ANCHORS[0], artifacts_sha256={n: receipt['inputs'][str(PREP/n)] for n in names[0]})
+    meta, audit, fit = read_json(PREP/'preparation.json'), read_json(PREP/'geometry_audit.json'), read_json(FIT/'fit.json')
+    demand(upstream[1]['input_bindings'] == prep_binding and fit['source_prepare'] == prep_binding, 'independent PREP-FIT lineage')
+    demand(meta['cycle'] == audit['cycle'] == fit['cycle'] == '292018.5' and meta['reference'] == 1, 'training cycle/reference')
+    demand(audit['stages'] == [13, 14] and len(audit['training_headers']) == 2 and meta['observations'] == 648, 'training stages/support')
+    demand(fit['status'] == 'four_predictions_frozen_before_held_response', 'frozen source status')
+    forces = []
+    for stage, h, force in zip((13, 14), audit['training_headers'], meta['forces'][:2]):
+        demand(Decimal(h['current_stage_index']) == stage and Decimal(h['reference_stage_index']) == 1 and
+               Decimal(h['cycles']) == Decimal('292018.5') and float(h['force']) == force and math.isfinite(force), 'training headers/force')
+        forces.append(force)
+    demand(len(forces) == 2 and 0 < forces[0] < forces[1], 'training load order')
     with np.load(PREP/'prepared.npz', allow_pickle=False) as source:
         for key in PREP_KEYS:
             demand(np.array_equal(source[key], a['source_'+key]), 'source array identity '+key)
@@ -300,13 +352,11 @@ def main():
     threads = ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS', 'NUMEXPR_NUM_THREADS', 'BLIS_NUM_THREADS')
     demand(all(os.environ.get(k) == '1' for k in threads) and os.environ.get('CUDA_VISIBLE_DEVICES') == '', 'single CPU environment')
     repo = Path(__file__).resolve().parents[1]
-    current = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=repo, text=True).strip()
-    subprocess.run(['git', 'merge-base', '--is-ancestor', args.source_commit, current], cwd=repo, check=True)
-    changes = subprocess.check_output(['git', 'diff', '--name-only', args.source_commit, current], cwd=repo, text=True).splitlines()
-    demand(all(name.startswith('docs/') for name in changes), 'only later review records may differ')
-    demand(not subprocess.check_output(['git', 'status', '--porcelain'], cwd=repo, text=True).strip(), 'clean source')
+    current, initial_code = code_identity(repo, args.source_commit)
     run = 'S03-E019-D03-B001' if args.mode == 'synthetic' else 'S03-E019-D03-R001'
     demand(args.input == BASE/'S03-E019-D03'/run and args.output == BASE/'S03-E019-D03'/(run+'-acceptance'), 'exact input/output root')
+    safe_path(args.input); demand(args.input.is_dir(), 'producer directory')
+    safe_path(args.output)
     args.output.mkdir(parents=True, exist_ok=False)
     timer = Timer(); before = {}; result = dict(status='incomplete', command=sys.argv, source_commit=args.source_commit, runtime_head=current)
     try:
@@ -320,6 +370,7 @@ def main():
                 demand(receipt['mode'] == args.mode and receipt['source_commit'] == args.source_commit and
                        receipt['execution_status'] == 'producer_completed_not_independently_accepted', 'producer identity/status')
                 demand((receipt['svd_calls'], receipt['qr_calls']) == (1, 2), 'controlled API count')
+                demand(set(receipt['source_sha256']) == set(initial_code), 'exact three source code keys')
                 for name, digest in receipt['source_sha256'].items():
                     demand(name in ('aa2024_q_recheck.py', 'aa2024_q_verify.py', 'test_aa2024_q_recheck.py') and
                            file_sha(Path(__file__).with_name(name)) == digest, 'reviewed producer code identity')
@@ -345,12 +396,19 @@ def main():
                     demand(all(heading in text for heading in ('How to read', 'Data provenance', 'Limitations', 'Key numerical takeaway')), 'figure sidecar '+name)
                 for path, digest in before.items():
                     demand(file_sha(path) == digest, 'artifact changed during acceptance')
+                if args.mode == 'real':
+                    for path, digest in receipt['inputs'].items():
+                        demand(file_sha(path) == digest, 'real source changed during acceptance')
+                demand(code_identity(repo, args.source_commit) == (current, initial_code), 'runtime code/HEAD changed')
                 result.update(status='saved_arithmetic_accepted_not_visual_QA', elapsed_before_receipt=timer.check(),
                               input_sha256=before, svd_calls=0, qr_calls=0,
                               limitation='No full SVD replay, unretained-spectrum certificate, physical identification, PNG/PDF visual acceptance or history rescue')
+                safe_path(args.output/'acceptance.json')
                 with (args.output/'acceptance.json').open('x') as f:
                     json.dump(result, f, indent=2, allow_nan=False)
                 timer.check()
+                demand(code_identity(repo, args.source_commit) == (current, initial_code), 'runtime code/HEAD changed after receipt')
+                safe_path(args.output/'completion.json')
                 with (args.output/'completion.json').open('x') as f:
                     json.dump(dict(acceptance_sha256=file_sha(args.output/'acceptance.json')), f)
                 timer.check()
@@ -359,6 +417,7 @@ def main():
         if (args.output/'completion.json').exists():
             (args.output/'completion.json').unlink()
         result.update(status='failed', error=type(exc).__name__+': '+str(exc))
+        safe_path(args.output/'failure.json')
         with (args.output/'failure.json').open('x') as f:
             json.dump(result, f, indent=2, allow_nan=False)
         raise
