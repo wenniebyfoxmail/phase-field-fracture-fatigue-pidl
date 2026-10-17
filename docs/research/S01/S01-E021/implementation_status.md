@@ -1,0 +1,27 @@
+# S01-E021：新增像素空间定位信息已冻结、实现并经独立双审，真实R001未执行
+
+2026-10-17。用户授权的方案/预算/结果标准冻结、指定6.1 sol-Medium独立设计审查、实现/纯合成测试与精确版本独立代码/实际合成图表验收已完成。设计d3eb8937ee52a37f47d17c64b22bffee30e0001a，Code Ready76a9d5f3045b035e6b70a898fe915b77b3c02f13；后续提交仅审查/状态/Storyline，不改变已绑定源码。
+
+## 新信息与解决目标
+
+E009高维内容二值衰减、E011标量U、E019无监督PCA2、E020监督草图方向均未产生保护净收益。本版不读576缓存，不换压缩器。新增原图与原框/修正框的空间关系：在同一union+25%图场计算固定暗细线响应，得到修正框内响应集中度（扣面积比例）及原框→修正框集中度变化。两列配合原四标量，Q/N/A仅11监督系数，0表示拟合/光度统计/神经前向。
+
+阴影/接缝/纹理可能混淆，浅色裂缝/缩放会漏信息；响应不是裂缝真值。图像来自原已锁835训练图，是新像素访问，不是新增正例/地点。FIT3/5/6实际有益GT、上游复用与条件OOF限制保持。当前仅核对保存candidate_identity的835图/31156行字段身份，没有真实解码或测量。
+
+目标仍是有益修正留池→进入原源组前三→检测预算接纳→实际保旧净收益。E003原43347行/坐标/分数/概率/顺序、每图1/每源组3、accepted-only冲突、正面积交集、弃权机制不变。主标准同1FP/image、IoU=.5，一次pooled12条件OOF核验旧684后，旧命中保留>=95%、净GT>=1且地点macro召回变化>0。不扫交集，不打开新确认地点。
+
+## 验证与图表
+
+24个绑定测试文件460项回归通过，12条旧scalar人工矩阵告警；新31项由独立审查方-W error复跑无告警。覆盖独立四方向响应/中心mask/面积质量计算，几何/空场/零质量，路径/根/哈希/尺寸/地点/覆盖冲突拒绝，19成员+835图身份loader串联（合成缩小为14），禁止pooled输入，heldGT/空间值不影响自身FIT，所有9主头先合格/模型OOF先冻结、39solve计数、增益/弃权路径、图像与头预算、收据篡改及CPU1限制。旧源码未修改。
+
+真实PixelGate纯合成全流程：旧14/14、净+6；源图14次解码+案例6次解码、pixel_reads20，额外图片被拒。案例使用同hash字节缓冲且最多6张，有追加显示实际OOF追加，无追加只显示稳定排序/去重后的既有FIT机会，明确未选中；真实合成像素与GT/原/修正框overlay已打开并独立验收。仅工程样例，不是835图真实效果、真实定位语义证明或Windows资源实测（memory回调100bytes）。QA在local_archive/experiments/S01-E021/implementation_QA/，没有将合成图复制为Obsidian真实结果。
+
+## 已准备的下一执行版本
+
+分支codex/s01-e021-spatial-localization-20261017，精确source76a9d5f3045b035e6b70a898fe915b77b3c02f13；manifest194绑定/包195文件；manifest SHA83ddb0108f1ba4efe0a14fe1d7350edaed3ec17ba45d2068bfe3c3455b7c9ae1；config e80885b7f9052994c335215938959749cc7fe0fabe49beeae8396e08f50bc087；lock ab8bfff4a4594717ae66ba968b8db0b81742a652d37237a2323431aecb3a2b80。本地逐文件核验源码包在local_archive/experiments/S01-E021/prepared_R001/source_package.json，只有准备，没有传送/推送。
+
+未来source-only公开分支同名，基于E020公开cdd0e95d1ed91ea5984b7eceff664af5eef286da，只加入本次合同/源码/测试/manifest，不带内部审查、结果或私有提交历史。唯一未来S01-E021-R001指定gpu-server/D-26-09/ad\\xw436，CPU1、CUDA=-1、OMP/MKL/OPENBLAS1、3600秒/聚合RSS4GiB/0.5秒守护；无重跑/换机/放宽。未来source stage与Run/日志都用新目录，入口scripts/pavetrack_spatial_selector/producer.ps1绑定该source/manifest。producer、输入图文件可用性/哈希、资源、唯一目录必须在后续实际执行时再核验；本轮未SSH确认。
+
+输入仍原E017固定19成员ZIP+原12地点metadata；新像素严格只candidate_identity锁定训练根内835图，逐图原字节哈希核验后从同buffer解码、逐图释放。835源图解码/31156固定context测量；案例最多6次额外源图读取/解码，总source_image_reads/pixel_reads上限841（Run输出快照哈希属于已留存文件校验，不是另一次源图提取）。39角色头/39solve、13模型组、38768主监督行、6上下文、188214角色预测行向量、3FIT基线/15政策/1pooled+3held。0新神经前向/梯度/U/GT几何/full12 refit/新地点。
+
+本轮**没有真实图片解码/提取/拟合、SSH、源码传送、公开push或R001**。若下一次固定实测仍未进前三/全弃权，按冻结完成OOF后停止本固定灰度C/D家族，不搜索核宽/方向/网格/颜色/阈值/权重/L2/gate/交集/容量。保留实际组件进展，但不能用它救主标准；新确认/validation/reserve继续封存。
