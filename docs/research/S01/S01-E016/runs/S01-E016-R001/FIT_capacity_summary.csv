@@ -1,0 +1,4 @@
+fold,positive_GT_before,after_locality,after_fixed_admission,maximum_policy_positive_GT,chosen_positive_GT,chosen_policy,chosen_joint_net_GT
+0,3,3,3,0,0,abstain,0
+1,5,5,5,0,0,abstain,0
+2,6,6,6,0,0,abstain,0
