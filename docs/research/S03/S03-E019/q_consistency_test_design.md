@@ -46,6 +46,9 @@ STOP_REFERENCE_PATH_DIFFERENCE_UNRESOLVED停，不自动判旧报告错误，也
 tests/test_aa2024_qconsistent_repair.py：17个unittest test方法，含subtests。
 此数是静态方法数，不是通过数；当前没有语法、导入、运行或预算实测。
 测试不导入Matplotlib、不读原report/资产，不调用完整diagnose/render/launcher。
+仅从标准库启动器模块导入WarningStop类，不调用其main；在数值模块导入前
+为测试子进程安装同一logging.WARNING及以上即异常的处理器，字体初始化
+许可窗口始终关闭。人工LogRecord仅核对处理器拒绝行为，不发布真实警告。
 真实QR全部禁用；候选数据流测试用预先给定U/T作为QR返回stub，不冒充
 SciPy分解已通过。零实际QR、零SVD/eig/pinv/lstsq/cond/数值秩；算法不调用逆。
 

@@ -1,12 +1,17 @@
 """Prepared, NOT RUN. Artificial unit checks; no real QR or full diagnostic."""
 from contextlib import ExitStack
 from decimal import Decimal, localcontext
+import logging
 import sys
 from pathlib import Path
 import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'scripts'))
+# Install before any numerical import; importing launcher does not call main.
+from aa2024_qconsistent_launch import WarningStop
+TEST_LOG_GUARD = WarningStop()
+logging.getLogger().addHandler(TEST_LOG_GUARD)
 import aa2024_qconsistent_repair as d
 import numpy as np
 
@@ -158,7 +163,14 @@ class SyntheticUnits(unittest.TestCase):
         self.assertIs(d.linalg.svd.side_effect, d.forbidden)
         self.assertIs(np.load.side_effect, d.forbidden)
         self.assertIs(np.linalg.qr.side_effect, d.forbidden)
+        self.assertFalse(TEST_LOG_GUARD.font_initialization_open)
+        with self.assertRaisesRegex(RuntimeError, 'STOP_LOG_WARNING'):
+            TEST_LOG_GUARD.emit(logging.LogRecord('artificial.unit', logging.WARNING,
+                                                __file__, 0, 'declared handler rejection test', (), None))
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2, failfast=True)
+    try:
+        unittest.main(verbosity=2, failfast=True)
+    finally:
+        logging.getLogger().removeHandler(TEST_LOG_GUARD)
