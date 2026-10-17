@@ -154,9 +154,31 @@ established. No new Experiment result or Run was produced.
 The reviewed protocol/source are left unchanged at2563153; the protocol's
 pending-review status is its historical snapshot state. This current review
 record supplies the readback instead of editing that reviewed contract after
-approval. Subsequent commits change this review record only.
+approval. Readback commits through8e3fd1cc changed this review record only.
 
 Next: prepare final command and one-shot card bound to2563153 plus both review
 receipts for separate human approval, original300s/2GiB/100MiB and no retry.
 This repair/review turn stops before card preparation or execution; confirmation
 remains closed. Main chat alone updates Obsidian; no duplicate task/fit/test.
+
+## Final command/card preparation — 2026-10-17
+
+User authorised preparing, not executing, the final command and one-shot card
+bound to2563153 plus the independent static review. Prepared
+`R001_run_card_v1_20261017.md`, approval index
+`S04-E025-R001-CARD-v1-2563153` (not active without actual human approval).
+Its review-ref names the actual accepted difference-review message above;
+the card and source commits are distinct, no reviewed source/contract changed.
+
+Fixed future action: exact nine-file read, B32/C33 two-solve fit, viewed-u011
+evaluation and same-run report, original exploratory criterion and joint
+300s/2GiB/100MiB. Command issuance consumes one attempt even on early failure;
+no retries/resume/tests/additional fits or confirmation opening. Whole-file
+input-read permission, shared budget, unknown launch ownership and freeze/
+read-only own-output verification boundaries are explicit in the card.
+
+Only Git/source/documents checked; no project import/CLI/worker/guard/test,
+scientific metadata/content access, fit or live preflight. No new review message
+or job dispatched. Current state is CARD_PREPARED_AWAITING_HUMAN_APPROVAL,
+not an executed Run, dynamic validation, or scientific result. Main chat alone
+updates the existing Obsidian note and its one Roadmap status link.
