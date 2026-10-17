@@ -138,20 +138,28 @@ Facts: this bounded access/attribution/report completed under the sampled caps,
 passed its declared checks and produced a complete frozen diagnostic.54/81
 cycles have positive beyond-tolerance MSE differences,27 improve; k50=22.
 
-Bounded inference: the original rules favour preparing phase/objective/
-representation design questions rather than explaining this by one dominant
-cycle. The figure shows structured temporal sign variation, not physical cause.
-No exclusion of C121 or post-hoc change of the old verdict is warranted.
+Bounded inference (wording narrowed after independent read-only result review):
+The saved k50=22 means that 22 ranked cycles are needed to reach half the
+positive excess MSE. Together with saved n_harm=54, this selects the predeclared
+phase/objective/representation-question branch. It does not identify or rule
+out a shared upstream cause or provenance anomaly affecting multiple cycles,
+and does not justify excluding any cycle. The figure shows structured temporal
+sign variation, not physical cause. No exclusion of C121 or post-hoc change of
+the old verdict is warranted.
 
 Uncertainty: one already-viewed synthetic trajectory/window, correlated cycles,
 scalar reductions only. Cannot identify physical causes, gradient conflict,
 spatial support, driver/history coupling, NN necessity, a correct new loss or
 confirmation generalisation. Other three case values remain saved background.
-No independent result review yet; execution health is not mechanism validity.
+No independent result review had occurred at execution closure; the subsequent
+bounded review is recorded in `late_real_attribution_R001_result_review_20261017.md`.
+It accepted record/visual consistency with the above wording correction, not
+independent arithmetic re-derivation/source authentication or physical validity.
+Execution health is not mechanism validity. No frozen artifact was rewritten.
 
-**Only next proposed action:** independent read-only review of this frozen Run's
-existing controls/table/figure and interpretation, with no source reopening,
-describe rerun or fitting. Subject to that review, the prescribed downstream
-proposal is a minimal phase-objective/representation design question, not a
-new fit. No further task was sent this turn. Main chat alone updates Obsidian;
-U0.1175/U0.125 remain closed and S04-E017/NN/multi-objective fits remain deferred.
+**Only next proposed action after that review:** prepare a minimal phase-objective/
+representation design-question proposal for human approval, not a selected
+loss, implementation, source reopening or new fit. The later review did not
+perform/recommend an additional calculation, and this amendment adds none.
+Main chat alone updates Obsidian; U0.1175/U0.125 remain closed and S04-E017/NN/
+multi-objective fits remain deferred.

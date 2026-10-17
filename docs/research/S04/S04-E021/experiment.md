@@ -427,9 +427,30 @@ Saved U0.11 C41–C121 result: harm54/improve27/tie0; k50=22/81, S_plus22108.360
 S_minus10890.8029, S_net11217.5571; late RMSE ratio1.0160831289564438 matches
 the frozen reference. k50 covers half positive excess, not half net error.
 Original branch selects PROPOSE_PHASE_OBJECTIVE_REPRESENTATION_QUESTIONS;
-not a single-cycle explanation or physical/gradient-cause proof. Old E021
+only a contribution-distribution branch, not physical/gradient-cause proof. Old E021
 verdict unchanged; no source reopened or numerical attribution recomputed
 after execution. Main-chat own-output integrity/figure check passed; all8files
 and directories frozen0444/0555, no independent result review yet. Same PNG
 copied/embedded in the existing Obsidian note, main chat sole writer. Next only
 propose frozen-result read-only review; no additional analysis, fit or confirms.
+
+## ATTR-R001 independent result review — 2026-10-17
+
+User authorised a frozen-output read-only review only. Sent once to the method
+chat; turn01a14b7c-6b21-7241-83ed-c9c177bc7606 completed/error=null, final
+message msg_015d0a19570ed14a016ad3d67b3a1481918779ee2f2d9fac8b. See
+`late_real_attribution_R001_result_review_20261017.md` for scope and point-by-point
+main-chat check. Saved metric definitions/control declarations and existing
+PNG consistency acceptable; one text fix closed: k50=22 describes the number
+of ranked cycles reaching half positive excess and, with saved n_harm54,
+selects the original phase-question branch. It **does not rule out a shared
+upstream cause or provenance anomaly**, or justify excluding any cycle.
+
+Review is not an independent recomputation/source authentication/OS peak or
+physical-cause validation; core seven files checked, eighth cache/whole-tree
+total not independently re-certified. Frozen outputs, numbers, figure, code,
+contract and old E021 verdict unchanged; only main-chat interpretation/records
+amended. No four-source reopening, describe/plot/fit/holdout or other calculation
+by either chat. Obsidian/Roadmap updated by main chat alone, same PNG retained.
+Next only prepare minimal phase-objective/representation design questions for
+human approval, not implement a chosen loss or launch an extra fit/diagnostic.
