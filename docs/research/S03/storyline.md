@@ -457,3 +457,16 @@
   holdout access or frozen-output mutation. Supports artificial unit coverage only;
   actualQR repair, true E019 cause and physical inversion remain unestablished.
   Next is separately authorized B, never automatic continuation from this pass.
+
+- **2026-10-17 — E019-D02 B generated once; independent acceptance paused at sidecar.**
+  Exact approved command at clean6344be1/source0fb6bfe, exit0, receipt pre-write
+  9.317093292s/60s, controlledQR3/SVD0; exactly the approved one-time font log,
+  no execution retry. Producer newQr ratios C1=3.32096e-4, C2/C3=5.10917e-5,
+  all within original criterion; old C2/C3 negatives retained, C1 not bitwise0.
+  Independent reviewer stopped before arithmetic/validator/image/PDF: sidecar
+  lacks required 'how to read' phrase and inaccurately locates all probes in
+  summary.csv. No numeric-failure claim, no complete evidence acceptance.
+  See S03-E019/q_consistency_results.md and q_consistency_evidence_review.md.
+  No repair/rerender/recompute/reQR/SVD or realarray/holdout access; frozen files
+  untouched. Await permission for a sidecar-only derivative and resumed read-only
+  acceptance, not a new numerical run or true-root-cause conclusion.

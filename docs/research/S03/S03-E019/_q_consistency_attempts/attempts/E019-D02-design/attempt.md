@@ -50,6 +50,8 @@ Targets verified synthetic leakage without presupposing actual root cause or cha
 ## Tests
 - skipped: Numerical execution explicitly deferred - User authorizes preparation/static review only; no imports, tests, diagnostics, QR/SVD or real/held arrays accessed
 - pass: Approved A once-only artificial unit tests - 17/17 passed; unit section0.053s, receipt pre-write0.7636426659883s/60s; no warning/retry, actual QR0/SVD0 with stubs, original modes/tolerances/source bindings unchanged; B not started
+- pass: Approved B once-only generation - Generation exit0 once, pre-write9.317093292s/60s, QR3/SVD0 per controlled API receipt, one approved font initialization log; producer self-checks only, independent acceptance not completed
+- skipped: Independent acceptance stopped at sidecar content - STOP_SIDECAR_CONTENT_REQUIREMENT: missing how to read phrase and inaccurate CSV probe locator; stopped immediately; no numeric-failure verdict, repair or retry
 
 ## Result Interpretation
 Not recorded.
