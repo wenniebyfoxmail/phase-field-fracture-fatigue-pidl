@@ -1,7 +1,7 @@
 ---
 storyline_id: S04
 experiment_id: S04-E023
-status: production-package-prepared-awaiting-approval
+status: approved-awaiting-taobo-connectivity
 ---
 # E023 Taobo three-state production preparation — 2026-10-16
 
@@ -40,3 +40,9 @@ Retrieve33rowoutputs plus all logs/resource records, formalbaselinepreflight/nat
 ## Local validation
 
 15deploymenttests passed:87-file copy integrity/reuse/symlink/corruption, actual shell GPU/disk/UUID/query guards and actual row D hash/recomputation refusal. bash-n and four embedded Python blocks compile. Minimal local base22-only reconstruction explicitly lacked c4object before bundle, then reconstructed exact clean c4; bothCLIhelps and all3realvalidate-onlycalls pass. Formal GPU/runtime preflight remains future work. Independent [deployment review](producer/deployment_review.md) reports DEPLOYMENT_PREPARATION_PASS, no blockers, bound to deployment28f6aa8801ad0d24660c08a6711d97383936b752 and unchanged sciencec4ceb5d. It independently verified exact payloads and all15deploymenttests. Await this final version's user approval before remote action.
+
+## Approved action and connectivity stop — 2026-10-17
+
+User explicitly approved the exact two unchanged files, v1 new directory, GPU0sharing only free>8GiB and one conditional launch after all preflights. Local payload sizes/SHA256s reverified against approved manifest. First SSH transport stage failed during banner exchange before authentication (exit255 brokenpipe); one read-only target-state verification also failed during key exchange (exit255 connectionreset). No SCP/dispatcher/formalpreflight/training performed; remote directory remains unverified, not assumed absent or created. This is connectivity loss, not a producer/scientific failure.
+
+Read-only local network inspection: Tunnelblick GUI running but no openvpn process observed; target route uses en0/gateway10.255.255.254. Asked user to reconnect existing Taobo client. After restoration inspect target read-only, then continue this already approved exact action if safe; do not blindly repeat mutation, replace package, changeGPU or launch twice. User approval remains valid for this exact account/files/directory/policy. Local attempt record: local_archive/experiments/S04-E023/producer_execution_v1/connection_attempt.json. No dispatcherPID exists in this record; no training monitor claims a running job.
