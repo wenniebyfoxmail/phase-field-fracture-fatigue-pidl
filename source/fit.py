@@ -193,6 +193,8 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
 
     # ── Probe 3: soft symmetry penalty ───────────────────────────────────────
     if symmetry_dict is not None and symmetry_dict.get('enable', False):
+        if symmetry_dict.get('mode', 'raw') == 'physical':
+            raise ValueError('physical symmetry requires frozen weights; Algo1 adaptation is unsupported')
         l_sym = _compute_symmetry_penalty(field_comp, inp_train, 1.0, 1.0, 1.0)
         g_sym = _probe(l_sym)
         _record_grad_stats(grad_stats, 'sym', g_sym)
@@ -229,8 +231,12 @@ def _algo1_update(field_comp, inp_train, hist_alpha, matprop, pffmodel,
               f"λ_strac={state.get('lambda_strac',1.0):.2f}")
 
 
-def _compute_symmetry_penalty(field_comp, inp, lam_alpha, lam_u, lam_v):
+def _compute_symmetry_penalty(field_comp, inp, lam_alpha, lam_u, lam_v, symmetry_dict=None):
     """Soft mirror-symmetry penalty for SENT (y → -y geometry symmetry).
+
+    Legacy default is raw-output parity below. Explicit mode='physical' uses
+    complete mapped fields and requires fixed probes, weights and Uref. No
+    runner enables that mode by default; old lambda magnitudes do not transfer.
 
     Penalizes on NN raw correction (NOT total field), so the affine v_BC
     `(y+0.5)·sin(θ)·λ` is NOT constrained to be odd. The variational
@@ -247,6 +253,21 @@ def _compute_symmetry_penalty(field_comp, inp, lam_alpha, lam_u, lam_v):
     Only valid when williams_enabled=False (Williams branch uses 8D θ
     feature, not raw 2D input).
     """
+    cfg = symmetry_dict or {}
+    mode = cfg.get('mode', 'raw')
+    if mode == 'physical':
+        from physical_symmetry import physical_symmetry_terms
+        required = ('probe_points', 'pair_weights', 'displacement_scale',
+                    'lambda_alpha', 'lambda_u', 'lambda_v')
+        if any(k not in cfg for k in required):
+            raise ValueError('physical symmetry requires explicit probes, pair weights, scale and all three lambdas')
+        if any(not math.isfinite(float(v)) or float(v)<0 for v in (lam_alpha,lam_u,lam_v)):
+            raise ValueError('physical symmetry lambdas must be finite and nonnegative')
+        terms = physical_symmetry_terms(field_comp, cfg['probe_points'], cfg['pair_weights'],
+                                        cfg['displacement_scale'])
+        return lam_alpha*terms['alpha'] + lam_u*terms['u'] + lam_v*terms['v']
+    if mode != 'raw':
+        raise ValueError(f'unknown symmetry penalty mode: {mode!r}')
     if getattr(field_comp, 'williams_enabled', False):
         return torch.tensor(0.0, device=inp.device)
 
@@ -508,7 +529,8 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
                         field_comp, inp_train,
                         lam_alpha=_lam_sym * symmetry_dict.get('lambda_alpha', 1.0),
                         lam_u    =_lam_sym * symmetry_dict.get('lambda_u',     1.0),
-                        lam_v    =_lam_sym * symmetry_dict.get('lambda_v',     1.0))
+                        lam_v    =_lam_sym * symmetry_dict.get('lambda_v',     1.0),
+                        symmetry_dict=symmetry_dict)
                     loss = loss + loss_sym
                     if writer is not None:
                         writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_sym', loss_sym.item(), epoch)
@@ -669,7 +691,8 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
                     field_comp, inp_train,
                     lam_alpha=_lam_sym * symmetry_dict.get('lambda_alpha', 1.0),
                     lam_u    =_lam_sym * symmetry_dict.get('lambda_u',     1.0),
-                    lam_v    =_lam_sym * symmetry_dict.get('lambda_v',     1.0))
+                    lam_v    =_lam_sym * symmetry_dict.get('lambda_v',     1.0),
+                    symmetry_dict=symmetry_dict)
                 loss = loss + loss_sym
                 if writer is not None:
                     writer.add_scalar('U_p_'+str(field_comp.lmbda.item())+'/loss_sym', loss_sym.item(), epoch)
