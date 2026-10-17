@@ -1,0 +1,23 @@
+{
+  "verdict": "DEPLOYMENT_PREPARATION_PASS",
+  "blockers": [],
+  "deployment_commit": "a091ad744af1f642ec9ae185b7e8fa34d9de359e",
+  "scientific_source": "231fe4be83e26ef4054a2a6a567da51229185837",
+  "payloads_verified": true,
+  "bundle_prerequisite": "c4ceb5d27fa8d408be1b9f02dcd6b10308f301a2",
+  "independent_deployment_tests": 22,
+  "embedded_python_blocks_compiled": 5,
+  "approval_shell_outer_and_two_inner_syntax": true,
+  "asset_copies": 120,
+  "row_files": 13,
+  "total_row_files": 39,
+  "legacy001_physical_standard": false,
+  "route_acceptance": null,
+  "background_cost_acceptability": null,
+  "user_approval_pending": true,
+  "SSH_performed": false,
+  "transfer_performed": false,
+  "formal_preflight_performed": false,
+  "training_performed": false,
+  "optimizer_parameter_steps": 0
+}

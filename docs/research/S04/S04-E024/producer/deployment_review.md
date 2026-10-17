@@ -1,0 +1,29 @@
+# Independent E024 deployment preparation review
+
+Verdict: DEPLOYMENT_PREPARATION_PASS. No blockers. Bound to exactdeploymenta091ad744af1f642ec9ae185b7e8fa34d9de359e; scientificsource remains independentlyreviewed231fe4be83e26ef4054a2a6a567da51229185837 unchanged. This is preparationreview only, not approval/execution of SSH, transfer, producerpreflight ortraining.
+
+## Payload and action identity
+
+Independentlymeasured bundle138885bytes SHA256a4e108f4034779801949a69a7e4fe9be6383b5e51773a8d1a5b0a76671fad6ee andlauncher21011bytes SHA2566a35eb158194b1ebed43ebb2950a1baafa6527dddc5069e5dd8ed653a9bddb13. Local/trackedlauncher, plan andapprovalaction byte-identical; planfilefields equalmanifest. Inspectedactualbundleheader: prerequisitec4ceb5d27fa8d408be1b9f02dcd6b10308f301a2, target231fe4b underrefs/heads/codex/e024-producer-snapshot-20261017. Rootreconstructionreceipt shows c4-onlystore lackedtargetbeforebundle, reconstructedcleanexact231fe4b, CLIhelps andthree-realassetvalidateonly pass; notindependentlyreruntheseexpensiveassetchecks.
+
+Accountdrtao@172.16.100.2/GPUServer8, freshroot /mnt/data2/drtao/wennie/S04-E024-head-tail-231fe4b-20261017-v1. Independentlycheckedallthree state/runIDs/output/archive/expectedcommit and ownE023/E022/E021/E019 args againstplan/script. All7argumentprepare_baseline/build_candidate,5argumentgradientaudit and3argumentvalidate_record signatures agreewith embeddedcalls; no missinghead_control API. Scientifichelper/runner/aggregate/controllock have nodiff from231fe4b.
+
+## Independent executed checks
+
+22actualdeployment/resourceunitchecks independentlyPASS in2.74s/0skips. Theyexercise120assetcopy/reuse/symlink/corruption, platform/mountstop, GPU/disk/query/UUIDguards, formalDrepeat/ownE023match andcomparative-summarycontract rejection. Independentlybash-n finalscript plusapprovaloutercommandblock andbothSSH-innerpayloads; compiledall5Pythonblocks COPY/PREFLIGHT/ROW_PREFLIGHT/VERIFY/SUMMARY. NoSSHcommand orwholelauncher/CUDApreflight executed; nooptimizerparameterstep/training.
+
+## Preparation and calibration safety
+
+Host/user/Linux/mount/cwd/bundlehash checks precedeone-shotmarker, attributablelogs andfreshcode/output/archive/log checks. CloneexistingE023objectstore without hardlinks, verifybundle, fetchexactref, detachcleanreviewedsource. Allcache/tmp/outputpathsunder/mnt/data2. Existingroots onlyread/copied;120files=3references+15backbone+15E019+27E021+27E022+33E023 withbefore/afterSHA andpinnedloaderidentity, nosymlinks/reuseddestinations. Remoteabsence/currentresources deliberatelyunverifieduntilapproval.
+
+Allthree formalruntime andnative10000LR profiles vsownE023/E022/E021 checked beforefirsttraining. Eachstate recomputes originalCPUfloat64/two-thread/1024chunk284D/s(includingbias) andgradientaudit; repeatinitializationmustmatchinternalexpected and ownE023sidecarbytes exactly. CUDAbackbone/cache/zerooutput/BC checks are doneallthree. NoMacD injection orportablewaiver. Eachrowfreshpreflight repeatsD/gradient plus8000prefix/10000sampleraudit, matchesformalhashes/ownE023bytes andstage/evaluationrules. Unmodifiedscientificrunner independentlyenforcesownE023initialD/nativeidentity beforeupdates; postrowactualsidecarsmustmatchformalpreflight. No newunreviewedsourcehook.
+
+SharedGPU0 is explicitlyproposed onlywhilefreeVRAMstrictly>8192MiB, mounteddatafree>8GiB; stableUUID andquerysuccessrequired. Logothercontextswithoutinterference, noGPUfallback/waitqueue/retry/globalconfig/install. Thesearepoint-in-timepreconditions, notreservation; laterallocationfailurestopsratherthan silentlyrerunning.
+
+## Stage, retrieval and evaluation checks
+
+Three serialfresh10000-update rows retain allE023scienceexcept8000joint/2000headonly. ReviewedsourcekeepssameAdamW/headmoments/nativeLR, hidden.gradNone/nohiddenweightdecay, immutableoriginalPRE_UPDATE andnewstageentry+step8000CP+finalrealoptimizerstate. Deploymentdoesnotpatchscience. Everyrowwaitsforchild, originalstrictdecoder verifiesstage8000→finalweights/moments/counters/phase/prefix/earlierE023trace plusfullnumerics, then all13actualproducerarchivecopies andactualLR/formalDfiles before nextrow. Finalsourcecleanchecked. All39rowfilespluslogs/preflights/manifests/aggregate neededforretrieval/evidencereview.
+
+FinalSUMMARYrequires3valid/nomissing/nointegrityerrors and48regionalpairedcomparisons underPAIRED_COMPARATIVE_EVALUATION_COMPLETE. It explicitlyrejectsrestoringoldPASS/FAILgate, .001asphysicalstandard, nonnullrouteacceptance orbackgroundacceptability. Applicationtolerance/fitnessremaindownstreamunassessed: frozenUVdoesnotvalidatedamage/crack/fatiguehistory. Wall/allocation/payloadcostscopepreserved; noenergy/purekernelclaim. Completecomparisonsarenotapplication/scientificsuccess. Oldverdicts andstrictMacLR/mass/D/rhoexceptions remain unchanged.
+
+set-Eeuo/ERRtrap recordsfailedphase andstops; noautomaticrepair/resume/retry/budget/seed/GPU/split changes. SSHlossisvisibilityloss, notrestartauthority. Approvalactionshows exacttwofiles/account/root/sharingpolicy/singleconditionaldispatcher; usermustapprove thisfinalversion undercurrenttask beforeexecution. Anychangedpayload/action/scienceinvalidatesthisreviewbinding. NoSSH/transfer/newproducer/training/externalmessage performedbyreviewer.

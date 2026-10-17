@@ -1,5 +1,5 @@
 {
-  "status": "LOCAL_DEPLOYMENT_CHECKS_PASS_PENDING_INDEPENDENT_REVIEW",
+  "status": "DEPLOYMENT_PREPARATION_PASS_AWAITING_EXACT_USER_APPROVAL",
   "deployment_tests_passed": 22,
   "tests": "120-file copy/reuse/symlink/corruption; actual shell disk/VRAM/UUID/query guards; own-E023 D preflight; comparative final-summary rejection",
   "bundle_reconstruction": {
@@ -45,5 +45,7 @@
   "transfer": false,
   "formal_native_cuda_preflight": false,
   "training": false,
-  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_submission_v1"
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_submission_v1",
+  "independent_tests_passed": 22,
+  "reviewed_deployment_commit": "a091ad744af1f642ec9ae185b7e8fa34d9de359e"
 }
