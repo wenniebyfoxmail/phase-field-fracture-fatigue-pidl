@@ -1,0 +1,44 @@
+{
+  "same_camera_provenance": true,
+  "native_dimensions": [
+    6000,
+    4000
+  ],
+  "fixed_image_space_band": [
+    3900,
+    1700,
+    4600,
+    1950
+  ],
+  "not_material_point_tracking": true,
+  "similarity_diagnostics": {
+    "22": {
+      "available": true,
+      "matches": 1529,
+      "inliers": 1305,
+      "scale": 1.000455967249839,
+      "rotation_deg": -0.013798451923761236,
+      "translation_crop_resized_px": [
+        -0.9490150540923828,
+        7.465664693380645
+      ],
+      "diagnostic_only": true,
+      "no_warp_applied": true,
+      "material_correspondence": false
+    },
+    "23": {
+      "available": true,
+      "matches": 1385,
+      "inliers": 1100,
+      "scale": 1.001192225235326,
+      "rotation_deg": -0.02486239525853382,
+      "translation_crop_resized_px": [
+        -4.078259771208062,
+        14.587962461230074
+      ],
+      "diagnostic_only": true,
+      "no_warp_applied": true,
+      "material_correspondence": false
+    }
+  }
+}

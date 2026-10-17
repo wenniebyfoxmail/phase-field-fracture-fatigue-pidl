@@ -29,7 +29,10 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   failure isnot a universal prerequisite. Existing9frames,newmask/path/length/
   area/local-thickness definitions and explicitocclusion,then fixedcommon
   image-space21/22/23scalarreplay. No material-point/physical-aperture claim,
-  oldscore rewrite,newsource access ortraining; independentreview pending.
+  oldscore rewrite,newsource access ortraining. Executed:5/9candidateframes,
+  4earlyunidentified;commonarea trendAE19vs persistence492px²,oneviewedquery.
+  Length/P10lose; porebranches/finecrack omissions remain,notvalidatedmask
+  accuracy. Nextsource-only candidate/path reliability,notmandatoryanchors.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。

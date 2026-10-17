@@ -1,0 +1,46 @@
+{
+  "protocol": "per-frame-visible-geometry-v1",
+  "lock_sha256": "3f3ae69bfda1b88b600bb719fade1f545f02516f74692a954f7ad635fd49bf2c",
+  "support_sha256": "5b28e6ddc334744bae3c009498ef73691395761e1bf5b8f9737fdbc302a04728",
+  "predictions": {
+    "area_px2": {
+      "unit": "px2",
+      "persistence": 4565.0,
+      "trend": 5076.0,
+      "raw_trend": 5076.0
+    },
+    "length_px": {
+      "unit": "px",
+      "persistence": 326.6639969244294,
+      "trend": 324.735064736295,
+      "raw_trend": 324.735064736295
+    },
+    "thickness_mean_px": {
+      "unit": "px",
+      "persistence": 10.696711236960844,
+      "trend": 11.758874756008774,
+      "raw_trend": 11.758874756008774
+    },
+    "thickness_p10_px": {
+      "unit": "px",
+      "persistence": 5.656854249492381,
+      "trend": 7.313708498984761,
+      "raw_trend": 7.313708498984761
+    },
+    "thickness_p50_px": {
+      "unit": "px",
+      "persistence": 10.770329614269007,
+      "trend": 11.540659228538015,
+      "raw_trend": 11.540659228538015
+    },
+    "thickness_p90_px": {
+      "unit": "px",
+      "persistence": 16.0,
+      "trend": 17.971572875253813,
+      "raw_trend": 17.971572875253813
+    }
+  },
+  "saved_at_utc": "2026-10-17T19:46:23.790503+00:00",
+  "target_already_exposed": true,
+  "role": "retrospective development replay"
+}

@@ -1,0 +1,80 @@
+[
+  {
+    "metric": "area_px2",
+    "unit": "px2",
+    "reference": 5057,
+    "persistence": 4565.0,
+    "trend": 5076.0,
+    "raw_trend": 5076.0,
+    "scored": true,
+    "persistence_ae": 492.0,
+    "trend_ae": 19.0,
+    "delta_ae": -473.0,
+    "gain": 473.0
+  },
+  {
+    "metric": "length_px",
+    "unit": "px",
+    "reference": 343.56349186104103,
+    "persistence": 326.6639969244294,
+    "trend": 324.735064736295,
+    "raw_trend": 324.735064736295,
+    "scored": true,
+    "persistence_ae": 16.89949493661163,
+    "trend_ae": 18.828427124746042,
+    "delta_ae": 1.9289321881344108,
+    "gain": -1.9289321881344108
+  },
+  {
+    "metric": "thickness_mean_px",
+    "unit": "px",
+    "reference": 13.159972885586647,
+    "persistence": 10.696711236960844,
+    "trend": 11.758874756008774,
+    "raw_trend": 11.758874756008774,
+    "scored": true,
+    "persistence_ae": 2.463261648625803,
+    "trend_ae": 1.401098129577873,
+    "delta_ae": -1.06216351904793,
+    "gain": 1.06216351904793
+  },
+  {
+    "metric": "thickness_p10_px",
+    "unit": "px",
+    "reference": 6.324555320336759,
+    "persistence": 5.656854249492381,
+    "trend": 7.313708498984761,
+    "raw_trend": 7.313708498984761,
+    "scored": true,
+    "persistence_ae": 0.6677010708443785,
+    "trend_ae": 0.9891531786480021,
+    "delta_ae": 0.32145210780362365,
+    "gain": -0.32145210780362365
+  },
+  {
+    "metric": "thickness_p50_px",
+    "unit": "px",
+    "reference": 14.142135623730951,
+    "persistence": 10.770329614269007,
+    "trend": 11.540659228538015,
+    "raw_trend": 11.540659228538015,
+    "scored": true,
+    "persistence_ae": 3.3718060094619435,
+    "trend_ae": 2.601476395192936,
+    "delta_ae": -0.7703296142690075,
+    "gain": 0.7703296142690075
+  },
+  {
+    "metric": "thickness_p90_px",
+    "unit": "px",
+    "reference": 18.17643400393702,
+    "persistence": 16.0,
+    "trend": 17.971572875253813,
+    "raw_trend": 17.971572875253813,
+    "scored": true,
+    "persistence_ae": 2.1764340039370182,
+    "trend_ae": 0.2048611286832056,
+    "delta_ae": -1.9715728752538126,
+    "gain": 1.9715728752538126
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "protocol": "per-frame-visible-geometry-v1",
+  "phase": "history",
+  "started_at_utc": "2026-10-17T19:46:20.032371+00:00",
+  "command": [
+    "scripts/md01_frame_geometry.py",
+    "history",
+    "--lock",
+    "docs/research/S03/S03-E037-MD01/source_lock.json",
+    "--support",
+    "docs/research/S03/S03-E037-MD01/frame_support_lock.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001"
+  ],
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 56948,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "commit": "0eba2af8f8dea731a31403f7cd798d6142b1d14a",
+  "dirty": [],
+  "lock_sha256": "3f3ae69bfda1b88b600bb719fade1f545f02516f74692a954f7ad635fd49bf2c",
+  "support_sha256": "5b28e6ddc334744bae3c009498ef73691395761e1bf5b8f9737fdbc302a04728",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "old_results_unchanged": true,
+  "ended_at_utc": "2026-10-17T19:46:23.791606+00:00",
+  "wall_seconds": 3.766606791992672,
+  "cpu_seconds": 3.7443720000000003
+}

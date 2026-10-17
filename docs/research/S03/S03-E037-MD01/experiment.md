@@ -113,3 +113,39 @@ If full visible geometry changes only with occlusion,keepC2result but restrict
 change claims to shared image-space band. Ifreplayloses,retain that result and
 use increment/segmentation diagnostics to choose a separate next lever,no
 target-conditioned position/threshold or newmodel. Initial state: no newmetrics.
+
+## Executed outcome — 2026-10-17
+
+R001history/R002target succeeded at clean0eba2af in3.767/1.342s. Existing9sources
+only; no training/newsource/oldanchorrepair. Five visible-candidate frames
+18/19/21/22/23; four early unidentified/null, not auto-detection accuracy or zero.
+Step19geometry now returned despite original correspondence failure. Old
+half-depth and prelocked result bytes unchanged.
+
+Commonband21/22/23area4054→4565→5057px²; persistenceAE492,trendAE19,gain473px².
+One query scored1/1, six heterogeneous scalar outputs6/6,not6independent tests.
+Length gain−1.928932px and thicknessP10−.321452px retain losses; mean/P50/P90
+gain1.062164/.770330/1.971573px. Area slightdeceleration511→492isdescriptive,
+not calibrated slowing/turning validation or true-mask forecast accuracy.
+
+Samecamera/dimensions,commonband fullyunoccluded. ORBfits22/23relative21scale
+1.000456/1.001192,rotation−.013798/−.024862deg; translation persists,including
+23nativeapproximately(−10.196,+36.470)px. No maskswarped/materialaccuracyclaim.
+Fixedimageband drift may influence deltas; minimumviewdiagnostic isnot old
+fouranchor requirement. Perframeoutputs remain separate from changeclaims.
+
+Actualsourceoverlays show pore/texture branches,missed fine uppercracks and
+fragmentedpaths. Fullsupportchanges/lengthdrops cannot be physical closure.
+Pathendpoints notconfirmedtips; new2xEDTthickness notoldhalfdepth/mm. AIvisual
+review not independent humansegmentation. Prioritise a separate source-only
+candidate/path reliability version before extending simpleforecasts,not
+mandatorybackgroundrepair or newarchitecture.
+
+R003/R006previews ledonly todisplayheadroom/range fixes; R004six finalfigure
+sets readfromsavedoutputs atbc0e96a. PNG300dpi/embeddedPDFfont/gray/sidecar
+checks passed. IndependentR005 recomputes masks andsavedpathmetrics/6scores;
+alternativeequalshortestpaths can perturb fullpaththickness slightly,not
+commonband scores. Exactoutputreview andcompactreceipts in evidence/.
+
+[Analysis, actual masks and all metrics](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R004/analysis/README_analysis.md).
+Do not replace E0361/4coverage or anyoldscore with E037newdefinitions.

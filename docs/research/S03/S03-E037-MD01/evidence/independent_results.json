@@ -1,0 +1,1064 @@
+{
+  "producer_commit": "0eba2af8f8dea731a31403f7cd798d6142b1d14a",
+  "source_sha256": {
+    "12": "d899a5357d6601f9b144f2f80e01b235a86a1c2fa0e02e720b0def1778d5f234",
+    "13": "456f614ea21b35519d7c85efafb2798200ae6e0c223f57f4330e23206f065753",
+    "15": "c6e3315d936be3936c6f533eb6758f72da229c9de87a95369f222d36ab250f25",
+    "16": "8219e88b430280ea5166ffa4c4d54d2bf3d7beddcbac8108951dd41294767830",
+    "18": "1d22ff57f1925d79694bf9fd1ee6349d01a64450fad62c03e2587ad6415c61b1",
+    "19": "05a9329ace48d34e5bb287380d7131075614dadca3a346ebf939a67af3f7dda4",
+    "21": "1f19d9c2e55568148802ac053013f7191b4a642ee583b3c37b3ff08d8361203e",
+    "22": "d4c10d5f6d9a15c60cc5b5df4bb26604332335ca307e61c66841aef63d1174b4",
+    "23": "8100a7c6d2f5a2e22951c071b74fb3c0963e184eced691e5b4d136a88aac779b"
+  },
+  "protected_predeclared_hashes": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R002/summary.json": "c944476a97231fff1f9646d3909dde1dff229aae8b26a68a4bfd2fa0a45e6db7",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R001/predictions_saved_before_target.json": "e16f88e538069e24a5b87bf78a8aebe2b73540263f746070e3c064146344caae",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E032-MD01/runs/S03-E032-MD01-R001/summary.json": "ab93108248bc5f8a1706c199300cf71a37b3a028f2cbc763ca0b937b666800ba",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E033-MD01/runs/S03-E033-MD01-R003/summary.json": "0cbcfeb570461e212f1ba37f3924211800fd965ac9ea992bde3c065649b5af66",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E033-MD01/runs/S03-E033-MD01-R003/predictions_saved_before_target.json": "d8999655b6c15f32075b3a37dce8d5614914fd443469391261963591290498e2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E033-MD01/runs/S03-E033-MD01-R003/history_snapshot.json": "d8999655b6c15f32075b3a37dce8d5614914fd443469391261963591290498e2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R006/summary.json": "527e344427956879d008279d41601a2999665c5620895c4f6b3404324f1ba4c4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R006/target_measurement.json": "e3830a4edff0c127cad7291169051cbf5364935bd84ec0d45bb9a30cac625ce0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R002/summary.json": "f85012d93b7e89cd0d071f4e5b2d38ec68259c5da4cbac893ba87bd039d9b044",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R002/predictions_saved_before_target.json": "f5b70e1c4cab57f8e7f7c7f881d98b4c5101d7bb30559a69157e26eab7f83ff6",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R002/history_snapshot.json": "f5b70e1c4cab57f8e7f7c7f881d98b4c5101d7bb30559a69157e26eab7f83ff6",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R005/summary.json": "63ad152934e276b105acc6212223d100e695ac66a86c6c86c838fb1d50d07b58",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R005/predictions_saved_before_target.json": "1f7a28d8dc98fad7a6156b2045626cb2c988a29e00245eae8c8098c38511d33b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R005/history_snapshot.json": "1f7a28d8dc98fad7a6156b2045626cb2c988a29e00245eae8c8098c38511d33b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E035-MD01/runs/S03-E035-MD01-R001/summary.json": "7138cbad9f16414a9ee692cc92334deb20e9a2effed34081f336dc7e95890af3",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/summary.json": "9400a3f3d019dd04bde9b882ec1264d93ee6d282505d24624833ba0ba0eafd05",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/source_identities.json": "6c0632d6cfd5c130f73efb5f7fe89ab340eea099dc03b489f3393720e78b0b71",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/cases.json": "18735079a2fd89d6a6ddce7520d4a4e74430a498c0a74264b8a680473a3d7e30",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/run_receipt.json": "53d2b020019e668df7a9d6004cff6425d45804711e64dbd12a2d92069d1a4843",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/run_receipt.json": "534396ac30e254e2dfc513216a8e2e704cb8694103566bea0056783873d73794",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/histories_closed.json": "9213787d064d5179891a72bf8c50d9a7e1485fd88bc32b065bc3581b6bee8789",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/W18/summary.json": "5835e0dfd469bf735da8aa77166f05aa9c94d914395401cc76487c199d06051c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/W21/summary.json": "1dd04e28eba40cc098d0443c47b853ebd04e8aaa93fe6007778d68e9cc3abf18",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/W21/target_measurement.json": "a84a9301a61cacb9c8258f1b0cd3f98bdc97a3c9335158c414cd4ce3de717513",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/W15/summary.json": "83f1f81013c48e99b7e15d8ad67163d6efd425e55a30df04d4262c2300f137e0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/W12/summary.json": "020846091da2d97ca61bcd3a686dc2733a2b945309e160db6187e6c602f4ab9c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W18/geometry_saved_before_formal_measurement.json": "bcafd70ce3adecd603938a4df2e504615bace3822b9bb0188a54074e09f0d524",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W18/predictions_saved_before_target.json": "346c5cfbbeea8012fbdf62c9ab77355535598bd6c2dd9f26fa24ccf4593a35f1",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W18/history_snapshot.json": "346c5cfbbeea8012fbdf62c9ab77355535598bd6c2dd9f26fa24ccf4593a35f1",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W21/geometry_saved_before_formal_measurement.json": "92289efbc720f75eeed585f178d9a9000c4246b3fb2721d4f580eac1e26bfd03",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W21/predictions_saved_before_target.json": "7ed2e7269f8535e778a68ecc9fbe0788247a052a2b2375c582e92002635d4f7a",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W21/history_snapshot.json": "7ed2e7269f8535e778a68ecc9fbe0788247a052a2b2375c582e92002635d4f7a",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W15/predictions_saved_before_target.json": "89f9810eb242fe7fcfcaee1bcf6d921be287e0c9ddcd442b1c5486f07b04168f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W15/history_snapshot.json": "89f9810eb242fe7fcfcaee1bcf6d921be287e0c9ddcd442b1c5486f07b04168f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W12/predictions_saved_before_target.json": "db653f852ee10f7bc97594b5f509623a33737f4851fbcac7dbc81d2cec5eedec",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W12/history_snapshot.json": "db653f852ee10f7bc97594b5f509623a33737f4851fbcac7dbc81d2cec5eedec"
+  },
+  "input_hashes_unchanged_during_review": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/geometry_predictions_before_target.json": "ec6202902cadac4eaa3d25a8c6fa2ae8ecff2159684fa0db7020fcfd349e9069",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/frame_metrics.json": "d92c69105687b517bcbae076b661cea9ffd314ae73105b6addb1ffa27273b9aa",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/run_receipt.json": "0a2159e74f2d113e4cae167f84b097f1b6761c89f1ce4ce3c10c5e9b4002d1cd",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step16/metrics.json": "e709fc6c71363f9f0ac7c9ebeb01699a1960c6e868ad69deae22d58485e02b0d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step16/geometry_arrays.npz": "b5f1744e43291ce4d30137da43e79fd20469458ea35905c183f014846d47f0a2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step16/paths.json": "ed0d1f18b94433c0e9da1ad37a4f3401911d5727cc84576e5fad7a9571835ca8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step18/metrics.json": "7a37a659d15c471e6520aa7faffa8742860a7f91cbb426bc6e39d309283b471f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step18/geometry_arrays.npz": "e0d578f1ab437a6295fa48277697b4702a6b921637ce347790a057ef28df50c4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step18/paths.json": "a42d9da3fc296b4dc2d1d169c0f9380e6773f6c286d22bf09ef3cb53c4b71137",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step21/metrics.json": "cffed513c2835ab199a3af1b8ae11f983e1be9119da6b89c76ac3c70027ee155",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step21/geometry_arrays.npz": "f14150b030a3be8cefa768664ca9f434a3c5137f897fe699e095fab3deb19c25",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step21/paths.json": "ab3a5d057d383f89e29e8b467af439191c7403514eb1aab74a2412e46f0e3432",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step19/metrics.json": "b71e3fb024818f7f632697b814c57027ba0dc2cdacf0113f4995cb74cd6a4bed",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step19/geometry_arrays.npz": "b0a44fb3d5e5966f1c855a88831052d0c411f4a88a1d21bc4228092cc5c32f42",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step19/paths.json": "586d3403e3af7f6cf6729393647c36b462aac9f566af88e759617134b4f3ea6f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step12/metrics.json": "d514ca31cc787ec1fc0c144945a9aa593196ffe89945217721f66647dff3dcfb",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step12/geometry_arrays.npz": "b5f1744e43291ce4d30137da43e79fd20469458ea35905c183f014846d47f0a2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step12/paths.json": "ed0d1f18b94433c0e9da1ad37a4f3401911d5727cc84576e5fad7a9571835ca8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step15/metrics.json": "1b4b16c203f398552da873b6672bcff16f9c48388d16f72bffadeeaf01f3f2b0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step15/geometry_arrays.npz": "b5f1744e43291ce4d30137da43e79fd20469458ea35905c183f014846d47f0a2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step15/paths.json": "ed0d1f18b94433c0e9da1ad37a4f3401911d5727cc84576e5fad7a9571835ca8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step22/metrics.json": "92c3409a903bc88260234d3c7817aa488a8cd9f18bb9923066a2a9429f6b4683",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step22/geometry_arrays.npz": "1f033487c1dd8207883fc97ea567b7685457428c57c9db30d26622d05e5f019c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step22/paths.json": "db12330afcee314569fa477fc47a85388c620e766b630df0c0f5411778704718",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step13/metrics.json": "c49ba0bce60af3b0b21bb53152059ba4a0a4deda668eda8fde81b29b14de72ff",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step13/geometry_arrays.npz": "b5f1744e43291ce4d30137da43e79fd20469458ea35905c183f014846d47f0a2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R001/step13/paths.json": "ed0d1f18b94433c0e9da1ad37a4f3401911d5727cc84576e5fad7a9571835ca8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R002/comparison.json": "6df3e3e1c5e0aa89efd4ea0e06843a2f240a595b99ca2bf6b1b47cf69e5ad0a8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R002/view_consistency.json": "4ce873c619d7d38f1004d564f14303194553609d8fd390abd0bbd1c902dffc04",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R002/frame_metrics.json": "41c22035cd07628451a85a02efcbf1d490b687b667cfd744e029d24de992251d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R002/run_receipt.json": "892b20fcd29c70053bf3fe3d095990dd5c5e841185c2560477891022171ca087",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R002/step23/metrics.json": "6b3a66d254114662946bacb1474f00c073cdf66407c72cb07614f3d066b7cdec",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R002/step23/geometry_arrays.npz": "702e48c2a6992ca024f3f1d1a5cc9b2dc62c5095f3f52d06df35663cbd7d16fb",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E037-MD01/runs/S03-E037-MD01-R002/step23/paths.json": "c220b5a942c0b76252175b33f1fa161450ebf70ec4865743433a33cc229e0b94"
+  },
+  "maximum_differences": {
+    "mask_pixels": 0,
+    "excluded_pixels": 0,
+    "safe_pixels": 0,
+    "skeleton_pixels": 0,
+    "path_edge_length": 0.0,
+    "saved_path_edt": 0.0,
+    "saved_path_quantiles": 0.0,
+    "independent_graph_metrics": 0.0007498903749763031,
+    "scores": 0.0
+  },
+  "independent_path_coordinate_differences": [
+    {
+      "stage": 18,
+      "scope": "full",
+      "segment": 1,
+      "length_difference": 0.0
+    },
+    {
+      "stage": 18,
+      "scope": "full",
+      "segment": 14,
+      "length_difference": 0.0
+    },
+    {
+      "stage": 18,
+      "scope": "full",
+      "segment": 17,
+      "length_difference": 0.0
+    },
+    {
+      "stage": 22,
+      "scope": "full",
+      "segment": 5,
+      "length_difference": 0.0
+    },
+    {
+      "stage": 23,
+      "scope": "full",
+      "segment": 1,
+      "length_difference": 0.0
+    }
+  ],
+  "frame_count": 9,
+  "identified_count": 5,
+  "unidentified_count": 4,
+  "all_frames": [
+    {
+      "stage": 12,
+      "excluded_fraction": 0.07692307692307693,
+      "comparison_band_clear": true,
+      "full": {
+        "valid": false,
+        "area_px2": null,
+        "length_px": null,
+        "fragments": 0,
+        "path_points": 0,
+        "thickness_points": 0,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": null,
+        "thickness_mean_px": null,
+        "thickness_p10_px": null,
+        "thickness_p50_px": null,
+        "thickness_p90_px": null
+      },
+      "common": {
+        "valid": false,
+        "area_px2": null,
+        "length_px": null,
+        "fragments": 0,
+        "path_points": 0,
+        "thickness_points": 0,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": null,
+        "thickness_mean_px": null,
+        "thickness_p10_px": null,
+        "thickness_p50_px": null,
+        "thickness_p90_px": null
+      },
+      "details": {
+        "full": {
+          "independent": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          },
+          "saved_path_recomputed": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          }
+        },
+        "common": {
+          "independent": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          },
+          "saved_path_recomputed": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          }
+        }
+      }
+    },
+    {
+      "stage": 13,
+      "excluded_fraction": 0.07692307692307693,
+      "comparison_band_clear": true,
+      "full": {
+        "valid": false,
+        "area_px2": null,
+        "length_px": null,
+        "fragments": 0,
+        "path_points": 0,
+        "thickness_points": 0,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": null,
+        "thickness_mean_px": null,
+        "thickness_p10_px": null,
+        "thickness_p50_px": null,
+        "thickness_p90_px": null
+      },
+      "common": {
+        "valid": false,
+        "area_px2": null,
+        "length_px": null,
+        "fragments": 0,
+        "path_points": 0,
+        "thickness_points": 0,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": null,
+        "thickness_mean_px": null,
+        "thickness_p10_px": null,
+        "thickness_p50_px": null,
+        "thickness_p90_px": null
+      },
+      "details": {
+        "full": {
+          "independent": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          },
+          "saved_path_recomputed": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          }
+        },
+        "common": {
+          "independent": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          },
+          "saved_path_recomputed": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          }
+        }
+      }
+    },
+    {
+      "stage": 15,
+      "excluded_fraction": 0.07692307692307693,
+      "comparison_band_clear": true,
+      "full": {
+        "valid": false,
+        "area_px2": null,
+        "length_px": null,
+        "fragments": 0,
+        "path_points": 0,
+        "thickness_points": 0,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": null,
+        "thickness_mean_px": null,
+        "thickness_p10_px": null,
+        "thickness_p50_px": null,
+        "thickness_p90_px": null
+      },
+      "common": {
+        "valid": false,
+        "area_px2": null,
+        "length_px": null,
+        "fragments": 0,
+        "path_points": 0,
+        "thickness_points": 0,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": null,
+        "thickness_mean_px": null,
+        "thickness_p10_px": null,
+        "thickness_p50_px": null,
+        "thickness_p90_px": null
+      },
+      "details": {
+        "full": {
+          "independent": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          },
+          "saved_path_recomputed": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          }
+        },
+        "common": {
+          "independent": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          },
+          "saved_path_recomputed": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          }
+        }
+      }
+    },
+    {
+      "stage": 16,
+      "excluded_fraction": 0.07692307692307693,
+      "comparison_band_clear": true,
+      "full": {
+        "valid": false,
+        "area_px2": null,
+        "length_px": null,
+        "fragments": 0,
+        "path_points": 0,
+        "thickness_points": 0,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": null,
+        "thickness_mean_px": null,
+        "thickness_p10_px": null,
+        "thickness_p50_px": null,
+        "thickness_p90_px": null
+      },
+      "common": {
+        "valid": false,
+        "area_px2": null,
+        "length_px": null,
+        "fragments": 0,
+        "path_points": 0,
+        "thickness_points": 0,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": null,
+        "thickness_mean_px": null,
+        "thickness_p10_px": null,
+        "thickness_p50_px": null,
+        "thickness_p90_px": null
+      },
+      "details": {
+        "full": {
+          "independent": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          },
+          "saved_path_recomputed": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          }
+        },
+        "common": {
+          "independent": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          },
+          "saved_path_recomputed": {
+            "valid": false,
+            "area_px2": null,
+            "length_px": null,
+            "fragments": 0,
+            "path_points": 0,
+            "thickness_points": 0,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": null,
+            "thickness_mean_px": null,
+            "thickness_p10_px": null,
+            "thickness_p50_px": null,
+            "thickness_p90_px": null
+          }
+        }
+      }
+    },
+    {
+      "stage": 18,
+      "excluded_fraction": 0.07692307692307693,
+      "comparison_band_clear": true,
+      "full": {
+        "valid": true,
+        "area_px2": 29754,
+        "length_px": 2853.393144475064,
+        "fragments": 18,
+        "path_points": 2586,
+        "thickness_points": 2518,
+        "boundary_near_endpoints": 1,
+        "thickness_withheld_fraction": 0.026295436968290842,
+        "thickness_mean_px": 7.042323790962218,
+        "thickness_p10_px": 2.8284271247461903,
+        "thickness_p50_px": 6.0,
+        "thickness_p90_px": 12.0
+      },
+      "common": {
+        "valid": true,
+        "area_px2": 2064,
+        "length_px": 323.0365799264593,
+        "fragments": 3,
+        "path_points": 290,
+        "thickness_points": 290,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": 0.0,
+        "thickness_mean_px": 5.259510551758575,
+        "thickness_p10_px": 2.0,
+        "thickness_p50_px": 4.47213595499958,
+        "thickness_p90_px": 8.0
+      },
+      "details": {
+        "full": {
+          "independent": {
+            "valid": true,
+            "area_px2": 29754,
+            "length_px": 2853.393144475064,
+            "fragments": 18,
+            "path_points": 2586,
+            "thickness_points": 2518,
+            "boundary_near_endpoints": 1,
+            "thickness_withheld_fraction": 0.026295436968290842,
+            "thickness_mean_px": 7.042323790962218,
+            "thickness_p10_px": 2.8284271247461903,
+            "thickness_p50_px": 6.0,
+            "thickness_p90_px": 12.0
+          },
+          "saved_path_recomputed": {
+            "valid": true,
+            "area_px2": 29754,
+            "length_px": 2853.393144475064,
+            "fragments": 18,
+            "path_points": 2586,
+            "thickness_points": 2518,
+            "boundary_near_endpoints": 1,
+            "thickness_withheld_fraction": 0.026295436968290842,
+            "thickness_mean_px": 7.043073681337194,
+            "thickness_p10_px": 2.8284271247461903,
+            "thickness_p50_px": 6.0,
+            "thickness_p90_px": 12.0
+          }
+        },
+        "common": {
+          "independent": {
+            "valid": true,
+            "area_px2": 2064,
+            "length_px": 323.0365799264593,
+            "fragments": 3,
+            "path_points": 290,
+            "thickness_points": 290,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": 0.0,
+            "thickness_mean_px": 5.259510551758575,
+            "thickness_p10_px": 2.0,
+            "thickness_p50_px": 4.47213595499958,
+            "thickness_p90_px": 8.0
+          },
+          "saved_path_recomputed": {
+            "valid": true,
+            "area_px2": 2064,
+            "length_px": 323.0365799264593,
+            "fragments": 3,
+            "path_points": 290,
+            "thickness_points": 290,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": 0.0,
+            "thickness_mean_px": 5.259510551758575,
+            "thickness_p10_px": 2.0,
+            "thickness_p50_px": 4.47213595499958,
+            "thickness_p90_px": 8.0
+          }
+        }
+      }
+    },
+    {
+      "stage": 19,
+      "excluded_fraction": 0.4172442307692308,
+      "comparison_band_clear": true,
+      "full": {
+        "valid": true,
+        "area_px2": 21803,
+        "length_px": 1719.638743755015,
+        "fragments": 6,
+        "path_points": 1538,
+        "thickness_points": 999,
+        "boundary_near_endpoints": 4,
+        "thickness_withheld_fraction": 0.3504551365409623,
+        "thickness_mean_px": 8.525835023920486,
+        "thickness_p10_px": 4.0,
+        "thickness_p50_px": 8.246211251235321,
+        "thickness_p90_px": 12.649110640673518
+      },
+      "common": {
+        "valid": true,
+        "area_px2": 1743,
+        "length_px": 205.02438661763952,
+        "fragments": 3,
+        "path_points": 184,
+        "thickness_points": 184,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": 0.0,
+        "thickness_mean_px": 7.185727377295835,
+        "thickness_p10_px": 4.0,
+        "thickness_p50_px": 7.211102550927978,
+        "thickness_p90_px": 10.0
+      },
+      "details": {
+        "full": {
+          "independent": {
+            "valid": true,
+            "area_px2": 21803,
+            "length_px": 1719.638743755015,
+            "fragments": 6,
+            "path_points": 1538,
+            "thickness_points": 999,
+            "boundary_near_endpoints": 4,
+            "thickness_withheld_fraction": 0.3504551365409623,
+            "thickness_mean_px": 8.525835023920486,
+            "thickness_p10_px": 4.0,
+            "thickness_p50_px": 8.246211251235321,
+            "thickness_p90_px": 12.649110640673518
+          },
+          "saved_path_recomputed": {
+            "valid": true,
+            "area_px2": 21803,
+            "length_px": 1719.638743755015,
+            "fragments": 6,
+            "path_points": 1538,
+            "thickness_points": 999,
+            "boundary_near_endpoints": 4,
+            "thickness_withheld_fraction": 0.3504551365409623,
+            "thickness_mean_px": 8.525835023920486,
+            "thickness_p10_px": 4.0,
+            "thickness_p50_px": 8.246211251235321,
+            "thickness_p90_px": 12.649110640673518
+          }
+        },
+        "common": {
+          "independent": {
+            "valid": true,
+            "area_px2": 1743,
+            "length_px": 205.02438661763952,
+            "fragments": 3,
+            "path_points": 184,
+            "thickness_points": 184,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": 0.0,
+            "thickness_mean_px": 7.185727377295835,
+            "thickness_p10_px": 4.0,
+            "thickness_p50_px": 7.211102550927978,
+            "thickness_p90_px": 10.0
+          },
+          "saved_path_recomputed": {
+            "valid": true,
+            "area_px2": 1743,
+            "length_px": 205.02438661763952,
+            "fragments": 3,
+            "path_points": 184,
+            "thickness_points": 184,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": 0.0,
+            "thickness_mean_px": 7.185727377295835,
+            "thickness_p10_px": 4.0,
+            "thickness_p50_px": 7.211102550927978,
+            "thickness_p90_px": 10.0
+          }
+        }
+      }
+    },
+    {
+      "stage": 21,
+      "excluded_fraction": 0.4000834615384615,
+      "comparison_band_clear": true,
+      "full": {
+        "valid": true,
+        "area_px2": 34528,
+        "length_px": 2335.4398256692925,
+        "fragments": 9,
+        "path_points": 2081,
+        "thickness_points": 1688,
+        "boundary_near_endpoints": 2,
+        "thickness_withheld_fraction": 0.1888515136953388,
+        "thickness_mean_px": 10.963043432465462,
+        "thickness_p10_px": 4.0,
+        "thickness_p50_px": 10.770329614269007,
+        "thickness_p90_px": 17.204650534085253
+      },
+      "common": {
+        "valid": true,
+        "area_px2": 4054,
+        "length_px": 328.5929291125638,
+        "fragments": 1,
+        "path_points": 289,
+        "thickness_points": 289,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": 0.0,
+        "thickness_mean_px": 9.634547717912914,
+        "thickness_p10_px": 4.0,
+        "thickness_p50_px": 10.0,
+        "thickness_p90_px": 14.02842712474619
+      },
+      "details": {
+        "full": {
+          "independent": {
+            "valid": true,
+            "area_px2": 34528,
+            "length_px": 2335.4398256692925,
+            "fragments": 9,
+            "path_points": 2081,
+            "thickness_points": 1688,
+            "boundary_near_endpoints": 2,
+            "thickness_withheld_fraction": 0.1888515136953388,
+            "thickness_mean_px": 10.963043432465462,
+            "thickness_p10_px": 4.0,
+            "thickness_p50_px": 10.770329614269007,
+            "thickness_p90_px": 17.204650534085253
+          },
+          "saved_path_recomputed": {
+            "valid": true,
+            "area_px2": 34528,
+            "length_px": 2335.4398256692925,
+            "fragments": 9,
+            "path_points": 2081,
+            "thickness_points": 1688,
+            "boundary_near_endpoints": 2,
+            "thickness_withheld_fraction": 0.1888515136953388,
+            "thickness_mean_px": 10.963043432465462,
+            "thickness_p10_px": 4.0,
+            "thickness_p50_px": 10.770329614269007,
+            "thickness_p90_px": 17.204650534085253
+          }
+        },
+        "common": {
+          "independent": {
+            "valid": true,
+            "area_px2": 4054,
+            "length_px": 328.5929291125638,
+            "fragments": 1,
+            "path_points": 289,
+            "thickness_points": 289,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": 0.0,
+            "thickness_mean_px": 9.634547717912914,
+            "thickness_p10_px": 4.0,
+            "thickness_p50_px": 10.0,
+            "thickness_p90_px": 14.02842712474619
+          },
+          "saved_path_recomputed": {
+            "valid": true,
+            "area_px2": 4054,
+            "length_px": 328.5929291125638,
+            "fragments": 1,
+            "path_points": 289,
+            "thickness_points": 289,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": 0.0,
+            "thickness_mean_px": 9.634547717912914,
+            "thickness_p10_px": 4.0,
+            "thickness_p50_px": 10.0,
+            "thickness_p90_px": 14.02842712474619
+          }
+        }
+      }
+    },
+    {
+      "stage": 22,
+      "excluded_fraction": 0.3945423076923077,
+      "comparison_band_clear": true,
+      "full": {
+        "valid": true,
+        "area_px2": 39285,
+        "length_px": 2375.594154601844,
+        "fragments": 8,
+        "path_points": 2104,
+        "thickness_points": 1750,
+        "boundary_near_endpoints": 1,
+        "thickness_withheld_fraction": 0.16825095057034223,
+        "thickness_mean_px": 12.187752569215792,
+        "thickness_p10_px": 4.0,
+        "thickness_p50_px": 12.082762530298218,
+        "thickness_p90_px": 20.396078054371138
+      },
+      "common": {
+        "valid": true,
+        "area_px2": 4565,
+        "length_px": 326.6639969244294,
+        "fragments": 2,
+        "path_points": 286,
+        "thickness_points": 286,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": 0.0,
+        "thickness_mean_px": 10.696711236960844,
+        "thickness_p10_px": 5.656854249492381,
+        "thickness_p50_px": 10.770329614269007,
+        "thickness_p90_px": 16.0
+      },
+      "details": {
+        "full": {
+          "independent": {
+            "valid": true,
+            "area_px2": 39285,
+            "length_px": 2375.594154601844,
+            "fragments": 8,
+            "path_points": 2104,
+            "thickness_points": 1750,
+            "boundary_near_endpoints": 1,
+            "thickness_withheld_fraction": 0.16825095057034223,
+            "thickness_mean_px": 12.187752569215792,
+            "thickness_p10_px": 4.0,
+            "thickness_p50_px": 12.082762530298218,
+            "thickness_p90_px": 20.396078054371138
+          },
+          "saved_path_recomputed": {
+            "valid": true,
+            "area_px2": 39285,
+            "length_px": 2375.594154601844,
+            "fragments": 8,
+            "path_points": 2104,
+            "thickness_points": 1750,
+            "boundary_near_endpoints": 1,
+            "thickness_withheld_fraction": 0.16825095057034223,
+            "thickness_mean_px": 12.187752569215792,
+            "thickness_p10_px": 4.0,
+            "thickness_p50_px": 12.082762530298218,
+            "thickness_p90_px": 20.396078054371138
+          }
+        },
+        "common": {
+          "independent": {
+            "valid": true,
+            "area_px2": 4565,
+            "length_px": 326.6639969244294,
+            "fragments": 2,
+            "path_points": 286,
+            "thickness_points": 286,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": 0.0,
+            "thickness_mean_px": 10.696711236960844,
+            "thickness_p10_px": 5.656854249492381,
+            "thickness_p50_px": 10.770329614269007,
+            "thickness_p90_px": 16.0
+          },
+          "saved_path_recomputed": {
+            "valid": true,
+            "area_px2": 4565,
+            "length_px": 326.6639969244294,
+            "fragments": 2,
+            "path_points": 286,
+            "thickness_points": 286,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": 0.0,
+            "thickness_mean_px": 10.696711236960844,
+            "thickness_p10_px": 5.656854249492381,
+            "thickness_p50_px": 10.770329614269007,
+            "thickness_p90_px": 16.0
+          }
+        }
+      }
+    },
+    {
+      "stage": 23,
+      "excluded_fraction": 0.39135384615384616,
+      "comparison_band_clear": true,
+      "full": {
+        "valid": true,
+        "area_px2": 40497,
+        "length_px": 2276.0844866099656,
+        "fragments": 6,
+        "path_points": 2029,
+        "thickness_points": 1608,
+        "boundary_near_endpoints": 3,
+        "thickness_withheld_fraction": 0.20749137506160675,
+        "thickness_mean_px": 14.978472675100447,
+        "thickness_p10_px": 4.47213595499958,
+        "thickness_p50_px": 15.231546211727817,
+        "thickness_p90_px": 24.0
+      },
+      "common": {
+        "valid": true,
+        "area_px2": 5057,
+        "length_px": 343.56349186104103,
+        "fragments": 1,
+        "path_points": 299,
+        "thickness_points": 299,
+        "boundary_near_endpoints": 0,
+        "thickness_withheld_fraction": 0.0,
+        "thickness_mean_px": 13.159972885586647,
+        "thickness_p10_px": 6.324555320336759,
+        "thickness_p50_px": 14.142135623730951,
+        "thickness_p90_px": 18.17643400393702
+      },
+      "details": {
+        "full": {
+          "independent": {
+            "valid": true,
+            "area_px2": 40497,
+            "length_px": 2276.0844866099656,
+            "fragments": 6,
+            "path_points": 2029,
+            "thickness_points": 1608,
+            "boundary_near_endpoints": 3,
+            "thickness_withheld_fraction": 0.20749137506160675,
+            "thickness_mean_px": 14.978472675100447,
+            "thickness_p10_px": 4.47213595499958,
+            "thickness_p50_px": 15.231546211727817,
+            "thickness_p90_px": 24.0
+          },
+          "saved_path_recomputed": {
+            "valid": true,
+            "area_px2": 40497,
+            "length_px": 2276.0844866099656,
+            "fragments": 6,
+            "path_points": 2029,
+            "thickness_points": 1608,
+            "boundary_near_endpoints": 3,
+            "thickness_withheld_fraction": 0.20749137506160675,
+            "thickness_mean_px": 14.978389317050269,
+            "thickness_p10_px": 4.47213595499958,
+            "thickness_p50_px": 15.231546211727817,
+            "thickness_p90_px": 24.0
+          }
+        },
+        "common": {
+          "independent": {
+            "valid": true,
+            "area_px2": 5057,
+            "length_px": 343.56349186104103,
+            "fragments": 1,
+            "path_points": 299,
+            "thickness_points": 299,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": 0.0,
+            "thickness_mean_px": 13.159972885586647,
+            "thickness_p10_px": 6.324555320336759,
+            "thickness_p50_px": 14.142135623730951,
+            "thickness_p90_px": 18.17643400393702
+          },
+          "saved_path_recomputed": {
+            "valid": true,
+            "area_px2": 5057,
+            "length_px": 343.56349186104103,
+            "fragments": 1,
+            "path_points": 299,
+            "thickness_points": 299,
+            "boundary_near_endpoints": 0,
+            "thickness_withheld_fraction": 0.0,
+            "thickness_mean_px": 13.159972885586647,
+            "thickness_p10_px": 6.324555320336759,
+            "thickness_p50_px": 14.142135623730951,
+            "thickness_p90_px": 18.17643400393702
+          }
+        }
+      }
+    }
+  ],
+  "all_comparisons": [
+    {
+      "metric": "area_px2",
+      "reference": 5057,
+      "persistence": 4565,
+      "trend": 5076,
+      "raw_trend": 5076,
+      "persistence_ae": 492,
+      "trend_ae": 19,
+      "delta_ae": -473,
+      "gain": 473
+    },
+    {
+      "metric": "length_px",
+      "reference": 343.56349186104103,
+      "persistence": 326.6639969244294,
+      "trend": 324.735064736295,
+      "raw_trend": 324.735064736295,
+      "persistence_ae": 16.89949493661163,
+      "trend_ae": 18.828427124746042,
+      "delta_ae": 1.9289321881344108,
+      "gain": -1.9289321881344108
+    },
+    {
+      "metric": "thickness_mean_px",
+      "reference": 13.159972885586647,
+      "persistence": 10.696711236960844,
+      "trend": 11.758874756008774,
+      "raw_trend": 11.758874756008774,
+      "persistence_ae": 2.463261648625803,
+      "trend_ae": 1.401098129577873,
+      "delta_ae": -1.06216351904793,
+      "gain": 1.06216351904793
+    },
+    {
+      "metric": "thickness_p10_px",
+      "reference": 6.324555320336759,
+      "persistence": 5.656854249492381,
+      "trend": 7.313708498984761,
+      "raw_trend": 7.313708498984761,
+      "persistence_ae": 0.6677010708443785,
+      "trend_ae": 0.9891531786480021,
+      "delta_ae": 0.32145210780362365,
+      "gain": -0.32145210780362365
+    },
+    {
+      "metric": "thickness_p50_px",
+      "reference": 14.142135623730951,
+      "persistence": 10.770329614269007,
+      "trend": 11.540659228538015,
+      "raw_trend": 11.540659228538015,
+      "persistence_ae": 3.3718060094619435,
+      "trend_ae": 2.601476395192936,
+      "delta_ae": -0.7703296142690075,
+      "gain": 0.7703296142690075
+    },
+    {
+      "metric": "thickness_p90_px",
+      "reference": 18.17643400393702,
+      "persistence": 16.0,
+      "trend": 17.971572875253813,
+      "raw_trend": 17.971572875253813,
+      "persistence_ae": 2.1764340039370182,
+      "trend_ae": 0.2048611286832056,
+      "delta_ae": -1.9715728752538126,
+      "gain": 1.9715728752538126
+    }
+  ],
+  "old_halfdepth_or_material_mapping_used": false,
+  "shared_library_limitations": "Pillow/OpenCV colour and line/polygon rasterisation, SciPy exact EDT and skimage skeletonize shared with producer. Box background integer integral, mask components scipy label vs OpenCV, graph heap-Dijkstra vs sparse csgraph, metric aggregation and forecast arithmetic independently implemented. ORB/RANSAC diagnostics inspected but not refit.",
+  "history_save_precedes_target_phase": true,
+  "history_order_is_not_blind_validation": true,
+  "elapsed_wall_seconds": 3.940186166029889
+}

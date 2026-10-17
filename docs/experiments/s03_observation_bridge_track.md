@@ -149,3 +149,26 @@ Then replay the existing21/22/23 on a fixed common unoccluded image-space band,
 with camera/dimensions/view diagnostics,not material correspondence. Preserve
 olddefinitions/scores,no downloads/training/fouranchorrepair. Currentprotocol/
 code locked before newmetrics; independent review then execution/visuals.
+
+### E037 result — per-frame geometry advances without anchor repair
+
+Executed9existingimages:5candidate frames18/19/21/22/23,4unidentified/null,
+not5/9detectionaccuracy. Step19visiblegeometry available despiteoldanchor
+failure. Newvisiblemask area/dominant-fragment pathlength/2xEDTthickness stay
+separate from oldhalfdepth; alloldresults retained. Fixtureexclusions shown,
+hiddenparts notbridged. Finecrack omissions/porebranches remain,so extraction
+feasibility isnot validatedsegmentation orphysicalaperture.
+
+Fixedcommonimageband21/22/23area4054→4565→5057px²:trendAE19vs persistence492,
+gain473px². Onealready-exposedquery; length/P10gain−1.929/−.321px retain losses.
+All6heterogeneousmetrics available,not6replications. Coarseviewfits show small
+scale/rotation butnonzerotranslation; no materialregistration orphysicalchange.
+Independentmask/savedpath/scorereproduction exact; equalshortestpathties cause
+tiny fullthickness-only differences,commonbandunchanged. Exact review/figures
+and runreceipts linkedin E037. Do notbackfillE036coverage orrewriteoldscores.
+
+NextPROPOSED: source-only candidate/path reliability review inexistingimages
+(missedfinecrack,porebranches,fragmenttopology),then a separatelydefined
+improvement andsame-rule simpleforecast. Ifsupportdriftmatters,testcoarseview
+compensation separately; do notdefaulttofourbackgroundanchorrepair. Same
+materialpoint tracking isaseparate taskonlywhen thatclaimisrequired.
