@@ -28,3 +28,27 @@ are not established. E021's original directional-development verdict stands.
 See [result review](S04-E021/replay_evidence_review_result_20261016.md).
 Next proposed step is a no-execution late-regression attribution plan only;
 no new computation, confirmation access or S04-E017/MOO/NN authority.
+
+## 2026-10-17 — E025 single-interaction exploration completed, no late gain
+
+S04-E025-R002 (card1a97b3e7/sourceba4518d1, path baseline df5cb23) completed
+once within25.231s / sampled aggregate1,534.25MiB /316,746B, then froze.
+Nine inputs verified, exactly two matched alpha1 ridge fits and121 viewed
+U0.11 evaluation cycles; no retry or confirmation access. Unlike R001, real
+numerical work completed. Main-chat saved-output integrity/figure checks only,
+no independent result review or replay claimed.
+
+Adding q×raw to B32 gives C33/B32 late RMSE1.0055322408208067 (+0.5532%):
+**NO_DIRECTIONAL_GAIN** for this candidate. Early−0.0242%, middle+0.0192%,
+equal-stratum aggregate+0.3402% are reported context, not votes. Late versus
+V0 is B32+1.6083%, C33+2.1704%; existing late regression is not repaired.
+Proxy near_constant=false, but this does not identify the cause. Raw alone
+is fitted, damage/history equal V0: this did not test an MOO algorithm.
+No stage-causal, independent transfer, qualified physical teacher or road claim;
+old E021 verdict remains. Evidence: [R002 result](S04-E025/R002_result_20261017.md)
+and original same-run PNG under the frozen local archive.
+
+Disposition: redirect this single candidate, not the whole residual route.
+Do not repeat q×raw or add a sweep; proposed next is design-only review of
+stage/state representation and information support using frozen records.
+No new source access, fit, loss change or confirmation opening is authorised.
