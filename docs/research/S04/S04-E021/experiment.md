@@ -375,3 +375,13 @@ creation, numerical analysis, fitting or holdout access. Runtime and visual
 behaviour remain unverified. Independent static review will bind the exact
 code commit; final execution needs its own exact-version card and human approval.
 Main chat is sole writer; method chat may review only, not implement or compute.
+
+Independent static review of 5ddecdb returned two mandatory fixes: active-worker
+cache disappearance must not spuriously abort sampling; known describe checks
+need safe distinguishable reason codes. Main chat corrected only those issues:
+FileNotFoundError tolerance is restricted to cache paths while the child is
+observed active; final inventory/core files/links/other exceptions stay strict.
+Known unchanged-core constant messages and numeric overflow get whitelist codes;
+unknown failures still expose stage/type only, never raw exception text/values.
+AST/diff checks only, no execution/mock/real access; exact revision is submitted
+for static difference review before any run-card preparation.

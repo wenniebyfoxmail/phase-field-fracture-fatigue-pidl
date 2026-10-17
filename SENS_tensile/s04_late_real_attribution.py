@@ -22,6 +22,29 @@ FILES = {'authorization.json', 'diagnostic.csv', 'summary.json', 'diagnostic.png
          'README_analysis.md', 'analysis.log', 'guard_receipt.json'}
 CACHE_ENV = {'MPLCONFIGDIR': 'cache/matplotlib', 'XDG_CACHE_HOME': 'cache/xdg',
              'TMPDIR': 'cache/tmp'}
+# Exact constant messages in the unchanged core only. Never persist arbitrary
+# exception text, values, parser excerpts or inferred causes.
+DESCRIBE_FAILURE_CODES = {
+    'unidentifiable late baseline': 'LATE_BASELINE_UNIDENTIFIABLE',
+    'known late ratio disagreement': 'KNOWN_LATE_RATIO_DISAGREEMENT',
+    'MSE decomposition closure': 'MSE_DECOMPOSITION_CLOSURE_FAILED',
+    'nonfinite sum': 'NONFINITE_DECOMPOSITION_SUM',
+    'count closure': 'CYCLE_COUNT_CLOSURE_FAILED',
+    'nonfinite reference ratio': 'NONFINITE_REFERENCE_RATIO',
+    'negative MSE': 'NEGATIVE_MSE',
+    'nonfinite V0 MSE': 'NONFINITE_V0_MSE',
+    'nonfinite V1 MSE': 'NONFINITE_V1_MSE',
+}
+
+
+def safe_error(exc, phase):
+    record = dict(type=type(exc).__name__, stage=phase)
+    if phase == 'DESCRIBE':
+        code = (DESCRIBE_FAILURE_CODES.get(str(exc)) if type(exc) is ValueError else
+                'NUMERIC_OVERFLOW' if type(exc) is OverflowError else None)
+        if code is not None:
+            record['reason_code'] = code
+    return record
 
 
 def full_commit(code):
@@ -198,7 +221,8 @@ def run(out):
         report(late, analysis, cumulative, out, on_plot=on_plot)
     except BaseException as exc:
         # Parser exceptions can expose values. Record stage/type only.
-        error = dict(type=type(exc).__name__, stage=phase)
+        # Only known constant core checks get an additional safe reason code.
+        error = safe_error(exc, phase)
     record = dict(status='READONLY_ATTRIBUTION_REPORTED' if error is None else 'ATTRIBUTION_FAILED',
                   scope=SCOPE, domain='REAL_SAVED_SCALARS', evidence_domain='SYNTHETIC_VIEWED_DEVELOPMENT',
                   attempt_id=a.ATTR_RUN, code_commit=code, plan_commit=a.core.PLAN_COMMIT,

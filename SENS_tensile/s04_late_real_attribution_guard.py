@@ -32,7 +32,7 @@ PLAN = 'docs/research/S04/S04-E021/late_regression_readonly_attribution_plan_v1.
 SCOPE_DOC = 'docs/research/S04/S04-E021/late_attribution_real_plan_and_run_card_v1_20261017.md'
 
 
-def inventory(out):
+def inventory(out, *, tolerate_cache_missing=False):
     """Own output only; no symlinks, special files, hardlinks or hidden roots.
 
     Used during sampling too so caches/temporary files cannot escape accounting.
@@ -43,12 +43,28 @@ def inventory(out):
     seen = 0
     while directories:
         directory = directories.pop()
-        with os.scandir(directory) as entries:
+        try:
+            entries = os.scandir(directory)
+        except FileNotFoundError:
+            relative_dir = str(directory.relative_to(out))
+            if tolerate_cache_missing and (relative_dir == 'cache' or relative_dir.startswith('cache/')):
+                continue
+            raise
+        with entries:
             for entry in entries:
                 seen += 1
                 a.require(seen <= 1024, 'bounded output inventory')
                 relative = str(Path(entry.path).relative_to(out))
-                st = entry.stat(follow_symlinks=False)
+                try:
+                    st = entry.stat(follow_symlinks=False)
+                except FileNotFoundError:
+                    # Worker libraries may atomically replace/remove their own
+                    # temporary caches between enumeration and stat. Skip this
+                    # vanished cache item only; next bounded sample enumerates
+                    # again. Core files, links and all other errors stay strict.
+                    if tolerate_cache_missing and (relative == 'cache' or relative.startswith('cache/')):
+                        continue
+                    raise
                 a.require(not stat.S_ISLNK(st.st_mode), 'output symlink forbidden')
                 if stat.S_ISDIR(st.st_mode):
                     a.require(relative == 'cache' or relative.startswith('cache/'), 'unexpected output directory')
@@ -138,7 +154,8 @@ def execute(out, code, refs, allow_real_attribution):
                 if child.poll() is None:
                     raise RuntimeError('lost child visibility')
         peak = max(peak, rss)
-        return budget.cap_reason(time.monotonic()-started, peak, sum(inventory(out).values()))
+        files = inventory(out, tolerate_cache_missing=child is not None and child.poll() is None)
+        return budget.cap_reason(time.monotonic()-started, peak, sum(files.values()))
 
     try:
         out.mkdir(parents=True, exist_ok=False)
