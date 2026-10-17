@@ -369,6 +369,7 @@ def frozen_tolerance(reference: float) -> float:
 
 
 def safe_replay_ratio(candidate: float, reference: float) -> dict[str, Any]:
+    candidate, reference = float(candidate), float(reference)
     if not (math.isfinite(candidate) and math.isfinite(reference)) or candidate < 0 or reference < 0:
         raise ValueError("ratio inputs must be finite and nonnegative")
     if reference > 0:
@@ -382,6 +383,7 @@ def safe_replay_ratio(candidate: float, reference: float) -> dict[str, Any]:
 
 
 def group_amplitude_ratio(growth_mean: float, stagnant_mean: float) -> dict[str, Any]:
+    growth_mean, stagnant_mean = float(growth_mean), float(stagnant_mean)
     if not (math.isfinite(growth_mean) and math.isfinite(stagnant_mean)):
         raise ValueError("group amplitudes must be finite")
     if growth_mean < 0 or stagnant_mean < 0:

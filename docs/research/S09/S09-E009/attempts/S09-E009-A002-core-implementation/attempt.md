@@ -17,19 +17,19 @@ The protocol is design-ready, but no S09-E009 code candidate has yet passed exac
 
 ## GPT Pro Advice
 - Required: True
-- Advice path: `core_code_review_round1_20261017.md`
+- Advice path: `core_code_review_round2_20261017.md`
 - Advice sha256: ``
 
-Round 1 returned REVISE_AND_REREVIEW: fail closed on nonfinite derived values, normalise NumPy scalars for strict JSON, and distinguish exact zero from a near-zero projected residue.
+Round 2 returned REVISE_AND_REREVIEW: F3 closed; F1 still needed replay raw-norm/diagnostic checks and F2 still needed native-float ratio outputs.
 
 ## Adopted Decision
-Adopt all three bounded core fixes and add the reviewer counterexamples before freezing a new exact commit.
+Adopt both residual Round-2 fixes and submit one more narrow exact-commit rereview.
 
 ## Rejected Or Modified Advice
-No round-1 core finding is rejected; the frozen formulas, controls, budget and thresholds remain unchanged.
+No Round-2 finding is rejected; F3 remains closed.
 
 ## Decision Rationale
-The findings reproduce deterministic interface and numerical-safety defects without changing the reviewed four-arm mathematics.
+Both are deterministic interface boundaries; neither changes the approved mathematics, budget, controls or thresholds.
 
 ## Success Criteria
 - Exact implementation of all four directions; deterministic scorecard edge cases; E008 replay preservation; all selected no-training tests pass.
@@ -45,6 +45,7 @@ The findings reproduce deterministic interface and numerical-safety defects with
 - modify: `source/s09_e009_four_arm.py` - Fail closed on nonfinite derived quantities, emit strict JSON scalars, and separate exact-zero from near-zero projection labels
 - modify: `tests/test_s09_e009_four_arm.py` - Add Round-1 overflow, NumPy JSON, and projection-label counterexamples
 - modify: `source/s09_e009_four_arm.py` - Fail closed before the inherited replay merger when its ordinary norm would overflow, and validate finite replay diagnostics
+- modify: `source/s09_e009_four_arm.py` - Normalise accepted ratio inputs and defined outputs to native Python floats for strict JSON
 
 ## Input Assets
 - `docs/research/S09/S09-E009/experiment.md` (frozen protocol; exists)
@@ -58,6 +59,7 @@ The findings reproduce deterministic interface and numerical-safety defects with
 - pass: syntax and whitespace checks - Both checks completed with exit code 0.
 - pass: Round-1 repaired synthetic/no-training suite - 48 passed in 1.18s; reviewer counterexamples are covered; no optimiser step or training.
 - pass: Round-2 replay-boundary repair suite - 49 passed in 1.28s; the exact two-parameter replay norm-overflow counterexample now fails closed before the frozen merger.
+- pass: Round-2 residual repair suite - 51 passed in 1.15s; replay single-object norm overflow and NumPy float32/float64 strict JSON ratios are covered.
 
 ## Result Interpretation
 Not recorded.

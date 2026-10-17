@@ -134,6 +134,15 @@ def test_numpy_scorecard_outputs_are_strict_json_serialisable():
     assert all(type(cycle) is int for cycle in spatial["valid_cycles"])
 
 
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_numpy_ratio_outputs_are_native_float_and_strict_json(dtype):
+    replay = safe_replay_ratio(dtype(1), dtype(2))
+    amplitude = group_amplitude_ratio(dtype(1), dtype(2))
+    assert type(replay["value"]) is float
+    assert type(amplitude["value"]) is float
+    json.dumps({"replay": replay, "amplitude": amplitude}, allow_nan=False)
+
+
 def test_large_finite_direction_uses_stable_norm_and_clip():
     from s09_e009_four_arm import clip_complete_direction
 
