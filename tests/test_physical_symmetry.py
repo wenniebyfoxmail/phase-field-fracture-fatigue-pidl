@@ -11,7 +11,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path[:0]=[str(ROOT/'source'),str(ROOT/'SENS_tensile')]
 from field_computation import FieldComputation
 from physical_symmetry import physical_symmetry_terms
-from fit import _compute_symmetry_penalty
+from fit import _compute_symmetry_penalty, _validate_symmetry_weight_state
 
 
 class AnalyticNet(torch.nn.Module):
@@ -128,3 +128,18 @@ def test_saved_error_decomposition_is_orthogonal_not_a_model_update():
     before=e.copy();r=m.components(e,1)
     assert abs(r['parity_compatible_squared_fraction']+r['parity_violating_squared_fraction']-1)<1e-15
     assert np.array_equal(e,before)
+
+
+def test_adaptive_weights_rejected_before_training_loop_entry():
+    import ast
+    cfg={'enable':True,'mode':'physical'}
+    for state in [{'enable':True},{'enable':False,'lambda_sym':2.}]:
+        with pytest.raises(ValueError):_validate_symmetry_weight_state(cfg,state)
+    _validate_symmetry_weight_state(cfg,{'enable':False})
+    _validate_symmetry_weight_state({'enable':True}, {'enable':True})
+    module=ast.parse((ROOT/'source/fit.py').read_text())
+    for node in module.body:
+        if isinstance(node,ast.FunctionDef) and node.name in ['fit','fit_with_early_stopping']:
+            calls=[q.lineno for q in ast.walk(node) if isinstance(q,ast.Call) and isinstance(q.func,ast.Name) and q.func.id=='_validate_symmetry_weight_state']
+            loops=[q.lineno for q in ast.walk(node) if isinstance(q,ast.For)]
+            assert len(calls)==1 and calls[0]<min(loops)

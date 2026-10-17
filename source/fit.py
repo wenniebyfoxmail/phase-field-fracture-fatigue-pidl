@@ -287,6 +287,15 @@ def _compute_symmetry_penalty(field_comp, inp, lam_alpha, lam_u, lam_v, symmetry
     return lam_alpha * L_alpha + lam_u * L_u + lam_v * L_v
 
 
+def _validate_symmetry_weight_state(symmetry_dict, annealing_state):
+    """Reject unsupported physical-weight adaptation before any optimizer step."""
+    cfg = symmetry_dict or {}
+    state = annealing_state or {}
+    if cfg.get('enable', False) and cfg.get('mode', 'raw') == 'physical':
+        if state.get('enable', False) or float(state.get('lambda_sym', 1.0)) != 1.0:
+            raise ValueError('physical symmetry requires explicit frozen weights without Algo1 state')
+
+
 def _compute_side_traction_penalty(field_comp, matprop, lam_xx, lam_xy,
                                     sigma_ref=1.0, n_bdy_pts=51):
     """Soft side-traction penalty: enforce σ_xx ≈ 0, σ_xy ≈ 0 on x=±0.5.
@@ -461,6 +470,7 @@ def fit(field_comp, training_set_collocation, T_conn, area_T, hist_alpha, matpro
     #   from Algorithm 1 (updated during RPROP phase) are applied here.
     #   LBFGS does not update λ — it uses whatever values RPROP computed last cycle.
     _a1 = grad_annealing_state or {}
+    _validate_symmetry_weight_state(symmetry_dict, _a1)
     _lam_sup   = _supervised_lambda(supervised_dict, _a1)
     _lam_sym   = float(_a1.get('lambda_sym',   1.0))
     _lam_strac = float(_a1.get('lambda_strac', 1.0))
@@ -600,6 +610,7 @@ def fit_with_early_stopping(field_comp, training_set_collocation, T_conn, area_T
     #   Algo1 probes are run in RPROP only (not LBFGS) because RPROP's flat
     #   loop allows clean separate backward passes via torch.autograd.grad.
     _a1 = grad_annealing_state or {}
+    _validate_symmetry_weight_state(symmetry_dict, _a1)
     _a1_enabled    = bool(_a1.get('enable', False))
     _a1_upd_every  = int(_a1.get('update_every', 10))
 
