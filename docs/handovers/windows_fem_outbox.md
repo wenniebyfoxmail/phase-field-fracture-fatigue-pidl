@@ -26,6 +26,258 @@
 
 ## Entries
 
+## 2026-10-12 · [done]: Request 31 fresh v10 exited zero and seal integrity verified
+
+**Status**: `PASS_TERMINAL_INTEGRITY_SEALED__G5_PENDING`.
+
+- Worker finished at `2026-10-12T01:10:00Z`, MATLAB exit code 0; stderr 0;
+  current MATLAB processes 0. Production does not require the harmless-probe
+  sentinel, so its absence is expected in the reviewed worker code.
+- Producer semantic receipt: 7/7 gate rows pass. `reference_checked=false`
+  and `capture_neutrality_passed=false`; these do not establish independent
+  teacher/capture neutrality or physical validity.
+- Independent external audit: 1,116/1,116 manifest payload hashes match,
+  missing/changed/extra files 0/0/0; complete 476 unique and 570 logical
+  states. Payload bytes 10,483,758,226, excluding manifest.
+- Seal manifest SHA256:
+  `55b9f7e923fd7a00170761ec470fb63629e72d28cf82c168edbaa2644e7be561`.
+- Original case stays untouched and sealed. Audit/receipts/logs retrieved to
+  `local_archive/experiments/S04-E016/request31_v10_terminal_audit_20261012/windows_audit/`;
+  full scientific payload remains on Windows. No new solve or training.
+
+**Next**: G5 independent qualification of data roles, matched timing,
+Contract A cyclemax/end-cycle reductions and Contract B s4 states. Preserve
+U0.1175 as confirmation and U0.125 closed; freeze prediction protocol before
+scientific unsealing. Retain v12 as unexecuted diagnostic, not next compute.
+
+## 2026-10-11 · [progress]: Request 31 v12 restart diagnostic repaired but execution held
+
+**Re**: independent `CODE_READY FAIL` on the v11 c64/s3 -> c64/s4 candidate.
+
+**Status**: `OFFLINE_CANDIDATE_UPLOADED__NO_MATLAB__HOLD_WHILE_V10_RUNNING`.
+The v12 candidate repairs strict finite/schema comparison, callback-before-I/O
+ordering, terminal receipts and executable no-FEM tests. It was copied to a
+distinct Windows directory; its manifest matches Mac. No validator, MATLAB or
+FEM process was started because the authorised fresh c0 v10 production run is
+already active.
+
+**Key results**:
+
+- Mac/Windows candidate-manifest SHA256:
+  `4f4360edaa8f0935151c2f521a1b5b35a9bb93e808462aad8d890f45a33d0493`;
+- Windows candidate: 21 files total; all 20 manifest payloads rehashed 20/20,
+  missing/changed = 0/0;
+- v12 execution output `C:\q4runs\request31_u01175_resume_eq_20261011_v2`
+  remains absent;
+- live v10 MATLAB launcher/engine remained 21684/30732 at the read-only check.
+
+**Next**: do not run v12 or launch any competing MATLAB. Audit the fresh v10
+terminal state first. Only then decide whether v12 needs no-FEM validation or
+has become unnecessary.
+
+## 2026-10-11 · [progress]: Request 31 U0.1175 v10 fresh c0 run launched once
+
+**Status**: `RUNNING`; not completion or scientific validation.
+
+- independent read-only C0 review: `PASS_REQUEST31_U01175_V10_IMPLEMENTATION`;
+- exact manifest:
+  `9b1721b667266400caffb21134d15d9ea14f43ddaf85de65b0e3bc0e24133b46`;
+- fresh preflight: MATLAB=0, output absent, free bytes 36,116,197,376,
+  required 30,870,077,440;
+- exact live chain: worker 49600 -> MATLAB launcher 21684 -> R2025b engine
+  30732;
+- output: `C:\q4runs\request31_u01175_confirmation_20261011_v2`;
+- control: `C:\q4runs\request31_u01175_launcher_review_20261011_v10`;
+- early checks: output and stdout growing, stderr=0, no terminal receipt.
+
+The preflight was atomically consumed. Do not launch a retry, resume, second
+amplitude, teacher/corpus export or training from this running state.
+
+## 2026-10-11 · [progress]: Request 31 v11 bounded restart candidate passed no-solver validation
+
+**Re**: S04-E016 amendment v3, c64/s3 -> c64/s4 restart equivalence.
+
+**Status**: `AWAITING_INDEPENDENT_CODE_REVIEW__NO_SOLVER_RUN`. The exact v11
+candidate is present on CITPC12. Validate-only and 3/3 deterministic contract
+tests passed; MATLAB returned to zero and the fresh output root remains absent.
+
+**Key results**:
+
+- candidate manifest SHA256:
+  `ce6ecf3ce7b86964fdb51c39953b7ea3fcbb8323114fb27d1abd0a62684f2714`;
+- source c64/s3 checkpoint and frozen c64/s4 target hashes matched;
+- origin/target and one-load-step scope validated;
+- `solver_called=false`, `fem_started=false`, fresh recovery disabled and long
+  continuation unauthorized;
+- validation receipt SHA256:
+  `7b7f7459c5382c8d82839d5c3f3cc12cd916ff3da7d0d7ca51d3412ac4f08fe1`;
+- test receipt SHA256:
+  `aa300163a4996e1f9065143cfa233dc3b35e88a917ec2efe36edc2423e7ade94`.
+
+**Files written**:
+
+- Windows candidate:
+  `C:\q4runs\request31_u01175_v11_resume_equivalence_20261011`
+- Windows validation receipts:
+  `C:\q4runs\request31_u01175_v11_resume_equivalence_review_20261011`
+- Mac mirror:
+  `local_archive/experiments/S04-E016/request31_u01175_v11_resume_equivalence_review_20261011/`
+
+**Next**: obtain independent read-only review bound to the exact manifest and
+v3 protocol. Only a review PASS permits the one-step c64/s4 probe. A numerical
+PASS would advance to a separately reviewed G3 end-of-cycle I/O smoke, not a
+long continuation.
+
+## 2026-10-11 · [progress]: Request 31 native logger defect reproduced; v10 fresh-run candidate gated
+
+**Re**: diagnosis after the U0.1175 v9i failure at c64 s4.
+
+**Status**: the exact `dat_output.mexw64` hung on its first call in a clean
+non-FEM R2025b probe. Its pure-MATLAB, text-only five-argument replacement
+passed 10,000 calls and 8/8 append/parse/fail-closed tests. This is strong
+localisation evidence, not proof of the production crash source line because
+the MATLAB abort dump has no stack.
+
+The v10 candidate changes only text logging. It retains the locked physics,
+mesh, material, solver MEX kernels, tolerances, update order, Contract A/B
+capture and event policy. Its exact Windows snapshot is
+`C:\q4runs\request31_u01175_derived_snapshot_20261011_v10`; manifest SHA256 is
+`9b1721b667266400caffb21134d15d9ea14f43ddaf85de65b0e3bc0e24133b46`
+with 24/24 payloads and missing/changed/extra = 0/0/0.
+
+The first validate-only attempt correctly stopped at the preregistered storage
+gate: free space remains below 30,870,077,440 bytes. No FEM was started. The
+old c64 partial is being archived and remains immutable; it will not be
+resumed.
+
+## 2026-10-11 · [done]: Request 31 failed asset frozen; bounded resume gate considered
+
+**Re**: U0.1175 v9i failure at c64 s4.
+
+**Status**: `FROZEN_FAILED_ASSET__RESUME_AMENDMENT_REQUIRED`. The raw partial
+asset is frozen and no FEM retry, resume, second amplitude, or training run was
+started.
+
+**Key results**:
+
+- external freeze covers 749 files / 6,640,762,683 bytes with raw-tree manifest
+  SHA256 `f43c79f252ecc8fed6c7254f58c3f80d7c72961b1c53a37f9b5fca02e01fc5ab`;
+- MATLAB read-only load passes for `checkpoint.mat` at c63 and
+  `step_checkpoint.mat` at c64 s3; both contain complete restart and event
+  state, with no detected event;
+- interrupted `step_checkpoint_tmp.mat` at c64 s4 is corrupt;
+- direct resume is rejected because the current Stage 0b runner/producer is
+  fresh-only and would repeat zero-load recovery;
+- partial c64 remains diagnostic-only and cannot support Contract A/B, Delta
+  training, event cycle, or censoring.
+
+**Files written**:
+
+- Windows freeze:
+  `C:\q4runs\request31_u01175_failure_freeze_20261011_v1`
+- Windows audit:
+  `C:\q4runs\request31_u01175_postfreeze_audit_20261011_v1`
+- Mac evidence:
+  `local_archive/experiments/S04-E016/request31_u01175_failure_freeze_20261011_v1/`
+
+**Next**: create a separately reviewed resume-only amendment in a cloned root,
+remove the unqualified native logger/checkpoint write paths, recompute c64 s4
+only, and compare it with the frozen c64 s4. A long continuation requires a
+passing equivalence receipt and new explicit authorization.
+
+## 2026-10-09 · [blocker]: Request 31 v9i worker failed after c64 s4
+
+**Re**: the single authorised v9i U0.1175 production run.
+
+**Status**: `INFRASTRUCTURE_FAILED_PARTIAL_C64`; MATLAB/FEM is no longer
+running. No retry, resume, second amplitude, teacher use, corpus use or
+training was started.
+
+**Key results**:
+
+- final persisted state is `c0064_s04.mat`; 320 state files total
+  4,620,877,610 bytes;
+- worker heartbeat reports `WORKER_POWERSHELL_EXCEPTION` at
+  `2026-10-09T13:12:51.5159370Z`, while the native stderr file is empty and
+  `production_worker_exit.json` is zero bytes;
+- MATLAB's crash dump records the primary R2025b `abort()` at
+  `2026-10-09T13:12:50Z`, and stdout ends with MATLAB's fatal-error exit;
+- the heartbeat `WORKER_POWERSHELL_EXCEPTION` and same-second PowerShell
+  `System.IO.IOException` followed the abort and are secondary broken-stream
+  symptoms;
+- at the read-only audit, MATLAB count was zero and C: had 28,585,717,760 free
+  bytes; this does not support classifying the event as disk-full or FEM
+  non-convergence;
+- the c1--c64 partial trajectory is diagnostic-only and is not a completed
+  Contract A/B result. Restart from c64 is not authorised or qualified.
+
+**Files written**:
+
+- Windows partial output:
+  `C:\q4runs\request31_u01175_confirmation_20261008_v1`
+- Windows control evidence:
+  `C:\q4runs\request31_u01175_launcher_review_20261009_v9i`
+- Mac terminal evidence:
+  `local_archive/experiments/S04-E016/request31_u01175_v9i_production_launch_20261009/`
+
+**Next**: freeze this attempt as an infrastructure failure. A fresh run needs
+a new candidate that removes the unstable native text logger, passes its
+non-FEM stress and implementation gates, and receives a new explicit
+single-run approval/nonce. Do not resume the partial trajectory.
+
+## 2026-10-09 · [progress]: Request 31 U0.1175 reached c10
+
+**Re**: the single authorised v9i U0.1175 production run.
+
+**Status**: `RUNNING_HEALTH_CONFIRMED`; not complete and not a scientific
+verdict. No retry or second amplitude was started.
+
+**Key results**:
+
+- exact live chain remains worker 48012 -> launcher 21260 -> R2025b engine
+  13956 under nonce `f55c28d2-fd3c-45b0-83c0-8b4bee1ea90b`;
+- at `2026-10-09T11:40:14Z`, `states/` contained 51 files through
+  `c0010_s05.mat`, including the requested c10 s4 state;
+- newest state write was `2026-10-09T11:40:09Z`; no worker-exit or terminal
+  sentinel existed;
+- U0.115 remains reuse-only and U0.125 remains closed.
+
+**Files written**:
+
+- Windows output: `C:\q4runs\request31_u01175_confirmation_20261008_v1`
+- Mac launch evidence:
+  `local_archive/experiments/S04-E016/request31_u01175_v9i_production_launch_20261009_v1/`
+
+**Next**: let the sole run continue; after the terminal receipt, validate the
+complete Contract A/B trajectory and event/right-censor semantics.
+
+## 2026-10-09 · [progress]: Request 31 v9i U0.1175 production healthy
+
+**Re**: Request 31 single fresh U0.1175 trajectory; U0.115 reuse only and
+U0.125 closed.
+
+**Status**: `RUNNING_HEALTH_CONFIRMED`, not complete. Full preflight passed and
+the single-use nonce was consumed. Independent connection B released the exact
+Session-0 worker only after connection A returned.
+
+**Key results**:
+
+- process chain: worker 48012 -> launcher 21260 -> R2025b engine 13956;
+- stdout advanced 18,732 -> 48,730 bytes; stderr remained zero;
+- output root exists with `fem_archive`, `provenance`, `states`, `static`;
+- no second amplitude or retry was launched.
+
+**Files written**:
+
+- Windows output: `C:\q4runs\request31_u01175_confirmation_20261008_v1`
+- Windows control: `C:\q4runs\request31_u01175_launcher_review_20261009_v9i`
+- Mac receipt snapshot:
+  `local_archive/experiments/S04-E016/request31_u01175_v9i_production_launch_20261009/`
+
+**Next**: wait for terminal receipt, then retrieve and validate complete
+Contract A/B trajectories and event/right-censor semantics. Do not report
+scientific completion from the running snapshot.
+
 ## 2026-06-10 - [done] Re: Request 23 large-MAT OneDrive fallback selected-state package shipped
 
 **Re**: `docs/handovers/windows_fem_inbox.md` Request 23 update, "OneDrive large-MAT sync is stuck on Mac".

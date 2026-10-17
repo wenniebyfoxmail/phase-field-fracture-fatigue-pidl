@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "status": "candidate_manifest_not_admitted_data_lock",
+  "g5_verdict": "HOLD_MATCHED_PROJECTION_AND_FIELD_EXPORT",
+  "owner": "01a1131d-017c-7b03-a95a-ad73ba8fcc9c",
+  "origin": "physical cycle c, s4 post-history-commit",
+  "horizon": 0,
+  "representation": "declared reduced cell fields, direct supervised Delta",
+  "development": [
+    {"umax": 0.11, "pidl_export": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/pidl_peak_trajectories_three_umax_20261007/outputs/hard5_u011_peak_trajectory.npz", "pidl_cycles": [1,122], "fem_s4_full_export_verified": false, "paired_admitted": false},
+    {"umax": 0.115, "fem_run_id": "hard5_u0115_stage0b_c23cede2bec94515a393aa291c3d6d92", "fem_cycles": [1,103], "fem_local_metadata": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S09-E004/data_audit_u0115/run_summary.json", "pidl_run_id": "pf_u0115_acquire_39f8108fe96d406385e4011700cb47f9", "pidl_export": null, "pidl_checkpoint_coverage": [0,502], "pidl_complete_s4_s5_cycles": [1,100], "pidl_own_pre_event_s4_candidate": [1,99], "pin_triangle_count": 90000, "pin_history_node_count": 45591, "archive_manifest_sha256": "ddd2e4f4c247e3b5aeb7bcae409b6a579c6f9a02c1337d0770da94fda48d4326", "checkpoint_finite_audit": "pass", "projection_qualified": false, "paired_admitted": false},
+    {"umax": 0.12, "pidl_export": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/pidl_peak_trajectories_three_umax_20261007/outputs/hard5_u012_peak_trajectory.npz", "pidl_cycles": [1,83], "fem_s4_full_export_verified": false, "paired_admitted": false},
+    {"umax": 0.13, "pidl_export": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/pidl_peak_trajectories_three_umax_20261007/outputs/hard5_u013_peak_trajectory.npz", "pidl_cycles": [1,59], "fem_s4_full_export_verified": false, "paired_admitted": false}
+  ],
+  "confirmation": {"umax": 0.1175, "role": "sealed_interpolation_confirmation", "manifest_sha256": "55b9f7e923fd7a00170761ec470fb63629e72d28cf82c168edbaa2644e7be561", "scientific_unsealing_allowed": false, "integrity_passed": true},
+  "excluded": [{"umax": 0.125, "reason": "exposure_unknown_not_cleared"}],
+  "mapping_contract": {"pin_recovery_offset": "use each source manifest; c1 peak step4 in current exports", "native_fem": "Q4 nodes and GP states at s4", "pin_mapping": "current export maps onto FEM centroids; centroid sampling is not silently equal to cell integration", "remaining_gate": "freeze per-channel node/GP/cell projection and reduction; mapping-contained mask and areas must be identical"},
+  "inputs": {"allowed": ["known coordinates/connectivity/areas", "known Umax and applied load", "physical cycle/substep", "current and past PINN fields available at origin", "causal missing masks"], "forbidden": ["FEM event-normalized time", "FEM support or residual coefficients", "future PINN fields", "confirmation statistics"], "implementation_review": "pending"},
+  "unique_next_compute": "none until paired data qualification; reuse D003, no duplicate D0 or NN"
+}
