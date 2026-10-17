@@ -1,7 +1,7 @@
 ---
 experiment_id: S09-E009
 planned_run_id: S09-E009-R001-four-arm-damage-separation
-status: PREPARED_FOR_EXACT_PRODUCER_PACKAGE_REVIEW__NO_EXECUTION
+status: CODE_READY_AWAITING_FINAL_EXECUTION_APPROVAL
 producer: Taobo GPU
 forbidden_fallback: CSD3
 ---
@@ -32,7 +32,7 @@ budget transfer, and evaluations at updates 0, 16, 64, 128, 256, 496, and 500.
 | Base E008 config SHA256 | `0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b` |
 | Input packet manifest SHA256 | `1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6` |
 | E008 replay first-500 gradient rows SHA256 | `50c746b8f6548f53493c6556b7f7281a4b97d2340c35aad5e9d63c87f9bddfe9` |
-| Producer package reviewed commit | `TO_BE_FILLED_ONLY_AFTER_EXACT_COMMIT_PASS` |
+| Producer package reviewed commit | `bc1309c75a2309e8b5e0fa00d474605a333d0379` |
 
 ## Fixed producer paths
 

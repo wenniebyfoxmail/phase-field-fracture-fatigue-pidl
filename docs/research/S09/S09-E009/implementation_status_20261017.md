@@ -82,3 +82,17 @@ This layer still exposes no producer loop or optimiser-step route. A resolved
 producer configuration, full evaluator/evidence writer and launch path do not
 yet exist. The PASS authorises only their implementation and separate review;
 it is not an execution authorisation or a scientific result.
+
+## Producer-package closure update — 2026-10-18
+
+The later producer package now implements the exact-identity resolver,
+four-arm state machine, frozen evaluator/replay gate, conditional evidence
+writer and explicit launch CLI. Exact commit
+`bc1309c75a2309e8b5e0fa00d474605a333d0379` passed 101 local selected
+no-training tests and received `PRODUCER_PACKAGE_READY_PASS` after ChatGPT Pro
+independently ran four focused tests and 21 narrow checks.
+
+This supersedes the preceding implementation boundary while preserving its
+historical runner-gate record. The current state is code-ready and awaiting a
+separate final execution action. No SSH, transfer, optimiser update, fresh
+holdout access or scientific result occurred during implementation/review.
