@@ -411,3 +411,25 @@ analysis or fitting. Source/contract Git-equivalence and static command-text
 checks only. Runtime/resources/visuals remain unverified. Main chat alone
 updates Obsidian; no new task/compute dispatch to method chat. Await human
 single-run execution approval, not an additional implementation or trial run.
+
+## ATTR-R001 executed once and frozen — 2026-10-17
+
+User explicitly approved97dd337/card-v1 andab48965 for exactly one four-source
+real saved-scalar attribution/report (actual message
+01a14b77-a884-7151-a192-56663074c791). Approval is now consumed. See
+`late_real_attribution_R001_result_20261017.md` for command, human/review refs,
+Run receipt and frozen asset pointer. Guard66697/worker66720 exited0; COMPLETED /
+READONLY_ATTRIBUTION_REPORTED, no caps/errors/retry.8.805456s, sampled aggregate
+232.375MiB,253398bytes across7core outputs plus font cache. Four science reads,
+79377bytes,357-row validation; attribution/plot=true,fit/confirmation=false.
+
+Saved U0.11 C41–C121 result: harm54/improve27/tie0; k50=22/81, S_plus22108.3600,
+S_minus10890.8029, S_net11217.5571; late RMSE ratio1.0160831289564438 matches
+the frozen reference. k50 covers half positive excess, not half net error.
+Original branch selects PROPOSE_PHASE_OBJECTIVE_REPRESENTATION_QUESTIONS;
+not a single-cycle explanation or physical/gradient-cause proof. Old E021
+verdict unchanged; no source reopened or numerical attribution recomputed
+after execution. Main-chat own-output integrity/figure check passed; all8files
+and directories frozen0444/0555, no independent result review yet. Same PNG
+copied/embedded in the existing Obsidian note, main chat sole writer. Next only
+propose frozen-result read-only review; no additional analysis, fit or confirms.
