@@ -1,0 +1,27 @@
+{
+  "protocol": "step19-source-only-exclusion-repair-v1",
+  "phase": "E040_render_final",
+  "started_at_utc": "2026-10-17T21:15:25.696391+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 11070,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/plot_md01_exclusion_support.py",
+    "--run",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R001",
+    "--manifest",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R004/input_manifest.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R006/analysis"
+  ],
+  "commit": "8138dad0f4d6d7df94d9cc65c955e2d91089743c",
+  "dirty": [],
+  "execution": "succeeded",
+  "ended_at_utc": "2026-10-17T21:15:29.725785+00:00",
+  "elapsed_wall_s": 4.191441666975152,
+  "groups": [
+    "F01_step19_full_support_comparison",
+    "F02_step19_fixed_local_comparison"
+  ],
+  "source_run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R001"
+}

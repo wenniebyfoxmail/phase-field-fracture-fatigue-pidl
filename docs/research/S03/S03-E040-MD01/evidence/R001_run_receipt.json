@@ -1,0 +1,26 @@
+{
+  "protocol": "step19-source-only-exclusion-repair-v1",
+  "phase": "E040_single_frame_exclusion_comparison",
+  "started_at_utc": "2026-10-17T21:11:44.935449+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 8485,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_exclusion_support_repair.py",
+    "run",
+    "--manifest",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R004/input_manifest.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R001"
+  ],
+  "commit": "4df7ac1643547ab3080a1cb3580dec0b976b64b8",
+  "dirty": [],
+  "manifest_sha256": "583a101cb9794c900bf44f442009e4e0328519c26bf5a3a9950316bd56cee022",
+  "manifest_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R004/input_manifest.json",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "protected_files_unchanged": 12,
+  "ended_at_utc": "2026-10-17T21:11:45.443681+00:00",
+  "elapsed_wall_s": 0.516147667018231,
+  "elapsed_cpu_s": 0.5021500000000001
+}

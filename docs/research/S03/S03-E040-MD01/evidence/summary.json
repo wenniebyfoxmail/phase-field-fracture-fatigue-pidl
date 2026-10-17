@@ -1,0 +1,17 @@
+{
+  "stage": 19,
+  "baseline_exact": true,
+  "old_candidate_area_px2": 21803,
+  "new_candidate_area_px2": 22824,
+  "added_candidate_area_px2": 1021,
+  "old_candidate_pixels_lost": 0,
+  "old_excluded_area_px2": 1084835,
+  "new_excluded_area_px2": 1016926,
+  "released_support_area_px2": 67909,
+  "added_in_released_support_px2": 1021,
+  "added_elsewhere_due_to_connectivity_px2": 0,
+  "skeleton_path_thickness_forecast_recomputed": false,
+  "measurement_safe_not_replaced": true,
+  "no_accuracy_ground_truth": true,
+  "no_parameter_search": true
+}
