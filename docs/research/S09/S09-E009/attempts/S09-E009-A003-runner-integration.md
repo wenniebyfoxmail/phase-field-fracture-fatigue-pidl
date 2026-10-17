@@ -1,8 +1,8 @@
 # Attempt S09-E009-A003-runner-integration
 
-- Status: `tested`
+- Status: `accepted`
 - Created: 2026-10-17T21:53:43+01:00
-- Closed: None
+- Closed: 2026-10-17T22:51:07+01:00
 - Type: `implementation`
 - Human decision required: False
 
@@ -17,19 +17,19 @@ The four-arm core is reviewed, but runner/config/evidence integration has not ye
 
 ## GPT Pro Advice
 - Required: True
-- Advice path: `runner_integration_review_round3_20261017.md`
-- Advice sha256: `13678dc29ec6047a9770922d4ee384fe698c117e75332ff5cebb4dcfeacc8edc`
+- Advice path: `runner_integration_review_round4_20261017.md`
+- Advice sha256: `e5ddbef33614280074a8475fc7f9f38fc25d99fa11997cbe224a0f9151907722`
 
-Round 3 closed terminal receipt consistency but found one TOCTOU gap: trusted-reference SHA and JSON parsing reopened the path.
+Round 4 returned RUNNER_INTEGRATION_READY_PASS after reproducing 76 selected tests and 10 snapshot checks; the single-byte trusted-reference binding is closed.
 
 ## Adopted Decision
-Not recorded.
+Accept exact commit efeffbfae4395f95228c56e3f530e323f1ab8f6a as the reviewed no-training runner integration.
 
 ## Rejected Or Modified Advice
-Not recorded.
+None. The PASS boundary is retained: producer loop, resolver and complete evaluator/evidence writer require separate implementation and review.
 
 ## Decision Rationale
-Not recorded.
+The reviewed runner direction, arm isolation, frozen configuration, terminal evidence contract and trusted-reference byte identity all pass; Pro reproduced 76 selected tests plus 10 narrow checks with zero optimizer updates.
 
 ## Success Criteria
 - Four byte-identical object-independent arms with empty AdamW state
@@ -59,12 +59,12 @@ Not recorded.
 - modify: `tests/test_s09_e009_runner_integration.py` - Cover path replacement after trusted-reference snapshot capture
 
 ## Input Assets
-- `docs/research/S09/S09-E009/experiment.md` (frozen protocol; missing)
-- `docs/research/S09/S09-E009/core_code_review.md` (approved core review; missing)
+- `docs/research/S09/S09-E009/experiment.md` (frozen protocol; exists)
+- `docs/research/S09/S09-E009/core_code_review.md` (approved core review; exists)
 
 ## Output Assets
-- `docs/research/S09/S09-E009/runner_integration_config_20261017.json` (no-training integration config; missing)
-- `docs/research/S09/S09-E009/runner_integration_review_request_20261017.md` (exact-commit review request; missing)
+- `docs/research/S09/S09-E009/runner_integration_config_20261017.json` (no-training integration config; exists)
+- `docs/research/S09/S09-E009/runner_integration_review_request_20261017.md` (exact-commit review request; exists)
 
 ## Tests
 - pass: selected no-training integration suite - 59 passed in 1.36s; AdamW.step sentinel was not called; all four runner directions matched the reviewed core exactly.
@@ -73,10 +73,10 @@ Not recorded.
 - pass: Round-3 byte-snapshot repair no-training suite - 76 passed in 1.91s; trusted reference is read once, hashed and parsed from the same bytes; no optimizer step or producer route.
 
 ## Result Interpretation
-Not recorded.
+The no-training runner/config/evidence integration is code-ready. This is an engineering gate only; no producer or training execution occurred.
 
 ## Claim After Attempt
-Not recorded.
+Exact commit efeffbfae4395f95228c56e3f530e323f1ab8f6a has RUNNER_INTEGRATION_READY_PASS for no-training integration.
 
 ## Next Action
-Not recorded.
+Implement the producer loop, environment resolver and complete evaluator/evidence writer without executing optimizer steps, then submit that exact layer for independent review.

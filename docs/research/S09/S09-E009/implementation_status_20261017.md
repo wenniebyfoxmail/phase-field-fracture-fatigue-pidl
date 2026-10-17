@@ -65,11 +65,20 @@ consistent with completed steps, and a checkpoint identity whenever a real
 update-500 checkpoint is present. A late evidence-writer failure may retain
 that checkpoint while remaining `EXECUTION_FAILED`.
 
-The further repaired selected no-training suite reports 75 passed, including
-all 64 arm/cycle direction comparisons and every Round-1/Round-2 counterexample.
+Round 3 closed those receipt conditions but identified one final identity-use
+edge: the trusted-reference hash and JSON parser reopened the path separately.
+The final repair reads that reference once, verifies the frozen SHA256 over the
+captured bytes, and parses the same bytes. A path-replacement regression proves
+that the current call continues from the verified snapshot and reads the
+trusted path exactly once.
+
+Exact integration commit `efeffbfae4395f95228c56e3f530e323f1ab8f6a`
+reports 76 selected no-training tests, including all 64 arm/cycle comparisons
+and every Round-1 through Round-3 counterexample. Haofan / ChatGPT Pro returned
+`RUNNER_INTEGRATION_READY_PASS` after independently reproducing those 76 tests
+and 10 additional snapshot checks.
 
 This layer still exposes no producer loop or optimiser-step route. A resolved
 producer configuration, full evaluator/evidence writer and launch path do not
-yet exist. The repaired exact integration commit still requires a narrow
-ChatGPT Pro rereview; neither its local pass nor the prior core PASS is an
-execution authorisation.
+yet exist. The PASS authorises only their implementation and separate review;
+it is not an execution authorisation or a scientific result.
