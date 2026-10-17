@@ -285,3 +285,55 @@ Only next proposal: prepare a separately identified fresh Run/output and final
 card/version-binding plan for human approval, preserving the same science,
 data hashes and budget. Do not silently change RUN/OUT now or execute under an
 old approval. The current path-repair/review task ends here.
+
+## Fresh R002 identity and final card — 2026-10-17
+
+New user authority: prepare a fresh Run identity, final command and one-shot
+card bound to df5cb23 and its independent review. No execution, array read,
+fit or R001 restart. User also asked why repeated preparation had produced no
+calculation. Reconciliation: only one E025 scientific launch was issued; R001
+failed on the first geometry path lookup, content reads/solves/fits/evaluation
+all zero. Subsequent actions diagnosed metadata and corrected/reviewed code.
+Our six-path root-binding mistake and overfragmented preparation caused delay;
+there is no numerical evidence for or against the proposed interaction yet.
+
+Fresh source snapshot: `ba4518d1bd9c27b4b8bf154486456d59d17a57ee`.
+Only controlled-source difference from df5cb23: RUN R001 -> R002 in
+s04_phase_inputs.py:19. Fixed OUT derives the R002 final directory under the
+same parent; all other seven-source/five-contract bytes are unchanged. This
+is not an assertion that the original df5cb23 binary can target a new Run.
+Protocol/used R001 card/frozen outputs remain historical and untouched; the
+new card amends Run identity/approval references only, never scientific design.
+
+A single focused identity review was dispatched to the same independent Codex
+chat, keeping its settings. Exact target returned, isError=false. No duplicate
+implementation, tests, data access, fit, writing or downstream delegation was
+requested. Final response:
+
+- Turn `01a14bb9-a850-7e03-956f-98318366c1cf`;
+- Message `msg_015d0a19570ed14a016ad3e5f1c24c8191bc9b49566ed8033e`;
+- revision101, completed/idle, error=null;
+- **REVIEW_PASS only for ba4518d1 identity static difference**, no new required
+  changes. It does not retroactively pretend the old df5 review covered this
+  new commit. Existing mathematical/path findings are inherited, not rerun.
+
+| Review finding | Main-chat adoption |
+|---|---|
+| Only RUN changes; fixed derived output | Git diff of seven sources/five contracts shows exactly this one line; no arbitrary CLI/root/Run override. Adopted. |
+| Parent/child/grant/receipts/summary/figure take io.RUN/io.OUT | Static source trace agrees; old grant identity cannot match R002. Adopted; not a runtime test or current output-freshness check. |
+| Exact new SHA can bind expected-commit/Git/grant handoff | New card command binds full ba4518d1, not df5 or R001's expected-commit. Adopted. |
+| Approval ref is externally supplied, not authenticated | Operator must match actual human approval to new index S04-E025-R002-CARD-v1-ba4518d1; old approval is consumed. Adopted; no added authentication claim. |
+| Review does not cover final card or runtime | Main chat checks the final command against existing CLI/source and actual response reference; no content identity/resource feasibility/scientific success claimed. |
+
+Final card: `R002_run_card_v1_20261017.md`. Full command, nine exact sources via
+unchanged manifest v2, actual review reference, new approval index, primary
+direction/cost interpretation, 300s/2GiB/100MiB, one-attempt/no-retry rule and
+owned-output freeze/report scope are packaged together. Only waiting for the
+user's approval of the final card commit; no additional full mathematical
+review or new scientific acceptance requirement is proposed.
+
+Main chat alone updates existing Obsidian note and single Roadmap entry.
+Preparation used Git/source/control documents and static diff/whitespace
+checks only. No import/test/mock, scientific file stat/open/hash, arrays,
+numerical work, fit, output occupancy/process probe, Run directory/grant,
+SSH/automation or R001 mutation. Confirmation data remain closed.
