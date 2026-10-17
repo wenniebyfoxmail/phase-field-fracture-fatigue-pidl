@@ -89,7 +89,7 @@ def run(a):
     fig,axes=plt.subplots(2,4,figsize=(11,7.3),layout="constrained",gridspec_kw={"height_ratios":[560,190]})
     for i,box in enumerate(crops):
         for ax,(name,key) in zip(axes[i],cols):panel(ax,box,name,key)
-        axes[i,0].set_ylabel(f"native x[{box[0]},{box[2]}), y[{box[1]},{box[3]})",fontsize=8)
+        axes[i,0].set_xlabel(f"native x[{box[0]},{box[2]}), y[{box[1]},{box[3]})",fontsize=8)
         x0,y0,x1,y1=np.array(box)-np.array([3800,900,3800,900])
         axes[i,3].set_title(f"Added candidates: {d['added_candidates'][y0:y1,x0:x1].sum()}px2",fontsize=10)
     fig.suptitle("E040 | fixed source-only close-ups (selected before changed-support extraction)\n"
