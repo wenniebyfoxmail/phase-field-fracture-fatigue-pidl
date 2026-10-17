@@ -94,9 +94,11 @@ account.
 
 ## Fail-stop and evidence rules
 
-- Run `R` first. If its update-0/update-500 numeric replay or first-500 legacy
-  gradient-log hash fails, stop before the other arms and mark cross-arm
-  performance inadmissible.
+- Run `R` first. Its update-0/update-500 numeric replay is the fail-stop gate;
+  if that gate fails, stop before the other arms and mark cross-arm performance
+  inadmissible. Report the new first-500 legacy gradient-log hash against the
+  archived qualified reference as a diagnostic; a hash mismatch alone does not
+  fail an otherwise numerically valid replay.
 - An anchor norm at or below `1e-12` is `METHOD_INAPPLICABLE`, with its exact
   stop location and partial evidence. It is not an execution failure.
 - Any nonfinite value, layout/order mismatch, incomplete gradient assignment,

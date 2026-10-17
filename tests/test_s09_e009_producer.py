@@ -19,8 +19,11 @@ from s09_e009_four_arm import (
     ARM_REPLAY,
     AnchorStationary,
     LOSS_ORDER,
+    amplitude_auc,
+    group_amplitude_ratio,
 )
 from s09_e009_producer import (
+    EXPECTED_PACKET_MANIFEST_SHA256,
     EXPECTED_PROTOCOL_CONTRACT_SHA256,
     GROWTH_CYCLES,
     HARD_CONSTRAINT_KEYS,
@@ -28,9 +31,11 @@ from s09_e009_producer import (
     REPLAY_GRADIENT_PREFIX_SHA256,
     REPLAY_REFERENCE,
     TorchArmAdapter,
+    _read_gradient_summary,
     _protocol_contract_sha256,
     _replay_direction_with_legacy,
     evaluate_arm,
+    replay_validity,
     resolve_producer_config,
     run_arm_state_machine,
     validate_resolved_config,
@@ -101,6 +106,13 @@ def _evaluation(update: int, arm: str = ARM_REPLAY):
             },
             "hard_constraint_counts": _hard_counts(),
         })
+    growth_pred = [row["predicted_damage_increment_abs_mean"] for row in per_cycle
+                   if row["group"] == "growth"]
+    stagnant_pred = [row["predicted_damage_increment_abs_mean"] for row in per_cycle
+                     if row["group"] == "near_stagnant"]
+    predicted = [row["predicted_damage_increment_abs_mean"] for row in per_cycle]
+    truth = [row["true_damage_increment_abs_mean"] for row in per_cycle]
+    pairwise_values = [0.2] * 120
     aggregate = {
         "update": update,
         "finite": True,
@@ -108,16 +120,19 @@ def _evaluation(update: int, arm: str = ARM_REPLAY):
         "F": f,
         "persistence": persistence,
         "L_judge": judge,
-        "amplitude_ratio": {"value": 2.0, "status": "DEFINED"},
-        "amplitude_auc": {"value": 0.9 if arm != ARM_REPLAY else 0.7,
-                          "wins": 20, "ties": 5, "losses": 0},
-        "amplitude_pearson": 0.5,
-        "amplitude_spearman": 0.5,
+        "amplitude_ratio": group_amplitude_ratio(
+            float(np.mean(growth_pred)), float(np.mean(stagnant_pred))),
+        "amplitude_auc": amplitude_auc(growth_pred, stagnant_pred),
+        "amplitude_pearson": producer._pearson(predicted, truth),
+        "amplitude_spearman": producer._pearson(
+            producer._average_ranks(predicted), producer._average_ranks(truth)),
         "spatial": {"primary_median": 0.5, "primary_status": "DEFINED",
                     "valid_count": 16, "valid_cycles": list(EXPECTED_CYCLES),
                     "valid_subset_median": 0.5},
         "predicted_field_pairwise_correlation": {
-            "valid_pair_count": 120, "median": 0.2, "minimum": -0.1, "maximum": 0.9,
+            "pair_count": 120, "valid_pair_count": 120, "na_pair_count": 0,
+            "values": pairwise_values,
+            "median": 0.2, "minimum": 0.2, "maximum": 0.2,
         },
         "hard_constraint_counts": _hard_counts(),
         "hard_constraint_violations": 0,
@@ -216,6 +231,42 @@ def test_state_machine_preserves_post_step_failure_count_and_anchor_state(tmp_pa
     assert stationary.receipt["fully_logged_updates"] == 16
 
 
+def test_failed_arm_gradient_summary_preserves_confirmed_prefix_and_tail(tmp_path: Path):
+    failed = run_arm_state_machine(
+        arm=ARM_REPLAY,
+        adapter=MockAdapter(ARM_REPLAY, fail_at=17),
+        arm_dir=tmp_path / "failed-tail",
+    )
+    tail = MockAdapter(ARM_REPLAY).step(17, EXPECTED_CYCLES[0])["gradient_row"]
+    with (failed.arm_dir / "gradient_diagnostics.jsonl").open("ab") as stream:
+        stream.write(canonical_json(tail))
+    summary = _read_gradient_summary(failed)
+    assert summary["summary_status"] == "CONFIRMED_PREFIX_SUMMARISED"
+    assert summary["logged_updates"] == 16
+    assert summary["unconfirmed_tail_line_count"] == 1
+    assert summary["unconfirmed_tail_parseable_line_count"] == 1
+
+
+def test_evidence_close_failure_still_writes_checkpoint_bound_receipt(tmp_path: Path,
+                                                                     monkeypatch):
+    def fail_hashing(*_args, **_kwargs):
+        raise OSError("injected artifact hash failure")
+
+    monkeypatch.setattr(producer, "_artifact_hashes", fail_hashing)
+    result = run_arm_state_machine(
+        arm=ARM_REPLAY,
+        adapter=MockAdapter(ARM_REPLAY),
+        arm_dir=tmp_path / "evidence-close-failure",
+    )
+    assert result.receipt["terminal_state"] == "EXECUTION_FAILED"
+    assert result.receipt["reason"].startswith("EVIDENCE_CLOSE_FAILED")
+    assert result.receipt["optimizer_steps_completed"] == 500
+    assert result.receipt["fully_logged_updates"] == 500
+    assert result.receipt["update500_checkpoint_present"] is True
+    assert result.receipt["artifacts"]["checkpoint_update500.pt"]
+    assert (result.arm_dir / "termination_receipt.json").is_file()
+
+
 def test_evaluator_emits_full_fixed_support_scorecard_without_step(tmp_path: Path):
     packet, base_config, _ = packet_fixture(tmp_path)
     runtime = build_runtime(
@@ -230,6 +281,37 @@ def test_evaluator_emits_full_fixed_support_scorecard_without_step(tmp_path: Pat
     assert set(LOSS_ORDER).issubset(observed["aggregate"])
     assert observed["aggregate"]["hard_constraint_violations"] == 0
     json.dumps(observed, allow_nan=False)
+
+
+@pytest.mark.parametrize("mutation, message", [
+    (lambda record: record["aggregate"].__setitem__("amplitude_auc", {}),
+     "amplitude AUC"),
+    (lambda record: record["aggregate"]["amplitude_auc"].update(
+        {"value": 1.0, "wins": 25, "ties": 0, "losses": 0}),
+     "amplitude AUC"),
+    (lambda record: record["per_cycle"][0].__setitem__(
+        "predicted_target_spatial_correlation", None),
+     "spatial aggregate"),
+    (lambda record: record["aggregate"]["predicted_field_pairwise_correlation"]
+        ["values"].pop(), "pairwise field distribution schema"),
+])
+def test_evaluation_validator_rejects_nested_scorecard_drift(mutation, message):
+    record = _evaluation(0)
+    mutation(record)
+    with pytest.raises(ValueError, match=message):
+        producer._validate_evaluation_record(record, 0)
+
+
+def test_evaluation_validator_rejects_false_defined_zero_amplitude_ratio():
+    record = _evaluation(0)
+    for row in record["per_cycle"]:
+        row["predicted_damage_increment_abs_mean"] = 0.0
+    record["aggregate"]["amplitude_auc"] = amplitude_auc([0.0] * 5, [0.0] * 5)
+    record["aggregate"]["amplitude_pearson"] = None
+    record["aggregate"]["amplitude_spearman"] = None
+    record["aggregate"]["amplitude_ratio"] = {"value": 1.0, "status": "DEFINED"}
+    with pytest.raises(ValueError, match="amplitude ratio"):
+        producer._validate_evaluation_record(record, 0)
 
 
 def _losses(model: torch.nn.Module):
@@ -255,6 +337,21 @@ def test_replay_direction_and_legacy_record_match_reviewed_runner():
     torch.testing.assert_close(observed, expected, rtol=0, atol=0)
     torch.testing.assert_close(observed_gd, expected_gd, rtol=0, atol=0)
     json.dumps(legacy, allow_nan=False)
+
+
+def test_replay_direction_rejects_nonfinite_combined_objective_before_autograd():
+    model = torch.nn.Linear(2, 1, bias=False, dtype=torch.float64)
+    base = model.weight.sum()
+    losses = {name: base + 1e308 for name in LOSS_ORDER}
+    with pytest.raises(FloatingPointError, match="nonfinite replay objective"):
+        _replay_direction_with_legacy(model, losses)
+
+
+def test_exact_constant_weighted_correlation_is_na():
+    left = torch.tensor([0.1, 0.1, 0.1], dtype=torch.float64)
+    right = torch.tensor([0.2, 0.2, 0.2], dtype=torch.float64)
+    weight = torch.tensor([1.0, 2.0, 3.0], dtype=torch.float64)
+    assert producer._weighted_correlation(left, right, weight) is None
 
 
 def test_torch_adapter_rejects_hard_constraint_violation_before_step(tmp_path: Path,
@@ -292,8 +389,27 @@ def test_torch_adapter_rejects_hard_constraint_violation_before_step(tmp_path: P
         adapter.step(1, EXPECTED_CYCLES[0])
     assert fake.step_calls == 0
     assert adapter.optimizer_steps_completed == 0
+    assert adapter.hard_constraint_counts == violated
     for name, value in runtime.model.state_dict().items():
         torch.testing.assert_close(value, before[name], rtol=0, atol=0)
+
+
+def test_state_machine_preserves_failed_update_hard_constraint_counts(tmp_path: Path):
+    class HardViolationAdapter(MockAdapter):
+        def step(self, update: int, cycle: int):
+            self.hard_constraint_counts = _hard_counts()
+            self.hard_constraint_counts["damage_irreversibility"] = 1
+            raise ValueError("per-update hard-constraint violation")
+
+    result = run_arm_state_machine(
+        arm=ARM_REPLAY,
+        adapter=HardViolationAdapter(ARM_REPLAY),
+        arm_dir=tmp_path / "hard-violation",
+    )
+    assert result.receipt["terminal_state"] == "EXECUTION_FAILED"
+    assert result.receipt["optimizer_steps_completed"] == 0
+    assert result.receipt["fully_logged_updates"] == 0
+    assert result.receipt["hard_constraint_counts"]["damage_irreversibility"] == 1
 
 
 def test_protocol_projection_ignores_only_frontmatter_status(tmp_path: Path):
@@ -333,7 +449,7 @@ def test_resolver_binds_exact_snapshots_environment_packet_and_commit(tmp_path: 
         "source_hash_verdict": "FULL_TRAJECTORY_HASH_QUALIFIED",
         "source_decode_verdict": "FULL_TRAJECTORY_DECODE_QUALIFIED",
     }
-    identity = {"manifest_sha256": "packet-sha"}
+    identity = {"manifest_sha256": EXPECTED_PACKET_MANIFEST_SHA256}
     monkeypatch.setattr(sys, "platform", "linux")
     monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
     monkeypatch.setattr(producer, "current_commit", lambda _root: commit)
@@ -358,26 +474,69 @@ def test_resolver_binds_exact_snapshots_environment_packet_and_commit(tmp_path: 
         approved_gpu_uuid="gpu-uuid",
         approved_gpu_pci_bus_id="0000:01:00.0",
         approved_staging_root=staging,
-        authorize_execution=False,
+        authorize_execution=True,
     )
     assert output.is_file()
-    assert resolved["execution_authorized"] is False
+    assert resolved["execution_authorized"] is True
     assert resolved["source"]["training_commit"] == commit
+    reread = producer._parse_strict_json_bytes(output.read_bytes())
     validate_resolved_config(
-        resolved,
+        reread,
         base_runtime_config_path=BASE_CONFIG,
-        packet_manifest_sha256="packet-sha",
-        executable=False,
+        packet_manifest_sha256=EXPECTED_PACKET_MANIFEST_SHA256,
+        executable=True,
     )
-    tampered = copy.deepcopy(resolved)
+    unauthorised = copy.deepcopy(reread)
+    unauthorised["execution_authorized"] = False
+    with pytest.raises(PermissionError, match="execution is not authorised"):
+        validate_resolved_config(
+            unauthorised,
+            base_runtime_config_path=BASE_CONFIG,
+            packet_manifest_sha256=EXPECTED_PACKET_MANIFEST_SHA256,
+            executable=True,
+        )
+    tampered = copy.deepcopy(reread)
     tampered["source"]["training_commit"] = "b" * 40
     with pytest.raises(ValueError, match="not bound"):
         validate_resolved_config(
             tampered,
             base_runtime_config_path=BASE_CONFIG,
-            packet_manifest_sha256="packet-sha",
+            packet_manifest_sha256=EXPECTED_PACKET_MANIFEST_SHA256,
             executable=False,
         )
+
+
+def test_public_execution_entry_rejects_caller_controlled_other_repo(tmp_path: Path):
+    with pytest.raises(ValueError, match="repo root differs"):
+        producer.run_producer(
+            packet_dir=tmp_path / "packet",
+            resolved_config_path=tmp_path / "missing.json",
+            base_runtime_config_path=BASE_CONFIG,
+            output_dir=tmp_path / "output",
+            repo_root=tmp_path,
+        )
+
+
+def test_consumed_runtime_packet_identity_is_checked_before_optimizer_boundary():
+    config = {"source": {"input_packet_sha256": EXPECTED_PACKET_MANIFEST_SHA256}}
+    runtime = type("RuntimeFixture", (), {
+        "packet_identity": {"manifest_sha256": "different-consumed-packet"}
+    })()
+    with pytest.raises(ValueError, match="consumed runtime packet identity"):
+        producer._validated_runtime_packet_identity(runtime, config)
+
+
+def test_numeric_replay_gate_does_not_fail_on_new_stream_hash_diagnostic(tmp_path: Path):
+    result = run_arm_state_machine(
+        arm=ARM_REPLAY,
+        adapter=MockAdapter(ARM_REPLAY),
+        arm_dir=tmp_path / "numeric-replay",
+    )
+    result = replace(result, legacy_gradient_prefix_sha256="different-new-stream-hash")
+    verdict = replay_validity(result)
+    assert verdict["pass"] is True
+    assert verdict["new_stream_hash_matches_archived_reference"] is False
+    assert "first_500_legacy_gradient_rows_sha256" not in verdict["clauses"]
 
 
 def test_writer_emits_complete_decision_package_from_exact_mock_receipts(tmp_path: Path):

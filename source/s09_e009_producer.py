@@ -80,6 +80,7 @@ from s09_stage0a_transition import fixed_judgement_loss
 
 
 SCHEMA_VERSION = "s09-e009-four-arm-producer-v1"
+MODULE_ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_INTEGRATION_COMMIT = "efeffbfae4395f95228c56e3f530e323f1ab8f6a"
 EXPECTED_INTEGRATION_CONFIG_SHA256 = (
     "7994c8959ae5fc3adaa2b4037ba7be2619ddb28fccb00a9663a8a42009a283fd"
@@ -89,6 +90,9 @@ EXPECTED_PROTOCOL_CONTRACT_SHA256 = (
 )
 REPLAY_GRADIENT_PREFIX_SHA256 = (
     "50c746b8f6548f53493c6556b7f7281a4b97d2340c35aad5e9d63c87f9bddfe9"
+)
+EXPECTED_PACKET_MANIFEST_SHA256 = (
+    "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6"
 )
 REPLAY_REFERENCE = {
     0: {
@@ -114,6 +118,11 @@ HARD_CONSTRAINT_KEYS = (
     "derived_f_identity",
     "f_monotonicity",
     "peak_boundary_lifting",
+)
+PROJECTION_COUNT_KEYS = (
+    "damage_lower_projection_count",
+    "damage_upper_projection_count",
+    "alpha_relu_saturation_count",
 )
 GROWTH_CYCLES = (1, 58, 60, 69, 70)
 NEAR_STAGNANT_CYCLES = (3, 4, 71, 72, 73)
@@ -191,6 +200,14 @@ def _producer_execution_files_clean(root: Path) -> bool:
     return result.returncode == 0 and not untracked.stdout.strip()
 
 
+def _bound_repo_root(repo_root: Path) -> Path:
+    """Bind public entry points to the code tree that supplied this module."""
+    observed = repo_root.resolve(strict=True)
+    _require(observed == MODULE_ROOT,
+             "repo root differs from the executing producer module")
+    return observed
+
+
 def _environment_snapshot(visible: str) -> dict[str, Any]:
     return {
         "hostname": socket.gethostname(),
@@ -216,6 +233,10 @@ def _unresolved_projection(config: Mapping[str, Any]) -> dict[str, Any]:
     projected["producer"]["resolved_environment"] = (
         "TO_BE_LOCKED_BY_FUTURE_READ_ONLY_PREFLIGHT"
     )
+    arms = projected.get("arms")
+    _require(isinstance(arms, Mapping) and set(arms) == set(ARM_ORDER),
+             "resolved arm membership drift")
+    projected["arms"] = {arm: copy.deepcopy(arms[arm]) for arm in ARM_ORDER}
     projected.pop("resolution_receipt", None)
     return projected
 
@@ -241,6 +262,8 @@ def validate_resolved_config(
              "producer review is not bound to the training commit")
     _require(source.get("input_packet_sha256") == packet_manifest_sha256,
              "resolved packet identity mismatch")
+    _require(packet_manifest_sha256 == EXPECTED_PACKET_MANIFEST_SHA256,
+             "packet differs from the independently approved manifest")
     _require(isinstance(config.get("producer", {}).get("resolved_environment"), Mapping),
              "producer environment is unresolved")
     environment = config["producer"]["resolved_environment"]
@@ -295,6 +318,7 @@ def resolve_producer_config(
     authorize_execution: bool,
 ) -> dict[str, Any]:
     """Resolve live producer identities without constructing an optimiser."""
+    repo_root = _bound_repo_root(repo_root)
     _require(sys.platform.startswith("linux"), "config resolution is producer-only",
              PermissionError)
     _require(torch.cuda.is_available(), "CUDA is required for producer resolution",
@@ -331,6 +355,8 @@ def resolve_producer_config(
     }, "physical GPU differs from approved preflight")
 
     arrays, metadata, packet_identity = load_verified_packet(packet_dir)
+    _require(packet_identity.get("manifest_sha256") == EXPECTED_PACKET_MANIFEST_SHA256,
+             "packet differs from the independently approved manifest")
     base = _parse_strict_json_bytes(base_raw)
     _require(metadata.get("config_sha256") == EXPECTED_BASE_RUNTIME_CONFIG_SHA256,
              "packet was not exported from the reviewed base runtime config")
@@ -401,6 +427,10 @@ def _weighted_correlation(
     left = left.reshape(-1)
     right = right.reshape(-1)
     weight = weight.reshape(-1)
+    _require(left.numel() > 0 and left.shape == right.shape == weight.shape,
+             "weighted correlation shape drift")
+    if torch.all(left == left[0]) or torch.all(right == right[0]):
+        return None
     left_mean = _weighted_mean(left, weight)
     right_mean = _weighted_mean(right, weight)
     left_centered = left - left_mean
@@ -511,14 +541,15 @@ def evaluate_arm(runtime: Runtime, *, update: int) -> dict[str, Any]:
     spatial_records = {
         row["cycle"]: row["predicted_target_spatial_correlation"] for row in per_cycle
     }
-    pairwise: list[float] = []
+    pairwise: list[float | None] = []
     nodal = torch.as_tensor(runtime.arrays["nodal_weight"], device=runtime.device)
     for left in range(len(predicted_fields)):
         for right in range(left + 1, len(predicted_fields)):
             value = _weighted_correlation(
                 predicted_fields[left], predicted_fields[right], nodal)
-            if value is not None:
-                pairwise.append(value)
+            pairwise.append(value)
+    _require(len(pairwise) == 120, "pairwise field distribution size drift")
+    valid_pairwise = [value for value in pairwise if value is not None]
     growth_pred = [row["predicted_damage_increment_abs_mean"] for row in growth]
     stagnant_pred = [row["predicted_damage_increment_abs_mean"] for row in stagnant]
     aggregate: dict[str, Any] = {
@@ -538,10 +569,13 @@ def evaluate_arm(runtime: Runtime, *, update: int) -> dict[str, Any]:
             _average_ranks(predicted_amplitudes), _average_ranks(true_amplitudes)),
         "spatial": fixed_support_median(spatial_records, EXPECTED_CYCLES),
         "predicted_field_pairwise_correlation": {
-            "valid_pair_count": len(pairwise),
-            "median": None if not pairwise else float(np.median(pairwise)),
-            "minimum": None if not pairwise else float(np.min(pairwise)),
-            "maximum": None if not pairwise else float(np.max(pairwise)),
+            "pair_count": len(pairwise),
+            "valid_pair_count": len(valid_pairwise),
+            "na_pair_count": len(pairwise) - len(valid_pairwise),
+            "values": pairwise,
+            "median": None if not valid_pairwise else float(np.median(valid_pairwise)),
+            "minimum": None if not valid_pairwise else float(np.min(valid_pairwise)),
+            "maximum": None if not valid_pairwise else float(np.max(valid_pairwise)),
         },
         "hard_constraint_counts": hard_total,
         "hard_constraint_violations": int(sum(hard_total.values())),
@@ -575,6 +609,9 @@ def _replay_direction_with_legacy(
     vectors: dict[str, torch.Tensor] = {}
     legacy_layout = []
     for objective_index, (objective_name, objective) in enumerate(objectives.items()):
+        _require(objective.ndim == 0 and torch.isfinite(objective),
+                 f"nonfinite replay objective: {objective_name}",
+                 FloatingPointError)
         gradients = torch.autograd.grad(
             objective,
             [parameter for _, parameter in named],
@@ -604,6 +641,14 @@ def _replay_direction_with_legacy(
     _require(torch.isfinite(replay_norms).all(),
              "nonfinite norm at frozen replay-merger boundary", FloatingPointError)
     merged, diagnostics = merge_objective_gradients(replay_vectors)
+    diagnostic_names = (
+        "raw_norms", "reference_norm", "merged_norm_before_clip",
+        "merged_norm_after_clip", "balanced_norms", "projected_norms",
+    )
+    _require(torch.isfinite(merged).all() and all(
+        torch.isfinite(torch.as_tensor(diagnostics[name])).all()
+        for name in diagnostic_names
+    ), "nonfinite frozen replay direction or diagnostic", FloatingPointError)
     legacy = gradient_record(replay_vectors, merged, diagnostics)
     legacy["layout"] = {
         "parameter_order": [name for name, _ in named],
@@ -677,6 +722,52 @@ def _validate_evaluation_record(record: Mapping[str, Any], update: int) -> None:
     }
     _require(all(set(row) == row_keys for row in per_cycle),
              "per-cycle scorecard keys drift")
+
+    def finite_number(value: Any, *, nonnegative: bool = False) -> bool:
+        return (type(value) in (int, float) and math.isfinite(float(value)) and
+                (not nonnegative or float(value) >= 0))
+
+    def close(observed: Any, expected: float) -> bool:
+        return finite_number(observed) and (
+            abs(float(observed) - expected) <= 1e-12 + 1e-9 * abs(expected)
+        )
+
+    def optional_close(observed: Any, expected: float | None) -> bool:
+        return observed is None if expected is None else close(observed, expected)
+
+    for row in per_cycle:
+        _require(all(finite_number(row[name], nonnegative=True) for name in (
+            "predicted_damage_increment_abs_mean",
+            "true_damage_increment_abs_mean",
+            "damage_increment_mae", "false_growth", "L_judge",
+        )), "per-cycle scalar metric drift")
+        spatial_value = row["predicted_target_spatial_correlation"]
+        _require(spatial_value is None or
+                 (finite_number(spatial_value) and -1 <= float(spatial_value) <= 1),
+                 "per-cycle spatial correlation drift")
+        atomic = row["atomic_losses"]
+        grouped = row["grouped_losses"]
+        projection = row["projection_counts"]
+        row_hard = row["hard_constraint_counts"]
+        _require(isinstance(atomic, Mapping) and tuple(atomic) == LOSS_ORDER and
+                 all(finite_number(value, nonnegative=True)
+                     for value in atomic.values()),
+                 "per-cycle atomic loss schema drift")
+        _require(isinstance(grouped, Mapping) and
+                 tuple(grouped) == ("L_D", "L_U", "L_H", "L_P") and
+                 all(finite_number(value, nonnegative=True)
+                     for value in grouped.values()),
+                 "per-cycle grouped loss schema drift")
+        _require(isinstance(projection, Mapping) and
+                 tuple(projection) == PROJECTION_COUNT_KEYS and
+                 all(type(value) is int and value >= 0
+                     for value in projection.values()),
+                 "per-cycle projection-count schema drift")
+        _require(isinstance(row_hard, Mapping) and
+                 tuple(row_hard) == HARD_CONSTRAINT_KEYS and
+                 all(type(value) is int and value >= 0
+                     for value in row_hard.values()),
+                 "per-cycle hard-constraint schema drift")
     hard = aggregate.get("hard_constraint_counts")
     _require(isinstance(hard, Mapping) and tuple(hard) == HARD_CONSTRAINT_KEYS and
              all(type(value) is int and value >= 0 for value in hard.values()) and
@@ -692,11 +783,6 @@ def _validate_evaluation_record(record: Mapping[str, Any], update: int) -> None:
     growth = [row for row in per_cycle if row["group"] == "growth"]
     stagnant = [row for row in per_cycle if row["group"] == "near_stagnant"]
     _require(len(growth) == len(stagnant) == 5, "evaluation group support drift")
-
-    def close(observed: Any, expected: float) -> bool:
-        return isinstance(observed, (int, float)) and math.isfinite(float(observed)) and (
-            abs(float(observed) - expected) <= 1e-12 + 1e-9 * abs(expected)
-        )
 
     _require(close(aggregate["G"], float(np.mean([
         row["damage_increment_mae"] for row in growth
@@ -720,6 +806,88 @@ def _validate_evaluation_record(record: Mapping[str, Any], update: int) -> None:
                    for name in HARD_CONSTRAINT_KEYS}
     _require(dict(hard) == summed_hard,
              "aggregate/per-cycle hard-constraint drift")
+
+    growth_pred = [row["predicted_damage_increment_abs_mean"] for row in growth]
+    stagnant_pred = [row["predicted_damage_increment_abs_mean"] for row in stagnant]
+    predicted = [row["predicted_damage_increment_abs_mean"] for row in per_cycle]
+    truth = [row["true_damage_increment_abs_mean"] for row in per_cycle]
+    expected_auc = amplitude_auc(growth_pred, stagnant_pred)
+    observed_auc = aggregate["amplitude_auc"]
+    _require(isinstance(observed_auc, Mapping) and
+             set(observed_auc) == {"value", "wins", "ties", "losses"} and
+             type(observed_auc["wins"]) is int and
+             type(observed_auc["ties"]) is int and
+             type(observed_auc["losses"]) is int and
+             observed_auc["wins"] + observed_auc["ties"] +
+             observed_auc["losses"] == 25 and
+             all(observed_auc[name] == expected_auc[name]
+                 for name in ("wins", "ties", "losses")) and
+             close(observed_auc["value"], expected_auc["value"]),
+             "amplitude AUC/per-cycle drift")
+
+    expected_ratio = group_amplitude_ratio(
+        float(np.mean(growth_pred)), float(np.mean(stagnant_pred)))
+    observed_ratio = aggregate["amplitude_ratio"]
+    _require(isinstance(observed_ratio, Mapping) and
+             set(observed_ratio) == {"value", "status"} and
+             observed_ratio["status"] == expected_ratio["status"] and
+             optional_close(observed_ratio["value"], expected_ratio["value"]),
+             "amplitude ratio/per-cycle drift")
+    expected_pearson = _pearson(predicted, truth)
+    expected_spearman = _pearson(_average_ranks(predicted), _average_ranks(truth))
+    _require(optional_close(aggregate["amplitude_pearson"], expected_pearson) and
+             optional_close(aggregate["amplitude_spearman"], expected_spearman),
+             "amplitude correlation/per-cycle drift")
+
+    expected_spatial = fixed_support_median({
+        row["cycle"]: row["predicted_target_spatial_correlation"]
+        for row in per_cycle
+    }, EXPECTED_CYCLES)
+    observed_spatial = aggregate["spatial"]
+    _require(isinstance(observed_spatial, Mapping) and
+             set(observed_spatial) == {
+                 "primary_median", "primary_status", "valid_count",
+                 "valid_cycles", "valid_subset_median",
+             } and type(observed_spatial["valid_count"]) is int and
+             isinstance(observed_spatial["valid_cycles"], list) and
+             observed_spatial["primary_status"] == expected_spatial["primary_status"] and
+             observed_spatial["valid_count"] == expected_spatial["valid_count"] and
+             observed_spatial["valid_cycles"] == expected_spatial["valid_cycles"] and
+             optional_close(observed_spatial["primary_median"],
+                            expected_spatial["primary_median"]) and
+             optional_close(observed_spatial["valid_subset_median"],
+                            expected_spatial["valid_subset_median"]),
+             "spatial aggregate/per-cycle drift")
+
+    pairwise = aggregate["predicted_field_pairwise_correlation"]
+    pairwise_keys = {
+        "pair_count", "valid_pair_count", "na_pair_count", "values",
+        "median", "minimum", "maximum",
+    }
+    _require(isinstance(pairwise, Mapping) and set(pairwise) == pairwise_keys and
+             type(pairwise["pair_count"]) is int and
+             type(pairwise["valid_pair_count"]) is int and
+             type(pairwise["na_pair_count"]) is int and
+             pairwise["pair_count"] == 120 and
+             isinstance(pairwise["values"], list) and
+             len(pairwise["values"]) == pairwise["pair_count"] and
+             all(value is None or
+                 (finite_number(value) and -1 <= float(value) <= 1)
+                 for value in pairwise["values"]),
+             "pairwise field distribution schema drift")
+    valid_pairwise = [float(value) for value in pairwise["values"]
+                      if value is not None]
+    _require(pairwise["valid_pair_count"] == len(valid_pairwise) and
+             pairwise["na_pair_count"] == 120 - len(valid_pairwise),
+             "pairwise field distribution count drift")
+    expected_pairwise = {
+        "median": None if not valid_pairwise else float(np.median(valid_pairwise)),
+        "minimum": None if not valid_pairwise else float(np.min(valid_pairwise)),
+        "maximum": None if not valid_pairwise else float(np.max(valid_pairwise)),
+    }
+    _require(all(optional_close(pairwise[name], expected_pairwise[name])
+                 for name in expected_pairwise),
+             "pairwise field distribution statistic drift")
     canonical_json(record)
 
 
@@ -807,6 +975,11 @@ def run_arm_state_machine(
         state = TERMINAL_EXECUTION_FAILED
         reason = f"{type(error).__name__}: {error}"
         finite = not isinstance(error, FloatingPointError)
+        observed_hard_counts = getattr(adapter, "hard_constraint_counts", None)
+        if isinstance(observed_hard_counts, Mapping):
+            observed_hard_counts = dict(observed_hard_counts)
+            if sum(observed_hard_counts.values()) > 0:
+                hard_counts = observed_hard_counts
     finally:
         checkpoint_partial.unlink(missing_ok=True)
 
@@ -819,10 +992,22 @@ def run_arm_state_machine(
         "start_identity.json", "train_log.jsonl", "gradient_diagnostics.jsonl",
         "diagnostic_metrics.jsonl",
     ]
-    artifacts = _artifact_hashes(arm_dir, common)
-    if checkpoint_present:
-        artifacts["checkpoint_update500.pt"] = sha256_file(
-            checkpoint_path)
+    try:
+        artifacts = _artifact_hashes(arm_dir, common)
+        if checkpoint_present:
+            artifacts["checkpoint_update500.pt"] = sha256_file(checkpoint_path)
+    except Exception as error:
+        state = TERMINAL_EXECUTION_FAILED
+        reason = f"EVIDENCE_CLOSE_FAILED: {type(error).__name__}: {error}"
+        checkpoint_present = checkpoint_path.is_file()
+        artifacts = {}
+        fallback_names = [*common]
+        if checkpoint_present:
+            fallback_names.append("checkpoint_update500.pt")
+        for name in fallback_names:
+            path = arm_dir / name
+            if path.is_file():
+                artifacts[name] = hashlib.sha256(path.read_bytes()).hexdigest()
     receipt = {
         "arm": arm,
         "terminal_state": state,
@@ -880,6 +1065,7 @@ class TorchArmAdapter:
         losses, context = atomic_losses(self.runtime, index)
         step_hard_counts = hard_constraint_report(
             self.runtime, context["d_pre"], context["history_pre"], context["output"])
+        self.hard_constraint_counts = dict(step_hard_counts)
         _require(sum(step_hard_counts.values()) == 0,
                  "per-update hard-constraint violation")
         step_projection_counts = proposal_projection_diagnostics(
@@ -963,7 +1149,7 @@ class TorchArmAdapter:
 
 
 def replay_validity(result: ArmRunResult) -> dict[str, Any]:
-    """Apply the exact update-0/update-500 and legacy-log replay contract."""
+    """Gate numeric replay; report the new-stream legacy hash separately."""
     clauses: dict[str, bool] = {}
     for update, reference in REPLAY_REFERENCE.items():
         observed = result.evaluations.get(update, {}).get("aggregate", {})
@@ -983,11 +1169,13 @@ def replay_validity(result: ArmRunResult) -> dict[str, Any]:
                     abs(float(value) - float(expected)) <= 1e-12 + 1e-9 * abs(float(expected))
                 )
             clauses[f"update_{update}_{name}"] = passed
-    clauses["first_500_legacy_gradient_rows_sha256"] = (
-        result.legacy_gradient_prefix_sha256 == REPLAY_GRADIENT_PREFIX_SHA256)
     clauses["terminal_completed"] = (
         result.receipt["terminal_state"] == TERMINAL_COMPLETED)
+    hash_matches = (
+        result.legacy_gradient_prefix_sha256 == REPLAY_GRADIENT_PREFIX_SHA256)
     return {"pass": all(clauses.values()), "clauses": clauses,
+            "archived_reference_hash_qualification": "FROZEN_SOURCE_QUALIFIED",
+            "new_stream_hash_matches_archived_reference": hash_matches,
             "observed_legacy_gradient_sha256": result.legacy_gradient_prefix_sha256,
             "expected_legacy_gradient_sha256": REPLAY_GRADIENT_PREFIX_SHA256}
 
@@ -1004,28 +1192,69 @@ def _scorecard(metrics: Mapping[str, Any]) -> dict[str, float]:
 
 
 def _read_gradient_summary(result: ArmRunResult) -> dict[str, Any]:
+    path = result.arm_dir / "gradient_diagnostics.jsonl"
     try:
-        rows = [
-            json.loads(
-                line,
-                parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)),
-            )
-            for line in (result.arm_dir / "gradient_diagnostics.jsonl").read_text().splitlines()
-            if line.strip()
-        ]
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
+        raw_lines = [line for line in path.read_text().splitlines() if line.strip()]
+    except (OSError, UnicodeError) as error:
         _require(result.receipt["terminal_state"] != TERMINAL_COMPLETED,
                  f"{result.arm} completed gradient log is unreadable")
         return {"summary_status": "INVALID_PARTIAL_LOG", "error": str(error)}
+
     expected = result.receipt["fully_logged_updates"]
-    _require(len(rows) == expected and
-             [row.get("update") for row in rows] == list(range(1, expected + 1)),
-             f"{result.arm} gradient log/update count drift")
+    completed = result.receipt["terminal_state"] == TERMINAL_COMPLETED
+    if completed:
+        _require(len(raw_lines) == expected,
+                 f"{result.arm} completed gradient log/update count drift")
+
+    rows: list[dict[str, Any]] = []
+    prefix_error: str | None = None
+    for index in range(expected):
+        if index >= len(raw_lines):
+            prefix_error = f"missing confirmed row {index + 1}"
+            break
+        try:
+            row = json.loads(
+                raw_lines[index],
+                parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)),
+            )
+        except (json.JSONDecodeError, ValueError) as error:
+            prefix_error = f"unreadable confirmed row {index + 1}: {error}"
+            break
+        if not isinstance(row, dict) or row.get("update") != index + 1:
+            prefix_error = f"confirmed row {index + 1} update drift"
+            break
+        rows.append(row)
+    if prefix_error is not None:
+        _require(not completed,
+                 f"{result.arm} completed gradient log/update count drift")
+        return {
+            "summary_status": "CONFIRMED_PREFIX_INVALID",
+            "error": prefix_error,
+            "confirmed_prefix_rows_read": len(rows),
+            "declared_fully_logged_updates": expected,
+            "unconfirmed_tail_line_count": max(0, len(raw_lines) - expected),
+        }
+
+    tail_lines = raw_lines[expected:]
+    tail_parseable = 0
+    for line in tail_lines:
+        try:
+            parsed = json.loads(
+                line,
+                parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)),
+            )
+            tail_parseable += isinstance(parsed, dict)
+        except (json.JSONDecodeError, ValueError):
+            pass
+
     if not rows:
-        return {"logged_updates": 0, "clip_applied_count": 0,
+        return {"summary_status": "CONFIRMED_PREFIX_SUMMARISED",
+                "logged_updates": 0, "clip_applied_count": 0,
                 "positive_damage_alignment_count": 0,
                 "defined_damage_alignment_cosine_count": 0,
-                "median_damage_alignment_cosine": None}
+                "median_damage_alignment_cosine": None,
+                "unconfirmed_tail_line_count": len(tail_lines),
+                "unconfirmed_tail_parseable_line_count": int(tail_parseable)}
     clip_count = 0
     positive = 0
     cosines: list[float] = []
@@ -1041,7 +1270,10 @@ def _read_gradient_summary(result: ArmRunResult) -> dict[str, Any]:
         if alignment["cosine"] is not None:
             cosines.append(float(alignment["cosine"]))
     return {
+        "summary_status": "CONFIRMED_PREFIX_SUMMARISED",
         "logged_updates": len(rows),
+        "unconfirmed_tail_line_count": len(tail_lines),
+        "unconfirmed_tail_parseable_line_count": int(tail_parseable),
         "clip_applied_count": int(clip_count),
         "positive_damage_alignment_count": int(positive),
         "defined_damage_alignment_cosine_count": len(cosines),
@@ -1264,6 +1496,7 @@ def write_shared_evidence(
 def _execution_preflight(
     *, config: Mapping[str, Any], output_dir: Path, repo_root: Path,
 ) -> dict[str, Any]:
+    repo_root = _bound_repo_root(repo_root)
     _require(sys.platform.startswith("linux"), "E009 training is forbidden off Linux",
              PermissionError)
     _require(torch.cuda.is_available(), "CUDA is required", RuntimeError)
@@ -1285,11 +1518,25 @@ def _execution_preflight(
     return observed
 
 
+def _validated_runtime_packet_identity(
+    runtime: Runtime, config: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Bind the object actually consumed by build_runtime before optimisers exist."""
+    identity = runtime.packet_identity
+    _require(isinstance(identity, Mapping), "runtime packet identity missing")
+    observed = identity.get("manifest_sha256")
+    _require(observed == EXPECTED_PACKET_MANIFEST_SHA256 and
+             observed == config["source"]["input_packet_sha256"],
+             "consumed runtime packet identity mismatch")
+    return copy.deepcopy(dict(identity))
+
+
 def run_producer(
     *, packet_dir: Path, resolved_config_path: Path,
     base_runtime_config_path: Path, output_dir: Path, repo_root: Path,
 ) -> dict[str, Any]:
     """Execute from one captured config/base snapshot after final authorisation."""
+    repo_root = _bound_repo_root(repo_root)
     resolved_config_path = resolved_config_path.resolve(strict=True)
     resolved_raw = resolved_config_path.read_bytes()
     base_raw = base_runtime_config_path.read_bytes()
@@ -1324,6 +1571,7 @@ def _run_producer_snapshots(
     base_runtime_config_path: Path, output_dir: Path, repo_root: Path,
 ) -> dict[str, Any]:
     """Internal runner whose config inputs are immutable task-owned snapshots."""
+    repo_root = _bound_repo_root(repo_root)
     config = _load_json(resolved_config_path)
     packet_identity = json.loads((packet_dir / "packet_identity.json").read_text())
     validate_resolved_config(
@@ -1348,6 +1596,8 @@ def _run_producer_snapshots(
             device=device,
             executable=False,
         )
+        consumed_packet_identity = _validated_runtime_packet_identity(
+            base_runtime, config)
         from s09_e009_four_arm import initialise_arm_states
         options = config["optimisation"]
         models, optimizers, isolation = initialise_arm_states(
@@ -1362,7 +1612,8 @@ def _run_producer_snapshots(
         output_dir.mkdir(parents=False)
         _write_new_bytes(output_dir / "config_resolved.json",
                          resolved_config_path.read_bytes())
-        _write_new_json(output_dir / "input_packet_identity.json", packet_identity)
+        _write_new_json(output_dir / "input_packet_identity.json",
+                        consumed_packet_identity)
         _write_new_bytes(output_dir / "environment.txt", (
             json.dumps(environment, indent=2, sort_keys=True) + "\n").encode())
         config_sha = sha256_file(resolved_config_path)
