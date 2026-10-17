@@ -1,0 +1,9 @@
+{
+  "scientific_source": "c4ceb5d27fa8d408be1b9f02dcd6b10308f301a2",
+  "retrieval_verification_sha256": "639187276322a8704565e6ac258cd7d1c0b246bf4152aa75f141c5d20d42f400",
+  "all_sha256_verified": true,
+  "producer_valid_runs": 3,
+  "producer_verdict": "FIXED_INITIAL_HEAD_RMS_THREE_STATE_UV_SCREEN_FAIL",
+  "complete_mac_replay_pass": false,
+  "strict_mac_verdict": "INADMISSIBLE"
+}
