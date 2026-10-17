@@ -1,7 +1,7 @@
 ---
 storyline_id: S02
 experiment_id: S02-E006
-protocol_revision: audit-v1.1
+protocol_revision: audit-v1.2
 claim_class: C1_evidence_validity
 evidence_domain: real_road_and_controlled_experiment_reported_separately
 status: audit_preparation_no_training
@@ -24,3 +24,7 @@ Review/stop: independent read-only code review before the formal inventory, inde
 ## Audit-v1.1 identity correction before successful inventory
 
 R001 stopped at section metadata conflict, before formal output creation. Direct inspection found169015-D-2009 contains CELL169015/160015 and3302-I-2021 contains13 CELL codes under one SECTION_ID. Do not repair codes, merge across these groups, or silently promote them to separate independent specimens. Revised inventory reports the variant sets and quarantines any metadata-inconsistent or duplicate-date SECTION_ID from window counts/shortlist. Raw records are retained. This is validity handling, not outcome filtering or a relaxed forecast criterion. Re-review exact revised code before fresh R002. R001 failure receipt remains in its archive.
+
+## Audit-v1.2 waveform source-quality inventory
+
+R002 stopped before outputs at PHM non-strict waveform timestamps. Direct source inspection shows duplicated exported time values, not proof of duplicate physical samples or repairable exact acquisition timing. Report equal/backward-step counts as quality gaps while retaining raw waves and all metadata; do not deduplicate, reconstruct timestamps or certify usable waveform features. Use universal newline handling for literal CSV payload line endings. No forecast criterion changed, no labels repaired, no model execution. R002 failed receipt retained; fresh R003 after exact code rereview.

@@ -136,18 +136,20 @@ def phm():
         w=openpyxl.load_workbook(io.BytesIO(z.read(name)),read_only=True,data_only=True)
         vals=[(int(r[0]),float(r[1])) for r in w['Sheet1'].values if numeric(r[0]) and numeric(r[1])]
         labelkeys=[r[0] for r in vals];check(len(labelkeys)==len(set(labelkeys)),'duplicate PHM labels')
-        signals={};aliases=[]
+        signals={};aliases=[];time_warnings=[]
         for n in z.namelist():
             match=re.search('/'+s+r'/(\d+)/(signal|singal)_([12])\.csv$',n)
             if not match:continue
             if match[2]=='singal':aliases.append(n)
             cycle=int(match[1]);rep=int(match[3])
             check(rep not in signals.setdefault(cycle,{}),'duplicate PHM repeat')
-            rows=list(csv.reader(io.StringIO(z.read(n).decode())))
+            rows=list(csv.reader(io.StringIO(z.read(n).decode(),newline='')))
             check(rows[0]==['time','ch1','ch2'],'PHM signal header')
             vv=[[float(x) for x in r] for r in rows[1:] if r]
             check(all(len(r)==3 and all(math.isfinite(v) for v in r) for r in vv),'PHM waveform numeric')
-            check(all(b[0]>a[0] for a,b in zip(vv,vv[1:])),'waveform time monotonic')
+            equal=sum(b[0]==a[0] for a,b in zip(vv,vv[1:]))
+            backward=sum(b[0]<a[0] for a,b in zip(vv,vv[1:]))
+            if equal or backward:time_warnings.append({'member':n,'duplicate_time_steps':equal,'backward_time_steps':backward})
             signals[cycle][rep]=len(vv)
         check(all(set(v)=={1,2} for v in signals.values()),'PHM repeats missing')
         exact=sorted(set(labelkeys)&set(signals))
@@ -156,6 +158,9 @@ def phm():
             'signal_only_cycles':json.dumps(sorted(set(signals)-set(labelkeys))),
             'label_only_cycles':json.dumps(sorted(set(labelkeys)-set(signals))),
             'source_label_order_monotonic':not any(bad),'typo_spelling_signal_members':len(aliases),
+            'waveform_files_with_time_warnings':len(time_warnings),
+            'waveform_duplicate_time_steps':sum(r['duplicate_time_steps'] for r in time_warnings),
+            'waveform_backward_time_steps':sum(r['backward_time_steps'] for r in time_warnings),
             'three_past_plus_next_count_upper_bound':max(len(exact)-3,0),
             'fixed_h1000_four_state_windows':exact_windows(exact,1000),
             'typo_cycle_repaired':False})
@@ -173,7 +178,7 @@ def phm():
 
 
 def main():
-    out=ROOT/'local_archive/experiments/S02-E006/runs/S02-E006-R002/audit'
+    out=ROOT/'local_archive/experiments/S02-E006/runs/S02-E006-R003/audit'
     check(not out.exists(),'fresh output required')
     check(not subprocess.check_output(['git','status','--porcelain'],text=True).strip(),'clean code snapshot required')
     head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
@@ -186,10 +191,10 @@ def main():
     mt,ms=mendeley();nt,na,ns=mnroad();pt,pj,ps=phm()
     out.mkdir(parents=True)
     for name,rs in [('mendeley_sheets.csv',mt),('mnroad_sections.csv',nt),('mnroad_spring_slot_inventory.csv',na),('phm_specimens.csv',pt),('phm_cycle_join.csv',pj)]:write_csv(out/name,rs)
-    summary={'run_id':'S02-E006-R002','scope':'schema identity availability only, no forecasts','Mendeley':ms,'MnROAD':ns,'PHM2019':ps,'training':False,'fitting':False,'scientific_prediction_result':False}
+    summary={'run_id':'S02-E006-R003','scope':'schema identity availability only, no forecasts','Mendeley':ms,'MnROAD':ns,'PHM2019':ps,'training':False,'fitting':False,'scientific_prediction_result':False}
     (out/'summary.json').write_text(json.dumps(summary,indent=2,default=str)+'\n')
     check(all(p.read_bytes()==b for p,b in original.items()),'source changed')
-    receipt={'run_id':'S02-E006-R002','code_commit':head,'dirty_status':'clean at launch','hostname':socket.gethostname(),'pid':os.getpid(),'start_utc':started,'elapsed_seconds':time.monotonic()-start,'out':str(out),'input_paths':[str(p) for p in original],'input_bytes_unchanged':True,'execution_status':'succeeded','retrieval':'local verified','training':False,'fitting':False,'model_forward':False,'command':__import__('sys').argv}
+    receipt={'run_id':'S02-E006-R003','code_commit':head,'dirty_status':'clean at launch','hostname':socket.gethostname(),'pid':os.getpid(),'start_utc':started,'elapsed_seconds':time.monotonic()-start,'out':str(out),'input_paths':[str(p) for p in original],'input_bytes_unchanged':True,'execution_status':'succeeded','retrieval':'local verified','training':False,'fitting':False,'model_forward':False,'command':__import__('sys').argv}
     (out/'execution_receipt.json').write_text(json.dumps(receipt,indent=2)+'\n');signal.alarm(0)
     print(json.dumps(summary,indent=2,default=str))
 
