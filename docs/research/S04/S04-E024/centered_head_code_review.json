@@ -1,0 +1,26 @@
+{
+  "verdict": "PASS",
+  "scope": "centered shared-Frobenius-head trust-region pre-use review",
+  "source": "2c9ab039a3e4497125446d6065bad11593d21a93",
+  "blocking_findings": [],
+  "resolved_initial_finding": "nonfinite computed diagnostics now rejected; counterexample regression added",
+  "independent_tests": {
+    "initial_passed": 7,
+    "initial_seconds": 0.17,
+    "final_passed": 8,
+    "final_seconds": 0.2
+  },
+  "shared_UV_budget": true,
+  "center_preserved": true,
+  "solve_truncation": false,
+  "neural_optimizer_steps": 0,
+  "original_checkpoint_writes": 0,
+  "remote_actions": 0,
+  "real_results_reviewed": false,
+  "files_sha256": {
+    "SENS_tensile/s04_e024_centered_trust_region.py": "6b37f3bf5e7b48a0dc710a0114cf81309bed935c0721cd6b5e743957c9083f1a",
+    "SENS_tensile/diagnose_s04_e023_trust_head.py": "1533081a780bbbc76f35a16f7c4a43a1d51e8d28e45b250d7887b1d930d9c4fb",
+    "tests/test_s04_e024_centered_trust_region.py": "aed74c662d4c19171358aa271d88762eac8c88c949b30be752981bcc001185ee",
+    "docs/research/S04/S04-E024/centered_head_protocol.md": "9c5260d13b7aa1355d240aa52666fbbbc17c7f3db6e3d9eecadf093ffcd01937"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "verdict": "PASS",
+  "scope": "bounded centered trust-region saved-artifact result audit",
+  "source": "2c9ab039a3e4497125446d6065bad11593d21a93",
+  "blocking_findings": [],
+  "independent_driver": "gesvd",
+  "independent_products": "dgemm",
+  "independent_root": "ordinary-lambda bisection140 iterations",
+  "shared_budget": true,
+  "delta_relative_all_states": 0.1,
+  "max_lambda_relative_difference": 3.9968028886505635e-15,
+  "max_coefficient_difference": 1.942890293094024e-16,
+  "max_uv_difference": 5.551115123125783e-16,
+  "max_independent_kkt": 1.2510837600471426e-14,
+  "independent_warning_count": 0,
+  "original_input_hashes_verified": 33,
+  "regional_values_verified": 12,
+  "line_geometry_pairs_verified": 12,
+  "background_preserved": false,
+  "application_acceptance": null,
+  "main_decision_reviewed": true,
+  "normal_usage_remaining_percent": 93,
+  "neural_updates": 0,
+  "original_checkpoint_writes": 0,
+  "remote_actions": 0,
+  "future_t02_executed": false,
+  "source_sha256": {
+    "review/independent_trust.py": "11b7635b7cab1cc35b53cababfa3c7fc24ccfb40267e623d1ba51e808dd762df",
+    "results/receipt.json": "698d33b61be0d15846a33bcc86fd09d1f9233fb3492667512b02c2a386ea0bca",
+    "results/line_geometry.csv": "de2a38843384742ff4043768a65dd008b157e48e82104f760a45e927ea4ccc6c",
+    "analysis_source/line_geometry.py": "42a51d687bcb0083d1a576e5de15bb70f97f542c9346a1a7d6222ef9df40d52e"
+  },
+  "final_prose_blocking_findings": [],
+  "final_prose_sha256": {
+    ".codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/centered_head_decision.md": "71a606cadae409de31fd721f45e8c6c0ec3cecb266a6336d9fdc856161745b0b",
+    "local_archive/experiments/S04-E024/centered_head_trust_region_v1/figures/regional_cost.png": "473322b632e473694f1978a6454041fd42a791d29ca3f5a40434409fb3514eec",
+    "local_archive/experiments/S04-E024/centered_head_trust_region_v1/figures/regional_cost.md": "7387413b0948293fdf1cbb6ec2c45e03fe7f7ba7c1742c2ff255dfee6889cf1f",
+    "local_archive/experiments/S04-E024/centered_head_trust_region_v1/figures/trust_region_local_fields.png": "8e1c29fcdd266eb03629e091211c7927c1fa8e1c39762e69e94025e43f7cb15c",
+    "local_archive/experiments/S04-E024/centered_head_trust_region_v1/figures/trust_region_local_fields.md": "7fb4b1fc636dba76e081c2cdfdeb4b5c06e844deed62e657759aa9e6a25e14af"
+  }
+}
