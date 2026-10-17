@@ -51,6 +51,7 @@ def main():
                 exclude = bool(letters) and sides[1]<=600 and aspect>=0.12 and (
                     (len(symbols)>=2 and confidence>=0.15) or
                     (len(symbols)==1 and confidence>=0.65 and aspect>=0.15))
+                exclude = bool(exclude)
                 ocr.append({'polygon':poly.tolist(),'text':text,'confidence':float(confidence),
                             'excluded':exclude,'bbox_short_long':aspect})
                 if exclude: cv2.fillPoly(text_mask,[poly],1)
