@@ -179,7 +179,7 @@
     "tests/pavetrack_role_probe/test_probe.py": "b20d0170bc33d921dd8bbb0f572bdec43c4f0566fb806d24ceaf3a0c08cff67c",
     "tests/pavetrack_scalar_utility_cv/test_scalar_analysis.py": "3442c618cce07386f1d598b040c6784931143dd97219a9ae0a77c1f646162c1b",
     "tests/pavetrack_scalar_utility_cv/test_scalar_utility.py": "b9d627885a0c4e0243bdd1f729dc26b0fe1113845c27dfec2fe8fb04e00b963d",
-    "tests/pavetrack_supervised_content/test_content.py": "3da24833dfe72104c5b1736b2a8d3ee4108aff0e4696904dfe7d25d0f80b2c3e",
+    "tests/pavetrack_supervised_content/test_supervised_content.py": "3da24833dfe72104c5b1736b2a8d3ee4108aff0e4696904dfe7d25d0f80b2c3e",
     "tests/pavetrack_supervision_feasibility/test_audit.py": "f31a74350706446b9362dea9003666dfc72b630258faf299916b4b5934302a11",
     "tests/pavetrack_utility_cv/test_analysis.py": "752e763c6a48a52c3e52238d839e606443ab6006a21e1c49bd2031c71836dd28",
     "tests/pavetrack_utility_cv/test_utility.py": "55947c7658aebe7c381a1ab5c615a99811ab01a753b49b7e4745a61940ff0731",
