@@ -29,3 +29,6 @@ Bounded negative: this fixedrepresentation/fixedridge protocol found no addition
 Component progress: datajoin and causaltraining/evaluation execution worked;simple recentgrowth is stronger than eitherfittedarm. Sharednoise,extrapolation,featurechoice and limitedrecordcount remain unresolved alternatives. Do not tunealpha/lag/model/ROI/split on theseevaluatedtails. No additionalfit scheduled. Next meaningfulchange would require freshqualified trajectories,reference information or a separatelydeclared newrepresentation—not claiming the currentnegative succeeded.
 
 Independent Codex numerical evidence review passed; all 147 predictions and MAEs were independently recomputed without refitting, and the figure was inspected. See evidence_review.md. Execution succeeded; interpretation remains a negative label-only diagnostic.
+# 2026-10-17 source clarification addendum
+
+The frozen experiment result below is unchanged. Author correspondence and full-text checks of Langlois's thesis and Réthoré 2015 improve acquisition/measurement semantics but do not establish applicable numerical F/FF crack-tip uncertainty. See [the qualification addendum](../../../datasets/history_information_20261013/fatacrack_literature_addendum_20261017.md). No refitting, tuning or data-lock amendment was performed.

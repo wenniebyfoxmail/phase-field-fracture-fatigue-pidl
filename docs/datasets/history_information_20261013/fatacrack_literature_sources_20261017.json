@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-17",
+  "scope": "source qualification only; no training or refitting",
+  "archive_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/fatacrack_literature_audit_20261017",
+  "sources": [
+    {
+      "name": "Langlois 2023 doctoral thesis, v1",
+      "url": "https://theses.hal.science/tel-04397571v1/document",
+      "file": "sources/Langlois_2023_tel-04397571v1.pdf",
+      "sha256": "827d35ffc9439669a544dd44a1fc983ed3faee77b05b4a87e0b7177684d13e74",
+      "bytes": 106610234,
+      "pages": 151,
+      "coverage": "complete PDF acquired; targeted verification of relevant methods/Part II/Appendix C",
+      "version_caveat": "Versioned file and cover identify v1; current default HAL API reports v2. Do not substitute."
+    },
+    {
+      "name": "Réthoré 2015, HAL author manuscript v1",
+      "doi": "10.1002/nme.4905",
+      "url": "https://hal.science/hal-03665384v1/document",
+      "file": "sources/Rethore_2015_hal-03665384v1.pdf",
+      "sha256": "df4d70444214aebd3ce9950a16fb1c511b4096d69876fa0a3d35cab496b56cd1",
+      "bytes": 6272550,
+      "pages": 40,
+      "coverage": "complete manuscript acquired; method, implementation, validation and decisive figures checked",
+      "version_caveat": "HAL cover and publisher identify 2015 article; body retains 2013 template placeholders."
+    }
+  ],
+  "index_check": {
+    "F_tip_rows": 386,
+    "FF_tip_rows": 114,
+    "F_strict_1000_origins": 379,
+    "FF_strict_1000_origins": 107,
+    "non_1000_transition_both_records": [99001, 100000],
+    "data_mutation": false,
+    "admit_unnumbered_initial_column": false
+  },
+  "records": "reading_records.jsonl",
+  "index_audit": "index_audit.json",
+  "acquisition_receipt": "acquisition_receipt.json",
+  "decision": "Partially supports qualification; applicable F/FF numerical tip error and special time-key mapping remain unresolved; preserve S02-E005 verdict."
+}
