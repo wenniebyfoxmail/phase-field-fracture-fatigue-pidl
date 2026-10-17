@@ -242,6 +242,19 @@ def main(args):
         state=dict(cycle=cy,substep=4,output_folder=str(case),fem_reference=item['fem'],fem_fixed_state_readout={k:femgp[k] for k in ['E_el','E_d','E_hist','physical_energy','independent_free_u_l2','independent_box_projected_damage_l2']},arms={},missing=[],claims=[],_fem=fem)
         state['fem_fixed_state_readout']['native_FEM_feasible_damage_l2']=native_d_norm
         state['fem_fixed_state_readout']['own_PIDL_box_damage_l2_is_different_problem']=True
+        own_lower=inp['pidl_hist_alpha_pre'];own_gp=op.interp(own_lower,inp['cells'],N)
+        state['incoming_objective_differences']=dict(PIDL_gamma=16875,FEM_gamma=421875,
+            PIDL_lower_min=float(own_lower.min()),PIDL_lower_max=float(own_lower.max()),
+            PIDL_lower_negative_nodes=int(np.sum(own_lower<0)),PIDL_lower_above_one_nodes=int(np.sum(own_lower>1)),
+            PIDL_lower_GP_min=float(own_gp.min()),PIDL_lower_GP_max=float(own_gp.max()),
+            PIDL_lower_GP_above_one_count=int(np.sum(own_gp>1)),
+            hard_GP_no_healing_infeasible_with_box=bool(np.any(own_gp>1)),
+            own_soft_penalty_unavoidable_lower_bound=float(.5*16875*np.sum(w*np.maximum(own_gp-1,0)**2)),
+            lower_vs_FEM_pre_maxabs=float(np.max(np.abs(own_lower-inp['fem_pre_lower']))),
+            PIDL_committed_f_min=float(inp['pidl_f_pre'].min()),PIDL_committed_f_max=float(inp['pidl_f_pre'].max()),
+            FEM_accepted_trial_f_min=float(inp['fem_current_history234'][:,:,2].min()),FEM_accepted_trial_f_max=float(inp['fem_current_history234'][:,:,2].max()),
+            f_maxabs_difference=float(np.max(np.abs(inp['pidl_f_pre']-inp['fem_current_history234'][:,:,2]))))
+
         for name in ['operator_contract','b0_contract','original_objective_reproduction']:
             if (case/(name+'.json')).exists():state[name]=js(case/(name+'.json'))
         b0=checked_fields(case/'b0_fields.npz',n,observed) if (case/'b0_fields.npz').exists() else None
@@ -250,6 +263,11 @@ def main(args):
             reportpath=case/'result.json' if arm=='U_B0' else case/'initial_D.json' if arm=='D_B0' else case/arm/'result.json'
             if not reportpath.exists():state['missing'].append(arm);continue
             report=js(reportpath)
+            accepted_path=case/arm/'accepted.json'
+            if accepted_path.exists():
+                accepted=js(accepted_path);report['accepted_endpoint_records']=len(accepted)
+                report['nonzero_parameter_updates']=sum(x.get('param_delta_inf',0)>0 for x in accepted)
+                observed.append(dict(path=str(accepted_path),bytes=accepted_path.stat().st_size,sha256=sha(accepted_path)))
             observed.append(dict(path=str(reportpath),bytes=reportpath.stat().st_size,sha256=sha(reportpath)))
             if arm=='U_B0':f=checked_fields(case/'fields.npz',n,observed)
             elif arm=='D_B0':
@@ -279,6 +297,14 @@ def main(args):
                 report['independently_closed_box_KKT']=independently_closed
             report['independent_float64_energy']={k:gp[k] for k in ['E_el','E_d','E_hist','physical_energy']}
             report['E_el_ratio_to_conditional_FEM']=gp['E_el']/femgp['E_el']
+            ref_g=(1-femgp['dgp'])**2
+            grad_error=np.sum((gp['gu']-femgp['gu'])**2+(gp['gv']-femgp['gv'])**2,axis=2)
+            grad_reference=np.sum(femgp['gu']**2+femgp['gv']**2,axis=2)
+            report['FEM_g_weighted_uv_gradient_rel_L2']=float(np.sqrt(np.sum(w*ref_g*grad_error)/np.sum(w*ref_g*grad_reference)))
+            if arm in ['U_B0','head_U_actual','U_energy','U_supervised']:
+                report['fixed_damage_elastic_energy_excess_relative']=(gp['E_el']-femgp['E_el'])/femgp['E_el']
+                assert gp['E_el']>=femgp['E_el']-1e-10, 'Conditional FEM energy minimum contract'
+
             report['active_vs_conditional_FEM']=metric(femgp['active'],gp['active'],w)
             report['damage_vs_conditional_FEM']=metric(femgp['dgp'],gp['dgp'],w)
             report['independent_bounds_healing']={k:gp[k] for k in ['d_min','d_max','negative_damage_node_fraction','above_one_damage_node_fraction','gp_healing_max','exact_bound_node_fraction','exact_bound_projected_residual_squared_share']}
