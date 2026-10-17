@@ -1,0 +1,158 @@
+{
+  "locations": [
+    "24",
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "1638",
+    "2027",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "held_groups": [
+    [
+      "24",
+      "514",
+      "1577",
+      "3662"
+    ],
+    [
+      "95",
+      "728",
+      "1638",
+      "4494"
+    ],
+    [
+      "151",
+      "1400",
+      "2027",
+      "5508"
+    ]
+  ],
+  "excluded_locations": [
+    "353",
+    "1459",
+    "2028",
+    "5982"
+  ],
+  "input_counts": {
+    "images": 835,
+    "original_rows": 43347,
+    "corrections": 31156
+  },
+  "policy": {
+    "iou": 0.5,
+    "false_positives_per_image": 1,
+    "original_duplicate_iou": 0.7,
+    "correction_duplicate_iou": 0.5,
+    "score": "sqrt(original_proposer_confidence * corrected_E003_probability)",
+    "eligibility": "unchanged E012 base eligible19384, additionally strict positive original/corrected intersection; base indices/eligibility remain immutable",
+    "correction_order": "fixed diagnostic oracle order only; no learned/deployment policy",
+    "max_per_image": 1,
+    "max_per_source_group": 3,
+    "source_group_unit": "fixed four-site E012 group; apply same cap to each included group during FIT/jackknife/held",
+    "originals": "immutable prefix, all original scores unchanged; retain E003 as deployed comparator"
+  },
+  "producer": {
+    "hostname": "D-26-09",
+    "ssh_alias": "gpu-server",
+    "account": "ad\\xw436",
+    "python": "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+    "CUDA_VISIBLE_DEVICES": "-1",
+    "GPU": false,
+    "fallback": false
+  },
+  "locality": {
+    "predicate": "min(old_x2,new_x2)>max(old_x1,new_x1) AND min(old_y2,new_y2)>max(old_y1,new_y1)",
+    "edge_contact": false,
+    "epsilon": false,
+    "threshold_search": false,
+    "trainable_parameters": 0,
+    "field": "positive_intersection",
+    "base_eligibility_unchanged": true
+  },
+  "protocol": "S01-E017-v1",
+  "proposed_run_id": "S01-E017-R001",
+  "claim_class": "C1 training-supervision and fixed-oracle opportunity feasibility, not learned detection gain",
+  "feature": {
+    "probability_clip": 1e-06,
+    "names": [
+      "original_higher_score_rows_per_image",
+      "original_equal_score_rows_per_image",
+      "higher_or_equal_score_nonparent_overlap_count"
+    ],
+    "GT_free": true,
+    "reference_cutoff_as_feature": false,
+    "fit_scales": false
+  },
+  "fit": {
+    "expected_positive_GT": [
+      3,
+      5,
+      6
+    ],
+    "expected_positive_sites": [
+      3,
+      3,
+      4
+    ],
+    "learned_models": 0
+  },
+  "quality": {
+    "match_iou": 0.5,
+    "reference": "corrected highest positive IoU GT, smaller annotation index breaks ties; null if max IoU is zero",
+    "gain": "corrected IoU minus parent IoU against SAME corrected reference",
+    "full12_labels": false
+  },
+  "oracles": {
+    "names": [
+      "validity_only",
+      "decomposed_novel_budget"
+    ],
+    "validity_only": {
+      "filter": "fixed admission and corrected max GT IoU>=.5",
+      "order": "unchanged s0 descending, image/box/key"
+    },
+    "decomposed_novel_budget": {
+      "filter": "validity_only; corrected reference not in own FIT original budget hits; cached admitted true, lost==0 and FP==0",
+      "order": "same-reference IoU gain descending, then unchanged s0, image/box/key"
+    },
+    "GT_informed": true,
+    "learned_result": false,
+    "upper_bound": false
+  },
+  "criterion": {
+    "name": "at_least_one_own_FIT_decomposed_oracle_protected_increment",
+    "old_E003_retention_minimum": 1.0,
+    "net_new_GT_minimum": 1,
+    "macro_delta_strictly_positive": true,
+    "required_passing_FITs": 1,
+    "not_a_learned_effect": true,
+    "no_all_folds_active_gate": true
+  },
+  "budget": {
+    "runs": 1,
+    "cpu_threads": 1,
+    "total_wall_seconds": 900,
+    "peak_RSS_bytes": 4294967296,
+    "fit_baseline_metrics": 3,
+    "supervision_rows": 38768,
+    "context_feature_builds": 3,
+    "oracle_comparisons": 6,
+    "model_fits": 0,
+    "new_singleton_U": 0,
+    "head_forwards": 0,
+    "backbone_forwards": 0,
+    "pixel_reads": 0,
+    "gradient_steps": 0,
+    "linear_solves": 0,
+    "held_comparisons": 0,
+    "full12_comparisons": 0
+  },
+  "fresh_access": false,
+  "execution_authorized": false
+}

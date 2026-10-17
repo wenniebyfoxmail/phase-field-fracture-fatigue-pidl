@@ -1,0 +1,86 @@
+{
+  "protocol": "S01-E017-v1",
+  "source_run": "S01-E012-R004",
+  "source_commit": "fdc6c195aabbc518c3d2239dd900e5869c09a179",
+  "source_zip": "C:\\Users\\xw436\\pavetrack_runs\\S01-E012-R004\\delivery\\S01-E012-R004-evidence-v1.zip",
+  "source_zip_sha256": "a650b3117e9a4417681f75662d98f633c96679c0a2a4708229d0135e327db751",
+  "source_files": {
+    "qualification.json": "7d9f9532246bdc846ad557e2fae0950a0249eceb71a61119be106d6ecdf446d6",
+    "candidate_identity.json": "807d48894475b8619e58b057efaa44a80939c2d1868190171605880654c187da",
+    "scores.json": "fb84e5df4bf006d4df546a2d047cda0850fd055574924c49ed04a24da14d7344",
+    "fit8_fold_0.json": "edd7251bbe32b0545a614461e863bfcd8ff0a4aa74544e60d20ed9b193324d9d",
+    "fit8_fold_1.json": "d3e77f451971266fb41cbec901286169a07f9355c2a71855968fbb2a7c6f1c25",
+    "fit8_fold_2.json": "d2b9082d308182b8241e9d45f6c44e8f2b94f4391e86a4456cc24f3c83ed2a54",
+    "source_receipt.json": "3c0d080cc369e6a8ced88dde15fff9d9fbef007fe68c5dbdecb5bfe615bda68c",
+    "scoring_receipt.json": "83240c94d48c91fab187cb1940c1da9f78173792301249a35b9bc6302e6e4b59",
+    "launch.json": "e42eb6c275ffab36e9400d74f74bdc7e5f27af9dcddccb47eb3768589c303ce1",
+    "output_receipt.json": "4f5c7f2d8a4b47ad298daf652da9a97054a18585151d47c63121262e4822649c"
+  },
+  "original_rows_digest": "8770a36c06010cb0200c327c593e47aa29b914757f16eab1ac20edc16c4a2888",
+  "metadata_path": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\manifest_train_validation.json",
+  "metadata_sha256": "6fc622943a78063926d96a13e727013ae22d12919a3af3814cfc221bd1a7e5bb",
+  "classifier_identity_only": "bc304c5f5275975b1b5ec99fa6c398dba99835892c39e40a914896f8c3e22e65",
+  "locations": [
+    "24",
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "1638",
+    "2027",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "held_groups": [
+    [
+      "24",
+      "514",
+      "1577",
+      "3662"
+    ],
+    [
+      "95",
+      "728",
+      "1638",
+      "4494"
+    ],
+    [
+      "151",
+      "1400",
+      "2027",
+      "5508"
+    ]
+  ],
+  "source_original_count": 43347,
+  "source_correction_count": 31156,
+  "source_eligible_count": 19384,
+  "source_B12_hits": 684,
+  "forbidden_inputs": [
+    "pooled_features.npy",
+    "checkpoint weights",
+    "source image pixels",
+    "full12 U labels as training targets",
+    "R004 joint chosen corrections as learner data",
+    "four consumed qualification sites",
+    "validation/confirmation/reserve sites"
+  ],
+  "fresh_access": false,
+  "prior_experiment_reference": {
+    "experiment": "S01-E016",
+    "source_commit": "4eab421c0262e8784262be8f752440343db47818",
+    "result_run": "S01-E016-R001",
+    "result_zip_sha256": "d48987f57cd6c77a4b60a42ef6d7865d42c92ed73ae1d2df5efccc67df75f28c",
+    "use": "historical reference only; no policy replay",
+    "old_hits": 684,
+    "net_GT": 0,
+    "max_policy_positive_GT": [
+      0,
+      0,
+      0
+    ],
+    "all_main_abstained": true
+  }
+}
