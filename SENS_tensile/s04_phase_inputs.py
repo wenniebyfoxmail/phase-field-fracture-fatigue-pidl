@@ -16,7 +16,7 @@ from pathlib import Path
 import stat
 
 EXPERIMENT = 'S04-E025'
-RUN = EXPERIMENT+'-R001'
+RUN = EXPERIMENT+'-R002'
 ROOT = Path(__file__).resolve().parents[1]
 DATA_ROOT = Path('/Users/wenxiaofang/phase-field-fracture-with-pidl')
 # Only legacy relative scientific paths use the documented E016 source root.
