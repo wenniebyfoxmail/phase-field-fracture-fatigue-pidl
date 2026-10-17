@@ -1,0 +1,7 @@
+specimen,label_rows,signal_cycles,exact_joined_cycles,signal_only_cycles,label_only_cycles,source_label_order_monotonic,typo_spelling_signal_members,waveform_files_with_empty_padding_headers,waveform_files_with_invalid_rows,waveform_invalid_rows,waveform_files_with_time_warnings,waveform_duplicate_time_steps,waveform_backward_time_steps,three_past_plus_next_count_upper_bound,fixed_h1000_four_state_windows,typo_cycle_repaired
+T1,7,7,7,[],[],True,0,0,0,0,12,10788,0,4,0,False
+T2,3,3,3,[],[],True,0,0,0,0,6,5400,0,0,0,False
+T3,9,10,9,[55391],[],True,0,0,20,760,0,0,0,6,0,False
+T4,8,8,7,[67054],[7054],False,0,0,16,608,0,0,0,4,0,False
+T5,4,4,4,[],[],True,0,0,7,266,1,900,0,1,0,False
+T6,7,6,6,[],[0],True,8,9,0,0,12,21488,4,3,0,False

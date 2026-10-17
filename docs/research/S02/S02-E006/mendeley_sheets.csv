@@ -1,0 +1,5 @@
+sheet,specimen_code,label_rows,first_cycle,last_cycle,four_state_windows_h30,four_state_windows_h600,four_state_windows_h1200
+E_0_175_1(Section 5.1),E_0_175_1,42,33600,68400,0,11,30
+E_0_175_1(Section 6.1),E_0_175_1,38,39120,68520,0,18,17
+C_15_20_1(Section 5.2),C_15_20_1,41,18600,42600,0,25,29
+C_15_20_1(Section 6.2),C_15_20_1,35,22470,42870,0,32,29

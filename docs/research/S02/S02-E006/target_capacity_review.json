@@ -1,0 +1,103 @@
+{
+  "scope": "independent read-only original-value reconciliation; no prediction errors or fits",
+  "NWP_fixed_six": {
+    "cells": [
+      {
+        "cell": 3,
+        "windows": 4,
+        "range": [
+          0,
+          0
+        ],
+        "varying_windows": 0
+      },
+      {
+        "cell": 70,
+        "windows": 3,
+        "range": [
+          10.5,
+          61
+        ],
+        "varying_windows": 3
+      },
+      {
+        "cell": 14,
+        "windows": 2,
+        "range": [
+          0,
+          0
+        ],
+        "varying_windows": 0
+      },
+      {
+        "cell": 15,
+        "windows": 2,
+        "range": [
+          0,
+          0
+        ],
+        "varying_windows": 0
+      },
+      {
+        "cell": 2,
+        "windows": 2,
+        "range": [
+          0,
+          0
+        ],
+        "varying_windows": 0
+      },
+      {
+        "cell": 21,
+        "windows": 2,
+        "range": [
+          0,
+          0
+        ],
+        "varying_windows": 0
+      }
+    ],
+    "decision": "current fixed list cannot support a multi-varying-cell pilot"
+  },
+  "separate_fatigue_area": {
+    "all_six_ranges": [
+      0,
+      0
+    ],
+    "all15_four_state_sequences": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "varying_windows": 0,
+    "decision": "stopped under predeclared capacity rule"
+  },
+  "calendar_only_training_coverage": {
+    "origins_with_at_least2_other_rows_from_at_least2_other_cells": 10,
+    "total_origins": 15,
+    "unavailable_1997_origins": 5,
+    "release_qualification": false
+  },
+  "PHM_new_band": {
+    "specimen_ids": [
+      "T1",
+      "T3",
+      "T5",
+      "T6"
+    ],
+    "windows": 5,
+    "target_gap_min": 4979,
+    "target_gap_max": 5266,
+    "other_training_window_counts": {
+      "T1": 4,
+      "T3": 3,
+      "T5": 4,
+      "T6": 4
+    },
+    "decision": "best next supplement source, insufficient for substantive fitting"
+  },
+  "reviewer": "/root/sensitivity_protocol_review",
+  "training": false,
+  "old_prediction_negative_unchanged": true
+}

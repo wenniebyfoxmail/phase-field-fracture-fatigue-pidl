@@ -1,0 +1,56 @@
+[
+  {
+    "queried_section": "3-D-1990",
+    "selected": {
+      "ID": 289,
+      "NAME": "MnROAD Mainline - Interstate 94",
+      "ROAD_KEY": 9,
+      "SECTION_ID": "3-D-1990"
+    }
+  },
+  {
+    "queried_section": "1070-D-2010",
+    "selected": {
+      "ID": 1424,
+      "NAME": "MnROAD Mainline - Interstate 94",
+      "ROAD_KEY": 9,
+      "SECTION_ID": "1070-D-2010"
+    }
+  },
+  {
+    "queried_section": "14-D-1991",
+    "selected": {
+      "ID": 1479,
+      "NAME": "MnROAD Mainline - Interstate 94",
+      "ROAD_KEY": 9,
+      "SECTION_ID": "14-D-1991"
+    }
+  },
+  {
+    "queried_section": "15-D-1991",
+    "selected": {
+      "ID": 1487,
+      "NAME": "MnROAD Mainline - Interstate 94",
+      "ROAD_KEY": 9,
+      "SECTION_ID": "15-D-1991"
+    }
+  },
+  {
+    "queried_section": "2-D-1991",
+    "selected": {
+      "ID": 1707,
+      "NAME": "MnROAD Mainline - Interstate 94",
+      "ROAD_KEY": 9,
+      "SECTION_ID": "2-D-1991"
+    }
+  },
+  {
+    "queried_section": "21-D-1990",
+    "selected": {
+      "ID": 1751,
+      "NAME": "MnROAD Mainline - Interstate 94",
+      "ROAD_KEY": 9,
+      "SECTION_ID": "21-D-1990"
+    }
+  }
+]

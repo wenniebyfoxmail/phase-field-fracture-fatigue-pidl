@@ -4,7 +4,7 @@ experiment_id: S02-E006
 protocol_revision: audit-v1.4
 claim_class: C1_evidence_validity
 evidence_domain: real_road_and_controlled_experiment_reported_separately
-status: audit_preparation_no_training
+status: audit_complete_conditional_no_training
 ---
 
 # Candidate trajectories for incremental history information
@@ -42,3 +42,11 @@ R004 stopped at waveform headers with additional empty-named columns. Inventory 
 R005 completed source/schema inventory; preliminary source-quality checks are not performance results. To avoid ranking road candidates solely on unfiltered date counts, add one conservative metadata-only timeline screen as specified in minimum_next_validation.md. New script screen_timelines.py uses exact R005 CSVs plus official timeline JSONs, preserves all files, and requires a fresh reviewed R006. It never claims maintenance completeness or physical independence. The next validation document is an unexecuted design, not a training authorization or Run Ready protocol.
 
 R006 timeline source validation stopped before outputs because the23-D-1999 response includes historical23-D-1990 events. Preserve that chain, do not reassign ancestor events to current study. Revised screen reports mixed timeline identity and keeps zero coverage for that section pending lineage interpretation; fresh R007 after code rereview. This cannot create an extra independent road.
+
+## Dated S02 claim impact —2026-10-17
+
+Source and recorded-action inventory completed with independent code/evidence review. MnROAD is the preferred conditional road-label route;14DrivingCELL source candidates reduce to11codes/21upper-bound windows, top6qualification shortlist has15. None is certified independent/maintenance-cleared or ready for training. Mendeley provides2labelledcodes not4; PHMadditional6specimens lack the proposed exact1000cycle windows and have source-quality gaps. No predictive benefit was tested or claimed, and S02-E005 negative is unchanged. Next action is bounded metadata/measurement qualification of the shortlisted road units and a leakage-safe origin manifest; no model run follows.
+
+## Final S02 claim impact — target-capacity review supersedes candidate readiness
+
+Do not treat the earlier metadata shortlist as a viable training dataset. FixedNWPtop6 hasfiveallzero groups/onevarying group; separately predeclared fatiguearea isallzero. Both roadpilot proposals stopped. A separately declared PHMopticalwindow proposal yields4IDs/5windows, insufficientfor substantivefitting. PHM is onlythenextsupplement-sourcepriority, notqualifiedtrainingdata. No predictiveclaim changed; preserveS02-E005negative. No furtherindicator/road/bandsearchand no training. Next decisivework is existingmeasurements/cycle/provenance supplement or, ifunavailable, a newacquisitiondesign.

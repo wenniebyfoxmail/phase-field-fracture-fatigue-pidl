@@ -1,6 +1,6 @@
-# PHM optical-label minimum pilot — proposed, no training
+# PHM optical-label pilot — capacity-limited draft, do not fit
 
-2026-10-17, C1 selection plus an UNEXECUTED design. The metadata-selected MnROAD NWP list has only one varying group and its separate fatigue-area capacity check has none. Both are stopped as current changing-trajectory pilots. Do not change their indicators or choose positive-growth roads to erase those outcomes.
+2026-10-17. **CAPACITY BLOCK: the fixed proposed band gives only5windows across4IDs, leaving3–4trainingwindows per fold. This is insufficient for substantive history-information validation; next action is existing-data supplementation, not fitting.** C1 selection plus an UNEXECUTED design. The metadata-selected MnROAD NWP list has only one varying group and its separate fatigue-area capacity check has none. Both are stopped as current changing-trajectory pilots. Do not change their indicators or choose positive-growth roads to erase those outcomes.
 
 Preferred next qualification source: PHM2019 corrected-T6 PUBLIC TRAINING optical crack-length tables. They have six described physical specimens, labelled in mm independently of the PZT signals. This is a laboratory proxy, not road validation. Use optical labels only in this minimal plan: malformed/rounded PZT waveform time is not repaired or used. Physical lineage, optical definition/error and online measurement availability still need source clarification. T7/T8 remain untouched.
 
@@ -31,3 +31,11 @@ Budget if separately authorized later: at most four usable specimen folds after 
 Resolve original time/cycle anomalies, source physical grouping and optical label definition; check input availability using the past-only dependency audit; freeze the exact origin/target manifest, observed target-gap range, specimen eligibility and training counts. Record that sampling-window tolerance and actual observation policy limit interpretation. If physical qualification is unavailable but a published-label-only sandbox is considered, it needs explicit scope and new code/protocol review, never a claim that the metrology was repaired.
 
 Next immediate work is the small metadata/measurement/provenance supplement and frozen manifest; not a model run. If the exact band has inadequate distinct varying groups or lawful folds, report no usable next pilot and stop rather than widen the band or substitute labels.
+
+## Source-cycle availability result after design review
+
+T1:65500->70766 (5266cycles);T3:57038->62017 (4979) and60035->65029 (4994);T5:51000->56000 (5000);T6:68091->73211 (5120). T2zeroeligible;T4quarantinedwhole. FourIDshavevaryingpublishedlabels, but fivewindows cannot distinguish a reliable history gain from small-sample/regularisation effects. Whole-ID LOO permits only3–4trainingwindows, despite threeotherIDs. Do not expandband, addfeatures, replaceIDs or run the illustrative8fitbudget to obtain a claim.
+
+Minimum existing-material supplement: original/corrected T4cycle table and version note; T3's already-measured optical labels for55391 if they exist (otherwise explicit absence); original T6version/cycle definition; acquisition schedule/log stating fixed vs condition-triggered sampling; any additional already-measured optical label records forT1–T6 and existing repeatability/measurement-method summary. Do not request new experiments, infer labels from waves, or send a message without user approval. If no additional suitable direct labels exist, this release cannot provide the intended fixed-horizon confirmation; choose a separately justified new source/collection design.
+
+The future executable protocol must first state one scientifically useful horizon/target, then verify direct-label coverage and enough independent-unit variation to assess an agreed effect relative to baseline variation/noise. Do not impose a made-up universal sample threshold. Preserve the current proposal/manifest as a development capacity check, not a formal confirmation plan or a training authorization.

@@ -1,0 +1,57 @@
+{
+  "source_inventory": {
+    "run_id": "S02-E006-R005",
+    "code_commit": "c45fb2b6a35b45da3c3b59580857ed1ff226b060",
+    "dirty_status": "clean at launch",
+    "hostname": "Wennies-MacBook-Pro-14.local",
+    "pid": 68656,
+    "start_utc": "2026-10-17T20:09:54.923841+00:00",
+    "elapsed_seconds": 0.6746013329830021,
+    "out": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S02-E006/runs/S02-E006-R005/audit",
+    "input_paths": [
+      "/Users/wenxiaofang/Downloads/MnROAD/HMA Distress All export.xlsx",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/mendeley_four_specimen_audit_20261013/4. Cycles vs Crack Length.xlsx",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/mendeley_four_specimen_audit_20261013/archive_header_manifest.json",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/history_candidate_selection_20261017/raw/PHM2019_crack_growth_training_data_v2.zip"
+    ],
+    "input_bytes_unchanged": true,
+    "execution_status": "succeeded",
+    "retrieval": "local verified",
+    "training": false,
+    "fitting": false,
+    "model_forward": false,
+    "command": [
+      "docs/research/S02/S02-E006/audit_candidates.py"
+    ]
+  },
+  "timeline_screen": {
+    "run_id": "S02-E006-R007",
+    "code_commit": "1dc40123239312ec88a5b5192e81e07c608a2b14",
+    "hostname": "Wennies-MacBook-Pro-14.local",
+    "pid": 71154,
+    "start_utc": "2026-10-17T20:15:38.204011+00:00",
+    "elapsed_seconds": 0.004940957995131612,
+    "input_files_checked": 16,
+    "input_bytes_unchanged": true,
+    "execution_status": "succeeded",
+    "retrieval": "local verified",
+    "dirty_status": "clean",
+    "training": false,
+    "fitting": false,
+    "model_forward": false,
+    "command": [
+      "docs/research/S02/S02-E006/screen_timelines.py",
+      "--authorization",
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S02-E006/runs/S02-E006-R007/authorization.json"
+    ]
+  },
+  "failed_attempts": [
+    "S02-E006-R001",
+    "S02-E006-R002",
+    "S02-E006-R003",
+    "S02-E006-R004",
+    "S02-E006-R006"
+  ],
+  "training": false,
+  "prediction_performance_computed": false
+}

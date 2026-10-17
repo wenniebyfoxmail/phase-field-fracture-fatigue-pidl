@@ -1,0 +1,54 @@
+{
+  "scope": "read-only cycle availability under separately reviewed proposed band; no forecasts",
+  "protocol_commit": "2efaa59594303f9e885ed47f99e0b1e45d24ae95",
+  "counts": {
+    "T1": 1,
+    "T2": 0,
+    "T3": 2,
+    "T5": 1,
+    "T6": 1
+  },
+  "windows": [
+    {
+      "specimen": "T1",
+      "past2_cycle": 60000,
+      "past1_cycle": 62500,
+      "origin_cycle": 65500,
+      "target_cycle": 70766,
+      "actual_target_gap_not_input": 5266
+    },
+    {
+      "specimen": "T3",
+      "past2_cycle": 14000,
+      "past1_cycle": 50000,
+      "origin_cycle": 57038,
+      "target_cycle": 62017,
+      "actual_target_gap_not_input": 4979
+    },
+    {
+      "specimen": "T3",
+      "past2_cycle": 50000,
+      "past1_cycle": 57038,
+      "origin_cycle": 60035,
+      "target_cycle": 65029,
+      "actual_target_gap_not_input": 4994
+    },
+    {
+      "specimen": "T5",
+      "past2_cycle": 42000,
+      "past1_cycle": 46000,
+      "origin_cycle": 51000,
+      "target_cycle": 56000,
+      "actual_target_gap_not_input": 5000
+    },
+    {
+      "specimen": "T6",
+      "past2_cycle": 55000,
+      "past1_cycle": 60078,
+      "origin_cycle": 68091,
+      "target_cycle": 73211,
+      "actual_target_gap_not_input": 5120
+    }
+  ],
+  "training": false
+}
