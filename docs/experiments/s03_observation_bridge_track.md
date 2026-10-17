@@ -224,3 +224,13 @@ OneR001wall0.516s,12hashesverified; noindependentagentclaim. Nextproposedread-on
 grayscale/contrast/guide decision-layer diagnosis ofleftgap, not moreblindpurple
 shrinking orwholethreshold shift. Prior E039parallelforecast proposal retained
 as separate next transition option, not executed inthis support-only diagnostic.
+
+E040read-only closeout: sameStep19 fixedsource/gates showguide right ofsome
+visiblelefttrajectory;60pxcorridor clipsit. Releasedleftsupport16842pixels:
+749grayfail,11069nextcontrastfail,3050nextcorridorfail,1974allpixelgatespass
+butnotretained. Cachedcomponentexplanation verifiesall465savedretentions;
+1731of1974failonly12pxguidecontact,243bothcontact/height. Thesearemixedsurface
+pixelcounts,notcrackrecall. Original+1021bottom/0leftmaskandscoresunchanged.
+Exactsource-onlylocalguideproposalprepared, notexecuted; newcandidatecomparison
+requiresnewauthorisation, no extrauserlabelling. Diagnosticfigure/results in
+[E040decisionlayercloseout](../research/S03/S03-E040-MD01/decision_layer_results.md).

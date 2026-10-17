@@ -20,3 +20,16 @@ Local root:
 Compactreceipts/manifest/summary/finalQA in evidence/. Rawarrays/figures local.
 Independentagent not requested/used for this boundedexploration; local savedarray
 identity/subset/count checks performed separately without new extraction.
+
+## Read-only explanatory closeout
+
+- R008clean9ce664f7: sameStep19 fixedgray/contrast/guide layers, savedmask read
+  only; noextractor/CC/skeleton/metrology/forecast.18protectedhashesverified.
+- R009preview/R010final at8e4af2b7: samefixedleftcrop fivepanels; onepreview,
+  savednumericlayers only. No regenerationofE040R001 masks or earlierfigures.
+- R011clean8e4af2b7: separatelydeclared post-hoc cachedcomponentretention
+  arithmetic, no sourcedecode/newmask/reselection; all465savedretentions agree.
+  1974releasedeligiblepixels rejected:1731contact-only,243contact+height.
+
+Read-only results in decision_layer_results.md; exactunexecuted nextguideproposal
+in guide_repair_proposal.json. No cross-chat reply, newtask/agent orpredictionrun.

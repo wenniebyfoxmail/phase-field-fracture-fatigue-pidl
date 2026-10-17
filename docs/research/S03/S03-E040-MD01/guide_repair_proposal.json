@@ -1,0 +1,26 @@
+{
+  "status": "authorised_for_one_same_scope_guide_comparison_not_yet_executed",
+  "authorisation": "2026-10-17 HQ relay01a14bb9-6cd1-7ee2-9647-5190d786f7ba quotes Wennie's explicit approval of same-scope repairs without per-step confirmation; no new source/model/threshold/scoring/budget. Supersedes prior coordination-only preparation boundary.",
+  "revision": "step19-local-guide-source-proposal-v1",
+  "source": "existing Step19 IMG_0379.JPG; no other frame",
+  "source_sha256": "05a9329ace48d34e5bb287380d7131075614dadca3a346ebf939a67af3f7dda4",
+  "parent_support_manifest": "S03-E040-MD01-R004/input_manifest.json",
+  "parent_support_manifest_sha256": "583a101cb9794c900bf44f442009e4e0328519c26bf5a3a9950316bd56cee022",
+  "comparator": "immutable E040 R001 saved mask, not original v1 replacement",
+  "only_intervention": "replace coarse guide segment at/after y2700 with source-visible crack-like trajectory; no automatic mask fill",
+  "proposed_coarse_guide_native_xy": [[4260,1730],[4270,1900],[4300,2100],[4340,2300],[4340,2500],[4270,2700],[4240,2800],[4205,2900],[4165,3000],[4180,3100],[4210,3200],[4220,3300]],
+  "unchanged": {
+    "roi": [3800,900,4800,3500],
+    "exclusion": "E040 R004 final source-only support",
+    "gray_max": 100,
+    "local_contrast_min": 20,
+    "background_box_px": 101,
+    "guide_corridor_px": 60,
+    "component_guide_contact_px": 12,
+    "component_height_min_px": 30
+  },
+  "budget": "at most one same-source candidate extraction, CPU/wall60s, no error-tuned retry",
+  "outputs_if_authorised": "old/new mask source overlays, added/lost candidate counts, fixed left crop; no skeleton/path/thickness/forecast/scoring",
+  "preserve": "original v1, E038/E039/E040 masks and all prior scores/half-depth; no new source or labels",
+  "rationale": "Original guide is right of some visible left crack-like source segments and its60px corridor cuts them; remaining eligible fragments may fail12pxcontact. Proposal follows original RGB, not prediction error, and is not yet tested."
+}
