@@ -265,3 +265,16 @@ real-data read, fit or confirmation access. See late_binding_mock_R001_result_20
 This is C0 engineering evidence only; the original scientific verdict is unchanged.
 Next proposal only:prepare the minimal real read-only handoff scope/run card for
 approval; no real launcher, source access or late attribution is authorised here.
+
+## Restricted real-file access proposal — 2026-10-17
+
+At separate preparation-only approval, the exact four-source scope, parent/child
+authorization handoff, 60s/512MiB/5MiB budget and stop rules are drafted in
+late_real_readonly_access_scope_and_run_card_v1_20261017.md for human approval.
+The proposed LATE-DIAG-R001 is access/snapshot verification only, not describe,
+attribution, fitting or performance recomputation. Real launcher/source commit/
+command are not yet implemented; the card cannot be executed. No source
+metadata/content, mock or real Run was accessed/executed in this preparation.
+Next:scope approval only, then implementation and independent code review;
+final-version real execution requires a separate explicit approval. Main chat
+remains sole writer; original scientific verdict and confirmation seal unchanged.
