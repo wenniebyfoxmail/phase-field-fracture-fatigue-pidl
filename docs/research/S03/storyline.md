@@ -554,3 +554,16 @@
   S03-E019/real_training_unit_results.md. Supports artificial unit coverage only;
   actual factors/full-size budget/real numerical evidence remain untested.
   Next B requires separate approval; no automatic continuation.
+
+- **2026-10-17 — D03 B executed once and stopped at first floating underflow.**
+  Exact user-approved B at cleance1eb278/sourcea3352a69; session40100/chunks
+  55927e→5f16c3, exit1. At retained right singular-pair evaluation Vr*sr,
+  FloatingPointError underflow stopped before the second QR and any numeric
+  export/render. Failure receipt reports controlledSVD1/QR1, inputs{} and
+  artifacts{}; only failure_receipt.json exists. No restart, patch, tolerance
+  change, accepted partial certificate, B acceptance or C/D. Real/held arrays
+  and frozen outputs untouched; source hashes unchanged. See
+  S03-E019/real_training_budget_results.md. Full60s feasibility and numerical
+  validity remain unestablished; not a rejection of DIC inversion. Next possible
+  action needs approval: source/synthetic-only underflow handling proposal,
+  preserving original thresholds and B001 failure, before any new execution.
