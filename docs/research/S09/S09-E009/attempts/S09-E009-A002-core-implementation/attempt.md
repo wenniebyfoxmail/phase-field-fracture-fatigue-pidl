@@ -1,8 +1,8 @@
 # Attempt S09-E009-A002-core-implementation
 
-- Status: `tested`
+- Status: `accepted`
 - Created: 2026-10-17T20:46:47+01:00
-- Closed: None
+- Closed: 2026-10-17T21:36:44+01:00
 - Type: `implementation`
 - Human decision required: False
 
@@ -17,19 +17,19 @@ The protocol is design-ready, but no S09-E009 code candidate has yet passed exac
 
 ## GPT Pro Advice
 - Required: True
-- Advice path: `core_code_review_round2_20261017.md`
+- Advice path: `core_code_review_round3_20261017.md`
 - Advice sha256: ``
 
-Round 2 returned REVISE_AND_REREVIEW: F3 closed; F1 still needed replay raw-norm/diagnostic checks and F2 still needed native-float ratio outputs.
+Round 3 returned CORE_CODE_READY_PASS after independently reproducing 51 selected tests and 44 narrow checks; both residual Round-2 issues are closed.
 
 ## Adopted Decision
-Adopt both residual Round-2 fixes and submit one more narrow exact-commit rereview.
+Accept exact commit 8b6a2e49b241ae73f433645cb30a69291f7aee53 as the reviewed four-arm core and advance only to runner integration plus no-training verification.
 
 ## Rejected Or Modified Advice
-No Round-2 finding is rejected; F3 remains closed.
+No Round-3 finding was rejected or modified.
 
 ## Decision Rationale
-Both are deterministic interface boundaries; neither changes the approved mathematics, budget, controls or thresholds.
+Independent review confirmed replay fail-closed behavior, diagnostic finite checks, legal cosine NA, exact normal replay behavior, and strict JSON ratio outputs.
 
 ## Success Criteria
 - Exact implementation of all four directions; deterministic scorecard edge cases; E008 replay preservation; all selected no-training tests pass.
@@ -52,7 +52,7 @@ Both are deterministic interface boundaries; neither changes the approved mathem
 - `docs/research/S09/S09-E009/design_review.md` (design gate; exists)
 
 ## Output Assets
-- `docs/research/S09/S09-E009/core_code_review.md` (exact-commit review; missing)
+- `docs/research/S09/S09-E009/core_code_review.md` (exact-commit review; exists)
 
 ## Tests
 - pass: selected synthetic/no-training suite - 43 passed in 1.28s; no optimiser step or training.
@@ -62,10 +62,10 @@ Both are deterministic interface boundaries; neither changes the approved mathem
 - pass: Round-2 residual repair suite - 51 passed in 1.15s; replay single-object norm overflow and NumPy float32/float64 strict JSON ratios are covered.
 
 ## Result Interpretation
-Not recorded.
+The four-arm core numerical contract is code-ready for runner integration. This closes only the primitive implementation gate.
 
 ## Claim After Attempt
-Not recorded.
+Exact commit 8b6a2e49 provides a reviewed core implementation of the S09-E009 four-arm update and scorecard primitives.
 
 ## Next Action
-Not recorded.
+Implement a separate no-training runner/config/evidence integration candidate and submit it for exact-commit review before any producer execution.

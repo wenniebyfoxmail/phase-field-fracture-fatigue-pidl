@@ -2,7 +2,7 @@
 storyline_id: S09
 experiment_id: S09-E009
 protocol_revision: v3-four-arm-damage-separation-screen
-status: design-ready-local-implementation
+status: core-code-ready-runner-integration
 primary_storyline: S09
 related_experiments: [S09-E006, S09-E008]
 ---

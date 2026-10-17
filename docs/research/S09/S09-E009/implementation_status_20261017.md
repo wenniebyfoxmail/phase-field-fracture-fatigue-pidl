@@ -20,7 +20,7 @@ producer launch path:
 Using `/Users/wenxiaofang/miniconda3/bin/python3`:
 
 ```text
-49 passed in 1.28s
+51 passed in 1.15s
 ```
 
 The selected suite covers the new core, the frozen E008 update contract, and
@@ -36,7 +36,9 @@ input norms now stop before the merger, without adding a second clip.
 
 ## Boundary
 
-No optimiser step or training was executed. A full E009 producer runner,
-resolved configuration, evidence packet, and launch path do not yet exist.
-Therefore this is a core-implementation candidate for exact-commit review, not
-a full `CODE_READY_PASS` and not an execution authorisation.
+No optimiser step or training was executed. Exact commit
+`8b6a2e49b241ae73f433645cb30a69291f7aee53` received
+`CORE_CODE_READY_PASS`. A full E009 producer runner, resolved configuration,
+evidence packet, and launch path do not yet exist. The PASS authorises runner
+integration and further no-training verification only; it is not a full
+execution authorisation.
