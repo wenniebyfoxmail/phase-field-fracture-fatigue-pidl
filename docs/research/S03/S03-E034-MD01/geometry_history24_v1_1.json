@@ -1,0 +1,17 @@
+{
+  "protocol": "relative-stage-24-26-v1.1",
+  "native_shape": [4000,6000],
+  "reference_image": "IMG_0394.JPG",
+  "rough_center": [4280.0,2200.0],
+  "normal": [0.9805806756909201,-0.19611613513818402],
+  "observer_rule": "Same original first-history visible-mid-height profile; unchanged rough center and unit normal. One original first-history peak refinement, no alternative position or width-based scan.",
+  "inspection_crop_xyxy": [3900,900,4700,3500],
+  "background_centers": [[4100,1950],[4480,1950],[4170,2120],[4490,2370]],
+  "patch_size": 61,
+  "translation_radius": 80,
+  "correlation_min": 0.60,
+  "required_background_patches": 3,
+  "anchor_rule": "Original four centers, all uniformly smaller templates. v1 121px templates exposed crack edge in anchor3 and glue edge in anchor4. Uniform61px is chosen on first-history source content to exclude those edges; no target or width/prediction-error selection.",
+  "target_seen": false,
+  "limitations": "Background-to-crack translation remains an uncalibrated position proxy. Original v1 boundary-limited attempt remains unscorable; this revised attempt is explicit, not a retroactive change to its verdict."
+}

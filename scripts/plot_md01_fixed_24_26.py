@@ -35,17 +35,18 @@ def main(a):
         plt.close(fig)
     if a.phase=="anchors":
         cfg=json.loads(a.geometry.read_text())
+        half=cfg["patch_size"]//2
         fig,axes=plt.subplots(1,4,figsize=(9.5,3),constrained_layout=True)
         with Image.open(SOURCE/FILES[0]) as raw:
             im=ImageOps.exif_transpose(raw).convert("RGB")
             for i,((x,y),ax) in enumerate(zip(cfg["background_centers"],axes)):
-                ax.imshow(im.crop((x-60,y-60,x+61,y+61)),extent=(x-60,x+61,y+61,y-60))
+                ax.imshow(im.crop((x-half,y-half,x+half+1,y+half+1)),extent=(x-half,x+half+1,y+half+1,y-half))
                 ax.set_title(f"Anchor {i+1}: ({x},{y})",fontsize=9)
                 ax.set_xticks([]);ax.set_yticks([])
-        fig.suptitle("E034 | fixed Step24 background templates (121 x 121 native px)\n"
+        fig.suptitle(f"E034 | fixed Step24 background templates ({cfg['patch_size']} x {cfg['patch_size']} native px)\n"
                      "Source inspection only; no replacement / target access",fontsize=11)
         finish(fig,"F00_fixed_background_templates","# Fixed original templates\nStep24 source394, "
-               "exact four anchors saved before measurements. Native121px crops; no enhancement or measurement. "
+               f"exact original four centers; native{cfg['patch_size']}px crops. No enhancement or measurement. "
                "Inspect source content only, not target errors. These are background correspondences, not physical truth.")
     elif a.phase=="inspect":
         crop=(3900,900,4700,3500)
@@ -79,7 +80,8 @@ def main(a):
                 axes[1,i].imshow(im.crop((x0,y0,x1,y1)),extent=(x0,x1,y1,y0))
                 for p in h["geometry"]["background_centers"]:
                     q=np.array(p)+shift
-                    axes[1,i].add_patch(Rectangle(q-60,121,121,fill=False,color="#56B4E9",lw=1))
+                    half=h["geometry"]["patch_size"]//2
+                    axes[1,i].add_patch(Rectangle(q-half,2*half+1,2*half+1,fill=False,color="#56B4E9",lw=1))
                 band=np.array([center-normal*60,center+normal*60])
                 axes[1,i].plot(*band.T,color="#009E73",lw=1.5)
                 m=r["measurement"]
@@ -94,7 +96,7 @@ def main(a):
                      "Green: sampling / crop; orange: half-depth crossings; blue: background patches",fontsize=12)
         finish(fig,"F01_originals_and_sampling",f"# E034 originals and sampling\nSources {FILES}; "
                f"history={a.history}; target={a.target}. Top full views, bottom native720x600px crops; "
-               "green fixed band/crop, orange half-depth crossings, blue121px background patches. "
+               f"green fixed band/crop, orange half-depth crossings, blue{h['geometry']['patch_size']}px background patches. "
                "Background translation only; no target-specific recentering. These are image widths, "
                "not physical aperture, independently labelled edges or calibrated registration. See README_analysis.md.")
         fig,axes=plt.subplots(1,3,figsize=(12,3.8),sharey=True,constrained_layout=True)

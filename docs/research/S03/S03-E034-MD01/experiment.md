@@ -89,3 +89,28 @@ figures with README/sidecars. Display same selected figures in chat and Obsidian
 No old-case rescoring. Final scientific verdict and research disposition separate.
 
 Initial state: protocol fixed, photos not yet acquired, no new result.
+
+## Pre-target amendment v1.1 — 2026-10-17
+
+Original v1 R002 remains unchanged: Step24 valid image width33.80184736984325px,
+Step25 reference unavailable because all four historical background match peaks
+hit the +40px vertical search boundary; E=false, no predictions, no target.
+R003 exact template inspection also exposes crack-edge content in original
+anchor3 and glue-edge content in anchor4. Source interpretation corrects the
+initial assertion that all121px templates were entirely off-crack concrete.
+
+This is a background support/search implementation repair within the user-approved
+same-three-source/same-one-profile task, not a result-driven position change.
+Before target acquisition, register a distinct revised attempt v1.1: preserve
+all four centers, same rough/refined-profile rule and normal; uniformly reduce
+templates121→61px to exclude source-visible edge contamination; search±40→±80px
+for the already boundary-limited historical displacement. No NCC threshold,
+3/4 acceptance, median rule, half-depth definition, output mapping, formula,
+primary criterion or old score changes. New geometry file is separate; v1 remains.
+
+One revised history attempt only, independently reviewed before use. If it fails,
+stop without further geometry/window/threshold adjustments or target access.
+If it yields E=true, close revised predictions before evaluating400 exactly once.
+Target evaluation uses the same61/80 background config with historical seed.
+The source-driven change is disclosed and not called an entirely preregistered
+unamended replication or independent physical-reference validation.

@@ -14,7 +14,7 @@ from d01_crack_profile_diagnostic import S, native_gray, sample_profile, measure
 from md01_early_relative import (save, now, prediction, unavailable, registration_safe,
                                  profile_safe, self_test)
 
-PROTOCOL="relative-stage-24-26-v1"
+PROTOCOL="relative-stage-24-26-v1.1"
 FILES=("IMG_0394.JPG","IMG_0397.JPG","IMG_0400.JPG")
 IDS=("dc36397c-859e-491b-9310-587730d52c56","b6fc372e-0b53-4e98-af71-6c550d0675d3",
      "79dbc65d-89a0-4e1d-8b4b-6c2999f6741e")
