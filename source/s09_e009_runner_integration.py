@@ -117,6 +117,9 @@ def _validate_base_runtime_identity(*, source: Mapping[str, Any], base_config_pa
         return
 
     supplied = _load_json(base_config_path)
+    _require(sha256_file(TRUSTED_BASE_RUNTIME_CONFIG) ==
+             EXPECTED_BASE_RUNTIME_CONFIG_SHA256,
+             "synthetic adapter trusted base identity drift")
     trusted = _load_json(TRUSTED_BASE_RUNTIME_CONFIG)
     _require(supplied.get("data", {}).get("native_nodes") == 9 and
              supplied.get("data", {}).get("native_q4_elements") == 4,
@@ -275,6 +278,28 @@ def validate_termination_receipt(receipt: Mapping[str, Any]) -> None:
     _require(isinstance(receipt["hard_constraint_counts"], Mapping),
              "hard-constraint counts must be a mapping")
     _require(isinstance(receipt["artifacts"], Mapping), "artifacts must be a mapping")
+    hard_counts = receipt["hard_constraint_counts"]
+    artifacts = receipt["artifacts"]
+    _require(bool(hard_counts) and
+             all(type(value) is int and value >= 0 for value in hard_counts.values()),
+             "hard-constraint counts must be nonnegative integers")
+    _require(all(update <= steps for update in evaluations),
+             "evaluation update exceeds completed optimizer steps")
+    _require(stop_update >= steps,
+             "stop update cannot precede completed optimizer steps")
+    checkpoint_present = receipt["update500_checkpoint_present"]
+    _require(isinstance(checkpoint_present, bool),
+             "checkpoint presence must be boolean")
+    if checkpoint_present:
+        _require(steps == logged == UPDATES_PER_ARM and
+                 EVALUATION_UPDATES[-1] in evaluations,
+                 "update-500 checkpoint requires complete update/evaluation state")
+        _require(isinstance(artifacts.get("checkpoint_update500.pt"), str) and
+                 bool(artifacts["checkpoint_update500.pt"].strip()),
+                 "present update-500 checkpoint requires artifact identity")
+    else:
+        _require("checkpoint_update500.pt" not in artifacts,
+                 "absent update-500 checkpoint cannot have artifact identity")
 
     if state == TERMINAL_COMPLETED:
         _require(steps == logged == stop_update == UPDATES_PER_ARM,
@@ -286,9 +311,9 @@ def validate_termination_receipt(receipt: Mapping[str, Any]) -> None:
         _require(receipt["reason"] is None, "completed arm cannot carry a stop reason")
         _require(receipt["finite_status"] is True,
                  "completed arm must have finite status")
+        _require(all(value == 0 for value in hard_counts.values()),
+                 "completed arm cannot contain hard-constraint violations")
     elif state == TERMINAL_EXECUTION_FAILED:
-        _require(receipt["update500_checkpoint_present"] is False,
-                 "failed arm must not claim a completed update-500 checkpoint")
         _require(isinstance(receipt["reason"], str) and bool(receipt["reason"].strip()),
                  "failed arm requires an explicit reason")
     else:
@@ -300,6 +325,8 @@ def validate_termination_receipt(receipt: Mapping[str, Any]) -> None:
                  "method-inapplicable arm cannot require a final checkpoint")
         _require(receipt["finite_status"] is True,
                  "method-inapplicable arm must remain finite")
+        _require(all(value == 0 for value in hard_counts.values()),
+                 "method-inapplicable arm cannot contain hard-constraint violations")
 
 
 def cross_arm_performance_eligible(*, shared_identity_pass: bool,

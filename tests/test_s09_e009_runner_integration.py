@@ -9,6 +9,7 @@ import torch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "source"))
 
+import s09_e009_runner_integration as integration
 from s09_e009_four_arm import ARM_ORDER, arm_direction, atomic_losses, parameter_state_sha256
 from s09_e009_runner_integration import (
     EVALUATION_UPDATES,
@@ -169,6 +170,23 @@ def test_synthetic_adapter_rejects_non_resolution_base_drift(tmp_path: Path):
         )
 
 
+def test_synthetic_adapter_verifies_trusted_reference_bytes(tmp_path: Path, monkeypatch):
+    _, base_config, _ = packet_fixture(tmp_path)
+    config_path = synthetic_integration_config(tmp_path, base_config)
+    config = json.loads(config_path.read_text())
+    trusted = json.loads(integration.TRUSTED_BASE_RUNTIME_CONFIG.read_text())
+    trusted["model"]["hard_constraint_contract"]["peak_boundary_lifting"]["atol"] = 1.0
+    tampered_trusted = tmp_path / "tampered_trusted.json"
+    tampered_trusted.write_text(json.dumps(trusted))
+    monkeypatch.setattr(integration, "TRUSTED_BASE_RUNTIME_CONFIG", tampered_trusted)
+    with pytest.raises(ValueError, match="trusted base identity drift"):
+        validate_integration_config(
+            config,
+            base_config_path=base_config,
+            synthetic_test_adapter=True,
+        )
+
+
 @pytest.mark.parametrize(
     ("path", "value", "message"),
     [
@@ -201,7 +219,10 @@ def terminal_receipt(state: str, arm: str) -> dict:
         "update500_checkpoint_present": True,
         "finite_status": True,
         "hard_constraint_counts": {"total": 0},
-        "artifacts": {"termination_receipt.json": "sha256"},
+        "artifacts": {
+            "termination_receipt.json": "sha256",
+            "checkpoint_update500.pt": "sha256-checkpoint",
+        },
     }
     if state == TERMINAL_EXECUTION_FAILED:
         receipt.update({
@@ -213,6 +234,7 @@ def terminal_receipt(state: str, arm: str) -> dict:
             "reason": "NONFINITE_GRADIENT",
             "update500_checkpoint_present": False,
             "finite_status": False,
+            "artifacts": {"termination_receipt.json": "sha256"},
         })
     elif state == TERMINAL_METHOD_INAPPLICABLE:
         receipt.update({
@@ -223,6 +245,7 @@ def terminal_receipt(state: str, arm: str) -> dict:
             "last_valid_evaluation_update": 16,
             "reason": "ANCHOR_STATIONARY_OR_INAPPLICABLE",
             "update500_checkpoint_present": False,
+            "artifacts": {"termination_receipt.json": "sha256"},
         })
     return receipt
 
@@ -239,16 +262,57 @@ def test_conditional_terminal_receipts_accept_declared_states(state: str, arm: s
     validate_termination_receipt(terminal_receipt(state, arm))
 
 
-def test_terminal_receipts_fail_closed_without_fabricated_final_checkpoint():
+def test_terminal_receipts_fail_closed_on_premature_or_fabricated_final_checkpoint():
     failed = terminal_receipt(TERMINAL_EXECUTION_FAILED, ARM_ORDER[1])
     failed["update500_checkpoint_present"] = True
-    with pytest.raises(ValueError, match="must not claim"):
+    failed["artifacts"]["checkpoint_update500.pt"] = "sha256-checkpoint"
+    with pytest.raises(ValueError, match="requires complete"):
         validate_termination_receipt(failed)
 
     inapplicable = terminal_receipt(TERMINAL_METHOD_INAPPLICABLE, ARM_ORDER[2])
     inapplicable["reason"] = "GENERIC_FAILURE"
     with pytest.raises(ValueError, match="reason drift"):
         validate_termination_receipt(inapplicable)
+
+
+@pytest.mark.parametrize("state", [TERMINAL_COMPLETED, TERMINAL_METHOD_INAPPLICABLE])
+def test_valid_terminal_states_reject_hard_constraint_violations(state: str):
+    arm = ARM_ORDER[0] if state == TERMINAL_COMPLETED else ARM_ORDER[2]
+    receipt = terminal_receipt(state, arm)
+    receipt["hard_constraint_counts"]["total"] = 1
+    with pytest.raises(ValueError, match="hard-constraint violations"):
+        validate_termination_receipt(receipt)
+
+
+def test_failed_receipt_retains_real_hard_constraint_count():
+    receipt = terminal_receipt(TERMINAL_EXECUTION_FAILED, ARM_ORDER[1])
+    receipt["hard_constraint_counts"]["total"] = 1
+    validate_termination_receipt(receipt)
+
+
+def test_terminal_receipt_links_evaluations_and_stop_location_to_completed_steps():
+    impossible_evaluation = terminal_receipt(TERMINAL_EXECUTION_FAILED, ARM_ORDER[1])
+    impossible_evaluation.update({
+        "stop_update": 0,
+        "optimizer_steps_completed": 0,
+        "fully_logged_updates": 0,
+        "evaluation_updates_present": [0, 500],
+        "last_valid_evaluation_update": 500,
+    })
+    with pytest.raises(ValueError, match="evaluation update exceeds"):
+        validate_termination_receipt(impossible_evaluation)
+
+    impossible_stop = terminal_receipt(TERMINAL_EXECUTION_FAILED, ARM_ORDER[1])
+    impossible_stop["stop_update"] = 1
+    with pytest.raises(ValueError, match="cannot precede"):
+        validate_termination_receipt(impossible_stop)
+
+
+def test_late_execution_failure_preserves_existing_update500_checkpoint():
+    receipt = terminal_receipt(TERMINAL_COMPLETED, ARM_ORDER[0])
+    receipt["terminal_state"] = TERMINAL_EXECUTION_FAILED
+    receipt["reason"] = "DECISION_FIGURE_WRITE_FAILED"
+    validate_termination_receipt(receipt)
 
 
 def test_cross_arm_comparison_requires_identity_and_replay_gates():

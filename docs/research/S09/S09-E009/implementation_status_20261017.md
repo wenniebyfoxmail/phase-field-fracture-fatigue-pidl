@@ -56,8 +56,17 @@ substitution and rejects every other base-runtime change. The evidence contract
 now distinguishes completed, execution-failed and method-inapplicable arms,
 including conditional update-500 checkpoints and cross-arm comparison gates.
 
-The repaired selected no-training suite reports 69 passed, including all 64
-arm/cycle direction comparisons and the reviewer's four config counterexamples.
+Round-2 reproduced 69 tests and confirmed those major repairs, but found one
+remaining trust-anchor edge and five receipt-consistency edges. The synthetic
+adapter now verifies the trusted reference file's own frozen hash before using
+it. Terminal receipts now require valid nonnegative constraint counts, zero
+violations for completed/applicable states, evaluation and stop locations
+consistent with completed steps, and a checkpoint identity whenever a real
+update-500 checkpoint is present. A late evidence-writer failure may retain
+that checkpoint while remaining `EXECUTION_FAILED`.
+
+The further repaired selected no-training suite reports 75 passed, including
+all 64 arm/cycle direction comparisons and every Round-1/Round-2 counterexample.
 
 This layer still exposes no producer loop or optimiser-step route. A resolved
 producer configuration, full evaluator/evidence writer and launch path do not
