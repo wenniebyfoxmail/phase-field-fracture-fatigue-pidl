@@ -186,7 +186,9 @@ def self_test():
         for c,(v,w) in zip(g["background_centers"],[(-2,1),(2,-1),(-3,2),(3,-2)])])
     h=dict(geometry=g,history=[dict(registration=dict(dx=0.,dy=0.)),dict(registration=reg(1))]);target=dict(registration=reg(2))
     lock=build_lock(h,target);assert lock["envelope_normal_px"]==6 and lock["envelope_tangent_px"]==4
-    assert len(lock["cases"])==50 and len(lock["profiles"])==83 and json.loads(json.dumps(lock))==lock
+    # Synthetic anchor offsets can coincide with common-grid offsets; cache must deduplicate.
+    assert len(lock["cases"])==50 and 75<=len(lock["profiles"])<=83 and json.loads(json.dumps(lock))==lock
+    assert len({(r["stage"],*r["offset_xy"]) for r in lock["profiles"]})==len(lock["profiles"])
     assert build_lock(dict(h,width=-999,error=999),dict(target,width=999,error=-999))==lock
     assert all(c["profile_ids"][0]==lock["nominal_profile_ids"][0] for c in lock["cases"] if c["family"]=="independent")
     assert comparison([10,14,19])["delta_abs_error"]==-4
