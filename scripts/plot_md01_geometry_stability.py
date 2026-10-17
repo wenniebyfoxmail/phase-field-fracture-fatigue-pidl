@@ -1,6 +1,7 @@
 """Display saved E038 geometry; does not extract masks or fit parameters."""
 import argparse
 import json
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -125,7 +126,7 @@ def run(a):
         lineax.tick_params(labelbottom=False)
         countax.set(xlabel="Visible-path display s (px); 10px padding between fragments is not measured length",
                     ylabel="Settings",ylim=(-.4,9.5),yticks=[0,3,6,9])
-        countax.set_title("f  Available settings per point (0..9); missing is not zero thickness",fontsize=9)
+        countax.set_title("f  Mask + safety support / 9 settings (0 also includes boundary withholding)",fontsize=9)
         for ax in (lineax,countax):
             ax.set_xlim(-5,max(1,offset-10)+5)
             ax.grid(alpha=.15)
@@ -136,17 +137,18 @@ def run(a):
                "a unenhanced original fixedROI; b binaryv1mask inblue and excludedregions inmagenta (white=not selected,not true negative); "
                "c allv1skeleton shown with3x3 display-onlydilation for legibility, not measuredthickness; d orange selectedmainpaths onRGB, excludedmagenta. "
                "e fixedv1path coordinates, bluev1 andgrayfinite9settingmin/max,notCI; gaps retained and10pxpaddingperfragmentdisplayonly. "
-               "f numberofsettings withmaskpresent+safeatthatpoint; dropouts notfilled0thickness. No coordinate matching acrossframes.")
+               "f numberofsettings withmaskpresent+safeatthatpoint; zero also includes original60pxROI/exclusion-boundarywithholding,notonly maskdropouts. "
+               "Missingnotfilled0thickness. Summaryavailabilitydenominatorusesonlyv1originalsafe/finitepoints. No coordinate matching acrossframes.")
 
     fig,axes = plt.subplots(3,2,figsize=(12,9),constrained_layout=True)
-    for row,(metric,factor,label) in enumerate((("area_px2",100,"Area change (%)"),("length_px",100,"Path length change (%)"),("thickness_p50_px",1,"Own-path median thickness change (px)"))):
+    for row,(metric,factor,label) in enumerate((("area_px2",100,"Area change (%)"),("length_px",100,"Path length change (%)"),("thickness_p50_px",1,"Median thickness change (px)"))):
         matrices = []
         for scope in ("full","common"):
             key = metric + ("_relative_delta" if factor==100 else "_delta")
             matrices.append(np.array([[by[s,arm][scope+"_change"][key] for arm in arms[1:]] for s in stages],float)*factor)
         lim = max(1e-8,float(np.nanmax(np.abs(matrices))))
         norm = Normalize(-lim,lim)
-        for col,(scope,matrix) in enumerate(zip(("Full visible ROI","Common image band"),matrices)):
+        for col,(scope,matrix) in enumerate(zip(("Full ROI","Common band"),matrices)):
             ax = axes[row,col]
             ax.imshow(matrix,cmap="RdBu_r",norm=norm,aspect="auto")
             ax.set(xticks=range(8),xticklabels=labels,yticks=range(5),yticklabels=[f"Step{s}" for s in stages],title=f"{scope}: {label}")
