@@ -1,0 +1,29 @@
+{
+  "experiment_id": "S04-E025",
+  "revision": "v1",
+  "proposal_commit": "82cd09258bb09604a3f89809dd7005ac77631b8c",
+  "data_root": "/Users/wenxiaofang/phase-field-fracture-with-pidl",
+  "legacy_lock": "docs/research/S04/S04-E016/paired_s4_lock_candidate_20261013.json",
+  "legacy_lock_sha256": "cb9f63f8bd4b73afe0bd0f74bc7836018ce2e6bfcbd46edae80e7fef7b07868c",
+  "admission_record": "docs/research/S04/S04-E016/g5_archive_admission_verdict_20261013.md",
+  "train": ["u0115", "u012", "u013"],
+  "evaluation": "u011",
+  "counts": {"u011": 121, "u0115": 99, "u012": 82, "u013": 55},
+  "pin_fields": ["damage", "alpha_bar", "fatigue_f", "psi_raw_direct"],
+  "fem_fields": ["damage", "alpha_bar", "psi_raw_direct"],
+  "origin": "cN_s4_post_history_commit",
+  "horizon": 0,
+  "scientific_files": [
+    {"case": null, "kind": "geometry", "role": "public_geometry", "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E016/g5_export_20261013/geometry_native64_v4/mapping.npz", "sha256": "eb8791f7958c9999b2c2c83058e3542ec3cb25b272d2f9e4a018a313be5ba10f"},
+    {"case": "u0115", "kind": "pin", "role": "training", "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E016/g5_export_20261013/pin_v5_retrieved/hard5_u0115_s4.npz", "sha256": "37e1a94529e1fb3e10222ab319552bb33373b9b53169fe471e7a8796f369e75a"},
+    {"case": "u0115", "kind": "fem", "role": "training", "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E016/g5_export_20261013/fem_v3_retrieved/u0115_s4.mat", "sha256": "d4a0dc6d6c99652016bc01d164129b95272f1b87c7b09afe735fbc1ce8ab4d3b"},
+    {"case": "u012", "kind": "pin", "role": "training", "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/pidl_peak_trajectories_three_umax_20261007/outputs/hard5_u012_peak_trajectory.npz", "sha256": "b6a5adeee09e24a0ec1562db4c8525e0c7c9a6efa86e8369551ba5d296af8c6e"},
+    {"case": "u012", "kind": "fem", "role": "training", "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E016/g5_export_20261013/fem_v3_retrieved/u012_s4.mat", "sha256": "357d3169507e0ca062928939893a0da318f1548e89ce1be06edd9f9fe054638e"},
+    {"case": "u013", "kind": "pin", "role": "training", "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/pidl_peak_trajectories_three_umax_20261007/outputs/hard5_u013_peak_trajectory.npz", "sha256": "2afc4d3e6b285afed7089bdc27875df9822fd2cf495093e9bf28e64dba670937"},
+    {"case": "u013", "kind": "fem", "role": "training", "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E016/g5_export_20261013/fem_v3_retrieved/u013_s4.mat", "sha256": "8a49409e6ec3bb95b48eb2ca47c0ee7f4c33a91732bcac6e1a2e85b56672d4e8"},
+    {"case": "u011", "kind": "pin", "role": "evaluation_after_fit", "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/after_strict_setting_alignment/pidl_result/pidl_peak_trajectories_three_umax_20261007/outputs/hard5_u011_peak_trajectory.npz", "sha256": "1de8017c9dcb19360bfc2581b4f20b325625cfe3d3136b3af68331786960f3e2"},
+    {"case": "u011", "kind": "fem", "role": "evaluation_after_fit", "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E016/g5_export_20261013/fem_v3_retrieved/u011_s4.mat", "sha256": "dffa30092a28317b1c15b6679df8fed8ebc8edfa8d73434d425fa035e129b332"}
+  ],
+  "forbidden": ["u01175", "u0125", "confirmation", "models_or_selection_from_old_runs", "old_ATTR_four_scalar_sources", "extra_event_evidence", "new_exports"],
+  "current_access_permission": "NONE: implementation and static review only"
+}
