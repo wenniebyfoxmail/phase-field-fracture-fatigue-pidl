@@ -74,11 +74,12 @@ def run(a):
     fig.suptitle("E037 R001/R002 | all9 existing frames; '?' = unidentified, not zero\nFull visible supports differ: do not interpret these points as physical growth/shrinkage",fontsize=11)
     finish(fig,"F02_all_frame_geometry")
     fig,axes=plt.subplots(1,len(shown),figsize=(13,4.2),sharey=True,constrained_layout=True,squeeze=False)
+    max_thickness=max(w for s in shown for p in paths[s]["full"] for w in p["local_mask_thickness_px"] if w is not None)
     for ax,s in zip(axes[0],shown):
         offset=0.
         for p in paths[s]["full"]:
             widths=np.array([np.nan if w is None else w for w in p["local_mask_thickness_px"]]);ax.plot(np.array(p["arc_length_px"])+offset,widths,color="#0072B2",lw=.9);offset+=p["length_px"]+10
-        ax.set(title=f"Step{s}",xlabel="Visible-path s (px)");ax.set_ylim(bottom=0);ax.grid(alpha=.15)
+        ax.set(title=f"Step{s}",xlabel="Visible-path s (px)");ax.set_ylim(0,max_thickness*1.08);ax.grid(alpha=.15)
     axes[0,0].set_ylabel("2 x mask EDT (px)")
     fig.suptitle("E037 R001/R002 | along-path local candidate-mask thickness\nFragments not bridged; boundary-near samples withheld; not old half-depth or physical aperture",fontsize=11)
     finish(fig,"F03_along_path_thickness")
@@ -88,7 +89,8 @@ def run(a):
         ax.plot([21,22,23],ys,"o-",color="black",lw=1.2)
         for arm,color,m in (("persistence",".5","s"),("trend","#0072B2","^")):
             if c[arm] is not None:ax.plot([22,23],[ys[1],c[arm]],ls="--",color=color,marker=m,lw=1.1)
-        ax.set(title=key.replace("_"," ")+(" [PRIMARY]" if key=="area_px2" else ""),xticks=[21,22,23],xlabel="Ordinal stage",ylabel=c["unit"]);ax.set_ylim(bottom=0);ax.margins(y=.28);ax.grid(alpha=.15)
+        upper=max(v for v in [*ys,c["persistence"],c["trend"]] if v is not None)
+        ax.set(title=key.replace("_"," ")+(" [PRIMARY]" if key=="area_px2" else ""),xticks=[21,22,23],xlabel="Ordinal stage",ylabel=c["unit"]);ax.set_ylim(0,max(1,upper*1.38));ax.grid(alpha=.15)
         if c["scored"]:ax.text(.02,.97,f"AE keep {c['persistence_ae']:.2f} | trend {c['trend_ae']:.2f}\nGain {c['gain']:+.2f} {c['unit']}",transform=ax.transAxes,va="top",fontsize=8)
         else:ax.text(.5,.5,"Not scored",transform=ax.transAxes,ha="center")
     fig.legend(handles=[Line2D([],[],color="black",marker="o",label="Extractor reference"),Line2D([],[],color=".5",ls="--",marker="s",label="Persistence"),Line2D([],[],color="#0072B2",ls="--",marker="^",label="Two-point trend")],loc="outside lower center",ncols=3,frameon=False)
