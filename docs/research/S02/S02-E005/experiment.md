@@ -49,3 +49,7 @@ Code review: independent local Codex REVIEW_PASS at exact c71ea39; see code_revi
 ## Dated S02 claim impact — 2026-10-13
 
 Frozen v1 produced a bounded negative: equal-record MAE M0=0.081686 mm versus M1=0.109182 mm, difference+0.027496 mm; M1 worse in both records and secant best in both. Source publication labels only. This closes the four-fit exploration without additional arms or tuning. It does not close the observation-history storyline, qualify physical error, or alter earlier FATACRACK/Mendeley data gaps. Required numerical evidence, independent review and full-tail decision figure are present. Next meaningful change requires a separately frozen representation or new qualified observation axis; current evaluated tails must not be retuned to rescue this result.
+
+## Dated S02 claim impact — 2026-10-17, FF localisation
+
+R003/A002 is a post-result frozen-prediction label-sensitivity diagnostic, independently reviewed. Top5 FF origins111000/104000/105000/102000/97001 account for58.84% of two-phase gross lowering; hole-projection contribution63.51%/22.28% is phase-dependent; low-past11/33 contributes8.02%/22.97%, not enriched. All33 retained; no fitting, training, model forward or old-result change. R001 negative remains; R002 numerical paths reproduced. No physical hole/noise cause or road claim. See S02-E005-R003.md and ff_locality_evidence_review.md; next need author timing/processing and repeatability evidence.
