@@ -454,3 +454,30 @@ amended. No four-source reopening, describe/plot/fit/holdout or other calculatio
 by either chat. Obsidian/Roadmap updated by main chat alone, same PNG retained.
 Next only prepare minimal phase-objective/representation design questions for
 human approval, not implement a chosen loss or launch an extra fit/diagnostic.
+
+## Minimal phase/representation proposal — 2026-10-17
+
+User requested design/next-validation preparation only and explicitly preferred
+less stringent exploratory validation. See
+`phase_representation_minimal_proposal_v1_20261017.md`. Git evidence and feature/
+ridge definitions only: no four-source or frozen numeric-file reopening,
+recomputation, implementation/loss change, fitting or confirmation access.
+
+Proposal separates saved facts (54/27,k50=22; record/visual review only, no cause
+excluded) from H1: one existing PIN fatigue-state×raw interaction might add
+value over the32-feature additive ridge. Existing32 already include cycle/
+history/fatigue; no claim they lack phase information. Keep raw target and
+output rules; add only z=(1-current_global_fatigue_f)*current_raw_log_feature.
+Future exploratory B32/C33 both fixedalpha1, train the other3viewed cases,
+evaluate seenU0.11, no inner search,2fits/one joint task only. Not historical
+selectedV1 replication or fresh confirmation; would need a new Experiment,
+precise input approval, implementation/review and separately approved run.
+
+One proposed primary signal: lateC33/B32 RMSE direction. No imposed5%/10% gain,
+all-case/all-phase/all-variable victory or p-value requirement; small gain is
+weak evidence, early/overall changes disclosed as costs rather than an automatic
+fatal guard. Old E021Q/early rule/verdict not relaxed. Necessary validity and
+nonnegative/damage-history-identity/resource boundaries remain. Proposed new
+fit ceiling300s/2GiB/100MiB, not reuse of consumedATTR60s/512MiB/5MiB. No Run,
+directory or execution command reserved; design approval pending. Main chat
+alone updates Obsidian; no task/compute dispatch or duplicate writing.
