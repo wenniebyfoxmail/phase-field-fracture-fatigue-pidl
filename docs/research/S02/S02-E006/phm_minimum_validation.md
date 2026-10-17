@@ -1,5 +1,7 @@
 # PHM optical-label pilot — capacity-limited draft, do not fit
 
+> 2026-10-17 source-completeness follow-up: the four-ID/five-window count below describes the original T1–T6 training release only. T7/T8 public optical labels have now been acquired under the user's new request; see download_completeness_followup.md. The original manifest/design is preserved and remains unexecuted. No source addition authorizes fitting.
+
 2026-10-17. **CAPACITY BLOCK: the fixed proposed band gives only5windows across4IDs, leaving3–4trainingwindows per fold. This is insufficient for substantive history-information validation; next action is existing-data supplementation, not fitting.** C1 selection plus an UNEXECUTED design. The metadata-selected MnROAD NWP list has only one varying group and its separate fatigue-area capacity check has none. Both are stopped as current changing-trajectory pilots. Do not change their indicators or choose positive-growth roads to erase those outcomes.
 
 Preferred next qualification source: PHM2019 corrected-T6 PUBLIC TRAINING optical crack-length tables. They have six described physical specimens, labelled in mm independently of the PZT signals. This is a laboratory proxy, not road validation. Use optical labels only in this minimal plan: malformed/rounded PZT waveform time is not repaired or used. Physical lineage, optical definition/error and online measurement availability still need source clarification. T7/T8 remain untouched.
