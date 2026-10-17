@@ -137,7 +137,7 @@ A的提案上限：单张≥24GiB可用GPU，目标≤2 GPU-hours、host RAM≤3
 
 本轮已完成资料/源码检查与设计；只读MAT元数据、没有科学数组值解码、重算owner结果、训练、FEM、远程访问、资产转移、新留出或新结果。
 独立docs worktree `codex/fem-synthetic-augmentation-design-20261017`，base `6748b665004d703128a6143eb8e236b59b3890de`；仅新增本方案和其必要审查记录，原owner文件不改。
-下一步是收齐有界Pro设计审查并完成必要修订，再交HQ决定是否注册/实现该最小试验。正式实现仍需确切输入schema、runner、配置、预算可行性及相应独立代码审查；本设计不冒称可直接执行。
+有界Pro设计复审已通过，范围仅为研究设计，见[fem_synthetic_augmentation_review_20261017.md](fem_synthetic_augmentation_review_20261017.md)；科学方案身份为`0a7f4daed466180b09d36a1379563bf16b3f634e`。下一步交HQ决定是否注册/实现该最小试验。正式实现仍需确切输入schema、runner、配置、预算可行性及相应独立代码审查；本设计不冒称可直接执行。
 
 
 ## 来源定位（只读，不要求重新遍历）
