@@ -1,0 +1,11 @@
+# S01-E018-R001 independent evidence and actual-image acceptance
+
+Reviewer: existing independent e008_independent_review, **gpt-6.1-sol / Medium**. Read-only review of frozen producer outputs; no new fit/predict/policy replay/GT matching/metrics/SSH. **Evidence integrity PASS; actual three-PNG/README acceptance PASS. Execution succeeded; frozen scientific primary negative.**
+
+Bound implementation `0795404abbe6e60e0bfac4361b612a0ad3c3c51a`; result ZIP SHA`7a6b8fabb579728351a76d25f98580e79b08970ae61ed82276a2a7f2c96104e8`,36925712 bytes/44 members. Reviewer verified CRC, every member versus extraction, output and3model/OOF prediction-freeze receipts,19 source snapshot members and43347-original digest. All39 saved heads pass prescribed residual/constant-objective checks; resource/counts conform to the frozen budget. Reviewer actually opened each PNG and README; F02 clearly says no corrections selected.
+
+Confirmed: three main models and ten fixed-original-FIT8 training-location deletion diagnostics abstain. Pooled old684/684 retained, new/lost/netGT0,macrodelta0,FP decomposition unchanged. OriginalpositiveGT3/5/6 survive the pool,maximum/finalcapentry0/0/0. All14 overlapping-FIT positive candidate records in the savedr>0trace are rejected by group_cap after three accepted corrections, group consideration position40–1097. Their inverse_nonparent_overlap is1 and within each FIT their N output is identical; this does not prove every GT-free route/the whole feature set is uninformative.
+
+Disposition: stop this fixed Q*N*A family; no L2/gate/intersection/cap rescue. A new information axis must first distinguish beneficial candidates from capacity competitors; evidence does not establish which proposed extra information will work. E003 remains comparator/detector, fresh sites sealed.
+
+Reviewer requested local reception receipt to finish archive closure without altering ZIP. Root completed it at `/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E018/runs/S01-E018-R001/retrieval_receipt.json`, alongside immutableZIP/evidence, output extraction verification and saved-field-only summary. This last local bookkeeping is root verification, not an additional reviewer experiment. No original evidence changed.
