@@ -29,7 +29,7 @@ def export_model_arrays(sequences,out):
     n=sum(len(s['observations']) for s in sequences)
     y=np.full((n,12),np.nan);reference=y.copy();loads=[];times=[];forces=[];pistons=[];beams=[];images=[];k=0
     for seq in sequences:
-        first,last=seq['observations'];table=pd.read_csv(first['metadata']['source_table'],sep=r'\s+')
+        first,last=seq['observations'][0],seq['observations'][-1];table=pd.read_csv(first['metadata']['source_table'],sep=r'\s+')
         lo=first['metadata']['filename_time_s_nominal'];hi=last['metadata']['filename_time_s_nominal']
         clip=table[(table['Time(s)']>=lo)&(table['Time(s)']<=hi)]
         path=out/f'beam{seq["beam_id"]}_nominal_logger_history.npz'
@@ -37,7 +37,8 @@ def export_model_arrays(sequences,out):
         seq['nominal_logger_history']={'file':str(path.resolve()),'samples':len(clip),'time_axis':'manually aligned nominal logger seconds; synchronization uncertainty not quantified','use':'retrospective controls/sensitivity only; future forcing not assumed known','no_regridding_or_interpolation':True}
         for ob in seq['observations']:
             for j,t in enumerate(seq['paired_visible_reference_transects']):
-                y[k,t-1]=ob['model_widths_strip_px'][j];reference[k,t-1]=ob['human_reference_widths_strip_px'][j]
+                value=ob['model_widths_strip_px'][j];truth=ob['human_reference_widths_strip_px'][j]
+                y[k,t-1]=np.nan if value is None else value;reference[k,t-1]=np.nan if truth is None else truth
             m=ob['metadata'];loads.append(m['nominal_stage_load_kN']);times.append(m['filename_time_s_nominal']);forces.append(m['nominal_join_force_kN']);pistons.append(m['nominal_join_piston_mm']);beams.append(seq['beam_id']);images.append(ob['image']);k+=1
     np.savez_compressed(out/'state_space_input_arrays.npz',model_width_strip_px=y,human_reference_width_strip_px=reference,width_present=np.isfinite(y),nominal_stage_load_kN=np.array(loads),nominal_filename_time_s=np.array(times),nominal_join_force_kN=np.array(forces),nominal_join_piston_mm=np.array(pistons),beam_id=np.array(beams),image=np.array(images))
 

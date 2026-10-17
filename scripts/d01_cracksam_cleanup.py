@@ -25,6 +25,7 @@ def main():
     ap.add_argument('--text-proposals-only',action='store_true')
     ap.add_argument('--output',type=Path)
     ap.add_argument('--first-frame-text-prior',action='store_true')
+    ap.add_argument('--only-case',action='append',help='Process selected cases while retaining full-manifest first-frame priors.')
     args = ap.parse_args()
     root = args.root
     if args.cached_ocr is None:
@@ -43,6 +44,8 @@ def main():
         first_cases.setdefault(item['id'].split('_t')[0],item['id'])
     with torch.inference_mode():
         for case in cases:
+            if args.only_case and case['id'] not in args.only_case:
+                continue
             began = time.time()
             name = case['id']
             rgb = np.array(Image.open(root/'inputs'/case['file']).convert('RGB'))
