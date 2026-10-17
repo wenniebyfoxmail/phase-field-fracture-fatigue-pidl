@@ -182,3 +182,16 @@ scientific metadata/content access, fit or live preflight. No new review message
 or job dispatched. Current state is CARD_PREPARED_AWAITING_HUMAN_APPROVAL,
 not an executed Run, dynamic validation, or scientific result. Main chat alone
 updates the existing Obsidian note and its one Roadmap status link.
+
+## Approved R001 execution outcome — 2026-10-17
+
+User explicitly approved97118115/2563153 and the card index; the exact command
+was issued once. `R001_result_20261017.md` records approval text, actual identity,
+prelaunch checks and terminal evidence. Run failed at the first geometry
+metadata/path lookup (FileNotFoundError), content reads0/fits0/evaluationfalse.
+No resource cap, retry or confirmation access; known worker exit1 and both PIDs
+absent, four control files/8,367bytes frozen read-only. No scored outputs/figure.
+Static review remains accepted for its actual scope, not proof of live input
+availability or method success. Scientific comparison is not evaluated; R001
+permission consumed. Next only propose minimal read-only path availability
+diagnosis for user approval, not a new run or mathematical redesign.
