@@ -34,6 +34,8 @@ SCOPE_COMMIT = 'ea9cafbc907cb683544aca75a58480b51c7487bd'
 
 
 def execute(out, code, refs, allow_real_read):
+    started = time.monotonic()
+    start_utc = datetime.datetime.now(datetime.timezone.utc).isoformat()
     # These explicit arguments are machine interlocks, not human authentication.
     a.require(allow_real_read is True, 'separate explicit real execution approval required')
     access.full_commit(code)
@@ -41,8 +43,6 @@ def execute(out, code, refs, allow_real_read):
     out = Path(out).absolute()
     a.require(str(out) == a.REAL_OUTPUT and out.resolve() == out, 'fixed canonical output required')
     a.require(not out.exists(), 'single attempt consumed; no retry or overwrite')
-    started = time.monotonic()
-    start_utc = datetime.datetime.now(datetime.timezone.utc).isoformat()
     child = log = None
     owned = False
     primary = None
