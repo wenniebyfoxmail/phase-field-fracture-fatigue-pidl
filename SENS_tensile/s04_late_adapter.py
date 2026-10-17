@@ -35,6 +35,9 @@ REAL_VERIFICATION_BINDING = {
 REAL_ACQUISITION_ENABLED = False
 REAL_RUN = 'S04-E021-LATE-DIAG-R001'  # Proposed only; not an approved run.
 REAL_OUTPUT = str(BASE/'late_attribution_runs'/REAL_RUN)
+ATTR_RUN = 'S04-E021-LATE-ATTR-R001'
+ATTR_OUTPUT = str(BASE/'late_attribution_runs'/ATTR_RUN)
+ATTR_SCOPE_COMMIT = '2f0ff22d26818ece7aa02f509451301c0cefb7d2'
 require = core.require
 
 
@@ -144,8 +147,13 @@ def check_grant(grant, *, code_commit, attempt, output, domain):
                     code_commit=code_commit, plan_commit=core.PLAN_COMMIT,
                     attempt=attempt, output=output, sources=list(SOURCES), budget=BUDGET,
                     fit=False, confirmation=False)
+    if domain == 'REAL_SAVED_SCALARS' and attempt == ATTR_RUN:
+        expected.update(version=2, action='four_source_readonly_attribution',
+                        scope_commit=ATTR_SCOPE_COMMIT)
     extra = {'engineering_only', 'user_approved_real_execution'} if domain == 'MOCK_ONLY' else {
         'user_approved_real_execution', 'independent_code_review'}
+    if domain == 'REAL_SAVED_SCALARS' and attempt == ATTR_RUN:
+        extra = extra | {'execution_references'}
     require(isinstance(grant, dict) and set(grant) == set(expected) | extra and
             all(grant.get(k) == v for k, v in expected.items()),
             'authorization scope mismatch')
@@ -153,9 +161,12 @@ def check_grant(grant, *, code_commit, attempt, output, domain):
         require(grant.get('engineering_only') is True and
                 grant.get('user_approved_real_execution') is False, 'mock cannot grant real access')
     else:
-        require(attempt == REAL_RUN and output == REAL_OUTPUT and
+        require(((attempt == REAL_RUN and output == REAL_OUTPUT) or
+                 (attempt == ATTR_RUN and output == ATTR_OUTPUT)) and
                 grant.get('user_approved_real_execution') is True and
                 grant.get('independent_code_review') == 'APPROVED', 'separate real approval required')
+        if attempt == ATTR_RUN:
+            check_execution_refs(grant['execution_references'], code_commit)
 
 
 def prepare_handoff(auth_path, output, *, parent_pid, attempt, code_commit):
@@ -223,7 +234,8 @@ def snapshot(io, *, grant, code_commit, attempt, output, domain, binding, expect
     names = {'run_id', 'runtime_commit', 'rows', 'counts', 'late_ratio'}
     require(isinstance(binding, dict) and set(binding) == names, 'SCHEMA_BINDING_REQUIRED')
     if domain == 'REAL_SAVED_SCALARS':
-        scoped = (type(_real_permit) is _RealPermit and attempt == REAL_RUN and
+        scoped = (type(_real_permit) is _RealPermit and
+                  attempt in (REAL_RUN, ATTR_RUN) and
                   _real_permit.identity == (id(grant), code_commit, output, os.getppid()))
         require(REAL_ACQUISITION_ENABLED or scoped, 'REAL_EXECUTION_DISABLED')
         require(REAL_VERIFICATION_BINDING is not None and binding == REAL_VERIFICATION_BINDING,
@@ -298,6 +310,30 @@ def acquire_real(*, grant, code_commit, env, auth_path, output, actual_parent,
     permit = _RealPermit(grant, code_commit, output, actual_parent)
     return snapshot(ReadOnlyIO(access_event), grant=grant, code_commit=code_commit, attempt=REAL_RUN,
                     output=output, domain='REAL_SAVED_SCALARS',
+                    binding=REAL_VERIFICATION_BINDING, expected_ratio=core.KNOWN_REAL_RATIO,
+                    _real_permit=permit)
+
+
+def acquire_attribution(*, grant, code_commit, env, auth_path, output, actual_parent,
+                        execution_refs, access_event):
+    """New attribution purpose only; old access grant/Run cannot confer it.
+
+    This scoped permit leaves the global switch False and the old access entry
+    fixed to DIAG-R001. It is a call interlock, not proof of human consent.
+    """
+    check_execution_refs(execution_refs, code_commit)
+    check_child_handoff(auth_path, output, env, actual_parent=actual_parent,
+                        attempt=ATTR_RUN, code_commit=code_commit)
+    require(actual_parent == os.getppid() and output == ATTR_OUTPUT and
+            auth_path == str(Path(ATTR_OUTPUT)/'authorization.json'), 'fixed attribution handoff')
+    require(env.get('S04_LATE_APPROVAL_REF') == execution_refs['approval_ref'] and
+            env.get('S04_LATE_REVIEW_REF') == execution_refs['review_ref'], 'execution reference handoff')
+    check_grant(grant, code_commit=code_commit, attempt=ATTR_RUN,
+                output=output, domain='REAL_SAVED_SCALARS')
+    require(grant['execution_references'] == execution_refs, 'grant reference mismatch')
+    permit = _RealPermit(grant, code_commit, output, actual_parent)
+    return snapshot(ReadOnlyIO(access_event), grant=grant, code_commit=code_commit,
+                    attempt=ATTR_RUN, output=output, domain='REAL_SAVED_SCALARS',
                     binding=REAL_VERIFICATION_BINDING, expected_ratio=core.KNOWN_REAL_RATIO,
                     _real_permit=permit)
 

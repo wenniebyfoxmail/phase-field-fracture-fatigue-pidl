@@ -338,3 +338,40 @@ this preparation; the genuine report/authorization purpose still needs a
 separately approved implementation and independent review. Next:human scope
 approval only, then implement/review; final exact-version execution separately
 approved. Original science/outputs and main-chat sole writing ownership remain.
+
+## Minimal real attribution implementation — 2026-10-17
+
+User approved implementation and independent code review of the scope in
+2f0ff22, **not source access or execution**. Same dedicated branch/worktree;
+base 2f0ff22d26818ece7aa02f509451301c0cefb7d2. No producer coordination needed:
+no jobs started, running code or old Run output changed.
+
+- New `s04_late_real_attribution.py` / `_guard.py` implement the distinct
+  ATTR-R001 purpose, fixed output, version-2 grant with execution references,
+  original `describe()` and a genuine saved-file report. The adapter admits
+  only this explicit additional purpose; global real acquisition remains False.
+  Old access entry, generated report, mathematical core and 9984226/2f0ff22
+  contracts are unchanged. A scoped Python permit is not a sandbox or human
+  authentication; the operator must inspect actual review and final approval.
+- Sources/357-row validation, late81 metrics/tolerances/branches and other-case
+  saved-only background are retained. Seven core outputs plus run-owned caches;
+  no rows/fields/models duplication, fit, replay or confirmation opening.
+- Guard starts timing at execute entry, fixes non-optimised single-thread CPU
+  child configuration, monitors aggregate sampled RSS and all owned output
+  including caches, reserves 2s/16KiB, retains first failure, and reuses reviewed
+  own-process-group cleanup. 60s/512MiB/5MiB is one sampled budget, not a tested
+  hard OS guarantee. Plot/font initialisation is inside the supervised worker.
+- Worker records metadata/read attempts, returned content bytes, describe and
+  plotting entry. Failed reporting preserves completed access/analysis flags;
+  absent or invalid child control record leaves these unknown in the parent.
+  Real data is labelled synthetic viewed development, not engineering generated
+  data or physical truth. The two-panel plot specification is implemented but
+  no image was generated or visually verified.
+
+Validation this turn: stdlib AST parse of three changed/new source files and
+Git diff/contract-identity checks only. No project import, CLI/help, unit/mock,
+resource run, real metadata/content/control-file read, Run/authorization/cache
+creation, numerical analysis, fitting or holdout access. Runtime and visual
+behaviour remain unverified. Independent static review will bind the exact
+code commit; final execution needs its own exact-version card and human approval.
+Main chat is sole writer; method chat may review only, not implement or compute.
