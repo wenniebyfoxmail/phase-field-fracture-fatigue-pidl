@@ -28,9 +28,9 @@ for i,d in enumerate(S,1):
  flow.append(para('Source: '+d['source'],'src'))
  if i<len(S):flow.append(PageBreak())
  md.extend([f'\n## {i:02d}. {d["title"]}\n',f'![Slide {i}]({W}/review/final_slides/{i:02d}.png)\n','### English narration\n',en+'\n','### 中文对照\n',d['zh']+'\n','Source: '+d['source']+'\n'])
-(W/'output/Wennie_Wan_Bilingual_Notes_Evidence_v5.md').write_text('\n'.join(md)+'\n')
+(W/'output/Wennie_Wan_Bilingual_Notes_Evidence_v6.md').write_text('\n'.join(md)+'\n')
 def footer(canvas,doc):
  canvas.saveState();canvas.setFont('ArialTask',8);canvas.setFillColorRGB(.32,.38,.42);canvas.drawString(18*mm,12*mm,'Wennie Wan · First-year assessment');canvas.drawRightString(192*mm,12*mm,str(doc.page));canvas.restoreState()
-doc=SimpleDocTemplate(str(W/'output/Wennie_Wan_Bilingual_Notes_Evidence_v5.pdf'),pagesize=(210*mm,297*mm),rightMargin=18*mm,leftMargin=18*mm,topMargin=15*mm,bottomMargin=19*mm,title='First-year assessment: bilingual learning notes',author='Wennie Wan')
+doc=SimpleDocTemplate(str(W/'output/Wennie_Wan_Bilingual_Notes_Evidence_v6.pdf'),pagesize=(210*mm,297*mm),rightMargin=18*mm,leftMargin=18*mm,topMargin=15*mm,bottomMargin=19*mm,title='First-year assessment: bilingual learning notes',author='Wennie Wan')
 doc.build(flow,onFirstPage=footer,onLaterPages=footer)
 print('Wrote',len(S),'slide notes.')

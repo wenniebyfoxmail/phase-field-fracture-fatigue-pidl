@@ -123,10 +123,10 @@ fig('Reported rollout coverage and error',W/'uq/reported_rollout_coverage_and_er
  'Archived summaries   ·   Correlated starts within 150 files   ·   No fresh calibration',
  'At horizon twenty, CA-FNO reports coverage closer to ninety-five per cent, but its mean prediction error is larger than FNO. That trade-off is visible only when we show error beside coverage. The starts within each file are correlated, so they do not count as independent trajectories.',
  '在第 20 步，CA-FNO 报告的覆盖率更接近 95%，但平均预测误差也比 FNO 更大。只有把误差和覆盖率一起展示，才能看到这一取舍。每个文件内的起点相关，不能当作独立轨迹。',source=uq,kicker='BACKUP: SUPERVISED UQ')
-use(23,kicker='BACKUP: MAINTENANCE',
+use(23,kicker='BACKUP: MAINTENANCE',source='Original assessment deck: /Users/wenxiaofang/Downloads/Winnie_First_Year_Assessment.pptx, slide 9.',
  en='This backup comes from a separate maintenance study. Grades run from one, best, to three, worst. Different repair models can match the same historical post-repair grades. The question is whether they also give the same chance of reaching grade three after three years. Some starting conditions give one value, while others allow a range. These ranges describe what the available information permits.',
  zh='这一备份页来自独立的维修研究。等级从一到三，分别表示最好到最差。不同维修模型可以符合相同的历史维修后等级。问题是：它们对三年后达到三级的概率，是否也给出相同预测？有些初始条件对应一个数值，有些则允许一定范围。这些范围描述现有信息允许的结果。')
-use(24,kicker='BACKUP: MAINTENANCE',
+use(24,kicker='BACKUP: MAINTENANCE',source='Original assessment deck: /Users/wenxiaofang/Downloads/Winnie_First_Year_Assessment.pptx, slide 10.',
  en='Here I compare four ways to collect information, with four hundred grade scores each. A uses one source. B repeats visits. C varies exposure. D adds a worst-grade source. The added source gives the narrowest average confidence interval for the target probability in this example. Dots represent datasets and diamonds show means. Stars mark runs that reached a resource limit. The value of observations depends on the prediction target.',
  zh='这里比较四种信息收集方式，每种都使用四百个等级分数。A 使用一个来源，B 重复访问，C 改变暴露时间，D 增加最差等级来源。在这个算例中，增加来源后，目标概率置信区间的平均宽度最小。圆点表示数据集，菱形表示均值，星号表示达到资源上限的计算。观测的价值取决于具体预测目标。')
 prose('The Amor elastic-energy split',
