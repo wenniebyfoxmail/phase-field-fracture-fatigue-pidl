@@ -1,0 +1,44 @@
+{
+  "schema_version": "at1-fatigue-pino-stage0b-v1",
+  "request_id": "windows-griphfith-request-30-stage0b-20260824",
+  "state_timing": "post_converged_post_history_commit",
+  "history_channel_order": [
+    "max_tensile_history_H",
+    "fatigue_accumulator_alpha_bar",
+    "degraded_driver_q_prev",
+    "fatigue_degradation_f"
+  ],
+  "expected_mesh": {
+    "nnode": 86756,
+    "nelem": 86408,
+    "ngp": 4,
+    "dimension": 2,
+    "element_type": "Q4"
+  },
+  "cases": [
+    {
+      "case_id": "hard5",
+      "source_case_directory": "02_hard_5step_factorial",
+      "cycles": [1, 60, 82],
+      "load_factors": [0.25, 0.5, 0.75, 1.0, 0.0],
+      "alpha_T": 0.5,
+      "fatigue_p": 2.0,
+      "res_stiff": 1e-06
+    },
+    {
+      "case_id": "hard8",
+      "source_case_directory": "01_hard_8step_historical",
+      "cycles": [1, 60, 85],
+      "load_factors": [0.25, 0.5, 0.75, 1.0, 0.75, 0.5, 0.25, 0.0],
+      "alpha_T": 0.5,
+      "fatigue_p": 2.0,
+      "res_stiff": 1e-06
+    }
+  ],
+  "history_validation_tolerances": {
+    "atol": 1e-12,
+    "rtol": 1e-10,
+    "damage_bound_tolerance": 0.0005
+  },
+  "claim_boundary": "This spec requests a residual-validation packet only. It is not a teacher-corpus approval, FEM qualification, PINO training authorization, or physical-validation claim."
+}
