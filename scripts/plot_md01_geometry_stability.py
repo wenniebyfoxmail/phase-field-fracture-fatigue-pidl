@@ -127,6 +127,7 @@ def run(a):
                     ylabel="Settings",ylim=(-.4,9.5),yticks=[0,3,6,9])
         countax.set_title("f  Available settings per point (0..9); missing is not zero thickness",fontsize=9)
         for ax in (lineax,countax):
+            ax.set_xlim(-5,max(1,offset-10)+5)
             ax.grid(alpha=.15)
         r = by[stage,"v1"]["full"]
         fig.suptitle(f"{title_scope}\nStep{stage}: v1 area {r['area_px2']}px2; visible dominant paths {r['length_px']:.1f}px",fontsize=11)
