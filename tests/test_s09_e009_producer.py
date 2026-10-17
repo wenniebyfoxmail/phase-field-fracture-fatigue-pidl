@@ -267,6 +267,32 @@ def test_evidence_close_failure_still_writes_checkpoint_bound_receipt(tmp_path: 
     assert (result.arm_dir / "termination_receipt.json").is_file()
 
 
+def test_persistent_single_artifact_read_failure_still_writes_receipt(
+        tmp_path: Path, monkeypatch):
+    original_open = Path.open
+
+    def selective_open(path, mode="r", *args, **kwargs):
+        if path.name == "gradient_diagnostics.jsonl" and mode == "rb":
+            raise PermissionError("injected persistent artifact read failure")
+        return original_open(path, mode, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", selective_open)
+    result = run_arm_state_machine(
+        arm=ARM_REPLAY,
+        adapter=MockAdapter(ARM_REPLAY),
+        arm_dir=tmp_path / "persistent-artifact-read-failure",
+    )
+    assert result.receipt["terminal_state"] == "EXECUTION_FAILED"
+    assert "FALLBACK_UNREADABLE_ARTIFACTS" in result.receipt["reason"]
+    assert "gradient_diagnostics.jsonl=PermissionError" in result.receipt["reason"]
+    assert result.receipt["optimizer_steps_completed"] == 500
+    assert result.receipt["fully_logged_updates"] == 500
+    assert result.receipt["update500_checkpoint_present"] is True
+    assert result.receipt["artifacts"]["checkpoint_update500.pt"]
+    assert "gradient_diagnostics.jsonl" not in result.receipt["artifacts"]
+    assert (result.arm_dir / "termination_receipt.json").is_file()
+
+
 def test_evaluator_emits_full_fixed_support_scorecard_without_step(tmp_path: Path):
     packet, base_config, _ = packet_fixture(tmp_path)
     runtime = build_runtime(
@@ -412,8 +438,9 @@ def test_state_machine_preserves_failed_update_hard_constraint_counts(tmp_path: 
     assert result.receipt["hard_constraint_counts"]["damage_irreversibility"] == 1
 
 
+@pytest.mark.parametrize("failure_call", [1, len(EXPECTED_CYCLES) + 1])
 def test_real_forward_hard_constraint_failure_reaches_termination_receipt(
-        tmp_path: Path, monkeypatch):
+        tmp_path: Path, monkeypatch, failure_call: int):
     packet, base_config, _ = packet_fixture(tmp_path)
     runtime = build_runtime(
         packet_dir=packet,
@@ -440,6 +467,7 @@ def test_real_forward_hard_constraint_failure_reaches_termination_receipt(
         optimizer=fake,
         config_sha256="config",
     )
+    before = copy.deepcopy(runtime.model.state_dict())
     original_forward = runtime.model.forward
     calls = 0
 
@@ -447,7 +475,7 @@ def test_real_forward_hard_constraint_failure_reaches_termination_receipt(
         nonlocal calls
         calls += 1
         output = original_forward(*args, **kwargs)
-        if calls == len(EXPECTED_CYCLES) + 1:
+        if calls == failure_call:
             output = dict(output)
             u_peak = output["u_peak"].clone()
             boundary_index = int(torch.nonzero(
@@ -462,12 +490,15 @@ def test_real_forward_hard_constraint_failure_reaches_termination_receipt(
         adapter=adapter,
         arm_dir=tmp_path / "real-forward-hard-violation",
     )
-    assert calls == len(EXPECTED_CYCLES) + 1
+    assert calls == failure_call
     assert fake.step_calls == 0
     assert result.receipt["terminal_state"] == "EXECUTION_FAILED"
     assert result.receipt["optimizer_steps_completed"] == 0
     assert result.receipt["fully_logged_updates"] == 0
     assert result.receipt["hard_constraint_counts"]["peak_boundary_lifting"] == 1
+    assert "'peak_boundary_lifting': 1" in result.receipt["reason"]
+    for name, value in runtime.model.state_dict().items():
+        torch.testing.assert_close(value, before[name], rtol=0, atol=0)
 
 
 def test_protocol_projection_ignores_only_frontmatter_status(tmp_path: Path):

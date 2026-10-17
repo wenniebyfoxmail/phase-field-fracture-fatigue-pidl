@@ -690,6 +690,25 @@ def _empty_counts() -> dict[str, int]:
     return {key: 0 for key in HARD_CONSTRAINT_KEYS}
 
 
+def _hard_constraint_counts_from_error(error: ValueError) -> dict[str, int] | None:
+    prefix = "hard-constraint violation: "
+    message = str(error)
+    if not message.startswith(prefix):
+        return None
+    try:
+        observed = ast.literal_eval(message[len(prefix):])
+    except (SyntaxError, ValueError) as parse_error:
+        raise ValueError("invalid hard-constraint failure payload") from parse_error
+    _require(
+        isinstance(observed, Mapping) and
+        set(observed) == set(HARD_CONSTRAINT_KEYS) and
+        all(type(observed[name]) is int and observed[name] >= 0
+            for name in HARD_CONSTRAINT_KEYS),
+        "invalid hard-constraint failure payload",
+    )
+    return {name: observed[name] for name in HARD_CONSTRAINT_KEYS}
+
+
 def _artifact_hashes(arm_dir: Path, names: list[str]) -> dict[str, str]:
     return {name: sha256_file(arm_dir / name) for name in names if (arm_dir / name).is_file()}
 
@@ -1005,10 +1024,17 @@ def run_arm_state_machine(
         fallback_names = [*common]
         if checkpoint_present:
             fallback_names.append("checkpoint_update500.pt")
+        unavailable: list[str] = []
         for name in fallback_names:
             path = arm_dir / name
             if path.is_file():
-                artifacts[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+                try:
+                    artifacts[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+                except OSError as fallback_error:
+                    unavailable.append(
+                        f"{name}={type(fallback_error).__name__}: {fallback_error}")
+        if unavailable:
+            reason += "; FALLBACK_UNREADABLE_ARTIFACTS: " + " | ".join(unavailable)
     receipt = {
         "arm": arm,
         "terminal_state": state,
@@ -1054,7 +1080,13 @@ class TorchArmAdapter:
         }
 
     def evaluate(self, update: int) -> dict[str, Any]:
-        return evaluate_arm(self.runtime, update=update)
+        try:
+            return evaluate_arm(self.runtime, update=update)
+        except ValueError as error:
+            observed = _hard_constraint_counts_from_error(error)
+            if observed is not None:
+                self.hard_constraint_counts = observed
+            raise
 
     def step(self, update: int, cycle: int) -> dict[str, Any]:
         from s09_e009_four_arm import atomic_losses
@@ -1066,20 +1098,9 @@ class TorchArmAdapter:
         try:
             losses, context = atomic_losses(self.runtime, index)
         except ValueError as error:
-            prefix = "hard-constraint violation: "
-            message = str(error)
-            if message.startswith(prefix):
-                observed = ast.literal_eval(message[len(prefix):])
-                _require(
-                    isinstance(observed, Mapping) and
-                    set(observed) == set(HARD_CONSTRAINT_KEYS) and
-                    all(type(observed[name]) is int and observed[name] >= 0
-                        for name in HARD_CONSTRAINT_KEYS),
-                    "invalid hard-constraint failure payload",
-                )
-                self.hard_constraint_counts = {
-                    name: observed[name] for name in HARD_CONSTRAINT_KEYS
-                }
+            observed = _hard_constraint_counts_from_error(error)
+            if observed is not None:
+                self.hard_constraint_counts = observed
             raise
         step_hard_counts = hard_constraint_report(
             self.runtime, context["d_pre"], context["history_pre"], context["output"])
