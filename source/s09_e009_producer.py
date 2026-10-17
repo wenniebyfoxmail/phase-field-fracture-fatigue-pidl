@@ -6,6 +6,7 @@ Local tests use pure fixtures or mock adapters and never call AdamW.step.
 """
 from __future__ import annotations
 
+import ast
 from dataclasses import dataclass, replace
 import copy
 import csv
@@ -1062,7 +1063,24 @@ class TorchArmAdapter:
         index = self.cycle_to_index[cycle]
         self.runtime.model.train()
         self.optimizer.zero_grad(set_to_none=True)
-        losses, context = atomic_losses(self.runtime, index)
+        try:
+            losses, context = atomic_losses(self.runtime, index)
+        except ValueError as error:
+            prefix = "hard-constraint violation: "
+            message = str(error)
+            if message.startswith(prefix):
+                observed = ast.literal_eval(message[len(prefix):])
+                _require(
+                    isinstance(observed, Mapping) and
+                    set(observed) == set(HARD_CONSTRAINT_KEYS) and
+                    all(type(observed[name]) is int and observed[name] >= 0
+                        for name in HARD_CONSTRAINT_KEYS),
+                    "invalid hard-constraint failure payload",
+                )
+                self.hard_constraint_counts = {
+                    name: observed[name] for name in HARD_CONSTRAINT_KEYS
+                }
+            raise
         step_hard_counts = hard_constraint_report(
             self.runtime, context["d_pre"], context["history_pre"], context["output"])
         self.hard_constraint_counts = dict(step_hard_counts)

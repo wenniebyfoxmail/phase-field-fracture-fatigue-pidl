@@ -412,6 +412,64 @@ def test_state_machine_preserves_failed_update_hard_constraint_counts(tmp_path: 
     assert result.receipt["hard_constraint_counts"]["damage_irreversibility"] == 1
 
 
+def test_real_forward_hard_constraint_failure_reaches_termination_receipt(
+        tmp_path: Path, monkeypatch):
+    packet, base_config, _ = packet_fixture(tmp_path)
+    runtime = build_runtime(
+        packet_dir=packet,
+        config_path=base_config,
+        device=torch.device("cpu"),
+        executable=False,
+    )
+
+    class FakeOptimizer:
+        def __init__(self):
+            self.step_calls = 0
+
+        def zero_grad(self, set_to_none=True):
+            assert set_to_none is True
+
+        def step(self):
+            self.step_calls += 1
+            raise AssertionError("hard-constraint failure reached optimizer.step")
+
+    fake = FakeOptimizer()
+    adapter = TorchArmAdapter(
+        arm=ARM_REPLAY,
+        runtime=runtime,
+        optimizer=fake,
+        config_sha256="config",
+    )
+    original_forward = runtime.model.forward
+    calls = 0
+
+    def violate_first_update(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        output = original_forward(*args, **kwargs)
+        if calls == len(EXPECTED_CYCLES) + 1:
+            output = dict(output)
+            u_peak = output["u_peak"].clone()
+            boundary_index = int(torch.nonzero(
+                runtime.graph["boundary"], as_tuple=False)[0])
+            u_peak[boundary_index, 0] += 1.0
+            output["u_peak"] = u_peak
+        return output
+
+    monkeypatch.setattr(runtime.model, "forward", violate_first_update)
+    result = run_arm_state_machine(
+        arm=ARM_REPLAY,
+        adapter=adapter,
+        arm_dir=tmp_path / "real-forward-hard-violation",
+    )
+    assert calls == len(EXPECTED_CYCLES) + 1
+    assert fake.step_calls == 0
+    assert result.receipt["terminal_state"] == "EXECUTION_FAILED"
+    assert result.receipt["optimizer_steps_completed"] == 0
+    assert result.receipt["fully_logged_updates"] == 0
+    assert result.receipt["hard_constraint_counts"]["peak_boundary_lifting"] == 1
+
+
 def test_protocol_projection_ignores_only_frontmatter_status(tmp_path: Path):
     assert _protocol_contract_sha256(PROTOCOL) == EXPECTED_PROTOCOL_CONTRACT_SHA256
     raw = PROTOCOL.read_text()
