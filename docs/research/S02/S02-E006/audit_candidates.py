@@ -147,7 +147,6 @@ def phm():
             check(rows[0]==['time','ch1','ch2'],'PHM signal header')
             vv=[];invalid=0
             for raw in rows[1:]:
-                if not raw:continue
                 try:
                     values=[float(x) for x in raw]
                     valid=len(values)==3 and all(math.isfinite(v) for v in values)
