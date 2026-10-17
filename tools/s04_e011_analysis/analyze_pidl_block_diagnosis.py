@@ -15,7 +15,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection
-from matplotlib.colors import SymLogNorm
+from matplotlib.colors import SymLogNorm,Normalize
+from matplotlib.ticker import FormatStrFormatter
 
 PREP = Path(__file__).resolve().parent
 WORKTREE = Path('/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929')
@@ -160,12 +161,14 @@ def joint_field_maps(dest,state,inp,geo,fields,op):
         lo=min(float(r.min()),float(c.min()));hi=max(float(r.max()),float(c.max()),1e-15);lim=max(float(abs(err).max()),1e-15)
         for col,(values,title) in enumerate([(r,'converged FEM'),(c,'unchanged paired PIDL'),(err,'PIDL minus FEM')]):
             vmin,vmax=(lo,hi) if col<2 else (-lim,lim)
-            norm=SymLogNorm(max(abs(vmin),abs(vmax))*1e-5,vmin=vmin,vmax=vmax)
+            norm=Normalize(vmin=vmin,vmax=vmax) if col<2 and row<3 else SymLogNorm(max(abs(vmin),abs(vmax))*1e-3,vmin=vmin,vmax=vmax)
             pc=PolyCollection(polygons,array=values,cmap='viridis' if col<2 else 'RdBu_r',norm=norm,edgecolors='none')
-            ax=axs[row,col];ax.add_collection(pc);ax.autoscale();ax.set_aspect('equal');ax.set_xlabel('native x');ax.set_ylabel('native y');ax.set_title(label+' | '+title,fontsize=9);fig.colorbar(pc,ax=ax,shrink=.75)
+            ax=axs[row,col];ax.add_collection(pc);ax.autoscale();ax.set_aspect('equal');ax.set_xlabel('native x');ax.set_ylabel('native y');ax.set_title(label+' | '+title,fontsize=9);cb=fig.colorbar(pc,ax=ax,shrink=.75)
+            ticks=np.linspace(lo,hi,5) if col<2 and row<3 else [-lim,-lim/10,0,lim/10,lim] if col==2 else [lo,hi/100,hi/10,hi]
+            cb.set_ticks(ticks);cb.ax.yaxis.set_major_formatter(FormatStrFormatter('%.2g'))
     fig.suptitle(f"c{state['cycle']}s4 | accepted FEM vs original paired joint PIDL; no combined-arm model",fontsize=11)
     path=dest/f"c{state['cycle']}_joint_fields.png";fig.savefig(path,dpi=160);plt.close(fig)
-    path.with_suffix('.md').write_text('Full paired PIDL joint fields, unchanged by the original-control LBFGS (zero nonzero parameter updates), compared with the same-state accepted conditional FEM peak. Rows: horizontal u, vertical v, damage, active energy. Columns: FEM, PIDL, PIDL minus FEM. Each quantity has common FEM/PIDL limits and its own symmetric signed-error scale; different rows have different units/ranges. No damage clipping. GP/Jacobian-weighted Q4 cell means rendered, full GP metrics in summary. This is the original coupled PIDL baseline, unlike independent frozen-field U/D diagnostics. The FEM states are independent local restarts, not a continuous repaired trajectory; no physical teacher or evolution claim.\n')
+    path.with_suffix('.md').write_text('Full paired PIDL joint fields, unchanged by the original-control LBFGS (zero nonzero parameter updates), compared with the same-state accepted conditional FEM peak. Rows: horizontal u, vertical v, damage, active energy. Columns: FEM, PIDL, PIDL minus FEM. Each quantity has common FEM/PIDL limits and its own symmetric signed-error scale; different rows have different units/ranges. Displacement/damage reference and prediction use linear colour scales; active and signed errors use symmetric-log scales with five or fewer explicit ticks. No damage clipping. GP/Jacobian-weighted Q4 cell means rendered, full GP metrics in summary. This is the original coupled PIDL baseline, unlike independent frozen-field U/D diagnostics. The FEM states are independent local restarts, not a continuous repaired trajectory; no physical teacher or evolution claim.\n')
 
 def field_maps(dest,state,inp,geo,fields,op):
     cy=state['cycle'];N,B,w,_=geo;nodes=inp['nodes'];cells=inp['cells'];polygons=nodes[cells]
