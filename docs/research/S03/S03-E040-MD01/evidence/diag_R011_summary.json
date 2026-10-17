@@ -1,0 +1,209 @@
+{
+  "total_cached_components": 465,
+  "all_component_saved_retention_matches": true,
+  "fixed_crop_released_eligible_pixels": 1974,
+  "fixed_crop_pixel_counts_by_retention_reason": {
+    "no12pxcontact_only": 1731,
+    "height_below30_only": 0,
+    "both": 243,
+    "retained": 0
+  },
+  "involved_components": [
+    {
+      "label": 330,
+      "area_px": 1,
+      "bbox_native_xywh": [
+        4250,
+        2617,
+        1,
+        1
+      ],
+      "height_px": 1,
+      "touches_original_guide_12px": false,
+      "height_at_least30": false,
+      "saved_retained_pixels": 0,
+      "released_pixels_in_fixed_crop": 1,
+      "reason": "both"
+    },
+    {
+      "label": 331,
+      "area_px": 79,
+      "bbox_native_xywh": [
+        4248,
+        2617,
+        12,
+        14
+      ],
+      "height_px": 14,
+      "touches_original_guide_12px": false,
+      "height_at_least30": false,
+      "saved_retained_pixels": 0,
+      "released_pixels_in_fixed_crop": 12,
+      "reason": "both"
+    },
+    {
+      "label": 336,
+      "area_px": 3,
+      "bbox_native_xywh": [
+        4247,
+        2638,
+        2,
+        2
+      ],
+      "height_px": 2,
+      "touches_original_guide_12px": false,
+      "height_at_least30": false,
+      "saved_retained_pixels": 0,
+      "released_pixels_in_fixed_crop": 3,
+      "reason": "both"
+    },
+    {
+      "label": 337,
+      "area_px": 106,
+      "bbox_native_xywh": [
+        4238,
+        2648,
+        18,
+        21
+      ],
+      "height_px": 21,
+      "touches_original_guide_12px": false,
+      "height_at_least30": false,
+      "saved_retained_pixels": 0,
+      "released_pixels_in_fixed_crop": 99,
+      "reason": "both"
+    },
+    {
+      "label": 344,
+      "area_px": 623,
+      "bbox_native_xywh": [
+        4243,
+        2672,
+        28,
+        94
+      ],
+      "height_px": 94,
+      "touches_original_guide_12px": false,
+      "height_at_least30": true,
+      "saved_retained_pixels": 0,
+      "released_pixels_in_fixed_crop": 49,
+      "reason": "no12pxcontact_only"
+    },
+    {
+      "label": 360,
+      "area_px": 24,
+      "bbox_native_xywh": [
+        4248,
+        2769,
+        5,
+        14
+      ],
+      "height_px": 14,
+      "touches_original_guide_12px": false,
+      "height_at_least30": false,
+      "saved_retained_pixels": 0,
+      "released_pixels_in_fixed_crop": 14,
+      "reason": "both"
+    },
+    {
+      "label": 365,
+      "area_px": 74,
+      "bbox_native_xywh": [
+        4243,
+        2791,
+        9,
+        14
+      ],
+      "height_px": 14,
+      "touches_original_guide_12px": false,
+      "height_at_least30": false,
+      "saved_retained_pixels": 0,
+      "released_pixels_in_fixed_crop": 69,
+      "reason": "both"
+    },
+    {
+      "label": 368,
+      "area_px": 2597,
+      "bbox_native_xywh": [
+        4193,
+        2803,
+        71,
+        228
+      ],
+      "height_px": 228,
+      "touches_original_guide_12px": false,
+      "height_at_least30": true,
+      "saved_retained_pixels": 0,
+      "released_pixels_in_fixed_crop": 1682,
+      "reason": "no12pxcontact_only"
+    },
+    {
+      "label": 375,
+      "area_px": 1,
+      "bbox_native_xywh": [
+        4244,
+        2841,
+        1,
+        1
+      ],
+      "height_px": 1,
+      "touches_original_guide_12px": false,
+      "height_at_least30": false,
+      "saved_retained_pixels": 0,
+      "released_pixels_in_fixed_crop": 1,
+      "reason": "both"
+    },
+    {
+      "label": 376,
+      "area_px": 36,
+      "bbox_native_xywh": [
+        4238,
+        2843,
+        9,
+        7
+      ],
+      "height_px": 7,
+      "touches_original_guide_12px": false,
+      "height_at_least30": false,
+      "saved_retained_pixels": 0,
+      "released_pixels_in_fixed_crop": 36,
+      "reason": "both"
+    },
+    {
+      "label": 381,
+      "area_px": 4,
+      "bbox_native_xywh": [
+        4232,
+        2863,
+        2,
+        2
+      ],
+      "height_px": 2,
+      "touches_original_guide_12px": false,
+      "height_at_least30": false,
+      "saved_retained_pixels": 0,
+      "released_pixels_in_fixed_crop": 4,
+      "reason": "both"
+    },
+    {
+      "label": 421,
+      "area_px": 4,
+      "bbox_native_xywh": [
+        4192,
+        3039,
+        1,
+        4
+      ],
+      "height_px": 4,
+      "touches_original_guide_12px": false,
+      "height_at_least30": false,
+      "saved_retained_pixels": 0,
+      "released_pixels_in_fixed_crop": 4,
+      "reason": "both"
+    }
+  ],
+  "no_new_mask": true,
+  "no_source_decode": true,
+  "no_extractor_or_prediction": true,
+  "no_truth_or_accuracy_claim": true
+}

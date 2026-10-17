@@ -1,0 +1,21 @@
+{
+  "protocol": "geometry-oat-stability-v1",
+  "phase": "E041_saved_guide_comparison_render",
+  "started_at_utc": "2026-10-17T21:33:45.880785+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 25775,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_local_guide_repair.py",
+    "plot",
+    "--result",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E041-MD01/runs/S03-E041-MD01-R001",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E041-MD01/runs/S03-E041-MD01-R003/analysis"
+  ],
+  "commit": "d680721146abdc673d0a11df6752332db837c8fd",
+  "dirty": [],
+  "execution": "succeeded",
+  "ended_at_utc": "2026-10-17T21:33:49.770802+00:00",
+  "source_result": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E041-MD01/runs/S03-E041-MD01-R001"
+}

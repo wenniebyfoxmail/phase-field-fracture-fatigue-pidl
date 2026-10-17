@@ -44,8 +44,10 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   soexclusiondoesnotexplainallmisses. No path/width/forecast recomputation.
   Read-onlyleftgapdiagnosiscomplete: guidecorridor clipsvisibletrajectory;
   of1974releasedpixelgateeligiblepixels,1731failonly12pxguidecontact/243also
-  height. Mixedsurfacecountsnotrecall; savedmaskunchanged. Exactlocalguide
-  repairproposalpreparednotrun, needsnewcandidateauthorisation; parallel
+  height. Mixedsurfacecountsnotrecall; oldmaskunchanged. Updatedhumanauthority
+  permitsE041singlelocalguiderepair: left+5880/-1367candidatepx2, old1021bottom
+  retained; sourceoverlayshowstrajectoryrecovery, nottruth/physicalwidth.
+  No newframe/threshold/scoring. Cross-stagecheckseparatedesign; parallel
   21/22/23baseline replay remainsseparateproposal,nomandatoryfouranchors.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).

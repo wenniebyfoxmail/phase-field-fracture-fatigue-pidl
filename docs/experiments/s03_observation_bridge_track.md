@@ -234,3 +234,16 @@ pixelcounts,notcrackrecall. Original+1021bottom/0leftmaskandscoresunchanged.
 Exactsource-onlylocalguideproposalprepared, notexecuted; newcandidatecomparison
 requiresnewauthorisation, no extrauserlabelling. Diagnosticfigure/results in
 [E040decisionlayercloseout](../research/S03/S03-E040-MD01/decision_layer_results.md).
+
+### E041 source-only local-guide repair — 2026-10-17
+
+Underupdatedhuman same-scope repairauthority, exactpreparedStep19guidecandidate
+executedonce, no source/threshold/scoring expansion. [E041results](../research/S03/S03-E041-MD01/results.md):
+fullROI +6120/-1367candidatepx2 (22824→27577), fixedleftcrop+5880/-1367
+(4438→8951); all1021oldE040bottomadditions retained. Original-source overlay
+shows usefulleft/lowertrajectoryrecovery, some gaps/noise remain, no masktruth/
+physicalwidth orautomatic/generalisationclaim. v1/oldhalfdepth/scores retained,
+no path/width/forecast or14stage access. SingleR0010.560s,19hashesunchanged.
+Deliverablecomplete; nextoneproposalcross-stage repeatability requiresseparate
+design/allowedsupport, not tonight'sextraunapprovedrun. Quota93remaining at
+prefinalcheck, stopline80notreached, noresetorremotejob.

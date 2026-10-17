@@ -1,0 +1,132 @@
+{
+  "protocol": "step19-local-guide-source-v1",
+  "phase": "E041_single_local_guide_comparison",
+  "started_at_utc": "2026-10-17T21:32:01.989724+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 24415,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_local_guide_repair.py",
+    "run",
+    "--manifest",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R004/input_manifest.json",
+    "--spec",
+    "docs/research/S03/S03-E040-MD01/guide_repair_proposal.json",
+    "--plan",
+    "docs/research/S03/S03-E041-MD01/experiment.md",
+    "--baseline",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R001",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E041-MD01/runs/S03-E041-MD01-R001"
+  ],
+  "commit": "d680721146abdc673d0a11df6752332db837c8fd",
+  "dirty": [],
+  "execution": "succeeded",
+  "protected_files": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E040-MD01/support_repair.json": "627db5b46dd6a87a38253099990b3aaca24cf3d54f29fc0fd218d57e26254b1c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E040-MD01/experiment.md": "b90a934ad512812e0a1e3ea8bb223fc9df45d58b74d4b78487ff519675d8f51e",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/md01_exclusion_support_repair.py": "7794519d717f080a8d61cfdcf15340ba023fe0441e10d69ae30bf0dce76334c8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/md01_frame_geometry.py": "35eb5fe01d3c2d8c64df3a29ad6822663c6886999f496cc40bece492001d2267",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/d01_crack_profile_diagnostic.py": "9b1a8e02f413e6a9b29ea9c1d4c0b75412e2bfb152975af80c65151db7a4c494",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E037-MD01/frame_support_lock.json": "5b28e6ddc334744bae3c009498ef73691395761e1bf5b8f9737fdbc302a04728",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R000/input_manifest.json": "c069e93291d89e508cbaf30b460729ea43a39149a7f7e93fc5780f93fb5c8b34",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R004/independent_results.json": "5583cc3d8808005317e996d8f05913ec1f23439c7e005b6a933b559a451ff807",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/v1/geometry_arrays.npz": "b0a44fb3d5e5966f1c855a88831052d0c411f4a88a1d21bc4228092cc5c32f42",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/v1/paths.json": "586d3403e3af7f6cf6729393647c36b462aac9f566af88e759617134b4f3ea6f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/v1/metrics.json": "f5666c4f9cf83452e19bbb1c8f8e157fd93d18a506d89c9ca7bfc9a5f669deb4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/raw_images/IMG_0379.JPG": "05a9329ace48d34e5bb287380d7131075614dadca3a346ebf939a67af3f7dda4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R004/input_manifest.json": "583a101cb9794c900bf44f442009e4e0328519c26bf5a3a9950316bd56cee022",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E040-MD01/guide_repair_proposal.json": "2195bfcb6afb82c8cfff65bbf6925df1a995e52447bb36dc1b0e9c1d70193af9",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E041-MD01/experiment.md": "0a7ffaafe00a4d2968aa3e638997dceef100e52eed63bffa1c0953560285b965",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/md01_local_guide_repair.py": "0de27f7975d8a829e2ccf3ca4b27150bc9a6c853d385e6446734a47bba528917",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R001/support_comparison_arrays.npz": "4145efbd596c2514a882f7da7edc6156f2c673d790f226342222582efbac0609",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R001/summary.json": "947e015b00010c7b7ce610f5e9502d741b13087c6b387cbbaa572f1d65460046",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R001/run_receipt.json": "dab6d779a40434a4550ff20f9bd064e9c817c05a3eac4551eb710c43fdcf0528"
+  },
+  "parent_manifest": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R004/input_manifest.json",
+  "frozen_spec": {
+    "status": "authorised_for_one_same_scope_guide_comparison_not_yet_executed",
+    "authorisation": "2026-10-17 HQ relay01a14bb9-6cd1-7ee2-9647-5190d786f7ba quotes Wennie's explicit approval of same-scope repairs without per-step confirmation; no new source/model/threshold/scoring/budget. Supersedes prior coordination-only preparation boundary.",
+    "revision": "step19-local-guide-source-proposal-v1",
+    "source": "existing Step19 IMG_0379.JPG; no other frame",
+    "source_sha256": "05a9329ace48d34e5bb287380d7131075614dadca3a346ebf939a67af3f7dda4",
+    "parent_support_manifest": "S03-E040-MD01-R004/input_manifest.json",
+    "parent_support_manifest_sha256": "583a101cb9794c900bf44f442009e4e0328519c26bf5a3a9950316bd56cee022",
+    "comparator": "immutable E040 R001 saved mask, not original v1 replacement",
+    "only_intervention": "replace coarse guide segment at/after y2700 with source-visible crack-like trajectory; no automatic mask fill",
+    "proposed_coarse_guide_native_xy": [
+      [
+        4260,
+        1730
+      ],
+      [
+        4270,
+        1900
+      ],
+      [
+        4300,
+        2100
+      ],
+      [
+        4340,
+        2300
+      ],
+      [
+        4340,
+        2500
+      ],
+      [
+        4270,
+        2700
+      ],
+      [
+        4240,
+        2800
+      ],
+      [
+        4205,
+        2900
+      ],
+      [
+        4165,
+        3000
+      ],
+      [
+        4180,
+        3100
+      ],
+      [
+        4210,
+        3200
+      ],
+      [
+        4220,
+        3300
+      ]
+    ],
+    "unchanged": {
+      "roi": [
+        3800,
+        900,
+        4800,
+        3500
+      ],
+      "exclusion": "E040 R004 final source-only support",
+      "gray_max": 100,
+      "local_contrast_min": 20,
+      "background_box_px": 101,
+      "guide_corridor_px": 60,
+      "component_guide_contact_px": 12,
+      "component_height_min_px": 30
+    },
+    "budget": "at most one same-source candidate extraction, CPU/wall60s, no error-tuned retry",
+    "outputs_if_authorised": "old/new mask source overlays, added/lost candidate counts, fixed left crop; no skeleton/path/thickness/forecast/scoring",
+    "preserve": "original v1, E038/E039/E040 masks and all prior scores/half-depth; no new source or labels",
+    "rationale": "Original guide is right of some visible left crack-like source segments and its60px corridor cuts them; remaining eligible fragments may fail12pxcontact. Proposal follows original RGB, not prediction error, and is not yet tested."
+  },
+  "retrieval": "verified_local",
+  "protected_files_unchanged": 19,
+  "ended_at_utc": "2026-10-17T21:32:02.530480+00:00",
+  "elapsed_wall_s": 0.559690749971196,
+  "elapsed_cpu_s": 0.5126759999999999
+}

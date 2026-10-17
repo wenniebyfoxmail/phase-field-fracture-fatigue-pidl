@@ -1,0 +1,17 @@
+# Fixed decision layers QA and scope
+
+Actually viewedR009colourpreview andR010graydisplay. Samepredeclaredleftcrop,
+originalRGB/independentgraypass/contrastpass/originalguide60pxcorridor/savedmask
+pluspostgateunretained. Cyaneligibilitynottruth, orangeunretainednotnewlabels.
+ExactfullROI101background/distance computedbeforecrop, axesnativepx, no
+enhancement/dilation ormaskreplacement. Singlepreviewround, no layouttextbounds
+flags;3figurefiles/2guidesvalidated,2PNG300dpi andembeddedfontPDF.
+
+R00818protectedhashes andR01123protectedhashes stillmatch afterE041subsequent
+authorisedrepair. R011onlyexplainscachedcomponentretention, doesnotgenerate
+orselectnewmask;465savedretentions agree. Thosemixedsurfacepixelcountsnotrecall.
+
+Source note andexactPNGcopied toObsidian, butlatestnativeUIrendercheck blocked
+byMaclocked. Do notclaimactuallydisplayedthisround orwakeuser. Actualfiles and
+copySHA verified; nativecheckpendingafterunlock. E041subsequentrepair supplies
+newactualresult separately, notrewriteofdiagnostic/oldhalfdepth/scores.

@@ -1,0 +1,38 @@
+{
+  "stop_rule": "Any available normal Codex window remaining<80 or unknown => no new stages; only safe save. No reset/purchase.",
+  "checks": [
+    {
+      "stage": "first_check_after_night_rule_arrival_before_first_preview",
+      "checked_at_utc": null,
+      "usedPercent": 6,
+      "remainingPercent": 94
+    },
+    {
+      "checked_at_utc": "2026-10-17 21:33:44 UTC",
+      "stage": "after_numeric_and_source_visual_QA_before_final_render",
+      "windows": [
+        {
+          "window": "primary",
+          "usedPercent": 7,
+          "remainingPercent": 93,
+          "windowDurationMins": 10080
+        }
+      ],
+      "allowed": true
+    },
+    {
+      "checked_at_utc": "2026-10-17 21:37:55 UTC",
+      "stage": "after_results_and_QA_task_complete_safe_closeout",
+      "windows": [
+        {
+          "window": "primary",
+          "usedPercent": 7,
+          "remainingPercent": 93,
+          "windowDurationMins": 10080
+        }
+      ],
+      "continue_new_work": true
+    }
+  ],
+  "task_disposition": "complete_current_single_frame_repair_no_extra_scope_run"
+}

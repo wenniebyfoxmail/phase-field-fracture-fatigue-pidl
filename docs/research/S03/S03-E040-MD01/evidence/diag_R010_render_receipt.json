@@ -1,0 +1,23 @@
+{
+  "protocol": "geometry-oat-stability-v1",
+  "phase": "E040_decision_layers_render",
+  "started_at_utc": "2026-10-17T21:25:24.573498+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 20701,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_decision_layer_audit.py",
+    "plot",
+    "--manifest",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R004/input_manifest.json",
+    "--audit",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R008",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R010/analysis"
+  ],
+  "commit": "8e4af2b7f53e8c296240fe027713388788cde083",
+  "dirty": [],
+  "execution": "succeeded",
+  "ended_at_utc": "2026-10-17T21:25:24.620163+00:00",
+  "audit": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E040-MD01/runs/S03-E040-MD01-R008"
+}

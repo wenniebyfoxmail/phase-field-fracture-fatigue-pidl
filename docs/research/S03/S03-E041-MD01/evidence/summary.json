@@ -1,0 +1,17 @@
+{
+  "stage": 19,
+  "baseline_exact": true,
+  "old_area_px2": 22824,
+  "new_area_px2": 27577,
+  "added_px2": 6120,
+  "removed_px2": 1367,
+  "left_crop_old_px2": 4438,
+  "left_crop_new_px2": 8951,
+  "left_crop_added_px2": 5880,
+  "left_crop_removed_px2": 1367,
+  "old_bottom_added_px2": 1021,
+  "old_bottom_additions_retained_px2": 1021,
+  "thresholds_and_exclusions_unchanged": true,
+  "no_width_path_forecast_or_scoring": true,
+  "no_true_crack_accuracy_claim": true
+}

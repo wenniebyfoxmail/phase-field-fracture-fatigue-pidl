@@ -1,0 +1,38 @@
+{
+  "stage": 19,
+  "fixed_crop_native_xyxy": [
+    4100,
+    2600,
+    4450,
+    3160
+  ],
+  "full_crop": {
+    "pixels": 196000,
+    "excluded": 53882,
+    "gray_fail": 12024,
+    "contrast_fail_after_gray": 107233,
+    "corridor_fail_after_gray_contrast": 11797,
+    "passes_all_pixel_gates": 11064,
+    "not_retained_in_saved_mask": 6626,
+    "retained_in_saved_mask": 4438,
+    "independent_gray_fail": 32573,
+    "independent_contrast_fail": 162784,
+    "independent_corridor_fail": 127761
+  },
+  "released_in_crop": {
+    "pixels": 16842,
+    "excluded": 0,
+    "gray_fail": 749,
+    "contrast_fail_after_gray": 11069,
+    "corridor_fail_after_gray_contrast": 3050,
+    "passes_all_pixel_gates": 1974,
+    "not_retained_in_saved_mask": 1974,
+    "retained_in_saved_mask": 0,
+    "independent_gray_fail": 749,
+    "independent_contrast_fail": 11588,
+    "independent_corridor_fail": 11812
+  },
+  "no_pixel_truth_or_recall": true,
+  "no_mask_or_definition_change": true,
+  "inputs_unchanged": 18
+}

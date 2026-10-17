@@ -1,5 +1,11 @@
 # Read-only Step19 left-gap explanation — 2026-10-17
 
+Currentstatusupdate: laterHQrelay providesexplicit human same-scope repair
+authority, superseding the earliercoordination-only/preparationlimit below.
+The exactpreparedguide was subsequentlyexecuted once asE041, not a newthreshold/
+source/forecast. [ActualE041result](../S03-E041-MD01/results.md) supersedes only
+the earlier "awaitingcandidateauthority" status, not readonlycounts oroldmasks.
+
 ExistingE040 result remains+1021bottom/0left, unchangedmask/halfdepth/scores.
 This follow-up explains fixed gates, not another candidate extraction. Only
 sameStep19 sourceROI andcached decisionarrays, no newframes/labels/predictions.
