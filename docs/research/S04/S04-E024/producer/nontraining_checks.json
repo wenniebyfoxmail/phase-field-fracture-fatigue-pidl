@@ -1,0 +1,49 @@
+{
+  "status": "LOCAL_DEPLOYMENT_CHECKS_PASS_PENDING_INDEPENDENT_REVIEW",
+  "deployment_tests_passed": 22,
+  "tests": "120-file copy/reuse/symlink/corruption; actual shell disk/VRAM/UUID/query guards; own-E023 D preflight; comparative final-summary rejection",
+  "bundle_reconstruction": {
+    "base": "c4ceb5d27fa8d408be1b9f02dcd6b10308f301a2",
+    "target_absent_before_bundle": true,
+    "reconstructed_scientific_source": "231fe4be83e26ef4054a2a6a567da51229185837",
+    "clean": true,
+    "shell_syntax": true,
+    "python_blocks": [
+      "COPY",
+      "PREFLIGHT",
+      "ROW_PREFLIGHT",
+      "VERIFY",
+      "SUMMARY"
+    ],
+    "both_cli_help": true,
+    "validate_only": [
+      {
+        "state": "c20s4",
+        "scale_digest": "aa6eac8194e619f249b8b802c22cc7f92f78e4ab272f3e01ebe2a640a3cb65fb",
+        "initial_uv_max_diff": 9.71445146547012e-16,
+        "training": false
+      },
+      {
+        "state": "c60s4",
+        "scale_digest": "7bdbc59d86115c7f404c46424a7f891c6df5f9624626360316b2f0774da4c2a8",
+        "initial_uv_max_diff": 1.2628786905111156e-15,
+        "training": false
+      },
+      {
+        "state": "c83s4",
+        "scale_digest": "ddc0bae1ac2a5746ab2b0b439d03f24b7b5e398afe84ceaafb87abb9eb1737c0",
+        "initial_uv_max_diff": 6.38378239159465e-16,
+        "training": false
+      }
+    ],
+    "ssh": false,
+    "training": false,
+    "formal_preflight_performed": false
+  },
+  "embedded_python_call_signature_binding": true,
+  "SSH": false,
+  "transfer": false,
+  "formal_native_cuda_preflight": false,
+  "training": false,
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E024/producer_submission_v1"
+}
