@@ -1,0 +1,66 @@
+{
+  "snapshot_sha256": "REPLACE_WITH_64_HEX_SHA256",
+  "known_residual_sign": "actual_minus_nominal",
+  "code_commit": "REPLACE_WITH_COMMIT",
+  "dirty_status": "clean",
+  "producer_machine": "REPLACE_WITH_MACHINE",
+  "runtime": "REPLACE_WITH_RUNTIME_AND_SOLVER_VERSION",
+  "source_hashes": {
+    "solver": "REPLACE_WITH_64_HEX_SHA256",
+    "configuration": "REPLACE_WITH_64_HEX_SHA256",
+    "exporter": "REPLACE_WITH_64_HEX_SHA256"
+  },
+  "temperature_parameter_mapping": {
+    "temperature_low": {
+      "parameter": "REPLACE_WITH_NAME",
+      "value": "REPLACE_WITH_VALUE"
+    },
+    "temperature_high": {
+      "parameter": "REPLACE_WITH_NAME",
+      "value": "REPLACE_WITH_DIFFERENT_VALUE"
+    }
+  },
+  "moisture_parameter_mapping": {
+    "moisture_dry": {
+      "parameter": "REPLACE_WITH_NAME",
+      "value": "REPLACE_WITH_VALUE"
+    },
+    "moisture_wet": {
+      "parameter": "REPLACE_WITH_NAME",
+      "value": "REPLACE_WITH_DIFFERENT_VALUE"
+    }
+  },
+  "load_spectrum_semantics": {
+    "load_A": {
+      "is_physical": true,
+      "description": "REPLACE_WITH_PHYSICAL_SPECTRUM"
+    },
+    "load_B": {
+      "is_physical": true,
+      "description": "REPLACE_WITH_PHYSICAL_SPECTRUM"
+    },
+    "load_C": {
+      "is_physical": true,
+      "description": "REPLACE_WITH_PHYSICAL_SPECTRUM"
+    }
+  },
+  "right_censored_trajectories": [
+    "REPLACE_WITH_TRAJECTORY_ID"
+  ],
+  "factorial_design": {
+    "load_spectrum_ids": ["load_A", "load_B", "load_C"],
+    "temperature_levels": ["temperature_low", "temperature_high"],
+    "moisture_levels": ["moisture_dry", "moisture_wet"]
+  },
+  "splits": {
+    "train": [
+      "REPLACE_WITH_TRAIN_TRAJECTORY_IDS"
+    ],
+    "validation": [
+      "REPLACE_WITH_VALIDATION_TRAJECTORY_IDS"
+    ],
+    "holdout": [
+      "REPLACE_WITH_HOLDOUT_TRAJECTORY_IDS"
+    ]
+  }
+}
