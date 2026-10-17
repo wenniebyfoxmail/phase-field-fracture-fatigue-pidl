@@ -423,3 +423,14 @@
   producer/test/QR/SVD/solve/render/realarray/holdout access or frozen writes.
   PASS_SAVED_C1_C3_ARITHMETIC_WITH_C0_LIMITATION only; C0 C/A and original Qr
   histories remain unavailable, actualE019 rootcause/physics/forecast unproven.
+
+- **2026-10-17 — Q-consistent retained-basis repair candidate prepared only.**
+  See S03-E019/q_consistency_repair_plan.md v0.1, proposed E019-D02. One fixed
+  Q application to the retained factor followed by thin QR, then a new orthogonal
+  projection; not posthoc Qp or a claimed new SVD. Proposed C1-C3 analytic-only
+  comparison preserves five modes/original tolerances, adds a no-collapse guard,
+  and keeps old negatives/source labels. No code/numeric operation/QR/SVD or
+  frozen artifact/realarray/holdout access. Await user confirmation before plan
+  review/code preparation. Real A/Lr unavailable: synthetic repair cannot reopen
+  old E019 or establish actual cause; a real training-only audit needs separate
+  design/authorization, without reusing consumed stage15 as fresh validation.
