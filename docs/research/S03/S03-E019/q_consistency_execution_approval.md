@@ -2,7 +2,7 @@
 
 2026-10-17；Pro方案PASS_PLAN与独立本地方案PASS_STATIC_PLAN。用户仅授权
 代码/合成测试设计/命令准备和独立只读代码审查，未授权测试或诊断。
-代码、测试和约定快照：b6195191fe35dee7ac093619ceadbc4920d0eedb。
+代码、测试和约定快照：0fb6bfeffbd96bb45eb7c9ac5c75f10172fe7c42。
 独立静态代码审查完成后才展示执行审批；本稿不声称语法/导入/测试成功。
 
 实现：[新算法](../../../../scripts/aa2024_qconsistent_repair.py)、
@@ -29,6 +29,8 @@ START覆盖启动器标准库载入后续核对/导入/操作/保存/哈希/收�
 
 17个test方法含subtests；真实QR全部禁用，用已知U/T stub检查候选数据流。
 0实际QR、0SVD；不执行完整diagnose或render，不导入Matplotlib或旧producer。
+测试子进程在数值模块导入前安装与父进程相同的日志警告停止处理器，
+字体初始化许可窗口始终关闭；只导入处理器类，不调用启动器main。
 只写全新local_archive/code_checks/S03-E019-D02-T001/tests.log和test_receipt.json。
 首个非预期失败即停，不自动修后重跑，不进入B。
 
@@ -38,7 +40,7 @@ cd '/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s03-e016-
 export CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 unset PYTHONPATH PYTHONSTARTUP PYTHONHOME PYTEST_ADDOPTS PYTEST_PLUGINS MATPLOTLIBRC
-'/Users/wenxiaofang/miniconda3/bin/python3' -I -B -W error scripts/aa2024_qconsistent_launch.py A --snapshot b6195191fe35dee7ac093619ceadbc4920d0eedb
+'/Users/wenxiaofang/miniconda3/bin/python3' -I -B -W error scripts/aa2024_qconsistent_launch.py A --snapshot 0fb6bfeffbd96bb45eb7c9ac5c75f10172fe7c42
 ```
 
 ## B — A通过后仍须单独批准的三例合成诊断（未运行）
@@ -67,7 +69,7 @@ cd '/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s03-e016-
 export CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 unset PYTHONPATH PYTHONSTARTUP PYTHONHOME PYTEST_ADDOPTS PYTEST_PLUGINS MATPLOTLIBRC
-'/Users/wenxiaofang/miniconda3/bin/python3' -I -B -W error scripts/aa2024_qconsistent_launch.py B --snapshot b6195191fe35dee7ac093619ceadbc4920d0eedb
+'/Users/wenxiaofang/miniconda3/bin/python3' -I -B -W error scripts/aa2024_qconsistent_launch.py B --snapshot 0fb6bfeffbd96bb45eb7c9ac5c75f10172fe7c42
 ```
 
 ## 之后的界限
