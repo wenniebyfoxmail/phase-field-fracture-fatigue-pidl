@@ -52,3 +52,22 @@ Disposition: redirect this single candidate, not the whole residual route.
 Do not repeat q×raw or add a sweep; proposed next is design-only review of
 stage/state representation and information support using frozen records.
 No new source access, fit, loss change or confirmation opening is authorised.
+
+## 2026-10-17 — R002 stage/state design review, no new computation
+
+Read only the frozen R002 summary, existing result record and source definitions.
+The failed q×raw increment does not test state-specific experts or an MOO
+algorithm; original32 already contains state/spatial/lag information. Equal
+three-stratum training and late-primary evaluation are distinct objectives;
+training-allocation effects, representation adequacy and support cannot yet
+be causally separated by the stored positive MSE summaries. q is nonconstant,
+evaluation q maximum exceeds train maximum, but neither identifies the cause.
+
+One proposed discriminating test: reuse the exact frozen R002 B32/model/scales/
+sampling/errors without refitting or reevaluating it, fit one32-feature L32
+with only training C41+ carrying loss weight, keep everything else fixed.
+This is a phase-weight sensitivity diagnostic, not a deployable phase gate,
+physical stage or Pareto ceiling. Future reads/fit remain unapproved.
+See [design review and proposal](S04-E025/stage_state_review_and_minimal_proposal_v1_20261017.md).
+The old R002 no-gain verdict and evidence remain unchanged; no new execution,
+source reread, metric recomputation, code/loss edit, confirmation or second writer.
