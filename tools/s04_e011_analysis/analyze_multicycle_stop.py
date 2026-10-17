@@ -8,7 +8,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection
 from matplotlib.colors import SymLogNorm
-from analyze_c1_commit import a,v,scalar,state,same
+from analyze_c1_commit import a,v,scalar,state,same,text
+from analyze_s2_isolation import struct_columns
+from audit_raw_response_bound import admission as raw_admission,stencil as raw_stencil
 from analyze_s2_sum_outer import first_stop,selftest
 from run_multicycle_cross_replay import q4_geometry,amor_raw,interp,corr
 from audit_phase_tangent import assemble
@@ -49,6 +51,16 @@ def main(z):
  assert not subprocess.check_output(['git','status','--porcelain'],cwd=repo,text=True).strip()
  review=js(z.review);assert review['status']=='passed' and review['commit']==commit and review['analysis_sha256']==sha(Path(__file__))
  root,retrieval=verify(z.run);m=js(root/'input_manifest.json');assert m['source_commit']==PRODUCER
+ package=js(z.package);oldready=js(z.package.parent/'local_independent_review.json')
+ assert oldready['status']=='passed' and oldready['commit']==PRODUCER and oldready['package_manifest_sha256']==sha(z.package)
+ assert package['source_commit']==PRODUCER and len(package['files'])==29 and len(package['staging'])==23
+ for x in package['files']:
+  p=root/x['name'];assert p.stat().st_size==x['bytes'] and sha(p)==x['sha256']
+ launch=js(root/'launch_receipt.json');assert launch['commit']==PRODUCER and launch['root']==package['remote_root'] and launch['dirty'] is False and launch['threads']==1
+ assert launch['account'].lower()==r'ad\xw436' and launch['run_id']==z.run.name
+ assert m['staging']==package['staging'] and m['protocol_revision']=='S04-E011-MCS-r1'
+ expected_cases={'c1_common_anchor'}|{f'c{c}_s{s}' for c in [1,20,60,80,83] for s in [2,4]}
+ assert {p.name for p in (root/'output/mcs').iterdir() if p.is_dir()}==expected_cases
  tests=js(root/'selftest.json');assert sum(x.get('cases',0) for x in tests.values() if isinstance(x,dict))==64
  io=js(root/'io_preflight.json');assert io['status']=='passed' and io['unique_inputs']==23
  assert (root/'sequence_finished.json').exists() and not (root/'sequence_failure.json').exists()
@@ -67,10 +79,27 @@ def main(z):
  N,B,w,xy=q4_geometry(nodes,c);n=len(nodes);fixedu=np.setdiff1d(np.arange(2*n),fu);fixedd=np.setdiff1d(np.arange(n),fd)
  mass=np.zeros(n)
  for j in range(4):np.add.at(mass,c[:,j],np.einsum('eg,g->e',w,N[:,j]))
+ rawB=raw_stencil(nodes,c)
  cross=[];policies=[];cases=[];metrics=[];maps={};ncp=[]
  if z.pidl:
-  assert js(z.pidl/'complete.json')['states']==10
-  ncp=js(z.pidl/'rows.json')
+  ncproot,ncpretrieval=verify(z.pidl);ncpcontract=js(ncproot/'root/code/contract.json');ncpready=js(z.ncp_review)
+  assert ncpready['status']=='passed' and sha(ncproot/'root/code/contract.json')==ncpready['contract_sha256']
+  assert sha(ncproot/'root/code/read_pidl_plateau.py')==ncpready['worker_sha256']
+  assert ncpcontract['analysis_commit']==ncpready['commit'] and ncpcontract['source_commit']=='ad749c8bbba8120b3961add989b11427fab86254'
+  nlaunch=js(ncproot/'root/launch_receipt.json');assert nlaunch['commit']==ncpready['commit'] and nlaunch['run_id']==z.pidl.name and nlaunch['dirty'] is False and nlaunch['device']=='cpu' and nlaunch['threads']==1
+  z.pidl=ncproot/'archive/readout'
+  complete=js(z.pidl/'complete.json');receipt=js(z.pidl/'receipt.json')
+  assert complete['status']=='completed' and complete['states']==10 and complete['history_commits']==complete['optimizer_steps']==0
+  assert receipt['analysis_commit']==ncpready['commit'] and receipt['source_commit']==ncpcontract['source_commit'] and receipt['history_commits']==receipt['optimizer_steps']==0
+  assert receipt['original_archive']==ncpcontract['archive'] and receipt['device']=='cpu' and receipt['threads']==1
+  ncp=js(z.pidl/'rows.json');assert len(ncp)==10 and {(r['cycle'],r['substep'],r['step']) for r in ncp}=={(c,s,5*(c-1)+s) for c in [1,20,60,80,83] for s in [2,4]}
+  trials=js(z.pidl/'trials.json')
+  for r in ncp:
+   qq=[t for t in trials if t['step']==r['step']]
+   assert r['source_objective_readout_pass']==(max(r['original_poststep_component_relative_errors'])<=1e-4)
+   assert len(qq)==(8 if r['source_objective_readout_pass'] and r['parameter_gradient_l2']>0 else 0)
+   r['direction_evaluations']=len(qq)
+   if not qq:r['best_tested_loss_drop']=None;r['lower_fixed_objective_found']=None
   mesh=np.load(z.pidl/'mesh.npz');assert np.max(abs(mesh['node_coords']-nodes))<2e-8 and np.array_equal(mesh['connectivity'],c)
  def fields(u,d):
   raw=amor_raw(u[:n],u[n:],c,B);g=(1-interp(d,c,N))**2
@@ -91,19 +120,35 @@ def main(z):
   assert result['history_commits']==0 and not result['fatal'] and result['u_calls']<=250 and result['phase_calls']<=250
   with h5py.File(folder/'case.mat') as h:
    pre=state(h['pre']);start={k:v(h['start'],k) for k in ['u','d']};predictor={k:v(h['predictor'],k) for k in ['u','d']}
-   assert scalar(h['out'],'history_commits')==0
+   if isinstance(h['out'],h5py.Group):
+    assert scalar(h['out'],'history_commits')==0 and bool(scalar(h['out'],'policy_pass'))==result['accepted']
+    assert text(h['out'],'stop')==result['reason']
+    assert scalar(h['counts'],'u')==result['u_calls'] and scalar(h['counts'],'d')==result['phase_calls']
+    assert scalar(h['out/counts'],'u')+1==result['u_calls'] and scalar(h['out/counts'],'d')==result['phase_calls']
+   else:assert not result['accepted']
   if not anchor:
    before=snapshot(inputs[f'c{cycle}_s{sub-1}']);original=snapshot(inputs[f'c{cycle}_s{sub}'])
    for s,ss in [(before,sub-1),(original,sub)]:
     assert s['cycle']==cycle and s['substep']==ss and s['committed'] and np.array_equal(s['nodes'],nodes) and np.array_equal(s['cells'],c)
    for key in ['u','d','raw','history']:assert np.array_equal(pre[key],before[key])
+   assert np.isfinite(pre['history']).all() and np.isfinite(pre['lower']).all()
    assert np.array_equal(pre['lower'],before['d']) and pre['version']==5*(cycle-1)+sub-1
    assert np.array_equal(start['u'],pre['u']) and np.array_equal(start['d'],pre['d'])
-  else:assert result['reference']['pass'] and result['outer']==19
+  else:
+   assert result['reference']['pass'] and result['outer']==19
+   with h5py.File(inputs['anchor']) as ref,h5py.File(folder/'case.mat') as now:
+    same(state(ref['pre']),pre)
+    for name,value in [('start',start),('predictor',predictor)]:
+     for k,x in value.items():assert np.array_equal(v(ref[name],k),x)
+    for key in ['u','d']:assert np.max(abs(v(ref['current'],key)-v(now['current'],key)))<=1e-10
+    assert rel(a(ref['current'],'history234'),a(now['current'],'history234'))<=1e-10
+    rr,_=raw_admission(v(now['current'],'u'),a(now['current'],'raw').T,v(ref['current'],'u'),a(ref['current'],'raw').T,c,rawB,n);assert rr['pass_new']
   top=np.flatnonzero(abs(nodes[:,1]-nodes[:,1].max())<1e-12)
   assert max(abs(predictor['u'][n+top]-result['target_u']))<1e-12
   q=[];F={};prev=None;native_errors=[]
   paths=sorted(folder.glob('outer_*.mat'));assert [int(p.stem.split('_')[-1]) for p in paths]==list(range(result['outer']+1))
+  if not paths:
+   assert not result['accepted'];cases.append(dict(case=label,cycle=cycle,substep=sub,anchor=anchor,strict_accepted=False,strict_stop=result['reason'],first_stops={k:None for k in ['S0V0','S1V0','S0V1','S1V1']},last_vs_first_active_rel_L2=None,complete_blocks=0));continue
   for k,p in enumerate(paths):
    with h5py.File(p) as h:
     g=h['point'];assert scalar(g,'outer')==k
@@ -124,7 +169,20 @@ def main(z):
      u_before=float(np.linalg.norm(mechanics_force(u,prev[1],c,N,B,w,n)[fu]));assert u_before<1e-8
      reintroduced=float(np.linalg.norm((ru-mechanics_force(u,prev[1],c,N,B,w,n))[fu]))
      du=float(np.max(abs(u-prev[0])));dd=float(np.max(abs(d-prev[1])))
-    else:du=dd=None
+    else:
+     assert np.array_equal(u,predictor['u']) and np.array_equal(d,start['d']);du=dd=None
+    trace=struct_columns(h['trace']) if isinstance(h['trace'],h5py.Group) else {}
+    if k:
+     for name,value in [('outer',k),('u_l2',ur),('d_fresh_l2',dr),('u_delta_max',du),('d_delta_max',dd)]:
+      assert len(trace[name])==k and abs(trace[name][-1]-value)<=1e-12
+    assert abs(scalar(g,'criterion')-max((ur+dr)/4e-6,ur/1e-8))<1e-8
+    if k==result['outer'] and isinstance(h['trace'],h5py.Group):
+     with h5py.File(folder/'case.mat') as endpoint:
+      for key in ['u','d','raw','ru','rd','history234']:assert np.array_equal(a(g,key),a(endpoint['current'],key))
+      assert scalar(endpoint['out'],'completed_outer')==k
+      assert int(scalar(h['calls'],'u'))==int(scalar(endpoint['out/counts'],'u')) and int(scalar(h['calls'],'d'))==int(scalar(endpoint['out/counts'],'d'))
+     assert abs(result['fresh_C']-scalar(g,'criterion'))<1e-8
+     assert result['accepted']==bool(k>=1 and max((ur+dr)/4e-6,ur/1e-8)<=1 and result['reason']=='policy_tolerance')
     free_force=np.zeros(2*n);free_force[fu]=ru[fu];force_nodes=free_force[:n]**2+free_force[n:]**2
     fs=float(force_nodes.sum());imax=int(np.argmax(force_nodes))
     r=dict(case=label,cycle=cycle,substep=sub,outer=k,u_l2=ur,d_l2=dr,u_delta_max=du,d_delta_max=dd,u_before_damage=u_before,
@@ -135,6 +193,9 @@ def main(z):
     q.append(r);F[k]=ff;prev=u,d
    print('AUDIT',label,k,ur,dr,flush=True)
   cross.extend(q);chosen={}
+  if result['accepted']:assert first_stop(q,1,1)[0]==result['outer']
+  elif result['reason']=='outer_budget':assert result['outer']==20 and first_stop(q,1,1)[0] is None
+  elif result['reason']=='exact_stagnation':assert q[-1]['u_delta_max']==q[-1]['d_delta_max']==0
   for s,vv in [(0,0),(1,0),(0,1),(1,1)]:
    key=f'S{s}V{vv}';k,why=first_stop(q,s,vv);chosen[key]=k
    policies.append(dict(case=label,cycle=cycle,substep=sub,policy=key,first_outer=k,reason=why,source_strict_accepted=result['accepted']))
@@ -144,6 +205,7 @@ def main(z):
       first_stops=chosen,preaccept_blocks=len(bottleneck),damage_pass_preaccept=sum(r['d_l2']<=4e-6 for r in bottleneck),
       u_fails_preaccept=sum(r['u_l2']>1e-8 for r in bottleneck),max_native_error=max(native_errors),
       final_u=q[-1]['u_l2'],final_d=q[-1]['d_l2'],inner_failure=bool(result['reason'] not in ['policy_tolerance','outer_budget','exact_stagnation']))
+  row['last_vs_first_active_rel_L2']=None
   if 1 in F:
    A0=F[1]['active'];end=F[result['outer']]['active'];den=float(np.sum(w*A0*A0));sq=float(np.sum(w*(end-A0)**2))
    row['last_vs_first_active_rel_L2']=float(np.sqrt(sq/den)) if den>1e-30 else None
@@ -158,7 +220,9 @@ def main(z):
   row['archived_post_history234_scaled_mapping_gap']=rel(np.stack([tt['alpha'],tt['active'],tt['f']],axis=2),original['history'][:,:,1:4])
   if z.pidl:
    pp=np.load(z.pidl/'fields'/f'c{cycle}_s{sub}.npz');P=fields(np.r_[pp['u'].reshape(-1),pp['v'].reshape(-1)],pp['d'].reshape(-1))
-   for name,ff in [('original',O),('first_complete',F[1]),('strict_accepted' if result['accepted'] else 'strict_last_MISS',F[result['outer']])]:compare(name,ff,P,cycle,sub)
+   comparisons=[('original',O),('strict_accepted' if result['accepted'] else 'strict_last_MISS',F[result['outer']])]
+   if 1 in F:comparisons.append(('first_complete',F[1]))
+   for name,ff in comparisons:compare(name,ff,P,cycle,sub)
    nr=next(r for r in ncp if r['cycle']==cycle and r['substep']==sub)
    nr['own_free_u_energy_gradient_l2']=float(np.linalg.norm(np.r_[pp['own_energy_gradient_u'].reshape(-1),pp['own_energy_gradient_v'].reshape(-1)][fu]))
    nr['own_free_d_energy_gradient_l2']=float(np.linalg.norm(pp['own_energy_gradient_d'].reshape(-1)[fd]))
@@ -177,6 +241,8 @@ Read mcs_control.png first: stage-specific observed residuals and four first-pol
 
 Allowed: conditional solver-control sensitivities, common-operator field gaps and own-objective descent availability. Blocked: selecting FEM by agreement with PIDL; stitched repaired evolution, unique physical teacher, causal percentage allocation, or certifying convergence from loss plateau. Original baseline evolution and local repaired endpoints are distinct. Spatial/commit-state alignment does not remove fixed committed-f vs trial-f or joint NN Deep-Ritz vs staggered/Picard differences. No accepted PIDL update or optimizer continuation occurred.
 ''')
+ for png in z.out.glob('*.png'):
+  png.with_suffix('.md').write_text((z.out/'README_analysis.md').read_text()+'\nFigure: '+png.name+'; exact tables/summary in this directory. Map colour ranges differ across cycle rows; within each row reference and PIDL share a scale, signed gaps share a separate symmetric scale. Source-readout mismatches have no directional-loss bar, not zero gain.\n')
  print('ANALYSIS_COMPLETE',z.out,flush=True)
 
 def draw(out,cases,rows,policies,metrics,ncp,maps,nodes,c,w):
@@ -192,7 +258,7 @@ def draw(out,cases,rows,policies,metrics,ncp,maps,nodes,c,w):
  for j,key in enumerate(['S0V0','S1V0','S0V1','S1V1']):
   vals=[r['first_stops'][key] for r in natural];axs[1,0].plot(np.arange(len(natural))+.07*j,[np.nan if v is None else v for v in vals],'.-',label=key)
  axs[1,0].set_xticks(range(len(labels)),labels,rotation=45,ha='right');axs[1,0].set_ylabel('First eligible outer; missing is not extrapolated');axs[1,0].legend(fontsize=7)
- axs[1,1].bar(range(len(natural)),[100*r.get('last_vs_first_active_rel_L2',0) for r in natural],color=['#0072B2' if r['strict_accepted'] else '#D55E00' for r in natural]);axs[1,1].set_xticks(range(len(labels)),labels,rotation=45,ha='right');axs[1,1].set_ylabel('FEM last vs first active weighted L2 / first (%)');axs[1,1].set_title('Orange = last complete MISS; FEM self-change')
+ axs[1,1].bar(range(len(natural)),[100*r['last_vs_first_active_rel_L2'] if r.get('last_vs_first_active_rel_L2') is not None else np.nan for r in natural],color=['#0072B2' if r['strict_accepted'] else '#D55E00' for r in natural]);axs[1,1].set_xticks(range(len(labels)),labels,rotation=45,ha='right');axs[1,1].set_ylabel('FEM last vs first active weighted L2 / first (%)');axs[1,1].set_title('Orange = last complete MISS; FEM self-change')
  fig.suptitle('S04-E011 MCS | original predecessor frozen; no propagated trajectory');fig.tight_layout();fig.savefig(out/'mcs_control.png',dpi=170);plt.close(fig)
  if not metrics:return
  fig,axs=plt.subplots(2,2,figsize=(12,8))
@@ -211,20 +277,22 @@ def draw(out,cases,rows,policies,metrics,ncp,maps,nodes,c,w):
   for i,k in enumerate(chosen):
    O,T,P,accepted=maps[k];ref=T if accepted else O
    vals=[np.sum(w*f['active'],axis=1)/w.sum(1) for f in [ref,P]];vm=max(float(x.max()) for x in vals)
-   errs=[P['active']-ref['active'],T['active']-O['active']];ec=[np.sum(w*x,axis=1)/w.sum(1) for x in errs];ev=max(float(abs(x).max()) for x in ec)
+   errs=[P['active']-ref['active'],T['active']-O['active']];ec=[np.sum(w*x,axis=1)/w.sum(1) for x in errs];ev=max(max(float(abs(x).max()) for x in ec),1e-15);vm=max(vm,1e-15)
    for j,(val,title) in enumerate(zip(vals+ec,[('strict accepted FEM' if accepted else 'original FEM (strict MISS)'), 'unchanged PIDL','PIDL - reference','strict last - original'+(' (MISS)' if not accepted else '')])):
     norm=SymLogNorm(max((vm if j<2 else ev)*1e-5,1e-15),vmin=0 if j<2 else -ev,vmax=vm if j<2 else ev)
     pc=PolyCollection(nodes[c],array=val,norm=norm,cmap='viridis' if j<2 else 'RdBu_r',edgecolors='none');ax=axs[i,j];ax.add_collection(pc);ax.autoscale();ax.set_aspect('equal');ax.set_title(f'c{k}s4 {title}',fontsize=9);ax.set_xlabel('native x');ax.set_ylabel('native y');fig.colorbar(pc,ax=ax,shrink=.65)
-  fig.tight_layout();fig.savefig(out/'fem_pidl_maps.png',dpi=150);plt.close(fig)
+  fig.suptitle('Active cell means / signed gaps; colour limits common within each row, differ across cycles',fontsize=9);fig.tight_layout();fig.savefig(out/'fem_pidl_maps.png',dpi=150);plt.close(fig)
  if ncp:
   ncp.sort(key=lambda r:(r['cycle'],r['substep']));labs=[f"c{r['cycle']}s{r['substep']}" for r in ncp];x=np.arange(len(ncp));fig,axs=plt.subplots(2,2,figsize=(13,8))
   axs[0,0].bar(x,[r['epochs'] for r in ncp]);axs[0,0].set_ylabel('Original RPROP iterations')
-  for key in ['parameter_gradient_l2','physical_log_parameter_gradient_l2','reg_parameter_gradient_l2']:axs[0,1].semilogy(x,[r[key] for r in ncp],'o-',label=key.replace('_parameter_gradient_l2',''))
-  axs[0,1].legend(fontsize=7);axs[0,1].set_ylabel('Own fixed-objective gradient norm')
-  axs[1,0].bar(x,[r['best_tested_loss_drop'] for r in ncp]);axs[1,0].plot(x,[r['direction_loss_roundoff_floor'] for r in ncp],'k--',label='declared roundoff screen');axs[1,0].legend(fontsize=7);axs[1,0].set_ylabel('Independent normalized -gradient loss drop')
+  for key in ['parameter_gradient_l2','physical_log_parameter_gradient_l2','reg_parameter_gradient_l2']:axs[0,1].semilogy(x,[r[key] if r['source_objective_readout_pass'] else np.nan for r in ncp],'o-',label=key.replace('_parameter_gradient_l2',''))
+  axs[0,1].legend(fontsize=7);axs[0,1].set_ylabel('Source-qualified objective gradient norm')
+  for i,r in enumerate(ncp):
+   if not r['source_objective_readout_pass']:axs[0,1].annotate('source mismatch',(i,.5),xycoords=('data','axes fraction'),rotation=90,fontsize=7,ha='center')
+  axs[1,0].bar(x,[r['best_tested_loss_drop'] if r['source_objective_readout_pass'] and r['best_tested_loss_drop'] is not None else np.nan for r in ncp]);axs[1,0].plot(x,[r['direction_loss_roundoff_floor'] for r in ncp],'k--',label='declared roundoff screen');axs[1,0].legend(fontsize=7);axs[1,0].set_ylabel('Independent normalized -gradient loss drop')
   axs[1,1].semilogy(x,[max(r['own_free_u_energy_gradient_l2'],1e-18) for r in ncp],'o-',label='own free-u energygradient');axs[1,1].plot(x,[max(r['own_free_d_energy_gradient_l2'],1e-18) for r in ncp],'s-',label='own free-d energygradient');axs[1,1].legend(fontsize=7);axs[1,1].set_ylabel('Free nodal gradient L2 (not a feasibility certificate)')
   for ax in axs.ravel():ax.set_xticks(x,labs,rotation=45,ha='right');ax.grid(alpha=.2)
   fig.suptitle('Unchanged PIDL checkpoint readout | no optimizer steps/history commits');fig.tight_layout();fig.savefig(out/'pidl_plateau.png',dpi=170);plt.close(fig)
 
 if __name__=='__main__':
- ap=argparse.ArgumentParser();ap.add_argument('--run',type=Path,required=True);ap.add_argument('--pidl',type=Path);ap.add_argument('--out',type=Path,required=True);ap.add_argument('--review',type=Path,required=True);main(ap.parse_args())
+ ap=argparse.ArgumentParser();ap.add_argument('--package',type=Path,required=True);ap.add_argument('--ncp-review',type=Path);ap.add_argument('--run',type=Path,required=True);ap.add_argument('--pidl',type=Path);ap.add_argument('--out',type=Path,required=True);ap.add_argument('--review',type=Path,required=True);main(ap.parse_args())
