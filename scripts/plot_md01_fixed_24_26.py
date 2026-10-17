@@ -33,7 +33,21 @@ def main(a):
         (a.output/(name+".md")).write_text(caption+"\n")
         (a.output/(name+"_gray.md")).write_text("# Grayscale QA\nSame content/source as "+name+".md; not extra evidence.\n")
         plt.close(fig)
-    if a.phase=="inspect":
+    if a.phase=="anchors":
+        cfg=json.loads(a.geometry.read_text())
+        fig,axes=plt.subplots(1,4,figsize=(9.5,3),constrained_layout=True)
+        with Image.open(SOURCE/FILES[0]) as raw:
+            im=ImageOps.exif_transpose(raw).convert("RGB")
+            for i,((x,y),ax) in enumerate(zip(cfg["background_centers"],axes)):
+                ax.imshow(im.crop((x-60,y-60,x+61,y+61)),extent=(x-60,x+61,y+61,y-60))
+                ax.set_title(f"Anchor {i+1}: ({x},{y})",fontsize=9)
+                ax.set_xticks([]);ax.set_yticks([])
+        fig.suptitle("E034 | fixed Step24 background templates (121 x 121 native px)\n"
+                     "Source inspection only; no replacement / target access",fontsize=11)
+        finish(fig,"F00_fixed_background_templates","# Fixed original templates\nStep24 source394, "
+               "exact four anchors saved before measurements. Native121px crops; no enhancement or measurement. "
+               "Inspect source content only, not target errors. These are background correspondences, not physical truth.")
+    elif a.phase=="inspect":
         crop=(3900,900,4700,3500)
         for i in (0,1):
             with Image.open(SOURCE/FILES[i]) as im:
@@ -138,6 +152,6 @@ def main(a):
 
 
 if __name__=="__main__":
-    p=argparse.ArgumentParser();p.add_argument("phase",choices=("inspect","result"))
-    for key in ("output","history","target"):p.add_argument("--"+key,type=Path)
+    p=argparse.ArgumentParser();p.add_argument("phase",choices=("inspect","anchors","result"))
+    for key in ("output","history","target","geometry"):p.add_argument("--"+key,type=Path)
     p.add_argument("--vector",action="store_true");main(p.parse_args())
