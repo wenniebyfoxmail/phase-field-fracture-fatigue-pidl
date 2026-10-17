@@ -1,0 +1,60 @@
+{
+  "protocol": "S01-E001-v4",
+  "created_at": "2026-10-08",
+  "repository_base_commit": "dd738f177b5dbcced537a29497b4df3c38608a66",
+  "repository_branch": "codex/m2s-framework-validation",
+  "working_tree_status": "dirty_with_unrelated_user_changes; bind this experiment by file hashes",
+  "supersedes_failed_bundles": [
+    "code_review_bundle_v1_failed.json",
+    "code_review_bundle_v2_failed.json",
+    "code_review_bundle_v3_failed.json"
+  ],
+  "workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",
+  "initial_artifacts": {
+    "yolo11n.pt": {
+      "bytes": 5613764,
+      "sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1"
+    },
+    "mobilenet_v3_small_imagenet.pth": {
+      "bytes": 10306551,
+      "sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+    }
+  },
+  "files": {
+    "scripts/pavetrack_cv/__init__.py": "bf073aa0c1ecb700a26d8ea2a12e3c4750145de63e9afb2c6e9b663cb19794c6",
+    "scripts/pavetrack_cv/common.py": "992d1cd8dbfcc2f1e88239325f26ef2b397c1f6f3dd3e57f1f174f5607f721ff",
+    "scripts/pavetrack_cv/prepare_dataset.py": "f37064d673cd83a6615f10b61c19fedb500095907b07b5094fc7fa6caf60e373",
+    "scripts/pavetrack_cv/train_proposer.py": "c178e1e2ca2c35146e1b8e03d4110468a8a8fe1f936dbcaf9e97d883460c1931",
+    "scripts/pavetrack_cv/mine_crops.py": "46543aaed2219cb24ec37c8ee93b4d707d3996d1bc4960688dafceafcf6ec2e7",
+    "scripts/pavetrack_cv/train_reranker.py": "3267ed551e683016ed50a12cba0f0cf8bb4482d8ccd6ef30b09a8145b75e85f9",
+    "scripts/pavetrack_cv/evaluate_two_stage.py": "dd1a892678f9a4e1723b03b0aa6d9081ec0b750a2826d665ac89b36fcfc2d822",
+    "scripts/pavetrack_cv/freeze_for_test.py": "38fe823ddfce43d55b8c7c4c6f5894277d7576c9a7ac6dbb23f3342a09af0a7c",
+    "tests/pavetrack_cv/test_common.py": "bac54b0d8d8a507642bbead74f16881f5c0fa9504acdfcc7df4382c95167216e",
+    "tests/pavetrack_cv/test_crop_lineage.py": "86713bd6e73aecf67ee64278825b48cfb18f2b0932fe2fb30c422d6383976882",
+    "tests/pavetrack_cv/test_data_lock.py": "764a1c96327e190f267d296c834c887edaf3763faa9311d6e9fff47e64f42c0a",
+    "tests/pavetrack_cv/test_test_firewall.py": "e4f0cd3a105fa896b6e76136d153bb539ef6b4d6c6c3366014f5e82b61019a6d",
+    "docs/research/S01/S01-E001/experiment.md": "7cf8d15b782e3df64798a026346031f8326607cfb602639cb4b59ab8d69443f4",
+    "docs/research/S01/S01-E001/data_lock.json": "1e0a4e00b5558636d5eeef80a9465795e2401a7633a039266b8bb10b8c776cd9",
+    "docs/research/S01/S01-E001/run_config.json": "4aa333e0427957078de250f105b232ee755993d465a1a7bcb2cb99be93aedc42",
+    "docs/research/S01/S01-E001/execution_runbook.md": "f9138a2f39b0ef6d977e14a847adbebcce1d83b69a900bc9e55adc2607d98605"
+  },
+  "local_static_checks": {
+    "result": "PASS",
+    "tests": 25,
+    "scope": "syntax, partitions, deterministic ties, crop and prepared-data content hashes, forged authorization, fake checkpoint containers, runtime drift, confirmatory membership; no training"
+  },
+  "producer_checks_required_before_training": [
+    "all 25 tests under the frozen D-26-09 runtime",
+    "semantic load of the exact official initial artifacts",
+    "v4 development preparation and content-hash audit"
+  ],
+  "source_data_audit": {
+    "images": 1467,
+    "train_locations": 16,
+    "validation_locations": 5,
+    "crack_targets": 1442,
+    "empty_negative_labels": 34,
+    "confirmatory_pixels_accessed": false
+  },
+  "review_status": "pending_independent_v4_review"
+}

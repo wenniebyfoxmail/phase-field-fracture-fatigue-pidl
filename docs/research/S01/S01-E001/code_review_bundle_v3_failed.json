@@ -1,0 +1,55 @@
+{
+  "protocol": "S01-E001-v3",
+  "created_at": "2026-10-08",
+  "repository_base_commit": "dd738f177b5dbcced537a29497b4df3c38608a66",
+  "repository_branch": "codex/m2s-framework-validation",
+  "working_tree_status": "dirty_with_unrelated_user_changes; bind this experiment by file hashes",
+  "supersedes_failed_bundles": [
+    "code_review_bundle_v1_failed.json",
+    "code_review_bundle_v2_failed.json"
+  ],
+  "workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",
+  "initial_artifacts": {
+    "yolo11n.pt": {
+      "bytes": 5613764,
+      "sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1"
+    },
+    "mobilenet_v3_small_imagenet.pth": {
+      "bytes": 10306551,
+      "sha256": "047dcff4addef86ea5bc2eff13c9614dc11f47ab1160d0a71a25e7db994f4e1f"
+    }
+  },
+  "files": {
+    "scripts/pavetrack_cv/__init__.py": "bf073aa0c1ecb700a26d8ea2a12e3c4750145de63e9afb2c6e9b663cb19794c6",
+    "scripts/pavetrack_cv/common.py": "7ab05b5e3c5a2a9f5d0e046576974ea677417a443f0e44867f1bc63dea8bf317",
+    "scripts/pavetrack_cv/prepare_dataset.py": "a25f2711784bb443aa356ced7f5be8e0683c8150e704f5c1dd6a4ffa9e27abce",
+    "scripts/pavetrack_cv/train_proposer.py": "30909d998eee9630297b3d8a7ce46ffd307cb93c2b3c3a76ce72dc05d70a5f69",
+    "scripts/pavetrack_cv/mine_crops.py": "0e9ee773f7ec4bff4763a5b9fcac9d6393ef1891f199cda0c2cff61765e33f92",
+    "scripts/pavetrack_cv/train_reranker.py": "41fc1688f42e72e4708368eef1795af7c7c12c474444994e0e44117118cea7c1",
+    "scripts/pavetrack_cv/evaluate_two_stage.py": "82980c563ed94fa7a6265551e66fcb437d5c31c50ab13b7834ebfe042d57dfb1",
+    "scripts/pavetrack_cv/freeze_for_test.py": "374efe4733299e485f8f4c147b6264c0fccb5c2f19c348c4ca90615f86162cd4",
+    "tests/pavetrack_cv/test_common.py": "5f380829a0bec55fa4b8d945b40f5cf044d2849a64fe60560a4ecfa9e46bc0f6",
+    "tests/pavetrack_cv/test_crop_lineage.py": "99183cf3fe479f738cd58a4fbda99f90e14a4614073fa3614063bcc91d55a382",
+    "tests/pavetrack_cv/test_data_lock.py": "7f396f4f7e208b879b77c384e0695d05f175877fe0fa448dce92f10eba5693a2",
+    "tests/pavetrack_cv/test_test_firewall.py": "1774dfea881ef7e6a89255fc47a3b1478afe6815fc1fde4a65aa1c1a648228d0",
+    "docs/research/S01/S01-E001/experiment.md": "a8496b5014db60e0fb038da7f6425e9974eb94175d6001e5b4148f8d9c7a415e",
+    "docs/research/S01/S01-E001/data_lock.json": "1e0a4e00b5558636d5eeef80a9465795e2401a7633a039266b8bb10b8c776cd9",
+    "docs/research/S01/S01-E001/run_config.json": "23ef337602372c93cc8aa57fcf5fddcf482aa7467728efb6dda63daac4e5b3b8",
+    "docs/research/S01/S01-E001/execution_runbook.md": "aba452d0dd1337040a8fc60bbc7a816a3c775724653b685f77cd0ddf5fcf422c"
+  },
+  "local_static_checks": {
+    "result": "PASS",
+    "tests": 23,
+    "scope": "syntax, partitions, deterministic ties, crop content hashes, forged authorization, checkpoint containers, confirmatory membership, artifact freeze; no training"
+  },
+  "development_data": {
+    "images": 1467,
+    "train_locations": 16,
+    "validation_locations": 5,
+    "crack_targets": 1442,
+    "empty_negative_labels": 34,
+    "test_directory_exists": false
+  },
+  "review_status": "pending_independent_v3_review"
+}
+

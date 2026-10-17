@@ -1,0 +1,35 @@
+{
+  "protocol": "S01-E001-v2",
+  "created_at": "2026-10-08",
+  "repository_base_commit": "dd738f177b5dbcced537a29497b4df3c38608a66",
+  "repository_branch": "codex/m2s-framework-validation",
+  "working_tree_status": "dirty_with_unrelated_user_changes; bind this experiment by file hashes",
+  "supersedes_failed_bundle": "code_review_bundle_v1_failed.json",
+  "workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",
+  "files": {
+    "scripts/pavetrack_cv/__init__.py": "bf073aa0c1ecb700a26d8ea2a12e3c4750145de63e9afb2c6e9b663cb19794c6",
+    "scripts/pavetrack_cv/common.py": "ba6ccafa309bc1deb6b946f9387310f8aa688ed9a4859635c1c443224d03ca10",
+    "scripts/pavetrack_cv/prepare_dataset.py": "70fcdbe4a580412e531f2ebf2fa0731d9d752356ba1dd2deb73d03ec8244a820",
+    "scripts/pavetrack_cv/train_proposer.py": "dc1d2a24de723659e518dd0c43cc97e67153571ef2396aed206b776bd33fd647",
+    "scripts/pavetrack_cv/mine_crops.py": "2728d88f02ef52c0d53e935f5a5ba5db26d908ef70dd7e86b48203640c57e056",
+    "scripts/pavetrack_cv/train_reranker.py": "3efd92b2d11a26fb95a92de7b44d8905fac26c0c5803ce832ab566694aeac217",
+    "scripts/pavetrack_cv/evaluate_two_stage.py": "774bc960c03e2970ad47ae044cf4780ad884e30b457b21547b1a003af8891531",
+    "scripts/pavetrack_cv/freeze_for_test.py": "50171b2cd7ce438d4e7958518f21c8ca44e5d3a38225b25f11e181125efa65d0",
+    "tests/pavetrack_cv/test_common.py": "5f380829a0bec55fa4b8d945b40f5cf044d2849a64fe60560a4ecfa9e46bc0f6",
+    "tests/pavetrack_cv/test_crop_lineage.py": "39cbe74f0f7ba8118276ab9d709ee10aee8072f67537a433b376d45c507d8bf2",
+    "tests/pavetrack_cv/test_data_lock.py": "e7fe499f80b86da989d2464f484b4920524d0cf557bc63eda8337fadcc33206c",
+    "tests/pavetrack_cv/test_test_firewall.py": "e487a74e7915ac0a5f189374e571670b0153bbc9f2f380ebc32be351b820a6c9",
+    "docs/research/S01/S01-E001/experiment.md": "1e60290e434c70922a67c3ab2bd4098b6895fd48261a9e8b42eda16f7535351f",
+    "docs/research/S01/S01-E001/data_lock.json": "1e0a4e00b5558636d5eeef80a9465795e2401a7633a039266b8bb10b8c776cd9",
+    "docs/research/S01/S01-E001/run_config.json": "0fd96e28b32a26373ba7d62752a04776b9258da6fc0ba86ba15715ff93873802",
+    "docs/research/S01/S01-E001/execution_runbook.md": "7a19ac2a04703b2753e139e5e7f19b74e3a7bd5351181da46f60e92a90e6f891"
+  },
+  "local_static_checks": {
+    "command": "python3 -m compileall -q scripts/pavetrack_cv tests/pavetrack_cv && python3 -m unittest discover -s tests/pavetrack_cv -p 'test_*.py' -v",
+    "result": "PASS",
+    "tests": 20,
+    "scope": "syntax, all partition overlaps, box geometry, deterministic ties, crop lineage, matching, metric, artifact freeze; no model training"
+  },
+  "review_status": "pending_independent_v2_review"
+}
+

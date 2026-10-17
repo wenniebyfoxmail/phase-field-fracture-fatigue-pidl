@@ -1,0 +1,32 @@
+{
+  "protocol": "S01-E001-v1",
+  "created_at": "2026-10-08",
+  "repository_base_commit": "dd738f177b5dbcced537a29497b4df3c38608a66",
+  "repository_branch": "codex/m2s-framework-validation",
+  "working_tree_status": "dirty_with_unrelated_user_changes; bind this experiment by file hashes",
+  "workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",
+  "files": {
+    "scripts/pavetrack_cv/__init__.py": "bf073aa0c1ecb700a26d8ea2a12e3c4750145de63e9afb2c6e9b663cb19794c6",
+    "scripts/pavetrack_cv/common.py": "4ee78f14afedbb06652d0602cf1f812e4f93b2b43874d5d4c8f4e61b112a4481",
+    "scripts/pavetrack_cv/prepare_dataset.py": "d2f43aed365ad02462302ce3a1524d103250771b7200222945f87b928881997b",
+    "scripts/pavetrack_cv/train_proposer.py": "2eedc83dc06b368e0e6510b552568bdb2da6ca3a0ef72e338b9a1c77d103722a",
+    "scripts/pavetrack_cv/mine_crops.py": "52be3a028c47418b06208c5aaa3cdde0464993b4e36caac68be53da70d3eaec8",
+    "scripts/pavetrack_cv/train_reranker.py": "220d66ec8414dd5c99956ddcd32b603a6c9b598b6c1a0847c8cca9d160778ea7",
+    "scripts/pavetrack_cv/evaluate_two_stage.py": "d655a17b0b651cbea14aa0a886192fb32049fb27aad5b4efc568b86b4986cd7b",
+    "scripts/pavetrack_cv/freeze_for_test.py": "75c0c0030f7eaa057a4566e9262e47d671832e7310a347775574c2d9d52ef8f9",
+    "tests/pavetrack_cv/test_common.py": "274dbd72bfc6cbb988316a1b4b5d6d39eae238ee7ca6d4375502a9dc81c321e4",
+    "tests/pavetrack_cv/test_data_lock.py": "e7fe499f80b86da989d2464f484b4920524d0cf557bc63eda8337fadcc33206c",
+    "tests/pavetrack_cv/test_test_firewall.py": "c06d50734a5d55133d688d75f91300c6b661eac4e9ffdac393636e3321adcd93",
+    "docs/research/S01/S01-E001/experiment.md": "8d8cf7232bcfdf3040199ceadae9388af10ad47f35e08006185eee833eb6b095",
+    "docs/research/S01/S01-E001/data_lock.json": "1e0a4e00b5558636d5eeef80a9465795e2401a7633a039266b8bb10b8c776cd9",
+    "docs/research/S01/S01-E001/run_config.json": "15ed705b07b7f9da4d680bc8f95b66397c7573aaa589fbf45eb81e8005c70180",
+    "docs/research/S01/S01-E001/execution_runbook.md": "91a2574ab7a3a24056549d802ad0a8ba6722e36c8aba6ae09e5b54eecafe682c"
+  },
+  "local_static_checks": {
+    "command": "python3 -m compileall -q scripts/pavetrack_cv tests/pavetrack_cv && python3 -m unittest discover -s tests/pavetrack_cv -p 'test_*.py' -v",
+    "result": "PASS",
+    "tests": 13,
+    "scope": "syntax, split firewall, box geometry, matching, metric, artifact freeze; no model training"
+  },
+  "review_status": "pending_independent_review"
+}
