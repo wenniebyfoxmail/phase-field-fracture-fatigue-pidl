@@ -1,6 +1,8 @@
 import sys
+import json
 from pathlib import Path
 
+import numpy as np
 import pytest
 import torch
 
@@ -31,7 +33,7 @@ def groups(d=(1.0, 0.0), u=(-1.0, 1e-14), h=(0.0, 2.0), p=(-1.0, 2.0)):
 def test_anchor_equalises_before_projection_without_amplifying_residue():
     merged, record = damage_anchor_direction(groups(), beta=0.25)
     assert record["auxiliary"]["L_U"]["projected_norm"] == pytest.approx(1e-14)
-    assert record["auxiliary"]["L_U"]["zero_reason"] == "FULLY_PROJECTED_TO_ZERO"
+    assert record["auxiliary"]["L_U"]["zero_reason"] == "PROJECTED_RESIDUAL_AT_OR_BELOW_EPSILON"
     assert record["preclip_anchor_dot_merged"] >= record["preclip_anchor_norm_squared"] - 1e-14
     assert torch.isfinite(merged).all()
     assert record["norm_after_clip"] <= 1.0 + 1e-12
@@ -44,6 +46,16 @@ def test_anchor_zero_policies_are_distinct():
     assert record["auxiliary"]["L_H"]["zero_reason"] == "AUXILIARY_NORM_AT_OR_BELOW_EPSILON"
     with pytest.raises(FloatingPointError):
         damage_anchor_direction(groups(p=(float("nan"), 0.0)), beta=0.25)
+
+
+def test_exact_zero_and_near_zero_projection_labels_are_distinct():
+    _, exact = damage_anchor_direction(
+        groups(u=(-1.0, 0.0), h=(0.0, 0.0), p=(0.0, 0.0)), beta=0.0)
+    _, near = damage_anchor_direction(
+        groups(u=(-1.0, 1e-14), h=(0.0, 0.0), p=(0.0, 0.0)), beta=0.0)
+    assert exact["auxiliary"]["L_U"]["zero_reason"] == "FULLY_PROJECTED_TO_ZERO"
+    assert near["auxiliary"]["L_U"]["zero_reason"] == (
+        "PROJECTED_RESIDUAL_AT_OR_BELOW_EPSILON")
 
 
 def test_scalar_uses_no_physics_contribution_and_one_clip():
@@ -110,6 +122,54 @@ def test_amplitude_zero_rules_and_auc_ties():
     assert group_amplitude_ratio(1, 0)["status"] == "ZERO_STAGNANT_AMPLITUDE"
     assert group_amplitude_ratio(2, 1)["value"] == 2
     assert amplitude_auc([0] * 5, [0] * 5) == {"value": 0.5, "wins": 0, "ties": 25, "losses": 0}
+
+
+def test_numpy_scorecard_outputs_are_strict_json_serialisable():
+    auc = amplitude_auc([np.float64(0)] * 5, [np.float64(0)] * 5)
+    spatial = fixed_support_median(
+        {np.int64(index): np.float64(index) for index in range(1, 17)},
+        tuple(np.int64(index) for index in range(1, 17)))
+    json.dumps({"auc": auc, "spatial": spatial}, allow_nan=False)
+    assert all(type(auc[name]) is int for name in ("wins", "ties", "losses"))
+    assert all(type(cycle) is int for cycle in spatial["valid_cycles"])
+
+
+def test_large_finite_direction_uses_stable_norm_and_clip():
+    from s09_e009_four_arm import clip_complete_direction
+
+    direction = torch.tensor([1e200, 1e200], dtype=torch.float64)
+    clipped, record = clip_complete_direction(direction)
+    assert torch.isfinite(clipped).all()
+    assert clipped.norm() == pytest.approx(1.0)
+    assert record["norm_before_clip"] == pytest.approx(2 ** 0.5 * 1e200)
+
+
+def test_large_finite_arm_gradients_never_return_nonfinite_direction():
+    for arm in ("R_current_pino_replay", "S_data_only_scalar",
+                "A0_damage_anchor_beta0", "A25_damage_anchor_beta0p25"):
+        model = torch.nn.Linear(1, 1, bias=False).double()
+        with torch.no_grad():
+            model.weight.zero_()
+        output = model(torch.ones((1, 1), dtype=torch.float64)).sum()
+        losses = {name: (1 + 5e199 * output).square() for name in
+                  ("l_d", "l_dr", "l_u", "l_h", "l_hr", "L_P")}
+        try:
+            direction, _ = arm_direction(model, losses, arm)
+        except FloatingPointError:
+            continue
+        assert torch.isfinite(direction).all()
+
+
+def test_nonfinite_derived_diagnostics_fail_closed():
+    with pytest.raises(FloatingPointError, match="displacement dot"):
+        parameter_displacement_alignment(
+            torch.tensor([1e200], dtype=torch.float64),
+            torch.tensor([1e200], dtype=torch.float64),
+            torch.tensor([-1e200], dtype=torch.float64))
+    with pytest.raises(FloatingPointError, match="replay ratio"):
+        safe_replay_ratio(1.0, 1e-320)
+    with pytest.raises(FloatingPointError, match="group amplitude ratio"):
+        group_amplitude_ratio(1.0, 1e-320)
 
 
 def test_replay_ratio_undefined_propagation_inputs():

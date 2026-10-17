@@ -20,11 +20,16 @@ producer launch path:
 Using `/Users/wenxiaofang/miniconda3/bin/python3`:
 
 ```text
-43 passed in 1.36s
+48 passed in 1.18s
 ```
 
 The selected suite covers the new core, the frozen E008 update contract, and
 the E008 no-training runtime. `py_compile` and `git diff --check` also pass.
+
+After the first exact-commit review, the core also fails closed on nonfinite
+derived norms/dots/ratios, emits native JSON scalar types for valid NumPy
+inputs, and distinguishes an exactly zero projected vector from a retained
+near-zero residue. These fixes do not change the frozen four-arm formulas.
 
 ## Boundary
 
