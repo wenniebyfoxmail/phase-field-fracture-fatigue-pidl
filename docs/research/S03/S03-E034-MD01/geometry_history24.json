@@ -1,0 +1,17 @@
+{
+  "protocol": "relative-stage-24-26-v1",
+  "native_shape": [4000,6000],
+  "reference_image": "IMG_0394.JPG",
+  "rough_center": [4280.0,2200.0],
+  "normal": [0.9805806756909201,-0.19611613513818402],
+  "observer_rule": "First-history whole-view trace approximately spans y900..3500; select visible mid-height y2200, rough center near x4280. Local trace points down/right, normal points right/up. One predeclared first-history peak refinement only; no width-based candidate scan.",
+  "inspection_crop_xyxy": [3900,900,4700,3500],
+  "background_centers": [[4100,1950],[4480,1950],[4170,2120],[4490,2370]],
+  "patch_size": 121,
+  "translation_radius": 40,
+  "correlation_min": 0.60,
+  "required_background_patches": 3,
+  "anchor_rule": "Four visible off-crack concrete texture patches on the two flanks, excluding wire, plates, putty, crack and specimen boundary. Chosen by first-history geometry before numerical measurement.",
+  "target_seen": false,
+  "limitations": "Observer-assisted image geometry and background translation proxy, not calibrated physical position or human crack-edge reference. No target-dependent normal or recentering."
+}
