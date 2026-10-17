@@ -167,11 +167,13 @@ def run(a):
                manifest_sha256=v1.sha(a.manifest), execution="running")
     save(a.output / "run_receipt.json", rec)
     rows = []
+    def budget():
+        if max(time.monotonic()-start, time.process_time()-cpu) > 180:
+            raise TimeoutError("180s numeric budget")
     try:
         for stage in STAGES:
             for arm in ARMS:
-                if max(time.monotonic()-start, time.process_time()-cpu) > 180:
-                    raise TimeoutError("180s numeric budget")
+                budget()
                 src = Path(m["input_root"]) / f"step{stage}" / arm["id"]
                 with np.load(src / "geometry_arrays.npz") as data:
                     old = {k: data[k] for k in data.files}
@@ -209,6 +211,7 @@ def run(a):
             summary.append(s)
         save(a.output / "all_metrics.json", rows)
         save(a.output / "summary.json", summary)
+        budget()
         rec.update(execution="succeeded", retrieval="verified_local", protected_files_unchanged=len(m["protected_files"]),
                    cases=len(rows), no_forecast_files_parsed=True)
     except Exception as exc:
