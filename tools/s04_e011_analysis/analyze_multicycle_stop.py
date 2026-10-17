@@ -181,7 +181,11 @@ def main(z):
      with h5py.File(folder/'case.mat') as endpoint:
       for key in ['u','d','raw','ru','rd','history234']:assert np.array_equal(a(g,key),a(endpoint['current'],key))
       assert scalar(endpoint['out'],'completed_outer')==k
-      assert int(scalar(h['calls'],'u'))==int(scalar(endpoint['out/counts'],'u')) and int(scalar(h['calls'],'d'))==int(scalar(endpoint['out/counts'],'d'))
+      cu=int(scalar(h['calls'],'u'));cd=int(scalar(h['calls'],'d'));tu=int(scalar(endpoint['out/counts'],'u'));td=int(scalar(endpoint['out/counts'],'d'))
+      if result['reason'] in ['displacement_inner_miss','damage_inner_miss']:
+       assert cu<=tu and cd<=td and 'last_attempt' in endpoint['out']
+       assert ('u_out' if result['reason']=='displacement_inner_miss' else 'd_out') in endpoint['out/last_attempt']
+      else:assert cu==tu and cd==td
      assert abs(result['fresh_C']-scalar(g,'criterion'))<1e-8
      assert result['accepted']==bool(k>=1 and max((ur+dr)/4e-6,ur/1e-8)<=1 and result['reason']=='policy_tolerance')
     free_force=np.zeros(2*n);free_force[fu]=ru[fu];force_nodes=free_force[:n]**2+free_force[n:]**2
@@ -291,7 +295,7 @@ def draw(out,cases,rows,policies,metrics,ncp,maps,nodes,c,w):
   for i,r in enumerate(ncp):
    if not r['source_objective_readout_pass']:axs[0,1].annotate('source mismatch',(i,.5),xycoords=('data','axes fraction'),rotation=90,fontsize=7,ha='center')
   axs[1,0].bar(x,[r['best_tested_loss_drop'] if r['source_objective_readout_pass'] and r['best_tested_loss_drop'] is not None else np.nan for r in ncp]);axs[1,0].plot(x,[r['direction_loss_roundoff_floor'] for r in ncp],'k--',label='declared roundoff screen');axs[1,0].legend(fontsize=7);axs[1,0].set_ylabel('Independent normalized -gradient loss drop')
-  axs[1,1].semilogy(x,[max(r['own_free_u_energy_gradient_l2'],1e-18) for r in ncp],'o-',label='own free-u energygradient');axs[1,1].plot(x,[max(r['own_free_d_energy_gradient_l2'],1e-18) for r in ncp],'s-',label='own free-d energygradient');axs[1,1].legend(fontsize=7);axs[1,1].set_ylabel('Free nodal gradient L2 (not a feasibility certificate)')
+  axs[1,1].semilogy(x,[max(r['common_operator_PIDL_free_u_l2'],1e-18) for r in ncp],'o-',label='common Q4 free-u force (all fields)');axs[1,1].plot(x,[max(r['own_free_d_energy_gradient_l2'],1e-18) if r['source_objective_readout_pass'] else np.nan for r in ncp],'s-',label='source-qualified own free-d energygradient');axs[1,1].axhline(1e-8,color='k',ls='--',lw=.7);axs[1,1].legend(fontsize=7);axs[1,1].set_ylabel('Nodal L2; force is independent of objective replay')
   for ax in axs.ravel():ax.set_xticks(x,labs,rotation=45,ha='right');ax.grid(alpha=.2)
   fig.suptitle('Unchanged PIDL checkpoint readout | no optimizer steps/history commits');fig.tight_layout();fig.savefig(out/'pidl_plateau.png',dpi=170);plt.close(fig)
 
