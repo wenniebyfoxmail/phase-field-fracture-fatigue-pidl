@@ -23,7 +23,6 @@ from s09_e009_four_arm import (
     ARM_SCALAR,
     GLOBAL_CLIP_NORM,
     NORM_EPSILON,
-    arm_direction,
     atomic_losses,
     damage_anchor_direction,
     flattened_objective_gradients,
@@ -46,6 +45,44 @@ UPDATES_PER_ARM = 500
 TOTAL_UPDATE_CAP = 2000
 EXPECTED_CYCLES = (1, 2, 3, 4, 21, 29, 41, 46, 48, 58, 60, 69, 70, 71, 72, 73)
 EXPECTED_CORE_COMMIT = "8b6a2e49b241ae73f433645cb30a69291f7aee53"
+EXPECTED_PROTOCOL_REVISION = "v3-four-arm-damage-separation-screen"
+EXPECTED_PROTOCOL_SHA256 = "67f84d05ffca2054d47cef6e016b5c86098681bbf41813486adf8c9a72588ff8"
+EXPECTED_BASE_RUNTIME_CONFIG_SHA256 = (
+    "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b"
+)
+BASE_RUNTIME_CONFIG_RELATIVE = (
+    "docs/research/S09/S09-E008/p1_memorisation_run_config_20261016.json"
+)
+TRUSTED_BASE_RUNTIME_CONFIG = Path(__file__).resolve().parents[1] / BASE_RUNTIME_CONFIG_RELATIVE
+EXPECTED_PRODUCER = {
+    "alias": "Taobo GPU",
+    "forbidden_fallback": "CSD3",
+    "remote_root": "/mnt/data2/drtao/wennie/S09-E009-R001-four-arm-damage-separation",
+    "archive_root": "/mnt/data2/drtao/pidl_archives/S09-E009-R001-four-arm-damage-separation",
+    "resolved_environment": "TO_BE_LOCKED_BY_FUTURE_READ_ONLY_PREFLIGHT",
+}
+TERMINAL_COMPLETED = "COMPLETED"
+TERMINAL_EXECUTION_FAILED = "EXECUTION_FAILED"
+TERMINAL_METHOD_INAPPLICABLE = "METHOD_INAPPLICABLE"
+TERMINAL_STATES = (
+    TERMINAL_COMPLETED,
+    TERMINAL_EXECUTION_FAILED,
+    TERMINAL_METHOD_INAPPLICABLE,
+)
+TERMINATION_RECEIPT_FIELDS = (
+    "arm",
+    "terminal_state",
+    "stop_update",
+    "optimizer_steps_completed",
+    "fully_logged_updates",
+    "evaluation_updates_present",
+    "last_valid_evaluation_update",
+    "reason",
+    "update500_checkpoint_present",
+    "finite_status",
+    "hard_constraint_counts",
+    "artifacts",
+)
 
 
 def _require(condition: bool, message: str, error: type[Exception] = ValueError) -> None:
@@ -67,8 +104,39 @@ def _direction_sha256(direction: torch.Tensor) -> str:
                           array.tobytes()).hexdigest()
 
 
-def validate_integration_config(config: Mapping[str, Any], *, base_config_path: Path) -> None:
+def _validate_base_runtime_identity(*, source: Mapping[str, Any], base_config_path: Path,
+                                    synthetic_test_adapter: bool) -> None:
+    """Bind production to one reviewed file; allow one explicit tiny-Q4 test projection."""
+    actual_sha256 = sha256_file(base_config_path)
+    if not synthetic_test_adapter:
+        _require(actual_sha256 == EXPECTED_BASE_RUNTIME_CONFIG_SHA256,
+                 "untrusted base E008 runtime config bytes")
+        _require(source.get("base_runtime_config_sha256") ==
+                 EXPECTED_BASE_RUNTIME_CONFIG_SHA256,
+                 "base E008 runtime config trust anchor drift")
+        return
+
+    supplied = _load_json(base_config_path)
+    trusted = _load_json(TRUSTED_BASE_RUNTIME_CONFIG)
+    _require(supplied.get("data", {}).get("native_nodes") == 9 and
+             supplied.get("data", {}).get("native_q4_elements") == 4,
+             "synthetic adapter permits only the fixed 9-node/4-Q4 support")
+    trusted["data"]["native_nodes"] = 9
+    trusted["data"]["native_q4_elements"] = 4
+    _require(supplied == trusted,
+             "synthetic adapter changed a non-resolution base-runtime invariant")
+    _require(source.get("base_runtime_config_sha256") == actual_sha256,
+             "synthetic base-runtime hash mismatch")
+
+
+def validate_integration_config(config: Mapping[str, Any], *, base_config_path: Path,
+                                synthetic_test_adapter: bool = False) -> None:
     """Fail closed on drift from the design-reviewed no-training contract."""
+    _require(set(config) == {
+        "schema_version", "planned_run_id", "status", "execution_authorized",
+        "source", "data", "model", "optimisation", "budget", "arms", "evidence",
+        "producer",
+    }, "integration top-level keys drift")
     _require(config.get("schema_version") == SCHEMA_VERSION, "integration schema drift")
     _require(config.get("planned_run_id") == PLANNED_RUN_ID, "planned run identity drift")
     _require(config.get("status") == "RUNNER_INTEGRATION_CANDIDATE__NO_TRAINING",
@@ -76,27 +144,38 @@ def validate_integration_config(config: Mapping[str, Any], *, base_config_path: 
     _require(config.get("execution_authorized") is False,
              "no-training integration must remain unauthorised", PermissionError)
     source = config.get("source", {})
+    _require(set(source) == {
+        "protocol_revision", "protocol_sha256", "core_code_ready_commit",
+        "base_runtime_config", "base_runtime_config_sha256",
+        "integration_reviewed_commit", "input_packet_sha256",
+    }, "source keys drift")
+    _require(source.get("protocol_revision") == EXPECTED_PROTOCOL_REVISION,
+             "protocol revision drift")
+    _require(source.get("protocol_sha256") == EXPECTED_PROTOCOL_SHA256,
+             "protocol identity drift")
     _require(source.get("core_code_ready_commit") == EXPECTED_CORE_COMMIT,
              "reviewed core commit drift")
-    _require(source.get("base_runtime_config") ==
-             "docs/research/S09/S09-E008/p1_memorisation_run_config_20261016.json",
+    _require(source.get("base_runtime_config") == BASE_RUNTIME_CONFIG_RELATIVE,
              "base E008 runtime config path drift")
-    _require(source.get("base_runtime_config_sha256") == sha256_file(base_config_path),
-             "base E008 runtime config identity drift")
+    _validate_base_runtime_identity(
+        source=source,
+        base_config_path=base_config_path,
+        synthetic_test_adapter=synthetic_test_adapter,
+    )
     _require(source.get("integration_reviewed_commit") ==
              "TO_BE_SET_AFTER_EXACT_COMMIT_REVIEW" and
              source.get("input_packet_sha256") == "TO_BE_LOCKED_FROM_REVIEWED_PACKET",
              "no-training source fields must remain unresolved")
     budget = config.get("budget", {})
-    _require(budget.get("updates_per_arm") == UPDATES_PER_ARM and
-             budget.get("total_update_cap") == TOTAL_UPDATE_CAP,
-             "four-arm budget drift")
-    _require(tuple(budget.get("evaluation_updates", ())) == EVALUATION_UPDATES,
-             "evaluation schedule drift")
+    _require(budget == {
+        "updates_per_arm": UPDATES_PER_ARM,
+        "total_update_cap": TOTAL_UPDATE_CAP,
+        "evaluation_updates": list(EVALUATION_UPDATES),
+        "unused_budget_transfer": False,
+    }, "four-arm budget or evaluation schedule drift")
     data = config.get("data", {})
-    _require(tuple(data.get("selected_cycles", ())) == EXPECTED_CYCLES,
-             "cycle order drift")
-    _require(data.get("batch_size") == 1, "batch size drift")
+    _require(data == {"selected_cycles": list(EXPECTED_CYCLES), "batch_size": 1},
+             "data support or cycle order drift")
     _require(config.get("model") == {
         "seed": 20261016, "dtype": "float64",
         "initialisation": "one_constructed_model_then_complete_parameter_and_buffer_copy_per_arm",
@@ -107,8 +186,7 @@ def validate_integration_config(config: Mapping[str, Any], *, base_config_path: 
         "betas": [0.9, 0.999], "epsilon": 1e-8, "weight_decay": 0.0,
         "gradient_epsilon": NORM_EPSILON, "global_clip_norm": GLOBAL_CLIP_NORM,
     }
-    _require(all(optimisation.get(key) == value for key, value in expected_optimisation.items()),
-             "optimisation contract drift")
+    _require(optimisation == expected_optimisation, "optimisation contract drift")
     arms = config.get("arms", {})
     _require(tuple(arms) == ARM_ORDER, "arm order drift")
     _require(arms[ARM_REPLAY] == {"rule": "exact_e008_replay", "physics_coefficient": "inherited"},
@@ -120,15 +198,114 @@ def validate_integration_config(config: Mapping[str, Any], *, base_config_path: 
     _require(arms[ARM_ANCHOR_25] == {"rule": "damage_anchor", "beta": 0.25},
              "A25 arm drift")
     evidence = config.get("evidence", {})
-    _require(evidence.get("required_per_arm") == [
+    _require(set(evidence) == {
+        "required_per_arm_common", "required_completed_arm_only", "required_shared",
+        "termination_receipt_required_fields", "terminal_states",
+        "cross_arm_comparison",
+    }, "evidence keys drift")
+    _require(evidence.get("required_per_arm_common") == [
         "start_identity.json", "train_log.jsonl", "gradient_diagnostics.jsonl",
-        "diagnostic_metrics.jsonl", "checkpoint_update500.pt", "termination_receipt.json",
-    ], "per-arm evidence contract drift")
+        "diagnostic_metrics.jsonl", "termination_receipt.json",
+    ], "common per-arm evidence contract drift")
+    _require(evidence.get("required_completed_arm_only") == [
+        "checkpoint_update500.pt",
+    ], "completed-arm evidence contract drift")
     _require(evidence.get("required_shared") == [
         "config_resolved.json", "input_packet_identity.json", "environment.txt",
         "decision_metrics.json", "decision_table.csv", "decision_figure.png",
         "per_cycle_metrics.csv", "decision.md", "completion_receipt.json",
     ], "shared evidence contract drift")
+    _require(evidence.get("termination_receipt_required_fields") ==
+             list(TERMINATION_RECEIPT_FIELDS),
+             "termination receipt field contract drift")
+    _require(evidence.get("terminal_states") == {
+        TERMINAL_COMPLETED: {
+            "optimizer_steps_completed": UPDATES_PER_ARM,
+            "fully_logged_updates": UPDATES_PER_ARM,
+            "required_evaluation_updates": list(EVALUATION_UPDATES),
+            "update500_checkpoint_required": True,
+        },
+        TERMINAL_EXECUTION_FAILED: {
+            "partial_counts_required": True,
+            "last_valid_evaluation_required_if_any": True,
+            "update500_checkpoint_required": False,
+        },
+        TERMINAL_METHOD_INAPPLICABLE: {
+            "allowed_arms": [ARM_ANCHOR_0, ARM_ANCHOR_25],
+            "reason": "ANCHOR_STATIONARY_OR_INAPPLICABLE",
+            "stop_location_required": True,
+            "update500_checkpoint_required": False,
+        },
+    }, "terminal-state evidence contract drift")
+    _require(evidence.get("cross_arm_comparison") == {
+        "requires_shared_identity_pass": True,
+        "requires_replay_gate_pass": True,
+        "invalid_if_either_fails_even_when_files_exist": True,
+    }, "cross-arm comparison validity contract drift")
+    _require(config.get("producer") == EXPECTED_PRODUCER,
+             "producer contract drift")
+
+
+def validate_termination_receipt(receipt: Mapping[str, Any]) -> None:
+    """Validate one future terminal receipt without writing or stepping anything."""
+    _require(set(receipt) == set(TERMINATION_RECEIPT_FIELDS),
+             "termination receipt keys drift")
+    arm = receipt["arm"]
+    state = receipt["terminal_state"]
+    _require(arm in ARM_ORDER, "unknown arm in termination receipt")
+    _require(state in TERMINAL_STATES, "unknown terminal state")
+    steps = receipt["optimizer_steps_completed"]
+    logged = receipt["fully_logged_updates"]
+    stop_update = receipt["stop_update"]
+    evaluations = receipt["evaluation_updates_present"]
+    _require(type(steps) is int and 0 <= steps <= UPDATES_PER_ARM,
+             "invalid optimizer step count")
+    _require(type(logged) is int and 0 <= logged <= steps,
+             "invalid fully logged update count")
+    _require(type(stop_update) is int and 0 <= stop_update <= UPDATES_PER_ARM,
+             "invalid stop update")
+    _require(isinstance(evaluations, list) and
+             all(type(value) is int and value in EVALUATION_UPDATES for value in evaluations) and
+             evaluations == sorted(set(evaluations)),
+             "invalid evaluation update record")
+    _require(receipt["last_valid_evaluation_update"] ==
+             (evaluations[-1] if evaluations else None),
+             "last valid evaluation mismatch")
+    _require(isinstance(receipt["finite_status"], bool), "finite status must be boolean")
+    _require(isinstance(receipt["hard_constraint_counts"], Mapping),
+             "hard-constraint counts must be a mapping")
+    _require(isinstance(receipt["artifacts"], Mapping), "artifacts must be a mapping")
+
+    if state == TERMINAL_COMPLETED:
+        _require(steps == logged == stop_update == UPDATES_PER_ARM,
+                 "completed arm must contain exactly 500 complete updates")
+        _require(evaluations == list(EVALUATION_UPDATES),
+                 "completed arm is missing a required evaluation")
+        _require(receipt["update500_checkpoint_present"] is True,
+                 "completed arm requires the update-500 checkpoint")
+        _require(receipt["reason"] is None, "completed arm cannot carry a stop reason")
+        _require(receipt["finite_status"] is True,
+                 "completed arm must have finite status")
+    elif state == TERMINAL_EXECUTION_FAILED:
+        _require(receipt["update500_checkpoint_present"] is False,
+                 "failed arm must not claim a completed update-500 checkpoint")
+        _require(isinstance(receipt["reason"], str) and bool(receipt["reason"].strip()),
+                 "failed arm requires an explicit reason")
+    else:
+        _require(arm in (ARM_ANCHOR_0, ARM_ANCHOR_25),
+                 "method-inapplicable state is anchor-only")
+        _require(receipt["reason"] == "ANCHOR_STATIONARY_OR_INAPPLICABLE",
+                 "method-inapplicable reason drift")
+        _require(receipt["update500_checkpoint_present"] is False,
+                 "method-inapplicable arm cannot require a final checkpoint")
+        _require(receipt["finite_status"] is True,
+                 "method-inapplicable arm must remain finite")
+
+
+def cross_arm_performance_eligible(*, shared_identity_pass: bool,
+                                   replay_gate_pass: bool) -> bool:
+    """Freeze the two shared preconditions for any cross-arm performance claim."""
+    return shared_identity_pass is True and replay_gate_pass is True
 
 
 def build_schedule(cycles: tuple[int, ...] = EXPECTED_CYCLES) -> tuple[int, ...]:
@@ -191,10 +368,15 @@ class IntegrationBundle:
 
 def build_no_training_integration(*, packet_dir: Path, base_config_path: Path,
                                   integration_config_path: Path,
-                                  device: torch.device) -> IntegrationBundle:
+                                  device: torch.device,
+                                  synthetic_test_adapter: bool = False) -> IntegrationBundle:
     """Construct and exercise the full integration without an optimiser step."""
     config = _load_json(integration_config_path)
-    validate_integration_config(config, base_config_path=base_config_path)
+    validate_integration_config(
+        config,
+        base_config_path=base_config_path,
+        synthetic_test_adapter=synthetic_test_adapter,
+    )
     _require(device.type == "cpu", "no-training integration is CPU-only")
     torch.manual_seed(int(config["model"]["seed"]))
     base_runtime = build_runtime(packet_dir=packet_dir, config_path=base_config_path,

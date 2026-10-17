@@ -13,12 +13,18 @@ from s09_e009_four_arm import ARM_ORDER, arm_direction, atomic_losses, parameter
 from s09_e009_runner_integration import (
     EVALUATION_UPDATES,
     EXPECTED_CYCLES,
+    EXPECTED_BASE_RUNTIME_CONFIG_SHA256,
+    TERMINAL_COMPLETED,
+    TERMINAL_EXECUTION_FAILED,
+    TERMINAL_METHOD_INAPPLICABLE,
     TOTAL_UPDATE_CAP,
     UPDATES_PER_ARM,
     _direction_with_damage_reference,
     build_no_training_integration,
     build_schedule,
+    cross_arm_performance_eligible,
     validate_integration_config,
+    validate_termination_receipt,
     write_no_training_receipt,
 )
 from s09_stage0a_p1_packet import sha256_file
@@ -51,6 +57,7 @@ def build_bundle(tmp_path: Path, monkeypatch):
         base_config_path=base_config,
         integration_config_path=integration_config,
         device=torch.device("cpu"),
+        synthetic_test_adapter=True,
     )
     assert calls == []
     return bundle, base_config
@@ -81,13 +88,19 @@ def test_no_training_build_isolates_arms_and_preserves_empty_optimizers(tmp_path
     assert receipt["isolation"]["optimizer_parameters_match_arm_models"] is True
     assert all(not optimizer.state for optimizer in bundle.optimizers.values())
     assert len({id(optimizer) for optimizer in bundle.optimizers.values()}) == 4
+    for left_index, left_arm in enumerate(ARM_ORDER):
+        left_buffers = {buffer.data_ptr() for buffer in bundle.arm_runtimes[left_arm].model.buffers()}
+        for right_arm in ARM_ORDER[left_index + 1:]:
+            right_buffers = {
+                buffer.data_ptr() for buffer in bundle.arm_runtimes[right_arm].model.buffers()
+            }
+            assert left_buffers.isdisjoint(right_buffers)
     assert all(record["clip_count_for_complete_direction"] == 1
                for record in receipt["directions"].values())
     json.dumps(receipt, allow_nan=False)
 
 
-@pytest.mark.parametrize("arm", ARM_ORDER)
-def test_runner_direction_matches_reviewed_core_exactly(tmp_path: Path, arm: str):
+def test_runner_direction_matches_reviewed_core_for_all_64_arm_cycle_pairs(tmp_path: Path):
     packet, base_config, _ = packet_fixture(tmp_path)
     integration_config = synthetic_integration_config(tmp_path, base_config)
     bundle = build_no_training_integration(
@@ -95,24 +108,27 @@ def test_runner_direction_matches_reviewed_core_exactly(tmp_path: Path, arm: str
         base_config_path=base_config,
         integration_config_path=integration_config,
         device=torch.device("cpu"),
+        synthetic_test_adapter=True,
     )
-    runtime = bundle.arm_runtimes[arm]
-    expected_model = copy.deepcopy(runtime.model)
-    expected_runtime = copy.copy(runtime)
-    expected_runtime.model = expected_model
-    losses, _ = atomic_losses(expected_runtime, index=0)
-    expected, expected_diagnostic = arm_direction(expected_model, losses, arm)
+    for arm in ARM_ORDER:
+        runtime = bundle.arm_runtimes[arm]
+        before = parameter_state_sha256(runtime.model)
+        for index in range(len(EXPECTED_CYCLES)):
+            expected_model = copy.deepcopy(runtime.model)
+            expected_runtime = copy.copy(runtime)
+            expected_runtime.model = expected_model
+            losses, _ = atomic_losses(expected_runtime, index=index)
+            expected, expected_diagnostic = arm_direction(expected_model, losses, arm)
 
-    before = parameter_state_sha256(runtime.model)
-    losses, _ = atomic_losses(runtime, index=0)
-    observed, g_d, observed_diagnostic = _direction_with_damage_reference(
-        runtime.model, losses, arm)
-    torch.testing.assert_close(observed, expected, rtol=0, atol=0)
-    assert observed_diagnostic["layout"]["parameter_order"] == \
-        expected_diagnostic["layout"]["parameter_order"]
-    assert g_d.shape == observed.shape
-    assert torch.isfinite(g_d).all()
-    assert parameter_state_sha256(runtime.model) == before
+            losses, _ = atomic_losses(runtime, index=index)
+            observed, g_d, observed_diagnostic = _direction_with_damage_reference(
+                runtime.model, losses, arm)
+            torch.testing.assert_close(observed, expected, rtol=0, atol=0)
+            assert observed_diagnostic["layout"]["parameter_order"] == \
+                expected_diagnostic["layout"]["parameter_order"]
+            assert g_d.shape == observed.shape
+            assert torch.isfinite(g_d).all()
+        assert parameter_state_sha256(runtime.model) == before
 
 
 def test_config_and_receipt_fail_closed(tmp_path: Path, monkeypatch):
@@ -131,12 +147,131 @@ def test_config_and_receipt_fail_closed(tmp_path: Path, monkeypatch):
         write_no_training_receipt(bundle, output)
 
 
-def test_config_freezes_complete_evidence_manifest():
+def test_production_config_is_bound_to_reviewed_base_bytes():
     config = json.loads(INTEGRATION_CONFIG.read_text())
-    assert config["evidence"]["required_per_arm"] == [
+    base_config = ROOT / config["source"]["base_runtime_config"]
+    assert sha256_file(base_config) == EXPECTED_BASE_RUNTIME_CONFIG_SHA256
+    validate_integration_config(config, base_config_path=base_config)
+
+
+def test_synthetic_adapter_rejects_non_resolution_base_drift(tmp_path: Path):
+    _, base_config, _ = packet_fixture(tmp_path)
+    base = json.loads(base_config.read_text())
+    base["model"]["hard_constraint_contract"]["peak_boundary_lifting"]["atol"] = 1.0
+    base_config.write_text(json.dumps(base))
+    config_path = synthetic_integration_config(tmp_path, base_config)
+    config = json.loads(config_path.read_text())
+    with pytest.raises(ValueError, match="non-resolution"):
+        validate_integration_config(
+            config,
+            base_config_path=base_config,
+            synthetic_test_adapter=True,
+        )
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "message"),
+    [
+        (("budget", "unused_budget_transfer"), True, "budget"),
+        (("source", "protocol_revision"), "v2-three-arm", "protocol revision"),
+        (("producer", "resolved_environment"), {"already_resolved": True}, "producer"),
+        (("producer", "alias"), "unreviewed-gpu", "producer"),
+        (("producer", "forbidden_fallback"), "allowed", "producer"),
+        (("producer", "remote_root"), "/tmp/other", "producer"),
+    ],
+)
+def test_config_rejects_frozen_contract_drift(path, value, message):
+    config = json.loads(INTEGRATION_CONFIG.read_text())
+    config[path[0]][path[1]] = value
+    base_config = ROOT / config["source"]["base_runtime_config"]
+    with pytest.raises(ValueError, match=message):
+        validate_integration_config(config, base_config_path=base_config)
+
+
+def terminal_receipt(state: str, arm: str) -> dict:
+    receipt = {
+        "arm": arm,
+        "terminal_state": state,
+        "stop_update": 500,
+        "optimizer_steps_completed": 500,
+        "fully_logged_updates": 500,
+        "evaluation_updates_present": list(EVALUATION_UPDATES),
+        "last_valid_evaluation_update": 500,
+        "reason": None,
+        "update500_checkpoint_present": True,
+        "finite_status": True,
+        "hard_constraint_counts": {"total": 0},
+        "artifacts": {"termination_receipt.json": "sha256"},
+    }
+    if state == TERMINAL_EXECUTION_FAILED:
+        receipt.update({
+            "stop_update": 128,
+            "optimizer_steps_completed": 127,
+            "fully_logged_updates": 126,
+            "evaluation_updates_present": [0, 16, 64],
+            "last_valid_evaluation_update": 64,
+            "reason": "NONFINITE_GRADIENT",
+            "update500_checkpoint_present": False,
+            "finite_status": False,
+        })
+    elif state == TERMINAL_METHOD_INAPPLICABLE:
+        receipt.update({
+            "stop_update": 64,
+            "optimizer_steps_completed": 63,
+            "fully_logged_updates": 63,
+            "evaluation_updates_present": [0, 16],
+            "last_valid_evaluation_update": 16,
+            "reason": "ANCHOR_STATIONARY_OR_INAPPLICABLE",
+            "update500_checkpoint_present": False,
+        })
+    return receipt
+
+
+@pytest.mark.parametrize(
+    ("state", "arm"),
+    [
+        (TERMINAL_COMPLETED, ARM_ORDER[0]),
+        (TERMINAL_EXECUTION_FAILED, ARM_ORDER[1]),
+        (TERMINAL_METHOD_INAPPLICABLE, ARM_ORDER[2]),
+    ],
+)
+def test_conditional_terminal_receipts_accept_declared_states(state: str, arm: str):
+    validate_termination_receipt(terminal_receipt(state, arm))
+
+
+def test_terminal_receipts_fail_closed_without_fabricated_final_checkpoint():
+    failed = terminal_receipt(TERMINAL_EXECUTION_FAILED, ARM_ORDER[1])
+    failed["update500_checkpoint_present"] = True
+    with pytest.raises(ValueError, match="must not claim"):
+        validate_termination_receipt(failed)
+
+    inapplicable = terminal_receipt(TERMINAL_METHOD_INAPPLICABLE, ARM_ORDER[2])
+    inapplicable["reason"] = "GENERIC_FAILURE"
+    with pytest.raises(ValueError, match="reason drift"):
+        validate_termination_receipt(inapplicable)
+
+
+def test_cross_arm_comparison_requires_identity_and_replay_gates():
+    assert cross_arm_performance_eligible(shared_identity_pass=True, replay_gate_pass=True)
+    assert not cross_arm_performance_eligible(
+        shared_identity_pass=False, replay_gate_pass=True)
+    assert not cross_arm_performance_eligible(
+        shared_identity_pass=True, replay_gate_pass=False)
+
+
+def test_config_freezes_conditional_evidence_manifest():
+    config = json.loads(INTEGRATION_CONFIG.read_text())
+    assert config["evidence"]["required_per_arm_common"] == [
         "start_identity.json", "train_log.jsonl", "gradient_diagnostics.jsonl",
-        "diagnostic_metrics.jsonl", "checkpoint_update500.pt", "termination_receipt.json",
+        "diagnostic_metrics.jsonl", "termination_receipt.json",
     ]
+    assert config["evidence"]["required_completed_arm_only"] == [
+        "checkpoint_update500.pt",
+    ]
+    assert config["evidence"]["terminal_states"][TERMINAL_EXECUTION_FAILED][
+        "update500_checkpoint_required"] is False
+    assert config["evidence"]["terminal_states"][TERMINAL_METHOD_INAPPLICABLE][
+        "update500_checkpoint_required"] is False
     assert config["evidence"]["required_shared"][-4:] == [
         "decision_figure.png", "per_cycle_metrics.csv", "decision.md",
         "completion_receipt.json",

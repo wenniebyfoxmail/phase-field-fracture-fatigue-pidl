@@ -40,14 +40,27 @@ No optimiser step or training was executed. Exact commit
 `8b6a2e49b241ae73f433645cb30a69291f7aee53` received
 `CORE_CODE_READY_PASS`.
 
-The next local layer at exact commit
+The first local integration candidate at exact commit
 `77ab15254e8b444a37ae9f11c9a91791f2e1d906` now freezes the four-arm schedule,
 copies and isolates the arm models/optimisers, binds the reviewed E008 runtime,
 preserves the same-forward `g_D` needed by the later AdamW displacement
 diagnostic, and declares the future evidence manifest. Its 59-test selected
 suite passed with `AdamW.step` replaced by a fail-if-called sentinel.
 
+ChatGPT Pro returned `REVISE_AND_REREVIEW`: the numerical runner connection,
+same-forward damage gradient, arm isolation and fixed schedule passed, while
+the base-config identity check and terminal evidence declaration required
+repair. The production path now binds the reviewed E008 config and protocol by
+independent hashes. Its synthetic adapter permits only the 9-node/4-Q4 size
+substitution and rejects every other base-runtime change. The evidence contract
+now distinguishes completed, execution-failed and method-inapplicable arms,
+including conditional update-500 checkpoints and cross-arm comparison gates.
+
+The repaired selected no-training suite reports 69 passed, including all 64
+arm/cycle direction comparisons and the reviewer's four config counterexamples.
+
 This layer still exposes no producer loop or optimiser-step route. A resolved
 producer configuration, full evaluator/evidence writer and launch path do not
-yet exist. The exact integration commit is awaiting ChatGPT Pro review; neither
-its local pass nor the prior core PASS is an execution authorisation.
+yet exist. The repaired exact integration commit still requires a narrow
+ChatGPT Pro rereview; neither its local pass nor the prior core PASS is an
+execution authorisation.

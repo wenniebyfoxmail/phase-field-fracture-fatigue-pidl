@@ -5,6 +5,7 @@
   "execution_authorized": false,
   "source": {
     "protocol_revision": "v3-four-arm-damage-separation-screen",
+    "protocol_sha256": "67f84d05ffca2054d47cef6e016b5c86098681bbf41813486adf8c9a72588ff8",
     "core_code_ready_commit": "8b6a2e49b241ae73f433645cb30a69291f7aee53",
     "base_runtime_config": "docs/research/S09/S09-E008/p1_memorisation_run_config_20261016.json",
     "base_runtime_config_sha256": "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b",
@@ -42,13 +43,15 @@
     "A25_damage_anchor_beta0p25": {"rule": "damage_anchor", "beta": 0.25}
   },
   "evidence": {
-    "required_per_arm": [
+    "required_per_arm_common": [
       "start_identity.json",
       "train_log.jsonl",
       "gradient_diagnostics.jsonl",
       "diagnostic_metrics.jsonl",
-      "checkpoint_update500.pt",
       "termination_receipt.json"
+    ],
+    "required_completed_arm_only": [
+      "checkpoint_update500.pt"
     ],
     "required_shared": [
       "config_resolved.json",
@@ -60,7 +63,48 @@
       "per_cycle_metrics.csv",
       "decision.md",
       "completion_receipt.json"
-    ]
+    ],
+    "termination_receipt_required_fields": [
+      "arm",
+      "terminal_state",
+      "stop_update",
+      "optimizer_steps_completed",
+      "fully_logged_updates",
+      "evaluation_updates_present",
+      "last_valid_evaluation_update",
+      "reason",
+      "update500_checkpoint_present",
+      "finite_status",
+      "hard_constraint_counts",
+      "artifacts"
+    ],
+    "terminal_states": {
+      "COMPLETED": {
+        "optimizer_steps_completed": 500,
+        "fully_logged_updates": 500,
+        "required_evaluation_updates": [0, 16, 64, 128, 256, 496, 500],
+        "update500_checkpoint_required": true
+      },
+      "EXECUTION_FAILED": {
+        "partial_counts_required": true,
+        "last_valid_evaluation_required_if_any": true,
+        "update500_checkpoint_required": false
+      },
+      "METHOD_INAPPLICABLE": {
+        "allowed_arms": [
+          "A0_damage_anchor_beta0",
+          "A25_damage_anchor_beta0p25"
+        ],
+        "reason": "ANCHOR_STATIONARY_OR_INAPPLICABLE",
+        "stop_location_required": true,
+        "update500_checkpoint_required": false
+      }
+    },
+    "cross_arm_comparison": {
+      "requires_shared_identity_pass": true,
+      "requires_replay_gate_pass": true,
+      "invalid_if_either_fails_even_when_files_exist": true
+    }
   },
   "producer": {
     "alias": "Taobo GPU",
