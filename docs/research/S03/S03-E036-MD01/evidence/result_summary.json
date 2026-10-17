@@ -1,0 +1,28 @@
+{
+  "protocol": "md01-four-windows-v1",
+  "opportunities": 4,
+  "histories_eligible": 1,
+  "targets_attempted": 1,
+  "common_scored": 1,
+  "coverage": 0.25,
+  "conditional_common_coverage": 1.0,
+  "mean_delta_abs_error_px": -4.490149111604083,
+  "mean_abs_error_px": {
+    "persistence": 4.856293274366067,
+    "stage_trend": 0.3661441627619837
+  },
+  "trend_better": 1,
+  "tie": 0,
+  "persistence_better": 0,
+  "missing": 3,
+  "strata": {
+    "direction_reversal": 0,
+    "growth_deceleration": 0,
+    "growth_no_deceleration": 1,
+    "flat_history": 0,
+    "other": 0
+  },
+  "unit": "per-window native first-history pixels",
+  "physical_units": 1,
+  "independent_specimen_validation": false
+}

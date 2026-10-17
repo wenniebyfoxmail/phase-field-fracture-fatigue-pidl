@@ -110,3 +110,26 @@ batch stage windows with history-first measurements, the same two baselines,
 per-case gain and common-coverage reporting, including slowing/turning regimes.
 No new images/window/model execution in this record; do not further optimize
 the viewed point. Exact source identities/runs/plots/review stay in experiments.
+
+## E036 fixed four-window batch — 2026-10-17
+
+[E036](../research/S03/S03-E036-MD01/experiment.md) executes the proposed batch:
+metadata-fixed12/13/14,15/16/17,18/19/20,21/22/23;smallest explicitly joined
+image perstage,first-image-only midheight geometry,allfourhistory snapshots
+closed before anytarget. No error-based substitution or oldscore/operator change.
+
+OnlyW21common-scored:widths10.452488→14.942638→19.798931px,trendAE.366144
+vs persistence4.856293,gain4.490149px. Overall coverage1/4,conditional1/1;
+W12/W15trace unidentified,W18historical background matching failed,allthree
+targetsunopened/null. Actual4savedprofiles/source/numerical differences0 by
+independent implementation. Fifteen prelockedoldMD01 result hashes unchanged.
+
+This preserves one useful continuation benefit, notfourcase stability or
+slowing/reversal robustness: sole scored d1=4.490149,d2=4.856293,neither slowing
+nor reversal represented. Added fixtures/glue overlapW18background supports,
+consistent with NCCfailure;not proven sole cause/calibrated true displacement.
+The first repair lever is correspondence coverage,notarchitecture/threshold
+relaxation. Next PROPOSED separate18/19source-only unoccluded-background
+repair preserving transect/half-depth,then independent review and savedtwo
+predictions before any separately approved20access. Do not backfillE0361/4
+or choose positions/windows byerror; no repair performed in this experiment.

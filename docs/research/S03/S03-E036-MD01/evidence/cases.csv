@@ -1,0 +1,5 @@
+case,stages,E,R,target_attempted,common_scored,w1,w2,w3,d1,d2,stratum,gain_px,delta_abs_error_px,reason,persistence_prediction_px,persistence_abs_error_px,stage_trend_prediction_px,stage_trend_abs_error_px
+W12,"[12, 13, 14]",False,,False,0,,,,,,,,,history_ineligible,,,,
+W15,"[15, 16, 17]",False,,False,0,,,,,,,,,history_ineligible,,,,
+W18,"[18, 19, 20]",False,,False,0,5.34893038180641,,,,,,,,history_ineligible,,,,
+W21,"[21, 22, 23]",True,True,True,1,10.452488435657946,14.94263754726203,19.798930821628097,4.490149111604085,4.856293274366067,growth_no_deceleration,4.490149111604083,-4.490149111604083,ok,14.94263754726203,4.856293274366067,19.432786658866114,0.3661441627619837

@@ -3,6 +3,15 @@
 This navigation record covers the currently touched D01 observation route.
 Exact evidence and verdicts remain in the owning Experiments.
 
+2026-10-17 — [S03-E036-MD01](S03-E036-MD01/experiment.md) fixed four windows
+12..23 before newpixels. Common scoring1/4:W21trendAE.366vs persistence4.856px,
+gain4.490px; threeothersunscored (two no-trace,one background failure),targets
+14/17/20unopened. Source-pixel/half-depth/scores maxdiff0;oldresults unchanged.
+No slowing/reversal represented amongscored,so that question remains open.
+W18newfixtures overlapbackground supports;next proposal source-only18/19
+correspondence repair without moving transect or backfillingoriginalcoverage.
+This fulfills E035's batch proposal below,not new independent-beam validation.
+
 2026-10-17 — [S03-E035-MD01](S03-E035-MD01/experiment.md) completes the E034
 existing-three-image background-only position stress,83/83valid profiles.
 Common25/25 and independent25/25retain trend advantage, gains7.034–12.119

@@ -20,13 +20,13 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
 ## Current Evidence / Claim Boundary
 
 - **S03 optical observation bridge, 2026-10-17**: MD01 E034 relative24/25/26
-  continuation gives trendAE1.712vs persistence12.370px,common1/1; E035 retains
-  its advantage in both25case background-driven position sets,83/83valid
-  profiles,independent source/numeric maxdiff0. Viewed single-query finite
-  stress, not50independent tests or physical/beam-generalisation validation.
-  Half-depth and allold scores retained; earlyE033unscorable record preserved.
-  Next proposed: fixed small-batch stage windows with the same baselines,
-  per-case gains and coverage; no further viewed-point optimization or training.
+  continuation retains advantage underE035finiteposition stress. NewE036fixed
+  four-window12..23batch scores only1/4:W21trendAE.366vs persistence4.856px;
+  two no-trace/one background failure retainnulls andunopenedtargets. Independent
+  source/numeric maxdiff0;half-depth/oldresults unchanged. Slowing/reversal not
+  represented amongscored;notfourcase stability,physical orbeamgeneralisation.
+  Next proposed: source-only18/19unoccluded-background repair,fixedtransect,
+  newversion;no error-based substitution/backfill,newtargetaccess ortraining.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。

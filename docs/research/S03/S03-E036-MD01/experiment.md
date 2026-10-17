@@ -116,3 +116,50 @@ history-only trend attenuation with frozen coefficient, not target-informed
 gating or another architecture. If no slowing represented, state evidence gap,
 not demonstrated robustness. Preserve per-case advances and old verdicts.
 Initial state: rules fixed, sources not acquired, no new widths or predictions.
+
+## Outcome — 2026-10-17
+
+Initial state superseded by once-only R001history/R002target atclean7413b19;
+independent code admission8768dfe plus integrity-only amendment0721a48.
+Rule/identity lock predates access;first-image geometry predates numeric widths.
+Allfourhistory closures16:06:43.762204Z precede sole target391 acquisition
+16:07:11.016772Z. Other targets362/371/382 remain unopened/unacquired.
+
+|Window|Width1/2/3px|Pairedgainpx|Common scoring|Reason/stratum|
+|---|---|---:|---|---|
+|12/13/14|null/null/unopened|null|0/1|first-image trace unidentified|
+|15/16/17|null/null/unopened|null|0/1|first-image trace unidentified|
+|18/19/20|5.348930/null/unopened|null|0/1|history19background correspondence missing|
+|21/22/23|10.452488/14.942638/19.798931|4.490149|1/1|growth_no_deceleration|
+
+Common1/4=25%,conditional oneligiblehistory1/1,not interchangeable. Three
+unscored cases staynull,not zero errors or predictor failures. Savedvalid
+profiles4=3history+1target. Sole scored trendAE.3661441627619837 vs persistence
+4.856293274366067px;delta−4.490149111604083px,also the conditional mean because
+onlyone scored. No clipping. Counts1trendwin,0ties,0persistencewins,3missing.
+Bounded criterion supports observed-subset directional benefit, NOTfourwindow
+or population superiority. Slowing0/reversal0 amongscored;unobserved regimes
+unidentified,not proof absent. Research disposition repair observation coverage.
+
+W18fourNCC.345395/.461500/.297636/.346059 all<.60,A3also search-boundary;
+source18/19displays show added blackfixtures/whiteglue overlapping original
+background supports. Occlusion/appearance-change explanation is consistent
+with data,not unique-cause or calibrated displacement proof. No lowered
+thresholds/template repair/refit/positionchange/retry performed in this version.
+W12/W15AI first-image no-trace judgments do not establish zero physical width.
+
+Independent raw-pixel/operator/crossings/refinement/scores/coverage differences0
+for all4actual saved profiles;9source hashes and15prelocked oldpayloads match,
+olddefinitions/scores retained. Final allcase5figures expose original bands,
+profiles,forecasts,errors/increments and W18background failure; not mean-only.
+[Figures and full interpretation](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R004/analysis/README_analysis.md).
+
+Next PROPOSED only: separate source-only18/19background correspondence repair,
+keep original transect/half-depth,choose common unoccluded support without width
+or target-error optimization,independentreview then savepredictions before any
+newly authorized20access. Preserve E0361/4and alloldscores,notbackfill/claimrescue.
+No repair,newwindow,newmethod or extra source access executed by this result.
+Final independent5figure/guide review has no unresolved issue. Existing
+Obsidian task note andsingleRoadmap entry updated with allcase result/limits
+and next lever; two keyfigures visibly verified in-app. Concurrent oldD01
+annotation note from another chat preserved,not reused as MD01truth.

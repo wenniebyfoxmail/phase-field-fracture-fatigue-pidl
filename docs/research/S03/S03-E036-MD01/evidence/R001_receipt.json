@@ -1,0 +1,27 @@
+{
+  "protocol": "md01-four-windows-v1",
+  "phase": "history",
+  "started_at_utc": "2026-10-17T16:06:43.027897+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 45438,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_window_batch.py",
+    "history",
+    "--lock",
+    "docs/research/S03/S03-E036-MD01/window_lock.json",
+    "--geometry",
+    "docs/research/S03/S03-E036-MD01/first_history_geometry.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001"
+  ],
+  "commit": "7413b19d81e8ca93ed7abff2a537746d2a381298",
+  "dirty": [],
+  "execution": "succeeded",
+  "lock_sha256": "21e317dfa1055ddeb573ccd6238cfc08eb9aef8f34af639c8a97fb6062152221",
+  "retrieval": "verified_local",
+  "protected_old_hashes_unchanged": true,
+  "ended_at_utc": "2026-10-17T16:06:43.763233+00:00",
+  "wall_seconds": 0.7354046250111423,
+  "cpu_seconds": 0.7133189999999999
+}

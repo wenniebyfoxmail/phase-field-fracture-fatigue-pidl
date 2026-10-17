@@ -1,0 +1,167 @@
+{
+  "protocol": "md01-four-windows-v1",
+  "lock_sha256": "21e317dfa1055ddeb573ccd6238cfc08eb9aef8f34af639c8a97fb6062152221",
+  "closed_at_utc": "2026-10-17T16:06:43.762204+00:00",
+  "all_four_closed": true,
+  "cases": [
+    {
+      "case": "W12",
+      "stages": [
+        12,
+        13,
+        14
+      ],
+      "E": false,
+      "R": null,
+      "target_attempted": false,
+      "common_scored": 0,
+      "w1": null,
+      "w2": null,
+      "w3": null,
+      "delta_abs_error_px": null,
+      "gain_px": null,
+      "d1": null,
+      "d2": null,
+      "stratum": null,
+      "methods": {
+        "persistence": {
+          "attempted": false,
+          "success": false,
+          "prediction_px": null,
+          "reason": "history_measurement_missing",
+          "scored": false,
+          "abs_error_px": null
+        },
+        "stage_trend": {
+          "attempted": false,
+          "success": false,
+          "prediction_px": null,
+          "reason": "history_measurement_missing",
+          "scored": false,
+          "abs_error_px": null
+        }
+      },
+      "reason": "history_ineligible"
+    },
+    {
+      "case": "W15",
+      "stages": [
+        15,
+        16,
+        17
+      ],
+      "E": false,
+      "R": null,
+      "target_attempted": false,
+      "common_scored": 0,
+      "w1": null,
+      "w2": null,
+      "w3": null,
+      "delta_abs_error_px": null,
+      "gain_px": null,
+      "d1": null,
+      "d2": null,
+      "stratum": null,
+      "methods": {
+        "persistence": {
+          "attempted": false,
+          "success": false,
+          "prediction_px": null,
+          "reason": "history_measurement_missing",
+          "scored": false,
+          "abs_error_px": null
+        },
+        "stage_trend": {
+          "attempted": false,
+          "success": false,
+          "prediction_px": null,
+          "reason": "history_measurement_missing",
+          "scored": false,
+          "abs_error_px": null
+        }
+      },
+      "reason": "history_ineligible"
+    },
+    {
+      "case": "W18",
+      "stages": [
+        18,
+        19,
+        20
+      ],
+      "E": false,
+      "R": null,
+      "target_attempted": false,
+      "common_scored": 0,
+      "w1": 5.34893038180641,
+      "w2": null,
+      "w3": null,
+      "delta_abs_error_px": null,
+      "gain_px": null,
+      "d1": null,
+      "d2": null,
+      "stratum": null,
+      "methods": {
+        "persistence": {
+          "attempted": false,
+          "success": false,
+          "prediction_px": null,
+          "reason": "history_measurement_missing",
+          "scored": false,
+          "abs_error_px": null
+        },
+        "stage_trend": {
+          "attempted": false,
+          "success": false,
+          "prediction_px": null,
+          "reason": "history_measurement_missing",
+          "scored": false,
+          "abs_error_px": null
+        }
+      },
+      "reason": "history_ineligible"
+    },
+    {
+      "case": "W21",
+      "stages": [
+        21,
+        22,
+        23
+      ],
+      "E": true,
+      "R": null,
+      "target_attempted": false,
+      "common_scored": 0,
+      "w1": 10.452488435657946,
+      "w2": 14.94263754726203,
+      "w3": null,
+      "delta_abs_error_px": null,
+      "gain_px": null,
+      "d1": null,
+      "d2": null,
+      "stratum": null,
+      "methods": {
+        "persistence": {
+          "attempted": true,
+          "success": true,
+          "prediction_px": 14.94263754726203,
+          "reason": "ok",
+          "clipped": false,
+          "scored": false,
+          "abs_error_px": null
+        },
+        "stage_trend": {
+          "attempted": true,
+          "success": true,
+          "prediction_px": 19.432786658866114,
+          "reason": "ok",
+          "clipped": false,
+          "scored": false,
+          "abs_error_px": null
+        }
+      },
+      "reason": "awaiting_target"
+    }
+  ],
+  "target_files_absent": true
+}
