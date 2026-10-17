@@ -269,8 +269,8 @@ def main() -> int:
         for row in gate["candidates"]
         if row.get("passes_minimum_geometry_climate_gate")
     ]
-    if len(sections) != 6:
-        raise ValueError(f"Expected six qualified sections, found {len(sections)}")
+    if not sections:
+        raise ValueError("No qualified sections found in the acquisition gate")
     client = InfoPaveClient()
     section_receipts = []
     for section_row in sections:

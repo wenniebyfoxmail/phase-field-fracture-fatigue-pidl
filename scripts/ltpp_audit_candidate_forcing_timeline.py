@@ -100,7 +100,10 @@ def main() -> None:
         section_root.mkdir()
         traffic = post_json(
             TRAFFIC_ENDPOINT,
-            {"stateCode": 6, "SectionID": candidate["ldw_section_id"]},
+            {
+                "stateCode": int(candidate["state_code"]),
+                "SectionID": candidate["ldw_section_id"],
+            },
             args.timeout_seconds,
         )
         traffic_path = section_root / "traffic_climate_availability.json"

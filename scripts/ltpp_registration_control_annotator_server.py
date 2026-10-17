@@ -25,15 +25,23 @@ async function load(id){current=id;record=await fetch('/api/record/'+id).then(r=
 image.onclick=e=>{if(!selected||record.locked||document.getElementById('kind').value!=='usable')return;const r=image.getBoundingClientRect();record.tasks[selected].click_crop_px=[Math.round((e.clientX-r.left)*image.naturalWidth/r.width),Math.round((e.clientY-r.top)*image.naturalHeight/r.height)];say('Centre clicked for '+selected+'. Record it.');render()};document.getElementById('record').onclick=()=>{if(!selected)return say('Select a task first.',true);const status=document.getElementById('kind').value,t=record.tasks[selected];t.status=status;t.note=document.getElementById('note').value.trim();if(status==='usable'&&!t.click_crop_px)return say('Click the printed-grid centre before recording usable.',true);if(status!=='usable')t.click_crop_px=null;render();say('Recorded '+selected+'.')};async function save(lockIt=false){const r=await fetch('/api/record/'+current,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(record)});if(!r.ok)return say(await r.text(),true);if(lockIt){const q=await fetch('/api/lock/'+current,{method:'POST'});if(!q.ok)return say(await q.text(),true)}await load(current);say(lockIt?'Locked.':'Saved.')};document.getElementById('save').onclick=()=>save(false);document.getElementById('lock').onclick=()=>{if(Object.values(record.tasks).some(t=>!t.status))return say('Every task needs one status before lock.',true);if(confirm('Lock this blind map?'))save(true)};document.getElementById('map').onchange=e=>load(e.target.value);(async()=>{maps=await fetch('/api/maps').then(r=>r.json());document.getElementById('map').innerHTML=maps.map(x=>'<option>'+x+'</option>').join('');await load(maps[0])})();</script></body></html>"""
 
 
+def discover_blind_ids(records: Path, role: str, expected_maps: int) -> tuple[str, ...]:
+    if expected_maps < 1:
+        raise ValueError("expected map count must be positive")
+    prefix = "A" if role == "annotator_a" else "B"
+    ids = tuple(sorted(path.stem for path in records.glob(f"{prefix}[0-9][0-9].json")))
+    if len(ids) != expected_maps:
+        raise ValueError(f"packet role must contain exactly {expected_maps} blinded maps")
+    return ids
+
+
 class Server(ThreadingHTTPServer):
-    def __init__(self, address: tuple[str, int], packet: Path, role: str):
+    def __init__(self, address: tuple[str, int], packet: Path, role: str, expected_maps: int = 8):
         super().__init__(address, Handler)
         self.root = (packet / role).resolve()
         self.images = self.root / "images"
         self.records = self.root / "records"
-        self.ids = tuple(sorted(path.stem for path in self.records.glob("[AB][0-9][0-9].json")))
-        if len(self.ids) != 8:
-            raise ValueError("packet role must contain exactly eight blinded maps")
+        self.ids = discover_blind_ids(self.records, role, expected_maps)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -101,8 +109,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(); parser.add_argument("--packet-root", type=Path, required=True); parser.add_argument("--role", choices=("annotator_a", "annotator_b"), required=True); parser.add_argument("--host", default="127.0.0.1"); parser.add_argument("--port", type=int, default=8770); args = parser.parse_args()
-    server = Server((args.host, args.port), args.packet_root.resolve(), args.role)
+    parser = argparse.ArgumentParser(); parser.add_argument("--packet-root", type=Path, required=True); parser.add_argument("--role", choices=("annotator_a", "annotator_b"), required=True); parser.add_argument("--expected-maps", type=int, default=8); parser.add_argument("--host", default="127.0.0.1"); parser.add_argument("--port", type=int, default=8770); args = parser.parse_args()
+    server = Server((args.host, args.port), args.packet_root.resolve(), args.role, args.expected_maps)
     print(json.dumps({"url": f"http://{args.host}:{args.port}", "role": args.role, "maps": len(server.ids)}), flush=True)
     try: server.serve_forever()
     except KeyboardInterrupt: pass
