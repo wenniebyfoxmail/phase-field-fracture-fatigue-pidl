@@ -32,3 +32,5 @@ Independent Codex numerical evidence review passed; all 147 predictions and MAEs
 # 2026-10-17 source clarification addendum
 
 The frozen experiment result below is unchanged. Author correspondence and full-text checks of Langlois's thesis and Réthoré 2015 improve acquisition/measurement semantics but do not establish applicable numerical F/FF crack-tip uncertainty. See [the qualification addendum](../../../datasets/history_information_20261013/fatacrack_literature_addendum_20261017.md). No refitting, tuning or data-lock amendment was performed.
+
+The [S02-E005-A001 fixed-prediction label sensitivity amendment](label_sensitivity_amendment_20261017.md) and [configuration](label_sensitivity_config_v1.json) are draft protocols only. They specify shared endpoint errors, conservative ranking bounds and finite deterministic scenarios. No perturbation scoring, fitting or new result has been executed; the original verdict remains unchanged.
