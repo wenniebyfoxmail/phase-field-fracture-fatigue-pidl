@@ -1,7 +1,7 @@
 ---
 storyline_id: S02
 experiment_id: S02-E006
-protocol_revision: audit-v1.3
+protocol_revision: audit-v1.4
 claim_class: C1_evidence_validity
 evidence_domain: real_road_and_controlled_experiment_reported_separately
 status: audit_preparation_no_training
@@ -32,3 +32,7 @@ R002 stopped before outputs at PHM non-strict waveform timestamps. Direct source
 ## Audit-v1.3 waveform missing-value inventory
 
 R003 stopped before outputs on literal NA waveform tokens. Count missing/nonfinite/malformed waveform rows explicitly rather than coercing them to zeros, removing samples or accepting model-ready signals. Time-step quality counts use only adjacent valid rows and never bridge invalid rows. Exact cycle joins remain metadata coverage, not a certification of usable features. No other scientific definition changed. Preserve R003 failed receipt; fresh R004 after rereview.
+
+## Audit-v1.4 explicit empty CSV padding
+
+R004 stopped at waveform headers with additional empty-named columns. Inventory all such headers; accept the same first3 explicitly named fields only when all remaining header names are empty. A data row with any nonempty additional field remains invalid and is counted, not truncated into a valid sample. All original bytes retained; no channels guessed, data resampled or targets repaired. Preserve R004 failed receipt; exact rereview before fresh R005.
