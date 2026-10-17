@@ -1,0 +1,22 @@
+{
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "render_only": true,
+  "commit": "5bb5eb3f6be6a64fabe0f195267127d4fa2c69d5",
+  "dirty": [],
+  "started_at_utc": "2026-10-17T20:13:18.877045+00:00",
+  "ended_at_utc": "2026-10-17T20:13:29.903160+00:00",
+  "wall_seconds": 11.0260465000174,
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 70091,
+  "command": [
+    "scripts/plot_md01_geometry_stability.py",
+    "--run",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001",
+    "--manifest",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R000/input_manifest.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R005/preview",
+    "--preview"
+  ]
+}

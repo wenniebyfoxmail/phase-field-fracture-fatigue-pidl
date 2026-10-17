@@ -1,0 +1,67 @@
+[
+  {
+    "stage": 18,
+    "available_full": 9,
+    "available_common": 9,
+    "full_area_px2_max_abs_relative_change": 0.29764065335753176,
+    "full_length_px_max_abs_relative_change": 0.211124554428737,
+    "full_thickness_p50_px_max_abs_relative_change": 0.05409255338945984,
+    "common_area_px2_max_abs_relative_change": 0.7020348837209303,
+    "common_length_px_max_abs_relative_change": 0.2972177124048221,
+    "common_thickness_p50_px_max_abs_relative_change": 0.0,
+    "min_mask_iou": 0.715769308328292,
+    "min_fixed_path_available_fraction": 0.716441620333598
+  },
+  {
+    "stage": 19,
+    "available_full": 9,
+    "available_common": 9,
+    "full_area_px2_max_abs_relative_change": 0.4685135073155071,
+    "full_length_px_max_abs_relative_change": 0.49969004618503265,
+    "full_thickness_p50_px_max_abs_relative_change": 0.029857499854668124,
+    "common_area_px2_max_abs_relative_change": 1.5645438898450945,
+    "common_length_px_max_abs_relative_change": 1.7316797566554119,
+    "common_thickness_p50_px_max_abs_relative_change": 0.16794970566215628,
+    "min_mask_iou": 0.6809607096008495,
+    "min_fixed_path_available_fraction": 0.8888888888888888
+  },
+  {
+    "stage": 21,
+    "available_full": 9,
+    "available_common": 9,
+    "full_area_px2_max_abs_relative_change": 0.1634325764596849,
+    "full_length_px_max_abs_relative_change": 0.08127427694594813,
+    "full_thickness_p50_px_max_abs_relative_change": 0.05313584705200136,
+    "common_area_px2_max_abs_relative_change": 0.19634928465712886,
+    "common_length_px_max_abs_relative_change": 0.18272344058801915,
+    "common_thickness_p50_px_max_abs_relative_change": 0.17537887487646786,
+    "min_mask_iou": 0.8521489805375347,
+    "min_fixed_path_available_fraction": 0.8921800947867299
+  },
+  {
+    "stage": 22,
+    "available_full": 9,
+    "available_common": 9,
+    "full_area_px2_max_abs_relative_change": 0.20868015782105132,
+    "full_length_px_max_abs_relative_change": 0.24143275769865902,
+    "full_thickness_p50_px_max_abs_relative_change": 0.17237469701780306,
+    "common_area_px2_max_abs_relative_change": 0.1117196056955092,
+    "common_length_px_max_abs_relative_change": 0.10324958483000657,
+    "common_thickness_p50_px_max_abs_relative_change": 0.0,
+    "min_mask_iou": 0.8273487353368574,
+    "min_fixed_path_available_fraction": 0.9245714285714286
+  },
+  {
+    "stage": 23,
+    "available_full": 9,
+    "available_common": 9,
+    "full_area_px2_max_abs_relative_change": 0.12447835642146332,
+    "full_length_px_max_abs_relative_change": 0.1148191539699237,
+    "full_thickness_p50_px_max_abs_relative_change": 0.0715233091147407,
+    "common_area_px2_max_abs_relative_change": 0.0860193790785051,
+    "common_length_px_max_abs_relative_change": 0.022286577098213245,
+    "common_thickness_p50_px_max_abs_relative_change": 0.01980390271855681,
+    "min_mask_iou": 0.8893012429180025,
+    "min_fixed_path_available_fraction": 0.9620646766169154
+  }
+]

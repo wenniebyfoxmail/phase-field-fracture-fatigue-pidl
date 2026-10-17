@@ -1,0 +1,30 @@
+{
+  "protocol": "geometry-oat-stability-v1",
+  "phase": "geometry_stability",
+  "started_at_utc": "2026-10-17T20:11:11.216214+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 69230,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_geometry_stability.py",
+    "run",
+    "--manifest",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R000/input_manifest.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001"
+  ],
+  "commit": "8907da3ab6ddd246a97e6bf749338dfafb880441",
+  "dirty": [],
+  "manifest_sha256": "c069e93291d89e508cbaf30b460729ea43a39149a7f7e93fc5780f93fb5c8b34",
+  "manifest_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R000/input_manifest.json",
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "settings_per_frame": 9,
+  "frame_count": 5,
+  "v1_reconstruction_exact": true,
+  "protected_files_unchanged": true,
+  "no_forecast_computation": true,
+  "ended_at_utc": "2026-10-17T20:11:39.819211+00:00",
+  "wall_seconds": 28.6123655840056,
+  "cpu_seconds": 28.73057
+}

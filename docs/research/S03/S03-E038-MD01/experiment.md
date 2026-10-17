@@ -90,3 +90,39 @@ small-window baseline replication separately,notnewmodel. No automaticnewtarget
 access orparameterselection. Preserve E037v1masks/oldscores andrecordthisasnew
 sensitivityevidence. UpdateexistingObsidian tasknote/oneRoadmapentry withfew
 keyfigures,traceablefullreportand identificationcodepath.
+
+## Outcome — 2026-10-17
+
+R001 executedonce clean8907da3; wall28.612s/CPU28.731s,45/45full/common outputs,
+5/5default arrays/paths/metrics exactlyreproduceE037v1,all75protectedfiles
+unchanged. No forecasts calculated oroldscoreparsed; code/manifest remained
+unchanged whileonlyrendererdisplayalignment wascommitted separately.
+
+PrimaryfullROI maxabsarea changes18/19/21/22/23=29.764/46.851/16.343/20.868/
+12.448%; commonband70.203/156.454/19.635/11.172/8.602%. All5fullarea extremes
+arecontrastperturbations. Across5fullROI area maxgray2.446%,guide6.958%,
+contrast46.851%; commonguide remains43.653% (18) and38.726% (19),notirrelevant.
+Fullpath lengthmaxchanges21.112/49.969/8.127/24.143/11.482%; originalsafev1
+pathminretention71.644/88.889/89.218/92.457/96.206%. Ownpathmedianthickness
+maxabsdelta2.083px; fixedpath commonvalidpointabsdifferenceP90max1.985px,
+conditionalonremainingcoverage. No blanketstability/accuracy orphysicalclaim.
+
+R004independently rebuiltall45masks/exclusions/safe/skeleton andsavedpath/EDT/
+coverage/summary outputs; onlynearest-distancefloatingdifference1.78e-15.
+Alternativeequalshortestpaths40ties havezero lengthdifference,ownmeanthickness
+maxdifference.001267px; sharedskeleton/EDTlibraries andAIreference limits remain.
+No independentmasktruth; defaultandoldhalfdepth/scores preserved.
+
+R002firstpreview failedonly atfinalreceipt missingosimport,figuresretained;
+renderer-only fix andtitle/withholdingclarification passedR005preview. R003
+final8figuregroups at5bb5eb3: actualimage/layer/curve review,16PNGstrict300dpi,
+8embeddedfontPDFs,24files/16sidecarnotes checked. No numericalretry.
+
+Result=completedbounded C2sensitivitydiagnostic,notaccuracyqualification.
+Researchdisposition=repairlocalcontrast/fragmentrepresentation whilekeeping
+workablev1andseparatesimpleforecast route. NextPROPOSEDsource-only review of
+contrast-added/removedpixels todefineanexplicitrepair,notselectthresholdby
+predictiongain orreverttofouranchorrepair. No newwindow/target/training access.
+
+[Fullresults, all5processpages andcodeentry](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R003/analysis/README_analysis.md).
+Compactexactmetrics/receipts/independentreview in evidence/.

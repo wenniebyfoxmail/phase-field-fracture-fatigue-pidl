@@ -172,3 +172,21 @@ NextPROPOSED: source-only candidate/path reliability review inexistingimages
 improvement andsame-rule simpleforecast. Ifsupportdriftmatters,testcoarseview
 compensation separately; do notdefaulttofourbackgroundanchorrepair. Same
 materialpoint tracking isaseparate taskonlywhen thatclaimisrequired.
+
+### E038 geometry stability — 2026-10-17
+
+[E038](../research/S03/S03-E038-MD01/experiment.md) executes5existingframes×9
+fixedsettings,45/45extractable,5baseline reconstructions exact,75protectedold
+filesunchanged. All8OATsettings kept,noforecasterrorselection,newimages ortraining.
+FullROI area sensitivity maxgray2.45%,guide6.96%,contrast46.85%; primaryperframe
+max29.76/46.85/16.34/20.87/12.45%. Common18/19 also guide-sensitive43.65/38.73%,
+so no universalguide-invariance. Fullpath lengthmax8.13–49.97%,fixedsafev1path
+minimumretention71.64–96.21%. Finitepointthickness stability isconditionalon
+coverage,notwholecrackaccuracy. Keepallcomponentprogress,notblanketPASS/FAIL.
+
+Independentall45masks/savedpath/coverage/summaryreproduce,nearest-distance
+floatdifference1.78e-15; equalpathties onlytinymeanthicknessvariation(disclosed).
+Final5source/mask/skeleton/mainpath/thicknesspages andallsettingmaps linkedin
+E038. Oldhalfdepth/E037v1andoldscores retained; no physicalaperture/materialpoint
+orsegmentationtruth claim. Nextsource-only contrastadded/removedpixelreview
+toidentifyonegeometryrepair,notprediction-tunedthreshold ormandatoryanchors.

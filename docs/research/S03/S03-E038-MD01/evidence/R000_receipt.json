@@ -1,0 +1,24 @@
+{
+  "protocol": "geometry-oat-stability-v1",
+  "phase": "prepare_hashes_only",
+  "started_at_utc": "2026-10-17T20:08:02.718592+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 67751,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_geometry_stability.py",
+    "prepare",
+    "--lock",
+    "docs/research/S03/S03-E037-MD01/source_lock.json",
+    "--support",
+    "docs/research/S03/S03-E037-MD01/frame_support_lock.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R000"
+  ],
+  "commit": "188e6ec27f820d37bc1d334aa59800a82b7fad0c",
+  "dirty": [],
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "ended_at_utc": "2026-10-17T20:08:02.751228+00:00",
+  "no_image_decode": true
+}
