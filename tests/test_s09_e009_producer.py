@@ -27,6 +27,7 @@ from s09_e009_producer import (
     NEAR_STAGNANT_CYCLES,
     REPLAY_GRADIENT_PREFIX_SHA256,
     REPLAY_REFERENCE,
+    TorchArmAdapter,
     _protocol_contract_sha256,
     _replay_direction_with_legacy,
     evaluate_arm,
@@ -41,6 +42,7 @@ from s09_e009_runner_integration import (
     _direction_with_damage_reference,
 )
 from s09_stage0a_p1_trainer import build_runtime
+from s09_stage0a_p1_packet import canonical_json
 from test_s09_stage0a_p1_runner import packet_fixture
 
 
@@ -255,6 +257,45 @@ def test_replay_direction_and_legacy_record_match_reviewed_runner():
     json.dumps(legacy, allow_nan=False)
 
 
+def test_torch_adapter_rejects_hard_constraint_violation_before_step(tmp_path: Path,
+                                                                     monkeypatch):
+    packet, base_config, _ = packet_fixture(tmp_path)
+    runtime = build_runtime(
+        packet_dir=packet,
+        config_path=base_config,
+        device=torch.device("cpu"),
+        executable=False,
+    )
+
+    class FakeOptimizer:
+        def __init__(self):
+            self.step_calls = 0
+
+        def zero_grad(self, set_to_none=True):
+            assert set_to_none is True
+
+        def step(self):
+            self.step_calls += 1
+
+    fake = FakeOptimizer()
+    violated = _hard_counts()
+    violated["damage_irreversibility"] = 1
+    monkeypatch.setattr(producer, "hard_constraint_report", lambda *_args: violated)
+    adapter = TorchArmAdapter(
+        arm=ARM_REPLAY,
+        runtime=runtime,
+        optimizer=fake,
+        config_sha256="config",
+    )
+    before = copy.deepcopy(runtime.model.state_dict())
+    with pytest.raises(ValueError, match="per-update hard-constraint"):
+        adapter.step(1, EXPECTED_CYCLES[0])
+    assert fake.step_calls == 0
+    assert adapter.optimizer_steps_completed == 0
+    for name, value in runtime.model.state_dict().items():
+        torch.testing.assert_close(value, before[name], rtol=0, atol=0)
+
+
 def test_protocol_projection_ignores_only_frontmatter_status(tmp_path: Path):
     assert _protocol_contract_sha256(PROTOCOL) == EXPECTED_PROTOCOL_CONTRACT_SHA256
     raw = PROTOCOL.read_text()
@@ -374,7 +415,7 @@ def test_writer_emits_complete_decision_package_from_exact_mock_receipts(tmp_pat
 def test_execution_entrypoint_rejects_unauthorised_config_before_artifact_roots(tmp_path: Path):
     config = json.loads(INTEGRATION_CONFIG.read_text())
     config_path = tmp_path / "unresolved.json"
-    config_path.write_text(json.dumps(config))
+    config_path.write_bytes(canonical_json(config))
     packet = tmp_path / "packet"
     packet.mkdir()
     (packet / "packet_identity.json").write_text(json.dumps({"manifest_sha256": "x"}))

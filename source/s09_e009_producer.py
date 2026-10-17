@@ -878,6 +878,12 @@ class TorchArmAdapter:
         self.runtime.model.train()
         self.optimizer.zero_grad(set_to_none=True)
         losses, context = atomic_losses(self.runtime, index)
+        step_hard_counts = hard_constraint_report(
+            self.runtime, context["d_pre"], context["history_pre"], context["output"])
+        _require(sum(step_hard_counts.values()) == 0,
+                 "per-update hard-constraint violation")
+        step_projection_counts = proposal_projection_diagnostics(
+            self.runtime, context["d_pre"], context["output"])
         legacy = None
         if self.arm == ARM_REPLAY:
             direction, g_d, diagnostic, legacy = _replay_direction_with_legacy(
@@ -903,12 +909,8 @@ class TorchArmAdapter:
             "grouped_losses": {
                 name: float(value.detach().cpu()) for name, value in groups.items()
             },
-            "proposal_projection_counts": proposal_projection_diagnostics(
-                self.runtime, context["d_pre"], context["output"]),
-            "hard_constraint_counts": hard_constraint_report(
-                self.runtime, context["d_pre"], context["history_pre"],
-                context["output"],
-            ),
+            "proposal_projection_counts": step_projection_counts,
+            "hard_constraint_counts": step_hard_counts,
         }
         direction_norm = torch.linalg.vector_norm(direction)
         damage_norm = torch.linalg.vector_norm(g_d)
@@ -1294,6 +1296,8 @@ def run_producer(
     _require(hashlib.sha256(base_raw).hexdigest() == EXPECTED_BASE_RUNTIME_CONFIG_SHA256,
              "base runtime config differs from reviewed identity")
     preview = _parse_strict_json_bytes(resolved_raw)
+    _require(resolved_raw == canonical_json(preview),
+             "resolved config is not canonical JSON")
     receipt = preview.get("resolution_receipt", {})
     _require(receipt.get("resolved_config_path") == str(resolved_config_path),
              "resolved config path differs from resolution receipt")
