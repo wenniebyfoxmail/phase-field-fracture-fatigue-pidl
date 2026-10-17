@@ -1,0 +1,23 @@
+{
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "render_only": true,
+  "command": [
+    "scripts/plot_md01_fixed_24_26.py",
+    "result",
+    "--history",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R005",
+    "--target",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R006",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R009/analysis",
+    "--vector"
+  ],
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 32569,
+  "started_at_utc": "2026-10-17T14:55:10.170239+00:00",
+  "ended_at_utc": "2026-10-17T14:55:15.367700+00:00",
+  "wall_seconds": 5.1975853749900125,
+  "commit": "5d24339a07383ad36ad8aef75a4d28af61999aae",
+  "dirty": []
+}

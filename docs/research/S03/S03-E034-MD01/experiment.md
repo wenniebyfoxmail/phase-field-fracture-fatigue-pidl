@@ -114,3 +114,25 @@ If it yields E=true, close revised predictions before evaluating400 exactly once
 Target evaluation uses the same61/80 background config with historical seed.
 The source-driven change is disclosed and not called an entirely preregistered
 unamended replication or independent physical-reference validation.
+
+## Outcome — 2026-10-17
+
+v1.1 R005/R006 (clean72b2516) complete. Same fixed first-history position,
+widths33.80184736984325→44.45986567333118→56.82964858837154native px;
+persistence44.45986567333118,trend55.11788397681911. Same-target absolute errors
+12.36978291504036 /1.7117646115524323;Δ=−10.658018303487928px. Three valid
+profiles,E=true,R=true,both methods successful/scored,common1/1. Neither output
+clips. Predictions closed before target acquisition; historical snapshot unchanged.
+
+Independent implementation and independent source-pixel reconstruction reproduce
+profiles/widths/forecasts/errors with maximum difference0. R009 decision-facing
+source/profile/forecast figures and analysis README retrieved/visually checked.
+Original v1 R002 remainsE=false0/1, not overwritten. Half-depth and old scores
+unchanged. Final v1.1 verdict **supports one-case directional gain**, disposition
+**advance to bounded position diagnostic**, not independent/physical validation.
+
+Background anchor dispersion6.362298/13.673841px is not a calibrated error bound;
+left/right systematic motion and transfer to the sampling band remain unresolved.
+Next proposal only: same-three-image background-difference-driven fixed position
+stress sets, all scenarios reported, current scores preserved. Not yet executed;
+no extra data/training authorised by this outcome.

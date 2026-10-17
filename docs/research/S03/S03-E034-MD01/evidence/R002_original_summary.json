@@ -1,0 +1,31 @@
+{
+  "protocol": "relative-stage-24-26-v1",
+  "E": false,
+  "R": null,
+  "target_attempted": false,
+  "unit": "native_step24_reference_px",
+  "opportunities": 1,
+  "common_scored": 0,
+  "coverage": 0,
+  "conditional_common_coverage": null,
+  "target_width_px": null,
+  "delta_abs_error_px": null,
+  "methods": {
+    "persistence": {
+      "attempted": false,
+      "success": false,
+      "prediction_px": null,
+      "reason": "history_measurement_missing",
+      "scored": false,
+      "abs_error_px": null
+    },
+    "stage_trend": {
+      "attempted": false,
+      "success": false,
+      "prediction_px": null,
+      "reason": "history_measurement_missing",
+      "scored": false,
+      "abs_error_px": null
+    }
+  }
+}

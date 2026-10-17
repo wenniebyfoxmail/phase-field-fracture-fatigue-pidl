@@ -1,0 +1,38 @@
+{
+  "protocol": "relative-stage-24-26-v1",
+  "phase": "history",
+  "started_at_utc": "2026-10-17T14:47:03.982721+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 30316,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_fixed_24_26.py",
+    "history",
+    "--geometry",
+    "docs/research/S03/S03-E034-MD01/geometry_history24.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R002"
+  ],
+  "commit": "6a097fa1f91604d47fb4911904a1b660269b45c8",
+  "dirty": [],
+  "source_identities": [
+    {
+      "filename": "IMG_0394.JPG",
+      "file_id": "dc36397c-859e-491b-9310-587730d52c56",
+      "bytes": 17488347,
+      "sha256": "573fa3d7a65fd76e613cfb44e80784b4544953818d1a2b0376c33f0b9c4efb90"
+    },
+    {
+      "filename": "IMG_0397.JPG",
+      "file_id": "b6fc372e-0b53-4e98-af71-6c550d0675d3",
+      "bytes": 17445758,
+      "sha256": "20adfbe57e0c02e3c89be0ee080f93da3ef246853ff9af93fd34729874f57f03"
+    }
+  ],
+  "E": false,
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "ended_at_utc": "2026-10-17T14:47:04.316328+00:00",
+  "wall_seconds": 0.3336931249941699,
+  "cpu_seconds": 0.30866400000000005
+}

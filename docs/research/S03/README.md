@@ -3,6 +3,17 @@
 This navigation record covers the currently touched D01 observation route.
 Exact evidence and verdicts remain in the owning Experiments.
 
+2026-10-17 — [S03-E034-MD01](S03-E034-MD01/experiment.md) completes fixed
+24/25/26 continuation394/397/400 with history-first predictions. Original
+background121/40 attempt retainedE=false; explicit source-only pre-target61/80
+repair preserves four centers/profile/half-depth and quality thresholds.
+Revised widths33.802/44.460/56.830px;absolute error persistence12.370 vs trend1.712,
+gain10.658px,3valid profiles/common1/1. Independent source-pixel/numeric
+reproduction difference0. Another non-overlapping stage group, still same-source
+development, not independent-beam/physical validation. Anchor dispersion6.36/13.67px
+is not an error bound. Next: existing-three-image fixed position sensitivity;
+not executed, old scores unchanged.
+
 2026-10-16 — [S03-E033-MD01](S03-E033-MD01/experiment.md) applies the newly
 approved earliest-complete2/3/4 rule. Only326/329 histories acquired; whole
 views and one shared native loading crop do not establish an identifiable

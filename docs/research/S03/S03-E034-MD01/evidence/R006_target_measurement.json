@@ -1,0 +1,76 @@
+{
+  "step": 26,
+  "filename": "IMG_0400.JPG",
+  "attempted": true,
+  "measurement": {
+    "peak_offset_native_px": 8.0,
+    "depth_gray": 97.67021019345238,
+    "shoulder_noise_gray": 13.649082832031256,
+    "qc_threshold_gray": 40.94724849609377,
+    "relative_contrast": 0.91437214555316,
+    "fwhm_native_px": 56.82964858837154,
+    "left_crossing_px": -23.262130317543285,
+    "right_crossing_px": 33.56751827082826,
+    "valid": true,
+    "reason": "ok"
+  },
+  "registration": {
+    "valid": true,
+    "reason": "ok",
+    "patches": [
+      {
+        "center": [
+          4100,
+          1950
+        ],
+        "dx": -28.87646715291732,
+        "dy": 91.28422743483046,
+        "correlation": 0.9742377400398254,
+        "valid": true
+      },
+      {
+        "center": [
+          4480,
+          1950
+        ],
+        "dx": -9.297342512793797,
+        "dy": 84.08897443194,
+        "correlation": 0.9790781736373901,
+        "valid": true
+      },
+      {
+        "center": [
+          4170,
+          2120
+        ],
+        "dx": -30.086964634065904,
+        "dy": 91.87797814510932,
+        "correlation": 0.9793668985366821,
+        "valid": true
+      },
+      {
+        "center": [
+          4490,
+          2370
+        ],
+        "dx": -5.945272165353628,
+        "dy": 83.90884869694072,
+        "correlation": 0.9724858999252319,
+        "valid": true
+      }
+    ],
+    "dx": -19.08690483285556,
+    "dy": 87.68660093338522,
+    "search_seed_px": [
+      -12,
+      41
+    ],
+    "patch_residuals_px": [
+      10.429690640775213,
+      10.42969064077521,
+      11.771531699875078,
+      13.673840759915091
+    ],
+    "max_patch_residual_px": 13.673840759915091
+  }
+}

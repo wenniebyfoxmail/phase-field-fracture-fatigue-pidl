@@ -1,0 +1,33 @@
+{
+  "protocol": "relative-stage-24-26-v1.1",
+  "E": true,
+  "R": true,
+  "target_attempted": true,
+  "unit": "native_step24_reference_px",
+  "opportunities": 1,
+  "common_scored": 1,
+  "coverage": 1,
+  "conditional_common_coverage": 1,
+  "target_width_px": 56.82964858837154,
+  "delta_abs_error_px": -10.658018303487928,
+  "methods": {
+    "persistence": {
+      "attempted": true,
+      "success": true,
+      "prediction_px": 44.45986567333118,
+      "reason": "ok",
+      "clipped": false,
+      "scored": true,
+      "abs_error_px": 12.36978291504036
+    },
+    "stage_trend": {
+      "attempted": true,
+      "success": true,
+      "prediction_px": 55.11788397681911,
+      "reason": "ok",
+      "clipped": false,
+      "scored": true,
+      "abs_error_px": 1.7117646115524323
+    }
+  }
+}

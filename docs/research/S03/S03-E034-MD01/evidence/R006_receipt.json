@@ -1,0 +1,40 @@
+{
+  "protocol": "relative-stage-24-26-v1.1",
+  "phase": "target",
+  "started_at_utc": "2026-10-17T14:51:27.109782+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 31800,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_fixed_24_26.py",
+    "target",
+    "--history",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R005",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R006"
+  ],
+  "commit": "72b25161a0c24cc577d4d2b5382a404dc2994def",
+  "dirty": [],
+  "history_saved_at_utc": "2026-10-17T14:51:07.142011+00:00",
+  "target_acquired_at_utc": "2026-10-17T14:51:28.954504+00:00",
+  "source_identities": [
+    {
+      "filename": "IMG_0394.JPG",
+      "file_id": "dc36397c-859e-491b-9310-587730d52c56",
+      "bytes": 17488347,
+      "sha256": "573fa3d7a65fd76e613cfb44e80784b4544953818d1a2b0376c33f0b9c4efb90"
+    },
+    {
+      "filename": "IMG_0400.JPG",
+      "file_id": "79dbc65d-89a0-4e1d-8b4b-6c2999f6741e",
+      "bytes": 17510742,
+      "sha256": "31cba1e6237032ca057cbc525d2125278aeb29e9d36d2a036616f8c14593654a"
+    }
+  ],
+  "history_snapshot_unchanged": true,
+  "execution": "succeeded",
+  "retrieval": "verified_local",
+  "ended_at_utc": "2026-10-17T14:51:29.283447+00:00",
+  "wall_seconds": 2.173738834040705,
+  "cpu_seconds": 0.3464440000000001
+}

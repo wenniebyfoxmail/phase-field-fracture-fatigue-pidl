@@ -1,0 +1,188 @@
+{
+  "protocol": "relative-stage-24-26-v1.1",
+  "E": true,
+  "geometry": {
+    "protocol": "relative-stage-24-26-v1.1",
+    "native_shape": [
+      4000,
+      6000
+    ],
+    "reference_image": "IMG_0394.JPG",
+    "rough_center": [
+      4280.0,
+      2200.0
+    ],
+    "normal": [
+      0.9805806756909201,
+      -0.19611613513818402
+    ],
+    "observer_rule": "Same original first-history visible-mid-height profile; unchanged rough center and unit normal. One original first-history peak refinement, no alternative position or width-based scan.",
+    "inspection_crop_xyxy": [
+      3900,
+      900,
+      4700,
+      3500
+    ],
+    "background_centers": [
+      [
+        4100,
+        1950
+      ],
+      [
+        4480,
+        1950
+      ],
+      [
+        4170,
+        2120
+      ],
+      [
+        4490,
+        2370
+      ]
+    ],
+    "patch_size": 61,
+    "translation_radius": 80,
+    "correlation_min": 0.6,
+    "required_background_patches": 3,
+    "anchor_rule": "Original four centers, all uniformly smaller templates. v1 121px templates exposed crack edge in anchor3 and glue edge in anchor4. Uniform61px is chosen on first-history source content to exclude those edges; no target or width/prediction-error selection.",
+    "target_seen": false,
+    "limitations": "Background-to-crack translation remains an uncalibrated position proxy. Original v1 boundary-limited attempt remains unscorable; this revised attempt is explicit, not a retroactive change to its verdict.",
+    "center": [
+      4284.167467871686,
+      2199.1665064256626
+    ],
+    "refinement_native_px": 4.25
+  },
+  "history": [
+    {
+      "step": 24,
+      "filename": "IMG_0394.JPG",
+      "attempted": true,
+      "measurement": {
+        "peak_offset_native_px": 0.0,
+        "depth_gray": 105.0966796875,
+        "shoulder_noise_gray": 10.623369531249992,
+        "qc_threshold_gray": 31.870108593749976,
+        "relative_contrast": 0.9399696048632219,
+        "fwhm_native_px": 33.80184736984325,
+        "left_crossing_px": -12.051307770441849,
+        "right_crossing_px": 21.750539599401403,
+        "valid": true,
+        "reason": "ok"
+      },
+      "registration": {
+        "valid": true,
+        "reason": "first_image",
+        "dx": 0.0,
+        "dy": 0.0,
+        "patches": []
+      }
+    },
+    {
+      "step": 25,
+      "filename": "IMG_0397.JPG",
+      "attempted": true,
+      "measurement": {
+        "peak_offset_native_px": 5.75,
+        "depth_gray": 93.21326264880952,
+        "shoulder_noise_gray": 9.396246386718744,
+        "qc_threshold_gray": 28.18873916015623,
+        "relative_contrast": 0.9077856992111677,
+        "fwhm_native_px": 44.45986567333118,
+        "left_crossing_px": -17.112731839258114,
+        "right_crossing_px": 27.347133834073063,
+        "valid": true,
+        "reason": "ok"
+      },
+      "registration": {
+        "valid": true,
+        "reason": "ok",
+        "patches": [
+          {
+            "center": [
+              4100,
+              1950
+            ],
+            "dx": -16.31401059377798,
+            "dy": 43.214017546343534,
+            "correlation": 0.9731363654136658,
+            "valid": true
+          },
+          {
+            "center": [
+              4480,
+              1950
+            ],
+            "dx": -7.131466310663162,
+            "dy": 39.71573807363606,
+            "correlation": 0.9793083667755127,
+            "valid": true
+          },
+          {
+            "center": [
+              4170,
+              2120
+            ],
+            "dx": -16.915473438539426,
+            "dy": 43.424468546318955,
+            "correlation": 0.974410355091095,
+            "valid": true
+          },
+          {
+            "center": [
+              4490,
+              2370
+            ],
+            "dx": -5.624769264087797,
+            "dy": 39.65004691760937,
+            "correlation": 0.9604958891868591,
+            "valid": true
+          }
+        ],
+        "dx": -11.722738452220572,
+        "dy": 41.4648778099898,
+        "search_seed_px": [
+          0,
+          0
+        ],
+        "patch_residuals_px": [
+          4.913173078076198,
+          4.913173078076203,
+          5.550179500885256,
+          6.362298278716193
+        ],
+        "max_patch_residual_px": 6.362298278716193
+      }
+    }
+  ],
+  "predictions": {
+    "E": true,
+    "raw": {
+      "persistence": 44.45986567333118,
+      "stage_trend": 55.11788397681911
+    },
+    "arms": {
+      "persistence": {
+        "attempted": true,
+        "success": true,
+        "prediction_px": 44.45986567333118,
+        "reason": "ok",
+        "clipped": false
+      },
+      "stage_trend": {
+        "attempted": true,
+        "success": true,
+        "prediction_px": 55.11788397681911,
+        "reason": "ok",
+        "clipped": false
+      }
+    }
+  },
+  "E_reasons": [],
+  "origin_step": 25,
+  "target_step": 26,
+  "unit": "native_step24_reference_px",
+  "saved_at_utc": "2026-10-17T14:51:07.142011+00:00",
+  "target_file_present_at_save": false
+}
