@@ -139,7 +139,7 @@ def run(a):
             ax.scatter(i-.13,before,color=".3",marker="o",label="Before" if i==0 else None)
             ax.scatter(i+.13,after,color="#0072B2",marker="s",label="After" if i==0 else None)
             ax.annotate(f"{before:.2f}",(i-.13,before),xytext=(-5,9),textcoords="offset points",ha="right",fontsize=9)
-            ax.annotate(f"{after:.2f}",(i+.13,after),xytext=(5,9 if after < 10 else -15),textcoords="offset points",ha="left",fontsize=9)
+            ax.annotate(f"{after:.2f}",(i+.13,after),xytext=(5,9 if after < 8 else -15),textcoords="offset points",ha="left",fontsize=9)
         ax.set(xticks=range(5),xticklabels=[str(r["stage"]) for r in summary],xlabel="Stage",ylabel="Max absolute area setting-change (%)",ylim=(0,None))
         ax.margins(x=.15,y=.18)
         ax.set_title("Full visible ROI" if band=="full" else "Fixed common image band")

@@ -190,3 +190,22 @@ Final5source/mask/skeleton/mainpath/thicknesspages andallsettingmaps linkedin
 E038. Oldhalfdepth/E037v1andoldscores retained; no physicalaperture/materialpoint
 orsegmentationtruth claim. Nextsource-only contrastadded/removedpixelreview
 toidentifyonegeometryrepair,notprediction-tunedthreshold ormandatoryanchors.
+
+### E039 pore-like terminal-spur audit — 2026-10-17
+
+[E039](../research/S03/S03-E039-MD01/experiment.md) applies one frozen short/broad
+terminal-side-branch filter to45 existing E038 masks. Default fiveframes remove
+6.025–12.183% candidate area, all original full/common path points and2xEDT
+preserved by construction. Full/common finite area sensitivity decreases inall5,
+but substantial residuals remain; stage19 common156.45→153.37%. Useful bounded
+component progress, not proven pore accuracy or a replacement ofv1.
+Independent arithmetic/arrays/summary reproduce; source review22/23 shows
+edge-adjacent ambiguous deletions, possible real edge loss. Trunk pores/loops
+remain. Keep v1, oldhalfdepth/scores, no forecast parsing/tuning ortraining.
+
+Single producer savedall45 outputs then failed final receipt exclusive-create;
+original receipt preserved and separate read-only reconciliation verifies data.
+No numerical rerun, no fabricated successful exit. Newsource overlays/deleted
+maps expose limits. Next proposed parallel existing21/22/23 development forecast
+for v1/named cleanup candidate, neither error-selected, scores separately named;
+do not let perfect pore cleanup block simple prediction or defaulttofouranchors.
