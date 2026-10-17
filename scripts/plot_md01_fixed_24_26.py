@@ -91,13 +91,13 @@ def main(a):
                     axes[1,i].scatter(*cross.T,marker="x",c="#D55E00",s=22,linewidths=1.5)
             role="target: after saved forecasts" if i==2 else "history"
             axes[0,i].set_title(f"Step {r['step']} | {r['filename']}\n{role}",fontsize=10)
-            axes[1,i].set_title("Fixed band and mapped background patches",fontsize=9)
+            axes[1,i].set_title("Band and median-shifted anchor footprints",fontsize=9)
             for ax in axes[:,i]: ax.set_xticks([]);ax.set_yticks([])
         fig.suptitle(tag+" | controlled-experiment development, one transect\n"
                      "Green: sampling / crop; orange: half-depth crossings; blue: background patches",fontsize=12)
         finish(fig,"F01_originals_and_sampling",f"# E034 originals and sampling\nSources {FILES}; "
                f"history={a.history}; target={a.target}. Top full views, bottom native720x600px crops; "
-               f"green fixed band/crop, orange half-depth crossings, blue{h['geometry']['patch_size']}px background patches. "
+               f"green fixed band/crop, orange half-depth crossings, blue{h['geometry']['patch_size']}px original anchor footprints under median translation, NOT individual NCC peak positions. "
                "Background translation only; no target-specific recentering. These are image widths, "
                "not physical aperture, independently labelled edges or calibrated registration. See README_analysis.md.")
         fig,axes=plt.subplots(1,3,figsize=(12,3.8),sharey=True,constrained_layout=True)
