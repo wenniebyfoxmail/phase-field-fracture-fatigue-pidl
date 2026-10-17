@@ -195,3 +195,61 @@ Static review remains accepted for its actual scope, not proof of live input
 availability or method success. Scientific comparison is not evaluated; R001
 permission consumed. Next only propose minimal read-only path availability
 diagnosis for user approval, not a new run or mathematical redesign.
+
+## Input-root binding v2 amendment and static difference review — 2026-10-17
+
+Status at dispatch: **PATH_BINDING_DIFFERENCE_REVIEW_PENDING**. User authorised
+only six-path root-binding correction plus the corresponding inventory and
+direct independent static difference review. No array access, fitting, R001
+retry, copies/restores or new execution authority.
+
+- Exact changed snapshot: `df5cb23dde5058764381aba1b39f026f5d9207ad`.
+- Parent `3d136f75` records the authorised metadata-only root-cause diagnosis;
+  prior reviewed scientific/guard source was2563153.
+- Changed exactly two files: `SENS_tensile/s04_phase_inputs.py` and
+  `docs/research/S04/S04-E025/input_manifest.json`.
+- Add fixed RELATIVE_SOURCE_ROOT under the documented old E016 worktree; use
+  it only when resolving legacy **relative** scientific paths. DATA_ROOT/OUT/
+  RUN, three already absolute PIN paths, all nine expected SHA256/roles/order,
+  original lock, feature recipe, math, grouping/normalisers, criterion and
+  **300s / 2GiB / 100MiB** unchanged. No new configurable root/alternate source.
+- Manifest v2 adds relative_source_root and replaces only six path prefixes:
+  geometry, u0115 PIN and the four FEM files. Runtime manifest() requires v2 and
+  that exact root. Relative roots expand the same original locked path/hash
+  tuples; absolute paths remain untouched. Whole-file read scope/permissions,
+  no-follow/canonical/same-FD verification and grant contents are not expanded.
+- Root provenance: E021/run_card.md:37–63 and the metadata-only diagnosis in
+  R001_result_20261017.md. This is a dated **operational binding correction**,
+  not a changed teacher, primary hypothesis or numerical result. Manifest v1
+  remains recoverable from2563153 and the frozen R001 authorization; the used
+  R001 card and protocol are not rewritten to pretend the failed run used v2.
+- R001 remains consumed and frozen. RUN/OUT are intentionally unchanged under
+  the user's narrow scope; guard still rejects its existing destination. This
+  patch is **not a new executable Run package or Run Ready**. Any future fresh
+  Run identity/card requires separate preparation and approval, never relaunch
+  R001 with this new source or its old approval reference.
+
+Preparation: stdlib AST parse of changed input module and JSON/Git metadata
+comparison, exactly six changed paths, all other manifest values preserved,
+new paths expanded against the original lock and documented root. Source/math/
+guard/dependency/protocol/legacy-lock Git diff against2563153 is empty; old card
+compared separately against97118115, unchanged. Whitespace checks passed.
+No project import/runner/mock/resource test, scientific-file stat/open/hash,
+array read, fit, retry, copies/restores or new source links in this turn.
+
+Review dispatched to the same independent Codex chat **多目标优化学习 FEM–PINN
+Delta**, `01a12d15-9b60-7280-8248-18386d6ef741`; send_message_to_thread returned
+the exact target with isError=false. Model/settings retained; backend model not
+independently verified and not described as Pro. Shared exact snapshot/worktree,
+two changed paths, prior failure/root-cause records and bounded questions: six
+versus three paths, fixed source vs output roots, unchanged hash/math/budget,
+authority/reader closure, old R001/approval not reused. Reuse unchanged findings;
+no full repeat review or new scientific gate.
+
+Reviewer is restricted to static Git/source/documents; no execution/import/
+tests, scientific metadata/content, fits, writes/Obsidian or extra task dispatch.
+The main chat is sole writer. Requested verdict REVIEW_PASS /
+MODIFY_AND_REREVIEW / NOT_REVIEWABLE is static-only, never content identity,
+execution/resource assurance or method success. Final response pending readback.
+The reviewer acknowledged the static-only scope in turn
+`01a14bb4-f0e8-7761-995f-5b60bfe94319` (wait_threads revision97).
