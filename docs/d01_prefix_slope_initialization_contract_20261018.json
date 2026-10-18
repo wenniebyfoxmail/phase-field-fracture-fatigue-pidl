@@ -1,0 +1,21 @@
+{
+  "stage": "bounded exploration on already exposed development data",
+  "question": "Does a two-observation prefix-slope initialization improve the frozen section3 state-space comparison?",
+  "source": "section3_prediction_20261018; original outputs reused unchanged",
+  "noise": {
+    "measurement_sigma_strip_px": 1.0,
+    "acceleration_sigma": 0.05
+  },
+  "change": "Initialize at the second available observation: level=y1, slope=(y1-y0)/d; no first-two re-assimilation. Thereafter identical transitions, Q, R and Joseph updates.",
+  "initial_covariance": "[[R,R/d],[R/d,2R/d^2+q*d/3]], q=acceleration_sigma^2; measurement and initial-interval process uncertainty propagated, diffuse initial-slope limit",
+  "interpretation": "A coherent initialization change includes its prior covariance; do not attribute a difference to the slope mean alone. Observation/process noise scales are unchanged.",
+  "warmup": "one-history forecast reuses original model; first transition each beam remains outside primary score",
+  "primary": "same8 forecasts and equal-weight mean of per-beam MAEs; all11 target predictions exported",
+  "comparators": "reuse original state-space and load-secant forecasts from stored CSV; do not rerun earlier experiments",
+  "information": "prefix only, next nominal load specified; no next width or human endpoint used for initialization or tuning",
+  "uncertainty": "working Gaussian95% bands and last-prefix-observation +/-1px sensitivity at fixed noise; no noise grid or calibrated coverage claim",
+  "sanity": "zero-process-noise batch regression equivalence, two-observation secant equivalence, unequal loads, positive covariance, translation, future exclusion and no double counting",
+  "scope": "same three beam sequences, section3; masks, data, previous results and MD01 unchanged; no neural training/inference",
+  "resource_cap": "one CPU2x2 comparison plus fixed perturbations, <1min; no sweep",
+  "stop": "save results and figures, report mixed effects and next decision; do not alter fixed noise or replace previous result"
+}
