@@ -1,0 +1,9 @@
+{
+  "owner": "01a0ff36-c53f-7541-8161-a0584b44a9ae",
+  "helpers": {
+    "s04_e024_head_cone.py": "901a46a42ab619aaff5baabf8d9aba7d56e06789099668ea088dd0fe1babd506",
+    "s04_e024_three_head.py": "fb0d9519dcf91bc2fd23620a803ebf989a6e9a51f549f8219fc43fe7c69757f1"
+  },
+  "method": "full-head convex-hull common-descent5/7->11 rows and exact one-axis enrichment2old->7old. E032 joint proxy7->8 coefficients, six exact UV/u/v guards and11 true metric guards.",
+  "scope": "No owner old fields/driver semantics/state computation transferred or duplicated. Fresh endpoint E032 with actual separate u/v costs, same native physical metric definitions."
+}
