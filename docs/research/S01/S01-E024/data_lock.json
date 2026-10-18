@@ -28,7 +28,7 @@
   "original_rows_digest": "8770a36c06010cb0200c327c593e47aa29b914757f16eab1ac20edc16c4a2888",
   "metadata_path": "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\manifest_train_validation.json",
   "metadata_sha256": "6fc622943a78063926d96a13e727013ae22d12919a3af3814cfc221bd1a7e5bb",
-  "classifier_identity_only": "superseded by E003_checkpoint_sha256: frozen semantic extraction, no parameter fitting or detector rescoring",
+  "classifier_identity_only": "E003 checkpoint SHA retained solely for deployed comparator lineage; not opened by E024; its original bank rows/probabilities frozen",
   "locations": [
     "24",
     "95",
@@ -68,7 +68,6 @@
   "source_eligible_count": 19384,
   "source_B12_hits": 684,
   "forbidden_inputs": [
-    "checkpoint weights except the exact hash-pinned frozen E003 checkpoint for semantic extraction only",
     "full12 U labels as training targets",
     "R004 joint chosen corrections as learner data",
     "four consumed qualification sites",
@@ -81,8 +80,9 @@
     "E019 models, predictions, PCA or selection as learner input",
     "all pooled content arrays, PCA/sketches/learned compression/directions",
     "all pixels except exact835 train identities pinned in candidate_identity",
-    "held GT/labels in current FIT training/gate; no learned photometric statistics",
-    "all neural models except pinned frozen E003 intermediate extraction; all backbone backward/parameter gradients/updates; new boxes or detector rescoring"
+    "all external/pretrained neural weights; E003 checkpoint load/forward/gradients/updates; only this6049RGB CNN may train on own train6",
+    "qualification2 references in current CNN gradient/initial bias/constant fitting/sampling; current outer4 references in CNN/qualification/role training or admission",
+    "new boxes, changed E003 scores/coordinates/order, detector rescoring; any model/hyperparameter/checkpoint/seed/cap/intersection search"
   ],
   "fresh_access": false,
   "prior_experiment_reference": {
@@ -108,7 +108,7 @@
   "E003_checkpoint": "C:\\Users\\xw436\\pavetrack_runs\\S01-E003-R001\\best_ranker.pt",
   "permitted_semantic_extraction": {
     "E003": "unchanged deployed comparator; no load/rescore/update",
-    "localizer": "only independently trained own6-site RGB spatial CNN,qualified on own2 sites; outer4 excluded"
+    "localizer": "only independent6049RGB CNN owntrain6 gradients; ownqual2 admission per fold; currentouter4 excluded from CNN/qualification/rolefit; rejectedfold E003 fixed abstention"
   },
   "annotation_workbook": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/real_road_acquisition/pavetrack_pd_v3_manifest_20260805/Dataset_PDdescription.xlsx",
   "annotation_workbook_sha256": "72e3cfe6774a45a7e348b6c30a21b5eae30fb7bc111c4859c26744bdc6061e18",

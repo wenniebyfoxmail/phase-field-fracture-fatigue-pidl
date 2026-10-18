@@ -41,18 +41,18 @@ RGB缓存只存原/修正union+25%同context的PIL bilinear128图像，uint8CHW�
 
 资格Q为一个“非退化且优于简单常数的区域定位”条件：资格Brier比三常数最小值低>1e−6；且参考前景context子集Dice比三平凡二值图最大值高>1e−6。两者先context均图、图均地点、2地点均值；子集仅参考有前景context，无子集的图不参与，任一资格地点无前景则inconclusive不接入；train6无正或无负也inconclusive。空/空Dice=1但不进入前景子集。1e−6是数值严格改善余量，不是临床精度宣称。没有设高Dice硬门槛；小样本只支持最小能力判断，保存各地点差异，不冒充可靠teacher或独立总体推断。已有标注保证几何上可预测，模型实际能否胜常数未知，正是此最便宜的决定性检验。
 
-仅当3fold全部Q通过才接下游。任何一折未过→保存StageA资格负/不可算收据、完整模型与资格图/指标并停止；此时下游主标准未计算、应记inconclusive（不是实际OOF净0），E003默认继续，不拟合role或对完整银行新增评分，不用outer结果选模型。不更换损失/容量/阈值/资格地点或重跑。
+3fold资格决定全部冻结后，逐fold决定接入：通过Q的fold才拟合其role并对完整银行新增评分；未通过/缺支持fold固定E003并弃权，不训练role/不生成完整map或读取其outer像素参考。若0fold通过，保存StageA资格负/不可算收据并停止，此时下游主标准未计算、应记inconclusive，netGT必须null（不是实际OOF净0）。若至少1fold通过，完整12地点主OOF包括其他fold的固定弃权/E003，仍按同主标准，禁止只报告通过fold的检测收益。不用outer结果选模型，不更换损失/容量/阈值/资格地点或重跑。
 
 ## 合格后连接原选择器
 
-保持通过资格的train6模型不重训；对每fold31156RGBcontext预测32图，概率图的C/D仍原定义：精确面积覆盖，z=框内质量/总质量−框面积/context面积，C=z(修正)，D=(z修正−z原)/2；只换合格空间模型，非描述调参。零质量仍0并记账。原4scalar+2C/D、11系数Q/N/A角色头、FIT8监督/权重/L2/.01、阈值0/1/16/1/8/1/4/弃权、原分数与排序tie-break完全沿用E023。资格2属于自身FIT8，可进role拟合；outer4不可。原cap1/image、每固定四地点组cap3、正面积交集、原dup<=.7、accepted-only修正冲突>.5、允许不修正不变。
+保持通过资格的train6模型不重训；仅对合格fold的31156RGBcontext预测32图，概率图的C/D仍原定义：精确面积覆盖，z=框内质量/总质量−框面积/context面积，C=z(修正)，D=(z修正−z原)/2；只换合格空间模型，非描述调参。零质量仍0并记账。原4scalar+2C/D、11系数Q/N/A角色头、FIT8监督/权重/L2/.01、阈值0/1/16/1/8/1/4/弃权、原分数与排序tie-break完全沿用E023。资格2属于自身FIT8，可进role拟合；outer4不可。原cap1/image、每固定四地点组cap3、正面积交集、原dup<=.7、accepted-only修正冲突>.5、允许不修正不变。
 
-三模型/九角色头全部合格，OOF/模型/maps先hash冻结，再计算一次pooled12/三个held检测与12地点像素描述组件。唯一最终主标准仍旧保留>=95%、净GT>=1、macro召回变化>0，baseline684，同1FP/image/IoU.5。资格PASS、像素改善、FIT排序前移不能救主失败。正例入前三/实际检测预算/旧新失净与地点变化完整保留。
+三定位模型/全部资格决定/合格fold全部角色头已验证，OOF/模型/maps先hash冻结，再计算一次pooled12/三个held检测与合格fold外层地点的像素描述组件；未接入地点pixel指标null而非伪造0，组件均值只覆盖合格外层地点。其比较常数直接沿用冻结train6层级前景率，不重拟合。唯一最终主标准仍旧保留>=95%、净GT>=1、macro召回变化>0，baseline684，同1FP/image/IoU.5。资格PASS、像素改善、FIT排序前移不能救主失败。正例入前三/实际检测预算/旧新失净与地点变化完整保留。
 
 ## 预算、停止与最小证据
 
-未来唯一gpu-server/D-26-09 GPU1/CPU1 R001，3600s、聚合RSS4GiB、GPUallocated/reserved各4GiB，临时盘>=12GiB、结果包<=3GiB。835源图+<=6case=<=841图像读取/解码；RGBcache1531379712payload、FITmask63807488bytes、资格map100253696bytes、条件完整map382844928bytes；不再保留E023977MB特征cache。3CNN/768optimizersteps/12288训练前后向行；24476资格预测；接入后93468完整map行、9role线性求解、38768role训练行、58152role预测行、15策略比较、一次pooled/3held；拒绝时这些接入计数必须全0。monitor .5s，精确分阶段计数，所有source/caches/权重/资格/OOF/maps哈希绑定。真实Windows吞吐和峰值尚未测，不保证预算内成功；资源上限不放宽。
+未来唯一gpu-server/D-26-09 GPU1/CPU1 R001，3600s、聚合RSS4GiB、GPUallocated/reserved各4GiB，临时盘>=12GiB、结果包<=3GiB。835源图+<=6case=<=841图像读取/解码；RGBcache1531379712payload、FITmask63807488bytes、资格map100253696bytes、条件完整map382844928bytes；不再保留E023977MB特征cache。3CNN/768optimizersteps/12288训练前后向行；24476资格预测；接入后93468完整map行、最多9role线性求解、38768role训练行、58152role预测行、15策略比较、一次pooled/3held；精确接入计数按合格fold集合A：rolefit/solve=3|A|、train=sum([11588,13422,13758][k])、predict=19384|A|、context=2|A|、calibration=5|A|、fullmap=31156|A|、outerpixel=sum(fixedheldcount[k])；A空时这些全0且不计算pooled/held，否则pooled1/held3。fit基线支持核验固定3次。monitor .5s，768训练批次/optimizersteps单独计数；max_semantic_batches仅推理（不含训练，4000上界，最大3688批），E003_*梯度0，新CNN全局gradient/parameter_gradient_steps为768，backbone_backward_rows只指E003而localizer_backward_rows为12288。精确分阶段计数，所有source/caches/权重/资格/OOF/maps哈希绑定。真实Windows吞吐和峰值尚未测，不保证预算内成功；资源上限不放宽。
 
-StageA F00显示3fold/各资格地点对简单基线的Brier和前景Dice，F02最多6个固定fold/qualification-site、原score最高context案例与保存GT区域/预测map，无模型再前向。若接入，额外F01显示主E003/OOF/旧新失净/12地点，F02仍用固定六个已保存FIT机会或OOF追加规则并明确身份。保存原始uint8缓存、各fold目标索引、3模型、参数哈希冻结、全部资格map/逐context/图/地点指标、输入19成员/私有标签、条件maps/OOF/原行摘要、资源与严格清单；大数组/标签/图片不入Git。
+StageA F00显示3fold/各资格地点对简单基线的Brier和前景Dice，F02最多6个固定fold/qualification-site、原score最高context案例与保存GT区域/预测map，无模型再前向；StageA按fold/qual-site最多6例，允许重复图像但不同模型，不能作6个独立单位。若有合格fold接入，额外F01显示主E003/OOF/旧新失净/12地点，F02仍用固定六个已保存FIT机会或OOF追加规则并明确身份。保存原始uint8缓存、各fold目标索引、3模型、参数哈希冻结、全部资格map/逐context/图/地点指标、输入19成员/私有标签、条件maps/OOF/原行摘要、资源与严格清单；大数组/标签/图片不入Git。
 
-失败后：资格未过则停止固定6049参数RGB区域CNN，下一次先改善区域参考/空间模型与域证据；资格过但前三/净益未成则保留已验证定位组件，下一独立方案转向可信效用支持/直接预算对齐。不是继续微调本模型/描述，均须另冻结；本版无R002。用户本轮范围到设计审查→实现测试→代码审查/执行准备，0真实训练/传送/push/R001。按指定6.1sol-Medium独立审查最终协议，再实施。
+失败后：资格未过则停止固定6049参数RGB区域CNN，下一次先改善区域参考/空间模型与域证据；至少一折资格过但完整12地点前三/净益未成则保留已验证定位组件，下一独立方案转向可信效用支持/直接预算对齐。不是继续微调本模型/描述，均须另冻结；本版无R002。用户本轮范围到设计审查→实现测试→代码审查/执行准备，0真实训练/传送/push/R001。按指定6.1sol-Medium独立审查最终协议，再实施。

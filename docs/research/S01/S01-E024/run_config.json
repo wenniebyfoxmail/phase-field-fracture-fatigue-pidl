@@ -174,7 +174,7 @@
     "head_forwards": 0,
     "backbone_forwards": 0,
     "pixel_reads": 841,
-    "gradient_steps": 0,
+    "gradient_steps": 768,
     "full12_refits": 0,
     "source_image_decodes": 835,
     "spatial_feature_rows": 31156,
@@ -201,7 +201,7 @@
     ],
     "head_input_gradient_rows": 0,
     "backbone_backward_rows": 0,
-    "parameter_gradient_steps": 0,
+    "parameter_gradient_steps": 768,
     "max_semantic_batches": 4000,
     "peak_GPU_allocated_bytes": 4294967296,
     "peak_GPU_reserved_bytes": 4294967296,
@@ -219,7 +219,9 @@
     "localizer_qualifications": 3,
     "localizer_prediction_rows": 93468,
     "localizer_mask_rows": 62312,
-    "localizer_mask_bytes": 63807488
+    "localizer_mask_bytes": 63807488,
+    "E003_parameter_gradient_steps": 0,
+    "E003_backbone_backward_rows": 0
   },
   "fresh_access": false,
   "execution_authorized": false,
@@ -244,9 +246,9 @@
     "threshold": 0.5,
     "comparison": ">=",
     "empty_empty_Dice": 1,
-    "FIT_constant": "unweighted foreground/total over all ownFIT contexts x16fixed samples",
+    "FIT_constant": "frozen own train6 hierarchical(context/image/site) foreground prevalence over all native32x32target cells; same as StageA, no FIT8x16 or qual/outer refit",
     "Brier": "mean((P-Y)^2) per context",
-    "aggregate": "same E023 percontext->image->12location; native32grid; only if connection qualified and OOF frozen",
+    "aggregate": "only admittedfold outer sites,context->image->site then equal admitted outer sites; emit full12 location records with unqualified sites null/not_predicted,not all12model average",
     "foreground_context_subset": "reference Y.any(); empty image/location null, no model selection",
     "independence": "overlapping contexts and pixels are not independent units"
   },
@@ -363,10 +365,23 @@
       "margin": 1e-06,
       "Brier": "qual context32x32 MSE, equal context/image then images/site then2sites; beat min(owntrain6 hierarchical prevalence constant,all0,all1)",
       "foreground_Dice": "fixed P>=.5; reference-foreground contexts only, equal contexts/image then nonempty images/site then2sites; beat max(owntrain6 prevalence>=.5 constant,all0,all1)",
-      "rule": "both differences exceed1e-6 and both qualification sites have foreground support; all3folds must pass before ANY role fit/fullbank scoring or outer held metric",
+      "rule": "per-fold both differences exceed1e-6 and both own qualification sites have foreground support; all3qualification decisions freeze before ANY role fit; only qualified fold connects,unqualified fold fixed abstain/E003; no qualified folds -> StageB uncomputed/inconclusive",
       "missing": "missing foreground site or single-class own training -> inconclusive, no connection",
       "no_selection": "one architecture/seed/last step; qualification admits frozen models only; no checkpoint/threshold/model search"
     }
   },
-  "resource_notes": "GPU1/CPU1/3600s/RSS4GiB/GPU4GiB; >=12GiB temporary free disk; RGBcache1.531GB+FITmasks63.8MB+qualificationmaps100.3MB+conditionalmaps382.8MB; archive<=3GiB. StageB conditional counters must be exact if admitted,all0 if rejected."
+  "resource_notes": "GPU1/CPU1/3600s/RSS4GiB/GPU4GiB; >=12GiB temporary free disk; RGBcache1.531GB+FITmasks63.8MB+qualificationmaps100.3MB+conditionalmaps382.8MB; archive<=3GiB. StageB conditional counters must be exact if admitted,all0 if rejected. Fold-local admission avoids all-or-nothing veto; conditional exact counters per budget_definitions. No qualified fold means no main detector evaluation and net_GT null.",
+  "budget_definitions": {
+    "model_fits": "only role heads,3 per admittedfold; localizer_models separately3",
+    "gradient_steps": "all optimizer steps for newCNN only,exact768; E003 gradients0",
+    "parameter_gradient_steps": "same768 optimizer steps,not scalar parameter count",
+    "backbone_backward_rows": "E003 backbone only,zero; newCNN localizer_backward_rows12288",
+    "max_semantic_batches": "inference batches only,qualification24476+admittedfold full31156,batched32 (max ceil7729/32+ceil8116/32+ceil8631/32+3ceil31156/32=3688); train768batches counted independently",
+    "stageB_exact": "if admissions A, maps31156*len(A); rolefits/linear3*len(A); rolemodelsets len(A); roletraining sum([11588,13422,13758][k] for k in A); roleprediction19384*len(A); context2*len(A); calibration5*len(A); pooled1/held3 iff A nonempty,else0; outerpixel sum(held candidate rows[k] for k in A)",
+    "held_candidate_rows": [
+      12857,
+      9881,
+      8418
+    ]
+  }
 }
