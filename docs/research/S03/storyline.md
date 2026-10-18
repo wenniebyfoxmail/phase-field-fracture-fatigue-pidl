@@ -745,3 +745,18 @@
   numerical acceptance. B003 absent by metadata only; no Python/import/AST/
   tests/compute/plot or archive-content/real/held reads this turn. B002 remains
   quarantined; no frozen edits, retry, verifier or C/D. Await user approval.
+
+- **2026-10-18 — Guarded B003 executed once; font warning stopped process.**
+  User approved exact command; runtimeclean657b95a1/source87bc592d,
+  sevenSHA externally unchanged. session37711 ended exit70 (chunks2932c2,
+  366052,7844a7; all terminal empty); new guard event identifies font-cache
+  WARNING atmatplotlib_import. This actual dependency path now stops instead
+  of writing success after the warning; not a general hard-real-time claim.
+  D1 resource completion missed; partial certificate/report/caches preserved,
+  no PNG/sidecar/receipt/completion. Only event+directory metadata read, no
+  numeric decode, counter/60s final certification, independent acceptance or
+  rerun. See S03-E019/guarded_b003_results.md. No cache warmup/log exemption,
+  source/frozen changes, oldB002 retry, real/held reads or C/D. B003 partial
+  output not accepted, B002 quarantine unchanged. D2 not entered; proposed
+  redirectR1 is font-initialization diagnosis and numeric/plot separation
+  planning without repeatSVD/QR, subject to new scope approval.
