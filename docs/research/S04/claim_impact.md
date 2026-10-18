@@ -143,3 +143,26 @@ same-state/same-energy/fixed-feature conditioning repair design with the
 coupling owner, not a resumed r2 or new raw fit. No implementation/run is
 authorized by this recommendation. Main chat alone updated residual Obsidian
 and reused the exact same-run PNG. See [terminal synthesis](S04-E026/coupling_r2_result_readback_and_next_decision_20261018.md).
+
+## 2026-10-18 — PC16 preparation and independent static review, no new science
+
+User approved design52d24088 for minimal implementation/static review only.
+The separate coupling owner completed executable source3dfef418 and exact card
+88145f8c (PC16-CARD-r1), with review record06d0c47f. Main S04 read the reviewer's
+original final response and the repair diff; no tests, payload access or solve.
+The sole initial blocker, missing actual-force-to-z final gradient consistency,
+was repaired using already-paid force. Both actual and basis original-z norms
+must meet the unchanged1e-8 stationarity threshold. Focused independent static
+re-review found no remaining blocker at the exact code/card versions.
+
+Same c1s4/fixed damage/original hidden+UV initial field/388-column transform and
+all776 coordinates, unchanged energy/PBD comparison; PC16 changes only solver
+coordinates. Five exact future inputs explicitly add transform-only access to
+r2 head.npz. Shared400-unit HVP/control/optimization/final accounting and old
+900s/8GiB RSS/8GiB CUDA/100MiB/shared-GPU protections remain. No numerical
+equivalence, spectrum/curvature, memory feasibility or current resource claim.
+No scientific arrays, numerical tests, SSH/deployment/new Run or fit this stage;
+E025/E026/r2 verdicts and confirmation closure unchanged. Next is separate human
+approval of this exact new card, not execution inferred from preparation.
+Main chat alone updated residual Obsidian/Roadmap; no duplicate implementation.
+See [PC16 readback section9](S04-E026/variant_gaps_objectives_and_PC16_design_readback_20261018.md).
