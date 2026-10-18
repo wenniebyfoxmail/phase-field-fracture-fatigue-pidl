@@ -1,4 +1,4 @@
-# 梯度算术路径最小零更新核验（设计 v1；未实施、未执行）
+# 梯度算术路径最小零更新核验（设计 v2；未实施、未执行）
 
 本轮仅准备方案并独立审核。没有新 producer Run、NN forward、参数扰动、训练或 FEM 求解。
 原始失败和9项差异保留；`atol=1e-6, rtol=1e-4` 不变。设计审核不等于 Code Ready 或执行许可。
@@ -81,7 +81,19 @@ network、mapper、所有history及输入均复用同一原件；不新增FEM ta
 ### 真正FP64重放（不等同于上次末端double累加）
 
 将保存的FP32参数、coordinates、浮点history和**全部mapper常量**逐值精确widen到FP64；
-load/theta/domain和material常数的构造也必须dtype一致，connectivity/mask仍long/bool。
+load/theta/domain等**原来已经是Tensor的输入**必须取FP32原点实际运行时值再widen，
+例如load用原FP32 Tensor的bit pattern，theta用原FP32 `pi/2` Tensor，不得直接用double字面量重建。
+若旧bundle没保存这些Tensor，在FP32原点按原构造代码生成一次并保存hex/bytes，FP64只提升这份值。
+connectivity/mask仍long/bool；递归处理state_dict中的非Tensor extra_state，不把它误作参数。
+
+Python标量不先偷偷降成FP32：沿用原源码/构造顺序与运行时binary64值。
+`MaterialProperties(1.,.3,1.,.01)`的E/nu/w1/l0及实际mat_lmbda、mat_mu，
+`PFFModel`的tol_ir/residual_stiffness和实际irrPenalty，先在FP32基线构造时记录type/float.hex，
+FP64复用这些相同Python属性，不能改用tensor公式、重新排序或从舍入后的mu/lambda反推材料。
+`mat_lmbda=E*nu/(1+nu)/(1-2*nu)`、`mat_mu=E/(1+nu)/2`的Python求值顺序保留。
+Q4的Python `1/sqrt(3)`、shape/dN列表以及ln(10)、lambda、map support/coeff等，
+记录实际标量来源与binary64值，两个dtype沿用同一Python运算顺序；按原源码在Tensor操作入口
+转到各自dtype。FP64的Q4张量/几何重算与Tensor算术属于精度对照，不将保存FP32输入重新解释成更精确的十进制数据。
 Q4几何、所有网络层、field、energy、R与上述全部D/P/N/M/U/Q反传均为FP64；
 不只把loss或最后梯度转double。释放FP32图后才建立FP64图，禁止autocast。
 
@@ -93,19 +105,39 @@ FP64保留保存的raw_reference、anchor_raw、initial_damage不变再widen，�
 单独解释成同一局部Jacobian的归约误差，标记branch-sensitive/mixed；不自动冻结分支或换函数。
 不得将FP64中Eh很小但非零的结果强制归零，也不得借此开beta25对照。
 
-### 两个事先指定方向的独立数值差分
+### 两个事先指定方向的局部分支差分（不是原全局函数差分）
+
+普通中心FD会跨越C-origin的damage map折点，混合两侧.25/.001斜率，无法检验代码
+在±2选中的中心导数。FP64保留raw_reference后原点是否仍在折点必须实测，不能预先假定。
+因此固定12次差分事前全部指定为**FP64原点实际分支的局部延拓shadow objective**，
+只核验该点所选计算程序的导数，不称原全局分段目标已获FD验证。
 
 只在FP64，方向固定为单位参数坐标 e_i：
 H3.weight[1,386]（global483186）与 H1.weight[112,95]（global206495），均zero-based。
-前者是最严重原越界，后者是最大绝对差但未越界；它们不代表全网络独立验证。
+前者是最严重原越界，后者是最大绝对差但未越界；不代表全网络独立验证。
+从同一次native FP64原点forward保存的操作数，冻结全部非光滑原语实际分支：
+网络ReLU依据`coeff*x>0`（在0选inactive、斜率0）；map `>2/<-2`为tail，±2属center、斜率.25；
+volumetric split与penalty的ReLU也冻结，再保留原平方/后续算术；hard-line/BC mask原样保持。
+其他不存在的非光滑分支不得默默遗漏，实施时先按实际source做原语清单。
+
+每个原语在**已保存的原点操作数**上只做标量/逐元素代数检查，验证native与local extension
+的值及源码选定斜率相同；ReLU-square在0的导数均0，map折点按实际中心分支。
+这些不调用NN forward、autograd或新VJP；保存不相同的全部位置并停止FD，不借改mask修正结果。
+共享的平滑操作和连接关系保持源码顺序，只有布尔branch selector冻结；影子计算不得重锚mapper。
+原始native D/P/N/M/U/Q及跨dtype分支监测始终保留，不被shadow替代。
+
 在隔离的功能性参数副本上求中心差分，原点参数/mapper/history绝不原地扰动：
-`[L(theta+h e_i)-L(theta-h e_i)]/(2h)`，
+`[L_local(theta+h e_i)-L_local(theta-h e_i)]/(2h)`，
 h固定为 `{2^-20,2^-24,2^-28}*max(1,abs(theta_i))`，不根据结果换步长或方向。
-共12次forward，不构图/反传；每次使用同一冻结mapper常量，记录实际正负扰动、L、分支变化、BC/line。
-将FD与D64、P64的该分量都按**原**`1e-6+1e-4*abs(D64_i)`比较，报告三档原始值。
-最小两档均满足且无相关非光滑分支变化，才称这两个方向获得数值差分支持；
-发生branch crossing、消减导致不稳定或未完成则记不可判，不能当作实现错误或自动加方向/步长。
-差分仍调用同一forward，只独立于autograd反传，不是独立物理能量实现。
+共12次forward，不构图/反传；每次复用冻结的FP64原点branch masks和mapper常量，
+记录实际正负扰动、L_local、BC/line，以及扰动操作数若用native selector会跨分支的计数。
+跨分支不重新选择mask；这是局部延拓定义，不能拿shadow的离点值充作全局目标值。
+
+将FD与native D64、P64的该分量都按**原**`1e-6+1e-4*abs(D64_i)`比较，报告三档原始值。
+最小两档均满足且原语值/斜率对应已验证，才称这两个方向获得局部程序数值差分支持。
+消减导致不稳定、shadow语义不一致或未完成则记不可判，不自动加方向/步长。
+这一对照独立于autograd反传，但仍共用平滑forward与选定分支；不是独立物理能量实现，
+也不能排除两个方向以外的bug。跨dtype非光滑分支改变仍须单列，不被局部FD成功覆盖。
 
 ## 调用数、资源与停止（拟议上限，不是执行授权）
 
@@ -124,7 +156,8 @@ TF32/matmul精度、deterministic flags、CUDA/cuBLAS/PyTorch/GPU型号全部记
 
 身份/布局/冻结状态错误、非finite、log域错误、OOM、时间/调用上限即停；
 首个FP32重建必须d==d0、能量逐值复现旧值（Eel=.0006000853609293699、Ed=.005059129558503628、Eh=0）。
-若能量/初场不复现则停止，不进行精度归因；原梯度是否逐位复现另记，不把CUDA重复性当作输入身份。
+若能量/初场不复现则停止，记“基线状态或数值设置未复现”，不进行精度归因；
+输入hash相同也可能因backend/算术设置而能量不同，不能仅凭这个条件宣判输入身份错误。原梯度是否逐位复现另记，不把CUDA重复性当作输入身份。
 如果FP32 P/D原容差失败不复现，仍完成同图首尾重复并记录，后续归因不作“旧故障已解释”的结论。
 参数、mapper、history前后逐值相等，优化更新/history提交/FEM求解均必须0；
 FD正负副本单列为预定函数评估，不是优化或被接受端点。
@@ -135,8 +168,8 @@ FD正负副本单列为预定函数评估，不是优化或被接受端点。
 |---|---|---|
 | 布局/漏项/系数语义/状态不一致得到可复现实例 | 具体实现/构造问题；标明首个坏接口 | 只修该点，另行审查；原失败保留 |
 | FP32同图D或P重复读数跨原容差变化 | 存在执行/归约重复性问题；尚不能归因为固定求和次序 | 保留各向量，不追加重复或直接放宽 |
-| FP32原失败复现，桥接能定位改变次序的具体接口；FP64全参数P/D及桥接均满足原容差，两个FD方向支持，跨dtype非光滑分支可比且无语义缺陷 | 在所查快照/路径上支持浮点算术路径解释；不是证明整个实现无bug | 汇报每段贡献、剩余不确定性；训练仍关闭 |
-| FP64仍超原容差，或FD与两条autograd路径稳定不符 | 实现/反传问题仍待查；单独FP64失败不足以证明bug | 定位首个接口，不引入新的物理/优化因素 |
+| FP32原失败复现，桥接能定位改变次序的具体接口；FP64全参数P/D及桥接均满足原容差，两个局部FD方向支持，跨dtype非光滑分支可比且无语义缺陷 | 在所查快照/路径上支持浮点算术路径解释；不是证明整个实现无bug | 汇报每段贡献、剩余不确定性；训练仍关闭 |
+| FP64仍超原容差，或已验证原语对应的local FD与两条autograd路径稳定不符 | 实现/反传问题仍待查；单独FP64失败不足以证明bug | 定位首个接口，不引入新的物理/优化因素 |
 | mixed/branch-sensitive、不能复现旧失败、超时、缺数据或FD不可判 | inconclusive，写清已排除/未排除项 | 只提出下一项最小区分，不自动执行 |
 
 三种解释允许共存；不得强行把数值和实现二选一，也不得仅凭FP64通过宣布“只是浮点”。
@@ -148,10 +181,17 @@ FD正负副本单列为预定函数评估，不是优化或被接受端点。
 FP32/64参数layout、freeze hashes、native/manual seeds、完整P/D/N/M/U/Q与重复向量、
 FP32节点及pullback向量、origin字段/能量、branch mask（可bitpack）与差异索引、FD所有原始读数。
 按阶段立即落盘，不在最后一个断言后才保存。标注任何缺失；超时的missing不是通过。
-图只需一张：接口差异/原容差比并列FP32/64，附原9坐标和两方向FD步长曲线；
+图只需一张：接口差异/原容差比并列FP32/64，附原9坐标和两方向local-FD步长曲线；
 零线和原容差边界明确，解释branch与重复性，不画训练收益。raw留归档，git存compact摘要和脚本。
 
 后续独立runner需静态审查保证无optimizer/train/history入口，并以小型共享参数图验证
 native-seed与postscale的区分、参数布局和故意漏项能被发现；只做CPU轻量单测。
 再审查实际上传包、输入hash与55+5秒launcher，之后才可能申请该准确版本的执行授权。
 本设计未冻结未来源码commit，当前状态只可能为DESIGN_REVIEWED，绝非CODE_READY。
+
+## 独立审核修订记录
+
+v1 `e13223c6` 经独立只读Codex设计审核为MODIFY_AND_REREVIEW：
+将普通全局FD替换为上述明确的局部分支延拓；补齐原运行时Tensor提升和Python标量的来源/转换规则。
+同时明确能量不复现不单独证明输入身份错误。调用上限34 reverse /14 forward保持不变；
+局部原语核验不得暗增NN forward或VJP。v2等待这两处风险的焦点复审，仍未实施或执行。

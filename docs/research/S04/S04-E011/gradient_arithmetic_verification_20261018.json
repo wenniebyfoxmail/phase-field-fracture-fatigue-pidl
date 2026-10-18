@@ -1,6 +1,6 @@
 {
-  "protocol": "s04-e011-gradient-arithmetic-verification-design-v1-20261018",
-  "status": "DESIGN_PREPARED_PENDING_INDEPENDENT_REVIEW",
+  "protocol": "s04-e011-gradient-arithmetic-verification-design-v2-20261018",
+  "status": "DESIGN_REVISED_PENDING_FOCUSED_REVIEW",
   "stage": "design only; no new runner or numerical execution",
   "owner_experiment": "S04-E011",
   "claim_class": "C1 evidence-validity",
@@ -33,7 +33,9 @@
       -28
     ],
     "scale": "max(1,abs(theta_i))",
-    "functional_copies_only": true
+    "functional_copies_only": true,
+    "target": "FP64-origin fixed-active-branch local extension only; not original global piecewise objective",
+    "primitive_value_and_selected_slope_check": "saved origin operands only; no extra forward/VJP"
   },
   "FP64_anchor_rule": "exact widening of saved mapper constants; no reanchoring; branch changes explicit",
   "blocked": [
@@ -48,5 +50,19 @@
     "code review of exact snapshot and launcher",
     "input full hashes and backend identity",
     "direct human execution approval for exact package"
+  ],
+  "scalar_rule": "widen actual FP32 runtime tensor inputs; preserve Python binary64 material/model and derived scalar values/construction order; original per-dtype tensor conversion points",
+  "baseline_nonreproduction_rule": "stop as state/numerical-settings nonreproduction; energy mismatch alone does not establish input identity error",
+  "review_history": [
+    {
+      "snapshot": "e13223c6",
+      "verdict": "MODIFY_AND_REREVIEW",
+      "scope": "design only",
+      "blockers": [
+        "local-branch FD definition",
+        "runtime tensor and Python scalar promotion rules"
+      ],
+      "numeric_execution": false
+    }
   ]
 }
