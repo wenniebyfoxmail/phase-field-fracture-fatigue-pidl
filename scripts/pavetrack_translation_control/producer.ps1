@@ -16,7 +16,13 @@ try{
  if(!$p.WaitForExit(600000)){
   $v=Get-CimInstance Win32_Process -Filter "ProcessId=$($p.Id)"
   if($null -eq $v -or $v.CommandLine -notlike '*pavetrack_translation_control*' -or $v.ParentProcessId -ne $PID){throw 'watchdog process identity uncertain'}
-  $p.Kill();throw 'own E026 Python exceeded600s; no retry'
+  $all=@(Get-CimInstance Win32_Process);$own=@($p.Id);$previous=0
+  while($previous -ne $own.Count){$previous=$own.Count;foreach($child in $all){if(($own -contains $child.ParentProcessId) -and ($own -notcontains $child.ProcessId)){$own+=@($child.ProcessId)}}}
+  & taskkill.exe /PID $p.Id /T /F|Out-Null
+  if($LASTEXITCODE -ne 0){throw 'own process tree termination uncertain; inspect, do not retry'}
+  $remaining=@(Get-CimInstance Win32_Process|Where-Object {$own -contains $_.ProcessId})
+  if($remaining.Count -ne 0){throw 'own process tree remains; inspect, do not retry'}
+  throw 'own E026 Python tree exceeded600s and was terminated; no retry'
  }
  $p.Refresh();if($p.ExitCode -ne 0){throw "E026 stopped:$($p.ExitCode)"}
  @{state='completed';wrapper_pid=$PID;python_pid=$p.Id;reviewed_commit=$ReviewedCommit;finished_at=(Get-Date -Format o)}|ConvertTo-Json|Set-Content "$logs\wrapper_status.json" -Encoding UTF8
