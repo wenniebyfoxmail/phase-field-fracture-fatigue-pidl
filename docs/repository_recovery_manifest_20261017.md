@@ -39,6 +39,7 @@ verdicts nor authorises deletion of local evidence.
 | 5 | S04-E016 Windows-FEM | shared Oct-08/09 snapshots and launcher archives; dedicated worktree retains only E017 drafts plus raw archive | authoritative E016 code/records are remote-preserved at `codex/s04-e016-request31-storage-block-20261009` (`7f874982`); reconcile only byte-identical shared duplicates, and retain divergent legacy snapshots for a separate history decision | preserve all raw FEM exports and receipts under archive; no bulk Git import | diagnostic route remains distinct from scientific validation; no solver retry or result promotion implied |
 | 6 | S09 transition-surrogate | shared E001 record differs from the archived prototype; E007 has 215 unarchived writes | hold the whole S09 family until its authoritative worktrees publish a reconciled record | retain run and review packets locally | do not integrate stale shared copies while any S09 writer remains active |
 | 7 | Governance and skills | shared rule/skill copies | authoritative branch is `codex/exploratory-formal-gate-20261017` (`322a40c0`); fourteen byte-identical copies were reconciled, while divergent legacy entrypoints remain held | none | pushed and enabled locally |
+| 7a | July future-plan record | early PIDL/FEM and road-DT decision sequence | preserved at `codex/legacy-future-plan-recovery-20261018` (`fe07efbc`) on top of the later calibrated-criteria branch | none | historical only; its former producer-routing text is not current policy |
 
 ## Completion Rule Per Row
 
