@@ -604,6 +604,14 @@ class ArmRunResult:
     evaluations: dict[int, dict[str, Any]]
 
 
+class ArmReceiptCloseError(RuntimeError):
+    """Carry the completed arm counters when its terminal receipt cannot close."""
+
+    def __init__(self, message: str, result: ArmRunResult):
+        super().__init__(message)
+        self.result = result
+
+
 def _empty_counts() -> dict[str, int]:
     return {key: 0 for key in HARD_CONSTRAINT_KEYS}
 
@@ -981,13 +989,32 @@ def run_arm_state_machine(
         "artifacts": artifacts,
     }
     validate_termination_receipt(receipt)
-    _write_new_json(arm_dir / "termination_receipt.json", receipt)
-    return ArmRunResult(
+    result = ArmRunResult(
         arm=arm,
         arm_dir=arm_dir,
         receipt=receipt,
         evaluations=evaluations,
     )
+    try:
+        _write_new_json(arm_dir / "termination_receipt.json", receipt)
+    except BaseException as error:
+        failed_receipt = copy.deepcopy(receipt)
+        failed_receipt["terminal_state"] = TERMINAL_EXECUTION_FAILED
+        failed_receipt["reason"] = (
+            "TERMINATION_RECEIPT_WRITE_FAILED: "
+            f"{type(error).__name__}: {error}"
+        )
+        validate_termination_receipt(failed_receipt)
+        failed_result = ArmRunResult(
+            arm=arm,
+            arm_dir=arm_dir,
+            receipt=failed_receipt,
+            evaluations=evaluations,
+        )
+        raise ArmReceiptCloseError(
+            f"terminal receipt write failed for {arm}", failed_result,
+        ) from error
+    return result
 
 
 class TorchArmAdapter:
@@ -1203,6 +1230,16 @@ def _arm_execution_failure(result: ArmRunResult) -> bool:
     return result.receipt["terminal_state"] == TERMINAL_EXECUTION_FAILED
 
 
+def _a25_replay_failure_requires_stop(
+    result: ArmRunResult, trace: Mapping[str, Any],
+) -> bool:
+    """Replay drift stops a completed A25; method-inapplicability stays arm-local."""
+    return (
+        result.receipt["terminal_state"] == TERMINAL_COMPLETED
+        and trace.get("pass") is not True
+    )
+
+
 def _failure_completion_receipt(
     *, config: Mapping[str, Any], error: BaseException, start: float,
     arm_results: Mapping[str, ArmRunResult],
@@ -1379,10 +1416,10 @@ def _decision_from_results(
     physics_axis = None
     if any(state == TERMINAL_EXECUTION_FAILED for state in states.values()):
         status = "EXECUTION_INVALID"
-    elif not eligible:
-        status = "EXECUTION_INVALID"
     elif any(state == TERMINAL_METHOD_INAPPLICABLE for state in states.values()):
         status = "METHOD_INAPPLICABLE"
+    elif not eligible:
+        status = "EXECUTION_INVALID"
     elif not all(state == TERMINAL_COMPLETED for state in states.values()):
         status = "EXECUTION_INVALID"
     else:
@@ -1430,8 +1467,10 @@ def _verify_arm_evidence_integrity(
     for arm, result in arm_results.items():
         receipt_path = result.arm_dir / "termination_receipt.json"
         _require(receipt_path.is_file(), f"missing termination receipt: {arm}")
-        disk_receipt = _parse_strict_json_bytes(receipt_path.read_bytes())
-        _require(disk_receipt == result.receipt,
+        disk_receipt_raw = receipt_path.read_bytes()
+        disk_receipt = _parse_strict_json_bytes(disk_receipt_raw)
+        validate_termination_receipt(disk_receipt)
+        _require(disk_receipt_raw == canonical_json(result.receipt),
                  f"termination receipt changed after arm close: {arm}")
         artifacts = result.receipt["artifacts"]
         for name, expected_sha256 in artifacts.items():
@@ -1765,12 +1804,19 @@ def _run_producer_snapshots(
             adapter = TorchArmAdapter(
                 arm=arm, runtime=runtime, optimizer=optimizers[arm],
                 config_sha256=config_sha)
-            arm_results[arm] = run_arm_state_machine(
-                arm=arm, adapter=adapter, arm_dir=output_dir / arm)
+            try:
+                arm_result = run_arm_state_machine(
+                    arm=arm, adapter=adapter, arm_dir=output_dir / arm)
+            except ArmReceiptCloseError as error:
+                arm_results[arm] = error.result
+                raise
+            arm_results[arm] = arm_result
             if arm == ARM_A25:
                 replay_trace = exact_a25_replay_validity(arm_results[arm])
                 _persist_exact_a25_replay_trace(output_dir, replay_trace)
-                if not replay_trace["pass"]:
+                if _a25_replay_failure_requires_stop(
+                    arm_results[arm], replay_trace,
+                ):
                     raise RuntimeError("REPLAY_VALIDITY_GATE_FAILED")
             if _arm_execution_failure(arm_results[arm]):
                 raise RuntimeError(f"ARM_EXECUTION_FAILED: {arm}")

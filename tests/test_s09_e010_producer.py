@@ -11,8 +11,14 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "source"))
 
 import s09_e010_producer as producer
-from s09_e009_four_arm import LOSS_ORDER, amplitude_auc, group_amplitude_ratio
+from s09_e009_four_arm import (
+    AnchorStationary,
+    LOSS_ORDER,
+    amplitude_auc,
+    group_amplitude_ratio,
+)
 from s09_e010_producer import (
+    ArmReceiptCloseError,
     ArmRunResult,
     EXPECTED_E009_REFERENCE_SHA256,
     EXPECTED_PROTOCOL_CONTRACT_SHA256,
@@ -21,6 +27,7 @@ from s09_e010_producer import (
     NEAR_STAGNANT_CYCLES,
     PRODUCER_EXECUTION_FILES,
     _arm_execution_failure,
+    _a25_replay_failure_requires_stop,
     _conditional_physics_axis,
     _failure_completion_receipt,
     _load_e009_reference,
@@ -157,6 +164,11 @@ class MockAdapter:
         path.write_bytes(f"checkpoint-{update}".encode())
 
 
+class MethodInapplicableAdapter(MockAdapter):
+    def step(self, update, cycle):
+        raise AnchorStationary("anchor unavailable")
+
+
 def test_protocol_and_frozen_reference_identities_are_bound():
     assert _protocol_contract_sha256(PROTOCOL) == EXPECTED_PROTOCOL_CONTRACT_SHA256
     assert sha256_file(producer.E009_REFERENCE_PATH) == EXPECTED_E009_REFERENCE_SHA256
@@ -229,6 +241,26 @@ def test_shared_evidence_rejects_post_receipt_arm_artifact_drift(tmp_path):
         _verify_arm_evidence_integrity({ARM_B0: result})
 
 
+@pytest.mark.parametrize(
+    ("field", "replacement", "message"),
+    [
+        ("optimizer_steps_completed", 500.0, "invalid optimizer step count"),
+        ("finite_status", 1, "finite status must be boolean"),
+    ],
+)
+def test_shared_evidence_rejects_terminal_receipt_scalar_type_drift(
+    tmp_path, field, replacement, message,
+):
+    result = run_arm_state_machine(
+        arm=ARM_B0, adapter=MockAdapter(), arm_dir=tmp_path / "B0")
+    receipt_path = result.arm_dir / "termination_receipt.json"
+    mutated = json.loads(receipt_path.read_text())
+    mutated[field] = replacement
+    receipt_path.write_text(json.dumps(mutated, sort_keys=True))
+    with pytest.raises(ValueError, match=message):
+        _verify_arm_evidence_integrity({ARM_B0: result})
+
+
 def test_execution_failure_stops_later_arms_but_method_inapplicable_does_not(
     tmp_path,
 ):
@@ -237,6 +269,77 @@ def test_execution_failure_stops_later_arms_but_method_inapplicable_does_not(
     assert _arm_execution_failure(failed) is True
     failed.receipt["terminal_state"] = "METHOD_INAPPLICABLE"
     assert _arm_execution_failure(failed) is False
+
+
+def test_a25_method_inapplicable_does_not_become_global_replay_failure(tmp_path):
+    result = _reference_result(tmp_path)
+    result.receipt["terminal_state"] = "METHOD_INAPPLICABLE"
+    trace = exact_a25_replay_validity(result)
+    assert trace["pass"] is False
+    assert _a25_replay_failure_requires_stop(result, trace) is False
+    result.receipt["terminal_state"] = "COMPLETED"
+    assert _a25_replay_failure_requires_stop(result, trace) is True
+
+
+def test_a25_method_inapplicable_allows_later_arms_and_final_method_status(
+    tmp_path,
+):
+    results = {
+        ARM_A25: run_arm_state_machine(
+            arm=ARM_A25,
+            adapter=MethodInapplicableAdapter(),
+            arm_dir=tmp_path / ARM_A25,
+        ),
+        ARM_B25: run_arm_state_machine(
+            arm=ARM_B25,
+            adapter=MockAdapter(),
+            arm_dir=tmp_path / ARM_B25,
+        ),
+        ARM_B0: run_arm_state_machine(
+            arm=ARM_B0,
+            adapter=MockAdapter(),
+            arm_dir=tmp_path / ARM_B0,
+        ),
+    }
+    trace = exact_a25_replay_validity(results[ARM_A25])
+    assert trace["pass"] is False
+    assert _a25_replay_failure_requires_stop(results[ARM_A25], trace) is False
+    decision = producer._decision_from_results(results)
+    assert tuple(results) == (ARM_A25, ARM_B25, ARM_B0)
+    assert decision["status"] == "METHOD_INAPPLICABLE"
+    assert decision["e010_classification"] is None
+
+
+def test_terminal_receipt_write_failure_preserves_current_arm_step_count(
+    monkeypatch, tmp_path,
+):
+    original_write = producer._write_new_json
+
+    def fail_terminal_receipt(path, value):
+        if path.name == "termination_receipt.json":
+            raise OSError("receipt storage unavailable")
+        return original_write(path, value)
+
+    monkeypatch.setattr(producer, "_write_new_json", fail_terminal_receipt)
+    with pytest.raises(ArmReceiptCloseError) as captured:
+        run_arm_state_machine(
+            arm=ARM_B0,
+            adapter=MockAdapter(fail_at=17),
+            arm_dir=tmp_path / "B0",
+        )
+    partial = captured.value.result
+    assert partial.receipt["terminal_state"] == "EXECUTION_FAILED"
+    assert partial.receipt["optimizer_steps_completed"] == 17
+    assert partial.receipt["fully_logged_updates"] == 16
+    completion = _failure_completion_receipt(
+        config={"planned_run_id": "run", "source": {}},
+        error=captured.value,
+        start=0.0,
+        arm_results={ARM_B0: partial},
+        exact_a25_replay_trace=None,
+    )
+    assert completion["total_optimizer_steps_completed"] == 17
+    assert completion["arm_receipts"][ARM_B0]["fully_logged_updates"] == 16
 
 
 def test_replay_trace_is_persisted_before_failure_and_bound_to_failure_receipt(
