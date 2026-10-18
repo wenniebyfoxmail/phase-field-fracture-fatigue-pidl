@@ -26,15 +26,20 @@ def build(source, out):
     assert len(source) == 40
     assert cmd(['git', 'rev-parse', source+'^{commit}']) == source
     exact = {'.gitignore', 'AGENTS.md', 'SENS_tensile/run_native_q4_one_step_matrix.py',
+             'SENS_tensile/field_computation.py',
              'tools/s04_e011_pc16/worker.py', 'tools/s04_e011_pc16/guard_gpu7.py',
              'tools/s04_e011_pc16/build_code_package.py', 'tools/s04_e011_pc16/verify_code_package.py',
              'docs/research/S04/S04-E011/uv_head_c1_pc16_20261018/inputs_gpu7.json',
              'docs/research/S04/S04-E011/uv_head_c1_pc16_20261018/protocol.md',
              'docs/research/S04/S04-E011/uv_head_c1_pc16_20261018/deployment_gpu7.md'}
     rows = []
+    local_modules = {}
     for line in cmd(['git', 'ls-tree', '-r', source]).splitlines():
         left, path = line.split('\t')
         mode, kind, blob = left.split()
+        if path.endswith('.py') and Path(path).parent.as_posix() in (
+                'source', 'SENS_tensile', 'tools/s04_e011_pc16'):
+            local_modules.setdefault(Path(path).stem, []).append(path)
         if path not in exact and not (path.startswith('source/') and path.endswith('.py')):
             continue
         assert kind == 'blob' and mode in ('100644', '100755')
@@ -45,6 +50,9 @@ def build(source, out):
     worker_blob = cmd(['git', 'rev-parse', source+':tools/s04_e011_pc16/worker.py'])
     assert worker_blob == cmd(['git', 'rev-parse', '3dfef418828e53632b3a5c90521ab8989dbf9673:tools/s04_e011_pc16/worker.py'])
     manifest = dict(development_source=source, locked_science_worker_blob=worker_blob,
+                    local_module_catalog=local_modules,
+                    import_entrypoints=['tools/s04_e011_pc16/'+name+'.py' for name in
+                                        ('worker', 'guard_gpu7', 'build_code_package', 'verify_code_package')],
                     source_repository='wenniebyfoxmail/phase-field-fracture-fatigue-pidl',
                     scope='code-only self-contained PC16 GPU7 snapshot; no scientific payload', files=rows)
     text = json.dumps(manifest, indent=2)+'\n'

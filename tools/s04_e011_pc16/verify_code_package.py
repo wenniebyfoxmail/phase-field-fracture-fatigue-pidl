@@ -8,6 +8,45 @@ from pathlib import Path
 import subprocess
 
 
+def check_local_imports(code, manifest):
+    """Traverse AST only, including imports inside functions; execute no module.
+
+    The canonical catalog includes omitted modules, so missing local imports
+    cannot silently become third-party imports. Explicit entrypoints cover
+    subprocess-launched scripts. External package availability is not tested.
+    """
+    catalog = manifest['local_module_catalog']
+    selected = {row['path'] for row in manifest['files']}
+    pending = list(manifest['import_entrypoints'])
+    seen, external = set(), set()
+    while pending:
+        path = pending.pop()
+        if path in seen:
+            continue
+        assert path in selected, 'missing local module: '+path
+        seen.add(path)
+        tree = ast.parse((code/path).read_text(), filename=path)
+        for node in ast.walk(tree):
+            names = []
+            if isinstance(node, ast.Import):
+                names = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                assert node.level == 0, 'unhandled reachable relative import: '+path
+                names = [node.module] if node.module else []
+            for name in names:
+                module = name.split('.')[0]
+                if module in catalog:
+                    candidates = catalog[module]
+                    assert len(candidates) == 1, 'ambiguous local import: '+module
+                    dependency = candidates[0]
+                    assert dependency in selected, 'missing local module: '+dependency+' imported by '+path
+                    pending.append(dependency)
+                else:
+                    external.add(module)
+    return dict(reachable_local_paths=sorted(seen), external_modules=sorted(external),
+                method='AST only; no numeric imports or calls')
+
+
 def verify(code, expected):
     code = code.resolve()
     env = dict(os.environ, GIT_NO_LAZY_FETCH='1', GIT_TERMINAL_PROMPT='0')
@@ -59,11 +98,13 @@ def verify(code, expected):
             ast.parse(raw.decode('utf-8'), filename=row['path'])
     worker = next(row for row in rows if row['path'] == 'tools/s04_e011_pc16/worker.py')
     assert worker['blob'] == manifest['locked_science_worker_blob']
+    imports = check_local_imports(code, manifest)
     return dict(status='code_materialization_verified', source=expected,
                 development_source=manifest['development_source'], root_commit=True,
                 files=len(expected_paths), selected_code_bytes=sum(r['bytes'] for r in rows),
                 full_fsck=True, sparse=False, partial_clone=False, external_object_store=False,
-                worker_blob=worker['blob'], scientific_arrays_accessed=0, numeric_imports_or_calls=0)
+                worker_blob=worker['blob'], local_import_closure=imports,
+                scientific_arrays_accessed=0, numeric_imports_or_calls=0)
 
 
 if __name__ == '__main__':

@@ -1,16 +1,18 @@
 # PC16 GPU7 D1 — self-contained source materialization contract
 
-2026-10-18. D1 began as preparation only. Subsequent direct human messages explicitly
-authorize deployment/execution onGPU7 and sharing the two observed processes;
-independent exact-package review and fresh resource checks still precede launch. Old r3 failed checkout stays untouched and terminal.
-This document replaces that failed old-checkout prerequisite for a NEW future
-Run only. Record the actual human scope/wording and exact reviewed source/card at launch;
-do not claim the human recited a generated snapshot SHA.
+2026-10-18. D1 began as preparation only. Latest verified direct human
+turn01a150d4-5c85-7890-9131-847e9ed323c6 in source chat
+01a0d3dd-b956-7d63-aef4-a3724c414f59 explicitly authorizes completing the
+module/package repair and independent review, then one new GPU7 run under the
+original budget without another approval. This supersedes the earlier
+prep-only instruction. Old r3 remains terminal and untouched. Review and fresh
+duplicate/resource checks must pass first; no scientific scope expansion.
 
 ## Source packaging, not a method change
 
 build_code_package.py reads one committed Mac development source and selects
-only: .gitignore,AGENTS.md,source/**/*.py, the existing make_field runner,
+only: .gitignore,AGENTS.md,source/**/*.py, the existing make_field runner
+and its original SENS_tensile/field_computation.py dependency,
 unchanged PC16 worker,new GPU7 guard,two standard-library package tools,
 GPU7 input contract,existing science protocol and this deployment contract.
 No scientific NPZ/PT/MAT/mesh/CSV/array payload is selected, read or hashed.
@@ -26,7 +28,8 @@ Local code-only materialization creates a fresh empty Git repository, fetches
 ONLY that self-contained bundle, checks out the exact snapshot, and runs
 verify_code_package.py. It verifies root/no-parent identity, full fsck, clean
 status, no sparse/partial/promisor/alternate object store, exact enumerated files,
-Git blob identities/bytes/modes, AST syntax and frozen worker identity. It
+Git blob identities/bytes/modes, AST syntax, reachable local import closure
+against the canonical module catalog, and frozen worker identity. It
 imports no worker/torch/numpy/scipy and performs no fixture/HVP/energy/matrix/
 factorization/training. Passing is source-package evidence, not numeric
 equivalence,8GiB feasibility or resource admission.
@@ -41,7 +44,8 @@ Only empty occupancy or the exact approved TWO-service set is permitted.
 Unknown/incomplete service set, identity/mode change or extra PID stops.
 No automatic re-whitelist, GPU fallback or service/process mutation.
 
-After new exact-package approval, transfer the sole reviewed bundle to the
+After independent exact-package review and fresh admission under the above
+verified human authorization, transfer the sole reviewed bundle to the
 fresh root as source.bundle and verify its exact size/SHA256 against the local
 package receipt. Initialize a NEW empty code repo, fetch ONLY the bundle's
 declared ref, detach at the exact snapshot SHA, run verify_code_package.py.
@@ -87,3 +91,22 @@ Read-only metadata endpoint:
 /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/gpu7_d1_20261018/
 gpu7_request.py.txt andgpu7_observations.json. New package receipt/materialized
 code checks live under a separate package subdir, not an actual Run/claim.
+
+## Why old r3 materialization failed; scope of the repair
+
+The preserved r3 deployment receipt records missing base Git blobs during
+checkout (AGENTS.md and an archived shell script); HEAD alone still matched
+and checkout returned zero, but stderr and the deleted tracked AGENTS.md
+showed incomplete materialization. The incremental bundle depended on the old
+base object store. A clean earlier sparse checkout did not prove those objects
+were present. The original reason that base store lost/lacked the objects is
+unproven; no repair or rerun of r3 is attempted. The new parentless bundle
+contains all selected code objects and is checked in an empty repository.
+
+First local package a33cb406/be8009b6 passed object/materialization checks but
+independent review found omitted field_computation.py; that preparation receipt
+is preserved and is not a Code Ready pass or a producer attempt. The repaired
+selection adds the unchanged canonical blob and checks the AST dependency
+closure from worker/guard/package entrypoints. The promisor pattern was already
+correct in actual source; a code-only Git-config negative test verifies it.
+No numerical modules or science arrays are imported by these checks.
