@@ -1,0 +1,53 @@
+{
+  "run_id": "S01-E025-R001",
+  "state": "running",
+  "launch": {
+    "protocol": "S01-E025-v1",
+    "run_id": "S01-E025-R001",
+    "reviewed_commit": "e9ac17c8958bfec52503d815cfee7fd0bc533ac9",
+    "source_manifest_sha256": "49392793fb9d2fc40230fca5992412d41a190068c9147494cce7e750dc04110d",
+    "config_sha256": "319959f740daad44697efb945a05ebd89bd2b5ee5cc13f8e1c749a8836d5c242",
+    "lock_sha256": "882b06467ef0156fac4c29c0177721fec47de850ac4867d228e5ead0b3d2486c",
+    "pid": 50844,
+    "command": [
+      "C:\\Users\\xw436\\pavetrack_stage\\S01-E025-R001-v1-e9ac17c8\\scripts\\pavetrack_controlled_localizer\\run.py",
+      "--config",
+      "C:\\Users\\xw436\\pavetrack_stage\\S01-E025-R001-v1-e9ac17c8\\docs\\research\\S01\\S01-E025\\run_config.json",
+      "--lock",
+      "C:\\Users\\xw436\\pavetrack_stage\\S01-E025-R001-v1-e9ac17c8\\docs\\research\\S01\\S01-E025\\data_lock.json",
+      "--source",
+      "C:\\Users\\xw436\\pavetrack_runs\\S01-E017-R001\\delivery\\S01-E017-R001-evidence-v1.zip",
+      "--metadata",
+      "C:\\Users\\xw436\\pavetrack_runs\\S01-E002-R002\\prepared\\development\\manifest_train_validation.json",
+      "--run",
+      "C:\\Users\\xw436\\pavetrack_runs\\S01-E025-R001",
+      "--reviewed-commit",
+      "e9ac17c8958bfec52503d815cfee7fd0bc533ac9"
+    ],
+    "hostname": "D-26-09",
+    "started_at": "2026-10-18T20:43:36.302798+00:00",
+    "fresh_access": false
+  },
+  "wrapper_pid": 30480,
+  "python_launcher_pid": 52004,
+  "main_pid": 50844,
+  "producer": "gpu-server/D-26-09/ad\\xw436",
+  "GPU_uuid": "GPU-3d74ea12-5d84-a619-90b2-c0b1f104599a",
+  "physical_GPU": 1,
+  "cpu_threads": 1,
+  "source_transfer": "verified240members",
+  "private_annotation_transfer": "verified98542eb41ec03eebf7a1f73ddf372dc36bb4432aefa259a6e4e3e168e202e3e9",
+  "input_presence": {
+    "images_verified_present": 835,
+    "rows": 31156,
+    "source_image_bytes_read": 0,
+    "pixel_decodes": 0
+  },
+  "authorization_record": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E025/execution_R001/authorization_readback.json",
+  "local_operational_receipts": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E025/execution_R001",
+  "public_push": false,
+  "new_runs": 1,
+  "retries": 0,
+  "sealed_access": false,
+  "scientific_result": "pending"
+}
