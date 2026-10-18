@@ -1,4 +1,4 @@
-# G01 v0.2 — 人工子进程执行包 v1.1（待焦点复审及用户批准）
+# G01 v0.2 — 人工子进程执行包 v1.2（待焦点复审及用户批准）
 
 2026-10-18。已获准实现/设计/只读代码审查，未获测试或运行许可。
 计划 SHA946c71850116b0c092052a3109a30a239f2d36062121668e9434c282f95c8098 不变；
@@ -6,13 +6,13 @@
 
 ## 代码身份
 
-基线 `8e1bab3155439b30b605e7447ef84e314f9a9fba`，后继仅允许 docs、clean；
+基线 `ecb8b9a9238b035f9a87bf7d4a85deb2455b95e0`，后继仅允许 docs、clean；
 启动前及结束后核对实际 HEAD 和下列7个SHA，不以旧A002/B002源码代替。
 
 | scripts/ 文件 | SHA256 |
 |---|---|
 | aa2024_runtime_guard.py | e7bf15a9a46fa60dcc1ef41cbd3f86c2d41fb44bcda6de1ba9300df8cd76874c |
-| test_aa2024_runtime_guard.py | 05d000359b32d5570f3701d0231737f58d1b9d7ea039a435cf1bcf5fa4c59563 |
+| test_aa2024_runtime_guard.py | 2eb8663fea0a31a9bf88802dc9ac9bdd609934f8ab415a557a8ed6b6d6922e54 |
 | aa2024_q_recheck.py | fc35d2c2a85780228468417613eb194ac95e6ca8b77d37f76f4ac1eba3bb8fcf |
 | aa2024_q_verify.py | db48c03ccd5b4972663e10b31f54cbbc3562b9d78d994852f10b69190c85af09 |
 | test_aa2024_q_recheck.py | a5b7fc3c1e97132c45df5118d06015baff3a3caf101e66a22137d941f014cedf |
@@ -25,7 +25,7 @@
 `/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s03-e016-geometry-alignment-20261013`
 
 ```bash
-env CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 NUMEXPR_NUM_THREADS=1 BLIS_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 /Users/wenxiaofang/miniconda3/bin/python3 -W error -B scripts/test_aa2024_runtime_guard.py --source-commit 8e1bab3155439b30b605e7447ef84e314f9a9fba
+env CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 NUMEXPR_NUM_THREADS=1 BLIS_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 /Users/wenxiaofang/miniconda3/bin/python3 -W error -B scripts/test_aa2024_runtime_guard.py --source-commit ecb8b9a9238b035f9a87bf7d4a85deb2455b95e0
 ```
 
 若审查修改源码，必须更新代码基线/哈希/确切命令并复审，不能执行本旧版。
@@ -39,6 +39,8 @@ env CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREA
   忽略父包或其他子例的异常。字体日志没有任何真实运行豁免。
   v1.1另核对故障类别/原生异常类名、触发/写入哨兵；并发准备失败退出71，
   不把意外设置错误造成的exit70冒充预期故障。26子例数量/总预算未变。
+  v1.2进一步核完整writer哨兵、blocked payload日志类别和主线程已观察阻塞
+  的标记；writer/blocked payload设置失败直接exit71，不可归入预期exit70。
 - 仅标准库+guard，实际SVD0/QR0、求解0；不导入NumPy/SciPy/Matplotlib/
   torch/producer/verifier/原参考算术/原65项测试，不做全尺寸人工生成或出图。
 - 只读本仓库源码和Git、本次自建临时目录小型哨兵/事件文件；不读任何
