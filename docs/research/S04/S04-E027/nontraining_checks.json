@@ -11,11 +11,12 @@
   "nodes": 86756,
   "elements": 86408,
   "init_status": "UNRESOLVED_NOT_READ",
-  "unit_tests": 13,
+  "unit_tests": 14,
   "unit_test_result": "passed",
   "training_loop_entered": false,
   "optimizer_step_called": false,
   "mac_training": false,
   "remote_access": false,
-  "initializer_payload_read": false
+  "initializer_payload_read": false,
+  "followup_check": "component diagnostic forward/autograd only; no parameter or RNG mutation"
 }

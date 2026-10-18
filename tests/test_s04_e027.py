@@ -16,7 +16,7 @@ sys.path[:0] = [str(ROOT/"source"), str(ROOT/"SENS_tensile")]
 import s04_e027 as m
 from compute_energy import compute_energy
 from field_computation import FieldComputation
-from run_s04_e027 import execution_admission
+from run_s04_e027 import execution_admission, diagnostics
 
 
 def fixture():
@@ -74,6 +74,23 @@ class Tests(unittest.TestCase):
         self.assertTrue(p.zone[ids[1]].all())
         q = p.ref+torch.tensor([m.US, 0., 1.], dtype=torch.float64)
         self.assertAlmostEqual(float(p.supervised(q, ids)), 2., places=12)
+
+    def test_diagnostics_components_without_parameter_or_rng_mutation(self):
+        p = m.Problem(fixture())
+        net = torch.nn.Linear(2, 3).double()
+        before = [q.detach().clone() for q in net.parameters()]
+        rng_before = torch.get_rng_state().clone()
+        report = diagnostics(p, net, .1)
+        self.assertEqual(set(report["losses"]), {"L_U", "L_D", "L_mech", "L_P"})
+        self.assertTrue(all(np.isfinite(v) and v >= 0 for v in report["parameter_gradient_l2"].values()))
+        torch.testing.assert_close(torch.get_rng_state(), rng_before)
+        for old, new in zip(before, net.parameters()):
+            torch.testing.assert_close(old, new)
+            self.assertIsNone(new.grad)
+        ids = p.sample(torch.Generator().manual_seed(1))
+        q = m.fields(net, p.xy)
+        lu, ld = p.supervised_components(q, ids)
+        torch.testing.assert_close(lu+ld, p.supervised(q, ids))
 
     def test_clone_nonempty_adam_without_step(self):
         net = torch.nn.Linear(2, 3).double()

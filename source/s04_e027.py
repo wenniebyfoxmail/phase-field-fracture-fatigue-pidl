@@ -176,11 +176,17 @@ class Problem:
 
     def supervised(self, fields, ids):
         # Sampling probabilities already include mass; do not multiply mass again.
-        losses = []
+        lu, ld = self.supervised_components(fields, ids)
+        return lu+ld
+
+    def supervised_components(self, fields, ids):
+        # Each support has probability mass 1/2; ids already use mass sampling.
+        eu, ed = [], []
         for q in ids:
             e = fields[q]-self.ref[q]
-            losses.append(e[:, :2].square().sum(1).mean()/US**2+e[:, 2].square().mean())
-        return .5*(losses[0]+losses[1])
+            eu.append(e[:, :2].square().sum(1).mean()/US**2)
+            ed.append(e[:, 2].square().mean())
+        return .5*(eu[0]+eu[1]), .5*(ed[0]+ed[1])
 
     def score(self, fields):
         q = fields.detach().clone().requires_grad_(True)

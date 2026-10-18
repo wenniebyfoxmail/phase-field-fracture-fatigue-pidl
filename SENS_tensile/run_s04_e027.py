@@ -52,7 +52,7 @@ def execution_admission(lock, grant):
     return head
 
 
-def render(problem, arrays, predictions, records, output):
+def render(problem, arrays, predictions, records, milestones, scores, receipt, output):
     """Render only actual scored outputs; called only in an authorized Run."""
     os.environ["MPLCONFIGDIR"] = str(output/"mplcache")
     import matplotlib
@@ -102,19 +102,80 @@ def render(problem, arrays, predictions, records, output):
     ax.set_title("S04-E027: optimization trace, not physical evolution"); ax.legend()
     fig.tight_layout(); fig.savefig(output/"loss.png", dpi=150); plt.close(fig)
 
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+    for arm in ("P", "S", "C"):
+        rows = sorted((r for r in milestones if r["arm"] == arm), key=lambda r: r["step"])
+        for ax, metric in zip(axes, ("active_error", "zone_d_RMS", "free_force")):
+            ax.plot([r["step"] for r in rows],
+                    [np.nan if r["scores"][metric] is None else r["scores"][metric] for r in rows],
+                    "o-", label=arm)
+            ax.set_xlabel("optimizer updates including shared prefix")
+            ax.set_ylabel(metric); ax.legend()
+    fig.suptitle("Fixed 0/1000/1500 evaluations; C reuses S prefix through 1000")
+    fig.tight_layout(); fig.savefig(output/"metrics.png", dpi=150); plt.close(fig)
+    decision = method.decision(scores)
+    context = (f"Run directory: `{output}`; commit: `{receipt['commit']}`; "
+               f"protocol: `{method.PROTOCOL}`.\n"
+               "Source: exact scored `predictions.npz`, `scores.json`, `milestones.json`, "
+               "`loss_trace.json`; identities: `data_lock.json`, `preflight.json`, `receipt.json`.\n")
+    captions = {
+        "fields": "Final reference/P/S/C u,v,d,raw,active with signed errors. Native Q4 Jacobian-weighted element means; scores retain native nodal/GP supports. Shared row limits; no clipping.",
+        "profiles": "Final damage profiles at geometry-only nearest columns to x=.25/.40, actual x labelled. Display values are raw nodal d.",
+        "loss": "Per-update sampled objectives. P/S/C objectives have different definitions/scales; C begins after shared S prefix. Optimization trace is not physical evolution.",
+        "metrics": "Full-support fixed endpoint evaluations at 0/1000/1500. C points at 0 and 1000 reuse common/S prefix; lines only connect observations. NA denominator is a missing point. Primary comparison is final C/S active-error ratio."
+    }
+    for stem, caption in captions.items():
+        (output/f"{stem}.md").write_text(f"# {stem}\n"+context+caption+"\n"
+            +f"Final decision readout: `{json.dumps(decision)}`.\n"
+            +"Allowed: descriptive comparison of this exposed synthetic state at horizon0. "
+             "Blocked: generalization, autonomous history evolution or validated field prediction. "
+             "Visual inspection and independent evidence review pending.\n")
+    table = "\n".join(f"| {arm} | {scores[arm]['active_error']} | {scores[arm]['zone_d_RMS']} | {scores[arm]['free_force']} |" for arm in ("P", "S", "C"))
+    (output/"README_analysis.md").write_text("# S04-E027 analysis\n"
+        "Question: does adding native mechanical loss after a shared supervised prefix reduce active-field error in this exposed synthetic c20s4 state?\n"
+        +context+"Read metrics.png with scores.json first, then fields.png, profiles.png and loss.png.\n"
+        +"\n| Arm | active relative error Z | damage RMS Z | free force |\n|---|---:|---:|---:|\n"+table+"\n"
+        +f"Primary readout: `{json.dumps(decision)}`.\n"
+        +"\n"+"\n".join(f"- {stem}.png: {caption}" for stem, caption in captions.items())+"\n"
+        +"Interpret the active-field ratio alongside displacement/damage fit, force, raw feasibility and measured costs; secondary diagnostics do not vote on the primary readout. Costs are in resources.json, with shared prefix charged once for actual execution and included in both S/C conceptual arm costs.\n"
+        +"Allowed conclusion: single exposed-state component comparison only. Blocked: generalization, autonomous evolution, field validity or statistical significance. Storyline impact remains pending visual inspection and independent evidence review; not Evidence Ready.\n")
 
-def optimize(problem, model, opt, rng, arm, first, last, normalizer, guard, records, progress, output):
+
+def diagnostics(problem, model, normalizer):
+    """Fixed diagnostic sample, no optimizer/RNG-state mutation or update."""
+    q = method.fields(model, problem.xy)
+    lu, ld = problem.supervised_components(q, problem.sample(torch.Generator().manual_seed(1)))
+    lm = method.mechanical_loss(problem, q, normalizer)
+    lp = method.physical_loss(problem, q, model)
+    components = dict(L_U=lu, L_D=ld, L_mech=lm, L_P=lp)
+    norms = {}
+    params = tuple(model.parameters())
+    for key, loss in dict(components, L_sup=lu+ld, C_mech_weighted=.1*lm).items():
+        grads = torch.autograd.grad(loss, params, retain_graph=True, allow_unused=True)
+        norm = torch.sqrt(sum(g.square().sum() for g in grads if g is not None))
+        norms[key] = float(method.finite(norm, "component gradient").detach())
+    return dict(losses={k: float(method.finite(v, k).detach()) for k, v in components.items()},
+                parameter_gradient_l2=norms, sample="fixed seed1 mass-sampled 2048 global + 2048 Z")
+
+
+def optimize(problem, model, opt, rng, arm, first, last, normalizer, guard, records, progress, output, checkpoint):
     """Future producer-only loop. Never called in local preparation/tests."""
     for step in range(first, last+1):
         guard()
         opt.zero_grad(set_to_none=True)
         q = method.fields(model, problem.xy)
+        components = {}
         if arm == "P":
             loss = method.physical_loss(problem, q, model)
+            components["L_P"] = float(loss.detach())
         else:
-            loss = problem.supervised(q, problem.sample(rng))
+            lu, ld = problem.supervised_components(q, problem.sample(rng))
+            components.update(L_U=float(lu.detach()), L_D=float(ld.detach()))
+            loss = lu+ld
             if arm == "C":
-                loss = loss+.1*method.mechanical_loss(problem, q, normalizer)
+                lm = method.mechanical_loss(problem, q, normalizer)
+                components["L_mech"] = float(lm.detach())
+                loss = loss+.1*lm
         method.finite(loss, "loss").backward()
         for p in model.parameters():
             if p.grad is None:
@@ -127,12 +188,16 @@ def optimize(problem, model, opt, rng, arm, first, last, normalizer, guard, reco
             method.finite(p, "updated parameter")
         progress["optimizer_steps"] += 1
         progress["optimizer_attempt"] = "completed_finite"
-        row = dict(arm=arm, step=step, sampled_training_loss=float(loss.detach()))
+        row = dict(arm=arm, step=step, sampled_training_loss=float(loss.detach()), components=components)
         records.append(row)
         with (output/"loss_trace.jsonl").open("a") as f:
             f.write(json.dumps(row, allow_nan=False)+"\n")
-        if step == 1000:
-            dump(output/f"{arm}_1000.json", problem.score(method.fields(model, problem.xy)))
+        if step in (1000, 1500):
+            opt.zero_grad(set_to_none=True)
+            del q, loss
+            if arm != "P": del lu, ld
+            if arm == "C": del lm
+            checkpoint(arm, step, model)
         guard()
 
 
@@ -161,6 +226,7 @@ def run(root, lock, grant, output, initializer):
         if sum(p.stat().st_size for p in output.rglob("*") if p.is_file()) > 2*1024**3:
             raise OSError("2 GiB output cap")
     try:
+        dump(output/"data_lock.json", lock)
         root = Path(grant["data_root"])  # explicitly approved producer staging, never a fallback
         check = method.prepare(root, lock)
         payload = dict(relative=initializer.name, bytes=lock["initializer"]["bytes"], sha256=lock["initializer"]["sha256"])
@@ -205,16 +271,51 @@ def run(root, lock, grant, output, initializer):
         adam = lambda model: torch.optim.Adam(model.parameters(), lr=1e-4, betas=(.9, .999), eps=1e-8, weight_decay=0)
         popt, sopt = adam(pmodel), adam(smodel)
         prng, srng = torch.Generator().manual_seed(1), torch.Generator().manual_seed(1)
-        initial = problem.score(method.fields(common, problem.xy))
-        dump(output/"initial.json", initial)
-        records = []
-        optimize(problem, pmodel, popt, prng, "P", 1, 1500, normalizer, guard, records, progress, output)
-        optimize(problem, smodel, sopt, srng, "S", 1, 1000, normalizer, guard, records, progress, output)
+        milestones, records, resources = [], [], {}
+        def checkpoint(arm, step, model):
+            guard()
+            row = dict(arm=arm, step=step, scores=problem.score(method.fields(model, problem.xy)),
+                       diagnostics=diagnostics(problem, model, normalizer))
+            milestones.append(row)
+            dump(output/"milestones.json", milestones)
+            guard()
+            return row
+        initial_row = checkpoint("P", 0, common)
+        for arm in ("S", "C"):
+            milestones.append(dict(copy.deepcopy(initial_row), arm=arm, reused_from="common initialization"))
+        dump(output/"initial.json", initial_row["scores"])
+        def segment(name, model, opt, rng, arm, first, last):
+            torch.cuda.synchronize(); torch.cuda.reset_peak_memory_stats()
+            t0 = time.monotonic()
+            try:
+                optimize(problem, model, opt, rng, arm, first, last, normalizer, guard,
+                         records, progress, output, checkpoint)
+            finally:
+                torch.cuda.synchronize()
+                resources[name] = dict(elapsed_seconds=time.monotonic()-t0,
+                    peak_cuda_allocated_bytes=torch.cuda.max_memory_allocated(),
+                    peak_cuda_reserved_bytes=torch.cuda.max_memory_reserved(),
+                    first=first, last=last, includes_scheduled_evaluation=True,
+                    scope="whole process including other resident arms; not incremental per-model memory")
+                dump(output/"resources.json", dict(segments=resources))
+        segment("P", pmodel, popt, prng, "P", 1, 1500)
+        segment("shared_prefix", smodel, sopt, srng, "S", 1, 1000)
         cmodel, copt, crng = method.clone_branch(smodel, sopt, srng)
         torch.save(dict(model=smodel.state_dict(), optimizer=sopt.state_dict(), rng=srng.get_state()), output/"prefix1000.pt")
-        dump(output/"prefix1000.json", problem.score(method.fields(smodel, problem.xy)))
-        optimize(problem, smodel, sopt, srng, "S", 1001, 1500, normalizer, guard, records, progress, output)
-        optimize(problem, cmodel, copt, crng, "C", 1001, 1500, normalizer, guard, records, progress, output)
+        prefix = next(r for r in milestones if r["arm"] == "S" and r["step"] == 1000)
+        milestones.append(dict(copy.deepcopy(prefix), arm="C", reused_from="S shared prefix at 1000"))
+        dump(output/"prefix1000.json", prefix["scores"])
+        segment("S_tail", smodel, sopt, srng, "S", 1001, 1500)
+        segment("C_tail", cmodel, copt, crng, "C", 1001, 1500)
+        arm_costs = {}
+        for arm, names in (("P", ("P",)), ("S", ("shared_prefix", "S_tail")), ("C", ("shared_prefix", "C_tail"))):
+            arm_costs[arm] = dict(elapsed_seconds=sum(resources[k]["elapsed_seconds"] for k in names),
+                peak_cuda_allocated_bytes=max(resources[k]["peak_cuda_allocated_bytes"] for k in names),
+                segments=names)
+        dump(output/"resources.json", dict(segments=resources, conceptual_arm_costs=arm_costs,
+            actual_unique_segment_seconds=sum(r["elapsed_seconds"] for r in resources.values()),
+            note="shared prefix charged once in unique execution total; both S/C inherit it; memory is whole-process peak"))
+        dump(output/"milestones.json", milestones)
         scores, predictions = {}, {}
         for arm, model in (("P", pmodel), ("S", smodel), ("C", cmodel)):
             guard()
@@ -225,15 +326,8 @@ def run(root, lock, grant, output, initializer):
         np.savez_compressed(output/"predictions.npz", reference=arrays["ref"], **predictions)
         dump(output/"scores.json", dict(scores=scores, decision=method.decision(scores)))
         dump(output/"loss_trace.json", records)
-        render(problem, arrays, predictions, records, output)
+        render(problem, arrays, predictions, records, milestones, scores, receipt, output)
         receipt.update(execution="completed_retrieval_and_evidence_review_pending")
-        (output/"README_analysis.md").write_text("# S04-E027\nSingle exposed synthetic c20s4; horizon0.\n"
-            "scores.json is the fixed endpoint table; predictions.npz contains exact scored nodal fields.\n"
-            "fields.png displays native-GP-weighted element means; scores retain original nodal/GP supports.\n"
-            "rows u/v/d/raw/active; reference/P/S/C share row limits and all signed errors share row limits.\n"
-            "profiles.png uses geometry-only nearest columns to x=.25/.40, actual x labelled.\n"
-            "loss.png is sampled optimization loss, not physical evolution; losses differ between arms.\n"
-            "Visual inspection and independent evidence review pending; not Evidence Ready.\n")
         guard()
     except BaseException as ex:
         receipt.update(execution="failed_or_partial", error_type=type(ex).__name__, error=str(ex))
