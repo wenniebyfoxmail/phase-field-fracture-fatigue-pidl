@@ -117,3 +117,29 @@ Its old r1 resource-precheck stop had zero scientific computation; a revised
 card remains that owner's/user's decision. No new data/SSH/fit/confirmation
 access in this synthesis. Main chat alone updates the residual Obsidian note.
 See [design synthesis](S04-E026/post_E025_E026_representation_review_v1_20261018.md).
+
+## 2026-10-18 — coupling UVH r2 terminal readback, optimization unresolved
+
+Separate coupling owner completed pf_s04e011_uvh_c1_r2_20261018 once at source
+9a0bf3c7 (owner resultfd8f3588). Parent/worker exit0,395/400 evaluations,
+25.484s; sampled resource limits respected,51files retrieved and checked by
+owner. Main chat verified saved scalar/control consistency, four-input receipt
+agreement and retrieved sizes, inspected the same PNG, but did not decode
+scientific arrays, replay scores or perform an independent numerical audit.
+
+Fixed-FEM-d c1s4 actual head energy0.006360077631691784 versus saved PBD
+0.005672469584399648 gives G=-0.12121846350365408: bounded negative,
+energy12.12% higher. Energy falls about41.60% from the original conditional
+initial point; this component progress does not rescue the PBD comparison.
+Residual/H1/L2 are also worse than PBD. Retained gradient16.13 and false
+stationarity screen show unresolved optimization; the evaluation reserve bound
+stopped further optimization, not wall time or a resource fault. No retained-
+space optimum, whole-network capacity, coupling or late-transfer cause follows.
+
+E025/E026 remain negative for their specific raw interaction/weight candidates,
+not for the whole residual route. Their ridge solutions and UVH's nonstationary
+energy iteration are different problems. Recommendation: prepare one bounded
+same-state/same-energy/fixed-feature conditioning repair design with the
+coupling owner, not a resumed r2 or new raw fit. No implementation/run is
+authorized by this recommendation. Main chat alone updated residual Obsidian
+and reused the exact same-run PNG. See [terminal synthesis](S04-E026/coupling_r2_result_readback_and_next_decision_20261018.md).
