@@ -105,15 +105,19 @@ fresh optimizer、状态和端点读出完全相同，才能提出复用 W0 的�
    验证不回退时 Eh及梯度均0，零点使用实际 ReLU平方导数。
 4. NN 参数梯度诊断不得用下表的 nodal 梯度冒充：同一个参数快照上算两种 beta
    的总 grad，固定 readout k=0,1,200（端点只读、无额外更新），分项 norm/cosine、
-   sign-flip/zero和nearzero比例，另报 RPROP 步长状态。nearzero阈值必须在执行卡
-   固定，不能看结果改；未实现/未审不得称 producer-ready。
+   sign-flip/zero和nearzero比例，另报 RPROP 步长状态。两种beta均含相同R，
+   分别在各臂同一快照上计算，不能把两条已经分化的轨迹之梯度差称直接beta效应。
+   exact sign-flip分母为全部requires_grad参数标量；另列零/一侧零。
+   nearzero采用预定阈值 `1e-12*max(1,maxabs(g1),maxabs(g25))`，
+   只作诊断，不修改传给RPROP的梯度；余弦在任一范数为0时标未定义。
+   未实现/未审不得称 producer-ready。
 
 ## 已完成的零训练检查及边界
 
 脚本 `tools/audit_loss_weight_semantics.py`，CPU静态，无optimizer实例/循环，
 只读原U0模型、checkpoint与FEM U0输入；未打开加载后的FEM目标。
 本节是系数/链式法则检查，不是训练后场拟合或NN可表示能力结果。
-原始输出在 parent `local_archive/experiments/S04-E011/loss_weight_preparation_20261018/static_v1/`，
+原始输出在 parent `local_archive/experiments/S04-E011/loss_weight_preparation_20261018/static_v2/`，
 紧凑 JSON 见 `runs/loss_weight_static_20261018.json`。
 
 | 固定场 | beta | base Eh | weighted Eh | nodal grad log(S) L2 |
@@ -127,6 +131,8 @@ fresh optimizer、状态和端点读出完全相同，才能提出复用 W0 的�
 1e-5R=.0267209163，单独正则参数梯度L2=.00103384556。
 未计算完整 NN 物理参数梯度，不把该数与 nodal norm 比较。
 log链式公式实际全场L∞差≤2.84e-8；小标量整体能量×25的梯度差2.22e-16。
+beta25 与仅改tol=.001的两种全场能量差均0，回退场的节点能量梯度L∞差
+1.46e-11；不会自动推广为所有硬件与任意网络状态逐位相同。
 预设回退场未必在现有NN表示中可达，不把它当作一次优化步或训练趋势。
 本次静态系数审计不比较方法预测，决策表即最小可视摘要；未来加载结果必须
 画实际评分场图。optimizer updates=0，history commits=0，FEM solves=0。

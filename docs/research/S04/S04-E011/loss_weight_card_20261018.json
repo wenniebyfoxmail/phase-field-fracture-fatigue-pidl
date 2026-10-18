@@ -62,7 +62,7 @@
     "new version-specific budget and execution authorization",
     "actual device C update0 equality and fixed buffer serialization",
     "beta25 vs tol.001 equivalence without double scaling",
-    "same-snapshot fullNN gradients for both beta at frozen readout indices; fixed nearzero threshold; RPROP state diagnostics",
+    "same-snapshot fullNN gradients for both beta at k0/1/200 independently on each arm; nearzero=1e-12*max(1,maxabs(g1),maxabs(g25)); exact sign/zero counts; zero-norm cosines undefined; never threshold RPROP gradients; step state diagnostics",
     "same-state FEM reference/mesh/readout contract and offline scorer identity"
   ],
   "static_audit": {
