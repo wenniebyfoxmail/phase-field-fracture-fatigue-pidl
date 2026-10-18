@@ -166,3 +166,28 @@ E025/E026/r2 verdicts and confirmation closure unchanged. Next is separate human
 approval of this exact new card, not execution inferred from preparation.
 Main chat alone updated residual Obsidian/Roadmap; no duplicate implementation.
 See [PC16 readback section9](S04-E026/variant_gaps_objectives_and_PC16_design_readback_20261018.md).
+
+## 2026-10-18 — PC16 admission stops reconciled; no solver evidence
+
+Before dispatching the user's exact r1-card approval, main S04 live-checked the
+coupling owner and found two existing terminal resource actions: PC16-r1 at
+13:31 London (missing specified resident PID; stop9a02ad7b) and separately
+authorized PC16-r2 at20:01 (unknown CUDA process; stopa6fd422b). Both have zero
+deployment, guard/worker, scientific-file reads, HVP and work units. Main read
+the original local preflight/terminal/retrieval-control records; these are not
+remote numerical receipts. Old stop documents remain unchanged. No scientific
+payload/hash/peak/figure exists for these actions; no result or method failure
+is invented. This exact old-card approval cannot restart an already-terminal
+action or authorize a changed successor profile. Main launched no duplicate.
+
+Under separate direct user authority the coupling owner identified a new API
+service instance and prepared resource-only PC16-r3/source2a2a7e43/card4f2955b4.
+Main verified the original independent resource-review PASS and text/Git diffs:
+same worker/representation/five inputs/400-unit and900s/8GiB/100MiB envelopes;
+new exact service PID/start, lower1748MiB service ceiling, fresh run identity.
+Capacity samples are not current future admission or a service-impact guarantee.
+Active decision D2 is separate approval of that new exact card; no execution,
+retry, extra fit or confirmation access. Scientific verdict remains inconclusive
+for PC16, not negative. Existing UVH-r2 nonstationarity and E025/E026 bounded
+negatives stand. Main alone reconciled Obsidian/Roadmap; coupling remains sole
+producer owner. See PC16 readback sections10–11 for control evidence and ladder.
