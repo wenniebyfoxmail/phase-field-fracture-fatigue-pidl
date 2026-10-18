@@ -57,5 +57,22 @@
   ],
   "producer_operations": 0,
   "new_numeric_evaluations": 0,
-  "after_review_change_scope": "status/review receipt and experiment/Obsidian milestone only; reviewed numeric protocol unchanged"
+  "after_review_change_scope": "Status/review receipt and experiment/Obsidian milestone only after respective design and reuse/defer snapshots; no numerical protocol or runtime source changes.",
+  "reuse_addendum_review": {
+    "snapshot": "5f66210a824ab329e016bcd02fc7cc2472aaf67c",
+    "reviewer": "/root/loss_weight_readonly_review",
+    "verdict": "REVIEW_PASS_SCOPED_TO_REUSE_AND_DEFER",
+    "confirmed_access": "Read amendment, reuse manifest, original owner controls/evidence review and immutable8edc762 diagnostics source locally.",
+    "confirmed": [
+      "9 postscaled /12 prescaled separate /0 joint manual VJP reported; joint and actual-output-adjoint route bitwise equal",
+      "H3 local64 is not full-network64",
+      "Existing controls overlap core question but are not the full proposed N/M/U/Q matrix",
+      "No claim of fresh full-vector recomputation or field-score certification here",
+      "Reuse existing evidence and defer supplemental/duplicate producer is reasonable"
+    ],
+    "new_computation": 0,
+    "SSH": 0,
+    "GPU": 0,
+    "code_edits": 0
+  }
 }

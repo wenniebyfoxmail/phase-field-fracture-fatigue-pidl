@@ -69,6 +69,12 @@
       "verdict": "REVIEW_PASS_SCOPED_TO_DESIGN",
       "scope": "v2 risk-focused design rereview; unchanged v1 source review retained",
       "numeric_execution": false
+    },
+    {
+      "snapshot": "5f66210a824ab329e016bcd02fc7cc2472aaf67c",
+      "verdict": "REVIEW_PASS_SCOPED_TO_REUSE_AND_DEFER",
+      "scope": "existing-control factual mapping, source/access limits and duplicate-run deferral",
+      "numeric_execution": false
     }
   ],
   "review_receipt": "runs/gradient_arithmetic_verification_design_review_20261018.json",

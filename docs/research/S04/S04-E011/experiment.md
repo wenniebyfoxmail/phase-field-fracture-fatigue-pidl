@@ -203,3 +203,20 @@ No new diagnostic runner has been implemented, no numerical evaluation
 or producer invocation occurred, and no root cause or Code Ready is claimed.
 Next: implement the diagnostic-only runner and review its exact code/package
 before any separately authorized execution. W0/W25 training remains closed.
+
+### Arithmetic design closeout reuse amendment (2026-10-18)
+
+A newly available, separately authorized owner already performed the central
+float32 control Run `pf_s04e011_wgradfix_8edc762_20261018T210153Z`, source
+`8edc762a99bacfa6825ed413a148fbcccd09a921`: original postscaled9 failures
+reproduced bitwise, prescaled separate12, analytic manual joint-VJP0/bitwise
+with direct; fixed-H3 local64 control is not full-network64. Compact evidence,
+source and its bounded independent review were read here, not recomputed.
+[Reuse/disposition in the design](gradient_arithmetic_verification_20261018.md)
+records the exact owner/Run/source and evidence limits. The supplementary
+full64/runtime-scalar/branch-local-FD design is reviewed but deferred; do not
+implement or launch a duplicate producer by default. The same owner's separately
+authorized W0/W25 each200 is reported completed, field retrieval/verification
+ongoing. This chat launches no pair, reanalysis or new numerical evaluations,
+and makes no field-error claim. Existing earlier statements about training
+closed describe this chat's scope and historical state, not that owner's new run.
