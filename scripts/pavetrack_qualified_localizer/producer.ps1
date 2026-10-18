@@ -18,7 +18,7 @@ $argsBase=@('--config',"$Source\docs\research\S01\S01-E024\run_config.json",'--l
 try{
  $saved=$ErrorActionPreference
  try{$ErrorActionPreference='Continue';& $py "$Source\scripts\pavetrack_qualified_localizer\run.py" @argsBase 1>"$logs\execute_stdout.log" 2>"$logs\execute_stderr.log";$code=$LASTEXITCODE}finally{$ErrorActionPreference=$saved}
- if($code -ne 0){throw "E023 stopped:$code"}
+ if($code -ne 0){throw "E024 stopped:$code"}
  Copy-Item "$logs\*" $r
  @{state='completed';reviewed_commit=$ReviewedCommit;wrapper_pid=$PID;completed_at=(Get-Date -Format o);fresh_access=$false}|ConvertTo-Json|Set-Content "$r\wrapper_receipt.json" -Encoding UTF8
 }catch{@{state='stopped';reason=$_.Exception.Message;updated_at=(Get-Date -Format o);fresh_access=$false}|ConvertTo-Json|Set-Content "$logs\wrapper_status.json" -Encoding UTF8;throw}

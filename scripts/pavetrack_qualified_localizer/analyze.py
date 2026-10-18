@@ -11,9 +11,10 @@ def render(run,result,qualifications,admitted,cases,buffers,g,c,spatial):
     out=run/'analysis';out.mkdir(exist_ok=False);domain='SYNTHETIC ENGINEERING TEST — NOT REAL ROAD' if 'synthetic' in run.name.lower() else 'current-image real-road; region-envelope reference'
     fig,axes=plt.subplots(1,2,figsize=(12,4));xs=np.arange(3)
     for dx,values,color,label in [(-.16,[q['macro']['Brier'] for q in qualifications],'#477da7','CNN'),(.16,[min(q['macro'][k] for k in ['constant_Brier','zero_Brier','one_Brier']) for q in qualifications],'#89939b','best fixed constant')]:axes[0].bar(xs+dx,values,width=.3,label=label,color=color)
-    for dx,values,color,label in [(-.16,[q['foreground_macro']['Dice'] or 0 for q in qualifications],'#477da7','CNN'),(.16,[max((q['foreground_macro'][k] or 0) for k in ['constant_Dice','all_background_Dice','all_foreground_Dice']) for q in qualifications],'#89939b','best trivial binary')]:axes[1].bar(xs+dx,values,width=.3,label=label,color=color)
+    for dx,values,color,label in [(-.16,[q['foreground_macro']['Dice'] if q['foreground_macro']['Dice'] is not None else np.nan for q in qualifications],'#477da7','CNN'),(.16,[np.nan if q['foreground_macro']['Dice'] is None else max(q['foreground_macro'][k] for k in ['constant_Dice','all_background_Dice','all_foreground_Dice']) for q in qualifications],'#89939b','best trivial binary')]:axes[1].bar(xs+dx,values,width=.3,label=label,color=color)
     # Individual qualification locations are reused units, not just fold averages.
     for k,q in enumerate(qualifications):
+        if q['foreground_macro']['Dice'] is None:axes[1].text(k,.02,'NA: no foreground',ha='center',fontsize=7,rotation=90)
         for j,site in enumerate(q['sites']):
             offset=(j-.5)*.07
             axes[0].scatter(k-.16+offset,site['Brier'],s=20,color='#173f60',marker='x',zorder=4)
