@@ -1,0 +1,36 @@
+{
+  "verdict": "PASS",
+  "scope": "bounded returned-plane/actual nonlinear guard and score verification",
+  "source": "263509c4c7e84756678dca57a39ba5de9faecfe3",
+  "blocking_findings": [],
+  "original_asset_hashes": 33,
+  "direction_input_hashes": 3,
+  "uv_values": 24,
+  "physical_values": 72,
+  "rho_rows": 6,
+  "branch_fractions_match": true,
+  "max_actual_UV_difference": 1.3877787807814457e-17,
+  "actual_weakforce_nondegradation": true,
+  "UV_nondegradation": true,
+  "background_fully_preserved": false,
+  "fullhead_optimality_assessed": false,
+  "SLSQP_rerun": false,
+  "application_acceptance": null,
+  "net_damage_evolution_assessed": false,
+  "main_decision_reviewed": true,
+  "normal_usage_remaining_before_and_after": 82,
+  "extra_candidates": 0,
+  "neural_updates": 0,
+  "source_sha256": {
+    "review/independent_guard.py": "fa438bb3883951a8b4612ec94b66cd1e561ea8a590a9364701386cd5c1643fd4",
+    "results/receipt.json": "8d9972c55b1bc31236a073e95c35f0bbeed3bbbf1c05ba9609f42d848bfcd901"
+  },
+  "final_prose_blocking_findings": [],
+  "final_prose_sha256": {
+    ".codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/weak_guard_decision.md": "65adebf73e29b2fcf49578ca1199d9e891e078b0b1698a635a58a8e08a32c14b",
+    "local_archive/experiments/S04-E024/weak_guard_v1/figures/physical_comparison.png": "fbd0327a03ae9e2eff812bc84d5d22fcff8ea69d758016f96c181e64347cbfbb",
+    "local_archive/experiments/S04-E024/weak_guard_v1/figures/physical_comparison.md": "856373234ab5f77fa615968e81057b3a43c22eb1cc4a716dd12e37f0bbf67637",
+    "local_archive/experiments/S04-E024/weak_guard_v1/figures/weak_guard_local_fields.png": "e1357fe71d89783561d19926a319d9aed9b7641069e3637fde348d6c138ec69e",
+    "local_archive/experiments/S04-E024/weak_guard_v1/figures/weak_guard_local_fields.md": "835752fd1c6176ea20e8a786fcab4fcc5c92ce3d462f62bf998580c3d80d0413"
+  }
+}

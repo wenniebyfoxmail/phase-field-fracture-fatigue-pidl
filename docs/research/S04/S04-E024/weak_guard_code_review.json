@@ -1,0 +1,17 @@
+{
+  "verdict": "PASS",
+  "scope": "focused differential pre-use math/code review",
+  "source": "263509c4c7e84756678dca57a39ba5de9faecfe3",
+  "blocking_findings": [],
+  "normal_usage_remaining_percent": 82,
+  "full_state_run_by_reviewer": false,
+  "independent_sanity_retests": false,
+  "parent_reported_sanity_checks": 3,
+  "neural_updates": 0,
+  "remote_actions": 0,
+  "source_sha256": {
+    "SENS_tensile/s04_e024_weak_guard.py": "4d87d86e76c4905be45cc0f48acc4850422429a8ac3159449d2ce151c5ec6096",
+    "SENS_tensile/diagnose_s04_e023_weak_guard.py": "968faa9ca011c53d2c2675a50872c6ab6b5070a1417a886f246b1d6d3401f037",
+    "docs/research/S04/S04-E024/weak_guard_protocol.md": "25dedca2f2c75f8df57c49235159b1021bf5f229c1609b23b50fe4d4d0309397"
+  }
+}
