@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E027
 protocol_revision: v1-source-faithful-P-20261018
-status: preparation
+status: executed-hq-evaluation-pending
 ---
 # 固定c20s4的FEM监督与联合机械微调
 
@@ -60,3 +60,8 @@ v2方案对P的转录错误按真实E011目标纠正：`L_P=log10(E_el+E_d+E_irr
 ## 2026-10-18 最终运行卡收口（暂停未解除）
 
 run_card.json绑定已核验原trained98与唯一命令，91537ce2三臂目标/3500更新不变；87a9359b仅补首个CPU容器/26键兼容步骤、共同与fork存档、修正不可能的24GiB-free门槛并落实实际free−1GiB显存限额及超时信号。db4a8dac只读静态差异复核通过；原15tests保留未重跑。无权重反序列化、科学数组读取、SSH、资源预检或训练。当前准备层面仅待用户解除原对话“不启动资源预检或训练”的暂停，并非计算预算不足；真实schema/实时设备/三图成本须在正式Run逐项准入，未宣称Run Ready。
+
+
+## 2026-10-18 用户解除暂停后实际运行完成
+
+按最终运行卡，原trained98兼容/实时资源/三图准入通过；dd2325a6单次运行3500更新，40.50分钟约.675GPU小时，worker已退出，未重试/换权重。冻结C/S=.952342（下降4.77%）保留方向信号；C dmax=.003389，损伤几乎消失，Z损伤/UV误差为S的9.48/11.47倍；二者active误差均高于共同初态。实际产物及图已独立复核，原空profiles不支持宽度/位置结论。详见[result_20261018.md](result_20261018.md)及runs收据；执行完成，科学处置待HQ，不自动追加运行。上文暂停/未知/未运行均属历史时点。

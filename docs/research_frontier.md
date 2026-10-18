@@ -51,3 +51,6 @@ California 126 条 section 的官方 viewer 全量审计得到 20 条重复地�
 - 不把 generative video 视觉逼真度当物理预测；headline metrics 必须是未来 registered mask/tip/area、event timing、CRPS/coverage 与决策效用。
 - 若公开数据无法对齐图像—荷载—天气—维修时间轴，立即转为最小 prospective pilot；若 world model 不优于 persistence 和 observation-only state-space baseline，则停止扩大架构。
 - 暂停新的 PIDL loss/architecture sweep、Freeze-Then-Select 阈值调节、未合格 FEM corpus 和单轨迹 foundation-model 宣称。
+
+
+**2026-10-18 S04-E027限定合成组件结果**：单次3500更新/.675GPU小时完成并独立复核；C/S active误差=.952342，但C损伤几乎清零，不能作完整修复。科学处置及是否另立尺度/可行性判别待HQ，未安排续跑。事实源与下一步见[canonical track](experiments/fem_synthetic_supervision_track.md)。

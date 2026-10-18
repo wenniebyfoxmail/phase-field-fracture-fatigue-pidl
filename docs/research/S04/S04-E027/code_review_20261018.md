@@ -1,6 +1,6 @@
 # S04-E027 本地准备与独立代码审查交接
 
-> 最新状态（2026-10-18）：原trained98自身身份/本地可用性已齐；最终run_card与唯一命令已准备，87a9359b仅补运行准入和身份保存，三臂目标仍为91537ce2。db4a8dac聚焦静态复核通过。当前保持人方“不启动资源预检或训练”的暂停，不因计算预算不足而停；实际容器/GPU/计算图准入留在正式运行。下列未知/未取回等均为历史时点记录。
+> 最新状态（2026-10-18，运行后）：用户已解除本次暂停；实际dd2325a6的兼容与资源预检通过，单次3500更新完成，约.675GPU小时。输出完整性、独立证据与新决策图目视复核完成；C/S主比值.952342，但C损伤几乎消失，不是有效完整修复。科学处置待HQ；见[result_20261018.md](result_20261018.md)。下文暂停/未知/未执行均为历史记录。
 
 2026-10-18；Owner chat `01a14bc7-fd2a-73e1-9d0f-de457ba1dcc0`；HQ chat `01a14bb9-6cd1-7ee2-9647-5190d786f7ba`。用户授权范围是本地接口、三臂代码、必要检查及独立审查；先不启动训练。报告在本对话/本地归档供HQ读取，没有另行发送消息。
 
@@ -103,3 +103,8 @@
 ```bash
 nohup setsid timeout --signal=TERM --kill-after=5s 7190s env CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 TMPDIR=/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/tmp XDG_CACHE_HOME=/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/cache MPLCONFIGDIR=/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/cache/matplotlib PIDL_ARCHIVE_DIR=/mnt/data2/drtao/pidl_archives/pf_s04e027_three_arm_v1_20261018 nice -n 10 /usr/bin/python3 -u /mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/code/SENS_tensile/run_s04_e027.py --execute --grant /mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/grant.json --initializer /mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_98.pt --out /mnt/data2/drtao/pidl_archives/pf_s04e027_three_arm_v1_20261018/output > /mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/worker.log 2>&1 < /dev/null &
 ```
+
+
+## 2026-10-18 实际证据独立复核
+
+同一独立审查者/root/e027_independent_review复核真实输出与部署源码/数据锁，确认3500连续更新、9固定里程碑、共同起点/fork、29文件大小、主分子/分母比值和NPZ damage范围。新decision图目视通过；原profiles空图不支持宽度/位置推断。未反序列化PT、未独立重积分FEM科学数组。完整范围、代价与限制见result_20261018.md和Case/analysis/independent_evidence_review.json；不把工程/输出完整性等同科学成功。
