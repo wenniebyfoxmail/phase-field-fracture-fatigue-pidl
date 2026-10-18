@@ -75,6 +75,13 @@ they independently decide whether the route can continue. Name one active
 step and one next step; do not create a separate Experiment, Run, or ledger
 entry for every `D` step.
 
+For a direction triggered by a saved post, paper, meeting note, or other
+external idea, make `D1` a **source and overlap screen**. Label the source as
+inspiration or verified evidence, state the new question/estimand/evidence axis
+relative to active Storylines, and merge or redirect it when none is new. Do
+not create a duplicate Storyline or treat a secondary summary as performance
+evidence.
+
 For exploration, an observed directional gain, capability proof, or diagnostic
 that selects a repair may advance the ladder. For a formal claim, the frozen
 primary criterion remains the only scientific verdict; the ladder organises

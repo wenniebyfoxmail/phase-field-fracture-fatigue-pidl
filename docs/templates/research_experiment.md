@@ -28,6 +28,8 @@ Use three to six `D` steps for an active multi-step route. Each step must
 remove a research uncertainty; implementation work belongs in the action cell.
 Mark exactly one active step. These steps organise decisions and repairs; they
 do not add scientific acceptance gates or override the frozen primary criterion.
+For an idea from a saved source, make D1 a source/overlap screen before opening
+a new Storyline or treating the source as performance evidence.
 
 | step | uncertainty / purpose | smallest action and evidence asset | advance condition → next step | redirect condition → alternative |
 |---|---|---|---|---|
