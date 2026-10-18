@@ -1,0 +1,116 @@
+--- tools/s04_e011_pc16/guard.py (frozen r1)
++++ tools/s04_e011_pc16/guard_resource_r2.py (prospective r2)
+@@ -10,12 +10,12 @@
+ import sys
+ import time
+ 
+-RUN = 'pf_s04e011_uvh_c1_pc16_r1_20261018'
+-CARD = 'S04-E011-UVH-C1-PC16-CARD-r1'
++RUN = 'pf_s04e011_uvh_c1_pc16_r2_20261018'
++CARD = 'S04-E011-UVH-C1-PC16-CARD-r2'
+ ROOT = Path('/mnt/data2/drtao/wennie') / RUN
+ OUT = Path('/mnt/data2/drtao/pidl_archives') / RUN
+ CODE = ROOT / 'code'
+-CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_pc16_20261018/inputs.json'
++CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_pc16_20261018/inputs_resource_r2.json'
+ 
+ 
+ def digest(path):
+@@ -100,11 +100,9 @@
+             digest(base / 'cgroup') == expected['cgroup_sha256'])
+ 
+ 
+-def gpu_snapshot(contract, worker_pid=None):
++def gpu_snapshot(contract, worker_pid=None, mode=None):
+     policy = contract['resource_policy']
+     expected = policy['service']
+-    if not service_identity(expected):
+-        raise RuntimeError('resident service identity changed; no automatic re-whitelist')
+     row = command(['nvidia-smi', '-i', str(policy['physical_GPU']),
+                    '--query-gpu=uuid,memory.free,utilization.gpu', '--format=csv,noheader,nounits'], timeout=2)
+     uuid, free, utilization = [x.strip() for x in row.split(',')]
+@@ -119,13 +117,23 @@
+         app_uuid, pid, memory = [v.strip() for v in line.split(',')]
+         if app_uuid == uuid:
+             processes[int(pid)] = int(memory)
+-    allowed = {expected['pid']}
+-    if worker_pid is not None:
+-        allowed.add(worker_pid)  # CUDA computation uses only this one Python worker.
+-    if set(processes) - allowed or expected['pid'] not in processes:
+-        raise RuntimeError('unknown/missing GPU process; no shared-service mutation')
+-    if processes[expected['pid']] > policy['maximum_service_MiB']:
+-        raise RuntimeError('resident service VRAM exceeds frozen allowance')
++    others = set(processes) - ({worker_pid} if worker_pid is not None else set())
++    if not others:
++        observed_mode = 'empty'
++    elif others == {expected['pid']}:
++        if not service_identity(expected):
++            raise RuntimeError('resident service identity changed; no automatic re-whitelist')
++        if processes[expected['pid']] > policy['maximum_service_MiB']:
++            raise RuntimeError('resident service VRAM exceeds frozen allowance')
++        observed_mode = 'exact_service'
++    else:
++        raise RuntimeError('unknown GPU process; no automatic re-whitelist')
++    if observed_mode not in policy['admission_modes']:
++        raise RuntimeError('unapproved resource admission mode')
++    # Select only on first admission. Never switch service/empty mode during
++    # later admission samples or runtime, including service exit/reappearance.
++    if mode is not None and observed_mode != mode:
++        raise RuntimeError('GPU admission mode changed; stop owned child only')
+     if worker_pid is not None and processes.get(worker_pid, 0) * 1024**2 > contract['budget']['gpu_process_bytes']:
+         raise RuntimeError('sampled worker total CUDA-process memory cap')
+     free, utilization = int(free), int(utilization)
+@@ -133,9 +141,9 @@
+     if free < required:
+         raise RuntimeError('insufficient shared GPU free-memory margin')
+     if worker_pid is None and utilization > policy['maximum_admission_utilization_percent']:
+-        raise RuntimeError('resident GPU is active above admission limit')
++        raise RuntimeError('GPU is active above admission limit')
+     return dict(free_MiB=free, utilization_percent=utilization, processes_MiB=processes,
+-                elapsed_utc=dt.datetime.now(dt.timezone.utc).isoformat())
++                admission_mode=observed_mode, elapsed_utc=dt.datetime.now(dt.timezone.utc).isoformat())
+ 
+ 
+ def main():
+@@ -171,7 +179,8 @@
+         raise SystemExit('producer code checkout not clean')
+     # Binding is reviewed Git content; no alternate contract/path/budget flags.
+     contract = json.loads(CONTRACT.read_text())
+-    if contract['protocol'] != 'S04-E011-UVH-C1-PC16-v1' or contract['run_id'] != RUN:
++    if (contract['protocol'] != 'S04-E011-UVH-C1-PC16-v1' or contract['run_id'] != RUN or
++            contract['resource_revision'] != 'GPU3-empty-or-exact-service-r2'):
+         raise SystemExit('contract identity mismatch')
+     if OUT.exists() or OUT.is_symlink():
+         raise SystemExit('attempt already consumed; no resume/retry')
+@@ -193,8 +202,12 @@
+             raise SystemExit('possible same-item producer process; resolve ownership before launch')
+     # Read-only shared-resource checks precede scientific input access.
+     admission = []
++    admission_mode = None
+     for i in range(contract['resource_policy']['admission_samples']):
+-        admission.append(gpu_snapshot(contract))
++        snapshot = gpu_snapshot(contract, mode=admission_mode)
++        if admission_mode is None:
++            admission_mode = snapshot['admission_mode']
++        admission.append(snapshot)
+         if i + 1 < contract['resource_policy']['admission_samples']:
+             time.sleep(contract['resource_policy']['admission_interval_seconds'])
+     mem = dict((r.split(':')[0], int(r.split()[1])) for r in Path('/proc/meminfo').read_text().splitlines())
+@@ -220,7 +233,7 @@
+                   approval_ref=args.approval_ref, start_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
+                   guard_pid=os.getpid(), host=os.uname().nodename, GPU=3,
+                   output=str(OUT), code=str(CODE), budget=contract['budget'],
+-                  resource_policy=contract['resource_policy'], admission=admission)
++                  resource_policy=contract['resource_policy'], admission_mode=admission_mode, admission=admission)
+     save(OUT / 'guard_receipt.json', record)
+     reason = None
+     peak = 0
+@@ -243,7 +256,7 @@
+                 usage = output_bytes()
+                 if time.monotonic() >= next_gpu_check:
+                     try:
+-                        gpu_observations.append(gpu_snapshot(contract, child.pid))
++                        gpu_observations.append(gpu_snapshot(contract, child.pid, mode=admission_mode))
+                     except Exception as error:
+                         reason = 'shared_GPU_monitor: ' + repr(error)
+                     next_gpu_check = time.monotonic() + contract['resource_policy']['runtime_monitor_interval_seconds']
