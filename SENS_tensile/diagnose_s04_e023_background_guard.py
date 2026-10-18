@@ -33,6 +33,8 @@ def run(a):
         increments=np.stack([network_order(model,data['xy'],np.zeros_like(base),radius*e,1024)/abs(US) for e in basis])
         w=data['mass']/data['mass'].sum();error=(origin-data['equilibrated_uv'])/abs(US)
         background=data['damage']<=.1;assert background.any()
+        with torch.no_grad():window=compact_window(torch.tensor(data['xy']),model.lower,model.upper).numpy()[:,0]
+        wbi=w*(background&(window>0));wbi/=wbi.sum();bgi0=float(np.sum(wbi[:,None]*error**2));assert np.isfinite(bgi0) and bgi0>0
         wb=w*background;wb/=wb.sum();bg0=float(np.sum(wb[:,None]*error**2));assert np.isfinite(bg0) and bg0>0
         bg_q=np.einsum('n,ind,jnd->ij',wb,increments,increments)/bg0;bg_g=np.einsum('n,nd,ind->i',wb,error,increments)/bg0
         q=np.einsum('n,ind,jnd->ij',w,increments,increments);g=np.einsum('n,nd,ind->i',w,error,increments);obj0=float(np.sum(w[:,None]*error**2))
@@ -42,11 +44,10 @@ def run(a):
         if solve['success'] and solve['feasible']:
             for backtrack in range(9):
                 fraction=2.**(-backtrack);delta=radius*np.einsum('i,ijk->jk',fraction*z,basis);coef=theta+delta;candidate=network_order(model,data['xy'],base,coef,1024)
-                actual=float(np.sum(mechanics.dual(mechanics.force(candidate))**2));uvobj=float(np.sum(w[:,None]*((candidate-data['equilibrated_uv'])/abs(US))**2));bgobj=float(np.sum(wb[:,None]*((candidate-data['equilibrated_uv'])/abs(US))**2));ratio=float(np.linalg.norm(coef-theta)/np.linalg.norm(theta))
-                ok=bool(np.isfinite([actual,uvobj,bgobj,ratio]).all() and actual<=f2 and uvobj<=obj0 and bgobj<=bg0 and ratio<=.02*(1+1e-12))
-                trials.append(dict(state=st,backtrack=backtrack,factor=fraction,force_squared_ratio=actual/f2,uv_mse_ratio=uvobj/obj0,background_mse_ratio=bgobj/bg0,delta_relative=ratio,accepted=ok))
+                actual=float(np.sum(mechanics.dual(mechanics.force(candidate))**2));uvobj=float(np.sum(w[:,None]*((candidate-data['equilibrated_uv'])/abs(US))**2));bgobj=float(np.sum(wb[:,None]*((candidate-data['equilibrated_uv'])/abs(US))**2));bgiobj=float(np.sum(wbi[:,None]*((candidate-data['equilibrated_uv'])/abs(US))**2));ratio=float(np.linalg.norm(coef-theta)/np.linalg.norm(theta))
+                ok=bool(np.isfinite([actual,uvobj,bgobj,bgiobj,ratio]).all() and actual<=f2 and uvobj<=obj0 and bgobj<=bg0 and bgiobj<=bgi0 and ratio<=.02*(1+1e-12))
+                trials.append(dict(state=st,backtrack=backtrack,factor=fraction,force_squared_ratio=actual/f2,uv_mse_ratio=uvobj/obj0,background_mse_ratio=bgobj/bg0,inside_background_mse_ratio=bgiobj/bgi0,delta_relative=ratio,accepted=ok))
                 if ok:chosen=coef;uv=candidate;factor=fraction;accepted=True;break
-        window=compact_window(torch.tensor(data['xy']),model.lower,model.upper).detach().numpy()[:,0]
         for arm,v in [('E023',origin),('D007',old_uv),('background_guard',uv)]:metrics.append(dict(state=st,arm=arm,**scores(v,data,window)))
         ref=observables(data,data['equilibrated_uv']);d=ref['gp_damage']>.1;gpdist=np.maximum(np.asarray(read(cp/'metrics.json')['geometry']['lower'])-ref['gp_xy'],ref['gp_xy']-np.asarray(read(cp/'metrics.json')['geometry']['upper']));masks=dict(full=np.ones_like(d),damage=d,background=~d,inside_background=(~d)&(gpdist<.02).all(2))
         for arm,v in [('E023',origin),('D007',old_uv),('background_guard',uv)]:
@@ -54,11 +55,12 @@ def run(a):
             for region,mask in masks.items():
                 physical.append(dict(state=st,arm=arm,region=region,strain_error=compare(ob,ref,mask,'strain'),elastic_driver_error=compare(ob,ref,mask,'elastic_damage_driver'),active_energy_error=compare(ob,ref,mask,'active_energy'),rho_u=ob['rho_u']))
         final_bg=float(np.sum(wb[:,None]*((uv-data['equilibrated_uv'])/abs(US))**2));assert final_bg<=bg0*(1+1e-13)
+        final_bgi=float(np.sum(wbi[:,None]*((uv-data['equilibrated_uv'])/abs(US))**2));assert final_bgi<=bgi0*(1+1e-13)
         affinity=origin+abs(US)*np.einsum('i,ind->nd',factor*z,increments) if accepted else origin.copy();affine_gap=float(np.max(abs(uv-affinity)));assert affine_gap<=1e-12
         actualforce=mechanics.force(uv);actratio=float(np.sum(mechanics.dual(actualforce)**2)/f2);assert actratio<=1+1e-13
-        outside=float(abs(uv[window==0]-base[window==0]).max());assert outside==0
+        outside=float(abs(uv[window==0]-base[window==0]).max());assert outside==0;np.testing.assert_array_equal(uv[window==0],origin[window==0])
         branchchange=float(np.mean((mechanics.strains(uv)[...,:2].sum(2)>=0)!=mechanics.branches))
-        audits.append(dict(state=st,**solve,dimension=2,accepted=accepted,accepted_fraction=factor,background_mse_ratio=final_bg/bg0,affine_max_abs=affine_gap,delta_relative=float(np.linalg.norm(chosen-theta)/np.linalg.norm(theta)),actual_force_squared_ratio=actratio,branch_changed_gp_fraction=branchchange,outside_max_abs=outside,radius=radius))
+        audits.append(dict(state=st,**solve,dimension=2,accepted=accepted,accepted_fraction=factor,background_mse_ratio=final_bg/bg0,inside_background_mse_ratio=final_bgi/bgi0,affine_max_abs=affine_gap,delta_relative=float(np.linalg.norm(chosen-theta)/np.linalg.norm(theta)),actual_force_squared_ratio=actratio,branch_changed_gp_fraction=branchchange,outside_max_abs=outside,radius=radius))
         np.savez_compressed(a.out/f'{st}_background_guard.npz',uv=uv,head_coefficients=chosen,original_coefficients=theta,delta=chosen-theta,basis=basis,plane_z=z,accepted_fraction=factor)
         assert digest==state_digest(model) and all(p.grad is None for p in model.parameters());assert sha(inp)==inputhash and all(sha(Path(p))==v for p,v in before.items())
         assets.append(dict(**asset,original_file_hashes=before,direction_input_sha256=inputhash,model_digest=digest));peak=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*(1 if platform.system()=='Darwin' else 1024)
