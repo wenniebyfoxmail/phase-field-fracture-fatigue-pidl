@@ -292,7 +292,7 @@ def fig_A3_sn_comparison():
     C_pidl, m_pidl = power_fit(u_arr, nf_pidl)
     C_fem,  m_fem  = power_fit(u_arr, nf_fem)
 
-    u_fit = np.linspace(0.075, 0.135, 300)
+    u_fit = np.linspace(0.078, 0.123, 300)
 
     fig, ax = plt.subplots(figsize=(6.5, 5))
 
@@ -302,13 +302,11 @@ def fig_A3_sn_comparison():
     # Per-U_max colored scatter
     for umax, np_, nf_ in zip(u_arr, nf_pidl, nf_fem):
         col = COLORS_UMAX[umax]
-        ax.scatter(nf_,  umax, color=col, marker='s', s=80, zorder=5,
+        ax.scatter(umax, nf_, color=col, marker='s', s=80, zorder=5,
                    edgecolors='k', linewidths=0.7)
-        ax.scatter(np_, umax, color=col, marker='o', s=80, zorder=5,
+        ax.scatter(umax, np_, color=col, marker='o', s=80, zorder=5,
                    edgecolors='k', linewidths=0.7)
-        ax.plot([nf_, np_], [umax, umax], color=col, lw=0.8, alpha=0.35)
-        ax.annotate(f'{umax}', xy=(nf_, umax), xytext=(-16, 4),
-                    textcoords='offset points', fontsize=8, color=col)
+        ax.plot([umax, umax], [nf_, np_], color=col, lw=0.8, alpha=0.35)
 
     # Multi-seed error bar at Umax=0.12
     seeds_nf = []
@@ -320,15 +318,15 @@ def fig_A3_sn_comparison():
             seeds_nf.append(frac[0] + 1 if len(frac) else len(tip))
     if seeds_nf:
         mn, mx, mean_nf = min(seeds_nf), max(seeds_nf), np.mean(seeds_nf)
-        ax.errorbar(mean_nf, 0.12,
-                    xerr=[[mean_nf - mn], [mx - mean_nf]],
+        ax.errorbar(0.12, mean_nf,
+                    yerr=[[mean_nf - mn], [mx - mean_nf]],
                     fmt='none', color='#1f78b4', capsize=5, lw=1.5,
                     label=f'PIDL seed range [{mn}–{mx}]')
 
     # Power-law fits
-    ax.plot(C_fem  * u_fit ** m_fem,  u_fit, 'r-', lw=2.0,
+    ax.plot(u_fit, C_fem  * u_fit ** m_fem, 'r-', lw=2.0,
             label=f'FEM:  $N_f \\propto U^{{{m_fem:.2f}}}$')
-    ax.plot(C_pidl * u_fit ** m_pidl, u_fit, 'b--', lw=2.0,
+    ax.plot(u_fit, C_pidl * u_fit ** m_pidl, 'b--', lw=2.0,
             label=f'PIDL: $N_f \\propto U^{{{m_pidl:.2f}}}$')
 
     # Legend dummies
@@ -336,8 +334,15 @@ def fig_A3_sn_comparison():
     ax.scatter([], [], color='gray', marker='o', s=70, label='PIDL 8×400 seed 1', edgecolors='k', lw=0.7)
 
     ax.set_xscale('log')
-    ax.set_xlabel('Cycles to failure $N_f$', fontsize=12)
-    ax.set_ylabel('Displacement amplitude $U_{max}$', fontsize=12)
+    ax.set_yscale('log')
+    ax.set_xlim(0.077, 0.123)
+    ax.set_ylim(70, 450)
+    ax.set_xticks([0.08, 0.09, 0.10, 0.11, 0.12])
+    ax.set_xticklabels(['0.08', '0.09', '0.10', '0.11', '0.12'])
+    ax.set_yticks([80, 100, 150, 200, 300, 400])
+    ax.set_yticklabels(['80', '100', '150', '200', '300', '400'])
+    ax.set_xlabel('Displacement amplitude $U_{max}$', fontsize=12)
+    ax.set_ylabel('Cycles to failure $N_f$', fontsize=12)
     ax.set_title(f'S-N Curve: PIDL 8×400 vs FEM GRIPHFiTH\n'
                  f'FEM exponent {m_fem:.2f}  vs  PIDL exponent {m_pidl:.2f}',
                  fontsize=11)
@@ -360,6 +365,7 @@ def fig_A3_sn_comparison():
     plt.tight_layout()
     path = OUT_DIR / 'fig_A3_SN_comparison.png'
     fig.savefig(str(path), dpi=200, bbox_inches='tight')
+    fig.savefig(str(path.with_suffix('.pdf')), bbox_inches='tight')
     plt.close(fig)
     print(f'Saved: {path.name}')
 
