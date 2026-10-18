@@ -1,0 +1,38 @@
+{
+  "protocol": "precrack-initial-alignment-r2-20261018",
+  "run_id": "pf_s04e011_abc_20261018T115520Z",
+  "commit": "a0794cb4999d67c875470891cd7e37abcae89924",
+  "arms": [
+    "A",
+    "B",
+    "C"
+  ],
+  "updates_per_arm": 200,
+  "total_gpu_seconds_cap": 3600,
+  "load": 0.02999988,
+  "symmetry_weight": 0,
+  "weight_decay": 1e-05,
+  "energy_weights": [
+    1,
+    1,
+    1
+  ],
+  "FEM_supervision": 0,
+  "initial_inputs": "/mnt/data2/drtao/wennie/pf_s04e011_abc_20261018T115520Z/inputs/initial_inputs.npz",
+  "network": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_0.pt",
+  "history": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/checkpoint_step_0.pt",
+  "inputs": [
+    {
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_0.pt",
+      "bytes": 4510165
+    },
+    {
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/checkpoint_step_0.pt",
+      "bytes": 4497665
+    },
+    {
+      "path": "/mnt/data2/drtao/wennie/pf_s04e011_abc_20261018T115520Z/inputs/initial_inputs.npz",
+      "bytes": 3271767
+    }
+  ]
+}

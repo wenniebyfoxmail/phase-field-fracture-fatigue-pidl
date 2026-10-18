@@ -67,3 +67,7 @@ Second-layer cleanup details are in `docs/cleanup_manifest_2026-07-06.md`.
 Every future run must add one row here or in `docs/pidl_experiment_inventory.md`
 with: mechanism question, changed claim, cheaper diagnostic, minimal asset,
 producer machine, commit, runner, output root, verdict, and next action.
+
+### 2026-10-18 S04-E011 precrack/initial-field r2 — diagnostic
+
+Run pf_s04e011_abc_20261018T115520Z: same-origin A/B/C200 at c1s1, symmetry0, unchanged loss weights;600 updates35.664s, no new FEM/history commit/trajectory. C joint same-state FEM-comparator error58.343% below A, damage90.357% lower; B line-only joint reduction3.981%. Exact U0 construction, loaded0 and within-arm optimization are separate. Independent scoped code/evidence reviews pass; scalar/field gains do not establish pure initialization, convergence, physical feasibility, qualified teacher or full-trajectory baseline. [Result and source pointers](research/S04/S04-E011/runs/precrack_abc_20261018_result.md).

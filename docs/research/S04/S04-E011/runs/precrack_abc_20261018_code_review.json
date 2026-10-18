@@ -1,0 +1,57 @@
+{
+  "verdict": "REVIEW_PASS_CODE_READY_SCOPED",
+  "commit": "a0794cb4999d67c875470891cd7e37abcae89924",
+  "run_id": "pf_s04e011_abc_20261018T115520Z",
+  "reviewer": "independent read-only Codex reviewer physical_parity_review",
+  "scope": "tools/run_precrack_alignment.py plus frozen r2 A/B/C execution card and exact local recipe; unchanged map/helper findings reused",
+  "recipe_sha256": "4c77f023d898dbec2eeec738b50f529166edd9eb171cb81a95aa2f3a7f91e5f8",
+  "reviewed_utc": "2026-10-18T11:57:13.774731+00:00",
+  "decisive_blockers": [],
+  "checks": [
+    "Clean exact commit; recipe equals execution-card recipe after only permitted exact-commit substitution.",
+    "38 deterministic map/parity tests passed independently; no fit/optimizer loop executed.",
+    "Worker import is inert and does not load config/main; no target FEM file, supervised loss, history updater or trajectory continuation.",
+    "Actual full-node float32 GPU theta_R raw anchor captured once; C exact initial d0 and bitwise initial u/v equality checked before optimization; each arm starts same saved network with fresh Rprop.",
+    "A original h0, B hard-line-modified h0, C FEM d0; fatigue/previous-driver/H zeros and f=1; per-arm history and adapter buffers checked unchanged.",
+    "Exactly A/B/C x200 optimizer calls; original native-Q4 energy operator, gamma16875, log10(Eel+Ed+Ehist)+1e-5 named-weight regularizer; symmetry/FEM supervision zero.",
+    "Each arm saves U0 field, target-load update0/update200 physical fields and network/mapper/history/optimizer checkpoint; trace plus fixed endpoints covers first-step and maximum energy without target selection.",
+    "Internal global3500s check, invalid-domain/nonfinite/line-condition abort, no retry. External mandatory timeout TERM3590s + KILL5s remains below1hour."
+  ],
+  "execution_requirements": [
+    "Use the reviewed exact commit snapshot and exact recipe in the named fresh remote/output roots; verify RUN_PROVENANCE.json as worker requires.",
+    "Complete fresh GPU0/resource preflight and materialize the stated external timeout watchdog before launch; no substitution or extra arms."
+  ],
+  "excluded": [
+    "analysis/scoring script, to be reviewed separately",
+    "producer execution evidence",
+    "scientific improvement or convergence/trajectory claim"
+  ],
+  "review_activity": {
+    "training_steps": 0,
+    "FEM_solves": 0,
+    "SSH_producer_operations": 0,
+    "code_mutations": 0
+  },
+  "analysis_review": {
+    "verdict": "REVIEW_PASS_ANALYSIS_CODE_SCOPED",
+    "commit": "f05b3b36677351a60e640d98f268ae6818dca7c0",
+    "file": "tools/analyze_precrack_alignment.py",
+    "file_sha256": "7040bbafcba9bbd307d1edec3c4f33dbd8a4b19e077a76be11c76ffe3c25f32d",
+    "runner_byte_identical_to_reviewed_commit": true,
+    "checks": [
+      "Read-only source/AST review. No execution against absent future outputs and no new evaluation criteria.",
+      "Requires completed exact A/B/C200 run,600 updates, <3600s, zero history commits/FEM solves; FEMc1s1 load and exact canonical node/connectivity order checked.",
+      "Canonical float64 native-Q4 common operator used for all six0/200 endpoints and FEM. Positive Q4 lumped nodal mass Jfield formula/scales .12,.12,1 match r2.",
+      "Fixed ROI x[0,.08],abs(y)<=.04; separate u/v/d component fractions and line/free damage RMS; raw/active GP/Jacobian L2 with undefined relative error on zero reference norm.",
+      "Reports same-stage B-A, C-B bundle, C-A contrasts at0 and200 and within-arm0-to200 changes separately; no best-target endpoint choice.",
+      "Energy trace index1 correctly gives first-update physical energy; trace0..199 plus saved200 covers maximum. All initial U0 differences retained separately.",
+      "Primitive and signed-error maps use all endpoints, shared row scales and canonical native-Q4 interpolation. Damage profiles use all frozen sections and raw values; positive-part integrals limited to explicitly labelled morphology diagnostics.",
+      "No symmetry success criterion, target-FEM producer loss, clipping/cropping/mirroring, altered native energy operator or implicit trajectory extension."
+    ],
+    "excluded": [
+      "actual retrieved data provenance and outcome verification",
+      "rendered-figure inspection, pending execution",
+      "scientific-benefit verdict"
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+# S04 claim impact: 2026-10-18 precrack repair
+
+S04-E011 r2 synthetic single-block diagnostic, Run pf_s04e011_abc_20261018T115520Z: C fixed200 joint u/v/d error to existing same-state FEM is58.343% below legacy A, damage RMS90.357% lower, whereas B line-only primary improvement is3.981%. Initial U0 construction and within-arm optimization are separately retained. The next development starting point is aligned C; remaining primary error is96.12% displacement. This is conditional field/history/representation progress, not pure initialization, converged physics, a qualified teacher or a full-trajectory baseline. No new FEM/trajectory/run was added. [Result and limitations](S04-E011/runs/precrack_abc_20261018_result.md).

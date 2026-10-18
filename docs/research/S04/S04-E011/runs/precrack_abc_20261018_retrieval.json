@@ -1,0 +1,39 @@
+{
+  "status": "VERIFIED_SCORING_SUBSET_FULL_CHECKPOINTS_RETAINED_REMOTE",
+  "package_bytes": 5295396,
+  "retrieved_files": 29,
+  "source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_abc_20261018T115520Z/readout",
+  "scope": "All JSON/NPY and all NPZ arrays except raw_gp/active_gp from fields.npz; exact nodal u/v/d retained with bitwise extraction check. Checkpoints and GP outputs remain in immutable producer archive.",
+  "source_files": 31,
+  "checkpoint_files": [
+    {
+      "relative": "A/update000/checkpoint.pt",
+      "bytes": 9006325
+    },
+    {
+      "relative": "A/update200/checkpoint.pt",
+      "bytes": 18029565
+    },
+    {
+      "relative": "B/update000/checkpoint.pt",
+      "bytes": 9787829
+    },
+    {
+      "relative": "B/update200/checkpoint.pt",
+      "bytes": 18811071
+    },
+    {
+      "relative": "C/update000/checkpoint.pt",
+      "bytes": 10829749
+    },
+    {
+      "relative": "C/update200/checkpoint.pt",
+      "bytes": 19853058
+    }
+  ],
+  "lossless_extraction": "producer np.array_equal check for every retained array",
+  "transport": "SCP exit0, expected byte count, XZ checksum/extraction success",
+  "FEM_reference": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/c0001_s001_post_commit.mat",
+  "runner_commit": "a0794cb4999d67c875470891cd7e37abcae89924",
+  "analysis_commit": "f05b3b36677351a60e640d98f268ae6818dca7c0"
+}

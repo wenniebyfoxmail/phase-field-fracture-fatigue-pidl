@@ -1,0 +1,126 @@
+{
+  "verdict": "REVIEW_PASS_SCOPED_EVIDENCE",
+  "run_id": "pf_s04e011_abc_20261018T115520Z",
+  "runner_commit": "a0794cb4999d67c875470891cd7e37abcae89924",
+  "analysis_commit": "f05b3b36677351a60e640d98f268ae6818dca7c0",
+  "analysis_nonmaterial_diff_reviewed": "Three README-only labels changed; no numeric or plotting logic changed.",
+  "reviewed_utc": "2026-10-18T12:09:11.111900+00:00",
+  "reviewer": "independent read-only Codex physical_parity_review",
+  "decisive_blockers": [],
+  "allowed_conclusion": "On this one previously seen synthetic c1s1 development block at fixed history and equal200-update budgets, hard-line plus FEM-initial-field/history/anchored-representation package C yields lower same-state joint FEM field disagreement than A and B. The bounded component gain is supported; C-B is not pure initialization or an isolated causal component.",
+  "execution": {
+    "status": "succeeded",
+    "exit_code": 0,
+    "worker_pid": 2740931,
+    "host": "GPUServer8",
+    "gpu": 0,
+    "updates_per_arm": 200,
+    "total_updates": 600,
+    "elapsed_seconds": 35.664097126573324,
+    "history_updates": 0,
+    "FEM_solves": 0,
+    "symmetry_weight": 0
+  },
+  "retrieval": {
+    "status": "VERIFIED_SCORING_SUBSET_FULL_CHECKPOINTS_RETAINED_REMOTE",
+    "local_archive_members_byte_equal_to_extracted_files": 29,
+    "independently_checked": "Local scoring.tar.xz decompressed successfully; all29 file members byte-equal to local extracted files. All6 exact nodal u/v/d endpoint arrays, histories, U0 arrays, traces and receipts inspected. Canonical topology/order matched original c1s1 FEM.",
+    "producer_assertion": "package_scoring.py checks retained NPZ arrays with np.array_equal against original producer arrays; retrieval_manifest.json explicitly distinguishes original source bytes from the reduced extraction.",
+    "not_retrieved_or_independently_reopened": "6 full network/mapper/optimizer checkpoints and raw_gp/active_gp outputs remain remote. This review did not access SSH or claim full-checkpoint retrieval/roundtrip verification.",
+    "remote_source": "/mnt/data2/drtao/pidl_archives/pf_s04e011_abc_20261018T115520Z/readout"
+  },
+  "independent_numeric_checks": {
+    "primary_method": "Canonical native-Q4 shape/Jacobian weights; positive lumped nodal masses; independently evaluated direct norm of sqrt(m)*[du/.12,dv/.12,dd]/sqrt(3 sum(m)).",
+    "GP_method": "Independent expanded plane-strain AMOR formula and g=(1-N*d)^2 at345632 native GP, same float64 geometry for all endpoints/reference.",
+    "max_absolute_difference_from_scored_primary_and_GP_relative_metrics": 3.3306690738754696e-16,
+    "positive_lumped_mass_sum": 0.9999999999999996,
+    "all_six_endpoints_verified": true,
+    "initial_and_history_checks": "Initial u/v are bitwise identical across A/B/C. U0 u/v zero. C U0 and loaded update0 d equal declared FEM float32 d0 exactly. A initial history equals original h0; B equals h0 with line1; C equals d0. Initial output equals own history in all arms. B/C all251 line nodes exactly1 at0/200; B0 free d identical to A0.",
+    "trace_checks": "Each before_update list exactly0..199; all objectives/energy components finite and total original energy positive; trace index1 and saved endpoint independently match reported first-step jump/maximum.",
+    "reductions": {
+      "J_field": {
+        "A200": 0.003371956148706488,
+        "B200": 0.0032377193180686,
+        "C200": 0.001404643134956264,
+        "C_vs_A_reduction_percent": 58.34337479462486,
+        "C_vs_B_reduction_percent": 56.61627840568413
+      },
+      "u_RMS_over_Uref": {
+        "A200": 0.0019505338968610678,
+        "B200": 0.0017405119227591039,
+        "C200": 0.0016185552458057664,
+        "C_vs_A_reduction_percent": 17.01988627777985,
+        "C_vs_B_reduction_percent": 7.006942920563775
+      },
+      "v_RMS_over_Uref": {
+        "A200": 0.0023699168772611623,
+        "B200": 0.0021766925083633276,
+        "C200": 0.0017520760837476126,
+        "C_vs_A_reduction_percent": 26.070146149073746,
+        "C_vs_B_reduction_percent": 19.50741425278243
+      },
+      "d_RMS": {
+        "A200": 0.004968820415195859,
+        "B200": 0.0048663237786394946,
+        "C200": 0.00047914019114821403,
+        "C_vs_A_reduction_percent": 90.35706362655235,
+        "C_vs_B_reduction_percent": 90.15395988957047
+      },
+      "ROI_J_field": {
+        "A200": 0.02846653095011599,
+        "B200": 0.028507332629181717,
+        "C200": 0.0015852367856115696,
+        "C_vs_A_reduction_percent": 94.43122596009505,
+        "C_vs_B_reduction_percent": 94.43919637718462
+      },
+      "raw_relative_L2": {
+        "A200": 0.44909649298692916,
+        "B200": 0.42849620309561126,
+        "C200": 0.33493621860805767,
+        "C_vs_A_reduction_percent": 25.419987945039267,
+        "C_vs_B_reduction_percent": 21.834495571172507
+      },
+      "active_relative_L2": {
+        "A200": 0.2839481037583832,
+        "B200": 0.3128859857184756,
+        "C200": 0.24617179176121792,
+        "C_vs_A_reduction_percent": 13.303949382704749,
+        "C_vs_B_reduction_percent": 21.322205852097476
+      }
+    },
+    "within_arm_error_reduction_percent": {
+      "A": 78.08897151493106,
+      "B": 78.96006741833332,
+      "C": 90.74062569119029
+    }
+  },
+  "plots": {
+    "inspected": [
+      "error_stages.png",
+      "primitive_fields.png",
+      "primitive_errors.png",
+      "front_fields.png",
+      "front_errors.png",
+      "damage_profiles.png"
+    ],
+    "result": "No blank/wrong-stage/flipped-coordinate/incorrect signed-error panel found. All stages are included; row scales shared; error scales symmetric. Front comparison visibly retains C residuals and the damage profiles retain small negative/off-axis tails. Stage0-to200 connector is an endpoint comparison, not a measured convergence trajectory."
+  },
+  "material_caveats": [
+    "C changes initial spatial field, own hist_alpha and the anchored representation/tangent. C-B is this conditional bundle; do not label58.34percent gain pure initialization or sum sequential percentages as independent contributions.",
+    "C has improved U0 initial damage by construction, while loaded C0 still has nonzero u/v and d disagreement to FEMc1s1. Loaded update0 and200 comparisons are separate from the U0 identity check.",
+    "First-step physical-energy ratios A1701.239/B1382.902/C1187.813 are finite but very large;200 fixed updates do not establish convergence, stability or strict feasible evolution.",
+    "C200 retains d_min=-0.0001638596 and healing_max=0.0018659234 against its own initial lower. Hard251-node line is exact, but free nodes are neither hard boxed nor hard irreversible.",
+    "Free-u residual C200=.003436514 exceeds A200=.003355417 although below B200=.003744837; lower FEM field error is not monotone improvement in every numerical diagnostic.",
+    "B200 joint error is3.981percent lower than A200 but active-field relativeL2 worsens from.283948 to.312886; line-only gain is limited and not universal.",
+    "C retains local mismatch: x=.01 positive damage-profile mass is about40.25percent above FEM and x=.02 has a very small off-axis positive tail despite FEM zero there. Do not claim exact full-field alignment or restored propagation.",
+    "Single seen synthetic development block, fixed committed fatigue f=1, no history commit, no new FEM, no trajectory/seed uncertainty. FEM trial-fatigue/staggered/gamma/hard-constraint differences remain; no physical truth, teacher qualification, full-method equivalence or baseline promotion.",
+    "Original E011 and prior physical-parity pilot verdicts remain unchanged; no further producer run or budget extension is authorized by this review."
+  ],
+  "review_activity": {
+    "new_training_steps": 0,
+    "new_FEM_solves": 0,
+    "SSH_operations": 0,
+    "code_edits": 0,
+    "numeric_recomputation": "only frozen metrics from existing local nodal arrays; no new criteria"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "run_id": "pf_s04e011_abc_20261018T115520Z",
+  "remote_root": "/mnt/data2/drtao/wennie/pf_s04e011_abc_20261018T115520Z",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/pf_s04e011_abc_20261018T115520Z",
+  "status": "succeeded",
+  "source_worktree": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/pidl-physical-symmetry-20261017",
+  "target_FEM": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/c0001_s001_post_commit.mat",
+  "authorization": "User 2026-10-18 exact A/B/C 200 each <=1 GPU hour, symmetry0 other weights unchanged; direct run after review",
+  "watchdog": "timeout --signal=TERM --kill-after=5s 3590s; internal global3500s; no retry",
+  "recipe": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_abc_20261018T115520Z/recipe.json",
+  "wrapper_pid": 2740928,
+  "gpu": 0,
+  "producer": "Taobo drtao@172.16.100.2 / GPUServer8",
+  "commit": "a0794cb4999d67c875470891cd7e37abcae89924",
+  "analysis_commit": "f05b3b36677351a60e640d98f268ae6818dca7c0",
+  "dirty": false,
+  "start_utc": "2026-10-18T12:03:43.844998+00:00",
+  "log": "/mnt/data2/drtao/wennie/pf_s04e011_abc_20261018T115520Z/logs/run.log",
+  "command": [
+    "bash",
+    "/mnt/data2/drtao/wennie/pf_s04e011_abc_20261018T115520Z/launch.sh"
+  ],
+  "worker_pid": 2740931,
+  "elapsed_seconds": 35.664097126573324,
+  "total_updates": 600,
+  "history_updates": 0,
+  "FEM_solves": 0,
+  "retrieval": "verified_scoring_subset",
+  "producer_package_bytes": 5295396,
+  "source_archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_abc_20261018T115520Z/retrieved/readout",
+  "analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_abc_20261018T115520Z/analysis",
+  "full_checkpoints": "6 remote-only checkpoint.pt files listed in retrieval manifest"
+}

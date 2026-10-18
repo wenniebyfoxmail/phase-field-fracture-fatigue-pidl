@@ -1,0 +1,126 @@
+{
+  "primary": "mass-weighted joint u/v/d RMS: scales .12,.12,1",
+  "reference": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/c0001_s001_post_commit.mat",
+  "native_operator": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/analysis/run_multicycle_cross_replay.py",
+  "run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_abc_20261018T115520Z/retrieved/readout",
+  "elapsed_seconds": 35.664097126573324,
+  "initial": [
+    {
+      "arm": "A",
+      "damage_RMS_to_FEM_U0_float32": 0.005118829975309849,
+      "damage_Linf_to_FEM_U0_float32": 0.35492728650569916,
+      "line_Linf": 0.009962081909179688
+    },
+    {
+      "arm": "B",
+      "damage_RMS_to_FEM_U0_float32": 0.005111057623654251,
+      "damage_Linf_to_FEM_U0_float32": 0.35492728650569916,
+      "line_Linf": 0.0
+    },
+    {
+      "arm": "C",
+      "damage_RMS_to_FEM_U0_float32": 0.0,
+      "damage_Linf_to_FEM_U0_float32": 0.0,
+      "line_Linf": 0.0
+    }
+  ],
+  "optimization": [
+    {
+      "arm": "A",
+      "before": 0.015389310232535529,
+      "after": 0.003371956148706488,
+      "error_reduction_percent": 78.08897151493106
+    },
+    {
+      "arm": "B",
+      "before": 0.015388449109812331,
+      "after": 0.0032377193180686,
+      "error_reduction_percent": 78.96006741833332
+    },
+    {
+      "arm": "C",
+      "before": 0.015169957365475922,
+      "after": 0.001404643134956264,
+      "error_reduction_percent": 90.74062569119029
+    }
+  ],
+  "contrasts": [
+    {
+      "comparison": "B-A",
+      "update": 0,
+      "before": 0.015389310232535529,
+      "after": 0.015388449109812331,
+      "error_reduction_percent": 0.0055955901218762705,
+      "meaning": "hard line/current+history conditional effect"
+    },
+    {
+      "comparison": "C-B",
+      "update": 0,
+      "before": 0.015388449109812331,
+      "after": 0.015169957365475922,
+      "error_reduction_percent": 1.4198425245926183,
+      "meaning": "FEM initial field/history/representation bundle; not pure initialization"
+    },
+    {
+      "comparison": "C-A",
+      "update": 0,
+      "before": 0.015389310232535529,
+      "after": 0.015169957365475922,
+      "error_reduction_percent": 1.425358666146448,
+      "meaning": "combined alignment"
+    },
+    {
+      "comparison": "B-A",
+      "update": 200,
+      "before": 0.003371956148706488,
+      "after": 0.0032377193180686,
+      "error_reduction_percent": 3.980977946269615,
+      "meaning": "hard line/current+history conditional effect"
+    },
+    {
+      "comparison": "C-B",
+      "update": 200,
+      "before": 0.0032377193180686,
+      "after": 0.001404643134956264,
+      "error_reduction_percent": 56.61627840568413,
+      "meaning": "FEM initial field/history/representation bundle; not pure initialization"
+    },
+    {
+      "comparison": "C-A",
+      "update": 200,
+      "before": 0.003371956148706488,
+      "after": 0.001404643134956264,
+      "error_reduction_percent": 58.34337479462486,
+      "meaning": "combined alignment"
+    }
+  ],
+  "energy": [
+    {
+      "arm": "A",
+      "initial": 0.005642097967211157,
+      "after_first": 9.598559141217265,
+      "first_ratio": 1701.239361138168,
+      "maximum": 9.598559141217265,
+      "endpoint": 0.005487037771672476
+    },
+    {
+      "arm": "B",
+      "initial": 0.005696957930922508,
+      "after_first": 7.878336687514093,
+      "first_ratio": 1382.9023810674962,
+      "maximum": 7.878336687514093,
+      "endpoint": 0.005544822093725088
+    },
+    {
+      "arm": "C",
+      "initial": 0.005659214919432998,
+      "after_first": 6.722086840076372,
+      "first_ratio": 1187.8126093062153,
+      "maximum": 6.722086840076372,
+      "endpoint": 0.005519203652511351
+    }
+  ],
+  "interpretation": "negative reduction means worse; one seen synthetic development state; no convergence/generalization/physical-validity claim",
+  "validity": "same canonical Q4 nodes; frozen histories; no FEM loss or best-FEM checkpoint selection; no symmetry",
+  "remaining_model_differences": "FEM trial-fatigue/staggered/gamma421875/hard constraints versus PIDL committed-f/joint/gamma16875"
+}
