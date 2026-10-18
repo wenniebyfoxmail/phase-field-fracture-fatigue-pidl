@@ -1,0 +1,8 @@
+{
+  "run": "C:\\Users\\xw436\\pavetrack_runs\\S01-E026-R001",
+  "reviewed_commit": "ed248277bb7156743dea998178322369d890e04b",
+  "wrapper_pid": 15888,
+  "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\xw436\\pavetrack_stage\\S01-E026-R001-v1\\scripts\\pavetrack_translation_control\\producer.ps1\" -Source \"C:\\Users\\xw436\\pavetrack_stage\\S01-E026-R001-v1\" -ReviewedCommit \"ed248277bb7156743dea998178322369d890e04b\" -ManifestSha256 \"4e2154eab1847a99fc7bb69827d0a26b9a9b06301dc80f7dc120bc098344a6de\"",
+  "state": "launch_requested",
+  "started_at": "2026-10-18T23:24:01.5625389+01:00"
+}

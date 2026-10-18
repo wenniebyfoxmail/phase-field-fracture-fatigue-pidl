@@ -1,0 +1,41 @@
+{
+  "source_commit": "ed248277bb7156743dea998178322369d890e04b",
+  "archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S01-E026/runs/S01-E026-R001/S01-E026-R001-evidence-v1.zip",
+  "sha256": "1a1a656a87991a17a9ed48f045eb8e2e63eb59d3def0563e67db2ea0078687ea",
+  "bytes": 5408802,
+  "members": 43,
+  "retrieval": "verified",
+  "source_image_reads": 0,
+  "qualification_reference_reads": 0,
+  "python_status": {
+    "state": "completed",
+    "counts": {
+      "models": 6,
+      "updates": 768,
+      "training_rows": 6144,
+      "prediction_rows": 576
+    }
+  },
+  "wrapper_status": {
+    "reviewed_commit": "ed248277bb7156743dea998178322369d890e04b",
+    "updated_at": "2026-10-18T23:24:19.3778181+01:00",
+    "reason": "E026 stopped:",
+    "state": "stopped"
+  },
+  "resource": {
+    "elapsed_seconds": 14.561999999918044,
+    "peak_RSS_bytes": 1523974144,
+    "peak_GPU_allocated_bytes": 9743360,
+    "peak_GPU_reserved_bytes": 27262976,
+    "counts": {
+      "models": 6,
+      "updates": 768,
+      "training_rows": 6144,
+      "prediction_rows": 576
+    },
+    "source_image_reads": 0,
+    "qualification_reference_reads": 0,
+    "OOF": false,
+    "E003_loaded": false
+  }
+}

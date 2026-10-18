@@ -43,3 +43,7 @@
 纯离线脚本scripts/e025_cached_scale_diagnostic.py，Pillow12.3.0；最终3.64秒，复算3.46秒、峰值RSS972914688bytes（0.906GiB），输出2135948bytes；四个数组/坐标合成不变量通过，contexts/sites/case_rule/PNG复算字节一致。系统Pillow10.4首次栅格化边界差1格，明确停止，改已有bundled12.3后全量零差异；早期身份null和缺绘图库退出均保留诊断目录，不改旧证据。
 
 事实源：local_archive/experiments/S01-E025/runs/S01-E025-R001/D4_cached_scale/{contexts.csv,sites.csv,decision_table.csv,summary.json,F04_cached_scale.png}；RSS及复算在D4_verification/summary.json。原76成员固定ZIP与原图/标注/模型不改。D4完成→D5仅为HQ选择单一修复；E025区域结论和下游null保持不变。
+
+## Subsequent bounded follow-up
+
+HQ selected the paired-translation candidate; independently registered/reviewed E026 executed its uniqueR001 (not E025 retry). D5 results are S01-E026/runs/S01-E026-R001/result.md:weak pairingL1,0stablefold, no selector/OOF; E025 original evidence/verdict unchanged. No additional sourceRGB or qualification-reference reads.
