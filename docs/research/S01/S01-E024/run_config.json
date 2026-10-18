@@ -1,0 +1,372 @@
+{
+  "locations": [
+    "24",
+    "95",
+    "151",
+    "514",
+    "728",
+    "1400",
+    "1577",
+    "1638",
+    "2027",
+    "3662",
+    "4494",
+    "5508"
+  ],
+  "held_groups": [
+    [
+      "24",
+      "514",
+      "1577",
+      "3662"
+    ],
+    [
+      "95",
+      "728",
+      "1638",
+      "4494"
+    ],
+    [
+      "151",
+      "1400",
+      "2027",
+      "5508"
+    ]
+  ],
+  "excluded_locations": [
+    "353",
+    "1459",
+    "2028",
+    "5982"
+  ],
+  "input_counts": {
+    "images": 835,
+    "original_rows": 43347,
+    "corrections": 31156
+  },
+  "policy": {
+    "iou": 0.5,
+    "false_positives_per_image": 1,
+    "original_duplicate_iou": 0.7,
+    "correction_duplicate_iou": 0.5,
+    "score": "sqrt(original_proposer_confidence * corrected_E003_probability)",
+    "eligibility": "unchanged E012 base eligible19384, additionally strict positive original/corrected intersection; base indices/eligibility remain immutable",
+    "correction_order": "learned Q*N*A descending, unchanged s0 descending, image/box/key; no detector rescore",
+    "max_per_image": 1,
+    "max_per_source_group": 3,
+    "source_group_unit": "fixed four-site E012 group; apply same cap to each included group during FIT/jackknife/held",
+    "originals": "immutable prefix, all original scores unchanged; retain E003 as deployed comparator"
+  },
+  "producer": {
+    "hostname": "D-26-09",
+    "ssh_alias": "gpu-server",
+    "account": "ad\\xw436",
+    "python": "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "gpu_physical_index": 1,
+    "gpu_logical_index": 0,
+    "CUDA_VISIBLE_DEVICES": "1",
+    "gpu_uuid": "GPU-3d74ea12-5d84-a619-90b2-c0b1f104599a",
+    "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition",
+    "fallback": false,
+    "GPU": true
+  },
+  "locality": {
+    "predicate": "min(old_x2,new_x2)>max(old_x1,new_x1) AND min(old_y2,new_y2)>max(old_y1,new_y1)",
+    "edge_contact": false,
+    "epsilon": false,
+    "threshold_search": false,
+    "trainable_parameters": 0,
+    "field": "positive_intersection",
+    "base_eligibility_unchanged": true
+  },
+  "protocol": "S01-E024-v1",
+  "proposed_run_id": "S01-E024-R001",
+  "claim_class": "C2 current-image real-road conditional OOF protected detection; prerequisite inner-location regional localisation capability",
+  "feature": {
+    "probability_clip": 1e-06,
+    "GT_free": true,
+    "names": [
+      "corrected_probability",
+      "original_corrected_IoU",
+      "inverse_nonparent_overlap",
+      "inverse_original_score_pressure",
+      "corrected_supervised_region_concentration",
+      "paired_supervised_region_gain"
+    ],
+    "fit_scales": false,
+    "reference_cutoff_as_feature": false,
+    "thresholds": [
+      0,
+      0.0625,
+      0.125,
+      0.25,
+      "abstain"
+    ]
+  },
+  "fit": {
+    "expected_positive_GT": [
+      3,
+      5,
+      6
+    ],
+    "expected_positive_sites": [
+      3,
+      3,
+      4
+    ],
+    "model": "independent6049-parameter RGB spatial CNN qualified inside FIT before unchanged11-coefficient Q/N/A",
+    "ridge": 0.01,
+    "numerical_tolerance": 1e-09,
+    "heads": {
+      "Q": {
+        "columns": [
+          0,
+          1,
+          4,
+          5
+        ],
+        "target": "corrected_max_IoU"
+      },
+      "N": {
+        "columns": [
+          2,
+          4,
+          5
+        ],
+        "target": "valid_localisation AND novel_reference"
+      },
+      "A": {
+        "columns": [
+          3
+        ],
+        "target": "cached admitted AND lost==0 AND FP==0"
+      }
+    },
+    "diagnostic_scope": "no deletion refits; inner localizer qualification then unchanged conditional selector OOF",
+    "model_sets": 3,
+    "head_fits": 9
+  },
+  "criterion": {
+    "name": "pooled12_OOF_protected_net_gain",
+    "old_E003_retention_minimum": 0.95,
+    "net_new_GT_minimum": 1,
+    "macro_delta_strictly_positive": true,
+    "no_all_folds_active_gate": true
+  },
+  "budget": {
+    "runs": 1,
+    "cpu_threads": 1,
+    "total_wall_seconds": 3600,
+    "peak_RSS_bytes": 4294967296,
+    "model_sets": 3,
+    "model_fits": 9,
+    "linear_solves": 9,
+    "training_target_rows": 38768,
+    "context_feature_builds": 6,
+    "prediction_rows": 58152,
+    "fit_baseline_metrics": 3,
+    "calibration_policy_comparisons": 15,
+    "final_OOF_comparisons": 1,
+    "held_group_comparisons": 3,
+    "new_singleton_U": 0,
+    "head_forwards": 0,
+    "backbone_forwards": 0,
+    "pixel_reads": 841,
+    "gradient_steps": 0,
+    "full12_refits": 0,
+    "source_image_decodes": 835,
+    "spatial_feature_rows": 31156,
+    "case_image_decodes": 6,
+    "source_image_reads": 841,
+    "upper_bound_counters": [
+      "model_fits",
+      "source_image_reads",
+      "fit_baseline_metrics",
+      "calibration_policy_comparisons",
+      "training_target_rows",
+      "final_OOF_comparisons",
+      "model_sets",
+      "pixel_reads",
+      "pixel_evaluation_rows",
+      "case_image_decodes",
+      "localizer_prediction_rows",
+      "held_group_comparisons",
+      "pixel_map_prediction_rows",
+      "context_feature_builds",
+      "prediction_rows",
+      "linear_solves",
+      "max_semantic_batches"
+    ],
+    "head_input_gradient_rows": 0,
+    "backbone_backward_rows": 0,
+    "parameter_gradient_steps": 0,
+    "max_semantic_batches": 4000,
+    "peak_GPU_allocated_bytes": 4294967296,
+    "peak_GPU_reserved_bytes": 4294967296,
+    "pixel_head_fits": 0,
+    "pixel_training_sample_rows": 0,
+    "pixel_map_prediction_rows": 93468,
+    "pixel_evaluation_rows": 31156,
+    "feature_cache_bytes": 1531379712,
+    "archive_bytes_limit": 3221225472,
+    "localizer_models": 3,
+    "localizer_steps": 768,
+    "localizer_training_rows": 12288,
+    "localizer_backward_rows": 12288,
+    "localizer_qualification_rows": 24476,
+    "localizer_qualifications": 3,
+    "localizer_prediction_rows": 93468,
+    "localizer_mask_rows": 62312,
+    "localizer_mask_bytes": 63807488
+  },
+  "fresh_access": false,
+  "execution_authorized": false,
+  "spatial": {
+    "context_padding_fraction": 0.25,
+    "mass_floor": 1e-12,
+    "case_limit": 6,
+    "input_size": 128,
+    "grid_size": 32,
+    "batch_size": 32,
+    "dtype": "float32",
+    "source": "independent RGB CNN; no E003 encoder/checkpoint use",
+    "backend": {
+      "matmul_precision": "highest",
+      "cuda_matmul_allow_tf32": false,
+      "cudnn_allow_tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true
+    }
+  },
+  "pixel_component": {
+    "threshold": 0.5,
+    "comparison": ">=",
+    "empty_empty_Dice": 1,
+    "FIT_constant": "unweighted foreground/total over all ownFIT contexts x16fixed samples",
+    "Brier": "mean((P-Y)^2) per context",
+    "aggregate": "same E023 percontext->image->12location; native32grid; only if connection qualified and OOF frozen",
+    "foreground_context_subset": "reference Y.any(); empty image/location null, no model selection",
+    "independence": "overlapping contexts and pixels are not independent units"
+  },
+  "localizer": {
+    "architecture": [
+      [
+        3,
+        8,
+        3,
+        1,
+        1
+      ],
+      [
+        8,
+        16,
+        3,
+        2,
+        1
+      ],
+      [
+        16,
+        16,
+        3,
+        2,
+        1
+      ],
+      [
+        16,
+        16,
+        3,
+        1,
+        1
+      ],
+      [
+        16,
+        1,
+        1,
+        1,
+        0
+      ]
+    ],
+    "activation": "ReLU after first4conv; final logits; sigmoid only prediction",
+    "parameters": 6049,
+    "seed": 24000,
+    "steps_per_fold": 256,
+    "batch_size": 16,
+    "optimizer": "AdamW",
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "loss": "mean((sigmoid(logits)-Y)^2)+.1*(1-(2*sum(P*Y)+1)/(sum(P)+sum(Y)+1)), per context then batch mean",
+    "soft_dice_weight": 0.1,
+    "initial_bias": "logit(clamp own training6 hierarchical foreground rate,1e-4,1-1e-4))",
+    "sampling": "fixed seeded uniform site then image then candidate context, with replacement; no GT-based crop selection/augment/early stopping",
+    "input": "same union+25%context,RGB PIL bilinear128,CHW float32/255; no normalisation fit",
+    "target": "same original-size polygon raster,32x32 floor-centered binary samples; only own train6 or qualification2 references",
+    "qual_locations": [
+      [
+        "1638",
+        "2027"
+      ],
+      [
+        "24",
+        "2027"
+      ],
+      [
+        "24",
+        "1638"
+      ]
+    ],
+    "train_locations": [
+      [
+        "95",
+        "151",
+        "728",
+        "1400",
+        "4494",
+        "5508"
+      ],
+      [
+        "151",
+        "514",
+        "1400",
+        "1577",
+        "3662",
+        "5508"
+      ],
+      [
+        "95",
+        "514",
+        "728",
+        "1577",
+        "3662",
+        "4494"
+      ]
+    ],
+    "train_rows": [
+      10570,
+      13159,
+      14107
+    ],
+    "qual_rows": [
+      7729,
+      8116,
+      8631
+    ],
+    "qual_images": [
+      222,
+      229,
+      225
+    ],
+    "split_rule": "largest existing allowed-image-count site in each remaining E012 group, tie numeric ID; fixed from saved identity counts without new metrics",
+    "freeze": "all3finalstep model states hash-frozen before any qualification prediction; no refit after qualification",
+    "qualification": {
+      "margin": 1e-06,
+      "Brier": "qual context32x32 MSE, equal context/image then images/site then2sites; beat min(owntrain6 hierarchical prevalence constant,all0,all1)",
+      "foreground_Dice": "fixed P>=.5; reference-foreground contexts only, equal contexts/image then nonempty images/site then2sites; beat max(owntrain6 prevalence>=.5 constant,all0,all1)",
+      "rule": "both differences exceed1e-6 and both qualification sites have foreground support; all3folds must pass before ANY role fit/fullbank scoring or outer held metric",
+      "missing": "missing foreground site or single-class own training -> inconclusive, no connection",
+      "no_selection": "one architecture/seed/last step; qualification admits frozen models only; no checkpoint/threshold/model search"
+    }
+  },
+  "resource_notes": "GPU1/CPU1/3600s/RSS4GiB/GPU4GiB; >=12GiB temporary free disk; RGBcache1.531GB+FITmasks63.8MB+qualificationmaps100.3MB+conditionalmaps382.8MB; archive<=3GiB. StageB conditional counters must be exact if admitted,all0 if rejected."
+}
