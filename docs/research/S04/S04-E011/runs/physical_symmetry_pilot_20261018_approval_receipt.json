@@ -1,0 +1,7 @@
+{
+  "date": "2026-10-18",
+  "user_text": "同意按这张验证卡执行，各200步、总预算不超过1 GPU小时。完成必要的runner准备和复审后直接运行，给我看FEM、control和候选的场图及实际改善。不要求严格对称，暂不扩展完整轨迹或新FEM。",
+  "scope": "fixed c1s2, two fresh RPROP arms, no history commit, no new FEM/trajectory/holdout",
+  "quota_stop": "prior remaining<80 percent rule retained",
+  "run_id": "pf_s04e011_psym_f3f9742_20261018T100235Z"
+}

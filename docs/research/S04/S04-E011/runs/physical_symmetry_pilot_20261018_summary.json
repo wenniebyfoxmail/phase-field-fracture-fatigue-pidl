@@ -1,0 +1,35 @@
+{
+  "primary": {
+    "control": 0.25718085744329244,
+    "candidate": 0.2545695950218048,
+    "relative_change_percent": -1.015340895682093
+  },
+  "components": {
+    "active_relative_L2": {
+      "control": 0.25718085744329244,
+      "candidate": 0.2545695950218048,
+      "relative_change_percent": -1.015340895682093
+    },
+    "raw_relative_L2": {
+      "control": 0.40533149346202746,
+      "candidate": 0.40938031671622216,
+      "relative_change_percent": 0.9988918501280919
+    },
+    "uv_mass_RMS_over_Uref": {
+      "control": 0.0017239289892116568,
+      "candidate": 0.0016963901812387346,
+      "relative_change_percent": -1.5974444507436236
+    },
+    "damage_mass_RMS": {
+      "control": 0.004246591265852618,
+      "candidate": 0.004245285606554183,
+      "relative_change_percent": -0.030746055287533824
+    }
+  },
+  "elapsed_seconds": 26.319353480823338,
+  "lambda0": 0.12718020965483381,
+  "updates": 400,
+  "interpretation": "negative percent means lower same-state FEM disagreement; exploratory single-state result only",
+  "native_operator": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/analysis/run_multicycle_cross_replay.py",
+  "reference": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/c0001_s002_post_commit.mat"
+}

@@ -25,3 +25,7 @@ Reproduce only the authorized local checks:
 The saved-field script requires `--root` and a fresh `--out`; it refuses overwrite. `tools/summarize_saved_error_parity.py` consumes its saved arrays plus the owner's existing c83 display arrays. Probe resolution sensitivity is retained, especially for strong near-tip driver gradients; it is not a converged physical symmetry test.
 
 Obsidian: one concise milestone plus exact rendered PNGs appended to the existing `mesh对齐.md`; one current Roadmap entry updated, preserving other owners' text and historical links. Nightly usage checks remained above the80% remaining stop line (latest checked92%). No further work is opened once the only next action requires a new training authorization.
+
+## 2026-10-18 approved bounded execution completed
+
+User approved the exact two-arm card (200 updates each, <=1 GPU-hour) and necessary runner/review. Commit `f3f97428` executed on Taobo GPU0, 400 updates in 26.319s, exit0; no history commits/new FEM. Candidate vs control active error -1.015%, UV -1.597%, damage essentially unchanged, raw +0.999%. Candidate remains worse than unchanged original on active/UV/damage and does not reduce local mirror RMS. No rollout or retry. [Result and provenance](runs/physical_symmetry_pilot_20261018.md); independent numeric/plot review passed for this bounded mixed result. Earlier preparation-only statements above remain historical.

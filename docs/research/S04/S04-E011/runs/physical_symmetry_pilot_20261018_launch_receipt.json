@@ -1,0 +1,12 @@
+{
+  "run_id": "pf_s04e011_psym_f3f9742_20261018T100235Z",
+  "commit": "f3f974283636e0a184b162261efa3cb4b611521f",
+  "status": "launched_verified",
+  "host": "GPUServer8",
+  "gpu": 0,
+  "worker_pid": 2584496,
+  "watchdog_pid": 2584495,
+  "started_utc": "2026-10-18T10:08:30.447464+00:00",
+  "limits": "200 updates each; watchdog 3590s +5s kill",
+  "quota_remaining_percent_before_launch": 80
+}

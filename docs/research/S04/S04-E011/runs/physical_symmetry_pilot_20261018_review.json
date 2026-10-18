@@ -1,0 +1,13 @@
+{
+  "verdict": "REVIEW_PASS_BOUNDED_COMPONENT_RESULT",
+  "reviewer": "/root/physical_parity_review",
+  "source_commit": "f3f974283636e0a184b162261efa3cb4b611521f",
+  "checks": "All lean-readout hashes and source manifest match; both 200-entry traces finite, exit0, 26.319 seconds; independent native Q4 metric recompute max discrepancy5.55e-17; images correct scales/directions",
+  "caveats": [
+    "candidate active/uv/damage worse than unchanged original by0.540/4.195/0.774 percent",
+    "candidate local mirror RMS worse than control",
+    "threshold front unchanged; weak x=.02 tail bigger/upward",
+    "FEM healing_max vs PIDL history is not FEM temporal healing",
+    "No overall repair, evolution or physical-validity claim"
+  ]
+}

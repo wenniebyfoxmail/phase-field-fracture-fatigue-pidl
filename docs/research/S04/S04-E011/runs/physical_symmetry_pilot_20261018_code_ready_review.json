@@ -1,0 +1,15 @@
+{
+  "reviewed_commit": "f3f974283636e0a184b162261efa3cb4b611521f",
+  "reviewer": "/root/physical_parity_review",
+  "verdict": "REVIEW_PASS_CODE_READY_ONLY",
+  "scope": "two arms, 200 RPROP updates each, fixed history and frozen inputs, one-time gradient calibration, fixed reflection probes, total watchdog <=3595 seconds",
+  "findings": "No decisive blocker; shared native Q4 FEM active-field L2 primary; parity diagnostic only; 16 deterministic tests passed. No runtime or scientific verdict.",
+  "package_sha256": {
+    "launch.sh": "4605b17348cfa2092963663c6a5eb295b8f8f11effd3c4d6850a6a425e678f54",
+    "approval_receipt.json": "e72ab119844c4874f4b85419cb6c2c6dbb2ffe629df408776c1f7c935f13af90",
+    "recipe.json": "a3d9dfa065a7b2ef681e3c5250c0cc942cdc0b028d13697c8258f7995a907077",
+    "code.tar": "20fed0929467733a7b63ef545014f9fb37a6c103e8ff3fc7270d780d6b7db3ef",
+    "mesh.npz": "4c2816cce37338a3be23f73793bb6c7b47e1ddc2d3c1b358a3486dc72ff16333",
+    "analysis_inputs.json": "d896c16ea161f7cb9294e2ca8397cb1350833c8e2f59caaf14ab4c77457a13a8"
+  }
+}

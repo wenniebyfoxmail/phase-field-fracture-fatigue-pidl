@@ -1,0 +1,23 @@
+{
+  "attempt_id": "S04-E011-PHYSICAL-PARITY-PILOT-20261018",
+  "run_id": "pf_s04e011_psym_f3f9742_20261018T100235Z",
+  "attempt_type": "approved_fixed_state_two_arm_pilot",
+  "status": "completed_mixed_component_result",
+  "human_approval": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_psym_f3f9742_20261018T100235Z/approval_receipt.json",
+  "commit": "f3f974283636e0a184b162261efa3cb4b611521f",
+  "updates_per_arm": 200,
+  "gpu_seconds": 26.319353480823338,
+  "history_commits": 0,
+  "FEM_solves": 0,
+  "candidate_vs_control": {
+    "active_error_percent": -1.015340895682093,
+    "uv_error_percent": -1.5974444507436236,
+    "damage_error_percent": -0.030746055287533824,
+    "raw_error_percent": 0.9988918501280919
+  },
+  "interpretation": "small improvement vs fresh-optimizer control, still worse than unchanged original; no demonstrated upcurl repair",
+  "next_action": "retain original; no retries, rollout or new FEM",
+  "review": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_psym_f3f9742_20261018T100235Z/evidence_review.json",
+  "result": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_psym_f3f9742_20261018T100235Z/RESULT.md",
+  "result_sha256": "53aef8a18217fa110e2c76949ad72c6199bf5bdadf8ec65859ad9b5f94e279b7"
+}
