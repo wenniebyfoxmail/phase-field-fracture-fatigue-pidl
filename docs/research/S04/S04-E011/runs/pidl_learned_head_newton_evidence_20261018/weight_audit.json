@@ -1,0 +1,419 @@
+{
+  "schema": "S04-E011-learned-head-saved-weights-audit-r1",
+  "run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production",
+  "mode": "verified_new_actual_head_endpoint",
+  "protocol_status": "completed",
+  "rolled_back": false,
+  "new_actual_candidate_retained": true,
+  "nonzero_retained_UV_change": true,
+  "retained_before_UV_exact": false,
+  "UV_delta_maxabs": 680.6437042798335,
+  "UV_delta_l2": 1641.8857051939583,
+  "checks": {
+    "all_tensor_values_finite": true,
+    "hidden_tensors_exactly_unchanged": true,
+    "damage_output_weight_row_exactly_unchanged": true,
+    "damage_output_bias_row_exactly_unchanged": true,
+    "basis_initial_head_exactly_saved_PBD": true,
+    "current_transform_retained_increment_roundoff": true,
+    "installed_candidate_exact_copy": true,
+    "fallback_retained_before_exact": true
+  },
+  "passed": true,
+  "retained_increment_span_audit": {
+    "passed": true,
+    "method": "np.einsum ir,kr->ki; optimize=False; float64",
+    "rank_per_component": 386,
+    "total_reduced_coordinates": 772,
+    "maxabs_reconstruction_error": 5.684341886080802e-14,
+    "maxabs_roundoff_envelope": 2.025194540916565e-10,
+    "max_error_to_envelope": 0.0013632090803904673,
+    "actual_increment_maxabs": 680.6437042798335,
+    "reduced_increment_maxabs": 680.6437042798335,
+    "gamma_r": 8.570921750106943e-14,
+    "roundoff_definition": "2*gamma_r*sum(abs(T*z)) + 2*eps*(abs(initial_head)+abs(einsum_increment)+gamma_r*sum(abs(T*z))) + underflow guard; positive sum rounded upward by 1/(1-gamma_r)",
+    "limitation": "Roundoff-scale consistency under the standard floating-point dot/add model, not directed-rounding IEEE certification or a capacity/field-validity claim"
+  },
+  "unaccepted_or_retained_reduced_candidate_span_audit": {
+    "passed": true,
+    "method": "np.einsum ir,kr->ki; optimize=False; float64",
+    "rank_per_component": 386,
+    "total_reduced_coordinates": 772,
+    "maxabs_reconstruction_error": 5.684341886080802e-14,
+    "maxabs_roundoff_envelope": 2.025194540916565e-10,
+    "max_error_to_envelope": 0.0013632090803904673,
+    "actual_increment_maxabs": 680.6437042798335,
+    "reduced_increment_maxabs": 680.6437042798335,
+    "gamma_r": 8.570921750106943e-14,
+    "roundoff_definition": "2*gamma_r*sum(abs(T*z)) + 2*eps*(abs(initial_head)+abs(einsum_increment)+gamma_r*sum(abs(T*z))) + underflow guard; positive sum rounded upward by 1/(1-gamma_r)",
+    "limitation": "Roundoff-scale consistency under the standard floating-point dot/add model, not directed-rounding IEEE certification or a capacity/field-validity claim"
+  },
+  "tensor_comparisons": [
+    {
+      "name": "activations.0.coeff",
+      "shape": [],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "2dd060457cf649ce7a90baf418dcf37012c243af22dc6eb153e7fa48a118e4e0",
+      "after_sha256": "2dd060457cf649ce7a90baf418dcf37012c243af22dc6eb153e7fa48a118e4e0"
+    },
+    {
+      "name": "activations.1.coeff",
+      "shape": [],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "48bf505b4662532edf9c1a8829a4703e6207b08a522bcca453816f84ad861c65",
+      "after_sha256": "48bf505b4662532edf9c1a8829a4703e6207b08a522bcca453816f84ad861c65"
+    },
+    {
+      "name": "activations.2.coeff",
+      "shape": [],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "405f1720c683557f7e42c7487670067bcc0d84887772c9c366fece0707433cf7",
+      "after_sha256": "405f1720c683557f7e42c7487670067bcc0d84887772c9c366fece0707433cf7"
+    },
+    {
+      "name": "activations.3.coeff",
+      "shape": [],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "75d14bd390eec1382cda8492bfcf9ae8b0fb8def71ba7298290fd9839ef087ac",
+      "after_sha256": "75d14bd390eec1382cda8492bfcf9ae8b0fb8def71ba7298290fd9839ef087ac"
+    },
+    {
+      "name": "activations.4.coeff",
+      "shape": [],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "2eedb1f5284a12efe9105f37adf05f7f4424f18b2b58248704cd87d7e46433c3",
+      "after_sha256": "2eedb1f5284a12efe9105f37adf05f7f4424f18b2b58248704cd87d7e46433c3"
+    },
+    {
+      "name": "activations.5.coeff",
+      "shape": [],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "5e1e34aa64032008ebd8dee946a354e4fe2fcce2489ed4ec3382bb471a4daf02",
+      "after_sha256": "5e1e34aa64032008ebd8dee946a354e4fe2fcce2489ed4ec3382bb471a4daf02"
+    },
+    {
+      "name": "activations.6.coeff",
+      "shape": [],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "2a01959f51f9f7ebb66ed4f36c46b9908c11db644f3c8cf27c025e61317bf023",
+      "after_sha256": "2a01959f51f9f7ebb66ed4f36c46b9908c11db644f3c8cf27c025e61317bf023"
+    },
+    {
+      "name": "activations.7.coeff",
+      "shape": [],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "b94787e94e14eb051c87f51a3b4dd3ea6322912c6edfc332423a346bc86c0d3a",
+      "after_sha256": "b94787e94e14eb051c87f51a3b4dd3ea6322912c6edfc332423a346bc86c0d3a"
+    },
+    {
+      "name": "hidden_layers.0.bias",
+      "shape": [
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "aea3ad85d7fa801393c5092ea85414f6fcef3c513dfa345600968ab3d03745ae",
+      "after_sha256": "aea3ad85d7fa801393c5092ea85414f6fcef3c513dfa345600968ab3d03745ae"
+    },
+    {
+      "name": "hidden_layers.0.weight",
+      "shape": [
+        400,
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "d7c759f073a690c093a4f35848f23c3bc343553a6a1577cb1ae7be754e1fcbf5",
+      "after_sha256": "d7c759f073a690c093a4f35848f23c3bc343553a6a1577cb1ae7be754e1fcbf5"
+    },
+    {
+      "name": "hidden_layers.1.bias",
+      "shape": [
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "a708c08e245d090dfc633e8f5e4260beffc486db7083cad331f6a7d379ff0ead",
+      "after_sha256": "a708c08e245d090dfc633e8f5e4260beffc486db7083cad331f6a7d379ff0ead"
+    },
+    {
+      "name": "hidden_layers.1.weight",
+      "shape": [
+        400,
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "c3465942ba4e5e21b83e7011a3150e67576557620f2f5761f05d0e11114f9365",
+      "after_sha256": "c3465942ba4e5e21b83e7011a3150e67576557620f2f5761f05d0e11114f9365"
+    },
+    {
+      "name": "hidden_layers.2.bias",
+      "shape": [
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "ac83b021b05de90598d6d5491e8a44c0ac718cf2ab936aeb48b38db01a94e02e",
+      "after_sha256": "ac83b021b05de90598d6d5491e8a44c0ac718cf2ab936aeb48b38db01a94e02e"
+    },
+    {
+      "name": "hidden_layers.2.weight",
+      "shape": [
+        400,
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "7f5edec5e49dbd3859bca38887a8425f974ae88c78578b5a6f8d70143677c2a8",
+      "after_sha256": "7f5edec5e49dbd3859bca38887a8425f974ae88c78578b5a6f8d70143677c2a8"
+    },
+    {
+      "name": "hidden_layers.3.bias",
+      "shape": [
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "1f11e9cf001124f295468aa633d697e23761d50bd4f8617e52571c2584c40f0b",
+      "after_sha256": "1f11e9cf001124f295468aa633d697e23761d50bd4f8617e52571c2584c40f0b"
+    },
+    {
+      "name": "hidden_layers.3.weight",
+      "shape": [
+        400,
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "f6ae01d72d70326ebc1a7e49b57fed89d4018813efd6a2be676cc24730a5cd7e",
+      "after_sha256": "f6ae01d72d70326ebc1a7e49b57fed89d4018813efd6a2be676cc24730a5cd7e"
+    },
+    {
+      "name": "hidden_layers.4.bias",
+      "shape": [
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "8c813af465e65b77580fb10ec7c71d38093ff75762cdc08d7f64e949c0baa26b",
+      "after_sha256": "8c813af465e65b77580fb10ec7c71d38093ff75762cdc08d7f64e949c0baa26b"
+    },
+    {
+      "name": "hidden_layers.4.weight",
+      "shape": [
+        400,
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "2175f9abca976c3326b5b9730ed99f8b50ff2d46cb70a7a877e0b28b7fed597a",
+      "after_sha256": "2175f9abca976c3326b5b9730ed99f8b50ff2d46cb70a7a877e0b28b7fed597a"
+    },
+    {
+      "name": "hidden_layers.5.bias",
+      "shape": [
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "87c7c7c789bb4d8b51e7eabcdb77ee7a840489a54eebeecbb777fb6af6bff6e6",
+      "after_sha256": "87c7c7c789bb4d8b51e7eabcdb77ee7a840489a54eebeecbb777fb6af6bff6e6"
+    },
+    {
+      "name": "hidden_layers.5.weight",
+      "shape": [
+        400,
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "1e3f6e9bfdb93445483787044f150a23f539ea5f4f05735843b96e29cbd2e4fd",
+      "after_sha256": "1e3f6e9bfdb93445483787044f150a23f539ea5f4f05735843b96e29cbd2e4fd"
+    },
+    {
+      "name": "hidden_layers.6.bias",
+      "shape": [
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "e3eb1ba913f749cc324e012e5ac1ad37600ca798b14bac48c4a710e3b5a7bfcb",
+      "after_sha256": "e3eb1ba913f749cc324e012e5ac1ad37600ca798b14bac48c4a710e3b5a7bfcb"
+    },
+    {
+      "name": "hidden_layers.6.weight",
+      "shape": [
+        400,
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "f6bb8fabd618c9e9a17e6330a9a324ec852fc9fbd68cb4387cd6c405ce882135",
+      "after_sha256": "f6bb8fabd618c9e9a17e6330a9a324ec852fc9fbd68cb4387cd6c405ce882135"
+    },
+    {
+      "name": "input_layer.bias",
+      "shape": [
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "f318dcf44dc3c7826aa606370a5971c7923f97839bf7f465bf03d70f2a930d3e",
+      "after_sha256": "f318dcf44dc3c7826aa606370a5971c7923f97839bf7f465bf03d70f2a930d3e"
+    },
+    {
+      "name": "input_layer.weight",
+      "shape": [
+        400,
+        2
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": true,
+      "maxabs_delta": 0.0,
+      "before_sha256": "38e9a8e4e064bfd439a58a57b412da12dc33fad84b143a81a52f236d6a960dcd",
+      "after_sha256": "38e9a8e4e064bfd439a58a57b412da12dc33fad84b143a81a52f236d6a960dcd"
+    },
+    {
+      "name": "output_layer.bias",
+      "shape": [
+        3
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": false,
+      "maxabs_delta": 24.419470207642163,
+      "before_sha256": "cbe4c5492d79fc75010eb632b74e2cafed0a6177b3f31979ec5c61eae978b101",
+      "after_sha256": "17436e394627b493c29b7713b67d1a3b358499920da746f9b54771bace9be99a"
+    },
+    {
+      "name": "output_layer.weight",
+      "shape": [
+        3,
+        400
+      ],
+      "dtype": "torch.float64",
+      "finite_before": true,
+      "finite_after": true,
+      "exact_equal": false,
+      "maxabs_delta": 680.6437042798335,
+      "before_sha256": "934d548c51906f661a7240e34858fb0df2cf70e02d5f5c4a4434d20c2c3c2674",
+      "after_sha256": "aad6d55dad36c1c7c34be4aeca2966f8b87ece19b7c440589baee8921116fa8f"
+    }
+  ],
+  "sources": [
+    {
+      "role": "unique frozen saved PBD accepted weights",
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/retrieved/archive/output/c20_s4/U_energy/accepted_network.pt",
+      "bytes": 9011061,
+      "sha256": "c3bc15ae65f5b919e27440c3f8b9999e66aa8a507ae7144f5f81fca411654f95"
+    },
+    {
+      "role": "terminal result/status",
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/retrieved/archive/output/c20_s4/result.json",
+      "bytes": 21400,
+      "sha256": "bb6d22b16312c377913e75304bf21674d450eb7836ff264c5c73b0dffa31bae5"
+    },
+    {
+      "role": "current full401 numerical basis",
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/retrieved/archive/output/c20_s4/basis.npz",
+      "bytes": 1187496,
+      "sha256": "c07d855e9403d889323e2c6f53c33233071b8a0385422045ccd93782cf02f9de"
+    },
+    {
+      "role": "conditioned reduced candidate (not automatically accepted)",
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/retrieved/archive/output/c20_s4/accepted_reduced_candidate.npz",
+      "bytes": 15492,
+      "sha256": "44c7f6d47f1a36e1c56a0656381893b4d1bb13959ab9aa0cb67ee9023c51b59d"
+    },
+    {
+      "role": "actually retained network weights",
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/retrieved/archive/output/c20_s4/accepted_network.pt",
+      "bytes": 9011061,
+      "sha256": "8ea35dc4d1147ed49b26e0e3c440034d3fde7c971343519c394526c41d12180e"
+    }
+  ],
+  "worker_frozen_flags_match_tensor_evidence": true,
+  "claim_boundary": "Saved-tensor equality and head-increment realization only. No neural forward, training, field derivative, scientific convergence, full-network capacity or physical certificate.",
+  "before_parameter_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/retrieved/archive/output/c20_s4/U_energy/accepted_network.pt"
+}

@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "reviewer": "root independent from analyzer author",
+  "blob": "3fa48b1daf8f0a4989700eb9be7fc4cc1f7b6b55",
+  "utc": "2026-10-18T12:50:28.774144+00:00",
+  "checks": [
+    "Independent native Q4 source force and all four scalar metrics",
+    "Same fixed FEM damage, exact boundary, fresh before reproduces saved PBD",
+    "Full current401 basis dynamic rank and frozen hidden/dhead/anchor/history checks",
+    "Raw and active physical GP metrics retained independently of display transforms",
+    "Rolledback/hardfailure/partial visible fallback excluded from new candidate metrics and plots",
+    "Gradient coordinate spaces separate; discarded candidate not labelled retained",
+    "Compilation passed; no producer data yet"
+  ],
+  "blockers": []
+}

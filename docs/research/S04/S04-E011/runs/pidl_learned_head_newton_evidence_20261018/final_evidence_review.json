@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "report_review": "passed",
+  "review_kind": "independent final evidence review",
+  "reviewer": "b0_route_inventory",
+  "reviewed_utc": "2026-10-18T12:59:24.648714+00:00",
+  "producer_commit": "e2dc61d55f880c078170abad745989ecb9c267f1",
+  "run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production",
+  "analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/analysis_learned_head_newton",
+  "summary_sha256": "91d14bda9e1f939522e2d32aeb0363bbcb0b08ecab2f0d89e8b8a1a4b84db437",
+  "metrics_csv_sha256": "bd7a7564acc3897d493dc85408475e3bfbb129eeb37c018f1425d0e3eb0b3ce0",
+  "report": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_learned_head_newton_result_20261018.md",
+  "report_sha256": "4f4ab668c3ae84a1c93a6bfb767afd2f1a5a14687d0cbbd7b4ffe83c89c97478",
+  "obsidian_own_section_sha256": "e98685469259e046815684db0406719d2625875f43144c338d62ce5332f8e58e",
+  "numerical_checks_sha256": "aa7f107bc72dd1026130199025c3b2426873140b999baf54bda439bcc11e6b9d",
+  "weight_audit_sha256": "71ecbc0d08ce597bfed5c1ab585f7f1758e0f8d3ec371f9ceede45449a89e714",
+  "checks": {
+    "identity_retrieval": "Unique saved PBDc20 U_energy checkpoint; same canonicalmesh/FEMc20s4outer18/FEMd/UVboundary.23files17590507bytes count/per-file-sizeverified; no claim of remote per-fileSHA verification. Clean producer e2dc61d5/GPU5/PID2878433, normalcomplete/nofailure.",
+    "probe": "33Egradientcalls, realrawparameterbackward and cachedtangent/ADFD/Choleskysolve,0parameter/hiddenupdates,peak5376339456/free16065953792bytes,passedbeforeproduction.",
+    "budget": "40completed Egradientcalls, allbegin<600s,12.159s elapsed;5acceptedalpha1Newtonupdates,5denseassemblies/5solves/13explicitproducts within400/600/10/10/1000. No rollback/hardfailure/historycommit/rollout/retry.",
+    "finite_frozen": "Independent torchsavedtensor audit:allfinite, allhiddenincludingactivation coefficients tensor-exact to PBDbefore, damage output weight/bias rows exact; basisinitialhead=PBDhead and installedhead=candidatehead exact. Samecurrenttransform increment recomputed finiteeinsum gives5.68e-14 reconstruction error. Mechanicaldf exact andboundaryerror<1e-12.",
+    "rank": "Currentfull401column physicaldesign independentlyidentifiedfromproducerbasis.386directions/component=772coordinates,cutoff0.1/1/10ranks386/386/386. No old387basis forced, ridge, extra rank deletion or rank sensitivity solves.",
+    "independent_numeric": "Separate manualNumPy Q4strain/Amorenergy/stressforce/mass/H1/rawpsi+/active replays FEM/PBDbefore/after:fullmetricsL2/correlation/integrals match summary. Detailedvalues in evidence_numerical_checks.json. Doesnotclaim independent neuralparameterdifferentiation.",
+    "primary": "Actualinstalled projectedhead gradient vector inf3.3665696099e-11 passes1e-10;conditioned2.6146619592e-15,vector-differenceinf3.3666232562e-11,UVrealization3.1625e-13 all verifiedsavedarrays/report. PhysicalEel .0052684000052, Ru .0134889411547;headclosedonly,rawhiddeninf .0440131 and globalforceunclosed.",
+    "comparisons": "Eel−2.4653%/Ru−15.67% vsPBDbefore,UVmassworsens6.2627→7.5487%,H1slightlyimproves.591347→.587639,activeL2slightlyimproves6.334879→6.120899butremainshuge. WeightedrawL2.719029/rawcorr.832043 andactivecorr.102518/integral.00526594 accurate. No allfieldpromotion/equalbudgetoptimizer/capacity claim.",
+    "visual": "All4PNGs actuallyviewed:decision,raw/conditioned/nodalgradient,raw+activefieldmaps,anderrors. FEMfirst/sharedrowlimits,driverlogfloor1e-12 andsignedlogtransformation explicitlylabelled; transformedcolors notphysicaldifferenceamplitudes.4sidecarsvalidatorpass.3ObsidianPNGembeds resolveuniquely/byteidentical;See/Therefore lines matchboundedfindings.",
+    "report": "Read finaltrackedreport and Obsidianownsection. Exactmethodsubjects/rank/state/frozenphysics,oldcontrols,fieldmetrics,criterion,rawactiveboundary andnextrecommendation clear. No damageprediction/trajectory/physicalteacher/fullnetworkcapacity certificate. Nextintegratedhidden/headdiagnostic remains unlaunched recommendation."
+  },
+  "blockers": [],
+  "administrative_note": "Final report changes only pending-to-passed review status after original review binding; independently reverse-replacement hash verified. Exact head-projection subject was already in original bound report. Final report/ownsection/receipt hashes updated; numeric/figure/claim content unchanged.",
+  "not_performed": [
+    "No SSH/remoteaction",
+    "No producertraining/optimization",
+    "No source/report edits"
+  ],
+  "compact_receipt_sha256": "b9645b1a29364559d7e1f4e2d494eddb66839e1ad87eb3d266e708cdeda7f507",
+  "final_wording_addendum_utc": "2026-10-18T13:01:37.365973+00:00"
+}

@@ -1,0 +1,62 @@
+{
+  "status": "passed",
+  "scope": "Independent manual NumPy native-Q4 energy/stress/force/mass/H1/raw+active L2/correlation/integral and saved-tensor/trace audit. No networkforward/training/SSH.",
+  "independent_metrics": {
+    "FEM": {
+      "E_el": 0.004320576024533599,
+      "free_u_l2": 3.775945107306163e-15,
+      "uv_mass_rel_L2": 0.0,
+      "uv_H1_rel": 0.0,
+      "raw_vs_FEM_relative_L2": 0.0,
+      "raw_integral": 2.173694477736418,
+      "raw_vs_FEM_correlation": 1.0,
+      "active_vs_FEM_relative_L2": 0.0,
+      "active_integral": 0.004317519850105422,
+      "active_vs_FEM_correlation": 1.0
+    },
+    "saved_PBD_before": {
+      "E_el": 0.00540156567903897,
+      "free_u_l2": 0.015995833518180787,
+      "uv_mass_rel_L2": 0.06262684393394058,
+      "uv_H1_rel": 0.5913469685524375,
+      "raw_vs_FEM_relative_L2": 0.7241645226150624,
+      "raw_integral": 0.8151841346098414,
+      "raw_vs_FEM_correlation": 0.8410317691167931,
+      "active_vs_FEM_relative_L2": 6.3348792476318945,
+      "active_integral": 0.005398066472996435,
+      "active_vs_FEM_correlation": 0.100177274687356
+    },
+    "learned_head_after": {
+      "E_el": 0.005268400005223915,
+      "free_u_l2": 0.013488941154683496,
+      "uv_mass_rel_L2": 0.07548651474572704,
+      "uv_H1_rel": 0.5876388790246524,
+      "raw_vs_FEM_relative_L2": 0.7190289696425879,
+      "raw_integral": 0.8202343306538182,
+      "raw_vs_FEM_correlation": 0.8320428000502166,
+      "active_vs_FEM_relative_L2": 6.120899302222349,
+      "active_integral": 0.005265939601442452,
+      "active_vs_FEM_correlation": 0.10251798586523095
+    }
+  },
+  "hidden_and_damage_row_exact": true,
+  "initial_head_exact": true,
+  "actual_installed_head_exact": true,
+  "current_rank_per_component": 386,
+  "total_reduced_coordinates": 772,
+  "rank_cutoff_sensitivity": {
+    "0.1": 386,
+    "1.0": 386,
+    "10.0": 386
+  },
+  "candidate_einsum_reconstruction_maxabs": 5.684341886080802e-14,
+  "boundary_maxabs": 7.347873447003325e-18,
+  "evaluations": 40,
+  "Newton_updates": 5,
+  "dense_assemblies": 5,
+  "explicit_tangent_products": 13,
+  "actual_current_head_gradient_inf": 3.3665696098916786e-11,
+  "conditioned_gradient_inf": 2.6146619591660425e-15,
+  "raw_hidden_gradient_inf": 0.04401310774368345,
+  "max_Cholesky_relative_residual": 1.1775005947251131e-15
+}

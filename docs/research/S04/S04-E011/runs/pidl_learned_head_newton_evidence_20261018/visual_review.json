@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "reviewer": "root actual rendered visual inspection",
+  "figures": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/analysis_learned_head_newton/c20_learned_head_errors.png",
+      "sha256": "db9e4f56a3e1283cfcae8365e52c6f51d0b8bc8dfd722a9a5f631d771a5d9e3d",
+      "sidecar": true,
+      "checks": "Readable labels, common FEM/before/after scales, separate raw/active and gradient spaces, no absent endpoint or transposition; signed log errors explicitly labelled"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/analysis_learned_head_newton/c20_learned_head_fields.png",
+      "sha256": "23aed8006ecc51424c0d57c0de74817aaccc34aa9356379e56a1e10cc4f52c5f",
+      "sidecar": true,
+      "checks": "Readable labels, common FEM/before/after scales, separate raw/active and gradient spaces, no absent endpoint or transposition; signed log errors explicitly labelled"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/analysis_learned_head_newton/learned_head_decision.png",
+      "sha256": "aee4f72205ba09114b50c1b15b3420d4a9f5d906b4bf7081fe4a283eb65e458a",
+      "sidecar": true,
+      "checks": "Readable labels, common FEM/before/after scales, separate raw/active and gradient spaces, no absent endpoint or transposition; signed log errors explicitly labelled"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production/analysis_learned_head_newton/learned_head_gradients.png",
+      "sha256": "541797f260cc71b14919ee6514f36a23ce452f977ef5daca6a0c0533cd8a2b99",
+      "sidecar": true,
+      "checks": "Readable labels, common FEM/before/after scales, separate raw/active and gradient spaces, no absent endpoint or transposition; signed log errors explicitly labelled"
+    }
+  ],
+  "scoring": "Full physical GP values and nodal UV unaffected by display transforms"
+}
