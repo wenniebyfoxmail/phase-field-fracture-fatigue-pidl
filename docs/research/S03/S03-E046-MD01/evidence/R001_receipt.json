@@ -1,0 +1,26 @@
+{
+  "execution": "succeeded",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 14320,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_consistent_observer_forecast.py",
+    "run",
+    "--lock",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E046-MD01/runs/S03-E046-MD01-R000/input_lock.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E046-MD01/runs/S03-E046-MD01-R001"
+  ],
+  "started_utc": "2026-10-18T12:11:45.252596+00:00",
+  "commit": "d8752569a972fd8d0cba047968008b60b0008d0b",
+  "dirty": [],
+  "lock_sha256": "5b726659378249cbc4aabe9f54726d58b94d76820af886a147ca1ae278495a44",
+  "code_sha256": "768bdad710ad4821c17f2be7dd1258f7d3a94d885dca4618ff1ab1c4b24016b9",
+  "retrieval": "verified_local",
+  "protected_files_verified": 245,
+  "target_masks_exact": 3,
+  "forecast_before_target_chains_verified": 3,
+  "wall_seconds": 0.9828967499779537,
+  "cpu_seconds": 0.9653250000000001,
+  "ended_utc": "2026-10-18T12:11:46.235283+00:00"
+}

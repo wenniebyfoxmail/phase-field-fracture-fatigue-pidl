@@ -1,0 +1,459 @@
+{
+  "protocol": "E046-consistent-E045-v1",
+  "history_frames": [
+    {
+      "stage": 22,
+      "filename": "IMG_0388.JPG",
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/raw_images/IMG_0388.JPG",
+      "bytes": 18331342,
+      "sha256": "d4c10d5f6d9a15c60cc5b5df4bb26604332335ca307e61c66841aef63d1174b4"
+    },
+    {
+      "stage": 23,
+      "filename": "IMG_0391.JPG",
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/raw_images/IMG_0391.JPG",
+      "bytes": 17550369,
+      "sha256": "8100a7c6d2f5a2e22951c071b74fb3c0963e184eced691e5b4d136a88aac779b"
+    }
+  ],
+  "target_frames": [
+    {
+      "stage": 24,
+      "filename": "IMG_0394.JPG",
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/raw_images/IMG_0394.JPG",
+      "official_id": "dc36397c-859e-491b-9310-587730d52c56",
+      "excel_row": 76,
+      "bytes": 17488347,
+      "sha256": "573fa3d7a65fd76e613cfb44e80784b4544953818d1a2b0376c33f0b9c4efb90"
+    },
+    {
+      "stage": 25,
+      "filename": "IMG_0397.JPG",
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/raw_images/IMG_0397.JPG",
+      "official_id": "b6fc372e-0b53-4e98-af71-6c550d0675d3",
+      "excel_row": 79,
+      "bytes": 17445758,
+      "sha256": "20adfbe57e0c02e3c89be0ee080f93da3ef246853ff9af93fd34729874f57f03"
+    },
+    {
+      "stage": 26,
+      "filename": "IMG_0400.JPG",
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/raw_images/IMG_0400.JPG",
+      "official_id": "79dbc65d-89a0-4e1d-8b4b-6c2999f6741e",
+      "excel_row": 82,
+      "bytes": 17510742,
+      "sha256": "31cba1e6237032ca057cbc525d2125278aeb29e9d36d2a036616f8c14593654a"
+    }
+  ],
+  "roi": [
+    3800,
+    900,
+    4800,
+    3500
+  ],
+  "band": [
+    3900,
+    1700,
+    4600,
+    1950
+  ],
+  "original_support": {
+    "visible_trace": true,
+    "coarse_guide_xy": [
+      [
+        4000,
+        1350
+      ],
+      [
+        4010,
+        1450
+      ],
+      [
+        4120,
+        1590
+      ],
+      [
+        4280,
+        1730
+      ],
+      [
+        4220,
+        1900
+      ],
+      [
+        4260,
+        2100
+      ],
+      [
+        4320,
+        2300
+      ],
+      [
+        4350,
+        2550
+      ],
+      [
+        4310,
+        2800
+      ],
+      [
+        4270,
+        3000
+      ],
+      [
+        4300,
+        3300
+      ]
+    ],
+    "exclude_polygons": [
+      [
+        [
+          3800,
+          2050
+        ],
+        [
+          4080,
+          2050
+        ],
+        [
+          4100,
+          2430
+        ],
+        [
+          4250,
+          2690
+        ],
+        [
+          4250,
+          2980
+        ],
+        [
+          4140,
+          3300
+        ],
+        [
+          3800,
+          3500
+        ]
+      ],
+      [
+        [
+          4540,
+          2180
+        ],
+        [
+          4800,
+          2090
+        ],
+        [
+          4800,
+          3500
+        ],
+        [
+          4500,
+          3500
+        ],
+        [
+          4500,
+          2820
+        ],
+        [
+          4470,
+          2560
+        ],
+        [
+          4500,
+          2340
+        ]
+      ],
+      [
+        [
+          3800,
+          3300
+        ],
+        [
+          4800,
+          3300
+        ],
+        [
+          4800,
+          3500
+        ],
+        [
+          3800,
+          3500
+        ]
+      ]
+    ],
+    "reason": "source_only_visible_candidate",
+    "fixture_polygons_coarse": true,
+    "target_exposure": "all existing images already viewed; no blind claim"
+  },
+  "windows": [
+    [
+      22,
+      23,
+      24
+    ],
+    [
+      23,
+      24,
+      25
+    ],
+    [
+      24,
+      25,
+      26
+    ]
+  ],
+  "protected_inputs": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/md01_tack_metadata_20261016/step_image_metadata_receipt.json": "ee3661ea35b2a2f3a4b0487adaf6354814fbeba2fe2758abdee833d47dcde447",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/open_data/md01_tack_metadata_20261016/fixed_camera_file_metadata.json": "910b9dfb31e3c6e441b4b9b6f2aa097b6f917a757f34b4a42493e6eaeab33005",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E037-MD01/source_lock.json": "3f3ae69bfda1b88b600bb719fade1f545f02516f74692a954f7ad635fd49bf2c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E037-MD01/frame_support_lock.json": "5b28e6ddc334744bae3c009498ef73691395761e1bf5b8f9737fdbc302a04728",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E044-MD01/experiment.md": "0c8b9d8a864dfe25b5f003e1a918f3d048f59f28729a7f1e5a15d1ca07c4e8cb",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/md01_next_stage_validation.py": "f493abc5d05982ecdbc15f84422ee1d6be37da7a2d0db6da159841152e1e8211",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/md01_support_mass_forecast.py": "d304a7853558d8174d34146c0bd3bccfc67ee6cb1c8444bbb48b3908def32a8e",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/md01_cached_stage_forecast.py": "19ebce45341c14640de6ba0bf64c7ba8fc9ce3ac0e1eed7abc4a922160f8298e",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/md01_frame_geometry.py": "35eb5fe01d3c2d8c64df3a29ad6822663c6886999f496cc40bece492001d2267",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/d01_crack_profile_diagnostic.py": "9b1a8e02f413e6a9b29ea9c1d4c0b75412e2bfb152975af80c65151db7a4c494",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E043-MD01/experiment.md": "74e8e2b6d8c396ab02a403d1f524628fb20f07f306e2cd522bf9f25851c88cd4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/F01_common_band_observations.md": "5fac25e956684a332864ee08e2d72edeb197f02aa49e886564e1170aa9fdd91c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/F01_common_band_observations.pdf": "09d74733315b44b6580ad16b6f4739a70a6f79dce4ddefb162b0dd6f9af6b76f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/F01_common_band_observations.png": "8d7a8d6474b9d160fe5432f17e142ea784d08b5594f37ffdbd0ebeff741e1889",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/F02_area_forecast_comparison.md": "02bab131bd5186aadbf007ec894419c780f8dd6ff0bb9b7d4a92c90b0225da20",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/F02_area_forecast_comparison.pdf": "b1e749934761320b8bc2f28000867ad938283fb2d83cecc8cbf8b7351bb46f16",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/F02_area_forecast_comparison.png": "d79335f2c1a06f33f53d51efcee3f0a7dfab01187665bb7b84c1dc65d1b3a7fa",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/README_analysis.md": "aaf767c2b748c0764bf43bec06515b23ffdfcc796c19a1a9943334d8180b00d0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/all_forecasts.csv": "48f98d9070ff8c48041ffd3b885bbfa40ebb6f20a48b69e4c1020277e4771199",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/input_manifest.json": "8afe7443118ec7e504e6605e7f9188be502d040e1469ab05e25a888042c6231f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/observations.csv": "03e78091ccb5c37080011541e9c2f12acf012dd3ba41d77f21b3db734f74f62c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/predictions_before_scoring.json": "e2b8a4fd723b437462f40e6cadf935861e54b3a890d61826c5e3979ba993c130",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/run_receipt.json": "2697c2258ae2c91428ee2ad8c8eb3f02870a7f74ba978a017d5105e2673666c4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/run_start_receipt.json": "aba807b62baf685f904616c84860bd6872645ab07a987f0c4e9ca05076b52d27",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/sensitivity.csv": "225a9062a830ff584ab713a96690eba827386865e99420ef07e0609ed141afb2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E042-MD01/runs/S03-E042-MD01-R001/summary.json": "3f38d2ff558448bc8d2d2f467fdacf44fe6abbe5cdc8a16b855b2698258c00b4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R002/summary.json": "c944476a97231fff1f9646d3909dde1dff229aae8b26a68a4bfd2fa0a45e6db7",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E031-MD01/runs/S03-E031-MD01-R001/predictions_saved_before_target.json": "e16f88e538069e24a5b87bf78a8aebe2b73540263f746070e3c064146344caae",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E032-MD01/runs/S03-E032-MD01-R001/summary.json": "ab93108248bc5f8a1706c199300cf71a37b3a028f2cbc763ca0b937b666800ba",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E033-MD01/runs/S03-E033-MD01-R003/summary.json": "0cbcfeb570461e212f1ba37f3924211800fd965ac9ea992bde3c065649b5af66",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E033-MD01/runs/S03-E033-MD01-R003/predictions_saved_before_target.json": "d8999655b6c15f32075b3a37dce8d5614914fd443469391261963591290498e2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E033-MD01/runs/S03-E033-MD01-R003/history_snapshot.json": "d8999655b6c15f32075b3a37dce8d5614914fd443469391261963591290498e2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R006/summary.json": "527e344427956879d008279d41601a2999665c5620895c4f6b3404324f1ba4c4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R006/target_measurement.json": "e3830a4edff0c127cad7291169051cbf5364935bd84ec0d45bb9a30cac625ce0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R002/summary.json": "f85012d93b7e89cd0d071f4e5b2d38ec68259c5da4cbac893ba87bd039d9b044",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R002/predictions_saved_before_target.json": "f5b70e1c4cab57f8e7f7c7f881d98b4c5101d7bb30559a69157e26eab7f83ff6",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R002/history_snapshot.json": "f5b70e1c4cab57f8e7f7c7f881d98b4c5101d7bb30559a69157e26eab7f83ff6",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R005/summary.json": "63ad152934e276b105acc6212223d100e695ac66a86c6c86c838fb1d50d07b58",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R005/predictions_saved_before_target.json": "1f7a28d8dc98fad7a6156b2045626cb2c988a29e00245eae8c8098c38511d33b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/runs/S03-E034-MD01-R005/history_snapshot.json": "1f7a28d8dc98fad7a6156b2045626cb2c988a29e00245eae8c8098c38511d33b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E035-MD01/runs/S03-E035-MD01-R001/summary.json": "7138cbad9f16414a9ee692cc92334deb20e9a2effed34081f336dc7e95890af3",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/summary.json": "9400a3f3d019dd04bde9b882ec1264d93ee6d282505d24624833ba0ba0eafd05",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/source_identities.json": "6c0632d6cfd5c130f73efb5f7fe89ab340eea099dc03b489f3393720e78b0b71",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/cases.json": "18735079a2fd89d6a6ddce7520d4a4e74430a498c0a74264b8a680473a3d7e30",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/run_receipt.json": "53d2b020019e668df7a9d6004cff6425d45804711e64dbd12a2d92069d1a4843",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/run_receipt.json": "534396ac30e254e2dfc513216a8e2e704cb8694103566bea0056783873d73794",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/histories_closed.json": "9213787d064d5179891a72bf8c50d9a7e1485fd88bc32b065bc3581b6bee8789",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/W18/summary.json": "5835e0dfd469bf735da8aa77166f05aa9c94d914395401cc76487c199d06051c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/W21/summary.json": "1dd04e28eba40cc098d0443c47b853ebd04e8aaa93fe6007778d68e9cc3abf18",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/W21/target_measurement.json": "a84a9301a61cacb9c8258f1b0cd3f98bdc97a3c9335158c414cd4ce3de717513",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/W15/summary.json": "83f1f81013c48e99b7e15d8ad67163d6efd425e55a30df04d4262c2300f137e0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R002/W12/summary.json": "020846091da2d97ca61bcd3a686dc2733a2b945309e160db6187e6c602f4ab9c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W18/geometry_saved_before_formal_measurement.json": "bcafd70ce3adecd603938a4df2e504615bace3822b9bb0188a54074e09f0d524",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W18/predictions_saved_before_target.json": "346c5cfbbeea8012fbdf62c9ab77355535598bd6c2dd9f26fa24ccf4593a35f1",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W18/history_snapshot.json": "346c5cfbbeea8012fbdf62c9ab77355535598bd6c2dd9f26fa24ccf4593a35f1",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W21/geometry_saved_before_formal_measurement.json": "92289efbc720f75eeed585f178d9a9000c4246b3fb2721d4f580eac1e26bfd03",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W21/predictions_saved_before_target.json": "7ed2e7269f8535e778a68ecc9fbe0788247a052a2b2375c582e92002635d4f7a",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W21/history_snapshot.json": "7ed2e7269f8535e778a68ecc9fbe0788247a052a2b2375c582e92002635d4f7a",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W15/predictions_saved_before_target.json": "89f9810eb242fe7fcfcaee1bcf6d921be287e0c9ddcd442b1c5486f07b04168f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W15/history_snapshot.json": "89f9810eb242fe7fcfcaee1bcf6d921be287e0c9ddcd442b1c5486f07b04168f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W12/predictions_saved_before_target.json": "db653f852ee10f7bc97594b5f509623a33737f4851fbcac7dbc81d2cec5eedec",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/runs/S03-E036-MD01-R001/W12/history_snapshot.json": "db653f852ee10f7bc97594b5f509623a33737f4851fbcac7dbc81d2cec5eedec",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/v1/geometry_arrays.npz": "e0d578f1ab437a6295fa48277697b4702a6b921637ce347790a057ef28df50c4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/v1/metrics.json": "d4686afeec1a9bdc5662f9aaf83f7d32c5cc98e0d86ec6cf7babbc0103dae1ef",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/v1/geometry_arrays.npz": "b0a44fb3d5e5966f1c855a88831052d0c411f4a88a1d21bc4228092cc5c32f42",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/v1/metrics.json": "f5666c4f9cf83452e19bbb1c8f8e157fd93d18a506d89c9ca7bfc9a5f669deb4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/v1/geometry_arrays.npz": "f14150b030a3be8cefa768664ca9f434a3c5137f897fe699e095fab3deb19c25",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/v1/metrics.json": "988c9451309928439d832bed5cc4a9d91a8bae1210e6b26ee5aa7b43037fa3fb",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/v1/geometry_arrays.npz": "1f033487c1dd8207883fc97ea567b7685457428c57c9db30d26622d05e5f019c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/v1/metrics.json": "53a6e22ff9e80d0fb76054df6b3258fc8ce9c47e5ef09623ae37b044b323c4af",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/v1/geometry_arrays.npz": "702e48c2a6992ca024f3f1d1a5cc9b2dc62c5095f3f52d06df35663cbd7d16fb",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/v1/metrics.json": "8f5a022cf387f39ae569882dad36d483e8a5fd5c0d06e43d0bd9b6126d6f8e92",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/gray_minus5/geometry_arrays.npz": "43077c43d7961a75f0a2e82068ccd8f5e874ecaae053ea00b24ef2841aa8e87a",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/gray_minus5/metrics.json": "f8f88502edc25bec5506bc185ff5151ae0e1125f2fc8949529b2b5ba2610d55e",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/gray_minus5/geometry_arrays.npz": "b0a44fb3d5e5966f1c855a88831052d0c411f4a88a1d21bc4228092cc5c32f42",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/gray_minus5/metrics.json": "d7fedac7f15f691421145db89b001f443f14deaea258e7cb06358b3414e2d58d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/gray_minus5/geometry_arrays.npz": "e3132d50ab4266e157b9f7ece0b7c6a56593b47e109682689c3e91bac3c04c20",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/gray_minus5/metrics.json": "873f3f4ec594e6615d273118828038779d01a68e5e3e2d850f01513b71a6a51d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/gray_minus5/geometry_arrays.npz": "16eb30e8d9c11998088791318a8adeebcc1cd8843982d0f474d8d30466458c40",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/gray_minus5/metrics.json": "29a836f41e30707880230f86e9b2687ab38498fada0224d2956eac61e12a16ca",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/gray_minus5/geometry_arrays.npz": "4dc2315b11e974fc7bf0d86df5a8ffbf912555ec7f70069f398b661cd906ee74",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/gray_minus5/metrics.json": "e388369f33ecb11dae528f77d589de65e4babe8b43300f00ee58559243bba92d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/gray_plus5/geometry_arrays.npz": "884ad765eaad0d94f5915227d39ac1bd859e98785ddd1b93218e285dd872e574",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/gray_plus5/metrics.json": "1391a26fb4d75ca597037ea2748b5f1999cd40bd77215c038f48ca0deef40fc9",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/gray_plus5/geometry_arrays.npz": "b0a44fb3d5e5966f1c855a88831052d0c411f4a88a1d21bc4228092cc5c32f42",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/gray_plus5/metrics.json": "e5cb3146c208d8367803e78ed147185d643a0e45ffd235f36d209d615c34a82d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/gray_plus5/geometry_arrays.npz": "2bf797554680cd393c8a8100f4dbc2debc0687928ccf4c36fe4d5c506fcafbd1",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/gray_plus5/metrics.json": "7e3a68408cedee37726ea9b8056cf25704e9c967f609999da1f93be08cc208da",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/gray_plus5/geometry_arrays.npz": "23635f2d03c2a2b4fbeb021a96ac8a9a6e464623c0cdf8a6c4b0a2d68bd03528",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/gray_plus5/metrics.json": "6772a756e422ebbc715405f7ed0233d4a64db237d56b6ce9f2c27d4f3e951793",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/gray_plus5/geometry_arrays.npz": "c5693ba6775b5432d189997b89040aa80f01e29cc3707e89929550b1979ce378",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/gray_plus5/metrics.json": "c1833302f01189869669fe3d0d5cd137c78a924f0b2bbca5101aa6ab5576c48c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/contrast_minus5/geometry_arrays.npz": "2bfef18a48e9fe45912c87d2f556f4b261b84fe0a4516e960be3f71b46b99245",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/contrast_minus5/metrics.json": "b2a83cc4d1a8f3abd46e2a63c40e8368f661f8be18e2d3c0e76fd9aba0877729",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/contrast_minus5/geometry_arrays.npz": "dc2b5226ea2ff8fac2fd57215f30c1f0a409fba10d0f78b8ea4dc8c3d6b6a204",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/contrast_minus5/metrics.json": "293a0692c01bc16b50ec869bee0edf3ea28f86648fe02e58b2d9ae931a8aeffc",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/contrast_minus5/geometry_arrays.npz": "754a2735978c1bc6da1448fd29ec45d14485bd99e13fd57921f37cf8bd20fe1d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/contrast_minus5/metrics.json": "f0cdd7237e12928dd7316083da19761dd2a458f32ab11876587b1bfb243a08aa",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/contrast_minus5/geometry_arrays.npz": "2a5fa5f716bb80728d23afc0c64300d72798c12303292df235fab8f646a9694d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/contrast_minus5/metrics.json": "174fad71f9ed35d2deffe58583c79fbe5cd78b64806ad7fb433b3744b499efa9",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/contrast_minus5/geometry_arrays.npz": "3352f76d18f653f2c3123f44afe3e0fde1f1bc1c3ba130a3d2858772e7321cc6",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/contrast_minus5/metrics.json": "7ff7a2b28494f3d18074c5504810a39b0e07e5eaa66abf237d3d86d73a6a5c6b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/contrast_plus5/geometry_arrays.npz": "a3ca3f5b38caddf9e54f490fdcfcba14dcd07176534468b03fe02e623e0f19e2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/contrast_plus5/metrics.json": "ca89e524811d467bec2838f7c1a9cbb23c0c9e1f64caffa415b376af081b49f6",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/contrast_plus5/geometry_arrays.npz": "8ad928dd43a95a5542bfa83f0ed7fbbd7edfe40bb2f7beec6757ca4d52a36ff1",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/contrast_plus5/metrics.json": "142aaa295b3995cddec451af10e92d5d884411d50155f8c8212e11018436c263",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/contrast_plus5/geometry_arrays.npz": "6177e630309f6de1b89b231fd4250b5f594706c3d746308dec977a77136344ec",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/contrast_plus5/metrics.json": "2b06925f0facd3d77b861c68a27a8a4a34ec6c5feaaf0ec98a5aaed795f3a1d3",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/contrast_plus5/geometry_arrays.npz": "ac17a285e05418dcd10e7879583f32ae0f79e00209915df2a044ce999df7f9b0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/contrast_plus5/metrics.json": "114c042baf841aeba2ad4850f8682257bfaa02601be3c59e4e7f5617280da2ff",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/contrast_plus5/geometry_arrays.npz": "8c7fff6e10e2d77dab67b0f90b8104df704a93cab51fec3eb9f3d54ffdc42617",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/contrast_plus5/metrics.json": "9d3eeaa531d7b399921b83171e5b95caee9e2d2822f4977b5bb77cfb7708a048",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/guide_x_minus5/geometry_arrays.npz": "bc434ba86d4e38ac7c9c960449b621566bcaed1a9d78ab65c1853b6885523a43",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/guide_x_minus5/metrics.json": "84ba4996711495d023ff2609a9acb46a6a985662feea4d519ed2499acadfacf6",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/guide_x_minus5/geometry_arrays.npz": "bb85e09709af032f6d637d15f87079265d14794d243c3dbbbafcbef642b9b856",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/guide_x_minus5/metrics.json": "4a444b84224df1b532b20a05a138e56a66c864583c47ef7072b1abab9cf3bf7c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/guide_x_minus5/geometry_arrays.npz": "287da60e8e800fda57754e7a3f15b765ea433a366edaf44e09d4670ecfc641ae",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/guide_x_minus5/metrics.json": "20e267129265f1c05d52b924a8640c42000f1e5c939f644d77171593a242ee94",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/guide_x_minus5/geometry_arrays.npz": "5e3ef63689b5656f397dc55605b90807490f883b03ea549b35de5fb92f7fe993",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/guide_x_minus5/metrics.json": "d172cf8dc02ef3e9998ac0057e1f0e8a86200d4483cf709b5e2cdca5ab73f176",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/guide_x_minus5/geometry_arrays.npz": "a2533051303be213b976bb444e17c967f272bfcd2e2fc6abce44e62943838579",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/guide_x_minus5/metrics.json": "c0b79642127dffce5e2e1fa42e7e20b8d2e124de166da55248136fa30235a0e1",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/guide_x_plus5/geometry_arrays.npz": "3af558aec88d9929ce7c58d7a87fc85acd28659d47a56b701f574c7f97d9a996",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/guide_x_plus5/metrics.json": "2a7fd2bf11b7bcc82a381c4f0ac533d2738d85ded8e5ca7675f3602b57e7cf76",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/guide_x_plus5/geometry_arrays.npz": "79341754d17dfb7b2da0062a78ed46b12ff1bbefeca178786f498a66586d297c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/guide_x_plus5/metrics.json": "3baf1af0f0bfd4d53c65e300fad566451fae59843a3cc638b0c5915531395ce3",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/guide_x_plus5/geometry_arrays.npz": "d5a8eb70182626b0c06e438560d5a9826dcd166b6a4b4ce70d24f77b25fb5806",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/guide_x_plus5/metrics.json": "e586b20ee6965136867c6502839140f1549210c799f09afe78771a58029487d7",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/guide_x_plus5/geometry_arrays.npz": "3523894c93dc581fc315c7e942615229a1e9ca33464749f64a3f11a53ecdea33",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/guide_x_plus5/metrics.json": "cfe3d78599da12feb893218f64e5486365112892fe348d2e3dcb607d84552757",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/guide_x_plus5/geometry_arrays.npz": "7346a9f395ab17234cb3dcbd4ff4624217d10d646fc6c439e5eadb97b06f99ff",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/guide_x_plus5/metrics.json": "131fc839f5b56d88ec22cc65cf4a807e8a7ca260bfd814328a87cd68a191b5f1",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/guide_y_minus5/geometry_arrays.npz": "564ab9a24a9e36813718d2e2304bc8e34a4eea4756d0c25cd469aa332ffbb4ce",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/guide_y_minus5/metrics.json": "7c30404d94cf902bd04d8507a42a1cf92bb545e3e3d0a566ba09c37aeccf10c8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/guide_y_minus5/geometry_arrays.npz": "f06ace04515547a3ca07475713a944b03f81755be7d011717129cb83b2c5b338",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/guide_y_minus5/metrics.json": "77f1a0da85b0c2ad3bbdb4fc669352311019ab2c50b5a8dd05b93fe0d81b8cd0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/guide_y_minus5/geometry_arrays.npz": "8c308fd04f42a54190c1f0efc81d70ed6721e597072dc05642b59964070bf01f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/guide_y_minus5/metrics.json": "a57dcc3c1194a667d10b2fa067eec5ce3c2d82a7c2071d489eaa1538c37cd3d0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/guide_y_minus5/geometry_arrays.npz": "4e3cf68a5e01fc73a21357ff08ba3dd95cdd28b929e516ea0a27b3eb77f776d5",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/guide_y_minus5/metrics.json": "ba4fbf4053c08591f0571b0a7ef861450109c91bdd4e9ee26c5d9fdb6928cafc",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/guide_y_minus5/geometry_arrays.npz": "3249e644a3cb101a6831615b1bd3493a2ac1638990ed3a86d640f10ae3ebca67",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/guide_y_minus5/metrics.json": "9430d2db4568dfa1996afd6165b6d32511167a9a9b05590fc0184001217b5401",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/guide_y_plus5/geometry_arrays.npz": "753a7c1880303719e241a6602af1fea4ae614248daa4c68ba76b4d0386bf7558",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step18/guide_y_plus5/metrics.json": "b5071bdaf1462f4b49d2bb96919613c510ce90e8fe5dd4f1268295da78eadbf1",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/guide_y_plus5/geometry_arrays.npz": "5c3022deaf968e74cc336b6a5dc825c0f9149ec30c9a28d4273e12ae5137a35b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step19/guide_y_plus5/metrics.json": "ba41aa52aebc4b0e7da419b24667105204834b6cd123ec5b0d4c6e8ab2d86f06",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/guide_y_plus5/geometry_arrays.npz": "4abf1eb60268afcc1d8154889946d4dd58702a663f11482f4199f627604da941",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step21/guide_y_plus5/metrics.json": "538a3d8d956911659a35997d147856fe66c043822765a090c2ca402fc0d176ee",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/guide_y_plus5/geometry_arrays.npz": "0f7d705c17f8aa667c47fb2b3b07cbb76cc686ab2128c5620da6619ffcdbba95",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step22/guide_y_plus5/metrics.json": "29305e625e055c5be49a59479daceebef43107760a0f9e3873179c7fc5fe9685",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/guide_y_plus5/geometry_arrays.npz": "2ed72af0836b72bfa574077fa85be23269790b4d8c8553b1cf1cc4956e2b4bda",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E038-MD01/runs/S03-E038-MD01-R001/step23/guide_y_plus5/metrics.json": "aea4e5940f1e483a4688889bc1cd4355c58342fb5a69660b4cc833f4da1aaebb",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E041-MD01/runs/S03-E041-MD01-R001/guide_comparison_arrays.npz": "5706582379e978f97240cb17c3f5f014ccea9670ec5d0e0d8b7ad1f1456fc917",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R001/README_analysis.md": "5d1d983dbe482d29ceef2947dbf69867220b2789952323545254c8662a0a4460",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R001/all_forecasts.csv": "cae6927a716cd5df4a5c852d7e3f2fd1a14d911c8b400d4c55c75dbdeccc6953",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R001/input_manifest.json": "f7e0f6f6b80ac9e729cbfe9dd6ce25a502f2cde5177fbefa907e53b37937882b",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R001/observations.csv": "ccdc1a95185f7e3eb4e50ec7a20d2025e6cc48b3259ffd9b399519671182030d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R001/predictions_before_scoring.json": "10cb82fa4a0c78d92e35184b6dc310a6087ec52b882feb443751098a96b4ff9e",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R001/row_profiles.npz": "a344b10cf6c6a56af3f60a49af7d3493530f97257a53c8069f499cf6cd660330",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R001/run_receipt.json": "39494d84744ff92c44cf7f13eea58c9d54fabcf6d5cfa91473d46c68193d8974",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R001/run_start_receipt.json": "809c573810a191116bcdf0804a2f178075b47b201120a356b1d08dbff268e865",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R001/sensitivity.csv": "7a89997b7de696c1cea356e532590f6a766bc5de5de6ae6db1bba0018134e8fa",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R001/summary.json": "0ea3a4795cf8a099adc2b2bc88ea836018cf075e940e9086b0ce14e9bf0adf74",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R002/F01_support_and_row_mass.md": "66aaa861de9ec57962becefd19e4d567b2a30f3fd2096d0daad2317ac689ba77",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R002/F01_support_and_row_mass.pdf": "fbffeffb3de707a00c70cb0b95261d1aee570fafbc258550c0ea1ef644c83a63",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R002/F01_support_and_row_mass.png": "d00217cb74f352137c9e8b48f0e495af0bb6d7654274bb76c1d580d4de400bae",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R002/F02_separated_prediction_comparison.md": "3c89db2b30d8db946d12e36b23e609a6ea2adbaed49fc0c91c86d7d2b858aa55",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R002/F02_separated_prediction_comparison.pdf": "5cf230b301488ce79c76cf8ba5c8aeb08582b6f3d85a4d0421d5df5477e48993",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R002/F02_separated_prediction_comparison.png": "b0729ca76700df4f8c11b607fe1fc97104454bbe5a982787c9e1c77f51834eae",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E043-MD01/runs/S03-E043-MD01-R002/render_receipt.json": "d07eafba7bfb15892b4240f032be5ef9ce1d87c1d20429dbd22fecd7cd8c8756",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/raw_images/IMG_0394.JPG": "573fa3d7a65fd76e613cfb44e80784b4544953818d1a2b0376c33f0b9c4efb90",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/raw_images/IMG_0397.JPG": "20adfbe57e0c02e3c89be0ee080f93da3ef246853ff9af93fd34729874f57f03",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E034-MD01/raw_images/IMG_0400.JPG": "31cba1e6237032ca057cbc525d2125278aeb29e9d36d2a036616f8c14593654a",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R000/prepare_receipt.json": "6998bef2eb7600410d8482885d3586a8e2d9c78478fd2fed27c3035cf4d67049",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R000/selection_lock.json": "bd63b4e36bf5ca0f9bede0b06dbdc7f50184e22421863ec2b593ea5b6f5b06c2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/README_analysis.md": "bdc0cdfd1ced043355dd3ea2569e1a7d565f83810cc3934e54969edc599df2b4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W24/comparison.json": "e552e68e3b51b970a724a37e86b4a8380477e43c7d79de9f51d17ea065822821",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W24/observation.json": "b988e1a3f5d8db7f56560f59c81341c7d4e36553b418196f250e2cfbbbf9eaaa",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W24/observation_arrays.npz": "65f380253bc3bb8e71ffb1f2b6a622b71d4b4bc8aa1a6dc82f52452f57b6c4b5",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W24/predictions_before_target.json": "b9ca7e06f82eb7f17458f7e9f53065f04f449c004645e4596aa1366ebfaaf400",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W25/comparison.json": "8fd75637e9aaf8bac0d3570897bed37455c26d5f78fe13803a5a5aba871dca54",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W25/observation.json": "f0a005e5e156f631606896157b674c81e216bcd4db2f0eb6819cc135fc8c7049",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W25/observation_arrays.npz": "0712c7e262d6040d1f8c215a28648287722ff564fb6f7280c3a8c3cdf9d76644",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W25/predictions_before_target.json": "9a73872923b3aa2e634165675c211e4606d9a7c9f36c4804847f275e8a948ad1",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W26/comparison.json": "5c6166ee17acd1df76282110ad16f04814c0a1b8134b916bd123185fab9f1964",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W26/observation.json": "7b9740f5f19722f61fa8b8a911d8f395f9f32f400ddb29eed26127f709678021",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W26/observation_arrays.npz": "b8ff08b36707bd857a7f60fa663f11e0f8e82defdc31b19c455daaec1670ebbe",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W26/predictions_before_target.json": "927b86d25969d79f15239ed0198c176b92f39d6f4035b9dd6b2918505fb9d5c0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/comparisons.csv": "c25c13dd81a433be20e39d0c70394937b4ac9ac7c38e1f63eb1fcba50d540c9e",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/event_order.json": "1e1e0127b1ee66a462e09b3bf67d0a6fd5ec01d9ef819c503fe93a11e0dedb05",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/observations.csv": "76041ed7e109acdf62c355e0ee0249fe819a1c7faa8575e53f3bfcd7de2fe5cd",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/run_receipt.json": "dbd304b12d1e52bbd3a1b002c8e4a24a58658d72b58c5c8f70012f78f3c342d7",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/run_start_receipt.json": "0a663a4efe2ecab3c5701ccfc9060d434c392487286e2aff7a28a5e587765bc8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/summary.json": "0e045badd2a20896a410a482d5f81121f2c4ca4ec723fc5edf342b77f605e8d8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R002/F01_all_new_target_masks.md": "57c5a9ab75bf254c3a260bfd0848e8412db9ee63858ca559417724b1c8743493",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R002/F01_all_new_target_masks.pdf": "56dc031661139dc6612f2270ae1b5f9e7d1db20fdb64ea88bb29da4504835521",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R002/F01_all_new_target_masks.png": "e519885b4bf9314e71d1b820ca808c74f2f81d3e2a7d0c837e6cc434fdd6294c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R002/F02_every_window_forecast.md": "394de41df66c1fcc37448448126396d5c24607feafa80acd42c687dc152d44b8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R002/F02_every_window_forecast.pdf": "cc968900f3bab7f38f757a068aef39dfbf81bf5d2e39fb399d636b23022201ee",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R002/F02_every_window_forecast.png": "6257b149d7a5811d97f1a4e085170042b8c73934e8f58f0bc75d2f070d60df69",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R002/render_receipt.json": "dd3f4f8044f9287e6c35b53afffce1b74f19700662b8e5923860f04d544c06de",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R003/F03_worst_case_frozen_guide.md": "b80382e51c843f8fa2ba6b8e0223ca663ca0c049133ce46e93cecc5e82670bd5",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R003/F03_worst_case_frozen_guide.pdf": "28e6feea2912d6c05115eb6e91c535843eb4b4117df704cda627ddafad0564ae",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R003/F03_worst_case_frozen_guide.png": "bbf022799539f074ca49527b74c43e07665b873e029cb988c0e8c61830434190",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R003/render_receipt.json": "cb3e115e89183ffa04f05c9cb538e8b0ad2780a88eb38e2903be084d96802b56",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E045-MD01/experiment.md": "64d13ecfcc8a67a548aaff1e2423d1a14936f3ca744751b2ac792e7fbbc4a012",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/md01_geometric_guide_transfer.py": "0a1b070792eab75b4f15c797333f94b1b0f1f8d07aa1443872afa4f0fa2d57df",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R000/input_lock.json": "6efeda069b38521427181379e0ca18598a392c7903640b4bcb6183a5df48e647",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R000/prepare_receipt.json": "8fa64a4ae8175337930b0d212f8ff06bb522ecfb5355381c5b2597c8e49d9b14",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/README_analysis.md": "3ed5a0c9a359676373dd720b70c17abe6533c4d97b3a81cbe226dc4a853aec7e",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/measures.csv": "21e783ce05a6f7ebb125654de0c87bc16df0c4d896b85a708566d2fe28c89416",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/review_regions.csv": "69f9c793f246311a614d407eecb49b971a0502495f5a73f020a4a7f1031ad19e",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/run_receipt.json": "be8806c606699ccf1eb87568be0db885e303146b6416c174b99317a625d63f30",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/run_start_receipt.json": "7be8a779944debb065518739f723d00416c8948f74a0a7ce5342732487804cb9",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/step24/comparison_arrays.npz": "23ae7472b5a92007f246bbc82da8d20a13eeba0242c2ea9c67343bcf2e58b98e",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/step24/guide_before_extraction.json": "0e355ba9ad112438417207aac6b46296de603a6ad2014df0206e0eca75f94688",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/step24/summary.json": "bf7f97cf47c2137a4e45a1157a23e14c526a89c3d923d845e50b5dfb5e5f48b2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/step25/comparison_arrays.npz": "9b196ed8c56d86b85bd6d66ddd8270b88ad28fa47fd8e03a0bd1e748e4d7b3bc",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/step25/guide_before_extraction.json": "5f508043458e29c909124f0c6971c3b2437479859d9002a786f7719b9f0adb39",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/step25/summary.json": "edff4926c077e482db30c19fe1d8a03b75d3f125cf27c8f1e3ff5a69d556d121",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/step26/comparison_arrays.npz": "537457552763618e9010fa7202202d3f99e1aeadc512b3a71a35a69f973bb211",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/step26/guide_before_extraction.json": "1d613744a2c7fc2b305e6c73602767bd02397ff7afffeb3cf03b0e0d4da95b27",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/step26/summary.json": "18039c109bf666a505131a00cd2226862fbbf8dadae09280e57479ff681ea8d8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001/summary.json": "674b9d1edbe522be1afb6aebd7ce46e2befe97ebd0e1b4f58d3dc384c4a51d2e",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/F01_step24_guide_comparison.md": "816febdb92dbd5264a33237947a617688abc9a0f6afc5211492bb3651920797c",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/F01_step24_guide_comparison.pdf": "cdd218036a7f6fc33e371fbebae852198b7b5bc705420b68dc82e2290809813d",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/F01_step24_guide_comparison.png": "537a8344e1227d4eb066c924fa0310d3264d38ce7cc755c9754ef481accff973",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/F01_step25_guide_comparison.md": "820afcc89e3678ad15934c36a4c18f2bfb41d2fd60390d2a5946a324438c4c35",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/F01_step25_guide_comparison.pdf": "be444bf6390f6f42c7f6be8df4906da31eb24417365408af6492fc56e673f163",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/F01_step25_guide_comparison.png": "8c927966f80d9303eceebb4d4605876c4cee3bd4d78025d618a7d6d287972636",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/F01_step26_guide_comparison.md": "701da1fb6b4815fcd4153c2d2c0e558b0b0c17f485f486cbb040f1e07e9ec1fc",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/F01_step26_guide_comparison.pdf": "a882f7e719e738205755eb0105d3b930ced866cc40c8b57b084b0db695297722",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/F01_step26_guide_comparison.png": "835ffb3f05787be44dcf8fc4ec72d475da665d9369622a0bd579ef36658fcb15",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/F02_step26_review_regions.md": "d4542e5d8fd3b6713cb455601d024ed885d91d6353e1df5b740a7cfd922bb946",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/F02_step26_review_regions.pdf": "09a10a6bd6c7522cb6f9415224e978908f0fca83077dfa6d3c2524a682ebfe83",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/F02_step26_review_regions.png": "693b7a52b10d5e970b90f6ceb477575061525c71a08e341b33c0b267d40a0284",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R002/render_receipt.json": "6f093a7da36b237f988092f710d40b5fce5fcd6916ec15eeee75a2b6b3f7e874",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R003/F03_all_cases_compact.md": "01ab95e7797574aaccc85c058faf054669a493c47afac75367f821e9c2d063d5",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R003/F03_all_cases_compact.pdf": "eb4978ccee915453162929c47b89356eefcfa58ba1a632e72821564799d1c409",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R003/F03_all_cases_compact.png": "50096f74c6398d55ebb2e0e23a3246f70e80414cf18dcd1d31cb8ce0ab8edead",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R003/render_receipt.json": "5b3659bbcc0570f493c92b6b1eca40afa0bf934dba13e2da0f4a95d6dddb7733",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/docs/research/S03/S03-E046-MD01/experiment.md": "1f8caf04a13d8002ff21b7da7718e5a9f28392fcb23f715b128fe742358c8b37",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/md01_consistent_observer_forecast.py": "768bdad710ad4821c17f2be7dd1258f7d3a94d885dca4618ff1ab1c4b24016b9",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/raw_images/IMG_0388.JPG": "d4c10d5f6d9a15c60cc5b5df4bb26604332335ca307e61c66841aef63d1174b4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E036-MD01/raw_images/IMG_0391.JPG": "8100a7c6d2f5a2e22951c071b74fb3c0963e184eced691e5b4d136a88aac779b"
+  },
+  "prepared_utc": "2026-10-18T12:11:44.499578+00:00",
+  "exposure": "all five frames already viewed; development replay, not blind",
+  "no_history_reextraction_yet": true
+}

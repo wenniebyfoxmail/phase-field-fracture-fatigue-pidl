@@ -302,3 +302,17 @@ R0011.824s,207hashesunchanged,3baselinesexact; all3cases/detaildisplayedwith
 shortinterpretations. Oldhalfdepth/scoreskept, no forecastsorrescueofE044.
 Nextconsistenthistoryobservationthennewnamedprediction proposed,notexecuted;
 donotsubstitutenewmeasurementintooldscore. No moreperfect-segmentationprerequisite.
+
+### E046 accepted observer → consistent-history forecast replay — 2026-10-18
+
+[E046results](../research/S03/S03-E046-MD01/results.md): useracceptsE045,
+freezeidentification. Same23anchor/rule remeasureshistory22/23once;24/25/26
+acceptedmasksexactreused. A5379/5057/5755/7361/9191, L250/250/250/250/240.
+Same3fixedwindows22,23→24;23,24→25;24,25→26: persistenceerrors698/1606/1830,
+trend/separated1020/908/224px², MAE1378/717.333/717.333, −47.94%vshold;
+2wins1loss,3/3calculable. ConstantoriginLmeansseparatedisredundant,notnewgain.
+Developmentreplayonly,nofuturephysicalmask/apertureclaim; oldscoresnotreplaced.
+Cleanproducerd8752569,R0010.983s,245hashesunchanged,3targetmasksidentical;
+allcase/sourcefiguresrenderedandchecked. Literalfloat-equalityflagdefect
+documentedwithoutrescore; differences<1.82e−12. Nextproposefixednext3complete
+stageswithsameobserver/simpletrend,notexecuted; no newstageimagesopened.

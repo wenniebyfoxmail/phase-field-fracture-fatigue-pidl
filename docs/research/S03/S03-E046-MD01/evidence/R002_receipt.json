@@ -1,0 +1,15 @@
+{
+  "execution": "succeeded",
+  "source_summary_sha256": "5f2abea29d8d3d779a313428baad52c0803f83824c87ad67442049e99269c2c5",
+  "renderer_sha256": "768bdad710ad4821c17f2be7dd1258f7d3a94d885dca4618ff1ab1c4b24016b9",
+  "figures": 2,
+  "numerical_rerun": false,
+  "output_hashes": {
+    "F02_every_window_forecast.png": "1ed23e94e007f400987ae580fe833c414fe2acebf990685e6ec8e92807c129df",
+    "F02_every_window_forecast.pdf": "301868b60c13cacb91a4177c4dfd731610404c35957b4d752649f2b6b24c0412",
+    "F02_every_window_forecast.md": "33baef4be40eef57f5a0cb144cda92653c6b077cad171d1452447f2326a656a0",
+    "F01_consistent_observations.png": "aa45cd718e7d426be34fe47600017538f020d51508bd6d029b1da63a21cdab51",
+    "F01_consistent_observations.pdf": "c13b13ef31a4478501f8352790b893beb87523e41a4e5ae4c50046442c937a10",
+    "F01_consistent_observations.md": "ec116c45618a8fcd29059a9852b4e7d3362e082304c6751edbb03f221648d0ea"
+  }
+}
