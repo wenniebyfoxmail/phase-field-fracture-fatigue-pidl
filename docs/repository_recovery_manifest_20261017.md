@@ -40,6 +40,7 @@ verdicts nor authorises deletion of local evidence.
 | 6 | S09 transition-surrogate | shared E001 record differs from the archived prototype; E007 has 215 unarchived writes | hold the whole S09 family until its authoritative worktrees publish a reconciled record | retain run and review packets locally | do not integrate stale shared copies while any S09 writer remains active |
 | 7 | Governance and skills | shared rule/skill copies | authoritative branch is `codex/exploratory-formal-gate-20261017` (`322a40c0`); fourteen byte-identical copies were reconciled, while divergent legacy entrypoints remain held | none | pushed and enabled locally |
 | 7a | July future-plan record | early PIDL/FEM and road-DT decision sequence | preserved at `codex/legacy-future-plan-recovery-20261018` (`fe07efbc`) on top of the later calibrated-criteria branch | none | historical only; its former producer-routing text is not current policy |
+| 7b | Historical cleanup records | July and August checkout inventories, bundles, and archive recommendations | preserved at `codex/historical-cleanup-records-recovery-20261018` (`3eef9de5`) | raw archives remain untouched | provenance only; this current manifest supersedes their execution guidance |
 
 ## Completion Rule Per Row
 
