@@ -618,3 +618,18 @@
   no code review repeated for unchanged algorithm and no new Pro request.
   HQ alone will resolve fresh tiny authority/budget; no automatic retry or
   claimed A002 result. Quota start/end normalwindowused9%=remaining91%.
+
+- **2026-10-18 — U01 A002 exact revised tiny executed once:65/65 passed.**
+  Direct user approval for exact F01 command, cleanruntimec024bfac/sourceab6f123a.
+  chunk97939d exit0; 41new artificial cases plus24stub regressions passed,
+  no unexpected errors/warnings/retry. unittest0.013s; scriptpreprint
+  0.4453895419719629s with final60s check passed; separate toolwall0.369903083s
+  retained without pretending the two clocks measure the same interval. Actual
+  controlledQR0/SVD0; no NPZ/report/real/held reads, full-size generation, solve,
+  figures or B002/C/D. Five sourcehashes and A001 resultSHA24931848 unchanged.
+  See S03-E019/underflow_a002_results.md and underflow_a002_attempt.md.
+  This supports tested artificial arithmetic/guards only, not B001 rootcause,
+  full-size certificate budget, realDIC validity or physical inversion. Prior
+  A001/B001 failures preserved. Next minimal check is separately authorized
+  B002 full-size synthetic resource test, not launched. Quota before/after
+  normalwindowused16%=remaining84%; no thresholds or stoprules changed.
