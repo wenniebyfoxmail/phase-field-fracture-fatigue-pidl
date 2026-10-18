@@ -1,0 +1,309 @@
+{
+  "stage": "exploratory robustness on previously exposed archive",
+  "question": "Does fixed prefix initialization retain value on every other existing eligible section?",
+  "registered_before_prediction": true,
+  "created_utc": "2026-10-18T12:21:20.366933+00:00",
+  "noise": {
+    "measurement_sigma_strip_px": 1.0,
+    "acceleration_sigma": 0.05
+  },
+  "methods": [
+    "original_state_space",
+    "load_secant",
+    "prefix_slope_state_space"
+  ],
+  "eligibility": "all exported paired cuts; origin valid, full saved fixed strip inside all-stage support, positive finite saved widths, allowed existing statuses, >=3 increasing-load observations; no errors used",
+  "primary": "additional sections only: MAE within section over >=2-observation-prefix targets; equal-section mean within beam; equal-beam mean across three beams",
+  "secondary": "all eligible sections including cached section3, same nested aggregation",
+  "grouping": "three physical beams only; sections and adjacent transitions are correlated, no independent-section inference",
+  "warmup": "first transition each section separate; original initialization reused",
+  "information": "one-step available prefix plus specified next nominal load; no future width initialization",
+  "support_limit": "support and paired endpoint selection are retrospective archive choices, not prospectively available support",
+  "comparator_cache": "reuse all existing section3 forecasts; no matching other-section caches exist, compute fixed published equations without fitting",
+  "uncertainty": "fixed working Gaussian intervals, not calibrated; carry all saved uncertainty flags",
+  "resource_cap": "one deterministic CPU replay <1 minute, no search/training/inference/new observations",
+  "stop": "register missing/excluded sections, run all eligible exported other sections, save result, no model or parameter changes",
+  "protected_files": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/analysis/state_space_inputs.json": "cba35336e5af00bba118a58be8d91eb263cc1ed7e5480e94fecda84428b727fa",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/analysis/beam4_all_stage_common_support.png": "84d0cba43f829144821ffdfb42922c60f89b0b65e4b6cca77022ec9db7c8104f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/analysis/beam5_all_stage_common_support.png": "2d38b1a549b95fa8585fddfab257f2672b971fd1ea0b02444cc144ea9c21025f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/analysis/beam6_all_stage_common_support.png": "8346b0c5f9a19e17fcaaa49b990c3c75235f4dc73b23fe14221738a33e90ea39",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam4_t225_mask.png": "b57b3538887a9c180dfdb871e1dc6b0526971a989f911756908a6645cc74ec99",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam4_t400_mask.png": "57551893efcd12df0e16482513b0fc132b8382ba4e83749b816df61721ff06fb",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam4_t500_mask.png": "950e8ea31d3eb8b24c02fd945f91802a548e3b4a325f8926dc637104da6c15a9",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam4_t588_mask.png": "578ba5900e8d36c9554994318e24e4d12e8ff1be7cff9171b97233aa4626e9a0",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam5_t228_mask.png": "86ae91aef2bb78ae962e5094d461a674c6e3e83cca6bb995360b2821c73b8d62",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam5_t358_mask.png": "be126a3bd40c1f5b89345882476d43fff77a00aa8f4b4b08eecf805a0ea02105",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam5_t464_mask.png": "2e633d5efe75232646e998fe5ab9e6b4e9fe4962e11a4770bcd6ac5ebdd2d54f",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam5_t553_mask.png": "dcc60ada414c01525c868add2bc63329e7bb1f2328c9b3e28f86bcfab1b59601",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam5_t636_mask.png": "2d2eb77fc9156a1aec51ed202d48caedc2f00c1e9613b9a9775d22571a2743bf",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam5_t729_mask.png": "8023fdc4c48bf6120505ba39ec0d74cb016d3ceaf2ee65d9ed8de1c1e650d4d9",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam6_t183_mask.png": "4b72ae2129a9a56a3f1c648c21b1dc96765e2582a75893eb14700d313315a404",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam6_t293_mask.png": "17143ca5f83639a909a8bb40de43252e8dff7d78bc1177b9f8d97c933674a281",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam6_t376_mask.png": "ccbd888241b4c07c5b0fa6be98a472933c292ecd3767c8b67d398ca8b869d2c8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/fourteen_stage_extension_20261017/refined_v3/beam6_t460_mask.png": "d4ea0a324ddf0e25840b7510b02000892797f707d1cadb0221622579effe7801",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/section3_prediction_20261018/predictions_and_errors.csv": "894c0b69ffe1dc8f10e5870ddcc59cf87733cc72a0b9f7d7ff26a9c68c380ba9",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/section3_prediction_20261018/summary.json": "84fe0d626456d28aa1f200f3ed4a717036aa2c39c47f69727fb9a2b8a07ff251",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/section3_prefix_slope_init_20261018/predictions_and_errors.csv": "7b459aa8ecedaa32ce0b2c3aa17f22575ab0bc06e8dd3d126453d0a8abed420e",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/section3_prefix_slope_init_20261018/summary.json": "3c6cfb4033902a22fba3cd33741792d6262cf5b887dc191e401a428844e7def4",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E016-D01/section3_prefix_slope_init_20261018/frozen_contract.json": "6ed160855ab2c5452d6274f92a0a2734de914ad395872b9d6a2e3a2d7046a79f"
+  },
+  "inventory": [
+    {
+      "beam": 4,
+      "section": 3,
+      "role": "existing_section3_cache",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "n_observations": 4,
+      "n_primary": 2,
+      "full_strip_common_support": true,
+      "origin_valid": true,
+      "statuses": [
+        "existing_human_reference_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "existing_human_reference_boundary_bias_uncorrected"
+      ],
+      "uncertainty_flags": [
+        "boundary_bias_uncorrected",
+        "clock_synchronization_unknown",
+        "frame_specific_eligibility",
+        "microcrack_coverage_unknown",
+        "partial_eligible_length",
+        "pixel_scale_not_metric"
+      ],
+      "images": [
+        "beam4_t225",
+        "beam4_t400",
+        "beam4_t500",
+        "beam4_t588"
+      ]
+    },
+    {
+      "beam": 4,
+      "section": 6,
+      "role": "additional_section",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "n_observations": 4,
+      "n_primary": 2,
+      "full_strip_common_support": true,
+      "origin_valid": true,
+      "statuses": [
+        "existing_human_reference_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "existing_human_reference_boundary_bias_uncorrected"
+      ],
+      "uncertainty_flags": [
+        "boundary_bias_uncorrected",
+        "clock_synchronization_unknown",
+        "frame_specific_eligibility",
+        "microcrack_coverage_unknown",
+        "partial_eligible_length",
+        "pixel_scale_not_metric"
+      ],
+      "images": [
+        "beam4_t225",
+        "beam4_t400",
+        "beam4_t500",
+        "beam4_t588"
+      ]
+    },
+    {
+      "beam": 4,
+      "section": 9,
+      "role": "additional_section",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "n_observations": 4,
+      "n_primary": 2,
+      "full_strip_common_support": true,
+      "origin_valid": true,
+      "statuses": [
+        "existing_human_reference_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "existing_human_reference_boundary_bias_uncorrected"
+      ],
+      "uncertainty_flags": [
+        "boundary_bias_uncorrected",
+        "clock_synchronization_unknown",
+        "frame_specific_eligibility",
+        "microcrack_coverage_unknown",
+        "partial_eligible_length",
+        "pixel_scale_not_metric"
+      ],
+      "images": [
+        "beam4_t225",
+        "beam4_t400",
+        "beam4_t500",
+        "beam4_t588"
+      ]
+    },
+    {
+      "beam": 5,
+      "section": 3,
+      "role": "existing_section3_cache",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "n_observations": 6,
+      "n_primary": 4,
+      "full_strip_common_support": true,
+      "origin_valid": true,
+      "statuses": [
+        "existing_human_reference_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "existing_human_reference_boundary_bias_uncorrected"
+      ],
+      "uncertainty_flags": [
+        "boundary_bias_uncorrected",
+        "clock_synchronization_unknown",
+        "frame_specific_eligibility",
+        "microcrack_coverage_unknown",
+        "partial_eligible_length",
+        "pixel_scale_not_metric"
+      ],
+      "images": [
+        "beam5_t228",
+        "beam5_t358",
+        "beam5_t464",
+        "beam5_t553",
+        "beam5_t636",
+        "beam5_t729"
+      ]
+    },
+    {
+      "beam": 5,
+      "section": 6,
+      "role": "additional_section",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "n_observations": 6,
+      "n_primary": 4,
+      "full_strip_common_support": true,
+      "origin_valid": true,
+      "statuses": [
+        "existing_human_reference_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "existing_human_reference_boundary_bias_uncorrected"
+      ],
+      "uncertainty_flags": [
+        "boundary_bias_uncorrected",
+        "clock_synchronization_unknown",
+        "frame_specific_eligibility",
+        "microcrack_coverage_unknown",
+        "partial_eligible_length",
+        "pixel_scale_not_metric"
+      ],
+      "images": [
+        "beam5_t228",
+        "beam5_t358",
+        "beam5_t464",
+        "beam5_t553",
+        "beam5_t636",
+        "beam5_t729"
+      ]
+    },
+    {
+      "beam": 6,
+      "section": 3,
+      "role": "existing_section3_cache",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "n_observations": 4,
+      "n_primary": 2,
+      "full_strip_common_support": true,
+      "origin_valid": true,
+      "statuses": [
+        "existing_human_reference_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "existing_human_reference_boundary_bias_uncorrected"
+      ],
+      "uncertainty_flags": [
+        "boundary_bias_uncorrected",
+        "clock_synchronization_unknown",
+        "frame_specific_eligibility",
+        "microcrack_coverage_unknown",
+        "partial_eligible_length",
+        "pixel_scale_not_metric"
+      ],
+      "images": [
+        "beam6_t183",
+        "beam6_t293",
+        "beam6_t376",
+        "beam6_t460"
+      ]
+    },
+    {
+      "beam": 6,
+      "section": 9,
+      "role": "additional_section",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "n_observations": 4,
+      "n_primary": 2,
+      "full_strip_common_support": true,
+      "origin_valid": true,
+      "statuses": [
+        "existing_human_reference_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "existing_human_reference_boundary_bias_uncorrected"
+      ],
+      "uncertainty_flags": [
+        "boundary_bias_uncorrected",
+        "clock_synchronization_unknown",
+        "frame_specific_eligibility",
+        "microcrack_coverage_unknown",
+        "partial_eligible_length",
+        "pixel_scale_not_metric"
+      ],
+      "images": [
+        "beam6_t183",
+        "beam6_t293",
+        "beam6_t376",
+        "beam6_t460"
+      ]
+    },
+    {
+      "beam": 6,
+      "section": 12,
+      "role": "additional_section",
+      "eligible": true,
+      "exclusion_reasons": [],
+      "n_observations": 4,
+      "n_primary": 2,
+      "full_strip_common_support": true,
+      "origin_valid": true,
+      "statuses": [
+        "existing_human_reference_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "model_only_boundary_bias_uncorrected",
+        "existing_human_reference_boundary_bias_uncorrected"
+      ],
+      "uncertainty_flags": [
+        "boundary_bias_uncorrected",
+        "clock_synchronization_unknown",
+        "frame_specific_eligibility",
+        "microcrack_coverage_unknown",
+        "partial_eligible_length",
+        "pixel_scale_not_metric"
+      ],
+      "images": [
+        "beam6_t183",
+        "beam6_t293",
+        "beam6_t376",
+        "beam6_t460"
+      ]
+    }
+  ]
+}
