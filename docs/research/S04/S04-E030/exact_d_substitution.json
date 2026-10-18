@@ -1,0 +1,8 @@
+{
+  "scope": "posthoc fixed own-zero UV with exact FEM d, algebraic substitution only; not NN oracle or solved state",
+  "active_error": 0.6114473703717968,
+  "own_zero_active_error": 0.7727268883300547,
+  "global_d_RMS": 0.0,
+  "zone_d_RMS": 0.0,
+  "source": "E029 exact fields.npz + locked4MAT; CPU component_scores, no PT/model, optimizer or FEM solve"
+}

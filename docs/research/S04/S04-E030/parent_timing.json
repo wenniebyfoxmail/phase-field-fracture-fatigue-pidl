@@ -1,0 +1,129 @@
+{
+  "status": "EXACT_TIMING_ALIGNED",
+  "source_case": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E029/runs/pf_s04e029_increment_v1_20261018T2115Z",
+  "runtime_commit": "7c72db1795e2982a25de68a37dceb0baffb18f8a",
+  "own_zero_active": 0.7727268883300547,
+  "windows": [
+    {
+      "first": 1,
+      "last": 200,
+      "post_min": 0.6413489096143705,
+      "post_median": 2.3544092974348585,
+      "post_max": 74.31092564889731,
+      "worse_than_zero_count": 196,
+      "count": 200
+    },
+    {
+      "first": 1,
+      "last": 50,
+      "post_min": 0.8369256452514172,
+      "post_median": 2.836888149097099,
+      "post_max": 74.31092564889731,
+      "worse_than_zero_count": 50,
+      "count": 50
+    },
+    {
+      "first": 51,
+      "last": 100,
+      "post_min": 1.673229520666704,
+      "post_median": 2.3526839120238536,
+      "post_max": 4.367672150041568,
+      "worse_than_zero_count": 50,
+      "count": 50
+    },
+    {
+      "first": 101,
+      "last": 150,
+      "post_min": 1.1817858719019487,
+      "post_median": 2.0365056556945604,
+      "post_max": 9.29821481314684,
+      "worse_than_zero_count": 50,
+      "count": 50
+    },
+    {
+      "first": 151,
+      "last": 200,
+      "post_min": 0.6413489096143705,
+      "post_median": 1.298207845498994,
+      "post_max": 11.828314414116084,
+      "worse_than_zero_count": 46,
+      "count": 50
+    }
+  ],
+  "largest_jumps": [
+    {
+      "update": 1,
+      "pre_active_error": 0.7727268883300547,
+      "post_active_error": 74.31092564889731,
+      "post_over_pre": 96.16712809035435,
+      "post_source": "next row full-support pre-loss"
+    },
+    {
+      "update": 165,
+      "pre_active_error": 1.1755306555805725,
+      "post_active_error": 11.34390144903022,
+      "post_over_pre": 9.65002605008857,
+      "post_source": "next row full-support pre-loss"
+    },
+    {
+      "update": 162,
+      "pre_active_error": 1.1156215941809051,
+      "post_active_error": 8.507922030647858,
+      "post_over_pre": 7.626171880344802,
+      "post_source": "next row full-support pre-loss"
+    },
+    {
+      "update": 196,
+      "pre_active_error": 0.6413489096143705,
+      "post_active_error": 3.6027724048853225,
+      "post_over_pre": 5.617492056003639,
+      "post_source": "next row full-support pre-loss"
+    },
+    {
+      "update": 159,
+      "pre_active_error": 0.8449295403256338,
+      "post_active_error": 3.8112004964986195,
+      "post_over_pre": 4.510672564519157,
+      "post_source": "next row full-support pre-loss"
+    },
+    {
+      "update": 148,
+      "pre_active_error": 1.1817858719019487,
+      "post_active_error": 5.243198614266441,
+      "post_over_pre": 4.436673968549069,
+      "post_source": "next row full-support pre-loss"
+    },
+    {
+      "update": 177,
+      "pre_active_error": 0.7594114083655901,
+      "post_active_error": 2.776354663596309,
+      "post_over_pre": 3.655929622616016,
+      "post_source": "next row full-support pre-loss"
+    },
+    {
+      "update": 132,
+      "pre_active_error": 1.608212681452402,
+      "post_active_error": 5.687914566002001,
+      "post_over_pre": 3.536792509847116,
+      "post_source": "next row full-support pre-loss"
+    },
+    {
+      "update": 197,
+      "pre_active_error": 3.6027724048853225,
+      "post_active_error": 11.828314414116084,
+      "post_over_pre": 3.28311452537968,
+      "post_source": "next row full-support pre-loss"
+    },
+    {
+      "update": 120,
+      "pre_active_error": 1.4303380572289148,
+      "post_active_error": 4.587073106038226,
+      "post_over_pre": 3.2069852877473286,
+      "post_source": "next row full-support pre-loss"
+    }
+  ],
+  "scope": "Full-support active objective has no sampling; next pre-update q is prior post-update q, with no intervening parameter update. All scheduled milestones independently match.",
+  "observed": "196/200 post-update states worse than own zero, plus repeated sharp changes. Stored10/50/100/200 UV errors all worse than zero; endpoint swaps implicate UV/raw while damage also imperfect.",
+  "unavailable": "No per-step UV/d fields or parameter/Adam update norms. Cannot attribute every jump to UV, classify actual parameter step magnitude, or prove optimizer causality.",
+  "decision": "One-factor fixed physical own-zero UV isolation; retain map/Adam/loss/seed/200steps. No simultaneous step clipping or optimizer change."
+}
