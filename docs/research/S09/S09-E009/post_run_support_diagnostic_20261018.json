@@ -1,0 +1,152 @@
+{
+  "operation": "read-only; no model forward; no optimizer step",
+  "packet_manifest_sha256": "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6",
+  "rows": [
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.009547905883445269,
+      "cycle": 1,
+      "group": "growth",
+      "maximum_increment": 0.31064864516903196,
+      "positive_area_fraction_above_1e-15": 0.020507011153964326,
+      "top_1_percent_nodes_squared_target_energy_share": 0.5552339466688564,
+      "weighted_mean_absolute_increment": 0.001535518225173021
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.0009780479662281803,
+      "cycle": 2,
+      "group": "other",
+      "maximum_increment": 0.036482983674915065,
+      "positive_area_fraction_above_1e-15": 0.01900597094329362,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9765688472896854,
+      "weighted_mean_absolute_increment": 1.1476800909085256e-05
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.00013967692919530816,
+      "cycle": 3,
+      "group": "near_stagnant",
+      "maximum_increment": 0.05294265357076311,
+      "positive_area_fraction_above_1e-15": 0.01891444847793275,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9878348379527608,
+      "weighted_mean_absolute_increment": 5.133116081612963e-06
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 2.5710145530232135e-05,
+      "cycle": 4,
+      "group": "near_stagnant",
+      "maximum_increment": 0.06552068730669314,
+      "positive_area_fraction_above_1e-15": 0.018796330338440546,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9959555061888349,
+      "weighted_mean_absolute_increment": 4.268386296054926e-06
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.00020541842963316543,
+      "cycle": 21,
+      "group": "other",
+      "maximum_increment": 0.7367346235455474,
+      "positive_area_fraction_above_1e-15": 0.021415380532483572,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9999956611902671,
+      "weighted_mean_absolute_increment": 0.00012342244897919335
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.0003704292264209459,
+      "cycle": 29,
+      "group": "other",
+      "maximum_increment": 0.14470392662042728,
+      "positive_area_fraction_above_1e-15": 0.022099389557128004,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9999672567837832,
+      "weighted_mean_absolute_increment": 3.606675943354452e-05
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.0004886465508690564,
+      "cycle": 41,
+      "group": "other",
+      "maximum_increment": 0.15149737149712528,
+      "positive_area_fraction_above_1e-15": 0.02622209634209307,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9999610389610316,
+      "weighted_mean_absolute_increment": 5.0039491942250404e-05
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.0002964137408786034,
+      "cycle": 46,
+      "group": "other",
+      "maximum_increment": 0.685757378663777,
+      "positive_area_fraction_above_1e-15": 0.02824681829867252,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9999939540298471,
+      "weighted_mean_absolute_increment": 0.0001606004616501232
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.0002783262857201994,
+      "cycle": 48,
+      "group": "other",
+      "maximum_increment": 0.7144842470432755,
+      "positive_area_fraction_above_1e-15": 0.028825625448599096,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9999908008238323,
+      "weighted_mean_absolute_increment": 0.0001610317096137407
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.00029880835679491514,
+      "cycle": 58,
+      "group": "growth",
+      "maximum_increment": 0.8437569694631997,
+      "positive_area_fraction_above_1e-15": 0.03211337601954507,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9999929261918786,
+      "weighted_mean_absolute_increment": 0.00020795533516832973
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.0002962466020496468,
+      "cycle": 60,
+      "group": "growth",
+      "maximum_increment": 0.7584123740497557,
+      "positive_area_fraction_above_1e-15": 0.03319839770635888,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9999847218179969,
+      "weighted_mean_absolute_increment": 0.00018450457483909562
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.0003638448946760565,
+      "cycle": 69,
+      "group": "growth",
+      "maximum_increment": 0.8629666904008941,
+      "positive_area_fraction_above_1e-15": 0.034684217780496365,
+      "top_1_percent_nodes_squared_target_energy_share": 0.999995124920183,
+      "weighted_mean_absolute_increment": 0.0002564150209144691
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.0003546639125026363,
+      "cycle": 70,
+      "group": "growth",
+      "maximum_increment": 0.9985498589291916,
+      "positive_area_fraction_above_1e-15": 0.03114740506927575,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9999995928272949,
+      "weighted_mean_absolute_increment": 0.0003242840749811181
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.00016330663244037193,
+      "cycle": 71,
+      "group": "near_stagnant",
+      "maximum_increment": 0.03127396356571228,
+      "positive_area_fraction_above_1e-15": 0.020976454649733946,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9999988002567144,
+      "weighted_mean_absolute_increment": 2.9618278389868435e-06
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.0001430693301686583,
+      "cycle": 72,
+      "group": "near_stagnant",
+      "maximum_increment": 0.005199504042743557,
+      "positive_area_fraction_above_1e-15": 0.020883338271858634,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9999445589014192,
+      "weighted_mean_absolute_increment": 3.6020571340683636e-07
+    },
+    {
+      "area_fraction_containing_90_percent_squared_target_energy": 0.00021474418545931707,
+      "cycle": 73,
+      "group": "near_stagnant",
+      "maximum_increment": 0.010216407268032931,
+      "positive_area_fraction_above_1e-15": 0.02112793950876144,
+      "top_1_percent_nodes_squared_target_energy_share": 0.9999926409797023,
+      "weighted_mean_absolute_increment": 1.0959172120996745e-06
+    }
+  ],
+  "schema_version": "s09-e009-post-run-support-diagnostic-v1",
+  "support_threshold": 1e-15
+}

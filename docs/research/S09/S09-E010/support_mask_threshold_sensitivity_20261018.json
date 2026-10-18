@@ -1,0 +1,93 @@
+{
+  "largest_increment_damage_units": 0.9985498589291916,
+  "node_count": 86756,
+  "operation": "read-only target-array diagnostic; no model forward; no optimiser step",
+  "schema_version": "s09-e010-support-mask-threshold-sensitivity-v1",
+  "selected_cycles": [
+    1,
+    2,
+    3,
+    4,
+    21,
+    29,
+    41,
+    46,
+    48,
+    58,
+    60,
+    69,
+    70,
+    71,
+    72,
+    73
+  ],
+  "selected_threshold_damage_units": 1e-15,
+  "selection_rationale": "Strict positivity, 1e-15, and 1e-14 yield identical masks on every frozen cycle; 1e-15 is below the smallest positive saved increment and retains the exact zero background boundary.",
+  "smallest_positive_increment_damage_units": 2.581268532253489e-14,
+  "source_packet_manifest_sha256": "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6",
+  "threshold_rows": [
+    {
+      "changed_node_memberships_vs_1e-15": 0,
+      "retained_squared_target_energy_median": 1.0,
+      "retained_squared_target_energy_min": 0.9999999999999999,
+      "threshold_damage_units": 0.0,
+      "weighted_area_fraction_max": 0.03468421778049636,
+      "weighted_area_fraction_median": 0.021757385044805788,
+      "weighted_area_fraction_min": 0.018796330338440546
+    },
+    {
+      "changed_node_memberships_vs_1e-15": 0,
+      "retained_squared_target_energy_median": 1.0,
+      "retained_squared_target_energy_min": 0.9999999999999999,
+      "threshold_damage_units": 1e-15,
+      "weighted_area_fraction_max": 0.03468421778049636,
+      "weighted_area_fraction_median": 0.021757385044805788,
+      "weighted_area_fraction_min": 0.018796330338440546
+    },
+    {
+      "changed_node_memberships_vs_1e-15": 0,
+      "retained_squared_target_energy_median": 1.0,
+      "retained_squared_target_energy_min": 0.9999999999999999,
+      "threshold_damage_units": 1e-14,
+      "weighted_area_fraction_max": 0.03468421778049636,
+      "weighted_area_fraction_median": 0.021757385044805788,
+      "weighted_area_fraction_min": 0.018796330338440546
+    },
+    {
+      "changed_node_memberships_vs_1e-15": 46,
+      "retained_squared_target_energy_median": 1.0,
+      "retained_squared_target_energy_min": 0.9999999999999999,
+      "threshold_damage_units": 1e-12,
+      "weighted_area_fraction_max": 0.03468421778049636,
+      "weighted_area_fraction_median": 0.021757385044805788,
+      "weighted_area_fraction_min": 0.018796330338440546
+    },
+    {
+      "changed_node_memberships_vs_1e-15": 182,
+      "retained_squared_target_energy_median": 1.0,
+      "retained_squared_target_energy_min": 0.9999999999999993,
+      "threshold_damage_units": 1e-10,
+      "weighted_area_fraction_max": 0.034628965138055516,
+      "weighted_area_fraction_median": 0.021742996198762823,
+      "weighted_area_fraction_min": 0.018792440178314187
+    },
+    {
+      "changed_node_memberships_vs_1e-15": 3086,
+      "retained_squared_target_energy_median": 0.9999999999999989,
+      "retained_squared_target_energy_min": 0.9999999998890978,
+      "threshold_damage_units": 1e-08,
+      "weighted_area_fraction_max": 0.033947361230884224,
+      "weighted_area_fraction_median": 0.02152063786578975,
+      "weighted_area_fraction_min": 0.017901541447858268
+    },
+    {
+      "changed_node_memberships_vs_1e-15": 15241,
+      "retained_squared_target_energy_median": 0.9999999999597693,
+      "retained_squared_target_energy_min": 0.9999974691295205,
+      "threshold_damage_units": 1e-06,
+      "weighted_area_fraction_max": 0.031998978855946936,
+      "weighted_area_fraction_median": 0.020494489519407463,
+      "weighted_area_fraction_min": 0.006968097462674204
+    }
+  ]
+}

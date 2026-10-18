@@ -96,3 +96,21 @@ This supersedes the preceding implementation boundary while preserving its
 historical runner-gate record. The current state is code-ready and awaiting a
 separate final execution action. No SSH, transfer, optimiser update, fresh
 holdout access or scientific result occurred during implementation/review.
+
+## Producer execution update — 2026-10-18
+
+The user subsequently authorised the final run card. The reviewed exact
+producer completed all four 500-update arms on Taobo, for 2000/2000 optimiser
+steps. The numeric replay gate, shared identity, cross-arm eligibility,
+terminal receipts, fixed evaluation schedule and zero hard-constraint counts
+all passed. Complete retrieval verification matched 38 remote-manifest entries
+and every shared/per-arm artifact hash.
+
+The frozen scientific classification is
+`COMPONENT_SIGNAL_OR_MIXED_TRADEOFF`. `A25` improved growth MAE and
+near-stagnant false growth relative to replay, but amplitude AUC remained 0.68,
+the spatial median remained unresolved, `L_P` was 2.70 times replay and no
+confirmatory-P1 nomination was made. Implementation readiness has therefore
+advanced to one valid bounded producer result, while the generalisation and
+full-PINO boundaries remain unchanged. The component analysis and selected
+next design gate are recorded in `run_analysis_20261018.md`.

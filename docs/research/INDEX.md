@@ -45,7 +45,7 @@ documents.
 | S06 | LTPP 2-D spatial registration | paused | legacy `research_storylines.md` |
 | S07 | LTPP current-map crack recognition | closed | legacy S07 (`killed` under its frozen protocol) |
 | S08 | LTPP scalar/enriched/load forecasting | closed | legacy S08 (`killed` under its frozen protocol) |
-| S09 | Synthetic FEM transition-surrogate qualification | active | `../experiments/at1_fatigue_mesh_pino_track.md`; [S09-E001](S09/S09-E001/experiment.md); [S09-E008](S09/S09-E008/experiment.md) (Stage-0A P1 execution succeeded; frozen performance verdict negative) |
+| S09 | Synthetic FEM transition-surrogate qualification | active | `../experiments/at1_fatigue_mesh_pino_track.md`; [S09-E001](S09/S09-E001/experiment.md); [S09-E008](S09/S09-E008/experiment.md) (Stage-0A P1 frozen negative); [S09-E009](S09/S09-E009/experiment.md) (valid component signal / mixed trade-off); [S09-E010](S09/S09-E010/experiment.md) (support-amplitude design under review) |
 
 Storyline statuses are `active | paused | closed | merged`. Dependencies belong
 in Storyline metadata (`depends_on`, `feeds`, `merged_into`), not in a separate

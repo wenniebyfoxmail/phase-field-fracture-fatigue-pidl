@@ -1,7 +1,7 @@
 ---
 experiment_id: S09-E009
 planned_run_id: S09-E009-R001-four-arm-damage-separation
-status: CODE_READY_AWAITING_FINAL_EXECUTION_APPROVAL
+status: EXECUTED_COMPONENT_SIGNAL_OR_MIXED_TRADEOFF
 producer: Taobo GPU
 forbidden_fallback: CSD3
 ---
@@ -118,3 +118,25 @@ Update 500 is the only decision checkpoint. The graded outcome is one of
 `NOMINATE_CONFIRMATORY_P1`. A positive outcome supports only the next bounded
 development test. It does not establish rollout, generalisation, FEM truth,
 full fracture-evolution PINO performance, or real-road validity.
+
+## Execution record (2026-10-18)
+
+The user authorised this exact run card and the reviewed producer completed on
+Taobo as `S09-E009-R001-four-arm-damage-separation`.
+
+- reviewed producer commit:
+  `bc1309c75a2309e8b5e0fa00d474605a333d0379`;
+- resolved-config SHA256:
+  `17972245713a1c32388d52f9cbcb91095ee997a3d6dfd3cb6915e1ba3b98673c`;
+- all four arms completed 500 updates, for 2000/2000 total optimiser steps;
+- every arm has 500 train rows, 500 gradient rows, all seven evaluations and
+  an update-500 checkpoint;
+- the numeric replay gate, shared identity and cross-arm eligibility passed;
+- all hard-constraint counts are zero;
+- complete local retrieval verification passed 38 remote-manifest entries and
+  all shared/per-arm hashes and receipts;
+- frozen result: `COMPONENT_SIGNAL_OR_MIXED_TRADEOFF`.
+
+The result does not nominate confirmatory P1. See
+`run_analysis_20261018.md` for the component gains, costs and selected next
+design gate.
