@@ -88,6 +88,18 @@ def output_bytes():
     return size_tree(OUT) + sum(p.stat().st_size for p in ROOT.iterdir() if p.is_file())
 
 
+def service_identity(expected):
+    """Read only OS identity; never attach/request/stop the resident service."""
+    base = Path('/proc') / str(expected['pid'])
+    raw = (base / 'stat').read_text()
+    fields = raw[raw.rfind(')') + 2:].split()
+    uids = next(r for r in (base / 'status').read_text().splitlines() if r.startswith('Uid:'))
+    return (int(fields[19]) == expected['start_ticks'] and
+            [int(v) for v in uids.split()[1:]] == expected['uids'] and
+            digest(base / 'cmdline') == expected['cmdline_sha256'] and
+            digest(base / 'cgroup') == expected['cgroup_sha256'])
+
+
 def gpu_snapshot(contract, worker_pid=None, mode=None):
     policy = contract['resource_policy']
     row = command(['nvidia-smi', '-i', str(policy['physical_GPU']),
@@ -105,12 +117,21 @@ def gpu_snapshot(contract, worker_pid=None, mode=None):
         if app_uuid == uuid:
             processes[int(pid)] = int(memory)
     others = set(processes) - ({worker_pid} if worker_pid is not None else set())
-    if others:
-        raise RuntimeError('GPU7 must be empty of other CUDA processes; no whitelist or fallback')
-    observed_mode = 'empty'
+    allowed_services = {row['pid']: row for row in policy['services']}
+    if not others:
+        observed_mode = 'empty'
+    elif others == set(allowed_services):
+        for pid, expected in allowed_services.items():
+            if not service_identity(expected):
+                raise RuntimeError('GPU7 service identity changed; no re-whitelist')
+            if processes[pid] > expected['maximum_MiB']:
+                raise RuntimeError('GPU7 service memory exceeds frozen allowance')
+        observed_mode = 'exact_services'
+    else:
+        raise RuntimeError('unknown or incomplete GPU7 service set; no whitelist or fallback')
     if observed_mode not in policy['admission_modes']:
         raise RuntimeError('unapproved resource admission mode')
-    # Only empty admission; runtime allows our own worker and no other PID.
+    # Pin empty/exact-service-set mode; runtime permits only that set plus our worker.
     if mode is not None and observed_mode != mode:
         raise RuntimeError('GPU admission mode changed; stop owned child only')
     if worker_pid is not None and processes.get(worker_pid, 0) * 1024**2 > contract['budget']['gpu_process_bytes']:
@@ -161,7 +182,7 @@ def main():
     # Binding is reviewed Git content; no alternate contract/path/budget flags.
     contract = json.loads(CONTRACT.read_text())
     if (contract['protocol'] != 'S04-E011-UVH-C1-PC16-v1' or contract['run_id'] != RUN or
-            contract['resource_revision'] != 'GPU7-empty-selfcontained-r1'):
+            contract['resource_revision'] != 'GPU7-shared-selfcontained-r1'):
         raise SystemExit('contract identity mismatch')
     if OUT.exists() or OUT.is_symlink():
         raise SystemExit('attempt already consumed; no resume/retry')

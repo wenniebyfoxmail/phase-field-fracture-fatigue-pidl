@@ -1,9 +1,11 @@
 # PC16 GPU7 D1 — self-contained source materialization contract
 
-2026-10-18. Preparation/static/code-only checks permitted; no deployment or
-scientific work in D1. Old r3 failed checkout stays untouched and terminal.
+2026-10-18. D1 began as preparation only. Subsequent direct human messages explicitly
+authorize deployment/execution onGPU7 and sharing the two observed processes;
+independent exact-package review and fresh resource checks still precede launch. Old r3 failed checkout stays untouched and terminal.
 This document replaces that failed old-checkout prerequisite for a NEW future
-Run only. Exact source/card execution approval follows a frozen final package.
+Run only. Record the actual human scope/wording and exact reviewed source/card at launch;
+do not claim the human recited a generated snapshot SHA.
 
 ## Source packaging, not a method change
 
@@ -35,8 +37,9 @@ Fresh root /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_pc16_g7_r1_20261018;
 code subdir; output /mnt/data2/drtao/pidl_archives/pf_s04e011_uvh_c1_pc16_g7_r1_20261018.
 Do not touch or reuse any old GPU3 run/code root. Check no same-item worker,
 fresh paths, host>=16GiB/data2mounted/free>=5GiB and GPU7 admission FIRST.
-If any other CUDA process exists, stop; no shared-service whitelist or GPU
-fallback under this empty-only card. No service/process mutation.
+Only empty occupancy or the exact approved TWO-service set is permitted.
+Unknown/incomplete service set, identity/mode change or extra PID stops.
+No automatic re-whitelist, GPU fallback or service/process mutation.
 
 After new exact-package approval, transfer the sole reviewed bundle to the
 fresh root as source.bundle and verify its exact size/SHA256 against the local
@@ -58,19 +61,27 @@ immutable materialized code is excluded as in the previous guards.
 
 PhysicalGPU7 RTX4090 UUID GPU-350d3f31-8bd6-4257-4d4c-21ad344eaa81 only.
 CUDA_VISIBLE_DEVICES is that full UUID, worker logicalcuda:0. Three admission
-samples1s apart must show NO other CUDA compute PID, free>=12288MiB and whole
-GPUutil<=10%; runtime allows only our worker, free>=4096MiB and own caps.
-Any process/UUID/monitor/margin failure stops our child, no whitelist/GPU switch.
+samples1s apart must show empty occupancy or the exact two-service set,
+free>=12288MiB and wholeGPUutil<=10%. Pin first mode; runtime permits only
+that same service set plus our worker, free>=4096MiB and own caps.
+Exact tuples/UIDs/hashes ininputs_gpu7.json; PID2742304 baseline494/ceiling1518MiB,
+PID2742215 baseline446/ceiling1470MiB, each with original1GiB growth allowance.
+Any unknown/incomplete process set/UUID/identity/mode/monitor/margin failure
+stops our child, no re-whitelist/GPU switch.
 
 Read-only observations at20:53:55–58UTC/21:53:55–58London found GPU7 NONEMPTY:
 PID2742304 python angle_main.py494MiB andPID2742215 uvicorn det_main:service
 port18093 446MiB. Free23127MiB/util0% in all3 samples, no matching PC16 worker.
-Low utilization does not meet empty admission; purpose/business ownership of
-these two processes is not fully qualified. No service requests, stopping,
-priority changes or extra GPU scan occurred. Current Run Ready is BLOCKED
-RESOURCE; no live run approval or alternative service allowance is inferred.
-If future empty admission is not met, report/wait or request a separately
-reviewed resource decision. Never silently expand the allowed PID set.
+These are not an empty card; their detailed business purpose/latency is not
+measured. The user then explicitly confirmed sharing them and requested this
+PC16 execution (source chat01a0d3dd, turn01a150cd-2fb0-78c0-ae31-cfbe0813bef2;
+preceding GPU7 deploy/execute turn01a150c8-b9c0-7b21-a14c-67214632190a).
+A followup read-only identity check20:58:40UTC verified exact PID/start/UID/
+command/cgroup tuples and23127MiBfree/0% utilization. No request/benchmark or
+service mutation occurred. User permission addresses the shared occupancy;
+it does not establish zero performance impact or8GiB numeric feasibility.
+With own8192MiB and total service growth2048MiB, sampled free would be12887MiB
+before other changes, above4096MiB. Fresh admission is still mandatory.
 
 Read-only metadata endpoint:
 /Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/preparation/gpu7_d1_20261018/

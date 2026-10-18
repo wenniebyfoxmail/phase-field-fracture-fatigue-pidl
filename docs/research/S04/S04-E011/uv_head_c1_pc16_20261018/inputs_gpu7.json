@@ -96,10 +96,45 @@
     "runtime_monitor_interval_seconds": 1,
     "unknown_or_unreadable_process": "stop_owned_child_only",
     "admission_modes": [
-      "empty"
+      "empty",
+      "exact_services"
     ],
     "lock_admission_mode_for_attempt": true,
-    "allow_only_own_worker": true
+    "allow_only_exact_services_plus_worker": true,
+    "services": [
+      {
+        "pid": 2742304,
+        "start_ticks": 534715435,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "cmdline_sha256": "9df93584a40b493212aa581aaa5a51566636332610ea3c9f7a7c80a5931efe81",
+        "cgroup_sha256": "55662a44f20befbec491c4dae0247b25b3edc7b1832ee39454e92556db77b5e6",
+        "baseline_MiB": 494,
+        "maximum_MiB": 1518,
+        "description": "python angle_main.py",
+        "utc": "2026-10-18T20:58:40.170059+00:00"
+      },
+      {
+        "pid": 2742215,
+        "start_ticks": 534715397,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "cmdline_sha256": "3ecbfd5be66e5e0f72dc6714728130af58640b3526927564f9168b453ccc3c96",
+        "cgroup_sha256": "13748762b00b39b9a979c55164b6945788a8d4ed7c74e4134f499cd9be021d33",
+        "baseline_MiB": 446,
+        "maximum_MiB": 1470,
+        "description": "/usr/bin/python3.10 /usr/local/bin/uvicorn det_main:service --host 0.0.0.0 --port 18093",
+        "utc": "2026-10-18T20:58:40.170059+00:00"
+      }
+    ]
   },
   "work_ledger": {
     "total": 400,
@@ -131,5 +166,5 @@
     "maxcor": 10,
     "maxls": 20
   },
-  "resource_revision": "GPU7-empty-selfcontained-r1"
+  "resource_revision": "GPU7-shared-selfcontained-r1"
 }
