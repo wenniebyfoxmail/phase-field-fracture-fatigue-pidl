@@ -31,6 +31,8 @@ from s09_e009_four_arm import (
     parameter_state_sha256,
 )
 from s09_e010_producer import (
+    HARD_CONSTRAINT_KEYS,
+    PROJECTION_COUNT_KEYS,
     _validate_evaluation_record,
     evaluate_arm,
 )
@@ -124,6 +126,81 @@ def _write_json(path: Path, value: Any) -> None:
 def _append_jsonl(stream: io.BufferedWriter, value: Any) -> None:
     stream.write(canonical_json(value))
     stream.flush()
+
+
+def _append_durable_evaluation(
+    stream: io.BufferedWriter,
+    evaluations: dict[int, dict[str, Any]],
+    update: int,
+    evaluation: dict[str, Any],
+) -> None:
+    """Register an evaluation only after its JSONL row is durably flushed."""
+    _append_jsonl(stream, evaluation)
+    evaluations[update] = evaluation
+
+
+def _restore_evaluation_key_order(record: Mapping[str, Any]) -> dict[str, Any]:
+    """Restore frozen named-map order after canonical JSON sorts object keys.
+
+    Canonical JSON is retained for deterministic evidence bytes. The inherited
+    E010 validator also treats the order of four scientifically named maps as
+    part of its schema, so the disk decoder first requires exact memberships and
+    then reconstructs those maps in their frozen order.
+    """
+    _require(set(record) == {"aggregate", "per_cycle"},
+             "evaluation record keys drift")
+    aggregate_raw = record["aggregate"]
+    rows_raw = record["per_cycle"]
+    _require(isinstance(aggregate_raw, Mapping) and isinstance(rows_raw, list),
+             "evaluation record shape drift")
+
+    def ordered_named_map(value: Any, keys: tuple[str, ...], label: str):
+        _require(isinstance(value, Mapping) and set(value) == set(keys),
+                 f"{label} membership drift")
+        return OrderedDict((key, value[key]) for key in keys)
+
+    aggregate = dict(aggregate_raw)
+    aggregate["hard_constraint_counts"] = ordered_named_map(
+        aggregate.get("hard_constraint_counts"), HARD_CONSTRAINT_KEYS,
+        "aggregate hard-constraint counts",
+    )
+    rows = []
+    for raw in rows_raw:
+        _require(isinstance(raw, Mapping), "per-cycle record shape drift")
+        row = dict(raw)
+        row["atomic_losses"] = ordered_named_map(
+            row.get("atomic_losses"), LOSS_ORDER, "per-cycle atomic losses")
+        row["grouped_losses"] = ordered_named_map(
+            row.get("grouped_losses"), ("L_D", "L_U", "L_H", "L_P"),
+            "per-cycle grouped losses",
+        )
+        row["projection_counts"] = ordered_named_map(
+            row.get("projection_counts"), PROJECTION_COUNT_KEYS,
+            "per-cycle projection counts",
+        )
+        row["hard_constraint_counts"] = ordered_named_map(
+            row.get("hard_constraint_counts"), HARD_CONSTRAINT_KEYS,
+            "per-cycle hard-constraint counts",
+        )
+        rows.append(row)
+    return {"aggregate": aggregate, "per_cycle": rows}
+
+
+def _optimizer_step_before_deadline(
+    optimizer: torch.optim.AdamW, deadline: float, stage: str,
+) -> None:
+    """Do not begin an avoidable optimizer mutation after the wall cap."""
+    _check_deadline(deadline, stage)
+    optimizer.step()
+
+
+def _cleanup_partial_checkpoint(path: Path) -> str | None:
+    """Return cleanup failure text so arm progress can still be receipted."""
+    try:
+        path.unlink(missing_ok=True)
+    except BaseException as error:
+        return f"CHECKPOINT_CLEANUP_FAILED: {type(error).__name__}: {error}"
+    return None
 
 
 def _load_strict_json(path: Path) -> dict[str, Any]:
@@ -457,8 +534,7 @@ def _train_arm(
             initial = evaluate_arm(runtime, update=0)
             _validate_evaluation_record(initial, 0)
             _check_deadline(deadline, f"{arm}:initial_evaluation_after")
-            evaluations[0] = initial
-            _append_jsonl(diagnostic_stream, initial)
+            _append_durable_evaluation(diagnostic_stream, evaluations, 0, initial)
             for update, (growth_cycle, stagnant_cycle) in enumerate(schedule, 1):
                 _check_deadline(deadline, f"{arm}:update_{update}_before")
                 runtime.model.train()
@@ -485,7 +561,8 @@ def _train_arm(
                 _require(diagnostic["layout"]["parameter_order"] == parameter_order,
                          "parameter order drift")
                 assign_merged_gradient(runtime.model, direction, parameter_order)
-                optimizer.step()
+                _optimizer_step_before_deadline(
+                    optimizer, deadline, f"{arm}:update_{update}_pre_step")
                 steps = update
                 after, after_order = flattened_parameters(runtime.model)
                 _require(after_order == parameter_order,
@@ -521,8 +598,8 @@ def _train_arm(
                     evaluation = evaluate_arm(runtime, update=update)
                     _validate_evaluation_record(evaluation, update)
                     _check_deadline(deadline, f"{arm}:evaluation_{update}_after")
-                    evaluations[update] = evaluation
-                    _append_jsonl(diagnostic_stream, evaluation)
+                    _append_durable_evaluation(
+                        diagnostic_stream, evaluations, update, evaluation)
         _check_deadline(deadline, f"{arm}:checkpoint_before")
         torch.save({
             "model": runtime.model.state_dict(), "optimizer": optimizer.state_dict(),
@@ -536,8 +613,10 @@ def _train_arm(
     except BaseException as error:
         reason = f"{type(error).__name__}: {error}"
         finite = not isinstance(error, FloatingPointError)
-    finally:
-        checkpoint_partial.unlink(missing_ok=True)
+    cleanup_failure = _cleanup_partial_checkpoint(checkpoint_partial)
+    if cleanup_failure is not None:
+        terminal_state = "EXECUTION_FAILED"
+        reason = cleanup_failure if reason is None else f"{reason}; {cleanup_failure}"
 
     artifact_names = (
         "start_identity.json", "train_log.jsonl", "gradient_diagnostics.jsonl",
@@ -611,16 +690,24 @@ def _validate_arm_on_disk(result: ArmRunResult) -> ArmRunResult:
     receipt = _load_strict_json(receipt_path)
     _require(receipt_path.read_bytes() == canonical_json(receipt),
              f"noncanonical termination receipt: {result.arm}")
-    _require(receipt == result.receipt, f"in-memory/on-disk receipt drift: {result.arm}")
+    _require(receipt_path.read_bytes() == canonical_json(result.receipt),
+             f"in-memory/on-disk receipt drift: {result.arm}")
     _require(receipt.get("arm") == result.arm and
              receipt.get("terminal_state") == "COMPLETED" and
+             type(receipt.get("optimizer_steps_completed")) is int and
              receipt.get("optimizer_steps_completed") == UPDATES_PER_ARM and
+             type(receipt.get("fully_logged_updates")) is int and
              receipt.get("fully_logged_updates") == UPDATES_PER_ARM and
              receipt.get("evaluation_updates_present") == list(EVALUATION_UPDATES) and
+             isinstance(receipt.get("evaluation_updates_present"), list) and
+             all(type(value) is int
+                 for value in receipt.get("evaluation_updates_present", ())) and
+             type(receipt.get("last_valid_evaluation_update")) is int and
              receipt.get("last_valid_evaluation_update") == 500 and
              receipt.get("reason") is None and
              receipt.get("update500_checkpoint_present") is True and
              receipt.get("finite") is True and
+             type(receipt.get("hard_constraint_violations")) is int and
              receipt.get("hard_constraint_violations") == 0,
              f"invalid completed receipt: {result.arm}")
     required_artifacts = {
@@ -648,13 +735,18 @@ def _validate_arm_on_disk(result: ArmRunResult) -> ArmRunResult:
              f"evaluation row count drift: {result.arm}")
     evaluations = {}
     for update, record in zip(EVALUATION_UPDATES, evaluation_rows):
+        record = _restore_evaluation_key_order(record)
         _validate_evaluation_record(record, update)
         _require(record["aggregate"]["hard_constraint_violations"] == 0,
                  f"hard-constraint drift: {result.arm}/{update}")
         evaluations[update] = record
     checkpoint = torch.load(
         arm_dir / "checkpoint_update500.pt", map_location="cpu", weights_only=False)
-    _require(checkpoint.get("update") == UPDATES_PER_ARM and
+    _require(set(checkpoint) == {"model", "optimizer", "update", "arm", "source_run"} and
+             isinstance(checkpoint.get("model"), Mapping) and
+             isinstance(checkpoint.get("optimizer"), Mapping) and
+             type(checkpoint.get("update")) is int and
+             checkpoint.get("update") == UPDATES_PER_ARM and
              checkpoint.get("arm") == result.arm and
              checkpoint.get("source_run") == RUN_ID,
              f"checkpoint semantic identity drift: {result.arm}")
@@ -687,12 +779,41 @@ def _write_required_figures(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    fields = {arm: _collect_fields(runtimes[arm]) for arm in ARM_ORDER}
+    fields = {}
+    for arm in ARM_ORDER:
+        runtime = runtimes[arm]
+        device = next(runtime.model.parameters()).device
+        checkpoint = torch.load(
+            results[arm].arm_dir / "checkpoint_update500.pt",
+            map_location=device,
+            weights_only=False,
+        )
+        _require(set(checkpoint) == {"model", "optimizer", "update", "arm", "source_run"},
+                 f"checkpoint field-replay structure drift: {arm}")
+        runtime.model.load_state_dict(checkpoint["model"], strict=True)
+        fields[arm] = _collect_fields(runtime)
     common = fields[ARM_CONTROL]
     _require(np.array_equal(common["cycles"], fields[ARM_RANK]["cycles"]) and
              np.array_equal(common["d_pre"], fields[ARM_RANK]["d_pre"]) and
              np.array_equal(common["target_peak"], fields[ARM_RANK]["target_peak"]),
              "field reconstruction support drift")
+    weights = np.asarray(common["nodal_weight"]).reshape(-1)
+    _require(np.all(np.isfinite(weights)) and np.all(weights > 0),
+             "field reconstruction weight drift")
+    for arm in ARM_ORDER:
+        reconstructed = []
+        for predicted, pre in zip(fields[arm]["predicted_peak"], common["d_pre"]):
+            increment = np.abs(np.asarray(predicted).reshape(-1) -
+                               np.asarray(pre).reshape(-1))
+            _require(len(increment) == len(weights),
+                     f"field reconstruction node-count drift: {arm}")
+            reconstructed.append(float(np.dot(increment, weights) / weights.sum()))
+        recorded = [
+            row["predicted_damage_increment_abs_mean"]
+            for row in results[arm].evaluations[500]["per_cycle"]
+        ]
+        _require(np.allclose(reconstructed, recorded, rtol=1e-9, atol=1e-12),
+                 f"checkpoint/evaluation amplitude drift: {arm}")
     arrays_path = output / "field_arrays_update500.npz"
     with arrays_path.open("xb") as stream:
         np.savez_compressed(

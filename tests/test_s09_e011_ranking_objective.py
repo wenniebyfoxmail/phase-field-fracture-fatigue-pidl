@@ -3,7 +3,9 @@ import json
 from pathlib import Path
 import subprocess
 import time
+from types import SimpleNamespace
 
+import numpy as np
 import pytest
 import torch
 
@@ -25,6 +27,11 @@ import s09_e011_producer as producer
 from s09_e011_producer import ArmRunResult, _adamw_displacement
 from s09_stage0a_p1_packet import canonical_json, sha256_file
 from s09_stage0a_p1_trainer import assign_merged_gradient
+
+
+EVALUATION_FIXTURE = (
+    Path(__file__).parent / "fixtures/s09_e011_evaluation_update500.json"
+)
 
 
 def test_pair_schedule_is_fixed_complete_and_repeated_twenty_times():
@@ -181,6 +188,125 @@ def test_wall_deadline_is_checked_at_close_boundaries():
         producer._check_deadline(time.time() - 1.0, "after_evidence")
 
 
+def test_optimizer_step_is_refused_when_direction_crosses_deadline():
+    class CountingOptimizer:
+        def __init__(self):
+            self.steps = 0
+
+        def step(self):
+            self.steps += 1
+
+    optimizer = CountingOptimizer()
+    with pytest.raises(TimeoutError, match="update_1_pre_step"):
+        producer._optimizer_step_before_deadline(
+            optimizer, time.time() - 1.0, "control:update_1_pre_step")
+    assert optimizer.steps == 0
+
+
+def test_evaluation_is_registered_only_after_jsonl_flush():
+    class FailingStream:
+        def write(self, value):
+            raise OSError("diagnostic disk unavailable")
+
+        def flush(self):
+            raise AssertionError("flush cannot follow failed write")
+
+    evaluations = {}
+    with pytest.raises(OSError, match="diagnostic disk unavailable"):
+        producer._append_durable_evaluation(
+            FailingStream(), evaluations, 16, {"aggregate": {}, "per_cycle": []})
+    assert evaluations == {}
+
+
+def test_checkpoint_cleanup_failure_is_returned_instead_of_escaping():
+    class FailingPath:
+        def unlink(self, *, missing_ok):
+            assert missing_ok is True
+            raise PermissionError("arm directory read-only")
+
+    observed = producer._cleanup_partial_checkpoint(FailingPath())
+    assert observed == (
+        "CHECKPOINT_CLEANUP_FAILED: PermissionError: arm directory read-only"
+    )
+
+
+def test_canonical_evaluation_round_trip_passes_inherited_validator(tmp_path):
+    raw = json.loads(EVALUATION_FIXTURE.read_text(encoding="utf-8"))
+    ordered = producer._restore_evaluation_key_order(raw)
+    producer._validate_evaluation_record(ordered, 500)
+
+    path = tmp_path / "diagnostic_metrics.jsonl"
+    durable = {}
+    with path.open("wb") as stream:
+        producer._append_durable_evaluation(stream, durable, 500, ordered)
+    assert list(durable) == [500]
+
+    reloaded = producer._read_jsonl(path)
+    assert len(reloaded) == 1
+    restored = producer._restore_evaluation_key_order(reloaded[0])
+    producer._validate_evaluation_record(restored, 500)
+
+
+def test_evaluation_order_restore_rejects_unknown_named_metric():
+    raw = json.loads(EVALUATION_FIXTURE.read_text(encoding="utf-8"))
+    raw["per_cycle"][0]["atomic_losses"]["unexpected"] = 0.0
+    with pytest.raises(ValueError, match="atomic losses membership drift"):
+        producer._restore_evaluation_key_order(raw)
+
+
+def test_required_figures_replay_checkpoints_and_match_recorded_amplitudes(
+    tmp_path, monkeypatch,
+):
+    cycles = np.arange(1, 17, dtype=np.int64)
+    xy = np.asarray([[0., 0.], [1., 0.], [1., 1.], [0., 1.]])
+    weights = np.ones(4)
+    common = {
+        "cycles": cycles,
+        "xy": xy,
+        "nodal_weight": weights,
+        "d_pre": np.zeros((16, 4)),
+        "target_peak": np.full((16, 4), 0.3),
+    }
+    peaks = {ARM_CONTROL: 0.1, ARM_RANK: 0.2}
+    runtimes = {}
+    results = {}
+    for arm in (ARM_CONTROL, ARM_RANK):
+        model = torch.nn.Linear(1, 1, bias=False, dtype=torch.float64)
+        runtime = SimpleNamespace(model=model, arm=arm)
+        runtimes[arm] = runtime
+        arm_dir = tmp_path / arm
+        arm_dir.mkdir()
+        torch.save({
+            "model": model.state_dict(), "optimizer": {}, "update": 500,
+            "arm": arm, "source_run": producer.RUN_ID,
+        }, arm_dir / "checkpoint_update500.pt")
+        rows = [
+            {"cycle": int(cycle),
+             "predicted_damage_increment_abs_mean": peaks[arm],
+             "true_damage_increment_abs_mean": 0.3}
+            for cycle in cycles
+        ]
+        results[arm] = ArmRunResult(
+            arm, arm_dir, {}, {500: {"per_cycle": rows}})
+
+    def collect(runtime):
+        return {
+            **common,
+            "predicted_peak": np.full((16, 4), peaks[runtime.arm]),
+        }
+
+    monkeypatch.setattr(producer, "_collect_fields", collect)
+    artifacts = producer._write_required_figures(
+        output=tmp_path, results=results, runtimes=runtimes,
+        deadline=time.time() + 60,
+    )
+    assert set(artifacts) == {
+        "field_arrays_update500.npz", "amplitude_trajectory.png",
+        "delta_d_fields_all_cycles.png",
+    }
+    assert all((tmp_path / name).stat().st_size > 0 for name in artifacts)
+
+
 def _synthetic_completed_arm(tmp_path: Path) -> ArmRunResult:
     arm = ARM_CONTROL
     arm_dir = tmp_path / arm
@@ -196,11 +322,15 @@ def _synthetic_completed_arm(tmp_path: Path) -> ArmRunResult:
         for update in range(1, 501):
             stream.write(canonical_json({"update": update}))
     with (arm_dir / "diagnostic_metrics.jsonl").open("wb") as stream:
+        template = json.loads(EVALUATION_FIXTURE.read_text(encoding="utf-8"))
         for update in producer.EVALUATION_UPDATES:
-            stream.write(canonical_json({"aggregate": {"update": update,
-                                                        "hard_constraint_violations": 0},
-                                         "per_cycle": []}))
-    torch.save({"update": 500, "arm": arm, "source_run": producer.RUN_ID},
+            record = json.loads(json.dumps(template))
+            record["aggregate"]["update"] = update
+            for row in record["per_cycle"]:
+                row["update"] = update
+            stream.write(canonical_json(record))
+    torch.save({"model": {}, "optimizer": {}, "update": 500, "arm": arm,
+                "source_run": producer.RUN_ID},
                arm_dir / "checkpoint_update500.pt")
     names = {
         "start_identity.json", "train_log.jsonl", "gradient_diagnostics.jsonl",
@@ -228,4 +358,17 @@ def test_shared_close_rejects_post_receipt_artifact_tamper(tmp_path, monkeypatch
     with (result.arm_dir / "train_log.jsonl").open("ab") as stream:
         stream.write(json.dumps({"update": 501}).encode() + b"\n")
     with pytest.raises(ValueError, match="artifact hash drift"):
+        producer._validate_arm_on_disk(result)
+
+
+def test_shared_close_rejects_float_step_count_even_if_memory_matches(
+    tmp_path, monkeypatch,
+):
+    result = _synthetic_completed_arm(tmp_path)
+    result.receipt["optimizer_steps_completed"] = 500.0
+    receipt_path = result.arm_dir / "termination_receipt.json"
+    receipt_path.write_bytes(canonical_json(result.receipt))
+    monkeypatch.setattr(producer, "_validate_evaluation_record",
+                        lambda record, update: None)
+    with pytest.raises(ValueError, match="invalid completed receipt"):
         producer._validate_arm_on_disk(result)
