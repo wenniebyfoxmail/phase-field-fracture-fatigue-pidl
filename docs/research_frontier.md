@@ -72,8 +72,11 @@ PIDL/FEM 不再是最终产品，而是可与经验状态空间模型、数据�
   spans163/41/206px² (1.567/.361/1.626%);all39localcombinationsand27coherent
   pathsretaintrendgain,mean-gain735.667…832.667px². Finitephotostress,notCI/
   independenttrials;commonbiasremains. OldE047scores/halfdepth/masksunchanged.
-  Nextproposeindependent-sequenceidentity/availabilitycheck,nottuningorphoto
-  averaging;notexecuted. Freezeacceptedobserver,noperfectsegmentationprerequisite.
+  Independent-sequencemetadataauditcompleted: MD03twoDICbeamspreferred,
+  173/100TIFFcatalogues, distinctstudy/material/dimensions; MD02BT119/81JPEG
+  backup. No newtargetpixelsorresultattachments;file-numbercontinuitynotcapture
+  chronology. NextMD03acquisition/numberingtextthenfixedminimalhistorycheck,
+  notexecuted;freezeobserver,notmoresegmentationtuning.
   Canonical state/evidence:
   [S03 observation bridge track](experiments/s03_observation_bridge_track.md).
 - Hard-recovery PIDL 可匹配 FEM `N_f=89`，但 active-driver/process-zone/history 不共定位；正确事件时间不等于正确机制。

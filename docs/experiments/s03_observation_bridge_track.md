@@ -346,3 +346,17 @@ wall(incl105.98MBdownloads)/2.945sCPU,319protectedhashesunchanged;3snapshots
 beforetargetgroups,all39/27arithmeticchecked,all4figuresinspected.
 D3retainobserver/simpletrend; nextproposeindependent-specimen/sequenceidentity
 availabilitycheck,nottuningorphotoaveraging; notexecuted.
+
+### Independent-sequence metadata audit — 2026-10-18
+
+[Read-only audit](../research/S03/independent_sequence_metadata_audit_20261018.md):
+D1reuseexisting3candidates, D2officialpages/folder/filemetadata completed.
+MD03preferred: twoDICbeams19.2/33.7%lattice, distinctstudy/material/dimensions
+fromMD01,173/100TIFFrecords. MD02BTbackup119/81JPEGrecords; specificspecimen
+mappingunverified. All4listsnumbercontinuous,emptytails,uniquehashes/nointersection
+withMD01fixed87publishedhashes; notphysical/globaldeduporchronologyproof.
+MD01othercameraissamespecimen,notnewvalidation. CC-BY4.0publicmetadata,
+no newtargetpixels/ZIP/XLSX/PDFdownload, no measurement/prediction/training.
+Relatedpapersearchreturnedabstract/result-captiontextincidentally:recordtext
+exposure,neverclaimvirginholdout. D3nextreadMD03acquisition/numberingtext,
+thenfixminimalhistory-onlyROI/triplettest; notexecuted. Oldscores/halfdepthkept.
