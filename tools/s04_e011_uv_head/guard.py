@@ -102,6 +102,8 @@ def main():
         return run_worker()
     if not args.execute_approved or args.approval_ref != CARD:
         raise SystemExit('No execution: exact human-approved run card required')
+    if sys.flags.optimize:
+        raise SystemExit('Python optimization must be disabled; assertions are validity checks')
     if not args.expected_source or len(args.expected_source) != 40:
         raise SystemExit('exact reviewed source commit required')
     if sys.platform != 'linux' or Path(__file__).resolve().parents[2] != CODE:
@@ -126,8 +128,18 @@ def main():
     processes = command(['ps', '-eo', 'pid,args'])
     for row in processes.splitlines()[1:]:
         pid, _, arguments = row.strip().partition(' ')
-        if int(pid) != os.getpid() and 'python' in arguments and any(
-                token in arguments for token in ('s04_e011_uv_head', 'same_energy_head', 'pidl_uv_head')):
+        if int(pid) == os.getpid() or not any(token in arguments for token in
+                ('s04_e011_uv_head', 'same_energy_head', 'pidl_uv_head')):
+            continue
+        try:
+            executable = Path(os.readlink('/proc/' + pid + '/exe')).name
+        except FileNotFoundError:
+            continue  # Process exited between ps and executable inspection.
+        except PermissionError:
+            raise SystemExit('possible duplicate process identity unreadable; stop')
+        # A launching shell can contain our whole command in argv; only an actual
+        # Python executable is a competing worker, never bash/sshd by substring.
+        if executable.startswith('python'):
             raise SystemExit('possible same-item producer process; resolve ownership before launch')
     # Read-only shared-resource checks precede scientific input access.
     gpu = command(['nvidia-smi', '--query-gpu=index,memory.free', '--format=csv,noheader,nounits'])
