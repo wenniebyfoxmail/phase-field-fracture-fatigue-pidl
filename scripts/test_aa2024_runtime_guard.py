@@ -196,9 +196,12 @@ def child(case, root):
         barrier = threading.Barrier(3)
 
         def race(index):
-            barrier.wait(1)
-            (root/('ready'+str(index))).write_text('ready to inject logging')
-            barrier.wait(1)
+            try:
+                barrier.wait(1)
+                (root/('ready'+str(index))).write_text('ready to inject logging')
+                barrier.wait(1)
+            except BaseException:
+                os._exit(71)  # Setup fault cannot masquerade as guard exit70.
             logging.warning('artificial concurrent fatal')
         first, second = threading.Thread(target=race, args=(1,)), threading.Thread(target=race, args=(2,))
         first.start(); second.start(); barrier.wait(1)
