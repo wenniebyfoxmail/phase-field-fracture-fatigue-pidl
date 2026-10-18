@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/loss_weight_readonly_review",
+  "channel": "independent read-only Codex",
+  "verdict": "REVIEW_PASS_CODE_READY_SCOPED",
+  "commit": "03a8f32093a96a47b0a3f31ea98b361a8b21a6d0",
+  "previous_review_commit": "8a25804de321f04e01ffc0b98880366a47858d36",
+  "run_id": "pf_s04e011_wpair_20261018T121457Z",
+  "exact_recipe": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_wpair_20261018T121457Z/recipe.json",
+  "exact_launcher": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_wpair_20261018T121457Z/launch.sh",
+  "scope": "task runner/fullNN gradient helper/offline nativeQ4 scorer, executioncard, exact recipe and unique launcher; unchanged C/source preparation findings reused",
+  "checks": [
+    "3 helper CPU tests passed, 4 files compile, inert imports, launcher shell syntax, NumPy trapezoid available",
+    "fixedC independent freshW0/W25; only beta1to25; same U0/history/map/BC/material/Q4; no loaded FEM target in producer",
+    "no-step fullNN origin gradients/signs equal, serialization/reload, prescribed output bias perturbation and exact restore; actual GPU assertions before any optimizer step",
+    "detached diagnostic gradients; no full graph retained across probe return",
+    "fixed0/1/200 outputs,200calls per arm, no history refresh/trajectory/FEM; initial autograd versus backward checked before first step",
+    "same-state positiveQ4 mass J and contribution/scoring/readout indices match frozen card; no incomplete endpoint substitution",
+    "GPU5 no co-tenant and free>=23GiB;22GiB allocator; internalglobal3500/per-arm1800; external3590TERM+5KILL",
+    "first review found missing per-arm deadline checks around final probe/readout/step; fixed in03a8f320 and focused rereview passed"
+  ],
+  "remaining_execution_requirements": "fresh GPU resource admission and actual no-step fullNN preflight must pass; user authorization already received for named pair400updates<=3600GPUseconds",
+  "excluded": ["actual producer health", "run/evidence validity", "FEM closeness benefit", "physical validity"],
+  "review_activity": {"producer_operations": 0,"training_updates": 0,"FEM_solves": 0,"source_edits": 0}
+}
