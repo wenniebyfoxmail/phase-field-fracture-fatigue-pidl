@@ -43,3 +43,22 @@
 总部要求仅用本地源码/记录/清单补齐initializer身份，不训练、不远程。开场额度核对显示Codex used24%、remaining76%，低于此前80%工作下限；本轮不开始进一步定位阶段，仅保存当前可核实状态。现有`data_lock.json`仍指向唯一的原producer `pf_s04e011_pidl_pair_ad749c8_20261008T0912Z` 下、`s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0`分支的`best_models/trained_1NN_98.pt`（完整路径保存在lock），producer commit `ad749c8bbba8120b3961add989b11427fab86254`；sha256和bytes仍为null。本轮没有重新核实本地文件是否出现、产生状态/序号语义或字段容器身份，不能把旧“未找到”当作本轮穷尽搜索结果。
 
 具体未闭合对象仍是该单一checkpoint本体或能唯一绑定它的既有本地manifest条目；恢复本地补查后，最小动作是先从其原运行contract/保存源码/归档清单核实98对应状态、序列化字段与已有hash/size及本地映射。若确无对应本体或清单，需由总部安排仅该确切文件的身份/可用性补齐，不接受同名其它运行、随机初始化或替代权重。此处是待办，不代表已经定位或授权取回；无初始化设计变更。此前15项检查和91537ce2独立代码审查结果保持，未重复审核，代码/lock未改，未新增数据或科学结果。
+
+## 2026-10-18 初始化身份补查完成（仅本地元数据与源码）
+
+总部后续指令澄清旧总部停止条件已取消，本轮继续完成本地核查；上一节76%停止保留为历史动作记录，不再作为当前停止依据。当前未闭合项是下述文件身份/可用性。
+
+**已确认运行/状态/字段语义，未确认权重字节身份；无需更改初始化设计。** 结构化核查在`initializer_identity_20261018.json`，不改runner、data_lock、协议或三臂条件；保留15项检查和91537ce2代码审查，未重复全套审核。
+
+- 唯一运行是`pf_s04e011_pidl_pair_ad749c8_20261008T0912Z`的native Q4/GP4 coordinate-MLP臂，producer commit `ad749c8bbba8120b3961add989b11427fab86254`。精确期望路径仍是data_lock的`initializer.producer_path`，未选择新文件。
+- 本地原运行`model_settings.txt`与旧contract中的3799 bytes、SHA256 `7c7469b895f3e95eb5d45a86d861dce25e08ef33f29e5b205ba8267f34a99597`一致。恢复偏移1、每周期5步，故j=98对应c20s3、U=.08999988；c20s4目标j=99、U=.11999988。目标文件应是j98训练步结束时的网络参数，绝非初始U0恢复态、c20s4标签或共享paired-initial-state。
+- 原producer保存源码`source/model_train.py:2837-2838`是`torch.save(field_comp.net.state_dict(), trained_1NN_{j}.pt)`。其git blob与旧contract的155527 bytes、SHA256 `975edbcc506cd0cdad8e6881f9be7384b13a38a3092284681c8ba9d123e49d9f`一致；network、construct_model、runner三个blob也逐一匹配旧manifest。预期是裸state_dict而非network_state_dict包装；8×400、2输入/3输出TrainableReLU，共26参数键、1125211标量。源码输出顺序raw u/v/damage，输入物理x/y；实际payload键、shape、dtype未读取，不能冒称已验。
+- `checkpoint_step_98.pt`另存hist_alpha、hist_fat、psi_plus_prev等历史/mesh元数据，**没有网络参数**；更不是RPROP恢复文件。其旧manifest大小4497675、SHA256 `a0efb95da644236dcbefbe729990e607a7f4198d63b48603ee3bb1e0fddb4264`不能移给trained文件。原Q4/T3共同初始态的`e400cb...`也不是c20s3网络的哈希。
+
+**纠正之前身份措辞：** 原计划称“trained98已由NCP contract/receipt绑定”过强。四份已存contract列出的是model97、model99及history98；原NCP reader只读s2/s4网络（c20为97/99），history98用于s4前态。它们不含trained98条目。本地可复原其唯一期望位置和源码语义，但没有该网络文件自身的已有哈希/大小，不能由邻文件推算，也不能宣称远端不存在。
+
+本轮仅用`rg --files -uuu`检查项目根、Downloads、Documents的文件名清单：同名trained98/history98共121项，无原运行名/`s04e011_q4_production_ad749c8`匹配。没有打开这些其它同名权重；没有检查压缩包成员、其它卷或producer当前目录，因此“未找到”严格限于上述范围。已扫描E011已有manifest/contract/receipt文本，同样没有目标network98的条目。
+
+三臂共同条件保持：P/S从同一个network98复制所有参数、各建空Adam与seed1采样；C在S1000时复制全部参数、非空Adam和采样RNG；不继承原RPROP，也不重新运行C前缀。共同应用目标U=.11999988，前态/历史仍来自原四MAT中的FEM输入，绝不由PIDL history98覆盖。
+
+**只缺这一具体对象：** 原运行精确`best_models/trained_1NN_98.pt`网络文件及它自身的size/SHA256/可用映射。最小补齐动作是由总部安排对该唯一producer路径只读核验存在性与身份，存在时仅取回该文件及收据；无需其它checkpoint、新状态数组、计算图预检或训练。若文件实际缺失或不能归属，则停止此初始化准备，将任何替代设计单独交用户决定。本轮没有远程操作、checkpoint payload读取、模型实例化/替代初始化、新科学数组/留出、训练或FEM。

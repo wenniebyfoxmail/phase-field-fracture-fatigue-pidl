@@ -1,0 +1,206 @@
+{
+  "experiment": "S04-E027",
+  "date": "2026-10-18",
+  "scope": "local text/manifest/source and filesystem names only; no checkpoint payload read",
+  "status": "STATE_AND_SCHEMA_SOURCE_IDENTIFIED__EXACT_NETWORK_BYTES_AND_AVAILABILITY_UNRESOLVED",
+  "target": {
+    "producer_path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_98.pt",
+    "producer_commit": "ad749c8bbba8120b3961add989b11427fab86254",
+    "run": "pf_s04e011_pidl_pair_ad749c8_20261008T0912Z",
+    "arm": "native_Q4_GP4_coordinate_MLP",
+    "global_step": 98,
+    "physical_cycle": 20,
+    "substep_one_based": 3,
+    "prescribed_u": 0.08999988,
+    "mapping": "j=1+5*(cycle-1)+(substep_one_based-1)=5*(cycle-1)+substep_one_based",
+    "save_point": "end of j=98 loading-step fit; network weights for c20s3, not initial recovery state or c20s4 label",
+    "sha256": null,
+    "bytes": null,
+    "local_path": null
+  },
+  "source_bound_evidence": {
+    "contract": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_ncp_348be4b_20261017T2029Z/retrieved/root/code/contract.json",
+    "model_settings": {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/multicycle_stop_preparation_20261017_v1/pidl_bindings/model_settings.txt",
+      "bytes": 3799,
+      "sha256": "7c7469b895f3e95eb5d45a86d861dce25e08ef33f29e5b205ba8267f34a99597"
+    },
+    "producer_source_blobs": [
+      {
+        "relative": "source/model_train.py",
+        "bytes": 155527,
+        "sha256": "975edbcc506cd0cdad8e6881f9be7384b13a38a3092284681c8ba9d123e49d9f",
+        "matches_original_manifest": true
+      },
+      {
+        "relative": "source/network.py",
+        "bytes": 25661,
+        "sha256": "85cec459cb6ac99e959e3eba5072ee448560890a4b6b0a592ea136cea5d2bded",
+        "matches_original_manifest": true
+      },
+      {
+        "relative": "source/construct_model.py",
+        "bytes": 8425,
+        "sha256": "c953e295dbd5845fc1807ecca885409532288f115d7d892414206fff124ae00e",
+        "matches_original_manifest": true
+      },
+      {
+        "relative": "SENS_tensile/run_fem_mesh_probe_driver_umax.py",
+        "bytes": 32111,
+        "sha256": "724bbe213d63b4b9505ffa071b2a4e6aa3e91a51f275d074875dca7770ff5b00",
+        "matches_original_manifest": true
+      }
+    ]
+  },
+  "serialization_source_contract": {
+    "expression": "torch.save(field_comp.net.state_dict(), trainedModel_path / trained_1NN_{j}.pt)",
+    "source": "source/model_train.py:2837-2838 at producer commit",
+    "container": "bare PyTorch state_dict mapping; no network_state_dict wrapper",
+    "expected_keys_and_shapes_from_source": {
+      "input_layer.weight": [
+        400,
+        2
+      ],
+      "input_layer.bias": [
+        400
+      ],
+      "hidden_layers.0.weight": [
+        400,
+        400
+      ],
+      "hidden_layers.0.bias": [
+        400
+      ],
+      "hidden_layers.1.weight": [
+        400,
+        400
+      ],
+      "hidden_layers.1.bias": [
+        400
+      ],
+      "hidden_layers.2.weight": [
+        400,
+        400
+      ],
+      "hidden_layers.2.bias": [
+        400
+      ],
+      "hidden_layers.3.weight": [
+        400,
+        400
+      ],
+      "hidden_layers.3.bias": [
+        400
+      ],
+      "hidden_layers.4.weight": [
+        400,
+        400
+      ],
+      "hidden_layers.4.bias": [
+        400
+      ],
+      "hidden_layers.5.weight": [
+        400,
+        400
+      ],
+      "hidden_layers.5.bias": [
+        400
+      ],
+      "hidden_layers.6.weight": [
+        400,
+        400
+      ],
+      "hidden_layers.6.bias": [
+        400
+      ],
+      "output_layer.weight": [
+        3,
+        400
+      ],
+      "output_layer.bias": [
+        3
+      ],
+      "activations.0.coeff": [],
+      "activations.1.coeff": [],
+      "activations.2.coeff": [],
+      "activations.3.coeff": [],
+      "activations.4.coeff": [],
+      "activations.5.coeff": [],
+      "activations.6.coeff": [],
+      "activations.7.coeff": []
+    },
+    "expected_tensor_count": 26,
+    "expected_parameter_elements": 1125211,
+    "output_order": [
+      "raw u",
+      "raw v",
+      "raw damage alpha"
+    ],
+    "input": "physical x,y",
+    "not_in_network_file": [
+      "optimizer/RPROP state",
+      "hist_alpha",
+      "hist_fat",
+      "psi_plus_prev",
+      "mesh/history metadata"
+    ],
+    "actual_payload_keys_shapes_dtype": "not inspected; file unavailable in searched mapping"
+  },
+  "manifest_coverage": {
+    "target_network_entry_count": 0,
+    "existing_other_file_entries": [
+      {
+        "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_97.pt",
+        "bytes": 4510197,
+        "sha256": "0c685ec73539af0292613d8d97e1b9fa15faec5be977163d36454b612fc345ba"
+      },
+      {
+        "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_99.pt",
+        "bytes": 4510197,
+        "sha256": "55de7e6c5ed7b3dd80cee19139b7e33a22b92c0b5384a8af9a019ff3e465004f"
+      },
+      {
+        "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/checkpoint_step_98.pt",
+        "bytes": 4497675,
+        "sha256": "a0efb95da644236dcbefbe729990e607a7f4198d63b48603ee3bb1e0fddb4264"
+      }
+    ],
+    "warning": "checkpoint_step_98.pt is a distinct history-only file; its bytes/hash do not identify trained_1NN_98.pt. Selected NCP reader loads model97/model99 (s2/s4), previous history98 for s4."
+  },
+  "local_availability": {
+    "search_roots": [
+      "/Users/wenxiaofang/phase-field-fracture-with-pidl",
+      "/Users/wenxiaofang/Downloads",
+      "/Users/wenxiaofang/Documents"
+    ],
+    "method": "rg --files -uuu; filename inventory only",
+    "same_leaf_files": 121,
+    "correct_run_leaf_matches": [],
+    "boundary": "No content inspection of other same-named files; no archive member/other volume/global availability claim; no remote existence claim"
+  },
+  "shared_conditions": {
+    "common": "all P/S start from identical network98 parameters; fresh empty Adam and seed1 sampling; no original RPROP state",
+    "c_fork": "clone S at exactly1000 updates: every model parameter, nonempty Adam state and sampling RNG; no separate prefix",
+    "applied_load": ".11999988 for c20s4 in all arms; checkpoint weights came from c20s3 .08999988",
+    "previous_state": "only predeclared FEM c20s3 MAT inputs, never PIDL history98",
+    "changed": false
+  },
+  "single_missing_reference": "exact original-run trained_1NN_98.pt network file with its own size/SHA256 and available mapping",
+  "minimal_completion": "read-only identity/existence check of that one exact producer file and, if present, retrieve only it with size/SHA256 receipt; no neighboring checkpoint, new state array, preflight or fitting. This audit does not perform or authorize remote action.",
+  "existing_reviews": {
+    "code": "91537ce240d892fc71f714cceedc1cea92c32b1b",
+    "unit_tests": 15,
+    "rerun": false,
+    "preserved": true,
+    "data_lock_changed": false,
+    "runner_changed": false
+  },
+  "activity": {
+    "training": false,
+    "remote": false,
+    "new_scientific_arrays": false,
+    "checkpoint_payload": false,
+    "model_instantiation": false,
+    "initializer_replacement": false
+  }
+}

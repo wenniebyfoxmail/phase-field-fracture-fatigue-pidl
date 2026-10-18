@@ -148,3 +148,8 @@ A的提案上限：单张≥24GiB可用GPU，目标≤2 GPU-hours、host RAM≤3
 - UV监督与表示诊断：`/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/`，本轮owner HEAD `a399ef7d`；E023/E024原结果不变，本方案不接管其后续头修复。
 - 残差与G5归档范围：`/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-late-regression-plan-20261016/docs/research/S04/`，本轮owner HEAD `82cd0925`；仅引用其E016准入和E021结果，不运行其guard/worker或追加拟合。
 - S09：`/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s09-e007-fixed-damage-holdout-20261012/docs/research/S09/`，本轮owner HEAD `e56fa6cc`；只读E007/E008/E009设计与紧凑结果，不读取被保护数据。
+
+
+## 2026-10-18 初始化来源措辞澄清
+
+保持原c20s3共同网络初始化设计不变。此前“trained_1NN_98.pt由已有NCP contract/receipt绑定”的表述过强：原保存源码和settings确定该唯一期望路径/状态（j98=c20s3），但NCP清单只有97/99网络及history98，未绑定trained98自身字节。其hash、bytes与可用映射仍待单文件补齐；不得借history98、paired-initial或邻网络的哈希，不得默换权重。见`S04-E027/code_review_20261018.md`初始化补查结论。
