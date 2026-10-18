@@ -37,3 +37,9 @@
 初始化仅有原producer archive路径，当前无本地文件和精确字节身份，lock明确null；执行入口在数据/GPU/优化器前强制停止，禁止随机/其它checkpoint/旧UV头替代。应先由HQ安排准确权重的身份与可用性核实；任何lock更改须重新绑定审查。
 
 随后由HQ统一决定是否批准指定producer的no-step三图预检和执行；需新Run、exact source、人工授权、完整资源/输出卡。预检P/S/C各100次forward/backward、无optimizer更新；实际成本和CUDA峰值当前未知。拟合总上限仍2 GPU小时/32GiB host/2GiB输出，超限停止，不自动换机/扩容/重试。若运行，完整Code Ready/Run Ready记录、真实图检查和独立证据审查仍须补齐；代码准备通过不授予科学结论或运行许可。
+
+## 2026-10-18 初始化身份补查的额度停止记录
+
+总部要求仅用本地源码/记录/清单补齐initializer身份，不训练、不远程。开场额度核对显示Codex used24%、remaining76%，低于此前80%工作下限；本轮不开始进一步定位阶段，仅保存当前可核实状态。现有`data_lock.json`仍指向唯一的原producer `pf_s04e011_pidl_pair_ad749c8_20261008T0912Z` 下、`s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0`分支的`best_models/trained_1NN_98.pt`（完整路径保存在lock），producer commit `ad749c8bbba8120b3961add989b11427fab86254`；sha256和bytes仍为null。本轮没有重新核实本地文件是否出现、产生状态/序号语义或字段容器身份，不能把旧“未找到”当作本轮穷尽搜索结果。
+
+具体未闭合对象仍是该单一checkpoint本体或能唯一绑定它的既有本地manifest条目；恢复本地补查后，最小动作是先从其原运行contract/保存源码/归档清单核实98对应状态、序列化字段与已有hash/size及本地映射。若确无对应本体或清单，需由总部安排仅该确切文件的身份/可用性补齐，不接受同名其它运行、随机初始化或替代权重。此处是待办，不代表已经定位或授权取回；无初始化设计变更。此前15项检查和91537ce2独立代码审查结果保持，未重复审核，代码/lock未改，未新增数据或科学结果。
