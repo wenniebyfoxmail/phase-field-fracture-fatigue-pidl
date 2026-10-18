@@ -216,3 +216,42 @@ before any new approved science attempt; no such repair/test/new run is
 authorized or performed this turn. Preserve old PC16 and UVH/E025/E026 records.
 Main alone updated residual Obsidian/Roadmap, with no computed figure because
 no candidate exists. See PC16 readback section12 for the stage decision table.
+
+## 2026-10-18 — self-contained code repair complete; one GPU7 PC16 bounded negative
+
+Preparation-only permission was followed by a verified newer direct human
+override in coordinating chat turn01a150d4, authorizing package repair/review
+then one GPU7 test without another approval. Sole coupling owner used
+Dev59eddaa8/root snapshotd788477b/card36e49e42. Parentless code-only bundle,
+empty-repo full materialization/fsck and44-file identities passed. Initial
+missing field_computation.py was restored from the original blob;17-module
+AST closure and missing-module negative control passed. Promisor-regex false
+positive was withdrawn, no unnecessary edit. Static exact-package PASS was
+read directly by main. Worker/science/five inputs/400+resource caps unchanged.
+The old r3 missing-base-object mechanism is evidenced; the base store's
+original object-loss history remains unproven. Old r3 stayed untouched.
+
+Runpf_s04e011_uvh_c1_pc16_g7_r1_20261018 completed once, guard3731098 /
+worker3731260,22.515s,391/400units (68+12+308+3),exit0/no resource fault.
+Frozen endpoint energy.0064654634550594114 vs savedPBD.005672469584399648:
+13.9797% higher;1.65699% higher than oldUVHr2. Original-z gradientinf45.7133
+and false stationarity show unresolved optimization. Same-field realization
+and coordinate controls passed, not an optimum/capacity guarantee. Conditional
+seen-state primary miss remains negative; neither this nor E025/E026 proves
+missing coupling, a representation ceiling, teacher truth or transfer failure.
+
+55 frozen payloads plus manifest retrieved,56files/12959838B+17911B,all
+sizes/hashes match and no science rescore. Initial read-only transfer timeout
+did not cause another solve. Main verified selected JSON/PNG hashes and raw
+independent evidence-review response, no source/output-array decoding or SSH.
+Metadata/ledger/accepted/PNG consistency review supports the bounded negative,
+not a scientific PASS. Main copied same-run PNG byte-identically to Obsidian;
+caption explains PC16/PBD/r2 bars and fixed-d scope. Local retrieved copies
+remain writable; remote freeze and identity checks are the recorded guarantee.
+
+Engineering capability advances; stop this candidate, no retry/sweep. One active
+D3 is now solver-bottleneck route selection: only a discriminating proposal is
+next, no automatic numeric follow-up or representation expansion. Installed
+workflow core/adapters supersede generic historical skill snapshots without
+changing this frozen protocol. Main alone updated Obsidian/Roadmap and retains
+all old results. See PC16 readback sections13–14 and owner result_gpu7_20261018.md.
