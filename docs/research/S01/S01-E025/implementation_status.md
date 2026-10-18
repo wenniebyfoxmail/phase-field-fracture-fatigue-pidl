@@ -1,3 +1,5 @@
+> 更新：精确e9ac17c8已按核验的人方总部授权私有执行唯一R001，接收/实际图表/独立Evidence PASS；控制和资格negative，StageB未执行/null。以下保留先前准备阶段记录，见runs/S01-E025-R001/result.md。
+
 # S01-E025 implementation status
 
 2026-10-18. Design REVIEW_PASS at299b1723 by independent gpt-6.1-sol/Medium. Implemented fixed29761-parameter regional encoder-decoder,train6-only deterministic foreground buckets,6never-deployed controls,3independent deploy fits,all9statefreeze before control/qualification metrics; unchanged E024 role/detection contract thereafter. Prior frozen sources untouched. New source scope scripts/pavetrack_controlled_localizer and tests/pavetrack_controlled_localizer; exact manifest239bindings.

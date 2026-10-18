@@ -1,0 +1,4 @@
+fold,qualification_locations,control_pass,qualification_only_pass,admitted,status,Brier,prevalence_constant_Brier,foreground_Dice,best_trivial_foreground_Dice,maximum_probability,foreground_predicted_cells
+0,1638/2027,False,False,False,negative_control,0.029524671916581008,0.028667446141276934,0.0,0.14451578339315685,0.011319040320813656,0
+1,24/2027,False,False,False,negative_control,0.04834959452083579,0.04664040969135005,0.0,0.21650212066127028,0.0019052204443141818,0
+2,24/1638,False,False,False,negative_control,0.04880278522432374,0.04793758560135844,0.0,0.22799140350925684,0.4121597409248352,0

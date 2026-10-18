@@ -1,3 +1,5 @@
+> 更新：精确e9ac17c8已按核验的人方总部授权私有执行唯一R001，接收/实际图表/独立Evidence PASS；控制和资格negative，StageB未执行/null。以下保留先前准备阶段记录，见runs/S01-E025-R001/result.md。
+
 # S01-E025 execution preparation — not executed
 
 Source Code Ready: e9ac17c8958bfec52503d815cfee7fd0bc533ac9, gpt-6.1-sol Medium independent REVIEW_PASS; see docs/reviews/S01-E025_code_review_20261018.md. Design initially passed299b1723, missing-support clarification accepted in final review. Local branch codex/s01-e025-spatial-positive-control-20261018, base e1048336f5fb7bf94b7c5fcada3767c34e745d24; older frozen sources unchanged. Scope: E025 docs/newcontrolledlocalizer source/tests, plus dated S01 storyline milestone. No shared checkout integration.
