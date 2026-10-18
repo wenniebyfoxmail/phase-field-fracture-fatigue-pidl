@@ -137,3 +137,24 @@ no PIDL launch is allowed without fresh read-only GPU/ownership inspection.
 ## 2026-10-18 prospective preparation amendment: precrack/initial field
 
 User requests preparation and review only, with FEM field agreement as the goal and symmetry diagnostic. [r2 minimal plan](precrack_alignment_plan_20261018.md) and [card](precrack_alignment_card_20261018.json) add opt-in permanent crack-line d=1 and FEM U0 anchored initial damage. Static construction verified; Pro design and independent Codex preparation review passed in their bounded scopes. Proposed future A/B/C isolates line and initial-field/history/representation package at one c1s1 block, all symmetry off; update0 and fixed endpoints required. No training runner/execution or new FEM/trajectory was authorized or performed, and earlier scientific verdicts remain unchanged.
+
+## 2026-10-18 prospective single-factor penalty-weight execution amendment
+
+The [loss-weight r2 plan](loss_weight_plan_20261018.md) fixed C initialization
+before examining ABC outcomes and compares beta1 versus25 only. Pro design and
+independent static preparation reviews are scoped and retained. A later direct
+human authorization relayed by HQ now authorizes completing the exact runner,
+focused review, no-step GPU admission, and this pair200 each under a separately
+allocated <=3600GPU-second cap, without further budget/version confirmation.
+This supersedes the historical preparation-only budget0 status for this named
+Run only; it does not rewrite old scientific outcomes or authorize a sweep.
+
+[Execution r3](loss_weight_execution_20261018.json) freezes GPU5/no-co-tenant
+admission,22GiB allocator,per-arm1800s/global3500s/internal and3590s external
+timeout. Reuse of the saved ABC C-construction/scorer source is explicit and
+read-only; ABC results/budget do not replace either control. FullNN no-step
+preflight must pass before any optimizer update. Both sealed update200
+endpoints are required for DeltaJ200; failure/cap does not permit earlier/best
+endpoint substitution, retry, added updates/arms/load/history refresh or FEM.
+This is one seen synthetic c1s1 development diagnostic, not convergence,
+independent prediction, physical validation or teacher qualification.

@@ -1,0 +1,109 @@
+{
+  "owner": "S04-E011",
+  "revision": "loss-weight-gamma-execution-r3-20261018",
+  "run_id": "pf_s04e011_wpair_20261018T121457Z",
+  "source_branch": "codex/pidl-loss-weight-prep-20261018",
+  "base_commit": "5e1db05e35a31af34d5d1641e56b987b87c4cb57",
+  "status": "runner_focus_review_pending",
+  "authorization": {
+    "source_thread": "01a14bb9-6cd1-7ee2-9647-5190d786f7ba",
+    "received_date": "2026-10-18",
+    "scope": "Direct human authorization relayed by HQ: complete runner/focus review/GPU preflight and run frozen W0/W25 each200 after resource admission; no further budget/version request; no extra arms/steps/retries/FEM",
+    "allocated_GPU_seconds_cap": 3600,
+    "training_updates_cap": 400,
+    "ABC_budget_used": 0
+  },
+  "producer": "Taobo drtao@172.16.100.2 / GPUServer8",
+  "GPU": "5",
+  "admission": "GPU5 must have no compute processes, utilization0, free>=23GiB immediately before launch; no process termination/no fallback",
+  "remote_root": "/mnt/data2/drtao/wennie/pf_s04e011_wpair_20261018T121457Z",
+  "archive_root": "/mnt/data2/drtao/pidl_archives/pf_s04e011_wpair_20261018T121457Z",
+  "local_run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_wpair_20261018T121457Z",
+  "local_inputs": [
+    {
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/precrack_alignment_preparation_20261018/u0_network.pt",
+      "remote": "/mnt/data2/drtao/wennie/pf_s04e011_wpair_20261018T121457Z/inputs/network.pt",
+      "bytes": 4510165
+    },
+    {
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/precrack_alignment_preparation_20261018/u0_checkpoint.pt",
+      "remote": "/mnt/data2/drtao/wennie/pf_s04e011_wpair_20261018T121457Z/inputs/history.pt",
+      "bytes": 4497665
+    },
+    {
+      "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/precrack_alignment_preparation_20261018/static_v3/initial_inputs.npz",
+      "remote": "/mnt/data2/drtao/wennie/pf_s04e011_wpair_20261018T121457Z/inputs/initial_inputs.npz",
+      "bytes": 3271767
+    }
+  ],
+  "reuse": {
+    "C_runner_reference": "a0794cb4999d67c875470891cd7e37abcae89924:tools/run_precrack_alignment.py",
+    "scorer_reference": "f05b3b36677351a60e640d98f268ae6818dca7c0:tools/analyze_precrack_alignment.py",
+    "scope": "C construction/readout/nativeQ4 scoring copied into task-owned files; no ABC result reused as control; no main worktree edits"
+  },
+  "receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_wpair_20261018T121457Z/recipe.json",
+  "watchdog": "timeout --signal=TERM --kill-after=5s 3590s; worker global3500s/per-arm1800s; allocator22GiB; no retries",
+  "unique_worker_command": [
+    "/usr/bin/python3",
+    "-u",
+    "tools/run_loss_weight_pair.py",
+    "--recipe",
+    "/mnt/data2/drtao/wennie/pf_s04e011_wpair_20261018T121457Z/recipe.json",
+    "--out",
+    "/mnt/data2/drtao/pidl_archives/pf_s04e011_wpair_20261018T121457Z/readout"
+  ],
+  "preflight": "all no-step checks in same invocation before first opt.step; fullNN origin equal, serialize/reload identical, prescribed bias[2]-1e-3 response and exact restore; frozen PyTorch2.7.0+cu126 single-tensor RPROP foreachFalse",
+  "target_FEM_scoring_only": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/c0001_s001_post_commit.mat",
+  "scorer": "tools/analyze_loss_weight_pair.py",
+  "primary": "DeltaJ200=J_W25-J_W0; fixed Q4 positive lumped nodal mass/scales .12 .12 1; both200 required",
+  "minimum_evidence": "all update0/update1/update200 primitive fields and checkpoint+mapper/history/optimizer; per-update energy/gradient-sign trace; fullNN0/1/200 gradient decomposition; preflight; complete/failure receipts; same-state scoring and common-scale field figures",
+  "no_automatic": [
+    "retry",
+    "more_steps",
+    "more_arms",
+    "optimizer_change",
+    "new_FEM",
+    "history_refresh",
+    "c1s2_unload_trajectory"
+  ],
+  "recipe": {
+    "protocol": "loss-weight-gamma-execution-r3-20261018",
+    "run_id": "pf_s04e011_wpair_20261018T121457Z",
+    "commit": "PENDING_CODE_COMMIT",
+    "arms": [
+      "W0",
+      "W25"
+    ],
+    "betas": [
+      1,
+      25
+    ],
+    "updates_per_arm": 200,
+    "total_gpu_seconds_cap": 3600,
+    "per_arm_seconds_cap": 1800,
+    "GPU_memory_cap_GiB": 22,
+    "GPU": "5",
+    "torch_version": "2.7.0+cu126",
+    "load": 0.02999988,
+    "weight_decay": 1e-05,
+    "symmetry_weight": 0,
+    "FEM_supervision": 0,
+    "network": "/mnt/data2/drtao/wennie/pf_s04e011_wpair_20261018T121457Z/inputs/network.pt",
+    "history": "/mnt/data2/drtao/wennie/pf_s04e011_wpair_20261018T121457Z/inputs/history.pt",
+    "initial_inputs": "/mnt/data2/drtao/wennie/pf_s04e011_wpair_20261018T121457Z/inputs/initial_inputs.npz",
+    "inputs": [
+      {
+        "path": "/mnt/data2/drtao/wennie/pf_s04e011_wpair_20261018T121457Z/inputs/network.pt",
+        "bytes": 4510165
+      },
+      {
+        "path": "/mnt/data2/drtao/wennie/pf_s04e011_wpair_20261018T121457Z/inputs/history.pt",
+        "bytes": 4497665
+      },
+      {
+        "path": "/mnt/data2/drtao/wennie/pf_s04e011_wpair_20261018T121457Z/inputs/initial_inputs.npz",
+        "bytes": 3271767
+      }
+    ]
+  }
+}
