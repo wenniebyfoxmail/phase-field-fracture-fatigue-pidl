@@ -1,0 +1,50 @@
+{
+  "retrieved/Rprop_implementation.txt": {
+    "bytes": 2270,
+    "sha256": "07bb5e0f90fbc22f35875c653688e32a2cfbae00bcb86717093e418d3e63cdb8"
+  },
+  "retrieved/logs/run.log": {
+    "bytes": 1155,
+    "sha256": "b42c4017bd504aba8e603e7b82eca26b8dee7f6a1c84ad554ec0623c3b77805c"
+  },
+  "retrieved/preflight_origin_gradients.failure.json": {
+    "bytes": 815,
+    "sha256": "705b5a03e6efdd4edb9cbfaaf81d6b430c49f1082a679221c6a0e88c642ca6d4"
+  },
+  "retrieved/receipt.json": {
+    "bytes": 793,
+    "sha256": "8e4efa2672c3f81e023eeee362507cffe7bcec74a70491d73ad8a568193998ab"
+  },
+  "retrieved/terminal_failure.json": {
+    "bytes": 99,
+    "sha256": "065379a3ac02cfbd5def851c7777583aa507a549d4e75ac14f62a8f1bda7b414"
+  },
+  "retrieved/worker_end_utc.txt": {
+    "bytes": 21,
+    "sha256": "b0893e3a2519cd41fd217c012a4ef9e5558cbe72199e9749191196311f70fae4"
+  },
+  "retrieved/worker_exit_code.txt": {
+    "bytes": 2,
+    "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  "retrieved/worker_start_utc.txt": {
+    "bytes": 21,
+    "sha256": "aafd7b63443a36f7580b56d2cd7c0d757008ab18fc9110ccff16ca5313043db7"
+  },
+  "retrieved/wrapper.pid": {
+    "bytes": 8,
+    "sha256": "714408bc2d0824ffcfb9f05b4e8fa3b13e8d6357aa2b005ab61065af4b86f99c"
+  },
+  "cpu_analysis/parameter_tensors.csv": {
+    "bytes": 3288,
+    "sha256": "9ec2eb0b34ef78a9d29ef523bd8856bcb443272831429a81c614db04eb63a6ef"
+  },
+  "cpu_analysis/summary.json": {
+    "bytes": 16659,
+    "sha256": "27109d0442e4ca7477087ec79fbf907b27e90155aa8b3033c06105d68ee5af8c"
+  },
+  "cpu_analysis/violating_components.csv": {
+    "bytes": 1991,
+    "sha256": "e8fbd571c2f2a9f5f66918b66127217c51a2fa19a39d4e7eccd6f8b3416e2b31"
+  }
+}

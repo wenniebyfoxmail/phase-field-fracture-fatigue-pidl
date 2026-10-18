@@ -1,7 +1,7 @@
 {
   "run_id": "pf_s04e011_wpair_grad_audit_20261018_v1",
   "source_commit": "99cad0b32eb88fcae496785f8090286e8bdfe5ea",
-  "status": "focused_launcher_review_pass_pending_live_admission",
+  "status": "diagnostic_complete_original_gradient_guard_failed",
   "authorization": "Direct user2026-10-18: execute this<=60s no-update diagnostic, retain original tolerance, identify mismatch magnitude/location, no two-arm training",
   "GPU_seconds_cap": 60,
   "watchdog": "timeout TERM55s + KILL5s",
@@ -39,5 +39,37 @@
       "fresh Run and verified same input identities; no source modification"
     ],
     "not_certified": "live resource admission, actual discrepancy result or weight effect"
-  }
+  },
+  "start_utc": "2026-10-18T20:33:41Z",
+  "end_utc": "2026-10-18T20:33:45Z",
+  "wall_seconds_rounded": 4,
+  "exit_code": 1,
+  "timeout_hit": false,
+  "wrapper_PID": 3661704,
+  "worker_PID": 3661724,
+  "live_admission": {
+    "free_MiB": 24077,
+    "compute_processes": 0,
+    "utilization_percent": 0
+  },
+  "two_arm_training_started": false,
+  "guard_relaxed": false,
+  "analysis_commit": "26c0da659391d2e9972fb1281e8e672fc6f3c52c",
+  "failing_components": 9,
+  "relative_L2": 1.0699867244428536e-06,
+  "max_absolute_difference": 0.0002002716064453125,
+  "worst_tolerance_ratio": 2.5317792892456055,
+  "retrieval": {
+    "compact_receipts": "verified locally under retrieved/",
+    "CPU_analysis": "summary and both CSVs verified locally",
+    "raw_vectors": "remote only; 27008473 bytes",
+    "initial_bundle": "remote only; 6333769 bytes"
+  },
+  "not_reached": [
+    "beta25 check",
+    "parameter perturbation check",
+    "W0/W25 optimizer loop"
+  ],
+  "figure": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_wpair_grad_audit_20261018_v1/analysis/gradient_discrepancy.png",
+  "inherited_recipe_fields": "updates_per_arm200 and 3600/1800s are unused legacy runner schema fields; effective authorization and invocation are preflight-only, zero updates, external55+5s cap."
 }

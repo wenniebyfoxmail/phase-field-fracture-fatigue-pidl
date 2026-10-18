@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root/loss_weight_readonly_review",
+  "review_type": "independent code and saved-evidence review",
+  "source_commit": "99cad0b32eb88fcae496785f8090286e8bdfe5ea",
+  "analysis_commit": "26c0da659391d2e9972fb1281e8e672fc6f3c52c",
+  "verdict": "REVIEW_PASS_SCOPED_TO_DIAGNOSTIC_EVIDENCE",
+  "original_numerical_guard": "FAIL unchanged",
+  "independent_recomputation": "Read-only SSH CPU calculation directly loading remote raw failure vectors and initial bundle with CUDA hidden; no NN forward, optimizer, remote writes or producer rerun.",
+  "confirmed": [
+    "1125211 scalar parameters; 9 violations",
+    "hidden_layers.0/1/2/3.weight counts 1/2/2/4",
+    "worst H3[1,386] ratio 2.531779289",
+    "maximum absolute difference H1[112,95] does not violate",
+    "relative L2 1.0699867244428536e-6; raw Eh gradient zero",
+    "saved-component terminal double recombination still 9 violations",
+    "about 4 seconds, exit1, no W0/W25 dirs or training complete receipt"
+  ],
+  "limitations": [
+    "Not a reference gradient or unique root cause",
+    "Terminal double recombination also recomputes coefficient/order; not double-precision NN/energy replay",
+    "Does not authorize training or tolerance changes"
+  ]
+}

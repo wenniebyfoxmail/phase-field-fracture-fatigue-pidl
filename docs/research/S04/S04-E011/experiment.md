@@ -169,3 +169,17 @@ Compact receipts/log verified; initial bundle remains remote. No retry,
 threshold relaxation, new FEM or history update. A diagnostics-only patch
 preserves the guard and records the presently missing mismatch magnitude;
 it has not been executed on producer.
+
+### Authorized zero-update gradient audit result (2026-10-18)
+
+Run `pf_s04e011_wpair_grad_audit_20261018_v1`, source99cad0b3, executed once
+with `--preflight-only` and TERM55s+KILL5s. About4s, exit1 at unchanged
+`atol=1e-6, rtol=1e-4`; zero optimizer/history/FEM updates. Saved vectors
+and independent CPU recomputation show9/1,125,211 violating components in
+hidden-layer0–3 weights, relative L2 difference1.06999e-6. Worst point
+H3[1,386] is2.53178 times its original allowance; maximum absolute difference
+2.00272e-4 is at a different point that does not violate.
+[Full result, provenance and boundaries](runs/loss_weight_no_step_audit_20261018_result.md).
+The magnitude/location question is resolved; numerical guard still fails,
+root cause remains unconfirmed. No tolerance change, beta25/perturbation
+qualification, W0/W25 training, retry or new producer computation follows.
