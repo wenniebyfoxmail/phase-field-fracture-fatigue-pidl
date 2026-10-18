@@ -97,6 +97,7 @@ def verify(run,expected,receipt,lock):
     for name,h in receipt['files'].items():c.e12.checked(run/name,h)
     for name,value in expected.items():
         if c.read(run/name)!=value:raise ValueError('trusted semantic mismatch:'+name)
+    for name,h in expected['prediction_freeze_receipt.json']['files'].items():c.e12.checked(run/name,h)
     for name,h in lock['source_files'].items():c.e12.checked(run/'input_snapshot'/name,h)
     for name,h in snapshots.items():c.e12.checked(run/name,h)
     c.e12.checked(run/'input_snapshot/train_polygons.json',lock['annotation_snapshot_sha256'])

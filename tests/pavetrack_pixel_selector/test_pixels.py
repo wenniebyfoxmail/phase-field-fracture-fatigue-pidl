@@ -197,3 +197,9 @@ def test_combined_input_loader_private_polygon_hash_and_bank_alignment(tmp_path)
  loaded=a.inputs.load(source,run,cfg,lock,g,c,a.legacy,a.prior_inputs)
  assert loaded['annotations']==d['annotations'] and loaded['candidates']==d['candidates'] and not g.counts
  assert not (run/'input_snapshot/pooled_features.npy').exists() and c.sha(run/'input_snapshot/train_polygons.json')==lock['annotation_snapshot_sha256']
+
+
+def test_changed_map_rehashed_by_output_receipt_cannot_override_trusted_freeze(tmp_path,monkeypatch):
+ run,result,g,lock=pipeline(tmp_path,monkeypatch);receipt=c.read(run/'output_receipt.json');expected={n:c.read(run/n) for n in receipt['files'] if n.endswith('.json') and not n.startswith('input_snapshot/')}
+ path=run/'pixel_maps_fold_0.npy';mapping=np.load(path,mmap_mode='r+');mapping[0,0,0]=.456789;mapping.flush();del mapping;receipt['files']['pixel_maps_fold_0.npy']=c.sha(path)
+ with pytest.raises(ValueError):a.verify(run,expected,receipt,lock)
