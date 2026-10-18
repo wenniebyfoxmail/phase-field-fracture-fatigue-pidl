@@ -1,0 +1,27 @@
+--- tools/s04_e011_pc16/guard_resource_r2.py (stopped r2)
++++ tools/s04_e011_pc16/guard_resource_r3.py (prospective r3)
+@@ -10,12 +10,12 @@
+ import sys
+ import time
+ 
+-RUN = 'pf_s04e011_uvh_c1_pc16_r2_20261018'
+-CARD = 'S04-E011-UVH-C1-PC16-CARD-r2'
++RUN = 'pf_s04e011_uvh_c1_pc16_r3_20261018'
++CARD = 'S04-E011-UVH-C1-PC16-CARD-r3'
+ ROOT = Path('/mnt/data2/drtao/wennie') / RUN
+ OUT = Path('/mnt/data2/drtao/pidl_archives') / RUN
+ CODE = ROOT / 'code'
+-CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_pc16_20261018/inputs_resource_r2.json'
++CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_pc16_20261018/inputs_resource_r3.json'
+ 
+ 
+ def digest(path):
+@@ -180,7 +180,7 @@
+     # Binding is reviewed Git content; no alternate contract/path/budget flags.
+     contract = json.loads(CONTRACT.read_text())
+     if (contract['protocol'] != 'S04-E011-UVH-C1-PC16-v1' or contract['run_id'] != RUN or
+-            contract['resource_revision'] != 'GPU3-empty-or-exact-service-r2'):
++            contract['resource_revision'] != 'GPU3-empty-or-exact-service-r3'):
+         raise SystemExit('contract identity mismatch')
+     if OUT.exists() or OUT.is_symlink():
+         raise SystemExit('attempt already consumed; no resume/retry')
