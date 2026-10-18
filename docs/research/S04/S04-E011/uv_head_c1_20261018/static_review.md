@@ -52,6 +52,7 @@ All are prospective inside the single human-approved bounded run, not evidence
 obtained by this review. No physical/teacher/coupled-rollout conclusion follows.
 
 Quota checks: normal Codex7-day window reported16% used/84% remaining at
-preparation start, major phase boundaries, reviewer start/end and final checks.
+preparation start, major phase boundaries and reviewer start/end. At final
+delivery the refreshed window was17% used/83% remaining.
 No reset, credit purchase or substitute quota was used. Execution must refresh
 again and stop if any normal available window remaining is<80% or unknown.
