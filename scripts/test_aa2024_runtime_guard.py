@@ -152,13 +152,19 @@ def child(case, root):
         ready.set(); worker.join(1)
     elif case == 'write_failure':
         def broken_write(fd, payload):
-            (root/'write_called').write_text('failure')
+            try:
+                (root/'write_called').write_text('failure')
+            except BaseException:
+                os._exit(71)
             raise OSError('artificial evidence failure')
         guard._write = broken_write
         logging.warning('artificial failed evidence')
     elif case == 'short_write':
         def short_write(fd, payload):
-            (root/'write_called').write_text('short')
+            try:
+                (root/'write_called').write_text('short')
+            except BaseException:
+                os._exit(71)
             return 0
         guard._write = short_write
         logging.warning('artificial short evidence')
@@ -184,6 +190,10 @@ def child(case, root):
         entered = threading.Event()
 
         def blocked(fd, payload):
+            try:
+                (root/'blocked_payload').write_bytes(payload)
+            except BaseException:
+                os._exit(71)
             entered.set()
             threading.Event().wait(10)
             return 0
@@ -191,6 +201,7 @@ def child(case, root):
         worker = threading.Thread(target=lambda: logging.warning('artificial blocked evidence'))
         worker.start()
         demand(entered.wait(1), 'writer entered after fatal latch')
+        (root/'main_observed_block').write_text('before_guard_check')
         guard.check()  # Must exit without waiting for writer/event-file content.
     elif case == 'simultaneous':
         barrier = threading.Barrier(3)
@@ -305,7 +316,14 @@ def main():
             elif expected == 70 and case not in ('write_failure', 'short_write', 'blocked_evidence', 'simultaneous'):
                 demand('G01 fatal logging ' in evidence, case+' logging failure category')
             if case in ('write_failure', 'short_write'):
-                demand((root/'write_called').exists(), case+' writer injection reached')
+                demand((root/'write_called').read_text() == ('failure' if case == 'write_failure' else 'short'),
+                       case+' complete writer injection sentinel')
+            if case == 'blocked_evidence':
+                payload = (root/'blocked_payload').read_bytes()
+                demand(payload.startswith(b'G01 fatal logging ') and
+                       payload.endswith(b'artificial blocked evidence\n') and
+                       (root/'main_observed_block').read_text() == 'before_guard_check' and
+                       event.read_bytes() == b'', 'blocked logging source and main-thread latch observation')
             if case == 'simultaneous':
                 demand((root/'ready1').exists() and (root/'ready2').exists(), 'both concurrent injections ready')
                 # Contending fatal may exit before the first raw write. Empty
