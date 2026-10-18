@@ -217,7 +217,7 @@
     "tests/pavetrack_protected_cv/test_protected.py": "f0196d97597021cdf58a69db9d926f89f5a22cef4b959d811f018e8e2d178c56",
     "tests/pavetrack_protected_cv/test_protected_analysis.py": "e0b80743d7b18be97933f0f84c2cdb7f608ef2f5a983b088c3e557d9e128e107",
     "tests/pavetrack_protected_selector/test_selector.py": "493260ccd74d8c42c3c7288f01ba875c1cff42d4b8d4100d6c7e6ae254510dae",
-    "tests/pavetrack_qualified_localizer/test_localizer.py": "3e2b7937c10d3147c768d149f3197a7687e7accde6e0f77bceff426beebaa887",
+    "tests/pavetrack_qualified_localizer/test_localizer.py": "e4391d7b951aa2528dad4d13edf824e8ac97f1ef27513a444f5a871eb858f4b7",
     "tests/pavetrack_rescore_cv/test_rescore.py": "cfd485896de834847550fc4277e648847ac7f968ab5eac3cd9675eb18bf02976",
     "tests/pavetrack_rescore_cv/test_rescore_analysis.py": "892385373fb19b815c6c9d57e742781364d39c4c8431c8a13614a9c583a26e5b",
     "tests/pavetrack_role_probe/test_probe.py": "b20d0170bc33d921dd8bbb0f572bdec43c4f0566fb806d24ceaf3a0c08cff67c",

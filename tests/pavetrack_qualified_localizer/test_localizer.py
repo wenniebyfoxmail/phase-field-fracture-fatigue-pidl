@@ -8,6 +8,7 @@ def module(name,path):
  s=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
 a=module('e024_test',ROOT/'scripts/pavetrack_qualified_localizer/run.py');c=a.c;sp=a.spatial;net=a.model;old=module('e024_fixture',ROOT/'tests/pavetrack_pixel_selector/test_pixels.py');CFG=c.read(ROOT/'docs/research/S01/S01-E024/run_config.json')
 def fixture(tmp_path):
+ tmp_path.parent.mkdir(parents=True,exist_ok=True)
  d,t,prev=old.fixture(tmp_path);cfg=copy.deepcopy(CFG);n=len(d['candidates']);cfg['input_counts']={'images':len(d['images']),'original_rows':len(d['originals']),'corrections':n};cfg['localizer'].update(steps_per_fold=2,batch_size=2,train_rows=[sum(r['location'] in cfg['localizer']['train_locations'][k] for r in d['candidates']) for k in range(3)],qual_rows=[sum(r['location'] in cfg['localizer']['qual_locations'][k] for r in d['candidates']) for k in range(3)])
  role=[sum(r['eligible'] and r['location'] not in held for r in d['candidates']) for held in cfg['held_groups']];eligible=sum(r['eligible'] for r in d['candidates']);heldrows=[sum(r['location'] in h for r in d['candidates']) for h in cfg['held_groups']]
  cfg['budget_definitions'].update(role_training_rows=role,eligible_rows=eligible,held_candidate_rows=heldrows)
