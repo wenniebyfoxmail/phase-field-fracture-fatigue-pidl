@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from dataclasses import replace
+from dataclasses import dataclass, replace
 import copy
 import csv
 import hashlib
@@ -30,7 +30,10 @@ from s09_e009_four_arm import (
     grouped_losses,
     parameter_state_sha256,
 )
-from s09_e010_producer import evaluate_arm
+from s09_e010_producer import (
+    _validate_evaluation_record,
+    evaluate_arm,
+)
 from s09_e010_support_amplitude import support_amplitude_losses
 from s09_e011_ranking_objective import (
     ARM_CONTROL,
@@ -61,18 +64,45 @@ from s09_stage0a_p1_trainer import (
 
 SCHEMA_VERSION = "s09-e011-pairwise-ranking-producer-v1"
 RUN_ID = "S09-E011-R001-objective-only-ranking"
+MODULE_ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_BASE_CONFIG_SHA256 = "0cf59c58dfed34b8e333bffde6ca276623c71f45adf787a6f7879498bb088e4b"
 EXPECTED_PACKET_MANIFEST_SHA256 = "1658d2a2acc67c279b06e3e7965186bc1616aec50d6ee05179ff2606160272a6"
 EXPECTED_B25_CHECKPOINT_SHA256 = "24bbea271fe3c2df79913f552dde863e495d33df963e0db9586b4920904dcf05"
 EXPECTED_E010_DECISION_SHA256 = "b01cf367381a0fda46a4b1015bf3ea881d2c0c32d27021176c39009eb8cd3b54"
 EVALUATION_UPDATES = (0, 16, 64, 128, 256, 496, 500)
+EXPECTED_HOSTNAME = "GPUServer8"
+EXPECTED_CUDA_VISIBLE_DEVICES = "5"
+EXPECTED_GPU_UUID = "GPU-5622bd47-1050-3003-246d-3cabe2b4791b"
+EXPECTED_REMOTE_ROOT = "/mnt/data2/drtao/wennie/S09-E011-R001-objective-only-ranking"
+EXPECTED_OUTPUT_ROOT = EXPECTED_REMOTE_ROOT + "/run"
+EXPECTED_ARCHIVE_ROOT = "/mnt/data2/drtao/pidl_archives/S09-E011-R001-objective-only-ranking"
+EXPECTED_CODE_ROOT = EXPECTED_REMOTE_ROOT + "/code"
+WALL_TIME_CAP_SECONDS = 3600.0
+# Filled from the canonical files and checked again by the entry point.
+EXPECTED_RUN_CONFIG_SHA256 = "41dd49aa5a713c93e1bc5d2997c50f54102b3f84215f65d492e3b6db3540ab25"
+EXPECTED_PROTOCOL_SHA256 = "9ade1eb0034c28af29641a0bb4ef457878d802442d8d467c28bff40cc2775e3c"
 PRODUCER_FILES = (
-    "source/s09_e011_ranking_objective.py",
-    "source/s09_e011_producer.py",
+    # The complete source tree is a deliberately conservative transitive
+    # dependency closure for the runtime/model/physics/evaluator imports.
+    "source",
     "scripts/run_s09_e011_producer.py",
     "docs/research/S09/S09-E011/experiment.md",
     "docs/research/S09/S09-E011/run_config.json",
 )
+
+
+@dataclass
+class ArmRunResult:
+    arm: str
+    arm_dir: Path
+    receipt: dict[str, Any]
+    evaluations: dict[int, dict[str, Any]]
+
+
+class ArmReceiptCloseError(RuntimeError):
+    def __init__(self, message: str, result: ArmRunResult):
+        super().__init__(message)
+        self.result = result
 
 
 def _require(condition: bool, message: str, error: type[Exception] = ValueError) -> None:
@@ -94,6 +124,32 @@ def _write_json(path: Path, value: Any) -> None:
 def _append_jsonl(stream: io.BufferedWriter, value: Any) -> None:
     stream.write(canonical_json(value))
     stream.flush()
+
+
+def _load_strict_json(path: Path) -> dict[str, Any]:
+    return json.loads(
+        path.read_text(encoding="utf-8"),
+        parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)),
+    )
+
+
+def _check_deadline(deadline: float, stage: str) -> None:
+    _require(time.time() < deadline, f"WALL_TIME_CAP_REACHED:{stage}", TimeoutError)
+
+
+def _bound_repo_root(repo_root: Path) -> Path:
+    observed = repo_root.resolve(strict=True)
+    _require(observed == MODULE_ROOT, "repo root differs from executing module")
+    return observed
+
+
+def _canonical_exact_path(path: Path, expected: str, label: str) -> Path:
+    _require(path.is_absolute(), f"{label} must be absolute")
+    _require(path == Path(os.path.normpath(str(path))), f"{label} is noncanonical")
+    _require(path == Path(expected), f"{label} differs from frozen run config")
+    parent = path.parent.resolve(strict=True)
+    _require(parent == Path(expected).parent, f"{label} parent resolves through a symlink")
+    return path
 
 
 def _environment(visible: str) -> dict[str, Any]:
@@ -120,6 +176,45 @@ def _execution_files_clean(root: Path) -> bool:
         text=True,
     )
     return tracked.returncode == 0 and not untracked.stdout.strip()
+
+
+def _validate_run_binding(
+    *, run_config: Path, protocol: Path, output_dir: Path, archive_dir: Path,
+    repo_root: Path, expected_commit: str,
+) -> tuple[dict[str, Any], dict[str, Any], Path, Path]:
+    repo_root = _bound_repo_root(repo_root)
+    _require(sha256_file(run_config) == EXPECTED_RUN_CONFIG_SHA256,
+             "run config identity mismatch")
+    _require(sha256_file(protocol) == EXPECTED_PROTOCOL_SHA256,
+             "protocol identity mismatch")
+    config = _load_strict_json(run_config)
+    _require(run_config.read_bytes() == canonical_json(config),
+             "run config is not canonical JSON")
+    producer = config.get("producer", {})
+    _require(producer.get("hostname") == EXPECTED_HOSTNAME and
+             producer.get("CUDA_VISIBLE_DEVICES") == EXPECTED_CUDA_VISIBLE_DEVICES and
+             producer.get("gpu_uuid") == EXPECTED_GPU_UUID and
+             producer.get("code_root") == EXPECTED_CODE_ROOT and
+             producer.get("output_root") == EXPECTED_OUTPUT_ROOT and
+             producer.get("archive_root") == EXPECTED_ARCHIVE_ROOT,
+             "run config producer binding drift")
+    _require(producer.get("wall_time_cap_seconds") == WALL_TIME_CAP_SECONDS,
+             "wall-time cap drift")
+    _require(str(repo_root) == EXPECTED_CODE_ROOT, "executing code root drift")
+    output = _canonical_exact_path(output_dir, EXPECTED_OUTPUT_ROOT, "output root")
+    archive = _canonical_exact_path(archive_dir, EXPECTED_ARCHIVE_ROOT, "archive root")
+    visible = os.environ.get("CUDA_VISIBLE_DEVICES", "")
+    _require(visible == EXPECTED_CUDA_VISIBLE_DEVICES,
+             "CUDA_VISIBLE_DEVICES differs from frozen binding")
+    environment = _environment(visible)
+    _require(environment["hostname"] == EXPECTED_HOSTNAME,
+             "producer hostname differs from frozen binding")
+    _require(environment["gpu"].get("uuid") == EXPECTED_GPU_UUID,
+             "physical GPU UUID differs from frozen binding")
+    _require(current_commit(repo_root) == expected_commit,
+             "commit identity mismatch")
+    _require(_execution_files_clean(repo_root), "execution dependency is dirty")
+    return config, environment, output, archive
 
 
 def _optimizer_state_sha256(optimizer: torch.optim.AdamW) -> str:
@@ -332,7 +427,7 @@ def _initialise_arms(runtime: Any, checkpoint: Mapping[str, Any]):
 def _train_arm(
     *, arm: str, runtime: Any, optimizer: torch.optim.AdamW, output: Path,
     initial_identity: Mapping[str, Any], deadline: float,
-) -> dict[str, Any]:
+) -> ArmRunResult:
     _require(arm in ARM_ORDER, "unknown arm")
     _require(not output.exists(), "arm output exists")
     output.mkdir(parents=True)
@@ -347,98 +442,146 @@ def _train_arm(
     }
     _write_json(output / "start_identity.json", start_record)
     evaluations: dict[int, dict[str, Any]] = {}
-    with (output / "train_log.jsonl").open("xb") as train_stream, \
-         (output / "gradient_diagnostics.jsonl").open("xb") as gradient_stream, \
-         (output / "diagnostic_metrics.jsonl").open("xb") as diagnostic_stream:
-        initial = evaluate_arm(runtime, update=0)
-        evaluations[0] = initial
-        _append_jsonl(diagnostic_stream, initial)
-        for update, (growth_cycle, stagnant_cycle) in enumerate(schedule, 1):
-            _require(time.time() < deadline, "WALL_TIME_CAP_REACHED", TimeoutError)
-            runtime.model.train()
-            optimizer.zero_grad(set_to_none=True)
-            objectives, _, rank_record, per_cycle = _pair_objectives(
-                runtime, cycle_to_index[growth_cycle], cycle_to_index[stagnant_cycle]
-            )
-            hard_records = []
-            projection_records = []
-            for _, context, _, _, _ in per_cycle:
-                hard = hard_constraint_report(
-                    runtime, context["d_pre"], context["history_pre"], context["output"]
-                )
-                _require(sum(hard.values()) == 0, "per-update hard-constraint violation")
-                hard_records.append(hard)
-                projection_records.append(proposal_projection_diagnostics(
-                    runtime, context["d_pre"], context["output"]
-                ))
-            direction, diagnostic, gradients = ranking_direction(
-                runtime.model, objectives, arm
-            )
-            before, parameter_order = flattened_parameters(runtime.model)
-            _require(diagnostic["layout"]["parameter_order"] == parameter_order,
-                     "parameter order drift")
-            assign_merged_gradient(runtime.model, direction, parameter_order)
-            optimizer.step()
-            after, after_order = flattened_parameters(runtime.model)
-            _require(after_order == parameter_order, "post-step parameter order drift")
-            displacement = after - before
-            train_row = {
-                "update": update,
-                "growth_cycle": growth_cycle,
-                "stagnant_cycle": stagnant_cycle,
-                "pair_index": (update - 1) % len(PAIR_ORDER),
-                "ranking_record": rank_record,
-                "objectives": {
-                    name: float(value.detach().cpu()) for name, value in objectives.items()
-                },
-                "hard_constraint_counts": hard_records,
-                "proposal_projection_counts": projection_records,
-            }
-            gradient_row = {
-                "update": update,
-                "growth_cycle": growth_cycle,
-                "stagnant_cycle": stagnant_cycle,
-                "direction_sha256": hashlib.sha256(
-                    direction.detach().cpu().numpy().tobytes()
-                ).hexdigest(),
-                "direction_norm": float(torch.linalg.vector_norm(direction).cpu()),
-                "parameter_displacement_norm": float(
-                    torch.linalg.vector_norm(displacement).cpu()
-                ),
-                "rank_margin_derivative_along_displacement": float(
-                    (gradients["L_R"].dot(displacement)).detach().cpu()
-                ),
-                "direction_diagnostics": diagnostic,
-            }
-            _append_jsonl(train_stream, train_row)
-            _append_jsonl(gradient_stream, gradient_row)
-            if update in EVALUATION_UPDATES[1:]:
-                evaluation = evaluate_arm(runtime, update=update)
-                evaluations[update] = evaluation
-                _append_jsonl(diagnostic_stream, evaluation)
+    steps = logged = 0
+    reason: str | None = None
+    terminal_state = "EXECUTION_FAILED"
+    finite = True
+    checkpoint_present = False
     checkpoint_path = output / "checkpoint_update500.pt"
-    torch.save({
-        "model": runtime.model.state_dict(),
-        "optimizer": optimizer.state_dict(),
-        "update": UPDATES_PER_ARM,
-        "arm": arm,
-        "source_run": RUN_ID,
-    }, checkpoint_path)
+    checkpoint_partial = output / ".checkpoint_update500.pt.partial"
+    try:
+        with (output / "train_log.jsonl").open("xb") as train_stream, \
+             (output / "gradient_diagnostics.jsonl").open("xb") as gradient_stream, \
+             (output / "diagnostic_metrics.jsonl").open("xb") as diagnostic_stream:
+            _check_deadline(deadline, f"{arm}:initial_evaluation_before")
+            initial = evaluate_arm(runtime, update=0)
+            _validate_evaluation_record(initial, 0)
+            _check_deadline(deadline, f"{arm}:initial_evaluation_after")
+            evaluations[0] = initial
+            _append_jsonl(diagnostic_stream, initial)
+            for update, (growth_cycle, stagnant_cycle) in enumerate(schedule, 1):
+                _check_deadline(deadline, f"{arm}:update_{update}_before")
+                runtime.model.train()
+                optimizer.zero_grad(set_to_none=True)
+                objectives, _, rank_record, per_cycle = _pair_objectives(
+                    runtime, cycle_to_index[growth_cycle], cycle_to_index[stagnant_cycle]
+                )
+                hard_records = []
+                projection_records = []
+                for _, context, _, _, _ in per_cycle:
+                    hard = hard_constraint_report(
+                        runtime, context["d_pre"], context["history_pre"], context["output"]
+                    )
+                    _require(sum(hard.values()) == 0,
+                             "per-update hard-constraint violation")
+                    hard_records.append(hard)
+                    projection_records.append(proposal_projection_diagnostics(
+                        runtime, context["d_pre"], context["output"]
+                    ))
+                direction, diagnostic, gradients = ranking_direction(
+                    runtime.model, objectives, arm
+                )
+                before, parameter_order = flattened_parameters(runtime.model)
+                _require(diagnostic["layout"]["parameter_order"] == parameter_order,
+                         "parameter order drift")
+                assign_merged_gradient(runtime.model, direction, parameter_order)
+                optimizer.step()
+                steps = update
+                after, after_order = flattened_parameters(runtime.model)
+                _require(after_order == parameter_order,
+                         "post-step parameter order drift")
+                displacement = after - before
+                train_row = {
+                    "update": update, "growth_cycle": growth_cycle,
+                    "stagnant_cycle": stagnant_cycle,
+                    "pair_index": (update - 1) % len(PAIR_ORDER),
+                    "ranking_record": rank_record,
+                    "objectives": {name: float(value.detach().cpu())
+                                   for name, value in objectives.items()},
+                    "hard_constraint_counts": hard_records,
+                    "proposal_projection_counts": projection_records,
+                }
+                gradient_row = {
+                    "update": update, "growth_cycle": growth_cycle,
+                    "stagnant_cycle": stagnant_cycle,
+                    "direction_sha256": hashlib.sha256(
+                        direction.detach().cpu().numpy().tobytes()).hexdigest(),
+                    "direction_norm": float(torch.linalg.vector_norm(direction).cpu()),
+                    "parameter_displacement_norm": float(
+                        torch.linalg.vector_norm(displacement).cpu()),
+                    "ranking_loss_change_along_displacement": float(
+                        gradients["L_R"].dot(displacement).detach().cpu()),
+                    "direction_diagnostics": diagnostic,
+                }
+                _append_jsonl(train_stream, train_row)
+                _append_jsonl(gradient_stream, gradient_row)
+                logged = update
+                if update in EVALUATION_UPDATES[1:]:
+                    _check_deadline(deadline, f"{arm}:evaluation_{update}_before")
+                    evaluation = evaluate_arm(runtime, update=update)
+                    _validate_evaluation_record(evaluation, update)
+                    _check_deadline(deadline, f"{arm}:evaluation_{update}_after")
+                    evaluations[update] = evaluation
+                    _append_jsonl(diagnostic_stream, evaluation)
+        _check_deadline(deadline, f"{arm}:checkpoint_before")
+        torch.save({
+            "model": runtime.model.state_dict(), "optimizer": optimizer.state_dict(),
+            "update": UPDATES_PER_ARM, "arm": arm, "source_run": RUN_ID,
+        }, checkpoint_partial)
+        _require(checkpoint_partial.is_file(), "checkpoint write produced no file")
+        os.replace(checkpoint_partial, checkpoint_path)
+        checkpoint_present = True
+        _check_deadline(deadline, f"{arm}:checkpoint_after")
+        terminal_state = "COMPLETED"
+    except BaseException as error:
+        reason = f"{type(error).__name__}: {error}"
+        finite = not isinstance(error, FloatingPointError)
+    finally:
+        checkpoint_partial.unlink(missing_ok=True)
+
     artifact_names = (
         "start_identity.json", "train_log.jsonl", "gradient_diagnostics.jsonl",
         "diagnostic_metrics.jsonl", "checkpoint_update500.pt",
     )
+    artifacts = {}
+    for name in artifact_names:
+        path = output / name
+        if path.is_file():
+            try:
+                artifacts[name] = sha256_file(path)
+            except OSError as error:
+                terminal_state = "EXECUTION_FAILED"
+                reason = f"EVIDENCE_CLOSE_FAILED: {type(error).__name__}: {error}"
+    if terminal_state == "COMPLETED" and (
+        steps != UPDATES_PER_ARM or logged != UPDATES_PER_ARM or
+        list(evaluations) != list(EVALUATION_UPDATES) or not checkpoint_present
+    ):
+        terminal_state = "EXECUTION_FAILED"
+        reason = "COMPLETION_COUNTER_DRIFT"
     receipt = {
-        "arm": arm,
-        "terminal_state": "COMPLETED",
-        "optimizer_steps_completed": UPDATES_PER_ARM,
+        "arm": arm, "terminal_state": terminal_state,
+        "optimizer_steps_completed": steps, "fully_logged_updates": logged,
         "evaluation_updates_present": list(evaluations),
-        "finite": True,
-        "hard_constraint_violations": 0,
-        "artifacts": {name: sha256_file(output / name) for name in artifact_names},
+        "last_valid_evaluation_update": next(reversed(evaluations), None),
+        "reason": reason, "update500_checkpoint_present": checkpoint_present,
+        "finite": finite, "hard_constraint_violations": 0,
+        "artifacts": artifacts,
     }
-    _write_json(output / "termination_receipt.json", receipt)
-    return {"receipt": receipt, "evaluations": evaluations}
+    result = ArmRunResult(arm, output, receipt, evaluations)
+    try:
+        _write_json(output / "termination_receipt.json", receipt)
+    except BaseException as error:
+        failed = dict(receipt)
+        failed["terminal_state"] = "EXECUTION_FAILED"
+        failed["reason"] = (
+            "TERMINATION_RECEIPT_WRITE_FAILED: "
+            f"{type(error).__name__}: {error}"
+        )
+        raise ArmReceiptCloseError(
+            f"terminal receipt write failed for {arm}",
+            ArmRunResult(arm, output, failed, evaluations),
+        ) from error
+    return result
 
 
 def _pair_outcomes(rows: list[dict[str, Any]]) -> dict[tuple[int, int], str]:
@@ -450,19 +593,185 @@ def _pair_outcomes(rows: list[dict[str, Any]]) -> dict[tuple[int, int], str]:
     return outcomes
 
 
+def _read_jsonl(path: Path) -> list[dict[str, Any]]:
+    rows = []
+    with path.open("rb") as stream:
+        for line in stream:
+            _require(line.endswith(b"\n"), f"unterminated JSONL row: {path.name}")
+            rows.append(json.loads(
+                line.decode("utf-8"),
+                parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)),
+            ))
+    return rows
+
+
+def _validate_arm_on_disk(result: ArmRunResult) -> ArmRunResult:
+    arm_dir = result.arm_dir
+    receipt_path = arm_dir / "termination_receipt.json"
+    receipt = _load_strict_json(receipt_path)
+    _require(receipt_path.read_bytes() == canonical_json(receipt),
+             f"noncanonical termination receipt: {result.arm}")
+    _require(receipt == result.receipt, f"in-memory/on-disk receipt drift: {result.arm}")
+    _require(receipt.get("arm") == result.arm and
+             receipt.get("terminal_state") == "COMPLETED" and
+             receipt.get("optimizer_steps_completed") == UPDATES_PER_ARM and
+             receipt.get("fully_logged_updates") == UPDATES_PER_ARM and
+             receipt.get("evaluation_updates_present") == list(EVALUATION_UPDATES) and
+             receipt.get("last_valid_evaluation_update") == 500 and
+             receipt.get("reason") is None and
+             receipt.get("update500_checkpoint_present") is True and
+             receipt.get("finite") is True and
+             receipt.get("hard_constraint_violations") == 0,
+             f"invalid completed receipt: {result.arm}")
+    required_artifacts = {
+        "start_identity.json", "train_log.jsonl", "gradient_diagnostics.jsonl",
+        "diagnostic_metrics.jsonl", "checkpoint_update500.pt",
+    }
+    _require(set(receipt.get("artifacts", {})) == required_artifacts,
+             f"artifact membership drift: {result.arm}")
+    for name, expected in receipt["artifacts"].items():
+        _require(sha256_file(arm_dir / name) == expected,
+                 f"artifact hash drift: {result.arm}/{name}")
+    start = _load_strict_json(arm_dir / "start_identity.json")
+    _require(start.get("arm") == result.arm and
+             start.get("updates_per_arm") == UPDATES_PER_ARM and
+             start.get("pair_schedule") == [list(pair) for pair in pair_schedule()],
+             f"start identity drift: {result.arm}")
+    train_rows = _read_jsonl(arm_dir / "train_log.jsonl")
+    gradient_rows = _read_jsonl(arm_dir / "gradient_diagnostics.jsonl")
+    _require(len(train_rows) == len(gradient_rows) == UPDATES_PER_ARM and
+             [row.get("update") for row in train_rows] == list(range(1, 501)) and
+             [row.get("update") for row in gradient_rows] == list(range(1, 501)),
+             f"update log coverage drift: {result.arm}")
+    evaluation_rows = _read_jsonl(arm_dir / "diagnostic_metrics.jsonl")
+    _require(len(evaluation_rows) == len(EVALUATION_UPDATES),
+             f"evaluation row count drift: {result.arm}")
+    evaluations = {}
+    for update, record in zip(EVALUATION_UPDATES, evaluation_rows):
+        _validate_evaluation_record(record, update)
+        _require(record["aggregate"]["hard_constraint_violations"] == 0,
+                 f"hard-constraint drift: {result.arm}/{update}")
+        evaluations[update] = record
+    checkpoint = torch.load(
+        arm_dir / "checkpoint_update500.pt", map_location="cpu", weights_only=False)
+    _require(checkpoint.get("update") == UPDATES_PER_ARM and
+             checkpoint.get("arm") == result.arm and
+             checkpoint.get("source_run") == RUN_ID,
+             f"checkpoint semantic identity drift: {result.arm}")
+    return ArmRunResult(result.arm, arm_dir, receipt, evaluations)
+
+
+def _collect_fields(runtime: Any) -> dict[str, np.ndarray]:
+    predicted = []
+    runtime.model.eval()
+    with torch.no_grad():
+        for index in range(len(runtime.arrays["cycles"])):
+            _, context = atomic_losses(runtime, index)
+            predicted.append(context["output"]["d_peak"].detach().cpu().numpy())
+    return {
+        "predicted_peak": np.stack(predicted),
+        "d_pre": np.asarray(runtime.arrays["d_pre"]),
+        "target_peak": np.asarray(runtime.arrays["d_peak"]),
+        "cycles": np.asarray(runtime.arrays["cycles"]),
+        "xy": np.asarray(runtime.arrays["xy"]),
+        "nodal_weight": np.asarray(runtime.arrays["nodal_weight"]),
+    }
+
+
+def _write_required_figures(
+    *, output: Path, results: Mapping[str, ArmRunResult],
+    runtimes: Mapping[str, Any], deadline: float,
+) -> tuple[str, ...]:
+    _check_deadline(deadline, "figures_before")
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    fields = {arm: _collect_fields(runtimes[arm]) for arm in ARM_ORDER}
+    common = fields[ARM_CONTROL]
+    _require(np.array_equal(common["cycles"], fields[ARM_RANK]["cycles"]) and
+             np.array_equal(common["d_pre"], fields[ARM_RANK]["d_pre"]) and
+             np.array_equal(common["target_peak"], fields[ARM_RANK]["target_peak"]),
+             "field reconstruction support drift")
+    arrays_path = output / "field_arrays_update500.npz"
+    with arrays_path.open("xb") as stream:
+        np.savez_compressed(
+            stream, cycles=common["cycles"], xy=common["xy"],
+            nodal_weight=common["nodal_weight"], d_pre=common["d_pre"],
+            target_peak=common["target_peak"],
+            control_peak=fields[ARM_CONTROL]["predicted_peak"],
+            ranking_peak=fields[ARM_RANK]["predicted_peak"],
+        )
+
+    cycles = [int(value) for value in common["cycles"]]
+    fig, ax = plt.subplots(figsize=(10.5, 5.4), constrained_layout=True)
+    truth = results[ARM_CONTROL].evaluations[500]["per_cycle"]
+    ax.plot(cycles, [row["true_damage_increment_abs_mean"] for row in truth],
+            "o-", label="FEM reference", color="#111111")
+    for arm, color, label in (
+        (ARM_CONTROL, "#377eb8", "B25 continuation"),
+        (ARM_RANK, "#e41a1c", "B25 + ranking"),
+    ):
+        rows = results[arm].evaluations[500]["per_cycle"]
+        ax.plot(cycles, [row["predicted_damage_increment_abs_mean"] for row in rows],
+                "o-", label=label, color=color)
+    ax.set(xlabel="cycle", ylabel="weighted mean |Δd|",
+           title="S09-E011 update-500 damage-increment amplitudes")
+    ax.grid(alpha=.25); ax.legend()
+    fig.savefig(output / "amplitude_trajectory.png", dpi=180, facecolor="white")
+    plt.close(fig)
+
+    reference = common["target_peak"] - common["d_pre"]
+    control = fields[ARM_CONTROL]["predicted_peak"] - common["d_pre"]
+    ranking = fields[ARM_RANK]["predicted_peak"] - common["d_pre"]
+    vmin = float(min(reference.min(), control.min(), ranking.min()))
+    vmax = float(max(reference.max(), control.max(), ranking.max()))
+    _require(math.isfinite(vmin) and math.isfinite(vmax) and vmax > vmin,
+             "invalid shared field colour range")
+    xy = common["xy"]
+    fig, axes = plt.subplots(
+        len(cycles), 3, figsize=(12, 2.15 * len(cycles)), constrained_layout=True)
+    image = None
+    for row, cycle in enumerate(cycles):
+        for column, (array, title) in enumerate((
+            (reference, "FEM reference Δd"),
+            (control, "B25 continuation Δd"),
+            (ranking, "B25 + ranking Δd"),
+        )):
+            axis = axes[row, column]
+            image = axis.tripcolor(
+                xy[:, 0], xy[:, 1], array[row], shading="gouraud",
+                cmap="viridis", vmin=vmin, vmax=vmax)
+            axis.set_title(f"cycle {cycle}: {title}", fontsize=8)
+            axis.set_aspect("equal"); axis.set_xticks([]); axis.set_yticks([])
+    fig.colorbar(image, ax=axes.ravel().tolist(), shrink=.35,
+                 label=f"Δd, shared physical scale [{vmin:.3e}, {vmax:.3e}]")
+    fig.savefig(output / "delta_d_fields_all_cycles.png", dpi=150, facecolor="white")
+    plt.close(fig)
+    _check_deadline(deadline, "figures_after")
+    return (
+        "field_arrays_update500.npz", "amplitude_trajectory.png",
+        "delta_d_fields_all_cycles.png",
+    )
+
+
 def _write_evidence(
-    *, output: Path, results: Mapping[str, Any], zero_audit: Mapping[str, Any],
+    *, output: Path, results: Mapping[str, ArmRunResult],
+    runtimes: Mapping[str, Any], zero_audit: Mapping[str, Any],
     environment: Mapping[str, Any], source: Mapping[str, Any], elapsed: float,
+    deadline: float,
 ) -> dict[str, Any]:
+    _check_deadline(deadline, "shared_evidence_before_validation")
+    validated = {arm: _validate_arm_on_disk(results[arm]) for arm in ARM_ORDER}
     final = {
-        arm: results[arm]["evaluations"][500]["aggregate"] for arm in ARM_ORDER
+        arm: validated[arm].evaluations[500]["aggregate"] for arm in ARM_ORDER
     }
     classification = classify_e011(
         control=final[ARM_CONTROL], ranking=final[ARM_RANK], validity=True
     )
-    initial_rows = results[ARM_CONTROL]["evaluations"][0]["per_cycle"]
-    control_rows = results[ARM_CONTROL]["evaluations"][500]["per_cycle"]
-    ranking_rows = results[ARM_RANK]["evaluations"][500]["per_cycle"]
+    initial_rows = validated[ARM_CONTROL].evaluations[0]["per_cycle"]
+    control_rows = validated[ARM_CONTROL].evaluations[500]["per_cycle"]
+    ranking_rows = validated[ARM_RANK].evaluations[500]["per_cycle"]
     initial_outcomes = _pair_outcomes(initial_rows)
     control_outcomes = _pair_outcomes(control_rows)
     ranking_outcomes = _pair_outcomes(ranking_rows)
@@ -507,7 +816,7 @@ def _write_evidence(
         writer.writeheader()
         for arm in ARM_ORDER:
             for update in EVALUATION_UPDATES:
-                for row in results[arm]["evaluations"][update]["per_cycle"]:
+                for row in validated[arm].evaluations[update]["per_cycle"]:
                     writer.writerow({"arm": arm, **{key: row[key] for key in fields[1:]}})
     with (output / "decision_table.csv").open("x", newline="") as stream:
         fields2 = ["arm", "pair_score", "AUC", "G", "F", "L_P", "L_judge", "spatial"]
@@ -522,6 +831,9 @@ def _write_evidence(
                 "L_P": metrics["L_P"], "L_judge": metrics["L_judge"],
                 "spatial": metrics["spatial"]["primary_median"],
             })
+    figure_artifacts = _write_required_figures(
+        output=output, results=validated, runtimes=runtimes, deadline=deadline)
+    _check_deadline(deadline, "shared_evidence_before_completion")
     completion = {
         "schema_version": SCHEMA_VERSION,
         "run_id": RUN_ID,
@@ -534,69 +846,42 @@ def _write_evidence(
         "environment": dict(environment),
         "source": dict(source),
         "zero_step_audit_passed": zero_audit["passed"],
-        "arms": {arm: results[arm]["receipt"] for arm in ARM_ORDER},
+        "arms": {arm: validated[arm].receipt for arm in ARM_ORDER},
         "shared_artifacts": {},
     }
     for name in ("zero_step_audit.json", "decision_metrics.json", "decision_table.csv",
-                 "per_cycle_metrics.csv", "environment.json", "source_identity.json"):
+                 "per_cycle_metrics.csv", "environment.json", "source_identity.json",
+                 *figure_artifacts):
         completion["shared_artifacts"][name] = sha256_file(output / name)
-    _write_json(output / "completion_receipt.json", completion)
+    _check_deadline(deadline, "shared_evidence_after_hashes")
     return completion
 
 
 def run_producer(
     *, packet_dir: Path, base_config: Path, initial_checkpoint: Path,
     e010_decision: Path, output_dir: Path, archive_dir: Path, repo_root: Path,
-    expected_commit: str,
+    expected_commit: str, run_config: Path, protocol: Path,
 ) -> dict[str, Any]:
     start = time.time()
-    deadline = start + 3600.0
+    deadline = start + WALL_TIME_CAP_SECONDS
     _require(os.name == "posix" and platform.system() == "Linux",
              "S09-E011 producer is Linux-only", PermissionError)
     _require(torch.cuda.is_available(), "CUDA unavailable", RuntimeError)
-    visible = os.environ.get("CUDA_VISIBLE_DEVICES", "")
-    _require(visible and "," not in visible, "exactly one visible GPU required")
-    _require(current_commit(repo_root) == expected_commit, "commit identity mismatch")
-    _require(_execution_files_clean(repo_root), "producer files are dirty")
-    _require(sha256_file(base_config) == EXPECTED_BASE_CONFIG_SHA256,
-             "base config identity mismatch")
-    packet_identity = json.loads((packet_dir / "packet_identity.json").read_text())
-    _require(packet_identity["manifest_sha256"] == EXPECTED_PACKET_MANIFEST_SHA256,
-             "packet identity mismatch")
-    _require(sha256_file(initial_checkpoint) == EXPECTED_B25_CHECKPOINT_SHA256,
-             "B25 checkpoint identity mismatch")
-    _require(sha256_file(e010_decision) == EXPECTED_E010_DECISION_SHA256,
-             "E010 reference identity mismatch")
+    config, environment, output_dir, archive_dir = _validate_run_binding(
+        run_config=run_config, protocol=protocol, output_dir=output_dir,
+        archive_dir=archive_dir, repo_root=repo_root,
+        expected_commit=expected_commit,
+    )
     _require(not output_dir.exists() and not archive_dir.exists(), "fresh roots required")
-    _require(str(output_dir).startswith("/mnt/data2/drtao/wennie/"), "invalid output root")
-    _require(str(archive_dir).startswith("/mnt/data2/drtao/pidl_archives/"),
-             "invalid archive root")
     _require(shutil.disk_usage(output_dir.parent).free >= 5 * 1024**3,
              "less than 5 GiB free")
-    environment = _environment(visible)
-    device = torch.device("cuda:0")
-    runtime = build_runtime(
-        packet_dir=packet_dir, config_path=base_config, device=device, executable=False
-    )
-    checkpoint = torch.load(initial_checkpoint, map_location=device, weights_only=False)
-    _require(checkpoint["update"] == 500 and checkpoint["arm"] ==
-             "B25_support_amplitude_beta0p25", "checkpoint semantic identity drift")
-    runtime.model.load_state_dict(checkpoint["model"], strict=True)
-    models, optimizers, initial_identity = _initialise_arms(runtime, checkpoint)
-    initial_identity = {
-        **initial_identity,
-        "source_checkpoint_sha256": EXPECTED_B25_CHECKPOINT_SHA256,
-        "packet_manifest_sha256": EXPECTED_PACKET_MANIFEST_SHA256,
-    }
-    audit_runtime = replace(runtime, model=models[ARM_RANK])
-    audit = zero_step_audit(audit_runtime, optimizers[ARM_RANK])
-    _require(audit["passed"], "ZERO_STEP_DIRECTION_STOP")
     output_dir.mkdir(parents=True)
     archive_dir.mkdir(parents=True)
-    _write_json(output_dir / "zero_step_audit.json", audit)
     _write_json(output_dir / "environment.json", environment)
     source = {
         "training_commit": expected_commit,
+        "run_config_sha256": EXPECTED_RUN_CONFIG_SHA256,
+        "protocol_sha256": EXPECTED_PROTOCOL_SHA256,
         "packet_manifest_sha256": EXPECTED_PACKET_MANIFEST_SHA256,
         "base_config_sha256": EXPECTED_BASE_CONFIG_SHA256,
         "source_B25_checkpoint_sha256": EXPECTED_B25_CHECKPOINT_SHA256,
@@ -604,20 +889,71 @@ def run_producer(
         "run_id": RUN_ID,
     }
     _write_json(output_dir / "source_identity.json", source)
-    results = {}
+    _write_json(output_dir / "attempt_started.json", {
+        "run_id": RUN_ID, "execution_status": "ADMISSION_STARTED",
+        "total_update_cap": 2 * UPDATES_PER_ARM,
+        "wall_time_cap_seconds": WALL_TIME_CAP_SECONDS,
+        "run_config": config,
+    })
+    results: dict[str, ArmRunResult] = {}
+    audit: dict[str, Any] | None = None
     try:
+        _check_deadline(deadline, "input_identity_before")
+        _require(sha256_file(base_config) == EXPECTED_BASE_CONFIG_SHA256,
+                 "base config identity mismatch")
+        packet_identity = _load_strict_json(packet_dir / "packet_identity.json")
+        _require(packet_identity["manifest_sha256"] == EXPECTED_PACKET_MANIFEST_SHA256,
+                 "packet identity mismatch")
+        _require(sha256_file(initial_checkpoint) == EXPECTED_B25_CHECKPOINT_SHA256,
+                 "B25 checkpoint identity mismatch")
+        _require(sha256_file(e010_decision) == EXPECTED_E010_DECISION_SHA256,
+                 "E010 reference identity mismatch")
+        _check_deadline(deadline, "runtime_build_before")
+        device = torch.device("cuda:0")
+        runtime = build_runtime(
+            packet_dir=packet_dir, config_path=base_config,
+            device=device, executable=False)
+        checkpoint = torch.load(
+            initial_checkpoint, map_location=device, weights_only=False)
+        _require(checkpoint["update"] == 500 and checkpoint["arm"] ==
+                 "B25_support_amplitude_beta0p25",
+                 "checkpoint semantic identity drift")
+        runtime.model.load_state_dict(checkpoint["model"], strict=True)
+        models, optimizers, initial_identity = _initialise_arms(runtime, checkpoint)
+        initial_identity = {
+            **initial_identity,
+            "source_checkpoint_sha256": EXPECTED_B25_CHECKPOINT_SHA256,
+            "packet_manifest_sha256": EXPECTED_PACKET_MANIFEST_SHA256,
+        }
+        runtimes = {arm: replace(runtime, model=models[arm]) for arm in ARM_ORDER}
+        _check_deadline(deadline, "zero_step_before")
+        audit = zero_step_audit(runtimes[ARM_RANK], optimizers[ARM_RANK])
+        _write_json(output_dir / "zero_step_audit.json", audit)
+        _check_deadline(deadline, "zero_step_after")
+        _require(audit["passed"], "ZERO_STEP_DIRECTION_STOP")
         for arm in ARM_ORDER:
-            arm_runtime = replace(runtime, model=models[arm])
-            results[arm] = _train_arm(
-                arm=arm, runtime=arm_runtime, optimizer=optimizers[arm],
-                output=output_dir / arm, initial_identity=initial_identity,
-                deadline=deadline,
-            )
+            try:
+                result = _train_arm(
+                    arm=arm, runtime=runtimes[arm], optimizer=optimizers[arm],
+                    output=output_dir / arm, initial_identity=initial_identity,
+                    deadline=deadline)
+            except ArmReceiptCloseError as error:
+                results[arm] = error.result
+                raise
+            results[arm] = result
+            _require(result.receipt["terminal_state"] == "COMPLETED",
+                     f"ARM_EXECUTION_FAILED:{arm}")
         completion = _write_evidence(
-            output=output_dir, results=results, zero_audit=audit,
-            environment=environment, source=source, elapsed=time.time() - start,
+            output=output_dir, results=results, runtimes=runtimes,
+            zero_audit=audit, environment=environment, source=source,
+            elapsed=time.time() - start, deadline=deadline,
         )
+        completion["elapsed_seconds"] = time.time() - start
+        _check_deadline(deadline, "archive_success_before")
         _write_json(archive_dir / "completion_receipt.json", completion)
+        _check_deadline(deadline, "archive_success_after")
+        _write_json(output_dir / "completion_receipt.json", completion)
+        _check_deadline(deadline, "output_success_after")
         return completion
     except BaseException as error:
         failure = {
@@ -627,15 +963,25 @@ def run_producer(
             "error_type": type(error).__name__,
             "error": str(error),
             "elapsed_seconds": time.time() - start,
-            "zero_step_audit_passed": audit["passed"],
+            "zero_step_audit_passed": None if audit is None else audit["passed"],
+            "total_optimizer_steps_completed": sum(
+                result.receipt["optimizer_steps_completed"]
+                for result in results.values()),
             "completed_arms": {
-                arm: result["receipt"] for arm, result in results.items()
+                arm: result.receipt for arm, result in results.items()
             },
             "source": source,
             "environment": environment,
+            "authoritative_precedence": (
+                "failure_receipt.json supersedes any completion_receipt.json "
+                "left by an interrupted close"
+            ),
         }
-        if not (output_dir / "completion_receipt.json").exists():
-            _write_json(output_dir / "completion_receipt.json", failure)
-        if not (archive_dir / "completion_receipt.json").exists():
-            _write_json(archive_dir / "completion_receipt.json", failure)
+        for root in (output_dir, archive_dir):
+            path = root / "failure_receipt.json"
+            if not path.exists():
+                try:
+                    _write_json(path, failure)
+                except BaseException:
+                    pass
         raise

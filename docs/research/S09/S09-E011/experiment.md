@@ -2,7 +2,7 @@
 experiment_id: S09-E011
 storyline: S09 Neural Operator fracture development
 protocol_revision: v2-objective-only-ranking-after-zero-step-stop
-status: ZERO_STEP_READY_CODE_REVIEW_PENDING
+status: CODE_REVIEW_REPAIR_READY
 date: 2026-10-18
 ---
 
@@ -37,6 +37,11 @@ The physics contribution remains the native-Q4 AMOR free-displacement
 equilibrium residual at predicted peak, with coefficient `beta=0.25`. It does
 not include damage stationarity, the complete fracture variational inequality,
 fatigue rollout, or a complete fracture PINO constraint.
+
+For naming continuity, E010 `A25` is the exact E009 damage-anchor control
+`g_D+q_U+q_H+0.25q_P`; it does not contain the new support/amplitude terms.
+E010 `B25` adds `q_S+q_A` at the same equilibrium coefficient, and `B0`
+removes the equilibrium term. E011 starts from the frozen B25 endpoint.
 
 ## Fixed data, pairs and initial state
 
@@ -90,6 +95,10 @@ the required zero-crossing coefficient was at most approximately `2.84e3`.
 Revision v2 fixes `gamma_R=4096`, the next power of two above that bound. This
 is one analytic repair, not a weight scan. The immutable A001 receipt remains
 under `attempts/`.
+
+A001 used the historical v1 admission predicate and therefore remains a
+faithful `STOP` record. Under the prospectively amended v2 predicate it is not
+relabelled after the fact; A002 is the first v2 admission record.
 
 ## Zero-step directional admission
 
@@ -160,6 +169,11 @@ reported separately. Component changes never overwrite the primary label.
   start/gradient/train/evaluation logs, update-500 checkpoints, completion
   receipt, decision metrics/table, aligned amplitude plot and equal-scale
   reference/control/ranking `delta d` fields.
+- A shared success is published only after rereading canonical per-arm
+  receipts, checking the 500 update rows and seven evaluations, recomputing
+  every declared artifact hash, reconstructing fields, and writing the two
+  required figures. `failure_receipt.json` is authoritative if close-out is
+  interrupted after any success-looking file is written.
 
 ## Decision ladder
 

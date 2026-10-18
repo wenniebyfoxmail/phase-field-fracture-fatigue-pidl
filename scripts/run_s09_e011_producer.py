@@ -20,6 +20,8 @@ def main() -> None:
     parser.add_argument("--base-config", type=Path, required=True)
     parser.add_argument("--initial-checkpoint", type=Path, required=True)
     parser.add_argument("--e010-decision", type=Path, required=True)
+    parser.add_argument("--run-config", type=Path, required=True)
+    parser.add_argument("--protocol", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--archive-dir", type=Path, required=True)
     parser.add_argument("--expected-commit", required=True)
@@ -36,6 +38,8 @@ def main() -> None:
         archive_dir=args.archive_dir,
         repo_root=ROOT,
         expected_commit=args.expected_commit,
+        run_config=args.run_config,
+        protocol=args.protocol,
     )
     print(json.dumps(receipt, sort_keys=True))
 

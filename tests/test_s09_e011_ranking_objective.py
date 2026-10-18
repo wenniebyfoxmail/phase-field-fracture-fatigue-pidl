@@ -1,4 +1,8 @@
 from collections import OrderedDict
+import json
+from pathlib import Path
+import subprocess
+import time
 
 import pytest
 import torch
@@ -17,7 +21,9 @@ from s09_e011_ranking_objective import (
     ranking_loss,
     weighted_amplitude,
 )
-from s09_e011_producer import _adamw_displacement
+import s09_e011_producer as producer
+from s09_e011_producer import ArmRunResult, _adamw_displacement
+from s09_stage0a_p1_packet import canonical_json, sha256_file
 from s09_stage0a_p1_trainer import assign_merged_gradient
 
 
@@ -153,3 +159,73 @@ def test_analytic_next_adamw_displacement_matches_real_cloned_step():
     clone_optimizer.step()
     after = torch.cat([parameter.detach().reshape(-1) for parameter in clone.parameters()])
     assert torch.allclose(after - before, predicted, atol=1e-15, rtol=1e-12)
+
+
+def test_clean_gate_includes_inherited_e009_dependency(tmp_path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "config", "user.email", "test@example.invalid"],
+                   cwd=tmp_path, check=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=tmp_path, check=True)
+    path = tmp_path / "source/s09_e009_four_arm.py"
+    path.parent.mkdir()
+    path.write_text("value = 1\n")
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True)
+    subprocess.run(["git", "commit", "-qm", "base"], cwd=tmp_path, check=True)
+    assert producer._execution_files_clean(tmp_path)
+    path.write_text("value = 2\n")
+    assert not producer._execution_files_clean(tmp_path)
+
+
+def test_wall_deadline_is_checked_at_close_boundaries():
+    with pytest.raises(TimeoutError, match="WALL_TIME_CAP_REACHED:after_evidence"):
+        producer._check_deadline(time.time() - 1.0, "after_evidence")
+
+
+def _synthetic_completed_arm(tmp_path: Path) -> ArmRunResult:
+    arm = ARM_CONTROL
+    arm_dir = tmp_path / arm
+    arm_dir.mkdir()
+    (arm_dir / "start_identity.json").write_bytes(canonical_json({
+        "arm": arm, "updates_per_arm": 500,
+        "pair_schedule": [list(pair) for pair in pair_schedule()],
+    }))
+    with (arm_dir / "train_log.jsonl").open("wb") as stream:
+        for update in range(1, 501):
+            stream.write(canonical_json({"update": update}))
+    with (arm_dir / "gradient_diagnostics.jsonl").open("wb") as stream:
+        for update in range(1, 501):
+            stream.write(canonical_json({"update": update}))
+    with (arm_dir / "diagnostic_metrics.jsonl").open("wb") as stream:
+        for update in producer.EVALUATION_UPDATES:
+            stream.write(canonical_json({"aggregate": {"update": update,
+                                                        "hard_constraint_violations": 0},
+                                         "per_cycle": []}))
+    torch.save({"update": 500, "arm": arm, "source_run": producer.RUN_ID},
+               arm_dir / "checkpoint_update500.pt")
+    names = {
+        "start_identity.json", "train_log.jsonl", "gradient_diagnostics.jsonl",
+        "diagnostic_metrics.jsonl", "checkpoint_update500.pt",
+    }
+    receipt = {
+        "arm": arm, "terminal_state": "COMPLETED",
+        "optimizer_steps_completed": 500, "fully_logged_updates": 500,
+        "evaluation_updates_present": list(producer.EVALUATION_UPDATES),
+        "last_valid_evaluation_update": 500, "reason": None,
+        "update500_checkpoint_present": True, "finite": True,
+        "hard_constraint_violations": 0,
+        "artifacts": {name: sha256_file(arm_dir / name) for name in names},
+    }
+    (arm_dir / "termination_receipt.json").write_bytes(canonical_json(receipt))
+    return ArmRunResult(arm, arm_dir, receipt, {})
+
+
+def test_shared_close_rejects_post_receipt_artifact_tamper(tmp_path, monkeypatch):
+    result = _synthetic_completed_arm(tmp_path)
+    monkeypatch.setattr(producer, "_validate_evaluation_record",
+                        lambda record, update: None)
+    validated = producer._validate_arm_on_disk(result)
+    assert list(validated.evaluations) == list(producer.EVALUATION_UPDATES)
+    with (result.arm_dir / "train_log.jsonl").open("ab") as stream:
+        stream.write(json.dumps({"update": 501}).encode() + b"\n")
+    with pytest.raises(ValueError, match="artifact hash drift"):
+        producer._validate_arm_on_disk(result)
