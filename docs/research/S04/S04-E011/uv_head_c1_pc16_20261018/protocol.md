@@ -76,6 +76,14 @@ Final actual raw-head energy/field, basis readout and original-z gradient must
 agree at the original r2 tolerances1e-10 energy/1e-9 UV; hidden/damage row and
 actual damage output remain bitwise unchanged. Invalid/undefined result is
 inadmissible/inconclusive, not a physical negative.
+Map the already-paid actual raw-head force into the same original z coordinates
+and check its gradient against the basis gradient at the derivative tolerance.
+Since agreement tolerance alone can straddle the1e-8 stationarity boundary,
+final stationarity requires BOTH original-z gradient infinity norms<=the SAME
+1e-8. Record both gradients and their difference. This is final implementation
+consistency, not another scientific criterion or additional energy/AD call.
+An accepted-callback stationary stop followed by a nonstationary actual readout
+remains nonstationary and does not authorize a restart.
 
 ## One paid ledger and resource envelope
 

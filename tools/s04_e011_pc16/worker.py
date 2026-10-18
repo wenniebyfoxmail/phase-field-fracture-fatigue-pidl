@@ -403,6 +403,12 @@ def run(contract, out, start):
     realization_uv = float(torch.max(torch.abs(torch.stack((uh-ub, vh-vb)))))
     assert realization <= pc['energy_abs_tolerance'] and realization_uv <= pc['field_abs_tolerance']
     full_head_gradient = design.T @ torch.stack((head_force[:len(x)], head_force[len(x):]), 1) / scale
+    # Pull back the already-paid ACTUAL raw-network force to the SAME original
+    # z coordinates. No new target/AD call. Agreement alone has tolerance1e-8,
+    # so both gradients must meet the unchanged1e-8 stationarity threshold.
+    actual_gz = (basis.T @ torch.stack((head_force[:len(x)], head_force[len(x):]), 1) / scale).reshape(size)
+    final_z_gradient_error = gradient_close(actual_gz, final_gz)
+    stationary = max(float(final_gz.abs().max()), float(actual_gz.abs().max())) <= pc['z_gradient_inf_threshold']
     uncertainty = max(frozen['numerical_energy_uncertainty'], initial_error, realization,
                       64*np.finfo(float).eps*scale)
     gap = baseline['E_el']-head_metrics['E_el']
@@ -421,9 +427,11 @@ def run(contract, out, start):
          numerical_energy_uncertainty=uncertainty, initial_identity_energy_abs_error=initial_error,
          actual_basis_energy_difference=realization, actual_basis_displacement_maxabs=realization_uv,
          retained_gradient_l2=float(torch.linalg.vector_norm(final_gz)), retained_gradient_inf=float(final_gz.abs().max()),
+         actual_retained_gradient_l2=float(torch.linalg.vector_norm(actual_gz)),
+         actual_retained_gradient_inf=float(actual_gz.abs().max()), final_z_gradient_maxabs_error=final_z_gradient_error,
          transformed_y_gradient_l2=float(torch.linalg.vector_norm(final_gy)), transformed_y_gradient_inf=float(final_gy.abs().max()),
          full_head_gradient_l2=float(torch.linalg.vector_norm(full_head_gradient)), full_head_gradient_inf=float(full_head_gradient.abs().max()),
-         stationarity_screen=float(final_gz.abs().max()) <= pc['z_gradient_inf_threshold'],
+         stationarity_screen=stationary,
          robust_directional_gain=robust, verdict=verdict, stop=stop, work_ledger=work_ledger,
          history_commits=0, rollout_steps=0, hidden_updates=0, damage_updates=0, baseline_reevaluations=0,
          timings=timings, elapsed_before_serialization_seconds=elapsed(),
