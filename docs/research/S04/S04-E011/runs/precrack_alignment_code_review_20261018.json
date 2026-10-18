@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root/physical_parity_review",
+  "channel": "independent read-only Codex review",
+  "verdict": "REVIEW_PASS_SCOPED_TO_PREPARATION",
+  "reviewed_commit": "2ecd8e78ea5ea149a3461ac861438702032f15e3",
+  "prior_reviewed_commit": "4cdfa13b314d49fb96690388c1129fd861812270",
+  "scope": "opt-in nodal alignment, actual saved-state CPU static preparation,38 deterministic tests and r2 design/weight meanings; no training runner",
+  "checks": [
+    "38 independent tests pass",
+    "actual full FieldComputation raw origin, nonzero load UV unchanged, initial C equals FEM float32",
+    "kink directional response and individual network gradients",
+    "Q4 gradient includes nonuniform d0",
+    "actual state0/current common match and zero fatigue",
+    "fresh runtime anchoring/no resume reanchor and fixed endpoint rules documented"
+  ],
+  "not_certified": [
+    "producer readiness/GPU bitwise equality",
+    "training execution",
+    "FEM closeness after optimization",
+    "physical/scientific validity",
+    "execution authorization"
+  ]
+}

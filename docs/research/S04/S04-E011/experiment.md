@@ -133,3 +133,7 @@ removes lineage and sparse-output ambiguity and provides a direct Q4
 regression against the canonical c76/c82/c83 hashes/fields.  Windows MATLAB
 on `citpc12-ssh` is the FEM producer.  Taobo is the preferred PIDL producer;
 no PIDL launch is allowed without fresh read-only GPU/ownership inspection.
+
+## 2026-10-18 prospective preparation amendment: precrack/initial field
+
+User requests preparation and review only, with FEM field agreement as the goal and symmetry diagnostic. [r2 minimal plan](precrack_alignment_plan_20261018.md) and [card](precrack_alignment_card_20261018.json) add opt-in permanent crack-line d=1 and FEM U0 anchored initial damage. Static construction verified; Pro design and independent Codex preparation review passed in their bounded scopes. Proposed future A/B/C isolates line and initial-field/history/representation package at one c1s1 block, all symmetry off; update0 and fixed endpoints required. No training runner/execution or new FEM/trajectory was authorized or performed, and earlier scientific verdicts remain unchanged.

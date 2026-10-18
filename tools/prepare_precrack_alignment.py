@@ -1,7 +1,8 @@
 """Read-only preparation: saved U=0 NN/FEM inputs and exact nodal-map checks.
 
-No optimizer, fitting, recovery solve, target loading or history commit exists
-in this program. Saved models are evaluated once in bounded CPU chunks.
+No optimizer, fitting, recovery solve or history commit exists in this program.
+Saved origins use the complete ordered CPU node batch, including a nonzero-load
+compatibility check. Loaded FEM target fields are never read.
 """
 import argparse,json,sys,math
 from pathlib import Path

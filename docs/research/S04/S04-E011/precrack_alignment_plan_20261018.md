@@ -87,3 +87,10 @@ A/B/C物理梯度一律沿既有native-Q4 compute_energy路径：d_gp=N*d_nodes�
 三臂共同保留原零载hist_fat=0、psi_plus_prev=0、H=0、f=1；仅hist_alpha随三臂定义而异。固定history不固定当前g(d)，当前g和空间梯度仍随当前mapped d变化。原物理E=1,nu=.3,Gc=.01,ell=.01,w1=1,AT1,Amor split,eta=0,alpha_T=.5,p=2全部固定。完整损失为log10(Eel+Ed+Ehist)+1e-5*sum(weight²)，Ehist内含gamma16875；log内没有epsilon，非正能量停止。
 
 评分固定Q4面积lumped节点权、物理u/v变换、既定窗口/剖面；raw/active按原定义用GP4/Jacobian权。若FEM参考范数为0，相对误差未定义并另报绝对误差，不暗加epsilon。所有输出不clip、不裁剪尾部、不按预测裂尖移动窗口。未来D必须与C从同一theta_R/anchor/history/fresh optimizer独立启动，不能从C终点追加训练后称D−C。
+
+## 最终准备复审收口
+
+- Pro文本设计复审：首轮要求补齐三个契约，r2关闭后REVIEW_PASS_SCOPED_TO_DESIGN；只审实际提交文字，未访问本地代码/数据。[原文](https://chatgpt.com/c/6ad4aa74-fe44-8328-80a4-1eb9982fdda0)。
+- 独立Codex：精确实现2ecd8e78ea5ea149a3461ac861438702032f15e3，38项测试独立复现，实际static_v3和新完整forward锚定检查一致；REVIEW_PASS_SCOPED_TO_PREPARATION。[代码复审](runs/precrack_alignment_code_review_20261018.json)。
+- 两项结论均不签producer-ready，不证明加载后FEM误差改善，也不是运行批准。训练runner未实现/未送审；本轮没有训练更新、history提交、新FEM或轨迹扩展。
+- [静态构造图及阅读说明](/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/precrack_alignment_preparation_20261018/static_v3/README_analysis.md)。

@@ -68,6 +68,10 @@ class FieldComputation:
              - u is fixed only at bottom-left anchor (x_min, y_min),
              - horizontal displacement is free on the rest of top/bottom.
 
+    nodal_damage_alignment: optional ordered-native-node damage mapping.
+        Default None keeps legacy outputs. A mapper rejects arbitrary probes
+        and must be saved separately with the network state.
+
     fieldCalculation: applies BCs and constraint on alpha (needs to be customized for each problem)
     update_hist_alpha: alpha_field for use in the next loading step to enforce irreversibility
     '''
