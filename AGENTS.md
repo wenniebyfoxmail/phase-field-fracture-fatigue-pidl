@@ -118,6 +118,9 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
   figure shows, the cross-figure interpretation, the allowed conclusion, the
   blocked conclusion, and the storyline impact. Use
   `docs/templates/research_analysis_readme.md`.
+- For any research figure work, read
+  `docs/skills/research-figure-workflow/SKILL.md`. It owns figure presentation
+  and the short plain-language explanation of what a displayed figure supports.
 - A same-stem `.md` sidecar is required only when a figure will be cited,
   submitted, handed off, or read independently of its figure set. Multiple
   render formats of the same figure may share that sidecar. Intermediate
@@ -255,6 +258,8 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
 - `docs/skills/pidl-experiment-gate/SKILL.md` — compatibility entry for
   PIDL/FEM, teacher, residual, neural-operator, and Hard-5-specific semantics;
   it delegates the common decision contract to the road-fracture gate.
+- `docs/skills/research-figure-workflow/SKILL.md` — planning, visual QA,
+  captions, and the compact user-facing interpretation of research figures.
 - `docs/skills/project_skill_inventory_2026-07-06.md` — current map from
   project skills/workflows to code entrypoints and producer machines.
 - `docs/skills/paper-ledger-to-paper/SKILL.md` — use for evolving mechanism

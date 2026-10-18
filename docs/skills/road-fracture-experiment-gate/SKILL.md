@@ -239,6 +239,20 @@ the exact scored outputs; do not launch an extra Run just to make a picture.
 Embed the same selected figure below the result in its Obsidian task note and
 verify that the image renders there.
 
+Immediately below every displayed result figure, add a compact **What this
+figure means** block in the user's working language:
+
+- **See:** one visible, case-bound pattern (including the comparator).
+- **Therefore:** the bounded claim or decision that pattern supports.
+- **Does not show:** include this third line only when one material
+  over-interpretation needs preventing.
+
+Use two or three short plain-language lines. Translate a metric or field into
+its practical meaning; do not repeat the full caption, numerical table, or
+audit trail. The block must match the frozen verdict: it cannot turn progress
+into a pass, rescue a failed criterion, or imply field mechanism from a scalar
+curve alone.
+
 Keep the exact numerical table and verdict as authoritative. A visualization
 explains the decision but does not vote, add a new criterion, rescue a primary
 failure, or replace uncertainty reporting. Missing required visualization means
