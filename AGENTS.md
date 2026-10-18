@@ -151,6 +151,21 @@ Taobo user `drtao` is shared by Wennie and Haofan. Process ownership cannot be i
   documents, and registries are legacy evidence. Do not bulk-move, rewrite, or
   delete them. Migrate an active item only when it is next touched.
 
+## Research Progress Updates
+
+When a research conversation has made a substantive move (for example, an
+analysis, design choice, implementation, run, review, or interpreted result),
+include this three-line plain-language summary in the user-facing update or
+handoff:
+
+- **目的：** the research question or decision being advanced.
+- **本轮：** the material work completed in this turn.
+- **结论：** the evidence-backed result and resulting next state.
+
+Keep each line to one short sentence. Omit the block for ordinary discussion,
+clarifying questions, routine file inspection, and unchanged quiet monitoring;
+do not invent a conclusion when there is only preparation or visibility.
+
 ## Obsidian Research Milestones
 
 - For each research task, keep one concise living Obsidian note under the

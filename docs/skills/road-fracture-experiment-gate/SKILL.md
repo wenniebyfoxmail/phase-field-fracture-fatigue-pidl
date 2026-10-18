@@ -329,6 +329,11 @@ single Roadmap link/status. Include the chosen route or result, an evidence
 pointer, and next action; omit routine progress and duplicate chat narrative.
 For computed outcomes, embed the selected decision-facing figure there.
 
+For each substantive user-facing research update, also use the three-line
+`目的 / 本轮 / 结论` progress summary required by the project `AGENTS.md`.
+Keep it factual: preparation is not a result, and unchanged monitoring has no
+new conclusion.
+
 ## Output Template
 
 For exploration, output only five short fields: question; baseline/observable;
