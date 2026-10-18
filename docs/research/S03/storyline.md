@@ -661,3 +661,16 @@
   S03-E019/underflow_b002_results.md. Budget not the observed first blocker;
   next proposed lever is source/artificial-only cross-thread warning propagation
   protection design/review, not numeric tolerance changes or automatic rerun.
+
+- **2026-10-18 — G01 thread-stop plan v0.2 independently reviewed; awaiting user confirmation.**
+  Source/docs-only design, no implementation. First independent Codex review
+  requested earlier logging entry/order and fatal-state/guard-health closure;
+  adopted in docs, focused PASS_STATIC_PLAN atcleanf4178923, planSHA946c7185.
+  CLI-only factory precheck/thread hook promotes fatal to saved real os._exit70;
+  latch precedes best-effort raw evidence, guarded stage/marker checks and
+  external nonzero exit dominate completion. No arbitrary hard-real-time,
+  native-code or atomic-commit guarantee. Original math/tolerances/60s soft
+  budget unchanged; B002 remains quarantined. Proposed stdlib child-process
+  negative controls only on paper. See S03-E019/thread_stop_plan.md and
+  thread_stop_review.md. No source changes, imports/tests/factors/plots,
+  archive/real/held reads or C/D; not Code Ready or execution approval.
