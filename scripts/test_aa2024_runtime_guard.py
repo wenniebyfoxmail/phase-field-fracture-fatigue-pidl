@@ -268,7 +268,8 @@ def main():
             run = subprocess.run(command, cwd=repo, capture_output=True, text=True,
                                  timeout=min(3., left()))
             expected = 0 if case in ('normal_main', 'normal_thread', 'import_only') else 70
-            demand(run.returncode == expected, case+' exit '+str(run.returncode)+' expected '+str(expected))
+            demand(run.returncode == expected, case+' exit '+str(run.returncode)+' expected '+str(expected)+
+                   '\nstdout='+run.stdout+'\nstderr='+run.stderr)
             demand(run.stdout == '' and (run.stderr == '' or
                    all(line.startswith('G01 fatal ') for line in run.stderr.splitlines())), case+' unexpected output')
             demand((root/'passed').exists() == (expected == 0), case+' terminal sentinel')
@@ -279,7 +280,8 @@ def main():
                 demand(event.read_bytes() == b'', case+' clean events')
             if case in ('early_import_warning', 'unsupported_factory', 'unsupported_hook', 'import_only'):
                 demand(not event.exists(), case+' must not bind unknown output')
-            outcomes.append(dict(case=case, exit_code=run.returncode, expected=expected))
+            outcomes.append(dict(case=case, exit_code=run.returncode, expected=expected,
+                                 stderr=run.stderr, event_text=event.read_text() if event.exists() else None))
             guard.check()
             left()
     demand(identity(repo, args.source_commit) == initial, 'final source identity')
