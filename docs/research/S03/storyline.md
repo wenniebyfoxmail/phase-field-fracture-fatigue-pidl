@@ -718,3 +718,16 @@
   No Python/import/AST/discovery/test or archive/real/held reads this turn;
   no source/frozen changes, B002 retry or C/D. Static readiness is not65/65
   execution evidence. Await exact-command user approval; no new run started.
+
+- **2026-10-18 — G01-R65-A001 original65 artificial regression passed once.**
+  User approved exact packet command; cleanruntime4486d51d/sourceecb8b9a9.
+  chunkc59af2 exit0,41+24 allok with no skip/error/unexpected warning/retry.
+  unittest0.013s; scriptpreprint0.4939692079788074s; final60s check passed;
+  separate toolwall0.418301041s, not conflated. Controlled actualQR/SVD0/0,
+  external before/afterHEAD and7SHA unchanged. See
+  S03-E019/thread_stop_regression_results.md for command, receipt and full
+  merged terminal. Supports original artificial regression compatibility only,
+  not fullproducer/guard/font or realDIC validation. No archive/real/held reads,
+  source/frozen changes, B002 retry, C/D or independent runtime acceptance.
+  B002 remains quarantined. A fresh protected synthetic resource packet may
+  be prepared separately; no new execution is authorized by this result.
