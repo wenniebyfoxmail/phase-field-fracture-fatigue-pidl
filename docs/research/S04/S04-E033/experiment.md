@@ -2,7 +2,7 @@
 storyline_id: S04
 experiment_id: S04-E033
 protocol_revision: v1-full-head-eleven-guards-one-axis-20261019
-status: preparation
+status: admission_stopped
 ---
 # E033：完整UV头只读诊断；有证书才作唯一单轴增广校正
 
@@ -58,3 +58,8 @@ D8，沿用D1与E032结论。E032 raw .0460%未达.1%，u全域/Z误差回退15.
 HQ直接人方夜间继续托管与既有最小试验授权有效，本次D8明确授权<=15分钟诊断+有支持才作一条轴的有限校正，合计<=.5GPUh，不另待普通预算批准。旧六Run累计1.09177619513718GPUh，最坏加本次.5后1.5917762<原2总限。单GPU实际UUID、空闲>=20GiB/SM0/无计算进程，allocator<=free−1GiB且保持1GiB余量，RSS32GiB，输出2GiB，所有缓存/临时/输出在fresh /mnt/data2目录；clean exact Git snapshot与必要独立焦点review后才执行。
 
 Mac仅合成fixture和保存数组分析，不加载真实PT/模型、真实梯度或头拟合。来源/shape/零步/主机/GPU身份不符、非有限/证书矛盾、物理界或非UV/d/历史改变、前向不符、联合求解故障、时间/内存/输出超限均首停、不重试、不替换权重、不触及共享进程或封存数据。下一方法不包含在本Run；本次结束保留全部证据交HQ。
+
+
+## 2026-10-19 首次资源准入停止（未启动）
+
+GPU5身份正确，但18314MiB空闲/87%利用率未满足20480MiB/0%条件；断言早于启动标记与Popen。本次无worker、模型加载、梯度或校正，后续只读核验无本次残留进程。科学可达性未评价，不作head/方法失败结论；新增GPU小时0、累计1.09177620。停止本Run，不重试/换卡/新编号绕过，未追加审查。[最短可核验回执](admission_stop_20261019.md)、[运行摘要](run_summary.json)。
