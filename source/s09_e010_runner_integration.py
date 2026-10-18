@@ -437,7 +437,7 @@ def validate_termination_receipt(receipt: Mapping[str, Any]) -> None:
     _require(
         isinstance(stop, int)
         and not isinstance(stop, bool)
-        and steps <= stop <= UPDATES_PER_ARM,
+        and steps <= stop <= min(steps + 1, UPDATES_PER_ARM),
         "invalid stop update",
     )
     evaluations = receipt["evaluation_updates_present"]

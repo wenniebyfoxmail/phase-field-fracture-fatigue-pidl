@@ -49,6 +49,10 @@ Not recorded.
 - add: `scripts/check_s09_e010_runner_integration.py` - Add explicit CPU-only no-training integration receipt entry point
 - add: `docs/research/S09/S09-E010/runner_integration_config_20261018.json` - Freeze three arms, 1500-update cap, evidence set and producer placeholders
 - add: `docs/research/S09/S09-E010/runner_integration_no_training_20261018.json` - Record actual frozen-packet 48-direction no-step integration evidence
+- modify: `source/s09_e010_runner_integration.py` - Tighten terminal stop position to the completed update or its immediate successor
+- modify: `tests/test_s09_e010_runner_integration.py` - Add legal initial and final stop boundaries and reject zero-completed update 500
+- modify: `docs/research/S09/S09-E010/runner_integration_no_training_20261018.json` - Regenerate frozen-packet no-training evidence after receipt-validator repair
+- add: `docs/research/S09/S09-E010/runner_integration_review_round1_20261018.md` - Record independent runner-integration findings and narrow repair scope
 
 ## Input Assets
 - `docs/research/S09/S09-E010/experiment.md` (frozen protocol; exists)
@@ -64,6 +68,9 @@ Not recorded.
 - pass: actual frozen-packet no-training integration - NO_TRAINING_INTEGRATION_PASS; all 48 arm-cycle runner directions match reviewed core bitwise, model hashes are unchanged, optimizer states remain empty and step count is zero.
 - pass: static checks - New integration module, test and entry script pass lint, syntax and whitespace checks.
 - pass: complete selected E010 and E009 regression suite - 72 passed; complete reviewed core plus both integration layers remain consistent.
+- pass: termination receipt blocker regression and inherited suite - 76 passed; zero-completed stop500 is rejected; valid 0-to-0, 0-to-1, 63-to-64 and 500-to-500 boundaries pass.
+- pass: revised frozen 16-cycle no-training integration - NO_TRAINING_INTEGRATION_PASS; 48/48 directions match reviewed core with max abs difference 0; model hashes unchanged; optimizer states empty; no optimizer step.
+- pass: revised integration static checks - Revised validator and test module pass lint, syntax and whitespace checks.
 
 ## Result Interpretation
 Not recorded.

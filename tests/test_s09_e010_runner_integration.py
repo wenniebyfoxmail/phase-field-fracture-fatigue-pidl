@@ -245,6 +245,48 @@ def test_terminal_receipt_rejects_fabricated_final_checkpoint():
         validate_termination_receipt(receipt)
 
 
+def test_terminal_receipt_rejects_stop_update_far_beyond_completed_steps():
+    receipt = terminal_receipt(TERMINAL_METHOD_INAPPLICABLE, ARM_ORDER[2])
+    receipt.update(
+        stop_update=500,
+        optimizer_steps_completed=0,
+        fully_logged_updates=0,
+        evaluation_updates_present=[0],
+        last_valid_evaluation_update=0,
+    )
+    with pytest.raises(ValueError, match="invalid stop update"):
+        validate_termination_receipt(receipt)
+
+
+@pytest.mark.parametrize("stop_update", [0, 1])
+def test_terminal_receipt_accepts_initial_stop_boundaries(stop_update):
+    receipt = terminal_receipt(TERMINAL_METHOD_INAPPLICABLE, ARM_ORDER[2])
+    receipt.update(
+        stop_update=stop_update,
+        optimizer_steps_completed=0,
+        fully_logged_updates=0,
+        evaluation_updates_present=[0],
+        last_valid_evaluation_update=0,
+    )
+    validate_termination_receipt(receipt)
+
+
+def test_terminal_receipt_accepts_update500_evidence_write_failure():
+    receipt = terminal_receipt(TERMINAL_EXECUTION_FAILED, ARM_ORDER[1])
+    receipt.update(
+        stop_update=500,
+        optimizer_steps_completed=500,
+        fully_logged_updates=500,
+        evaluation_updates_present=list(EVALUATION_UPDATES),
+        last_valid_evaluation_update=500,
+        reason="EVIDENCE_WRITE_FAILURE",
+        update500_checkpoint_present=True,
+        finite_status=True,
+        artifacts={"checkpoint_update500.pt": "sha256"},
+    )
+    validate_termination_receipt(receipt)
+
+
 def test_cross_arm_claim_requires_both_identity_and_exact_replay():
     assert cross_arm_performance_eligible(
         shared_identity_pass=True, exact_a25_replay_pass=True

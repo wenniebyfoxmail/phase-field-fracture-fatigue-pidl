@@ -2,7 +2,7 @@
 
 ## Current state
 
-`RUNNER_INTEGRATION_CANDIDATE__AWAITING_EXACT_COMMIT_REVIEW`
+`RUNNER_INTEGRATION_CANDIDATE__AWAITING_FOCUSED_REREVIEW`
 
 The reviewed E010 support/amplitude core is now connected to the frozen E008
 runtime, three isolated arm states, the 500-update schedule and a fail-closed
@@ -27,12 +27,20 @@ no optimizer-step or producer-launch function.
 
 ## Verification
 
-The selected E010 and inherited E009 suite reports `72 passed`.  The actual
+The selected E010 and inherited E009 suite now reports `76 passed`.  The actual
 frozen 16-cycle, 86,756-node packet produced
 `NO_TRAINING_INTEGRATION_PASS`.  All 48 arm-cycle runner directions match their
 reviewed core implementations with maximum absolute difference zero.  All
 three model hashes remain unchanged, all optimizer states remain empty, and no
 optimizer step was called.
+
+Round-1 independent review accepted the arm, budget, isolation, loss-routing,
+leakage, replay and no-step boundaries. It found one receipt-validator defect:
+zero completed updates could be paired with `stop_update=500`. The validator
+now requires the stop to be the completed update or its immediate successor,
+and explicit `0 -> 0`, `0 -> 1`, `63 -> 64`, `500 -> 500` and rejected
+`0 -> 500` cases are covered. The no-training frozen-packet receipt was
+regenerated after this repair with the same 48/48 exact matches.
 
 The no-training receipt records the exact packet identity, config identity,
 schedule hash, isolated initial-state hashes, per-arm first-cycle direction
@@ -41,8 +49,8 @@ hashes and all 48 runner-versus-core hashes.
 ## Boundary and next gate
 
 This is an integration candidate, not Run Ready and not a scientific result.
-The exact commit must receive independent runner-integration review.  Only
+The narrow validator repair must receive focused exact-commit rereview. Only
 after that review may producer-loop/config-resolution/evaluator-writer code and
-an exact run card be prepared.  This stage does not launch training, access a
+an exact run card be prepared. This stage does not launch training, access a
 new holdout or alter the frozen E009 result.
 
