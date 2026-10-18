@@ -29,3 +29,7 @@ Obsidian: one concise milestone plus exact rendered PNGs appended to the existin
 ## 2026-10-18 approved bounded execution completed
 
 User approved the exact two-arm card (200 updates each, <=1 GPU-hour) and necessary runner/review. Commit `f3f97428` executed on Taobo GPU0, 400 updates in 26.319s, exit0; no history commits/new FEM. Candidate vs control active error -1.015%, UV -1.597%, damage essentially unchanged, raw +0.999%. Candidate remains worse than unchanged original on active/UV/damage and does not reduce local mirror RMS. No rollout or retry. [Result and provenance](runs/physical_symmetry_pilot_20261018.md); independent numeric/plot review passed for this bounded mixed result. Earlier preparation-only statements above remain historical.
+
+## 2026-10-18 implementation diagnosis (no new Run)
+
+[Read-only diagnostic](runs/physical_symmetry_pilot_diagnosis_20261018.md): exact training-support endpoint parity is original6.196e-7/control4.382e-7/candidate4.762e-7; candidate does not beat control even before native-Q4 reconstruction. FEM hard-fixes251 crack-line damage DOFs; PIDL initializes a history then penalizes recovery, with no persistent crack-line equality. The analytic PIDL initial tip profile also differs from zero-load recovered FEM. This is an initialization/feasible-space and finite-optimizer issue, not proof that full physical parity was disconnected. No training/FEM/history change.

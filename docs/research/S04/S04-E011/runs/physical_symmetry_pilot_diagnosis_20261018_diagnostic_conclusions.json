@@ -1,0 +1,20 @@
+{
+  "read_only_diagnosis": true,
+  "new_training_updates": 0,
+  "new_FEM_solves": 0,
+  "train_uv_mse": {
+    "original": 6.196239345418354e-07,
+    "control": 4.381837895652446e-07,
+    "candidate": 4.761861536096586e-07,
+    "candidate_vs_control_percent": 8.672699663791539,
+    "candidate_vs_original_percent": -23.149167250654724,
+    "control_vs_original_percent": -29.28230090252274
+  },
+  "precrack_fixed_FEM_dofs": 251,
+  "PIDL_output_has_crack_line_hard_BC": false,
+  "initial_tip_profile_at_x0_y001": {
+    "PIDL_analytic_history": 0.24957940942601048,
+    "FEM_U0_recovered": 0.1076771080634562
+  },
+  "scope": "one frozen c1s2; CPU inference and archived FEM/native Q4 reconstruction; no step or solve"
+}
