@@ -71,3 +71,28 @@ physical stage or Pareto ceiling. Future reads/fit remain unapproved.
 See [design review and proposal](S04-E025/stage_state_review_and_minimal_proposal_v1_20261017.md).
 The old R002 no-gain verdict and evidence remain unchanged; no new execution,
 source reread, metric recomputation, code/loss edit, confirmation or second writer.
+
+## 2026-10-18 — E026 late-only weight probe completed, no late gain
+
+User-approved S04-E026-R001 (card32651e27/source63af1f4f) ran once:
+19.267s, sampled aggregate1,551.17MiB,316,063B including caches and final receipt.
+All9 scientific and5 frozen input records match the Git manifest; exactly
+one L32 solve,116 late training cycles,121 viewed U0.11 evaluation rows.
+B32/V0 frozen model/scales/sampling/scalars reused, no baseline fit/forward/
+error reevaluation. Parent/worker exit0; saved-output integrity and PNG inspected,
+own output frozen read-only. No retry, confirmation or coupling computation.
+
+Saved L32/B32 RMSE ratios: early1.0126748298231503, middle1.0060002549346905,
+late1.0033009666720292, equal-stratum aggregate1.0054896682150172.
+Primary late **NO_DIRECTIONAL_GAIN** (+0.3301%); this is not an early-cost veto.
+Late remains worse than V0 by1.9437%. The specific late-only training-weight
+candidate is not supported; simple loss reallocation was insufficient here.
+This does not exclude other weights or establish a representation/support/
+coupling cause. No MOO/Pareto, physical-stage, teacher, fresh-transfer or
+future-dynamics claim; PINN/damage/history remain unchanged.
+
+Disposition: stop this candidate, no automatic weight sweep or new fit.
+Next recommendation is design synthesis from frozen E025/E026 records,
+coordinated with the separate coupling question, not duplicate computation.
+Main-chat result checks only, no independent result review claimed.
+Evidence: [R001 result](S04-E026/R001_result_20261018.md).
