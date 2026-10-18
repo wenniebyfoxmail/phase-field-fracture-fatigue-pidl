@@ -1,0 +1,55 @@
+{
+  "status": "passed",
+  "reviewer": "/root/pidl_design_review",
+  "scope": "Independent review of new offline analyzer; not its author. Input adapter/head-basis producer authored separately by reviewer and excluded from independent signoff here. No producer/retraining/SSH performed.",
+  "reviewed_UTC": "2026-10-18T10:08:30.563516+00:00",
+  "quota_before_stage": {
+    "ordinary_used_percent": 20,
+    "ordinary_remaining_percent": 80,
+    "allowed": true
+  },
+  "analysis_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/tools/s04_e011_analysis/analyze_pidl_energy_head.py",
+  "analysis_git_blob": "52735127b4ac43adbc27b7d32b7dc3d188ce550c",
+  "analysis_sha256": "d8bc9657f5bc4b57a86a5335cdc454cc8fde9cc1d2edf5aea9c38bcd1213d35e",
+  "reused_mechanical_helper": "analyze_pidl_block_diagnosis.q4_fields + run_multicycle_cross_replay.q4_geometry; independently rederived and checked for all20PBD fields in prior numerical_independent_review.json",
+  "checks": {
+    "native_Q4_elastic_compressive_split": true,
+    "blocked_force_freeDOFs": true,
+    "mass_lumped_displacement_L2": true,
+    "GP_Q4_gradient_H1": true,
+    "FEM_damage_frozen_in_all_candidates": true,
+    "source_labels_and_no_joint_trajectory_claim": true,
+    "completed_actual_network_only_gain_scoring": true,
+    "missing_partial_states_keep_screen_null": true,
+    "shared_row_field_scales_and_signed_error_scales": true,
+    "fresh_analysis_outputs_required": true,
+    "four_actual_network_metrics_independently_checked": true
+  },
+  "numerical_readonly_fixtures": [
+    {
+      "cycle": 1,
+      "E_el_maxabs": 2.6020852139652106e-18,
+      "free_force_l2_maxabs": 1.0408340855860843e-17,
+      "mass_L2_maxabs": 6.938893903907228e-18,
+      "H1_maxabs": 0.0
+    },
+    {
+      "cycle": 20,
+      "E_el_maxabs": 8.673617379884035e-19,
+      "free_force_l2_maxabs": 0.0,
+      "mass_L2_maxabs": 0.0,
+      "H1_maxabs": 0.0
+    }
+  ],
+  "required_repair": null,
+  "nonblocking_suggestion": "For the eventual gain interpretation, report independently measured numerical readout uncertainty; do not infer global optimum from the screen.",
+  "figure_review": "Code/semantics reviewed; actual rendered new UVHEAD figures unavailable before run and require separate visual QA.",
+  "scientific_boundaries": [
+    "Same fixed-FEM-d mechanical hybrid",
+    "No finite-budget oracle or whole-network capacity lower bound",
+    "No repaired evolution or physical teacher",
+    "Numerical cutoff only constrains retained frozen-feature subspace"
+  ],
+  "analysis_commit": "f28b215e867f23b63d4905bb6a9070718a2083c3",
+  "resolved_issue": "Final f28b215e rejects existing analysis folders, preventing stale evidence. It also checks actual head Eel/free-force/mass-L2/H1 against independent replay."
+}

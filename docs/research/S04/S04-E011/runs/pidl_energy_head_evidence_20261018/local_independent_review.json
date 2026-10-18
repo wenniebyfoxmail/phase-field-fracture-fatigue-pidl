@@ -1,0 +1,64 @@
+{
+  "status": "passed",
+  "reviewer": "/root/b0_route_inventory",
+  "reviewed_utc": "2026-10-18T10:10:10.263769+00:00",
+  "scope": "Independent difference Code Ready review, before remote probe/production; not execution/numerical-success/physical-validity approval",
+  "worker_blob": "061537488819a0db3abf22d564b2a24ff9b675e8",
+  "worker_sha256": "bee1f5dbec4b8a1579e8005371fa99841be0b83fc27c8b977c4026041569821f",
+  "tests_blob": "391c6730f0d75c7c0b7de9a8b4801f578b9dba92",
+  "launcher_sha256": "b07bc51ec13d98bfb25b49eed3478b4a9d447b4717919facfec947b123e45a3e",
+  "protocol_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/pidl_same_energy_head_execution_20261018.md",
+  "protocol_sha256": "dc58883798b7ff95c408df255a3f3475f9204fc27f3f04fdcbbc823ca8981d5e",
+  "quota_pre_review": {
+    "source": "live get_usage_limits codex primary",
+    "used_percent": 19,
+    "remaining_percent": 81,
+    "threshold_remaining_percent": 80,
+    "reset_credits_used": false
+  },
+  "tests": {
+    "command": "python -m pytest -q tests/test_pidl_energy_head.py",
+    "passed": 4,
+    "failed": 0,
+    "scope": "tiny algebra/budget/one-backward fixtures; no full model training"
+  },
+  "launcher_embedded_python_scripts_parse": 5,
+  "details": [
+    "Only UV weights/biases may change; hidden parameters and damage output rows checked tensor-exact after solve, anchor and FEM damage/own lower/f checked unchanged. Original UV bubble/lift formula independently checked <=1e-12.",
+    "Elastic objective is unchanged fixed-FEM-d native Q4 Eel without regularizer; source energy and full native FEM force contracts run before production updates.",
+    "Mass-weighted physical displacement thin SVD uses explicit eps*max(rows,columns)*smax cutoff, complete401-column spectrum and0.1/1/10x rank counts; no ridge. Theta0 retained as base point; omitted numerical directions unchanged. Conclusions limited to retained resolvable subspace, not full-head/network capacity.",
+    "SciPy unbounded L-BFGS-B accepts only completed cached points in callback; cap/deadline preserves last accepted reduced candidate.400call budget includes source/native/initial contracts, trial gradients, and one reserved final actual-network observation;600seconds includes preparation.",
+    "Final actual raw UV head is installed in unchanged original network and actual fields/Eel/free-force/H1/mass errors scored. Reduced-coordinate gradient and actual projected-gradient readout remain stationarity observations; librarysuccess/ftol or cap endpoint is not oracle/global FEM convergence.",
+    "No new final readout after600seconds. Missing terminal actual readout produces partial output, lastverifiedtheta0 fields and no scored/deployed newhead; offline analyzer now excludes partial/missing states from gain decisions.",
+    "Probe constructs same features/basis and one energy backward with zero optimizer/model updates, explicit frozen checks and >=3GiB remaining VRAM; root probe_pass.json/statuspassed now matches launcher admission.",
+    "Launcher binds review worker blob and launcher SHA; clean gitarchive bundle SHA covers full code snapshot, phase/probe contract SHA checked; expected PBD input/model SHA checked on staged copies; duplicateenergyhead process check and GPU preflight repeated after staging.",
+    "GPU0 shared-resource checks reuse previously reviewed old preflight; fresh roots, caches, environment and attributable detached command receipt preserve other processes.",
+    "Protocol and worker use UVHEAD-r1 and same400/600budget; no new history commits, rollout, seeds, retries, ridge, weightregularizer or full120cycle continuation.",
+    "Final producer commit f28b215e differs from initial22d28a66 only in separately reviewed offline analyzer; exact reviewed worker blob and launcher remain unchanged.",
+    "Placement-only amendment: GPU3 queried, CUDA_VISIBLE_DEVICES3, contract/receipt GPU3, pre/post-staging custom preflight and own worker duplicate checks preserved. Source worker/test/analysis unchanged; original GPU0 review archived separately. No SSH, process disturbance or producer call by reviewer."
+  ],
+  "runtime_conditions": [
+    "Source must be committed cleanly with reviewed worker blob and unchanged reviewed launcher; runtime build/launch checks still required.",
+    "Resource preflight, finite zero-update probe, production contracts, actual installed-head numerical realization and terminal evidence must pass before result claims."
+  ],
+  "blockers": [],
+  "commit": "c3e42282e9e3beee50fa9079e1fb2da92bc7711d",
+  "worktree_clean": true,
+  "GPU": 3,
+  "placement_difference_review": {
+    "quota_live_used_percent": 20,
+    "remaining_percent": 80,
+    "threshold": 80,
+    "source_commit": "c3e42282e9e3beee50fa9079e1fb2da92bc7711d",
+    "prior_review": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_energy_head_preparation_20261018_v1/local_independent_review_gpu0_f28b215e.json",
+    "prior_review_sha256": "54b5f964ff27e5a7e49ca89f8b502f1adc4e7e52ed4faada5f4b3a32ddbb04e6",
+    "preflight_difference": "AST-normalized exact match to previously reviewed preflight except GPU0 -> GPU3 index/status labels",
+    "active_GPU0_placement_residue": false,
+    "worker_test_analysis_unchanged": true,
+    "embedded_remote_python_scripts_parse": 6,
+    "remote_access": false,
+    "producer_calls": 0,
+    "resource_state": "GPU3 capacity/occupancy is conditional until launcher fresh checks and probe actually pass",
+    "reason": "GPU0 occupied by another thread before probe launch; no numerical run started onGPU0"
+  }
+}

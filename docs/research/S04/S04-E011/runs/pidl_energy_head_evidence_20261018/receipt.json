@@ -1,0 +1,73 @@
+{
+  "protocol": "S04-E011-UVHEAD-r1",
+  "execution": "completed",
+  "retrieval": {
+    "status": "verified",
+    "files": 23,
+    "bytes": 23527442,
+    "remote": "/mnt/data2/drtao/pidl_archives/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production",
+    "run_id": "pf_s04e011_uvhead_c3e4228_20261018T101024Z_production",
+    "missing": []
+  },
+  "producer": {
+    "run_id": "pf_s04e011_uvhead_c3e4228_20261018T101024Z_production",
+    "phase": "production",
+    "commit": "c3e42282e9e3beee50fa9079e1fb2da92bc7711d",
+    "branch": "codex/hard5-q4-t3-2x2-20261005",
+    "dirty": false,
+    "pid": 2592186,
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "/usr/bin/python3",
+      "-u",
+      "/mnt/data2/drtao/wennie/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/code/tools/s04_e011_analysis/run_pidl_energy_head.py",
+      "--contract",
+      "/mnt/data2/drtao/wennie/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/contract.json",
+      "--out",
+      "/mnt/data2/drtao/pidl_archives/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/output",
+      "--phase",
+      "production"
+    ],
+    "root": "/mnt/data2/drtao/wennie/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production",
+    "archive": "/mnt/data2/drtao/pidl_archives/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production",
+    "log": "/mnt/data2/drtao/wennie/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/worker.log",
+    "GPU": 3,
+    "started_utc": "2026-10-18T10:13:13.418114+00:00"
+  },
+  "analysis_commit": "56fafcf58def8f99ea4c0177a63050b20a44ce83",
+  "analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final",
+  "local_preparation": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_energy_head_preparation_20261018_v1",
+  "outcome": "negative beating-PBD directional screen; retained feature limit inconclusive",
+  "history_commits": 0,
+  "rollout_steps": 0,
+  "states": [
+    {
+      "cycle": 1,
+      "pbd_relative_energy_reduction": -0.11816879239958133,
+      "screen": false,
+      "E_el": 0.006342778465111506,
+      "free_u_l2": 0.0255071153185911,
+      "actual_head_gradient_l2": 0.031661401223105616,
+      "evaluations": 400,
+      "stop": "evaluation_budget",
+      "rank": 388
+    },
+    {
+      "cycle": 20,
+      "pbd_relative_energy_reduction": -0.11524914750887172,
+      "screen": false,
+      "E_el": 0.0060240915187613885,
+      "free_u_l2": 0.02096445043550586,
+      "actual_head_gradient_l2": 0.007911243463706483,
+      "evaluations": 400,
+      "stop": "evaluation_budget",
+      "rank": 387
+    }
+  ],
+  "figures": 6,
+  "Obsidian_copies": 13,
+  "source_tests": "4 passed; no Mac training",
+  "future": "curvature card prepared only; no extra producer/evaluation"
+}

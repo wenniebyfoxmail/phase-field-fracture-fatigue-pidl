@@ -1,0 +1,202 @@
+{
+  "status": "passed",
+  "reviewer": "/root/b0_route_inventory",
+  "reviewed_utc": "2026-10-18T10:21:21.501074+00:00",
+  "producer_commit": "c3e42282e9e3beee50fa9079e1fb2da92bc7711d",
+  "run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production",
+  "quota_opening": {
+    "live_used_percent": 20,
+    "remaining_percent": 80,
+    "threshold": 80
+  },
+  "transfer_verification": {
+    "files": 23,
+    "bytes": 23527442,
+    "method": "single-stream gzip/tar and remote-generated inventory per-file byte sizes independently checked; no remote per-file SHA claim",
+    "inventory_sha256": "ff1401dc8bd3036452f6f2cfe55a2cee5e435ad5a319d5a36fd488b93768fc9e"
+  },
+  "cases": [
+    {
+      "cycle": 1,
+      "E_el": 0.006342778465111506,
+      "free_u_l2": 0.0255071153185911,
+      "uv_mass_rel_L2": 0.13154509281268084,
+      "uv_H1_rel": 0.7977028447467303,
+      "independent_NumPy_energy_force_mass_H1_agree": true,
+      "evaluations": 400,
+      "all_trace_starts_before600": true,
+      "final_actual_readout_counted": true,
+      "accepted_head_updates": 373,
+      "frozen_hidden_damage_head_independently_tensor_exact": true,
+      "actual_saved_rawhead_independently_candidate_exact": true,
+      "CPU_rawhead_formula_roundoff_maxabs": 1.8189894035458565e-12,
+      "retained_rank": 388,
+      "rank_cutoff_sensitivity": {
+        "0.1": 388,
+        "1.0": 388,
+        "10.0": 386
+      },
+      "conditioned_gradient_l2": 0.03166140125248133,
+      "actual_reduced_gradient_l2": 0.031661401223105616,
+      "actual_minus_conditioned_energy": 9.998946115530316e-15,
+      "linear_vs_actual_uv_maxabs": 1.3727526060325346e-12,
+      "theta0_energy_reduction": 0.41754293666509634,
+      "PBD_energy_reduction": -0.11816879239958067,
+      "primary_beating_PBD": "negative_within_declared_budget",
+      "fixed_feature_limit": "inconclusive_not_stationary",
+      "source_result_sha256": "6c47049628184cdac17005f0a5bd77d1fa2e03d58194e542c076c9a3a95e8507",
+      "source_fields_sha256": "4ab066f285406a8b9f4f03c6b59b3cebedd77ac28e3094a0721e0393b7fd24f3"
+    },
+    {
+      "cycle": 20,
+      "E_el": 0.0060240915187613885,
+      "free_u_l2": 0.02096445043550586,
+      "uv_mass_rel_L2": 0.13851435980898916,
+      "uv_H1_rel": 0.8081683416583437,
+      "independent_NumPy_energy_force_mass_H1_agree": true,
+      "evaluations": 400,
+      "all_trace_starts_before600": true,
+      "final_actual_readout_counted": true,
+      "accepted_head_updates": 383,
+      "frozen_hidden_damage_head_independently_tensor_exact": true,
+      "actual_saved_rawhead_independently_candidate_exact": true,
+      "CPU_rawhead_formula_roundoff_maxabs": 5.684341886080802e-14,
+      "retained_rank": 387,
+      "rank_cutoff_sensitivity": {
+        "0.1": 387,
+        "1.0": 387,
+        "10.0": 387
+      },
+      "conditioned_gradient_l2": 0.007911243455115414,
+      "actual_reduced_gradient_l2": 0.007911243463706483,
+      "actual_minus_conditioned_energy": -2.5205532105943007e-15,
+      "linear_vs_actual_uv_maxabs": 2.993993941657891e-13,
+      "theta0_energy_reduction": 0.4629266282582267,
+      "PBD_energy_reduction": -0.11524914750887172,
+      "primary_beating_PBD": "negative_within_declared_budget",
+      "fixed_feature_limit": "inconclusive_not_stationary",
+      "source_result_sha256": "a472ed5e4392a6b84437b271805359a42bbda46f566d77b729bf40e5c28fdd39",
+      "source_fields_sha256": "7e03654d1790c90adda3881d890fa3cd252090ea6b81ec077e374c236980cb64"
+    }
+  ],
+  "analysis_summary_sha256": "fa6c7bea661980450405c36b644b16202d74955adf2c855ed1ad41464f2dcc4e",
+  "figures_actually_viewed": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/head_decision.png",
+      "sha256": "df7f8056e7cf765c16be74657e8d053bf9b1debf963e515a9873f56833096b8f",
+      "view_basis": "Actually viewed analysis_v2 figure; final byte-identical verified"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/head_stationarity.png",
+      "sha256": "88c1078b44b68f738e7f1ff90b2c21800569003c14f99c5cd2c345da44ac8d58",
+      "view_basis": "Actually viewed analysis_v2 figure; final byte-identical verified"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/c20_mechanical_fields.png",
+      "sha256": "1412381bb340c1c44c472b648fbf4c41ee6f1587e3ee3691e9dad9dfa581a253",
+      "view_basis": "Actually viewed analysis_v2 figure; final byte-identical verified"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/c1_mechanical_fields.png",
+      "sha256": "0e85e3e5fd196a4cbb694d1261025e82dbf3341713fa228ddd17b0e077cafbef",
+      "view_basis": "Actually viewed analysis figure; final byte-identical verified"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/c20_uv_errors.png",
+      "sha256": "cb715c78adff75fd48339fd3596e7bc86121c6c078c11febd43714831df7705e",
+      "view_basis": "Actual final image viewed; all five numeric signed colourbar ticks readable"
+    }
+  ],
+  "notes": [
+    "Both complete statuses confirm producer finished, not stationarity; both400-call caps reached.",
+    "Independent NumPy native-Q4 replay agrees on actual Eel/free force/mass-L2/H1; actual hidden+damage head tensors checked against unchanged original joint theta0 converted to float64; no Mac training/remote activity.",
+    "Raw head candidate equals installed saved output head. Recomputing rawtransform on localCPU has observed rounding1.82e-12/5.68e-14; it is not bitwise cross-device gate and does not affect actual scored fields.",
+    "No oracle/capacity/physical/rollout claim. Primary beatingPBD criterion negative, frozen-feature ceiling inconclusive because accepted actual reduced gradients remain nonzero.",
+    "All candidates use fixed FEMd; original-UV and newhead hybrid metrics are not changed full joint PIDL baseline.",
+    "analysis_v2 and analysis_final numerical rows/states compared identical; final visual-only corrections make signed-error scale numbers readable. Final scalar/trace/mechanical images byte-identical to actually inspected variants."
+  ],
+  "report_review": {
+    "status": "passed",
+    "reviewed_files": [
+      {
+        "path": "/Users/wenxiaofang/obsidian/mesh对齐.md",
+        "sha256": "5e70b3f0fc410af636c11f2fc236a9e33f7db9cf8ed33c2e35b59febfd0701b3"
+      },
+      {
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_energy_head_result_20261018.md",
+        "sha256": "609b33feff968c633400aeb286d732dcefbfc52274e74044261dd10fcf7dceff"
+      },
+      {
+        "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/pidl_head_curvature_next_card_20261018.md",
+        "sha256": "f9aca7cb1f11b64055bff1de30bd010cff90a402f039f6016bd87dffa6a8429f"
+      }
+    ],
+    "obsidian_head_section_sha256": "87988fd9c4d9d4873ed205fff7878c0b3ab114b0fee466c9e2917d183cf718e6",
+    "checks": [
+      "FEM reference and PIDL conditional U methods explicitly named; original UV+FEMd hybrid is not represented as unchanged full joint PIDL baseline.",
+      "41.7543/46.2927% reduction againsttheta0 retained as component progress, with11.8169/11.5249% higher Eel than PBD declared primary negative.",
+      "Both400-call caps, reduced nonstationary gradients, native globalRu, fields/H1 and retained numerical rank disclosed. No oracle or feature/network capacity bound.",
+      "Last20accepted endpoint relative decreases independently recomputed .0086755958/.0013427197 percent match text; small loss changes not convergence.",
+      "Actual-head realization roundoff is far below material energy gap; no serialization-error explanation or new posthoc acceptance gate.",
+      "Single-stream23files23,527,442byte transfer correctly described as file-count/size verification; no unsupported remote per-file SHA claim.",
+      "Next same-basis curvature/Newton card is prospective only, preserves representation/objective and closed budgets; no new producer/rollout claimed or launched."
+    ]
+  },
+  "open_items": [],
+  "blockers": [],
+  "analysis_summary": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/summary.json",
+  "all_final_figure_and_sidecar_bindings": [
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/c1_mechanical_fields.png",
+      "sha256": "0e85e3e5fd196a4cbb694d1261025e82dbf3341713fa228ddd17b0e077cafbef"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/c1_uv_errors.png",
+      "sha256": "05bc356593ac43a667e55d0b4c79c45560afcf082e3865fc66372485633f5d17"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/c20_mechanical_fields.png",
+      "sha256": "1412381bb340c1c44c472b648fbf4c41ee6f1587e3ee3691e9dad9dfa581a253"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/c20_uv_errors.png",
+      "sha256": "cb715c78adff75fd48339fd3596e7bc86121c6c078c11febd43714831df7705e"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/head_decision.png",
+      "sha256": "df7f8056e7cf765c16be74657e8d053bf9b1debf963e515a9873f56833096b8f"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/head_stationarity.png",
+      "sha256": "88c1078b44b68f738e7f1ff90b2c21800569003c14f99c5cd2c345da44ac8d58"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/README_analysis.md",
+      "sha256": "d1f4ac99ce2e99595088b2d29a89728a880a3ad8f274c11f2bc6d17752df8dcd"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/c1_mechanical_fields.md",
+      "sha256": "b33430dfb659bb62b7f2fe3af93505ec45896022efd567233f19a4f5ce36fd8b"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/c1_uv_errors.md",
+      "sha256": "eb09328a86ea8cf3a283a8cbb7a10b940533e9c855d5df3b32594d00efc73295"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/c20_mechanical_fields.md",
+      "sha256": "46e11fc32065e0c423f34e09c0d778d0a4a0ed6cbcbaa78244c89cfabe5c84cb"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/c20_uv_errors.md",
+      "sha256": "eb09328a86ea8cf3a283a8cbb7a10b940533e9c855d5df3b32594d00efc73295"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/head_decision.md",
+      "sha256": "c47c9ff288de1a765b2e54ea79535c3a5bcbd254d6f11553b70031bc48bc9692"
+    },
+    {
+      "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_uvhead_c3e4228_20261018T101024Z_production/analysis_final/head_stationarity.md",
+      "sha256": "b63899f9d90c418c443e51ed47709410df2d7bd6b978406d9bc973121f6dfbfb"
+    }
+  ]
+}
