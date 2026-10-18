@@ -1,6 +1,6 @@
 # S04-E027 本地准备与独立代码审查交接
 
-> 最新状态（2026-10-18）：用户批准的原trained98单文件只读核验/取回完成，自身大小与SHA256远近一致、已补data_lock；见本文末节和initializer_retrieval_20261018.json。下列未找到/无SSH/lock未改等是此前时点的历史记录。源码未改，资源预检与训练仍未进行。
+> 最新状态（2026-10-18）：原trained98自身身份/本地可用性已齐；最终run_card与唯一命令已准备，87a9359b仅补运行准入和身份保存，三臂目标仍为91537ce2。db4a8dac聚焦静态复核通过。当前保持人方“不启动资源预检或训练”的暂停，不因计算预算不足而停；实际容器/GPU/计算图准入留在正式运行。下列未知/未取回等均为历史时点记录。
 
 2026-10-18；Owner chat `01a14bc7-fd2a-73e1-9d0f-de457ba1dcc0`；HQ chat `01a14bb9-6cd1-7ee2-9647-5190d786f7ba`。用户授权范围是本地接口、三臂代码、必要检查及独立审查；先不启动训练。报告在本对话/本地归档供HQ读取，没有另行发送消息。
 
@@ -91,3 +91,15 @@
 唯一命令使用外层timeout：7190秒TERM、5秒后KILL，少于7200秒，计入导入、CPU身份与四文件检查、P/S/C各100次no-step图测、优化、评估、保存/渲染；runner原7200秒联合计时和预估式仍保留。SIGTERM转为失败收据，SIGKILL可能留部分数据，绝不判成功/自动重试。32GiB RSS和2GiB输出是操作边界采样检查，并非OS硬配额；GPU allocator另设上限。所有运行量仍未知。
 
 候选为已有授权producer GPUServer8、GPU0/UUID GPU-980d2e42-c060-c272-b10b-8fbc204fef7f（仅来源于本地既有记录；未重探测/占卡/改服务）。root/archive/data等完整路径、四MAT锁、唯一命令、输出名及一次性停止规则均在run_card。正式grant只能在暂停解除且设备准入后填具体许可、clean HEAD、同一GPU index/UUID；先前91537ce2源码审查与15测试保留，未重复全套。此次只跑语法/AST/JSON/静态差异检查，无科学数组、权重反序列化、远程、资源检验或训练。运行准备补丁须作聚焦静态复核，不再新增通用审核材料。
+
+### 最终卡的聚焦复核结论及唯一命令
+
+只读审查者`/root/e027_independent_review`在干净`db4a8daccced08db85725cb03f8a5f9a5afde7bf`完成静态差异复核：未发现新增阻断性代码或卡片一致性问题；原目标/数据支持/3500更新预算不变；CPU schema检查顺序、共同/分叉凭据、index/UUID/显存限额、false grant、timeout命令与partial边界一致。AST/diff/命令语法通过；未导入runner、重跑15tests、读权重/科学数组、SSH、资源预检或训练。此后仅补本结论与卡片复核字段，不改runner、data_lock或协议。
+
+当前准备工作已收口，**人方需解除的是原对话“先不启动资源预检或训练”的明确暂停**；不是额外申请计算预算。仍未知的真实schema兼容性、当次GPU/路径可用性和三图适配是正式Run的先后准入步骤，不被静态通过冒充已验证。卡内grant维持false且许可/commit字段为空，本结论不签Run Ready或授权执行。
+
+以下是卡中同一条命令，**未执行**；仅在上述暂停解除、当次设备准入和官方grant绑定clean HEAD/实际许可后使用。若候选GPU0不满足当次条件，停止该卡，禁止自动挪用其它卡或扩容。文件/命令/分叉/输出详细字段以run_card.json为准。
+
+```bash
+nohup setsid timeout --signal=TERM --kill-after=5s 7190s env CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 TMPDIR=/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/tmp XDG_CACHE_HOME=/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/cache MPLCONFIGDIR=/mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/cache/matplotlib PIDL_ARCHIVE_DIR=/mnt/data2/drtao/pidl_archives/pf_s04e027_three_arm_v1_20261018 nice -n 10 /usr/bin/python3 -u /mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/code/SENS_tensile/run_s04_e027.py --execute --grant /mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/grant.json --initializer /mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_98.pt --out /mnt/data2/drtao/pidl_archives/pf_s04e027_three_arm_v1_20261018/output > /mnt/data2/drtao/wennie/pf_s04e027_three_arm_v1_20261018/worker.log 2>&1 < /dev/null &
+```

@@ -183,5 +183,13 @@
       "AST/static source and card/lock consistency",
       "bash -n unique command only"
     ]
+  },
+  "static_delivery_review": {
+    "snapshot": "db4a8daccced08db85725cb03f8a5f9a5afde7bf",
+    "reviewer": "/root/e027_independent_review",
+    "result": "passed static delta; no new blocking code/card inconsistency",
+    "original15_tests_repeated": false,
+    "real_schema_GPU_graphs_validated": false,
+    "run_authorized": false
   }
 }
