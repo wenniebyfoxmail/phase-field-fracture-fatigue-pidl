@@ -78,11 +78,13 @@ class FieldComputation:
                  l0=0.01,
                  symmetry_prior=False,
                  exact_bc_dict=None,
-                 local_patch_dict=None):
+                 local_patch_dict=None,
+                 nodal_damage_alignment=None):
         self.net = net
         self.domain_extrema = domain_extrema
         self.theta = theta
         self.lmbda = lmbda
+        self.nodal_damage_alignment = nodal_damage_alignment
 
         # ★ Direction 4: Williams 特征配置
         _wd = williams_dict or {}
@@ -338,7 +340,10 @@ class FieldComputation:
             disp_v = out_disp[:, 1]
 
         # 约束相场在 [0, 1] 范围内
-        alpha = self.alpha_constraint(out[:, 2])
+        if self.nodal_damage_alignment is None:
+            alpha = self.alpha_constraint(out[:, 2])
+        else:
+            alpha = self.nodal_damage_alignment(inp, out[:, 2], self.alpha_constraint)
 
         # 边界条件强制（使用物理坐标 inp，不受 Williams / Enriched Ansatz 影响）
         if self.exact_bc_enabled:

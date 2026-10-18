@@ -1,0 +1,49 @@
+{
+  "status": "STATIC_ALIGNMENT_VERIFIED_NOT_TRAINED",
+  "origin": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/precrack_alignment_preparation_20261018",
+  "FEM_initial": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/common_common_initial.mat",
+  "original_FEM_state0": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4/retrieved/inputs/465148b6ffd9d95c_state0_analysis.mat",
+  "common_vs_original_state0_max": 2.7755575615628914e-16,
+  "execution": "CPU saved-network inference and elementwise mapping only",
+  "optimizer_updates": 0,
+  "FEM_solves": 0,
+  "history_commits": 0,
+  "crack_line_nodes": 251,
+  "nodes": 86756,
+  "cells": 86408,
+  "original_history_vs_CPU_output_max": 6.884336471557617e-06,
+  "FEM_float64_to_float32_max": 2.971290757880496e-08,
+  "initial_free_raw_derivative_min": 0.25,
+  "initial_free_raw_derivative_max": 0.25,
+  "line_raw_derivative_max": 0.0,
+  "caveat": "C changes initial spatial representation and its tangent, not only optimizer initialization; soft tails and free-node healing remain",
+  "arms": [
+    {
+      "arm": "A_legacy",
+      "initial_Linf_to_FEM_float32": 0.3549269437789917,
+      "line_min": 0.990039587020874,
+      "line_max": 0.9963933229446411,
+      "full_min": -0.0003315193753223866,
+      "full_max": 0.9963933229446411,
+      "history_initial_Linf_to_FEM_float32": 0.35492730140686035
+    },
+    {
+      "arm": "B_hard_line",
+      "initial_Linf_to_FEM_float32": 0.3549269437789917,
+      "line_min": 1.0,
+      "line_max": 1.0,
+      "full_min": -0.0003315193753223866,
+      "full_max": 1.0,
+      "history_initial_Linf_to_FEM_float32": 0.35492730140686035
+    },
+    {
+      "arm": "C_FEM_initial",
+      "initial_Linf_to_FEM_float32": 0.0,
+      "line_min": 1.0,
+      "line_max": 1.0,
+      "full_min": 0.0,
+      "full_max": 1.0,
+      "history_initial_Linf_to_FEM_float32": 0.0
+    }
+  ]
+}

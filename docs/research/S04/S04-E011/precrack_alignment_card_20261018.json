@@ -1,0 +1,123 @@
+{
+  "status": "PREPARATION_ONLY_NO_EXECUTION_AUTHORIZATION",
+  "revision": "precrack-initial-alignment-r1-20261018",
+  "owner": "S04-E011 early-state method diagnostic, dated prospective amendment; old result/verdict unchanged",
+  "primary_goal": "reduce joint u/v/d disagreement to existing same-state FEM numerical comparator; symmetry diagnostic only",
+  "changes": [
+    "persistent d=1 on canonical y=0,x[-.5,0]251 nodes",
+    "FEM recovered U0 nodal damage as C initial output AND initial hist_alpha",
+    "opt-in nodal anchored NN damage residual; default legacy unchanged"
+  ],
+  "origin": {
+    "PIDL_source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/precrack_alignment_preparation_20261018/origin_sources.json",
+    "network": "u0_network.pt, original post-U0 model, not c1s2",
+    "checkpoint": "u0_checkpoint.pt, hist_fat/q_prev/H all zero, current_active, native Q4 GP4",
+    "FEM_initial": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/common_common_initial.mat",
+    "original_state0_check": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_c1_commit_20261016_v4/retrieved/inputs/465148b6ffd9d95c_state0_analysis.mat",
+    "future_targets_in_init": false
+  },
+  "representation": {
+    "raw_increment": "raw_theta - raw_theta_R, parentheses evaluated first",
+    "C_field": "where(crack_line,1,d0_FEM + [s(4*d0_FEM-2 + (raw_theta-raw_theta_R))-s(4*d0_FEM-2)])",
+    "s": "legacy nonsmooth map, support2, tail slope.001",
+    "u_v": "identical original physical mapping and common NN parameters",
+    "domain": "identical ordered canonical nodes only; all energy/grad(d)/readout via native Q4 mapped nodal field",
+    "frozen_buffers": "coordinate order, FEM d0, raw theta_R, line mask; must save mapping state with NN state",
+    "not_claimed": "pure optimizer initialization effect or hard box/hard irreversibility; C changes representation/tangent/history package"
+  },
+  "static_checks": {
+    "optimizer_steps": 0,
+    "FEM_solves": 0,
+    "history_commits": 0,
+    "receipt": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/precrack_alignment_preparation_20261018/static_v2/static_receipt.json",
+    "minimum": [
+      "exact float32 initial C field and history equals FEM d0",
+      "251 line nodes remain1 after raw perturbations; line gradients zero",
+      "free initial nodes differentiable and can move below d0; no hidden floor",
+      "default outputs/UV unchanged",
+      "wrong node order/queries rejected",
+      "state buffers copied and serialized; direct-NN parity rejects mesh-locked field"
+    ]
+  },
+  "proposed_only_single_block": {
+    "execution_authorized": false,
+    "training_runner": "not implemented; this package contains no launch path",
+    "origin": "same saved theta_R at U0; no new zero-load recovery or network fitting",
+    "load": "one c1s1 U=.02999988 solve only, no c1s2/rollout",
+    "comparison_class": "same loading state, own initial histories, frozen committed f=1; FEM trial-f/solver differences retained",
+    "arms": [
+      {
+        "id": "A",
+        "damage": "legacy nonsmooth",
+        "initial_history": "saved original PIDL U0",
+        "symmetry": 0
+      },
+      {
+        "id": "B",
+        "damage": "hard crack line; free nodes legacy",
+        "initial_history": "A history with line1 only",
+        "symmetry": 0
+      },
+      {
+        "id": "C",
+        "damage": "hard line + anchored FEM initial field",
+        "initial_history": "FEM U0 d0",
+        "symmetry": 0
+      }
+    ],
+    "optimizer_proposal": "fresh RPROP identical to prior lr1e-5 etas(.5,1.2) steps(1e-10,50); fixed200 updates each; not a convergence claim",
+    "budget_proposal": "3x200=600 updates; total <=1 GPU-hour including calibration/readouts; previous 2-arm approval does not authorize this",
+    "history_commits": 0,
+    "new_FEM": 0,
+    "stops": "nonfinite, invalid domain/input/order/line contract, cap; no retry/sweep/posthoc budget extension",
+    "endpoint_policy": "save Utarget/update0 and update200 for each arm; first-step jump/max physical energy visible; scoring offline after outputs sealed; no best-FEM checkpoint selection",
+    "interpretation": {
+      "B-A": "hard line/current+history conditional effect",
+      "C-B": "FEM initial field/history/representation package conditional effect",
+      "C-A": "combined alignment effect",
+      "not_identified": "initialization-only independent of changed representation/tangent, or interactions"
+    }
+  },
+  "symmetry_separation": {
+    "current_round": "lambda_sym=0 in all three arms; no symmetry confound",
+    "future_optional": "separate reviewed D=C+symmetry; C/D same origin, map, histories, budget and coefficients except lambda_sym; must use same native-Q4 paired-probe reconstruction",
+    "D_ready": false,
+    "D_weight": "not selected/authorized; no implicit repetition of the failed1percent gradient recipe",
+    "claim": "D-C conditional symmetry increment after alignment; does not identify interaction on original initialization"
+  },
+  "scoring": {
+    "primary": "J_field=sqrt(sum(m*((du/.12)^2+(dv/.12)^2+dd^2))/(3*sum(m)))",
+    "fixed_scales": {
+      "u": 0.12,
+      "v": 0.12,
+      "d": 1.0
+    },
+    "m": "canonical positive Q4 lumped physical nodal mass",
+    "required_components": "separate u/v/d and contribution fractions; fixed front ROI x[0,.08],abs(y)<=.04; precrack-line-only and free-node damage errors separately",
+    "required_secondary": "native GP4 raw/active FEM relative L2, damage profiles x=-.25,0,.01,.02, physical energy/free-u residual/bounds/healing, initialization match and timings",
+    "minimum_visual": "same-state FEM/A/B/C primitive fields and signed errors with shared scales; exact scored outputs; static initial-check figure not a trained accuracy result",
+    "target_use": "existing c1s1 FEM fields scoring-only, never initial buffers, losses, gradients or checkpoint selection",
+    "stage": "seen synthetic development diagnostic, directional effect, no pass threshold/generalization claim"
+  },
+  "loss_weights": {
+    "frozen_this_round": {
+      "Eel": 1,
+      "Ed": 1,
+      "Ehist": 1,
+      "weight_decay": 1e-05,
+      "symmetry": 0,
+      "FEM_supervision": 0,
+      "gamma_PIDl": 16875
+    },
+    "allowed_later_separate_tests": [
+      "gamma or numerical constraint enforcement toward FEM semantics",
+      "weight decay or optimizer conditioning",
+      "symmetry only if it helps FEM agreement",
+      "FEM-supervised calibration loss explicitly labeled and with separate evaluation"
+    ],
+    "physical_change": "Eel/Ed relative coefficients change equivalent Gc/toughness (with E/ell held); not neutral loss balancing",
+    "not_added": "persistent initial-FEM fitting loss during loaded steps; would discourage valid damage evolution",
+    "residual_difference": "FEM gamma421875/hard conditions and trial-fatigue differ; aligned initial conditions alone do not make both algorithms the same problem"
+  },
+  "review_scope": "design plus opt-in map/static prep code only; no runtime/accuracy verdict or producer permission"
+}
