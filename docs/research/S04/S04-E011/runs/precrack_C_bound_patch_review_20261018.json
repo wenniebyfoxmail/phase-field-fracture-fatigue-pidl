@@ -1,0 +1,55 @@
+{
+  "verdict": "REVIEW_PASS_SCOPED_TO_DEFAULT_OFF_BOUND_PATCH_AND_SAVED_C_DIAGNOSTIC",
+  "commit": "0e8362b5285c074038ee22b5889f62dd53145d81",
+  "reviewer": "independent read-only Codex physical_parity_review",
+  "reviewed_utc": "2026-10-18T12:32:42.194891+00:00",
+  "scope": [
+    "source/nodal_damage_alignment.py explicit default-off hard_lower_box option",
+    "tests/test_nodal_damage_bounds.py and existing map/parity tests",
+    "tools/check_precrack_bound_patch.py algebraic saved-candidate check",
+    "tools/diagnose_precrack_admissibility.py and saved C diagnostic",
+    "docs/research/S04/S04-E011/runs/precrack_C_bound_patch_20261018.md and rendered diagnostic"
+  ],
+  "decisive_blockers": [],
+  "checks": [
+    "Clean exact commit verified; no runner/config modified. Independently ran46 deterministic tests, all pass in.75s; no optimizer loop.",
+    "hard_lower_box=False preserves prior formula, output and extra-state schema. True requires fem_initial, adds an explicit constraint checkpoint tag; old/new constraint states cannot load silently.",
+    "Opt-in projects the complete physical nodal candidate before Q4 gradients/energy, preserves exact initial d0 and crack line. Initial movable-node raw AD derivative=.25 at the declared equality convention; saturated derivatives0; every d0=1 node has constant output1 and derivative0.",
+    "Raw input finiteness and preprojection physical-candidate finiteness prevent clamp from hiding overflow. Serialization/roundtrip and unsupported flag/mode checks pass.",
+    "Native bilinear Q4 shape functions are nonnegative and partition unity inside reference cells. Nodal d0<=d<=1 therefore implies interpolated lower<=physical field<=1 mathematically; this is stronger than GP4-only feasibility and not FEM trial-space equivalence.",
+    "Independently recomputed saved-C nodal/GP minima, own-initial-lower retreat maxima, negative GP area, positive-initial-support retreat area and5-node/zero-GP1e-3 counts; exactly match summary.json.",
+    "Reviewed algebraic dummy-zero-raw-origin inversion/replay script and patch_check.json; source physical candidates, not saved NN/GPU raw tensors. No projected prediction arrays or new FEM accuracy scores are saved.",
+    "Rendered C_physical_admissibility.png inspected: three panels/legends/colorbars readable, coordinate orientation and violation definitions correct. Different map grids versus GP4 metrics are labelled; JSON remains authoritative for extrema."
+  ],
+  "independent_numbers": {
+    "nodal_min": -0.000163859614985995,
+    "GP_min": -0.00015759320870325727,
+    "nodal_retreat_max": 0.0018659234046936035,
+    "GP_retreat_max": 0.0005541627658500747,
+    "negative_GP_fraction_beyond_unit_epsilon": 0.9770239014959758,
+    "retreat_GP_fraction_beyond_unit_epsilon_where_initial_above_unit_epsilon": 0.000340525010850361,
+    "fractions_denominator": "whole-domain native GP Jacobian weight sum, not positive-initial-support-only area",
+    "negative_GP_integral": 2.5624261414144076e-05,
+    "nodal_retreat_over_1e_minus3_count": 5,
+    "GP_retreat_over_1e_minus3_count": 0
+  },
+  "allowed_conclusion": "Saved C contains physical-field negativity and retreat well above measured float roundoff, mostly shallow background negative bias. The explicit default-off forward projection is a mathematically usable fixed-initial-lower/unit-upper feasibility patch with verified deterministic behavior. No trained, FEM-agreement, optimizer-performance or evolution improvement is established.",
+  "material_boundaries": [
+    "Negativity does not trigger the old1e-3 box screen; strict physical bounds and the existing QP1e-10 hard-feasibility comparison are distinct. Do not change the used r2 verdict or treat penalty tol_ir as a tolerance exemption.",
+    "97.70239percent negative GP area includes primarily initially undamaged background. Retreat on initially positive support beyond epsilon occupies0.0340525percent of the full domain; it is not97.7percent crack healing.",
+    "The opt-in constrains only the declared fixed initial nodal lower for this block; it neither updates history nor proves a future monotonically irreversible trajectory.",
+    "Projection changes trial space and makes the matching fixed-lower soft Ehist term inactive; equality is nonsmooth and saturated gradients may affect optimization. No training behavior or speed/accuracy result is claimed.",
+    "Full-mesh patch check is algebraic with a dummy raw reference, not original NN/CUDA/checkpoint replay. It does not modify original A/B/C outputs or rescore projected fields against FEM.",
+    "No new producer scope, no activation of the option in any runner/config, no W0/W25 changes, no additional budget or run authorization follows."
+  ],
+  "review_activity": {
+    "training_steps": 0,
+    "FEM_solves": 0,
+    "history_updates": 0,
+    "SSH_producer_operations": 0,
+    "code_mutations": 0,
+    "numeric_recompute": "only existing local saved-C diagnostic quantities; no new criteria",
+    "saved_checkpoint_NN_inference": 0,
+    "deterministic_toy_network_forward_and_autograd_tests": true
+  }
+}

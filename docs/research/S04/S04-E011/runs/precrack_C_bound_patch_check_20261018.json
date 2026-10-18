@@ -1,0 +1,22 @@
+{
+  "status": "DETERMINISTIC_FEASIBILITY_PATCH_CHECK_PASS_NOT_TRAINED",
+  "nodes": 86756,
+  "cells": 86408,
+  "GP": 345632,
+  "source_C_physical_field": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_abc_20261018T115520Z/retrieved/readout/C/update200/fields.npz",
+  "algebraic_roundtrip_Linf": 0.0,
+  "initial_damage_exact": true,
+  "hard_line_nodes": 251,
+  "nodal_lower_violation": 0.0,
+  "nodal_upper_violation": 0.0,
+  "GP_lower_violation": 0.0,
+  "GP_upper_violation": 0.0,
+  "initial_free_raw_gradient_min": 0.25,
+  "initial_free_raw_gradient_max": 0.25,
+  "state_roundtrip_exact": true,
+  "NN_inference": 0,
+  "optimizer_steps": 0,
+  "FEM_solves": 0,
+  "scope": "Algebraic physical-candidate replay with dummy zero raw origin, not saved-network/GPU checkpoint replay. No projected fields or FEM accuracy scores saved; original A/B/C endpoint files untouched.",
+  "limitations": "Opt-in changes the trial space. Nodal lower is sufficient and stronger than four-point-only GP lower; clamp has nonsmooth equality convention and saturated zero gradients. Training behavior untested; not enabled in any runner/config."
+}
