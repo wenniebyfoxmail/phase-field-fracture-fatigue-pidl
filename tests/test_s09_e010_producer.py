@@ -277,6 +277,13 @@ def test_a25_method_inapplicable_does_not_become_global_replay_failure(tmp_path)
     trace = exact_a25_replay_validity(result)
     assert trace["pass"] is False
     assert _a25_replay_failure_requires_stop(result, trace) is False
+    start_path = result.arm_dir / "start_identity.json"
+    start = json.loads(start_path.read_text())
+    start["initial_state_sha256"] = "f" * 64
+    start_path.write_text(json.dumps(start))
+    identity_drift_trace = exact_a25_replay_validity(result)
+    assert identity_drift_trace["clauses"]["start_initial_state_sha256"] is False
+    assert _a25_replay_failure_requires_stop(result, identity_drift_trace) is True
     result.receipt["terminal_state"] = "COMPLETED"
     assert _a25_replay_failure_requires_stop(result, trace) is True
 
@@ -284,20 +291,29 @@ def test_a25_method_inapplicable_does_not_become_global_replay_failure(tmp_path)
 def test_a25_method_inapplicable_allows_later_arms_and_final_method_status(
     tmp_path,
 ):
+    reference = _load_e009_reference()["start_identity"]
+    adapters = {
+        ARM_A25: MethodInapplicableAdapter(),
+        ARM_B25: MockAdapter(),
+        ARM_B0: MockAdapter(),
+    }
+    for adapter in adapters.values():
+        adapter.packet_manifest_sha256 = reference["packet_manifest_sha256"]
+        adapter.initial_state_sha256 = reference["initial_state_sha256"]
     results = {
         ARM_A25: run_arm_state_machine(
             arm=ARM_A25,
-            adapter=MethodInapplicableAdapter(),
+            adapter=adapters[ARM_A25],
             arm_dir=tmp_path / ARM_A25,
         ),
         ARM_B25: run_arm_state_machine(
             arm=ARM_B25,
-            adapter=MockAdapter(),
+            adapter=adapters[ARM_B25],
             arm_dir=tmp_path / ARM_B25,
         ),
         ARM_B0: run_arm_state_machine(
             arm=ARM_B0,
-            adapter=MockAdapter(),
+            adapter=adapters[ARM_B0],
             arm_dir=tmp_path / ARM_B0,
         ),
     }
@@ -307,6 +323,41 @@ def test_a25_method_inapplicable_allows_later_arms_and_final_method_status(
     decision = producer._decision_from_results(results)
     assert tuple(results) == (ARM_A25, ARM_B25, ARM_B0)
     assert decision["status"] == "METHOD_INAPPLICABLE"
+    assert decision["e010_classification"] is None
+
+
+def test_method_inapplicable_does_not_mask_shared_identity_failure(tmp_path):
+    reference = _load_e009_reference()["start_identity"]
+    adapters = {
+        ARM_A25: MethodInapplicableAdapter(),
+        ARM_B25: MockAdapter(),
+        ARM_B0: MockAdapter(),
+    }
+    for adapter in adapters.values():
+        adapter.packet_manifest_sha256 = reference["packet_manifest_sha256"]
+        adapter.initial_state_sha256 = reference["initial_state_sha256"]
+    adapters[ARM_B25].initial_state_sha256 = "f" * 64
+    results = {
+        ARM_A25: run_arm_state_machine(
+            arm=ARM_A25,
+            adapter=adapters[ARM_A25],
+            arm_dir=tmp_path / ARM_A25,
+        ),
+        ARM_B25: run_arm_state_machine(
+            arm=ARM_B25,
+            adapter=adapters[ARM_B25],
+            arm_dir=tmp_path / ARM_B25,
+        ),
+        ARM_B0: run_arm_state_machine(
+            arm=ARM_B0,
+            adapter=adapters[ARM_B0],
+            arm_dir=tmp_path / ARM_B0,
+        ),
+    }
+    _verify_arm_evidence_integrity(results)
+    decision = producer._decision_from_results(results)
+    assert decision["shared_identity_pass"] is False
+    assert decision["status"] == "EXECUTION_INVALID"
     assert decision["e010_classification"] is None
 
 

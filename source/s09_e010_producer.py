@@ -1234,10 +1234,21 @@ def _a25_replay_failure_requires_stop(
     result: ArmRunResult, trace: Mapping[str, Any],
 ) -> bool:
     """Replay drift stops a completed A25; method-inapplicability stays arm-local."""
-    return (
-        result.receipt["terminal_state"] == TERMINAL_COMPLETED
-        and trace.get("pass") is not True
-    )
+    state = result.receipt["terminal_state"]
+    if state == TERMINAL_COMPLETED:
+        return trace.get("pass") is not True
+    if state == TERMINAL_METHOD_INAPPLICABLE:
+        clauses = trace.get("clauses", {})
+        return not all(
+            clauses.get(name) is True
+            for name in (
+                "start_initial_state_sha256",
+                "start_packet_manifest_sha256",
+                "start_schedule",
+                "start_updates_per_arm",
+            )
+        )
+    return False
 
 
 def _failure_completion_receipt(
@@ -1415,6 +1426,8 @@ def _decision_from_results(
     classification = None
     physics_axis = None
     if any(state == TERMINAL_EXECUTION_FAILED for state in states.values()):
+        status = "EXECUTION_INVALID"
+    elif not shared_identity:
         status = "EXECUTION_INVALID"
     elif any(state == TERMINAL_METHOD_INAPPLICABLE for state in states.values()):
         status = "METHOD_INAPPLICABLE"
