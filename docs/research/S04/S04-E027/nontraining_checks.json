@@ -1,0 +1,21 @@
+{
+  "protocol": "S04-E027/v1-source-faithful-P-20261018",
+  "execution": "NONTRAINING_REFERENCE_CHECK_ONLY",
+  "optimizer_steps": 0,
+  "history_commits": 0,
+  "reference_force_maxabs": 8.605431227630064e-17,
+  "reference_free_force": 3.776120766585009e-15,
+  "reference_raw_maxscaled": 3.020017395882757e-12,
+  "trial_history_maxscaled": 1.7239217865727685e-12,
+  "reference_BC": 0.0,
+  "nodes": 86756,
+  "elements": 86408,
+  "init_status": "UNRESOLVED_NOT_READ",
+  "unit_tests": 13,
+  "unit_test_result": "passed",
+  "training_loop_entered": false,
+  "optimizer_step_called": false,
+  "mac_training": false,
+  "remote_access": false,
+  "initializer_payload_read": false
+}

@@ -1,0 +1,36 @@
+---
+storyline_id: S04
+experiment_id: S04-E027
+protocol_revision: v1-source-faithful-P-20261018
+status: preparation
+---
+# 固定c20s4的FEM监督与联合机械微调
+
+Owner：本对话01a14bc7-fd2a-73e1-9d0f-de457ba1dcc0；沿用唯一方案`../fem_synthetic_augmentation_plan_20261017.md`的A。用户2026-10-18批准本地接口/三臂代码、必要检查及独立代码审查，**不批准训练、FEM、远程预检或运行**。本任务沿用干净worktree/branch `codex/fem-synthetic-augmentation-design-20261017`，起点ea421670；只改本Experiment、专用模块/CLI/测试与复用核查，其他owner源码和档案不改。
+
+## 2026-10-18 实施前源码修订
+
+v2方案对P的转录错误按真实E011目标纠正：`L_P=log10(E_el+E_d+E_irr)+1e-5*sum_{name contains weight}(parameter²)`，必须正能量，不加epsilon或重写负值。PIDL不可逆容差`.005`、gamma16875；FEM参考的`.001/421875`不移给PIDL。manual L2仅P保留，Adam weight_decay仍0。S=Lsup，C=Lsup+.1Lmech。此项尚需本轮exact代码/协议独立审查；旧Pro设计审查不冒充已覆盖本修订。
+
+## 固定合同
+
+- synthetic，已看过的单个状态/horizon0；不是新留出、泛化或自主演化。参考只取E011 MCS c20s4 outer18，无history commit。
+- 精确四个FEM文件：`output/mcs/c20_s4/outer_18.mat`、同case的`case.mat`、`inputs/common_common_initial.mat`、`inputs/c0020_s003_post_commit.mat`；身份沿用原retrieval/input manifest。初始化只取绑定Q4生产archive的`best_models/trained_1NN_98.pt`，不取checkpoint内前态、不更换缺失模型。
+- 三臂同一8×400三输出TrainableReLU、原始坐标/整边lifting/nonsmooth映射。实际shape/GP语义/前态/自由DOF/参考力/边界必须检查；不clip预测，不重新commit历史。
+- P1500；共享监督前缀1000，S续500，C复制前缀全部参数/Adam/RNG后续500；3500唯一更新，seed1/float64/Adam1e-4(.9,.999,eps1e-8,weight_decay0)。C/S采样流相同，只有机械项不同。
+- 全域与Z=`0<=x<=.5,abs(y)<=.03`各半质量加权监督；Us=.11999988；损失/机械归一、active定义、原始可行性代价与NA规则沿用A。唯一探索主读数Eactive(C)/Eactive(S)，方向容差1e-8，无显著性/综合成功承诺。无独立样本，不做伪置信区间。
+- 参考机械原生向量重放maxabs<=1e-10、free norm<=1e-8；这些是已有一致性屏，不把模型性能阈值前置。FEM前态/当前trial f不可由PIDL状态替代，f不直接进入机械力。
+- 上限2 GPU小时（含三图预检、评估与保存）、32GiB host RAM、2GiB输出；Run/producer身份和硬件可行性由HQ统一决定。Mac禁训练；无批准不读初始化权重、不进入优化循环。无重试、扩容、换机、换seed或新留出。
+
+## 交付与当前限制
+
+代码与轻量测试不等于已运行。必需交付三臂固定终态/数值分母、全域/Z u/v/d/raw/active、force/reaction/可行性、0/1000/1500结果、实际预测场/同色标图、曲线及README_analysis；没有真实输出不生成“结果图”。当前初始化模型仅有原producer路径，未发现本地文件且不远程取回；正式数据身份/可用性若未闭合不能冒称完整Code Ready或Run Ready。旧负结果与旧判据不改。
+
+
+## 2026-10-18 非训练准备检查
+
+专用模块`source/s04_e027.py`复用本分支原生Q4/网络/constitutive helper；CLI`SENS_tensile/run_s04_e027.py`默认无执行，须显式prepare或未来execute+HQ grant，Mac执行禁止、当前init身份空则强制拒绝。13个轻量单测通过，包含原生能量与FieldComputation等价、力有限差分、damage机械梯度、无重复质量权重、非空Adam状态/RNG隔离复制、坏输入/禁止运行保护。没有optimizer.step、生产训练循环或远程预检。
+
+指定四MAT实值校验和参考重放通过：全力maxabs差8.60543e−17、free norm3.77612e−15、raw gap3.02002e−12、trial history gap1.72392e−12、BC误差0；这些是接口/已有参考数值的一致性，不是新方法结果。摘要在nontraining_checks.json，原准备收据在本地`local_archive/experiments/S04-E027/preparation_20261018/`。
+
+当前初始模型未在本地找到且无精确字节身份，data_lock明确null，execute必停；不能用随机初始化、晚一帧或旧UV头替换。独立审查应将源码正确性与数据身份未齐分开；完整Code Ready/Run Ready不得因13 tests通过而自动宣称。

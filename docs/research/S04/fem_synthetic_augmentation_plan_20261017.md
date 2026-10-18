@@ -4,6 +4,8 @@
 Owner：本对话 `01a14bc7-fd2a-73e1-9d0f-de457ba1dcc0`；HQ `01a14bb9-6cd1-7ee2-9647-5190d786f7ba`。
 本记录是 S04 下的方案孵化项，不占用新 Experiment ID，不改变 E011/E021/E024 或 S09 的协议与结果。
 
+> 2026-10-18 实施修订：已有MIT-8/Path C/直接字段监督已核查，见[fem_supervision_reuse_audit_20261018.md](fem_supervision_reuse_audit_20261018.md)。P臂真实源码的log10+L2目标与PIDL罚系数按[S04-E027/experiment.md](S04-E027/experiment.md)更正；下文v2原式保留为设计历史，不得照旧式运行。
+
 ## 决定
 
 推荐**全场 FEM 监督预训练 → 保留数据锚点的有限机械平衡微调**，直接使用当前坐标 PIDL 网络，而不是再造残差网络或算子。
