@@ -1,0 +1,61 @@
+{
+  "status": "passed",
+  "review_kind": "independent failure-evidence audit, not successful-run qualification",
+  "reviewed_utc": "2026-10-18T13:31:15.455084+00:00",
+  "producer_commit": "02d9485606f6befba496ef49f074ab57c08ef6ea",
+  "run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production",
+  "execution_status": "failed_initial_admission",
+  "scientific_disposition": "inconclusive for hidden-update efficacy; no hidden optimization executed",
+  "production": {
+    "completed_energy_gradient_calls": 1,
+    "trace_initial_energy": 0.005268400005223913,
+    "source_energy": 0.005268400005223913,
+    "energy_error": 0.0,
+    "first_evaluation_start_seconds": 6.79303159378469,
+    "error": "AssertionError at exact worker line141 initial E/current-projected-gradient admission",
+    "initial_current_projected_gradient_inf": null,
+    "initial_current_projected_gradient_above_target_inferred": true,
+    "target": 1e-10,
+    "exact_gradient_value_persisted": false,
+    "production_basis_persisted": false,
+    "source_fields_maxabs_exact_persisted": false,
+    "source_field_tolerance_passed_inferred": true,
+    "initial_rank386_passed_inferred": true,
+    "finite_readout_passed_inferred": true,
+    "hidden_updates": 0,
+    "Newton_updates": 0,
+    "dense_assemblies": 0,
+    "explicit_tangent_products": 0,
+    "history_commits": 0,
+    "rollout_steps": 0,
+    "accepted_checkpoints": 0,
+    "actual_terminal_available": false,
+    "elapsed_seconds": null
+  },
+  "probe": {
+    "completed_energy_gradient_calls": 34,
+    "elapsed_seconds": 9.303714387118816,
+    "initial_projected_gradient_inf": 7.123752694508656e-11,
+    "source_energy_error": 0,
+    "source_fields_maxabs": {
+      "u": 0.0,
+      "v": 0.0,
+      "d": 0.0
+    },
+    "parameter_updates": 0,
+    "hidden_updates": 0,
+    "stage": "zero-update memory/numerical probe passed",
+    "files": 17,
+    "bytes": 1221145
+  },
+  "total_observed_calls": 35,
+  "total_call_cap": 400,
+  "identities": "Probe/production input/originalmodel/uniqueinitialmodel/sourcefields hashes identical; local prior network+fields hashes match staged contracts.",
+  "logical_localization": "Line141 reached after rank386 assertion, rawreadout finite checks and sourceUVd<=1e-12 verification; exact sourceE in completedtrace makes only finite current-basis projectedheadg>1e-10 disjunct fail. No exact productiong or productionbasis persisted: do not substitute probeg or infer SVD/roundoff cause.",
+  "limitations": [
+    "No production initial gradient vector/value or currentbasis saved before assertion.",
+    "No production measured final elapsed persisted; only evaluation start time and failure receipts.",
+    "No new accepted network/field/checkpoint exists; never score probe or prior source as this candidate."
+  ],
+  "conclusion": "Initial numerical admission failed. This is not a negative hidden-optimization outcome and does not revoke prior learned-head qualification in its recorded basis. Stop remains; no retry/criterion relaxation or new optimizer call by reviewer."
+}

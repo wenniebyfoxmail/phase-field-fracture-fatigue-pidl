@@ -1,0 +1,127 @@
+{
+  "protocol": "S04-E011-LEARNED-HIDDEN-NEWTON-r1",
+  "source_commit": "02d9485606f6befba496ef49f074ab57c08ef6ea",
+  "execution_status": "failed_initial_admission",
+  "scientific_outcome": "inconclusive_no_hidden_optimisation",
+  "launch": {
+    "run_id": "pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production",
+    "phase": "production",
+    "commit": "02d9485606f6befba496ef49f074ab57c08ef6ea",
+    "branch": "codex/hard5-q4-t3-2x2-20261005",
+    "dirty": false,
+    "pid": 2923449,
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "/usr/bin/python3",
+      "-u",
+      "/mnt/data2/drtao/wennie/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production/code/tools/s04_e011_analysis/run_pidl_learned_hidden_newton.py",
+      "--contract",
+      "/mnt/data2/drtao/wennie/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production/contract.json",
+      "--out",
+      "/mnt/data2/drtao/pidl_archives/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production/output",
+      "--phase",
+      "production"
+    ],
+    "root": "/mnt/data2/drtao/wennie/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production",
+    "archive": "/mnt/data2/drtao/pidl_archives/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production",
+    "log": "/mnt/data2/drtao/wennie/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production/worker.log",
+    "GPU": 5,
+    "started_utc": "2026-10-18T13:27:09.908173+00:00"
+  },
+  "probe": {
+    "status": "passed",
+    "evaluations": 34,
+    "cap": 40,
+    "deadline_seconds": 60.0,
+    "elapsed_seconds": 9.303714387118816,
+    "hidden_backward": true,
+    "optimizer_updates": 0,
+    "parameter_updates": 0,
+    "actual_tangent_assembly_and_solve": true,
+    "dense_assemblies": 1,
+    "linear_solves": 1,
+    "explicit_tangent_vector_products": 9,
+    "solve": {
+      "relative_residual": 1.2043629088936697e-15,
+      "descent_dot": -3.123973441728939e-24,
+      "cholesky": true,
+      "ridge": 0.0,
+      "further_truncation": false
+    },
+    "free_VRAM": 16065953792,
+    "total_VRAM": 25250627584,
+    "source_reproduction": {
+      "source_energy": 0.005268400005223913,
+      "actual_energy": 0.005268400005223913,
+      "energy_abs_error": 0.0,
+      "actual_current_head_gradient_inf": 7.123752694508656e-11,
+      "initial_rank": 386,
+      "source_fields_maxabs": {
+        "u": 0.0,
+        "v": 0.0,
+        "d": 0.0
+      },
+      "source_fields_path": "/mnt/data2/drtao/wennie/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_probe/inputs/source_fields.npz",
+      "source_fields_sha256": "6f10cb22d01ca243005c1a4c8541d4687e22c4214d863b3e771b23389a16fd57",
+      "passed": true
+    },
+    "initial_rank": 386,
+    "history_commits": 0,
+    "rollout_steps": 0,
+    "damage_output_row_unchanged": true,
+    "Smooth_B0_anchor_unchanged": true,
+    "mechanical_damage_exact_FEM": true,
+    "boundary_unchanged": true,
+    "peak_allocated": 5374256640
+  },
+  "retrieval": {
+    "status": "verified",
+    "files": 7,
+    "bytes": 6019,
+    "remote": "/mnt/data2/drtao/pidl_archives/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production",
+    "run_id": "pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production",
+    "missing": []
+  },
+  "probe_retrieval": {
+    "status": "verified",
+    "files": 17,
+    "bytes": 1221145,
+    "remote": "/mnt/data2/drtao/pidl_archives/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_probe",
+    "run_id": "pf_s04e011_learnedhidden_02d9485_20261018T132051Z_probe",
+    "missing": []
+  },
+  "production_trace": [
+    {
+      "evaluation": 1,
+      "role": "raw_network_gradient_initial_learned_head",
+      "start_seconds": 6.79303159378469,
+      "completed": true,
+      "E_el": 0.005268400005223913,
+      "label": "initial_learned_head"
+    }
+  ],
+  "failure": {
+    "type": "AssertionError",
+    "message": "",
+    "history_commits": 0
+  },
+  "total_evaluations": 35,
+  "hidden_updates": 0,
+  "Newton_parameter_updates": 0,
+  "history_commits": 0,
+  "new_FEM": 0,
+  "no_retry": true,
+  "exact_failed_gradient": "not persisted; finite >1e-10 inferred",
+  "production_basis": "not persisted",
+  "new_accepted_checkpoints": 0,
+  "new_terminal_metrics": null,
+  "plot": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production/analysis_initial_admission_failure/initial_admission_failure.png",
+  "raw_archive": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production",
+  "independent_failure_review": "passed; confirms inconclusive/untested hidden efficacy, not run success",
+  "next_observation_patch": {
+    "path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_learned_hidden_newton_preparation_20261018_v1/initial_observation_before_admission_unapplied.patch",
+    "status": "local preparation only, not applied/uploaded/executed"
+  }
+}

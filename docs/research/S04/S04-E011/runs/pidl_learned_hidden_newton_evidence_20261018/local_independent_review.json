@@ -1,0 +1,43 @@
+{
+  "status": "passed",
+  "reviewer": "b0_route_inventory",
+  "review_kind": "independent Code Ready narrow adapter/budget/rollback difference review",
+  "reviewed_utc": "2026-10-18T13:20:12.185655+00:00",
+  "worker_blob": "84b8dc17e16ccb97167ed67ac99fe100e1d3fecf",
+  "tests_blob": "848cf16f110fb478551b50e306871c64fab4a801",
+  "launcher_sha256": "dda34b5f9269147c342832970d74de0034617f46e8d76eb3bcc1bc492cb49f68",
+  "protocol_sha256": "b948594ffef192cc831b76c77ba1e7d598086b384686dd5cc0f452c83df43f89",
+  "reviewed_base_commit": "3682b9a3a53269961af6ed61d84662a13e35c264",
+  "commit_binding": "Verified exactcleanfinal02d94856 source/worker/tests plus unchangedlauncher/protocol andfreshGPU5package/40+360phasecontracts20261018T132051Z; no scientific or sourcechanges afterreview.",
+  "scope": "Only unique qualified endpoint/source-fields integration, dynamic currentfull401 basis, phasebudget and actual acceptance rollback differences. Reused unchanged energy/tangent/hidden optimizer core not re-audited.",
+  "checks": {
+    "local_tests": "14 passed independently: new7phase/sourcefields/fullbasis/restore/identityfixtures plus3affected sharedhidden rollback/rawgradientfixtures and4learnedhead adapterfixtures. Compile worker/tests/launcher passed; no real model inference/training onMac.",
+    "initialization": "Unique previous learned-head actual network and fields.npz staged bySHA. Same original SmoothB0anchor, canonicalQ4/GP/material/FEMc20s4outer18/FEMd/UVboundary. ActualinitialUVd<=1e-12source, E within1e-10 and current projectedheadinf<=1e-10; initialrank386 required.",
+    "representation": "After each acceptedhiddenchange rebuild entire current400features+bias physical401column design. Sameepsmaxshape cutoff; retain all currently resolvable rank, no fixedold386/387mask/ridge/rcondsearch. Increment about currentactualhead, no reduced-ztransfer or projection ofexistingcoefficients; discarded rawcoefficients preserved. Metadata now namescurrentactualhead.",
+    "phasebudget": "Probe40calls/60s +production360calls/540s totals400calls/600s allocated no-new-work deadlines. Eachphase includesSVD/preparation/contracts/trials/actualreadouts; finalcallreserved. PhaseWork stops furtherSVD/assembly/solve afterordinaryallowance/deadline. Atmost2hiddenblocks40each,10Newtonperhead/global50dense/1000explicitproducts. Report actualelapsed, inflightmayfinish.",
+    "stops": "Local hidden40cap endsblock normally thenNewton; globalphasebudget/wallstop instead restores previous wholeverifiedcheckpoint and stops withoutanotherSVD/head. Hardhiddenenergy/headCholesky/linear/non-descent/Armijo failure stops; incomplete trial never promotes. Actualenergyincrease restoresbeforestage. Partialterminal preserves lastverifiedfallback, notverifiedfinal.",
+    "newidentityguard": "Actualinstalled headUV vslinear reducedfields max<=1e-10 prospectiveengineeringidentitycalibrated toprior~1e-12, separate from FEMaccuracy andheadgradienttarget. Miss recordscandidate/error, restores preceding actualhiddencheckpoint, doesnot save/promotehead and stops. Newfixture tests above/belowguard; core unchanged.",
+    "acceptance": "Every actuallyaccepted initial/hidden/head checkpoint savedchronologically, finalalwayslastactualaccepted; noFEMerror/lowestfieldscoreselection. IntermediateconditionedNewtonpoints remain nonactual untilinstalled readout+energy/identity/frozenchecks.",
+    "frozen": "Onlyhiddenparameters maymove duringhiddenmicroblocks, outputUV/dhead heldexact; headsinstall onlyUVrows. TargetFEMd/ownlower/f/B0anchor/dhead remain exact. NNdamagefield maychange viahidden; nohistory/damage/rollout claim.",
+    "gradientsemantics": "SharedrawEel parameter/nodal readouts vscurrent massconditioned projectedheadgradient separate; scaling E/Eoriginaltheta0 onlyhiddenoptimizer. Actualheadg1e-10 component target never substitutes hidden/globalstationarity.",
+    "launcher": "GPU5select/env/receipt consistent; cleanarchive/bundle/contract/workerblob/launcher/protocolbinding; uniqueinput/originalmodel/initialnetwork/sourcefieldSHAstaging. Freshpre/poststageGPU+duplicatechecks, ownroots/caches. Productionrequiresfinishedfinite0update realbackward+tangentprobe,eval<=40,elapsed<=60,>=3GiBfree."
+  },
+  "primary": "Actual terminal Eel reduction>1e-10 vsunique initial withactualhiddenchange; directional numerical feature-update progress only. Field/force/head/hidden diagnostics cannot rescue energyprimaryorimplywholefield/architecture/physicalsuccess.",
+  "blockers": [],
+  "remaining": [
+    "Parent clean exactsource commit/push and package/phasecontracts binding.",
+    "FreshGPU5/duplicatechecks thenattributablezero-updateprobe; no retry/capgrowth."
+  ],
+  "not_performed": [
+    "No SSH/remoteaction",
+    "No producer oroptimization",
+    "No source/report edits"
+  ],
+  "commit": "02d9485606f6befba496ef49f074ab57c08ef6ea",
+  "package_manifest_sha256": "5615705dd077020720223456071744aefb293cb9ff5273588c4b359311d4072c",
+  "contract_sha256": {
+    "probe": "0a0e53066e6f22d3e0294e82ea82f5ec2c0aa100ccc5766cfea2865a94f76d86",
+    "production": "1dc9a88250b759b9c72235574b9c9aa32dd3c327550f3a1bbfb7b6dbee9c5227"
+  },
+  "commit_addendum_utc": "2026-10-18T13:21:26.876045+00:00"
+}

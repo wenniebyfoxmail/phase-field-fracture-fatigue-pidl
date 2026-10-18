@@ -1,0 +1,29 @@
+{
+  "status": "initial_admission_failed_before_optimizer",
+  "E_el": [
+    0.005268400005223913,
+    0.005268400005223913,
+    0.005268400005223913
+  ],
+  "projected_head_gradient_inf": [
+    3.3665696098916786e-11,
+    7.123752694508656e-11,
+    null
+  ],
+  "production_gradient_bound": "strictly >1e-10 inferred from exact E reproduction, finite readout and failed conjunction; exact value not saved",
+  "target": 1e-10,
+  "optimizer_updates": 0,
+  "hidden_updates": 0,
+  "Newton_updates": 0,
+  "history_commits": 0,
+  "production_evaluations": 1,
+  "probe_evaluations": 34,
+  "interpretation": "No hidden-optimization outcome, no new accepted terminal. Source/probe head gradients use their own current numerical bases; no causal attribution or norm-ratio claim.",
+  "sources": {
+    "production": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production",
+    "probe": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_probe",
+    "unique_initial": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnednewton_e2dc61d_20261018T125034Z_production",
+    "trace": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production/retrieved/archive/output/c20_s4/trace.json",
+    "log": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production/retrieved/run/worker.log"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "reviewer": "root actual rendered inspection",
+  "selected_figure": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production/analysis_initial_admission_failure/initial_admission_failure.png",
+  "checks": [
+    "Exact equal energies from three saved readouts",
+    "Two actual numeric gradient points only; production inequality explicitly unknown exact magnitude, no fake marker/bar",
+    "Unchanged1e-10 target and0update outcome clear",
+    "Readable labels and sidecar validator passed"
+  ],
+  "excluded_generic_figures": [
+    "learned_hidden_stage_decision.png",
+    "learned_hidden_gradient_spaces.png"
+  ],
+  "excluded_reason": "No accepted checkpoints: empty generic stage axes are missing data, not zero changes; not used as decision assets",
+  "other_field_figures": "Actually inspected: only old source/FEM panels with NO ELIGIBLE NEW TERMINAL, no new comparison",
+  "sha256": "e02aa9806daf6dd5722896fd91696ccf5045fc665503209ba22704934441318b"
+}

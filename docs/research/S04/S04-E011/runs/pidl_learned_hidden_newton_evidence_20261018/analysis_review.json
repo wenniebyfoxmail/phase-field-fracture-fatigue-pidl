@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "reviewer": "root independent of analyzer author",
+  "utc": "2026-10-18T13:19:06.401576+00:00",
+  "analyzer_blob": "295b48f412aef8a3c1f25dbcf3085aac1ada46ad",
+  "checks": [
+    "Unique learned-head c20 saved initial, source fields/damage/BC/sourceforce contracts",
+    "Full saved accepted stage scoring using independent native Q4 Eel/freeforce/mass/H1 and raw/active weighted L2/correlation/integrals",
+    "Terminal must match latest chronological saved actual checkpoint; no FEM-based selection",
+    "Partial excluded from newterminal, verified hidden after headfailure remains explicit head-unclosed",
+    "Raw parameter / current conditioned head / globalnodal gradient spaces separate; hidden digest+delta verification",
+    "Current full401 dynamic basis contract and exact initial386; no old387basis",
+    "Four rendered figures designed with sharedscales, physical signed driver errors on declared symlog, originalphysicalGP scores and sidecars",
+    "LF-only CSV serialization prevents CRLF formatting noise; compile passed"
+  ],
+  "blockers": []
+}

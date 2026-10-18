@@ -1,0 +1,40 @@
+{
+  "status": "passed",
+  "report_review": "passed",
+  "review_kind": "independent failed-initial-admission evidence/report review",
+  "reviewer": "b0_route_inventory",
+  "reviewed_utc": "2026-10-18T13:37:14.082106+00:00",
+  "producer_commit": "02d9485606f6befba496ef49f074ab57c08ef6ea",
+  "run": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production",
+  "execution_status": "failed_initial_numerical_admission",
+  "scientific_disposition": "inconclusive; hidden-update efficacy untested",
+  "analysis": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_learnedhidden_02d9485_20261018T132051Z_production/analysis_initial_admission_failure",
+  "scored_admission_sha256": "1c2d87d3951f9864f62c0eecfd1c867399e475daa9278bf1ac6e47f435f86da0",
+  "numerical_checks_sha256": "f50315ff4ce8d6154321e6b9e55335afc921e5370fd1c5fa2a2e2173848a8e97",
+  "report": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/hard5-native-mesh-pidl-20260929/docs/research/S04/S04-E011/runs/pidl_learned_hidden_newton_result_20261018.md",
+  "report_sha256": "346a6530ea49793dc69d6f94c0331a90b9e8d7043d030fbd4147c31bdcdd9881",
+  "obsidian_own_section_sha256": "5b5a60a93e17910af76b8f3951b02fa6f240754a1f21c74d3d9452a55f46c6a1",
+  "presentation_script_blob": "0dd6f4fe798054a4fd6a38e2062470206324d336",
+  "checks": {
+    "identity": "Source/probe/production same unique learned-head weights/sourcefields/input/originalmodel SHA locks verified. Production traceEel .005268400005223913 exactly source; sourcefield/rank guards preceded failure.",
+    "failure_localization": "Actual productionline141 E-and-head-gradientassert fails after finite readout. Etermexact means finite actual current-basis projectedheadinf>1e-10. Exact g/vector/basis/fielddelta notpersisted; source/probevalues cannotfillmissing production values. NoSVDorGPUrounding cause established.",
+    "zero_updates": "Failurebefore optimizer construction/tangent/head stages.0hidden/Newton/damage/history/rollout/newFEM,0acceptedcheckpoints/newterminal. Expected output/source_reproduction/basis/gradient/network/fields absent. Prior source qualification in recorded basis remainsunchanged.",
+    "budget_retrieval": "Probe34completedcalls9.303714s/17files1221145bytes,0updates;prod1completedcall/7files6019bytes,count/perfilesizeverified,total35calls within400. Production onlystart6.793s known; nofinalelapsed persisted, notclaimed asfullruntime.",
+    "numerical_verdict": "Auditpassed means evidence interpreted correctly; executionfailed and hidden-method primary result unassessed/inconclusive, nevernegative optimizingmethod ornewzero-gaincandidate. Generic analyzer excludes newterminal/scoring, onlyFEM/prior source remain.",
+    "plot": "Readpresentation-onlyplotlogic and actualviewedfailurePNG. Leftthreeequal energies readfromexactsource/probe/productionreceipts;rightonlysource/probenumericgpoints,productioninequalityannotationwith no invented point/bar. Targetunchanged1e-10; distinctnumericalbases explicit. Sidecar1/1pass.",
+    "missing_visual": "Genericemptyaccepted-stage/gradientfigures retainedhistorically andREADMEexplains missingnotzero, notadopted asresultasset. Source/FEMfieldfigure hasNOELIGIBLENEWTERMINAL; dedicatedfailurePNG isonlyObsidianresultfigure.",
+    "report": "Finalfailureprose/Obsidianownsection clearlydistinguishobservations/inference/unknowns,0updates+35calls+failedadmission vsuntestedhiddenefficacy, fixedFEMstateandfrozenroutes, prioroutcomespreserved. OneuniqueembeddedPNGbyteidenticaltoinspectedoriginal;See/Therefore matchesinconclusivefinding.",
+    "next": "Onlylocalunappliedobservationpatch andprospectivefrozenendpointzero-updatebasis/reductiondiagnostic proposed. Nothresholdchange/retry/SSH/launch occurred byreviewer; reportdoesnotclaim newproducerforit."
+  },
+  "blockers": [],
+  "administrative_note": "Final report status-only pending-to-reviewed change reverse-hash verified. Finalreport/ownsection/receipt/presentationhelper hashes bound; producerworker exactunchanged. Compactreceipt nextpatch pointer is localunapplied/nonexecuted and scientificoutcome remainsinconclusive.",
+  "not_performed": [
+    "No SSH orremoteaction",
+    "No newproducer/optimizercall",
+    "No source/report edit",
+    "No thresholdrelaxation orretry"
+  ],
+  "compact_receipt_sha256": "3f2c1243e8f22741f95ff27b01668c2eb0e73231ff424b36746f51765386b359",
+  "presentation_script_sha256": "3a9ea541240aef0dc897d0d8ef12b8f70524584ca8b4dbd29568e44fe0918dba",
+  "final_status_addendum_utc": "2026-10-18T13:38:45.862550+00:00"
+}
