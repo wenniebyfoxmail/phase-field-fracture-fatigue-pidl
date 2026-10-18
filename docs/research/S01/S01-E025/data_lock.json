@@ -80,7 +80,7 @@
     "E019 models, predictions, PCA or selection as learner input",
     "all pooled content arrays, PCA/sketches/learned compression/directions",
     "all pixels except exact835 train identities pinned in candidate_identity",
-    "all external/pretrained neural weights; E003 checkpoint load/forward/gradients/updates; only this6049RGB CNN may train on own train6",
+    "all external/pretrained neural weights; E003 checkpoint load/forward/gradients/updates; only fixed29761-parameter regional model and its6never-deployed controls may train on own train6",
     "qualification2 references in current CNN gradient/initial bias/constant fitting/sampling; current outer4 references in CNN/qualification/role training or admission",
     "new boxes, changed E003 scores/coordinates/order, detector rescoring; any model/hyperparameter/checkpoint/seed/cap/intersection search"
   ],
