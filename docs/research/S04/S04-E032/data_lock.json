@@ -1,0 +1,103 @@
+{
+  "protocol": "S04-E032/v1-fixed-damage-joint-head-plane-20261018",
+  "reference_lock": {
+    "protocol": "S04-E027/v1-source-faithful-P-20261018",
+    "root": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved",
+    "payloads": {
+      "mesh": {
+        "relative": "inputs/common_common_initial.mat",
+        "bytes": 32927359,
+        "sha256": "59a0f81368d0c46a698f94fdfcb32158e96361714d7547f00deed996d4a7c181"
+      },
+      "predecessor": {
+        "relative": "inputs/c0020_s003_post_commit.mat",
+        "bytes": 32000094,
+        "sha256": "c242202960ae1da66d234d8646b12f69e6bab3bd4a119daa1811391e2efc5683"
+      },
+      "case": {
+        "relative": "output/mcs/c20_s4/case.mat",
+        "bytes": 107596994,
+        "sha256": "315e2dc00cd57668bc287af6619b33846dc5273f21c124b6d6f84aa10ed62c48"
+      },
+      "reference": {
+        "relative": "output/mcs/c20_s4/outer_18.mat",
+        "bytes": 24195415,
+        "sha256": "31ab8a56c6485da0ead9b28abcb3f6e6f8973e7eadcd12b6acaed6ade5479483"
+      }
+    },
+    "initializer": {
+      "producer_path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_98.pt",
+      "producer_commit": "ad749c8bbba8120b3961add989b11427fab86254",
+      "sha256": "e0acd981b8c6d69be9b88d676088b8a026448ee24f28ec231ecdd5c266edd69f",
+      "bytes": 4510197,
+      "status": "REMOTE_LOCAL_SIZE_SHA256_MATCH; original exact file; not deserialized; no resource preflight or training",
+      "local_path": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E027/initializer_retrieval_20261018T121735823711Z/trained_1NN_98.pt",
+      "producer_hostname": "GPUServer8",
+      "identity_receipt": "initializer_retrieval_20261018.json"
+    }
+  },
+  "s0": {
+    "relative": "S_1500.pt",
+    "bytes": 9009653,
+    "sha256": "ef2be905167b6e26be3de5778a42e5043ddebd96610e06b1f39f4106ffca8f0b"
+  },
+  "s0_remote": "/mnt/data2/drtao/pidl_archives/pf_s04e027_three_arm_v1_20261018/output/S_1500.pt",
+  "control_remote": "/mnt/data2/drtao/pidl_archives/pf_s04e031_UVhead_v1_20261018T2214Z/output",
+  "control_payloads": {
+    "fields.npz": {
+      "relative": "fields.npz",
+      "bytes": 6843206,
+      "sha256": "cb102c48bff4a6154d4c59397f0b2310023a74e5ee8b7df402ac7051a30e7455"
+    },
+    "scores.json": {
+      "relative": "scores.json",
+      "bytes": 3913,
+      "sha256": "c736d8816fd4a63d59af0da3beed724e86ed42092889ecf9449d91bc03996066"
+    },
+    "head_geometry.npz": {
+      "relative": "head_geometry.npz",
+      "bytes": 1345758,
+      "sha256": "b875f2f4f79169fc495fcf785b884b167007501783b8e25454195a966a073314"
+    },
+    "head_endpoint.npz": {
+      "relative": "head_endpoint.npz",
+      "bytes": 12615,
+      "sha256": "0e3a9d6123742b3362e44e52185cdf559aca11c85e79485fe2a9e2cb54a42737"
+    },
+    "receipt.json": {
+      "relative": "receipt.json",
+      "bytes": 1044,
+      "sha256": "4ce854dd7f4efdff99015211d2f56f122f59fae907d65732581f6a88ac41f03d"
+    }
+  },
+  "expected_zero_scores": {
+    "active_RMSE": 0.01558655329429912,
+    "active_ref_RMS": 0.021161588421324366,
+    "active_error": 0.7365493073569408,
+    "free_force": 0.024987697551350718,
+    "d_min": 6.322760754665565e-06,
+    "d_max": 1.0,
+    "healing": 0.0,
+    "top_reaction": 0.06962719032798612,
+    "upper_violation": 0.0,
+    "notch_error": 0.0,
+    "global_uv_RMS_Us": 0.015460202322109122,
+    "global_d_RMS": 0.0014738345203623683,
+    "zone_uv_RMS_Us": 0.007241890934432285,
+    "zone_d_RMS": 0.005810667248622888,
+    "global_raw_RMSE": 49.07200765657422,
+    "global_active_RMSE": 0.08025916234339693,
+    "zone_raw_RMSE": 9.869111040756783,
+    "zone_active_RMSE": 0.01558655329429912,
+    "global_u_RMS_Us": 0.001887601201634576,
+    "global_v_RMS_Us": 0.015344537058645203,
+    "zone_u_RMS_Us": 0.0021301719661889276,
+    "zone_v_RMS_Us": 0.006921513685652533,
+    "gp_healing": 0.0,
+    "lower_violation": 0.0,
+    "negative_violation": 0.0
+  },
+  "UV_start": "actual accepted E031 theta endpoint; originalS1500 hidden features; complete cached E031 physical replay",
+  "damage_start": "E030 actual physical damage, inherited bitwise through E031 UVhead fields, never target lower",
+  "expected_control_runtime_commit": "b0039a05e251d0452da3ad8964c24c91197c2dbc"
+}

@@ -1,0 +1,11 @@
+{
+  "owner": "01a0ff36-c53f-7541-8161-a0584b44a9ae",
+  "prior_decision": "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/s04-sampling-multiscale-20261012/docs/research/S04/S04-E024/background_guard_protocol.md",
+  "pattern": "One small coefficient SLSQP, normalized exact UV quadratics/ball and independently checked finite physics. No old AMOR fields/metrics imported.",
+  "helpers": {
+    "s04_e024_weak_guard.py": "4d87d86e76c4905be45cc0f48acc4850422429a8ac3159449d2ce151c5ec6096",
+    "s04_e024_background_guard.py": "0d3b9e5414c8aab28fda4c8c679d45d2d233a02e1b504f6e76ec592518b78d72"
+  },
+  "E031_code": "8794578e686cc11ddd2a27bfa65f1163af6ec58b",
+  "scope": "frozen saved E031 7-gradient span; fresh true plane gradients at actual E031 endpoint, no full-head or representation claim"
+}
