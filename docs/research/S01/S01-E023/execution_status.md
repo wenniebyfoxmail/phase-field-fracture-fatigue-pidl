@@ -7,3 +7,11 @@
 启动：2026-10-18T12:53:16.5082534+01:00；Win32_Process.Create脱离SSH，wrapper PID 29304。运行目录 C:\Users\xw436\pavetrack_runs\S01-E023-R001；源码 pavetrack_stage\S01-E023-R001-v1-ba596aa2。3600秒、CPU1、RSS4GiB/GPU allocated-reserved4GiB、原前三/弃权/检测及交集规则不变。唯一执行，无重试/额外地点。当前真实结果待程序结束，不能以启动/预检通过计作收益。
 
 本地详细SSH/transfer/publication/launch日志：local_archive/experiments/S01-E023/execution_R001/。
+
+## 最终状态（2026-10-18）
+
+R001 completed，1087.031秒/RSS3140538368bytes（2.925GiB），GPU allocated48395264/reserved73400320bytes，所有计数完整且预算未放宽。原835图31156contexts/996992像素样本/93468maprows/12solves；841图像读取，无CNN参数更新、额外地点、重试或交集扫描。
+
+主标准negative：旧684/684保留，新增/损失/净0，macro0；有益GT3/5/6全部留池、最大/所选入前三均0，三模型弃权。区域Brier0.171709差于常数0.034257；全contextDice0.113087、参考前景context子集地点均Dice0.358392。固定像素ridge家族停止，研究主线保留。
+
+固定65成员ZIP1007307504bytes，SHA02a60f57bf8050873f4cbd7ed2f599af95cc16a114ad804884e213e0bf8dde37，已取回local_archive/experiments/S01-E023/runs/S01-E023-R001/。核验SHA/CRC/严格清单/全部输出/19输入/私有标签/模型-OOF-maps冻结/featurecache/43347原行和资源。四实际PNG/README已由HQ打开验收，FIT六图明确非OOF新增；没有追加独立证据审查或新计算。事实源runs/S01-E023-R001/result.md、run_receipt.json及local saved_summary.json。
