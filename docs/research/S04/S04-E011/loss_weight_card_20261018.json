@@ -1,0 +1,77 @@
+{
+  "owner": "S04-E011 prospective loss-weight diagnostic preparation",
+  "revision": "loss-weight-gamma-r1-20261018",
+  "status": "PREPARATION_ONLY_NOT_PRODUCER_READY",
+  "source_base_commit": "6274a696b0bef8b72a169c803ad06d311822e16a",
+  "question": "At fixed C initialization and fixed200 updates, does stronger irreversibility penalty reduce same-state FEM joint u/v/d disagreement?",
+  "domain": "synthetic seen development, single c1s1 block, no independent trajectory",
+  "claim_class": "C1/C2 early-method diagnostic",
+  "reference_role": "existing numerical comparator; E011 reference qualifications unchanged",
+  "load": 0.02999988,
+  "loss": "log10(Eel+Ed+beta*Ehist_base)+1e-5*sum(named weight parameters squared)",
+  "Ehist_base": ".5*w1*16875*sum(GP4 physical Jacobian weight*ReLU(N*hist-N*d)^2)",
+  "arms": [
+    {"id": "W0", "hist_loss_weight": 1, "model_tol_ir": 0.005, "effective_gamma": 16875},
+    {"id": "W25", "hist_loss_weight": 25, "model_tol_ir": 0.005, "effective_gamma": 421875}
+  ],
+  "only_changed_factor": "hist_loss_weight; do not also change model_tol_ir",
+  "fixed": {
+    "initialization": "C: immutable original post-U0 theta_R; hard251-line; FEM U0 d0 and hist_alpha; anchored map and fixed buffers",
+    "anchor": "actual device/dtype complete-node forward at immutable theta_R once; no resume re-anchor",
+    "network": "8x400 TrainableReLU seed1 float32 eval no-autocast, original UV boundary mapping, all enrichments/prior/patches off",
+    "mesh": "86756 ordered nodes/86408 nativeQ4/GP4",
+    "physical": {"E": 1, "nu": 0.3, "Gc": 0.01, "ell": 0.01, "w1": 1, "AT": "AT1", "split": "Amor", "eta": 0, "alpha_T": 0.5, "p": 2},
+    "history": "own C hist_alpha=d0; H/hist_fat/q_prev zero, f_committed1; current g(d) changes",
+    "weight_decay": 0.00001,
+    "symmetry": 0,
+    "FEM_supervision": 0,
+    "optimizer": "independent fresh RPROP lr1e-5 etas(.5,1.2) step_sizes(1e-10,50)",
+    "updates_per_arm_proposed": 200,
+    "history_commits": 0,
+    "new_FEM": 0
+  },
+  "information": {
+    "allowed": "existing U0 network/checkpoint, FEM U0 initial field; original material/geometry/BC",
+    "c1s1_FEM": "offline scoring only after outputs sealed; never loss/gradients/buffers/initialization/endpoint selection",
+    "future_loaded_states": "not used",
+    "C_choice": "fixed before ABC outcome; not select best ABC arm"
+  },
+  "budget": {
+    "authorized_new_GPU_seconds": 0,
+    "authorized_training_updates": 0,
+    "proposed_separate_total_GPU_seconds_cap": 3600,
+    "included": "all device forward/gradient diagnostics/saving/readouts",
+    "ABC_budget": "unavailable, unrelated, may not be consumed or duplicated",
+    "launch_entrypoint": null
+  },
+  "scoring": {
+    "primary": "DeltaJ=J(W25,update200)-J(W0,update200)",
+    "J": "sqrt(sum(m*((du/.12)^2+(dv/.12)^2+dd^2))/(3*sum(m)))",
+    "weights": "positive nativeQ4 lumped nodal mass, fixed scales .12/.12/1",
+    "endpoint_policy": "update0 and update200, fixed200, no best checkpoint or early stop",
+    "missing_or_cap_before_200": "endpoint comparison inconclusive; preserve valid prefix; no top-up",
+    "interpretation": "directional development effect only; no formal pass threshold or significance claim",
+    "secondary": "UVd contributions, free/line damage, fixed-front ROI/profiles, GP4 raw/active, free-u residual, nodal/GP healing and box, resource use",
+    "no_rescue": "symmetry, lower training loss or penalty cannot replace FEM distance",
+    "minimum_visual": "FEM/W0/W25 same-state primitive fields and signed errors with shared scales plus score table/README_analysis"
+  },
+  "stops": ["nonfinite", "nonpositive log domain", "initialization/node-order/input/line/history/buffer violation", "200updates per arm", "new total budget cap"],
+  "no_automatic": ["retry", "extra steps", "extra arms", "seed/optimizer changes", "c1s2/unload/trajectory", "newFEM"],
+  "pre_execution_requirements": [
+    "independent exact runner/config/protocol/input review",
+    "new version-specific budget and execution authorization",
+    "actual device C update0 equality and fixed buffer serialization",
+    "beta25 vs tol.001 equivalence without double scaling",
+    "same-snapshot fullNN gradients for both beta at frozen readout indices; fixed nearzero threshold; RPROP state diagnostics",
+    "same-state FEM reference/mesh/readout contract and offline scorer identity"
+  ],
+  "static_audit": {
+    "script": "tools/audit_loss_weight_semantics.py",
+    "receipt": "runs/loss_weight_static_20261018.json",
+    "gradient_space": "physical nodal fields; no fullNN parameter physics gradients",
+    "optimizer_updates": 0,
+    "history_commits": 0,
+    "FEM_solves": 0
+  },
+  "decision": "diagnose/preparation complete only; no execution"
+}

@@ -1,0 +1,96 @@
+{
+  "status": "DETERMINISTIC_NO_TRAINING",
+  "source_commit": "6274a696b0bef8b72a169c803ad06d311822e16a",
+  "origin": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/precrack_alignment_preparation_20261018",
+  "fem_initial": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_mcs_20261017_v1/retrieved/inputs/common_common_initial.mat",
+  "loaded_FEM_targets_read": false,
+  "optimizer_updates": 0,
+  "history_commits": 0,
+  "FEM_solves": 0,
+  "device": "cpu",
+  "gradient_space": "physical nodal u/v/d; not NN parameter gradients or RPROP sign flips",
+  "regularizer_sum_weights_squared": 2672.091629288079,
+  "regularizer_at_1e_5": 0.02672091629288079,
+  "regularizer_parameter_gradient_L2_at_1e_5": 0.0010338455647316148,
+  "whole_energy_scaling_gradient_max_difference": 2.220446049250313e-16,
+  "gamma_ratio": 25,
+  "beta_vs_tol_equivalence": [
+    {
+      "state": "C_update0",
+      "energy_difference": 0.0,
+      "nodal_gradient_difference_Linf": 0.0
+    },
+    {
+      "state": "prescribed_1e-4_healing",
+      "energy_difference": 0.0,
+      "nodal_gradient_difference_Linf": 1.4551915228366852e-11
+    }
+  ],
+  "rows": [
+    {
+      "state": "C_update0",
+      "hist_loss_weight": 1.0,
+      "effective_gamma": 16875.0,
+      "Eel": 0.000600085302721709,
+      "Ed": 0.005059130024164915,
+      "Ehist_base": 0.0,
+      "Ehist_weighted": 0.0,
+      "total": 0.005659215152263641,
+      "log10": -2.247243881225586,
+      "nodal_gradient_L2": 0.9780410978649169,
+      "grad_Eel_L2": 0.01013001818166009,
+      "grad_Ed_L2": 0.007758678387255535,
+      "grad_Ehist_base_L2": 0.0,
+      "chain_error_Linf": 2.8336199164868958e-08
+    },
+    {
+      "state": "C_update0",
+      "hist_loss_weight": 25.0,
+      "effective_gamma": 421875.0,
+      "Eel": 0.000600085302721709,
+      "Ed": 0.005059130024164915,
+      "Ehist_base": 0.0,
+      "Ehist_weighted": 0.0,
+      "total": 0.005659215152263641,
+      "log10": -2.247243881225586,
+      "nodal_gradient_L2": 0.9780410978649169,
+      "grad_Eel_L2": 0.01013001818166009,
+      "grad_Ed_L2": 0.007758678387255535,
+      "grad_Ehist_base_L2": 0.0,
+      "chain_error_Linf": 2.8336199164868958e-08
+    },
+    {
+      "state": "prescribed_1e-4_healing",
+      "hist_loss_weight": 1.0,
+      "effective_gamma": 16875.0,
+      "Eel": 0.0006000856519676745,
+      "Ed": 0.005059130024164915,
+      "Ehist_base": 2.3674438409670984e-07,
+      "Ehist_weighted": 2.3674438409670984e-07,
+      "total": 0.005659452173858881,
+      "log10": -2.247225522994995,
+      "nodal_gradient_L2": 0.978008856568187,
+      "grad_Eel_L2": 0.01013001733944493,
+      "grad_Ed_L2": 0.0077586904745286225,
+      "grad_Ehist_base_L2": 0.00017402587349259357,
+      "chain_error_Linf": 2.2351741790771484e-08
+    },
+    {
+      "state": "prescribed_1e-4_healing",
+      "hist_loss_weight": 25.0,
+      "effective_gamma": 421875.0,
+      "Eel": 0.0006000856519676745,
+      "Ed": 0.005059130024164915,
+      "Ehist_base": 2.3674438409670984e-07,
+      "Ehist_weighted": 5.918609531363472e-06,
+      "total": 0.00566513417288661,
+      "log10": -2.2467896938323975,
+      "nodal_gradient_L2": 1.0304176934017044,
+      "grad_Eel_L2": 0.01013001733944493,
+      "grad_Ed_L2": 0.0077586904745286225,
+      "grad_Ehist_base_L2": 0.00017402587349259357,
+      "chain_error_Linf": 2.6854468870851633e-08
+    }
+  ],
+  "limitation": "No loaded-state accuracy evidence or full-NN gradient conflict measurement; physical field probe need not be network-representable."
+}
