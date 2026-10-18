@@ -1,0 +1,84 @@
+{
+  "protocol": "S01-E026-v1",
+  "run_id": "S01-E026-R001",
+  "producer": {
+    "hostname": "D-26-09",
+    "ssh_alias": "gpu-server",
+    "account": "ad\\xw436",
+    "python": "C:\\Users\\xw436\\pavetrack_env\\Scripts\\python.exe",
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "gpu_physical_index": 1,
+    "gpu_logical_index": 0,
+    "CUDA_VISIBLE_DEVICES": "1",
+    "gpu_uuid": "GPU-3d74ea12-5d84-a619-90b2-c0b1f104599a",
+    "gpu_name": "NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition",
+    "fallback": false,
+    "GPU": true
+  },
+  "localizer": {
+    "parameters": 29761,
+    "batch_size": 8,
+    "optimizer": "AdamW",
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "loss": "BCEWithLogits mean + softDiceLoss smooth1, per context then batch mean",
+    "initial_bias": "zero; no prevalence bias",
+    "network": "RGB128 area-average to32; two3x3ReLU convs per level8/16/32; maxpool2 twice; bilinear align_corners=False upsample and skip concatenate; decoder16 then8;1x1logits; no pretrained weights/BN/dropout; zero final bias"
+  },
+  "seeds": [
+    [
+      25100,
+      25200
+    ],
+    [
+      25101,
+      25201
+    ],
+    [
+      25102,
+      25202
+    ]
+  ],
+  "steps": 128,
+  "test_shifts": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      8
+    ],
+    [
+      8,
+      0
+    ],
+    [
+      8,
+      8
+    ]
+  ],
+  "phase_offset": [
+    16,
+    16
+  ],
+  "margin": 1e-06,
+  "threshold": 0.5,
+  "budget": {
+    "models": 6,
+    "updates": 768,
+    "training_rows": 6144,
+    "prediction_rows": 576,
+    "total_wall_seconds": 600,
+    "peak_RSS_bytes": 4294967296,
+    "peak_GPU_allocated_bytes": 4294967296,
+    "peak_GPU_reserved_bytes": 4294967296,
+    "output_bytes": 104857600
+  },
+  "fresh_access": false,
+  "source_image_reads": 0,
+  "qualification_reference_reads": 0,
+  "selector": false,
+  "OOF": false
+}

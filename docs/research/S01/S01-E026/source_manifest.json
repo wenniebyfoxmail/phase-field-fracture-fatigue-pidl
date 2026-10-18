@@ -1,0 +1,17 @@
+{
+  "protocol": "S01-E026-v1",
+  "files": {
+    "scripts/pavetrack_translation_control/run.py": "9db18098f5b3a2e96cc8958f583bb9d81bfeb21b96226c23b7821239bdf145a2",
+    "scripts/pavetrack_translation_control/probe.py": "6b80c0721f48dd86a9bc3616086f35d74b8a635408ae13c979872eb6ff348f67",
+    "scripts/pavetrack_translation_control/analyze.py": "f71cd7aec0aecc985df4ef7eef000b78d7c023c5d7f28f9911a2526bca9049fd",
+    "scripts/pavetrack_translation_control/producer.ps1": "de5a880bea7f801ddf849f32c76beca48b24cab8b474f6f09e891eb19433cc8d",
+    "scripts/pavetrack_controlled_localizer/model.py": "1e4116bfe1b850f8d1090ee14033f735ff3b56ad1aa6fd17d5556d8409708daa",
+    "scripts/pavetrack_qualified_localizer/model.py": "22bc611f53ebb9b748fa438de18bfde0748fd3c0df788a69e2bb8405a9003b31",
+    "scripts/pavetrack_positive_evidence/stage_b_runtime.py": "2a7b1f8cf53f869487dbe723e111299231286001cefa59c5e11b4676a1134dcd",
+    "docs/research/S01/S01-E012/stage_B/gpu_desktop_baseline.json": "bebab7f7f4059abb296790377fa33d43a46774a91121feeba38a60d706911926",
+    "docs/research/S01/S01-E026/experiment.md": "4f2e4d9608e38cc6638b5e09bc12c770b5f3a58f46aca692dfa2c1b4d338fb47",
+    "docs/research/S01/S01-E026/run_config.json": "2494e0d7070b811a0694a5d9321c2c5e8de8e851aa332d460a55d67270873f76",
+    "docs/research/S01/S01-E026/data_lock.json": "278039c968275d4cf1592218275597d0e82a4c62b8075c877d180ccefbca3e8e",
+    "tests/pavetrack_translation_control/test_probe.py": "d50489686ffbf9d24c7d90af740c08162bf981e93efc06b611ea40682eefb7b0"
+  }
+}
