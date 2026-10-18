@@ -180,5 +180,30 @@ reported separately. Component changes never overwrite the primary label.
 | Step | Question | Evidence | Advance or redirect |
 |---|---|---|---|
 | D1 complete | Can existing E010 assets isolate an objective change? | pair-contrast audit and reusable B25 endpoint | Continue; no head change |
-| D2 active | Does the exact merged/AdamW direction target wrong pairs safely enough? | zero-step audit | Pass -> exact review and one run; fail -> redesign objective only |
-| D3 | Does the objective produce realised net pair repair? | R001 two-arm result | Gain >=2 -> retain objective; miss -> factorized head becomes next discriminator |
+| D2 complete | Does the exact merged/AdamW direction target wrong pairs safely enough? | zero-step audit passed | Advanced to the one frozen run |
+| D3 complete | Does the objective produce realised net pair repair? | R001: candidate-control score -6 | No repair; redirect to no-training contrast/local-support audit |
+
+## Executed result — 2026-10-19
+
+`S09-E011-R001-objective-only-ranking` completed the frozen two-arm budget at
+producer commit `ee9d62d5604c35ee66a4838b8c7333b4f9b41359`: 500 updates per arm,
+seven frozen evaluations per arm, 1000 total updates, zero hard-constraint
+violations, and no failure receipt. The archived 23-file producer output was
+retrieved with every manifest hash matching.
+
+The control reached pair score 40 and AUC 0.80 (20/0/5), while the ranking arm
+remained at pair score 34 and AUC 0.68 (17/0/8), for a candidate-minus-control
+score of -6. The realised classification is therefore
+`NO_REALISED_RANKING_REPAIR`. Candidate/control ratios were 1.178 for `G`,
+1.988 for `F`, 1.740 for `L_P`, and 1.096 for `L_judge`.
+
+The total damage fields are visually dominated by supplied `d_pre`. At cycle
+73 the FEM increment exceeded `1e-6` on 2.05% of nodes, versus 99.61% for both
+learned arms. This is evidence that the current global amplitude objective can
+be changed through diffuse positive damage without reproducing the local crack
+event. It is not evidence against multi-objective learning in general.
+
+D3 therefore redirects to a no-training audit on the same exposed states:
+measure wrong-pair contrast sensitivity, its allocation before/after gradient
+merging and clipping, and a local support/crack-tip observable. No new training
+or holdout access is implied.
