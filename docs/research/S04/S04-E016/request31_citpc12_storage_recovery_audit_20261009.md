@@ -120,3 +120,25 @@ rerun the unchanged free-space, process, source-identity, and output-root
 preflight. Only that fresh receipt can authorise MATLAB start.
 
 No storage mutation or FEM execution was performed by this audit.
+
+## Post-audit authorised release
+
+After the read-only audit, the user explicitly authorised release of the two
+recommended Windows duplicate roots. Immediately before release, the Mac
+mirror was fully re-read and reproduced the same canonical tree SHA256. The
+delete scope was also resolved as 463 files / 10,388,660,792 bytes: the 459
+canonical files plus four queue-provenance files whose individual SHA256 values
+matched the OneDrive copies. Both roots were ordinary directories with no
+reparse points detected.
+
+Post-action check at `2026-10-09T00:46:53+01:00`:
+
+- both exact Windows roots are absent;
+- C: free is 34,055,544,832 bytes = 31.716698 GiB;
+- MATLAB process count is zero;
+- the intended U0.1175 output root is absent.
+
+The Windows deletion is irreversible on that host. Recovery remains available
+from the complete, hash-verified Mac/OneDrive canonical mirror. The storage
+capacity condition is now satisfied, but the full frozen producer preflight
+has not been rerun and no FEM launch occurred.

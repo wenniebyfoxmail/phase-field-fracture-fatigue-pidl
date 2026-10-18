@@ -1,8 +1,8 @@
 ---
 storyline_id: S04
 experiment_id: S04-E016
-protocol_revision: v3-resume-equivalence
-status: g5_hold_paired_semantics_and_input_lock
+protocol_revision: v2
+status: blocked_implementation_preflight
 started_at: 2026-10-08
 primary_storyline: S04
 related_storylines: [S09]
@@ -68,49 +68,6 @@ Delta-model development protocol before U0.125 is opened.
 
 ## Status
 
-- 2026-10-12: U0.115 acquisition exited0 in4h16min. Terminal audit verifies
-  503 continuous checkpoint/model states0..502, finite retained histories,
-  and complete s4/s5 through physicalc100. Native first detectionstep499 is
-  c100/s4; native three-step confirmation stopsstep502=c101/s2, not three
-  physical cycles. G5 remains HOLD for explicit projection/field/input
-  qualification. See `u0115_pinn_terminal_audit_20261012.md`.
-
-- 2026-10-12: user approved missing U0.115 PINN acquisition after Code Ready.
-  Independent v3 PASS, single launch on Taobo GPU7, supervisor840976 ->
-  training840977, Run `pf_u0115_acquire_39f8108fe96d406385e4011700cb47f9`.
-  London deadline2026-10-14 18:35:49, 48h/50GiB bound, no retry. Initial
-  runtime health verified; complete paired-data/G5 verdict remains pending.
-  See `u0115_pinn_launch_receipt_20261012.md`.
-
-- 2026-10-12 G5: Contract A has all 95 cycle files; Contract B has 95
-  post-history s4 rows. Roles/exclusion policy is retained, but paired
-  predictive readiness does not pass: existing FEM composite cycle summaries
-  and PINN peak states differ in timing/reduction; complete U0.115 PINN pairing
-  is unverified; exact derived f/active heads require native support. See
-  `g5_contract_role_input_audit_20261012.md`. Reuse D003 evidence; next is the
-  paired-asset metadata lock, not D0 repetition or NN training.
-
-- 2026-10-12: fresh v10 completed with MATLAB exit 0. Producer semantic
-  validation passes 7/7. External terminal audit rehashed all 1,116 manifest
-  payloads with no missing/changed/extra files; 476 unique and 570 logical
-  states are complete. Manifest identity is
-  `55b9f7e923fd7a00170761ec470fb63629e72d28cf82c168edbaa2644e7be561`.
-  This is terminal/integrity evidence only. G5 independent qualification and
-  Contract A/B derivation review remain; confirmation fields are sealed and
-  no model training or restart was executed.
-
-- 2026-10-11: independently reviewed fresh-c0 v10 is the active production
-  path and is running once on CITPC12. At the latest read-only check, MATLAB
-  launcher/engine PIDs were 21684/30732 and 28 states had reached c0006_s02.
-  No terminal receipt exists yet; this is not completion or scientific
-  validity.
-- 2026-10-11: independent review of restart candidate v11 returned
-  `CODE_READY FAIL`. v12 repairs the finite/schema comparator, callback/I/O
-  ordering, terminal receipt boundary and executable tests. Its Mac/Windows
-  manifest is `4f4360edaa8f0935151c2f521a1b5b35a9bb93e808462aad8d890f45a33d0493`
-  with 20/20 payload hashes matching. It remains an offline diagnostic:
-  no MATLAB or FEM execution while fresh v10 is active.
-
 - 2026-10-08: user approved both trajectories.
 - 2026-10-08: Request 31 prepared for Windows-FEM dispatch.
 - 2026-10-08: Phase A c1 smoke completed but v1 failed: cyclemax raw driver
@@ -142,243 +99,136 @@ Delta-model development protocol before U0.125 is opened.
   No deletion, move, compression, MATLAB start, or FEM run occurred. Explicit
   human storage-mutation approval and a fresh unchanged preflight remain
   mandatory. See `request31_citpc12_storage_recovery_audit_20261009.md`.
-- 2026-10-09: v9i supersedes v9f after adding the two missing behavior assets:
-  an actual identity-matched owned-tree cleanup with unrelated sidecar control,
-  and a manifest/run/nonce-bound machine-readable Mac A-return-before-B-start
-  timeline. Compact suite: MATLAB 11/11, authorization 10/10, spawn 13/13,
-  detachment/identity/cleanup 11/11, release behavior 7/7 and cross-SSH probe
-  PASS. Final MATLAB=0 and production output is absent. Status is
-  `PASS_REQUEST31_V9I_LAUNCHER`; no production retry is authorised. See
-  `request31_u01175_v9i_launcher_candidate_20261009.md`.
-- 2026-10-09 11:25 UTC: the user authorised exactly one v9i U0.1175
-  production run. Fresh full preflight passed with the frozen parent and
-  payload identities, Contract A/B, zero competing MATLAB processes, absent
-  output and 35,566,350,336 free bytes. Connection A returned before the
-  independent connection B released worker 48012; the live chain is worker
-  48012 -> MATLAB launcher 21260 -> R2025b engine 13956. At 11:28 UTC stdout
-  had advanced to 48,730 bytes, stderr remained zero, and the output tree had
-  created `fem_archive/`, `provenance/`, `states/`, and `static/`. Status is
-  `RUNNING_HEALTH_CONFIRMED`, not completion or scientific validation.
-- 2026-10-09 11:40 UTC: a fresh live check matched the same nonce and exact
-  process chain. The `states/` directory contained 51 files and had completed
-  `c0010_s05.mat`; `c0010_s04.mat` and all five c10 substeps were present.
-  The latest state write advanced to 11:40:09 UTC, while no worker-exit or
-  terminal sentinel existed. This is active production progress only.
-- 2026-10-09 13:12 UTC: the sole authorised run terminated abnormally during
-  c64 step 4. The final state write is `c0064_s04.mat` at 13:12:50 UTC; the
-  state directory contains 320 files totalling 4,620,877,610 bytes. Native
-  stderr is empty, while MATLAB's crash dump records an R2025b `abort()` at
-  13:12:50 UTC and stdout ends with `MATLAB is exiting because of fatal
-  error`. The worker heartbeat's `WORKER_POWERSHELL_EXCEPTION` and
-  `powershell.exe` `System.IO.IOException` followed in the next second, after
-  MATLAB had broken the native stream; they are secondary reporting failures,
-  not the primary termination. The worker-exit receipt is zero bytes. No MATLAB
-  process remained at the 16:23 UTC audit, and C: still had 28,585,717,760
-  bytes free, so the observed evidence does not support a disk-full or a
-  solver-convergence verdict. Status is `INFRASTRUCTURE_FAILED_PARTIAL_C64`.
-  The partial states are diagnostic-only: they do not satisfy Contract A/B,
-  cannot establish event/right-censor outcome, and cannot be resumed as a
-  scientific trajectory until restart equivalence is separately qualified.
-  No retry was launched.
-- 2026-10-11: the failed asset was frozen externally without mutating its raw
-  tree. The frozen inventory is 749 files / 6,640,762,683 bytes; its sorted
-  SHA256 manifest digest is
-  `f43c79f252ecc8fed6c7254f58c3f80d7c72961b1c53a37f9b5fca02e01fc5ab`.
-  MATLAB read-only loading verified `checkpoint.mat` at c63 and
-  `step_checkpoint.mat` at c64 s3 with all restart/event fields present;
-  `step_checkpoint_tmp.mat` is corrupt and is timestamp-aligned with the c64
-  s4 fatal abort. Direct resume remains disallowed because the current Stage 0b
-  case runner and producer are fresh-only and the producer would repeat
-  zero-load recovery. Decision: prepare a bounded cloned-workspace resume
-  amendment, recompute c64 s4 only, and require restart equivalence before any
-  separately authorised long continuation. Status:
-  `FROZEN_FAILED_ASSET__RESUME_AMENDMENT_REQUIRED`.
-- 2026-10-11: a clean, isolated non-FEM probe hung on its first invocation of
-  the exact native `phase_field.mex.output.dat_output` binary used by v9i. A
-  five-argument pure-MATLAB text-only replacement completed 10,000 calls and
-  8/8 append/parse/fail-closed contract tests. This strongly localises an
-  infrastructure defect in the native logger, but the production crash dump
-  contains no stack, so it does not prove the exact crashing source line. A
-  v10 fresh-run candidate therefore replaces only this text logger; physics,
-  mesh, solver MEX kernels, tolerances, update order, Contract A/B capture and
-  event policy remain frozen. The c64 partial will not be resumed.
-- 2026-10-11: protocol amendment `v3-resume-equivalence` was frozen before
-  execution. It permits one c64/s3 -> c64/s4 restart-equivalence Run only, with
-  a fresh Run ID, exact frozen input hashes, no fresh recovery, a one-load-step
-  stop, and predeclared `1e-12` scaled-max/relative-L2 field tolerances. A pass
-  advances only to a separate end-of-cycle infrastructure smoke; it does not
-  authorize long continuation. See
-  `amendment_v3_resume_equivalence_20261011.md` and the storyline-level
-  `../fem_pidl_delta_top_level_design_20261011.md`.
-- 2026-10-11: the exact v11 candidate was mirrored to CITPC12 with manifest
-  SHA256
-  `ce6ecf3ce7b86964fdb51c39953b7ea3fcbb8323114fb27d1abd0a62684f2714`.
-  Windows `validate_only` returned `VALIDATED_NOT_EXECUTED`; all 3 no-solver
-  contract tests passed, with `solver_called=false` and `fem_started=false`.
-  The target output root remains absent and MATLAB returned to zero. Status is
-  `AWAITING_INDEPENDENT_CODE_REVIEW__NO_SOLVER_RUN`; the one-step numerical
-  probe is not yet authorised, and no s5/long continuation is implied.
-- 2026-10-11 22:19 UTC: the separately selected v10 fresh-run route passed an
-  independent read-only implementation review bound to manifest
-  `9b1721b667266400caffb21134d15d9ea14f43ddaf85de65b0e3bc0e24133b46`.
-  Its live preflight passed with MATLAB=0, absent output and 36,116,197,376
-  free bytes against the 30,870,077,440-byte gate. The single authorised fresh
-  c0 run entered `RUNNING` through the two-session release contract: worker
-  49600 -> MATLAB launcher 21684 -> R2025b engine 30732. Early read-only checks
-  showed growing output/stdout, zero stderr and no terminal receipt. This is
-  launch/health evidence only, not completion, convergence, Contract A/B
-  acceptance or scientific validation. The v11 restart candidate is held and
-  may not execute while v10 is running.
-- 2026-10-13: G5 existing-state audit advanced to native64 geometry. v3 exact
-  old/native identity FAILED; old center/area values exactly replay float32
-  intermediates. Reviewed v4 repair retains that FAIL and independently admits
-  85,112 native-center cells (98.6069% native area), excludes1,296, removes only
-  cell57509 with no domain expansion. Independent method dialogue approved the
-  mapping input identity. The unique CPU U0.115 PINN export then exited1 after
-  2s on c1/s4 negative current-alpha admission; no trajectory NPZ was produced.
-  Frozen nonsmooth ansatz permits signed tails (min -1.3258e-4 in that state),
-  so a v5 signed-input/bounded-FEM-target amendment is awaiting exact code
-  review. Original bounds FAIL preserved, no clipping, no training retry,
-  no FEM full export and no D0. See g5_export_review_progress_20261013.md,
-  g5_native64_mapping_amendment_20261013.md,
-  g5_pin_input_bounds_diagnostic_20261013.md and
-  g5_signed_pin_input_amendment_20261013.md. Main dialogue remains sole
-  executor; method dialogue is read-only reviewer. G5 HOLD; no confirmation
-  fields or U0.125 opened. Obsidian topic/Roadmap updated.
-- 2026-10-13 final data-review milestone: independent review admitted the
-  exact native64/signed-PIN archive lock cb9f63f8…868c for retrospective
-  horizon0 imitation only:357 common-pre-event cycles/85112 cells. Detector
-  traces have no earlier resets/gaps;U0.11 boundary checkpoint bytes and26
-  model tensors match at600/605 (serialization file bytes differ). Four FEM
-  s4 exports and100-row PIN export completed/verified. Original geometry and
-  bounded-PIN FAILs remain;teacher/physics/Contract A full qualification HOLD.
-  See g5_archive_admission_verdict_20261013.md. Unique next step is B0/B1
-  closed-form runner preparation and exact Code Ready review, capped
-  300s/2GiB/100MiB. No D0 fit,NN or confirmation scoring started. Ownership
-  and Obsidian/Roadmap synchronized;no duplicate solve/training.
-- 2026-10-13 D0 execution: exact cb86a118 independently Code Ready PASS,
-  unique S04-E016-D0-R001 launched on Mac CPU4, then guard RSS_CAP at56.53s
-  (sampled2.269GiB>2GiB), own child terminated. Six inner fits logged but no
-  complete outer/percycle/models/figures persisted; no retry. Execution failed,
-  method verdict INCONCLUSIVE; no Delta/NN/physical negative inferred. See
-  d0_code_review_and_run_20261013.md and external local_archive/experiments/
-  S04-E016/runs/S04-E016-D0-R001_guard_receipt.json. Minimum method evidence
-  unavailable, Evidence Ready not reached. Next prepared engineering repair:
-  cycle-streamed moments/Gram, dense-equivalence and working-set checks; a
-  fresh actual R002 needs renewed exact review and authorization. Archive data
-  admission unchanged;teacher/physics/Contract A HOLD, .1175/.125 still closed.
-- 2026-10-15 R002 terminal: exact3f78309 final review request sent with the
-  user's per-send approval; independent code review passed. Sole authorized
-  B0/B1 execution COMPLETED without retry:97.73s, peakRSS1.468GiB, output
-  about27.1MiB, below the unchanged300s/2GiB/100MiB joint limits. All12
-  transformed all-cycle ratios improve, but C1-20 damage regresses in all
-  four holdouts, physical raw driver regresses in three, and mean damage
-  bound-violation area is40.2%-67.1%. Verdict MIXED diagnostic, not physical
-  correction qualification or shared-network gradient-conflict evidence.
-  See d0_streaming_checks_and_run_20261014.md and external R002 analysis/figures.
-  Obsidian topic and single Roadmap entry updated. Next is read-only review of
-  existing early-cycle/raw/bound regressions; no automatic D1/NN, refit,
-  clipping, retry or confirmation access. No new outbound result send approved.
-- 2026-10-15 authorized read-only R002 cause audit: no new fit/prediction,
-  producer access or confirmation opening. Existing scores show equal stratum
-  weights do not prevent late damage MSE dominance (68%-96% of B0 total);
-  early regression persists after excluding C1-C2. Saved C20 decompositions
-  identify oversized damage corrections in3/4 cases, raw high-value suppression
-  (reference top~1% area contains>99.5% of B1 physical raw error), and deeper
-  damage-bound violations despite less violating area. These fixed-snapshot
-  explanations are not full-trajectory causal ablations or new acceptance gates.
-  See d0_R002_readonly_cause_audit_20261015.md and its derived JSON pointer.
-  Disposition: repair estimator/acceptance design before MOO, preserving external
-  horizon0 architecture, data lock and splits. Unique next step is a no-compute
-  design amendment choosing physical estimand/admissible representation/minimal
-  test; no training or refit authorized. Obsidian/Roadmap updated; no outbound
-  result message sent. Existing R002 verdict and original outputs unchanged.
-- 2026-10-15 design-only follow-up prepared at user request: proposed
-  design_revision_raw_physical_v1_20261015.md narrows the next question to
-  single-output physical raw residual ridge, a fixed nonnegative output map,
-  identical pointwise-admissible d/history controls, worst-whole-Umax physical
-  error and inner early-regime veto with preselected whole-trajectory fallback.
-  No new fit, counterfactual, runner implementation or outgoing request.
-  Historical R002 untouched; new estimand/selector would need a new Experiment
-  ID, separate exact implementation review and explicit run authorization.
-  Existing300s/2GiB/100MiB cap is proposed only, not renewed execution authority.
-  Method-chat design-review request drafted for per-send user approval;
-  Obsidian/Roadmap updated to design-pending status, confirmation remains closed.
-- 2026-10-15 independent design review received: exact approved410fffc message
-  sent once and receipt/final verified. Reviewer directionally endorses the
-  single-raw scope and common admissible baseline but requires three document
-  fixes: explicit h/r input scales, terminal numerical errors rather than
-  normal fallback, consistent tolerance/tie/partial-fallback routing. Main chat
-  checked all three against unchanged410fffc and agrees. See
-  design_review_result_410fffc_20261015.md for source message and exact findings.
-  Status revision-required, not design/code/run approval. Unique next action
-  is document-only v2 then a newly approved review request; no design rewrite,
-  implementation, fitting or new computation in this turn. Obsidian/Roadmap
-  updated; no additional outgoing message or confirmation access.
-- 2026-10-15 user-authorized document-only v2 prepared: see
-  design_revision_raw_physical_v2_20261015.md. Both full-domain training-PIN
-  h/r means now explicit for each independent inner/outer fit; terminal
-  identity/numerical/map failures cannot become ordinary fallback; unidentified
-  denominators stop inconclusively; eps/tie/partial-fallback branches consistent.
-  Original signed PIN input and V0/V1 scope unchanged. Future toy cases specified
-  only, not implemented/executed. v1/410fffc and R002 remain unchanged.
-  Exact re-review request is being prepared for per-send approval; no sending,
-  implementation, fitting, producer access or new Experiment/Run in this turn.
-  Obsidian/Roadmap updated to v2-pending status, not review or run approval.
-- 2026-10-15 v2 independent re-review completed: exact user-approved45b8d32
-  request sent once; returned final explicitly confirms all three issues
-  resolved and no new mandatory corrections. Main chat checked scale,
-  terminal-error and tolerance/fallback clauses against unchanged45b8d32.
-  See design_review_result_45b8d32_20261015.md for delivery/response identity.
-  Design is accepted as a basis for implementation discussion only; no code,
-  tests, producer access, fit or further message this turn. Other S04-E017
-  material in the reviewer response is not inherited as approval here.
-  Recommended next step requires separate user authorization for runner/toy
-  preparation and subsequent exact code/resource review; fitting needs its
-  own later approval. Obsidian/Roadmap updated; confirmation remains closed.
-- 2026-10-15 user-approved implementation/engineering preparation under45b8d32:
-  raw scalar V0/V1 runner, joint guard/report and synthetic/mocked checks prepared
-  at82e588e/8ef6c2d. No real inputs opened, real fit/score, SSH, confirmation access
-  or code-review send. Toy dense/stream Gram maxdiff1.55e-15; nested selections
-  and physical scores agree. Full generated357-cycle/86408-cell pipeline exits0:
-  94.34s, aggregate sampledRSS1.60008GiB, output10.78MiB. Original caps unchanged;
-  source-sized arrays plus loading-transient proxy, not actual decode/I/O.
-  See raw_v2_runner_engineering_20261015.md for exact code/evidence/limitations.
-  Figures visibly marked engineering-only; mocked cap cleanup tests pass.
-  Main chat sole executor, method chat read-only; no duplicate/other-chat work
-  launched. Exact code-review request is next and still needs per-send approval.
-  Independent Code Ready and a named actual-run protocol/approval remain absent.
-  Obsidian/Roadmap updated; original R001/R002/design/data identities preserved.
-- 2026-10-15 exact user-approved ab34c46 code-review request sent once; final
-  review received and checked against unchanged code. NEEDS REVISION: one P2,
-  caller-relative authorization path is passed unchanged to a child whose cwd
-  becomes repository root. h/r, physical residual/final map, error/fallback and
-  four-fold/tolerance logic otherwise align with45b8d32. See
-  raw_v2_code_review_result_ab34c46_20261015.md for per-item source checks and
-  delivery/response IDs. Unique proposed next action is localized path repair
-  plus one mocked non-root-cwd handoff check, then difference-only re-review;
-  no full-size resource rerun needed for this change. No implementation, tests,
-  actual archive reads, real fit/score or producer access this turn. Main chat
-  sole execution owner; method chat read-only, S04-E017 held. Obsidian/Roadmap
-  updated; new actual-run protocol and separate approval remain required.
-- 2026-10-15 user-approved path-only repair completed at c883bfd. Guard resolves
-  authorization once against caller cwd; parent validator/env/child argv agree.
-  One isolated non-repository-cwd mock handoff test passed, no actual approval
-  artifact/source/child/fit. See appended raw_v2_code_review_result_ab34c46_20261015.md
-  for command, exact evidence pointer and mocked real-mode receipt caveat.
-  No full resource/cap/model tests rerun; model/data/design/budgets unchanged.
-  Difference-only review request prepared for per-send approval, NOT SENT;
-  no new assignment to method chat, which remains read-only. Obsidian/Roadmap
-  updated; no code approval, actual-run protocol or real fitting authorized.
-- 2026-10-15 exact c883bfd difference-review request user-approved and sent once;
-  final APPROVED explicitly bound to c883bfd8e4ecd37d2ae32dc3717a63db018f1ae2.
-  Main chat checked path normalization/parent/argv/env and existing mock receipt;
-  prior P2 resolved, no new mandatory changes. See appended
-  raw_v2_code_review_result_ab34c46_20261015.md for item-by-item checks and IDs.
-  Base algorithm review plus accepted repair supplies narrow code approval,
-  not actual Run Ready or scientific validity. No additional tests/resource
-  runs, real archive reads/fits, producer access or unapproved message this turn.
-  Recommended next step only:prepare fresh Experiment protocol and single Run
-  card for later user approval, maintaining300s/2GiB/100MiB and current semantics.
-  Main chat sole executor; method chat read-only, S04-E017/MOO/NN held and
-  confirmation closed. Obsidian/Roadmap updated; no execution authority implied.
+- 2026-10-09: user authorised release of exactly
+  `C:\q4runs\hard5_umax_20260729_v1` and
+  `C:\q4runs\hard5_formal_20260727_v1`. Before release, the three canonical
+  case trees were revalidated as 459 files / 10,388,657,995 bytes with the
+  same complete-tree SHA256 above; the full two-root delete scope was 463
+  files / 10,388,660,792 bytes, including four separately hash-matched queue
+  provenance files. Post-action check at `2026-10-09T00:46:53+01:00` confirms
+  both exact paths absent and C: free at 31.716698 GiB. Recovery is from the
+  verified Mac/OneDrive July canonical mirror. MATLAB count remained zero and
+  the U0.1175 output root remained absent. Storage capacity now exceeds the
+  frozen 28.750 GiB threshold, but a fresh full producer preflight remains
+  required before any launch.
+- 2026-10-09: complete frozen producer preflight rerun after storage recovery.
+  Storage (31.679737 GiB free versus 28.75 GiB required), zero-process,
+  output-collision, clean snapshot/commit, snapshot manifest, solver, state0,
+  both MEX binaries, qualification-v5, exact U0.1175 load values, and A/B
+  capture-capability gates passed. Launch failed closed because the reviewed
+  snapshot builder accepts only U0.115/U0.125, the frozen solver has no c160
+  first-hit-search ceiling with conditional c161–c163 confirmation tail, and no
+  reviewed exact U0.1175 launcher/log contract exists. MATLAB/FEM starts: zero;
+  PID/command/log: null. Status is `BLOCKED_IMPLEMENTATION_PREFLIGHT`, not a
+  scientific negative. See `request31_u01175_complete_preflight_20261009.md`.
+- 2026-10-09: a minimal derived execution overlay was built without modifying
+  the canonical snapshot. Authoritative candidate v3 is sealed at
+  `C:\q4runs\request31_u01175_derived_snapshot_20261009_v3`, manifest SHA256
+  `fbe2b9cc2fb8d71c01b5a58b0af50e09dd6f0084df0873278406992f55e17de5`.
+  Validate-only/static review tests passed 9/9, including exact U0.1175-only
+  admission, c160 right-censor, c160-hit-to-c163 confirmation, late-hit
+  rejection, Contract A/B timing, and overlay path precedence. Status is now
+  `READY_FOR_CHATGPT_IMPLEMENTATION_REREVIEW`; long FEM runs remain zero and
+  production launch remains forbidden pending an independent verdict plus a
+  fresh manifest-bound producer preflight. Review request:
+  `docs/reviews/request31_u01175_implementation_review_request_20261009.md`.
+- 2026-10-09: independent review returned `MODIFY_AND_REREVIEW` for v3 because
+  production parent-path initialization could supersede the reviewed event
+  policy and the approval/preflight contract lacked complete run-ID, nonce and
+  freshness binding. v3 is superseded. Immutable v4 at
+  `C:\q4runs\request31_u01175_derived_snapshot_20261009_v4` repairs only those
+  implementation gates; manifest SHA256
+  `72fbb67d9e052c5b1ee451c80e3ad82224e4a1e31386510e7f588048e55e49ce`.
+  MATLAB validate-only tests passed 11/11 and PowerShell authorization tests
+  passed 10/10. Canonical parent remained clean and unchanged; MATLAB count is
+  zero and production output is absent. Status remains
+  `READY_FOR_CHATGPT_IMPLEMENTATION_REREVIEW`; no approval, production
+  preflight, c1 solve or long run is authorised. Review request:
+  `docs/reviews/request31_u01175_implementation_v4_review_request_20261009.md`.
+- 2026-10-09: independent v4 review passed, and a manifest/run-ID/nonce-bound
+  approval plus fresh full producer preflight passed. The reviewed production
+  launcher was invoked exactly once at `2026-10-09T01:09:03.9824443Z`, recording
+  PID `30656`. The immediate health check found that PID absent, MATLAB count
+  zero, both production logs empty and the output root absent. Authoritative
+  status is `START_FAILED_NOT_RUNNING`, not `RUNNING`; no scientific payload or
+  result exists. No second launch was attempted. The preflight receipt was
+  renamed to `production_preflight_consumed_start_failed.json` so it cannot be
+  reused. A retry requires reviewed launcher repair, new approval/nonce and new
+  full preflight. See `request31_u01175_v4_launch_attempt_20261009.md`.
+- 2026-10-09: read-only launcher diagnosis and immutable v5 candidate completed.
+  Evidence confirms the v4 direct `Start-Process matlab.exe` attempt was not an
+  observable persistent launch on this host, but does not isolate quoting,
+  MATLAB launcher behaviour or process lifetime as the unique sub-cause. v5
+  replaces only that boundary with `Start-Process PowerShell worker -> call
+  operator MATLAB` plus a worker/MATLAB/heartbeat handshake before `RUNNING`.
+  The harmless no-solve probe and failure branches passed: MATLAB 11/11,
+  authorization 10/10, spawn-contract 6/6. Candidate manifest is
+  `2f14fd5ad90a629ae88890b88e251b2653167928e0d20d0819ce6135873453c1`;
+  canonical parent remains clean, MATLAB=0 and production output absent.
+  Status is `READY_FOR_CHATGPT_LAUNCHER_REREVIEW`; no v5 approval, preflight or
+  production attempt exists. Review request:
+  `docs/reviews/request31_u01175_launcher_v5_review_request_20261009.md`.
+- 2026-10-09: v5 was superseded before external review after a cross-check
+  found its preflight writer and launcher targeted different review roots. No
+  approval, preflight or production occurred. Immutable v5b aligns both paths
+  and adds an explicit regression gate. Authoritative manifest is
+  `14e96779d0ea83bdc8a7f7e351f988740708feb7d3a5949cbf39c2c4ffb2a219`;
+  MATLAB 11/11, authorization 10/10 and spawn-contract 7/7 all pass. Parent is
+  clean, MATLAB=0, output absent, and v5b approval/preflight are absent. Status
+  remains `READY_FOR_CHATGPT_LAUNCHER_REREVIEW`. Review request:
+  `docs/reviews/request31_u01175_launcher_v5b_review_request_20261009.md`.
+- 2026-10-09: v5b external review returned `MODIFY_AND_REREVIEW`. Immutable v6
+  adds worker-descendant/creation-time MATLAB attribution, guaranteed terminal
+  receipts after worker start, a real missing-executable failure probe, and
+  exclusive UTF-16LE native logs with decode validation. Windows R2025b was
+  observed as worker -> MATLAB launcher -> MATLAB engine, so v6 selects the
+  unique owned MATLAB leaf rather than rejecting the healthy two-level chain.
+  Authoritative manifest is
+  `61725acf0a07caa9c7b0e622c81f30d496f0f2d184cf0abaad419a5bba6e0d53`;
+  MATLAB 11/11, authorization 10/10 and spawn-contract 12/12 all pass. The
+  live probe recorded worker PID 27552, engine PID 49732, parent launcher PID
+  25640 and engine creation time `2026-10-09T01:56:26.4540870+00:00`.
+  MATLAB=0, output/approval/preflight absent, and no scientific payload exists.
+  Status remains `READY_FOR_CHATGPT_LAUNCHER_REREVIEW`; no production retry is
+  authorised. Review request:
+  `docs/reviews/request31_u01175_launcher_v6_review_request_20261009.md`.
+- 2026-10-09: v6 review returned `MODIFY_AND_REREVIEW` on one remaining
+  launcher-only identity boundary. Immutable v7 requires the worker-owned,
+  post-start MATLAB engine leaf to have normalized `ExecutablePath` exactly
+  equal to the frozen R2025b
+  `C:\Program Files\MATLAB\R2025b\bin\win64\MATLAB.exe`. Missing-path and
+  launcher-only snapshots remain waiting and cannot report `RUNNING`.
+  Authoritative manifest is
+  `8a30ce48dfa4be30ba196a8d54a7177f74d0b79206fe292539eecce9f684f742`;
+  MATLAB 11/11, authorization 10/10 and spawn-contract 13/13 all pass. The
+  harmless live probe recorded worker PID 45668, engine PID 16160, launcher
+  parent PID 36032, exact engine path and creation time
+  `2026-10-09T02:05:13.1711990+00:00`. Parent manifest remains unchanged;
+  MATLAB=0 and output/approval/preflight are absent. No production retry or
+  scientific payload exists. Status is `READY_FOR_CHATGPT_LAUNCHER_REREVIEW`.
+  Review request:
+  `docs/reviews/request31_u01175_launcher_v7_review_request_20261009.md`.
+- 2026-10-09: independent v7 review passed. A new manifest/run-ID/nonce-bound
+  approval and fresh full producer preflight passed all canonical identity,
+  exact evaluator, state0, MEX, qualification, load, A/B, engine prerequisite,
+  zero-process, output-collision and storage gates. The exactly-one authorised
+  production retry captured the reviewed worker -> launcher -> exact R2025b
+  engine chain, but the post-launch health check found all three PIDs absent,
+  heartbeat stopped at `matlab_call_operator_begin`, native logs empty, no
+  terminal worker receipt and no output root. Authoritative status is
+  `START_FAILED_NOT_RUNNING`, not `RUNNING`; scientific result is none. The
+  preflight was consumed, no second retry is permitted, MATLAB=0 and output
+  remains absent. See
+  `request31_u01175_v7_launch_attempt_20261009.md`.
+- 2026-10-09: v8 launcher-only diagnosis supports the OpenSSH process-lifetime
+  hypothesis. A WMI-created Session-0 worker survived the creator SSH
+  disconnect, and a second SSH connection observed worker PID 26892 -> MATLAB
+  launcher PID 36376 -> exact R2025b engine PID 34688 during a 20-second
+  no-solve probe; terminal exit was zero, MATLAB returned to zero and output
+  remained absent. Immutable v8 manifest is
+  `e80c4b835d68ccff941c5eccc95ab5f8a3aea5a40ab2462b8ac7cb3d81bfa74a`.
+  MATLAB 11/11, authorization 10/10, spawn 13/13 and detachment 8/8 pass.
+  Canonical parent remains clean. Status is
+  `READY_FOR_CHATGPT_DETACHED_LAUNCHER_REREVIEW`; approval/preflight are absent
+  and production was not started. See
+  `request31_u01175_v8_detached_launcher_candidate_20261009.md`.
