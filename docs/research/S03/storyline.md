@@ -705,3 +705,16 @@
   rescue. Original quota-not-started record and frozen results remain unchanged.
   Next possible preparation: separately approved original65 regression packet;
   no new execution or independent acceptance triggered by this result.
+
+- **2026-10-18 — G01-R65-A001 original65 regression packet statically ready.**
+  Original41+24 tests and dyadic reference byte-identical to A002; current
+  seven-source identity remains ecb8b9a9. Independent read-only Codex returned
+  PASS_STATIC_REGRESSION_PACKAGE atclean72f3e146, packetSHA6790392991af;
+  no mandatory revision. See S03-E019/thread_stop_regression_review.md and
+  thread_stop_regression_execution_package.md. Unique command preserves
+  singleCPU/60s soft budget, original tolerances, failfast and actualQR/SVD
+  guards; NumPy/SciPy imports allowed, unlike prior stdlib-only G01 controls.
+  Import-mode guard remains inactive, retaining original assertRaises/stubs.
+  No Python/import/AST/discovery/test or archive/real/held reads this turn;
+  no source/frozen changes, B002 retry or C/D. Static readiness is not65/65
+  execution evidence. Await exact-command user approval; no new run started.
