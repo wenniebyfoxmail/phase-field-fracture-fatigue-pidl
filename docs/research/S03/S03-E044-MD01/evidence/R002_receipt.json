@@ -1,0 +1,16 @@
+{
+  "execution": "succeeded",
+  "numeric_summary_sha256": "0e045badd2a20896a410a482d5f81121f2c4ca4ec723fc5edf342b77f605e8d8",
+  "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001",
+  "renderer_sha256": "f493abc5d05982ecdbc15f84422ee1d6be37da7a2d0db6da159841152e1e8211",
+  "numerical_rerun": false,
+  "figures": 2,
+  "output_hashes": {
+    "F01_all_new_target_masks.pdf": "56dc031661139dc6612f2270ae1b5f9e7d1db20fdb64ea88bb29da4504835521",
+    "F01_all_new_target_masks.png": "e519885b4bf9314e71d1b820ca808c74f2f81d3e2a7d0c837e6cc434fdd6294c",
+    "F02_every_window_forecast.png": "6257b149d7a5811d97f1a4e085170042b8c73934e8f58f0bc75d2f070d60df69",
+    "F01_all_new_target_masks.md": "57c5a9ab75bf254c3a260bfd0848e8412db9ee63858ca559417724b1c8743493",
+    "F02_every_window_forecast.pdf": "cc968900f3bab7f38f757a068aef39dfbf81bf5d2e39fb399d636b23022201ee",
+    "F02_every_window_forecast.md": "394de41df66c1fcc37448448126396d5c24607feafa80acd42c687dc152d44b8"
+  }
+}

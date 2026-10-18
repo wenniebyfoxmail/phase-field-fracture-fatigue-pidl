@@ -1,0 +1,181 @@
+{
+  "role": "new rolling query extension on previously exposed images; one trajectory",
+  "selection_sha256": "bd63b4e36bf5ca0f9bede0b06dbdc7f50184e22421863ec2b593ea5b6f5b06c2",
+  "windows": [
+    [
+      22,
+      23,
+      24
+    ],
+    [
+      23,
+      24,
+      25
+    ],
+    [
+      24,
+      25,
+      26
+    ]
+  ],
+  "coverage": "3/3 paired windows",
+  "observations": [
+    {
+      "stage": 22,
+      "role": "unchanged_history_cache",
+      "area": 4565,
+      "support": 250,
+      "mass": 18.26,
+      "occupied_fraction": 1.0,
+      "p10": 10.0,
+      "p50": 18.0,
+      "p90": 26.099999999999994
+    },
+    {
+      "stage": 23,
+      "role": "unchanged_history_cache",
+      "area": 5057,
+      "support": 250,
+      "mass": 20.228,
+      "occupied_fraction": 1.0,
+      "p10": 10.0,
+      "p50": 20.0,
+      "p90": 27.099999999999994
+    },
+    {
+      "stage": 24,
+      "role": "new_target_then_next_history",
+      "area": 5755,
+      "support": 250,
+      "mass": 23.02,
+      "occupied_fraction": 1.0,
+      "p10": 13.0,
+      "p50": 24.0,
+      "p90": 30.0
+    },
+    {
+      "stage": 25,
+      "role": "new_target_then_next_history",
+      "area": 7300,
+      "support": 250,
+      "mass": 29.2,
+      "occupied_fraction": 1.0,
+      "p10": 16.0,
+      "p50": 29.0,
+      "p90": 39.099999999999994
+    },
+    {
+      "stage": 26,
+      "role": "new_target_then_next_history",
+      "area": 6612,
+      "support": 240,
+      "mass": 27.55,
+      "occupied_fraction": 0.96,
+      "p10": 12.900000000000002,
+      "p50": 25.0,
+      "p90": 45.0
+    }
+  ],
+  "comparisons": [
+    {
+      "history_a": 22,
+      "origin": 23,
+      "target": 24,
+      "observed_area": 5755,
+      "observed_support": 250,
+      "observed_mass": 23.02,
+      "common_band_clear": true,
+      "persistence": 5057.0,
+      "secant": 5549.0,
+      "raw_secant": 5549.0,
+      "support_hold": 5549.0,
+      "predicted_support": 250,
+      "raw_predicted_mass": 22.196,
+      "predicted_mass": 22.196,
+      "mass_clipped": false,
+      "reason": "available",
+      "persistence_ae": 698.0,
+      "secant_ae": 206.0,
+      "support_hold_ae": 206.0,
+      "paired_scored": true,
+      "gain_vs_persistence": 492.0,
+      "gain_vs_secant": 0.0,
+      "support_ae": 0,
+      "mass_ae": 0.8239999999999981
+    },
+    {
+      "history_a": 23,
+      "origin": 24,
+      "target": 25,
+      "observed_area": 7300,
+      "observed_support": 250,
+      "observed_mass": 29.2,
+      "common_band_clear": true,
+      "persistence": 5755.0,
+      "secant": 6453.0,
+      "raw_secant": 6453.0,
+      "support_hold": 6452.999999999999,
+      "predicted_support": 250,
+      "raw_predicted_mass": 25.811999999999998,
+      "predicted_mass": 25.811999999999998,
+      "mass_clipped": false,
+      "reason": "available",
+      "persistence_ae": 1545.0,
+      "secant_ae": 847.0,
+      "support_hold_ae": 847.0000000000009,
+      "paired_scored": true,
+      "gain_vs_persistence": 697.9999999999991,
+      "gain_vs_secant": -9.094947017729282e-13,
+      "support_ae": 0,
+      "mass_ae": 3.3880000000000017
+    },
+    {
+      "history_a": 24,
+      "origin": 25,
+      "target": 26,
+      "observed_area": 6612,
+      "observed_support": 240,
+      "observed_mass": 27.55,
+      "common_band_clear": true,
+      "persistence": 7300.0,
+      "secant": 8845.0,
+      "raw_secant": 8845.0,
+      "support_hold": 8844.999999999998,
+      "predicted_support": 250,
+      "raw_predicted_mass": 35.379999999999995,
+      "predicted_mass": 35.379999999999995,
+      "mass_clipped": false,
+      "reason": "available",
+      "persistence_ae": 688.0,
+      "secant_ae": 2233.0,
+      "support_hold_ae": 2232.999999999998,
+      "paired_scored": true,
+      "gain_vs_persistence": -1544.9999999999982,
+      "gain_vs_secant": 1.8189894035458565e-12,
+      "support_ae": 10,
+      "mass_ae": 7.829999999999995
+    }
+  ],
+  "paired_mae": {
+    "persistence": 977.0,
+    "secant": 1095.3333333333333,
+    "support_hold": 1095.333333333333
+  },
+  "fixed_identification": true,
+  "old_cache_unmodified": true,
+  "new_stage_support_from": 23,
+  "new_stage_extraction_count": 3,
+  "clipped": 0,
+  "not_material_registration": true,
+  "shadow_false_positives": "retained; not quantified",
+  "equal_support_regime": [
+    24,
+    25,
+    26
+  ],
+  "prediction_equals_area_secant": [
+    24,
+    25,
+    26
+  ]
+}

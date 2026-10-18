@@ -274,3 +274,18 @@ noindependentvalidation. R001single0.232s,148inputhashes/oldE042filesunchanged,
 27rationalarithmeticchecks; bothactualfiguresdisplayed, no newextraction/training.
 Nextnewfixedstage/windowverification proposed, notexecuted; preservecurrentrules,
 oldhalfdepth/scoring, observerrisk flags ratherthanclaimshadowremoval.
+
+### E044 metadata-fixed next-stage extension — 2026-10-18
+
+[E044results](../research/S03/S03-E044-MD01/results.md): first3completeafter23=
+24/25/26, fixedrollingqueries22,23→24;23,24→25;24,25→26. Sourcealreadyviewed,
+newmethodquerynotvirginholdout. Guide23fixed, no parameter/locationchanges;
+predictionsbeforeeachtargetdecode. All3scoreable. Persistence/secant/separated
+MAE977/1095.333/1095.333px²; early2win,lastloses. AllhistoryL250 meansmethods
+2/3algebraicallysame, noincrementalbenefit. Target26L240/M27.55; fixedcorridor
+overlay showsupper-leftdarktraceoutsideguide60px, nearbyotherdarkpixelsremain.
+Do notcallareareductionphysicalshrinkage orpureforecastmiss. Fixedguide transfer
+limitation,notentireperframe/predictionroute. R0010.945s,173hashesunchanged,
+all3arithmetic/eventchainschecked; allcaseplotsandposthocgeometrydisplayed.
+Nextoneimage-geometricguidetransfercandidate proposed, notexecuted; preserve
+frozenmasks/oldhalfdepth/scores, no mandatoryanchors ormodelcomplexityexpansion.

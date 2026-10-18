@@ -1,0 +1,15 @@
+{
+  "execution": "succeeded",
+  "posthoc": true,
+  "target": 26,
+  "selection_rule": "largest stored separated AE; smallest target tie-break",
+  "inputs": {
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/summary.json": "0e045badd2a20896a410a482d5f81121f2c4ca4ec723fc5edf342b77f605e8d8",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R000/selection_lock.json": "bd63b4e36bf5ca0f9bede0b06dbdc7f50184e22421863ec2b593ea5b6f5b06c2",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E044-MD01/runs/S03-E044-MD01-R001/W26/observation_arrays.npz": "b8ff08b36707bd857a7f60fa663f11e0f8e82defdc31b19c455daaec1670ebbe",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/.codex/worktrees/crackmnist-tokenizer-mvp/scripts/plot_md01_guide_transfer_audit.py": "7bab7553ef0d53cd1f34077e51bb5713d2eb0c5639fa950783c193f8a83700ac"
+  },
+  "old_saved_mask_unchanged": true,
+  "new_extraction": false,
+  "new_forecast": false
+}
