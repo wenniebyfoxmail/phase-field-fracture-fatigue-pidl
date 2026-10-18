@@ -1,0 +1,227 @@
+{
+  "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_abc_20261018T115520Z/retrieved/readout/C/update200/fields.npz",
+  "lower": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_abc_20261018T115520Z/retrieved/readout/C/initial_history.npy",
+  "scope": "Only saved C physical nodal d and own fixed initial lower; native Q4 reconstruction. No raw NN output read or inferred.",
+  "native_operator": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/analysis/run_multicycle_cross_replay.py",
+  "nodes": 86756,
+  "cells": 86408,
+  "GP_count": 345632,
+  "domain_area": 1.0,
+  "initial_C_equal_lower": true,
+  "hard_line_exact_nodes": 251,
+  "roundoff": {
+    "float32_unit_epsilon": 1.1920928955078125e-07,
+    "measured_FEM_float64_cast_max": 2.971290757880496e-08,
+    "measured_initial_map_roundoff": 1.4901161193847656e-08,
+    "actual_initial_C_error": 0.0,
+    "GP_float32_vs_float64_damage_Linf": 1.0815489459581329e-07,
+    "GP_float32_vs_float64_lower_Linf": 9.112208776418385e-08
+  },
+  "tolerances": {
+    "strict_physical": "0<=d<=1; mapped previous-accepted lower is separate irreversibility condition",
+    "QP_contract": "source/native_q4_damage_qp.py::validate_qp_contract default1e-10 is a hard-feasibility comparison, not a new r2 pass rule",
+    "legacy_box": "experiment.md existing applicable box <=1e-3; separate from irreversibility",
+    "PIDL_tol_ir": ".005 sets gamma16875; not a posthoc allowed-healing guarantee or hard constraint",
+    "FEM_tol_irrev": ".001 sets gamma421875; phase/staggered4e-4 are solver criteria, not allowable damage-bound violations"
+  },
+  "area_note": "GP measures are native 4-point Jacobian-weighted quadrature estimates of violation support, not exact continuum level-set areas. Nodal measures use lumped masses and are separately labelled.",
+  "temporal_note": "healing means C200 below its own fixed U0 lower; this block commits no history and is not a temporal trajectory.",
+  "nodal": {
+    "minimum": -0.000163859614985995,
+    "minimum_xy": [
+      0.02900106215008931,
+      -0.01136054690656263
+    ],
+    "healing_max": 0.0018659234046936035,
+    "healing_max_xy": [
+      -0.2598831025285707,
+      0.001154195500710583
+    ],
+    "negative_integral": 2.5661581900336497e-05,
+    "healing_integral": 2.5714843111229267e-05,
+    "healing_L2": 2.9804598360509163e-05,
+    "upper_violation_max": 0.0,
+    "healing_beyond_epsilon_on_positive_initial_damage": {
+      "points": 90,
+      "quadrature_or_lumped_area": 0.00034908353129653366,
+      "fraction": 0.0003490835312965338,
+      "bbox_xy": [
+        [
+          -0.4200167283763551,
+          -0.02513123411211519
+        ],
+        [
+          0.01086877621377483,
+          0.02312114850338835
+        ]
+      ],
+      "centroid_xy": [
+        -0.17855738651291148,
+        -0.0064117026488338166
+      ]
+    },
+    "unit_epsilon_support": {
+      "threshold": 1.1920928955078125e-07,
+      "negative": {
+        "points": 81666,
+        "quadrature_or_lumped_area": 0.9784133269833618,
+        "fraction": 0.9784133269833623,
+        "bbox_xy": [
+          [
+            -0.5,
+            -0.5
+          ],
+          [
+            0.5,
+            0.5
+          ]
+        ],
+        "centroid_xy": [
+          0.0054274923755448365,
+          -1.2396354440976299e-05
+        ]
+      },
+      "healing": {
+        "points": 81698,
+        "quadrature_or_lumped_area": 0.9785382558883936,
+        "fraction": 0.978538255888394,
+        "bbox_xy": [
+          [
+            -0.5,
+            -0.5
+          ],
+          [
+            0.5,
+            0.5
+          ]
+        ],
+        "centroid_xy": [
+          0.005415042967665116,
+          -1.2230177633943787e-05
+        ]
+      }
+    },
+    "above_1e_minus3": {
+      "threshold": 0.001,
+      "negative": {
+        "points": 0,
+        "quadrature_or_lumped_area": 0.0,
+        "fraction": 0.0,
+        "bbox_xy": null,
+        "centroid_xy": null
+      },
+      "healing": {
+        "points": 5,
+        "quadrature_or_lumped_area": 1.8889493542750398e-05,
+        "fraction": 1.8889493542750405e-05,
+        "bbox_xy": [
+          [
+            -0.2598831025285707,
+            -0.002038191410743411
+          ],
+          [
+            0.002567407083507826,
+            0.0132084871665647
+          ]
+        ],
+        "centroid_xy": [
+          -0.031175258578222443,
+          0.007046206250782693
+        ]
+      }
+    }
+  },
+  "native_Q4_GP": {
+    "minimum": -0.00015759320870325727,
+    "minimum_xy": [
+      0.028595999910488,
+      -0.011762329742525631
+    ],
+    "healing_max": 0.0005541627658500747,
+    "healing_max_xy": [
+      -0.2595987468136743,
+      0.0009798257087792605
+    ],
+    "negative_integral": 2.5624261414144076e-05,
+    "healing_integral": 2.5629034946834405e-05,
+    "healing_L2": 2.8255308523575204e-05,
+    "upper_violation_max": 0.0,
+    "healing_beyond_epsilon_on_positive_initial_damage": {
+      "points": 354,
+      "quadrature_or_lumped_area": 0.000340525010850361,
+      "fraction": 0.000340525010850361,
+      "bbox_xy": [
+        [
+          -0.4215807412001031,
+          -0.025165468403222084
+        ],
+        [
+          0.00946078875789471,
+          0.023597854417648816
+        ]
+      ],
+      "centroid_xy": [
+        -0.2229349558425395,
+        -0.01256423064839365
+      ]
+    },
+    "unit_epsilon_support": {
+      "threshold": 1.1920928955078125e-07,
+      "negative": {
+        "points": 323893,
+        "quadrature_or_lumped_area": 0.9770239014959758,
+        "fraction": 0.9770239014959758,
+        "bbox_xy": [
+          [
+            -0.4995792980597899,
+            -0.49957987501059065
+          ],
+          [
+            0.499579878713512,
+            0.4926323234855367
+          ]
+        ],
+        "centroid_xy": [
+          0.0057483070452433935,
+          -0.0002182033070430277
+        ]
+      },
+      "healing": {
+        "points": 323958,
+        "quadrature_or_lumped_area": 0.9770847388964353,
+        "fraction": 0.9770847388964353,
+        "bbox_xy": [
+          [
+            -0.4995792980597899,
+            -0.49957987501059065
+          ],
+          [
+            0.499579878713512,
+            0.4926323234855367
+          ]
+        ],
+        "centroid_xy": [
+          0.005739913894921503,
+          -0.00021826544680642043
+        ]
+      }
+    },
+    "above_1e_minus3": {
+      "threshold": 0.001,
+      "negative": {
+        "points": 0,
+        "quadrature_or_lumped_area": 0.0,
+        "fraction": 0.0,
+        "bbox_xy": null,
+        "centroid_xy": null
+      },
+      "healing": {
+        "points": 0,
+        "quadrature_or_lumped_area": 0.0,
+        "fraction": 0.0,
+        "bbox_xy": null,
+        "centroid_xy": null
+      }
+    }
+  }
+}

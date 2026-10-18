@@ -1,8 +1,9 @@
 """Opt-in SENT crack-line and initial-field alignment on ordered native nodes.
 
 Frozen buffers are part of the representation, not optimizer parameters.
-This module neither trains nor updates any history. It deliberately retains
-the legacy soft tails: a hard crack line is not hard box/irreversibility.
+This module neither trains nor updates any history. The default retains the
+legacy soft tails. A separately serialized opt-in can impose the initial
+nodal lower bound and unit upper bound; existing arms stay unchanged.
 """
 import torch
 from torch import nn
@@ -10,10 +11,16 @@ from torch import nn
 
 class NodalDamageAlignment(nn.Module):
     def __init__(self, coordinates, *, mode, initial_damage=None,
-                 raw_reference=None, expected_crack_mask=None):
+                 raw_reference=None, expected_crack_mask=None,
+                 hard_lower_box=False):
         super().__init__()
         if mode not in {"hard_line", "fem_initial"}:
             raise ValueError("mode must be hard_line or fem_initial")
+        if not isinstance(hard_lower_box, bool):
+            raise ValueError("hard_lower_box must be bool")
+        if hard_lower_box and mode != "fem_initial":
+            raise ValueError("hard lower/box requires a declared FEM initial lower")
+        self.hard_lower_box = hard_lower_box
         xy = coordinates.detach().clone()
         if (xy.ndim != 2 or xy.shape[1] != 2 or not xy.is_floating_point()
                 or not bool(torch.isfinite(xy).all())):
@@ -52,7 +59,10 @@ class NodalDamageAlignment(nn.Module):
         return result
 
     def get_extra_state(self):
-        return {"schema": "sent_nodal_damage_alignment_v1", "mode": self.mode}
+        state = {"schema": "sent_nodal_damage_alignment_v1", "mode": self.mode}
+        if self.hard_lower_box:
+            state["constraint"] = "initial_nodal_lower_unit_upper_v1"
+        return state
 
     def set_extra_state(self, state):
         if state != self.get_extra_state():
@@ -78,6 +88,17 @@ class NodalDamageAlignment(nn.Module):
             # the declared tensor dtype, without an inverse-map roundoff drift.
             shifted = self.anchor_raw + (raw_alpha-self.raw_reference)
             damage = self.initial_damage + (legacy_map(shifted)-legacy_map(self.anchor_raw))
+            if self.hard_lower_box:
+                if not bool(torch.isfinite(damage).all()):
+                    raise ValueError("finite damage required before hard projection")
+                # Project inside the forward representation, before all native
+                # Q4 spatial gradients/energy evaluations. No history update.
+                damage = torch.clamp(damage, min=self.initial_damage,
+                                     max=torch.ones_like(damage))
+                # A coincident lower=upper=1 is constant, including at the
+                # equality point where torch.clamp alone chooses gradient 1.
+                damage = torch.where(self.initial_damage == 1,
+                                     torch.ones_like(damage), damage)
         return torch.where(self.crack_mask, torch.ones_like(damage), damage)
 
     def initial_history(self, original_history):
