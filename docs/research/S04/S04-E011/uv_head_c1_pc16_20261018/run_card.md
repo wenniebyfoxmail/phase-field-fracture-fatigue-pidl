@@ -7,7 +7,7 @@ source9a0bf3c7, negative result and consumed authorization remain unchanged.
 |Binding|Exact value|
 |---|---|
 |Owner|验证位移–damage 耦合机制 /01a14e3b-f1ff-7360-a084-c1f13b261cc6|
-|Executable source|55c1d266a3418c8dcf7618353699b4699410f3d2|
+|Executable source|3dfef418828e53632b3a5c90521ab8989dbf9673|
 |Frozen design|52d240880e91124bcdf30ee502922e3ad93c4c2c conditioning_proposal_v1_20261018.md|
 |Protocol|S04-E011-UVH-C1-PC16-v1, protocol.md + inputs.json + resource_card.md at executable source|
 |Fresh Run ID|pf_s04e011_uvh_c1_pc16_r1_20261018|
@@ -75,7 +75,10 @@ probe HVP. QR/eigh build a frozen invertible C=I+Q(S^-1/2-I)Q.T, identity on
 Q complement. Optimize F(Cy), all776 y coordinates, y0=0. No eigenvalue floor,
 jitter/truncation/smaller-k/seed refresh. Actual field/energy/gradient equivalence,
 positive curvature and C/inverse checks are enforced prospectively in code.
-Stationarity is ORIGINAL z infinity norm<=1e-8; y gtol=0, memory10/maxls20/
+Stationarity is ORIGINAL z infinity norm<=1e-8 in BOTH final actual-force and
+basis readouts; their gradient agreement is checked and recorded using already-paid
+force, with no extra objective/AD call. Callback stopping uses basis z, but a
+failed final actual screen stays nonstationary without restart. y gtol=0, memory10/maxls20/
 ftol1e-14. Restore only last callback-confirmed accepted point or original zero.
 
 ## Shared work/time/memory budget and stops
@@ -146,7 +149,7 @@ Invoke exactly once, detached, using this full UUID rather than ordinal3:
 
 ```bash
 cd /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_pc16_r1_20261018/code
-nohup env PYTHONDONTWRITEBYTECODE=1 PYTHONOPTIMIZE=0 CUDA_VISIBLE_DEVICES=GPU-ea68e432-5acb-5488-5be1-4ba9a2053beb OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 /usr/bin/python3 -B tools/s04_e011_pc16/guard.py --execute-approved --approval-ref S04-E011-UVH-C1-PC16-CARD-r1 --expected-source 55c1d266a3418c8dcf7618353699b4699410f3d2 > /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_pc16_r1_20261018/guard.log 2>&1 < /dev/null &
+nohup env PYTHONDONTWRITEBYTECODE=1 PYTHONOPTIMIZE=0 CUDA_VISIBLE_DEVICES=GPU-ea68e432-5acb-5488-5be1-4ba9a2053beb OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 /usr/bin/python3 -B tools/s04_e011_pc16/guard.py --execute-approved --approval-ref S04-E011-UVH-C1-PC16-CARD-r1 --expected-source 3dfef418828e53632b3a5c90521ab8989dbf9673 > /mnt/data2/drtao/wennie/pf_s04e011_uvh_c1_pc16_r1_20261018/guard.log 2>&1 < /dev/null &
 ```
 
 The approval-ref flag itself is not authorization. Do not run a help/smoke/
@@ -171,7 +174,7 @@ capacity verdict; no coupling/root-cause/teacher/physical/road conclusion.
 The main S04 owner will read this result and maintain the shared milestone.
 
 Approval wording after completed static review:
-“批准按S04-E011-UVH-C1-PC16-CARD-r1、源码55c1d266a3418c8dcf7618353699b4699410f3d2，
+“批准按S04-E011-UVH-C1-PC16-CARD-r1、源码3dfef418828e53632b3a5c90521ab8989dbf9673，
 在Taobo物理GPU3执行唯一一次PC16检验，含卡内SSH检查、部署、五文件读取（r2 head.npz仅transform）、
 34HVP构造、单次求解及报告取回；遵守400共享工作单位、900/600/840秒、8GiB RSS/8GiB CUDA、
 100MiB及4GiB余量监测，失败不重试、不改动其他进程、不重置或购买额度。”
