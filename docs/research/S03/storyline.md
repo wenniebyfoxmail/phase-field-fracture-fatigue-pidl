@@ -690,3 +690,18 @@
   performed this turn. B002/frozen artifacts untouched; no resource retry,
   original65 rerun, numeric/visual acceptance or C/D. Ready for user to approve
   this artificial test only, not an execution/scientific success claim.
+
+- **2026-10-18 — G01-A001 artificial stop package executed once and passed.**
+  User explicitly revoked the quota stop line and reapproved exactv1.2 command.
+  Cleanruntime7e24a04d/sourceecb8b9a9, external before/after7SHA unchanged.
+  chunk16ec8d exit0;26child controls matched (3normal0/23fatal70),2source static
+  categories passed; no unexpected error/warning/retry. Scriptpreprint
+  0.9912483749794774s with final60s check passed, separate toolwall0.910399542s
+  retained without conflating clocks. Zero actualQR/SVD, no scientific imports,
+  archive/real/held reads, original65 dynamic regression, producer/verifier,
+  full-size resource run, B002 retry, figure or C/D. See
+  S03-E019/thread_stop_test_results.md. Supports artificial C0 process-stop
+  behavior only, not fullCLI/font scanning, realDIC, physical inversion or B002
+  rescue. Original quota-not-started record and frozen results remain unchanged.
+  Next possible preparation: separately approved original65 regression packet;
+  no new execution or independent acceptance triggered by this result.
