@@ -9,7 +9,7 @@ from matplotlib.patches import Rectangle,Polygon
 
 def render(run,result,qualifications,admitted,cases,buffers,g,c,spatial):
     out=run/'analysis';out.mkdir(exist_ok=False);domain='SYNTHETIC ENGINEERING TEST — NOT REAL ROAD' if 'synthetic' in run.name.lower() else 'current-image real-road; region-envelope reference'
-    fig,axes=plt.subplots(1,2,figsize=(12,4));xs=np.arange(3)
+    fig,axes=plt.subplots(1,2,figsize=(12,4.8));xs=np.arange(3)
     for dx,values,color,label in [(-.16,[q['macro']['Brier'] for q in qualifications],'#477da7','CNN'),(.16,[min(q['macro'][k] for k in ['constant_Brier','zero_Brier','one_Brier']) for q in qualifications],'#89939b','best fixed constant')]:axes[0].bar(xs+dx,values,width=.3,label=label,color=color)
     for dx,values,color,label in [(-.16,[q['foreground_macro']['Dice'] if q['foreground_macro']['Dice'] is not None else np.nan for q in qualifications],'#477da7','CNN'),(.16,[np.nan if q['foreground_macro']['Dice'] is None else max(q['foreground_macro'][k] for k in ['constant_Dice','all_background_Dice','all_foreground_Dice']) for q in qualifications],'#89939b','best trivial binary')]:axes[1].bar(xs+dx,values,width=.3,label=label,color=color)
     # Individual qualification locations are reused units, not just fold averages.
@@ -24,7 +24,7 @@ def render(run,result,qualifications,admitted,cases,buffers,g,c,spatial):
                 axes[1].scatter(k+.16+offset,max(site['foreground'][key] for key in ['constant_Dice','all_background_Dice','all_foreground_Dice']),s=20,color='#444444',marker='x',zorder=4)
     for ax in axes:ax.set_xticks(xs,[f"fold{k}: {q['status']}" for k,q in enumerate(qualifications)]);ax.legend(fontsize=8)
     axes[0].set_title('Own qualification2 regional Brier — lower better');axes[1].set_title('Reference-foreground context Dice — higher better')
-    fig.suptitle(f'{run.name} | {domain}\nFrozen train6 CNN; qualification2 only; admitted={admitted}; 3 unique reused qualification sites; x = individual site diagnostic');fig.tight_layout();fig.savefig(out/'F00_qualification.png',dpi=140);plt.close(fig);g.check()
+    fig.suptitle(f'{run.name}\n{domain}\nTrain6 / qualification2; admitted={admitted}; 3 reused sites; x = individual site diagnostics',fontsize=9);fig.tight_layout(rect=(0,0,1,.80));fig.savefig(out/'F00_qualification.png',dpi=140);plt.close(fig);g.check()
     if admitted:
         comp=result['comparison'];base={v['location']:v for v in result['baseline']['locations']};after={v['location']:v for v in comp['candidate']['locations']};sites=sorted(base,key=int);fig,axes=plt.subplots(1,4,figsize=(16,4));bars=axes[0].bar(['E003','conditional OOF'],[comp['retained_old']+comp['lost_old'],comp['retained_old']+comp['new_GT']],color=['#89939b','#477da7']);axes[0].bar_label(bars);axes[0].set_title(f"old {comp['retained_old']}/"+str(comp['retained_old']+comp['lost_old'])+f"; retention={comp['retention']}")
         bars=axes[2].bar(['new','lost','net'],[comp[k] for k in ['new_GT','lost_old','net_GT']],color=['#477da7','#af5949','#397b55']);axes[2].bar_label(bars);axes[2].set_title(f"macro change={comp['macro_delta']}");bars=axes[3].bar(range(len(sites)),[after[s]['true_positives']-base[s]['true_positives'] for s in sites]);axes[3].bar_label(bars);axes[3].set_xticks(range(len(sites)),sites,rotation=45);axes[3].set_title('Full12 sites, including rejectedfold E003')
