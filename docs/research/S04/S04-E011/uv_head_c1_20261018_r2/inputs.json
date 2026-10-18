@@ -1,0 +1,104 @@
+{
+  "protocol": "S04-E011-UVH-C1-r2",
+  "run_id": "pf_s04e011_uvh_c1_r2_20261018",
+  "cycle": 1,
+  "substep": 4,
+  "load": 0.11999988,
+  "FEM_outer": 9,
+  "source_base": "bf0f21b572ad2f5a74d30dfcf8fbf402ece2ab08",
+  "files": [
+    {
+      "role": "state",
+      "path": "/mnt/data2/drtao/wennie/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/inputs/c1_peak.npz",
+      "local_reference": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/pidl_block_preparation_20261017_v1/inputs/c1_peak.npz",
+      "bytes": 15183163,
+      "sha256": "ac63ba676376179f0539c156e3fd49f8e74c5eba386f684c71a617bb637b7fdd",
+      "decode_fields": [
+        "nodes",
+        "cells",
+        "freeu",
+        "u_fem",
+        "v_fem",
+        "d_fem",
+        "ru_fem"
+      ]
+    },
+    {
+      "role": "model",
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pidl_pair_ad749c8_20261008T0912Z/probeDriver_hl8_n400_seed1_AT1_numerical_carrara_asy_aT0.5_Ncyc120_Nstep601_U0.12_s04e011_q4_production_ad749c8_current_active_native_q4_gp4_femIrrGP4_hardAlphaRecoverU0_u0.0299999-0.0599999-0.0899999-0.12-0/best_models/trained_1NN_4.pt",
+      "bytes": 4510165,
+      "sha256": "9c4ebbe4bcf1d4bc6b4997f1072a6a5f68e0c94783d0365b0224a7175ed12d1b",
+      "decode_fields": [
+        "weights_only state_dict"
+      ]
+    },
+    {
+      "role": "baseline_fields",
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/output/c1_s4/U_energy/fields.npz",
+      "local_reference": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/retrieved/archive/output/c1_s4/U_energy/fields.npz",
+      "bytes": 1355797,
+      "sha256": "6f7a52eddafc2675aab1f1ce1b53fc729914b9fb9246a6ee37ec32eb8e436e6f",
+      "decode_fields": [
+        "u",
+        "v",
+        "d"
+      ]
+    },
+    {
+      "role": "baseline_result",
+      "path": "/mnt/data2/drtao/pidl_archives/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/output/c1_s4/U_energy/result.json",
+      "local_reference": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S04-E011/runs/pf_s04e011_pbd_2c7c5dc_20261017T2110Z_production/retrieved/archive/output/c1_s4/U_energy/result.json",
+      "bytes": 833,
+      "sha256": "939ccbae02a1283650b62ed2a30abbd414f7e4626608561b96f94903a5f3bdc9",
+      "decode_fields": [
+        "E_el",
+        "free_u_l2",
+        "block",
+        "kind",
+        "weight_regularizer",
+        "objective_scale"
+      ]
+    }
+  ],
+  "read_semantics": "Hash entire four files once, then decode only whitelisted NPZ fields. Whole-file hashing is scientific access and is not authorised during preparation.",
+  "budget": {
+    "wall_seconds": 900,
+    "opt_no_new_eval_seconds": 600,
+    "work_seconds": 840,
+    "evaluations": 400,
+    "rss_bytes": 8589934592,
+    "gpu_reserved_bytes": 8589934592,
+    "output_bytes": 104857600,
+    "gpu_process_bytes": 8589934592
+  },
+  "rcond": 1e-10,
+  "relative_gain_screen": 0.0001,
+  "resource_policy": {
+    "physical_GPU": 3,
+    "gpu_uuid": "GPU-ea68e432-5acb-5488-5be1-4ba9a2053beb",
+    "minimum_initial_free_MiB": 12288,
+    "minimum_runtime_free_MiB": 4096,
+    "maximum_admission_utilization_percent": 10,
+    "admission_samples": 3,
+    "admission_interval_seconds": 1,
+    "runtime_monitor_interval_seconds": 1,
+    "service": {
+      "pid": 3295884,
+      "start_ticks": 213283304,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cmdline_sha256": "a49591b49d77aff5b8f23818f5b03d9bf9f3a1d71fe6b7f34f1bb3130cf54425",
+      "cgroup_sha256": "223dd996e67fe2019f27964c5e7348c142bee134b5ac7ea531fe7f13568996fd",
+      "utc": "2026-10-18T09:58:07Z"
+    },
+    "service_command_description": "/usr/bin/python /usr/local/bin/uvicorn api:app --host0.0.0.0 --port39070",
+    "service_baseline_MiB": 10612,
+    "maximum_service_MiB": 11636,
+    "allow_only_this_service_plus_worker": true,
+    "unknown_or_unreadable_process": "stop_owned_child_only"
+  }
+}

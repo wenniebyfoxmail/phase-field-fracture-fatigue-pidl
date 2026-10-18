@@ -10,12 +10,12 @@ import subprocess
 import sys
 import time
 
-RUN = 'pf_s04e011_uvh_c1_r1_20261018'
-CARD = 'S04-E011-UVH-C1-CARD-r1'
+RUN = 'pf_s04e011_uvh_c1_r2_20261018'
+CARD = 'S04-E011-UVH-C1-CARD-r2'
 ROOT = Path('/mnt/data2/drtao/wennie') / RUN
 OUT = Path('/mnt/data2/drtao/pidl_archives') / RUN
 CODE = ROOT / 'code'
-CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_20261018/inputs.json'
+CONTRACT = CODE / 'docs/research/S04/S04-E011/uv_head_c1_20261018_r2/inputs.json'
 
 
 def digest(path):
@@ -30,8 +30,8 @@ def save(path, value):
     path.write_text(json.dumps(value, indent=2, allow_nan=False) + '\n')
 
 
-def command(args):
-    return subprocess.check_output(args, text=True, timeout=10).strip()
+def command(args, timeout=10):
+    return subprocess.check_output(args, text=True, timeout=timeout).strip()
 
 
 def run_worker():
@@ -88,6 +88,56 @@ def output_bytes():
     return size_tree(OUT) + sum(p.stat().st_size for p in ROOT.iterdir() if p.is_file())
 
 
+def service_identity(expected):
+    """Read only OS identity; never attach/request/stop the resident service."""
+    base = Path('/proc') / str(expected['pid'])
+    raw = (base / 'stat').read_text()
+    fields = raw[raw.rfind(')') + 2:].split()
+    uids = next(r for r in (base / 'status').read_text().splitlines() if r.startswith('Uid:'))
+    return (int(fields[19]) == expected['start_ticks'] and
+            [int(v) for v in uids.split()[1:]] == expected['uids'] and
+            digest(base / 'cmdline') == expected['cmdline_sha256'] and
+            digest(base / 'cgroup') == expected['cgroup_sha256'])
+
+
+def gpu_snapshot(contract, worker_pid=None):
+    policy = contract['resource_policy']
+    expected = policy['service']
+    if not service_identity(expected):
+        raise RuntimeError('resident service identity changed; no automatic re-whitelist')
+    row = command(['nvidia-smi', '-i', str(policy['physical_GPU']),
+                   '--query-gpu=uuid,memory.free,utilization.gpu', '--format=csv,noheader,nounits'], timeout=2)
+    uuid, free, utilization = [x.strip() for x in row.split(',')]
+    if uuid != policy['gpu_uuid']:
+        raise RuntimeError('physical GPU index/UUID mapping changed')
+    apps = command(['nvidia-smi', '--query-compute-apps=gpu_uuid,pid,used_memory',
+                    '--format=csv,noheader,nounits'], timeout=2)
+    processes = {}
+    for line in apps.splitlines():
+        if not line.strip():
+            continue
+        app_uuid, pid, memory = [v.strip() for v in line.split(',')]
+        if app_uuid == uuid:
+            processes[int(pid)] = int(memory)
+    allowed = {expected['pid']}
+    if worker_pid is not None:
+        allowed.add(worker_pid)  # CUDA computation uses only this one Python worker.
+    if set(processes) - allowed or expected['pid'] not in processes:
+        raise RuntimeError('unknown/missing GPU process; no shared-service mutation')
+    if processes[expected['pid']] > policy['maximum_service_MiB']:
+        raise RuntimeError('resident service VRAM exceeds frozen allowance')
+    if worker_pid is not None and processes.get(worker_pid, 0) * 1024**2 > contract['budget']['gpu_process_bytes']:
+        raise RuntimeError('sampled worker total CUDA-process memory cap')
+    free, utilization = int(free), int(utilization)
+    required = policy['minimum_initial_free_MiB'] if worker_pid is None else policy['minimum_runtime_free_MiB']
+    if free < required:
+        raise RuntimeError('insufficient shared GPU free-memory margin')
+    if worker_pid is None and utilization > policy['maximum_admission_utilization_percent']:
+        raise RuntimeError('resident GPU is active above admission limit')
+    return dict(free_MiB=free, utilization_percent=utilization, processes_MiB=processes,
+                elapsed_utc=dt.datetime.now(dt.timezone.utc).isoformat())
+
+
 def main():
     start = time.monotonic()
     p = argparse.ArgumentParser(description=__doc__)
@@ -113,15 +163,15 @@ def main():
                        approval_ref=args.approval_ref,
                        utc=dt.datetime.now(dt.timezone.utc).isoformat()), claim)
     # An approved invocation consumes the card even if any later preflight fails.
-    if os.environ.get('CUDA_VISIBLE_DEVICES') != '0':
-        raise SystemExit('only approved physical GPU0, no fallback')
+    if os.environ.get('CUDA_VISIBLE_DEVICES') != '3':
+        raise SystemExit('only approved physical GPU3, no fallback')
     if command(['git', '-C', str(CODE), 'rev-parse', 'HEAD']) != args.expected_source:
         raise SystemExit('source identity mismatch')
     if command(['git', '-C', str(CODE), 'status', '--porcelain', '--untracked-files=all']):
         raise SystemExit('producer code checkout not clean')
     # Binding is reviewed Git content; no alternate contract/path/budget flags.
     contract = json.loads(CONTRACT.read_text())
-    if contract['protocol'] != 'S04-E011-UVH-C1-r1' or contract['run_id'] != RUN:
+    if contract['protocol'] != 'S04-E011-UVH-C1-r2' or contract['run_id'] != RUN:
         raise SystemExit('contract identity mismatch')
     if OUT.exists() or OUT.is_symlink():
         raise SystemExit('attempt already consumed; no resume/retry')
@@ -142,14 +192,11 @@ def main():
         if executable.startswith('python'):
             raise SystemExit('possible same-item producer process; resolve ownership before launch')
     # Read-only shared-resource checks precede scientific input access.
-    gpu = command(['nvidia-smi', '--query-gpu=index,memory.free', '--format=csv,noheader,nounits'])
-    free0 = {int(v.split(',')[0]): int(v.split(',')[1]) for v in gpu.splitlines()}
-    if free0.get(0, 0) < 16384:
-        raise SystemExit('GPU0 has less than16GiB free; stop without fallback')
-    apps = command(['nvidia-smi', '--query-compute-apps=gpu_uuid,pid', '--format=csv,noheader'])
-    uuid0 = command(['nvidia-smi', '-i', '0', '--query-gpu=uuid', '--format=csv,noheader'])
-    if uuid0 in apps:
-        raise SystemExit('GPU0 has an existing compute process; stop')
+    admission = []
+    for i in range(contract['resource_policy']['admission_samples']):
+        admission.append(gpu_snapshot(contract))
+        if i + 1 < contract['resource_policy']['admission_samples']:
+            time.sleep(contract['resource_policy']['admission_interval_seconds'])
     mem = dict((r.split(':')[0], int(r.split()[1])) for r in Path('/proc/meminfo').read_text().splitlines())
     if mem['MemAvailable'] < 16 * 1024 * 1024:
         raise SystemExit('less than16GiB host RAM available')
@@ -171,11 +218,14 @@ def main():
     env['UVH_START'] = str(start)
     record = dict(run_id=RUN, status='started', source=args.expected_source,
                   approval_ref=args.approval_ref, start_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
-                  guard_pid=os.getpid(), host=os.uname().nodename, GPU=0,
-                  output=str(OUT), code=str(CODE), budget=contract['budget'])
+                  guard_pid=os.getpid(), host=os.uname().nodename, GPU=3,
+                  output=str(OUT), code=str(CODE), budget=contract['budget'],
+                  resource_policy=contract['resource_policy'], admission=admission)
     save(OUT / 'guard_receipt.json', record)
     reason = None
     peak = 0
+    gpu_observations = []
+    next_gpu_check = 0.
     def interrupt(signum, frame):
         raise KeyboardInterrupt('guard received signal ' + str(signum))
     signal.signal(signal.SIGTERM, interrupt)
@@ -191,11 +241,17 @@ def main():
                 rss = process_tree(child.pid)
                 peak = max(peak, rss)
                 usage = output_bytes()
-                if time.monotonic() - start >= contract['budget']['wall_seconds'] - 5:
+                if time.monotonic() >= next_gpu_check:
+                    try:
+                        gpu_observations.append(gpu_snapshot(contract, child.pid))
+                    except Exception as error:
+                        reason = 'shared_GPU_monitor: ' + repr(error)
+                    next_gpu_check = time.monotonic() + contract['resource_policy']['runtime_monitor_interval_seconds']
+                if time.monotonic() - start >= contract['budget']['wall_seconds'] - 10:
                     reason = 'wall_limit'
                 elif rss > contract['budget']['rss_bytes']:
                     reason = 'sampled_RSS_limit'
-                elif usage > contract['budget']['output_bytes'] - 65536:
+                elif usage > contract['budget']['output_bytes'] - 1024**2:
                     reason = 'output_limit'
                 if reason:
                     break
@@ -214,10 +270,11 @@ def main():
             child.wait()
             record.update(status='completed' if child.returncode == 0 and not reason else 'stopped_or_failed',
                           exit_code=child.returncode, first_limit=reason, sampled_peak_RSS=peak,
+                          gpu_observations=gpu_observations,
                           elapsed_seconds=time.monotonic() - start,
                           sampled_output_bytes=output_bytes(),
                           finish_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
-                          sampling_note='100ms sampled RSS/output, not OS hard peaks; guard cleanup reserve5s')
+                          sampling_note='RSS/output nominal100ms between GPU checks; two NVML commands each2s timeout; sampled not OS hard peaks; guard cleanup reserve10s')
             save(OUT / 'guard_receipt.json', record)
     if child.returncode or reason:
         raise SystemExit(1)

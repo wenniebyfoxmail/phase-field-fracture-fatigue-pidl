@@ -19,7 +19,7 @@ def main():
                      isinstance(n.func, ast.Attribute) and n.func.attr == 'load' and
                      isinstance(n.func.value, ast.Name)]
             assert len(loads) == 3  # Two allow_pickle=False NPZ, one weights_only PT.
-    c = json.loads((root / 'docs/research/S04/S04-E011/uv_head_c1_20261018/inputs.json').read_text())
+    c = json.loads((root / 'docs/research/S04/S04-E011/uv_head_c1_20261018_r2/inputs.json').read_text())
     assert c['cycle'] == 1 and c['substep'] == 4 and c['FEM_outer'] == 9
     assert len(c['files']) == 4
     assert [r['role'] for r in c['files']] == ['state', 'model', 'baseline_fields', 'baseline_result']
@@ -28,7 +28,12 @@ def main():
     assert c['files'][0]['decode_fields'] == ['nodes', 'cells', 'freeu', 'u_fem', 'v_fem', 'd_fem', 'ru_fem']
     assert c['budget'] == dict(wall_seconds=900, opt_no_new_eval_seconds=600,
                                work_seconds=840, evaluations=400, rss_bytes=8589934592,
-                               gpu_reserved_bytes=12884901888, output_bytes=104857600)
+                               gpu_reserved_bytes=8589934592, gpu_process_bytes=8589934592,
+                               output_bytes=104857600)
+    assert c['resource_policy']['physical_GPU'] == 3
+    assert c['resource_policy']['minimum_initial_free_MiB'] == 12288
+    assert c['resource_policy']['minimum_runtime_free_MiB'] == 4096
+    assert c['resource_policy']['service']['pid'] == 3295884
     assert c['rcond'] == 1e-10 and c['relative_gain_screen'] == 1e-4
     print('AST and four-file contract checks passed; no payload opened, imported or evaluated')
 
