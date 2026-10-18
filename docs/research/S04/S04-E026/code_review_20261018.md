@@ -57,3 +57,39 @@ coupling work or extra compute authorised. Account normal Codex window checked
 at preparation start and after implementation:16%used/84%remaining, no reset.
 No new scientific fit or9-source read will occur without separate final-card
 approval. Review receipt/readback and final card pointers will append here.
+
+## Independent static review readback
+
+Exact snapshot `63af1f4f473f47a3298cad6f6c6e5716b0fe9a45` received
+**REVIEW_PASS, no blocking item**. Target01a12d15-9b60-7280-8248-18386d6ef741
+returned isError=false on dispatch; model/settings retained, backend not
+independently verified or described as Pro.
+Turn `01a14e47-95cc-7cb2-a708-ac97ca09d90a`, final message
+`msg_015d0a19570ed14a016ad48e65728c819194c08c17bd68fc7e`;
+wait_threads revision107 confirmed completed/idle,error=null.
+
+| Reviewer finding | Main-chat reconciliation |
+|---|---|
+| One L32 solve,116late training cycles, frozen normalisers/sample | fit_one has one solve call, count/mass check, no new moments/scales; original32/alpha1/intercept retained. Adopted. |
+| B32/V0 not fitted/predicted or rescored on raw fields | Worker copies saved CSV values and saved three-stratum MSE; only candidate gets forward evaluation. Balanced ratios combine three saved scalar MSEs arithmetically, not a baseline replay. Adopted. |
+| Nine science plus five frozen inputs bound separately | Manifest exact oldnine tuples and fixed five path/size/role entries; same-FD science hash and bounded frozen evidence semantics explicitly distinct. Adopted within declared local-artifact trust, not tamper-proof qualification. |
+| Evaluation after fit and release | read_frozen forbids evaluation role before fit1/release; run then opens saved evaluation and U0.11, no labels enter new fitting. Adopted. |
+| Budget and exception stop/no retry retained | Copied guard delta is identity/contracts/one-fit requirements; unknown launch/known group cleanup/resource coverage/errors unchanged. Adopted as static design, not runtime or OS guarantee. |
+| Static-only scope | Reviewer read source/documents, no14payloads/tests/fit/plot. No numerical equivalence, resource, artifact availability or scientific result claimed. |
+
+No code fix was requested or made after this snapshot. Final card
+`R001_run_card_v1_20261018.md` binds the exact SHA, actual review message,
+new approval index S04-E026-R001-CARD-v1-63af1f4f and one full command. Main
+chat checks command against source CLI, controlled-source/contract Git identity
+and no placeholders; the final card itself is operator-prepared, not falsely
+labelled an independently reviewed execution. Only docs and original Obsidian
+note/Roadmap change after the reviewed source. Tests are not rerun merely to
+refresh a version, no numerical solve or real job occurs.
+
+Completion of current request: integrated protocol,14-source manifest,
+minimal source/generated checks, scoped independent review and final approval
+card prepared together. Only next decision is the user's exact final-card
+execution approval; no extra full review or scientific criterion added.
+At the final preparation check the normal Codex window remains16%used/84%left;
+no quota reset/purchase. Coupling chat owns no E026 calculation or shared-note
+write, notification delivered; original method chat remains read-only reviewer.
