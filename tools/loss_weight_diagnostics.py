@@ -20,6 +20,17 @@ def flatten_grad(value, params):
     return result.detach()
 
 
+def flatten_vjp(outputs, params, seeds):
+    """Manual loss-chain cotangents, combined before shared NN reverse ops."""
+    gg = torch.autograd.grad(outputs, params, grad_outputs=seeds,
+                             retain_graph=True, allow_unused=True)
+    result = torch.cat([(torch.zeros_like(p) if g is None else g).reshape(-1)
+                        for p,g in zip(params,gg)])
+    if not bool(torch.isfinite(result).all()):
+        raise RuntimeError('nonfinite diagnostic VJP')
+    return result.detach()
+
+
 def norm(g):
     return float(g.double().norm())
 
@@ -54,7 +65,9 @@ def gradient_probe(energies,reg,params):
         coeff=1/(math.log(10)*total.detach())
         terms={'Eel':raw['Eel']*coeff,'Ed':raw['Ed']*coeff,
                'Eh':raw['Eh']*(beta*coeff),'R':raw['R']*1e-5}
-        expected=sum(terms.values())
+        postscaled_sum=sum(terms.values())
+        expected=flatten_vjp((*energies,reg),params,
+            (coeff,coeff,beta*coeff,torch.full_like(reg,1e-5)))
         direct[beta]=flatten_grad(torch.log10(total)+1e-5*reg,params)
         discrepancy=float((expected-direct[beta]).abs().max())
         if not torch.allclose(expected,direct[beta],atol=1e-6,rtol=1e-4):
@@ -76,11 +89,15 @@ def gradient_probe(energies,reg,params):
             weighted_log_gradient_L2={k:norm(v) for k,v in terms.items()},
             weighted_log_component_cosine={f'{a}:{b}':cosine(terms[a],terms[b])
                 for a,b in itertools.combinations(terms,2)},
-            chain_error_Linf=discrepancy))
+            chain_error_Linf=discrepancy,
+            postscaled_parameter_sum_Linf=float((postscaled_sum-direct[beta]).abs().max()),
+            postscaled_parameter_sum_failing_components=int(((postscaled_sum-direct[beta]).abs()>(1e-6+1e-4*direct[beta].abs())).sum())))
     result=dict(space='all requires_grad network parameters in named order; no mapping buffers',
         energies=[float(q.detach()) for q in energies],rows=rows,
         same_snapshot_beta_signs=sign_stats(direct[1.],direct[25.]),
-        zero_Eh_parameter_gradient=bool(torch.count_nonzero(raw['Eh'])==0))
+        zero_Eh_parameter_gradient=bool(torch.count_nonzero(raw['Eh'])==0),
+        chain_check='manual scalar cotangents VJP versus complete-log direct AD; same atol1e-6 rtol1e-4',
+        postscaled_sum_role='reported rounding-order diagnostic, not machine-equivalent shared-backward reconstruction')
     return result,direct
 
 

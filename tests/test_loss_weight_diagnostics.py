@@ -55,3 +55,25 @@ def test_failed_decomposition_preserves_original_guard_and_diagnostics():
     assert error.diagnostics['largest_difference_flat_index']==0
     assert error.diagnostics['difference_Linf']>.99
     assert set(error.vectors)=={'Eel','Ed','Eh','R','expected','direct'}
+
+
+def test_incorrect_manual_chain_seed_still_fails_original_tolerance():
+    import loss_weight_diagnostics as module
+    from unittest.mock import patch
+    import pytest
+    original=module.flatten_vjp
+    def wrong_seed(outputs,params,seeds):
+        seeds=list(seeds);seeds[2]=seeds[2]*.5
+        return original(outputs,params,tuple(seeds))
+    p=torch.tensor([.1,-.1],dtype=torch.float64,requires_grad=True)
+    energies=((p+1).square().sum(),.01*p.square().sum(),torch.relu(-p).square().sum())
+    with patch.object(module,'flatten_vjp',side_effect=wrong_seed):
+        with pytest.raises(GradientDecompositionError):gradient_probe(energies,p.square().sum(),[p])
+
+
+def test_joint_manual_vjp_is_independent_of_complete_loss_construction():
+    from loss_weight_diagnostics import flatten_vjp
+    p=torch.tensor([.1,-.2],dtype=torch.float64,requires_grad=True)
+    a=(p*p).sum();b=(3*p).sum()
+    got=flatten_vjp((a,b),[p],(a.new_tensor(2.),b.new_tensor(-.5)))
+    assert torch.allclose(got,4*p.detach()-1.5,atol=1e-14,rtol=1e-14)

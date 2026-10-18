@@ -1,0 +1,37 @@
+{
+  "protocol": "loss-weight-arithmetic-repair-r1-20261018",
+  "source_base": "19d9ea35debfb8bf17a2a390eb1fbd8bbdd10367",
+  "user_authorization": "2026-10-18 human: identify/fix9 components without relaxed tolerance; review then originalW0/W25 gamma-only200 each; hard bounds off; no trajectory/FEM",
+  "diagnostic": {
+    "GPU_seconds_cap": 180,
+    "external_TERM": 175,
+    "external_KILL_grace": 5,
+    "updates": 0,
+    "source_bundle": "/mnt/data2/drtao/pidl_archives/pf_s04e011_wpair_grad_audit_20261018_v1/readout/initial_bundle.pt",
+    "source_vectors": "/mnt/data2/drtao/pidl_archives/pf_s04e011_wpair_grad_audit_20261018_v1/readout/preflight_origin_gradients.failure.pt",
+    "GPU": 5
+  },
+  "pair": {
+    "updates_per_arm": 200,
+    "betas": [
+      1,
+      25
+    ],
+    "gamma": [
+      16875,
+      421875
+    ],
+    "symmetry": 0,
+    "hard_constraint": false,
+    "weight_decay": 1e-05,
+    "load": 0.02999988,
+    "external_TERM": 3300,
+    "external_KILL_grace": 5,
+    "original_frozen_physics_and_optimizer": true
+  },
+  "combined_GPU_seconds_cap": 3600,
+  "checks": "original9 reproduced at samefloat32 savedbundle; direct repeat exact; manual independent-chain jointVJP passes unchanged1e-6/1e-4; preserve postscaled mismatch; seeded separate paths and fixed-affine32/64 arithmetic control; production preflight includes activeEh reversible perturbation beta25",
+  "unchanged": "no training objective/backward/optimizer/history/FEMtarget change; only diagnostic expected computation path",
+  "before_pair": "focused exact-code review and actual no-step evidence review; no pair if unexplained discrepancy/invalid controls",
+  "stop": "finite/domain/identity/tolerance/resources/time failure; preserve prefix; no silent sweep or budget extension"
+}
