@@ -1,0 +1,52 @@
+{
+  "protocol": "s04-e011-gradient-arithmetic-verification-design-v1-20261018",
+  "status": "DESIGN_PREPARED_PENDING_INDEPENDENT_REVIEW",
+  "stage": "design only; no new runner or numerical execution",
+  "owner_experiment": "S04-E011",
+  "claim_class": "C1 evidence-validity",
+  "domain": "synthetic",
+  "baseline_run": "pf_s04e011_wpair_grad_audit_20261018_v1",
+  "baseline_source": "99cad0b32eb88fcae496785f8090286e8bdfe5ea",
+  "document": "gradient_arithmetic_verification_20261018.md",
+  "original_tolerance": {
+    "atol": 1e-06,
+    "rtol": 0.0001,
+    "reference": "direct gradient"
+  },
+  "base_beta": 1,
+  "proposed_GPU_seconds_cap": 60,
+  "watchdog": "TERM55s+KILL5s",
+  "GPU_allocator_cap_GiB": 22,
+  "max_reverse_calls": 34,
+  "max_forward_calls": 14,
+  "optimizer_updates": 0,
+  "history_commits": 0,
+  "FEM_solves": 0,
+  "FD": {
+    "zero_based_global_indices": [
+      483186,
+      206495
+    ],
+    "h_powers_of_two": [
+      -20,
+      -24,
+      -28
+    ],
+    "scale": "max(1,abs(theta_i))",
+    "functional_copies_only": true
+  },
+  "FP64_anchor_rule": "exact widening of saved mapper constants; no reanchoring; branch changes explicit",
+  "blocked": [
+    "producer execution this turn",
+    "tolerance relaxation",
+    "W0/W25 training",
+    "automatic retries or extra diagnostics",
+    "claiming FP64 or FD alone proves no bug"
+  ],
+  "future_requirements": [
+    "independent diagnostic runner implementation and CPU sanity",
+    "code review of exact snapshot and launcher",
+    "input full hashes and backend identity",
+    "direct human execution approval for exact package"
+  ]
+}
