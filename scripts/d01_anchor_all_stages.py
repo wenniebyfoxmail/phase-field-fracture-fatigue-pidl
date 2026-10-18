@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from audit_d01_measurement_readiness import mapped_points,intervals
 from d01_section3_prediction import write_csv
 
-ROOT=Path('/Users/wenxiaofang/phase-field-fracture-with-pidl');BASE=ROOT/'local_archive/experiments/S03-E016-D01';EXT=BASE/'fourteen_stage_extension_20261017';OUT=BASE/'anchor_rule_all_stages_20261018'
+ROOT=Path('/Users/wenxiaofang/phase-field-fracture-with-pidl');BASE=ROOT/'local_archive/experiments/S03-E016-D01';EXT=BASE/'fourteen_stage_extension_20261017';OUT=BASE/'anchor_rule_all_stages_20261018_r002'
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def dump(p,x):p.write_text(json.dumps(x,indent=2))
 def main():
@@ -32,7 +32,7 @@ def main():
                     xy=mapped_points(cut['center'],cut['normal'],h,dense-60,np.array([off]));p=cv2.remap(mask,*xy,cv2.INTER_LINEAR)[0];runs=intervals(dense,p);legacy=[r for r in runs if r[0]<=75 and r[1]>=45];anchored=[r for r in runs if r[0]<=60<=r[1]];status='ok' if len(anchored)==1 and not anchored[0][2] else 'missing_anchor' if not anchored else 'nonunique_anchor' if len(anchored)>1 else 'censored_anchor';chosen=anchored[0] if status=='ok' else None;extras=[r for r in legacy if chosen is None or r!=chosen];old_ok=len(legacy)==1 and not legacy[0][2]
                     r={'beam':b,'image':o['image'],'load_kN':o['metadata']['nominal_stage_load_kN'],'section':sec,'tangent_offset_ref_px':float(off),'centerline':off==0,'saved_width':o['model_widths_strip_px'][j] if off==0 else None,'anchor_status':status,'anchor_left':chosen[0] if chosen else None,'anchor_right':chosen[1] if chosen else None,'anchor_width':chosen[1]-chosen[0] if chosen else None,'legacy_status':'ok' if old_ok else 'ambiguous','legacy_width':legacy[0][1]-legacy[0][0] if old_ok else None,'extra_window_components':len(extras),'all_strip_intervals':json.dumps(runs),'old_window_intervals':json.dumps(legacy),'extra_intervals':json.dumps(extras),'source_status':o['width_observation_status'][j],'uncertainty_flags':'|'.join(o['uncertainty_flags'])};rows.append(r);case_rows.append(r)
                     if off==0:
-                        assert old_ok and abs(r['legacy_width']-r['saved_width'])<1e-9;r['anchor_minus_saved']=r['anchor_width']-r['saved_width'] if chosen else None;central.append(dict(r));zero_diff.append(abs(r['legacy_width']-r['saved_width']))
+                        assert old_ok and abs(r['legacy_width']-r['saved_width'])<1e-9;cr=dict(r);cr['anchor_minus_saved']=r['anchor_width']-r['saved_width'] if chosen else None;central.append(cr);zero_diff.append(abs(r['legacy_width']-r['saved_width']))
                 if any(r['anchor_status']!='ok' or r['extra_window_components'] for r in case_rows):
                     cases.append({'beam':b,'image':o['image'],'section':sec,'load_kN':o['metadata']['nominal_stage_load_kN'],'flagged_offsets':[r['tangent_offset_ref_px'] for r in case_rows if r['anchor_status']!='ok' or r['extra_window_components']],'n_failed_anchor':sum(r['anchor_status']!='ok' for r in case_rows),'n_extra_fragment_lines':sum(r['extra_window_components']>0 for r in case_rows)})
     # Rows need stable field lists; only central table has comparison delta.
