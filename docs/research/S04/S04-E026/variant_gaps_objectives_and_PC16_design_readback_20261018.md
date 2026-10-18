@@ -215,4 +215,45 @@ D3准入／数值／预算失败均结束该唯一动作，不追加拟合、换
 现有UVH-r2仍未驻点，E025／E026负结果不变；没有理由由资源停止推断表示不足。
 主对话统一更新Obsidian／Roadmap；原耦合对话仍唯一producer owner。
 
+## 12. PC16-r3已按新批准推进：资源通过、部署失败，0科学工作并冻结核验
+
+本轮直接人方批准绑定卡4f2955b4、源码2a2a7e43，来源主对话用户turn
+`01a150bc-e6c9-72d2-a54c-e28667fe04d6`；原耦合owner只读核对原文后独占推进。
+新Run为`pf_s04e011_uvh_c1_pc16_r3_20261018`，不是旧r1/r2重启。
+400共享工作单位／34HVP／五源范围、900/600/840秒、8GiB RSS／CUDA／100MiB及4GiB余量不变。
+owner终态文档提交`2cf0fe84a61898f63058196bd95b5e3f571e6c43`：
+`docs/research/S04/S04-E011/uv_head_c1_pc16_20261018/deployment_r3_stop_20261018.md`。
+完成turn `01a150bd-9b74-7b51-8b87-af4d7794e7da`，completed／error=null，
+最终消息`msg_0dc5ef36970fd720016ad5307976f48191864aaf72db904efe`；owner工作树干净。
+
+|2026-10-18伦敦时间的阶段|核验事实|
+|---|---|
+|21:40:32–36资源准入|三次exact_service样本均PID2741803、724MiB、空闲23348MiB／利用率0%；无重复worker，host／data2准入通过|
+|21:41:25部署开始|新r3 root创建，78311字节源码bundle已传；只触及本次自有目录|
+|21:42:09部署停止|HEAD为正确2a2a7e43，但checkout stderr报告AGENTS.md及archive脚本对象无法读取，status有` D AGENTS.md`；精确干净部署未通过|
+|科学消费／终态|guard0、worker0、五科学输入读取／哈希0/5、HVP0/34、工作账本0/400；无attempt_claim／科学输出，未补对象、重试或改其他进程|
+
+部署回执中checkout进程返回0并不等于物化成功；后续dirty检查捕获了缺口。
+HEAD精确、旧checkout干净、delta bundle ancestry可验证，都不足以证明新checkout所需Git blob齐全。
+日志直接证明本次源码物化缺对象，尚未调查原始缺失原因或定位究竟哪个对象库／打包环节丢失；
+不将其称作已确诊的全库损坏，也不把源头推断当实测。失败checkout／对象库原样留在新r3 root，未修复或删除。
+
+主对话只读核对授权、preflight.json、deployment_exact.json、terminal_verification.json、
+retrieval_verification.json及取回的两份终态／部署receipt与清单，未SSH、读科学数组或执行测试。
+清单三个控制产物为deployment_receipt.json（3323B）、operator_terminal.json（876B）、
+source.bundle（78311B），共82510B；另有transfer_manifest.json（1064B），共四个文件。
+主对话再次核对三项SHA256及字节数全部匹配；四个取回文件均为`-r--r-----`，写权限已移除。
+远端冻结由owner回执记录；本对话未重查远端，未将本地观察冒充远端实时验证。
+哈希仅证明控制证据取回一致性，不是科学输入或结果身份核验。
+
+**D3停在工程部署，未抵达同空间科学判别。** 没有PC16能量、驻点、梯度一致性或FEM场误差，
+故主判据不可计算／结论未定，不是PC16方法的科学负结果；没有数值峰值／运行时或候选图可以展示。
+上表就是非数值部署审查的决策证据，不另画伪结果图。原UVH-r2及E025／E026结论保持。
+
+唯一下一步建议：先单独准备**代码包完整性／空目录物化核验**，验证精确源码和允许依赖能由完整包交付，
+而非只核对目标commit和旧生产checkout的干净状态；明确代码包对象闭包与所需文件清单，避免再靠不完整前置对象。
+这应是代码专用工程核验，不读取科学数据、不导入数值执行、不用GPU、不续跑或改r3。
+本轮只建议，未实现、测试、补对象、修卡或启动后继；完成并审核该准备后才另批新的科学动作。
+主对话统一更新残差Obsidian／Roadmap；耦合owner与主对话均未双写或派第二计算。
+
 来源：E021/run_result.md，E025-R002和E026-R001既有summary.json，r2结果fd8f3588及现有源码定义，PC16提案52d24088。

@@ -191,3 +191,28 @@ retry, extra fit or confirmation access. Scientific verdict remains inconclusive
 for PC16, not negative. Existing UVH-r2 nonstationarity and E025/E026 bounded
 negatives stand. Main alone reconciled Obsidian/Roadmap; coupling remains sole
 producer owner. See PC16 readback sections10–11 for control evidence and ladder.
+
+## 2026-10-18 — approved PC16-r3 stops at deployment; controls frozen/verified
+
+Direct human approval of card4f2955b4/source2a2a7e43 was relayed to the sole
+coupling owner. Fresh exact-service resource admission passed, no duplicate;
+then source checkout reported missing AGENTS.md/archive-script objects despite
+exact target HEAD. Dirty-state validation stopped deployment before guard,
+worker or any scientific input access:0/34HVP,0/400units. No repair/refill/retry,
+other-process change, representation change or extra fit. Owner result2cf0fe84.
+
+Main read original approval/preflight/deployment/terminal/retrieval controls,
+matched all3 returned control payload hashes/sizes (82510B) and manifest1064B;
+all4 local copies have write bits removed. Failed code checkout remains in the
+owned producer root, not retrieved/repaired. No scientific output/figure/peak
+exists; controls are not numerical evidence. Main did no SSH/payload/numeric
+work. The source-object absence is observed; original loss mechanism remains
+uninvestigated. Existing Git cleanliness/ancestry checks had not proved a fully
+materializable source package. Scientific PC16 verdict remains inconclusive.
+
+D3 did not reach its solver decision. Next recommendation is a code-only
+package/object-completeness and fresh-directory materialization preparation
+before any new approved science attempt; no such repair/test/new run is
+authorized or performed this turn. Preserve old PC16 and UVH/E025/E026 records.
+Main alone updated residual Obsidian/Roadmap, with no computed figure because
+no candidate exists. See PC16 readback section12 for the stage decision table.
