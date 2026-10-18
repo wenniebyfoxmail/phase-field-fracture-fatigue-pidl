@@ -289,3 +289,16 @@ limitation,notentireperframe/predictionroute. R0010.945s,173hashesunchanged,
 all3arithmetic/eventchainschecked; allcaseplotsandposthocgeometrydisplayed.
 Nextoneimage-geometricguidetransfercandidate proposed, notexecuted; preserve
 frozenmasks/oldhalfdepth/scores, no mandatoryanchors ormodelcomplexityexpansion.
+
+### E045 image-geometric guide-transfer comparison — 2026-10-18
+
+[E045results](../research/S03/S03-E045-MD01/results.md): fixedcurrent-imageEDT/
+continuouspathguide, sameintensity/exclusion/corridor; all24/25/26 once, no
+forecasterrorselection. Scoringbandarea5755→5755,7300→7361,6612→9191px²;
+added/removed0/0,385/324,3651/1072. Fixed26upperreview45→3357,shadowrisk1072→0;
+sourceoverlay showsomittedtracecoverageandbackgroundblockremoval, nottruepixel
+accuracy. Allrightcontrols0→0;26occupiedrows240unchanged, residualgaps/texture.
+R0011.824s,207hashesunchanged,3baselinesexact; all3cases/detaildisplayedwith
+shortinterpretations. Oldhalfdepth/scoreskept, no forecastsorrescueofE044.
+Nextconsistenthistoryobservationthennewnamedprediction proposed,notexecuted;
+donotsubstitutenewmeasurementintooldscore. No moreperfect-segmentationprerequisite.

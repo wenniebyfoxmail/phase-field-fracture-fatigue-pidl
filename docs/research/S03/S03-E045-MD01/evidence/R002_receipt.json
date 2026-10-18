@@ -1,0 +1,21 @@
+{
+  "execution": "succeeded",
+  "source_summary_sha256": "674b9d1edbe522be1afb6aebd7ce46e2befe97ebd0e1b4f58d3dc384c4a51d2e",
+  "renderer_sha256": "0a1b070792eab75b4f15c797333f94b1b0f1f8d07aa1443872afa4f0fa2d57df",
+  "figures": 4,
+  "numerical_rerun": false,
+  "output_hashes": {
+    "F02_step26_review_regions.md": "d4542e5d8fd3b6713cb455601d024ed885d91d6353e1df5b740a7cfd922bb946",
+    "F01_step24_guide_comparison.png": "537a8344e1227d4eb066c924fa0310d3264d38ce7cc755c9754ef481accff973",
+    "F01_step24_guide_comparison.pdf": "cdd218036a7f6fc33e371fbebae852198b7b5bc705420b68dc82e2290809813d",
+    "F01_step24_guide_comparison.md": "816febdb92dbd5264a33237947a617688abc9a0f6afc5211492bb3651920797c",
+    "F01_step25_guide_comparison.pdf": "be444bf6390f6f42c7f6be8df4906da31eb24417365408af6492fc56e673f163",
+    "F01_step25_guide_comparison.md": "820afcc89e3678ad15934c36a4c18f2bfb41d2fd60390d2a5946a324438c4c35",
+    "F01_step26_guide_comparison.md": "701da1fb6b4815fcd4153c2d2c0e558b0b0c17f485f486cbb040f1e07e9ec1fc",
+    "F01_step25_guide_comparison.png": "8c927966f80d9303eceebb4d4605876c4cee3bd4d78025d618a7d6d287972636",
+    "F01_step26_guide_comparison.png": "835ffb3f05787be44dcf8fc4ec72d475da665d9369622a0bd579ef36658fcb15",
+    "F01_step26_guide_comparison.pdf": "a882f7e719e738205755eb0105d3b930ced866cc40c8b57b084b0db695297722",
+    "F02_step26_review_regions.png": "693b7a52b10d5e970b90f6ceb477575061525c71a08e341b33c0b267d40a0284",
+    "F02_step26_review_regions.pdf": "09a10a6bd6c7522cb6f9415224e978908f0fca83077dfa6d3c2524a682ebfe83"
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "role": "one image-geometry candidate,3 already-exposed frames, no forecast scoring",
+  "rows": [
+    {
+      "stage": 24,
+      "old_area": 5755,
+      "new_area": 5755,
+      "added": 0,
+      "removed": 0,
+      "old_support": 250,
+      "new_support": 250,
+      "old_row_mass": 23.02,
+      "new_row_mass": 23.02,
+      "new_pixels_outside_old_corridor": 0,
+      "fallback": false,
+      "max_step": 3,
+      "search_radius": 240,
+      "path_score": 3068.439802233322,
+      "guide_shift_mean_abs_px": 16.099191374663082,
+      "guide_shift_max_abs_px": 40.714285714285325,
+      "path_on_eligible_fraction": 0.9892183288409704,
+      "path_rows": 371
+    },
+    {
+      "stage": 25,
+      "old_area": 7300,
+      "new_area": 7361,
+      "added": 385,
+      "removed": 324,
+      "old_support": 250,
+      "new_support": 250,
+      "old_row_mass": 29.2,
+      "new_row_mass": 29.444,
+      "new_pixels_outside_old_corridor": 385,
+      "fallback": false,
+      "max_step": 3,
+      "search_radius": 240,
+      "path_score": 3571.9270877046097,
+      "guide_shift_mean_abs_px": 40.77739020136357,
+      "guide_shift_max_abs_px": 108.0,
+      "path_on_eligible_fraction": 0.9973045822102425,
+      "path_rows": 371
+    },
+    {
+      "stage": 26,
+      "old_area": 6612,
+      "new_area": 9191,
+      "added": 3651,
+      "removed": 1072,
+      "old_support": 240,
+      "new_support": 240,
+      "old_row_mass": 27.55,
+      "new_row_mass": 38.295833333333334,
+      "new_pixels_outside_old_corridor": 3651,
+      "fallback": false,
+      "max_step": 3,
+      "search_radius": 240,
+      "path_score": 4165.754708117505,
+      "guide_shift_mean_abs_px": 70.16790867290312,
+      "guide_shift_max_abs_px": 184.28571428571468,
+      "path_on_eligible_fraction": 0.9730458221024259,
+      "path_rows": 371
+    }
+  ],
+  "regions": [
+    {
+      "stage": 24,
+      "region": "right_background_control",
+      "box": [
+        4380,
+        1700,
+        4510,
+        1950
+      ],
+      "old_pixels": 0,
+      "new_pixels": 0,
+      "added": 0,
+      "removed": 0,
+      "reference_role": "source-informed mixed-pixel review box; not truth"
+    },
+    {
+      "stage": 25,
+      "region": "right_background_control",
+      "box": [
+        4380,
+        1700,
+        4510,
+        1950
+      ],
+      "old_pixels": 0,
+      "new_pixels": 0,
+      "added": 0,
+      "removed": 0,
+      "reference_role": "source-informed mixed-pixel review box; not truth"
+    },
+    {
+      "stage": 26,
+      "region": "right_background_control",
+      "box": [
+        4380,
+        1700,
+        4510,
+        1950
+      ],
+      "old_pixels": 0,
+      "new_pixels": 0,
+      "added": 0,
+      "removed": 0,
+      "reference_role": "source-informed mixed-pixel review box; not truth"
+    },
+    {
+      "stage": 26,
+      "region": "upper_omission_review",
+      "box": [
+        4020,
+        1700,
+        4210,
+        1770
+      ],
+      "old_pixels": 45,
+      "new_pixels": 3357,
+      "added": 3312,
+      "removed": 0,
+      "reference_role": "source-informed mixed-pixel review box; not truth"
+    },
+    {
+      "stage": 26,
+      "region": "shadow_risk_review",
+      "box": [
+        4250,
+        1700,
+        4335,
+        1770
+      ],
+      "old_pixels": 1072,
+      "new_pixels": 0,
+      "added": 0,
+      "removed": 1072,
+      "reference_role": "source-informed mixed-pixel review box; not truth"
+    }
+  ],
+  "all_baselines_exact": true,
+  "exclusions_unchanged": true,
+  "old_halfdepth_and_scores_unchanged": true,
+  "region_counts_are_not_accuracy": true,
+  "no_predictive_error_selection": true
+}

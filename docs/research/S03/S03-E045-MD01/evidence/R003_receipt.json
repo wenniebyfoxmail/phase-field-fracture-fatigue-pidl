@@ -1,0 +1,12 @@
+{
+  "execution": "succeeded",
+  "source": "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001",
+  "summary_sha256": "674b9d1edbe522be1afb6aebd7ce46e2befe97ebd0e1b4f58d3dc384c4a51d2e",
+  "renderer_sha256": "1afc522fef483b0dd5b434ad3dd7eb607dece2c09bee9b042ad5eb9fddb64610",
+  "numerical_rerun": false,
+  "output_hashes": {
+    "F03_all_cases_compact.md": "01ab95e7797574aaccc85c058faf054669a493c47afac75367f821e9c2d063d5",
+    "F03_all_cases_compact.pdf": "eb4978ccee915453162929c47b89356eefcfa58ba1a632e72821564799d1c409",
+    "F03_all_cases_compact.png": "50096f74c6398d55ebb2e0e23a3246f70e80414cf18dcd1d31cb8ce0ab8edead"
+  }
+}

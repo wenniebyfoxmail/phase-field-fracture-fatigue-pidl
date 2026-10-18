@@ -1,0 +1,27 @@
+# E045 visual and integrity QA — 2026-10-18
+
+Cleanproducer822b42455aea5a8ae7aad6171949214a4b7e580c; singleR0011.824s,
+3baselinearrayreconstructions exact,3candidateextractions,207protectedinputs
+unchanged. DP syntheticstraight/sloping/isolatedblob/ties/bounds andexhaustive
+tiny-gridoptimality passed. Savedall3booleanarrayarea/delta,5reviewregioncounts
+andpathstepconstraints independentlyrecounted. Localchecks, no independentagent.
+
+Actuallyviewedall5PNGexports: R002step24/25/26and26reviewboxes, R003allcasecompact.
+No blank/rotated/mismatchedcases; step24zero delta is intended. Same source/mask
+extent andold/newcolours, readabletitles/counts, contextualsourcepixels retained.
+25top-leftadded followsdarktrace whiletop-rightremovedsourceappearsbackground;
+26upperrecovery andrightbackgroundremoval visible. Residualedgeambiguity and10
+missingrows disclosed, no falsepixeltruth orcompleteshadowremovalclaim.
+
+R0028figurefiles/4sidecars andR0032files/1sidecar passvalidator; 300dpiPNG/PDF.
+NewshortChineseSee/Therefore/Doesnotshow blocks placedimmediatelyafterdisplayed
+figures inreportandObsidian, consistentwithmeasuredscope andoldscorepreservation.
+
+FourPNG/MDvaultcopiesexact;2uniqueembedsresolve. NativeObsidian AXstate refreshed
+E045text, bothimageelements andChineseexplanations. Screenshotstillreturnsold
+E040switcherpixels despitecurrentAX; nativepixelrendering remainsunverified.
+ActualexportPNGcontent andfilehashesverified separately. No UI-pixelverification
+claimed; do not repeatedlydivertresearch into unchangedscreenshotproblem.
+
+No forecastread/selection/rescore; never replaceoldtarget6612withnew9191to
+reclassifyoldforecast8845. Newmeasurementversion separatefrompreservedE044.

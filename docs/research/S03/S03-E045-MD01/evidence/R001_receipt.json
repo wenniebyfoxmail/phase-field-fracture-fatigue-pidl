@@ -1,0 +1,25 @@
+{
+  "execution": "succeeded",
+  "started_utc": "2026-10-18T11:57:21.241371+00:00",
+  "host": "Wennies-MacBook-Pro-14.local",
+  "pid": 3261,
+  "runtime": "/Users/wenxiaofang/miniconda3/bin/python3",
+  "command": [
+    "scripts/md01_geometric_guide_transfer.py",
+    "run",
+    "--lock",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R000/input_lock.json",
+    "--output",
+    "/Users/wenxiaofang/phase-field-fracture-with-pidl/local_archive/experiments/S03-E045-MD01/runs/S03-E045-MD01-R001"
+  ],
+  "commit": "822b42455aea5a8ae7aad6171949214a4b7e580c",
+  "dirty": [],
+  "lock_sha256": "6efeda069b38521427181379e0ca18598a392c7903640b4bcb6183a5df48e647",
+  "retrieval": "verified_local",
+  "protected_files_verified": 207,
+  "baseline_reconstructions_exact": 3,
+  "candidate_extractions": 3,
+  "wall_seconds": 1.8242077080067247,
+  "cpu_seconds": 1.814528,
+  "ended_utc": "2026-10-18T11:57:23.065337+00:00"
+}
